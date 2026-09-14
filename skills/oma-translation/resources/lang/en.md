@@ -1,15 +1,16 @@
 # English Target-Language Profile (`en`)
 
 Load this file whenever the **target** language is English. It is read together
-with `../anti-ai-patterns.md` (shared taxonomy) and `../translation-rubric.md`
-(shared scoring), never instead of them.
+with `../translation-rubric.md` for substantive content or review. For prose style
+review, also load `../../../_shared/core/anti-ai-prose.md` (common taxonomy) and
+`../anti-ai-patterns.md` (translation exceptions and grammar diagnostics).
 
 Most oma translation runs go English → other. This profile covers the reverse
 direction, where the source is CJK: commit-adjacent docs written in Korean,
 Japanese issue threads, Chinese design notes, and Korean-authored READMEs being
 published in English.
 
-- **Localizations** of shared anti-AI rules (`1`–`24`).
+- **Localizations** of shared anti-AI patterns.
 - **English-only rules** (`EN-1`–`EN-8`).
 
 ---
@@ -107,7 +108,7 @@ Do not add "kindly", "please be informed", "as per", or "do the needful".
 
 The shared em-dash restructuring requirement is a CJK-target rule. English
 typography accepts `—`, so do not mechanically strip it. It still falls under
-shared rule `14`: one per paragraph at most, and never as a substitute for
+the decorative dashes guidance: one per paragraph at most, and never as a substitute for
 deciding the logical relationship between two clauses.
 
 Use spaced or unspaced em dashes consistently with sibling files. Prefer a
@@ -118,7 +119,7 @@ colon for definitions and a comma pair for asides.
 - **Quotes**: straight `"` and `'` in code-adjacent docs and Markdown source.
   Curly quotes only when the publishing pipeline requires them.
 - **Headings**: sentence case unless sibling headings use title case. Do not
-  introduce title case (shared rule `15`).
+  introduce title case (the heading case guidance).
 - **Serial comma**: follow sibling files; be consistent within a document.
 - **Dates**: `2026-08-20` in tables and logs, `August 20, 2026` in US-audience
   prose, `20 August 2026` for international audiences. Follow siblings.
@@ -130,7 +131,9 @@ colon for definitions and a comma pair for asides.
 
 ## Localizations of shared rules
 
-### Shared `5` — AI vocabulary overuse
+### AI vocabulary overuse
+
+See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-clustering).
 
 The shared English watch list applies directly here: *additionally, crucial,
 delve, enhance, foster, garner, highlight, interplay, intricate, key, landscape,
@@ -147,18 +150,24 @@ Frequent CJK-source triggers:
 | `~를 통해` / `〜を通じて` / `通过` | through the use of | via, with, or restructure |
 | `최적화` / `最適化` / `优化` | optimize (when source means "improve") | improve, tune |
 
-### Shared `8` — synonym cycling
+### synonym cycling
+
+See [Synonym cycling](../../../_shared/core/anti-ai-prose.md#synonym-cycling).
 
 Keep one term per concept. If the source uses `사용자` throughout, use "user"
 throughout; do not rotate through "client", "consumer", "end user".
 
-### Shared `13`, `16a` — boldface and inline-header lists
+### boldface and inline-header lists
+
+See [Decorative bold](../../../_shared/core/anti-ai-prose.md#decorative-bold) and [Mini-heading lists](../../../_shared/core/anti-ai-prose.md#mini-heading-lists).
 
 CJK technical writing bolds far more freely than English documentation. Do not
 carry every bold span through, and do not convert plain bullets into
 `**Header:** description` form.
 
-### Shared `19` — unnecessary connectives
+### unnecessary connectives
+
+See [Unnecessary Connectives](../anti-ai-patterns.md#unnecessary-connectives).
 
 Korean and Japanese place explicit connectives more often than English needs.
 
@@ -170,7 +179,9 @@ Good: Performance improved, and so did the user experience.
 Watch therefore, moreover, furthermore, in addition, consequently, that being
 said.
 
-### Shared `20` — passive voice
+### passive voice
+
+See [Passive Voice Abuse](../anti-ai-patterns.md#passive-voice-abuse).
 
 CJK sources often front the object with `은/는` or `は`, which tempts a passive
 rendering. Prefer active with an explicit agent when the agent is known.
@@ -180,7 +191,9 @@ Bad:  This feature was developed by the team.
 Good: The team developed this feature.
 ```
 
-### Shared `23` — pronouns
+### pronouns
+
+See [Awkward Pronoun Insertion](../anti-ai-patterns.md#awkward-pronoun-insertion).
 
 The inverse of the CJK rule. English requires the subject that the source
 omitted; supply it from context rather than leaving a dangling clause. Do not

@@ -1,10 +1,11 @@
 # Japanese Target-Language Profile (`ja`)
 
 Load this file whenever the **target** language is Japanese. It is read together
-with `../anti-ai-patterns.md` (shared taxonomy) and `../translation-rubric.md`
-(shared scoring), never instead of them.
+with `../translation-rubric.md` for substantive content or review. For prose style
+review, also load `../../../_shared/core/anti-ai-prose.md` (common taxonomy) and
+`../anti-ai-patterns.md` (translation exceptions and grammar diagnostics).
 
-- **Localizations** of shared anti-AI rules (`1`–`24`).
+- **Localizations** of shared anti-AI patterns.
 - **Japanese-only rules** (`JA-1`–`JA-9`).
 
 ---
@@ -89,7 +90,7 @@ Keep the suffix when it is established terminology (`可用性`, `冪等性`,
   fullwidth `（）` for asides in Japanese text, halfwidth `()` around ASCII-only
   content such as `(CLI)`.
 - **Em dash**: `—` is not Japanese typography. Restructure, or use `。` to split.
-  Do not swap it for `：` and stop there (shared rule `14a`).
+  Do not swap it for `：` and stop there (the mechanical punctuation swaps guidance).
 - **中黒**: `・` for coordinating loanword nouns (`インストール・設定`).
 - **Spacing**: follow the project convention for a space between Japanese and
   ASCII runs. Read three sibling files before choosing; do not switch mid-file.
@@ -136,7 +137,9 @@ Good: 可能性があります
 
 ## Localizations of shared rules
 
-### Shared `2` — `-ing` participle phrases
+### `-ing` participle phrases
+
+See [Superficial analysis](../../../_shared/core/anti-ai-prose.md#superficial-analysis).
 
 ```
 EN:   The update improves performance, ensuring a seamless experience
@@ -144,7 +147,9 @@ Bad:  このアップデートはパフォーマンスを向上させ、シー�
 Good: このアップデートでパフォーマンスが改善され、より快適に使えます
 ```
 
-### Shared `5` — AI vocabulary overuse
+### AI vocabulary overuse
+
+See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-clustering).
 
 | Watch | Prefer |
 |---|---|
@@ -155,7 +160,9 @@ Good: このアップデートでパフォーマンスが改善され、より�
 | 〜を通じて | restructure the clause |
 | 最適化する / 最大化する | match the source's intensity |
 
-### Shared `7` — rule of three
+### rule of three
+
+See [Mechanical triples](../../../_shared/core/anti-ai-prose.md#mechanical-triples).
 
 ```
 EN:   a fast, reliable, and intuitive experience
@@ -163,19 +170,25 @@ Bad:  高速で、信頼性が高く、直感的な体験
 Good: 速くて使いやすい
 ```
 
-### Shared `8` — synonym cycling
+### synonym cycling
+
+See [Synonym cycling](../../../_shared/core/anti-ai-prose.md#synonym-cycling).
 
 If `ユーザー` is right, use `ユーザー` throughout. Do not rotate through
 `利用者`, `使用者`, `エンドユーザー`.
 
-### Shared `10`, `11` — compound stacking
+### compound stacking
+
+See [Compound adjective stacking](../../../_shared/core/anti-ai-prose.md#compound-adjective-stacking) and [Abstract noun and adjective stacking](../../../_shared/core/anti-ai-prose.md#abstract-noun-and-adjective-stacking).
 
 ```
 Bad:  AI 搭載のクラウドベースのエンタープライズグレードのソリューション
 Good: クラウド上で動く AI ソリューション
 ```
 
-### Shared `14a` — mechanical punctuation swap
+### mechanical punctuation swap
+
+See [Mechanical punctuation swaps](../../../_shared/core/anti-ai-prose.md#mechanical-punctuation-swaps).
 
 ```
 Source: Documentation drift checks — broken refs and diff-affected docs
@@ -183,7 +196,9 @@ Lazy:   ドキュメントドリフトチェック：壊れた参照と diff 影
 Better: 参照の整合性チェックと、変更の影響を受けるドキュメントの特定
 ```
 
-### Shared `19` — unnecessary connectives
+### unnecessary connectives
+
+See [Unnecessary Connectives](../anti-ai-patterns.md#unnecessary-connectives).
 
 ```
 Bad:  パフォーマンスが向上しました。したがって、ユーザー体験が良くなりました。
@@ -192,21 +207,27 @@ Good: パフォーマンスが向上し、ユーザー体験も良くなりま�
 
 Watch したがって, しかしながら, さらに, また, その結果.
 
-### Shared `20` — passive voice
+### passive voice
+
+See [Passive Voice Abuse](../anti-ai-patterns.md#passive-voice-abuse).
 
 ```
 Bad:  この機能はチームによって開発されました
 Good: チームがこの機能を開発しました
 ```
 
-### Shared `21` — noun pile-up
+### noun pile-up
+
+See [Noun Pile-up (Long Modifier Chains)](../anti-ai-patterns.md#noun-pile-up-long-modifier-chains).
 
 ```
 Bad:  AI ベースのクラウド対応リアルタイムデータ監視システム
 Good: AI を使ってクラウド上でデータをリアルタイムに監視するシステム
 ```
 
-### Shared `22` — over-nominalization
+### over-nominalization
+
+See [Over-nominalization](../anti-ai-patterns.md#over-nominalization).
 
 ```
 議論を行いました → 議論しました
@@ -214,7 +235,9 @@ Good: AI を使ってクラウド上でデータをリアルタイムに監視�
 検討を進める     → 検討する
 ```
 
-### Shared `23` — forced pronouns
+### forced pronouns
+
+See [Awkward Pronoun Insertion](../anti-ai-patterns.md#awkward-pronoun-insertion).
 
 ```
 Bad:  私たちはこの機能をリリースし、私たちは良い反応を得ました
@@ -224,7 +247,9 @@ Good: この機能をリリースしたところ、反応は良好でした
 Japanese omits subjects freely. Insert `私たち` only when the actor genuinely
 changes or contrast requires it.
 
-### Shared `24` — cleft calques
+### cleft calques
+
+See [Cleft Sentence Calques](../anti-ai-patterns.md#cleft-sentence-calques).
 
 ```
 Bad:  重要なのはユーザー体験であるということです

@@ -38,7 +38,7 @@ structure.
 ### Dependencies
 - Target profile: `resources/lang/{code}.md`, if one exists.
 - `resources/translation-rubric.md` for substantive content or review.
-- `resources/anti-ai-patterns.md` when prose needs style review.
+- `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-patterns.md` together when prose needs style review.
 - Existing siblings and glossary when translating into a project.
 
 ### Control-flow features
@@ -55,7 +55,7 @@ structure.
 
 ### Scenes
 1. **PREPARE**: Resolve locale, output mode, target audience, and protected syntax.
-2. **ACQUIRE**: Read the target profile, relevant siblings, glossary, and source context. For prose or review, load the rubric; load anti-AI patterns only when style review is needed.
+2. **ACQUIRE**: Read the target profile, relevant siblings, glossary, and source context. For prose or review, load the rubric; for style review, load the shared prose diagnostics and translation exceptions together.
 3. **REASON**: Determine meaning, register, terminology, cultural references, and any ambiguity. Decide whether an idiom should be interpreted, substituted, or retained.
 4. **ACT**: Write natural target-language text. Match established project patterns without adding meaning, opinion, or personality.
 5. **VERIFY**: Check protected syntax and structure. For substantive text, check meaning, terminology, register, and target-language naturalness against the rubric.
@@ -173,8 +173,9 @@ the suggested revision only when warranted, and the evidence for each finding.
 
 ### Canonical workflow path
 1. Resolve target locale and protect exact syntax.
-2. Load the one applicable language profile and relevant siblings; load rubric/style resources only
-   for substantive content or review.
+2. Load the one applicable language profile and relevant siblings; load the rubric for substantive
+   content or review. For prose style review, load `../_shared/core/anti-ai-prose.md` with
+   `resources/anti-ai-patterns.md`; apply its fidelity exceptions before any shared style fix.
 3. Infer meaning, register, terminology, and figurative-language handling.
 4. Draft in natural target order and project style.
 5. Verify exact syntax and structure, then review substantive content against the rubric.
@@ -204,7 +205,8 @@ the suggested revision only when warranted, and the evidence for each finding.
 ## References
 
 - Translation rubric: `resources/translation-rubric.md` (load for substantive content or review)
-- Style diagnostics: `resources/anti-ai-patterns.md` (load when prose style needs review)
+- Common prose diagnostics: `../_shared/core/anti-ai-prose.md` (load with translation exceptions when prose style needs review)
+- Translation exceptions and grammar diagnostics: `resources/anti-ai-patterns.md` (load with common diagnostics when prose style needs review)
 - Target profiles: `resources/lang/{ko,ja,zh,en}.md` (load one matching profile)
 - Profile template: `resources/lang/_template.md` (only when adding a profile)
 - Shared context loading: `../_shared/core/context-loading.md`

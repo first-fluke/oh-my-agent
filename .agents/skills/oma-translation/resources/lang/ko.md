@@ -1,12 +1,13 @@
 # Korean Target-Language Profile (`ko`)
 
 Load this file whenever the **target** language is Korean. It is read together
-with `../anti-ai-patterns.md` (shared taxonomy) and `../translation-rubric.md`
-(shared scoring), never instead of them.
+with `../translation-rubric.md` for substantive content or review. For prose style
+review, also load `../../../_shared/core/anti-ai-prose.md` (common taxonomy) and
+`../anti-ai-patterns.md` (translation exceptions and grammar diagnostics).
 
 Two kinds of rules live here:
 
-- **Localizations** of shared anti-AI rules (`1`–`24`): how the shared pattern
+- **Localizations** of shared anti-AI patterns: how the shared pattern
   surfaces in Korean and what the fix looks like.
 - **Korean-only rules** (`KO-1`–`KO-12`): grammar, typography, and register
   requirements that have no equivalent in the shared taxonomy.
@@ -81,7 +82,7 @@ Also delete `의` that entered as a calque of Japanese `の` or English `of` whe
 Korean would use no particle at all: `최대의 성능` → `최대 성능`,
 `두 개의 파일` → `파일 두 개`.
 
-This rule catches what shared rule `21` (noun pile-up) misses, because a `의`
+This rule catches what the noun pile-up (long modifier chains) guidance (noun pile-up) misses, because a `의`
 chain can hide a dropped predicate without ever stacking three modifiers.
 
 ### KO-3. Finish the sentence
@@ -109,7 +110,7 @@ is a noun fragment in Korean body text.
 
 ### KO-4. Sino-Korean vocabulary is not the problem; bare Sino-Korean nouns are
 
-Do not read shared rules `5` and `11` as "avoid 한자어". A precise Sino-Korean
+Do not read the vocabulary-clustering and abstract noun/adjective guidance as "avoid 한자어". A precise Sino-Korean
 root combined with Korean inflection produces the clearest technical Korean
 available. What fails is the Sino-Korean noun left bare, with no particle and no
 verb ending, so that the action disappears.
@@ -137,7 +138,7 @@ skill을 로드              → skill을 불러옵니다
 
 ### KO-6. No figurative substitution for plain vocabulary
 
-Shared rules `1`–`3` cover figurative language arriving from the source. This
+The significance, superficial-analysis, and promotional-tone guidance cover figurative language arriving from the source. This
 rule covers figurative vocabulary the model invents on the Korean side, where
 the source had a plain noun or verb. It lowers readability and shifts meaning.
 
@@ -155,7 +156,7 @@ stilted if flattened (`병목`, `롤백`, `핫픽스`).
 
 A word can be in the dictionary, unambiguous, and still hurt communication
 because readers rarely meet it. Choose the common word over the rare one when
-both are precise. This is the inverse of shared rule `5`, which targets
+both are precise. This is the inverse of the vocabulary clustering guidance, which targets
 overused words; both failures are live in Korean output.
 
 ### KO-8. Korean translation-ese constructions
@@ -182,7 +183,7 @@ plural reading would otherwise be lost.
 - **Counters**: no space between numeral and counter. `5 개` → `5개`, `3 번째` →
   `3번째`. Units keep a space: `10 MB`, `200 ms`.
 - **Em dash**: `—` does not exist in Korean typography. Restructure the clause;
-  never swap it for `:` or parentheses and stop there (shared rule `14a`).
+  never swap it for `:` or parentheses and stop there (the mechanical punctuation swaps guidance).
 - **Quotes**: straight `"` and `'`, or `「」` only when the project already uses
   them. Do not emit curly quotes.
 - **Parentheses**: halfwidth `()` with no leading space when attached to a term:
@@ -228,7 +229,9 @@ Internal status keywords, workflow markers, and log levels stay in English per
 
 ## Localizations of shared rules
 
-### Shared `2` — `-ing` participle phrases
+### `-ing` participle phrases
+
+See [Superficial analysis](../../../_shared/core/anti-ai-prose.md#superficial-analysis).
 
 ```
 EN: The update improves performance, ensuring a seamless experience
@@ -236,7 +239,9 @@ Bad: 업데이트는 성능을 향상시키며, 원활한 경험을 보장합니
 Good: 이번 업데이트로 성능이 개선되어 더 매끄럽게 사용할 수 있습니다
 ```
 
-### Shared `5` — AI vocabulary overuse
+### AI vocabulary overuse
+
+See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-clustering).
 
 | Watch | Prefer |
 |---|---|
@@ -247,7 +252,9 @@ Good: 이번 업데이트로 성능이 개선되어 더 매끄럽게 사용할 �
 | ~를 통해 | restructure the clause |
 | 극대화하다 / 최적화하다 | match the source's actual intensity |
 
-### Shared `7` — rule of three
+### rule of three
+
+See [Mechanical triples](../../../_shared/core/anti-ai-prose.md#mechanical-triples).
 
 ```
 EN: a fast, reliable, and intuitive experience
@@ -255,12 +262,16 @@ Bad: 빠르고, 안정적이며, 직관적인 경험
 Good: 빠르고 쓰기 편한 경험
 ```
 
-### Shared `8` — synonym cycling
+### synonym cycling
+
+See [Synonym cycling](../../../_shared/core/anti-ai-prose.md#synonym-cycling).
 
 Terminology consistency outranks variety. If `사용자` is right, use `사용자`
 throughout; do not rotate through `이용자`, `유저`, `참여자`.
 
-### Shared `10`, `11` — compound stacking
+### compound stacking
+
+See [Compound adjective stacking](../../../_shared/core/anti-ai-prose.md#compound-adjective-stacking) and [Abstract noun and adjective stacking](../../../_shared/core/anti-ai-prose.md#abstract-noun-and-adjective-stacking).
 
 ```
 Bad: AI 기반의, 클라우드 기반의, 엔터프라이즈급 솔루션
@@ -270,7 +281,9 @@ Bad: 직관적인 UI와 강력한 성능, 원활한 연동을 제공합니다
 Good: UI는 쓰기 편하고, 성능이 좋고, 연동도 매끄럽습니다
 ```
 
-### Shared `14a` — mechanical punctuation swap
+### mechanical punctuation swap
+
+See [Mechanical punctuation swaps](../../../_shared/core/anti-ai-prose.md#mechanical-punctuation-swaps).
 
 ```
 Source: Documentation drift checks — broken refs and diff-affected docs
@@ -278,7 +291,9 @@ Lazy swap: 문서 drift 체크: 깨진 참조와 diff 영향받는 docs
 Restructured: 참조 무결성 검사, 변경 영향 문서 식별
 ```
 
-### Shared `19` — unnecessary connectives
+### unnecessary connectives
+
+See [Unnecessary Connectives](../anti-ai-patterns.md#unnecessary-connectives).
 
 ```
 Bad: 성능이 향상되었다. 따라서 사용자 경험이 좋아졌다.
@@ -287,21 +302,27 @@ Good: 성능이 향상되면서 사용자 경험도 좋아졌다.
 
 Watch 따라서, 그러므로, 하지만, 게다가, 또한, 더 나아가.
 
-### Shared `20` — passive voice
+### passive voice
+
+See [Passive Voice Abuse](../anti-ai-patterns.md#passive-voice-abuse).
 
 ```
 Bad: 이 기능은 팀에 의해 개발되었다
 Good: 팀이 이 기능을 개발했다
 ```
 
-### Shared `21` — noun pile-up
+### noun pile-up
+
+See [Noun Pile-up (Long Modifier Chains)](../anti-ai-patterns.md#noun-pile-up-long-modifier-chains).
 
 ```
 Bad: AI 기반의 클라우드 지원 실시간 데이터 모니터링 시스템
 Good: AI를 활용해 클라우드에서 실시간으로 데이터를 모니터링하는 시스템
 ```
 
-### Shared `22` — over-nominalization
+### over-nominalization
+
+See [Over-nominalization](../anti-ai-patterns.md#over-nominalization).
 
 ```
 논의를 진행했다 → 논의했다
@@ -309,14 +330,18 @@ Good: AI를 활용해 클라우드에서 실시간으로 데이터를 모니터�
 검토를 수행하다 → 검토하다
 ```
 
-### Shared `23` — forced pronouns
+### forced pronouns
+
+See [Awkward Pronoun Insertion](../anti-ai-patterns.md#awkward-pronoun-insertion).
 
 ```
 Bad: 우리는 이 기능을 출시했고, 우리는 좋은 반응을 얻었다
 Good: 이 기능을 출시했고, 반응이 좋았다
 ```
 
-### Shared `24` — cleft calques
+### cleft calques
+
+See [Cleft Sentence Calques](../anti-ai-patterns.md#cleft-sentence-calques).
 
 ```
 Bad: 중요한 것은 사용자 경험이다

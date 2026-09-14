@@ -25,7 +25,7 @@ Red flags:
 - Unnatural particles or prepositions
 - Overly long sentences that should be split
 - Pronouns handled against the target's pro-drop behavior
-- Europeanized patterns: unnecessary connectives, passive voice abuse, noun pile-up, over-nominalization, cleft sentence calques (shared rules `19`–`24`)
+- Europeanized patterns: unnecessary connectives, passive voice abuse, noun pile-up, over-nominalization, cleft sentence calques
 - Any rule in the target's language profile marked as a block-level failure
 
 ### 2. Accuracy (10 pts)

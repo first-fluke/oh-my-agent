@@ -6,7 +6,9 @@ Copy this file to `<code>.md` (BCP 47 primary subtag, e.g. `de.md`, `pt.md`,
 
 A profile exists to hold what the shared files must not: anything that is true
 of one target language and false of another. If a rule would apply equally to
-every target, it belongs in `../anti-ai-patterns.md` instead.
+every target, put translation-specific guidance in `../anti-ai-patterns.md`.
+Put prose diagnostics that also apply to academic writing in
+`../../../_shared/core/anti-ai-prose.md`; refer to patterns by heading name.
 
 Delete every section you have nothing grounded to say about. An empty profile
 is better than an invented one, because a wrong rule is followed as confidently
@@ -33,7 +35,7 @@ and never drifts, and name the exempt positions (headings, table cells).
 ## `<CODE>`-only rules
 
 Number them `<CODE>-1`, `<CODE>-2`, ... so the self-check and `SKILL.md` can
-cite them without colliding with shared rule numbers.
+cite local requirements unambiguously.
 
 Typical categories worth a rule, when the language has one:
 
@@ -51,12 +53,12 @@ the rule text.
 
 ## Localizations of shared rules
 
-Only the shared rules that manifest distinctly in this language. Cite the shared
-number and show the language's version.
+Include only patterns that manifest distinctly in this language. Use a descriptive
+heading and link to the corresponding heading in the common prose diagnostics or
+translation resource. Show the language-specific example beneath that reference.
 
-Commonly needed: `2` (participle phrases), `5` (AI vocabulary equivalents),
-`7` (rule of three), `8` (synonym cycling), `10`/`11` (compound stacking),
-`14`/`14a` (dash handling), `19`–`24` (translation-ese).
+Common topics include participle phrases, vocabulary, synonym cycling, compound
+stacking, dash handling, and translation-ese.
 
 Say explicitly when a shared rule **does not** apply. `en.md` does this for the
 em-dash rule, which exists only for CJK targets. Silence gets read as agreement.

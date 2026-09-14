@@ -1,10 +1,11 @@
 # Chinese Target-Language Profile (`zh`)
 
 Load this file whenever the **target** language is Chinese. It is read together
-with `../anti-ai-patterns.md` (shared taxonomy) and `../translation-rubric.md`
-(shared scoring), never instead of them.
+with `../translation-rubric.md` for substantive content or review. For prose style
+review, also load `../../../_shared/core/anti-ai-prose.md` (common taxonomy) and
+`../anti-ai-patterns.md` (translation exceptions and grammar diagnostics).
 
-- **Localizations** of shared anti-AI rules (`1`–`24`).
+- **Localizations** of shared anti-AI patterns.
 - **Chinese-only rules** (`ZH-1`–`ZH-9`).
 
 ---
@@ -152,7 +153,9 @@ Keep the suffix when it is established terminology (`可用性`, `幂等性`,
 
 ## Localizations of shared rules
 
-### Shared `2` — `-ing` participle phrases
+### `-ing` participle phrases
+
+See [Superficial analysis](../../../_shared/core/anti-ai-prose.md#superficial-analysis).
 
 ```
 EN:   The update improves performance, ensuring a seamless experience
@@ -160,7 +163,9 @@ Bad:  这次更新提升了性能，确保了无缝的体验
 Good: 这次更新提升了性能，用起来更顺畅
 ```
 
-### Shared `5` — AI vocabulary overuse
+### AI vocabulary overuse
+
+See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-clustering).
 
 | Watch | Prefer |
 |---|---|
@@ -171,7 +176,9 @@ Good: 这次更新提升了性能，用起来更顺畅
 | 通过...来 | restructure the clause |
 | 优化 / 最大化 | match the source's intensity |
 
-### Shared `7` — rule of three
+### rule of three
+
+See [Mechanical triples](../../../_shared/core/anti-ai-prose.md#mechanical-triples).
 
 ```
 EN:   a fast, reliable, and intuitive experience
@@ -179,19 +186,25 @@ Bad:  快速的、可靠的、直观的体验
 Good: 又快又好用
 ```
 
-### Shared `8` — synonym cycling
+### synonym cycling
+
+See [Synonym cycling](../../../_shared/core/anti-ai-prose.md#synonym-cycling).
 
 If `用户` is right, use `用户` throughout. Do not rotate through `使用者`,
 `客户`, `终端用户`.
 
-### Shared `10`, `11` — compound stacking
+### compound stacking
+
+See [Compound adjective stacking](../../../_shared/core/anti-ai-prose.md#compound-adjective-stacking) and [Abstract noun and adjective stacking](../../../_shared/core/anti-ai-prose.md#abstract-noun-and-adjective-stacking).
 
 ```
 Bad:  一个 AI 驱动的、基于云的、企业级的解决方案
 Good: 一套跑在云上的 AI 方案
 ```
 
-### Shared `14a` — mechanical punctuation swap
+### mechanical punctuation swap
+
+See [Mechanical punctuation swaps](../../../_shared/core/anti-ai-prose.md#mechanical-punctuation-swaps).
 
 ```
 Source: Documentation drift checks — broken refs and diff-affected docs
@@ -199,7 +212,9 @@ Lazy:   文档漂移检查：损坏的引用和受 diff 影响的文档
 Better: 检查引用是否失效，并找出受改动影响的文档
 ```
 
-### Shared `19` — unnecessary connectives
+### unnecessary connectives
+
+See [Unnecessary Connectives](../anti-ai-patterns.md#unnecessary-connectives).
 
 ```
 Bad:  性能提升了。因此，用户体验变好了。
@@ -208,7 +223,9 @@ Good: 性能提升了，用户体验也跟着变好。
 
 Watch 因此, 然而, 此外, 另外, 同时, 综上所述.
 
-### Shared `20` — passive voice
+### passive voice
+
+See [Passive Voice Abuse](../anti-ai-patterns.md#passive-voice-abuse).
 
 ```
 Bad:  这个功能被团队开发了
@@ -218,22 +235,30 @@ Good: 团队开发了这个功能
 `被` is correct when the outcome is adverse or the agent is genuinely unknown
 (`文件被删除了`). It is wrong as a blanket rendering of English passive.
 
-### Shared `21` — noun pile-up
+### noun pile-up
+
+See [Noun Pile-up (Long Modifier Chains)](../anti-ai-patterns.md#noun-pile-up-long-modifier-chains).
 
 See `ZH-6`.
 
-### Shared `22` — over-nominalization
+### over-nominalization
+
+See [Over-nominalization](../anti-ai-patterns.md#over-nominalization).
 
 See `ZH-4`.
 
-### Shared `23` — forced pronouns
+### forced pronouns
+
+See [Awkward Pronoun Insertion](../anti-ai-patterns.md#awkward-pronoun-insertion).
 
 ```
 Bad:  我们推出了这个功能，我们得到了好的反馈
 Good: 推出这个功能后，反馈不错
 ```
 
-### Shared `24` — cleft calques
+### cleft calques
+
+See [Cleft Sentence Calques](../anti-ai-patterns.md#cleft-sentence-calques).
 
 ```
 Bad:  重要的是用户体验

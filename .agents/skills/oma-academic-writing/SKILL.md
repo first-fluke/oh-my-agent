@@ -48,7 +48,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 - `review` mode: PASS/FAIL Compliance Report across Sentence Structure, Verb Quality, Anti-AI, Specificity, Hedging, Paragraph Clarity, Rhythm/Burstiness, Claim-Evidence Alignment, plus recommended fixes
 
 ### Dependencies
-- `resources/anti-ai-checklist.md`: banned vocabulary, banned structural patterns, sentence-level checks
+- `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`: common diagnostics and academic constraints; load together for prose audits
 - `resources/sentence-structure-reference.md`: four sentence types, length targets, common errors
 - `resources/academic-verb-tiers.md`: meaning- and evidence-based verb guidance
 - `resources/hedging-guide.md`: calibrated certainty expressions matched to evidence strength
@@ -75,7 +75,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 1. **PREPARE**: load rubric, existing draft, source data; record quoted constraints and note claims whose verbs or hedges need attention.
 2. **ACQUIRE**: read `resources/sentence-structure-reference.md`, `academic-verb-tiers.md`, and `hedging-guide.md` only for the patterns relevant to the current section.
 3. **ACT**: write or revise prose with sentence variety, accurate verb choice, evidence-matched hedging, clear paragraphing, and direct statements. Keep a common verb when it is the clearest accurate choice.
-4. **VERIFY**: audit against `resources/anti-ai-checklist.md` (vocabulary clusters, structural patterns, mannered prose §11, sentence-level checks); apply reverse outlining and build the Claim-Evidence Map; weaken or remove unsupported claims.
+4. **VERIFY**: apply the shared prose diagnostics and academic checklist; use reverse outlining and the Claim-Evidence Map to identify unsupported claims. In review mode, report findings without rewriting the draft.
 5. **FINALIZE**: read-aloud test, cohesion check, specificity audit, word-count verification, paragraph-length variation, rhythm check; emit per the mode's output format.
 
 ### Transitions
@@ -89,12 +89,12 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 | Failure | Recovery |
 |---------|----------|
 | Word count over / under target | Cut filler adverbs and redundant qualifiers, or expand with supporting evidence; re-run audit |
-| Prose still sounds AI-generated after one pass | Vary sentence openers (subject, adverbial, participial, prepositional) and insert one short (≤10-word) sentence per paragraph; re-run audit |
+| Repeated syntax obscures the argument | Revise the affected sentences for clarity using shared rhythm guidance; preserve clear sentences |
 | Rubric requirement unclear | Quote exact rubric text and ask user; do not combine rules |
 | Claim lacks evidence | Add citation, hedge to match weaker evidence, or remove the claim entirely |
 | Hedging miscalibrated | Replace double hedges; align hedge strength with `resources/hedging-guide.md` evidence-level table |
 | Verb is vague | Name the action, method, result, or evidence only if that makes the claim clearer |
-| Paragraph blocks are uniform 4–5 sentences | Insert a 2-sentence emphasis paragraph; re-run rhythm check |
+| Repeated paragraph structure hinders progression | Reorganize the affected argument without inserting a paragraph solely to vary length |
 
 ### Exit
 - Success: every protocol PASSes, the Claim-Evidence Map has no unsupported entries, word count complies, and the mode-specific output format is fully populated.
@@ -133,7 +133,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 1. **READ** rubric/draft and quote the exact literal constraint text; pin word limits, mandatory sections, and rubric rows.
 2. **PLAN** each paragraph as Topic-Support-Conclude; identify where evidence strength or a vague claim calls for a more precise verb.
 3. **DRAFT** prose with sentence variety, clear verb choice, hedging, and Topic-Support-Conclude structure.
-4. **AUDIT** the draft against `resources/anti-ai-checklist.md` (banned vocabulary clusters, banned structural patterns, mannered prose, sentence-level checks) and fix every flag.
+4. **AUDIT** with `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`. Fix supported defects in draft/revise mode; in review mode, quote the passage, identify the defect, and recommend a local fix without a full rewrite or AI-authorship estimate.
 5. **REVERSE-OUTLINE** the section and build the Claim-Evidence Map; weaken or remove any unsupported claim.
 6. **POLISH** with read-aloud, cohesion, specificity, word-count, rhythm, and paragraph-length-variation checks; emit in the mode's output format.
 
@@ -162,14 +162,15 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 4. Choose verbs for their exact meaning and support. Keep common verbs when they are accurate and natural; replace a vague verb only when the new wording states a relevant distinction without inflating the claim.
 5. Never place 3+ sentences of the same structural type consecutively; vary length (short 8–15, medium 16–25, long 26–40 words) and openers.
 6. Match hedge strength to evidence strength per `hedging-guide.md`; never use absolute claim words (`definitely`, `clearly`, `obviously`) outside mathematical facts; never first-person `I think` / `I believe`.
-7. Never cluster 3+ flagged AI-vocabulary items in a single paragraph; never insert promotional or inflated language; never append superficial `-ing` clauses for analysis.
+7. Apply common prose diagnostics with the academic checklist's evidence and register exceptions. Vocabulary counts trigger contextual review, not automatic replacement of precise terms.
 8. Em dashes ≤ 1 per paragraph; semicolons ≤ 2 per 1000 words; sentence-case headers; no didactic disclaimers (`It is important to note`) or summary phrases (`In summary`, `Overall`).
 9. Every claim must map to evidence in the Claim-Evidence Map; weaken or remove unsupported claims rather than emit them.
 10. Read aloud before emit; if a sentence does not flow naturally, restructure it.
-11. Prefer literal statement over mannered prose. Mannered prose substitutes metaphor and flourish for direct statement (e.g., `a dial worth turning` for `a parameter worth varying`, `this point earns its keep` for `this point still matters`). It makes the reader work harder so the writer can perform, and it is imprecise because metaphors drag in uncontrolled connotations. When a literal phrase is available, use it.
+11. Apply the shared mannered-prose guidance with the academic checklist's literal-statement requirement.
 
 ## References
-- Anti-AI checklist: `resources/anti-ai-checklist.md`
+- Common prose diagnostics: `../_shared/core/anti-ai-prose.md` (load with the academic checklist for prose audits)
+- Academic audit constraints: `resources/anti-ai-checklist.md`
 - Sentence-structure reference: `resources/sentence-structure-reference.md`
 - Academic verb tiers: `resources/academic-verb-tiers.md`
 - Hedging guide: `resources/hedging-guide.md`

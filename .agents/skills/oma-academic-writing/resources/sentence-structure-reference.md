@@ -68,9 +68,9 @@ Two or more independent clauses + one or more dependent clauses.
    - Medium: 16–25 words (for flow)
    - Long: 26–40 words (for depth)
 3. Paragraphs of 4+ sentences should contain at least 3 of the 4 sentence types; short emphasis paragraphs (2–3 sentences) are exempt
-4. Vary paragraph length (2–8 sentences); uniform blocks signal AI
+4. Vary paragraph length (2–8 sentences) where it improves the argument; uniform blocks alone do not identify AI authorship
 
-> For detailed burstiness detection, semicolon limits, and paragraph length variation rules, see `anti-ai-checklist.md` §9.
+> For rhythm review and punctuation limits, see `anti-ai-checklist.md`, sections "Rhythm and sentence structure" and "Formatting".
 
 ### Sentence openers (vary these)
 
