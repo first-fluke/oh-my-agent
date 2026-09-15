@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.12.0...cli-v14.12.1) (2026-09-15)
+
+
+### Bug Fixes
+
+* **config:** merge missing YAML fields into CUE config ([35756e9](https://github.com/first-fluke/oh-my-agent/commit/35756e9378b10c3481e8f8146046995fee0e6a44))
+
 ## [14.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.11.0...cli-v14.12.0) (2026-09-15)
 
 
