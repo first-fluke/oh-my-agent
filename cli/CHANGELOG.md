@@ -1,5 +1,17 @@
 # Changelog
 
+## [14.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.11.0...cli-v14.12.0) (2026-09-15)
+
+
+### Features
+
+* **qwen:** support native agents and reinforce serena hooks ([b2340ee](https://github.com/first-fluke/oh-my-agent/commit/b2340eedd1f9d75699f7a83306da0d0a8460bbff))
+
+
+### Bug Fixes
+
+* **qwen:** align hooks with the shared code intelligence primer ([23a2b15](https://github.com/first-fluke/oh-my-agent/commit/23a2b15186aad795053ec18e29f26d31daec71b1))
+
 ## [14.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.10.0...cli-v14.11.0) (2026-09-15)
 
 
