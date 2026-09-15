@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.8.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.7.0...web-v6.8.0) (2026-09-15)
+
+
+### Features
+
+* **qwen:** support native agents and reinforce serena hooks ([b2340ee](https://github.com/first-fluke/oh-my-agent/commit/b2340eedd1f9d75699f7a83306da0d0a8460bbff))
+
+
+### Bug Fixes
+
+* **qwen:** align hooks with the shared code intelligence primer ([23a2b15](https://github.com/first-fluke/oh-my-agent/commit/23a2b15186aad795053ec18e29f26d31daec71b1))
+
 ## [6.7.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.6.0...web-v6.7.0) (2026-09-15)
 
 
