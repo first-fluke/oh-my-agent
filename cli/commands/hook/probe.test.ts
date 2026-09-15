@@ -60,6 +60,16 @@ describe("hook compatibility probe", () => {
     );
   }, 15000);
 
+  it("reports the effective Qwen chain from the CLI compatibility layer", () => {
+    const matrix = runHookProbe({ vendors: ["qwen"], projectDir: repoRoot });
+    expect(matrix.results[0]?.chainOrder).toEqual([
+      "keyword-detector.ts",
+      "state-boundary.ts",
+      "skill-injector.ts",
+      "qwen-code-intelligence.ts",
+    ]);
+  });
+
   it("renders text and markdown matrices", () => {
     const matrix = runHookProbe({ vendors: ["claude"], projectDir: repoRoot });
     const text = renderProbeMatrix(matrix);

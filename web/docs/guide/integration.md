@@ -13,7 +13,7 @@ There are two ways to add oh-my-agent to an existing project:
 1. **CLI path**: Run `oma` (or `npx oh-my-agent`) and follow the interactive prompts. Recommended for most users.
 2. **Manual path**: Copy files and configure symlinks yourself. Useful for restricted environments or custom setups.
 
-Both paths produce the same result: a `.agents/` directory (the SSOT) plus vendor-native generated files such as `.claude/agents/`, `.codex/agents/`, and `.gemini/agents/`.
+Both paths produce the same result: a `.agents/` directory (the SSOT) plus vendor-native generated files such as `.claude/agents/`, `.codex/agents/`, and `.qwen/agents/`.
 
 ---
 
@@ -179,7 +179,13 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link` rebuilds `.claude/`, `.codex/`, `.gemini/`, and related vendor-native files from `.agents/agents/`. At runtime, OMA uses native dispatch only when the current runtime vendor matches the target vendor for that agent. Mixed-vendor setups still work, but non-matching agents fall back to external `oma agent spawn`.
+`oma link` regenerates `.claude/`, `.codex/`, `.qwen/`, and related vendor-native files from `.agents/agents/`. At runtime, OMA uses native dispatch only when the current runtime vendor matches the target vendor for that agent. Mixed-vendor setups still work, but non-matching agents fall back to external `oma agent spawn`.
+
+For Qwen Code, generated Markdown definitions live in `.qwen/agents/`. Select an OMA role through the Agent tool's `subagent_type`, for example `backend-engineer`. Check the available definitions with `/agents manage` in Qwen Code. Native agents use the same [result lifecycle](./agent-results-and-resume.md) as CLI spawns: `oma agent begin`, `oma agent verify`, and `oma agent finish`. With `model_preset: free`, use `oma agent spawn` so the child receives the gateway configuration.
+
+Qwen hooks also inject code-intelligence guidance on session startup, resume, clear, compaction, and subagent startup. When Serena is selected, the guidance gives the `tool_search` discovery step for deferred MCP tools. If an agent starts a native code search before a successful Serena call, `PreToolUse` interrupts that search once with instructions to use Serena. Later searches keep the normal permission checks; OMA does not auto-approve them. Successful calls and failures are tracked separately for each session and agent, and Serena failure enables native fallback. File reads, ordinary commands, and explicitly documentation-only searches are not redirected.
+
+After updating the CLI, run `oma link qwen` to regenerate the hook settings and wrapper, then start a new Qwen session. Hook output tests verify the integration contract; they do not guarantee which tool a model will choose.
 
 ### Step 3: configure user preferences
 

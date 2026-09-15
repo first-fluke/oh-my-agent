@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { atomicWriteFileSync } from "../utils/safe-write.js";
+import { withQwenHookEvents } from "../vendors/qwen/hooks.js";
 import { ensureFeatureFlags } from "./hooks-composer/feature-flags.js";
 import {
   buildHookCmd,
@@ -75,6 +76,7 @@ export function installHooksFromVariant(
   targetDir: string,
   variant: HookVariant,
 ): void {
+  variant = withQwenHookEvents(variant);
   // 1. Materialize ONLY the scripts this variant executes/reads from hookDir
   //    (hud.ts, filter-test-output.sh — see requiredVariantScripts). The
   //    destination is cleared first, so re-install also sweeps stale handler
@@ -84,7 +86,9 @@ export function installHooksFromVariant(
 
   // 2. Write the single oma-hook wrapper (one per vendor hookDir).
   const wrapperPath = join(hooksDest, OMA_HOOK_WRAPPER_FILENAME);
-  atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
+  atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(variant.vendor), {
+    mode: 0o755,
+  });
 
   // 3. Build hook entries from events.
   // biome-ignore lint/suspicious/noExplicitAny: hook config varies by vendor

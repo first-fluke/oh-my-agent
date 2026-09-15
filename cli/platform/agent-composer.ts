@@ -42,6 +42,14 @@ export const TOOL_MAPPING: Record<string, Record<string, string>> = {
     glob: "list_dir",
     ask: "ask_user",
   },
+  qwen: {
+    read: "read_file",
+    write: "write_file",
+    edit: "edit",
+    bash: "run_shell_command",
+    grep: "grep_search",
+    glob: "glob",
+  },
 };
 
 export interface AgentConfig {
@@ -69,6 +77,19 @@ export interface AgentVariant {
   agents: Record<string, AgentConfig>;
 }
 
+// Qwen Code discovers project subagents from `.qwen/agents/*.md`. Keep this
+// fallback in source code because `.agents/` is generated installation output,
+// not an editable CLI source of truth. Omitting both model and tools lets Qwen
+// inherit the parent session's model and full tool/MCP set.
+const QWEN_NATIVE_AGENT_VARIANT: AgentVariant = {
+  vendor: "qwen",
+  destDir: ".qwen/agents",
+  modelDefault: "inherit",
+  toolsDefault: [],
+  protocolPath: ".agents/skills/_shared/runtime/execution-protocols/qwen.md",
+  agents: {},
+};
+
 interface AbstractAgentDefinition {
   agentKey: string;
   entry: string;
@@ -85,9 +106,9 @@ function getTimeoutField(_vendor: string): string {
 }
 
 function supportsSkillsFrontmatter(vendor: string): boolean {
-  // opencode's markdown agent schema has no `skills` frontmatter key
-  // (skills are project-level config there).
-  return vendor !== "opencode";
+  // Qwen Code and OpenCode have no `skills` frontmatter key. Qwen skills are
+  // discovered from the parent session; OpenCode skills are project-level.
+  return vendor !== "opencode" && vendor !== "qwen";
 }
 
 function serializeTomlString(value: string): string {
@@ -209,7 +230,8 @@ function buildMarkdownAgentFile(
     description: config.description || frontmatter.description,
     tools: hasTools ? finalTools : undefined,
     model:
-      vendor === "opencode" && resolvedModel === "inherit"
+      (vendor === "opencode" || vendor === "qwen") &&
+      resolvedModel === "inherit"
         ? undefined
         : resolvedModel,
   };
@@ -333,7 +355,7 @@ const ALLOWED_FIELDS: Record<string, readonly string[]> = {
     "sandbox_mode",
   ],
   antigravity: ["name", "description", "model"],
-  qwen: ["name", "description", "model", "thinking"],
+  qwen: ["name", "description", "model", "tools", "approvalMode", "maxTurns"],
   opencode: [
     "name",
     "description",
@@ -430,32 +452,40 @@ export function installVendorAgents(
   const agentsSrcDir = join(sourceDir, ".agents", "agents");
   const variantPath = join(agentsSrcDir, "variants", `${vendor}.json`);
 
-  if (!existsSync(agentsSrcDir) || !existsSync(variantPath)) return 0;
+  if (
+    !existsSync(agentsSrcDir) ||
+    (!existsSync(variantPath) && vendor !== "qwen")
+  )
+    return 0;
 
   // Variant JSON comes from the (untrusted) working project. safeLoadVariant
   // guards the parse so a malformed file doesn't abort install mid-loop, and
   // destDir is validated so a traversing value (e.g. "../../../tmp/evil")
   // can't escape the install root.
-  const variant = safeLoadVariant<AgentVariant>({
-    variantPath,
-    kind: "agent",
-    validate: (v) => {
-      if (!v?.destDir) return; // missing destDir is a silent skip below
-      assertContainedRelPath(targetDir, v.destDir, "agent dest dir");
-      // protocolPath is embedded verbatim into every generated agent file the
-      // AI runtime loads. Require a contained relative path with no markdown/
-      // newline breakout characters so a hostile variant can't smuggle
-      // instructions.
-      if (v.protocolPath) {
-        if (/[`\r\n]/.test(v.protocolPath)) {
-          throw new Error(
-            `protocol path "${v.protocolPath}" contains forbidden characters.`,
-          );
-        }
-        assertContainedRelPath(targetDir, v.protocolPath, "protocol path");
-      }
-    },
-  });
+  const variant = existsSync(variantPath)
+    ? safeLoadVariant<AgentVariant>({
+        variantPath,
+        kind: "agent",
+        validate: (v) => {
+          if (!v?.destDir) return; // missing destDir is a silent skip below
+          assertContainedRelPath(targetDir, v.destDir, "agent dest dir");
+          // protocolPath is embedded verbatim into every generated agent file the
+          // AI runtime loads. Require a contained relative path with no markdown/
+          // newline breakout characters so a hostile variant can't smuggle
+          // instructions.
+          if (v.protocolPath) {
+            if (/[`\r\n]/.test(v.protocolPath)) {
+              throw new Error(
+                `protocol path "${v.protocolPath}" contains forbidden characters.`,
+              );
+            }
+            assertContainedRelPath(targetDir, v.protocolPath, "protocol path");
+          }
+        },
+      })
+    : vendor === "qwen"
+      ? QWEN_NATIVE_AGENT_VARIANT
+      : undefined;
   if (!variant?.destDir) return 0;
 
   const destDir = join(targetDir, variant.destDir);
@@ -478,20 +508,25 @@ export function installVendorAgents(
     };
 
     const agentId = normalizeAgentId(definition.agentKey);
-    if (
-      userConfig.model_preset === "auto" &&
-      agentId &&
-      userConfig.agents?.[agentId]
-    ) {
-      const plan = resolveAgentPlanFromConfig(
-        agentId,
-        userConfig,
-        undefined,
-        {},
-      );
-      if (plan.cli === vendor && plan.cliModel) {
-        config.model = plan.cliModel;
-        if (plan.effort) config.effort = plan.effort;
+    if (agentId) {
+      const hasAutoAgentOverride =
+        userConfig.model_preset === "auto" && !!userConfig.agents?.[agentId];
+      const hasPinnedQwenPreset =
+        vendor === "qwen" &&
+        !!userConfig.model_preset &&
+        userConfig.model_preset !== "free" &&
+        userConfig.model_preset !== "auto";
+      if (hasAutoAgentOverride || hasPinnedQwenPreset) {
+        const plan = resolveAgentPlanFromConfig(
+          agentId,
+          userConfig,
+          undefined,
+          {},
+        );
+        if (plan.cli === vendor && plan.cliModel) {
+          config.model = plan.cliModel;
+          if (plan.effort) config.effort = plan.effort;
+        }
       }
     }
 

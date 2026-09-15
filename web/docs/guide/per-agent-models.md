@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | All agents use Antigravity CLI (`agy`): Gemini 3.1 Pro for implementation/architecture and Gemini 3.6 Flash for orchestration, documentation, and explore. Model selection is config-driven inside `agy` — no `--model` or `--thinking-budget` flags are exposed. | Antigravity CLI users |
 | `claude` | All agents use Claude (Sonnet/Opus) | Claude Max subscription holders |
 | `codex` | All agents use OpenAI Codex (GPT-5.5 for most roles, GPT-5.4-mini for explore) with effort levels | ChatGPT Plus/Pro users |
-| `qwen` | All agents routed external via Qwen Code; binary thinking (no effort levels) | Local / self-hosted inference |
+| `qwen` | All agents use Qwen Code; matching Qwen sessions can use generated native agents, and other runtimes use CLI dispatch | Local / self-hosted inference |
 | `kiro` | All agents use Kiro CLI; Sonnet handles implementation/architecture and Haiku handles orchestration/explore | Kiro users |
 | `cursor` | All agents use Cursor `composer-2.5` (`composer-2.5-fast` for orchestrator/qa/pm/docs/explore) | Cursor Pro / Pro Student users |
 | `mixed` | Mixed: impl roles use Codex, architecture/qa/pm use Claude, explore uses Gemini | Cross-vendor strengths without managing per-agent config |

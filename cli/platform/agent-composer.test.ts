@@ -241,16 +241,17 @@ describe("sanitizeFrontmatterForVendor — qwen", () => {
     vi.restoreAllMocks();
   });
 
-  it("keeps name, description, model, thinking and drops unsupported fields", () => {
+  it("keeps Qwen Code's supported fields and drops unsupported fields", () => {
     const input = {
       name: "backend-engineer",
       description: "Backend specialist",
       model: "qwen/qwen3-coder-plus",
-      thinking: true,
-      // unsupported:
-      tools: "read_file",
-      effort: "medium",
+      tools: ["read_file", "run_shell_command"],
+      approvalMode: "default",
       maxTurns: 20,
+      // unsupported:
+      thinking: true,
+      effort: "medium",
     };
 
     const result = sanitizeFrontmatterForVendor(input, "qwen");
@@ -259,9 +260,11 @@ describe("sanitizeFrontmatterForVendor — qwen", () => {
       name: "backend-engineer",
       description: "Backend specialist",
       model: "qwen/qwen3-coder-plus",
-      thinking: true,
+      tools: ["read_file", "run_shell_command"],
+      approvalMode: "default",
+      maxTurns: 20,
     });
-    expect(warnSpy).toHaveBeenCalledTimes(3);
+    expect(warnSpy).toHaveBeenCalledTimes(2);
     const warnMessages: string[] = warnSpy.mock.calls.map(
       (c: unknown[]) => c[0] as string,
     );
@@ -507,6 +510,180 @@ describe("installVendorAgents — real Codex variant SSOT", () => {
     } finally {
       rmSync(targetDir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("installVendorAgents — built-in Qwen native fallback", () => {
+  const tempRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of tempRoots.splice(0)) {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("generates project subagents that inherit the parent model and tools", () => {
+    const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-agent-dst-"));
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      expect(installVendorAgents(sourceDir, targetDir, "qwen")).toBeGreaterThan(
+        0,
+      );
+
+      const backend = readFileSync(
+        join(targetDir, ".qwen", "agents", "backend-engineer.md"),
+        "utf-8",
+      );
+      expect(backend).toContain("name: backend-engineer");
+      expect(backend).toContain("description: Backend implementation.");
+      expect(backend).toContain(
+        ".agents/skills/_shared/runtime/execution-protocols/qwen.md",
+      );
+      expect(backend).not.toMatch(/^model:/m);
+      expect(backend).not.toMatch(/^tools:/m);
+      expect(backend).not.toContain("thinking:");
+      expect(warnSpy).not.toHaveBeenCalled();
+    } finally {
+      warnSpy.mockRestore();
+      rmSync(targetDir, { recursive: true, force: true });
+    }
+  });
+
+  it("maps explicit abstract tools to Qwen Code tool names", () => {
+    const sourceDir = mkdtempSync(join(tmpdir(), "oma-qwen-agent-src-"));
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-agent-tools-"));
+    tempRoots.push(sourceDir, targetDir);
+    const agentsDir = join(sourceDir, ".agents", "agents");
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(agentsDir, "tester.md"),
+      [
+        "---",
+        "name: tester",
+        "description: Test agent",
+        "tools:",
+        "  - read",
+        "  - write",
+        "  - edit",
+        "  - bash",
+        "  - grep",
+        "  - glob",
+        "---",
+        "Follow the vendor-specific execution protocol:",
+        "",
+      ].join("\n"),
+    );
+
+    expect(installVendorAgents(sourceDir, targetDir, "qwen")).toBe(1);
+
+    const tester = readFileSync(
+      join(targetDir, ".qwen", "agents", "tester.md"),
+      "utf-8",
+    );
+    expect(tester).toContain(
+      "tools:\n  - read_file\n  - write_file\n  - edit\n  - run_shell_command\n  - grep_search\n  - glob",
+    );
+  });
+
+  it("pins a Qwen model when the configured role resolves to Qwen", () => {
+    const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-agent-config-"));
+    tempRoots.push(targetDir);
+    mkdirSync(join(targetDir, ".agents"), { recursive: true });
+    writeFileSync(
+      join(targetDir, ".agents", "oma-config.yaml"),
+      "language: en\nmodel_preset: qwen\n",
+    );
+
+    expect(installVendorAgents(sourceDir, targetDir, "qwen")).toBeGreaterThan(
+      0,
+    );
+
+    const backend = readFileSync(
+      join(targetDir, ".qwen", "agents", "backend-engineer.md"),
+      "utf-8",
+    );
+    expect(backend).toMatch(/^model: qwen3\.6-plus$/m);
+  });
+
+  it("keeps the parent model when the free preset requires subprocess dispatch", () => {
+    const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-agent-free-"));
+    tempRoots.push(targetDir);
+    mkdirSync(join(targetDir, ".agents"), { recursive: true });
+    writeFileSync(
+      join(targetDir, ".agents", "oma-config.yaml"),
+      "language: en\nmodel_preset: free\n",
+    );
+
+    expect(installVendorAgents(sourceDir, targetDir, "qwen")).toBeGreaterThan(
+      0,
+    );
+
+    const backend = readFileSync(
+      join(targetDir, ".qwen", "agents", "backend-engineer.md"),
+      "utf-8",
+    );
+    expect(backend).not.toMatch(/^model:/m);
+    expect(backend).not.toMatch(/^tools:/m);
+  });
+
+  it("pins only an explicit auto-preset override routed to Qwen", () => {
+    const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-agent-auto-"));
+    tempRoots.push(targetDir);
+    mkdirSync(join(targetDir, ".agents"), { recursive: true });
+    writeFileSync(
+      join(targetDir, ".agents", "oma-config.yaml"),
+      [
+        "language: en",
+        "model_preset: auto",
+        "agents:",
+        "  backend:",
+        "    model: qwen/qwen3-coder-plus",
+        "",
+      ].join("\n"),
+    );
+
+    expect(installVendorAgents(sourceDir, targetDir, "qwen")).toBeGreaterThan(
+      0,
+    );
+
+    const backend = readFileSync(
+      join(targetDir, ".qwen", "agents", "backend-engineer.md"),
+      "utf-8",
+    );
+    expect(backend).toMatch(/^model: qwen3-coder-plus$/m);
+  });
+
+  it("keeps the parent model for an explicit auto-preset cross-vendor override", () => {
+    const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-agent-cross-"));
+    tempRoots.push(targetDir);
+    mkdirSync(join(targetDir, ".agents"), { recursive: true });
+    writeFileSync(
+      join(targetDir, ".agents", "oma-config.yaml"),
+      [
+        "language: en",
+        "model_preset: auto",
+        "agents:",
+        "  backend:",
+        "    model: openai/gpt-5.5",
+        "",
+      ].join("\n"),
+    );
+
+    expect(installVendorAgents(sourceDir, targetDir, "qwen")).toBeGreaterThan(
+      0,
+    );
+
+    const backend = readFileSync(
+      join(targetDir, ".qwen", "agents", "backend-engineer.md"),
+      "utf-8",
+    );
+    expect(backend).not.toMatch(/^model:/m);
   });
 });
 

@@ -174,7 +174,7 @@ const VENDOR_SPAWN: Record<string, string> = {
   cursor: "`@agent-name` (defined in `.cursor/agents/`)",
   codex:
     "Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent spawn`",
-  qwen: "`oma agent spawn {agent} {prompt} {sessionId}`",
+  qwen: "Same-vendor native dispatch via Qwen Code subagents in `.qwen/agents/{name}.md`; cross-vendor fallback via `oma agent spawn`",
   pi: "pi has no native subagent API; use `oma agent spawn {agent} {prompt} {sessionId} --vendor pi` for CLI subprocess dispatch",
 };
 

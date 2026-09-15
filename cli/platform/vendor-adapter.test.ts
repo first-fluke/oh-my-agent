@@ -90,3 +90,27 @@ describe("installVendorAdaptations — antigravity homeOnly", () => {
     );
   });
 });
+
+describe("installVendorAdaptations — Qwen native agents", () => {
+  let installRoot: string;
+
+  beforeEach(() => {
+    installRoot = mkdtempSync(join(tmpdir(), "oma-qwen-vendor-adapter-"));
+  });
+
+  afterEach(() => {
+    rmSync(installRoot, { recursive: true, force: true });
+  });
+
+  it("installs Qwen Code project subagents during vendor reconciliation", () => {
+    installVendorAdaptations(repoRoot, installRoot, ["qwen"]);
+
+    const backendAgent = join(
+      installRoot,
+      ".qwen",
+      "agents",
+      "backend-engineer.md",
+    );
+    expect(existsSync(backendAgent)).toBe(true);
+  });
+});

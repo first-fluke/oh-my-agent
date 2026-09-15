@@ -41,8 +41,9 @@ import type { HookInput, Vendor } from "./types.js";
 // session-start (routed through the prompt pipeline so serena-primer /
 // state-boundary — both guarded on kind==="prompt", both no-op on an empty
 // prompt — inject once-per-session context):
-//           SessionStart (claude, commandcode)
+//           SessionStart (claude, commandcode, qwen)
 //           sessionStart (cursor)
+//           SubagentStart (qwen, scoped to the child by the Qwen handler)
 //   claude's SessionStart fires on startup|resume|clear|compact and supports
 //   hookSpecificOutput.additionalContext + reloadSkills (code.claude.com/docs/
 //   en/hooks), so it re-primes serena + re-injects the OMA state snapshot when
@@ -67,15 +68,22 @@ export function nativeEventToKind(
       return "prompt";
 
     // session-start context injection — only for vendors that wire it as a
-    // handler event (claude / commandcode / cursor). HUD-only SessionStart
+    // handler event (claude / commandcode / cursor / qwen). HUD-only SessionStart
     // (gemini) → null.
     case "SessionStart":
     case "sessionStart":
       return vendor === "claude" ||
         vendor === "commandcode" ||
-        vendor === "cursor"
+        vendor === "cursor" ||
+        vendor === "qwen"
         ? "prompt"
         : null;
+
+    case "SubagentStart":
+      return vendor === "qwen" ? "prompt" : null;
+
+    case "PostToolUseFailure":
+      return vendor === "qwen" ? "post_tool" : null;
 
     // pre_tool events
     case "PreToolUse":

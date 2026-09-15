@@ -76,7 +76,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
 
   qwen: {
     description:
-      "Qwen Code — all agents routed external (no native parallel); Qwen has no --effort, only binary --thinking",
+      "Qwen Code — native subagents support per-agent model selection; Qwen has no --effort, only binary --thinking",
     agent_defaults: {
       orchestrator: { model: "qwen/qwen3-coder-next", thinking: false },
       architecture: { model: "qwen/qwen3.6-plus", thinking: true },

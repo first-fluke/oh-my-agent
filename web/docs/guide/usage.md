@@ -199,9 +199,10 @@ If your current runtime matches the target vendor in `.agents/oma-config.yaml`, 
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`, selected through the Agent tool's `subagent_type`
 - Antigravity CLI/IDE -> `oma agent spawn` through `agy`
 
-Cross-vendor tasks still use `oma agent spawn`.
+Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispatch still requires the [result lifecycle](./agent-results-and-resume.md) to record verification evidence.
 
 ---
 

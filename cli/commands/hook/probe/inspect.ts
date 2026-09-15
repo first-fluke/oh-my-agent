@@ -1,7 +1,9 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { HookVariant } from "../../../platform/hooks-composer/variant-types.js";
 import { eventsPath, readableIndexPath } from "../../../state/events.js";
+import { withQwenHookEvents } from "../../../vendors/qwen/hooks.js";
 import type { ProbeStatus, VendorProbeResult } from "./types.js";
 import { type ProbeVendor, VENDOR_CASES } from "./vendor-cases.js";
 
@@ -97,9 +99,9 @@ export function readChainOrder(
   );
   if (!existsSync(variantPath)) return { chain: [], fromVariants: false };
   try {
-    const variant = JSON.parse(readFileSync(variantPath, "utf-8")) as {
-      events?: Record<string, unknown>;
-    };
+    const variant = withQwenHookEvents(
+      JSON.parse(readFileSync(variantPath, "utf-8")) as HookVariant,
+    );
     const entry = variant.events?.[VENDOR_CASES[vendor].promptEvent];
     const list = Array.isArray(entry) ? entry : entry ? [entry] : [];
     const chain = list
