@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.10.0...cli-v14.11.0) (2026-09-15)
+
+
+### Features
+
+* **harness:** add budgeted project skill evolution ([23484f1](https://github.com/first-fluke/oh-my-agent/commit/23484f17f9c14014c25c6d7cd6ac9168e7d4ee91))
+
 ## [14.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.9.0...cli-v14.10.0) (2026-09-14)
 
 
