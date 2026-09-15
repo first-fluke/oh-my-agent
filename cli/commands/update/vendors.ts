@@ -79,15 +79,18 @@ export function resolveUpdateVendors(
   if (options.vendor) return parseVendorList(options.vendor);
   if (options.all) return supportedProjectVendors();
 
-  // Include recorded HOME-only vendors (notably Hermes) which have no
-  // project directory. Only an explicit YAML list counts as a selection.
+  // An explicit selection is authoritative, including an empty list and
+  // HOME-only vendors. Leftover project directories must not expand it.
   const configured: unknown = loadOmaConfig(cwd)?.vendors;
-  const recorded = Array.isArray(configured) ? configured : [];
+  if (Array.isArray(configured)) {
+    return UPDATE_VENDORS.filter((vendor) => configured.includes(vendor));
+  }
+
+  // Legacy installs without a selection fall back to project markers.
   return UPDATE_VENDORS.filter(
     (vendor) =>
-      recorded.includes(vendor) ||
-      ((!isCliTool(vendor) || !vendorRequiresHomeConsent(vendor)) &&
-        hasExistingVendorRoot(cwd, vendor)),
+      (!isCliTool(vendor) || !vendorRequiresHomeConsent(vendor)) &&
+      hasExistingVendorRoot(cwd, vendor),
   );
 }
 

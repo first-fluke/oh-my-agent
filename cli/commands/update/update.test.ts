@@ -404,6 +404,23 @@ describe("resolveUpdateVendors", () => {
     expect(resolveUpdateVendors(root)).toEqual(["claude", "pi", "qwen"]);
   });
 
+  it.each([
+    ["vendors:\n  - cursor\n", ["cursor"]],
+    ["vendors: []\n", []],
+  ])("respects an explicit vendor selection: %s", (config, expected) => {
+    const root = mkdtempSync(join(tmpdir(), "oma-update-vendors-"));
+    tempRoots.push(root);
+
+    for (const dir of [".agents", ".cursor", ".commandcode", ".kiro"]) {
+      mkdirSync(join(root, dir), { recursive: true });
+    }
+    writeFileSync(join(root, ".agents", "oma-config.yaml"), config);
+
+    expect(resolveUpdateVendors(root)).toEqual(expected);
+    expect(resolveUpdateVendors(root, { vendor: "kiro" })).toEqual(["kiro"]);
+    expect(resolveUpdateVendors(root, { all: true })).toContain("commandcode");
+  });
+
   it("does not infer HOME-only vendors from project markers", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-update-vendors-"));
     tempRoots.push(root);
