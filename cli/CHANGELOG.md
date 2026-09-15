@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.12.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.12.1...cli-v14.12.2) (2026-09-15)
+
+
+### Bug Fixes
+
+* **update:** respect explicit vendor selection ([eb040b3](https://github.com/first-fluke/oh-my-agent/commit/eb040b34fd3b072705b96960c8310faf9287a575))
+
 ## [14.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.12.0...cli-v14.12.1) (2026-09-15)
 
 
