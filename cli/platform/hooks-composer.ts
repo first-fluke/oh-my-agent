@@ -93,6 +93,11 @@ export function installHooksFromVariant(
   // 3. Build hook entries from events.
   // biome-ignore lint/suspicious/noExplicitAny: hook config varies by vendor
   const hookEntries: Record<string, any> = {};
+  if (variant.vendor === "qwen") {
+    // Remove registrations from the retired Qwen-only intelligence handler.
+    hookEntries.SubagentStart = [];
+    hookEntries.PostToolUseFailure = [];
+  }
   for (const [eventName, rawConfig] of Object.entries(variant.events)) {
     const configs = Array.isArray(rawConfig) ? rawConfig : [rawConfig];
     if (configs.length === 0) continue;

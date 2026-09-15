@@ -50,12 +50,8 @@ import qwenVariant from "../../../.agents/hooks/variants/qwen.json" with {
 };
 import { withSelectedHookMemory } from "../../state/hook-memory.js";
 import type { VendorType } from "../../types/vendors.js";
-import {
-  QWEN_CODE_INTELLIGENCE_HOOK,
-  withQwenHookEvents,
-} from "../../vendors/qwen/hooks.js";
+import { withQwenHookEvents } from "../../vendors/qwen/hooks.js";
 import { nativeEventToKind, normalizeInput } from "./adapters.js";
-import { qwenCodeIntelligenceHandler } from "./qwen-code-intelligence.js";
 import type {
   HandlerCtx,
   HandlerResult,
@@ -141,7 +137,6 @@ export const VARIANT_ROUTES: Readonly<Record<VendorType, VariantJson>> = {
  * are prompt-submit → "UserPromptSubmit".
  */
 function promptHookEventName(nativeEvent: string): string {
-  if (nativeEvent === "SubagentStart") return nativeEvent;
   return nativeEvent === "SessionStart" || nativeEvent === "sessionStart"
     ? "SessionStart"
     : "UserPromptSubmit";
@@ -174,8 +169,7 @@ function toMs(timeout: number): number {
   return timeout > 30 ? timeout : timeout * 1000;
 }
 
-function resolveChain(req: HookRequest): ResolvedHandler[] {
-  const { vendor, nativeEvent } = req;
+function resolveChain(vendor: Vendor, nativeEvent: string): ResolvedHandler[] {
   const variant = loadVariant(vendor);
   if (!variant) {
     process.stderr.write(
@@ -192,10 +186,7 @@ function resolveChain(req: HookRequest): ResolvedHandler[] {
 
   for (const e of entries) {
     const id = e.hook.replace(/\.ts$/, "");
-    const runFn =
-      vendor === "qwen" && e.hook === QWEN_CODE_INTELLIGENCE_HOOK
-        ? qwenCodeIntelligenceHandler(req)
-        : HANDLER_REGISTRY[id];
+    const runFn = HANDLER_REGISTRY[id];
     if (!runFn) {
       process.stderr.write(
         `[oma hook] warn: unknown handler id "${id}" in variant "${vendor}/${nativeEvent}" — skipping\n`,
@@ -342,7 +333,7 @@ export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
   // runs), falling back to the wrapper's process cwd. State files resolve here.
   const projectRoot = resolveGitRoot(input.cwd || cwd);
 
-  const chain = resolveChain(req);
+  const chain = resolveChain(vendor, nativeEvent);
   if (chain.length === 0) {
     return { output: "" };
   }

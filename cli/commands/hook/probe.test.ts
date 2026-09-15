@@ -66,7 +66,7 @@ describe("hook compatibility probe", () => {
       "keyword-detector.ts",
       "state-boundary.ts",
       "skill-injector.ts",
-      "qwen-code-intelligence.ts",
+      "code-intelligence-primer.ts",
     ]);
   });
 

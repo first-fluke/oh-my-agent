@@ -40,8 +40,8 @@ const OMA_BIN_CANDIDATES = [
  *
  * The dedup preamble suppresses double-fire when both a project and global
  * install register the same event. Qwen skips the coarse time-based preamble:
- * it drops distinct tool calls and sibling agents; its code-intelligence
- * handler instead tracks session/agent identity from stdin.
+ * it drops distinct tool calls and can suppress post-compaction priming.
+ * The shared primer handles its own session deduplication.
  *
  * Passes `"$@"` verbatim so `--vendor`, `--event`, `--matcher` args that
  * the settings entry emits reach `oma hook run` unchanged (no shell injection).
@@ -52,7 +52,7 @@ export function generateOmaHookWrapper(vendor?: string): string {
   // and it must ALWAYS exit 0 — a non-zero hook exit (e.g. a stale oma without
   // the `hook` command) can disrupt the vendor agent.
   return `#!/usr/bin/env bash
-${vendor === "qwen" ? "# Qwen handlers deduplicate by session and agent; never drop distinct tool events by time." : HOOK_DEDUP_PREAMBLE}
+${vendor === "qwen" ? "# Preserve distinct Qwen events; the shared primer deduplicates by session." : HOOK_DEDUP_PREAMBLE}
 __oma_bin=""
 if [ -n "\${OMA_BIN:-}" ] && [ -x "\${OMA_BIN}" ]; then
   __oma_bin="\${OMA_BIN}"

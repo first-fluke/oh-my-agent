@@ -145,6 +145,10 @@ export function mergeIntoSettings(
       existingHooks[eventName],
       Array.isArray(newGroups) ? newGroups : [newGroups],
     );
+    if (Array.isArray(newGroups) && newGroups.length === 0) {
+      const remaining = mergedHooks[eventName] as unknown[];
+      if (remaining.length === 0) delete mergedHooks[eventName];
+    }
   }
   settings.hooks = mergedHooks;
   if (extra) {

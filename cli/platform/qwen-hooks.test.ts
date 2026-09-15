@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-it("registers Qwen lifecycle and tool feedback hooks while preserving user hooks", () => {
+it("registers the shared primer lifecycle while preserving user hooks", () => {
   const variant = JSON.parse(
     readFileSync(join(repoRoot, ".agents/hooks/variants/qwen.json"), "utf8"),
   ) as HookVariant;
@@ -36,19 +36,16 @@ it("registers Qwen lifecycle and tool feedback hooks while preserving user hooks
   );
   expect(settings.hooks.SessionStart).toContainEqual(userHook);
   expect(settings.hooks.SessionStart).toHaveLength(2);
-  expect(settings.hooks.SubagentStart).toHaveLength(1);
-  expect(settings.hooks.PostToolUseFailure).toHaveLength(1);
+  expect(settings.hooks.SubagentStart).toBeUndefined();
+  expect(settings.hooks.PostToolUseFailure).toBeUndefined();
   const pre = new RegExp(settings.hooks.PreToolUse[0].matcher);
   const post = new RegExp(settings.hooks.PostToolUse[0].matcher);
-  for (const name of ["grep_search", "glob", "run_shell_command"])
-    expect(pre.test(name)).toBe(true);
-  for (const name of [
-    "edit",
-    "write_file",
-    "mcp__serena__initial_instructions",
-  ])
+  expect(pre.test("run_shell_command")).toBe(true);
+  for (const name of ["grep_search", "glob"])
+    expect(pre.test(name)).toBe(false);
+  for (const name of ["edit", "write_file", "replace"])
     expect(post.test(name)).toBe(true);
-  expect(pre.test("other_grep_search_tool")).toBe(false);
+  expect(post.test("mcp__serena__initial_instructions")).toBe(false);
 });
 
 it("does not drop rapid Qwen tool events in the shell wrapper", () => {
@@ -74,7 +71,7 @@ it("does not drop rapid Qwen tool events in the shell wrapper", () => {
         },
         input: `${JSON.stringify({
           agent_id,
-          tool_name: "mcp__serena__initial_instructions",
+          tool_name: "edit",
         })}\n`,
         encoding: "utf8",
       },
@@ -84,6 +81,37 @@ it("does not drop rapid Qwen tool events in the shell wrapper", () => {
   expect(
     readFileSync(join(root, "received"), "utf8").trim().split("\n"),
   ).toHaveLength(2);
+});
+
+it("removes retired Qwen registrations while preserving user event hooks", () => {
+  const variant = JSON.parse(
+    readFileSync(join(repoRoot, ".agents/hooks/variants/qwen.json"), "utf8"),
+  ) as HookVariant;
+  const userHook = { hooks: [{ type: "command", command: "echo user-hook" }] };
+  const retiredHook = {
+    hooks: [
+      {
+        type: "command",
+        command: '"$QWEN_PROJECT_DIR/.qwen/hooks/oma-hook.sh" --vendor qwen',
+      },
+    ],
+  };
+  mkdirSync(join(root, ".qwen"));
+  writeFileSync(
+    join(root, ".qwen/settings.json"),
+    JSON.stringify({
+      hooks: {
+        SubagentStart: [retiredHook, userHook],
+        PostToolUseFailure: [retiredHook],
+      },
+    }),
+  );
+  installHooksFromVariant(repoRoot, root, variant);
+  const settings = JSON.parse(
+    readFileSync(join(root, ".qwen/settings.json"), "utf8"),
+  );
+  expect(settings.hooks.SubagentStart).toEqual([userHook]);
+  expect(settings.hooks.PostToolUseFailure).toBeUndefined();
 });
 
 it("executes generated Qwen hooks through the source CLI without a build", () => {
@@ -139,21 +167,15 @@ it("executes generated Qwen hooks through the source CLI without a build", () =>
   expect(
     invoke("SessionStart", { source: "startup" }).hookSpecificOutput
       .additionalContext,
-  ).toContain("tool_search");
+  ).toContain("[OMA SERENA PRIMER]");
   expect(
-    invoke("SubagentStart", { agent_id: "child" }).hookSpecificOutput
-      .hookEventName,
-  ).toBe("SubagentStart");
+    invoke("UserPromptSubmit", { prompt: "Inspect the code" })
+      .hookSpecificOutput?.additionalContext ?? "",
+  ).not.toContain("[OMA SERENA PRIMER]");
   expect(
-    invoke("PreToolUse", {
-      tool_name: "grep_search",
-      tool_input: { pattern: "AuthService" },
-    }).hookSpecificOutput.permissionDecision,
-  ).toBe("deny");
-  invoke("PostToolUseFailure", {
-    tool_name: "mcp__serena__find_symbol",
-    error: "request timed out",
-  });
+    invoke("SessionStart", { source: "compact" }).hookSpecificOutput
+      .additionalContext,
+  ).toContain("[OMA SERENA PRIMER]");
   expect(
     invoke("PreToolUse", {
       tool_name: "grep_search",
