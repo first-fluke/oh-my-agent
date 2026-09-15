@@ -124,7 +124,19 @@ export function loadConfigLayers(
       const strict = locals.length > 0 || env.OMA_MODEL_PRESET === "free";
       if (existsSync(cue)) {
         try {
-          shared = readConfig(cue, strict);
+          const cueConfig = readConfig(cue, strict);
+          let yamlDefaults: Record<string, unknown> = {};
+          if (existsSync(yaml)) {
+            try {
+              yamlDefaults = readConfig(yaml, strict);
+            } catch {
+              // A valid CUE config remains authoritative over a stale YAML file.
+            }
+          }
+          // Update/install commands still persist some newer preferences in
+          // YAML. Retain those fields when the preferred CUE config has no
+          // corresponding value, while CUE continues to win on conflicts.
+          shared = overlay(yamlDefaults, cueConfig);
           sources.shared = cue;
         } catch (error) {
           if (!existsSync(yaml)) throw error;

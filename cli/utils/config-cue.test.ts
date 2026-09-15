@@ -8,7 +8,7 @@ vi.mock("./cue.js", () => ({
 }));
 
 const { evaluateCueFile } = await import("./cue.js");
-const { loadOmaConfig } = await import("./config.js");
+const { loadDevToolsBrowsers, loadOmaConfig } = await import("./config.js");
 
 describe("loadOmaConfig CUE priority and fallback", () => {
   let dir: string;
@@ -45,6 +45,25 @@ describe("loadOmaConfig CUE priority and fallback", () => {
     expect(evaluateCueFile).toHaveBeenCalledWith(
       join(dir, ".agents", "oma-config.cue"),
     );
+  });
+
+  it("uses YAML fields that are absent from the preferred CUE config", () => {
+    writeFileSync(
+      join(dir, ".agents", "oma-config.cue"),
+      'language: "ko"\nmodel_preset: "auto"\n',
+    );
+    writeFileSync(
+      join(dir, ".agents", "oma-config.yaml"),
+      "language: en\nmcp:\n  devtools_browsers: [aside]\n",
+    );
+
+    vi.mocked(evaluateCueFile).mockReturnValue({
+      success: true,
+      data: { language: "ko", model_preset: "auto" },
+    });
+
+    expect(loadDevToolsBrowsers(dir)).toEqual(["aside"]);
+    expect(loadOmaConfig(dir)?.language).toBe("ko");
   });
 
   it("falls back to oma-config.yaml when cue CLI is missing", () => {
