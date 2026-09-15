@@ -59,7 +59,7 @@ Save a JSON specification inside the project:
 }
 ```
 
-`initial_workspace`, `evidence_files`, and dependency fixture paths are relative to the specification file. A command check's `checker` path is project-relative. Check syntax matches [Harness Evaluation](./harness-eval.md). The initial directory must be a supplied pre-run task fixture without OMA/vendor instruction files; the harness under evaluation is injected separately.
+`initial_workspace`, `evidence_files`, and dependency fixture paths are relative to the specification file. A command check's `checker` path is project-relative. Check syntax matches [Harness Evaluation](../harness-eval/). The initial directory must be a supplied pre-run task fixture without OMA/vendor instruction files; the harness under evaluation is injected separately.
 
 ```bash
 oma harness incident capture --spec incidents/incomplete-result.json --json
@@ -135,7 +135,7 @@ oma harness incident reproduce incomplete-result --candidate candidates/fix \
 | `fixture-replay` | Replays supplied tool response data and file changes against the recorded initial state. No model or tool process runs. |
 | `rerun` | Starts actual baseline/candidate agent calls from the recorded initial state. This incurs normal model usage. |
 
-For a revised acceptance contract, create a separate harness suite and use `oma harness eval --action rescore` with the same suite/task/incident identity and prompt. An exported incident suite itself is immutable. See [recording and replay details](./harness-eval.md) for raw evidence requirements and the tool transcript schema.
+For a revised acceptance contract, create a separate harness suite and use `oma harness eval --action rescore` with the same suite/task/incident identity and prompt. An exported incident suite itself is immutable. See [recording and replay details](../harness-eval/) for raw evidence requirements and the tool transcript schema.
 
 Declare external dependencies as `{ "name": "service", "repeatability": "fixture|live|unavailable", "reason": "...", "fixture": "response.json" }`. A fixture dependency points to a file using the complete harness transcript schema, with the incident ID as `taskId`. Offline incident replay rejects live/unavailable dependencies, missing fixture files, changed fixture hashes, missing named responses, and requests/responses/file changes that differ from the pinned transcript. It still cannot attest that the author declared every external dependency. A live rerun also cannot guarantee that an external service behaves as it did historically.
 
