@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.8.1](https://github.com/first-fluke/oh-my-agent/compare/web-v6.8.0...web-v6.8.1) (2026-09-15)
+
+
+### Documentation
+
+* **i18n:** add harness incident guides for all locales ([e41fd5e](https://github.com/first-fluke/oh-my-agent/commit/e41fd5e749c2ea205d08a0b883627ef67afd2f58))
+
 ## [6.8.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.7.0...web-v6.8.0) (2026-09-15)
 
 
