@@ -4,6 +4,7 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
+import { registerHarnessEvolutionCommand } from "./evolution.js";
 import { registerHarnessIncidentCommands } from "./incident-command.js";
 import { runHarnessEval } from "./run.js";
 
@@ -74,4 +75,5 @@ export function registerHarnessCommand(program: Command): void {
     ),
   );
   registerHarnessIncidentCommands(harness);
+  registerHarnessEvolutionCommand(harness);
 }

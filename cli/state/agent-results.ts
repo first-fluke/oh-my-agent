@@ -12,6 +12,7 @@ import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
 import { atomicWriteJson } from "./events.js";
+import { recordHarnessEvolutionEvidence } from "./harness-evolution.js";
 import {
   contractStillCurrent,
   loadTaskContract,
@@ -437,7 +438,7 @@ export function finishAgentRun(
   options: { logPath?: string } = {},
 ): AgentRun {
   const after = runFingerprint(readAgentRun(root, runId));
-  return withStateIndexLock(root, () => {
+  const finished = withStateIndexLock(root, () => {
     const run = readAgentRun(root, runId);
     if (run.status !== "running") return run;
     run.exitCode = exitCode;
@@ -492,6 +493,14 @@ export function finishAgentRun(
     atomicWriteJson(runPath(root, runId), run);
     return run;
   });
+  // Passive evidence capture must never change the completed run result. The
+  // recorder stores only references to existing output and verification data.
+  try {
+    recordHarnessEvolutionEvidence(root, finished);
+  } catch {
+    // A later evolution tick can still scan the canonical agent-run state.
+  }
+  return finished;
 }
 
 export function hasCurrentChecks(run: AgentRun): boolean {

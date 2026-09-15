@@ -17,6 +17,7 @@
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { resolveOmaInvocation } from "../../utils/oma-invocation.js";
 import {
   getEnvFilePath,
   getJobById,
@@ -151,6 +152,31 @@ export async function runScheduledJob(id: string): Promise<void> {
     console.log(
       `schedule:run: job "${id}" expired after ${job.maxAgeDays} days; removed.`,
     );
+    return;
+  }
+
+  if (job.builtin === "harness-evolution") {
+    const invocation = resolveOmaInvocation();
+    const result = spawnSync(
+      invocation.command,
+      [...invocation.prefixArgs, "harness", "evolution", "run", "--scheduled"],
+      {
+        cwd: job.workspace,
+        encoding: "utf-8",
+        timeout: 60 * 60 * 1000,
+      },
+    );
+    const output = [
+      result.stdout ?? "",
+      result.stderr ?? "",
+      result.error?.message ?? "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const exitCode = result.status ?? 1;
+    writeRunResult(id, `schedule-${id}-${Date.now()}`, exitCode, output);
+    updateJob(id, { lastFiredAt: new Date().toISOString() });
+    if (exitCode !== 0) process.exitCode = 1;
     return;
   }
 

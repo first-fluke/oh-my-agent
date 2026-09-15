@@ -1,16 +1,9 @@
 import { createHash } from "node:crypto";
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
-import { INSTALLED_SKILLS_DIR } from "../../../constants/vendors.js";
+import { resolveEffectiveSkill } from "../../../platform/skill-overlays.js";
 import { evalConcurrency, mapWithLimit } from "./concurrency.js";
 import {
   awaitDispatchResult,
@@ -35,15 +28,8 @@ import {
  * Returns empty string when the file does not exist.
  */
 export function loadSkillMdBody(skillId: string, workspace: string): string {
-  const skillMdPath = join(
-    workspace,
-    INSTALLED_SKILLS_DIR,
-    skillId,
-    "SKILL.md",
-  );
-  if (!existsSync(skillMdPath)) return "";
   try {
-    return readFileSync(skillMdPath, "utf-8");
+    return resolveEffectiveSkill(workspace, skillId).body;
   } catch {
     return "";
   }

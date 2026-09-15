@@ -82,9 +82,18 @@ export type FeedbackOptimizer = (
   skill: string,
 ) => Promise<SkillOptResult | undefined>;
 
+/** Charges immediately before a real model dispatch. Kept structural so the
+ * cycle meter can be shared with the optimizer without a command dependency. */
+export interface FeedbackDispatchMeter {
+  charge(): void;
+  snapshot(): { limit: number | null; used: number };
+}
+
 export function buildLiveFeedbackOptimizer(options: {
   apply: boolean;
   maxEpochs: number;
+  meter?: FeedbackDispatchMeter;
+  applyTarget?: "managed" | "overlay";
 }): FeedbackOptimizer {
   return (skill) =>
     runSkillsOpt(true, {
@@ -94,8 +103,23 @@ export function buildLiveFeedbackOptimizer(options: {
       apply: options.apply,
       yes: true,
       maxEpochs: options.maxEpochs,
+      ...(options.meter ? { _dispatchMeter: options.meter } : {}),
+      ...(options.applyTarget ? { applyTarget: options.applyTarget } : {}),
       _quiet: true,
     });
+}
+
+function incompleteOptimizationReason(
+  result: SkillOptResult,
+): string | undefined {
+  const diagnostics = result.diagnostics ?? [];
+  if (diagnostics.length === 0) return undefined;
+  return diagnostics
+    .map(
+      (diagnostic) =>
+        `${diagnostic.stage}:${diagnostic.status}: ${diagnostic.message}`,
+    )
+    .join("; ");
 }
 
 export async function runHarnessFeedback(options: {
@@ -109,6 +133,13 @@ export async function runHarnessFeedback(options: {
   incidentIds?: string[];
   /** Also capture uncaptured failed runs from their task contracts first. */
   scanRuns?: boolean;
+  /** Optional due-run filter for durable scheduled retries. */
+  runIds?: string[];
+  /** Skills with an existing fixture whose prior optimization must resume. */
+  retrySkills?: string[];
+  /** Shared cycle budget for capture, routing, judging, and optimization. */
+  meter?: FeedbackDispatchMeter;
+  applyTarget?: "managed" | "overlay";
   onProgress?: (message: string) => void;
 }): Promise<FeedbackReport> {
   const { root } = options;
@@ -121,10 +152,41 @@ export async function runHarnessFeedback(options: {
     skipped: [],
     skills: [],
   };
+  const incidentFilter = options.incidentIds
+    ? new Set(options.incidentIds)
+    : undefined;
+  const charge = (): void => options.meter?.charge();
+  const drafter = async (prompt: string): Promise<string> => {
+    charge();
+    return (options.drafter ?? runEvolutionPrompt)(prompt);
+  };
+  // Native eval dispatchers receive the hook at their per-attempt boundary,
+  // including the one timeout retry. Injected dispatchers have no retry
+  // contract, so charge once around their invocation instead.
+  const judge = options.judge
+    ? (
+        ...args: Parameters<typeof options.judge>
+      ): ReturnType<typeof options.judge> => {
+        charge();
+        return options.judge?.(...args) as ReturnType<typeof options.judge>;
+      }
+    : buildJudgeDispatchFn(charge);
+  const router =
+    options.router === null
+      ? undefined
+      : options.router
+        ? (
+            ...args: Parameters<typeof options.router>
+          ): ReturnType<typeof options.router> => {
+            charge();
+            return options.router?.(...args) as ReturnType<
+              typeof options.router
+            >;
+          }
+        : buildLiveDispatchFn(root, undefined, charge);
   if (options.scanRuns) {
-    const drafter = options.drafter ?? runEvolutionPrompt;
-    const judge = options.judge ?? buildJudgeDispatchFn();
     for (const candidate of scanHarnessIncidents(root).candidates) {
+      if (options.runIds && !options.runIds.includes(candidate.runId)) continue;
       if (!candidate.hasOutput || !candidate.hasPrompt) {
         report.uncapturable.push({
           runId: candidate.runId,
@@ -146,6 +208,7 @@ export async function runHarnessFeedback(options: {
           incidentId: captured.incident.id,
           rubric: captured.rubric,
         });
+        incidentFilter?.add(captured.incident.id);
         progress(
           `[oma harness feedback] run ${candidate.runId.slice(0, 8)} → incident ${captured.incident.id}`,
         );
@@ -159,8 +222,7 @@ export async function runHarnessFeedback(options: {
     }
   }
   const pending = listUnpromotedIncidents(root).filter(
-    (incident) =>
-      !options.incidentIds || options.incidentIds.includes(incident.id),
+    (incident) => !incidentFilter || incidentFilter.has(incident.id),
   );
   const bySkill = new Map<string, string[]>();
   for (const incident of pending) {
@@ -168,12 +230,9 @@ export async function runHarnessFeedback(options: {
       const { promotion } = await promoteHarnessIncident({
         root,
         id: incident.id,
-        drafter: options.drafter ?? runEvolutionPrompt,
-        judge: options.judge ?? buildJudgeDispatchFn(),
-        router:
-          options.router === null
-            ? undefined
-            : (options.router ?? buildLiveDispatchFn(root)),
+        drafter,
+        judge,
+        router,
       });
       report.promoted.push(promotion);
       bySkill.set(promotion.skill, [
@@ -191,6 +250,9 @@ export async function runHarnessFeedback(options: {
       );
     }
   }
+  for (const skill of options.retrySkills ?? []) {
+    if (!bySkill.has(skill)) bySkill.set(skill, []);
+  }
   for (const [skill, incidents] of bySkill) {
     if (!options.optimize) {
       report.skills.push({ skill, incidents, status: "promoted-only" });
@@ -202,9 +264,24 @@ export async function runHarnessFeedback(options: {
     try {
       const optimizer =
         options.optimizer ??
-        buildLiveFeedbackOptimizer({ apply: false, maxEpochs: 1 });
+        buildLiveFeedbackOptimizer({
+          apply: options.applyTarget === "overlay",
+          maxEpochs: 1,
+          meter: options.meter,
+          applyTarget: options.applyTarget,
+        });
       const result = await optimizer(skill);
       if (!result) throw new Error("optimization returned no result");
+      const incomplete = incompleteOptimizationReason(result);
+      if (incomplete) {
+        report.skills.push({
+          skill,
+          incidents,
+          status: "failed",
+          error: incomplete,
+        });
+        continue;
+      }
       report.skills.push({
         skill,
         incidents,

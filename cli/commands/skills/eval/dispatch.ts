@@ -99,6 +99,7 @@ export function runEvalDispatchDetailed(
   cwd: string,
   prompt: string,
   promptFlag: string | null,
+  beforeAttempt?: () => void,
 ): { output: string; usage: DispatchUsage } {
   const { args } = invocation;
   // Locate the prompt VALUE: the arg immediately after `promptFlag` (e.g. `-p`).
@@ -121,6 +122,7 @@ export function runEvalDispatchDetailed(
   // optimization, a whole run's coverage).
   for (let attempt = 0; ; attempt += 1) {
     try {
+      beforeAttempt?.();
       return runEvalDispatchOnce(invocation, cwd, prompt, viaStdin, execArgs);
     } catch (err) {
       if (attempt === 0 && err instanceof EvalDispatchError && err.timedOut) {
@@ -142,6 +144,7 @@ export async function runEvalDispatchDetailedAsync(
   cwd: string,
   prompt: string,
   promptFlag: string | null,
+  beforeAttempt?: () => void,
 ): Promise<{ output: string; usage: DispatchUsage }> {
   const { args } = invocation;
   let promptIdx = -1;
@@ -157,6 +160,7 @@ export async function runEvalDispatchDetailedAsync(
   const execArgs = viaStdin ? args.filter((_, idx) => idx !== promptIdx) : args;
   for (let attempt = 0; ; attempt += 1) {
     try {
+      beforeAttempt?.();
       return await runEvalDispatchOnceAsync(
         invocation,
         cwd,
@@ -526,6 +530,7 @@ export function isolateEvalMemory(invocation: {
 export function buildLiveDispatchFn(
   workspace: string,
   excludeSkillId?: string,
+  beforeAttempt?: () => void,
 ): LiveDispatchFn {
   const { vendor, config } = resolveVendor("eval-agent");
   const vendorConfig = config?.vendors?.[vendor] ?? {};
@@ -571,7 +576,13 @@ export function buildLiveDispatchFn(
           vendor,
         );
 
-    return runEvalDispatchDetailedAsync(invocation, cwd, prompt, promptFlag);
+    return runEvalDispatchDetailedAsync(
+      invocation,
+      cwd,
+      prompt,
+      promptFlag,
+      beforeAttempt,
+    );
   };
 }
 
@@ -584,7 +595,9 @@ export function buildLiveDispatchFn(
  * grading. Design 016 Tier-2 flagged this for an opt-in warning; a one-line
  * console.warn is emitted on the FIRST judge dispatch within a --live run.
  */
-export function buildJudgeDispatchFn(): JudgeDispatchFn {
+export function buildJudgeDispatchFn(
+  beforeAttempt?: () => void,
+): JudgeDispatchFn {
   const { vendor, config } = resolveVendor("eval-agent");
   const vendorConfig = config?.vendors?.[vendor] ?? {};
   const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
@@ -633,6 +646,7 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
       judgeWorkspace,
       gradingPrompt,
       promptFlag,
+      beforeAttempt,
     ).finally(() => {
       rmSync(judgeWorkspace, { recursive: true, force: true });
     });

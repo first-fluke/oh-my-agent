@@ -44,6 +44,29 @@ export function createDispatchMeter(limit: number | null): DispatchMeter {
   };
 }
 
+/**
+ * Combine a tick-owned meter with a per-skill constitution cap. The local
+ * guard runs first, so a refused local call never consumes the shared budget.
+ * A permitted call charges the shared meter exactly once.
+ */
+export function capDispatchMeter(
+  shared: DispatchMeter,
+  localLimit: number | null,
+): DispatchMeter {
+  let used = 0;
+  return {
+    charge() {
+      if (localLimit !== null && used >= localLimit)
+        throw new DispatchBudgetExceededError(localLimit, used);
+      shared.charge();
+      used++;
+    },
+    snapshot() {
+      return { limit: localLimit, used };
+    },
+  };
+}
+
 /** Charge one unit per call of any async function (optimizer, maintainer). */
 export function meterCall<Args extends unknown[], Result>(
   fn: (...args: Args) => Result,

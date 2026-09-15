@@ -8,6 +8,11 @@ import {
 } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { AGENTS_DIR } from "../../../constants/paths.js";
+import {
+  resolveEffectiveSkill,
+  rollbackSkillOverlay,
+} from "../../../platform/skill-overlays.js";
+import { refreshSkillOverlayVendorLinks } from "../../../platform/skills-installer/skill-symlinks.js";
 import { contentHash } from "../eval/rollouts.js";
 import { unifiedDiff } from "./diff.js";
 
@@ -61,6 +66,8 @@ export interface SkillPromotionRecord {
   };
   /** For a rollback: the apply record it reverses. */
   reverses?: string;
+  /** Present when the managed source was left immutable and an overlay changed. */
+  overlay?: { baseSkillMdPath: string; baseHash: string };
 }
 
 export function promotionsDir(workspace: string, skillId: string): string {
@@ -116,6 +123,7 @@ export interface RecordPromotionInput {
   originalBody: string;
   finalBody: string;
   evidence: SkillPromotionRecord["evidence"];
+  overlay?: SkillPromotionRecord["overlay"];
 }
 
 /** Append an apply record and write the reviewable patch beside it. */
@@ -151,6 +159,7 @@ export function recordSkillPromotion(input: RecordPromotionInput): {
       : null,
     patchPath: toRelative(input.workspace, patchPath),
     evidence: input.evidence,
+    ...(input.overlay ? { overlay: input.overlay } : {}),
   };
   const logPath = appendRecord(input.workspace, record);
   return { record, logPath, patchPath };
@@ -173,43 +182,68 @@ export function rollbackSkillPromotion(
 ): RollbackResult {
   const records = readSkillPromotions(workspace, skillId);
   const applies = records.filter((record) => record.action === "apply");
-  const last = applies.at(-1);
+  const reversed = new Set(
+    records
+      .filter((record) => record.action === "rollback" && record.reverses)
+      .map((record) => record.reverses),
+  );
+  const last = applies.filter((record) => !reversed.has(record.ts)).at(-1);
+  if (!last && applies.length > 0)
+    throw new Error(
+      `[oma skill rollback] the last promotion of "${skillId}" was already rolled back`,
+    );
   if (!last)
     throw new Error(
       `[oma skill rollback] no recorded promotion for "${skillId}"`,
     );
-  const alreadyReversed = records.some(
-    (record) => record.action === "rollback" && record.reverses === last.ts,
-  );
-  if (alreadyReversed)
-    throw new Error(
-      `[oma skill rollback] the last promotion of "${skillId}" (${last.ts}) was already rolled back`,
-    );
   if (!last.backupPath)
-    throw new Error(
-      `[oma skill rollback] promotion ${last.ts} has no backup to restore`,
-    );
+    if (!last.overlay)
+      throw new Error(
+        `[oma skill rollback] promotion ${last.ts} has no backup to restore`,
+      );
   const skillMdPath = toAbsolute(workspace, last.skillMdPath);
-  const backupPath = toAbsolute(workspace, last.backupPath);
-  if (!existsSync(skillMdPath))
-    throw new Error(`[oma skill rollback] ${last.skillMdPath} is missing`);
-  if (!existsSync(backupPath))
-    throw new Error(
-      `[oma skill rollback] backup ${last.backupPath} is missing`,
-    );
-  const current = readFileSync(skillMdPath, "utf-8");
-  if (contentHash(current) !== last.candidateHash)
-    throw new Error(
-      `[oma skill rollback] ${last.skillMdPath} differs from the promoted candidate; refusing to discard unknown edits`,
-    );
-  const restored = readFileSync(backupPath, "utf-8");
-  if (contentHash(restored) !== last.parentHash)
-    throw new Error(
-      `[oma skill rollback] backup ${last.backupPath} does not match the recorded parent body`,
-    );
-  const tmpPath = `${skillMdPath}.tmp`;
-  writeFileSync(tmpPath, restored, "utf-8");
-  renameSync(tmpPath, skillMdPath);
+  let restoredFrom: string;
+  if (last.overlay) {
+    const backupPath = last.backupPath
+      ? toAbsolute(workspace, last.backupPath)
+      : undefined;
+    const parentBody = backupPath
+      ? readFileSync(backupPath, "utf-8")
+      : readFileSync(
+          toAbsolute(workspace, last.overlay.baseSkillMdPath),
+          "utf-8",
+        );
+    rollbackSkillOverlay({
+      workspace,
+      skillId,
+      expectedCandidateHash: last.candidateHash,
+      parentHash: last.parentHash,
+      parentBody,
+    });
+    restoredFrom = backupPath ?? last.overlay.baseSkillMdPath;
+  } else {
+    const backupPath = toAbsolute(workspace, last.backupPath as string);
+    if (!existsSync(skillMdPath))
+      throw new Error(`[oma skill rollback] ${last.skillMdPath} is missing`);
+    if (!existsSync(backupPath))
+      throw new Error(
+        `[oma skill rollback] backup ${last.backupPath} is missing`,
+      );
+    const current = readFileSync(skillMdPath, "utf-8");
+    if (contentHash(current) !== last.candidateHash)
+      throw new Error(
+        `[oma skill rollback] ${last.skillMdPath} differs from the promoted candidate; refusing to discard unknown edits`,
+      );
+    const restored = readFileSync(backupPath, "utf-8");
+    if (contentHash(restored) !== last.parentHash)
+      throw new Error(
+        `[oma skill rollback] backup ${last.backupPath} does not match the recorded parent body`,
+      );
+    const tmpPath = `${skillMdPath}.tmp`;
+    writeFileSync(tmpPath, restored, "utf-8");
+    renameSync(tmpPath, skillMdPath);
+    restoredFrom = last.backupPath as string;
+  }
   const record: SkillPromotionRecord = {
     schemaVersion: 1,
     ts: new Date().toISOString(),
@@ -225,5 +259,12 @@ export function rollbackSkillPromotion(
     reverses: last.ts,
   };
   appendRecord(workspace, record);
-  return { record, restoredFrom: last.backupPath, skillMdPath };
+  if (last.overlay) refreshSkillOverlayVendorLinks(workspace, skillId);
+  return {
+    record,
+    restoredFrom,
+    skillMdPath: last.overlay
+      ? resolveEffectiveSkill(workspace, skillId).skillMdPath
+      : skillMdPath,
+  };
 }

@@ -9,6 +9,15 @@ import { dirname, join } from "node:path";
 import { AGENTS_DIR } from "../../constants/paths.js";
 import { getProtectedTextCapability } from "../../io/protected-text.js";
 import { resolveVendor } from "../../platform/agent-config.js";
+import {
+  applySkillOverlay,
+  resolveEffectiveSkill,
+  skillOverlayMdPath,
+} from "../../platform/skill-overlays.js";
+import {
+  assertSkillOverlayVendorLinks,
+  refreshSkillOverlayVendorLinks,
+} from "../../platform/skills-installer/skill-symlinks.js";
 import { createNoneMemoryProvider } from "../../state/memory-provider.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
 import { SKILL_EVAL_PROTOCOL_REVISION } from "./eval/types.js";
@@ -19,6 +28,7 @@ import {
   scoreSkillBody,
 } from "./eval.js";
 import {
+  capDispatchMeter,
   createDispatchMeter,
   meterCall,
   meterScoringFn,
@@ -57,6 +67,12 @@ import {
 
 // --- Re-exported public API (module entry point) ---
 
+export {
+  capDispatchMeter,
+  createDispatchMeter,
+  type DispatchBudget,
+  type DispatchMeter,
+} from "./opt/budget.js";
 export {
   confirmLiveRun,
   estimateLiveDispatchCalls,
@@ -282,7 +298,14 @@ async function runSkillsOptInner(
   // meter every model call against the constitution budget; injected
   // functions are metered too so the limit means the same thing in tests.
   const dispatchMeter = isLive
-    ? createDispatchMeter(procedure.constitution.budget.max_dispatches_per_run)
+    ? options._dispatchMeter
+      ? capDispatchMeter(
+          options._dispatchMeter,
+          procedure.constitution.budget.max_dispatches_per_run,
+        )
+      : createDispatchMeter(
+          procedure.constitution.budget.max_dispatches_per_run,
+        )
     : undefined;
   const meterFn = <Args extends unknown[], Result>(
     fn: (...args: Args) => Result,
@@ -306,13 +329,15 @@ async function runSkillsOptInner(
   // When _skillMdPath is injected (tests), read from there; otherwise use
   // the standard installed-skills resolution via loadSkillMdBody.
   let originalBody: string;
+  const effectiveSkill = options._skillMdPath
+    ? undefined
+    : resolveEffectiveSkill(workspace, skillId);
   if (options._skillMdPath) {
     originalBody = existsSync(options._skillMdPath)
       ? readFileSync(options._skillMdPath, "utf-8")
       : "";
   } else {
-    const { loadSkillMdBody } = await import("./eval.js");
-    originalBody = loadSkillMdBody(skillId, workspace);
+    originalBody = effectiveSkill?.body ?? "";
   }
 
   // Internal test workspaces stay hermetic unless a provider/recorder is
@@ -543,7 +568,14 @@ async function runSkillsOptInner(
     }
 
     // --- oma-owned guard ---
-    if (isOmaOwnedSkill(skillId) && !yes) {
+    const applyTarget = options.applyTarget ?? "managed";
+    if (applyTarget === "managed" && effectiveSkill?.kind === "overlay") {
+      await evolutionRecorder?.complete(finalResult);
+      throw new Error(
+        "[oma skill opt] an active project overlay owns this skill; use the evolution apply flow or rollback the overlay before a legacy --apply",
+      );
+    }
+    if (applyTarget === "managed" && isOmaOwnedSkill(skillId) && !yes) {
       await evolutionRecorder?.complete(finalResult);
       const warnMsg =
         `[oma skill opt] WARNING: "${skillId}" is an oma-owned skill. ` +
@@ -573,25 +605,48 @@ async function runSkillsOptInner(
     }
 
     // --- Write the improved SKILL.md ---
-    const skillMdPath =
+    let skillMdPath =
       options._skillMdPath ?? resolveSkillMdPath(skillId, workspace);
-
-    // Ensure the skill directory exists (in case it is brand-new)
-    const skillDir = dirname(skillMdPath);
-    mkdirSync(skillDir, { recursive: true });
-
-    // Backup original BEFORE touching the live file
-    const backupPath = existsSync(skillMdPath)
-      ? backupSkillMd(skillMdPath)
-      : null;
+    let backupPath: string | null;
+    if (applyTarget === "overlay" && !options._skillMdPath) {
+      // Overlay versions are immutable. The first overlay has no prior overlay
+      // to back up; later overlays back up exactly the active version so every
+      // lineage rollback has its own parent body.
+      skillMdPath =
+        effectiveSkill?.kind === "overlay"
+          ? effectiveSkill.skillMdPath
+          : skillOverlayMdPath(workspace, skillId);
+      backupPath =
+        effectiveSkill?.kind === "overlay" ? backupSkillMd(skillMdPath) : null;
+    } else {
+      mkdirSync(dirname(skillMdPath), { recursive: true });
+      backupPath = existsSync(skillMdPath) ? backupSkillMd(skillMdPath) : null;
+    }
 
     // Atomic write: write to a sibling .tmp file on the SAME filesystem,
     // then rename into place. On POSIX, rename(2) is atomic — the live
     // SKILL.md is never in a truncated/partial state even if the process
     // is killed between the writeFileSync and the renameSync.
-    const tmpPath = `${skillMdPath}.tmp`;
-    writeFileSync(tmpPath, loopResult.finalSkillMd, "utf-8");
-    renameSync(tmpPath, skillMdPath);
+    if (applyTarget === "overlay" && !options._skillMdPath) {
+      if (!effectiveSkill)
+        throw new Error(
+          "[oma skill opt] overlay apply requires an effective skill",
+        );
+      assertSkillOverlayVendorLinks(workspace, skillId);
+      applySkillOverlay({
+        workspace,
+        skillId,
+        body: loopResult.finalSkillMd,
+        expectedBaseHash: effectiveSkill.baseHash,
+        expectedEffectiveHash: effectiveSkill.effectiveHash,
+      });
+      skillMdPath = skillOverlayMdPath(workspace, skillId);
+      refreshSkillOverlayVendorLinks(workspace, skillId);
+    } else {
+      const tmpPath = `${skillMdPath}.tmp`;
+      writeFileSync(tmpPath, loopResult.finalSkillMd, "utf-8");
+      renameSync(tmpPath, skillMdPath);
+    }
 
     finalResult = { ...loopResult, applied: true };
     await evolutionRecorder?.complete(finalResult);
@@ -641,6 +696,14 @@ async function runSkillsOptInner(
             }
           : {}),
       },
+      ...(applyTarget === "overlay" && !options._skillMdPath
+        ? {
+            overlay: {
+              baseSkillMdPath: resolveSkillMdPath(skillId, workspace),
+              baseHash: effectiveSkill?.baseHash ?? "",
+            },
+          }
+        : {}),
     });
 
     if (!jsonMode) {

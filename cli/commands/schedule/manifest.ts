@@ -48,6 +48,8 @@ export interface ScheduleJob {
   osBackend: string;
   /** OS-side job label, e.g. "dev.oma.sch_xxxxx" */
   osJobLabel: string;
+  /** Fixed internal job. Absent means the legacy agent:spawn job shape. */
+  builtin?: "harness-evolution";
 }
 
 export interface ScheduleManifest {

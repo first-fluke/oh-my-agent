@@ -525,6 +525,10 @@ The following matrix is generated from the checked-in public command registry. I
 | `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | Compare a candidate .agents overlay with the current baseline |
 | `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | Derive a skill regression fixture from a captured incident |
 | `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | Promote incidents and optimize the affected skills |
+| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | Enable a project's budgeted scheduled feedback cycle; mode is apply or propose |
+| `harness evolution status` | `--json, --output <format>` | Show configuration, schedule, pending work, conflicts, and the last cycle |
+| `harness evolution disable` | `--json, --output <format>` | Disable the project's scheduled feedback cycle |
+| `harness evolution run` | `--json, --output <format>` | Run one cycle under the enabled project's saved mode and budget |
 | `slide` | `—` | HTML presentation toolkit — scaffold, validate, export, and edit 1920×1080 slide decks |
 | `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | Geometric quality gate — renders slides via puppeteer-core and checks overflow/overlap/font-size |
 | `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | Merge per-slide files into a single self-contained .html deliverable |

@@ -54,7 +54,7 @@ This map keeps the long references below scannable and makes the less frequently
 | `star` | `star` |
 | `visualize` | `visualize` |
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google` |
-| `harness` | `harness`, `harness eval` |
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get` |
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint` |
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |

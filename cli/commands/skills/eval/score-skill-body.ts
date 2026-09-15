@@ -157,20 +157,26 @@ export async function scoreSkillBody(
       );
     }
     const before = options.beforeDispatch;
-    const baseDispatchFn = dispatchFn ?? buildLiveDispatchFn(workspace, skill);
-    const baseJudgeFn = judgeFn ?? buildJudgeDispatchFn();
-    const resolvedDispatchFn: LiveDispatchFn = before
-      ? (arm, prompt, armWorkspace) => {
-          before();
-          return baseDispatchFn(arm, prompt, armWorkspace);
-        }
-      : baseDispatchFn;
-    const resolvedJudgeFn: JudgeDispatchFn = before
-      ? (gradingPrompt) => {
-          before();
-          return baseJudgeFn(gradingPrompt);
-        }
-      : baseJudgeFn;
+    const baseDispatchFn =
+      dispatchFn ?? buildLiveDispatchFn(workspace, skill, before);
+    const baseJudgeFn = judgeFn ?? buildJudgeDispatchFn(before);
+    // Real dispatch receives the hook at its retry boundary. Injected test
+    // dispatchers have no known retry semantics, so one invocation is one
+    // charged dispatch.
+    const resolvedDispatchFn: LiveDispatchFn =
+      dispatchFn && before
+        ? (arm, prompt, armWorkspace) => {
+            before();
+            return baseDispatchFn(arm, prompt, armWorkspace);
+          }
+        : baseDispatchFn;
+    const resolvedJudgeFn: JudgeDispatchFn =
+      judgeFn && before
+        ? (gradingPrompt) => {
+            before();
+            return baseJudgeFn(gradingPrompt);
+          }
+        : baseJudgeFn;
 
     const { rollouts, cleanupTmp } = await collectLiveRollouts(
       tasks,

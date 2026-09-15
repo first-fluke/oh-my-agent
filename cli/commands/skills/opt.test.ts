@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { resolveEffectiveSkill } from "../../platform/skill-overlays.js";
 import { taskFixtureHash } from "./eval/rollouts.js";
 import {
   contentHash,
@@ -1710,6 +1711,43 @@ describe("runSkillsOpt OUTPUT layer: --dry-run (default) writes nothing", () => 
 // --- runSkillsOpt OUTPUT layer: --apply with improvement ---
 
 describe("runSkillsOpt OUTPUT layer: --apply with improving result", () => {
+  it("applies an explicit overlay while leaving the managed SKILL.md unchanged", async () => {
+    const skillId = "oma-overlay-apply";
+    const taskDir = join(tmpDir, ".agents", "eval", skillId);
+    writeNTasks(taskDir, MIN_TASKS * 2);
+    const originalContent = makeValidSkillBody("## Overview\n\nManaged body.");
+    const managedPath = join(tmpDir, ".agents", "skills", skillId, "SKILL.md");
+    writeSkillMd(managedPath, originalContent);
+    const edit: SkillEdit = {
+      op: "add",
+      anchor: "## Overview",
+      after: "\n\n- Overlay rule.",
+    };
+    const candidateBody = applyEdit(originalContent, edit);
+    const result = await runSkillsOpt(false, {
+      skill: skillId,
+      apply: true,
+      applyTarget: "overlay",
+      _workspace: tmpDir,
+      _taskDir: taskDir,
+      _optimizerFn: makeMockOptimizerFn([[edit]]),
+      _scoringFn: makeMockScoringFn(
+        new Map([
+          [originalContent, 0],
+          [candidateBody, 0.3],
+        ]),
+        0,
+      ),
+    });
+    expect(result?.applied).toBe(true);
+    expect(readFileSync(managedPath, "utf-8")).toBe(originalContent);
+    expect(resolveEffectiveSkill(tmpDir, skillId)).toMatchObject({
+      kind: "overlay",
+      body: candidateBody,
+    });
+    expect(readSkillPromotions(tmpDir, skillId)[0]?.overlay).toBeDefined();
+  });
+
   it("writes finalSkillMd and creates .bak with original content", async () => {
     const skillId = "user-apply-ok";
     const taskDir = join(tmpDir, "eval", skillId);

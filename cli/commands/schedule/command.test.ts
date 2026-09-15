@@ -23,6 +23,7 @@ const manifestMock = vi.hoisted(() => ({
   getJobById: vi.fn(),
   readManifest: vi.fn(),
   removeJob: vi.fn(() => true),
+  updateJob: vi.fn(),
   validateCronExpression: vi.fn(),
 }));
 
@@ -158,6 +159,67 @@ describe("schedule:add", () => {
     );
     expect(process.exitCode).toBe(1);
     expect(manifestMock.addJob).not.toHaveBeenCalled();
+  });
+});
+
+describe("schedule:builtin-evolution-add", () => {
+  it("updates the existing project job and repairs its OS registration", async () => {
+    manifestMock.readManifest.mockReturnValue({
+      jobs: [
+        {
+          id: "sch_evolution",
+          builtin: "harness-evolution",
+          workspace: process.cwd(),
+          osJobLabel: "dev.oma.sch_evolution",
+        },
+      ],
+    });
+    await run(
+      "schedule:builtin-evolution-add",
+      process.cwd(),
+      "--cron",
+      "15 4 * * *",
+    );
+    expect(upsertSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "sch_evolution",
+        cron: "15 4 * * *",
+        command: ["oma", "schedule", "run", "sch_evolution"],
+      }),
+    );
+    expect(manifestMock.updateJob).toHaveBeenCalledWith(
+      "sch_evolution",
+      expect.objectContaining({ cron: "15 4 * * *" }),
+    );
+    expect(manifestMock.addJob).not.toHaveBeenCalled();
+  });
+
+  it("registers the running source entrypoint for an OS job", async () => {
+    manifestMock.readManifest.mockReturnValue({ jobs: [] });
+    const prior = process.argv[1];
+    process.argv[1] = "/tmp/cli.ts";
+    try {
+      await run(
+        "schedule:builtin-evolution-add",
+        process.cwd(),
+        "--cron",
+        "0 3 * * *",
+      );
+    } finally {
+      if (prior === undefined) delete process.argv[1];
+      else process.argv[1] = prior;
+    }
+    expect(upsertSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        command: [
+          process.execPath,
+          "/tmp/cli.ts",
+          "schedule",
+          "run",
+          "sch_testid01234",
+        ],
+      }),
+    );
   });
 });
 

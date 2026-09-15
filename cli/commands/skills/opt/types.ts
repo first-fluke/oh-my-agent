@@ -1,5 +1,6 @@
 import type { MemoryProvider } from "../../../types/memory.js";
 import type { ScoreSkillBodyOptions, SkillUtilityReport } from "../eval.js";
+import type { DispatchMeter } from "./budget.js";
 
 // --- Constants (design 017) ---
 
@@ -211,6 +212,8 @@ export interface SkillsOptOptions {
   skill?: string;
   dryRun?: boolean;
   apply?: boolean;
+  /** Legacy manual applies rewrite managed files; automation explicitly uses overlays. */
+  applyTarget?: "managed" | "overlay";
   mock?: boolean;
   live?: boolean;
   maxEpochs?: number;
@@ -258,6 +261,11 @@ export interface SkillsOptOptions {
   _skillMdPath?: string;
   /** Injectable memory provider for hermetic tests. */
   _memoryProvider?: MemoryProvider;
+  /**
+   * Shared tick-level meter. It is charged once for every dispatch this run
+   * makes and is capped by this skill's constitution allowance.
+   */
+  _dispatchMeter?: DispatchMeter;
   /** Injectable evolution recorder for epoch-loop tests. */
   _evolutionRecorder?: SkillEvolutionRecorder;
 }

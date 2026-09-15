@@ -17,6 +17,7 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
+import { resolveOmaInvocation } from "../../utils/oma-invocation.js";
 import { parseIntervalToCron } from "./cron-nl.js";
 import {
   addJob,
@@ -26,6 +27,7 @@ import {
   getJobById,
   readManifest,
   removeJob,
+  updateJob,
   validateCronExpression,
 } from "./manifest.js";
 import { selectAdapter } from "./port.js";
@@ -192,7 +194,13 @@ async function scheduleAdd(
   await port.upsert({
     id,
     cron: cronExpr,
-    command: ["oma", "schedule", "run", id],
+    command: [
+      resolveOmaInvocation().command,
+      ...resolveOmaInvocation().prefixArgs,
+      "schedule",
+      "run",
+      id,
+    ],
     label: osJobLabel,
     workspace,
   });
@@ -205,6 +213,77 @@ async function scheduleAdd(
   console.log(`  Vendor:  ${options.model ?? "auto"}`);
   console.log(`  Project: ${projectLabel}`);
   console.log(`  Once:    ${!recurring}`);
+}
+
+async function scheduleBuiltinEvolutionAdd(
+  workspaceArg: string,
+  options: { cron: string },
+): Promise<void> {
+  validateCronExpression(options.cron);
+  const workspace = path.resolve(workspaceArg);
+  const existing = readManifest().jobs.find(
+    (job) => job.builtin === "harness-evolution" && job.workspace === workspace,
+  );
+  if (existing) {
+    const port = await selectAdapter();
+    await port.upsert({
+      id: existing.id,
+      cron: options.cron,
+      command: [
+        resolveOmaInvocation().command,
+        ...resolveOmaInvocation().prefixArgs,
+        "schedule",
+        "run",
+        existing.id,
+      ],
+      label: existing.osJobLabel,
+      workspace,
+    });
+    updateJob(existing.id, {
+      cron: options.cron,
+      osBackend: await getAdapterName(port),
+    });
+    console.log(
+      JSON.stringify({ id: existing.id, existing: true, repaired: true }),
+    );
+    return;
+  }
+  const id = generateJobId();
+  const port = await selectAdapter();
+  const job = {
+    id,
+    cron: options.cron,
+    // Legacy fields stay populated so old manifest readers keep working.
+    agentId: "__builtin__",
+    prompt: null,
+    promptPath: null,
+    vendor: null,
+    workspace,
+    projectLabel: deriveProjectLabel(workspace),
+    recurring: true,
+    maxAgeDays: 0,
+    capturedEnvRef: null,
+    createdAt: new Date().toISOString(),
+    lastFiredAt: null,
+    osBackend: await getAdapterName(port),
+    osJobLabel: `dev.oma.${id}`,
+    builtin: "harness-evolution" as const,
+  };
+  await port.upsert({
+    id,
+    cron: job.cron,
+    command: [
+      resolveOmaInvocation().command,
+      ...resolveOmaInvocation().prefixArgs,
+      "schedule",
+      "run",
+      id,
+    ],
+    label: job.osJobLabel,
+    workspace,
+  });
+  addJob(job);
+  console.log(JSON.stringify({ id, existing: false }));
 }
 
 /** Derive a human-readable adapter name for the manifest osBackend field. */
@@ -455,6 +534,18 @@ export function registerSchedule(program: Command): void {
       }),
     );
 
+  // Internal fixed job registration. This deliberately accepts no command or
+  // prompt: the OS scheduler can only invoke OMA's deterministic evolution
+  // tick, never an arbitrary shell command or an LLM shell agent.
+  program
+    .command("schedule:builtin-evolution-add <workspace>")
+    .requiredOption("--cron <expr>", "5-field cron expression")
+    .action(
+      runAction(async (workspace, options) => {
+        await scheduleBuiltinEvolutionAdd(workspace, options);
+      }),
+    );
+
   // schedule:list
   addOutputOptions(
     program
@@ -478,6 +569,16 @@ export function registerSchedule(program: Command): void {
     .action(
       runAction(async (id) => {
         await scheduleRemove(id);
+      }),
+    );
+
+  program
+    .command("schedule:inspect <id>")
+    .description("Inspect one scheduler manifest entry for internal callers")
+    .action(
+      runAction(async (id) => {
+        const job = getJobById(id);
+        console.log(JSON.stringify({ exists: Boolean(job), job: job ?? null }));
       }),
     );
 
