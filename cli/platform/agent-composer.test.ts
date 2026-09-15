@@ -528,6 +528,11 @@ describe("installVendorAgents — built-in Qwen native fallback", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     try {
+      mkdirSync(join(targetDir, ".agents"), { recursive: true });
+      writeFileSync(
+        join(targetDir, ".agents", "oma-config.yaml"),
+        "language: en\nmodel_preset: auto\n",
+      );
       expect(installVendorAgents(sourceDir, targetDir, "qwen")).toBeGreaterThan(
         0,
       );
