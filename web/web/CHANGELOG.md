@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.7.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.6.0...web-v6.7.0) (2026-09-15)
+
+
+### Features
+
+* **harness:** add budgeted project skill evolution ([23484f1](https://github.com/first-fluke/oh-my-agent/commit/23484f17f9c14014c25c6d7cd6ac9168e7d4ee91))
+
+
+### Bug Fixes
+
+* **docs:** resolve harness links across locales ([dea8fdb](https://github.com/first-fluke/oh-my-agent/commit/dea8fdb0734a202160df75d6f90677496b11bc71))
+
 ## [6.6.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.5.0...web-v6.6.0) (2026-09-14)
 
 
