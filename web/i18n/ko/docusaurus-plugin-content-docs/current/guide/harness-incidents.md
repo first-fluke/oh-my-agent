@@ -93,7 +93,7 @@ oma harness feedback --live          # also run one optimization epoch per affec
 oma harness feedback --apply --json  # write edits that pass every gate
 ```
 
-`feedback`은 배포 피드백 루프를 한 개의 명령으로 묶은 것입니다. `--scan-runs`를 붙이면 계약이 있는 미캡처 실패 실행을 먼저 모두 캡처하고(위 참고), 캡처했으나 픽스처가 없는 인시던트를 모두 승격하며(필요하면 채점 기준표를 초안 작성), 영향받은 스킬을 묶은 뒤, `--live`로 각 스킬을 넓어진 스위트 상대로 일반 게이트(held-in/held-out 수락, 확인된 음의 전이, 실행기 소유 최종 테스트) 아래에서 한 번씩 최적화합니다. `.agents/results/feedback/feedback-<ts>.json`의 보고서에는 승격과, 이유와 함께 건너뛴 인시던트와, diff를 포함한 각 스킬의 결과가 실리므로, 관측된 실패에서 후보 편집까지의 연결이 감사 가능한 단일 기록이 됩니다. 실패한 에이전트 실행이 캡처된 뒤 이 명령을 스케줄러나 실행 후 훅에서 돌리세요. `oma schedule create <agent> "Run \`oma harness feedback --scan-runs --apply --json\` and summarize the report" --cron "0 3 * * *"`가 야간에 돌리는 형태이고, 이 명령이 적용한 내용은 다음 세션의 상태 스냅샷이 알려줍니다.
+`feedback`은 배포 피드백 루프를 한 개의 명령으로 묶은 것입니다. `--scan-runs`를 붙이면 계약이 있는 미캡처 실패 실행을 먼저 모두 캡처하고(위 참고), 캡처했으나 픽스처가 없는 인시던트를 모두 승격하며(필요하면 채점 기준표를 초안 작성), 영향받은 스킬을 묶은 뒤, `--live`로 각 스킬을 넓어진 스위트 상대로 일반 게이트(held-in/held-out 수락, 확인된 음의 전이, 실행기 소유 최종 테스트) 아래에서 한 번씩 최적화합니다. `.agents/results/feedback/feedback-<ts>.json`의 보고서에는 승격과, 이유와 함께 건너뛴 인시던트와, diff를 포함한 각 스킬의 결과가 실리므로, 관측된 실패에서 후보 편집까지의 연결이 감사 가능한 단일 기록이 됩니다. 공유 모델 호출 한도, 지속되는 재시도, 프로젝트 스킬 오버레이를 갖춘 예약 실행에는 [프로젝트 하네스 진화](/docs/guide/harness-evolution)를 활성화하세요. 적용된 변경은 다음 세션의 상태 스냅샷이 알려줍니다.
 
 사람이 남기는 판단: 작업 계약이 없는 실행은 기대 동작이 기록되지 않으므로 `incident scan` 목록에만 오르고 사양을 통해서만 캡처됩니다. `--skeleton`이 그 사양의 초안을 만듭니다.
 
