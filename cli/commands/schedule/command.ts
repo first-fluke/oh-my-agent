@@ -30,7 +30,12 @@ import {
   updateJob,
   validateCronExpression,
 } from "./manifest.js";
-import { selectAdapter } from "./port.js";
+import {
+  expectedScheduleCommand,
+  isStaleScheduleCommand,
+  type SchedulerPort,
+  selectAdapter,
+} from "./port.js";
 import { runScheduledJob } from "./runner.js";
 
 // ---------------------------------------------------------------------------
@@ -302,7 +307,31 @@ async function getAdapterName(
 // schedule:list
 // ---------------------------------------------------------------------------
 
-type DriftState = "synced" | "missing-in-os" | "orphan-in-os";
+type DriftState = "synced" | "stale" | "missing-in-os" | "orphan-in-os";
+
+/**
+ * Labels whose OS registration exists but carries a command the current CLI
+ * no longer accepts (e.g. `schedule:run <id>` written before the command-path
+ * standardization). Adapters without `readCommand` report none.
+ */
+async function findStaleLabels(
+  port: SchedulerPort,
+  jobs: ReadonlyArray<{ id: string; osJobLabel: string }>,
+  osLabelSet: ReadonlySet<string>,
+): Promise<Set<string>> {
+  const stale = new Set<string>();
+  if (!port.readCommand) return stale;
+  for (const job of jobs) {
+    if (!osLabelSet.has(job.osJobLabel)) continue;
+    try {
+      const registered = await port.readCommand(job.osJobLabel);
+      if (isStaleScheduleCommand(registered, job.id)) stale.add(job.osJobLabel);
+    } catch {
+      // Unreadable registration — leave it as synced rather than guess.
+    }
+  }
+  return stale;
+}
 
 interface ListEntry {
   id: string;
@@ -325,8 +354,9 @@ async function scheduleList(options: {
   const manifest = readManifest();
 
   let osLabels: string[] = [];
+  let port: SchedulerPort | null = null;
   try {
-    const port = await selectAdapter();
+    port = await selectAdapter();
     osLabels = await port.listLabels();
   } catch {
     // Non-fatal: if no adapter is available, all jobs show as missing-in-os
@@ -334,6 +364,9 @@ async function scheduleList(options: {
 
   const osLabelSet = new Set(osLabels);
   const manifestLabelSet = new Set(manifest.jobs.map((j) => j.osJobLabel));
+  const staleLabels = port
+    ? await findStaleLabels(port, manifest.jobs, osLabelSet)
+    : new Set<string>();
 
   // Build manifest entries with drift state
   const entries: ListEntry[] = manifest.jobs.map((job) => ({
@@ -346,9 +379,11 @@ async function scheduleList(options: {
     recurring: job.recurring,
     lastFiredAt: job.lastFiredAt,
     osBackend: job.osBackend,
-    drift: osLabelSet.has(job.osJobLabel)
-      ? ("synced" as DriftState)
-      : ("missing-in-os" as DriftState),
+    drift: !osLabelSet.has(job.osJobLabel)
+      ? ("missing-in-os" as DriftState)
+      : staleLabels.has(job.osJobLabel)
+        ? ("stale" as DriftState)
+        : ("synced" as DriftState),
   }));
 
   // Orphan OS labels (in OS but not in manifest)
@@ -445,27 +480,57 @@ async function scheduleRemove(id: string): Promise<void> {
 // schedule:sync
 // ---------------------------------------------------------------------------
 
-async function scheduleSync(options: { prune?: boolean }): Promise<void> {
+export interface SyncSchedulesResult {
+  /** Manifest jobs that were absent from the OS scheduler and re-registered. */
+  synced: number;
+  /** Registered jobs whose OS command was stale and got rewritten. */
+  resynced: number;
+  /** Orphan OS jobs removed (only with `prune`). */
+  pruned: number;
+}
+
+/**
+ * Reconcile the manifest into the OS scheduler: register missing jobs,
+ * rewrite registrations whose command drifted from what the current CLI
+ * accepts (`stale`), and optionally prune orphans. Shared by `oma schedule
+ * sync` and the post-update hook so a CLI upgrade can never leave OS jobs
+ * pointing at a command spelling the new binary rejects.
+ *
+ * With no manifest jobs and no prune request this returns without touching
+ * the OS scheduler at all.
+ */
+export async function syncSchedules(
+  options: { prune?: boolean; log?: (line: string) => void } = {},
+): Promise<SyncSchedulesResult> {
+  const log = options.log ?? (() => {});
+  const result: SyncSchedulesResult = { synced: 0, resynced: 0, pruned: 0 };
   const manifest = readManifest();
+  if (manifest.jobs.length === 0 && !options.prune) return result;
+
   const port = await selectAdapter();
   const osLabels = await port.listLabels();
   const osLabelSet = new Set(osLabels);
+  const staleLabels = await findStaleLabels(port, manifest.jobs, osLabelSet);
 
-  let synced = 0;
-  let pruned = 0;
-
-  // Re-register manifest jobs that are missing from OS
+  // Re-register manifest jobs that are missing from OS or registered with a
+  // command the current CLI no longer accepts.
   for (const job of manifest.jobs) {
-    if (!osLabelSet.has(job.osJobLabel)) {
-      await port.upsert({
-        id: job.id,
-        cron: job.cron,
-        command: ["oma", "schedule", "run", job.id],
-        label: job.osJobLabel,
-        workspace: job.workspace,
-      });
-      synced++;
-      console.log(`  synced: ${job.id} → ${job.osJobLabel}`);
+    const missing = !osLabelSet.has(job.osJobLabel);
+    const stale = staleLabels.has(job.osJobLabel);
+    if (!missing && !stale) continue;
+    await port.upsert({
+      id: job.id,
+      cron: job.cron,
+      command: expectedScheduleCommand(job.id),
+      label: job.osJobLabel,
+      workspace: job.workspace,
+    });
+    if (missing) {
+      result.synced++;
+      log(`  synced: ${job.id} → ${job.osJobLabel}`);
+    } else {
+      result.resynced++;
+      log(`  resynced (stale command): ${job.id} → ${job.osJobLabel}`);
     }
   }
 
@@ -475,14 +540,22 @@ async function scheduleSync(options: { prune?: boolean }): Promise<void> {
     for (const label of osLabels) {
       if (!manifestLabelSet.has(label)) {
         await port.remove(label);
-        pruned++;
-        console.log(`  pruned: ${label}`);
+        result.pruned++;
+        log(`  pruned: ${label}`);
       }
     }
   }
 
+  return result;
+}
+
+async function scheduleSync(options: { prune?: boolean }): Promise<void> {
+  const { synced, resynced, pruned } = await syncSchedules({
+    prune: options.prune,
+    log: (line) => console.log(line),
+  });
   console.log(
-    `sync complete: ${synced} synced, ${pruned} pruned${options.prune ? "" : " (run with --prune to remove orphan OS jobs)"}`,
+    `sync complete: ${synced} synced, ${resynced} resynced, ${pruned} pruned${options.prune ? "" : " (run with --prune to remove orphan OS jobs)"}`,
   );
 }
 
@@ -551,7 +624,7 @@ export function registerSchedule(program: Command): void {
     program
       .command("schedule:list")
       .description(
-        "List scheduled jobs with OS drift state (synced/missing-in-os/orphan-in-os), grouped by project",
+        "List scheduled jobs with OS drift state (synced/stale/missing-in-os/orphan-in-os), grouped by project",
       ),
   ).action(
     runAction(
@@ -598,7 +671,7 @@ export function registerSchedule(program: Command): void {
   program
     .command("schedule:sync")
     .description(
-      "Re-sync manifest → OS scheduler. Use --prune to remove orphan OS jobs.",
+      "Re-sync manifest → OS scheduler (registers missing jobs, rewrites stale commands). Use --prune to remove orphan OS jobs.",
     )
     .option("--prune", "Remove OS jobs not present in manifest")
     .action(

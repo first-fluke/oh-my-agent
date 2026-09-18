@@ -1,6 +1,10 @@
 import { Argument, Command, Option } from "commander";
 import { standardOption } from "./command-options.js";
-import { canonicalCommandPath, EXPANDED_COMMANDS } from "./command-paths.js";
+import {
+  canonicalCommandPath,
+  EXPANDED_COMMANDS,
+  OS_INVOKED_LEGACY_PATHS,
+} from "./command-paths.js";
 
 type Route = {
   path: string;
@@ -296,6 +300,16 @@ export function createCommandSurface(program: Command): CommandSurface {
     help,
     describePath: (path) => path,
     normalize(argv) {
+      // OS schedulers registered before the path standardization still invoke
+      // the colon spelling; map it to the canonical path instead of rejecting.
+      const legacyOffset = commandOffset(argv, program);
+      const legacy = OS_INVOKED_LEGACY_PATHS[argv[legacyOffset] ?? ""];
+      if (legacy)
+        argv = [
+          ...argv.slice(0, legacyOffset),
+          ...legacy.split(" "),
+          ...argv.slice(legacyOffset + 1),
+        ];
       const found = locate(argv);
       if (!found) {
         const offset = commandOffset(argv, program);

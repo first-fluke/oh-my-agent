@@ -40,6 +40,36 @@ export interface SchedulerPort {
   listLabels(): Promise<string[]>;
   /** True iff this adapter can run on the current host. */
   isAvailable(): Promise<boolean>;
+  /**
+   * Return the argv the OS scheduler currently has registered for a label
+   * (absolute binary first), or null when the job is absent or unreadable.
+   * Optional: adapters that cannot read their registration back omit it and
+   * stale detection is skipped for them.
+   */
+  readCommand?(label: string): Promise<string[] | null>;
+}
+
+/** The logical argv every OS registration must carry for a manifest job. */
+export function expectedScheduleCommand(id: string): string[] {
+  return ["oma", "schedule", "run", id];
+}
+
+/**
+ * True when an OS registration exists but its command tail no longer matches
+ * what the current CLI accepts (e.g. a pre-rename `schedule:run <id>`
+ * registration). The binary path (argv[0]) is machine-specific and ignored.
+ */
+export function isStaleScheduleCommand(
+  registered: string[] | null | undefined,
+  id: string,
+): boolean {
+  if (!registered) return false;
+  const expectedTail = expectedScheduleCommand(id).slice(1);
+  const tail = registered.slice(1);
+  return (
+    tail.length !== expectedTail.length ||
+    tail.some((arg, i) => arg !== expectedTail[i])
+  );
 }
 
 // ---------------------------------------------------------------------------

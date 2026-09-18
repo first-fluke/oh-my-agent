@@ -85,7 +85,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list`는 `synced`, `missing-in-os`, `orphan-in-os`를 보고합니다. `schedule sync`는 누락된 작업을 복원하며, OS에 남은 고아 작업을 제거할 때만 `--prune`을 추가하세요. `--dry-run`으로 만든 미리보기는 작업을 등록하지 않습니다. 반복 간격에서는 미리보기를 검토한 뒤 `--accept-rounded`로 OMA의 반올림을 승인하세요. `~/.agents/schedule/runs/<id>/`의 실행 로그에서 0이 아닌 벤더 종료 코드 또는 `re-auth required`를 확인하세요.
+`schedule list`는 `synced`, `stale`, `missing-in-os`, `orphan-in-os`를 보고합니다. `schedule sync`는 누락된 작업을 복원하고 stale 등록을 다시 씁니다(실행 로그의 `Unknown command: schedule:run` 줄은 등록이 명령 이름 변경 이전 것이라는 뜻이며, `oma update`가 자동으로 재동기화합니다). OS에 남은 고아 작업을 제거할 때만 `--prune`을 추가하세요. `--dry-run`으로 만든 미리보기는 작업을 등록하지 않습니다. 반복 간격에서는 미리보기를 검토한 뒤 `--accept-rounded`로 OMA의 반올림을 승인하세요. `~/.agents/schedule/runs/<id>/`의 실행 로그에서 0이 아닌 벤더 종료 코드 또는 `re-auth required`를 확인하세요.
 
 ## 평가 또는 최적화가 커버리지를 보고하지 않음
 

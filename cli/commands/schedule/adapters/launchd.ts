@@ -244,6 +244,15 @@ function dictXml(obj: Record<string, number>): string {
   return `<dict>${entries}</dict>`;
 }
 
+function unescapeXml(value: string): string {
+  return value
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
 function escapeXml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -320,6 +329,25 @@ export class LaunchdAdapter implements SchedulerPort {
 
     if (fs.existsSync(pPath)) {
       fs.unlinkSync(pPath);
+    }
+  }
+
+  async readCommand(label: string): Promise<string[] | null> {
+    const pPath = plistPath(label);
+    if (!fs.existsSync(pPath)) return null;
+    try {
+      const xml = fs.readFileSync(pPath, "utf-8");
+      const block =
+        /<key>ProgramArguments<\/key>\s*<array>([\s\S]*?)<\/array>/.exec(
+          xml,
+        )?.[1];
+      if (!block) return null;
+      const args = [...block.matchAll(/<string>([\s\S]*?)<\/string>/g)].map(
+        (m) => unescapeXml(m[1] ?? ""),
+      );
+      return args.length > 0 ? args : null;
+    } catch {
+      return null;
     }
   }
 

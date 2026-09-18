@@ -796,7 +796,7 @@ oma schedule list [--json]
 |:-----|:-----------|
 | `--json` | JSON으로 출력 |
 
-**드리프트 상태:** `synced`(매니페스트와 OS가 일치), `missing-in-os`(`schedule sync`로 복구), `orphan-in-os`(매니페스트에 없는 작업이 OS에 있음. `schedule sync --prune`으로 제거).
+**드리프트 상태:** `synced`(매니페스트와 OS가 일치), `stale`(OS 등록이 현재 CLI가 받지 않는 명령을 호출함. `schedule sync`로 다시 쓰며 `oma update`가 자동 처리), `missing-in-os`(`schedule sync`로 복구), `orphan-in-os`(매니페스트에 없는 작업이 OS에 있음. `schedule sync --prune`으로 제거).
 
 **예제:**
 ```bash

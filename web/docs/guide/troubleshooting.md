@@ -85,7 +85,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` reports `synced`, `missing-in-os`, and `orphan-in-os`. `schedule sync` restores missing jobs; add `--prune` only when orphaned OS jobs should be removed. A preview created with `--dry-run` does not register a job. For a recurring interval, accept OMA’s rounding with `--accept-rounded` after reviewing the preview. Check the run log under `~/.agents/schedule/runs/<id>/` for a non-zero vendor exit or `re-auth required`.
+`schedule list` reports `synced`, `stale`, `missing-in-os`, and `orphan-in-os`. `schedule sync` restores missing jobs and rewrites stale registrations (an `Unknown command: schedule:run` line in the run log means the registration predates the command rename; `oma update` re-syncs it automatically); add `--prune` only when orphaned OS jobs should be removed. A preview created with `--dry-run` does not register a job. For a recurring interval, accept OMA’s rounding with `--accept-rounded` after reviewing the preview. Check the run log under `~/.agents/schedule/runs/<id>/` for a non-zero vendor exit or `re-auth required`.
 
 ## Evaluation or optimization reports no coverage
 

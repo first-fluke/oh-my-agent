@@ -826,7 +826,7 @@ oma schedule list [--json]
 |:-----|:-----------|
 | `--json` | Output as JSON |
 
-**Drift states:** `synced` (manifest + OS agree), `missing-in-os` (run `schedule sync` to repair), `orphan-in-os` (OS has a job not in manifest; run `schedule sync --prune` to remove).
+**Drift states:** `synced` (manifest + OS agree), `stale` (OS registration invokes a command the current CLI no longer accepts; run `schedule sync` to rewrite, `oma update` does it automatically), `missing-in-os` (run `schedule sync` to repair), `orphan-in-os` (OS has a job not in manifest; run `schedule sync --prune` to remove).
 
 **Examples:**
 ```bash

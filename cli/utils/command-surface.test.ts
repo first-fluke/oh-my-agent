@@ -22,6 +22,7 @@ function fixture() {
     .option("--json")
     .option("--output <format>")
     .action(action);
+  program.command("schedule:run <id>").action(action);
   program
     .command("agent:spawn <agent> <prompt> <session>")
     .option("--root <path>")
@@ -354,5 +355,40 @@ describe("canonical command surface", () => {
         "--help",
       ]),
     ).toBe(false);
+  });
+});
+
+describe("OS-invoked legacy paths", () => {
+  // Regression: launchd/crontab/systemd registrations written before the
+  // command-path standardization invoke `oma schedule:run <id>`; rejecting the
+  // spelling made every pre-existing scheduled job fail with Unknown command.
+  // normalize() returns the legacy-parser spelling (the registered
+  // `schedule:run` command), so the assertion is that the argv is accepted
+  // and routed — the same result the canonical `schedule run` produces.
+  it("accepts `schedule:run <id>` and routes it like `schedule run <id>`", () => {
+    const { surface } = fixture();
+    expect(surface.normalize(["schedule:run", "sch_abc"])).toEqual(
+      surface.normalize(["schedule", "run", "sch_abc"]),
+    );
+    expect(surface.normalize(["schedule:run", "sch_abc"])).toEqual([
+      "schedule:run",
+      "sch_abc",
+    ]);
+  });
+
+  it("keeps root options ahead of the legacy path intact", () => {
+    const { surface } = fixture();
+    expect(surface.normalize(["--yes", "schedule:run", "sch_abc"])).toEqual([
+      "--yes",
+      "schedule:run",
+      "sch_abc",
+    ]);
+  });
+
+  it("still rejects human-typed legacy paths that are not OS-invoked", () => {
+    const { surface } = fixture();
+    expect(() => surface.normalize(["schedule:list"])).toThrow(
+      /Unknown command/,
+    );
   });
 });

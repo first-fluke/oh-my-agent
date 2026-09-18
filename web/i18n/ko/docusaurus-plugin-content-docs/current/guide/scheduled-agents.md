@@ -171,6 +171,7 @@ oma schedule list [--json]
 | 상태 | 의미 |
 |---|---|
 | `synced` | 매니페스트와 OS 스케줄러 양쪽에 작업이 있습니다 |
+| `stale` | 등록은 되어 있지만 OS 등록이 현재 CLI가 받지 않는 명령을 호출합니다(예: 명령 경로 표준화 전에 기록된 `schedule:run <id>`). `schedule sync`로 다시 쓰세요. `oma update`가 자동으로 처리합니다. |
 | `missing-in-os` | 매니페스트에는 있지만 OS 스케줄러에 없습니다. `schedule sync`로 복구하세요. |
 | `orphan-in-os` | OS 스케줄러에는 있지만 매니페스트에 없습니다. `schedule sync --prune`으로 제거하세요. |
 
@@ -265,12 +266,14 @@ oma schedule sync [--prune]
 **예제:**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
+
+`oma update`는 업데이트가 끝날 때마다 같은 동기화를(`--prune` 없이) 실행합니다. 따라서 CLI 릴리스가 `oma schedule run` 명령의 표기를 바꾸더라도 기존 OS 등록이 새 바이너리가 거부하는 명령을 가리킨 채 남지 않습니다. 이전 버전이 `oma schedule:run <id>`로 기록한 등록도 계속 동작합니다. OS가 호출하는 작업에 한해 이 예전 표기는 계속 허용됩니다.
 
 ---
 

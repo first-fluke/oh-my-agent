@@ -4,6 +4,9 @@ import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Version/reconciliation tests must not refresh the developer's real toolchain.
+const syncSchedulesSpy = vi.hoisted(() =>
+  vi.fn(async () => ({ synced: 0, resynced: 0, pruned: 0 })),
+);
 vi.mock("../video/internal/remotion-workspace.js", () => ({
   describeToolchain: vi.fn(() => ({ version: null })),
   ensureLatestToolchain: vi.fn(),
@@ -183,6 +186,9 @@ vi.mock("../../io/github.js", () => githubState);
 vi.mock("../../io/self-update.js", () => selfUpdateState);
 vi.mock("../../io/serena.js", () => serenaState);
 vi.mock("../../io/tarball.js", () => tarballState);
+vi.mock("../schedule/command.js", () => ({
+  syncSchedules: syncSchedulesSpy,
+}));
 vi.mock("../../io/git-recommended.js", () => ({
   maybeApplyRecommendedGitConfig: vi.fn(async () => ({
     available: true,

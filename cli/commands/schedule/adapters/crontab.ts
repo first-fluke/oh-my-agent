@@ -179,6 +179,23 @@ export class CrontabAdapter implements SchedulerPort {
     }
   }
 
+  async readCommand(label: string): Promise<string[] | null> {
+    try {
+      const { block } = parseCrontab(readCrontab());
+      const line = block.find((l) => extractLabel(l) === label);
+      if (!line) return null;
+      // `<cron 5 fields> <argv...> # oma:<label>` → argv
+      const tokens = line
+        .replace(/\s*# oma:\S+$/, "")
+        .trim()
+        .split(/\s+/);
+      const argv = tokens.slice(5);
+      return argv.length > 0 ? argv : null;
+    } catch {
+      return null;
+    }
+  }
+
   async upsert(spec: ScheduledJobSpec): Promise<void> {
     const absOma = resolveOmaBinary();
 

@@ -40,6 +40,18 @@ export const COMMAND_PATHS: Record<string, string> = {
   "schedule:remove": "schedule delete",
 };
 
+/**
+ * Legacy spellings that are NOT typed by humans but baked into OS scheduler
+ * registrations (launchd plists, crontab lines, systemd units, schtasks) by
+ * older oma versions. Removing the colon syntax must not silently break every
+ * scheduled job registered before the rename, so these keep resolving to
+ * their canonical path (see the #788-adjacent scheduler regression: two
+ * weekly runs failed with "Unknown command: schedule:run").
+ */
+export const OS_INVOKED_LEGACY_PATHS: Readonly<Record<string, string>> = {
+  "schedule:run": "schedule run",
+};
+
 export function canonicalCommandPath(path: string): string {
   return COMMAND_PATHS[path] ?? path.replaceAll(":", " ");
 }

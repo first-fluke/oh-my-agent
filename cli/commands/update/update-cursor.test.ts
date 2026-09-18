@@ -10,6 +10,9 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const testHome = vi.hoisted(() => ({ root: "" }));
+const syncSchedulesSpy = vi.hoisted(() =>
+  vi.fn(async () => ({ synced: 0, resynced: 0, pruned: 0 })),
+);
 vi.mock("node:os", async (original) => ({
   ...(await original<typeof import("node:os")>()),
   homedir: () => join(testHome.root, "test-home"),
@@ -111,6 +114,9 @@ vi.mock("../../io/tarball.js", () => ({
   })),
 }));
 
+vi.mock("../schedule/command.js", () => ({
+  syncSchedules: syncSchedulesSpy,
+}));
 vi.mock("../../io/git-recommended.js", () => ({
   maybeApplyRecommendedGitConfig: vi.fn(async () => ({
     available: true,
@@ -250,6 +256,22 @@ describe("update cursor vendor adaptations", () => {
       mkdirSync(join(projectRoot, `.${vendor}`), { recursive: true });
     }
   }
+
+  it("re-syncs OS scheduler registrations after a successful update", async () => {
+    // Regression: a CLI upgrade that renamed `schedule:run` → `schedule run`
+    // left every launchd/crontab registration invoking the old spelling.
+    const projectDir = makeTempRoot("oma-update-sched-project-");
+    const repoDir = makeTempRoot("oma-update-sched-repo-");
+    extractedRepoDir = repoDir;
+    mockInstallRoot = projectDir;
+    writeRepoConfig(repoDir, ["cursor"]);
+    createExistingVendorRoots(projectDir, ["cursor"]);
+
+    process.chdir(projectDir);
+    await update({ ci: true });
+
+    expect(syncSchedulesSpy).toHaveBeenCalledTimes(1);
+  });
 
   it("installs cursor hooks and merges cursor guide on update", async () => {
     const projectDir = makeTempRoot("oma-update-cursor-project-");

@@ -585,6 +585,27 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
           );
         }
 
+        // Scheduled jobs are registered in the OS with an `oma …` argv. A CLI
+        // upgrade that renames a command path would otherwise leave every
+        // existing registration invoking a spelling the new binary rejects
+        // (this is how the weekly `schedule:run` jobs silently died after
+        // the command-path standardization). Re-sync is warn-only.
+        try {
+          const { syncSchedules } = await import("../schedule/command.js");
+          const sched = await syncSchedules();
+          if (sched.synced > 0 || sched.resynced > 0) {
+            ui.note(
+              `${sched.resynced} stale registration(s) rewritten, ${sched.synced} missing job(s) re-registered.`,
+              "Schedules re-synced",
+            );
+          }
+        } catch (err) {
+          ui.note(
+            `Could not re-sync scheduled jobs: ${err instanceof Error ? err.message : String(err)}. Run \`oma schedule sync\` manually.`,
+            "Schedules",
+          );
+        }
+
         const postUpdateOmaConfig = loadOmaConfig(cwd);
         if (usesGeminiCli(postUpdateOmaConfig)) {
           ui.note(formatGeminiDeprecationWarning(), "Gemini CLI deprecation");

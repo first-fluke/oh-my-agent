@@ -40,15 +40,22 @@ const fsMock = vi.hoisted(() => ({
 const upsertSpy = vi.hoisted(() => vi.fn());
 const removeSpy = vi.hoisted(() => vi.fn());
 const listLabelsSpy = vi.hoisted(() => vi.fn(async () => [] as string[]));
+const readCommandSpy = vi.hoisted(() =>
+  vi.fn(async (_label: string) => null as string[] | null),
+);
 const runScheduledJobSpy = vi.hoisted(() => vi.fn());
 
 vi.mock("node:fs", () => ({ default: fsMock, ...fsMock }));
 vi.mock("./manifest.js", () => manifestMock);
-vi.mock("./port.js", () => ({
+vi.mock("./port.js", async (importOriginal) => ({
+  // Keep the pure helpers (expectedScheduleCommand / isStaleScheduleCommand);
+  // only the adapter selection is faked.
+  ...(await importOriginal<typeof import("./port.js")>()),
   selectAdapter: vi.fn(async () => ({
     upsert: upsertSpy,
     remove: removeSpy,
     listLabels: listLabelsSpy,
+    readCommand: readCommandSpy,
     isAvailable: async () => true,
   })),
 }));
@@ -71,6 +78,7 @@ async function run(...argv: string[]): Promise<void> {
 beforeEach(() => {
   vi.clearAllMocks();
   listLabelsSpy.mockResolvedValue([]);
+  readCommandSpy.mockResolvedValue(null);
   process.exitCode = 0;
   vi.spyOn(console, "log").mockImplementation(() => undefined);
 });
@@ -282,6 +290,35 @@ describe("schedule:list --json", () => {
     expect(out.jobs[0].drift).toBe("missing-in-os");
   });
 
+  it("marks a registration with a pre-rename command as stale", async () => {
+    manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [job] });
+    listLabelsSpy.mockResolvedValue(["dev.oma.sch_a"]);
+    readCommandSpy.mockResolvedValue(["/abs/oma", "schedule:run", "sch_a"]);
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    await run("schedule:list", "--json");
+
+    const out = JSON.parse(logSpy.mock.calls.map((c) => c[0]).join("\n"));
+    expect(out.jobs[0].drift).toBe("stale");
+  });
+
+  it("keeps a registration with the current command synced regardless of binary path", async () => {
+    manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [job] });
+    listLabelsSpy.mockResolvedValue(["dev.oma.sch_a"]);
+    readCommandSpy.mockResolvedValue([
+      "/other/machine/oma",
+      "schedule",
+      "run",
+      "sch_a",
+    ]);
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    await run("schedule:list", "--json");
+
+    const out = JSON.parse(logSpy.mock.calls.map((c) => c[0]).join("\n"));
+    expect(out.jobs[0].drift).toBe("synced");
+  });
+
   it("reports OS labels absent from the manifest as orphans", async () => {
     manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [] });
     listLabelsSpy.mockResolvedValue(["dev.oma.orphan"]);
@@ -440,5 +477,58 @@ describe("schedule:add --env", () => {
     expect(fsMock.writeFileSync).not.toHaveBeenCalled();
     const job = manifestMock.addJob.mock.calls[0]?.[0];
     expect(job?.capturedEnvRef).toBeNull();
+  });
+});
+
+describe("schedule:sync", () => {
+  const job = {
+    id: "sch_a",
+    cron: "0 9 * * *",
+    agentId: "qa",
+    vendor: null,
+    projectLabel: "proj",
+    workspace: "/ws",
+    recurring: true,
+    lastFiredAt: null,
+    osBackend: "launchd",
+    osJobLabel: "dev.oma.sch_a",
+  };
+
+  it("rewrites a stale registration with the canonical command", async () => {
+    manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [job] });
+    listLabelsSpy.mockResolvedValue(["dev.oma.sch_a"]);
+    readCommandSpy.mockResolvedValue(["/abs/oma", "schedule:run", "sch_a"]);
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    await run("schedule:sync");
+
+    expect(upsertSpy).toHaveBeenCalledTimes(1);
+    expect(upsertSpy.mock.calls[0]?.[0]).toMatchObject({
+      id: "sch_a",
+      label: "dev.oma.sch_a",
+      command: ["oma", "schedule", "run", "sch_a"],
+    });
+    const logged = logSpy.mock.calls.map((c) => String(c[0])).join("\n");
+    expect(logged).toContain("resynced (stale command): sch_a");
+    expect(logged).toContain("0 synced, 1 resynced, 0 pruned");
+  });
+
+  it("leaves an up-to-date registration alone", async () => {
+    manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [job] });
+    listLabelsSpy.mockResolvedValue(["dev.oma.sch_a"]);
+    readCommandSpy.mockResolvedValue(["/abs/oma", "schedule", "run", "sch_a"]);
+
+    await run("schedule:sync");
+
+    expect(upsertSpy).not.toHaveBeenCalled();
+  });
+
+  it("does not touch the OS scheduler when the manifest is empty", async () => {
+    manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [] });
+
+    await run("schedule:sync");
+
+    expect(listLabelsSpy).not.toHaveBeenCalled();
+    expect(upsertSpy).not.toHaveBeenCalled();
   });
 });

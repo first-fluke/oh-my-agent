@@ -356,6 +356,22 @@ export class SystemdAdapter implements SchedulerPort {
     }
   }
 
+  async readCommand(label: string): Promise<string[] | null> {
+    const servicePath = unitPath(label, "service");
+    if (!fs.existsSync(servicePath)) return null;
+    try {
+      const line = fs
+        .readFileSync(servicePath, "utf-8")
+        .split("\n")
+        .find((l) => l.startsWith("ExecStart="));
+      if (!line) return null;
+      const argv = line.slice("ExecStart=".length).trim().split(/\s+/);
+      return argv.length > 0 && argv[0] ? argv : null;
+    } catch {
+      return null;
+    }
+  }
+
   async listLabels(): Promise<string[]> {
     const unitDir = getSystemdUserDir();
     if (!fs.existsSync(unitDir)) return [];

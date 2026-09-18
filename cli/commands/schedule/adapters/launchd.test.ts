@@ -17,6 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFsFunctions = vi.hoisted(() => ({
   existsSync: vi.fn(),
+  readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
   unlinkSync: vi.fn(),
   readdirSync: vi.fn(),
@@ -297,5 +298,43 @@ describe("LaunchdAdapter", () => {
       const labels = await adapter.listLabels();
       expect(labels).toEqual([]);
     });
+  });
+});
+
+describe("LaunchdAdapter.readCommand", () => {
+  it("returns the registered ProgramArguments, XML-unescaped", async () => {
+    mockFsFunctions.existsSync.mockReturnValue(true);
+    mockFsFunctions.readFileSync.mockReturnValue(`<?xml version="1.0"?>
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>${LABEL}</string>
+  <key>ProgramArguments</key>
+  <array>
+      <string>/Users/me/.bun/bin/oma</string>
+      <string>schedule:run</string>
+      <string>${JOB_ID}</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/p&amp;q</string>
+</dict>
+</plist>`);
+
+    const adapter = new LaunchdAdapter();
+    expect(await adapter.readCommand(LABEL)).toEqual([
+      "/Users/me/.bun/bin/oma",
+      "schedule:run",
+      JOB_ID,
+    ]);
+    expect(mockFsFunctions.readFileSync).toHaveBeenCalledWith(
+      PLIST_PATH,
+      "utf-8",
+    );
+  });
+
+  it("returns null when the plist is absent", async () => {
+    mockFsFunctions.existsSync.mockReturnValue(false);
+    const adapter = new LaunchdAdapter();
+    expect(await adapter.readCommand(LABEL)).toBeNull();
   });
 });
