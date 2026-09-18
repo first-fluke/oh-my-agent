@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.9.1](https://github.com/first-fluke/oh-my-agent/compare/web-v6.9.0...web-v6.9.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **link:** refuse project-mode link and update from HOME ([8e9465b](https://github.com/first-fluke/oh-my-agent/commit/8e9465b4ba7e0e1ba267b6993c2d29c11e3b6641))
+
 ## [6.9.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.8.1...web-v6.9.0) (2026-09-18)
 
 
