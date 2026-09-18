@@ -7,6 +7,7 @@ import {
   getInstallContext,
   getInstallMode,
   getInstallRoot,
+  isProjectModeInHome,
   resolveInstallContext,
   setInstallContext,
   validateOmaHome,
@@ -249,5 +250,19 @@ describe("install-context", () => {
         fs.chmodSync(dir, 0o755);
       }
     });
+  });
+});
+
+describe("isProjectModeInHome (#788)", () => {
+  it("is true only for project mode whose root resolves to HOME", () => {
+    const home = makeTmpDir();
+    expect(isProjectModeInHome(home, "project", home)).toBe(true);
+    expect(isProjectModeInHome(`${home}${path.sep}.`, "project", home)).toBe(
+      true,
+    );
+    expect(isProjectModeInHome(home, "global", home)).toBe(false);
+    expect(isProjectModeInHome(path.join(home, "proj"), "project", home)).toBe(
+      false,
+    );
   });
 });

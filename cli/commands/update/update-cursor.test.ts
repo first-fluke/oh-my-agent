@@ -78,6 +78,7 @@ vi.mock("../../platform/install-context.js", () => ({
   getInstallMode: vi.fn(() => "project"),
   safeGetInstallRoot: vi.fn(() => mockInstallRoot),
   safeGetInstallMode: vi.fn(() => "project"),
+  isProjectModeInHome: vi.fn(() => false),
   _resetInstallContext: vi.fn(),
 }));
 

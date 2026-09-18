@@ -8,6 +8,7 @@ import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
 import { installVendorAgents } from "../../platform/agent-composer.js";
 import {
   getInstallMode,
+  isProjectModeInHome,
   safeGetInstallMode,
   safeGetInstallRoot,
 } from "../../platform/install-context.js";
@@ -209,6 +210,26 @@ export function link(opts: LinkOptions = {}): LinkResult {
     symlinksCreated: [],
     plan,
   };
+
+  // #788 — standalone `oma link` from $HOME without --global: `<root>/.claude/
+  // settings.json` is then the user's GLOBAL Claude settings, and project-mode
+  // rendering would replace its `$HOME/.claude/hooks/...` commands with
+  // `$CLAUDE_PROJECT_DIR/...`, breaking every hook and the statusline in every
+  // project. Only the CLI wrapper omits `root`; install/update pass it (install
+  // has already obtained explicit HOME consent), so they are not gated here.
+  // `homedir()` is passed from here (not defaulted inside install-context) so
+  // the test setup's early import of install-context cannot pin the real HOME.
+  if (
+    opts.root === undefined &&
+    isProjectModeInHome(root, safeGetInstallMode(), homedir())
+  ) {
+    console.error(
+      `${pc.red("✗")} Refusing to link in HOME without --global: ${join(root, ".claude", "settings.json")} is your global Claude Code settings, and a project-mode link would rewrite its hook paths to $CLAUDE_PROJECT_DIR. ` +
+        `Run ${pc.cyan("oma link --global")} to reconcile the HOME install, or cd to a project directory first.`,
+    );
+    process.exitCode = 1;
+    return empty;
+  }
 
   if (!existsSync(join(root, ".agents"))) {
     // Name the root that was searched: the message is otherwise indistinguishable

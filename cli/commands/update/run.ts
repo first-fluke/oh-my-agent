@@ -6,6 +6,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
@@ -25,6 +26,7 @@ import { appendMissingConfigKeys } from "../../platform/agent-config/config-merg
 import {
   getInstallMode,
   getInstallRoot,
+  isProjectModeInHome,
 } from "../../platform/install-context.js";
 import {
   fetchRemoteManifest,
@@ -157,6 +159,21 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
 
   // Project-mode operations use the project cwd; global mode uses installRoot.
   const cwd = mode === "global" ? installRoot : process.cwd();
+
+  // #788 — a project-mode update from $HOME would reconcile the user's GLOBAL
+  // vendor files (~/.claude/settings.json, …) with project-relative hook paths
+  // and break hooks everywhere. `link` refuses the same way; `install` asks.
+  if (isProjectModeInHome(cwd, mode, homedir())) {
+    const msg =
+      "Refusing to update in HOME without --global: ~/.claude/settings.json and the other HOME vendor files would be rewritten with project-relative hook paths. " +
+      "Run `oma update --global` for the HOME install, or cd to a project directory first.";
+    releaseLock();
+    if (ci) {
+      throw new Error(msg);
+    }
+    p.cancel(msg);
+    process.exit(1);
+  }
 
   try {
     const localVersion = await getLocalVersion(cwd);

@@ -72,6 +72,22 @@ export function safeGetInstallRoot(): string {
   }
 }
 
+/**
+ * True when a project-mode root IS the user's HOME (#788). In that case every
+ * "project-scoped" vendor file (`<root>/.claude/settings.json`, …) is really
+ * the user's global file, so project-relative hook paths
+ * (`$CLAUDE_PROJECT_DIR/...`) would be written into the global settings and
+ * break hooks / the statusline in every other project. `install` asks for
+ * consent; `link` and `update` refuse and point at `--global`.
+ */
+export function isProjectModeInHome(
+  root: string,
+  mode: InstallMode,
+  home: string = homedir(),
+): boolean {
+  return mode === "project" && path.resolve(root) === path.resolve(home);
+}
+
 /** Test-only — resets the module-level singleton between vitest cases. */
 export function _resetInstallContext(): void {
   _ctx = null;

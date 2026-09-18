@@ -13,6 +13,17 @@ vi.mock("../../../utils/safe-write.js", () => ({
   safeWriteJson: vi.fn(),
 }));
 
+// #788 — lets a test point `homedir()` at a temp dir so the HOME guard can be
+// exercised without touching the developer's real HOME. `null` = real homedir.
+const osMock = vi.hoisted(() => ({ home: null as string | null }));
+vi.mock("node:os", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:os")>();
+  return {
+    ...actual,
+    homedir: () => osMock.home ?? actual.homedir(),
+  };
+});
+
 let configuredVendorsForTest: string[] = [];
 let agyInstalledResult: { installed: boolean; reason?: string } = {
   installed: true,
@@ -465,6 +476,63 @@ describe("link kernel", () => {
       ).mock.calls.map((args: unknown[]) => args[0] as string);
       const forbidden = calls.find((p: string) => p.endsWith(".claude.json"));
       expect(forbidden).toBeUndefined();
+    });
+  });
+
+  // Regression — #788: `cd $HOME && oma link claude` on a global install treated
+  // HOME as a project root and rewrote ~/.claude/settings.json (the GLOBAL
+  // Claude settings) with $CLAUDE_PROJECT_DIR hook paths, breaking every hook
+  // and the statusline in every project without its own .claude/hooks/.
+  describe("HOME guard (#788)", () => {
+    afterEach(() => {
+      osMock.home = null;
+      process.exitCode = undefined;
+    });
+
+    it("refuses a project-mode link whose root is HOME and points at --global", () => {
+      const homeRoot = makeProject(["claude"]);
+      osMock.home = homeRoot;
+      process.chdir(homeRoot);
+      _resetInstallContext();
+      setInstallContext({ installRoot: homeRoot, mode: "project" });
+      const consoleError = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      const result = link({ quiet: true });
+
+      expect(result.vendors).toEqual([]);
+      expect(result.plan).toEqual([]);
+      expect(process.exitCode).toBe(1);
+      expect(consoleError).toHaveBeenCalledTimes(1);
+      expect(String(consoleError.mock.calls[0]?.[0])).toContain("--global");
+      expect(skills.installVendorAdaptations).not.toHaveBeenCalled();
+      consoleError.mockRestore();
+    });
+
+    it("still reconciles HOME in global mode", () => {
+      const homeRoot = makeProject(["claude"]);
+      osMock.home = homeRoot;
+      process.chdir(homeRoot);
+      _resetInstallContext();
+      setInstallContext({ installRoot: homeRoot, mode: "global" });
+
+      const result = link({ quiet: true });
+
+      expect(result.vendors).toEqual(["claude"]);
+      expect(process.exitCode).not.toBe(1);
+    });
+
+    it("does not gate callers that pass an explicit root (install/update own their consent)", () => {
+      const homeRoot = makeProject(["claude"]);
+      osMock.home = homeRoot;
+      _resetInstallContext();
+      setInstallContext({ installRoot: homeRoot, mode: "project" });
+
+      const result = link({ root: homeRoot, quiet: true });
+
+      expect(result.vendors).toEqual(["claude"]);
+      expect(process.exitCode).not.toBe(1);
     });
   });
 
