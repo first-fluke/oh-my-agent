@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.12.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.12.2...cli-v14.12.3) (2026-09-18)
+
+
+### Bug Fixes
+
+* **qwen:** trust managed mcp servers by default ([55fbf48](https://github.com/first-fluke/oh-my-agent/commit/55fbf4815477613f90a08894ba999a82bee06ca7))
+
 ## [14.12.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.12.1...cli-v14.12.2) (2026-09-15)
 
 
