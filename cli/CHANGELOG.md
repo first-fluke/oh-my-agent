@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.13.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.0...cli-v14.13.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **link:** refuse project-mode link and update from HOME ([8e9465b](https://github.com/first-fluke/oh-my-agent/commit/8e9465b4ba7e0e1ba267b6993c2d29c11e3b6641))
+
 ## [14.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.12.3...cli-v14.13.0) (2026-09-18)
 
 
