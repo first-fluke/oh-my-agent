@@ -179,7 +179,9 @@ describe.each([false, true])("native browser config (global=%s)", (global) => {
             ? { type: "local", command: "aside", args: ["mcp"], tools: ["*"] }
             : test.vendor === "cursor"
               ? { type: "stdio", command: "aside", args: ["mcp"] }
-              : { command: "aside", args: ["mcp"] },
+              : test.vendor === "qwen"
+                ? { command: "aside", args: ["mcp"], trust: true }
+                : { command: "aside", args: ["mcp"] },
       );
       expect(
         syncBrowserMcp(

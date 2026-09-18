@@ -90,6 +90,12 @@ export function syncBrowserMcp(
       } else {
         doc.set(keys, existing ?? config);
       }
+      if (
+        target.entry === "qwen" &&
+        doc.get([...keys, "trust"]) === undefined
+      ) {
+        doc.set([...keys, "trust"], true);
+      }
     }
     const change = doc.result();
     if (change) changes.push(change);

@@ -19,6 +19,50 @@ const PINNED_TIMEOUT = {
 } as const;
 
 describe("qwen settings", () => {
+  it("trusts recommended MCP servers on a fresh install", () => {
+    const result = applyQwenSettings({});
+    expect(result.mcpServers?.serena?.trust).toBe(true);
+    expect(result.mcpServers?.["chrome-devtools"]?.trust).toBe(true);
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
+  it.each(["serena", "chrome-devtools"])(
+    "migrates missing trust for %s without changing its transport",
+    (name) => {
+      const settings = applyQwenSettings({});
+      const server = settings.mcpServers?.[name];
+      if (!server) throw new Error(`Missing ${name}`);
+      delete server.trust;
+      const original = structuredClone(server);
+
+      expect(needsQwenSettingsUpdate(settings)).toBe(true);
+      const result = applyQwenSettings(settings);
+      expect(result.mcpServers?.[name]).toEqual({ ...original, trust: true });
+      expect(settings.mcpServers?.[name]).toEqual(original);
+      expect(needsQwenSettingsUpdate(result)).toBe(false);
+    },
+  );
+
+  it("preserves explicit distrust during transport migration and leaves other servers alone", () => {
+    const result = applyQwenSettings({
+      mcpServers: {
+        serena: { command: "uvx", args: ["serena"], trust: false },
+        "chrome-devtools": { command: "custom-devtools", trust: false },
+        other: { url: "http://localhost:3000/mcp" },
+      },
+    });
+    expectOmaSerenaEntry(result.mcpServers?.serena, "ide");
+    expect(result.mcpServers?.serena?.trust).toBe(false);
+    expect(result.mcpServers?.["chrome-devtools"]).toEqual({
+      command: "custom-devtools",
+      trust: false,
+    });
+    expect(result.mcpServers?.other).toEqual({
+      url: "http://localhost:3000/mcp",
+    });
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
   it("requires update when serena MCP config is missing", () => {
     expect(needsQwenSettingsUpdate({})).toBe(true);
     expect(needsQwenSettingsUpdate({ mcpServers: {} })).toBe(true);
@@ -29,6 +73,7 @@ describe("qwen settings", () => {
       privacy: { usageStatisticsEnabled: false },
       mcpServers: {
         "chrome-devtools": {
+          trust: true,
           command: "npx",
           args: [
             "-y",
@@ -61,6 +106,7 @@ describe("qwen settings", () => {
       ...PINNED_TIMEOUT,
       mcpServers: {
         "chrome-devtools": {
+          trust: true,
           command: "npx",
           args: [
             "-y",
@@ -69,7 +115,7 @@ describe("qwen settings", () => {
             "--isolated",
           ],
         },
-        serena: { url: "http://localhost:12341/mcp" },
+        serena: { url: "http://localhost:12341/mcp", trust: true },
       },
     };
     expect(needsQwenSettingsUpdate(settings)).toBe(false);
@@ -89,6 +135,7 @@ describe("qwen settings", () => {
       ...PINNED_TIMEOUT,
       mcpServers: {
         "chrome-devtools": {
+          trust: true,
           command: "npx",
           args: [
             "-y",
@@ -160,6 +207,7 @@ describe("qwen settings", () => {
     expect(result.mcpServers?.serena).toEqual({
       command: "my-serena-wrapper",
       args: ["--flag"],
+      trust: true,
     });
   });
 
@@ -190,6 +238,7 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
     const expected = {
       mcpServers: {
         "chrome-devtools": {
+          trust: true,
           command: "npx",
           args: [
             "-y",
@@ -218,6 +267,7 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
       ...PINNED_TIMEOUT,
       mcpServers: {
         "chrome-devtools": {
+          trust: true,
           command: "npx",
           args: [
             "-y",

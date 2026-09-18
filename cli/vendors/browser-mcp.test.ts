@@ -10,6 +10,8 @@ import { dirname, join } from "node:path";
 import { parse } from "smol-toml";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { syncBrowserMcp } from "./browser-mcp.js";
+import { applyQwenSettings } from "./qwen/settings.js";
+import type { DevToolsBrowser } from "./serena.js";
 
 const aside = vi.hoisted(() => vi.fn(() => "aside"));
 vi.mock("node:os", async (original) => ({
@@ -41,6 +43,60 @@ function read(path: string): {
 }
 
 describe("browser MCP reconciliation", () => {
+  it.each<{ browsers: DevToolsBrowser[]; names: string[] }>([
+    { browsers: ["aside"], names: ["aside"] },
+    { browsers: ["chrome"], names: ["chrome-devtools"] },
+    { browsers: ["firefox"], names: ["firefox-devtools"] },
+    { browsers: ["aside", "firefox"], names: ["aside", "firefox-devtools"] },
+    { browsers: [], names: [] },
+  ])("trusts only selected Qwen browsers: $browsers", ({ browsers, names }) => {
+    write(".qwen/settings.json", JSON.stringify(applyQwenSettings({})));
+    syncBrowserMcp(root, browsers, ["qwen", "cursor"]);
+    const servers = read(".qwen/settings.json").mcpServers;
+    expect(Object.keys(servers).sort()).toEqual(["serena", ...names].sort());
+    for (const name of names) {
+      expect(servers[name]).toMatchObject({ trust: true });
+      expect(read(".cursor/mcp.json").mcpServers[name]).not.toHaveProperty(
+        "trust",
+      );
+      expect(read(".agents/mcp.json").mcpServers[name]).not.toHaveProperty(
+        "trust",
+      );
+    }
+    expect(syncBrowserMcp(root, browsers, ["qwen", "cursor"])).toEqual([]);
+  });
+
+  it.each([false, true])(
+    "preserves Qwen trust=%s and custom browser options",
+    (trust) => {
+      const config = {
+        mcpServers: {
+          aside: { command: "aside", args: ["mcp"], trust },
+          "firefox-devtools": { command: "custom-firefox", args: ["--flag"] },
+          custom: { command: "custom-server" },
+        },
+      };
+      write(".qwen/settings.json", JSON.stringify(config));
+      aside.mockReturnValue("/test/local/bin/aside");
+      syncBrowserMcp(root, ["aside", "firefox"], ["qwen"]);
+      expect(read(".qwen/settings.json").mcpServers).toEqual({
+        ...config.mcpServers,
+        aside: { ...config.mcpServers.aside, command: "/test/local/bin/aside" },
+        "firefox-devtools": {
+          ...config.mcpServers["firefox-devtools"],
+          trust: true,
+        },
+      });
+    },
+  );
+
+  it("trusts newly selected Qwen browsers in global settings", () => {
+    syncBrowserMcp(root, ["firefox"], ["qwen"], { global: true, home: root });
+    expect(
+      read(".qwen/settings.json").mcpServers["firefox-devtools"],
+    ).toMatchObject({ trust: true });
+  });
+
   it("validates inherited configurations before writing either scope", () => {
     const original = '{"mcpServers":{"chrome-devtools":{"command":"chrome"}}}';
     write(".cursor/mcp.json", original);

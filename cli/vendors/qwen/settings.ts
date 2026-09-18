@@ -41,9 +41,9 @@ export interface QwenSettingsOptions {
 }
 
 export const RECOMMENDED_QWEN_MCP = {
-  "chrome-devtools": RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  get serena(): SerenaMcpEntry {
-    return serenaMcpEntry("ide", serenaTransportMode());
+  "chrome-devtools": { ...RECOMMENDED_CHROME_DEVTOOLS_MCP, trust: true },
+  get serena(): SerenaMcpEntry & { trust: boolean } {
+    return { ...serenaMcpEntry("ide", serenaTransportMode()), trust: true };
   },
 };
 
@@ -192,6 +192,12 @@ export function needsQwenSettingsUpdate(
   if (JSON.stringify(normalized) !== JSON.stringify(sanitized)) return true;
 
   if (needsRecommendedMcpUpdate(sanitized.mcpServers)) return true;
+  if (
+    Object.keys(RECOMMENDED_QWEN_MCP).some(
+      (name) => typeof sanitized.mcpServers?.[name]?.trust !== "boolean",
+    )
+  )
+    return true;
 
   // applyQwenSettings drops `contentGenerator`, and every call site gates that
   // apply behind this function — without reporting the leftover key here the
@@ -226,11 +232,18 @@ export function applyQwenSettings(
   options: QwenSettingsOptions = {},
 ): QwenSettings {
   const qwenSettings = sanitizeQwenSettings(rawSettings);
+  const existingServers = qwenSettings.mcpServers;
 
   qwenSettings.mcpServers = applyRecommendedMcpServers(
     qwenSettings.mcpServers,
     RECOMMENDED_QWEN_MCP,
   );
+  for (const name of Object.keys(RECOMMENDED_QWEN_MCP)) {
+    qwenSettings.mcpServers[name] = {
+      ...qwenSettings.mcpServers[name],
+      trust: existingServers?.[name]?.trust ?? true,
+    };
+  }
 
   delete qwenSettings.contentGenerator;
 

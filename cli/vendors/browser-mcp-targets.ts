@@ -12,7 +12,7 @@ export type BrowserMcpTarget = {
   path: string;
   keys: string[];
   format: "json" | "jsonc" | "toml" | "yaml";
-  entry?: "opencode" | "copilot" | "stdio";
+  entry?: "opencode" | "copilot" | "stdio" | "qwen";
   removeOnly?: boolean;
   cleanupOnly?: boolean;
 };
@@ -96,7 +96,13 @@ export function browserMcpTargets(
             )
           : project(".codex/config.toml"),
       ),
-    qwen: () => json(scoped(".qwen/settings.json", ".qwen/settings.json")),
+    qwen: () =>
+      json(scoped(".qwen/settings.json", ".qwen/settings.json")).map(
+        (target) => ({
+          ...target,
+          entry: "qwen",
+        }),
+      ),
     grok: () => toml(scoped(".grok/config.toml", ".grok/config.toml")),
     kiro: () => {
       const native = json(
