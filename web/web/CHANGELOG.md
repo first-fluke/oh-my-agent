@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.9.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.8.1...web-v6.9.0) (2026-09-18)
+
+
+### Features
+
+* **hooks:** enforce code-intelligence provider with PreToolUse guard ([b5a5598](https://github.com/first-fluke/oh-my-agent/commit/b5a5598a38f08e7acf9f945d75dc5aee7ed16260))
+
 ## [6.8.1](https://github.com/first-fluke/oh-my-agent/compare/web-v6.8.0...web-v6.8.1) (2026-09-15)
 
 
