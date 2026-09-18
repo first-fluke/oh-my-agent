@@ -93,7 +93,7 @@ oma harness feedback --live          # also run one optimization epoch per affec
 oma harness feedback --apply --json  # write edits that pass every gate
 ```
 
-`feedback` 把部署反馈回路收进一条命令：加上 `--scan-runs` 时，先捕获每一个带契约且尚未捕获的失败运行（见上文），再把每一个已捕获但没有 fixture 的事故晋升（必要时起草评分细则），然后按受影响的技能分组，并在加上 `--live` 时让每个技能针对扩大后的套件优化一次，仍受常规关卡约束（held-in/held-out 验收、确认的负迁移、运行器拥有的最终测试）。`.agents/results/feedback/feedback-<ts>.json` 下的报告会列出晋升、被跳过的事故及原因，以及带 diff 的每个技能结果，于是从观测失败到候选编辑的整条链就是一条可审计的记录。请在失败的智能体运行被捕获之后，由调度器或运行后钩子运行它；`oma schedule create <agent> "Run \`oma harness feedback --scan-runs --apply --json\` and summarize the report" --cron "0 3 * * *"` 是夜间形式，下一次会话的状态快照会宣布它应用了哪些内容。
+`feedback` 把部署反馈回路收进一条命令：加上 `--scan-runs` 时，先捕获每一个带契约且尚未捕获的失败运行（见上文），再把每一个已捕获但没有 fixture 的事故晋升（必要时起草评分细则），然后按受影响的技能分组，并在加上 `--live` 时让每个技能针对扩大后的套件优化一次，仍受常规关卡约束（held-in/held-out 验收、确认的负迁移、运行器拥有的最终测试）。`.agents/results/feedback/feedback-<ts>.json` 下的报告会列出晋升、被跳过的事故及原因，以及带 diff 的每个技能结果，于是从观测失败到候选编辑的整条链就是一条可审计的记录。若要以共享的模型调用额度、持久重试和项目技能覆盖层按计划运行，请启用[项目 Harness 演进](/docs/guide/harness-evolution)。下一次会话的状态快照会宣布已应用的内容。
 
 仍由人决定的部分：没有任务契约的运行没有记录预期行为，因此只会被 `incident scan` 列出，只能通过规格捕获；`--skeleton` 会起草一份规格。
 

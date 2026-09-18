@@ -53,7 +53,7 @@ A disabled project does not run model work through the evolution command, includ
 4. **Apply or report.** In `apply` mode, a passing candidate becomes a project skill overlay. In `propose` mode, the cycle records the result without installing it.
 5. **Report changes.** Use status and the existing promotion history to inspect results. Applied changes also feed the next-session evolution notice.
 
-OMA does not automatically observe every native conversation or every user correction. The input is the run evidence OMA actually tracks. A run without a preserved output or acceptance contract may require a manually authored [incident specification](./harness-incidents.md).
+OMA does not automatically observe every native conversation or every user correction. The input is the run evidence OMA actually tracks. A run without a preserved output or acceptance contract may require a manually authored [incident specification](../harness-incidents/).
 
 ## Budget and retries
 
