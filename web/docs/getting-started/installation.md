@@ -223,6 +223,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -257,7 +258,7 @@ agents:
 | `model_preset` | string | Yes | Active preset key. `auto` follows the current runtime; fixed keys include `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro`, and `mixed`. Custom preset keys are also valid. See [Per-Agent Models](../guide/per-agent-models.md). |
 | `default_cli` | string | No | Fallback CLI for `oma agent spawn` when explicit agent settings and the selected preset do not resolve a vendor. |
 | `free` | map | No | FreeLLMAPI gateway settings used when `model_preset: free`; keep API keys in environment variables. |
-| `providers` | map | No | Capability providers: `code_intelligence` (`serena` or `gortex`), `docs` (`context7`), `web` (`native` or `brave`), and `semantic_memory` (`agentmemory`, `honcho`, or `none`). |
+| `providers` | map | No | Capability providers: `code_intelligence` (`serena` or `gortex`), `code_intelligence_guard` (`block` or `off`), `docs` (`context7`), `web` (`native` or `brave`), and `semantic_memory` (`agentmemory`, `honcho`, or `none`). |
 | `date_format` | string | No | Timestamp format (`ISO`, `US`, `EU`). Default: `ISO`. |
 | `timezone` | string | No | Timezone identifier (for example, `Asia/Seoul`). Omitted values use the host system timezone. |
 | `auto_update_cli` | boolean | No | Whether routine CLI checks may update in the background. Default: `true` (opt out with `false`). |

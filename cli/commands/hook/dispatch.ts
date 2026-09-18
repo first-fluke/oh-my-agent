@@ -1,6 +1,7 @@
 // Hook router + merge — design 019, Section 2.
 // This module owns routing (vendor × event → handler chain) and merge rules.
 
+import * as codeIntelligenceGuard from "../../../.agents/hooks/core/code-intelligence-guard.js";
 import * as codeIntelligencePrimer from "../../../.agents/hooks/core/code-intelligence-primer.js";
 import { resolveGitRoot } from "../../../.agents/hooks/core/fs-utils.js";
 import {
@@ -77,6 +78,7 @@ const HANDLER_REGISTRY: Readonly<Record<string, RunFn>> = {
   "serena-primer": codeIntelligencePrimer.run,
   "state-boundary": stateBoundary.run,
   "scm-guard": scmGuard.run,
+  "code-intelligence-guard": codeIntelligenceGuard.run,
   "refactor-guard": refactorGuard.run,
   "test-filter": testFilter.run,
   "persistent-mode": persistentMode.run,

@@ -31,6 +31,11 @@
         "timeout": 3
       },
       {
+        "hook": "code-intelligence-guard.ts",
+        "matcher": "Bash",
+        "timeout": 2
+      },
+      {
         "hook": "test-filter.ts",
         "matcher": "Bash",
         "timeout": 5

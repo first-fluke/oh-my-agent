@@ -20,6 +20,7 @@ import {
   installHooksFromVariant,
   isOmaManagedHookGroup,
   mergeHookGroups,
+  mergeMatchers,
   requiredVariantScripts,
   withDedup,
 } from "./hooks-composer.js";
@@ -148,6 +149,53 @@ describe("Codex hook variant contract", () => {
 // ---------------------------------------------------------------------------
 // isOmaManagedHookGroup — unit tests (Task 7 migration marker)
 // ---------------------------------------------------------------------------
+
+describe("Claude hook variant contract — PreToolUse matcher union", () => {
+  it("unions Bash with the code-intelligence-guard Grep|Glob matcher", () => {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-claude-hooks-"));
+    try {
+      const variant = JSON.parse(
+        readFileSync(
+          join(repoRoot, ".agents", "hooks", "variants", "claude.json"),
+          "utf-8",
+        ),
+      ) as HookVariant;
+      installHooksFromVariant(repoRoot, targetDir, variant);
+      const settings = JSON.parse(
+        readFileSync(join(targetDir, ".claude", "settings.json"), "utf-8"),
+      );
+      const entry = settings.hooks.PreToolUse[0];
+      // scm-guard / test-filter filter on Bash; code-intelligence-guard also
+      // needs the native Grep/Glob tool calls, so the single chain entry must
+      // admit all three (each handler still filters on toolName).
+      expect(entry.matcher).toBe("Bash|Grep|Glob");
+      expect(entry.hooks).toHaveLength(1);
+      expect(entry.hooks[0].command).toContain(
+        "--vendor 'claude' --event 'PreToolUse' --matcher 'Bash|Grep|Glob'",
+      );
+      // Timeout = scm-guard 3 + code-intelligence-guard 2 + test-filter 5 + 5 margin.
+      expect(entry.hooks[0].timeout).toBe(15);
+    } finally {
+      rmSync(targetDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("mergeMatchers", () => {
+  it("returns undefined when no handler declares a matcher", () => {
+    expect(mergeMatchers([undefined, undefined])).toBeUndefined();
+  });
+
+  it("keeps a single repeated matcher unchanged", () => {
+    expect(mergeMatchers(["Bash", "Bash", undefined])).toBe("Bash");
+  });
+
+  it("unions distinct alternations without duplicates", () => {
+    expect(mergeMatchers(["Bash", "Grep|Glob", "Bash|Grep"])).toBe(
+      "Bash|Grep|Glob",
+    );
+  });
+});
 
 describe("isOmaManagedHookGroup", () => {
   it("detects new-style oma-hook.sh entry by command", () => {

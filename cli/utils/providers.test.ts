@@ -27,6 +27,7 @@ describe("capability provider selection", () => {
       docs: "context7",
       web: "native",
       code_intelligence: "serena",
+      code_intelligence_guard: "block",
       semantic_memory: "agentmemory",
     });
     expect(createMemoryProvider({ projectDir: sub, env: {} }).name).toBe(
@@ -49,8 +50,15 @@ describe("capability provider selection", () => {
     expect(provider.observeEvents).toBe(false);
     expect(await provider.recall?.({ query: "secret" })).toEqual([]);
   });
+  it("accepts code_intelligence_guard: off", () => {
+    expect(
+      loadProviders(project("providers:\n  code_intelligence_guard: off\n"))
+        .code_intelligence_guard,
+    ).toBe("off");
+  });
   it.each([
     "code_intelligence: typo",
+    "code_intelligence_guard: warn",
     "semantic_memory: typo",
     "docs: honcho",
     "code-intelligence: gortex",

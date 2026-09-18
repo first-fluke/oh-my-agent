@@ -20,6 +20,7 @@ const OMA_CORE_SCRIPT_NAMES = new Set([
   "serena-primer",
   "state-boundary",
   "scm-guard",
+  "code-intelligence-guard",
   "test-filter",
   "persistent-mode",
   "hud",

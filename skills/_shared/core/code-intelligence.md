@@ -15,6 +15,12 @@ requirement in a workflow or skill.
 4. If the provider is unavailable, has no applicable tool, or times out, use
    native search and scoped file reads. Record the fallback and its limits in
    the result.
+5. The `code-intelligence-guard` PreToolUse hook enforces this contract while a
+   provider is configured (`providers.code_intelligence_guard: block`, the
+   default): native `Grep` / `Glob` and recursive shell search (`rg`, `grep -r`,
+   `find -name`, `git grep`) are denied and the reason names the provider tool
+   to use. In the fallback case of rule 4, prefix the shell search command with
+   `OMA_CI_ALLOW_NATIVE=1`; that prefix is the recorded fallback signal.
 
 The fallback is valid evidence when it covers the requested scope; it is not a
 reason to stop independent work or to silently switch to another provider.

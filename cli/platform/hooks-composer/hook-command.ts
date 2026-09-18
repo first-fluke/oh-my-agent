@@ -123,3 +123,25 @@ export function buildOmaHookCmd(
 export function deriveHookName(script: string): string {
   return script.replace(/\.[^.]+$/, "");
 }
+
+/**
+ * Union the per-handler matchers of one event into the single matcher the
+ * settings entry carries. Handlers are chained behind one `oma hook run`
+ * command, so the entry must admit every tool any handler filters on.
+ * Distinct alternatives are de-duplicated and joined with `|` (vendor matchers
+ * are regex alternations: `Bash` + `Grep|Glob` → `Bash|Grep|Glob`). Returns
+ * undefined when no handler declares a matcher.
+ */
+export function mergeMatchers(
+  matchers: ReadonlyArray<string | undefined>,
+): string | undefined {
+  const parts: string[] = [];
+  for (const m of matchers) {
+    if (!m) continue;
+    for (const alt of m.split("|")) {
+      const trimmed = alt.trim();
+      if (trimmed && !parts.includes(trimmed)) parts.push(trimmed);
+    }
+  }
+  return parts.length > 0 ? parts.join("|") : undefined;
+}

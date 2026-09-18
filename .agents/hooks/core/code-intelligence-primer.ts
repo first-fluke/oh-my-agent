@@ -32,22 +32,40 @@ export type CodeIntelligenceProvider = "serena" | "gortex";
 
 // ── Provider Detection ────────────────────────────────────────
 
-function readCodeIntelligenceFromYaml(
+/**
+ * Read a scalar `providers.<key>` value from oma-config yaml content without a
+ * yaml dependency (core handlers must stay standalone). Returns the lowercased
+ * value with trailing comments stripped, or null when absent.
+ */
+export function readProvidersValueFromYaml(
   content: string,
-): CodeIntelligenceProvider | null {
+  key: string,
+): string | null {
   const lines = content.split(/\r?\n/);
   const start = lines.findIndex((l) => /^providers:\s*(#.*)?$/.test(l));
   if (start === -1) return null;
+  const keyRe = new RegExp(`^\\s+${key}:\\s*(\\S.*)$`);
   for (let i = start + 1; i < lines.length; i++) {
     const line = lines[i] ?? "";
     if (/^\s*(#|$)/.test(line)) continue;
     if (!/^\s/.test(line)) break;
-    const match = line.match(/^\s+code_intelligence:\s*(\S.*)$/)?.[1];
+    const match = line.match(keyRe)?.[1];
     if (match) {
-      const val = match.replace(/#.*$/, "").trim().toLowerCase();
-      if (val === "gortex" || val === "serena") return val;
+      return match
+        .replace(/#.*$/, "")
+        .trim()
+        .replace(/^["']|["']$/g, "")
+        .toLowerCase();
     }
   }
+  return null;
+}
+
+function readCodeIntelligenceFromYaml(
+  content: string,
+): CodeIntelligenceProvider | null {
+  const val = readProvidersValueFromYaml(content, "code_intelligence");
+  if (val === "gortex" || val === "serena") return val;
   return null;
 }
 
@@ -84,6 +102,37 @@ export function detectCodeIntelligenceProvider(
  */
 export function isSerenaProject(projectDir: string): boolean {
   return detectCodeIntelligenceProvider(projectDir) === "serena";
+}
+
+export type CodeIntelligenceGuardMode = "block" | "off";
+
+/**
+ * Resolves `providers.code_intelligence_guard` (oma-config.local.yaml wins
+ * over oma-config.yaml). `block` (default) makes code-intelligence-guard deny
+ * native search tool calls while a provider is configured; `off` disables the
+ * guard and leaves the primer advisory-only.
+ */
+export function detectCodeIntelligenceGuardMode(
+  projectDir: string,
+): CodeIntelligenceGuardMode {
+  for (const rel of [
+    join(".agents", "oma-config.local.yaml"),
+    join(".agents", "oma-config.yaml"),
+  ]) {
+    const p = join(projectDir, rel);
+    if (!existsSync(p)) continue;
+    try {
+      const val = readProvidersValueFromYaml(
+        readFileSync(p, "utf-8"),
+        "code_intelligence_guard",
+      );
+      if (val === "off" || val === "false" || val === "warn") return "off";
+      if (val === "block" || val === "true") return "block";
+    } catch {
+      // fall open to the default
+    }
+  }
+  return "block";
 }
 
 // ── Session-once State ────────────────────────────────────────
@@ -168,14 +217,16 @@ export function primerContext(
     return [
       "[OMA GORTEX PRIMER]",
       "For code work, use Gortex MCP tools for code search, navigation, impact, contracts and edits.",
-      "Load deferred tools before use. If Gortex is unavailable or times out, use native tools.",
+      "A PreToolUse hook denies native Grep, Glob and recursive shell search while Gortex is configured.",
+      "Load deferred tools before use. If Gortex is unavailable or times out, use native tools: prefix the shell search command with `OMA_CI_ALLOW_NATIVE=1`.",
     ].join("\n");
   }
   return [
     "[OMA SERENA PRIMER]",
     "For code work, load deferred Serena tools if needed and read `initial_instructions` once unless already provided.",
+    "Use `find_file` instead of Glob, `search_for_pattern` instead of Grep / recursive shell search, and `find_symbol` / `get_symbols_overview` for symbols. A PreToolUse hook denies native Grep, Glob and recursive shell search while Serena is configured.",
     "Omit `max_answer_chars`; narrow the query if results exceed the limit.",
-    "If Serena is unavailable or times out, use native tools. Do not retry timed-out MCP calls this session.",
+    "If Serena is unavailable or times out, use native tools: prefix the shell search command with `OMA_CI_ALLOW_NATIVE=1`. Do not retry timed-out MCP calls this session.",
   ].join("\n");
 }
 

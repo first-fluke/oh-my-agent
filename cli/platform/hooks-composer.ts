@@ -7,6 +7,7 @@ import {
   buildHookCmd,
   buildOmaHookCmd,
   deriveHookName,
+  mergeMatchers,
   OMA_HOOK_WRAPPER_FILENAME,
 } from "./hooks-composer/hook-command.js";
 import { generateOmaHookWrapper } from "./hooks-composer/oma-hook-wrapper.js";
@@ -18,7 +19,10 @@ import { mergeIntoSettings } from "./hooks-composer/settings-merge.js";
 import type { HookVariant } from "./hooks-composer/variant-types.js";
 
 export { ensureFeatureFlags } from "./hooks-composer/feature-flags.js";
-export { buildOmaHookCmd } from "./hooks-composer/hook-command.js";
+export {
+  buildOmaHookCmd,
+  mergeMatchers,
+} from "./hooks-composer/hook-command.js";
 export { generateOmaHookWrapper } from "./hooks-composer/oma-hook-wrapper.js";
 export {
   copyHookScripts,
@@ -108,7 +112,11 @@ export function installHooksFromVariant(
 
     // biome-ignore lint/suspicious/noExplicitAny: hook entry shape varies
     let entry: any;
-    const matcher = configs.find((c) => c.matcher)?.matcher;
+    // One settings entry serves the whole chain, so its matcher must admit
+    // every tool any handler in the chain wants to see: union the distinct
+    // per-handler matchers (`Bash` + `Grep|Glob` → `Bash|Grep|Glob`). Each
+    // handler still filters on toolName itself, so widening is safe.
+    const matcher = mergeMatchers(configs.map((c) => c.matcher));
 
     if (allHud) {
       // Hud-only event — keep the current bun path (T1-c: statusLine/hud stays

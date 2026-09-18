@@ -64,8 +64,16 @@ auto_update_cli: true
 telemetry: false
 
 # Capability providers (docs, web, code_intelligence, semantic_memory)
+#
+# code_intelligence_guard — `block` (default) | `off`. While a code-intelligence
+# provider is configured, the PreToolUse hook `code-intelligence-guard` denies
+# native search (Claude `Grep` / `Glob`; shell `rg`, `ag`, `fd`, `grep -r`,
+# `find -name`, `git grep`) and points the agent at the provider's tools. Set
+# `off` to fall back to the advisory-only primer. A shell command prefixed with
+# `OMA_CI_ALLOW_NATIVE=1` bypasses the guard when the provider is down.
 providers:
   code_intelligence: serena
+  # code_intelligence_guard: block
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. Model selection
 # ─────────────────────────────────────────────────────────────────────────────

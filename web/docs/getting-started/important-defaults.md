@@ -14,6 +14,7 @@ Defaults are selected to make a first project usable while keeping user-owned co
 | Response language | `en` | Agent and workflow responses use English unless the project config selects another supported language. An explicit user or session language instruction can still override the project default where the host/workflow supports it. | `language` in `.agents/oma-config.yaml` or `.cue` |
 | Model routing | `auto` | The current runtime's native agent configuration is used. Unknown runtimes fall back to `default_cli` when set. | `model_preset`, `default_cli`, or `agents.<id>` |
 | Code intelligence | `serena` | A fresh install tries to install Serena and wires its MCP configuration. | `providers.code_intelligence: gortex` or `serena` |
+| Code-search guard | `block` | While a code-intelligence provider is configured, a PreToolUse hook denies native `Grep`/`Glob` and recursive shell search (`rg`, `grep -r`, `find -name`) and points the agent at the provider's tools. Prefix a shell command with `OMA_CI_ALLOW_NATIVE=1` when the provider is down. | `providers.code_intelligence_guard: off` |
 | Semantic memory | `agentmemory` | Agent Memory is selected for semantic memory when available. | `providers.semantic_memory: honcho` or `none` |
 | Web search | `native` | Search uses the runtime's native web channel unless a provider is selected. | `providers.web` |
 | Documentation provider | `context7` | Documentation lookup uses the Context7 provider when a skill requests it. | `providers.docs` |

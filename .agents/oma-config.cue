@@ -279,6 +279,10 @@ package config
 // ── Search & Provider overrides ─────────────────────────────────────────────
 
 #ProvidersConfig: {
+	code_intelligence?: "serena" | "gortex"
+	// PreToolUse guard that denies native Grep/Glob/recursive shell search
+	// while a code-intelligence provider is configured. Default: block.
+	code_intelligence_guard?: "block" | "off"
 	[string]: _
 }
 

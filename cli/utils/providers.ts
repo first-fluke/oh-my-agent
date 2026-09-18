@@ -10,6 +10,12 @@ export const ProvidersSchema = z
     docs: z.literal("context7").optional(),
     web: SearchProviderIdSchema.optional(),
     code_intelligence: z.enum(["serena", "gortex"]).optional(),
+    /**
+     * PreToolUse guard (`code-intelligence-guard` hook) that denies native
+     * Grep/Glob/recursive shell search while a code-intelligence provider is
+     * configured. `off` keeps the advisory primer only.
+     */
+    code_intelligence_guard: z.enum(["block", "off"]).optional(),
     semantic_memory: z.enum(["agentmemory", "honcho", "none"]).optional(),
   })
   .strict();
@@ -69,6 +75,7 @@ export function loadProviders(cwd?: string): Required<ProvidersConfig> {
     docs: raw.docs ?? "context7",
     web: raw.web ?? "native",
     code_intelligence: raw.code_intelligence ?? "serena",
+    code_intelligence_guard: raw.code_intelligence_guard ?? "block",
     semantic_memory: raw.semantic_memory ?? "agentmemory",
   };
 }
