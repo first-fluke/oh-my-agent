@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "14.12.3",
-  "releaseDate": "2026-09-18T13:01:30.637Z",
+  "releaseDate": "2026-09-18T13:22:31.503Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -120,9 +120,14 @@
       "size": 2592
     },
     {
+      "path": ".agents/hooks/core/code-intelligence-guard.ts",
+      "sha256": "fedbd6bbf688f0de55a1c3381421aee51381527b3845c69a4f8dae08eba3cee6",
+      "size": 9271
+    },
+    {
       "path": ".agents/hooks/core/code-intelligence-primer.ts",
-      "sha256": "d8b11196b43258e92b0f2f0ef41c0a0df7262878ff619b74b774a8a5c44e5f9e",
-      "size": 9401
+      "sha256": "c539eeb3766591dd75015d89fd8f90094567f1bbd2ef0ce8d398c819fa880c82",
+      "size": 11373
     },
     {
       "path": ".agents/hooks/core/constants.ts",
@@ -261,13 +266,13 @@
     },
     {
       "path": ".agents/hooks/variants/claude.json",
-      "sha256": "db02e58a270c74d4d5dcfd2c0fc93d6e7cc961bfcdcdb31fcc9fb6b1b0d5d811",
-      "size": 1559
+      "sha256": "7f255fd3265e27b4181c138ea775ae684745f1d9dc7135a97d545b927ee1126b",
+      "size": 1675
     },
     {
       "path": ".agents/hooks/variants/codex.json",
-      "sha256": "03dfa81ea046d33e8a3d2203bf4db1ce1f2af8c31129084e8307b164b27b860e",
-      "size": 1082
+      "sha256": "8ee3a35e422d4dc596952ae1a64438fa6cc03965a19808b9aa2544ed61a5a939",
+      "size": 1193
     },
     {
       "path": ".agents/hooks/variants/commandcode.json",
@@ -276,13 +281,13 @@
     },
     {
       "path": ".agents/hooks/variants/cursor.json",
-      "sha256": "2e75837478f0fcc4eef7ee36de0d644664faaa300adc228ca0ab877a5d461886",
-      "size": 1323
+      "sha256": "ca9b5b6806cb0d9d7cc2717919589101d11fc4d0187dd5fc69cfa98651288525",
+      "size": 1435
     },
     {
       "path": ".agents/hooks/variants/grok.json",
-      "sha256": "cbc00fc31c34b78cbf3b1d2d553875fd0db8b102b4c4b85feaa507e4385fc209",
-      "size": 1154
+      "sha256": "58c6931e1060d4153ba9c37a645cd9edd68e40d4b391bd65ceaefad34501cf3a",
+      "size": 1265
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
@@ -291,13 +296,13 @@
     },
     {
       "path": ".agents/hooks/variants/kimi.json",
-      "sha256": "e40b3a41069c7ce2fd79b25187c18a659f1b1a3ba2c93da0e60768a630685a1f",
-      "size": 1114
+      "sha256": "cd6c041efb2957c3fb8b07ba7ae62488dc2497d5ed88f551c8b723af6f492abb",
+      "size": 1225
     },
     {
       "path": ".agents/hooks/variants/kiro.json",
-      "sha256": "6f530c71a38c7117d88e22bc6be15dfc35f7f47670925386763a98b4ca7f1ec1",
-      "size": 1103
+      "sha256": "a683cc66c46dae8e8ff66f96e1b2851980ffcb1ce6802549df7842ce0237f3c7",
+      "size": 1215
     },
     {
       "path": ".agents/hooks/variants/opencode/oma.ts",
@@ -316,8 +321,8 @@
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "85f475f1228b2227ce27c9d9dc58776b816b1b1cfb867bc676d50c321c90def9",
-      "size": 1327
+      "sha256": "ad52adc6e811c918ade3c34a6b9a63720427eda51c7467227b07c70ba54ede42",
+      "size": 1451
     },
     {
       "path": ".agents/mcp.json",
@@ -331,13 +336,13 @@
     },
     {
       "path": ".agents/oma-config.cue",
-      "sha256": "b94ef83dc404abba0ba9d4461deb9497ea3aa9f772d01abfd2cb8387e3d338e3",
-      "size": 12534
+      "sha256": "d31ca742a460220f202c2669db2c0ccaccbf53f52e203c71d0ddec247ca5cee1",
+      "size": 12761
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "8d979a29495716d34b2bb33429f40a341103c311f20f7789039cdfc996627ed1",
-      "size": 30457
+      "sha256": "d136f7981a8fed41beb5fb019f5a5a794db30e07be191075994139dfd0047c40",
+      "size": 30962
     },
     {
       "path": ".agents/rules/backend.md",
@@ -451,8 +456,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/code-intelligence.md",
-      "sha256": "955a666ae618c92211ee877792b75eb55439968d60d4e44730a4961f555130dd",
-      "size": 1545
+      "sha256": "9fba618be301278f4dd105dc0648bd1e8f4bf9d1badd309ca46d1c0afd942f8b",
+      "size": 2013
     },
     {
       "path": ".agents/skills/_shared/core/common-checklist.md",
@@ -2176,6 +2181,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 433
+    "totalFiles": 434
   }
 }
