@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.9.2](https://github.com/first-fluke/oh-my-agent/compare/web-v6.9.1...web-v6.9.2) (2026-09-18)
+
+
+### Documentation
+
+* **i18n:** add ja and zh harness-evolution guides and harden source link ([99ef73b](https://github.com/first-fluke/oh-my-agent/commit/99ef73bcafcb465cde403e072c4464fd7de45bae))
+* **i18n:** add Korean harness-evolution guide and sidebar entry ([f8de2a9](https://github.com/first-fluke/oh-my-agent/commit/f8de2a93684c7f79448a005e0fc6d97619fb59cc))
+
 ## [6.9.1](https://github.com/first-fluke/oh-my-agent/compare/web-v6.9.0...web-v6.9.1) (2026-09-18)
 
 
