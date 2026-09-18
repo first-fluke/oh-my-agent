@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.12.3...cli-v14.13.0) (2026-09-18)
+
+
+### Features
+
+* **hooks:** enforce code-intelligence provider with PreToolUse guard ([b5a5598](https://github.com/first-fluke/oh-my-agent/commit/b5a5598a38f08e7acf9f945d75dc5aee7ed16260))
+
 ## [14.12.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.12.2...cli-v14.12.3) (2026-09-18)
 
 
