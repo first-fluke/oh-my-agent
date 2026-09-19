@@ -1,10 +1,9 @@
 import * as fs from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { CLI_SKILLS_DIR } from "../../constants/index.js";
 import type { CliTool } from "../../types/index.js";
 import { atomicWriteFileSync } from "../../utils/safe-write.js";
 import { createLink } from "../fs-link.js";
-import { resolveCliSkillsDir } from "./vendor-dirs.js";
+import { getVendorDisplayPath, resolveCliSkillsDir } from "./vendor-dirs.js";
 
 export const WORKFLOW_GENERATED_MARKER = "<!-- oma:generated -->";
 
@@ -59,8 +58,7 @@ export function createVendorWorkflowSymlinks(
   const workflowsDir = resolve(installRoot, ".agents", "workflows");
 
   for (const cli of cliTools) {
-    const spec = CLI_SKILLS_DIR[cli];
-    const label = spec.requiresHomeConsent ? spec.homePath : spec.projectPath;
+    const label = getVendorDisplayPath(cli);
     const linkRootDir = resolveCliSkillsDir(installRoot, cli);
 
     for (const name of workflowNames) {

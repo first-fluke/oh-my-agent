@@ -451,10 +451,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
                 ["tool", "upgrade", "serena-agent", "--prerelease=allow"],
                 { stdio: "ignore" },
               );
-              ui.note(
-                "Upgraded serena-agent to the latest prerelease.",
-                "Serena",
-              );
+              ui.note("Serena prerelease update check completed.", "Serena");
             } catch {
               ui.note(
                 "Skipped serena upgrade (uv unavailable or upgrade failed).",

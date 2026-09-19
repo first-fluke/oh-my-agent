@@ -4,7 +4,7 @@ import { CLI_SKILLS_DIR, INSTALLED_SKILLS_DIR } from "../../constants/index.js";
 import type { CliTool } from "../../types/index.js";
 import { createLink } from "../fs-link.js";
 import { resolveEffectiveSkill } from "../skill-overlays.js";
-import { resolveCliSkillsDir } from "./vendor-dirs.js";
+import { getVendorDisplayPath, resolveCliSkillsDir } from "./vendor-dirs.js";
 
 /**
  * Remove symlinks in `linkRootDir` whose target no longer exists (e.g. legacy
@@ -48,10 +48,7 @@ export function createVendorSymlinks(
   }
 
   for (const cli of cliTools) {
-    const spec = CLI_SKILLS_DIR[cli];
-    const skillsDir = spec.requiresHomeConsent
-      ? spec.homePath
-      : spec.projectPath;
+    const skillsDir = getVendorDisplayPath(cli);
     const linkRootDir = resolveCliSkillsDir(installRoot, cli);
 
     if (!fs.existsSync(linkRootDir)) {

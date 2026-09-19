@@ -655,7 +655,7 @@ describe("createCliSymlinks", () => {
       join("/tmp/test-home", ".hermes/skills/oma/oma-frontend"),
       "dir",
     );
-    expect(result.created).toContain(".hermes/skills/oma/oma-frontend");
+    expect(result.created).toContain("~/.hermes/skills/oma/oma-frontend");
   });
 
   it("should reject sources whose realpath escapes the SSOT base", () => {
@@ -708,7 +708,7 @@ describe("createCliSymlinks", () => {
     );
 
     expect(result.created).toContain(".claude/skills/oma-frontend");
-    expect(result.created).toContain(".hermes/skills/oma/oma-frontend");
+    expect(result.created).toContain("~/.hermes/skills/oma/oma-frontend");
   });
 
   it("should skip hermes when target real directory exists", () => {
@@ -727,7 +727,7 @@ describe("createCliSymlinks", () => {
 
     expect(fs.symlinkSync).not.toHaveBeenCalled();
     expect(result.skipped).toContain(
-      ".hermes/skills/oma/oma-frontend (real dir exists)",
+      "~/.hermes/skills/oma/oma-frontend (real dir exists)",
     );
   });
 });
