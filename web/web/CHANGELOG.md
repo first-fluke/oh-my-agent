@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.9.3](https://github.com/first-fluke/oh-my-agent/compare/web-v6.9.2...web-v6.9.3) (2026-09-19)
+
+
+### Bug Fixes
+
+* **schedule:** keep pre-rename OS registrations working and resync stale jobs ([428e80e](https://github.com/first-fluke/oh-my-agent/commit/428e80e93fa9e4e6e9776e755ee57af4ba5cd929))
+
 ## [6.9.2](https://github.com/first-fluke/oh-my-agent/compare/web-v6.9.1...web-v6.9.2) (2026-09-18)
 
 
