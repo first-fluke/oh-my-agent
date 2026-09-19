@@ -1,5 +1,13 @@
 # Changelog
 
+## [14.13.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.2...cli-v14.13.3) (2026-09-19)
+
+
+### Bug Fixes
+
+* **update:** clarify Serena checks and home symlink paths ([be421e6](https://github.com/first-fluke/oh-my-agent/commit/be421e69047e128e6ab06ffd932654c3e6094f21))
+* **update:** stop repeated Serena migration after browser selection ([22e1ab1](https://github.com/first-fluke/oh-my-agent/commit/22e1ab1d0e9a9d3a59d46f47a54c03a6f3a7e445))
+
 ## [14.13.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.1...cli-v14.13.2) (2026-09-19)
 
 
