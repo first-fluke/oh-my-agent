@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.10.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.9.3...web-v6.10.0) (2026-09-19)
+
+
+### Features
+
+* **link:** manage AGENTS.md only and retire CLAUDE.md OMA block ([f81c5a4](https://github.com/first-fluke/oh-my-agent/commit/f81c5a4c661b314d721a57a95fa952c9ea4b8b00))
+
 ## [6.9.3](https://github.com/first-fluke/oh-my-agent/compare/web-v6.9.2...web-v6.9.3) (2026-09-19)
 
 
