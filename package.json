@@ -25,6 +25,7 @@
     "sns:qiita": "bun scripts/sns/qiita/index.ts",
     "test": "bun run --cwd cli test",
     "test:orca": "node --test integrations/orca/plugin.test.mjs",
+    "test:scripts": "bun test scripts/",
     "typecheck": "bunx tsc --noEmit -p tsconfig.json && bunx tsc --noEmit -p web/tsconfig.json",
     "bench:oma-hook": "bun run cli/__bench__/oma-hook-latency.bench.ts",
     "web:dev": "bun run --cwd web dev",
