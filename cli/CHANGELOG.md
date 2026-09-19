@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.13.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.3...cli-v14.13.4) (2026-09-19)
+
+
+### Bug Fixes
+
+* **update:** clean up retired Gemini MCP settings ([5c4ad44](https://github.com/first-fluke/oh-my-agent/commit/5c4ad441d87fbd1e12218faf667eb56c65aee5dd))
+
 ## [14.13.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.2...cli-v14.13.3) (2026-09-19)
 
 
