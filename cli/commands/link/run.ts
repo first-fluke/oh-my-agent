@@ -7,6 +7,10 @@ import { ensureCoAuthorGuardHook, OMA_HOOKS_DIR } from "../../io/git-hooks.js";
 import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
 import { installVendorAgents } from "../../platform/agent-composer.js";
 import {
+  claudeMdShadowsAgentsMd,
+  ensureAgentsMdImport,
+} from "../../platform/agents-md-import.js";
+import {
   getInstallMode,
   isProjectModeInHome,
   safeGetInstallMode,
@@ -161,7 +165,7 @@ export interface LinkResult {
   agyInstalled: boolean;
   /** Human reason returned by the agy installer when it skipped. */
   agySkipReason?: string;
-  /** Vendor doc files that were merged (e.g. `["CLAUDE.md", "AGENTS.md"]`). */
+  /** Vendor doc files that were merged (only ever `["AGENTS.md"]`). */
   mergedDocs: string[];
   /** CLI skill symlinks that were created during this pass. */
   symlinksCreated: string[];
@@ -755,7 +759,8 @@ export function link(opts: LinkOptions = {}): LinkResult {
   syncBrowsers();
   syncProviders();
 
-  // 6. Merge vendor documentation (CLAUDE.md, AGENTS.md)
+  // 6. Merge vendor documentation. AGENTS.md is the only managed doc;
+  //    CLAUDE.md / GEMINI.md are never written and stay fully user-owned.
   const mergedDocs: string[] = [];
   const mergedDocsSet = new Set<string>();
   // mergeRulesIndexForVendor both splices the OMA block and reports whether it
@@ -765,7 +770,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
   for (const v of VENDORS) {
     if (!docVendors.includes(v)) continue;
     const target = vendorDocFile(v);
-    if (!target) continue;
+    if (target !== "AGENTS.md") continue;
     if (mergedDocsSet.has(target) || plannedDocs.has(target)) continue;
     if (dryRun) {
       plannedDocs.add(target);
@@ -792,6 +797,17 @@ export function link(opts: LinkOptions = {}): LinkResult {
       mergedDocsSet.add("AGENTS.md");
       mergedDocs.push("AGENTS.md");
       record(join(root, "AGENTS.md"), "write", "mergeRulesIndexForVendor (pi)");
+    }
+  }
+
+  // 6b. Claude Code reads CLAUDE.md alone when both files exist, unless
+  //     CLAUDE.md imports AGENTS.md. Never create CLAUDE.md; only append the
+  //     one import line to a user-owned file that would otherwise shadow the
+  //     AGENTS.md block just written.
+  if (docVendors.includes("claude") && claudeMdShadowsAgentsMd(root)) {
+    record(join(root, "CLAUDE.md"), "write", "ensureAgentsMdImport");
+    if (!dryRun && ensureAgentsMdImport(root) && !quiet) {
+      console.log(`${pc.green("✓")} CLAUDE.md: added @AGENTS.md import`);
     }
   }
 

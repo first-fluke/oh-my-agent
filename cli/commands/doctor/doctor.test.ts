@@ -333,15 +333,49 @@ describe("vendor doc OMA block checks", () => {
     expect(report.totalIssues).toBeGreaterThanOrEqual(1);
   });
 
-  it("does not require AGENTS.md when only claude is installed", async () => {
+  it("does not require AGENTS.md when only an older claude is installed", async () => {
     const reportPromise = collectDoctorReport();
     await vi.advanceTimersByTimeAsync(0);
-    await settleInstalledClis(["claude"]);
+    await settleInstalledClis(["claude"], "2.1.276 (Claude Code)");
 
     const report = await reportPromise;
     const agents = report.vendorDocs.find((d) => d.fileName === "AGENTS.md");
 
     expect(agents?.required).toBe(false);
+  });
+
+  it("requires AGENTS.md when claude >= 2.1.277 is installed", async () => {
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    await settleInstalledClis(["claude"], "2.1.277 (Claude Code)");
+
+    const report = await reportPromise;
+    const agents = report.vendorDocs.find((d) => d.fileName === "AGENTS.md");
+
+    expect(agents?.required).toBe(true);
+    expect(agents?.shadowedByClaudeMd).toBe(false);
+  });
+
+  it("flags a CLAUDE.md without @AGENTS.md import as shadowing AGENTS.md", async () => {
+    vi.mocked(existsSync).mockImplementation(
+      (p) => String(p).endsWith("AGENTS.md") || String(p).endsWith("CLAUDE.md"),
+    );
+    vi.mocked(readFileSync).mockImplementation((p) =>
+      String(p).endsWith("AGENTS.md")
+        ? "<!-- OMA:START -->\nblock\n<!-- OMA:END -->\n"
+        : "# user notes\n",
+    );
+
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    await settleInstalledClis(["claude"], "2.1.277 (Claude Code)");
+
+    const report = await reportPromise;
+    const agents = report.vendorDocs.find((d) => d.fileName === "AGENTS.md");
+
+    expect(agents?.hasOmaBlock).toBe(true);
+    expect(agents?.shadowedByClaudeMd).toBe(true);
+    expect(report.totalIssues).toBeGreaterThanOrEqual(1);
   });
 });
 

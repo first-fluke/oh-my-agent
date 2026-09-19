@@ -1,11 +1,13 @@
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { claudeMdShadowsAgentsMd } from "../../platform/agents-md-import.js";
 import {
   getAllSkills,
   INSTALLED_SKILLS_DIR,
 } from "../../platform/skills-installer.js";
 import type { CLICheck, SkillCheck } from "../../types/index.js";
+import { claudeReadsAgentsMd } from "../../utils/claude-version.js";
 import type { VendorDocCheck } from "./types.js";
 
 const OMA_DOCTOR_PROBE_TIMEOUT_MS = Number(
@@ -28,14 +30,15 @@ export const CLI_DEFINITIONS: Array<[string, string, string]> = [
   ["pi", "pi", "bun install --global @earendil-works/pi-coding-agent"],
 ];
 
-/** Vendor context files checked when their CLI is installed. */
+/**
+ * Vendor context files checked when their CLI is installed. AGENTS.md is the
+ * only OMA-managed vendor doc; CLAUDE.md is user-owned. claude counts only
+ * once it reads AGENTS.md natively (CLAUDE_AGENTS_MD_MIN_VERSION).
+ */
 const VENDOR_DOC_SPECS: Array<{
   fileName: string;
   cliNames: readonly string[];
-}> = [
-  { fileName: "CLAUDE.md", cliNames: ["claude"] },
-  { fileName: "AGENTS.md", cliNames: ["codex", "qwen"] },
-];
+}> = [{ fileName: "AGENTS.md", cliNames: ["codex", "qwen", "claude"] }];
 
 const OMA_START_MARKER = "<!-- OMA:START";
 
@@ -162,11 +165,22 @@ export function collectVendorDocChecks(
   cwd: string,
   clis: CLICheck[],
 ): VendorDocCheck[] {
-  const installed = new Set(clis.filter((c) => c.installed).map((c) => c.name));
+  const installed = new Set(
+    clis
+      .filter(
+        (c) =>
+          c.installed &&
+          (c.name !== "claude" || claudeReadsAgentsMd(c.version)),
+      )
+      .map((c) => c.name),
+  );
 
   return VENDOR_DOC_SPECS.map(({ fileName, cliNames }) => ({
     fileName,
     required: cliNames.some((name) => installed.has(name)),
     hasOmaBlock: fileHasOmaBlock(cwd, fileName),
+    ...(fileName === "AGENTS.md" && installed.has("claude")
+      ? { shadowedByClaudeMd: claudeMdShadowsAgentsMd(cwd) }
+      : {}),
   }));
 }

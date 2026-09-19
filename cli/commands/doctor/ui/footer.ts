@@ -37,7 +37,12 @@ export async function renderFooter(report: DoctorReport): Promise<void> {
   for (const doc of report.vendorDocs) {
     if (!doc.required) continue;
     const label = `./${doc.fileName}`;
-    if (doc.hasOmaBlock) {
+    if (doc.hasOmaBlock && doc.shadowedByClaudeMd === true) {
+      p.note(
+        `${pc.yellow("⚠️")} OMA block found in ${label}, but ./CLAUDE.md has no @AGENTS.md import\n${pc.dim("Claude Code reads CLAUDE.md alone when both exist. Run 'oma link' to add the import")}`,
+        doc.fileName,
+      );
+    } else if (doc.hasOmaBlock) {
       p.note(`${pc.green("✅")} OMA block found in ${label}`, doc.fileName);
     } else {
       p.note(

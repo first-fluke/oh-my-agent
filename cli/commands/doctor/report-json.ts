@@ -63,12 +63,10 @@ export function serializeReportAsJson(report: DoctorReport): string {
       file: d.fileName,
       required: d.required,
       hasOmaBlock: d.hasOmaBlock,
+      ...(d.shadowedByClaudeMd !== undefined
+        ? { shadowedByClaudeMd: d.shadowedByClaudeMd }
+        : {}),
     })),
-    claudeMd: {
-      hasOmaBlock:
-        report.vendorDocs.find((d) => d.fileName === "CLAUDE.md")
-          ?.hasOmaBlock ?? false,
-    },
     skillAudit: {
       skillCount: report.skillAudit.skillCount,
       worstPair: report.skillAudit.worstPair ?? null,

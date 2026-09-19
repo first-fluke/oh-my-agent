@@ -409,7 +409,7 @@ For each selected skill, `installSkill()` copies the skill directory to `.agents
 
 - Agent definitions (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
 - Hook configurations (`.claude/hooks/`, `.codex/hooks.json`)
-- Settings files and vendor integration docs (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
+- Settings files and the shared vendor integration doc (`AGENTS.md` only, Claude Code ≥ 2.1.277 included). `CLAUDE.md` and `GEMINI.md` never get an OMA block; an existing user-owned `CLAUDE.md` only receives an `@AGENTS.md` import line so Claude Code does not skip `AGENTS.md`
 
 Codex gates its hooks behind a one-time trust step, so `.codex/hooks.json` does not run until you review it once via the Codex `/hooks` browser. See [Codex Hook Trust](/docs/guide/codex-hook-trust) for details.
 

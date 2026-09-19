@@ -215,7 +215,7 @@ export async function promptVendors(
     {
       value: "claude",
       label: "Claude Code",
-      hint: "hooks + settings + CLAUDE.md",
+      hint: "hooks + settings",
     },
     { value: "codex", label: "Codex", hint: "hooks + plugin" },
     {

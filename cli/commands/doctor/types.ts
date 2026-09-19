@@ -28,6 +28,11 @@ export interface VendorDocCheck {
   fileName: string;
   required: boolean;
   hasOmaBlock: boolean;
+  /**
+   * AGENTS.md only: a `./CLAUDE.md` exists without an `@AGENTS.md` import, so
+   * Claude Code would read CLAUDE.md alone and skip the OMA block.
+   */
+  shadowedByClaudeMd?: boolean;
 }
 
 export interface AgentMemoryRetryQueueCheck {

@@ -218,16 +218,16 @@ describe("mergeRulesIndexForVendor", () => {
   it("should still generate usage guide even without rules", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
-        if (typeof p === "string" && p.endsWith("CLAUDE.md")) return false;
+        if (typeof p === "string" && p.endsWith("AGENTS.md")) return false;
         if (typeof p === "string" && p.includes(".agents/rules")) return false;
         return false;
       },
     );
 
-    const result = mergeRulesIndexForVendor(mockTargetDir, "claude");
+    const result = mergeRulesIndexForVendor(mockTargetDir, "codex");
     expect(result).toBe(true);
 
-    const writeCall = findAtomicWrite("CLAUDE.md");
+    const writeCall = findAtomicWrite("AGENTS.md");
     expect(writeCall).toBeDefined();
     const content = writeCall?.content as string;
     expect(content).toContain("# oh-my-agent");
@@ -247,11 +247,28 @@ describe("mergeRulesIndexForVendor", () => {
     expect(findAtomicWrite("GEMINI.md")).toBeUndefined();
   });
 
-  it("should create CLAUDE.md with usage guide and rules index", () => {
+  it("writes AGENTS.md (never CLAUDE.md) for the claude vendor", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      false,
+    );
+
+    const result = mergeRulesIndexForVendor(mockTargetDir, "claude");
+
+    // Only AGENTS.md is managed; CLAUDE.md stays user-owned.
+    expect(result).toBe(true);
+    expect(findAtomicWrite("CLAUDE.md")).toBeUndefined();
+    const content = findAtomicWrite("AGENTS.md")?.content as string;
+    expect(content).toContain(".claude/agents/{name}.md");
+    expect(content).toContain(
+      "Write non-ASCII tool-call parameters as literal UTF-8, not Unicode escapes.",
+    );
+  });
+
+  it("should create AGENTS.md with usage guide and rules index", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
         const norm = typeof p === "string" ? p.replace(/\\/g, "/") : "";
-        if (norm.endsWith("CLAUDE.md")) return false;
+        if (norm.endsWith("AGENTS.md")) return false;
         return norm.includes(".agents/rules");
       },
     );
@@ -263,10 +280,10 @@ describe("mergeRulesIndexForVendor", () => {
       '---\ndescription: test\nglobs: "**/*.tsx"\n---\n\n# Test',
     );
 
-    const result = mergeRulesIndexForVendor(mockTargetDir, "claude");
+    const result = mergeRulesIndexForVendor(mockTargetDir, "codex");
     expect(result).toBe(true);
 
-    const writeCall = findAtomicWrite("CLAUDE.md");
+    const writeCall = findAtomicWrite("AGENTS.md");
     expect(writeCall).toBeDefined();
     const content = writeCall?.content as string;
     expect(content).toContain("<!-- OMA:START");
@@ -288,9 +305,6 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).toContain("| frontend |");
     expect(content).toContain("| backend |");
     expect(content).toContain(".agents/rules/");
-    expect(content).toContain(
-      "Write non-ASCII tool-call parameters as literal UTF-8, not Unicode escapes.",
-    );
   });
 
   it("should create AGENTS.md for codex vendor", () => {
@@ -310,26 +324,6 @@ describe("mergeRulesIndexForVendor", () => {
     mergeRulesIndexForVendor(mockTargetDir, "codex");
 
     const writeCall = findAtomicWrite("AGENTS.md");
-    expect(writeCall).toBeDefined();
-  });
-
-  it("should write CLAUDE.md for claude vendor", () => {
-    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (typeof p === "string" && p.endsWith("CLAUDE.md")) return false;
-        return p.includes(".agents/rules");
-      },
-    );
-    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
-      "frontend.md",
-    ]);
-    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-      "---\ndescription: test\n---\n\n# Test",
-    );
-
-    mergeRulesIndexForVendor(mockTargetDir, "claude");
-
-    const writeCall = findAtomicWrite("CLAUDE.md");
     expect(writeCall).toBeDefined();
   });
 
@@ -397,9 +391,9 @@ describe("mergeRulesIndexForVendor", () => {
     expect(viaCursor).toContain("`@agent-name`");
     expect(viaCursor).not.toContain("Hooks (codex):");
     expect(viaCursor).not.toContain("Hooks (cursor):");
-    // claude writes CLAUDE.md — it must not leak into the shared AGENTS.md.
-    expect(viaCursor).not.toContain("- claude: ");
-    expect(viaCursor).not.toContain("Write non-ASCII");
+    // claude shares AGENTS.md too, so its dispatch line must be present.
+    expect(viaCursor).toContain("- claude: ");
+    expect(viaCursor).toContain("Write non-ASCII");
 
     // The unfiltered run starts from codex instead; same file, same bytes.
     vi.clearAllMocks();
@@ -422,7 +416,7 @@ describe("mergeRulesIndexForVendor", () => {
       "---\ndescription: test\n---\n\n# Test",
     );
 
-    mergeRulesIndexForVendor(mockTargetDir, "cursor", ["claude", "kimi"]);
+    mergeRulesIndexForVendor(mockTargetDir, "cursor", ["kimi"]);
 
     const content = findAtomicWrite("AGENTS.md")?.content as string;
     expect(content).toContain("- **Subagents**: `@agent-name`");

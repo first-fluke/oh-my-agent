@@ -180,7 +180,7 @@ export async function collectDoctorReport(
     : undefined;
 
   const vendorDocIssues = vendorDocs.filter(
-    (d) => d.required && !d.hasOmaBlock,
+    (d) => d.required && (!d.hasOmaBlock || d.shadowedByClaudeMd === true),
   ).length;
   const selfHealingIssues = selfHealing && !selfHealing.ok ? 1 : 0;
   // Only an issue when Serena's project config exists; OMA coordination state

@@ -134,11 +134,9 @@ vi.mock("../../platform/rules.js", () => ({
   applyCursorRules: vi.fn(() => []),
   mergeRulesIndexForVendor: vi.fn(() => true),
   vendorDocFile: vi.fn((vendor: string) =>
-    vendor === "claude"
-      ? "CLAUDE.md"
-      : ["codex", "cursor", "qwen", "pi"].includes(vendor)
-        ? "AGENTS.md"
-        : undefined,
+    ["claude", "codex", "cursor", "qwen", "pi"].includes(vendor)
+      ? "AGENTS.md"
+      : undefined,
   ),
 }));
 

@@ -2,6 +2,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -9,7 +10,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../../utils/safe-write.js", () => ({
+vi.mock("../../../utils/safe-write.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../utils/safe-write.js")>()),
   safeWriteJson: vi.fn(),
 }));
 
@@ -33,11 +35,9 @@ vi.mock("../../../platform/rules.js", () => ({
   applyCursorRules: vi.fn(() => []),
   mergeRulesIndexForVendor: vi.fn(() => true),
   vendorDocFile: vi.fn((vendor: string) =>
-    vendor === "claude"
-      ? "CLAUDE.md"
-      : ["codex", "cursor", "qwen", "pi"].includes(vendor)
-        ? "AGENTS.md"
-        : undefined,
+    ["claude", "codex", "cursor", "qwen", "pi"].includes(vendor)
+      ? "AGENTS.md"
+      : undefined,
   ),
 }));
 
@@ -419,9 +419,66 @@ describe("link kernel", () => {
       const result = link({ quiet: true });
 
       // mergeRulesIndexForVendor is mocked to return true for all vendors,
-      // and link dedupes by target file (CLAUDE.md / AGENTS.md / GEMINI.md).
-      expect(result.mergedDocs).toContain("CLAUDE.md");
+      // and link dedupes by target file (AGENTS.md).
       expect(result.mergedDocs).toContain("AGENTS.md");
+    });
+
+    it("routes claude into the shared AGENTS.md and never touches CLAUDE.md", () => {
+      const projectDir = makeProject(["claude"]);
+      process.chdir(projectDir);
+
+      const result = link({ quiet: true });
+
+      expect(result.mergedDocs).toEqual(["AGENTS.md"]);
+      const mergeCalls = (
+        rules.mergeRulesIndexForVendor as unknown as ReturnType<typeof vi.fn>
+      ).mock.calls;
+      expect(mergeCalls.map((c: unknown[]) => c[1])).toEqual(["claude"]);
+      expect(result.plan.some((e) => e.path.endsWith("CLAUDE.md"))).toBe(false);
+    });
+
+    it("appends @AGENTS.md to a user-owned CLAUDE.md that would shadow AGENTS.md", () => {
+      const projectDir = makeProject(["claude"]);
+      writeFileSync(join(projectDir, "CLAUDE.md"), "# Mine\n", "utf-8");
+      process.chdir(projectDir);
+
+      const result = link({ quiet: true });
+
+      expect(readFileSync(join(projectDir, "CLAUDE.md"), "utf-8")).toBe(
+        "# Mine\n\n@AGENTS.md\n",
+      );
+      expect(
+        result.plan.find((e) => e.path.endsWith("CLAUDE.md"))?.reason,
+      ).toBe("ensureAgentsMdImport");
+    });
+
+    it("leaves CLAUDE.md alone when it already imports AGENTS.md", () => {
+      const projectDir = makeProject(["claude"]);
+      writeFileSync(
+        join(projectDir, "CLAUDE.md"),
+        "# Mine\n\n@AGENTS.md\n",
+        "utf-8",
+      );
+      process.chdir(projectDir);
+
+      const result = link({ quiet: true });
+
+      expect(readFileSync(join(projectDir, "CLAUDE.md"), "utf-8")).toBe(
+        "# Mine\n\n@AGENTS.md\n",
+      );
+      expect(result.plan.some((e) => e.path.endsWith("CLAUDE.md"))).toBe(false);
+    });
+
+    it("does not touch CLAUDE.md when claude is not a configured vendor", () => {
+      const projectDir = makeProject(["codex"]);
+      writeFileSync(join(projectDir, "CLAUDE.md"), "# Mine\n", "utf-8");
+      process.chdir(projectDir);
+
+      link({ quiet: true });
+
+      expect(readFileSync(join(projectDir, "CLAUDE.md"), "utf-8")).toBe(
+        "# Mine\n",
+      );
     });
   });
 
@@ -748,20 +805,21 @@ describe("link kernel", () => {
       expect(plan.length).toBeGreaterThan(0);
       expect(reasons).toContain("installVendorAdaptations");
       expect(reasons).toContain("applyCursorRules");
-      expect(endsWith("CLAUDE.md")).toBe(true);
+      expect(endsWith("CLAUDE.md")).toBe(false);
+      expect(endsWith("AGENTS.md")).toBe(true);
       expect(endsWith(".gitignore")).toBe(true);
     });
 
-    it("records CLAUDE.md and AGENTS.md at most once each", () => {
+    it("records AGENTS.md at most once and never CLAUDE.md", () => {
       const projectDir = makeProject(["claude", "codex", "qwen", "pi"]);
       process.chdir(projectDir);
 
       const { plan } = link({ quiet: true, dryRun: true });
-      const docs = plan
-        .map((e) => e.path)
-        .filter((p) => p.endsWith("CLAUDE.md") || p.endsWith("AGENTS.md"));
+      const paths = plan.map((e) => e.path);
+      const agents = paths.filter((p) => p.endsWith("AGENTS.md"));
 
-      expect(new Set(docs).size).toBe(docs.length);
+      expect(agents).toHaveLength(1);
+      expect(paths.some((p) => p.endsWith("CLAUDE.md"))).toBe(false);
     });
 
     it("leaves derived counters empty and defers to the plan", () => {

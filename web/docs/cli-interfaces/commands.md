@@ -146,7 +146,7 @@ oma doctor [--json] [--output <format>] [--profile]
   - `rerere.enabled=true`
   - `init.defaultBranch=main`
   - Each mismatch counts toward `totalIssues`
-- Project vendor context files (e.g. `CLAUDE.md` / `AGENTS.md` OMA blocks when the matching CLI is installed).
+- Project vendor context file (`AGENTS.md` OMA block when Codex, Qwen, or Claude Code ≥ 2.1.277 is installed).
 - AgentMemory, state/hooks health, Serena reaper diagnostics, and related issue counters.
 
 **Auto-repair:** If missing skills are detected, `doctor` offers to install them interactively. If recommended git config is missing or wrong, it offers the same opt-in global fixes used by install/update.
@@ -262,7 +262,7 @@ Without `--global`, link targets `<cwd>/.agents/`; with it, `~/.agents/` (or `OM
 **What it does:**
 1. Rebuilds vendor-native agent files from `.agents/agents/`
 2. Refreshes hooks and local settings for the selected vendors
-3. Regenerates `CLAUDE.md`, `GEMINI.md`, or `AGENTS.md` integration blocks
+3. Regenerates the `AGENTS.md` integration block for every configured vendor, Claude Code included. `CLAUDE.md` and `GEMINI.md` are never created or given an OMA block. Claude Code ≥ 2.1.277 reads `AGENTS.md` natively but ignores it whenever a `CLAUDE.md` exists, so when a user-owned `CLAUDE.md` is present link appends a single `@AGENTS.md` import line; `oma update` also strips the legacy `CLAUDE.md` OMA block once that version is detected
 4. Refreshes Cursor MCP linkage and CLI skill symlinks when relevant
 
 Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`, or hook definitions.

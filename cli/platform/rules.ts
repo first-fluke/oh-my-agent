@@ -140,10 +140,11 @@ export function installRulesRaw(sourceDir: string, targetDir: string): void {
 }
 
 // =============================================================================
-// Single-file vendors (GEMINI.md, AGENTS.md)
+// Single-file vendors (AGENTS.md only)
 // — Usage guide + Rules index combined in one OMA block
-// — AGENTS.md: Codex (native) + Qwen (native since 2026-03) + Cursor (native)
-// — GEMINI.md: Gemini CLI only (does not read AGENTS.md by default)
+// — AGENTS.md: Claude Code (native since CLAUDE_AGENTS_MD_MIN_VERSION) +
+//   Codex (native) + Qwen (native since 2026-03) + Cursor (native) + pi
+// — CLAUDE.md / GEMINI.md are never written: oma manages AGENTS.md only.
 // =============================================================================
 
 const OMA_START =
@@ -151,16 +152,13 @@ const OMA_START =
 const OMA_END = "<!-- OMA:END -->";
 
 /**
- * Vendor → target file mapping.
- * codex/qwen/cursor share AGENTS.md (all read it natively).
- * claude uses project-local CLAUDE.md.
- * gemini requires its own GEMINI.md (default context filename).
+ * Vendor → target file mapping. Only AGENTS.md is managed: claude (from
+ * CLAUDE_AGENTS_MD_MIN_VERSION), codex, cursor, qwen and pi all read it
+ * natively. CLAUDE.md and GEMINI.md are never written and stay user-owned;
+ * migration 031 strips the legacy CLAUDE.md block.
  */
 const VENDOR_FILES: Record<string, string> = {
-  claude: "CLAUDE.md",
-  // gemini (GEMINI.md) removed — Gemini CLI is deprecated (see
-  // utils/gemini-deprecation.ts; sunset June 18, 2026). Legacy configs
-  // soft-redirect to antigravity; oma no longer generates GEMINI.md.
+  claude: "AGENTS.md",
   codex: "AGENTS.md",
   cursor: "AGENTS.md",
   qwen: "AGENTS.md",
