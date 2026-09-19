@@ -42,6 +42,24 @@ export default defineConfig({
         },
       },
       {
+        // Repo scripts (scripts/sns, scripts/utils) live outside cli/ but are
+        // first-party source with first-party tests, so they run in the same
+        // vitest suite. They need the "@cli/" alias — scripts/utils/agent-spawn
+        // reuses the cli's vendor resolution — but not the cli setup files,
+        // which resolve relative to cli/ and seed cli-only globals.
+        resolve: {
+          alias: {
+            "@cli/": fileURLToPath(new URL("./", import.meta.url)),
+          },
+        },
+        test: {
+          name: "scripts",
+          root: fileURLToPath(new URL("../scripts/", import.meta.url)),
+          include: ["**/*.test.ts"],
+          testTimeout: 30_000,
+        },
+      },
+      {
         // Quarantine for the serena-daemon tests: their forks worker kept
         // dying or wedging during COLLECTION (tests 0ms) under load — locally
         // and on CI — and it survived removal of child spawns, top-level

@@ -9,7 +9,7 @@
  * three retry attempts failed identically.
  */
 
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { unwrapVendorResponse } from "./agent-spawn.ts";
 
 const ARTICLE = '{"title":"Weekly","tags":["oma"],"body_markdown":"# Hi"}';
