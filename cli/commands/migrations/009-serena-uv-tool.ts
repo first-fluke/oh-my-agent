@@ -15,7 +15,6 @@
  * Touches:
  *   - .codex/config.toml      (mcp_servers.serena)
  *   - .qwen/settings.json     (mcpServers.serena, also bumps context=agent→ide)
- *   - .gemini/settings.json   (mcpServers.serena — stdio variant)
  *   - .agents/mcp.json        (project-local SSOT, mcpServers.serena, context→claude-code)
  *   - ~/.claude.json          (top-level mcpServers.serena, context→claude-code)
  *

@@ -65,6 +65,7 @@ import { migrateGlobalCodexSerenaTransport } from "./026-global-codex-serena-tra
 import { migrateAntigravityDesktopSerenaBridge } from "./027-antigravity-desktop-serena-bridge.js";
 import { migrateProfileSessions } from "./028-profile-sessions.js";
 import { migrateProjectSerenaBridge } from "./029-project-serena-bridge.js";
+import { migrateLegacyGeminiMcp } from "./030-legacy-gemini-mcp.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -95,6 +96,7 @@ const migrations: Migration[] = [
   migrateAntigravityDesktopSerenaBridge,
   migrateProfileSessions,
   migrateProjectSerenaBridge,
+  migrateLegacyGeminiMcp,
 ];
 
 export function runMigrations(

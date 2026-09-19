@@ -53,6 +53,8 @@ All 14 installable OMA vendors have an explicit browser MCP adapter. Paths below
 
 Native environment overrides are respected: `CODEX_HOME`, `KIMI_CODE_HOME`, `PI_CODING_AGENT_DIR`, `HERMES_HOME`, and OpenCode's `XDG_CONFIG_HOME`. OpenCode updates existing project-root and `.opencode/` JSON/JSONC configurations so higher-priority files do not retain an obsolete OMA browser selection. JSONC and YAML comments and unrelated settings are preserved.
 
+The retired Gemini CLI path `.gemini/settings.json` is not an Antigravity configuration target. With Antigravity selected, `oma update` removes matching OMA default Serena and browser MCP entries from that existing project file. It preserves customized launchers, unrelated MCP servers and other settings, and leaves HOME files and symlinked configurations alone. This cleanup does not create the file, register replacement servers there, or force a same-version download.
+
 <!-- oma-docs:ignore-start -->
 Kiro browser entries previously written to `settings/cli.json` are removed from that incorrect location and reconciled into `settings/mcp.json`.
 <!-- oma-docs:ignore-end -->
