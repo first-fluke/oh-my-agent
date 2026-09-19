@@ -1,5 +1,14 @@
 # Changelog
 
+## [14.13.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.1...cli-v14.13.2) (2026-09-19)
+
+
+### Bug Fixes
+
+* **schedule:** keep pre-rename OS registrations working and resync stale jobs ([428e80e](https://github.com/first-fluke/oh-my-agent/commit/428e80e93fa9e4e6e9776e755ee57af4ba5cd929))
+* **sns:** keep translated titles faithful to the dev.to source ([3a664e5](https://github.com/first-fluke/oh-my-agent/commit/3a664e57ea66a5183ae05b89cfcba0b01fd9efad))
+* **sns:** unwrap the vendor JSON envelope in runAgent ([25fe325](https://github.com/first-fluke/oh-my-agent/commit/25fe325ee6d1290fcf1231ec9ecc8f9ab58e1be4))
+
 ## [14.13.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.0...cli-v14.13.1) (2026-09-18)
 
 
