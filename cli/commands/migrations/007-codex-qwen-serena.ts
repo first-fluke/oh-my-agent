@@ -1,17 +1,14 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { loadProviders } from "../../utils/providers.js";
+import { isRecord } from "../../utils/type-guards.js";
 import {
   applyCodexSettings,
-  needsCodexSettingsUpdate,
   parseCodexConfig,
   serializeCodexConfig,
 } from "../../vendors/codex/settings.js";
-import {
-  applyQwenSettings,
-  needsQwenSettingsUpdate,
-} from "../../vendors/qwen/settings.js";
-import { hasUserQwenModelProviders } from "../../vendors/qwen/user-settings.js";
+import { applyQwenSettings } from "../../vendors/qwen/settings.js";
 import type { Migration } from "./index.js";
 import { allowsVendor, type MigrationContext } from "./vendor-scope.js";
 
@@ -39,9 +36,15 @@ export const migrateCodexQwenSerena: Migration = {
       } catch {
         parsed = {};
       }
-      const qwenOptions = { userModelProviders: hasUserQwenModelProviders() };
-      if (needsQwenSettingsUpdate(parsed, qwenOptions)) {
-        const next = applyQwenSettings(parsed, qwenOptions);
+      const base = isRecord(parsed) ? parsed : {};
+      const servers = isRecord(base.mcpServers) ? base.mcpServers : {};
+      // Migrate only Serena. Full settings generators also seed Chrome and
+      // privacy defaults, which conflict with the user's reconciled choices.
+      const serena = applyQwenSettings({
+        mcpServers: { serena: servers.serena ?? {} },
+      }).mcpServers?.serena;
+      if (serena && !isDeepStrictEqual(servers.serena, serena)) {
+        const next = { ...base, mcpServers: { ...servers, serena } };
         writeFileSync(qwenSettingsPath, `${JSON.stringify(next, null, 2)}\n`);
         actions.push(".qwen/settings.json (Serena MCP registered)");
       }
@@ -51,8 +54,12 @@ export const migrateCodexQwenSerena: Migration = {
     if (allowsVendor(ctx, "codex") && existsSync(codexConfigPath)) {
       const rawToml = readFileSync(codexConfigPath, "utf-8");
       const parsed = parseCodexConfig(rawToml);
-      if (needsCodexSettingsUpdate(parsed)) {
-        const next = applyCodexSettings(parsed);
+      const servers = isRecord(parsed.mcp_servers) ? parsed.mcp_servers : {};
+      const serena = applyCodexSettings({
+        mcp_servers: { serena: servers.serena },
+      }).mcp_servers?.serena;
+      if (serena && !isDeepStrictEqual(servers.serena, serena)) {
+        const next = { ...parsed, mcp_servers: { ...servers, serena } };
         writeFileSync(codexConfigPath, `${serializeCodexConfig(next)}\n`);
         actions.push(".codex/config.toml (Serena MCP registered)");
       }

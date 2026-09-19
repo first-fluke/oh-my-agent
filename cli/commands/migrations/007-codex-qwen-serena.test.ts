@@ -8,6 +8,13 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { syncBrowserMcp } from "../../vendors/browser-mcp.js";
+import {
+  applyCodexSettings,
+  serializeCodexConfig,
+} from "../../vendors/codex/settings.js";
+import { applyQwenSettings } from "../../vendors/qwen/settings.js";
+import type { DevToolsBrowser } from "../../vendors/serena.js";
 import { migrateCodexQwenSerena } from "./007-codex-qwen-serena.js";
 
 let cwd: string;
@@ -100,6 +107,51 @@ describe("migrateCodexQwenSerena (007) — vendor gating", () => {
 
     expect(first).toHaveLength(1);
     expect(second).toEqual([]);
+  });
+
+  it.each<{ browsers: DevToolsBrowser[] }>([
+    { browsers: ["aside"] },
+    { browsers: ["firefox"] },
+    { browsers: [] },
+  ])(
+    "does not re-register Serena after browser reconciliation: $browsers",
+    ({ browsers }) => {
+      const codex = seedCodex();
+      const qwen = seedQwen();
+      writeFileSync(codex, serializeCodexConfig(applyCodexSettings({})));
+      writeFileSync(qwen, JSON.stringify(applyQwenSettings({})));
+      syncBrowserMcp(cwd, browsers, ["codex", "qwen"], {
+        home: join(cwd, "home"),
+      });
+      const before = [codex, qwen].map((path) => readFileSync(path, "utf-8"));
+
+      expect(
+        migrateCodexQwenSerena.up(cwd, { vendors: ["codex", "qwen"] }),
+      ).toEqual([]);
+      expect([codex, qwen].map((path) => readFileSync(path, "utf-8"))).toEqual(
+        before,
+      );
+    },
+  );
+
+  it("registers Serena without changing browser, privacy, or model preferences", () => {
+    const codex = seedCodex();
+    const qwen = seedQwen();
+    writeFileSync(codex, 'model = "custom-model"\n');
+    writeFileSync(qwen, '{"model":{"generationConfig":{"timeout":123}}}');
+
+    expect(
+      migrateCodexQwenSerena.up(cwd, { vendors: ["codex", "qwen"] }),
+    ).toHaveLength(2);
+    const codexAfter = readFileSync(codex, "utf-8");
+    const qwenAfter = JSON.parse(readFileSync(qwen, "utf-8"));
+    expect(codexAfter).toContain('model = "custom-model"');
+    expect(codexAfter).not.toMatch(
+      /chrome-devtools|analytics|feedback|features/,
+    );
+    expect(Object.keys(qwenAfter.mcpServers)).toEqual(["serena"]);
+    expect(qwenAfter.model.generationConfig.timeout).toBe(123);
+    expect(qwenAfter).not.toHaveProperty("privacy");
   });
 
   it("does not register Serena when another code intelligence provider is selected", () => {
