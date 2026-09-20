@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.4...cli-v14.14.0) (2026-09-19)
+
+
+### Features
+
+* **link:** manage AGENTS.md only and retire CLAUDE.md OMA block ([f81c5a4](https://github.com/first-fluke/oh-my-agent/commit/f81c5a4c661b314d721a57a95fa952c9ea4b8b00))
+
 ## [14.13.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.3...cli-v14.13.4) (2026-09-19)
 
 
