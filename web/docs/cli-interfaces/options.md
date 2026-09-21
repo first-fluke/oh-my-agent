@@ -243,7 +243,7 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 ### agent parallel
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flag | Short | Description | Default |
