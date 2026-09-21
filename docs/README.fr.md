@@ -16,30 +16,42 @@ oh-my-agent rend l'affirmation falsifiable. Un Stop hook refuse de terminer ta s
 
 ## Démarrage Rapide
 
+**Chemin le plus rapide — skills dans tes agents (Claude Code, Cursor, Codex, etc.) :**
+
 ```bash
-# macOS / Linux — installe bun, uv & serena automatiquement si absents
+npx skills add first-fluke/oh-my-agent
+```
+
+Ça installe le pack de skills OMA dans les runtimes d’agent détectés. Les skills apprennent à l’agent *comment* travailler ; le harness complet (ci-dessous) vérifie si le travail a *vraiment* eu lieu — gates stop-hook, vérification d’artefacts, juges indépendants et event log append-only.
+
+### Harness complet (gates, hooks, CLI)
+
+À utiliser quand tu veux workflows, règles, `oma-config.yaml`, hooks de détection de mots-clés et `oma agent spawn` — pas seulement les skills.
+
+Les scripts d’install installent bun, uv et serena automatiquement s’ils manquent.
+
+```bash
+# macOS / Linux — installe bun, uv & serena auto si manquants
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
 ```powershell
-# Windows (PowerShell) — installe bun, uv & serena automatiquement si absents
+# Windows (PowerShell) — installe bun, uv & serena auto si manquants
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
 ```bash
-# Ou manuellement (n'importe quel OS, nécessite bun + uv + serena)
+# Ou manuel (tout OS, nécessite bun + uv + serena)
 bunx oh-my-agent@latest
 ```
 
-### Installation via Agent Package Manager
-
 <details>
-<summary>L'<a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) de Microsoft : distribution skills uniquement. Clique pour déplier.</summary>
+<summary>Ou installer les skills avec l’<a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) de Microsoft. Déplier.</summary>
 
-> À ne pas confondre avec l'APM (Application Performance Monitoring) d'`oma-observability`.
+> À ne pas confondre avec l’APM (Application Performance Monitoring) de `oma-observability`.
 
 ```bash
-# Tous les skills, déployés sur chaque runtime détectée
+# Tous les skills, vers chaque runtime détecté
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
@@ -47,11 +59,11 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM ne livre que les skills. Pour les workflows, les règles, `oma-config.yaml`, les hooks de détection de mots-clés et la CLI `oma agent spawn`, utilise `bunx oh-my-agent@latest`. Une seule méthode de distribution par projet, sinon ça finit par diverger.
+APM ne livre que les skills. Pour le harness complet, utilise `bunx oh-my-agent@latest` (ou les scripts ci-dessus). Une seule distribution par projet — si tu as déjà fait `npx skills add`, reste en skills-only tant que tu n’as pas besoin des gates/hooks/CLI.
 
 </details>
 
-Choisis un preset et c'est parti :
+Choisis un preset et c’est parti :
 
 | Preset | Ce Que Tu Obtiens |
 |--------|-------------|

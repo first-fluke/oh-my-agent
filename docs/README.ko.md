@@ -16,42 +16,54 @@ oh-my-agent는 그 주장을 반증 가능하게 만듭니다. Stop hook은 프�
 
 ## 빠른 시작
 
+**가장 빠른 경로 — 에이전트에 스킬 설치 (Claude Code, Cursor, Codex 등):**
+
 ```bash
-# macOS / Linux — bun, uv, serena가 없으면 자동으로 설치됩니다
+npx skills add first-fluke/oh-my-agent
+```
+
+감지된 에이전트 런타임에 OMA 스킬 팩을 넣습니다. 스킬은 에이전트에게 *어떻게* 일할지 가르치고, 아래 풀 하네스는 일이 *실제로* 끝났는지 검증합니다 — stop-hook 게이트, 아티팩트 검증, 독립 판정, append-only 이벤트 로그.
+
+### 풀 하네스 (게이트, 훅, CLI)
+
+워크플로, 규칙, `oma-config.yaml`, 키워드 감지 훅, `oma agent spawn`까지 필요할 때 쓰세요. 스킬만으로는 부족할 때의 경로입니다.
+
+아래 설치 스크립트는 bun, uv, serena가 없으면 자동으로 설치합니다.
+
+```bash
+# macOS / Linux — bun, uv, serena 없으면 자동 설치
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
 ```powershell
-# Windows (PowerShell) — bun, uv, serena가 없으면 자동으로 설치됩니다
+# Windows (PowerShell) — bun, uv, serena 없으면 자동 설치
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
 ```bash
-# 또는 직접 실행 (모든 OS, bun + uv + serena 필요)
+# 또는 수동 (모든 OS, bun + uv + serena 필요)
 bunx oh-my-agent@latest
 ```
 
-### Agent Package Manager로 설치
-
 <details>
-<summary>Microsoft의 <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM): 스킬 전용 배포. 클릭하면 펼쳐집니다.</summary>
+<summary>또는 Microsoft <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM)로 스킬만 설치. 펼치기.</summary>
 
-> `oma-observability`의 APM(Application Performance Monitoring)과는 다릅니다.
+> `oma-observability`의 APM(Application Performance Monitoring)과 다릅니다.
 
 ```bash
-# 스킬 전체를 감지된 모든 런타임에 배포
+# 모든 스킬, 감지된 모든 런타임에 배포
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
-# 스킬 하나만
+# 단일 스킬
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM은 스킬만 제공합니다. 워크플로우, 규칙, `oma-config.yaml`, 키워드 감지 훅, `oma agent spawn` CLI는 `bunx oh-my-agent@latest`를 쓰세요. 드리프트를 피하려면 프로젝트당 한 가지 배포 방식만 고르는 게 좋습니다.
+APM은 스킬만 제공합니다. 풀 하네스는 `bunx oh-my-agent@latest`(또는 위 스크립트)를 쓰세요. 이미 `npx skills add`를 썼다면, 게이트/훅/CLI가 필요할 때까지 스킬 전용으로 유지하는 편이 드리프트를 줄입니다.
 
 </details>
 
-프리셋만 고르면 바로 시작할 수 있습니다:
+프리셋을 고르면 바로 시작할 수 있습니다:
 
 | 프리셋 | 구성 |
 |--------|------|

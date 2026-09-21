@@ -16,42 +16,54 @@ oh-my-agent làm cho tuyên bố ấy có thể bị bác bỏ. Một Stop hook 
 
 ## Bắt đầu nhanh
 
+**Đường nhanh nhất — đưa skills vào agents (Claude Code, Cursor, Codex, …):**
+
 ```bash
-# macOS / Linux — tự động cài bun, uv & serena nếu chưa có
+npx skills add first-fluke/oh-my-agent
+```
+
+Lệnh này cài gói skills OMA vào các runtime agent được phát hiện. Skills dạy agent *cách* làm việc; full harness (bên dưới) kiểm tra việc đó *đã thực sự xảy ra* chưa — stop-hook gate, kiểm chứng artifact, judge độc lập và event log append-only.
+
+### Full harness (gates, hooks, CLI)
+
+Dùng khi bạn cần workflow, rule, `oma-config.yaml`, hook phát hiện từ khóa và `oma agent spawn` — không chỉ skills.
+
+Script cài đặt sẽ tự cài bun, uv và serena nếu thiếu.
+
+```bash
+# macOS / Linux — tự cài bun, uv & serena nếu thiếu
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
 ```powershell
-# Windows (PowerShell) — tự động cài bun, uv & serena nếu chưa có
+# Windows (PowerShell) — tự cài bun, uv & serena nếu thiếu
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
 ```bash
-# Hoặc chạy trực tiếp (mọi OS, cần bun + uv + serena)
+# Hoặc thủ công (mọi OS, cần bun + uv + serena)
 bunx oh-my-agent@latest
 ```
 
-### Cài đặt qua Agent Package Manager
-
 <details>
-<summary><a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) của Microsoft: bản phân phối chỉ có skill. Click để mở rộng.</summary>
+<summary>Hoặc cài skills bằng <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) của Microsoft. Mở rộng.</summary>
 
 > Đừng nhầm với APM (Application Performance Monitoring) của `oma-observability`.
 
 ```bash
-# Toàn bộ skill, triển khai vào mọi runtime được phát hiện
+# Mọi skills, tới mọi runtime được phát hiện
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
-# Một skill duy nhất
+# Một skill
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM chỉ phân phối skill. Còn workflow, rule, `oma-config.yaml`, hook phát hiện từ khóa và CLI `oma agent spawn` thì dùng `bunx oh-my-agent@latest`. Mỗi dự án chỉ chọn một cách phân phối thôi, không thì lệch nhau.
+APM chỉ phân phối skills. Với full harness dùng `bunx oh-my-agent@latest` (hoặc script trên). Một cách phân phối mỗi dự án — nếu đã dùng `npx skills add`, giữ skills-only cho tới khi cần gates/hooks/CLI.
 
 </details>
 
-Chọn một preset và bạn đã sẵn sàng:
+Chọn preset là xong:
 
 | Preset | Bạn nhận được |
 |--------|--------------|

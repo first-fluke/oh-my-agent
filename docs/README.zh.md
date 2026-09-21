@@ -16,30 +16,42 @@ oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，�
 
 ## 快速开始
 
+**最快路径 — 把 skills 装进你的 agents（Claude Code、Cursor、Codex 等）：**
+
 ```bash
-# macOS / Linux — 自动安装 bun、uv & serena
+npx skills add first-fluke/oh-my-agent
+```
+
+这会把 OMA skill 包装进检测到的 agent 运行时。Skills 教 agent *怎么* 干活；下面的完整 harness 负责检查活 *有没有真干完* —— stop-hook 门禁、产物校验、独立评审，以及只追加的事件日志。
+
+### 完整 harness（门禁、hooks、CLI）
+
+需要 workflow、规则、`oma-config.yaml`、关键词检测 hook 和 `oma agent spawn` 时用这条路径——不只是 skills。
+
+安装脚本会在缺少 bun、uv、serena 时自动安装。
+
+```bash
+# macOS / Linux — 缺少 bun、uv、serena 时自动安装
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
 ```powershell
-# Windows (PowerShell) — 自动安装 bun、uv & serena
+# Windows (PowerShell) — 缺少 bun、uv、serena 时自动安装
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
 ```bash
-# 或者手动运行（任意系统，需要 bun + uv + serena）
+# 或手动（任意 OS，需要 bun + uv + serena）
 bunx oh-my-agent@latest
 ```
 
-### 通过 Agent Package Manager 安装
-
 <details>
-<summary>Microsoft 的 <a href="https://github.com/microsoft/apm">Agent Package Manager</a>（APM）：只分发 skill。点击展开。</summary>
+<summary>或用微软的 <a href="https://github.com/microsoft/apm">Agent Package Manager</a>（APM）只装 skills。展开。</summary>
 
 > 别和 `oma-observability` 的 APM（Application Performance Monitoring）搞混。
 
 ```bash
-# 所有 skill，部署到检测到的每个 runtime
+# 全部 skills，部署到每个检测到的运行时
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
@@ -47,11 +59,11 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 hook 和 `oma agent spawn` CLI 还是用 `bunx oh-my-agent@latest`。一个项目挑一种分发方式就好，免得跑偏。
+APM 只分发 skills。完整 harness 请用 `bunx oh-my-agent@latest`（或上面的脚本）。每个项目只用一种分发方式——如果已经用了 `npx skills add`，在需要门禁/hooks/CLI 之前就保持 skills-only。
 
 </details>
 
-选个预设就能开始：
+选一个预设就可以开始：
 
 | 预设 | 包含内容 |
 |------|---------|

@@ -16,42 +16,54 @@ oh-my-agent делает это утверждение фальсифициру�
 
 ## Быстрый старт
 
+**Самый быстрый путь — skills в ваши агенты (Claude Code, Cursor, Codex и др.):**
+
 ```bash
-# macOS / Linux — автоматически установит bun, uv & serena, если их нет
+npx skills add first-fluke/oh-my-agent
+```
+
+Это ставит пакет skills OMA в обнаруженные runtime агентов. Skills учат агента *как* работать; полный harness (ниже) проверяет, что работа *действительно* произошла — stop-hook гейты, проверка артефактов, независимые судьи и append-only event log.
+
+### Полный harness (гейты, хуки, CLI)
+
+Берите это, когда нужны workflow, правила, `oma-config.yaml`, хуки детекции ключевых слов и `oma agent spawn` — не только skills.
+
+Скрипты установки сами поставят bun, uv и serena, если их нет.
+
+```bash
+# macOS / Linux — поставит bun, uv и serena при отсутствии
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
 ```powershell
-# Windows (PowerShell) — автоматически установит bun, uv & serena, если их нет
+# Windows (PowerShell) — поставит bun, uv и serena при отсутствии
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
 ```bash
-# Или вручную (любая ОС, требуется bun + uv + serena)
+# Или вручную (любая ОС, нужны bun + uv + serena)
 bunx oh-my-agent@latest
 ```
 
-### Установка через Agent Package Manager
-
 <details>
-<summary><a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) от Microsoft: дистрибуция только со скилами. Нажмите, чтобы развернуть.</summary>
+<summary>Или поставьте skills через <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) от Microsoft. Раскрыть.</summary>
 
-> Не путайте с APM (Application Performance Monitoring) из `oma-observability`.
+> Не путать с APM (Application Performance Monitoring) из `oma-observability`.
 
 ```bash
-# Все скилы, разворачиваются во все обнаруженные runtime
+# Все skills во все обнаруженные runtime
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
-# Один скил
+# Один skill
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM поставляет только скилы. Для workflow, правил, `oma-config.yaml`, хуков детекции ключевых слов и CLI `oma agent spawn` используйте `bunx oh-my-agent@latest`. На один проект выбирайте один способ дистрибуции, иначе всё разъедется.
+APM поставляет только skills. Для полного harness используйте `bunx oh-my-agent@latest` (или скрипты выше). Один способ дистрибуции на проект — если уже сделали `npx skills add`, оставайтесь на skills-only, пока не нужны гейты/хуки/CLI.
 
 </details>
 
-Выберите пресет, и готово:
+Выберите пресет и можно начинать:
 
 | Пресет | Что получаете |
 |--------|-------------|

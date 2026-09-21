@@ -16,38 +16,50 @@ O oh-my-agent torna essa afirmação falseável. Um Stop hook se recusa a encerr
 
 ## Inicio Rapido
 
+**Caminho mais rapido — skills nos seus agents (Claude Code, Cursor, Codex e mais):**
+
 ```bash
-# macOS / Linux — instala bun, uv & serena automaticamente se nao tiver
+npx skills add first-fluke/oh-my-agent
+```
+
+Isso instala o pack de skills da OMA nos runtimes de agent detectados. Skills ensinam o agent *como* trabalhar; o harness completo (abaixo) verifica se o trabalho *de fato* aconteceu — gates de stop-hook, verificacao de artefatos, juizes independentes e event log append-only.
+
+### Harness completo (gates, hooks, CLI)
+
+Use quando quiser workflows, regras, `oma-config.yaml`, hooks de deteccao de palavras-chave e `oma agent spawn` — nao so skills.
+
+Os scripts de install instalam bun, uv e serena automaticamente se faltarem.
+
+```bash
+# macOS / Linux — auto-instala bun, uv e serena se faltarem
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
 ```powershell
-# Windows (PowerShell) — instala bun, uv & serena automaticamente se nao tiver
+# Windows (PowerShell) — auto-instala bun, uv e serena se faltarem
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
 ```bash
-# Ou manualmente (qualquer SO, requer bun + uv + serena)
+# Ou manual (qualquer OS, precisa bun + uv + serena)
 bunx oh-my-agent@latest
 ```
 
-### Instalacao via Agent Package Manager
-
 <details>
-<summary><a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) da Microsoft: distribuicao so com skills. Clique para expandir.</summary>
+<summary>Ou instale skills com o <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) da Microsoft. Expandir.</summary>
 
-> Nao confunda com o APM (Application Performance Monitoring) do `oma-observability`.
+> Nao confundir com o APM (Application Performance Monitoring) do `oma-observability`.
 
 ```bash
-# Todos os skills, instalados em cada runtime detectado
+# Todas as skills, em cada runtime detectado
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
-# Um unico skill
+# Uma skill
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-O APM so entrega os skills. Para workflows, regras, `oma-config.yaml`, hooks de deteccao de palavras-chave e a CLI `oma agent spawn`, use `bunx oh-my-agent@latest`. Escolha so um modo de distribuicao por projeto, senao acaba dando ruim.
+O APM so entrega skills. Para o harness completo use `bunx oh-my-agent@latest` (ou os scripts acima). Uma distribuicao por projeto — se ja usou `npx skills add`, fique em skills-only ate precisar de gates/hooks/CLI.
 
 </details>
 

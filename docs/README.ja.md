@@ -16,6 +16,20 @@ oh-my-agent はその主張を反証可能にします。Stop hook は、プロ�
 
 ## クイックスタート
 
+**最短ルート — エージェントにスキルを入れる（Claude Code、Cursor、Codex など）:**
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+検出されたエージェントランタイムに OMA スキルパックを入れます。スキルはエージェントに *どう* 動くかを教え、下のフルハーネスは仕事が *本当に* 終わったかを検証します — ストップフックゲート、成果物検証、独立ジャッジ、追記専用イベントログ。
+
+### フルハーネス（ゲート・フック・CLI）
+
+ワークフロー、ルール、`oma-config.yaml`、キーワード検出フック、`oma agent spawn` まで欲しいときの経路です。スキルだけでは足りない場合に使います。
+
+インストールスクリプトは bun / uv / serena がなければ自動インストールします。
+
 ```bash
 # macOS / Linux — bun & uv & serena がなければ自動インストール
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
@@ -27,31 +41,29 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 ```
 
 ```bash
-# または手動で（任意の OS、bun + uv + serena が必要）
+# または手動（任意 OS、bun + uv + serena が必要）
 bunx oh-my-agent@latest
 ```
 
-### Agent Package Manager でインストール
-
 <details>
-<summary>Microsoft の <a href="https://github.com/microsoft/apm">Agent Package Manager</a>（APM）はスキルだけを配布する仕組み。クリックで展開。</summary>
+<summary>または Microsoft の <a href="https://github.com/microsoft/apm">Agent Package Manager</a>（APM）でスキルだけ入れる。展開。</summary>
 
 > `oma-observability` の APM（Application Performance Monitoring）とは別物です。
 
 ```bash
-# 全スキルを検出されたすべてのランタイムに展開
+# 全スキルを、検出された全ランタイムへ
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
-# スキル 1 つだけ
+# 単一スキル
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM が配るのはスキル一式だけです。ワークフロー、ルール、`oma-config.yaml`、キーワード検出フック、`oma agent spawn` CLI には `bunx oh-my-agent@latest` を使ってください。プロジェクトごとに配布方式は 1 つに絞り、ずれが出ないようにしましょう。
+APM が配るのはスキルだけです。フルハーネスは `bunx oh-my-agent@latest`（または上のスクリプト）を使ってください。すでに `npx skills add` を使っているなら、ゲート/フック/CLI が必要になるまでは skills-only のままがドリフトを減らせます。
 
 </details>
 
-プリセットを選べばすぐ使えます:
+プリセットを選べばすぐ始められます:
 
 | プリセット | 内容 |
 |-----------|------|

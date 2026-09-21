@@ -16,7 +16,18 @@ The installer groups integrations by capability. Hook vendors include Antigravit
 
 ---
 
-## Method 1: one-liner install (recommended)
+## Method 0: skills CLI (fastest for skills-only)
+
+Install the OMA skill pack into detected agent runtimes:
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+This is the lightest on-ramp when you want skills without the full harness. For workflows, rules, hooks, gates, and `oma agent spawn`, use Method 1 or 2 below.
+
+## Method 1: one-liner install (full harness)
+
 
 ```bash
 # macOS / Linux
