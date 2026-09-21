@@ -1,5 +1,13 @@
 # Changelog
 
+## [14.14.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.14.0...cli-v14.14.1) (2026-09-21)
+
+
+### Documentation
+
+* **cli:** replace removed -m/--model spawn flag with --vendor ([#804](https://github.com/first-fluke/oh-my-agent/issues/804)) ([90e426d](https://github.com/first-fluke/oh-my-agent/commit/90e426d85460a473ce04c24c5d5ba2d2f61318a9))
+* lead install CTA with npx skills add ([#801](https://github.com/first-fluke/oh-my-agent/issues/801)) ([51cbf62](https://github.com/first-fluke/oh-my-agent/commit/51cbf62513b6b2eab178fbfa6e3c924f8f3390cf))
+
 ## [14.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.13.4...cli-v14.14.0) (2026-09-19)
 
 
