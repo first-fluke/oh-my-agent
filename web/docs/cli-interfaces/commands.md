@@ -514,7 +514,7 @@ and `--json` attached to the child command.
 Spawn a subagent process.
 
 ```
-oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
+oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 **Arguments:**
@@ -635,7 +635,7 @@ oma agent status session-20260324-143000 qa -r /path/to/project
 Run multiple subagents in parallel.
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **Arguments:**
@@ -768,7 +768,7 @@ oma goal set --workflow ultrawork --gate test --budget-minutes 120
 Register a scheduled agent job. Exactly one of `--cron` or `--every` is required.
 
 ```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **Arguments:**
