@@ -7,7 +7,17 @@ description: The shortest path from an empty project to a verified oh-my-agent p
 
 Use this page when you want to confirm the harness works before reading the full reference. You need a project directory and at least one supported AI CLI or IDE. The installer can bootstrap `bun`, `uv`, Serena, and CUE on macOS, Linux, or Windows; the selected host integration is required for the first prompt, while provider and browser integrations are optional.
 
-## 1. Install the project harness
+## 1. Install
+
+### Fastest path — skills into your agents
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+This installs the OMA skill pack into detected agent runtimes (Claude Code, Cursor, Codex, and more). Skills teach the agent how to work. For stop-hook gates, artifact verification, independent judges, and the `oma` CLI, install the full harness below.
+
+### Full harness (gates, hooks, CLI)
 
 From the project directory, run the bootstrap installer:
 
@@ -30,6 +40,7 @@ bunx oh-my-agent@latest
 ```
 
 The bootstrap scripts install into the current project. Use `oma install --global` when you want a HOME-level install; read [Installation](./installation.md) before mixing project and global installs.
+
 
 ## 2. Check the result
 

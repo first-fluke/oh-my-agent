@@ -16,7 +16,19 @@ oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session
 
 ## Quick Start
 
-The install scripts below auto-install bun, uv, and serena if they're missing.
+**Fastest path — skills into your agents (Claude Code, Cursor, Codex, and more):**
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+That installs the OMA skill pack into detected agent runtimes. Skills teach the agent how to work; the full harness (below) is what checks whether the work actually happened — stop-hook gates, artifact verification, independent judges, and an append-only event log.
+
+### Full harness (gates, hooks, CLI)
+
+Use this when you want workflows, rules, `oma-config.yaml`, keyword-detection hooks, and `oma agent spawn` — not just skills.
+
+The install scripts auto-install bun, uv, and serena if they're missing.
 
 ```bash
 # macOS / Linux — auto-installs bun, uv & serena if missing
@@ -47,7 +59,7 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM ships skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
+APM ships skills only. For the full harness, use `bunx oh-my-agent@latest` (or the scripts above). Prefer one distribution path per project to avoid drift — if you already used `npx skills add`, stick with skills-only unless you need gates/hooks/CLI.
 
 </details>
 
