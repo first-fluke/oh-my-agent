@@ -16,42 +16,54 @@ oh-my-agent ทำให้คำกล่าวอ้างนั้นพิ�
 
 ## Quick Start
 
+**ทางลัดที่เร็วสุด — ใส่ skills ลง agents (Claude Code, Cursor, Codex และอื่น ๆ):**
+
 ```bash
-# macOS / Linux — ติดตั้ง bun, uv และ serena ให้อัตโนมัติหากยังไม่ได้ install ไว้
+npx skills add first-fluke/oh-my-agent
+```
+
+คำสั่งนี้ติดตั้งแพ็ก skills ของ OMA ลง runtime ของ agent ที่ตรวจเจอ Skills สอน agent ว่า *ทำยังไง*; harness เต็ม (ด้านล่าง) ตรวจว่างาน *เกิดจริง* หรือยัง — stop-hook gate, ตรวจ artifact, ผู้ตัดสินอิสระ และ event log แบบ append-only
+
+### Full harness (gates, hooks, CLI)
+
+ใช้เมื่อต้องการ workflow, rules, `oma-config.yaml`, hook ตรวจจับคำสำคัญ และ `oma agent spawn` — ไม่ใช่แค่ skills
+
+สคริปต์ติดตั้งจะลง bun, uv และ serena ให้อัตโนมัติถ้ายังไม่มี
+
+```bash
+# macOS / Linux — ลง bun, uv & serena อัตโนมัติถ้ายังไม่มี
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
 ```powershell
-# Windows (PowerShell) — ติดตั้ง bun, uv และ serena ให้อัตโนมัติหากยังไม่ได้ install ไว้
+# Windows (PowerShell) — ลง bun, uv & serena อัตโนมัติถ้ายังไม่มี
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
 ```bash
-# หรือรันด้วยตนเอง (ทุก OS, ต้องการ bun + uv + serena)
+# หรือทำเอง (ทุก OS ต้องมี bun + uv + serena)
 bunx oh-my-agent@latest
 ```
 
-### ติดตั้งผ่าน Agent Package Manager
-
 <details>
-<summary><a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) จาก Microsoft แจกเฉพาะ skill เท่านั้น คลิกเพื่อขยาย</summary>
+<summary>หรือติดตั้ง skills ด้วย <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) ของ Microsoft กดขยาย</summary>
 
 > อย่าสับสนกับ APM (Application Performance Monitoring) ของ `oma-observability`
 
 ```bash
-# ทุก skill ติดตั้งลงทุก runtime ที่ตรวจพบ
+# skills ทั้งหมด ไปยังทุก runtime ที่ตรวจเจอ
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
-# Skill เดี่ยว
+# skill เดียว
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM แจกแค่ skill เท่านั้น ส่วน workflow, rules, `oma-config.yaml`, hook สำหรับตรวจจับคำสำคัญ และ CLI `oma agent spawn` ให้ใช้ `bunx oh-my-agent@latest` แทน เลือกใช้แค่วิธีเดียวต่อโปรเจกต์ จะได้ไม่ตีกัน
+APM แจกแค่ skills สำหรับ harness เต็มใช้ `bunx oh-my-agent@latest` (หรือสคริปต์ด้านบน) เลือกวิธีแจกจ่ายเดียวต่อโปรเจกต์ — ถ้าใช้ `npx skills add` ไปแล้ว อยู่แบบ skills-only จนกว่าจะต้องการ gates/hooks/CLI
 
 </details>
 
-เลือก Preset ที่ต้องการ แล้วคุณก็พร้อมใช้งาน:
+เลือก preset แล้วเริ่มได้เลย:
 
 | Preset | สิ่งที่คุณจะได้รับ |
 |--------|-------------|
