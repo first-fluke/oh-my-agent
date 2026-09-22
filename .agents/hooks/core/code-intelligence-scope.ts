@@ -11,6 +11,7 @@ import {
   matchesGlob,
   relative,
   resolve,
+  sep,
 } from "node:path";
 import type { CodeIntelligenceProvider } from "./code-intelligence-primer.ts";
 
@@ -85,6 +86,7 @@ function stringList(yaml: string, key: string): string[] | null {
 
 /** Literal directory prefix of a search glob; leading wildcards give no scope. */
 export function searchPathRoot(path: string): string | null {
+  path = path.split(sep).join("/");
   if (!path || /[$`\n\r\\{}()!]/.test(path)) return null;
   const parts = path.split("/");
   const wildcard = parts.findIndex((part) => /[*?[]/.test(part));
@@ -128,12 +130,12 @@ function hasReincludedPaths(
   for (const path of paths) {
     const target = resolve(root, path);
     let current = target;
-    while (current === root || current.startsWith(`${root}/`)) {
+    while (current === root || current.startsWith(`${root}${sep}`)) {
       for (const name of names) {
         for (const line of read(join(current, name)).split(/\r?\n/)) {
           if (!line.startsWith("!")) continue;
           const pattern = line.slice(1).trim().replace(/^\//, "");
-          const scope = relative(current, target);
+          const scope = relative(current, target).split(sep).join("/");
           const anchor = searchPathRoot(pattern);
           if (
             !scope ||
@@ -288,7 +290,9 @@ export function isExcludedSearchScope(
   for (const root of roots) {
     const literal = searchPathRoot(root);
     if (!literal) return false;
-    const path = relative(projectDir, resolve(projectDir, literal));
+    const path = relative(projectDir, resolve(projectDir, literal))
+      .split(sep)
+      .join("/");
     if (!path) return false;
     // Explicit external paths, such as uv's cache, are outside this project.
     if (path === ".." || path.startsWith(`../`) || isAbsolute(path)) continue;
