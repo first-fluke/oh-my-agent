@@ -1,5 +1,16 @@
 # Changelog
 
+## [14.14.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.14.1...cli-v14.14.2) (2026-09-22)
+
+
+### Bug Fixes
+
+* **agent:** share parallel dispatch preparation ([baa1071](https://github.com/first-fluke/oh-my-agent/commit/baa1071fa039bdd1a383066b6a1e5b651527053f))
+* **cli:** enforce boundaries for all literal imports ([3c908fe](https://github.com/first-fluke/oh-my-agent/commit/3c908fe54b712ff2221a3066913b928b85ab6b46))
+* **cli:** normalize virtual boundary paths on windows ([f992bf4](https://github.com/first-fluke/oh-my-agent/commit/f992bf4e5d16ab142acafab5d5c99dc18b06013b))
+* **config:** preserve empty vendor selections ([24fb55a](https://github.com/first-fluke/oh-my-agent/commit/24fb55a7e4ec0b393f5c1a56dc7a4b6a9f8b7617))
+* **verify:** detect hardcoded secrets reliably ([b0d73f4](https://github.com/first-fluke/oh-my-agent/commit/b0d73f415829a71cdd9eff92c14866c0fef586b1))
+
 ## [14.14.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.14.0...cli-v14.14.1) (2026-09-21)
 
 
