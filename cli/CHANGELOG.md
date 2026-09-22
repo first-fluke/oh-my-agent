@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.14.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.14.2...cli-v14.14.3) (2026-09-22)
+
+
+### Bug Fixes
+
+* **hooks:** allow native search in provider-excluded paths ([#806](https://github.com/first-fluke/oh-my-agent/issues/806)) ([da6cc67](https://github.com/first-fluke/oh-my-agent/commit/da6cc678071b61a8b6283958c585902a07de4947))
+
 ## [14.14.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.14.1...cli-v14.14.2) (2026-09-22)
 
 
