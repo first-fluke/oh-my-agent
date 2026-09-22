@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import type { VerifyCheck } from "../../types/index.js";
 import {
   checkCommandResult,
@@ -10,22 +10,51 @@ import {
 } from "./check-utils.js";
 
 export function checkHardcodedSecrets(workspace: string): VerifyCheck {
-  const patterns = ["*.py", "*.ts", "*.tsx", "*.js", "*.dart"];
+  const excludedDirectories = new Set([
+    ".git",
+    "node_modules",
+    "test",
+    "tests",
+    "__tests__",
+    "example",
+    "examples",
+  ]);
   const secretPattern =
-    "(password|secret|api_key|token)\\s*=\\s*['\"][^'\"]{8,}";
+    /(?:^|[\s;,.({[])[\w$]*(?:password|secret|api_key|token)\s*=\s*(['"])[^'"\r\n]{8,}\1/;
+  const pending = [workspace];
 
-  for (const pattern of patterns) {
-    const result = runCommand(
-      `grep -rn --include="${pattern}" -E "${secretPattern}" . 2>/dev/null | grep -v test | grep -v example | grep -v node_modules | head -1`,
-      workspace,
-    );
-    if (result) {
-      return createCheck(
-        "Hardcoded Secrets",
-        "fail",
-        `Found in: ${result.split(":")[0]}`,
-      );
+  try {
+    while (pending.length > 0) {
+      const directory = pending.pop() as string;
+      for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const path = join(directory, entry.name);
+        if (entry.isDirectory()) {
+          if (!excludedDirectories.has(entry.name)) pending.push(path);
+          continue;
+        }
+        // Match fixture names, not substrings in production paths or values.
+        if (
+          !entry.isFile() ||
+          !/\.(py|ts|tsx|js|dart)$/.test(entry.name) ||
+          /(?:^|[._-])(?:test|spec|example)(?:[._-]|$)/.test(entry.name)
+        ) {
+          continue;
+        }
+        if (secretPattern.test(readFileSync(path, "utf8"))) {
+          return createCheck(
+            "Hardcoded Secrets",
+            "fail",
+            `Found in: ${relative(workspace, path)}`,
+          );
+        }
+      }
     }
+  } catch (error) {
+    return createCheck(
+      "Hardcoded Secrets",
+      "fail",
+      `Could not scan source files: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
   return createCheck("Hardcoded Secrets", "pass", "None detected");
 }
