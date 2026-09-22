@@ -44,6 +44,12 @@ The canonical event envelope, durable writes, session index operations, and meta
 
 Agent runs use `state/agent-results.ts` for structured claims, actual verification receipts, and content hashes. See [execution evidence and graph queries](../docs/migrations/execution-evidence.md) for usage and migration from Markdown-only completion.
 
+Single and parallel process launches share `io/runtime-dispatch/prepared-agent-dispatch.ts` for workspace options and OpenCode primary wrappers. Parallel tasks use their individual run IDs for wrapper filenames so one task's cleanup cannot remove another task's wrapper.
+
+`io/schedule/` owns scheduler manifests, OS adapters, and reconciliation shared by the schedule and update commands. `commands/schedule/` retains command behavior and compatibility exports; update imports reconciliation from the shared I/O layer.
+
+`io/video/` owns video configuration and Remotion toolchain setup shared by video and update. The boundary checker parses import declarations, re-exports, literal dynamic imports, and `require()` calls; comments and strings containing import examples are ignored.
+
 ## Path alias
 
 Use `@cli/*` (mapped to `cli/*` in `tsconfig.json`) for cross-slice imports. Example:

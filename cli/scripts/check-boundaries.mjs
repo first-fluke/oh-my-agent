@@ -3,11 +3,13 @@
 // See cli/ARCHITECTURE.md.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import * as ts from "typescript/unstable/ast";
+import { createVirtualFileSystem } from "typescript/unstable/fs";
+import { API } from "typescript/unstable/sync";
 
 const CLI_DIR = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const COMMANDS_DIR = join(CLI_DIR, "commands");
 
 // Real shared dirs under commands/ that every slice may import.
 const ALLOWED_SHARED = new Set(["migrations"]);
@@ -50,57 +52,160 @@ function walk(dir) {
     const full = join(dir, name);
     const stat = statSync(full);
     if (stat.isDirectory()) entries.push(...walk(full));
-    else if (/\.(ts|tsx|mjs|js)$/.test(name) && !name.endsWith(".d.ts"))
+    else if (/\.(ts|tsx|mjs|js)$/.test(name) && !name.endsWith(".d.ts")) {
       entries.push(full);
+    }
   }
   return entries;
 }
 
 /** Slice name (top-level dir under commands/) for an absolute path, or null. */
-function sliceNameOf(absPath) {
-  const rel = relative(COMMANDS_DIR, absPath);
+function sliceNameOf(commandsDir, absPath) {
+  const rel = relative(commandsDir, absPath);
   if (rel.startsWith("..")) return null;
   const head = rel.split(sep)[0] ?? null;
   return head?.includes(".") ? null : head;
 }
 
-const violations = [];
-const files = walk(COMMANDS_DIR);
-const importRe = /(?:from|require\()\s*["']([^"']+)["']/g;
+function moduleSpecifierOf(node) {
+  if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+    return node.moduleSpecifier;
+  }
+  if (
+    ts.isImportEqualsDeclaration(node) &&
+    ts.isExternalModuleReference(node.moduleReference)
+  ) {
+    return node.moduleReference.expression;
+  }
+  if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
+    return node.argument.literal;
+  }
+  if (
+    ts.isCallExpression(node) &&
+    (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+      (ts.isIdentifier(node.expression) && node.expression.text === "require"))
+  ) {
+    return node.arguments[0];
+  }
+  return undefined;
+}
 
-for (const file of files) {
-  const slice = sliceNameOf(file);
-  if (!slice) continue;
-  const src = readFileSync(file, "utf8");
-  for (const match of src.matchAll(importRe)) {
-    const imp = match[1];
+function isLiteralModuleSpecifier(node) {
+  return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node);
+}
 
-    // Resolve the import to an absolute path: relative specifiers against the
-    // importing file's directory, @cli/* against CLI_DIR. Bare specifiers
-    // (node:fs, npm packages) are ignored.
-    let resolved = null;
-    if (imp.startsWith(".")) {
-      resolved = resolve(dirname(file), imp);
-    } else if (imp.startsWith("@cli/")) {
-      resolved = resolve(CLI_DIR, imp.slice("@cli/".length));
+function collectImportsFromBatch(files) {
+  const configPath = resolve("/oma-boundary-check/tsconfig.json");
+  const sourceRoot = resolve("/oma-boundary-check/files");
+  const virtualPaths = new Map(
+    files.map((file, index) => [
+      file,
+      join(sourceRoot, `${index}${extname(file)}`),
+    ]),
+  );
+  const virtualFiles = Object.fromEntries(
+    files.map((file) => [virtualPaths.get(file), readFileSync(file, "utf8")]),
+  );
+  virtualFiles[configPath] = JSON.stringify({
+    compilerOptions: {
+      allowJs: true,
+      noEmit: true,
+      noLib: true,
+      noResolve: true,
+    },
+    files: [...virtualPaths.values()],
+  });
+
+  const api = new API({
+    cwd: process.cwd(),
+    fs: createVirtualFileSystem(virtualFiles),
+  });
+  try {
+    const snapshot = api.updateSnapshot({ openProjects: [configPath] });
+    try {
+      const program = snapshot.getProject(configPath).program;
+      const imports = new Map();
+      for (const file of files) {
+        const sourceFile = program.getSourceFile(virtualPaths.get(file));
+        if (!sourceFile) throw new Error(`Could not parse ${file}`);
+        const specifiers = [];
+        const visit = (node) => {
+          const specifier = moduleSpecifierOf(node);
+          if (specifier && isLiteralModuleSpecifier(specifier)) {
+            specifiers.push(specifier.text);
+          }
+          node.forEachChild(visit);
+        };
+        visit(sourceFile);
+        imports.set(file, specifiers);
+      }
+      return imports;
+    } finally {
+      snapshot.dispose();
     }
-    if (!resolved) continue;
-
-    const otherSlice = sliceNameOf(resolved);
-    if (
-      otherSlice &&
-      otherSlice !== slice &&
-      !ALLOWED_SHARED.has(otherSlice) &&
-      !ALLOWED_EDGES.has(`${slice}->${otherSlice}`)
-    ) {
-      violations.push(`${relative(CLI_DIR, file)} -> commands/${otherSlice}`);
-    }
+  } finally {
+    api.close();
   }
 }
 
-if (violations.length) {
-  console.error("cross-slice imports detected:");
-  for (const v of violations) console.error(`  ${v}`);
-  process.exit(1);
+function collectImports(files) {
+  const imports = new Map();
+  // TS 7's sync API can terminate its child on a whole-repository snapshot.
+  // Bound snapshot size while still parsing every file; no code is emitted.
+  for (let start = 0; start < files.length; start += 20) {
+    for (const [file, specifiers] of collectImportsFromBatch(
+      files.slice(start, start + 20),
+    )) {
+      imports.set(file, specifiers);
+    }
+  }
+  return imports;
 }
-console.log("boundaries ok");
+
+export function findBoundaryViolations({
+  cliDir = CLI_DIR,
+  commandsDir = join(cliDir, "commands"),
+} = {}) {
+  const violations = [];
+  const files = walk(commandsDir);
+  const imports = collectImports(files);
+
+  for (const file of files) {
+    const slice = sliceNameOf(commandsDir, file);
+    if (!slice) continue;
+    for (const imp of imports.get(file) ?? []) {
+      // Resolve the import to an absolute path: relative specifiers against the
+      // importing file's directory, @cli/* against CLI_DIR. Bare specifiers
+      // (node:fs, npm packages) are ignored.
+      let resolved = null;
+      if (imp.startsWith(".")) {
+        resolved = resolve(dirname(file), imp);
+      } else if (imp.startsWith("@cli/")) {
+        resolved = resolve(cliDir, imp.slice("@cli/".length));
+      }
+      if (!resolved) continue;
+
+      const otherSlice = sliceNameOf(commandsDir, resolved);
+      if (
+        otherSlice &&
+        otherSlice !== slice &&
+        !ALLOWED_SHARED.has(otherSlice) &&
+        !ALLOWED_EDGES.has(`${slice}->${otherSlice}`)
+      ) {
+        violations.push(`${relative(cliDir, file)} -> commands/${otherSlice}`);
+      }
+    }
+  }
+
+  return violations;
+}
+
+if (resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
+  const violations = findBoundaryViolations();
+  if (violations.length) {
+    console.error("cross-slice imports detected:");
+    for (const violation of violations) console.error(`  ${violation}`);
+    process.exit(1);
+  }
+  console.log("boundaries ok");
+}

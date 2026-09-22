@@ -515,8 +515,8 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
             { describeToolchain, ensureLatestToolchain, ensureRemotionSkills },
             { loadVideoConfig },
           ] = await Promise.all([
-            import("../video/internal/remotion-workspace.js"),
-            import("../video/config.js"),
+            import("../../io/video/internal/remotion-workspace.js"),
+            import("../../io/video/config.js"),
           ]);
           if (
             installedSkillNames.includes("oma-video") &&
@@ -588,7 +588,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         // (this is how the weekly `schedule:run` jobs silently died after
         // the command-path standardization). Re-sync is warn-only.
         try {
-          const { syncSchedules } = await import("../schedule/command.js");
+          const { syncSchedules } = await import("../../io/schedule/sync.js");
           const sched = await syncSchedules();
           if (sched.synced > 0 || sched.resynced > 0) {
             ui.note(

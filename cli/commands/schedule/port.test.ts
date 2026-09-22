@@ -25,35 +25,35 @@ const schtasksAvailable = vi.hoisted(() => vi.fn<() => Promise<boolean>>());
 // vitest v4 requires a `function`/`class` (not arrow) for a mock invoked with
 // `new`. Classes are used here because biome's useArrowFunction lint rewrites a
 // plain `function` expression back into an arrow, reintroducing the failure.
-vi.mock("./adapters/launchd.js", () => ({
+vi.mock("../../io/schedule/adapters/launchd.js", () => ({
   LaunchdAdapter: class {
     isAvailable = launchdAvailable;
     name = "LaunchdAdapter";
   },
 }));
 
-vi.mock("./adapters/systemd.js", () => ({
+vi.mock("../../io/schedule/adapters/systemd.js", () => ({
   SystemdAdapter: class {
     isAvailable = systemdAvailable;
     name = "SystemdAdapter";
   },
 }));
 
-vi.mock("./adapters/crontab.js", () => ({
+vi.mock("../../io/schedule/adapters/crontab.js", () => ({
   CrontabAdapter: class {
     isAvailable = crontabAvailable;
     name = "CrontabAdapter";
   },
 }));
 
-vi.mock("./adapters/schtasks.js", () => ({
+vi.mock("../../io/schedule/adapters/schtasks.js", () => ({
   SchtasksAdapter: class {
     isAvailable = schtasksAvailable;
     name = "SchtasksAdapter";
   },
 }));
 
-import { selectAdapter } from "./port.js";
+import { selectAdapter } from "../../io/schedule/port.js";
 
 describe("selectAdapter", () => {
   let origPlatform: NodeJS.Platform;

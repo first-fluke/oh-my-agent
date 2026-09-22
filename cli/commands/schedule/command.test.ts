@@ -47,10 +47,21 @@ const runScheduledJobSpy = vi.hoisted(() => vi.fn());
 
 vi.mock("node:fs", () => ({ default: fsMock, ...fsMock }));
 vi.mock("./manifest.js", () => manifestMock);
+vi.mock("../../io/schedule/manifest.js", () => manifestMock);
 vi.mock("./port.js", async (importOriginal) => ({
   // Keep the pure helpers (expectedScheduleCommand / isStaleScheduleCommand);
   // only the adapter selection is faked.
   ...(await importOriginal<typeof import("./port.js")>()),
+  selectAdapter: vi.fn(async () => ({
+    upsert: upsertSpy,
+    remove: removeSpy,
+    listLabels: listLabelsSpy,
+    readCommand: readCommandSpy,
+    isAvailable: async () => true,
+  })),
+}));
+vi.mock("../../io/schedule/port.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../io/schedule/port.js")>()),
   selectAdapter: vi.fn(async () => ({
     upsert: upsertSpy,
     remove: removeSpy,

@@ -25,7 +25,7 @@ const remotionState = vi.hoisted(() => ({
 }));
 
 // Vendor reconciliation must not inspect or update the developer's toolchain.
-vi.mock("../video/internal/remotion-workspace.js", () => remotionState);
+vi.mock("../../io/video/internal/remotion-workspace.js", () => remotionState);
 
 const serenaState = vi.hoisted(() => ({
   ensureSerenaProject: vi.fn(() => ({ configured: false, registered: false })),
@@ -114,7 +114,7 @@ vi.mock("../../io/tarball.js", () => ({
   })),
 }));
 
-vi.mock("../schedule/command.js", () => ({
+vi.mock("../../io/schedule/sync.js", () => ({
   syncSchedules: syncSchedulesSpy,
 }));
 vi.mock("../../io/git-recommended.js", () => ({
