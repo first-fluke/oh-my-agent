@@ -8,10 +8,9 @@ import { loadOmaConfig } from "../../utils/config.js";
 export function readVendorsFromConfig(installRoot: string): CliVendor[] {
   const raw: unknown = loadOmaConfig(installRoot)?.vendors;
   if (!Array.isArray(raw)) return [...ALL_CLI_VENDORS];
-  const vendors = raw.filter(
+  return raw.filter(
     (vendor): vendor is CliVendor => typeof vendor === "string",
   );
-  return vendors.length ? vendors : [...ALL_CLI_VENDORS];
 }
 
 /** Write selected vendors to oma-config.yaml. */
@@ -23,11 +22,13 @@ export function writeVendorsToConfig(
   if (!fs.existsSync(configPath)) return;
 
   let content = fs.readFileSync(configPath, "utf-8");
-  const vendorsBlock = `vendors:\n${vendors.map((v) => `  - ${v}`).join("\n")}`;
+  const vendorsBlock = vendors.length
+    ? `vendors:\n${vendors.map((v) => `  - ${v}`).join("\n")}`
+    : "vendors: []";
 
   if (/^vendors:/m.test(content)) {
     content = content.replace(
-      /^vendors:\s*\n(?:\s+-\s+\S+\n?)*/m,
+      /^vendors:[^\n]*(?:\n[\t ]+-\s+\S+[^\n]*)*/m,
       `${vendorsBlock}\n`,
     );
   } else {

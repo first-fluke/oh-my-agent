@@ -76,6 +76,12 @@ describe("readVendorsFromConfig", () => {
     const vendors = readVendorsFromConfig(dir);
     expect(vendors).toEqual(["claude"]);
   });
+
+  it("preserves an explicit empty vendor selection", () => {
+    const dir = createTemp("language: en\nvendors: []\n");
+
+    expect(readVendorsFromConfig(dir)).toEqual([]);
+  });
 });
 
 describe("writeVendorsToConfig", () => {
@@ -142,5 +148,31 @@ describe("writeVendorsToConfig", () => {
     const result = readVendorsFromConfig(dir);
 
     expect(result).toEqual([...vendors]);
+  });
+
+  it("writes an empty selection as an explicit YAML array", () => {
+    const dir = createTemp("language: ko\n");
+
+    writeVendorsToConfig(dir, []);
+
+    const content = readFileSync(
+      join(dir, ".agents", "oma-config.yaml"),
+      "utf-8",
+    );
+    expect(content).toContain("vendors: []");
+    expect(readVendorsFromConfig(dir)).toEqual([]);
+  });
+
+  it("can clear and later replace a selection without changing other settings", () => {
+    const dir = createTemp("vendors:\n  - claude\nlanguage: ko\n");
+
+    writeVendorsToConfig(dir, []);
+    expect(readVendorsFromConfig(dir)).toEqual([]);
+
+    writeVendorsToConfig(dir, ["codex"]);
+    expect(readVendorsFromConfig(dir)).toEqual(["codex"]);
+    expect(
+      readFileSync(join(dir, ".agents", "oma-config.yaml"), "utf-8"),
+    ).toContain("language: ko");
   });
 });

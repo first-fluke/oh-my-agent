@@ -113,7 +113,9 @@ describe("link --dry-run (real project writers)", () => {
    * existing `.claude/skills/` dir arms the symlink refresh, and `git init`
    * arms the .gitignore writer.
    */
-  function makeProject(): string {
+  function makeProject(
+    config = "vendors:\n  - claude\n  - cursor\n  - antigravity\n  - kimi\n  - grok\n",
+  ): string {
     const root = mkdtempSync(join(tmpdir(), "oma-link-dryrun-"));
     tempRoots.push(root);
 
@@ -126,13 +128,7 @@ describe("link --dry-run (real project writers)", () => {
     // considers vendors that already have one.
     mkdirSync(join(root, ".claude", "skills"), { recursive: true });
 
-    writeFileSync(
-      join(root, ".agents", "oma-config.yaml"),
-      // antigravity / kimi / grok are selected on purpose: their blocks are the
-      // ones that write outside the install root.
-      "vendors:\n  - claude\n  - cursor\n  - antigravity\n  - kimi\n  - grok\n",
-      "utf-8",
-    );
+    writeFileSync(join(root, ".agents", "oma-config.yaml"), config, "utf-8");
     writeFileSync(
       join(root, ".agents", "rules", "quality.md"),
       "---\ndescription: Quality rules\nalwaysApply: true\n---\n\nBe careful.\n",
@@ -216,6 +212,16 @@ describe("link --dry-run (real project writers)", () => {
     expect(after).not.toContain(".cursor/rules");
     expect(after).not.toContain(".claude/skills/oma-frontend");
     expect(after).not.toContain(".claude/agents");
+  });
+
+  it("does not select vendors when the config records an empty array", () => {
+    const root = makeProject("vendors: []\n");
+    process.chdir(root);
+
+    const result = link({ quiet: true, dryRun: true });
+
+    expect(result.vendors).toEqual([]);
+    expect(result.plan).toEqual([]);
   });
 
   // Control: proves the assertions above are armed rather than vacuous. If the
