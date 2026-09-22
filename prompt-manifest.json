@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "14.14.2",
-  "releaseDate": "2026-09-22T05:51:27.760Z",
+  "releaseDate": "2026-09-22T08:38:00.479Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -121,13 +121,18 @@
     },
     {
       "path": ".agents/hooks/core/code-intelligence-guard.ts",
-      "sha256": "fedbd6bbf688f0de55a1c3381421aee51381527b3845c69a4f8dae08eba3cee6",
-      "size": 9271
+      "sha256": "5f28017b3947f92f9032f29e6593b481264cd89b57aa20f802a026c7438e0120",
+      "size": 14324
     },
     {
       "path": ".agents/hooks/core/code-intelligence-primer.ts",
-      "sha256": "c539eeb3766591dd75015d89fd8f90094567f1bbd2ef0ce8d398c819fa880c82",
-      "size": 11373
+      "sha256": "74e6e1508e3beda337e7b20afb4eed8cbb6ae6085d1f1ec6a03e4e6b84a586cf",
+      "size": 11537
+    },
+    {
+      "path": ".agents/hooks/core/code-intelligence-scope.ts",
+      "sha256": "b1f7dcc56fb9569c33cd3ffc488090e3d2283947d85f623e88d718d5fdc43029",
+      "size": 9938
     },
     {
       "path": ".agents/hooks/core/constants.ts",
@@ -2181,6 +2186,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 434
+    "totalFiles": 435
   }
 }
