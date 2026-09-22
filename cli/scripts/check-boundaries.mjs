@@ -3,7 +3,15 @@
 // See cli/ARCHITECTURE.md.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, extname, join, relative, resolve, sep } from "node:path";
+import {
+  dirname,
+  extname,
+  join,
+  posix,
+  relative,
+  resolve,
+  sep,
+} from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ts from "typescript/unstable/ast";
 import { createVirtualFileSystem } from "typescript/unstable/fs";
@@ -95,12 +103,14 @@ function isLiteralModuleSpecifier(node) {
 }
 
 function collectImportsFromBatch(files) {
-  const configPath = resolve("/oma-boundary-check/tsconfig.json");
-  const sourceRoot = resolve("/oma-boundary-check/files");
+  // The TypeScript virtual filesystem canonicalizes paths with `/` even on
+  // Windows. These are virtual paths only; source files keep their native paths.
+  const configPath = "/oma-boundary-check/tsconfig.json";
+  const sourceRoot = "/oma-boundary-check/files";
   const virtualPaths = new Map(
     files.map((file, index) => [
       file,
-      join(sourceRoot, `${index}${extname(file)}`),
+      posix.join(sourceRoot, `${index}${extname(file)}`),
     ]),
   );
   const virtualFiles = Object.fromEntries(
@@ -123,7 +133,13 @@ function collectImportsFromBatch(files) {
   try {
     const snapshot = api.updateSnapshot({ openProjects: [configPath] });
     try {
-      const program = snapshot.getProject(configPath).program;
+      const project = snapshot.getProject(configPath);
+      if (!project) {
+        throw new Error(
+          `Could not open virtual boundary-check project at ${configPath}`,
+        );
+      }
+      const program = project.program;
       const imports = new Map();
       for (const file of files) {
         const sourceFile = program.getSourceFile(virtualPaths.get(file));
