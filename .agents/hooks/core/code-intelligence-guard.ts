@@ -4,8 +4,8 @@
 // Works with: Claude Code, Codex CLI, Cursor, Grok, Kimi, Kiro, Qwen Code.
 //
 // Scope decisions:
-//  - Native search tools (`Grep`, `Glob`) are denied outright: Serena's
-//    `search_for_pattern` / `find_file` cover the same ground. `Read` / `LS`
+//  - Native searches confined to provider-excluded or external paths pass.
+//    Other `Grep` / `Glob` calls use the provider. `Read` / `LS`
 //    style tools are never touched — the provider contract is about discovery,
 //    not reading.
 //  - Shell commands are denied only when a segment's leading command is a
@@ -22,11 +22,16 @@
 //    no argument to carry a token, so the fallback for those is the shell path.
 
 import { readFileSync } from "node:fs";
+import { isAbsolute, resolve } from "node:path";
 import {
   type CodeIntelligenceProvider,
   detectCodeIntelligenceGuardMode,
   detectCodeIntelligenceProvider,
 } from "./code-intelligence-primer.ts";
+import {
+  isExcludedSearchScope,
+  searchPathRoot,
+} from "./code-intelligence-scope.ts";
 import { makePreToolDenyOutput } from "./hook-output.ts";
 import type { HandlerCtx, HandlerResult, HookInput, Vendor } from "./types.ts";
 import { getProjectDir } from "./vendor-detect.ts";
@@ -71,6 +76,11 @@ function tokenize(segment: string): string[] {
   return (segment.match(/"[^"]*"|'[^']*'|\S+/g) ?? []).map((t) =>
     t.replace(/^["']|["']$/g, ""),
   );
+}
+
+function commandSegments(command: string): string[] {
+  // Preserve quoted regex alternation, semicolons and spaces.
+  return command.match(/(?:"[^"]*"|'[^']*'|[^;|&\n])+/g) ?? [];
 }
 
 /**
@@ -127,7 +137,7 @@ function findHasNamePredicate(args: string[]): boolean {
  * Exported for tests.
  */
 export function detectNativeSearchCommand(command: string): string | null {
-  const segments = command.split(/&&|\|\||;|\||\n/);
+  const segments = commandSegments(command);
   for (const segment of segments) {
     const tokens = stripPrefixes(tokenize(segment.trim()));
     if (tokens.length === 0) continue;
@@ -140,6 +150,163 @@ export function detectNativeSearchCommand(command: string): string | null {
     if (bin === "git" && args[0] === "grep") return "git grep";
   }
   return null;
+}
+
+// Options with values must not be mistaken for patterns or search roots.
+const VALUE_OPTIONS = new Set([
+  "-e",
+  "-f",
+  "-g",
+  "-t",
+  "-T",
+  "-A",
+  "-B",
+  "-C",
+  "-m",
+  "-j",
+  "-E",
+  "--regexp",
+  "--file",
+  "--glob",
+  "--iglob",
+  "--type",
+  "--type-not",
+  "--after-context",
+  "--before-context",
+  "--context",
+  "--max-count",
+  "--max-depth",
+  "--maxdepth",
+  "--max-filesize",
+  "--encoding",
+  "--threads",
+  "--color",
+  "--colors",
+  "--sort",
+  "--sortr",
+  "--ignore-file",
+  "--include",
+  "--exclude",
+  "--exclude-dir",
+  "--extension",
+  "-d",
+  "--search-path",
+  "--base-directory",
+]);
+const FD_VALUE_OPTIONS = new Set([
+  "-e",
+  "--extension",
+  "-t",
+  "--type",
+  "-E",
+  "--exclude",
+  "-d",
+  "--max-depth",
+  "--color",
+  "-j",
+  "--threads",
+]);
+const FLAG_OPTIONS = new Set([
+  "--hidden",
+  "--no-ignore",
+  "--no-ignore-vcs",
+  "--no-ignore-parent",
+  "--no-ignore-global",
+  "--files",
+  "--files-with-matches",
+  "--files-without-match",
+  "--line-number",
+  "--ignore-case",
+  "--smart-case",
+  "--fixed-strings",
+  "--recursive",
+  "--dereference-recursive",
+  "--heading",
+  "--no-heading",
+  "--count",
+  "--only-matching",
+  "--follow",
+  "--null",
+]);
+
+function searchRoots(bin: string, args: string[]): string[] | null {
+  if (bin === "git") return null; // revisions/pathspec magic need the explicit fallback
+  if (bin === "find") {
+    if (
+      args.some((arg) => ["-exec", "-execdir", "-ok", "-okdir"].includes(arg))
+    )
+      return null;
+    const roots: string[] = [];
+    for (const arg of args) {
+      if (arg.startsWith("-") || arg === "(") break;
+      roots.push(arg);
+    }
+    return roots;
+  }
+  const positional: string[] = [];
+  let hasPattern = false;
+  let filesOnly = false;
+  let options = true;
+  const fd = bin === "fd" || bin === "fdfind";
+  const grep = GREP_BINARIES.has(bin);
+  const valueOptions = fd ? FD_VALUE_OPTIONS : VALUE_OPTIONS;
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i] ?? "";
+    if (options && arg === "--") {
+      options = false;
+      continue;
+    }
+    if (options && arg.startsWith("-")) {
+      if (bin === "ag" || bin === "ack") return null;
+      const option = arg.split("=", 1)[0] ?? arg;
+      if (option === "--search-path" || option === "--base-directory")
+        return null;
+      if (option === "--files" && bin === "rg") filesOnly = true;
+      if (grep && /^-[EF]+$/.test(arg)) continue;
+      if (fd && /^-[fFHILlis0]+$/.test(arg)) continue;
+      if (valueOptions.has(option)) {
+        if (["-e", "-f", "--regexp", "--file"].includes(option) && !fd)
+          hasPattern = true;
+        if (!arg.includes("=")) i++;
+      } else if (
+        FLAG_OPTIONS.has(option) ||
+        (!fd && /^-[nivwoxlLcrRshuUqFa0]+$/.test(arg))
+      ) {
+        // Flags with no following value.
+      } else if (!fd && /^-[efgABCmjtT].+/.test(arg)) {
+        if (/^-[ef]/.test(arg)) hasPattern = true;
+      } else {
+        return null; // Unknown options may consume the apparent path.
+      }
+    } else {
+      positional.push(arg);
+    }
+  }
+  if (!hasPattern && !filesOnly) positional.shift();
+  return positional;
+}
+
+function shellSearchRoots(
+  command: string,
+  projectDir: string,
+): string[] | null {
+  // Do not guess expansions, redirections, subshells or changing directories.
+  if (/[$`<>\\()]/.test(command)) return null;
+  const roots: string[] = [];
+  for (const segment of commandSegments(command)) {
+    const tokens = stripPrefixes(tokenize(segment.trim()));
+    const bin = basename(tokens[0] ?? "");
+    if (["cd", "pushd", "popd"].includes(bin)) return null;
+    if (!detectNativeSearchCommand(segment)) continue;
+    const paths = searchRoots(bin, tokens.slice(1));
+    if (!paths?.length) return null;
+    for (const path of paths) {
+      const literal = searchPathRoot(path);
+      if (!literal) return null;
+      roots.push(resolve(projectDir, literal));
+    }
+  }
+  return roots;
 }
 
 // --- Deny reasons ---
@@ -175,7 +342,8 @@ function denyReason(
     `[oma code-intelligence-guard] Blocked ${detail}: ${label} is the configured code-intelligence provider ` +
     `(providers.code_intelligence in .agents/oma-config.yaml). Use ${replacementFor(provider, kind)} instead; ` +
     `load the deferred ${label} tools first if needed. ` +
-    `Only if ${label} is unavailable or timed out this session, run the search through the shell tool ` +
+    `Searches scoped entirely to confirmed provider exclusions or external paths are allowed. ` +
+    `If ${label} is unavailable, timed out, or cannot search the requested path (including unrecognized exclusions), run the search through the shell tool ` +
     `with the command prefixed by ${BYPASS_TOKEN}. ` +
     `Set providers.code_intelligence_guard: off to disable this guard.`
   );
@@ -215,6 +383,22 @@ export async function run(
   const provider = detectCodeIntelligenceProvider(projectDir);
   if (!provider) return null;
   if (detectCodeIntelligenceGuardMode(projectDir) === "off") return null;
+
+  let roots: string[] | null = null;
+  if (isShell) {
+    roots = shellSearchRoots(toolInput.command as string, projectDir);
+  } else if (isGlob && typeof toolInput.pattern === "string") {
+    const base =
+      typeof toolInput.path === "string" ? toolInput.path : projectDir;
+    const target = isAbsolute(toolInput.pattern)
+      ? toolInput.pattern
+      : `${resolve(projectDir, base)}/${toolInput.pattern}`;
+    const root = searchPathRoot(target);
+    if (root) roots = [root];
+  } else if (typeof toolInput.path === "string") {
+    roots = [toolInput.path];
+  }
+  if (roots && isExcludedSearchScope(provider, projectDir, roots)) return null;
 
   if (isGrep) {
     return {
