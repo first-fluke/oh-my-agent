@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.10.2](https://github.com/first-fluke/oh-my-agent/compare/web-v6.10.1...web-v6.10.2) (2026-09-22)
+
+
+### Bug Fixes
+
+* **hooks:** allow native search in provider-excluded paths ([#806](https://github.com/first-fluke/oh-my-agent/issues/806)) ([da6cc67](https://github.com/first-fluke/oh-my-agent/commit/da6cc678071b61a8b6283958c585902a07de4947))
+
 ## [6.10.1](https://github.com/first-fluke/oh-my-agent/compare/web-v6.10.0...web-v6.10.1) (2026-09-21)
 
 
