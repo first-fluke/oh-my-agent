@@ -11,17 +11,11 @@ import {
 import { createOrcaSubagent } from "../../io/orca-subagent.js";
 import { loadUserConfig } from "../../io/runtime-dispatch/config-loader.js";
 import { detectRuntimeVendor } from "../../io/runtime-dispatch/detect.js";
-import {
-  createOpencodeSpawnWrapper,
-  type OpencodeWrapper,
-  removeOpencodeSpawnWrapper,
-  swapOpencodeAgentArg,
-} from "../../io/runtime-dispatch/opencode-wrapper.js";
+import { prepareAgentDispatch } from "../../io/runtime-dispatch/prepared-agent-dispatch.js";
 import {
   targetVendorNeedsPty,
   wrapInvocationWithPty,
 } from "../../io/runtime-dispatch/pty-wrap.js";
-import { planDispatch } from "../../io/runtime-dispatch.js";
 import {
   checkCap,
   formatPromptMessage,
@@ -372,26 +366,43 @@ export async function spawnAgent(
   if (readOnly) {
     console.log(color.dim("  Mode: read-only (auto-approve suppressed)"));
   }
-  let dispatch: ReturnType<typeof planDispatch>;
+  let prepared: ReturnType<typeof prepareAgentDispatch>;
   try {
-    dispatch = planDispatch(
+    prepared = prepareAgentDispatch({
       agentId,
       vendor,
       vendorConfig,
       promptFlag,
       promptContent,
-      undefined,
-      { readOnly: readOnly ?? false, workspace: resolvedWorkspace },
-    );
+      sessionId,
+      workspace: resolvedWorkspace,
+      readOnly,
+    });
   } catch (error) {
     finishAgentRun(runRoot, run.runId, null);
     throw error;
   }
-  const logStream = fs.openSync(logFile, "w");
+  const { dispatch } = prepared;
+  let logStream: number;
+  try {
+    logStream = fs.openSync(logFile, "w");
+  } catch (error) {
+    prepared.cleanup();
+    finishAgentRun(runRoot, run.runId, null);
+    throw error;
+  }
   // Keep the historical combined log unless failover is explicitly requested.
   // For failover, stderr is the only terminal-error input so task stdout cannot
   // forge a quota/rate-limit signal.
-  const stderrStream = hasFailover ? fs.openSync(stderrFile, "w") : logStream;
+  let stderrStream: number;
+  try {
+    stderrStream = hasFailover ? fs.openSync(stderrFile, "w") : logStream;
+  } catch (error) {
+    fs.closeSync(logStream);
+    prepared.cleanup();
+    finishAgentRun(runRoot, run.runId, null);
+    throw error;
+  }
 
   console.log(
     color.dim(
@@ -399,56 +410,41 @@ export async function spawnAgent(
     ),
   );
 
-  // #583: OpenCode refuses to run a `mode: subagent` agent as the entry point
-  // (`opencode run --agent <subagent>` falls back to the default agent and
-  // still exits 0 — silently running the WRONG agent). For the external
-  // fallback, create a throwaway primary wrapper that delegates to the real
-  // subagent via the task tool, and repoint `--agent` at the wrapper. The
-  // wrapper lives under `process.cwd()` to match the `--dir` opencode is given.
-  let opencodeWrapper: OpencodeWrapper | null = null;
-  if (dispatch.targetVendor === "opencode" && dispatch.mode === "external") {
-    const dispatchArgs = dispatch.invocation.args;
-    const modelIdx = dispatchArgs.indexOf("-m");
-    const wrapperModel =
-      modelIdx !== -1 ? dispatchArgs[modelIdx + 1] : undefined;
-    const wrapper = createOpencodeSpawnWrapper(
-      agentId,
-      sessionId,
-      process.cwd(),
-      wrapperModel,
+  if (prepared.opencodeWrapper) {
+    console.log(
+      color.dim(
+        `  OpenCode: primary wrapper ${prepared.opencodeWrapper.name} → task(${agentId})`,
+      ),
     );
-    if (swapOpencodeAgentArg(dispatchArgs, agentId, wrapper.name)) {
-      opencodeWrapper = wrapper;
-      console.log(
-        color.dim(
-          `  OpenCode: primary wrapper ${wrapper.name} → task(${agentId})`,
-        ),
-      );
-    } else {
-      // `--agent` was not present as expected — drop the unused wrapper file.
-      removeOpencodeSpawnWrapper(wrapper.filePath);
-    }
   }
 
   // Workaround for agy's non-TTY stdout drop (antigravity-cli#76): run the
   // subagent under a pseudo-terminal so its headless output is captured.
   let invocation = dispatch.invocation;
-  if (targetVendorNeedsPty(dispatch.targetVendor)) {
-    const pty = wrapInvocationWithPty(dispatch.invocation);
-    invocation = pty.invocation;
-    if (pty.wrapped) {
-      console.log(
-        color.dim(
-          `  PTY: ${dispatch.targetVendor} run under script(1) (non-TTY stdout workaround)`,
-        ),
-      );
-    } else {
-      console.warn(
-        color.yellow(
-          `[${agentId}] ${dispatch.targetVendor} headless output may be empty: ${pty.unsupportedReason}`,
-        ),
-      );
+  try {
+    if (targetVendorNeedsPty(dispatch.targetVendor)) {
+      const pty = wrapInvocationWithPty(dispatch.invocation);
+      invocation = pty.invocation;
+      if (pty.wrapped) {
+        console.log(
+          color.dim(
+            `  PTY: ${dispatch.targetVendor} run under script(1) (non-TTY stdout workaround)`,
+          ),
+        );
+      } else {
+        console.warn(
+          color.yellow(
+            `[${agentId}] ${dispatch.targetVendor} headless output may be empty: ${pty.unsupportedReason}`,
+          ),
+        );
+      }
     }
+  } catch (error) {
+    fs.closeSync(logStream);
+    if (stderrStream !== logStream) fs.closeSync(stderrStream);
+    prepared.cleanup();
+    finishAgentRun(runRoot, run.runId, null);
+    throw error;
   }
   const { command, args, env } = invocation;
   const orcaSubagent = createOrcaSubagent(
@@ -458,15 +454,25 @@ export async function spawnAgent(
     env,
   );
 
-  const child = spawnProcess(command, args, {
-    cwd: resolvedWorkspace,
-    stdio: ["ignore", logStream, stderrStream],
-    detached: false,
-    env: orcaSubagent?.childEnv ?? env,
-  });
+  let child: ReturnType<typeof spawnProcess>;
+  try {
+    child = spawnProcess(command, args, {
+      cwd: resolvedWorkspace,
+      stdio: ["ignore", logStream, stderrStream],
+      detached: false,
+      env: orcaSubagent?.childEnv ?? env,
+    });
+  } catch (error) {
+    fs.closeSync(logStream);
+    if (stderrStream !== logStream) fs.closeSync(stderrStream);
+    prepared.cleanup();
+    finishAgentRun(runRoot, run.runId, null);
+    throw error;
+  }
 
   if (!child.pid) {
     finishAgentRun(runRoot, run.runId, null);
+    prepared.cleanup();
     fs.closeSync(logStream);
     if (stderrStream !== logStream) fs.closeSync(stderrStream);
     if (worktreeHandle) {
@@ -513,7 +519,7 @@ export async function spawnAgent(
     } catch {
       // ignore
     }
-    if (opencodeWrapper) removeOpencodeSpawnWrapper(opencodeWrapper.filePath);
+    prepared.cleanup();
   };
 
   const cleanAndExit = () => {

@@ -7,11 +7,11 @@ import {
   AGENTS_RESULTS_DIR,
   agentsPathFromRoot,
 } from "../../constants/paths.js";
+import { prepareAgentDispatch } from "../../io/runtime-dispatch/prepared-agent-dispatch.js";
 import {
   targetVendorNeedsPty,
   wrapInvocationWithPty,
 } from "../../io/runtime-dispatch/pty-wrap.js";
-import { planDispatch } from "../../io/runtime-dispatch.js";
 import { detectWorkspace } from "../../io/workspaces.js";
 import {
   loadExecutionProtocol,
@@ -154,16 +154,31 @@ export async function parallelRun(
     );
     const promptContent = `${taskPrompt}\n\n${agentResultInstructions(runRoot, run)}${taskContext ? `\n\n${taskContext}` : ""}`;
 
-    const dispatch = planDispatch(
-      agent,
-      vendor,
-      vendorConfig,
-      promptFlag,
-      promptContent,
-    );
+    let prepared: ReturnType<typeof prepareAgentDispatch>;
+    try {
+      prepared = prepareAgentDispatch({
+        agentId: agent,
+        vendor,
+        vendorConfig,
+        promptFlag,
+        promptContent,
+        sessionId: options.session ?? path.basename(runDir),
+        wrapperId: run.runId,
+        workspace: resolvedWorkspace,
+      });
+    } catch (error) {
+      finishAgentRun(runRoot, run.runId, null);
+      throw error;
+    }
+    const { dispatch } = prepared;
     console.log(
       `    Dispatch: ${dispatch.mode} (${dispatch.runtimeVendor} -> ${dispatch.targetVendor})`,
     );
+    if (prepared.opencodeWrapper) {
+      console.log(
+        `    OpenCode: primary wrapper ${prepared.opencodeWrapper.name} → task(${agent})`,
+      );
+    }
 
     // Workaround for agy's non-TTY stdout drop (antigravity-cli#76): run the
     // subagent under a pseudo-terminal so its headless output is captured.
@@ -183,13 +198,28 @@ export async function parallelRun(
     }
     const { command, args, env } = invocation;
 
-    const logStream = fs.openSync(logFile, "w");
-    const child = spawnProcess(command, args, {
-      cwd: resolvedWorkspace,
-      stdio: ["ignore", logStream, logStream],
-      detached: false,
-      env,
-    });
+    let logStream: number;
+    try {
+      logStream = fs.openSync(logFile, "w");
+    } catch (error) {
+      prepared.cleanup();
+      finishAgentRun(runRoot, run.runId, null);
+      throw error;
+    }
+    let child: ReturnType<typeof spawnProcess>;
+    try {
+      child = spawnProcess(command, args, {
+        cwd: resolvedWorkspace,
+        stdio: ["ignore", logStream, logStream],
+        detached: false,
+        env,
+      });
+    } catch (error) {
+      fs.closeSync(logStream);
+      prepared.cleanup();
+      finishAgentRun(runRoot, run.runId, null);
+      throw error;
+    }
 
     const exitPromise = new Promise<number | null>((resolve) => {
       let settled = false;
@@ -197,6 +227,7 @@ export async function parallelRun(
         if (settled) return;
         settled = true;
         fs.closeSync(logStream);
+        prepared.cleanup();
         const result = finishAgentRun(runRoot, run.runId, code, undefined, {
           logPath: logFile,
         });
