@@ -217,16 +217,16 @@ export function primerContext(
     return [
       "[OMA GORTEX PRIMER]",
       "For code work, use Gortex MCP tools for code search, navigation, impact, contracts and edits.",
-      "A PreToolUse hook denies native Grep, Glob and recursive shell search while Gortex is configured.",
-      "Load deferred tools before use. If Gortex is unavailable or times out, use native tools: prefix the shell search command with `OMA_CI_ALLOW_NATIVE=1`.",
+      "A PreToolUse hook guards native Grep, Glob and recursive shell search. Searches confined to confirmed provider exclusions or paths outside this project are allowed.",
+      "Load deferred tools before use. If Gortex is unavailable, times out, or cannot search the requested path, use native tools: prefix the shell search command with `OMA_CI_ALLOW_NATIVE=1`.",
     ].join("\n");
   }
   return [
     "[OMA SERENA PRIMER]",
     "For code work, load deferred Serena tools if needed and read `initial_instructions` once unless already provided.",
-    "Use `find_file` instead of Glob, `search_for_pattern` instead of Grep / recursive shell search, and `find_symbol` / `get_symbols_overview` for symbols. A PreToolUse hook denies native Grep, Glob and recursive shell search while Serena is configured.",
+    "Use `find_file` instead of Glob, `search_for_pattern` instead of Grep / recursive shell search, and `find_symbol` / `get_symbols_overview` for symbols. Native searches confined to confirmed provider exclusions or paths outside this project are allowed by the PreToolUse guard.",
     "Omit `max_answer_chars`; narrow the query if results exceed the limit.",
-    "If Serena is unavailable or times out, use native tools: prefix the shell search command with `OMA_CI_ALLOW_NATIVE=1`. Do not retry timed-out MCP calls this session.",
+    "If Serena is unavailable, times out, or cannot search the requested path, use native tools: prefix the shell search command with `OMA_CI_ALLOW_NATIVE=1`. Do not retry timed-out MCP calls this session.",
   ].join("\n");
 }
 
