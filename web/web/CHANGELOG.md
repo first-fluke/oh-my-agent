@@ -1,5 +1,16 @@
 # Changelog
 
+## [7.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.10.2...web-v7.0.0) (2026-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **video:** the `video.remotion` config key is now `video.hyperframes`, and `--compositor remotion` is replaced by `--compositor hyperframes`.
+
+### Features
+
+* **video:** replace remotion compositor with hyperframes ([55a7461](https://github.com/first-fluke/oh-my-agent/commit/55a74610917fa4ab2430dede816103163403ea38))
+
 ## [6.10.2](https://github.com/first-fluke/oh-my-agent/compare/web-v6.10.1...web-v6.10.2) (2026-09-22)
 
 
