@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import {
   closeSync,
   existsSync,
@@ -127,6 +127,57 @@ export function readRegistry(): DaemonRegistry {
 function writeRegistry(registry: DaemonRegistry): void {
   mkdirSync(omaStateDir(), { recursive: true });
   writeFileSync(daemonRegistryPath(), `${JSON.stringify(registry, null, 2)}\n`);
+}
+
+/** How long a synchronous registry mutation waits for the file lock. */
+const REGISTRY_LOCK_WAIT_MS = 5_000;
+const REGISTRY_LOCK_POLL_MS = 25;
+
+function sleepSync(ms: number): void {
+  try {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  } catch {
+    const until = Date.now() + ms;
+    while (Date.now() < until) {
+      // busy-wait fallback where Atomics.wait is unavailable
+    }
+  }
+}
+
+/**
+ * Read-modify-write the registry under the file lock.
+ *
+ * Every mutation goes through here. Attach, detach and reclaim used to read the
+ * file, edit their record and write the whole thing back with no lock, so two
+ * bridges doing that at once (codex starts several per session) lost whichever
+ * write landed first — a daemon that had just been registered vanished from
+ * the file while its process lived on, invisible to reclamation.
+ *
+ * Synchronous because detach runs from process exit handlers. The critical
+ * sections are microseconds long, so a lock still held after the wait budget
+ * is stale (its owner died mid-section) and the mutation proceeds unlocked:
+ * losing one race beats a bridge that cannot exit.
+ */
+function withRegistryLock<T>(mutate: (registry: DaemonRegistry) => T): T {
+  const deadline = Date.now() + REGISTRY_LOCK_WAIT_MS;
+  let release: (() => void) | null = null;
+  for (;;) {
+    release = acquireLock();
+    if (release || Date.now() >= deadline) break;
+    sleepSync(REGISTRY_LOCK_POLL_MS);
+  }
+  try {
+    const registry = readRegistry();
+    const before = JSON.stringify(registry);
+    const result = mutate(registry);
+    // Write only on change: a read-only sweep must not touch the file, and a
+    // caller whose read failed (unreadable file, mocked fs) must not replace
+    // the registry with the empty object it fell back to.
+    if (JSON.stringify(registry) !== before) writeRegistry(registry);
+    return result;
+  } finally {
+    release?.();
+  }
 }
 
 /**
@@ -260,6 +311,42 @@ export interface EnsureDaemonOptions {
   spawnDaemon?: (port: number, root: string, context: string) => number | null;
   /** Injected for tests. */
   probe?: (port: number) => Promise<boolean>;
+  /** Poll interval while waiting on a daemon; injected for tests. */
+  pollIntervalMs?: number;
+  /** Process-table scan used by the opening sweep; injected for tests. */
+  listDaemons?: () => RunningDaemon[];
+  /**
+   * How long to wait on a registered daemon that is alive but not answering
+   * before giving up on it for this session. Defaults to
+   * {@link BUSY_DAEMON_WAIT_MS}; injected for tests.
+   */
+  busyWaitMs?: number;
+}
+
+/**
+ * How long a session waits for a registered daemon that is alive but not
+ * answering its port. Covers both a daemon another session spawned moments ago
+ * (~8s cold start) and one whose main thread is pinned by a long tool call —
+ * a probe times out after 2s, which a `search_for_pattern` over a big repo can
+ * exceed while holding the GIL. Bounded so a truly wedged daemon costs one
+ * stdio fallback, not a hung client startup.
+ */
+export const BUSY_DAEMON_WAIT_MS = 20_000;
+
+type WaitOutcome = "up" | "died" | "unresponsive";
+
+async function waitForRegisteredDaemon(
+  record: DaemonRecord,
+  untilMs: number,
+  probe: (port: number) => Promise<boolean>,
+  pollIntervalMs: number,
+): Promise<WaitOutcome> {
+  for (;;) {
+    if (await probe(record.port)) return "up";
+    if (!isAlive(record.pid)) return "died";
+    if (Date.now() >= untilMs) return "unresponsive";
+    await new Promise((r) => setTimeout(r, pollIntervalMs));
+  }
 }
 
 export interface DaemonHandle {
@@ -312,83 +399,136 @@ export async function ensureSerenaDaemon(
   const timeoutMs = opts.timeoutMs ?? 120_000;
   const spawnFn = opts.spawnDaemon ?? spawnDaemonProcess;
   const probe = opts.probe ?? probePort;
+  const pollIntervalMs = opts.pollIntervalMs ?? STARTUP_CHECK_INTERVAL_MS;
+  const busyWaitMs = opts.busyWaitMs ?? BUSY_DAEMON_WAIT_MS;
   const key = daemonKey(root, context);
   const deadline = Date.now() + timeoutMs;
 
   const urlFor = (port: number) => `http://127.0.0.1:${port}/mcp`;
+  const reuse = (port: number): DaemonHandle => {
+    attachClient(key);
+    return { url: urlFor(port), port, started: false };
+  };
 
   // Every start is also a sweep: daemons whose sessions have all gone away get
   // reclaimed here, so the fleet stays bounded with nothing to schedule or run.
-  reclaimIdleDaemons();
+  reclaimIdleDaemons(Date.now(), undefined, opts.listDaemons);
 
-  // Fast path: a live registration that still answers.
-  const known = readRegistry()[key];
-  if (known && (await probe(known.port))) {
-    attachClient(key);
-    return { url: urlFor(known.port), port: known.port, started: false };
-  }
+  while (Date.now() < deadline) {
+    // Fast path: a live registration that still answers.
+    const known = readRegistry()[key];
+    if (known && (await probe(known.port))) return reuse(known.port);
 
-  const release = await waitForLock(Math.min(timeoutMs, 30_000));
-  if (!release) return null;
-
-  try {
-    // Re-check under the lock: another session may have just started it.
-    const registry = readRegistry();
-    const current = registry[key];
-    if (current && (await probe(current.port))) {
-      attachClient(key);
-      return { url: urlFor(current.port), port: current.port, started: false };
+    // Registered, alive, not answering: still starting (another session
+    // spawned it moments ago) or busy (its main thread pinned by a long tool
+    // call, so the 2s probe timed out). Either way it IS this project's daemon,
+    // so wait for it. The invariant is one live daemon process per key: a
+    // rival used to be started here, on the very same port because the probe
+    // said it was free, die with "address already in use", and take the live
+    // daemon's registration with it when pruned as "died during startup". The
+    // survivor then ran on unregistered — never reclaimed — and every later
+    // session, seeing no record and an occupied port, started yet another one.
+    if (known && isAlive(known.pid)) {
+      const outcome = await waitForRegisteredDaemon(
+        known,
+        Math.min(deadline, Date.now() + busyWaitMs),
+        probe,
+        pollIntervalMs,
+      );
+      if (outcome === "up") return reuse(known.port);
+      // Alive but unresponsive: leave it registered — it is still the daemon
+      // for this key and may recover — and let this session fall back to
+      // stdio rather than fork the fleet.
+      if (outcome === "unresponsive") return null;
+      // "died": fall through and start a fresh one.
     }
 
-    // Pick a free port, skipping ones another key owns or anything already bound.
-    const taken = new Set(
-      Object.entries(registry)
-        .filter(([otherKey, record]) => otherKey !== key && isAlive(record.pid))
-        .map(([, record]) => record.port),
-    );
+    const release = await waitForLock(Math.min(timeoutMs, 30_000));
+    if (!release) return null;
 
-    let port: number | null = null;
-    const first = preferredPort(key);
-    for (let i = 0; i < PORT_RANGE; i++) {
-      const candidate = PORT_BASE + ((first - PORT_BASE + i) % PORT_RANGE);
-      if (taken.has(candidate)) continue;
-      if (await probe(candidate)) continue; // occupied by something else
-      port = candidate;
-      break;
+    let spawned: { port: number; pid: number } | null = null;
+    try {
+      // Re-check under the lock: another session may have just started it.
+      const registry = readRegistry();
+      const current = registry[key];
+      if (current && (await probe(current.port))) {
+        attachClientTo(current);
+        writeRegistry(registry);
+        return {
+          url: urlFor(current.port),
+          port: current.port,
+          started: false,
+        };
+      }
+      // Someone else registered a live daemon while we waited for the lock;
+      // go around and wait on it instead of racing it for the port.
+      if (current && current.pid !== known?.pid && isAlive(current.pid)) {
+        continue;
+      }
+
+      // Pick a free port, skipping ones another key owns or anything already bound.
+      const taken = new Set(
+        Object.entries(registry)
+          .filter(
+            ([otherKey, record]) => otherKey !== key && isAlive(record.pid),
+          )
+          .map(([, record]) => record.port),
+      );
+
+      let port: number | null = null;
+      const first = preferredPort(key);
+      for (let i = 0; i < PORT_RANGE; i++) {
+        const candidate = PORT_BASE + ((first - PORT_BASE + i) % PORT_RANGE);
+        if (taken.has(candidate)) continue;
+        if (await probe(candidate)) continue; // occupied by something else
+        port = candidate;
+        break;
+      }
+      if (port === null) return null;
+
+      const pid = spawnFn(port, root, context);
+      if (pid === null) return null;
+
+      registry[key] = {
+        root,
+        context,
+        port,
+        pid,
+        startedAt: new Date().toISOString(),
+        clients: [process.pid],
+      };
+      writeRegistry(registry);
+      spawned = { port, pid };
+    } finally {
+      // Release before the startup wait: the record is written, so a peer
+      // arriving now sees a live pid and waits on it rather than spawning.
+      // Holding the lock through the ~8s cold start would block every other
+      // session's attach/detach for that long.
+      release();
     }
-    if (port === null) return null;
-
-    const pid = spawnFn(port, root, context);
-    if (pid === null) return null;
-
-    registry[key] = {
-      root,
-      context,
-      port,
-      pid,
-      startedAt: new Date().toISOString(),
-      clients: [process.pid],
-    };
-    writeRegistry(registry);
+    if (!spawned) return null;
 
     while (Date.now() < deadline) {
-      if (await probe(port)) {
-        return { url: urlFor(port), port, started: true };
+      if (await probe(spawned.port)) {
+        return { url: urlFor(spawned.port), port: spawned.port, started: true };
       }
-      if (!isAlive(pid)) {
+      if (!isAlive(spawned.pid)) {
         // Died during startup (bad project.yml, missing binary, port race).
-        const pruned = readRegistry();
-        delete pruned[key];
-        writeRegistry(pruned);
+        // Forget it only while the registration is still ours: if the record
+        // now points at another live process, that one is the daemon.
+        const pid = spawned.pid;
+        withRegistryLock((registry) => {
+          if (registry[key]?.pid === pid) delete registry[key];
+        });
         return null;
       }
-      await new Promise((r) => setTimeout(r, STARTUP_CHECK_INTERVAL_MS));
+      await new Promise((r) => setTimeout(r, pollIntervalMs));
     }
 
     return null;
-  } finally {
-    release();
   }
+
+  return null;
 }
 
 /**
@@ -411,16 +551,113 @@ export function daemonPidsWithLiveClients(): Set<number> {
 
 /** Drop registrations whose process is gone. Used by `oma doctor` / reap paths. */
 export function pruneRegistry(): DaemonRecord[] {
-  const registry = readRegistry();
-  const removed: DaemonRecord[] = [];
-  for (const [key, record] of Object.entries(registry)) {
-    if (!isAlive(record.pid)) {
-      removed.push(record);
-      delete registry[key];
+  return withRegistryLock((registry) => {
+    const removed: DaemonRecord[] = [];
+    for (const [key, record] of Object.entries(registry)) {
+      if (!isAlive(record.pid)) {
+        removed.push(record);
+        delete registry[key];
+      }
     }
+    return removed;
+  });
+}
+
+/** A `serena start-mcp-server` HTTP daemon found in the process table. */
+export interface RunningDaemon {
+  pid: number;
+  port: number;
+  root: string;
+  context: string;
+}
+
+const DAEMON_COMMAND_PATTERN =
+  /serena\S*\s+start-mcp-server\b(?=.*--transport\s+streamable-http\b)(?=.*--port\s+(\d+))(?=.*--project\s+(\S+))(?=.*--context\s+(\S+))/;
+
+/**
+ * Parse `ps -axo pid,command` output for daemons shaped like the ones
+ * {@link spawnDaemonProcess} launches: HTTP transport, pinned project, a port
+ * inside our window. Pure, so the scan is testable without a process table.
+ */
+export function parseRunningDaemons(psOutput: string): RunningDaemon[] {
+  const found: RunningDaemon[] = [];
+  for (const line of psOutput.split("\n")) {
+    const row = line.trim().match(/^(\d+)\s+(.*)$/);
+    const [, pidText, command] = row ?? [];
+    if (!pidText || !command) continue;
+    const [, portText, root, context] =
+      command.match(DAEMON_COMMAND_PATTERN) ?? [];
+    if (!portText || !root || !context) continue;
+    const port = Number.parseInt(portText, 10);
+    if (port < PORT_BASE || port >= PORT_BASE + PORT_RANGE) continue;
+    found.push({ pid: Number.parseInt(pidText, 10), port, root, context });
   }
-  if (removed.length > 0) writeRegistry(registry);
-  return removed;
+  return found;
+}
+
+/** Best-effort process-table scan; empty where `ps` is unavailable (Windows). */
+export function listRunningDaemons(): RunningDaemon[] {
+  try {
+    const result = spawnSync("ps", ["-axo", "pid,command"], {
+      encoding: "utf-8",
+      timeout: 5_000,
+    });
+    return parseRunningDaemons(result.stdout ?? "");
+  } catch {
+    return [];
+  }
+}
+
+/** Key under which a second live daemon for an already-served project is parked. */
+function duplicateKey(key: string, pid: number): string {
+  return `${key}::duplicate::${pid}`;
+}
+
+/**
+ * Bring daemons that are running but missing from the registry back under
+ * management, so the grace period applies to them too.
+ *
+ * A daemon can only leave the registry while alive through a bug (the
+ * startup-race prune this module used to have, or a lost concurrent write),
+ * but once it has, nothing else will ever stop it: the reaper refuses to kill
+ * serena roots, and `oma cleanup` cannot tell an in-use detached daemon from
+ * an abandoned one. So every sweep re-adopts them.
+ *
+ * Their clients are unknown, so they start idle: a session that is using one
+ * re-attaches on its next start, and one nobody comes back for is reclaimed
+ * after the grace period. When the project already has a live registered
+ * daemon the stray is a duplicate — parked under its own key so it too ages
+ * out, while new sessions keep converging on the registered one.
+ */
+function adoptUnregisteredDaemons(
+  registry: DaemonRegistry,
+  running: RunningDaemon[],
+  nowMs: number,
+): DaemonRecord[] {
+  const registered = new Set(Object.values(registry).map((r) => r.pid));
+  const adopted: DaemonRecord[] = [];
+  const now = new Date(nowMs).toISOString();
+
+  for (const proc of running) {
+    if (registered.has(proc.pid) || !isAlive(proc.pid)) continue;
+    const key = daemonKey(proc.root, proc.context);
+    const record: DaemonRecord = {
+      root: proc.root,
+      context: proc.context,
+      port: proc.port,
+      pid: proc.pid,
+      startedAt: now,
+      clients: [],
+      idleSince: now,
+    };
+    const current = registry[key];
+    const slot =
+      current && isAlive(current.pid) ? duplicateKey(key, proc.pid) : key;
+    registry[slot] = record;
+    registered.add(proc.pid);
+    adopted.push(record);
+  }
+  return adopted;
 }
 
 /**
@@ -436,15 +673,18 @@ export const DAEMON_IDLE_GRACE_MS = 10 * 60_000;
 
 /** Register this process as a client of `key`, so the daemon is not reclaimed. */
 export function attachClient(key: string, pid = process.pid): void {
-  const registry = readRegistry();
-  const record = registry[key];
-  if (!record) return;
+  withRegistryLock((registry) => {
+    const record = registry[key];
+    if (record) attachClientTo(record, pid);
+  });
+}
 
+/** In-place attach for callers already holding the lock. */
+function attachClientTo(record: DaemonRecord, pid = process.pid): void {
   const clients = new Set((record.clients ?? []).filter(isAlive));
   clients.add(pid);
   record.clients = [...clients];
   record.idleSince = undefined;
-  writeRegistry(registry);
 }
 
 /**
@@ -453,17 +693,17 @@ export function attachClient(key: string, pid = process.pid): void {
  * restart can re-attach inside the grace period.
  */
 export function detachClient(key: string, pid = process.pid): void {
-  const registry = readRegistry();
-  const record = registry[key];
-  if (!record) return;
+  withRegistryLock((registry) => {
+    const record = registry[key];
+    if (!record) return;
 
-  const clients = (record.clients ?? []).filter(
-    (client) => client !== pid && isAlive(client),
-  );
-  record.clients = clients;
-  record.idleSince =
-    clients.length === 0 ? new Date().toISOString() : undefined;
-  writeRegistry(registry);
+    const clients = (record.clients ?? []).filter(
+      (client) => client !== pid && isAlive(client),
+    );
+    record.clients = clients;
+    record.idleSince =
+      clients.length === 0 ? new Date().toISOString() : undefined;
+  });
 }
 
 /**
@@ -484,45 +724,52 @@ export function reclaimIdleDaemons(
   kill: (pid: number, signal: NodeJS.Signals) => void = (pid, signal) => {
     process.kill(pid, signal);
   },
+  listDaemons: () => RunningDaemon[] = listRunningDaemons,
 ): DaemonRecord[] {
-  const registry = readRegistry();
-  const reclaimed: DaemonRecord[] = [];
+  // The process scan runs outside the lock: it is the slow part (~tens of ms)
+  // and only reads the process table.
+  const running = listDaemons();
 
-  for (const [key, record] of Object.entries(registry)) {
-    if (!isAlive(record.pid)) {
-      delete registry[key];
-      continue;
-    }
+  return withRegistryLock((registry) => {
+    const reclaimed: DaemonRecord[] = [];
 
-    const clients = (record.clients ?? []).filter(isAlive);
-    if (clients.length > 0) {
-      // Re-attached, or a client died without detaching: either way it is busy.
-      if (clients.length !== (record.clients ?? []).length) {
-        record.clients = clients;
-        record.idleSince = undefined;
+    adoptUnregisteredDaemons(registry, running, nowMs);
+
+    for (const [key, record] of Object.entries(registry)) {
+      if (!isAlive(record.pid)) {
+        delete registry[key];
+        continue;
       }
-      continue;
+
+      const clients = (record.clients ?? []).filter(isAlive);
+      if (clients.length > 0) {
+        // Re-attached, or a client died without detaching: either way it is busy.
+        if (clients.length !== (record.clients ?? []).length) {
+          record.clients = clients;
+          record.idleSince = undefined;
+        }
+        continue;
+      }
+
+      // Idle. Start the clock if this is the first time we noticed.
+      if (!record.idleSince) {
+        record.clients = [];
+        record.idleSince = new Date(nowMs).toISOString();
+        continue;
+      }
+
+      const idleMs = nowMs - Date.parse(record.idleSince);
+      if (Number.isNaN(idleMs) || idleMs < DAEMON_IDLE_GRACE_MS) continue;
+
+      try {
+        kill(record.pid, "SIGTERM");
+      } catch {
+        // already gone
+      }
+      reclaimed.push(record);
+      delete registry[key];
     }
 
-    // Idle. Start the clock if this is the first time we noticed.
-    if (!record.idleSince) {
-      record.clients = [];
-      record.idleSince = new Date(nowMs).toISOString();
-      continue;
-    }
-
-    const idleMs = nowMs - Date.parse(record.idleSince);
-    if (Number.isNaN(idleMs) || idleMs < DAEMON_IDLE_GRACE_MS) continue;
-
-    try {
-      kill(record.pid, "SIGTERM");
-    } catch {
-      // already gone
-    }
-    reclaimed.push(record);
-    delete registry[key];
-  }
-
-  writeRegistry(registry);
-  return reclaimed;
+    return reclaimed;
+  });
 }

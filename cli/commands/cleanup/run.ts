@@ -7,6 +7,7 @@ import {
   AGENTS_RESULTS_DIR,
   agentsPathFromRoot,
 } from "../../constants/paths.js";
+import { readRegistry, reclaimIdleDaemons } from "../../io/serena-daemon.js";
 import {
   type ActivitySignal,
   discoverSerenaRoots,
@@ -257,13 +258,24 @@ export async function cleanup(
   // children (tsserver/pyright/…, hundreds of MB) keep running with no client.
   // These are pure waste and always safe to reap — the idle-but-live case is
   // handled separately by `oma serena reap` / the reaper scheduler.
+  //
+  // Bridge daemons are the exception: they are detached on purpose (ppid 1
+  // while fully in use), so ppid alone cannot tell them apart. They belong to
+  // the daemon registry, whose sweep re-adopts any that fell out of it and
+  // stops the idle ones after their grace period; cleanup leaves them to it.
   try {
+    reclaimIdleDaemons();
+    const managed = new Set(
+      Object.values(readRegistry()).map((record) => record.pid),
+    );
     const noActivity = (): ActivitySignal => ({
       lastActivityMs: 0,
       signalSource: "mtime",
     });
     const roots = discoverSerenaRoots(runPs(), noActivity);
-    const orphans = selectOrphanedSerenaRoots(roots);
+    const orphans = selectOrphanedSerenaRoots(roots).filter(
+      (root) => !managed.has(root.pid),
+    );
     for (const orphan of orphans) {
       for (const lsp of orphan.lspChildren) {
         logAction(

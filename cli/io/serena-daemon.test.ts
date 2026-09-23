@@ -13,6 +13,7 @@ import {
   detachClient,
   ensureSerenaDaemon,
   omaStateDir,
+  parseRunningDaemons,
   preferredPort,
   pruneRegistry,
   readRegistry,
@@ -113,8 +114,14 @@ function fakeFleet() {
       return process.pid; // a pid that is alive
     }),
     probe: async (port: number) => listening.has(port),
+    // Keep the opening sweep off the real process table: on a developer
+    // machine it would adopt whatever daemons happen to be running.
+    listDaemons: noDaemons,
+    pollIntervalMs: 5,
   };
 }
+
+const noDaemons = () => [];
 
 describe("ensureSerenaDaemon", () => {
   it("registers the daemon it starts", async () => {
@@ -213,6 +220,7 @@ describe("ensureSerenaDaemon", () => {
       timeoutMs: 2_000,
       spawnDaemon: () => null,
       probe: async () => false,
+      listDaemons: noDaemons,
     });
 
     expect(handle).toBeNull();
@@ -230,6 +238,7 @@ describe("ensureSerenaDaemon", () => {
         context: "ide",
         timeoutMs: 2_000,
         probe: async () => false,
+        listDaemons: noDaemons,
       });
       await new Promise<void>((resolve) => setImmediate(resolve));
 
@@ -246,6 +255,8 @@ describe("ensureSerenaDaemon", () => {
       timeoutMs: 5_000,
       spawnDaemon: () => 2 ** 30, // a pid that is not running
       probe: async () => false,
+      listDaemons: noDaemons,
+      pollIntervalMs: 5,
     });
 
     expect(handle).toBeNull();
@@ -333,6 +344,8 @@ describe("daemon lifecycle", () => {
         return process.pid;
       },
       probe: async (port: number) => listening.has(port),
+      listDaemons: noDaemons,
+      pollIntervalMs: 5,
     });
     killed.pid = handle?.port ?? 0;
     return handle;
@@ -382,6 +395,7 @@ describe("daemon lifecycle", () => {
     const reclaimed = reclaimIdleDaemons(
       beforeDetach + DAEMON_IDLE_GRACE_MS - 1,
       recordKill,
+      noDaemons,
     );
 
     expect(reclaimed).toEqual([]);
@@ -398,6 +412,7 @@ describe("daemon lifecycle", () => {
     const reclaimed = reclaimIdleDaemons(
       Date.now() + DAEMON_IDLE_GRACE_MS * 10,
       recordKill,
+      noDaemons,
     );
 
     expect(reclaimed).toEqual([]);
@@ -418,7 +433,7 @@ describe("daemon lifecycle", () => {
       JSON.stringify(registry),
     );
 
-    reclaimIdleDaemons(Date.now(), recordKill);
+    reclaimIdleDaemons(Date.now(), recordKill, noDaemons);
 
     expect(kills).toEqual([]);
     expect(readRegistry()[key]?.idleSince).toBeDefined();
@@ -442,6 +457,7 @@ describe("reclaimIdleDaemons — actually stopping a daemon", () => {
         return process.pid;
       },
       probe: async (port: number) => listening.has(port),
+      listDaemons: noDaemons,
     });
 
     const key = daemonKey("/abandoned", "ide");
@@ -451,6 +467,7 @@ describe("reclaimIdleDaemons — actually stopping a daemon", () => {
     const reclaimed = reclaimIdleDaemons(
       Date.now() + DAEMON_IDLE_GRACE_MS + 1,
       (pid, signal) => kills.push({ pid, signal }),
+      noDaemons,
     );
 
     expect(reclaimed.map((r) => r.root)).toEqual(["/abandoned"]);
@@ -478,11 +495,242 @@ describe("reclaimIdleDaemons — actually stopping a daemon", () => {
       }),
     );
 
-    const reclaimed = reclaimIdleDaemons(now, () => {
-      throw new Error("ESRCH");
-    });
+    const reclaimed = reclaimIdleDaemons(
+      now,
+      () => {
+        throw new Error("ESRCH");
+      },
+      noDaemons,
+    );
 
     expect(reclaimed.map((r) => r.root)).toEqual(["/gone"]);
     expect(readRegistry()[daemonKey("/gone", "ide")]).toBeUndefined();
+  });
+});
+
+describe("ensureSerenaDaemon — a registered daemon that is alive but not answering", () => {
+  // Regression: the fleet on one machine grew to three daemons per project.
+  // A probe timed out against a busy daemon, a rival was spawned on the same
+  // port (the probe said it was free), the rival died on bind, and pruning it
+  // as "died during startup" deleted the live daemon's registration. From then
+  // on every session saw an unregistered, occupied port and started another.
+
+  it("waits for it instead of starting a rival", async () => {
+    const fleet = fakeFleet();
+    const opts = { root: "/proj", context: "ide", timeoutMs: 5_000, ...fleet };
+    const first = await ensureSerenaDaemon(opts);
+
+    // The daemon is alive (registered under this process's pid) but its port
+    // stops answering for the first few probes, as a pinned main thread would.
+    let misses = 3;
+    const slowProbe = async (port: number) => {
+      if (port === first?.port && misses > 0) {
+        misses--;
+        return false;
+      }
+      return fleet.listening.has(port);
+    };
+
+    const second = await ensureSerenaDaemon({ ...opts, probe: slowProbe });
+
+    expect(second?.port).toBe(first?.port);
+    expect(second?.started).toBe(false);
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
+    expect(readRegistry()[daemonKey("/proj", "ide")]?.pid).toBe(process.pid);
+  });
+
+  it("gives up on this session, not on the daemon, when it never answers", async () => {
+    const fleet = fakeFleet();
+    const opts = { root: "/proj", context: "ide", timeoutMs: 5_000, ...fleet };
+    const first = await ensureSerenaDaemon(opts);
+
+    const handle = await ensureSerenaDaemon({
+      ...opts,
+      probe: async () => false,
+      busyWaitMs: 20,
+    });
+
+    // Null sends this session to the stdio fallback; the registration stays so
+    // the daemon is still found (and, if it stays wedged, eventually reclaimed).
+    expect(handle).toBeNull();
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
+    expect(readRegistry()[daemonKey("/proj", "ide")]?.port).toBe(first?.port);
+  });
+
+  it("only forgets a startup casualty while the registration is still its own", async () => {
+    // While our spawn is dying, a peer registers a live daemon under the same
+    // key. The prune must leave that record alone.
+    const key = daemonKey("/proj", "ide");
+    let spawnedPort: number | null = null;
+    const handle = await ensureSerenaDaemon({
+      root: "/proj",
+      context: "ide",
+      timeoutMs: 5_000,
+      spawnDaemon: (port: number) => {
+        spawnedPort = port;
+        return 2 ** 30; // our own spawn: not running
+      },
+      probe: async (port: number) => {
+        // The first probe of our own port is the startup poll, which runs
+        // after our record is written and before the death check: the peer's
+        // registration lands here, exactly where the race used to bite.
+        if (spawnedPort !== null && port === spawnedPort) {
+          const registry = readRegistry();
+          registry[key] = {
+            root: "/proj",
+            context: "ide",
+            port: port + 1,
+            pid: process.pid,
+            startedAt: new Date().toISOString(),
+            clients: [process.ppid],
+          };
+          writeFileSync(
+            join(omaStateDir(), "serena-daemons.json"),
+            JSON.stringify(registry),
+          );
+        }
+        return false;
+      },
+      listDaemons: noDaemons,
+      pollIntervalMs: 20,
+    });
+
+    expect(handle).toBeNull();
+    expect(readRegistry()[key]?.pid).toBe(process.pid);
+  });
+});
+
+describe("parseRunningDaemons", () => {
+  const python =
+    "/opt/homebrew/Cellar/python@3.13/3.13.15/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python";
+
+  it("finds bridge daemons and reads their key and port off the command line", () => {
+    const ps = [
+      "  PID COMMAND",
+      `89861 ${python} /Users/me/.local/bin/serena start-mcp-server --transport streamable-http --host 127.0.0.1 --port 12389 --project /Users/me/workspace/dahaejo --context oma --add-mode no-memories --open-web-dashboard false`,
+      `21710 ${python} /Users/me/.local/bin/serena start-mcp-server --context ide --project-from-cwd --open-web-dashboard false`,
+      "90027 node /Users/me/.serena/language_servers/static/TypeScriptLanguageServer/ts-lsp/node_modules/.bin/typescript-language-server --stdio",
+      `99 ${python} /Users/me/.local/bin/serena start-mcp-server --transport streamable-http --host 127.0.0.1 --port 8080 --project /Users/me/own --context ide`,
+    ].join("\n");
+
+    expect(parseRunningDaemons(ps)).toEqual([
+      {
+        pid: 89861,
+        port: 12389,
+        root: "/Users/me/workspace/dahaejo",
+        context: "oma",
+      },
+    ]);
+  });
+});
+
+describe("reclaimIdleDaemons — daemons missing from the registry", () => {
+  const running = (pid: number, port: number, root = "/proj") => ({
+    pid,
+    port,
+    root,
+    context: "ide",
+  });
+
+  it("adopts a live unregistered daemon so later sessions reuse it", async () => {
+    const key = daemonKey("/proj", "ide");
+    const kills: number[] = [];
+
+    reclaimIdleDaemons(
+      Date.now(),
+      (pid) => kills.push(pid),
+      () => [running(process.pid, 12389)],
+    );
+
+    const record = readRegistry()[key];
+    expect(record?.pid).toBe(process.pid);
+    expect(record?.port).toBe(12389);
+    expect(record?.clients).toEqual([]);
+    expect(record?.idleSince).toBeDefined();
+    expect(kills).toEqual([]);
+
+    // The next session finds it instead of spawning yet another daemon.
+    const spawnDaemon = vi.fn(() => process.pid);
+    const handle = await ensureSerenaDaemon({
+      root: "/proj",
+      context: "ide",
+      timeoutMs: 5_000,
+      spawnDaemon,
+      probe: async (port: number) => port === 12389,
+      listDaemons: () => [running(process.pid, 12389)],
+    });
+    expect(handle?.port).toBe(12389);
+    expect(handle?.started).toBe(false);
+    expect(spawnDaemon).not.toHaveBeenCalled();
+    expect(readRegistry()[key]?.clients).toEqual([process.pid]);
+  });
+
+  it("reclaims an adopted daemon nobody comes back for", () => {
+    const now = Date.now();
+    const kills: number[] = [];
+    const scan = () => [running(process.pid, 12389)];
+
+    reclaimIdleDaemons(now, (pid) => kills.push(pid), scan);
+    const reclaimed = reclaimIdleDaemons(
+      now + DAEMON_IDLE_GRACE_MS + 1,
+      (pid) => kills.push(pid),
+      scan,
+    );
+
+    expect(reclaimed.map((r) => r.port)).toEqual([12389]);
+    expect(kills).toEqual([process.pid]);
+  });
+
+  it("parks a duplicate beside the registered daemon and ages it out", async () => {
+    const fleet = fakeFleet();
+    const first = await ensureSerenaDaemon({
+      root: "/proj",
+      context: "ide",
+      timeoutMs: 5_000,
+      ...fleet,
+    });
+    const key = daemonKey("/proj", "ide");
+    const now = Date.now();
+    const kills: number[] = [];
+    // A second live daemon for the same project, on the next port. process.ppid
+    // stands in for its pid: it must read as alive.
+    const scan = () => [running(process.ppid, (first?.port ?? 0) + 1)];
+
+    reclaimIdleDaemons(now, (pid) => kills.push(pid), scan);
+
+    // The registered daemon is untouched and still what sessions resolve to.
+    expect(readRegistry()[key]?.pid).toBe(process.pid);
+    expect(readRegistry()[key]?.clients).toEqual([process.pid]);
+    const parked = Object.values(readRegistry()).find(
+      (r) => r.pid === process.ppid,
+    );
+    expect(parked?.idleSince).toBeDefined();
+
+    const reclaimed = reclaimIdleDaemons(
+      now + DAEMON_IDLE_GRACE_MS + 1,
+      (pid) => kills.push(pid),
+      scan,
+    );
+    expect(reclaimed.map((r) => r.pid)).toEqual([process.ppid]);
+    expect(kills).toEqual([process.ppid]);
+    expect(readRegistry()[key]?.pid).toBe(process.pid);
+  });
+
+  it("does not re-adopt a daemon that is already registered", async () => {
+    const fleet = fakeFleet();
+    const first = await ensureSerenaDaemon({
+      root: "/proj",
+      context: "ide",
+      timeoutMs: 5_000,
+      ...fleet,
+    });
+
+    reclaimIdleDaemons(
+      Date.now(),
+      () => {},
+      () => [running(process.pid, first?.port ?? 0)],
+    );
+
+    expect(Object.keys(readRegistry())).toEqual([daemonKey("/proj", "ide")]);
   });
 });
