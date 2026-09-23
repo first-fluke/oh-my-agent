@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.0.0",
-  "releaseDate": "2026-09-23T10:08:40.237Z",
+  "releaseDate": "2026-09-23T21:45:10.191Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -51,8 +51,8 @@
     },
     {
       "path": ".agents/agents/refactor-engineer.md",
-      "sha256": "3e4ca940225c79568127aa6d43238eb641e40d55322642386bf470a7b39fa5d2",
-      "size": 2608
+      "sha256": "7f2cd27b3cf42732750ddd4ce3b598583cc740cc2e0b4fa8631e1116864b3ada",
+      "size": 2738
     },
     {
       "path": ".agents/agents/research-explorer.md",
@@ -1666,8 +1666,8 @@
     },
     {
       "path": ".agents/skills/oma-refactor/SKILL.md",
-      "sha256": "feac82492b2a8bcb26c303edadfe010782122d39ea3e1875dd24a37716df707c",
-      "size": 12546
+      "sha256": "14564a8381cbc26ca088e60fc67d85b0adfd2bae9a1ac9324feb3fbcc0ba913a",
+      "size": 12658
     },
     {
       "path": ".agents/skills/oma-refactor/resources/definition.md",
@@ -1676,8 +1676,8 @@
     },
     {
       "path": ".agents/skills/oma-refactor/resources/governance.md",
-      "sha256": "ee090a367e6da27e1bc4b52d825aa0a1620f57b187f1b3f496afd2611eca499e",
-      "size": 4833
+      "sha256": "352c9f2e74185896f98c9781f10ca243892cba492ef401620ca37995040fb59b",
+      "size": 5323
     },
     {
       "path": ".agents/skills/oma-refactor/resources/measurement.md",
