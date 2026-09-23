@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "14.14.3",
-  "releaseDate": "2026-09-22T08:43:08.778Z",
+  "releaseDate": "2026-09-23T09:56:28.194Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -346,8 +346,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "d136f7981a8fed41beb5fb019f5a5a794db30e07be191075994139dfd0047c40",
-      "size": 30962
+      "sha256": "648eaa55e19ce02421f34ea5ab40346dc6d022aa7fe943122f600cb2dc750170",
+      "size": 31002
     },
     {
       "path": ".agents/rules/backend.md",
@@ -1956,13 +1956,13 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "58c7cc2d14bd1e44f3987a4b22feee7a6644193247423d6e409be26a2d43e69f",
-      "size": 6532
+      "sha256": "da4a0ea5da6410c12324867261f80f31151dbb0255dd21f751b05b3cdd2e2a5d",
+      "size": 6540
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
-      "sha256": "8d4533c33ae03f46efb3ed6f04e002dc05e908ea0152a0955ce0f04c470ef84c",
-      "size": 1875
+      "sha256": "dd58eab73fd0bca332bce2543f88a1d88fb0e21afb2a5498a2930450ea9e9212",
+      "size": 1910
     },
     {
       "path": ".agents/skills/oma-video/resources/checklist.md",
@@ -1971,8 +1971,28 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/execution-protocol.md",
-      "sha256": "97f0080eda558ec503a2ce4430f77be18098631a8b58e9a78ac0217c1640b815",
-      "size": 8099
+      "sha256": "70e0279b88e4c188d7a29d8276622d3256d77d45c9eee88e9df409553fecb17e",
+      "size": 7983
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/hyperframes-authoring/README.md",
+      "sha256": "6ad2d5e1837cc4de5ae3b13764f88885e1eef0d5a99a553bf1a66deb24c7ccca",
+      "size": 2106
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/hyperframes-authoring/demo.md",
+      "sha256": "c50ca4d19d594d65adde1ff3c38cd9f4dd346a77bfd184ac2b81e0375a5ffeae",
+      "size": 966
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/hyperframes-authoring/explainer.md",
+      "sha256": "4be2d3110690db6fb8013cd98a697de94dfb7d5619fec21dd443267b72c17501",
+      "size": 901
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/hyperframes-authoring/shorts.md",
+      "sha256": "f6c3cc7f330c03df721f5940da2f95b981849042a4dc5fff233fbb87e124928d",
+      "size": 1238
     },
     {
       "path": ".agents/skills/oma-video/resources/mpt/driver.py",
@@ -1981,28 +2001,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/prompt-tips.md",
-      "sha256": "b7a61d62cb0e7eb95b7ff787e11e9d763c7249b3cee94ac3084727fc7406f5ca",
-      "size": 4579
-    },
-    {
-      "path": ".agents/skills/oma-video/resources/remotion-authoring/README.md",
-      "sha256": "fdc3e4d8f9be86d612c9c82b7ee50e5227db785add7cd1feed590ef894d21e13",
-      "size": 3146
-    },
-    {
-      "path": ".agents/skills/oma-video/resources/remotion-authoring/demo.md",
-      "sha256": "447d795ada46b6bc43ee714294b8486ea7f1aa8c0c13a255e09fca2e084f85e3",
-      "size": 975
-    },
-    {
-      "path": ".agents/skills/oma-video/resources/remotion-authoring/explainer.md",
-      "sha256": "77fc4b9728af8d8b5cfbe85f2da418c9b65d8d588b698bdf94cf6b18d70cbddd",
-      "size": 901
-    },
-    {
-      "path": ".agents/skills/oma-video/resources/remotion-authoring/shorts.md",
-      "sha256": "3a1fe819cc91e9cac71fac83b5d534052780eab8139df234660acc9a4886dc56",
-      "size": 1169
+      "sha256": "6cfa98ac673cea08601754ca87d2c164dfd12570b53e41f8806233a28fbc1b97",
+      "size": 4582
     },
     {
       "path": ".agents/skills/oma-video/resources/script-schema.md",
@@ -2026,8 +2026,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/vendor-matrix.md",
-      "sha256": "0cc735661080fefa8ab378174d6953a0bc2c5c8a726cb5a7c1b0c87636503829",
-      "size": 6469
+      "sha256": "13bce0b251f3f8e9358ae7ae0588032bca98992111531d40ab558cea1e47bd1e",
+      "size": 6388
     },
     {
       "path": ".agents/skills/oma-voice/SKILL.md",
@@ -2171,8 +2171,8 @@
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "accdc30e84a52e8e5e95697d7299a6362dc3d71b34eae497cf35d5419c589ce2",
-      "size": 21330
+      "sha256": "d59e50c37a3ea2429a9302fd689659be78a65015b7b49e12c45072e9e4e18173",
+      "size": 20618
     },
     {
       "path": ".agents/workflows/work.md",
