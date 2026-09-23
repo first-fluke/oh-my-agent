@@ -1,5 +1,21 @@
 # Changelog
 
+## [15.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.14.3...cli-v15.0.0) (2026-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **video:** the `video.remotion` config key is now `video.hyperframes`, and `--compositor remotion` is replaced by `--compositor hyperframes`.
+
+### Features
+
+* **video:** replace remotion compositor with hyperframes ([55a7461](https://github.com/first-fluke/oh-my-agent/commit/55a74610917fa4ab2430dede816103163403ea38))
+
+
+### Bug Fixes
+
+* **serena:** keep a busy daemon registered instead of spawning a rival ([c4679a5](https://github.com/first-fluke/oh-my-agent/commit/c4679a54b49e167a7694047623167b0e053d2ca1))
+
 ## [14.14.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.14.2...cli-v14.14.3) (2026-09-22)
 
 
