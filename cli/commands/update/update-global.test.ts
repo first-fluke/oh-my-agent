@@ -7,10 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const syncSchedulesSpy = vi.hoisted(() =>
   vi.fn(async () => ({ synced: 0, resynced: 0, pruned: 0 })),
 );
-vi.mock("../../io/video/internal/remotion-workspace.js", () => ({
+vi.mock("../../io/video/internal/hyperframes-workspace.js", () => ({
   describeToolchain: vi.fn(() => ({ version: null })),
   ensureLatestToolchain: vi.fn(),
-  ensureRemotionSkills: vi.fn(),
+  ensureHyperframesSkills: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------

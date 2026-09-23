@@ -8,8 +8,8 @@ import {
   ProviderUnavailableError,
   VIDEO_EXIT_CODES,
 } from "./errors.js";
+import { prepareHyperframesRun } from "./internal/hyperframes-workspace.js";
 import { isMockMode } from "./internal/mock.js";
-import { prepareRemotionRun } from "./internal/remotion-workspace.js";
 import { collectAssetRecord, writeManifest } from "./manifest.js";
 import { makeVideoRunId } from "./naming.js";
 import { emitRawDemoOutput, handleCapture } from "./orchestrator/capture.js";
@@ -219,7 +219,7 @@ export class VideoOrchestrator {
       }
 
       // Demo + a captured recording: the footage is the video background. With
-      // --polish the Remotion `Demo` composition overlays intro/captions/zoom on
+      // --polish the Hyperframes `Demo` composition overlays intro/captions/zoom on
       // top; without it the raw capture is the output (handled below). Either way
       // the render-spec records the footage as the background source.
       const footageBackground =
@@ -267,21 +267,21 @@ export class VideoOrchestrator {
         await emitRawDemoOutput(runDir, ctx, renderSpec.slug);
       } else if (
         !normalized.dryRun &&
-        normalized.compositor === "remotion" &&
+        normalized.compositor === "hyperframes" &&
         !isMockMode()
       ) {
-        // Remotion: the composition is agent-authored per run. Scaffold the
+        // Hyperframes: the composition is agent-authored per run. Scaffold the
         // project on the always-latest toolchain and stop; `oma video render`
-        // renders once src/Root.tsx is authored. The manifest records the
+        // renders once index.html is authored. The manifest records the
         // pending state instead of a placeholder mp4.
-        ctx.providers.compositor = "remotion";
-        const prepared = await prepareRemotionRun({
+        ctx.providers.compositor = "hyperframes";
+        const prepared = await prepareHyperframesRun({
           runDir,
           spec: renderSpec,
-          checkIntervalMin: this.config.remotion.checkIntervalMin,
+          checkIntervalMin: this.config.hyperframes.checkIntervalMin,
         });
         ctx.warnings.push(
-          `compositor remotion: composition pending — author ${prepared.project.rootTsx} per ${prepared.project.authoringGuide} (remotion ${prepared.toolchain.version}), then run \`oma video render ${runDir}\``,
+          `compositor hyperframes: composition pending — author ${prepared.project.entryHtml} per ${prepared.project.authoringGuide} (hyperframes ${prepared.toolchain.version}), then run \`oma video render ${runDir}\``,
         );
       } else if (!normalized.dryRun) {
         const compositor = await this.pickProvider<Compositor>(

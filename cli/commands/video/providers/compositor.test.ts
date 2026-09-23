@@ -11,17 +11,17 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { binaryAvailable } from "../internal/exec.js";
-import { getMptProjectStatus } from "../internal/mpt-project.js";
-import { runProjectDir, STUB_MARKER } from "../internal/remotion-workspace.js";
-import type { RenderSpec } from "../types.js";
 import {
-  RemotionLikeCompositor,
-  requirePlayableVideoDuration,
-} from "./compositor.js";
+  runProjectDir,
+  STUB_MARKER,
+} from "../internal/hyperframes-workspace.js";
+import { getMptProjectStatus } from "../internal/mpt-project.js";
+import type { RenderSpec } from "../types.js";
+import { requirePlayableVideoDuration, VideoCompositor } from "./compositor.js";
 
 const SPEC: RenderSpec = {
   schemaVersion: "1.0",
-  compositor: "remotion",
+  compositor: "hyperframes",
   composition: "Shorts",
   fps: 30,
   dimensions: { width: 1080, height: 1920 },
@@ -46,7 +46,7 @@ const SPEC: RenderSpec = {
   seed: 1,
 };
 
-describe("RemotionLikeCompositor", () => {
+describe("VideoCompositor", () => {
   let tmp: string;
   let previousCwd: string;
   const originalMock = process.env.OMA_VIDEO_MOCK;
@@ -66,7 +66,7 @@ describe("RemotionLikeCompositor", () => {
 
   it("writes the deterministic placeholder in mock mode (fallback path)", async () => {
     process.env.OMA_VIDEO_MOCK = "1";
-    const artifact = await new RemotionLikeCompositor("remotion").render(SPEC);
+    const artifact = await new VideoCompositor("hyperframes").render(SPEC);
     expect(artifact.path).toBe("shorts.mp4");
     expect(artifact.pathTaken).toBe("fallback");
     expect(artifact.durationSec).toBeCloseTo(1, 5);
@@ -77,7 +77,7 @@ describe("RemotionLikeCompositor", () => {
 
   it("names the output <mode>-<slug>.mp4 when the spec carries a slug", async () => {
     process.env.OMA_VIDEO_MOCK = "1";
-    const artifact = await new RemotionLikeCompositor("remotion").render({
+    const artifact = await new VideoCompositor("hyperframes").render({
       ...SPEC,
       slug: "jeju-coffee",
     });
@@ -88,16 +88,16 @@ describe("RemotionLikeCompositor", () => {
 
   it("is reproducible from the same spec in mock mode", async () => {
     process.env.OMA_VIDEO_MOCK = "1";
-    const a = await new RemotionLikeCompositor("remotion").render(SPEC);
+    const a = await new VideoCompositor("hyperframes").render(SPEC);
     const first = readFileSync(path.join(tmp, a.path), "utf8");
-    const b = await new RemotionLikeCompositor("remotion").render(SPEC);
+    const b = await new VideoCompositor("hyperframes").render(SPEC);
     const second = readFileSync(path.join(tmp, b.path), "utf8");
     expect(second).toBe(first);
   });
 
   it("uses the placeholder for the mpt compositor in mock mode (fallback path)", async () => {
     process.env.OMA_VIDEO_MOCK = "1";
-    const artifact = await new RemotionLikeCompositor("mpt").render(SPEC);
+    const artifact = await new VideoCompositor("mpt").render(SPEC);
     expect(artifact.pathTaken).toBe("fallback");
     const body = readFileSync(path.join(tmp, artifact.path), "utf8");
     expect(body).toContain("oma-video placeholder render");
@@ -122,7 +122,7 @@ describe("RemotionLikeCompositor", () => {
         "utf8",
       );
       await expect(
-        new RemotionLikeCompositor("mpt").render({
+        new VideoCompositor("mpt").render({
           ...SPEC,
           compositor: "mpt",
         }),
@@ -136,7 +136,7 @@ describe("RemotionLikeCompositor", () => {
 
   // Real branch, no composition: outside mock mode the compositor must NOT
   // paper over a missing/stub composition with a placeholder — it throws with
-  // the remediation so the agent authors src/Root.tsx and re-renders.
+  // the remediation so the agent authors index.html and re-renders.
   it("throws (no placeholder) when the run has no authored composition", async () => {
     delete process.env.OMA_VIDEO_MOCK;
     writeFileSync(
@@ -146,16 +146,15 @@ describe("RemotionLikeCompositor", () => {
     );
     const ffmpeg = await binaryAvailable("ffmpeg", ["-version"]);
     await expect(
-      new RemotionLikeCompositor("remotion").render(SPEC),
+      new VideoCompositor("hyperframes").render(SPEC),
     ).rejects.toThrow(ffmpeg.ok ? /oma video compose/ : /ffmpeg not found/);
     if (!ffmpeg.ok) return;
-    // Scaffold present but Root.tsx is still the stub → still an error, named.
+    // Scaffold present but index.html is still the stub → still an error, named.
     const project = runProjectDir(tmp);
-    mkdirSync(path.join(project, "src"), { recursive: true });
-    writeFileSync(path.join(project, "src", "index.ts"), "// entry\n");
-    writeFileSync(path.join(project, "src", "Root.tsx"), `// ${STUB_MARKER}\n`);
+    mkdirSync(project, { recursive: true });
+    writeFileSync(path.join(project, "index.html"), `// ${STUB_MARKER}\n`);
     await expect(
-      new RemotionLikeCompositor("remotion").render(SPEC),
+      new VideoCompositor("hyperframes").render(SPEC),
     ).rejects.toThrow(/composition not authored/);
   });
 
@@ -192,7 +191,7 @@ describe("RemotionLikeCompositor", () => {
         JSON.stringify(mptSpec),
         "utf8",
       );
-      const artifact = await new RemotionLikeCompositor("mpt").render(mptSpec);
+      const artifact = await new VideoCompositor("mpt").render(mptSpec);
 
       if (!(ffmpeg && project.installed)) return;
 

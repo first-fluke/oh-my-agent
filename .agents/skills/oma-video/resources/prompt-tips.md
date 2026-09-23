@@ -29,7 +29,7 @@ Example (shorts): `30s vertical short for a dev audience: how oma-video turns a 
 
 ### demo (16:9)
 - The visual is a human-recorded capture (`--capture`). The brief drives the intro card, zoom/callout beats, and outro.
-- Call out *where to look* on screen — Remotion adds zoom + callouts over the capture.
+- Call out *where to look* on screen — HyperFrames adds zoom + callouts over the capture.
 - Keep the intro ≤ 3s; viewers came for the product, not the title card.
 
 ## Per-scene image prompts (oma-image)

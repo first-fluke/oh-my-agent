@@ -28,7 +28,7 @@ export function registerVideoCommand(program: Command): void {
       "Music: upbeat | calm | cinematic | lofi | piano | none",
     )
     .option("--duration <sec>", "Duration in seconds, or auto")
-    .option("--compositor <name>", "Compositor: remotion | mpt")
+    .option("--compositor <name>", "Compositor: hyperframes | mpt")
     .option(
       "--capture <path>",
       "Capture input path for demo mode (--source file)",
@@ -44,7 +44,10 @@ export function registerVideoCommand(program: Command): void {
       "CSS selector to await before web capture",
     )
     .option("--show-cursor", "Overlay a visible cursor in the web capture")
-    .option("--polish", "Overlay the Remotion Demo composition on the footage")
+    .option(
+      "--polish",
+      "Overlay the Hyperframes Demo composition on the footage",
+    )
     .option("--capture-timeout <sec>", "Hard ceiling for the live web capture")
     .option(
       "--capture-stop <mode>",
@@ -90,11 +93,11 @@ export function registerVideoCommand(program: Command): void {
     .option("--format <format>", "Output format: text | json", "text")
     .option(
       "--install",
-      "Install the latest Remotion toolchain (deps + headless shell + Pretendard) and remotion-dev/skills into ~/.cache/oma-video",
+      "Install the latest Hyperframes toolchain (deps + headless shell + Pretendard) and heygen-com/hyperframes into ~/.cache/oma-video",
     )
     .option(
       "--upgrade",
-      "Re-check and download the latest remotion toolchain + remotion-dev/skills now",
+      "Re-check and download the latest hyperframes toolchain + heygen-com/hyperframes now",
     )
     .option(
       "--install-mpt",
@@ -129,10 +132,10 @@ export function registerVideoCommand(program: Command): void {
   video
     .command("compose <runDir>")
     .description(
-      "Scaffold the run's Remotion project on the latest toolchain + remotion-dev/skills; prints the authoring contract",
+      "Scaffold the run's Hyperframes project on the latest toolchain + heygen-com/hyperframes; prints the authoring contract",
     )
     .option("--format <format>", "Output format: text | json", "text")
-    .option("--refresh", "Re-check the latest remotion / skills now")
+    .option("--refresh", "Re-check the latest hyperframes / skills now")
     .option("--offline", "Use cached toolchain and skills only")
     .action(
       async (runDir: string, opts: Record<string, unknown>): Promise<void> => {

@@ -348,7 +348,7 @@ export class StrudelMusicProvider implements MusicProvider {
 
     return {
       mode: opts.mode,
-      // Remotion resolves this with staticFile() — must stay run-dir-relative
+      // The HTML project stages this asset — keep the path run-relative
       // and POSIX-separated regardless of host platform.
       path: toPosix(wavRel),
       mp3Path: mp3Rel ? toPosix(mp3Rel) : undefined,
@@ -359,7 +359,7 @@ export class StrudelMusicProvider implements MusicProvider {
   }
 }
 
-/** Run-dir-relative paths must be POSIX for the compositor's staticFile(). */
+/** Run-dir-relative paths must be POSIX for HTML media URLs. */
 function toPosix(relative: string): string {
   return relative.split(path.sep).join("/");
 }

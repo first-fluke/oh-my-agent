@@ -63,8 +63,8 @@ export interface VideoConfig {
   naming: {
     singleFolderPattern: string;
   };
-  /** Always-latest Remotion toolchain + remotion-dev/skills refresh policy. */
-  remotion: {
+  /** Always-latest Hyperframes toolchain + heygen-com/hyperframes refresh policy. */
+  hyperframes: {
     /** Minutes between latest-version checks (npm + GitHub); 0 = every compose. */
     checkIntervalMin: number;
   };
@@ -80,7 +80,7 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
   defaultVisual: "auto",
   defaultVoice: "none",
   defaultMusic: "none",
-  defaultCompositor: "remotion",
+  defaultCompositor: "hyperframes",
   defaultTimeoutSec: 600,
   yes: false,
   providers: {
@@ -90,14 +90,14 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
     caption: { order: ["oma-captions"] },
     capture: { order: ["cap"] },
     music: { order: ["strudel"] },
-    compositor: { order: ["remotion", "mpt"] },
+    compositor: { order: ["hyperframes", "mpt"] },
     pexels: { enabled: false, envVar: "PEXELS_API_KEY" },
     pixelle: { enabled: false, envVar: "RUNNINGHUB_API_KEY" },
   },
   cost: { guardrailUsd: 0.2 },
   limits: { maxDurationSec: 180, maxScenes: 40 },
   naming: { singleFolderPattern: "{timestamp}-{shortid}-{mode}" },
-  remotion: { checkIntervalMin: 60 },
+  hyperframes: { checkIntervalMin: 60 },
   language: "en",
 };
 
@@ -176,14 +176,14 @@ function normalizeKeys(raw: Record<string, unknown>): Partial<VideoConfig> {
           (naming.singleFolderPattern as string) ??
           DEFAULT_VIDEO_CONFIG.naming.singleFolderPattern,
       };
-    } else if (mapped === "remotion" && value && typeof value === "object") {
+    } else if (mapped === "hyperframes" && value && typeof value === "object") {
       const r = value as Record<string, unknown>;
       const interval = r.check_interval_min ?? r.checkIntervalMin;
-      out.remotion = {
+      out.hyperframes = {
         checkIntervalMin:
           typeof interval === "number" && interval >= 0
             ? interval
-            : DEFAULT_VIDEO_CONFIG.remotion.checkIntervalMin,
+            : DEFAULT_VIDEO_CONFIG.hyperframes.checkIntervalMin,
       };
     } else if (mapped === "providers" && value && typeof value === "object") {
       out.providers = normalizeProviders(value as Record<string, unknown>);

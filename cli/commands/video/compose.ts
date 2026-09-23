@@ -2,14 +2,14 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import color from "picocolors";
 import { loadVideoConfig } from "./config.js";
-import { prepareRemotionRun } from "./internal/remotion-workspace.js";
+import { prepareHyperframesRun } from "./internal/hyperframes-workspace.js";
 import { parseVideoSchema, RenderSpecSchema } from "./types.js";
 
 /**
- * `oma video compose <runDir>` — scaffold (or refresh) the run's Remotion
- * project on the always-latest toolchain + remotion-dev/skills, and print what
+ * `oma video compose <runDir>` — scaffold (or refresh) the run's Hyperframes
+ * project on the always-latest toolchain + heygen-com/hyperframes, and print what
  * the agent needs to author the composition. Idempotent; never overwrites an
- * authored src/Root.tsx.
+ * authored index.html.
  */
 export async function runVideoCompose({
   runDir,
@@ -25,7 +25,7 @@ export async function runVideoCompose({
     RenderSpecSchema,
     JSON.parse(await readFile(renderSpecPath, "utf8")),
   );
-  if (spec.compositor !== "remotion") {
+  if (spec.compositor !== "hyperframes") {
     console.error(
       color.yellow(
         `render-spec compositor is "${spec.compositor}" — nothing to compose`,
@@ -34,10 +34,10 @@ export async function runVideoCompose({
     return 0;
   }
   const config = await loadVideoConfig();
-  const prepared = await prepareRemotionRun({
+  const prepared = await prepareHyperframesRun({
     runDir: resolvedDir,
     spec,
-    checkIntervalMin: config.remotion.checkIntervalMin,
+    checkIntervalMin: config.hyperframes.checkIntervalMin,
     force: opts.refresh === true,
     offline: opts.offline === true,
   });
@@ -46,12 +46,11 @@ export async function runVideoCompose({
     renderSpecPath,
     composition: spec.composition,
     projectDir: prepared.project.projectDir,
-    rootTsx: prepared.project.rootTsx,
+    entryHtml: prepared.project.entryHtml,
     stub: prepared.project.stub,
     authoringGuide: prepared.project.authoringGuide,
-    remotion: {
+    hyperframes: {
       version: prepared.toolchain.version,
-      react: prepared.toolchain.reactVersion,
       dir: prepared.toolchain.dir,
       status: prepared.toolchain.status,
       note: prepared.toolchain.note,
@@ -68,7 +67,7 @@ export async function runVideoCompose({
         }
       : null,
     next: prepared.project.stub
-      ? `author ${prepared.project.rootTsx} per ${prepared.project.authoringGuide}, then \`oma video render ${resolvedDir}\``
+      ? `author ${prepared.project.entryHtml} per ${prepared.project.authoringGuide}, then \`oma video render ${resolvedDir}\``
       : `composition present — \`oma video render ${resolvedDir}\``,
   };
   if ((opts.format as string | undefined) === "json") {
@@ -77,7 +76,7 @@ export async function runVideoCompose({
     console.log(color.bold(`oma video compose — ${spec.composition}`));
     console.log(`  project:   ${out.projectDir}`);
     console.log(
-      `  remotion:  ${out.remotion.version} (${out.remotion.status}${out.remotion.note ? `, ${out.remotion.note}` : ""})`,
+      `  hyperframes:  ${out.hyperframes.version} (${out.hyperframes.status}${out.hyperframes.note ? `, ${out.hyperframes.note}` : ""})`,
     );
     console.log(
       `  skills:    ${out.skills ? `${out.skills.ref} (${Object.keys(out.skills.files).length} skills)` : color.yellow("unavailable")}`,

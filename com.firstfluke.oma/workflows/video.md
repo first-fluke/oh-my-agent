@@ -1,12 +1,12 @@
 ---
 name: video
-description: Agent-native, key-optional video generation workflow that turns a brief into a finished MP4 — script → parallel asset generation (voice/visual/caption) → render-spec → Remotion compositor (MPT alternative) → QA loop → output + manifest
+description: Agent-native, key-optional video generation workflow that turns a brief into a finished MP4 — script → parallel asset generation (voice/visual/caption) → render-spec → HyperFrames compositor (MPT alternative) → QA loop → output + manifest
 disable-model-invocation: true
 ---
 
 - **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
-- **Key-optional by default (backend rule 11).** The baseline path uses **zero external API keys**: the agent writes the script, oma-voice does TTS, oma-image does visuals, captions are key-free, Remotion composites. Every paid upgrade (Pexels stock, Pixelle AIGC) sits behind a key-free fallback and is **off by default**. Never disable the fallback to force a real call, and never silently drop a requested real path.
+- **Key-optional by default (backend rule 11).** The baseline path uses **zero external API keys**: the agent writes the script, oma-voice does TTS, oma-image does visuals, captions are key-free, HyperFrames composites. Every paid upgrade (Pexels stock, Pixelle AIGC) sits behind a key-free fallback and is **off by default**. Never disable the fallback to force a real call, and never silently drop a requested real path.
 - **Determinism boundary = `render-spec.json` + asset files (+ seed + embedded Pretendard).** "Reproducible from script/assets, not from brief." Never edit assets or render-spec by hand after generation; re-run the stage that produced them.
 - **Demo capture is human-supplied.** `--source web --url` gives URL context only; it neither opens nor records a browser. The human records the flow with Cap or another recorder, then supplies `--capture <path>`. Never automate login or capture credentials. Mask URL query tokens in logs and manifests.
 - **The `oma video` CLI owns the pipeline. This workflow owns the brief, the agent-authored script, the QA loop, and decision checkpoints.** Do NOT reimplement orchestration, provider selection, or rendering in the workflow.
@@ -33,13 +33,13 @@ Resolve the mode first — it determines aspect, source, visual track, and compo
 
 | mode | aspect | source | visual track (default → opt) | compositor | output |
 |------|:---:|------|------|------|------|
-| `shorts` | 9:16 | synthetic (topic → clip) | oma-image stills · Pexels (opt) · Pixelle AIGC (opt) | Remotion · MPT alt | `shorts-<slug>.mp4` |
-| `explainer` | 16:9 / 9:16 | README · code · data | oma-slide frames + oma-image diagrams + code | Remotion (deterministic) | `explainer-<slug>.mp4` |
-| `demo` | 16:9 | Human recording via `--capture`; `--source web --url` adds URL context | raw footage (default) · Remotion intro · zoom · callouts (`--polish`) | Remotion polish | `demo-<slug>.mp4` |
+| `shorts` | 9:16 | synthetic (topic → clip) | oma-image stills · Pexels (opt) · Pixelle AIGC (opt) | HyperFrames · MPT alt | `shorts-<slug>.mp4` |
+| `explainer` | 16:9 / 9:16 | README · code · data | oma-slide frames + oma-image diagrams + code | HyperFrames (deterministic) | `explainer-<slug>.mp4` |
+| `demo` | 16:9 | Human recording via `--capture`; `--source web --url` adds URL context | raw footage (default) · HyperFrames intro · zoom · callouts (`--polish`) | HyperFrames polish | `demo-<slug>.mp4` |
 
 Intent heuristics: "reel / TikTok / short / hook" → `shorts`; "walkthrough / how it works / from the README / explain the architecture" → `explainer`; "record / screen / show the app running / product demo" → `demo`.
 
-For `demo`, resolve the recording path first. Use `--source file --capture <path>` for a recording; `--source web --url <url> --capture <path>` adds URL context to that human recording. The CLI does not open or record a browser. Raw footage is the default output; `--polish` overlays the Remotion `Demo` composition.
+For `demo`, resolve the recording path first. Use `--source file --capture <path>` for a recording; `--source web --url <url> --capture <path>` adds URL context to that human recording. The CLI does not open or record a browser. Raw footage is the default output; `--polish` overlays the HyperFrames `Demo` composition.
 
 ---
 
@@ -71,7 +71,7 @@ For `demo`, resolve the recording path first. Use `--source file --capture <path
    ```bash
    oma video doctor --output json
    ```
-   This reports Node / Chromium / FFmpeg, the Remotion project, the embedded Pretendard font, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and MPT readiness. **Doctor does NOT auto-bootstrap** — plain `oma video doctor` only reports. If Remotion is not yet installed, run `oma video doctor --install` (one-time: deps + Chrome Headless Shell + Pretendard font fetch) — do not install during a run. MPT needs a one-time `oma video doctor --install-mpt` (clone + venv + deps).
+   This reports Node / Chromium / FFmpeg, the HyperFrames project, the embedded Pretendard font, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and MPT readiness. **Doctor does NOT auto-bootstrap** — plain `oma video doctor` only reports. If HyperFrames is not yet installed, run `oma video doctor --install` (one-time: deps + Chrome Headless Shell + Pretendard font fetch) — do not install during a run. MPT needs a one-time `oma video doctor --install-mpt` (clone + venv + deps).
 3. If doctor reports a hard blocker for the chosen mode (e.g. no compositor for `shorts`/`explainer`), report the remediation and stop. If only an optional provider is missing (Pexels, Pixelle, Cap), note it and continue on the fallback.
 4. Record run start in the configured file-memory path: brief summary, requested mode, and doctor result.
 
@@ -108,7 +108,7 @@ The agent writes the script — this is the start of the determinism boundary. D
    oma video generate "<brief>" --mode <mode> --aspect <aspect> --locale <lang> \
      --captions <tiktok|lower-third|none> --visual <auto|generate|stock|aigc|slide> \
      --voice <profile|none> --music <upbeat|calm|cinematic|lofi|piano|none> --duration <sec|auto> \
-     --compositor <remotion|mpt> --seed <n> \
+     --compositor <hyperframes|mpt> --seed <n> \
      --script <path-to-agent-authored-script.json> --dry-run --output json
    ```
 6. Review the emitted `script.json` for scene count, durations, and narration quality. Iterate here — fixing the script is cheap; fixing a render is not.
@@ -126,7 +126,7 @@ oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script
 The three tracks (per `.agents/skills/oma-video/SKILL.md` and its execution protocol):
 
 - **Voice** (oma-voice / Voicebox MCP) → a **single** `audio/narration-01.wav` (all scene lines joined into one track — not per-scene files) + `timing.json`. Timing source: `voicebox-stt` (MCP `voicebox_transcribe`, REST `/transcribe` fallback, on the generated wav) → `estimated` (the `tts-native` / `whisper-cpp` source values are reserved but deferred). **The default voice is `none` → a silent video with estimated timing; pass `--voice <profile>` for narration.** If oma-voice is down, the run falls back to silent + estimated timing and warns — it does not hard-fail.
-- **Visual** (per-scene, fallback chain `oma-image → pexels → pixelle`) → `visuals/scene-NN.*`. Default is key-free oma-image stills (aspect snapped to the nearest 16-multiple; Remotion crops to exact frame). `--visual stock` engages Pexels only when `PEXELS_API_KEY` is set; `--visual aigc` engages Pixelle only after consent + cost gate. Each scene that falls back is recorded with `pathTaken: fallback`.
+- **Visual** (per-scene, fallback chain `oma-image → pexels → pixelle`) → `visuals/scene-NN.*`. Default is key-free oma-image stills (aspect snapped to the nearest 16-multiple; HyperFrames crops to exact frame). `--visual stock` engages Pexels only when `PEXELS_API_KEY` is set; `--visual aigc` engages Pixelle only after consent + cost gate. Each scene that falls back is recorded with `pathTaken: fallback`.
 - **Caption** (key-free) → `captions.srt` / `.vtt`, aligned to `timing.json`, styled `tiktok` or `lower-third`, with platform safe-area presets. Non-source locales translate via oma-translation; if absent, captions keep the source locale and warn.
 
 Report which path each track took (real vs fallback) and surface any warnings.
@@ -154,16 +154,16 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 
 ---
 
-## Step 6: Composite (Remotion — you author the composition; MPT is an alternative)
+## Step 6: Composite (HyperFrames — you author the composition; MPT is an alternative)
 
-1. **Remotion** (default, all modes) — oma ships no composition code; you write it per run on the always-latest Remotion:
-   1. `oma video generate` already scaffolded `<runDir>/remotion/` (warning `composition pending`). If not, or to refresh: `oma video compose <runDir> --output json`.
-   2. Read, in order: `<runDir>/remotion/AUTHORING.md` (contract for this spec), the `remotion-best-practices` and `remotion-markup` SKILL.md paths it lists (remotion-dev/skills at HEAD; `remotion-captions` when `captions.style !== "none"`, `remotion-multimedia` for video/audio), and `.agents/skills/oma-video/resources/remotion-authoring/<mode>.md`.
-   3. Write `<runDir>/remotion/src/Root.tsx` (+ `src/components/*`): one `<Composition id={composition}>` consuming `render-spec.json`, `calculateMetadata` from props, deterministic (no network/randomness), Pretendard via `staticFile("fonts/PretendardVariable.woff2")`. Never edit the generated files.
-   4. `oma video render <runDir> --output json` — typecheck → `npx remotion render` → ffprobe video-stream/duration validation. A non-zero exit or invalid output is a render failure; use diagnostics to classify toolchain, runtime, or composition causes, then fix and re-render. Use at most three render attempts within ten minutes; then report the diagnostics and recovery artifacts.
-   - **Demo raw vs `--polish`**: for `demo`, the **default** is the raw captured footage copied through as the output. `--polish` means you author the `Demo` composition (intro / callouts / zoom over the capture as `background`).
+1. **HyperFrames** (default, all modes):
+   1. `generate` prepares `<runDir>/hyperframes/` with a `composition pending` warning. Use `oma video compose <runDir> --output json` to refresh it.
+   2. Read `<runDir>/hyperframes/AUTHORING.md`, the listed `hyperframes-core`, `hyperframes-animation`, and `hyperframes-cli` API references, and `.agents/skills/oma-video/resources/hyperframes-authoring/<mode>.md`.
+   3. Author `index.html`. Use the staged render spec and local assets, timed HTML clips, uniquely identified audio elements, and a paused GSAP timeline. Honor the spec's dimensions, duration, captions, and audio levels.
+   4. Run `oma video render <runDir> --output json`. It lints, renders, verifies the encoded video, and updates the manifest. Diagnose and fix any failure before delivery.
+
 2. **MoneyPrinterTurbo** (`--compositor mpt`, shorts e2e alternative): the agent-written script is injected in custom-script mode; provider keys are env-only and masked in logs. It needs `oma video doctor --install-mpt` once. Setup or render failures fail with diagnostics; only `OMA_VIDEO_MOCK=1` tests may create a placeholder file.
-3. If the toolchain cannot be fetched (offline, nothing cached): `oma video doctor --install` once online. Do not pin or hand-install Remotion.
+3. If the toolchain cannot be fetched (offline, nothing cached): `oma video doctor --install` once online. Do not pin or hand-install HyperFrames.
 4. Confirm the output MP4 exists, matches `<mode>-<slug>.mp4`, has a video stream, and has a positive ffprobe duration.
 
 ---
@@ -184,7 +184,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    - wrong/placeholder visual → **Step 4** visual track (adjust prompt or `--visual` mode).
    - missing/incomplete demo capture → **Step 4** demo capture track (obtain a new human recording and pass `--capture`; `--url` is context only).
    - caption sync/wrap/locale → **Step 4** caption track (or oma-translation).
-   - layout/transition/crop → **Step 6** edit the composition (`<runDir>/remotion/src`) or the render-spec → `oma video render` (for `demo`, toggle `--polish`).
+   - layout/transition/crop → **Step 6** edit the composition (`<runDir>/hyperframes/index.html`) or the render-spec → `oma video render` (for `demo`, toggle `--polish`).
 3. **Determinism guard:** when validating reproducibility, run the golden harness — render-spec and assets must be byte-identical:
    ```bash
    OMA_VIDEO_MOCK=1 oma video generate "<brief>" --mode <mode> --seed <n> --dry-run --output json
@@ -226,7 +226,7 @@ Common error → action map:
 | error | exit | action |
 |------|:---:|------|
 | `ProviderUnavailableError` | 5 | a required provider is down → run `oma video doctor`, fix or fall back |
-| `CompositorBootstrapError` | 1 | Remotion not installed → `oma video doctor` install-once, then re-render |
+| `CompositorBootstrapError` | 1 | HyperFrames not installed → `oma video doctor` install-once, then re-render |
 | `CostGuardrailError` | confirm | estimate crossed guardrail → Step 5 confirmation or drop paid providers |
 | `CaptureRequiredError` | guided | demo needs a human recording → provide `--capture <path>`; `--source web` also requires `--url` context |
 | `SchemaValidationError` | 4 | script/render-spec invalid, missing demo capture, or `--source web` without `--url` → fix in Step 3 and re-validate with `--dry-run` |

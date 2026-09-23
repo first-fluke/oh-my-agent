@@ -2,7 +2,7 @@ import type { VideoConfig } from "./config.js";
 import { ProviderUnavailableError } from "./errors.js";
 import { TimedCaptionProvider } from "./providers/caption.js";
 import { GuidedCaptureProvider } from "./providers/capture.js";
-import { RemotionLikeCompositor } from "./providers/compositor.js";
+import { VideoCompositor } from "./providers/compositor.js";
 import { StrudelMusicProvider } from "./providers/music-strudel.js";
 import {
   AgentScriptProvider,
@@ -91,7 +91,7 @@ export function defaultVideoRegistry(
     .register("caption", new TimedCaptionProvider())
     .register("capture", new GuidedCaptureProvider(options.cwd))
     .register("music", new StrudelMusicProvider())
-    .register("compositor", new RemotionLikeCompositor("remotion"))
-    .register("compositor", new RemotionLikeCompositor("mpt"));
+    .register("compositor", new VideoCompositor("hyperframes"))
+    .register("compositor", new VideoCompositor("mpt"));
   return registry;
 }

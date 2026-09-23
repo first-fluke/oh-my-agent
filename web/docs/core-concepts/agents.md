@@ -776,7 +776,7 @@ Project-specific `stack/stack.yaml`, `stack/tech-stack.md`, snippets, and API te
 
 ### oma-video
 
-**Domain:** Short-form, explainer, and human-recorded demo video generation through the `oma video` CLI, composing script → narration → visuals → captions → Remotion render.
+**Domain:** Short-form, explainer, and human-recorded demo video generation through the `oma video` CLI, composing script → narration → visuals → captions → HyperFrames render.
 
 **When to use:** Generating short-form video (shorts/reels, 9:16) from a topic, explainers (16:9/9:16) from a README/code/data, demos/walkthroughs from a screen capture (`--source file`) or supervised headed web-app capture of any URL (`--source web`), re-rendering an existing run deterministically.
 
@@ -792,7 +792,7 @@ Project-specific `stack/stack.yaml`, `stack/tech-stack.md`, snippets, and API te
 
 **Workflow:** PREPARE (mode/aspect/locale, clarify/amplify brief) → ACQUIRE (probe provider availability, validate capture path, check cost) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, manifest hashes, exit code, mp4) → FINALIZE (run-dir + mp4 path + coverage warnings).
 
-**Resources:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, plus the vendored `remotion/` compositor, the web-capture driver, and the `mpt/` fallback compositor; `config/video-config.yaml`.
+**Resources:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, plus the `hyperframes-authoring/` mode guides, the web-capture driver, and the `mpt/` fallback compositor; `config/video-config.yaml`.
 
 ---
 

@@ -7,7 +7,7 @@
     "voice": "stub-voice",
     "visual": ["oma-image"],
     "caption": "stub-caption",
-    "compositor": "remotion"
+    "compositor": "hyperframes"
   },
   "assets": [
     {

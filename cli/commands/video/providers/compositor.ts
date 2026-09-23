@@ -1,34 +1,20 @@
-// Compositor — Remotion / MPT (design §3.2, §5). Two deterministic branches:
-//
-//   real     : (not mock) — the AGENT-AUTHORED per-run project at
-//              `<runDir>/remotion/` (scaffolded by `oma video compose` on the
-//              always-latest Remotion toolchain) is typechecked and rendered via
-//              `npx remotion render` as a SUBPROCESS. Never imported. Assets are
-//              passed via `--props` + `--public-dir=<runDir>`. Any failure —
-//              missing/stub composition, tsc error, render error — THROWS with
-//              the diagnostics: a broken render on the latest Remotion is the
-//              composition's bug to fix, never something to paper over.
-//   fallback : OMA_VIDEO_MOCK=1 only — deterministic placeholder mp4 derived
-//              from the render-spec so tests and dry runs stay toolchain-free.
-//
-// The render OUTPUT is not part of the determinism boundary (render-spec.json +
-// assets are). The placeholder stays a pure function of the spec so it is
-// reproducible from the same render-spec.
+// Local HyperFrames and MPT compositors; placeholders are test-only.
 import { existsSync } from "node:fs";
 import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { stageRenderSpec } from "../../../io/video/internal/hyperframes-project.js";
 import { binaryAvailable, runCapture } from "../internal/exec.js";
+import {
+  isStubRoot,
+  runProjectDir,
+  toolchainCli,
+} from "../internal/hyperframes-workspace.js";
 import { isMockMode } from "../internal/mock.js";
 import {
   getMptProjectStatus,
   type MptProjectStatus,
   resolveMptDriverPath,
 } from "../internal/mpt-project.js";
-import {
-  describeToolchain,
-  isStubRoot,
-  runProjectDir,
-} from "../internal/remotion-workspace.js";
 import type { Availability, Compositor, CostEstimate } from "../providers.js";
 import {
   outputFileName,
@@ -43,6 +29,7 @@ const RENDER_TIMEOUT_MS = 600_000;
 /** Require a video stream and positive encoded duration, never a text stub. */
 export async function requirePlayableVideoDuration(
   absPath: string,
+  dimensions?: RenderSpec["dimensions"],
 ): Promise<number> {
   if (!existsSync(absPath)) {
     throw new Error(`render did not produce an output file: ${absPath}`);
@@ -55,7 +42,7 @@ export async function requirePlayableVideoDuration(
       "-select_streams",
       "v:0",
       "-show_entries",
-      "stream=codec_type:format=duration",
+      "stream=codec_type,width,height:format=duration",
       "-of",
       "json",
       absPath,
@@ -71,14 +58,25 @@ export async function requirePlayableVideoDuration(
   try {
     const parsed = JSON.parse(res.stdout) as {
       format?: { duration?: string };
-      streams?: Array<{ codec_type?: string }>;
+      streams?: Array<{ codec_type?: string; width?: number; height?: number }>;
     };
     const seconds = Number.parseFloat(parsed.format?.duration ?? "");
-    const hasVideo = parsed.streams?.some(
+    const video = parsed.streams?.find(
       (stream) => stream.codec_type === "video",
     );
-    if (hasVideo && Number.isFinite(seconds) && seconds > 0) return seconds;
-  } catch {
+    if (
+      video &&
+      dimensions &&
+      (video.width !== dimensions.width || video.height !== dimensions.height)
+    ) {
+      throw new Error(
+        `render dimensions ${video.width}x${video.height} do not match ${dimensions.width}x${dimensions.height}`,
+      );
+    }
+    if (video && Number.isFinite(seconds) && seconds > 0) return seconds;
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("render dimensions"))
+      throw error;
     // Fall through to the actionable validation error.
   }
   throw new Error(
@@ -86,8 +84,8 @@ export async function requirePlayableVideoDuration(
   );
 }
 
-export class RemotionLikeCompositor implements Compositor {
-  constructor(public readonly id: "remotion" | "mpt" = "remotion") {}
+export class VideoCompositor implements Compositor {
+  constructor(public readonly id: "hyperframes" | "mpt" = "hyperframes") {}
 
   async available(): Promise<Availability> {
     return { ok: true };
@@ -116,12 +114,11 @@ export class RemotionLikeCompositor implements Compositor {
 
     const gate = await this.realBranchGate(runDir);
     if (!gate.ok) throw new Error(gate.reason);
-    return await this.renderWithRemotion({
+    return await this.renderWithHyperframes({
       spec,
       file,
       runDir,
       projectDir: gate.projectDir,
-      chromeOverride: gate.chromeOverride,
     });
   }
 
@@ -323,168 +320,98 @@ export class RemotionLikeCompositor implements Compositor {
     }
   }
 
-  /**
-   * The real Remotion branch needs: ffmpeg (ffprobe), the per-run project with
-   * an agent-authored Root.tsx (not the stub), and a toolchain with its
-   * headless shell. Every miss is an error with the remediation in the reason.
-   */
   private async realBranchGate(
     runDir: string,
-  ): Promise<
-    | { ok: true; projectDir: string; chromeOverride?: string }
-    | { ok: false; reason: string }
-  > {
+  ): Promise<{ ok: true; projectDir: string } | { ok: false; reason: string }> {
     const ffmpeg = await binaryAvailable("ffmpeg", ["-version"]);
     if (!ffmpeg.ok) return { ok: false, reason: "ffmpeg not found" };
-
     const projectDir = runProjectDir(runDir);
-    if (!existsSync(path.join(projectDir, "src", "index.ts"))) {
+    if (!existsSync(path.join(projectDir, "index.html"))) {
       return {
         ok: false,
-        reason: `no Remotion project at ${projectDir} — run \`oma video compose ${runDir}\` and author src/Root.tsx`,
+        reason: `no HyperFrames project at ${projectDir} — run \`oma video compose ${runDir}\` and author index.html`,
       };
     }
     if (isStubRoot(projectDir)) {
       return {
         ok: false,
-        reason: `composition not authored: ${path.join(projectDir, "src", "Root.tsx")} is still the scaffold stub — author it per ${path.join(projectDir, "AUTHORING.md")}`,
+        reason: `composition not authored: replace ${projectDir}/index.html per AUTHORING.md`,
       };
     }
-    if (!existsSync(path.join(projectDir, "node_modules", "remotion"))) {
+    if (!existsSync(toolchainCli(projectDir))) {
       return {
         ok: false,
-        reason: `toolchain link missing under ${projectDir}/node_modules — re-run \`oma video compose ${runDir}\``,
+        reason: `HyperFrames toolchain missing — run \`oma video compose ${runDir}\``,
       };
     }
-
-    const chromeOverride = process.env.OMA_VIDEO_CHROME?.trim() || undefined;
-    if (!describeToolchain().browserReady && !chromeOverride) {
-      return {
-        ok: false,
-        reason:
-          "remotion headless shell not ready (run `oma video doctor --install`)",
-      };
-    }
-
-    const tsc = await runCapture("npx", ["tsc", "--noEmit"], {
-      cwd: projectDir,
-      timeoutMs: 300_000,
-    });
-    if (tsc.code !== 0) {
-      const tail = (tsc.stdout || tsc.stderr)
-        .trim()
-        .split("\n")
-        .slice(-8)
-        .join("\n");
-      return {
-        ok: false,
-        reason: `composition does not typecheck against remotion ${describeToolchain().version ?? "?"} — fix ${projectDir}/src (consult remotion-dev/skills):\n${tail}`,
-      };
-    }
-
-    return { ok: true, projectDir, chromeOverride };
+    return { ok: true, projectDir };
   }
 
-  /**
-   * Spawn `npx remotion render <entry> <CompId> <out> --props=<spec>
-   * --public-dir=<runDir> --browser-executable=<chrome>` in the project dir.
-   *
-   * `--public-dir=<runDir>` is what makes the render-spec's run-dir-relative
-   * asset paths (`visuals/...`, `captions.srt`) resolve via `staticFile()`; the
-   * Remotion `src/` never sees an absolute path. On success we probe the real
-   * duration from the produced mp4 (the render-spec duration is the planned
-   * length; ffprobe verifies a video stream and its encoded duration).
-   */
-  private async renderWithRemotion(args: {
+  private async renderWithHyperframes(args: {
     spec: RenderSpec;
     file: string;
     runDir: string;
     projectDir: string;
-    chromeOverride?: string;
   }): Promise<VideoArtifact> {
-    const { spec, file, runDir, projectDir, chromeOverride } = args;
+    const { spec, file, runDir, projectDir } = args;
+    stageRenderSpec(runDir, spec);
     const outPath = path.join(runDir, file);
-    const specPath = path.join(runDir, "render-spec.json");
-
-    // The render server can transiently fail to bind/serve on the first attempt
-    // when many Chrome processes start at once ("got no response"). Retry once
-    // with a fresh port before failing.
-    let lastError = "";
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const res = await this.spawnRemotionRender({
-        composition: spec.composition,
-        outPath,
-        specPath,
-        runDir,
-        projectDir,
-        chromeOverride,
-      });
-      if (res.timedOut) {
-        throw new Error(`render timed out after ${RENDER_TIMEOUT_MS}ms`);
-      }
-      if (res.code === 0) {
-        return {
-          // Orchestrator joins this against the run dir, so return run-relative.
-          path: file,
-          durationSec: await requirePlayableVideoDuration(outPath),
-          pathTaken: "real",
-        };
-      }
-      const tail = (res.stderr || res.stdout).trim().split("\n").slice(-12);
-      lastError = `remotion render exit ${res.code}:\n${tail.join("\n") || "no output"}`;
-      const transient = /got no response|Target closed|net::ERR/i.test(
-        res.stderr + res.stdout,
-      );
-      if (!transient) break;
-    }
-    throw new Error(lastError || "render failed");
-  }
-
-  /**
-   * One `npx remotion render` invocation. Remotion serves the bundle on a local
-   * HTTP port (default 3000) during the render; two renders close together — or
-   * a lingering server — collide on 3000 and fail with "got no response". A
-   * per-invocation high-range port keeps sequential/concurrent runs isolated.
-   */
-  private spawnRemotionRender(args: {
-    composition: string;
-    outPath: string;
-    specPath: string;
-    runDir: string;
-    projectDir: string;
-    chromeOverride?: string;
-  }): ReturnType<typeof runCapture> {
-    const {
-      composition,
-      outPath,
-      specPath,
-      runDir,
-      projectDir,
-      chromeOverride,
-    } = args;
-    const port = 30_000 + Math.floor(Math.random() * 20_000);
-    const renderArgs = [
-      "remotion",
-      "render",
-      "src/index.ts",
-      composition,
-      outPath,
-      `--props=${specPath}`,
-      `--public-dir=${runDir}`,
-      `--port=${port}`,
-    ];
-    // Default: Remotion's Chrome Headless Shell (reliable). Only force a system
-    // Chrome when the user explicitly opts in via OMA_VIDEO_CHROME.
-    if (chromeOverride) {
-      renderArgs.push(`--browser-executable=${chromeOverride}`);
-    }
-    return runCapture("npx", renderArgs, {
+    const options = {
       cwd: projectDir,
       timeoutMs: RENDER_TIMEOUT_MS,
-      // Don't auto-download at render time; the headless shell lives in the
-      // toolchain cache (`oma video compose` / `oma video doctor --install`).
-      env: { ...process.env, REMOTION_SKIP_BROWSER_DOWNLOAD: "1" },
-    });
+      env: { ...process.env, DO_NOT_TRACK: "1" },
+    };
+    const cli = toolchainCli(projectDir);
+    const lint = await runCapture("node", [cli, "lint"], options);
+    if (lint.timedOut) throw new Error("hyperframes lint timed out");
+    if (lint.code !== 0) {
+      throw new Error(
+        `hyperframes lint failed:\n${(lint.stderr || lint.stdout).trim()}`,
+      );
+    }
+    // Remove stale output before invoking the renderer: exit zero alone is not evidence.
+    await rm(outPath, { force: true });
+    try {
+      const result = await runCapture(
+        "node",
+        [
+          cli,
+          "render",
+          "--output",
+          outPath,
+          "--fps",
+          String(spec.fps),
+          "--format",
+          "mp4",
+          "--strict",
+          "--no-best-effort",
+        ],
+        options,
+      );
+      if (result.timedOut)
+        throw new Error(`render timed out after ${RENDER_TIMEOUT_MS}ms`);
+      if (result.code !== 0) {
+        throw new Error(
+          `hyperframes render exit ${result.code}:\n${(result.stderr || result.stdout).trim().split("\n").slice(-12).join("\n")}`,
+        );
+      }
+      const durationSec = await requirePlayableVideoDuration(
+        outPath,
+        spec.dimensions,
+      );
+      if (
+        Math.abs(durationSec - spec.durationInFrames / spec.fps) >
+        Math.max(0.1, 2 / spec.fps)
+      ) {
+        throw new Error(
+          `render duration ${durationSec}s does not match render-spec ${spec.durationInFrames / spec.fps}s`,
+        );
+      }
+      return { path: file, durationSec, pathTaken: "real" };
+    } catch (error) {
+      await rm(outPath, { force: true });
+      throw error;
+    }
   }
 
   private async placeholder(

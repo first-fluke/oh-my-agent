@@ -71,7 +71,7 @@ export async function ingestVisual(
 }
 
 function placeholderSvg(scene: Scene, seed: number): string {
-  // A fixed, deterministic SVG card. Remotion can render SVG/raster alike; the
+  // A fixed, deterministic SVG card. Hyperframes can render SVG/raster alike; the
   // exact bytes here are what the determinism harness pins.
   const label = scene.onScreenText[0] ?? scene.id;
   return [

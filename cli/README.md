@@ -194,7 +194,7 @@ Separate from the engineering team, oma ships content and research pipelines bui
 | **oma-scholar** | Searches academic literature and helps you run peer review. |
 | **oma-slide** | Generates distinctive, animation-rich HTML presentation decks and exports to PDF/PNG/PPTX. |
 | **oma-translation** | Translates between languages so it reads like a native wrote it. |
-| **oma-video** | Generates short-form, explainer, and demo videos through a key-optional Remotion pipeline. |
+| **oma-video** | Generates short-form, explainer, and demo videos through a key-optional HyperFrames pipeline. |
 | **oma-voice** | Generates voiceovers and transcribes audio on-device, no cloud needed. |
 
 ## How It Works

@@ -6,8 +6,7 @@
 // running `resources/mpt/driver.py` — and NEVER imports it. Locating the clone
 // on disk + its venv is the whole boundary.
 //
-// Unlike the Remotion project (which is vendored INSIDE the repo under
-// `.agents/skills/oma-video/resources/remotion`), the MPT checkout is ~1GB
+// The MPT checkout is ~1GB
 // (repo + venv) and MUST NOT be vendored into git. It is cloned to a cache dir
 // OUTSIDE the repo. Resolution order:
 //   1. OMA_VIDEO_MPT_DIR  — explicit override wins
@@ -84,7 +83,7 @@ export function getMptProjectStatus(): MptProjectStatus {
 /**
  * Resolve the in-repo MPT driver script (`resources/mpt/driver.py`). The driver
  * ships with the oma-video skill, not the MPT clone, so it stays in-repo and
- * boundary-safe. Layout-agnostic upward walk mirrors the Remotion resolver:
+ * boundary-safe. Layout-agnostic upward walk mirrors the Hyperframes resolver:
  * works from the repo root, `cli/`, a bundled `cli/bin/`, or any nested cwd.
  */
 export function resolveMptDriverPath(): string | null {

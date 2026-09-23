@@ -459,12 +459,12 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ### /video
 
-**Description:** Drive the `oma-video` skill end-to-end: brief → script → narration → visuals → captions → render-spec → vendored Remotion (or MoneyPrinterTurbo) compositor. The workflow creates a reproducible run directory and emits a real `.mp4` only after the compositor and ffprobe checks pass. Provider configuration is key-optional for supported asset fallbacks; a compositor or toolchain failure remains a failed run. Executes inline (no subagent spawning).
+**Description:** Drive the `oma-video` skill end-to-end: brief → script → narration → visuals → captions → render-spec → managed HyperFrames (or MoneyPrinterTurbo) compositor. The workflow creates a reproducible run directory and emits a real `.mp4` only after the compositor and ffprobe checks pass. Provider configuration is key-optional for supported asset fallbacks; a compositor or toolchain failure remains a failed run. Executes inline (no subagent spawning).
 
 **Trigger keywords:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "/video", "oma-video", "remotion", "shorts", "reels", "screencast" |
+| Universal | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
 | English | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
 | Korean | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
 | Japanese | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
@@ -475,7 +475,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 2. **Compose the script:** Generate scenes + narration (LLM when a key is present, else a deterministic outline from the brief).
 3. **Synthesize assets:** Narration via `oma-voice`, visuals via `oma-image`/`oma-slide`/stock, key-free caption alignment, or a supervised browser web capture for `demo --source web`. Each provider degrades to a deterministic fallback.
 4. **Build the render-spec:** Write `render-spec.json` (the determinism boundary) plus assets into the run directory.
-5. **Render:** Spawn the vendored Remotion project (or MoneyPrinterTurbo) as a subprocess. A normal compositor or toolchain failure fails the run; the deterministic placeholder is available only through the explicit mock/test path (`OMA_VIDEO_MOCK=1`). Live capture is recorded as `nondeterministic` in the manifest.
+5. **Render:** Spawn the managed HyperFrames project (or MoneyPrinterTurbo) as a subprocess. A normal compositor or toolchain failure fails the run; the deterministic placeholder is available only through the explicit mock/test path (`OMA_VIDEO_MOCK=1`). Live capture is recorded as `nondeterministic` in the manifest.
 
 **Output:** A run directory at `.agents/results/videos/{timestamp}-{shortid}-{mode}/` with `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4`, and `manifest.json`. See the [Video Generation guide](../guide/video-generation.md).
 

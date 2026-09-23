@@ -346,7 +346,7 @@ oma video provider list [--output <format>]
 
 `video generate` accepts the planning and capture controls `--mode`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor`, `--capture`, `--source`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, and `--capture-stop`. It also accepts `--output-dir`, `--allow-external-output`, `--max-usd`, `--seed`, `--timeout`, `--script`, `--dry-run`, `--yes`, `--output`, and `--no-brief-in-manifest`. Browser capture uses `--source web --url <url>`; `file` is the default source. A normal render requires an authored composition and a working compositor; placeholders are limited to the `OMA_VIDEO_MOCK=1` test path.
 
-`video doctor` reports or provisions the Remotion/MPT/Strudel toolchain. `compose` prepares the run's composition contract, and `render` typechecks, renders, and probes the output. `provider list` reports provider and key status. Read [Video Generation](../guide/video-generation.md) for the run manifest and recovery sequence.
+`video doctor` reports or provisions the HyperFrames/MPT/Strudel toolchain. `compose` prepares the run's composition contract, and `render` lints, renders, and probes the output. `provider list` reports provider and key status. Read [Video Generation](../guide/video-generation.md) for the run manifest and recovery sequence.
 
 ### memory init
 
@@ -561,7 +561,7 @@ The following matrix is generated from the checked-in public command registry. I
 | `video` | `—` | Short-form, explainer, and demo video generation |
 | `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | Generate a video run directory from a brief |
 | `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | Check video provider and compositor readiness |
-| `video compose` | `--output <format>, --refresh, --offline` | Scaffold the run's Remotion project on the latest toolchain + remotion-dev/skills; prints the authoring contract |
+| `video compose` | `--output <format>, --refresh, --offline` | Scaffold the run's HyperFrames project on the latest toolchain + heygen-com/hyperframes; prints the authoring contract |
 | `video render` | `--output <format>` | Re-render a run directory from render-spec.json |
 | `video provider` | `—` |  |
 | `video provider list` | `--output <format>` | List video providers and availability |

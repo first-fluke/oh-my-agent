@@ -18,14 +18,17 @@ vi.mock("node:os", async (original) => ({
   homedir: () => join(testHome.root, "test-home"),
 }));
 
-const remotionState = vi.hoisted(() => ({
+const hyperframesState = vi.hoisted(() => ({
   describeToolchain: vi.fn(() => ({ version: null as string | null })),
   ensureLatestToolchain: vi.fn(),
-  ensureRemotionSkills: vi.fn(),
+  ensureHyperframesSkills: vi.fn(),
 }));
 
 // Vendor reconciliation must not inspect or update the developer's toolchain.
-vi.mock("../../io/video/internal/remotion-workspace.js", () => remotionState);
+vi.mock(
+  "../../io/video/internal/hyperframes-workspace.js",
+  () => hyperframesState,
+);
 
 const serenaState = vi.hoisted(() => ({
   ensureSerenaProject: vi.fn(() => ({ configured: false, registered: false })),
@@ -215,7 +218,7 @@ describe("update cursor vendor adaptations", () => {
       code_intelligence: "serena",
       semantic_memory: "agentmemory",
     });
-    remotionState.describeToolchain.mockReturnValue({ version: null });
+    hyperframesState.describeToolchain.mockReturnValue({ version: null });
   });
 
   afterEach(() => {
@@ -480,9 +483,9 @@ describe("update cursor vendor adaptations", () => {
     ).toEqual({ custom: { command: "keep" } });
   });
 
-  it("throttles Remotion refresh for projects with oma-video", async () => {
-    const projectDir = makeTempRoot("oma-update-remotion-project-");
-    const repoDir = makeTempRoot("oma-update-remotion-repo-");
+  it("throttles Hyperframes refresh for projects with oma-video", async () => {
+    const projectDir = makeTempRoot("oma-update-hyperframes-project-");
+    const repoDir = makeTempRoot("oma-update-hyperframes-repo-");
     extractedRepoDir = repoDir;
     mockInstallRoot = projectDir;
     writeRepoConfig(repoDir, ["codex"]);
@@ -490,12 +493,12 @@ describe("update cursor vendor adaptations", () => {
     (
       skills.getInstalledSkillNames as unknown as ReturnType<typeof vi.fn>
     ).mockReturnValue(["oma-video"]);
-    remotionState.describeToolchain.mockReturnValue({ version: "4.0.522" });
-    remotionState.ensureLatestToolchain.mockResolvedValue({
+    hyperframesState.describeToolchain.mockReturnValue({ version: "4.0.522" });
+    hyperframesState.ensureLatestToolchain.mockResolvedValue({
       version: "4.0.522",
       status: "current",
     });
-    remotionState.ensureRemotionSkills.mockResolvedValue({
+    hyperframesState.ensureHyperframesSkills.mockResolvedValue({
       ref: "11986e44eeb6",
       status: "current",
     });
@@ -504,16 +507,16 @@ describe("update cursor vendor adaptations", () => {
     process.chdir(projectDir);
     await update({ ci: true });
 
-    expect(remotionState.ensureLatestToolchain).toHaveBeenCalledWith({
+    expect(hyperframesState.ensureLatestToolchain).toHaveBeenCalledWith({
       checkIntervalMin: 60,
       force: false,
     });
-    expect(remotionState.ensureRemotionSkills).toHaveBeenCalledWith({
+    expect(hyperframesState.ensureHyperframesSkills).toHaveBeenCalledWith({
       checkIntervalMin: 60,
       force: false,
     });
     expect(logSpy.mock.calls.flat().join("\n")).not.toContain(
-      "remotion 4.0.522",
+      "hyperframes 4.0.522",
     );
   });
 });

@@ -6,8 +6,8 @@ import { findChromeExecutable } from "@cli/io/chrome";
 import { http } from "@cli/io/http";
 import { readManagedState } from "../../../platform/managed-skill.js";
 import { binaryAvailable, resolveOmaInvocation, runCapture } from "./exec.js";
+import { describeToolchain, skillsCacheRoot } from "./hyperframes-workspace.js";
 import { getMptProjectStatus } from "./mpt-project.js";
-import { describeToolchain, skillsCacheRoot } from "./remotion-workspace.js";
 import { getStrudelProjectStatus } from "./strudel-project.js";
 
 export interface ReadinessCheck {
@@ -20,7 +20,7 @@ export interface ReadinessCheck {
 export const VOICEBOX_BASE_URL =
   process.env.OMA_VOICEBOX_URL ?? "http://127.0.0.1:17493";
 
-/** FFmpeg presence — required by Remotion/MPT to mux audio + frames. */
+/** FFmpeg presence — required by Hyperframes/MPT to mux audio + frames. */
 export async function checkFfmpeg(): Promise<ReadinessCheck> {
   const probe = await binaryAvailable("ffmpeg", ["-version"]);
   return {
@@ -35,10 +35,28 @@ export async function checkFfmpeg(): Promise<ReadinessCheck> {
 
 /** Node runtime — always present when this code runs, reported for completeness. */
 export function checkNode(): ReadinessCheck {
-  return { name: "node", ok: true, detail: process.version };
+  const ok = Number(process.versions.node.split(".")[0]) >= 22;
+  return {
+    name: "node",
+    ok,
+    detail: process.version,
+    remediation: ok
+      ? undefined
+      : "Install Node.js 22 or newer for HyperFrames.",
+  };
 }
 
-/** System Chromium — required by Remotion render + oma-slide png export. */
+export async function checkFfprobe(): Promise<ReadinessCheck> {
+  const probe = await binaryAvailable("ffprobe", ["-version"]);
+  return {
+    name: "ffprobe",
+    ok: probe.ok,
+    detail: probe.detail,
+    remediation: probe.ok ? undefined : "Install FFmpeg including ffprobe.",
+  };
+}
+
+/** System Chromium — required by Hyperframes render + oma-slide png export. */
 export function checkChromium(): ReadinessCheck {
   const chrome = findChromeExecutable();
   return {
@@ -143,51 +161,51 @@ export function checkPixelle(): ReadinessCheck {
 }
 
 /**
- * Always-latest Remotion toolchain cache (`~/.cache/oma-video/remotion/<ver>/`):
+ * Always-latest Hyperframes toolchain cache (`~/.cache/oma-video/hyperframes/<ver>/`):
  * deps + Chrome Headless Shell. `oma video compose` refreshes it per run;
  * `oma video doctor --install` warms it.
  */
-export function checkRemotionToolchain(): ReadinessCheck {
+export function checkHyperframesToolchain(): ReadinessCheck {
   const tc = describeToolchain();
   if (!tc.version) {
     return {
-      name: "remotion-toolchain",
+      name: "hyperframes-toolchain",
       ok: false,
       detail: "not cached",
       remediation:
-        "Run `oma video doctor --install` (or any `oma video compose`) once online to fetch the latest remotion.",
+        "Run `oma video doctor --install` (or any `oma video compose`) once online to fetch the latest hyperframes.",
     };
   }
   return {
-    name: "remotion-toolchain",
+    name: "hyperframes-toolchain",
     ok: tc.browserReady,
     detail: tc.browserReady
-      ? `remotion ${tc.version} (${tc.dir})`
-      : `remotion ${tc.version}, headless shell missing (${tc.dir})`,
+      ? `hyperframes ${tc.version} (${tc.dir})`
+      : `hyperframes ${tc.version}, headless shell missing (${tc.dir})`,
     remediation: tc.browserReady
       ? undefined
-      : "Run `oma video doctor --install` to fetch Remotion's Chrome Headless Shell.",
+      : "Run `oma video doctor --install` to fetch Hyperframes's Chrome Headless Shell.",
   };
 }
 
 /**
- * remotion-dev/skills at HEAD — what the agent reads to author compositions.
+ * heygen-com/hyperframes at HEAD — what the agent reads to author compositions.
  * Optional (offline authoring still works) but strongly recommended.
  */
-export function checkRemotionSkills(): ReadinessCheck {
+export function checkHyperframesSkills(): ReadinessCheck {
   const state = readManagedState(skillsCacheRoot());
   return state
     ? {
-        name: "remotion-skills",
+        name: "hyperframes-skills",
         ok: true,
-        detail: `remotion-dev/skills @ ${state.ref} (checked ${state.lastCheck.slice(0, 10)})`,
+        detail: `heygen-com/hyperframes @ ${state.ref} (checked ${state.lastCheck.slice(0, 10)})`,
       }
     : {
-        name: "remotion-skills",
+        name: "hyperframes-skills",
         ok: false,
         detail: "not cached",
         remediation:
-          "Run `oma video doctor --install` once online to fetch remotion-dev/skills.",
+          "Run `oma video doctor --install` once online to fetch heygen-com/hyperframes.",
       };
 }
 
@@ -288,8 +306,9 @@ export async function checkCap(): Promise<ReadinessCheck> {
 }
 
 export async function runReadinessChecks(): Promise<ReadinessCheck[]> {
-  const [ffmpeg, voicebox, omaImage, cap] = await Promise.all([
+  const [ffmpeg, ffprobe, voicebox, omaImage, cap] = await Promise.all([
     checkFfmpeg(),
+    checkFfprobe(),
     checkVoicebox(),
     checkOmaImage(),
     checkCap(),
@@ -298,8 +317,9 @@ export async function runReadinessChecks(): Promise<ReadinessCheck[]> {
     checkNode(),
     checkChromium(),
     ffmpeg,
-    checkRemotionToolchain(),
-    checkRemotionSkills(),
+    ffprobe,
+    checkHyperframesToolchain(),
+    checkHyperframesSkills(),
     checkPretendardFont(),
     checkMptProject(),
     checkStrudel(),

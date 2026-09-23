@@ -1,7 +1,7 @@
 # Demo (16:9, `--polish`) — layout spec
 
 Composition id `Demo`. The human-recorded capture arrives as
-`background.type: "video"` (full-frame, `<OffthreadVideo>`, `objectFit: cover`);
+`background.type: "video"` (full-frame, `<video>`, `objectFit: cover`);
 scenes are overlays on top of it.
 
 - **Intro card** (first scene, usually `placeholder` visual + `onScreenText`): solid brand color, centered title 72px weight 800, 10-frame fade in/out.

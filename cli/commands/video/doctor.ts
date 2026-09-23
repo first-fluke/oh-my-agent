@@ -5,15 +5,21 @@
 // oma-image) is ready; exit 1 otherwise so callers can gate.
 import color from "picocolors";
 import { loadVideoConfig } from "./config.js";
+import {
+  ensureHyperframesSkills,
+  ensureLatestToolchain,
+} from "./internal/hyperframes-workspace.js";
 import { installMptProject } from "./internal/mpt-project.js";
 import { runReadinessChecks } from "./internal/readiness.js";
-import {
-  ensureLatestToolchain,
-  ensureRemotionSkills,
-} from "./internal/remotion-workspace.js";
 import { installStrudelProject } from "./internal/strudel-project.js";
 
-const BASELINE = new Set(["node", "chromium", "ffmpeg", "oma-image"]);
+const BASELINE = new Set([
+  "node",
+  "hyperframes-toolchain",
+  "ffmpeg",
+  "ffprobe",
+  "oma-image",
+]);
 
 export async function runVideoDoctor({
   opts,
@@ -22,16 +28,16 @@ export async function runVideoDoctor({
 }): Promise<number> {
   const formatMode = (opts.format as string | undefined) ?? "text";
 
-  // Always-latest Remotion toolchain + remotion-dev/skills. `--install` warms
+  // Always-latest Hyperframes toolchain + heygen-com/hyperframes. `--install` warms
   // the cache (fresh machines); `--upgrade` forces a latest check now. Both
   // are idempotent — `oma video compose` does the same per run.
   if (opts.install === true || opts.upgrade === true) {
-    const policy = (await loadVideoConfig()).remotion;
+    const policy = (await loadVideoConfig()).hyperframes;
     const tc = await ensureLatestToolchain({
       checkIntervalMin: policy.checkIntervalMin,
       force: opts.upgrade === true,
     });
-    const skills = await ensureRemotionSkills({
+    const skills = await ensureHyperframesSkills({
       checkIntervalMin: policy.checkIntervalMin,
       force: opts.upgrade === true,
     });
@@ -39,21 +45,21 @@ export async function runVideoDoctor({
       if (tc) {
         const mark = tc.browserReady ? color.green("✓") : color.yellow("!");
         console.log(
-          `${mark} remotion-toolchain: ${tc.version} (${tc.status}${tc.note ? `, ${tc.note}` : ""})${tc.browserReady ? "" : " — headless shell missing"}${tc.fontReady ? "" : " — font missing"}`,
+          `${mark} hyperframes-toolchain: ${tc.version} (${tc.status}${tc.note ? `, ${tc.note}` : ""})${tc.browserReady ? "" : " — headless shell missing"}${tc.fontReady ? "" : " — font missing"}`,
         );
         console.log(color.dim(`    ${tc.dir}`));
       } else {
         console.log(
-          `${color.yellow("!")} remotion-toolchain: could not fetch the latest remotion (offline?) and nothing is cached`,
+          `${color.yellow("!")} hyperframes-toolchain: could not fetch the latest hyperframes (offline?) and nothing is cached`,
         );
       }
       if (skills) {
         console.log(
-          `${color.green("✓")} remotion-skills: ${skills.ref} (${skills.status}${skills.note ? `, ${skills.note}` : ""}), ${Object.keys(skills.skills).length} skills`,
+          `${color.green("✓")} hyperframes-skills: ${skills.ref} (${skills.status}${skills.note ? `, ${skills.note}` : ""}), ${Object.keys(skills.skills).length} skills`,
         );
       } else {
         console.log(
-          `${color.yellow("!")} remotion-skills: could not fetch remotion-dev/skills and nothing is cached`,
+          `${color.yellow("!")} hyperframes-skills: could not fetch heygen-com/hyperframes and nothing is cached`,
         );
       }
     }
@@ -117,7 +123,7 @@ export async function runVideoDoctor({
     if (baselineMissing.length === 0) {
       console.log(
         color.green(
-          "Key-free baseline ready (Node + Chromium + FFmpeg + oma-image).",
+          "Key-free baseline ready (Node + HyperFrames/Chrome + FFmpeg/FFprobe + oma-image).",
         ),
       );
     } else {

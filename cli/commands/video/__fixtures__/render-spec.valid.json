@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "compositor": "remotion",
+  "compositor": "hyperframes",
   "composition": "Shorts",
   "fps": 30,
   "dimensions": { "width": 1080, "height": 1920 },

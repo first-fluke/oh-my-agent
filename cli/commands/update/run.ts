@@ -507,46 +507,50 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
           if (lines.length > 0) ui.note(lines.join("\n"), "Gortex");
         }
 
-        // --- Always-latest Remotion toolchain + remotion-dev/skills (oma-video) ---
+        // --- Always-latest Hyperframes toolchain + heygen-com/hyperframes (oma-video) ---
         // Only refreshes a cache that already exists; a first `oma video compose`
         // fetches it on demand. Warn-only.
         try {
           const [
-            { describeToolchain, ensureLatestToolchain, ensureRemotionSkills },
+            {
+              describeToolchain,
+              ensureLatestToolchain,
+              ensureHyperframesSkills,
+            },
             { loadVideoConfig },
           ] = await Promise.all([
-            import("../../io/video/internal/remotion-workspace.js"),
+            import("../../io/video/internal/hyperframes-workspace.js"),
             import("../../io/video/config.js"),
           ]);
           if (
             installedSkillNames.includes("oma-video") &&
             describeToolchain().version
           ) {
-            const policy = (await loadVideoConfig(cwd)).remotion;
+            const policy = (await loadVideoConfig(cwd)).hyperframes;
             const tc = await ensureLatestToolchain({
               checkIntervalMin: policy.checkIntervalMin,
               force: false,
             });
-            const skills = await ensureRemotionSkills({
+            const skills = await ensureHyperframesSkills({
               checkIntervalMin: policy.checkIntervalMin,
               force: false,
             });
             const parts = [
               tc
-                ? `remotion ${tc.version} (${tc.status})`
-                : "remotion: check failed",
+                ? `hyperframes ${tc.version} (${tc.status})`
+                : "hyperframes: check failed",
               skills
                 ? `skills ${skills.ref} (${skills.status})`
                 : "skills: check failed",
             ];
             if (tc?.status !== "current" || skills?.status !== "current") {
-              ui.note(parts.join(", "), "Remotion");
+              ui.note(parts.join(", "), "Hyperframes");
             }
           }
         } catch (err) {
           ui.note(
-            `Skipped remotion refresh (${err instanceof Error ? err.message : String(err)}).`,
-            "Remotion",
+            `Skipped hyperframes refresh (${err instanceof Error ? err.message : String(err)}).`,
+            "Hyperframes",
           );
         }
 

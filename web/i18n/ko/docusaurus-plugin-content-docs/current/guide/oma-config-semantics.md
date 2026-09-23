@@ -58,7 +58,7 @@ agents:
 - `auto_update_cli` 우선순위는 update 명령에 명시적으로 구현되어 있습니다. 프로젝트 설치와 글로벌 설치가 모두 있을 때 프로젝트 값을 먼저 확인하고, 그다음 home 값을 확인합니다.
 - `telemetry`(기본값 `false`)는 각 벤더 자체의 opt-out으로 연결되며, `oma install` / `oma update` / `oma link`가 값을 씁니다. Claude는 `DISABLE_TELEMETRY`와 `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY`, Gemini와 Qwen은 `privacy.usageStatisticsEnabled`, Codex는 `analytics.enabled`와 `feedback.enabled`, Grok은 `[features] telemetry`, Antigravity(agy)는 `~/.gemini/antigravity-cli/settings.json`의 `enableTelemetry`를 씁니다. `telemetry: true`로 두면 해당 벤더에 대한 oma의 opt-out을 제거해 다시 수집에 동의합니다.
 - `diagram`(engine `auto` / `archify` / `mermaid`, `explain_sidecar`, `archify.managed|channel|check_interval_min|path|quality|open`)은 `video` / `image`와 같은 sparse skill-override 섹션입니다. [Diagram Engine](/docs/guide/diagram-engine)을 참고하세요.
-- `video.remotion.check_interval_min`은 per-run Remotion toolchain 및 remotion-dev/skills에 대한 최신 버전 확인(`oma video compose`, `oma update`)을 제한합니다.
+- `video.hyperframes.check_interval_min`은 per-run HyperFrames toolchain 및 heygen-com/hyperframes에 대한 최신 버전 확인(`oma video compose`, `oma update`)을 제한합니다.
 - `market`(`managed|channel|check_interval_min|path|python|save_dir`)은 `oma market`의 기반인 항상 최신 `last30days` engine을 설정합니다. [Market Research](/docs/guide/market-research)를 참고하세요.
 - typed runtime schema는 `providers`, `free`, `agents`, `models`, `custom_presets`, `vendors`, `session`, `docs` 및 sparse skill 섹션을 다룹니다. 배포 템플릿에는 `scm`, `memory`, `serena_reaper`, `mcp`와 같은 consumer-owned block도 있습니다. 이 목록에서 키를 추론하지 말고 [설정 레퍼런스](/docs/guide/configuration-reference)와 해당 block의 feature guide를 사용하세요.
 - `oma-config.yaml`을 직접 편집하는 것은 안전합니다. `oma install`과 `oma update`는 정규식 수준의 필드 치환을 사용하며, 자신이 관리하지 않는 사용자 편집 키(예: 커스텀 `agents:` override, `session.quota_cap`)는 그대로 보존합니다.

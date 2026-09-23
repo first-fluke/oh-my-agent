@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describeToolchain } from "./internal/hyperframes-workspace.js";
 import { getMptProjectStatus } from "./internal/mpt-project.js";
 import {
+  checkHyperframesSkills,
+  checkHyperframesToolchain,
   checkMptProject,
   checkNode,
   checkPixelle,
   checkPretendardFont,
-  checkRemotionSkills,
-  checkRemotionToolchain,
 } from "./internal/readiness.js";
-import { describeToolchain } from "./internal/remotion-workspace.js";
 
 // The subprocess/network checks (ffmpeg, voicebox, oma-image, cap) are exercised
 // end-to-end by the doctor command; here we cover the pure/synchronous checks
@@ -45,22 +45,22 @@ describe("video readiness checks (pure)", () => {
     expect(pixelle.detail).toContain("RUNNINGHUB_API_KEY present");
   });
 
-  it("reports the remotion toolchain cache consistently", () => {
+  it("reports the hyperframes toolchain cache consistently", () => {
     // ok = a cached toolchain with its Chrome Headless Shell; anything else
     // must point at `doctor --install`. Reads the cache only — no network.
     const tc = describeToolchain();
-    const check = checkRemotionToolchain();
-    expect(check.name).toBe("remotion-toolchain");
+    const check = checkHyperframesToolchain();
+    expect(check.name).toBe("hyperframes-toolchain");
     expect(check.ok).toBe(Boolean(tc.version) && tc.browserReady);
-    if (check.ok) expect(check.detail).toContain(`remotion ${tc.version}`);
+    if (check.ok) expect(check.detail).toContain(`hyperframes ${tc.version}`);
     else expect(check.remediation).toContain("--install");
   });
 
-  it("reports remotion-dev/skills cache state without network", () => {
-    const check = checkRemotionSkills();
-    expect(check.name).toBe("remotion-skills");
+  it("reports heygen-com/hyperframes cache state without network", () => {
+    const check = checkHyperframesSkills();
+    expect(check.name).toBe("hyperframes-skills");
     if (!check.ok) expect(check.remediation).toContain("--install");
-    else expect(check.detail).toContain("remotion-dev/skills");
+    else expect(check.detail).toContain("heygen-com/hyperframes");
   });
 
   it("reports the pretendard font status consistently", () => {

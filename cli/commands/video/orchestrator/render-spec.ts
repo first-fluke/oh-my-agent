@@ -17,7 +17,7 @@ import {
 
 /**
  * Default mix level for the music bed, sitting under narration. Applied by the
- * Remotion `VideoBase` component via `dbToGain(audio.musicGainDb ?? -18)`.
+ * HTML audio element via data-volume = 10 ** ((musicGainDb ?? -18) / 20).
  */
 export const DEFAULT_MUSIC_GAIN_DB = -18;
 
@@ -84,7 +84,7 @@ export function buildRenderSpec(args: {
     audio: {
       narration: args.audio.path ? args.audio.path : undefined,
       // `audio.music` must be a run-dir-relative audio FILE — the compositor
-      // resolves it with staticFile(). The music provider only sets `path` on
+      // stages it into the HTML project. The music provider only sets `path` on
       // its real branch, so a fallback bed leaves both fields unset and the
       // render simply has no music (never a dangling file ref).
       music: args.music?.path,

@@ -388,7 +388,7 @@ mcp:
 #   default_visual: auto
 #   default_voice: none
 #   default_music: none
-#   default_compositor: remotion
+#   default_compositor: hyperframes
 #   default_timeout_sec: 600
 #   yes: false                      # skip interactive confirmations
 #   providers:
@@ -398,7 +398,7 @@ mcp:
 #     caption:    { order: [oma-captions] }
 #     capture:    { order: [cap] }
 #     music:      { order: [strudel] }
-#     compositor: { order: [remotion, mpt] }
+#     compositor: { order: [hyperframes, mpt] }
 #     # Paid providers turn themselves on when their key is in the environment;
 #     # only the variable name is configurable.
 #     pexels:     { env_var: PEXELS_API_KEY }
@@ -410,12 +410,12 @@ mcp:
 #     max_scenes: 40
 #   naming:
 #     single_folder_pattern: "{timestamp}-{shortid}-{mode}"
-#   # Always-latest Remotion. oma ships no composition code: `oma video compose`
-#   # scaffolds <runDir>/remotion/ on the latest npm remotion (cache
-#   # ~/.cache/oma-video/remotion/<ver>/) with remotion-dev/skills at HEAD, and
+#   # Always-latest HyperFrames. oma ships no composition code: `oma video compose`
+#   # scaffolds <runDir>/hyperframes/ on the latest npm hyperframes (cache
+#   # ~/.cache/oma-video/hyperframes/<ver>/) with heygen-com/hyperframes at HEAD, and
 #   # the agent authors the composition per run. Latest checks are throttled by
-#   # check_interval_min; `oma update` / `oma video doctor --upgrade` force one.
-#   remotion:
+#   # check_interval_min; `oma update` respects it; `oma video doctor --upgrade` forces a check.
+#   hyperframes:
 #     check_interval_min: 60        # 0 = check on every compose
 
 # ── image (oma-image) ────────────────────────────────────────────────────────

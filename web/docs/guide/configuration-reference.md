@@ -55,7 +55,7 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | `oma docs verify` behavior and scan exclusions. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena MCP transport and update behavior. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox`, or `[]` | unset = leave existing setup alone | Browser DevTools MCP selection during reconciliation. An explicit empty list removes selected browser entries. |
-| `video` | sparse skill-owned map | skill default; see [Video Generation](/docs/guide/video-generation) | Video routing, provider order, output, cost, limits, and Remotion refresh settings. |
+| `video` | sparse skill-owned map | skill default; see [Video Generation](/docs/guide/video-generation) | Video routing, provider order, output, cost, limits, and HyperFrames refresh settings. |
 | `image` | sparse skill-owned map | skill default; see [Image Generation](/docs/guide/image-generation) | Image vendor, size, quality, output, comparison, and cost settings. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Voicebox profile, output, and length settings. |
 | `hwp` | `format`, `version.*`, `output.*` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc format, version channel, and output location. |

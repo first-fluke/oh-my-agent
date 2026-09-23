@@ -1,7 +1,7 @@
 ---
 title: "Guide: Video Generation"
 sidebar_label: Video Generation
-description: Complete guide to oh-my-agent video generation — a key-optional, three-tier router that composes script, narration, visuals, captions, and a vendored Remotion compositor into reproducible run directories across shorts, explainer, and demo modes.
+description: Complete guide to oh-my-agent video generation — a key-optional, three-tier router that composes script, narration, visuals, captions, and a managed HyperFrames compositor into reproducible run directories across shorts, explainer, and demo modes.
 ---
 
 # Video Generation
@@ -62,6 +62,7 @@ Other tools that shell out to `oma video generate --output json` parse a JSON en
 ```
 oma video generate <brief...> [options]
 oma video doctor [--install|--upgrade|--install-mpt|--install-strudel]  # toolchain readiness / provisioning
+oma video compose <runDir>       # prepare HTML project and authoring contract
 oma video render <runDir>        # re-render from render-spec.json (deterministic)
 oma video provider list         # provider availability + key/fallback status
 ```
@@ -77,14 +78,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
 | `--voice <profile>` | Narration voice, or `none` (the default; omit it and the video renders silent with estimated caption timing). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano`, or `none`. |
-| `--compositor <c>` | `remotion` (default) \| `mpt`. |
+| `--compositor <c>` | `hyperframes` (default) \| `mpt`. |
 | `--capture <path>` | Input recording path for demo mode (`--source file`). |
 | `--source <k>` | Demo capture source: `file` or `web` (default: `file`). |
 | `--url <url>` | Target URL for `--source web` (local, staging, or production); it does not replace `--capture` when a recording is required. |
 | `--device <name>` | Device frame for web capture; overrides aspect sizing. |
 | `--ready-selector <css>` | CSS selector to await before web capture. |
 | `--show-cursor` | Overlay a visible cursor in web capture. |
-| `--polish` | Overlay the Remotion composition on captured footage. |
+| `--polish` | Overlay the HyperFrames composition on captured footage. |
 | `--capture-timeout <sec>` | Hard ceiling for live web capture. |
 | `--capture-stop <mode>` | Non-interactive stop for CI: `duration:<sec>` or `selector:<css>`. |
 | `--output-dir <path>` | Output base directory. Paths outside `$PWD` require `--allow-external-output`. |
@@ -111,7 +112,7 @@ Provider stages resolve to a **real branch** and, where the stage supports it, a
 | visual | `oma-image` / `oma-slide` / stock | placeholder asset |
 | caption | key-free forced alignment | estimated word timing |
 | capture | supervised browser web capture (`--source web`) or a supplied recording (`--source file --capture`) | guided "record it yourself" protocol |
-| compositor | Remotion (vendored) or MoneyPrinterTurbo | no compositor fallback; the run fails with diagnostics |
+| compositor | HyperFrames (managed) or MoneyPrinterTurbo | no compositor fallback; the run fails with diagnostics |
 
 No credential automation: a human performs any on-screen login during capture; URLs and query tokens are masked in logs and the manifest.
 
@@ -121,23 +122,23 @@ Captions render as **static windowed cues** — the single caption line active a
 
 ## Toolchain and `doctor`
 
-The heavy toolchain (the vendored Remotion project's `node_modules`, the embedded Pretendard font, the MoneyPrinterTurbo checkout, capture browsers, Chrome Headless Shell) is **provisioned on demand**, never shipped in the package. Plain `doctor` is report-only — it never installs anything:
+The heavy toolchain (the managed HyperFrames project's `node_modules`, the embedded Pretendard font, the MoneyPrinterTurbo checkout, capture browsers, Chrome Headless Shell) is **provisioned on demand**, never shipped in the package. Plain `doctor` is report-only — it never installs anything:
 
 ```bash
 oma video doctor
 ```
 
-It reports `node`, `chromium`, `ffmpeg`, `remotion-toolchain`, `remotion-skills`, `pretendard-font`, `mpt-project`, `voicebox`, `oma-image`, `pixelle`, and `cap`, and prints the install hint for anything missing. The key-free baseline (Node + Chromium + FFmpeg + `oma-image`) is enough to produce a real `.mp4`.
+It reports `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `voicebox`, `oma-image`, `pixelle`, and `cap`, and prints the install hint for anything missing. The baseline requires Node.js 22+, the HyperFrames toolchain and its Chrome browser, FFmpeg/FFprobe, and `oma-image`. A real MP4 also requires authored HTML.
 
 Use the install flags to provision the toolchain:
 
 ```bash
-oma video doctor --install             # warm the latest Remotion toolchain + Chrome Headless Shell + Pretendard + remotion-dev/skills
+oma video doctor --install             # warm the latest HyperFrames toolchain + Chrome Headless Shell + Pretendard + heygen-com/hyperframes
 oma video doctor --upgrade             # force a latest-version check now
 oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
 ```
 
-`--install` also fetches the embedded Pretendard font (pinned release) into the vendored project — this is part of the determinism boundary. On a network failure it warns and the render falls back to system fonts; byte-identical output across machines is only guaranteed once the font is present.
+`--install` also fetches the embedded Pretendard font (pinned release) into the shared toolchain cache — this is part of the determinism boundary. On a network failure it warns and the render falls back to system fonts; browser and OS differences can still affect the encoded output.
 
 ---
 
@@ -151,6 +152,7 @@ oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + ven
 ├── captions.srt / .vtt
 ├── audio/narration-*.wav
 ├── visuals/scene-*.{png,svg,…}
+├── hyperframes/         # index.html, AUTHORING.md, local assets and toolchain link
 ├── {mode}-{slug}.mp4    # the rendered output (slug derived from the script title)
 └── manifest.json        # providers, assets, cost, warnings
 ```
@@ -166,32 +168,32 @@ The `render-spec.json` + assets are the determinism boundary; live capture is re
 | No MP4 is produced | A compositor, composition, or toolchain check failed. Run `oma video doctor`, then `oma video compose <runDir>` and fix the reported composition before rerunning `oma video render <runDir>`. |
 | Narration is silent (`source: estimated`) | Voicebox is unreachable; start the `oma-voice` server, or accept estimated timing. |
 | `--source web` prints a guided protocol instead of recording | No TTY or browser capture runtime unavailable → guided fallback. Use an interactive terminal with a provisioned capture runtime and `--capture-stop`, or pass a recorded file with `--capture`. |
-| Render is slow on the first run | The Remotion browser / MPT checkout is being provisioned once; subsequent runs reuse the cache. |
+| Render is slow on the first run | The HyperFrames browser / MPT checkout is being provisioned once; subsequent runs reuse the cache. |
 
 ---
 
-## Always-latest Remotion — you author the composition
+## Always-latest HyperFrames — you author the composition
 
-oh-my-agent ships **no Remotion composition code**. Each run gets its own project at `<runDir>/remotion/`, scaffolded by `oma video compose` on the latest npm Remotion (toolchain cache `~/.cache/oma-video/remotion/<version>/`, shared via a `node_modules` symlink) with [remotion-dev/skills](https://github.com/remotion-dev/skills) at HEAD (`~/.cache/oma-video/remotion-skills/`). The agent authors the generated composition source following the scaffold's `AUTHORING.md`, the skills, and the mode spec in `.agents/skills/oma-video/resources/remotion-authoring/`.
+oh-my-agent ships **no HyperFrames composition code**. Each run gets its own project at `<runDir>/hyperframes/`, scaffolded by `oma video compose` on the latest npm HyperFrames (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, shared via a `node_modules` symlink) with [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) at HEAD (`~/.cache/oma-video/hyperframes-skills/`). The agent authors the generated composition source following the scaffold's `AUTHORING.md`, the skills, and the mode spec in `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
-oma video generate "…"                     # → render-spec.json + <runDir>/remotion/ (composition pending)
+oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
 oma video compose <runDir> --output json   # refresh scaffold / print the contract (idempotent)
-#   author the generated composition source as instructed by AUTHORING.md
-oma video render <runDir> --output json    # tsc → npx remotion render → ffprobe; exit 1 on any failure
+#   author hyperframes/index.html as instructed by AUTHORING.md
+oma video render <runDir> --output json    # lint → npx hyperframes render → ffprobe; exit 1 on any failure
 ```
 
-- Latest-version checks (npm + GitHub) are throttled by `video.remotion.check_interval_min` (default 60; `0` = every compose). `oma update` and `oma video doctor --upgrade` force them; offline runs use the cached toolchain and report `stale`.
-- Reproducibility lives in the run dir: `render-spec.json`, the authored composition source, and the toolchain version recorded in the generated Remotion package metadata. Re-rendering the same run reuses that render contract; a new run checks the latest Remotion.
-- A typecheck or render failure is **not** hidden behind a placeholder (that exists only for `OMA_VIDEO_MOCK=1`): `oma video render` exits 1 with the diagnostics and the agent fixes the composition using the latest skills. Breakage on a new Remotion release is a composition bug, never a reason to pin.
+- Latest-version checks (npm + GitHub) are throttled by `video.hyperframes.check_interval_min` (default 60; `0` = every compose). `oma update` respects the interval; `oma video doctor --upgrade` forces a check; offline runs use the cached toolchain and report `stale`.
+- Reproducibility lives in the run dir: `render-spec.json`, the authored composition source, and the toolchain version recorded in the generated HyperFrames package metadata. Re-rendering the same run reuses that render contract; a new run checks the latest HyperFrames.
+- A lint or render failure is **not** hidden behind a placeholder (that exists only for `OMA_VIDEO_MOCK=1`): `oma video render` exits 1 with the diagnostics and the agent fixes the composition using the latest skills. Breakage on a new HyperFrames release is a composition bug, never a reason to pin.
 
 ```yaml
 video:
-  remotion:
+  hyperframes:
     check_interval_min: 60    # 0 = check on every compose
 ```
 
 ## Related
 
-- [`/video` workflow](/docs/core-concepts/workflows) — the brief → script → assets → render-spec → Remotion pipeline.
+- [`/video` workflow](/docs/core-concepts/workflows) — the brief → script → assets → render-spec → HyperFrames pipeline.
 - [Image Generation](/docs/guide/image-generation) — the still-image router reused as a video visual provider.

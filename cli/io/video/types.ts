@@ -25,7 +25,7 @@ export const MusicModeSchema = z.enum([
 export type MusicMode = z.infer<typeof MusicModeSchema>;
 /** Every music mode that actually renders a bed (i.e. everything but `none`). */
 export type MusicPreset = Exclude<MusicMode, "none">;
-export const CompositorNameSchema = z.enum(["remotion", "mpt"]);
+export const CompositorNameSchema = z.enum(["hyperframes", "mpt"]);
 export const OutputFormatSchema = z.enum(["text", "json"]);
 
 const SchemaVersion = z.literal(VIDEO_SCHEMA_VERSION);
@@ -234,7 +234,7 @@ export interface Captions {
  * reproducible and the user can tweak + re-render it by hand.
  */
 export interface MusicBed {
-  /** Run-dir-relative wav path (POSIX separators, for Remotion staticFile). */
+  /** Run-dir-relative wav path (POSIX separators, for HTML media URLs). */
   path?: string;
   /** Run-dir-relative mp3 of the same bed, for previewing outside the render. */
   mp3Path?: string;
@@ -249,7 +249,7 @@ export interface MusicBed {
 export interface VideoArtifact {
   path: string;
   durationSec: number;
-  /** Which path produced this artifact: "real" (Remotion render) or "fallback". */
+  /** Which path produced this artifact: "real" (Hyperframes render) or "fallback". */
   pathTaken?: "real" | "fallback";
   /** Non-fatal notices to surface in the manifest (e.g. real-branch fell back). */
   warnings?: string[];
@@ -291,7 +291,7 @@ export interface RawFootage {
 /**
  * Snap an aspect to an image-generation size whose edges are both multiples of
  * 16 (oma-image / gpt-image-2 constraint). Design 013 §5: 9:16 → 1088×1920,
- * 16:9 → 1920×1088, 1:1 → 1088×1088. Remotion later crops to the exact frame.
+ * 16:9 → 1920×1088, 1:1 → 1088×1088. Hyperframes later crops to the exact frame.
  */
 export function snapAspectToImageSize(aspect: "9:16" | "16:9" | "1:1"): {
   width: number;

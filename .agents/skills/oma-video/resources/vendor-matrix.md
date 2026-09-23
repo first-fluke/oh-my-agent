@@ -15,13 +15,13 @@ otherwise the chain falls through to a key-free default.
 | visual | `[oma-image, pexels, pixelle]` | Pexels stock · Pixelle AIGC | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` / `pixelle` |
 | caption | `[oma-captions]` | oma-translation for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translation` |
 | capture | Cap / guided capture | Human-recorded video ingestion | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
-| compositor | `[remotion, mpt]` | Remotion live render (wired, default) · MPT custom-script | none: missing toolchain, failed render, or invalid output fails with diagnostics | — |
+| compositor | `[hyperframes, mpt]` | HyperFrames live render (wired, default) · MPT custom-script | none: missing toolchain, failed render, or invalid output fails with diagnostics | — |
 
 ## Tier model
 
 | Tier | Surface | Providers | Notes |
 |:---:|---------|-----------|-------|
-| 1 | CLI-first (subprocess) | Remotion, MPT, oma-image, oma-slide, oma-voice (REST) | deterministic; preferred whenever a CLI can drive the work |
+| 1 | CLI-first (subprocess) | HyperFrames, MPT, oma-image, oma-slide, oma-voice (REST) | deterministic; preferred whenever a CLI can drive the work |
 | 2 | MCP | Voicebox MCP, Pixelle-MCP | localhost MCP; Pixelle off by default, community-MCP consent + key |
 | 3 | Guided (human) | Cap / human-recorded video | `demo` capture is performed by a human |
 
@@ -43,7 +43,7 @@ otherwise the chain falls through to a key-free default.
 |-------|-------|
 | Transport | `oma image generate "<prompt>" --vendor auto --size <16-multiple> --output json --output-dir <runDir>/visuals` |
 | Aspect -> size | snapped to nearest 16-multiple: 9:16 -> 1088×1920, 16:9 -> 1920×1088, 1:1 -> 1088×1088 |
-| Crop | Remotion crops the still to the exact frame; Ken Burns adds motion |
+| Crop | HyperFrames crops the still to the exact frame; Ken Burns adds motion |
 | Cost | free defaults (pollinations / antigravity); codex per-image per oma-image config |
 
 ## oma-slide (VisualProvider: slide, explainer) — key-free
@@ -83,14 +83,14 @@ otherwise the chain falls through to a key-free default.
 | Path safety | `--capture` is absolutized, `$PWD`-guarded, existence + format validated |
 | Marker | `TODO(oma-deferred): cap` on the CLI-trigger branch |
 
-## Compositor: Remotion (default) / MPT (alt)
+## Compositor: HyperFrames (default) / MPT (alt)
 
 | Field | Value |
 |-------|-------|
-| Real | **wired (default)** — agent-authored `<runDir>/remotion/` (scaffolded by `oma video compose` on the latest Remotion + remotion-dev/skills); `oma video render` typechecks and spawns `npx remotion render src/index.ts <CompId> out.mp4 --props=render-spec.json --public-dir=<runDir>` |
+| Real | Agent-authored `<runDir>/hyperframes/index.html`; `compose` stages local assets and the authoring contract. `render` runs the cached CLI: lint → strict MP4 render → ffprobe. |
 | Requires | Node + Chrome Headless Shell + FFmpeg (bootstrapped once via `oma video doctor --install`) |
 | Failure | Missing toolchain, render error, missing video stream, or non-positive duration fails with diagnostics. `OMA_VIDEO_MOCK=1` may write a deterministic placeholder only for tests. |
-| Determinism | render-spec + assets + seed + embedded Pretendard (fetched once by `oma video doctor --install`; system-font fallback when absent); re-render is byte-stable |
+| Determinism | Saved render spec, local assets, authored HTML, seed, recorded CLI version, and embedded font. Byte identity across different browser/OS versions is not guaranteed. |
 | MPT alt | inject the agent-written script (custom-script mode); keys env-only + log masking; `--compositor mpt` |
 
 ## Error Classification

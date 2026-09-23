@@ -33,7 +33,7 @@ function build(music?: MusicBed) {
     },
     audio: { path: "" },
     visualAssets: [],
-    compositor: "remotion",
+    compositor: "hyperframes",
     seed: 1,
     captionStyle: "tiktok",
     music,

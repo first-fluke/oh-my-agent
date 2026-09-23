@@ -48,7 +48,7 @@ Single and parallel process launches share `io/runtime-dispatch/prepared-agent-d
 
 `io/schedule/` owns scheduler manifests, OS adapters, and reconciliation shared by the schedule and update commands. `commands/schedule/` retains command behavior and compatibility exports; update imports reconciliation from the shared I/O layer.
 
-`io/video/` owns video configuration and Remotion toolchain setup shared by video and update. The boundary checker parses import declarations, re-exports, literal dynamic imports, and `require()` calls; comments and strings containing import examples are ignored.
+`io/video/` owns video configuration and HyperFrames toolchain setup shared by video and update. The boundary checker parses import declarations, re-exports, literal dynamic imports, and `require()` calls; comments and strings containing import examples are ignored.
 
 ## Path alias
 

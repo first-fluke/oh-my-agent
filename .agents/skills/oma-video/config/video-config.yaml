@@ -5,9 +5,9 @@
 # overwritten. `oma update` runs migration 022, which moves anything you had
 # changed here into oma-config for you.
 #
-# The values below mirror DEFAULT_VIDEO_CONFIG in cli/commands/video/config.ts,
-# which is the source of truth. They are kept only so migration 022 can tell an
-# edited file from a pristine one.
+# The values below are the frozen migration 022 baseline, not current defaults.
+# Keep them unchanged so migration 022 can identify historical user overrides.
+# Current defaults (HyperFrames) live in cli/io/video/config.ts.
 default_output_dir: .agents/results/videos
 default_mode: shorts
 default_aspect: auto
@@ -16,7 +16,7 @@ default_captions: tiktok
 default_visual: auto
 default_voice: none
 default_music: none
-default_compositor: remotion
+default_compositor: hyperframes
 default_timeout_sec: 600
 
 providers:
@@ -39,7 +39,7 @@ providers:
   music:
     order: [strudel]
   compositor:
-    order: [remotion, mpt]
+    order: [hyperframes, mpt]
   # Paid providers — auto-enabled only when their env key is present (backend
   # rule 11: real path gated on key, key-free fallback otherwise).
   pexels:

@@ -129,7 +129,7 @@ describe("StrudelMusicProvider", () => {
       const bed = await provider.compose(opts("piano", tmp));
       expect(bed.reason).toBeUndefined();
       expect(bed.pathTaken).toBe("real");
-      // Must stay run-dir-relative + POSIX for Remotion's staticFile().
+      // Must stay run-dir-relative + POSIX for Hyperframes's staticFile().
       expect(bed.path).toBe("music/bgm.wav");
       expect(bed.mp3Path).toBe("music/bgm.mp3");
       const wav = path.join(tmp, "music", "bgm.wav");

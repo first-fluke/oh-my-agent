@@ -40,6 +40,9 @@ describe("loadVideoConfig", () => {
   it("returns defaults when config file absent", async () => {
     const cfg = await loadVideoConfig(tmp);
     expect(cfg.defaultMode).toBe("shorts");
+    expect(cfg.defaultCompositor).toBe("hyperframes");
+    expect(cfg.providers.compositor.order).toEqual(["hyperframes", "mpt"]);
+    expect(cfg.hyperframes.checkIntervalMin).toBe(60);
     expect(cfg.defaultOutputDir).toBe(".agents/results/videos");
     expect(cfg.providers.visual.order).toEqual([
       "oma-image",
@@ -72,6 +75,8 @@ describe("loadVideoConfig", () => {
           "  default_output_dir: out/videos",
           "  default_mode: explainer",
           "  default_timeout_sec: 120",
+          "  hyperframes:",
+          "    check_interval_min: 15",
           "  cost:",
           "    guardrail_usd: 0.5",
           "  limits:",
@@ -86,6 +91,7 @@ describe("loadVideoConfig", () => {
       expect(cfg.defaultOutputDir).toBe("out/videos");
       expect(cfg.defaultMode).toBe("explainer");
       expect(cfg.defaultTimeoutSec).toBe(120);
+      expect(cfg.hyperframes.checkIntervalMin).toBe(15);
       expect(cfg.cost.guardrailUsd).toBe(0.5);
       expect(cfg.limits.maxScenes).toBe(12);
       expect(cfg.naming.singleFolderPattern).toBe("custom-{shortid}-{mode}");
