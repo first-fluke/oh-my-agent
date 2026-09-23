@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.0...cli-v15.0.1) (2026-09-23)
+
+
+### Documentation
+
+* **refactor:** explain optional file map after feature splits ([5379610](https://github.com/first-fluke/oh-my-agent/commit/5379610feacda908a3f24bcf4db16dcc94338820))
+
 ## [15.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.14.3...cli-v15.0.0) (2026-09-23)
 
 
