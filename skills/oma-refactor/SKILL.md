@@ -75,7 +75,7 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 1. **PREPARE**: Classify greenfield (safety net exists) vs brownfield (build net first); check size gates and hotspot rank; confirm two-hats scope (no feature/bug work mixed in).
 2. **ACQUIRE**: Read target code via symbol tools; collect metrics (complexity, size, coupling) and git signals (churn, ownership); read the coding guide for conventions.
 3. **REASON**: Decompose the goal into a sequence of named atomic transformations; for stateful targets plan expand-contract; verify each step is independently verifiable and revertible.
-4. **ACT**: Apply ONE transformation; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits.
+4. **ACT**: Apply ONE transformation; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits. When one feature spans several files after a split, consider G-5's optional header map if it helps navigation.
 5. **VERIFY**: Re-run existing tests unchanged. Pass -> commit (refactor-only) -> next transformation. Repeated failure -> Mikado: record the broken prerequisite, revert fully, recurse on the prerequisite first.
 6. **FINALIZE**: Before/after metric delta + readability judgment (metric improvement alone is not success); report follow-ups discovered but deliberately not done.
 

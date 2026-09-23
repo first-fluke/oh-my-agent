@@ -20,7 +20,7 @@ Follow the shared execution policy for authorization and clarification. State ma
 1. **Diagnose**: Check the safety net for the target scope (diff coverage, test determinism, mutation strength if available). No net -> build it first.
 2. **Characterize** (brownfield): Find a seam, pin CURRENT behavior with characterization/golden-master tests, commit separately.
 3. **Target**: Rank by hotspot (complexity x churn), not smell aesthetics. Skip cold complex code.
-4. **Transform**: ONE named atomic transformation at a time; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits.
+4. **Transform**: ONE named atomic transformation at a time; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits. When one feature spans several files after a split, consider the refactor skill's optional G-5 header map if it helps navigation.
 5. **Verify**: Re-run existing tests UNCHANGED. Pass -> commit `refactor:` only. Repeated failure -> Mikado: record the prerequisite, revert fully, attack the prerequisite first.
 6. **Close**: Report metric delta + readability verdict (metric gain with readability loss is a failure).
 

@@ -30,6 +30,7 @@ A file exceeding 500 lines is a refactoring target by default; KEEPING it requir
 - **Closed justification list**: generated code / data tables / cohesive state machines or parsers where splitting hurts readability (requires ADR-grade record - the most abused item) / vendored code / regulated freeze.
 - **Ratchet enforcement**: lint rule (`max-lines: 500` ESLint, `max-module-lines=500` Pylint, metric tooling for Dart) - new files hard-fail in CI; existing violations frozen in a baseline and forbidden to grow (shrink updates the baseline). Suppression comments must state the reason; permanent exemptions need an ADR.
 - **Caution**: LOC is the weakest metric - the gate's virtue is enforceable simplicity. Splits follow responsibility boundaries, never line counts; a split producing mutually-importing tightly-coupled halves is void.
+- **Split navigation**: If one feature's responsibility spans several files after a split and their relationship is hard to infer from names and imports, consider a short map in the feature entry file's top multiline comment or module docstring. Add a header only when it helps navigation, after any required shebang, license, or language directives. List the relevant files by path relative to the entry file with a one-line role for each. Keep paths current after later moves or renames.
 
 ## G-6. Per-language tool registry
 
