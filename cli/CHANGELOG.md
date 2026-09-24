@@ -1,5 +1,13 @@
 # Changelog
 
+## [15.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.1...cli-v15.0.2) (2026-09-24)
+
+
+### Bug Fixes
+
+* **cli:** reap idle Serena daemons on schedule ([823ac6a](https://github.com/first-fluke/oh-my-agent/commit/823ac6a866b7932bdcba51fa35f297cb3c69f2c5))
+* **cli:** stabilize timeout and boundary checks ([427be90](https://github.com/first-fluke/oh-my-agent/commit/427be90ef43f28e912ef20ef1b7edec40ee0613e))
+
 ## [15.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.0...cli-v15.0.1) (2026-09-23)
 
 
