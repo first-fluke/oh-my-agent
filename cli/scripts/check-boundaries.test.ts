@@ -1,8 +1,8 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
-import { findBoundaryViolations } from "./check-boundaries.mjs";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { collectImports, findBoundaryViolations } from "./check-boundaries.mjs";
 
 describe("check-boundaries", () => {
   const roots: string[] = [];
@@ -74,5 +74,41 @@ describe("check-boundaries", () => {
         violation.endsWith("-> commands/schedule"),
       ),
     ).toBe(true);
+  });
+
+  it("retries only a transient TypeScript child-process exit", () => {
+    const parseBatch = vi
+      .fn()
+      .mockImplementationOnce(() => {
+        throw new Error("Unexpected EOF while reading from child process");
+      })
+      .mockReturnValue(new Map([["fixture.ts", ["../schedule/example.js"]]]));
+
+    expect(collectImports(["fixture.ts"], parseBatch)).toEqual(
+      new Map([["fixture.ts", ["../schedule/example.js"]]]),
+    );
+    expect(parseBatch).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry a parser error", () => {
+    const parseBatch = vi.fn(() => {
+      throw new Error("Could not parse fixture.ts");
+    });
+
+    expect(() => collectImports(["fixture.ts"], parseBatch)).toThrow(
+      "Could not parse fixture.ts",
+    );
+    expect(parseBatch).toHaveBeenCalledOnce();
+  });
+
+  it("stops after three compiler exits", () => {
+    const parseBatch = vi.fn(() => {
+      throw new Error("Unexpected EOF while reading from child process");
+    });
+
+    expect(() => collectImports(["fixture.ts"], parseBatch)).toThrow(
+      "Unexpected EOF while reading from child process",
+    );
+    expect(parseBatch).toHaveBeenCalledTimes(3);
   });
 });

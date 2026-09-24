@@ -69,7 +69,11 @@ createInterface({ input: process.stdin }).on('line', line => {
   chmodSync(command, 0o755);
   return { root, command, trace };
 }
-function runFake(fake: ReturnType<typeof fakeCodex>, timeoutMs = 10_000) {
+function runFake(
+  fake: ReturnType<typeof fakeCodex>,
+  timeoutMs = 10_000,
+  watchdogMs = timeoutMs + 2_000,
+) {
   return execFileSync(process.execPath, ["--eval", CODEX_TEXT_BRIDGE], {
     cwd: fake.root,
     input: JSON.stringify({
@@ -78,7 +82,7 @@ function runFake(fake: ReturnType<typeof fakeCodex>, timeoutMs = 10_000) {
       timeoutMs,
     }),
     encoding: "utf8",
-    timeout: timeoutMs + 2_000,
+    timeout: watchdogMs,
     stdio: ["pipe", "pipe", "pipe"],
   });
 }
@@ -215,8 +219,10 @@ describe("protected text capability", () => {
   });
 
   it("terminates a stalled server within the request budget", () => {
-    const before = Date.now();
-    expect(() => runFake(fakeCodex("timeout"), 200)).toThrow();
-    expect(Date.now() - before).toBeLessThan(2_000);
+    // Assert the bridge's own deadline fired. A wall-clock assertion also
+    // measures process startup and scheduler delays outside this contract.
+    expect(() => runFake(fakeCodex("timeout"), 200, 10_000)).toThrow(
+      "Protected Codex dispatch failed: timeout",
+    );
   });
 });

@@ -164,14 +164,29 @@ function collectImportsFromBatch(files) {
   }
 }
 
-function collectImports(files) {
+function isTransientCompilerExit(error) {
+  return (
+    error instanceof Error &&
+    error.message.includes("Unexpected EOF while reading from child process")
+  );
+}
+
+export function collectImports(files, parseBatch = collectImportsFromBatch) {
   const imports = new Map();
-  // TS 7's sync API can terminate its child on a whole-repository snapshot.
-  // Bound snapshot size while still parsing every file; no code is emitted.
+  // Bound TS 7 snapshots and retry a transient native-worker EOF. Other
+  // parser errors still fail immediately; no code is emitted.
   for (let start = 0; start < files.length; start += 20) {
-    for (const [file, specifiers] of collectImportsFromBatch(
-      files.slice(start, start + 20),
-    )) {
+    const batch = files.slice(start, start + 20);
+    let parsed;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        parsed = parseBatch(batch);
+        break;
+      } catch (error) {
+        if (!isTransientCompilerExit(error) || attempt === 2) throw error;
+      }
+    }
+    for (const [file, specifiers] of parsed) {
       imports.set(file, specifiers);
     }
   }
