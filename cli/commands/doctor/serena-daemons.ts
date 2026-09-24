@@ -23,7 +23,7 @@ export interface SerenaDaemonSummary {
   liveClients: number;
   /** Minutes since the last client detached; undefined while clients remain. */
   idleMinutes?: number;
-  /** True when past the idle grace — the next bridge start will reclaim it. */
+  /** True when past the idle grace — the next cleanup sweep will reclaim it. */
   pendingReclaim: boolean;
 }
 
@@ -79,11 +79,10 @@ export function collectSerenaDaemonCheck(
   const issues: string[] = [];
   const overdue = daemons.filter((daemon) => daemon.pendingReclaim);
   if (overdue.length > 0) {
-    // Informational rather than actionable-by-hand: reclamation is automatic
-    // on the next bridge start, but a machine where no session ever starts
-    // again would keep these alive, so doctor surfaces them.
+    // A timer or the next bridge start will reclaim these; surface the pending
+    // state in doctor while they wait for the next sweep.
     issues.push(
-      `${overdue.length} idle serena daemon(s) past the reclaim grace — freed on the next session start, or kill the pid to free now`,
+      `${overdue.length} idle serena daemon(s) past the reclaim grace — freed on the next cleanup sweep`,
     );
   }
 

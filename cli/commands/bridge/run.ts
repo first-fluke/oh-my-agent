@@ -104,6 +104,21 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
     );
     MCP_URL = daemon.url;
     attachedKey = daemonKey(root, context);
+
+    // The shared server survives this bridge. Keep its idle cleanup scheduled
+    // even when every bridge process has exited.
+    try {
+      const { ensureSerenaDaemonGcService } = await import(
+        "../../platform/serena-daemon-gc-service.js"
+      );
+      if (!ensureSerenaDaemonGcService()) {
+        console.error("[Bridge] Serena daemon cleanup timer is unavailable.");
+      }
+    } catch (err) {
+      console.error(
+        `[Bridge] Serena daemon cleanup timer failed: ${err instanceof Error ? err.message : err}`,
+      );
+    }
   }
 
   const url = new URL(MCP_URL);
@@ -385,7 +400,7 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
     // take serena out from under every other session on the project. Dropping
     // to zero clients only starts the grace period — a session restarting
     // moments later re-attaches to a still-warm daemon, and one that is truly
-    // abandoned is reclaimed by the next bridge to start.
+    // abandoned is reclaimed by the periodic timer or the next bridge.
     isShuttingDown = true;
     if (attachedKey) detachClient(attachedKey);
     clearBridgeRuntimeListeners();

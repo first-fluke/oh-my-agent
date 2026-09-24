@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import {
   daemonPidsWithLiveClients,
   pruneRegistry,
+  reclaimIdleDaemons,
 } from "../../io/serena-daemon.js";
 import { runAction } from "../../utils/cli-framework.js";
 
@@ -17,6 +18,21 @@ export function registerSerenaCommands(program: Command): void {
   const serena = program
     .command("serena")
     .description("Serena MCP language-server lifecycle utilities");
+
+  serena
+    .command("daemon:gc")
+    .description(
+      "Stop shared Serena daemons with no clients after the idle grace period",
+    )
+    .option("--quiet", "Suppress output for the periodic cleanup task")
+    .action(
+      runAction(async (options) => {
+        const reclaimed = reclaimIdleDaemons();
+        if (!options.quiet) {
+          console.log(`Reclaimed ${reclaimed.length} idle Serena daemon(s).`);
+        }
+      }),
+    );
 
   // ---------------------------------------------------------------------------
   // oma serena reap [--dry-run] [--quiet]

@@ -410,8 +410,8 @@ export async function ensureSerenaDaemon(
     return { url: urlFor(port), port, started: false };
   };
 
-  // Every start is also a sweep: daemons whose sessions have all gone away get
-  // reclaimed here, so the fleet stays bounded with nothing to schedule or run.
+  // Also sweep on bridge start, so cleanup catches up immediately after sleep
+  // or when the periodic task was unavailable.
   reclaimIdleDaemons(Date.now(), undefined, opts.listDaemons);
 
   while (Date.now() < deadline) {
@@ -710,9 +710,8 @@ export function detachClient(key: string, pid = process.pid): void {
  * Stop daemons whose clients are all gone and whose grace period has expired,
  * and forget registrations whose process already died.
  *
- * Called opportunistically whenever a bridge starts, which keeps the fleet
- * bounded without a scheduler, a background process, or anything for the user
- * to run.
+ * Called by the periodic daemon cleanup task and opportunistically whenever
+ * a bridge starts.
  *
  * `nowMs` and `kill` are injectable for tests: the grace period must be
  * steppable, and a test that lets the real `process.kill` fire would have to
@@ -760,6 +759,17 @@ export function reclaimIdleDaemons(
 
       const idleMs = nowMs - Date.parse(record.idleSince);
       if (Number.isNaN(idleMs) || idleMs < DAEMON_IDLE_GRACE_MS) continue;
+
+      // A stale registry PID may have been reused by an unrelated process.
+      // A periodic task must verify the current command before signalling it.
+      const sameDaemon = running.some(
+        (proc) =>
+          proc.pid === record.pid &&
+          proc.port === record.port &&
+          proc.root === record.root &&
+          proc.context === record.context,
+      );
+      if (!sameDaemon) continue;
 
       try {
         kill(record.pid, "SIGTERM");

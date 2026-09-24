@@ -467,7 +467,14 @@ describe("reclaimIdleDaemons — actually stopping a daemon", () => {
     const reclaimed = reclaimIdleDaemons(
       Date.now() + DAEMON_IDLE_GRACE_MS + 1,
       (pid, signal) => kills.push({ pid, signal }),
-      noDaemons,
+      () => [
+        {
+          pid: process.pid,
+          port: readRegistry()[key]?.port ?? 0,
+          root: "/abandoned",
+          context: "ide",
+        },
+      ],
     );
 
     expect(reclaimed.map((r) => r.root)).toEqual(["/abandoned"]);
@@ -500,11 +507,39 @@ describe("reclaimIdleDaemons — actually stopping a daemon", () => {
       () => {
         throw new Error("ESRCH");
       },
-      noDaemons,
+      () => [{ pid: process.pid, port: 12440, root: "/gone", context: "ide" }],
     );
 
     expect(reclaimed.map((r) => r.root)).toEqual(["/gone"]);
     expect(readRegistry()[daemonKey("/gone", "ide")]).toBeUndefined();
+  });
+
+  it("never signals a PID whose current command is not the registered daemon", () => {
+    const now = Date.now();
+    mkdirSync(omaStateDir(), { recursive: true });
+    const key = daemonKey("/old", "ide");
+    writeFileSync(
+      join(omaStateDir(), "serena-daemons.json"),
+      JSON.stringify({
+        [key]: {
+          root: "/old",
+          context: "ide",
+          port: 12389,
+          pid: process.pid,
+          startedAt: new Date(now - DAEMON_IDLE_GRACE_MS * 2).toISOString(),
+          clients: [],
+          idleSince: new Date(now - DAEMON_IDLE_GRACE_MS - 1).toISOString(),
+        },
+      }),
+    );
+    const kill = vi.fn();
+
+    const reclaimed = reclaimIdleDaemons(now, kill, () => [
+      { pid: process.pid, port: 12390, root: "/other", context: "ide" },
+    ]);
+
+    expect(reclaimed).toEqual([]);
+    expect(kill).not.toHaveBeenCalled();
   });
 });
 
