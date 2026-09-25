@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.2...cli-v15.0.3) (2026-09-25)
+
+
+### Bug Fixes
+
+* **serena:** prevent duplicate servers and reduce eager analysis ([419d3cf](https://github.com/first-fluke/oh-my-agent/commit/419d3cf74bb229d46ada89d61a294bcca26ad839))
+
 ## [15.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.1...cli-v15.0.2) (2026-09-24)
 
 
