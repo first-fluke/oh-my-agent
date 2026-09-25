@@ -50,7 +50,7 @@ export function registerSerenaCommands(program: Command): void {
         );
         const { installDartCheckLauncher } = await import("./check.js");
         const { validateSerenaConfigs } = await import(
-          "../bridge/serena-config.js"
+          "../../io/serena-config.js"
         );
         const root = resolveProjectRoot(process.cwd());
         validateSerenaConfigs(root);

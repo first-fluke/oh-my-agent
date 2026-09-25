@@ -4,8 +4,8 @@ import { join, resolve } from "node:path";
 import {
   parseProjectYmlLanguages,
   reconcileSerenaLanguages,
-} from "../../io/serena.js";
-import { reconcileSerenaRuntimeSettings } from "../../io/serena-runtime-settings.js";
+} from "./serena.js";
+import { reconcileSerenaRuntimeSettings } from "./serena-runtime-settings.js";
 
 /**
  * Repair one project.yml so every installed serena version can read it.

@@ -3,6 +3,7 @@ import { chmodSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { SERENA_ASSETS } from "../../io/serena-adapter.js";
+import { validateSerenaConfigs } from "../../io/serena-config.js";
 import {
   daemonKey,
   detachClient,
@@ -11,7 +12,6 @@ import {
 } from "../../io/serena-daemon.js";
 import { prepareSerenaRuntime } from "../../io/serena-managed-runtime.js";
 import { serenaTransportMode } from "../../utils/config.js";
-import { validateSerenaConfigs } from "../bridge/serena-config.js";
 
 export interface DartCheckOptions {
   project: string;

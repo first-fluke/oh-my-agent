@@ -1,5 +1,6 @@
 import http, { type IncomingMessage } from "node:http";
 import https from "node:https";
+import { validateSerenaConfigs } from "../../io/serena-config.js";
 import {
   daemonKey,
   detachClient,
@@ -9,7 +10,6 @@ import {
 } from "../../io/serena-daemon.js";
 import { prepareSerenaRuntime } from "../../io/serena-managed-runtime.js";
 import { omaSerenaContext } from "../../vendors/serena.js";
-import { validateSerenaConfigs } from "./serena-config.js";
 import { parseSSEStream } from "./sse.js";
 
 export { validateSerenaConfigs };
