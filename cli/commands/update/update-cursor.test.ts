@@ -578,7 +578,9 @@ describe("update cursor vendor adaptations", () => {
     process.chdir(projectDir);
     await update({ ci: true });
 
-    const output = stripVTControlCharacters(logSpy.mock.calls.flat().join("\n"));
+    const output = stripVTControlCharacters(
+      logSpy.mock.calls.flat().join("\n"),
+    );
     expect(output.split(repaired)).toHaveLength(2);
     expect(output).toContain(removed);
     expect(output.match(/Updated to version 9\.9\.9/g)).toHaveLength(1);
