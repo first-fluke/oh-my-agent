@@ -1,5 +1,14 @@
 # Changelog
 
+## [15.0.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.3...cli-v15.0.4) (2026-09-25)
+
+
+### Bug Fixes
+
+* **serena:** manage shared diagnostics and bound symbol cache memory ([84c8200](https://github.com/first-fluke/oh-my-agent/commit/84c8200ddef843ac02edbabc7e553df8ec8892e0))
+* **serena:** share config validation across commands ([f2546a8](https://github.com/first-fluke/oh-my-agent/commit/f2546a8886e05affd0db62b6eadbd7224b2e052b))
+* **update:** reduce redundant update output ([d212790](https://github.com/first-fluke/oh-my-agent/commit/d2127904a54845e44c05d125f5a6f6c26440b83e))
+
 ## [15.0.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.2...cli-v15.0.3) (2026-09-25)
 
 
