@@ -7,6 +7,7 @@ import {
   resolveProjectRoot,
   STARTUP_PROBE_TIMEOUT_MS,
 } from "../../io/serena-daemon.js";
+import { prepareSerenaRuntime } from "../../io/serena-managed-runtime.js";
 import { omaSerenaContext } from "../../vendors/serena.js";
 import { validateSerenaConfigs } from "./serena-config.js";
 import { parseSSEStream } from "./sse.js";
@@ -71,7 +72,12 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   if (explicitUrl) {
     MCP_URL = explicitUrl;
   } else {
-    const daemon = await ensureSerenaDaemon({ root, context });
+    const runtime = context === "oma" ? prepareSerenaRuntime(root) : undefined;
+    const daemon = await ensureSerenaDaemon({
+      root,
+      context,
+      runtimeRevision: runtime?.runtimeRevision,
+    });
     if (!daemon) {
       detachClient(daemonKey(root, context));
       throw new Error(

@@ -116,6 +116,7 @@ export function serializeReportAsJson(report: DoctorReport): string {
       prunedCount: report.serenaDaemons.prunedCount,
       issues: report.serenaDaemons.issues,
     },
+    serenaAdapter: report.serenaAdapter,
     serenaReap: {
       rootCount: report.serenaReap.roots.length,
       totalLspRssMb: report.serenaReap.totalLspRssMb,

@@ -14,6 +14,10 @@ import { lastCall as mockLastCall } from "../../__tests__/helpers.js";
 import { detachClient, ensureSerenaDaemon } from "../../io/serena-daemon.js";
 import { bridge, validateSerenaConfigs } from "../bridge/run.js";
 
+vi.mock("../../io/serena-managed-runtime.js", () => ({
+  prepareSerenaRuntime: vi.fn(() => ({ runtimeRevision: undefined })),
+}));
+
 vi.mock("../../io/serena-daemon.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../io/serena-daemon.js")>()),
   ensureSerenaDaemon: vi.fn(),

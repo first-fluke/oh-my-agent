@@ -18,6 +18,7 @@ import {
   detectableLanguages,
   detectProjectLanguages,
 } from "./project-languages.js";
+import { DART_PROJECT_TOOL, ensureSerenaAdapter } from "./serena-adapter.js";
 import { reconcileSerenaRuntimeSettings } from "./serena-runtime-settings.js";
 
 /**
@@ -486,22 +487,34 @@ export const OMA_SERENA_CONTEXT_YML = [
  * client. Its fixed allowlist retains code search, diagnostics, and symbolic
  * editing while removing memory/onboarding from MCP registration entirely.
  */
-export function ensureOmaSerenaContexts(): SerenaContextsOutcome {
+export function ensureOmaSerenaContexts(
+  adapter = ensureSerenaAdapter(),
+): SerenaContextsOutcome {
   const changed: string[] = [];
   const failed: string[] = [];
+  if (adapter.status === "unsupported" || adapter.status === "error") {
+    failed.push(`Dart adapter: ${adapter.error ?? adapter.status}`);
+  }
   const serenaHome =
     process.env.SERENA_HOME?.trim() || join(homedir(), ".serena");
   const contextsDir = join(serenaHome, "contexts");
   const contextPath = join(contextsDir, `${OMA_SERENA_CONTEXT}.yml`);
   let contextReady = false;
+  const desired =
+    adapter.status === "ready"
+      ? OMA_SERENA_CONTEXT_YML.replace(
+          "fixed_tools:\n",
+          `fixed_tools:\n- ${DART_PROJECT_TOOL}\n`,
+        )
+      : OMA_SERENA_CONTEXT_YML;
 
   try {
     mkdirSync(contextsDir, { recursive: true });
     const current = existsSync(contextPath)
       ? readFileSync(contextPath, "utf-8")
       : null;
-    if (current !== OMA_SERENA_CONTEXT_YML) {
-      writeFileSync(contextPath, OMA_SERENA_CONTEXT_YML, "utf-8");
+    if (current !== desired) {
+      writeFileSync(contextPath, desired, "utf-8");
       changed.push(OMA_SERENA_CONTEXT);
     }
     contextReady = true;

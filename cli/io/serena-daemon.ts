@@ -94,6 +94,8 @@ export interface DaemonRecord {
   port: number;
   pid: number;
   startedAt: string;
+  /** Adapter, project settings, context, and SDK loaded at startup. */
+  runtimeRevision?: string;
   /**
    * PIDs of the bridge proxies currently attached. A daemon with no live
    * clients is a candidate for reclamation.
@@ -305,6 +307,9 @@ async function waitForLock(timeoutMs: number): Promise<(() => void) | null> {
 export interface EnsureDaemonOptions {
   root: string;
   context: string;
+  runtimeRevision?: string;
+  /** Test seam for stopping a verified, unused stale daemon. */
+  stopDaemon?: (pid: number) => Promise<void>;
   /** Overall budget for "is it up, else start it and wait". */
   timeoutMs?: number;
   /** Injected for tests. */
@@ -368,6 +373,7 @@ function spawnDaemonProcess(
   // Detached on purpose: the daemon outlives the session that happened to start
   // it, so one client exiting does not tear serena out from under its peers.
   const child = spawn("serena", serenaDaemonMcpArgs(context, root, port), {
+    cwd: root,
     detached: true,
     stdio: ["ignore", log, log],
     // On Windows a detached console app pops open its own console window;
@@ -383,6 +389,16 @@ function spawnDaemonProcess(
   if (typeof child.pid !== "number") return null;
   child.unref();
   return child.pid;
+}
+
+async function stopStaleDaemon(pid: number): Promise<void> {
+  process.kill(pid, "SIGTERM");
+  const deadline = Date.now() + 5000;
+  while (isAlive(pid) && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  if (isAlive(pid))
+    throw new Error("Stale Serena daemon did not stop; retry after it exits");
 }
 
 /**
@@ -411,12 +427,18 @@ export async function ensureSerenaDaemon(
 
   // Also sweep on bridge start, so cleanup catches up immediately after sleep
   // or when the periodic task was unavailable.
-  reclaimIdleDaemons(Date.now(), undefined, opts.listDaemons);
+  reclaimIdleDaemons(
+    Date.now(),
+    undefined,
+    opts.listDaemons,
+    opts.runtimeRevision ? key : undefined,
+  );
 
   while (Date.now() < deadline) {
     // Fast path: a live registration that still answers.
     const known = readRegistry()[key];
-    if (known && (await probe(known.port))) return reuse(known.port);
+    if (!opts.runtimeRevision && known && (await probe(known.port)))
+      return reuse(known.port);
 
     // Registered, alive, not answering: still starting (another session
     // spawned it moments ago) or busy (its main thread pinned by a long tool
@@ -427,14 +449,18 @@ export async function ensureSerenaDaemon(
     // daemon's registration with it when pruned as "died during startup". The
     // survivor then ran on unregistered — never reclaimed — and every later
     // session, seeing no record and an occupied port, started yet another one.
-    if (known && isAlive(known.pid)) {
+    if (
+      known &&
+      isAlive(known.pid) &&
+      (!opts.runtimeRevision || known.runtimeRevision === opts.runtimeRevision)
+    ) {
       const outcome = await waitForRegisteredDaemon(
         known,
         Math.min(deadline, Date.now() + busyWaitMs),
         probe,
         pollIntervalMs,
       );
-      if (outcome === "up") return reuse(known.port);
+      if (outcome === "up" && !opts.runtimeRevision) return reuse(known.port);
       // Leave the live daemon registered so a later connection can reuse it.
       if (outcome === "unresponsive") return null;
       // "died": fall through and start a fresh one.
@@ -447,7 +473,35 @@ export async function ensureSerenaDaemon(
     try {
       // Re-check under the lock: another session may have just started it.
       const registry = readRegistry();
-      const current = registry[key];
+      let current: DaemonRecord | undefined = registry[key];
+      if (
+        current &&
+        opts.runtimeRevision &&
+        current.runtimeRevision !== opts.runtimeRevision
+      ) {
+        if ((current.clients ?? []).some(isAlive)) {
+          throw new Error(
+            "Serena runtime changed. Close this project's active MCP sessions, then retry; the shared daemon was left running.",
+          );
+        }
+        if (isAlive(current.pid)) {
+          const matches = (opts.listDaemons ?? listRunningDaemons)().some(
+            (proc) =>
+              proc.pid === current?.pid &&
+              proc.root === root &&
+              proc.context === context &&
+              proc.port === current?.port,
+          );
+          if (!matches)
+            throw new Error(
+              "Cannot verify stale Serena process identity; run oma doctor",
+            );
+          await (opts.stopDaemon ?? stopStaleDaemon)(current.pid);
+        }
+        delete registry[key];
+        writeRegistry(registry);
+        current = undefined;
+      }
       if (current && (await probe(current.port))) {
         attachClientTo(current);
         writeRegistry(registry);
@@ -459,7 +513,8 @@ export async function ensureSerenaDaemon(
       }
       // Someone else registered a live daemon while we waited for the lock;
       // go around and wait on it instead of racing it for the port.
-      if (current && current.pid !== known?.pid && isAlive(current.pid)) {
+      if (current && isAlive(current.pid)) {
+        if (current.pid === known?.pid) return null;
         continue;
       }
 
@@ -492,6 +547,7 @@ export async function ensureSerenaDaemon(
         port,
         pid,
         startedAt: new Date().toISOString(),
+        runtimeRevision: opts.runtimeRevision,
         clients: [process.pid],
       };
       writeRegistry(registry);
@@ -721,6 +777,8 @@ export function reclaimIdleDaemons(
     process.kill(pid, signal);
   },
   listDaemons: () => RunningDaemon[] = listRunningDaemons,
+  /** The acquiring caller handles this key's stop-and-wait under its startup lock. */
+  protectedKey?: string,
 ): DaemonRecord[] {
   // The process scan runs outside the lock: it is the slow part (~tens of ms)
   // and only reads the process table.
@@ -736,6 +794,7 @@ export function reclaimIdleDaemons(
         delete registry[key];
         continue;
       }
+      if (key === protectedKey) continue;
 
       const clients = (record.clients ?? []).filter(isAlive);
       if (clients.length > 0) {

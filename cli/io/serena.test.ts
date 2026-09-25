@@ -41,6 +41,10 @@ const mockFs = vi.hoisted(() => ({
 }));
 
 const mockExecFileSync = vi.hoisted(() => vi.fn());
+vi.mock("./serena-adapter.js", () => ({
+  DART_PROJECT_TOOL: "get_dart_project_diagnostics",
+  ensureSerenaAdapter: vi.fn(() => ({ status: "unavailable" })),
+}));
 
 vi.mock("node:child_process", () => ({
   execFileSync: mockExecFileSync,

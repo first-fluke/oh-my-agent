@@ -20,6 +20,48 @@ export function registerSerenaCommands(program: Command): void {
     .description("Serena MCP language-server lifecycle utilities");
 
   serena
+    .command("check")
+    .description("Analyze a Dart package using the managed shared Serena LSP")
+    .option(
+      "--project <path>",
+      "Package relative to the repository root",
+      "apps/mobile",
+    )
+    .option("--dart-sdk <path>", "Require this Dart executable")
+    .option("--timeout <seconds>", "Startup and analysis timeout (each)", "60")
+    .option("--staged", "Reject analysis inputs that differ from the Git index")
+    .action(async (options) => {
+      const { checkDart } = await import("./check.js");
+      process.exitCode = await checkDart(options);
+    });
+
+  serena
+    .command("setup")
+    .description(
+      "Repair the managed adapter and install the oma-dart-check compatibility launcher",
+    )
+    .action(
+      runAction(async () => {
+        const { prepareSerenaRuntime } = await import(
+          "../../io/serena-managed-runtime.js"
+        );
+        const { resolveProjectRoot } = await import(
+          "../../io/serena-daemon.js"
+        );
+        const { installDartCheckLauncher } = await import("./check.js");
+        const { validateSerenaConfigs } = await import(
+          "../bridge/serena-config.js"
+        );
+        const root = resolveProjectRoot(process.cwd());
+        validateSerenaConfigs(root);
+        const { adapter } = prepareSerenaRuntime(root, true);
+        console.log(
+          `Serena ${adapter.version}: adapter ready; ${installDartCheckLauncher()}`,
+        );
+      }),
+    );
+
+  serena
     .command("daemon:gc")
     .description(
       "Stop shared Serena daemons with no clients after the idle grace period",

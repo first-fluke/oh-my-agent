@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { inspectRecommendedGitConfig } from "../../io/git-recommended.js";
 import { getCoordinationStorePath } from "../../io/memory.js";
 import { SERENA_INSTALL_HINT } from "../../io/serena.js";
+import { resolveProjectRoot } from "../../io/serena-daemon.js";
 import { downloadAndExtract } from "../../io/tarball.js";
 import { safeGetInstallRoot } from "../../platform/install-context.js";
 import {
@@ -27,6 +28,7 @@ import {
 } from "./environment-checks.js";
 import { collectHookWrapperChecks } from "./hook-wrapper-check.js";
 import { collectProviderCheck } from "./providers.js";
+import { collectSerenaAdapterCheck } from "./serena-adapter.js";
 import { collectSerenaDaemonCheck } from "./serena-daemons.js";
 import { collectSerenaReapCheck } from "./serena-reap.js";
 import { collectStateDoctorCheck } from "./state-health.js";
@@ -163,6 +165,7 @@ export async function collectDoctorReport(
   const providers = await collectProviderCheck(root, agentMemory.status);
   const serenaReap = collectSerenaReapCheck(cwd);
   const serenaDaemons = collectSerenaDaemonCheck();
+  const serenaAdapter = collectSerenaAdapterCheck(resolveProjectRoot(cwd));
   const state = collectStateDoctorCheck(root);
   // The full lineage stays in `oma skill promotions --all`; doctor keeps the
   // figures and the latest line per skill.
@@ -216,6 +219,7 @@ export async function collectDoctorReport(
     providers.issues.length +
     serenaReap.issues.length +
     serenaDaemons.issues.length +
+    serenaAdapter.issues.length +
     state.issues.length +
     selfHealingIssues +
     serenaBinaryIssues +
@@ -238,6 +242,7 @@ export async function collectDoctorReport(
     agentMemory,
     serenaReap,
     serenaDaemons,
+    serenaAdapter,
     gitRecommended,
     totalIssues,
     skillAudit,

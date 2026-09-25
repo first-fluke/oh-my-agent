@@ -164,6 +164,7 @@ export interface DoctorReport {
   serenaReap: SerenaReapDoctorCheck;
   /** Shared per-project serena daemons started by `oma bridge`. */
   serenaDaemons: SerenaDaemonDoctorCheck;
+  serenaAdapter?: import("./serena-adapter.js").SerenaAdapterDoctorCheck;
   /** Recommended global git config (rerere.enabled, init.defaultBranch). */
   gitRecommended: GitRecommendedDoctorCheck;
   totalIssues: number;

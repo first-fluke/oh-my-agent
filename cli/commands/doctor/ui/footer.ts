@@ -32,6 +32,15 @@ export async function renderFooter(report: DoctorReport): Promise<void> {
   }
 
   renderSerenaDaemons(report);
+  if (report.serenaAdapter?.applicable) {
+    const adapter = report.serenaAdapter;
+    p.note(
+      adapter.issues.length
+        ? adapter.issues.join("\n")
+        : `Serena ${adapter.adapter?.version}: Dart adapter ready`,
+      "Serena Dart Adapter",
+    );
+  }
   renderSerenaReap(report);
 
   for (const doc of report.vendorDocs) {

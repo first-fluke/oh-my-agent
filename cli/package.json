@@ -8,7 +8,8 @@
     "oma": "./bin/cli.js"
   },
   "files": [
-    "bin"
+    "bin",
+    "assets/serena"
   ],
   "keywords": [
     "oh-my-agent",

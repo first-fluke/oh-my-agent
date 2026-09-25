@@ -124,6 +124,95 @@ function fakeFleet() {
 const noDaemons = () => [];
 
 describe("ensureSerenaDaemon", () => {
+  it("waits for a busy same-revision daemon with bounded polling", async () => {
+    const fleet = fakeFleet();
+    const opts = {
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 500,
+      ...fleet,
+    };
+    await ensureSerenaDaemon(opts);
+    let polls = 0;
+    const probe = vi.fn(async () => ++polls > 3);
+    const start = Date.now();
+    expect(
+      (await ensureSerenaDaemon({ ...opts, probe, pollIntervalMs: 10 }))
+        ?.started,
+    ).toBe(false);
+    expect(Date.now() - start).toBeGreaterThanOrEqual(25);
+    expect(probe).toHaveBeenCalledTimes(5);
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
+  });
+  it("reuses the loaded revision and refuses to interrupt live clients on a revision change", async () => {
+    const fleet = fakeFleet();
+    const opts = {
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 100,
+      ...fleet,
+    };
+    await ensureSerenaDaemon(opts);
+    expect((await ensureSerenaDaemon(opts))?.started).toBe(false);
+    const stopDaemon = vi.fn();
+    await expect(
+      ensureSerenaDaemon({ ...opts, runtimeRevision: "v2", stopDaemon }),
+    ).rejects.toThrow("active MCP sessions");
+    expect(stopDaemon).not.toHaveBeenCalled();
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
+  });
+
+  it("restarts an idle verified daemon exactly once after settings change", async () => {
+    const fleet = fakeFleet();
+    const opts = {
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 1000,
+      ...fleet,
+    };
+    await ensureSerenaDaemon(opts);
+    const key = daemonKey(opts.root, opts.context);
+    const record = readRegistry()[key];
+    if (!record) throw new Error("missing daemon");
+    detachClient(key);
+    const stopDaemon = vi.fn(async () => {
+      fleet.listening.delete(record.port);
+    });
+    const changed = {
+      ...opts,
+      runtimeRevision: "v2",
+      stopDaemon,
+      listDaemons: () => [record],
+    };
+    expect((await ensureSerenaDaemon(changed))?.started).toBe(true);
+    expect((await ensureSerenaDaemon(changed))?.started).toBe(false);
+    expect(stopDaemon).toHaveBeenCalledExactlyOnceWith(record.pid);
+    expect(readRegistry()[key]?.runtimeRevision).toBe("v2");
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(2);
+  });
+
+  it("never signals a stale registry PID whose process identity does not match", async () => {
+    const fleet = fakeFleet();
+    const opts = {
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 100,
+      ...fleet,
+    };
+    await ensureSerenaDaemon(opts);
+    detachClient(daemonKey(opts.root, opts.context));
+    const stopDaemon = vi.fn();
+    await expect(
+      ensureSerenaDaemon({ ...opts, runtimeRevision: "v2", stopDaemon }),
+    ).rejects.toThrow("process identity");
+    expect(stopDaemon).not.toHaveBeenCalled();
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
+  });
+
   it("registers the daemon it starts", async () => {
     const fleet = fakeFleet();
     const handle = await ensureSerenaDaemon({
