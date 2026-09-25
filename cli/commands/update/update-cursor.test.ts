@@ -7,6 +7,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const testHome = vi.hoisted(() => ({ root: "" }));
@@ -577,7 +578,9 @@ describe("update cursor vendor adaptations", () => {
     process.chdir(projectDir);
     await update({ ci: true });
 
-    const output = logSpy.mock.calls.flat().join("\n");
+    const output = stripVTControlCharacters(
+      logSpy.mock.calls.flat().join("\n"),
+    );
     expect(output.split(repaired)).toHaveLength(2);
     expect(output).toContain(removed);
     expect(output.match(/Updated to version 9\.9\.9/g)).toHaveLength(1);
