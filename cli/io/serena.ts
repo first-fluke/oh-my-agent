@@ -18,6 +18,7 @@ import {
   detectableLanguages,
   detectProjectLanguages,
 } from "./project-languages.js";
+import { reconcileSerenaRuntimeSettings } from "./serena-runtime-settings.js";
 
 /**
  * `uv` arguments that install the Serena binary the MCP transport invokes
@@ -701,8 +702,10 @@ export function reconcileSerenaProjectConfig(
   const existing = readFileSync(projectYml, "utf-8");
   const languageUpdated =
     reconcileSerenaLanguages(existing, derivedLanguages, opts) ?? existing;
-  const updated =
+  const exclusionsUpdated =
     reconcileSerenaToolExclusions(languageUpdated) ?? languageUpdated;
+  const updated =
+    reconcileSerenaRuntimeSettings(exclusionsUpdated, cwd) ?? exclusionsUpdated;
 
   if (updated === existing) return false;
 
@@ -998,7 +1001,11 @@ export function ensureSerenaProjectConfig(
     cwd.split("/").pop() || cwd.split("\\").pop() || "project";
 
   mkdirSync(serenaDir, { recursive: true });
-  writeFileSync(projectYml, DEFAULT_PROJECT_YML(languages, projectName));
+  const content = DEFAULT_PROJECT_YML(languages, projectName);
+  writeFileSync(
+    projectYml,
+    reconcileSerenaRuntimeSettings(content, cwd) ?? content,
+  );
 
   // Ensure .gitignore
   const gitignorePath = join(serenaDir, ".gitignore");

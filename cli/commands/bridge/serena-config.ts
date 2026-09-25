@@ -5,6 +5,7 @@ import {
   parseProjectYmlLanguages,
   reconcileSerenaLanguages,
 } from "../../io/serena.js";
+import { reconcileSerenaRuntimeSettings } from "../../io/serena-runtime-settings.js";
 
 /**
  * Repair one project.yml so every installed serena version can read it.
@@ -29,12 +30,14 @@ function repairProjectConfig(projectPath: string): boolean {
   const current = parseProjectYmlLanguages(content);
   if (current.length === 0) return false;
 
-  const repaired = reconcileSerenaLanguages(content, current);
-  if (repaired === null) return false;
+  const languages = reconcileSerenaLanguages(content, current) ?? content;
+  const repaired =
+    reconcileSerenaRuntimeSettings(languages, projectPath) ?? languages;
+  if (repaired === content) return false;
 
   writeFileSync(projectConfigPath, repaired);
   console.error(
-    `[Bridge] Restored 'languages' key in ${projectConfigPath} (required by serena 1.6.1)`,
+    `[Bridge] Reconciled Serena language keys and runtime settings in ${projectConfigPath}`,
   );
   return true;
 }

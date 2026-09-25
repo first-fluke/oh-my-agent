@@ -328,8 +328,8 @@ export interface EnsureDaemonOptions {
  * answering its port. Covers both a daemon another session spawned moments ago
  * (~8s cold start) and one whose main thread is pinned by a long tool call —
  * a probe times out after 2s, which a `search_for_pattern` over a big repo can
- * exceed while holding the GIL. Bounded so a truly wedged daemon costs one
- * stdio fallback, not a hung client startup.
+ * exceed while holding the GIL. Bounded so a wedged daemon produces a startup
+ * error instead of hanging the client or duplicating its language servers.
  */
 export const BUSY_DAEMON_WAIT_MS = 20_000;
 
@@ -378,7 +378,7 @@ function spawnDaemonProcess(
 
   // A missing executable reports failure asynchronously through `error`.
   // Always consume it: pid is undefined in that case, so the caller can return
-  // null and use the stdio fallback instead of crashing on an unhandled event.
+  // null and report unavailability instead of crashing on an unhandled event.
   child.once("error", () => {});
   if (typeof child.pid !== "number") return null;
   child.unref();
@@ -388,9 +388,8 @@ function spawnDaemonProcess(
 /**
  * Return a reachable shared daemon for (root, context), starting one if needed.
  *
- * Returns null when no daemon could be made reachable — callers must fall back
- * to plain stdio rather than fail, so a broken daemon never costs the user
- * their code intelligence.
+ * Returns null when no daemon could be made reachable. Callers report this
+ * failure without spawning a private stack alongside a potentially live one.
  */
 export async function ensureSerenaDaemon(
   opts: EnsureDaemonOptions,
@@ -436,9 +435,7 @@ export async function ensureSerenaDaemon(
         pollIntervalMs,
       );
       if (outcome === "up") return reuse(known.port);
-      // Alive but unresponsive: leave it registered — it is still the daemon
-      // for this key and may recover — and let this session fall back to
-      // stdio rather than fork the fleet.
+      // Leave the live daemon registered so a later connection can reuse it.
       if (outcome === "unresponsive") return null;
       // "died": fall through and start a fresh one.
     }

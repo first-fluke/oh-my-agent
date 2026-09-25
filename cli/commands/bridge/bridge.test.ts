@@ -11,7 +11,14 @@ import {
   vi,
 } from "vitest";
 import { lastCall as mockLastCall } from "../../__tests__/helpers.js";
+import { detachClient, ensureSerenaDaemon } from "../../io/serena-daemon.js";
 import { bridge, validateSerenaConfigs } from "../bridge/run.js";
+
+vi.mock("../../io/serena-daemon.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../io/serena-daemon.js")>()),
+  ensureSerenaDaemon: vi.fn(),
+  detachClient: vi.fn(),
+}));
 
 // Normalize Windows backslashes for cross-platform path string checks.
 const n = (s: string) => s.replace(/\\/g, "/");
@@ -216,10 +223,7 @@ describe("bridge command", () => {
       );
     });
 
-    it("falls back to a session-local serena when nothing is listening", async () => {
-      // Losing code intelligence for the whole session is a far worse outcome
-      // than losing the shared-daemon savings, so an unreachable endpoint must
-      // degrade to plain stdio rather than fail.
+    it("reports an unreachable endpoint without spawning another server", async () => {
       mockHttp.get.mockImplementation(
         (_url: string | URL, _cb?: (res: http.IncomingMessage) => void) => ({
           on: (event: string, handler: (err?: Error) => void) => {
@@ -232,24 +236,35 @@ describe("bridge command", () => {
         }),
       );
 
-      const _bridgePromise = bridge(PROXY_ONLY_URL);
-      await vi.advanceTimersByTimeAsync(2000);
-
-      expect(child_process.spawn).toHaveBeenCalledWith(
-        "serena",
-        expect.arrayContaining([
-          "start-mcp-server",
-          "--project-from-cwd",
-          "--add-mode",
-          "no-memories",
-        ]),
-        expect.objectContaining({ stdio: "inherit" }),
+      await expect(bridge(PROXY_ONLY_URL)).rejects.toThrow(
+        "No MCP server reachable",
       );
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Falling back to a session-local serena"),
-      );
+      expect(child_process.spawn).not.toHaveBeenCalled();
     });
   });
+
+  it("does not amplify a shared-daemon timeout with a private Python stack", async () => {
+    vi.mocked(ensureSerenaDaemon).mockResolvedValue(null);
+    await expect(
+      bridge(undefined, { cwd: "/project", context: "oma" }),
+    ).rejects.toThrow("Shared Serena is unavailable");
+    expect(child_process.spawn).not.toHaveBeenCalled();
+    expect(detachClient).toHaveBeenCalled();
+  });
+
+  it.each(["ide", "codex", "claude-code", "oma-antigravity", "oma"])(
+    "uses the same registry context for the managed alias %s",
+    async (context) => {
+      vi.mocked(ensureSerenaDaemon).mockResolvedValue(null);
+      await expect(
+        bridge(undefined, { cwd: "/project", context }),
+      ).rejects.toThrow();
+      expect(ensureSerenaDaemon).toHaveBeenCalledWith({
+        root: expect.any(String),
+        context: "oma",
+      });
+    },
+  );
 
   describe("Streamable HTTP protocol", () => {
     function setupBridgeWithStdin(): {

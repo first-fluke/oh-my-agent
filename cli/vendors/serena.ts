@@ -198,8 +198,8 @@ export interface SerenaMcpEntry {
  * shared, project-pinned serena HTTP server, starting it on first use. Sessions
  * on the same project then share a single language-server stack instead of each
  * paying for its own, which is what makes several concurrent agents affordable.
- * The proxy falls back to a session-local stdio serena whenever the daemon
- * cannot be reached, so the worst case is today's behaviour.
+ * If the daemon cannot be reached, the proxy reports an error. Spawning a
+ * private stack on timeout would amplify memory pressure in a busy project.
  *
  * `stdio` restores the unshared form for anyone who wants it
  * (`serena.mode: stdio` in oma-config.yaml).

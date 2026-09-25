@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import http, { type IncomingMessage } from "node:http";
 import https from "node:https";
 import {
@@ -8,7 +7,7 @@ import {
   resolveProjectRoot,
   STARTUP_PROBE_TIMEOUT_MS,
 } from "../../io/serena-daemon.js";
-import { serenaStartMcpArgs } from "../../vendors/serena.js";
+import { omaSerenaContext } from "../../vendors/serena.js";
 import { validateSerenaConfigs } from "./serena-config.js";
 import { parseSSEStream } from "./sse.js";
 
@@ -52,31 +51,11 @@ export interface BridgeOptions {
   cwd?: string;
 }
 
-/**
- * Run serena over stdio in this process, exactly as an unbridged MCP config
- * would. The fallback for every path where a shared daemon cannot be reached:
- * losing code intelligence entirely is a far worse outcome than losing the
- * memory savings, and the failure would be invisible to the user mid-session.
- */
-async function runStdioFallback(context: string): Promise<void> {
-  console.error("[Bridge] Falling back to a session-local serena (stdio).");
-
-  await new Promise<void>((done) => {
-    const child = spawn("serena", serenaStartMcpArgs(context), {
-      stdio: "inherit",
-    });
-    child.on("error", (err: Error) => {
-      console.error(`[Bridge] serena is not runnable: ${err.message}`);
-      done();
-    });
-    child.on("exit", () => done());
-  });
-}
-
 export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   clearBridgeRuntimeListeners();
 
-  const context = opts.context ?? "ide";
+  // The registry key must match the context passed to the actual server.
+  const context = omaSerenaContext(opts.context ?? "ide");
   const cwd = opts.cwd ?? process.cwd();
   const root = resolveProjectRoot(cwd);
   /** Set once this proxy is counted as a client, so exit knows to detach. */
@@ -94,8 +73,12 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   } else {
     const daemon = await ensureSerenaDaemon({ root, context });
     if (!daemon) {
-      await runStdioFallback(context);
-      return;
+      detachClient(daemonKey(root, context));
+      throw new Error(
+        `Shared Serena is unavailable for ${root}. Check 'oma doctor' and retry the MCP connection. ` +
+          "Automatic stdio fallback is disabled because it duplicates the language-server stack under memory pressure. " +
+          "Use serena.mode: stdio only when a dedicated server is intended.",
+      );
     }
     console.error(
       daemon.started
@@ -276,12 +259,11 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   }
 
   if (explicitUrl) {
-    // Caller-managed endpoint: connect, but never leave the session without
-    // serena if nothing is listening there.
+    // A failed caller-managed endpoint must not silently launch a local stack.
     if (!(await checkServer())) {
-      console.error(`[Bridge] No MCP server reachable at ${MCP_URL}.`);
-      await runStdioFallback(context);
-      return;
+      throw new Error(
+        `No MCP server reachable at ${MCP_URL}. Retry the MCP connection when the server is available.`,
+      );
     }
     console.error(`Connected to existing Serena server at ${MCP_URL}`);
   }

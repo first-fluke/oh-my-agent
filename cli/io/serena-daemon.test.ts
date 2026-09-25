@@ -212,8 +212,7 @@ describe("ensureSerenaDaemon", () => {
   });
 
   it("returns null instead of throwing when the daemon cannot be spawned", async () => {
-    // Callers fall back to a session-local stdio serena on null; throwing here
-    // would leave the session with no code intelligence at all.
+    // The bridge reports this failure without spawning a private server.
     const handle = await ensureSerenaDaemon({
       root: "/proj",
       context: "ide",
@@ -585,8 +584,7 @@ describe("ensureSerenaDaemon — a registered daemon that is alive but not answe
       busyWaitMs: 20,
     });
 
-    // Null sends this session to the stdio fallback; the registration stays so
-    // the daemon is still found (and, if it stays wedged, eventually reclaimed).
+    // The bridge reports unavailability; the daemon remains registered.
     expect(handle).toBeNull();
     expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
     expect(readRegistry()[daemonKey("/proj", "ide")]?.port).toBe(first?.port);
