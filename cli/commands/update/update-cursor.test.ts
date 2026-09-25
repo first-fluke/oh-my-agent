@@ -519,4 +519,70 @@ describe("update cursor vendor adaptations", () => {
       "hyperframes 4.0.522",
     );
   });
+
+  it.each([
+    { status: "fresh", expected: "skills updated to abc123" },
+    { status: "stale", expected: "skills: network unavailable" },
+    { status: undefined, expected: "skills: check failed" },
+  ])(
+    "reports only changed or failed Hyperframes components ($status)",
+    async ({ status, expected }) => {
+      const projectDir = makeTempRoot("oma-update-output-project-");
+      extractedRepoDir = makeTempRoot("oma-update-output-repo-");
+      mockInstallRoot = projectDir;
+      writeRepoConfig(extractedRepoDir, ["codex"]);
+      createExistingVendorRoots(projectDir, ["codex"]);
+      vi.mocked(skills.getInstalledSkillNames).mockReturnValue(["oma-video"]);
+      hyperframesState.describeToolchain.mockReturnValue({ version: "0.8.74" });
+      hyperframesState.ensureLatestToolchain.mockResolvedValue({
+        version: "0.8.74",
+        status: "current",
+      });
+      hyperframesState.ensureHyperframesSkills.mockResolvedValue(
+        status
+          ? {
+              ref: "abc123",
+              status,
+              note: status === "stale" ? "network unavailable" : undefined,
+            }
+          : undefined,
+      );
+      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      process.chdir(projectDir);
+      await update({ ci: true });
+
+      const output = logSpy.mock.calls.flat().join("\n");
+      expect(output).toContain(expected);
+      expect(output).not.toContain("hyperframes 0.8.74");
+      logSpy.mockRestore();
+    },
+  );
+
+  it("reports completion once and a repaired symlink once", async () => {
+    const projectDir = makeTempRoot("oma-update-summary-project-");
+    extractedRepoDir = makeTempRoot("oma-update-summary-repo-");
+    mockInstallRoot = projectDir;
+    writeRepoConfig(extractedRepoDir, ["codex"]);
+    createExistingVendorRoots(projectDir, ["codex"]);
+    const repaired = "~/.kimi-code/skills/oma-frontend";
+    const removed = "~/.kimi-code/skills/legacy";
+    vi.mocked(skills.createVendorSymlinks).mockReturnValueOnce({
+      created: [repaired],
+      removed: [repaired, removed],
+      skipped: [],
+    });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    process.chdir(projectDir);
+    await update({ ci: true });
+
+    const output = logSpy.mock.calls.flat().join("\n");
+    expect(output.split(repaired)).toHaveLength(2);
+    expect(output).toContain(removed);
+    expect(output.match(/Updated to version 9\.9\.9/g)).toHaveLength(1);
+    expect(output).not.toContain("files updated successfully");
+    expect(output).not.toContain("Skipped global HOME-level");
+    logSpy.mockRestore();
+  });
 });

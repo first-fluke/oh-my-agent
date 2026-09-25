@@ -536,15 +536,20 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
               force: false,
             });
             const parts = [
-              tc
-                ? `hyperframes ${tc.version} (${tc.status})`
-                : "hyperframes: check failed",
-              skills
-                ? `skills ${skills.ref} (${skills.status})`
-                : "skills: check failed",
-            ];
-            if (tc?.status !== "current" || skills?.status !== "current") {
-              ui.note(parts.join(", "), "Hyperframes");
+              { name: "hyperframes", version: tc?.version, result: tc },
+              { name: "skills", version: skills?.ref, result: skills },
+            ].flatMap(({ name, version, result }) => {
+              if (!result) return [`${name}: check failed`];
+              if (result.status === "current") return [];
+              if (result.status === "fresh") {
+                return [`${name} updated to ${version}`];
+              }
+              return [
+                `${name}: ${result.note ?? `update check failed; using cached ${version}`}`,
+              ];
+            });
+            if (parts.length > 0) {
+              ui.note(parts.join("\n"), "Hyperframes");
             }
           }
         } catch (err) {
@@ -559,18 +564,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         // legacy installs that lack `mode` get backfilled on next update.
         await saveLocalVersion(cwd, remoteManifest.version, mode);
 
-        if (mode === "project") {
-          ui.note(
-            "Skipped global HOME-level configuration updates during project update.",
-            "Notice",
-          );
-        }
-
-        spinner.stop(
-          isReconcileOnly
-            ? pc.green("Reconciled project configuration!")
-            : `Updated to version ${pc.cyan(remoteManifest.version)}!`,
-        );
+        spinner.stop();
 
         noteArtifactDiff(ui, cwd, beforeArtifacts);
 
@@ -579,7 +573,9 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         if (cliSymlinks.created.length > 0 || cliSymlinks.removed.length > 0) {
           ui.note(
             [
-              ...cliSymlinks.removed.map((s) => `${pc.red("×")} ${s}`),
+              ...cliSymlinks.removed
+                .filter((s) => !cliSymlinks.created.includes(s))
+                .map((s) => `${pc.red("×")} ${s}`),
               ...cliSymlinks.created.map((s) => `${pc.green("→")} ${s}`),
             ].join("\n"),
             "Symlinks updated",
@@ -615,7 +611,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         ui.outro(
           isReconcileOnly
             ? `Reconciled project at version ${pc.cyan(remoteManifest.version)}`
-            : `${remoteManifest.metadata?.totalFiles ?? 0} files updated successfully`,
+            : `Updated to version ${pc.cyan(remoteManifest.version)}!`,
         );
 
         await maybeApplyRecommendedGitConfig({ nonInteractive });
