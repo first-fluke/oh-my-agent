@@ -163,6 +163,72 @@ describe("session recovery", () => {
     plan({ dependencies: ["B"] });
     expect(() => planSessionResume(root, "s1")).toThrow("Cycle");
   });
+  it("counts independent run IDs against the same attempt budget", () => {
+    finishAgentRun(root, start("A").runId, 1);
+    finishAgentRun(root, start("A").runId, 1);
+    expect(planSessionResume(root, "s1", 2).tasks[0]?.reason).toBe(
+      "Attempt limit reached",
+    );
+  });
+  it("shares a logical goal budget across predeclared task IDs", () => {
+    plan({ goal_id: "same-goal" }, { goal_id: "same-goal", dependencies: [] });
+    finishAgentRun(root, start("A").runId, 1);
+    finishAgentRun(root, start("A").runId, 1);
+    expect(planSessionResume(root, "s1", 2).tasks[1]?.reason).toBe(
+      "Attempt limit reached",
+    );
+  });
+  it("rechecks a shared goal budget between dispatches", async () => {
+    plan({ goal_id: "same-goal" }, { goal_id: "same-goal", dependencies: [] });
+    const calls: string[] = [];
+    const report = await resumeSession({
+      root,
+      sessionId: "s1",
+      maxAttempts: 1,
+      dispatch: async (task) => {
+        calls.push(task.taskId);
+        return dispatch(task);
+      },
+    });
+    expect(calls).toEqual(["A"]);
+    expect(report.tasks[1]).toMatchObject({
+      status: "blocked",
+      reason: "Attempt limit reached",
+    });
+  });
+  it("blocks product replay when checks pass but the claim is invalid", async () => {
+    const run = start("A");
+    verifyRequiredChecks(root, run.runId);
+    finishAgentRun(root, run.runId, 0, { status: "completed" });
+    const calls: string[] = [];
+    const report = await resumeSession({
+      root,
+      sessionId: "s1",
+      dispatch: async (task) => {
+        calls.push(task.taskId);
+        return 0;
+      },
+    });
+    expect(calls).toEqual([]);
+    expect(report.tasks[0]).toMatchObject({ status: "blocked" });
+    expect(report.tasks[0]?.reason).toContain("WORKFLOW_EVIDENCE_FAILURE");
+  });
+  it("blocks product replay when only a bound artifact changed", () => {
+    const report = join(root, ".agents/results/report.md");
+    writeFileSync(report, "review");
+    const run = start("A");
+    verifyRequiredChecks(root, run.runId);
+    finishAgentRun(root, run.runId, 0, {
+      status: "completed",
+      changedFiles: [],
+      unresolved: [],
+      artifacts: [".agents/results/report.md"],
+    });
+    writeFileSync(report, "updated metadata");
+    expect(planSessionResume(root, "s1").tasks[0]?.reason).toContain(
+      "WORKFLOW_EVIDENCE_FAILURE",
+    );
+  });
   it("holds one coordinator lease and releases it after completion", async () => {
     let unblock: () => void = () => {};
     const paused = new Promise<void>((resolve) => {

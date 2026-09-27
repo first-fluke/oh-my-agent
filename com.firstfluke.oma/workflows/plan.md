@@ -133,6 +133,7 @@ Use `.agents/skills/oma-pm/resources/task-template.json`. For executable accepta
 - Preserve the canonical `dependencies` task-ID array and a self-contained `task` prompt. `retry_policy` defaults to `manual`; choose `safe` only for repeatable work without duplicate external effects.
 - Optional `inputs` lists concrete project-relative source, test, configuration and dependency files/directories that completely determine the task's behavior. Omit it for whole-tree verification. Do not guess a narrow input scope to make evidence reusable.
 - Keep the JSON plan fixed after dispatch starts. Record progress in the Markdown tracker and run records. Contract changes require a new run.
+- Set a stable `lineage_id` for the workflow goal and reuse it across resumed sessions. `goal_id` groups alternate task IDs for the same logical work; `max_attempts` defaults to 3 including the original attempt. The runtime pins the complete plan on first dispatch. A changed contract requires a new session and lineage, not another revision in the current run. Do not create recursive plan/review tasks or new remediation plans for `WORKFLOW_EVIDENCE_FAILURE`; follow `result-contract.md` for bounded metadata repair and a partial handoff.
 - Use `oma agent verify RUN_ID --required` to execute pinned checks and `oma agent resume SESSION_ID --dry-run` to inspect recovery decisions.
 
 ### 7b. Human-readable tracker (Medium/Complex only)

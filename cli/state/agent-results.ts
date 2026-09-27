@@ -15,7 +15,9 @@ import { atomicWriteJson } from "./events.js";
 import { recordHarnessEvolutionEvidence } from "./harness-evolution.js";
 import {
   contractStillCurrent,
+  loadSessionPlan,
   loadTaskContract,
+  pinSessionPlan,
   type TaskContract,
   TaskContractSchema,
 } from "./task-contract.js";
@@ -44,6 +46,9 @@ export interface AgentRun {
   sequence: number;
   taskId: string;
   sessionId: string;
+  lineageId?: string;
+  goalId?: string;
+  evidenceRepair?: boolean;
   agentId: string;
   vendor: string;
   runnerPid?: number;
@@ -78,6 +83,9 @@ const RunSchema = z.object({
   sequence: z.number().int().positive(),
   taskId: z.string().min(1),
   sessionId: z.string().min(1),
+  lineageId: z.string().min(1).optional(),
+  goalId: z.string().min(1).optional(),
+  evidenceRepair: z.boolean().optional(),
   agentId: z.string().min(1),
   vendor: z.string().min(1),
   runnerPid: z.number().int().positive().optional(),
@@ -265,6 +273,7 @@ export function beginAgentRun(args: {
 }): AgentRun {
   const contract =
     loadTaskContract(args.root, args.sessionId, args.taskId) ?? undefined;
+  const plan = loadSessionPlan(args.root, args.sessionId);
   if (args.resumedFrom) {
     const previous = readAgentRun(args.root, args.resumedFrom);
     if (
@@ -279,6 +288,10 @@ export function beginAgentRun(args: {
     sequence: 0,
     taskId: args.taskId,
     sessionId: args.sessionId,
+    lineageId: plan?.lineage_id ?? args.sessionId,
+    goalId:
+      plan?.tasks.find((task) => task.id === args.taskId)?.goal_id ??
+      args.taskId,
     agentId: args.agentId,
     vendor: args.vendor,
     runnerPid: args.managed ? process.pid : undefined,
@@ -299,6 +312,35 @@ export function beginAgentRun(args: {
     artifacts: {},
   };
   return withStateIndexLock(args.root, () => {
+    // Freeze the entire plan, including task IDs and replay prompts, at dispatch.
+    // Re-read under the lock so concurrent dispatches share one identity/budget.
+    const current = loadTaskContract(args.root, args.sessionId, args.taskId);
+    if (JSON.stringify(current ?? undefined) !== JSON.stringify(contract))
+      throw new Error("Task acceptance contract changed before dispatch");
+    const currentPlan = loadSessionPlan(args.root, args.sessionId);
+    if (JSON.stringify(currentPlan) !== JSON.stringify(plan))
+      throw new Error("Plan changed before dispatch");
+    if (plan) {
+      const history = goalRuns(
+        listAgentRuns(args.root),
+        run.lineageId ?? args.sessionId,
+        run.goalId ?? args.taskId,
+      );
+      if (history.length >= plan.max_attempts)
+        throw new Error(
+          "Attempt limit reached for workflow lineage and logical goal",
+        );
+      const previous = history.at(-1);
+      if (
+        previous &&
+        classifyRunFailure(previous) === "WORKFLOW_EVIDENCE_FAILURE"
+      ) {
+        if (history.some((attempt) => attempt.evidenceRepair))
+          throw new Error(evidenceFailureHandoff(previous));
+        run.evidenceRepair = true;
+      }
+      pinSessionPlan(args.root, args.sessionId);
+    }
     const counter = join(args.root, ".agents/state/agent-runs/_sequence.json");
     const previous: unknown = existsSync(counter)
       ? JSON.parse(readFileSync(counter, "utf8"))
@@ -324,6 +366,9 @@ export function agentResultInstructions(
     return `## Read-only result contract\nRun ${run.runId}, task ${run.taskId}, session ${run.sessionId}. Do not write coordination or result files. Return one final line: OMA_RESULT_JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[],"verificationSkipped":"specific explanation of the read-only inspection performed"}. The parent records this inspection; it does not count as executable verification.\n`;
   return (
     `## Execution result contract\nRun: ${run.runId}\nTask: ${run.taskId}\nSession: ${run.sessionId}\n` +
+    (run.evidenceRepair
+      ? "WORKFLOW_EVIDENCE_FAILURE repair (one attempt): correct only claim/report/artifact metadata and reverify the existing checks. Preserve product inputs, task IDs, and the frozen plan. Do not spawn planning or review tasks. On failure, stop with a partial handoff.\n"
+      : "") +
     `Execute the pinned required checks with: oma agent verify ${run.runId} --required (from ${JSON.stringify(root)}).\nRequired checks: ${JSON.stringify(run.contract?.required_checks ?? [])}. A missing contract cannot prove acceptance criteria; define it in the session plan before starting a new run.\n` +
     `Write ${claimPath(root, run.runId)} as JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[]}.
 Paths are relative to ${run.artifactRoot}. Include the report and relevant plan/phase artifacts. A completed result requires no unresolved items and successful current verification receipts, or an explicit verificationSkipped reason for work that needs no executable check. Do not invent checks. Never run a build unless the user explicitly requested it.\n`
@@ -490,6 +535,12 @@ export function finishAgentRun(
       );
     }
     if (exitCode !== 0) run.status = "failed";
+    if (run.evidenceRepair && run.before !== run.after) {
+      run.status = "failed";
+      run.unresolved.push(
+        "Evidence repair changed product inputs; preserve the product and report the unresolved work",
+      );
+    }
     atomicWriteJson(runPath(root, runId), run);
     return run;
   });
@@ -588,6 +639,44 @@ export function resultEvidenceValid(
   } catch {
     return false;
   }
+}
+
+/** Attempts belong to a logical goal, even without a resumedFrom chain. */
+export function goalRuns(
+  runs: AgentRun[],
+  lineageId: string,
+  goalId: string,
+): AgentRun[] {
+  return runs.filter(
+    (run) =>
+      (run.lineageId ?? run.sessionId) === lineageId &&
+      (run.goalId ?? run.taskId) === goalId,
+  );
+}
+
+export function classifyRunFailure(
+  run: AgentRun,
+): "PRODUCT_FAILURE" | "WORKFLOW_EVIDENCE_FAILURE" | null {
+  if (run.status === "running" || resultEvidenceValid(run)) return null;
+  try {
+    // Invalid claims and missing artifacts add a diagnostic, not a product finding.
+    if (
+      run.exitCode === 0 &&
+      hasCurrentChecks(run) &&
+      run.after === runFingerprint(run) &&
+      run.unresolved.every((issue) =>
+        issue.startsWith("Missing or invalid structured result:"),
+      )
+    )
+      return "WORKFLOW_EVIDENCE_FAILURE";
+  } catch {
+    // Without current product evidence it is unsafe to claim product success.
+  }
+  return "PRODUCT_FAILURE";
+}
+
+export function evidenceFailureHandoff(run: AgentRun): string {
+  return `WORKFLOW_EVIDENCE_FAILURE: product checks passed for run ${run.runId}; stop product replay and recursive planning. Inspect ${claimPath(run.artifactRoot, run.runId)} and its receipt/artifact bindings; preserve the plan and report partial with the failing evidence.`;
 }
 
 export function runFingerprint(run: AgentRun): string {

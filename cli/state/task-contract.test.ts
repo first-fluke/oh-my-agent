@@ -118,6 +118,133 @@ describe("acceptance contracts", () => {
       `Invalid session plan JSON at ${file}`,
     );
   });
+  it("rejects a new task ID or changed plan after the first dispatch", () => {
+    finishAgentRun(root, start().runId, 1);
+    writeTestPlan(root, ["T2"]);
+    expect(() =>
+      beginAgentRun({
+        root,
+        workspace: root,
+        agentId: "pm",
+        sessionId: "s1",
+        taskId: "T2",
+        vendor: "test",
+      }),
+    ).toThrow("Plan is immutable after dispatch");
+  });
+  it("rejects an unknown task instead of starting an uncontracted repair", () => {
+    expect(() =>
+      beginAgentRun({
+        root,
+        workspace: root,
+        agentId: "pm",
+        sessionId: "s1",
+        taskId: "repair-1",
+        vendor: "test",
+      }),
+    ).toThrow("Unknown plan task");
+  });
+  it("rejects recursive plan/review dependencies before the first dispatch", () => {
+    writeFileSync(
+      join(root, ".agents/results/plan-s1.json"),
+      JSON.stringify({
+        tasks: [
+          testTask("T1", { dependencies: ["review"] }),
+          testTask("review", { dependencies: ["T1"] }),
+        ],
+      }),
+    );
+    expect(start).toThrow("Cycle in task dependencies");
+  });
+  it("enforces the attempt budget on direct dispatch without resume ancestry", () => {
+    for (let i = 0; i < 3; i++) finishAgentRun(root, start().runId, 1);
+    expect(start).toThrow("Attempt limit reached");
+  });
+  it("retains the budget across sessions in the same explicit lineage", () => {
+    const plan = { lineage_id: "original-goal", tasks: [testTask("T1")] };
+    writeFileSync(
+      join(root, ".agents/results/plan-s1.json"),
+      JSON.stringify(plan),
+    );
+    for (let i = 0; i < 3; i++) finishAgentRun(root, start().runId, 1);
+    writeFileSync(
+      join(root, ".agents/results/plan-s2.json"),
+      JSON.stringify(plan),
+    );
+    expect(() =>
+      beginAgentRun({
+        root,
+        workspace: root,
+        agentId: "qa",
+        sessionId: "s2",
+        taskId: "T1",
+        vendor: "test",
+      }),
+    ).toThrow("Attempt limit reached");
+  });
+  it("requires both a new session and lineage for a contract change", () => {
+    finishAgentRun(root, start().runId, 1);
+    const changed = { lineage_id: "s1", tasks: [testTask("T2")] };
+    writeFileSync(
+      join(root, ".agents/results/plan-s2.json"),
+      JSON.stringify(changed),
+    );
+    const next = () =>
+      beginAgentRun({
+        root,
+        workspace: root,
+        agentId: "qa",
+        sessionId: "s2",
+        taskId: "T2",
+        vendor: "test",
+      });
+    expect(next).toThrow("Plan is immutable after dispatch");
+    changed.lineage_id = "new-contract";
+    writeFileSync(
+      join(root, ".agents/results/plan-s1.json"),
+      JSON.stringify(changed),
+    );
+    expect(start).toThrow("Plan is immutable after dispatch");
+    writeFileSync(
+      join(root, ".agents/results/plan-s2.json"),
+      JSON.stringify(changed),
+    );
+    expect(next().lineageId).toBe("new-contract");
+  });
+  it("allows plan formatting changes but rejects deletion of a dispatched plan", () => {
+    finishAgentRun(root, start().runId, 1);
+    writeFileSync(
+      join(root, ".agents/results/plan-s1.json"),
+      JSON.stringify({ tasks: [testTask("T1")] }, null, 2),
+    );
+    const retry = start();
+    finishAgentRun(root, retry.runId, 1);
+    rmSync(join(root, ".agents/results/plan-s1.json"));
+    expect(start).toThrow("Plan is immutable after dispatch: missing plan");
+  });
+  it("permits one metadata repair under the same contract and then stops", () => {
+    const run = start();
+    verifyRequiredChecks(root, run.runId);
+    finishAgentRun(root, run.runId, 0, { status: "completed" });
+    const repair = start();
+    expect(repair.evidenceRepair).toBe(true);
+    verifyRequiredChecks(root, repair.runId);
+    finishAgentRun(root, repair.runId, 0, { status: "completed" });
+    expect(start).toThrow("WORKFLOW_EVIDENCE_FAILURE");
+  });
+  it("does not accept product changes during metadata repair", () => {
+    const run = start();
+    verifyRequiredChecks(root, run.runId);
+    finishAgentRun(root, run.runId, 0, { status: "completed" });
+    const repair = start();
+    writeFileSync(join(root, "product.txt"), "unexpected product edit");
+    verifyRequiredChecks(root, repair.runId);
+    const result = finishAgentRun(root, repair.runId, 0, claim);
+    expect(result.status).toBe("failed");
+    expect(result.unresolved.join(" ")).toContain(
+      "Evidence repair changed product inputs",
+    );
+  });
   it("rejects scoped inputs reached through a symlinked parent directory", () => {
     mkdirSync(join(root, "source"));
     writeFileSync(join(root, "source/input.txt"), "input");

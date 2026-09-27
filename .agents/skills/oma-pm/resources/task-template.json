@@ -2,6 +2,8 @@
   "project_name": "",
   "description": "",
   "session_id": "{YYYYMMDD}-{HHMMSS}",
+  "lineage_id": "{YYYYMMDD}-{HHMMSS}",
+  "max_attempts": 3,
   "created": "",
   "tech_stack": {
     "frontend": "",
@@ -20,6 +22,7 @@
   "tasks": [
     {
       "id": "task-1",
+      "goal_id": "task-1",
       "agent": "backend|frontend|mobile|db|qa|debug|pm|architecture|refactor|tf-infra|docs",
       "title": "",
       "description": "",
