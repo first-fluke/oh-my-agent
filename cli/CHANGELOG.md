@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.5...cli-v15.0.6) (2026-09-27)
+
+
+### Bug Fixes
+
+* **serena:** defer runtime replacement while clients are active ([3cbbf81](https://github.com/first-fluke/oh-my-agent/commit/3cbbf81cb9718e40f2d6a24c50c6ca6484717fa5))
+
 ## [15.0.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.4...cli-v15.0.5) (2026-09-27)
 
 
