@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.0.4",
-  "releaseDate": "2026-09-25T05:23:12.855Z",
+  "releaseDate": "2026-09-27T11:09:46.176Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -591,8 +591,8 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/result-contract.md",
-      "sha256": "c66b0557be4ad7ae2430270538fa19d403ecf0d687cc3b3254751015884b326e",
-      "size": 6034
+      "sha256": "7268aebf3a4b5344b377815158c1e0b5449a458101680cc96f2d010ae9769b06",
+      "size": 8456
     },
     {
       "path": ".agents/skills/_version.json",
@@ -1511,8 +1511,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/SKILL.md",
-      "sha256": "e491851af395355a24a058af95457b6252107037dbbc20f9d718d20ac8c87d23",
-      "size": 15069
+      "sha256": "954d4263c91a1ee294453b996c9f88882d2f1bc2eaf98424144d60276c696b48",
+      "size": 15969
     },
     {
       "path": ".agents/skills/oma-orchestration/config/cli-config.yaml",
@@ -1621,8 +1621,8 @@
     },
     {
       "path": ".agents/skills/oma-pm/resources/task-template.json",
-      "sha256": "8bee455349122e3d85cbc92f901bfe59b17a6aeb8ba94fe18db6c8b2572d3270",
-      "size": 2032
+      "sha256": "6c8c1511f391a0512c8906a6f0a2154e71a33b2a56195b21c9ef89fa274fb931",
+      "size": 2119
     },
     {
       "path": ".agents/skills/oma-qa/SKILL.md",
@@ -2106,13 +2106,13 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "9fdb1452f9e8574fd5a912b210db1d520dd0196c559d47b348a2a675fd3913ac",
-      "size": 12966
+      "sha256": "2cef4db5e33b3379d3fff58bd399fcfccb8f7f697c5298fa3d5662834eb5a439",
+      "size": 15271
     },
     {
       "path": ".agents/workflows/plan.md",
-      "sha256": "0edddfe8c1d461bfc1844bdc7ea722e390a2b161e6d47002ce859bdd5ddd006b",
-      "size": 11570
+      "sha256": "f8c0a0f517e1cabe490108f902935c4cefa24cad58a3001e29d4661501ba1f0a",
+      "size": 12111
     },
     {
       "path": ".agents/workflows/ralph/resources/judge-protocol.md",
@@ -2166,8 +2166,8 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "98419f6815d32901201c105cb4514e60baee31ae156bff795ddc9074f4c3867a",
-      "size": 30654
+      "sha256": "9cd4a2d0866e51eb710b743eec3837050a3c13c6f5bab1cbd87d8da759e3ad0c",
+      "size": 31152
     },
     {
       "path": ".agents/workflows/video.md",
