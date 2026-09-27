@@ -145,7 +145,7 @@ describe("ensureSerenaDaemon", () => {
     expect(probe).toHaveBeenCalledTimes(5);
     expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
   });
-  it("reuses the loaded revision and refuses to interrupt live clients on a revision change", async () => {
+  it("reuses the loaded revision and defers replacement while clients are active", async () => {
     const fleet = fakeFleet();
     const opts = {
       root: "/proj",
@@ -157,9 +157,13 @@ describe("ensureSerenaDaemon", () => {
     await ensureSerenaDaemon(opts);
     expect((await ensureSerenaDaemon(opts))?.started).toBe(false);
     const stopDaemon = vi.fn();
-    await expect(
-      ensureSerenaDaemon({ ...opts, runtimeRevision: "v2", stopDaemon }),
-    ).rejects.toThrow("active MCP sessions");
+    expect(
+      (await ensureSerenaDaemon({ ...opts, runtimeRevision: "v2", stopDaemon }))
+        ?.started,
+    ).toBe(false);
+    expect(
+      readRegistry()[daemonKey(opts.root, opts.context)]?.runtimeRevision,
+    ).toBe("v1");
     expect(stopDaemon).not.toHaveBeenCalled();
     expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
   });
@@ -189,6 +193,169 @@ describe("ensureSerenaDaemon", () => {
     };
     expect((await ensureSerenaDaemon(changed))?.started).toBe(true);
     expect((await ensureSerenaDaemon(changed))?.started).toBe(false);
+    expect(stopDaemon).toHaveBeenCalledExactlyOnceWith(record.pid);
+    expect(readRegistry()[key]?.runtimeRevision).toBe("v2");
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    { context: "oma", runtimeRevision: "v1" },
+    { context: "oma", runtimeRevision: undefined },
+    { context: "custom", runtimeRevision: "v1" },
+    { context: "custom", runtimeRevision: undefined },
+  ])(
+    "reuses active $context revision $runtimeRevision without relabeling it",
+    async ({ context, runtimeRevision }) => {
+      const fleet = fakeFleet();
+      const opts = {
+        root: "/proj",
+        context,
+        runtimeRevision,
+        timeoutMs: 500,
+        ...fleet,
+      };
+      const first = await ensureSerenaDaemon(opts);
+      const key = daemonKey(opts.root, opts.context);
+      const record = readRegistry()[key];
+      const stopDaemon = vi.fn();
+      const changed = {
+        ...opts,
+        runtimeRevision: "v2",
+        stopDaemon,
+      };
+      expect(await ensureSerenaDaemon(changed)).toEqual({
+        ...first,
+        started: false,
+      });
+      expect(readRegistry()[key]).toEqual(record);
+      expect(stopDaemon).not.toHaveBeenCalled();
+      expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
+
+      // A subsequent ordinary MCP connection shares the same loaded runtime.
+      expect(await ensureSerenaDaemon(changed)).toEqual({
+        ...first,
+        started: false,
+      });
+      expect(readRegistry()[key]?.runtimeRevision).toBe(runtimeRevision);
+    },
+  );
+
+  it("waits for a busy active stale runtime without spawning a second daemon", async () => {
+    const fleet = fakeFleet();
+    const opts = {
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 500,
+      ...fleet,
+    };
+    const first = await ensureSerenaDaemon(opts);
+    let polls = 0;
+    const changed = {
+      ...opts,
+      runtimeRevision: "v2",
+      probe: vi.fn(async () => ++polls > 3),
+      stopDaemon: vi.fn(),
+      busyWaitMs: 50,
+    };
+    expect(await ensureSerenaDaemon(changed)).toEqual({
+      ...first,
+      started: false,
+    });
+    expect(changed.probe.mock.calls.length).toBeGreaterThan(3);
+    expect(changed.stopDaemon).not.toHaveBeenCalled();
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves an unresponsive active stale runtime registered and fails within budget", async () => {
+    const fleet = fakeFleet();
+    const opts = {
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 500,
+      ...fleet,
+    };
+    await ensureSerenaDaemon(opts);
+    const key = daemonKey(opts.root, opts.context);
+    const record = readRegistry()[key];
+    const changed = {
+      ...opts,
+      runtimeRevision: "v2",
+      probe: async () => false,
+      stopDaemon: vi.fn(),
+      busyWaitMs: 20,
+    };
+    expect(await ensureSerenaDaemon(changed)).toBeNull();
+    expect(readRegistry()[key]).toEqual(record);
+    expect(changed.stopDaemon).not.toHaveBeenCalled();
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(1);
+  });
+
+  it("replaces a deferred runtime after the last client detaches", async () => {
+    const fleet = fakeFleet();
+    const opts = {
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 500,
+      ...fleet,
+    };
+    await ensureSerenaDaemon(opts);
+    const key = daemonKey(opts.root, opts.context);
+    const record = readRegistry()[key];
+    if (!record) throw new Error("missing daemon");
+    const changed = {
+      ...opts,
+      runtimeRevision: "v2",
+      listDaemons: () => [record],
+      stopDaemon: vi.fn(async () => {
+        fleet.listening.delete(record.port);
+      }),
+    };
+    expect((await ensureSerenaDaemon(changed))?.started).toBe(false);
+    expect(changed.stopDaemon).not.toHaveBeenCalled();
+    detachClient(key);
+    expect((await ensureSerenaDaemon(changed))?.started).toBe(true);
+    expect(changed.stopDaemon).toHaveBeenCalledExactlyOnceWith(record.pid);
+    expect(readRegistry()[key]?.runtimeRevision).toBe("v2");
+    expect(fleet.spawnDaemon).toHaveBeenCalledTimes(2);
+  });
+
+  it("rechecks active clients under the lock if the last client exits while probing", async () => {
+    const fleet = fakeFleet();
+    const opts = {
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 500,
+      ...fleet,
+    };
+    await ensureSerenaDaemon(opts);
+    const key = daemonKey(opts.root, opts.context);
+    const record = readRegistry()[key];
+    if (!record) throw new Error("missing daemon");
+    let firstProbe = true;
+    const stopDaemon = vi.fn(async () => {
+      fleet.listening.delete(record.port);
+    });
+    expect(
+      (
+        await ensureSerenaDaemon({
+          ...opts,
+          runtimeRevision: "v2",
+          listDaemons: () => [record],
+          stopDaemon,
+          probe: async (port) => {
+            if (firstProbe) {
+              firstProbe = false;
+              detachClient(key);
+            }
+            return fleet.probe(port);
+          },
+        })
+      )?.started,
+    ).toBe(true);
     expect(stopDaemon).toHaveBeenCalledExactlyOnceWith(record.pid);
     expect(readRegistry()[key]?.runtimeRevision).toBe("v2");
     expect(fleet.spawnDaemon).toHaveBeenCalledTimes(2);

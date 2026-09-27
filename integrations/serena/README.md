@@ -22,7 +22,14 @@ The check starts the shared server if needed and registers itself as a client fo
 its whole lifetime. Adapter code, project settings, context, and installed SDK
 version form a startup revision. On revision changes, an idle daemon is replaced
 after verifying its PID, command, project, context, and port. A daemon with live
-clients is left running; close that project's active MCP sessions and retry.
+clients is reused by both MCP bridge connections and Dart checks even when its
+startup revision has changed. Once all clients detach, the next connection
+replaces the daemon with the requested runtime. Reuse preserves the loaded
+revision and pending restart; it does not apply new runtime settings.
+
+The Dart check still requires fresh completed analysis from the project diagnostic
+tool and validates the SDK, repository, package, and staged inputs. Missing or
+incompatible tools, SDK mismatches, and incomplete analysis fail the check.
 Doctor reports missing/unsupported adapters, missing tool registration, and
 pending restarts without repairing them.
 
@@ -123,9 +130,11 @@ expected to remain stable during a check. CI remains the full analysis authority
   -s integrations/serena -p 'test_*.py'
 cd cli
 bun x vitest run io/serena-adapter.test.ts io/serena-managed-runtime.test.ts \
-  io/serena-daemon.test.ts commands/doctor/serena-adapter.test.ts
+  io/serena-daemon.test.ts commands/serena/check.test.ts \
+  commands/doctor/serena-adapter.test.ts
 ```
 
 Coverage includes incomplete-analysis rejection, cross-file errors, partially
 staged work, upgrade repair, idempotency, conditional tool registration, SDK
-changes, busy-server reuse, and safe stale-server replacement.
+changes, active stale-runtime checks, busy-server reuse, and safe stale-server
+replacement.

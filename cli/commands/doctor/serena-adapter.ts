@@ -44,7 +44,7 @@ export function collectSerenaAdapterCheck(
     ) {
       result.pendingRestart = true;
       result.issues.push(
-        "Serena runtime changed: close active MCP sessions and run oma serena check to restart it",
+        "Serena runtime update pending: active sessions keep using the loaded runtime; the next connection after all clients exit applies the update",
       );
     }
   } catch (error) {

@@ -404,6 +404,10 @@ async function stopStaleDaemon(pid: number): Promise<void> {
 /**
  * Return a reachable shared daemon for (root, context), starting one if needed.
  *
+ * Runtime changes are deferred while the daemon has live clients. New callers
+ * share that loaded runtime without changing its recorded revision. Once all
+ * clients detach, the next acquisition replaces it with the requested revision.
+ *
  * Returns null when no daemon could be made reachable. Callers report this
  * failure without spawning a private stack alongside a potentially live one.
  */
@@ -424,6 +428,8 @@ export async function ensureSerenaDaemon(
     attachClient(key);
     return { url: urlFor(port), port, started: false };
   };
+  const canReuseActiveRuntime = (record: DaemonRecord): boolean =>
+    isAlive(record.pid) && (record.clients ?? []).some(isAlive);
 
   // Also sweep on bridge start, so cleanup catches up immediately after sleep
   // or when the periodic task was unavailable.
@@ -452,7 +458,9 @@ export async function ensureSerenaDaemon(
     if (
       known &&
       isAlive(known.pid) &&
-      (!opts.runtimeRevision || known.runtimeRevision === opts.runtimeRevision)
+      (!opts.runtimeRevision ||
+        known.runtimeRevision === opts.runtimeRevision ||
+        canReuseActiveRuntime(known))
     ) {
       const outcome = await waitForRegisteredDaemon(
         known,
@@ -477,13 +485,9 @@ export async function ensureSerenaDaemon(
       if (
         current &&
         opts.runtimeRevision &&
-        current.runtimeRevision !== opts.runtimeRevision
+        current.runtimeRevision !== opts.runtimeRevision &&
+        !canReuseActiveRuntime(current)
       ) {
-        if ((current.clients ?? []).some(isAlive)) {
-          throw new Error(
-            "Serena runtime changed. Close this project's active MCP sessions, then retry; the shared daemon was left running.",
-          );
-        }
         if (isAlive(current.pid)) {
           const matches = (opts.listDaemons ?? listRunningDaemons)().some(
             (proc) =>
