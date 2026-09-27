@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.4...cli-v15.0.5) (2026-09-27)
+
+
+### Bug Fixes
+
+* **orchestration:** bound plan and evidence recovery loops ([#816](https://github.com/first-fluke/oh-my-agent/issues/816)) ([4b57224](https://github.com/first-fluke/oh-my-agent/commit/4b57224bff29a6990624080e64bd52dcdd32d26d)), closes [#815](https://github.com/first-fluke/oh-my-agent/issues/815)
+
 ## [15.0.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.3...cli-v15.0.4) (2026-09-25)
 
 
