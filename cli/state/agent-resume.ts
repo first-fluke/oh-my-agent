@@ -4,12 +4,18 @@ import { hostname } from "node:os";
 import { join, resolve } from "node:path";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
 import {
-  type AgentRun,
+  classifyRunFailure,
+  evidenceFailureHandoff,
+  goalRuns,
   listAgentRuns,
   resultEvidenceValid,
 } from "./agent-results.js";
 import { atomicWriteJson } from "./events.js";
-import { loadTaskContract, sessionPlanPath } from "./task-contract.js";
+import {
+  loadSessionPlan,
+  loadTaskContract,
+  sessionPlanPath,
+} from "./task-contract.js";
 
 export interface ResumeTask {
   taskId: string;
@@ -37,21 +43,6 @@ function alive(pid: number): boolean {
     return (error as NodeJS.ErrnoException).code !== "ESRCH";
   }
 }
-function attempts(run: AgentRun, runs: AgentRun[]): number {
-  let count = 1;
-  const seen = new Set([run.runId]);
-  let parent = run.resumedFrom;
-  while (parent) {
-    if (seen.has(parent)) throw new Error("Cycle in resume ancestry");
-    seen.add(parent);
-    const previous = runs.find((candidate) => candidate.runId === parent);
-    if (!previous) break;
-    count++;
-    parent = previous.resumedFrom;
-  }
-  return count;
-}
-
 /** Pure scheduling decision: no subprocesses, record writes, or hidden retries. */
 export function planSessionResume(
   root: string,
@@ -60,8 +51,15 @@ export function planSessionResume(
 ): ResumeReport {
   if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1)
     throw new Error("max-attempts must be a positive integer");
-  const runs = listAgentRuns(root).filter((run) => run.sessionId === sessionId);
-  const latest = new Map(runs.map((run) => [run.taskId, run]));
+  const runs = listAgentRuns(root);
+  const latest = new Map(
+    runs
+      .filter((run) => run.sessionId === sessionId)
+      .map((run) => [run.taskId, run]),
+  );
+  const sessionPlan = loadSessionPlan(root, sessionId);
+  const lineageId = sessionPlan?.lineage_id ?? sessionId;
+  maxAttempts = Math.min(maxAttempts, sessionPlan?.max_attempts ?? 3);
   const path = sessionPlanPath(root, sessionId);
   if (!existsSync(path))
     throw new Error("Resume requires a session plan with task contracts");
@@ -80,6 +78,12 @@ export function planSessionResume(
   for (const definition of plan.tasks) {
     const contract = loadTaskContract(root, sessionId, definition.id);
     const previous = latest.get(definition.id);
+    const history = goalRuns(
+      runs,
+      lineageId,
+      contract?.goal_id ?? definition.id,
+    );
+    const lastGoalRun = history.at(-1);
     const task: ResumeTask = {
       taskId: definition.id,
       agentId: previous?.agentId ?? definition.agent ?? "",
@@ -106,6 +110,12 @@ export function planSessionResume(
     } else if (previous && resultEvidenceValid(previous)) {
       task.status = "reused";
       task.reason = "Acceptance evidence and declared inputs remain current";
+    } else if (
+      lastGoalRun &&
+      classifyRunFailure(lastGoalRun) === "WORKFLOW_EVIDENCE_FAILURE"
+    ) {
+      task.status = "blocked";
+      task.reason = evidenceFailureHandoff(lastGoalRun);
     } else if (contract?.retry_policy !== "safe") {
       task.status = "blocked";
       task.reason =
@@ -113,7 +123,7 @@ export function planSessionResume(
     } else if (!task.prompt || !task.agentId) {
       task.status = "blocked";
       task.reason = "No replayable prompt/agent is recorded in the run or plan";
-    } else if (previous && attempts(previous, runs) >= maxAttempts) {
+    } else if (history.length >= maxAttempts) {
       task.status = "blocked";
       task.reason = "Attempt limit reached";
     }
@@ -134,12 +144,11 @@ export function planSessionResume(
       task.dependsOn.some((id) => tasks.get(id)?.status !== "reused")
     ) {
       const contract = loadTaskContract(root, sessionId, id);
-      const previous = latest.get(id);
       task.status =
         contract?.retry_policy === "safe" &&
         task.prompt &&
         task.agentId &&
-        (!previous || attempts(previous, runs) < maxAttempts)
+        goalRuns(runs, lineageId, contract?.goal_id ?? id).length < maxAttempts
           ? "ready"
           : "blocked";
       task.reason =
@@ -243,6 +252,33 @@ export async function resumeSession(args: {
         task.status = "blocked";
         task.reason = "A dependency is incomplete";
       } else {
+        // A prior dispatch can consume the shared goal budget of a different
+        // task ID. Recheck before every dispatch, not just when scheduling.
+        const plan = loadSessionPlan(args.root, args.sessionId);
+        const goalId =
+          plan?.tasks.find((definition) => definition.id === task.taskId)
+            ?.goal_id ?? task.taskId;
+        const history = goalRuns(
+          listAgentRuns(args.root),
+          plan?.lineage_id ?? args.sessionId,
+          goalId,
+        );
+        const previous = history.at(-1);
+        const evidenceFailure =
+          previous &&
+          classifyRunFailure(previous) === "WORKFLOW_EVIDENCE_FAILURE";
+        if (
+          history.length >=
+            Math.min(args.maxAttempts ?? 3, plan?.max_attempts ?? 3) ||
+          evidenceFailure
+        ) {
+          task.status = "blocked";
+          task.reason = evidenceFailure
+            ? evidenceFailureHandoff(previous)
+            : "Attempt limit reached";
+          atomicWriteJson(checkpoint, report);
+          continue;
+        }
         const code = await args.dispatch(task);
         const latest = listAgentRuns(args.root)
           .filter(

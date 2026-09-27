@@ -110,7 +110,7 @@ Evaluate [the canonical PLAN_GATE](ultrawork/resources/phase-gates.md#plan_gate)
    oma state verify --workflow ultrawork --checkpoint impl-plan-locked
    ```
 
-**Gate failure → Return to Step 1**
+**Gate failure → Return to Step 1 only before the first executable task dispatch and within the existing review/cost bounds.** After dispatch the plan is immutable. Follow `result-contract.md`: classify product failures separately from `WORKFLOW_EVIDENCE_FAILURE`, preserve lineage/goal retry counters, and allow at most one metadata-only repair under the existing task before a partial handoff. Never return to PLAN or repeat its three reviews to repair completion metadata. These rules also apply at VERIFY, REFINE, and SHIP gates.
 
 ---
 

@@ -16,6 +16,15 @@ disable-model-invocation: true
 
 Follow `.agents/skills/_shared/core/execution-policy.md` and `.agents/skills/_shared/runtime/result-contract.md`. Include QA and REFINE task IDs in the plan. For each native agent, begin a run, record checks, and finalize its structured result. For CLI dispatch, pass `--task-id` and use the injected run identity. Complete phase logs before finalizing the QA/REFINE artifacts; code changes after verification require fresh checks.
 
+### Plan lineage and bounded recovery
+
+- Follow the lineage and evidence-failure rules in `result-contract.md`. Set a stable plan `lineage_id` (defaults to the session ID) and task `goal_id` (defaults to the task ID). Alternate task IDs for the same logical goal share its budget. Reuse this lineage when a session is resumed; never mint an identity to reset recovery counters.
+- The first task dispatch freezes the full JSON plan. Do not add PM, plan-review, or evidence-repair tasks, rename tasks, or revise acceptance criteria after dispatch. A real scope/contract change requires an explicitly separated new session and lineage, with the prior run reported as partial/failed.
+- Validate dependencies before dispatch. Reject cycles and tasks whose purpose is to recursively regenerate or review this execution plan. Plan creation and initial plan review happen before executable task dispatch.
+- `max_attempts` defaults to 3 including the original attempt, shared by lineage and logical goal across direct dispatch, retries, and exploration. Set any different bound before dispatch. Review/cost limits can stop earlier; they cannot reset this counter.
+- Classify failures as `PRODUCT_FAILURE` or `WORKFLOW_EVIDENCE_FAILURE` before choosing recovery. Passing current product checks with invalid claims, artifact bindings, or coordination digests is an evidence failure. Never return to Step 1 or import ultrawork's three-review PLAN loop for it.
+- Automatic resume blocks evidence-only replay. At most one metadata-only repair may use the existing task and frozen contract, consuming the same budget. Correct claims/report bindings and reverify; do not change product inputs or launch more planners/reviewers. If it still fails, stop with `partial`, the failing run/claim/artifact paths, the exact diagnostic, and the remaining correction. Report product verification separately from workflow completion.
+
 
 ## Vendor Detection
 
@@ -42,7 +51,7 @@ Look for a plan file:
 
 1. Check `.agents/results/plan-{sessionId}.json` (current session's plan).
 2. If not found: find the most recent `.agents/results/plan-*.json` file.
-3. A plan is **usable** only when every task carries an agent assignment, a priority tier, its dependencies, and acceptance criteria. A plan missing any of these is not execution-ready — fall through to 1b rather than fanning out against it.
+3. A plan is **usable** only when every task carries an agent assignment, a priority tier, its dependencies, and acceptance criteria, with an acyclic graph and no recursive planning/review tasks. Before first dispatch, a missing/incomplete plan falls through to 1b. After dispatch, load only the frozen plan for this lineage; never substitute the most recent plan or create a remediation plan.
 
 ### 1b. Create (no usable plan)
 
@@ -173,6 +182,8 @@ If useful context is lost or progress remains stalled, save completed work, rema
 ## Step 5: Verify Completed Agents
 
 For each completed agent, execute the complete review loop:
+
+First classify any failure using **Plan lineage and bounded recovery**. An evidence-only failure takes the bounded metadata repair/handoff path and does not restart this product review loop. All cycles below consume the same lineage/goal budget.
 
 1. **Mechanical self-check**: require the implementation agent to run applicable lint, typecheck, tests, and diff-scope checks. Feed failures back for correction, up to 3 cycles.
 2. **Automated verify**: run the command below only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`. For `db`, `refactor`, `architecture`, `tf-infra`, and `docs`, record `SKIP (unsupported agent type)` and continue.

@@ -260,11 +260,15 @@ Resolve relevant automated checks before handoff. Ask for approval only when the
 
 ### Recovery Budget (after review loop exhaustion)
 
-Maintain one per-task budget: `attempts_used`, `attempts_remaining`, and any
+Maintain one budget per workflow lineage and logical goal: `attempts_used`, `attempts_remaining`, and any
 configured cost cap. The original attempt, each ordinary retry, and each
 exploration hypothesis consume one attempt. Before starting recovery, reserve
 the complete next action; do not exceed the budget or start an incomplete
 exploration round.
+
+Use the plan's stable `lineage_id` and task `goal_id` from `../_shared/runtime/result-contract.md`. New task/run/session IDs do not reset that budget. Freeze the full JSON plan at first dispatch; reject recursive planning/review tasks and post-dispatch plan revisions. A contract change requires an explicitly separated new session and lineage.
+
+Classify failures before retrying: `PRODUCT_FAILURE` follows the remaining product recovery budget; `WORKFLOW_EVIDENCE_FAILURE` means current product checks passed but completion claims or bindings failed. Automatic resume stops evidence-only replay. Allow at most one metadata-only repair under the existing task and frozen plan, consuming the same budget, then stop with a partial handoff if unresolved. Do not create PM tasks, rerun product planning, or import another workflow's plan-review loop for evidence failures.
 
 - First remaining attempt: re-spawn with review history.
 - Later attempts: choose either one different retry or a 2–3 hypothesis round
