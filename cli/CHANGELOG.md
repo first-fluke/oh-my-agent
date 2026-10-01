@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.6...cli-v15.0.7) (2026-10-01)
+
+
+### Bug Fixes
+
+* **hooks:** hide native-search bypass from project source ([c8f4f9b](https://github.com/first-fluke/oh-my-agent/commit/c8f4f9b5a12cd7ab89e252db4ceff2c99c30a7c8))
+
 ## [15.0.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.5...cli-v15.0.6) (2026-09-27)
 
 
