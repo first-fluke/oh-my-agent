@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.0...web-v7.0.1) (2026-10-01)
+
+
+### Bug Fixes
+
+* **hooks:** hide native-search bypass from project source ([c8f4f9b](https://github.com/first-fluke/oh-my-agent/commit/c8f4f9b5a12cd7ab89e252db4ceff2c99c30a7c8))
+
 ## [7.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.10.2...web-v7.0.0) (2026-09-23)
 
 
