@@ -50,8 +50,6 @@ jobs:
       web_release_created: ${{ steps.release.outputs['web--release_created'] }}
       web_tag_name: ${{ steps.release.outputs['web--tag_name'] }}
       web_version: ${{ steps.release.outputs['web--version'] }}
-      prs_created: ${{ steps.release.outputs.prs_created }}
-      prs: ${{ steps.release.outputs.prs }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -61,37 +59,56 @@ jobs:
           manifest-file: .release-please-manifest.json
           include-component-in-tag: true
 
-  # Squash-merge every release PR this run opened or updated. main has no
+  # Squash-merge every open release PR, including one this run left
+  # untouched because the new commit was not itself releasable. main has no
   # required reviews. A merge made with GITHUB_TOKEN does not start push
-  # workflows, so this job also commits the manifest sync those workflows
+  # workflows, so a real merge also commits the manifest sync those workflows
   # would have done and dispatches this workflow to create the tag and publish.
   merge-release-prs:
     needs: release-please
-    if: ${{ needs.release-please.outputs.prs_created == 'true' }}
+    if: ${{ needs.release-please.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Squash-merge release pull requests
+        id: merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRS: ${{ needs.release-please.outputs.prs }}
         run: |
           set -euo pipefail
-          echo "$PRS" | jq -e 'type == "array" and length > 0' >/dev/null
-          for number in $(echo "$PRS" | jq -r '.[].number'); do
+          numbers=$(gh pr list --label "autorelease: pending" --state open --json number --jq '.[].number')
+          merged=false
+          if [ -z "$numbers" ]; then
+            echo "No pending release pull requests"
+            echo "merged=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          for number in $numbers; do
             echo "Squash-merging release PR #${number}"
-            gh pr merge "$number" --squash --delete-branch
+            if gh pr merge "$number" --squash --delete-branch; then
+              merged=true
+              continue
+            fi
+            state=$(gh pr view "$number" --json state --jq '.state')
+            if [ "$state" != "MERGED" ]; then
+              echo "Failed to merge release PR #${number} (state: ${state})"
+              exit 1
+            fi
           done
+          echo "merged=${merged}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
+        if: ${{ steps.merge.outputs.merged == 'true' }}
         with:
           ref: main
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
+        if: ${{ steps.merge.outputs.merged == 'true' }}
         with:
           bun-version: latest
 
       - name: Sync prompt-manifest.json
+        if: ${{ steps.merge.outputs.merged == 'true' }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -126,6 +143,7 @@ jobs:
           done
 
       - name: Dispatch release-please to tag and publish
+        if: ${{ steps.merge.outputs.merged == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run release-please.yml --ref main
