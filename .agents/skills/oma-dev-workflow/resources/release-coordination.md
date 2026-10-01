@@ -130,16 +130,11 @@ Automatically creates a PR like:
 - Includes updated CHANGELOG.md
 - Includes version bump in package.json
 
-### 4. Review and Merge
+### 4. Automatic merge
+`.github/workflows/release-please.yml` squash-merges every release PR from that run. `GITHUB_TOKEN` does not emit a push event, so the same job syncs `prompt-manifest.json` and dispatches the workflow again. That second run tags the release and publishes.
+
 ```bash
-# Check the release PR
 gh pr list --label "autorelease: pending"
-
-# Review changes
-git fetch origin
-git diff origin/main...release-please--branches--main
-
-# Merge via GitHub (creates release)
 ```
 
 ### 5. Verify Release

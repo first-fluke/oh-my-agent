@@ -23,6 +23,9 @@ permissions:
   contents: write
   pull-requests: write
   id-token: write
+  # workflow_dispatch of this file after a GITHUB_TOKEN merge. That merge
+  # does not emit a push event, so the follow-up run is what tags and publishes.
+  actions: write
 
 # Serialize Release Please runs.
 # With separate-pull-requests: true + monorepo (cli/action/web), concurrent
@@ -47,6 +50,8 @@ jobs:
       web_release_created: ${{ steps.release.outputs['web--release_created'] }}
       web_tag_name: ${{ steps.release.outputs['web--tag_name'] }}
       web_version: ${{ steps.release.outputs['web--version'] }}
+      prs_created: ${{ steps.release.outputs.prs_created }}
+      prs: ${{ steps.release.outputs.prs }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -55,6 +60,75 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           include-component-in-tag: true
+
+  # Squash-merge every release PR this run opened or updated. main has no
+  # required reviews. A merge made with GITHUB_TOKEN does not start push
+  # workflows, so this job also commits the manifest sync those workflows
+  # would have done and dispatches this workflow to create the tag and publish.
+  merge-release-prs:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.prs_created == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Squash-merge release pull requests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRS: ${{ needs.release-please.outputs.prs }}
+        run: |
+          set -euo pipefail
+          echo "$PRS" | jq -e 'type == "array" and length > 0' >/dev/null
+          for number in $(echo "$PRS" | jq -r '.[].number'); do
+            echo "Squash-merging release PR #${number}"
+            gh pr merge "$number" --squash --delete-branch
+          done
+
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Sync prompt-manifest.json
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+
+            VERSION=$(jq -r '.["."]' .release-please-manifest.json)
+            bunx tsx cli/generate-manifest.ts "$VERSION"
+
+            if git diff --quiet prompt-manifest.json; then
+              echo "prompt-manifest.json already up to date"
+              break
+            fi
+
+            git add prompt-manifest.json
+            git commit -m "ci: sync prompt-manifest.json [skip ci]"
+
+            if git push origin HEAD:main; then
+              echo "Pushed on attempt $attempt"
+              break
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              echo "Failed to sync prompt-manifest.json after 3 attempts"
+              exit 1
+            fi
+            echo "Push failed on attempt $attempt, retrying..."
+            sleep $((attempt * 5))
+          done
+
+      - name: Dispatch release-please to tag and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run release-please.yml --ref main
 
   publish-artifacts:
     needs: release-please
