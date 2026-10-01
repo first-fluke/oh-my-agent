@@ -69,13 +69,17 @@ jobs:
     if: ${{ needs.release-please.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
+      # This step runs before checkout. gh treats a missing git repo as a
+      # hard failure unless every command names the repository. --repo also
+      # skips the local branch delete, which would call git.
       - name: Squash-merge release pull requests
         id: merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          numbers=$(gh pr list --label "autorelease: pending" --state open --json number --jq '.[].number')
+          numbers=$(gh pr list --repo "$GH_REPO" --label "autorelease: pending" --state open --json number --jq '.[].number')
           merged=false
           if [ -z "$numbers" ]; then
             echo "No pending release pull requests"
@@ -84,11 +88,11 @@ jobs:
           fi
           for number in $numbers; do
             echo "Squash-merging release PR #${number}"
-            if gh pr merge "$number" --squash --delete-branch; then
+            if gh pr merge "$number" --repo "$GH_REPO" --squash --delete-branch; then
               merged=true
               continue
             fi
-            state=$(gh pr view "$number" --json state --jq '.state')
+            state=$(gh pr view "$number" --repo "$GH_REPO" --json state --jq '.state')
             if [ "$state" != "MERGED" ]; then
               echo "Failed to merge release PR #${number} (state: ${state})"
               exit 1
@@ -146,7 +150,8 @@ jobs:
         if: ${{ steps.merge.outputs.merged == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run release-please.yml --ref main
+          GH_REPO: ${{ github.repository }}
+        run: gh workflow run release-please.yml --repo "$GH_REPO" --ref main
 
   publish-artifacts:
     needs: release-please

@@ -131,7 +131,7 @@ Automatically creates a PR like:
 - Includes version bump in package.json
 
 ### 4. Automatic merge
-`.github/workflows/release-please.yml` squash-merges every release PR from that run. `GITHUB_TOKEN` does not emit a push event, so the same job syncs `prompt-manifest.json` and dispatches the workflow again. That second run tags the release and publishes.
+`.github/workflows/release-please.yml` squash-merges every open pull request labeled `autorelease: pending`. `GITHUB_TOKEN` does not emit a push event, so the same job syncs `prompt-manifest.json` and dispatches the workflow again. That second run tags the release and publishes.
 
 ```bash
 gh pr list --label "autorelease: pending"
