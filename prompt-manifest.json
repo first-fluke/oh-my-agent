@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.0.6",
-  "releaseDate": "2026-10-01T11:18:49.782Z",
+  "releaseDate": "2026-10-01T11:25:21.159Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1021,8 +1021,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/release-coordination.md",
-      "sha256": "0e1b0c23fdf3af67b563516c88c19fd26ede2385a36bde83bc3e3792fdc62f27",
-      "size": 5793
+      "sha256": "4f77626dc579383247d60d79bd431ab078520259802e78b7cb3d080031af8234",
+      "size": 5899
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/troubleshooting.md",
