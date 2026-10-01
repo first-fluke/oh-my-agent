@@ -69,8 +69,10 @@ telemetry: false
 # provider is configured, the PreToolUse hook `code-intelligence-guard` denies
 # native search (Claude `Grep` / `Glob`; shell `rg`, `ag`, `fd`, `grep -r`,
 # `find -name`, `git grep`) and points the agent at the provider's tools. Set
-# `off` to fall back to the advisory-only primer. A shell command prefixed with
-# `OMA_CI_ALLOW_NATIVE=1` bypasses the guard when the provider is down.
+# `off` to fall back to the advisory-only primer. The hook does not advertise
+# a bypass. A shell command prefixed with `OMA_CI_ALLOW_NATIVE=1` bypasses
+# the guard only for searches outside the project or ignored paths the guard
+# did not recognize, not for project source.
 providers:
   code_intelligence: serena
   # code_intelligence_guard: block

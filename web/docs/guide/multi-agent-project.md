@@ -36,7 +36,7 @@ The `/plan` workflow runs inline (no subagent spawning) and produces a structure
 What happens:
 
 1. **Gather requirements**: The PM agent asks about target users, core features, constraints, and deployment targets.
-2. **Analyze technical feasibility**: Uses the configured code-intelligence provider and native scoped search when it is unavailable to scan the existing codebase for reusable code and architecture patterns.
+2. **Analyze technical feasibility**: Uses the configured code-intelligence provider to scan the existing codebase for reusable code and architecture patterns. Native search is only for paths outside the project or ignored paths.
 3. **Define API contracts**: Designs endpoint contracts (method, path, request/response schemas, auth, error responses) and saves them to `.agents/results/api-contracts/` (run artifacts), promoting durable specs to `docs/plans/contracts/` when committed.
 4. **Decompose into tasks**: Breaks the project into actionable tasks, each with assigned agent, title, acceptance criteria, priority (P0-P3), and dependencies.
 5. **Review plan with user**: Presents the full plan for confirmation. The workflow will not proceed without explicit user approval.
@@ -211,7 +211,7 @@ API contracts are the synchronization mechanism between agents. The contract-fir
    - Authentication requirements
    - Error response formats
 
-4. **Contract violations are caught during monitoring.** Step 5 of `/work` uses the configured code-intelligence provider or native scoped search to verify API contract alignment between agents.
+4. **Contract violations are caught during monitoring.** Step 5 of `/work` uses the configured code-intelligence provider to verify API contract alignment between agents. Native search is only for paths outside the project or ignored paths.
 
 5. **QA review checks contract adherence.** The QA agent's Alignment Review (Step 6 in ultrawork) explicitly compares implementation against the plan, including API contracts.
 
@@ -340,7 +340,7 @@ Using `agent spawn` directly without recording the result contract afterward. Ru
 
 After all agents complete their individual tasks, cross-domain integration must be validated:
 
-1. **API contract alignment**: The configured code-intelligence provider or native scoped search verifies that backend implementations match the contracts consumed by frontend and mobile.
+1. **API contract alignment**: The configured code-intelligence provider verifies that backend implementations match the contracts consumed by frontend and mobile. Native search is only for paths outside the project or ignored paths.
 
 2. **Type consistency**: TypeScript types, Python dataclasses, or Dart models shared across domains must use consistent field names and types.
 

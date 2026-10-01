@@ -108,7 +108,7 @@ Severity determines how the bug is handled and how quickly it should be fixed.
 
 ## The seven-stage debug loop in detail
 
-The `/debug` workflow executes these stages in order. It uses the configured code-intelligence provider when available, plus native search and scoped file reads when that provider is unavailable or times out.
+The `/debug` workflow executes these stages in order. It uses the configured code-intelligence provider. Native search is only for paths outside the project or ignored paths when that provider is unavailable or times out.
 
 ### Step 1: collect error information
 

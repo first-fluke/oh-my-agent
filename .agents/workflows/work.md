@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 - **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
-- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search and scoped reads when unavailable or timed out. Do not install a provider or track a repository automatically.
+- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search only for paths outside this project or ignored paths when unavailable or timed out. Do not install a provider or track a repository automatically.
 - Use native file tools and `.agents/skills/_shared/runtime/memory-protocol.md` for durable coordination state; code-intelligence memory tools are not required.
 - **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Core Rules.
 - **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
@@ -45,7 +45,7 @@ Analyze the user's request and identify involved domains (frontend, backend, mob
 
 - Single domain: suggest using the specific agent directly.
 - Multiple domains: proceed to Step 2.
-- Use configured code-intelligence tools or native search and scoped reads to understand the existing codebase structure relevant to the request.
+- Use configured code-intelligence tools to understand the existing codebase structure relevant to the request. Native search is only for paths outside this project or ignored paths.
 - Report analysis results to the user.
 
 ---

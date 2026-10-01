@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 - **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
-- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover configured tools and use native scoped search if unavailable or timed out. Do not install or track repositories automatically.
+- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover configured tools; if unavailable or timed out, use native search only for paths outside this project or ignored paths. Do not install or track repositories automatically.
 - Persist coordination artifacts through `.agents/skills/_shared/runtime/memory-protocol.md`; file state is independent of code-intelligence MCP tools.
 - **This workflow does NOT stop until all completion criteria pass or safeguards trigger.**
 - **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.

@@ -121,7 +121,7 @@ outputs:
 - Optional stakeholder-agent consultation only when cross-cutting enough to justify cost
 
 ### Canonical workflow path
-Use the configured code-intelligence provider for structure, symbols, references, and integration points. If unavailable, use native search and scoped reads:
+Use the configured code-intelligence provider for structure, symbols, references, and integration points. If unavailable, use native search only for paths outside this project or ignored paths:
 
 ```bash
 ls .agents/results/architecture/   # prior decisions — read before deciding

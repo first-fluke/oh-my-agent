@@ -8,8 +8,8 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - List all files/modules to inspect
 - Determine review depth: quick check vs. comprehensive audit
 - Follow `../../_shared/core/code-intelligence.md` to discover configured code
-  navigation/search tools. If unavailable or timed out, use native scoped
-  search and reads, record that fallback, and continue the review.
+  navigation/search tools. If unavailable or timed out, use native search only
+  for paths outside this project or ignored paths, record that limit, and continue the review.
 
 ## Step 2: Audit
 Review in this priority order:

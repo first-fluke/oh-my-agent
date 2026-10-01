@@ -114,7 +114,9 @@ describe("code-intelligence-guard run() — serena configured", () => {
     const reason = (result as { reason: string }).reason;
     expect(reason).toContain("search_for_pattern");
     expect(reason).toContain("Serena");
-    expect(reason).toContain(BYPASS_TOKEN);
+    expect(reason).toContain("ignored paths");
+    expect(reason).toContain("outside this project");
+    expect(reason).not.toContain(BYPASS_TOKEN);
   });
 
   it("denies the native Glob tool and points at find_file", async () => {

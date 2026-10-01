@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 - **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
-- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search and scoped reads when unavailable or timed out. Do not install a provider or track a repository automatically.
+- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search only for paths outside this project or ignored paths when unavailable or timed out. Do not install a provider or track a repository automatically.
 - Use native file tools and `.agents/skills/_shared/runtime/memory-protocol.md` for durable coordination state; code-intelligence memory tools are not required.
 
 ---
@@ -71,8 +71,8 @@ If an error message is provided, proceed immediately.
 
 Run the smallest available failing test, runtime command, or log query that exercises the reported behavior and capture the observed failure signal. If the environment cannot reproduce it, follow `.agents/skills/oma-debug/resources/error-playbook.md` § "Cannot Reproduce the Bug" and record that limitation before continuing.
 
-Use configured pattern search or native search with the error message or stack trace to locate the error in the codebase.
-Locate the exact function and file with configured symbol tools or native search and scoped reads.
+Use configured pattern search with the error message or stack trace to locate the error in the codebase. Native search is only for paths outside this project or ignored paths.
+Locate the exact function and file with configured symbol tools. Native search is only for paths outside this project or ignored paths.
 
 ---
 

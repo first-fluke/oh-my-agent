@@ -7,8 +7,8 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Read the task requirements carefully
 - Read `DESIGN.md` if present at the project root; treat Section 9 (Agent Prompt Guide) as authoritative component spec
 - Identify which components, pages, and hooks are needed
-- Inspect existing structure and relevant symbols via `../../_shared/core/code-intelligence.md`; use native search and scoped reads when the configured provider is unavailable
-- Review existing patterns: reference search for `Button` through the configured provider or native search to understand usage conventions
+- Inspect existing structure and relevant symbols via `../../_shared/core/code-intelligence.md`; if the configured provider is unavailable, use native search only for paths outside this project or ignored paths
+- Review existing patterns: reference search for `Button` through the configured provider to understand usage conventions. Native search is only for paths outside this project or ignored paths.
 - List assumptions; ask if unclear
 
 ## Step 2: Plan

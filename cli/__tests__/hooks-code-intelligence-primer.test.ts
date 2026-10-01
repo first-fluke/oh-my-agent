@@ -70,6 +70,8 @@ describe("code-intelligence-primer", () => {
     if (result?.type === "context") {
       expect(result.additionalContext).toContain("[OMA GORTEX PRIMER]");
       expect(result.additionalContext).toContain("Gortex MCP tools");
+      expect(result.additionalContext).toContain("ignored paths");
+      expect(result.additionalContext).not.toContain("OMA_CI_ALLOW_NATIVE");
     }
   });
 
@@ -86,6 +88,8 @@ describe("code-intelligence-primer", () => {
     if (result?.type === "context") {
       expect(result.additionalContext).toContain("[OMA SERENA PRIMER]");
       expect(result.additionalContext).toContain("initial_instructions");
+      expect(result.additionalContext).toContain("ignored paths");
+      expect(result.additionalContext).not.toContain("OMA_CI_ALLOW_NATIVE");
     }
   });
 

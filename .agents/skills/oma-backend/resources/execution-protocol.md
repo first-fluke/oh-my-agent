@@ -6,7 +6,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 ## Step 1: Analyze
 - Read the task requirements carefully
 - Identify which endpoints, models, and services are needed
-- Inspect existing structure and relevant symbols via `../../_shared/core/code-intelligence.md`; use native search and scoped reads when the configured provider is unavailable
+- Inspect existing structure and relevant symbols via `../../_shared/core/code-intelligence.md`; if the configured provider is unavailable, use native search only for paths outside this project or ignored paths
 - If the task is ORM-heavy, load `resources/orm-reference.md` before deciding on loading strategy, transaction scope, or client/session lifecycle
 - List assumptions; ask if unclear
 

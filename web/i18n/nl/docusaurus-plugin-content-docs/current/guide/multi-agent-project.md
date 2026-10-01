@@ -36,7 +36,7 @@ De workflow `/plan` draait inline (zonder subagents te starten) en maakt een ges
 Wat er gebeurt:
 
 1. **Requirements verzamelen:** De PM-agent vraagt naar doelgebruikers, kernfeatures, beperkingen en deploymentdoelen.
-2. **Technische haalbaarheid analyseren:** Gebruikt de geconfigureerde code-intelligenceprovider en native scoped search wanneer die niet beschikbaar is, om herbruikbare code en architectuurpatronen in de bestaande codebase te vinden.
+2. **Technische haalbaarheid analyseren:** Gebruikt de geconfigureerde code-intelligenceprovider om herbruikbare code en architectuurpatronen in de bestaande codebase te vinden. Native search is alleen voor paden buiten het project of genegeerde paden.
 3. **API-contracten definiëren:** Ontwerpt endpointcontracten (methode, pad, request-/responseschema's, auth en foutresponses) en slaat ze op in `.agents/results/api-contracts/` (runartefacten). Duurzame specs worden gepromoveerd naar `docs/plans/contracts/` wanneer ze worden gecommit.
 4. **Opsplitsen in taken:** Deelt het project op in uitvoerbare taken, elk met een toegewezen agent, titel, acceptatiecriteria, prioriteit (P0–P3) en afhankelijkheden.
 5. **Plan met de gebruiker reviewen:** Presenteert het volledige plan ter bevestiging. De workflow gaat pas verder na expliciete goedkeuring.
@@ -211,7 +211,7 @@ API-contracten zijn het synchronisatiemechanisme tussen agents. De contract-firs
    - Authenticatievereisten
    - Formaten van foutresponses
 
-4. **Contractschendingen worden tijdens monitoring gevonden.** Stap 5 van `/work` gebruikt de geconfigureerde code-intelligenceprovider of native scoped search om te controleren of API-implementaties overeenkomen tussen agents.
+4. **Contractschendingen worden tijdens monitoring gevonden.** Stap 5 van `/work` gebruikt de geconfigureerde code-intelligenceprovider om te controleren of API-implementaties overeenkomen tussen agents. Native search is alleen voor paden buiten het project of genegeerde paden.
 
 5. **QA controleert naleving van contracten.** De Alignment Review van de QA-agent (stap 6 in ultrawork) vergelijkt de implementatie systematisch met het plan, inclusief API-contracten.
 
@@ -340,7 +340,7 @@ P1-taken starten voordat P0-taken klaar zijn. Prioriteitstiers bestaan omdat P1-
 
 Nadat alle agents hun individuele taken hebben afgerond, moet de cross-domeinintegratie worden gevalideerd:
 
-1. **Afstemming van API-contracten:** De geconfigureerde code-intelligenceprovider of native scoped search controleert of backendimplementaties overeenkomen met de contracten die frontend en mobile gebruiken.
+1. **Afstemming van API-contracten:** De geconfigureerde code-intelligenceprovider controleert of backendimplementaties overeenkomen met de contracten die frontend en mobile gebruiken. Native search is alleen voor paden buiten het project of genegeerde paden.
 
 2. **Typeconsistentie:** TypeScript-types, Python-dataclasses en Dart-modellen die tussen domeinen worden gedeeld, gebruiken consistente veldnamen en types.
 

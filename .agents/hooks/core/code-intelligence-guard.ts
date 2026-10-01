@@ -15,11 +15,14 @@
 //    a name predicate pass through — they are not discovery.
 //  - Gating: only fires when `providers.code_intelligence` resolves (yaml or
 //    `.serena/project.yml`) and `providers.code_intelligence_guard` is not
-//    `off`. The hook cannot observe whether the MCP server is actually up, so
-//    the deny reason names the escape hatch.
-//  - Escape hatch: a shell command containing `OMA_CI_ALLOW_NATIVE=1` bypasses
-//    the guard (mirrors scm-guard's `OMA_SCM_ALLOW_SECRETS=1`). Grep/Glob have
-//    no argument to carry a token, so the fallback for those is the shell path.
+//    `off`. The hook cannot observe whether the MCP server is actually up.
+//    The deny reason does not name a bypass: confirmed exclusions and
+//    external paths already pass, and project source stays on the provider.
+//  - Escape hatch: a shell command containing `OMA_CI_ALLOW_NATIVE=1` still
+//    bypasses the guard. That prefix is only for a search of resources
+//    outside the project or ignored paths the guard did not recognize, never
+//    for project source. Do not advertise it in the deny reason. Grep/Glob
+//    have no argument to carry a token, so the hatch stays shell-only.
 
 import { readFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
@@ -342,9 +345,10 @@ function denyReason(
     `[oma code-intelligence-guard] Blocked ${detail}: ${label} is the configured code-intelligence provider ` +
     `(providers.code_intelligence in .agents/oma-config.yaml). Use ${replacementFor(provider, kind)} instead; ` +
     `load the deferred ${label} tools first if needed. ` +
-    `Searches scoped entirely to confirmed provider exclusions or external paths are allowed. ` +
-    `If ${label} is unavailable, timed out, or cannot search the requested path (including unrecognized exclusions), run the search through the shell tool ` +
-    `with the command prefixed by ${BYPASS_TOKEN}. ` +
+    `Native search is only for paths outside this project or ignored paths. ` +
+    `Searches scoped entirely to confirmed provider exclusions or external paths are already allowed; ` +
+    `narrow the path if this search was meant to be one of those. ` +
+    `Do not bypass this guard to search project source. ` +
     `Set providers.code_intelligence_guard: off to disable this guard.`
   );
 }

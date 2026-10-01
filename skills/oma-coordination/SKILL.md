@@ -125,7 +125,7 @@ Useful `agent spawn` options: `--vendor <vendor>` (CLI vendor override), `--isol
 3. Define API contracts before frontend/mobile tasks
 4. QA review is always the final step
 5. Assign separate workspaces to avoid file conflicts (or use `--isolation worktree` for a git worktree per spawn)
-6. Follow `../_shared/core/code-intelligence.md`: discover configured tools, do not auto-install or track, and use native scoped search when unavailable or timed out
+6. Follow `../_shared/core/code-intelligence.md`: discover configured tools, do not auto-install or track, and use native search only for paths outside this project or ignored paths when unavailable or timed out
 7. Never skip steps in the workflow; follow each step sequentially without omission
 
 ### Workflow

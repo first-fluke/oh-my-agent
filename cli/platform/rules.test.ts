@@ -296,7 +296,10 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).toContain(
       "confirmed provider exclusions or paths outside this project",
     );
-    expect(content).toContain("or cannot search the requested path");
+    expect(content).toContain(
+      "Native search is only for paths outside this project, ignored paths, or plain non-code content.",
+    );
+    expect(content).not.toContain("OMA_CI_ALLOW_NATIVE");
     expect(content).toContain("execution-policy.md");
     expect(content).toContain("unless the user explicitly requests a build");
     expect(content).toContain("Do not modify `.agents/` definitions");

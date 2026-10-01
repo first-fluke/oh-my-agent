@@ -11,7 +11,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 <!-- oma-docs:ignore-end -->
 - **If Flutter**: identify screens, widgets, and Riverpod/Bloc providers
 - **If React Native**: identify screens, query/mutation hooks (`src/features/*/queries.ts`), Zustand stores, and navigation types
-- Explore existing code through the configured `code_intelligence` capability. If it is unavailable or times out, use native search/read for the relevant feature roots (`Sources/Features`, `lib/features`, or `src/features`) and record the limit.
+- Explore existing code through the configured `code_intelligence` capability. If it is unavailable or times out, do not native-search feature roots. Native search is only for paths outside this project or ignored paths; record that limit.
 - Determine platform-specific requirements (iOS HIG vs Material Design 3)
 - List assumptions; ask if unclear
 

@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 - **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
-- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search and scoped reads when unavailable or timed out. Do not install a provider or track a repository automatically.
+- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search only for paths outside this project or ignored paths when unavailable or timed out. Do not install a provider or track a repository automatically.
 - Use native file tools and `.agents/skills/_shared/runtime/memory-protocol.md` for durable coordination state; code-intelligence memory tools are not required.
 - **Exclude directories:**
   - Respect the project's `.gitignore` as the source of truth for excluding directories.
@@ -94,7 +94,7 @@ Not all files are required. Generate only what is **discoverable and relevant** 
    - What packages/apps/services exist?
    - What tech stacks are used?
 
-2. **Discover architectural patterns** using configured structure/pattern tools or native search and scoped reads:
+2. **Discover architectural patterns** using configured structure/pattern tools. Native search is only for paths outside this project or ignored paths:
    - Layer structure (e.g., controllers → services → repositories)
    - Module boundaries and dependency direction
    - Naming conventions in use

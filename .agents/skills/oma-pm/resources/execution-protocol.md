@@ -8,7 +8,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Identify explicit and implicit features
 - List edge cases and assumptions
 - Ask clarifying questions if ambiguous
-- Inspect existing structure and relevant symbols via `../../_shared/core/code-intelligence.md`; use native search and scoped reads when the configured provider is unavailable
+- Inspect existing structure and relevant symbols via `../../_shared/core/code-intelligence.md`; if the configured provider is unavailable, use native search only for paths outside this project or ignored paths
 - If risk or governance matters, identify:
   - stakeholders
   - constraints

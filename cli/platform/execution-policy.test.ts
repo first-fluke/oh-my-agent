@@ -68,7 +68,9 @@ describe("shared execution policy", () => {
     expect(orchestrate).toContain("partial` or `failed");
     expect(judge).toContain("`COMPLETED`: every criterion is PASS.");
     expect(judge).toContain("`PARTIAL`");
-    expect(intelligence).toContain("native search and scoped file reads");
+    expect(intelligence).toContain(
+      "native search only for paths outside this project or ignored paths",
+    );
     expect(intelligence).toContain("Do not install, initialize, track");
   });
 });

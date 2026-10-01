@@ -7,7 +7,7 @@ disable-model-invocation: true
 - **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - Follow `.agents/skills/_shared/core/code-intelligence.md`: discover configured
-  tools and use native scoped search if unavailable or timed out. Do not install
+  tools; if unavailable or timed out, use native search only for paths outside this project or ignored paths. Do not install
   or track repositories automatically.
 - Persist review state through `.agents/skills/_shared/runtime/memory-protocol.md`.
 
