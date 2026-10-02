@@ -1,4 +1,4 @@
-import { appendFileSync } from "node:fs";
+import { closeSync, fsyncSync, openSync, writeFileSync } from "node:fs";
 import { observeWithTimeout } from "./agentmemory-client.ts";
 import {
   emitEvent as appendEvent,
@@ -36,8 +36,26 @@ export async function emitEvent(
     });
     if (!observed) {
       const path = retryObservePath(projectDir);
-      ensureParent(path);
-      appendFileSync(path, `${JSON.stringify(enriched)}\n`, "utf-8");
+      try {
+        ensureParent(path);
+        const fd = openSync(path, "a", 0o600);
+        try {
+          // Separate a prior interrupted row without replacing the append-only
+          // log or invalidating an already-open writer. Legacy rows retry observe.
+          writeFileSync(fd, `\n${JSON.stringify(enriched)}\n`, "utf-8");
+          fsyncSync(fd);
+        } finally {
+          closeSync(fd);
+        }
+      } catch (error) {
+        // L1 is already authoritative; an optional retry-log failure must not
+        // make callers repeat the event or restore completed workflow state.
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(
+          `[oma] observation retry write failed: ${message}\n`,
+        );
+        process.stderr.write(`[oma]   path=${path}\n`);
+      }
     }
   }
   return enriched;

@@ -196,13 +196,13 @@ export async function deliverMemoryRetryEntry(
   return observed && remembered;
 }
 
-export async function emitEventWithMemory(
+/** Deliver an already appended L1 event without changing its identity or appending again. */
+export async function deliverEventMemory(
   projectDir: string,
-  sid: string,
-  event: Omit<Partial<OmaEvent>, "sid"> & { kind: string },
+  event: OmaEvent,
   provider?: MemoryProvider,
 ): Promise<OmaEvent> {
-  const enriched = emitEvent(projectDir, sid, event);
+  const enriched = event;
   if (!SEMANTIC_EVENT_KINDS.has(enriched.kind)) return enriched;
   const memo = rememberContentForEvent(enriched);
 
@@ -257,4 +257,17 @@ export async function emitEventWithMemory(
     }
   }
   return enriched;
+}
+
+export async function emitEventWithMemory(
+  projectDir: string,
+  sid: string,
+  event: Omit<Partial<OmaEvent>, "sid"> & { kind: string },
+  provider?: MemoryProvider,
+): Promise<OmaEvent> {
+  return deliverEventMemory(
+    projectDir,
+    emitEvent(projectDir, sid, event),
+    provider,
+  );
 }

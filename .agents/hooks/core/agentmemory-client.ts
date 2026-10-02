@@ -279,6 +279,9 @@ export async function observeWithTimeout(payload: {
   try {
     const adapter = currentMemoryAdapter(payload.projectDir);
     if (adapter) return await adapter.observe(payload);
+    // An explicit opt-out leaves no observation to retry. Injected adapters
+    // still own their delivery policy, including non-AgentMemory providers.
+    if (process.env.OMA_NO_AGENTMEMORY === "1") return true;
     if (!(await isAgentMemoryReachable())) return false;
     const url = endpointUrl();
     if (!url) return false;
