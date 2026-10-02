@@ -310,6 +310,106 @@ describe("bridge command", () => {
       };
     }
 
+    it.each([0, 3000, 8000, 49_999])(
+      "returns search hits when the agent requests a small %i-character cap",
+      async (maxAnswerChars) => {
+        const { triggerStdin, getPostCallback, getPostOptions } =
+          setupBridgeWithStdin();
+        await bridge(PROXY_ONLY_URL);
+
+        triggerStdin(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            id: 42,
+            method: "tools/call",
+            params: {
+              name: "search_for_pattern",
+              arguments: {
+                substring_pattern: "example",
+                relative_path: "cli/example.ts",
+                max_answer_chars: maxAnswerChars,
+              },
+            },
+          }),
+        );
+
+        const body = String(mockReq.write.mock.calls.at(-1)?.[0]);
+        const request = JSON.parse(body);
+        const matchPrefix = JSON.stringify({ "cli/example.ts": ["example"] });
+        const resultText = JSON.stringify({
+          "cli/example.ts": [
+            `example${"x".repeat(9_551 - matchPrefix.length)}`,
+          ],
+        });
+        const text =
+          request.params.arguments.max_answer_chars >= resultText.length
+            ? resultText
+            : "The answer is too long (9551 characters). You can adjust your query or raise the max_answer_chars parameter.";
+        const response = JSON.stringify({
+          jsonrpc: "2.0",
+          id: 42,
+          result: { content: [{ type: "text", text }], isError: false },
+        });
+        const res = createMockRes({ contentType: "application/json" });
+        getPostCallback()(res as unknown as http.IncomingMessage);
+        res.emit("data", response);
+        res.emit("end");
+
+        const forwarded = JSON.parse(
+          String(stdoutWriteSpy.mock.calls.at(-1)?.[0]),
+        );
+        expect(forwarded.result.content[0].text).toBe(resultText);
+        expect(request.params.arguments).toEqual({
+          substring_pattern: "example",
+          relative_path: "cli/example.ts",
+          max_answer_chars: 150_000,
+        });
+        const headers = getPostOptions().headers as Record<string, string>;
+        expect(headers["Content-Length"]).toBe(String(Buffer.byteLength(body)));
+      },
+    );
+
+    it.each([undefined, -1, 50_000, 500_000])(
+      "preserves the search answer cap %s when no repair is needed",
+      async (maxAnswerChars) => {
+        const { triggerStdin } = setupBridgeWithStdin();
+        await bridge(PROXY_ONLY_URL);
+        const request = {
+          jsonrpc: "2.0",
+          id: 42,
+          method: "tools/call",
+          params: {
+            name: "search_for_pattern",
+            arguments: {
+              substring_pattern: "example",
+              max_answer_chars: maxAnswerChars,
+            },
+          },
+        };
+        triggerStdin(JSON.stringify(request));
+        expect(mockReq.write).toHaveBeenCalledWith(JSON.stringify(request));
+      },
+    );
+
+    it("preserves answer caps for other tools", async () => {
+      const { triggerStdin } = setupBridgeWithStdin();
+      await bridge(PROXY_ONLY_URL);
+      const request = {
+        jsonrpc: "2.0",
+        id: 42,
+        method: "tools/call",
+        params: {
+          name: "get_symbols_overview",
+          arguments: {
+            relative_path: "cli/example.ts",
+            max_answer_chars: 3000,
+          },
+        },
+      };
+      triggerStdin(JSON.stringify(request));
+      expect(mockReq.write).toHaveBeenCalledWith(JSON.stringify(request));
+    });
+
     it("should store session ID from initialize response", async () => {
       const { triggerStdin, getPostCallback, getPostOptions } =
         setupBridgeWithStdin();

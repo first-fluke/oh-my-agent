@@ -1,6 +1,10 @@
 import http, { type ClientRequest, type IncomingMessage } from "node:http";
 import https from "node:https";
 import { StringDecoder } from "node:string_decoder";
+import {
+  SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS,
+  SERENA_MAX_TOOL_ANSWER_CHARS_FLOOR,
+} from "../../io/serena.js";
 import { validateSerenaConfigs } from "../../io/serena-config.js";
 import {
   daemonKey,
@@ -333,6 +337,18 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   function handleIDEMessage(message: string) {
     try {
       const parsed = JSON.parse(message);
+      const maxAnswerChars = parsed.params?.arguments?.max_answer_chars;
+      // Per-call caps override Serena's global setting, including on a warm daemon.
+      if (
+        parsed.method === "tools/call" &&
+        parsed.params?.name === "search_for_pattern" &&
+        typeof maxAnswerChars === "number" &&
+        maxAnswerChars >= 0 &&
+        maxAnswerChars < SERENA_MAX_TOOL_ANSWER_CHARS_FLOOR
+      ) {
+        parsed.params.arguments.max_answer_chars =
+          SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS;
+      }
       const isInitialize = parsed.method === "initialize";
       let settled = false;
       let failed = false;

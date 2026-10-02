@@ -10,7 +10,10 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { ensureOmaSerenaContexts } from "./serena.js";
+import {
+  ensureOmaSerenaContexts,
+  ensureSerenaDefaultMaxAnswerChars,
+} from "./serena.js";
 import { ensureSerenaAdapter } from "./serena-adapter.js";
 import {
   prepareSerenaRuntime,
@@ -18,6 +21,10 @@ import {
 } from "./serena-managed-runtime.js";
 
 vi.mock("node:child_process", () => ({ execFileSync: vi.fn() }));
+vi.mock("./serena.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./serena.js")>()),
+  ensureSerenaDefaultMaxAnswerChars: vi.fn(),
+}));
 vi.mock("./serena-adapter.js", () => ({
   DART_PROJECT_TOOL: "get_dart_project_diagnostics",
   ensureSerenaAdapter: vi.fn(),
@@ -52,6 +59,17 @@ afterEach(() => {
   vi.unstubAllEnvs();
   vi.resetAllMocks();
   rmSync(root, { recursive: true, force: true });
+});
+
+it("repairs the global answer limit before preparing the adapter", () => {
+  vi.mocked(ensureSerenaAdapter).mockImplementationOnce(() => {
+    expect(ensureSerenaDefaultMaxAnswerChars).toHaveBeenCalledOnce();
+    return ready;
+  });
+
+  prepareSerenaRuntime(root);
+
+  expect(ensureSerenaDefaultMaxAnswerChars).toHaveBeenCalledOnce();
 });
 
 it("repairs adapter registration after context regeneration and remains idempotent", () => {

@@ -4,7 +4,10 @@ import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { isMap, parseDocument } from "yaml";
-import { ensureOmaSerenaContexts } from "./serena.js";
+import {
+  ensureOmaSerenaContexts,
+  ensureSerenaDefaultMaxAnswerChars,
+} from "./serena.js";
 import {
   DART_PROJECT_TOOL,
   ensureSerenaAdapter,
@@ -102,6 +105,7 @@ export function serenaRuntimeRevision(
 }
 
 export function prepareSerenaRuntime(root: string, requireDart = false) {
+  ensureSerenaDefaultMaxAnswerChars();
   const adapter = ensureSerenaAdapter();
   const contexts = ensureOmaSerenaContexts(adapter);
   const dart = projectUsesDart(root);

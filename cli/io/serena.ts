@@ -117,8 +117,8 @@ const SERENA_CONFIG_PATH = join(homedir(), ".serena", "serena_config.yml");
  * Floor for Serena's global `default_max_tool_answer_chars`.
  *
  * Serena tools accept per-call `max_answer_chars` (default -1 → this global).
- * Agents sometimes pass tiny caps (e.g. 3000); that is a call-site mistake,
- * not fixed by this floor. What we *do* fix: missing or legacy-low global
+ * The bridge raises tiny search_for_pattern caps (e.g. 3000) before forwarding.
+ * This global floor fixes missing or legacy-low global
  * defaults that reject moderate search hits (~25k+) with
  * "The answer is too long". Serena's own template uses 150_000.
  */
