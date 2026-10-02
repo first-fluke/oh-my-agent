@@ -12,6 +12,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { retryObservePath } from "../../state/events.js";
+import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import type {
   MemoryObservePayload,
   MemoryProvider,
@@ -325,7 +326,7 @@ describe("memory commands", () => {
       "sid-ok",
       "sid-fail",
     ]);
-    expect(readFileSync(retryPath, "utf-8").trim().split("\n")).toEqual([
+    expect(readMemoryRetryQueue(projectDir).map(({ line }) => line)).toEqual([
       eventLine("fail", "sid-fail"),
       "not-json",
     ]);

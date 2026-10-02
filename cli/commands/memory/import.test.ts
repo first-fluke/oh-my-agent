@@ -1,14 +1,9 @@
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { retryObservePath } from "../../state/events.js";
+import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import type {
   MemoryObservePayload,
   MemoryProvider,
@@ -141,7 +136,7 @@ describe("memory import", () => {
       imported: 1,
       failed: 0,
     });
-    expect(readFileSync(retryPath, "utf-8")).toBe("");
+    expect(readMemoryRetryQueue(projectDir)).toEqual([]);
   });
 
   it("rejects retry mixed with vendor imports", async () => {

@@ -1,5 +1,10 @@
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { type OmaEvent, retryObservePath } from "../../state/events.js";
+import {
+  acknowledgeMemoryRetryLine,
+  acquireMemoryRetryDrainLock,
+  readMemoryRetryQueue,
+} from "../../state/memory-retry-queue.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
 import type {
   MemoryProvider,
@@ -44,53 +49,44 @@ export async function drainMemoryRetryQueue(
       dryRun: args.dryRun === true,
     };
   }
+  const shouldObserve = !args.dryRun && provider.observeEvents !== false;
+  const release = shouldObserve
+    ? await acquireMemoryRetryDrainLock(projectDir)
+    : undefined;
 
-  const lines = readFileSync(retryPath, "utf-8")
-    .split("\n")
-    .filter((line) => line.trim());
-  const retainedLines: string[] = [];
-  let drained = 0;
-  let invalid = 0;
+  try {
+    const lines = readMemoryRetryQueue(projectDir);
+    let drained = 0;
+    let invalid = 0;
 
-  for (const line of lines) {
-    const event = parseRetryLine(line);
-    if (!event) {
-      invalid += 1;
-      retainedLines.push(line);
-      continue;
+    for (const entry of lines) {
+      const event = parseRetryLine(entry.line);
+      if (!event) {
+        invalid += 1;
+        continue;
+      }
+      if (!shouldObserve) continue;
+
+      const observed = await provider.observe({
+        sessionId: event.sid,
+        content: `${JSON.stringify(event)}\n`,
+        source: "oma-workflow",
+      });
+      if (observed) {
+        acknowledgeMemoryRetryLine(projectDir, entry);
+        drained += 1;
+      }
     }
 
-    if (args.dryRun || provider.observeEvents === false) {
-      retainedLines.push(line);
-      continue;
-    }
-
-    const observed = await provider.observe({
-      sessionId: event.sid,
-      content: `${JSON.stringify(event)}\n`,
-      source: "oma-workflow",
-    });
-    if (observed) {
-      drained += 1;
-    } else {
-      retainedLines.push(line);
-    }
+    return {
+      retryPath,
+      total: lines.length,
+      drained,
+      retained: lines.length - drained,
+      invalid,
+      dryRun: args.dryRun === true,
+    };
+  } finally {
+    release?.();
   }
-
-  if (!args.dryRun) {
-    const tmp = `${retryPath}.${process.pid}.${Date.now()}.tmp`;
-    const content =
-      retainedLines.length > 0 ? `${retainedLines.join("\n")}\n` : "";
-    writeFileSync(tmp, content, "utf-8");
-    renameSync(tmp, retryPath);
-  }
-
-  return {
-    retryPath,
-    total: lines.length,
-    drained,
-    retained: retainedLines.length,
-    invalid,
-    dryRun: args.dryRun === true,
-  };
 }

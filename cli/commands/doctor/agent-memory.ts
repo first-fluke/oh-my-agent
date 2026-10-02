@@ -1,12 +1,8 @@
-import {
-  accessSync,
-  existsSync,
-  constants as fsConstants,
-  readFileSync,
-} from "node:fs";
+import { accessSync, existsSync, constants as fsConstants } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { retryObservePath } from "../../state/events.js";
+import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import type {
   MemoryDaemonResult,
   MemoryProviderStatus,
@@ -39,14 +35,11 @@ function isValidRetryLine(line: string): boolean {
 
 function collectRetryQueue(cwd: string): AgentMemoryRetryQueueCheck {
   const path = retryObservePath(cwd);
-  if (!existsSync(path)) return { path, total: 0, invalid: 0 };
-  const lines = readFileSync(path, "utf-8")
-    .split("\n")
-    .filter((line) => line.trim());
+  const lines = readMemoryRetryQueue(cwd);
   return {
     path,
     total: lines.length,
-    invalid: lines.filter((line) => !isValidRetryLine(line)).length,
+    invalid: lines.filter(({ line }) => !isValidRetryLine(line)).length,
   };
 }
 

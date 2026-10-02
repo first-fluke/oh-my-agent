@@ -128,6 +128,13 @@ vi.mock("node:fs", async (importOriginal) => {
   };
 });
 
+vi.mock("../../state/memory-retry-queue.js", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("../../state/memory-retry-queue.js")
+  >()),
+  readMemoryRetryQueue: vi.fn(() => []),
+}));
+
 vi.mock("../../io/git-recommended.js", () => ({
   inspectRecommendedGitConfig: vi.fn(() => ({
     available: true,
@@ -166,6 +173,7 @@ import {
   _resetInstallContext,
   setInstallContext,
 } from "../../platform/install-context.js";
+import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import {
   collectDoctorReport,
   computeEvalCoverage,
@@ -445,6 +453,7 @@ describe("AgentMemory doctor checks", () => {
     spawnState.execFileSyncFn.mockReturnValue("");
     vi.mocked(existsSync).mockReturnValue(false);
     vi.mocked(readFileSync).mockReturnValue("");
+    vi.mocked(readMemoryRetryQueue).mockReturnValue([]);
   });
 
   afterEach(() => {
@@ -460,13 +469,18 @@ describe("AgentMemory doctor checks", () => {
         ts: "2026-05-29T00:00:00.000Z",
       }),
       "{bad json",
-    ].join("\n");
+    ];
 
     vi.mocked(existsSync).mockImplementation((p) =>
       String(p).endsWith("observe.jsonl"),
     );
-    vi.mocked(readFileSync).mockImplementation((p) =>
-      String(p).endsWith("observe.jsonl") ? retryLines : "",
+    vi.mocked(readMemoryRetryQueue).mockReturnValue(
+      retryLines.map((line, offset) => ({
+        line,
+        offset,
+        file: "test",
+        hash: line,
+      })),
     );
 
     const reportPromise = collectDoctorReport();
