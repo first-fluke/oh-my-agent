@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.9](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.8...cli-v15.0.9) (2026-10-02)
+
+
+### Bug Fixes
+
+* **scm:** remove mandatory commit decision checkpoint ([5bb1dc3](https://github.com/first-fluke/oh-my-agent/commit/5bb1dc3da6b2ea53845d1f6eb369c2b10c3e60dd))
+
 ## [15.0.8](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.7...cli-v15.0.8) (2026-10-02)
 
 
