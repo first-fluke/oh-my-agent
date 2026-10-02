@@ -331,9 +331,9 @@ describe("L1 state events", () => {
       {
         kind: "decision.made",
         payload: {
-          subject: "scm.commit-split",
-          decision: "Split into two commits.",
-          rationale: "Independent scopes.",
+          subject: "scm.merge-strategy",
+          decision: "Merge the feature branch.",
+          rationale: "Preserve its existing commits.",
         },
       },
       {

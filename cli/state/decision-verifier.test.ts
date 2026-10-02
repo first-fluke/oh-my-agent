@@ -89,13 +89,11 @@ describe("required decision verifier", () => {
       deepsec: {
         "triage-outcome": [{ subject: "deepsec.triage-outcome" }],
       },
-      scm: {
-        "commit-split": [{ subject: "scm.commit-split" }],
-      },
       docs: {
         "sync-patch-approval": [{ subject: "docs.sync-patch-approval" }],
       },
     });
+    expect(table).not.toHaveProperty("scm");
   });
 
   it("documents every required workflow decision checkpoint in the workflow assets", () => {

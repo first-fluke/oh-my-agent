@@ -5,7 +5,7 @@ disable-model-invocation: true
 ---
 
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization and completion.
-- Read `.agents/skills/oma-scm/SKILL.md`; its canonical path, guardrails, and push rules own Git execution. This workflow adds the decision checkpoint and optional documentation hook.
+- Read `.agents/skills/oma-scm/SKILL.md`; its canonical path, guardrails, and push rules own Git execution. This workflow adds an optional documentation hook.
 - Execute inline with native Git tools. User-facing language follows project configuration; Git/PR text stays in English.
 
 ## Step 1: Determine intent
@@ -19,13 +19,7 @@ Follow the skill's configuration-management resources for the requested operatio
 
 ## Step 3B: Commit execution
 1. Select commit groups using the skill's Transitions rules.
-2. Record the actual grouping decision under the fixed subject `scm.commit-split`, then verify it:
-   ```bash
-   oma state emit "decision.made" '{"subject":"scm.commit-split","decision":"<actual commit groups>","rationale":"<why these changes belong together or apart>"}'
-   oma state verify --workflow scm --checkpoint commit-split
-   ```
-   Use `.agents/skills/_shared/runtime/event-spec.md` for session binding and event transport. Replace placeholders with the decision made in this run.
-3. Execute the skill's canonical commit path and, when requested, its Push and PR safety path.
+2. Execute the skill's canonical commit path and, when requested, its Push and PR safety path.
 
 ## Step 3.5: Optional Doc Verify Hook
 Only when `docs.auto_verify: true` in project configuration:

@@ -127,15 +127,6 @@ export const REQUIRED_DECISIONS: RequiredDecisionTable = {
       },
     ],
   },
-  scm: {
-    "commit-split": [
-      {
-        subject: "scm.commit-split",
-        description:
-          "Commit grouping decision captured after SCM split strategy is chosen.",
-      },
-    ],
-  },
   docs: {
     "sync-patch-approval": [
       {
