@@ -9,6 +9,13 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { checkCap, recordUsage } from "../../io/session-cost.js";
+import {
+  emitEvent,
+  readIndex,
+  sessionDir,
+  setActiveSession,
+} from "../../state/events.js";
 import { garbageCollectLocalState, loadMemoryGcConfig } from "./gc.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -135,6 +142,133 @@ describe("garbageCollectLocalState — Serena", () => {
       "session-cost-x.md",
     ]);
     expect(existsSync(join(serenaDir(), "progress-ancient.md"))).toBe(true);
+  });
+});
+
+describe("garbageCollectLocalState — session quota records", () => {
+  it.each([undefined, 0])(
+    "preserves quota enforcement for an indexed active session with keep=%s",
+    (keep) => {
+      const sid = "oma-live-quota";
+      emitEvent(base, sid, { kind: "session.created" });
+      setActiveSession(base, "codex", sid);
+      recordUsage(
+        sid,
+        { vendor: "codex", agentId: "frontend", tokens: 100 },
+        base,
+      );
+      const cap = { tokens: 100 };
+      expect(checkCap(sid, cap, [], base)).toMatchObject({
+        exceeded: true,
+        current: 100,
+      });
+
+      const result = garbageCollectLocalState({ baseDir: base, keep });
+
+      expect(readIndex(base).active.codex).toBe(sid);
+      expect(existsSync(sessionDir(base, sid))).toBe(true);
+      expect(result.prunedSerena).toEqual([]);
+      expect(checkCap(sid, cap, [], base)).toMatchObject({
+        exceeded: true,
+        current: 100,
+        limit: 100,
+      });
+    },
+  );
+
+  it("preserves costs for kept sessions and deletes costs for discarded sessions", () => {
+    mkSession("oma-kept", 0);
+    mkSession("oma-discarded", 99);
+    for (const sid of ["oma-kept", "oma-discarded"]) {
+      recordUsage(
+        sid,
+        { vendor: "codex", agentId: "frontend", tokens: 100 },
+        base,
+      );
+      mkSerena(`session-cost-${sid}.md`, 99);
+    }
+
+    const result = garbageCollectLocalState({
+      baseDir: base,
+      keep: 1,
+      nowMs: NOW,
+    });
+
+    expect(result.prunedSessions).toEqual([
+      join(sessionsDir(), "oma-discarded"),
+    ]);
+    expect(result.prunedSerena).toEqual([
+      join(
+        base,
+        ".agents",
+        "state",
+        "memories",
+        "session-cost-oma-discarded.md",
+      ),
+      join(serenaDir(), "session-cost-oma-discarded.md"),
+    ]);
+    expect(existsSync(join(serenaDir(), "session-cost-oma-kept.md"))).toBe(
+      true,
+    );
+    expect(checkCap("oma-kept", { tokens: 100 }, [], base)).toMatchObject({
+      exceeded: true,
+      current: 100,
+    });
+  });
+
+  it("uses the same retained sessions for dry-run and actual cleanup", () => {
+    mkSession("oma-kept", 0);
+    mkSession("oma-discarded", 99);
+    for (const sid of ["oma-kept", "oma-discarded"]) {
+      recordUsage(
+        sid,
+        { vendor: "codex", agentId: "frontend", tokens: 100 },
+        base,
+      );
+    }
+
+    const preview = garbageCollectLocalState({
+      baseDir: base,
+      keep: 1,
+      dryRun: true,
+    });
+    expect(preview.prunedSerena).toEqual([
+      join(
+        base,
+        ".agents",
+        "state",
+        "memories",
+        "session-cost-oma-discarded.md",
+      ),
+    ]);
+    expect(checkCap("oma-discarded", { tokens: 100 }, [], base).current).toBe(
+      100,
+    );
+
+    const actual = garbageCollectLocalState({ baseDir: base, keep: 1 });
+    expect(actual.prunedSerena).toEqual(preview.prunedSerena);
+  });
+
+  it("preserves existing sessions and their costs in coordination-only cleanup", () => {
+    mkSession("oma-old-kept", 99);
+    recordUsage(
+      "oma-old-kept",
+      { vendor: "codex", agentId: "frontend", tokens: 100 },
+      base,
+    );
+
+    const result = garbageCollectLocalState({
+      baseDir: base,
+      keep: 0,
+      scope: "serena",
+    });
+
+    expect(result.prunedSessions).toEqual([]);
+    expect(result.prunedSerena).toEqual([]);
+    expect(checkCap("oma-old-kept", { tokens: 100 }, [], base)).toMatchObject({
+      exceeded: true,
+      current: 100,
+    });
   });
 });
 

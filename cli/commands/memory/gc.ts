@@ -32,9 +32,9 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // Memory-store files safe to prune. Curated knowledge (decisions/, designs/,
 // plans/, code_style.md, project_purpose.md, …) is never matched and so always
 // kept — only ephemeral run/cost artifacts are swept.
-//   - ALWAYS: per-session cost records — pure ephemeral, age-independent.
+//   - COST:   cost records for removed sessions — age-independent.
 //   - AGED:   workflow run artifacts — pruned only when older than maxAgeDays.
-const RUN_ARTIFACT_ALWAYS = [/^session-cost-.*\.md$/];
+const SESSION_COST_RECORD = /^session-cost-(.+)\.md$/;
 const RUN_ARTIFACT_AGED = [
   /^progress-.*\.md$/,
   /^result-.*\.md$/,
@@ -100,8 +100,9 @@ function gcSessions(
   baseDir: string,
   keep: number,
   dryRun: boolean,
-): { pruned: string[]; kept: number } {
+): { pruned: string[]; kept: number; retainedSessionIds: Set<string> } {
   const active = activeSessionIds(baseDir);
+  const retainedSessionIds = new Set(active);
   const entries = listSessionIds(baseDir)
     .map((name) => {
       const path = sessionDir(baseDir, name);
@@ -113,12 +114,15 @@ function gcSessions(
   const pruned: string[] = [];
   entries.forEach((entry, rank) => {
     if (active.has(entry.name)) return; // never delete the live session
-    if (rank < keep) return; // within the retained window
+    if (rank < keep) {
+      retainedSessionIds.add(entry.name);
+      return;
+    }
     pruned.push(entry.path);
     if (!dryRun) rmSync(entry.path, { recursive: true, force: true });
   });
 
-  return { pruned, kept: entries.length - pruned.length };
+  return { pruned, kept: entries.length - pruned.length, retainedSessionIds };
 }
 
 function gcCoordinationArtifacts(
@@ -126,6 +130,7 @@ function gcCoordinationArtifacts(
   maxAgeMs: number | null,
   nowMs: number,
   dryRun: boolean,
+  retainedSessionIds: Set<string>,
 ): { pruned: string[]; kept: number } {
   const pruned: string[] = [];
   let considered = 0;
@@ -136,16 +141,16 @@ function gcCoordinationArtifacts(
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       // Directories (decisions/, designs/, plans/, …) are curated — always kept.
       if (!e.isFile()) continue;
-      const always = RUN_ARTIFACT_ALWAYS.some((re) => re.test(e.name));
+      const costSessionId = SESSION_COST_RECORD.exec(e.name)?.[1];
       const aged = RUN_ARTIFACT_AGED.some((re) => re.test(e.name));
-      if (!always && !aged) continue; // curated / unknown file — keep
+      if (costSessionId === undefined && !aged) continue;
 
       considered += 1;
+      if (costSessionId && retainedSessionIds.has(costSessionId)) continue;
       const path = join(dir, e.name);
-      // `always` files (session-cost) are pruned regardless of age. `aged`-only
-      // files are pruned only when the age gate is enabled and exceeded; with the
-      // gate disabled (maxAgeMs === null) they are kept.
-      if (!always) {
+      // Cost records remain valid for every retained session. Removed-session
+      // records are pruned regardless of age; other run artifacts use the age gate.
+      if (costSessionId === undefined) {
         if (maxAgeMs === null) continue; // aged pruning disabled — keep
         const ageMs = nowMs - statSync(path).mtimeMs;
         if (ageMs < maxAgeMs) continue; // not old enough — keep
@@ -185,12 +190,25 @@ export function garbageCollectLocalState(
 
   const sessions =
     scope === "serena"
-      ? { pruned: [], kept: 0 }
+      ? {
+          pruned: [],
+          kept: 0,
+          retainedSessionIds: new Set([
+            ...activeSessionIds(baseDir),
+            ...listSessionIds(baseDir),
+          ]),
+        }
       : gcSessions(baseDir, keep, dryRun);
   const coordination =
     scope === "sessions"
       ? { pruned: [], kept: 0 }
-      : gcCoordinationArtifacts(baseDir, maxAgeMs, nowMs, dryRun);
+      : gcCoordinationArtifacts(
+          baseDir,
+          maxAgeMs,
+          nowMs,
+          dryRun,
+          sessions.retainedSessionIds,
+        );
 
   const total = sessions.pruned.length + coordination.pruned.length;
   const verb = dryRun ? "would prune" : "pruned";
