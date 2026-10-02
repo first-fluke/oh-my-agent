@@ -49,7 +49,24 @@ describe("AgentMemory retry queue diagnostics", () => {
 
     const check = await collectAgentMemoryCheck(projectDir);
     expect(check.retryQueue).toEqual({ path: retryPath, total: 1, invalid: 1 });
-    expect(check.issues).toContain("1 queued AgentMemory observe retries");
+    expect(check.issues).toContain("1 queued memory delivery retries");
     expect(check.issues).toContain("1 invalid AgentMemory retry rows");
+  });
+
+  it("flags malformed pending delivery flags for a valid legacy envelope", async () => {
+    const retryPath = retryObservePath(projectDir);
+    mkdirSync(dirname(retryPath), { recursive: true });
+    writeFileSync(
+      retryPath,
+      `${JSON.stringify({
+        sid: "oma-test",
+        kind: "gate.failed",
+        eventId: "pending",
+        ts: "2026-10-02T00:00:00.000Z",
+        memoryDelivery: { observe: true, remember: "false" },
+      })}\n`,
+    );
+    const check = await collectAgentMemoryCheck(projectDir);
+    expect(check.retryQueue).toEqual({ path: retryPath, total: 1, invalid: 1 });
   });
 });

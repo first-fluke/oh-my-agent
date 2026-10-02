@@ -44,6 +44,8 @@ export interface MemoryProviderStatus {
 
 export interface MemoryProvider {
   name: import("../utils/providers.js").SemanticMemoryProviderName;
+  /** False disables all delivery intentionally; transient unavailability stays enabled. */
+  enabled?: boolean;
   /** False means raw event mirroring is unsupported, not a retryable failure. */
   observeEvents?: boolean;
   status(): Promise<MemoryProviderStatus>;

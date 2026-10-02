@@ -22,7 +22,10 @@ vi.mock("../../state/agent-results.js", () => ({
   listAgentRuns: vi.fn(() => []),
   resultEvidenceValid: vi.fn(() => true),
 }));
-vi.mock("../../state/events.js", () => ({ emitEvent: vi.fn() }));
+vi.mock("../../state/events.js", () => ({
+  emitEvent: vi.fn(),
+  emitEventWithMemory: vi.fn(),
+}));
 
 vi.mock("../../platform/context-loader.js", async (original) => ({
   ...(await original<typeof import("../../platform/context-loader.js")>()),
@@ -58,6 +61,13 @@ vi.mock("node:child_process", () => ({
 describe("agent/spawn-status.ts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(events.emitEventWithMemory).mockResolvedValue({
+      eventId: "memory-1",
+      writerPid: process.pid,
+      sid: "session1",
+      ts: "2026-10-02T00:00:00.000Z",
+      kind: "blocker.raised",
+    });
     vi.stubEnv("OMA_RUNTIME_VENDOR", "");
     vi.stubEnv("CODEX_CI", "");
     vi.stubEnv("CODEX_THREAD_ID", "");
@@ -69,6 +79,49 @@ describe("agent/spawn-status.ts", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
+  });
+
+  it("persists an incomplete-result summary and waits for memory before exit", async () => {
+    mockFsFunctions.existsSync.mockReturnValue(false);
+    mockFsFunctions.readFileSync.mockReturnValue("");
+    mockFsFunctions.openSync.mockReturnValue(123);
+    let exitHandler: ((code: number | null) => void) | undefined;
+    vi.mocked(child_process.spawn).mockReturnValue({
+      pid: 12345,
+      on: vi.fn((event, handler) => {
+        if (event === "exit") exitHandler = handler;
+      }),
+    } as unknown as child_process.ChildProcess);
+    let finishMemory!: (event: events.OmaEvent) => void;
+    const pending = new Promise<events.OmaEvent>((resolve) => {
+      finishMemory = resolve;
+    });
+    vi.mocked(events.emitEventWithMemory).mockReturnValue(pending);
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    await spawnAgent("agent1", "work", "session1", "/tmp");
+    exitHandler?.(1);
+    expect(events.emitEventWithMemory).toHaveBeenCalledWith(
+      expect.any(String),
+      "session1",
+      expect.objectContaining({
+        kind: "blocker.raised",
+        payload: expect.objectContaining({
+          code: "spawn.incomplete-result",
+          summary: expect.stringContaining("agent1"),
+        }),
+      }),
+    );
+    expect(exitSpy).not.toHaveBeenCalled();
+    finishMemory({
+      eventId: "memory-1",
+      writerPid: process.pid,
+      sid: "session1",
+      ts: "2026-10-02T00:00:00.000Z",
+      kind: "blocker.raised",
+    });
+    await vi.waitFor(() => expect(exitSpy).toHaveBeenCalledWith(1));
   });
 
   it("starts Orca tracking after spawn and drains Stop before runner exit", async () => {
@@ -502,15 +555,16 @@ describe("agent/spawn-status.ts", () => {
       mockChild as unknown as child_process.ChildProcess,
     );
 
-    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
-      throw new Error("exit");
-    });
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
     const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     await spawnAgent("agent1", "do stuff", "session1", "/tmp");
 
     expect(exitHandler).toBeDefined();
-    expect(() => exitHandler?.(1)).toThrow("exit");
+    exitHandler?.(1);
+    await vi.waitFor(() => expect(exitSpy).toHaveBeenCalledWith(1));
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Log output"),
@@ -646,9 +700,14 @@ describe("agent/spawn-status.ts", () => {
           isSymbolicLink: () => false,
         }) as fs.Stats,
     );
-    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
-      throw new Error("exit");
+    let finishMemory!: (event: events.OmaEvent) => void;
+    const pendingMemory = new Promise<events.OmaEvent>((resolve) => {
+      finishMemory = resolve;
     });
+    vi.mocked(events.emitEventWithMemory).mockReturnValue(pendingMemory);
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
 
     await spawnAgent(
       "agent1",
@@ -671,15 +730,20 @@ describe("agent/spawn-status.ts", () => {
       expect.any(Array),
       expect.any(Object),
     );
-    expect(events.emitEvent).toHaveBeenCalledWith(
+    expect(events.emitEventWithMemory).toHaveBeenCalledWith(
       expect.any(String),
       "session1",
       expect.objectContaining({
         kind: "decision.made",
-        payload: expect.objectContaining({ code: "failover.transition" }),
+        payload: expect.objectContaining({
+          code: "failover.transition",
+          subject: "agent.failover.agent1",
+          decision: expect.stringContaining("codex"),
+          rationale: expect.stringContaining("rate-limit"),
+        }),
       }),
     );
-    expect(events.emitEvent).not.toHaveBeenCalledWith(
+    expect(events.emitEventWithMemory).not.toHaveBeenCalledWith(
       expect.any(String),
       "session1",
       expect.objectContaining({
@@ -688,8 +752,16 @@ describe("agent/spawn-status.ts", () => {
       }),
     );
     expect(exitHandlers).toHaveLength(2);
-    expect(() => exitHandlers[1]?.(0)).toThrow("exit");
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    exitHandlers[1]?.(0);
+    expect(exitSpy).not.toHaveBeenCalled();
+    finishMemory({
+      eventId: "memory-1",
+      writerPid: process.pid,
+      sid: "session1",
+      ts: "2026-10-02T00:00:00.000Z",
+      kind: "decision.made",
+    });
+    await vi.waitFor(() => expect(exitSpy).toHaveBeenCalledWith(0));
   });
 
   it("does not inject CODEX_HOME isolation env for codex fallback", async () => {

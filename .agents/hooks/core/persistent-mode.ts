@@ -161,6 +161,103 @@ async function emitGateEvent(
   }
 }
 
+interface PendingEnding {
+  status: "completed" | "failed";
+  reason: string;
+}
+
+interface SessionEnding extends PendingEnding {
+  state: ModeState;
+}
+
+type RecoverableModeState = ModeState & { pendingEnding?: PendingEnding };
+
+async function finishPersistentSessions(
+  projectDir: string,
+  sessionId: string,
+  endings: SessionEnding[],
+): Promise<void> {
+  const bySid = new Map<string, SessionEnding>();
+  for (const ending of endings) {
+    const sid = ending.state.omaSid;
+    if (!sid) continue;
+    const previous = bySid.get(sid);
+    if (previous?.status !== "failed") bySid.set(sid, ending);
+  }
+  for (const [sid, ending] of bySid) {
+    // Several persistent workflows can share one L1 session. Keep it active
+    // while any sibling mode still needs work or a gate retry.
+    if (
+      loadPersistentWorkflows().some(
+        (workflow) =>
+          readModeState(projectDir, workflow, sessionId)?.omaSid === sid,
+      )
+    )
+      continue;
+    const pending: PendingEnding = {
+      status: ending.status,
+      reason: ending.reason,
+    };
+    try {
+      const { emitEvent, readEvents } = await import("./state-emit.ts");
+      const previousStopFailure =
+        ending.reason === "workflow_done"
+          ? undefined
+          : readEvents(projectDir, sid).findLast(
+              (event) =>
+                event.kind === "gate.failed" &&
+                [
+                  "budget_exhausted",
+                  "stale_state",
+                  "reinforcement_exhausted",
+                ].includes(String(event.payload?.reason ?? "")),
+            );
+      if (previousStopFailure) {
+        pending.status = "failed";
+        pending.reason = String(previousStopFailure.payload?.reason);
+      }
+      await emitEvent(projectDir, sid, {
+        kind: "session.ended",
+        payload: {
+          workflow: ending.state.workflow,
+          status: pending.status,
+          reason: pending.reason,
+        },
+      });
+    } catch {
+      // Preserve a terminal retry without overwriting a newly activated mode.
+      const path = join(
+        getStateDir(projectDir),
+        `${ending.state.workflow}-state-${sessionId}.json`,
+      );
+      try {
+        if (!existsSync(path))
+          writeFileSync(
+            path,
+            JSON.stringify(
+              { ...ending.state, pendingEnding: pending },
+              null,
+              2,
+            ),
+            { flag: "wx" },
+          );
+      } catch (error) {
+        process.stderr.write(
+          `[oma] Could not retain session end retry for ${sid}: ${error instanceof Error ? error.message : String(error)}\n`,
+        );
+      }
+      continue;
+    }
+    // Summary export is optional and follows successful terminal persistence.
+    try {
+      const { exportSessionSummary } = await import("./session-summary.ts");
+      await exportSessionSummary({ projectDir, sid });
+    } catch {
+      // Optional export failure must not undo the terminal event or stop.
+    }
+  }
+}
+
 // ── Config Loading ────────────────────────────────────────────
 
 interface TriggerConfig {
@@ -226,14 +323,14 @@ function readModeState(
   projectDir: string,
   workflow: string,
   sessionId: string,
-): ModeState | null {
+): RecoverableModeState | null {
   const path = join(
     getStateDir(projectDir),
     `${workflow}-state-${sessionId}.json`,
   );
   if (!existsSync(path)) return null;
   try {
-    return JSON.parse(readFileSync(path, "utf-8")) as ModeState;
+    return JSON.parse(readFileSync(path, "utf-8")) as RecoverableModeState;
   } catch {
     return null;
   }
@@ -296,12 +393,7 @@ function incrementReinforcement(
  * the stop should be blocked, or `null` when no workflow is active / all are
  * stale/exhausted.
  *
- * NOTE: The deactivation-via-response-text check (reading `prompt_response`,
- * `response`, `content` etc. from raw stdin) is not representable in the
- * canonical `HookInput { kind: "stop"; cwd }` shape — those fields are absent.
- * That check stays in the standalone `main()` path. When dispatched via
- * `oma hook run`, the dispatch layer is responsible for passing a pre-checked input
- * (or extending HookInput in a future revision).
+ * Both canonical and standalone callers pass response text to this handler.
  *
  * `ctx.cwd` must be the resolved git-root project directory;
  * `ctx.sid` is the vendor session id.
@@ -328,30 +420,67 @@ export async function run(
   // mode could not be deactivated via the central `oma hook run` dispatch.
   if (input.responseText) {
     if (isDeactivationRequest(input.responseText)) {
+      const endings = loadPersistentWorkflows()
+        .map((workflow) => readModeState(projectDir, workflow, sessionId))
+        .filter((state): state is ModeState => state !== null)
+        .map(
+          (state): SessionEnding => ({
+            state,
+            status: "completed",
+            reason: "workflow_done",
+          }),
+        );
       deactivateAllForSession(projectDir, sessionId);
+      await finishPersistentSessions(projectDir, sessionId, endings);
       return null;
     }
   }
 
   const persistentWorkflows = loadPersistentWorkflows();
+  const endings: SessionEnding[] = [];
 
   for (const workflow of persistentWorkflows) {
     const state = readModeState(projectDir, workflow, sessionId);
     if (!state) continue;
 
-    if (isStale(state) || state.reinforcementCount >= MAX_REINFORCEMENTS) {
+    if (
+      state.pendingEnding &&
+      (state.pendingEnding.status === "completed" ||
+        state.pendingEnding.status === "failed") &&
+      typeof state.pendingEnding.reason === "string" &&
+      state.pendingEnding.reason.trim()
+    ) {
       deactivate(projectDir, workflow, sessionId);
+      endings.push({ state, ...state.pendingEnding });
       continue;
     }
 
-    // (1) Wall-clock budget: exhausted → honest partial stop. A machine
+    // (1) Wall-clock budget: exhausted → failed terminal stop. A machine
     // verdict, not model discretion — the stop is allowed and the exhaustion
     // is recorded on the L1 trail.
     if (isBudgetExhausted(state)) {
       deactivate(projectDir, workflow, sessionId);
       await emitGateEvent(projectDir, state, "gate.failed", {
         gate: "budget",
-        summary: `wall-clock budget (${state.goal?.budget?.wallClockMinutes}m) exhausted for /${workflow}; stopping with partial status`,
+        reason: "budget_exhausted",
+        summary: `wall-clock budget (${state.goal?.budget?.wallClockMinutes}m) exhausted for /${workflow}; stopping with failed status`,
+      });
+      endings.push({ state, status: "failed", reason: "budget_exhausted" });
+      continue;
+    }
+
+    if (isStale(state) || state.reinforcementCount >= MAX_REINFORCEMENTS) {
+      deactivate(projectDir, workflow, sessionId);
+      const reason = isStale(state) ? "stale_state" : "reinforcement_exhausted";
+      await emitGateEvent(projectDir, state, "gate.failed", {
+        gate: "persistent-mode",
+        reason,
+        summary: `persistent stop released for /${workflow}: ${reason}`,
+      });
+      endings.push({
+        state,
+        status: "failed",
+        reason,
       });
       continue;
     }
@@ -375,6 +504,11 @@ export async function run(
             gate: gateKeyword,
             summary: `stop gate '${gateKeyword}' passed for /${workflow}`,
           });
+          endings.push({
+            state,
+            status: "completed",
+            reason: "completion_gate_passed",
+          });
           continue;
         }
         // Failure and timeout both count toward MAX_REINFORCEMENTS so a
@@ -396,6 +530,7 @@ export async function run(
         ]
           .filter(Boolean)
           .join("\n");
+        await finishPersistentSessions(projectDir, sessionId, endings);
         return { type: "block", reason };
       }
       ignoredGateNote = `Note: configured stop gate ${JSON.stringify(gateKeyword)} is not an allowed keyword (typecheck|test|lint) or has no matching package.json script — it was NOT executed.`;
@@ -413,9 +548,11 @@ export async function run(
       .filter(Boolean)
       .join("\n");
 
+    await finishPersistentSessions(projectDir, sessionId, endings);
     return { type: "block", reason };
   }
 
+  await finishPersistentSessions(projectDir, sessionId, endings);
   return null;
 }
 
@@ -449,14 +586,12 @@ async function main() {
     .filter((v): v is string => typeof v === "string")
     .join(" ");
 
-  if (textToCheck && isDeactivationRequest(textToCheck)) {
-    // Deactivate all persistent workflows for this session (shared helper).
-    deactivateAllForSession(projectDir, sessionId);
-    process.exit(0);
-  }
-
   // Delegate to run() for the block decision — single logic source.
-  const hookInput: HookInput = { kind: "stop", cwd: projectDir };
+  const hookInput: HookInput = {
+    kind: "stop",
+    cwd: projectDir,
+    responseText: textToCheck || undefined,
+  };
   const ctxVal: HandlerCtx = { vendor, cwd: projectDir, sid: sessionId };
 
   const result = await run(hookInput, ctxVal);

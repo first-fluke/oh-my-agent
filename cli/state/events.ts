@@ -1,21 +1,21 @@
-import { appendFileSync } from "node:fs";
 import {
   emitEvent,
-  ensureParent,
   type OmaEvent,
-  retryObservePath,
   SEMANTIC_EVENT_KINDS,
 } from "../../.agents/hooks/core/state-core.ts";
 import type { MemoryProvider } from "../types/memory.js";
+import { loadProviders } from "../utils/providers.js";
+import {
+  acknowledgeMemoryRetryLine,
+  acquireMemoryRetryDrainLock,
+  enqueueMemoryRetry,
+  type MemoryRetryLine,
+  parseMemoryRetryLine,
+  readMemoryRetryQueue,
+} from "./memory-retry-queue.js";
 import { createMemoryProvider } from "./semantic-memory.js";
 
 export * from "../../.agents/hooks/core/state-core.ts";
-
-function enqueueObserveRetry(projectDir: string, event: OmaEvent): void {
-  const path = retryObservePath(projectDir);
-  ensureParent(path);
-  appendFileSync(path, `${JSON.stringify(event)}\n`, "utf-8");
-}
 
 /**
  * Build a human-readable narrative for events worth recalling across vendor /
@@ -125,46 +125,135 @@ export function rememberContentForEvent(
 
   return null;
 }
-export async function emitEventWithMemory(
-  projectDir: string,
-  sid: string,
-  event: Omit<Partial<OmaEvent>, "sid"> & { kind: string },
-  provider: MemoryProvider = createMemoryProvider({ projectDir }),
-): Promise<OmaEvent> {
-  const enriched = emitEvent(projectDir, sid, event);
-  if (!SEMANTIC_EVENT_KINDS.has(enriched.kind)) return enriched;
 
-  const observed =
-    provider.observeEvents === false ||
-    (await provider.observe({
-      sessionId: sid,
-      content: `${JSON.stringify(enriched)}\n`,
-      source: "oma-workflow",
-    }));
-  if (!observed) enqueueObserveRetry(projectDir, enriched);
-
-  // Durable, recallable fact for cross-boundary rehydration (best-effort: a
-  // failure here never affects L1 or the observe retry queue). Feature-detected
-  // so provider stubs without `remember` stay valid.
-  const memo = rememberContentForEvent(enriched);
-  if (
-    memo &&
-    typeof provider.remember === "function" &&
-    (provider.name !== "honcho" ||
+function supportsRememberKind(
+  kind: string,
+  provider: MemoryProvider["name"],
+): boolean {
+  return (
+    provider !== "none" &&
+    (provider !== "honcho" ||
       [
         "decision.made",
         "blocker.raised",
         "skill.pattern.consolidated",
-      ].includes(enriched.kind))
-  ) {
+      ].includes(kind))
+  );
+}
+
+function canRememberEvent(event: OmaEvent, provider: MemoryProvider): boolean {
+  return (
+    provider.enabled !== false &&
+    typeof provider.remember === "function" &&
+    supportsRememberKind(event.kind, provider.name)
+  );
+}
+
+async function tryMemoryDelivery(
+  deliver: () => Promise<boolean>,
+): Promise<boolean> {
+  try {
+    return await deliver();
+  } catch {
+    return false;
+  }
+}
+
+/** Resume memory delivery without appending another L1 event. Caller holds the drain lease. */
+export async function deliverMemoryRetryEntry(
+  projectDir: string,
+  entry: MemoryRetryLine,
+  provider: MemoryProvider,
+): Promise<boolean> {
+  const record = parseMemoryRetryLine(entry.line);
+  if (!record || provider.enabled === false) return false;
+  const { event, delivery } = record;
+  let observed =
+    !delivery.observe || entry.delivered?.includes("observe") === true;
+  let remembered =
+    !delivery.remember || entry.delivered?.includes("remember") === true;
+  if (!observed && provider.observeEvents !== false) {
+    observed = await tryMemoryDelivery(() =>
+      provider.observe({
+        sessionId: event.sid,
+        content: `${JSON.stringify(event)}\n`,
+        source: "oma-workflow",
+      }),
+    );
+    if (observed) acknowledgeMemoryRetryLine(projectDir, entry, "observe");
+  }
+  const memo = rememberContentForEvent(event);
+  const remember = provider.remember;
+  if (!remembered && memo && remember && canRememberEvent(event, provider)) {
+    remembered = await tryMemoryDelivery(() =>
+      remember.call(provider, {
+        sessionId: event.sid,
+        ...memo,
+      }),
+    );
+    if (remembered) acknowledgeMemoryRetryLine(projectDir, entry, "remember");
+  }
+  return observed && remembered;
+}
+
+export async function emitEventWithMemory(
+  projectDir: string,
+  sid: string,
+  event: Omit<Partial<OmaEvent>, "sid"> & { kind: string },
+  provider?: MemoryProvider,
+): Promise<OmaEvent> {
+  const enriched = emitEvent(projectDir, sid, event);
+  if (!SEMANTIC_EVENT_KINDS.has(enriched.kind)) return enriched;
+  const memo = rememberContentForEvent(enriched);
+
+  try {
+    provider ??= createMemoryProvider({ projectDir });
+  } catch (error) {
+    console.warn(`[state] Memory provider unavailable: ${String(error)}`);
     try {
-      await provider.remember({
-        sessionId: sid,
-        content: memo.content,
-        importance: memo.importance,
-      });
-    } catch {
-      // Non-fatal: recall is an enhancement, not an L1 correctness guarantee.
+      const selected = loadProviders(projectDir).semantic_memory;
+      const delivery = {
+        observe: selected === "agentmemory",
+        remember:
+          memo !== null && supportsRememberKind(enriched.kind, selected),
+      };
+      if (delivery.observe || delivery.remember) {
+        enqueueMemoryRetry(projectDir, enriched, delivery);
+      }
+    } catch (queueError) {
+      console.warn(
+        `[state] Memory retry enqueue failed: ${String(queueError)}`,
+      );
+    }
+    return enriched;
+  }
+  if (provider.enabled === false) return enriched;
+
+  const delivery = {
+    observe: provider.name !== "none" && provider.observeEvents !== false,
+    remember: memo !== null && canRememberEvent(enriched, provider),
+  };
+  if (!delivery.observe && !delivery.remember) return enriched;
+
+  let release: (() => void) | undefined;
+  try {
+    // Queue before awaiting the lease or provider, so interruption leaves durable work.
+    const line = enqueueMemoryRetry(projectDir, enriched, delivery);
+    release = await acquireMemoryRetryDrainLock(projectDir, 1000);
+    // A drain may have completed this row while we waited for its lease.
+    const entry = readMemoryRetryQueue(projectDir).find(
+      (candidate) => candidate.line === line,
+    );
+    if (entry) await deliverMemoryRetryEntry(projectDir, entry, provider);
+  } catch (error) {
+    console.warn(`[state] Memory delivery deferred: ${String(error)}`);
+  } finally {
+    try {
+      release?.();
+    } catch (error) {
+      console.warn(
+        `[state] Memory delivery lease cleanup failed: ${String(error)}`,
+      );
     }
   }
   return enriched;

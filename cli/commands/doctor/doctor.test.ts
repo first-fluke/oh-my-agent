@@ -499,7 +499,7 @@ describe("AgentMemory doctor checks", () => {
       reason: "endpoint not configured",
     });
     expect(report.agentMemory.issues).toContain(
-      "2 queued AgentMemory observe retries",
+      "2 queued memory delivery retries",
     );
     expect(report.agentMemory.issues).toContain(
       "1 invalid AgentMemory retry rows",
@@ -637,6 +637,7 @@ describe("state and hook doctor checks", () => {
             kind: "session.created",
             eventId: "evt-1",
             ts: "2026-06-01T00:00:00.000Z",
+            writerPid: 1,
           }),
           "{bad json",
         ].join("\n");

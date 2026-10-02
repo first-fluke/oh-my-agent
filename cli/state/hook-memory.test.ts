@@ -94,7 +94,11 @@ describe("provider-aware CLI hooks", () => {
     const root = project("none");
     await emitEventWithMemory(root, "s1", {
       kind: "decision.made",
-      payload: { subject: "DB", decision: "Postgres" },
+      payload: {
+        subject: "DB",
+        decision: "Postgres",
+        rationale: "Use relational constraints",
+      },
     });
     expect(readFileSync(eventsPath(root, "s1"), "utf8")).toContain("Postgres");
     expect(existsSync(retryObservePath(root))).toBe(false);
@@ -154,6 +158,7 @@ describe("provider-aware CLI hooks", () => {
           payload: {
             subject: "database",
             decision: "Postgres",
+            rationale: "Use relational constraints",
             unrelated: "not for memory",
           },
         }),

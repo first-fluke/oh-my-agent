@@ -69,8 +69,10 @@ describe("spawn structured result integration", () => {
       });
   });
   it("does not label a native exit zero without a claim as completed", async () => {
+    vi.mocked(process.exit).mockImplementation(() => undefined as never);
     await spawnAgent("qa-reviewer", "Review", "s1", root);
-    expect(() => child.emit("exit", 0)).toThrow("process-exit");
+    child.emit("exit", 0);
+    await vi.waitFor(() => expect(process.exit).toHaveBeenCalledWith(3));
     expect(listAgentRuns(root)[0]?.status).toBe("partial");
     expect(process.exit).toHaveBeenCalledWith(3);
   });

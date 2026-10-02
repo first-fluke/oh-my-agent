@@ -21,12 +21,21 @@ import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import type { MemoryProvider } from "../../types/memory.js";
 import { drainMemoryRetryQueue } from "./retry-drain.js";
 
-function eventLine(eventId: string): string {
+function eventLine(eventId: string, retryRemember = false): string {
   return `${JSON.stringify({
     eventId,
     ts: "2026-05-27T00:00:00.000Z",
     sid: "oma-retry-test",
     kind: "decision.made",
+    writerPid: process.pid,
+    payload: {
+      subject: "retry",
+      decision: eventId,
+      rationale: "Keep the original delivery",
+    },
+    ...(retryRemember
+      ? { memoryDelivery: { observe: true, remember: true } }
+      : {}),
   })}\n`;
 }
 
@@ -130,7 +139,7 @@ describe("memory retry drain concurrency", () => {
           return true;
         }),
       }),
-    ).rejects.toThrow("interrupted provider");
+    ).resolves.toMatchObject({ drained: 1, retained: 1 });
 
     const observed: string[] = [];
     await drainMemoryRetryQueue({
@@ -211,70 +220,94 @@ describe("memory retry drain concurrency", () => {
     ).toEqual(["한글"]);
   });
 
-  it("releases the cross-process drain lock and recovers progress after a killed drain", async () => {
-    appendFileSync(retryPath, eventLine("second"));
-    const modulePath = fileURLToPath(
-      new URL("./retry-drain.ts", import.meta.url),
-    );
-    const child = spawn(
-      "bun",
-      [
-        "--eval",
-        `import { drainMemoryRetryQueue } from ${JSON.stringify(modulePath)};
+  it.each(["observe", "remember"])(
+    "recovers the drain lock and completed dimensions after a kill during %s",
+    async (dimension) => {
+      writeFileSync(
+        retryPath,
+        eventLine("first", dimension === "remember") +
+          eventLine("second", dimension === "remember"),
+      );
+      const modulePath = fileURLToPath(
+        new URL("./retry-drain.ts", import.meta.url),
+      );
+      const child = spawn(
+        "bun",
+        [
+          "--eval",
+          `import { drainMemoryRetryQueue } from ${JSON.stringify(modulePath)};
       await drainMemoryRetryQueue({
         projectDir: ${JSON.stringify(projectDir)},
         provider: {
           name: "agentmemory",
           async status() { return { provider: "agentmemory", reachable: true }; },
           async observe(payload) {
-            if (JSON.parse(payload.content).eventId === "first") return true;
+            if (JSON.parse(payload.content).eventId === "first" || ${JSON.stringify(dimension === "remember")}) return true;
+            process.stdout.write("blocked\\n");
+            await new Promise(() => {});
+          },
+          async remember(payload) {
+            if (payload.content.includes(": first ")) return true;
             process.stdout.write("blocked\\n");
             await new Promise(() => {});
           }
         }
       });`,
-      ],
-      { stdio: ["pipe", "pipe", "pipe"] },
-    );
-    let pendingDrain: ReturnType<typeof drainMemoryRetryQueue> | undefined;
-    try {
-      await new Promise<void>((resolve, reject) => {
-        let stdout = "";
-        let stderr = "";
-        child.stdout.on("data", (chunk: Buffer) => {
-          stdout += chunk.toString();
-          if (stdout.includes("blocked\n")) resolve();
+        ],
+        { stdio: ["pipe", "pipe", "pipe"] },
+      );
+      let pendingDrain: ReturnType<typeof drainMemoryRetryQueue> | undefined;
+      try {
+        await new Promise<void>((resolve, reject) => {
+          let stdout = "";
+          let stderr = "";
+          child.stdout.on("data", (chunk: Buffer) => {
+            stdout += chunk.toString();
+            if (stdout.includes("blocked\n")) resolve();
+          });
+          child.stderr.on("data", (chunk: Buffer) => {
+            stderr += chunk.toString();
+          });
+          child.once("error", reject);
+          child.once("exit", (code) =>
+            reject(new Error(`Drain exited ${code}: ${stderr}`)),
+          );
         });
-        child.stderr.on("data", (chunk: Buffer) => {
-          stderr += chunk.toString();
+
+        const observed: string[] = [];
+        const remembered: string[] = [];
+        pendingDrain = drainMemoryRetryQueue({
+          projectDir,
+          provider: {
+            ...provider(async (payload) => {
+              observed.push(JSON.parse(payload.content).eventId);
+              return true;
+            }),
+            async remember(payload) {
+              remembered.push(payload.content);
+              return true;
+            },
+          },
         });
-        child.once("error", reject);
-        child.once("exit", (code) =>
-          reject(new Error(`Drain exited ${code}: ${stderr}`)),
-        );
-      });
-
-      const observed: string[] = [];
-      pendingDrain = drainMemoryRetryQueue({
-        projectDir,
-        provider: provider(async (payload) => {
-          observed.push(JSON.parse(payload.content).eventId);
-          return true;
-        }),
-      });
-      await setTimeout(75);
-      expect(observed).toEqual([]);
-      child.kill("SIGKILL");
-      await once(child, "exit");
-
-      expect(await pendingDrain).toMatchObject({ total: 1, drained: 1 });
-      expect(observed).toEqual(["second"]);
-    } finally {
-      if (child.exitCode === null && child.signalCode === null) {
+        await setTimeout(75);
+        expect(observed).toEqual([]);
         child.kill("SIGKILL");
         await once(child, "exit");
+
+        expect(await pendingDrain).toMatchObject({ total: 1, drained: 1 });
+        expect(observed).toEqual(dimension === "remember" ? [] : ["second"]);
+        expect(remembered).toEqual(
+          dimension === "remember"
+            ? ["Decision [retry]: second Rationale: Keep the original delivery"]
+            : [],
+        );
+      } finally {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill("SIGKILL");
+          await once(child, "exit");
+        }
+        await pendingDrain;
       }
-      await pendingDrain;
-    }
-  });
+    },
+  );
 });

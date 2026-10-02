@@ -12,6 +12,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
+import { validateEventPayload } from "./event-contract.ts";
 import {
   ensureProfile,
   ensureSessionStorage,
@@ -252,6 +253,12 @@ function appendEvent(
   sid: string,
   event: Omit<Partial<OmaEvent>, "sid"> & { kind: string },
 ): OmaEvent {
+  const payloadIssues = validateEventPayload(event.kind, event.payload);
+  if (payloadIssues.length) {
+    throw new Error(
+      `Invalid ${event.kind} event payload: ${payloadIssues.join("; ")}`,
+    );
+  }
   const enriched: OmaEvent = {
     eventId: event.eventId ?? createEventId(),
     ts: event.ts ?? new Date().toISOString(),
@@ -284,9 +291,18 @@ function appendEvent(
   if (
     event.kind === "session.created" ||
     event.kind === "workflow.phase" ||
+    event.kind === "gate.passed" ||
+    event.kind === "gate.failed" ||
     event.kind === "session.ended"
   ) {
     refreshMetaUnlocked(projectDir, sid);
+  }
+  if (event.kind === "session.ended") {
+    updateIndex(projectDir, (index) => {
+      for (const [category, activeSid] of Object.entries(index.active)) {
+        if (activeSid === sid) delete index.active[category];
+      }
+    });
   }
   return enriched;
 }
@@ -347,7 +363,7 @@ export function deriveMeta(sid: string, events: OmaEvent[]): SessionMeta {
       meta.gatesPassedBy.push({ ts: event.ts, ...(event.payload ?? {}) });
     } else if (event.kind === "session.ended") {
       const status = event.payload?.status;
-      meta.status = status === "failed" ? "failed" : "completed";
+      if (status === "failed" || status === "completed") meta.status = status;
     }
   }
   return meta;

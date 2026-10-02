@@ -114,6 +114,7 @@ export function resolveAgentMemoryEndpoint(options: {
 export function createNoneMemoryProvider(): MemoryProvider {
   return {
     name: "none",
+    enabled: false,
     async status() {
       return {
         provider: "none",
@@ -212,6 +213,9 @@ export function createAgentMemoryProvider(
 
   return {
     name: "agentmemory",
+    get enabled() {
+      return env.OMA_NO_AGENTMEMORY !== "1";
+    },
     status,
     async observe(payload) {
       const current = await status();

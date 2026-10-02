@@ -84,6 +84,22 @@ describe("collectHarnessSignals", () => {
     expect(signals[0]?.latestSummary).toContain("no artifact");
   });
 
+  it("preserves the failure reason when a stop gate has no summary", () => {
+    const ws = makeWorkspace();
+    writeEvents(ws, "oma-reason", [
+      event("gate.failed", {
+        gate: "budget",
+        workflow: "ultrawork",
+        reason: "Wall-clock budget exhausted after 30 minutes.",
+      }),
+    ]);
+    const signals = collectHarnessSignals(ws, 7);
+    expect(signals[0]?.latestSummary).toBe(
+      "Wall-clock budget exhausted after 30 minutes.",
+    );
+    expect(fmtHarnessSignals(signals)).toContain("Wall-clock budget exhausted");
+  });
+
   it("excludes events older than the window and skips malformed lines", () => {
     const ws = makeWorkspace();
     writeEvents(ws, "oma-sig3", [

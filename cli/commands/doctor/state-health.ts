@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { validateEventEnvelope } from "../../../.agents/hooks/core/event-contract.ts";
 import { AGENTS_STATE_DIR, agentsPathFromRoot } from "../../constants/paths.js";
 import { isGitRepo, isPathGitIgnored } from "../../io/gitignore.js";
 import {
@@ -316,13 +317,7 @@ function countInvalidEventLines(path: string): number {
     if (!line.trim()) continue;
     try {
       const parsed = JSON.parse(line);
-      if (
-        !isRecord(parsed) ||
-        typeof parsed.sid !== "string" ||
-        typeof parsed.kind !== "string" ||
-        typeof parsed.eventId !== "string" ||
-        typeof parsed.ts !== "string"
-      ) {
+      if (validateEventEnvelope(parsed).length > 0) {
         invalid += 1;
       }
     } catch {

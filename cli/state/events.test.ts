@@ -24,6 +24,10 @@ import {
   setActiveSession,
   sortEvents,
 } from "./events.js";
+import {
+  parseMemoryRetryLine,
+  readMemoryRetryQueue,
+} from "./memory-retry-queue.js";
 
 describe("L1 state events", () => {
   let projectDir: string;
@@ -185,7 +189,7 @@ describe("L1 state events", () => {
     for (const kind of ["session.created", "workflow.phase", "session.ended"]) {
       emitEvent(projectDir, "oma-win", {
         kind,
-        payload: { workflow: "debug", category: "main" },
+        payload: { workflow: "debug", category: "main", status: "completed" },
       });
     }
 
@@ -230,7 +234,11 @@ describe("L1 state events", () => {
       "oma-memory",
       {
         kind: "decision.made",
-        payload: { subject: "work.remediation-choice" },
+        payload: {
+          subject: "work.remediation-choice",
+          decision: "Repair the finding",
+          rationale: "The finding blocks completion",
+        },
       },
       {
         name: "agentmemory",
@@ -252,7 +260,7 @@ describe("L1 state events", () => {
         source: "oma-workflow",
       },
     ]);
-    expect(existsSync(retryObservePath(projectDir))).toBe(false);
+    expect(readMemoryRetryQueue(projectDir)).toEqual([]);
   });
 
   it("queues semantic event retry when memory observe fails", async () => {
@@ -275,9 +283,13 @@ describe("L1 state events", () => {
       },
     );
 
-    expect(readFileSync(retryObservePath(projectDir), "utf-8")).toBe(
-      `${JSON.stringify(event)}\n`,
-    );
+    const pending = readMemoryRetryQueue(projectDir);
+    expect(pending).toHaveLength(1);
+    if (!pending[0]) throw new Error("Expected the queued observation");
+    expect(parseMemoryRetryLine(pending[0].line)).toEqual({
+      event,
+      delivery: { observe: true, remember: false },
+    });
   });
 
   it("remembers a decision.made event as a formatted durable fact", async () => {

@@ -69,6 +69,91 @@ describe("session-summary", () => {
   });
 
   describe("buildSessionSummary", () => {
+    it("bounds exported summary text and strips payload controls", () => {
+      const events = Array.from({ length: 100 }, (_, index) => ({
+        eventId: String(index),
+        ts: "2026-10-02T00:00:00Z",
+        sid,
+        kind: "decision.made",
+        writerPid: 1,
+        payload: {
+          subject: "storage",
+          decision: `Retry\n## Forged\u001b[31m${"x".repeat(20_000)}`,
+          rationale: "y".repeat(20_000),
+          instanceId: `instance-${index}`,
+          secret: "do-not-export",
+        },
+      }));
+      const content = buildSessionSummary(
+        sid,
+        {
+          sid,
+          schemaVersion: 1,
+          category: "main",
+          status: "failed",
+          gatesPassedBy: [],
+          pendingPeerReviews: [],
+        },
+        events,
+      );
+      expect(content.length).toBeLessThanOrEqual(24_001);
+      expect(content.includes("\n## Forged")).toBe(false);
+      expect(content.includes("\u001b")).toBe(false);
+      expect(content.includes("do-not-export")).toBe(false);
+      expect(content).toContain("instance-99");
+      expect(content.includes("instance-0]")).toBe(false);
+    });
+
+    it("includes failed gate reasons, blockers, terminal reasons, and decision instance ids", () => {
+      emitEvent(projectDir, sid, {
+        kind: "decision.made",
+        payload: {
+          subject: "recovery",
+          decision: "retry persistence",
+          rationale: "retain session evidence",
+          instanceId: "retry-1",
+        },
+      });
+      emitEvent(projectDir, sid, {
+        kind: "gate.failed",
+        payload: {
+          gate: "budget",
+          summary: "time cap exhausted",
+          reason: "budget_exhausted",
+        },
+      });
+      emitEvent(projectDir, sid, {
+        kind: "blocker.raised",
+        payload: { summary: "missing database fixture", instanceId: "db-1" },
+      });
+      emitEvent(projectDir, sid, {
+        kind: "session.ended",
+        payload: { status: "failed", reason: "budget_exhausted" },
+      });
+      const events = readEvents(projectDir, sid);
+      const content = buildSessionSummary(
+        sid,
+        {
+          sid,
+          schemaVersion: 1,
+          category: "main",
+          status: "failed",
+          gatesPassedBy: [],
+          pendingPeerReviews: [],
+        },
+        events,
+      );
+      for (const text of [
+        "retry-1",
+        "failed",
+        "time cap exhausted",
+        "budget_exhausted",
+        "missing database fixture",
+        "db-1",
+      ])
+        expect(content).toContain(text);
+    });
+
     it("includes decisions, gates, and recent events", () => {
       const events = readEvents(projectDir, sid);
       const content = buildSessionSummary(

@@ -48,7 +48,7 @@ import {
   readOnlyClaim,
   resultEvidenceValid,
 } from "../../state/agent-results.js";
-import { emitEvent } from "../../state/events.js";
+import { emitEventWithMemory, type OmaEvent } from "../../state/events.js";
 import {
   probeFreeProvider,
   resolveFreeProvider,
@@ -204,6 +204,7 @@ export async function spawnAgent(
   fallbackVendors?: string | string[],
   failoverAttempt = 0,
   originalTaskPrompt?: string,
+  pendingMemoryDeliveries: Promise<unknown>[] = [],
 ) {
   let worktreeHandle: WorktreeHandle | null = null;
   if (isolation === "worktree") {
@@ -481,6 +482,7 @@ export async function spawnAgent(
       );
     }
     console.error(color.red(`[${agentId}] Failed to spawn process`));
+    await Promise.allSettled(pendingMemoryDeliveries);
     process.exit(1);
   }
 
@@ -497,11 +499,30 @@ export async function spawnAgent(
   orcaSubagent?.start();
 
   const exitAfterOrca = (code: number) => {
-    if (orcaSubagent) {
+    if (pendingMemoryDeliveries.length > 0) {
+      void Promise.allSettled(pendingMemoryDeliveries).then(async () => {
+        await orcaSubagent?.stop();
+        process.exit(code);
+      });
+    } else if (orcaSubagent) {
       void orcaSubagent.stop().then(() => process.exit(code));
     } else {
       process.exit(code);
     }
+  };
+
+  const emitLifecycleMemory = (
+    event: Omit<Partial<OmaEvent>, "sid"> & { kind: string },
+  ) => {
+    // Queue durably before awaiting memory. A successor may start immediately;
+    // its final exit also waits for this attempt's provider delivery.
+    pendingMemoryDeliveries.push(
+      emitEventWithMemory(runRoot, sessionId, event).catch((error) => {
+        console.warn(
+          `[${agentId}] Memory event delivery failed (non-fatal): ${String(error)}`,
+        );
+      }),
+    );
   };
 
   // Remove the PID file but preserve the log for post-run inspection (#583).
@@ -590,11 +611,12 @@ export async function spawnAgent(
       // blocked for that expected handoff; a transition is recorded below as a
       // decision. All other incomplete results keep the existing blocker.
       if (result.status !== "completed" && !willFailover) {
-        emitEvent(runRoot, sessionId, {
+        emitLifecycleMemory({
           kind: "blocker.raised",
           vendor,
           payload: {
             code: "spawn.incomplete-result",
+            summary: `${agentId} run ${run.runId} ended with ${result.status}: ${result.unresolved.join("; ") || "a verified completion result is missing"}`,
             agentId,
             runId: run.runId,
             status: result.status,
@@ -628,11 +650,15 @@ export async function spawnAgent(
       }
 
       if (willFailover && nextVendor && safeHandoff && terminalReason) {
-        emitEvent(runRoot, sessionId, {
+        emitLifecycleMemory({
           kind: "decision.made",
           vendor,
           payload: {
             code: "failover.transition",
+            subject: `agent.failover.${agentId}`,
+            decision: `Continue ${agentId} from ${vendor} with ${nextVendor}`,
+            rationale: `${vendor} ended with ${terminalReason}; fresh safe handoff checkpoint: ${safeHandoff.path}`,
+            instanceId: run.runId,
             agentId,
             runId: run.runId,
             fromVendor: vendor,
@@ -665,23 +691,25 @@ export async function spawnAgent(
           fallbackCandidates.vendors.slice(1),
           failoverAttempt + 1,
           initialTaskPrompt,
+          pendingMemoryDeliveries,
         ).catch((error) => {
           console.error(
             color.red(
               `[${agentId}] Failover could not start: ${String(error)}`,
             ),
           );
-          process.exit(3);
+          exitAfterOrca(3);
         });
         return;
       }
 
       if (terminalReason && nextVendor && result.status !== "completed") {
-        emitEvent(runRoot, sessionId, {
+        emitLifecycleMemory({
           kind: "blocker.raised",
           vendor,
           payload: {
             code: "failover.needs-review",
+            summary: `${agentId} cannot continue from ${vendor} with ${nextVendor} after ${terminalReason}: ${safeHandoff ? "handoff result was not eligible" : "missing fresh safe handoff checkpoint"}`,
             agentId,
             runId: run.runId,
             fromVendor: vendor,

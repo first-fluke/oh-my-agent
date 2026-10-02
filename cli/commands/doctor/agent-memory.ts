@@ -2,7 +2,10 @@ import { accessSync, existsSync, constants as fsConstants } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { retryObservePath } from "../../state/events.js";
-import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
+import {
+  parseMemoryRetryLine,
+  readMemoryRetryQueue,
+} from "../../state/memory-retry-queue.js";
 import type {
   MemoryDaemonResult,
   MemoryProviderStatus,
@@ -20,17 +23,7 @@ import type {
 } from "./types.js";
 
 function isValidRetryLine(line: string): boolean {
-  try {
-    const parsed = JSON.parse(line) as Record<string, unknown>;
-    return (
-      typeof parsed.sid === "string" &&
-      typeof parsed.kind === "string" &&
-      typeof parsed.eventId === "string" &&
-      typeof parsed.ts === "string"
-    );
-  } catch {
-    return false;
-  }
+  return parseMemoryRetryLine(line) !== null;
 }
 
 function collectRetryQueue(cwd: string): AgentMemoryRetryQueueCheck {
@@ -132,7 +125,7 @@ function agentMemoryIssues(args: {
     issues.push(`AgentMemory binary not found: ${args.binary.command}`);
   }
   if (args.retryQueue.total > 0) {
-    issues.push(`${args.retryQueue.total} queued AgentMemory observe retries`);
+    issues.push(`${args.retryQueue.total} queued memory delivery retries`);
   }
   if (args.retryQueue.invalid > 0) {
     issues.push(`${args.retryQueue.invalid} invalid AgentMemory retry rows`);

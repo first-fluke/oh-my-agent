@@ -169,7 +169,11 @@ export function collectHarnessSignals(
       if (!group.latestTs || event.ts > group.latestTs) {
         group.latestTs = event.ts;
         group.latestSummary =
-          str(payload, "summary") || str(payload, "decision") || "";
+          str(payload, "summary") ||
+          str(payload, "reason") ||
+          str(payload, "decision") ||
+          str(payload, "remediation") ||
+          "";
       }
       groups.set(groupKey, group);
     }
