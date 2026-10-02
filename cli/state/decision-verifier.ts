@@ -1,6 +1,6 @@
 import {
   isNonblankEventText,
-  validateEventPayload,
+  validateEventEnvelope,
 } from "../../.agents/hooks/core/event-contract.ts";
 import {
   emitEventWithMemory,
@@ -200,7 +200,8 @@ export async function verifyRequiredDecisions(args: {
     .filter(
       (event) =>
         event.kind === "decision.made" &&
-        validateEventPayload(event.kind, event.payload).length === 0 &&
+        event.sid === args.sid &&
+        validateEventEnvelope(event).length === 0 &&
         event.payload?.instanceId === args.instanceId,
     )
     .map((event) => event.payload?.subject)

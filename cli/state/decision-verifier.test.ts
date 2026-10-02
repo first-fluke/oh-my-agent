@@ -110,6 +110,48 @@ describe("required decision verifier", () => {
     });
   });
 
+  it.each([
+    { sid: "another-session" },
+    { ts: "not-a-timestamp" },
+    { writerPid: undefined },
+  ])(
+    "rejects a decision with a corrupt or mismatched envelope: %j",
+    async (overrides) => {
+      activateWorkflowSession({
+        projectDir,
+        sid: "oma-envelope",
+        workflow: "ultrawork",
+      });
+      appendFileSync(
+        eventsPath(projectDir, "oma-envelope"),
+        `${JSON.stringify({
+          eventId: "legacy-decision",
+          ts: new Date().toISOString(),
+          sid: "oma-envelope",
+          kind: "decision.made",
+          writerPid: 1,
+          ...overrides,
+          payload: {
+            subject: "ultrawork.plan-approved",
+            instanceId: "plan-v1",
+            decision: "Apply this patch.",
+            rationale: "The scope is approved.",
+          },
+        })}\n`,
+      );
+      const result = await verifyRequiredDecisions({
+        projectDir,
+        sid: "oma-envelope",
+        workflow: "ultrawork",
+        checkpoint: "plan-approved",
+        instanceId: "plan-v1",
+        emitMissing: false,
+      });
+      expect(result.ok).toBe(false);
+      expect(result.presentSubjects).toEqual([]);
+    },
+  );
+
   it.each([undefined, "", "  "])(
     "requires a concrete checkpoint instance (%j)",
     async (instanceId) => {
