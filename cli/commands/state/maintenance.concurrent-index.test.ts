@@ -21,6 +21,7 @@ describe("maintenance preserves newer index writes", () => {
     events.emitEvent(root, "oma-old", {
       kind: "session.ended",
       ts: "2025-01-02T00:00:00.000Z",
+      payload: { status: "completed" },
     });
   });
   afterEach(() => {
@@ -44,11 +45,13 @@ describe("maintenance preserves newer index writes", () => {
         concurrentUpdate();
         return snapshot;
       });
-      run({
+      const result = run({
         projectDir: root,
         olderThan: "90d",
         now: new Date("2026-09-05T00:00:00.000Z"),
       });
+      if ("purged" in result) expect(result.purged).toEqual(["oma-old"]);
+      else expect(result.archived.map(({ sid }) => sid)).toEqual(["oma-old"]);
       expect(events.readIndex(root)).toMatchObject({
         active: { research: "oma-new" },
         lastSession: { vendorSid: "new-vendor-session" },

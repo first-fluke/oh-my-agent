@@ -18,6 +18,7 @@ import {
   sessionArchiveRoot,
   sessionDir,
   sessionsDir,
+  setActiveSession,
 } from "../../state/events.js";
 import {
   activateStateSession,
@@ -223,6 +224,8 @@ describe("state command helpers", () => {
       kind: "session.ended",
       payload: { status: "completed" },
     });
+    // Seed a stale pointer to verify that archiving still protects it.
+    setActiveSession(projectDir, "main", "oma-active-done");
 
     const result = archiveStateSessions({
       projectDir,

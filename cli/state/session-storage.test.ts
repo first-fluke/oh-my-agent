@@ -203,7 +203,10 @@ describe("profile session storage", () => {
   it("archives and purges only the current project's sessions", () => {
     const a = create(project);
     const b = create(other);
-    emitEvent(project, a, { kind: "session.ended" });
+    emitEvent(project, a, {
+      kind: "session.ended",
+      payload: { status: "completed" },
+    });
     updateIndex(project, (index) => {
       index.active = {};
     });
