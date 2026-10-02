@@ -1,13 +1,16 @@
 import type { Command } from "commander";
 import { runAction } from "../../utils/cli-framework.js";
 import { showAgentContext } from "./context.js";
-import { parallelRun } from "./parallel.js";
+import { parallelRun, runParallelSupervisor } from "./parallel.js";
 import { beginResult, finishResult, verifyResult } from "./results.js";
 import { resumeAgents } from "./resume.js";
 import { reviewAgent } from "./review.js";
 import { checkStatus, spawnAgent } from "./spawn-status.js";
 
 export function registerAgentCommands(program: Command): void {
+  program
+    .command("agent:parallel-supervisor <manifest>", { hidden: true })
+    .action(runAction(runParallelSupervisor));
   program
     .command("agent:context <agent-id>")
     .description("Load graph-selected context for a native dispatch prompt")

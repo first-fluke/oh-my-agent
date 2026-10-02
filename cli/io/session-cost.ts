@@ -62,10 +62,10 @@ export interface CheckCapResult {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-const usageStore = createMarkdownRecordStore<UsageRecord>({
+const usageStoreOptions = {
   filePrefix: "session-cost",
   title: "Session Cost",
-  isRecordValid: (value) => {
+  isRecordValid: (value: unknown) => {
     const record = value as UsageRecord | null;
     return (
       !!record &&
@@ -76,7 +76,14 @@ const usageStore = createMarkdownRecordStore<UsageRecord>({
       typeof record.recordedAt === "string"
     );
   },
-});
+};
+const usageStore = createMarkdownRecordStore<UsageRecord>(usageStoreOptions);
+
+function usageStoreAt(root?: string) {
+  return root
+    ? createMarkdownRecordStore<UsageRecord>({ ...usageStoreOptions, root })
+    : usageStore;
+}
 
 // ---------------------------------------------------------------------------
 // Config loading — same pattern as runtime-dispatch.ts
@@ -160,8 +167,9 @@ export function loadQuotaCap(cwd: string = process.cwd()): QuotaCap | null {
 export function recordUsage(
   sessionId: string,
   record: Omit<UsageRecord, "sessionId" | "recordedAt">,
+  root?: string,
 ): void {
-  usageStore.append(sessionId, {
+  usageStoreAt(root).append(sessionId, {
     ...record,
     sessionId,
     recordedAt: new Date().toISOString(),
@@ -172,8 +180,11 @@ export function recordUsage(
  * Return all usage records for the session, in order of recording.
  * Partial records (due to concurrent writes) are silently skipped.
  */
-export function loadSessionUsage(sessionId: string): UsageRecord[] {
-  return usageStore.load(sessionId);
+export function loadSessionUsage(
+  sessionId: string,
+  root?: string,
+): UsageRecord[] {
+  return usageStoreAt(root).load(sessionId);
 }
 
 /**
@@ -254,8 +265,13 @@ export function listAllSessionUsage(
  *
  * Returns { exceeded: false } when no cap is configured or none are crossed.
  */
-export function checkCap(sessionId: string, cap: QuotaCap): CheckCapResult {
-  const records = loadSessionUsage(sessionId);
+export function checkCap(
+  sessionId: string,
+  cap: QuotaCap,
+  pending: readonly Pick<UsageRecord, "vendor" | "tokens">[] = [],
+  root?: string,
+): CheckCapResult {
+  const records = [...loadSessionUsage(sessionId, root), ...pending];
 
   // 1. spawn count
   if (cap.spawnCount !== undefined) {

@@ -65,6 +65,8 @@ export interface MarkdownRecordStore<T> {
 }
 
 export function createMarkdownRecordStore<T>(options: {
+  /** Bind the ledger to a project independently of the process working directory. */
+  root?: string;
   /** File name prefix, e.g. "findings" → `findings-{sessionId}.md`. */
   filePrefix: string;
   /** Heading written into the frontmatter block, e.g. "Findings". */
@@ -72,6 +74,8 @@ export function createMarkdownRecordStore<T>(options: {
   /** Shape check applied to each parsed JSON block. */
   isRecordValid: (value: unknown) => boolean;
 }): MarkdownRecordStore<T> {
+  const resolveBase = (base: string): string =>
+    options.root ? join(options.root, base) : base;
   // All bases a session file may live in, resolved-base first, so records
   // written before the store moved to `.agents/state/memories` stay readable.
   const candidatePaths = (sessionId: string): string[] => {
@@ -82,7 +86,7 @@ export function createMarkdownRecordStore<T>(options: {
       COORDINATION_STORE_REL,
       LEGACY_SERENA_MEMORY_REL,
     ];
-    return [...new Set(bases)].map((base) => join(base, name));
+    return [...new Set(bases)].map((base) => join(resolveBase(base), name));
   };
 
   const filePath = (sessionId: string): string => {
@@ -90,7 +94,10 @@ export function createMarkdownRecordStore<T>(options: {
     const candidates = candidatePaths(sessionId);
     return (
       candidates.find((path) => existsSync(path)) ??
-      join(coordinationBase(), `${options.filePrefix}-${sessionId}.md`)
+      join(
+        resolveBase(coordinationBase()),
+        `${options.filePrefix}-${sessionId}.md`,
+      )
     );
   };
 
@@ -117,7 +124,7 @@ export function createMarkdownRecordStore<T>(options: {
     append(sessionId: string, record: T): void {
       assertSafeSessionId(sessionId);
       const target = join(
-        coordinationBase(),
+        resolveBase(coordinationBase()),
         `${options.filePrefix}-${sessionId}.md`,
       );
       const targetDir = dirname(target);

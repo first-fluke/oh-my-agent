@@ -85,6 +85,16 @@ describe("spawn structured result integration", () => {
     expect(process.exit).toHaveBeenCalledWith(1);
   });
 
+  it("reports a background supervisor launch error before returning success", async () => {
+    const pending = parallelRun([`qa-reviewer:Review:${root}`], {
+      inline: true,
+      noWait: true,
+    });
+    child.emit("error", new Error("supervisor could not start"));
+    await expect(pending).rejects.toThrow("supervisor could not start");
+    expect(listAgentRuns(root)).toHaveLength(0);
+  });
+
   it("passes each parallel workspace to dispatch planning", async () => {
     const pending = parallelRun([`qa-reviewer:Review:${root}`], {
       inline: true,

@@ -12,6 +12,13 @@ import {
   targetVendorNeedsPty,
   wrapInvocationWithPty,
 } from "../../io/runtime-dispatch/pty-wrap.js";
+import {
+  checkCap,
+  formatPromptMessage,
+  loadQuotaCap,
+  recordUsage,
+  type UsageRecord,
+} from "../../io/session-cost.js";
 import { detectWorkspace } from "../../io/workspaces.js";
 import {
   loadExecutionProtocol,
@@ -37,28 +44,124 @@ import {
   type TaskDefinition,
 } from "./tasks.js";
 
+interface ParallelOptions {
+  vendor?: string;
+  inline?: boolean;
+  noWait?: boolean;
+  session?: string;
+  /** Internal supervisor handoff; never exposed as a user CLI option. */
+  runDir?: string;
+}
+
+type PendingUsage = Omit<UsageRecord, "sessionId" | "recordedAt">;
+
+function assertParallelQuota(
+  sessionId: string,
+  cwd: string,
+  pending: PendingUsage[] = [],
+): void {
+  try {
+    const cap = loadQuotaCap(cwd);
+    if (cap === null) return;
+    const result = checkCap(sessionId, cap, pending, cwd);
+    if (!result.exceeded) return;
+    console.error(color.red(`[Parallel] ${formatPromptMessage(result)}`));
+    throw new Error(
+      `[session-cost] Quota cap exceeded for session ${sessionId}: ${result.reason} ` +
+        `(current: ${result.current}, limit: ${result.limit})`,
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("[session-cost]")) {
+      throw error;
+    }
+    console.warn(
+      `[Parallel] session-cost checkCap error (non-fatal): ${error}`,
+    );
+  }
+}
+
+async function startParallelSupervisor(
+  tasks: TaskDefinition[],
+  options: ParallelOptions,
+  runDir: string,
+): Promise<void> {
+  const entry = process.argv[1];
+  if (!entry)
+    throw new Error("Cannot locate the CLI entry for background execution");
+  const manifestFile = path.join(runDir, "supervisor.json");
+  fs.writeFileSync(
+    manifestFile,
+    JSON.stringify({ tasks, vendor: options.vendor, session: options.session }),
+    { mode: 0o600 },
+  );
+  const logFd = fs.openSync(path.join(runDir, "supervisor.log"), "w");
+  let supervisor: ReturnType<typeof spawnProcess>;
+  try {
+    supervisor = spawnProcess(
+      process.execPath,
+      [...process.execArgv, entry, "agent:parallel-supervisor", manifestFile],
+      {
+        cwd: process.cwd(),
+        detached: true,
+        stdio: ["ignore", logFd, logFd],
+        env: process.env,
+      },
+    );
+  } finally {
+    fs.closeSync(logFd);
+  }
+  await new Promise<void>((resolve, reject) => {
+    supervisor.once("error", reject);
+    supervisor.once("spawn", () => {
+      try {
+        fs.writeFileSync(
+          path.join(runDir, "supervisor.pid"),
+          String(supervisor.pid),
+        );
+        supervisor.unref();
+        resolve();
+      } catch (error) {
+        supervisor.kill();
+        reject(error);
+      }
+    });
+  });
+}
+
+/** Own the complete child lifecycle after the calling CLI has exited. */
+export async function runParallelSupervisor(
+  manifestFile: string,
+): Promise<void> {
+  const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8")) as {
+    vendor?: string;
+    session?: string;
+  };
+  const runDir = path.dirname(path.resolve(manifestFile));
+  try {
+    await parallelRun([manifestFile], {
+      vendor: manifest.vendor,
+      session: manifest.session,
+      runDir,
+    });
+  } finally {
+    fs.rmSync(path.join(runDir, "supervisor.pid"), { force: true });
+  }
+}
+
 export async function parallelRun(
   tasksOrFile: string[],
-  options: {
-    vendor?: string;
-    inline?: boolean;
-    noWait?: boolean;
-    session?: string;
-  } = {},
+  options: ParallelOptions = {},
 ) {
   const cwd = process.cwd();
+  const projectRoot = resolveProjectRoot(cwd);
   // Results must land at the project root's .agents/, not under a workspace
   // subdir (a raw cwd here seeded stray cli/.agents/ trees that then hijack
   // resolveProjectRoot for every later command run from that subdir).
-  const resultsDir = agentsPathFromRoot(
-    resolveProjectRoot(cwd),
-    AGENTS_RESULTS_DIR,
-  );
+  const resultsDir = agentsPathFromRoot(projectRoot, AGENTS_RESULTS_DIR);
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  const runDir = path.join(
-    resultsDir,
-    `parallel-${timestamp}-${randomUUID().slice(0, 8)}`,
-  );
+  const runDir =
+    options.runDir ??
+    path.join(resultsDir, `parallel-${timestamp}-${randomUUID().slice(0, 8)}`);
   const pidListFile = path.join(runDir, "pids.txt");
 
   let tasks: TaskDefinition[];
@@ -90,7 +193,21 @@ export async function parallelRun(
     process.exit(1);
   }
 
+  const sessionId = options.session ?? path.basename(runDir);
+  assertParallelQuota(sessionId, projectRoot);
   fs.mkdirSync(runDir, { recursive: true });
+
+  if (options.noWait) {
+    await startParallelSupervisor(
+      tasks,
+      { ...options, session: sessionId },
+      runDir,
+    );
+    console.log(`${color.blue("[Parallel]")} Running in background mode`);
+    console.log(`${color.blue("[Parallel]")} Results will be in: ${runDir}`);
+    console.log(`${color.blue("[Parallel]")} PID list: ${pidListFile}`);
+    return;
+  }
 
   console.log(color.cyan("======================================"));
   console.log(color.cyan("  Parallel SubAgent Execution"));
@@ -105,10 +222,19 @@ export async function parallelRun(
     idx: number;
     promise: Promise<number | null>;
   }> = [];
+  const pendingUsage: PendingUsage[] = [];
+  const activePids = new Set<number>();
+  let quotaError: unknown;
 
   for (let idx = 0; idx < tasks.length; idx++) {
     const taskDef = tasks[idx];
     if (!taskDef) continue;
+    try {
+      assertParallelQuota(sessionId, projectRoot, pendingUsage);
+    } catch (error) {
+      quotaError = error;
+      break;
+    }
 
     const { agent, task, workspace = "." } = taskDef;
     const effectiveWorkspace =
@@ -138,7 +264,7 @@ export async function parallelRun(
       root: runRoot,
       workspace: resolvedWorkspace,
       agentId: agent,
-      sessionId: options.session ?? path.basename(runDir),
+      sessionId,
       taskId: taskDef.id ?? `${agent}-${idx}`,
       vendor,
       managed: true,
@@ -162,7 +288,7 @@ export async function parallelRun(
         vendorConfig,
         promptFlag,
         promptContent,
-        sessionId: options.session ?? path.basename(runDir),
+        sessionId,
         wrapperId: run.runId,
         workspace: resolvedWorkspace,
       });
@@ -221,13 +347,32 @@ export async function parallelRun(
       throw error;
     }
 
+    const usage: PendingUsage = {
+      vendor,
+      agentId: agent,
+      tokens: Math.ceil(promptContent.length / 4),
+      estimatedCostNote: `difficulty:${classifyDifficulty(rawPromptContent, 3, 2)}`,
+    };
+    pendingUsage.push(usage);
+    if (child.pid) activePids.add(child.pid);
+
     const exitPromise = new Promise<number | null>((resolve) => {
       let settled = false;
       const finish = (code: number | null) => {
         if (settled) return;
         settled = true;
+        if (child.pid) activePids.delete(child.pid);
         fs.closeSync(logStream);
         prepared.cleanup();
+        const pendingIndex = pendingUsage.indexOf(usage);
+        if (pendingIndex >= 0) pendingUsage.splice(pendingIndex, 1);
+        try {
+          recordUsage(sessionId, usage, projectRoot);
+        } catch (error) {
+          console.warn(
+            `[${agent}] session-cost recordUsage error (non-fatal): ${error}`,
+          );
+        }
         const result = finishAgentRun(runRoot, run.runId, code, undefined, {
           logPath: logFile,
         });
@@ -257,24 +402,18 @@ export async function parallelRun(
       ` Started ${color.yellow(String(childProcesses.length))} agents`,
   );
 
-  if (options.noWait) {
-    console.log(`${color.blue("[Parallel]")} Running in background mode`);
-    console.log(`${color.blue("[Parallel]")} Results will be in: ${runDir}`);
-    console.log(`${color.blue("[Parallel]")} PID list: ${pidListFile}`);
-    return;
-  }
-
   console.log(`${color.blue("[Parallel]")} Waiting for completion...`);
   console.log("");
 
-  const cleanup = () => {
+  const cleanup = (signal: NodeJS.Signals = "SIGTERM") => {
     console.log("");
     console.log(`${color.yellow("[Parallel]")} Cleaning up child processes...`);
     for (const { pid, agent } of childProcesses) {
       if (!pid) continue;
+      if (!activePids.has(pid)) continue;
       if (!isProcessRunning(pid)) continue;
       try {
-        process.kill(pid, "SIGTERM");
+        process.kill(pid, signal);
         console.log(
           `${color.yellow("[Parallel]")} Killed PID ${pid} (${agent})`,
         );
@@ -282,24 +421,23 @@ export async function parallelRun(
         // empty
       }
     }
-    try {
-      if (fs.existsSync(pidListFile)) {
-        fs.unlinkSync(pidListFile);
-      }
-    } catch {
-      // empty
-    }
   };
 
-  const handleParallelSigint = () => {
+  let signalExitCode: number | undefined;
+  let killTimer: ReturnType<typeof setTimeout> | undefined;
+  const stopParallel = (exitCode: number) => {
     unregisterSignalCleanup();
     cleanup();
-    process.exit(130);
+    // Both modes wait for child exits so accounting, results, and temporary
+    // wrappers are finalized before the CLI or supervisor exits.
+    signalExitCode = exitCode;
+    process.exitCode = exitCode;
+    killTimer = setTimeout(() => cleanup("SIGKILL"), 1000);
+    killTimer.unref();
   };
+  const handleParallelSigint = () => stopParallel(130);
   const handleParallelSigterm = () => {
-    unregisterSignalCleanup();
-    cleanup();
-    process.exit(143);
+    stopParallel(143);
   };
   const unregisterSignalCleanup = registerSignalCleanup(
     handleParallelSigint,
@@ -322,6 +460,7 @@ export async function parallelRun(
       failed++;
     }
   }
+  if (killTimer) clearTimeout(killTimer);
 
   try {
     if (fs.existsSync(pidListFile)) {
@@ -351,7 +490,13 @@ export async function parallelRun(
     console.log(`  - ${path.join(runDir, file)}`);
   }
 
+  if (quotaError) throw quotaError;
+  if (signalExitCode !== undefined) {
+    if (!options.runDir) process.exit(signalExitCode);
+    return;
+  }
   if (failed > 0) {
-    process.exit(1);
+    if (options.runDir) process.exitCode = 1;
+    else process.exit(1);
   }
 }

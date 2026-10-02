@@ -236,6 +236,27 @@ describe("checkCap — token limit", () => {
 });
 
 describe("checkCap — spawn count limit", () => {
+  it("counts pending spawns without persisting them as completed usage", () => {
+    recordUsage(SESSION, makeRecord({ tokens: 50 }));
+    const result = checkCap(SESSION, { spawnCount: 2 }, [
+      { vendor: "qwen", tokens: 70 },
+    ]);
+    expect(result).toEqual({
+      exceeded: true,
+      reason: "spawnCount",
+      current: 2,
+      limit: 2,
+    });
+    expect(loadSessionUsage(SESSION)).toHaveLength(1);
+  });
+
+  it("includes pending input estimates in the total token cap", () => {
+    recordUsage(SESSION, makeRecord({ tokens: 50 }));
+    expect(
+      checkCap(SESSION, { tokens: 120 }, [{ vendor: "qwen", tokens: 70 }]),
+    ).toMatchObject({ exceeded: true, reason: "tokens", current: 120 });
+  });
+
   it("returns exceeded: true with reason 'spawnCount' when spawn limit is hit", () => {
     for (let i = 0; i < 5; i++) {
       recordUsage(SESSION, makeRecord({ agentId: `agent-${i}`, tokens: 100 }));
@@ -262,6 +283,22 @@ describe("checkCap — spawn count limit", () => {
 });
 
 describe("checkCap — per-vendor limit", () => {
+  it("adds only the matching vendor's pending tokens to its cap", () => {
+    recordUsage(SESSION, makeRecord({ vendor: "codex", tokens: 40 }));
+    const pending = Object.freeze([
+      { vendor: "qwen", tokens: 5000 },
+      { vendor: "codex", tokens: 60 },
+    ]);
+    expect(checkCap(SESSION, { perVendor: { codex: 100 } }, pending)).toEqual({
+      exceeded: true,
+      reason: "perVendor",
+      current: 100,
+      limit: 100,
+    });
+    expect(pending).toHaveLength(2);
+    expect(loadSessionUsage(SESSION)).toHaveLength(1);
+  });
+
   it("returns exceeded: true with reason 'perVendor' when vendor limit is hit", () => {
     recordUsage(SESSION, makeRecord({ vendor: "codex", tokens: 200000 }));
     recordUsage(SESSION, makeRecord({ vendor: "codex", tokens: 150000 }));
