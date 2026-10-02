@@ -1,5 +1,15 @@
 # Changelog
 
+## [15.0.11](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.10...cli-v15.0.11) (2026-10-02)
+
+
+### Bug Fixes
+
+* **memory:** persist hook retries and honor observation opt-out ([8fe9775](https://github.com/first-fluke/oh-my-agent/commit/8fe97756cd9e9554046e1da7221a4f990a85c6e6))
+* **state:** preserve lifecycle events and retry memory delivery ([dc05bf8](https://github.com/first-fluke/oh-my-agent/commit/dc05bf801d9cf3e53767e1242e56c78dcd37f155))
+* **state:** reject corrupt or foreign decision records ([1fcc56f](https://github.com/first-fluke/oh-my-agent/commit/1fcc56f560b2c87ae0120d717db5485af0449dcd))
+* **workflows:** scope decision checks and correct event placement ([90a1acd](https://github.com/first-fluke/oh-my-agent/commit/90a1acd0cc7a5dfd265d94c047f73fd2baccf8d2))
+
 ## [15.0.10](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.9...cli-v15.0.10) (2026-10-02)
 
 
