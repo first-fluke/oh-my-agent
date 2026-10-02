@@ -58,23 +58,11 @@ If `.deepsec/` does not exist and the intent involves AI calls (`scan` / `pr-rev
 
 ---
 
-## Step 3: Confirm agent choice
+## Step 3: Resolve backend, scope, and spend
 
-Before any paid call (`process` / `revalidate` / `triage`), confirm the agent backend.
+Reuse the backend, file/matcher scope, severity floor, limits, and spend authorization already supplied by the user or project configuration. A configured backend identifies the tool; it does not authorize additional spend. Resolve routine choices within delegated scope. Ask only for a material unresolved choice or spend outside existing authorization.
 
-Skip this step if **any** of these is true:
-- The user has already named `claude` or `codex` in the prompt.
-- `deepsec.config.ts` pins `defaultAgent`.
-- The user explicitly delegated the choice ("just pick reasonable defaults").
-
-Otherwise ask exactly one question with the trade-off stated:
-
-> deepsec supports two agent backends. Which would you like to use?
-> - **`codex`** (`gpt-5.5`, the upstream default): runs in a strict read-only sandbox, fast at grep-heavy investigations. Cheaper.
-> - **`claude`** (`claude-opus-4-8`): strongest reasoning on auth shapes and cross-file flows. Most expensive.
-> Both can be mixed later via `--reinvestigate`; findings dedupe across agents.
-
-Do not also bargain over `--limit`, `--concurrency`, or severity floor; those are handled by the calibration rule in Step 4 and the user-stated severity floor.
+Before any paid call (`process` / `revalidate` / `triage`) or a selected custom scope/backend, follow `.agents/skills/oma-deepsec/resources/decision-records.md` § Execution scope. Record the actual approved, limited, or declined action with its backend, scope, estimate, stopping limit, and authorization source. This conditional event records the decision; it does not require another confirmation. A declined paid pass stays declined; continue only authorized free or limited work.
 
 ---
 
@@ -100,7 +88,7 @@ bunx deepsec scan --limit 20         # cheap, no AI calls
 bunx deepsec process --limit 5       # exercises the gateway
 ```
 
-Then write `data/<id>/INFO.md` per `resources/setup.md` § 4: 50–100 lines, project-specific only, 3–5 examples per section, no line numbers, no generic CWE rehash. Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization. before continuing.
+Then write `data/<id>/INFO.md` per `resources/setup.md` § 4: 50–100 lines, project-specific only, 3–5 examples per section, no line numbers, no generic CWE rehash. Apply `.agents/skills/_shared/core/execution-policy.md`: proceed within existing authorization; ask only for a material missing decision or new authorization.
 
 ### Step 4B: `scan`
 
@@ -109,11 +97,11 @@ Then write `data/<id>/INFO.md` per `resources/setup.md` § 4: 50–100 lines, pr
    bunx deepsec scan
    bunx deepsec status
    ```
-2. **Calibrate** with the deepsec-recommended values (or user-named values if provided):
+2. **Calibrate** within the recorded authorization, using the deepsec-recommended values or user-named limits. Record the execution-scope decision before this paid pass; a file-count limit is not a spend cap:
    ```bash
    bunx deepsec process --limit 50 --concurrency 5
    ```
-3. **Report cost extrapolation**: read the calibration run's total cost, multiply by `(total_files / 50)`, present to the user with the cost-band table from `resources/scanning.md`. If the CLI reports only a per-batch cost, multiply by `(total_files / batch_size)` instead (`--batch-size` defaults to 5, so the `--limit 50` calibration runs 10 batches). Cross-check against the cost-band table before reporting. **Before launching the unbounded `process`, obtain spend authorization unless an existing authorization covers the estimated scope and cost.**
+3. **Report cost extrapolation**: read the calibration run's total cost, multiply by `(total_files / 50)`, present to the user with the cost-band table from `resources/scanning.md`. If the CLI reports only a per-batch cost, multiply by `(total_files / batch_size)` instead (`--batch-size` defaults to 5, so the `--limit 50` calibration runs 10 batches). Cross-check against the cost-band table before reporting. **Before launching full `process`, record the approved, limited, or declined scope against this estimate using the execution-scope protocol. Reuse existing authorization when it covers the backend, scope, and estimated spend; otherwise resolve only the missing authorization. Use a limited pass or stop when the full pass is not authorized.**
 4. **Full investigation**:
    ```bash
    bunx deepsec process --concurrency 5
@@ -123,7 +111,8 @@ Then write `data/<id>/INFO.md` per `resources/setup.md` § 4: 50–100 lines, pr
    bunx deepsec triage --severity HIGH
    bunx deepsec revalidate --min-severity HIGH
    ```
-6. **Export**:
+6. **Record verdicts before filtering or export**: follow `.agents/skills/oma-deepsec/resources/decision-records.md` § Finding verdicts for every triaged finding, including false positives and fixed findings that will be suppressed. Bind each event and verification to its finding and analysis/revalidation revision.
+7. **Export**:
    ```bash
    bunx deepsec export --format md-dir --out ./findings
    bunx deepsec metrics
@@ -172,13 +161,9 @@ Pipeline per `resources/triage.md`:
 
 1. `bunx deepsec triage --severity HIGH` to bucket P0/P1/P2/skip (~$0.01 / finding).
 2. `bunx deepsec revalidate --min-severity HIGH` to attach `true-positive` / `false-positive` / `fixed` / `uncertain` verdicts (cuts FP rate by 50%+).
-3. Filter the export to verdict `true-positive` (and `uncertain` for human review). Suppress `false-positive` and matched-`fixed`.
-4. Note recurring FP shapes for the next `INFO.md` revision; bias matchers toward `precise` if the FP is regex-level.
-5. For each triaged finding, emit and verify the required triage decision:
-   ```bash
-   oma state emit "decision.made" '{"subject":"deepsec.triage-outcome","decision":"Use the triage verdict for the current deepsec finding.","rationale":"The finding has a true-positive, false-positive, fixed, or uncertain verdict with a recorded reason."}'
-   oma state verify --workflow deepsec --checkpoint triage-outcome
-   ```
+3. Record and verify each finding verdict using `.agents/skills/oma-deepsec/resources/decision-records.md` § Finding verdicts before filtering, suppression, or export. Include the finding identity, actual verdict, causal evidence, and analysis/revalidation revision.
+4. Filter the export to verdict `true-positive` (and `uncertain` for human review). Suppress `false-positive` and matched-`fixed` only after their verdict events are recorded.
+5. Note recurring FP shapes for the next `INFO.md` revision; bias matchers toward `precise` if the FP is regex-level.
 
 ### Step 4F: `config` / `troubleshoot`
 
@@ -236,7 +221,7 @@ For each routed item, include: file path, severity, `vulnSlug`, revalidation ver
 End the workflow when **any** of these is true:
 
 - The user's stated intent is complete and Step 5 summary has been delivered.
-- A blocking precondition is reported (missing credential, no calibration agreement, refused INFO.md).
+- A blocking precondition is reported (missing credential, unresolved spend authorization, or unusable INFO.md).
 - A quota / credit stop has been surfaced with the safe-resume command.
 
 Do not loop back to Step 1 unless the user re-invokes the workflow with a new intent.

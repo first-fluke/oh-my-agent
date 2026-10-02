@@ -26,7 +26,8 @@ Do not show the user raw `process` output for HIGH+ findings. The right pipeline
 1. `bunx deepsec process` (or `process --diff` for PR mode).
 2. `bunx deepsec triage --severity HIGH` to bucket findings into P0/P1/P2 (~$0.01 / finding).
 3. `bunx deepsec revalidate --min-severity HIGH` re-reads the code and git history, then emits a verdict. The cost is comparable to `process`, and FP rate drops by 50%+.
-4. `bunx deepsec export --format md-dir --out ./findings` to surface results to the user.
+4. In an OMA run, record and verify every triaged finding's actual verdict using `decision-records.md` § Finding verdicts, before any filtering or suppression. Bind the event to the finding and current analysis/revalidation revision, including false-positive and fixed findings.
+5. `bunx deepsec export --format md-dir --out ./findings` to surface the selected results to the user.
 
 `revalidate` verdicts:
 
@@ -80,6 +81,8 @@ findings/
 Each file contains: severity, title, `vulnSlug`, file path with line numbers, description, recommendation, confidence, triage verdict (if run), revalidation verdict (if run), and an `analysisHistory` summary. Use these as inputs to issue tracker tickets; the structure is friendly to GitHub Issues / Linear / Jira import scripts.
 
 ## When to *not* surface a finding
+
+Apply these filters only after recording the current finding verdict under the decision protocol above. Suppression must preserve the finding identity and reason.
 
 - `revalidation.verdict === "false-positive"`.
 - `revalidation.verdict === "fixed"` and the fix matches the current `HEAD`.

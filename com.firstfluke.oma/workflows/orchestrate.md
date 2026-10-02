@@ -95,12 +95,7 @@ Stop and report only when the plan cannot be produced: the user declines to plan
 
 ## Step 3: Spawn Agents by Priority Tier
 
-Before spawning agents, emit and verify the required fan-out decision:
-
-```bash
-oma state emit "decision.made" '{"subject":"orchestrate.fanout-strategy","decision":"Spawn agents by priority tier using the loaded plan.","rationale":"The plan is available and determines which agents run in parallel."}'
-oma state verify --workflow orchestrate --checkpoint fanout-strategy
-```
+Use the loaded plan and record task ownership, dependency tiers, and run identities in the task board. Routine dispatch does not require a separate decision acknowledgment.
 
 For each priority tier (lowest first: tier 1, then tier 2, etc.):
 
@@ -209,11 +204,11 @@ After all agents finish, read their claims and run-scoped reports. Collect as
 `completed` only plan tasks with successful required checks; summarize partial,
 blocked, and failed tasks with their remaining issues.
 
-Emit and verify the required QA verdict decision before the final report:
+Emit and verify the actual aggregate verdict before the final report. Identify the plan revision, accepted task/run IDs, change requests, and unresolved findings; cite the collected review evidence:
 
 ```bash
-oma state emit "decision.made" '{"subject":"orchestrate.qa-verdict","decision":"Accept completed agents or record change requests.","rationale":"Agent verification results have been collected and classified."}'
-oma state verify --workflow orchestrate --checkpoint qa-verdict
+oma state emit "decision.made" '{"subject":"orchestrate.qa-verdict","instanceId":"<plan revision and review round>","decision":"<accepted task/run IDs; change requests; remaining findings>","rationale":"<why the cited checks support each acceptance or requested change>","evidence":["<review/result artifact paths>"]}'
+oma state verify --workflow orchestrate --checkpoint qa-verdict --instance "<plan revision and review round>"
 ```
 
 ---

@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { appendFileSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -10,6 +10,7 @@ import {
 import {
   activateWorkflowSession,
   emitEvent,
+  eventsPath,
   readEvents,
   setActiveSession,
 } from "./events.js";
@@ -37,6 +38,7 @@ describe("required decision verifier", () => {
         subject: "ultrawork.plan-approved",
         decision: "Proceed with the scoped plan.",
         rationale: "PLAN_GATE checklist passed with user approval.",
+        instanceId: "plan-v1",
       },
     });
 
@@ -45,25 +47,92 @@ describe("required decision verifier", () => {
       sid: "oma-ultra",
       workflow: "ultrawork",
       checkpoint: "plan-approved",
+      instanceId: "plan-v1",
     });
 
     expect(result.ok).toBe(true);
     expect(result.missing).toEqual([]);
   });
 
+  it.each([
+    { subject: "ultrawork.plan-approved" },
+    { subject: "ultrawork.plan-approved", decision: "", rationale: "" },
+    { subject: "ultrawork.plan-approved", decision: "  ", rationale: "\n" },
+  ])("rejects an incomplete legacy decision payload: %j", async (payload) => {
+    activateWorkflowSession({
+      projectDir,
+      sid: "oma-legacy",
+      workflow: "ultrawork",
+    });
+    appendFileSync(
+      eventsPath(projectDir, "oma-legacy"),
+      `${JSON.stringify({
+        eventId: "legacy-invalid-decision",
+        ts: new Date().toISOString(),
+        sid: "oma-legacy",
+        kind: "decision.made",
+        writerPid: 1,
+        payload: { ...payload, instanceId: "plan-v1" },
+      })}\n`,
+    );
+    const result = await verifyRequiredDecisions({
+      projectDir,
+      sid: "oma-legacy",
+      workflow: "ultrawork",
+      checkpoint: "plan-approved",
+      instanceId: "plan-v1",
+      emitMissing: false,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.presentSubjects).toEqual([]);
+  });
+
+  it("does not reuse a previous iteration's decision", async () => {
+    emitEvent(projectDir, "oma-repeat", {
+      kind: "decision.made",
+      payload: {
+        subject: "ultrawork.plan-approved",
+        decision: "Apply patch one.",
+        rationale: "The first patch was approved.",
+        instanceId: "iteration-1:plan-v1",
+      },
+    });
+    const result = await verifyRequiredDecisions({
+      projectDir,
+      sid: "oma-repeat",
+      workflow: "ultrawork",
+      checkpoint: "plan-approved",
+      instanceId: "iteration-2:plan-v2",
+    });
+    expect(result.ok).toBe(false);
+    expect(readEvents(projectDir, "oma-repeat").at(-1)?.payload).toMatchObject({
+      instanceId: "iteration-2:plan-v2",
+    });
+  });
+
+  it.each([undefined, "", "  "])(
+    "requires a concrete checkpoint instance (%j)",
+    async (instanceId) => {
+      await expect(
+        verifyRequiredDecisions({
+          projectDir,
+          sid: "oma-repeat",
+          workflow: "ultrawork",
+          checkpoint: "plan-approved",
+          instanceId,
+        }),
+      ).rejects.toThrow(/instance/);
+    },
+  );
+
   it("lists all D62 workflow decision checkpoints", () => {
     const table = listRequiredDecisionCheckpoints();
     expect(table).toMatchObject({
       ultrawork: {
         "plan-approved": [{ subject: "ultrawork.plan-approved" }],
-        "impl-plan-locked": [{ subject: "ultrawork.impl-plan-locked" }],
         "refine-outcome": [{ subject: "ultrawork.refine-outcome" }],
       },
-      ralph: {
-        "exec-delegated": [{ subject: "ralph.exec-delegated" }],
-      },
       orchestrate: {
-        "fanout-strategy": [{ subject: "orchestrate.fanout-strategy" }],
         "qa-verdict": [{ subject: "orchestrate.qa-verdict" }],
       },
       work: {
@@ -87,6 +156,7 @@ describe("required decision verifier", () => {
         ],
       },
       deepsec: {
+        "execution-scope": [{ subject: "deepsec.execution-scope" }],
         "triage-outcome": [{ subject: "deepsec.triage-outcome" }],
       },
       docs: {
@@ -94,6 +164,9 @@ describe("required decision verifier", () => {
       },
     });
     expect(table).not.toHaveProperty("scm");
+    expect(table).not.toHaveProperty("ralph");
+    expect(table.ultrawork).not.toHaveProperty("impl-plan-locked");
+    expect(table.orchestrate).not.toHaveProperty("fanout-strategy");
   });
 
   it("documents every required workflow decision checkpoint in the workflow assets", () => {
@@ -110,7 +183,7 @@ describe("required decision verifier", () => {
     expect(eventSpec).toContain("oma state verify --workflow");
 
     for (const [workflow, checkpoints] of Object.entries(table)) {
-      const body = readFileSync(
+      let body = readFileSync(
         new URL(`../../.agents/workflows/${workflow}.md`, import.meta.url),
         "utf-8",
       );
@@ -118,6 +191,15 @@ describe("required decision verifier", () => {
       expect(body, `${workflow} should reference the L1 event spec`).toContain(
         ".agents/skills/_shared/runtime/event-spec.md",
       );
+      if (workflow === "deepsec") {
+        const resource =
+          ".agents/skills/oma-deepsec/resources/decision-records.md";
+        expect(body).toContain(resource);
+        body += readFileSync(
+          new URL(`../../${resource}`, import.meta.url),
+          "utf-8",
+        );
+      }
 
       for (const [checkpoint, decisions] of Object.entries(checkpoints)) {
         expect(
@@ -149,6 +231,7 @@ describe("required decision verifier", () => {
       sid: "oma-work",
       workflow: "work",
       checkpoint: "remediation-choice",
+      instanceId: "finding-1:patch-v1",
     });
 
     expect(result.ok).toBe(false);

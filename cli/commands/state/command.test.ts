@@ -76,6 +76,9 @@ describe("state command registration", () => {
     expect(
       verify?.options.some((option) => option.long === "--checkpoint"),
     ).toBe(true);
+    expect(
+      verify?.options.find((option) => option.long === "--instance")?.mandatory,
+    ).toBe(true);
     expect(stateCommandNames).toEqual(
       expect.arrayContaining([
         "state:emit",

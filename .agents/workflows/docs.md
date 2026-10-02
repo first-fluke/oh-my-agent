@@ -149,11 +149,11 @@ For each candidate doc:
    [y] apply  [n] skip  [d] show diff  [s] show full proposal
    ```
 
-5. Before applying or skipping each patch, emit and verify the required patch approval decision. Substitute the actual doc path, intended action, and authorization source (existing request or new choice); do not emit the literal template:
+5. Before applying or skipping each patch, emit and verify its actual action and authorization source. Bind `instanceId` to the doc path plus patch revision (a diff hash or proposal revision); a previous patch for the same file cannot authorize the current patch. Existing scoped edit authorization remains sufficient:
 
    ```bash
-   oma state emit "decision.made" '{"subject":"docs.sync-patch-approval","decision":"<apply|skip>: <doc path>","rationale":"<existing scoped edit request or new user choice authorizing this action>"}'
-   oma state verify --workflow docs --checkpoint sync-patch-approval
+   oma state emit "decision.made" '{"subject":"docs.sync-patch-approval","instanceId":"<doc path>@<patch revision>","decision":"<apply|skip>: <doc path>; <specific correction or skip reason>","rationale":"<existing scoped edit authorization or actual unresolved patch choice>","evidence":["<patch proposal/diff artifact path>"]}'
+   oma state verify --workflow docs --checkpoint sync-patch-approval --instance "<doc path>@<patch revision>"
    ```
 
 6. Apply authorized patches via `git apply` or by writing the doc directly. After applying the patch batch, regenerate the index once:

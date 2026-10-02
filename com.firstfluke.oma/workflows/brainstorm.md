@@ -114,8 +114,8 @@ Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the reques
 Once the option is resolved from the user request, delegated choice, or a clarification, emit and verify the required option-selection decision. Record how the choice was authorized:
 
 ```bash
-oma state emit "decision.made" '{"subject":"brainstorm.option-selection","decision":"<selected approach>","rationale":"<existing instruction, delegated choice, or new user selection authorizing this option>"}'
-oma state verify --workflow brainstorm --checkpoint option-selection
+oma state emit "decision.made" '{"subject":"brainstorm.option-selection","instanceId":"<design topic and option revision>","decision":"<selected approach, mechanism, and scoped goal>","rationale":"<comparison evidence and existing instruction, delegated choice, or actual user selection>","evidence":["<option comparison or design artifact path>"]}'
+oma state verify --workflow brainstorm --checkpoint option-selection --instance "<design topic and option revision>"
 ```
 
 ---

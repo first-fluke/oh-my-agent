@@ -57,7 +57,7 @@ Report verified findings, edits made, and remaining gaps. A clean reference scan
 1. Select mode, paths/diff, and authorization from the request. Read only the matching section of `resources/commands.md`.
 2. Run `oma docs verify --json`, `oma docs sync <range> --json`, `oma docs i18n --json`, or `oma docs lint --json` as appropriate. For sync, use the requested range; otherwise staged changes, then `HEAD~1..HEAD`.
 3. Inspect the structured results. Verify each proposed correction against current code and document context. Exclude secret-bearing files and values from patches and reports.
-4. Apply corrections already authorized by the user or assigned task. Ask only about material missing decisions or new scope; continue independent work while waiting.
+4. Apply corrections already authorized by the user or assigned task. In an active OMA docs-sync workflow, first record each patch's actual apply/skip action, rationale, and evidence with `docs.sync-patch-approval`; bind `instanceId` and verification `--instance` to the doc path plus current patch revision (workflow Step 4 owns the command template). Existing authorization remains sufficient. Ask only about material missing decisions or new scope; continue independent work while waiting.
 5. Re-run affected checks after edits and record remaining failures. Regenerate the reference index once after a patch batch when needed.
 
 ### Resource scope and effects

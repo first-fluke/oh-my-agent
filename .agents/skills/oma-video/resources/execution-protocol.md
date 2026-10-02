@@ -40,8 +40,8 @@ plan when the brief is a one-liner.
 
 1. Estimate cost = sum of each selected provider's `estimateCost()` (most are `$0`; Pixelle/RunningHub credits are non-zero).
 2. If `--dry-run`: emit `script.json` / `render-spec.json` / `manifest.json`, skip rendering, exit 0.
-3. If estimate ≥ `cost.guardrail_usd` (or `--max-usd`) and not `--yes` / `OMA_VIDEO_YES=1`:
-   - Prompt on stderr: `Estimated cost $X.XX. Proceed? (y/N)`. Decline -> exit 1.
+3. Before a non-dry run whose estimate reaches the guardrail or whose paid-provider choice requires authorization, reuse existing authorization for that provider, amount, and scope. Resolve only missing authorization. In an active OMA video workflow, emit `video.cost-confirmation` with the current script/provider-plan `instanceId`, actual paid/limited/fallback/declined action, rationale, and planning-manifest evidence; verify with `--instance` before the provider action (workflow Step 4 owns the command template).
+4. The CLI throws a cost-guardrail error and exits 1 when the cumulative provider estimate reaches the threshold without `--yes`; it does not collect a workflow decision through an interactive prompt. Planning may hit the same guard: retain the error/manifest estimate or rerun with `--dry-run --yes` to finish planning without paid generation or rendering. Keep `--dry-run` on that planning rerun. On a non-dry run, pass `--yes` / `OMA_VIDEO_YES=1` only when the paid action is already authorized. A declined path may be replaced by an authorized key-free plan and re-planned. A new provider or increased estimate must fit current authorization before paid work resumes.
 
 ## Step 3: Cancellation Setup
 

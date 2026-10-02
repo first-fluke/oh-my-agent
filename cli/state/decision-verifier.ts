@@ -1,4 +1,8 @@
 import {
+  isNonblankEventText,
+  validateEventPayload,
+} from "../../.agents/hooks/core/event-contract.ts";
+import {
   emitEventWithMemory,
   getActiveSid,
   readEvents,
@@ -24,13 +28,6 @@ export const REQUIRED_DECISIONS: RequiredDecisionTable = {
           "Architecture and plan decision captured after PLAN_GATE approval.",
       },
     ],
-    "impl-plan-locked": [
-      {
-        subject: "ultrawork.impl-plan-locked",
-        description:
-          "Task decomposition and implementation scope locked before IMPL work.",
-      },
-    ],
     "refine-outcome": [
       {
         subject: "ultrawork.refine-outcome",
@@ -39,23 +36,7 @@ export const REQUIRED_DECISIONS: RequiredDecisionTable = {
       },
     ],
   },
-  ralph: {
-    "exec-delegated": [
-      {
-        subject: "ralph.exec-delegated",
-        description:
-          "EXEC iteration delegated to the full ultrawork 5-phase workflow before any agent is spawned; abridging or substituting ultrawork without user approval is forbidden.",
-      },
-    ],
-  },
   orchestrate: {
-    "fanout-strategy": [
-      {
-        subject: "orchestrate.fanout-strategy",
-        description:
-          "Parallel agent fan-out strategy captured after the plan is loaded.",
-      },
-    ],
     "qa-verdict": [
       {
         subject: "orchestrate.qa-verdict",
@@ -78,7 +59,7 @@ export const REQUIRED_DECISIONS: RequiredDecisionTable = {
       {
         subject: "plan.api-contract",
         description:
-          "Endpoint and contract shape captured after API contract approval.",
+          "Selected endpoint and contract shape captured within existing authorization or delegated scope.",
       },
     ],
   },
@@ -87,7 +68,7 @@ export const REQUIRED_DECISIONS: RequiredDecisionTable = {
       {
         subject: "brainstorm.option-selection",
         description:
-          "Selected option and considered alternatives captured after user choice.",
+          "Selected option and considered alternatives captured from user choice or delegated scope.",
       },
     ],
   },
@@ -119,11 +100,18 @@ export const REQUIRED_DECISIONS: RequiredDecisionTable = {
     ],
   },
   deepsec: {
+    "execution-scope": [
+      {
+        subject: "deepsec.execution-scope",
+        description:
+          "Authorized, limited, or declined backend, budget, and scan scope captured before the conditional paid or custom-scope branch.",
+      },
+    ],
     "triage-outcome": [
       {
         subject: "deepsec.triage-outcome",
         description:
-          "Security finding triage verdict captured as true-positive or false-positive with rationale.",
+          "Finding identity and true-positive, false-positive, fixed, or uncertain verdict captured with causal evidence for the current analysis revision.",
       },
     ],
   },
@@ -158,6 +146,7 @@ export interface DecisionVerificationResult {
   sid: string;
   workflow: string;
   checkpoint: string;
+  instanceId: string;
   ok: boolean;
   required: RequiredDecision[];
   presentSubjects: string[];
@@ -191,6 +180,7 @@ export async function verifyRequiredDecisions(args: {
   sid: string;
   workflow: string;
   checkpoint: string;
+  instanceId?: string;
   emitMissing?: boolean;
 }): Promise<DecisionVerificationResult> {
   const required = REQUIRED_DECISIONS[args.workflow]?.[args.checkpoint];
@@ -199,10 +189,20 @@ export async function verifyRequiredDecisions(args: {
       `Unknown required decision checkpoint: ${args.workflow}/${args.checkpoint}`,
     );
   }
+  if (!isNonblankEventText(args.instanceId)) {
+    throw new Error(
+      "A nonblank checkpoint instance is required. Pass --instance <id>.",
+    );
+  }
 
   const events = readEvents(args.projectDir, args.sid);
   const presentSubjects = events
-    .filter((event) => event.kind === "decision.made")
+    .filter(
+      (event) =>
+        event.kind === "decision.made" &&
+        validateEventPayload(event.kind, event.payload).length === 0 &&
+        event.payload?.instanceId === args.instanceId,
+    )
     .map((event) => event.payload?.subject)
     .filter((subject): subject is string => typeof subject === "string");
   const present = new Set(presentSubjects);
@@ -211,6 +211,7 @@ export async function verifyRequiredDecisions(args: {
     sid: args.sid,
     workflow: args.workflow,
     checkpoint: args.checkpoint,
+    instanceId: args.instanceId,
     ok: missing.length === 0,
     required,
     presentSubjects,
@@ -223,9 +224,10 @@ export async function verifyRequiredDecisions(args: {
       payload: {
         workflow: args.workflow,
         checkpoint: args.checkpoint,
+        instanceId: args.instanceId,
         missing,
         remediation:
-          "Emit the required decision.made event with oma state emit, then rerun this verifier.",
+          "Emit the required decision.made event with this instanceId, subject, decision, and rationale, then rerun this verifier with the same --instance.",
       },
     });
   }

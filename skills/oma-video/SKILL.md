@@ -71,8 +71,12 @@ provides context only; it never automates login or starts a recorder. Without
    providers require their environment key and the cost guardrail. Local
    fallbacks may replace voice, visuals, captions, or music; record coverage in
    warnings. A compositor failure is never a fallback video.
-3. Confirm estimated spend at or above `cost.guardrail_usd` or `--max-usd`
-   unless `--yes` or `OMA_VIDEO_YES=1` authorizes it.
+3. Before a paid provider action or rerun, compare the planning estimate with
+   `cost.guardrail_usd` or `--max-usd` and reuse existing spend authorization.
+   In an active OMA video workflow, record the actual paid, limited, fallback, or
+   declined choice before executing it (execution protocol Step 2). Pass `--yes`
+   or `OMA_VIDEO_YES=1` only for an already authorized paid action; the event does
+   not grant permission.
 4. Respect `limits.max_duration_sec` (180) and `limits.max_scenes` (40).
    Cancel subprocess work on SIGINT/SIGTERM.
 5. Keep run directories. Never auto-prune a user’s video artifacts.

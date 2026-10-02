@@ -38,7 +38,7 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 - `target_repo_root`: absolute path of the codebase to scan (parent of `.deepsec/`).
 - `intent`: one of `setup` | `scan` | `pr-review` | `matchers` | `triage` | `config` | `troubleshoot`.
 - `credential_mode`: `ai-gateway-key` | `vercel-oidc` | `direct-anthropic` | `direct-openai` | `subscription`.
-- `agent_choice`: `codex` (upstream default; model `gpt-5.5`) or `claude` (model `claude-opus-4-8`). Asked once before the first paid call if not already provided.
+- `agent_choice`: use the user-named backend, configured `defaultAgent`, or a choice within delegated scope; ask only when a material choice remains unresolved.
 - `severity_floor`: lowest severity worth surfacing (typically `HIGH`).
 - Optional: existing `.deepsec/data/<id>/`, `deepsec.config.ts`, custom matchers, CI provider.
 
@@ -73,7 +73,7 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 2. Resolve `intent` from the user prompt; if ambiguous (e.g. "scan this repo"), default to `setup` then `scan` (calibration mode).
 3. Estimate scale: count source files (rough `rg --files | wc -l` excluding `node_modules`, `.git`, `dist`) to forecast cost before any AI pass.
 4. Check for an AI credential in `.env.local` or shell env; if none, route to credential setup before any `process` / `revalidate` / `triage` call.
-5. **Confirm agent choice with the user before the first paid call.** If `agent_choice` is not already in the prompt and `deepsec.config.ts` does not pin a `defaultAgent`, ask whether to run `codex` (`gpt-5.5`, the upstream default; runs in a strict sandbox, cheaper, grep-heavy) or `claude` (`claude-opus-4-8`; strongest reasoning, most expensive). The two backends can be mixed via `--reinvestigate` and findings dedupe across agents. Skip the question if the user has already named an agent or has explicitly delegated the decision ("just pick reasonable defaults").
+5. Resolve backend, scope, and spend from existing instructions and configuration under `../_shared/core/execution-policy.md`. Before paid or custom-scope work, record the actual approved, limited, or declined action using `resources/decision-records.md`. A configured backend does not authorize additional spend; ask only for a material missing choice or new authorization.
 
 ### Transitions
 - If `.deepsec/` is missing and intent involves scanning → run `bunx deepsec init` (or `npx deepsec init`) and follow the printed prompt to populate `INFO.md` before any AI pass.
@@ -95,7 +95,7 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 | FP rate too high on `HIGH+` | Run `revalidate --min-severity HIGH`; tighten `INFO.md`'s threat model and FP notes; bias matchers to `precise`. |
 | `noisy` matcher wedges scanner on a 100k-file repo | Tighten `filePatterns` to language- or directory-anchored globs. |
 | Sandbox auth fails | OIDC: re-run `vercel env pull`. Access-token mode: verify `VERCEL_TOKEN` + `VERCEL_TEAM_ID` + `VERCEL_PROJECT_ID`. |
-| User asks for full scan with no budget context | Halt; report file count and forecast cost band; require explicit go-ahead before the full pass. |
+| Full pass exceeds existing scope or spend authorization | Report the calibrated estimate and preserve completed free/limited work. Resolve only the missing authorization; record the actual approved, limited, or declined pass before executing it. |
 
 ### Exit
 - **Success**: planned passes ran, findings exist with verdicts (or no findings produced), files written are listed, residual cost / followups are explicit.
@@ -126,18 +126,21 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
    skim `README` / `AGENTS.md` / `CLAUDE.md` and a handful of representative
    files, and replace each section of `data/<id>/INFO.md` (50-100 lines,
    3-5 examples per section, no line numbers, no generic CWE rehash).
-2. **Calibrate before any full pass.** The deepsec docs (`getting-started.md`, `vercel-setup.md`, `faq.md`) recommend `--limit 50 --concurrency 5` as the calibration starting point.
+2. **Calibrate before any full pass.** First record the selected authorized calibration scope using `resources/decision-records.md`; `--limit` bounds files, not dollar spend. The deepsec docs (`getting-started.md`, `vercel-setup.md`, `faq.md`) recommend `--limit 50 --concurrency 5` as the calibration starting point.
    ```bash
    bunx deepsec scan
    bunx deepsec status
    bunx deepsec process --limit 50 --concurrency 5
    ```
-   Read the per-batch cost. Extrapolate to full repo. Get the user's explicit go-ahead before the full `process`. If the user names different `--limit` / `--concurrency` values, use theirs.
+   Read the run cost and extrapolate to the full repo using `resources/scanning.md`. Reuse existing authorization covering the backend, scope, and estimated spend. Record the actual scope decision before calibration and again before an expanded pass; resolve only missing authorization. If the user names different `--limit` / `--concurrency` values, use theirs.
 3. **Full investigation, triage, revalidate, export**:
    ```bash
    bunx deepsec process --concurrency 5
    bunx deepsec triage --severity HIGH
    bunx deepsec revalidate --min-severity HIGH
+   ```
+   Record and verify every triaged finding's actual verdict using `resources/decision-records.md` before filtering or suppression, including findings that will not be surfaced. Then export:
+   ```bash
    bunx deepsec export --format md-dir --out ./findings
    bunx deepsec metrics
    ```
@@ -169,7 +172,7 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 - Repo is a git checkout (deepsec uses git history for `revalidate` and `--diff`).
 - For any AI command: at least one credential mode is configured *before* the call, or the call is held until one is.
 - For `sandbox` mode: Vercel auth is wired; otherwise stay local.
-- For unbounded `process` runs on > 500-file repos: a `--limit` calibration pass has produced a cost number the user has acknowledged.
+- For unbounded `process`: measured file scope and calibrated cost must fit existing authorization; otherwise use an authorized limited pass or resolve the missing spend/scope decision.
 
 ### Effects and side effects
 - Creates `.deepsec/` (config, lockfile, scaffolding) and `.deepsec/data/<id>/` (gitignored) inside the target repo.
@@ -197,9 +200,10 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 10. **Treat deepsec like an agent with shell access.** Recommend `sandbox` for prompt-injection-prone repos (vendored code, untrusted deps).
 11. **Findings need verdicts.** For any HIGH+ surfaced to the user, prefer `revalidate`-tagged verdicts (`true-positive` / `false-positive` / `fixed` / `uncertain`) over raw `process` output.
 12. **Do not invent CLI flags, and trust the CLI over these notes.** Anything beyond `resources/scanning.md`'s flag list must be checked against `--help` first. Likewise, when the CLI's printed model names, defaults, or per-batch costs disagree with the values written in this skill, the CLI is right — upstream moves faster than these resources.
-13. **Ask agent choice before the first paid call.** If the user has not named an agent (`claude` vs `codex`) and `deepsec.config.ts` does not pin `defaultAgent`, ask once with the trade-off clearly stated. Do not also bargain over budget or severity; those are handled via the upstream calibration recommendation (`--limit 50 --concurrency 5` per deepsec docs) and the user-stated `severity_floor`.
+13. **Reuse existing backend, scope, and spend decisions.** Record consequential execution choices and per-finding verdicts through `resources/decision-records.md`; do not add another confirmation when existing authorization covers the action.
 
 ## References
+- L1 execution scope and per-finding verdict records: `resources/decision-records.md` (before paid/custom-scope work or filtering triaged findings).
 - Workspace install + `INFO.md` bootstrap: `resources/setup.md`
 - Full scan/process/triage/revalidate/export workflow + cost guide: `resources/scanning.md`
 - PR / CI gate via `process --diff` (two-job pattern, exit-code semantics): `resources/pr-review.md`

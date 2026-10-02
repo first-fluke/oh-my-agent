@@ -105,6 +105,10 @@ function registerDecisionVerifyCommand(
         "--checkpoint <checkpoint>",
         "Required decision checkpoint",
       )
+      .requiredOption(
+        "--instance <id>",
+        "Current finding, revision, or attempt identifier",
+      )
       .option("--sid <sid>", "Target session id")
       .option("--category <category>", "Active category lookup", "main")
       .option(
@@ -127,6 +131,7 @@ function registerDecisionVerifyCommand(
           sid,
           workflow,
           checkpoint,
+          instanceId: options.instance as string,
           emitMissing: options.emitMissing !== false,
         });
 
@@ -134,11 +139,11 @@ function registerDecisionVerifyCommand(
           console.log(JSON.stringify(result, null, 2));
         } else if (result.ok) {
           console.log(
-            `Required decisions present for ${workflow}/${checkpoint} -> ${sid}`,
+            `Required decisions present for ${workflow}/${checkpoint} (${result.instanceId}) -> ${sid}`,
           );
         } else {
           console.error(
-            `Missing required decisions for ${workflow}/${checkpoint} -> ${sid}:`,
+            `Missing required decisions for ${workflow}/${checkpoint} (${result.instanceId}) -> ${sid}:`,
           );
           for (const decision of result.missing) {
             console.error(`  - ${decision.subject}: ${decision.description}`);

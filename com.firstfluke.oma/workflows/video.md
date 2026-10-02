@@ -23,7 +23,7 @@ disable-model-invocation: true
 
 Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
-This workflow has two required checkpoints: **mode-selection** (Step 2) and **cost-confirmation** (Step 5). Do not skip either emit/verify pair.
+Record **mode-selection** at Step 2. Record **cost-confirmation** at Step 4 only when the estimate reaches the guardrail or a paid-provider choice needs authorization. Emit and verify that decision before a non-dry run, paid rerun, or provider action; an under-guardrail default does not require a confirmation event.
 
 ---
 
@@ -45,7 +45,7 @@ For `demo`, resolve the recording path first. Use `--source file --capture <path
 
 ## Cost Guardrail & Key-Optional Notes (read before Step 4)
 
-- **Guardrail**: default `cost.guardrail_usd: 0.20` in `.agents/skills/oma-video/config/video-config.yaml` (reused from oma-image). Any provider whose estimated cost meets or exceeds the guardrail requires spend authorization (`-y` / `--yes` or the Step 5 checkpoint). Reuse an existing authorization covering that provider and amount. `--max-usd <n>` overrides the threshold.
+- **Guardrail**: default `cost.guardrail_usd: 0.20` in `.agents/skills/oma-video/config/video-config.yaml` (reused from oma-image). Any provider whose estimated cost meets or exceeds the guardrail requires spend authorization (`-y` / `--yes` backed by existing authorization and the Step 4 decision). Reuse an existing authorization covering that provider and amount. `--max-usd <n>` overrides the threshold.
 - **Key-optional pairs** (real path is gated; fallback is always wired):
 
   | capability | real (key/resource) | key-free fallback | deferred marker |
@@ -86,8 +86,8 @@ For `demo`, resolve the recording path first. Use `--source file --capture <path
 3. Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 4. Once the mode is resolved under the execution policy, emit and verify the mode-selection decision with its actual authorization source:
    ```bash
-   oma state emit "decision.made" '{"subject":"video.mode-selection","decision":"<resolved mode and pipeline plan>","rationale":"<existing instruction, delegated choice, or new user decision authorizing the plan>"}'
-   oma state verify --workflow video --checkpoint mode-selection
+   oma state emit "decision.made" '{"subject":"video.mode-selection","instanceId":"<brief/script revision>","decision":"<resolved mode, aspect, source, and visual/compositor choices>","rationale":"<brief constraints and existing instruction or delegated choice>","evidence":["<brief or script artifact path>"]}'
+   oma state verify --workflow video --checkpoint mode-selection --instance "<brief/script revision>"
    ```
 
 ---
@@ -111,13 +111,22 @@ The agent writes the script — this is the start of the determinism boundary. D
      --compositor <hyperframes|mpt> --seed <n> \
      --script <path-to-agent-authored-script.json> --dry-run --output json
    ```
-6. Review the emitted `script.json` for scene count, durations, and narration quality. Iterate here — fixing the script is cheap; fixing a render is not.
+6. Review the emitted `script.json` for scene count, durations, and narration quality. If planning exits at the cost guardrail, retain its estimate/error manifest; complete the estimate with the same flags and `--dry-run --yes` only if needed. `--dry-run` keeps this rerun free of paid generation and rendering; keep that flag. Step 4 resolves the actual provider action before a non-dry rerun.
 
 ---
 
 ## Step 4: Parallel Asset Generation (voice / visual / caption)
 
-The CLI orchestrator fans out the asset tracks per the asset bus. Trigger the full (non-dry) run; the orchestrator runs the tracks and writes them into the run directory. **Do not author assets by hand.**
+Before the non-dry run, inspect the planning manifest from Step 3 for `cost.usd`, its provider breakdown, and the selected scope. If the estimate reaches the guardrail, present it and reuse existing spend authorization covering those providers and that amount. Resolve only any missing authorization, then record the actual paid, limited, fallback, or declined action before any provider call:
+
+```bash
+oma state emit "decision.made" '{"subject":"video.cost-confirmation","instanceId":"<script revision and provider plan>","decision":"<paid|limited|fallback|declined>: <providers, amount, and selected output scope>","rationale":"<estimate and existing authorization or actual decline/limitation>","evidence":["<planning manifest path>"]}'
+oma state verify --workflow video --checkpoint cost-confirmation --instance "<script revision and provider plan>"
+```
+
+If spend is declined, use an authorized key-free provider plan or stop. Re-plan changed providers with `--dry-run`; do not invoke the declined paid path. If the estimate is under the guardrail, note the estimate and continue without a confirmation prompt. A changed estimate/provider/scope needs a current decision only when it changes the authorization required.
+
+The CLI orchestrator then fans out the asset tracks per the asset bus. Pass `--yes` only when existing authorization covers the selected paid action; the event itself does not grant permission. **Do not author assets by hand.**
 
 ```bash
 oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script <path>, without --dry-run] --output json
@@ -140,17 +149,10 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 
 ---
 
-## Step 5: Cost Gate & `render-spec.json`
+## Step 5: Inspect `render-spec.json` and realized cost
 
-1. Inspect the cost estimate the orchestrator computed across providers (`cost.usd` + breakdown in the manifest/JSON output).
-2. **If the estimate meets or exceeds the guardrail** (default $0.20, or `--max-usd`), present the breakdown and reuse existing spend authorization if it covers the provider and amount. Otherwise obtain authorization before the paid render proceeds. Then emit and verify the actual decision:
-   ```bash
-   oma state emit "decision.made" '{"subject":"video.cost-confirmation","decision":"Proceed with the estimated paid cost or fall back to the key-free path.","rationale":"Estimated cost crossed the guardrail; the user confirmed spend or chose the fallback."}'
-   oma state verify --workflow video --checkpoint cost-confirmation
-   ```
-   If the user declines, re-run with the key-free providers (drop `--visual stock|aigc`) — the fallback chain keeps the run alive.
-3. If the estimate is under the guardrail, note "cost under guardrail ($X.XX < $0.20)" and continue without a confirmation prompt.
-4. Confirm `render-spec.json` was written. This is the **deterministic compute boundary**: `compositor, composition, fps, dimensions, durationInFrames, audio, scenes[], captions, background, seed`. The seed is embedded so re-renders are byte-identical.
+1. Inspect realized cost and warnings against the provider plan recorded before Step 4. Resolve a changed authorization requirement before any paid retry.
+2. Confirm `render-spec.json` was written. This is the **deterministic compute boundary**: `compositor, composition, fps, dimensions, durationInFrames, audio, scenes[], captions, background, seed`. The seed is embedded so re-renders are byte-identical.
 
 ---
 

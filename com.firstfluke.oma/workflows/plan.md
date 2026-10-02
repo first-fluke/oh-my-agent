@@ -93,10 +93,10 @@ If the plan involves cross-boundary work (frontend ↔ backend, service ↔ serv
    - Auth requirements, error responses
 2. When creating a separate artifact, save the generated contract to `.agents/results/api-contracts/{contract-name}.md` (run artifact; gitignored). If the contract must be versioned as a durable spec, promote it to `docs/plans/contracts/{contract-name}.md` when committing the feature.
 3. Reference from the markdown tracker generated in Step 6.
-4. Emit and verify the required API contract decision:
+4. Record the actual endpoint, request/response, authentication, and error-contract choices with their current revision and supporting requirements. Existing scope authorization is sufficient; do not label a proposed contract approved while its user-owned choices remain unresolved:
    ```bash
-   oma state emit "decision.made" '{"subject":"plan.api-contract","decision":"Use the approved endpoint and contract shape for this plan.","rationale":"The cross-boundary API contract has been reviewed and accepted before task decomposition."}'
-   oma state verify --workflow plan --checkpoint api-contract
+   oma state emit "decision.made" '{"subject":"plan.api-contract","instanceId":"<plan and contract revision>","decision":"<chosen endpoint/schema/auth/error behavior and contract path>","rationale":"<caller requirements, tradeoffs, and actual decision authority>","evidence":["<contract and requirement artifact paths>"]}'
+   oma state verify --workflow plan --checkpoint api-contract --instance "<plan and contract revision>"
    ```
 
 ---

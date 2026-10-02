@@ -101,7 +101,7 @@ rg "<error-message-or-symbol>"
 rg --files
 ```
 
-Then run the smallest reproduction command first, add a regression test, and re-run the failing check plus related tests.
+Then run the smallest reproduction command first, establish the causal mechanism, and follow `resources/execution-protocol.md` for the diagnosis record when an OMA workflow is active. Add the regression test and re-run the failing check plus related tests.
 
 ### Resource scope
 | Scope | Resource target |

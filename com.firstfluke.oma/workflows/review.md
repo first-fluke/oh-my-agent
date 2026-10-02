@@ -93,11 +93,11 @@ Compile all findings into a prioritized report:
 Each finding must include: `file:line`, description, and remediation code.
 Use memory write tool to record the final report.
 
-After severity classification is complete, emit and verify the required review decision:
+For each classified finding, record its actual severity, impact, and exploitability or failure evidence before report handoff. Use the finding identity and reviewed revision; when there are no findings, record the reviewed scope and checks with that outcome:
 
 ```bash
-oma state emit "decision.made" '{"subject":"review.severity-classification","decision":"Use the classified finding severities for the QA report and follow-up routing.","rationale":"Findings have been reviewed and assigned CRITICAL/HIGH/MEDIUM/LOW severity with remediation context."}'
-oma state verify --workflow review --checkpoint severity-classification
+oma state emit "decision.made" '{"subject":"review.severity-classification","instanceId":"<finding ID or empty-review scope>@<reviewed revision>","decision":"<severity>: <identified finding and resulting remediation priority|no findings in the identified scope>","rationale":"<observed impact, prerequisites, and evidence supporting this classification>","evidence":["<review report and relevant check/log paths>"]}'
+oma state verify --workflow review --checkpoint severity-classification --instance "<finding ID or empty-review scope>@<reviewed revision>"
 ```
 
 ---

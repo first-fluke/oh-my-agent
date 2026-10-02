@@ -26,7 +26,7 @@ bunx deepsec process --limit 50 --concurrency 5       # upstream-recommended cal
 
 `scan` runs ~110 regex matchers across the codebase. **No AI calls.** ~15s on 2k files. Output goes to `data/<id>/files/` as one `FileRecord` JSON per scanned source file.
 
-The calibration `process` is a budget-capped AI pass. Extrapolate from the run's **total** cost: multiply it by `(total_files / 50)`. If the CLI reports only a per-batch number, multiply by `(total_files / batch_size)` — `--batch-size` defaults to 5, so a `--limit 50` calibration is 10 batches, not 1. Sanity-check the result against the cost bands below; an estimate an order of magnitude under the band means the wrong multiplier was used. **Get the user's explicit go-ahead before launching the unbounded `process`.**
+The calibration `process` is a file-limited AI pass; `--limit` does not cap dollar spend. Extrapolate from the run's **total** cost: multiply it by `(total_files / 50)`. If the CLI reports only a per-batch number, multiply by `(total_files / batch_size)` — `--batch-size` defaults to 5, so a `--limit 50` calibration is 10 batches, not 1. Sanity-check the result against the cost bands below; an estimate an order of magnitude under the band means the wrong multiplier was used. **Reuse existing authorization covering the selected backend, scope, and estimated spend. Before paid work under a new plan or expanded scope, record the actual approved, limited, or declined action using `decision-records.md` § Execution scope; resolve only missing authorization.**
 
 ## Cost guide (`--agent claude`, Claude Opus — the most expensive backend)
 
@@ -75,6 +75,8 @@ bunx deepsec revalidate --min-severity HIGH
 | `revalidate` | Re-reads code + git history, emits `true-positive` / `false-positive` / `fixed` / `uncertain` verdicts and may adjust severity. | Comparable to `process` |
 
 `revalidate` empirically cuts FP rate by 50%+ on most repos. Run it on `HIGH+` before surfacing anything to the user.
+
+Before filtering or exporting triaged findings in an OMA run, record and verify each actual finding verdict through `decision-records.md` § Finding verdicts. Preserve records for suppressed false positives and matched fixes.
 
 ## Export
 

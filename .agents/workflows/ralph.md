@@ -27,7 +27,7 @@ The detected vendor determines how ultrawork spawns agents internally.
 1. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 2. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 3. Read `.agents/workflows/ralph/resources/judge-protocol.md` for JUDGE rules.
-4. Read `.agents/skills/_shared/runtime/event-spec.md` for the L1 event protocol and `oma state emit` (used by the EXEC checkpoint in Step 1.2).
+4. Read `.agents/skills/_shared/runtime/event-spec.md` for meaningful decisions, gate failures, and iteration-scoped evidence.
 
 ### Step 0.2: Define Completion Criteria
 
@@ -79,17 +79,12 @@ Compose the ultrawork input based on current iteration:
 
 ### Step 1.2: Execute Ultrawork
 
-**EXEC-entry checkpoint (MANDATORY — emit before delegating).** This records, in the auditable L1 event log, that this iteration delegates to the full ultrawork workflow. A run without this event is a non-compliant run.
-
-```bash
-oma state emit "decision.made" '{"subject":"ralph.exec-delegated","decision":"Delegate this iteration to the full ultrawork 5-phase workflow.","rationale":"Ralph EXEC must run ultrawork in full; abridging, substituting, or skipping phases for cost/stability/time reasons is forbidden without explicit user approval."}'
-oma state verify --workflow ralph --checkpoint exec-delegated
-```
+Record the current iteration and plan revision in the session artifact. Pass that identity into ultrawork so its plan and REFINE decisions cannot be satisfied by an earlier iteration.
 
 Delegate to the ultrawork workflow:
 
 1. Read and follow `.agents/workflows/ultrawork.md` step by step.
-2. Pass the prepared input as the task description, **and pass this ralph run's `sessionId` as ultrawork's session id**. Ultrawork must keep plan task IDs, claims, receipts, and run-scoped reports under that identity so Step 1.3 can match the evidence.
+2. Pass the prepared input, current iteration, and plan revision as the task context, **and pass this ralph run's `sessionId` as ultrawork's session id**. Ultrawork must keep plan task IDs, claims, receipts, and run-scoped reports under that identity so Step 1.3 can match the evidence.
 3. Ultrawork handles all vendor-specific agent spawning internally.
 4. Wait for ultrawork to complete all 5 phases (PLAN, IMPL, VERIFY, REFINE, SHIP).
 5. **Do NOT abridge ultrawork.** If you believe the environment (subagent instability, cost, time) warrants reducing fan-out or collapsing phases, STOP and ask the user first. Single-judgment substitution of ultrawork's structure is forbidden — see the Anti-Circumvention gate in Step 1.3.
@@ -124,7 +119,7 @@ oma ralph verify --json --session-id {sessionId} --newer-than {iteration_start_i
   1. Record the violation in `session-ralph-{sessionId}.md`: `exec-circumvention detected at iteration {N}: missing {artifact}`.
   2. Emit the audit event:
      ```bash
-     oma state emit "decision.made" '{"subject":"ralph.exec-circumvention","decision":"EXEC artifacts incomplete — ultrawork did not run in full.","rationale":"Required VERIFY/REFINE agent result files are absent; the iteration was abridged."}'
+     oma state emit "gate.failed" '{"gate":"ralph.exec-artifacts","reason":"<actual missing or stale artifacts and verification failure>","workflow":"ralph","iteration":"<current iteration>","evidence":["<saved oma ralph verify result path>"]}'
      ```
   3. Report the missing or stale evidence, repair the authorized work, and retry the gate. Apply `.agents/skills/_shared/core/execution-policy.md`; ask only when repair needs a material missing decision or new authorization. Do NOT retry with the same missing evidence.
 
@@ -155,7 +150,7 @@ oma ralph verify --json --session-id {sessionId} --newer-than {iteration_start_i
 3. **Wait for the judge claim and `result-qa-{judge_task.id}-{runId}-{sessionId}.md`**, then read it as the JUDGE result.
 4. **Inline fallback (exception)**: only if subagent spawning is unavailable in the current runtime, perform the verification inline. Record `judge-inline-fallback at iteration {N}` in `session-ralph-{sessionId}.md` and emit:
    ```bash
-   oma state emit "decision.made" '{"subject":"ralph.judge-inline-fallback","decision":"Run JUDGE inline in the orchestrator context.","rationale":"Subagent spawning unavailable in this runtime; judge independence is downgraded for this iteration."}'
+   oma state emit "decision.made" '{"subject":"ralph.judge-inline-fallback","instanceId":"<current iteration>","decision":"Run JUDGE inline for iteration <N> using <verification commands>.","rationale":"<observed dispatch limitation and why inline verification is the available recovery>","evidence":["<dispatch failure or session artifact path>"]}'
    ```
 
 Apply [Verification Execution Order](ralph/resources/judge-protocol.md#verification-execution-order), including prior PASS criteria, and its heavy-verification cache rules. The judge uses the shared execution policy when selecting or executing checks.

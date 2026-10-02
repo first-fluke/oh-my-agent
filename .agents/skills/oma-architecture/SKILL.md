@@ -158,7 +158,7 @@ Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or
 8. When a decision is material, compare at least two genuinely different options before recommending one.
 9. Save architecture artifacts to `.agents/results/architecture/`.
 10. Read prior artifacts in `.agents/results/architecture/` before deciding; when replacing an old decision, mark it superseded rather than contradicting it.
-11. When a durable artifact is finalized, emit the `architecture.adr-complete` L1 decision event and verify the checkpoint (commands in `resources/execution-protocol.md` Step 7).
+11. When a durable artifact is finalized in an active OMA workflow, record its actual recommendation, authority status, rationale, revision, and evidence with `architecture.adr-complete` (execution protocol Step 7). A completed proposal does not supply user approval or authorize implementation.
 
 ### Method Selection Summary
 - **Diagnostic Mode**: vague pain, unclear architecture symptom

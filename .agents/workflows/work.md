@@ -145,13 +145,13 @@ If QA finds CRITICAL or HIGH issues:
 
 Apply the shared per-task attempt and cost budget in `.agents/skills/oma-orchestration/SKILL.md`. Count the original attempt, each retry, and every exploration hypothesis; the workflow cycle limit never grants additional attempts.
 
-1. Re-spawn the responsible agent with QA findings. **The fix prompt MUST instruct root-cause remediation, not symptom suppression.** Forbid tactical patches (try/catch swallowing, validation bypass, hardcoded values, feature flags hiding the bug, silencing the failing test) unless the agent can explicitly justify why a structural fix is out of scope for this iteration (e.g., upstream library bug, deprecated path, hotfix window). Bias toward the orthodox engineering fix even when it costs more lines or touches more files.
-2. Emit and verify the remediation decision before accepting any fix/ignore choice:
+1. Select the action for each finding and identify its current revision/attempt before re-dispatch. **The fix prompt MUST instruct root-cause remediation, not symptom suppression.** Forbid tactical patches (try/catch swallowing, validation bypass, hardcoded values, feature flags hiding the bug, silencing the failing test) unless the agent can explicitly justify why a structural fix is out of scope for this iteration (e.g., upstream library bug, deprecated path, hotfix window). Bias toward the orthodox engineering fix even when it costs more lines or touches more files.
+2. Emit and verify each finding-specific remediation choice before dispatching its fix or accepting a defer/ignore choice. Record the actual action, cause, owner, and authorization for any exception:
    ```bash
-   oma state emit "decision.made" '{"subject":"work.remediation-choice","decision":"Fix the responsible QA finding with root-cause remediation or explicitly defer it.","rationale":"QA identified a CRITICAL/HIGH issue requiring a recorded remediation choice."}'
-   oma state verify --workflow work --checkpoint remediation-choice
+   oma state emit "decision.made" '{"subject":"work.remediation-choice","instanceId":"<finding ID and revision/attempt>","decision":"<fix|defer|ignore> <finding ID>: <specific remedy and owner or accepted residual risk>.","rationale":"<cause, verification evidence, and existing authorization or resolved exception>","evidence":["<finding/review artifact path>"]}'
+   oma state verify --workflow work --checkpoint remediation-choice --instance "<finding ID and revision/attempt>"
    ```
-3. If a defined comparison is active, refresh affected measurements after the fix and verify required checks. Record actual experiment decisions with evidence.
+3. Dispatch authorized fixes to their owners with the recorded action and evidence. If a defined comparison is active, refresh affected measurements after the fix and verify required checks. Record actual experiment decisions with evidence.
 4. Before each new fix cycle, apply the loop termination check:
 
    > **Fix Loop termination conditions** (OR, whichever fires first wins):

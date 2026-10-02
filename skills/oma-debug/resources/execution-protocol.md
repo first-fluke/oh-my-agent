@@ -18,6 +18,8 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - Wrong assumption about data shape?
 - Check `resources/common-patterns.md` for known patterns
 
+Before fixing a confirmed cause in an active OMA debug workflow, record `debug.root-cause` with the actual causal mechanism, selected remedy, bug/reproduction revision as `instanceId`, and reproduction/trace evidence. Verify the same instance using the command pair in `.agents/workflows/debug.md`; a matching subject from an older diagnosis is insufficient.
+
 ## Step 3: Fix & Test
 - Write a regression test that:
   - Fails without the fix

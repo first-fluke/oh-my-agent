@@ -89,8 +89,8 @@ Identify the root cause, not just the symptom. Check:
 When the root cause is confirmed, emit and verify the required diagnosis decision:
 
 ```bash
-oma state emit "decision.made" '{"subject":"debug.root-cause","decision":"Treat the confirmed root cause as the basis for the minimal fix.","rationale":"The diagnosis traced the failure path and distinguished the root cause from symptoms."}'
-oma state verify --workflow debug --checkpoint root-cause
+oma state emit "decision.made" '{"subject":"debug.root-cause","instanceId":"<bug or reproduction revision>","decision":"<specific causal mechanism at the affected file/symbol and selected fix approach>","rationale":"<how the reproduction and trace establish this cause and reject competing hypotheses>","evidence":["<reproduction/log/test artifact paths>"]}'
+oma state verify --workflow debug --checkpoint root-cause --instance "<bug or reproduction revision>"
 ```
 
 ---

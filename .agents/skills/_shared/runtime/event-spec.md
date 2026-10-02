@@ -54,39 +54,32 @@ Readers MUST derive state by sorting valid events by `(ts, eventId)`. Raw file o
     "eventId": { "type": "string", "minLength": 1 },
     "ts": { "type": "string", "format": "date-time" },
     "sid": { "type": "string", "minLength": 1 },
-    "kind": {
-      "type": "string",
-      "enum": [
-        "boundary",
-        "session.created",
-        "workflow.phase",
-        "gate.passed",
-        "gate.failed",
-        "blocker.raised",
-        "decision.made",
-        "decision.missing",
-        "session.ended"
-      ]
-    },
+    "kind": { "type": "string", "minLength": 1 },
     "writerPid": { "type": "integer" },
     "vendor": { "type": "string" },
     "vendorSid": { "type": "string" },
     "parentEventId": { "type": "string" },
     "causalityKey": { "type": "string" },
-    "payload": { "type": "object" }
+    "payload": {
+      "type": "object",
+      "properties": {
+        "instanceId": { "type": "string", "pattern": "\\S" }
+      }
+    }
   },
   "allOf": [
     {
       "if": { "properties": { "kind": { "const": "decision.made" } } },
       "then": {
+        "required": ["payload"],
         "properties": {
           "payload": {
             "type": "object",
             "required": ["subject", "decision", "rationale"],
             "properties": {
-              "subject": { "type": "string", "minLength": 1 },
-              "decision": { "type": "string", "minLength": 1 },
-              "rationale": { "type": "string", "minLength": 1 }
+              "subject": { "type": "string", "pattern": "\\S" },
+              "decision": { "type": "string", "pattern": "\\S" },
+              "rationale": { "type": "string", "pattern": "\\S" }
             }
           }
         }
@@ -95,6 +88,7 @@ Readers MUST derive state by sorting valid events by `(ts, eventId)`. Raw file o
     {
       "if": { "properties": { "kind": { "const": "session.ended" } } },
       "then": {
+        "required": ["payload"],
         "properties": {
           "payload": {
             "type": "object",
@@ -102,6 +96,18 @@ Readers MUST derive state by sorting valid events by `(ts, eventId)`. Raw file o
             "properties": {
               "status": { "enum": ["completed", "failed"] }
             }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "blocker.raised" } } },
+      "then": {
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "required": ["summary"],
+            "properties": { "summary": { "type": "string", "pattern": "\\S" } }
           }
         }
       }
@@ -194,8 +200,11 @@ Optional payload fields:
 
 - `alternatives`
 - `evidence`
+- `instanceId`: concrete finding, revision, or attempt identifier. Required when the event must satisfy a workflow checkpoint.
 
-> **Substitute real content.** Workflow files show `oma state emit` commands as templates. When emitting, fill `decision` and `rationale` with the *actual* decision made in this run — the chosen option, the target file, the approve/skip outcome — never the literal template sentence. Only `subject` is a fixed key (the verifier matches on it); an audit log of identical boilerplate strings records that decisions happened but not what they were.
+> **Substitute real content.** Fill `decision` and `rationale` with the actual choice and cause. Preserve the fixed `subject`; use the same concrete `instanceId` in the emitted payload and verifier. Empty or whitespace-only decision fields are rejected. An optional decision without `instanceId` is retained but cannot satisfy a required checkpoint.
+
+Use an instance that changes when the reviewed item changes: iteration plus plan revision, a finding ID plus patch/revalidation revision, or a target path plus patch revision. A single session-wide constant allows old decisions to satisfy later work. Keep IDs identical for emit and verify; do not emit literal angle-bracket placeholders.
 
 ### `decision.missing`
 
@@ -205,6 +214,7 @@ Required payload fields:
 
 - `workflow`
 - `checkpoint`
+- `instanceId`
 - `missing`
 - `remediation`
 
@@ -216,6 +226,12 @@ Required payload fields:
 
 - `status`: `completed` or `failed`.
 
+Optional payload fields:
+
+- `reason`: completion cause or failure reason.
+
+Completion gates and explicit workflow completion end the session as `completed`. Exhausted budgets end it as `failed` with a reason. A failed retryable gate keeps the session active. Terminal events remove matching active-index entries. Persistent-mode termination also exports the coordination summary; other callers can use `oma state summary`. Unsupported terminal statuses are diagnosed and do not mark a session completed.
+
 ## Emitting Decisions
 
 Call `oma state emit` **directly** at each required checkpoint — do not wrap it in a shell helper.
@@ -225,6 +241,10 @@ Every Bash tool call runs in a fresh shell, so a shell function defined in one c
 Required decision example:
 
 ```bash
-oma state emit "decision.made" '{"subject":"ultrawork.plan-approved","decision":"Proceed with the approved plan.","rationale":"PLAN_GATE passed and the user confirmed scope."}'
-oma state verify --workflow ultrawork --checkpoint plan-approved
+oma state emit "decision.made" '{"subject":"ultrawork.plan-approved","instanceId":"iteration-1:plan-v2","decision":"Use SQLite for the local append-only retry ledger.","rationale":"The approved scope requires cross-process serialization without a hosted service."}'
+oma state verify --workflow ultrawork --checkpoint plan-approved --instance "iteration-1:plan-v2"
 ```
+
+Required verification matches both `subject` and `instanceId` and checks nonblank decision content, including historical records. A decision for an earlier iteration, patch, or finding cannot satisfy the current checkpoint. `oma doctor` reports malformed event envelopes and payloads without rewriting the authoritative log.
+
+Core kinds above have stable contracts. Additional event kinds may be used by extensions; they do not satisfy core decision or terminal contracts.

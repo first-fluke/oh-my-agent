@@ -98,13 +98,13 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - `cbam-<topic>.md`
   - `diagnosis-<topic>.md`
 - Rerunning the same topic updates the existing file; record the revision in the ADR `Status` line rather than creating a copy
-- ADR lifecycle: `Status` is `Proposed`, `Accepted`, or `Superseded by <adr-file>`; when a new ADR replaces an old one, update the old ADR's `Status` in the same run
+- ADR lifecycle: `Status` is `Proposed`, `Accepted`, or `Superseded by <adr-file>`. Keep a user-owned unresolved choice `Proposed`; a completed artifact or event is not acceptance. Use `Accepted` only when existing decision authority supports it. Update a prior ADR as superseded only when the replacement is authorized.
 - When running as a dispatched subagent, ALSO write the run report to `.agents/results/result-architecture.md` per the agent protocol; the report links to the durable artifact, it does not replace it
-- Emit and verify the completion decision event:
+- In an active OMA workflow, record and verify the actual recommendation with its authority status and current artifact revision. This records completion of the analysis without granting implementation approval:
 
 ```bash
-oma state emit "decision.made" '{"subject":"architecture.adr-complete","decision":"<one-line decision>","rationale":"<one-line rationale>"}'
-oma state verify --workflow architecture --checkpoint adr-complete
+oma state emit "decision.made" '{"subject":"architecture.adr-complete","instanceId":"<artifact path and revision>","decision":"<Proposed|Accepted>: <recommended or authorized option and boundary>","rationale":"<option comparison and actual acceptance authority when Accepted>","evidence":["<architecture artifact and supporting evidence paths>"]}'
+oma state verify --workflow architecture --checkpoint adr-complete --instance "<artifact path and revision>"
 ```
 
 ## Escalation

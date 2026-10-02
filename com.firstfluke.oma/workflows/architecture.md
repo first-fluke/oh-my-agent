@@ -132,7 +132,7 @@ Suggested filenames (kebab-case topic, no sequence numbers):
 - `cbam-<topic>.md`
 - `diagnosis-<topic>.md`
 
-ADR lifecycle: set `Status` (`Proposed` / `Accepted` / `Superseded by <adr-file>`); when replacing an old ADR, update its `Status` in the same run.
+ADR lifecycle: set `Status` (`Proposed` / `Accepted` / `Superseded by <adr-file>`) from the actual decision authority. A completed recommendation stays `Proposed` while a user-owned choice is unresolved; producing the artifact or emitting an event does not supply approval. When replacing an accepted ADR, update the prior artifact only when that supersession is authorized.
 
 ### Step 7a: Render the structural diagram (archify when available)
 
@@ -143,11 +143,11 @@ Only when the decision changes structure (boundaries, dependencies, data flow) a
 3. `engine: archify` → author `<artifact-stem>.archify.json` from the Mermaid topology, then `oma diagram archify validate …` / `oma diagram archify deliver … <artifact-stem>.archify.html` per the protocol. Allow at most 3 repair attempts or 10 minutes total, and stop earlier when the same diagnostic repeats. On success, link the HTML under the artifact's Diagram section; on a bound or convergence failure, keep the Mermaid block, preserve the JSON, and report the last diagnostics.
 4. `ok: false` (archify pinned but unresolvable — e.g. first run offline) → stop and tell the user to run `oma diagram update` once online; do not deliver a Mermaid-only artifact silently.
 
-Emit and verify the required ADR/architecture completion decision:
+Record the recommendation, its authority status, and supporting comparison. Keep recommendation completion separate from permission to implement:
 
 ```bash
-oma state emit "decision.made" '{"subject":"architecture.adr-complete","decision":"Use the completed architecture recommendation or ADR as the handoff basis.","rationale":"The architecture artifact captures the selected option, tradeoffs, risks, and validation steps."}'
-oma state verify --workflow architecture --checkpoint adr-complete
+oma state emit "decision.made" '{"subject":"architecture.adr-complete","instanceId":"<artifact path and revision>","decision":"<Proposed|Accepted>: <recommended or authorized option and structural boundary>.","rationale":"<option comparison, constraints, and actual acceptance authority when Accepted>","evidence":["<architecture artifact path>","<supporting comparison/authorization evidence>"]}'
+oma state verify --workflow architecture --checkpoint adr-complete --instance "<artifact path and revision>"
 ```
 
 Then guide the next step:

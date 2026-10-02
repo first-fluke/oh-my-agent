@@ -96,19 +96,15 @@ Evaluate [the canonical PLAN_GATE](ultrawork/resources/phase-gates.md#plan_gate)
 
 **On gate pass**:
 1. Use memory edit tool to record phase completion in `session-ultrawork.md`.
-2. Emit the required L1 decision, replacing the rationale placeholder with the actual authorization and gate evidence:
+2. Emit the chosen plan with its actual scope authorization and gate evidence. Use the current plan revision as `instanceId`; inside Ralph, include the current iteration in that identity:
    ```bash
-   oma state emit "decision.made" '{"subject":"ultrawork.plan-approved","decision":"Proceed with the approved PLAN output.","rationale":"<scope authorization from the existing request or a newly resolved decision; PLAN_GATE evidence>"}'
+   oma state emit "decision.made" '{"subject":"ultrawork.plan-approved","instanceId":"<iteration and plan revision>","decision":"Implement <chosen plan option and scoped task IDs>.","rationale":"<existing scope authorization and why PLAN_GATE evidence supports this option>","evidence":["<plan artifact path>","<gate/review evidence paths>"]}'
    ```
 3. Verify the required decision before Phase 2:
    ```bash
-   oma state verify --workflow ultrawork --checkpoint plan-approved
+   oma state verify --workflow ultrawork --checkpoint plan-approved --instance "<iteration and plan revision>"
    ```
-4. Emit and verify the implementation scope lock before spawning implementation agents:
-   ```bash
-   oma state emit "decision.made" '{"subject":"ultrawork.impl-plan-locked","decision":"Use the approved task decomposition for IMPL.","rationale":"PLAN output is locked before implementation agents are spawned."}'
-   oma state verify --workflow ultrawork --checkpoint impl-plan-locked
-   ```
+4. Dispatch the recorded plan using its task IDs and revision. The plan artifact and task claims carry the scope lock; no additional decision acknowledgment is required.
 
 **Gate failure → Return to Step 1 only before the first executable task dispatch and within the existing review/cost bounds.** After dispatch the plan is immutable. Follow `result-contract.md`: classify product failures separately from `WORKFLOW_EVIDENCE_FAILURE`, preserve lineage/goal retry counters, and allow at most one metadata-only repair under the existing task before a partial handoff. Never return to PLAN or repeat its three reviews to repair completion metadata. These rules also apply at VERIFY, REFINE, and SHIP gates.
 
@@ -325,12 +321,12 @@ If a comparable baseline was recorded at Step 5.2 and subsequent changes affect 
 
 Evaluate [the canonical REFINE_GATE](ultrawork/resources/phase-gates.md#refine_gate).
 
-**On gate pass**:
-1. Use memory edit tool to record phase completion in `session-ultrawork.md`.
-2. Emit and verify the REFINE outcome decision:
+**On gate pass or a documented skip**:
+1. Use memory edit tool to record the accepted changes or exact skip condition in `session-ultrawork.md`. A skip bypasses the refactor dispatch, but still records its outcome before SHIP.
+2. Emit and verify the actual REFINE outcome for this iteration and plan revision:
    ```bash
-   oma state emit "decision.made" '{"subject":"ultrawork.refine-outcome","decision":"Keep the REFINE changes or explicitly skip refinement.","rationale":"REFINE_GATE passed or the documented skip condition applies."}'
-   oma state verify --workflow ultrawork --checkpoint refine-outcome
+   oma state emit "decision.made" '{"subject":"ultrawork.refine-outcome","instanceId":"<iteration and plan revision>","decision":"<keep identified refinement changes|skip refinement for the identified scope>","rationale":"<actual gate evidence or exact documented skip condition>","evidence":["<refinement report or recorded skip artifact path>"]}'
+   oma state verify --workflow ultrawork --checkpoint refine-outcome --instance "<iteration and plan revision>"
    ```
 
 **Gate failure → Before re-spawning the Refactor Agent, apply the same termination check:**
