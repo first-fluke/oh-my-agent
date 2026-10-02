@@ -1,6 +1,6 @@
 {
   "name": "oma",
-  "version": "15.0.9",
+  "version": "15.0.10",
   "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
   "author": {
     "name": "First Fluke",

@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.10](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.9...cli-v15.0.10) (2026-10-02)
+
+
+### Bug Fixes
+
+* **serena:** normalize small search answer limits ([858898d](https://github.com/first-fluke/oh-my-agent/commit/858898d42f01894c8202cba8bf373338b8d790f8))
+
 ## [15.0.9](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.8...cli-v15.0.9) (2026-10-02)
 
 
