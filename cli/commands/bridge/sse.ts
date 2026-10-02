@@ -1,13 +1,15 @@
 import type { IncomingMessage } from "node:http";
+import { StringDecoder } from "node:string_decoder";
 
 export function parseSSEStream(
   res: IncomingMessage,
   onMessage: (data: string) => void,
 ): void {
   let buffer = "";
+  const decoder = new StringDecoder("utf8");
 
   res.on("data", (chunk: string | Buffer) => {
-    buffer += chunk.toString();
+    buffer += typeof chunk === "string" ? chunk : decoder.write(chunk);
     buffer = buffer.replace(/\r\n/g, "\n");
 
     const parts = buffer.split("\n\n");

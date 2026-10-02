@@ -1,5 +1,6 @@
-import http, { type IncomingMessage } from "node:http";
+import http, { type ClientRequest, type IncomingMessage } from "node:http";
 import https from "node:https";
+import { StringDecoder } from "node:string_decoder";
 import { validateSerenaConfigs } from "../../io/serena-config.js";
 import {
   daemonKey,
@@ -50,6 +51,8 @@ export interface BridgeOptions {
   context?: string;
   /** Working directory the project root is resolved from. */
   cwd?: string;
+  /** Deadline for an MCP initialize response. */
+  initializeTimeoutMs?: number;
 }
 
 export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
@@ -159,7 +162,8 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   function postToServer(
     body: string,
     callback: (res: IncomingMessage) => void,
-  ): void {
+    onError: (error: Error) => void,
+  ): ClientRequest {
     const mcpUrl = new URL(MCP_URL);
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -174,19 +178,18 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
     const options = {
       hostname: mcpUrl.hostname,
       port: mcpUrl.port,
-      path: mcpUrl.pathname,
+      path: mcpUrl.pathname + mcpUrl.search,
       method: "POST",
       headers,
     };
 
     const req = httpModule.request(options, callback);
 
-    req.on("error", (err: Error) => {
-      console.error("POST error:", err.message);
-    });
+    req.on("error", onError);
 
     req.write(body);
     req.end();
+    return req;
   }
 
   function connectServerStream(): void {
@@ -200,7 +203,7 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
     const options = {
       hostname: mcpUrl.hostname,
       port: mcpUrl.port,
-      path: mcpUrl.pathname,
+      path: mcpUrl.pathname + mcpUrl.search,
       method: "GET",
       headers: {
         Accept: "application/json, text/event-stream",
@@ -302,10 +305,27 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   }
 
   function flushPendingMessages() {
-    while (pendingMessages.length > 0) {
+    while (!initializePending && pendingMessages.length > 0) {
       const msg = pendingMessages.shift();
       if (msg) {
         handleIDEMessage(msg);
+      }
+    }
+  }
+
+  function sendRequestError(request: { id?: unknown }, message: string) {
+    if (request.id === undefined) return;
+    process.stdout.write(
+      `${JSON.stringify({ jsonrpc: "2.0", id: request.id, error: { code: -32000, message } })}\n`,
+    );
+  }
+
+  function rejectPendingMessages(message: string) {
+    for (const pending of pendingMessages.splice(0)) {
+      try {
+        sendRequestError(JSON.parse(pending), message);
+      } catch {
+        console.error("Failed to parse queued IDE message");
       }
     }
   }
@@ -314,67 +334,152 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
     try {
       const parsed = JSON.parse(message);
       const isInitialize = parsed.method === "initialize";
+      let settled = false;
+      let failed = false;
+      let request: ClientRequest | undefined;
+      let initializeTimer: ReturnType<typeof setTimeout> | undefined;
+
+      const finishInitialize = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(initializeTimer);
+        if (isInitialize) {
+          initializePending = false;
+          if (sessionId) connectServerStream();
+          flushPendingMessages();
+        }
+      };
+
+      const failRequest = (error: Error) => {
+        if (settled) return;
+        settled = true;
+        failed = true;
+        clearTimeout(initializeTimer);
+        console.error("POST error:", error.message);
+        sendRequestError(parsed, `MCP request failed: ${error.message}`);
+        if (isInitialize) {
+          initializePending = false;
+          sessionId = null;
+          rejectPendingMessages(
+            "MCP initialization failed; retry initialization",
+          );
+        }
+      };
+
+      const forwardResponse = (data: string) => {
+        if (failed) return;
+        process.stdout.write(`${data}\n`);
+        try {
+          const response = JSON.parse(data);
+          if (
+            !settled &&
+            parsed.id !== undefined &&
+            response.id === parsed.id &&
+            ("result" in response || "error" in response)
+          ) {
+            if (isInitialize && "error" in response) {
+              settled = true;
+              failed = true;
+              clearTimeout(initializeTimer);
+              initializePending = false;
+              sessionId = null;
+              rejectPendingMessages(
+                "MCP initialization failed; retry initialization",
+              );
+            } else {
+              finishInitialize();
+            }
+          }
+        } catch {
+          // The client handles malformed protocol responses.
+        }
+      };
 
       if (isInitialize) {
         initializePending = true;
+        initializeTimer = setTimeout(() => {
+          failRequest(new Error("MCP initialization timed out"));
+          request?.destroy();
+        }, opts.initializeTimeoutMs ?? 30_000);
+        initializeTimer.unref();
       }
 
       const postData = JSON.stringify(parsed);
 
-      postToServer(postData, (res: IncomingMessage) => {
-        const newSessionId = res.headers["mcp-session-id"] as
-          | string
-          | undefined;
-        if (newSessionId) {
-          sessionId = newSessionId;
-        }
-
-        if (res.statusCode === 202) {
-          res.resume();
-          if (isInitialize) {
-            initializePending = false;
-            flushPendingMessages();
+      request = postToServer(
+        postData,
+        (res: IncomingMessage) => {
+          res.on("error", failRequest);
+          res.on("aborted", () =>
+            failRequest(new Error("MCP response aborted")),
+          );
+          if (res.statusCode && res.statusCode >= 400) {
+            failRequest(
+              new Error(`MCP server returned HTTP ${res.statusCode}`),
+            );
+            res.resume();
+            return;
           }
-          return;
-        }
+          const newSessionId = res.headers["mcp-session-id"] as
+            | string
+            | undefined;
+          if (newSessionId) {
+            sessionId = newSessionId;
+          }
 
-        const contentType = res.headers["content-type"] || "";
-
-        if (contentType.includes("text/event-stream")) {
-          parseSSEStream(res, (data) => {
-            process.stdout.write(`${data}\n`);
-          });
-
-          res.on("end", () => {
+          if (res.statusCode === 202) {
+            res.resume();
             if (isInitialize) {
-              initializePending = false;
-              if (sessionId) {
-                connectServerStream();
-              }
-              flushPendingMessages();
+              failRequest(
+                new Error("MCP initialization ended without a response"),
+              );
+            } else {
+              finishInitialize();
             }
-          });
-        } else {
-          let responseData = "";
+            return;
+          }
 
-          res.on("data", (chunk: string | Buffer) => {
-            responseData += chunk.toString();
-          });
+          const contentType = res.headers["content-type"] || "";
 
-          res.on("end", () => {
-            if (responseData.trim()) {
-              process.stdout.write(`${responseData}\n`);
-            }
-            if (isInitialize) {
-              initializePending = false;
-              if (sessionId) {
-                connectServerStream();
+          if (contentType.includes("text/event-stream")) {
+            parseSSEStream(res, forwardResponse);
+
+            res.on("end", () => {
+              if (isInitialize && !settled) {
+                failRequest(
+                  new Error("MCP initialization ended without a response"),
+                );
+              } else {
+                finishInitialize();
               }
-              flushPendingMessages();
-            }
-          });
-        }
-      });
+            });
+          } else {
+            let responseData = "";
+            const decoder = new StringDecoder("utf8");
+
+            res.on("data", (chunk: string | Buffer) => {
+              responseData +=
+                typeof chunk === "string" ? chunk : decoder.write(chunk);
+            });
+
+            res.on("end", () => {
+              if (settled) return;
+              responseData += decoder.end();
+              if (responseData.trim()) {
+                forwardResponse(responseData);
+              }
+              if (isInitialize && !settled) {
+                failRequest(
+                  new Error("MCP initialization ended without a response"),
+                );
+              } else {
+                finishInitialize();
+              }
+            });
+          }
+        },
+        failRequest,
+      );
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error("Failed to parse IDE message:", errorMessage);

@@ -371,6 +371,265 @@ describe("bridge command", () => {
       expect(headers["Content-Type"]).toBe("application/json");
     });
 
+    it.each(["http", "https"])(
+      "preserves encoded and repeated query parameters in %s POST and GET requests",
+      async (protocol) => {
+        const { triggerStdin, getPostCallback, getPostOptions } =
+          setupBridgeWithStdin();
+        const requestPath = "/mcp?tenant=example&filter=a%2Bb&tag=one&tag=two";
+        await bridge(`${protocol}://localhost:12341${requestPath}#local`);
+        triggerStdin(
+          JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+        );
+        expect(getPostOptions()).toMatchObject({
+          method: "POST",
+          path: requestPath,
+        });
+        const res = createMockRes({
+          headers: { "mcp-session-id": "query-session" },
+          contentType: "application/json",
+        });
+        getPostCallback()(res as unknown as http.IncomingMessage);
+        res.emit("data", '{"jsonrpc":"2.0","id":1,"result":{}}');
+        res.emit("end");
+        expect(getPostOptions()).toMatchObject({
+          method: "GET",
+          path: requestPath,
+        });
+      },
+    );
+
+    it("preserves query parameters from OMA_BRIDGE_URL", async () => {
+      const { triggerStdin, getPostOptions } = setupBridgeWithStdin();
+      vi.stubEnv("OMA_BRIDGE_URL", "http://localhost:12341/mcp?tenant=example");
+      try {
+        await bridge();
+        triggerStdin(
+          JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+        );
+        expect(getPostOptions()).toMatchObject({
+          method: "POST",
+          path: "/mcp?tenant=example",
+        });
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it("reports failed initialization and allows a new initialize request", async () => {
+      const { triggerStdin } = setupBridgeWithStdin();
+      const requests: EventEmitter[] = [];
+      mockHttp.request.mockImplementation(() => {
+        const req = Object.assign(new EventEmitter(), {
+          write: vi.fn(),
+          end: vi.fn(),
+          destroy: vi.fn(),
+          setTimeout: vi.fn(),
+        });
+        requests.push(req);
+        return req;
+      });
+      await bridge(PROXY_ONLY_URL);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      );
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" }),
+      );
+      requests[0]?.emit("error", new Error("socket hang up"));
+
+      const replies = stdoutWriteSpy.mock.calls.map(([data]) =>
+        JSON.parse(String(data)),
+      );
+      expect(replies).toEqual([
+        expect.objectContaining({
+          id: 1,
+          error: expect.objectContaining({
+            message: expect.stringContaining("socket hang up"),
+          }),
+        }),
+        expect.objectContaining({ id: 2, error: expect.any(Object) }),
+      ]);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 3, method: "initialize" }),
+      );
+      expect(requests).toHaveLength(2);
+    });
+
+    it("reports an aborted initialize response and releases queued requests", async () => {
+      const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
+      await bridge(PROXY_ONLY_URL);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      );
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" }),
+      );
+      const res = createMockRes({ contentType: "application/json" });
+      getPostCallback()(res as unknown as http.IncomingMessage);
+      res.emit("aborted");
+      expect(stdoutWriteSpy).toHaveBeenCalledTimes(2);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 3, method: "initialize" }),
+      );
+      expect(mockHttp.request).toHaveBeenCalledTimes(2);
+    });
+
+    it("expires initialization instead of leaving later requests queued", async () => {
+      const { triggerStdin } = setupBridgeWithStdin();
+      await bridge(PROXY_ONLY_URL, { initializeTimeoutMs: 1000 });
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      );
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" }),
+      );
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(mockReq.destroy).toHaveBeenCalledOnce();
+      expect(stdoutWriteSpy).toHaveBeenCalledTimes(2);
+      expect(
+        JSON.parse(String(stdoutWriteSpy.mock.calls[0]?.[0])).error.message,
+      ).toContain("timed out");
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 3, method: "initialize" }),
+      );
+      expect(mockHttp.request).toHaveBeenCalledTimes(2);
+    });
+
+    it("turns an HTTP failure into JSON-RPC errors without forwarding HTML", async () => {
+      const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
+      await bridge(PROXY_ONLY_URL);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      );
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" }),
+      );
+      const res = createMockRes({ statusCode: 503, contentType: "text/html" });
+      getPostCallback()(res as unknown as http.IncomingMessage);
+      res.emit("data", "<html>Unavailable</html>");
+      res.emit("end");
+      expect(res.resume).toHaveBeenCalledOnce();
+      expect(stdoutWriteSpy).toHaveBeenCalledTimes(2);
+      expect(
+        JSON.parse(String(stdoutWriteSpy.mock.calls[0]?.[0])).error.message,
+      ).toContain("HTTP 503");
+    });
+
+    it("preserves UTF-8 characters split across JSON response chunks", async () => {
+      const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
+      await bridge(PROXY_ONLY_URL);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+      );
+      const res = createMockRes({ contentType: "application/json" });
+      getPostCallback()(res as unknown as http.IncomingMessage);
+      const response = JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        result: { text: "한글🙂" },
+      });
+      for (const byte of Buffer.from(response))
+        res.emit("data", Buffer.from([byte]));
+      res.emit("end");
+      expect(stdoutWriteSpy).toHaveBeenCalledWith(`${response}\n`);
+    });
+
+    it("releases initialization on its SSE response before the stream ends", async () => {
+      const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
+      await bridge(PROXY_ONLY_URL);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      );
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" }),
+      );
+      const res = createMockRes({ contentType: "text/event-stream" });
+      getPostCallback()(res as unknown as http.IncomingMessage);
+      res.emit("data", 'data: {"jsonrpc":"2.0","id":1,"result":{}}\n\n');
+      expect(mockHttp.request).toHaveBeenCalledTimes(2);
+      res.emit("aborted");
+      expect(stdoutWriteSpy).toHaveBeenCalledOnce();
+    });
+
+    it.each(["application/json", "text/event-stream"])(
+      "rejects initialization when a %s response ends without a reply",
+      async (contentType) => {
+        const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
+        await bridge(PROXY_ONLY_URL);
+        triggerStdin(
+          JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+        );
+        triggerStdin(
+          JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" }),
+        );
+        const res = createMockRes({ contentType });
+        getPostCallback()(res as unknown as http.IncomingMessage);
+        res.emit("end");
+        const replies = stdoutWriteSpy.mock.calls.map(([data]) =>
+          JSON.parse(String(data)),
+        );
+        expect(replies).toEqual([
+          expect.objectContaining({ id: 1, error: expect.any(Object) }),
+          expect.objectContaining({ id: 2, error: expect.any(Object) }),
+        ]);
+        expect(mockHttp.request).toHaveBeenCalledOnce();
+      },
+    );
+
+    it("rejects a 202 initialize response without losing notification behavior", async () => {
+      const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
+      await bridge(PROXY_ONLY_URL);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      );
+      getPostCallback()(
+        createMockRes({ statusCode: 202 }) as unknown as http.IncomingMessage,
+      );
+      expect(
+        JSON.parse(String(stdoutWriteSpy.mock.calls[0]?.[0])),
+      ).toHaveProperty("error");
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }),
+      );
+      getPostCallback()(
+        createMockRes({ statusCode: 202 }) as unknown as http.IncomingMessage,
+      );
+      expect(stdoutWriteSpy).toHaveBeenCalledOnce();
+    });
+
+    it("ignores an old initialize stream error while a new initialize is pending", async () => {
+      const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
+      await bridge(PROXY_ONLY_URL);
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }),
+      );
+      const first = createMockRes({ contentType: "text/event-stream" });
+      getPostCallback()(first as unknown as http.IncomingMessage);
+      first.emit(
+        "data",
+        'data: {"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"retry"}}\n\n',
+      );
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 2, method: "initialize" }),
+      );
+      const secondCallback = getPostCallback();
+      triggerStdin(
+        JSON.stringify({ jsonrpc: "2.0", id: 3, method: "tools/list" }),
+      );
+      first.emit(
+        "data",
+        'data: {"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"stale"}}\n\n',
+      );
+      expect(stdoutWriteSpy).toHaveBeenCalledOnce();
+      const second = createMockRes({ contentType: "application/json" });
+      secondCallback(second as unknown as http.IncomingMessage);
+      second.emit("data", '{"jsonrpc":"2.0","id":2,"result":{}}');
+      second.emit("end");
+      expect(mockHttp.request).toHaveBeenCalledTimes(3);
+      expect(stdoutWriteSpy).toHaveBeenCalledTimes(2);
+    });
+
     it("should handle SSE response with CRLF line endings", async () => {
       const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
 
