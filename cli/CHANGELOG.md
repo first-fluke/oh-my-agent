@@ -1,5 +1,16 @@
 # Changelog
 
+## [15.0.8](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.7...cli-v15.0.8) (2026-10-02)
+
+
+### Bug Fixes
+
+* **agent:** enforce parallel quotas and supervise background runs ([22b11a5](https://github.com/first-fluke/oh-my-agent/commit/22b11a5db13cbbe69b15d2a2f9e25b64a14c6f23))
+* **bridge:** recover initialization and preserve streamed responses ([a7b0d29](https://github.com/first-fluke/oh-my-agent/commit/a7b0d29053aa376c84be7301b794c270b6daf8e3))
+* **files:** preserve user-owned prompts and workflow contents ([26ce22c](https://github.com/first-fluke/oh-my-agent/commit/26ce22cea2638e82a7bfd980f236141d7aad26ac))
+* **memory:** preserve concurrent retries and recover interrupted drains ([8546321](https://github.com/first-fluke/oh-my-agent/commit/8546321a2154ada988168f358b4af034f78ec634))
+* **memory:** retain quota records for active and kept sessions ([491fb25](https://github.com/first-fluke/oh-my-agent/commit/491fb25369c1d53364d68ad98044d176c9ef84cb))
+
 ## [15.0.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.6...cli-v15.0.7) (2026-10-01)
 
 
