@@ -18,6 +18,7 @@ export type RemovalEntry = {
   path: string;
   kind: "dir" | "file" | "symlink";
   reason: string;
+  removeIfEmpty?: boolean;
 };
 
 /**
@@ -59,7 +60,8 @@ function hasOmaMarker(filePath: string): boolean {
 /**
  * Returns true when `entryPath` is a vendor workflow entry: a real directory
  * whose `SKILL.md` is a symlink resolving into `.agents/workflows/` (created by
- * `createVendorWorkflowSymlinks`). These are oma-owned, not user-authored.
+ * `createVendorWorkflowSymlinks`). Only the link is owned; the directory can
+ * contain user-authored files.
  */
 function isWorkflowSymlinkDir(entryPath: string, installRoot: string): boolean {
   const skillFile = path.join(entryPath, "SKILL.md");
@@ -280,10 +282,27 @@ export function buildRemovalPlan(installRoot: string): {
         isWorkflowSymlinkDir(entryPath, installRoot)
       ) {
         omaOwned.push({
-          path: entryPath,
-          kind: "dir",
+          path: path.join(entryPath, "SKILL.md"),
+          kind: "symlink",
           reason: `created by createVendorWorkflowSymlinks (${vendor})`,
         });
+        const hasUserContent = listDir(entryPath).some(
+          (child) => child.name !== "SKILL.md",
+        );
+        if (hasUserContent) {
+          userOwned.push({
+            path: entryPath,
+            kind: "dir",
+            reason: "user-authored workflow content",
+          });
+        } else {
+          omaOwned.push({
+            path: entryPath,
+            kind: "dir",
+            reason: `workflow directory, if empty (${vendor})`,
+            removeIfEmpty: true,
+          });
+        }
       } else {
         // Real directory or file — user authored
         userOwned.push({
@@ -417,7 +436,11 @@ function applyRemoval(omaOwned: RemovalEntry[]): void {
 
   for (const entry of dirs) {
     try {
-      fs.rmSync(entry.path, { recursive: true, force: true });
+      if (entry.removeIfEmpty) {
+        fs.rmdirSync(entry.path);
+      } else {
+        fs.rmSync(entry.path, { recursive: true, force: true });
+      }
     } catch {
       // best-effort
     }

@@ -263,10 +263,23 @@ export function installCopilotWorkflowPrompts(
 
   fs.mkdirSync(promptsRoot, { recursive: true });
   for (const name of names) {
+    const promptFile = join(promptsRoot, `${name}.prompt.md`);
+    try {
+      const existing = fs.lstatSync(promptFile);
+      if (
+        !existing.isFile() ||
+        !fs
+          .readFileSync(promptFile, "utf-8")
+          .includes(WORKFLOW_GENERATED_MARKER)
+      ) {
+        continue;
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") continue;
+    }
     const description =
       extractWorkflowDescription(join(workflowsDir, `${name}.md`)) ??
       `Workflow: ${name}`;
-    const promptFile = join(promptsRoot, `${name}.prompt.md`);
     const body = `---\ndescription: ${description}\nmode: agent\n---\n${WORKFLOW_GENERATED_MARKER}\n\nRead and follow [.agents/workflows/${name}.md](../../.agents/workflows/${name}.md) step by step.\n`;
     atomicWriteFileSync(promptFile, body);
   }

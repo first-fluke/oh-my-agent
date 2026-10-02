@@ -191,6 +191,59 @@ describe("buildRemovalPlan", () => {
 });
 
 describe("uninstall (actual removal with --yes)", () => {
+  it("removes workflow links and preserves user files in their directories", async () => {
+    const root = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    seedOmaLayout(root);
+    const workflow = path.join(root, ".agents", "workflows", "debug.md");
+    fs.writeFileSync(workflow, "# Debug\n");
+    const workflowDir = path.join(root, ".claude", "skills", "debug");
+    fs.mkdirSync(path.join(workflowDir, "scripts"), { recursive: true });
+    const link = path.join(workflowDir, "SKILL.md");
+    fs.symlinkSync(workflow, link);
+    const note = path.join(workflowDir, "notes.md");
+    const script = path.join(workflowDir, "scripts", "diagnose.sh");
+    fs.writeFileSync(note, "My debugging notes.\n");
+    fs.writeFileSync(script, "echo diagnose\n");
+
+    const { omaOwned, userOwned } = buildRemovalPlan(root);
+    expect(omaOwned).toContainEqual(
+      expect.objectContaining({ path: link, kind: "symlink" }),
+    );
+    expect(omaOwned.map((entry) => entry.path)).not.toContain(workflowDir);
+    expect(userOwned.map((entry) => entry.path)).toContain(workflowDir);
+
+    await uninstall({ yes: true });
+
+    expect(() => fs.lstatSync(link)).toThrow();
+    expect(fs.readFileSync(note, "utf-8")).toBe("My debugging notes.\n");
+    expect(fs.readFileSync(script, "utf-8")).toBe("echo diagnose\n");
+  });
+
+  it("removes workflow directories after their only link is removed", async () => {
+    const root = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    seedOmaLayout(root);
+    const workflow = path.join(root, ".agents", "workflows", "debug.md");
+    fs.writeFileSync(workflow, "# Debug\n");
+    const workflowDir = path.join(root, ".claude", "skills", "debug");
+    fs.mkdirSync(workflowDir, { recursive: true });
+    fs.symlinkSync(workflow, path.join(workflowDir, "SKILL.md"));
+
+    const { omaOwned } = buildRemovalPlan(root);
+    expect(omaOwned).toContainEqual(
+      expect.objectContaining({
+        path: workflowDir,
+        kind: "dir",
+        removeIfEmpty: true,
+      }),
+    );
+
+    await uninstall({ yes: true });
+
+    expect(fs.existsSync(workflowDir)).toBe(false);
+  });
+
   it("removes oma-owned entries and preserves user-owned files", async () => {
     const root = makeTmpDir();
     setInstallContext({ installRoot: root, mode: "project" });

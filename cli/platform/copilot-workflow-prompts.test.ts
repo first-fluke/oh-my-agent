@@ -1,9 +1,12 @@
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readlinkSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -137,6 +140,84 @@ describe("installCopilotWorkflowPrompts", () => {
     installCopilotWorkflowPrompts(sourceDir, targetDir);
 
     expect(readFileSync(userPrompt, "utf-8")).toBe(userBody);
+  });
+
+  it("preserves a user prompt with the same name as a workflow", () => {
+    const sourceDir = mkTemp("oma-copilot-src-");
+    const targetDir = mkTemp("oma-copilot-dst-");
+    setupSource(sourceDir, { debug: "---\ndescription: Bug\n---\n" });
+    const promptsDir = join(targetDir, ".github", "prompts");
+    mkdirSync(promptsDir, { recursive: true });
+    const userPrompt = join(promptsDir, "debug.prompt.md");
+    const userBody = "Diagnose using my project-specific instructions.\n";
+    writeFileSync(userPrompt, userBody);
+
+    installCopilotWorkflowPrompts(sourceDir, targetDir);
+
+    expect(readFileSync(userPrompt, "utf-8")).toBe(userBody);
+  });
+
+  it.each([false, true])(
+    "preserves a same-name prompt symlink, even when its target has an oma marker (%s)",
+    (hasMarker) => {
+      const sourceDir = mkTemp("oma-copilot-src-");
+      const targetDir = mkTemp("oma-copilot-dst-");
+      setupSource(sourceDir, { debug: "---\ndescription: Bug\n---\n" });
+      const promptsDir = join(targetDir, ".github", "prompts");
+      mkdirSync(promptsDir, { recursive: true });
+      const target = join(targetDir, "shared-prompt.md");
+      const content = `${hasMarker ? "<!-- oma:generated -->\n" : ""}Shared instructions.\n`;
+      writeFileSync(target, content);
+      const prompt = join(promptsDir, "debug.prompt.md");
+      symlinkSync(target, prompt);
+
+      installCopilotWorkflowPrompts(sourceDir, targetDir);
+
+      expect(lstatSync(prompt).isSymbolicLink()).toBe(true);
+      expect(readlinkSync(prompt)).toBe(target);
+      expect(readFileSync(target, "utf-8")).toBe(content);
+    },
+  );
+
+  it("preserves a dangling same-name prompt symlink", () => {
+    const sourceDir = mkTemp("oma-copilot-src-");
+    const targetDir = mkTemp("oma-copilot-dst-");
+    setupSource(sourceDir, { debug: "---\ndescription: Bug\n---\n" });
+    const promptsDir = join(targetDir, ".github", "prompts");
+    mkdirSync(promptsDir, { recursive: true });
+    const prompt = join(promptsDir, "debug.prompt.md");
+    const missingTarget = join(targetDir, "missing.md");
+    symlinkSync(missingTarget, prompt);
+
+    installCopilotWorkflowPrompts(sourceDir, targetDir);
+
+    expect(lstatSync(prompt).isSymbolicLink()).toBe(true);
+    expect(readlinkSync(prompt)).toBe(missingTarget);
+    expect(existsSync(missingTarget)).toBe(false);
+  });
+
+  it("refreshes an existing oma-generated prompt", () => {
+    const sourceDir = mkTemp("oma-copilot-src-");
+    const targetDir = mkTemp("oma-copilot-dst-");
+    setupSource(sourceDir, {
+      debug: "---\ndescription: Updated diagnosis\n---\n",
+    });
+    const promptsDir = join(targetDir, ".github", "prompts");
+    mkdirSync(promptsDir, { recursive: true });
+    const prompt = join(promptsDir, "debug.prompt.md");
+    writeFileSync(
+      prompt,
+      "<!-- oma:generated -->\nOld generated instructions.\n",
+    );
+
+    installCopilotWorkflowPrompts(sourceDir, targetDir);
+
+    expect(readFileSync(prompt, "utf-8")).toContain(
+      "description: Updated diagnosis",
+    );
+    expect(readFileSync(prompt, "utf-8")).not.toContain(
+      "Old generated instructions.",
+    );
   });
 
   it("is idempotent on repeated calls", () => {
