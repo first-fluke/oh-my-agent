@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.0.8",
-  "releaseDate": "2026-10-02T12:54:31.607Z",
+  "releaseDate": "2026-10-02T13:08:53.668Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -2141,8 +2141,8 @@
     },
     {
       "path": ".agents/workflows/scm.md",
-      "sha256": "4bcb79e665ea3874087276185f205da17bc312c816626a9d3fced72e6b61e30c",
-      "size": 2611
+      "sha256": "8e24c82268b3ce6c8bdc83fc64d39293fdb3ca892e04796de40e1f2dd06af7f8",
+      "size": 2094
     },
     {
       "path": ".agents/workflows/stack-set.md",
