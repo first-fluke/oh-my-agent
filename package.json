@@ -25,7 +25,7 @@
     "sns:qiita": "bun scripts/sns/qiita/index.ts",
     "test": "bun run --cwd cli test",
     "test:orca": "node --test integrations/orca/plugin.test.mjs",
-    "typecheck": "bunx tsc --noEmit -p tsconfig.json && bunx tsc --noEmit -p web/tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p web/tsconfig.json",
     "bench:oma-hook": "bun run cli/__bench__/oma-hook-latency.bench.ts",
     "web:dev": "bun run --cwd web dev",
     "web:build": "bun run --cwd web build"
@@ -48,7 +48,8 @@
     "@biomejs/biome": "^2.5.6",
     "@commitlint/cli": "21.2.1",
     "@commitlint/config-conventional": "21.2.0",
-    "husky": "9.1.7"
+    "husky": "9.1.7",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "jsonrepair": "^3.15.0"
