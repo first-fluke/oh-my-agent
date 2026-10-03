@@ -282,7 +282,7 @@ Este é o diretório central. Tudo de que os agentes precisam fica aqui. É o ú
 - `conditional/`: medição de pontuação de qualidade, acompanhamento de experimentos e protocolo de loop de exploração (carregados somente quando acionados)
 
 **`oma-{skill}/`**: diretórios por habilidade. Cada um contém:
-- `SKILL.md` (mediana de cerca de 2.631 tokens na árvore atual): camada 1, carregada quando a habilidade é roteada; identidade, roteamento e regras principais.
+- `SKILL.md`: camada 1, carregada quando a habilidade é roteada; identidade, roteamento e regras principais.
 - `resources/`: camada 2, carregada sob demanda; protocolos de execução, exemplos, checklists, playbooks de erros, stacks tecnológicos, snippets e templates.
 - Algumas habilidades têm subdiretórios adicionais: `variants/` (sementes de backend/mobile), referências `stack/` geradas por `/stack-set`, `reference/` (oma-design) e scripts/configurações específicos da habilidade.
 

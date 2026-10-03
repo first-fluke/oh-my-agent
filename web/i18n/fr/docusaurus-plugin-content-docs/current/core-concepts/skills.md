@@ -227,7 +227,7 @@ Le script fournit des estimations (octets UTF-8 / 4) pour des scénarios de tail
 
 La commande de contexte affiche l’injection réelle du contexte de la tâche. Elle n’inclut pas le reste de la conversation ni l’ensemble des instructions de l’hôte ou du runtime. Utilisez un prompt assemblé ou la télémétrie d’usage pour mesurer le nombre total de tokens d’entrée, la latence et le coût sur un modèle précis. Ne les déduisez pas de la taille du dépôt ni des comptages de miroirs générés.
 
-## Chargement des ressources selon la tâche
+## Chargement des ressources selon la tâche {#resource-loading-by-task}
 
 Chaque niveau de difficulté commence par le skill responsable. Le graphe est un index de références ; l’adjacence n’autorise pas le chargement d’un autre spécialiste, d’un guide de résolution d’erreurs ou d’un workflow d’expériences conditionnel.
 

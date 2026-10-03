@@ -601,7 +601,7 @@ La section `informationalPatterns` de `.agents/hooks/core/triggers.json` défini
 
 Si l’entrée correspond à la fois à un déclencheur de workflow et à un motif informatif, le motif informatif est prioritaire et aucun workflow ne se déclenche. C’est ce qui bloque par exemple :
 - `"How do you build a TODO app?"` : `how do` dans `*` bloque la regex d’intention orchestrate ;
-- `"orchestrate 트리거 해주면 되나요?"` (avec `language: ko`) : `트리거` dans `ko` bloque le mot-clé orchestrate.
+- `"orchestrate 트리거 해주면 되나요?"` : `트리거` dans `ko` bloque le mot-clé orchestrate.
 
 ### Workflows exclus
 

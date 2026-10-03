@@ -598,7 +598,7 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 입력이 워크플로우 트리거와 정보성 패턴 모두에 매칭되면, 정보성 패턴이 우선하고 워크플로우는 트리거되지 않습니다. 다음과 같은 프롬프트가 차단되는 이유입니다.
 - `"How do you build a TODO app?"`: `*`의 `how do`가 orchestrate 의도 정규식을 차단
-- `"orchestrate 트리거 해주면 되나요?"` (`language: ko` 환경): `ko`의 `트리거`가 orchestrate 키워드를 차단
+- `"orchestrate 트리거 해주면 되나요?"`: `ko`의 `트리거`가 orchestrate 키워드를 차단
 
 ### 제외된 워크플로우
 

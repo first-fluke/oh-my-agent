@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Viết tắt | Mô tả |
 |------|------|-------------|
 | `--workspace <path>` | `-w` | Thư mục làm việc của agent. Agent chỉ sửa file trong thư mục này. |
-| `--model <vendor>` | `-m` | Ghi đè vendor CLI cho lần spawn này (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` hoặc `pi`). |
+| `--vendor <vendor>` | | Ghi đè vendor CLI cho lần spawn này (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` hoặc `pi`). |
 | `--resumed-from <run-id>` |  | Liên kết lần retry với run trước đó có evidence. |
 | `--fallback-vendors <vendors>` |  | Các vendor fallback theo thứ tự, phân tách bằng dấu phẩy, khi vendor chính không chạy được. |
 | `--task-id <id>` |  | Gắn spawn với task ID trong session plan. |

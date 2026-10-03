@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Corto | Descripción |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Directorio de trabajo del agente. Los agentes solo modifican archivos dentro de este directorio. |
-| `--model <vendor>` | `-m` | Sobrescribe el proveedor de CLI para esta generación (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` o `pi`). |
+| `--vendor <vendor>` | | Sobrescribe el proveedor de CLI para esta generación (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` o `pi`). |
 | `--resumed-from <run-id>` | | Vincula un reintento con la ejecución anterior respaldada por evidencia. |
 | `--fallback-vendors <vendors>` | | Proveedores alternativos ordenados y separados por comas cuando el principal no puede ejecutarse. |
 | `--task-id <id>` | | Vincula la generación con un ID de tarea del plan de la sesión. |

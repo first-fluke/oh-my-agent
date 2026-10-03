@@ -834,17 +834,11 @@ CHARTER_CHECK:
 
 각 에이전트의 지식은 두 계층으로 나뉩니다:
 
-**Layer 1: SKILL.md (중앙값 약 3,100토큰):**
-항상 로딩됩니다. 프론트매터(이름, 설명), 사용 시기 / 사용하지 말아야 할 때, 핵심 규칙, 아키텍처 개요, 라이브러리 목록, Layer 2 리소스에 대한 참조가 포함됩니다.
+**Layer 1: SKILL.md (스킬이 라우팅될 때 로딩됨):**
+프론트매터(이름, 설명), 사용 시기 / 사용하지 말아야 할 때, 핵심 규칙, 아키텍처 개요, 라이브러리 목록, Layer 2 리소스에 대한 참조가 포함됩니다.
 
 **Layer 2: resources/ (필요 시 로딩):**
-에이전트가 활발히 작업할 때만 로딩되며, 태스크 유형과 난이도에 맞는 리소스만 로딩됩니다:
-
-| 난이도 | 로딩되는 리소스 |
-|-----------|-----------------|
-| **Simple** | execution-protocol.md만 |
-| **Medium** | execution-protocol.md + examples.md |
-| **Complex** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+에이전트가 실제로 작업할 때만, 태스크에 필요한 리소스만 로딩됩니다. 난이도는 고정된 파일 목록이 아니라 소프트 토큰 예산을 정합니다. [태스크별 리소스 로딩](./skills.md#resource-loading-by-task)을 참고하세요.
 
 실행 중 필요에 따라 추가 리소스가 로딩됩니다:
 - `checklist.md`: Verify 단계에서

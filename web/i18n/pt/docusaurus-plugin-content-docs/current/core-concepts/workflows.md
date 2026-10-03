@@ -606,7 +606,7 @@ A seção `informationalPatterns` de `.agents/hooks/core/triggers.json` define f
 
 Se a entrada corresponder tanto a um gatilho de workflow quanto a um padrão informativo, o padrão informativo terá prioridade e nenhum workflow será acionado. É isso que bloqueia prompts como:
 - `"How do you build a TODO app?"`: `how do` em `*` bloqueia a regex de intenção do orchestrate
-- `"orchestrate 트리거 해주면 되나요?"` (com `language: ko`): `트리거` em `ko` bloqueia a palavra-chave do orchestrate
+- `"orchestrate 트리거 해주면 되나요?"`: `트리거` em `ko` bloqueia a palavra-chave do orchestrate
 
 ### Workflows excluídos
 

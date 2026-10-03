@@ -828,17 +828,11 @@ CHARTER_CHECK:
 
 Kiến thức của mỗi agent được chia thành hai tầng:
 
-**Layer 1 — SKILL.md (~800 byte):**
-Luôn được tải. Chứa frontmatter (name, description), khi nào sử dụng / không sử dụng, quy tắc cốt lõi, tổng quan kiến trúc, danh sách thư viện và tham chiếu đến tài nguyên Layer 2.
+**Layer 1 — SKILL.md (tải khi skill được định tuyến):**
+Chứa frontmatter (name, description), khi nào sử dụng / không sử dụng, quy tắc cốt lõi, tổng quan kiến trúc, danh sách thư viện và tham chiếu đến tài nguyên Layer 2.
 
 **Layer 2 — resources/ (tải theo nhu cầu):**
-Chỉ tải khi agent đang làm việc, và chỉ tài nguyên khớp loại task và độ khó:
-
-| Độ khó | Tài nguyên tải |
-|-----------|-----------------|
-| **Simple** | Chỉ execution-protocol.md |
-| **Medium** | execution-protocol.md + examples.md |
-| **Complex** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+Chỉ tải khi agent đang làm việc, và chỉ những tài nguyên mà task cần. Độ khó đặt ra ngân sách token mềm, không phải danh sách file cố định; xem [Tải tài nguyên theo task](./skills.md#resource-loading-by-task).
 
 Tài nguyên bổ sung được tải trong quá trình thực thi khi cần:
 - `checklist.md` — ở bước Verify

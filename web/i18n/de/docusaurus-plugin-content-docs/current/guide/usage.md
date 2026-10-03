@@ -399,7 +399,7 @@ Verwende 3 Terminals:
 
 ### Progressive Offenlegung
 
-Skills werden in zwei Schichten geladen, um Tokens zu sparen. Schicht 1 (`SKILL.md`, im aktuellen 33-Skill-Baum im Median etwa 2.631 Tokens) gelangt in den Kontext, wenn der Host den Skill routet; der Injector übergibt einen Pfad, nicht den Inhalt. Schicht 2 (`resources/`) wird gemäß den Schwierigkeitsstufen nur nach Bedarf gelesen. In einer Sitzung mit 5 Agenten umfasst der Skill-Kontext bei Simple oder Medium etwa 18–19K Tokens gegenüber einer Obergrenze von 73K; damit bleiben in einem 128K-Kontext ungefähr 109K für die eigentliche Arbeit frei. Complex umfasst etwa 39K und lässt ungefähr 89K frei. Siehe [Token-Einsparungsberechnung](../core-concepts/skills.md#token-savings-math) für Tabelle und Messskript.
+Skills werden in zwei Schichten geladen, um Tokens zu sparen. Schicht 1 (`SKILL.md`) gelangt in den Kontext, wenn der Host den Skill routet; der Injector übergibt einen Pfad, nicht den Inhalt. Schicht 2 (`resources/`) wird nur gelesen, wenn die Aufgabe sie braucht; der Schwierigkeitsgrad legt ein weiches Budget fest, keine Dateiliste. Wie viel das spart, hängt von den Skills und der Aufgabe ab; miss es daher, statt eine Zahl anzunehmen. Die [Token-Einsparungsberechnung](../core-concepts/skills.md#token-savings-math) enthält das Skript und erklärt, was seine Schätzungen abdecken.
 
 ### Token-Optimierung
 

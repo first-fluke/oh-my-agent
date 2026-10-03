@@ -96,6 +96,7 @@ oma video provider list         # provider availability + key/fallback status
 | `--dry-run` | Emit script / render-spec / manifest, skip rendering. |
 | `--script <path>` | Agent-authored `script.json` để inject (ghi đè skeleton; điều khiển narration, on-screen text và visual prompt theo scene). |
 | `-y, --yes` | Bỏ qua cost-confirmation prompt. |
+| `--timeout <duration>` | Giới hạn thời gian cho mỗi lần gọi provider hình ảnh hoặc âm nhạc, ví dụ `90s` hoặc `2m`; số không có đơn vị được tính là giây. |
 | `--output <f>` | CLI output: `text` (mặc định) hoặc `json`. |
 | `--no-brief-in-manifest` | Lưu SHA-256 của brief thay vì brief thô. |
 

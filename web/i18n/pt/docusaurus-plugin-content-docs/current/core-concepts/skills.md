@@ -227,7 +227,7 @@ O script informa estimativas (bytes UTF-8 / 4) para cenários de tamanho de arqu
 
 O comando de contexto exibe a injeção real de contexto da tarefa. Ele não inclui o restante da conversa nem todas as instruções do host/runtime. Use um prompt montado ou a telemetria de uso para medir o total de tokens de entrada, a latência e o custo em um modelo específico. Não infira esses valores a partir do tamanho do repositório nem das contagens de espelhos gerados.
 
-## Carregamento de recursos por tarefa
+## Carregamento de recursos por tarefa {#resource-loading-by-task}
 
 Todo nível de dificuldade começa pela skill responsável. O grafo é um índice de referências; a adjacência não autoriza carregar outro especialista, um playbook de erros nem um workflow condicional de experimentos.
 

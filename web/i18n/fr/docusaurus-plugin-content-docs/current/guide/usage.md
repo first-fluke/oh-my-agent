@@ -399,7 +399,7 @@ Utilisez 3 terminaux :
 
 ### Divulgation progressive
 
-Les skills se chargent en deux couches pour économiser des tokens. La couche 1 (`SKILL.md`, environ 2 631 tokens en médiane dans l’arbre courant de 33 skills) entre dans le contexte lorsque l’hôte route le skill : l’injecteur transmet un chemin, pas le contenu. La couche 2 (`resources/`) est lue selon les besoins de la tâche, selon les niveaux de difficulté. Sur une session de 5 agents, une tâche Simple ou Medium conserve environ 18–19 K tokens de contexte de skills sur un plafond de 73 K, laissant environ 109 K d’un contexte de 128 K au travail réel ; une tâche Complex en conserve environ 39 K, laissant environ 89 K. Voir le [calcul des économies de tokens](../core-concepts/skills.md#token-savings-math) pour la table et le script de reproduction.
+Les skills se chargent en deux couches pour économiser des tokens. La couche 1 (`SKILL.md`) entre dans le contexte lorsque l’hôte route le skill : l’injecteur transmet un chemin, pas le contenu. La couche 2 (`resources/`) n’est lue que lorsque la tâche en a besoin ; la difficulté fixe un budget souple, pas une liste de fichiers. L’économie dépend des skills et de la tâche : mesurez-la plutôt que de supposer un chiffre. Le [calcul des économies de tokens](../core-concepts/skills.md#token-savings-math) fournit le script et explique ce que couvrent ses estimations.
 
 ### Optimisation des tokens
 

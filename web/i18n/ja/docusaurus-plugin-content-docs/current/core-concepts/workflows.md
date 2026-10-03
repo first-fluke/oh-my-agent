@@ -627,7 +627,7 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 入力がワークフローのトリガーと情報パターンの両方に一致した場合、情報パターンを優先し、ワークフローを起動しません。次のプロンプトをブロックする仕組みです。
 
 - `"How do you build a TODO app?"`：`*` の `how do` が orchestrate の意図正規表現をブロックします。
-- `"orchestrate 트리거 해주면 되나요?"`（`language: ko` の場合）：`ko` の `트리거` が orchestrate キーワードをブロックします。
+- `"orchestrate 트리거 해주면 되나요?"`：`ko` の `트리거` が orchestrate キーワードをブロックします。
 
 ### 除外ワークフロー
 

@@ -227,7 +227,7 @@ Das Skript meldet Schätzwerte (UTF-8-Bytes / 4) für Dateigrößen-Szenarien. `
 
 Der Context-Befehl zeigt an, was tatsächlich als Aufgabenkontext injiziert wird. Er enthält weder den übrigen Gesprächsverlauf noch sämtliche Host- und Laufzeitanweisungen. Gesamte Eingabe-Tokens, Latenz und Kosten für ein konkret benanntes Modell mit einem zusammengestellten Prompt oder mit Nutzungstelemetrie messen. Diese Werte nicht aus der Repository-Größe oder aus der Anzahl generierter Spiegelkopien ableiten.
 
-## Ressourcenladen nach Aufgabe
+## Ressourcenladen nach Aufgabe {#resource-loading-by-task}
 
 Jede Schwierigkeitsstufe beginnt mit dem zuständigen Skill. Der Graph ist ein Referenzindex; Nachbarschaft im Graphen berechtigt nicht zum Laden eines anderen Spezialisten, eines Fehler-Playbooks oder eines bedingten Experiment-Workflows.
 

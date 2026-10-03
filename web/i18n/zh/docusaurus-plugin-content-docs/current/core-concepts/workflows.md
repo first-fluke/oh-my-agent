@@ -588,7 +588,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 如果输入同时匹配工作流触发器和信息性模式，信息性模式优先，不触发工作流。正是这一点阻止了以下提示：
 
 - `"How do you build a TODO app?"`：`*` 中的 `how do` 会阻止 orchestrate 意图正则。
-- `"orchestrate 트리거 해주면 되나요?"`（`language: ko` 下）：`ko` 中的 `트리거` 会阻止 orchestrate 关键词。
+- `"orchestrate 트리거 해주면 되나요?"`：`ko` 中的 `트리거` 会阻止 orchestrate 关键词。
 
 ### 排除的工作流
 

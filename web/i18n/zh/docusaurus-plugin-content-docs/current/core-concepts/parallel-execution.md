@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | 标志 | 短标志 | 说明 |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | 智能体的工作目录。智能体只能修改此目录内的文件。 |
-| `--model <vendor>` | `-m` | 为这次启动覆盖 CLI 供应商（`antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok` 或 `pi`）。 |
+| `--vendor <vendor>` | | 为这次启动覆盖 CLI 供应商（`antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok` 或 `pi`）。 |
 | `--resumed-from <run-id>` |  | 将重试关联到之前有证据支持的运行。 |
 | `--fallback-vendors <vendors>` |  | 主供应商无法运行时使用的、有序逗号分隔供应商回退列表。 |
 | `--task-id <id>` |  | 将启动绑定到会话计划中的任务 ID。 |

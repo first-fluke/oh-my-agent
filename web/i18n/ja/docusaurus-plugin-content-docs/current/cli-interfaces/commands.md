@@ -522,7 +522,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | 引数 | 必須 | 説明 |
 |:-----|:-----|:-----------|
-| `agent-id` | 必須 | エージェント種別: `backend`、`frontend`、`mobile`、`qa`、`debug`、`pm` |
+| `agent-id` | 必須 | エージェント種別: `orchestrator`、`architecture`、`qa`、`pm`、`backend`、`frontend`、`mobile`、`db`、`debug`、`refactor`、`docs`、`tf-infra`、`explore` |
 | `prompt` | 必須 | 起動時に渡すタスク説明。インラインテキストまたはファイルパスです。 |
 | `session-id` | 必須 | セッション識別子（形式: `session-YYYYMMDD-HHMMSS`） |
 
@@ -530,8 +530,10 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | フラグ | 説明 |
 |:-----|:-----------|
-| `--vendor <vendor>` | CLI ベンダーの上書き: `antigravity`、`claude`、`codex`、`cursor`、`qwen`、`grok`、`pi` |
+| `--vendor <vendor>` | CLI ベンダーの上書き: `antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok`、`pi` |
 | `-w, --workspace <path>` | エージェントの作業ディレクトリ。省略時はモノレポ設定から自動検出します。 |
+| `--resumed-from <run-id>` | 再試行を直前の実行の run ID に関連付けます。 |
+| `--task-id <id>` | セッション計画のタスク ID。省略時はエージェント ID です。 |
 | `--isolation <mode>` | 起動ごとの分離モード。現在は `worktree` に対応し、`${tmpdir}/oma-worktrees/{sessionId}/{agentId}` に `oma/{sessionId}/{agentId}` ブランチの新しい Git worktree を作ってそこでエージェントを実行します。終了後も worktree は保持され、マージまたは破棄のコマンドを確認用に表示します（自動マージはしません）。 |
 | `--read-only` | 起動したエージェントを非破壊ツールに制限します（自動承認フラグを抑止します）。`oma skill eval --live` が 2 つの評価アームで内部的に使います。 |
 | `--fallback-vendors <vendors>` | 最大 3 つの設定済み CLI ベンダーを順序付きカンマ区切りで指定するフォールバックチェーンを有効にします。継続には、認識済みのクォータ・レート制限・一時的障害と、新しい安全な引き継ぎチェックポイントが必要です。 |
@@ -1521,7 +1523,7 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` は `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop duration:<seconds>|selector:<css>` を受け付けます。ブラウザーキャプチャには `--source web --url <url>` を使い、既定のソースは `--source file` です。`--output-dir` は実行ルート、`--allow-external-output` は `$PWD` 外のパス、`--max-usd` はコスト上限、`--seed` は計画入力の安定化、`--no-brief-in-manifest` は本文の代わりに brief ハッシュの保存を指定します。`--dry-run` は計画後に停止し、`--output text|json` は CLI エンベロープを制御します。
+`generate` は `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop duration:<seconds>|selector:<css>` を受け付けます。ブラウザーキャプチャには `--source web --url <url>` を使い、既定のソースは `--source file` です。`--output-dir` は実行ルート、`--allow-external-output` は `$PWD` 外のパス、`--max-usd` はコスト上限、`-y, --yes` はコスト確認の省略、`--seed` は計画入力の安定化、`--timeout` はビジュアル・音楽プロバイダー呼び出しごとの制限時間、`--script` はエージェントが書いた `script.json` の注入、`--no-brief-in-manifest` は本文の代わりに brief ハッシュの保存を指定します。`--dry-run` は計画後に停止し、`--output text|json` は CLI エンベロープを制御します。
 
 `doctor` はキャッシュ済み HyperFrames/MPT ツールチェーンを確認し、`--install`、`--upgrade`、`--install-mpt`、`--install-strudel` を受け付けます。`provider list` はプロバイダーの利用可能性とキー状態を報告します。`compose` は実行用 composition を作成または更新して作成規約を示し、`render` は lint、レンダー、出力検査を行います。compositor、composition、ツールチェーンの不足はエラーです。テスト専用の `OMA_VIDEO_MOCK=1` だけがプレースホルダーモードで、通常の実行はテキストや小さなファイルを MP4 の代わりにしません。
 

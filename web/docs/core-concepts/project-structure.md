@@ -282,7 +282,7 @@ Where skill expertise lives. There are 33 skill directories plus `_shared` resou
 - `conditional/`: Quality score measurement, experiment ledger tracking, exploration loop protocol (loaded only when triggered)
 
 **`oma-{skill}/`**: Per-skill directories. Each contains:
-- `SKILL.md` (about 2,631 tokens median in the current tree): Layer 1, loaded when the skill is routed. Identity, routing, core rules.
+- `SKILL.md`: Layer 1, loaded when the skill is routed. Identity, routing, core rules.
 - `resources/`: Layer 2, on-demand. Execution protocols, examples, checklists, error playbooks, tech stacks, snippets, templates.
 - Some skills have additional subdirectories: `variants/` (backend/mobile seeds), generated `stack/` references from `/stack-set`, `reference/` (oma-design), and skill-specific scripts/config.
 

@@ -606,7 +606,7 @@ De sectie `informationalPatterns` in `.agents/hooks/core/triggers.json` bevat zi
 
 Als input zowel een workflowtrigger als een informatief patroon matcht, wint het informatieve patroon en wordt geen workflow gestart. Dat blokkeert prompts zoals:
 - `"How do you build a TODO app?"`: `how do` in `*` blokkeert de orchestrate-intentregex
-- `"orchestrate 트리거 해주면 되나요?"` (onder `language: ko`): `트리거` in `ko` blokkeert het orchestrate-keyword
+- `"orchestrate 트리거 해주면 되나요?"`: `트리거` in `ko` blokkeert het orchestrate-keyword
 
 ### Uitgesloten workflows
 

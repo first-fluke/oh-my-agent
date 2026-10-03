@@ -96,6 +96,7 @@ oma video provider list         # provider availability + key/fallback status
 | `--dry-run` | Geeft script / render-spec / manifest uit en slaat renderen over. |
 | `--script <path>` | Door de agent geschreven `script.json` om in te voegen (overschrijft het skelet; stuurt vertelling, tekst op het scherm en visuele prompts per scène). |
 | `-y, --yes` | Slaat de kostenbevestigingsprompt over. |
+| `--timeout <duration>` | Tijdslimiet voor elke aanroep van een visual- of muziekprovider, zoals `90s` of `2m`; een getal zonder eenheid telt als seconden. |
 | `--output <f>` | CLI-uitvoer: `text` (standaard) of `json`. |
 | `--no-brief-in-manifest` | Slaat een SHA-256 van de briefing op in plaats van de onbewerkte briefing. |
 

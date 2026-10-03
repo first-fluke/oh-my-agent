@@ -282,7 +282,7 @@ Tu znajdują się specjalistyczne umiejętności. Bieżący katalog zawiera 33 k
 - `conditional/`: pomiar wyniku jakości, śledzenie dziennika eksperymentów i protokół pętli eksploracji (ładowane tylko po wyzwoleniu)
 
 **`oma-{skill}/`**: katalogi poszczególnych umiejętności. Każdy zawiera:
-- `SKILL.md` (mediana około 2631 tokenów w bieżącym drzewie): warstwa 1 ładowana po routingu umiejętności. Tożsamość, routing i główne reguły.
+- `SKILL.md`: warstwa 1 ładowana po routingu umiejętności. Tożsamość, routing i główne reguły.
 - `resources/`: warstwa 2 ładowana na żądanie. Protokoły wykonywania, przykłady, checklisty, podręczniki błędów, stosy technologiczne, fragmenty i szablony.
 - Niektóre umiejętności mają dodatkowe podkatalogi: `variants/` (ziarna backendu/mobile), wygenerowane referencje `stack/` z `/stack-set`, `reference/` (oma-design) oraz skrypty i konfiguracje właściwe dla umiejętności.
 

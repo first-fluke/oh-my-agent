@@ -835,17 +835,11 @@ W trybie subagenta (uruchamianym z CLI) agenci nie mogą pytać użytkownika bez
 
 Wiedza każdego agenta jest podzielona na dwie warstwy:
 
-**Warstwa 1: SKILL.md (~3 100 tokenów mediany)**
-Zawsze ładowana. Zawiera frontmatter (name, description), sekcje kiedy używać / kiedy nie używać, podstawowe reguły, przegląd architektury, listę bibliotek i odwołania do zasobów warstwy 2.
+**Warstwa 1: SKILL.md (ładowana po routingu umiejętności)**
+Zawiera frontmatter (name, description), sekcje kiedy używać / kiedy nie używać, podstawowe reguły, przegląd architektury, listę bibliotek i odwołania do zasobów warstwy 2.
 
 **Warstwa 2: resources/ (ładowana na żądanie)**
-Ładowana tylko podczas aktywnej pracy agenta i tylko z zasobami odpowiadającymi typowi oraz trudności zadania:
-
-| Trudność | Ładowane zasoby |
-|----------|-----------------|
-| **Proste** | tylko execution-protocol.md |
-| **Średnie** | execution-protocol.md + examples.md |
-| **Złożone** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+Ładowana tylko podczas aktywnej pracy agenta i tylko z zasobami, których potrzebuje zadanie. Poziom trudności wyznacza miękki budżet tokenów, a nie stałą listę plików; zobacz [Ładowanie zasobów według zadania](./skills.md#resource-loading-by-task).
 
 Dodatkowe zasoby ładuje się podczas wykonania, gdy są potrzebne:
 - `checklist.md`: na etapie Verify

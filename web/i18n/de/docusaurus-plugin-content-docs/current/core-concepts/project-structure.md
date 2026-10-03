@@ -286,7 +286,7 @@ Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Ver
 
 **`oma-{skill}/`** enthält die Verzeichnisse der einzelnen Skills. Jedes enthält:
 
-- `SKILL.md` (im aktuellen Baum im Median etwa 2.631 Tokens): Ebene 1, die beim Routing des Skills geladen wird; Identität, Routing und Kernregeln
+- `SKILL.md`: Ebene 1, die beim Routing des Skills geladen wird; Identität, Routing und Kernregeln
 - `resources/`: Ebene 2, bedarfsgesteuert; Ausführungsprotokolle, Beispiele, Checklisten, Fehler-Playbooks, Tech-Stacks, Snippets und Vorlagen
 - Einige Skills haben zusätzliche Unterverzeichnisse: `variants/` (Seeds für Backend und Mobile), generierte `stack/`-Referenzen aus `/stack-set`, `reference/` (bei `oma-design`) sowie skill-spezifische Skripte und Konfigurationen
 

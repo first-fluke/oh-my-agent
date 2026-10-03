@@ -283,7 +283,7 @@ your-project/
 - `conditional/`: Quality Score、Experiment Ledger、Exploration Loop の測定。トリガーされたときだけ読み込みます。
 
 **`oma-{skill}/`** はスキルごとのディレクトリです。それぞれに次があります。
-- `SKILL.md`（現在のツリーでは中央値約2,631トークン）: スキルがルーティングされたときに読み込む Layer 1。役割、ルーティング、コアルールを定義します。
+- `SKILL.md`: スキルがルーティングされたときに読み込む Layer 1。役割、ルーティング、コアルールを定義します。
 - `resources/`: オンデマンドで読む Layer 2。実行プロトコル、例、チェックリスト、エラー対応手順、技術スタック、スニペット、テンプレートを含みます。
 - 一部のスキルには `variants/`（backend/mobile の種）、`stack/`（`/stack-set` が生成するリファレンス）、`reference/`（oma-design）、スキル固有のスクリプトや設定もあります。
 

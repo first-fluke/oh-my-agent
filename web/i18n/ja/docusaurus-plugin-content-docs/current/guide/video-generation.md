@@ -92,6 +92,7 @@ oma video provider list         # provider availability + key/fallback status
 | `--dry-run` | スクリプト、render-spec、マニフェストを出力し、レンダーを省略します。 |
 | `--script <path>` | エージェントが作成した注入用の `script.json`（骨格を上書きし、ナレーション、画面上のテキスト、シーンごとの映像プロンプトを制御）。 |
 | `-y, --yes` | コスト確認を省略します。 |
+| `--timeout <duration>` | ビジュアル・音楽プロバイダー呼び出しごとの制限時間（例: `90s`、`2m`）。単位のない数値は秒として扱います。 |
 | `--output <f>` | CLI の出力は `text`（デフォルト）または `json`。 |
 | `--no-brief-in-manifest` | brief の生値の代わりに SHA-256 をマニフェストへ保存します。 |
 

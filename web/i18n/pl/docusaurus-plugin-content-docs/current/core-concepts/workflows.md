@@ -607,7 +607,7 @@ Sekcja `informationalPatterns` w `.agents/hooks/core/triggers.json` definiuje fr
 
 Jeśli wejście pasuje jednocześnie do wyzwalacza workflowu i wzorca informacyjnego, wzorzec informacyjny ma priorytet i workflow nie jest wyzwalany. To blokuje prompty takie jak:
 - `"How do you build a TODO app?"`: `how do` w `*` blokuje regex intencji orchestrate
-- `"orchestrate 트리거 해주면 되나요?"` (przy `language: ko`): `트리거` w `ko` blokuje słowo kluczowe orchestrate
+- `"orchestrate 트리거 해주면 되나요?"`: `트리거` w `ko` blokuje słowo kluczowe orchestrate
 
 ### Wykluczane workflowy {#excluded-workflows}
 

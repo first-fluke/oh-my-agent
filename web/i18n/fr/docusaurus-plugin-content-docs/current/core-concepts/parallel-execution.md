@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Option | Court | Description |
 |--------|-------|-------------|
 | `--workspace <path>` | `-w` | Répertoire de travail de l’agent. L’agent ne modifie que les fichiers de ce répertoire. |
-| `--model <vendor>` | `-m` | Remplace le fournisseur CLI pour ce lancement (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` ou `pi`). |
+| `--vendor <vendor>` | | Remplace le fournisseur CLI pour ce lancement (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` ou `pi`). |
 | `--resumed-from <run-id>` | | Lie une reprise au run précédent étayé par des preuves. |
 | `--fallback-vendors <vendors>` | | Fournisseurs de repli dans l’ordre lorsque le fournisseur principal ne peut pas s’exécuter. |
 | `--task-id <id>` | | Lie le lancement à une tâche du plan de session. |

@@ -144,13 +144,13 @@ The 12 checked-in definition files cover the 13 runtime roles through aliases: `
 
 oh-my-agent uses a two-layer skill architecture to prevent context window exhaustion:
 
-**Layer 1: SKILL.md (~3,100 tokens median, loaded when the skill is routed)**
+**Layer 1: SKILL.md (loaded when the skill is routed)**
 Contains the agent's identity, routing conditions, core rules, and "when to use / when NOT to use" guidance. This is all that is loaded when the agent is not actively working.
 
 **Layer 2: resources/ (loaded on-demand)**
 Contains execution protocols, tech stack references, code snippets, error playbooks, checklists, and examples. These are loaded only when the agent is invoked for a task, and even then, only the resources relevant to the specific task type are loaded (based on the difficulty assessment and task-resource mapping in `context-loading.md`).
 
-Measured across a 5-agent session, this holds roughly 17-19K tokens of skill context for a Simple or Medium task against a 72K ceiling — about 75% of the maximum avoided, falling to ~47% for Complex tasks that pull in stack references. See [token savings math](../core-concepts/skills.md#token-savings-math) for the measured table and the script that reproduces it.
+How much context this saves depends on the skills and the task, so measure it instead of assuming a figure. See [token savings math](../core-concepts/skills.md#token-savings-math) for the script and what its estimates cover.
 
 ---
 

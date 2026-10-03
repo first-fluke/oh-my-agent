@@ -510,7 +510,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | Argument | Obligatoire | Description |
 |:---------|:---------|:-----------|
-| `agent-id` | Oui | Type d’agent. L’un de : `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `agent-id` | Oui | Type d’agent. L’un de : `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra`, `explore` |
 | `prompt` | Oui | Description de la tâche. Peut être un texte inline ou un chemin de fichier. |
 | `session-id` | Oui | Identifiant de session (format `session-YYYYMMDD-HHMMSS`) |
 
@@ -518,8 +518,10 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | Option | Description |
 |:-----|:-----------|
-| `--vendor <vendor>` | Surcharge du fournisseur CLI : `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi` |
+| `--vendor <vendor>` | Surcharge du fournisseur CLI : `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi` |
 | `-w, --workspace <path>` | Répertoire de travail de l’agent. Détecté automatiquement depuis la configuration du monorepo s’il est omis. |
+| `--resumed-from <run-id>` | Relie une nouvelle tentative à l’ID de l’exécution précédente. |
+| `--task-id <id>` | ID de tâche issu du plan de session. Par défaut, l’ID de l’agent. |
 | `--isolation <mode>` | Mode d’isolation par lancement. Prend actuellement en charge `worktree` : crée un worktree git à `${tmpdir}/oma-worktrees/{sessionId}/{agentId}` sur la branche `oma/{sessionId}/{agentId}` et y exécute l’agent. Le worktree est conservé après la fin ; les commandes de fusion ou de suppression sont affichées pour une revue manuelle (aucune fusion automatique). |
 | `--read-only` | Limite l’agent lancé aux outils non destructifs et supprime les options d’auto-approbation. Utilisé en interne par `oma skill eval --live` pour les deux branches d’évaluation. |
 | `--fallback-vendors <vendors>` | Active une chaîne ordonnée, séparée par des virgules, d’au plus trois fournisseurs CLI configurés. La continuation exige un échec reconnu lié au quota, à la limitation de débit ou à une panne transitoire, ainsi qu’un nouveau point de contrôle de transmission sûre. |
@@ -1476,7 +1478,7 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` accepte `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` et `--capture-stop duration:<seconds>|selector:<css>`. Utilisez `--source web --url <url>` pour une capture navigateur ; `--source file` est la valeur par défaut. `--output-dir` choisit la racine d’exécution, `--allow-external-output` autorise un chemin hors de `$PWD`, `--max-usd` fixe un plafond de coût, `--seed` stabilise les entrées de planification et `--no-brief-in-manifest` stocke un hash du brief au lieu de son texte. `--dry-run` s’arrête après la planification. `--output text|json` contrôle l’enveloppe CLI.
+`generate` accepte `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` et `--capture-stop duration:<seconds>|selector:<css>`. Utilisez `--source web --url <url>` pour une capture navigateur ; `--source file` est la valeur par défaut. `--output-dir` choisit la racine d’exécution, `--allow-external-output` autorise un chemin hors de `$PWD`, `--max-usd` fixe un plafond de coût, `-y, --yes` ignore la confirmation du coût, `--seed` stabilise les entrées de planification, `--timeout` limite chaque appel à un fournisseur visuel ou musical, `--script` injecte un `script.json` rédigé par l’agent et `--no-brief-in-manifest` stocke un hash du brief au lieu de son texte. `--dry-run` s’arrête après la planification. `--output text|json` contrôle l’enveloppe CLI.
 
 `doctor` vérifie la chaîne d’outils HyperFrames/MPT en cache et accepte `--install`, `--upgrade`, `--install-mpt` et `--install-strudel`. `provider list` indique la disponibilité des fournisseurs et l’état des clés. `compose` crée ou actualise la composition d’exécution et affiche le contrat d’écriture ; `render` exécute le lint, produit le rendu et sonde la sortie. L’absence du compositeur, de la composition ou d’une dépendance de la chaîne d’outils est une erreur. Le chemin réservé aux tests `OMA_VIDEO_MOCK=1` est le seul mode de remplacement ; une exécution normale ne substitue jamais un MP4 texte ou minuscule.
 

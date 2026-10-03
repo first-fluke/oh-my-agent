@@ -282,7 +282,7 @@ Hier staat de skillkennis. De huidige catalogus bevat 33 skilldirectories plus g
 - `conditional/`: kwaliteitsmeting, experimentledger en exploratielus (alleen geladen wanneer geactiveerd)
 
 **`oma-{skill}/`**: elke directory per skill bevat:
-- `SKILL.md` (mediaan ongeveer 2.631 tokens in de huidige boom): Laag 1, geladen wanneer de skill wordt gerouteerd. Bevat identiteit, routering en kernregels.
+- `SKILL.md`: Laag 1, geladen wanneer de skill wordt gerouteerd. Bevat identiteit, routering en kernregels.
 - `resources/`: Laag 2, on demand geladen. Bevat uitvoeringsprotocollen, voorbeelden, checklists, foutoplossingshandleidingen, techstacks, snippets en templates.
 - Sommige skills hebben extra subdirectories: `variants/` (backend/mobile-seeds), gegenereerde `stack/`-referenties van `/stack-set`, `reference/` (oma-design) en skillspecifieke scripts/configuratie.
 

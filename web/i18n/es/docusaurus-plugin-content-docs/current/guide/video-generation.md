@@ -96,6 +96,7 @@ oma video provider list         # provider availability + key/fallback status
 | `--dry-run` | Emite el guion, la especificación de renderizado y el manifiesto, y omite el renderizado. |
 | `--script <path>` | `script.json` escrito por el agente para inyectar (sobrescribe el esqueleto; controla la narración, el texto en pantalla y los prompts visuales de cada escena). |
 | `-y, --yes` | Omite el prompt de confirmación del coste. |
+| `--timeout <duration>` | Límite de tiempo de cada llamada a un proveedor visual o de música, como `90s` o `2m`; un número sin unidad se interpreta en segundos. |
 | `--output <f>` | Salida de la CLI: `text` (predeterminada) o `json`. |
 | `--no-brief-in-manifest` | Guarda un SHA-256 del brief en lugar del brief sin procesar. |
 

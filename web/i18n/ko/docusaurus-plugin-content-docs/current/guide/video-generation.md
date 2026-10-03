@@ -96,7 +96,7 @@ oma video provider list --output json      # 프로바이더 가용성과 키 �
 | `--dry-run` | 스크립트, render-spec, 매니페스트만 내보내고 렌더링은 건너뜁니다. |
 | `--script <path>` | 에이전트가 작성한 `script.json`을 주입합니다(스켈레톤을 대체하며 내레이션, 화면 텍스트, 장면별 비주얼 프롬프트를 제어합니다). |
 | `-y, --yes` | 비용 확인 프롬프트를 생략합니다. |
-| `--timeout <duration>` | 실행 제한 시간입니다. |
+| `--timeout <duration>` | 비주얼·음악 프로바이더를 호출할 때마다 적용하는 제한 시간입니다(예: `90s`, `2m`). 단위 없는 숫자는 초로 해석합니다. |
 | `--output <f>` | CLI 출력: `text`(기본값) \| `json`. |
 | `--no-brief-in-manifest` | 브리프 원문 대신 SHA-256을 매니페스트에 저장합니다. |
 

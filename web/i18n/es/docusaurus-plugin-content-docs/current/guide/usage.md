@@ -399,7 +399,7 @@ Usa 3 terminales:
 
 ### Divulgación progresiva
 
-Las habilidades se cargan en dos capas para ahorrar tokens. La Capa 1 (`SKILL.md`, aproximadamente 2,631 tokens de mediana en el árbol actual de 33 habilidades) entra en contexto cuando el host enruta la habilidad; el inyector pasa una ruta, no el contenido. La Capa 2 (`resources/`) solo se lee cuando la tarea lo necesita, según los niveles de dificultad. Medido en una sesión con 5 agentes, una tarea Simple o Medium mantiene aproximadamente 18-19K tokens de contexto de habilidades frente a un techo de 73K, dejando cerca de 109K de un contexto de 128K para el trabajo; una tarea Complex mantiene unos 39K, dejando cerca de 89K. Consulta el [cálculo de ahorro de tokens](../core-concepts/skills.md#token-savings-math) para ver la tabla y el script que reproduce las mediciones.
+Las habilidades se cargan en dos capas para ahorrar tokens. La Capa 1 (`SKILL.md`) entra en contexto cuando el host enruta la habilidad; el inyector pasa una ruta, no el contenido. La Capa 2 (`resources/`) solo se lee cuando la tarea lo necesita; la dificultad fija un presupuesto flexible, no una lista de archivos. El ahorro depende de las habilidades y de la tarea, así que mídelo en lugar de suponer una cifra: el [cálculo de ahorro de tokens](../core-concepts/skills.md#token-savings-math) incluye el script y explica qué cubren sus estimaciones.
 
 ### Optimización de tokens
 

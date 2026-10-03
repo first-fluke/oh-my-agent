@@ -142,13 +142,13 @@ Die 12 eingecheckten Definitionsdateien decken über Aliase 13 Laufzeitrollen ab
 
 oh-my-agent verwendet eine Zwei-Schichten-Skill-Architektur, damit das Kontextfenster nicht erschöpft wird:
 
-**Schicht 1: SKILL.md (Median ~3.100 Tokens, beim Routing des Skills geladen)**
+**Schicht 1: SKILL.md (beim Routing des Skills geladen)**
 Enthält Identität des Agenten, Routing-Bedingungen, Kernregeln und Hinweise zu „wann verwenden / wann NICHT verwenden“. Das ist alles, was geladen wird, wenn der Agent nicht aktiv arbeitet.
 
 **Schicht 2: resources/ (bei Bedarf geladen)**
 Enthält Ausführungsprotokolle, Tech-Stack-Referenzen, Code-Snippets, Fehler-Playbooks, Checklisten und Beispiele. Diese Ressourcen werden erst beim Aufruf des Agenten für eine Aufgabe und dann nur für den jeweiligen Aufgabentyp geladen (abhängig von Schwierigkeitsbewertung und Zuordnung in `context-loading.md`).
 
-Gemessen über eine Sitzung mit fünf Agenten benötigt der Skill-Kontext bei einer einfachen oder mittleren Aufgabe ungefähr 17–19K Tokens bei einem Limit von 72K; etwa 75 % des Maximums werden vermieden. Bei komplexen Aufgaben, die Stack-Referenzen laden, sinkt der vermiedene Anteil auf etwa 47 %. Die [Berechnung der Token-Einsparung](../core-concepts/skills.md#token-savings-math) enthält die Messtabelle und das reproduzierende Skript.
+Wie viel Kontext das spart, hängt von den Skills und der Aufgabe ab; miss es daher, statt eine Zahl anzunehmen. Die [Berechnung der Token-Einsparung](../core-concepts/skills.md#token-savings-math) enthält das Skript und erklärt, was seine Schätzungen abdecken.
 
 ---
 

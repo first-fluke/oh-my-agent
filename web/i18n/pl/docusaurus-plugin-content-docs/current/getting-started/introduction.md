@@ -144,13 +144,13 @@ Dwanaście plików definicji znajdujących się w repozytorium obejmuje 13 ról 
 
 oh-my-agent używa dwuwarstwowej architektury umiejętności, aby nie wyczerpać okna kontekstowego:
 
-**Warstwa 1: SKILL.md (mediana ~3100 tokenów, ładowana po routingu umiejętności)**
+**Warstwa 1: SKILL.md (ładowana po routingu umiejętności)**
 Zawiera tożsamość agenta, warunki routingu, główne reguły oraz wskazówki „kiedy używać / kiedy NIE używać”. To wszystko jest ładowane, gdy agent nie pracuje aktywnie.
 
 **Warstwa 2: resources/ (ładowana na żądanie)**
 Zawiera protokoły wykonania, referencje stosu technologicznego, fragmenty kodu, podręczniki błędów, checklisty i przykłady. Zasoby są ładowane tylko po wywołaniu agenta i tylko te potrzebne dla konkretnego typu zadania (na podstawie oceny trudności i mapowania zadanie–zasób w `context-loading.md`).
 
-W sesji pięciu agentów pomiary utrzymują około 17–19 tys. tokenów kontekstu dla zadania Simple lub Medium przy limicie 72 tys. — unikając około 75% maksimum; dla zadań Complex, które pobierają referencje stosu, wartość spada do około 47%. Zobacz [matematykę oszczędności tokenów](../core-concepts/skills.md#token-savings-math), aby poznać zmierzoną tabelę i skrypt odtwarzający wyniki.
+Ile kontekstu to oszczędza, zależy od umiejętności i zadania, więc zmierz to, zamiast zakładać konkretną liczbę. Zobacz [matematykę oszczędności tokenów](../core-concepts/skills.md#token-savings-math), aby poznać skrypt i to, co obejmują jego szacunki.
 
 ---
 

@@ -603,7 +603,7 @@ La sección `informationalPatterns` de `.agents/hooks/core/triggers.json` define
 
 Si la entrada coincide con un disparador de flujo y un patrón informativo, el patrón informativo tiene prioridad y no se activa ningún flujo. Esto bloquea prompts como:
 - `"How do you build a TODO app?"`: `how do` en `*` bloquea la regex de intención de orchestrate.
-- `"orchestrate 트리거 해주면 되나요?"` (con `language: ko`): `트리거` en `ko` bloquea la palabra clave de orchestrate.
+- `"orchestrate 트리거 해주면 되나요?"`: `트리거` en `ko` bloquea la palabra clave de orchestrate.
 
 ### Flujos excluidos
 

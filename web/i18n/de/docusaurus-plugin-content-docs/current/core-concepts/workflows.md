@@ -601,7 +601,7 @@ Der Abschnitt `informationalPatterns` in `.agents/hooks/core/triggers.json` defi
 
 Wenn die Eingabe sowohl einem Workflow-Trigger als auch einem informationellen Muster entspricht, hat das informationelle Muster Vorrang und es wird kein Workflow ausgelöst. Damit werden Prompts wie die folgenden blockiert:
 - `"How do you build a TODO app?"` — `how do` in `*` blockiert die orchestrate-Absichts-Regex
-- `"orchestrate 트리거 해주면 되나요?"` (unter `language: ko`) — `트리거` in `ko` blockiert das orchestrate-Keyword
+- `"orchestrate 트리거 해주면 되나요?"` — `트리거` in `ko` blockiert das orchestrate-Keyword
 
 ### Ausgeschlossene Workflows
 

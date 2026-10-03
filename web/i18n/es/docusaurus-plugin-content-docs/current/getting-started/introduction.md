@@ -144,13 +144,13 @@ Los 12 archivos de definición versionados cubren los 13 roles de runtime median
 
 oh-my-agent usa una arquitectura de skills de dos capas para evitar agotar la ventana de contexto:
 
-**Capa 1: SKILL.md (mediana de ~3.100 tokens, cargada cuando se enruta la skill)**
+**Capa 1: SKILL.md (cargada cuando se enruta la skill)**
 Contiene la identidad del agente, las condiciones de enrutamiento, las reglas principales y la orientación "when to use / when NOT to use". Esto es todo lo que se carga cuando el agente no está trabajando activamente.
 
 **Capa 2: resources/ (cargados bajo demanda)**
 Contiene protocolos de ejecución, referencias de stack tecnológico, snippets de código, playbooks de errores, listas de comprobación y ejemplos. Solo se cargan cuando se invoca el agente para una tarea y, aun así, solo los recursos pertinentes al tipo de tarea, según la evaluación de dificultad y el mapa tarea-recurso de `context-loading.md`.
 
-En una sesión de 5 agentes, esto mantiene aproximadamente 17-19K tokens de contexto de skills para una tarea Simple o Medium frente a un límite de 72K: evita cerca del 75% del máximo y baja a ~47% para tareas Complex que cargan referencias de stack. Consulta las [matemáticas del ahorro de tokens](../core-concepts/skills.md#token-savings-math) para ver la tabla medida y el script que la reproduce.
+Cuánto contexto ahorra esto depende de las skills y de la tarea, así que mídelo en lugar de suponer una cifra. Consulta las [matemáticas del ahorro de tokens](../core-concepts/skills.md#token-savings-math) para ver el script y qué cubren sus estimaciones.
 
 ---
 

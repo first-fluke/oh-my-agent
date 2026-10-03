@@ -96,6 +96,7 @@ oma video provider list         # provider availability + key/fallback status
 | `--dry-run` | Вывести script / render-spec / manifest и пропустить render. |
 | `--script <path>` | Созданный agent `script.json` для injection (заменяет skeleton; управляет narration, on-screen text и visual prompt каждой сцены). |
 | `-y, --yes` | Пропустить cost-confirmation prompt. |
+| `--timeout <duration>` | Лимит времени на каждый вызов провайдера визуала или музыки, например `90s` или `2m`; число без единицы измерения считается секундами. |
 | `--output <f>` | Output CLI: `text` (default) или `json`. |
 | `--no-brief-in-manifest` | Сохранить SHA-256 brief вместо исходного brief. |
 

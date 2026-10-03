@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | 플래그 | 단축 | 설명 |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | 에이전트의 작업 디렉토리. 에이전트는 이 디렉토리 내의 파일만 수정합니다. |
-| `--model <vendor>` | `-m` | 이 스폰의 CLI 벤더를 오버라이드합니다(`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`). |
+| `--vendor <vendor>` | | 이 스폰의 CLI 벤더를 오버라이드합니다(`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`). |
 | `--resumed-from <run-id>` | | 재시도를 앞선 근거 기반 실행에 연결합니다. |
 | `--fallback-vendors <vendors>` | | 기본 벤더를 실행할 수 없을 때 사용할 쉼표로 구분한 벤더 폴백 순서입니다. |
 | `--task-id <id>` | | 세션 계획의 태스크 ID에 스폰을 연결합니다. |

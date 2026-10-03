@@ -227,7 +227,7 @@ Het script rapporteert schattingen (UTF-8-bytes / 4) voor scenario's op basis va
 
 Het contextcommando toont de daadwerkelijke injectie van de taakcontext. Het bevat niet de rest van het gesprek of elke instructie van de host of runtime. Gebruik een samengestelde prompt of gebruikstelemetrie om de totale inputtokens, de latentie en de kosten op een benoemd model te meten. Leid die niet af uit de omvang van de repository of uit aantallen gegenereerde mirrors.
 
-## Resources laden per taak
+## Resources laden per taak {#resource-loading-by-task}
 
 Elk moeilijkheidsniveau begint met de verantwoordelijke skill. De graaf is een referentie-index; aangrenzende knopen geven geen toestemming om een andere specialist, een error playbook of een conditionele experimentworkflow te laden.
 

@@ -227,7 +227,7 @@ Script báo cáo các ước lượng UTF-8 byte / 4 cho những kịch bản d�
 
 Lệnh context hiển thị phần ngữ cảnh task thực tế được inject. Lệnh này không bao gồm phần còn lại của cuộc hội thoại hay mọi chỉ dẫn của host/runtime. Hãy dùng prompt đã được lắp ghép hoặc telemetry sử dụng để đo tổng token đầu vào, độ trễ và chi phí trên một model cụ thể. Không suy ra các số liệu đó từ kích thước repository hay số lượng bản mirror được tạo.
 
-## Tải tài nguyên theo task
+## Tải tài nguyên theo task {#resource-loading-by-task}
 
 Mọi mức độ khó đều bắt đầu bằng skill sở hữu. Graph là một chỉ mục tham chiếu; việc kề cận trong graph không cho phép tải specialist khác, playbook lỗi hay workflow thử nghiệm có điều kiện.
 

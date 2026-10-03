@@ -549,7 +549,7 @@ Section `informationalPatterns` của `.agents/hooks/core/triggers.json` định
 
 Nếu đầu vào khớp cả trigger workflow và mẫu thông tin, mẫu thông tin được ưu tiên và không workflow nào được kích hoạt. Đây là điều chặn các prompt như:
 - `"How do you build a TODO app?"` — `how do` trong `*` chặn regex intent orchestrate
-- `"orchestrate 트리거 해주면 되나요?"` (dưới `language: ko`) — `트리거` trong `ko` chặn keyword orchestrate
+- `"orchestrate 트리거 해주면 되나요?"` — `트리거` trong `ko` chặn keyword orchestrate
 
 ### Workflow loại trừ
 

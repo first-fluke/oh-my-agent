@@ -142,13 +142,13 @@ De 12 ingecheckte definitiebestanden dekken de 13 runtime-rollen via aliassen: `
 
 oh-my-agent gebruikt een skillarchitectuur met twee lagen om uitputting van het contextvenster te voorkomen:
 
-**Laag 1: SKILL.md (~3.100 tokens mediaan, geladen wanneer de skill wordt gerouteerd)**
+**Laag 1: SKILL.md (geladen wanneer de skill wordt gerouteerd)**
 Bevat de identiteit van de agent, routeringsvoorwaarden, kernregels en richtlijnen voor "when to use / when NOT to use". Dit is alles wat wordt geladen wanneer de agent niet actief werkt.
 
 **Laag 2: resources/ (on demand geladen)**
 Bevat uitvoeringsprotocollen, techstackreferenties, codefragmenten, foutoplossingshandleidingen, checklists en voorbeelden. Deze worden alleen geladen wanneer de agent wordt aangeroepen, en dan alleen de resources die relevant zijn voor het specifieke taaktype (op basis van de moeilijkheidsinschatting en de mapping van taak naar resource in `context-loading.md`).
 
-Gemeten over een sessie met 5 agenten levert dit ongeveer 17-19K tokens aan skillcontext op voor een Simple- of Medium-taak tegenover een plafond van 72K — ongeveer 75% van het maximum blijft ongebruikt, en bij Complex-taken die stackreferenties laden daalt dat tot ongeveer 47%. Zie [de berekening van tokensparing](../core-concepts/skills.md#token-savings-math) voor de gemeten tabel en het script waarmee je die reproduceert.
+Hoeveel context dit bespaart, hangt af van de skills en de taak, dus meet het in plaats van een getal aan te nemen. Zie [de tokenbesparingsberekening](../core-concepts/skills.md#token-savings-math) voor het script en wat de schattingen dekken.
 
 ---
 

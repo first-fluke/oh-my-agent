@@ -835,17 +835,11 @@ In subagent mode (CLI-spawned), agents cannot ask users directly. LOW proceeds, 
 
 Each agent's knowledge is split across two layers:
 
-**Layer 1: SKILL.md (~3,100 tokens median)**
-Always loaded. Contains frontmatter (name, description), when to use / not use, core rules, architecture overview, library list, and references to Layer 2 resources.
+**Layer 1: SKILL.md (loaded when the skill is routed)**
+Contains frontmatter (name, description), when to use / not use, core rules, architecture overview, library list, and references to Layer 2 resources.
 
 **Layer 2: resources/ (loaded on-demand)**
-Loaded only when the agent is actively working, and only the resources matching the task type and difficulty:
-
-| Difficulty | Resources Loaded |
-|-----------|-----------------|
-| **Simple** | execution-protocol.md only |
-| **Medium** | execution-protocol.md + examples.md |
-| **Complex** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+Loaded only when the agent is actively working, and only the resources the task needs. Difficulty sets a soft token budget, not a fixed file list; see [Resource loading by task](./skills.md#resource-loading-by-task).
 
 Additional resources are loaded during execution as needed:
 - `checklist.md`: at the Verify step

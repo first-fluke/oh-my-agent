@@ -852,17 +852,11 @@ CHARTER_CHECK:
 
 每个智能体的知识分为两层：
 
-**第一层：SKILL.md（中位数约 3,100 个令牌）**
-始终加载。包含 frontmatter（name、description）、何时使用或不使用、核心规则、架构概览、库清单以及第二层资源的引用。
+**第一层：SKILL.md（路由到技能时加载）**
+包含 frontmatter（name、description）、何时使用或不使用、核心规则、架构概览、库清单以及第二层资源的引用。
 
 **第二层：resources/（按需加载）**
-仅当智能体正在处理任务时加载，并根据任务类型和难度加载匹配的资源：
-
-| 难度 | 加载的资源 |
-|-----------|---------------|
-| **简单** | 仅 execution-protocol.md |
-| **中等** | execution-protocol.md + examples.md |
-| **复杂** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+仅当智能体正在处理任务时加载，并且只加载任务需要的资源。难度设定的是软性令牌预算，而不是固定的文件清单；参见[按任务加载资源](./skills.md#resource-loading-by-task)。
 
 执行期间还会按需加载：
 - checklist.md：验证步骤

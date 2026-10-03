@@ -837,17 +837,11 @@ Im Subagenten-Modus (CLI-gestartet) können Agenten Benutzer nicht direkt befrag
 
 Das Wissen jedes Agenten ist auf zwei Schichten aufgeteilt:
 
-**Schicht 1 — SKILL.md (Median ~3.100 Tokens):**
-Wird immer geladen. Enthält Frontmatter (Name, Beschreibung), Einsatz-/Nicht-Einsatz-Bedingungen, Kernregeln, Architekturübersicht, Bibliotheksliste und Verweise auf Schicht-2-Ressourcen.
+**Schicht 1 — SKILL.md (beim Routing des Skills geladen):**
+Enthält Frontmatter (Name, Beschreibung), Einsatz-/Nicht-Einsatz-Bedingungen, Kernregeln, Architekturübersicht, Bibliotheksliste und Verweise auf Schicht-2-Ressourcen.
 
 **Schicht 2 — resources/ (bedarfsgesteuert geladen):**
-Wird nur geladen, wenn der Agent aktiv arbeitet, und nur die Ressourcen, die zum Aufgabentyp und Schwierigkeitsgrad passen:
-
-| Schwierigkeitsgrad | Geladene Ressourcen |
-|-----------|-----------------|
-| **Einfach** | Nur execution-protocol.md |
-| **Mittel** | execution-protocol.md + examples.md |
-| **Komplex** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+Wird nur geladen, wenn der Agent aktiv arbeitet, und nur mit den Ressourcen, die die Aufgabe braucht. Der Schwierigkeitsgrad legt ein weiches Token-Budget fest, keine feste Dateiliste; siehe [Ressourcenladen nach Aufgabe](./skills.md#resource-loading-by-task).
 
 Zusätzliche Ressourcen werden während der Ausführung nach Bedarf geladen:
 - `checklist.md` — beim Verifikationsschritt

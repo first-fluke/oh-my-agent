@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Kurz | Beschreibung |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Arbeitsverzeichnis für den Agenten. Agenten modifizieren nur Dateien innerhalb dieses Verzeichnisses. |
-| `--model <vendor>` | `-m` | CLI-Vendor für diesen Spawn überschreiben (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` oder `pi`). |
+| `--vendor <vendor>` | | CLI-Vendor für diesen Spawn überschreiben (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` oder `pi`). |
 | `--resumed-from <run-id>` | | Retry mit dem vorherigen evidenzbasierten Lauf verknüpfen. |
 | `--fallback-vendors <vendors>` | | Geordnete, durch Kommas getrennte Vendor-Fallbacks, wenn der primäre Vendor nicht laufen kann. |
 | `--task-id <id>` | | Den Spawn an eine Task-ID aus dem Sitzungsplan binden. |

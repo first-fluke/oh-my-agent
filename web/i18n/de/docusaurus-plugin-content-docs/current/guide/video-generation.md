@@ -96,6 +96,7 @@ oma video provider list         # provider availability + key/fallback status
 | `--dry-run` | Skript, Render-Spezifikation und Manifest ausgeben, Rendering überspringen. |
 | `--script <path>` | Vom Agenten erstelltes `script.json` zum Injizieren (überschreibt das Gerüst; steuert Sprechertext, On-Screen-Text und visuelle Prompts pro Szene). |
 | `-y, --yes` | Kostenbestätigungs-Prompt überspringen. |
+| `--timeout <duration>` | Zeitlimit für jeden Aufruf eines Visual- oder Musik-Providers, etwa `90s` oder `2m`; eine Zahl ohne Einheit gilt als Sekunden. |
 | `--output <f>` | CLI-Ausgabe: `text` (Standard) oder `json`. |
 | `--no-brief-in-manifest` | Einen SHA-256-Hash des Briefings statt des Rohtexts im Manifest speichern. |
 

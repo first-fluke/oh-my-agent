@@ -833,17 +833,11 @@ En modo subagente (generado por CLI), los agentes no pueden preguntar a los usua
 
 El conocimiento de cada agente se divide en dos capas:
 
-**Capa 1: SKILL.md (~3,100 tokens de mediana):**
-Siempre cargada. Contiene frontmatter (nombre, descripción), cuándo usar / cuándo no usar, reglas principales, vista general de arquitectura, lista de librerías y referencias a recursos de Capa 2.
+**Capa 1: SKILL.md (cargada cuando se enruta la skill):**
+Contiene frontmatter (nombre, descripción), cuándo usar / cuándo no usar, reglas principales, vista general de arquitectura, lista de librerías y referencias a recursos de Capa 2.
 
 **Capa 2 — resources/ (cargada bajo demanda):**
-Cargada solo cuando el agente está trabajando activamente, y solo los recursos que coinciden con el tipo de tarea y dificultad:
-
-| Dificultad | Recursos Cargados |
-|------------|-------------------|
-| **Simple** | solo execution-protocol.md |
-| **Media** | execution-protocol.md + examples.md |
-| **Compleja** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+Se carga solo cuando el agente está trabajando activamente, y solo con los recursos que necesita la tarea. La dificultad fija un presupuesto flexible de tokens, no una lista fija de archivos; consulta [Carga de recursos por tarea](./skills.md#resource-loading-by-task).
 
 Recursos adicionales se cargan durante la ejecución según sea necesario:
 - `checklist.md` — en el paso de Verificación

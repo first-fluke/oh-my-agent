@@ -145,13 +145,13 @@ Les 12 fichiers de définition versionnés couvrent les 13 rôles du runtime gr�
 
 oh-my-agent utilise une architecture de compétences en deux couches pour éviter l'épuisement de la fenêtre de contexte :
 
-**Couche 1 : SKILL.md (~3 100 tokens en médiane, chargée lorsque la compétence est routée)**
+**Couche 1 : SKILL.md (chargée lorsque la compétence est routée)**
 Contient l'identité de l'agent, les conditions de routage, les règles fondamentales et les indications « quand utiliser / quand NE PAS utiliser ». C'est tout ce qui est chargé lorsque l'agent n'est pas activement sollicité.
 
 **Couche 2 : resources/ (chargées à la demande)**
 Contient les protocoles d'exécution, les références de stack technique, les extraits de code, les guides de résolution d'erreurs, les checklists et les exemples. Ces ressources ne sont chargées que lorsque l'agent est invoqué pour une tâche, et même dans ce cas uniquement celles qui correspondent au type de tâche (selon l'évaluation de difficulté et le mapping tâche-ressource dans `context-loading.md`).
 
-Mesurée sur une session de 5 agents, cette architecture maintient environ 17 à 19 K tokens de contexte de compétences pour une tâche Simple ou Medium sur un plafond de 72 K, soit environ 75 % du maximum évité ; elle passe à environ 47 % pour les tâches Complex qui chargent des références de stack. Voir les [mathématiques de l'économie de tokens](../core-concepts/skills.md#token-savings-math) pour le tableau mesuré et le script qui le reproduit.
+La quantité de contexte économisée dépend des compétences et de la tâche : mesurez-la plutôt que de supposer un chiffre. Voir les [mathématiques de l'économie de tokens](../core-concepts/skills.md#token-savings-math) pour le script et ce que couvrent ses estimations.
 
 ---
 

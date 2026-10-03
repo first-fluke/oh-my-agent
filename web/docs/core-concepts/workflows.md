@@ -603,7 +603,7 @@ The `informationalPatterns` section of `.agents/hooks/core/triggers.json` define
 
 If the input matches both a workflow trigger and an informational pattern, the informational pattern takes priority and no workflow is triggered. This is what blocks prompts like:
 - `"How do you build a TODO app?"`: `how do` in `*` blocks the orchestrate intent regex
-- `"orchestrate 트리거 해주면 되나요?"` (under `language: ko`): `트리거` in `ko` blocks the orchestrate keyword
+- `"orchestrate 트리거 해주면 되나요?"`: `트리거` in `ko` blocks the orchestrate keyword
 
 ### Excluded workflows
 

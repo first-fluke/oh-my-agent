@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | フラグ | 短縮形 | 説明 |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | エージェントの作業ディレクトリです。エージェントが変更できるのはこのディレクトリ内のファイルだけです。 |
-| `--model <vendor>` | `-m` | このスポーンに使う CLI ベンダーを上書きします（`antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok`、`pi`）。 |
+| `--vendor <vendor>` | | このスポーンに使う CLI ベンダーを上書きします（`antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok`、`pi`）。 |
 | `--resumed-from <run-id>` | | 直前の実行に基づく証拠チェーンへリトライをリンクします。 |
 | `--fallback-vendors <vendors>` | | プライマリが実行できない場合に使う、順序付きのカンマ区切りベンダーフォールバックです。 |
 | `--task-id <id>` | | セッションプランのタスク ID にスポーンを関連付けます。 |

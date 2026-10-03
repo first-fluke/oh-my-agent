@@ -521,7 +521,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | Argument | Verplicht | Beschrijving |
 |:---------|:---------|:-----------|
-| `agent-id` | Ja | Agenttype. Een van: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `agent-id` | Ja | Agenttype. Een van: `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra`, `explore` |
 | `prompt` | Ja | Taakomschrijving. Kan inline tekst of een bestandspad zijn. |
 | `session-id` | Ja | Sessie-ID (formaat: `session-YYYYMMDD-HHMMSS`) |
 
@@ -529,8 +529,10 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `--vendor <vendor>` | Overschrijving van de CLI-vendor: `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi` |
+| `--vendor <vendor>` | Overschrijving van de CLI-vendor: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi` |
 | `-w, --workspace <path>` | Werkmap voor de agent. Wordt automatisch uit monorepo-configuratie gedetecteerd wanneer je deze weglaat. |
+| `--resumed-from <run-id>` | Koppelt een nieuwe poging aan de run-ID van de vorige run. |
+| `--task-id <id>` | Taak-ID uit het sessieplan. Standaard de agent-ID. |
 | `--isolation <mode>` | Isolatiemodus per spawn. Ondersteunt momenteel `worktree`: maakt een verse git-worktree aan op `${tmpdir}/oma-worktrees/{sessionId}/{agentId}` op branch `oma/{sessionId}/{agentId}` en voert de agent daar uit. De worktree blijft na afloop behouden; merge- of discard-commando's worden afgedrukt voor handmatige beoordeling (geen automatische merge). |
 | `--read-only` | Beperk de gespawnde agent tot niet-destructieve tools (onderdrukt auto-approve-flags). Intern gebruikt door `oma skill eval --live` voor beide evalarmen. |
 | `--fallback-vendors <vendors>` | Kies expliciet voor een geordende, kommagescheiden keten van maximaal drie geconfigureerde CLI-vendors. Doorgaan vereist een herkende quota-, rate-limit- of tijdelijke fout en een nieuw safe-handoff-checkpoint. |
@@ -1517,7 +1519,7 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` accepteert `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` en `--capture-stop duration:<seconds>|selector:<css>`. Gebruik `--source web --url <url>` voor browseropname; `--source file` is de standaard. `--output-dir` kiest de runroot, `--allow-external-output` staat een pad buiten `$PWD` toe, `--max-usd` stelt een kostenplafond in, `--seed` stabiliseert planningsinvoer en `--no-brief-in-manifest` slaat een briefhash op in plaats van de tekst. `--dry-run` stopt na de planning. `--output text|json` bepaalt de CLI-envelop.
+`generate` accepteert `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` en `--capture-stop duration:<seconds>|selector:<css>`. Gebruik `--source web --url <url>` voor browseropname; `--source file` is de standaard. `--output-dir` kiest de runroot, `--allow-external-output` staat een pad buiten `$PWD` toe, `--max-usd` stelt een kostenplafond in, `-y, --yes` slaat de kostenbevestiging over, `--seed` stabiliseert planningsinvoer, `--timeout` begrenst elke aanroep van een visual- of muziekprovider, `--script` injecteert een door de agent geschreven `script.json` en `--no-brief-in-manifest` slaat een briefhash op in plaats van de tekst. `--dry-run` stopt na de planning. `--output text|json` bepaalt de CLI-envelop.
 
 `doctor` controleert de gecachete HyperFrames/MPT-toolchain en accepteert `--install`, `--upgrade`, `--install-mpt` en `--install-strudel`. `provider list` rapporteert providerbeschikbaarheid en sleutelstatus. `compose` zet de runcompositie op of vernieuwt die en rapporteert het authoringcontract; `render` voert lint uit, rendert en controleert de uitvoer. Ontbrekende compositor-, compositie- of toolchaindependency's zijn fouten. Het alleen voor tests bedoelde pad `OMA_VIDEO_MOCK=1` is de enige placeholdermodus; een normale run vervangt een MP4 nooit door een tekst- of klein bestand.
 

@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Short | Description |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Working directory for the agent. Agents only modify files within this directory. |
-| `--model <vendor>` | `-m` | Override the CLI vendor for this spawn (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, or `pi`). |
+| `--vendor <vendor>` | | Override the CLI vendor for this spawn (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, or `pi`). |
 | `--resumed-from <run-id>` | | Link a retry to the preceding evidence-backed run. |
 | `--fallback-vendors <vendors>` | | Ordered comma-separated vendor fallbacks when the primary cannot run. |
 | `--task-id <id>` | | Bind the spawn to a task ID from the session plan. |

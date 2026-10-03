@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Curta | Descrição |
 |-----------|----------|-------------|
 | `--workspace <path>` | `-w` | Diretório de trabalho do agente. Os agentes só modificam arquivos dentro desse diretório. |
-| `--model <vendor>` | `-m` | Substitui o vendor da CLI para esta criação (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` ou `pi`). |
+| `--vendor <vendor>` | | Substitui o vendor da CLI para esta criação (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` ou `pi`). |
 | `--resumed-from <run-id>` | | Vincula um retry à execução anterior respaldada por evidências. |
 | `--fallback-vendors <vendors>` | | Fallbacks de vendor ordenados e separados por vírgula quando o primário não puder executar. |
 | `--task-id <id>` | | Vincula a criação a um ID de tarefa do plano da sessão. |

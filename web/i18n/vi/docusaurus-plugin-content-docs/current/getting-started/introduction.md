@@ -144,13 +144,13 @@ Mười hai tệp định nghĩa được kiểm soát bao phủ 13 vai trò run
 
 oh-my-agent dùng kiến trúc skill hai lớp để tránh làm cạn cửa sổ ngữ cảnh:
 
-**Lớp 1: SKILL.md (trung vị khoảng 3.100 token, tải khi skill được định tuyến)**
+**Lớp 1: SKILL.md (tải khi skill được định tuyến)**
 Chứa identity của agent, điều kiện định tuyến, quy tắc cốt lõi và hướng dẫn “when to use / when NOT to use”. Đây là toàn bộ nội dung được tải khi agent chưa làm việc chủ động.
 
 **Lớp 2: resources/ (tải theo nhu cầu)**
 Chứa protocol thực thi, tham chiếu tech stack, code snippet, playbook lỗi, checklist và ví dụ. Chỉ tải khi agent được gọi cho một tác vụ, và khi đó chỉ tải tài nguyên liên quan tới loại tác vụ cụ thể (dựa trên đánh giá độ khó và ánh xạ task-resource trong `context-loading.md`).
 
-Đo trên session 5 agent, mô hình này giữ khoảng 17-19K token ngữ cảnh skill cho task Simple hoặc Medium trong giới hạn 72K, tránh khoảng 75% mức tối đa; với task Complex kéo theo tham chiếu stack, mức tránh giảm còn khoảng 47%. Xem [token savings math](../core-concepts/skills.md#token-savings-math) để đọc bảng đo và script tái tạo.
+Lượng ngữ cảnh tiết kiệm được phụ thuộc vào skill và task, vì vậy hãy đo thay vì giả định một con số. Xem [toán tiết kiệm token](../core-concepts/skills.md#token-savings-math) để biết script và phạm vi các ước tính của nó.
 
 ---
 

@@ -399,7 +399,7 @@ Gebruik 3 terminals:
 
 ### Progressieve onthulling
 
-Skills laden in twee lagen om tokens te besparen. Laag 1 (`SKILL.md`, momenteel mediaan ongeveer 2.631 tokens in de tree met 33 skills) komt in de context wanneer de host de skill routeert — de injector geeft een pad, niet de inhoud. Laag 2 (`resources/`) wordt alleen gelezen wanneer de taak die nodig heeft, volgens de moeilijkheidsniveaus. Gemeten over een sessie met 5 agenten houdt een Simple- of Medium-taak ongeveer 18-19K skillcontext vast tegenover een plafond van 73K; er blijft ongeveer 109K van een context van 128K over voor het eigenlijke werk. Een Complex-taak houdt ongeveer 39K vast, zodat circa 89K overblijft. Zie [token savings math](../core-concepts/skills.md#token-savings-math) voor de tabel en het script dat dit reproduceert.
+Skills laden in twee lagen om tokens te besparen. Laag 1 (`SKILL.md`) komt in de context wanneer de host de skill routeert — de injector geeft een pad, niet de inhoud. Laag 2 (`resources/`) wordt alleen gelezen wanneer de taak die nodig heeft; de moeilijkheidsgraad bepaalt een zacht budget, geen lijst met bestanden. Hoeveel dat bespaart, hangt af van de skills en de taak, dus meet het in plaats van een getal aan te nemen: de [tokenbesparingsberekening](../core-concepts/skills.md#token-savings-math) bevat het script en legt uit wat de schattingen dekken.
 
 ### Tokenoptimalisatie
 

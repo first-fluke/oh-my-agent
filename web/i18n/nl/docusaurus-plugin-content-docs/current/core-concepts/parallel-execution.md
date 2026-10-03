@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Kort | Beschrijving |
 |-------|-------|-------------|
 | `--workspace <path>` | `-w` | Werkdirectory voor de agent. Agenten wijzigen alleen bestanden binnen deze directory. |
-| `--model <vendor>` | `-m` | Overschrijf de CLI-vendor voor deze spawn (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` of `pi`). |
+| `--vendor <vendor>` | | Overschrijf de CLI-vendor voor deze spawn (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` of `pi`). |
 | `--resumed-from <run-id>` | | Koppel een retry aan de voorafgaande run met evidence. |
 | `--fallback-vendors <vendors>` | | Geordende, komma-gescheiden vendor-fallbacks wanneer de primaire vendor niet kan draaien. |
 | `--task-id <id>` | | Koppel de spawn aan een task-ID uit het sessieplan. |

@@ -282,7 +282,7 @@ Aquí vive la experiencia de las skills. En el catálogo actual hay 33 directori
 - `conditional/`: medición de quality score, seguimiento del experiment ledger y protocolo del exploration loop (solo se carga cuando se activa).
 
 **`oma-{skill}/`**: directorios de cada skill. Cada uno contiene:
-- `SKILL.md` (mediana de unos 2.631 tokens en el árbol actual): capa 1, cargada cuando se enruta la skill; identidad, enrutamiento y reglas principales.
+- `SKILL.md`: capa 1, cargada cuando se enruta la skill; identidad, enrutamiento y reglas principales.
 - `resources/`: capa 2, bajo demanda; protocolos de ejecución, ejemplos, listas de comprobación, playbooks de errores, stacks tecnológicos, snippets y plantillas.
 - Algunas skills tienen subdirectorios adicionales: `variants/` (semillas de backend/móvil), referencias `stack/` generadas por `/stack-set`, `reference/` (oma-design) y scripts/configuración propios de la skill.
 

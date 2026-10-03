@@ -831,17 +831,11 @@ No modo subagente (iniciado pela CLI), os agentes não podem perguntar diretamen
 
 O conhecimento de cada agente é dividido em duas camadas:
 
-**Camada 1: SKILL.md (~3.100 tokens em mediana)**
-Sempre carregada. Contém frontmatter (name, description), quando usar/não usar, regras principais, visão geral da arquitetura, lista de bibliotecas e referências aos recursos da Camada 2.
+**Camada 1: SKILL.md (carregada quando a habilidade é roteada)**
+Contém frontmatter (name, description), quando usar/não usar, regras principais, visão geral da arquitetura, lista de bibliotecas e referências aos recursos da Camada 2.
 
 **Camada 2: resources/ (carregada sob demanda)**
-Carregada somente quando o agente está trabalhando ativamente e apenas com os recursos correspondentes ao tipo e à dificuldade da tarefa:
-
-| Dificuldade | Recursos carregados |
-|-----------|---------------------|
-| **Simples** | execution-protocol.md apenas |
-| **Média** | execution-protocol.md + examples.md |
-| **Complexa** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+Carregada somente quando o agente está trabalhando ativamente e apenas com os recursos de que a tarefa precisa. A dificuldade define um orçamento flexível de tokens, não uma lista fixa de arquivos; veja [Carregamento de recursos por tarefa](./skills.md#resource-loading-by-task).
 
 Recursos adicionais são carregados durante a execução conforme necessário:
 - `checklist.md`: na etapa Verify

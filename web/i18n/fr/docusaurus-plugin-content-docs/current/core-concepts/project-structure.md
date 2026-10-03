@@ -283,7 +283,7 @@ C'est ici que se trouve l'expertise des compétences. Le catalogue actuel compre
 - `conditional/` : mesure du score de qualité, suivi du registre d'expériences et protocole de boucle d'exploration (chargés uniquement lorsqu'ils sont déclenchés)
 
 **`oma-{skill}/`** : répertoires propres aux compétences. Chacun contient :
-- `SKILL.md` (environ 2 631 tokens en médiane dans l'arborescence actuelle) : couche 1, chargée lorsque la compétence est routée ; identité, routage et règles fondamentales
+- `SKILL.md` : couche 1, chargée lorsque la compétence est routée ; identité, routage et règles fondamentales
 - `resources/` : couche 2, chargée à la demande ; protocoles d'exécution, exemples, checklists, guides de résolution d'erreurs, stacks techniques, extraits et modèles
 - Certaines compétences ont d'autres sous-répertoires : `variants/` (graines backend/mobile), références `stack/` générées par `/stack-set`, `reference/` (`oma-design`) et des scripts ou configurations propres à la compétence.
 

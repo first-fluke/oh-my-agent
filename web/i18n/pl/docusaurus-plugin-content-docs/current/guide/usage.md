@@ -399,7 +399,7 @@ Używaj 3 terminali:
 
 ### Progressive disclosure
 
-Umiejętności ładują się w dwóch warstwach, aby oszczędzać tokeny. Warstwa 1 (`SKILL.md`, około 2631 tokenów mediany w bieżącym drzewie 33 umiejętności) trafia do kontekstu, gdy host kieruje do umiejętności — injector przekazuje ścieżkę, a nie treść. Warstwa 2 (`resources/`) jest odczytywana dopiero wtedy, gdy wymaga tego zadanie, zgodnie z poziomami trudności. W pomiarze sesji 5 agentów zadanie Simple albo Medium zajmuje około 18–19 tys. tokenów kontekstu umiejętności przy limicie 73 tys., pozostawiając około 109 tys. z kontekstu 128 tys. na rzeczywistą pracę; zadanie Complex zajmuje około 39 tys., pozostawiając około 89 tys. Zobacz [matematykę oszczędności tokenów](../core-concepts/skills.md#token-savings-math), aby znaleźć tabelę i skrypt odtwarzający te wartości.
+Umiejętności ładują się w dwóch warstwach, aby oszczędzać tokeny. Warstwa 1 (`SKILL.md`) trafia do kontekstu, gdy host kieruje do umiejętności — injector przekazuje ścieżkę, a nie treść. Warstwa 2 (`resources/`) jest odczytywana dopiero wtedy, gdy wymaga tego zadanie; poziom trudności wyznacza miękki budżet, a nie listę plików. Oszczędność zależy od umiejętności i zadania, więc zmierz ją, zamiast zakładać konkretną liczbę: [matematyka oszczędności tokenów](../core-concepts/skills.md#token-savings-math) zawiera skrypt i wyjaśnia, co obejmują jego szacunki.
 
 ### Optymalizacja tokenów
 

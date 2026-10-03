@@ -835,17 +835,11 @@ In subagentmodus (CLI-gespawnd) kunnen agenten gebruikers niet rechtstreeks vrag
 
 De kennis van elke agent is verdeeld over twee lagen:
 
-**Laag 1: SKILL.md (~3.100 tokens mediaan)**
-Altijd geladen. Bevat frontmatter (`name` en `description`), wanneer de skill wel/niet wordt gebruikt, kernregels, architectuuroverzicht, bibliothekenlijst en verwijzingen naar Laag 2.
+**Laag 1: SKILL.md (geladen wanneer de skill wordt gerouteerd)**
+Bevat frontmatter (`name` en `description`), wanneer de skill wel/niet wordt gebruikt, kernregels, architectuuroverzicht, bibliothekenlijst en verwijzingen naar Laag 2.
 
 **Laag 2: resources/ (op aanvraag geladen)**
-Wordt alleen geladen wanneer de agent actief werkt, en alleen de bronnen die bij het taaktype en de moeilijkheidsgraad passen:
-
-| Moeilijkheid | Geladen bronnen |
-|-------------|----------------|
-| **Eenvoudig** | alleen execution-protocol.md |
-| **Gemiddeld** | execution-protocol.md + examples.md |
-| **Complex** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+Wordt alleen geladen wanneer de agent actief werkt, en alleen met de bronnen die de taak nodig heeft. De moeilijkheidsgraad bepaalt een zacht tokenbudget, geen vaste lijst met bestanden; zie [Resources laden per taak](./skills.md#resource-loading-by-task).
 
 Tijdens de uitvoering worden aanvullend geladen wanneer dat nodig is:
 - `checklist.md`: bij de Verify-stap

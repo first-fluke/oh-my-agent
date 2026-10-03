@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Flaga | Skrót | Opis |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Katalog roboczy agenta. Agent modyfikuje pliki tylko w tym katalogu. |
-| `--model <vendor>` | `-m` | Nadpisuje dostawcę CLI dla tego uruchomienia (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` lub `pi`). |
+| `--vendor <vendor>` | | Nadpisuje dostawcę CLI dla tego uruchomienia (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` lub `pi`). |
 | `--resumed-from <run-id>` |  | Łączy retry z poprzednim uruchomieniem opartym na dowodach. |
 | `--fallback-vendors <vendors>` |  | Uporządkowane, rozdzielone przecinkami fallbacki dostawców, gdy główny dostawca nie może działać. |
 | `--task-id <id>` |  | Wiąże uruchomienie z identyfikatorem zadania z planu sesji. |

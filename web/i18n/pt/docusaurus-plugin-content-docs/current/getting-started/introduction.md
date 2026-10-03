@@ -144,13 +144,13 @@ Os 12 arquivos de definição versionados cobrem as 13 funções de tempo de exe
 
 O oh-my-agent usa uma arquitetura de habilidades em duas camadas para evitar o esgotamento da janela de contexto:
 
-**Camada 1: SKILL.md (~3.100 tokens medianos, carregada quando a habilidade é roteada)**
+**Camada 1: SKILL.md (carregada quando a habilidade é roteada)**
 Contém a identidade do agente, condições de roteamento, regras principais e orientações de “quando usar / quando NÃO usar”. Isso é tudo que é carregado quando o agente não está trabalhando ativamente.
 
 **Camada 2: resources/ (carregados sob demanda)**
 Contém protocolos de execução, referências de stack, snippets de código, playbooks de erros, checklists e exemplos. Esses recursos são carregados somente quando o agente é invocado para uma tarefa e, mesmo então, apenas os recursos relevantes ao tipo específico da tarefa são carregados (com base na avaliação de dificuldade e no mapeamento tarefa-recurso em `context-loading.md`).
 
-Medido em uma sessão com 5 agentes, isso mantém aproximadamente 17–19 mil tokens de contexto de habilidades para uma tarefa simples ou média diante de um teto de 72 mil, evitando cerca de 75% do máximo; para tarefas complexas que carregam referências de stack, a redução cai para cerca de 47%. Veja a [matemática da economia de tokens](../core-concepts/skills.md#token-savings-math) para a tabela medida e o script que a reproduz.
+Quanto contexto isso economiza depende das habilidades e da tarefa, então meça em vez de supor um número. Veja a [matemática da economia de tokens](../core-concepts/skills.md#token-savings-math) para o script e o que suas estimativas cobrem.
 
 ---
 

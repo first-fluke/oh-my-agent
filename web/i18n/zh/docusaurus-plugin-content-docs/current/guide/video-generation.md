@@ -96,6 +96,7 @@ oma video provider list         # provider availability + key/fallback status
 | `--dry-run` | 输出脚本、渲染规格和清单，跳过渲染。 |
 | `--script <path>` | 要注入的智能体编写 `script.json`，会覆盖骨架，并控制旁白、屏幕文字和每个场景的视觉提示。 |
 | `-y, --yes` | 跳过成本确认提示。 |
+| `--timeout <duration>` | 每次调用视觉或音乐供应商的时间上限，例如 `90s` 或 `2m`；不带单位的数字按秒计算。 |
 | `--output <f>` | CLI 输出：`text`（默认）或 `json`。 |
 | `--no-brief-in-manifest` | 保存简述的 SHA-256，而不是原始简述。 |
 

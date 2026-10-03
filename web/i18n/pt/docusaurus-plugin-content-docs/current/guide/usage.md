@@ -408,7 +408,7 @@ Use 3 terminais:
 
 ### Divulgação progressiva
 
-As skills são carregadas em duas camadas para economizar tokens. A camada 1 (`SKILL.md`, mediana de cerca de 2.631 tokens na árvore atual de 33 skills) entra no contexto quando o host roteia a skill; o injetor passa um caminho, não o conteúdo. A camada 2 (`resources/`) é lida somente conforme a tarefa exige, de acordo com os tiers de dificuldade. Medido em uma sessão com 5 agentes, uma tarefa Simples ou Média mantém cerca de 18-19K tokens de contexto de skills contra um teto de 73K, deixando aproximadamente 109K de um contexto de 128K para o trabalho real; uma tarefa Complexa mantém cerca de 39K, deixando aproximadamente 89K. Consulte a [matemática da economia de tokens](../core-concepts/skills.md#token-savings-math) para a tabela e o script que reproduz o cálculo.
+As skills são carregadas em duas camadas para economizar tokens. A camada 1 (`SKILL.md`) entra no contexto quando o host roteia a skill; o injetor passa um caminho, não o conteúdo. A camada 2 (`resources/`) só é lida quando a tarefa precisa dela; a dificuldade define um orçamento flexível, não uma lista de arquivos. A economia depende das skills e da tarefa, então meça-a em vez de supor um número: a [matemática da economia de tokens](../core-concepts/skills.md#token-savings-math) traz o script e explica o que as estimativas cobrem.
 
 ### Otimização de tokens
 

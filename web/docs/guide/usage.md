@@ -399,7 +399,7 @@ Use 3 terminals:
 
 ### Progressive disclosure
 
-Skills load in two layers to save tokens. Layer 1 (`SKILL.md`, about 2,631 tokens median in the current 33-skill tree) enters context when the host routes the skill — the injector passes a path, not the body. Layer 2 (`resources/`) is read only as the task needs it, per the difficulty tiers. Measured across a 5-agent session, a Simple or Medium task holds about 18-19K tokens of skill context against a 73K ceiling, leaving roughly 109K of a 128K context for actual work; a Complex task holds about 39K, leaving roughly 89K. See [token savings math](../core-concepts/skills.md#token-savings-math) for the table and the script that reproduces it.
+Skills load in two layers to save tokens. Layer 1 (`SKILL.md`) enters context when the host routes the skill — the injector passes a path, not the body. Layer 2 (`resources/`) is read only when the task needs it; difficulty sets a soft budget, not a file list. The savings depend on the skills and the task, so measure them instead of assuming a figure: [token savings math](../core-concepts/skills.md#token-savings-math) has the script and explains what its estimates cover.
 
 ### Token optimization
 

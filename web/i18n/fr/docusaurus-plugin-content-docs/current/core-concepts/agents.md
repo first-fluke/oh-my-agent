@@ -835,17 +835,11 @@ En mode sous-agent (lancé par CLI), l’agent ne peut pas interroger directemen
 
 Les connaissances de chaque agent se répartissent sur deux couches.
 
-**Couche 1 : SKILL.md (~3 100 tokens en médiane)**
-Toujours chargée. Elle contient le frontmatter (nom, description), les conditions d’utilisation, les règles fondamentales, l’architecture, la liste des bibliothèques et les références vers la couche 2.
+**Couche 1 : SKILL.md (chargée lorsque la compétence est routée)**
+Elle contient le frontmatter (nom, description), les conditions d’utilisation, les règles fondamentales, l’architecture, la liste des bibliothèques et les références vers la couche 2.
 
 **Couche 2 : resources/ (chargée à la demande)**
-Chargée seulement lorsque l’agent travaille et seulement pour le type et la difficulté de tâche correspondants :
-
-| Difficulté | Ressources chargées |
-|-----------|---------------------|
-| **Simple** | execution-protocol.md uniquement |
-| **Medium** | execution-protocol.md + examples.md |
-| **Complex** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+Chargée seulement lorsque l’agent travaille, et seulement avec les ressources dont la tâche a besoin. La difficulté fixe un budget de tokens souple, pas une liste de fichiers fixe ; voir [Chargement des ressources selon la tâche](./skills.md#resource-loading-by-task).
 
 Ressources supplémentaires chargées pendant l’exécution :
 - `checklist.md` : à l’étape Verify ;

@@ -282,7 +282,7 @@ Nơi lưu kiến thức chuyên môn của skill. Có 33 thư mục skill cùng 
 - `conditional/`: Đo quality score, theo dõi experiment ledger, protocol exploration loop (chỉ tải khi được kích hoạt)
 
 **`oma-{skill}/`**: Thư mục của từng skill. Mỗi thư mục gồm:
-- `SKILL.md` (trung vị khoảng 2.631 token trong cây hiện tại): Lớp 1, tải khi skill được định tuyến. Chứa identity, định tuyến và quy tắc cốt lõi.
+- `SKILL.md`: Lớp 1, tải khi skill được định tuyến. Chứa identity, định tuyến và quy tắc cốt lõi.
 - `resources/`: Lớp 2, tải theo nhu cầu. Chứa execution protocol, ví dụ, checklist, error playbook, tech stack, snippet và template.
 - Một số skill có thư mục con: `variants/` (seed backend/mobile), tham chiếu `stack/` được tạo từ `/stack-set`, `reference/` (oma-design) và script/config riêng của skill.
 

@@ -227,7 +227,7 @@ El script informa estimaciones (bytes UTF-8 / 4) para escenarios de tamaño de a
 
 El comando de contexto muestra la inyección real del contexto de la tarea. No incluye el resto de la conversación ni todas las instrucciones del host o del runtime. Usa un prompt ensamblado o la telemetría de uso para medir el total de tokens de entrada, la latencia y el costo en un modelo concreto. No los infieras a partir del tamaño del repositorio ni de los recuentos de copias espejo generadas.
 
-## Carga de recursos por tarea
+## Carga de recursos por tarea {#resource-loading-by-task}
 
 Todos los niveles de dificultad comienzan con la habilidad responsable. El grafo es un índice de referencias; la adyacencia no autoriza a cargar otro especialista, una guía de errores ni un flujo de experimentos condicional.
 

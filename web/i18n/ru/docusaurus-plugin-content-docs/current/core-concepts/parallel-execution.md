@@ -31,7 +31,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | Флаг | Сокращение | Описание |
 |------|-------|--------|
 | `--workspace <path>` | `-w` | Рабочая директория агента. Агенты модифицируют файлы только в этой директории |
-| `--model <vendor>` | `-m` | Переопределение CLI-вендора для этого запуска (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` или `pi`) |
+| `--vendor <vendor>` | | Переопределение CLI-вендора для этого запуска (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` или `pi`) |
 | `--resumed-from <run-id>` | | Связывает повторный запуск с предыдущим запуском, подтверждённым evidence |
 | `--fallback-vendors <vendors>` | | Упорядоченные fallback-вендоры через запятую, если основной запуск невозможен |
 | `--task-id <id>` | | Привязывает запуск к ID задачи из плана сессии |

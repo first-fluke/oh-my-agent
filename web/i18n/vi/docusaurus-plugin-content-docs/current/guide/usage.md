@@ -401,7 +401,7 @@ Dùng 3 terminal:
 
 ### Progressive disclosure
 
-Skill tải theo hai tầng để tiết kiệm token. Tầng 1 (`SKILL.md`, trung vị khoảng 2.631 token trong cây 33 skill hiện tại) đi vào ngữ cảnh khi host định tuyến skill, injector truyền path chứ không truyền body. Tầng 2 (`resources/`) chỉ được đọc khi task cần theo các tier độ khó. Đo trên phiên 5 agent, task Simple hoặc Medium giữ khoảng 18-19K token ngữ cảnh skill trong giới hạn 73K, để lại khoảng 109K trong context 128K cho công việc thực; task Complex giữ khoảng 39K, để lại khoảng 89K. Xem [toán tiết kiệm token](../core-concepts/skills.md#token-savings-math) để đọc bảng và script tái tạo.
+Skill tải theo hai tầng để tiết kiệm token. Tầng 1 (`SKILL.md`) đi vào ngữ cảnh khi host định tuyến skill; injector truyền đường dẫn chứ không truyền nội dung. Tầng 2 (`resources/`) chỉ được đọc khi task cần; độ khó đặt ra một ngân sách mềm, không phải danh sách file. Mức tiết kiệm phụ thuộc vào skill và task, vì vậy hãy đo thay vì giả định một con số: [toán tiết kiệm token](../core-concepts/skills.md#token-savings-math) có script và giải thích các ước tính của nó bao gồm những gì.
 
 ### Tối ưu token
 
