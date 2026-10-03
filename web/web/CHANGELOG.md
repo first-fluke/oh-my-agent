@@ -1,5 +1,14 @@
 # Changelog
 
+## [7.0.5](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.4...web-v7.0.5) (2026-10-03)
+
+
+### Documentation
+
+* drop stale token figures and fix agent spawn flags ([3cf73e8](https://github.com/first-fluke/oh-my-agent/commit/3cf73e8b8b709246c7021d31126415ab8f083c9f))
+* **i18n:** render CJK bold labels and fix copied table rows ([8c2f1ca](https://github.com/first-fluke/oh-my-agent/commit/8c2f1ca64ea2f0f907e37f380244adca8c47d468))
+* **i18n:** retranslate the ru, vi, and zh CLI references ([2097d8d](https://github.com/first-fluke/oh-my-agent/commit/2097d8dadd532889cc5ddd90e8c9d9fd0a67ab91))
+
 ## [7.0.4](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.3...web-v7.0.4) (2026-10-03)
 
 
