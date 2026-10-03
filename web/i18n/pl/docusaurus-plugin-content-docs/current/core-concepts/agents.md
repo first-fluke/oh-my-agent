@@ -114,8 +114,6 @@ Gdy workflow mapuje agenta na tego samego dostawcę co bieżący runtime, powini
 
 **Zasoby:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/template.md` (kontrakty są zapisywane w `.agents/results/api-contracts/`).
 
-**Limity tur:** Domyślnie 10, maksymalnie 15.
-
 ---
 
 ### oma-frontend
@@ -162,8 +160,6 @@ Gdy workflow mapuje agenta na tego samego dostawcę co bieżący runtime, powini
 - Testy: logika pokryta przez Vitest
 - Jakość: typecheck i lint przechodzą
 
-**Limity tur:** Domyślnie 20, maksymalnie 30.
-
 ---
 
 ### oma-backend
@@ -191,8 +187,6 @@ Gdy workflow mapuje agenta na tego samego dostawcę co bieżący runtime, powini
 Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i szablony API są generowane przez `/stack-set`, gdy są potrzebne; nie istnieją, dopóki stos nie zostanie zmaterializowany.
 <!-- oma-docs:ignore-end -->
 
-**Limity tur:** Domyślnie 20, maksymalnie 30.
-
 ---
 
 ### oma-mobile
@@ -215,8 +209,6 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 - Swift: na iOS 17+ używaj `@Observable` zamiast `ObservableObject`; generuj klientów API ze specyfikacji OpenAPI przez `swift-openapi-generator`
 
 **Zasoby:** `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md` i `error-playbook.md`. Katalog `variants/` zawiera schemat stosu oraz wygenerowane odwołania platformowe, gdy `/stack-set` je zmaterializuje.
-
-**Limity tur:** Domyślnie 20, maksymalnie 30.
 
 ---
 
@@ -353,8 +345,6 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 **Zasoby:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**Limity tur:** Domyślnie 15, maksymalnie 20.
-
 ---
 
 ### oma-debug
@@ -378,8 +368,6 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 - `search_for_pattern("error pattern")` lub wyszukiwanie Gortex: znajdź podobne problemy
 
 **Zasoby:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
-
-**Limity tur:** Domyślnie 15, maksymalnie 25.
 
 ---
 
@@ -416,9 +404,6 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 | MAX_PARALLEL | 3 | Maksymalna liczba równoczesnych subagentów |
 | MAX_RETRIES | 2 | Próby ponowienia dla każdego nieudanego zadania |
 | POLL_INTERVAL | 30s | Interwał sprawdzania stanu |
-| MAX_TURNS (impl) | 20 | Limit tur dla backend/frontend/mobile |
-| MAX_TURNS (review) | 15 | Limit tur dla qa/debug |
-| MAX_TURNS (plan) | 10 | Limit tur dla pm |
 
 **Fazy workflowu:** Plan -> konfiguracja (ID sesji, inicjalizacja pamięci) -> wykonanie (uruchamianie według poziomów priorytetu) -> monitorowanie (odczyt postępu) -> weryfikacja (automatyczna i pętla przeglądu między agentami) -> zebranie wyników.
 

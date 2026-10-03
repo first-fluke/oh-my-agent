@@ -116,8 +116,6 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 **资源：** `execution-protocol.md`、`examples.md`、`iso-planning.md`、`task-template.json`、`../_shared/core/api-contracts/`。
 
-**回合限制：** 默认 10，最大 15。
-
 ---
 
 受保护标识符补充： `../_shared/core/api-contracts/template.md`、`.agents/results/api-contracts/`。
@@ -165,8 +163,6 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 测试：逻辑由 Vitest 覆盖
 - 质量：类型检查和 lint 通过
 
-**回合限制：**默认 20，最大 30。
-
 受保护标识符补充： `@/`、`angular-rules.md`、`checklist.md`、`components/ui/*`、`error-playbook.md`、`execution-protocol.md`、`middleware.ts`、`proxy.ts`、`snippets.md`、`src/`、`src/features/*/`、`tailwind-rules.md`、`tech-stack.md`。
 
 ### oma-backend
@@ -193,8 +189,6 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 项目专用的 stack/stack.yaml、stack/tech-stack.md、代码片段和 API 模板由 /stack-set 按需生成；在栈被物化之前这些文件不存在。
 <!-- oma-docs:ignore-end -->
 
-**回合限制：**默认 20，最大 30。
-
 受保护标识符补充： `/stack-set`、`checklist.md`、`error-playbook.md`、`execution-protocol.md`、`orm-reference.md`、`stack/`、`stack/stack.yaml`、`stack/tech-stack.md`、`variants/stack.schema.json`。
 
 ### oma-mobile
@@ -216,8 +210,6 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - Swift：iOS 17+ 使用 @Observable 而不是 ObservableObject；根据 OpenAPI 规范通过 swift-openapi-generator 生成 API 客户端
 
 **资源：**execution-protocol.md、tech-stack.md、screen-template.dart、screen-template.swift、screen-template.tsx、checklist.md 和 error-playbook.md。variants/ 目录包含栈 schema 以及 /stack-set 物化后的平台参考资料。
-
-**回合限制：**默认 20，最大 30。
 
 受保护标识符补充： `/stack-set`、`@Observable`、`App/Core/Features/Shared`、`checklist.md`、`dispose()`、`error-playbook.md`、`execution-protocol.md`、`ObservableObject`、`screen-template.dart`、`screen-template.swift`、`screen-template.tsx`、`swift-openapi-generator`、`tech-stack.md`、`variants/`。
 
@@ -354,8 +346,6 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 **资源：** `execution-protocol.md`、`iso-quality.md`、`checklist.md`、`self-check.md`、`error-playbook.md`、`examples.md`。
 
-**回合限制：** 默认 15，最大 20。
-
 ---
 
 ### oma-debug
@@ -378,8 +368,6 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - search_for_pattern("error pattern") 或 Gortex 搜索：查找相似问题
 
 **资源：**execution-protocol.md、common-patterns.md、debugging-checklist.md、bug-report-template.md、error-playbook.md、examples.md。
-
-**回合限制：**默认 15，最大 25。
 
 受保护标识符补充： `.agents/results/`、`bug-report-template.md`、`common-patterns.md`、`debugging-checklist.md`、`error-playbook.md`、`examples.md`、`execution-protocol.md`、`find_referencing_symbols("Component")`、`find_symbol("functionName")`、`search_for_pattern("error pattern")`。
 
@@ -415,9 +403,6 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 | MAX_PARALLEL | 3 | 最大并发子智能体数 |
 | MAX_RETRIES | 2 | 每个失败任务的重试次数 |
 | POLL_INTERVAL | 30s | 状态检查间隔 |
-| MAX_TURNS（实现） | 20 | backend/frontend/mobile 的回合限制 |
-| MAX_TURNS（审查） | 15 | qa/debug 的回合限制 |
-| MAX_TURNS（规划） | 10 | pm 的回合限制 |
 
 **工作流阶段：** 规划 -> 设置（会话 ID、内存初始化）-> 执行（按优先级层启动）-> 监控（轮询进度）-> 验证（自动化 + 交叉审查循环）-> 收集（汇编结果）。
 

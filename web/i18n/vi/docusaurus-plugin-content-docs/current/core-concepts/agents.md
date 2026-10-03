@@ -114,8 +114,6 @@ Khi workflow ánh xạ agent vào cùng vendor với runtime hiện tại, trư�
 
 **Tài nguyên:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/template.md`.
 
-**Giới hạn lượt:** Mặc định 10, tối đa 15.
-
 ---
 
 ### oma-frontend
@@ -162,8 +160,6 @@ Khi workflow ánh xạ agent vào cùng vendor với runtime hiện tại, trư�
 - Test: logic được bao phủ bởi Vitest
 - Chất lượng: typecheck và lint pass
 
-**Giới hạn lượt:** Mặc định 20, tối đa 30.
-
 ---
 
 ### oma-backend
@@ -191,8 +187,6 @@ Khi workflow ánh xạ agent vào cùng vendor với runtime hiện tại, trư�
 Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template dành riêng cho dự án được `/stack-set` tạo khi cần; chúng chưa tồn tại cho đến khi stack được materialize.
 <!-- oma-docs:ignore-end -->
 
-**Giới hạn lượt:** Mặc định 20, tối đa 30.
-
 ---
 
 ### oma-mobile
@@ -213,8 +207,6 @@ Với iOS native, bố cục là `App/Core/Features/Shared`; dùng `@Observable`
 - Mục tiêu 60fps; test trên cả hai nền tảng
 
 **Tài nguyên:** `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md` và `error-playbook.md`. Thư mục `variants/` chứa schema stack và tham chiếu platform được tạo khi `/stack-set` materialize.
-
-**Giới hạn lượt:** Mặc định 20, tối đa 30.
 
 ---
 
@@ -344,8 +336,6 @@ Với iOS native, bố cục là `App/Core/Features/Shared`; dùng `@Observable`
 
 **Tài nguyên:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**Giới hạn lượt:** Mặc định 15, tối đa 20.
-
 ---
 
 ### oma-debug
@@ -369,8 +359,6 @@ Với iOS native, bố cục là `App/Core/Features/Shared`; dùng `@Observable`
 - `search_for_pattern("error pattern")` hoặc tìm kiếm bằng Gortex: tìm các vấn đề tương tự
 
 **Tài nguyên:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
-
-**Giới hạn lượt:** Mặc định 15, tối đa 25.
 
 ---
 
@@ -409,9 +397,6 @@ Với iOS native, bố cục là `App/Core/Features/Shared`; dùng `@Observable`
 | MAX_PARALLEL | 3 | Subagent đồng thời tối đa |
 | MAX_RETRIES | 2 | Số lần thử lại mỗi task thất bại |
 | POLL_INTERVAL | 30s | Khoảng kiểm tra trạng thái |
-| MAX_TURNS (impl) | 20 | Giới hạn lượt cho backend/frontend/mobile |
-| MAX_TURNS (review) | 15 | Giới hạn lượt cho qa/debug |
-| MAX_TURNS (plan) | 10 | Giới hạn lượt cho pm |
 
 **Giai đoạn quy trình:** Plan -> Setup (session ID, khởi tạo bộ nhớ) -> Execute (spawn theo tier ưu tiên) -> Monitor (poll tiến trình) -> Verify (tự động + vòng lặp review chéo) -> Collect (tổng hợp kết quả).
 

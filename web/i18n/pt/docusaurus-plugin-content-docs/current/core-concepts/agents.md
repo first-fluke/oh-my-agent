@@ -114,8 +114,6 @@ Quando um workflow mapeia um agente para o mesmo fornecedor do runtime atual, el
 
 **Recursos:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/template.md` (os contratos são gravados em `.agents/results/api-contracts/`).
 
-**Limite de turnos:** Padrão 10, máximo 15.
-
 ---
 
 ### oma-frontend
@@ -162,8 +160,6 @@ Quando um workflow mapeia um agente para o mesmo fornecedor do runtime atual, el
 - Testes: lógica coberta por Vitest
 - Qualidade: typecheck e lint passam
 
-**Limite de turnos:** Padrão 20, máximo 30.
-
 ---
 
 ### oma-backend
@@ -191,8 +187,6 @@ Quando um workflow mapeia um agente para o mesmo fornecedor do runtime atual, el
 Os arquivos específicos do projeto `stack/stack.yaml`, `stack/tech-stack.md`, snippets e templates de API são gerados por `/stack-set` quando necessários; ficam ausentes até a materialização da stack.
 <!-- oma-docs:ignore-end -->
 
-**Limite de turnos:** Padrão 20, máximo 30.
-
 ---
 
 ### oma-mobile
@@ -215,8 +209,6 @@ Os arquivos específicos do projeto `stack/stack.yaml`, `stack/tech-stack.md`, s
 - Swift: usar `@Observable` em vez de `ObservableObject` no iOS 17+; gerar clientes de API a partir de specs OpenAPI via `swift-openapi-generator`
 
 **Recursos:** `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md` e `error-playbook.md`. O diretório `variants/` contém o schema da stack e as referências de plataforma geradas quando `/stack-set` materializa a stack.
-
-**Limite de turnos:** Padrão 20, máximo 30.
 
 ---
 
@@ -353,8 +345,6 @@ Os arquivos específicos do projeto `stack/stack.yaml`, `stack/tech-stack.md`, s
 
 **Recursos:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**Limite de turnos:** Padrão 15, máximo 20.
-
 ---
 
 ### oma-debug
@@ -378,8 +368,6 @@ Os arquivos específicos do projeto `stack/stack.yaml`, `stack/tech-stack.md`, s
 - `search_for_pattern("error pattern")` — encontrar problemas similares
 
 **Recursos:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
-
-**Limite de turnos:** Padrão 15, máximo 25.
 
 ---
 
@@ -418,9 +406,6 @@ Os arquivos específicos do projeto `stack/stack.yaml`, `stack/tech-stack.md`, s
 | MAX_PARALLEL | 3 | Máximo de subagentes concorrentes |
 | MAX_RETRIES | 2 | Tentativas de retry por tarefa falhada |
 | POLL_INTERVAL | 30s | Intervalo de verificação de status |
-| MAX_TURNS (impl) | 20 | Limite de turnos para backend/frontend/mobile |
-| MAX_TURNS (review) | 15 | Limite de turnos para qa/debug |
-| MAX_TURNS (plan) | 10 | Limite de turnos para pm |
 
 **Fases do workflow:** Plan -> Setup (ID de sessão, inicialização de memória) -> Execute (spawn por tier de prioridade) -> Monitor (poll de progresso) -> Verify (automatizado + loop de revisão cruzada) -> Collect (compilar resultados).
 

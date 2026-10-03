@@ -112,8 +112,6 @@ Cuando un flujo asigna un agente al mismo proveedor que el runtime actual, debe 
 
 **Recursos:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/template.md` (los contratos se escriben en `.agents/results/api-contracts/`).
 
-**Límite de turnos:** Por defecto 10, máximo 15.
-
 ---
 
 ### oma-frontend
@@ -160,8 +158,6 @@ Cuando un flujo asigna un agente al mismo proveedor que el runtime actual, debe 
 - Pruebas: lógica cubierta por Vitest
 - Calidad: typecheck y lint pasan
 
-**Límite de turnos:** Por defecto 20, máximo 30.
-
 ---
 
 ### oma-backend
@@ -189,8 +185,6 @@ Cuando un flujo asigna un agente al mismo proveedor que el runtime actual, debe 
 Los `stack/stack.yaml`, `stack/tech-stack.md`, snippets y plantillas de API específicos del proyecto se generan mediante `/stack-set` cuando hacen falta; están ausentes hasta que se materializa el stack.
 <!-- oma-docs:ignore-end -->
 
-**Límite de turnos:** Por defecto 20, máximo 30.
-
 ---
 
 ### oma-mobile
@@ -213,8 +207,6 @@ Los `stack/stack.yaml`, `stack/tech-stack.md`, snippets y plantillas de API espe
 - Swift: usar `@Observable` en lugar de `ObservableObject` en iOS 17+; generar clientes de API a partir de especificaciones OpenAPI con `swift-openapi-generator`
 
 **Recursos:** `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md` y `error-playbook.md`. El directorio `variants/` contiene el esquema del stack y las referencias de plataforma generadas cuando `/stack-set` las materializa.
-
-**Límite de turnos:** Por defecto 20, máximo 30.
 
 ---
 
@@ -351,8 +343,6 @@ Los `stack/stack.yaml`, `stack/tech-stack.md`, snippets y plantillas de API espe
 
 **Recursos:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**Límite de turnos:** Por defecto 15, máximo 20.
-
 ---
 
 ### oma-debug
@@ -376,8 +366,6 @@ Los `stack/stack.yaml`, `stack/tech-stack.md`, snippets y plantillas de API espe
 - `search_for_pattern("error pattern")` o búsqueda de Gortex — encontrar problemas similares
 
 **Recursos:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
-
-**Límite de turnos:** Por defecto 15, máximo 25.
 
 ---
 
@@ -414,9 +402,6 @@ Los `stack/stack.yaml`, `stack/tech-stack.md`, snippets y plantillas de API espe
 | MAX_PARALLEL | 3 | Máximo de subagentes concurrentes |
 | MAX_RETRIES | 2 | Intentos de reintento por tarea fallida |
 | POLL_INTERVAL | 30s | Intervalo de verificación de estado |
-| MAX_TURNS (impl) | 20 | Límite de turnos para backend/frontend/mobile |
-| MAX_TURNS (review) | 15 | Límite de turnos para qa/debug |
-| MAX_TURNS (plan) | 10 | Límite de turnos para pm |
 
 **Fases del flujo:** Plan -> Configuración (ID de sesión, inicialización de memoria) -> Ejecución (generar por nivel de prioridad) -> Monitoreo (sondear progreso) -> Verificación (automatizada + bucle de revisión cruzada) -> Recopilación (compilar resultados).
 

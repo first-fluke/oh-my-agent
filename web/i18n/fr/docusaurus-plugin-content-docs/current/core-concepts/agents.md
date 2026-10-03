@@ -114,8 +114,6 @@ Lorsqu’un workflow associe un agent au même fournisseur que le runtime couran
 
 **Ressources :** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/template.md` (les contrats sont écrits dans `.agents/results/api-contracts/`).
 
-**Limites de tours :** par défaut 10, maximum 15.
-
 ---
 
 ### oma-frontend
@@ -162,8 +160,6 @@ Lorsqu’un workflow associe un agent au même fournisseur que le runtime couran
 - tests : logique couverte par Vitest ;
 - qualité : typecheck et lint passent.
 
-**Limites de tours :** par défaut 20, maximum 30.
-
 ---
 
 ### oma-backend
@@ -191,8 +187,6 @@ Lorsqu’un workflow associe un agent au même fournisseur que le runtime couran
 Les fichiers propres au projet `stack/stack.yaml`, `stack/tech-stack.md`, les snippets et les modèles d’API sont générés par `/stack-set` lorsque nécessaire ; ils sont absents tant que la stack n’est pas matérialisée.
 <!-- oma-docs:ignore-end -->
 
-**Limites de tours :** par défaut 20, maximum 30.
-
 ---
 
 ### oma-mobile
@@ -215,8 +209,6 @@ Les fichiers propres au projet `stack/stack.yaml`, `stack/tech-stack.md`, les sn
 - en Swift, préférer `@Observable` à `ObservableObject` sur iOS 17+, et générer les clients API depuis des spécifications OpenAPI avec `swift-openapi-generator`.
 
 **Ressources :** `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md` et `error-playbook.md`. Le répertoire `variants/` contient le schéma de stack et les références de plateforme générées lorsque `/stack-set` les matérialise.
-
-**Limites de tours :** par défaut 20, maximum 30.
 
 ---
 
@@ -322,8 +314,6 @@ Les fichiers propres au projet `stack/stack.yaml`, `stack/tech-stack.md`, les sn
 
 **Ressources :** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**Limites de tours :** par défaut 15, maximum 20.
-
 ---
 
 ### oma-debug
@@ -342,8 +332,6 @@ Les fichiers propres au projet `stack/stack.yaml`, `stack/tech-stack.md`, les sn
 - `search_for_pattern("error pattern")` ou recherche Gortex : trouver les problèmes similaires.
 
 **Ressources :** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
-
-**Limites de tours :** par défaut 15, maximum 25.
 
 ---
 
@@ -374,9 +362,6 @@ Les fichiers propres au projet `stack/stack.yaml`, `stack/tech-stack.md`, les sn
 | MAX_PARALLEL | 3 | Nombre maximal de sous-agents simultanés |
 | MAX_RETRIES | 2 | Tentatives de reprise par tâche échouée |
 | POLL_INTERVAL | 30s | Intervalle de vérification de l’état |
-| MAX_TURNS (impl) | 20 | Limite de tours pour backend/frontend/mobile |
-| MAX_TURNS (review) | 15 | Limite de tours pour qa/debug |
-| MAX_TURNS (plan) | 10 | Limite de tours pour pm |
 
 **Phases du workflow :** Plan -> Setup (ID de session, initialisation mémoire) -> Execute (lancement par priorité) -> Monitor (interrogation de la progression) -> Verify (boucle automatisée + revue croisée) -> Collect (rassemblement des résultats).
 

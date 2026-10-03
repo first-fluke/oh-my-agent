@@ -114,8 +114,6 @@ Wanneer een workflow een agent aan dezelfde leverancier koppelt als de huidige r
 
 **Bronnen:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json` en `../_shared/core/api-contracts/template.md` (contracten staan in `.agents/results/api-contracts/`).
 
-**Beurtlimieten:** Standaard 10, maximaal 15.
-
 ---
 
 ### oma-frontend
@@ -162,8 +160,6 @@ Wanneer een workflow een agent aan dezelfde leverancier koppelt als de huidige r
 - Tests: logica gedekt door Vitest
 - Kwaliteit: typecheck en lint slagen
 
-**Beurtlimieten:** Standaard 20, maximaal 30.
-
 ---
 
 ### oma-backend
@@ -191,8 +187,6 @@ Wanneer een workflow een agent aan dezelfde leverancier koppelt als de huidige r
 Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sjablonen worden indien nodig gegenereerd door `/stack-set`; ze bestaan nog niet voordat de stack is gematerialiseerd.
 <!-- oma-docs:ignore-end -->
 
-**Beurtlimieten:** Standaard 20, maximaal 30.
-
 ---
 
 ### oma-mobile
@@ -215,8 +209,6 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 - Swift: gebruik `@Observable` boven `ObservableObject` op iOS 17+; genereer API-clients uit OpenAPI-specs via `swift-openapi-generator`
 
 **Bronnen:** `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md` en `error-playbook.md`. De map `variants/` bevat het stackschema en gegenereerde platformreferenties zodra `/stack-set` ze materialiseert.
-
-**Beurtlimieten:** Standaard 20, maximaal 30.
 
 ---
 
@@ -353,8 +345,6 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Bronnen:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md` en `examples.md`.
 
-**Beurtlimieten:** Standaard 15, maximaal 20.
-
 ---
 
 ### oma-debug
@@ -378,8 +368,6 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 - `search_for_pattern("error pattern")` of zoeken in Gortex: vind vergelijkbare problemen
 
 **Bronnen:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md` en `examples.md`.
-
-**Beurtlimieten:** Standaard 15, maximaal 25.
 
 ---
 
@@ -416,9 +404,6 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 | MAX_PARALLEL | 3 | Maximum aantal gelijktijdige subagenten |
 | MAX_RETRIES | 2 | Aantal herhaalpogingen per mislukte taak |
 | POLL_INTERVAL | 30s | Interval voor statuscontroles |
-| MAX_TURNS (impl) | 20 | Beurtlimiet voor backend/frontend/mobile |
-| MAX_TURNS (review) | 15 | Beurtlimiet voor qa/debug |
-| MAX_TURNS (plan) | 10 | Beurtlimiet voor pm |
 
 **Workflowfasen:** Plan -> Setup (sessie-ID en geheugeninitialisatie) -> Execute (spawnen per prioriteitstier) -> Monitor (voortgang pollen) -> Verify (geautomatiseerde + cross-reviewlus) -> Collect (resultaten verzamelen).
 

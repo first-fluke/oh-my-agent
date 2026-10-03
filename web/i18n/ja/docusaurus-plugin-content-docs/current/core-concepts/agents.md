@@ -114,8 +114,6 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 
 **リソース：** `execution-protocol.md`、`examples.md`、`iso-planning.md`、`task-template.json`、`../_shared/core/api-contracts/template.md`。成果物は `.agents/results/` と `.agents/results/api-contracts/` に書き込みます。
 
-**ターン制限：** デフォルト10、最大15。
-
 ---
 
 ### oma-frontend
@@ -162,8 +160,6 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 - テスト：ロジックをVitestでカバー
 - 品質：型チェックとリントがパス
 
-**ターン制限：** デフォルト20、最大30。
-
 ---
 
 ### oma-backend
@@ -191,8 +187,6 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 プロジェクト固有の `stack/stack.yaml`、`stack/tech-stack.md`、snippets、API テンプレートは必要に応じて `/stack-set` が生成します。スタックを具体化するまでは存在しません。
 <!-- oma-docs:ignore-end -->
 
-**ターン制限：** デフォルト 20、最大 30。
-
 ---
 
 ### oma-mobile
@@ -215,8 +209,6 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 - Swift では iOS 17+ の `@Observable` を `ObservableObject` より優先し、OpenAPI 仕様から `swift-openapi-generator` で API クライアントを生成する
 
 **リソース：** `execution-protocol.md`、`tech-stack.md`、`screen-template.dart`、`screen-template.swift`、`screen-template.tsx`、`checklist.md`、`error-playbook.md`。`variants/` には、`/stack-set` がスタックマニフェストを具体化したときに生成するスキーマとプラットフォーム参照が入ります。
-
-**ターン制限：** デフォルト20、最大30。
 
 ---
 
@@ -353,8 +345,6 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 
 **リソース：** `execution-protocol.md`、`iso-quality.md`、`checklist.md`、`self-check.md`、`error-playbook.md`、`examples.md`。
 
-**ターン制限：** デフォルト15、最大20。
-
 ---
 
 ### oma-debug
@@ -378,8 +368,6 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 - `search_for_pattern("error pattern")` または Gortex の検索：類似の問題を探す
 
 **リソース：** `execution-protocol.md`、`common-patterns.md`、`debugging-checklist.md`、`bug-report-template.md`、`error-playbook.md`、`examples.md`。
-
-**ターン制限：** デフォルト15、最大25。
 
 ---
 
@@ -416,9 +404,6 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 | MAX_PARALLEL | 3 | 同時サブエージェント最大数 |
 | MAX_RETRIES | 2 | 失敗タスクのリトライ回数 |
 | POLL_INTERVAL | 30秒 | ステータスチェック間隔 |
-| MAX_TURNS（実装） | 20 | backend/frontend/mobileのターン制限 |
-| MAX_TURNS（レビュー） | 15 | qa/debugのターン制限 |
-| MAX_TURNS（計画） | 10 | pmのターン制限 |
 
 **ワークフローフェーズ：** Plan -> Setup（セッションID、メモリ初期化）-> Execute（優先度ティアごとにスポーン）-> Monitor（進捗ポーリング）-> Verify（自動 + クロスレビューループ）-> Collect（結果のコンパイル）。
 

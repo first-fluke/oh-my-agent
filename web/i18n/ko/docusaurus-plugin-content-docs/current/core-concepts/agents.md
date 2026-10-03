@@ -114,8 +114,6 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 
 **리소스:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/`.
 
-**턴 제한:** 기본 10, 최대 15.
-
 ---
 
 ### oma-frontend
@@ -162,8 +160,6 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 - 테스트: Vitest로 로직 커버
 - 품질: typecheck와 lint 통과
 
-**턴 제한:** 기본 20, 최대 30.
-
 ---
 
 ### oma-backend
@@ -191,8 +187,6 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 필요할 때 `/stack-set`이 프로젝트별 `stack/stack.yaml`, `stack/tech-stack.md`, 스니펫, API 템플릿을 생성합니다. 스택을 실체화하기 전에는 이 파일들이 존재하지 않습니다.
 <!-- oma-docs:ignore-end -->
 
-**턴 제한:** 기본 20, 최대 30.
-
 ---
 
 ### oma-mobile
@@ -215,8 +209,6 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 - Swift: iOS 17+에서는 `ObservableObject` 대신 `@Observable` 사용; `swift-openapi-generator`로 OpenAPI 스펙에서 API 클라이언트 생성
 
 **리소스:** `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md`, `error-playbook.md`. `/stack-set`이 `variants/`의 스택 스키마와 생성된 플랫폼 레퍼런스를 실체화합니다.
-
-**턴 제한:** 기본 20, 최대 30.
 
 ---
 
@@ -353,8 +345,6 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 
 **리소스:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**턴 제한:** 기본 15, 최대 20.
-
 ---
 
 ### oma-debug
@@ -378,8 +368,6 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 - `search_for_pattern("error pattern")`: 유사한 문제 찾기
 
 **리소스:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
-
-**턴 제한:** 기본 15, 최대 25.
 
 ---
 
@@ -416,9 +404,6 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 | MAX_PARALLEL | 3 | 최대 동시 서브에이전트 수 |
 | MAX_RETRIES | 2 | 실패한 태스크당 재시도 횟수 |
 | POLL_INTERVAL | 30초 | 상태 확인 간격 |
-| MAX_TURNS (impl) | 20 | backend/frontend/mobile 턴 제한 |
-| MAX_TURNS (review) | 15 | qa/debug 턴 제한 |
-| MAX_TURNS (plan) | 10 | pm 턴 제한 |
 
 **워크플로우 단계:** Plan -> Setup (세션 ID, 메모리 초기화) -> Execute (우선순위 티어별 스폰) -> Monitor (진행 상황 폴링) -> Verify (자동화 + 크로스 리뷰 루프) -> Collect (결과 수집).
 

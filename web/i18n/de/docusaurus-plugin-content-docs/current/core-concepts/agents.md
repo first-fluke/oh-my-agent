@@ -114,8 +114,6 @@ Ordnet ein Workflow einen Agenten demselben Vendor wie die aktuelle Laufzeit zu,
 
 **Ressourcen:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/template.md` (Verträge werden nach `.agents/results/api-contracts/` geschrieben).
 
-**Turn-Limits:** Standard 10, Maximum 15.
-
 ---
 
 ### oma-frontend
@@ -162,8 +160,6 @@ Ordnet ein Workflow einen Agenten demselben Vendor wie die aktuelle Laufzeit zu,
 - Tests: Logik durch Vitest abgedeckt
 - Qualität: Typecheck und Lint bestehen
 
-**Turn-Limits:** Standard 20, Maximum 30.
-
 ---
 
 ### oma-backend
@@ -191,8 +187,6 @@ Ordnet ein Workflow einen Agenten demselben Vendor wie die aktuelle Laufzeit zu,
 Projektspezifische `stack/stack.yaml`, `stack/tech-stack.md`, Snippets und API-Vorlagen werden bei Bedarf durch `/stack-set` erzeugt; sie fehlen, bis der Stack materialisiert wurde.
 <!-- oma-docs:ignore-end -->
 
-**Turn-Limits:** Standard 20, Maximum 30.
-
 ---
 
 ### oma-mobile
@@ -215,8 +209,6 @@ Projektspezifische `stack/stack.yaml`, `stack/tech-stack.md`, Snippets und API-V
 - Swift: Unter iOS 17+ `@Observable` statt `ObservableObject` verwenden; API-Clients aus OpenAPI-Spezifikationen mit `swift-openapi-generator` generieren
 
 **Ressourcen:** `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md` und `error-playbook.md`. Das Verzeichnis `variants/` enthält das Stack-Schema und generierte Plattformreferenzen, sobald `/stack-set` sie materialisiert.
-
-**Turn-Limits:** Standard 20, Maximum 30.
 
 ---
 
@@ -353,8 +345,6 @@ Projektspezifische `stack/stack.yaml`, `stack/tech-stack.md`, Snippets und API-V
 
 **Ressourcen:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**Turn-Limits:** Standard 15, Maximum 20.
-
 ---
 
 ### oma-debug
@@ -378,8 +368,6 @@ Projektspezifische `stack/stack.yaml`, `stack/tech-stack.md`, Snippets und API-V
 - `search_for_pattern("error pattern")` oder Gortex-Suche — ähnliche Probleme finden
 
 **Ressourcen:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
-
-**Turn-Limits:** Standard 15, Maximum 25.
 
 ---
 
@@ -416,9 +404,6 @@ Projektspezifische `stack/stack.yaml`, `stack/tech-stack.md`, Snippets und API-V
 | MAX_PARALLEL | 3 | Maximale gleichzeitige Subagenten |
 | MAX_RETRIES | 2 | Wiederholungsversuche pro fehlgeschlagener Aufgabe |
 | POLL_INTERVAL | 30 s | Intervall für Statusprüfungen |
-| MAX_TURNS (impl) | 20 | Turn-Limit für Backend/Frontend/Mobile |
-| MAX_TURNS (review) | 15 | Turn-Limit für QA/Debug |
-| MAX_TURNS (plan) | 10 | Turn-Limit für PM |
 
 **Workflow-Phasen:** Plan -> Setup (Sitzungs-ID, Memory-Initialisierung) -> Ausführung (Spawn nach Prioritätsstufe) -> Überwachung (Fortschritt abfragen) -> Verifikation (automatisierte + Gegen-Review-Schleife) -> Sammlung (Ergebnisse zusammentragen).
 

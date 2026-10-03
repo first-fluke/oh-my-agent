@@ -120,8 +120,6 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 
 **Ресурсы:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/`.
 
-**Лимит ходов:** По умолчанию 10, максимум 15.
-
 ---
 
 ### oma-frontend
@@ -168,8 +166,6 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 - Тесты: логика покрыта Vitest
 - Качество: проходят typecheck и lint
 
-**Лимит ходов:** По умолчанию 20, максимум 30.
-
 ---
 
 ### oma-backend
@@ -197,8 +193,6 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 Специфичные для проекта `stack/stack.yaml`, `stack/tech-stack.md`, snippets и API-шаблоны создаются через `/stack-set` при необходимости; до материализации стека они отсутствуют.
 <!-- oma-docs:ignore-end -->
 
-**Лимит ходов:** По умолчанию 20, максимум 30.
-
 ---
 
 ### oma-mobile
@@ -221,8 +215,6 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 - Swift: использовать `@Observable` вместо `ObservableObject` на iOS 17+; генерировать API-клиенты из OpenAPI-спецификаций через `swift-openapi-generator`
 
 **Ресурсы:** `execution-protocol.md`, `tech-stack.md`, `snippets.md`, `screen-template.dart`, `screen-template.swift`, `checklist.md`, `error-playbook.md`, `examples.md`. Справочники по варианту Swift в `variants/swift-ios/` (генерируются `/stack-set`: `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.swift`).
-
-**Лимит ходов:** По умолчанию 20, максимум 30.
 
 ---
 
@@ -359,8 +351,6 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 
 **Ресурсы:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**Лимит ходов:** По умолчанию 15, максимум 20.
-
 ---
 
 ### oma-debug
@@ -384,8 +374,6 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 - `search_for_pattern("error pattern")` — найти похожие проблемы
 
 **Ресурсы:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
-
-**Лимит ходов:** По умолчанию 15, максимум 25.
 
 ---
 
@@ -424,9 +412,6 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 | MAX_PARALLEL | 3 | Максимум параллельных субагентов |
 | MAX_RETRIES | 2 | Количество попыток при ошибке |
 | POLL_INTERVAL | 30 сек | Интервал проверки статуса |
-| MAX_TURNS (impl) | 20 | Лимит ходов для backend/frontend/mobile |
-| MAX_TURNS (review) | 15 | Лимит ходов для qa/debug |
-| MAX_TURNS (plan) | 10 | Лимит ходов для pm |
 
 **Фазы рабочего процесса:** Планирование -> Настройка (ID сессии, инициализация памяти) -> Выполнение (запуск по приоритетному уровню) -> Мониторинг (опрос прогресса) -> Верификация (автоматическая + цикл кросс-ревью) -> Сбор (компиляция результатов).
 
