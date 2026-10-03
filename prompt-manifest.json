@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.0.12",
-  "releaseDate": "2026-10-03T00:17:23.767Z",
+  "releaseDate": "2026-10-03T01:58:39.012Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -121,13 +121,13 @@
     },
     {
       "path": ".agents/hooks/core/code-intelligence-guard.ts",
-      "sha256": "c44d8c0f1224309ebf2bf1f1129c5861dfc0b35a18c92fa3a86aaf624951f0cd",
-      "size": 14561
+      "sha256": "0551839c568ef19dc5f08e12f86ae0eceb1988aa465af295e1fe25d6c49c0bc2",
+      "size": 14838
     },
     {
       "path": ".agents/hooks/core/code-intelligence-primer.ts",
-      "sha256": "1f84b28b2d4385430aff1a638d18ed9af29fa0a48840dca48e5cd7094c1a1f4b",
-      "size": 11552
+      "sha256": "21e38d9b7bc7df8e680bc919f9754632e7880920a66ebb8babc46f9c762b4ad7",
+      "size": 11802
     },
     {
       "path": ".agents/hooks/core/code-intelligence-scope.ts",
@@ -156,8 +156,8 @@
     },
     {
       "path": ".agents/hooks/core/fs-utils.ts",
-      "sha256": "711e81167fbf6b25a09c158c9f0cb78febf45fa5f5ed1552a901863610934337",
-      "size": 932
+      "sha256": "13d87885bbc8a0dc96b5ef50507035a9d70aa0b5c3d0d890a019955518ea28b1",
+      "size": 2824
     },
     {
       "path": ".agents/hooks/core/hook-output.ts",
@@ -166,8 +166,8 @@
     },
     {
       "path": ".agents/hooks/core/hud.ts",
-      "sha256": "974d440ca19f7fa226d299f80ddd6135579b397c68a6ac1eaec3bf039bb5734f",
-      "size": 11589
+      "sha256": "464b7c82f74373d2287116b1720e421ba8a3d015fba557ac66c693038c5aae38",
+      "size": 12665
     },
     {
       "path": ".agents/hooks/core/inject-log.ts",
@@ -176,8 +176,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "fe3a18488ec71778b34e24ffb1e08ba67fdca1410eb8f8e86273171290b1fed0",
-      "size": 42971
+      "sha256": "5480472cdf3c7d913d06526c3d1d22ba30d7f5a4815fe8e14b9d8cd63ee94bd3",
+      "size": 46941
     },
     {
       "path": ".agents/hooks/core/memory-adapter.ts",
@@ -186,23 +186,23 @@
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "0545adaede4eb932fab69d7aeebc939bc1aa2951fb90e6b2fc4a47cc3d0d6077",
-      "size": 20656
+      "sha256": "aa3fa0ab4ecbdf47cc0d5eb350f6cac44f077b6737a6ff27b74819b0ef4e2170",
+      "size": 29097
     },
     {
       "path": ".agents/hooks/core/prompt-input.ts",
-      "sha256": "9ac55ce2763d1368c48cb238240d7c14ebd5ff8da5f0f73f483de06f09c90cf2",
-      "size": 1961
+      "sha256": "04bc815cbe50c065662c7b1cd52b0e7a7243270ae16e6b3561721ae632f6c0f5",
+      "size": 2341
     },
     {
       "path": ".agents/hooks/core/refactor-guard.ts",
-      "sha256": "c8f62e1310c1c3b2b01a0077f91ee5c8ed8c87e5d898b932a27554c2cdc101a8",
-      "size": 20282
+      "sha256": "16434a6f06dca7efce007d5e26074b2d73f7acc1263d17e09e27682ee0bf0e80",
+      "size": 21702
     },
     {
       "path": ".agents/hooks/core/scm-guard.ts",
-      "sha256": "eb53b61f723108ea42a7677c4ac1d4f5358cccc60e93026c941714f5237c2f9d",
-      "size": 8142
+      "sha256": "20eaff009c2dce9b8d5e48188e2726344d6d915615343077679fff01586d72e9",
+      "size": 9344
     },
     {
       "path": ".agents/hooks/core/serena-primer.ts",
@@ -221,13 +221,13 @@
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "8b7b08c0c6e1a151cafeae569011385defe5ef3d1260bbdd6c3e7d13de246a2e",
-      "size": 17825
+      "sha256": "edeb677485c7aa4e62fc352567d3cf7a4e65e064617e9f46d69e8ee2573733ac",
+      "size": 17351
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "eee2e929ae3a95e4da7d531b66ae2e3570d8a190fb616fcf2535a818064fceb4",
-      "size": 8508
+      "sha256": "976c73c3ee213686c40a2dc89bf039bd227ce9156974e34aa3977b6c82461d97",
+      "size": 7501
     },
     {
       "path": ".agents/hooks/core/state-core.ts",
@@ -251,23 +251,23 @@
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "d3f1dd6a2026fbc2e60a99eeeacbb8e0f60945705f8c9bf271e900b80768dcb7",
-      "size": 6621
+      "sha256": "8caeef8a89fd425916c63b8b54fbdf1e570c5af420410023efcd35182b15283c",
+      "size": 6218
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "6b38403a74bd99b8255895c7c0b812e9650e64166b7dc4afb538cb5519d6dea4",
-      "size": 84415
+      "sha256": "c9c0044fa16d2a0b0b5d1f9628f1c228fc2db60935294bb7e1234ac0b7d81688",
+      "size": 84361
     },
     {
       "path": ".agents/hooks/core/types.ts",
-      "sha256": "029dd5a15f3cb447baa3667c9acc17354acea31e5b724e0919a6edacdd0a5ebe",
-      "size": 5465
+      "sha256": "213b0a9c967ef4c64d608d1ffa4ef75e528f4d2848e2bcb47e64faf1bd4b1a19",
+      "size": 6039
     },
     {
       "path": ".agents/hooks/core/vendor-detect.ts",
-      "sha256": "30fd36774e04f7d727e435786918c7e50ef44a46d53e2b1bb84c3c8ef7c6cf95",
-      "size": 4404
+      "sha256": "60856c80578c7d65a2be15ef2bf8d7476a913c3a30e246c43feb958f646c2d27",
+      "size": 6983
     },
     {
       "path": ".agents/hooks/core/vendor-renderer.ts",
@@ -276,33 +276,33 @@
     },
     {
       "path": ".agents/hooks/variants/antigravity.json",
-      "sha256": "f8b71181f82e917c27a9429f16f7434360b387a8ca70ebc7ab0f78479e1f9b70",
-      "size": 960
+      "sha256": "56019725fdca85bef1d87b095a2c005113195f7b8d695365761e2fcde9f044dc",
+      "size": 961
     },
     {
       "path": ".agents/hooks/variants/claude.json",
-      "sha256": "7f255fd3265e27b4181c138ea775ae684745f1d9dc7135a97d545b927ee1126b",
-      "size": 1675
+      "sha256": "b3b3f77857fe12ffcab52ea5cfaeafa64bb0bb12173388ada0c8d9eba0ecaf93",
+      "size": 1676
     },
     {
       "path": ".agents/hooks/variants/codex.json",
-      "sha256": "8ee3a35e422d4dc596952ae1a64438fa6cc03965a19808b9aa2544ed61a5a939",
-      "size": 1193
+      "sha256": "9f43ba6346e8f3c109c5115ca1e83e36000efea9913d3229e824895171b82523",
+      "size": 1194
     },
     {
       "path": ".agents/hooks/variants/commandcode.json",
-      "sha256": "7c61c474c1f1da0e9c68a9ae278fdc61889b11d4e7e4e3fc60e6d01841c889a0",
-      "size": 713
+      "sha256": "dc82f052a92531e5b75f5ed07456d60a91d06aa05765f24dfe247577cee46898",
+      "size": 714
     },
     {
       "path": ".agents/hooks/variants/cursor.json",
-      "sha256": "ca9b5b6806cb0d9d7cc2717919589101d11fc4d0187dd5fc69cfa98651288525",
-      "size": 1435
+      "sha256": "570b425924912f104e36c0c4fadf763460152fc71d7c23bd90beb5d3bdc61027",
+      "size": 1436
     },
     {
       "path": ".agents/hooks/variants/grok.json",
-      "sha256": "58c6931e1060d4153ba9c37a645cd9edd68e40d4b391bd65ceaefad34501cf3a",
-      "size": 1265
+      "sha256": "eee944bcd781081886d4cbae68a3bce47a268aa12b9875e7fbc46c8e5d698c7e",
+      "size": 1266
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
@@ -311,18 +311,18 @@
     },
     {
       "path": ".agents/hooks/variants/kimi.json",
-      "sha256": "cd6c041efb2957c3fb8b07ba7ae62488dc2497d5ed88f551c8b723af6f492abb",
-      "size": 1225
+      "sha256": "03b26bccf4fc7be128c9169a0a65b40d9de23d655c68e2007eecfdea723df74c",
+      "size": 1226
     },
     {
       "path": ".agents/hooks/variants/kiro.json",
-      "sha256": "a683cc66c46dae8e8ff66f96e1b2851980ffcb1ce6802549df7842ce0237f3c7",
-      "size": 1215
+      "sha256": "1fe1744a95db67b98189070c73b65142ddf536ccb104f6f2eb9f2a129fca0345",
+      "size": 1216
     },
     {
       "path": ".agents/hooks/variants/opencode/oma.ts",
-      "sha256": "ac56ffeb64c076fe16a7f2555370cfa1f1f6e417dba1acfe23f93ab52396c915",
-      "size": 17497
+      "sha256": "fcd97cec846a199bd515c743f4bec8f4b9aa7771687607de6c86ea0cfdadc7c2",
+      "size": 17832
     },
     {
       "path": ".agents/hooks/variants/pi/README.md",
@@ -331,13 +331,13 @@
     },
     {
       "path": ".agents/hooks/variants/pi/index.ts",
-      "sha256": "731f8b3d6de12d9dd47ca9d33129b956ed607da43465f182eaca8a5dfdb3da12",
-      "size": 10207
+      "sha256": "1cceeafb9f7c447e253f6fcfd87ac6d807d9e34516b7577c6e29b2c5fa6c59ee",
+      "size": 10583
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "ad52adc6e811c918ade3c34a6b9a63720427eda51c7467227b07c70ba54ede42",
-      "size": 1451
+      "sha256": "028076d3a9e4e1985d10d310e82501c13e78bf4d1007eb81832f081afa131a7b",
+      "size": 1452
     },
     {
       "path": ".agents/mcp.json",
@@ -1531,8 +1531,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/config/cli-config.yaml",
-      "sha256": "c9638d8671ad4f82428e99614a63822561214ab0e1d5ec9f196a1c21416ac2e5",
-      "size": 3441
+      "sha256": "b157dffde80c0eb964e4ef60555618b75bc134f1cf8ae8967a2df405e9fa12a5",
+      "size": 3823
     },
     {
       "path": ".agents/skills/oma-orchestration/resources/memory-schema.md",
