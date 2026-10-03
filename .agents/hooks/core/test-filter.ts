@@ -92,7 +92,7 @@ interface PreToolUseInput {
  * Returns a `mutate` HandlerResult when a test command should be piped through
  * the failure-filter script, or `null` when the input is not a test command /
  * the filter script is not installed.
- * `ctx.cwd` must be the resolved git-root project directory.
+ * `ctx.cwd` must be the resolved project root (see fs-utils resolveProjectRoot).
  */
 export async function run(
   input: HookInput,
@@ -100,8 +100,11 @@ export async function run(
 ): Promise<HandlerResult | null> {
   if (input.kind !== "pre_tool") return null;
 
-  const { toolName, toolInput, cwd: projectDir } = input;
+  const { toolName, toolInput } = input;
   const { vendor } = ctx;
+  // Filter scripts live under the project root. ctx.cwd is the resolved root
+  // even after the session cd's into a subdirectory; input.cwd is not.
+  const projectDir = ctx.cwd || input.cwd;
 
   // Claude-family uses Bash; some CLIs use run_shell_command; Cursor names its
   // terminal tool "Shell" (matches cursor.json's preToolUse matcher); Kiro's

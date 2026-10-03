@@ -111,5 +111,24 @@ describe("test-filter run() — platform and idempotency guards (#618)", () => {
         }
       }
     });
+
+    it("resolves the filter script from the project root, not the session cwd", async () => {
+      setPlatform("linux");
+      const result = await tf.run(
+        {
+          kind: "pre_tool",
+          toolName: "Bash",
+          toolInput: { command: "npm test" },
+          cwd: "/tmp/project/packages/api",
+        },
+        { vendor: "claude", cwd: "/tmp/project" },
+      );
+      expect(result?.type).toBe("mutate");
+      if (result?.type === "mutate") {
+        expect(result.updatedInput.command as string).toContain(
+          'bash "/tmp/project/.claude/hooks/filter-test-output.sh"',
+        );
+      }
+    });
   });
 });
