@@ -20,12 +20,17 @@ vendors:
     response_jq: ".result"
     isolation_method: "flags"
 
+  # Codex runs in its workspace-write sandbox. oma also enables network and
+  # grants the project root, the OMA state home (~/.oma), and existing
+  # package-manager caches. This file is replaced by `oma update`; choose
+  # another mode durably with OMA_CODEX_SANDBOX=read-only|workspace-write|
+  # danger-full-access (danger-full-access = no sandbox, no approvals).
   codex:
     command: codex
     subcommand: "exec"
     prompt_flag: "none"
     output_format_flag: "--json"
-    auto_approve_flag: "--full-auto"
+    auto_approve_flag: "--sandbox workspace-write"
     model_flag: "-m"
     default_model: "gpt-5.5"
     response_jq: ".response"

@@ -594,15 +594,35 @@ describe("buildExternalInvocation — vendor branches", () => {
     expect(inv.args).toContain("--trust");
   });
 
-  it("codex: missing auto_approve_flag → uses the current bypass flag", () => {
+  it("codex: missing auto_approve_flag → workspace-write sandbox, never the bypass", () => {
     const inv = buildExternalInvocation(
       "codex",
       { command: "codex" },
       null,
       "hi",
     );
-    expect(inv.args).toContain("--dangerously-bypass-approvals-and-sandbox");
+    const sandbox = inv.args.indexOf("--sandbox");
+    expect(inv.args[sandbox + 1]).toBe("workspace-write");
+    expect(inv.args).toContain("sandbox_workspace_write.network_access=true");
+    expect(inv.args).not.toContain(
+      "--dangerously-bypass-approvals-and-sandbox",
+    );
     expect(inv.args).not.toContain("--full-auto");
+    expect(inv.args.at(-1)).toBe("hi");
+  });
+
+  it("codex: an explicit full-access flag is honored verbatim", () => {
+    const inv = buildExternalInvocation(
+      "codex",
+      {
+        command: "codex",
+        auto_approve_flag: "--dangerously-bypass-approvals-and-sandbox",
+      },
+      null,
+      "hi",
+    );
+    expect(inv.args).toContain("--dangerously-bypass-approvals-and-sandbox");
+    expect(inv.args).not.toContain("--sandbox");
   });
 
   it("qwen: missing auto_approve_flag → falls back to --yolo", () => {

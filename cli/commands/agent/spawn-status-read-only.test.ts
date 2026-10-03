@@ -134,6 +134,7 @@ describe("agent/spawn-status.ts — read-only flag", () => {
 
     // auto-approve flag suppressed
     expect(spawnArgs).not.toContain("--full-auto");
+    expect(spawnArgs).not.toContain("workspace-write");
     expect(spawnArgs).not.toContain(
       "--dangerously-bypass-approvals-and-sandbox",
     );
@@ -250,12 +251,14 @@ describe("agent/spawn-status.ts — read-only flag", () => {
     const spawnArgs = vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1];
     expect(spawnArgs).toBeDefined();
 
-    // Legacy config is normalized to the current Codex bypass flag.
-    expect(spawnArgs).toContain("--dangerously-bypass-approvals-and-sandbox");
+    // Legacy --full-auto maps to Codex's workspace-write sandbox, not a bypass.
+    expect(spawnArgs).toContain("workspace-write");
+    expect(spawnArgs).not.toContain(
+      "--dangerously-bypass-approvals-and-sandbox",
+    );
     expect(spawnArgs).not.toContain("--full-auto");
 
     // read-only restriction flags absent
-    expect(spawnArgs).not.toContain("--sandbox");
     expect(spawnArgs).not.toContain("read-only");
     expect(spawnArgs).not.toContain("--permission-mode");
   });

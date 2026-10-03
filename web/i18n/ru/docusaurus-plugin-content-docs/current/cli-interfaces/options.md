@@ -219,7 +219,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 |:-------|:--------|:-----------------|:----------- <!-- Перевод на русский -->|
 | antigravity | `agy` | `--dangerously-skip-permissions` | `-p`  <!-- Перевод на русский -->|
 | claude | `claude` | (none) | `-p`  <!-- Перевод на русский -->|
-| codex | `codex` | `--dangerously-bypass-approvals-and-sandbox` | (none; prompt is positional)  <!-- Перевод на русский -->|
+| codex | `codex` | `--sandbox workspace-write` | (none; prompt is positional)  <!-- Перевод на русский -->|
 | cursor | `cursor-agent` | vendor-specific | `-p`  <!-- Перевод на русский -->|
 | opencode | `opencode` | vendor-specific | `-p`  <!-- Перевод на русский -->|
 | qwen | `qwen` | `--yolo` | `-p`  <!-- Перевод на русский -->|

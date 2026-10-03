@@ -3,7 +3,7 @@ import {
   type VendorConfig,
 } from "../../../platform/agent-config.js";
 import { agyPrintTimeoutArgs, detectAgyCaps } from "../agy-caps.js";
-import { resolveCodexAutoApproveFlag } from "../codex-flags.js";
+import { resolveCodexAutoApproveArgs } from "../codex-flags.js";
 import type { Invocation } from "../types.js";
 
 export interface NativeInvocationOptions {
@@ -13,7 +13,8 @@ export interface NativeInvocationOptions {
   readOnly?: boolean;
   /** Absolute workspace path the agent must be able to write. Used by vendors
    * whose CLI confines writes to a trusted root unless granted explicitly
-   * (antigravity/agy → `--add-dir`). Mirrors ExternalInvocationOptions. */
+   * (antigravity/agy → `--add-dir`; codex derives its extra sandbox roots
+   * from it). Mirrors ExternalInvocationOptions. */
   workspace?: string;
 }
 
@@ -63,7 +64,7 @@ export function buildCodexNativeInvocation(
   vendorConfig: VendorConfig,
   options: NativeInvocationOptions = {},
 ): Invocation {
-  const { readOnly = false } = options;
+  const { readOnly = false, workspace } = options;
   const command = vendorConfig.command || "codex";
   const args: string[] = [];
 
@@ -81,7 +82,11 @@ export function buildCodexNativeInvocation(
     const readOnlyFlag = vendorConfig.read_only_flag ?? "--sandbox read-only";
     args.push(...splitArgs(readOnlyFlag));
   } else {
-    args.push(resolveCodexAutoApproveFlag(vendorConfig.auto_approve_flag));
+    args.push(
+      ...resolveCodexAutoApproveArgs(vendorConfig.auto_approve_flag, {
+        workspace,
+      }),
+    );
   }
 
   // Codex gates every non-managed command hook behind a per-invocation trust

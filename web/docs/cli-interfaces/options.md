@@ -216,7 +216,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 |:-------|:--------|:-----------------|:-----------|
 | antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | claude | `claude` | (none) | `-p` |
-| codex | `codex` | `--dangerously-bypass-approvals-and-sandbox` | (none; prompt is positional) |
+| codex | `codex` | `--sandbox workspace-write` | (none; prompt is positional) |
 | cursor | `cursor-agent` | vendor-specific | `-p` |
 | opencode | `opencode` | vendor-specific | `-p` |
 | qwen | `qwen` | `--yolo` | `-p` |
@@ -224,6 +224,8 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | pi | `pi` | suppressed in `--read-only` mode | prompt is positional |
 
 These defaults can be overridden in `.agents/skills/oma-orchestration/config/cli-config.yaml`.
+
+Codex keeps its workspace-write sandbox. oma enables network access and adds the project root, the OMA state home (`~/.oma`), and existing package-manager caches as writable directories. `oma update` replaces `cli-config.yaml`, so set a lasting mode with `OMA_CODEX_SANDBOX`: `read-only`, `workspace-write` (default), or `danger-full-access` (no sandbox and no approvals).
 
 ### agent status
 

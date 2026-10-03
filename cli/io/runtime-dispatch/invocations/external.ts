@@ -3,7 +3,7 @@ import {
   type VendorConfig,
 } from "../../../platform/agent-config.js";
 import { agyPrintTimeoutArgs, detectAgyCaps } from "../agy-caps.js";
-import { resolveCodexAutoApproveFlag } from "../codex-flags.js";
+import { resolveCodexAutoApproveArgs } from "../codex-flags.js";
 import type { Invocation } from "../types.js";
 
 export interface ExternalInvocationOptions {
@@ -13,7 +13,8 @@ export interface ExternalInvocationOptions {
   readOnly?: boolean;
   /** Absolute workspace path the agent must be able to write. Used by vendors
    * whose CLI confines writes to a trusted root unless granted explicitly
-   * (antigravity/agy → `--add-dir`). */
+   * (antigravity/agy → `--add-dir`; codex derives its extra sandbox roots
+   * from it). */
   workspace?: string;
 }
 
@@ -374,7 +375,9 @@ const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
   } else {
     if (vendor === "codex") {
       optionArgs.push(
-        resolveCodexAutoApproveFlag(vendorConfig.auto_approve_flag),
+        ...resolveCodexAutoApproveArgs(vendorConfig.auto_approve_flag, {
+          workspace,
+        }),
       );
     } else if (vendorConfig.auto_approve_flag) {
       optionArgs.push(vendorConfig.auto_approve_flag);

@@ -216,7 +216,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 |:-------|:--------|:-----------------|:-----------|
 | antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | claude | `claude` | geen | `-p` |
-| codex | `codex` | `--dangerously-bypass-approvals-and-sandbox` | geen; prompt is positioneel |
+| codex | `codex` | `--sandbox workspace-write` | geen; prompt is positioneel |
 | cursor | `cursor-agent` | vendorafhankelijk | `-p` |
 | opencode | `opencode` | vendorafhankelijk | `-p` |
 | qwen | `qwen` | `--yolo` | `-p` |

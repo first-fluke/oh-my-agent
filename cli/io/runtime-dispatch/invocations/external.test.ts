@@ -615,7 +615,10 @@ describe("buildExternalInvocation — codex hook-trust bypass", () => {
       { readOnly: false },
     );
     expect(inv.args).toContain("--dangerously-bypass-hook-trust");
-    expect(inv.args).toContain("--dangerously-bypass-approvals-and-sandbox");
+    expect(inv.args).toContain("workspace-write");
+    expect(inv.args).not.toContain(
+      "--dangerously-bypass-approvals-and-sandbox",
+    );
     expect(inv.args).not.toContain("--full-auto");
     // The flag must precede the positional prompt.
     expect(inv.args.indexOf("--dangerously-bypass-hook-trust")).toBeLessThan(

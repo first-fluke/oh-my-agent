@@ -216,7 +216,7 @@ Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 |:-------|:--------|:-----------------|:-----------|
 | Nội dung tương ứng | `agy` | `--dangerously-skip-permissions` | `-p` |
 | Nội dung tương ứng | `claude` | Nội dung tương ứng | `-p` |
-| Nội dung tương ứng | `codex` | `--dangerously-bypass-approvals-and-sandbox` | Nội dung tương ứng |
+| Nội dung tương ứng | `codex` | `--sandbox workspace-write` | Nội dung tương ứng |
 | Nội dung tương ứng | `cursor-agent` | Nội dung tương ứng | `-p` |
 | Nội dung tương ứng | `opencode` | Nội dung tương ứng | `-p` |
 | Nội dung tương ứng | `qwen` | `--yolo` | `-p` |

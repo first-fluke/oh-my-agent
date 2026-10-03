@@ -163,8 +163,8 @@ export interface PlanDispatchOptions {
    * Emits console.warn when the vendor has no read_only_flag defined. */
   readOnly?: boolean;
   /** Absolute workspace path the spawned agent must be able to write.
-   * Threaded to external builders for vendors that confine writes to a
-   * trusted root (antigravity/agy → `--add-dir`). */
+   * Threaded to native and external builders for vendors that confine writes
+   * to a trusted root (antigravity/agy → `--add-dir`; codex sandbox roots). */
   workspace?: string;
 }
 

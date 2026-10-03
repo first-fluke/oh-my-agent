@@ -214,7 +214,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 |:-----|:-----|:---------------|:-------------|
 | antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | claude | `claude` | (없음) | `-p` |
-| codex | `codex` | `--dangerously-bypass-approvals-and-sandbox` | (없음, 프롬프트는 위치 인자) |
+| codex | `codex` | `--sandbox workspace-write` | (없음, 프롬프트는 위치 인자) |
 | cursor | `cursor-agent` | 벤더별 | `-p` |
 | opencode | `opencode` | 벤더별 | `-p` |
 | qwen | `qwen` | `--yolo` | `-p` |

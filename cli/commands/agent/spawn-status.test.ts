@@ -929,12 +929,16 @@ describe("agent/spawn-status.ts", () => {
         "--json",
         "-m",
         "gpt-5.5",
-        "--dangerously-bypass-approvals-and-sandbox",
+        "--sandbox",
+        "workspace-write",
         "@backend-engineer\n\nimplement auth",
       ]),
       expect.objectContaining({
         cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/),
       }),
+    );
+    expect(vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1]).not.toContain(
+      "--dangerously-bypass-approvals-and-sandbox",
     );
   });
 });
