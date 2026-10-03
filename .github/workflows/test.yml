@@ -23,7 +23,8 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Keep in step with mise.toml so CI and local runs use the same bun.
+          bun-version: "1.4.2"
 
       - uses: actions/setup-node@v6
         with:
@@ -48,6 +49,7 @@ jobs:
         run: bun run --cwd cli cli.ts verify triggers
 
       - name: Typecheck
+        if: matrix.os == 'ubuntu-latest'
         run: bun run typecheck
 
       - name: Test Orca plugin (no build)
@@ -55,7 +57,8 @@ jobs:
 
       # Windows hangs indefinitely inside vitest (root cause TBD — likely a
       # spawn/stdin test that never closes the loop). Skip until fixed; Lint,
-      # Typecheck, Build, and install.ps1 smoke still validate Windows.
+      # Build, and install.ps1 smoke still validate Windows (Typecheck is
+      # OS-independent and runs on ubuntu only).
       - name: Test
         if: matrix.os != 'windows-latest'
         run: bun run test

@@ -109,7 +109,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         if: ${{ steps.merge.outputs.merged == 'true' }}
         with:
-          bun-version: latest
+          bun-version: "1.4.2"
 
       - name: Sync prompt-manifest.json
         if: ${{ steps.merge.outputs.merged == 'true' }}
@@ -162,7 +162,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "1.4.2"
 
       - name: Resolve release tag
         id: release_tag
@@ -209,7 +209,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "1.4.2"
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
