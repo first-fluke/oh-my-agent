@@ -17,13 +17,23 @@ const RELAY_ENVELOPE_PREFIXES = [
   "<agent-message",
   "<teammate-message",
   "<task-notification",
+  "<cross-session-message",
 ];
+
+// Messages from another local session may arrive behind a one-line host
+// preamble ("Another Claude session sent a message ..."), so the envelope tag
+// is also accepted near the start, not only as the first token.
+const CROSS_SESSION_ENVELOPE = "<cross-session-message ";
 
 /** True when the prompt is a relayed inter-agent envelope, not user intent. */
 export function isRelayedAgentMessage(prompt: string): boolean {
   const trimmed = prompt.trimStart();
   if (RELAY_ENVELOPE_PREFIXES.some((p) => trimmed.startsWith(p))) return true;
-  return trimmed.slice(0, 200).includes('"type":"idle_notification"');
+  const head = trimmed.slice(0, 200);
+  return (
+    head.includes(CROSS_SESSION_ENVELOPE) ||
+    head.includes('"type":"idle_notification"')
+  );
 }
 
 /** Coerce a raw stdin `prompt` field to a string across vendor payload shapes. */

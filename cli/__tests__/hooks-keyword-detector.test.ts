@@ -1768,6 +1768,30 @@ describe("keyword-detector", () => {
       ).toBe(true);
     });
 
+    it("flags cross-session messages, with or without a host preamble", () => {
+      const envelope =
+        '<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="peer">If you plan more locale edits, tell me which files.</cross-session-message>';
+      expect(isRelayedAgentMessage(envelope)).toBe(true);
+      expect(
+        isRelayedAgentMessage(
+          `Another Claude session sent a message while you were working:\n${envelope}`,
+        ),
+      ).toBe(true);
+    });
+
+    it("does not start a workflow from a cross-session message", async () => {
+      const result = await run(
+        {
+          kind: "prompt",
+          prompt:
+            '<cross-session-message from="uds:/tmp/cc-socks/1.sock">If you plan more locale edits, tell me which files.</cross-session-message>',
+          cwd: "/tmp",
+        },
+        { vendor: "claude", cwd: "/tmp", sid: "relay-test" },
+      );
+      expect(result).toBeNull();
+    });
+
     it("does not flag a normal user prompt", () => {
       expect(isRelayedAgentMessage("please review this")).toBe(false);
       expect(isRelayedAgentMessage("orchestrate the deployment")).toBe(false);
