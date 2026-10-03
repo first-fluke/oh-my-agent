@@ -3,16 +3,28 @@
 // left inside bundled UMD dependencies (jsonc-parser in CLI 14.0.0).
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { BUNDLE_FILE } from "./write-bin-entry.mjs";
 
 const entry = process.argv[2]
   ? resolve(process.argv[2])
   : fileURLToPath(new URL("../bin/cli.js", import.meta.url));
 const { version } = JSON.parse(
   readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+);
+
+// The entry must stay the compile-cache loader in front of the bundle
+// (scripts/write-bin-entry.mjs). Shipping the bundle itself as the entry still
+// runs, but silently drops the cache that keeps hook startup cheap.
+const bundle = join(dirname(entry), BUNDLE_FILE);
+assert.ok(existsSync(bundle), `missing CLI bundle next to entry: ${bundle}`);
+assert.match(
+  readFileSync(entry, "utf8"),
+  /enableCompileCache/,
+  `${entry} is not the compile-cache loader`,
 );
 
 for (const args of [["--version"], ["--help"], ["update", "--help"]]) {

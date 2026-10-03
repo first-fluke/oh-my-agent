@@ -14,9 +14,9 @@
  * Latency SLO (design 019):
  *   - p95 ceiling: 1500 ms (~1.8x headroom over the measured ~821 ms).
  *   - The dominant cost is node startup + loading the ~6.5 MB bundled cli.js
- *     (`oma --version` alone is ~640 ms). A leaner hook entrypoint and/or the
- *     future daemon phase (SocketTransport, keeps oma warm → sub-ms IPC)
- *     eliminate this one-shot cost.
+ *     (`oma --version` alone is ~640 ms). The bin entry now enables Node's
+ *     compile cache (cli/scripts/write-bin-entry.mjs), which removes most of
+ *     the parse cost; a leaner hook entrypoint would cut the rest.
  *
  * Invocation (do NOT use `bun run test` — this is on-demand only):
  *   node --loader ts-node/esm cli/__bench__/oma-hook-latency.bench.ts
