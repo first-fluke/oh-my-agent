@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.0.3](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.2...web-v7.0.3) (2026-10-03)
+
+
+### Bug Fixes
+
+* **agents:** raise the subagent turn limit to 100 ([f4945be](https://github.com/first-fluke/oh-my-agent/commit/f4945be84e256297830a3318a7b0d8d45c0b3c59))
+
+
+### Documentation
+
+* lead new users through one scoped first task ([b96655e](https://github.com/first-fluke/oh-my-agent/commit/b96655eaabe5690e2bec7474275cf9b15e5a9a41))
+
 ## [7.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.1...web-v7.0.2) (2026-10-03)
 
 
