@@ -1,8 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
+import { stringify as stringifyToml } from "smol-toml";
 import { serenaTransportMode } from "../../utils/config.js";
+import {
+  readTomlForMerge,
+  readTomlMergeBaseOrWarn,
+  warnUnmergeable,
+} from "../../utils/merge-read.js";
 import { safeWriteFile } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
@@ -46,20 +51,15 @@ export function applyGrokTelemetryConfig(
 ): void {
   const wantTelemetry = options.telemetry === true;
 
-  let content = "";
-  if (existsSync(GROK_GLOBAL_CONFIG_PATH)) {
-    content = readFileSync(GROK_GLOBAL_CONFIG_PATH, "utf-8");
-  }
-
-  let parsed: TomlValue = {};
-  try {
-    if (content.trim()) {
-      parsed = parseToml(content) as TomlValue;
-    }
-  } catch {
-    // Corrupt or unparsable — start fresh but preserve other sections if possible.
-    parsed = {};
-  }
+  const content = existsSync(GROK_GLOBAL_CONFIG_PATH)
+    ? readFileSync(GROK_GLOBAL_CONFIG_PATH, "utf-8")
+    : "";
+  // A config that does not parse is left untouched: rewriting it from `{}`
+  // would erase the user's Grok settings.
+  const parsed: TomlValue | null = readTomlMergeBaseOrWarn(
+    GROK_GLOBAL_CONFIG_PATH,
+  );
+  if (!parsed) return;
 
   const features = isRecord(parsed.features) ? { ...parsed.features } : {};
 
@@ -99,24 +99,23 @@ export function needsGrokTelemetryUpdate(
     return !wantTelemetry; // File missing → we should create it with telemetry=false
   }
 
-  try {
-    const content = readFileSync(GROK_GLOBAL_CONFIG_PATH, "utf-8");
-    const parsed = parseToml(content) as TomlValue;
-
-    const current = isRecord(parsed.features)
-      ? parsed.features.telemetry
-      : undefined;
-
-    if (wantTelemetry) {
-      // We want telemetry → only update if we previously forced it off.
-      return current === false;
-    } else {
-      // We want it off → update unless it's already explicitly false.
-      return current !== false;
-    }
-  } catch {
-    return true; // Unparsable file → treat as needing update.
+  const read = readTomlForMerge(GROK_GLOBAL_CONFIG_PATH);
+  if (read.status === "invalid") {
+    // Unparsable file → oma cannot update it safely; leave it to the user.
+    warnUnmergeable(GROK_GLOBAL_CONFIG_PATH, read.reason);
+    return false;
   }
+  const parsed: TomlValue = read.status === "ok" ? read.value : {};
+  const current = isRecord(parsed.features)
+    ? parsed.features.telemetry
+    : undefined;
+
+  if (wantTelemetry) {
+    // We want telemetry → only update if we previously forced it off.
+    return current === false;
+  }
+  // We want it off → update unless it's already explicitly false.
+  return current !== false;
 }
 
 /**
@@ -128,19 +127,12 @@ export function needsGrokTelemetryUpdate(
 export function applyGrokProjectMcp(cwd: string): void {
   const projectConfigPath = join(cwd, GROK_PROJECT_CONFIG_PATH);
 
-  let content = "";
-  if (existsSync(projectConfigPath)) {
-    content = readFileSync(projectConfigPath, "utf-8");
-  }
-
-  let parsed: TomlValue = {};
-  try {
-    if (content.trim()) {
-      parsed = parseToml(content) as TomlValue;
-    }
-  } catch {
-    parsed = {};
-  }
+  const content = existsSync(projectConfigPath)
+    ? readFileSync(projectConfigPath, "utf-8")
+    : "";
+  // Never rewrite an unparsable config from `{}` (user MCP servers live here).
+  const parsed: TomlValue | null = readTomlMergeBaseOrWarn(projectConfigPath);
+  if (!parsed) return;
 
   const currentMcp = isRecord(parsed.mcp_servers) ? parsed.mcp_servers : {};
   const currentSerena = isRecord(currentMcp.serena) ? currentMcp.serena : {};
@@ -191,23 +183,23 @@ export function needsGrokProjectMcpUpdate(cwd: string): boolean {
     return true;
   }
 
-  try {
-    const content = readFileSync(projectConfigPath, "utf-8");
-    const parsed = parseToml(content) as TomlValue;
-    const mcp = isRecord(parsed.mcp_servers) ? parsed.mcp_servers : {};
-    const serena = isRecord(mcp.serena) ? mcp.serena : {};
-    const chromeDevtools = isRecord(mcp["chrome-devtools"])
-      ? mcp["chrome-devtools"]
-      : {};
-
-    return !(
-      (typeof serena.command === "string" || typeof serena.url === "string") &&
-      !isLegacyUvxSerena(serena) &&
-      hasSerenaDashboardOpenDisabled(serena) &&
-      (typeof chromeDevtools.command === "string" ||
-        typeof chromeDevtools.url === "string")
-    );
-  } catch {
-    return true;
+  const read = readTomlForMerge(projectConfigPath);
+  if (read.status === "invalid") {
+    warnUnmergeable(projectConfigPath, read.reason);
+    return false;
   }
+  const parsed: TomlValue = read.status === "ok" ? read.value : {};
+  const mcp = isRecord(parsed.mcp_servers) ? parsed.mcp_servers : {};
+  const serena = isRecord(mcp.serena) ? mcp.serena : {};
+  const chromeDevtools = isRecord(mcp["chrome-devtools"])
+    ? mcp["chrome-devtools"]
+    : {};
+
+  return !(
+    (typeof serena.command === "string" || typeof serena.url === "string") &&
+    !isLegacyUvxSerena(serena) &&
+    hasSerenaDashboardOpenDisabled(serena) &&
+    (typeof chromeDevtools.command === "string" ||
+      typeof chromeDevtools.url === "string")
+  );
 }

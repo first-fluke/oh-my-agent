@@ -329,6 +329,27 @@ describe("qwen model request timeout", () => {
     ).toBe(true);
   });
 
+  it("keeps a user's higher timeout (the pin is a floor, never lowered)", () => {
+    const higher = QWEN_REQUEST_TIMEOUT_MS * 2;
+    const settings = {
+      ...baseline(),
+      model: { generationConfig: { timeout: higher } },
+    };
+    expect(needsQwenSettingsUpdate(settings)).toBe(false);
+    expect(applyQwenSettings(settings).model?.generationConfig?.timeout).toBe(
+      higher,
+    );
+
+    const providers = applyQwenSettings({
+      modelProviders: {
+        openai: [{ model: "a", generationConfig: { timeout: higher } }],
+      },
+    });
+    expect(providers.modelProviders).toEqual({
+      openai: [{ model: "a", generationConfig: { timeout: higher } }],
+    });
+  });
+
   it("pins the timeout on every modelProviders entry instead", () => {
     const result = applyQwenSettings({
       modelProviders: {

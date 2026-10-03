@@ -113,6 +113,9 @@ function normalizeQwenSettings(input: unknown): QwenSettings {
  * default is short enough that long agent turns abort mid-stream, so oma
  * writes an explicit 5-minute ceiling.
  *
+ * The pin is a floor: a missing or lower value (e.g. an older oma pin) is
+ * raised, and a user's higher value is kept as-is.
+ *
  * Where it lands depends on the settings shape: newer configs carry a
  * `modelProviders` map (per-provider entry lists) and the timeout belongs on
  * each provider entry; older configs have none, and the single top-level
@@ -137,9 +140,15 @@ function updateModelProvidersTimeout(
       const genConfig = isRecord(item.generationConfig)
         ? item.generationConfig
         : {};
+      if (meetsTimeoutFloor(genConfig.timeout, timeout)) continue;
       item.generationConfig = { ...genConfig, timeout };
     }
   }
+}
+
+/** True when `value` is a number at or above the pinned floor. */
+function meetsTimeoutFloor(value: unknown, floor: number): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= floor;
 }
 
 function hasModelProvidersTimeoutMismatch(
@@ -155,7 +164,7 @@ function hasModelProvidersTimeoutMismatch(
       const genConfig = isRecord(item.generationConfig)
         ? item.generationConfig
         : {};
-      if (genConfig.timeout !== targetTimeout) return true;
+      if (!meetsTimeoutFloor(genConfig.timeout, targetTimeout)) return true;
     }
   }
   return false;
@@ -219,7 +228,10 @@ export function needsQwenSettingsUpdate(
     // User-level providers ignore the project top-level copy; clear it.
     if (hasTopLevelTimeout(sanitized)) return true;
   } else if (
-    sanitized.model?.generationConfig?.timeout !== QWEN_REQUEST_TIMEOUT_MS
+    !meetsTimeoutFloor(
+      sanitized.model?.generationConfig?.timeout,
+      QWEN_REQUEST_TIMEOUT_MS,
+    )
   ) {
     return true;
   }
@@ -263,13 +275,17 @@ export function applyQwenSettings(
       ? existingModel.generationConfig
       : {};
 
-    qwenSettings.model = {
-      ...existingModel,
-      generationConfig: {
-        ...existingGenConfig,
-        timeout: QWEN_REQUEST_TIMEOUT_MS,
-      },
-    };
+    if (
+      !meetsTimeoutFloor(existingGenConfig.timeout, QWEN_REQUEST_TIMEOUT_MS)
+    ) {
+      qwenSettings.model = {
+        ...existingModel,
+        generationConfig: {
+          ...existingGenConfig,
+          timeout: QWEN_REQUEST_TIMEOUT_MS,
+        },
+      };
+    }
   }
 
   applyPrivacyTelemetry(qwenSettings, options.telemetry);

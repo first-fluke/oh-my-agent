@@ -1,6 +1,6 @@
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
+import { stringify as stringifyToml } from "smol-toml";
 import kimiVariant from "../../../.agents/hooks/variants/kimi.json" with {
   type: "json",
 };
@@ -14,6 +14,7 @@ import {
   requiredVariantScripts,
 } from "../../platform/hooks-composer/script-copy.js";
 import type { HookVariant } from "../../platform/hooks-composer/variant-types.js";
+import { readTomlMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { atomicWriteFileSync, safeWriteFile } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import { KIMI_HOME_MISSING_REASON, kimiHome } from "./auth.js";
@@ -106,19 +107,15 @@ export function installKimiHooks(sourceDir: string): KimiHookInstallResult {
   atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
 
   // 3. Merge our `[[hooks]]` entries into config.toml, preserving user config.
+  //    A config that does not parse is left untouched: rewriting it from `{}`
+  //    would erase the user's Kimi settings (model, providers, own hooks).
   const configPath = join(base, "config.toml");
-  let parsed: Record<string, unknown> = {};
-  if (existsSync(configPath)) {
-    try {
-      const raw = readFileSync(configPath, "utf-8");
-      if (raw.trim()) {
-        const t = parseToml(raw);
-        if (isRecord(t)) parsed = t as Record<string, unknown>;
-      }
-    } catch {
-      // Malformed existing config — start fresh rather than crash the install.
-      parsed = {};
-    }
+  const parsed = readTomlMergeBaseOrWarn(configPath);
+  if (!parsed) {
+    return {
+      installed: false,
+      reason: `could not parse ${configPath}; left it unchanged`,
+    };
   }
 
   const existingHooks = Array.isArray(parsed.hooks)

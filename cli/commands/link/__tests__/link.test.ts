@@ -92,6 +92,7 @@ vi.mock("../../../vendors/claude/mcp.js", () => ({
 
 vi.mock("../../../vendors/claude/settings.js", () => ({
   applyClaudeSettings: vi.fn(),
+  claudeAttributionEnabled: vi.fn(() => true),
   needsClaudeSettingsUpdate: vi.fn(() => false),
 }));
 

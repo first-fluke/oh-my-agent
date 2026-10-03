@@ -2,8 +2,9 @@ import { isPlainObject } from "../../utils/type-guards.js";
 
 export { isPlainObject };
 
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import { readJsonForMerge, warnUnmergeable } from "../../utils/merge-read.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 
 /** True for non-null, non-array plain objects (used for shallow settings merges). */
@@ -113,6 +114,9 @@ export function mergeHookGroups(
 /**
  * Merge hook entries (and optional extra fields) into a JSON settings file.
  * Preserves existing settings outside the hooks/extra keys.
+ *
+ * Returns false — without writing — when the existing file cannot be parsed:
+ * rewriting it from `{}` would erase every user setting it holds.
  */
 export function mergeIntoSettings(
   settingsPath: string,
@@ -120,19 +124,16 @@ export function mergeIntoSettings(
   hookEntries: Record<string, any>,
   // biome-ignore lint/suspicious/noExplicitAny: extra fields like statusLine
   extra?: Record<string, any>,
-): void {
+): boolean {
+  const read = readJsonForMerge(settingsPath);
+  if (read.status === "invalid") {
+    warnUnmergeable(settingsPath, read.reason);
+    return false;
+  }
   mkdirSync(dirname(settingsPath), { recursive: true });
 
   // biome-ignore lint/suspicious/noExplicitAny: settings.json schema is dynamic
-  let settings: any = {};
-
-  if (existsSync(settingsPath)) {
-    try {
-      settings = JSON.parse(readFileSync(settingsPath, "utf-8"));
-    } catch {
-      // Corrupted — start fresh
-    }
-  }
+  const settings: any = read.status === "ok" ? read.value : {};
 
   // Merge hook entries with replace semantics for OMA-managed groups.
   // For each event key OMA is writing: strip existing OMA-managed groups
@@ -165,4 +166,5 @@ export function mergeIntoSettings(
     }
   }
   safeWriteJson(settingsPath, settings);
+  return true;
 }

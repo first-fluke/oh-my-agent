@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
   type InstallMode,
@@ -8,7 +8,8 @@ import {
   loadDevToolsBrowsers,
   serenaTransportMode,
 } from "../../utils/config.js";
-import { safeReadJson } from "../../utils/safe-json.js";
+import { readJsonForMerge, warnUnmergeable } from "../../utils/merge-read.js";
+import { safeWriteJson } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
@@ -152,13 +153,23 @@ export function installKimiMcp(cwd: string): KimiMcpInstallResult {
   );
 
   const mcpPath = kimiMcpConfigPath(cwd, mode);
-  const current = safeReadJson<KimiMcpConfig>(mcpPath);
+  // User-configured servers live here: a file that does not parse is left
+  // untouched instead of being rewritten with only oma's servers.
+  const read = readJsonForMerge(mcpPath);
+  if (read.status === "invalid") {
+    warnUnmergeable(mcpPath, read.reason);
+    return {
+      installed: false,
+      reason: `could not parse ${mcpPath}; left it unchanged`,
+    };
+  }
+  const current = read.status === "ok" ? read.value : null;
   if (!needsKimiMcpUpdate(current, withChromeDevtools)) {
     return { installed: true, path: mcpPath };
   }
 
   mkdirSync(dirname(mcpPath), { recursive: true });
   const next = applyKimiMcp(current ?? {}, withChromeDevtools);
-  writeFileSync(mcpPath, `${JSON.stringify(next, null, 2)}\n`);
+  safeWriteJson(mcpPath, next);
   return { installed: true, path: mcpPath };
 }

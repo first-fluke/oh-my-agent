@@ -1,11 +1,15 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
+import {
+  readJsonMergeBaseOrWarn,
+  readTomlMergeBaseOrWarn,
+} from "../../utils/merge-read.js";
 import { loadProviders } from "../../utils/providers.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   applyCodexSettings,
-  parseCodexConfig,
+  type CodexSettings,
   serializeCodexConfig,
 } from "../../vendors/codex/settings.js";
 import { applyQwenSettings } from "../../vendors/qwen/settings.js";
@@ -29,14 +33,14 @@ export const migrateCodexQwenSerena: Migration = {
     if (loadProviders(cwd).code_intelligence !== "serena") return actions;
 
     const qwenSettingsPath = join(cwd, ".qwen", "settings.json");
-    if (allowsVendor(ctx, "qwen") && existsSync(qwenSettingsPath)) {
-      let parsed: unknown = {};
-      try {
-        parsed = JSON.parse(readFileSync(qwenSettingsPath, "utf-8"));
-      } catch {
-        parsed = {};
-      }
-      const base = isRecord(parsed) ? parsed : {};
+    // A file that does not parse is left untouched (warned, never rewritten
+    // from `{}`); `oma link` reports it again until the user fixes it.
+    const qwenBase =
+      allowsVendor(ctx, "qwen") && existsSync(qwenSettingsPath)
+        ? readJsonMergeBaseOrWarn(qwenSettingsPath)
+        : null;
+    if (qwenBase) {
+      const base = qwenBase;
       const servers = isRecord(base.mcpServers) ? base.mcpServers : {};
       // Migrate only Serena. Full settings generators also seed Chrome and
       // privacy defaults, which conflict with the user's reconciled choices.
@@ -51,9 +55,12 @@ export const migrateCodexQwenSerena: Migration = {
     }
 
     const codexConfigPath = join(cwd, ".codex", "config.toml");
-    if (allowsVendor(ctx, "codex") && existsSync(codexConfigPath)) {
-      const rawToml = readFileSync(codexConfigPath, "utf-8");
-      const parsed = parseCodexConfig(rawToml);
+    const codexBase =
+      allowsVendor(ctx, "codex") && existsSync(codexConfigPath)
+        ? readTomlMergeBaseOrWarn(codexConfigPath)
+        : null;
+    if (codexBase) {
+      const parsed = codexBase as CodexSettings;
       const servers = isRecord(parsed.mcp_servers) ? parsed.mcp_servers : {};
       const serena = applyCodexSettings({
         mcp_servers: { serena: servers.serena },

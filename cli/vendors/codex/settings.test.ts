@@ -250,7 +250,7 @@ describe("codex settings", () => {
     expect(needsCodexSettingsUpdate(settings)).toBe(true);
   });
 
-  it("force-enables recommended features even when user disabled them", () => {
+  it("keeps a recommended feature the user explicitly disabled", () => {
     const settings = {
       mcp_servers: {
         serena: { command: "uvx", args: ["serena"] },
@@ -260,9 +260,20 @@ describe("codex settings", () => {
 
     const result = applyCodexSettings(settings);
     expect(result.features).toEqual({
-      goals: true,
+      goals: false,
       custom_flag: true,
     });
+  });
+
+  it("enables a recommended feature only when it is absent", () => {
+    const result = applyCodexSettings({ features: { custom_flag: true } });
+    expect(result.features).toEqual({ goals: true, custom_flag: true });
+    // An explicit false is not a pending update — no perpetual rewrite.
+    expect(
+      needsCodexSettingsUpdate(
+        applyCodexSettings({ features: { goals: false } }),
+      ),
+    ).toBe(false);
   });
 
   it("strips removed child_agents_md key during apply", () => {

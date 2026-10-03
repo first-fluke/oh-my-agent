@@ -30,6 +30,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { readJsonForMerge } from "../../utils/merge-read.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   applyClaudeMcp,
@@ -265,16 +266,13 @@ export const migrateSerenaUvTool: Migration = {
     // entries.
     const claudeMcpPath = join(cwd, ".mcp.json");
     if (allowsVendor(ctx, "claude") && existsSync(claudeMcpPath)) {
-      let claudeMcp: unknown = {};
-      try {
-        claudeMcp = JSON.parse(readFileSync(claudeMcpPath, "utf-8"));
-      } catch {
-        claudeMcp = {};
-      }
-      const claudeServers = isRecord(claudeMcp)
-        ? claudeMcp.mcpServers
-        : undefined;
+      // Only a file that parses is refreshed; a broken one keeps the user's
+      // servers untouched (`oma link` warns about it).
+      const read = readJsonForMerge(claudeMcpPath);
+      const claudeMcp = read.status === "ok" ? read.value : undefined;
+      const claudeServers = claudeMcp?.mcpServers;
       if (
+        claudeMcp &&
         isRecord(claudeServers) &&
         isRecord(claudeServers.serena) &&
         needsClaudeMcpUpdate(claudeMcp)

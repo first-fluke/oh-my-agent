@@ -49,6 +49,12 @@ import {
   isTelemetryEnabled,
   loadDevToolsBrowsers,
 } from "../../utils/config.js";
+import {
+  readJsonForMerge,
+  readJsonMergeBaseOrWarn,
+  readTomlMergeBaseOrWarn,
+  warnUnmergeable,
+} from "../../utils/merge-read.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { installAntigravityHud } from "../../vendors/antigravity/hud.js";
 import { applyAntigravityMcpConfig } from "../../vendors/antigravity/mcp.js";
@@ -60,13 +66,13 @@ import {
 } from "../../vendors/claude/mcp.js";
 import {
   applyClaudeSettings,
+  claudeAttributionEnabled,
   needsClaudeSettingsUpdate,
 } from "../../vendors/claude/settings.js";
 import { ensureClaudeWorkspaceTrust } from "../../vendors/claude/trust.js";
 import {
   applyCodexSettings,
   needsCodexSettingsUpdate,
-  parseCodexConfig,
   serializeCodexConfig,
 } from "../../vendors/codex/settings.js";
 import { disableCursorAgentAttribution } from "../../vendors/cursor/settings.js";
@@ -452,21 +458,22 @@ export function link(opts: LinkOptions = {}): LinkResult {
     }
   }
 
-  // 4a. Claude `.claude/settings.json` — telemetry-aware env opt-out.
+  // 4a. Claude `.claude/settings.json` — telemetry-aware env opt-out. A file
+  //     that does not parse is left untouched (never rewritten from `{}`).
   if (configuredVendors.includes("claude")) {
     const claudeSettingsPath = join(root, ".claude", "settings.json");
-    let claudeSettings: unknown = {};
-    if (existsSync(claudeSettingsPath)) {
-      try {
-        claudeSettings = JSON.parse(readFileSync(claudeSettingsPath, "utf-8"));
-      } catch {
-        claudeSettings = {};
-      }
-    }
-    if (needsClaudeSettingsUpdate(claudeSettings, telemetryOptions)) {
+    const claudeSettings = readJsonMergeBaseOrWarn(claudeSettingsPath);
+    const claudeOptions = {
+      ...telemetryOptions,
+      attribution: claudeAttributionEnabled(root),
+    };
+    if (
+      claudeSettings &&
+      needsClaudeSettingsUpdate(claudeSettings, claudeOptions)
+    ) {
       record(claudeSettingsPath, "write", "claude settings (telemetry)");
       if (!dryRun) {
-        applyClaudeSettings(claudeSettings, telemetryOptions);
+        applyClaudeSettings(claudeSettings, claudeOptions);
         safeWriteJson(claudeSettingsPath, claudeSettings);
       }
     }
@@ -506,19 +513,12 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // 4c. Qwen `.qwen/settings.json` — telemetry-aware.
   if (configuredVendors.includes("qwen")) {
     const qwenSettingsPath = join(root, ".qwen", "settings.json");
-    let qwenSettings: unknown = {};
-    if (existsSync(qwenSettingsPath)) {
-      try {
-        qwenSettings = JSON.parse(readFileSync(qwenSettingsPath, "utf-8"));
-      } catch {
-        qwenSettings = {};
-      }
-    }
+    const qwenSettings = readJsonMergeBaseOrWarn(qwenSettingsPath);
     const qwenOptions = {
       ...telemetryOptions,
       userModelProviders: hasUserQwenModelProviders(),
     };
-    if (needsQwenSettingsUpdate(qwenSettings, qwenOptions)) {
+    if (qwenSettings && needsQwenSettingsUpdate(qwenSettings, qwenOptions)) {
       record(qwenSettingsPath, "write", "qwen settings (telemetry)");
       if (!dryRun) {
         const next = applyQwenSettings(qwenSettings, qwenOptions);
@@ -542,11 +542,11 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // 4e. Codex `.codex/config.toml`.
   if (configuredVendors.includes("codex")) {
     const codexConfigPath = join(root, ".codex", "config.toml");
-    const rawToml = existsSync(codexConfigPath)
-      ? readFileSync(codexConfigPath, "utf-8")
-      : "";
-    const codexSettings = parseCodexConfig(rawToml);
-    if (needsCodexSettingsUpdate(codexSettings, telemetryOptions)) {
+    const codexSettings = readTomlMergeBaseOrWarn(codexConfigPath);
+    if (
+      codexSettings &&
+      needsCodexSettingsUpdate(codexSettings, telemetryOptions)
+    ) {
       record(codexConfigPath, "write", "codex config.toml");
       if (!dryRun) {
         const next = applyCodexSettings(codexSettings, telemetryOptions);
@@ -636,15 +636,17 @@ export function link(opts: LinkOptions = {}): LinkResult {
       }
     }
 
-    let claudeMcp: unknown = {};
-    if (claudeMcpExists) {
-      try {
-        claudeMcp = JSON.parse(readFileSync(claudeMcpPath, "utf-8"));
-      } catch {
-        claudeMcp = {};
-      }
+    const claudeMcpRead = readJsonForMerge(claudeMcpPath);
+    if (claudeMcpRead.status === "invalid") {
+      // User MCP servers live here; a parse failure must not reseed it.
+      warnUnmergeable(claudeMcpPath, claudeMcpRead.reason);
     }
-    if (!claudeMcpExists || needsClaudeMcpUpdate(claudeMcp, ssotServers)) {
+    const claudeMcp =
+      claudeMcpRead.status === "ok" ? claudeMcpRead.value : undefined;
+    if (
+      claudeMcpRead.status !== "invalid" &&
+      (!claudeMcpExists || needsClaudeMcpUpdate(claudeMcp, ssotServers))
+    ) {
       record(
         claudeMcpPath,
         "write",
@@ -653,7 +655,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
           : "claude mcp (seed from SSOT)",
       );
       if (!dryRun) {
-        const next = applyClaudeMcp(claudeMcp, ssotServers);
+        const next = applyClaudeMcp(claudeMcp ?? {}, ssotServers);
         safeWriteJson(claudeMcpPath, next);
       }
     }

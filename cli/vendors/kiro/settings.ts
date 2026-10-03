@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { serenaTransportMode } from "../../utils/config.js";
+import { readJsonMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
@@ -78,11 +79,21 @@ function writeJson(path: string, data: JsonRecord): void {
 }
 
 /**
+ * `.kiro/settings/cli.json` is user-owned (MCP servers, chat settings). Null
+ * when it exists but does not parse: callers skip their write instead of
+ * rewriting the file from `{}`.
+ */
+function readUserSettings(path: string): JsonRecord | null {
+  return readJsonMergeBaseOrWarn(path);
+}
+
+/**
  * Returns true if the project Kiro settings need the Serena MCP entry added.
  */
 export function needsKiroMcpUpdate(cwd: string): boolean {
   const path = join(cwd, KIRO_PROJECT_SETTINGS_PATH);
-  const settings = readJson(path);
+  const settings = readUserSettings(path);
+  if (!settings) return false;
   const mcp = isRecord(settings.mcpServers) ? settings.mcpServers : {};
   const chromeDevtools = isRecord(mcp["chrome-devtools"])
     ? mcp["chrome-devtools"]
@@ -110,7 +121,8 @@ export function applyKiroProjectMcp(cwd: string): void {
   if (!needsKiroMcpUpdate(cwd)) return;
 
   const path = join(cwd, KIRO_PROJECT_SETTINGS_PATH);
-  const settings = readJson(path);
+  const settings = readUserSettings(path);
+  if (!settings) return;
   const currentMcp = isRecord(settings.mcpServers) ? settings.mcpServers : {};
   const currentSerena = isRecord(currentMcp.serena) ? currentMcp.serena : {};
 
@@ -151,7 +163,8 @@ export function applyKiroOmaHooksAgent(cwd: string): void {
   }
 
   const settingsPath = join(cwd, KIRO_PROJECT_SETTINGS_PATH);
-  const settings = readJson(settingsPath);
+  const settings = readUserSettings(settingsPath);
+  if (!settings) return;
   let changed = false;
 
   if (

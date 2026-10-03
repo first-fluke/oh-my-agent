@@ -2,6 +2,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { serenaTransportMode } from "../../utils/config.js";
+import { readJsonMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { safeReadJson } from "../../utils/safe-json.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import {
@@ -136,13 +137,15 @@ export function applyAntigravityMcpConfig(
   );
 
   const targetPath = antigravityMcpConfigPath(installRoot, mode);
+  // Merge with any existing user-added servers under the same file. A file
+  // that does not parse is skipped, never rewritten without those servers.
+  const existingRecord = readJsonMergeBaseOrWarn(targetPath);
+  if (!existingRecord) return null;
+  const existing = existingRecord as McpConfig;
   const targetDir = dirname(targetPath);
   if (!existsSync(targetDir)) {
     mkdirSync(targetDir, { recursive: true });
   }
-
-  // Merge with any existing user-added servers under the same file
-  const existing = safeReadJson<McpConfig>(targetPath) ?? {};
   const mergedServers = {
     ...(existing.mcpServers ?? {}),
     ...transformed,

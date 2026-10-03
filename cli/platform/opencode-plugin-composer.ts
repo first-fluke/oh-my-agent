@@ -1,11 +1,6 @@
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { readJsonForMerge, warnUnmergeable } from "../utils/merge-read.js";
 import { copyHookScripts } from "./hooks-composer.js";
 
 /**
@@ -78,80 +73,6 @@ export const OPENCODE_PLUGIN_ENTRY = "./plugins/oma/oma.ts";
 const OPENCODE_CONFIG_SCHEMA = "https://opencode.ai/config.json";
 
 /**
- * Strip `//` / block comments while respecting string literals, so a `//`
- * inside a value (e.g. the `https://opencode.ai/config.json` `$schema` URL that
- * every opencode config carries) is preserved rather than truncated. A naive
- * line-based strip would corrupt the config — hence the small scanner.
- */
-function stripJsoncComments(raw: string): string {
-  let out = "";
-  let inString = false;
-  let inLineComment = false;
-  let inBlockComment = false;
-
-  for (let i = 0; i < raw.length; i++) {
-    const c = raw[i];
-    const next = raw[i + 1];
-
-    if (inLineComment) {
-      if (c === "\n") {
-        inLineComment = false;
-        out += c;
-      }
-      continue;
-    }
-    if (inBlockComment) {
-      if (c === "*" && next === "/") {
-        inBlockComment = false;
-        i++;
-      }
-      continue;
-    }
-    if (inString) {
-      out += c;
-      if (c === "\\") {
-        out += next ?? "";
-        i++;
-      } else if (c === '"') {
-        inString = false;
-      }
-      continue;
-    }
-    if (c === '"') {
-      inString = true;
-      out += c;
-      continue;
-    }
-    if (c === "/" && next === "/") {
-      inLineComment = true;
-      i++;
-      continue;
-    }
-    if (c === "/" && next === "*") {
-      inBlockComment = true;
-      i++;
-      continue;
-    }
-    out += c;
-  }
-  return out;
-}
-
-/**
- * Parse a JSONC config into a plain object. Strips comments (string-aware) and
- * trailing commas so `JSON.parse` accepts it. The repo intentionally avoids a
- * heavyweight JSONC dependency (cf. the lenient reader in `utils/competitors.ts`).
- */
-function parseJsoncObject(raw: string): Record<string, unknown> {
-  const clean = stripJsoncComments(raw).replace(/,(\s*[\]}])/g, "$1");
-  const parsed = JSON.parse(clean);
-  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-    return parsed as Record<string, unknown>;
-  }
-  return {};
-}
-
-/**
  * Register the OMA bridge in `.opencode/opencode.jsonc` so opencode loads it.
  *
  * `installOpencodePlugin` only materializes the bridge files; opencode will not
@@ -164,7 +85,8 @@ function parseJsoncObject(raw: string): Record<string, unknown> {
  * Idempotent: re-running leaves an already-registered config byte-identical.
  * An existing `opencode.json` is preferred over `opencode.jsonc` when present;
  * otherwise a fresh `opencode.jsonc` is created. Comments in an existing config
- * are dropped on rewrite (same tradeoff as the competitors uninstall path).
+ * are dropped on rewrite (same tradeoff as the competitors uninstall path); a
+ * config that does not parse is left untouched with a warning.
  */
 export function registerOpencodePlugin(targetDir: string): void {
   const dir = join(targetDir, ".opencode");
@@ -172,15 +94,15 @@ export function registerOpencodePlugin(targetDir: string): void {
   const jsoncPath = join(dir, "opencode.jsonc");
   const configPath = existsSync(jsonPath) ? jsonPath : jsoncPath;
 
-  let config: Record<string, unknown> = {};
-  if (existsSync(configPath)) {
-    try {
-      config = parseJsoncObject(readFileSync(configPath, "utf-8"));
-    } catch {
-      // Malformed config: start fresh rather than abort the whole link run.
-      config = {};
-    }
+  // JSONC (comments, trailing commas) parses; anything still invalid is left
+  // untouched — rewriting it from `{}` would erase the user's opencode config.
+  const read = readJsonForMerge(configPath);
+  if (read.status === "invalid") {
+    warnUnmergeable(configPath, read.reason);
+    return;
   }
+  const config: Record<string, unknown> =
+    read.status === "ok" ? read.value : {};
 
   if (typeof config.$schema !== "string") {
     config.$schema = OPENCODE_CONFIG_SCHEMA;

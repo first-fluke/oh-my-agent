@@ -118,22 +118,19 @@ describe("Claude settings", () => {
     expect(settings.env.cleanupPeriodDays).toBeUndefined();
   });
 
-  it("downgrades invalid effortLevel values to the recommended level", () => {
-    const settings = applyClaudeSettings({
-      env: {},
-      attribution: {},
-      effortLevel: "max",
-    });
-    expect(settings.effortLevel).toBe("high");
+  it("keeps an explicit effortLevel, including levels oma does not rank (max)", () => {
+    for (const level of ["max", "medium", "low"]) {
+      const settings = applyClaudeSettings({
+        env: {},
+        attribution: {},
+        effortLevel: level,
+      });
+      expect(settings.effortLevel).toBe(level);
+    }
   });
 
-  it("upgrades below-recommended effortLevel to the recommended level", () => {
-    const settings = applyClaudeSettings({
-      env: {},
-      attribution: {},
-      effortLevel: "medium",
-    });
-    expect(settings.effortLevel).toBe("high");
+  it("fills effortLevel only when it is missing", () => {
+    expect(applyClaudeSettings({ env: {} }).effortLevel).toBe("high");
   });
 
   it("removes DISABLE_PROMPT_CACHING while preserving recommended settings", () => {
@@ -302,5 +299,107 @@ describe("T2.9 rename regression — applyClaudeSettings", () => {
     } as const;
 
     expect(needsClaudeSettingsUpdate(upToDate)).toBe(false);
+  });
+});
+
+describe("Claude settings never flip explicit user values", () => {
+  const fullyRecommended = () =>
+    applyClaudeSettings({ env: {} }, {}) as Record<string, unknown>;
+
+  it("keeps skipDangerousModePermissionPrompt: false and reports no update", () => {
+    const user = {
+      ...fullyRecommended(),
+      skipDangerousModePermissionPrompt: false,
+    };
+    expect(needsClaudeSettingsUpdate(user)).toBe(false);
+    const out = applyClaudeSettings(structuredClone(user));
+    expect(out.skipDangerousModePermissionPrompt).toBe(false);
+  });
+
+  it("keeps an explicitly blanked attribution", () => {
+    const user = { ...fullyRecommended(), attribution: { commit: "", pr: "" } };
+    expect(needsClaudeSettingsUpdate(user)).toBe(false);
+    const out = applyClaudeSettings(structuredClone(user));
+    expect(out.attribution).toEqual({ commit: "", pr: "" });
+  });
+
+  it("keeps a custom attribution", () => {
+    const user = {
+      ...fullyRecommended(),
+      attribution: { commit: "Co-Authored-By: Me <me@example.com>", pr: "" },
+    };
+    expect(needsClaudeSettingsUpdate(user)).toBe(false);
+    expect(applyClaudeSettings(structuredClone(user)).attribution).toEqual(
+      user.attribution,
+    );
+  });
+
+  it("does not add attribution when scm.co_author is disabled", () => {
+    const out = applyClaudeSettings({ env: {} }, { attribution: false });
+    expect(out.attribution).toBeUndefined();
+    expect(needsClaudeSettingsUpdate(out, { attribution: false })).toBe(false);
+  });
+
+  it("removes only oma's own attribution when scm.co_author is disabled", () => {
+    const own = applyClaudeSettings({ env: {} });
+    expect(needsClaudeSettingsUpdate(own, { attribution: false })).toBe(true);
+    expect(
+      applyClaudeSettings(structuredClone(own), { attribution: false })
+        .attribution,
+    ).toBeUndefined();
+
+    const mixed = {
+      ...own,
+      attribution: { ...own.attribution, pr: "my own PR footer" },
+    };
+    expect(
+      applyClaudeSettings(structuredClone(mixed), { attribution: false })
+        .attribution,
+    ).toEqual({ pr: "my own PR footer" });
+  });
+
+  it("keeps explicit env flags and lower numeric tunables", () => {
+    const user = {
+      ...fullyRecommended(),
+      env: {
+        ...(fullyRecommended().env as Record<string, string>),
+        CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "0",
+        CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "50",
+      },
+      cleanupPeriodDays: 30,
+    };
+    expect(needsClaudeSettingsUpdate(user)).toBe(false);
+    const out = applyClaudeSettings(structuredClone(user));
+    expect(out.env.CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING).toBe("0");
+    expect(out.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE).toBe("50");
+    expect(out.cleanupPeriodDays).toBe(30);
+  });
+
+  it("repairs non-numeric tunables", () => {
+    const out = applyClaudeSettings({
+      env: { CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "lots" },
+    });
+    expect(out.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE).toBe("80");
+  });
+
+  it("apply then check never asks for another write", () => {
+    const inputs: Array<[Record<string, unknown>, object]> = [
+      [{}, {}],
+      [{ env: { DISABLE_PROMPT_CACHING: "1" } }, {}],
+      [{ env: { cleanupPeriodDays: 400 } }, {}],
+      [{ env: {}, effortLevel: "max", attribution: { commit: "" } }, {}],
+      [{ env: { DISABLE_TELEMETRY: "1" } }, { telemetry: true }],
+      [{ env: {} }, { attribution: false }],
+    ];
+    for (const [input, options] of inputs) {
+      const out = applyClaudeSettings(structuredClone(input), options);
+      expect(needsClaudeSettingsUpdate(out, options)).toBe(false);
+    }
+  });
+
+  it("migrates a legacy env.cleanupPeriodDays without lowering it", () => {
+    const out = applyClaudeSettings({ env: { cleanupPeriodDays: 400 } });
+    expect(out.cleanupPeriodDays).toBe(400);
+    expect(out.env.cleanupPeriodDays).toBeUndefined();
   });
 });

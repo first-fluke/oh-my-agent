@@ -172,3 +172,40 @@ describe("migrateCodexQwenSerena (007) — vendor gating", () => {
     expect(readFileSync(qwen, "utf-8")).not.toContain("serena");
   });
 });
+
+describe("migrateCodexQwenSerena (007) — unparseable user configs", () => {
+  it("never rewrites a qwen settings.json or codex config.toml it cannot parse", () => {
+    const qwen = join(cwd, ".qwen", "settings.json");
+    const codex = join(cwd, ".codex", "config.toml");
+    mkdirSync(join(cwd, ".qwen"), { recursive: true });
+    mkdirSync(join(cwd, ".codex"), { recursive: true });
+    const brokenJson = '{ "theme": "dark", "mcpServers": { "mine": ';
+    const brokenToml = 'model = "gpt-5"\n[mcp_servers.mine\n';
+    writeFileSync(qwen, brokenJson);
+    writeFileSync(codex, brokenToml);
+
+    const actions = migrateCodexQwenSerena.up(cwd, {
+      vendors: ["codex", "qwen"],
+    });
+
+    expect(actions).toEqual([]);
+    expect(readFileSync(qwen, "utf-8")).toBe(brokenJson);
+    expect(readFileSync(codex, "utf-8")).toBe(brokenToml);
+  });
+
+  it("merges into a qwen settings.json that only has trailing commas", () => {
+    const qwen = join(cwd, ".qwen", "settings.json");
+    mkdirSync(join(cwd, ".qwen"), { recursive: true });
+    writeFileSync(
+      qwen,
+      '{ "theme": "dark", "mcpServers": { "mine": { "command": "x" }, }, }',
+    );
+
+    migrateCodexQwenSerena.up(cwd, { vendors: ["qwen"] });
+
+    const after = JSON.parse(readFileSync(qwen, "utf-8"));
+    expect(after.theme).toBe("dark");
+    expect(after.mcpServers.mine).toEqual({ command: "x" });
+    expect(after.mcpServers.serena).toBeDefined();
+  });
+});

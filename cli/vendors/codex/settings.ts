@@ -35,7 +35,8 @@ export const RECOMMENDED_CODEX_MCP = {
 };
 
 // Codex CLI experimental feature flags that default to false but oh-my-agent
-// always enables (Codex 0.124.0, 2026-05). `multi_agent` is omitted because it
+// enables when the user has not set them (Codex 0.124.0, 2026-05). An explicit
+// user value — including `false` — is kept. `multi_agent` is omitted because it
 // already defaults to true upstream.
 export const RECOMMENDED_CODEX_FEATURES = {
   goals: true,
@@ -126,8 +127,10 @@ export function needsCodexSettingsUpdate(
   if (!hasCodexMcpTransport(chromeDevtools)) return true;
 
   const features = isRecord(typed.features) ? typed.features : undefined;
-  for (const [key, value] of Object.entries(RECOMMENDED_CODEX_FEATURES)) {
-    if (features?.[key] !== value) return true;
+  for (const key of Object.keys(RECOMMENDED_CODEX_FEATURES)) {
+    // An explicit user value (including `false`) is kept; only absent flags
+    // are filled in.
+    if (typeof features?.[key] !== "boolean") return true;
   }
   for (const key of DEPRECATED_CODEX_FEATURES) {
     if (features && key in features) return true;
@@ -236,10 +239,10 @@ export function applyCodexSettings(
   };
 
   const currentFeatures = isRecord(base.features) ? base.features : {};
-  const nextFeatures: Record<string, unknown> = {
-    ...currentFeatures,
-    ...RECOMMENDED_CODEX_FEATURES,
-  };
+  const nextFeatures: Record<string, unknown> = { ...currentFeatures };
+  for (const [key, value] of Object.entries(RECOMMENDED_CODEX_FEATURES)) {
+    if (typeof nextFeatures[key] !== "boolean") nextFeatures[key] = value;
+  }
   for (const key of DEPRECATED_CODEX_FEATURES) {
     delete nextFeatures[key];
   }

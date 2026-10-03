@@ -41,6 +41,7 @@ import {
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { clearNonDirectory } from "../../utils/fs-utils.js";
+import { readJsonMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 
 /**
@@ -100,15 +101,6 @@ function homePaths() {
   const hooksDir = join(home, AGY_HOME_DIR, "hooks");
   const staleHooksJson = join(home, AGY_HOME_DIR, "hooks.json");
   return { home, settingsPath, hooksDir, staleHooksJson };
-}
-
-function readAgySettings(settingsPath: string): AgySettings {
-  if (!existsSync(settingsPath)) return {};
-  try {
-    return JSON.parse(readFileSync(settingsPath, "utf-8"));
-  } catch {
-    return {};
-  }
 }
 
 function copyCoreHooks(sourceDir: string, hooksDir: string): void {
@@ -280,20 +272,35 @@ export function installAntigravityHud(
   const coreHooksDir = join(sourceDir, PROJECT_CORE_HOOKS);
   let writtenHooksJson: string | undefined;
   if (existsSync(coreHooksDir)) {
-    mkdirSync(join(sourceDir, ".agents"), { recursive: true });
-    safeWriteJson(
-      hooksJsonPath,
-      mergeAgyHooksDoc(
-        readJsonRecord(hooksJsonPath),
-        buildAgyHooksDoc(coreHooksDir, variant),
-      ),
-    );
-    writtenHooksJson = hooksJsonPath;
+    // A hooks.json that does not parse may hold user hooks: leave it alone.
+    const existingHooks = readJsonMergeBaseOrWarn(hooksJsonPath);
+    if (existingHooks) {
+      mkdirSync(join(sourceDir, ".agents"), { recursive: true });
+      safeWriteJson(
+        hooksJsonPath,
+        mergeAgyHooksDoc(
+          existingHooks,
+          buildAgyHooksDoc(coreHooksDir, variant),
+        ),
+      );
+      writtenHooksJson = hooksJsonPath;
+    }
   }
 
   // HOME settings.json: wire the native statusLine; never write hooks/
   // defaultHooksPath (agy strips them). Remove dead keys from earlier installs.
-  const settings = readAgySettings(settingsPath);
+  const parsedSettings = readJsonMergeBaseOrWarn(settingsPath);
+  if (!parsedSettings) {
+    // Never rewrite agy's settings from `{}`: it holds the user's model,
+    // theme, permissions, and trusted workspaces.
+    return {
+      installed: false,
+      reason: `could not parse ${settingsPath}; left it unchanged`,
+      hooksJsonPath: writtenHooksJson,
+      hooksDir,
+    };
+  }
+  const settings: AgySettings = parsedSettings;
   settings.statusLine = {
     type: "command",
     command: `bun "${join(hooksDir, statusLineHook)}"`,

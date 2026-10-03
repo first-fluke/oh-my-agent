@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import { join } from "node:path";
+import { readJsonForMerge, warnUnmergeable } from "../../utils/merge-read.js";
 import { isRecord } from "../../utils/type-guards.js";
 import { applyRecommendedCursorSettings } from "../../vendors/cursor/settings.js";
 
@@ -40,12 +41,17 @@ export function applyCursorMcpConfig(installRoot: string): void {
   let isLegacySymlink = false;
   try {
     isLegacySymlink = fs.lstatSync(cursorMcp).isSymbolicLink();
-    if (!isLegacySymlink) {
-      const parsed = JSON.parse(fs.readFileSync(cursorMcp, "utf-8"));
-      if (isRecord(parsed)) existing = parsed;
-    }
   } catch {
-    // missing or unparseable — treat as empty and regenerate
+    // missing — generate it
+  }
+  if (!isLegacySymlink) {
+    const read = readJsonForMerge(cursorMcp);
+    if (read.status === "invalid") {
+      // User-added servers live here; never regenerate over a broken file.
+      warnUnmergeable(cursorMcp, read.reason);
+      return;
+    }
+    if (read.status === "ok") existing = read.value;
   }
 
   // Cursor reads only `mcpServers`; oma-only keys (memoryConfig, toolGroups)

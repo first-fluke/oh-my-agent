@@ -368,6 +368,8 @@ describe("installAntigravityHud", () => {
             return true;
           if (norm === STALE_HOME_HOOKS)
             return opts.homeHooksJson !== undefined;
+          if (norm === PROJECT_HOOKS_JSON)
+            return opts.projectHooksJson !== undefined;
           return false;
         },
       );
