@@ -2,8 +2,18 @@
  * Migration runner — executes all registered migrations in order.
  * Each migration is idempotent: safe to run multiple times.
  * Returns action log strings for UI display.
+ *
+ * Every migration runs on every install/update — there is deliberately no
+ * applied-migration ledger. Vendor-scoped migrations gate their writes on the
+ * run's vendor selection (`allowsVendor`), so one that was a no-op for a vendor
+ * the user had not selected must run again once that vendor is added; a ledger
+ * would skip it forever. Idempotence makes the repeat runs safe.
+ *
+ * Each migration is isolated: one that throws is reported and the rest still
+ * run, so a single bad file cannot abort an install/update half-way.
  */
 
+import pc from "picocolors";
 import {
   type MigrationContext,
   UNRESTRICTED_MIGRATION_CONTEXT,
@@ -31,9 +41,16 @@ export interface Migration {
   up(cwd: string, ctx?: MigrationContext): string[];
 }
 
+export interface MigrationFailure {
+  name: string;
+  error: string;
+}
+
 export interface MigrationRunStatus {
   actions: string[];
   requiresReconcile: boolean;
+  /** Migrations that threw. The others still ran. */
+  failures: MigrationFailure[];
 }
 
 import { migrateToAgents } from "./001-agents-dir.js";
@@ -111,15 +128,32 @@ export function runMigrations(
 export function runMigrationsWithStatus(
   cwd: string,
   ctx: MigrationContext = UNRESTRICTED_MIGRATION_CONTEXT,
+  registry: readonly Migration[] = migrations,
 ): MigrationRunStatus {
   const actions: string[] = [];
+  const failures: MigrationFailure[] = [];
   let requiresReconcile = false;
-  for (const migration of migrations) {
-    const migrationActions = migration.up(cwd, ctx);
+  for (const migration of registry) {
+    let migrationActions: string[];
+    try {
+      migrationActions = migration.up(cwd, ctx);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      failures.push({ name: migration.name, error: message });
+      // Printed for every caller (install/update render only `actions`); the
+      // failure is not fatal, but it must not pass silently either.
+      console.warn(
+        `${pc.yellow("⚠")} Migration ${migration.name} failed: ${message}. The remaining migrations still ran; re-run the command after fixing the cause.`,
+      );
+      // It may have written part of its change before throwing — reconcile so
+      // the vendor files it touched are regenerated.
+      if (migration.requiresReconcile !== false) requiresReconcile = true;
+      continue;
+    }
     actions.push(...migrationActions);
     if (migrationActions.length > 0 && migration.requiresReconcile !== false) {
       requiresReconcile = true;
     }
   }
-  return { actions, requiresReconcile };
+  return { actions, requiresReconcile, failures };
 }
