@@ -10,6 +10,8 @@ Spawning parallel agents is the easy part. The hard part is knowing whether they
 
 oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session until your project's own `typecheck` / `test` / `lint` script exits 0. A gate command decides whether a workflow really ran by looking for the artifacts it must have left behind — and its JSON verdict, not the agent's summary, is the result. An independent judge with a fresh context re-verifies every criterion each round, including the ones that already passed. Every gate decision lands on an append-only event log you can read after the fact. Then it runs that same discipline across a dozen agent runtimes from one portable `.agents/` directory.
 
+Start with the existing [Quick Start](./web/docs/getting-started/quick-start.md) to choose an install path, ask a named skill for one scoped change, and record the file, check command, and exit status. The full-harness path includes `oma doctor`.
+
 ![oh-my-agent explainer](./docs/assets/video/oh-my-agent-explainer.gif)
 
 [Watch the full video (35s)](./docs/assets/video/oh-my-agent-explainer.mp4)

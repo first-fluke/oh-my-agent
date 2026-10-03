@@ -1,11 +1,11 @@
 ---
 title: Quick Start
-description: The shortest path from an empty project to a verified oh-my-agent prompt, with expected results and recovery steps.
+description: Run one scoped task from install through verification, with expected output and recovery.
 ---
 
 # Quick Start
 
-Use this page when you want to confirm the harness works before reading the full reference. You need a project directory and at least one supported AI CLI or IDE. The installer can bootstrap `bun`, `uv`, Serena, and CUE on macOS, Linux, or Windows; the selected host integration is required for the first prompt, while provider and browser integrations are optional.
+Use this page to run one small task and record a concrete result. You need a project directory and at least one supported AI CLI or IDE. The installer can bootstrap `bun`, `uv`, Serena, and CUE on macOS, Linux, or Windows; the selected host integration is required for the first prompt, while provider and browser integrations are optional.
 
 ## 1. Install
 
@@ -16,6 +16,8 @@ npx skills add first-fluke/oh-my-agent
 ```
 
 This installs the OMA skill pack into detected agent runtimes (Claude Code, Cursor, Codex, and more). Skills teach the agent how to work. For stop-hook gates, artifact verification, independent judges, and the `oma` CLI, install the full harness below.
+
+Skills-only installs do not provide the `oma` CLI, hooks, workflows, or judges. Use a named installed skill for the first task below; use the full harness when you need the CLI checks.
 
 ### Full harness (gates, hooks, CLI)
 
@@ -42,27 +44,47 @@ bunx oh-my-agent@latest
 The bootstrap scripts install into the current project. Use `oma install --global` when you want a HOME-level install; read [Installation](./installation.md) before mixing project and global installs.
 
 
-## 2. Check the result
+## 2. Check the result (full harness only)
 
-Run the health check from the same project directory:
+If you installed the full harness, run the health check from the same project directory:
 
 ```bash
 oma doctor
 ```
 
-Success means the selected vendor integration and `.agents/` files are ready. Optional MCP, browser, memory, or code-intelligence integrations may be reported as warnings; they are needed only for tasks that use them. Use `oma doctor --profile` to inspect the resolved model and CLI for each canonical agent role.
+The text command prints a report with sections such as `CLI Status` and `Skills Status`, then returns the shell status. The exact rows depend on the hosts installed in the project:
 
-If the command is missing, the CLI was installed outside your current `PATH`; open a new shell or add the package manager's bin directory. If `oma doctor` reports an invalid configuration, fix the named field and run it again. Do not delete `.agents/oma-config.yaml` to recover: it is the user-owned configuration that preserves settings across updates.
+```text
+┌   🩺 oh-my-agent doctor
+◇  CLI Status ...
+◇  Skills Status ...
+$ echo $?
+0
+```
+
+Optional MCP, browser, memory, or code-intelligence integrations may be reported as warnings; they are needed only for tasks that use them. For a machine-readable status, `oma doctor --json` returns a non-zero status when the report contains issues. Use `oma doctor --profile` to inspect the resolved model and CLI for each canonical agent role.
+
+If `oma` is unavailable but Bun is installed, run the same check without the global command:
+
+```bash
+bunx oh-my-agent@latest doctor
+```
+
+If the bare command is still missing, open a new shell or add the package manager's bin directory to `PATH`. If `oma doctor` reports an invalid configuration, fix the named field and run it again. Do not delete `.agents/oma-config.yaml` to recover: it is the user-owned configuration that preserves settings across updates.
+
+If you installed skills only, skip this CLI check and continue to the named-skill task below.
 
 ## 3. Run one small task
 
-Open the repository in the configured AI tool and describe one self-contained change:
+Open the repository in the configured AI tool and ask for one named skill and one self-contained result:
 
 ```text
-Add a validation message to the existing email field. Follow the project's current form and test conventions. Done when the invalid-email case is covered by a focused test.
+Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-When the keyword hook is enabled for the selected host, it can activate a matching workflow. Skill routing is performed by the host or the selected workflow, so an arbitrary host prompt does not guarantee a hook, a particular skill, or a `CHARTER_CHECK`. The execution contract should still inspect repository conventions, make only the scoped change, and report its verification. The exact files and command depend on the project; the prompt above is illustrative.
+The host should identify the selected skill, inspect one target, and report either a focused link edit or that the link is already valid. Include the command output and exit status for any check that actually ran. A skills-only install does not add `/debug`, `/ralph`, hooks, or workflow gates; asking for the named skill keeps this first task within the installed capabilities.
+
+When the keyword hook is enabled for the selected host, it can activate a matching workflow. Skill routing is performed by the host or the selected workflow, so an arbitrary host prompt does not guarantee a hook, a particular skill, or a `CHARTER_CHECK`. The execution contract should still inspect repository conventions, make only the scoped change, and report its verification. The exact files and command depend on the project.
 
 For a task that crosses API and UI boundaries, select `/work` or `/orchestrate` explicitly. For a single domain, continue with [Single Skill Execution](../guide/single-skill.md). The [Usage Guide](../guide/usage.md) contains longer examples.
 

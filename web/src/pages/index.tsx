@@ -24,6 +24,18 @@ function Hero() {
           <h1 className={styles.title}>{siteConfig.title}</h1>
           <p className={styles.tagline}>{siteConfig.tagline}</p>
 
+          <p className={styles.tagline}>
+            Run one scoped task and record its check result.
+          </p>
+          <div className={styles.buttons}>
+            <Link
+              className="button button--primary button--lg"
+              to="/docs/getting-started/quick-start/"
+            >
+              Start your first task
+            </Link>
+          </div>
+
           <div className={styles.videoWrapper}>
             <video
               className={styles.video}
