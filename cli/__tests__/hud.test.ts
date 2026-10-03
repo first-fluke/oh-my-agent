@@ -1,7 +1,8 @@
 import { execSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const HUD_PATH = join(__dirname, "../../.agents/hooks/core/hud.ts");
 const HUD_PROJECT_DIR = join(tmpdir(), "oma-hud-test-empty-project");
@@ -399,6 +400,96 @@ describe("hud.ts", () => {
       const result = stripAnsi(hud({}));
       expect(result).toContain("[OMA]");
       expect(result.split("│").length).toBe(1);
+    });
+  });
+
+  describe("active workflow", () => {
+    let projectDir: string;
+    const writeModeState = (
+      file: string,
+      workflow: string,
+      reinforcementCount = 0,
+    ) =>
+      writeFileSync(
+        join(projectDir, ".agents", "state", file),
+        JSON.stringify({
+          workflow,
+          sessionId: file.replace(/^.*-state-|\.json$/g, ""),
+          activatedAt: new Date().toISOString(),
+          reinforcementCount,
+        }),
+      );
+
+    beforeEach(() => {
+      projectDir = mkdtempSync(join(tmpdir(), "oma-hud-workflow-"));
+      mkdirSync(join(projectDir, ".agents", "state"), { recursive: true });
+    });
+
+    afterEach(() => {
+      rmSync(projectDir, { recursive: true, force: true });
+    });
+
+    it("shows only the workflow of the session the statusline is for", async () => {
+      const { getActiveWorkflow } = await import(
+        "../../.agents/hooks/core/hud.ts"
+      );
+      writeModeState("ralph-state-other-session.json", "ralph");
+      writeModeState("work-state-my-session.json", "work", 2);
+
+      expect(getActiveWorkflow(projectDir, "my-session")?.workflow).toBe(
+        "work",
+      );
+      expect(getActiveWorkflow(projectDir, "no-such-session")).toBeNull();
+    });
+
+    it("does not let one corrupt state file hide a valid one", async () => {
+      const { getActiveWorkflow } = await import(
+        "../../.agents/hooks/core/hud.ts"
+      );
+      // Several half-written files around one valid one: the old loop's single
+      // try/catch returned null at the first bad file it listed.
+      for (const name of ["aaa", "bbb", "ccc", "xxx", "zzz"]) {
+        writeFileSync(
+          join(projectDir, ".agents", "state", `${name}-state-broken.json`),
+          "{not json",
+        );
+      }
+      writeModeState("work-state-s1.json", "work");
+
+      expect(getActiveWorkflow(projectDir)?.workflow).toBe("work");
+    });
+
+    it("ignores stale (>2h) state", async () => {
+      const { getActiveWorkflow } = await import(
+        "../../.agents/hooks/core/hud.ts"
+      );
+      writeFileSync(
+        join(projectDir, ".agents", "state", "work-state-s1.json"),
+        JSON.stringify({
+          workflow: "work",
+          sessionId: "s1",
+          activatedAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+          reinforcementCount: 0,
+        }),
+      );
+
+      expect(getActiveWorkflow(projectDir, "s1")).toBeNull();
+    });
+
+    it("renders this session's workflow end-to-end from the session_id on stdin", () => {
+      writeModeState("ralph-state-other-session.json", "ralph", 4);
+      writeModeState("work-state-my-session.json", "work", 1);
+
+      const result = stripAnsi(
+        execSync(`bun "${HUD_PATH}"`, {
+          input: JSON.stringify({ session_id: "my-session" }),
+          encoding: "utf-8",
+          env: { ...process.env, CLAUDE_PROJECT_DIR: projectDir },
+        }),
+      );
+
+      expect(result).toContain("work:1");
+      expect(result).not.toContain("ralph");
     });
   });
 

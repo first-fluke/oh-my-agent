@@ -52,7 +52,7 @@
     "stop": [
       {
         "hook": "persistent-mode.ts",
-        "timeout": 5
+        "timeout": 30
       },
       {
         "hook": "refactor-guard.ts",

@@ -51,7 +51,7 @@
     "stop": [
       {
         "hook": "persistent-mode.ts",
-        "timeout": 5,
+        "timeout": 30,
         "loopLimit": null
       },
       {

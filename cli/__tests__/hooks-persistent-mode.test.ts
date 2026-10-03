@@ -1,3 +1,4 @@
+import { EventEmitter } from "node:events";
 import * as fs from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -9,17 +10,54 @@ vi.mock("node:fs", () => ({
   unlinkSync: vi.fn(),
   existsSync: vi.fn(),
   readdirSync: vi.fn(() => []),
+  statSync: vi.fn(),
 }));
 
 vi.mock("node:child_process", () => ({
+  spawn: vi.fn(),
   spawnSync: vi.fn(),
 }));
 
 const childProcess = await import("node:child_process");
-const { isStale, deactivate, writeBlockAndExit, run } = await import(
-  "../../.agents/hooks/core/persistent-mode.ts"
-);
+const { isStale, deactivate, writeBlockAndExit, run, sweepOrphanedModeStates } =
+  await import("../../.agents/hooks/core/persistent-mode.ts");
 const { resolveGitRoot } = await import("../../.agents/hooks/core/fs-utils.ts");
+
+const FAKE_GATE_PID = 987_654;
+
+type FakeChild = EventEmitter & {
+  pid: number;
+  stdout: EventEmitter;
+  stderr: EventEmitter;
+};
+
+/** A gate child that exits on its own with `code` after printing output. */
+function exitingGate(code: number | null, stdout = "", stderr = ""): FakeChild {
+  const child = Object.assign(new EventEmitter(), {
+    pid: FAKE_GATE_PID,
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  setImmediate(() => {
+    if (stdout) child.stdout.emit("data", Buffer.from(stdout));
+    if (stderr) child.stderr.emit("data", Buffer.from(stderr));
+    child.emit("exit", code, null);
+    child.emit("close", code, null);
+  });
+  return child;
+}
+
+/** A gate child that never finishes until its process group is killed. */
+function hangingGate(): FakeChild {
+  return Object.assign(new EventEmitter(), {
+    pid: FAKE_GATE_PID,
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+}
+
+const spawnMock = () =>
+  childProcess.spawn as unknown as ReturnType<typeof vi.fn>;
 
 describe("persistent-mode", () => {
   beforeEach(() => {
@@ -192,6 +230,7 @@ describe("persistent-mode", () => {
 
       const result = await run(stopInput, ctx);
 
+      expect(childProcess.spawn).not.toHaveBeenCalled();
       expect(childProcess.spawnSync).not.toHaveBeenCalled();
       expect(result?.type).toBe("block");
       expect((result as { reason: string }).reason).toContain("NOT executed");
@@ -199,36 +238,43 @@ describe("persistent-mode", () => {
 
     it("allows the stop and deactivates when the allowlisted gate passes (argv, no shell)", async () => {
       mockFsFor(baseState({ goal: { completion: { gate: "typecheck" } } }));
-      (
-        childProcess.spawnSync as unknown as ReturnType<typeof vi.fn>
-      ).mockReturnValue({ status: 0, stdout: "", stderr: "", signal: null });
+      spawnMock().mockImplementation(() => exitingGate(0));
 
       const result = await run(stopInput, ctx);
 
       expect(result).toBeNull();
-      expect(childProcess.spawnSync).toHaveBeenCalledWith(
+      expect(childProcess.spawn).toHaveBeenCalledWith(
         "bun",
         ["run", "typecheck"],
         expect.objectContaining({ cwd: projectDir }),
       );
+      // No shell: argv only, never a `shell: true` option.
+      expect(spawnMock().mock.calls[0]?.[2]).not.toHaveProperty("shell");
       expect(fs.unlinkSync).toHaveBeenCalledWith(statePath);
+    });
+
+    it("runs the gate in its own process group on POSIX so a kill reaches its workers", async () => {
+      mockFsFor(baseState({ goal: { completion: { gate: "typecheck" } } }));
+      spawnMock().mockImplementation(() => exitingGate(0));
+
+      await run(stopInput, ctx);
+
+      expect(spawnMock().mock.calls[0]?.[2]).toMatchObject({
+        detached: process.platform !== "win32",
+      });
     });
 
     it("blocks with output tail and increments reinforcement when the gate fails", async () => {
       mockFsFor(baseState({ goal: { completion: { gate: "typecheck" } } }));
-      (
-        childProcess.spawnSync as unknown as ReturnType<typeof vi.fn>
-      ).mockReturnValue({
-        status: 1,
-        stdout: "src/x.ts(3,1): error TS2304",
-        stderr: "",
-        signal: null,
-      });
+      spawnMock().mockImplementation(() =>
+        exitingGate(1, "src/x.ts(3,1): error TS2304"),
+      );
 
       const result = await run(stopInput, ctx);
 
       expect(result?.type).toBe("block");
       expect((result as { reason: string }).reason).toContain("TS2304");
+      expect((result as { reason: string }).reason).toContain("FAILED");
       // reinforcement counted on gate failure — MAX_REINFORCEMENTS stays a real backstop
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         statePath,
@@ -236,28 +282,79 @@ describe("persistent-mode", () => {
       );
     });
 
-    it("counts a gate timeout as a failure (reinforcement still increments)", async () => {
-      mockFsFor(baseState({ goal: { completion: { gate: "test" } } }));
-      (
-        childProcess.spawnSync as unknown as ReturnType<typeof vi.fn>
-      ).mockReturnValue({
-        status: null,
-        stdout: "",
-        stderr: "",
-        signal: "SIGKILL",
-        error: Object.assign(new Error("spawnSync ETIMEDOUT"), {
-          code: "ETIMEDOUT",
-        }),
+    it.skipIf(process.platform === "win32")(
+      "kills the gate's process group on timeout and records it as a budgeted failure",
+      async () => {
+        vi.stubEnv("OMA_GATE_TIMEOUT_MS", "300");
+        mockFsFor(baseState({ goal: { completion: { gate: "test" } } }));
+        const gate = hangingGate();
+        spawnMock().mockImplementation(() => gate);
+        const killed: Array<[number, unknown]> = [];
+        vi.spyOn(process, "kill").mockImplementation(((
+          pid: number,
+          signal?: string | number,
+        ) => {
+          killed.push([pid, signal]);
+          if (pid === -FAKE_GATE_PID) {
+            setImmediate(() => {
+              gate.emit("exit", null, "SIGKILL");
+              gate.emit("close", null, "SIGKILL");
+            });
+            return true;
+          }
+          throw Object.assign(new Error("no such process"), { code: "ESRCH" });
+        }) as typeof process.kill);
+
+        try {
+          const result = await run(stopInput, ctx);
+
+          // Whole group, not just the package-manager pid.
+          expect(killed[0]).toEqual([-FAKE_GATE_PID, "SIGKILL"]);
+          expect(result?.type).toBe("block");
+          const reason = (result as { reason: string }).reason;
+          expect(reason).toContain("timed out after 0.3s");
+          expect(reason).toContain("Stop-hook gate budget");
+          expect(reason).toContain("`oma goal set --gate lint`");
+          expect(reason).toContain("`oma goal set --gate typecheck`");
+          expect(fs.writeFileSync).toHaveBeenCalledWith(
+            statePath,
+            expect.stringContaining('"reinforcementCount": 1'),
+          );
+        } finally {
+          vi.unstubAllEnvs();
+        }
+      },
+    );
+
+    it("never lets the env override raise the gate budget", async () => {
+      const { gateTimeoutMs, GATE_TIMEOUT_MS } = await import(
+        "../../.agents/hooks/core/persistent-mode.ts"
+      );
+      try {
+        vi.stubEnv("OMA_GATE_TIMEOUT_MS", String(GATE_TIMEOUT_MS * 10));
+        expect(gateTimeoutMs()).toBe(GATE_TIMEOUT_MS);
+        vi.stubEnv("OMA_GATE_TIMEOUT_MS", "250");
+        expect(gateTimeoutMs()).toBe(250);
+        vi.stubEnv("OMA_GATE_TIMEOUT_MS", "nonsense");
+        expect(gateTimeoutMs()).toBe(GATE_TIMEOUT_MS);
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it("treats a gate that cannot start as a failure, not a pass", async () => {
+      mockFsFor(baseState({ goal: { completion: { gate: "lint" } } }));
+      spawnMock().mockImplementation(() => {
+        const child = hangingGate();
+        setImmediate(() => child.emit("error", new Error("spawn bun ENOENT")));
+        return child;
       });
 
       const result = await run(stopInput, ctx);
 
       expect(result?.type).toBe("block");
-      expect((result as { reason: string }).reason).toContain("timed out");
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        statePath,
-        expect.stringContaining('"reinforcementCount": 1'),
-      );
+      expect((result as { reason: string }).reason).toContain("ENOENT");
+      expect(fs.unlinkSync).not.toHaveBeenCalledWith(statePath);
     });
 
     it("allows an honest partial stop when the wall-clock budget is exhausted", async () => {
@@ -276,7 +373,104 @@ describe("persistent-mode", () => {
       expect(result).toBeNull();
       expect(fs.unlinkSync).toHaveBeenCalledWith(statePath);
       // budget exhaustion must short-circuit BEFORE any gate execution
-      expect(childProcess.spawnSync).not.toHaveBeenCalled();
+      expect(childProcess.spawn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("sweepOrphanedModeStates", () => {
+    const projectDir = "/tmp/project";
+    const stateDir = join(projectDir, ".agents", "state");
+    const now = Date.parse("2026-10-03T12:00:00.000Z");
+    const hoursAgo = (h: number) => new Date(now - h * 3_600_000).toISOString();
+
+    const mockStateDir = (files: Record<string, string>) => {
+      (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        Object.keys(files),
+      );
+      (
+        fs.readFileSync as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((p: string) => {
+        const name = p.slice(stateDir.length + 1);
+        if (name in files) return files[name];
+        throw new Error(`unexpected read: ${p}`);
+      });
+      (fs.statSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        mtimeMs: now - 72 * 3_600_000,
+      });
+    };
+
+    it("removes other sessions' persistent state older than 24h, keeps the rest", () => {
+      mockStateDir({
+        "ralph-state-dead.json": JSON.stringify({ activatedAt: hoursAgo(30) }),
+        "work-state-recent.json": JSON.stringify({ activatedAt: hoursAgo(3) }),
+        "ultrawork-state-current.json": JSON.stringify({
+          activatedAt: hoursAgo(99),
+        }),
+        "keyword-detector-state.json": "{}",
+        "skill-sessions.json": "{}",
+      });
+
+      const removed = sweepOrphanedModeStates(projectDir, "current", now);
+
+      expect(removed).toEqual(["ralph-state-dead.json"]);
+      expect(fs.unlinkSync).toHaveBeenCalledTimes(1);
+      expect(fs.unlinkSync).toHaveBeenCalledWith(
+        join(stateDir, "ralph-state-dead.json"),
+      );
+    });
+
+    it("never touches the current session's own file, however old", () => {
+      mockStateDir({
+        "orchestrate-state-me.json": JSON.stringify({
+          activatedAt: hoursAgo(500),
+        }),
+      });
+
+      expect(sweepOrphanedModeStates(projectDir, "me", now)).toEqual([]);
+      expect(fs.unlinkSync).not.toHaveBeenCalled();
+    });
+
+    it("judges a corrupt file by its mtime instead of skipping it forever", () => {
+      mockStateDir({ "orchestrate-state-unknown.json": "{not json" });
+
+      expect(sweepOrphanedModeStates(projectDir, "other", now)).toEqual([
+        "orchestrate-state-unknown.json",
+      ]);
+    });
+
+    it("parses the session id after the right workflow prefix (`work` vs `ultrawork`)", () => {
+      mockStateDir({
+        "ultrawork-state-me.json": JSON.stringify({
+          activatedAt: hoursAgo(48),
+        }),
+        "work-state-other.json": JSON.stringify({ activatedAt: hoursAgo(48) }),
+      });
+
+      expect(sweepOrphanedModeStates(projectDir, "me", now)).toEqual([
+        "work-state-other.json",
+      ]);
+    });
+
+    it("runs on every Stop, before the decision", async () => {
+      mockStateDir({
+        "ralph-state-dead.json": JSON.stringify({ activatedAt: hoursAgo(30) }),
+      });
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        false,
+      );
+      vi.useFakeTimers({ now, toFake: ["Date"] });
+      try {
+        const result = await run(
+          { kind: "stop", cwd: projectDir },
+          { vendor: "claude", cwd: projectDir, sid: "alive" },
+        );
+        expect(result).toBeNull();
+        expect(fs.unlinkSync).toHaveBeenCalledWith(
+          join(stateDir, "ralph-state-dead.json"),
+        );
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

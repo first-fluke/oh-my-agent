@@ -1,3 +1,4 @@
+import { EventEmitter } from "node:events";
 import {
   appendFileSync,
   existsSync,
@@ -25,13 +26,28 @@ import { installHooks } from "../platform/skills-installer/ssot-install.js";
 
 vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:child_process")>();
-  return { ...actual, spawnSync: vi.fn() };
+  return { ...actual, spawn: vi.fn(), spawnSync: vi.fn() };
 });
 vi.mock("node:fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:fs")>();
   return { ...actual, appendFileSync: vi.fn(actual.appendFileSync) };
 });
-const { execFileSync, spawnSync } = await import("node:child_process");
+const { execFileSync, spawn } = await import("node:child_process");
+
+/** A stop-gate child that prints `stdout` and exits with `code`. */
+function gateChild(code: number, stdout = "") {
+  const child = Object.assign(new EventEmitter(), {
+    pid: undefined,
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  setImmediate(() => {
+    if (stdout) child.stdout.emit("data", Buffer.from(stdout));
+    child.emit("exit", code, null);
+    child.emit("close", code, null);
+  });
+  return child as unknown as ReturnType<typeof spawn>;
+}
 
 describe("persistent stop event lifecycle", () => {
   let projectDir: string;
@@ -45,12 +61,7 @@ describe("persistent stop event lifecycle", () => {
       join(projectDir, "package.json"),
       JSON.stringify({ scripts: { test: "vitest" } }),
     );
-    vi.mocked(spawnSync).mockReturnValue({
-      status: 0,
-      stdout: "",
-      stderr: "",
-      signal: null,
-    } as ReturnType<typeof spawnSync>);
+    vi.mocked(spawn).mockImplementation(() => gateChild(0));
     activateWorkflowSession({ projectDir, sid: omaSid, workflow: "ultrawork" });
     setActiveSession(projectDir, "also-current", omaSid);
     setActiveSession(projectDir, "other", "oma-other");
@@ -135,7 +146,7 @@ describe("persistent stop event lifecycle", () => {
       ]),
     );
     expect(readIndex(projectDir).active).toEqual({ other: "oma-other" });
-    expect(spawnSync).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
   });
 
   it("uses the same lifecycle when workflow done arrives through standalone stdin", () => {
@@ -193,7 +204,7 @@ describe("persistent stop event lifecycle", () => {
         (event) => event.kind === "session.ended",
       )?.payload,
     ).toMatchObject({ status: "completed", reason: "workflow_done" });
-    expect(spawnSync).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
     stderr.mockRestore();
   });
 
@@ -215,7 +226,7 @@ describe("persistent stop event lifecycle", () => {
       ]),
     );
     expect(readIndex(projectDir).active).toEqual({ other: "oma-other" });
-    expect(spawnSync).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
     const summary = readFileSync(
       join(
         projectDir,
@@ -248,12 +259,7 @@ describe("persistent stop event lifecycle", () => {
 
   it("keeps a retrying gate active without a session.ended event", async () => {
     mode();
-    vi.mocked(spawnSync).mockReturnValue({
-      status: 1,
-      stdout: "failure",
-      stderr: "",
-      signal: null,
-    } as ReturnType<typeof spawnSync>);
+    vi.mocked(spawn).mockImplementation(() => gateChild(1, "failure"));
     expect(
       (await run({ kind: "stop", cwd: projectDir }, context()))?.type,
     ).toBe("block");
@@ -282,7 +288,7 @@ describe("persistent stop event lifecycle", () => {
           (event) => event.kind === "session.ended",
         )?.payload,
       ).toMatchObject({ status: "failed", reason });
-      expect(spawnSync).not.toHaveBeenCalled();
+      expect(spawn).not.toHaveBeenCalled();
     },
   );
 

@@ -39,6 +39,8 @@ interface RateLimit {
 
 interface StatuslineStdin {
   cwd?: string;
+  /** Claude / Qwen: the session the statusline is drawn for. */
+  session_id?: string;
   model?: { id?: string; display_name?: string };
   context_window?: {
     context_window_size?: number;
@@ -136,26 +138,49 @@ function maybeDumpDebugPayload(raw: string): void {
 
 // ── Active Workflow Detection ─────────────────────────────────
 
-function getActiveWorkflow(projectDir: string): ModeState | null {
+const STALE_WORKFLOW_MS = 2 * 60 * 60 * 1000;
+
+/**
+ * The persistent workflow to show. With a session id (Claude/Qwen
+ * `session_id`, agy `conversation_id`) only that session's state file counts,
+ * so a concurrent session's workflow never appears here. Each file is judged
+ * on its own: one corrupt or half-written file cannot hide the others.
+ */
+export function getActiveWorkflow(
+  projectDir: string,
+  sessionId?: string,
+): ModeState | null {
   const stateDir = join(projectDir, ".agents", "state");
   if (!existsSync(stateDir)) return null;
 
+  let files: string[];
   try {
-    for (const file of readdirSync(stateDir)) {
-      if (!file.endsWith(".json") || !file.includes("-state-")) continue;
-      const content = readFileSync(join(stateDir, file), "utf-8");
-      const state: ModeState = JSON.parse(content);
-
-      // Skip stale (>2h)
-      const elapsed = Date.now() - new Date(state.activatedAt).getTime();
-      if (elapsed > 2 * 60 * 60 * 1000) continue;
-
-      return state;
-    }
+    files = readdirSync(stateDir);
   } catch {
-    // ignore
+    return null;
+  }
+  const sessionSuffix = sessionId ? `-state-${sessionId}.json` : null;
+  for (const file of files) {
+    if (!file.endsWith(".json") || !file.includes("-state-")) continue;
+    if (sessionSuffix && !file.endsWith(sessionSuffix)) continue;
+    let state: ModeState;
+    try {
+      state = JSON.parse(readFileSync(join(stateDir, file), "utf-8"));
+    } catch {
+      continue;
+    }
+    if (!state || typeof state.workflow !== "string") continue;
+    const activatedMs = new Date(state.activatedAt).getTime();
+    if (!Number.isFinite(activatedMs)) continue;
+    if (Date.now() - activatedMs > STALE_WORKFLOW_MS) continue;
+    return state;
   }
   return null;
+}
+
+function statuslineSessionId(input: StatuslineStdin): string | undefined {
+  const id = input.session_id ?? input.conversation_id;
+  return typeof id === "string" && id.trim() ? id : undefined;
 }
 
 // ── Model Name Shortener ──────────────────────────────────────
@@ -179,8 +204,8 @@ export function shortModel(model?: {
     /gemini-([\d.]+)-(pro|flash|ultra|nano|thinking)/i,
   );
   if (geminiSlug) {
-    const capType =
-      geminiSlug[2].charAt(0).toUpperCase() + geminiSlug[2].slice(1);
+    const type = geminiSlug[2] ?? "";
+    const capType = type.charAt(0).toUpperCase() + type.slice(1);
     return `Gemini ${geminiSlug[1]} ${capType}`;
   }
   return name.split("/").pop()?.slice(0, 20) || "";
@@ -293,8 +318,8 @@ export function buildClaudeStatusline(input: StatuslineStdin): string {
     parts.push(dim("sandbox"));
   }
 
-  // 8. Active workflow
-  const workflow = getActiveWorkflow(projectDir);
+  // 8. Active workflow (this session's only, when the vendor says which)
+  const workflow = getActiveWorkflow(projectDir, statuslineSessionId(input));
   if (workflow) {
     parts.push(yellow(`${workflow.workflow}:${workflow.reinforcementCount}`));
   }
@@ -325,4 +350,6 @@ async function main() {
   process.stdout.write(out, () => process.exit(0));
 }
 
-void main();
+if (import.meta.main) {
+  void main();
+}

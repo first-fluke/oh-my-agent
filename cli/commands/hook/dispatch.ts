@@ -164,12 +164,16 @@ interface ResolvedHandler {
 
 /**
  * Normalize a variant timeout value to milliseconds.
- * The schema defines timeout in seconds (1–30 range).
- * Gemini's variant JSON uses milliseconds (e.g. 5000) which violates the
- * schema but is handled here: values > 30 are treated as already-ms.
+ * The schema defines timeout in integer seconds (hook-variant.schema.json).
+ * Only values ≥ 1000 are taken as already-milliseconds (legacy ms-authored
+ * variants, e.g. the removed Gemini one): the old `> 30 ⇒ ms` cut-off turned
+ * a 31–999 s budget into a few dozen milliseconds. Invalid → the default.
  */
-function toMs(timeout: number): number {
-  return timeout > 30 ? timeout : timeout * 1000;
+export function toMs(timeout: number): number {
+  if (!Number.isFinite(timeout) || timeout <= 0) {
+    return DEFAULT_HANDLER_TIMEOUT_MS;
+  }
+  return timeout >= 1000 ? timeout : timeout * 1000;
 }
 
 function resolveChain(vendor: Vendor, nativeEvent: string): ResolvedHandler[] {

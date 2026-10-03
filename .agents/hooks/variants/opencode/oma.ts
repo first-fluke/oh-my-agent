@@ -61,6 +61,13 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
+/**
+ * persistent-mode may run a goal stop gate (25s cap in persistent-mode.ts).
+ * Its budget matches the variant Stop handler timeout (30s) so this bridge
+ * never kills the hook mid-gate — the other core scripts keep 5s.
+ */
+const PERSISTENT_MODE_TIMEOUT_MS = 30_000;
+
 /** Absolute path to a core script copied next to this bridge at install time. */
 function corePath(script: string): string {
   return fileURLToPath(new URL(`./${script}`, import.meta.url));
@@ -78,13 +85,14 @@ function runCore(
   script: string,
   payload: Record<string, unknown>,
   cwd: string,
+  timeoutMs = 5000,
 ): Record<string, unknown> | null {
   try {
     const res = spawnSync("bun", [corePath(script)], {
       input: JSON.stringify(payload),
       cwd,
       encoding: "utf-8",
-      timeout: 5000,
+      timeout: timeoutMs,
       env: process.env,
     });
     const out = (res.stdout ?? "").trim();
@@ -410,6 +418,7 @@ export default (async ({
         "persistent-mode.ts",
         { cwd, sessionId: sessionID, hook_event_name: "Stop" },
         cwd,
+        PERSISTENT_MODE_TIMEOUT_MS,
       );
 
       if (pm?.decision !== "block") {

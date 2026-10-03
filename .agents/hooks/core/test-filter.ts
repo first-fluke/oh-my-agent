@@ -146,7 +146,10 @@ export async function run(
     .find((p) => existsSync(p));
   if (!filterScript) return null;
 
-  const filteredCmd = `set -o pipefail; (${command}) 2>&1 | bash "${filterScript}"`;
+  // The original command sits on its own lines inside the subshell: a
+  // trailing `# comment` would otherwise swallow the closing paren, and a
+  // heredoc's terminator must stay alone on its line (`EOF)` never matches).
+  const filteredCmd = `set -o pipefail; (\n${command}\n) 2>&1 | bash "${filterScript}"`;
   const updatedInput: Record<string, unknown> = {
     ...toolInput,
     command: filteredCmd,

@@ -91,8 +91,24 @@ describe("test-filter run() — platform and idempotency guards (#618)", () => {
       expect(result?.type).toBe("mutate");
       if (result?.type === "mutate") {
         expect(result.updatedInput.command as string).toContain(
-          `(${original})`,
+          `(\n${original}\n)`,
         );
+      }
+    });
+
+    it("keeps the original command on its own lines inside the subshell", async () => {
+      setPlatform("linux");
+      for (const original of [
+        "npm test # full suite",
+        "python3 - <<'EOF'\nimport pytest\nEOF",
+      ]) {
+        const result = await runWith(original);
+        expect(result?.type).toBe("mutate");
+        if (result?.type === "mutate") {
+          expect(result.updatedInput.command as string).toMatch(
+            /^set -o pipefail; \(\n[\s\S]*\n\) 2>&1 \| bash "/,
+          );
+        }
       }
     });
   });

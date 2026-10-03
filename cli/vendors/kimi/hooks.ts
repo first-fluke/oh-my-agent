@@ -14,6 +14,7 @@ import {
   requiredVariantScripts,
 } from "../../platform/hooks-composer/script-copy.js";
 import type { HookVariant } from "../../platform/hooks-composer/variant-types.js";
+import { chainTimeoutSeconds } from "../../platform/hooks-composer.js";
 import { readTomlMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { atomicWriteFileSync, safeWriteFile } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
@@ -54,7 +55,7 @@ function buildKimiHooks(wrapperPath: string): KimiTomlHook[] {
     if (configs.length === 0) continue;
     // Kimi has no statusLine surface; every event is a handler chain.
     const matcher = configs.find((c) => c.matcher)?.matcher;
-    const timeout = configs.reduce((sum, c) => sum + c.timeout, 0) + 5;
+    const timeout = chainTimeoutSeconds(configs);
 
     const hook: KimiTomlHook = {
       event: eventName,

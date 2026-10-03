@@ -13,11 +13,12 @@
  * exit 2 = block stop
  */
 
-import { spawnSync } from "node:child_process";
+import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import {
   existsSync,
   readdirSync,
   readFileSync,
+  statSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -41,6 +42,13 @@ import { getProjectDir } from "./vendor-detect.ts";
 const MAX_REINFORCEMENTS = 5;
 const STALE_HOURS = 2;
 
+/**
+ * Persistent state older than this belongs to a session that is gone. A live
+ * session's own Stop releases its workflow after STALE_HOURS, so a file this
+ * old is an orphan (crashed or closed session, pre-fix `-unknown` files).
+ */
+const ORPHAN_STATE_HOURS = 24;
+
 // ── Goal contract: deterministic stop gate + wall-clock budget ─
 // (design-prime-agent-adoption Track B — no-exec-of-agent-writable-strings)
 
@@ -53,11 +61,53 @@ const STALE_HOURS = 2;
  */
 const GATE_KEYWORDS = new Set(["typecheck", "test", "lint"]);
 
-/** Hard cap on a gate run; SIGKILL after this. Keeps Stop-hook latency bounded. */
-const GATE_TIMEOUT_MS = 60_000;
+/**
+ * Hard cap on a gate run. The Stop budget chain, smallest to largest, keeps a
+ * gate inside the hook so THIS code stops it — never the vendor, which would
+ * kill the hook silently and fail open with nothing recorded:
+ *
+ *   GATE_TIMEOUT_MS (25s)
+ *     < persistent-mode Stop handler timeout in every
+ *       `.agents/hooks/variants/*.json` (30s — `oma hook run` races it, and
+ *       the pi/opencode bridges spawn this script with the same budget)
+ *     < vendor Stop timeout = chain sum + 5s margin
+ *       (`chainTimeoutSeconds` in cli/platform/hooks-composer.ts → 40s).
+ *
+ * `cli/__tests__/hook-timeout-budget.test.ts` locks the chain.
+ */
+export const GATE_TIMEOUT_MS = 25_000;
+
+/** Below this much remaining budget a gate is deferred instead of started. */
+const MIN_GATE_RUN_MS = 1_000;
+
+/** After the gate exits, wait this long for its pipes to drain. */
+const EXIT_FLUSH_GRACE_MS = 500;
 
 /** Tail of gate output carried back into the block reason. */
 const GATE_OUTPUT_TAIL_CHARS = 2_000;
+
+/** Rolling output buffer; trimmed to its latter half when exceeded. */
+const GATE_OUTPUT_BUFFER_CHARS = 64_000;
+
+/** Signals that, aimed at this hook process, must take the gate run down too. */
+const FORWARDED_SIGNALS: NodeJS.Signals[] = ["SIGTERM", "SIGINT", "SIGHUP"];
+
+/**
+ * Effective gate budget in ms. `OMA_GATE_TIMEOUT_MS` may only LOWER it
+ * (tests, slow CI): raising it past the handler budget would bring back the
+ * silent vendor kill.
+ */
+export function gateTimeoutMs(): number {
+  const raw = Number(process.env.OMA_GATE_TIMEOUT_MS);
+  return Number.isFinite(raw) && raw > 0
+    ? Math.min(raw, GATE_TIMEOUT_MS)
+    : GATE_TIMEOUT_MS;
+}
+
+/** `25s`, `0.5s` — budget wording for block reasons. */
+function formatSeconds(ms: number): string {
+  return `${Number((ms / 1000).toFixed(1))}s`;
+}
 
 /**
  * Resolve an allowlisted gate keyword to a package-runner argv, or null when
@@ -100,28 +150,134 @@ export interface GateRunResult {
   outputTail: string;
 }
 
-/** Run a resolved gate argv with a hard timeout. No shell involved. */
+/**
+ * Stop a gate run and everything it forked. POSIX gates lead their own
+ * process group (spawned detached), so the negative pid also reaches the
+ * test-runner workers; Windows has no process groups — taskkill /T walks the
+ * tree. `leaderAlive: false` (after exit) never falls back to the bare pid,
+ * which the OS may already have handed to an unrelated process.
+ */
+function killGateTree(pid: number | undefined, leaderAlive: boolean): void {
+  if (!pid) return;
+  if (process.platform === "win32") {
+    if (!leaderAlive) return;
+    try {
+      spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], {
+        stdio: "ignore",
+        windowsHide: true,
+      });
+    } catch {
+      // already gone
+    }
+    return;
+  }
+  try {
+    process.kill(-pid, "SIGKILL");
+  } catch {
+    if (!leaderAlive) return;
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {
+      // already gone
+    }
+  }
+}
+
+/**
+ * Run a resolved gate argv with a hard timeout. No shell involved. Async so
+ * the dispatcher's per-handler timeout can still preempt it; on timeout, or
+ * when this hook process is itself signalled (vendor kill, Ctrl-C), the whole
+ * gate process tree is killed — no orphaned test runners.
+ */
 export function runGateCommand(
   argv: string[],
   projectDir: string,
-): GateRunResult {
+  timeoutMs: number = gateTimeoutMs(),
+): Promise<GateRunResult> {
   const [command, ...args] = argv;
-  const result = spawnSync(command as string, args, {
-    cwd: projectDir,
-    encoding: "utf-8",
-    timeout: GATE_TIMEOUT_MS,
-    killSignal: "SIGKILL",
-    maxBuffer: 8 * 1024 * 1024,
+  return new Promise((resolve) => {
+    let output = "";
+    let timedOut = false;
+    let settled = false;
+    let exitCode: number | null = null;
+    let spawnError = "";
+    let child: ChildProcess | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let flushTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const append = (chunk: Buffer | string): void => {
+      output += chunk.toString();
+      if (output.length > GATE_OUTPUT_BUFFER_CHARS) {
+        output = output.slice(-GATE_OUTPUT_BUFFER_CHARS / 2);
+      }
+    };
+    const onSignal = (signal: NodeJS.Signals): void => {
+      killGateTree(child?.pid, true);
+      // Keep the signal's default effect when nothing else handles it.
+      if (process.listenerCount(signal) <= 1) {
+        detachSignals();
+        process.kill(process.pid, signal);
+      }
+    };
+    const detachSignals = (): void => {
+      for (const signal of FORWARDED_SIGNALS) {
+        process.removeListener(signal, onSignal);
+      }
+    };
+    const finish = (): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      clearTimeout(flushTimer);
+      detachSignals();
+      if (spawnError) append(`\n${spawnError}`);
+      resolve({
+        passed: exitCode === 0 && !timedOut && !spawnError,
+        timedOut,
+        outputTail: output.trim().slice(-GATE_OUTPUT_TAIL_CHARS),
+      });
+    };
+
+    try {
+      child = spawn(command as string, args, {
+        cwd: projectDir,
+        detached: process.platform !== "win32",
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true,
+      });
+    } catch (error) {
+      spawnError = error instanceof Error ? error.message : String(error);
+      finish();
+      return;
+    }
+    const gate = child;
+    for (const signal of FORWARDED_SIGNALS) process.on(signal, onSignal);
+    gate.stdout?.on("data", append);
+    gate.stderr?.on("data", append);
+    timer = setTimeout(() => {
+      timedOut = true;
+      killGateTree(gate.pid, true);
+    }, timeoutMs);
+    gate.on("error", (error) => {
+      spawnError = error.message;
+      finish();
+    });
+    gate.on("exit", (code) => {
+      exitCode = code;
+      // The verdict is the leader's exit code. Give its pipes a moment to
+      // drain, then settle even if a straggler still holds stdout open.
+      flushTimer = setTimeout(() => {
+        killGateTree(gate.pid, false);
+        finish();
+      }, EXIT_FLUSH_GRACE_MS);
+    });
+    gate.on("close", (code) => {
+      exitCode ??= code;
+      // Reap stragglers the runner left in its group (leaked workers, servers).
+      killGateTree(gate.pid, false);
+      finish();
+    });
   });
-  const timedOut =
-    (result.error as NodeJS.ErrnoException | undefined)?.code === "ETIMEDOUT" ||
-    result.signal === "SIGKILL";
-  const combined = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim();
-  return {
-    passed: result.status === 0 && !result.error,
-    timedOut,
-    outputTail: combined.slice(-GATE_OUTPUT_TAIL_CHARS),
-  };
 }
 
 /** True when the goal's wall-clock budget (from activatedAt) is exhausted. */
@@ -370,6 +526,64 @@ export function deactivateAllForSession(
   }
 }
 
+/** activatedAt of a state file, falling back to its mtime when unreadable. */
+function stateTimestampMs(path: string): number {
+  try {
+    const parsed = JSON.parse(readFileSync(path, "utf-8")) as {
+      activatedAt?: unknown;
+    };
+    const ms =
+      typeof parsed?.activatedAt === "string"
+        ? Date.parse(parsed.activatedAt)
+        : Number.NaN;
+    if (Number.isFinite(ms)) return ms;
+  } catch {
+    // corrupt or half-written — judge by mtime instead
+  }
+  return statSync(path).mtimeMs;
+}
+
+/**
+ * Remove persistent-workflow state files of OTHER sessions older than
+ * ORPHAN_STATE_HOURS. Only that session's own Stop deletes its file, so a
+ * session that ended without one (crash, closed terminal) left it behind
+ * forever. The current session's file is never touched. Returns the removed
+ * file names; best-effort, never throws.
+ */
+export function sweepOrphanedModeStates(
+  projectDir: string,
+  currentSessionId: string,
+  now: number = Date.now(),
+): string[] {
+  const stateDir = getStateDir(projectDir);
+  let files: string[];
+  try {
+    files = readdirSync(stateDir);
+  } catch {
+    return [];
+  }
+  const prefixes = loadPersistentWorkflows().map((w) => `${w}-state-`);
+  const cutoff = now - ORPHAN_STATE_HOURS * 60 * 60 * 1000;
+  const removed: string[] = [];
+  for (const file of files) {
+    if (!file.endsWith(".json")) continue;
+    const prefix = prefixes.find((p) => file.startsWith(p));
+    if (!prefix) continue;
+    const sid = file.slice(prefix.length, -".json".length);
+    if (!sid || sid === currentSessionId) continue;
+    const path = join(stateDir, file);
+    try {
+      if (stateTimestampMs(path) < cutoff) {
+        unlinkSync(path);
+        removed.push(file);
+      }
+    } catch {
+      // raced with another remover or unreadable — leave it
+    }
+  }
+  return removed;
+}
+
 function incrementReinforcement(
   projectDir: string,
   workflow: string,
@@ -405,6 +619,15 @@ export async function run(
   if (input.kind !== "stop") return null;
 
   const { cwd: projectDir, sid: sessionId = UNKNOWN_SESSION_ID } = ctx;
+
+  // Every gate in this Stop shares one budget so the chain stays inside the
+  // persistent-mode handler timeout (see GATE_TIMEOUT_MS).
+  const gateBudgetMs = gateTimeoutMs();
+  const gateDeadline = Date.now() + gateBudgetMs;
+  let gateRanThisStop = false;
+
+  // Housekeeping: other sessions' long-dead persistent state.
+  sweepOrphanedModeStates(projectDir, sessionId);
 
   // A stop event whose session id resolves to the fallback cannot be isolated:
   // blocking on an `-unknown` state file would freeze unrelated sessions that
@@ -496,7 +719,24 @@ export async function run(
     if (gateKeyword) {
       const argv = resolveGateArgv(gateKeyword, projectDir);
       if (argv) {
-        const gate = runGateCommand(argv, projectDir);
+        const budgetMs = Math.max(1, gateDeadline - Date.now());
+        if (gateRanThisStop && budgetMs < MIN_GATE_RUN_MS) {
+          // An earlier workflow's gate spent this Stop's budget. That gate's
+          // workflow is now settled, so the next Stop runs this one in full —
+          // not a failure, no reinforcement charged.
+          await finishPersistentSessions(projectDir, sessionId, endings);
+          return {
+            type: "block",
+            reason: [
+              `[OMA PERSISTENT MODE: ${workflow.toUpperCase()}]`,
+              `Stop gate '${gateKeyword}' deferred: another gate used this stop's ${formatSeconds(gateBudgetMs)} gate budget.`,
+              `Finish your current step and stop again — the gate runs then.`,
+              `To abandon instead: delete ${stateFile} or say "workflow done".`,
+            ].join("\n"),
+          };
+        }
+        gateRanThisStop = true;
+        const gate = await runGateCommand(argv, projectDir, budgetMs);
         if (gate.passed) {
           // The gate is the mechanical proof of completion: allow the stop.
           deactivate(projectDir, workflow, sessionId);
@@ -512,17 +752,30 @@ export async function run(
           continue;
         }
         // Failure and timeout both count toward MAX_REINFORCEMENTS so a
-        // permanently red gate cannot block stops forever.
+        // permanently red (or permanently slow) gate cannot block stops
+        // forever. Recorded before anything else can go wrong.
         incrementReinforcement(projectDir, workflow, sessionId, state);
+        const budget = formatSeconds(gateBudgetMs);
         await emitGateEvent(projectDir, state, "gate.failed", {
           gate: gateKeyword,
           timedOut: gate.timedOut,
-          summary: `stop gate '${gateKeyword}' ${gate.timedOut ? "timed out" : "failed"} for /${workflow}`,
+          ...(gate.timedOut ? { budgetMs } : {}),
+          summary: gate.timedOut
+            ? `stop gate '${gateKeyword}' timed out after ${budget} (Stop-hook gate budget) for /${workflow}`
+            : `stop gate '${gateKeyword}' failed for /${workflow}`,
         });
+        const quicker = ["lint", "typecheck"]
+          .filter((keyword) => keyword !== gateKeyword)
+          .map((keyword) => `\`oma goal set --gate ${keyword}\``)
+          .join(" or ");
         const reason = [
           `[OMA PERSISTENT MODE: ${workflow.toUpperCase()}]`,
-          `Stop gate '${gateKeyword}' ${gate.timedOut ? `timed out after ${GATE_TIMEOUT_MS / 1000}s` : "FAILED"} (reinforcement ${state.reinforcementCount}/${MAX_REINFORCEMENTS}).`,
-          `Fix the failures below, then finish the workflow — the stop is allowed only when the gate passes.`,
+          gate.timedOut
+            ? `Stop gate '${gateKeyword}' timed out after ${budget} — the Stop-hook gate budget — and its process tree was stopped (reinforcement ${state.reinforcementCount}/${MAX_REINFORCEMENTS}).`
+            : `Stop gate '${gateKeyword}' FAILED (reinforcement ${state.reinforcementCount}/${MAX_REINFORCEMENTS}).`,
+          gate.timedOut
+            ? `A gate runs inside the Stop hook and must finish within ${budget}: make the \`${gateKeyword}\` script faster (e.g. only the affected tests), or switch to a quicker gate with ${quicker}.`
+            : `Fix the failures below, then finish the workflow — the stop is allowed only when the gate passes.`,
           gate.outputTail
             ? `--- gate output (tail) ---\n${gate.outputTail}`
             : "",

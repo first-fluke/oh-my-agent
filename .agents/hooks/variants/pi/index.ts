@@ -38,6 +38,13 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
+/**
+ * persistent-mode may run a goal stop gate (25s cap in persistent-mode.ts).
+ * Its budget matches the variant Stop handler timeout (30s) so this bridge
+ * never kills the hook mid-gate — the other core scripts keep 5s.
+ */
+const PERSISTENT_MODE_TIMEOUT_MS = 30_000;
+
 /** Absolute path to a core script copied next to this bridge at install time. */
 function corePath(script: string): string {
   return fileURLToPath(new URL(`./${script}`, import.meta.url));
@@ -53,13 +60,14 @@ function corePath(script: string): string {
 function runCore(
   script: string,
   payload: Record<string, unknown>,
+  timeoutMs = 5000,
 ): Record<string, unknown> | null {
   try {
     const res = spawnSync("bun", [corePath(script)], {
       input: JSON.stringify(payload),
       cwd: process.cwd(),
       encoding: "utf-8",
-      timeout: 5000,
+      timeout: timeoutMs,
       env: process.env,
     });
     const out = (res.stdout ?? "").trim();
@@ -212,11 +220,15 @@ export default function omaHooks(pi: ExtensionAPI): void {
         if (typeof pi.sendUserMessage !== "function") return undefined;
 
         const sessionId = sessionIdOf(ctx);
-        const pm = runCore("persistent-mode.ts", {
-          cwd: process.cwd(),
-          hook_event_name: "Stop",
-          ...(sessionId ? { sessionId } : {}),
-        });
+        const pm = runCore(
+          "persistent-mode.ts",
+          {
+            cwd: process.cwd(),
+            hook_event_name: "Stop",
+            ...(sessionId ? { sessionId } : {}),
+          },
+          PERSISTENT_MODE_TIMEOUT_MS,
+        );
 
         // persistent-mode classifies this subprocess as a generic vendor, so
         // the decision arrives as `{ decision: "block" }`; also accept pi's

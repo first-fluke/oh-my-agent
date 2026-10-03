@@ -38,6 +38,24 @@ export type {
   HookVariant,
 } from "./hooks-composer/variant-types.js";
 
+/** Seconds on top of the handler budgets for oma startup and the stdin read. */
+export const OMA_HOOK_STARTUP_MARGIN_S = 5;
+
+/**
+ * Vendor-side timeout (seconds) for one settings entry running a whole handler
+ * chain in-process: every handler's own budget plus the startup margin. It
+ * must exceed the chain so `oma hook run` — not the vendor — stops a slow
+ * handler and records why (the Stop chain carries the persistent-mode gate:
+ * gate 25s < handler 30s < vendor 40s, see GATE_TIMEOUT_MS).
+ */
+export function chainTimeoutSeconds(
+  configs: ReadonlyArray<{ timeout: number }>,
+): number {
+  return (
+    configs.reduce((sum, c) => sum + c.timeout, 0) + OMA_HOOK_STARTUP_MARGIN_S
+  );
+}
+
 /**
  * Install hooks for any vendor using its variant config from .agents/hooks/variants/.
  * Reads the variant JSON, copies core hooks, generates settings entries.
@@ -126,9 +144,7 @@ export function installHooksFromVariant(
       if (matcher) entry.matcher = matcher;
     } else {
       // Handler event — route through oma hook (one entry for the whole chain).
-      // Timeout = sum of all handler timeouts + 5 s margin for oma startup/IPC.
-      const handlerTimeout =
-        nonHudConfigs.reduce((sum, c) => sum + c.timeout, 0) + 5;
+      const handlerTimeout = chainTimeoutSeconds(nonHudConfigs);
       const omaHookCmd = buildOmaHookCmd(variant, eventName, matcher);
       if (variant.flatHookEntries) {
         // Flat-entry vendors (Cursor): the event array holds the hook object
