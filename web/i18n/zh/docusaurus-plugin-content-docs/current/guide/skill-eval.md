@@ -99,7 +99,7 @@ rubric: "Does the answer enumerate the main claims without adding fabricated one
 weight: 1
 ```
 
-**重要：**在 `--mock` 模式中，judge 任务需要 `_rollouts/` 中之前记录的结论。如果任务没有已记录的结论，它会带警告从报告中排除。先运行 `--live --record` 填充 rollout。
+**重要**：在 `--mock` 模式中，judge 任务需要 `_rollouts/` 中之前记录的结论。如果任务没有已记录的结论，它会带警告从报告中排除。先运行 `--live --record` 填充 rollout。
 
 任意检查器类型在某个分支完全缺失时也遵循相同规则：任务会被排除，而不是评分为 0。缺失数据不是失败答案，给它评分会让两个分支都变成 0，使零提升读作 `decision: "fail"`。如果排除后已评分数量低于 `MIN_TASKS`，报告会显示 `coverage: "insufficient"`。
 

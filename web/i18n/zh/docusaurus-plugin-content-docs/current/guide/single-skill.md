@@ -107,8 +107,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 
 **预期执行流程：**
 
-1. **技能路由：**宿主或工作流选择 `oma-frontend`（"form"、"component"、"Tailwind CSS" 和 "React" 等关键词是路由信号）。
-2. **难度评估：**中等（2-3 个文件，需要在验证 UX 上做一些设计决策）。
+1. **技能路由**：宿主或工作流选择 `oma-frontend`（"form"、"component"、"Tailwind CSS" 和 "React" 等关键词是路由信号）。
+2. **难度评估**：中等（2-3 个文件，需要在验证 UX 上做一些设计决策）。
 3. **加载的资源：**
    - `execution-protocol.md`（始终加载）
    - `snippets.md`（表单 + Zod 模式）
@@ -156,8 +156,8 @@ Add tests for: auth required, pagination, status filter, empty results.
 **预期执行流程：**
 
 1. **技能激活：** `oma-backend` 激活（关键词："API"、"endpoint"、"REST"）
-2. **栈检测：**读取 `pyproject.toml` 或 `package.json` 确定语言和框架。如果生成的 `stack/` 参考或随附 `variants/` 存在，则从中加载约定。
-3. **难度评估：**中等（2 到 3 个文件：路由、服务、仓储，加上测试）
+2. **栈检测**：读取 `pyproject.toml` 或 `package.json` 确定语言和框架。如果生成的 `stack/` 参考或随附 `variants/` 存在，则从中加载约定。
+3. **难度评估**：中等（2 到 3 个文件：路由、服务、仓储，加上测试）
 4. **加载的资源：**
    - `execution-protocol.md`（始终加载）
 <!-- oma-docs:ignore-start -->

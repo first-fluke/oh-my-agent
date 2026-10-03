@@ -328,7 +328,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 - 智能体 persona（系统提示）会从 `.agents/agents/<id>.md` 内联，因为 pi 没有可引用的供应商侧智能体文件。
 - 身份验证使用 pi 自身的配置（`~/.pi/agent/auth.json` 或环境中的供应商 API 密钥）。`oma doctor` 会在其他 CLI 旁报告 pi 的安装和身份验证状态。
 
-**限制：**pi 只能运行真实供应商模型。CLI 专有预设（`cursor`、`kiro`、`qwen`、`antigravity`）指向只存在于各自 CLI 内的模型，因此通过 pi 调度会被清晰地拒绝。通过 pi 路由智能体时，请使用真实供应商预设（`claude`、`codex`、`gemini` 或 `mixed`）。
+**限制**：pi 只能运行真实供应商模型。CLI 专有预设（`cursor`、`kiro`、`qwen`、`antigravity`）指向只存在于各自 CLI 内的模型，因此通过 pi 调度会被清晰地拒绝。通过 pi 路由智能体时，请使用真实供应商预设（`claude`、`codex`、`gemini` 或 `mixed`）。
 
 > pi 的模型目录随版本更新，并受身份验证限制。如果解析出的 slug 与当前 pi 安装提供的目录不匹配，请检查 `pi --list-models`。pi 对 `--model` 的匹配是模糊的，因此大多数供应商 slug 可以直接解析。
 
@@ -427,7 +427,7 @@ opencode models opencode-go                            # list everything your pl
 - **身份验证：**`opencode auth login` 将凭据存入 `~/.local/share/opencode/auth.json`，每个供应商一条记录。`oma auth status` 和 `oma doctor` 在任意供应商存在凭据时将 opencode 报告为已认证。`oma doctor --profile` 会进一步按供应商识别；每一行根据注册 `cli_model` 的供应商前缀检查，因此 `cli_model: zai-coding-plan/glm-5.3` 对应检查 `zai-coding-plan` 凭据。模型没有已注册的 `provider/model` `cli_model` 时，该行会报告 `? unknown`，而不会断言认证失败。
 - **生成文件：**`oma link`（或 `oma link opencode`）会为每个智能体写入一个 `.opencode/agents/<id>.md` persona 文件，以及 `.opencode/plugins/oma/` 桥接。它们从 `.agents/` SSOT 生成，不要直接编辑；重新运行 `oma link` 生成。
 
-> **持久工作流说明：**opencode 的 `session.idle` 事件（最接近 Claude `Stop` 钩子的对应事件）仅用于通知，无法阻止会话结束。因此，在 opencode 下，持久工作流（orchestrate、work、ultrawork）使用**降级的 Stop 语义**；工作流会在下一条消息中强化，而不是保持会话打开。
+> **持久工作流说明**：opencode 的 `session.idle` 事件（最接近 Claude `Stop` 钩子的对应事件）仅用于通知，无法阻止会话结束。因此，在 opencode 下，持久工作流（orchestrate、work、ultrawork）使用**降级的 Stop 语义**；工作流会在下一条消息中强化，而不是保持会话打开。
 
 ---
 
@@ -474,4 +474,4 @@ agents:
 
 每个已路由的智能体都会运行 `kimi --model kimi-code/kimi-for-coding -p "<prompt>"`。
 
-> **持久工作流说明：**Kimi 文档记录的阻止 Stop 路径是退出码 2 和 stderr，但 `oma hook run` 路由器始终退出 0 并输出 stdout 方言。oma 会尽力发出 `permissionDecision: "deny"`（以及 Claude 风格的 `decision: "block"`），因此持久工作流在 Kimi 下会平稳降级。
+> **持久工作流说明**：Kimi 文档记录的阻止 Stop 路径是退出码 2 和 stderr，但 `oma hook run` 路由器始终退出 0 并输出 stdout 方言。oma 会尽力发出 `permissionDecision: "deny"`（以及 Claude 风格的 `decision: "block"`），因此持久工作流在 Kimi 下会平稳降级。

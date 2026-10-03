@@ -36,12 +36,12 @@ description: 协调跨前端、后端、数据库、移动端和 QA 的多个领
 
 流程：
 
-1. **收集需求：**PM 智能体询问目标用户、核心功能、约束和部署目标。
-2. **分析技术可行性：**使用配置的代码智能提供商扫描现有代码库，以寻找可复用代码和架构模式。原生搜索仅用于项目之外的路径或被忽略的路径。
-3. **定义 API 契约：**设计端点契约（方法、路径、请求或响应 schema、认证和错误响应），保存到 agents results `api`-contracts/（运行产物）；提交时可将持久规范提升到 `docs/plans/contracts/`。
-4. **分解为任务：**将项目分解为可执行任务，每个任务包含分配的智能体、标题、验收标准、优先级（P0-P3）和依赖关系。
-5. **与用户审查计划：**展示完整计划供确认。没有用户明确批准，工作流不会继续。
-6. **保存计划：**将批准的计划写入 agents results plan session-id.json，并在内存中记录摘要。
+1. **收集需求**：PM 智能体询问目标用户、核心功能、约束和部署目标。
+2. **分析技术可行性**：使用配置的代码智能提供商扫描现有代码库，以寻找可复用代码和架构模式。原生搜索仅用于项目之外的路径或被忽略的路径。
+3. **定义 API 契约**：设计端点契约（方法、路径、请求或响应 schema、认证和错误响应），保存到 agents results `api`-contracts/（运行产物）；提交时可将持久规范提升到 `docs/plans/contracts/`。
+4. **分解为任务**：将项目分解为可执行任务，每个任务包含分配的智能体、标题、验收标准、优先级（P0-P3）和依赖关系。
+5. **与用户审查计划**：展示完整计划供确认。没有用户明确批准，工作流不会继续。
+6. **保存计划**：将批准的计划写入 agents results plan session-id.json，并在内存中记录摘要。
 
 agents results plan session-id.json 是 `/work` 和 `/orchestrate` 的输入。
 
@@ -113,7 +113,7 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 **工作区自动检测**按以下顺序检查单体仓库配置：pnpm-workspace.yaml、package.json workspaces、lerna.json、nx.json、turbo.json、mise.toml。每个工作区目录根据智能体类型关键词评分（例如，frontend 智能体匹配 web、frontend、`client`）。如果找不到单体仓库配置，则回退到 `apps/web`、`apps/frontend`、`frontend/` 等硬编码候选路径。
 
-**提示词解析：**prompt 参数可以是内联文本或文件路径。如果路径解析为现有文件，则读取其内容作为提示词。CLI 还从 agents skills shared runtime execution-protocols vendor.md 注入供应商专用执行协议。
+**提示词解析**：prompt 参数可以是内联文本或文件路径。如果路径解析为现有文件，则读取其内容作为提示词。CLI 还从 agents skills shared runtime execution-protocols vendor.md 注入供应商专用执行协议。
 
 ### 步骤 4：/review，QA 验证
 

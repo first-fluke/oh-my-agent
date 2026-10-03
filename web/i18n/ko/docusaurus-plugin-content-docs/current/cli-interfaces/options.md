@@ -481,11 +481,11 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `market run` | `없음` | 해석된 last30days 엔진을 실행합니다. |
 | `doctor` | `--profile, --heal-check <agentType>, --json, --output <format>` | CLI 설치, MCP 설정, 스킬 상태를 점검합니다. |
 | `profile` | `없음` | 로컬 OMA 실행 프로필을 관리합니다. |
-| `profile list` | `--json, --output <format>` | 로컬 OMA 실행 프로필을 관리합니다. |
-| `profile show` | `--json, --output <format>` | 로컬 OMA 실행 프로필을 관리합니다. |
-| `profile create` | `--json, --output <format>` | 로컬 OMA 실행 프로필을 관리합니다. |
-| `profile use` | `--shell <shell>, --json, --output <format>` | 로컬 OMA 실행 프로필을 관리합니다. |
-| `profile run` | `없음` | 로컬 OMA 실행 프로필을 관리합니다. |
+| `profile list` | `--json, --output <format>` | 로컬 프로필 목록을 표시합니다. |
+| `profile show` | `--json, --output <format>` | 로컬 프로필 하나를 표시합니다. |
+| `profile create` | `--json, --output <format>` | 로컬 프로필을 만듭니다. |
+| `profile use` | `--shell <shell>, --json, --output <format>` | 기존 프로필을 활성화하는 셸 코드를 출력합니다. |
+| `profile run` | `없음` | 자식 프로세스에 OMA_PROFILE을 설정해 명령 하나를 실행합니다. |
 | `retro` | `--interactive, --compare, --json, --output <format>` | 메트릭과 추세를 포함한 엔지니어링 회고를 실행합니다. |
 | `recap` | `--window <period>, --date <date>, --tool <tools>, --top <n>, --sort <metric>, --mermaid, --graph, --json, --output <format>` | AI 도구 대화 이력을 요약합니다. |
 | `docs` | `없음` | 문서 드리프트를 검사하고 변경 문서 후보를 찾습니다. |
@@ -499,11 +499,11 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `verify` | `없음` | 서브에이전트 결과 또는 키워드 트리거 정확도를 검증합니다. |
 | `verify agent` | `-w, --workspace <path>, --json, --output <format>` | 에이전트 출력물을 검증합니다. |
 | `verify triggers` | `--corpus <path>, --max-false-fire <pct>, --max-missed-fire <pct>, --json, --output <format>` | 라벨이 지정된 프롬프트 corpus에서 키워드 트리거 정확도를 측정합니다. |
-| `vault` | `없음` | 운영체제 키체인의 API 키와 시크릿을 관리합니다. |
-| `vault store` | `--value <value>` | 운영체제 키체인의 API 키와 시크릿을 관리합니다. |
-| `vault get` | `없음` | 운영체제 키체인의 API 키와 시크릿을 관리합니다. |
-| `vault list` | `--json` | 운영체제 키체인의 API 키와 시크릿을 관리합니다. |
-| `vault delete` | `없음` | 운영체제 키체인의 API 키와 시크릿을 관리합니다. |
+| `vault` | `없음` | 운영체제 키체인(macOS Keychain / Linux Secret Service / Windows Credential Manager)에서 API 키와 시크릿을 관리합니다. |
+| `vault store` | `--value <value>` | <name> 아래에 시크릿을 저장합니다(대화형 비밀번호 프롬프트). |
+| `vault get` | `없음` | 저장된 값을 stdout으로 출력합니다(용도: export KEY=$(oma vault get <name>)). |
+| `vault list` | `--json` | 저장된 시크릿 이름 목록을 표시합니다(값은 표시하지 않음). |
+| `vault delete` | `없음` | 키체인과 인덱스에서 시크릿을 삭제합니다. |
 | `star` | `없음` | GitHub에서 oh-my-agent에 별을 표시합니다. |
 | `visualize` | `--focus <node-or-path>, --affected <paths...>, --json, --output <format>` | 프로젝트 구조를 의존성 그래프로 시각화합니다. |
 | `search` | `없음` | fetch, meta, rss, media, trust, code 검색 프리미티브를 제공합니다. |

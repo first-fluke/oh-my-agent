@@ -99,7 +99,7 @@ oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Ch
 1. `oma diagram resolve --json`
 2. 先编写 Mermaid 块（始终如此）。
 3. 如果 `engine: archify`，将 Mermaid 拓扑转换成 archify JSON IR（`architecture` / `sequence` / `dataflow` / `lifecycle` / `workflow`），只阅读安装目录中匹配的 schema 和一个示例。
-4. `validate` → 修复 → `deliver`。**没有固定的迭代上限。**只要 archify 的客观错误数仍在改善，智能体就继续修复；连续两轮没有改善时，才按 archify 自己的收敛规则停止。不得为了通过检查而删除语义标签。
+4. `validate` → 修复 → `deliver`。**没有固定的迭代上限**。只要 archify 的客观错误数仍在改善，智能体就继续修复；连续两轮没有改善时，才按 archify 自己的收敛规则停止。不得为了通过检查而删除语义标签。
 5. 链接到 HTML，绝不嵌入。
 
 ### `/architecture`

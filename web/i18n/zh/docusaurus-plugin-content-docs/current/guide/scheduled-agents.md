@@ -241,7 +241,7 @@ oma schedule run <id>
 5. 更新清单中的 `lastFiredAt`。
 6. 如果设置了 `--once`，自行移除任务（清单和操作系统调度器）。
 
-**身份验证失败会明确报错：**如果供应商凭据已过期，任务会以非零代码退出，并向 stderr 打印 `re-auth required: <vendor>`。它不会静默成功。可以配置可选的 `oma-voice` 通知。
+**身份验证失败会明确报错**：如果供应商凭据已过期，任务会以非零代码退出，并向 stderr 打印 `re-auth required: <vendor>`。它不会静默成功。可以配置可选的 `oma-voice` 通知。
 
 调试时可以手动调用 `schedule run`：
 

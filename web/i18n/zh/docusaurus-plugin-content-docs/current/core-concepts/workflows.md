@@ -41,7 +41,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 ### /orchestrate
 
-**说明：**基于 CLI 的自动化并行智能体执行。通过 CLI 启动子智能体，使用持久化运行状态和回执协调它们，监控进度并运行验证循环。
+**说明**：基于 CLI 的自动化并行智能体执行。通过 CLI 启动子智能体，使用持久化运行状态和回执协调它们，监控进度并运行验证循环。
 
 **持久化：** 是。状态文件：`.agents/state/orchestrate-state.json`。
 
@@ -73,19 +73,19 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 名词白名单（14 个）：app、api、service、server、cli、tool、website、dashboard、system、backend、frontend、prototype、mvp、bot。单个功能（“implement the login feature”、“로그인 기능 구현해줘”）或已有的东西（“make the API faster”）不会匹配。
 
 **步骤：**
-1. **步骤 0，准备：**读取协调技能、上下文加载指南和内存协议。检测供应商。
-2. **步骤 1，加载或创建计划：**先检查 `.agents/results/plan-{sessionId}.json`，再检查最新的 `plan-*.json`。如果没有计划，或计划尚不可执行（任务缺少智能体、优先级层、依赖关系或验收标准），则在当前流程中内联委派 `/plan` 创建计划，并沿用同一会话 ID。展示计划并沿用已有授权；只有缺少关键决策或需要新增授权时，才在委派前询问。
-3. **步骤 2，初始化会话：**加载 `oma-config.yaml`，显示 CLI 映射表，沿用创建计划时的会话 ID，或生成新的会话 ID（`session-YYYYMMDD-HHMMSS`），并在配置的内存存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`。
-4. **步骤 3，启动智能体：**按优先级层处理每个任务（先 P0，再 P1……），使用供应商适配的方法启动智能体（当前运行时和目标供应商相同时使用原生子智能体；外部或跨供应商工作使用 `oma agent spawn`）。绝不超过 MAX_PARALLEL。
-5. **步骤 4，监控：**轮询运行范围内的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件和结构化回执，然后更新任务板。留意完成、失败和崩溃。
-6. **步骤 5，验证：**对每个完成的智能体运行 `verify.sh {agent-type} {workspace}`。失败时带上错误上下文重新启动（最多重试 2 次）。反复失败时，可以考虑尝试其他假设，但所有尝试共用同一份恢复总预算。如果预算不足以支撑一轮对比，则保留未解决的证据。
-7. **步骤 6，收集：**读取运行范围内的结果文件和结构化声明，然后编写摘要。
-8. **步骤 7，最终报告：**呈现会话摘要。如果运行了实验，则总结证据和决策；仅在确认了可复用的原因时才记录经验教训。
+1. **步骤 0，准备**：读取协调技能、上下文加载指南和内存协议。检测供应商。
+2. **步骤 1，加载或创建计划**：先检查 `.agents/results/plan-{sessionId}.json`，再检查最新的 `plan-*.json`。如果没有计划，或计划尚不可执行（任务缺少智能体、优先级层、依赖关系或验收标准），则在当前流程中内联委派 `/plan` 创建计划，并沿用同一会话 ID。展示计划并沿用已有授权；只有缺少关键决策或需要新增授权时，才在委派前询问。
+3. **步骤 2，初始化会话**：加载 `oma-config.yaml`，显示 CLI 映射表，沿用创建计划时的会话 ID，或生成新的会话 ID（`session-YYYYMMDD-HHMMSS`），并在配置的内存存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`。
+4. **步骤 3，启动智能体**：按优先级层处理每个任务（先 P0，再 P1……），使用供应商适配的方法启动智能体（当前运行时和目标供应商相同时使用原生子智能体；外部或跨供应商工作使用 `oma agent spawn`）。绝不超过 MAX_PARALLEL。
+5. **步骤 4，监控**：轮询运行范围内的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件和结构化回执，然后更新任务板。留意完成、失败和崩溃。
+6. **步骤 5，验证**：对每个完成的智能体运行 `verify.sh {agent-type} {workspace}`。失败时带上错误上下文重新启动（最多重试 2 次）。反复失败时，可以考虑尝试其他假设，但所有尝试共用同一份恢复总预算。如果预算不足以支撑一轮对比，则保留未解决的证据。
+7. **步骤 6，收集**：读取运行范围内的结果文件和结构化声明，然后编写摘要。
+8. **步骤 7，最终报告**：呈现会话摘要。如果运行了实验，则总结证据和决策；仅在确认了可复用的原因时才记录经验教训。
 
 **读取文件：**`.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、运行范围内的进度和结果文件，以及结构化运行回执。
-**写入文件：**配置内存存储中的运行范围会话和任务板状态、结构化回执和声明，以及最终报告。
+**写入文件**：配置内存存储中的运行范围会话和任务板状态、结构化回执和声明，以及最终报告。
 
-**何时使用：**需要最大并行度和自动化协调的大型项目。
+**何时使用**：需要最大并行度和自动化协调的大型项目。
 
 ### /work
 
@@ -125,7 +125,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 ### /ultrawork
 
-**说明：**以质量为核心的工作流。包含 5 个阶段、17 个总步骤和 12 个隔离审查步骤。每个阶段都有必须通过才能继续的关卡。
+**说明**：以质量为核心的工作流。包含 5 个阶段、17 个总步骤和 12 个隔离审查步骤。每个阶段都有必须通过才能继续的关卡。
 
 **持久化：** 是。状态文件：`.agents/state/ultrawork-state.json`。
 
@@ -159,7 +159,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 **REFINE 跳过条件：** 50 行以下的简单任务。
 
-**何时使用：**在决定结果是否达到发布条件前运行完整的审查流程。工作流会记录检查和发现，但不会替你做出生产就绪决定。
+**何时使用**：在决定结果是否达到发布条件前运行完整的审查流程。工作流会记录检查和发现，但不会替你做出生产就绪决定。
 
 ---
 
@@ -203,7 +203,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 ### /plan
 
-**说明：**PM 驱动的任务分解。分析需求，选择技术栈，分解为带依赖关系的优先级任务，并定义 API 契约。
+**说明**：PM 驱动的任务分解。分析需求，选择技术栈，分解为带依赖关系的优先级任务，并定义 API 契约。
 
 **触发关键词：**
 | 语言 | 关键词 |
@@ -214,11 +214,11 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 | 日语 | "計画"、"要件分析"、"タスク分解" |
 | 中文 | "计划"、"需求分析"、"任务分解" |
 
-**步骤：**收集需求 -> 使用 MCP 代码分析评估技术可行性 -> 评估复杂度（Simple、Medium、Complex）-> 在跨边界时定义 API 契约 -> 分解任务 -> 与用户审查 -> 保存计划工件（Medium/Complex 时同时保存机器可读 JSON 和人类可读的 Markdown 跟踪文件）。
+**步骤**：收集需求 -> 使用 MCP 代码分析评估技术可行性 -> 评估复杂度（Simple、Medium、Complex）-> 在跨边界时定义 API 契约 -> 分解任务 -> 与用户审查 -> 保存计划工件（Medium/Complex 时同时保存机器可读 JSON 和人类可读的 Markdown 跟踪文件）。
 
 **输出：**`.agents/results/plan-{sessionId}.json`、内存写入，以及 Medium/Complex 任务的 `docs/plans/work/{NNN}-{name}.md`，其中包含任务表、决策日志和进度备注。Markdown 标题中的 `Status` 字段记录生命周期（`Active` -> `Completed`），计划不会在目录间移动。通过 `/brainstorm` 创建的设计保存到 `docs/plans/designs/{NNN}-{name}.md`。
 
-**执行方式：**内联执行（不启动子智能体）。由 `/orchestrate` 或 `/work` 消费，后者会在执行期间更新任务和状态字段。
+**执行方式**：内联执行（不启动子智能体）。由 `/orchestrate` 或 `/work` 消费，后者会在执行期间更新任务和状态字段。
 
 ### /brainstorm
 
@@ -381,7 +381,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 **步骤：** 分析变更（git status、git diff）-> 分离功能（如果超过 5 个文件且跨越不同 scope/type）-> 确定类型（feat/fix/refactor/docs/test/chore/style/perf）-> 确定范围（变更的模块）-> 编写描述（祈使语气，< 72 字符）-> 立即执行提交（不需确认提示）。
 
-**规则：**绝不使用 `git add -A`。绝不提交密钥。多行消息使用 HEREDOC。只有生效的 `scm.co_author` 配置启用并同时提供两个值时，才添加共同作者尾注。
+**规则**：绝不使用 `git add -A`。绝不提交密钥。多行消息使用 HEREDOC。只有生效的 `scm.co_author` 配置启用并同时提供两个值时，才添加共同作者尾注。
 
 ---
 
@@ -417,50 +417,50 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 ### /docs
 
-**说明：**通过 `oma-docs` 检测文档漂移并同步。验证模式会检查仓库中全部 Markdown（默认 glob 为 `**/*.md`）的损坏引用；同步模式会为受 Git diff 影响的文档提出逐文档补丁。内联执行（不启动子智能体）；所有供应商都直接调用 `oma docs`。
+**说明**：通过 `oma-docs` 检测文档漂移并同步。验证模式会检查仓库中全部 Markdown（默认 glob 为 `**/*.md`）的损坏引用；同步模式会为受 Git diff 影响的文档提出逐文档补丁。内联执行（不启动子智能体）；所有供应商都直接调用 `oma docs`。
 
-**触发关键词：**通用：“oma-docs”、“docs verify”、“docs sync”。英语：“verify docs”、“check docs”、“docs drift”、“broken doc links”、“stale docs”、“sync docs”、“patch docs”。韩语：“문서 검증”、“문서 드리프트”、“문서 동기화”。日语：“ドキュメント検証”、“ドキュメント同期”。中文：“文档校验”、“文档同步”。
+**触发关键词**：通用：“oma-docs”、“docs verify”、“docs sync”。英语：“verify docs”、“check docs”、“docs drift”、“broken doc links”、“stale docs”、“sync docs”、“patch docs”。韩语：“문서 검증”、“문서 드리프트”、“문서 동기화”。日语：“ドキュメント検証”、“ドキュメント同期”。中文：“文档校验”、“文档同步”。
 
-**步骤：**检测模式（默认 `verify`；提示包含 sync 或 Git diff 范围时使用 `sync`）-> 预检（`command -v oma`；同步时确认可用 diff，回退到 `HEAD~1..HEAD`）-> 验证：运行 `oma docs verify --json`（干净时退出 `0`，有损坏引用时退出 `1`），或同步：针对范围运行 `oma docs sync --json` -> 按宿主 LLM 契约综合结果（验证：按 CRITICAL/HIGH/MEDIUM/LOW 分组并给出具体修复；同步：起草最小统一 diff 补丁）-> 逐个交互呈现同步补丁（`[y] apply [n] skip [d] show diff [s] show full proposal`，绝不自动应用）-> 应用后用 `oma docs verify --json` 重新生成索引 -> 报告模式、按类型统计的数量，以及 `docs/generated/doc-refs.json` / `url-drift.json` 的位置。
+**步骤**：检测模式（默认 `verify`；提示包含 sync 或 Git diff 范围时使用 `sync`）-> 预检（`command -v oma`；同步时确认可用 diff，回退到 `HEAD~1..HEAD`）-> 验证：运行 `oma docs verify --json`（干净时退出 `0`，有损坏引用时退出 `1`），或同步：针对范围运行 `oma docs sync --json` -> 按宿主 LLM 契约综合结果（验证：按 CRITICAL/HIGH/MEDIUM/LOW 分组并给出具体修复；同步：起草最小统一 diff 补丁）-> 逐个交互呈现同步补丁（`[y] apply [n] skip [d] show diff [s] show full proposal`，绝不自动应用）-> 应用后用 `oma docs verify --json` 重新生成索引 -> 报告模式、按类型统计的数量，以及 `docs/generated/doc-refs.json` / `url-drift.json` 的位置。
 
-**规则：**绝不自动应用同步补丁（每篇文档都需要 `[y]` 确认）。绝不修改 `.agents/`（SSOT）。如果缺少 `oma docs`，打印安装提示后退出，不回退到手工 grep。
+**规则**：绝不自动应用同步补丁（每篇文档都需要 `[y]` 确认）。绝不修改 `.agents/`（SSOT）。如果缺少 `oma docs`，打印安装提示后退出，不回退到手工 grep。
 
-**读取文件：**目标 Markdown（`**/*.md` 或请求的 glob），以及同步模式中 `changedFiles` 对应的 `git diff`。
+**读取文件**：目标 Markdown（`**/*.md` 或请求的 glob），以及同步模式中 `changedFiles` 对应的 `git diff`。
 **写入文件：**`docs/generated/doc-refs.json`（验证时始终重新生成）、`docs/generated/url-drift.json`（运行 URL 检查时），以及获准的文档补丁（同步选择 `[y]` 时）。
 
-**何时使用：**检查文档是否仍与代码库一致（损坏的文件路径、CLI 命令、配置键、环境变量），或在代码变更后提出补丁。
+**何时使用**：检查文档是否仍与代码库一致（损坏的文件路径、CLI 命令、配置键、环境变量），或在代码变更后提出补丁。
 
 ### /recap
 
-**说明：**通过 `oma-recap` 生成每日或周期工作回顾。解析自然语言中的日期或时间窗口，通过 `oma recap --json` 汇总多个 AI 工具的历史（Grok、Claude、Codex、Qwen、Cursor、Antigravity），将主题分析和 Markdown 格式化交给技能，并报告 TL;DR 和保存路径。内联执行（不启动子智能体）。
+**说明**：通过 `oma-recap` 生成每日或周期工作回顾。解析自然语言中的日期或时间窗口，通过 `oma recap --json` 汇总多个 AI 工具的历史（Grok、Claude、Codex、Qwen、Cursor、Antigravity），将主题分析和 Markdown 格式化交给技能，并报告 TL;DR 和保存路径。内联执行（不启动子智能体）。
 
-**触发关键词：**通用：“recap”。韩语：“리캡”。日语：“リキャップ”。
+**触发关键词**：通用：“recap”。韩语：“리캡”。日语：“リキャップ”。
 
-**步骤：**检测模式并解析窗口（默认 `daily`，使用今天；短语如“this week”或“지난 7일”解析为 `--window Nd` 的 `period`）-> 只有用户明确指定工具时才提取 `--tool` 过滤器（`grok, claude, codex, qwen, cursor, antigravity`）-> 预检（`command -v oma`）-> 运行 `oma recap --json`（daily：`--date YYYY-MM-DD` 或省略；period：`--window 7d` / `30d`）-> 按技能契约综合（15 分钟主题阈值，使用 daily 或多日模板）-> 报告 3 条 TL;DR 和保存路径。
+**步骤**：检测模式并解析窗口（默认 `daily`，使用今天；短语如“this week”或“지난 7일”解析为 `--window Nd` 的 `period`）-> 只有用户明确指定工具时才提取 `--tool` 过滤器（`grok, claude, codex, qwen, cursor, antigravity`）-> 预检（`command -v oma`）-> 运行 `oma recap --json`（daily：`--date YYYY-MM-DD` 或省略；period：`--window 7d` / `30d`）-> 按技能契约综合（15 分钟主题阈值，使用 daily 或多日模板）-> 报告 3 条 TL;DR 和保存路径。
 
-**规则：**绝不修改 `.agents/`（SSOT）。保存的回顾中绝不自动翻译技术术语（项目名、工具名、CLI 标志）。没有来源时不要编造回顾。
+**规则**：绝不修改 `.agents/`（SSOT）。保存的回顾中绝不自动翻译技术术语（项目名、工具名、CLI 标志）。没有来源时不要编造回顾。
 
-**读取文件：**AI 工具对话历史（通过 `oma recap`）。
+**读取文件**：AI 工具对话历史（通过 `oma recap`）。
 **写入文件：**`.agents/results/recap/{date}.md` 或 `.agents/results/recap/{start}~{end}.md`。
 
-**何时使用：**总结某一天或某个周期内跨 AI 工具完成的工作，可选按工具过滤。
+**何时使用**：总结某一天或某个周期内跨 AI 工具完成的工作，可选按工具过滤。
 
 ### /stack-set
 
-**说明：**自动检测项目技术栈，为已解析的领域技能（backend 或 mobile）生成语言专用参考资料。它会检测移动端技术栈（通过 `Package.swift` / `.xcodeproj` 检测 Swift/iOS，通过 `pubspec.yaml` 检测 Flutter，通过 `package.json` + react-native 检测 React Native），并路由到 `oma-mobile`；否则路由到 `oma-backend`。如果单体仓库同时存在两者，则询问要配置哪一个。
+**说明**：自动检测项目技术栈，为已解析的领域技能（backend 或 mobile）生成语言专用参考资料。它会检测移动端技术栈（通过 `Package.swift` / `.xcodeproj` 检测 Swift/iOS，通过 `pubspec.yaml` 检测 Flutter，通过 `package.json` + react-native 检测 React Native），并路由到 `oma-mobile`；否则路由到 `oma-backend`。如果单体仓库同时存在两者，则询问要配置哪一个。
 
-**触发关键词：**无（排除在自动检测之外）。
+**触发关键词**：无（排除在自动检测之外）。
 
 <!-- oma-docs:ignore-start -->
-**步骤：**检测（扫描清单：pyproject.toml、package.json、Cargo.toml、pom.xml、go.mod、mix.exs、Gemfile、*.csproj、Package.swift、*.xcodeproj、pubspec.yaml）-> 确认（显示检测到的技术栈并获取用户确认）-> 生成（`stack/stack.yaml`、`stack/tech-stack.md`、包含 8 个必需模式的 `stack/snippets.md`、`stack/api-template.*`）-> 验证。
+**步骤**：检测（扫描清单：pyproject.toml、package.json、Cargo.toml、pom.xml、go.mod、mix.exs、Gemfile、*.csproj、Package.swift、*.xcodeproj、pubspec.yaml）-> 确认（显示检测到的技术栈并获取用户确认）-> 生成（`stack/stack.yaml`、`stack/tech-stack.md`、包含 8 个必需模式的 `stack/snippets.md`、`stack/api-template.*`）-> 验证。
 <!-- oma-docs:ignore-end -->
 
-**输出：**写入已解析领域技能的 `stack/` 目录，例如 `.agents/skills/oma-backend/stack/` 或 `.agents/skills/oma-mobile/stack/`。不会修改 SKILL.md 或 `resources/`。
+**输出**：写入已解析领域技能的 `stack/` 目录，例如 `.agents/skills/oma-backend/stack/` 或 `.agents/skills/oma-mobile/stack/`。不会修改 SKILL.md 或 `resources/`。
 
 
 ### /video
 
-**说明：**端到端驱动 `oma-video` 技能：简介 -> 脚本 -> 旁白 -> 视觉素材 -> 字幕 -> render-spec -> 受管的 HyperFrames（或 MoneyPrinterTurbo）合成器。工作流会创建可复现的运行目录，只有合成器和 ffprobe 检查通过后才输出真实的 `.mp4`。受支持素材回退的供应商配置可以不提供密钥；合成器或工具链失败仍会使运行失败。内联执行（不启动子智能体）。
+**说明**：端到端驱动 `oma-video` 技能：简介 -> 脚本 -> 旁白 -> 视觉素材 -> 字幕 -> render-spec -> 受管的 HyperFrames（或 MoneyPrinterTurbo）合成器。工作流会创建可复现的运行目录，只有合成器和 ffprobe 检查通过后才输出真实的 `.mp4`。受支持素材回退的供应商配置可以不提供密钥；合成器或工具链失败仍会使运行失败。内联执行（不启动子智能体）。
 
 **触发关键词：**
 | 语言 | 关键词 |
@@ -472,31 +472,31 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 | 中文 | "生成视频"、"制作视频"、"短视频"、"讲解视频"、"演示视频" |
 
 **步骤：**
-1. **解析简介和模式：**选择 `shorts`（9:16）、`explainer`（16:9）或 `demo`（屏幕或 Web 捕获），应用模式默认值，可用标志覆盖。
-2. **组合脚本：**生成场景和旁白（有密钥时使用 LLM，否则从简介生成确定性大纲）。
-3. **合成素材：**使用 `oma-voice` 生成旁白，使用 `oma-image` / `oma-slide` / 素材库生成视觉内容，使用免密钥字幕对齐，或在 `demo --source web` 中使用受监督的浏览器 Web 捕获。每个供应商都会降级为确定性回退。
-4. **构建 render-spec：**在运行目录中写入 `render-spec.json`（确定性边界）和素材。
-5. **渲染：**以子进程启动受管的 HyperFrames 项目（或 MoneyPrinterTurbo）。普通合成器或工具链失败会使运行失败；确定性占位符仅可通过显式 mock/test 路径（`OMA_VIDEO_MOCK=1`）使用。实时捕获会在清单中记录为 `nondeterministic`。
+1. **解析简介和模式**：选择 `shorts`（9:16）、`explainer`（16:9）或 `demo`（屏幕或 Web 捕获），应用模式默认值，可用标志覆盖。
+2. **组合脚本**：生成场景和旁白（有密钥时使用 LLM，否则从简介生成确定性大纲）。
+3. **合成素材**：使用 `oma-voice` 生成旁白，使用 `oma-image` / `oma-slide` / 素材库生成视觉内容，使用免密钥字幕对齐，或在 `demo --source web` 中使用受监督的浏览器 Web 捕获。每个供应商都会降级为确定性回退。
+4. **构建 render-spec**：在运行目录中写入 `render-spec.json`（确定性边界）和素材。
+5. **渲染**：以子进程启动受管的 HyperFrames 项目（或 MoneyPrinterTurbo）。普通合成器或工具链失败会使运行失败；确定性占位符仅可通过显式 mock/test 路径（`OMA_VIDEO_MOCK=1`）使用。实时捕获会在清单中记录为 `nondeterministic`。
 
 **输出：**`.agents/results/videos/{timestamp}-{shortid}-{mode}/` 下的运行目录，包含 `script.json`、`render-spec.json`、`timing.json`、`captions.{srt,vtt}`、`audio/`、`visuals/`、`{composition}.mp4` 和 `manifest.json`。参见[视频生成指南](../guide/video-generation.md)。
 
 ### /schedule
 
-**说明：**通过 `oma schedule <action>` 命令注册和管理基于时间的智能体作业。作业保存在全局注册表（`~/.agents/schedule/`），通过操作系统原生调度器触发（macOS 为 launchd，Linux 为 systemd 用户计时器，Windows 为 schtasks，POSIX 回退为 crontab），每次运行都会通过 `oma agent spawn` 重新进入 harness。
+**说明**：通过 `oma schedule <action>` 命令注册和管理基于时间的智能体作业。作业保存在全局注册表（`~/.agents/schedule/`），通过操作系统原生调度器触发（macOS 为 launchd，Linux 为 systemd 用户计时器，Windows 为 schtasks，POSIX 回退为 crontab），每次运行都会通过 `oma agent spawn` 重新进入 harness。
 
-**触发关键词：**无（针对 `oma schedule <action>` 时间作业的斜杠调用工作流）。
+**触发关键词**：无（针对 `oma schedule <action>` 时间作业的斜杠调用工作流）。
 
-**步骤：**解析意图（add / list / remove / sync）-> 解析计划（显式 `--cron`，或通过 `--every` 使用自然语言）-> 使用 `oma schedule create` 注册（仅捕获命名环境变量，文件权限 0600）-> 使用 `oma schedule list` 验证（清单 × 操作系统漂移，按项目分组）-> 报告作业 ID 和下次触发时间。
+**步骤**：解析意图（add / list / remove / sync）-> 解析计划（显式 `--cron`，或通过 `--every` 使用自然语言）-> 使用 `oma schedule create` 注册（仅捕获命名环境变量，文件权限 0600）-> 使用 `oma schedule list` 验证（清单 × 操作系统漂移，按项目分组）-> 报告作业 ID 和下次触发时间。
 
-**何时使用：**必须在没有交互式会话时也能触发的重复性智能体任务，例如夜间回顾、计划扫描和周期性维护。
+**何时使用**：必须在没有交互式会话时也能触发的重复性智能体任务，例如夜间回顾、计划扫描和周期性维护。
 
 ### /explain
 
-**说明：**端到端驱动 `oma-explanation` 技能，把 diff、PR、分支或提交范围转换为自包含的交互式 HTML 讲解（Background / Intuition / Code / Quiz）。内联执行（不启动子智能体）。
+**说明**：端到端驱动 `oma-explanation` 技能，把 diff、PR、分支或提交范围转换为自包含的交互式 HTML 讲解（Background / Intuition / Code / Quiz）。内联执行（不启动子智能体）。
 
-**触发关键词：**无（“explain”是日常词语，关键词检测会在普通“解释这个函数”问题中产生误报，因此只能通过斜杠命令调用）。
+**触发关键词**：无（“explain”是日常词语，关键词检测会在普通“解释这个函数”问题中产生误报，因此只能通过斜杠命令调用）。
 
-**步骤：**解析参数（目标引用：显式 PR# / 分支 / SHA 范围 → 暂存区 → dirty tree → `HEAD~1..HEAD`；读者级别 `onboarding` | `reviewer`；输出语言；题目数）-> 加载契约（`oma-explanation` SKILL.md 和资源）-> 收集并设门禁（diff + 周边代码；生成前机密扫描；将 diff/PR 文本严格作为数据）-> 按文档和 HTML 契约生成 HTML -> 验证（包含最终 HTML 机密扫描的 grep 清单，最多 3 个修复循环）-> 交付（`open` 仅警告，不阻断；TL;DR + 路径）。
+**步骤**：解析参数（目标引用：显式 PR# / 分支 / SHA 范围 → 暂存区 → dirty tree → `HEAD~1..HEAD`；读者级别 `onboarding` | `reviewer`；输出语言；题目数）-> 加载契约（`oma-explanation` SKILL.md 和资源）-> 收集并设门禁（diff + 周边代码；生成前机密扫描；将 diff/PR 文本严格作为数据）-> 按文档和 HTML 契约生成 HTML -> 验证（包含最终 HTML 机密扫描的 grep 清单，最多 3 个修复循环）-> 交付（`open` 仅警告，不阻断；TL;DR + 路径）。
 
 **输出：**`.agents/results/explain/{YYYY-MM-DD}-{slug}.html`（Asia/Seoul 日期；同一日期和 slug 再运行会覆盖）。参见[代码讲解指南](../guide/code-explainer.md)。
 

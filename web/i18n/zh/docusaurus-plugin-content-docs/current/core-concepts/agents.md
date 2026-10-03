@@ -56,11 +56,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 ## 详细智能体参考
 
 ### oma-brainstorm
-**领域：**规划或实现之前的设计优先构思。
+**领域**：规划或实现之前的设计优先构思。
 
-**何时使用：**探索新功能想法、理解用户意图、比较方案。在复杂或模糊的请求之前先于 /plan 使用。
+**何时使用**：探索新功能想法、理解用户意图、比较方案。在复杂或模糊的请求之前先于 /plan 使用。
 
-**何时不使用：**需求明确时交给 oma-pm，实现阶段交给领域智能体，代码审查交给 oma-qa。
+**何时不使用**：需求明确时交给 oma-pm，实现阶段交给领域智能体，代码审查交给 oma-qa。
 
 **核心规则：**
 - 设计批准前不进行实现或规划
@@ -69,9 +69,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 逐节设计，每一步都需要用户确认
 - YAGNI：只设计需要的部分
 
-**工作流：**6 个阶段：上下文探索、提问、方案、设计、文档，保存到 docs/plans/，然后过渡到 /plan。
+**工作流**：6 个阶段：上下文探索、提问、方案、设计、文档，保存到 docs/plans/，然后过渡到 /plan。
 
-**资源：**仅使用共享资源：clarification-protocol、quality-principles、skill-routing。
+**资源**：仅使用共享资源：clarification-protocol、quality-principles、skill-routing。
 
 受保护标识符补充： `/plan`、`docs/plans/`。
 
@@ -121,9 +121,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 受保护标识符补充： `../_shared/core/api-contracts/template.md`、`.agents/results/api-contracts/`。
 
 ### oma-frontend
-**领域：**基于 FSD-lite 架构使用 React、Next.js 和 TypeScript 构建 Web UI。
+**领域**：基于 FSD-lite 架构使用 React、Next.js 和 TypeScript 构建 Web UI。
 
-**何时使用：**构建用户界面、组件、客户端逻辑、样式、表单验证和 API 集成。
+**何时使用**：构建用户界面、组件、客户端逻辑、样式、表单验证和 API 集成。
 
 **技术栈：**
 - React + Next.js，默认服务端组件，交互时使用客户端组件
@@ -153,7 +153,7 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - FCP 目标 < 1s
 - 响应式断点：320px、768px、1024px、1440px
 
-**资源：**execution-protocol.md、tech-stack.md、tailwind-rules.md、snippets.md、angular-rules.md、error-playbook.md 和 checklist.md。
+**资源**：execution-protocol.md、tech-stack.md、tailwind-rules.md、snippets.md、angular-rules.md、error-playbook.md 和 checklist.md。
 
 **质量关卡检查清单：**
 - 无障碍：ARIA 标签、语义化标题、键盘导航
@@ -166,13 +166,13 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 受保护标识符补充： `@/`、`angular-rules.md`、`checklist.md`、`components/ui/*`、`error-playbook.md`、`execution-protocol.md`、`middleware.ts`、`proxy.ts`、`snippets.md`、`src/`、`src/features/*/`、`tailwind-rules.md`、`tech-stack.md`。
 
 ### oma-backend
-**领域：**API、服务端逻辑、认证、数据库操作。
+**领域**：API、服务端逻辑、认证、数据库操作。
 
-**何时使用：**REST/GraphQL API、数据库迁移、认证、服务端业务逻辑和后台任务。
+**何时使用**：REST/GraphQL API、数据库迁移、认证、服务端业务逻辑和后台任务。
 
-**架构：**Router（HTTP）-> Service（业务逻辑）-> Repository（数据访问）-> Models。
+**架构**：Router（HTTP）-> Service（业务逻辑）-> Repository（数据访问）-> Models。
 
-**栈检测：**读取项目清单文件（pyproject.toml、package.json、Cargo.toml、go.mod 等）确定语言和框架。如果缺少项目专用约定，要求用户运行 /stack-set；该命令会根据随附的 schema 和模板将解析后的 stack 参考资料生成到项目中。
+**栈检测**：读取项目清单文件（pyproject.toml、package.json、Cargo.toml、go.mod 等）确定语言和框架。如果缺少项目专用约定，要求用户运行 /stack-set；该命令会根据随附的 schema 和模板将解析后的 stack 参考资料生成到项目中。
 
 **核心规则：**
 - 整洁架构：路由处理器中不放业务逻辑
@@ -183,7 +183,7 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 通过集中错误模块处理自定义异常
 - 显式 ORM 加载策略、事务边界和安全生命周期
 
-**资源：**execution-protocol.md、orm-reference.md、checklist.md 和 error-playbook.md。variants/stack.schema.json 定义栈清单形状。
+**资源**：execution-protocol.md、orm-reference.md、checklist.md 和 error-playbook.md。variants/stack.schema.json 定义栈清单形状。
 
 <!-- oma-docs:ignore-start -->
 项目专用的 stack/stack.yaml、stack/tech-stack.md、代码片段和 API 模板由 /stack-set 按需生成；在栈被物化之前这些文件不存在。
@@ -192,11 +192,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 受保护标识符补充： `/stack-set`、`checklist.md`、`error-playbook.md`、`execution-protocol.md`、`orm-reference.md`、`stack/`、`stack/stack.yaml`、`stack/tech-stack.md`、`variants/stack.schema.json`。
 
 ### oma-mobile
-**领域：**跨平台和原生移动应用，包括 Flutter、React Native 和 Swift 原生 iOS。
+**领域**：跨平台和原生移动应用，包括 Flutter、React Native 和 Swift 原生 iOS。
 
-**何时使用：**原生移动应用（iOS + Android）、移动端特定 UI 模式、相机、GPS、推送通知等平台功能、离线优先架构；也用于采用 SwiftUI 和 swift-openapi-generator 的 Swift 原生 iOS 应用。
+**何时使用**：原生移动应用（iOS + Android）、移动端特定 UI 模式、相机、GPS、推送通知等平台功能、离线优先架构；也用于采用 SwiftUI 和 swift-openapi-generator 的 Swift 原生 iOS 应用。
 
-**架构：**整洁架构：domain -> data -> presentation。Swift iOS 使用 App/Core/Features/Shared 项目布局。
+**架构**：整洁架构：domain -> data -> presentation。Swift iOS 使用 App/Core/Features/Shared 项目布局。
 
 **技术栈：**
 - Flutter/Dart：Riverpod/Bloc 管理状态，Dio 带拦截器处理 API，GoRouter 负责导航，Android 使用 Material Design 3，iOS 遵循 iOS HIG。
@@ -209,7 +209,7 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 目标 60fps，在两个平台上测试
 - Swift：iOS 17+ 使用 @Observable 而不是 ObservableObject；根据 OpenAPI 规范通过 swift-openapi-generator 生成 API 客户端
 
-**资源：**execution-protocol.md、tech-stack.md、screen-template.dart、screen-template.swift、screen-template.tsx、checklist.md 和 error-playbook.md。variants/ 目录包含栈 schema 以及 /stack-set 物化后的平台参考资料。
+**资源**：execution-protocol.md、tech-stack.md、screen-template.dart、screen-template.swift、screen-template.tsx、checklist.md 和 error-playbook.md。variants/ 目录包含栈 schema 以及 /stack-set 物化后的平台参考资料。
 
 受保护标识符补充： `/stack-set`、`@Observable`、`App/Core/Features/Shared`、`checklist.md`、`dispose()`、`error-playbook.md`、`execution-protocol.md`、`ObservableObject`、`screen-template.dart`、`screen-template.swift`、`screen-template.tsx`、`swift-openapi-generator`、`tech-stack.md`、`variants/`。
 
@@ -349,11 +349,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 ---
 
 ### oma-debug
-**领域：**Bug 诊断与修复。
+**领域**：Bug 诊断与修复。
 
-**何时使用：**用户报告的 Bug、崩溃、性能问题、间歇性故障、竞态条件和回归 Bug。
+**何时使用**：用户报告的 Bug、崩溃、性能问题、间歇性故障、竞态条件和回归 Bug。
 
-**方法论：**先复现，再诊断。永远不要猜测修复方案。
+**方法论**：先复现，再诊断。永远不要猜测修复方案。
 
 **核心规则：**
 - 找到根因，而非仅处理症状
@@ -367,16 +367,16 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - find_referencing_symbols("Component") 或 Gortex 影响分析：查找所有用法
 - search_for_pattern("error pattern") 或 Gortex 搜索：查找相似问题
 
-**资源：**execution-protocol.md、common-patterns.md、debugging-checklist.md、bug-report-template.md、error-playbook.md、examples.md。
+**资源**：execution-protocol.md、common-patterns.md、debugging-checklist.md、bug-report-template.md、error-playbook.md、examples.md。
 
 受保护标识符补充： `.agents/results/`、`bug-report-template.md`、`common-patterns.md`、`debugging-checklist.md`、`error-playbook.md`、`examples.md`、`execution-protocol.md`、`find_referencing_symbols("Component")`、`find_symbol("functionName")`、`search_for_pattern("error pattern")`。
 
 ### oma-translation
-**领域：**上下文感知的多语言翻译。
+**领域**：上下文感知的多语言翻译。
 
-**何时使用：**翻译 UI 字符串、文档、营销文案，审查现有翻译，创建术语表。
+**何时使用**：翻译 UI 字符串、文档、营销文案，审查现有翻译，创建术语表。
 
-**六幕流程：**Prepare、Acquire、Reason、Act、Verify 和 Finalize。翻译方法有四步：阅读含义和受保护语法，选择语域，在目标语言中重构，并在适当处保留作者风格。
+**六幕流程**：Prepare、Acquire、Reason、Act、Verify 和 Finalize。翻译方法有四步：阅读含义和受保护语法，选择语域，在目标语言中重构，并在适当处保留作者风格。
 
 **核心规则：**
 - 先扫描现有区域设置文件以匹配惯例
@@ -386,7 +386,7 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 同一篇文章中不混合语域
 - 保留领域特定术语原文
 
-**资源：**translation-rubric.md、anti-ai-patterns.md（均与语言无关），以及 resources/lang/ 下按目标语言划分的配置文件（ko、ja、zh、en；新增语言可复制 _template.md）。
+**资源**：translation-rubric.md、anti-ai-patterns.md（均与语言无关），以及 resources/lang/ 下按目标语言划分的配置文件（ko、ja、zh、en；新增语言可复制 _template.md）。
 
 受保护标识符补充： `_template.md`、`anti-ai-patterns.md`、`en`、`ja`、`ko`、`resources/lang/`、`translation-rubric.md`、`zh`。
 
@@ -421,13 +421,13 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 受保护标识符补充： `oma verify agent {agent-type} --workspace {workspace}`。
 
 ### oma-scm
-**领域：**软件配置管理（SCM）和 Git，涵盖分支、合并、工作区、基线、审计就绪性和 Conventional Commits。
+**领域**：软件配置管理（SCM）和 Git，涵盖分支、合并、工作区、基线、审计就绪性和 Conventional Commits。
 
-**何时使用：**代码变更完成后（/scm）、处理合并冲突、分支策略、发布或标签，以及任何仓库配置管理问题。
+**何时使用**：代码变更完成后（/scm）、处理合并冲突、分支策略、发布或标签，以及任何仓库配置管理问题。
 
-**提交类型：**feat、fix、refactor、docs、test、chore、style、perf。
+**提交类型**：feat、fix、refactor、docs、test、chore、style、perf。
 
-**提交工作流：**分析变更 → 必要时按功能拆分 → 类型 → 范围 → 描述（祈使语气、不超过 72 个字符、小写、末尾不加句号）→ 使用明确路径提交。
+**提交工作流**：分析变更 → 必要时按功能拆分 → 类型 → 范围 → 描述（祈使语气、不超过 72 个字符、小写、末尾不加句号）→ 使用明确路径提交。
 
 **规则：**
 - 永远不要使用 git add -A 或 git add .
@@ -482,11 +482,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 ---
 
 ### oma-recap
-**领域：**分析多个 AI 工具（Claude、Codex、Qwen、Cursor）的对话历史，生成主题化的每日或周期工作摘要。
+**领域**：分析多个 AI 工具（Claude、Codex、Qwen、Cursor）的对话历史，生成主题化的每日或周期工作摘要。
 
-**何时使用：**汇总一天或一段时间的工作活动，理解多个 AI 工具之间的工作流，分析会话之间的工具切换模式，准备每日站会、每周回顾或工作日志。
+**何时使用**：汇总一天或一段时间的工作活动，理解多个 AI 工具之间的工作流，分析会话之间的工具切换模式，准备每日站会、每周回顾或工作日志。
 
-**何时不使用：**基于 Git 提交的代码变更回顾（使用 oma retro）、实时智能体监控（使用 oma dashboard terminal）、生产力指标（使用 oma stats get）。
+**何时不使用**：基于 Git 提交的代码变更回顾（使用 oma retro）、实时智能体监控（使用 oma dashboard terminal）、生产力指标（使用 oma stats get）。
 
 **流程：**
 1. 从自然语言输入（今天、昨天、上周一、明确日期）解析日期或时间窗口
@@ -495,7 +495,7 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 4. 提取主题（完成的功能、修复的 Bug、探索的工具）
 5. 生成主题化的每日或周期摘要
 
-**资源：**SKILL.md。繁重工作由 oma recap CLI 延迟处理。
+**资源**：SKILL.md。繁重工作由 oma recap CLI 延迟处理。
 
 受保护标识符补充： `--since`、`--until`、`oma dashboard terminal`、`oma recap`、`oma recap --date YYYY-MM-DD`、`oma retro`、`oma stats get`、`SKILL.md`。
 
@@ -544,11 +544,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-academic-writing
 
-**领域：**面向出版质量的学术写作能力，负责起草、修订和审查学术论文、报告、分析章节、执行摘要、结论和文献综述。
+**领域**：面向出版质量的学术写作能力，负责起草、修订和审查学术论文、报告、分析章节、执行摘要、结论和文献综述。
 
-**何时使用：**撰写或修订学术文本，需要精确的动词、校准后的限定语、句式变化，或需要针对评分标准和反 AI 风格要求审查文本。
+**何时使用**：撰写或修订学术文本，需要精确的动词、校准后的限定语、句式变化，或需要针对评分标准和反 AI 风格要求审查文本。
 
-**何时不使用：**一般文案或产品文档（使用相应领域技能），学术搜索和论文 sidecar（使用 oma-scholar），一般翻译（使用 oma-translation）。
+**何时不使用**：一般文案或产品文档（使用相应领域技能），学术搜索和论文 sidecar（使用 oma-scholar），一般翻译（使用 oma-translation）。
 
 **核心规则：**
 - 先确认体裁、读者、评分标准和证据边界
@@ -557,9 +557,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 审查主张、证据、引文和推理链
 - 避免套话、空泛总结和可预测的段落节奏
 
-**工作流：**读取要求和文本 → 识别论点、证据和语域 → 修订结构与句子 → 运行反 AI 风格审查 → 交付带有依据的最终稿。
+**工作流**：读取要求和文本 → 识别论点、证据和语域 → 修订结构与句子 → 运行反 AI 风格审查 → 交付带有依据的最终稿。
 
-**资源：**sentence-structure-reference.md、academic-verb-tiers.md、hedging-guide.md、anti-ai-checklist.md 和 prompt-tips.md。
+**资源**：sentence-structure-reference.md、academic-verb-tiers.md、hedging-guide.md、anti-ai-checklist.md 和 prompt-tips.md。
 
 ---
 
@@ -567,11 +567,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-deepsec
 
-**领域：**以成本意识驱动 Vercel 的 deepsec 智能体漏洞扫描器，涵盖扫描、PR 门禁、自定义匹配器、分诊、重新验证和导出。
+**领域**：以成本意识驱动 Vercel 的 deepsec 智能体漏洞扫描器，涵盖扫描、PR 门禁、自定义匹配器、分诊、重新验证和导出。
 
-**何时使用：**安装或引导 .deepsec/ 工作区，运行成本可控的 scan、process、triage、revalidate 和 export，使用 process --diff 为 PR 设置门禁，编写自定义匹配器，或分诊扫描结果。
+**何时使用**：安装或引导 .deepsec/ 工作区，运行成本可控的 scan、process、triage、revalidate 和 export，使用 process --diff 为 PR 设置门禁，编写自定义匹配器，或分诊扫描结果。
 
-**何时不使用：**一般安全审查（使用 oma-qa），应用代码修复（使用相应领域技能），没有可用凭据或扫描器未安装时的猜测性安全结论。
+**何时不使用**：一般安全审查（使用 oma-qa），应用代码修复（使用相应领域技能），没有可用凭据或扫描器未安装时的猜测性安全结论。
 
 **核心规则：**
 - 先初始化 .deepsec/ 工作区和 INFO.md
@@ -580,9 +580,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 结果必须可复现，并记录扫描配置、匹配器和分诊决定
 - 绝不把凭据写入结果、提示或版本库
 
-**工作流：**初始化 → 读取 INFO.md → 选择扫描或处理范围 → 运行 scan、process、triage、revalidate、export → 复核匹配器和严重性 → 导出报告或 PR 门禁结果。
+**工作流**：初始化 → 读取 INFO.md → 选择扫描或处理范围 → 运行 scan、process、triage、revalidate、export → 复核匹配器和严重性 → 导出报告或 PR 门禁结果。
 
-**资源：**scanning.md、matchers.md、triage.md、validation-checklist.md、error-playbook.md、INFO.md，以及 .deepsec/ 工作区。CLI 可通过 oma deepsec scan、oma deepsec process --diff、oma deepsec triage、oma deepsec revalidate 和 oma deepsec export 调用。
+**资源**：scanning.md、matchers.md、triage.md、validation-checklist.md、error-playbook.md、INFO.md，以及 .deepsec/ 工作区。CLI 可通过 oma deepsec scan、oma deepsec process --diff、oma deepsec triage、oma deepsec revalidate 和 oma deepsec export 调用。
 
 ---
 
@@ -590,11 +590,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-docs
 
-**领域：**文档漂移检测：对照当前代码库验证 `docs/**/*.md` 中的引用（verify 模式），并为受 diff 影响的文档提出补丁（sync 模式）。
+**领域**：文档漂移检测：对照当前代码库验证 `docs/**/*.md` 中的引用（verify 模式），并为受 diff 影响的文档提出补丁（sync 模式）。
 
-**何时使用：**代码变更可能使文档中的文件路径、CLI 命令、配置键、环境变量、脚本或链接失效时，或需要审查 i18n 文档漂移和 CJK 风格问题时。
+**何时使用**：代码变更可能使文档中的文件路径、CLI 命令、配置键、环境变量、脚本或链接失效时，或需要审查 i18n 文档漂移和 CJK 风格问题时。
 
-**何时不使用：**直接修改代码（交给领域智能体），与代码变更无关的全面重写，以及密钥相邻文件的自动处理。
+**何时不使用**：直接修改代码（交给领域智能体），与代码变更无关的全面重写，以及密钥相邻文件的自动处理。
 
 **核心规则：**
 - 先运行 oma docs verify --json 获取基线
@@ -603,9 +603,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 排除 .env*、*.pem、*.key、id_rsa* 等密钥文件
 - 重跑验证并记录修改前后的漂移计数
 
-**工作流：**验证基线 → 读取同步候选及变更文件 → 逐篇比较文档和 diff → 起草最小补丁 → 应用 → 重跑 oma docs verify --json → 报告未解决的越界漂移。
+**工作流**：验证基线 → 读取同步候选及变更文件 → 逐篇比较文档和 diff → 起草最小补丁 → 应用 → 重跑 oma docs verify --json → 报告未解决的越界漂移。
 
-**资源：**SKILL.md、docs-curator.md、config.md、intent-rules.md、measurement.md、validation-checklist.md、pr-review.md、doc-refs.json、cli/commands/docs/，以及 extract.ts、resolve.ts、reporter.ts 和 sync-propose.ts。
+**资源**：SKILL.md、docs-curator.md、config.md、intent-rules.md、measurement.md、validation-checklist.md、pr-review.md、doc-refs.json、cli/commands/docs/，以及 extract.ts、resolve.ts、reporter.ts 和 sync-propose.ts。
 
 ---
 
@@ -613,15 +613,15 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-explanation
 
-**领域：**将代码变更、diff、PR、分支或提交范围转为丰富的离线 HTML 讲解。
+**领域**：将代码变更、diff、PR、分支或提交范围转为丰富的离线 HTML 讲解。
 
-**何时使用：**需要向读者解释代码变更的背景、直觉、实现细节和理解检查时，或需要可离线打开的单文件讲解时。
+**何时使用**：需要向读者解释代码变更的背景、直觉、实现细节和理解检查时，或需要可离线打开的单文件讲解时。
 
-**何时不使用：**普通文档翻译、只需要简短代码评论，或需要修改产品代码。
+**何时不使用**：普通文档翻译、只需要简短代码评论，或需要修改产品代码。
 
-**工作流：**读取 diff 和相关上下文 → 设计 Background、Intuition、Code、Quiz 四部分 → 生成单个离线 HTML → 检查图表、可访问性和离线资源 → 交付文件。
+**工作流**：读取 diff 和相关上下文 → 设计 Background、Intuition、Code、Quiz 四部分 → 生成单个离线 HTML → 检查图表、可访问性和离线资源 → 交付文件。
 
-**资源：**generation-protocol.md、measurement.md、output-laws.md、quality-principles、context-loading、validation-checklist.md 和 error-playbook.md。
+**资源**：generation-protocol.md、measurement.md、output-laws.md、quality-principles、context-loading、validation-checklist.md 和 error-playbook.md。
 
 ---
 
@@ -629,11 +629,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-image
 
-**领域：**使用多供应商后端生成图像和视觉素材，并生成可复现的运行目录。
+**领域**：使用多供应商后端生成图像和视觉素材，并生成可复现的运行目录。
 
-**何时使用：**生成全新图像、编辑现有图像、选择供应商、比较变体，或需要带清单和提示词的可审计图像运行。
+**何时使用**：生成全新图像、编辑现有图像、选择供应商、比较变体，或需要带清单和提示词的可审计图像运行。
 
-**何时不使用：**生成视频或演示文稿（使用 oma-video 或 oma-slide），只需要代码或矢量素材，以及没有授权执行付费供应商调用时。
+**何时不使用**：生成视频或演示文稿（使用 oma-video 或 oma-slide），只需要代码或矢量素材，以及没有授权执行付费供应商调用时。
 
 **核心规则：**
 - 先检查凭据和供应商可用性，支持 vendor all 并行比较
@@ -642,9 +642,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 单次变体数 n 最多为 5，使用 reference path 指定参考图
 - 每次运行写入 manifest.json，记录供应商、模型、提示词、种子、路径和成本
 
-**工作流：**准备 → 检查供应商 → 生成或编辑 → 按需放大或比较 → 验证输出和清单 → 报告路径与限制。
+**工作流**：准备 → 检查供应商 → 生成或编辑 → 按需放大或比较 → 验证输出和清单 → 报告路径与限制。
 
-**资源：**generation-protocol.md、vendor-matrix.md、style-presets.md、fallback-providers.md、checklist.md、error-playbook.md、config/image-config.yaml。CLI：oma image generate。
+**资源**：generation-protocol.md、vendor-matrix.md、style-presets.md、fallback-providers.md、checklist.md、error-playbook.md、config/image-config.yaml。CLI：oma image generate。
 
 ---
 
@@ -652,11 +652,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-market
 
-**领域：**通过社区信号进行痛点、趋势、竞品和发现研究，并使用意图自动选择的 SWOT、Porter 五力和 PESTEL 框架。
+**领域**：通过社区信号进行痛点、趋势、竞品和发现研究，并使用意图自动选择的 SWOT、Porter 五力和 PESTEL 框架。
 
-**何时使用：**需要跨 Reddit、X、YouTube、TikTok、HN、Polymarket、GitHub、arXiv、Techmeme、Bluesky 等来源提取近期信号、检测趋势、比较竞品或发现机会时。
+**何时使用**：需要跨 Reddit、X、YouTube、TikTok、HN、Polymarket、GitHub、arXiv、Techmeme、Bluesky 等来源提取近期信号、检测趋势、比较竞品或发现机会时。
 
-**何时不使用：**只需一次网络搜索、没有社区信号的静态事实核查，或无法使用受支持研究引擎时。
+**何时不使用**：只需一次网络搜索、没有社区信号的静态事实核查，或无法使用受支持研究引擎时。
 
 **核心规则：**
 - 先运行陷阱检测，再使用唯一的最新引擎；oma market resolve 会在运行前刷新托管副本
@@ -666,9 +666,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 框架只引用引擎聚类；写入文件前必须满足首行徽章和上游 LAW
 - 每次运行仅生成一份 market 结果简报；按意图自动切换框架
 
-**工作流：**detect-trap → oma market resolve → 读取上游 SKILL.md → 上游研究前步骤（设置向导、处理句柄或 subreddit 解析、查询计划）→ oma market run emit compact → 按上游 OUTPUT CONTRACT 综合 → 添加框架 → 自检 → 写入。
+**工作流**：detect-trap → oma market resolve → 读取上游 SKILL.md → 上游研究前步骤（设置向导、处理句柄或 subreddit 解析、查询计划）→ oma market run emit compact → 按上游 OUTPUT CONTRACT 综合 → 添加框架 → 自检 → 写入。
 
-**资源：**intent-rules.md、output-laws.md、execution-protocol.md、checklist.md、error-playbook.md，以及 frameworks/（swot、porters-5f、pestel）。CLI：oma market detect-trap、resolve、update、run。
+**资源**：intent-rules.md、output-laws.md、execution-protocol.md、checklist.md、error-playbook.md，以及 frameworks/（swot、porters-5f、pestel）。CLI：oma market detect-trap、resolve、update、run。
 
 ---
 
@@ -676,11 +676,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-refactor
 
-**领域：**保持行为的重构：以安全的渐进式重组处理代码异味、SATD 和热点，并使用特征测试安全网，提交仅含重构。
+**领域**：保持行为的重构：以安全的渐进式重组处理代码异味、SATD 和热点，并使用特征测试安全网，提交仅含重构。
 
-**何时使用：**对特定文件或模块执行提取、移动、重命名、拆分或惯用法对齐；在功能开发前预先重构；通过接缝发现和特征测试救援遗留或棕地代码；按热点（变更频率 × 复杂度）选择重构目标；审查代码是否已具备安全重构条件。
+**何时使用**：对特定文件或模块执行提取、移动、重命名、拆分或惯用法对齐；在功能开发前预先重构；通过接缝发现和特征测试救援遗留或棕地代码；按热点（变更频率 × 复杂度）选择重构目标；审查代码是否已具备安全重构条件。
 
-**何时不使用：**修复报告的 Bug 或失败行为（使用 oma-debug，重构不得改变行为），安全、性能或无障碍审查（使用 oma-qa），系统设计或模块边界（使用 oma-architecture），数据库模式设计或迁移机制（使用 oma-db），提交拆分或暂存（使用 oma-scm），以性能优化为目标的工作。
+**何时不使用**：修复报告的 Bug 或失败行为（使用 oma-debug，重构不得改变行为），安全、性能或无障碍审查（使用 oma-qa），系统设计或模块边界（使用 oma-architecture），数据库模式设计或迁移机制（使用 oma-db），提交拆分或暂存（使用 oma-scm），以性能优化为目标的工作。
 
 **核心规则：**
 - 保持行为：消费者契约不可破坏；调优只能是副作用，不能成为目标
@@ -690,9 +690,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 经济性：可读性是主要目标；不要重构计划删除或低变更率代码
 - 约定偏离需要走 oma-architecture ADR 路由，而不是局部修改；所有指标都只是代理，需警惕 Goodhart
 
-**工作流：**PREPARE（分类 greenfield 或 brownfield、规模关卡、热点排序）→ ACQUIRE（通过符号工具读取代码，收集指标和 Git 信号）→ REASON（规划原子变换顺序或 expand-contract）→ ACT（以引擎为先进行一个变换）→ VERIFY（不变地重跑测试后提交，或使用 Mikado 回退）→ FINALIZE（指标差异和可读性结论）。
+**工作流**：PREPARE（分类 greenfield 或 brownfield、规模关卡、热点排序）→ ACQUIRE（通过符号工具读取代码，收集指标和 Git 信号）→ REASON（规划原子变换顺序或 expand-contract）→ ACT（以引擎为先进行一个变换）→ VERIFY（不变地重跑测试后提交，或使用 Mikado 回退）→ FINALIZE（指标差异和可读性结论）。
 
-**资源：**definition.md、measurement.md、governance.md，以及共享的 context-loading、quality-principles。
+**资源**：definition.md、measurement.md、governance.md，以及共享的 context-loading、quality-principles。
 
 ---
 
@@ -700,13 +700,13 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-scholar
 
-**领域：**使用 Knows .knows.yaml sidecar 规范进行学术研究，生成、验证、审查、查询和比较结构化论文 sidecar，并从 knows.academy 获取内容。
+**领域**：使用 Knows .knows.yaml sidecar 规范进行学术研究，生成、验证、审查、查询和比较结构化论文 sidecar，并从 knows.academy 获取内容。
 
-**何时使用：**用 sidecar 高效阅读论文（仅主张约 700 个令牌，完整 PDF 约 10K），从草稿、LaTeX 或笔记生成 .knows.yaml，分享前验证 sidecar 结构，生成 sidecar 形式的同行评审，查询或总结现有 sidecar，结构化比较两篇论文，或搜索、获取 knows.academy 内容。
+**何时使用**：用 sidecar 高效阅读论文（仅主张约 700 个令牌，完整 PDF 约 10K），从草稿、LaTeX 或笔记生成 .knows.yaml，分享前验证 sidecar 结构，生成 sidecar 形式的同行评审，查询或总结现有 sidecar，结构化比较两篇论文，或搜索、获取 knows.academy 内容。
 
-**何时不使用：**一般网络搜索或非学术内容（使用 oma-search），翻译论文（使用 oma-translation），只做 PDF 解析而不需要 sidecar（使用 oma-pdf），使用编辑系统进行完整同行评审工作流。
+**何时不使用**：一般网络搜索或非学术内容（使用 oma-search），翻译论文（使用 oma-translation），只做 PDF 解析而不需要 sidecar（使用 oma-pdf），使用编辑系统进行完整同行评审工作流。
 
-**模式：**Generate、Validate、Review、Analyze、Compare、Remote（搜索或获取）。
+**模式**：Generate、Validate、Review、Analyze、Compare、Remote（搜索或获取）。
 
 **核心规则：**
 - 目标规范是 v0.9.0 / paper@1 配置；由宿主 LLM 生成 sidecar，绝不调用外部 LLM SDK
@@ -716,9 +716,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 分享前验证（oma scholar lint）；第三方 sidecar 使用 lenient
 - 对较旧或非 2026 年论文使用 knows.academy → OpenAlex 回退；公共代理 API 不需要认证
 
-**工作流：**PREPARE（模式和来源）→ ACQUIRE（元数据、章节或本地文本）→ REASON（提取主张、证据和关系）→ ACT（生成、lint、审查、分析、比较或获取）→ VERIFY（schema、枚举、ID、关系）→ FINALIZE（带有注意事项的 sidecar、报告或摘要）。
+**工作流**：PREPARE（模式和来源）→ ACQUIRE（元数据、章节或本地文本）→ REASON（提取主张、证据和关系）→ ACT（生成、lint、审查、分析、比较或获取）→ VERIFY（schema、枚举、ID、关系）→ FINALIZE（带有注意事项的 sidecar、报告或摘要）。
 
-**资源：**execution-protocol.md、sidecar-spec.md、api-endpoints.md、setup-openalex.md、upstream-spec-cache.md、fallback-providers.md、checklist.md 和 config/scholar-config.yaml。
+**资源**：execution-protocol.md、sidecar-spec.md、api-endpoints.md、setup-openalex.md、upstream-spec-cache.md、fallback-providers.md、checklist.md 和 config/scholar-config.yaml。
 
 ---
 
@@ -726,11 +726,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-skill-creation
 
-**领域：**以 SSL-lite Markdown 格式（Scheduling / Structural Flow / Logical Operations / References）编写并验证 OMA 技能。
+**领域**：以 SSL-lite Markdown 格式（Scheduling / Structural Flow / Logical Operations / References）编写并验证 OMA 技能。
 
-**何时使用：**在 agents skills name SKILL.md 下创建技能，将现有技能更新为 SSL-lite 格式，为执行繁重的技能添加规范命令或工作流路径，审查技能是否具备足够的路由、执行、验证和恢复细节，决定示例应内嵌还是放在 resources/。
+**何时使用**：在 agents skills name SKILL.md 下创建技能，将现有技能更新为 SSL-lite 格式，为执行繁重的技能添加规范命令或工作流路径，审查技能是否具备足够的路由、执行、验证和恢复细节，决定示例应内嵌还是放在 resources/。
 
-**何时不使用：**将第三方技能安装到 CODEX_HOME skills，创建 Codex 插件包，编写与技能无关的一般项目计划（使用 oma-pm），直接编辑产品、基础设施、前端、后端或移动代码（使用相应专业技能）。
+**何时不使用**：将第三方技能安装到 CODEX_HOME skills，创建 Codex 插件包，编写与技能无关的一般项目计划（使用 oma-pm），直接编辑产品、基础设施、前端、后端或移动代码（使用相应专业技能）。
 
 **核心规则：**
 - 四个顶层部分必须完全保留：Scheduling、Structural Flow、Logical Operations、References
@@ -739,9 +739,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 为脆弱或可重复命令添加且只添加一条内嵌规范路径（Canonical command path）；研究或判断流程使用 Canonical workflow path
 - 将长的变体专用细节放入 resources/，不要在技能主体中添加 README、变更日志或安装文档
 
-**工作流：**PREPARE（目的、触发器、边界、输入输出、依赖）→ ACQUIRE（读取 1 至 3 个相似技能和约定）→ REASON（内联还是 resources/）→ ACT（从 SSL-lite 模板起草）→ VERIFY（结构、路由、执行和格式检查）→ FINALIZE（变更文件和验证报告）。
+**工作流**：PREPARE（目的、触发器、边界、输入输出、依赖）→ ACQUIRE（读取 1 至 3 个相似技能和约定）→ REASON（内联还是 resources/）→ ACT（从 SSL-lite 模板起草）→ VERIFY（结构、路由、执行和格式检查）→ FINALIZE（变更文件和验证报告）。
 
-**资源：**ssl-lite-template.md、validation-checklist.md，以及共享的 context-loading、quality-principles。
+**资源**：ssl-lite-template.md、validation-checklist.md，以及共享的 context-loading、quality-principles。
 
 ---
 
@@ -749,11 +749,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-slide
 
-**领域：**在固定 1920×1080 舞台上生成带丰富动画的 HTML 演示文稿，并通过 oma slide CLI 确定性验证、打包和导出为 PDF/PNG/PPTX。
+**领域**：在固定 1920×1080 舞台上生成带丰富动画的 HTML 演示文稿，并通过 oma slide CLI 确定性验证、打包和导出为 PDF/PNG/PPTX。
 
-**何时使用：**根据主题或大纲创建新演示文稿，增强或重新排版现有演示文稿，生成带动画和设计规范审美的逐页 HTML，导出演示文稿，应用命名样式预设，或导出到 Canva 及从 Canva 导入。
+**何时使用**：根据主题或大纲创建新演示文稿，增强或重新排版现有演示文稿，生成带动画和设计规范审美的逐页 HTML，导出演示文稿，应用命名样式预设，或导出到 Canva 及从 Canva 导入。
 
-**何时不使用：**没有幻灯片的普通文档创建，单独生成图像（直接使用 oma-image），定义品牌或设计系统（使用 oma-design），不需要生成而只做确定性 CLI 操作（直接调用 oma slide CLI）。
+**何时不使用**：没有幻灯片的普通文档创建，单独生成图像（直接使用 oma-image），定义品牌或设计系统（使用 oma-design），不需要生成而只做确定性 CLI 操作（直接调用 oma slide CLI）。
 
 **核心规则：**
 - 技能负责编写 HTML；CLI 负责其他工作（脚手架、验证、打包、导出）
@@ -763,9 +763,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 验证最多自动修复 3 次，之后将 diff 提交给用户
 - 图像生成交给 oma-image；Canva MCP 只有在用户明确同意后才可选配并自动提供
 
-**工作流：**7 个阶段：DETECT（模式）→ DISCOVER（澄清并评估素材）→ STYLE（3 个实时预览，用户选择）→ GENERATE（以 1920×1080 生成 slide-NN.html）→ VALIDATE（oma slide validate，最多 3 次自动修复循环）→ REVIEW（查看器和可选 bbox 编辑器）→ DELIVER（打包并可选导出 PDF/PNG/PPTX）。
+**工作流**：7 个阶段：DETECT（模式）→ DISCOVER（澄清并评估素材）→ STYLE（3 个实时预览，用户选择）→ GENERATE（以 1920×1080 生成 slide-NN.html）→ VALIDATE（oma slide validate，最多 3 次自动修复循环）→ REVIEW（查看器和可选 bbox 编辑器）→ DELIVER（打包并可选导出 PDF/PNG/PPTX）。
 
-**资源：**generation-protocol.md、design-doctrine.md、fixed-stage.md、style-presets.md、selection-index.json、animation-patterns.md、canva-integration.md、checklist.md，以及 assets/ 目录。
+**资源**：generation-protocol.md、design-doctrine.md、fixed-stage.md、style-presets.md、selection-index.json、animation-patterns.md、canva-integration.md、checklist.md，以及 assets/ 目录。
 
 ---
 
@@ -773,11 +773,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-video
 
-**领域：**通过 oma video CLI 生成短视频、讲解视频和真人录制演示，组合脚本 → 旁白 → 视觉素材 → 字幕 → HyperFrames 渲染。
+**领域**：通过 oma video CLI 生成短视频、讲解视频和真人录制演示，组合脚本 → 旁白 → 视觉素材 → 字幕 → HyperFrames 渲染。
 
-**何时使用：**从主题生成短视频（shorts/reels，9:16），从 README、代码或数据生成讲解视频（16:9/9:16），从屏幕录制（source file）或监督式有头浏览器录制任意 URL 的 Web 应用演示（source web），或对现有运行进行确定性重新渲染。
+**何时使用**：从主题生成短视频（shorts/reels，9:16），从 README、代码或数据生成讲解视频（16:9/9:16），从屏幕录制（source file）或监督式有头浏览器录制任意 URL 的 Web 应用演示（source web），或对现有运行进行确定性重新渲染。
 
-**何时不使用：**生成单张静态图像（使用 oma-image），生成演示文稿（使用 oma-slide），只生成语音音频（使用 oma-voice），对现有成品 mp4 做非线性编辑，或直播。
+**何时不使用**：生成单张静态图像（使用 oma-image），生成演示文稿（使用 oma-slide），只生成语音音频（使用 oma-voice），对现有成品 mp4 做非线性编辑，或直播。
 
 **核心规则：**
 - 调用前先澄清或推断模式；不要从含糊简报中静默渲染，应向用户展示推断计划
@@ -787,9 +787,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 演示录制需要人在回路中：Web 录制只打开有头浏览器并由人驱动，禁止凭据自动化；日志或清单中会遮蔽 url 和令牌
 - 路径安全：输出到 PWD 之外必须使用 allow-external-output
 
-**工作流：**PREPARE（模式、画面比例、语区，澄清或扩展简报）→ ACQUIRE（探测供应商可用性、验证录制路径、检查费用）→ ACT（脚本 → 语音 ∥ 视觉素材 ∥ 字幕 → render-spec → 渲染）→ VERIFY（schema、清单哈希、退出码、mp4）→ FINALIZE（运行目录、mp4 路径和覆盖率警告）。
+**工作流**：PREPARE（模式、画面比例、语区，澄清或扩展简报）→ ACQUIRE（探测供应商可用性、验证录制路径、检查费用）→ ACT（脚本 → 语音 ∥ 视觉素材 ∥ 字幕 → render-spec → 渲染）→ VERIFY（schema、清单哈希、退出码、mp4）→ FINALIZE（运行目录、mp4 路径和覆盖率警告）。
 
-**资源：**execution-protocol.md、vendor-matrix.md、prompt-tips.md、checklist.md，以及 hyperframes-authoring/ 模式指南、Web 录制驱动和 mpt/ 回退合成器；config/video-config.yaml。
+**资源**：execution-protocol.md、vendor-matrix.md、prompt-tips.md、checklist.md，以及 hyperframes-authoring/ 模式指南、Web 录制驱动和 mpt/ 回退合成器；config/video-config.yaml。
 
 ---
 
@@ -797,11 +797,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-voice
 
-**领域：**通过 Voicebox MCP 服务器进行本地优先的文本转语音和语音转文本，完全在设备上运行，无云端、无 API 密钥、无单次调用费用。
+**领域**：通过 Voicebox MCP 服务器进行本地优先的文本转语音和语音转文本，完全在设备上运行，无云端、无 API 密钥、无单次调用费用。
 
-**何时使用：**生成智能体任务完成或阻塞时的短通知音频，制作旁白或音频素材（mp3 或 wav），将本地音频文件（mp3、wav、m4a、webm、flac）转录为 Markdown，或对不同 profile id 重新运行相同文本以比较语音配置。
+**何时使用**：生成智能体任务完成或阻塞时的短通知音频，制作旁白或音频素材（mp3 或 wav），将本地音频文件（mp3、wav、m4a、webm、flac）转录为 Markdown，或对不同 profile id 重新运行相同文本以比较语音配置。
 
-**何时不使用：**云端 TTS 或高保真多语言云端语音，实时终端麦克风听写，上传语音克隆样本或创建 profile，视频、音乐或声音设计。
+**何时不使用**：云端 TTS 或高保真多语言云端语音，实时终端麦克风听写，上传语音克隆样本或创建 profile，视频、音乐或声音设计。
 
 **核心规则：**
 - 必须使用 Voicebox：握手或 GET /health 失败时退出，并给出一次性安装或启动提示；不要重试或自动重新启动
@@ -811,9 +811,9 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 - 路径安全：输出到 PWD 之外时警告并确认；SIGINT 不写入部分输出
 - 每次生成都必须有清单；Voicebox 免费，不设费用门槛
 
-**工作流：**PREPARE（验证文本、音频、语言、路径和 profile）→ ACQUIRE（缺少信号时仅澄清一次）→ ACT（MCP voicebox_speak 或 voicebox_transcribe）→ VERIFY（音频或转录存在且清单字段完整）→ FINALIZE（写入 manifest.json，报告路径）。
+**工作流**：PREPARE（验证文本、音频、语言、路径和 profile）→ ACQUIRE（缺少信号时仅澄清一次）→ ACT（MCP voicebox_speak 或 voicebox_transcribe）→ VERIFY（音频或转录存在且清单字段完整）→ FINALIZE（写入 manifest.json，报告路径）。
 
-**资源：**voice-matrix.md、prompt-tips.md、execution-protocol.md、checklist.md，以及 config/voice-config.yaml。
+**资源**：voice-matrix.md、prompt-tips.md、execution-protocol.md、checklist.md，以及 config/voice-config.yaml。
 
 受保护标识符补充： `$PWD`、`auto_notify_after_sec`、`checklist.md`、`config/voice-config.yaml`、`execution-protocol.md`、`GET /health`、`manifest.json`、`prompt-tips.md`、`voice-matrix.md`、`voicebox_list_profiles`、`voicebox_speak`、`voicebox_transcribe`。
 
@@ -924,13 +924,13 @@ oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 
 智能体定义位于两个位置：
 
-**agents 目录：**包含 12 个已签入的事实来源子智能体定义，包括：
+**agents 目录**：包含 12 个已签入的事实来源子智能体定义，包括：
 
 这些文件定义智能体身份、执行协议引用、CHARTER_CHECK 模板、架构摘要和规则。启动子智能体时，Task/Agent 工具（Claude Code）或 CLI 会使用这些定义。
 
 运行时还提供 13 个规范调度角色：orchestrator、architecture、qa、pm、backend、frontend、mobile、db、debug、refactor、docs、tf-infra 和 explore。research-explorer.md 是映射到 explore 的已签入定义；orchestrator 是没有单独定义文件的运行时协调角色。
 
-**供应商原生投影：**OMA 会将源定义物化为运行时专用智能体文件：
+**供应商原生投影**：OMA 会将源定义物化为运行时专用智能体文件：
 
 这些生成文件由 oma link、oma install 和 oma update 刷新。
 

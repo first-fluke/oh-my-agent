@@ -143,11 +143,11 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 
 仪表盘使用多种策略提取信息：
 
-1. **会话检测：**先查找 orchestrator-session.md，然后回退到最近修改的 `session-*.md` 文件。从 RUNNING、`IN PROGRESS`、COMPLETED、`DONE`、FAILED、`ERROR` 等关键词解析状态。
-2. **任务看板解析：**将 task-board.md 作为 Markdown 表格读取，从列中提取智能体名称、状态和任务描述。
-3. **智能体发现：**如果没有任务看板，则扫描所有 Markdown 文件中的 Agent 模式、Agent 行，或文件名中包含 `_agent` 或 `-agent` 的文件。
-4. **回合计数：**对每个发现的智能体读取 progress-{agent}`.md`，从 `turn: N` 模式提取回合号。
-5. **活动信息流：**列出最近修改的 5 个 Markdown 文件，提取最后一行有意义的内容（标题、状态行、操作项）作为活动消息。Web 仪表盘也在 recap 提供回顾视图。
+1. **会话检测**：先查找 orchestrator-session.md，然后回退到最近修改的 `session-*.md` 文件。从 RUNNING、`IN PROGRESS`、COMPLETED、`DONE`、FAILED、`ERROR` 等关键词解析状态。
+2. **任务看板解析**：将 task-board.md 作为 Markdown 表格读取，从列中提取智能体名称、状态和任务描述。
+3. **智能体发现**：如果没有任务看板，则扫描所有 Markdown 文件中的 Agent 模式、Agent 行，或文件名中包含 `_agent` 或 `-agent` 的文件。
+4. **回合计数**：对每个发现的智能体读取 progress-{agent}`.md`，从 `turn: N` 模式提取回合号。
+5. **活动信息流**：列出最近修改的 5 个 Markdown 文件，提取最后一行有意义的内容（标题、状态行、操作项）作为活动消息。Web 仪表盘也在 recap 提供回顾视图。
 
 ---
 
@@ -156,16 +156,16 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 ### 会话状态
 
 顶部区域显示：
-- **会话 ID：**从会话文件提取，格式为 `session-YYYYMMDD-HHMMSS`。
-- **状态：**颜色编码，绿色表示 RUNNING，青色表示 COMPLETED，红色表示 FAILED，黄色表示 UNKNOWN。
+- **会话 ID**：从会话文件提取，格式为 `session-YYYYMMDD-HHMMSS`。
+- **状态**：颜色编码，绿色表示 RUNNING，青色表示 COMPLETED，红色表示 FAILED，黄色表示 UNKNOWN。
 
 ### 任务看板
 
 智能体表格显示每个检测到的智能体：
-- **智能体名称：**领域标识符，例如 backend、frontend、mobile、qa、debug、pm。
-- **状态：**当前状态及视觉指示器（running、completed、failed、blocked、pending）。
-- **回合：**智能体当前的回合号，即完成的迭代数，从进度文件提取。
-- **任务：**智能体正在处理的简短描述，截断以适应显示。
+- **智能体名称**：领域标识符，例如 backend、frontend、mobile、qa、debug、pm。
+- **状态**：当前状态及视觉指示器（running、completed、failed、blocked、pending）。
+- **回合**：智能体当前的回合号，即完成的迭代数，从进度文件提取。
+- **任务**：智能体正在处理的简短描述，截断以适应显示。
 
 ### 智能体进度
 
@@ -190,7 +190,7 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 
 ### 信号 1：智能体显示 running 但回合没有进展
 
-**症状：**仪表盘显示智能体正在运行，但回合号几分钟没有变化。
+**症状**：仪表盘显示智能体正在运行，但回合号几分钟没有变化。
 
 **可能原因：**
 - 智能体卡在长时间操作上，例如大型代码库扫描或缓慢 API 调用
@@ -219,7 +219,7 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 
 ### 信号 3：仪表盘显示 no agents detected yet
 
-**症状：**仪表盘正在运行但未显示任何智能体。
+**症状**：仪表盘正在运行但未显示任何智能体。
 
 **可能原因：**
 - 工作流尚未到达智能体启动步骤
@@ -234,7 +234,7 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 
 ### 信号 4：Web 仪表盘显示 disconnected
 
-**症状：**Web 仪表盘的连接徽章显示红色 disconnected。
+**症状**：Web 仪表盘的连接徽章显示红色 disconnected。
 
 **可能原因：**
 - oma dashboard web 进程被终止
@@ -254,12 +254,12 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 
 在认为多智能体会话完成之前，通过仪表盘验证：
 
-- [ ] **所有智能体显示 completed：**没有智能体卡在 running 或 blocked 状态
-- [ ] **没有智能体显示 failed：**如有失败，检查日志并重新启动
-- [ ] **QA 智能体已完成审查：**查找 `result-qa-agent.md` 或 `result-qa.md`
-- [ ] **零 CRITICAL 或 HIGH 发现：**检查 QA 结果文件的严重度计数
-- [ ] **会话状态为 COMPLETED：**会话文件应显示最终状态
-- [ ] **活动信息流显示最终报告：**最后一条活动应为摘要报告
+- [ ] **所有智能体显示 completed**：没有智能体卡在 running 或 blocked 状态
+- [ ] **没有智能体显示 failed**：如有失败，检查日志并重新启动
+- [ ] **QA 智能体已完成审查**：查找 `result-qa-agent.md` 或 `result-qa.md`
+- [ ] **零 CRITICAL 或 HIGH 发现**：检查 QA 结果文件的严重度计数
+- [ ] **会话状态为 COMPLETED**：会话文件应显示最终状态
+- [ ] **活动信息流显示最终报告**：最后一条活动应为摘要报告
 
 ---
 
@@ -277,19 +277,19 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 
 ### 终端仪表盘（oma dashboard terminal）
 
-- **文件监视：**使用 chokidar，配置 `awaitWriteFinish`（200ms 稳定阈值、50ms 轮询间隔），避免渲染部分写入的文件。
-- **渲染：**每次文件变更事件时清除并重新绘制整个终端，使用 picocolors 输出 ANSI 颜色，使用 Unicode 方框绘制字符作为边框。
-- **内存目录：**从 MEMORIES_DIR、CLI 参数（如提供）或 `{cwd}/.agents/state/memories` 解析。
-- **优雅关闭：**捕获 `SIGINT` 和 `SIGTERM`，关闭 chokidar 监视器并干净退出。
+- **文件监视**：使用 chokidar，配置 `awaitWriteFinish`（200ms 稳定阈值、50ms 轮询间隔），避免渲染部分写入的文件。
+- **渲染**：每次文件变更事件时清除并重新绘制整个终端，使用 picocolors 输出 ANSI 颜色，使用 Unicode 方框绘制字符作为边框。
+- **内存目录**：从 MEMORIES_DIR、CLI 参数（如提供）或 `{cwd}/.agents/state/memories` 解析。
+- **优雅关闭**：捕获 `SIGINT` 和 `SIGTERM`，关闭 chokidar 监视器并干净退出。
 
 ### Web 仪表盘（oma dashboard web）
 
-- **HTTP 服务器：**Node.js `createServer` 在 / 提供 HTML 页面，在 `/recap` 提供回顾页面，在 `/api/state` 提供 JSON 状态，在 `/api/recap` 提供回顾数据。服务器绑定到 127.0.0.1。
-- **WebSocket：**使用 `ws` 库。回环来源的连接必须在查询字符串中包含进程令牌。连接时客户端立即收到完整状态，后续更新作为 update、event、file、data 消息推送。
-- **文件监视：**与终端仪表盘相同的 chokidar 设置。文件变更触发 `broadcast()`，它构建当前状态并发送给所有连接的 WebSocket 客户端。
-- **防抖：**更新以 100ms 防抖，避免快速文件写入时淹没客户端，例如多个智能体同时写入进度。
-- **自动重连：**浏览器客户端在 WebSocket 断开时使用指数退避重连，初始 1 秒，乘数 1.5，最大 10 秒。
-- **端口：**默认 9847，可通过 DASHBOARD_PORT 环境变量配置。API 请求接受 `X-OMA-Dashboard-Token` 或 token=...；缺少或无效令牌返回 401。
+- **HTTP 服务器**：Node.js `createServer` 在 / 提供 HTML 页面，在 `/recap` 提供回顾页面，在 `/api/state` 提供 JSON 状态，在 `/api/recap` 提供回顾数据。服务器绑定到 127.0.0.1。
+- **WebSocket**：使用 `ws` 库。回环来源的连接必须在查询字符串中包含进程令牌。连接时客户端立即收到完整状态，后续更新作为 update、event、file、data 消息推送。
+- **文件监视**：与终端仪表盘相同的 chokidar 设置。文件变更触发 `broadcast()`，它构建当前状态并发送给所有连接的 WebSocket 客户端。
+- **防抖**：更新以 100ms 防抖，避免快速文件写入时淹没客户端，例如多个智能体同时写入进度。
+- **自动重连**：浏览器客户端在 WebSocket 断开时使用指数退避重连，初始 1 秒，乘数 1.5，最大 10 秒。
+- **端口**：默认 9847，可通过 DASHBOARD_PORT 环境变量配置。API 请求接受 `X-OMA-Dashboard-Token` 或 token=...；缺少或无效令牌返回 401。
 - **状态构建：**`buildFullState()` 每次更新都将会话信息、任务看板、智能体状态、回合计数和活动信息流聚合为一个 JSON 对象。
 
 相关命令、路径和标识符： `MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal`、`oma agent spawn {agent-id} "{task}" {session-id} -w {workspace}`、`{ type: "update", event, file, data }`、`http://127.0.0.1:9847`、`**Agent**: {name}`、`Agent: {name}`、`?token=...`、`127.0.0.1`。

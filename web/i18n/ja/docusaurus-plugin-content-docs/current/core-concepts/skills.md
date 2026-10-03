@@ -212,7 +212,7 @@ description: Frontend specialist for React, Next.js, TypeScript with FSD-lite ar
 - 実装エージェント -> oma-qa（実装後にレビュー）
 - oma-backend -> oma-frontend / oma-mobile（API コントラクトが事前定義されていない場合）
 
-**QA は常に最後です。**ただし、ユーザーが特定ファイルだけのレビューを依頼した場合を除きます。
+**QA は常に最後です**。ただし、ユーザーが特定ファイルだけのレビューを依頼した場合を除きます。
 
 ---
 
@@ -248,7 +248,7 @@ context コマンドは、実際に注入されるタスクコンテキストを
 |-----------|-------------------|
 | CRUD API の作成 | 存在する場合は対応する `variants/{node,python,rust}/snippets.md` |
 | 認証 | 対応する `variants` の `snippets.md` と、存在する場合は `tech-stack.md` |
-| DB マイグレーション | 存在する場合は対応する `variants/{node,python,rust}/snippets.md` |
+| DB マイグレーション | 存在する場合は対応するバリアントの `snippets.md` |
 | パフォーマンス最適化 | `orm-reference.md` と、スキルが提供する対応する例 |
 | 既存コードの変更 | プロジェクトのコードインテリジェンスプロバイダーと関連する実行リソース |
 
