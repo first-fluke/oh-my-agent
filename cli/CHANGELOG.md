@@ -1,5 +1,33 @@
 # Changelog
 
+## [15.0.13](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.12...cli-v15.0.13) (2026-10-03)
+
+
+### Bug Fixes
+
+* **agent:** run codex subagents in the workspace-write sandbox ([60db173](https://github.com/first-fluke/oh-my-agent/commit/60db1730d2b02a85b1d5fc7449d9dee4b41972cd))
+* **config:** never overwrite unparseable or explicit user settings ([5f377a8](https://github.com/first-fluke/oh-my-agent/commit/5f377a845be109cec43beb124f6b1467cc408251))
+* **hook:** drop only duplicate deliveries from a second registration ([f0d5ed3](https://github.com/first-fluke/oh-my-agent/commit/f0d5ed33b90ff0bc3584f28d18ed1a9ae5f9473f))
+* **hook:** ignore cross-session messages in prompt hooks ([6a57eaf](https://github.com/first-fluke/oh-my-agent/commit/6a57eaf50bf5604c5e4729d1e05343a08c5210b6))
+* **hook:** keep test commands intact and bound the stop gate ([8957ca8](https://github.com/first-fluke/oh-my-agent/commit/8957ca81c43b9de32175fc76a8a354b50ec46359))
+* **hook:** require explicit triggers for persistent workflows ([40d61f4](https://github.com/first-fluke/oh-my-agent/commit/40d61f4e470b0dd2903f721971127f8e8c7bf093))
+* **hook:** resolve project root and config like the cli ([e37cd85](https://github.com/first-fluke/oh-my-agent/commit/e37cd8528cc7e422ca590ea7bf8605ac6e03f431))
+* **hook:** resolve test-filter scripts from the project root ([7e897a8](https://github.com/first-fluke/oh-my-agent/commit/7e897a8763b183f5d62c0a1d59efbf9c1988f936))
+* **migrations:** continue after a failing migration ([b7bf232](https://github.com/first-fluke/oh-my-agent/commit/b7bf232164c68687256a59eadb9cd9e88ebabb03))
+* **server:** require a token and loopback host for local servers ([bcba976](https://github.com/first-fluke/oh-my-agent/commit/bcba976833116ef980b3b38325e0c74f95b4c4e3))
+* **update:** install from the checksum-verified release asset ([5101552](https://github.com/first-fluke/oh-my-agent/commit/510155295a72dbf5e38141a3fbb26b0dbcb99617))
+* **update:** keep safe-write backups and prune stale sessions ([50cac95](https://github.com/first-fluke/oh-my-agent/commit/50cac95b4cb04ea6df135b292304a31102b67c6b))
+
+
+### Performance
+
+* **cli:** enable the node compile cache for the bin entry ([ab61cfc](https://github.com/first-fluke/oh-my-agent/commit/ab61cfc0c72f05a06bac3f529adf485f68ef6496))
+
+
+### Refactoring
+
+* **hook:** share vendor detection across core handlers ([c24f003](https://github.com/first-fluke/oh-my-agent/commit/c24f0031623609c6b8dcc8cbcdd9c14c56c3bcdb))
+
 ## [15.0.12](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.11...cli-v15.0.12) (2026-10-03)
 
 
