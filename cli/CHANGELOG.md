@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.15](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.14...cli-v15.0.15) (2026-10-03)
+
+
+### Documentation
+
+* **i18n:** sync translations with the English docs ([92dd632](https://github.com/first-fluke/oh-my-agent/commit/92dd632aa668559f8f3d86bce9ecfb2f2fbb43c1))
+
 ## [15.0.14](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.13...cli-v15.0.14) (2026-10-03)
 
 
