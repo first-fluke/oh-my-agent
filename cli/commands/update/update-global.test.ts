@@ -426,6 +426,19 @@ describe("update --global: _install.json lifecycle", () => {
     expect(meta.version).toBe("8.1.0");
   });
 
+  it("pins the download to the release the remote manifest points at", async () => {
+    manifestState.fetchRemoteManifest.mockResolvedValue({
+      version: "8.1.0",
+      metadata: { totalFiles: 10 },
+    });
+
+    await update({ global: true, force: true, ci: true });
+
+    expect(tarballState.downloadAndExtract).toHaveBeenCalledWith({
+      version: "8.1.0",
+    });
+  });
+
   it("starts CLI self-update only after project reconciliation completes", async () => {
     await update({ global: true, force: true, ci: true });
 

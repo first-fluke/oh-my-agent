@@ -235,10 +235,14 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
     let repoDir: string;
     let cleanup: () => void;
+    let downloadWarnings: string[];
     try {
+      // Pinned to the latest published release (checksum-verified asset
+      // first); unreleased main-branch content only via OMA_UPDATE_CHANNEL.
       const result = await downloadAndExtract();
       repoDir = result.dir;
       cleanup = result.cleanup;
+      downloadWarnings = result.warnings ?? [];
     } catch (error) {
       spinner.stop("Download failed");
       p.log.error(error instanceof Error ? error.message : String(error));
@@ -246,6 +250,9 @@ export async function install(options: InstallOptions = {}): Promise<void> {
     }
 
     spinner.stop("Downloaded!");
+    for (const warning of downloadWarnings) {
+      p.log.warn(warning);
+    }
 
     const language = await promptLanguage(
       repoDir,

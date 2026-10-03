@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci` keeps the run non-interactive. If user configuration was replaced unexpectedly, check whether `--force` was used; regular updates preserve the user-owned config, while force mode can replace it.
 
+## An install or update cannot download the release
+
+<!-- oma-docs:ignore-start -->
+`oma install`, `oma update`, and the `oma doctor` repair download the release that `prompt-manifest.json` on `main` names. They try the `agent-skills.tar.gz` asset of the `cli-v<version>` GitHub release first, checked against its `.sha256` file, then that tag's source archive, then a shallow clone of the tag. A checksum mismatch, or a payload whose `.agents/skills/_version.json` names a different version, stops the run instead of trying another source.
+<!-- oma-docs:ignore-end -->
+
+Right after a release is cut, the manifest can name a version whose assets are still publishing; wait a few minutes and retry. To install unreleased content from the `main` branch on purpose, opt in for that run:
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+The run prints a warning: main-branch content is neither a tagged release nor checksum-verified.
+
 ## A vendor does not start
 
 Run the vendor’s own authentication check, then inspect OMA’s resolved profile:

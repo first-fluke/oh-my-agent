@@ -271,7 +271,16 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
 
       spinner.message(`Downloading ${pc.cyan(remoteManifest.version)}...`);
 
-      const { dir: repoDir, cleanup } = await downloadAndExtract();
+      // Pinned to the release the manifest points at (checksum-verified
+      // release asset first); main-branch content only via OMA_UPDATE_CHANNEL.
+      const download = await downloadAndExtract({
+        version: remoteManifest.version,
+      });
+      const { dir: repoDir, cleanup } = download;
+      const downloadWarnings = download.warnings ?? [];
+      if (downloadWarnings.length > 0) {
+        ui.note(downloadWarnings.join("\n"), "Download source");
+      }
 
       try {
         spinner.message("Copying files...");

@@ -1,12 +1,14 @@
 import {
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   rmSync,
   symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   cleanDanglingSymlinks,
@@ -15,6 +17,7 @@ import {
   isNonInteractive,
   scanLanguages,
 } from "../install/run.js";
+import { README_LANGUAGES } from "./preferences.js";
 
 describe("scanLanguages", () => {
   const tempRoots: string[] = [];
@@ -26,13 +29,26 @@ describe("scanLanguages", () => {
     tempRoots.length = 0;
   });
 
-  it("returns en as default when no docs directory exists", () => {
+  it("offers the README language list when the payload has no docs directory", () => {
+    // The release asset ships `.agents/` only — no `docs/` to scan.
     const root = mkdtempSync(join(tmpdir(), "oma-install-"));
     tempRoots.push(root);
 
     const result = scanLanguages(root);
 
-    expect(result).toEqual([{ value: "en", label: "English" }]);
+    expect(result.map((r) => r.value)).toEqual([...README_LANGUAGES]);
+    expect(result[0]).toEqual({ value: "en", label: "English" });
+    expect(result.find((r) => r.value === "ko")?.label).toBe("한국어");
+  });
+
+  it("keeps README_LANGUAGES in sync with the repository's docs/README.*.md", () => {
+    const docsDir = fileURLToPath(new URL("../../../docs", import.meta.url));
+    const translated = readdirSync(docsDir)
+      .map((file) => file.match(/^README\.(.+)\.md$/)?.[1])
+      .filter((code): code is string => Boolean(code))
+      .sort();
+
+    expect([...README_LANGUAGES]).toEqual(["en", ...translated]);
   });
 
   it("discovers languages from README.*.md files", () => {

@@ -17,19 +17,45 @@ const LANGUAGE_NAMES: Record<string, string> = {
   pl: "Polski",
   pt: "Português",
   ru: "Русский",
+  th: "ไทย",
 };
+
+/**
+ * Languages with a translated README under the repository's `docs/`. The
+ * release asset ships `.agents/` only, so this list is offered when the
+ * downloaded payload has no `docs/` directory. install.test.ts keeps it in
+ * sync with `docs/README.*.md`.
+ */
+export const README_LANGUAGES = [
+  "en",
+  "de",
+  "es",
+  "fr",
+  "ja",
+  "ko",
+  "nl",
+  "pl",
+  "pt",
+  "ru",
+  "th",
+  "vi",
+  "zh",
+] as const;
 
 export function scanLanguages(
   repoDir: string,
 ): { value: string; label: string }[] {
   const docsDir = join(repoDir, "docs");
-  const codes: string[] = ["en"];
+  let codes: string[];
 
   if (existsSync(docsDir)) {
+    codes = ["en"];
     for (const file of readdirSync(docsDir)) {
       const match = file.match(/^README\.(.+)\.md$/);
       if (match?.[1]) codes.push(match[1]);
     }
+  } else {
+    codes = [...README_LANGUAGES];
   }
 
   return codes.map((code) => ({

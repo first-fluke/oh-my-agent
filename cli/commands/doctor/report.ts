@@ -263,13 +263,17 @@ export async function collectDoctorReport(
  *
  * Replaces the prior `installShared(cwd, cwd)` anti-pattern that always
  * threw `src and dest cannot be the same`.
+ *
+ * Returns the download notices (fallback source, opted-in main channel) for
+ * the caller to surface.
  */
 export async function installSkillsFromRemote(
   targetDir: string,
   skillNames: string[],
   onProgress?: (name: string) => void,
-): Promise<void> {
-  const { dir: repoDir, cleanup } = await downloadAndExtract();
+): Promise<string[]> {
+  const download = await downloadAndExtract();
+  const { dir: repoDir, cleanup } = download;
   try {
     installShared(repoDir, targetDir);
     for (const name of skillNames) {
@@ -279,4 +283,5 @@ export async function installSkillsFromRemote(
   } finally {
     cleanup();
   }
+  return download.warnings ?? [];
 }

@@ -118,6 +118,21 @@ describe("installSkillsFromRemote", () => {
     expect(tarballState.cleanup).toHaveBeenCalledTimes(1);
   });
 
+  it("returns download notices for the caller to surface", async () => {
+    const notice =
+      "Release asset cli-v1.2.3/agent-skills.tar.gz unavailable (HTTP 404); installed cli-v1.2.3 from the tag source archive instead (no checksum available).";
+    const download = {
+      dir: "/tmp/extracted-source",
+      cleanup: tarballState.cleanup,
+      warnings: [notice],
+    };
+    tarballState.downloadAndExtract.mockResolvedValueOnce(download);
+
+    await expect(
+      installSkillsFromRemote(target, ["oma-frontend"]),
+    ).resolves.toEqual([notice]);
+  });
+
   it("calls cleanup even when installShared throws", async () => {
     skillsState.installShared.mockImplementationOnce(() => {
       throw new Error("permission denied");
