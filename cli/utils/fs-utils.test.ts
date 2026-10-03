@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -22,6 +28,13 @@ vi.mock("node:fs", async (importOriginal) => {
   return { ...actual, existsSync, default: { ...actual, existsSync } };
 });
 
+/** An OMA install: `.agents/` holding a config marker, not just runtime output. */
+function install(dir: string, marker = "oma-config.yaml"): void {
+  const file = join(dir, ".agents", marker);
+  mkdirSync(join(file, ".."), { recursive: true });
+  writeFileSync(file, "language: en\n");
+}
+
 describe("resolveProjectRoot", () => {
   let root: string;
 
@@ -33,6 +46,7 @@ describe("resolveProjectRoot", () => {
 
   afterEach(() => {
     markerScope = null;
+    vi.unstubAllEnvs();
     rmSync(root, { recursive: true, force: true });
   });
 
@@ -40,7 +54,7 @@ describe("resolveProjectRoot", () => {
     // Regression: `oma state:emit` (and siblings) run with cwd inside e.g.
     // apps/api used to anchor state on the bare cwd, materializing a stray
     // apps/api/.agents/ instead of writing to the repo-level .agents/.
-    mkdirSync(join(root, ".agents"), { recursive: true });
+    install(root);
     const subPackage = join(root, "apps", "api");
     mkdirSync(subPackage, { recursive: true });
 
@@ -48,7 +62,7 @@ describe("resolveProjectRoot", () => {
   });
 
   it("prefers the `.agents/` root over a deeper `.git` boundary", () => {
-    mkdirSync(join(root, ".agents"), { recursive: true });
+    install(root);
     mkdirSync(join(root, ".git"), { recursive: true });
     const nested = join(root, "packages", "i18n");
     mkdirSync(nested, { recursive: true });
@@ -68,7 +82,7 @@ describe("resolveProjectRoot", () => {
     // Parent has .agents; a nested git submodule has its own .git but no
     // .agents. Resolution must stop at the submodule, not leak state into the
     // parent project root.
-    mkdirSync(join(root, ".agents"), { recursive: true });
+    install(root);
     const submodule = join(root, "vendor", "lib");
     mkdirSync(join(submodule, ".git"), { recursive: true });
     const deep = join(submodule, "src");
@@ -82,5 +96,62 @@ describe("resolveProjectRoot", () => {
     mkdirSync(bare, { recursive: true });
 
     expect(resolveProjectRoot(bare)).toBe(bare);
+  });
+
+  it("treats a sub-package with its own install as the project root", () => {
+    mkdirSync(join(root, ".git"), { recursive: true });
+    install(root);
+    const app = join(root, "apps", "x");
+    install(app, "oma-config.local.yaml");
+    mkdirSync(join(app, "src"), { recursive: true });
+    mkdirSync(join(root, "apps", "y", "src"), { recursive: true });
+
+    expect(resolveProjectRoot(join(app, "src"))).toBe(app);
+    expect(resolveProjectRoot(join(root, "apps", "y", "src"))).toBe(root);
+  });
+
+  it("accepts skills/_version.json as an install marker", () => {
+    mkdirSync(join(root, ".git"), { recursive: true });
+    const app = join(root, "apps", "x");
+    install(app, join("skills", "_version.json"));
+
+    expect(resolveProjectRoot(app)).toBe(app);
+  });
+
+  it("ignores a marker-less `.agents/` (stray runtime output)", () => {
+    // e.g. cli/.agents/{state,backup} written by a run from cli/: not an
+    // install, so it must not capture state or config away from the repo.
+    mkdirSync(join(root, ".git"), { recursive: true });
+    install(root);
+    const cli = join(root, "cli");
+    mkdirSync(join(cli, ".agents", "state"), { recursive: true });
+    mkdirSync(join(cli, ".agents", "backup"), { recursive: true });
+    mkdirSync(join(cli, "commands"), { recursive: true });
+
+    expect(resolveProjectRoot(join(cli, "commands"))).toBe(root);
+  });
+
+  it("does not adopt the global install in the home directory outside a repo", () => {
+    const home = join(root, "home");
+    install(home);
+    const scratch = join(home, "scratch", "notes");
+    mkdirSync(scratch, { recursive: true });
+    vi.stubEnv("HOME", home);
+    vi.stubEnv("USERPROFILE", home);
+
+    expect(resolveProjectRoot(scratch)).toBe(scratch);
+    expect(resolveProjectRoot(home)).toBe(home);
+  });
+
+  it("still finds a project install below the home directory", () => {
+    const home = join(root, "home");
+    install(home);
+    const project = join(home, "projects", "app");
+    install(project);
+    mkdirSync(join(project, "src"), { recursive: true });
+    vi.stubEnv("HOME", home);
+    vi.stubEnv("USERPROFILE", home);
+
+    expect(resolveProjectRoot(join(project, "src"))).toBe(project);
   });
 });

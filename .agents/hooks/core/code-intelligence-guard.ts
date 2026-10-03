@@ -362,11 +362,15 @@ function denyReason(
  */
 export async function run(
   input: HookInput,
-  _ctx: HandlerCtx,
+  ctx: HandlerCtx,
 ): Promise<HandlerResult | null> {
   if (input.kind !== "pre_tool") return null;
 
-  const { toolName, toolInput, cwd: projectDir } = input;
+  const { toolName, toolInput } = input;
+  // Config and the project-scope check use the resolved project root; the
+  // tool's relative paths are relative to the session's working directory.
+  const projectDir = ctx.cwd || input.cwd;
+  const sessionCwd = input.cwd || projectDir;
 
   const isGrep = GREP_TOOLS.has(toolName);
   const isGlob = GLOB_TOOLS.has(toolName);
@@ -384,23 +388,25 @@ export async function run(
 
   // Config reads happen after the cheap tool/command checks so the common
   // (non-search) path never touches the filesystem.
-  const provider = detectCodeIntelligenceProvider(projectDir);
+  const provider = detectCodeIntelligenceProvider(projectDir, ctx.config);
   if (!provider) return null;
-  if (detectCodeIntelligenceGuardMode(projectDir) === "off") return null;
+  if (detectCodeIntelligenceGuardMode(projectDir, ctx.config) === "off") {
+    return null;
+  }
 
   let roots: string[] | null = null;
   if (isShell) {
-    roots = shellSearchRoots(toolInput.command as string, projectDir);
+    roots = shellSearchRoots(toolInput.command as string, sessionCwd);
   } else if (isGlob && typeof toolInput.pattern === "string") {
     const base =
-      typeof toolInput.path === "string" ? toolInput.path : projectDir;
+      typeof toolInput.path === "string" ? toolInput.path : sessionCwd;
     const target = isAbsolute(toolInput.pattern)
       ? toolInput.pattern
-      : `${resolve(projectDir, base)}/${toolInput.pattern}`;
+      : `${resolve(sessionCwd, base)}/${toolInput.pattern}`;
     const root = searchPathRoot(target);
     if (root) roots = [root];
   } else if (typeof toolInput.path === "string") {
-    roots = [toolInput.path];
+    roots = [resolve(sessionCwd, toolInput.path)];
   }
   if (roots && isExcludedSearchScope(provider, projectDir, roots)) return null;
 

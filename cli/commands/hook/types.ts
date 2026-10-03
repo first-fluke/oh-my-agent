@@ -15,6 +15,7 @@
 export type {
   HandlerCtx,
   HandlerResult,
+  HookConfig,
   HookHandler,
   HookInput,
   Vendor,

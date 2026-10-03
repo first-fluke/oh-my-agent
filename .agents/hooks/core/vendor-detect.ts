@@ -9,7 +9,7 @@
 
 import { join } from "node:path";
 import { agyProjectDir } from "./agy-input.ts";
-import { resolveGitRoot } from "./fs-utils.ts";
+import { resolveProjectRoot } from "./fs-utils.ts";
 import type { Vendor } from "./types.ts";
 
 /**
@@ -34,7 +34,7 @@ export function inferVendorFromScriptPath(scriptPath: string): Vendor | null {
   return null;
 }
 
-/** Resolve the git-root project directory for a vendor + raw hook input. */
+/** Resolve the OMA project root for a vendor + raw hook input. */
 export function getProjectDir(
   vendor: Vendor,
   input: Record<string, unknown>,
@@ -71,7 +71,7 @@ export function getProjectDir(
       dir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
       break;
   }
-  return resolveGitRoot(dir);
+  return resolveProjectRoot(dir);
 }
 
 /**

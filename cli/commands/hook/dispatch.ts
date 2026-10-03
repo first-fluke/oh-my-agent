@@ -3,7 +3,7 @@
 
 import * as codeIntelligenceGuard from "../../../.agents/hooks/core/code-intelligence-guard.js";
 import * as codeIntelligencePrimer from "../../../.agents/hooks/core/code-intelligence-primer.js";
-import { resolveGitRoot } from "../../../.agents/hooks/core/fs-utils.js";
+import { resolveProjectRoot } from "../../../.agents/hooks/core/fs-utils.js";
 import {
   makeBlockOutput,
   makePostToolBlockOutput,
@@ -53,6 +53,7 @@ import { withSelectedHookMemory } from "../../state/hook-memory.js";
 import type { VendorType } from "../../types/vendors.js";
 import { withQwenHookEvents } from "../../vendors/qwen/hooks.js";
 import { nativeEventToKind, normalizeInput } from "./adapters.js";
+import { resolveHookConfig } from "./hook-config.js";
 import type {
   HandlerCtx,
   HandlerResult,
@@ -330,20 +331,31 @@ export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
     return { output: "" };
   }
 
-  // Resolve the project root by walking up to the git root from the
-  // payload-provided cwd (authoritative — the vendor reports where the session
-  // runs), falling back to the wrapper's process cwd. State files resolve here.
-  const projectRoot = resolveGitRoot(input.cwd || cwd);
+  // Resolve the project root from the payload-provided cwd (authoritative —
+  // the vendor reports where the session runs), falling back to the wrapper's
+  // process cwd. Same resolver as the CLI, so state written by `oma goal:set`
+  // and read here agree. State files and config resolve under this root.
+  const projectRoot = resolveProjectRoot(input.cwd || cwd);
 
   const chain = resolveChain(vendor, nativeEvent);
   if (chain.length === 0) {
     return { output: "" };
   }
 
-  const ctx: HandlerCtx = { vendor, cwd: projectRoot, sid };
+  // One CUE/local-overlay-aware config load serves every handler and the
+  // semantic-memory selection.
+  const { config, memory } = resolveHookConfig(projectRoot);
+  const ctx: HandlerCtx = {
+    vendor,
+    cwd: projectRoot,
+    sid,
+    ...(config ? { config } : {}),
+  };
 
-  const merged = await withSelectedHookMemory(projectRoot, () =>
-    runChain(chain, input, ctx),
+  const merged = await withSelectedHookMemory(
+    projectRoot,
+    () => runChain(chain, input, ctx),
+    memory,
   );
 
   // Dialect render — translate the merged HandlerResult into the vendor-native

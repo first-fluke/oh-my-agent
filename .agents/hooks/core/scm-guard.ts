@@ -17,7 +17,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { makePreToolDenyOutput } from "./hook-output.ts";
-import type { HandlerCtx, HandlerResult, HookInput, Vendor } from "./types.ts";
+import type {
+  HandlerCtx,
+  HandlerResult,
+  HookConfig,
+  HookInput,
+  Vendor,
+} from "./types.ts";
 import { getProjectDir } from "./vendor-detect.ts";
 
 // --- Defaults (mirror .agents/skills/oma-scm/config/commit-config.yaml) ---
@@ -86,9 +92,35 @@ interface GuardConfig {
   exceptions: string[];
 }
 
-function loadGuardConfig(projectDir: string): GuardConfig {
+function stringList(value: unknown): string[] | null {
+  if (!Array.isArray(value)) return null;
+  const items = value.filter(
+    (item): item is string => typeof item === "string" && item.length > 0,
+  );
+  return items.length > 0 ? items : null;
+}
+
+/** `scm.forbidden_patterns` from the config `oma hook run` loaded, if set. */
+function guardConfigFromConfig(config: HookConfig): GuardConfig | null {
+  const scm = config.scm;
+  if (!scm || typeof scm !== "object" || Array.isArray(scm)) return null;
+  const block = scm as Record<string, unknown>;
+  const forbidden = stringList(block.forbidden_patterns);
+  if (!forbidden) return null;
+  return {
+    forbidden,
+    exceptions:
+      stringList(block.allowed_exceptions) ?? DEFAULT_ALLOWED_EXCEPTIONS,
+  };
+}
+
+function loadGuardConfig(projectDir: string, config?: HookConfig): GuardConfig {
+  // The dispatcher's config (CUE / local overlay aware) replaces the
+  // oma-config.yaml read; the skill config and built-in defaults still back it.
+  const fromConfig = config ? guardConfigFromConfig(config) : null;
+  if (fromConfig) return fromConfig;
   const pathsToTry = [
-    join(projectDir, MAIN_CONFIG_RELPATH),
+    ...(config ? [] : [join(projectDir, MAIN_CONFIG_RELPATH)]),
     join(projectDir, SKILL_CONFIG_RELPATH),
   ];
 
@@ -174,11 +206,13 @@ export function extractGitAddPaths(command: string): string[] {
  */
 export async function run(
   input: HookInput,
-  _ctx: HandlerCtx,
+  ctx: HandlerCtx,
 ): Promise<HandlerResult | null> {
   if (input.kind !== "pre_tool") return null;
 
-  const { toolName, toolInput, cwd: projectDir } = input;
+  const { toolName, toolInput } = input;
+  // Config resolves at the project root, not the session's current directory.
+  const projectDir = ctx.cwd || input.cwd;
 
   if (
     toolName !== "Bash" &&
@@ -196,7 +230,7 @@ export async function run(
   const candidates = extractGitAddPaths(command);
   if (candidates.length === 0) return null;
 
-  const config = loadGuardConfig(projectDir);
+  const config = loadGuardConfig(projectDir, ctx.config);
   const flagged = candidates.filter((p) => matchesForbidden(p, config));
   if (flagged.length === 0) return null;
 
