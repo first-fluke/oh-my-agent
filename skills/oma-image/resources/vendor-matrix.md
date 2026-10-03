@@ -18,8 +18,8 @@ All paths are validated in `reference-guard.ts` (magic-byte MIME check + size + 
 | Auth | OAuth via `codex login` |
 | Health check | `codex login status` output contains "Logged in" |
 | Model | `gpt-image-2` |
-| Transport | `codex exec "<instruction>"` (internal bridge invokes `image_gen` tool) |
-| Image location | `~/.codex/generated_images/<session>/ig_*.png` → copied to `outDir` |
+| Transport | `codex exec --json "<instruction>"` (internal bridge invokes `image_gen` tool; the first JSONL event carries the thread id) |
+| Image location | `$CODEX_HOME/generated_images/<thread_id>/*.png` (`CODEX_HOME` defaults to `~/.codex`) → copied to `outDir`. Without a thread id, images new since the run started are taken from the whole folder. |
 | Sizes | Any `WxH` passing `size-guard.ts` (each edge ∈ [16, 3840], multiples of 16, aspect 1:3..3:1) or `auto`. Codex CLI clamps to its own gpt-image-2 limits internally. |
 | Qualities | `low`, `medium`, `high`, `auto` |
 

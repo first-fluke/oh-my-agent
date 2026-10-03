@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { copyFile, readdir, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { safeParseJson } from "../../../utils/safe-json.js";
 import type { ImageConfig } from "../config.js";
 import { buildOutputFilename, shortId } from "../naming.js";
 import type {
@@ -13,7 +14,15 @@ import type {
   VendorProvider,
 } from "../types.js";
 
-const GENERATED_DIR = path.join(os.homedir(), ".codex", "generated_images");
+// Codex saves image_gen output under $CODEX_HOME/generated_images/<thread id>/.
+// Launchers such as Orca point CODEX_HOME at a per-account home, so ~/.codex
+// is only the fallback.
+export function codexGeneratedImagesDir(
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const home = env.CODEX_HOME?.trim() || path.join(os.homedir(), ".codex");
+  return path.join(home, "generated_images");
+}
 
 export class CodexProvider implements VendorProvider {
   readonly name = "codex";
@@ -65,7 +74,8 @@ export class CodexProvider implements VendorProvider {
   async generate(input: GenerateInput): Promise<GenerateResult[]> {
     const model =
       input.model ?? this.config?.vendors.codex?.model ?? "gpt-image-2";
-    const existingBefore = await listGenerated(GENERATED_DIR);
+    const generatedDir = codexGeneratedImagesDir();
+    const existingBefore = await listGenerated(generatedDir);
     const instruction = buildInstruction({ ...input, model });
 
     const start = Date.now();
@@ -79,13 +89,24 @@ export class CodexProvider implements VendorProvider {
 
     if (res.code !== 0) throw classifyCodexError(res);
 
-    const afterFiles = await listGenerated(GENERATED_DIR);
-    const newFiles = afterFiles.filter((f) => !existingBefore.includes(f));
+    // Each run saves into a folder named after its thread, so concurrent runs
+    // never claim each other's images. The folder-wide diff covers a Codex
+    // that does not report its thread id.
+    const output = parseCodexExecOutput(res.stdout);
+    const searchedDir = output.threadId
+      ? path.join(generatedDir, output.threadId)
+      : generatedDir;
+    const newFiles = output.threadId
+      ? await listImages(searchedDir)
+      : (await listGenerated(generatedDir)).filter(
+          (f) => !existingBefore.includes(f),
+        );
     if (newFiles.length === 0) {
+      const reply = output.reply ?? res.stdout;
       const err: VendorError = {
         kind: "other",
         cause: new Error(
-          `No image produced. stdout: ${res.stdout.slice(0, 400)}`,
+          `No image produced in ${searchedDir}. Codex reply: ${reply.slice(0, 400)}`,
         ),
       };
       throw err;
@@ -130,9 +151,10 @@ export class CodexProvider implements VendorProvider {
   }
 }
 
-// Assemble the full `codex exec` argv. `codex exec` declares `-i/--image
-// <FILE>...` as variadic, so its parser would greedily consume the
-// following positional [PROMPT] as an additional image path. We always
+// Assemble the full `codex exec` argv. `--json` makes Codex print its thread
+// id, which names the folder its images land in. `codex exec` declares
+// `-i/--image <FILE>...` as variadic, so its parser would greedily consume
+// the following positional [PROMPT] as an additional image path. We always
 // emit `--` before the instruction so the prompt is delimited
 // unambiguously, even when no references are attached.
 export function buildCodexExecArgs(
@@ -143,7 +165,65 @@ export function buildCodexExecArgs(
     "-i",
     r.path,
   ]);
-  return ["exec", "--skip-git-repo-check", ...imageArgs, "--", instruction];
+  return [
+    "exec",
+    "--json",
+    "--skip-git-repo-check",
+    ...imageArgs,
+    "--",
+    instruction,
+  ];
+}
+
+interface CodexExecEvent {
+  type?: unknown;
+  thread_id?: unknown;
+  message?: unknown;
+  item?: { type?: unknown; text?: unknown } | null;
+  error?: { message?: unknown } | null;
+}
+
+export interface CodexExecOutput {
+  threadId?: string;
+  reply?: string;
+  failure?: string;
+}
+
+// Reads the JSONL events of `codex exec --json`. Lines that are not JSON
+// events are skipped, so plain-text output parses as an empty result.
+export function parseCodexExecOutput(stdout: string): CodexExecOutput {
+  const output: CodexExecOutput = {};
+  for (const line of stdout.split("\n")) {
+    const event = safeParseJson(line) as CodexExecEvent | null;
+    switch (event?.type) {
+      case "thread.started":
+        // The id names a folder, so reject anything that could escape it.
+        if (
+          typeof event.thread_id === "string" &&
+          /^[\w-]+$/.test(event.thread_id)
+        ) {
+          output.threadId ??= event.thread_id;
+        }
+        break;
+      case "item.completed":
+        if (
+          event.item?.type === "agent_message" &&
+          typeof event.item.text === "string"
+        ) {
+          output.reply = event.item.text;
+        }
+        break;
+      case "error":
+        if (typeof event.message === "string") output.failure = event.message;
+        break;
+      case "turn.failed":
+        if (typeof event.error?.message === "string") {
+          output.failure = event.error.message;
+        }
+        break;
+    }
+  }
+  return output;
 }
 
 export function buildInstruction(
@@ -173,12 +253,16 @@ async function listGenerated(dir: string): Promise<string[]> {
     const sdir = path.join(dir, s);
     const st = await stat(sdir).catch(() => null);
     if (!st?.isDirectory()) continue;
-    const entries = await readdir(sdir).catch(() => []);
-    for (const e of entries) {
-      if (/\.(png|webp|jpe?g)$/i.test(e)) files.push(path.join(sdir, e));
-    }
+    files.push(...(await listImages(sdir)));
   }
   return files;
+}
+
+async function listImages(dir: string): Promise<string[]> {
+  const entries: string[] = await readdir(dir).catch(() => []);
+  return entries
+    .filter((e) => /\.(png|webp|jpe?g)$/i.test(e))
+    .map((e) => path.join(dir, e));
 }
 
 function checkBinary(
@@ -261,15 +345,21 @@ export function runCapture(
 
 function classifyCodexError(res: Captured): VendorError {
   const blob = `${res.stdout}\n${res.stderr}`.toLowerCase();
+  // `codex exec --json` prints config warnings before the turn failure, so a
+  // prefix of the raw output can miss the cause.
+  const detail = (parseCodexExecOutput(res.stdout).failure ?? blob).slice(
+    0,
+    400,
+  );
   if (res.timedOut) return { kind: "timeout", after_ms: 0 };
   if (/not.?logged.?in|login/.test(blob)) {
     return { kind: "auth-required", hint: "Run: codex login" };
   }
   if (/content.?policy|safety|refus/.test(blob)) {
-    return { kind: "safety-refused", message: blob.slice(0, 400) };
+    return { kind: "safety-refused", message: detail };
   }
   if (/rate[- ]?limit|429/.test(blob)) {
     return { kind: "rate-limit" };
   }
-  return { kind: "other", cause: new Error(blob.slice(0, 400)) };
+  return { kind: "other", cause: new Error(detail) };
 }
