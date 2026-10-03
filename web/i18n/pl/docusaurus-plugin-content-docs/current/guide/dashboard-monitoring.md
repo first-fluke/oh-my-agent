@@ -129,8 +129,8 @@ Dashboardy odczytują katalog `.agents/state/memories/`. Agenci i workflowy wype
 | `progress-{agent}.md` | Każdy uruchomiony agent | Bieżąca tura, nad czym agent pracuje, wyniki pośrednie |
 | `result-{agent}.md` | Każdy ukończony agent | Status końcowy (COMPLETED/FAILED), zmienione pliki, znalezione problemy, dostarczone rezultaty |
 | `debug-{id}.md` | Workflow `/debug` | Diagnoza błędu, przyczyna źródłowa, zastosowana poprawka, lokalizacja testu regresji |
-| `experiment-ledger.md` | System Quality Score | Śledzenie eksperymentów: wyniki bazowe, delty, decyzje zachować/odrzucić |
-| `lessons-learned.md` | Automatycznie przy końcu sesji | Wnioski odrzuconych eksperymentów (delta <= -5) |
+| `experiment-ledger-{sessionId}.md` | Rzeczywiste eksperymenty | Porównywalne dowody bazowe i kandydata, wymagane kontrole i decyzje |
+| `lessons-{sessionId}.md` | Gdy przyczyna nadająca się do ponownego użycia jest poparta dowodami | Wnioski ograniczone do sesji; bez generowania wyzwalanego punktacją |
 
 ### Jak dashboard odczytuje pliki
 

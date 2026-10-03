@@ -171,6 +171,7 @@ oma schedule list [--json]
 | Zustand | Bedeutung |
 |---|---|
 | `synced` | Job existiert sowohl im Manifest als auch im OS-Scheduler |
+| `stale` | Job ist registriert, aber die OS-Registrierung ruft einen Befehl auf, den die aktuelle CLI nicht mehr akzeptiert (zum Beispiel `schedule:run <id>`, geschrieben vor der Vereinheitlichung der Befehlspfade). `schedule sync` zum Neuschreiben ausführen; `oma update` erledigt das automatisch. |
 | `missing-in-os` | Job ist im Manifest, fehlt aber im OS-Scheduler. `schedule sync` zur Reparatur ausführen. |
 | `orphan-in-os` | Job existiert im OS-Scheduler, aber nicht im Manifest. Mit `schedule sync --prune` entfernen. |
 
@@ -265,12 +266,14 @@ oma schedule sync [--prune]
 **Beispiele:**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
+
+`oma update` führt nach jedem Update denselben Abgleich aus (ohne `--prune`), sodass ein CLI-Release, das die Schreibweise des Befehls `oma schedule run` ändert, bestehende OS-Registrierungen nicht auf einen Befehl zeigen lassen kann, den das neue Binary ablehnt. Auch von älteren Versionen mit `oma schedule:run <id>` geschriebene Registrierungen funktionieren weiter: Diese veraltete Schreibweise bleibt für vom OS aufgerufene Jobs akzeptiert.
 
 ---
 

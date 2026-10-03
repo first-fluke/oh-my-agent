@@ -68,10 +68,11 @@ weight: 1
 |:------|:---------|:-----------|
 | `id` | 是 | 此任务的唯一标识符（用于 rollout 文件名和报告）。 |
 | `skill` | 是 | 要评估的技能（与父目录名称匹配）。 |
-| `domain` | 是 | 领域标签（用于分组和未来的负迁移检测）。 |
+| `domain` | 是 | 用于分组和选择负迁移邻居任务的领域标签。 |
 | `prompt` | 是 | 调度给两个分支的任务提示。 |
 | `checker` | 否 | 如何评分智能体输出。省略时默认为 `{ type: judge }`。 |
 | `weight` | 是 | 加权平均分使用的相对权重（除非任务重要性不同，否则使用 `1`）。 |
+| `group` | 否 | 系列标签。`oma skill optimize` 会让共享同一 group 的 fixture 留在同一个 train/validation/final-test 分区中，避免近似重复的任务跨拆分泄漏。 |
 
 ### 检查器类型
 
@@ -142,7 +143,7 @@ checker:
 
 如果 judge 任务在 `_rollouts/` 中没有记录的分数，它会从报告中排除（并打印控制台警告）。这样能让 mock 模式严格保持离线。
 
-记录在使用前也会检查是否过期。在不同 SKILL.md 正文下记录的处理条目、fixture `prompt` 已改变的条目，以及早于来源追踪的条目，都会被丢弃，并给出包含文件和数量的警告。如果剩余可评分任务少于 `MIN_TASKS`，运行会报告 `coverage: "insufficient"` 而不是结论，因此编辑后的技能不会继承之前的分数。
+记录在使用前也会检查是否过期。技能正文、提示、任务/检查器契约、实际生效的 judge rubric 以及评估器协议修订版本发生变化，都会使受影响的条目失效。缺少来源信息的条目同样会被丢弃，并给出包含文件和数量的警告。如果剩余可评分任务少于 `MIN_TASKS`，运行会报告 `coverage: "insufficient"` 而不是结论。
 
 :::note `oma skill optimize --mock`
 优化器会为候选 SKILL.md 正文评分。由于记录只对创建它的正文有效，候选正文没有匹配的 rollout，报告会显示未覆盖。使用 `--live` 为候选评分。
@@ -156,7 +157,7 @@ oma skill eval --skill oma-scholar
 
 ### --live
 
-通过 `oma agent spawn --read-only` 生成真实智能体分支。两个分支都在临时工作区中运行，防止修改项目文件。
+通过 `oma agent spawn --read-only` 生成真实智能体分支。每个任务分支都在各自的临时工作区中运行，因此一个分支产生的文件不会影响另一个分支。进程失败、API 错误信封和 judge 失败会把整个成对比较排除在评分和记录之外；部分输出只是诊断数据。
 
 调度前，命令会打印成本预览，其中列出任务数、分支调度数、judge 调度数和解析出的供应商。使用 `y` 确认，或使用 `--yes` 跳过确认。
 
@@ -166,8 +167,10 @@ oma skill eval --skill oma-scholar
 | --- | --- |
 | `--task-dir <path>` | 从 `.agents/eval/<skill>` 之外的目录评估 fixture。 |
 | `--max-tasks <n>` | 为有界实时运行限制 fixture 数量。 |
-| `--neg-transfer` | 抽样同领域邻居以查找负迁移，默认关闭。 |
-| `--require-coverage` | 可评分的成对任务少于五个时以非零状态退出。 |
+| `--trials <n>` | 将每个分支重复 `n` 次（1 到 10）。先启动的分支在各次试验之间交替，每个任务的分数取平均，报告会增加任务内方差。`--neg-transfer` 的邻居任务只运行一次。 |
+| `--neg-transfer` | 在属于其他技能的同领域任务上测量候选技能，默认关闭。 |
+| `--routing` | 测量激活情况：对每个任务，根据每个技能的 `description` 询问会加载哪个已安装技能。live 会实际测量（每个任务多一次调度）；mock 会重放在同一技能目录下录制的路由记录。 |
+| `--require-coverage` | 可评分的成对任务少于五个，或所请求的负迁移检查不完整时，以非零状态退出。 |
 
 ```bash
 # Preview and confirm
@@ -177,22 +180,32 @@ oma skill eval --skill oma-scholar --live
 oma skill eval --skill oma-scholar --live --yes
 ```
 
+#### 负迁移测量
+
+使用 `--neg-transfer` 时，每个被选中的邻居任务会运行两次：先是不含候选的全新基线，再是注入了确切候选正文的处理分支。邻居是同一 `domain` 中属于其他技能的任务。如果没有其他技能共享该领域，则改用有上限的跨领域样本（最多六个任务，分散在其他技能中），并且 `negativeTransferCoverage.scope` 报告 `cross-domain`；注入正文造成的干扰并不局限于它自己的领域；技能独占某个领域，也不能让这项检查无法进行。两个分支使用同一个评估器和各自独立的空工作区。差值为处理组分数减去基线分数；负值表示候选损害了该邻居任务。实时预览包含这些额外的分支和 judge 调度。`--max-tasks` 同样会限制邻居样本，并在有任务被省略时给出警告。
+
+使用 `--live --neg-transfer --record`，可将针对候选的比较保存到 `.agents/eval/<candidate>/_negative-transfer/<neighbor>/<body-hash>/_rollouts/` 下。mock 重放要求候选标识、正文哈希、完整的任务/检查器哈希，以及两个分支共用的比较 ID 全部匹配。邻居任务的普通评估记录不能代替这项测量。
+
+每个 `negativeTransfer` 条目都带有 `trials`（`delta` 背后的成对比较次数）。优化运行会在拒绝候选之前，对发生回归的邻居重新测量一次，并加入 `confirmed`（重复测量也回归时为 `true`，否则为 `false`）；`oma skill eval --neg-transfer` 只报告单次比较。报告包含 `negativeTransferCoverage`，其中有 `status`、`expected` 和 `scored`。未使用该标志时，状态为 `not-requested`；每个被选中的邻居都有有效的成对结果且样本非空时，状态为 `measured`；邻居数为零或任何比较缺失时，状态为 `insufficient`。空的 `negativeTransfer` 数组因此并不能证明不存在回归。当所请求的负迁移覆盖不足时，JSON 的 `ok` 为 false。
+
 #### 技能隔离（保持基线诚实） {#skill-isolation-keeping-the-baseline-honest}
 
 只有当**基线分支在没有目标技能的情况下运行**时，`utilityLift` 才有意义。问题在于：被调度的智能体会自动加载其运行时安装的所有技能，因此一个朴素的基线仍会加载本应被测量为“不提供”的技能，导致比较被污染（基线约等于处理组，提升约等于 0）。
 
-为防止这种情况，`--live` 会在隔离的临时工作区中运行**两个分支**，其技能目录包含除目标技能外的所有已安装技能。处理分支只通过注入的 `SKILL.md` 重新加入目标技能（该文件加在提示开头）。因此注入是唯一受控变量：基线 = 没有技能，处理组 = 候选 `SKILL.md`。
+为防止这种情况，`--live` 会**让两个分支各自在独立的临时工作区中运行**。受保护的 Claude 和 Codex 配置档会禁用自动的技能/指令发现以及智能体工具。处理分支**只**通过注入的 `SKILL.md` 获得目标技能。探索性配置档使用不含目标技能的已过滤技能目录，但仅凭这一点不能证明已经隔离。
 
-这是因为大多数供应商会相对于工作目录发现技能（例如 `<cwd>/.claude/skills`、`<cwd>/.codex/skills`），干净的工作目录确实可以隐藏该技能。报告通过 `isolation` 字段说明隔离保持得多好：
+干净的工作目录会隐藏项目本地的技能发现，但运行时隔离还取决于供应商配置档。报告通过 `isolation` 字段声明经过验证的级别：
 
 | 状态 | 含义 |
 |---|---|
-| `enforced` | 相对于 cwd 的供应商，目标技能不在 HOME 路径中，完全隔离。 |
-| `best-effort` | 相对于 cwd 的供应商，但 HOME 中也有技能副本（或供应商未知）；项目副本被隐藏，但 HOME 副本仍可能泄漏。标记为低置信度。 |
+| `enforced` | 目标 ID 有效且没有 HOME 副本的受保护 Claude，或具备发现/工具抑制以及运行时线程检查的原生 Codex。运行时契约失败会中止调度。 |
+| `best-effort` | 没有受保护文本配置档的运行时、无效的目标 ID，或存在 Claude HOME 副本；隔离未经验证。 |
 | `unavailable` | 基于 HOME 的供应商（例如 **antigravity**，它读取 `~/.gemini/antigravity-cli/skills`）；干净的 cwd 无法隐藏它。打印警告，结果标记为低置信度。 |
 | n/a | mock 模式，不进行实时调度。 |
 
-隔离不是 `enforced` 时，会打印一行警告，结果应视为低置信度。为了得到干净信号，请使用相对于 cwd 且可隔离的供应商（claude、codex、qwen），不要使用基于 HOME 的供应商。评估供应商遵循 `.agents/oma-config.yaml` 中的 `model_preset`，因此请选择默认供应商相对于 cwd 的预设。
+其他运行时配置档仍可用于探索性评估，但 `best-effort` 和 `unavailable` 的结果会阻止实时优化的晋升。评估供应商遵循项目的模型配置。Codex 通过 `app-server` 使用其原生 CLI 登录以及已配置的模型/提供方；它不会悄悄切换到 Claude 或基于 API 密钥的客户端。受保护的 Codex 契约面向 macOS/Linux 上的 CLI 0.154.x，要求使用原生文件凭据存储，并且已存在 `auth.json`。私有的临时配置主目录引用原始的配置/认证文件，同时排除共享的引导状态；凭据不会被复制，原生刷新使用原始认证文件。目前不支持 keyring、auto 和 ephemeral 凭据存储。不受支持的版本、存储模式和契约失败都会变成调度错误。
+
+judge 在全新的临时目录中运行，并禁用优化内存。Claude 和 Codex 的 judge 使用与评估分支相同的受保护文本传输。judge 的供应商配置在本次运行期间保持固定。
 
 ### --live --record
 
@@ -206,8 +219,15 @@ oma skill eval --skill oma-scholar --live --yes
 |---|---|---|
 | `skillBodyHash` | 仅 `treatment` | 正在评估的 SKILL.md 正文 |
 | `promptHash` | 两个分支 | fixture 当前的 `prompt` |
+| `taskHash` | 两个分支 | 完整任务、实际生效的检查器/默认 judge rubric，以及 `SKILL_EVAL_PROTOCOL_REVISION` |
+| `trial` | 两个分支（`--trials` > 1） | 将同一次重复中的基线和处理分支配对；单次试验时不存在 |
+| `judgeResponse` | judge 任务 | judge 解包后的判定文本（有长度上限），保留它以便审计已存储的 `score` |
 
-基线分支不提供技能，因此编辑 SKILL.md 不会使其失效，只有处理分支需要重新记录。
+分支输出以答案文本记录。当供应商 CLI 返回 JSON 结果信封时，会存储并评分 `result` 字段；信封中的记账信息绝不会被 `assert`/`regex` 检查器匹配，也不会被 judge 解析器读取。
+
+基线分支不提供技能，因此仅编辑 SKILL.md 不会使其记录失效。对任务或评估器契约的改动会使两个分支都失效。实时记录会重新运行两个分支。
+
+早于完整任务/评估器来源信息的记录，必须用 `--live --record` 重新生成（邻居比较还要加上 `--neg-transfer`）；给旧分数补上新哈希无法验证它们。同一份契约也参与优化套件的标识，因此在更新后的契约下不会复用此前套件范围内的知识。当评分器行为、judge 提示/判定解析或其他隐含的评估器行为发生变化时，请通过递增来维护 `SKILL_EVAL_PROTOCOL_REVISION`。
 
 :::caution `_rollouts/` 仅限本地使用，请勿提交
 记录只对创建它时的确切 SKILL.md 正文重放。编辑技能后，处理记录会在下一次 `--mock` 运行中被丢弃，并为所有拉取该仓库的人产生警告。该目录已加入 gitignore，请在本地记录。
@@ -220,6 +240,24 @@ oma skill eval --skill oma-scholar --live --record --yes
 成功的实时运行后，报告包含基线和处理组计数、`utilityLift`、`coverage: "ok"`、隔离状态以及 pass/warn/fail 决策。之后的 mock 运行只会复用任务提示和处理技能正文仍然匹配的记录。
 
 ---
+
+### 并发与调度超时
+
+实时分支、邻居分支、judge 调用和路由探测通过一个最多包含 `OMA_SKILL_EVAL_CONCURRENCY` 个子进程的有界池运行（默认 4，最多 16）。一次试验的两个分支总是一起在各自独立的空目录中运行，先启动的分支在各次试验之间交替，结果保持任务顺序，因此记录和分数与串行运行相同。将该变量设为 1 即可串行执行。
+
+每个实时分支和 judge 调用会在 `OMA_SKILL_EVAL_TIMEOUT_MS`（默认 180000）到期后被终止。超时的调度会先重试一次，之后才把任务排除出报告，因为一次缓慢的响应是传输失败，而不是答案；第二次超时会排除该任务（在优化中还会使该拆分的覆盖检查失败）。如果 fixture 确实需要长答案，请调高该限制。
+
+## 路由：技能会被选中吗？
+
+效用提升衡量的是正文被加载之后它能做什么。供应商根据技能 frontmatter 中的 `description` 决定是否加载该技能，因此更好但从未被选中的正文并不算改进。`--routing` 会把每个任务提示，连同每个已安装技能的名称和描述，发送给同一个受保护模型，并询问它会加载哪一个技能（或 `NONE`）。选中目标技能算作一次激活；选中其他技能算作误路由；`NONE` 算作未命中。
+
+```text
+  routing: measured  activated 5/6 (83%)  misrouted 1 [oma-docs×1]  none 0  unparsed 0  catalog 33
+```
+
+JSON 报告带有 `routing`，其中包含 `status`、各项计数、`activationRate`、`misroutedTo` 和 `catalogSize`；`findings` 中的每个条目带有 `routing: target | other | none | unparsed`。使用 `--record` 时，这些选择会连同技能目录的哈希一起保存到 `_rollouts/<hash>.routing.json`。之后的 `--mock --routing` 只有在每条描述和每个任务都未改变时才会重放它们；否则 `status` 为 `stale`，且不计入任何内容。
+
+这是通过受保护传输，对照技能目录来衡量描述。它不检验供应商自己的发现机制（受保护配置档特意禁用了它），也不衡量已加载技能的流程是否被遵循；那仍属于效用测量。
 
 ## 最小可用 fixture 集
 
@@ -265,7 +303,7 @@ oma skill eval --skill oma-scholar --json
 ```
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
-  isolation: enforced [codex]
+  isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
@@ -293,16 +331,29 @@ Skill utility eval  (skill: oma-scholar)
   "treatmentScore": 0.7143,
   "utilityLift": 0.2857,
   "utilityStdDev": 0.1429,
+  "repeatability": {
+    "trials": 1,
+    "liftCi95": { "lower": 0.0918, "upper": 0.4796 },
+    "withinTaskStdDev": null,
+    "status": "single-trial"
+  },
   "findings": [
-    { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0 }
+    { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0, "trials": 1, "liftStdDev": 0, "routing": "target" }
   ],
+  "usage": { "status": "actual", "dispatches": 14, "inputTokens": 61234, "outputTokens": 9876, "costUsd": 0.8123, "judge": { "status": "actual", "dispatches": 6, "inputTokens": 12000, "outputTokens": 30, "costUsd": 0.1401 } },
+  "routing": { "status": "measured", "measured": 7, "activated": 6, "misrouted": 1, "none": 0, "unparsed": 0, "activationRate": 0.8571, "misroutedTo": { "oma-search": 1 }, "catalogSize": 33 },
   "negativeTransfer": [],
+  "negativeTransferCoverage": { "status": "not-requested", "expected": 0, "scored": 0 },
   "isolation": "enforced",
-  "isolationVendor": "codex"
+  "isolationVendor": "claude"
 }
 ```
 
-只有当 `coverage === "ok"` 且 `decision === "pass"` 时，`ok` 才为 `true`。`isolation` 字段报告基线分支是否确实在没有目标技能的情况下运行（请参阅[技能隔离](#skill-isolation-keeping-the-baseline-honest)）；在 `--mock` 模式下，`isolation` 为 `"n/a"`。
+`usage` 汇总供应商为已评分分支报告的用量，并单独汇总其 judge 调用的用量：调度次数、输入和输出 token（包括缓存读取和写入），以及以美元计的费用。每次调度都报告了用量时，`status` 为 `actual`；部分调度没有报告时为 `partial`；全都没有报告时为 `unknown`（Codex bridge 这类纯文本传输不会报告任何内容）。已记录的 rollout 在每个条目中都带有 `usage` 和 `judgeUsage`，因此 mock 重放报告的是它所复用记录的费用，而不是零。
+
+`repeatability` 把任务层面的差异与重跑差异区分开。`liftCi95` 是对各任务提升值做的成对 95% t 区间（已评分任务少于两个时为 null）。`--trials` 为 2 或更大时，`withinTaskStdDev` 是各任务的试验间提升值标准差的平均值，并且只有当区间在提升值所在一侧排除零时，`status` 才为 `stable`；否则为 `unstable`，`pass` 会被降级为 `warn`。单次试验的运行会报告 `single-trial`：它可以显示提升，但不能证明这种提升可以重复出现。
+
+只有当 `coverage === "ok"`、`decision === "pass"`，并且所请求的任何负迁移检查都有足够覆盖时，`ok` 才为 `true`。`isolation` 字段报告基线分支是否确实在没有目标技能的情况下运行（请参阅[技能隔离](#skill-isolation-keeping-the-baseline-honest)）；在 `--mock` 模式下，`isolation` 为 `"n/a"`。
 
 
 ---
@@ -316,7 +367,7 @@ oma skill eval --skill oma-scholar --json --require-coverage
 
 退出码：
 - `0`：通过或警告
-- `1`：失败，或使用 `--require-coverage` 时覆盖率不足
+- `1`：失败，或使用 `--require-coverage` 时任务/负迁移覆盖率不足
 
 ---
 
@@ -328,7 +379,7 @@ mock 的确定性来自于：在 `--live --record` 期间将 judge 的二元判�
 
 **数据外流：**`--live` 期间，judge 会将候选分支输出调度给配置的供应商评分。每次实时运行开始时都会打印一次性警告。
 
-如果 mock 运行报告覆盖率不足，请检查警告中被丢弃或缺失的 `_rollouts` 条目，修复 fixture 或技能后再运行实时记录。如果隔离状态为 `best-effort` 或 `unavailable`，在将提升视为强信号前，请选择相对于 cwd 的供应商，例如 Claude、Codex 或 Qwen。
+如果 mock 运行报告覆盖率不足，请检查警告中被丢弃或缺失的 `_rollouts` 条目，修复 fixture 或技能后再运行实时记录。实时晋升要求有可用的受保护 Claude 或 Codex 配置档，且 `isolation: "enforced"`；其他配置档仍属探索性。
 
 ---
 

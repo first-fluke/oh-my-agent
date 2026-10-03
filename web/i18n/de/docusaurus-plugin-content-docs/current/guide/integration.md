@@ -13,7 +13,7 @@ Es gibt zwei Möglichkeiten, oh-my-agent zu einem bestehenden Projekt hinzuzufü
 1. **CLI-Weg:** Führen Sie `oma` (oder `npx oh-my-agent`) aus und folgen Sie den interaktiven Eingabeaufforderungen. Für die meisten Benutzer empfohlen.
 2. **Manueller Weg:** Kopieren Sie Dateien und konfigurieren Sie Symlinks selbst. Das ist für eingeschränkte Umgebungen oder benutzerdefinierte Setups nützlich.
 
-Beide Wege erzeugen dasselbe Ergebnis: ein `.agents/`-Verzeichnis (die SSOT) sowie generierte Vendor-native Dateien wie `.claude/agents/`, `.codex/agents/` und `.gemini/agents/`.
+Beide Wege erzeugen dasselbe Ergebnis: ein `.agents/`-Verzeichnis (die SSOT) sowie generierte Vendor-native Dateien wie `.claude/agents/`, `.codex/agents/` und `.qwen/agents/`.
 
 ---
 
@@ -179,7 +179,13 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link` baut `.claude/`, `.codex/`, `.gemini/` und weitere Vendor-native Dateien aus `.agents/agents/` neu auf. Zur Laufzeit verwendet OMA den nativen Dispatch nur, wenn der Vendor der aktuellen Laufzeit mit dem Ziel-Vendor des Agenten übereinstimmt. Setups mit mehreren Vendoren funktionieren weiterhin, aber nicht passende Agenten fallen auf den externen Aufruf `oma agent spawn` zurück.
+`oma link` erzeugt `.claude/`, `.codex/`, `.qwen/` und weitere Vendor-native Dateien aus `.agents/agents/` neu. Zur Laufzeit verwendet OMA den nativen Dispatch nur, wenn der Vendor der aktuellen Laufzeit mit dem Ziel-Vendor des Agenten übereinstimmt. Setups mit mehreren Vendoren funktionieren weiterhin, aber nicht passende Agenten fallen auf den externen Aufruf `oma agent spawn` zurück.
+
+Für Qwen Code liegen die erzeugten Markdown-Definitionen in `.qwen/agents/`. Wählen Sie eine OMA-Rolle über den `subagent_type` des Agent-Tools aus, zum Beispiel `backend-engineer`. Prüfen Sie die verfügbaren Definitionen mit `/agents manage` in Qwen Code. Native Agenten verwenden denselben [Ergebnis-Lebenszyklus](./agent-results-and-resume.md) wie CLI-Spawns: `oma agent begin`, `oma agent verify` und `oma agent finish`. Verwenden Sie bei `model_preset: free` `oma agent spawn`, damit der untergeordnete Prozess die Gateway-Konfiguration erhält.
+
+Qwen Code verwendet denselben `code-intelligence-primer` wie die anderen Vendoren. Wie Claude Code registriert es den gemeinsamen Primer bei `SessionStart` und `UserPromptSubmit`: Die Hinweise werden einmal pro Sitzung und nach einer Kompaktierung erneut eingefügt. Der Primer folgt dem konfigurierten Provider (Serena oder Gortex), enthält Hinweise zu zurückgestellten Tools (Deferred Tools) und erlaubt den nativen Fallback, wenn der Provider nicht verfügbar ist oder eine Zeitüberschreitung auftritt. Qwen fügt keine eigene Blockierung der Codesuche und keine Nachverfolgung von Provider-Ergebnissen hinzu.
+
+Führen Sie nach einem Update der CLI `oma link qwen` aus, um die Hook-Einstellungen und den Wrapper neu zu erzeugen, und starten Sie danach eine neue Qwen-Sitzung. Tests der Hook-Ausgabe prüfen den Integrationsvertrag; sie garantieren nicht, welches Tool ein Modell auswählt.
 
 ### Schritt 3: Benutzereinstellungen konfigurieren
 
@@ -403,7 +409,7 @@ Für jeden ausgewählten Skill kopiert `installSkill()` das Skill-Verzeichnis na
 
 - Agenten-Definitionen (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
 - Hook-Konfigurationen (`.claude/hooks/`, `.codex/hooks.json`)
-- Einstellungsdateien und Vendor-Integrationsdokumentation (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
+- Einstellungsdateien und die gemeinsame Vendor-Integrationsdokumentation (nur `AGENTS.md`, Claude Code ≥ 2.1.277 eingeschlossen). `CLAUDE.md` und `GEMINI.md` erhalten nie einen OMA-Block; eine bestehende benutzereigene `CLAUDE.md` erhält lediglich eine `@AGENTS.md`-Importzeile, damit Claude Code `AGENTS.md` nicht überspringt
 
 Codex schützt seine Hooks durch einen einmaligen Vertrauensschritt. Daher wird `.codex/hooks.json` erst ausgeführt, nachdem Sie die Datei einmal über den Codex-`/hooks`-Browser geprüft haben. Details finden Sie in der [Anleitung zum Codex-Hook-Vertrauen](/docs/guide/codex-hook-trust).
 

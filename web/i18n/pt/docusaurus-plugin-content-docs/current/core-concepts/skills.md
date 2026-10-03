@@ -11,7 +11,7 @@ Skills são pacotes estruturados de conhecimento que fornecem a um papel de disp
 
 ## O design em duas camadas
 
-### Camada 1: SKILL.md (~2.631 tokens em mediana, carregado quando a skill é roteada)
+### Camada 1: SKILL.md (carregado quando a skill é roteada)
 
 Toda skill tem um arquivo `SKILL.md` na raiz. Ele entra na janela de contexto quando a skill é roteada: o hook injetor transmite uma **referência de caminho**, não o corpo, então uma skill não roteada não custa nada além de sua `description`. O arquivo contém:
 
@@ -37,9 +37,9 @@ O campo description é fundamental porque contém as palavras-chave de roteament
 
 O diretório `resources/` contém conhecimento de execução detalhado. Esses arquivos são carregados somente quando:
 1. O host ou workflow selecionou a skill (por exemplo, por uma correspondência nativa ou comando explícito)
-2. O recurso específico é necessário para o tipo e a dificuldade da tarefa atual
+2. A tarefa atual atende à condição de carregamento da referência
 
-Este carregamento sob demanda é governado pelo guia de context-loading (`.agents/skills/_shared/core/context-loading.md`), que mapeia tipos de tarefa para recursos necessários por agente.
+Este carregamento sob demanda é governado pelo guia de context-loading (`.agents/skills/_shared/core/context-loading.md`), que distingue as instruções de entrada das referências selecionadas pela tarefa.
 
 ---
 
@@ -110,12 +110,12 @@ Este carregamento sob demanda é governado pelo guia de context-loading (`.agent
 
 | Tipo de Recurso | Padrão de Nome | Propósito | Quando Carregado |
 |-----------------|---------------|---------|-------------|
-| **Protocolo de Execução** | `execution-protocol.md` | Workflow passo a passo: Analisar -> Planejar -> Implementar -> Verificar | Sempre (com SKILL.md) |
-| **Stack Tecnológico** | `tech-stack.md` | Specs detalhadas de tecnologia, versões, configuração | Tarefas complexas |
+| **Protocolo de Execução** | `execution-protocol.md` | Workflow passo a passo: Analisar -> Planejar -> Implementar -> Verificar | A operação selecionada precisa dos detalhes de seu comando ou contrato |
+| **Stack Tecnológico** | `tech-stack.md` | Specs detalhadas de tecnologia, versões, configuração | Decisão de framework ou stack selecionada |
 | **Playbook de Erros** | `error-playbook.md` | Procedimentos de recuperação com escalação "3 strikes" | Apenas em erros |
 | **Checklist** | `checklist.md` | Verificação de qualidade específica do domínio | Na etapa de Verificação |
-| **Snippets** | `snippets.md` | Padrões de código prontos para copiar | Tarefas Médias/Complexas |
-| **Exemplos** | `examples.md` ou `examples/` | Exemplos few-shot de entrada/saída para o LLM | Tarefas Médias/Complexas |
+| **Snippets** | `snippets.md` | Padrões de código prontos para copiar | Implementação ou formato de saída pouco familiar |
+| **Exemplos** | `examples.md` ou `examples/` | Exemplos few-shot de entrada/saída para o LLM | Implementação ou formato de saída pouco familiar |
 | **Variantes** | Diretório `variants/` | Referências específicas de linguagem/framework. O backend fornece seeds `node`, `python` e `rust`; o mobile fornece um schema e pode receber referências de plataforma geradas. | Quando existe uma stack correspondente |
 | **Templates** | `component-template.tsx`, `screen-template.dart` | Templates boilerplate de arquivo | Na criação de componentes |
 | **Referência de Domínio** | `orm-reference.md`, `anti-patterns.md`, etc. | Conhecimento profundo de domínio para subtarefas específicas | Específico por tipo de tarefa |
@@ -130,24 +130,24 @@ Todos os agentes compartilham fundamentos comuns de `.agents/skills/_shared/`. E
 
 | Recurso | Finalidade | Quando carregado |
 |---------|---------|------------------------|
-| **`skill-routing.md`** | Mapeia palavras-chave de tarefas ao agente correto. Contém a tabela Skill-Agent Mapping, padrões de Complex Request Routing, Inter-Agent Dependency Rules, Escalation Rules e Turn Limit Guide. | Referenciado por skills de orquestração e coordenação |
-| **`context-loading.md`** | Define quais recursos carregar para cada tipo e dificuldade de tarefa. Contém tabelas de mapeamento por agente e gatilhos de carregamento de protocolos condicionais. | No início do workflow (Step 0 / Phase 0) |
-| **`prompt-structure.md`** | Define os quatro elementos de todo prompt: Goal, Context, Constraints, Done When. Inclui templates para agentes PM, implementação e QA e lista anti-padrões. | Referenciado pelo agente PM e por todos os workflows |
-| **`clarification-protocol.md`** | Define níveis LOW/MEDIUM/HIGH de incerteza e as ações correspondentes. Contém gatilhos, templates de escalonamento, verificações obrigatórias por agente e comportamento em modo subagente. | Quando os requisitos são ambíguos |
-| **`context-budget.md`** | Gerencia o orçamento de tokens. Define estratégia de leitura (use `find_symbol` em vez de `read_file`), custos medidos de cada recurso e de um carregamento Simple (~4.000 tokens) versus Complex (~9.000 tokens), o teto de `SKILL.md` (25.000 caracteres, verificado por `oma skill audit`), tratamento de arquivos grandes e sintomas de overflow de contexto. | No início do workflow |
-| **`difficulty-guide.md`** | Define critérios de classificação Simple/Medium/Complex, turnos esperados, ramificações de protocolo (Fast Track / Standard / Extended) e recuperação de um julgamento errado. | No início da tarefa (Step 0) |
-| **`quality-principles.md`** | Quatro princípios universais de qualidade aplicados a todos os agentes. | No início de workflows orientados à qualidade (ultrawork) |
+| **`skill-routing.md`** | Roteia por resultado da tarefa, responsabilidade e dependências reais; sem cadeia obrigatória de agentes nem cota de turnos. | Referenciado por skills de orquestração e coordenação |
+| **`context-loading.md`** | Entrada da skill responsável, referências condicionais e limites de carregamento em runtime. | Ao compor o contexto |
+| **`prompt-structure.md`** | Orienta handoffs de tarefas pouco familiares com objetivo, contexto, restrições reais e evidências de aceitação; sem template obrigatório para tarefas diretas. | Referenciado pelo agente PM e por todos os workflows |
+| **`clarification-protocol.md`** | Resolve detalhes rotineiros a partir do contexto e pede apenas informações relevantes ausentes ou autorização. | Quando os requisitos são ambíguos |
+| **`context-budget.md`** | Estimativas de tamanho de arquivo, medição do prompt real, leituras delimitadas e checkpoints. | Tarefas longas ou diagnóstico de sobrecarga de contexto |
+| **`difficulty-guide.md`** | Escolhe a profundidade do planejamento e os entregáveis com base nas dependências e nas necessidades de verificação. | Quando a decomposição precisa de uma estimativa de dificuldade |
+| **`quality-principles.md`** | Orientações sobre escopo, manutenibilidade, evidências e verificação proporcional. | No início de workflows orientados à qualidade (ultrawork) |
 | **`vendor-detection.md`** | Protocolo para detectar o runtime atual (Claude Code, Codex CLI, Antigravity, Cursor, Kiro, Qwen e fallback CLI), usando marcadores do host e estado do fornecedor configurado. | No início do workflow |
-| **`session-metrics.md`** | Pontuação de Clarification Debt (CD) e acompanhamento das métricas da sessão. Define eventos (clarify +10, correct +25, redo +40), limiares (CD >= 50 = RCA, CD >= 80 = pause) e pontos de integração. | Durante sessões de orquestração |
-| **`common-checklist.md`** | Checklist universal de qualidade aplicado na verificação final de tarefas Complex, além dos checklists específicos do agente. | Etapa Verify de tarefas Complex |
-| **`lessons-learned.md`** | Repositório de aprendizados de sessões anteriores, gerado após violações de Clarification Debt e experimentos descartados. Organizado por domínio e com QA Evaluation Lessons para rastrear pontos cegos do avaliador. | Consultado após erros e no fim da sessão |
-| **`api-contracts/`** | Diretório com o template de contrato de API e contratos gerados. `template.md` define o formato por endpoint (método, caminho, schemas de request/response, auth e erros). | Quando o trabalho atravessa fronteiras |
+| **`session-metrics.md`** | Evidências opcionais da sessão, sem pontuações de penalidade conversacional ou do avaliador. | Retrospectiva solicitada ou correção relevante |
+| **`common-checklist.md`** | Verificações aplicáveis entre domínios; sem limites globais de contagem de linhas nem exigência generalizada de catch. | Revisão entre domínios, quando relevante |
+| **`lessons-learned.md`** | Registra e aplica lições baseadas em evidências, com condições de versão/gatilho; sem limiar automático de RCA. | Consultado após erros e no fim da sessão |
+| **`api-contracts/`** | Template de contrato opcional. Reutilize os schemas do projeto; os contratos gerados ficam fora do código-fonte da skill. | Quando o trabalho atravessa fronteiras |
 
 ### Recursos de runtime (`.agents/skills/_shared/runtime/`)
 
 | Recurso | Finalidade |
 |---------|---------|
-| **`memory-protocol.md`** | Formato e operações de arquivos de memória para subagentes CLI. Define protocolos On Start, During Execution e On Completion usando ferramentas de memória configuráveis, com extensão para rastrear experimentos. |
+| **`memory-protocol.md`** | Formato e operações de arquivos de memória para subagentes CLI. Define protocolos On Start, During Execution e On Completion usando ferramentas de memória configuráveis (leitura/escrita/edição), com extensão para rastrear experimentos. |
 | **`execution-protocols/claude.md`** | Padrões de execução específicos do Claude Code, injetados por `oma agent spawn` quando o fornecedor é claude. |
 | **`execution-protocols/antigravity.md`** | Padrões de execução da CLI Antigravity (`agy`). |
 | **`execution-protocols/codex.md`** | Padrões de execução da CLI Codex. |
@@ -165,13 +165,13 @@ Os protocolos específicos de fornecedor são injetados automaticamente em agent
 
 Estes são carregados apenas quando condições específicas são atendidas durante a execução:
 
-| Recurso | Condição de Gatilho | Carregado Por | Tokens Aprox. |
-|---------|---------------------|--------------|--------------|
-| **`quality-score.md`** | Fase VERIFY ou SHIP começa em um workflow que suporta medição de qualidade | Orquestrador (passa para prompt do agente QA) | ~250 |
-| **`experiment-ledger.md`** | Primeiro experimento registrado após estabelecer baseline IMPL | Orquestrador (inline, após medição de baseline) | ~250 |
-| **`exploration-loop.md`** | Mesmo portão falha duas vezes no mesmo problema | Orquestrador (inline, antes de spawnar agentes de hipótese) | ~250 |
+| Recurso | Condição de Gatilho | Carregado Por |
+|---------|---------------------|--------------|
+| **`quality-score.md`** | É necessária uma baseline definida ou uma comparação de experimentos | Orquestrador (passa para prompt do agente QA) |
+| **`experiment-ledger.md`** | Primeiro experimento registrado após estabelecer baseline IMPL | Orquestrador (inline, após medição de baseline) |
+| **`exploration-loop.md`** | A recuperação falha repetidamente e alternativas merecem ser testadas dentro do orçamento | Orquestrador (inline, antes de spawnar agentes de hipótese) |
 
-Impacto no orçamento: aproximadamente 750 tokens no total se todos os 3 forem carregados. Como o carregamento é condicional, sessões típicas carregam 1-2 destes — um valor pequeno perto dos ~4.000 tokens que uma tarefa Simple já usa com `SKILL.md` e `execution-protocol.md`.
+Esses recursos ficam adiados até que o gatilho de cada um se aplique. A dificuldade, por si só, não os injeta.
 
 ---
 
@@ -215,75 +215,29 @@ Requisições multi-domínio seguem ordens de execução estabelecidas:
 
 ## Matemática de economia de tokens {#token-savings-math}
 
-Esses números são medidos na árvore de skills, e não estimados manualmente. Recalcule-os a qualquer momento:
+Meça antes de afirmar que há economia:
 
 ```bash
-bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend,oma-mobile,oma-qa
+bun scripts/measure-skill-context.ts
+bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend --json
+oma agent context backend --difficulty Simple
 ```
 
-As contagens de tokens são **aproximações** (bytes ÷ 4, proporção aproximada para Markdown em inglês). Tabelas e blocos de código tokenizam um pouco pior, então os valores ficam ligeiramente abaixo do real; use um tokenizer real para o modelo-alvo se precisar de números exatos.
+O script informa estimativas (bytes UTF-8 / 4) para cenários de tamanho de arquivo. `routed` é apenas a entrada; `simple`, `medium` e `complex` acrescentam arquivos hipotéticos de protocolo, de exemplo e de stack para comparação. Os nomes são mantidos por compatibilidade com o script, e não como instruções de pré-carregamento. `all` é um teto de tamanho dos recursos, não uma configuração de runtime. Um checkout novo pode usar uma seed de plataforma como proxy de tamanho; ele não carrega todas as plataformas.
 
-### Níveis de carregamento
+O comando de contexto exibe a injeção real de contexto da tarefa. Ele não inclui o restante da conversa nem todas as instruções do host/runtime. Use um prompt montado ou a telemetria de uso para medir o total de tokens de entrada, a latência e o custo em um modelo específico. Não infira esses valores a partir do tamanho do repositório nem das contagens de espelhos gerados.
 
-Cada nível corresponde a um estado que um agente realmente alcança, segundo [`context-loading.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/_shared/core/context-loading.md):
+## Carregamento de recursos por tarefa
 
-| Nível | O que entra no contexto |
-|------|--------------------------|
-| `routed` | Apenas `SKILL.md` |
-| `simple` | + `execution-protocol.md` |
-| `medium` | + o recurso mapeado para a tarefa, quando esse arquivo existe |
-| `complex` | + o recurso mapeado e as referências de stack quando o projeto as fornece |
-| `all` | `SKILL.md` + todos os arquivos de recursos — o **teto**, não um modo selecionável |
+Todo nível de dificuldade começa pela skill responsável. O grafo é um índice de referências; a adjacência não autoriza carregar outro especialista, um playbook de erros nem um workflow condicional de experimentos.
 
-Para as skills backend e mobile, `/stack-set` pode gerar referências específicas do projeto em `stack/`. Um checkout novo não contém um diretório de stack gerado, então a linha `complex` abaixo é medida contra as seeds fornecidas em `variants/`, das quais a geração parte: trata-se de um proxy de tamanho, não de um arquivo que o agente carregue.
+O loader usa orçamentos flexíveis de 1.500 / 4.000 / 8.000 tokens estimados para Simple / Medium / Complex. Uma entrada que excede o orçamento é mantida e o excesso é informado. As referências de apoio permanecem adiadas, a menos que sejam selecionadas explicitamente depois que o gatilho da tarefa correspondente for resolvido. Uma entrada obrigatória nunca é substituída por documentos menores e não relacionados.
 
-### Uma sessão com 5 agentes (pm, backend, frontend, mobile, qa)
-
-| Nível | Tokens | Participação do teto | Evitados |
-|--------|-------:|-----------------:|--------:|
-| `routed` | 11,497 | 15.7% | 84.3% |
-| `simple` | 17,923 | 24.4% | 75.6% |
-| `medium` | 19,125 | 26.1% | 73.9% |
-| `complex` | 39,156 | 53.4% | 46.6% |
-| `all` | 73,355 | 100% | — |
-
-Assim, uma tarefa Simple ou Medium em cinco agentes mantém aproximadamente **17–19K tokens** de contexto de skills em vez do teto de 73K, enquanto uma tarefa Complex mantém cerca de **38K**. A economia fica em torno de 74–76% no trabalho comum e cai para aproximadamente 47% quando uma tarefa carrega referências de stack. Em um modelo com contexto de 128K, isso deixa cerca de 110K livres para trabalho Simple/Medium e 90K para trabalho Complex.
-
-:::note Leia `all` como um limite, não como uma alternativa
-Nenhum runtime carrega todos os recursos antecipadamente: as skills são apresentadas por sua `description`, seu corpo é lido quando roteado e os recursos são lidos conforme a necessidade. `all` é o limite superior do custo que uma skill *poderia* ter; por isso os percentuais acima indicam o que é "evitado", e não uma comparação com uma configuração real.
-:::
-
-A Camada 1 é o piso, e ele não é pequeno: entre as 33 skills instaladas, `SKILL.md` ocupa cerca de 1.275–5.489 tokens (mediana ~2.631). Esse piso limita o quanto a divulgação progressiva pode economizar; com os cinco agentes roteados, apenas o nível `routed` já representa 15% do teto.
-
----
-
-## Carregamento de recursos conforme a dificuldade da tarefa
-
-O guia de dificuldade classifica as tarefas em três níveis, que determinam quanto da Camada 2 é carregado:
-
-### Simples (3-5 turnos esperados)
-
-Mudança em um único arquivo, requisitos claros, repetição de padrões existentes.
-
-Carrega: somente `execution-protocol.md`. Pule a análise e siga diretamente para a implementação com um checklist mínimo.
-
-### Média (8-15 turnos esperados)
-
-Mudança em 2–3 arquivos, algumas decisões de design necessárias, aplicação de padrões a novos domínios.
-
-Carrega: `execution-protocol.md` e o recurso Medium mapeado quando esse arquivo existe. Protocolo padrão com análise breve e verificação completa.
-
-### Complexa (15-25 turnos esperados)
-
-Mudança em 4 ou mais arquivos, decisões de arquitetura necessárias, introdução de novos padrões ou dependências de outros agentes.
-
-Carrega: `execution-protocol.md`, o recurso mapeado e referências disponíveis de `tech-stack.md`/`snippets.md`. Protocolo estendido com checkpoints, registro de progresso durante a execução e verificação completa incluindo `common-checklist.md`.
-
----
+A verificação segue o risco da tarefa e os requisitos do projeto. Um rótulo de dificuldade não exige uma suíte de testes completa, uma resposta de preflight fixa nem uma segunda aprovação de trabalho já autorizado.
 
 ## Mapas de tarefas de context-loading (por agente)
 
-O guia de context-loading fornece mapeamentos detalhados entre tipo de tarefa e recurso. Estes são os principais:
+Estes são exemplos de referências a consultar quando a tarefa precisar delas. Use o índice atual da skill responsável e selecione apenas as seções aplicáveis:
 
 ### Agente backend
 
@@ -324,7 +278,7 @@ O guia de context-loading fornece mapeamentos detalhados entre tipo de tarefa e 
 | Revisão de performance | checklist.md (seção Performance) |
 | Revisão de acessibilidade | checklist.md (seção Accessibility) |
 | Auditoria completa | checklist.md (completo) + self-check.md |
-| Pontuação de qualidade | quality-score.md (condicional) |
+| Comparação de métrica definida | quality-score.md (condicional) |
 
 ---
 
@@ -332,100 +286,32 @@ O guia de context-loading fornece mapeamentos detalhados entre tipo de tarefa e 
 
 Quando o orquestrador compõe prompts para subagentes, inclui somente recursos relevantes à tarefa:
 
-1. A seção Core Rules do SKILL.md do agente
-2. `execution-protocol.md`
+1. Caminho do SKILL.md da skill responsável (o dispatch pela CLI já injeta o corpo)
+2. A seção do execution-protocol de uma operação selecionada, quando necessária
 3. Recursos correspondentes ao tipo de tarefa específico, a partir dos mapas acima
-4. `error-playbook.md` (sempre incluído; recuperação é essencial)
+4. A seção relevante do error-playbook somente após uma falha observada
 5. Memory Protocol (modo CLI)
 
 Essa composição direcionada evita carregar recursos desnecessários e maximiza o contexto disponível do subagente para o trabalho real.
 
 ---
 
-## Dívida de clarificação e métricas de sessão (análise detalhada)
+## Evidências de sessão e revisão retrospectiva
 
-Clarification Debt (CD) mede o custo de requisitos pouco claros durante uma sessão. O orquestrador acompanha cada correção do usuário e atribui uma pontuação:
+Os registros de sessão capturam correções relevantes, mudanças de escopo, retrabalho e achados de revisão julgados com evidências. A clarificação necessária não gera penalidade. As antigas pontuações ponderadas de CD e EA e as regras de RCA acionadas por limiares foram removidas; eram instruções de prompt, e não métricas calculadas pela CLI.
 
-| Tipo de evento | Pontos | Descrição |
-|------------|-------|---------------|
-| `clarify` | +10 | Pergunta simples de clarificação (esperada para incerteza MEDIUM) |
-| `correct` | +25 | Mal-entendido de intenção que exige mudar de direção |
-| `redo` | +40 | Violação de escopo/charter que exige rollback e reinício |
-| `blocked` | +0 | Agente parou corretamente e perguntou (bom comportamento, sem penalidade) |
+Use os resultados de tarefas existentes sempre que possível. Um arquivo `session-metrics-{sessionId}.md` separado é opcional no armazenamento de coordenação configurado. Uma falha repetida ou uma retrospectiva solicitada pode justificar uma lição, mas uma verificação comum com falha ou um achado contestado não estabelece uma automaticamente. Mantenha os logs históricos; não os reescreva no novo formato.
 
-**Modificadores:** charter não lido (+15), violação de allowlist (+20), repetição do mesmo erro (x1.5).
+`oma stats` informa a produtividade e os resumos de uso/custo registrados. `oma retro` agrupa eventos reais de portão, bloqueio e decisão ausente em sugestões. Nenhum dos dois calcula pontuações de CD/EA a partir desses artefatos Markdown.
 
-**Limiares e enforcement:**
-- **CD >= 50** → Entrada de RCA obrigatória adicionada a `lessons-learned.md`
-- **CD >= 80** → Sessão pausada; o usuário deve reespecificar os requisitos
-- **`redo` >= 2** → Orquestrador pausa e pede confirmação explícita do escopo
-- **CD >= 30 em 3 sessões consecutivas para o mesmo agente** → Revisão do template de prompt desse agente
+## Decomposição de tarefas e recuperação de contexto
 
-O log da sessão fica em `.agents/state/memories/session-metrics.md`, com uma linha por evento (turno, agente, tipo, pontos, detalhe) e uma seção de resumo.
+Planeje em torno de dependências e de comportamentos verificáveis de forma independente. Contagens fixas de sprints e de arquivos, assim como estimativas de turnos, não determinam a profundidade da revisão nem a conclusão. Mantenha os testes e o tratamento de erros junto ao comportamento que eles verificam.
 
----
+Diante de uma estagnação observada ou da perda de contexto útil, salve o trabalho concluído, os critérios restantes, os caminhos relevantes e as evidências de verificação antes de retomar ou de fazer um novo dispatch. Preserve o trabalho existente e evite duplicar uma tentativa em andamento. A proporção entre turnos e progresso, por si só, não exige um reset.
 
-## Precisão do avaliador e ajuste de QA
+## Medição condicional e exploração
 
-Os agentes de QA melhoram por meio de erros de julgamento rastreados. Diferentemente do CD (em tempo real), a Evaluator Accuracy (EA) é retrospectiva; a maioria dos erros só aparece depois que a sessão termina.
+Uma baseline definida ou uma comparação de experimentos ativa a orientação de medição; ter apenas testes ou lint, não. Registre métricas comparáveis com unidades, método, revisão e evidências. As verificações obrigatórias de correção e de segurança permanecem independentes. O OMA não tem fórmula composta padrão, portão de nota por letra nem rollback acionado por pontuação.
 
-**Tipos de eventos EA:**
-
-| Evento | Pontos | Quando descoberto |
-|--------|-------|-------------------|
-| `false_negative` | +30 | Próxima sessão ou produção — bug que o QA não detectou |
-| `false_positive` | +15 | Durante a sessão — agente de implementação refuta com sucesso o achado do QA |
-| `severity_mismatch` | +10 | Durante a sessão ou na revisão seguinte — severidade atribuída incorretamente |
-| `missed_stub` | +20 | Verificação em runtime captura uma feature apenas visual |
-| `good_catch` | -10 | QA capturou um bug não óbvio (sinal de recompensa positiva) |
-
-**EA é calculada em uma janela móvel de 3 sessões.** Limiares:
-- **EA >= 30** → Ajuste sugerido: revisar os eventos EA acumulados em busca de erros recorrentes do QA
-- **EA >= 50** → Ajuste obrigatório: atualizar o execution-protocol.md do QA
-- **`false_negative` >= 3** na janela → Adicionar o padrão de detecção ao checklist.md do QA
-- **`good_catch` >= 5** na janela → Generalizar o padrão bem-sucedido em `common-checklist.md`
-
-Quando um limiar é violado, revise os eventos EA, categorize os erros, aplique patches ao checklist/protocolo de execução do QA e valide nas 3 sessões seguintes.
-
----
-
-## Decomposição em sprints para tarefas complexas
-
-Tarefas complexas (4 ou mais arquivos e decisões de arquitetura) usam execução baseada em sprints, em vez de uma única execução longa:
-
-1. **Decomponha** em 2–4 sprints focados em funcionalidades, cada um testável de forma independente
-2. **Mire** 5–8 turnos por sprint
-3. **Sprint Gate** após cada sprint:
-   - O entregável do sprint está completo?
-   - Lint/teste passa?
-   - Se o sprint levou 2x os turnos esperados, escreva um checkpoint e informe o usuário
-4. **Continue** para o sprint seguinte quando o gate for aprovado
-
-**Exemplo:** a tarefa "JWT auth + CRUD API + tests" é decomposta em:
-- Sprint 1: modelo de usuário + endpoints de auth (register/login)
-- Sprint 2: endpoints CRUD + validação
-- Sprint 3: testes + tratamento de erros
-
-**Recuperação de um julgamento errado de dificuldade:** se uma tarefa começou como Simples mas se revelar mais complexa, o agente eleva para o protocolo Médio ou Complexo durante a execução e registra a mudança no progresso.
-
----
-
-## Protocolo de reset de contexto
-
-Agentes de longa duração perdem qualidade conforme o contexto enche. O Orquestrador, e não o agente, monitora esse estado e aciona resets.
-
-**Condições de disparo (verificadas pelo Orquestrador durante o monitoramento):**
-
-| Condição | Detecção | Ação |
-|----------|----------|------|
-| Orçamento de turnos esgotado | Agente consumiu >= 80% dos turnos esperados E menos de 50% dos critérios de aceitação estão completos | Reset de contexto |
-| Progresso estagnado | Nenhuma atualização no arquivo de progresso por 3 ou mais ciclos consecutivos de monitoramento | Reset de contexto |
-| Saída superficial | Arquivo de resultado contém marcadores de stub ou placeholders TODO | Re-spawn com instrução explícita |
-
-**Procedimento de reset:**
-1. **Checkpoint** — salvar o estado atual do agente (itens completos, itens restantes e decisões-chave)
-2. **Terminar** — parar a execução atual do agente
-3. **Re-spawnar** — iniciar um agente novo com o checkpoint como contexto
-4. **Retomar** — o novo agente lê o checkpoint e continua somente os itens restantes
-
-Para agentes standalone (sem Orquestrador), o Sprint Gate em `difficulty-guide.md` serve como rede de segurança: se um sprint levar 2x os turnos esperados, o agente escreve um checkpoint e informa.
+Um experimento real registra sua hipótese, as evidências de baseline e do candidato, as verificações obrigatórias, a decisão e os arquivos sob sua responsabilidade. Falhas repetidas podem justificar testar outro mecanismo dentro do orçamento de recuperação existente. Isole as mudanças do experimento, preserve edições não relacionadas e verifique o candidato integrado antes de retomar o portão.

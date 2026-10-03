@@ -10,6 +10,8 @@ Parallele Agenten zu spawnen ist der einfache Teil. Schwierig wird die Frage, ob
 
 oh-my-agent macht diese Behauptung falsifizierbar. Ein Stop-Hook weigert sich, deine Session zu beenden, solange das projekteigene `typecheck`- / `test`- / `lint`-Skript nicht mit Exit-Code 0 durchläuft. Ein Gate-Command entscheidet anhand der Artefakte, die ein Workflow hinterlassen haben muss, ob er wirklich gelaufen ist — und maßgeblich ist sein JSON-Verdikt, nicht die Zusammenfassung des Agenten. Ein unabhängiger Judge mit frischem Kontext verifiziert in jeder Runde jedes Kriterium neu, auch die bereits bestandenen. Jede Gate-Entscheidung landet in einem Append-only-Event-Log, das du im Nachhinein lesen kannst. Und dieselbe Disziplin läuft über ein Dutzend Agenten-Runtimes hinweg, aus einem einzigen portablen `.agents/`-Verzeichnis.
 
+Beginne mit dem bestehenden [Schnellstart](../web/docs/getting-started/quick-start.md), um einen Installationsweg zu wählen, einen benannten Skill um eine abgegrenzte Änderung zu bitten und Datei, Prüfbefehl und Exit-Status festzuhalten. Der Full-Harness-Weg enthält `oma doctor`.
+
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
@@ -206,8 +208,12 @@ Getrennt vom Engineering-Team liefert oma Content- und Research-Pipelines, die n
 | **oma-scholar** | Durchsucht akademische Literatur und unterstützt dich beim Peer-Review |
 | **oma-slide** | Erzeugt markante, animationsreiche HTML-Präsentationsdecks und exportiert nach PDF/PNG/PPTX |
 | **oma-translation** | Übersetzt zwischen Sprachen so, als hätte ein Muttersprachler geschrieben |
-| **oma-video** | Erzeugt Kurzvideos, Erklärvideos und Demos über eine auch ohne Schlüssel nutzbare Remotion-Pipeline |
+| **oma-video** | Erzeugt Kurzvideos, Erklärvideos und Demos über eine auch ohne Schlüssel nutzbare HyperFrames-Pipeline |
 | **oma-voice** | Generiert Voiceovers und transkribiert Audio lokal — ganz ohne Cloud |
+
+### Orca IDE
+
+[OMA for Orca](../integrations/orca/README.md) ergänzt ein Seitenleisten-Panel und Command-Palette-Aktionen für Projekt-Setup, Review, Debugging, Verifikation und lokale Ergebnisse. Es nutzt dein vorhandenes Orca-Agent-Terminal und die OMA-Installation deines Projekts. Erfordert Orca 1.4.197+ mit aktivierten experimentellen Plugins.
 
 ## So Funktioniert's
 
@@ -276,10 +282,16 @@ Jeder Mechanismus unten ist mechanisch: Ein Command endet mit Exit-Code 0 oder e
 
 Budgets werden genauso durchgesetzt. `session.quota_cap` deckelt Tokens, Spawn-Anzahl und Ausgaben pro Vendor; der Orchestrator verweigert den nächsten Spawn, sobald eine Dimension überschritten ist. Läuft das Zeitbudget aus, stoppt der Stop-Hook ehrlich und hält den Teilstatus im Event-Log fest, statt Fertigstellung vorzutäuschen.
 
+### Kontrollgrenze
+
+oh-my-agent überlässt offene Planung und die Wahl der nächsten Aktion dem Host-LLM. Es ersetzt dieses Urteil nicht durch einen universellen Workflow-Graphen oder eine Policy-Engine. Stattdessen externalisiert es die Invarianten, die unabhängig vom Modell gelten müssen: Tool-Guardrails, Berechtigungen, Budgets, Retry- und Stopp-Limits, dauerhafte Events und mechanisch verifizierter Abschluss. Strukturierte Events halten Entscheidungen und Gate-Ergebnisse fest; sie agieren nicht als zweiter Planer.
+
+Deterministische SLM-Ausführung ist daher eine eigenständige, optionale Produktrichtung und keine fehlende Infrastruktur im aktuellen Harness.
+
 ## Warum oh-my-agent?
 
 - **Rollenbasiert**: Agenten wie ein echtes Engineering-Team modelliert, kein Haufen Prompts
-- **Token-effizient**: Zwei-Schichten-Skill-Design spart ~75% der Tokens ([wie es funktioniert](../web/docs/guide/usage.md))
+- **Bedingter Kontext**: Der Dispatch lädt den zuständigen Skill und verschiebt unterstützende Referenzen, bis die Aufgabe sie benötigt. Szenarien zur Dateigröße und das tatsächliche Laden zur Laufzeit werden getrennt ausgewiesen ([Hinweise zur Messung](../web/docs/core-concepts/skills.md#token-savings-math)).
 - **Wiederherstellbar**: nach 2 gescheiterten Retries spawnt `orchestrate` Hypothesen-Varianten parallel und behält das Ergebnis mit der höchsten Punktzahl, statt endlos einen falschen Ansatz zu wiederholen
 - **Monorepo-fähig**: `detectWorkspace` liest pnpm / nx / turbo / lerna und routet jeden Agenten zu seinem Workspace
 - **Multi-Vendor**: mische Antigravity, Claude, Codex, Cursor, Kiro und Qwen je nach Agententyp
@@ -336,6 +348,7 @@ flowchart TD
 
 - **[Detaillierte Dokumentation](./AGENTS_SPEC.md)**: vollständige technische Spec und Architektur
 - **[Unterstützte Agenten](./SUPPORTED_AGENTS.md)**: Agenten-Support-Matrix nach IDE
+- **[Fähigkeits-Provider](./capability-providers.md)**: experimentelle Konfiguration, Routing und Grenzen von Gortex und Honcho
 - **[Benchmark-Report](../benchmarks/README.md)**: Methode, Scores, Screenshots und Vorbehalte
 - **[Web-Docs](https://first-fluke.github.io/oh-my-agent/)**: Guides, Tutorials und CLI-Referenz
 

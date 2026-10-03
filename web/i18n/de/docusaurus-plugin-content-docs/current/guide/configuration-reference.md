@@ -43,7 +43,7 @@ Die folgenden Schlüssel werden vom aktuellen Laufzeitschema oder von ausgeliefe
 | `telemetry` | boolean | `false` | Opt-in für Vendor-Telemetrie bei Installation, Update und Link-Abgleich. |
 | `model_preset` | nichtleerer String | `auto` in neuen Templates | Integriertes oder benutzerdefiniertes Modell-Preset. `OMA_MODEL_PRESET` überschreibt es für einen Prozess. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | FreeLLMAPI-Einstellungen beim Preset `free`; `FREELLM_BASE_URL` und `FREELLM_MODEL` überschreiben Werte aus der Datei, und der Schlüsselname enthält nie das Secret. Siehe [Modellkonfiguration pro Agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `semantic_memory` | `context7`, `native`, `serena`, `agentmemory` | Dokumentations-, Such-, Code-Intelligence- und semantische Speicher-Provider auswählen. Code Intelligence akzeptiert `serena` oder `gortex`; semantischer Speicher akzeptiert `agentmemory`, `honcho` oder `none`. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Dokumentations-, Such-, Code-Intelligence- und semantische Speicher-Provider auswählen. Code Intelligence akzeptiert `serena` oder `gortex`; semantischer Speicher akzeptiert `agentmemory`, `honcho` oder `none`. `code_intelligence_guard` (`block` oder `off`) steuert den PreToolUse-Such-Guard. Native Suchen, die auf bestätigte Provider-Ausschlüsse oder Pfade außerhalb des Projekts beschränkt sind, sind ohne Bypass erlaubt. Der Guard liest Serena-Ausschlüsse und aktivierte gitignore-Regeln oder die Ausschlussliste von Gortex; er leitet Abhängigkeiten nicht aus Verzeichnisnamen ab. Der Hook nennt `OMA_CI_ALLOW_NATIVE` nicht. Eine Shell-Suche mit dem Präfix `OMA_CI_ALLOW_NATIVE=1` umgeht den Guard nur für Ressourcen außerhalb des Projekts oder für ignorierte Pfade, die der Guard nicht erkannt hat, nicht aber für Projektquellcode. |
 | `brave` | `api_key_env` oder `api_key_vault` | nicht gesetzt | Referenz auf das Brave-Such-Credential. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Siehe [Honcho-Details](#honcho-semantic-memory) | Verbindungseinstellungen für den semantischen Honcho-Speicher. |
 | `agents` | Agenten-ID → `model`, optional `effort`, `thinking`, `memory` | Preset-Auflösung | Pro-Agent-Überschreibungen über dem ausgewählten Preset. Effort ist `none`, `low`, `medium`, `high` oder `xhigh`; Memory ist `user`, `project` oder `local`. |
@@ -55,7 +55,7 @@ Die folgenden Schlüssel werden vom aktuellen Laufzeitschema oder von ausgeliefe
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Verhalten und Scan-Ausschlüsse von `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena-MCP-Transport und Update-Verhalten. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` oder `[]` | nicht gesetzt = bestehende Einrichtung unverändert lassen | Auswahl des Browser-DevTools-MCP beim Abgleich. Eine ausdrücklich leere Liste entfernt ausgewählte Browser-Einträge. |
-| `video` | sparsame, vom Skill verwaltete Map | Skill-Standard; siehe [Videoerzeugung](/docs/guide/video-generation) | Video-Routing, Provider-Reihenfolge, Ausgabe, Kosten, Limits und Remotion-Aktualisierung. |
+| `video` | sparsame, vom Skill verwaltete Map | Skill-Standard; siehe [Videoerzeugung](/docs/guide/video-generation) | Video-Routing, Provider-Reihenfolge, Ausgabe, Kosten, Limits und HyperFrames-Aktualisierung. |
 | `image` | sparsame, vom Skill verwaltete Map | Skill-Standard; siehe [Bilderzeugung](/docs/guide/image-generation) | Einstellungen für Bildanbieter, Größe, Qualität, Ausgabe, Vergleich und Kosten. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | Skill-Standard; siehe [Content- und Research-Workflows](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Voicebox-Profil sowie Ausgabe- und Längeneinstellungen. |
 | `hwp` | `format`, `version.*`, `output.*` | Skill-Standard; siehe [Content- und Research-Workflows](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc-Format, Versionskanal und Ausgabeort. |
@@ -181,6 +181,7 @@ Wählen Sie Code-Intelligence- und Speicher-Provider ausdrücklich:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

@@ -199,9 +199,10 @@ Wenn die aktuelle Laufzeit dem Ziel-Vendor in `.agents/oma-config.yaml` entspric
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`, ausgewählt über den `subagent_type` des Agent-Tools
 - Antigravity CLI/IDE -> `oma agent spawn` über `agy`
 
-Cross-Vendor-Aufgaben verwenden weiterhin `oma agent spawn`.
+Cross-Vendor-Aufgaben und `model_preset: free` verwenden `oma agent spawn`. Der native Dispatch erfordert weiterhin den [Ergebnis-Lebenszyklus](./agent-results-and-resume.md), um Verifizierungsbelege zu erfassen.
 
 ---
 
@@ -224,14 +225,14 @@ Cross-Vendor-Aufgaben verwenden weiterhin `oma agent spawn`.
 **Phase 2, IMPL (Schritt 5, Dev-Agenten gestartet):**
 - Backend-Agent implementiert Stripe-Integration (Webhooks, Idempotenz, Fehlerbehandlung)
 - Frontend-Agent erstellt Checkout-Flow und UI für den Zahlungsstatus
-- Schritt 5.2: Quality-Score-Baseline messen (Tests, Lint, Typecheck)
+- Schritt 5.2: Eine Baseline nur aufzeichnen, wenn ein definierter Messvergleich erforderlich ist
 - IMPL_GATE: Anwendbare Prüfungen ohne Dateiausgabe und Tests bestehen, nur geplante Dateien geändert; Build-Prüfungen nur auf ausdrücklichen Wunsch
 
 **Phase 3, VERIFY (Schritte 6–8, QA-Agent gestartet):**
 - Schritt 6: Alignment-Review (entspricht die Implementierung dem Plan?)
 - Schritt 7: Sicherheits-/Bug-Review (OWASP, npm audit, Stripe-Sicherheitspraktiken)
 - Schritt 8: Verbesserungs-/Regression-Review (keine Regressionen)
-- VERIFY_GATE: null CRITICAL, null HIGH, Quality Score >= 75
+- VERIFY_GATE: null CRITICAL, null HIGH, anwendbare Messziele des Projekts erreicht
 
 **Phase 4, REFINE (Schritte 9–13, Refactor-Agent gestartet):**
 - Schritt 9: Große Dateien (> 500 Zeilen) und Funktionen (> 50 Zeilen) aufteilen
@@ -239,7 +240,7 @@ Cross-Vendor-Aufgaben verwenden weiterhin `oma agent spawn`.
 - Schritt 11: Seiteneffekt-Review (Kaskadenauswirkung mit `find_referencing_symbols` verfolgen)
 - Schritt 12: Vollständiges Änderungs-Review (Namenskonsistenz, Stilabgleich)
 - Schritt 13: Toten Code bereinigen
-- REFINE_GATE: Quality Score nicht rückläufig, Code bereinigt
+- REFINE_GATE: keine ungelöste gemessene Regression, Code bereinigt
 
 **Phase 5, SHIP (Schritte 14–17, QA-Agent gestartet):**
 - Schritt 14: Code-Qualitäts-Review (Lint, Typen, Abdeckung)

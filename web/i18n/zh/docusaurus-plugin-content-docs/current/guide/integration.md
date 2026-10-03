@@ -13,7 +13,7 @@ description: 将 oh-my-agent 添加到现有项目的完整指南，涵盖 CLI �
 1. **CLI 路径**：运行 `oma`（或 `npx oh-my-agent`）并按照交互式提示操作。推荐大多数用户使用。
 2. **手动路径**：自行复制文件和配置符号链接。适用于受限环境或自定义设置。
 
-两种路径产生相同结果：一个 `.agents/` 目录（SSOT），以及由它生成的供应商原生文件，例如 `.claude/agents/`、`.codex/agents/` 和 `.gemini/agents/`。
+两种路径产生相同结果：一个 `.agents/` 目录（SSOT），以及由它生成的供应商原生文件，例如 `.claude/agents/`、`.codex/agents/` 和 `.qwen/agents/`。
 
 ---
 
@@ -177,7 +177,13 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link` 会从 SSOT 重新构建 `.claude/`、`.codex/`、`.gemini/` 以及其他供应商原生文件。运行时只有当前运行时供应商与该智能体的目标供应商一致时，OMA 才使用原生分发；混合供应商设置仍然可用，但不匹配的智能体会回退到外部 `oma agent spawn`。
+`oma link` 会从 SSOT 重新生成 `.claude/`、`.codex/`、`.qwen/` 以及其他供应商原生文件。运行时只有当前运行时供应商与该智能体的目标供应商一致时，OMA 才使用原生分发；混合供应商设置仍然可用，但不匹配的智能体会回退到外部 `oma agent spawn`。
+
+在 Qwen Code 中，生成的 Markdown 定义位于 `.qwen/agents/`。通过 Agent 工具的 `subagent_type` 选择 OMA 角色，例如 `backend-engineer`。在 Qwen Code 中使用 `/agents manage` 查看可用的定义。原生智能体与 CLI 启动使用相同的[结果生命周期](./agent-results-and-resume.md)：`oma agent begin`、`oma agent verify` 和 `oma agent finish`。使用 `model_preset: free` 时，请使用 `oma agent spawn`，这样子进程才能获得网关配置。
+
+Qwen Code 与其他供应商使用相同的 `code-intelligence-primer`。与 Claude Code 一样，它在 `SessionStart` 和 `UserPromptSubmit` 上注册共享的 primer：指引每个会话注入一次，并在上下文压缩后再次注入。primer 遵循已配置的提供方（Serena 或 Gortex），包含延迟加载工具的指引，并在提供方不可用或超时时允许回退到原生搜索。Qwen 不会另外添加代码搜索拦截或提供方结果跟踪。
+
+更新 CLI 后，运行 `oma link qwen` 重新生成钩子设置和包装脚本，然后启动新的 Qwen 会话。钩子输出测试验证的是集成契约，并不保证模型会选择哪个工具。
 
 ### 步骤 3：配置用户偏好
 
@@ -401,7 +407,7 @@ oma dashboard web
 
 - 智能体定义（`.claude/agents/*.md`、`.codex/agents/*.toml`、`.gemini/agents/*.md`）
 - 钩子配置（`.claude/hooks/`、`.codex/hooks.json`）
-- 设置文件和供应商集成文档（`CLAUDE.md`、`AGENTS.md`、`GEMINI.md`）
+- 设置文件和共享的供应商集成文档（仅 `AGENTS.md`，包括 Claude Code ≥ 2.1.277）。`CLAUDE.md` 和 `GEMINI.md` 永远不会获得 OMA 区块；已存在的用户自有 `CLAUDE.md` 只会收到一行 `@AGENTS.md` 导入，以免 Claude Code 跳过 `AGENTS.md`
 
 Codex 会将钩子置于一次性信任步骤之后，因此 `.codex/hooks.json` 在你通过 Codex `/hooks` 浏览器完成一次审查前不会运行。详情请参见 [Codex Hook Trust](/docs/guide/codex-hook-trust)。
 

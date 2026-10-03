@@ -48,7 +48,7 @@ oma agent spawn backend "Implement JWT authentication API with refresh tokens" s
 oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # 이 특정 스폰의 CLI 벤더 오버라이드
-oma agent spawn frontend "Build login form" session-01 --model claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # 증거 체인을 유지하면서 실행 재시도
 oma agent spawn backend "Fix the payment gateway issue" session-01 --resumed-from run-123
@@ -152,11 +152,11 @@ agents:
 
 | 우선순위 | 소스 | 예시 |
 |----------|--------|---------|
-| 1 (최고) | `--model` 플래그 | `oma agent spawn backend "task" session-01 --model claude` |
+| 1 (최고) | `--vendor` 플래그 | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | `oma-config.yaml`의 `agents:` 오버라이드 | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | 활성 `model_preset`의 에이전트 기본값 | 에이전트 역할로 프리셋 조회 |
 
-`--model` 플래그가 항상 우선합니다. 플래그가 없으면 `agents:` 오버라이드, 프리셋 기본값, 설정된 폴백 CLI 순서로 확인합니다. `model_preset: auto`이면 현재 런타임의 네이티브 설정이 모델을 제공합니다.
+`--vendor` 플래그가 항상 우선합니다. 플래그가 없으면 `agents:` 오버라이드, 프리셋 기본값, 설정된 폴백 CLI 순서로 확인합니다. `model_preset: auto`이면 현재 런타임의 네이티브 설정이 모델을 제공합니다.
 
 ---
 

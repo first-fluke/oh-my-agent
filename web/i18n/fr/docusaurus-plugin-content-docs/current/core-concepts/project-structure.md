@@ -221,7 +221,7 @@ your-project/
 │   │       ├── task-board-{sessionId}.md          ← Task assignments and status
 │   │       ├── progress-{agentId}-{taskId}-{runId}-{sessionId}.md ← Run-scoped progress updates
 │   │       ├── result-{agentId}-{taskId}-{runId}-{sessionId}.md   ← Run-scoped final outputs
-│   │       ├── session-metrics.md         ← Clarification Debt and Quality Score tracking
+│   │       ├── session-metrics.md         ← Session evidence and experiment results
 │   │       ├── experiment-ledger.md       ← Experiment tracking (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
@@ -384,16 +384,19 @@ Les sources des handlers sont la SSOT dans `.agents/hooks/core/` et s'exécutent
 
 **`scm-guard.ts`** : handler pur (`run()`) sur `PreToolUse` (outils Bash/shell) qui refuse les `git add` de fichiers susceptibles de contenir des secrets. Il applique `forbidden_patterns` moins `allowed_exceptions` depuis `.agents/skills/oma-scm/config/commit-config.yaml` (valeurs par défaut intégrées si la configuration est absente). Il s'exécute avant `test-filter` dans la chaîne de claude, codex, cursor, grok, kimi, kiro et qwen, ainsi que dans le pont opencode (`tool.execute.before` lève une exception pour bloquer) et le pont pi (`tool_call` renvoie `{ block: true, reason }`) ; une commande préfixée par `OMA_SCM_ALLOW_SECRETS=1` contourne la protection après approbation explicite de l'utilisateur. Le staging global (`git add -A` / `git add .`) n'est volontairement pas bloqué : cette règle dépend d'un consentement utilisateur que le hook ne peut pas observer.
 
+**`code-intelligence-guard.ts`** : handler pur (`run()`) sur `PreToolUse` qui applique mécaniquement la règle « Code Search ». Tant que `providers.code_intelligence` se résout en `serena` (ou `gortex`) et que `providers.code_intelligence_guard` n'est pas `off`, il refuse les outils de recherche natifs (`Grep`, `Glob` sur Claude Code) et les commandes shell dont le binaire principal est une recherche récursive de code (`rg`, `ag`, `ack`, `fd`, `grep -r`, `find -name`/`-path`, `git grep`) ; le motif du refus nomme l'outil du fournisseur à utiliser à la place (`search_for_pattern`, `find_file`, `find_symbol`). Les `grep` non récursifs (filtres de pipe, fichiers uniques), les `find` sans prédicat de nom et les lectures ne sont jamais touchés. Il est enregistré juste après `scm-guard` pour claude, codex, cursor, grok, kimi, kiro et qwen ; l'installateur réunit les matchers de la chaîne, si bien que l'entrée `PreToolUse` de Claude devient `Bash|Grep|Glob`. Une commande shell contenant `OMA_CI_ALLOW_NATIVE=1` contourne toujours la protection, mais uniquement comme échappatoire d'opérateur pour des recherches portant sur des ressources extérieures au projet ou sur des chemins ignorés que la protection n'a pas reconnus. Le motif du refus ne nomme pas ce préfixe, et ce n'est pas un repli pour le code source du projet.
+
 **`triggers.json`** : mapping mot-clé→workflow, intégré statiquement au binaire `oma` lors du build (source : `.agents/hooks/core/triggers.json`). Il définit :
-- `workflows` : map du nom du workflow vers `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] } }`. `keywords` contient des phrases littérales ; `patterns` contient des chaînes regex brutes (compilées avec les flags `iu`).
+- `workflows` : map du nom du workflow vers `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] }, explicit?: [...] }`. `keywords` contient des phrases littérales ; `patterns` contient des chaînes regex brutes (compilées avec les flags `iu`). `explicit` (workflows persistants uniquement) liste les mots-clés qui comptent comme une invocation explicite — seuls ceux-ci activent le mode persistant ; toute autre correspondance est injectée comme suggestion.
 - `informationalPatterns` : phrases qui indiquent une question (filtrées de la détection automatique)
 - `excludedWorkflows` : workflows qui nécessitent un appel explicite à `/command`
-- `cjkScripts` : codes de langue utilisant les scripts CJK (ko, ja, zh)
 
 Les sections de langue de `keywords`, `patterns` et `informationalPatterns` suivent cette convention :
-- `*` : universel/anglais. Toujours chargé quel que soit le réglage `language` dans `.agents/oma-config.yaml`.
-- `en` : chargé pour la rétrocompatibilité. Fonctionnellement équivalent à `*`. Le nouveau contenu anglais doit aller dans `*`.
-- `ko`/`ja`/`zh`/etc. : propre à une langue. Chargé uniquement lorsque `language: <code>` est défini dans `.agents/oma-config.yaml`.
+- `*` : universel/anglais.
+- `en` : fonctionnellement équivalent à `*`.
+- `ko`/`ja`/`zh`/etc. : formulations propres à une langue.
+
+Toutes les sections sont toujours chargées ; le réglage `language` dans `.agents/oma-config.yaml` ne contrôle que la langue des réponses. Les limites de mots dépendent du mot-clé lui-même : les mots-clés ASCII ne correspondent qu'à des mots entiers, tandis que les mots-clés contenant du texte non ASCII correspondent comme sous-chaînes.
 
 #### Matérialisation par fournisseur : avant → après {#per-vendor-materialization-before-after}
 
@@ -487,8 +490,8 @@ Les agents y écrivent leur progression pendant les sessions d'orchestration. Il
 | `task-board-{sessionId}.md` | Orchestrator | Affectations : agent, tâche, priorité, statut, dépendances |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Cette exécution | Mises à jour tour par tour : actions, fichiers lus/modifiés, statut actuel |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Cette exécution | Résultat final : statut, résumé, fichiers modifiés, critères d'acceptation |
-| `session-metrics.md` | Orchestrator | Événements de dette de clarification et progression du score de qualité |
-| `experiment-ledger.md` | Orchestrator/QA | Lignes d'expérience lorsque le score de qualité est actif |
+| `session-metrics.md` | Orchestrator | Corrections importantes et preuves d'expérience |
+| `experiment-ledger.md` | Orchestrator/QA | Lignes de preuve pour de véritables expériences |
 | `session-work.md` | Workflow Work | État de session propre à Work |
 | `session-ultrawork.md` | Workflow Ultrawork | Suivi des phases propre à Ultrawork |
 | `session-cost-{sessionId}.md` | Système | Télémétrie des coûts par session |

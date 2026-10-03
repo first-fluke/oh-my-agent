@@ -108,7 +108,7 @@ Der Schweregrad bestimmt, wie der Bug behandelt wird und wie schnell er behoben 
 
 ## Die siebenstufige Debug-Schleife im Detail
 
-Der `/debug`-Workflow führt diese Stufen in der angegebenen Reihenfolge aus. Er verwendet nach Möglichkeit den konfigurierten Code-Intelligence-Anbieter sowie native Suche und begrenzte Dateizugriffe, wenn dieser Anbieter nicht verfügbar ist oder eine Zeitüberschreitung auftritt.
+Der `/debug`-Workflow führt diese Stufen in der angegebenen Reihenfolge aus. Er verwendet den konfigurierten Code-Intelligence-Anbieter. Native Suche ist nur für Pfade außerhalb des Projekts oder für ignorierte Pfade vorgesehen, wenn dieser Anbieter nicht verfügbar ist oder eine Zeitüberschreitung auftritt.
 
 ### Schritt 1: Fehlerinformationen sammeln
 
@@ -247,11 +247,11 @@ Diese Signale zeigen an, dass der Bug eine Eskalation über die Standard-Debug-S
 
 ### Signal 1: Gleiche Korrektur zweimal versucht
 
-Wenn der Workflow eine Korrektur vorschlägt, anwendet und derselbe Fehler erneut auftritt, liegt das Problem tiefer als die ursprüngliche Diagnose. Dies löst die **Explorationsschleife** in Workflows aus, die diese unterstützen (ultrawork, orchestrate, work):
+Wenn der Workflow eine Korrektur vorschlägt, anwendet und derselbe Fehler erneut auftritt, liegt das Problem tiefer als die ursprüngliche Diagnose. Bewerten Sie die Ursache neu. Wenn Alternativen einen Test verdienen und das vorhandene Wiederherstellungsbudget dies zulässt, verwenden Sie die **Explorationsschleife** im aktiven Workflow (ultrawork, orchestrate, work):
 
 - 2-3 alternative Hypothesen zur Grundursache generieren.
-- Jede Hypothese in einem separaten Workspace testen (git stash pro Versuch).
-- Ergebnisse bewerten und den besten Ansatz übernehmen.
+- Jedes Experiment isolieren und seine Baseline, seine Belege und davon unabhängige Arbeit bewahren.
+- Einen Ansatz wählen, der das geforderte Verhalten und vergleichbare Messkriterien erfüllt, und danach das integrierte Ergebnis verifizieren.
 
 ### Signal 2: Domänenübergreifende Grundursache
 

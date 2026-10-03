@@ -48,7 +48,7 @@ oma agent spawn backend "Implement JWT authentication API with refresh tokens" s
 oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # Override the CLI vendor for this specific spawn
-oma agent spawn frontend "Build login form" session-01 --model claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # Retry a run while preserving its evidence chain
 oma agent spawn backend "Fix the payment gateway issue" session-01 --resumed-from run-123
@@ -152,11 +152,11 @@ Quando `oma agent spawn` determina qual CLI usar:
 
 | Prioridade | Fonte | Exemplo |
 |---------|---------|---------|
-| 1 (mais alta) | Flag `--model` | `oma agent spawn backend "task" session-01 --model claude` |
+| 1 (mais alta) | Flag `--vendor` | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | Substituição em `agents:` no `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | Defaults de agente do `model_preset` ativo | busca do preset para o papel do agente |
 
-A flag `--model` sempre vence. Se nenhuma flag for fornecida, o sistema verifica as substituições de `agents:`, depois os defaults do preset e, por fim, a CLI de fallback configurada. Com `model_preset: auto`, as configurações nativas do runtime atual fornecem o modelo.
+A flag `--vendor` sempre vence. Se nenhuma flag for fornecida, o sistema verifica as substituições de `agents:`, depois os defaults do preset e, por fim, a CLI de fallback configurada. Com `model_preset: auto`, as configurações nativas do runtime atual fornecem o modelo.
 
 ---
 

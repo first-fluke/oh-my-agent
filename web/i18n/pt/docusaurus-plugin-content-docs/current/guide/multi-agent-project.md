@@ -36,7 +36,7 @@ O workflow `/plan` executa inline (sem iniciar subagentes) e produz um plano est
 **O que acontece:**
 
 1. **Coletar requisitos:** O agente PM pergunta sobre usuários-alvo, funcionalidades principais, restrições e destinos de deploy.
-2. **Analisar viabilidade técnica:** Usa o provedor de inteligência de código configurado e a busca nativa com escopo quando ele não está disponível para examinar o codebase existente em busca de código reutilizável e padrões de arquitetura.
+2. **Analisar viabilidade técnica:** Usa o provedor de inteligência de código configurado para examinar o codebase existente em busca de código reutilizável e padrões de arquitetura. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
 3. **Definir contratos de API:** Projeta contratos de endpoint (método, caminho, schemas de request/response, auth, respostas de erro) e os salva em `.agents/results/api-contracts/` (artefatos da execução), promovendo especificações duráveis para `docs/plans/contracts/` quando forem commitadas.
 4. **Decompor em tarefas:** Divide o projeto em tarefas acionáveis, cada uma com agente atribuído, título, critérios de aceitação, prioridade (P0-P3) e dependências.
 5. **Revisar o plano com o usuário:** Apresenta o plano completo para confirmação. O workflow não prossegue sem aprovação explícita do usuário.
@@ -211,7 +211,7 @@ Os contratos de API são o mecanismo de sincronização entre agentes. A regra d
    - Requisitos de autenticação
    - Formatos das respostas de erro
 
-4. **Violações de contrato são detectadas durante o monitoramento.** A Etapa 5 de `/work` usa o provedor de inteligência de código configurado ou busca nativa com escopo para verificar o alinhamento do contrato de API entre agentes.
+4. **Violações de contrato são detectadas durante o monitoramento.** A Etapa 5 de `/work` usa o provedor de inteligência de código configurado para verificar o alinhamento do contrato de API entre agentes. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
 
 5. **A revisão QA verifica a aderência ao contrato.** A Revisão de Alinhamento do agente QA (Etapa 6 do ultrawork) compara explicitamente a implementação com o plano, incluindo contratos de API.
 
@@ -340,7 +340,7 @@ Usar `agent spawn` diretamente sem registrar depois o contrato de resultado. Exe
 
 Depois que todos os agentes concluírem suas tarefas individuais, a integração entre domínios deve ser validada:
 
-1. **Alinhamento do contrato de API:** O provedor de inteligência de código configurado ou a busca nativa com escopo verifica se as implementações do backend correspondem aos contratos consumidos pelo frontend e mobile.
+1. **Alinhamento do contrato de API:** O provedor de inteligência de código configurado verifica se as implementações do backend correspondem aos contratos consumidos pelo frontend e mobile. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
 
 2. **Consistência de tipos:** Tipos TypeScript, dataclasses Python ou modelos Dart compartilhados entre domínios devem usar nomes e tipos de campo consistentes.
 

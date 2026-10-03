@@ -421,7 +421,7 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 3. Кросс-ревью: QA-агент проверяет изменения
 4. При сбое: замечания возвращаются для исправления (максимум 5 итераций цикла)
 
-**Мониторинг Clarification Debt:** Отслеживает пользовательские коррекции во время сессий. События оцениваются: clarify (+10), correct (+25), redo (+40). CD >= 50 запускает обязательный RCA. CD >= 80 приостанавливает сессию.
+**Доказательства сессии:** Когда это полезно, записывает существенные коррекции и замечания ревью, по которым вынесено решение, с указанием причины, влияния и верификации. Ни штрафной балл, ни приостановка, вызванная баллом, не применяются.
 
 **Ресурсы:** `subagent-prompt-template.md`, `memory-schema.md`.
 
@@ -769,7 +769,7 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 
 ### oma-video
 
-**Область:** генерация коротких, объясняющих и записанных человеком демонстрационных видео через CLI `oma video`, с композицией script → narration → visuals → captions → render Remotion.
+**Область:** генерация коротких, объясняющих и записанных человеком демонстрационных видео через CLI `oma video`, с композицией script → narration → visuals → captions → render HyperFrames.
 
 **Когда использовать:** при генерации коротких видео (shorts/reels, 9:16) по теме, explainer (16:9/9:16) по README/коду/данным, demo/walkthrough по screen capture (`--source file`) или контролируемому headed-захвату веб-приложения любого URL (`--source web`), а также при детерминированном повторном рендеринге существующего запуска.
 
@@ -785,7 +785,7 @@ OMA разделяет пакеты навыков, роли dispatch и фай�
 
 **Рабочий процесс:** PREPARE (режим/aspect/locale, уточнить или расширить brief) → ACQUIRE (проверить доступность провайдера, путь capture и стоимость) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, hashes manifest, код выхода, mp4) → FINALIZE (каталог запуска, путь mp4 и предупреждения о покрытии).
 
-**Ресурсы:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, а также vendored compositor `remotion/`, driver web-capture и fallback compositor `mpt/`, плюс `config/video-config.yaml`.
+**Ресурсы:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, а также руководства по режимам `hyperframes-authoring/`, driver web-capture и fallback compositor `mpt/`, плюс `config/video-config.yaml`.
 
 ---
 
@@ -950,8 +950,8 @@ Runtime также раскрывает 13 канонических ролей d
 | `task-board-{sessionId}.md` | Оркестратор | Назначения задач, приоритеты, обновления статуса | Только чтение |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Этот запуск | Пошаговый прогресс: выполненные действия, прочитанные/изменённые файлы, текущий статус | Читает оркестратор |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Этот запуск | Итоговый вывод: статус (completed/failed), резюме, изменённые файлы, чек-лист критериев приёмки | Читает оркестратор |
-| `session-metrics.md` | Оркестратор | Отслеживание Clarification Debt и прогресса Quality Score | Читает QA |
-| `experiment-ledger.md` | Оркестратор/QA | Отслеживание экспериментов при активном Quality Score | Читают все |
+| `session-metrics.md` | Оркестратор | Необязательные доказательства сессии и измеренные результаты экспериментов | Читает QA |
+| `experiment-ledger.md` | Оркестратор/QA | Доказательства для фактических экспериментов | Читают все |
 
 Инструменты памяти загружаются из конфигурации. По умолчанию агенты напрямую читают и записывают эти coordination-файлы нативными инструментами (`Read`, `Write`, `Edit`), но в `mcp.json` можно настроить пользовательские инструменты и базовый путь:
 

@@ -10,6 +10,8 @@
 
 oh-my-agent는 그 주장을 반증 가능하게 만듭니다. Stop hook은 프로젝트 자체의 `typecheck` / `test` / `lint` 스크립트가 0으로 종료되기 전까지 세션 종료를 거부합니다. 게이트 커맨드는 워크플로우가 정말 돌았는지를, 돌았다면 반드시 남아 있어야 할 산출물이 있는지로 판정합니다. 결과가 되는 것은 에이전트의 요약이 아니라 이 커맨드의 JSON 판정입니다. 독립 judge는 매 라운드마다 새 컨텍스트에서 모든 기준을 다시 검증합니다. 이미 통과한 기준까지 포함해서요. 모든 게이트 판정은 나중에 읽어볼 수 있는 append-only 이벤트 로그에 쌓입니다. 그리고 이 규율을 하나의 이식 가능한 `.agents/` 디렉터리에서 열 개가 넘는 에이전트 런타임에 똑같이 적용합니다.
 
+기존 [빠른 시작](../web/docs/getting-started/quick-start.md)에서 시작해 설치 경로를 고르고, 이름을 지정한 스킬에 범위가 정해진 변경 하나를 요청한 뒤, 파일, 검사 명령, 종료 코드를 기록해 보세요. 풀 하네스 경로에는 `oma doctor`가 포함됩니다.
+
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
@@ -176,7 +178,7 @@ AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 
 | **oma-orchestration** | CLI에서 여러 에이전트를 병렬로 실행 |
 | **oma-pm** | 태스크를 계획하고 요구사항을 분해하며 API 계약을 정의 |
 | **oma-qa** | OWASP 보안, 성능, 접근성 관점에서 코드를 리뷰 |
-| **oma-refactor** | 핫스팟 우선순위와 특성화 테스트 안전망으로 동작을 보존하면서 코드를 리팩토링 |
+| **oma-refactor** | 핫스팟 우선순위, 특성화 테스트 안전망, 리팩토링만 담은 커밋으로 동작을 보존하면서 코드를 리팩토링 |
 | **oma-scm** | 브랜치, 머지, 워크트리, Conventional Commits 관리 |
 | **oma-search** | 각 쿼리를 최적 소스로 라우팅하고 결과의 신뢰 점수를 제공 |
 | **oma-tf-infra** | Terraform으로 멀티 클라우드 인프라를 프로비저닝 |
@@ -206,8 +208,12 @@ AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 
 | **oma-scholar** | 학술 문헌을 검색하고 동료 평가를 지원 |
 | **oma-slide** | 애니메이션이 풍부한 HTML 프레젠테이션 덱을 생성하고 PDF/PNG/PPTX로 내보냄 |
 | **oma-translation** | 원어민이 쓴 것처럼 자연스럽게 언어 간 번역 |
-| **oma-video** | 키 없이도 동작하는 Remotion 파이프라인으로 숏폼, 설명 영상, 데모 영상을 생성 |
+| **oma-video** | 키 없이도 동작하는 HyperFrames 파이프라인으로 숏폼, 설명 영상, 데모 영상을 생성 |
 | **oma-voice** | 클라우드 없이 온디바이스로 보이스오버를 생성하고 오디오를 텍스트로 변환 |
+
+### Orca IDE
+
+[OMA for Orca](../integrations/orca/README.md)는 프로젝트 설정, 리뷰, 디버깅, 검증, 로컬 결과를 위한 사이드바 패널과 명령 팔레트 액션을 추가합니다. 기존 Orca 에이전트 터미널과 프로젝트에 설치된 OMA를 그대로 사용합니다. 실험적 플러그인을 활성화한 Orca 1.4.197 이상이 필요합니다.
 
 ## 작동 방식
 
@@ -285,7 +291,7 @@ oh-my-agent는 개방형 planning과 다음 action 선택을 host LLM에 맡깁�
 ## 왜 oh-my-agent인가?
 
 - **역할 기반**: 프롬프트 뭉치가 아니라 실제 엔지니어링 팀처럼 설계했습니다
-- **토큰 효율**: 2계층 스킬 구조로 토큰을 약 75% 절감합니다 ([작동 방식](../web/docs/guide/usage.md))
+- **조건부 컨텍스트**: 디스패치는 담당 스킬만 불러오고, 보조 참조는 태스크에 필요해질 때까지 미룹니다. 파일 크기 시나리오와 런타임 로딩은 구분해서 보고합니다([측정 가이드](../web/docs/core-concepts/skills.md#token-savings-math))
 - **복구 가능**: retry 2회가 실패하면 `orchestrate`가 hypothesis 변형을 병렬 spawn하고 최고 점수만 남깁니다. 틀린 접근을 언제까지고 다시 시도하지 않습니다
 - **모노레포 인식**: `detectWorkspace`가 pnpm / nx / turbo / lerna를 읽어 각 에이전트를 자기 workspace로 보냅니다
 - **멀티 벤더**: 에이전트 유형별로 Antigravity, Claude, Codex, Cursor, Kiro, Qwen을 섞어 쓸 수 있습니다
@@ -342,6 +348,7 @@ flowchart TD
 
 - **[상세 문서](./AGENTS_SPEC.md)**: 전체 기술 스펙과 아키텍처
 - **[지원 에이전트](./SUPPORTED_AGENTS.md)**: IDE별 에이전트 지원 현황
+- **[기능 프로바이더](./capability-providers.md)**: 실험적 Gortex와 Honcho의 설정, 라우팅, 제약
 - **[벤치마크 리포트](../benchmarks/README.md)**: 방법론, 점수, 스크린샷, 유의사항
 - **[웹 문서](https://first-fluke.github.io/oh-my-agent/)**: 가이드, 튜토리얼, CLI 레퍼런스
 

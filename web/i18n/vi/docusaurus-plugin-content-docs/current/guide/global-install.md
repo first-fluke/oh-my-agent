@@ -95,7 +95,9 @@ If you want a Windows-side install, re-run this command from PowerShell.
 
 WSL install và PowerShell install độc lập. Muốn phủ global ở cả hai phía, chạy `oma install --global` một lần trong WSL và một lần từ PowerShell.
 
-### Cảnh báo cwd = HOME (project mode)
+### Guard cwd = HOME (project mode)
+
+`oma link` và `oma update` (không có `--global`) từ chối chạy khi current directory là HOME. Ở project mode, `<cwd>/.claude/settings.json` sẽ chính là `~/.claude/settings.json` — setting Claude Code global của bạn — và bản render theo phạm vi project sẽ ghi lại các command `$HOME/.claude/hooks/...` của nó thành `$CLAUDE_PROJECT_DIR/...`, làm hỏng mọi hook và statusline trong những project không có `.claude/hooks/` riêng. Hãy dùng `oma link --global` / `oma update --global` cho bản cài ở HOME, hoặc `cd` vào một project trước.
 
 Nếu chạy `oma install` không có `--global` khi current directory là HOME, oma cảnh báo:
 

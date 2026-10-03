@@ -129,8 +129,8 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 | `progress-{agent}.md` | 각 생성된 에이전트 | 현재 턴 번호, 에이전트가 작업 중인 내용, 중간 결과 |
 | `result-{agent}.md` | 각 완료된 에이전트 | 최종 상태 (COMPLETED/FAILED), 변경된 파일, 발견된 이슈, 산출물 |
 | `debug-{id}.md` | `/debug` 워크플로우 | 버그 진단, 근본 원인, 적용된 수정, 회귀 테스트 위치 |
-| `experiment-ledger.md` | Quality Score 시스템 | 실험 추적: 기준 점수, 변동, 유지/폐기 결정 |
-| `lessons-learned.md` | 세션 종료 시 자동 생성 | 폐기된 실험(변동 <= -5)의 교훈 |
+| `experiment-ledger-{sessionId}.md` | 실제 실험 | 비교 가능한 기준선/후보 증거, 필수 검사, 결정 |
+| `lessons-{sessionId}.md` | 재사용 가능한 원인이 증거로 뒷받침될 때 | 세션 범위 교훈. 점수에 따른 자동 생성 없음 |
 
 ### 대시보드가 읽는 방법
 

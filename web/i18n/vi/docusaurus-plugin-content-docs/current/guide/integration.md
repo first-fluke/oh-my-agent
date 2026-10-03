@@ -13,7 +13,7 @@ Có hai cách thêm oh-my-agent vào project hiện có:
 1. **Đường CLI:** Chạy `oma` hoặc `npx oh-my-agent` rồi làm theo prompt interactive. Đây là lựa chọn được khuyến nghị cho phần lớn user.
 2. **Đường thủ công:** Tự copy file và cấu hình symlink. Hữu ích trong môi trường hạn chế hoặc setup tùy chỉnh.
 
-Cả hai đường cho cùng kết quả: thư mục `.agents/` là SSOT cùng các file native do vendor tạo như `.claude/agents/`, `.codex/agents/` và `.gemini/agents/`.
+Cả hai đường cho cùng kết quả: thư mục `.agents/` là SSOT cùng các file native do vendor tạo như `.claude/agents/`, `.codex/agents/` và `.qwen/agents/`.
 
 ---
 
@@ -191,7 +191,13 @@ oma link
 ```
 
 
-`oma link` rebuild `.claude/`, `.codex/`, `.gemini/` và file native vendor liên quan từ `.agents/agents/`. Khi runtime, OMA chỉ dùng native dispatch khi vendor runtime hiện tại khớp vendor đích của agent. Setup nhiều vendor vẫn hoạt động, nhưng agent không khớp sẽ fallback về external `oma agent spawn`.
+`oma link` tạo lại `.claude/`, `.codex/`, `.qwen/` và file native vendor liên quan từ `.agents/agents/`. Khi runtime, OMA chỉ dùng native dispatch khi vendor runtime hiện tại khớp vendor đích của agent. Setup nhiều vendor vẫn hoạt động, nhưng agent không khớp sẽ fallback về external `oma agent spawn`.
+
+Với Qwen Code, các định nghĩa Markdown được sinh ra nằm trong `.qwen/agents/`. Chọn một vai trò OMA thông qua `subagent_type` của Agent tool, ví dụ `backend-engineer`. Kiểm tra các định nghĩa khả dụng bằng `/agents manage` trong Qwen Code. Agent native dùng cùng [lifecycle của result](./agent-results-and-resume.md) như CLI spawn: `oma agent begin`, `oma agent verify` và `oma agent finish`. Với `model_preset: free`, hãy dùng `oma agent spawn` để child nhận được cấu hình gateway.
+
+Qwen Code dùng cùng `code-intelligence-primer` như các vendor khác. Giống Claude Code, nó đăng ký primer dùng chung trên `SessionStart` và `UserPromptSubmit`: hướng dẫn được inject một lần mỗi session và inject lại sau khi compaction. Primer theo provider đã cấu hình (Serena hoặc Gortex), gồm hướng dẫn về deferred tool, và cho phép fallback sang native khi provider không khả dụng hoặc timeout. Qwen không thêm cơ chế chặn tìm kiếm code hay theo dõi kết quả provider riêng.
+
+Sau khi cập nhật CLI, chạy `oma link qwen` để tạo lại setting hook và wrapper, rồi bắt đầu một session Qwen mới. Các test output của hook xác minh contract tích hợp; chúng không đảm bảo model sẽ chọn tool nào.
 
 ### Bước 3: cấu hình preference của user
 
@@ -424,7 +430,7 @@ Với mỗi skill được chọn, `installSkill()` copy thư mục skill vào `
 
 - Agent definition (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`).
 - Hook config (`.claude/hooks/`, `.codex/hooks.json`).
-- Settings và tài liệu tích hợp vendor (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`).
+- Settings và tài liệu tích hợp vendor dùng chung (chỉ `AGENTS.md`, kể cả Claude Code ≥ 2.1.277). `CLAUDE.md` và `GEMINI.md` không bao giờ nhận block OMA; `CLAUDE.md` có sẵn do user sở hữu chỉ nhận thêm một dòng import `@AGENTS.md` để Claude Code không bỏ qua `AGENTS.md`.
 
 Codex gate hook sau bước trust một lần, nên `.codex/hooks.json` không chạy cho đến khi review một lần qua browser `/hooks` của Codex. Xem [Codex Hook Trust](/docs/guide/codex-hook-trust).
 

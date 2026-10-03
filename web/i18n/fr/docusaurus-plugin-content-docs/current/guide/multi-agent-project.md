@@ -36,7 +36,7 @@ Le workflow `/plan` s'exécute en ligne (sans lancer de sous-agent) et produit u
 Ce qui se passe :
 
 1. **Recueillir les exigences :** l'agent PM interroge sur les utilisateurs cibles, les fonctionnalités principales, les contraintes et les cibles de déploiement.
-2. **Analyser la faisabilité technique :** utilise le fournisseur d'intelligence du code configuré et la recherche native ciblée lorsqu'il est indisponible pour analyser le dépôt existant à la recherche de code réutilisable et de motifs d'architecture.
+2. **Analyser la faisabilité technique :** utilise le fournisseur d'intelligence du code configuré pour analyser le dépôt existant à la recherche de code réutilisable et de motifs d'architecture. La recherche native est réservée aux chemins situés hors du projet ou aux chemins ignorés.
 3. **Définir les contrats d'API :** conçoit les contrats d'endpoint (méthode, chemin, schémas de requête/réponse, authentification et réponses d'erreur), puis les enregistre dans `.agents/results/api-contracts/` (artefacts d'exécution), en promouvant les spécifications durables vers `docs/plans/contracts/` lorsqu'elles sont validées.
 4. **Décomposer les tâches :** découpe le projet en tâches actionnables, chacune avec un agent assigné, un titre, des critères d'acceptation, une priorité (P0-P3) et des dépendances.
 5. **Revoir le plan avec l'utilisateur :** présente le plan complet pour confirmation. Le workflow ne continue pas sans l'approbation explicite de l'utilisateur.
@@ -211,7 +211,7 @@ Les contrats d'API sont le mécanisme de synchronisation entre les agents. La r�
    - les exigences d'authentification ;
    - les formats des réponses d'erreur.
 
-4. **Les violations de contrat sont détectées pendant la surveillance.** L'étape 5 de `/work` utilise le fournisseur d'intelligence du code configuré ou la recherche native ciblée pour vérifier l'alignement des contrats d'API entre agents.
+4. **Les violations de contrat sont détectées pendant la surveillance.** L'étape 5 de `/work` utilise le fournisseur d'intelligence du code configuré pour vérifier l'alignement des contrats d'API entre agents. La recherche native est réservée aux chemins situés hors du projet ou aux chemins ignorés.
 
 5. **La revue QA vérifie le respect des contrats.** La revue d'alignement de l'agent QA (étape 6 d'ultrawork) compare explicitement l'implémentation au plan, y compris les contrats d'API.
 
@@ -340,7 +340,7 @@ Utiliser directement `agent spawn` sans enregistrer ensuite le contrat de résul
 
 Une fois que tous les agents ont terminé leurs tâches individuelles, l'intégration inter-domaines doit être validée :
 
-1. **Alignement des contrats d'API :** le fournisseur d'intelligence du code configuré ou la recherche native ciblée vérifie que les implémentations backend correspondent aux contrats consommés par le frontend et le mobile.
+1. **Alignement des contrats d'API :** le fournisseur d'intelligence du code configuré vérifie que les implémentations backend correspondent aux contrats consommés par le frontend et le mobile. La recherche native est réservée aux chemins situés hors du projet ou aux chemins ignorés.
 
 2. **Cohérence des types :** les types TypeScript, dataclasses Python ou modèles Dart partagés entre les domaines doivent utiliser des noms de champs et des types cohérents.
 

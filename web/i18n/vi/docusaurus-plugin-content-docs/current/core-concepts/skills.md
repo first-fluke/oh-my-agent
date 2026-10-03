@@ -5,15 +5,15 @@ description: Hướng dẫn đầy đủ về kiến trúc hai tầng của 33 s
 
 # Skill
 
-Skill là các gói kiến thức có cấu trúc, cung cấp hướng dẫn theo lĩnh vực cho một vai trò dispatch. Mỗi gói chứa protocol thực thi, tham chiếu tech stack, mẫu mã, playbook lỗi, checklist chất lượng và ví dụ khi cần, được tổ chức theo kiến trúc hai tầng để tiết kiệm token.
+Skill là các gói kiến thức có cấu trúc, cung cấp hướng dẫn theo lĩnh vực cho một vai trò dispatch. Mỗi gói chứa protocol thực thi, tham chiếu tech stack, mẫu mã, playbook lỗi, checklist chất lượng và ví dụ khi skill có cung cấp, được tổ chức theo kiến trúc hai tầng để tiết kiệm token.
 
 ---
 
 ## Thiết kế hai tầng
 
-### Tầng 1: SKILL.md (trung vị khoảng 2.631 token, tải khi skill được định tuyến)
+### Tầng 1: SKILL.md (tải khi skill được định tuyến)
 
-Mỗi skill có tệp `SKILL.md` ở thư mục gốc. Tệp này đi vào cửa sổ ngữ cảnh khi skill được định tuyến, tức hook injector truyền một **tham chiếu đường dẫn** chứ không truyền nội dung, nên skill chưa được định tuyến hầu như không tốn gì ngoài trường `description`. Tệp chứa:
+Mỗi skill có tệp `SKILL.md` ở thư mục gốc. Tệp này đi vào cửa sổ ngữ cảnh khi skill được định tuyến, tức hook injector truyền một **tham chiếu đường dẫn** chứ không truyền nội dung, nên skill chưa được định tuyến không tốn gì ngoài trường `description`. Tệp chứa:
 
 - **Frontmatter YAML** với `name` và `description` (dùng để định tuyến và hiển thị)
 - **When to use / When NOT to use**: điều kiện kích hoạt rõ ràng
@@ -37,9 +37,9 @@ Trường description rất quan trọng vì chứa các từ khóa định tuy�
 
 Thư mục `resources/` chứa kiến thức thực thi chuyên sâu. Các tệp này chỉ được tải khi:
 1. Host hoặc workflow đã chọn skill, ví dụ qua native skill match hoặc lệnh tường minh
-2. Loại task và độ khó hiện tại cần tài nguyên cụ thể
+2. Task hiện tại đáp ứng điều kiện tải của tham chiếu
 
-Việc tải theo nhu cầu được hướng dẫn bởi tài liệu context-loading (`.agents/skills/_shared/core/context-loading.md`), tài liệu này ánh xạ loại task với tài nguyên bắt buộc cho từng agent.
+Việc tải theo nhu cầu được hướng dẫn bởi tài liệu context-loading (`.agents/skills/_shared/core/context-loading.md`), tài liệu này phân biệt chỉ dẫn entry với các tham chiếu do task chọn.
 
 ---
 
@@ -110,14 +110,14 @@ Việc tải theo nhu cầu được hướng dẫn bởi tài liệu context-lo
 
 | Loại tài nguyên | Mẫu tên file | Mục đích | Khi tải |
 |--------------|-----------------|---------|-------------|
-| **Execution Protocol** | `execution-protocol.md` | Workflow từng bước: Analyze → Plan → Implement → Verify | Luôn tải cùng SKILL.md |
-| **Tech Stack** | `tech-stack.md` | Thông số công nghệ, phiên bản và cấu hình chi tiết | Task Complex |
+| **Execution Protocol** | `execution-protocol.md` | Workflow từng bước: Analyze → Plan → Implement → Verify | Thao tác được chọn cần chi tiết về lệnh hoặc contract của nó |
+| **Tech Stack** | `tech-stack.md` | Thông số công nghệ, phiên bản và cấu hình chi tiết | Framework được chọn hoặc quyết định về stack |
 | **Error Playbook** | `error-playbook.md` | Quy trình phục hồi với cơ chế leo thang “3 lần thử” | Chỉ khi có lỗi |
 | **Checklist** | `checklist.md` | Xác minh chất lượng theo lĩnh vực | Ở bước Verify |
-| **Snippets** | `snippets.md` | Mẫu mã sẵn sàng copy-paste | Task Medium/Complex |
-| **Examples** | `examples.md` hoặc `examples/` | Ví dụ input/output few-shot cho LLM | Task Medium/Complex |
+| **Snippets** | `snippets.md` | Mẫu mã sẵn sàng copy-paste | Cách triển khai hoặc dạng đầu ra chưa quen thuộc |
+| **Examples** | `examples.md` hoặc `examples/` | Ví dụ input/output few-shot cho LLM | Cách triển khai hoặc dạng đầu ra chưa quen thuộc |
 | **Variants** | `variants/` | Tham chiếu theo ngôn ngữ/framework. Backend cung cấp seed `node`, `python`, `rust`; mobile cung cấp schema và có thể nhận tham chiếu nền tảng được tạo. | Khi có stack phù hợp |
-| **Templates** | `component-template.tsx`, `screen-template.dart` | Template boilerplate cho file component | Khi tạo component |
+| **Templates** | `component-template.tsx`, `screen-template.dart` | Template file boilerplate | Khi tạo component |
 | **Domain Reference** | `orm-reference.md`, `anti-patterns.md`, v.v. | Kiến thức lĩnh vực chuyên sâu cho subtask cụ thể | Theo loại task |
 
 ---
@@ -130,18 +130,18 @@ Mọi agent dùng chung nền tảng từ `.agents/skills/_shared/`. Các tài n
 
 | Tài nguyên | Mục đích | Khi tải |
 |---------|---------|---------|
-| **`skill-routing.md`** | Ánh xạ từ khóa task tới agent phù hợp. Chứa bảng Skill-Agent Mapping, mẫu Complex Request Routing, Inter-Agent Dependency Rules, Escalation Rules và Turn Limit Guide. | Orchestrator và skill coordination tham chiếu |
-| **`context-loading.md`** | Xác định tài nguyên cần tải cho từng loại task và độ khó. Chứa bảng ánh xạ loại task với tài nguyên theo agent và trigger tải protocol có điều kiện. | Khi workflow bắt đầu (Step 0 / Phase 0) |
-| **`prompt-structure.md`** | Định nghĩa bốn thành phần mọi prompt task phải có: Goal, Context, Constraints, Done When. Có template cho agent PM, implementation và QA; liệt kê anti-pattern (bắt đầu chỉ với Goal). | Agent PM và mọi workflow tham chiếu |
-| **`clarification-protocol.md`** | Định nghĩa mức độ bất định LOW/MEDIUM/HIGH và hành động tương ứng. Chứa trigger bất định, mẫu escalation, mục xác minh bắt buộc theo loại agent và hành vi subagent mode. | Khi yêu cầu chưa rõ |
-| **`context-budget.md`** | Quản lý ngân sách token. Định nghĩa chiến lược đọc file (dùng `find_symbol` thay vì `read_file`), chi phí đo được của từng file tài nguyên và tải Simple (~4.000 token) so với Complex (~9.000 token), giới hạn `SKILL.md` bắt buộc (25.000 ký tự, `oma skill audit` kiểm tra), xử lý file lớn và dấu hiệu tràn ngữ cảnh. | Khi workflow bắt đầu |
-| **`difficulty-guide.md`** | Tiêu chí phân loại task Simple/Medium/Complex. Định nghĩa số lượt dự kiến, nhánh protocol (Fast Track / Standard / Extended) và cách phục hồi khi đánh giá sai độ khó. | Khi bắt đầu task (Step 0) |
-| **`quality-principles.md`** | 4 nguyên tắc chất lượng chung áp dụng cho mọi agent. | Khi workflow tập trung chất lượng (ultrawork) bắt đầu |
+| **`skill-routing.md`** | Định tuyến theo kết quả task, quyền sở hữu và phụ thuộc thực tế; không có chuỗi agent bắt buộc hay hạn mức lượt. | Orchestrator và skill coordination tham chiếu |
+| **`context-loading.md`** | Entry sở hữu, các tham chiếu có điều kiện và ranh giới tải ở runtime. | Khi soạn ngữ cảnh |
+| **`prompt-structure.md`** | Hướng dẫn bàn giao task chưa quen thuộc bằng mục tiêu, ngữ cảnh, ràng buộc thực sự và bằng chứng nghiệm thu; không có template bắt buộc cho task trực tiếp. | Agent PM và mọi workflow tham chiếu |
+| **`clarification-protocol.md`** | Giải quyết các chi tiết thường lệ từ ngữ cảnh và chỉ hỏi khi thiếu thông tin quan trọng hoặc cần được ủy quyền. | Khi yêu cầu chưa rõ |
+| **`context-budget.md`** | Ước lượng kích thước file, đo prompt thực tế, đọc có phạm vi và checkpoint. | Task dài hoặc chẩn đoán overhead ngữ cảnh |
+| **`difficulty-guide.md`** | Chọn độ sâu lập kế hoạch và sản phẩm bàn giao dựa trên phụ thuộc và nhu cầu xác minh. | Khi việc phân rã cần ước lượng độ khó |
+| **`quality-principles.md`** | Hướng dẫn về phạm vi, khả năng bảo trì, bằng chứng và mức xác minh tương xứng. | Khi workflow tập trung chất lượng (ultrawork) bắt đầu |
 | **`vendor-detection.md`** | Protocol phát hiện môi trường runtime hiện tại (Claude Code, Codex CLI, Antigravity, Cursor, Kiro, Qwen và CLI fallback). Dùng marker host và trạng thái vendor đã cấu hình. | Khi workflow bắt đầu |
-| **`session-metrics.md`** | Chấm Clarification Debt (CD) và theo dõi số liệu phiên. Định nghĩa loại sự kiện (clarify +10, correct +25, redo +40), ngưỡng (CD >= 50 = RCA, CD >= 80 = pause) và các điểm tích hợp. | Trong phiên điều phối |
-| **`common-checklist.md`** | Checklist chất lượng chung áp dụng ở lần xác minh cuối của task Complex, bên cạnh checklist riêng của agent. | Bước Verify của task Complex |
-| **`lessons-learned.md`** | Kho bài học phiên trước, tự tạo từ các lần vượt Clarification Debt và thử nghiệm bị loại. Tổ chức theo phần lĩnh vực, có QA Evaluation Lessons để theo dõi điểm mù của evaluator. | Tham chiếu sau lỗi và khi kết thúc phiên |
-| **`api-contracts/`** | Thư mục chứa template API contract và contract đã tạo. `template.md` định nghĩa định dạng theo endpoint (method, path, schema request/response, auth, errors). | Khi lập kế hoạch công việc qua ranh giới |
+| **`session-metrics.md`** | Bằng chứng phiên tùy chọn, không có điểm phạt về hội thoại hay evaluator. | Retrospective được yêu cầu hoặc có sửa hướng đáng kể |
+| **`common-checklist.md`** | Các kiểm tra liên lĩnh vực áp dụng được; không có giới hạn số dòng toàn cục hay yêu cầu catch áp dụng cho mọi trường hợp. | Review liên lĩnh vực khi liên quan |
+| **`lessons-learned.md`** | Ghi nhận và áp dụng các bài học có bằng chứng kèm điều kiện phiên bản/trigger; không có ngưỡng RCA tự động. | Tham chiếu sau lỗi và khi kết thúc phiên |
+| **`api-contracts/`** | Template contract tùy chọn. Dùng lại schema của project; contract được tạo ra nằm ngoài nguồn của skill. | Khi lập kế hoạch công việc qua ranh giới |
 
 ### Tài nguyên runtime (`.agents/skills/_shared/runtime/`)
 
@@ -165,13 +165,13 @@ Các protocol thực thi theo vendor được tự động inject cho agent đư
 
 Chỉ tải khi trong quá trình thực thi có điều kiện tương ứng:
 
-| Tài nguyên | Điều kiện trigger | Agent tải | Xấp xỉ token |
-|-----------|-----------------|-----------|----------------|
-| **`quality-score.md`** | Bắt đầu phase VERIFY hoặc SHIP trong workflow hỗ trợ đo chất lượng | Orchestrator (truyền vào prompt agent QA) | ~250 |
-| **`experiment-ledger.md`** | Ghi thử nghiệm đầu tiên sau khi lập baseline IMPL | Orchestrator (inline, sau phép đo baseline) | ~250 |
-| **`exploration-loop.md`** | Cùng một gate thất bại hai lần vì cùng vấn đề | Orchestrator (inline, trước khi spawn agent giả thuyết) | ~250 |
+| Tài nguyên | Điều kiện trigger | Agent tải |
+|-----------|-----------------|-----------|
+| **`quality-score.md`** | Cần có baseline đã xác định hoặc phép so sánh thử nghiệm | Orchestrator (truyền vào prompt agent QA) |
+| **`experiment-ledger.md`** | Ghi thử nghiệm đầu tiên sau khi lập baseline IMPL | Orchestrator (inline, sau phép đo baseline) |
+| **`exploration-loop.md`** | Phục hồi lặp lại không thành công và có phương án thay thế đáng thử trong ngân sách | Orchestrator (inline, trước khi spawn agent giả thuyết) |
 
-Tác động ngân sách: tổng khoảng 750 token nếu tải cả 3. Do tải có điều kiện, phiên thông thường tải 1-2 file, không đáng kể so với khoảng 4.000 token mà task Simple đã dùng cho `SKILL.md` và `execution-protocol.md`.
+Các tài nguyên này được hoãn tải cho đến khi trigger riêng của từng tài nguyên được đáp ứng. Chỉ riêng độ khó không khiến chúng được inject.
 
 ---
 
@@ -209,81 +209,35 @@ Yêu cầu đa lĩnh vực tuân theo thứ tự thực thi đã định nghĩa:
 - agent triển khai -> oma-qa (review sau triển khai)
 - oma-backend -> oma-frontend/oma-mobile (khi chưa có API contract)
 
-**QA luôn cuối cùng**, trừ khi người dùng yêu cầu review riêng các file.
+**QA luôn cuối cùng**, trừ khi người dùng chỉ yêu cầu review một số file cụ thể.
 
 ---
 
 ## Toán tiết kiệm token {#token-savings-math}
 
-Các số liệu này được đo từ cây skill, không ước lượng thủ công. Có thể dẫn xuất lại bất cứ lúc nào:
+Hãy đo trước khi khẳng định mức tiết kiệm:
 
 ```bash
-bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend,oma-mobile,oma-qa
+bun scripts/measure-skill-context.ts
+bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend --json
+oma agent context backend --difficulty Simple
 ```
 
-Số token là **xấp xỉ** (byte ÷ 4, tỷ lệ gần đúng cho Markdown tiếng Anh). Bảng và fenced code thường tokenize kém hơn, nên các con số này hơi thấp; nếu cần con số chính xác, hãy dùng tokenizer thực cho model đích.
+Script báo cáo các ước lượng UTF-8 byte / 4 cho những kịch bản dựa trên kích thước file. `routed` chỉ gồm entry; `simple`, `medium` và `complex` thêm các file giả định gồm protocol, ví dụ và stack để so sánh. Tên của chúng được giữ lại để tương thích với script, không phải chỉ dẫn tải trước. `all` là giới hạn trên về kích thước tài nguyên, không phải cấu hình runtime. Checkout mới có thể dùng một seed nền tảng làm proxy kích thước; việc này không tải mọi nền tảng.
 
-### Các tầng tải
+Lệnh context hiển thị phần ngữ cảnh task thực tế được inject. Lệnh này không bao gồm phần còn lại của cuộc hội thoại hay mọi chỉ dẫn của host/runtime. Hãy dùng prompt đã được lắp ghép hoặc telemetry sử dụng để đo tổng token đầu vào, độ trễ và chi phí trên một model cụ thể. Không suy ra các số liệu đó từ kích thước repository hay số lượng bản mirror được tạo.
 
-Mỗi tầng là trạng thái agent thực sự đạt được, theo [`context-loading.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/_shared/core/context-loading.md):
+## Tải tài nguyên theo task
 
-| Tầng | Nội dung trong ngữ cảnh |
-|------|--------------------|
-| `routed` | Chỉ SKILL.md |
-| `simple` | + `execution-protocol.md` |
-| `medium` | + tài nguyên được ánh xạ cho task, khi file đó tồn tại |
-| `complex` | + tài nguyên được ánh xạ và tham chiếu stack khi project cung cấp |
-| `all` | `SKILL.md` + mọi file tài nguyên, là **giới hạn trên**, không phải mode chọn được |
+Mọi mức độ khó đều bắt đầu bằng skill sở hữu. Graph là một chỉ mục tham chiếu; việc kề cận trong graph không cho phép tải specialist khác, playbook lỗi hay workflow thử nghiệm có điều kiện.
 
-Với skill backend và mobile, `/stack-set` có thể tạo tham chiếu theo project dưới `stack/`. Checkout mới không có thư mục stack đã tạo, nên dòng `complex` trong bảng dưới được đo dựa trên seed `variants/` đã ship mà quá trình tạo sẽ điều chỉnh, đây là proxy kích thước chứ chưa phải file agent tải.
+Loader dùng ngân sách mềm 1.500 / 4.000 / 8.000 token ước tính cho Simple / Medium / Complex. Entry vượt ngân sách vẫn được giữ lại và phần vượt mức được báo cáo. Các tham chiếu hỗ trợ vẫn bị hoãn tải, trừ khi được chọn tường minh sau khi trigger theo task của chúng đã được xác định. Entry bắt buộc không bao giờ bị thay bằng các tài liệu nhỏ hơn không liên quan.
 
-### Một phiên 5 agent (pm, backend, frontend, mobile, qa)
-
-| Tầng | Token | Tỷ lệ của giới hạn | Tiết kiệm |
-|------|-------:|-----------------:|--------:|
-| `routed` | 11,497 | 15.7% | 84.3% |
-| `simple` | 17,923 | 24.4% | 75.6% |
-| `medium` | 19,125 | 26.1% | 73.9% |
-| `complex` | 39,156 | 53.4% | 46.6% |
-| `all` | 73,355 | 100% | — |
-
-Vì vậy task Simple hoặc Medium trên năm agent giữ khoảng **17-19K token** ngữ cảnh skill thay vì giới hạn 73K, còn task Complex giữ khoảng **38K**, mức tiết kiệm khoảng 74-76% ở công việc thường và giảm còn khoảng 47% khi kéo theo tham chiếu stack. Với model có ngữ cảnh 128K, còn khoảng 110K trống cho công việc Simple/Medium và 90K cho Complex.
-
-:::note Hãy xem `all` là giới hạn, không phải lựa chọn thay thế
-Không runtime nào tải mọi tài nguyên ngay từ đầu: skill được hiển thị qua `description`, thân skill được đọc khi định tuyến và tài nguyên được đọc khi task cần. `all` là giới hạn trên về chi phí tiềm tàng của skill, vì vậy phần trăm được nêu là “tiết kiệm” chứ không phải so sánh với một cấu hình thực tế.
-:::
-
-Tầng 1 là mức sàn và không hề nhỏ: trong 33 skill đã cài, `SKILL.md` có khoảng 1.275-5.489 token (trung vị ~2.631). Mức sàn này giới hạn khoản tiết kiệm của progressive disclosure, vì khi cả năm agent đều được định tuyến, riêng tầng `routed` đã chiếm 15% giới hạn.
-
----
-
-## Tải tài nguyên theo độ khó task
-
-Tài liệu hướng dẫn độ khó phân loại task thành ba mức, quyết định lượng tài nguyên tầng 2 được tải:
-
-### Simple (dự kiến 3-5 lượt)
-
-Thay đổi một file, yêu cầu rõ ràng, lặp lại mẫu có sẵn.
-
-Tải: chỉ `execution-protocol.md`. Bỏ qua phân tích, tiến thẳng tới triển khai với checklist tối thiểu.
-
-### Medium (dự kiến 8-15 lượt)
-
-Thay đổi 2-3 file, cần một số quyết định thiết kế, áp dụng mẫu cho domain mới.
-
-Tải: `execution-protocol.md` cùng tài nguyên Medium được ánh xạ nếu file đó tồn tại. Dùng protocol Standard với phân tích ngắn và xác minh đầy đủ.
-
-### Complex (dự kiến 15-25 lượt)
-
-Thay đổi từ 4 file, cần quyết định kiến trúc, giới thiệu mẫu mới hoặc phụ thuộc agent khác.
-
-Tải: `execution-protocol.md` cùng tài nguyên được ánh xạ và tham chiếu `tech-stack.md` / `snippets.md` khả dụng. Dùng protocol Extended với checkpoint, ghi tiến độ giữa chừng và xác minh đầy đủ kèm `common-checklist.md`.
-
----
+Việc xác minh tuân theo rủi ro của task và yêu cầu của project. Nhãn độ khó không đòi hỏi bộ test đầy đủ, phản hồi preflight cố định hay lần phê duyệt thứ hai cho công việc đã được ủy quyền.
 
 ## Bản đồ task context-loading (theo agent)
 
-Tài liệu context-loading cung cấp ánh xạ chi tiết giữa loại task và tài nguyên. Dưới đây là các ánh xạ chính:
+Đây là các ví dụ về những tham chiếu cần tham khảo khi task cần đến. Hãy dùng chỉ mục hiện tại của skill sở hữu và chỉ chọn các phần áp dụng được:
 
 ### Backend agent
 
@@ -292,8 +246,8 @@ Tài liệu context-loading cung cấp ánh xạ chi tiết giữa loại task v
 | Tạo CRUD API | `variants/{node,python,rust}/snippets.md` tương ứng khi có |
 | Xác thực | `snippets.md` của variant tương ứng + `tech-stack.md` khi có |
 | Database migration | `snippets.md` của variant tương ứng khi có |
-| Tối ưu hiệu suất | `orm-reference.md` và mọi example tương ứng skill cung cấp |
-| Sửa mã hiện có | Provider code-intelligence của project và resource thực thi liên quan |
+| Tối ưu hiệu suất | `orm-reference.md` và mọi ví dụ tương ứng do skill cung cấp |
+| Sửa mã hiện có | Provider code-intelligence của project và tài nguyên thực thi liên quan |
 
 ### Frontend agent
 
@@ -324,7 +278,7 @@ Tài liệu context-loading cung cấp ánh xạ chi tiết giữa loại task v
 | Review hiệu suất | checklist.md (phần Performance) |
 | Review accessibility | checklist.md (phần Accessibility) |
 | Audit đầy đủ | checklist.md (full) + self-check.md |
-| Chấm điểm chất lượng | quality-score.md (có điều kiện) |
+| So sánh số liệu đã xác định | quality-score.md (có điều kiện) |
 
 ---
 
@@ -332,99 +286,32 @@ Tài liệu context-loading cung cấp ánh xạ chi tiết giữa loại task v
 
 Khi orchestrator soạn prompt cho subagent, nó chỉ đưa vào các tài nguyên liên quan task:
 
-1. Phần Core Rules của `SKILL.md` agent
-2. `execution-protocol.md`
-3. Tài nguyên phù hợp loại task (theo mapping)
-4. `error-playbook.md` (luôn đưa vào vì recovery cần thiết)
+1. Đường dẫn SKILL.md của skill sở hữu (dispatch qua CLI đã inject sẵn nội dung)
+2. Phần execution-protocol của thao tác được chọn, khi cần
+3. Tài nguyên phù hợp loại task (theo các bản đồ ở trên)
+4. Phần error-playbook liên quan, chỉ sau khi đã quan sát thấy lỗi
 5. Memory Protocol (chế độ CLI)
 
-Cách soạn mục tiêu này tránh tải tài nguyên không cần thiết, dành tối đa ngữ cảnh cho công việc thực tế.
+Cách soạn nhắm đúng mục tiêu này tránh tải tài nguyên không cần thiết, dành tối đa ngữ cảnh khả dụng của subagent cho công việc thực tế.
 
 ---
 
-## Clarification debt và số liệu phiên (đào sâu)
+## Bằng chứng phiên và review retrospective
 
-Clarification Debt (CD) đo chi phí của yêu cầu chưa rõ trong một phiên. Orchestrator theo dõi mỗi lần người dùng sửa hướng và chấm điểm:
+Bản ghi phiên lưu lại các lần sửa hướng đáng kể, thay đổi phạm vi, việc làm lại và các phát hiện review đã được phân xử, kèm bằng chứng. Việc làm rõ cần thiết không bị phạt. Điểm có trọng số CD và EA trước đây cùng các quy tắc RCA kích hoạt theo ngưỡng đã bị loại bỏ; chúng vốn là chỉ dẫn trong prompt chứ không phải số liệu do CLI tính toán.
 
-| Loại sự kiện | Điểm | Mô tả |
-|------------|--------|-------------|
-| `clarify` | +10 | Câu hỏi làm rõ đơn giản (dự kiến với bất định MEDIUM) |
-| `correct` | +25 | Hiểu sai ý định khiến hướng phải thay đổi |
-| `redo` | +40 | Vi phạm phạm vi/charter cần rollback và bắt đầu lại |
-| `blocked` | +0 | Agent dừng đúng lúc và hỏi (hành vi tốt, không bị phạt) |
+Hãy dùng kết quả task hiện có khi có thể. File `session-metrics-{sessionId}.md` riêng là tùy chọn trong coordination store đã cấu hình. Việc thất bại lặp lại hoặc retrospective được yêu cầu có thể đủ cơ sở để rút ra một bài học, nhưng một check thất bại thông thường hay một phát hiện đang bị tranh luận thì không tự động tạo thành bài học. Hãy giữ nguyên log lịch sử; không viết lại chúng theo định dạng mới.
 
-**Hệ số:** Không đọc charter (+15), vi phạm allowlist (+20), lặp lại cùng lỗi (x1.5).
+`oma stats` báo cáo năng suất và các bản tóm tắt sử dụng/chi phí đã ghi nhận. `oma retro` nhóm các sự kiện thực tế gồm gate, blocker và thiếu quyết định thành các gợi ý. Cả hai đều không tính điểm CD/EA từ các artifact Markdown này.
 
-**Ngưỡng và cưỡng chế:**
-- **CD >= 50** → Bắt buộc thêm RCA vào `lessons-learned.md`
-- **CD >= 80** → Dừng phiên, người dùng phải đặc tả lại yêu cầu
-- **`redo` >= 2** → Orchestrator tạm dừng và yêu cầu xác nhận phạm vi rõ ràng
-- **CD >= 30 trong 3 phiên liên tiếp của cùng agent** → Review template prompt của agent
+## Phân rã task và phục hồi ngữ cảnh
 
-Log phiên được duy trì tại `.agents/state/memories/session-metrics.md` với các dòng theo sự kiện (turn, agent, event type, points, detail) và phần tóm tắt.
+Hãy lập kế hoạch xoay quanh các phụ thuộc và hành vi có thể xác minh độc lập. Số sprint, số file và số lượt ước tính cố định không quyết định độ sâu review hay việc hoàn thành. Hãy giữ test và xử lý lỗi đi kèm với hành vi mà chúng xác minh.
 
----
+Khi quan sát thấy tình trạng đứng tiến độ hoặc mất ngữ cảnh hữu ích, hãy lưu lại công việc đã hoàn thành, tiêu chí còn lại, đường dẫn liên quan và bằng chứng xác minh trước khi tiếp tục hoặc dispatch lại. Hãy giữ nguyên công việc hiện có và tránh làm trùng lặp một lần thử đang chạy. Chỉ riêng tỷ lệ lượt/tiến độ không đòi hỏi phải reset.
 
-## Độ chính xác evaluator và tinh chỉnh QA
+## Đo lường và khám phá có điều kiện
 
-Agent QA cải thiện qua các lỗi đánh giá được theo dõi. Khác với CD (thời gian thực), Evaluator Accuracy (EA) được đánh giá hồi cứu. Phần lớn lỗi được phát hiện sau khi phiên kết thúc.
+Một baseline đã xác định hoặc phép so sánh thử nghiệm sẽ kích hoạt hướng dẫn đo lường; chỉ riêng việc có test hay lint thì không. Hãy ghi lại các số liệu có thể so sánh kèm đơn vị, phương pháp, revision và bằng chứng. Các kiểm tra bắt buộc về tính đúng đắn và bảo mật vẫn độc lập. OMA không có công thức tổng hợp mặc định, gate theo điểm chữ hay rollback kích hoạt theo điểm số.
 
-**Loại sự kiện EA:**
-
-| Sự kiện | Điểm | Khi phát hiện |
-|---------|------|---------------|
-| `false_negative` | +30 | Phiên sau hoặc production (lỗi QA bỏ sót) |
-| `false_positive` | +15 | Trong phiên (agent triển khai tranh luận thành công phát hiện QA) |
-| `severity_mismatch` | +10 | Trong phiên hoặc review phiên sau (gán severity sai) |
-| `missed_stub` | +20 | Xác minh runtime phát hiện tính năng chỉ hiển thị |
-| `good_catch` | -10 | QA phát hiện lỗi khó thấy (tín hiệu thưởng tích cực) |
-
-**EA tính theo cửa sổ 3 phiên cuốn chiếu.** Ngưỡng:
-- **EA >= 30** → Gợi ý tinh chỉnh: review các event EA đã tích lũy để tìm lỗi đánh giá lặp lại
-- **EA >= 50** → Bắt buộc tinh chỉnh: cập nhật execution-protocol.md của QA
-- **`false_negative` >= 3** trong cửa sổ → Thêm pattern phát hiện vào checklist.md của QA
-- **`good_catch` >= 5** trong cửa sổ → Khái quát pattern thành công vào `common-checklist.md`
-
-Khi vượt ngưỡng, review các event EA tích lũy, phân loại lỗi, cập nhật checklist/execution protocol của QA và xác minh trong 3 phiên tiếp theo.
-
----
-
-## Phân rã sprint cho task Complex
-
-Task Complex (từ 4 file, có quyết định kiến trúc) dùng thực thi theo sprint thay vì một lượt dài:
-
-1. **Phân rã** thành 2-4 sprint tập trung chức năng, mỗi sprint độc lập và có thể test
-2. **Mục tiêu** 5-8 lượt mỗi sprint
-3. **Cổng sprint** sau mỗi sprint:
-   - Sản phẩm sprint hoàn tất?
-   - Lint/test pass?
-   - Nếu sprint tốn gấp 2 lượt dự kiến → ghi checkpoint, báo người dùng
-4. Chuyển sprint tiếp theo khi cổng pass
-
-**Ví dụ:** Task “JWT auth + CRUD API + tests” tách thành:
-- Sprint 1: Model User + endpoint auth (register/login)
-- Sprint 2: endpoint CRUD + xác thực
-- Sprint 3: Test + xử lý lỗi
-
-**Phục hồi khi đánh giá sai độ khó:** Nếu task bắt đầu là Simple nhưng hóa ra phức tạp hơn, agent nâng protocol lên Medium hoặc Complex giữa chừng và ghi lại thay đổi vào tiến độ.
----
-
-## Giao thức reset ngữ cảnh
-
-Agent chạy lâu sẽ giảm chất lượng khi ngữ cảnh đầy dần. Orchestrator (không phải chính agent) theo dõi việc này và kích hoạt reset.
-
-**Điều kiện trigger (Orchestrator kiểm tra khi giám sát):**
-
-| Điều kiện | Phát hiện | Hành động |
-|-----------|-----------|-----------|
-| Hết ngân sách lượt | Agent đã dùng >= 80% số lượt dự kiến VÀ tiêu chí chấp nhận hoàn thành < 50% | Reset ngữ cảnh |
-| Đứng tiến độ | Không cập nhật file progress trong >= 3 chu kỳ giám sát liên tiếp | Reset ngữ cảnh |
-| Đầu ra hời hợt | File kết quả chứa marker stub hoặc placeholder TODO | Spawn lại với chỉ dẫn tường minh |
-
-**Quy trình reset:**
-1. **Checkpoint:** Lưu trạng thái hiện tại của agent (mục đã hoàn thành, phần còn lại, quyết định chính)
-2. **Kết thúc:** Dừng lượt agent hiện tại
-3. **Spawn lại:** Bắt đầu lượt agent mới với checkpoint làm ngữ cảnh
-4. **Tiếp tục:** Lượt mới đọc checkpoint và chỉ tiếp tục phần còn lại
-
-Với agent độc lập (không có Orchestrator), Sprint Gate trong `difficulty-guide.md` là cơ chế an toàn tương ứng. Nếu một sprint tốn gấp 2 số lượt dự kiến, agent ghi checkpoint và báo người dùng.
+Một thử nghiệm thực sự ghi lại giả thuyết, bằng chứng baseline và candidate, các kiểm tra bắt buộc, quyết định và các file do nó sở hữu. Việc thất bại lặp lại có thể đủ cơ sở để thử một cơ chế khác trong ngân sách phục hồi hiện có. Hãy cô lập thay đổi của thử nghiệm, giữ nguyên các chỉnh sửa không liên quan và xác minh candidate đã tích hợp trước khi tiếp tục gate.

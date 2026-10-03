@@ -199,9 +199,10 @@ Als je huidige runtime overeenkomt met de doelvendor in `.agents/oma-config.yaml
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`, geselecteerd via de `subagent_type` van de Agent-tool
 - Antigravity CLI/IDE -> `oma agent spawn` via `agy`
 
-Cross-vendor taken gebruiken nog steeds `oma agent spawn`.
+Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native dispatch vereist nog steeds de [resultaatlevenscyclus](./agent-results-and-resume.md) om verificatie-evidence vast te leggen.
 
 ---
 
@@ -224,14 +225,14 @@ Cross-vendor taken gebruiken nog steeds `oma agent spawn`.
 **Fase 2, IMPL (stap 5, dev-agents gespawnd):**
 - Backend-agent implementeert Stripe-integratie (webhooks, idempotency, foutafhandeling)
 - Frontend-agent bouwt checkoutflow en UI voor betaalstatus
-- Stap 5.2: Baseline Quality Score meten (tests, lint, typecheck)
+- Stap 5.2: Alleen een baseline vastleggen wanneer een gedefinieerde meetvergelijking nodig is
 - IMPL_GATE: toepasselijke checks en tests zonder emit slagen, alleen geplande bestanden gewijzigd; buildchecks alleen wanneer expliciet gevraagd
 
 **Fase 3, VERIFY (stappen 6-8, QA-agent gespawnd):**
 - Stap 6: Alignmentreview (komt implementatie overeen met het plan?)
 - Stap 7: Security-/bugreview (OWASP, npm audit, Stripe-security best practices)
 - Stap 8: Improvement-/regressiereview (geen regressies geïntroduceerd)
-- VERIFY_GATE: nul CRITICAL, nul HIGH, Quality Score >= 75
+- VERIFY_GATE: nul CRITICAL, nul HIGH, toepasselijke meetdoelen van het project gehaald
 
 **Fase 4, REFINE (stappen 9-13, refactor-agent gespawnd):**
 - Stap 9: Grote bestanden (> 500 regels) en functies (> 50 regels) splitsen
@@ -239,7 +240,7 @@ Cross-vendor taken gebruiken nog steeds `oma agent spawn`.
 - Stap 11: Side-effectreview (cascade-impact volgen met `find_referencing_symbols`)
 - Stap 12: Volledige changereview (naamgevingsconsistentie, stijlafstemming)
 - Stap 13: Dode code opruimen
-- REFINE_GATE: Quality Score niet gedaald, code schoon
+- REFINE_GATE: geen onopgeloste gemeten regressie, code schoon
 
 **Fase 5, SHIP (stappen 14-17, QA-agent gespawnd):**
 - Stap 14: Codekwaliteitsreview (lint, types, coverage)

@@ -54,7 +54,7 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `star` | `star` |
 | `visualize` | `visualize` |
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google` |
-| `harness` | `harness`, `harness eval` |
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get` |
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint` |
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
@@ -74,7 +74,7 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize` |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 Wanneer een commando de resterende argumenten doorgeeft aan een andere tool, laat het register de opties bewust open. Dit geldt voor `market run` en `diagram archify`; lees de opgeloste upstream-help voordat je een wijzigende of netwerkgebonden bewerking uitvoert.
@@ -146,7 +146,7 @@ oma doctor [--json] [--output <format>] [--profile]
   - `rerere.enabled=true`
   - `init.defaultBranch=main`
   - Elke afwijking telt mee in `totalIssues`
-- Vendorcontextbestanden van het project (bijvoorbeeld OMA-blokken in `CLAUDE.md` / `AGENTS.md` wanneer de bijbehorende CLI is geïnstalleerd).
+- Vendorcontextbestand van het project (OMA-blok in `AGENTS.md` wanneer Codex, Qwen of Claude Code ≥ 2.1.277 is geïnstalleerd).
 - Gezondheid van AgentMemory en state/hooks, Serena Reaper-diagnostiek en bijbehorende probleemtellers.
 
 **Automatisch herstel:** als ontbrekende skills worden gevonden, biedt `doctor` aan ze interactief te installeren. Als aanbevolen git-configuratie ontbreekt of onjuist is, biedt het dezelfde globale opt-in-herstelacties als install/update.
@@ -262,7 +262,7 @@ Zonder `--global` richt link zich op `<cwd>/.agents/`; met deze vlag op `~/.agen
 **Wat het doet:**
 1. Bouwt vendor-native agentbestanden opnieuw op vanuit `.agents/agents/`
 2. Vernieuwt hooks en lokale instellingen voor de geselecteerde vendors
-3. Genereert integratieblokken in `CLAUDE.md`, `GEMINI.md` of `AGENTS.md` opnieuw
+3. Genereert het integratieblok in `AGENTS.md` opnieuw voor elke geconfigureerde vendor, Claude Code inbegrepen. `CLAUDE.md` en `GEMINI.md` worden nooit aangemaakt of van een OMA-blok voorzien. Claude Code ≥ 2.1.277 leest `AGENTS.md` native, maar negeert het zodra er een `CLAUDE.md` bestaat; daarom voegt link, wanneer er een `CLAUDE.md` van de gebruiker aanwezig is, één importregel `@AGENTS.md` toe; `oma update` verwijdert bovendien het legacy-OMA-blok uit `CLAUDE.md` zodra die versie wordt gedetecteerd
 4. Vernieuwt de Cursor-MCP-koppeling en CLI-skillsymlinks wanneer dat relevant is
 
 Gebruik dit na het bewerken van `.agents/agents/`, `.agents/workflows/`, `.agents/rules/` of hookdefinities.
@@ -278,6 +278,7 @@ Gebruik dit na het bewerken van `.agents/agents/`, `.agents/workflows/`, `.agent
 ### setup (workflow)
 
 De workflow `/setup` (aangeroepen binnen een agentsessie) biedt interactieve configuratie van taal, CLI-installaties, MCP-verbindingen en agent-CLI-koppeling. Dit verschilt van `oma` (de installer): `/setup` configureert een al geïnstalleerde instantie.
+
 ---
 
 ## Monitoring en metrieken
@@ -513,7 +514,7 @@ en `--json` aan het kindcommando gekoppeld blijven.
 Spawn een subagentproces.
 
 ```
-oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
+oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 **Argumenten:**
@@ -633,7 +634,7 @@ oma agent status session-20260324-143000 qa -r /path/to/project
 Voer meerdere subagents parallel uit.
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **Argumenten:**
@@ -766,7 +767,7 @@ oma goal set --workflow ultrawork --gate test --budget-minutes 120
 Registreer een geplande agentjob. Precies één van `--cron` of `--every` is verplicht.
 
 ```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **Argumenten:**
@@ -824,7 +825,7 @@ oma schedule list [--json]
 |:-----|:-----------|
 | `--json` | Geef uitvoer als JSON |
 
-**Driftstatussen:** `synced` (manifest en OS zijn gelijk), `missing-in-os` (voer `schedule sync` uit om te herstellen), `orphan-in-os` (OS heeft een job die niet in het manifest staat; voer `schedule sync --prune` uit om die te verwijderen).
+**Driftstatussen:** `synced` (manifest en OS zijn gelijk), `stale` (de OS-registratie roept een commando aan dat de huidige CLI niet meer accepteert; voer `schedule sync` uit om die te herschrijven, `oma update` doet dat automatisch), `missing-in-os` (voer `schedule sync` uit om te herstellen), `orphan-in-os` (OS heeft een job die niet in het manifest staat; voer `schedule sync --prune` uit om die te verwijderen).
 
 **Voorbeelden:**
 ```bash
@@ -1116,6 +1117,7 @@ Lege stdout betekent dat de keten voor dat event een no-op produceerde. Een JSON
 **Notities over scope:**
 - `statusLine`/hud-items worden niet via `oma hook run` gerouteerd (weergave op het hot path blijft via een direct `bun`-pad lopen).
 - De pi-vendor gebruikt de in-process `installPiExtension`-bridge, niet `oma hook run`.
+- Dubbele leveringen van een dubbele installatie (project + globaal) worden binnen `oma hook run` genegeerd (identieke payload die door een andere `oma-hook.sh`-wrapper is gestart); verschillende events, waaronder parallelle toolaanroepen, worden altijd uitgevoerd.
 
 Zie `cli/commands/hook/command.ts` voor de routerimplementatie (intern aangeduid als "design 019") en `cli/commands/hook/probe/` voor de compatibiliteitsmatrix per vendor.
 
@@ -1515,9 +1517,9 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` accepteert `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor remotion|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` en `--capture-stop duration:<seconds>|selector:<css>`. Gebruik `--source web --url <url>` voor browseropname; `--source file` is de standaard. `--output-dir` kiest de runroot, `--allow-external-output` staat een pad buiten `$PWD` toe, `--max-usd` stelt een kostenplafond in, `--seed` stabiliseert planningsinvoer en `--no-brief-in-manifest` slaat een briefhash op in plaats van de tekst. `--dry-run` stopt na de planning. `--output text|json` bepaalt de CLI-envelop.
+`generate` accepteert `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` en `--capture-stop duration:<seconds>|selector:<css>`. Gebruik `--source web --url <url>` voor browseropname; `--source file` is de standaard. `--output-dir` kiest de runroot, `--allow-external-output` staat een pad buiten `$PWD` toe, `--max-usd` stelt een kostenplafond in, `--seed` stabiliseert planningsinvoer en `--no-brief-in-manifest` slaat een briefhash op in plaats van de tekst. `--dry-run` stopt na de planning. `--output text|json` bepaalt de CLI-envelop.
 
-`doctor` controleert de gecachete Remotion/MPT-toolchain en accepteert `--install`, `--upgrade`, `--install-mpt` en `--install-strudel`. `provider list` rapporteert providerbeschikbaarheid en sleutelstatus. `compose` zet de runcompositie op of vernieuwt die en rapporteert het authoringcontract; `render` voert typechecks uit, rendert en controleert de uitvoer. Ontbrekende compositor-, compositie- of toolchaindependency's zijn fouten. Het alleen voor tests bedoelde pad `OMA_VIDEO_MOCK=1` is de enige placeholdermodus; een normale run vervangt een MP4 nooit door een tekst- of klein bestand.
+`doctor` controleert de gecachete HyperFrames/MPT-toolchain en accepteert `--install`, `--upgrade`, `--install-mpt` en `--install-strudel`. `provider list` rapporteert providerbeschikbaarheid en sleutelstatus. `compose` zet de runcompositie op of vernieuwt die en rapporteert het authoringcontract; `render` voert lint uit, rendert en controleert de uitvoer. Ontbrekende compositor-, compositie- of toolchaindependency's zijn fouten. Het alleen voor tests bedoelde pad `OMA_VIDEO_MOCK=1` is de enige placeholdermodus; een normale run vervangt een MP4 nooit door een tekst- of klein bestand.
 
 Geslaagde JSON-uitvoer bevat `runDir`, `manifestPath`, `scriptPath` en `renderSpecPath`; het manifest legt geselecteerde providers, invoer en gegenereerde assets vast. Schrijf na `compose` de gegenereerde compositie volgens `AUTHORING.md` en voer daarna `render` opnieuw uit. Als een providersleutel niet beschikbaar is, voer `oma video doctor` uit; als capture mislukt, controleer URL, selector, device en time-out; als renderen mislukt, herstel eerst de compositiediagnostiek.
 
@@ -1972,6 +1974,24 @@ oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --
 
 Zie de [gids voor Harness Evaluation](../guide/harness-eval.md) voor het suiteschema, ondersteunde controles, isolatiemodel en huidige beperkingen.
 
+### harness incident promote
+
+Maak van een vastgelegd incident een regressiefixture voor de skill waar de falende agent gebruik van maakte.
+
+```
+oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
+```
+
+### harness feedback
+
+Promoot elk incident dat nog niet is gepromoot en optimaliseer, met `--live` of `--apply`, elke getroffen skill tegen zijn uitgebreide suite.
+
+```
+oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
+```
+
+Zie de [gids voor Incident Regression Cases](../guide/harness-incidents.md).
+
 ---
 
 ### help
@@ -2004,6 +2024,8 @@ Geeft de huidige CLI-versie terug en sluit af.
 | `DASHBOARD_PORT` | Poort voor het webdashboard | `dashboard web` |
 | `MEMORIES_DIR` | Overschrijf het pad naar de memorymap | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Stel in op `1` om mockmodus in `oma skill eval` af te dwingen, ongeacht de vlaggen | `skills eval` |
+| `OMA_HOOK_DEDUP` | Stel in op `0` om het onderdrukken van dubbele leveringen in `oma hook run` uit te schakelen. | `hook` |
+| `OMA_HOOK_DEDUP_DIR` | Overschrijf de privémap voor claims die wordt gebruikt om dubbele hookleveringen te onderdrukken (standaard: `$XDG_RUNTIME_DIR/oma-hook-dedup`, anders `<tmpdir>/oma-hook-dedup-<uid>`). | `hook` |
 
 ---
 

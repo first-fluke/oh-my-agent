@@ -413,7 +413,7 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 3. Cross-review: een QA-agent reviewt de wijzigingen
 4. Bij falen: problemen gaan terug naar de verantwoordelijke agent (maximaal 5 totale lusiteraties)
 
-**Clarification Debt-bewaking:** Houdt gebruikerscorrecties tijdens sessies bij. Gebeurtenissen krijgen scores: verduidelijking (+10), correctie (+25) en overdoen (+40). CD >= 50 triggert een verplichte RCA; CD >= 80 pauzeert de sessie.
+**Sessie-evidence:** Legt waar nuttig wezenlijke correcties en beoordeelde reviewbevindingen vast, met oorzaak, impact en verificatie. Er geldt geen strafscore en geen door een score geactiveerde pauze.
 
 **Bronnen:** `subagent-prompt-template.md`, `memory-schema.md`.
 
@@ -761,7 +761,7 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 ### oma-video
 
-**Domein:** Short-form-, uitleg- en door mensen opgenomen demovideo's genereren via de `oma video`-CLI, van script en narratie tot visuals, captions en Remotion-render.
+**Domein:** Short-form-, uitleg- en door mensen opgenomen demovideo's genereren via de `oma video`-CLI, van script en narratie tot visuals, captions en HyperFrames-render.
 
 **Wanneer gebruiken:** Short-formvideo (shorts/reels, 9:16), explainers (16:9/9:16) uit een README/code/data, demo's/walkthroughs uit een schermopname (`--source file`) of begeleide browsercapture in een venster voor elke URL (`--source web`), of een bestaande run deterministisch opnieuw renderen.
 
@@ -777,7 +777,7 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Workflow:** PREPARE (modus/aspect/locale, briefing verduidelijken/versterken) -> ACQUIRE (providerbeschikbaarheid peilen, capturepad valideren, kosten controleren) -> ACT (script -> voice ∥ visuals ∥ captions -> render-spec -> render) -> VERIFY (schema, manifesthashes, exitcode, mp4) -> FINALIZE (run-dir + mp4-pad + dekkingswaarschuwingen).
 
-**Bronnen:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, plus de vendored `remotion/`-compositor, de web-capture-driver en de fallback-compositor `mpt/`; `config/video-config.yaml`.
+**Bronnen:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, plus de `hyperframes-authoring/`-modusgidsen, de web-capture-driver en de fallback-compositor `mpt/`; `config/video-config.yaml`.
 
 ---
 
@@ -941,8 +941,8 @@ Tijdens orchestratiesessies coördineren agenten via gedeelde geheugenbestanden 
 | `task-board-{sessionId}.md` | Orchestrator | Taaktoewijzingen, prioriteiten en statusupdates | Alleen-lezen |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Die run | Voortgang per beurt: acties, gelezen/gewijzigde bestanden en huidige status | Orchestrator leest |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Die run | Einduitvoer: status (voltooid/mislukt), samenvatting, gewijzigde bestanden en acceptatiecriteria-checklist | Orchestrator leest |
-| `session-metrics.md` | Orchestrator | Clarification Debt en Quality Score bijhouden | QA leest |
-| `experiment-ledger.md` | Orchestrator/QA | Experimenten bijhouden wanneer Quality Score actief is | Iedereen leest |
+| `session-metrics.md` | Orchestrator | Optionele sessie-evidence en gemeten experimentresultaten | QA leest |
+| `experiment-ledger.md` | Orchestrator/QA | Evidence voor daadwerkelijke experimenten | Iedereen leest |
 
 Geheugentools zijn configureerbaar. Standaard lezen en schrijven agenten deze bestanden met hun native tools (`Read`, `Write`, `Edit`), maar de toolmapping kan in `mcp.json` worden aangepast:
 

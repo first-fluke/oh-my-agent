@@ -203,9 +203,10 @@ Se o runtime atual corresponder ao vendor-alvo em `.agents/oma-config.yaml`, os 
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`, selecionado por meio do `subagent_type` da ferramenta Agent
 - Antigravity CLI/IDE -> `oma agent spawn` por meio de `agy`
 
-Tarefas entre vendors ainda usam `oma agent spawn`.
+Tarefas entre vendors e `model_preset: free` usam `oma agent spawn`. O dispatch nativo ainda exige o [ciclo de vida do resultado](./agent-results-and-resume.md) para registrar a evidência de verificação.
 
 ---
 
@@ -229,14 +230,14 @@ Tarefas entre vendors ainda usam `oma agent spawn`.
 **Fase 2, IMPL (etapa 5, agentes Dev iniciados):**
 - O agente backend implementa a integração Stripe (webhooks, idempotência, tratamento de erros)
 - O agente frontend cria o fluxo de checkout e a UI do status do pagamento
-- Etapa 5.2: Medir o Quality Score baseline (testes, lint, typecheck)
+- Etapa 5.2: Registrar um baseline somente quando uma comparação de medição definida for necessária
 - IMPL_GATE: As verificações aplicáveis sem emissão e os testes passam, somente arquivos planejados foram modificados; verificações de build são executadas apenas quando solicitadas explicitamente
 
 **Fase 3, VERIFY (etapas 6-8, agente QA iniciado):**
 - Etapa 6: Revisão de alinhamento (a implementação corresponde ao plano?)
 - Etapa 7: Revisão de segurança e bugs (OWASP, npm audit, práticas recomendadas de segurança do Stripe)
 - Etapa 8: Revisão de melhoria e regressão (nenhuma regressão foi introduzida)
-- VERIFY_GATE: Zero CRITICAL, zero HIGH, Quality Score >= 75
+- VERIFY_GATE: Zero CRITICAL, zero HIGH, metas de medição aplicáveis do projeto atingidas
 
 **Fase 4, REFINE (etapas 9-13, agente de refatoração iniciado):**
 - Etapa 9: Dividir arquivos grandes (> 500 linhas) e funções (> 50 linhas)
@@ -244,7 +245,7 @@ Tarefas entre vendors ainda usam `oma agent spawn`.
 - Etapa 11: Revisão de efeitos colaterais (rastrear o impacto em cascata com `find_referencing_symbols`)
 - Etapa 12: Revisão completa das mudanças (consistência de nomes, alinhamento de estilo)
 - Etapa 13: Limpar código morto
-- REFINE_GATE: Quality Score não regrediu, código limpo
+- REFINE_GATE: nenhuma regressão medida pendente, código limpo
 
 **Fase 5, SHIP (etapas 14-17, agente QA iniciado):**
 - Etapa 14: Revisão de qualidade do código (lint, tipos, cobertura)

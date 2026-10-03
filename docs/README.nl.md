@@ -10,6 +10,8 @@ Parallelle agents spawnen is het makkelijke deel. Het moeilijke deel is weten of
 
 oh-my-agent maakt die bewering falsifieerbaar. Een Stop-hook weigert je sessie te beëindigen zolang het `typecheck`- / `test`- / `lint`-script van je eigen project niet met exitcode 0 afsluit. Een gate-commando bepaalt of een workflow echt heeft gedraaid door te kijken naar de artefacten die hij moet hebben achtergelaten — en het JSON-oordeel daarvan is het resultaat, niet de samenvatting van de agent. Een onafhankelijke judge met een verse context verifieert elke ronde opnieuw elk criterium, ook de criteria die al geslaagd waren. Elke gate-beslissing komt terecht in een append-only event log dat je achteraf kunt lezen. En diezelfde discipline draait over een tiental agent-runtimes heen, vanuit één draagbare `.agents/`-map.
 
+Begin met de bestaande pagina [Snel starten](../web/docs/getting-started/quick-start.md) om een installatiepad te kiezen, een benoemde skill om één afgebakende wijziging te vragen en het bestand, het controlecommando en de exitstatus vast te leggen. Het pad met de full harness bevat `oma doctor`.
+
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
@@ -206,8 +208,12 @@ Los van het engineeringteam levert oma content- en researchpijplijnen die volgen
 | **oma-scholar** | Doorzoekt academische literatuur en helpt je bij peer review |
 | **oma-slide** | Genereert onderscheidende, animatierijke HTML-presentatiedecks en exporteert naar PDF/PNG/PPTX |
 | **oma-translation** | Vertaalt tussen talen zodat het klinkt alsof een native het heeft geschreven |
-| **oma-video** | Genereert korte video's, uitlegvideo's en demo's via een Remotion-pijplijn die ook zonder sleutels werkt |
+| **oma-video** | Genereert korte video's, uitlegvideo's en demo's via een HyperFrames-pijplijn die ook zonder sleutels werkt |
 | **oma-voice** | Genereert voice-overs en transcribeert audio lokaal, zonder cloud |
+
+### Orca IDE
+
+[OMA for Orca](../integrations/orca/README.md) voegt een zijbalkpaneel en command-palette-acties toe voor projectsetup, review, debugging, verificatie en lokale resultaten. Het gebruikt je bestaande Orca-agentterminal en de OMA-installatie van het project. Vereist Orca 1.4.197+ met ingeschakelde experimentele plugins.
 
 ## Hoe het werkt
 
@@ -276,10 +282,16 @@ Elk mechanisme hieronder is mechanisch: een commando eindigt met exitcode 0 of n
 
 Budgetten worden op dezelfde manier afgedwongen. `session.quota_cap` begrenst tokens, het aantal spawns en de uitgaven per vendor; de orchestrator weigert de volgende spawn zodra een dimensie wordt overschreden. Loopt het tijdbudget af, dan stopt de Stop-hook eerlijk en legt de deelstatus vast in het event log, in plaats van voltooiing voor te wenden.
 
+### Controlegrens
+
+oh-my-agent laat open planning en de keuze van de volgende actie over aan de host-LLM. Het vervangt dat oordeel niet door een universele workflowgraaf of policy-engine. In plaats daarvan externaliseert het de invarianten die moeten gelden, ongeacht het model: tool-guardrails, rechten, budgetten, retry- en stoplimieten, duurzame events en mechanisch geverifieerde voltooiing. Gestructureerde events leggen beslissingen en gate-uitkomsten vast; ze fungeren niet als een tweede planner.
+
+Deterministische SLM-uitvoering is daarom een aparte, optionele productrichting en geen ontbrekende infrastructuur in de huidige harness.
+
 ## Waarom oh-my-agent?
 
 - **Rolgebaseerd**: agents gemodelleerd als een echt engineeringteam, niet een stapel prompts
-- **Token-efficient**: tweelaags skill-ontwerp bespaart ~75% tokens ([hoe het werkt](../web/docs/guide/usage.md))
+- **Conditionele context**: dispatch laadt de verantwoordelijke skill en stelt ondersteunende referenties uit totdat de taak ze nodig heeft. Scenario's op basis van bestandsgrootte en het laden tijdens runtime worden afzonderlijk gerapporteerd ([richtlijnen voor metingen](../web/docs/core-concepts/skills.md#token-savings-math))
 - **Herstelbaar**: na 2 mislukte retries spawnt `orchestrate` hypothese-varianten parallel en houdt het hoogst scorende resultaat, in plaats van eindeloos een verkeerde aanpak te herhalen
 - **Monorepo-bewust**: `detectWorkspace` leest pnpm / nx / turbo / lerna en routeert elke agent naar zijn workspace
 - **Multi-vendor**: mix Antigravity, Claude, Codex, Cursor, Kiro en Qwen per agent-type
@@ -336,6 +348,7 @@ flowchart TD
 
 - **[Uitgebreide documentatie](./AGENTS_SPEC.md)**: volledige technische spec en architectuur
 - **[Ondersteunde agents](./SUPPORTED_AGENTS.md)**: agent-ondersteuningsmatrix per IDE
+- **[Capability-providers](./capability-providers.md)**: experimentele configuratie, routing en beperkingen van Gortex en Honcho
 - **[Benchmarkrapport](../benchmarks/README.md)**: methode, scores, screenshots en kanttekeningen
 - **[Webdocs](https://first-fluke.github.io/oh-my-agent/)**: handleidingen, tutorials en CLI-referentie
 

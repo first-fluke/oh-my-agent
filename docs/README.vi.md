@@ -10,6 +10,8 @@ Chạy song song nhiều agent là phần dễ. Phần khó là biết được 
 
 oh-my-agent làm cho tuyên bố ấy có thể bị bác bỏ. Một Stop hook không cho kết thúc phiên làm việc cho đến khi script `typecheck` / `test` / `lint` của chính dự án bạn thoát với mã 0. Một lệnh gate quyết định workflow có thực sự chạy hay không bằng cách tìm những artifact mà nó bắt buộc phải để lại — và kết quả chính là phán quyết JSON của lệnh đó, không phải bản tóm tắt của agent. Một trọng tài độc lập với ngữ cảnh hoàn toàn mới kiểm chứng lại mọi tiêu chí ở từng vòng, kể cả những tiêu chí đã đạt. Mọi quyết định của gate đều được ghi vào một nhật ký sự kiện chỉ-thêm mà bạn có thể đọc lại sau. Rồi oh-my-agent áp dụng đúng kỷ luật đó trên cả chục agent runtime, từ một thư mục `.agents/` di động duy nhất.
 
+Hãy bắt đầu với [Bắt đầu nhanh](../web/docs/getting-started/quick-start.md) có sẵn để chọn đường cài đặt, yêu cầu một skill có tên cụ thể thực hiện một thay đổi có phạm vi, rồi ghi lại file, lệnh kiểm tra và exit status. Đường full harness có bao gồm `oma doctor`.
+
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
@@ -206,8 +208,12 @@ Tách khỏi đội ngũ kỹ thuật, oma còn cung cấp các pipeline nội d
 | **oma-scholar** | Tìm kiếm tài liệu học thuật và hỗ trợ bình duyệt khoa học |
 | **oma-slide** | Tạo các deck trình bày HTML đặc trưng giàu hoạt hình và xuất sang PDF/PNG/PPTX |
 | **oma-translation** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
-| **oma-video** | Tạo video ngắn, video giải thích và video demo qua pipeline Remotion dùng được cả khi không có khóa |
+| **oma-video** | Tạo video ngắn, video giải thích và video demo qua pipeline HyperFrames dùng được cả khi không có khóa |
 | **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |
+
+### Orca IDE
+
+[OMA for Orca](../integrations/orca/README.md) bổ sung một sidebar panel và các action trên command palette cho việc thiết lập dự án, review, debug, xác minh và xem kết quả cục bộ. Nó dùng terminal agent Orca hiện có và bản cài OMA của dự án. Yêu cầu Orca 1.4.197+ đã bật plugin thử nghiệm.
 
 ## Cách hoạt động
 
@@ -276,10 +282,16 @@ Mọi cơ chế dưới đây đều mang tính máy móc: một lệnh hoặc t
 
 Ngân sách cũng được thực thi theo đúng cách đó. `session.quota_cap` giới hạn token, số lần spawn và chi phí theo từng vendor; orchestrator từ chối lần spawn kế tiếp khi một chiều vượt hạn mức. Khi hết ngân sách thời gian thực, Stop hook dừng một cách trung thực và ghi trạng thái dở dang vào nhật ký sự kiện, thay vì giả vờ đã hoàn thành.
 
+### Ranh giới kiểm soát
+
+oh-my-agent để việc lập kế hoạch tự do và việc chọn hành động tiếp theo cho host LLM. Nó không thay phán đoán đó bằng một đồ thị workflow hay policy engine phổ quát. Thay vào đó, nó đưa ra bên ngoài những bất biến phải luôn đúng bất kể model nào: guardrail của tool, quyền hạn, ngân sách, giới hạn retry và dừng, event bền vững, và việc hoàn thành được kiểm chứng máy móc. Các event có cấu trúc ghi lại quyết định và kết quả của gate; chúng không đóng vai trò một bộ lập kế hoạch thứ hai.
+
+Vì vậy, thực thi SLM xác định là một hướng sản phẩm riêng, tùy chọn, chứ không phải hạ tầng còn thiếu trong harness hiện tại.
+
 ## Tại sao chọn oh-my-agent?
 
 - **Dựa trên vai trò**: agent được mô hình hóa như đội kỹ thuật thực, không phải một đống prompt
-- **Tiết kiệm token**: thiết kế skill 2 lớp tiết kiệm ~75% token ([cách hoạt động](../web/docs/guide/usage.md))
+- **Ngữ cảnh có điều kiện**: dispatch chỉ tải skill sở hữu task và hoãn các tham chiếu hỗ trợ cho đến khi task cần đến. Kịch bản kích thước file và việc tải lúc runtime được báo cáo riêng ([hướng dẫn đo lường](../web/docs/core-concepts/skills.md#token-savings-math))
 - **Phục hồi được**: sau 2 lần retry thất bại, `orchestrate` spawn các biến thể hypothesis song song và giữ kết quả điểm cao nhất, thay vì lặp mãi một hướng đi sai
 - **Hiểu monorepo**: `detectWorkspace` đọc pnpm / nx / turbo / lerna và route mỗi agent đến workspace của nó
 - **Đa nhà cung cấp**: kết hợp Antigravity, Claude, Codex, Cursor, Kiro và Qwen theo loại agent
@@ -336,6 +348,7 @@ flowchart TD
 
 - **[Tài liệu chi tiết](./AGENTS_SPEC.md)**: đặc tả kỹ thuật và kiến trúc đầy đủ
 - **[Agent được hỗ trợ](./SUPPORTED_AGENTS.md)**: ma trận hỗ trợ agent theo IDE
+- **[Capability Provider](./capability-providers.md)**: cấu hình, định tuyến và giới hạn của Gortex và Honcho (thử nghiệm)
 - **[Báo cáo benchmark](../benchmarks/README.md)**: phương pháp, điểm số, ảnh chụp màn hình và các lưu ý
 - **[Tài liệu web](https://first-fluke.github.io/oh-my-agent/)**: hướng dẫn, tutorial và CLI reference
 

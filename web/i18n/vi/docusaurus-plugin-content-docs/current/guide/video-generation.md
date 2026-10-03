@@ -1,7 +1,7 @@
 ---
 title: "Hướng dẫn: Tạo video"
 sidebar_label: Tạo video
-description: Hướng dẫn đầy đủ về tạo video oh-my-agent — router ba tầng không bắt buộc key, kết hợp script, narration, visual, caption và Remotion compositor vendored vào các run directory có thể tái lập cho shorts, explainer và demo.
+description: Hướng dẫn đầy đủ về tạo video oh-my-agent — router ba tầng không bắt buộc key, kết hợp script, narration, visual, caption và HyperFrames compositor được quản lý vào các run directory có thể tái lập cho shorts, explainer và demo.
 ---
 
 # Tạo video {#video-generation}
@@ -62,6 +62,7 @@ Tool khác gọi shell tới `oma video generate --output json` sẽ parse JSON 
 ```
 oma video generate <brief...> [options]
 oma video doctor [--install|--upgrade|--install-mpt|--install-strudel]  # toolchain readiness / provisioning
+oma video compose <runDir>       # prepare HTML project and authoring contract
 oma video render <runDir>        # re-render from render-spec.json (deterministic)
 oma video provider list         # provider availability + key/fallback status
 ```
@@ -77,14 +78,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
 | `--voice <profile>` | Narration voice hoặc `none` (mặc định; bỏ qua để video silent với caption timing ước tính). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano` hoặc `none`. |
-| `--compositor <c>` | `remotion` (mặc định) \| `mpt`. |
+| `--compositor <c>` | `hyperframes` (mặc định) \| `mpt`. |
 | `--capture <path>` | Recording path input cho demo mode (`--source file`). |
 | `--source <k>` | Demo capture source: `file` hoặc `web` (mặc định: `file`). |
 | `--url <url>` | URL đích cho `--source web` (local, staging hoặc production); không thay thế `--capture` khi cần recording. |
 | `--device <name>` | Device frame cho web capture; ghi đè aspect sizing. |
 | `--ready-selector <css>` | CSS selector cần chờ trước web capture. |
 | `--show-cursor` | Overlay cursor thấy được trong web capture. |
-| `--polish` | Overlay Remotion composition lên footage đã capture. |
+| `--polish` | Overlay HyperFrames composition lên footage đã capture. |
 | `--capture-timeout <sec>` | Hard ceiling cho live web capture. |
 | `--capture-stop <mode>` | Stop không tương tác cho CI: `duration:<sec>` hoặc `selector:<css>`. |
 | `--output-dir <path>` | Output base directory. Paths outside `$PWD` require `--allow-external-output`. |
@@ -111,7 +112,7 @@ Provider stage resolve tới **real branch** và, khi stage hỗ trợ, **determ
 | visual | `oma-image` / `oma-slide` / stock | placeholder asset |
 | caption | forced alignment không cần key | word timing ước tính |
 | capture | supervised browser web capture (`--source web`) hoặc recording cung cấp (`--source file --capture`) | guided protocol “tự record” |
-| compositor | Remotion (vendored) hoặc MoneyPrinterTurbo | không có compositor fallback; run thất bại kèm diagnostics |
+| compositor | HyperFrames (được quản lý) hoặc MoneyPrinterTurbo | không có compositor fallback; run thất bại kèm diagnostics |
 
 Không tự động hóa credential: người dùng thực hiện mọi login trên màn hình trong lúc capture; URL và query token được mask trong log và manifest.
 
@@ -121,23 +122,23 @@ Caption render dưới dạng **static windowed cue** — một caption line ho�
 
 ## Toolchain và `doctor` {#toolchain-and-doctor}
 
-Heavy toolchain (vendor Remotion project `node_modules`, Pretendard font nhúng, MoneyPrinterTurbo checkout, capture browser, Chrome Headless Shell) được **provision on demand**, không ship trong package. Plain `doctor` chỉ report — không cài gì:
+Heavy toolchain (`node_modules` của project HyperFrames được quản lý, Pretendard font nhúng, MoneyPrinterTurbo checkout, capture browser, Chrome Headless Shell) được **provision on demand**, không ship trong package. Plain `doctor` chỉ report — không cài gì:
 
 ```bash
 oma video doctor
 ```
 
-Nó báo cáo `node`, `chromium`, `ffmpeg`, `remotion-toolchain`, `remotion-skills`, `pretendard-font`, `mpt-project`, `voicebox`, `oma-image`, `pixelle` và `cap`, đồng thời in install hint cho thứ còn thiếu. Key-free baseline (Node + Chromium + FFmpeg + `oma-image`) đủ để tạo `.mp4` thật.
+Nó báo cáo `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `voicebox`, `oma-image`, `pixelle` và `cap`, đồng thời in install hint cho thứ còn thiếu. Baseline yêu cầu Node.js 22+, HyperFrames toolchain cùng Chrome browser của nó, FFmpeg/FFprobe và `oma-image`. MP4 thật còn cần HTML đã được author.
 
 Dùng install flag để provision toolchain:
 
 ```bash
-oma video doctor --install             # warm the latest Remotion toolchain + Chrome Headless Shell + Pretendard + remotion-dev/skills
+oma video doctor --install             # warm the latest HyperFrames toolchain + Chrome Headless Shell + Pretendard + heygen-com/hyperframes
 oma video doctor --upgrade             # force a latest-version check now
 oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
 ```
 
-`--install` cũng fetch Pretendard font nhúng (pinned release) vào vendor project — đây là một phần của determinism boundary. Khi network failure, command cảnh báo và render fallback sang system font; output byte-identical giữa các máy chỉ được đảm bảo khi font đã có.
+`--install` cũng fetch Pretendard font nhúng (pinned release) vào shared toolchain cache — đây là một phần của determinism boundary. Khi network failure, command cảnh báo và render fallback sang system font; khác biệt về browser và OS vẫn có thể ảnh hưởng đến output đã encode.
 
 ---
 
@@ -151,6 +152,7 @@ oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + ven
 ├── captions.srt / .vtt
 ├── audio/narration-*.wav
 ├── visuals/scene-*.{png,svg,…}
+├── hyperframes/         # index.html, AUTHORING.md, local assets and toolchain link
 ├── {mode}-{slug}.mp4    # the rendered output (slug derived from the script title)
 └── manifest.json        # providers, assets, cost, warnings
 ```
@@ -166,32 +168,32 @@ oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + ven
 | Không tạo MP4 | Compositor, composition hoặc toolchain check thất bại. Chạy `oma video doctor`, sau đó `oma video compose <runDir>` và sửa composition được báo trước khi chạy lại `oma video render <runDir>`. |
 | Narration im lặng (`source: estimated`) | Voicebox không truy cập được; khởi động `oma-voice` server hoặc chấp nhận timing ước tính. |
 | `--source web` in guided protocol thay vì record | Không có TTY hoặc browser capture runtime không khả dụng → guided fallback. Dùng interactive terminal với capture runtime đã provision và `--capture-stop`, hoặc truyền file đã record bằng `--capture`. |
-| Render chậm ở lần đầu | Remotion browser / MPT checkout đang được provision một lần; run sau dùng lại cache. |
+| Render chậm ở lần đầu | HyperFrames browser / MPT checkout đang được provision một lần; run sau dùng lại cache. |
 
 ---
 
-## Remotion luôn mới nhất — bạn author composition {#always-latest-remotion-you-author-the-composition}
+## HyperFrames luôn mới nhất — bạn author composition {#always-latest-hyperframes-you-author-the-composition}
 
-oh-my-agent **không ship Remotion composition code**. Mỗi run có project riêng tại `<runDir>/remotion/`, được scaffold bởi `oma video compose` trên npm Remotion mới nhất (toolchain cache `~/.cache/oma-video/remotion/<version>/`, dùng chung qua symlink `node_modules`) cùng [remotion-dev/skills](https://github.com/remotion-dev/skills) tại HEAD (`~/.cache/oma-video/remotion-skills/`). Agent author generated composition source theo `AUTHORING.md` của scaffold, skill và mode spec trong `.agents/skills/oma-video/resources/remotion-authoring/`.
+oh-my-agent **không ship HyperFrames composition code**. Mỗi run có project riêng tại `<runDir>/hyperframes/`, được scaffold bởi `oma video compose` trên npm HyperFrames mới nhất (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, dùng chung qua symlink `node_modules`) cùng [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) tại HEAD (`~/.cache/oma-video/hyperframes-skills/`). Agent author generated composition source theo `AUTHORING.md` của scaffold, skill và mode spec trong `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
-oma video generate "…"                     # → render-spec.json + <runDir>/remotion/ (composition pending)
+oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
 oma video compose <runDir> --output json   # refresh scaffold / print the contract (idempotent)
-#   author the generated composition source as instructed by AUTHORING.md
-oma video render <runDir> --output json    # tsc → npx remotion render → ffprobe; exit 1 on any failure
+#   author hyperframes/index.html as instructed by AUTHORING.md
+oma video render <runDir> --output json    # lint → npx hyperframes render → ffprobe; exit 1 on any failure
 ```
 
-- Latest-version check (npm + GitHub) bị giới hạn bởi `video.remotion.check_interval_min` (mặc định 60; `0` = mỗi compose). `oma update` và `oma video doctor --upgrade` force check; offline run dùng cached toolchain và báo `stale`.
-- Tính tái lập nằm trong run dir: `render-spec.json`, authored composition source và toolchain version ghi trong generated Remotion package metadata. Render lại cùng run dùng lại render contract; run mới kiểm tra Remotion mới nhất.
-- Typecheck hoặc render failure **không** bị che bằng placeholder (chỉ tồn tại khi `OMA_VIDEO_MOCK=1`): `oma video render` thoát 1 kèm diagnostics và agent sửa composition bằng skill mới nhất. Hỏng trên Remotion release mới là composition bug, không phải lý do pin.
+- Latest-version check (npm + GitHub) bị giới hạn bởi `video.hyperframes.check_interval_min` (mặc định 60; `0` = mỗi compose). `oma update` tuân theo interval; `oma video doctor --upgrade` force check; offline run dùng cached toolchain và báo `stale`.
+- Tính tái lập nằm trong run dir: `render-spec.json`, authored composition source và toolchain version ghi trong generated HyperFrames package metadata. Render lại cùng run dùng lại render contract; run mới kiểm tra HyperFrames mới nhất.
+- Lint hoặc render failure **không** bị che bằng placeholder (chỉ tồn tại khi `OMA_VIDEO_MOCK=1`): `oma video render` thoát 1 kèm diagnostics và agent sửa composition bằng skill mới nhất. Hỏng trên HyperFrames release mới là composition bug, không phải lý do pin.
 
 ```yaml
 video:
-  remotion:
+  hyperframes:
     check_interval_min: 60    # 0 = check on every compose
 ```
 
 ## Liên quan {#related}
 
-- [`/video` workflow](/docs/core-concepts/workflows) — pipeline brief → script → asset → render-spec → Remotion.
+- [`/video` workflow](/docs/core-concepts/workflows) — pipeline brief → script → asset → render-spec → HyperFrames.
 - [Tạo hình ảnh](/docs/guide/image-generation) — still-image router được dùng lại như video visual provider.

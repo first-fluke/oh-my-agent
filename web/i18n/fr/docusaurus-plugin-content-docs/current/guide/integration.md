@@ -13,7 +13,7 @@ Deux méthodes permettent d'ajouter oh-my-agent à un projet existant :
 1. **Voie CLI** : exécutez `oma` (ou `npx oh-my-agent`) et suivez les invites interactives. C'est la méthode recommandée dans la plupart des cas.
 2. **Voie manuelle** : copiez les fichiers et configurez vous-même les liens symboliques. Cette méthode convient aux environnements restreints ou aux installations personnalisées.
 
-Les deux méthodes produisent le même résultat : un répertoire `.agents/` (la SSOT) et des fichiers natifs générés pour les fournisseurs, comme `.claude/agents/`, `.codex/agents/` et `.gemini/agents/`.
+Les deux méthodes produisent le même résultat : un répertoire `.agents/` (la SSOT) et des fichiers natifs générés pour les fournisseurs, comme `.claude/agents/`, `.codex/agents/` et `.qwen/agents/`.
 
 ---
 
@@ -180,7 +180,13 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link` reconstruit `.claude/`, `.codex/`, `.gemini/` et les autres fichiers natifs des fournisseurs à partir de `.agents/agents/`. À l'exécution, OMA utilise le dispatch natif uniquement lorsque le fournisseur du runtime actuel correspond au fournisseur cible de l'agent. Les configurations multi-fournisseurs restent fonctionnelles, mais les agents qui ne correspondent pas passent par un `oma agent spawn` externe.
+`oma link` régénère `.claude/`, `.codex/`, `.qwen/` et les autres fichiers natifs des fournisseurs à partir de `.agents/agents/`. À l'exécution, OMA utilise le dispatch natif uniquement lorsque le fournisseur du runtime actuel correspond au fournisseur cible de l'agent. Les configurations multi-fournisseurs restent fonctionnelles, mais les agents qui ne correspondent pas passent par un `oma agent spawn` externe.
+
+Pour Qwen Code, les définitions Markdown générées se trouvent dans `.qwen/agents/`. Sélectionnez un rôle OMA via le `subagent_type` de l'outil Agent, par exemple `backend-engineer`. Vérifiez les définitions disponibles avec `/agents manage` dans Qwen Code. Les agents natifs suivent le même [cycle de vie des résultats](./agent-results-and-resume.md) que les lancements CLI : `oma agent begin`, `oma agent verify` et `oma agent finish`. Avec `model_preset: free`, utilisez `oma agent spawn` afin que le processus enfant reçoive la configuration de la passerelle.
+
+Qwen Code utilise le même `code-intelligence-primer` que les autres fournisseurs. Comme Claude Code, il enregistre l'amorce partagée sur `SessionStart` et `UserPromptSubmit` : les consignes sont injectées une fois par session, puis de nouveau après un compactage. L'amorce suit le fournisseur configuré (Serena ou Gortex), inclut des consignes sur les outils différés et autorise le repli natif lorsque le fournisseur est indisponible ou expire. Qwen n'ajoute ni blocage distinct de la recherche de code ni suivi des résultats du fournisseur.
+
+Après la mise à jour de la CLI, exécutez `oma link qwen` pour régénérer les paramètres de hooks et le wrapper, puis démarrez une nouvelle session Qwen. Les tests de sortie des hooks vérifient le contrat d'intégration ; ils ne garantissent pas quel outil un modèle choisira.
 
 ### Étape 3 : configurer les préférences utilisateur
 
@@ -404,7 +410,7 @@ Pour chaque compétence sélectionnée, `installSkill()` copie le répertoire de
 
 - Définitions d'agents (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
 - Configurations des hooks (`.claude/hooks/`, `.codex/hooks.json`)
-- Fichiers de réglages et documents d'intégration du fournisseur (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
+- Fichiers de réglages et document d'intégration partagé des fournisseurs (`AGENTS.md` uniquement, Claude Code ≥ 2.1.277 compris). `CLAUDE.md` et `GEMINI.md` ne reçoivent jamais de bloc OMA ; un `CLAUDE.md` existant appartenant à l'utilisateur ne reçoit qu'une ligne d'import `@AGENTS.md`, afin que Claude Code n'ignore pas `AGENTS.md`
 
 Codex protège ses hooks derrière une étape de confiance unique : `.codex/hooks.json` ne s'exécute pas tant que vous ne l'avez pas examiné une fois via le navigateur `/hooks` de Codex. Consultez [Confiance accordée aux hooks Codex](/docs/guide/codex-hook-trust) pour plus de détails.
 

@@ -10,13 +10,23 @@ description: oh-my-agent 설치, 스킬과 프로바이더 선택, 생성된 프
 - **AI 기반 IDE 또는 CLI**: Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot, Hermes 등 지원되는 호스트 하나 이상
 - **bun**: JavaScript 런타임 및 패키지 매니저 (설치 스크립트에서 없으면 자동 설치)
 - **uv**: Python 패키지 매니저 (없으면 부트스트랩 스크립트가 설치를 제안)
-- **코드 인텔리전스 프로바이더**: Serena가 기본 프로바이더입니다. 프로바이더 설정에서 선택하면 Gortex도 지원합니다. 설치 프로그램은 `uv tool install`로 Serena를 부트스트랩할 수 있으며 선택적 의존성을 사용할 수 없을 때 경고 후 계속합니다.
+- **코드 인텔리전스 프로바이더**: Serena가 기본 프로바이더입니다. 프로바이더 설정에서 선택하면 Gortex도 지원합니다. 설치 프로그램은 `uv tool install`로 Serena를 부트스트랩할 수 있으며 선택적 의존성을 사용할 수 없을 때 경고 후 계속합니다. Gortex를 선택하면 프로젝트 모드의 `oma install`과 `oma update`가 아직 추적되지 않은 프로젝트를 Gortex 데몬에 등록하고(`gortex track`), OMA가 생성한 디렉토리를 Gortex CLI로 해당 프로젝트의 제외 목록에 추가합니다. 프로젝트 트리에는 아무것도 쓰지 않습니다. Gortex 자체는 별도로 설치해야 합니다.
 
 설치 프로그램은 기능별로 통합을 분류합니다. 훅 벤더는 Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro, Qwen이고, OpenCode와 pi는 확장 브리지를 사용하며, GitHub Copilot과 Hermes에는 스킬 링크를 제공하고, ZCode에는 워크플로우 명령을 제공합니다. 여러 벤더를 선택할 수 있지만 첫 태스크에는 사용할 호스트만 있으면 됩니다.
 
 ---
 
-## 방법 1: 한 줄 설치 (권장)
+## 방법 0: skills CLI (스킬만 쓸 때 가장 빠름)
+
+감지된 에이전트 런타임에 OMA 스킬 팩을 설치합니다:
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+전체 하네스 없이 스킬만 쓰고 싶을 때 가장 가볍게 시작하는 방법입니다. 워크플로우, 규칙, 훅, 게이트, `oma agent spawn`이 필요하면 아래 방법 1 또는 방법 2를 사용하세요.
+
+## 방법 1: 한 줄 설치 (전체 하네스)
 
 ```bash
 # macOS / Linux
@@ -223,6 +233,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -259,7 +270,7 @@ agents:
 | `model_preset` | string | 필수 | 활성 프리셋 키. `auto`는 현재 런타임을 따르며, 고정 키로 `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro`, `mixed`를 사용할 수 있습니다. 사용자 정의 프리셋 키도 유효합니다. 자세한 내용은 [에이전트별 모델 설정](../guide/per-agent-models.md)을 참조하세요. |
 | `default_cli` | string | 선택 | 명시적인 에이전트 설정과 선택한 프리셋으로 벤더가 해석되지 않을 때 `oma agent spawn`이 사용할 폴백 CLI입니다. |
 | `free` | map | 선택 | `model_preset: free`일 때 사용하는 FreeLLMAPI 게이트웨이 설정입니다. API 키는 환경 변수에 보관하세요. |
-| `providers` | map | 선택 | 기능 프로바이더: `code_intelligence`(`serena` 또는 `gortex`), `docs`(`context7`), `web`(`native` 또는 `brave`), `semantic_memory`(`agentmemory`, `honcho`, 또는 `none`). |
+| `providers` | map | 선택 | 기능 프로바이더: `code_intelligence`(`serena` 또는 `gortex`), `code_intelligence_guard`(`block` 또는 `off`), `docs`(`context7`), `web`(`native` 또는 `brave`), `semantic_memory`(`agentmemory`, `honcho`, 또는 `none`). |
 | `date_format` | string | 선택 | 타임스탬프 형식 (`ISO`, `US`, `EU`). 기본값: `ISO`. |
 | `timezone` | string | 선택 | 시간대 식별자(예: `Asia/Seoul`). 생략하면 호스트 시스템 시간대를 사용합니다. |
 | `auto_update_cli` | boolean | 선택 | 정기 CLI 확인이 백그라운드에서 업데이트할 수 있는지 결정합니다. 기본값 `true`이며 `false`로 옵트아웃합니다. |
@@ -291,7 +302,7 @@ oma doctor
 - SKILL.md 프론트매터가 유효한 스킬 파일이 있는지
 - `.claude/skills/`의 심볼릭 링크가 유효한 대상을 가리키는지
 - `.claude/settings.json`에 훅이 올바르게 설정되어 있는지
-- 선택한 코드 인텔리전스와 메모리 프로바이더에 연결 가능한지
+- 선택한 코드 인텔리전스와 메모리 프로바이더에 연결 가능한지 (Gortex는 현재 프로젝트가 데몬의 추적 대상에 들어 있는지도 확인)
 - `oma-config.cue` / `oma-config.yaml`이 필수 필드를 갖춘 유효한지
 
 문제가 발견되면 `oma doctor`가 누락되었거나 잘못된 항목을 식별하고 첫 태스크를 막는 문제와 선택적인 통합 경고를 구분합니다.

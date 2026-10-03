@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | Alle Agenten verwenden die Antigravity CLI (`agy`): Gemini 3.1 Pro für Implementierung und Architektur sowie Gemini 3.6 Flash für Orchestrierung, Dokumentation und Explore. Die Modellauswahl wird innerhalb von `agy` über die Konfiguration gesteuert; `--model`- und `--thinking-budget`-Flags werden nicht bereitgestellt. | Nutzer der Antigravity CLI |
 | `claude` | Alle Agenten verwenden Claude (Sonnet/Opus) | Inhaber eines Claude-Max-Abonnements |
 | `codex` | Alle Agenten verwenden OpenAI Codex (GPT-5.5 für die meisten Rollen, GPT-5.4-mini für Explore) mit Effort-Stufen | Nutzer von ChatGPT Plus/Pro |
-| `qwen` | Alle Agenten werden extern über Qwen Code geleitet; binäres Thinking (keine Effort-Stufen) | Lokale oder selbst gehostete Inferenz |
+| `qwen` | Alle Agenten verwenden Qwen Code; passende Qwen-Sitzungen können erzeugte native Agenten nutzen, andere Laufzeiten verwenden CLI-Dispatch | Lokale oder selbst gehostete Inferenz |
 | `kiro` | Alle Agenten verwenden die Kiro CLI; Sonnet übernimmt Implementierung und Architektur, Haiku Orchestrierung und Explore | Kiro-Nutzer |
 | `cursor` | Alle Agenten verwenden Cursors `composer-2.5` (`composer-2.5-fast` für Orchestrator, QA, PM, Docs und Explore) | Cursor-Pro- oder Pro-Student-Nutzer |
 | `mixed` | Gemischt: Implementierungsrollen nutzen Codex, Architektur/QA/PM Claude und Explore Gemini | Anbieterübergreifende Stärken ohne Verwaltung einer Konfiguration pro Agent |
@@ -61,7 +61,7 @@ Beim CLI-Dispatch wählt `--vendor` den Ziel-Vendor ausdrücklich aus. Ohne dies
 
 ## Lokale Konfiguration
 
-Erstellen Sie neben der gemeinsamen Konfiguration genau eine der Dateien `.agents/oma-config.local.cue` oder `.agents/oma-config.local.yaml`. Install, link und update nehmen beide Pfade in die `.gitignore` auf; update erhält vorhandene lokale Dateien auch mit `--force`.
+Erstellen Sie neben der gemeinsamen Konfiguration **genau eine** der Dateien `.agents/oma-config.local.cue` oder `.agents/oma-config.local.yaml`. Install, link und update nehmen beide Pfade in die `.gitignore` auf; update erhält vorhandene lokale Dateien auch mit `--force`.
 
 OMA wählt das nächste Projekt-Konfigurationsverzeichnis. Innerhalb dieses Verzeichnisses hat gemeinsames CUE Vorrang vor gemeinsamem YAML, und die lokale Datei überschreibt die gemeinsamen Werte. CUE-Dateien werden vor dem Zusammenführen unabhängig ausgewertet, sodass ein gemeinsames `model_preset: "auto"` lokal durch `"free"` ersetzt werden kann. Objekte werden rekursiv zusammengeführt; Arrays, Skalare und `null` ersetzen den gemeinsamen Wert. Eine fehlerhafte lokale Datei, eine fehlende CUE-Executable für lokales CUE oder das gleichzeitige Vorhandensein beider lokalen Formate ist ein Fehler und keine Erlaubnis, auf gemeinsame Standardwerte auszuweichen.
 
@@ -312,7 +312,7 @@ Führen Sie `oma doctor --profile` aus, um die Auflösung zu bestätigen, und st
 
 ## Dispatch über pi (Transportlaufzeit)
 
-[pi](https://github.com/earendil-works/pi) (Earendil) ist eine Multi-Provider-Proxy-Laufzeit und kein Modellanbieter. Sie kann Modelle echter Anbieter (Anthropic, OpenAI, Google) unter einer CLI ausführen. oma behandelt pi als **Transport-Overlay**: Ihr `model_preset` und Ihre `agents:`-Überschreibungen bleiben unverändert, während pi für einen Agenten zur ausführenden CLI wird.
+[pi](https://github.com/earendil-works/pi) (Earendil) ist eine Multi-Provider-Proxy-Laufzeit und kein Modellanbieter. Sie kann jedes Modell echter Anbieter (Anthropic, OpenAI, Google) unter einer CLI ausführen. oma behandelt pi als **Transport-Overlay**: Ihr `model_preset` und Ihre `agents:`-Überschreibungen bleiben unverändert, während pi für einen Agenten zur ausführenden CLI wird.
 
 Leiten Sie einen beliebigen Agenten mit der Überschreibung `--vendor pi` über pi:
 
@@ -322,7 +322,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 
 Dabei geschieht Folgendes:
 
-- Das aus Preset oder Überschreibungen aufgelöste Modell des Agenten (z. B. `openai/gpt-5.5`) wird in pis Form `--model <provider/id>` übersetzt; `effort` wird in pis `--thinking`-Stufe übersetzt. **Pro-Subagent-Modelle funktionieren mit pi wie nativ:** Verschiedene Agenten können verschiedene Modelle verwenden.
+- Das aus Preset oder Überschreibungen aufgelöste Modell des Agenten (z. B. `openai/gpt-5.5`) wird in pis Form `--model <provider/id>` übersetzt; `effort` wird in pis `--thinking`-Stufe übersetzt. **Pro-Subagent-Modelle funktionieren mit pi genau wie nativ:** Verschiedene Agenten können verschiedene Modelle verwenden.
 - Die Persona des Agenten (System-Prompt) wird aus `.agents/agents/<id>.md` inline eingefügt, da pi keine Vendor-seitige Agentendatei referenzieren kann.
 - Die Authentifizierung stammt aus der pi-Konfiguration (`~/.pi/agent/auth.json` oder ein Provider-API-Key in der Umgebung). `oma doctor` meldet pi-Installation und Auth-Status zusammen mit den anderen CLIs.
 
@@ -332,7 +332,7 @@ Dabei geschieht Folgendes:
 
 ### Modelle außerhalb der eingebauten pi-Registry (z. B. Z.ai GLM)
 
-pi löst `--model` gegen seine eingebaute Modell-Registry auf. Die Einstellung `defaultProvider` wird nur berücksichtigt, wenn überhaupt kein Modell übergeben wird. Für Z.ai liefert pi nur eine Teilmenge der GLM-IDs (`glm-4.7`, `glm-4.5-air`, `glm-5-turbo`, `glm-5.1`, `glm-5v-turbo` ab pi 0.80.x); ein Preset mit einer anderen GLM-ID kann nicht aufgelöst werden.
+pi löst `--model` gegen seine **eingebaute Modell-Registry** auf. Die Einstellung `defaultProvider` wird nur berücksichtigt, wenn überhaupt kein Modell übergeben wird. Für Z.ai liefert pi nur eine Teilmenge der GLM-IDs (`glm-4.7`, `glm-4.5-air`, `glm-5-turbo`, `glm-5.1`, `glm-5v-turbo`, Stand pi 0.80.x); ein Preset mit einer anderen GLM-ID kann nicht aufgelöst werden.
 
 Dafür gibt es zwei Möglichkeiten:
 
@@ -371,7 +371,7 @@ Leiten Sie einen beliebigen Agenten mit der Überschreibung `--vendor opencode` 
 oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
-Dabei wird `opencode run --agent pm --dir <workspace> "<prompt>"` ausgeführt. Der Prompt ist ein **nachgestelltes Positionsargument**; das `-p`-Flag von OpenCode bedeutet `--password` und nicht Prompt.
+Dabei wird `opencode run --agent pm --dir <workspace> "<prompt>"` ausgeführt. Der Prompt ist ein **nachgestelltes Positionsargument**; das `-p`-Flag von OpenCode bedeutet `--password`, nicht den Prompt.
 
 ### OpenCode-Modelle pro Agent
 
@@ -421,7 +421,7 @@ opencode models opencode-go                            # list everything your pl
 
 ### Authentifizierung und generierte Dateien
 
-- **Authentifizierung:** `opencode auth login` speichert Zugangsdaten in `~/.local/share/opencode/auth.json`, einen Eintrag pro Provider. `oma auth status` und `oma doctor` melden OpenCode als authentifiziert, sobald irgendein Provider Zugangsdaten besitzt. `oma doctor --profile` ist dagegen providerbezogen: Jede Zeile wird gegen das Provider-Präfix ihres registrierten `cli_model` geprüft. Ein Modell mit `cli_model: zai-coding-plan/glm-5.3` wird also gegen die Zugangsdaten von `zai-coding-plan` geprüft. Wenn das Modell kein registriertes `provider/model`-`cli_model` besitzt, meldet die Zeile `? unknown` statt eines eindeutigen Authentifizierungsfehlers.
+- **Authentifizierung:** `opencode auth login` speichert Zugangsdaten in `~/.local/share/opencode/auth.json`, einen Eintrag pro Provider. `oma auth status` und `oma doctor` melden OpenCode als authentifiziert, sobald *irgendein* Provider Zugangsdaten besitzt. `oma doctor --profile` ist dagegen providerbezogen: Jede Zeile wird gegen das Provider-Präfix ihres registrierten `cli_model` geprüft. Ein Modell mit `cli_model: zai-coding-plan/glm-5.3` wird also gegen die Zugangsdaten von `zai-coding-plan` geprüft. Wenn das Modell kein registriertes `provider/model`-`cli_model` besitzt, meldet die Zeile `? unknown` statt eines eindeutigen Authentifizierungsfehlers.
 - **Generierte Dateien:** `oma link` (oder `oma link opencode`) schreibt pro Agent eine `.opencode/agents/<id>.md`-Persona sowie die Bridge `.opencode/plugins/oma/`. Diese Dateien werden aus der `.agents/`-SSOT generiert; bearbeiten Sie sie nicht direkt, sondern führen Sie `oma link` erneut aus.
 
 > **Hinweis zu persistenten Workflows:** Das OpenCode-Ereignis `session.idle` (sein nächstes Gegenstück zum Claude-`Stop`-Hook) dient nur Benachrichtigungen und kann das Ende der Sitzung nicht blockieren. Persistente Workflows (orchestrate / work / ultrawork) laufen unter OpenCode daher mit **eingeschränkter Stop-Semantik**; die Workflow-Verstärkung erfolgt bei der nächsten Nachricht, statt die Sitzung offen zu halten.
@@ -430,7 +430,7 @@ opencode models opencode-go                            # list everything your pl
 
 ## Dispatch über die Kimi Code CLI
 
-[Kimi Code CLI](https://www.kimi.com/code) liest **Hooks** nur aus einer globalen Konfiguration (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`). Daher schreiben `oma install` und `oma link` die Kimi-Hook-Kette und ihre Skill-Symlinks nach ausdrücklicher Zustimmung ins HOME (wie bei Antigravity). Kimi scannt außerdem OMAs SSOT `.agents/skills/` direkt, sodass Skills projektweit aufgelöst werden. **MCP** benötigt keinen Schreibzugriff auf das HOME und ist projektbezogen; es wird modusabhängig nach `<cwd>/.kimi-code/mcp.json` (Projekt) oder `~/.kimi-code/mcp.json` (global) geschrieben.
+[Kimi Code CLI](https://www.kimi.com/code) liest **Hooks** nur aus einer globalen Konfiguration (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`). Daher schreiben `oma install` und `oma link` die Kimi-Hook-Kette und ihre Skill-Symlinks nach ausdrücklicher Zustimmung ins HOME (wie bei Antigravity). Kimi scannt außerdem OMAs SSOT `.agents/skills/` direkt, sodass Skills auch unabhängig davon projektweit aufgelöst werden. **MCP** benötigt keinen Schreibzugriff auf das HOME und ist projektbezogen; es wird modusabhängig nach `<cwd>/.kimi-code/mcp.json` (Projekt) oder `~/.kimi-code/mcp.json` (global) geschrieben.
 
 ### Expliziter Dispatch
 
@@ -440,11 +440,11 @@ Leiten Sie einen beliebigen Agenten mit der Überschreibung `--vendor kimi` übe
 oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
-Dies führt `kimi -p "<prompt>"` aus. Kimi genehmigt im nicht-interaktiven `-p`-Modus reguläre Tool-Aufrufe automatisch über seine Berechtigungsrichtlinie `auto`. Daher hängt oma `--yolo` oder `--auto` nicht an; diese Optionen sind mit `-p` gegenseitig unvereinbar.
+Dies führt `kimi -p "<prompt>"` aus. Kimi genehmigt im nicht-interaktiven `-p`-Modus reguläre Tool-Aufrufe automatisch über seine Berechtigungsrichtlinie `auto`. Daher hängt oma `--yolo` oder `--auto` **nicht** an; diese Optionen sind mit `-p` gegenseitig unvereinbar.
 
 ### Kimi-Modelle pro Agent
 
-Wie bei OpenCode hardcodiert oma keinen Kimi-Modellkatalog, weil Kimis Angebot von Provider und Abonnement abhängt. Um bestimmte Agenten an ein Kimi-Modell zu routen, registrieren Sie eine vollständige Spezifikation unter `models:` mit `cli: kimi` und referenzieren sie aus `agents:`:
+Wie bei OpenCode hardcodiert oma **keinen** Kimi-Modellkatalog, weil Kimis Angebot von Provider und Abonnement abhängt. Um bestimmte Agenten an ein Kimi-Modell zu routen, registrieren Sie eine vollständige Spezifikation unter `models:` mit `cli: kimi` und referenzieren sie aus `agents:`:
 
 Der Registry-Schlüssel muss die Form `owner/model` haben; bloße Namen werden vom Schema `agents.<id>.model` abgelehnt. `cli_model` ist der exakte Alias, der an `kimi --model` übergeben wird. Kimis dokumentierter Coding-Alias ist `kimi-code/kimi-for-coding`. Bestätigen Sie vor dem Commit mit `kimi --model <alias>`, welchen Alias Ihr Abonnement bereitstellt.
 
@@ -471,4 +471,4 @@ agents:
 
 Jeder geroutete Agent führt `kimi --model kimi-code/kimi-for-coding -p "<prompt>"` aus.
 
-> **Hinweis zu persistenten Workflows:** Kimis dokumentierter Stop-blockierender Pfad verwendet Exit-Code 2 und stderr, aber der Router `oma hook run` beendet sich immer mit 0 und gibt ein stdout-Dialekt aus. oma gibt nach bestem Bemühen `permissionDecision: "deny"` (zusätzlich zum Claude-ähnlichen `decision: "block"`) aus, damit persistente Workflows unter Kimi kontrolliert eingeschränkt weiterlaufen.
+> **Hinweis zu persistenten Workflows:** Kimis dokumentierter Stop-blockierender Pfad verwendet Exit-Code 2 und stderr, aber der Router `oma hook run` beendet sich immer mit 0 und gibt einen stdout-Dialekt aus. oma gibt nach bestem Bemühen `permissionDecision: "deny"` (zusätzlich zum Claude-ähnlichen `decision: "block"`) aus, damit persistente Workflows unter Kimi kontrolliert eingeschränkt weiterlaufen.

@@ -78,11 +78,10 @@ oma video provider list --output json      # 프로바이더 가용성과 키 �
 | `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
 | `--voice <profile>` | 내레이션 음성, 또는 `none`(기본값입니다. 생략하면 자막 타이밍을 추정해 무음으로 렌더링합니다). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano`, 또는 `none`. |
-| `--duration <sec>` | 목표 길이(초), 또는 `auto`. |
 | `--compositor <c>` | `hyperframes`(기본값) \| `mpt`. |
 | `--capture <path>` | 데모 모드의 입력 녹화 경로(`--source file`). |
-| `--source <k>` | 데모 캡처 소스: `file` \| `web`. |
-| `--url <url>` | `--source web`의 대상 URL(로컬, 스테이징, 프로덕션 모두 가능). |
+| `--source <k>` | 데모 캡처 소스: `file` \| `web`(기본값: `file`). |
+| `--url <url>` | `--source web`의 대상 URL(로컬, 스테이징, 프로덕션 모두 가능). 녹화가 필요한 경우 `--capture`를 대체하지 않습니다. |
 | `--device <name>` | 웹 캡처의 디바이스 프레임입니다. 화면비 크기를 덮어씁니다. |
 | `--ready-selector <css>` | 웹 캡처 전에 기다릴 CSS 선택자입니다. |
 | `--show-cursor` | 웹 캡처에 커서를 표시합니다. |
@@ -92,6 +91,7 @@ oma video provider list --output json      # 프로바이더 가용성과 키 �
 | `--output-dir <path>` | 실행 디렉토리의 기본 경로입니다. `$PWD` 외부 경로에는 `--allow-external-output`이 필요합니다. |
 | `--allow-external-output` | `$PWD` 외부의 출력 경로를 허용합니다. |
 | `--max-usd <n>` | 확인 전에 적용할 최대 예상 비용입니다. |
+| `--duration <sec>` | 목표 길이(초), 또는 `auto`. |
 | `--seed <n>` | 결정론적 시드. |
 | `--dry-run` | 스크립트, render-spec, 매니페스트만 내보내고 렌더링은 건너뜁니다. |
 | `--script <path>` | 에이전트가 작성한 `script.json`을 주입합니다(스켈레톤을 대체하며 내레이션, 화면 텍스트, 장면별 비주얼 프롬프트를 제어합니다). |

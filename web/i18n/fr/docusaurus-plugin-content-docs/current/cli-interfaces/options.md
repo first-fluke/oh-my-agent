@@ -225,6 +225,8 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 
 Ces valeurs par défaut peuvent être remplacées dans `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
+Codex conserve son sandbox workspace-write. oma active l’accès réseau et ajoute la racine du projet, le répertoire d’état OMA (`~/.oma`) et les caches de gestionnaires de paquets existants comme répertoires accessibles en écriture. `oma update` remplace `cli-config.yaml` ; pour définir un mode durable, utilisez donc `OMA_CODEX_SANDBOX` : `read-only`, `workspace-write` (par défaut) ou `danger-full-access` (aucun sandbox et aucune approbation).
+
 ### agent status
 
 ```
@@ -243,7 +245,7 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 ### agent parallel
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Option | Court | Description | Valeur par défaut |
@@ -346,7 +348,7 @@ oma video provider list [--output <format>]
 
 `video generate` accepte les contrôles de planification et de capture `--mode`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor`, `--capture`, `--source`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` et `--capture-stop`. Il accepte aussi `--output-dir`, `--allow-external-output`, `--max-usd`, `--seed`, `--timeout`, `--script`, `--dry-run`, `--yes`, `--output` et `--no-brief-in-manifest`. La capture navigateur utilise `--source web --url <url>` ; `file` est la source par défaut. Un rendu normal nécessite une composition écrite et un compositeur fonctionnel ; les remplacements sont limités au chemin de test `OMA_VIDEO_MOCK=1`.
 
-`video doctor` signale ou installe la chaîne d’outils Remotion/MPT/Strudel. `compose` prépare le contrat de composition de l’exécution et `render` vérifie les types, produit le rendu et sonde la sortie. `provider list` signale l’état du fournisseur et de la clé. Consultez [Génération vidéo](../guide/video-generation.md) pour le manifeste d’exécution et la séquence de récupération.
+`video doctor` signale ou installe la chaîne d’outils HyperFrames/MPT/Strudel. `compose` prépare le contrat de composition de l’exécution et `render` exécute le lint, produit le rendu et sonde la sortie. `provider list` signale l’état du fournisseur et de la clé. Consultez [Génération vidéo](../guide/video-generation.md) pour le manifeste d’exécution et la séquence de récupération.
 
 ### memory init
 
@@ -492,7 +494,7 @@ La matrice suivante est générée depuis le registre public des commandes prés
 | `docs verify` | `--json, --report-file <path>, --no-urls, --urls-sync` | Extrait les références L2 des documents et signale les cibles rompues. Régénère docs/generated/doc-refs.json comme effet secondaire. Code de sortie : 0 = propre, 1 = références rompues. La vérification des URL est déléguée à `lychee` (installation : brew install lychee). |
 | `docs sync` | `--json` | À partir d’un diff git, liste les documents qui référencent les fichiers modifiés. Le LLM hôte (runtime de compétence) lit cette liste et le diff, puis propose des correctifs selon le contrat SKILL.md — le CLI ne modifie jamais automatiquement les documents. Plage par défaut : --cached (modifications indexées), repli vers HEAD~1..HEAD. |
 | `docs i18n` | `--json, --min-severity <level>` | Détecte la dérive entre les sources anglaises (web/docs) et les traductions i18n (web/i18n/{lang}/...). Émet des signaux structurels (nombre de lignes, titres, horodatage du dernier commit) pour chaque paire afin que le LLM hôte décide quelles traductions synchroniser. Le CLI ne modifie jamais les traductions. |
-| `docs lint` | `--json, --locales <list>` | Vérifie les anti-patterns de contenu dans les documents traduits (tirets cadratins dans les cibles CJK, etc.). Complète `oma docs i18n` (dérive structurelle) par des contrôles de style propres à oma-translation ` Stage 4. Le CLI ne corrige jamais automatiquement : il ne fait que signaler les problèmes à restructurer au LLM hôte. |
+| `docs lint` | `--json, --locales <list>` | Vérifie les anti-patterns de contenu dans les documents traduits (tirets cadratins dans les cibles CJK, etc.). Complète `oma docs i18n` (dérive structurelle) par des contrôles de style et d’anti-patterns selon oma-translation SKILL.md § Stage 4. Le CLI ne corrige jamais automatiquement : il ne fait que signaler les problèmes à restructurer au LLM hôte. |
 | `emit` | `--target <target>, --output-dir <path>, --json, --output <format>` | Émet des artefacts conformes aux standards depuis la SSOT .agents/ (spécification Agent Skills, paquet Agent Plugins, marketplace de plugins Claude Code, AGENTS.md, documents fournisseurs limités à cli/) |
 | `cleanup` | `--dry-run, -y, --yes, --json, --output <format>` | Nettoie les processus d’agents secondaires et fichiers temporaires orphelins |
 | `bridge` | `--context <name>` | Fait transiter MCP stdio vers un serveur Serena partagé par projet (démarré à la demande) |
@@ -524,6 +526,12 @@ La matrice suivante est générée depuis le registre public des commandes prés
 | `search rss google` | `--locale <value>` | Construit une URL RSS Google News pour une requête |
 | `harness` | `—` | Évalue les surcouches du harness OMA sur des tâches de dépôt isolées |
 | `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | Compare une candidate .agents avec la base courante |
+| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | Dérive une fixture de régression de compétence à partir d’un incident capturé |
+| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | Promeut les incidents et optimise les compétences touchées |
+| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | Active le cycle de retour planifié et budgété d’un projet ; le mode est apply ou propose |
+| `harness evolution status` | `--json, --output <format>` | Affiche la configuration, la planification, le travail en attente, les conflits et le dernier cycle |
+| `harness evolution disable` | `--json, --output <format>` | Désactive le cycle de retour planifié du projet |
+| `harness evolution run` | `--json, --output <format>` | Exécute un cycle avec le mode et le budget enregistrés du projet activé |
 | `slide` | `—` | Boîte à outils de présentations HTML : créer, valider, exporter et modifier des jeux de diapositives 1920×1080 |
 | `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | Porte de qualité géométrique : rend les diapositives via puppeteer-core et contrôle débordements, chevauchements et taille des polices |
 | `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | Fusionne les fichiers par diapositive en un livrable .html autonome |
@@ -556,7 +564,7 @@ La matrice suivante est générée depuis le registre public des commandes prés
 | `video` | `—` | Génération de vidéos courtes, explicatives et de démonstration |
 | `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | Génère un répertoire d’exécution vidéo depuis un brief |
 | `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | Contrôle la disponibilité du fournisseur vidéo et du compositeur |
-| `video compose` | `--output <format>, --refresh, --offline` | Crée le projet Remotion de l’exécution sur la dernière chaîne d’outils + remotion-dev/skills et affiche le contrat d’écriture |
+| `video compose` | `--output <format>, --refresh, --offline` | Crée le projet HyperFrames de l’exécution sur la dernière chaîne d’outils + heygen-com/hyperframes et affiche le contrat d’écriture |
 | `video render` | `--output <format>` | Produit à nouveau le rendu d’un répertoire d’exécution depuis render-spec.json |
 | `video provider` | `—` |  |
 | `video provider list` | `--output <format>` | Liste les fournisseurs vidéo et leur disponibilité |
@@ -644,8 +652,13 @@ La matrice suivante est générée depuis le registre public des commandes prés
 | `skill` | `—` | Inspecte et audite les compétences installées |
 | `skill audit` | `--json, --output <format>` | Contrôle la similarité des descriptions de frontmatter entre compétences installées |
 | `skill lint` | `--skill <id>, --json, --output <format>` | Détecte les défauts d’écriture par compétence (frontmatter, structure, références rompues) |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --require-coverage, --neg-transfer, --json, --output <format>` | Mesure le gain d’utilité par compétence (traitement contre référence sur des tâches conservées) |
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --json, --output <format>` | Optimise le SKILL.md d’une compétence pour maximiser le gain d’utilité mesuré sur les tâches conservées |
+| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | Mesure le gain d’utilité par compétence (traitement contre référence sur des tâches conservées) |
+| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | Optimise le SKILL.md d’une compétence pour maximiser le gain d’utilité mesuré sur les tâches conservées |
+| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | Propose et note des modifications de la procédure d’évolution sur des compétences conservées |
+| `skill procedure` | `--export, --json, --output <format>` | Affiche la procédure d’évolution (prompts de l’optimiseur et du mainteneur, constitution) et ses hachages |
+| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | Agrège les exécutions d’optimisation enregistrées par résultat, mode de mémoire et procédure |
+| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | Retrace les promotions et retours arrière de SKILL.md enregistrés pour une compétence, ou pour toutes les compétences et la procédure avec `--all` |
+| `skill rollback` | `--skill <id>, --json, --output <format>` | Restaure le corps de SKILL.md remplacé par la promotion enregistrée la plus récente |
 | `schedule` | `—` |  |
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | Enregistre une tâche d’agent planifiée |
 | `schedule list` | `--json, --output <format>` | Liste les tâches planifiées avec l’état de dérive du système (synced/missing-in-os/orphan-in-os), regroupées par projet |

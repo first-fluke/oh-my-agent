@@ -220,7 +220,7 @@ your-project/
 │   │       ├── task-board-{sessionId}.md          ← Task assignments and status
 │   │       ├── progress-{agentId}-{taskId}-{runId}-{sessionId}.md ← Run-scoped progress updates
 │   │       ├── result-{agentId}-{taskId}-{runId}-{sessionId}.md   ← Run-scoped final outputs
-│   │       ├── session-metrics.md         ← Clarification Debt and Quality Score tracking
+│   │       ├── session-metrics.md         ← Session evidence and experiment results
 │   │       ├── experiment-ledger.md       ← Experiment tracking (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
@@ -383,16 +383,19 @@ Claude Code용 훅과 권한을 등록합니다. 이제 각 이벤트 훅 항목
 
 **`scm-guard.ts`**: `PreToolUse`(Bash/셸 도구)에서 동작하는 순수 핸들러(`run()`)로, 시크릿일 가능성이 있는 파일의 `git add`를 거부합니다. `.agents/skills/oma-scm/config/commit-config.yaml`의 `forbidden_patterns`에서 `allowed_exceptions`를 뺀 목록을 강제합니다(설정이 없으면 내장 기본값을 씁니다). claude, codex, cursor, grok, kimi, kiro, qwen에서는 체인상 `test-filter`보다 먼저 실행되고, opencode 브릿지에서는 `tool.execute.before`가 예외를 던져 차단하며, pi 브릿지에서는 `tool_call`이 `{ block: true, reason }`을 반환합니다. 사용자가 명시적으로 승인한 뒤 명령 앞에 `OMA_SCM_ALLOW_SECRETS=1`을 붙이면 가드를 우회합니다. 광범위 스테이징(`git add -A` / `git add .`)은 의도적으로 막지 않는데, 이 규칙은 훅이 관찰할 수 없는 사용자 동의에 달려 있기 때문입니다.
 
+**`code-intelligence-guard.ts`**: `PreToolUse`에서 동작하는 순수 핸들러(`run()`)로, "Code Search" 규칙을 기계적으로 강제합니다. `providers.code_intelligence`가 `serena`(또는 `gortex`)로 해석되고 `providers.code_intelligence_guard`가 `off`가 아닌 동안에는 네이티브 검색 도구(Claude Code의 `Grep`, `Glob`)와, 맨 앞에 오는 바이너리가 재귀 코드 검색인 셸 명령(`rg`, `ag`, `ack`, `fd`, `grep -r`, `find -name`/`-path`, `git grep`)을 거부하며, 거부 사유는 대신 써야 할 프로바이더 도구(`search_for_pattern`, `find_file`, `find_symbol`)의 이름을 알려 줍니다. 재귀가 아닌 `grep`(파이프 필터, 단일 파일), 이름 조건이 없는 `find`, 읽기는 어떤 경우에도 건드리지 않습니다. claude, codex, cursor, grok, kimi, kiro, qwen에서는 `scm-guard` 바로 뒤에 등록되며, 설치 프로그램이 체인의 matcher를 하나로 합치므로 Claude의 `PreToolUse` 항목은 `Bash|Grep|Glob`이 됩니다. `OMA_CI_ALLOW_NATIVE=1`이 들어 있는 셸 명령은 여전히 가드를 우회하지만, 이는 프로젝트 밖 리소스나 가드가 인식하지 못한 무시 대상 경로를 검색할 때 쓰는 운영자용 예외 경로일 뿐입니다. 거부 사유는 이 접두사를 언급하지 않으며, 프로젝트 소스용 폴백이 아닙니다.
+
 **`triggers.json`**: 키워드-워크플로우 매핑으로, 빌드 시점에 `oma` 바이너리에 정적으로 인라인됩니다(원본은 `.agents/hooks/core/triggers.json`). 다음을 정의합니다.
-- `workflows`: 워크플로우 이름에서 `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] } }`로의 매핑. `keywords`는 리터럴 문구이며, `patterns`는 원시 정규식 문자열입니다(`iu` 플래그로 컴파일됨).
+- `workflows`: 워크플로우 이름에서 `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] }, explicit?: [...] }`로의 매핑. `keywords`는 리터럴 문구이며, `patterns`는 원시 정규식 문자열입니다(`iu` 플래그로 컴파일됨). `explicit`(지속 워크플로우 전용)은 명시적 호출로 인정되는 키워드를 나열하며, 이 키워드만 지속 모드를 활성화합니다. 나머지 일치는 모두 제안으로 주입됩니다.
 - `informationalPatterns`: 질문을 나타내는 문구 (자동 감지에서 필터링됨)
 - `excludedWorkflows`: 명시적 `/command` 호출이 필요한 워크플로우
-- `cjkScripts`: CJK 스크립트를 사용하는 언어 코드 (ko, ja, zh)
 
 `keywords`, `patterns`, `informationalPatterns` 내 언어 섹션은 다음 컨벤션을 따릅니다:
-- `*`: 공통/영어. `.agents/oma-config.yaml`의 `language` 설정과 무관하게 항상 로드됩니다.
-- `en`: 하위 호환성을 위해 로드됩니다. 기능적으로 `*`와 동일하며, 새로운 영어 콘텐츠는 `*`에 추가해야 합니다.
-- `ko`/`ja`/`zh`/etc.: 언어별. `.agents/oma-config.yaml`에 `language: <code>`가 설정된 경우에만 로드됩니다.
+- `*`: 공통/영어.
+- `en`: 기능적으로 `*`와 동일합니다.
+- `ko`/`ja`/`zh`/etc.: 언어별 표현.
+
+모든 섹션은 항상 로드되며, `.agents/oma-config.yaml`의 `language` 설정은 응답 언어만 제어합니다. 단어 경계는 키워드 자체에 따라 달라집니다. ASCII 키워드는 전체 단어일 때만 일치하고, ASCII가 아닌 텍스트를 포함한 키워드는 부분 문자열로 일치합니다.
 
 #### 벤더별 실체화: 변경 전과 변경 후
 
@@ -486,8 +489,8 @@ Claude Code의 Agent 도구용으로 포맷된 서브에이전트 정의. 스킬
 | `task-board-{sessionId}.md` | 오케스트레이터 | 태스크 할당: 에이전트, 태스크, 우선순위, 상태, 의존성 |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | 해당 실행 | 턴별 업데이트: 수행한 작업, 읽은/수정한 파일, 현재 상태 |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | 해당 실행 | 최종 출력: 완료 상태, 요약, 변경된 파일, 인수 기준 |
-| `session-metrics.md` | 오케스트레이터 | Clarification Debt 이벤트, Quality Score 진행 상황 |
-| `experiment-ledger.md` | 오케스트레이터/QA | Quality Score 활성 시 실험 행 |
+| `session-metrics.md` | 오케스트레이터 | 중요한 수정과 실험 증거 |
+| `experiment-ledger.md` | 오케스트레이터/QA | 실제 실험의 증거 행 |
 | `session-work.md` | Work 워크플로우 | Work 전용 세션 상태 |
 | `session-ultrawork.md` | Ultrawork 워크플로우 | Ultrawork 전용 단계 추적 |
 | `session-cost-{sessionId}.md` | 시스템 | 세션별 스폰 비용 텔레메트리 |

@@ -413,7 +413,7 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 3. 크로스 리뷰: QA 에이전트가 변경사항 리뷰
 4. 실패 시: 수정을 위해 이슈 피드백 (총 최대 5회 루프 반복)
 
-**Clarification Debt 모니터링:** 세션 중 사용자 교정을 추적합니다. 이벤트 점수: clarify (+10), correct (+25), redo (+40). CD >= 50이면 필수 RCA 트리거. CD >= 80이면 세션 일시 중지.
+**세션 증거:** 필요할 때 중요한 수정과 판정을 거친 리뷰 발견 사항을 원인, 영향, 검증과 함께 기록합니다. 페널티 점수도, 점수에 따른 일시 중지도 적용되지 않습니다.
 
 **리소스:** `subagent-prompt-template.md`, `memory-schema.md`.
 
@@ -760,7 +760,7 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 
 ### oma-video
 
-**도메인:** `oma video` CLI로 숏폼, 설명 영상, 사람이 녹화하는 데모 영상을 생성합니다. 스크립트 → 내레이션 → 비주얼 → 자막 → Remotion 렌더 순으로 조합합니다.
+**도메인:** `oma video` CLI로 숏폼, 설명 영상, 사람이 녹화하는 데모 영상을 생성합니다. 스크립트 → 내레이션 → 비주얼 → 자막 → HyperFrames 렌더 순으로 조합합니다.
 
 **사용 시기:** 주제로 숏폼 영상(숏츠·릴스, 9:16)을 만들 때, README·코드·데이터로 설명 영상(16:9 또는 9:16)을 만들 때, 화면 캡처(`--source file`)나 감독하에 진행하는 웹 앱 헤디드 캡처(`--source web`)로 데모와 워크스루를 만들 때, 기존 실행을 결정론적으로 다시 렌더링할 때.
 
@@ -776,7 +776,7 @@ OMA는 스킬 패키지, 디스패치 역할, 서브에이전트 정의 파일�
 
 **워크플로우:** PREPARE(모드·화면비·로케일, 브리프 명확화와 보강) → ACQUIRE(프로바이더 가용성 확인, 캡처 경로 검증, 비용 확인) → ACT(스크립트 → 음성과 비주얼과 자막 → render-spec → 렌더) → VERIFY(스키마, 매니페스트 해시, 종료 코드, mp4) → FINALIZE(실행 디렉토리, mp4 경로, 커버리지 경고).
 
-**리소스:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, 그리고 벤더링된 `remotion/` 컴포지터, 웹 캡처 드라이버, `mpt/` 폴백 컴포지터, `config/video-config.yaml`.
+**리소스:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, 그리고 `hyperframes-authoring/` 모드 가이드, 웹 캡처 드라이버, `mpt/` 폴백 컴포지터, `config/video-config.yaml`.
 
 ---
 
@@ -941,8 +941,8 @@ oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 | `task-board-{sessionId}.md` | 오케스트레이터 | 태스크 할당, 우선순위, 상태 업데이트 | 읽기 전용 |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | 해당 실행 | 턴별 진행 상황: 수행한 작업, 읽기/수정한 파일, 현재 상태 | 오케스트레이터가 읽음 |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | 해당 실행 | 최종 출력: 상태(완료/실패), 요약, 변경된 파일, 인수 기준 | 오케스트레이터가 읽음 |
-| `session-metrics.md` | 오케스트레이터 | Clarification Debt 추적, Quality Score 진행 | QA가 읽음 |
-| `experiment-ledger.md` | 오케스트레이터/QA | Quality Score 활성 시 실험 추적 | 모두 읽음 |
+| `session-metrics.md` | 오케스트레이터 | 선택적 세션 증거와 측정된 실험 결과 | QA가 읽음 |
+| `experiment-ledger.md` | 오케스트레이터/QA | 실제 실험의 증거 | 모두 읽음 |
 
 메모리 도구는 설정 가능합니다. 기본적으로 에이전트는 네이티브 파일 도구(`Read`, `Write`, `Edit`)로 조율 파일을 직접 읽고 쓰며, 사용자 지정 도구와 기본 경로를 `mcp.json`에서 설정할 수 있습니다:
 

@@ -55,7 +55,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 | `star` | `star` | GitHub에서 oh-my-agent에 별을 표시합니다. |
 | `visualize` | `visualize` | 프로젝트 구조를 의존성 그래프로 시각화합니다. |
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google` | 웹, 미디어, RSS, 아카이브, 코드 검색을 제공합니다. |
-| `harness` | `harness`, `harness eval` | 격리된 저장소 작업에서 harness 오버레이를 평가합니다. |
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` | 격리된 저장소 작업에서 harness 오버레이를 평가합니다. |
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get` | 1920×1080 HTML 프레젠테이션을 만들고 검증·내보냅니다. |
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint` | Knows/OpenAlex/Semantic Scholar 논문 사이드카를 다룹니다. |
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` | 인증을 고려해 여러 벤더로 이미지를 생성합니다. |
@@ -75,7 +75,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` | 에이전트 실행과 수명 주기를 관리합니다. |
 | `model` | `model`, `model check`, `model probe`, `model propose` | 모델 레지스트리와 공급자 모델을 점검합니다. |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` | AgentMemory와 로컬 메모리를 관리합니다. |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize` | 설치된 스킬을 검사하고 감사합니다. |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` | 설치된 스킬을 검사하고 감사합니다. |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` | 예약된 에이전트 작업을 관리합니다. |
 
 명령이 남은 인자를 다른 도구에 위임하면 레지스트리에서 해당 옵션을 의도적으로 열어 둡니다. 이는 `market run`과 `diagram archify`에 적용됩니다. 변경을 일으키거나 네트워크를 사용하는 작업 전에 해석된 upstream 도움말을 읽습니다.
@@ -148,7 +148,7 @@ oma doctor [--json] [--output <format>] [--profile]
   - `rerere.enabled=true`
   - `init.defaultBranch=main`
   - 불일치마다 `totalIssues`에 반영
-- 프로젝트 벤더 컨텍스트 파일 (해당 CLI가 설치된 경우 `CLAUDE.md` / `AGENTS.md`의 OMA 블록 등).
+- 프로젝트 벤더 컨텍스트 파일 (Codex, Qwen 또는 Claude Code ≥ 2.1.277이 설치된 경우 `AGENTS.md`의 OMA 블록).
 - AgentMemory, state/hooks 헬스, Serena reaper 진단 및 관련 이슈 카운터.
 
 **자동 복구:** 누락된 스킬이 감지되면 대화형으로 설치를 제안합니다. 권장 git 설정이 없거나 다르면 install/update와 동일한 opt-in 전역 수정을 제안합니다.
@@ -266,7 +266,7 @@ oma link opencode --global
 **수행 내용:**
 1. `.agents/agents/`에서 벤더 네이티브 에이전트 파일을 다시 만듭니다
 2. 선택한 벤더의 훅과 로컬 설정을 갱신합니다
-3. `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`의 통합 블록을 재생성합니다
+3. Claude Code를 포함해 설정된 모든 벤더의 `AGENTS.md` 통합 블록을 재생성합니다. `CLAUDE.md`와 `GEMINI.md`는 생성하지 않고 OMA 블록도 넣지 않습니다. Claude Code ≥ 2.1.277은 `AGENTS.md`를 직접 읽지만 `CLAUDE.md`가 있으면 `AGENTS.md`를 무시하므로, 사용자가 소유한 `CLAUDE.md`가 있을 때 link는 `@AGENTS.md` import 줄을 하나만 추가합니다. 해당 버전이 감지되면 `oma update`가 `CLAUDE.md`에 남은 레거시 OMA 블록도 제거합니다
 4. 필요하면 Cursor MCP 연결과 CLI 스킬 심볼릭 링크를 갱신합니다
 
 `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`, 훅 정의를 수정한 뒤에 실행하세요.
@@ -282,36 +282,6 @@ oma link opencode --global
 ### setup (워크플로우)
 
 `/setup` 워크플로우는 에이전트 세션 안에서 호출하며, 언어, CLI 설치, MCP 연결, 에이전트-CLI 매핑을 대화형으로 설정합니다. 설치 프로그램인 `oma`와는 다릅니다. `/setup`은 이미 설치된 인스턴스를 설정합니다.
-
-## 세션 및 로컬 프로필 {#sessions-and-local-profiles}
-
-### state list
-
-현재 프로젝트의 OMA 워크플로우 세션을 나열합니다. 명시적인 전역 탐색은 선택한 로컬 프로필 안에서 여러 프로젝트의 세션을 나열합니다.
-
-```bash
-oma state list
-oma state list --all-projects --json
-oma state list --all-projects --project /path/to/project
-oma state list --all-projects --search migration
-```
-
-`--all-projects`는 읽기 전용입니다. 세션 활성화나 유지보수와 함께 사용할 수 없습니다. 일반 세션 읽기와 쓰기는 프로젝트 범위를 유지합니다. 다른 저장소의 레거시 세션은 aggregate 목록에 나타나기 전에 HOME 저장소로 먼저 마이그레이션해야 합니다.
-
-### profile
-
-`~/.oma/u/<slot>/` 아래의 로컬 저장 프로필을 관리합니다. 슬롯은 음이 아닌 10진 정수이며 모델 프리셋이나 공급자 로그인 계정과는 별개입니다.
-
-```bash
-oma profile list --json
-oma profile create 1
-oma profile show
-eval "$(oma profile use 1 --shell zsh)"
-oma profile show
-oma profile run 1 -- oma state list --all-projects --json
-```
-
-`profile use`는 셸 활성화 코드를 출력합니다. 평가하면 현재 셸에 `OMA_PROFILE`을 설정하지만, 명령만 실행해서는 부모 셸이나 이미 실행 중인 애플리케이션을 바꾸지 않으며 별도의 CLI 전용 기본값도 저장하지 않습니다. 활성 셸에서 시작한 CLI 명령과 벤더 훅은 같은 프로필을 상속합니다. 기본 프로필은 `0`이며 `OMA_STATE_HOME`이 저장 루트를 덮어씁니다. `profile run <slot> -- <command> [args...]`는 해당 명령과 자식 프로세스에만 프로필을 선택합니다. 구분 기호 덕분에 `--help`, `--json` 같은 자식 옵션이 자식 명령에 그대로 연결됩니다.
 
 ---
 
@@ -493,6 +463,38 @@ oma retro 7d --json
 
 ---
 
+## 세션 및 로컬 프로필 {#sessions-and-local-profiles}
+
+### state list
+
+현재 프로젝트의 OMA 워크플로우 세션을 나열합니다. 명시적인 전역 탐색은 선택한 로컬 프로필 안에서 여러 프로젝트의 세션을 나열합니다.
+
+```bash
+oma state list
+oma state list --all-projects --json
+oma state list --all-projects --project /path/to/project
+oma state list --all-projects --search migration
+```
+
+`--all-projects`는 읽기 전용입니다. 세션 활성화나 유지보수와 함께 사용할 수 없습니다. 일반 세션 읽기와 쓰기는 프로젝트 범위를 유지합니다. 다른 저장소의 레거시 세션은 aggregate 목록에 나타나기 전에 HOME 저장소로 먼저 마이그레이션해야 합니다.
+
+### profile
+
+`~/.oma/u/<slot>/` 아래의 로컬 저장 프로필을 관리합니다. 슬롯은 음이 아닌 10진 정수이며 모델 프리셋이나 공급자 로그인 계정과는 별개입니다.
+
+```bash
+oma profile list --json
+oma profile create 1
+oma profile show
+eval "$(oma profile use 1 --shell zsh)"
+oma profile show
+oma profile run 1 -- oma state list --all-projects --json
+```
+
+`profile use`는 셸 활성화 코드를 출력합니다. 평가하면 현재 셸에 `OMA_PROFILE`을 설정하지만, 명령만 실행해서는 부모 셸이나 이미 실행 중인 애플리케이션을 바꾸지 않으며 별도의 CLI 전용 기본값도 저장하지 않습니다. 활성 셸에서 시작한 CLI 명령과 벤더 훅은 같은 프로필을 상속합니다. 기본 프로필은 `0`이며 `OMA_STATE_HOME`이 저장 루트를 덮어씁니다. `profile run <slot> -- <command> [args...]`는 해당 명령과 자식 프로세스에만 프로필을 선택합니다. 구분 기호 덕분에 `--help`, `--json` 같은 자식 옵션이 자식 명령에 그대로 연결됩니다.
+
+---
+
 ## 에이전트 관리
 
 ### agent spawn
@@ -500,7 +502,7 @@ oma retro 7d --json
 서브에이전트 프로세스를 생성합니다.
 
 ```
-oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
+oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 **인자:**
@@ -518,10 +520,10 @@ oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] 
 | `--vendor <vendor>` | CLI 벤더 오버라이드: `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi` |
 | `-w, --workspace <path>` | 에이전트의 작업 디렉토리. 생략하면 모노레포 설정에서 자동 감지. |
 | `--resumed-from <run-id>` | 재시도를 선행 run ID에 연결합니다. |
-| `--fallback-vendors <vendors>` | 쉼표로 구분한 명시적 벤더 폴백 체인을 지정합니다. |
 | `--task-id <id>` | 세션 계획의 태스크 ID입니다. 기본값은 agent ID입니다. |
 | `--isolation <mode>` | 스폰별 격리 모드입니다. 현재 `worktree`를 지원하며, `${tmpdir}/oma-worktrees/{sessionId}/{agentId}`에 `oma/{sessionId}/{agentId}` 브랜치로 새 git 워크트리를 만들고 거기서 에이전트를 실행합니다. 종료 후에도 워크트리는 남으며, 수동 검토용 머지·폐기 명령을 출력합니다(자동 머지는 하지 않습니다). |
 | `--read-only` | 스폰된 에이전트를 비파괴 도구로 제한합니다(자동 승인 플래그를 억제합니다). `oma skill eval --live`가 두 평가 갈래 모두에 내부적으로 씁니다. |
+| `--fallback-vendors <vendors>` | 설정된 CLI 벤더를 최대 3개까지 쉼표로 구분해 순서대로 나열한 체인을 명시적으로 선택합니다. 이어서 실행하려면 인식된 쿼터/속도 제한/일시적 실패가 발생했고, 안전하게 인계할 수 있는 최신 체크포인트가 있어야 합니다. |
 
 **종료 코드:**
 
@@ -603,7 +605,7 @@ oma agent status session-20260324-143000 qa -r /path/to/project
 여러 서브에이전트를 병렬로 실행합니다.
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **인자:**
@@ -738,7 +740,7 @@ oma goal set --workflow ultrawork --gate test --budget-minutes 120
 예약 에이전트 작업을 등록합니다. `--cron`과 `--every` 중 정확히 하나가 필요합니다.
 
 ```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **인자:**
@@ -917,7 +919,6 @@ oma auth status [--json] [--output <format>]
 |:-------|:-----|
 | `--json` | JSON으로 출력 |
 | `--output <format>` | 출력 형식 (`text` 또는 `json`) |
-| `--profile` | 프로파일 상태 매트릭스를 표시합니다. 활성 `model_preset`과 `agents:` 오버라이드에서 해석된 에이전트별 모델 슬러그, CLI, 인증 상태를 보여줍니다. [에이전트별 모델](../guide/per-agent-models.md)을 참고하세요. |
 
 **확인 항목:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini (API 키), Claude (API 키 또는 OAuth), Codex (API 키), Cursor CLI, Qwen (API 키).
 
@@ -972,7 +973,7 @@ oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
-**인자:**
+**`verify agent` 인자:**
 
 | 인자 | 필수 | 설명 |
 |:-----|:-----|:-----|
@@ -985,13 +986,10 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `-w, --workspace <path>` | 검증할 워크스페이스 경로 | 현재 디렉토리 |
 | `--json` | JSON으로 출력 | |
 | `--output <format>` | 출력 형식 (`text` 또는 `json`) | |
-| `--corpus <path>` | 키워드 감지 정확도를 측정할 라벨 corpus 경로입니다. | 기본 corpus |
-| `--max-false-fire <pct>` | 허용할 오발동 비율 상한입니다. | |
-| `--max-missed-fire <pct>` | 허용할 미발동 비율 상한입니다. | |
 
 **수행 내용:** 지정된 에이전트 타입의 검증 스크립트를 실행하여 빌드 성공, 테스트 결과, 범위 준수를 확인합니다.
 
-`verify triggers`는 라벨이 지정된 corpus에서 키워드 감지 정확도를 측정합니다. 임계값은 게이트이며 CI에서는 JSON 출력으로 개별 결과를 확인합니다. 예전 `oma verify <agent-type>` 표기는 호환 도움말 형식이고 등록된 경로는 `verify agent`입니다.
+`verify triggers`는 라벨이 지정된 프롬프트 corpus를 기준으로 키워드 감지기 정확도를 측정합니다. 백분율 임계값은 게이트입니다. 등록된 경로는 `verify agent`입니다. 예전 최상위 표기는 호환 도움말에 여전히 나타날 수 있습니다.
 
 **공통 검사 (모든 에이전트 타입):**
 - **범위 검사**: `.agents/results/plan-{sessionId}.json`의 태스크 범위를 읽고, `git diff`로 변경된 파일을 정의된 범위 패턴과 비교합니다. 에이전트에 할당된 범위 외의 파일이 수정되면 실패합니다.
@@ -1082,6 +1080,7 @@ stdout이 비어 있으면 해당 이벤트에서 체인이 아무 일도 하지
 **범위 참고:**
 - `statusLine`과 hud 항목은 `oma hook run`을 거치지 않습니다(표시 경로는 지연을 아끼려고 `bun`을 직접 호출합니다).
 - pi 벤더는 `oma hook run`이 아니라 인프로세스 `installPiExtension` 브릿지를 씁니다.
+- 프로젝트 + 전역 이중 설치에서 발생하는 중복 전달은 `oma hook run` 안에서 버려집니다(다른 `oma-hook.sh` 래퍼가 실행한 동일한 페이로드). 병렬 도구 호출을 포함해 서로 다른 이벤트는 항상 실행됩니다.
 
 라우터 구현은 `cli/commands/hook/command.ts`(내부적으로 "design 019"라고 부릅니다)를, 벤더별 호환성 매트릭스는 `cli/commands/hook/probe/`를 참고하세요.
 
@@ -1425,7 +1424,7 @@ oma img <subcommand> ...
 | `--size <size>` | 양쪽이 16으로 나누어지는 `WxH`, 각 변 16~3840, 종횡비 1:3~3:1 또는 `auto` | 벤더 기본값 |
 | `--quality <level>` | `low` \| `medium` \| `high` \| `auto` | 벤더 기본값 |
 | `-n, --count <n>` | 이미지 개수 (1~5) | `1` |
-| `--output-dir <dir>` | 출력 디렉토리입니다. `--allow-external-output`이 없으면 `$PWD` 안에 있어야 합니다. | `.agents/results/images/{timestamp}/` |
+| `--output-dir <path>` | 출력 디렉토리입니다. `--allow-external-output`이 없으면 `$PWD` 안에 있어야 합니다. | `.agents/results/images/{timestamp}/` |
 | `--allow-external-output` | `$PWD` 밖의 `--output-dir` 경로를 허용합니다. | `false` |
 | `--model <name>` | 벤더별 모델 오버라이드입니다. antigravity 모델은 `agy`가 선택합니다. | 벤더 기본값 |
 | `--timeout <duration>` | duration 값으로 지정하는 이미지당 타임아웃입니다. | 벤더 기본값 |
@@ -1478,9 +1477,9 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate`는 `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor remotion|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, `--capture-stop duration:<seconds>|selector:<css>`를 받습니다. `--output-dir`는 실행 루트를 선택하고, `--allow-external-output`은 `$PWD` 밖의 경로를 허용하며, `--max-usd`는 비용 상한을 지정하고, `--seed`는 계획 입력을 안정화하고, `--no-brief-in-manifest`는 텍스트 대신 brief 해시를 저장합니다. `--source web --url <url>`은 브라우저 캡처이고 기본 source는 `file`입니다. `--dry-run`은 계획 뒤 중지하며 `--output text|json`은 CLI 봉투 형식을 정합니다.
+`generate`는 `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, `--capture-stop duration:<seconds>|selector:<css>`를 받습니다. `--output-dir`는 실행 루트를 선택하고, `--allow-external-output`은 `$PWD` 밖의 경로를 허용하며, `--max-usd`는 비용 상한을 지정하고, `--seed`는 계획 입력을 안정화하고, `--no-brief-in-manifest`는 텍스트 대신 brief 해시를 저장합니다. `--source web --url <url>`은 브라우저 캡처이고 기본 source는 `file`입니다. `--dry-run`은 계획 뒤 중지하며 `--output text|json`은 CLI 봉투 형식을 정합니다.
 
-`doctor`는 캐시된 Remotion/MPT 도구 체인을 검사하며 `--install`, `--upgrade`, `--install-mpt`, `--install-strudel`을 받습니다. `provider list`는 공급자 가용성과 키 상태를 보고합니다. `compose`는 실행 컴포지션을 만들거나 새로 고치고 작성 계약을 보고하며, `render`는 타입 검사, 렌더링, 출력을 검사합니다. compositor, 컴포지션, 도구 체인 의존성이 없으면 오류입니다. 테스트 전용 `OMA_VIDEO_MOCK=1`만 placeholder 모드이며 일반 실행은 텍스트나 작은 파일을 MP4로 대신하지 않습니다.
+`doctor`는 캐시된 HyperFrames/MPT 도구 체인을 검사하며 `--install`, `--upgrade`, `--install-mpt`, `--install-strudel`을 받습니다. `provider list`는 공급자 가용성과 키 상태를 보고합니다. `compose`는 실행 컴포지션을 만들거나 새로 고치고 작성 계약을 보고하며, `render`는 lint와 렌더링을 실행하고 출력을 검사합니다. compositor, 컴포지션, 도구 체인 의존성이 없으면 오류입니다. 테스트 전용 `OMA_VIDEO_MOCK=1`만 placeholder 모드이며 일반 실행은 텍스트나 작은 파일을 MP4로 대신하지 않습니다.
 
 성공한 JSON 출력에는 `runDir`, `manifestPath`, `scriptPath`, `renderSpecPath`가 포함됩니다. 매니페스트에는 선택된 공급자, 입력, 생성된 자산이 기록됩니다. `compose` 뒤에는 생성된 `AUTHORING.md`에 따라 컴포지션을 작성하고 `render`를 다시 실행합니다. 공급자 키가 없으면 `oma video doctor`를 실행하고, 캡처가 실패하면 URL, selector, device, timeout을 확인하며, 렌더링이 실패하면 컴포지션 진단을 해결한 뒤 재시도합니다.
 
@@ -1933,6 +1932,24 @@ oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --
 
 스위트 스키마, 지원 검사, 격리 모델, 현재 제약은 [하네스 평가 가이드](../guide/harness-eval.md)를 참고하세요.
 
+### harness incident promote
+
+캡처한 인시던트를 실패한 에이전트가 실제로 사용한 스킬의 회귀 픽스처로 만듭니다.
+
+```
+oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
+```
+
+### harness feedback
+
+아직 승격하지 않은 인시던트를 모두 승격하고, `--live` 또는 `--apply`를 지정하면 영향받은 각 스킬을 넓어진 스위트 상대로 최적화합니다.
+
+```
+oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
+```
+
+[인시던트 회귀 사례 가이드](../guide/harness-incidents.md)를 참고하세요.
+
 ---
 
 ### help
@@ -1965,6 +1982,8 @@ oma version
 | `DASHBOARD_PORT` | 웹 대시보드의 포트 | `dashboard web` |
 | `MEMORIES_DIR` | 메모리 디렉토리 경로 오버라이드 | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | `1`로 설정하면 플래그와 무관하게 `oma skill eval`이 mock 모드로 동작 | `skills eval` |
+| `OMA_HOOK_DEDUP` | `0`으로 설정하면 `oma hook run`의 중복 전달 억제를 비활성화 | `hook` |
+| `OMA_HOOK_DEDUP_DIR` | 중복 훅 전달을 억제하는 데 쓰는 비공개 클레임 디렉토리 오버라이드(기본값: `$XDG_RUNTIME_DIR/oma-hook-dedup`, 그렇지 않으면 `<tmpdir>/oma-hook-dedup-<uid>`) | `hook` |
 
 ---
 

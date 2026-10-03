@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci` を使うと、実行は非対話式になります。ユーザー設定が予期せず置き換わった場合は `--force` を使ったか確認してください。通常の更新はユーザーが管理する設定を保持しますが、force モードでは置き換えられることがあります。
 
+## インストールまたは更新でリリースをダウンロードできない
+
+<!-- oma-docs:ignore-start -->
+`oma install`、`oma update`、`oma doctor` の修復は、`main` ブランチの `prompt-manifest.json` が指すリリースをダウンロードします。まず `cli-v<version>` GitHub リリースの `agent-skills.tar.gz` アセットを試し、その `.sha256` ファイルで検証します。次にそのタグのソースアーカイブ、最後にそのタグの shallow clone を試します。チェックサムの不一致や、`.agents/skills/_version.json` が別のバージョンを示すペイロードがあった場合は、別のソースを試さずに実行を停止します。
+<!-- oma-docs:ignore-end -->
+
+リリースを作成した直後は、マニフェストが指すバージョンのアセットがまだ公開中の場合があります。数分待ってから再試行してください。リリース前の `main` ブランチの内容をあえてインストールしたい場合は、その実行に限ってオプトインします。
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+実行すると、main ブランチの内容はタグ付きリリースでもチェックサム検証済みでもない、という警告が表示されます。
+
 ## ベンダーが起動しない
 
 まずベンダー自身の認証チェックを実行し、次に OMA が解決したプロファイルを確認します。
@@ -85,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` は `synced`、`missing-in-os`、`orphan-in-os` を報告します。`schedule sync` は不足しているジョブを復元します。孤立した OS ジョブを削除する場合だけ `--prune` を追加してください。`--dry-run` で作成したプレビューはジョブを登録しません。繰り返し間隔では、プレビューを確認してから `--accept-rounded` を使い、OMA の丸めを受け入れます。ベンダーの終了コードが 0 以外、または `re-auth required` になっていないか、`~/.agents/schedule/runs/<id>/` の実行ログで確認してください。
+`schedule list` は `synced`、`stale`、`missing-in-os`、`orphan-in-os` を報告します。`schedule sync` は不足しているジョブを復元し、`stale` の登録を書き換えます（実行ログに `Unknown command: schedule:run` と出ている場合は、その登録がコマンド名の変更より前のものです。`oma update` が自動で再同期します）。孤立した OS ジョブを削除する場合だけ `--prune` を追加してください。`--dry-run` で作成したプレビューはジョブを登録しません。繰り返し間隔では、プレビューを確認してから `--accept-rounded` を使い、OMA の丸めを受け入れます。ベンダーの終了コードが 0 以外、または `re-auth required` になっていないか、`~/.agents/schedule/runs/<id>/` の実行ログで確認してください。
 
 ## 評価または最適化でカバレッジがないと報告される
 

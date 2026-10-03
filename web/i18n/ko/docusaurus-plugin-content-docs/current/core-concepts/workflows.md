@@ -33,9 +33,11 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 
 ---
 
-## 지속 워크플로우
+## 지속 워크플로우 {#persistent-workflows}
 
 지속 워크플로우는 모든 태스크가 완료될 때까지 계속 실행됩니다. `.agents/state/`에 상태를 유지하고, 명시적으로 비활성화될 때까지 매 사용자 메시지에 `[OMA PERSISTENT MODE: ...]` 컨텍스트를 재주입합니다.
+
+지속 모드는 **명시적 호출**, 즉 워크플로우 자체의 이름으로 호출할 때만 시작됩니다(`triggers.json`의 `explicit` 목록, 예: "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). 아래의 나머지 트리거 키워드는 자연어 힌트입니다. 이 키워드는 지속 모드를 활성화하지 않고 워크플로우를 제안으로만 주입하며, 프롬프트의 첫 줄이나 마지막 줄이 `?`로 끝나는 질문이면 절대 발동하지 않습니다.
 
 ### /orchestrate
 
@@ -46,27 +48,29 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 **트리거 키워드:**
 | 언어 | 키워드 |
 |----------|----------|
-| 공통 | "orchestrate" |
-| 영어 | "parallel", "do everything", "run everything" |
-| 한국어 | "자동 실행", "병렬 실행", "전부 실행", "전부 해" |
-| 일본어 | "オーケストレート", "並列実行", "自動実行" |
-| 중국어 | "编排", "并行执行", "自动执行" |
-| 스페인어 | "orquestar", "paralelo", "ejecutar todo" |
-| 프랑스어 | "orchestrer", "parallèle", "tout exécuter" |
-| 독일어 | "orchestrieren", "parallel", "alles ausführen" |
-| 포르투갈어 | "orquestrar", "paralelo", "executar tudo" |
-| 러시아어 | "оркестровать", "параллельно", "выполнить всё" |
-| 네덜란드어 | "orkestreren", "parallel", "alles uitvoeren" |
-| 폴란드어 | "orkiestrować", "równolegle", "wykonaj wszystko" |
+| 명시적 호출 (지속) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+| 영어 | "do everything", "run everything", "everything in parallel", "automate everything" |
+| 한국어 | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
+| 일본어 | "全部実行", "全部並列で", "自動でやって" |
+| 중국어 | "编排", "全部执行", "全部并行", "自动处理" |
+| 스페인어 | "ejecutar todo", "todo en paralelo" |
+| 프랑스어 | "tout exécuter", "tout en parallèle" |
+| 독일어 | "alles ausführen", "alles parallel" |
+| 포르투갈어 | "executar tudo", "tudo em paralelo" |
+| 러시아어 | "выполнить всё", "всё параллельно" |
+| 네덜란드어 | "alles uitvoeren", "alles parallel" |
+| 폴란드어 | "wykonaj wszystko", "wszystko równolegle" |
+
+단독으로 쓴 "parallel"/"automate"(와 각 언어의 번역어)는 트리거가 아닙니다. "run the tests in parallel"이나 "automate the release notes"는 멀티 에이전트 오케스트레이션이 아닌 일반 요청입니다.
 
 **트리거 정규식 패턴** (의도 + 명사 화이트리스트, [자동 감지: Pattern 필드](#pattern-field-raw-regex) 참조):
 | 섹션 | 패턴 | 트리거 예시 |
 |---------|---------|----------------------|
-| `*` (공통) | `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
+| `*` (공통) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
 | `*` (공통) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
 | `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
 
-명사 화이트리스트 (15개): app, api, service, server, cli, tool, website, dashboard, system, feature, backend, frontend, prototype, mvp, bot.
+명사 화이트리스트 (14개): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. 단일 기능("implement the login feature", "로그인 기능 구현해줘")이나 이미 있는 대상("make the API faster")은 일치하지 않습니다.
 
 **단계:**
 1. **Step 0 (준비):** 코디네이션 스킬, 컨텍스트 로딩 가이드, 메모리 프로토콜 읽기. 벤더 감지.
@@ -74,9 +78,9 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 3. **Step 2 (세션 초기화):** `oma-config.yaml`을 로딩하고 CLI 매핑 테이블을 표시합니다. 계획 생성 시 사용한 세션 ID를 재사용하거나 새 ID(`session-YYYYMMDD-HHMMSS`)를 생성하고, 설정된 메모리 저장소에 `orchestrator-session-{sessionId}.md`와 `task-board-{sessionId}.md`를 만듭니다.
 4. **Step 3 (에이전트 스폰):** 각 우선순위 티어(P0 먼저, 그 다음 P1...)에 대해 현재 런타임과 대상 벤더가 일치하면 네이티브 서브에이전트를 사용하고, 외부 또는 다른 벤더 작업에는 `oma agent spawn`을 사용합니다. MAX_PARALLEL을 초과하지 않습니다.
 5. **Step 4 (모니터링):** 실행 범위가 지정된 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 파일과 구조화된 실행 기록을 폴링하고 태스크 보드를 업데이트합니다. 완료, 실패, 크래시를 감시합니다.
-6. **Step 5 (검증):** 완료된 에이전트별로 `verify.sh {agent-type} {workspace}` 실행. 실패 시 에러 컨텍스트와 함께 재스폰 (최대 2회 재시도). 2회 재시도 후에도 실패하면 Exploration Loop 활성화: 2-3개 가설 생성, 병렬 실험 스폰, 점수 매기기, 최적 선택.
+6. **Step 5 (검증):** 완료된 에이전트별로 `verify.sh {agent-type} {workspace}` 실행. 실패 시 에러 컨텍스트와 함께 재스폰 (최대 2회 재시도). 반복되는 실패는 대안 가설을 검토할 이유가 될 수 있지만, 모든 시도는 같은 복구 예산 총량을 소비합니다. 예산으로 비교 라운드를 감당할 수 없으면 해결되지 않은 증거를 보존합니다.
 7. **Step 6 (수집):** 실행 범위가 지정된 결과 파일과 구조화된 클레임을 읽고 요약을 정리합니다.
-8. **Step 7 (최종 보고서):** 세션 요약 제시. Quality Score가 측정된 경우 Experiment Ledger 요약 포함 및 교훈 자동 생성.
+8. **Step 7 (최종 보고서):** 세션 요약 제시. 실험을 실행한 경우 증거와 결정을 요약하고, 재사용 가능한 원인이 규명된 경우에만 교훈을 남깁니다.
 
 **읽는 파일:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, 실행 범위 진행·결과 파일, 구조화된 실행 실행 기록.
 **쓰는 파일:** 설정된 메모리 저장소의 세션·태스크 보드 상태, 구조화된 실행 기록과 클레임, 최종 보고서.
@@ -94,13 +98,17 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 **트리거 키워드:**
 | 언어 | 키워드 |
 |----------|----------|
-| 공통 | "work", "step by step" |
-| 한국어 | "코디네이트", "단계별" |
-| 일본어 | "コーディネート", "ステップバイステップ" |
-| 중국어 | "协调", "逐步" |
-| 스페인어 | "coordinar", "paso a paso" |
-| 프랑스어 | "coordonner", "étape par étape" |
-| 독일어 | "koordinieren", "schritt für schritt" |
+| 명시적 호출 (지속) | "work mode", "work workflow" |
+| 공통 | "step by step" |
+| 영어 | "one by one", "one step at a time" |
+| 한국어 | "단계별", "하나씩 해줘", "차근차근" |
+| 일본어 | "ステップバイステップ", "一歩ずつ" |
+| 중국어 | "逐步", "一步一步" |
+| 스페인어 | "paso a paso", "uno por uno" |
+| 프랑스어 | "étape par étape", "un par un" |
+| 독일어 | "schritt für schritt", "der reihe nach" |
+
+단독으로 쓴 "work"는 일상적인 어휘("Does this work on Windows?")이므로 트리거가 아닙니다.
 
 **단계:**
 1. **Step 0 (준비):** 스킬, 컨텍스트 로딩, 메모리 프로토콜 읽기. 세션 시작 기록.
@@ -110,7 +118,7 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 5. **Step 4 (에이전트 스폰):** 우선순위 티어별 스폰, 같은 티어 내 병렬, 별도 워크스페이스.
 6. **Step 5 (모니터링):** 진행 파일 폴링, 에이전트 간 API 컨트랙트 정렬 확인.
 7. **Step 6 (QA 리뷰):** 보안(OWASP), 성능, 접근성, 코드 품질을 위한 QA 에이전트 스폰.
-8. **Step 6.1 (Quality Score)** (조건부): 기준선 측정 및 기록.
+8. **Step 6.1 (측정)** (조건부): 정의된 비교가 필요할 때 기준선을 기록합니다.
 9. **Step 7 (반복):** CRITICAL/HIGH 이슈 발견 시 담당 에이전트 재스폰. 2회 시도 후에도 같은 이슈 지속 시 Exploration Loop 활성화.
 
 **사용 시기:** 계획, 구현, QA를 단계별로 조율하려는 멀티 도메인 기능.
@@ -126,7 +134,7 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 **트리거 키워드:**
 | 언어 | 키워드 |
 |----------|----------|
-| 공통 | "ultrawork", "ulw" |
+| 명시적 호출 (지속) | "ultrawork", "ulw" |
 
 **단계 및 스텝:**
 
@@ -140,16 +148,16 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 
 **게이트 정의:**
 - **PLAN_GATE:** 계획 문서화, 가정 나열, 대안 검토, 과잉 엔지니어링 리뷰 완료, 작업 범위 승인.
-- **IMPL_GATE:** 산출물을 생성하지 않는 해당 검사와 테스트 통과, 계획된 파일만 수정, 기준선 Quality Score 기록(측정 시). 빌드 검사는 명시적으로 요청한 경우에만 실행합니다.
-- **VERIFY_GATE:** 구현이 요구사항과 일치, CRITICAL 0건, HIGH 0건, 회귀 없음, Quality Score >= 75.
-- **REFINE_GATE:** 대용량 파일/함수(> 500줄 / > 50줄) 없음, 통합 기회 포착, 부작용 확인, 코드 정리, Quality Score 비회귀.
-- **SHIP_GATE:** 품질 검사 통과, UX 확인, 관련 이슈 해결, 배포 체크리스트 완료, 최종 Quality Score >= 75 및 비음수 델타(측정 시). 기존 승인을 적용하며, 게시나 배포에는 해당 행동에 대한 승인이 필요합니다.
+- **IMPL_GATE:** 산출물을 생성하지 않는 해당 검사와 테스트 통과, 계획된 파일만 수정, 실제 실험의 기준선 증거 기록. 빌드 검사는 명시적으로 요청한 경우에만 실행합니다.
+- **VERIFY_GATE:** 구현이 요구사항과 일치, CRITICAL 0건, HIGH 0건, 회귀 없음, 해당하는 프로젝트 측정 목표 충족.
+- **REFINE_GATE:** 프로젝트 유지보수성 규칙 준수, 통합 기회 포착, 부작용 확인, 코드 정리, 해결되지 않은 회귀 없음.
+- **SHIP_GATE:** 품질 검사 통과, UX 확인, 관련 이슈 해결, 배포 체크리스트 완료, 해당하는 프로젝트 측정 목표를 최신 증거로 충족. 기존 승인을 적용하며, 게시나 배포에는 해당 행동에 대한 승인이 필요합니다.
 
 **게이트 실패 동작:**
 - 첫 번째 실패: 관련 스텝으로 돌아가 수정 후 재시도.
-- 같은 이슈에서 두 번째 실패: Exploration Loop 활성화.
+- 같은 이슈에서 두 번째 실패: 원인을 재평가하고, 남은 예산 안에서 테스트할 가치가 있는 대안이 있으면 격리된 실험을 요구 동작과 정의된 지표 기준으로 비교.
 
-**조건부 기능 확장:** Quality Score 측정, Keep/Discard 결정, Experiment Ledger, 가설 탐색, 자동 학습(폐기된 실험에서 얻은 교훈).
+**조건부 기능 확장:** 정의된 지표 비교, 실험 결정과 증거, 예산이 정해진 가설 탐색, 재사용 가능한 원인이 뒷받침하는 교훈.
 
 **REFINE 건너뛰기 조건:** 50줄 미만의 Simple 태스크.
 
@@ -166,14 +174,16 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 **트리거 키워드:**
 | 언어 | 키워드 |
 |------|--------|
-| 공통 | "ralph" |
-| 영어 | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
-| 한국어 | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| 명시적 호출 (지속) | "ralph", "랄프" |
+| 영어 | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
+| 한국어 | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
 | 일본어 | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
 | 중국어 | "不要停", "直到完成", "全部完成", "做完为止" |
 | 스페인어 | "no pares", "hasta completar", "termina todo" |
 | 프랑스어 | "n'arrête pas", "jusqu'à complétion", "termine tout" |
 | 독일어 | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+단독으로 쓴 재개 표현("keep going", "carry on", "계속해", "続けて", "продолжай", …)은 트리거가 아닙니다. 사용자가 중단 후 작업을 재개하려고 입력하는 표현이기 때문입니다.
 
 **단계:**
 1. **Phase 0 (INIT):** 사전 조건 로드(context-loading, 메모리 프로토콜, judge 프로토콜). 테스트 단언, 산출물을 생성하지 않는 타입 검사, 종료 코드, 파일 존재 여부처럼 기계적으로 검증 가능한 완료 기준을 정의하고 기록합니다. 빌드 검사는 명시적으로 요청한 경우에만 포함합니다. 기준을 제시하고 승인된 범위 안에서 계속 진행합니다. `max_iterations: 5` 초기화.
@@ -442,12 +452,12 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 
 ### /video
 
-**설명:** `oma-video` 스킬을 엔드 투 엔드로 구동합니다. 브리프 → 스크립트 → 내레이션 → 비주얼 → 자막 → render-spec → 벤더링된 Remotion(또는 MoneyPrinterTurbo) 컴포지터 순으로 진행합니다. 재현 가능한 실행 디렉토리를 만들며 컴포지터와 ffprobe 검사를 통과한 뒤에만 실제 `.mp4`를 내보냅니다. 지원되는 에셋 폴백에는 키를 선택적으로 설정할 수 있지만 컴포지터나 도구 체인의 실패는 실패한 실행으로 남습니다. 인라인으로 실행합니다(서브에이전트를 스폰하지 않습니다).
+**설명:** `oma-video` 스킬을 엔드 투 엔드로 구동합니다. 브리프 → 스크립트 → 내레이션 → 비주얼 → 자막 → render-spec → 관리되는 HyperFrames(또는 MoneyPrinterTurbo) 컴포지터 순으로 진행합니다. 재현 가능한 실행 디렉토리를 만들며 컴포지터와 ffprobe 검사를 통과한 뒤에만 실제 `.mp4`를 내보냅니다. 지원되는 에셋 폴백에는 키를 선택적으로 설정할 수 있지만 컴포지터나 도구 체인의 실패는 실패한 실행으로 남습니다. 인라인으로 실행합니다(서브에이전트를 스폰하지 않습니다).
 
 **트리거 키워드:**
 | 언어 | 키워드 |
 |----------|----------|
-| 공통 | "/video", "oma-video", "remotion", "shorts", "reels", "screencast" |
+| 공통 | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
 | 영어 | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
 | 한국어 | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
 | 일본어 | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
@@ -458,7 +468,7 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 2. **스크립트 작성:** 장면과 내레이션을 생성합니다(키가 있으면 LLM으로, 없으면 브리프에서 결정론적 개요로).
 3. **에셋 합성:** 내레이션은 `oma-voice`, 비주얼은 `oma-image` / `oma-slide` / 스톡, 자막은 키가 필요 없는 정렬로 만들며, `demo --source web`에서는 감독하의 브라우저 웹 캡처를 씁니다. 각 프로바이더는 결정론적 폴백으로 저하됩니다.
 4. **render-spec 구성:** 실행 디렉토리에 `render-spec.json`(결정성의 경계)과 에셋을 씁니다.
-5. **렌더:** 벤더링된 Remotion 프로젝트(또는 MoneyPrinterTurbo)를 서브프로세스로 스폰합니다. 일반 컴포지터나 도구 체인 실패는 실행을 실패시킵니다. 결정론적 플레이스홀더는 명시적인 mock/test 경로(`OMA_VIDEO_MOCK=1`)에서만 사용할 수 있습니다. 라이브 캡처는 매니페스트에 `nondeterministic`으로 기록됩니다.
+5. **렌더:** 관리되는 HyperFrames 프로젝트(또는 MoneyPrinterTurbo)를 서브프로세스로 스폰합니다. 일반 컴포지터나 도구 체인 실패는 실행을 실패시킵니다. 결정론적 플레이스홀더는 명시적인 mock/test 경로(`OMA_VIDEO_MOCK=1`)에서만 사용할 수 있습니다. 라이브 캡처는 매니페스트에 `nondeterministic`으로 기록됩니다.
 
 **출력:** `.agents/results/videos/{timestamp}-{shortid}-{mode}/`에 실행 디렉토리가 생기며, `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4`, `manifest.json`이 들어갑니다. [영상 생성 가이드](../guide/video-generation.md)를 참고하세요.
 
@@ -520,9 +530,9 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 
 oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `UserPromptSubmit` 훅을 사용합니다. 벤더 설정은 `<hookDir>/oma-hook.sh --vendor <v> --event <e>` 항목 하나를 등록하고, 이 항목이 인프로세스 핸들러 체인이 실행되는 `oma hook run`으로 연결됩니다:
 
-1. **`triggers.json`** (`.claude/hooks/triggers.json`): 11개 언어에 대한 키워드-워크플로우 매핑을 정의합니다.
-2. **`keyword-detector.ts`** (`.claude/hooks/keyword-detector.ts`): 사용자 입력을 트리거 키워드와 대조하고, 언어별 매칭을 존중하며, 워크플로우 활성화 컨텍스트를 주입하는 TypeScript 로직.
-3. **`persistent-mode.ts`** (`.claude/hooks/persistent-mode.ts`): 활성 상태 파일을 확인하고 지속 워크플로우 실행을 강제합니다.
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, `oma` 바이너리에 인라인됨): 지원하는 11개 언어(영어, 한국어, 일본어, 중국어, 스페인어, 프랑스어, 독일어, 포르투갈어, 러시아어, 네덜란드어, 폴란드어)의 키워드-워크플로우 매핑을 정의합니다.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): 사용자 입력을 모든 언어의 트리거 키워드와 대조하고 워크플로우 활성화 컨텍스트를 주입하는 TypeScript 로직.
+3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): 활성 상태 파일을 확인하고 워크플로우 컨텍스트를 다시 주입해 지속 워크플로우 실행을 강제합니다.
 
 ### 감지 흐름
 
@@ -531,8 +541,9 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 3. 훅이 입력을 정제(코드 블록, 인용 문자열, 붙여넣은 시스템 에코 블록 제거)한 뒤 `.agents/hooks/core/triggers.json`의 키워드 목록(리터럴 문구)과 `patterns`(원시 정규식) 양쪽에 대조하여 스캔합니다. 강화 가드는 동일 워크플로우가 최근 60초 내에 2회 이상 발동된 경우 재트리거를 억제합니다.
 4. 매칭이 발견되면, 입력이 정보성 패턴에 해당하는지 확인합니다.
 5. 정보성이면 필터링되며(예: "what is orchestrate?"), 워크플로우는 트리거되지 않습니다.
-6. 행동 가능하면, 컨텍스트에 `[OMA WORKFLOW: {workflow-name}]`를 주입합니다.
-7. 에이전트가 주입된 태그를 읽고 `.agents/workflows/`에서 해당 워크플로우 파일을 로드합니다.
+6. 행동 가능하면, 컨텍스트에 `[OMA WORKFLOW: {workflow-name}]`를 주입합니다. 여러 워크플로우가 일치하면 명시적 호출이 우선하고, 그다음에는 가장 긴 키워드가 우선합니다.
+7. 지속 워크플로우에서는 명시적 호출(`triggers.json`의 `explicit`)만 지속 모드 상태 파일을 기록합니다. 자연어 일치는 제안으로 주입되고, 질문으로 끝나는 프롬프트(첫 줄이나 마지막 줄의 `?`)는 아예 발동하지 않습니다.
+8. 에이전트가 주입된 태그를 읽고 `.agents/workflows/`에서 해당 워크플로우 파일을 로드합니다.
 
 ### 언어 섹션 컨벤션
 
@@ -540,11 +551,13 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 | 섹션 | 동작 |
 |---------|----------|
-| `*` | 공통. `.agents/oma-config.yaml`의 `language` 설정과 무관하게 항상 로드됩니다. 영어 콘텐츠(공용어)와 진정한 언어 무관 토큰(예: 워크플로우 이름 `"orchestrate"`)에 사용합니다. |
-| `en` | 영어. 하위 호환성을 위해 로드되며, 기능적으로 `*`와 동일합니다. 새로운 영어 콘텐츠는 `*`에 추가해야 합니다. |
-| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | 언어별. `.agents/oma-config.yaml`에 `language: <lang>`이 설정된 경우에만 로드됩니다. |
+| `*` | 공통. 영어 콘텐츠(공용어)와 진정한 언어 무관 토큰(예: 워크플로우 이름 `"orchestrate"`)에 사용합니다. |
+| `en` | 영어. 기능적으로 `*`와 동일합니다. |
+| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | 언어별 표현. |
 
-**의미**: `.agents/oma-config.yaml`에 `language: en`을 설정하면 `*`와 `en` 패턴만 로드됩니다. 사용자가 한국어나 일본어 등으로 입력하더라도 해당 언어의 자연어 트리거는 발동되지 않습니다. 비영어권 언어를 활성화하려면 `language: <code>`를 알맞게 설정해야 합니다. `*`의 영어 폴백은 항상 활성 상태로 유지됩니다.
+모든 섹션은 항상 로드됩니다. 사용자는 자신이 생각하는 언어로 프롬프트를 입력하며, `.agents/oma-config.yaml`의 `language` 설정은 응답 언어만 제어하기 때문입니다. 한 언어로 쓴 키워드는 그 언어의 문자가 들어 있는 프롬프트에만 일치할 수 있으므로, 모든 섹션을 합쳐도 관련 없는 프롬프트에서 발동하지 않습니다.
+
+단어 경계는 키워드 자체에만 좌우되며 `language` 설정과는 무관합니다. ASCII 키워드는 전체 단어일 때만 일치하고("work"는 "network"와, "review"는 "preview"와 일치하지 않습니다), ASCII가 아닌 텍스트를 포함한 키워드는 CJK의 조사와 어미가 단어에 바로 붙기 때문에 부분 문자열로 일치합니다("리뷰해줘").
 
 ### Pattern 필드 (원시 정규식) {#pattern-field-raw-regex}
 
@@ -555,9 +568,11 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      "keywords": { "*": ["orchestrate"], "en": ["parallel", ...] },
+      // Subset of `keywords` that activates persistent mode (persistent workflows only)
+      "explicit": ["orchestrate", ...],
+      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
       "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:an?|the)\\s+...\\b"],
+        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
         "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
       }
     }
@@ -600,7 +615,7 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 ### 상태 파일
 
-지속 워크플로우(orchestrate, ultrawork, work, ralph)는 `.agents/state/`에 상태 파일을 생성합니다:
+지속 워크플로우(orchestrate, ultrawork, work, ralph)는 명시적으로 호출되면 `.agents/state/`에 상태 파일을 생성합니다([지속 워크플로우](#persistent-workflows) 참조):
 
 ```
 .agents/state/

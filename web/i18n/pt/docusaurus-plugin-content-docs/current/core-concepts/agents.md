@@ -415,7 +415,7 @@ Os arquivos específicos do projeto `stack/stack.yaml`, `stack/tech-stack.md`, s
 3. Revisão cruzada: Agente QA revisa mudanças
 4. Em caso de falha: problemas alimentados de volta para correção (máximo 5 iterações totais do loop)
 
-**Monitoramento de Dívida de Clarificação:** Rastreia correções do usuário durante sessões. Eventos pontuados como clarify (+10), correct (+25), redo (+40). CD >= 50 aciona RCA obrigatória. CD >= 80 pausa a sessão.
+**Evidência de sessão:** Registra correções relevantes e achados de revisão julgados quando útil, com causa, impacto e verificação. Não há pontuação de penalidade nem pausa acionada por pontuação.
 
 **Recursos:** `subagent-prompt-template.md`, `memory-schema.md`.
 
@@ -757,7 +757,7 @@ Os arquivos específicos do projeto `stack/stack.yaml`, `stack/tech-stack.md`, s
 
 ### oma-video
 
-**Domínio:** Gerar vídeos curtos, explicativos e de demonstração humana por meio da CLI `oma video`, compondo script → narração → visuais → legendas → render do Remotion.
+**Domínio:** Gerar vídeos curtos, explicativos e de demonstração humana por meio da CLI `oma video`, compondo script → narração → visuais → legendas → render do HyperFrames.
 
 **Quando usar:** Gerar vídeo curto (shorts/reels, 9:16) a partir de um tema, explainers (16:9/9:16) a partir de README/código/dados, demonstrações a partir de captura de tela (`--source file`) ou captura supervisionada de aplicativo web em navegador headed (`--source web`) para qualquer URL e renderizar novamente uma execução existente de forma determinística.
 
@@ -773,7 +773,7 @@ Os arquivos específicos do projeto `stack/stack.yaml`, `stack/tech-stack.md`, s
 
 **Workflow:** PREPARE (modo/aspect/locale, esclareça/amplie o brief) → ACQUIRE (verifique disponibilidade dos fornecedores, valide o caminho de captura e o custo) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, hashes do manifest, código de saída e mp4) → FINALIZE (run-dir, caminho do mp4 e avisos de cobertura).
 
-**Recursos:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, o compositor `remotion/`, o driver de captura web e o compositor fallback `mpt/`, `config/video-config.yaml`.
+**Recursos:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, os guias de modo `hyperframes-authoring/`, o driver de captura web e o compositor fallback `mpt/`, `config/video-config.yaml`.
 
 ---
 
@@ -938,8 +938,8 @@ Durante sessões de orquestração, os agentes coordenam por arquivos de memóri
 | `task-board-{sessionId}.md` | Orchestrator | Atribuições de tarefas, prioridades e atualizações de status | Somente leitura |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esse run | Progresso turno a turno: ações, arquivos lidos/modificados e status atual | Lido pelo orquestrador |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esse run | Saída final: status (completed/failed), resumo, arquivos alterados e checklist dos critérios de aceitação | Lido pelo orquestrador |
-| `session-metrics.md` | Orchestrator | Acompanhamento de Clarification Debt e evolução do Quality Score | Lido pelo QA |
-| `experiment-ledger.md` | Orchestrator/QA | Acompanhamento de experimentos quando o Quality Score está ativo | Lido por todos |
+| `session-metrics.md` | Orchestrator | Evidência de sessão opcional e resultados medidos de experimentos | Lido pelo QA |
+| `experiment-ledger.md` | Orchestrator/QA | Evidências de experimentos reais | Lido por todos |
 
 As ferramentas de memória são configuráveis. Por padrão, os agentes leem e escrevem esses arquivos de coordenação diretamente com suas ferramentas nativas (`Read`, `Write`, `Edit`), mas ferramentas personalizadas e um caminho-base personalizado podem ser definidos em `mcp.json`:
 

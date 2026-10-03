@@ -57,7 +57,7 @@ description: "Полный справочник всех команд CLI oh-my-
 | `star` | `star`  <!-- Перевод на русский -->|
 | `visualize` | `visualize`  <!-- Перевод на русский -->|
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google`  <!-- Перевод на русский -->|
-| `harness` | `harness`, `harness eval`  <!-- Перевод на русский -->|
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run`  <!-- Перевод на русский -->|
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get`  <!-- Перевод на русский -->|
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint`  <!-- Перевод на русский -->|
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list`  <!-- Перевод на русский -->|
@@ -77,7 +77,7 @@ description: "Полный справочник всех команд CLI oh-my-
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review`  <!-- Перевод на русский -->|
 | `model` | `model`, `model check`, `model probe`, `model propose`  <!-- Перевод на русский -->|
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade`  <!-- Перевод на русский -->|
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`  <!-- Перевод на русский -->|
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`  <!-- Перевод на русский -->|
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync`  <!-- Перевод на русский -->|
 
 Когда команда передаёт оставшиеся аргументы другому инструменту, реестр намеренно оставляет её параметры открытыми. This applies to `market run` and `diagram archify`; перед изменяющей состояние или сетевой операцией прочитайте справку upstream.
@@ -149,7 +149,7 @@ oma doctor [--json] [--output <format>] [--profile]
   - `rerere.enabled=true` <!-- Перевод на русский -->
   - `init.defaultBranch=main` <!-- Перевод на русский -->
   - Each mismatch counts toward `totalIssues` <!-- Перевод на русский -->
-- Project vendor context files (e.g. `CLAUDE.md` / `AGENTS.md` OMA blocks when the matching CLI is installed). <!-- Перевод на русский -->
+- Файл контекста вендора проекта (блок OMA в `AGENTS.md`, если установлен Codex, Qwen или Claude Code ≥ 2.1.277). <!-- Перевод на русский -->
 - AgentMemory, state/hooks health, Serena reaper diagnostics, and related issue counters. <!-- Перевод на русский -->
 
 **Auto-repair:** If missing skills are detected, `doctor` offers to install them interactively. If recommended git config is missing or wrong, it offers the same opt-in global fixes used by install/update. <!-- Перевод на русский -->
@@ -265,7 +265,7 @@ Without `--global`, link targets `<cwd>/.agents/`; with it, `~/.agents/` (or `OM
 **Что делает команда:**
 1. Rebuilds vendor-native agent files from `.agents/agents/` <!-- Перевод на русский -->
 2. Refreshes hooks and local settings for the selected vendors <!-- Перевод на русский -->
-3. Regenerates `CLAUDE.md`, `GEMINI.md`, or `AGENTS.md` integration blocks <!-- Перевод на русский -->
+3. Заново генерирует блок интеграции `AGENTS.md` для каждого настроенного вендора, включая Claude Code. `CLAUDE.md` и `GEMINI.md` никогда не создаются и не получают блок OMA. Claude Code ≥ 2.1.277 читает `AGENTS.md` нативно, но игнорирует его всякий раз, когда существует `CLAUDE.md`, поэтому при наличии пользовательского `CLAUDE.md` link добавляет одну строку импорта `@AGENTS.md`; `oma update` также удаляет устаревший блок OMA из `CLAUDE.md`, как только обнаруживает эту версию <!-- Перевод на русский -->
 4. Refreshes Cursor MCP linkage and CLI skill symlinks when relevant <!-- Перевод на русский -->
 
 Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`, or hook definitions. <!-- Перевод на русский -->
@@ -280,7 +280,8 @@ Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`
 
 ### setup (рабочий процесс)
 
-The `/setup` workflow (invoked inside an agent session) provides interactive configuration of language, CLI installations, MCP connections, and agent-CLI mapping. This is different from `oma` (the installer): `/setup` configures an already-installed instance. <!-- Перевод на русский -->
+Рабочий процесс `/setup` (вызывается внутри сессии агента) обеспечивает интерактивную настройку языка, установок CLI, подключений MCP и сопоставления агентов с CLI. Это не то же самое, что `oma` (установщик): `/setup` настраивает уже установленный экземпляр.
+
 ---
 
 ## Мониторинг и метрики
@@ -517,7 +518,7 @@ and `--json` attached to the child command. <!-- Перевод на русск�
 Запускает процесс субагента.
 
 ```
-oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
+oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 **Аргументы:**
@@ -638,7 +639,7 @@ oma agent status session-20260324-143000 qa -r /path/to/project
 Запускает несколько субагентов параллельно.
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **Аргументы:**
@@ -771,7 +772,7 @@ oma goal set --workflow ultrawork --gate test --budget-minutes 120
 Регистрирует запланированную задачу агента. Exactly one of `--cron` or `--every` is required.
 
 ```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **Аргументы:**
@@ -829,7 +830,7 @@ oma schedule list [--json]
 |:-----|:----------- <!-- Перевод на русский -->|
 | `--json` | Output as JSON  <!-- Перевод на русский -->|
 
-**Drift states:** `synced` (manifest + OS agree), `missing-in-os` (run `schedule sync` to repair), `orphan-in-os` (OS has a job not in manifest; run `schedule sync --prune` to remove). <!-- Перевод на русский -->
+**Состояния drift:** `synced` (манифест и ОС согласованы), `stale` (регистрация в ОС вызывает команду, которую текущий CLI больше не принимает; выполните `schedule sync`, чтобы перезаписать её, `oma update` делает это автоматически), `missing-in-os` (выполните `schedule sync` для исправления), `orphan-in-os` (в ОС есть задача, которой нет в манифесте; выполните `schedule sync --prune`, чтобы удалить её). <!-- Перевод на русский -->
 
 **Примеры:**
 ```bash
@@ -1123,6 +1124,7 @@ Empty stdout means the chain produced a no-op for that event. A JSON object on s
 **Примечания об области:**
 - `statusLine`/hud entries are not routed through `oma hook run` (hot-path display stays on a direct `bun` path). <!-- Перевод на русский -->
 - The pi vendor uses its in-process `installPiExtension` bridge, not `oma hook run`. <!-- Перевод на русский -->
+- Дублирующиеся доставки из-за двойной установки (проект + глобально) отбрасываются внутри `oma hook run` (идентичный payload, запущенный другим wrapper `oma-hook.sh`); различные события, включая параллельные вызовы инструментов, выполняются всегда.
 
 See `cli/commands/hook/command.ts` for the router implementation (internally referred to as "design 019") and `cli/commands/hook/probe/` for the per-vendor compatibility matrix. <!-- Перевод на русский -->
 
@@ -1523,9 +1525,9 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` accepts `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor remotion|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, and `--capture-stop duration:<seconds>|selector:<css>`. Use `--source web --url <url>` for a browser capture; `--source file` is the default. `--output-dir` selects the run root, `--allow-external-output` permits a path outside `$PWD`, `--max-usd` sets a cost ceiling, `--seed` stabilizes planning inputs, and `--no-brief-in-manifest` stores a brief hash instead of its text. `--dry-run` stops after planning. `--output text|json` controls the CLI envelope. <!-- Перевод на русский -->
+`generate` accepts `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, and `--capture-stop duration:<seconds>|selector:<css>`. Use `--source web --url <url>` for a browser capture; `--source file` is the default. `--output-dir` selects the run root, `--allow-external-output` permits a path outside `$PWD`, `--max-usd` sets a cost ceiling, `--seed` stabilizes planning inputs, and `--no-brief-in-manifest` stores a brief hash instead of its text. `--dry-run` stops after planning. `--output text|json` controls the CLI envelope. <!-- Перевод на русский -->
 
-`doctor` checks the cached Remotion/MPT toolchain and accepts `--install`, `--upgrade`, `--install-mpt`, and `--install-strudel`. `provider list` reports provider availability and key status. `compose` scaffolds or refreshes the run composition and reports the authoring contract; `render` typechecks, renders, and probes the output. Missing compositor, composition, or toolchain dependencies are errors. The test-only `OMA_VIDEO_MOCK=1` path is the sole placeholder mode; a normal run never substitutes a text or tiny-file MP4. <!-- Перевод на русский -->
+`doctor` checks the cached HyperFrames/MPT toolchain and accepts `--install`, `--upgrade`, `--install-mpt`, and `--install-strudel`. `provider list` reports provider availability and key status. `compose` scaffolds or refreshes the run composition and reports the authoring contract; `render` lints, renders, and probes the output. Missing compositor, composition, or toolchain dependencies are errors. The test-only `OMA_VIDEO_MOCK=1` path is the sole placeholder mode; a normal run never substitutes a text or tiny-file MP4. <!-- Перевод на русский -->
 
 Successful JSON output contains `runDir`, `manifestPath`, `scriptPath`, and `renderSpecPath`; the manifest records selected providers, inputs, and generated assets. After `compose`, author the generated composition according to its `AUTHORING.md`, then rerun `render`. If a provider key is unavailable, run `oma video doctor`; if capture fails, check the URL, selector, device, and timeout; if rendering fails, fix the composition diagnostics before retrying. <!-- Перевод на русский -->
 
@@ -1980,6 +1982,24 @@ oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --
 
 See the [Harness Evaluation guide](../guide/harness-eval.md) for the suite schema, supported checks, isolation model, and current limitations. <!-- Перевод на русский -->
 
+### harness incident promote
+
+Превращает записанный инцидент в регрессионную fixture для навыка, который выполнял отказавший агент.
+
+```
+oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
+```
+
+### harness feedback
+
+Продвигает каждый ещё не продвинутый инцидент и, с `--live` или `--apply`, оптимизирует каждый пострадавший навык против его увеличенной suite.
+
+```
+oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
+```
+
+См. руководство [Регрессионные кейсы инцидентов](../guide/harness-incidents.md).
+
 ---
 
 ### help
@@ -2012,6 +2032,8 @@ Outputs the current CLI version and exits. <!-- Перевод на русски
 | `DASHBOARD_PORT` | Port for the web dashboard | `dashboard web`  <!-- Перевод на русский -->|
 | `MEMORIES_DIR` | Override the memories directory path | `dashboard`, `dashboard web`  <!-- Перевод на русский -->|
 | `OMA_SKILLEVAL_MOCK` | Set to `1` to force mock mode in `oma skill eval` regardless of flags | `skills eval`  <!-- Перевод на русский -->|
+| `OMA_HOOK_DEDUP` | Установите `0`, чтобы отключить подавление дублирующихся доставок в `oma hook run`. | `hook` |
+| `OMA_HOOK_DEDUP_DIR` | Переопределяет приватный каталог claim, используемый для подавления дублирующихся доставок хуков (по умолчанию: `$XDG_RUNTIME_DIR/oma-hook-dedup`, иначе `<tmpdir>/oma-hook-dedup-<uid>`). | `hook` |
 
 ---
 

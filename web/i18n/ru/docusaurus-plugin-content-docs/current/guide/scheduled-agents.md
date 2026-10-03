@@ -171,6 +171,7 @@ oma schedule list [--json]
 | Состояние | Значение |
 |---|---|
 | `synced` | Job существует и в manifest, и в планировщике ОС |
+| `stale` | Job зарегистрирован, но регистрация в ОС вызывает команду, которую текущий CLI больше не принимает (например, `schedule:run <id>`, записанную до стандартизации путей команд). Выполните `schedule sync`, чтобы перезаписать её; `oma update` делает это автоматически. |
 | `missing-in-os` | Job есть в manifest, но отсутствует в планировщике ОС. Выполните `schedule sync` для восстановления. |
 | `orphan-in-os` | Job есть в планировщике ОС, но отсутствует в manifest. Выполните `schedule sync --prune` для удаления. |
 
@@ -265,12 +266,14 @@ oma schedule sync [--prune]
 **Примеры:**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
+
+`oma update` выполняет ту же сверку (без `--prune`) после каждого обновления, поэтому релиз CLI, меняющий написание команды `oma schedule run`, не может оставить существующие регистрации ОС, указывающие на команду, которую новый бинарный файл отвергает. Регистрации, записанные старыми версиями с `oma schedule:run <id>`, тоже продолжают работать: это устаревшее написание по-прежнему принимается для задач, запускаемых ОС.
 
 ---
 

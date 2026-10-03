@@ -228,6 +228,8 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 
 These defaults can be overridden in `.agents/skills/oma-orchestration/config/cli-config.yaml`. <!-- Перевод на русский -->
 
+Codex сохраняет свою песочницу workspace-write. oma включает доступ к сети и добавляет корень проекта, домашний каталог состояния OMA (`~/.oma`) и существующие кеши менеджеров пакетов как каталоги, доступные для записи. `oma update` заменяет `cli-config.yaml`, поэтому для постоянного режима задайте `OMA_CODEX_SANDBOX`: `read-only`, `workspace-write` (по умолчанию) или `danger-full-access` (без песочницы и без подтверждений).
+
 ### agent status
 
 ```
@@ -246,7 +248,7 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 ### agent parallel
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Флаг | Короткая форма | Описание | По умолчанию |
@@ -349,7 +351,7 @@ oma video provider list [--output <format>]
 
 `video generate` принимает параметры планирования и захвата `--mode`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor`, `--capture`, `--source`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, and `--capture-stop`. Также поддерживаются `--output-dir`, `--allow-external-output`, `--max-usd`, `--seed`, `--timeout`, `--script`, `--dry-run`, `--yes`, `--output`, and `--no-brief-in-manifest`. Для захвата браузера используется `--source web --url <url>`; `file` is the default source. Обычный рендер требует an authored composition and a working compositor; placeholder-режим ограничен the `OMA_VIDEO_MOCK=1` test path.
 
-`video doctor` сообщает о состоянии или устанавливает the Remotion/MPT/Strudel toolchain. `compose` prepares the run's composition contract, and `render` typechecks, renders, and probes the output. `provider list` reports provider and key status. См. [Генерация видео](../guide/video-generation.md) for the run manifest and recovery sequence.
+`video doctor` сообщает о состоянии или устанавливает the HyperFrames/MPT/Strudel toolchain. `compose` prepares the run's composition contract, and `render` lints, renders, and probes the output. `provider list` reports provider and key status. См. [Генерация видео](../guide/video-generation.md) for the run manifest and recovery sequence.
 
 ### memory init
 
@@ -526,6 +528,12 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `search rss google` | `--locale <value>` | Build Google News RSS URL for a query  <!-- Перевод на русский -->|
 | `harness` | `—` | Evaluate OMA harness overlays against isolated repository tasks  <!-- Перевод на русский -->|
 | `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | Compare a candidate .agents overlay with the current baseline  <!-- Перевод на русский -->|
+| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | Выводит регрессионную fixture навыка из записанного инцидента |
+| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | Продвигает инциденты и оптимизирует пострадавшие навыки |
+| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | Включает запланированный цикл обратной связи проекта в рамках бюджета; режим — apply или propose |
+| `harness evolution status` | `--json, --output <format>` | Показывает конфигурацию, расписание, ожидающую работу, конфликты и последний цикл |
+| `harness evolution disable` | `--json, --output <format>` | Отключает запланированный цикл обратной связи проекта |
+| `harness evolution run` | `--json, --output <format>` | Запускает один цикл в сохранённом режиме и с сохранённым бюджетом включённого проекта |
 | `slide` | `—` | HTML presentation toolkit — scaffold, validate, export, and edit 1920×1080 slide decks  <!-- Перевод на русский -->|
 | `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | Geometric quality gate — renders slides via puppeteer-core and checks overflow/overlap/font-size  <!-- Перевод на русский -->|
 | `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | Merge per-slide files into a single self-contained .html deliverable  <!-- Перевод на русский -->|
@@ -558,7 +566,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `video` | `—` | Короткая форма-form, explainer, and demo video generation |
 | `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | Generate a video run directory from a brief  <!-- Перевод на русский -->|
 | `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | Check video provider and compositor readiness  <!-- Перевод на русский -->|
-| `video compose` | `--output <format>, --refresh, --offline` | Scaffold the run's Remotion project on the latest toolchain + remotion-dev/skills; prints the authoring contract  <!-- Перевод на русский -->|
+| `video compose` | `--output <format>, --refresh, --offline` | Создаёт scaffold проекта HyperFrames для запуска на последнем toolchain + heygen-com/hyperframes; печатает authoring contract  <!-- Перевод на русский -->|
 | `video render` | `--output <format>` | Re-render a run directory from render-spec.json  <!-- Перевод на русский -->|
 | `video provider` | `—` |   <!-- Перевод на русский -->|
 | `video provider list` | `--output <format>` | List video providers and availability  <!-- Перевод на русский -->|
@@ -646,8 +654,13 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `skill` | `—` | Inspect and audit installed skills  <!-- Перевод на русский -->|
 | `skill audit` | `--json, --output <format>` | Check frontmatter description similarity between installed skills  <!-- Перевод на русский -->|
 | `skill lint` | `--skill <id>, --json, --output <format>` | Detect per-skill authoring smells (frontmatter, structure, broken refs)  <!-- Перевод на русский -->|
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --require-coverage, --neg-transfer, --json, --output <format>` | Measure per-skill utility lift (treatment vs baseline on held-out tasks)  <!-- Перевод на русский -->|
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --json, --output <format>` | Optimize a skill's SKILL.md to maximize measured held-out utility lift  <!-- Перевод на русский -->|
+| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | Measure per-skill utility lift (treatment vs baseline on held-out tasks)  <!-- Перевод на русский -->|
+| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | Optimize a skill's SKILL.md to maximize measured held-out utility lift  <!-- Перевод на русский -->|
+| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | Предлагает и оценивает изменения процедуры эволюции на отложенных навыках |
+| `skill procedure` | `--export, --json, --output <format>` | Показывает процедуру эволюции (prompts optimizer/maintainer, constitution) и её hash-значения |
+| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | Агрегирует записанные запуски оптимизации по результату, режиму памяти и процедуре |
+| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | Описывает записанные продвижения и откаты SKILL.md для навыка либо для каждого навыка и процедуры с `--all` |
+| `skill rollback` | `--skill <id>, --json, --output <format>` | Восстанавливает тело SKILL.md, заменённое самым последним записанным продвижением |
 | `schedule` | `—` |   <!-- Перевод на русский -->|
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | Register a scheduled agent job  <!-- Перевод на русский -->|
 | `schedule list` | `--json, --output <format>` | List scheduled jobs with OS drift state (synced/missing-in-os/orphan-in-os), grouped by project  <!-- Перевод на русский -->|

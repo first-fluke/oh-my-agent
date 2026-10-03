@@ -411,7 +411,7 @@ Los `stack/stack.yaml`, `stack/tech-stack.md`, snippets y plantillas de API espe
 3. Revisión cruzada: el agente QA revisa los cambios
 4. En caso de fallo: los problemas se devuelven para corrección (máximo 5 iteraciones totales)
 
-**Monitoreo de Deuda de Clarificación:** Rastrea las correcciones del usuario durante las sesiones. Los eventos se puntúan como clarify (+10), correct (+25), redo (+40). DC >= 50 activa RCA obligatoria. DC >= 80 pausa la sesión.
+**Evidencia de sesión:** Registra las correcciones relevantes y los hallazgos de revisión dictaminados cuando resulta útil, con su causa, su impacto y su verificación. No se aplica ninguna puntuación de penalización ni pausa desencadenada por una puntuación.
 
 **Recursos:** `subagent-prompt-template.md`, `memory-schema.md`.
 
@@ -759,7 +759,7 @@ Los `stack/stack.yaml`, `stack/tech-stack.md`, snippets y plantillas de API espe
 
 ### oma-video
 
-**Dominio:** Generación de vídeos cortos, explainers y demos grabadas por humanos mediante la CLI `oma video`, componiendo guion → narración → visuales → subtítulos → render de Remotion.
+**Dominio:** Generación de vídeos cortos, explainers y demos grabadas por humanos mediante la CLI `oma video`, componiendo guion → narración → visuales → subtítulos → render de HyperFrames.
 
 **Cuándo usar:** Generar vídeos cortos (shorts/reels, 9:16) desde un tema, explainers (16:9/9:16) desde README/código/datos, demos/walkthroughs desde una captura de pantalla (`--source file`) o una captura supervisada de una aplicación web con navegador visible de cualquier URL (`--source web`), o volver a renderizar de forma determinista una ejecución existente.
 
@@ -775,7 +775,7 @@ Los `stack/stack.yaml`, `stack/tech-stack.md`, snippets y plantillas de API espe
 
 **Flujo:** PREPARE (modo/aspecto/locale, aclarar/ampliar el brief) → ACQUIRE (comprobar disponibilidad de proveedores, validar la captura y comprobar el costo) → ACT (guion → voz ∥ visuales ∥ subtítulos → render-spec → render) → VERIFY (esquema, hashes del manifest, código de salida y mp4) → FINALIZE (directorio de ejecución + ruta al mp4 + advertencias de cobertura).
 
-**Recursos:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, además del compositor Remotion distribuido en `remotion/`, el driver de captura web y el compositor fallback `mpt/`; `config/video-config.yaml`.
+**Recursos:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, además de las guías de modo de `hyperframes-authoring/`, el driver de captura web y el compositor fallback `mpt/`; `config/video-config.yaml`.
 
 ---
 
@@ -940,8 +940,8 @@ Durante las sesiones de orquestación, los agentes se coordinan mediante archivo
 | `task-board-{sessionId}.md` | Orquestador | Asignaciones de tareas, prioridades, actualizaciones de estado | Solo lectura |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esa ejecución | Progreso turno a turno: acciones realizadas, archivos leídos/modificados y estado actual | El orquestador lee |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esa ejecución | Salida final: estado (completado/fallido), resumen, archivos modificados y lista de criterios de aceptación | El orquestador lee |
-| `session-metrics.md` | Orquestador | Seguimiento de Deuda de Clarificación, progresión de Quality Score | QA lee |
-| `experiment-ledger.md` | Orquestador/QA | Seguimiento de experimentos cuando Quality Score está activo | Todos leen |
+| `session-metrics.md` | Orquestador | Evidencia de sesión opcional y resultados medidos de experimentos | QA lee |
+| `experiment-ledger.md` | Orquestador/QA | Evidencia de experimentos reales | Todos leen |
 
 Las herramientas de memoria son configurables. Por defecto los agentes leen y escriben estos archivos de coordinación directamente con sus herramientas nativas (`Read`, `Write`, `Edit`), pero se pueden configurar herramientas personalizadas y una ruta base en `mcp.json`:
 

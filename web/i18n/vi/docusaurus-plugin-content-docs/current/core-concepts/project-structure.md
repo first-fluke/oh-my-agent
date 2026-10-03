@@ -220,7 +220,7 @@ your-project/
 │   │       ├── task-board-{sessionId}.md          ← Task assignments and status
 │   │       ├── progress-{agentId}-{taskId}-{runId}-{sessionId}.md ← Run-scoped progress updates
 │   │       ├── result-{agentId}-{taskId}-{runId}-{sessionId}.md   ← Run-scoped final outputs
-│   │       ├── session-metrics.md         ← Clarification Debt and Quality Score tracking
+│   │       ├── session-metrics.md         ← Session evidence and experiment results
 │   │       ├── experiment-ledger.md       ← Experiment tracking (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
@@ -383,16 +383,19 @@ Nguồn handler là SSOT tại `.agents/hooks/core/` và chạy trong process qu
 
 **`scm-guard.ts`**: Handler thuần (`run()`) trên `PreToolUse` (tool Bash/shell), từ chối `git add` các file có vẻ chứa secret. Thực thi `forbidden_patterns` trừ `allowed_exceptions` từ `.agents/skills/oma-scm/config/commit-config.yaml` (default nhúng khi thiếu config). Chạy trước `test-filter` trong chain của claude, codex, cursor, grok, kimi, kiro và qwen, cũng như trong bridge opencode (`tool.execute.before` throw để block) và bridge pi (`tool_call` trả về `{ block: true, reason }`); lệnh có tiền tố `OMA_SCM_ALLOW_SECRETS=1` bypass guard sau khi người dùng chấp thuận rõ ràng. Staging rộng (`git add -A` / `git add .`) cố ý không bị block, vì rule đó phụ thuộc vào consent của người dùng mà hook không quan sát được.
 
+**`code-intelligence-guard.ts`**: Handler thuần (`run()`) trên `PreToolUse`, thực thi rule "Code Search" một cách cơ học. Khi `providers.code_intelligence` resolve thành `serena` (hoặc `gortex`) và `providers.code_intelligence_guard` không phải `off`, handler từ chối các tool tìm kiếm native (`Grep`, `Glob` trên Claude Code) và các lệnh shell có binary đứng đầu là tìm kiếm code đệ quy (`rg`, `ag`, `ack`, `fd`, `grep -r`, `find -name`/`-path`, `git grep`); lý do từ chối nêu tên tool của provider cần dùng thay thế (`search_for_pattern`, `find_file`, `find_symbol`). `grep` không đệ quy (bộ lọc pipe, file đơn lẻ), `find` không có name predicate và thao tác đọc không bao giờ bị can thiệp. Được đăng ký ngay sau `scm-guard` cho claude, codex, cursor, grok, kimi, kiro và qwen; installer gộp các matcher của chain, nên entry `PreToolUse` của Claude trở thành `Bash|Grep|Glob`. Lệnh shell chứa `OMA_CI_ALLOW_NATIVE=1` vẫn bypass được guard, nhưng chỉ như lối thoát dành cho operator khi tìm kiếm tài nguyên nằm ngoài project hoặc các path bị ignore mà guard không nhận ra. Lý do từ chối không nêu tiền tố này, và đó không phải đường fallback cho source của project.
+
 **`triggers.json`**: Mapping keyword tới workflow, được inline tĩnh vào binary `oma` lúc build (source: `.agents/hooks/core/triggers.json`). Định nghĩa:
-- `workflows`: Map tên workflow tới `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] } }`. `keywords` là phrase literal; `patterns` là raw regex string (compile với cờ `iu`).
+- `workflows`: Map tên workflow tới `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] }, explicit?: [...] }`. `keywords` là phrase literal; `patterns` là raw regex string (compile với cờ `iu`). `explicit` (chỉ persistent workflow) liệt kê các keyword được tính là lời gọi rõ ràng — chỉ các keyword này mới kích hoạt persistent mode; mọi match khác được inject dưới dạng gợi ý.
 - `informationalPatterns`: Phrase biểu thị câu hỏi (lọc khỏi auto-detection)
 - `excludedWorkflows`: Workflow yêu cầu gọi `/command` rõ ràng
-- `cjkScripts`: Mã ngôn ngữ dùng script CJK (ko, ja, zh)
 
 Các section ngôn ngữ trong `keywords`, `patterns` và `informationalPatterns` theo quy ước:
-- `*`: Universal/English. Luôn tải bất kể setting `language` trong `.agents/oma-config.yaml`.
-- `en`: Tải để tương thích ngược. Về chức năng tương đương `*`. Nội dung tiếng Anh mới nên đặt trong `*`.
-- `ko`/`ja`/`zh`/etc.: Theo ngôn ngữ cụ thể. Chỉ tải khi đặt `language: <code>` trong `.agents/oma-config.yaml`.
+- `*`: Universal/English.
+- `en`: Về chức năng tương đương `*`.
+- `ko`/`ja`/`zh`/etc.: Cách diễn đạt theo ngôn ngữ cụ thể.
+
+Mọi section đều luôn được tải; setting `language` trong `.agents/oma-config.yaml` chỉ điều khiển ngôn ngữ phản hồi. Ranh giới từ phụ thuộc vào chính keyword: keyword ASCII khớp nguyên từ, keyword chứa văn bản không phải ASCII khớp như chuỗi con.
 
 #### Materialize theo vendor: before → after
 
@@ -488,8 +491,8 @@ Nơi agent ghi progress trong các session orchestration. Đây là kho memory �
 | `task-board-{sessionId}.md` | Orchestrator | Phân công task: agent, task, priority, status, dependency |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Lần chạy đó | Cập nhật từng lượt: hành động, file đã đọc/thay đổi, status hiện tại |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Lần chạy đó | Output cuối: status hoàn tất, summary, file đã thay đổi, tiêu chí chấp nhận |
-| `session-metrics.md` | Orchestrator | Sự kiện Clarification Debt, diễn tiến Quality Score |
-| `experiment-ledger.md` | Orchestrator/QA | Các dòng experiment khi Quality Score hoạt động |
+| `session-metrics.md` | Orchestrator | Các sửa chữa đáng kể và bằng chứng experiment |
+| `experiment-ledger.md` | Orchestrator/QA | Các dòng bằng chứng cho experiment thực sự |
 | `session-work.md` | Work workflow | State session theo Work workflow |
 | `session-ultrawork.md` | Ultrawork workflow | Theo dõi phase theo Ultrawork |
 | `session-cost-{sessionId}.md` | System | Telemetry chi phí spawn theo session |

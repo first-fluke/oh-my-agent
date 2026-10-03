@@ -198,9 +198,10 @@ oma stats get
 Если текущий runtime совпадает с target vendor в `.agents/oma-config.yaml`, workflow должен предпочесть native subagents:
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`, выбирается через `subagent_type` Agent tool
 - Antigravity CLI/IDE -> `oma agent spawn` через `agy`
 
-Для cross-vendor tasks всё равно используется `oma agent spawn`.
+Для cross-vendor tasks и `model_preset: free` используется `oma agent spawn`. Native dispatch по-прежнему требует, чтобы [жизненный цикл результата](./agent-results-and-resume.md) фиксировал доказательства верификации.
 
 ---
 
@@ -223,14 +224,14 @@ oma stats get
 **Phase 2, IMPL (Step 5, Dev Agents spawned):**
 - Backend agent реализует Stripe integration (webhooks, idempotency, error handling)
 - Frontend agent создаёт checkout flow и payment status UI
-- Step 5.2: измерить baseline Quality Score (tests, lint, typecheck)
+- Step 5.2: записать baseline, только если нужно определённое сравнение измерений
 - IMPL_GATE: применимые non-emitting checks и tests проходят, изменены только запланированные файлы; build checks запускаются только по явному запросу
 
 **Phase 3, VERIFY (Steps 6-8, QA Agent spawned):**
 - Step 6: Alignment Review (соответствует ли implementation плану?)
 - Step 7: Security/Bug Review (OWASP, npm audit, Stripe security best practices)
 - Step 8: Improvement/Regression Review (нет новых regressions)
-- VERIFY_GATE: Zero CRITICAL, zero HIGH, Quality Score >= 75
+- VERIFY_GATE: Zero CRITICAL, zero HIGH, применимые целевые показатели измерений проекта достигнуты
 
 **Phase 4, REFINE (Steps 9-13, Refactor Agent spawned):**
 - Step 9: разделить большие files (> 500 lines) и functions (> 50 lines)
@@ -238,7 +239,7 @@ oma stats get
 - Step 11: Side Effect Review (проследить cascade impact через `find_referencing_symbols`)
 - Step 12: Full Change Review (consistency имён, alignment стиля)
 - Step 13: удалить dead code
-- REFINE_GATE: Quality Score не ухудшился, код очищен
+- REFINE_GATE: нет нерешённой измеренной регрессии, код очищен
 
 **Phase 5, SHIP (Steps 14-17, QA Agent spawned):**
 - Step 14: Code Quality Review (lint, types, coverage)

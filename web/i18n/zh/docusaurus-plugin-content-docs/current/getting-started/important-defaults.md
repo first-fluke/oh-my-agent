@@ -15,6 +15,7 @@ sidebar_label: 重要默认值
 | 响应语言 | `en` | 除非项目配置选择了其他受支持语言，否则智能体和工作流使用英语。宿主或工作流支持时，明确的用户或会话语言指令仍可覆盖项目默认值。 | `.agents/oma-config.yaml` 或 `.cue` 中的 `language` |
 | 模型路由 | `auto` | 使用当前运行时的原生智能体配置。设置了 `default_cli` 时，未知运行时回退到它。 | `model_preset`、`default_cli` 或 `agents.<id>` |
 | 代码智能 | `serena` | 新安装会尝试安装 Serena，并接入其 MCP 配置。 | `providers.code_intelligence: gortex` 或 `serena` |
+| 代码搜索保护 | `block` | 只要配置了代码智能提供方，PreToolUse 钩子就会拒绝原生 `Grep`/`Glob` 和递归 shell 搜索（`rg`、`grep -r`、`find -name`），并引导智能体改用提供方的工具。仅限已确认排除项或项目之外路径的搜索会被放行。该钩子不会提示针对项目源代码的绕过方式。 | `providers.code_intelligence_guard: off` |
 | 语义内存 | `agentmemory` | 可用时选择 Agent Memory 作为语义内存。 | `providers.semantic_memory: honcho` 或 `none` |
 | 网页搜索 | `native` | 除非选择了提供方，否则搜索使用运行时的原生网页通道。 | `providers.web` |
 | 文档提供方 | `context7` | 技能请求文档查找时使用 Context7 提供方。 | `providers.docs` |

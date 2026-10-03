@@ -1,14 +1,26 @@
 ---
 title: "快速开始"
-description: "从空项目到经过验证的 oh-my-agent 提示词的最短路径，包含预期结果和恢复步骤。"
+description: "从安装到验证，运行一个范围明确的任务，包含预期输出和恢复步骤。"
 sidebar_label: 快速开始
 ---
 
 # 快速开始
 
-如果你想在阅读完整参考前确认脚手架是否正常工作，请使用此页。你需要一个项目目录，以及至少一个受支持的 AI CLI 或 IDE。安装器可在 macOS、Linux 或 Windows 上安装 `bun`、`uv`、Serena 和 CUE。首次提示必须使用所选的宿主集成，供应商和浏览器集成为可选项。
+使用此页运行一个小任务，并记录具体结果。你需要一个项目目录，以及至少一个受支持的 AI CLI 或 IDE。安装器可在 macOS、Linux 或 Windows 上安装 `bun`、`uv`、Serena 和 CUE。首次提示必须使用所选的宿主集成，供应商和浏览器集成为可选项。
 
-## 1. 安装项目脚手架
+## 1. 安装
+
+### 最快路径：把技能装进你的智能体
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+这会把 OMA 技能包安装到检测到的智能体运行时中（Claude Code、Cursor、Codex 等）。技能教智能体如何工作。如需 Stop 钩子关卡、产物验证、独立 judge 和 `oma` CLI，请安装下面的完整脚手架。
+
+仅安装技能时，不会提供 `oma` CLI、钩子、工作流或 judge。下面的第一个任务请使用已安装的指定技能；需要 CLI 检查时，请使用完整脚手架。
+
+### 完整脚手架（关卡、钩子、CLI）
 
 在项目目录中运行引导安装器：
 
@@ -32,27 +44,47 @@ bunx oh-my-agent@latest
 
 引导脚本会安装到当前项目中。如果要进行 HOME 级别的安装，请使用 `oma install --global`。在混用项目级和全局安装前，请阅读[安装](./installation.md)。
 
-## 2. 检查结果
+## 2. 检查结果（仅限完整脚手架）
 
-在同一项目目录中运行健康检查：
+如果你安装了完整脚手架，请在同一项目目录中运行健康检查：
 
 ```bash
 oma doctor
 ```
 
-成功表示所选供应商集成和 `.agents/` 文件已准备就绪。可选的 MCP、浏览器、内存或代码智能集成可能会以警告形式报告；只有使用这些能力的任务才需要它们。使用 `oma doctor --profile` 可以检查每个规范智能体角色解析出的模型和 CLI。
+文本形式的命令会打印一份报告，其中包含 `CLI Status` 和 `Skills Status` 等小节，然后返回 shell 状态。具体的行取决于项目中安装的宿主：
 
-如果找不到该命令，说明 CLI 安装在当前 `PATH` 之外；打开新的 shell，或将包管理器的 bin 目录加入路径。如果 `oma doctor` 报告配置无效，请修复指出的字段后再次运行。不要删除 `.agents/oma-config.yaml` 来恢复，它是用户拥有的配置文件，用于在更新之间保留设置。
+```text
+┌   🩺 oh-my-agent doctor
+◇  CLI Status ...
+◇  Skills Status ...
+$ echo $?
+0
+```
+
+可选的 MCP、浏览器、内存或代码智能集成可能会以警告形式报告；只有使用这些能力的任务才需要它们。如需机器可读的状态，`oma doctor --json` 在报告包含问题时会返回非零状态。使用 `oma doctor --profile` 可以检查每个规范智能体角色解析出的模型和 CLI。
+
+如果 `oma` 不可用但已安装 Bun，可以不使用全局命令，直接运行同样的检查：
+
+```bash
+bunx oh-my-agent@latest doctor
+```
+
+如果仍然找不到 `oma` 命令，请打开新的 shell，或将包管理器的 bin 目录加入 `PATH`。如果 `oma doctor` 报告配置无效，请修复指出的字段后再次运行。不要删除 `.agents/oma-config.yaml` 来恢复，它是用户拥有的配置文件，用于在更新之间保留设置。
+
+如果只安装了技能，请跳过这项 CLI 检查，继续下面使用指定技能的任务。
 
 ## 3. 运行一个小任务
 
-在已配置的 AI 工具中打开仓库，并描述一个自包含的修改：
+在已配置的 AI 工具中打开仓库，请求使用一个指定技能，并要求一个自包含的结果：
 
 ```text
-Add a validation message to the existing email field. Follow the project's current form and test conventions. Done when the invalid-email case is covered by a focused test.
+Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-为所选宿主启用关键词钩子后，它可以激活匹配的工作流。技能路由由宿主或所选工作流执行，因此任意宿主提示都不能保证触发钩子、使用某个特定技能或生成 `CHARTER_CHECK`。执行契约仍应检查仓库约定，只进行范围内的修改，并报告验证结果。具体文件和命令取决于项目，上面的提示仅作示例。
+宿主应当识别所选技能，检查一个目标，并报告：要么对链接做了有针对性的修改，要么该链接本来就有效。对于实际运行过的检查，请附上命令输出和退出状态。仅安装技能不会增加 `/debug`、`/ralph`、钩子或工作流关卡；点名指定技能可以让这个首个任务保持在已安装的能力范围内。
+
+为所选宿主启用关键词钩子后，它可以激活匹配的工作流。技能路由由宿主或所选工作流执行，因此任意宿主提示都不能保证触发钩子、使用某个特定技能或生成 `CHARTER_CHECK`。执行契约仍应检查仓库约定，只进行范围内的修改，并报告验证结果。具体文件和命令取决于项目。
 
 如果任务跨越 API 和 UI 边界，请明确选择 `/work` 或 `/orchestrate`。单一领域的任务可以继续阅读[单技能执行](../guide/single-skill.md)。[使用指南](../guide/usage.md)包含更长的示例。
 

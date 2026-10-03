@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci`는 비대화형으로 실행합니다. 사용자 설정이 예기치 않게 교체되었다면 `--force`를 사용했는지 확인하세요. 일반 업데이트는 사용자가 소유한 설정을 보존하지만 강제 모드는 교체할 수 있습니다.
 
+## 설치 또는 업데이트가 릴리스를 다운로드할 수 없음
+
+<!-- oma-docs:ignore-start -->
+`oma install`, `oma update`, `oma doctor` 복구는 `main`의 `prompt-manifest.json`이 가리키는 릴리스를 다운로드합니다. `cli-v<version>` GitHub 릴리스의 `agent-skills.tar.gz` 에셋을 먼저 시도하며 `.sha256` 파일로 검증하고, 그다음 해당 태그의 소스 아카이브, 그다음 해당 태그의 shallow clone을 시도합니다. 체크섬이 일치하지 않거나 페이로드의 `.agents/skills/_version.json`이 다른 버전을 가리키면, 다른 소스를 시도하지 않고 실행을 중단합니다.
+<!-- oma-docs:ignore-end -->
+
+릴리스를 발행한 직후에는 매니페스트가 아직 에셋이 게시되고 있는 버전을 가리킬 수 있으니 몇 분 기다렸다가 다시 시도하세요. `main` 브랜치의 릴리스되지 않은 콘텐츠를 일부러 설치하려면 그 실행에 한해 명시적으로 활성화하세요:
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+실행하면 main 브랜치의 콘텐츠는 태그된 릴리스도 아니고 체크섬 검증도 거치지 않았다는 경고가 출력됩니다.
+
 ## 벤더가 시작되지 않음
 
 벤더 자체 인증 검사를 실행한 뒤 OMA의 해석된 프로필을 확인합니다.

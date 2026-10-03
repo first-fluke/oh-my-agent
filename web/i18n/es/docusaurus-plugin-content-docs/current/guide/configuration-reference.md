@@ -43,7 +43,7 @@ Las siguientes claves las lee el esquema del runtime actual o los consumidores i
 | `telemetry` | boolean | `false` | Activación de telemetría del proveedor usada por install, update y link. |
 | `model_preset` | string no vacío | `auto` en las plantillas nuevas | Preset de modelo integrado o personalizado. `OMA_MODEL_PRESET` lo sobrescribe para un proceso. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Ajustes de FreeLLMAPI cuando el preset es `free`; `FREELLM_BASE_URL` y `FREELLM_MODEL` sobrescriben los valores del archivo, y el nombre de la clave nunca contiene el secreto. Consulta [Configuración de modelos por agente](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `semantic_memory` | `context7`, `native`, `serena`, `agentmemory` | Selecciona los proveedores de documentación, búsqueda, inteligencia de código y memoria semántica. La inteligencia de código acepta `serena` o `gortex`; la memoria semántica acepta `agentmemory`, `honcho` o `none`. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Selecciona los proveedores de documentación, búsqueda, inteligencia de código y memoria semántica. La inteligencia de código acepta `serena` o `gortex`; la memoria semántica acepta `agentmemory`, `honcho` o `none`. `code_intelligence_guard` (`block` u `off`) controla el guard de búsqueda de PreToolUse. Las búsquedas nativas limitadas a exclusiones confirmadas del proveedor o a rutas fuera del proyecto se permiten sin necesidad de omitir el guard. El guard lee las exclusiones de Serena y las reglas de gitignore habilitadas, o el listado de exclusiones de Gortex; no infiere dependencias a partir de los nombres de directorio. El hook no nombra `OMA_CI_ALLOW_NATIVE`. Una búsqueda de shell con el prefijo `OMA_CI_ALLOW_NATIVE=1` omite el guard solo para recursos fuera del proyecto o rutas ignoradas que el guard no reconoció, no para el código fuente del proyecto. |
 | `brave` | `api_key_env` o `api_key_vault` | sin definir | Referencia de credenciales de búsqueda de Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Consulta [Detalles de Honcho](#honcho-semantic-memory) | Ajustes de conexión de la memoria semántica de Honcho. |
 | `agents` | ID de agente → `model`, `effort`, `thinking`, `memory` opcionales | resolución del preset | Sobrescrituras por agente aplicadas sobre el preset seleccionado. El nivel de esfuerzo es `none`, `low`, `medium`, `high` o `xhigh`; el tipo de memoria es `user`, `project` o `local`. |
@@ -55,7 +55,7 @@ Las siguientes claves las lee el esquema del runtime actual o los consumidores i
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Comportamiento y exclusiones de escaneo de `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transporte MCP y comportamiento de actualización de Serena. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` o `[]` | sin definir = deja intacta la configuración existente | Selección de MCP de DevTools del navegador durante la reconciliación. Una lista vacía explícita elimina las entradas seleccionadas. |
-| `video` | mapa sparse propiedad de la skill | valor predeterminado de la skill; consulta [Generación de vídeo](/docs/guide/video-generation) | Enrutamiento de vídeo, orden de proveedores, salida, costos, límites y ajustes de actualización de Remotion. |
+| `video` | mapa sparse propiedad de la skill | valor predeterminado de la skill; consulta [Generación de vídeo](/docs/guide/video-generation) | Enrutamiento de vídeo, orden de proveedores, salida, costos, límites y ajustes de actualización de HyperFrames. |
 | `image` | mapa sparse propiedad de la skill | valor predeterminado de la skill; consulta [Generación de imágenes](/docs/guide/image-generation) | Proveedor de imágenes, tamaño, calidad, salida, comparación y costos. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | valor predeterminado de la skill; consulta [Flujos de contenido e investigación](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Perfil, salida y límites de longitud de Voicebox. |
 | `hwp` | `format`, `version.*`, `output.*` | valor predeterminado de la skill; consulta [Flujos de contenido e investigación](/docs/guide/content-and-research#extract-hwp-family-documents) | Formato de Kordoc, canal de versión y ubicación de salida. |
@@ -181,6 +181,7 @@ Selecciona explícitamente los proveedores de inteligencia de código y memoria:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

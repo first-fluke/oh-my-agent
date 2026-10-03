@@ -225,6 +225,8 @@ Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 
 Thông tin của mục này được giữ theo registry hiện tại. `.agents/skills/oma-orchestration/config/cli-config.yaml`
 
+Codex giữ nguyên sandbox workspace-write của nó. oma bật quyền truy cập mạng và thêm project root, OMA state home (`~/.oma`) cùng các cache package-manager hiện có làm thư mục có thể ghi. `oma update` thay thế `cli-config.yaml`, nên hãy đặt chế độ lâu dài bằng `OMA_CODEX_SANDBOX`: `read-only`, `workspace-write` (mặc định) hoặc `danger-full-access` (không sandbox và không cần approval).
+
 ### agent status
 
 ```
@@ -243,7 +245,7 @@ Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 ### agent parallel
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flag | Nội dung tương ứng | Mô tả | Mặc định |
@@ -344,9 +346,9 @@ oma video render <run-dir> [--output <format>]
 oma video provider list [--output <format>]
 ```
 
-Thông tin của mục này được giữ theo registry hiện tại. `video generate` `--mode` `--aspect` `--locale` `--captions` `--visual` `--voice` `--music` `--duration` `--compositor` `--capture` `--source` `--url` `--device` `--ready-selector` `--show-cursor` `--polish` `--capture-timeout` `--capture-stop` `--output-dir` `--allow-external-output` `--max-usd` `--seed` `--timeout` `--script` `--dry-run` `--yes` `--output` `--no-brief-in-manifest` `--source web --url <url>` `file` `OMA_VIDEO_MOCK=1`
+`video generate` nhận các tùy chọn điều khiển planning và capture `--mode`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor`, `--capture`, `--source`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` và `--capture-stop`. Lệnh này cũng nhận `--output-dir`, `--allow-external-output`, `--max-usd`, `--seed`, `--timeout`, `--script`, `--dry-run`, `--yes`, `--output` và `--no-brief-in-manifest`. Capture bằng browser dùng `--source web --url <url>`; `file` là source mặc định. Một lần render bình thường cần composition đã được author và compositor hoạt động; placeholder chỉ giới hạn ở đường test `OMA_VIDEO_MOCK=1`.
 
-Thông tin của mục này được giữ theo registry hiện tại. `video doctor` `compose` `render` `provider list` [Tham chiếu](../guide/video-generation.md)
+`video doctor` báo cáo hoặc provision toolchain HyperFrames/MPT/Strudel. `compose` chuẩn bị composition contract của run, còn `render` chạy lint, render và probe output. `provider list` báo trạng thái provider và key. Xem [Tạo video](../guide/video-generation.md) để biết run manifest và trình tự khắc phục sự cố.
 
 ### memory init
 
@@ -523,6 +525,12 @@ Ma trận sau được tạo từ registry lệnh công khai đã được commi
 | `search rss google` | `--locale <value>` | Nội dung tương ứng |
 | `harness` | `—` | Nội dung tương ứng |
 | `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | Nội dung tương ứng |
+| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | Dẫn xuất fixture hồi quy skill từ một sự cố đã ghi nhận |
+| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | Thăng cấp các sự cố và tối ưu các skill bị ảnh hưởng |
+| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | Bật chu trình feedback theo lịch có ngân sách của project; mode là apply hoặc propose |
+| `harness evolution status` | `--json, --output <format>` | Hiển thị cấu hình, lịch, công việc đang chờ, xung đột và chu trình gần nhất |
+| `harness evolution disable` | `--json, --output <format>` | Tắt chu trình feedback theo lịch của project |
+| `harness evolution run` | `--json, --output <format>` | Chạy một chu trình theo mode và ngân sách đã lưu của project đang được bật |
 | `slide` | `—` | Nội dung tương ứng |
 | `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | Nội dung tương ứng |
 | `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | Nội dung tương ứng |
@@ -555,7 +563,7 @@ Ma trận sau được tạo từ registry lệnh công khai đã được commi
 | `video` | `—` | Nội dung tương ứng |
 | `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | Nội dung tương ứng |
 | `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | Nội dung tương ứng |
-| `video compose` | `--output <format>, --refresh, --offline` | Nội dung tương ứng |
+| `video compose` | `--output <format>, --refresh, --offline` | Scaffold project HyperFrames của run trên toolchain mới nhất + heygen-com/hyperframes; in authoring contract |
 | `video render` | `--output <format>` | Nội dung tương ứng |
 | `video provider` | `—` |  |
 | `video provider list` | `--output <format>` | Nội dung tương ứng |
@@ -643,8 +651,13 @@ Ma trận sau được tạo từ registry lệnh công khai đã được commi
 | `skill` | `—` | Nội dung tương ứng |
 | `skill audit` | `--json, --output <format>` | Nội dung tương ứng |
 | `skill lint` | `--skill <id>, --json, --output <format>` | Nội dung tương ứng |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --require-coverage, --neg-transfer, --json, --output <format>` | Nội dung tương ứng |
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --json, --output <format>` | Nội dung tương ứng |
+| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | Nội dung tương ứng |
+| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | Nội dung tương ứng |
+| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | Đề xuất và chấm điểm các thay đổi đối với quy trình evolution trên các skill held-out |
+| `skill procedure` | `--export, --json, --output <format>` | Hiển thị quy trình evolution (prompt optimizer/maintainer, constitution) cùng các hash của nó |
+| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | Tổng hợp các lần chạy optimization đã ghi theo kết quả, memory mode và quy trình |
+| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | Tường thuật các lần thăng cấp và rollback SKILL.md đã ghi cho một skill, hoặc cho mọi skill và quy trình khi dùng `--all` |
+| `skill rollback` | `--skill <id>, --json, --output <format>` | Khôi phục phần body SKILL.md đã bị thay bởi lần thăng cấp được ghi gần nhất |
 | `schedule` | `—` |  |
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | Nội dung tương ứng |
 | `schedule list` | `--json, --output <format>` | Nội dung tương ứng |

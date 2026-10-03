@@ -10,6 +10,8 @@
 
 oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，直到项目自己的 `typecheck` / `test` / `lint` 脚本以 0 退出为止。门禁命令判断某个工作流是否真的跑过，靠的是它跑过就必然留下的产出物；最终结果以这条命令给出的 JSON 判定为准，而不是 agent 的自述。独立的 judge 每一轮都会在全新上下文里重新校验每一条标准，包括那些已经通过的。每一次门禁判定都会落到一份只追加的事件日志上，事后可以逐条翻看。同一套纪律，再从一个可移植的 `.agents/` 目录铺到十几种 agent 运行时上。
 
+从现有的[快速开始](../web/docs/getting-started/quick-start.md)入手：选择安装路径，请一个指定的 skill 做一项范围明确的改动，并记录文件、检查命令和退出状态。完整 harness 路径包含 `oma doctor`。
+
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
@@ -176,7 +178,7 @@ APM 只分发 skills。完整 harness 请用 `bunx oh-my-agent@latest`（或上�
 | **oma-orchestration** | 通过 CLI 并行调度多个 agent |
 | **oma-pm** | 规划任务、拆解需求、定义 API 契约 |
 | **oma-qa** | 审查代码的 OWASP 安全性、性能与无障碍合规 |
-| **oma-refactor** | 借助热点定位与特性化测试安全网，在不改变行为的前提下重构代码 |
+| **oma-refactor** | 借助热点定位、特性化测试安全网和只含重构的提交，在不改变行为的前提下重构代码 |
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
 | **oma-search** | 将每条查询路由至最优来源，并标注结果的可信度评分 |
 | **oma-tf-infra** | 使用 Terraform 完成多云基础设施的自动化编排 |
@@ -206,8 +208,12 @@ APM 只分发 skills。完整 harness 请用 `bunx oh-my-agent@latest`（或上�
 | **oma-scholar** | 检索学术文献，协助开展同行评审 |
 | **oma-slide** | 生成特色鲜明、动画丰富的 HTML 演示文稿卡片，并导出至 PDF/PNG/PPTX |
 | **oma-translation** | 将内容翻译成目标语言，读来如同母语写就 |
-| **oma-video** | 通过可免密钥的 Remotion 流水线生成短视频、讲解视频和演示视频 |
+| **oma-video** | 通过可免密钥的 HyperFrames 流水线生成短视频、讲解视频和演示视频 |
 | **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |
+
+### Orca IDE
+
+[OMA for Orca](../integrations/orca/README.md) 会添加一个侧边栏面板和命令面板操作，用于项目设置、审查、调试、验证和本地结果。它使用你现有的 Orca agent 终端和项目中的 OMA 安装。需要 Orca 1.4.197+，并启用实验性插件。
 
 ## 工作原理
 
@@ -276,10 +282,16 @@ agents:
 
 预算也用同一套办法约束。`session.quota_cap` 会限定 token 数、spawn 次数和单厂商开销，任何一个维度超标，编排器都会拒绝下一次 spawn。当挂钟时间预算耗尽时，Stop hook 也会诚实地停下来，把部分完成状态记入事件日志，而不是假装已经收工。
 
+### 控制边界
+
+oh-my-agent 把开放式的规划和下一步行动的选择交给宿主 LLM，不会用一张通用的工作流图或策略引擎来取代这种判断。它做的是把无论使用哪个模型都必须成立的不变量外化出来：工具护栏、权限、预算、重试与停止上限、持久事件，以及经机械核查的完成情况。结构化事件记录的是决策和门禁结果，并不充当第二个规划器。
+
+因此，确定性的 SLM 执行是一个独立的、可选的产品方向，而不是当前 harness 中缺失的基础设施。
+
 ## 为什么选 oh-my-agent？
 
 - **角色化**：像真正的工程团队一样建模，而不是一堆 prompt 的堆砌
-- **省 token**：双层 skill 设计节省约 75% 的 token（[原理](../web/docs/guide/usage.md)）
+- **按需上下文**：派发时加载负责该任务的 skill，并把辅助参考资料推迟到任务需要时才加载。文件大小情景和运行时加载分开报告（[测量说明](../web/docs/core-concepts/skills.md#token-savings-math)）。
 - **可挽回**：重试 2 次仍失败后，`orchestrate` 会并行 spawn 多个 hypothesis 变体并保留得分最高的，而不是抱着一条错路无限重试
 - **识别单仓**：`detectWorkspace` 读取 pnpm / nx / turbo / lerna 并把每个 agent 路由到自己的 workspace
 - **多厂商**：按 agent 类型混用 Antigravity、Claude、Codex、Cursor、Kiro、Qwen
@@ -336,6 +348,7 @@ flowchart TD
 
 - **[详细文档](./AGENTS_SPEC.md)**：完整技术规格和架构
 - **[支持的 Agent](./SUPPORTED_AGENTS.md)**：各 IDE 的 agent 支持情况
+- **[能力提供方](./capability-providers.md)**：实验性 Gortex 与 Honcho 的配置、路由和限制
 - **[基准测试报告](../benchmarks/README.md)**：方法、分数、截图与注意事项
 - **[Web 文档](https://first-fluke.github.io/oh-my-agent/)**：指南、教程和 CLI 参考
 

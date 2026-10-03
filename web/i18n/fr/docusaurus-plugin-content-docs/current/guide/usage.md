@@ -199,9 +199,10 @@ Si le runtime courant correspond au fournisseur cible dans `.agents/oma-config.y
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`, sélectionné via le `subagent_type` de l’outil Agent
 - Antigravity CLI/IDE -> `oma agent spawn` via `agy`
 
-Les tâches inter-fournisseurs utilisent toujours `oma agent spawn`.
+Les tâches inter-fournisseurs et `model_preset: free` utilisent `oma agent spawn`. Le dispatch natif exige toujours que le [cycle de vie des résultats](./agent-results-and-resume.md) enregistre les preuves de vérification.
 
 ---
 
@@ -224,14 +225,14 @@ Les tâches inter-fournisseurs utilisent toujours `oma agent spawn`.
 **Phase 2, IMPL (étape 5, agents de développement lancés) :**
 - l’agent backend implémente l’intégration Stripe (webhooks, idempotence, gestion des erreurs) ;
 - l’agent frontend construit le parcours de paiement et l’interface de statut ;
-- Step 5.2 : mesurer le baseline Quality Score (tests, lint, typecheck) ;
+- Step 5.2 : enregistrer un baseline uniquement lorsqu’une comparaison de mesure définie est nécessaire ;
 - IMPL_GATE : contrôles et tests applicables qui n’émettent pas d’artefact passent, seuls les fichiers planifiés sont modifiés ; les contrôles de build ne sont lancés que sur demande explicite.
 
 **Phase 3, VERIFY (étapes 6–8, agent QA lancé) :**
 - Step 6 : revue d’alignement (l’implémentation correspond-elle au plan ?) ;
 - Step 7 : revue sécurité/bugs (OWASP, npm audit, bonnes pratiques Stripe) ;
 - Step 8 : revue amélioration/régression (aucune régression introduite) ;
-- VERIFY_GATE : zéro CRITICAL, zéro HIGH, Quality Score >= 75.
+- VERIFY_GATE : zéro CRITICAL, zéro HIGH, objectifs de mesure du projet applicables atteints.
 
 **Phase 4, REFINE (étapes 9–13, agent de refactoring lancé) :**
 - Step 9 : découper les fichiers (> 500 lignes) et fonctions (> 50 lignes) volumineux ;
@@ -239,7 +240,7 @@ Les tâches inter-fournisseurs utilisent toujours `oma agent spawn`.
 - Step 11 : revue des effets de bord (tracer l’impact en cascade avec `find_referencing_symbols`) ;
 - Step 12 : revue complète du changement (cohérence des noms et du style) ;
 - Step 13 : supprimer le code mort ;
-- REFINE_GATE : Quality Score non régressé, code propre.
+- REFINE_GATE : aucune régression mesurée non résolue, code propre.
 
 **Phase 5, SHIP (étapes 14–17, agent QA lancé) :**
 - Step 14 : revue qualité du code (lint, types, coverage) ;

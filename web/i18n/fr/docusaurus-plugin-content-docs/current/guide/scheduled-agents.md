@@ -171,6 +171,7 @@ oma schedule list [--json]
 | État | Signification |
 |---|---|
 | `synced` | La tâche existe dans le manifeste et le planificateur du système |
+| `stale` | La tâche est enregistrée, mais l’enregistrement système invoque une commande que le CLI actuel n’accepte plus (par exemple `schedule:run <id>` écrit avant la standardisation des chemins de commande). Lancez `schedule sync` pour le réécrire ; `oma update` le fait automatiquement. |
 | `missing-in-os` | La tâche est dans le manifeste mais absente du planificateur du système. Lancez `schedule sync` pour la réparer. |
 | `orphan-in-os` | La tâche existe dans le planificateur du système mais pas dans le manifeste. Lancez `schedule sync --prune` pour la supprimer. |
 
@@ -265,12 +266,14 @@ oma schedule sync [--prune]
 **Exemples :**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
+
+`oma update` exécute la même réconciliation (sans `--prune`) après chaque mise à jour, de sorte qu’une version du CLI qui modifie l’écriture de la commande `oma schedule run` ne peut pas laisser des enregistrements système existants pointer vers une commande que le nouveau binaire rejette. Les enregistrements écrits par d’anciennes versions avec `oma schedule:run <id>` continuent aussi de fonctionner : cette ancienne écriture reste acceptée pour les tâches invoquées par le système.
 
 ---
 

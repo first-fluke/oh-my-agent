@@ -10,13 +10,24 @@ description: Installeer oh-my-agent, kies skills en providers, bekijk de gegener
 - **Een AI-aangedreven IDE of CLI**: minstens één ondersteunde host, zoals Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot of Hermes
 - **bun**: JavaScript-runtime en pakketbeheerder (wordt automatisch door het installatiescript geïnstalleerd als deze ontbreekt)
 - **uv**: Python-pakketbeheerder (het bootstrap-script biedt installatie aan als deze ontbreekt)
-- **Code-intelligenceprovider**: Serena is de standaardprovider. Gortex wordt ook ondersteund wanneer je die in de providerconfiguratie selecteert. De installer kan Serena bootstrappen met `uv tool install` en gaat met een waarschuwing verder wanneer een optionele dependency niet beschikbaar is.
+- **Code-intelligenceprovider**: Serena is de standaardprovider. Gortex wordt ook ondersteund wanneer je die in de providerconfiguratie selecteert. De installer kan Serena bootstrappen met `uv tool install` en gaat met een waarschuwing verder wanneer een optionele dependency niet beschikbaar is. Bij een geselecteerde Gortex registreren `oma install` en `oma update` in projectmodus het project bij de Gortex-daemon (`gortex track`) wanneer het nog niet wordt getrackt, en voegen ze de door OMA gegenereerde mappen via de Gortex-CLI toe aan de uitsluitlijst van dat project; er wordt niets in de projectmap geschreven. Gortex zelf moet apart worden geïnstalleerd.
 
 De installer groepeert integraties op basis van capability. Hook-leveranciers zijn Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro en Qwen; OpenCode en pi gebruiken extension bridges; GitHub Copilot en Hermes krijgen skill-links; en ZCode krijgt workflowcommando's. Je kunt meer dan één leverancier selecteren, maar voor je eerste taak heb je alleen de host nodig die je wilt gebruiken.
 
 ---
 
-## Methode 1: installatie met één regel (aanbevolen)
+## Methode 0: skills-CLI (snelst voor alleen skills)
+
+Installeer het OMA-skillpakket in gedetecteerde agent-runtimes:
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+Dit is de lichtste instap wanneer je skills wilt zonder de volledige harness. Gebruik voor workflows, regels, hooks, gates en `oma agent spawn` Methode 1 of 2 hieronder.
+
+## Methode 1: installatie met één regel (volledige harness)
+
 
 ```bash
 # macOS / Linux
@@ -223,6 +234,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -257,7 +269,7 @@ agents:
 | `model_preset` | string | Ja | Actieve presetsleutel. `auto` volgt de huidige runtime; vaste sleutels zijn onder meer `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` en `mixed`. Aangepaste presetsleutels zijn ook geldig. Zie [Modellen per agent](../guide/per-agent-models.md). |
 | `default_cli` | string | Nee | Fallback-CLI voor `oma agent spawn` wanneer expliciete agentinstellingen en de geselecteerde preset geen leverancier opleveren. |
 | `free` | map | Nee | Gatewayinstellingen voor FreeLLMAPI wanneer `model_preset: free` wordt gebruikt; bewaar API-sleutels in omgevingsvariabelen. |
-| `providers` | map | Nee | Capability-providers: `code_intelligence` (`serena` of `gortex`), `docs` (`context7`), `web` (`native` of `brave`) en `semantic_memory` (`agentmemory`, `honcho` of `none`). |
+| `providers` | map | Nee | Capability-providers: `code_intelligence` (`serena` of `gortex`), `code_intelligence_guard` (`block` of `off`), `docs` (`context7`), `web` (`native` of `brave`) en `semantic_memory` (`agentmemory`, `honcho` of `none`). |
 | `date_format` | string | Nee | Tijdstempelformaat (`ISO`, `US`, `EU`). Standaard: `ISO`. |
 | `timezone` | string | Nee | Tijdzone-identificator (bijvoorbeeld `Asia/Seoul`). Weggelaten waarden gebruiken de tijdzone van het hostsysteem. |
 | `auto_update_cli` | boolean | Nee | Of routinematige CLI-controles op de achtergrond mogen bijwerken. Standaard: `true` (uitschakelen met `false`). |
@@ -291,7 +303,7 @@ Dit commando controleert:
 - Of skillbestanden bestaan met geldige SKILL.md-frontmatter
 - Of symlinks en hookscripts naar geldige doelen wijzen
 - Of hooks correct zijn geconfigureerd in de instellingenbestanden van de leverancier
-- Of de geselecteerde code-intelligence- en memoryproviders bereikbaar zijn
+- Of de geselecteerde code-intelligence- en memoryproviders bereikbaar zijn (bij Gortex ook of het huidige project zich in de getrackte set van de daemon bevindt)
 - Of `oma-config.cue` / `oma-config.yaml` geldig is en de vereiste velden bevat
 
 Als er iets mis is, identificeert `oma doctor` het ontbrekende of ongeldige onderdeel en maakt het onderscheid tussen blokkades voor de eerste taak en waarschuwingen over optionele integraties.

@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | 모든 에이전트가 Antigravity CLI(`agy`)를 사용합니다. 구현/아키텍처 역할은 Gemini 3.1 Pro, 오케스트레이션·문서화·검색 역할은 Gemini 3.6 Flash를 사용합니다. 모델 선택은 `agy` 내부 설정으로 처리되며, `--model`이나 `--thinking-budget` 플래그는 노출되지 않습니다. | Antigravity CLI 사용자 |
 | `claude` | 모든 에이전트가 Claude (Sonnet/Opus) 사용 | Claude Max 구독자 |
 | `codex` | 모든 에이전트가 OpenAI Codex(GPT-5.5가 대부분의 역할, GPT-5.4-mini가 explore에 사용)를 effort 레벨과 함께 사용합니다. | ChatGPT Plus/Pro 사용자 |
-| `qwen` | 모든 에이전트를 Qwen Code로 외부 라우팅. 이진 thinking 방식(effort 레벨 없음) | 로컬 또는 자체 호스팅 추론 |
+| `qwen` | 모든 에이전트가 Qwen Code를 사용합니다. 벤더가 일치하는 Qwen 세션은 생성된 네이티브 에이전트를 사용할 수 있고, 다른 런타임은 CLI 디스패치를 사용합니다. | 로컬 또는 자체 호스팅 추론 |
 | `kiro` | 모든 에이전트가 Kiro CLI를 사용합니다. Sonnet은 구현/아키텍처를, Haiku는 오케스트레이션/검색을 담당합니다. | Kiro 사용자 |
 | `cursor` | 모든 에이전트가 Cursor `composer-2.5` 사용 (orchestrator/qa/pm/docs/explore은 `composer-2.5-fast`) | Cursor Pro / Pro Student 사용자 |
 | `mixed` | 혼합 구성: 구현 역할은 Codex, architecture/qa/pm은 Claude, explore은 Gemini | 에이전트별 설정 부담 없이 벤더별 강점을 활용하고 싶을 때 |

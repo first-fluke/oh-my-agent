@@ -48,7 +48,7 @@ oma agent spawn backend "Implement JWT authentication API with refresh tokens" s
 oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # Override the CLI vendor for this specific spawn
-oma agent spawn frontend "Build login form" session-01 --model claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # Retry a run while preserving its evidence chain
 oma agent spawn backend "Fix the payment gateway issue" session-01 --resumed-from run-123
@@ -152,11 +152,11 @@ agents:
 
 | 优先级 | 来源 | 示例 |
 |---------|------|---------|
-| 1（最高） | `--model` 标志 | `oma agent spawn backend "task" session-01 --model claude` |
+| 1（最高） | `--vendor` 标志 | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | `oma-config.yaml` 中的 `agents:` 覆盖项 | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | 当前 `model_preset` 的智能体默认值 | 针对智能体角色查询预设 |
 
-`--model` 标志始终优先。如果没有提供该标志，系统会依次检查 `agents:` 覆盖项、预设默认值，再检查配置的回退 CLI。使用 `model_preset: auto` 时，由当前运行时的原生设置提供模型。
+`--vendor` 标志始终优先。如果没有提供该标志，系统会依次检查 `agents:` 覆盖项、预设默认值，再检查配置的回退 CLI。使用 `model_preset: auto` 时，由当前运行时的原生设置提供模型。
 
 ---
 

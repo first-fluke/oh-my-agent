@@ -43,7 +43,7 @@ OMA는 현재 디렉토리에서 상위로 이동하며 공유 설정이나 로�
 | `telemetry` | 불리언 | `false` | 설치·업데이트·연동 파일을 갱신할 때 벤더의 텔레메트리 수집 설정에 동의할지 정합니다. |
 | `model_preset` | 비어 있지 않은 문자열 | 새 템플릿에서는 `auto` | 기본 제공 또는 사용자 정의 모델 프리셋입니다. `OMA_MODEL_PRESET`으로 현재 프로세스에서만 바꿀 수 있습니다. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | `free` 프리셋의 FreeLLMAPI 연결 설정입니다. `FREELLM_BASE_URL`과 `FREELLM_MODEL`이 파일 값보다 우선합니다. API 키 자체가 아닌 환경 변수 이름을 지정합니다. [에이전트별 모델 설정](/docs/guide/per-agent-models#freellmapi-preset)을 참고하세요. |
-| `providers` | `docs`, `web`, `code_intelligence`, `semantic_memory` | `context7`, `native`, `serena`, `agentmemory` | 문서 조회, 웹 검색, 코드 분석, 의미 기반 메모리에 사용할 도구를 선택합니다. 코드 분석은 `serena` 또는 `gortex`, 의미 기반 메모리는 `agentmemory`, `honcho`, `none`을 허용합니다. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | 문서 조회, 웹 검색, 코드 분석, 의미 기반 메모리에 사용할 도구를 선택합니다. 코드 분석은 `serena` 또는 `gortex`, 의미 기반 메모리는 `agentmemory`, `honcho`, `none`을 허용합니다. `code_intelligence_guard`(`block` 또는 `off`)는 PreToolUse 검색 가드를 제어합니다. 확인된 제공자 제외 대상이나 프로젝트 밖 경로로 한정된 네이티브 검색은 우회 없이 허용됩니다. 가드는 Serena의 제외 설정과 활성화된 gitignore 규칙, 또는 Gortex의 제외 목록을 읽으며, 디렉토리 이름으로 의존성을 추정하지 않습니다. 훅은 `OMA_CI_ALLOW_NATIVE`를 언급하지 않습니다. `OMA_CI_ALLOW_NATIVE=1`을 앞에 붙인 셸 검색이 가드를 우회하는 대상은 프로젝트 밖 리소스와 가드가 인식하지 못한 무시 대상 경로뿐이며, 프로젝트 소스는 해당하지 않습니다. |
 | `brave` | `api_key_env` 또는 `api_key_vault` | 지정 없음 | Brave 검색 인증정보를 어디에서 읽을지 지정합니다. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | [Honcho 세부 설정](#honcho-semantic-memory) 참고 | Honcho 의미 기반 메모리의 연결 설정입니다. |
 | `agents` | 에이전트 ID → `model`, 선택적 `effort`, `thinking`, `memory` | 프리셋에 따라 결정 | 선택한 프리셋 위에 적용할 에이전트별 설정입니다. `effort`는 `none`, `low`, `medium`, `high`, `xhigh`, `memory`는 `user`, `project`, `local`을 허용합니다. |
@@ -55,7 +55,7 @@ OMA는 현재 디렉토리에서 상위로 이동하며 공유 설정이나 로�
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | `oma docs verify`의 동작과 검사 제외 항목입니다. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena MCP의 전송 방식과 업데이트 동작입니다. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` 또는 `[]` | 지정하지 않으면 기존 설정 유지 | 연동 설정을 갱신할 때 사용할 브라우저 DevTools MCP를 선택합니다. 명시적인 빈 목록은 브라우저 항목을 제거합니다. |
-| `video` | 필요한 값만 지정하는 스킬 설정 맵 | 스킬 기본값; [영상 생성](/docs/guide/video-generation) 참고 | 영상 생성 경로, 제공자 순서, 출력, 비용, 제한, Remotion 갱신 설정입니다. |
+| `video` | 필요한 값만 지정하는 스킬 설정 맵 | 스킬 기본값; [영상 생성](/docs/guide/video-generation) 참고 | 영상 생성 경로, 제공자 순서, 출력, 비용, 제한, HyperFrames 갱신 설정입니다. |
 | `image` | 필요한 값만 지정하는 스킬 설정 맵 | 스킬 기본값; [이미지 생성](/docs/guide/image-generation) 참고 | 이미지 벤더, 크기, 품질, 출력, 비교, 비용 설정입니다. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) 참고 | Voicebox 프로필, 출력, 길이 설정입니다. |
 | `hwp` | `format`, `version.*`, `output.*` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#extract-hwp-family-documents) 참고 | Kordoc 형식, 버전 채널, 출력 위치입니다. |
@@ -181,6 +181,7 @@ agents:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

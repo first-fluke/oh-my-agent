@@ -43,7 +43,7 @@ model_preset: auto
 | `antigravity` | Alle agents gebruiken de Antigravity CLI (`agy`): Gemini 3.1 Pro voor implementatie en architectuur en Gemini 3.6 Flash voor orkestratie, documentatie en verkenning. De modelkeuze wordt in `agy` door de configuratie bepaald; er worden geen `--model`- of `--thinking-budget`-flags doorgegeven. | Gebruikers van de Antigravity CLI |
 | `claude` | Alle agents gebruiken Claude (Sonnet/Opus) | Houders van een Claude Max-abonnement |
 | `codex` | Alle agents gebruiken OpenAI Codex (GPT-5.5 voor de meeste rollen, GPT-5.4-mini voor explore) met effortniveaus | ChatGPT Plus- en Pro-gebruikers |
-| `qwen` | Alle agents worden extern via Qwen Code gerouteerd; binair thinking (geen effortniveaus) | Lokale of self-hosted inference |
+| `qwen` | Alle agents gebruiken Qwen Code; overeenkomende Qwen-sessies kunnen gegenereerde native agents gebruiken en andere runtimes gebruiken CLI-dispatch | Lokale of self-hosted inference |
 | `kiro` | Alle agents gebruiken de Kiro CLI; Sonnet doet implementatie en architectuur, Haiku orkestratie en explore | Kiro-gebruikers |
 | `cursor` | Alle agents gebruiken Cursor `composer-2.5` (`composer-2.5-fast` voor orchestrator, qa, pm, docs en explore) | Cursor Pro- en Pro Student-gebruikers |
 | `mixed` | Gemengd: implementatierollen gebruiken Codex, architectuur/qa/pm Claude en explore Gemini | Sterke punten van verschillende vendors combineren zonder per-agentconfiguratie te beheren |
@@ -62,7 +62,7 @@ Bij CLI-dispatch kiest `--vendor` expliciet het doel. Zonder die flag gebruikt O
 
 ## Lokale configuratie
 
-Maak naast de gedeelde configuratie precies één van `.agents/oma-config.local.cue` en `.agents/oma-config.local.yaml` aan. Install, link en update voegen beide paden toe aan `.gitignore`; update behoudt bestaande lokale bestanden, ook met `--force`.
+Maak naast de gedeelde configuratie precies **één** van `.agents/oma-config.local.cue` en `.agents/oma-config.local.yaml` aan. Install, link en update voegen beide paden toe aan `.gitignore`; update behoudt bestaande lokale bestanden, ook met `--force`.
 
 OMA selecteert de dichtstbijzijnde projectconfiguratiemap. In die map heeft gedeelde CUE voorrang op gedeelde YAML en overschrijft het lokale bestand de gedeelde waarden. CUE-bestanden worden afzonderlijk geëvalueerd vóór het samenvoegen, zodat een gedeeld `model_preset: "auto"` lokaal kan worden vervangen door `"free"`. Objecten worden recursief samengevoegd; arrays, scalars en `null` vervangen de gedeelde waarde. Een ongeldig lokaal bestand, een ontbrekend CUE-programma voor lokale CUE of het tegelijk bestaan van beide lokale formaten is een fout en is geen reden om terug te vallen op gedeelde standaardwaarden.
 
@@ -344,7 +344,7 @@ Wat er gebeurt:
 
 ### Modellen buiten pi’s ingebouwde register (bijv. Z.ai GLM)
 
-Pi lost `--model` op tegen het ingebouwde modelregister en gebruikt de instelling `defaultProvider` alleen wanneer helemaal geen model wordt meegegeven. Voor Z.ai levert pi slechts een subset van GLM-ID’s (`glm-4.7`, `glm-4.5-air`, `glm-5-turbo`, `glm-5.1`, `glm-5v-turbo` in pi 0.80.x); een preset met een andere GLM-ID kan niet worden opgelost.
+Pi lost `--model` op tegen het **ingebouwde modelregister** en gebruikt de instelling `defaultProvider` alleen wanneer helemaal geen model wordt meegegeven. Voor Z.ai levert pi slechts een subset van GLM-ID’s (`glm-4.7`, `glm-4.5-air`, `glm-5-turbo`, `glm-5.1`, `glm-5v-turbo` in pi 0.80.x); een preset met een andere GLM-ID kan niet worden opgelost.
 
 Er zijn twee manieren:
 
@@ -426,7 +426,7 @@ Elke gerouteerde agent voert `opencode run -m opencode-go/deepseek-v4-flash
 
 ### Een model-slug valideren
 
-De catalogus van opencode is afhankelijk van abonnement en login, dus oma hardcodeert geen opencode-model-slugs. Valideer een slug tegen de catalogus die op jouw installatie beschikbaar is:
+De catalogus van opencode is afhankelijk van abonnement en login, dus oma hardcodeert **geen** opencode-model-slugs. Valideer een slug tegen de catalogus die op jouw installatie beschikbaar is:
 
 ```bash
 oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
@@ -438,7 +438,7 @@ opencode models opencode-go                            # list everything your pl
 
 ### Authenticatie en gegenereerde bestanden
 
-- **Auth:** `opencode auth login` slaat credentials op in `~/.local/share/opencode/auth.json`, één entry per provider. `oma auth status` / `oma doctor` melden opencode als geauthenticeerd wanneer een provider een credential heeft. `oma doctor --profile` houdt per provider rekening met de context: elke rij wordt gecontroleerd tegen de providerprefix van de geregistreerde `cli_model`. Een model met `cli_model: zai-coding-plan/glm-5.3` wordt dus gecontroleerd tegen de credential van `zai-coding-plan`. Heeft het model geen geregistreerde `provider/model`-`cli_model`, dan toont de rij `? unknown` in plaats van een zekere authfout.
+- **Auth:** `opencode auth login` slaat credentials op in `~/.local/share/opencode/auth.json`, één entry per provider. `oma auth status` / `oma doctor` melden opencode als geauthenticeerd wanneer *een willekeurige* provider een credential heeft. `oma doctor --profile` werkt daarentegen per provider: elke rij wordt gecontroleerd tegen de providerprefix van de geregistreerde `cli_model`. Een model met `cli_model: zai-coding-plan/glm-5.3` wordt dus gecontroleerd tegen de credential van `zai-coding-plan`. Heeft het model geen geregistreerde `provider/model`-`cli_model`, dan toont de rij `? unknown` in plaats van een zekere authfout.
 - **Gegenereerde bestanden:** `oma link` (of `oma link opencode`) schrijft per agent één persona in `.opencode/agents/<id>.md` en daarnaast de bridge in `.opencode/plugins/oma/`. Deze bestanden worden uit de SSOT in `.agents/` gegenereerd; bewerk ze niet rechtstreeks, maar voer `oma link` opnieuw uit om ze te genereren.
 
 > **Opmerking over persistente workflows:** de gebeurtenis `session.idle` van opencode (de dichtstbijzijnde tegenhanger van de Claude `Stop`-hook) geeft alleen een melding en kan niet verhinderen dat de sessie eindigt. Persistente workflows (orchestrate / work / ultrawork) draaien onder opencode daarom met **gedegradeerde Stop-semantiek**: de workflow wordt bij het volgende bericht opnieuw versterkt in plaats van de sessie open te houden.
@@ -447,7 +447,7 @@ opencode models opencode-go                            # list everything your pl
 
 ## Dispatch via Kimi Code CLI
 
-[Kimi Code CLI](https://www.kimi.com/code) leest hooks alleen uit een globale configuratie (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`). Daarom schrijft `oma install`/`oma link` de Kimi-hookketen en symlinks voor `.agents/skills/` onder HOME na expliciete toestemming, net als bij Antigravity. MCP heeft geen HOME-schrijving nodig en blijft projectspecifiek: de configuratie wordt modusbewust geschreven naar `<cwd>/.kimi-code/mcp.json` (project) of `~/.kimi-code/mcp.json` (globaal).
+[Kimi Code CLI](https://www.kimi.com/code) leest **hooks** alleen uit een globale configuratie (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`). Daarom schrijft `oma install`/`oma link` de Kimi-hookketen en de bijbehorende skill-symlinks onder HOME na expliciete toestemming, net als bij Antigravity. Kimi scant bovendien rechtstreeks de SSOT `.agents/skills/` van oma, zodat skills hoe dan ook projectbreed worden opgelost. **MCP** heeft geen HOME-schrijving nodig en blijft projectspecifiek: de configuratie wordt modusbewust geschreven naar `<cwd>/.kimi-code/mcp.json` (project) of `~/.kimi-code/mcp.json` (globaal).
 
 ### Expliciete dispatch
 
@@ -458,11 +458,11 @@ oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
 
-Dit voert `kimi -p "<prompt>"` uit. Kimi’s `-p` (niet-interactieve) modus keurt gewone toolaanroepen automatisch goed onder het `auto`-rechtenbeleid. Daarom voegt oma geen `--yolo`/`--auto` toe; die flags zijn niet te combineren met `-p`.
+Dit voert `kimi -p "<prompt>"` uit. Kimi’s `-p` (niet-interactieve) modus keurt gewone toolaanroepen automatisch goed onder het `auto`-rechtenbeleid. Daarom voegt oma **geen** `--yolo`/`--auto` toe; die flags zijn niet te combineren met `-p`.
 
 ### Kimi-modellen per agent
 
-Net als bij opencode hardcodeert oma geen Kimi-modelcatalogus; het aanbod hangt af van provider en abonnement. Routeer specifieke agents naar een Kimi-model door onder `models:` een complete spec met `cli: kimi` te registreren en er vanuit `agents:` naar te verwijzen.
+Net als bij opencode hardcodeert oma **geen** Kimi-modelcatalogus; het aanbod hangt af van provider en abonnement. Routeer specifieke agents naar een Kimi-model door onder `models:` een complete spec met `cli: kimi` te registreren en er vanuit `agents:` naar te verwijzen.
 
 De registersleutel moet de vorm `owner/model` hebben; kale namen worden door het schema van `agents.<id>.model` afgewezen. `cli_model` is de exacte alias die aan `kimi --model` wordt doorgegeven. De gedocumenteerde codingalias van Kimi is `kimi-code/kimi-for-coding`. Controleer vóór je de alias vastlegt welke alias jouw abonnement aanbiedt met `kimi --model <alias>`.
 

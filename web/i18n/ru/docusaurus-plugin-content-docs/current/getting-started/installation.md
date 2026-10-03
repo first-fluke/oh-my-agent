@@ -10,13 +10,23 @@ description: Установите oh-my-agent, выберите навыки и 
 - **IDE или CLI с поддержкой AI**: хотя бы один поддерживаемый хост, например Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot или Hermes
 - **bun**: среда выполнения JavaScript и менеджер пакетов (если его нет, скрипт установки установит его автоматически)
 - **uv**: менеджер пакетов Python (bootstrap-скрипт предложит установить его, если он отсутствует)
-- **Провайдер code intelligence**: провайдером по умолчанию является Serena. Также поддерживается Gortex, если он выбран в конфигурации провайдеров. Установщик может подготовить Serena через `uv tool install`; если необязательная зависимость недоступна, он продолжит работу с предупреждением.
+- **Провайдер code intelligence**: провайдером по умолчанию является Serena. Также поддерживается Gortex, если он выбран в конфигурации провайдеров. Установщик может подготовить Serena через `uv tool install`; если необязательная зависимость недоступна, он продолжит работу с предупреждением. Если выбран Gortex, в режиме проекта `oma install` и `oma update` регистрируют проект в демоне Gortex (`gortex track`), если он ещё не отслеживается, и добавляют сгенерированные OMA каталоги в список исключений этого проекта через Gortex CLI; в дерево проекта ничего не записывается. Сам Gortex необходимо устанавливать отдельно.
 
 Установщик группирует интеграции по возможностям. К hook-провайдерам относятся Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro и Qwen; OpenCode и pi используют extension bridge; GitHub Copilot и Hermes получают ссылки на навыки, а ZCode — команды рабочих процессов. Можно выбрать несколько поставщиков, но для первой задачи достаточно хоста, которым вы планируете пользоваться.
 
 ---
 
-## Способ 1: установка одной строкой (рекомендуется)
+## Способ 0: skills CLI (самый быстрый, если нужны только навыки)
+
+Установите пакет навыков OMA в обнаруженные runtime агентов:
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+Это самая лёгкая точка входа, если нужны навыки без полного harness. Для рабочих процессов, правил, хуков, шлюзов и `oma agent spawn` используйте способ 1 или 2 ниже.
+
+## Способ 1: установка одной строкой (полный harness)
 
 ```bash
 # macOS / Linux
@@ -223,6 +233,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -257,7 +268,7 @@ agents:
 | `model_preset` | string | Да | Ключ активного пресета. `auto` следует настройкам модели текущего runtime; фиксированные ключи включают `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` и `mixed`. Допустимы и пользовательские ключи пресетов. См. [модели для агентов](../guide/per-agent-models.md). |
 | `default_cli` | string | Нет | Резервный CLI для `oma agent spawn`, если явные настройки агента и выбранный пресет не определяют поставщика. |
 | `free` | map | Нет | Настройки шлюза FreeLLMAPI, используемые при `model_preset: free`; API-ключи следует хранить в переменных окружения. |
-| `providers` | map | Нет | Провайдеры возможностей: `code_intelligence` (`serena` или `gortex`), `docs` (`context7`), `web` (`native` или `brave`) и `semantic_memory` (`agentmemory`, `honcho` или `none`). |
+| `providers` | map | Нет | Провайдеры возможностей: `code_intelligence` (`serena` или `gortex`), `code_intelligence_guard` (`block` или `off`), `docs` (`context7`), `web` (`native` или `brave`) и `semantic_memory` (`agentmemory`, `honcho` или `none`). |
 | `date_format` | string | Нет | Формат временных меток (`ISO`, `US`, `EU`). По умолчанию: `ISO`. |
 | `timezone` | string | Нет | Идентификатор часового пояса (например, `Asia/Seoul`). Если значение не задано, используется часовой пояс системы хоста. |
 | `auto_update_cli` | boolean | Нет | Могут ли обычные проверки CLI обновляться в фоне. По умолчанию: `true` (отключите значением `false`). |
@@ -291,7 +302,7 @@ oma doctor
 - существуют ли файлы навыков и содержат ли они корректный frontmatter SKILL.md
 - указывают ли символические ссылки и скрипты хуков на действительные цели
 - правильно ли хуки настроены в файлах настроек поставщиков
-- доступны ли выбранные провайдеры code intelligence и памяти
+- доступны ли выбранные провайдеры code intelligence и памяти (для Gortex также проверяется, входит ли текущий проект в набор, отслеживаемый демоном)
 - корректен ли `oma-config.cue` / `oma-config.yaml` и содержит ли обязательные поля
 
 Если что-то не так, `oma doctor` указывает отсутствующий или некорректный элемент и отделяет блокеры первой задачи от необязательных предупреждений интеграции.

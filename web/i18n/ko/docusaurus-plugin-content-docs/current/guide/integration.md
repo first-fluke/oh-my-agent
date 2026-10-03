@@ -13,7 +13,7 @@ description: 기존 프로젝트에 oh-my-agent을 추가하는 완전 가이드
 1. **CLI 경로**: `oma` (또는 `npx oh-my-agent`)를 실행하고 대화형 프롬프트를 따릅니다. 대부분의 사용자에게 권장됩니다.
 2. **수동 경로**: 파일을 직접 복사하고 심볼릭 링크를 설정합니다. 제한된 환경이나 커스텀 설정에 유용합니다.
 
-두 경로 모두 동일한 결과를 생성합니다: `.agents/` 디렉토리(SSOT)와 `.claude/agents/`, `.codex/agents/`, `.gemini/agents/` 같은 벤더 네이티브 생성 파일입니다.
+두 경로 모두 동일한 결과를 생성합니다: `.agents/` 디렉토리(SSOT)와 `.claude/agents/`, `.codex/agents/`, `.qwen/agents/` 같은 벤더 네이티브 생성 파일입니다.
 
 ---
 
@@ -179,7 +179,13 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link`는 `.agents/agents/`에서 `.claude/`, `.codex/`, `.gemini/` 및 관련 벤더 네이티브 파일을 다시 만듭니다. 런타임에는 현재 런타임 벤더가 해당 에이전트의 대상 벤더와 일치할 때만 OMA가 네이티브 디스패치를 사용합니다. 벤더가 섞인 설정도 동작하지만, 일치하지 않는 에이전트는 외부 `oma agent spawn`으로 폴백합니다.
+`oma link`는 `.agents/agents/`에서 `.claude/`, `.codex/`, `.qwen/` 및 관련 벤더 네이티브 파일을 다시 생성합니다. 런타임에는 현재 런타임 벤더가 해당 에이전트의 대상 벤더와 일치할 때만 OMA가 네이티브 디스패치를 사용합니다. 벤더가 섞인 설정도 동작하지만, 일치하지 않는 에이전트는 외부 `oma agent spawn`으로 폴백합니다.
+
+Qwen Code에서는 생성된 Markdown 정의가 `.qwen/agents/`에 있습니다. OMA 역할은 Agent 도구의 `subagent_type`으로 선택합니다(예: `backend-engineer`). 사용 가능한 정의는 Qwen Code의 `/agents manage`로 확인합니다. 네이티브 에이전트도 CLI 스폰과 같은 [결과 수명 주기](./agent-results-and-resume.md)를 따릅니다: `oma agent begin`, `oma agent verify`, `oma agent finish`. `model_preset: free`에서는 자식 프로세스가 게이트웨이 설정을 받도록 `oma agent spawn`을 사용하세요.
+
+Qwen Code는 다른 벤더와 같은 `code-intelligence-primer`를 사용합니다. Claude Code와 마찬가지로 공유 primer를 `SessionStart`와 `UserPromptSubmit`에 등록하며, 안내는 세션마다 한 번 주입되고 컨텍스트 압축 후에 다시 주입됩니다. primer는 설정된 프로바이더(Serena 또는 Gortex)를 따르고, 지연 로드 도구(deferred tool) 안내를 포함하며, 프로바이더를 사용할 수 없거나 시간 초과되면 네이티브 폴백을 허용합니다. Qwen은 별도의 코드 검색 차단이나 프로바이더 결과 추적을 추가하지 않습니다.
+
+CLI를 업데이트한 뒤에는 `oma link qwen`을 실행해 훅 설정과 래퍼를 재생성하고, 새 Qwen 세션을 시작하세요. 훅 출력 테스트는 통합 계약을 검증할 뿐, 모델이 어떤 도구를 선택할지는 보장하지 않습니다.
 
 ### 3단계: 사용자 환경설정 구성
 
@@ -403,7 +409,7 @@ oma dashboard web
 
 - 에이전트 정의 (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
 - 훅 설정 (`.claude/hooks/`, `.codex/hooks.json`)
-- 설정 파일과 벤더 통합 문서 (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
+- 설정 파일과 공유 벤더 통합 문서 (`AGENTS.md`만 해당, Claude Code ≥ 2.1.277 포함). `CLAUDE.md`와 `GEMINI.md`에는 OMA 블록을 넣지 않으며, 사용자가 소유한 기존 `CLAUDE.md`에는 Claude Code가 `AGENTS.md`를 건너뛰지 않도록 `@AGENTS.md` import 줄만 추가합니다
 
 Codex는 훅을 일회성 신뢰 단계 뒤에 두기 때문에, Codex의 `/hooks` 브라우저에서 한 번 검토하기 전까지 `.codex/hooks.json`이 실행되지 않습니다. 자세한 내용은 [Codex 훅 신뢰](/docs/guide/codex-hook-trust)를 참고하세요.
 

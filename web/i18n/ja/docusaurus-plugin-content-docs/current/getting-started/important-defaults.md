@@ -14,6 +14,7 @@ description: ルーティング、モデル選択、プロバイダー、更新�
 | 応答言語 | `en` | プロジェクト設定で別の対応言語を選ばない限り、エージェントとワークフローの応答は英語になります。ホストやワークフローが対応していれば、ユーザーまたはセッションで明示した言語指定がプロジェクトのデフォルトを上書きできます。 | `.agents/oma-config.yaml` または `.cue` の `language` |
 | モデルルーティング | `auto` | 現在のランタイムのネイティブなエージェント設定を使います。ランタイムが不明で `default_cli` が設定されていれば、そこにフォールバックします。 | `model_preset`、`default_cli`、`agents.<id>` |
 | コードインテリジェンス | `serena` | 新規インストールでは Serena のインストールを試み、MCP 設定を接続します。 | `providers.code_intelligence: gortex` または `serena` |
+| コード検索ガード | `block` | コードインテリジェンスのプロバイダーが設定されている間、PreToolUse フックがネイティブの `Grep`/`Glob` と再帰的なシェル検索（`rg`、`grep -r`、`find -name`）を拒否し、プロバイダーのツールを使うようエージェントに案内します。確認済みの除外対象、またはプロジェクト外のパスだけを対象にした検索は許可されます。フックは、プロジェクトのソースに対する迂回方法を案内しません。 | `providers.code_intelligence_guard: off` |
 | 意味メモリ | `agentmemory` | 利用できる場合は Agent Memory を意味メモリに選びます。 | `providers.semantic_memory: honcho` または `none` |
 | Web 検索 | `native` | プロバイダーを選ばない限り、ランタイムのネイティブ Web チャネルで検索します。 | `providers.web` |
 | ドキュメントプロバイダー | `context7` | スキルが要求したとき、Context7 プロバイダーでドキュメントを検索します。 | `providers.docs` |

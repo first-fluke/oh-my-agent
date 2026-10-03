@@ -199,9 +199,10 @@ Si el runtime actual coincide con el proveedor objetivo en `.agents/oma-config.y
 
 - Claude Code -> `.claude/agents/*.md`.
 - Codex CLI -> `.codex/agents/*.toml`.
+- Qwen Code -> `.qwen/agents/*.md`, seleccionado mediante el `subagent_type` de la herramienta Agent.
 - Antigravity CLI/IDE -> `oma agent spawn` mediante `agy`.
 
-Las tareas entre proveedores siguen usando `oma agent spawn`.
+Las tareas entre proveedores y `model_preset: free` usan `oma agent spawn`. El despacho nativo sigue necesitando el [ciclo de vida de resultados](./agent-results-and-resume.md) para registrar la evidencia de verificación.
 
 ---
 
@@ -224,14 +225,14 @@ Las tareas entre proveedores siguen usando `oma agent spawn`.
 **Fase 2, IMPL (paso 5, agentes de desarrollo generados):**
 - El agente backend implementa la integración con Stripe (webhooks, idempotencia y manejo de errores).
 - El agente frontend crea el flujo de checkout y la UI de estado del pago.
-- Paso 5.2: Medir la línea base de Quality Score (tests, lint y typecheck).
+- Paso 5.2: Registrar una línea base solo cuando se necesita una comparación de medición definida.
 - IMPL_GATE: pasan las comprobaciones y pruebas aplicables que no emiten archivos, solo se modifican los archivos planificados; las comprobaciones de build solo se ejecutan cuando se solicitan explícitamente.
 
 **Fase 3, VERIFY (pasos 6-8, agente QA generado):**
 - Paso 6: Revisión de alineación (¿la implementación coincide con el plan?).
 - Paso 7: Revisión de seguridad/bugs (OWASP, npm audit y buenas prácticas de seguridad de Stripe).
 - Paso 8: Revisión de mejora/regresión (sin regresiones nuevas).
-- VERIFY_GATE: cero CRITICAL, cero HIGH, Quality Score >= 75.
+- VERIFY_GATE: cero CRITICAL, cero HIGH, se cumplen los objetivos de medición aplicables del proyecto.
 
 **Fase 4, REFINE (pasos 9-13, agente de refactorización generado):**
 - Paso 9: Dividir archivos (> 500 líneas) y funciones (> 50 líneas) grandes.
@@ -239,7 +240,7 @@ Las tareas entre proveedores siguen usando `oma agent spawn`.
 - Paso 11: Revisión de efectos secundarios (seguir el impacto en cascada con `find_referencing_symbols`).
 - Paso 12: Revisión completa del cambio (consistencia de nombres y alineación de estilo).
 - Paso 13: Limpiar código muerto.
-- REFINE_GATE: Quality Score sin regresión y código limpio.
+- REFINE_GATE: ninguna regresión medida sin resolver y código limpio.
 
 **Fase 5, SHIP (pasos 14-17, agente QA generado):**
 - Paso 14: Revisión de calidad de código (lint, tipos y cobertura).

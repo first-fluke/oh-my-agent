@@ -1,13 +1,25 @@
 ---
 title: Démarrage rapide
-description: Le chemin le plus court entre un projet vide et une invite oh-my-agent vérifiée, avec les résultats attendus et les étapes de récupération.
+description: Exécutez une tâche au périmètre défini, de l’installation à la vérification, avec la sortie attendue et la récupération.
 ---
 
 # Démarrage rapide
 
-Utilisez cette page pour vérifier que le harnais fonctionne avant de lire la référence complète. Vous avez besoin d’un répertoire de projet et d’au moins un CLI ou IDE d’IA pris en charge. L’installateur peut initialiser `bun`, `uv`, Serena et CUE sur macOS, Linux ou Windows ; l’intégration de l’hôte sélectionné est requise pour la première invite, tandis que les intégrations de fournisseurs et de navigateur sont facultatives.
+Utilisez cette page pour exécuter une petite tâche et consigner un résultat concret. Vous avez besoin d’un répertoire de projet et d’au moins un CLI ou IDE d’IA pris en charge. L’installateur peut initialiser `bun`, `uv`, Serena et CUE sur macOS, Linux ou Windows ; l’intégration de l’hôte sélectionné est requise pour la première invite, tandis que les intégrations de fournisseurs et de navigateur sont facultatives.
 
-## 1. Installer le harnais du projet
+## 1. Installer
+
+### Voie la plus rapide — les compétences dans vos agents
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+Cette commande installe le pack de compétences OMA dans les runtimes d’agents détectés (Claude Code, Cursor, Codex, etc.). Les compétences enseignent à l’agent comment travailler. Pour les portes du hook Stop, la vérification des artefacts, les juges indépendants et le CLI `oma`, installez le harnais complet ci-dessous.
+
+Les installations limitées aux compétences ne fournissent ni le CLI `oma`, ni les hooks, ni les workflows, ni les juges. Utilisez une compétence installée désignée par son nom pour la première tâche ci-dessous ; utilisez le harnais complet lorsque vous avez besoin des contrôles du CLI.
+
+### Harnais complet (portes, hooks, CLI)
 
 Depuis le répertoire du projet, lancez l’installateur d’amorçage :
 
@@ -31,27 +43,47 @@ bunx oh-my-agent@latest
 
 Les scripts d’amorçage installent dans le projet courant. Utilisez `oma install --global` pour une installation au niveau de HOME ; consultez [Installation](./installation.md) avant de mélanger des installations de projet et globales.
 
-## 2. Vérifier le résultat
+## 2. Vérifier le résultat (harnais complet uniquement)
 
-Lancez le contrôle d’état depuis le même répertoire de projet :
+Si vous avez installé le harnais complet, lancez le contrôle d’état depuis le même répertoire de projet :
 
 ```bash
 oma doctor
 ```
 
-La réussite signifie que l’intégration du fournisseur sélectionné et les fichiers `.agents/` sont prêts. Les intégrations MCP, navigateur, mémoire ou intelligence du code facultatives peuvent apparaître comme des avertissements ; elles ne sont nécessaires que pour les tâches qui les utilisent. Utilisez `oma doctor --profile` pour examiner le modèle et le CLI résolus pour chaque rôle d’agent canonique.
+La commande en mode texte affiche un rapport avec des sections telles que `CLI Status` et `Skills Status`, puis renvoie son code de sortie au shell. Les lignes exactes dépendent des hôtes installés dans le projet :
 
-Si la commande est introuvable, le CLI a été installé en dehors de votre `PATH` actuel ; ouvrez un nouveau shell ou ajoutez le répertoire bin du gestionnaire de paquets. Si `oma doctor` signale une configuration invalide, corrigez le champ nommé et relancez-le. Ne supprimez pas `.agents/oma-config.yaml` pour récupérer : c’est la configuration appartenant à l’utilisateur qui conserve les réglages lors des mises à jour.
+```text
+┌   🩺 oh-my-agent doctor
+◇  CLI Status ...
+◇  Skills Status ...
+$ echo $?
+0
+```
+
+Les intégrations MCP, navigateur, mémoire ou intelligence du code facultatives peuvent apparaître comme des avertissements ; elles ne sont nécessaires que pour les tâches qui les utilisent. Pour un état lisible par machine, `oma doctor --json` renvoie un code de sortie non nul lorsque le rapport contient des problèmes. Utilisez `oma doctor --profile` pour examiner le modèle et le CLI résolus pour chaque rôle d’agent canonique.
+
+Si `oma` est indisponible mais que Bun est installé, lancez le même contrôle sans la commande globale :
+
+```bash
+bunx oh-my-agent@latest doctor
+```
+
+Si la commande `oma` reste introuvable, ouvrez un nouveau shell ou ajoutez le répertoire bin du gestionnaire de paquets à `PATH`. Si `oma doctor` signale une configuration invalide, corrigez le champ nommé et relancez-le. Ne supprimez pas `.agents/oma-config.yaml` pour récupérer : c’est la configuration appartenant à l’utilisateur qui conserve les réglages lors des mises à jour.
+
+Si vous avez installé uniquement les compétences, ignorez ce contrôle du CLI et passez à la tâche à compétence nommée ci-dessous.
 
 ## 3. Exécuter une petite tâche
 
-Ouvrez le dépôt dans l’outil d’IA configuré et décrivez une modification autonome :
+Ouvrez le dépôt dans l’outil d’IA configuré et demandez une compétence nommée et un résultat autonome :
 
 ```text
-Add a validation message to the existing email field. Follow the project's current form and test conventions. Done when the invalid-email case is covered by a focused test.
+Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-Lorsque le hook de mots-clés est activé pour l’hôte sélectionné, il peut activer un workflow correspondant. Le routage des compétences est effectué par l’hôte ou le workflow sélectionné : une invite arbitraire adressée à l’hôte ne garantit donc ni hook, ni compétence précise, ni `CHARTER_CHECK`. Le contrat d’exécution doit tout de même examiner les conventions du dépôt, limiter la modification au périmètre demandé et en rendre compte avec sa vérification. Les fichiers exacts et la commande dépendent du projet ; l’invite ci-dessus est illustrative.
+L’hôte doit identifier la compétence sélectionnée, examiner une cible et indiquer soit une modification ciblée du lien, soit que le lien est déjà valide. Incluez la sortie de la commande et son code de sortie pour tout contrôle effectivement exécuté. Une installation limitée aux compétences n’ajoute ni `/debug`, ni `/ralph`, ni hooks, ni portes de workflow ; demander la compétence nommée garde cette première tâche dans les capacités installées.
+
+Lorsque le hook de mots-clés est activé pour l’hôte sélectionné, il peut activer un workflow correspondant. Le routage des compétences est effectué par l’hôte ou le workflow sélectionné : une invite arbitraire adressée à l’hôte ne garantit donc ni hook, ni compétence précise, ni `CHARTER_CHECK`. Le contrat d’exécution doit tout de même examiner les conventions du dépôt, limiter la modification au périmètre demandé et en rendre compte avec sa vérification. Les fichiers exacts et la commande dépendent du projet.
 
 Pour une tâche qui traverse les frontières API et interface utilisateur, sélectionnez explicitement `/work` ou `/orchestrate`. Pour un seul domaine, poursuivez avec [Exécution d’une compétence unique](../guide/single-skill.md). Le [Guide d’utilisation](../guide/usage.md) contient des exemples plus longs.
 

@@ -36,7 +36,7 @@ Workflow `/plan` działa inline (bez uruchamiania subagentów) i tworzy ustruktu
 Co się dzieje:
 
 1. **Zebranie wymagań**: agent PM pyta o użytkowników docelowych, główne funkcje, ograniczenia i środowiska wdrożeniowe.
-2. **Analiza wykonalności technicznej**: korzysta ze skonfigurowanego dostawcy inteligencji kodu oraz natywnego wyszukiwania w ograniczonym zakresie, gdy dostawca jest niedostępny, aby przeanalizować istniejącą bazę kodu pod kątem kodu do ponownego użycia i wzorców architektonicznych.
+2. **Analiza wykonalności technicznej**: korzysta ze skonfigurowanego dostawcy inteligencji kodu, aby przeanalizować istniejącą bazę kodu pod kątem kodu do ponownego użycia i wzorców architektonicznych. Natywne wyszukiwanie służy wyłącznie do ścieżek spoza projektu lub ścieżek ignorowanych.
 3. **Definicja kontraktów API**: projektuje kontrakty endpointów (metoda, ścieżka, schematy żądania/odpowiedzi, uwierzytelnianie, odpowiedzi błędów) i zapisuje je w `.agents/results/api-contracts/` (artefakty uruchomienia), a trwałe specyfikacje przenosi do `docs/plans/contracts/`, gdy są zatwierdzane.
 4. **Podział na zadania**: rozbija projekt na zadania możliwe do wykonania, z przypisanym agentem, tytułem, kryteriami akceptacji, priorytetem (P0–P3) i zależnościami.
 5. **Przegląd planu z użytkownikiem**: przedstawia pełny plan do zatwierdzenia. Workflow nie przejdzie dalej bez wyraźnej zgody użytkownika.
@@ -211,7 +211,7 @@ Kontrakty API są mechanizmem synchronizacji między agentami. Reguła contract-
    - wymagania uwierzytelniania
    - formaty odpowiedzi błędów
 
-4. **Naruszenia kontraktów są wykrywane podczas monitorowania.** Krok 5 `/work` korzysta ze skonfigurowanego dostawcy inteligencji kodu albo natywnego wyszukiwania w ograniczonym zakresie, aby zweryfikować zgodność API między agentami.
+4. **Naruszenia kontraktów są wykrywane podczas monitorowania.** Krok 5 `/work` korzysta ze skonfigurowanego dostawcy inteligencji kodu, aby zweryfikować zgodność API między agentami. Natywne wyszukiwanie służy wyłącznie do ścieżek spoza projektu lub ścieżek ignorowanych.
 
 5. **Przegląd QA sprawdza zgodność z kontraktami.** Przegląd Alignment Review agenta QA (Krok 6 w ultrawork) jawnie porównuje implementację z planem, w tym z kontraktami API.
 
@@ -340,7 +340,7 @@ Bezpośrednie używanie `agent spawn` bez zapisania kontraktu wyniku. Uruchom pr
 
 Po ukończeniu indywidualnych zadań przez wszystkich agentów trzeba zweryfikować integrację między domenami:
 
-1. **Zgodność kontraktów API**: skonfigurowany dostawca inteligencji kodu albo natywne wyszukiwanie w ograniczonym zakresie sprawdza, czy implementacje backendu odpowiadają kontraktom używanym przez frontend i mobile.
+1. **Zgodność kontraktów API**: skonfigurowany dostawca inteligencji kodu sprawdza, czy implementacje backendu odpowiadają kontraktom używanym przez frontend i mobile. Natywne wyszukiwanie służy wyłącznie do ścieżek spoza projektu lub ścieżek ignorowanych.
 
 2. **Spójność typów**: typy TypeScript, dataclasses Pythona albo modele Dart współdzielone między domenami muszą używać spójnych nazw pól i typów.
 

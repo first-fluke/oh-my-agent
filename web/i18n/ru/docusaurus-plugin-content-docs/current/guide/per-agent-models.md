@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | Все агенты используют Antigravity CLI (`agy`): Gemini 3.1 Pro для реализации и архитектуры, Gemini 3.6 Flash для оркестрации, документации и исследования. Выбор модели задаётся внутри `agy`; флаги `--model` и `--thinking-budget` не предоставляются | Пользователи Antigravity CLI |
 | `claude` | Все агенты используют Claude (Sonnet/Opus) | Владельцы подписки Claude Max |
 | `codex` | Все агенты используют OpenAI Codex (GPT-5.5 для большинства ролей, GPT-5.4-mini для explore) с уровнями effort | Пользователи ChatGPT Plus/Pro |
-| `qwen` | Все агенты направляются во внешний Qwen Code; бинарный режим thinking (без уровней effort) | Локальный или самостоятельно размещённый inference |
+| `qwen` | Все агенты используют Qwen Code; соответствующие сессии Qwen могут использовать сгенерированные нативные агенты, а другие runtime используют CLI-диспетчеризацию | Локальный или самостоятельно размещённый inference |
 | `kiro` | Все агенты используют Kiro CLI; Sonnet обслуживает реализацию и архитектуру, а Haiku — оркестрацию и explore | Пользователи Kiro |
 | `cursor` | Все агенты используют Cursor `composer-2.5` (`composer-2.5-fast` для orchestrator/qa/pm/docs/explore) | Подписчики Cursor Pro / Pro Student |
 | `mixed` | Смешанный режим: роли реализации используют Codex, architecture/qa/pm — Claude, explore — Gemini | Сочетание сильных сторон поставщиков без настройки каждого агента |
@@ -117,7 +117,6 @@ FreeLLMAPI отвечает за отказоустойчивое переклю
 
 Free-пресет настраивает inference агентов. Он не меняет конфигурацию embeddings существующих сервисов памяти. FreeLLMAPI также предоставляет `/v1/embeddings`; при отдельной настройке векторного хранилища закрепите семейство моделей, чтобы существующие векторы оставались в совместимом пространстве.
 
-Ссылки upstream: [настройка клиентов](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md), [API и семейства embeddings](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md).
 Ссылки upstream: [настройка клиентов](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md), [API и семейства embeddings](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md).
 
 ---
@@ -310,7 +309,6 @@ session:
 ```
 
 Запустите `oma doctor --profile`, чтобы подтвердить разрешение, а затем запускайте рабочий процесс как обычно.
-Запустите `oma doctor --profile`, чтобы подтвердить разрешение, а затем запускайте рабочий процесс как обычно.
 
 ---
 
@@ -444,7 +442,7 @@ opencode models opencode-go                            # list everything your pl
 oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
-Это запускает `kimi -p "<prompt>"`. Неинтерактивный режим Kimi `-p` автоматически подтверждает обычные вызовы инструментов при политике разрешений `auto`, поэтому oma не добавляет `--yolo` или `--auto` (они несовместимы с `-p`).
+Это запускает `kimi -p "<prompt>"`. Неинтерактивный режим Kimi `-p` автоматически подтверждает обычные вызовы инструментов при политике разрешений `auto`, поэтому oma **не** добавляет `--yolo` или `--auto` (они несовместимы с `-p`).
 
 ### Модели Kimi для отдельных агентов
 

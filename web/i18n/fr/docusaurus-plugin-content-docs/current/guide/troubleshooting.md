@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci` conserve l’exécution non interactive. Si la configuration utilisateur a été remplacée de manière inattendue, vérifiez si `--force` a été utilisé ; les mises à jour ordinaires conservent la configuration appartenant à l’utilisateur, tandis que le mode forcé peut la remplacer.
 
+## Une installation ou une mise à jour ne parvient pas à télécharger la release
+
+<!-- oma-docs:ignore-start -->
+`oma install`, `oma update` et la réparation de `oma doctor` téléchargent la release désignée par `prompt-manifest.json` sur `main`. Ils essaient d’abord l’asset `agent-skills.tar.gz` de la release GitHub `cli-v<version>`, vérifié par rapport à son fichier `.sha256`, puis l’archive source de ce tag, puis un clone superficiel du tag. Une somme de contrôle qui ne correspond pas, ou une charge utile dont `.agents/skills/_version.json` indique une autre version, interrompt l’exécution au lieu d’essayer une autre source.
+<!-- oma-docs:ignore-end -->
+
+Juste après la création d’une release, le manifeste peut désigner une version dont les assets sont encore en cours de publication ; attendez quelques minutes et réessayez. Pour installer volontairement du contenu non publié depuis la branche `main`, activez cette option pour cette exécution :
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+L’exécution affiche un avertissement : le contenu de la branche main n’est ni une release taguée ni vérifié par somme de contrôle.
+
 ## Un fournisseur ne démarre pas
 
 Lancez le contrôle d’authentification propre au fournisseur, puis examinez le profil résolu par OMA :
@@ -85,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` indique `synced`, `missing-in-os` et `orphan-in-os`. `schedule sync` restaure les tâches manquantes ; ajoutez `--prune` uniquement lorsque les tâches OS orphelines doivent être supprimées. Un aperçu créé avec `--dry-run` n’enregistre pas de tâche. Pour un intervalle récurrent, acceptez l’arrondi d’OMA avec `--accept-rounded` après examen de l’aperçu. Vérifiez le journal d’exécution sous `~/.agents/schedule/runs/<id>/` pour une sortie fournisseur non nulle ou `re-auth required`.
+`schedule list` indique `synced`, `stale`, `missing-in-os` et `orphan-in-os`. `schedule sync` restaure les tâches manquantes et réécrit les enregistrements obsolètes (une ligne `Unknown command: schedule:run` dans le journal d’exécution signifie que l’enregistrement date d’avant le renommage de la commande ; `oma update` le resynchronise automatiquement) ; ajoutez `--prune` uniquement lorsque les tâches OS orphelines doivent être supprimées. Un aperçu créé avec `--dry-run` n’enregistre pas de tâche. Pour un intervalle récurrent, acceptez l’arrondi d’OMA avec `--accept-rounded` après examen de l’aperçu. Vérifiez le journal d’exécution sous `~/.agents/schedule/runs/<id>/` pour une sortie fournisseur non nulle ou `re-auth required`.
 
 ## L’évaluation ou l’optimisation ne signale aucune couverture
 

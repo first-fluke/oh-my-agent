@@ -108,7 +108,7 @@ Ważność określa sposób obsługi błędu i szybkość naprawy.
 
 ## Szczegółowa siedmioetapowa pętla debugowania
 
-Workflow `/debug` wykonuje poniższe etapy w kolejności. Gdy jest dostępny, korzysta ze skonfigurowanego dostawcy code intelligence, a gdy dostawca jest niedostępny lub przekracza limit czasu, z natywnego wyszukiwania i odczytów plików w ograniczonym zakresie.
+Workflow `/debug` wykonuje poniższe etapy w kolejności. Korzysta ze skonfigurowanego dostawcy code intelligence. Natywne wyszukiwanie służy wyłącznie do ścieżek spoza projektu lub ścieżek ignorowanych, gdy ten dostawca jest niedostępny lub przekracza limit czasu.
 
 ### Krok 1: zbierz informacje o błędzie
 
@@ -247,11 +247,11 @@ Poniższe sygnały oznaczają, że błąd wymaga eskalacji poza standardową pę
 
 ### Sygnał 1: ta sama poprawka została podjęta dwa razy
 
-Jeśli workflow proponuje i stosuje poprawkę, a ten sam błąd wraca, problem jest głębszy niż początkowa diagnoza. Uruchamia to **Exploration Loop** w workflowach, które go obsługują (ultrawork, orchestrate, work):
+Jeśli workflow proponuje i stosuje poprawkę, a ten sam błąd wraca, problem jest głębszy niż początkowa diagnoza. Oceń przyczynę ponownie. Jeśli alternatywy warto przetestować, a istniejący budżet odzyskiwania na to pozwala, użyj **Exploration Loop** w aktywnym workflowie (ultrawork, orchestrate, work):
 
 - Wygeneruj 2–3 alternatywne hipotezy przyczyny źródłowej.
-- Przetestuj każdą hipotezę w osobnej przestrzeni roboczej (git stash dla każdej próby).
-- Oceń wyniki i przyjmij najlepsze podejście.
+- Wyizoluj każdy eksperyment i zachowaj jego baseline, dowody oraz niezwiązaną z nim pracę.
+- Wybierz podejście, które spełnia wymagane zachowanie i porównywalne kryteria pomiarowe, a następnie zweryfikuj zintegrowany wynik.
 
 ### Sygnał 2: przyczyna źródłowa obejmuje wiele domen
 

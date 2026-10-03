@@ -408,11 +408,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 **智能体间审查循环：**
 1. 自审：智能体根据验收标准检查自己的差异
-2. 自动验证：`oma verify {agent-type} --workspace {workspace}`
+2. 自动验证：`oma verify agent {agent-type} --workspace {workspace}`
 3. 交叉审查：QA 智能体审查变更
 4. 失败时：问题反馈进行修复（最多 5 次总循环迭代）
 
-**澄清债务监控：** 追踪会话期间的用户纠正。事件评分为 clarify（+10）、correct（+25）、redo（+40）。CD >= 50 触发强制根因分析。CD >= 80 暂停会话。
+**会话证据：** 有帮助时，记录实质性纠正和已裁定的审查发现，并附上原因、影响和验证情况。没有惩罚评分，也没有由评分触发的暂停。
 
 **资源：** `subagent-prompt-template.md`、`memory-schema.md`。
 
@@ -590,7 +590,7 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-docs
 
-**领域：**让 docs/**/*.md 与实时代码库保持一致，验证损坏引用并为受 diff 影响的文档提出同步补丁。
+**领域：**文档漂移检测：对照当前代码库验证 `docs/**/*.md` 中的引用（verify 模式），并为受 diff 影响的文档提出补丁（sync 模式）。
 
 **何时使用：**代码变更可能使文档中的文件路径、CLI 命令、配置键、环境变量、脚本或链接失效时，或需要审查 i18n 文档漂移和 CJK 风格问题时。
 
@@ -773,7 +773,7 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 ### oma-video
 
-**领域：**通过 oma video CLI 生成短视频、讲解视频和真人录制演示，组合脚本 → 旁白 → 视觉素材 → 字幕 → Remotion 渲染。
+**领域：**通过 oma video CLI 生成短视频、讲解视频和真人录制演示，组合脚本 → 旁白 → 视觉素材 → 字幕 → HyperFrames 渲染。
 
 **何时使用：**从主题生成短视频（shorts/reels，9:16），从 README、代码或数据生成讲解视频（16:9/9:16），从屏幕录制（source file）或监督式有头浏览器录制任意 URL 的 Web 应用演示（source web），或对现有运行进行确定性重新渲染。
 
@@ -789,11 +789,11 @@ agents 目录下的智能体定义是事实来源。OMA 会将它们投影为支
 
 **工作流：**PREPARE（模式、画面比例、语区，澄清或扩展简报）→ ACQUIRE（探测供应商可用性、验证录制路径、检查费用）→ ACT（脚本 → 语音 ∥ 视觉素材 ∥ 字幕 → render-spec → 渲染）→ VERIFY（schema、清单哈希、退出码、mp4）→ FINALIZE（运行目录、mp4 路径和覆盖率警告）。
 
-**资源：**execution-protocol.md、vendor-matrix.md、prompt-tips.md、checklist.md，以及 vendored remotion/ 合成器、Web 录制驱动和 mpt/ 回退合成器；config/video-config.yaml。
+**资源：**execution-protocol.md、vendor-matrix.md、prompt-tips.md、checklist.md，以及 hyperframes-authoring/ 模式指南、Web 录制驱动和 mpt/ 回退合成器；config/video-config.yaml。
 
 ---
 
-受保护标识符补充： `$0.20`、`$PWD`、`--allow-external-output`、`--source file`、`--source web`、`--url`、`--yes`、`checklist.md`、`config/video-config.yaml`、`execution-protocol.md`、`mpt/`、`oma video`、`OMA_VIDEO_MOCK=1`、`OMA_VIDEO_YES=1`、`prompt-tips.md`、`remotion/`、`render-spec.json`、`vendor-matrix.md`。
+受保护标识符补充： `$0.20`、`$PWD`、`--allow-external-output`、`--source file`、`--source web`、`--url`、`--yes`、`checklist.md`、`config/video-config.yaml`、`execution-protocol.md`、`hyperframes-authoring/`、`mpt/`、`oma video`、`OMA_VIDEO_MOCK=1`、`OMA_VIDEO_YES=1`、`prompt-tips.md`、`render-spec.json`、`vendor-matrix.md`。
 
 ### oma-voice
 
@@ -922,14 +922,6 @@ oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 7. **收集结果**：收集运行范围内的结果文件和结构化声明
 8. **最终报告**：会话摘要、变更文件和剩余问题
 
-**智能体间审查循环：**
-1. 自审：智能体根据验收标准检查自身 diff
-2. 自动验证：oma verify agent {agent-type} --workspace {workspace}
-3. 交叉审查：QA 智能体审查变更
-4. 失败时：将问题反馈并修复（循环最多 5 次）
-
-**澄清债务监控：**跟踪会话期间的用户更正。事件计分为 clarify（+10）、correct（+25）、redo（+40）。CD >= 50 触发强制 RCA。CD >= 80 暂停会话。
-
 ---
 
 受保护标识符补充： `/orchestrate`、`/work`、`orchestrator-session-{sessionId}.md`、`progress-{agentId}-{taskId}-{runId}-{sessionId}.md`、`task-board-{sessionId}.md`。
@@ -962,8 +954,8 @@ oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 | task-board-{sessionId}.md | 编排器 | 任务分配、优先级、状态更新 | 只读 |
 | progress-{agentId}-{taskId}-{runId}-{sessionId}.md | 该运行 | 逐回合进度：执行的操作、读取或修改的文件、当前状态 | 编排器读取 |
 | result-{agentId}-{taskId}-{runId}-{sessionId}.md | 该运行 | 最终输出：状态（completed/failed）、摘要、变更文件、验收标准清单 | 编排器读取 |
-| session-metrics.md | 编排器 | 澄清债务追踪、质量评分进展 | QA 读取 |
-| experiment-ledger.md | 编排器或 QA | Quality Score 启用时的实验追踪 | 全部读取 |
+| session-metrics.md | 编排器 | 可选的会话证据和实测的实验结果 | QA 读取 |
+| experiment-ledger.md | 编排器或 QA | 实际实验的证据 | 全部读取 |
 
 内存工具可配置。默认情况下，智能体使用原生文件工具直接读写这些协调文件，也可以在 mcp.json 中配置自定义工具和基础路径：
 

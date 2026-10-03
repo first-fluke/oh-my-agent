@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | Todos los agentes usan la CLI de Antigravity (`agy`): Gemini 3.1 Pro para implementación/arquitectura y Gemini 3.6 Flash para orquestación, documentación y exploración. La selección de modelos se configura dentro de `agy`; no se exponen los flags `--model` ni `--thinking-budget`. | Usuarios de Antigravity CLI |
 | `claude` | Todos los agentes usan Claude (Sonnet/Opus) | Suscriptores de Claude Max |
 | `codex` | Todos los agentes usan OpenAI Codex (GPT-5.5 para la mayoría de roles, GPT-5.4-mini para explore) con niveles de esfuerzo | Usuarios de ChatGPT Plus/Pro |
-| `qwen` | Todos los agentes se enrutan externamente mediante Qwen Code; thinking binario (sin niveles de esfuerzo) | Inferencia local o autoalojada |
+| `qwen` | Todos los agentes usan Qwen Code; las sesiones de Qwen que coinciden pueden usar los agentes nativos generados, y los demás runtimes usan el despacho por CLI | Inferencia local o autoalojada |
 | `kiro` | Todos los agentes usan la CLI de Kiro; Sonnet gestiona implementación/arquitectura y Haiku gestiona orquestación/explore | Usuarios de Kiro |
 | `cursor` | Todos los agentes usan Cursor `composer-2.5` (`composer-2.5-fast` para orchestrator/qa/pm/docs/explore) | Usuarios de Cursor Pro / Pro Student |
 | `mixed` | Mixto: los roles de implementación usan Codex, architecture/qa/pm usan Claude y explore usa Gemini | Combinar las fortalezas de varios proveedores sin gestionar la configuración de cada agente |
@@ -63,7 +63,7 @@ Para el despacho mediante una CLI, `--vendor` selecciona explícitamente el dest
 
 ## Configuración local
 
-Crea uno de estos archivos, `.agents/oma-config.local.cue` o `.agents/oma-config.local.yaml`, junto a la configuración compartida. Install, link y update añaden ambas rutas a `.gitignore`; update conserva los archivos locales existentes, incluso con `--force`.
+Crea **uno** de estos archivos, `.agents/oma-config.local.cue` o `.agents/oma-config.local.yaml`, junto a la configuración compartida. Install, link y update añaden ambas rutas a `.gitignore`; update conserva los archivos locales existentes, incluso con `--force`.
 
 OMA selecciona el directorio de configuración del proyecto más cercano. Dentro de ese directorio, CUE compartido tiene prioridad sobre YAML compartido, y el archivo local sobrescribe los valores compartidos. Los archivos CUE se evalúan de forma independiente antes de combinarlos, por lo que `model_preset: "auto"` compartido puede sustituirse localmente por `"free"`. Los objetos se combinan de forma recursiva; los arrays, escalares y `null` sustituyen al valor compartido. Un archivo local mal formado, la ausencia del ejecutable CUE para CUE local o la presencia de ambos formatos locales es un error, y no una autorización para usar los valores predeterminados compartidos.
 
@@ -343,7 +343,7 @@ pi resuelve `--model` contra su **registro integrado de modelos**, y solo consul
 Hay dos formas de gestionarlo:
 
 1. **IDs del registro**: limita el preset a los IDs del registro. Usa la forma `provider/id` (por ejemplo, `zai/glm-4.7`) para fijar el proveedor explícitamente; oma lo pasa a pi tal cual mediante `--model`.
-2. **IDs no registrados**: regístralos con una extensión de pi. El campo `api` debe nombrar uno de los IDs de adaptador de API de pi (`openai-completions`, `anthropic-messages`, …), no el nombre del proveedor. Los nombres de proveedor como `"zai"` o las abreviaturas como `"openai"` no son IDs de adaptador y fallan al despachar con `No API provider registered for api: …`.
+2. **IDs no registrados**: regístralos con una extensión de pi. El campo `api` debe nombrar uno de los **IDs de adaptador de API** de pi (`openai-completions`, `anthropic-messages`, …), no el nombre del proveedor. Los nombres de proveedor como `"zai"` o las abreviaturas como `"openai"` no son IDs de adaptador y fallan al despachar con `No API provider registered for api: …`.
 
 ```typescript
 // ~/.pi/agent/extensions/zai-glm-models/index.ts  (or <project>/.pi/extensions/)
@@ -437,7 +437,7 @@ opencode models opencode-go                            # list everything your pl
 
 ## Despachar mediante Kimi Code CLI
 
-[Kimi Code CLI](https://www.kimi.com/code) solo lee hooks desde una configuración global (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`), por lo que `oma install`/`oma link` escriben la cadena de hooks y sus symlinks de skills en HOME con consentimiento explícito (igual que Antigravity). Kimi también busca directamente en el SSOT `.agents/skills/` de oma, por lo que las skills se resuelven en todo el proyecto. **MCP** no necesita escribir en HOME y tiene alcance de proyecto: se escribe según el modo en `<cwd>/.kimi-code/mcp.json` (proyecto) o `~/.kimi-code/mcp.json` (global).
+[Kimi Code CLI](https://www.kimi.com/code) solo lee **hooks** desde una configuración global (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`), por lo que `oma install`/`oma link` escriben la cadena de hooks y sus symlinks de skills en HOME con consentimiento explícito (igual que Antigravity). Kimi también busca directamente en el SSOT `.agents/skills/` de oma, por lo que las skills se resuelven en todo el proyecto. **MCP** no necesita escribir en HOME y tiene alcance de proyecto: se escribe según el modo en `<cwd>/.kimi-code/mcp.json` (proyecto) o `~/.kimi-code/mcp.json` (global).
 
 ### Despacho explícito
 
@@ -447,11 +447,11 @@ Enruta cualquier agente mediante Kimi con la sobrescritura `--vendor kimi`:
 oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
-Esto ejecuta `kimi -p "<prompt>"`. El modo `-p` (no interactivo) de Kimi aprueba automáticamente las llamadas normales a herramientas con su política de permisos `auto`, así que oma no añade `--yolo`/`--auto` (son mutuamente excluyentes con `-p`).
+Esto ejecuta `kimi -p "<prompt>"`. El modo `-p` (no interactivo) de Kimi aprueba automáticamente las llamadas normales a herramientas con su política de permisos `auto`, así que oma **no** añade `--yolo`/`--auto` (son mutuamente excluyentes con `-p`).
 
 ### Modelos de Kimi por agente
 
-Al igual que con opencode, oma no codifica un catálogo de modelos de Kimi (la oferta depende del proveedor y de la suscripción). Para enrutar agentes concretos a un modelo de Kimi, registra una especificación completa bajo `models:` con `cli: kimi` y referencia el modelo desde `agents:`:
+Al igual que con opencode, oma **no** codifica un catálogo de modelos de Kimi (la oferta depende del proveedor y de la suscripción). Para enrutar agentes concretos a un modelo de Kimi, registra una especificación completa bajo `models:` con `cli: kimi` y referencia el modelo desde `agents:`:
 
 La clave del registro debe tener la forma `owner/model` (el esquema `agents.<id>.model` rechaza los nombres simples) y `cli_model` es el alias exacto que se pasa a `kimi --model`; el alias de coding documentado por Kimi es `kimi-code/kimi-for-coding`. Confirma el alias que ofrece tu suscripción con `kimi --model <alias>` antes de guardarlo.
 

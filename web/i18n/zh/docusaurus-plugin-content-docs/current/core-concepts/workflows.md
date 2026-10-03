@@ -33,9 +33,11 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 ---
 
-## 持久化工作流
+## 持久化工作流 {#persistent-workflows}
 
 持久化工作流持续运行直到所有任务完成。它们在 `.agents/state/` 中维护状态，并在每条用户消息中重新注入 `[OMA PERSISTENT MODE: ...]` 上下文，直到显式停用。
+
+只有**显式调用**才会启动持久模式，即工作流自己的名称（`triggers.json` 中的 `explicit` 列表，例如“orchestrate”、“ultrawork”/“ulw”、“ralph”/“랄프”、“work mode”）。下面的其他触发关键词是自然语言提示：它们只会把工作流作为建议注入，不会激活持久模式；当提示的第一行或最后一行是以 `?` 结尾的问句时，它们也绝不会触发。
 
 ### /orchestrate
 
@@ -46,27 +48,29 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 **触发关键词：**
 | 语言 | 关键词 |
 |------|-------|
-| 通用 | "orchestrate" |
-| 英语 | "parallel"、"do everything"、"run everything" |
-| 韩语 | "자동 실행"、"병렬 실행"、"전부 실행"、"전부 해" |
-| 日语 | "オーケストレート"、"並列実行"、"自動実行" |
-| 中文 | "编排"、"并行执行"、"自动执行" |
-| 西班牙语 | "orquestar"、"paralelo"、"ejecutar todo" |
-| 法语 | "orchestrer"、"parallèle"、"tout exécuter" |
-| 德语 | "orchestrieren"、"parallel"、"alles ausführen" |
-| 葡萄牙语 | "orquestrar"、"paralelo"、"executar tudo" |
-| 俄语 | "оркестровать"、"параллельно"、"выполнить всё" |
-| 荷兰语 | "orkestreren"、"parallel"、"alles uitvoeren" |
-| 波兰语 | "orkiestrować"、"równolegle"、"wykonaj wszystko" |
+| 显式（持久） | "orchestrate"、"オーケストレート"、"orquestar"、"orchestrer"、"orchestrieren"、"orquestrar"、"оркестровать"、"orkestreren"、"orkiestrować" |
+| 英语 | "do everything"、"run everything"、"everything in parallel"、"automate everything" |
+| 韩语 | "전부 실행"、"전부 해"、"전부 병렬로"、"자동으로 해줘" |
+| 日语 | "全部実行"、"全部並列で"、"自動でやって" |
+| 中文 | "编排"、"全部执行"、"全部并行"、"自动处理" |
+| 西班牙语 | "ejecutar todo"、"todo en paralelo" |
+| 法语 | "tout exécuter"、"tout en parallèle" |
+| 德语 | "alles ausführen"、"alles parallel" |
+| 葡萄牙语 | "executar tudo"、"tudo em paralelo" |
+| 俄语 | "выполнить всё"、"всё параллельно" |
+| 荷兰语 | "alles uitvoeren"、"alles parallel" |
+| 波兰语 | "wykonaj wszystko"、"wszystko równolegle" |
+
+单独的“parallel”/“automate”（及其各语言译法）不是触发词：“run the tests in parallel”或“automate the release notes”是普通请求，不是多智能体编排。
 
 **触发正则模式**（意图 + 名词白名单，参见[自动检测：模式字段](#pattern-field-raw-regex)）：
 | 分节 | 模式 | 触发示例 |
 |------|------|---------|
-| `*`（通用） | `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication"、"Create an awesome web service"、"Develop a backend with PostgreSQL" |
+| `*`（通用） | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication"、"Create an awesome web service"、"Develop a backend with PostgreSQL" |
 | `*`（通用） | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
 | `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘"、"REST API 구현해"、"백엔드를 개발해주세요" |
 
-名词白名单（15 个）：app、api、service、server、cli、tool、website、dashboard、system、feature、backend、frontend、prototype、mvp、bot。
+名词白名单（14 个）：app、api、service、server、cli、tool、website、dashboard、system、backend、frontend、prototype、mvp、bot。单个功能（“implement the login feature”、“로그인 기능 구현해줘”）或已有的东西（“make the API faster”）不会匹配。
 
 **步骤：**
 1. **步骤 0，准备：**读取协调技能、上下文加载指南和内存协议。检测供应商。
@@ -74,9 +78,9 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 3. **步骤 2，初始化会话：**加载 `oma-config.yaml`，显示 CLI 映射表，沿用创建计划时的会话 ID，或生成新的会话 ID（`session-YYYYMMDD-HHMMSS`），并在配置的内存存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`。
 4. **步骤 3，启动智能体：**按优先级层处理每个任务（先 P0，再 P1……），使用供应商适配的方法启动智能体（当前运行时和目标供应商相同时使用原生子智能体；外部或跨供应商工作使用 `oma agent spawn`）。绝不超过 MAX_PARALLEL。
 5. **步骤 4，监控：**轮询运行范围内的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件和结构化回执，然后更新任务板。留意完成、失败和崩溃。
-6. **步骤 5，验证：**对每个完成的智能体运行 `verify.sh {agent-type} {workspace}`。失败时带上错误上下文重新启动（最多重试 2 次）。重试 2 次后激活探索循环：生成 2 到 3 个假设，启动并行实验，评分并保留最佳方案。
+6. **步骤 5，验证：**对每个完成的智能体运行 `verify.sh {agent-type} {workspace}`。失败时带上错误上下文重新启动（最多重试 2 次）。反复失败时，可以考虑尝试其他假设，但所有尝试共用同一份恢复总预算。如果预算不足以支撑一轮对比，则保留未解决的证据。
 7. **步骤 6，收集：**读取运行范围内的结果文件和结构化声明，然后编写摘要。
-8. **步骤 7，最终报告：**呈现会话摘要。如果测量了质量评分，则包含实验账本摘要并自动生成经验教训。
+8. **步骤 7，最终报告：**呈现会话摘要。如果运行了实验，则总结证据和决策；仅在确认了可复用的原因时才记录经验教训。
 
 **读取文件：**`.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、运行范围内的进度和结果文件，以及结构化运行回执。
 **写入文件：**配置内存存储中的运行范围会话和任务板状态、结构化回执和声明，以及最终报告。
@@ -92,13 +96,17 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 **触发关键词：**
 | 语言 | 关键词 |
 |------|-------|
-| 通用 | "work"、"step by step" |
-| 韩语 | "코디네이트"、"단계별" |
-| 日语 | "コーディネート"、"ステップバイステップ" |
-| 中文 | "协调"、"逐步" |
-| 西班牙语 | "coordinar"、"paso a paso" |
-| 法语 | "coordonner"、"étape par étape" |
-| 德语 | "koordinieren"、"schritt für schritt" |
+| 显式（持久） | "work mode"、"work workflow" |
+| 通用 | "step by step" |
+| 英语 | "one by one"、"one step at a time" |
+| 韩语 | "단계별"、"하나씩 해줘"、"차근차근" |
+| 日语 | "ステップバイステップ"、"一歩ずつ" |
+| 中文 | "逐步"、"一步一步" |
+| 西班牙语 | "paso a paso"、"uno por uno" |
+| 法语 | "étape par étape"、"un par un" |
+| 德语 | "schritt für schritt"、"der reihe nach" |
+
+单独的“work”不是触发词，它只是普通词汇（“Does this work on Windows?”）。
 
 **步骤：**
 1. **步骤 0：准备** 读取技能、上下文加载、内存协议。记录会话开始。
@@ -108,7 +116,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 5. **步骤 4：启动智能体** 按优先级层启动，同层并行，独立工作空间。
 6. **步骤 5：监控** 轮询进度文件，验证智能体间的 API 契约对齐。
 7. **步骤 6：QA 审查** 启动 QA 智能体进行安全（OWASP）、性能、无障碍、代码质量审查。
-8. **步骤 6.1：质量评分**（条件）：测量并记录基线。
+8. **步骤 6.1：测量**（条件）：需要做明确定义的对比时，记录基线。
 9. **步骤 7：迭代** 如果发现 CRITICAL/HIGH 问题，重新启动责任智能体。如果同一问题在 2 次尝试后仍存在，激活探索循环。
 
 **何时使用：** 功能跨越多个领域，需要逐步协调规划、实现和 QA。
@@ -124,7 +132,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 **触发关键词：**
 | 语言 | 关键词 |
 |------|-------|
-| 通用 | "ultrawork"、"ulw" |
+| 显式（持久） | "ultrawork"、"ulw" |
 
 **阶段和步骤：**
 
@@ -138,16 +146,16 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 **关卡定义：**
 - **PLAN_GATE：** 计划已文档化、假设已列出、替代方案已考虑、过度工程审查已完成、工作范围已获授权。
-- **IMPL_GATE：** 适用的不生成产物的检查和测试通过、仅修改了计划中的文件、记录了基线质量评分（如果测量）。只有明确要求时才运行构建检查。
-- **VERIFY_GATE：** 实现匹配需求、零 CRITICAL、零 HIGH、无回归、质量评分 >= 75（如果测量）。
-- **REFINE_GATE：** 无大文件/函数（> 500 行 / > 50 行）、集成机会已捕获、副作用已验证、代码已清理、质量评分未回退。
-- **SHIP_GATE：** 质量检查通过、UX 已验证、相关问题已解决、部署清单完成、最终质量评分 >= 75 且增量非负（如果测量）。沿用已有授权；发布或部署需获得针对该操作的授权。
+- **IMPL_GATE：** 适用的不生成产物的检查和测试通过、仅修改了计划中的文件、已为实际实验记录基线证据。只有明确要求时才运行构建检查。
+- **VERIFY_GATE：** 实现匹配需求、零 CRITICAL、零 HIGH、无回归、适用的项目测量目标已达成。
+- **REFINE_GATE：** 遵循项目的可维护性规则、集成机会已捕获、副作用已验证、代码已清理、无未解决的回归。
+- **SHIP_GATE：** 质量检查通过、UX 已验证、相关问题已解决、部署清单完成、适用的项目测量目标已达成并有最新证据支撑。沿用已有授权；发布或部署需获得针对该操作的授权。
 
 **关卡失败行为：**
 - 第一次失败：返回相关步骤，修复，重试。
-- 同一问题第二次失败：激活探索循环（生成 2-3 个假设，逐一实验，评分，保留最佳）。
+- 同一问题第二次失败：重新评估原因；如果剩余预算内值得测试其他方案，则对照所需行为和已定义的指标，比较相互隔离的实验。
 
-**条件增强：** 质量评分测量、保留/丢弃决策、实验账本、假设探索、自动学习（从丢弃的实验中提取经验）。
+**条件增强：** 已定义指标的对比、实验决策与证据、有预算限制的假设探索，以及有可复用原因支撑的经验教训。
 
 **REFINE 跳过条件：** 50 行以下的简单任务。
 
@@ -164,14 +172,16 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 **触发关键词：**
 | 语言 | 关键词 |
 |------|-------|
-| 通用 | "ralph" |
-| 英语 | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
-| 韩语 | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| 显式（持久） | "ralph", "랄프" |
+| 英语 | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
+| 韩语 | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
 | 日语 | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
 | 中文 | "不要停", "直到完成", "全部完成", "做完为止" |
 | 西班牙语 | "no pares", "hasta completar", "termina todo" |
 | 法语 | "n'arrête pas", "jusqu'à complétion", "termine tout" |
 | 德语 | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+单独的续接用语（“keep going”、“carry on”、“계속해”、“続けて”、“продолжай”等）不是触发词：用户输入它们是为了在中断后继续。
 
 **阶段：**
 1. **Phase 0：INIT** 加载前置条件（context-loading、内存协议、judge 协议）。定义并记录可用程序验证的完成标准，例如测试断言、不生成产物的类型检查、退出码或文件是否存在。只有明确要求时才纳入构建检查。展示标准，并在授权范围内继续执行。以 `max_iterations: 5` 初始化会话。
@@ -450,12 +460,12 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 ### /video
 
-**说明：**端到端驱动 `oma-video` 技能：简介 -> 脚本 -> 旁白 -> 视觉素材 -> 字幕 -> render-spec -> 供应商自带的 Remotion（或 MoneyPrinterTurbo）合成器。工作流会创建可复现的运行目录，只有合成器和 ffprobe 检查通过后才输出真实的 `.mp4`。受支持素材回退的供应商配置可以不提供密钥；合成器或工具链失败仍会使运行失败。内联执行（不启动子智能体）。
+**说明：**端到端驱动 `oma-video` 技能：简介 -> 脚本 -> 旁白 -> 视觉素材 -> 字幕 -> render-spec -> 受管的 HyperFrames（或 MoneyPrinterTurbo）合成器。工作流会创建可复现的运行目录，只有合成器和 ffprobe 检查通过后才输出真实的 `.mp4`。受支持素材回退的供应商配置可以不提供密钥；合成器或工具链失败仍会使运行失败。内联执行（不启动子智能体）。
 
 **触发关键词：**
 | 语言 | 关键词 |
 |----------|----------|
-| 通用 | "/video"、"oma-video"、"remotion"、"shorts"、"reels"、"screencast" |
+| 通用 | "/video"、"oma-video"、"hyperframes"、"shorts"、"reels"、"screencast" |
 | 英语 | "generate video"、"create a video"、"make a video"、"short-form video"、"explainer video"、"demo video"、"walkthrough video"、"video from readme"、"video from code" |
 | 韩语 | "영상 만들어"、"영상 생성"、"비디오 만들어"、"숏폼 만들어"、"쇼츠 영상"、"릴스 영상"、"데모 영상"、"설명 영상" |
 | 日语 | "動画を生成"、"動画を作成"、"ショート動画"、"解説動画"、"デモ動画" |
@@ -466,7 +476,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 2. **组合脚本：**生成场景和旁白（有密钥时使用 LLM，否则从简介生成确定性大纲）。
 3. **合成素材：**使用 `oma-voice` 生成旁白，使用 `oma-image` / `oma-slide` / 素材库生成视觉内容，使用免密钥字幕对齐，或在 `demo --source web` 中使用受监督的浏览器 Web 捕获。每个供应商都会降级为确定性回退。
 4. **构建 render-spec：**在运行目录中写入 `render-spec.json`（确定性边界）和素材。
-5. **渲染：**以子进程启动供应商自带的 Remotion 项目（或 MoneyPrinterTurbo）。普通合成器或工具链失败会使运行失败；确定性占位符仅可通过显式 mock/test 路径（`OMA_VIDEO_MOCK=1`）使用。实时捕获会在清单中记录为 `nondeterministic`。
+5. **渲染：**以子进程启动受管的 HyperFrames 项目（或 MoneyPrinterTurbo）。普通合成器或工具链失败会使运行失败；确定性占位符仅可通过显式 mock/test 路径（`OMA_VIDEO_MOCK=1`）使用。实时捕获会在清单中记录为 `nondeterministic`。
 
 **输出：**`.agents/results/videos/{timestamp}-{shortid}-{mode}/` 下的运行目录，包含 `script.json`、`render-spec.json`、`timing.json`、`captions.{srt,vtt}`、`audio/`、`visuals/`、`{composition}.mp4` 和 `manifest.json`。参见[视频生成指南](../guide/video-generation.md)。
 
@@ -509,7 +519,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运行。供应商设置会注册一个 `<hookDir>/oma-hook.sh --vendor <v> --event <e>` 入口，将请求路由到 `oma hook run`，由处理器链在进程内运行。处理器链包括：
 
 1. **`triggers.json`**（`.agents/hooks/core/triggers.json`，内联在 `oma` 二进制中）：定义全部 11 种支持语言（英语、韩语、日语、中文、西班牙语、法语、德语、葡萄牙语、俄语、荷兰语、波兰语）的关键词到工作流映射。
-2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：扫描用户输入中的触发关键词，遵循按语言匹配，并注入工作流激活上下文的 TypeScript 逻辑。
+2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：对照所有语言的触发关键词扫描用户输入，并注入工作流激活上下文的 TypeScript 逻辑。
 3. **`persistent-mode.ts`**（`.agents/hooks/core/persistent-mode.ts`）：检查活跃状态文件并重新注入工作流上下文，以强制执行持久化工作流。
 
 ### 检测流程
@@ -519,8 +529,9 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 3. 钩子会清理输入（去除代码块、引号字符串和粘贴的系统回显块），然后对照 `.agents/hooks/core/triggers.json` 扫描关键词列表（字面短语）和 `patterns`（原始正则）。如果同一工作流在最近 60 秒内已触发 2 次或更多次，强化保护机制会抑制再次触发。
 4. 如果找到匹配项，检查输入是否匹配信息性模式。
 5. 如果属于信息性问题（例如“什么是 orchestrate？”），将其过滤，不触发工作流。
-6. 如果属于可执行请求，将 `[OMA WORKFLOW: {workflow-name}]` 注入上下文。
-7. 智能体读取注入的标签，并从 `.agents/workflows/` 加载对应的工作流文件。
+6. 如果属于可执行请求，将 `[OMA WORKFLOW: {workflow-name}]` 注入上下文。多个工作流同时匹配时，显式调用优先，其次是最长的关键词。
+7. 对于持久化工作流，只有显式调用（`triggers.json` 中的 `explicit`）才会写入持久模式状态文件；自然语言匹配只会作为建议注入，以问句结尾的提示（第一行或最后一行有 `?`）则完全不会触发它。
+8. 智能体读取注入的标签，并从 `.agents/workflows/` 加载对应的工作流文件。
 
 ### 语言分节约定
 
@@ -528,11 +539,13 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 
 | 分节 | 行为 |
 |----------|----------|
-| `*` | 通用：无论 `.agents/oma-config.yaml` 中的 `language` 设置如何都会加载。用于英语内容（通用语）以及真正跨语言的标记，例如工作流名 `"orchestrate"`。 |
-| `en` | 英语：为向后兼容而加载，功能上等同于 `*`。新的英语内容应放入 `*`。 |
-| `ko`、`ja`、`zh`、`es`、`fr`、`de`、`pt`、`ru`、`nl`、`pl` | 语言专用：仅当 `.agents/oma-config.yaml` 设置了 `language: <lang>` 时加载。 |
+| `*` | 通用。用于英语内容（通用语）以及真正跨语言的标记，例如工作流名 `"orchestrate"`。 |
+| `en` | 英语。功能上等同于 `*`。 |
+| `ko`、`ja`、`zh`、`es`、`fr`、`de`、`pt`、`ru`、`nl`、`pl` | 特定语言的措辞。 |
 
-**含义：**如果在 `.agents/oma-config.yaml` 中设置 `language: en`，只会加载 `*` 和 `en` 模式。即使用户使用韩语、日语等输入，相应的自然语言触发器也不会触发。要启用非英语语言，请相应设置 `language: <code>`。`*` 中的英语回退始终保持活跃。
+所有区段始终加载：用户会用自己习惯的语言输入提示，而 `.agents/oma-config.yaml` 中的 `language` 设置只控制响应语言。用某种语言写成的关键词，只能匹配含有该种文字的提示，因此合并所有区段不会在无关的提示上触发。
+
+单词边界只取决于关键词本身，与 `language` 无关：ASCII 关键词只匹配完整单词（所以“work”不会匹配“network”，“review”不会匹配“preview”），而含有非 ASCII 文本的关键词按子串匹配，因为 CJK 的助词和词形变化会直接附着在词上（“리뷰해줘”）。
 
 ### 模式字段（原始正则） {#pattern-field-raw-regex}
 
@@ -543,9 +556,11 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      "keywords": { "*": ["orchestrate"], "en": ["parallel", ...] },
+      // Subset of `keywords` that activates persistent mode (persistent workflows only)
+      "explicit": ["orchestrate", ...],
+      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
       "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:an?|the)\\s+...\\b"],
+        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
         "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
       }
     }
@@ -592,7 +607,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 
 ### 状态文件
 
-持久化工作流（orchestrate、ultrawork、work、ralph）会在 `.agents/state/` 中创建状态文件：
+持久化工作流（orchestrate、ultrawork、work、ralph）在被显式调用时会在 `.agents/state/` 中创建状态文件（参见[持久化工作流](#persistent-workflows)）：
 
 ```
 .agents/state/

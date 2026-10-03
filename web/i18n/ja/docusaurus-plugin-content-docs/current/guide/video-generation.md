@@ -1,7 +1,7 @@
 ---
 title: "ガイド：動画生成"
 sidebar_label: 動画生成
-description: oh-my-agent の動画生成を詳しく説明します。キーがなくても使える 3 層ルーターで、shorts、explainer、demo の各モードにおいて、スクリプト、ナレーション、映像、字幕、同梱 Remotion コンポジターを再現可能な実行ディレクトリへまとめます。
+description: oh-my-agent の動画生成を詳しく説明します。キーがなくても使える 3 層ルーターで、shorts、explainer、demo の各モードにおいて、スクリプト、ナレーション、映像、字幕、管理対象の HyperFrames コンポジターを再現可能な実行ディレクトリへまとめます。
 ---
 
 # 動画生成
@@ -58,6 +58,7 @@ oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --p
 ```
 oma video generate <brief...> [options]
 oma video doctor [--install|--upgrade|--install-mpt|--install-strudel]  # toolchain readiness / provisioning
+oma video compose <runDir>       # prepare HTML project and authoring contract
 oma video render <runDir>        # re-render from render-spec.json (deterministic)
 oma video provider list         # provider availability + key/fallback status
 ```
@@ -73,14 +74,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`。 |
 | `--voice <profile>` | ナレーション音声。`none`（デフォルト）を指定するか、フラグを省略すると、推定した字幕タイミングで音声なしの動画をレンダーします。 |
 | `--music <mode>` | `upbeat`、`calm`、`cinematic`、`lofi`、`piano`、または `none`。 |
-| `--compositor <c>` | `remotion`（デフォルト） \| `mpt`。 |
+| `--compositor <c>` | `hyperframes`（デフォルト） \| `mpt`。 |
 | `--capture <path>` | demo モードの入力録画パス（`--source file`）。 |
 | `--source <k>` | demo のキャプチャー元。`file` または `web`（デフォルトは `file`）。 |
 | `--url <url>` | `--source web` の対象 URL（ローカル、ステージング、または本番）。録画が必要なとき、`--capture` の代わりにはなりません。 |
 | `--device <name>` | Web キャプチャーのデバイス枠。アスペクトサイズを上書きします。 |
 | `--ready-selector <css>` | Web キャプチャー前に待つ CSS セレクター。 |
 | `--show-cursor` | Web キャプチャーに表示カーソルを重ねます。 |
-| `--polish` | キャプチャーした映像に Remotion コンポジションを重ねます。 |
+| `--polish` | キャプチャーした映像に HyperFrames コンポジションを重ねます。 |
 | `--capture-timeout <sec>` | ライブ Web キャプチャーの上限時間。 |
 | `--capture-stop <mode>` | CI 用の非対話式停止。`duration:<sec>` または `selector:<css>`。 |
 | `--output-dir <path>` | 出力の基底ディレクトリ。`$PWD` 外のパスには `--allow-external-output` が必要です。 |
@@ -107,7 +108,7 @@ oma video provider list         # provider availability + key/fallback status
 | visual | `oma-image` / `oma-slide` / stock | プレースホルダーアセット |
 | caption | キーなしの強制アラインメント | 単語の推定タイミング |
 | capture | 監督下のブラウザー Web capture（`--source web`）または指定した録画（`--source file --capture`） | 「自分で録画する」ガイド付き手順 |
-| compositor | Remotion（同梱）または MoneyPrinterTurbo | コンポジターのフォールバックなし。実行は診断付きで失敗します |
+| compositor | HyperFrames（管理対象）または MoneyPrinterTurbo | コンポジターのフォールバックなし。実行は診断付きで失敗します |
 
 認証情報の自動化はありません。キャプチャー中の画面ログインは人が行います。URL とクエリトークンはログとマニフェストでマスクされます。
 
@@ -115,23 +116,23 @@ oma video provider list         # provider availability + key/fallback status
 
 ## ツールチェーンと `doctor`
 
-重いツールチェーン（同梱された Remotion プロジェクトの `node_modules`、埋め込み Pretendard フォント、MoneyPrinterTurbo のチェックアウト、キャプチャーブラウザー、Chrome Headless Shell）は**必要なときに準備され**、パッケージには含まれません。通常の `doctor` はレポートだけを行い、インストールはしません。
+重いツールチェーン（管理対象の HyperFrames プロジェクトの `node_modules`、埋め込み Pretendard フォント、MoneyPrinterTurbo のチェックアウト、キャプチャーブラウザー、Chrome Headless Shell）は**必要なときに準備され**、パッケージには含まれません。通常の `doctor` はレポートだけを行い、インストールはしません。
 
 ```bash
 oma video doctor
 ```
 
-`node`、`chromium`、`ffmpeg`、`remotion-toolchain`、`remotion-skills`、`pretendard-font`、`mpt-project`、`voicebox`、`oma-image`、`pixelle`、`cap` を報告し、不足しているもののインストール方法を表示します。キーなしの基準（Node + Chromium + FFmpeg + `oma-image`）で、実際の `.mp4` を作成できます。
+`node`、`chromium`、`ffmpeg`、`ffprobe`、`hyperframes-toolchain`、`hyperframes-skills`、`pretendard-font`、`mpt-project`、`voicebox`、`oma-image`、`pixelle`、`cap` を報告し、不足しているもののインストール方法を表示します。基準として、Node.js 22 以上、HyperFrames ツールチェーンとその Chrome ブラウザー、FFmpeg/FFprobe、`oma-image` が必要です。実際の MP4 には、作成した HTML も必要です。
 
 ツールチェーンを準備するにはインストールフラグを使います。
 
 ```bash
-oma video doctor --install             # warm the latest Remotion toolchain + Chrome Headless Shell + Pretendard + remotion-dev/skills
+oma video doctor --install             # warm the latest HyperFrames toolchain + Chrome Headless Shell + Pretendard + heygen-com/hyperframes
 oma video doctor --upgrade             # force a latest-version check now
 oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
 ```
 
-`--install` は埋め込み Pretendard フォント（固定リリース）も同梱プロジェクトへ取得します。これは再現性の境界に含まれます。ネットワークに失敗した場合は警告し、レンダーはシステムフォントへフォールバックします。マシン間でバイト単位に同じ出力が保証されるのはフォントが存在するときだけです。
+`--install` は埋め込み Pretendard フォント（固定リリース）も共有のツールチェーンキャッシュへ取得します。これは再現性の境界に含まれます。ネットワークに失敗した場合は警告し、レンダーはシステムフォントへフォールバックします。ブラウザーや OS の違いは、エンコード後の出力に引き続き影響することがあります。
 
 ## 出力レイアウト
 
@@ -143,6 +144,7 @@ oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + ven
 ├── captions.srt / .vtt
 ├── audio/narration-*.wav
 ├── visuals/scene-*.{png,svg,…}
+├── hyperframes/         # index.html, AUTHORING.md, local assets and toolchain link
 ├── {mode}-{slug}.mp4    # the rendered output (slug derived from the script title)
 └── manifest.json        # providers, assets, cost, warnings
 ```
@@ -156,30 +158,30 @@ oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + ven
 | MP4 が生成されない | コンポジター、コンポジション、ツールチェーンのチェックが失敗しました。`oma video doctor`、次に `oma video compose <runDir>` を実行し、報告されたコンポジションを直してから `oma video render <runDir>` を再実行します。 |
 | ナレーションが無音（`source: estimated`） | Voicebox に接続できません。`oma-voice` サーバーを起動するか、推定タイミングを受け入れます。 |
 | `--source web` が録画の代わりにガイド付き手順を表示する | TTY がないか、ブラウザーのキャプチャーランタイムを利用できません。準備済みのキャプチャーランタイムと `--capture-stop` を使った対話式ターミナルを使うか、録画ファイルを `--capture` で渡します。 |
-| 初回レンダーが遅い | Remotion ブラウザー／MPT のチェックアウトを一度準備しています。以降の実行ではキャッシュを再利用します。 |
+| 初回レンダーが遅い | HyperFrames ブラウザー／MPT のチェックアウトを一度準備しています。以降の実行ではキャッシュを再利用します。 |
 
-## 常に最新の Remotion。コンポジションは自分で作成する
+## 常に最新の HyperFrames。コンポジションは自分で作成する
 
-oh-my-agent に Remotion のコンポジションコードは**含まれていません**。各実行は `<runDir>/remotion/` に専用プロジェクトを持ち、最新 npm Remotion を使って `oma video compose` が雛形を生成します。ツールチェーンのキャッシュは `~/.cache/oma-video/remotion/<version>/` にあり、`node_modules` のシンボリックリンクで共有されます。[remotion-dev/skills](https://github.com/remotion-dev/skills) は HEAD（`~/.cache/oma-video/remotion-skills/`）にあります。エージェントは、生成された雛形の `AUTHORING.md`、スキル、`.agents/skills/oma-video/resources/remotion-authoring/` のモード仕様に従って生成コンポジションのソースを作成します。
+oh-my-agent に HyperFrames のコンポジションコードは**含まれていません**。各実行は `<runDir>/hyperframes/` に専用プロジェクトを持ち、最新 npm HyperFrames を使って `oma video compose` が雛形を生成します。ツールチェーンのキャッシュは `~/.cache/oma-video/hyperframes/<version>/` にあり、`node_modules` のシンボリックリンクで共有されます。[heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) は HEAD（`~/.cache/oma-video/hyperframes-skills/`）にあります。エージェントは、生成された雛形の `AUTHORING.md`、スキル、`.agents/skills/oma-video/resources/hyperframes-authoring/` のモード仕様に従って生成コンポジションのソースを作成します。
 
 ```bash
-oma video generate "…"                     # → render-spec.json + <runDir>/remotion/ (composition pending)
+oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
 oma video compose <runDir> --output json   # refresh scaffold / print the contract (idempotent)
-#   author the generated composition source as instructed by AUTHORING.md
-oma video render <runDir> --output json    # tsc → npx remotion render → ffprobe; exit 1 on any failure
+#   author hyperframes/index.html as instructed by AUTHORING.md
+oma video render <runDir> --output json    # lint → npx hyperframes render → ffprobe; exit 1 on any failure
 ```
 
-- 最新版の確認（npm + GitHub）は `video.remotion.check_interval_min`（デフォルト 60、`0` なら compose ごと）で間引かれます。`oma update` と `oma video doctor --upgrade` は確認を強制します。オフライン実行ではキャッシュしたツールチェーンを使い、`stale` と報告します。
-- 再現性は実行ディレクトリにあります。`render-spec.json`、作成したコンポジションのソース、生成された Remotion パッケージメタデータに記録されたツールチェーンのバージョンが境界です。同じ実行を再レンダーすると同じレンダー契約を再利用し、新しい実行では最新 Remotion を確認します。
-- 型チェックやレンダーの失敗はプレースホルダーで隠されません（それが存在するのは `OMA_VIDEO_MOCK=1` の場合だけです）。`oma video render` は診断付きで終了コード 1 を返し、エージェントは最新スキルを使ってコンポジションを修正します。新しい Remotion リリースでの破損はコンポジションのバグであり、固定する理由にはなりません。
+- 最新版の確認（npm + GitHub）は `video.hyperframes.check_interval_min`（デフォルト 60、`0` なら compose ごと）で間引かれます。`oma update` は間隔に従い、`oma video doctor --upgrade` は確認を強制します。オフライン実行ではキャッシュしたツールチェーンを使い、`stale` と報告します。
+- 再現性は実行ディレクトリにあります。`render-spec.json`、作成したコンポジションのソース、生成された HyperFrames パッケージメタデータに記録されたツールチェーンのバージョンが境界です。同じ実行を再レンダーすると同じレンダー契約を再利用し、新しい実行では最新 HyperFrames を確認します。
+- lint やレンダーの失敗はプレースホルダーで隠されません（それが存在するのは `OMA_VIDEO_MOCK=1` の場合だけです）。`oma video render` は診断付きで終了コード 1 を返し、エージェントは最新スキルを使ってコンポジションを修正します。新しい HyperFrames リリースでの破損はコンポジションのバグであり、固定する理由にはなりません。
 
 ```yaml
 video:
-  remotion:
+  hyperframes:
     check_interval_min: 60    # 0 = check on every compose
 ```
 
 ## 関連項目
 
-- [`/video` ワークフロー](/docs/core-concepts/workflows)。brief → script → assets → render-spec → Remotion のパイプラインです。
+- [`/video` ワークフロー](/docs/core-concepts/workflows)。brief → script → assets → render-spec → HyperFrames のパイプラインです。
 - [画像生成](/docs/guide/image-generation)。動画の visual プロバイダーとして再利用される静止画ルーターです。

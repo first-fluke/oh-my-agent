@@ -43,7 +43,7 @@ oma doctor --profile
 | `telemetry` | boolean | `false` | 安装、更新和链接协调时使用的供应商遥测选择。 |
 | `model_preset` | 非空字符串 | 新模板中为 `auto` | 内置或自定义模型预设。`OMA_MODEL_PRESET` 可为单个进程覆盖它。 |
 | `free` | `base_url`、`api_key_env`、`model` | `http://127.0.0.1:31415/v1`、`FREELLM_API_KEY`、`auto` | 预设为 `free` 时的 FreeLLMAPI 设置；`FREELLM_BASE_URL` 和 `FREELLM_MODEL` 会覆盖文件值，键名永远不包含密钥。请参阅[按智能体配置模型](/docs/guide/per-agent-models#freellmapi-preset)。 |
-| `providers` | `docs`、`web`、`code_intelligence`、`semantic_memory` | `context7`、`native`、`serena`、`agentmemory` | 选择文档、搜索、代码智能和语义内存提供方。代码智能接受 `serena` 或 `gortex`；语义内存接受 `agentmemory`、`honcho` 或 `none`。 |
+| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory` | `context7`、`native`、`serena`、`block`、`agentmemory` | 选择文档、搜索、代码智能和语义内存提供方。代码智能接受 `serena` 或 `gortex`；语义内存接受 `agentmemory`、`honcho` 或 `none`。`code_intelligence_guard`（`block` 或 `off`）控制 PreToolUse 搜索保护。限定在已确认的提供方排除项或项目之外路径的原生搜索，无需绕过即可放行。该保护会读取 Serena 的排除项和已启用的 gitignore 规则，或 Gortex 的排除列表；它不会根据目录名推断依赖项。该钩子不会提及 `OMA_CI_ALLOW_NATIVE`。以 `OMA_CI_ALLOW_NATIVE=1` 为前缀的 shell 搜索，仅对项目之外的资源或保护未能识别的被忽略路径绕过保护，对项目源代码无效。 |
 | `brave` | `api_key_env` 或 `api_key_vault` | unset | Brave 搜索凭据引用。 |
 | `honcho` | `base_url`、`workspace_id`、`project_id`、`api_key_env`、`api_key_vault`、`timeout_ms`、`max_results`、`max_tokens`、`recall_mode` | 请参阅[Honcho 详情](#honcho-semantic-memory) | Honcho 语义内存连接设置。 |
 | `agents` | 智能体 ID → `model`，可选的 `effort`、`thinking`、`memory` | 由预设解析 | 在所选预设之上应用的每个智能体覆盖。effort 可为 `none`、`low`、`medium`、`high` 或 `xhigh`；memory 可为 `user`、`project` 或 `local`。 |
@@ -55,7 +55,7 @@ oma doctor --profile
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` 的行为和扫描排除项。 |
 | `serena` | `mode: bridge\|stdio`、`auto_update` | `bridge`、`true` | Serena MCP 传输和更新行为。 |
 | `mcp.devtools_browsers` | `aside`、`chrome`、`firefox` 或 `[]` | unset = 保留现有设置 | 协调时选择浏览器 DevTools MCP。明确的空列表会移除所选浏览器条目。 |
-| `video` | 技能拥有的 sparse 映射 | 技能默认值；请参阅[视频生成](/docs/guide/video-generation) | 视频路由、供应商顺序、输出、成本、限制和 Remotion 刷新设置。 |
+| `video` | 技能拥有的 sparse 映射 | 技能默认值；请参阅[视频生成](/docs/guide/video-generation) | 视频路由、供应商顺序、输出、成本、限制和 HyperFrames 刷新设置。 |
 | `image` | 技能拥有的 sparse 映射 | 技能默认值；请参阅[图像生成](/docs/guide/image-generation) | 图像供应商、尺寸、质量、输出、比较和成本设置。 |
 | `voice` | `notification_profile`、`asset_profile`、`output_dir`、`auto_notify_after_sec`、`max_tts_chars`、`max_stt_minutes` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Voicebox 配置档、输出和长度设置。 |
 | `hwp` | `format`、`version.*`、`output.*` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc 格式、版本通道和输出位置。 |
@@ -181,6 +181,7 @@ agents:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

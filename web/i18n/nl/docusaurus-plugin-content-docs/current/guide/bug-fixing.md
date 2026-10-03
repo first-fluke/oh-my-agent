@@ -112,7 +112,7 @@ De ernst bepaalt hoe de bug wordt behandeld en hoe snel deze moet worden opgelos
 
 ## De debuglus in zeven fasen
 
-De workflow `/debug` voert deze fasen in volgorde uit. Wanneer beschikbaar gebruikt de workflow de geconfigureerde code-intelligenceprovider, plus native search en scoped file reads wanneer die provider niet beschikbaar is of een timeout geeft.
+De workflow `/debug` voert deze fasen in volgorde uit. Hij gebruikt de geconfigureerde code-intelligenceprovider. Native search is alleen bedoeld voor paden buiten het project of genegeerde paden wanneer die provider niet beschikbaar is of een timeout geeft.
 
 ### Stap 1: foutinformatie verzamelen
 
@@ -255,11 +255,11 @@ Deze signalen wijzen erop dat de bug verder moet worden geëscaleerd dan de stan
 
 ### Signaal 1: dezelfde fix twee keer geprobeerd
 
-Als de workflow een fix voorstelt, toepast en dezelfde fout opnieuw optreedt, ligt het probleem dieper dan de eerste diagnose. Dit activeert de **Exploration Loop** in workflows die dit ondersteunen (ultrawork, orchestrate, work):
+Als de workflow een fix voorstelt, toepast en dezelfde fout opnieuw optreedt, ligt het probleem dieper dan de eerste diagnose. Heroverweeg de oorzaak. Als alternatieven het testen waard zijn en het bestaande herstelbudget dat toelaat, gebruik je de **Exploration Loop** in de actieve workflow (ultrawork, orchestrate, work):
 
 - Genereer 2–3 alternatieve hypothesen voor de hoofdoorzaak.
-- Test elke hypothese in een afzonderlijke workspace (git stash per poging).
-- Score de resultaten en neem de beste aanpak over.
+- Isoleer elk experiment en bewaar de baseline, de evidence en ongerelateerd werk.
+- Kies een aanpak die voldoet aan het vereiste gedrag en aan vergelijkbare meetcriteria en verifieer daarna het geïntegreerde resultaat.
 
 ### Signaal 2: hoofdoorzaak over meerdere domeinen
 

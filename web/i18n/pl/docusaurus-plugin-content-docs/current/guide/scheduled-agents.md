@@ -171,6 +171,7 @@ oma schedule list [--json]
 | Stan | Znaczenie |
 |---|---|
 | `synced` | Zadanie istnieje zarówno w manifeście, jak i w harmonogramie systemu |
+| `stale` | Zadanie jest zarejestrowane, ale rejestracja w systemie wywołuje polecenie, którego bieżące CLI już nie akceptuje (na przykład `schedule:run <id>` zapisane przed standaryzacją ścieżek poleceń). Uruchom `schedule sync`, aby je przepisać; `oma update` robi to automatycznie. |
 | `missing-in-os` | Zadanie jest w manifeście, ale brakuje go w harmonogramie systemu. Uruchom `schedule sync`, aby naprawić. |
 | `orphan-in-os` | Zadanie istnieje w harmonogramie systemu, ale nie w manifeście. Uruchom `schedule sync --prune`, aby je usunąć. |
 
@@ -265,12 +266,14 @@ oma schedule sync [--prune]
 **Przykłady:**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
+
+`oma update` uruchamia to samo uzgadnianie (bez `--prune`) po każdej aktualizacji, więc wydanie CLI zmieniające zapis polecenia `oma schedule run` nie może pozostawić istniejących rejestracji w systemie wskazujących polecenie, które nowy plik binarny odrzuca. Rejestracje zapisane przez starsze wersje z `oma schedule:run <id>` także nadal działają: ten starszy zapis pozostaje akceptowany dla zadań wywoływanych przez system.
 
 ---
 

@@ -68,10 +68,11 @@ weight: 1
 |:------|:-----------|:---------|
 | `id` | Да | Уникальный идентификатор task (используется в именах rollout и отчётах). |
 | `skill` | Да | Оцениваемый skill (совпадает с именем родительского каталога). |
-| `domain` | Да | Метка домена (для группировки и будущего обнаружения negative transfer). |
+| `domain` | Да | Метка домена для группировки и выбора соседних task для проверки negative transfer. |
 | `prompt` | Да | Prompt task, dispatchимый обеим сторонам. |
 | `checker` | Нет | Способ оценить output arm. Если отсутствует, используется `{ type: judge }`. |
 | `weight` | Да | Относительный вес для взвешенного среднего score (используйте `1`, если task одинаково важны). |
+| `group` | Нет | Метка семейства. `oma skill optimize` оставляет fixture с общим group в одном разделе train/validation/final-test, чтобы почти дубликат не мог просочиться через границу split. |
 
 ### Типы checker
 
@@ -141,7 +142,7 @@ Pattern длиннее 200 символов получает score 0 (защит
 
 Если для task judge в `_rollouts/` нет записанного score, task исключается из report (с предупреждением в консоли). Так mock mode остаётся строго offline.
 
-Перед использованием записи также проверяются на устаревание. Treatment entry, записанная для другого body SKILL.md, entry с изменившимся fixture `prompt` и любая entry без provenance tracking отбрасываются с предупреждением, где указаны файл и количество. Если после этого остаётся меньше `MIN_TASKS` оцениваемых task, запуск сообщает `coverage: "insufficient"`, а не verdict — изменившийся skill не наследует старую оценку.
+Перед использованием записи также проверяются на устаревание. Изменения body skill, prompt, контрактов task/checker, эффективных rubric judge и ревизий протокола evaluator делают соответствующие entry недействительными. Отсутствующий provenance также отбрасывается с предупреждением, где указаны файл и количество. Если после этого остаётся меньше `MIN_TASKS` оцениваемых task, запуск сообщает `coverage: "insufficient"`, а не verdict.
 
 :::note `oma skill optimize --mock`
 Optimizer оценивает candidate body SKILL.md. Поскольку запись действительна только для body, с которым она создана, для candidate body подходящих rollout нет и они считаются uncovered. Для оценки candidate используйте `--live`.
@@ -155,7 +156,7 @@ oma skill eval --skill oma-scholar
 
 ### --live
 
-Запускает реальные arm агентов через `oma agent spawn --read-only`. Обе стороны работают во временном workspace, чтобы не изменять файлы проекта.
+Запускает реальные arm агентов через `oma agent spawn --read-only`. Каждая arm задачи работает в собственном временном workspace, поэтому файлы, созданные одной arm, не влияют на другую. Сбои процесса, конверты ошибок API и сбои judge исключают всё парное сравнение из оценки и записи; частичный output — это диагностические данные.
 
 Перед dispatch команда печатает предварительную оценку стоимости: количество задач, dispatch arm, dispatch judge и разрешённый вендор. Подтвердите `y` или пропустите с `--yes`.
 
@@ -165,8 +166,10 @@ oma skill eval --skill oma-scholar
 | --- | --- |
 | `--task-dir <path>` | Оценивает fixture из каталога, отличного от `.agents/eval/<skill>`. |
 | `--max-tasks <n>` | Ограничивает число fixture для bounded live run. |
-| `--neg-transfer` | Выбирает соседние task того же домена для поиска negative transfer; по умолчанию выключено. |
-| `--require-coverage` | Завершает процесс ненулевым кодом, если осталось меньше пяти оцениваемых парных task. |
+| `--trials <n>` | Повторяет каждую arm `n` раз (1-10). Arm, запущенная первой, чередуется между trial, оценки по task усредняются, а report получает внутризадачную дисперсию. Соседние task из `--neg-transfer` выполняются один раз. |
+| `--neg-transfer` | Измеряет candidate skill на task того же домена, принадлежащих другим skill; по умолчанию выключено. |
+| `--routing` | Измеряет активацию: для каждой task спрашивает, какой установленный skill был бы загружен с учётом `description` каждого skill. Live-режим выполняет измерение (один дополнительный dispatch на task); mock воспроизводит запись маршрутизации, сделанную при том же каталоге. |
+| `--require-coverage` | Завершает процесс ненулевым кодом, если осталось меньше пяти оцениваемых парных task или запрошенная проверка negative transfer неполна. |
 
 ```bash
 # Preview and confirm
@@ -176,22 +179,32 @@ oma skill eval --skill oma-scholar --live
 oma skill eval --skill oma-scholar --live --yes
 ```
 
+#### Измерение negative transfer
+
+С `--neg-transfer` каждая выбранная соседняя task выполняется дважды: сначала свежий baseline без candidate, затем treatment с внедрённым точным body candidate. Соседние task — это task других skill в том же `domain`. Если ни один другой skill не использует этот домен, вместо этого берётся ограниченная междоменная выборка (до шести task, распределённых по другим skill), а `negativeTransferCoverage.scope` сообщает `cross-domain`; влияние внедрённого body не ограничено его собственным доменом, и уникальный домен не должен делать проверку невозможной. Обе arm используют один и тот же evaluator и отдельные пустые workspace. Delta — это score treatment минус score baseline; отрицательное значение означает, что candidate навредил этой соседней task. Предварительная оценка стоимости в live-режиме учитывает эти дополнительные dispatch arm и judge. `--max-tasks` также ограничивает выборку соседей, с предупреждением, если task пропущены.
+
+Используйте `--live --neg-transfer --record`, чтобы сохранить сравнения для конкретного candidate в `.agents/eval/<candidate>/_negative-transfer/<neighbor>/<body-hash>/_rollouts/`. Mock replay требует совпадения идентичности candidate, hash body, полного hash task/checker и общего ID сравнения для обеих arm. Обычные записи оценки соседа не могут заменить это измерение.
+
+Каждая запись `negativeTransfer` содержит `trials` (парные сравнения, на которых основана `delta`). Оптимизация повторно измеряет регрессировавшего соседа один раз, прежде чем отклонить candidate, и добавляет `confirmed` (`true`, если повтор тоже показал регрессию, `false` — если нет); `oma skill eval --neg-transfer` сообщает единичное сравнение. Report включает `negativeTransferCoverage` с полями `status`, `expected` и `scored`. Status равен `not-requested`, когда флага нет, `measured`, когда у каждого выбранного соседа есть корректный парный результат и выборка непуста, и `insufficient` при нуле соседей или любом отсутствующем сравнении. Поэтому пустой массив `negativeTransfer` не доказывает отсутствие регрессий. JSON `ok` равен false, если для запрошенной проверки negative transfer coverage недостаточно.
+
 #### Изоляция skill (чтобы baseline оставался честным) {#skill-isolation-keeping-the-baseline-honest}
 
 `utilityLift` имеет смысл только если **baseline arm запускается без target skill**. Проблема в том, что dispatchированный agent автоматически загружает все skill, установленные в его runtime, поэтому наивный baseline всё равно подхватил бы skill, который должен измеряться без него — сравнение загрязняется (baseline ≈ treatment, lift ≈ 0).
 
-Чтобы этого не произошло, `--live` запускает **обе стороны в изолированном временном workspace**, каталог skill которого содержит все установленные skill **кроме target**. Treatment arm добавляет target **только** через внедрённый `SKILL.md` (в начало prompt). Injection — единственная контролируемая переменная: baseline = без skill, treatment = candidate `SKILL.md`.
+Чтобы этого не произошло, `--live` запускает **обе стороны в отдельных временных workspace**. Защищённые профили Claude и Codex отключают автоматическое обнаружение skill/инструкций и инструменты агента. Treatment получает target **только** через внедрённый `SKILL.md`. Exploratory-профили используют отфильтрованный каталог skill без target, но одно это не доказывает изоляцию.
 
-Это работает, потому что большинство vendor обнаруживает skill **относительно рабочего каталога** (например, `<cwd>/.claude/skills`, `<cwd>/.codex/skills`): чистый рабочий каталог действительно скрывает skill. Report показывает, насколько хорошо сработала изоляция, в поле `isolation`:
+Чистый рабочий каталог скрывает локальное для проекта обнаружение skill, но изоляция runtime зависит и от профиля vendor. Report показывает проверенный уровень в поле `isolation`:
 
 | Статус | Значение |
 |---|---|
-| `enforced` | Vendor использует cwd-relative discovery, target skill отсутствует в HOME path — изоляция полная. |
-| `best-effort` | Vendor использует cwd-relative discovery, но копия skill есть в HOME (или vendor неизвестен); project copy скрыта, однако HOME copy всё ещё может просочиться. Низкая уверенность. |
+| `enforced` | Защищённый Claude с допустимым ID target и без копии в HOME либо нативный Codex с подавлением discovery/инструментов и проверками thread в runtime. Сбой runtime-контракта прерывает dispatch. |
+| `best-effort` | Runtime без защищённого текстового профиля, недопустимый ID target либо копия Claude в HOME; изоляция не проверена. |
 | `unavailable` | Vendor использует HOME (например, **antigravity**, который читает `~/.gemini/antigravity-cli/skills`); чистый cwd не может скрыть skill. Печатается warning, результат имеет низкую уверенность. |
 | n/a | Mock mode — live dispatch отсутствует. |
 
-Если isolation не `enforced`, печатается однострочное предупреждение, а результат следует считать сигналом с низкой уверенностью. Для чистого сигнала запускайте eval через изолируемого вендора с cwd-relative discovery (claude / codex / qwen), а не через HOME-based vendor — eval vendor следует `model_preset` в `.agents/oma-config.yaml`, поэтому выберите preset с cwd-relative default vendor.
+Другие runtime-профили остаются доступными для exploratory-оценки, но результаты `best-effort` и `unavailable` блокируют продвижение live-оптимизации. Eval vendor следует конфигурации моделей проекта. Codex использует собственный вход в CLI и настроенные модель/провайдер через `app-server`; он не переключается молча на Claude или клиент с API-ключом. Защищённый контракт Codex рассчитан на CLI 0.154.x на macOS/Linux с нативным файловым хранилищем credential и существующим `auth.json`. Приватный временный config home ссылается на исходные файлы config/auth и исключает общее bootstrap-состояние; credential не копируются, а нативное обновление использует исходный файл auth. Хранилища credential keyring, auto и ephemeral сейчас не поддерживаются. Неподдерживаемые версии, режимы хранилища и сбои контракта становятся ошибками dispatch.
+
+Judge запускаются в свежих временных каталогах с отключённой памятью оптимизации. Judge Claude и Codex используют тот же защищённый текстовый transport, что и arm оценки. Конфигурация vendor judge фиксируется на время запуска.
 
 ### --live --record
 
@@ -205,8 +218,15 @@ oma skill eval --skill oma-scholar --live --yes
 |---|---|---|
 | `skillBodyHash` | только `treatment` | body SKILL.md, который оценивается |
 | `promptHash` | обе arm | текущий `prompt` fixture |
+| `taskHash` | обе arm | полная task, эффективный checker/default judge rubric и `SKILL_EVAL_PROTOCOL_REVISION` |
+| `trial` | обе arm (`--trials` > 1) | связывает baseline и treatment одного повтора; отсутствует при одном trial |
+| `judgeResponse` | task с judge | распакованный из конверта текст verdict judge (ограниченного размера), сохраняемый, чтобы сохранённый `score` можно было проверить |
 
-Baseline arm скрывает skill, поэтому редактирование SKILL.md не делает его недействительным — повторно записывается только treatment arm.
+Output arm записываются как текст ответа. Когда CLI vendor возвращает JSON-конверт результата, сохраняется и оценивается поле `result`; служебные данные конверта никогда не сопоставляются checker `assert`/`regex` и не читаются парсером judge.
+
+Baseline arm скрывает skill, поэтому одно лишь редактирование SKILL.md не делает её запись недействительной. Изменения контракта task или evaluator делают недействительными обе arm. Live recording снова запускает обе arm.
+
+Записи, созданные до введения полного provenance task/evaluator, необходимо пересоздать через `--live --record` (и `--neg-transfer` для сравнений соседей); добавление новых hash к старым score не позволяет их проверить. Тот же контракт входит в идентичность suite оптимизации, поэтому прежние знания в рамках suite не используются повторно при обновлённом контракте. Поддерживайте `SKILL_EVAL_PROTOCOL_REVISION`, увеличивая значение при изменении поведения scorer, prompt judge/разбора verdict или другого неявного поведения evaluator.
 
 :::caution `_rollouts/` — только локальный каталог, не коммитьте его
 Recording воспроизводится только для точного body SKILL.md, с которым создан. После изменения skill treatment recording отбрасывается при следующем `--mock`, поэтому закоммиченный recording устареет при следующем изменении SKILL.md и выдаст warning всем, кто его получит. Каталог игнорируется Git; записывайте его локально.
@@ -219,6 +239,24 @@ oma skill eval --skill oma-scholar --live --record --yes
 После успешного live run report содержит оценки baseline и treatment, `utilityLift`, `coverage: "ok"`, статус isolation и решение pass/warn/fail. Последующий mock run использует только записи, у которых prompt задачи и body treatment skill по-прежнему совпадают.
 
 ---
+
+### Параллелизм и timeout dispatch
+
+Live arm, arm соседей, вызовы judge и зондирующие запросы маршрутизации выполняются через ограниченный пул из `OMA_SKILL_EVAL_CONCURRENCY` подпроцессов (по умолчанию 4, не более 16). Две arm одного trial всегда выполняются вместе в отдельных пустых каталогах, причём arm, запущенная первой, чередуется между trial, а результаты сохраняют порядок task, поэтому записи и score такие же, как при последовательном запуске. Задайте для переменной значение 1, чтобы выполнять последовательно.
+
+Каждая live arm и каждый вызов judge принудительно завершаются по истечении `OMA_SKILL_EVAL_TIMEOUT_MS` (по умолчанию 180000). Dispatch, завершившийся по timeout, повторяется один раз, прежде чем task исключается из report, потому что один медленный ответ — это сбой transport, а не ответ; второй timeout исключает task (а при оптимизации нарушает coverage split). Увеличьте лимит для fixture, которым действительно нужны длинные ответы.
+
+## Маршрутизация: выбирается ли skill?
+
+Utility lift измеряет, что делает body после загрузки. Vendor решают, загружать ли skill, по `description` из его frontmatter, поэтому лучший body, который никогда не выбирается, улучшением не является. `--routing` отправляет prompt каждой task вместе с именем и описанием каждого установленного skill той же защищённой модели и просит назвать единственный skill, который она загрузила бы (или `NONE`). Выбор target — активация; выбор другого skill — ошибочная маршрутизация; `NONE` — промах.
+
+```text
+  routing: measured  activated 5/6 (83%)  misrouted 1 [oma-docs×1]  none 0  unparsed 0  catalog 33
+```
+
+JSON-report содержит `routing` с полями `status`, счётчиками, `activationRate`, `misroutedTo` и `catalogSize`; каждый finding содержит `routing: target | other | none | unparsed`. С `--record` выбор сохраняется в `_rollouts/<hash>.routing.json` вместе с hash каталога. Последующий `--mock --routing` воспроизводит его, только пока каждое описание и каждая task не изменились; иначе `status` равен `stale`, и ничего не засчитывается.
+
+Так измеряется описание относительно каталога через защищённый transport. Это не задействует собственный механизм discovery vendor, который защищённый профиль намеренно отключает, и не измеряет, соблюдается ли процедура загруженного skill; это остаётся предметом измерения utility.
 
 ## Минимальный рабочий набор fixture
 
@@ -263,7 +301,7 @@ oma skill eval --skill oma-scholar --json
 ```
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
-  isolation: enforced [codex]
+  isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
@@ -291,16 +329,29 @@ Skill utility eval  (skill: oma-scholar)
   "treatmentScore": 0.7143,
   "utilityLift": 0.2857,
   "utilityStdDev": 0.1429,
+  "repeatability": {
+    "trials": 1,
+    "liftCi95": { "lower": 0.0918, "upper": 0.4796 },
+    "withinTaskStdDev": null,
+    "status": "single-trial"
+  },
   "findings": [
-    { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0 }
+    { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0, "trials": 1, "liftStdDev": 0, "routing": "target" }
   ],
+  "usage": { "status": "actual", "dispatches": 14, "inputTokens": 61234, "outputTokens": 9876, "costUsd": 0.8123, "judge": { "status": "actual", "dispatches": 6, "inputTokens": 12000, "outputTokens": 30, "costUsd": 0.1401 } },
+  "routing": { "status": "measured", "measured": 7, "activated": 6, "misrouted": 1, "none": 0, "unparsed": 0, "activationRate": 0.8571, "misroutedTo": { "oma-search": 1 }, "catalogSize": 33 },
   "negativeTransfer": [],
+  "negativeTransferCoverage": { "status": "not-requested", "expected": 0, "scored": 0 },
   "isolation": "enforced",
-  "isolationVendor": "codex"
+  "isolationVendor": "claude"
 }
 ```
 
-`ok` равно `true` только при `coverage === "ok"` и `decision === "pass"`. Поле `isolation` показывает, действительно ли baseline arm работал без target skill (см. [изоляцию skill](#skill-isolation-keeping-the-baseline-honest)); `isolation` в режиме `--mock` равно `"n/a"`.
+`usage` суммирует то, что vendor сообщил для оцениваемых arm и, отдельно, для их вызовов judge: число dispatch, входные и выходные token (включая чтение и запись кэша) и стоимость в USD. `status` равен `actual`, когда usage сообщил каждый dispatch, `partial` — когда не все, и `unknown` — когда ни один (текстовый transport вроде моста Codex ничего не сообщает). Записанные rollout содержат `usage` и `judgeUsage` для каждой entry, поэтому mock replay сообщает стоимость записи, которую использует повторно, а не ноль.
+
+`repeatability` отделяет вариативность между task от вариативности между повторными запусками. `liftCi95` — парный 95%-й t-интервал по lift отдельных task (null при менее чем двух оценённых task). При `--trials` не менее двух `withinTaskStdDev` — это среднее по task стандартное отклонение lift по trial, а `status` равен `stable` только когда интервал исключает ноль со стороны lift; иначе он равен `unstable`, и `pass` понижается до `warn`. Запуск с одним trial сообщает `single-trial`: он может показать lift, но не может показать, что lift воспроизводится.
+
+`ok` равно `true` только при `coverage === "ok"`, `decision === "pass"` и достаточном coverage для любой запрошенной проверки negative transfer. Поле `isolation` показывает, действительно ли baseline arm работал без target skill (см. [изоляцию skill](#skill-isolation-keeping-the-baseline-honest)); `isolation` в режиме `--mock` равно `"n/a"`.
 
 ---
 
@@ -313,7 +364,7 @@ oma skill eval --skill oma-scholar --json --require-coverage
 
 Коды выхода:
 - `0` — pass или warn
-- `1` — fail или недостаточное coverage с `--require-coverage`
+- `1` — fail или недостаточное coverage task/negative-transfer с `--require-coverage`
 
 ---
 
@@ -325,7 +376,7 @@ Mock determinism сохраняется так: во время `--live --record
 
 **Data egress:** во время `--live` judge dispatch передаёт output candidate arm настроенному vendor для оценки. В начале каждого live run печатается однократное предупреждение.
 
-Если mock run сообщает недостаточное coverage, изучите warning об отброшенных или отсутствующих entry `_rollouts`, затем после исправления fixture или skill выполните live recording. Если isolation имеет статус `best-effort` или `unavailable`, выберите cwd-relative vendor, например Claude, Codex или Qwen, прежде чем считать lift надёжным сигналом.
+Если mock run сообщает недостаточное coverage, изучите warning об отброшенных или отсутствующих entry `_rollouts`, затем после исправления fixture или skill выполните live recording. Live-продвижение требует работающего защищённого профиля Claude или Codex с `isolation: "enforced"`; остальные профили остаются exploratory.
 
 ---
 

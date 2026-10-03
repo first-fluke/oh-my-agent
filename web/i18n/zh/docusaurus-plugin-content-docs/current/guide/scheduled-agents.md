@@ -172,6 +172,7 @@ oma schedule list [--json]
 | 状态 | 含义 |
 |---|---|
 | `synced` | 任务同时存在于清单和操作系统调度器中 |
+| `stale` | 任务已注册，但操作系统中的注册项调用了当前 CLI 已不再接受的命令（例如在命令路径标准化之前写入的 `schedule:run <id>`）。运行 `schedule sync` 重写；`oma update` 会自动执行此操作。 |
 | `missing-in-os` | 任务在清单中，但在操作系统调度器中缺失。运行 `schedule sync` 修复。 |
 | `orphan-in-os` | 任务在操作系统调度器中，但不在清单中。运行 `schedule sync --prune` 移除。 |
 
@@ -267,13 +268,14 @@ oma schedule sync [--prune]
 **示例：**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
 
+每次更新后，`oma update` 都会运行同样的同步（不带 `--prune`）。这样，即使某个 CLI 版本更改了 `oma schedule run` 的命令写法，现有的操作系统注册项也不会指向新二进制文件已不接受的命令。旧版本用 `oma schedule:run <id>` 写入的注册项同样继续有效：对由操作系统调用的任务，这种旧写法仍被接受。
 
 ---
 

@@ -36,7 +36,7 @@ Der `/plan`-Workflow läuft inline (kein Subagenten-Spawning) und erzeugt einen 
 Was passiert:
 
 1. **Anforderungen erfassen** — Der PM-Agent fragt nach Zielgruppen, Kernfunktionen, Einschränkungen und Deployment-Zielen.
-2. **Technische Machbarkeit analysieren** — Verwendet den konfigurierten Code-Intelligence-Anbieter oder bei dessen Nichtverfügbarkeit die native Suche mit begrenztem Umfang, um die vorhandene Codebasis nach wiederverwendbarem Code und Architekturmustern zu scannen.
+2. **Technische Machbarkeit analysieren** — Verwendet den konfigurierten Code-Intelligence-Anbieter, um die vorhandene Codebasis nach wiederverwendbarem Code und Architekturmustern zu scannen. Native Suche ist nur für Pfade außerhalb des Projekts oder für ignorierte Pfade vorgesehen.
 3. **API-Verträge definieren** — Entwirft Endpunkt-Verträge (Methode, Pfad, Anfrage-/Antwort-Schemata, Auth, Fehlerantworten) und speichert sie in `.agents/results/api-contracts/` (Laufartefakte); dauerhafte Spezifikationen werden beim Commit nach `docs/plans/contracts/` übernommen.
 4. **In Aufgaben zerlegen** — Zerlegt das Projekt in umsetzbare Aufgaben, jeweils mit: zugewiesenem Agenten, Titel, Akzeptanzkriterien, Priorität (P0-P3) und Abhängigkeiten.
 5. **Plan mit Benutzer prüfen** — Präsentiert den vollständigen Plan zur Bestätigung. Der Workflow fährt ohne explizite Benutzergenehmigung nicht fort.
@@ -107,6 +107,8 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 1. `--vendor`-Flag auf der Kommandozeile
 2. `agents:`-Überschreibung in `oma-config.yaml` für diesen Agenten
 3. Aktive `model_preset`-Agentenstandards
+
+Details zur Konfiguration finden Sie unter [Modelle pro Agent](./per-agent-models.md).
 
 **Automatische Workspace-Erkennung** prüft Monorepo-Konfigurationen in dieser Reihenfolge: pnpm-workspace.yaml, package.json Workspaces, lerna.json, nx.json, turbo.json, mise.toml. Jedes Workspace-Verzeichnis wird gegen Agententyp-Keywords bewertet (z. B. "web", "frontend", "client" für den Frontend-Agenten). Ohne Monorepo-Konfiguration werden fest codierte Kandidaten wie `apps/web`, `apps/frontend`, `frontend/` usw. geprüft.
 
@@ -198,7 +200,7 @@ oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 
 API-Verträge sind der Synchronisierungsmechanismus zwischen Agenten. Die Contract-First-Regel bedeutet:
 
-1. **Verträge werden definiert, bevor die Implementierung beginnt.** Schritt 3 des `/plan`-Workflows erzeugt API-Verträge, die in `.agents/skills/_shared/core/api-contracts/` gespeichert werden.
+1. **Verträge werden definiert, bevor die Implementierung beginnt.** Schritt 3 des `/plan`-Workflows erzeugt API-Verträge, die in `.agents/results/api-contracts/` gespeichert werden (oder in `docs/plans/contracts/` für dauerhafte Spezifikationen).
 
 2. **Jeder Agent erhält seine relevanten Verträge als Kontext.** Wenn `/orchestrate` Agenten in Schritt 3 startet, erhält jeder Agent "Aufgabenbeschreibung, API-Verträge, relevanter Kontext."
 
@@ -209,11 +211,11 @@ API-Verträge sind der Synchronisierungsmechanismus zwischen Agenten. Die Contra
    - Authentifizierungsanforderungen
    - Fehlerantwortformate
 
-4. **Vertragsverletzungen werden während der Überwachung erkannt.** Schritt 5 von `/work` verwendet den konfigurierten Code-Intelligence-Anbieter oder die native Suche mit begrenztem Umfang, um die API-Vertrags-Übereinstimmung zwischen Agenten zu verifizieren.
+4. **Vertragsverletzungen werden während der Überwachung erkannt.** Schritt 5 von `/work` verwendet den konfigurierten Code-Intelligence-Anbieter, um die API-Vertrags-Übereinstimmung zwischen Agenten zu verifizieren. Native Suche ist nur für Pfade außerhalb des Projekts oder für ignorierte Pfade vorgesehen.
 
 5. **QA-Review prüft die Vertragseinhaltung.** Das Alignment-Review des QA-Agenten (Schritt 6 in ultrawork) vergleicht explizit die Implementierung mit dem Plan, einschließlich der API-Verträge.
 
-**Warum das wichtig ist:** Ohne Verträge könnte ein Backend-Agent `{ "user_id": 1 }` zurückgeben, während der Frontend-Agent `{ "userId": 1 }` erwartet. Die Contract-First-Regel eliminiert diese Klasse von Integrationsfehlern vollständig.
+Ohne Verträge könnte ein Backend-Agent `{ "user_id": 1 }` zurückgeben, während der Frontend-Agent `{ "userId": 1 }` erwartet. Die Contract-First-Regel verhindert diese Art von Integrationsfehlern.
 
 ---
 
@@ -338,7 +340,7 @@ P1-Aufgaben vor Abschluss der P0-Aufgaben ausführen. Prioritätsstufen existier
 
 Nachdem alle Agenten ihre individuellen Aufgaben abgeschlossen haben, muss die domänenübergreifende Integration validiert werden:
 
-1. **API-Vertrags-Übereinstimmung** — Der konfigurierte Code-Intelligence-Anbieter oder die native Suche mit begrenztem Umfang verifiziert, dass Backend-Implementierungen den Verträgen entsprechen, die von Frontend und Mobile konsumiert werden.
+1. **API-Vertrags-Übereinstimmung** — Der konfigurierte Code-Intelligence-Anbieter verifiziert, dass Backend-Implementierungen den Verträgen entsprechen, die von Frontend und Mobile konsumiert werden. Native Suche ist nur für Pfade außerhalb des Projekts oder für ignorierte Pfade vorgesehen.
 
 2. **Typkonsistenz** — TypeScript-Typen, Python-Dataclasses oder Dart-Modelle, die domänenübergreifend geteilt werden, müssen konsistente Feldnamen und -typen verwenden.
 

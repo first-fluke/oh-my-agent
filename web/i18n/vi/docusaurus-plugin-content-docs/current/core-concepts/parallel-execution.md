@@ -48,7 +48,7 @@ oma agent spawn backend "Implement JWT authentication API with refresh tokens" s
 oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # Override the CLI vendor for this specific spawn
-oma agent spawn frontend "Build login form" session-01 --model claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # Retry a run while preserving its evidence chain
 oma agent spawn backend "Fix the payment gateway issue" session-01 --resumed-from run-123
@@ -152,11 +152,11 @@ Khi `oma agent spawn` quyết định CLI sẽ dùng:
 
 | Ưu tiên | Nguồn | Ví dụ |
 |----------|--------|---------|
-| 1 (cao nhất) | Flag `--model` | `oma agent spawn backend "task" session-01 --model claude` |
+| 1 (cao nhất) | Flag `--vendor` | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | Override `agents:` trong `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | Mặc định agent của `model_preset` đang hoạt động | Tra cứu preset theo vai trò agent |
 
-Flag `--model` luôn được ưu tiên. Nếu không có flag, hệ thống kiểm tra override `agents:`, rồi mặc định preset, sau đó CLI fallback đã cấu hình. Với `model_preset: auto`, setting native của runtime hiện tại cung cấp model.
+Flag `--vendor` luôn được ưu tiên. Nếu không có flag, hệ thống kiểm tra override `agents:`, rồi mặc định preset, sau đó CLI fallback đã cấu hình. Với `model_preset: auto`, setting native của runtime hiện tại cung cấp model.
 
 ---
 

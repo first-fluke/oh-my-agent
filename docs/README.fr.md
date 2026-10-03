@@ -10,6 +10,8 @@ Lancer des agents en parallèle, c'est la partie facile. La partie difficile, c'
 
 oh-my-agent rend l'affirmation falsifiable. Un Stop hook refuse de terminer ta session tant que le script `typecheck` / `test` / `lint` de ton propre projet ne sort pas avec le code 0. Une commande de gate décide si un workflow s'est vraiment exécuté en cherchant les artefacts qu'il a forcément dû laisser derrière lui — et c'est son verdict JSON, pas le résumé de l'agent, qui fait foi. Un juge indépendant, doté d'un contexte neuf, revérifie chaque critère à chaque tour, y compris ceux qui étaient déjà passés. Chaque décision de gate atterrit dans un event log en ajout seul que tu peux relire après coup. Puis il applique cette même discipline à une douzaine de runtimes d'agents depuis un seul répertoire `.agents/` portable.
 
+Commence par le [Démarrage Rapide](../web/docs/getting-started/quick-start.md) existant pour choisir un chemin d'installation, demander à un skill nommé une modification à périmètre défini, et consigner le fichier, la commande de vérification et son code de sortie. Le chemin du harness complet inclut `oma doctor`.
+
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
@@ -59,7 +61,7 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM ne livre que les skills. Pour le harness complet, utilise `bunx oh-my-agent@latest` (ou les scripts ci-dessus). Une seule distribution par projet — si tu as déjà fait `npx skills add`, reste en skills-only tant que tu n’as pas besoin des gates/hooks/CLI.
+APM ne livre que les skills. Pour le harness complet, utilise `bunx oh-my-agent@latest` (ou les scripts ci-dessus). Une seule distribution par projet pour éviter la dérive — si tu as déjà fait `npx skills add`, reste en skills-only tant que tu n’as pas besoin des gates/hooks/CLI.
 
 </details>
 
@@ -206,8 +208,12 @@ En marge de l'équipe d'ingénierie, oma embarque des pipelines de contenu et de
 | **oma-scholar** | Explore la littérature académique et t'aide à mener une évaluation par les pairs |
 | **oma-slide** | Génère des decks de présentation HTML distinctifs riches en animations et exporte vers PDF/PNG/PPTX |
 | **oma-translation** | Traduit entre les langues comme si un natif avait écrit le texte |
-| **oma-video** | Génère des vidéos courtes, explicatives et de démo via un pipeline Remotion utilisable sans clés |
+| **oma-video** | Génère des vidéos courtes, explicatives et de démo via un pipeline HyperFrames utilisable sans clés |
 | **oma-voice** | Génère des voix off et transcrit de l'audio en local, sans cloud |
+
+### Orca IDE
+
+[OMA for Orca](../integrations/orca/README.md) ajoute un panneau latéral et des actions dans la palette de commandes pour la configuration du projet, la revue, le débogage, la vérification et les résultats locaux. Il utilise ton terminal d'agent Orca existant et l'installation OMA du projet. Nécessite Orca 1.4.197+ avec les plugins expérimentaux activés.
 
 ## Comment Ça Marche
 
@@ -276,10 +282,16 @@ Chaque mécanisme ci-dessous est mécanique : une commande sort avec le code 0 o
 
 Les budgets sont appliqués de la même façon. `session.quota_cap` plafonne les tokens, le nombre de spawns et la dépense par vendor ; l'orchestrateur refuse le spawn suivant dès qu'une dimension est dépassée. Quand le budget de temps réel est épuisé, le Stop hook s'arrête honnêtement en consignant un statut partiel dans l'event log, plutôt que de faire semblant d'avoir terminé.
 
+### Frontière de contrôle
+
+oh-my-agent laisse au LLM hôte la planification ouverte et le choix de la prochaine action. Il ne remplace pas ce jugement par un graphe de workflow universel ni par un moteur de politiques. Il externalise plutôt les invariants qui doivent tenir quel que soit le modèle : garde-fous des outils, permissions, budgets, limites de retry et d'arrêt, événements durables et achèvement vérifié mécaniquement. Les événements structurés consignent les décisions et les résultats des gates ; ils n'agissent pas comme un second planificateur.
+
+L'exécution déterministe par SLM est donc une orientation produit distincte et facultative, et non une infrastructure manquante du harness actuel.
+
 ## Pourquoi oh-my-agent ?
 
 - **Basé sur les rôles** : des agents modélisés comme une vraie équipe d'ingé, pas un tas de prompts
-- **Économe en tokens** : le design de skills à deux couches économise ~75% de tokens ([comment ça marche](../web/docs/guide/usage.md))
+- **Contexte conditionnel** : le dispatch charge le skill propriétaire et diffère les références annexes jusqu'à ce que la tâche en ait besoin. Les scénarios de taille de fichiers et le chargement réel à l'exécution sont rapportés séparément ([guide de mesure](../web/docs/core-concepts/skills.md#token-savings-math)).
 - **Récupérable** : après 2 retries ratés, `orchestrate` spawn des variantes d'hypothèse en parallèle et conserve la meilleure note, au lieu de s'acharner indéfiniment sur une mauvaise approche
 - **Conscient des monorepos** : `detectWorkspace` lit pnpm / nx / turbo / lerna et route chaque agent vers son workspace
 - **Multi-vendor** : mélange Antigravity, Claude, Codex, Cursor, Kiro et Qwen par type d'agent
@@ -336,6 +348,7 @@ flowchart TD
 
 - **[Documentation Détaillée](./AGENTS_SPEC.md)** : spec technique complète et architecture
 - **[Agents Supportés](./SUPPORTED_AGENTS.md)** : matrice de support des agents par IDE
+- **[Fournisseurs de Capacités](./capability-providers.md)** : configuration, routage et limites expérimentaux de Gortex et Honcho
 - **[Rapport de Benchmark](../benchmarks/README.md)** : méthode, scores, captures et limites
 - **[Docs Web](https://first-fluke.github.io/oh-my-agent/)** : guides, tutoriels et référence CLI
 

@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | すべてのエージェントが Antigravity CLI（`agy`）を使います。実装とアーキテクチャには Gemini 3.1 Pro、オーケストレーション、ドキュメント、探索には Gemini 3.6 Flash を使います。モデル選択は `agy` 内部の設定で行うため、`--model` や `--thinking-budget` フラグは公開されません。 | Antigravity CLI の利用者 |
 | `claude` | すべてのエージェントが Claude（Sonnet/Opus）を使います。 | Claude Max の契約者 |
 | `codex` | ほとんどのロールでは GPT-5.5、explore では GPT-5.4-mini を使う OpenAI Codex を、effort レベル付きで利用します。 | ChatGPT Plus/Pro の利用者 |
-| `qwen` | すべてのエージェントを Qwen Code 経由で外部ルーティングします。thinking は二値で、effort レベルはありません。 | ローカルまたはセルフホスト推論 |
+| `qwen` | すべてのエージェントが Qwen Code を使います。ランタイムが一致する Qwen セッションでは生成されたネイティブエージェントを使え、ほかのランタイムでは CLI ディスパッチを使います。 | ローカルまたはセルフホスト推論 |
 | `kiro` | すべてのエージェントが Kiro CLI を使います。実装とアーキテクチャは Sonnet、オーケストレーションと探索は Haiku が担当します。 | Kiro の利用者 |
 | `cursor` | すべてのエージェントが Cursor の `composer-2.5` を使います。orchestrator、qa、pm、docs、explore では `composer-2.5-fast` を使います。 | Cursor Pro / Pro Student の利用者 |
 | `mixed` | 混成構成です。実装ロールは Codex、アーキテクチャ、qa、pm は Claude、explore は Gemini を使います。 | エージェントごとの設定を管理せず、ベンダーごとの強みを使う場合 |
@@ -117,7 +117,7 @@ spawn と review は、エージェントを開始する前に認証済みの `G
 
 Free プリセットはエージェントの推論を設定します。既存のメモリサービスの埋め込み設定は変更しません。FreeLLMAPI は `/v1/embeddings` も提供するため、ベクトルストアを別に設定する場合はモデルファミリーを固定し、既存ベクトルと互換性のある空間を維持してください。
 
-参照： [クライアントのセットアップ](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md)、[API と埋め込みモデルの系統](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md)。
+上流の参考資料： [クライアントのセットアップ](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md)、[API と埋め込みモデルの系統](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md)。
 
 ## 個別のエージェントを上書きする
 
@@ -326,7 +326,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 - pi にはベンダー側のエージェントファイルを参照する仕組みがないため、エージェントのペルソナ（システムプロンプト）は `.agents/agents/<id>.md` からインライン化されます。
 - 認証は pi 自体の設定に従います（`~/.pi/agent/auth.json` または環境変数のプロバイダー API キー）。`oma doctor` は他の CLI と並べて pi のインストールと認証状態を報告します。
 
-**制約：** pi は実プロバイダーのモデルだけを実行します。CLI 内部だけに存在するモデルを名前に持つ `cursor`、`kiro`、`qwen`、`antigravity` のプリセットを pi 経由でディスパッチすると拒否されます。pi にルーティングする場合は、実プロバイダーを使う `claude`、`codex`、`gemini`、`mixed` のいずれかを使ってください。
+**制約：** pi は実プロバイダーのモデルだけを実行します。CLI 内部だけに存在するモデルを名前に持つ `cursor`、`kiro`、`qwen`、`antigravity` のプリセットを pi 経由でディスパッチすると、明確なエラーで拒否されます。pi にルーティングする場合は、実プロバイダーを使う `claude`、`codex`、`gemini`、`mixed` のいずれかを使ってください。
 
 > pi のモデルカタログはリリースと認証の状態に左右されます。解決したスラッグがインストールした pi にない場合は `pi --list-models` を確認してください。pi の `--model` 一致はあいまい検索なので、ほとんどのプロバイダーのスラッグはそのまま解決されます。
 
@@ -421,7 +421,7 @@ opencode models opencode-go                            # list everything your pl
 
 ### 認証と生成ファイル
 
-- **認証：** `opencode auth login` は認証情報を `~/.local/share/opencode/auth.json` に保存します。`oma auth status` / `oma doctor` は、いずれかのプロバイダーに認証情報があれば、他の CLI と同様に OpenCode を認証済みとして報告します。一方、`oma doctor --profile` はプロバイダーを区別します。各行を登録済み `cli_model` のプロバイダー接頭辞に対して確認するため、`cli_model: zai-coding-plan/glm-5.3` のモデルは `zai-coding-plan` の認証情報で確認されます。登録済みの `provider/model` 形式の `cli_model` がない行は、認証失敗と断定せず `? unknown` と報告します。
+- **認証：** `opencode auth login` は認証情報を `~/.local/share/opencode/auth.json` に、プロバイダーごとに 1 エントリずつ保存します。`oma auth status` / `oma doctor` は、いずれかのプロバイダーに認証情報があれば OpenCode を認証済みとして報告します。一方、`oma doctor --profile` はプロバイダーを区別します。各行を登録済み `cli_model` のプロバイダー接頭辞に対して確認するため、`cli_model: zai-coding-plan/glm-5.3` のモデルは `zai-coding-plan` の認証情報で確認されます。登録済みの `provider/model` 形式の `cli_model` がない行は、認証失敗と断定せず `? unknown` と報告します。
 - **生成ファイル：** `oma link`（または `oma link opencode`）は、エージェントごとに 1 つの `.opencode/agents/<id>.md` ペルソナと `.opencode/plugins/oma/` ブリッジを書き込みます。これらは `.agents/` の SSOT から生成されるため、直接編集せず、`oma link` を再実行して生成し直してください。
 
 > **永続ワークフローに関する注意：** OpenCode の `session.idle` イベント（Claude の `Stop` フックに最も近いもの）は通知専用で、セッションの終了をブロックできません。そのため、永続ワークフロー（orchestrate / work / ultrawork）は OpenCode では**Stop セマンティクスが低下した状態**で動作します。ワークフローの再強化は、セッションを開いたままにするのではなく、次のメッセージで行われます。
@@ -430,7 +430,7 @@ opencode models opencode-go                            # list everything your pl
 
 ## Kimi Code CLI を介したディスパッチ
 
-[Kimi Code CLI](https://www.kimi.com/code) は、フックをグローバル設定（`~/.kimi-code/config.toml`、`KIMI_CODE_HOME`）からのみ読み込みます。そのため `oma install` と `oma link` は、Antigravity と同様に明示的な同意を得て、HOME に Kimi のフックチェーンとスキルシンボリックリンクを書き込みます。Kimi は oma の SSOT `.agents/skills/` も直接スキャンするため、スキルはプロジェクト全体で解決できます。**MCP** は HOME への書き込みを必要とせず、プロジェクト単位です。プロジェクトでは `<cwd>/.kimi-code/mcp.json` に、グローバルでは `~/.kimi-code/mcp.json` に、モードに応じて書き込みます。
+[Kimi Code CLI](https://www.kimi.com/code) は、フックをグローバル設定（`~/.kimi-code/config.toml`、`KIMI_CODE_HOME`）からのみ読み込みます。そのため `oma install` と `oma link` は、Antigravity と同様に明示的な同意を得て、HOME に Kimi のフックチェーンとスキルシンボリックリンクを書き込みます。Kimi は oma の SSOT `.agents/skills/` も直接スキャンするため、いずれにせよスキルはプロジェクト全体で解決できます。**MCP** は HOME への書き込みを必要とせず、プロジェクト単位です。プロジェクトでは `<cwd>/.kimi-code/mcp.json` に、グローバルでは `~/.kimi-code/mcp.json` に、モードに応じて書き込みます。
 
 ### 明示的なディスパッチ
 

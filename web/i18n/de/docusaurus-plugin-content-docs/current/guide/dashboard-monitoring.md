@@ -129,8 +129,8 @@ Die Dashboards lesen aus dem `.agents/state/memories/`-Verzeichnis. Dieses Verze
 | `progress-{agent}.md` | Jeder gestartete Agent | Aktuelle Turn-Nummer, woran der Agent arbeitet, Zwischenergebnisse |
 | `result-{agent}.md` | Jeder abgeschlossene Agent | Endstatus (COMPLETED/FAILED), geänderte Dateien, gefundene Probleme, Ergebnisse |
 | `debug-{id}.md` | `/debug`-Workflow | Bug-Diagnose, Grundursache, angewendete Korrektur, Regressionstest-Speicherort |
-| `experiment-ledger.md` | Qualitätsbewertungssystem | Experimentverfolgung: Baseline-Bewertungen, Deltas, Behalten-/Verwerfen-Entscheidungen |
-| `lessons-learned.md` | Automatisch am Sitzungsende generiert | Erkenntnisse aus verworfenen Experimenten (Delta <= -5) |
+| `experiment-ledger-{sessionId}.md` | Tatsächliche Experimente | Vergleichbare Belege für Baseline und Kandidat, erforderliche Prüfungen und Entscheidungen |
+| `lessons-{sessionId}.md` | Wenn eine wiederverwendbare Ursache durch Belege gestützt ist | Sitzungsbezogene Erkenntnisse; keine durch einen Punktestand ausgelöste Erzeugung |
 
 ### Wie das Dashboard sie liest
 

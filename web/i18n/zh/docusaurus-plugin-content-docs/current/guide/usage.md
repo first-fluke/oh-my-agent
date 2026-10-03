@@ -199,9 +199,10 @@ oma stats get
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`，通过 Agent 工具的 `subagent_type` 选择
 - Antigravity CLI/IDE -> 通过 `agy` 使用 `oma agent spawn`
 
-跨供应商任务仍使用 `oma agent spawn`。
+跨供应商任务和 `model_preset: free` 使用 `oma agent spawn`。原生调度仍需通过[结果生命周期](./agent-results-and-resume.md)记录验证证据。
 
 ---
 
@@ -224,14 +225,14 @@ oma stats get
 **阶段 2：IMPL（步骤 5，开发智能体启动）**
 - Backend 智能体实现 Stripe 集成（webhooks、幂等性、错误处理）
 - Frontend 智能体构建结账流程和支付状态 UI
-- 步骤 5.2：测量基线质量评分（测试、lint、类型检查）
+- 步骤 5.2：仅在需要明确定义的测量对比时才记录基线
 - IMPL_GATE：适用的不生成产物的检查和测试通过、仅修改计划中的文件；只有明确要求时才运行构建检查
 
 **阶段 3：VERIFY（步骤 6-8，QA 智能体启动）**
 - 步骤 6：对齐审查，实现是否匹配计划？
 - 步骤 7：安全/Bug 审查，OWASP、npm audit、Stripe 安全最佳实践
 - 步骤 8：改进/回归审查，未引入回归
-- VERIFY_GATE：零 CRITICAL、零 HIGH、质量评分 >= 75
+- VERIFY_GATE：零 CRITICAL、零 HIGH、适用的项目测量目标已达成
 
 **阶段 4：REFINE（步骤 9-13，重构智能体启动）**
 - 步骤 9：拆分大文件（> 500 行）和函数（> 50 行）
@@ -239,7 +240,7 @@ oma stats get
 - 步骤 11：副作用审查，使用 `find_referencing_symbols` 追踪级联影响
 - 步骤 12：完整变更审查，命名一致性、风格对齐
 - 步骤 13：清理死代码
-- REFINE_GATE：质量评分未回退、代码干净
+- REFINE_GATE：无未解决的实测回归、代码干净
 
 **阶段 5：SHIP（步骤 14-17，QA 智能体启动）**
 - 步骤 14：代码质量审查，lint、类型、覆盖率

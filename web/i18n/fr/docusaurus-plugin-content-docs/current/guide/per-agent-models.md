@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | Tous les agents utilisent la CLI Antigravity (`agy`) : Gemini 3.1 Pro pour l'implémentation et l'architecture, Gemini 3.6 Flash pour l'orchestration, la documentation et l'exploration. Le choix du modèle est piloté par la configuration dans `agy` : aucun indicateur `--model` ou `--thinking-budget` n'est exposé. | Utilisateurs de la CLI Antigravity |
 | `claude` | Tous les agents utilisent Claude (Sonnet/Opus) | Détenteurs d'un abonnement Claude Max |
 | `codex` | Tous les agents utilisent OpenAI Codex (GPT-5.5 pour la plupart des rôles, GPT-5.4-mini pour l'exploration), avec des niveaux d'effort | Utilisateurs ChatGPT Plus/Pro |
-| `qwen` | Tous les agents sont routés vers Qwen Code en externe ; raisonnement binaire, sans niveaux d'effort | Inférence locale ou auto-hébergée |
+| `qwen` | Tous les agents utilisent Qwen Code ; les sessions Qwen correspondantes peuvent utiliser les agents natifs générés, et les autres runtimes utilisent le dispatch CLI | Inférence locale ou auto-hébergée |
 | `kiro` | Tous les agents utilisent la CLI Kiro ; Sonnet prend en charge l'implémentation et l'architecture, Haiku l'orchestration et l'exploration | Utilisateurs de Kiro |
 | `cursor` | Tous les agents utilisent Cursor `composer-2.5` (`composer-2.5-fast` pour orchestrator/qa/pm/docs/explore) | Utilisateurs Cursor Pro ou Pro Student |
 | `mixed` | Mixte : les rôles d'implémentation utilisent Codex, architecture/qa/pm utilisent Claude et explore utilise Gemini | Profiter de plusieurs fournisseurs sans gérer la configuration de chaque agent |
@@ -441,7 +441,7 @@ Routez n'importe quel agent via Kimi avec la surcharge `--vendor kimi` :
 oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
-Cette commande exécute `kimi -p "<prompt>"`. Le mode `-p` (non interactif) de Kimi approuve automatiquement les appels d'outils ordinaires avec sa politique d'autorisation `auto` ; oma n'ajoute donc pas `--yolo`/`--auto` (ces options sont mutuellement exclusives avec `-p`).
+Cette commande exécute `kimi -p "<prompt>"`. Le mode `-p` (non interactif) de Kimi approuve automatiquement les appels d'outils ordinaires avec sa politique d'autorisation `auto` ; oma n'ajoute donc **pas** `--yolo`/`--auto` (ces options sont mutuellement exclusives avec `-p`).
 
 ### Modèles Kimi par agent
 

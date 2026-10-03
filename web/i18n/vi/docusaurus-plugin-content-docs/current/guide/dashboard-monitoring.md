@@ -135,8 +135,8 @@ Dashboard đọc thư mục `.agents/state/memories/`. Agent và workflow điề
 | `progress-{agent}.md` | Mỗi agent được spawn | Số turn hiện tại, việc agent đang làm, kết quả trung gian |
 | `result-{agent}.md` | Mỗi agent hoàn thành | Status cuối (COMPLETED/FAILED), file đổi, issue và deliverable |
 | `debug-{id}.md` | Workflow `/debug` | Chẩn đoán lỗi, root cause, bản sửa, vị trí regression test |
-| `experiment-ledger.md` | Hệ thống Quality Score | Theo dõi experiment, score baseline, delta và quyết định giữ/bỏ |
-| `lessons-learned.md` | Tự tạo khi session kết thúc | Bài học từ experiment đã bỏ (delta <= -5) |
+| `experiment-ledger-{sessionId}.md` | Các experiment thực sự | Bằng chứng baseline/candidate có thể so sánh, các check bắt buộc và quyết định |
+| `lessons-{sessionId}.md` | Khi nguyên nhân có thể tái sử dụng được bằng chứng hỗ trợ | Bài học theo phạm vi session; không tự tạo theo score |
 
 ### Dashboard đọc các file này như thế nào
 

@@ -37,9 +37,11 @@ Việc đánh giá kế hoạch kế thừa quyền đã được cấp cho task
 
 ---
 
-## Các workflow liên tục
+## Các workflow liên tục {#persistent-workflows}
 
 Workflow liên tục tiếp tục chạy cho đến khi tất cả task hoàn thành. Chúng duy trì trạng thái trong `.agents/state/` và đưa lại ngữ cảnh `[OMA PERSISTENT MODE: ...]` vào mỗi tin nhắn người dùng cho đến khi được vô hiệu hóa tường minh.
+
+Chế độ liên tục chỉ bắt đầu khi có **lời gọi tường minh** — chính tên của workflow (danh sách `explicit` trong `triggers.json`, ví dụ "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). Các từ khóa trigger khác bên dưới là gợi ý bằng ngôn ngữ tự nhiên: chúng đưa workflow vào dưới dạng gợi ý mà không kích hoạt chế độ liên tục, và không bao giờ kích hoạt khi dòng đầu hoặc dòng cuối của prompt là một câu hỏi kết thúc bằng `?`.
 
 ### /orchestrate
 
@@ -50,26 +52,29 @@ Workflow liên tục tiếp tục chạy cho đến khi tất cả task hoàn th
 **Từ khóa trigger:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "orchestrate" |
-| English | "parallel", "do everything", "run everything" |
-| Korean | "자동 실행", "병렬 실행", "전부 실행", "전부 해" |
-| Japanese | "オーケストレート", "並列実行", "自動実行" |
-| Chinese | "编排", "并行执行", "自动执行" |
-| Spanish | "orquestar", "paralelo", "ejecutar todo" |
-| French | "orchestrer", "parallèle", "tout exécuter" |
-| German | "orchestrieren", "parallel", "alles ausführen" |
-| Portuguese | "orquestrar", "paralelo", "executar tudo" |
-| Russian | "оркестровать", "параллельно", "выполнить всё" |
-| Dutch | "orkestreren", "parallel", "alles uitvoeren" |
-| Polish | "orkiestrować", "równolegle", "wykonaj wszystko" |
+| Explicit (persistent) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+| English | "do everything", "run everything", "everything in parallel", "automate everything" |
+| Korean | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
+| Japanese | "全部実行", "全部並列で", "自動でやって" |
+| Chinese | "编排", "全部执行", "全部并行", "自动处理" |
+| Spanish | "ejecutar todo", "todo en paralelo" |
+| French | "tout exécuter", "tout en parallèle" |
+| German | "alles ausführen", "alles parallel" |
+| Portuguese | "executar tudo", "tudo em paralelo" |
+| Russian | "выполнить всё", "всё параллельно" |
+| Dutch | "alles uitvoeren", "alles parallel" |
+| Polish | "wykonaj wszystko", "wszystko równolegle" |
+
+Các từ trần "parallel"/"automate" (và bản dịch của chúng) không phải là trigger: "run the tests in parallel" hay "automate the release notes" là những yêu cầu thông thường, không phải điều phối đa agent.
 
 **Mẫu regex trigger** (ý định + danh sách trắng danh từ, xem [Phát hiện tự động: trường Pattern](#pattern-field-raw-regex)):
 | Section | Pattern | Examples that trigger |
 |---------|---------|----------------------|
-| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
+| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
 | `*` (universal) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
 | `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
-Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website, dashboard, system, feature, backend, frontend, prototype, mvp, bot.
+
+Danh sách trắng danh từ (14): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. Một feature đơn lẻ ("implement the login feature", "로그인 기능 구현해줘") hoặc một thứ đã có sẵn ("make the API faster") không khớp.
 
 **Các bước:**
 1. **Bước 0, Chuẩn bị:** Đọc skill coordination, hướng dẫn context-loading và memory protocol. Phát hiện vendor.
@@ -77,9 +82,9 @@ Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website
 3. **Bước 2, Khởi tạo session:** Tải `oma-config.yaml`, hiển thị bảng ánh xạ CLI, dùng session ID từ lúc tạo plan hoặc tạo ID mới (`session-YYYYMMDD-HHMMSS`), rồi tạo `orchestrator-session-{sessionId}.md` và `task-board-{sessionId}.md` trong memory store đã cấu hình.
 4. **Bước 3, Spawn agent:** Với từng tier ưu tiên (P0 trước, sau đó P1...), spawn agent bằng phương thức phù hợp vendor (subagent native khi runtime hiện tại và vendor đích trùng nhau; `oma agent spawn` cho vendor ngoài hoặc khác vendor). Không vượt quá MAX_PARALLEL.
 5. **Bước 4, Giám sát:** Poll file `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` theo run và receipt có cấu trúc, sau đó cập nhật task board. Theo dõi hoàn thành, thất bại và crash.
-6. **Bước 5, Xác minh:** Chạy `verify.sh {agent-type} {workspace}` cho mỗi agent hoàn tất. Khi thất bại, spawn lại với ngữ cảnh lỗi (tối đa 2 lần thử). Sau 2 lần thử, bật Exploration Loop: tạo 2-3 giả thuyết, chạy thí nghiệm song song, chấm điểm và giữ phương án tốt nhất.
+6. **Bước 5, Xác minh:** Chạy `verify.sh {agent-type} {workspace}` cho mỗi agent hoàn tất. Khi thất bại, spawn lại với ngữ cảnh lỗi (tối đa 2 lần thử). Thất bại lặp lại có thể là lý do để thử các giả thuyết thay thế, nhưng mọi lần thử đều tiêu tốn cùng một ngân sách phục hồi tổng. Giữ lại bằng chứng chưa được giải quyết nếu ngân sách không đủ cho một vòng so sánh.
 7. **Bước 6, Thu thập:** Đọc file result theo run và claim có cấu trúc, rồi biên soạn tóm tắt.
-8. **Bước 7, Báo cáo cuối:** Trình bày tóm tắt session. Nếu đã đo Quality Score, hãy đưa tóm tắt Experiment Ledger và tự tạo bài học.
+8. **Bước 7, Báo cáo cuối:** Trình bày tóm tắt session. Nếu đã chạy thí nghiệm, hãy tóm tắt bằng chứng và các quyết định; chỉ ghi lại bài học khi đã xác lập được nguyên nhân có thể tái sử dụng.
 
 **File đọc:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml``, file progress/result theo run và receipt run có cấu trúc.
 **File ghi:** state session/task-board theo run trong memory store đã cấu hình, receipt và claim có cấu trúc, cùng báo cáo cuối.
@@ -96,13 +101,17 @@ Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website
 **Từ khóa trigger:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "work", "step by step" |
-| Korean | "코디네이트", "단계별" |
-| Japanese | "コーディネート", "ステップバイステップ" |
-| Chinese | "协调", "逐步" |
-| Spanish | "coordinar", "paso a paso" |
-| French | "coordonner", "étape par étape" |
-| German | "koordinieren", "schritt für schritt" |
+| Explicit (persistent) | "work mode", "work workflow" |
+| Universal | "step by step" |
+| English | "one by one", "one step at a time" |
+| Korean | "단계별", "하나씩 해줘", "차근차근" |
+| Japanese | "ステップバイステップ", "一歩ずつ" |
+| Chinese | "逐步", "一步一步" |
+| Spanish | "paso a paso", "uno por uno" |
+| French | "étape par étape", "un par un" |
+| German | "schritt für schritt", "der reihe nach" |
+
+Từ trần "work" không phải là trigger — đó là từ vựng thông thường ("Does this work on Windows?").
 
 **Các bước:**
 1. **Bước 0, Chuẩn bị:** Đọc skill, context-loading và memory protocol. Ghi thời điểm bắt đầu session.
@@ -112,7 +121,7 @@ Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website
 5. **Bước 4, Spawn agent:** Spawn theo tier ưu tiên, chạy song song trong cùng tier và dùng workspace riêng.
 6. **Bước 5, Giám sát:** Poll file tiến trình, xác minh các agent khớp API contract.
 7. **Bước 6, QA review:** Spawn QA agent để review bảo mật (OWASP), hiệu suất, accessibility và chất lượng mã.
-8. **Bước 6.1, Quality Score** (tùy điều kiện): Đo và ghi baseline.
+8. **Bước 6.1, Đo lường** (tùy điều kiện): Ghi baseline khi cần một phép so sánh đã được xác định.
 9. **Bước 7, Lặp:** Nếu có vấn đề CRITICAL/HIGH, spawn lại agent chịu trách nhiệm. Nếu cùng vấn đề còn sau 2 lần thử, bật Exploration Loop.
 
 **Khi sử dụng:** Feature trải trên nhiều lĩnh vực khi cần điều phối lập plan, triển khai và QA từng bước.
@@ -127,7 +136,7 @@ Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website
 **Từ khóa trigger:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "ultrawork", "ulw" |
+| Explicit (persistent) | "ultrawork", "ulw" |
 **Phase và bước:**
 | Phase | Bước | Agent | Góc nhìn review |
 |-------|------|-------|-----------------|
@@ -139,16 +148,16 @@ Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website
 
 **Định nghĩa gate:**
 - **PLAN_GATE:** Plan được ghi lại, giả định được liệt kê, phương án thay thế được cân nhắc, review chống over-engineering hoàn tất và phạm vi được cấp quyền.
-- **IMPL_GATE:** Check và test không tạo output áp dụng đều pass, chỉ sửa file đã plan, ghi Quality Score baseline nếu có đo. Chỉ chạy check build khi được yêu cầu rõ.
-- **VERIFY_GATE:** Triển khai khớp yêu cầu, không có CRITICAL/HIGH, không hồi quy, Quality Score >= 75 nếu có đo.
-- **REFINE_GATE:** Không có file/function lớn (> 500 dòng / > 50 dòng), cơ hội tích hợp đã được ghi nhận, side effect đã xác minh, code đã dọn và Quality Score không giảm.
-- **SHIP_GATE:** Check chất lượng pass, UX được xác minh, vấn đề liên quan được xử lý, checklist triển khai hoàn tất, Quality Score cuối >= 75 với delta không âm nếu có đo. Dùng lại quyền đã cấp; publishing hoặc deployment cần quyền riêng cho hành động đó.
+- **IMPL_GATE:** Check và test không tạo output áp dụng đều pass, chỉ sửa file đã plan, đã ghi bằng chứng baseline cho các thí nghiệm thực sự. Chỉ chạy check build khi được yêu cầu rõ.
+- **VERIFY_GATE:** Triển khai khớp yêu cầu, không có CRITICAL/HIGH, không hồi quy, đạt các mục tiêu đo lường áp dụng của project.
+- **REFINE_GATE:** Tuân thủ các quy tắc bảo trì của project, cơ hội tích hợp đã được ghi nhận, side effect đã xác minh, code đã dọn và không còn hồi quy chưa giải quyết.
+- **SHIP_GATE:** Check chất lượng pass, UX được xác minh, vấn đề liên quan được xử lý, checklist triển khai hoàn tất, đạt các mục tiêu đo lường áp dụng của project với bằng chứng mới nhất. Dùng lại quyền đã cấp; publishing hoặc deployment cần quyền riêng cho hành động đó.
 
 **Ứng xử khi gate thất bại:**
 - Lần đầu: quay lại bước liên quan, sửa và thử lại.
-- Lần thứ hai cùng vấn đề: bật Exploration Loop (tạo 2-3 giả thuyết, thử từng giả thuyết, chấm điểm, giữ phương án tốt nhất).
+- Lần thứ hai cùng vấn đề: đánh giá lại nguyên nhân; nếu các phương án thay thế đáng thử trong ngân sách còn lại, so sánh các thí nghiệm cô lập với hành vi bắt buộc và các chỉ số đã xác định.
 
-**Tăng cường có điều kiện:** Đo Quality Score, quyết định Keep/Discard, Experiment Ledger, Hypothesis Exploration và Auto-learning (bài học từ thí nghiệm bị loại).
+**Tăng cường có điều kiện:** So sánh theo chỉ số đã xác định, quyết định và bằng chứng của thí nghiệm, khám phá giả thuyết có ngân sách, và bài học dựa trên nguyên nhân có thể tái sử dụng.
 
 **Điều kiện bỏ qua REFINE:** Task đơn giản dưới 50 dòng.
 
@@ -164,14 +173,16 @@ Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website
 **Từ khóa trigger:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "ralph" |
-| English | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
-| Korean | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| Explicit (persistent) | "ralph", "랄프" |
+| English | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
+| Korean | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
 | Japanese | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
 | Chinese | "不要停", "直到完成", "全部完成", "做完为止" |
 | Spanish | "no pares", "hasta completar", "termina todo" |
 | French | "n'arrête pas", "jusqu'à complétion", "termine tout" |
 | German | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+Các cụm từ tiếp tục trần ("keep going", "carry on", "계속해", "続けて", "продолжай", …) không phải là trigger: người dùng gõ chúng để tiếp tục sau khi bị gián đoạn.
 
 **Các phase:**
 1. **Phase 0, INIT:** Tải prerequisite (context-loading, memory protocol, judge protocol). Định nghĩa và ghi tiêu chí hoàn thành có thể kiểm chứng bằng máy, chẳng hạn test assertion, type check không tạo output, exit code hoặc sự tồn tại của file. Chỉ thêm check build khi được yêu cầu rõ. Hiển thị tiêu chí và tiếp tục trong phạm vi quyền đã cấp. Khởi tạo session với `max_iterations: 5`.
@@ -405,20 +416,25 @@ Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website
 
 ### /video
 
-**Mô tả:** Điều khiển oma-video từ brief đến script, narration, visuals, captions, render-spec và compositor. Chỉ xuất mp4 sau khi compositor và ffprobe pass; lỗi compositor vẫn là run thất bại.
-
-Chọn `shorts` (9:16), `explainer` (16:9) hoặc `demo` (screen/web capture), rồi áp dụng mode mặc định có thể ghi đè bằng flag.
-
-Xem [hướng dẫn tạo video](../guide/video-generation.md).
+**Mô tả:** Điều khiển skill `oma-video` từ đầu đến cuối: brief → script → narration → visuals → captions → render-spec → compositor HyperFrames được quản lý (hoặc MoneyPrinterTurbo). Workflow tạo một run directory có thể tái lập và chỉ xuất `.mp4` thật sau khi kiểm tra compositor và ffprobe đều pass. Cấu hình provider không bắt buộc key đối với các fallback asset được hỗ trợ; lỗi compositor hoặc toolchain vẫn là một run thất bại. Chạy inline (không spawn subagent).
 
 **Từ khóa trigger:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "/video", "oma-video", "remotion", "shorts", "reels", "screencast" |
+| Universal | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
 | English | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
 | Korean | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
 | Japanese | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
 | Chinese | "生成视频", "制作视频", "短视频", "讲解视频", "演示视频" |
+
+**Các bước:**
+1. **Resolve brief và mode:** Chọn `shorts` (9:16), `explainer` (16:9) hoặc `demo` (screen/web capture); áp dụng mode mặc định, có thể ghi đè bằng flag.
+2. **Soạn script:** Tạo scene + narration (dùng LLM khi có key, nếu không thì dùng outline xác định từ brief).
+3. **Tổng hợp asset:** Narration qua `oma-voice`, visuals qua `oma-image`/`oma-slide`/stock, căn caption không cần key, hoặc web capture bằng browser có giám sát cho `demo --source web`. Mỗi provider đều lùi về một fallback xác định.
+4. **Dựng render-spec:** Ghi `render-spec.json` (determinism boundary) cùng asset vào run directory.
+5. **Render:** Spawn project HyperFrames được quản lý (hoặc MoneyPrinterTurbo) làm subprocess. Lỗi compositor hoặc toolchain thông thường làm run thất bại; placeholder xác định chỉ có qua đường mock/test tường minh (`OMA_VIDEO_MOCK=1`). Live capture được ghi là `nondeterministic` trong manifest.
+
+**Đầu ra:** Một run directory tại `.agents/results/videos/{timestamp}-{shortid}-{mode}/` gồm `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4` và `manifest.json`. Xem [hướng dẫn tạo video](../guide/video-generation.md).
 
 ### `/schedule`
 
@@ -445,7 +461,7 @@ Xem [hướng dẫn tạo video](../guide/video-generation.md).
 
 
 
-**Tham chiếu kỹ thuật giữ nguyên:** Các path, flag, command, placeholder và tên định danh sau đây được giữ nguyên để đối chiếu với CLI: `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>`, `**/*.md`, `--budget-minutes <n>`, `--cron`, `--date YYYY-MM-DD`, `--every`, `--gate typecheck|test|lint`, `--temp`, `--tool`, `--window 7d`, `--window Nd`, `.agents/hooks/core/keyword-detector.ts`, `.agents/hooks/core/persistent-mode.ts`, `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, `.agents/results/recap/{date}.md`, `.agents/results/recap/{start}~{end}.md`, `.agents/results/videos/{timestamp}-{shortid}-{mode}/`, `.agents/skills/oma-backend/stack/`, `.agents/skills/oma-mobile/stack/`, `.agents/workflows/ralph/resources/judge-protocol.md`, `.xcodeproj`, `0`, `30d`, `<hookDir>/oma-hook.sh --vendor <v> --event <e>`, `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)`, `HEAD~1..HEAD`, `OMA_VIDEO_MOCK=1`, `Package.swift`, `[y]`, `[y] apply [n] skip [d] show diff [s] show full proposal`, `audio/`, `bunx kordoc@latest`, `captions.{srt,vtt}`, `changedFiles`, `command -v oma`, `demo --source web`, `docs/generated/doc-refs.json`, `docs/generated/url-drift.json`, `excludedWorkflows`, `git add -A`, `grok, claude, codex, qwen, cursor, antigravity`, `manifest.json`, `nondeterministic`, `oma`, `oma docs sync --json`, `oma docs verify --json`, `oma goal set`, `oma hook run`, `oma recap`, `oma recap --json`, `oma schedule <action>`, `oma schedule create`, `oma schedule list`, `oma-image`, `oma-slide`, `oma-voice`, `open`, `package.json`, `pubspec.yaml`, `render-spec.json`, `resources/`, `scm.co_author`, `script.json`, `stack/`, `stack/api-template.*`, `stack/snippets.md`, `stack/stack.yaml`, `stack/tech-stack.md`, `timing.json`, `url-drift.json`, `uvx mdformat`, `uvx opendataloader-pdf`, `visuals/`, `{composition}.mp4`, `~/.agents/schedule/`.
+**Tham chiếu kỹ thuật giữ nguyên:** Các path, flag, command, placeholder và tên định danh sau đây được giữ nguyên để đối chiếu với CLI: `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>`, `**/*.md`, `--budget-minutes <n>`, `--cron`, `--date YYYY-MM-DD`, `--every`, `--gate typecheck|test|lint`, `--temp`, `--tool`, `--window 7d`, `--window Nd`, `.agents/hooks/core/keyword-detector.ts`, `.agents/hooks/core/persistent-mode.ts`, `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, `.agents/results/recap/{date}.md`, `.agents/results/recap/{start}~{end}.md`, `.agents/results/videos/{timestamp}-{shortid}-{mode}/`, `.agents/skills/oma-backend/stack/`, `.agents/skills/oma-mobile/stack/`, `.agents/workflows/ralph/resources/judge-protocol.md`, `.xcodeproj`, `0`, `30d`, `<hookDir>/oma-hook.sh --vendor <v> --event <e>`, `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)`, `HEAD~1..HEAD`, `OMA_VIDEO_MOCK=1`, `Package.swift`, `[y]`, `[y] apply [n] skip [d] show diff [s] show full proposal`, `audio/`, `bunx kordoc@latest`, `captions.{srt,vtt}`, `changedFiles`, `command -v oma`, `demo --source web`, `docs/generated/doc-refs.json`, `docs/generated/url-drift.json`, `excludedWorkflows`, `git add -A`, `grok, claude, codex, qwen, cursor, antigravity`, `manifest.json`, `nondeterministic`, `oma`, `oma docs sync --json`, `oma docs verify --json`, `oma goal set`, `oma hook run`, `oma recap`, `oma recap --json`, `oma schedule <action>`, `oma schedule create`, `oma schedule list`, `oma-image`, `oma-slide`, `oma-voice`, `open`, `package.json`, `pubspec.yaml`, `render-spec.json`, `resources/`, `scm.co_author`, `script.json`, `stack/`, `stack/api-template.*`, `stack/snippets.md`, `stack/stack.yaml`, `stack/tech-stack.md`, `timing.json`, `url-drift.json`, `uvx mdformat`, `uvx opendataloader-pdf`, `visuals/`, `{composition}.mp4`, `~/.agents/schedule/`.
 
 ## Skill so với workflow
 
@@ -466,7 +482,7 @@ Xem [hướng dẫn tạo video](../guide/video-generation.md).
 oh-my-agent dùng hook `UserPromptSubmit` chạy trước mỗi tin nhắn người dùng được xử lý:
 
 1. **`triggers.json`**: Định nghĩa ánh xạ từ khóa-workflow cho 11 ngôn ngữ được hỗ trợ.
-2. **`keyword-detector.ts`**: Logic TypeScript quét đầu vào người dùng so với từ khóa trigger và đưa ngữ cảnh kích hoạt workflow vào.
+2. **`keyword-detector.ts`**: Logic TypeScript quét đầu vào người dùng so với từ khóa trigger của mọi ngôn ngữ và đưa ngữ cảnh kích hoạt workflow vào.
 3. **`persistent-mode.ts`**: Áp dụng thực thi workflow liên tục bằng cách kiểm tra file trạng thái đang hoạt động.
 
 ### Luồng phát hiện
@@ -476,8 +492,9 @@ oh-my-agent dùng hook `UserPromptSubmit` chạy trước mỗi tin nhắn ngư�
 3. Hook làm sạch đầu vào (loại bỏ code block, chuỗi trích dẫn, các khối system-echo đã dán) rồi quét so với `.agents/hooks/core/triggers.json` — cả danh sách keyword (cụm từ literal) và `patterns` (regex thô). Một lớp bảo vệ tăng cường ngăn chặn việc kích hoạt lại nếu cùng một workflow đã trigger từ 2 lần trở lên trong 60 giây gần nhất.
 4. Nếu tìm thấy khớp, kiểm tra xem đầu vào có khớp các mẫu thông tin hay không
 5. Nếu mang tính thông tin (ví dụ: "what is orchestrate?"), lọc ra — không workflow nào được kích hoạt
-6. Nếu mang tính hành động, đưa `[OMA WORKFLOW: {workflow-name}]` vào ngữ cảnh
-7. Agent đọc tag được đưa vào và tải file workflow tương ứng từ `.agents/workflows/`
+6. Nếu mang tính hành động, đưa `[OMA WORKFLOW: {workflow-name}]` vào ngữ cảnh. Khi nhiều workflow cùng khớp, lời gọi tường minh thắng, sau đó đến từ khóa dài nhất
+7. Với workflow liên tục, chỉ lời gọi tường minh (`explicit` trong `triggers.json`) mới ghi file trạng thái chế độ liên tục; một match bằng ngôn ngữ tự nhiên được đưa vào dưới dạng gợi ý, và prompt kết thúc bằng câu hỏi (`?` ở dòng đầu hoặc dòng cuối) hoàn toàn không kích hoạt nó
+8. Agent đọc tag được đưa vào và tải file workflow tương ứng từ `.agents/workflows/`
 
 ### Quy ước section ngôn ngữ
 
@@ -485,11 +502,13 @@ oh-my-agent dùng hook `UserPromptSubmit` chạy trước mỗi tin nhắn ngư�
 
 | Section | Hành vi |
 |---------|----------|
-| `*` | Chung — luôn được tải bất kể cài đặt `language` trong `.agents/oma-config.yaml`. Dùng cho nội dung tiếng Anh (ngôn ngữ chung) và token thực sự xuyên ngôn ngữ (ví dụ tên workflow `"orchestrate"`). |
-| `en` | Tiếng Anh — được tải để tương thích ngược. Tương đương về chức năng với `*`. Nội dung tiếng Anh mới nên đưa vào `*`. |
-| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | Theo ngôn ngữ — chỉ được tải khi `language: <lang>` được đặt trong `.agents/oma-config.yaml`. |
+| `*` | Chung. Dùng cho nội dung tiếng Anh (ngôn ngữ chung) và token thực sự xuyên ngôn ngữ (ví dụ tên workflow `"orchestrate"`). |
+| `en` | Tiếng Anh. Tương đương về chức năng với `*`. |
+| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | Cách diễn đạt theo ngôn ngữ. |
 
-**Hệ quả**: Nếu bạn đặt `language: en` trong `.agents/oma-config.yaml`, chỉ pattern `*` và `en` được tải. Trigger ngôn ngữ tự nhiên tiếng Hàn/Nhật/v.v. sẽ không kích hoạt ngay cả khi người dùng gõ trong các ngôn ngữ đó. Để bật một ngôn ngữ không phải tiếng Anh, đặt `language: <code>` tương ứng. Fallback tiếng Anh trong `*` luôn duy trì hoạt động.
+Mọi section đều luôn được tải: người dùng viết prompt bằng ngôn ngữ họ nghĩ, và cài đặt `language` trong `.agents/oma-config.yaml` chỉ điều khiển ngôn ngữ phản hồi. Một keyword viết bằng một ngôn ngữ chỉ có thể khớp với prompt chứa đúng chữ viết đó, nên việc gộp mọi section không thể kích hoạt nhầm trên các prompt không liên quan.
+
+Ranh giới từ chỉ phụ thuộc vào chính keyword, không bao giờ phụ thuộc vào `language`: keyword ASCII chỉ khớp nguyên từ (nên "work" không khớp "network", và "review" không khớp "preview"), còn keyword chứa văn bản không phải ASCII khớp như chuỗi con vì trợ từ và biến tố CJK gắn trực tiếp vào từ ("리뷰해줘").
 
 ### Trường pattern (regex thô) {#pattern-field-raw-regex}
 
@@ -500,9 +519,11 @@ Ngoài `keywords` literal, mỗi workflow có thể khai báo `patterns` — chu
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      "keywords": { "*": ["orchestrate"], "en": ["parallel", ...] },
+      // Subset of `keywords` that activates persistent mode (persistent workflows only)
+      "explicit": ["orchestrate", ...],
+      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
       "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:an?|the)\\s+...\\b"],
+        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
         "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
       }
     }
@@ -545,7 +566,7 @@ Các workflow sau bị loại trừ khỏi phát hiện tự động và phải 
 
 ### File trạng thái
 
-Workflow liên tục (orchestrate, ultrawork, work, ralph) tạo file trạng thái trong `.agents/state/`.
+Workflow liên tục (orchestrate, ultrawork, work, ralph) tạo file trạng thái trong `.agents/state/` khi được gọi tường minh (xem [Các workflow liên tục](#persistent-workflows)):
 
 ```
 .agents/state/

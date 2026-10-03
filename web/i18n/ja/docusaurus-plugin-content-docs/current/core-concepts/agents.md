@@ -413,7 +413,7 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 3. クロスレビュー：QAエージェントが変更をレビュー
 4. 失敗時：修正のためにフィードバック（最大5回の合計ループ反復）
 
-**Clarification Debtモニタリング：** セッション中のユーザー訂正を追跡。イベントスコア：clarify（+10）、correct（+25）、redo（+40）。CD >= 50で必須RCA発動。CD >= 80でセッション一時停止。
+**セッションの証拠：** 有用な場合に、重要な訂正と判定済みのレビュー指摘を、原因、影響、検証結果とあわせて記録します。ペナルティスコアは適用されず、スコアによるセッション一時停止もありません。
 
 **リソース：** `subagent-prompt-template.md`、`memory-schema.md`。
 
@@ -761,7 +761,7 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 
 ### oma-video
 
-**ドメイン：** `oma video` CLI で短編、解説、人間操作のデモ動画を生成し、スクリプト → ナレーション → ビジュアル → キャプション → Remotion レンダリングを構成します。
+**ドメイン：** `oma video` CLI で短編、解説、人間操作のデモ動画を生成し、スクリプト → ナレーション → ビジュアル → キャプション → HyperFrames レンダリングを構成します。
 
 **使用すべき場合：** トピックからの短編動画（shorts/reels、9:16）、README/コード/データからの解説（16:9/9:16）、画面キャプチャ（`--source file`）または監督下のブラウザによる任意 URL のウェブアプリキャプチャ（`--source web`）、既存 run の決定的な再レンダリング。
 
@@ -777,7 +777,7 @@ OMA は、スキルパッケージ、ディスパッチロール、サブエー�
 
 **ワークフロー：** PREPARE（モード/アスペクト/ロケール、brief の確認/補強）→ ACQUIRE（プロバイダー可用性、キャプチャパス、費用）→ ACT（スクリプト → 音声 ∥ ビジュアル ∥ キャプション → render-spec → render）→ VERIFY（スキーマ、manifest ハッシュ、終了コード、mp4）→ FINALIZE（run-dir、mp4 パス、カバレッジ警告）。
 
-**リソース：** `execution-protocol.md`、`vendor-matrix.md`、`prompt-tips.md`、`checklist.md`、vendored の `remotion/` コンポジター、ウェブキャプチャドライバー、`mpt/` フォールバックコンポジター、`config/video-config.yaml`。
+**リソース：** `execution-protocol.md`、`vendor-matrix.md`、`prompt-tips.md`、`checklist.md`、`hyperframes-authoring/` のモードガイド、ウェブキャプチャドライバー、`mpt/` フォールバックコンポジター、`config/video-config.yaml`。
 
 ---
 
@@ -942,8 +942,8 @@ oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 | `task-board-{sessionId}.md` | オーケストレータ | タスク割り当て、優先度、状態更新 | 読み取り専用 |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | その実行 | ターンごとの進捗：実行内容、読み取り/変更ファイル、現在の状態 | オーケストレータが読む |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | その実行 | 最終出力：状態（completed/failed）、要約、変更ファイル、受入基準チェックリスト | オーケストレータが読む |
-| `session-metrics.md` | オーケストレータ | Clarification Debt の追跡、Quality Score の推移 | QA が読む |
-| `experiment-ledger.md` | オーケストレータ/QA | Quality Score が有効なときの実験追跡 | 全員が読む |
+| `session-metrics.md` | オーケストレータ | 任意のセッションの証拠と、測定した実験結果 | QA が読む |
+| `experiment-ledger.md` | オーケストレータ/QA | 実際の実験の証拠 | 全員が読む |
 
 メモリツールは設定できます。デフォルトではエージェントがネイティブのファイルツール（`Read`、`Write`、`Edit`）でこれらの調整ファイルを直接読み書きします。`mcp.json` でカスタムツールとカスタムベースパスも設定できます。
 

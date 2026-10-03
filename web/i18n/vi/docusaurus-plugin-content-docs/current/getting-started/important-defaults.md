@@ -14,6 +14,7 @@ Các mặc định được chọn để dự án đầu tiên có thể sử d�
 | Ngôn ngữ phản hồi | `en` | Phản hồi của agent và workflow dùng tiếng Anh trừ khi cấu hình dự án chọn ngôn ngữ được hỗ trợ khác. Chỉ dẫn ngôn ngữ rõ ràng từ người dùng hoặc session vẫn có thể ghi đè mặc định dự án khi host/workflow hỗ trợ. | `language` trong `.agents/oma-config.yaml` hoặc `.cue` |
 | Model routing | `auto` | Dùng cấu hình agent/model native của runtime hiện tại. Runtime không xác định sẽ dùng `default_cli` nếu có. | `model_preset`, `default_cli` hoặc `agents.<id>` |
 | Code intelligence | `serena` | Cài đặt mới cố gắng cài Serena và kết nối cấu hình MCP của nó. | `providers.code_intelligence: gortex` hoặc `serena` |
+| Code-search guard | `block` | Khi đã cấu hình provider code intelligence, hook PreToolUse từ chối `Grep`/`Glob` native và việc tìm kiếm shell đệ quy (`rg`, `grep -r`, `find -name`), đồng thời hướng agent sang các tool của provider. Các lệnh tìm kiếm chỉ nằm trong mục loại trừ đã được xác nhận hoặc ở path ngoài project thì được cho phép. Hook không quảng bá cách bypass đối với source của project. | `providers.code_intelligence_guard: off` |
 | Semantic memory | `agentmemory` | Chọn Agent Memory cho semantic memory khi khả dụng. | `providers.semantic_memory: honcho` hoặc `none` |
 | Web search | `native` | Search dùng kênh web native của runtime trừ khi chọn provider khác. | `providers.web` |
 | Documentation provider | `context7` | Tra cứu documentation dùng Context7 khi skill yêu cầu. | `providers.docs` |

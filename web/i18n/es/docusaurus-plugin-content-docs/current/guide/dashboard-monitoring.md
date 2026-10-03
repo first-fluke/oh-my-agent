@@ -129,8 +129,8 @@ Los dashboards leen del directorio `.agents/state/memories/`. Los agentes y los 
 | `progress-{agent}.md` | Cada agente generado | Número de turno, tarea actual y resultados intermedios |
 | `result-{agent}.md` | Cada agente completado | Estado final (COMPLETED/FAILED), archivos modificados, problemas encontrados y entregables |
 | `debug-{id}.md` | Flujo `/debug` | Diagnóstico del bug, causa raíz, corrección aplicada y ubicación de la prueba de regresión |
-| `experiment-ledger.md` | Sistema de Quality Score | Seguimiento de experimentos: puntuaciones iniciales, deltas y decisiones de conservar o descartar |
-| `lessons-learned.md` | Generado automáticamente al terminar la sesión | Lecciones de experimentos descartados (delta <= -5) |
+| `experiment-ledger-{sessionId}.md` | Experimentos reales | Evidencia comparable de línea base/candidato, comprobaciones requeridas y decisiones |
+| `lessons-{sessionId}.md` | Cuando una causa reutilizable está respaldada por evidencia | Lecciones de ámbito de sesión; sin generación desencadenada por puntuación |
 
 ### Cómo los lee el dashboard
 

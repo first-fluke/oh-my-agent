@@ -5,13 +5,13 @@ description: Vollständige Anleitung zur Zwei-Schichten-Architektur der 33 OMA-S
 
 # Skills
 
-Skills sind strukturierte Wissenspakete, die jedem Agenten seine Domänenexpertise verleihen. Sie sind nicht nur Prompts — sie enthalten Ausführungsprotokolle, Tech-Stack-Referenzen, Code-Vorlagen, Fehler-Playbooks, Qualitätschecklisten und Few-Shot-Beispiele, organisiert in einer Zwei-Schichten-Architektur, die auf Token-Effizienz ausgelegt ist.
+Skills sind strukturierte Wissenspakete, die einer Dispatch-Rolle ihre Domänenleitlinien vermitteln. Sie enthalten Ausführungsprotokolle, Tech-Stack-Referenzen, Code-Vorlagen, Fehler-Playbooks, Qualitätschecklisten und Beispiele, soweit der Skill sie bereitstellt, organisiert in einer Zwei-Schichten-Architektur, die auf Token-Effizienz ausgelegt ist.
 
 ---
 
 ## Das Zwei-Schichten-Design
 
-### Schicht 1: SKILL.md (Median ~2.631 Tokens, beim Routing des Skills geladen)
+### Schicht 1: SKILL.md (beim Routing des Skills geladen)
 
 Jeder Skill hat eine `SKILL.md`-Datei im Stammverzeichnis. Sie gelangt in das Kontextfenster, sobald der Skill geroutet wird — der Injector-Hook übergibt eine **Pfadangabe**, nicht den Inhalt. Ein nicht gerouteter Skill kostet daher außer seiner `description` nichts. Die Datei enthält:
 
@@ -37,9 +37,9 @@ Das description-Feld ist entscheidend — es enthält die Routing-Keywords, die 
 
 Das `resources/`-Verzeichnis enthält ausführliches Ausführungswissen. Diese Dateien werden nur geladen, wenn:
 1. Der Host oder Workflow den Skill ausgewählt hat (etwa durch Skill-Matching oder einen ausdrücklichen Befehl)
-2. Die spezifische Ressource für den aktuellen Aufgabentyp und Schwierigkeitsgrad benötigt wird
+2. Die aktuelle Aufgabe die Ladebedingung der Referenz erfüllt
 
-Dieses bedarfsgesteuerte Laden wird durch den Context-Loading-Leitfaden (`.agents/skills/_shared/core/context-loading.md`) gesteuert, der Aufgabentypen den erforderlichen Ressourcen pro Agent zuordnet.
+Dieses bedarfsgesteuerte Laden wird durch den Context-Loading-Leitfaden (`.agents/skills/_shared/core/context-loading.md`) gesteuert, der zwischen Einstiegsanweisungen und je nach Aufgabe ausgewählten Referenzen unterscheidet.
 
 ---
 
@@ -110,12 +110,12 @@ Dieses bedarfsgesteuerte Laden wird durch den Context-Loading-Leitfaden (`.agent
 
 | Ressourcentyp | Dateinamenmuster | Zweck | Wann geladen |
 |--------------|-----------------|---------|-------------|
-| **Ausführungsprotokoll** | `execution-protocol.md` | Schritt-für-Schritt-Workflow: Analysieren -> Planen -> Implementieren -> Verifizieren | Immer (mit SKILL.md) |
-| **Tech-Stack** | `tech-stack.md` | Detaillierte Technologiespezifikationen, Versionen, Konfiguration | Komplexe Aufgaben |
+| **Ausführungsprotokoll** | `execution-protocol.md` | Schritt-für-Schritt-Workflow: Analysieren -> Planen -> Implementieren -> Verifizieren | Die ausgewählte Operation benötigt ihre Befehls- oder Vertragsdetails |
+| **Tech-Stack** | `tech-stack.md` | Detaillierte Technologiespezifikationen, Versionen, Konfiguration | Ausgewählte Framework- oder Stack-Entscheidung |
 | **Fehler-Playbook** | `error-playbook.md` | Wiederherstellungsverfahren mit "3-Strikes"-Eskalation | Nur bei Fehlern |
 | **Checkliste** | `checklist.md` | Domänenspezifische Qualitätsverifikation | Beim Verifikationsschritt |
-| **Snippets** | `snippets.md` | Kopierbereite Code-Muster | Mittlere/komplexe Aufgaben |
-| **Beispiele** | `examples.md` oder `examples/` | Few-Shot-Ein-/Ausgabebeispiele für das LLM | Mittlere/komplexe Aufgaben |
+| **Snippets** | `snippets.md` | Kopierbereite Code-Muster | Ungewohnte Implementierung oder Ausgabeform |
+| **Beispiele** | `examples.md` oder `examples/` | Few-Shot-Ein-/Ausgabebeispiele für das LLM | Ungewohnte Implementierung oder Ausgabeform |
 | **Varianten** | `variants/`-Verzeichnis | Sprach-/Framework-spezifische Referenzen. Für Backend gibt es `node`, `python` und `rust` als Seeds; Mobile liefert ein Schema und kann generierte Plattformreferenzen erhalten. | Wenn ein passender Stack vorhanden ist |
 | **Vorlagen** | `component-template.tsx`, `screen-template.dart` | Boilerplate-Dateivorlagen | Bei Komponentenerstellung |
 | **Domänenreferenz** | `orm-reference.md`, `anti-patterns.md` usw. | Vertiefte Domänenkenntnisse für spezifische Teilaufgaben | Aufgabentypspezifisch |
@@ -130,18 +130,18 @@ Alle Agenten teilen gemeinsame Grundlagen aus `.agents/skills/_shared/`. Diese s
 
 | Ressource | Zweck | Wann geladen |
 |----------|---------|-------------|
-| **`skill-routing.md`** | Ordnet Aufgaben-Keywords dem richtigen Agenten zu. Enthält die Skill-Agent-Zuordnung, Muster für komplexes Request-Routing, Inter-Agent-Abhängigkeiten, Eskalationsregeln und den Leitfaden für Zug-Limits. | Von Orchestrator- und Koordinations-Skills referenziert |
-| **`context-loading.md`** | Legt fest, welche Ressourcen für Aufgabentyp und Schwierigkeitsgrad geladen werden. Enthält Zuordnungstabellen pro Agent sowie Trigger für bedingte Protokolle. | Beim Workflow-Start (Schritt 0 / Phase 0) |
-| **`prompt-structure.md`** | Definiert die vier Elemente jedes Aufgaben-Prompts: Ziel, Kontext, Einschränkungen und Abschlusskriterium. Enthält Vorlagen für PM-, Implementierungs- und QA-Agenten sowie Anti-Patterns. | Von PM-Agent und allen Workflows referenziert |
-| **`clarification-protocol.md`** | Definiert die Unsicherheitsstufen LOW/MEDIUM/HIGH und ihre Aktionen, Auslöser, Eskalationsvorlagen, Verifikationsanforderungen pro Agententyp und das Verhalten im Subagentenmodus. | Bei unklaren Anforderungen |
-| **`context-budget.md`** | Verwaltet das Token-Budget. Beschreibt Dateilesestrategien (verwende `find_symbol`, nicht `read_file`), die gemessenen Kosten von Ressourcen, das durch `oma skill audit` geprüfte Limit für `SKILL.md`, den Umgang mit großen Dateien und Symptome eines Kontextüberlaufs. | Beim Workflow-Start |
-| **`difficulty-guide.md`** | Kriterien für die Einstufung als Simple/Medium/Complex, erwartete Zugzahlen, Protokollpfade und die Wiederherstellung bei Fehleinstufung. | Beim Aufgabenstart (Schritt 0) |
-| **`quality-principles.md`** | Vier universelle Qualitätsprinzipien, die für alle Agenten gelten. | Beim Workflow-Start qualitätsorientierter Workflows (ultrawork) |
-| **`vendor-detection.md`** | Protokoll zur Erkennung der Laufzeitumgebung (Claude Code, Codex CLI, Antigravity, Cursor, Kiro, Qwen und CLI-Fallback). | Beim Workflow-Start |
-| **`session-metrics.md`** | Bewertet Clarification Debt (CD) und Sitzungsmetriken. Enthält Ereignistypen, Schwellenwerte und Integrationspunkte. | Während Orchestrierungssitzungen |
-| **`common-checklist.md`** | Universelle Qualitätscheckliste für die abschließende Verifikation komplexer Aufgaben, zusätzlich zu agentenspezifischen Checklisten. | Beim Verifikationsschritt komplexer Aufgaben |
-| **`lessons-learned.md`** | Sammlung früherer Sitzungslearnings, automatisch aus Clarification-Debt-Überschreitungen und verworfenen Experimenten erzeugt und nach Domäne geordnet. | Nach Fehlern und am Sitzungsende |
-| **`api-contracts/`** | Verzeichnis mit API-Vertragsvorlage und generierten Verträgen. `template.md` beschreibt das Format pro Endpunkt. | Wenn domänenübergreifende Arbeit geplant wird |
+| **`skill-routing.md`** | Routet nach Aufgabenergebnis, Zuständigkeit und tatsächlichen Abhängigkeiten; keine zwingende Agentenkette und kein Zugkontingent. | Von Orchestrator- und Koordinations-Skills referenziert |
+| **`context-loading.md`** | Zuständige Einstiegsdatei, bedingte Referenzen und Grenzen des Ladens zur Laufzeit. | Beim Zusammenstellen des Kontexts |
+| **`prompt-structure.md`** | Gibt Orientierung für ungewohnte Aufgabenübergaben mit Ziel, Kontext, echten Einschränkungen und Akzeptanznachweis; keine verpflichtende Vorlage für direkte Aufgaben. | Von PM-Agent und allen Workflows referenziert |
+| **`clarification-protocol.md`** | Klärt Routinedetails anhand des Kontexts und fragt nur nach wesentlichen fehlenden Informationen oder einer Autorisierung. | Bei unklaren Anforderungen |
+| **`context-budget.md`** | Dateigrößenschätzungen, Messung des tatsächlichen Prompts, eingegrenzte Lesezugriffe und Checkpoints. | Lange Aufgaben oder Diagnose von Kontext-Overhead |
+| **`difficulty-guide.md`** | Wählt Planungstiefe und Liefergegenstände anhand von Abhängigkeiten und Verifikationsbedarf. | Wenn die Zerlegung eine Schwierigkeitsschätzung benötigt |
+| **`quality-principles.md`** | Leitlinien zu Umfang, Wartbarkeit, Nachweisen und verhältnismäßiger Verifikation. | Beim Workflow-Start qualitätsorientierter Workflows (ultrawork) |
+| **`vendor-detection.md`** | Protokoll zur Erkennung der Laufzeitumgebung (Claude Code, Codex CLI, Antigravity, Cursor, Kiro, Qwen und CLI-Fallback). Verwendet Host-Marker und den konfigurierten Vendor-Status. | Beim Workflow-Start |
+| **`session-metrics.md`** | Optionale Sitzungsnachweise ohne gesprächs- oder evaluatorbezogene Strafpunkte. | Angeforderte Retrospektive oder wesentliche Korrektur |
+| **`common-checklist.md`** | Anwendbare domänenübergreifende Prüfungen; keine globalen Zeilenzahl-Limits und keine pauschale Catch-Pflicht. | Domänenübergreifendes Review, wenn relevant |
+| **`lessons-learned.md`** | Erfassen und Anwenden belegter Lessons mit Versions- und Auslösebedingungen; kein automatischer RCA-Schwellenwert. | Nach Fehlern und am Sitzungsende |
+| **`api-contracts/`** | Optionale Vertragsvorlage. Projektschemata wiederverwenden; generierte Verträge liegen außerhalb der Skill-Quelle. | Wenn domänenübergreifende Arbeit geplant wird |
 
 ### Laufzeit-Ressourcen (`.agents/skills/_shared/runtime/`)
 
@@ -165,13 +165,13 @@ Vendor-spezifische Ausführungsprotokolle werden für per CLI gestartete Agenten
 
 Diese werden nur geladen, wenn bestimmte Bedingungen während der Ausführung erfüllt sind:
 
-| Ressource | Auslösebedingung | Geladen von | Ungefähre Tokens |
-|----------|-------------------|-----------|----------------|
-| **`quality-score.md`** | VERIFY- oder SHIP-Phase beginnt in einem Workflow, der Qualitätsmessung unterstützt | Orchestrator (wird an QA-Agent-Prompt übergeben) | ~250 |
-| **`experiment-ledger.md`** | Erstes Experiment wird aufgezeichnet, nachdem eine IMPL-Baseline etabliert wurde | Orchestrator (inline, nach Baseline-Messung) | ~250 |
-| **`exploration-loop.md`** | Dasselbe Gate scheitert zweimal beim selben Problem | Orchestrator (inline, vor dem Starten von Hypothesen-Agenten) | ~250 |
+| Ressource | Auslösebedingung | Geladen von |
+|----------|-------------------|-----------|
+| **`quality-score.md`** | Eine definierte Baseline oder ein Experimentvergleich wird benötigt | Orchestrator (wird an QA-Agent-Prompt übergeben) |
+| **`experiment-ledger.md`** | Erstes Experiment wird aufgezeichnet, nachdem eine IMPL-Baseline etabliert wurde | Orchestrator (inline, nach Baseline-Messung) |
+| **`exploration-loop.md`** | Wiederholte Wiederherstellungsversuche scheitern und es lohnt sich, Alternativen im Rahmen des Budgets zu testen | Orchestrator (inline, vor dem Starten von Hypothesen-Agenten) |
 
-Budgetauswirkung: ungefähr 750 Tokens insgesamt, wenn alle 3 geladen werden. Da das Laden bedingt ist, laden typische Sitzungen 1-2 davon. Das Flash-Tier-Budget bleibt innerhalb der ungefähr 3.100 Token-Zuweisung.
+Diese Ressourcen bleiben zurückgestellt, bis ihre jeweiligen Auslöser zutreffen. Der Schwierigkeitsgrad allein injiziert sie nicht.
 
 ---
 
@@ -215,75 +215,29 @@ Multi-Domänen-Anfragen folgen etablierten Ausführungsreihenfolgen:
 
 ## Token-Einsparungsberechnung {#token-savings-math}
 
-Diese Werte werden aus dem Skill-Baum gemessen und nicht von Hand geschätzt. Bei Bedarf lassen sie sich neu berechnen:
+Erst messen, dann Einsparungen behaupten:
 
 ```bash
-bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend,oma-mobile,oma-qa
+bun scripts/measure-skill-context.ts
+bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend --json
+oma agent context backend --difficulty Simple
 ```
 
-Tokenzahlen sind **Näherungswerte** (Bytes ÷ 4, ein grobes Verhältnis für englisches Markdown). Tabellen und Code-Fences werden etwas ungünstiger tokenisiert und liegen daher leicht zu niedrig. Für exakte Zahlen sollte ein echter Tokenizer des Zielmodells verwendet werden.
+Das Skript meldet Schätzwerte (UTF-8-Bytes / 4) für Dateigrößen-Szenarien. `routed` umfasst nur die Einstiegsdatei; `simple`, `medium` und `complex` fügen zum Vergleich hypothetische Protokoll-, Beispiel- und Stack-Dateien hinzu. Ihre Namen bleiben aus Gründen der Skriptkompatibilität erhalten und sind keine Anweisungen zum Vorladen. `all` ist eine Obergrenze der Ressourcengröße, keine Laufzeitkonfiguration. Ein frischer Checkout kann einen einzelnen Plattform-Seed als Größenproxy verwenden; dabei werden nicht alle Plattformen geladen.
 
-### Ladeebenen
+Der Context-Befehl zeigt an, was tatsächlich als Aufgabenkontext injiziert wird. Er enthält weder den übrigen Gesprächsverlauf noch sämtliche Host- und Laufzeitanweisungen. Gesamte Eingabe-Tokens, Latenz und Kosten für ein konkret benanntes Modell mit einem zusammengestellten Prompt oder mit Nutzungstelemetrie messen. Diese Werte nicht aus der Repository-Größe oder aus der Anzahl generierter Spiegelkopien ableiten.
 
-Jede Ebene entspricht einem Zustand, den ein Agent tatsächlich erreicht, gemäß [`context-loading.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/_shared/core/context-loading.md):
+## Ressourcenladen nach Aufgabe
 
-| Ebene | Inhalt des Kontexts |
-|------|--------------------|
-| `routed` | Nur `SKILL.md` |
-| `simple` | + `execution-protocol.md` |
-| `medium` | + die zugeordnete Ressource für die Aufgabe, sofern vorhanden |
-| `complex` | + zugeordnete Ressource und Stack-Referenzen, sofern das Projekt sie bereitstellt |
-| `all` | `SKILL.md` + jede Ressourcendatei — die **Obergrenze**, kein auswählbarer Modus |
+Jede Schwierigkeitsstufe beginnt mit dem zuständigen Skill. Der Graph ist ein Referenzindex; Nachbarschaft im Graphen berechtigt nicht zum Laden eines anderen Spezialisten, eines Fehler-Playbooks oder eines bedingten Experiment-Workflows.
 
-Für Backend- und Mobile-Skills kann `/stack-set` projektspezifische Referenzen unter `stack/` erzeugen. In einem frischen Checkout existiert dieses Verzeichnis noch nicht; die folgende Zeile `complex` wird daher anhand der ausgelieferten `variants/`-Seeds gemessen, aus denen die Generierung ableitet. Sie ist ein Größenproxy und keine Datei, die ein Agent bereits lädt.
+Der Loader verwendet weiche Budgets von 1.500 / 4.000 / 8.000 geschätzten Tokens für Simple / Medium / Complex. Eine Einstiegsdatei, die das Budget überschreitet, bleibt erhalten, und die Überschreitung wird gemeldet. Unterstützende Referenzen bleiben zurückgestellt, es sei denn, sie werden ausdrücklich ausgewählt, nachdem ihr aufgabenbezogener Auslöser geklärt wurde. Eine erforderliche Einstiegsdatei wird nie durch kleinere, nicht zugehörige Dokumente ersetzt.
 
-### Eine Sitzung mit 5 Agenten (pm, backend, frontend, mobile, qa)
-
-| Ebene | Tokens | Anteil an der Obergrenze | Vermeidung |
-|------|-------:|-------------------------:|----------:|
-| `routed` | 11.497 | 15,7 % | 84,3 % |
-| `simple` | 17.923 | 24,4 % | 75,6 % |
-| `medium` | 19.125 | 26,1 % | 73,9 % |
-| `complex` | 39.156 | 53,4 % | 46,6 % |
-| `all` | 73.355 | 100 % | — |
-
-Bei einer einfachen oder mittleren Aufgabe über fünf Agenten liegen damit ungefähr **17–19.000 Tokens** Skill-Kontext an, statt der Obergrenze von 73.000. Eine komplexe Aufgabe benötigt etwa **38.000**. Das entspricht bei gewöhnlicher Arbeit einer Einsparung von rund 74–76 %, bei geladenen Stack-Referenzen etwa 47 %. Bei einem Modell mit 128K Kontext bleiben damit ungefähr 110K Tokens für Simple/Medium und 90K für Complex frei.
-
-:::note `all` ist eine Grenze, keine Alternative
-Keine Laufzeit lädt jede Ressource im Voraus: Skills werden über ihre `description` angeboten, ihr Inhalt wird beim Routing gelesen und Ressourcen werden nur nach Bedarf geladen. `all` ist die obere Grenze dessen, was ein Skill kosten *könnte*. Deshalb werden die Prozentwerte als „vermieden“ angegeben und nicht als Vergleich mit einer realen Konfiguration.
-:::
-
-Schicht 1 bildet den Boden und ist nicht klein: Über die 33 installierten Skills umfasst `SKILL.md` etwa 1.275–5.489 Tokens (Median ~2.631). Dieser Boden begrenzt die Einsparung durch progressive Offenlegung. Sind alle fünf Agenten geroutet, belegt allein die Ebene `routed` bereits 15 % der Obergrenze.
-
----
-
-## Ressourcenladen nach Aufgabenschwierigkeit
-
-Der Schwierigkeitsleitfaden klassifiziert Aufgaben in drei Stufen. Daraus ergibt sich, wie viel von Schicht 2 geladen wird:
-
-### Einfach (3-5 erwartete Züge)
-
-Einzelne Dateiänderung, klare Anforderungen, Wiederholung vorhandener Muster.
-
-Lädt: nur `execution-protocol.md`. Analyse überspringen, direkt zur Implementierung mit minimaler Checkliste.
-
-### Mittel (8-15 erwartete Züge)
-
-2–3 Dateiänderungen, einige Designentscheidungen und die Übertragung von Mustern auf neue Domänen.
-
-Lädt: `execution-protocol.md` plus die zugeordnete Medium-Ressource, sofern diese Datei vorhanden ist. Standardprotokoll mit kurzer Analyse und vollständiger Verifikation.
-
-### Komplex (15-25 erwartete Züge)
-
-4+ Dateiänderungen, erforderliche Architekturentscheidungen, neue Muster oder Abhängigkeiten von anderen Agenten.
-
-Lädt: `execution-protocol.md` plus zugeordnete Ressource und verfügbare `tech-stack.md`-/`snippets.md`-Referenzen. Erweitertes Protokoll mit Checkpoints, Fortschrittsaufzeichnung während der Ausführung und vollständiger Verifikation einschließlich `common-checklist.md`.
-
----
+Die Verifikation richtet sich nach dem Risiko der Aufgabe und den Projektanforderungen. Eine Schwierigkeitseinstufung verlangt weder eine vollständige Test-Suite noch eine feste Preflight-Antwort noch eine zweite Genehmigung bereits autorisierter Arbeit.
 
 ## Context-Loading-Aufgabenzuordnungen (pro Agent)
 
-Der Context-Loading-Leitfaden bietet detaillierte Aufgabentyp-zu-Ressource-Zuordnungen. Hier sind die wichtigsten Zuordnungen:
+Dies sind Beispiele für Referenzen, die herangezogen werden, wenn die Aufgabe sie benötigt. Den aktuellen Index des zuständigen Skills verwenden und nur anwendbare Abschnitte auswählen:
 
 ### Backend-Agent
 
@@ -324,7 +278,7 @@ Der Context-Loading-Leitfaden bietet detaillierte Aufgabentyp-zu-Ressource-Zuord
 | Performance-Review | checklist.md (Performance-Abschnitt) |
 | Barrierefreiheits-Review | checklist.md (Barrierefreiheitsabschnitt) |
 | Vollständiges Audit | checklist.md (vollständig) + self-check.md |
-| Qualitätsbewertung | quality-score.md (bedingt) |
+| Vergleich einer definierten Metrik | quality-score.md (bedingt) |
 
 ---
 
@@ -332,100 +286,32 @@ Der Context-Loading-Leitfaden bietet detaillierte Aufgabentyp-zu-Ressource-Zuord
 
 Wenn der Orchestrator Prompts für Subagenten zusammenstellt, enthält er nur aufgabenrelevante Ressourcen:
 
-1. Kernregeln-Abschnitt der SKILL.md des Agenten
-2. `execution-protocol.md`
+1. Pfad der zuständigen SKILL.md (der CLI-Dispatch injiziert den Inhalt bereits)
+2. Abschnitt des Ausführungsprotokolls einer ausgewählten Operation, bei Bedarf
 3. Ressourcen, die dem spezifischen Aufgabentyp entsprechen (aus den obigen Zuordnungen)
-4. `error-playbook.md` (immer enthalten — Fehlerbehandlung ist essenziell)
+4. Relevanter Abschnitt des Fehler-Playbooks, nur nach einem beobachteten Fehler
 5. Memory Protocol (CLI-Modus)
 
 Diese zielgerichtete Zusammenstellung vermeidet unnötige Ressourcen und maximiert den verfügbaren Kontext des Subagenten für die eigentliche Arbeit.
 
 ---
 
-## Clarification Debt und Sitzungsmetriken (Vertiefung)
+## Sitzungsnachweise und retrospektive Auswertung
 
-Clarification Debt (CD) misst die Kosten unklarer Anforderungen während einer Sitzung. Der Orchestrator erfasst jede Korrektur durch den Benutzer und bewertet sie:
+Sitzungsaufzeichnungen halten wesentliche Korrekturen, Umfangsänderungen, Nacharbeit und beurteilte Review-Befunde mit Nachweisen fest. Notwendige Klärung zieht keine Strafe nach sich. Die früheren gewichteten CD- und EA-Scores sowie die durch Schwellenwerte ausgelösten RCA-Regeln wurden entfernt; sie waren Prompt-Anweisungen und keine per CLI berechneten Metriken.
 
-| Ereignistyp | Punkte | Beschreibung |
-|------------|--------|-------------|
-| `clarify` | +10 | Einfache Klärungsfrage (bei MEDIUM-Unsicherheit erwartet) |
-| `correct` | +25 | Missverstandene Absicht, die eine Richtungsänderung erfordert |
-| `redo` | +40 | Verstoß gegen Umfang oder Charter, der Rollback und Neustart erfordert |
-| `blocked` | +0 | Agent stoppt korrekt und fragt nach (gutes Verhalten, keine Strafe) |
+Nach Möglichkeit vorhandene Aufgabenergebnisse verwenden. Eine separate `session-metrics-{sessionId}.md` ist im konfigurierten Koordinationsspeicher optional. Ein wiederholter Fehlschlag oder eine angeforderte Retrospektive kann eine Lesson rechtfertigen; eine gewöhnliche fehlschlagende Prüfung oder ein strittiger Befund begründet jedoch nicht automatisch eine. Historische Protokolle beibehalten und nicht in das neue Format umschreiben.
 
-**Modifikatoren:** Charter nicht gelesen (+15), Allowlist-Verstoß (+20), derselbe Fehler erneut (×1,5).
+`oma stats` meldet die Produktivität sowie erfasste Nutzungs- und Kostenzusammenfassungen. `oma retro` gruppiert tatsächliche Ereignisse (Gate, Blocker, fehlende Entscheidung) zu Vorschlägen. Keiner von beiden berechnet CD-/EA-Scores aus diesen Markdown-Artefakten.
 
-**Schwellenwerte und Durchsetzung:**
-- **CD >= 50** → Verbindlicher RCA-Eintrag in `lessons-learned.md`
-- **CD >= 80** → Sitzung wird angehalten; der Benutzer muss die Anforderungen neu spezifizieren
-- **`redo` >= 2** → Orchestrator pausiert und fordert eine ausdrückliche Bestätigung des Umfangs an
-- **CD >= 30 über 3 aufeinanderfolgende Sitzungen für denselben Agenten** → Vorlage für den Agenten-Prompt prüfen
+## Aufgabenzerlegung und Kontextwiederherstellung
 
-Das Sitzungsprotokoll liegt in `.agents/state/memories/session-metrics.md`. Es enthält Zeilen pro Ereignis (Zug, Agent, Ereignistyp, Punkte, Details) und einen Zusammenfassungsabschnitt.
+Die Planung an Abhängigkeiten und unabhängig verifizierbarem Verhalten ausrichten. Feste Sprint-Anzahlen, Dateizahlen und Zugschätzungen bestimmen weder die Review-Tiefe noch den Abschluss. Tests und Fehlerbehandlung bei dem Verhalten belassen, das sie verifizieren.
 
----
+Bei einem beobachteten Stillstand oder Verlust nützlichen Kontexts vor dem Fortsetzen oder einem erneuten Dispatch abgeschlossene Arbeit, verbleibende Kriterien, relevante Pfade und Verifikationsnachweise speichern. Vorhandene Arbeit erhalten und einen laufenden Versuch nicht duplizieren. Ein Verhältnis von Zügen zu Fortschritt allein erfordert keinen Reset.
 
-## Evaluator-Genauigkeit und QA-Tuning
+## Bedingte Messung und Exploration
 
-QA-Agenten verbessern sich durch erfasste Beurteilungsfehler. Im Gegensatz zu CD (Echtzeit) ist Evaluator Accuracy (EA) retrospektiv; die meisten Fehler werden erst nach Sitzungsende entdeckt.
+Eine definierte Baseline oder ein Experimentvergleich aktiviert die Leitlinien zur Messung; das bloße Vorhandensein von Tests oder Lint tut das nicht. Vergleichbare Metriken mit Einheiten, Methode, Revision und Nachweisen aufzeichnen. Erforderliche Korrektheits- und Sicherheitsprüfungen bleiben davon unabhängig. OMA kennt keine zusammengesetzte Standardformel, kein Gate mit Buchstabennoten und keinen durch Scores ausgelösten Rollback.
 
-**EA-Ereignistypen:**
-
-| Ereignis | Punkte | Entdeckung |
-|-------|--------|-----------------|
-| `false_negative` | +30 | Nächste Sitzung oder Produktion (von QA übersehener Fehler) |
-| `false_positive` | +15 | Während der Sitzung (Implementierungsagent widerlegt den QA-Befund) |
-| `severity_mismatch` | +10 | Während der Sitzung oder im Review der nächsten Sitzung (falsche Schwere) |
-| `missed_stub` | +20 | Laufzeitverifikation findet ein reines Anzeige-Stub-Feature |
-| `good_catch` | -10 | QA entdeckt einen nicht offensichtlichen Fehler (positives Signal) |
-
-**EA wird über ein gleitendes Fenster von drei Sitzungen berechnet.** Schwellenwerte:
-- **EA >= 30** → Tuning empfohlen: gesammelte EA-Ereignisse auf wiederkehrende QA-Fehler prüfen
-- **EA >= 50** → Tuning erforderlich: `execution-protocol.md` des QA-Skills aktualisieren
-- **`false_negative` >= 3** im Fenster → Erkennungsmuster in `checklist.md` des QA-Skills ergänzen
-- **`good_catch` >= 5** im Fenster → Erfolgreiches Muster in `common-checklist.md` verallgemeinern
-
-Bei Überschreiten eines Schwellenwerts die EA-Ereignisse prüfen, Fehler kategorisieren, die QA-Checkliste oder das Ausführungsprotokoll anpassen und die Änderung in den nächsten drei Sitzungen validieren.
-
----
-
-## Sprint-Zerlegung für komplexe Aufgaben
-
-Komplexe Aufgaben (4+ Dateien, Architekturentscheidungen) werden in Sprints ausgeführt und nicht als ein einziger langer Lauf:
-
-1. **Zerlegen:** in 2–4 auf ein Feature fokussierte, unabhängig testbare Sprints
-2. **Ziel:** 5–8 Züge pro Sprint
-3. **Sprint Gate** nach jedem Sprint:
-   - Ist das Sprint-Ergebnis vollständig?
-   - Bestehen Lint und Tests?
-   - Dauert der Sprint doppelt so lange wie erwartet → Checkpoint schreiben und den Benutzer informieren
-4. **Fortsetzen:** nächsten Sprint starten, wenn das Gate bestanden ist
-
-**Beispiel:** Die Aufgabe „JWT-Auth + CRUD-API + Tests“ wird aufgeteilt in:
-- Sprint 1: Benutzermodell und Auth-Endpunkte (Registrierung/Login)
-- Sprint 2: CRUD-Endpunkte und Validierung
-- Sprint 3: Tests und Fehlerbehandlung
-
-**Wiederherstellung bei Fehleinstufung:** Wenn eine als Simple gestartete Aufgabe komplexer wird, wechselt der Agent während der Ausführung zum Medium- oder Complex-Protokoll und vermerkt die Änderung im Fortschritt.
-
----
-
-## Protokoll für Kontext-Resets
-
-Bei langen Läufen nimmt die Qualität ab, sobald der Kontext vollläuft. Der Orchestrator (nicht der Agent selbst) überwacht dies und löst Resets aus.
-
-**Auslöser (während der Überwachung):**
-
-| Bedingung | Erkennung | Aktion |
-|-----------|-----------|--------|
-| Zugbudget erschöpft | Agent hat >= 80 % der erwarteten Züge verbraucht und < 50 % der Akzeptanzkriterien erfüllt | Kontext-Reset |
-| Fortschritt stockt | 3 oder mehr Überwachungszyklen ohne Aktualisierung der Fortschrittsdatei | Kontext-Reset |
-| Oberflächliche Ausgabe | Ergebnisdatei enthält Stub-Marker oder TODO-Platzhalter | Mit ausdrücklicher Anweisung neu starten |
-
-**Reset-Ablauf:**
-1. **Checkpoint:** aktuellen Zustand des Agenten speichern (abgeschlossen, offen, wichtige Entscheidungen)
-2. **Beenden:** aktuellen Agentenlauf stoppen
-3. **Neu starten:** frischen Agenten mit dem Checkpoint als Kontext starten
-4. **Fortsetzen:** neuer Agent liest den Checkpoint und arbeitet nur die offenen Punkte ab
-
-Für eigenständige Agenten ohne Orchestrator dient das Sprint Gate in `difficulty-guide.md` als Sicherheitsnetz. Dauert ein Sprint doppelt so lange wie erwartet, schreibt der Agent einen Checkpoint und informiert den Benutzer.
+Ein tatsächliches Experiment zeichnet seine Hypothese, Baseline- und Kandidatennachweise, erforderliche Prüfungen, Entscheidung und zugeordnete Dateien auf. Wiederholte Fehlschläge können es rechtfertigen, einen anderen Mechanismus innerhalb des bestehenden Wiederherstellungsbudgets zu testen. Experimentänderungen isolieren, nicht zugehörige Änderungen erhalten und den integrierten Kandidaten verifizieren, bevor das Gate fortgesetzt wird.

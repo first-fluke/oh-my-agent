@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci` utrzymuje uruchomienie bez interakcji. Jeśli konfiguracja użytkownika została nieoczekiwanie zastąpiona, sprawdź, czy użyto `--force`; zwykłe aktualizacje zachowują konfigurację użytkownika, a tryb wymuszony może ją zastąpić.
 
+## Instalacja lub aktualizacja nie może pobrać wydania
+
+<!-- oma-docs:ignore-start -->
+`oma install`, `oma update` oraz naprawa wykonywana przez `oma doctor` pobierają wydanie wskazane przez `prompt-manifest.json` na gałęzi `main`. Najpierw próbują zasobu `agent-skills.tar.gz` z wydania GitHub `cli-v<version>`, sprawdzanego względem jego pliku `.sha256`, potem archiwum źródłowego tego tagu, a na końcu płytkiego klonu tagu. Niezgodność sumy kontrolnej albo payload, którego `.agents/skills/_version.json` wskazuje inną wersję, zatrzymuje uruchomienie zamiast próbować innego źródła.
+<!-- oma-docs:ignore-end -->
+
+Tuż po utworzeniu wydania manifest może wskazywać wersję, której zasoby nadal są publikowane; poczekaj kilka minut i spróbuj ponownie. Aby celowo zainstalować niewydaną zawartość z gałęzi `main`, włącz to dla danego uruchomienia:
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+Uruchomienie wypisuje ostrzeżenie: zawartość gałęzi main nie jest ani otagowanym wydaniem, ani zweryfikowana sumą kontrolną.
+
 ## Dostawca nie uruchamia się
 
 Uruchom własną kontrolę uwierzytelnienia dostawcy, a następnie sprawdź rozstrzygnięty profil OMA:
@@ -85,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` zgłasza `synced`, `missing-in-os` i `orphan-in-os`. `schedule sync` przywraca brakujące zadania; dodaj `--prune` tylko wtedy, gdy osierocone zadania systemu operacyjnego powinny zostać usunięte. Podgląd utworzony za pomocą `--dry-run` nie rejestruje zadania. Dla cyklicznego interwału zaakceptuj zaokrąglenie OMA przez `--accept-rounded` po sprawdzeniu podglądu. Sprawdź log uruchomienia w `~/.agents/schedule/runs/<id>/` pod kątem niezerowego kodu wyjścia dostawcy albo komunikatu `re-auth required`.
+`schedule list` zgłasza `synced`, `stale`, `missing-in-os` i `orphan-in-os`. `schedule sync` przywraca brakujące zadania i przepisuje przestarzałe rejestracje (wiersz `Unknown command: schedule:run` w logu uruchomienia oznacza, że rejestracja powstała przed zmianą nazwy polecenia; `oma update` synchronizuje ją ponownie automatycznie); dodaj `--prune` tylko wtedy, gdy osierocone zadania systemu operacyjnego powinny zostać usunięte. Podgląd utworzony za pomocą `--dry-run` nie rejestruje zadania. Dla cyklicznego interwału zaakceptuj zaokrąglenie OMA przez `--accept-rounded` po sprawdzeniu podglądu. Sprawdź log uruchomienia w `~/.agents/schedule/runs/<id>/` pod kątem niezerowego kodu wyjścia dostawcy albo komunikatu `re-auth required`.
 
 ## Raport ewaluacji albo optymalizacji nie pokazuje pokrycia
 

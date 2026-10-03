@@ -221,7 +221,7 @@ your-project/
 │   │       ├── task-board-{sessionId}.md          ← Task assignments and status
 │   │       ├── progress-{agentId}-{taskId}-{runId}-{sessionId}.md ← Run-scoped progress updates
 │   │       ├── result-{agentId}-{taskId}-{runId}-{sessionId}.md   ← Run-scoped final outputs
-│   │       ├── session-metrics.md         ← Clarification Debt and Quality Score tracking
+│   │       ├── session-metrics.md         ← Session evidence and experiment results
 │   │       ├── experiment-ledger.md       ← Experiment tracking (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
@@ -378,16 +378,19 @@ Claude Code のフックと権限を登録します。
 
 **`scm-guard.ts`** は Bash／シェルツールの `PreToolUse` で動く純粋なハンドラーです。秘密らしいファイルの `git add` を拒否します。`.agents/skills/oma-scm/config/commit-config.yaml` の `forbidden_patterns` から `allowed_exceptions` を除いた規則を適用し、設定がない場合は埋め込みのデフォルトを使います。claude、codex、cursor、grok、kimi、kiro、qwen のチェーンでは `test-filter` より前に動き、opencode ブリッジ（`tool.execute.before` から例外を投げてブロック）と pi ブリッジ（`tool_call` が `{ block: true, reason }` を返す）でも動きます。`OMA_SCM_ALLOW_SECRETS=1` を前置したコマンドは、ユーザーが明示的に承認した後にガードを迂回できます。広いステージング（`git add -A` / `git add .`）は、フックがユーザーの同意を観測できないため意図的にブロックしません。
 
+**`code-intelligence-guard.ts`** は `PreToolUse` で動く純粋なハンドラー（`run()`）で、「Code Search」ルールを機械的に強制します。`providers.code_intelligence` が `serena`（または `gortex`）に解決され、かつ `providers.code_intelligence_guard` が `off` でない間は、ネイティブの検索ツール（Claude Code では `Grep`、`Glob`）と、先頭のバイナリが再帰的なコード検索（`rg`、`ag`、`ack`、`fd`、`grep -r`、`find -name`/`-path`、`git grep`）であるシェルコマンドを拒否します。拒否の理由には、代わりに使うプロバイダーのツール（`search_for_pattern`、`find_file`、`find_symbol`）が示されます。再帰的でない `grep`（パイプのフィルター、単一ファイル）、名前の条件がない `find`、読み取りには干渉しません。claude、codex、cursor、grok、kimi、kiro、qwen では `scm-guard` の直後に登録されます。インストーラーはチェーンのマッチャーの和集合を取るため、Claude の `PreToolUse` エントリは `Bash|Grep|Glob` になります。`OMA_CI_ALLOW_NATIVE=1` を含むシェルコマンドは引き続きガードを迂回しますが、それはあくまで、プロジェクト外のリソースや、ガードが認識しなかった無視対象のパスを検索するための運用者向けのエスケープハッチです。拒否の理由にこの前置きは示されず、プロジェクトのソースに対するフォールバックでもありません。
+
 **`triggers.json`** は、ビルド時に `oma` バイナリへ静的にインライン化されるキーワードとワークフローの対応表です（ソースは `.agents/hooks/core/triggers.json`）。次を定義します。
-- `workflows`: ワークフロー名から `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] } }` へのマップ。`keywords` はリテラル句、`patterns` は正規表現文字列です（`iu` フラグでコンパイル）。
+- `workflows`: ワークフロー名から `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] }, explicit?: [...] }` へのマップ。`keywords` はリテラル句、`patterns` は正規表現文字列です（`iu` フラグでコンパイル）。`explicit`（永続ワークフローのみ）は、明示的な呼び出しとみなすキーワードの一覧です。永続モードを有効にするのはこれらだけで、それ以外の一致は提案として注入されます。
 - `informationalPatterns`: 質問を示す句（自動検出から除外）
 - `excludedWorkflows`: 明示的な `/command` 呼び出しが必要なワークフロー
-- `cjkScripts`: CJK スクリプトを使う言語コード（ko、ja、zh）
 
 `keywords`、`patterns`、`informationalPatterns` の言語セクションは次の規約です。
-- `*`: Universal/English。`.agents/oma-config.yaml` の `language` 設定にかかわらず、常に読み込まれます。
-- `en`: 後方互換性のため読み込まれます。機能的には `*` と同じです。新しい英語コンテンツは `*` に追加してください。
-- `ko`、`ja`、`zh` など: 言語固有です。`.agents/oma-config.yaml` で `language: <code>` を設定した場合だけ読み込まれます。
+- `*`: Universal/English。
+- `en`: 機能的には `*` と同じです。
+- `ko`、`ja`、`zh` など: 言語固有の言い回しです。
+
+すべてのセクションは常に読み込まれます。`.agents/oma-config.yaml` の `language` 設定が制御するのは応答言語だけです。単語境界はキーワード自体で決まります。ASCII のキーワードは単語全体に一致し、非 ASCII のテキストを含むキーワードは部分文字列として一致します。
 
 #### ベンダーごとの materialization: before → after
 
@@ -481,8 +484,8 @@ Claude Code の Agent tool 用に整形されたサブエージェント定義�
 | `task-board-{sessionId}.md` | オーケストレーター | タスクの割り当て、優先度、状態、依存関係 |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | その実行 | ターンごとの進捗、読んだ／変更したファイル、現在の状態 |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | その実行 | 最終出力、完了状況、変更ファイル、受入基準 |
-| `session-metrics.md` | オーケストレーター | Clarification Debt と Quality Score の追跡 |
-| `experiment-ledger.md` | オーケストレーター／QA | 条件付きの実験記録 |
+| `session-metrics.md` | オーケストレーター | 重要な訂正と実験の証拠 |
+| `experiment-ledger.md` | オーケストレーター／QA | 実際の実験の証拠記録 |
 | `session-work.md` | Work ワークフロー | Work ワークフローのセッション状態 |
 | `session-ultrawork.md` | Ultrawork ワークフロー | Ultrawork ワークフローのセッション状態 |
 | `session-cost-{sessionId}.md` | システム | セッションごとのコストテレメトリー |

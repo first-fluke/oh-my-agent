@@ -406,7 +406,7 @@ Với iOS native, bố cục là `App/Core/Features/Shared`; dùng `@Observable`
 3. Review chéo: agent QA đánh giá thay đổi
 4. Khi thất bại: vấn đề được phản hồi để sửa (tối đa 5 vòng lặp tổng)
 
-**Giám sát Clarification Debt:** Theo dõi sửa chữa của người dùng trong phiên. Sự kiện được tính điểm: clarify (+10), correct (+25), redo (+40). CD >= 50 kích hoạt RCA bắt buộc. CD >= 80 tạm dừng phiên.
+**Bằng chứng phiên:** Ghi lại các sửa chữa đáng kể và các phát hiện review đã được phân xử khi hữu ích, kèm nguyên nhân, tác động và cách xác minh. Không áp dụng điểm phạt hay việc tạm dừng do điểm số kích hoạt.
 
 **Tài nguyên:** `subagent-prompt-template.md`, `memory-schema.md`.
 
@@ -754,7 +754,7 @@ Với iOS native, bố cục là `App/Core/Features/Shared`; dùng `@Observable`
 
 ### oma-video
 
-**Lĩnh vực:** Tạo video short, explainer và demo có người điều khiển qua CLI `oma video`, ghép script → narration → visuals → captions → render Remotion.
+**Lĩnh vực:** Tạo video short, explainer và demo có người điều khiển qua CLI `oma video`, ghép script → narration → visuals → captions → render HyperFrames.
 
 **Khi nào sử dụng:** Tạo video short (shorts/reels, 9:16) từ topic, explainer (16:9/9:16) từ README/code/data, demo/walkthrough từ screen capture (`--source file`) hoặc capture web app có browser headed và người giám sát với bất kỳ URL nào (`--source web`), render lại run có sẵn một cách xác định.
 
@@ -770,7 +770,7 @@ Với iOS native, bố cục là `App/Core/Features/Shared`; dùng `@Observable`
 
 **Quy trình:** PREPARE (mode/aspect/locale, làm rõ/khuếch đại brief) → ACQUIRE (thăm dò availability provider, xác thực capture path, kiểm tra chi phí) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, hash manifest, exit code, mp4) → FINALIZE (run-dir + path mp4 + cảnh báo coverage).
 
-**Tài nguyên:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, cùng compositor `remotion/`, driver web-capture và compositor fallback `mpt/` được vendored; `config/video-config.yaml`.
+**Tài nguyên:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, cùng các hướng dẫn mode `hyperframes-authoring/`, driver web-capture và compositor fallback `mpt/`; `config/video-config.yaml`.
 
 ---
 
@@ -937,8 +937,8 @@ Trong phiên điều phối, agent phối hợp qua file bộ nhớ chia sẻ tr
 | `task-board-{sessionId}.md` | Orchestrator | Phân công task, ưu tiên, cập nhật trạng thái | Chỉ đọc |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Agent đó | Tiến trình từng lượt: hành động, file đọc/sửa, trạng thái hiện tại | Orchestrator đọc |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Agent đó | Kết quả cuối: trạng thái (completed/failed), tóm tắt, file thay đổi, checklist tiêu chí chấp nhận | Orchestrator đọc |
-| `session-metrics.md` | Orchestrator | Theo dõi Clarification Debt, tiến trình Quality Score | QA đọc |
-| `experiment-ledger.md` | Orchestrator/QA | Theo dõi thí nghiệm khi Quality Score được kích hoạt | Tất cả đọc |
+| `session-metrics.md` | Orchestrator | Bằng chứng phiên tùy chọn và kết quả thí nghiệm đã đo lường | QA đọc |
+| `experiment-ledger.md` | Orchestrator/QA | Bằng chứng cho các thí nghiệm thực sự | Tất cả đọc |
 
 Công cụ bộ nhớ có thể cấu hình. Mặc định dùng Serena MCP (`Read`, `Write`, `Edit`), nhưng công cụ tùy chỉnh có thể cấu hình trong `mcp.json`:
 

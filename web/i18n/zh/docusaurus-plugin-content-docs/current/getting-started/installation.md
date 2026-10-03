@@ -10,13 +10,23 @@ description: 安装 oh-my-agent，选择技能和能力提供商，了解生成�
 - **AI 驱动的 IDE 或 CLI**：至少安装一个受支持的主机，例如 Claude Code、Codex CLI、Qwen Code、Antigravity CLI（`agy`）、Cursor、OpenCode、Kimi Code CLI、Kiro、CommandCode、pi、GitHub Copilot 或 Hermes
 - **bun**：JavaScript 运行时和包管理器（安装脚本缺少时会自动安装）
 - **uv**：Python 包管理器（引导脚本缺少时会提供安装选项）
-- **代码智能提供商**：Serena 是默认提供商。选择提供商配置后也支持 Gortex。安装器可以使用 `uv tool install` 引导安装 Serena；可选依赖不可用时会发出警告并继续。
+- **代码智能提供商**：Serena 是默认提供商。选择提供商配置后也支持 Gortex。安装器可以使用 `uv tool install` 引导安装 Serena；可选依赖不可用时会发出警告并继续。选择 Gortex 后，项目模式的 `oma install` 和 `oma update` 会在项目尚未被跟踪时，将其注册到 Gortex 守护进程（`gortex track`），并通过 Gortex CLI 把 OMA 生成的目录加入该项目的排除列表；不会向项目目录写入任何内容。Gortex 本身需要单独安装。
 
 安装器按能力组织集成。钩子供应商包括 Antigravity、Claude、Codex、CommandCode、Cursor、Grok、Kimi、Kiro 和 Qwen；OpenCode 与 pi 使用扩展桥接；GitHub Copilot 和 Hermes 会获得技能链接；ZCode 会获得工作流命令。你可以选择多个供应商，但第一次任务只需要选择计划使用的主机。
 
 ---
 
-## 方式一：一键安装（推荐）
+## 方式零：skills CLI（仅安装技能时最快）
+
+将 OMA 技能包安装到检测到的智能体运行时中：
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+只需要技能、不需要完整 harness 时，这是最轻量的入门方式。如需工作流、规则、钩子、关卡和 `oma agent spawn`，请使用下面的方式一或方式二。
+
+## 方式一：一键安装（完整 harness）
 
 ```bash
 # macOS / Linux
@@ -234,6 +244,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -269,7 +280,7 @@ agents:
 | `model_preset` | string | 是 | 当前预设键。`auto` 遵循当前运行时；固定键包括 `free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro` 和 `mixed`。也可以使用自定义预设键。参见[按智能体配置模型](../guide/per-agent-models.md)。 |
 | `default_cli` | string | 否 | 当显式智能体设置和选定预设未解析出供应商时，`oma agent spawn` 使用的回退 CLI。 |
 | `free` | map | 否 | `model_preset: free` 时使用的 FreeLLMAPI 网关设置；请把 API 密钥放在环境变量中。 |
-| `providers` | map | 否 | 能力提供商：`code_intelligence`（`serena` 或 `gortex`）、`docs`（`context7`）、`web`（`native` 或 `brave`）以及 `semantic_memory`（`agentmemory`、`honcho` 或 `none`）。 |
+| `providers` | map | 否 | 能力提供商：`code_intelligence`（`serena` 或 `gortex`）、`code_intelligence_guard`（`block` 或 `off`）、`docs`（`context7`）、`web`（`native` 或 `brave`）以及 `semantic_memory`（`agentmemory`、`honcho` 或 `none`）。 |
 | `date_format` | string | 否 | 时间戳格式（`ISO`、`US`、`EU`）。默认值：`ISO`。 |
 | `timezone` | string | 否 | 时区标识符（例如 `Asia/Seoul`）。省略时使用主机系统时区。 |
 | `auto_update_cli` | boolean | 否 | 是否允许例行 CLI 检查在后台更新。默认值：`true`（使用 `false` 退出）。 |
@@ -304,7 +315,7 @@ oma doctor
 - 技能文件存在，且 SKILL.md 的前置元数据有效
 - 符号链接和钩子脚本指向有效目标
 - 供应商设置文件中的钩子配置正确
-- 选定的代码智能和内存提供商可访问
+- 选定的代码智能和内存提供商可访问（使用 Gortex 时，还会检查当前项目是否在守护进程的跟踪集合中）
 - `oma-config.cue` / `oma-config.yaml` 有效且包含必填字段
 
 如果发现问题，`oma doctor` 会指出缺失或无效的项目，并区分第一次任务的阻塞项与可选集成警告。

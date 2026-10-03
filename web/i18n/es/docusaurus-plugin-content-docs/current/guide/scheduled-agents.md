@@ -171,6 +171,7 @@ oma schedule list [--json]
 | Estado | Significado |
 |---|---|
 | `synced` | El trabajo existe tanto en el manifiesto como en el programador del sistema |
+| `stale` | El trabajo está registrado, pero el registro del sistema operativo invoca un comando que el CLI actual ya no acepta (por ejemplo, `schedule:run <id>` escrito antes de la estandarización de las rutas de comandos). Ejecuta `schedule sync` para reescribirlo; `oma update` lo hace automáticamente. |
 | `missing-in-os` | El trabajo está en el manifiesto, pero falta en el programador del sistema. Ejecuta `schedule sync` para repararlo. |
 | `orphan-in-os` | El trabajo existe en el programador del sistema, pero no en el manifiesto. Ejecuta `schedule sync --prune` para eliminarlo. |
 
@@ -265,12 +266,14 @@ oma schedule sync [--prune]
 **Ejemplos:**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
+
+`oma update` ejecuta la misma reconciliación (sin `--prune`) después de cada actualización, de modo que una versión del CLI que cambie la sintaxis del comando `oma schedule run` no pueda dejar los registros existentes del sistema operativo apuntando a un comando que el nuevo binario rechaza. Los registros escritos por versiones anteriores con `oma schedule:run <id>` también siguen funcionando: esa sintaxis legacy se sigue aceptando para los trabajos invocados por el sistema operativo.
 
 ---
 

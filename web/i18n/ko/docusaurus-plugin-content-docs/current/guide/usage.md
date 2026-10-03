@@ -199,7 +199,10 @@ oma stats get
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`(Agent 도구의 `subagent_type`으로 선택)
 - Antigravity CLI/IDE -> `agy`를 통한 `oma agent spawn`
+
+크로스 벤더 작업과 `model_preset: free`에서는 `oma agent spawn`을 사용합니다. 네이티브 디스패치에서도 검증 증거를 기록하려면 [결과 수명 주기](./agent-results-and-resume.md)를 따라야 합니다.
 
 ---
 
@@ -222,14 +225,14 @@ oma stats get
 **Phase 2 (IMPL, Step 5, Dev 에이전트 스폰):**
 - 백엔드 에이전트가 Stripe 통합 구현 (웹훅, 멱등성, 에러 처리)
 - 프론트엔드 에이전트가 체크아웃 플로우와 결제 상태 UI 구축
-- Step 5.2: 기준선 Quality Score 측정 (테스트, lint, typecheck)
+- Step 5.2: 정의된 측정 비교가 필요할 때만 기준선 기록
 - IMPL_GATE: 산출물을 생성하지 않는 해당 검사와 테스트 통과, 계획된 파일만 수정. 빌드 검사는 명시적으로 요청한 경우에만 실행합니다.
 
 **Phase 3 (VERIFY, Steps 6-8, QA 에이전트 스폰):**
 - Step 6: 정렬 리뷰 (구현이 계획과 일치하는지?)
 - Step 7: 보안/버그 리뷰 (OWASP, npm audit, Stripe 보안 모범 사례)
 - Step 8: 개선/회귀 리뷰 (도입된 회귀 없음)
-- VERIFY_GATE: CRITICAL 0건, HIGH 0건, Quality Score >= 75
+- VERIFY_GATE: CRITICAL 0건, HIGH 0건, 해당하는 프로젝트 측정 목표 충족
 
 **Phase 4 (REFINE, Steps 9-13, Debug 에이전트 스폰):**
 - Step 9: 대용량 파일(> 500줄)과 함수(> 50줄) 분할
@@ -237,7 +240,7 @@ oma stats get
 - Step 11: 부작용 리뷰 (`find_referencing_symbols`로 연쇄 영향 추적)
 - Step 12: 전체 변경 리뷰 (네이밍 일관성, 스타일 정렬)
 - Step 13: 데드 코드 정리
-- REFINE_GATE: Quality Score 비회귀, 코드 정리
+- REFINE_GATE: 해결되지 않은 측정 회귀 없음, 코드 정리
 
 **Phase 5 (SHIP, Steps 14-17, QA 에이전트 스폰):**
 - Step 14: 코드 품질 리뷰 (lint, 타입, 커버리지)
@@ -466,7 +469,7 @@ oma dashboard web
 | 지속 워크플로우가 중단되지 않음 | 상태 파일이 여전히 존재 | 채팅에서 "workflow done"이라고 말하거나 `.agents/state/`에서 상태 파일 수동 삭제 |
 | 에이전트가 HIGH 명확화로 차단됨 | 요구사항이 너무 모호 | 에이전트가 요청한 구체적인 답변 제공 후 재실행 |
 | MCP 도구가 작동하지 않음 | Serena가 설정되지 않았거나 실행 중이지 않음 | `oma doctor`로 MCP 설정 확인 |
-| 에이전트가 턴 제한 초과 | 태스크가 기본 턴에 비해 너무 복잡 | `-t 30` 플래그로 턴 증가, 또는 더 작은 태스크로 분해 |
+| 에이전트가 실행 예산을 초과함 | 한 번의 실행으로 처리하기에는 태스크가 너무 복잡함 | 태스크를 분해하거나, 태스크 경계가 명확한 워크플로우를 사용하거나, 더 좁은 인수 계약으로 다시 시도 |
 | 에이전트에 잘못된 CLI 사용 | `model_preset`이나 `agents:` 오버라이드 미설정 | `oma install`로 설정, 또는 `oma-config.yaml` 직접 편집 |
 
 ---

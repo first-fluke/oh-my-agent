@@ -136,8 +136,8 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 | `progress-{agent}.md` | 每个启动的智能体 | 当前回合号、正在进行的工作、中间结果 |
 | `result-{agent}.md` | 每个完成的智能体 | 最终状态（COMPLETED/FAILED）、变更文件、发现的问题、交付物 |
 | `debug-{id}.md` | `/debug` 工作流 | Bug 诊断、根因、应用的修复、回归测试位置 |
-| `experiment-ledger.md` | Quality Score 系统 | 实验追踪：基线分数、增量、保留或丢弃决定 |
-| `lessons-learned.md` | 会话结束时自动生成 | 被丢弃实验的教训（增量小于等于 -5） |
+| `experiment-ledger-{sessionId}.md` | 实际实验 | 可比较的基线/候选证据、必需检查和决定 |
+| `lessons-{sessionId}.md` | 有证据支持可复用原因时 | 会话范围的教训；不会因评分而触发生成 |
 
 ### 仪表盘如何读取这些文件
 

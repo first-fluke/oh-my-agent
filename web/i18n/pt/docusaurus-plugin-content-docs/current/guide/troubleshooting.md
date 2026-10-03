@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci` mantém a execução não interativa. Se a configuração do usuário tiver sido substituída inesperadamente, verifique se `--force` foi usado; atualizações normais preservam a configuração pertencente ao usuário, enquanto o modo force pode substituí-la.
 
+## Uma instalação ou atualização não consegue baixar o release
+
+<!-- oma-docs:ignore-start -->
+`oma install`, `oma update` e o reparo do `oma doctor` baixam o release que o `prompt-manifest.json` na `main` indica. Eles tentam primeiro o asset `agent-skills.tar.gz` do release `cli-v<version>` do GitHub, verificado com o arquivo `.sha256` correspondente, depois o arquivo compactado do código-fonte dessa tag e, por fim, um clone raso da tag. Uma divergência de checksum, ou um payload cujo `.agents/skills/_version.json` indique outra versão, interrompe a execução em vez de tentar outra origem.
+<!-- oma-docs:ignore-end -->
+
+Logo depois que um release é criado, o manifesto pode indicar uma versão cujos assets ainda estão sendo publicados; aguarde alguns minutos e tente novamente. Para instalar de propósito conteúdo ainda não lançado da branch `main`, ative essa opção apenas para essa execução:
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+A execução exibe um aviso: o conteúdo da branch main não é um release com tag nem tem o checksum verificado.
+
 ## Um vendor não inicia
 
 Execute primeiro a verificação de autenticação do próprio vendor e depois inspecione o perfil resolvido pelo OMA:
@@ -85,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` informa `synced`, `missing-in-os` e `orphan-in-os`. `schedule sync` restaura jobs ausentes; adicione `--prune` somente quando os jobs órfãos do sistema operacional devem ser removidos. Uma prévia criada com `--dry-run` não registra um job. Para um intervalo recorrente, aceite o arredondamento do OMA com `--accept-rounded` depois de revisar a prévia. Verifique o log da execução em `~/.agents/schedule/runs/<id>/` para uma saída de vendor diferente de zero ou `re-auth required`.
+`schedule list` informa `synced`, `stale`, `missing-in-os` e `orphan-in-os`. `schedule sync` restaura jobs ausentes e reescreve registros desatualizados (uma linha `Unknown command: schedule:run` no log da execução significa que o registro é anterior à renomeação do comando; o `oma update` o ressincroniza automaticamente); adicione `--prune` somente quando os jobs órfãos do sistema operacional devem ser removidos. Uma prévia criada com `--dry-run` não registra um job. Para um intervalo recorrente, aceite o arredondamento do OMA com `--accept-rounded` depois de revisar a prévia. Verifique o log da execução em `~/.agents/schedule/runs/<id>/` para uma saída de vendor diferente de zero ou `re-auth required`.
 
 ## A avaliação ou a otimização não informa cobertura
 

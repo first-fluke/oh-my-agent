@@ -201,9 +201,10 @@ Nếu runtime hiện tại khớp vendor đích trong `.agents/oma-config.yaml`,
 
 - Claude Code → `.claude/agents/*.md`
 - Codex CLI → `.codex/agents/*.toml`
+- Qwen Code → `.qwen/agents/*.md`, được chọn thông qua `subagent_type` của Agent tool
 - Antigravity CLI/IDE → `oma agent spawn` qua `agy`
 
-Task khác vendor vẫn dùng `oma agent spawn`.
+Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispatch vẫn cần [lifecycle của result](./agent-results-and-resume.md) để ghi lại bằng chứng xác minh.
 
 ---
 
@@ -226,14 +227,14 @@ Task khác vendor vẫn dùng `oma agent spawn`.
 **Giai đoạn 2, IMPL (Bước 5, Dev Agent được spawn):**
 - Agent backend triển khai tích hợp Stripe (webhook, idempotency, xử lý lỗi)
 - Agent frontend xây checkout flow và UI trạng thái thanh toán
-- Bước 5.2: Đo Quality Score baseline (test, lint, typecheck)
+- Bước 5.2: Chỉ ghi baseline khi cần một phép so sánh đo lường đã được xác định
 - IMPL_GATE: Kiểm tra không sinh file đầu ra và test áp dụng đều pass, chỉ sửa file trong kế hoạch; chỉ chạy kiểm tra build khi được yêu cầu rõ
 
 **Giai đoạn 3, VERIFY (Bước 6-8, Agent QA được spawn):**
 - Bước 6: Review đồng bộ (triển khai có khớp kế hoạch không?)
 - Bước 7: Review bảo mật/lỗi (OWASP, npm audit, best practice bảo mật Stripe)
 - Bước 8: Review cải thiện/hồi quy (không đưa regression vào)
-- VERIFY_GATE: Không CRITICAL, không HIGH, Quality Score >= 75
+- VERIFY_GATE: Không CRITICAL, không HIGH, đạt các mục tiêu đo lường áp dụng của project
 
 **Giai đoạn 4, REFINE (Bước 9-13, Agent Refactor được spawn):**
 - Bước 9: Tách file (> 500 dòng) và function (> 50 dòng)
@@ -241,7 +242,7 @@ Task khác vendor vẫn dùng `oma agent spawn`.
 - Bước 11: Review side effect (truy vết cascade impact bằng `find_referencing_symbols`)
 - Bước 12: Review toàn bộ thay đổi (nhất quán tên, đồng bộ style)
 - Bước 13: Dọn dead code
-- REFINE_GATE: Quality Score không giảm, code sạch
+- REFINE_GATE: Không còn hồi quy đo được chưa giải quyết, code sạch
 
 **Giai đoạn 5, SHIP (Bước 14-17, Agent QA được spawn):**
 - Bước 14: Review chất lượng mã (lint, type, coverage)

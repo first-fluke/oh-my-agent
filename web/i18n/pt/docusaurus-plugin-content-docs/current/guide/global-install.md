@@ -89,7 +89,9 @@ If you want a Windows-side install, re-run this command from PowerShell.
 
 Uma instalação no WSL e uma instalação no PowerShell são independentes. Para ter cobertura global nos dois lados, execute `oma install --global` uma vez no WSL e outra no PowerShell.
 
-### Aviso cwd = HOME (modo de projeto)
+### Proteção cwd = HOME (modo de projeto)
+
+`oma link` e `oma update` (sem `--global`) se recusam a executar enquanto o diretório atual for o seu HOME. No modo de projeto, `<cwd>/.claude/settings.json` seria `~/.claude/settings.json` — as suas configurações globais do Claude Code — e a renderização com escopo de projeto reescreveria os comandos `$HOME/.claude/hooks/...` dele para `$CLAUDE_PROJECT_DIR/...`, quebrando todos os hooks e a statusline em projetos sem `.claude/hooks/` próprio. Use `oma link --global` / `oma update --global` para a instalação em HOME, ou entre em um projeto com `cd` antes.
 
 Se você executar `oma install` (sem `--global`) enquanto o diretório atual for o HOME, o oma avisa:
 

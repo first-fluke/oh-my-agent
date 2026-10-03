@@ -10,13 +10,23 @@ description: oh-my-agent installieren, Skills und Provider auswählen, die erzeu
 - **Eine KI-gestützte IDE oder CLI:** mindestens ein unterstützter Host wie Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot oder Hermes
 - **bun:** JavaScript-Laufzeit und Paketmanager (wird vom Installationsskript automatisch angeboten, wenn es fehlt)
 - **uv:** Python-Paketmanager (das Bootstrap-Skript bietet die Installation an, wenn es fehlt)
-- **Code-Intelligence-Provider:** Serena ist der Standardprovider. Bei entsprechender Provider-Konfiguration wird auch Gortex unterstützt. Der Installer kann Serena über `uv tool install` einrichten und mit einer Warnung fortfahren, wenn eine optionale Abhängigkeit fehlt.
+- **Code-Intelligence-Provider:** Serena ist der Standardprovider. Bei entsprechender Provider-Konfiguration wird auch Gortex unterstützt. Der Installer kann Serena über `uv tool install` einrichten und mit einer Warnung fortfahren, wenn eine optionale Abhängigkeit fehlt. Ist Gortex ausgewählt, registrieren `oma install` und `oma update` im Projektmodus das Projekt beim Gortex-Daemon (`gortex track`), sofern es noch nicht verfolgt wird, und tragen die von OMA erzeugten Verzeichnisse über die Gortex-CLI in die Ausschlussliste dieses Projekts ein; in den Projektbaum wird nichts geschrieben. Gortex selbst muss separat installiert werden.
 
 Der Installer gruppiert Integrationen nach Fähigkeiten. Zu den Hook-Vendors gehören Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro und Qwen; OpenCode und pi verwenden Erweiterungsbrücken; GitHub Copilot und Hermes erhalten Skill-Links; ZCode erhält Workflow-Befehle. Sie können mehrere Vendors auswählen, für die erste Aufgabe genügt jedoch der Host, den Sie verwenden möchten.
 
 ---
 
-## Methode 1: Einzeiler-Installation (empfohlen)
+## Methode 0: Skills-CLI (am schnellsten für reine Skills)
+
+Installieren Sie das OMA-Skill-Paket in die erkannten Agent-Laufzeiten:
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+Das ist der leichteste Einstieg, wenn Sie Skills ohne das vollständige Harness möchten. Für Workflows, Regeln, Hooks, Gates und `oma agent spawn` verwenden Sie unten Methode 1 oder 2.
+
+## Methode 1: Einzeiler-Installation (vollständiges Harness)
 
 ```bash
 # macOS / Linux
@@ -223,6 +233,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -257,7 +268,7 @@ agents:
 | `model_preset` | string | Ja | Aktiver Preset-Schlüssel. `auto` folgt der aktuellen Laufzeit; feste Schlüssel sind `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` und `mixed`. Auch benutzerdefinierte Preset-Schlüssel sind gültig. Siehe [Modelle pro Agent](../guide/per-agent-models.md). |
 | `default_cli` | string | Nein | Fallback-CLI für `oma agent spawn`, wenn explizite Agenteneinstellungen und das ausgewählte Preset keinen Vendor auflösen. |
 | `free` | map | Nein | FreeLLMAPI-Gateway-Einstellungen bei `model_preset: free`; API-Schlüssel gehören in Umgebungsvariablen. |
-| `providers` | map | Nein | Fähigkeits-Provider: `code_intelligence` (`serena` oder `gortex`), `docs` (`context7`), `web` (`native` oder `brave`) und `semantic_memory` (`agentmemory`, `honcho` oder `none`). |
+| `providers` | map | Nein | Fähigkeits-Provider: `code_intelligence` (`serena` oder `gortex`), `code_intelligence_guard` (`block` oder `off`), `docs` (`context7`), `web` (`native` oder `brave`) und `semantic_memory` (`agentmemory`, `honcho` oder `none`). |
 | `date_format` | string | Nein | Zeitstempelformat (`ISO`, `US`, `EU`). Standard: `ISO`. |
 | `timezone` | string | Nein | Zeitzonenkennung (zum Beispiel `Asia/Seoul`). Ohne Wert wird die Zeitzone des Hosts verwendet. |
 | `auto_update_cli` | boolean | Nein | Ob routinemäßige CLI-Prüfungen im Hintergrund aktualisieren dürfen. Standard: `true` (mit `false` deaktivieren). |
@@ -291,7 +302,7 @@ Dieser Befehl prüft:
 - Skill-Dateien existieren mit gültigem SKILL.md-Frontmatter.
 - Symlinks und Hook-Skripte zeigen auf gültige Ziele.
 - Hooks sind in den Vendor-Einstellungsdateien korrekt konfiguriert.
-- Ausgewählte Code-Intelligence- und Memory-Provider sind erreichbar.
+- Ausgewählte Code-Intelligence- und Memory-Provider sind erreichbar (bei Gortex zusätzlich, ob sich das aktuelle Projekt in der Menge der vom Daemon verfolgten Projekte befindet).
 - `oma-config.cue` / `oma-config.yaml` ist mit den erforderlichen Feldern gültig.
 
 Wenn etwas nicht stimmt, nennt `oma doctor` das fehlende oder ungültige Element und trennt Blocker für die erste Aufgabe von Warnungen zu optionalen Integrationen.

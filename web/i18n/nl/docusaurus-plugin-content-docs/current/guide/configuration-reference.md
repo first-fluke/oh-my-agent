@@ -43,7 +43,7 @@ De huidige runtimeschema’s of meegeleverde OMA-consumers lezen de volgende sle
 | `telemetry` | boolean | `false` | Opt-in voor vendor-telemetrie tijdens installatie, updates en linkreconciliatie. |
 | `model_preset` | niet-lege string | `auto` in nieuwe templates | Ingebouwde of aangepaste modelpreset. `OMA_MODEL_PRESET` overschrijft deze voor één proces. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | FreeLLMAPI-instellingen wanneer de preset `free` is; `FREELLM_BASE_URL` en `FREELLM_MODEL` overschrijven bestandswaarden en de sleutelnaam bevat nooit het geheim. Zie [Modelconfiguratie per agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `semantic_memory` | `context7`, `native`, `serena`, `agentmemory` | Selecteert providers voor documentatie, search, code-intelligence en semantisch geheugen. Code-intelligence accepteert `serena` of `gortex`; semantisch geheugen accepteert `agentmemory`, `honcho` of `none`. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Selecteert providers voor documentatie, search, code-intelligence en semantisch geheugen. Code-intelligence accepteert `serena` of `gortex`; semantisch geheugen accepteert `agentmemory`, `honcho` of `none`. `code_intelligence_guard` (`block` of `off`) bepaalt de PreToolUse-zoekguard. Native zoekopdrachten die beperkt blijven tot bevestigde uitsluitingen van de provider of paden buiten het project zijn zonder bypass toegestaan. De guard leest Serena-uitsluitingen en ingeschakelde gitignore-regels, of de uitsluitlijst van Gortex; hij leidt geen dependencies af uit mapnamen. De hook noemt `OMA_CI_ALLOW_NATIVE` niet. Een shellzoekopdracht met prefix `OMA_CI_ALLOW_NATIVE=1` omzeilt de guard alleen voor resources buiten het project of genegeerde paden die de guard niet heeft herkend, niet voor de broncode van het project. |
 | `brave` | `api_key_env` of `api_key_vault` | niet ingesteld | Verwijzing naar de Brave-searchcredential. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Zie [Honcho-details](#honcho-semantic-memory) | Verbindingsinstellingen voor Honcho-semantisch geheugen. |
 | `agents` | agent-ID → `model`, optioneel `effort`, `thinking`, `memory` | resolutie van de preset | Overrides per agent boven op de geselecteerde preset. Effort is `none`, `low`, `medium`, `high` of `xhigh`; memory is `user`, `project` of `local`. |
@@ -55,7 +55,7 @@ De huidige runtimeschema’s of meegeleverde OMA-consumers lezen de volgende sle
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Gedrag en scanuitsluitingen van `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena-MCP-transport en updategedrag. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` of `[]` | niet ingesteld = bestaande setup behouden | Selectie van Browser DevTools MCP tijdens reconciliatie. Een expliciete lege lijst verwijdert geselecteerde browservermeldingen. |
-| `video` | sparse skill-owned map | standaard van de skill; zie [Video Generation](/docs/guide/video-generation) | Videorouting, providervolgorde, uitvoer, kosten, limieten en Remotion-verversingsinstellingen. |
+| `video` | sparse skill-owned map | standaard van de skill; zie [Video Generation](/docs/guide/video-generation) | Videorouting, providervolgorde, uitvoer, kosten, limieten en HyperFrames-verversingsinstellingen. |
 | `image` | sparse skill-owned map | standaard van de skill; zie [Image Generation](/docs/guide/image-generation) | Instellingen voor imagevendor, formaat, kwaliteit, uitvoer, vergelijking en kosten. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | standaard van de skill; zie [Content and Research Workflows](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Voicebox-profiel, uitvoer- en lengte-instellingen. |
 | `hwp` | `format`, `version.*`, `output.*` | standaard van de skill; zie [Content and Research Workflows](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc-formaat, versiekanaal en uitvoerlocatie. |
@@ -181,6 +181,7 @@ Selecteer de providers voor code-intelligence en geheugen expliciet:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

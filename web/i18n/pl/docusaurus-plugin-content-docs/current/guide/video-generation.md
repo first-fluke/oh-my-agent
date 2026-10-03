@@ -1,7 +1,7 @@
 ---
 title: "Przewodnik: generowanie wideo"
 sidebar_label: Generowanie wideo
-description: Pełny przewodnik po generowaniu wideo oh-my-agent — routerze z trzema poziomami, opcjonalnym kluczem, który składa skrypt, narrację, wizualizacje, napisy i dostarczony kompozytor Remotion w odtwarzalne katalogi uruchomień dla trybów shorts, explainer i demo.
+description: Pełny przewodnik po generowaniu wideo oh-my-agent — routerze z trzema poziomami, opcjonalnym kluczem, który składa skrypt, narrację, wizualizacje, napisy i zarządzany kompozytor HyperFrames w odtwarzalne katalogi uruchomień dla trybów shorts, explainer i demo.
 ---
 
 # Generowanie wideo
@@ -62,6 +62,7 @@ Inne narzędzia, które wywołują `oma video generate --output json`, parsują 
 ```
 oma video generate <brief...> [options]
 oma video doctor [--install|--upgrade|--install-mpt|--install-strudel]  # toolchain readiness / provisioning
+oma video compose <runDir>       # prepare HTML project and authoring contract
 oma video render <runDir>        # re-render from render-spec.json (deterministic)
 oma video provider list         # provider availability + key/fallback status
 ```
@@ -77,14 +78,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
 | `--voice <profile>` | Głos narracji albo `none` (domyślnie; pomiń, a wideo wyrenderuje się bez dźwięku z szacowanym czasem napisów). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano` albo `none`. |
-| `--compositor <c>` | `remotion` (domyślnie) \| `mpt`. |
+| `--compositor <c>` | `hyperframes` (domyślnie) \| `mpt`. |
 | `--capture <path>` | Ścieżka nagrania wejściowego dla trybu demo (`--source file`). |
 | `--source <k>` | Źródło przechwytywania demo: `file` albo `web` (domyślnie: `file`). |
 | `--url <url>` | Docelowy URL dla `--source web` (lokalny, staging albo produkcyjny); nie zastępuje `--capture`, gdy wymagane jest nagranie. |
 | `--device <name>` | Ramka urządzenia dla przechwytywania web; nadpisuje rozmiar proporcji. |
 | `--ready-selector <css>` | Selektor CSS, na który trzeba czekać przed przechwyceniem web. |
 | `--show-cursor` | Nałóż widoczny kursor na przechwycenie web. |
-| `--polish` | Nałóż kompozycję Remotion na przechwycone nagranie. |
+| `--polish` | Nałóż kompozycję HyperFrames na przechwycone nagranie. |
 | `--capture-timeout <sec>` | Twardy limit czasu przechwytywania web live. |
 | `--capture-stop <mode>` | Nieinteraktywne zatrzymanie dla CI: `duration:<sec>` albo `selector:<css>`. |
 | `--output-dir <path>` | Bazowy katalog wyjściowy. Ścieżki poza `$PWD` wymagają `--allow-external-output`. |
@@ -111,7 +112,7 @@ Etapy dostawców rozstrzygają się do **rzeczywistej gałęzi** oraz, gdy etap 
 | visual | `oma-image` / `oma-slide` / stock | zasób placeholdera |
 | caption | wyrównanie wymuszone bez klucza | szacowany czas słów |
 | capture | nadzorowane przechwytywanie web w przeglądarce (`--source web`) albo dostarczone nagranie (`--source file --capture`) | prowadzony protokół „nagraj samodzielnie” |
-| compositor | Remotion (dostarczony) albo MoneyPrinterTurbo | brak fallbacku kompozytora; uruchomienie kończy się diagnostyką |
+| compositor | HyperFrames (zarządzany) albo MoneyPrinterTurbo | brak fallbacku kompozytora; uruchomienie kończy się diagnostyką |
 
 Brak automatyzacji poświadczeń: człowiek wykonuje każde logowanie na ekranie podczas przechwytywania; URL-e i tokeny zapytań są maskowane w logach i manifeście.
 
@@ -121,23 +122,23 @@ Napisy renderują się jako **statyczne okna cue** — pojedyncza linia napisów
 
 ## Toolchain i `doctor`
 
-Ciężki toolchain (dostarczony projekt Remotion z `node_modules`, osadzony font Pretendard, checkout MoneyPrinterTurbo, przeglądarki przechwytywania i Chrome Headless Shell) jest **dostarczany na żądanie**, a nie wysyłany w pakiecie. Zwykłe `doctor` działa tylko raportowo — niczego nie instaluje:
+Ciężki toolchain (zarządzany projekt HyperFrames z `node_modules`, osadzony font Pretendard, checkout MoneyPrinterTurbo, przeglądarki przechwytywania i Chrome Headless Shell) jest **dostarczany na żądanie**, a nie wysyłany w pakiecie. Zwykłe `doctor` działa tylko raportowo — niczego nie instaluje:
 
 ```bash
 oma video doctor
 ```
 
-Raportuje `node`, `chromium`, `ffmpeg`, `remotion-toolchain`, `remotion-skills`, `pretendard-font`, `mpt-project`, `voicebox`, `oma-image`, `pixelle` i `cap`, a także podaje wskazówkę instalacji dla brakujących elementów. Bazowy wariant bez klucza (Node + Chromium + FFmpeg + `oma-image`) wystarcza do utworzenia prawdziwego `.mp4`.
+Raportuje `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `voicebox`, `oma-image`, `pixelle` i `cap`, a także podaje wskazówkę instalacji dla brakujących elementów. Wariant bazowy wymaga Node.js 22+, toolchainu HyperFrames wraz z jego przeglądarką Chrome, FFmpeg/FFprobe oraz `oma-image`. Prawdziwy MP4 wymaga też napisanego HTML.
 
 Użyj flag instalacji, aby dostarczyć toolchain:
 
 ```bash
-oma video doctor --install             # warm the latest Remotion toolchain + Chrome Headless Shell + Pretendard + remotion-dev/skills
+oma video doctor --install             # warm the latest HyperFrames toolchain + Chrome Headless Shell + Pretendard + heygen-com/hyperframes
 oma video doctor --upgrade             # force a latest-version check now
 oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
 ```
 
-`--install` pobiera także osadzony font Pretendard (przypięte wydanie) do dostarczonego projektu — należy to do granicy deterministyczności. Przy błędzie sieci ostrzega, a render przechodzi na fonty systemowe; identyczny bajtowo wynik między komputerami jest gwarantowany dopiero po obecności fontu.
+`--install` pobiera także osadzony font Pretendard (przypięte wydanie) do współdzielonego cache toolchainu — należy to do granicy deterministyczności. Przy błędzie sieci ostrzega, a render przechodzi na fonty systemowe; różnice przeglądarki i systemu operacyjnego nadal mogą wpływać na zakodowany wynik.
 
 ---
 
@@ -151,6 +152,7 @@ oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + ven
 ├── captions.srt / .vtt
 ├── audio/narration-*.wav
 ├── visuals/scene-*.{png,svg,…}
+├── hyperframes/         # index.html, AUTHORING.md, local assets and toolchain link
 ├── {mode}-{slug}.mp4    # the rendered output (slug derived from the script title)
 └── manifest.json        # providers, assets, cost, warnings
 ```
@@ -166,32 +168,32 @@ oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + ven
 | Nie powstaje MP4 | Kontrola kompozytora, kompozycji albo toolchainu nie powiodła się. Uruchom `oma video doctor`, następnie `oma video compose <runDir>` i popraw zgłoszoną kompozycję przed ponownym `oma video render <runDir>`. |
 | Narracja jest cicha (`source: estimated`) | Voicebox jest niedostępny; uruchom serwer `oma-voice` albo zaakceptuj szacowany czas. |
 | `--source web` wypisuje prowadzony protokół zamiast nagrania | Brak TTY albo niedostępny runtime przechwytywania przeglądarki → prowadzony fallback. Użyj interaktywnego terminala z dostarczonym runtime’em przechwytywania i `--capture-stop` albo przekaż nagrany plik przez `--capture`. |
-| Render jest wolny przy pierwszym uruchomieniu | Przeglądarka Remotion / checkout MPT są dostarczane raz; kolejne uruchomienia ponownie używają cache. |
+| Render jest wolny przy pierwszym uruchomieniu | Przeglądarka HyperFrames / checkout MPT są dostarczane raz; kolejne uruchomienia ponownie używają cache. |
 
 ---
 
-## Zawsze najnowszy Remotion — kompozycję piszesz Ty
+## Zawsze najnowszy HyperFrames — kompozycję piszesz Ty
 
-oh-my-agent nie dostarcza **żadnego kodu kompozycji Remotion**. Każde uruchomienie dostaje własny projekt w `<runDir>/remotion/`, przygotowany przez `oma video compose` na najnowszym Remotion z npm (cache toolchainu `~/.cache/oma-video/remotion/<version>/`, współdzielony przez dowiązanie `node_modules`) z [remotion-dev/skills](https://github.com/remotion-dev/skills) pod HEAD (`~/.cache/oma-video/remotion-skills/`). Agent pisze źródło wygenerowanej kompozycji zgodnie z `AUTHORING.md` szkieletu, umiejętnościami i specyfikacją trybu w `.agents/skills/oma-video/resources/remotion-authoring/`.
+oh-my-agent nie dostarcza **żadnego kodu kompozycji HyperFrames**. Każde uruchomienie dostaje własny projekt w `<runDir>/hyperframes/`, przygotowany przez `oma video compose` na najnowszym HyperFrames z npm (cache toolchainu `~/.cache/oma-video/hyperframes/<version>/`, współdzielony przez dowiązanie `node_modules`) z [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) pod HEAD (`~/.cache/oma-video/hyperframes-skills/`). Agent pisze źródło wygenerowanej kompozycji zgodnie z `AUTHORING.md` szkieletu, umiejętnościami i specyfikacją trybu w `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
-oma video generate "…"                     # → render-spec.json + <runDir>/remotion/ (composition pending)
+oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
 oma video compose <runDir> --output json   # refresh scaffold / print the contract (idempotent)
-#   author the generated composition source as instructed by AUTHORING.md
-oma video render <runDir> --output json    # tsc → npx remotion render → ffprobe; exit 1 on any failure
+#   author hyperframes/index.html as instructed by AUTHORING.md
+oma video render <runDir> --output json    # lint → npx hyperframes render → ffprobe; exit 1 on any failure
 ```
 
-- Kontrole najnowszej wersji (npm + GitHub) są ograniczane przez `video.remotion.check_interval_min` (domyślnie 60; `0` = przy każdym compose). `oma update` i `oma video doctor --upgrade` wymuszają ich wykonanie; uruchomienia offline używają cache toolchainu i zgłaszają `stale`.
-- Odtwarzalność znajduje się w katalogu uruchomienia: `render-spec.json`, źródło napisanej kompozycji i wersja toolchainu zapisana w metadanych wygenerowanego pakietu Remotion. Ponowny render tego samego uruchomienia używa tego kontraktu renderowania; nowe uruchomienie sprawdza najnowszy Remotion.
-- Błąd typechecku albo renderowania **nie** jest ukrywany za placeholderem (istnieje on wyłącznie dla `OMA_VIDEO_MOCK=1`): `oma video render` kończy się kodem 1 i diagnostyką, a agent poprawia kompozycję przy użyciu najnowszych umiejętności. Uszkodzenie po nowym wydaniu Remotion jest błędem kompozycji, nigdy powodem do przypięcia wersji.
+- Kontrole najnowszej wersji (npm + GitHub) są ograniczane przez `video.hyperframes.check_interval_min` (domyślnie 60; `0` = przy każdym compose). `oma update` respektuje ten interwał; `oma video doctor --upgrade` wymusza kontrolę; uruchomienia offline używają cache toolchainu i zgłaszają `stale`.
+- Odtwarzalność znajduje się w katalogu uruchomienia: `render-spec.json`, źródło napisanej kompozycji i wersja toolchainu zapisana w metadanych wygenerowanego pakietu HyperFrames. Ponowny render tego samego uruchomienia używa tego kontraktu renderowania; nowe uruchomienie sprawdza najnowszy HyperFrames.
+- Błąd lintu albo renderowania **nie** jest ukrywany za placeholderem (istnieje on wyłącznie dla `OMA_VIDEO_MOCK=1`): `oma video render` kończy się kodem 1 i diagnostyką, a agent poprawia kompozycję przy użyciu najnowszych umiejętności. Uszkodzenie po nowym wydaniu HyperFrames jest błędem kompozycji, nigdy powodem do przypięcia wersji.
 
 ```yaml
 video:
-  remotion:
+  hyperframes:
     check_interval_min: 60    # 0 = check on every compose
 ```
 
 ## Powiązane
 
-- [Workflow `/video`](/docs/core-concepts/workflows) — potok brief → skrypt → zasoby → render-spec → Remotion.
+- [Workflow `/video`](/docs/core-concepts/workflows) — potok brief → skrypt → zasoby → render-spec → HyperFrames.
 - [Generowanie obrazów](/docs/guide/image-generation) — router obrazów nieruchomych używany ponownie jako dostawca wizualizacji wideo.

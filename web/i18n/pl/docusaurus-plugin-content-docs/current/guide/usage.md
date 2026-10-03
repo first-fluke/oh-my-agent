@@ -199,9 +199,10 @@ Jeśli bieżący runtime odpowiada docelowemu dostawcy w `.agents/oma-config.yam
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`, wybierane przez `subagent_type` narzędzia Agent
 - Antigravity CLI/IDE -> `oma agent spawn` przez `agy`
 
-Zadania między dostawcami nadal używają `oma agent spawn`.
+Zadania między dostawcami oraz `model_preset: free` używają `oma agent spawn`. Natywny dispatch nadal wymaga [cyklu życia wyniku](./agent-results-and-resume.md), aby zapisać dowody weryfikacji.
 
 ---
 
@@ -224,14 +225,14 @@ Zadania między dostawcami nadal używają `oma agent spawn`.
 **Faza 2, IMPL (krok 5, uruchomieni agenci deweloperscy):**
 - Agent backendu implementuje integrację Stripe (webhooki, idempotencja, obsługa błędów)
 - Agent frontendu buduje przepływ checkoutu i interfejs statusu płatności
-- Krok 5.2: Zmierz bazowy Quality Score (testy, lint, typecheck)
+- Krok 5.2: Zapisz baseline tylko wtedy, gdy potrzebne jest zdefiniowane porównanie pomiarów
 - IMPL_GATE: Odpowiednie kontrole i testy niewytwarzające artefaktów przechodzą, zmieniono tylko zaplanowane pliki; kontrole builda są uruchamiane tylko na wyraźne żądanie
 
 **Faza 3, VERIFY (kroki 6–8, uruchomiony agent QA):**
 - Krok 6: przegląd zgodności (czy implementacja odpowiada planowi?)
 - Krok 7: przegląd bezpieczeństwa/błędów (OWASP, npm audit, praktyki bezpieczeństwa Stripe)
 - Krok 8: przegląd ulepszeń/regresji (czy nie wprowadzono regresji?)
-- VERIFY_GATE: zero CRITICAL, zero HIGH, Quality Score >= 75
+- VERIFY_GATE: zero CRITICAL, zero HIGH, spełnione odpowiednie cele pomiarowe projektu
 
 **Faza 4, REFINE (kroki 9–13, uruchomiony agent refaktoryzacji):**
 - Krok 9: Podziel duże pliki (> 500 linii) i funkcje (> 50 linii)
@@ -239,7 +240,7 @@ Zadania między dostawcami nadal używają `oma agent spawn`.
 - Krok 11: przegląd efektów ubocznych (prześledź wpływ kaskadowy przez `find_referencing_symbols`)
 - Krok 12: pełny przegląd zmian (spójność nazewnictwa, zgodność stylu)
 - Krok 13: usuń martwy kod
-- REFINE_GATE: Quality Score bez regresji, kod uporządkowany
+- REFINE_GATE: brak nierozwiązanej zmierzonej regresji, kod uporządkowany
 
 **Faza 5, SHIP (kroki 14–17, uruchomiony agent QA):**
 - Krok 14: przegląd jakości kodu (lint, typy, pokrycie)

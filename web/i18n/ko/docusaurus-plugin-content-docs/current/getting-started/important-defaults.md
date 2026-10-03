@@ -14,6 +14,7 @@ description: 라우팅, 모델 선택, 프로바이더, 업데이트, 텔레메�
 | 응답 언어 | `en` | 프로젝트 설정이 다른 지원 언어를 선택하지 않으면 에이전트와 워크플로우가 영어로 응답합니다. 호스트나 워크플로우가 지원하는 경우 사용자의 명시적인 언어 지시나 세션 언어가 프로젝트 기본값을 덮어쓸 수 있습니다. | `.agents/oma-config.yaml` 또는 `.cue`의 `language` |
 | 모델 라우팅 | `auto` | 현재 런타임의 네이티브 에이전트 설정을 사용합니다. 알 수 없는 런타임은 `default_cli`가 설정된 경우 그 값으로 폴백합니다. | `model_preset`, `default_cli`, `agents.<id>` |
 | 코드 인텔리전스 | `serena` | 새로 설치하면 Serena 설치를 시도하고 MCP 설정을 연결합니다. | `providers.code_intelligence: gortex` 또는 `serena` |
+| 코드 검색 가드 | `block` | 코드 인텔리전스 프로바이더가 설정된 동안에는 PreToolUse 훅이 네이티브 `Grep`/`Glob`과 재귀 셸 검색(`rg`, `grep -r`, `find -name`)을 거부하고, 에이전트가 프로바이더의 도구를 쓰도록 안내합니다. 확인된 제외 대상 안에서만 이루어지는 검색과 프로젝트 밖 경로의 검색은 허용됩니다. 훅은 프로젝트 소스용 우회 방법을 안내하지 않습니다. | `providers.code_intelligence_guard: off` |
 | 시맨틱 메모리 | `agentmemory` | 사용 가능한 경우 Agent Memory를 시맨틱 메모리로 선택합니다. | `providers.semantic_memory: honcho` 또는 `none` |
 | 웹 검색 | `native` | 별도 프로바이더를 선택하지 않으면 런타임의 네이티브 웹 채널을 사용합니다. | `providers.web` |
 | 문서 프로바이더 | `context7` | 스킬이 요청하면 Context7 프로바이더로 문서를 조회합니다. | `providers.docs` |

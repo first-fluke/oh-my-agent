@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci` giữ run ở chế độ không tương tác. Nếu user configuration bị thay thế ngoài dự kiến, kiểm tra có dùng `--force` không; update thường giữ config do người dùng sở hữu, còn force mode có thể thay thế nó.
 
+## Install hoặc update không tải được release {#an-install-or-update-cannot-download-the-release}
+
+<!-- oma-docs:ignore-start -->
+`oma install`, `oma update` và phần repair của `oma doctor` tải release mà `prompt-manifest.json` trên `main` chỉ định. Chúng thử asset `agent-skills.tar.gz` của GitHub release `cli-v<version>` trước, đối chiếu với file `.sha256` của nó, rồi đến source archive của tag đó, rồi đến shallow clone của tag. Checksum không khớp, hoặc payload có `.agents/skills/_version.json` ghi một version khác, sẽ dừng run thay vì thử nguồn khác.
+<!-- oma-docs:ignore-end -->
+
+Ngay sau khi cắt release, manifest có thể nêu một version mà asset vẫn đang được publish; hãy đợi vài phút rồi thử lại. Để cố ý cài nội dung chưa phát hành từ branch `main`, hãy opt in cho lần chạy đó:
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+Lần chạy in một cảnh báo: nội dung branch main không phải release có tag cũng không được xác minh checksum.
+
 ## Vendor không khởi động {#a-vendor-does-not-start}
 
 Chạy authentication check của vendor, sau đó kiểm tra profile OMA đã resolve:
@@ -85,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` báo `synced`, `missing-in-os` và `orphan-in-os`. `schedule sync` khôi phục job bị thiếu; chỉ thêm `--prune` khi cần xóa OS job mồ côi. Preview tạo bằng `--dry-run` không đăng ký job. Với interval lặp lại, chấp nhận OMA rounding bằng `--accept-rounded` sau khi xem preview. Kiểm tra run log tại `~/.agents/schedule/runs/<id>/` để tìm vendor exit khác không hoặc `re-auth required`.
+`schedule list` báo `synced`, `stale`, `missing-in-os` và `orphan-in-os`. `schedule sync` khôi phục job bị thiếu và ghi lại các registration lỗi thời (dòng `Unknown command: schedule:run` trong run log nghĩa là registration có từ trước khi lệnh được đổi tên; `oma update` tự động sync lại); chỉ thêm `--prune` khi cần xóa OS job mồ côi. Preview tạo bằng `--dry-run` không đăng ký job. Với interval lặp lại, chấp nhận OMA rounding bằng `--accept-rounded` sau khi xem preview. Kiểm tra run log tại `~/.agents/schedule/runs/<id>/` để tìm vendor exit khác không hoặc `re-auth required`.
 
 ## Evaluation hoặc optimization report không có coverage {#evaluation-or-optimization-reports-no-coverage}
 

@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | Todos os agentes usam a CLI Antigravity (`agy`): Gemini 3.1 Pro para implementação/arquitetura e Gemini 3.6 Flash para orquestração, documentação e exploração. A seleção de modelo é orientada pela configuração dentro de `agy`; não há flags `--model` ou `--thinking-budget` expostas. | Usuários da CLI Antigravity |
 | `claude` | Todos os agentes usam Claude (Sonnet/Opus) | Usuários da assinatura Claude Max |
 | `codex` | Todos os agentes usam OpenAI Codex (GPT-5.5 para a maioria dos papéis, GPT-5.4-mini para exploração), com níveis de esforço | Usuários do ChatGPT Plus/Pro |
-| `qwen` | Todos os agentes são encaminhados externamente pelo Qwen Code; raciocínio binário (sem níveis de esforço) | Inferência local ou hospedada por você |
+| `qwen` | Todos os agentes usam o Qwen Code; sessões Qwen correspondentes podem usar agentes nativos gerados, e outros runtimes usam dispatch via CLI | Inferência local ou hospedada por você |
 | `kiro` | Todos os agentes usam a CLI Kiro; Sonnet cuida da implementação/arquitetura e Haiku da orquestração/exploração | Usuários do Kiro |
 | `cursor` | Todos os agentes usam o Cursor `composer-2.5` (`composer-2.5-fast` para orchestrator/qa/pm/docs/explore) | Usuários Cursor Pro ou Pro Student |
 | `mixed` | Misto: papéis de implementação usam Codex, arquitetura/qa/pm usam Claude e exploração usa Gemini | Combinar pontos fortes de vendors sem gerenciar a configuração por agente |
@@ -171,8 +171,14 @@ models:
 
 Aplicam-se duas regras a um slug registrado que você referencia em `agents:`:
 
-1. **A chave deve estar no formato `owner/model`.** `agents.<id>.model` é validado contra um padrão `owner/model`, portanto uma chave simples como `my-fast-model` é rejeitada; use uma chave com barra, como `google/gemini-3-flash-fast` (ou o slug `provider/model` do próprio vendor).
-2. **A especificação deve estar completa.** `cli`, `cli_model`, `auth_hint` e todos os booleanos de `supports` são necessários no momento da resolução. Uma especificação incompleta é aceita pelo parser de configuração, mas falha na validação do registro de modelos e recorre silenciosamente ao registro principal.
+1. **A chave deve estar no formato `owner/model`.** `agents.<id>.model` é validado
+   contra um padrão `owner/model`, portanto uma chave simples como `my-fast-model`
+   é rejeitada; use uma chave com barra, como `google/gemini-3-flash-fast` (ou o
+   slug `provider/model` do próprio vendor).
+2. **A especificação deve estar completa.** `cli`, `cli_model`, `auth_hint` e todos
+   os booleanos de `supports` são necessários no momento da resolução. Uma
+   especificação incompleta é aceita pelo parser de configuração, mas falha na
+   validação do registro de modelos e recorre silenciosamente ao registro principal.
 
 > Se um slug definido pelo usuário colidir com um slug integrado, a definição do usuário vence e um aviso é emitido.
 
@@ -312,7 +318,11 @@ Execute `oma doctor --profile` para confirmar a resolução e então inicie um w
 
 ## Dispatch pelo pi (runtime de transporte)
 
-[pi](https://github.com/earendil-works/pi) (Earendil) é um runtime proxy multi-provider, não um proprietário de modelos: ele consegue executar qualquer modelo de provider real (Anthropic, OpenAI ou Google) por uma única CLI. O oma trata pi como uma **camada de transporte**: seu `model_preset` e as substituições em `agents:` permanecem exatamente como estão, enquanto pi se torna a CLI executora de um agente específico.
+[pi](https://github.com/earendil-works/pi) (Earendil) é um runtime proxy multi-provider,
+não um proprietário de modelos: ele consegue executar qualquer modelo de provider real
+(Anthropic, OpenAI ou Google) por uma única CLI. O oma trata pi como uma **camada de
+transporte**: seu `model_preset` e as substituições em `agents:` permanecem exatamente
+como estão, enquanto pi se torna a CLI executora de um agente específico.
 
 Encaminhe qualquer agente pelo pi com a substituição `--vendor pi`:
 
@@ -322,22 +332,44 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 
 O que acontece:
 
-- O modelo por agente resolvido a partir do seu preset/substituições (por exemplo, `openai/gpt-5.5`) é traduzido para o formato `--model <provider/id>` do pi, e `effort` é traduzido para o nível `--thinking` do pi. **Modelos por subagente funcionam no pi exatamente como nativamente**: agentes diferentes podem executar modelos diferentes.
-- A persona do agente (prompt do sistema) é embutida a partir de `.agents/agents/<id>.md`, pois o pi não tem um arquivo de agente no vendor.
-- A autenticação é a que o próprio pi estiver configurado para usar (`~/.pi/agent/auth.json` ou uma chave de API do provider no ambiente). `oma doctor` informa o status de instalação e autenticação do pi junto com as outras CLIs.
+- O modelo por agente resolvido a partir do seu preset/substituições (por exemplo,
+  `openai/gpt-5.5`) é traduzido para o formato `--model <provider/id>` do pi, e `effort`
+  é traduzido para o nível `--thinking` do pi. **Modelos por subagente funcionam no pi
+  exatamente como nativamente**: agentes diferentes podem executar modelos diferentes.
+- A persona do agente (prompt do sistema) é embutida a partir de `.agents/agents/<id>.md`,
+  pois o pi não tem um arquivo de agente no vendor.
+- A autenticação é a que o próprio pi estiver configurado para usar (`~/.pi/agent/auth.json`
+  ou uma chave de API do provider no ambiente). `oma doctor` informa o status de
+  instalação e autenticação do pi junto com as outras CLIs.
 
-**Restrição:** o pi executa somente modelos de providers reais. Presets proprietários de CLI (`cursor`, `kiro`, `qwen`, `antigravity`) nomeiam modelos que existem apenas dentro das próprias CLIs, portanto encaminhá-los pelo pi é rejeitado com um erro claro. Use um preset de provider real (`claude`, `codex`, `gemini` ou `mixed`) ao encaminhar agentes pelo pi.
+**Restrição:** o pi executa somente modelos de providers reais. Presets proprietários
+de CLI (`cursor`, `kiro`, `qwen`, `antigravity`) nomeiam modelos que existem apenas
+dentro das próprias CLIs, portanto encaminhá-los pelo pi é rejeitado com um erro claro.
+Use um preset de provider real (`claude`, `codex`, `gemini` ou `mixed`) ao encaminhar
+agentes pelo pi.
 
-> O catálogo de modelos do pi é controlado por versão e exige autenticação. Se um slug resolvido não corresponder ao que sua instalação do pi expõe, confira `pi --list-models`; a correspondência de `--model` do pi é fuzzy, então a maioria dos slugs de providers funciona como está.
+> O catálogo de modelos do pi é controlado por versão e exige autenticação. Se um slug resolvido
+> não corresponder ao que sua instalação do pi expõe, confira `pi --list-models`; a correspondência
+> de `--model` do pi é fuzzy, então a maioria dos slugs de providers funciona como está.
 
 ### Modelos fora do registro integrado do pi (por exemplo, Z.ai GLM)
 
-O pi resolve `--model` no próprio registro **integrado**, e a configuração `defaultProvider` só é consultada quando nenhum modelo é passado. Para Z.ai, o pi distribui apenas um subconjunto de IDs GLM (`glm-4.7`, `glm-4.5-air`, `glm-5-turbo`, `glm-5.1`, `glm-5v-turbo` na versão pi 0.80.x); um preset que nomeie qualquer outro ID não conseguirá resolvê-lo.
+O pi resolve `--model` no próprio **registro de modelos integrado**, e a configuração
+`defaultProvider` só é consultada quando nenhum modelo é passado. Para Z.ai, o pi
+distribui apenas um subconjunto de IDs GLM (`glm-4.7`, `glm-4.5-air`, `glm-5-turbo`,
+`glm-5.1`, `glm-5v-turbo` na versão pi 0.80.x); um preset que nomeie qualquer outro
+ID não conseguirá resolvê-lo.
 
 Há duas formas de lidar com isso:
 
-1. **IDs do registro:** restrinja o preset aos IDs do registro. Use o formato `provider/id` (por exemplo, `zai/glm-4.7`) para fixar o provider explicitamente; o oma o repassa ao pi como está em `--model`.
-2. **IDs não registrados:** registre-os com uma extensão do pi. O campo `api` deve nomear um dos **IDs de adaptador de API** do pi (`openai-completions`, `anthropic-messages` etc.), e não o nome do provider. Nomes de providers como `"zai"` ou abreviações como `"openai"` não são IDs de adaptador e falham no dispatch com `No API provider registered for api: …`.
+1. **IDs do registro:** restrinja o preset aos IDs do registro. Use o formato
+   `provider/id` (por exemplo, `zai/glm-4.7`) para fixar o provider explicitamente;
+   o oma o repassa ao pi como está em `--model`.
+2. **IDs não registrados:** registre-os com uma extensão do pi. O campo `api` deve
+   nomear um dos **IDs de adaptador de API** do pi (`openai-completions`,
+   `anthropic-messages` etc.), e não o nome do provider. Nomes de providers como
+   `"zai"` ou abreviações como `"openai"` não são IDs de adaptador e falham no
+   dispatch com `No API provider registered for api: …`.
 
 ```typescript
 // ~/.pi/agent/extensions/zai-glm-models/index.ts  (or <project>/.pi/extensions/)
@@ -361,7 +393,13 @@ Verifique com `pi --list-models` antes de ligar os IDs a um preset.
 
 ## Dispatch pelo OpenCode
 
-[OpenCode](https://opencode.ai) é um vendor de classe extensão: como o pi, ele não é proprietário de modelos, mas uma CLI que executa modelos de seu próprio catálogo — o provider gratuito `opencode`, o plano de assinatura de baixo custo `opencode-go` e o gateway `opencode-zen`. O oma integra-o como um **vendor plugin em processo**: o opencode carrega automaticamente `.opencode/plugins/oma/` em vez de registrar hooks em arquivos de configuração, e resolve a persona de cada agente a partir de arquivos `.opencode/agents/<id>.md` gerados.
+[OpenCode](https://opencode.ai) é um vendor de classe extensão: como o pi, ele não é
+proprietário de modelos, mas uma CLI que executa modelos de seu próprio catálogo —
+o provider gratuito `opencode`, o plano de assinatura de baixo custo `opencode-go`
+e o gateway `opencode-zen`. O oma integra-o como um **vendor plugin em processo**:
+o opencode carrega automaticamente `.opencode/plugins/oma/` em vez de registrar
+hooks em arquivos de configuração, e resolve a persona de cada agente a partir de
+arquivos `.opencode/agents/<id>.md` gerados.
 
 ### Dispatch explícito
 
@@ -371,14 +409,21 @@ Encaminhe qualquer agente pelo opencode com a substituição `--vendor opencode`
 oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
-Isso executa `opencode run --agent pm --dir <workspace> "<prompt>"`. O prompt é um **argumento posicional final**: a flag `-p` do opencode significa `--password`, não prompt.
+Isso executa `opencode run --agent pm --dir <workspace> "<prompt>"`. O prompt é um
+**argumento posicional final**: a flag `-p` do opencode significa `--password`,
+não prompt.
 
 ### Modelos OpenCode por agente
 
-Para encaminhar agentes específicos a um modelo do opencode, registre o modelo em `models:` e referencie-o em `agents:`. Aplicam-se dois requisitos (consulte [Inclusão inline de slugs de modelos](#inlining-model-slugs)):
+Para encaminhar agentes específicos a um modelo do opencode, registre o modelo em
+`models:` e referencie-o em `agents:`. Aplicam-se dois requisitos (consulte
+[Inclusão inline de slugs de modelos](#inlining-model-slugs)):
 
-1. **O slug deve estar no formato `owner/model`.** Use o slug `provider/model` do opencode como chave do registro; nomes simples são rejeitados pelo schema de `agents.<id>.model`.
-2. **A especificação deve estar completa:** `cli`, `cli_model`, `auth_hint` e todos os booleanos de `supports`. Uma especificação incompleta falha na validação e recorre silenciosamente ao registro principal (portanto o agente não será encaminhado ao opencode).
+1. **O slug deve estar no formato `owner/model`.** Use o slug `provider/model` do opencode
+   como chave do registro; nomes simples são rejeitados pelo schema de `agents.<id>.model`.
+2. **A especificação deve estar completa:** `cli`, `cli_model`, `auth_hint` e todos os
+   booleanos de `supports`. Uma especificação incompleta falha na validação e recorre
+   silenciosamente ao registro principal (portanto o agente não será encaminhado ao opencode).
 
 ```yaml
 # .agents/oma-config.yaml
@@ -407,31 +452,58 @@ agents:
 ```
 
 Cada agente encaminhado executa `opencode run -m opencode-go/deepseek-v4-flash
---agent <id> --dir <workspace> "<prompt>"`. Isso é adequado para papéis leves e rápidos (pm, qa, docs, explore), enquanto agentes de implementação mais pesados permanecem em Codex/Claude etc.
+--agent <id> --dir <workspace> "<prompt>"`. Isso é adequado para papéis leves e
+rápidos (pm, qa, docs, explore), enquanto agentes de implementação mais pesados
+permanecem em Codex/Claude etc.
 
 ### Validar um slug de modelo
 
-O catálogo do opencode depende de assinatura e login, portanto o oma **não** fixa slugs de modelos do opencode no código. Valide um slug no catálogo instalado:
+O catálogo do opencode depende de assinatura e login, portanto o oma **não** fixa
+slugs de modelos do opencode no código. Valide um slug no catálogo instalado:
 
 ```bash
 oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model probe` informa `accepted` quando o slug aparece em `opencode models`, `rejected` quando não aparece e `auth_required` quando o provider exige login ou assinatura.
+`oma model probe` informa `accepted` quando o slug aparece em
+`opencode models`, `rejected` quando não aparece e `auth_required` quando o
+provider exige login ou assinatura.
 
 ### Autenticação e arquivos gerados
 
-- **Autenticação:** `opencode auth login` armazena credenciais em `~/.local/share/opencode/auth.json`, uma entrada por provider. `oma auth status` / `oma doctor` informam o opencode como autenticado quando **qualquer** provider possui uma credencial. `oma doctor --profile` é orientado ao provider: cada linha é verificada contra o prefixo do provider no `cli_model` registrado; por exemplo, um modelo com `cli_model: zai-coding-plan/glm-5.3` é verificado contra a credencial `zai-coding-plan`. Uma linha cujo modelo não tenha um `cli_model` registrado no formato `provider/model` informa `? unknown`, em vez de uma falha de autenticação definitiva.
-- **Arquivos gerados:** `oma link` (ou `oma link opencode`) grava uma persona `.opencode/agents/<id>.md` por agente e a ponte `.opencode/plugins/oma/`. Esses arquivos são gerados a partir do SSOT `.agents/`; não os edite diretamente, execute `oma link` novamente para regenerá-los.
+- **Autenticação:** `opencode auth login` armazena credenciais em
+  `~/.local/share/opencode/auth.json`, uma entrada por provider. `oma auth status`
+  / `oma doctor` informam o opencode como autenticado quando *qualquer* provider
+  possui uma credencial. `oma doctor --profile` é
+  orientado ao provider: cada linha é verificada contra o prefixo do provider no
+  `cli_model` registrado; por exemplo, um modelo com `cli_model: zai-coding-plan/glm-5.3`
+  é verificado contra a credencial `zai-coding-plan`. Uma linha cujo modelo não tenha um
+  `cli_model` registrado no formato `provider/model` informa `? unknown`, em vez de
+  uma falha de autenticação definitiva.
+- **Arquivos gerados:** `oma link` (ou `oma link opencode`) grava uma persona
+  `.opencode/agents/<id>.md` por agente e a ponte `.opencode/plugins/oma/`. Esses
+  arquivos são gerados a partir do SSOT `.agents/`; não os edite diretamente,
+  execute `oma link` novamente para regenerá-los.
 
-> **Nota sobre workflows persistentes:** o evento `session.idle` do opencode (o análogo mais próximo do hook Claude `Stop`) serve somente para notificação e não pode impedir que a sessão termine. Por isso, workflows persistentes (orchestrate / work / ultrawork) executam com **semântica Stop degradada** sob opencode; o reforço do workflow acontece na próxima mensagem, em vez de manter a sessão aberta.
+> **Nota sobre workflows persistentes:** o evento `session.idle` do opencode (o análogo
+> mais próximo do hook Claude `Stop`) serve somente para notificação e não pode
+> impedir que a sessão termine. Por isso, workflows persistentes (orchestrate / work /
+> ultrawork) executam com **semântica Stop degradada** sob opencode; o reforço do
+> workflow acontece na próxima mensagem, em vez de manter a sessão
+> aberta.
 
 ---
 
 ## Dispatch pela Kimi Code CLI
 
-A [Kimi Code CLI](https://www.kimi.com/code) lê **hooks** somente de uma configuração global (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`); por isso `oma install`/`oma link` gravam a cadeia de hooks da Kimi e seus symlinks de skills no HOME mediante consentimento explícito (como no Antigravity). A Kimi também verifica diretamente o SSOT `.agents/skills/` do oma, portanto as skills são resolvidas em todo o projeto. **MCP** não precisa gravar no HOME e é específico do projeto: é escrito com o modo correto em `<cwd>/.kimi-code/mcp.json` (projeto) ou `~/.kimi-code/mcp.json` (global).
+A [Kimi Code CLI](https://www.kimi.com/code) lê **hooks** somente de uma configuração
+global (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`); por isso `oma install`/`oma link`
+gravam a cadeia de hooks da Kimi e seus symlinks de skills no HOME mediante consentimento
+explícito (como no Antigravity). A Kimi também verifica diretamente o SSOT
+`.agents/skills/` do oma, portanto as skills são resolvidas em todo o projeto. **MCP**
+não precisa gravar no HOME e é específico do projeto: é escrito com o modo correto em
+`<cwd>/.kimi-code/mcp.json` (projeto) ou `~/.kimi-code/mcp.json` (global).
 
 ### Dispatch explícito
 
@@ -441,13 +513,22 @@ Encaminhe qualquer agente pela Kimi usando a substituição `--vendor kimi`:
 oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
-Isso executa `kimi -p "<prompt>"`. O modo `-p` (não interativo) da Kimi aprova automaticamente chamadas regulares de ferramentas sob a política de permissões `auto`; por isso o oma **não** acrescenta `--yolo`/`--auto` (as opções são mutuamente exclusivas de `-p`).
+Isso executa `kimi -p "<prompt>"`. O modo `-p` (não interativo) da Kimi aprova automaticamente
+chamadas regulares de ferramentas sob a política de permissões `auto`; por isso o oma **não**
+acrescenta `--yolo`/`--auto` (as opções são mutuamente exclusivas com `-p`).
 
 ### Modelos Kimi por agente
 
-Como no opencode, o oma **não** fixa um catálogo de modelos da Kimi (a oferta da Kimi depende do provider e da assinatura). Para encaminhar agentes a um modelo da Kimi, registre uma especificação completa em `models:` com `cli: kimi` e referencie-a em `agents:`:
+Como no opencode, o oma **não** fixa um catálogo de modelos da Kimi (a oferta da Kimi
+depende do provider e da assinatura). Para encaminhar agentes a um modelo da Kimi,
+registre uma especificação completa em `models:` com `cli: kimi` e referencie-a em
+`agents:`:
 
-A chave do registro deve estar no formato `owner/model` (nomes simples são rejeitados pelo schema de `agents.<id>.model`), e `cli_model` é o alias exato passado para `kimi --model`; o alias de coding documentado da Kimi é `kimi-code/kimi-for-coding`. Confirme o alias exposto pela sua assinatura com `kimi --model <alias>` antes de fazer commit dele.
+A chave do registro deve estar no formato `owner/model` (nomes simples são rejeitados
+pelo schema de `agents.<id>.model`), e `cli_model` é o alias exato passado para
+`kimi --model`; o alias de coding documentado da Kimi é `kimi-code/kimi-for-coding`.
+Confirme o alias exposto pela sua assinatura com `kimi --model <alias>` antes de
+fazer commit dele.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -472,4 +553,7 @@ agents:
 
 Cada agente encaminhado executa `kimi --model kimi-code/kimi-for-coding -p "<prompt>"`.
 
-> **Nota sobre workflows persistentes:** o caminho documentado de bloqueio de Stop da Kimi é o código de saída 2 / stderr, mas o roteador `oma hook run` sempre termina com 0 e emite um dialeto stdout. O oma emite um `permissionDecision: "deny"` de melhor esforço (além de `decision: "block"` no estilo Claude) para que workflows persistentes degradem de forma controlada na Kimi.
+> **Nota sobre workflows persistentes:** o caminho documentado de bloqueio de Stop da Kimi é o
+> código de saída 2 / stderr, mas o roteador `oma hook run` sempre termina com 0 e emite um
+> dialeto stdout. O oma emite um `permissionDecision: "deny"` de melhor esforço (além de
+> `decision: "block"` no estilo Claude) para que workflows persistentes degradem de forma controlada na Kimi.

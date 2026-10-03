@@ -220,7 +220,7 @@ your-project/
 │   │       ├── task-board-{sessionId}.md          ← Task assignments and status
 │   │       ├── progress-{agentId}-{taskId}-{runId}-{sessionId}.md ← Run-scoped progress updates
 │   │       ├── result-{agentId}-{taskId}-{runId}-{sessionId}.md   ← Run-scoped final outputs
-│   │       ├── session-metrics.md         ← Clarification Debt and Quality Score tracking
+│   │       ├── session-metrics.md         ← Session evidence and experiment results
 │   │       ├── experiment-ledger.md       ← Experiment tracking (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
@@ -384,16 +384,19 @@ Katalog `hooks/` dostawcy zawiera **wyłącznie pliki, które coś z tego katalo
 
 **`scm-guard.ts`**: czysty handler (`run()`) dla `PreToolUse` (narzędzia Bash/powłoki), który odmawia `git add` plików prawdopodobnie zawierających sekrety. Wymusza `forbidden_patterns` pomniejszone o `allowed_exceptions` z `.agents/skills/oma-scm/config/commit-config.yaml` (domyślne wartości wbudowane, gdy konfiguracja nie istnieje). W łańcuchu dla claude, codex, cursor, grok, kimi, kiro i qwen działa przed `test-filter`, a także w mostku opencode (`tool.execute.before` rzuca wyjątek blokujący) i w mostku pi (`tool_call` zwraca `{ block: true, reason }`); polecenie z prefiksem `OMA_SCM_ALLOW_SECRETS=1` omija strażnika po jawnym zatwierdzeniu użytkownika. Szerokie stagingowanie (`git add -A` / `git add .`) celowo nie jest blokowane — ta reguła zależy od zgody użytkownika, której hook nie może obserwować.
 
+**`code-intelligence-guard.ts`**: czysty handler (`run()`) dla `PreToolUse`, który mechanicznie wymusza regułę „Code Search”. Dopóki rozstrzygnięta wartość `providers.code_intelligence` to `serena` (lub `gortex`), a `providers.code_intelligence_guard` nie jest `off`, odmawia użycia natywnych narzędzi wyszukiwania (`Grep`, `Glob` w Claude Code) oraz poleceń powłoki, których początkowy program to rekurencyjne wyszukiwanie kodu (`rg`, `ag`, `ack`, `fd`, `grep -r`, `find -name`/`-path`, `git grep`), a uzasadnienie odmowy wskazuje zamiast nich narzędzie dostawcy (`search_for_pattern`, `find_file`, `find_symbol`). Nierekurencyjny `grep` (filtry potokowe, pojedyncze pliki), `find` bez predykatu nazwy oraz odczyty nigdy nie są blokowane. Zarejestrowany tuż po `scm-guard` dla claude, codex, cursor, grok, kimi, kiro i qwen; instalator scala matchery łańcucha, więc wpis `PreToolUse` dla Claude przyjmuje postać `Bash|Grep|Glob`. Polecenie powłoki zawierające `OMA_CI_ALLOW_NATIVE=1` nadal omija strażnika, ale tylko jako furtka operatora dla wyszukiwań zasobów spoza projektu lub ignorowanych ścieżek, których strażnik nie rozpoznał. Uzasadnienie odmowy nie wymienia tego prefiksu, a sam prefiks nie jest rozwiązaniem zapasowym dla kodu źródłowego projektu.
+
 **`triggers.json`**: statycznie wbudowane w plik binarny `oma` podczas budowania mapowanie słów kluczowych na workflowy (źródło: `.agents/hooks/core/triggers.json`). Definiuje:
-- `workflows`: mapę nazwy workflowu na `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] } }`. `keywords` to frazy dosłowne; `patterns` to surowe ciągi regexów (kompilowane z flagami `iu`).
+- `workflows`: mapę nazwy workflowu na `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] }, explicit?: [...] }`. `keywords` to frazy dosłowne; `patterns` to surowe ciągi regexów (kompilowane z flagami `iu`). `explicit` (tylko workflowy trwałe) wymienia słowa kluczowe uznawane za jawne wywołanie — tylko one aktywują tryb trwały; każde inne dopasowanie jest wstrzykiwane jako sugestia.
 - `informationalPatterns`: frazy wskazujące pytania (odfiltrowywane z automatycznego wykrywania)
 - `excludedWorkflows`: workflowy wymagające jawnego wywołania `/command`
-- `cjkScripts`: kody języków używających skryptów CJK (ko, ja, zh)
 
 Sekcje językowe w `keywords`, `patterns` i `informationalPatterns` stosują następującą konwencję:
-- `*`: uniwersalne/angielskie. Zawsze ładowane niezależnie od ustawienia `language` w `.agents/oma-config.yaml`.
-- `en`: ładowane dla zgodności wstecznej. Funkcjonalnie równoważne z `*`. Nowe treści angielskie powinny trafiać do `*`.
-- `ko`/`ja`/`zh`/itd.: specyficzne dla języka. Ładowane tylko po ustawieniu `language: <code>` w `.agents/oma-config.yaml`.
+- `*`: uniwersalne/angielskie.
+- `en`: funkcjonalnie równoważne z `*`.
+- `ko`/`ja`/`zh`/itd.: sformułowania specyficzne dla języka.
+
+Każda sekcja jest zawsze ładowana; ustawienie `language` w `.agents/oma-config.yaml` steruje wyłącznie językiem odpowiedzi. Granice słów zależą od samego słowa kluczowego: słowa kluczowe ASCII dopasowują się jako całe słowa, a słowa kluczowe zawierające tekst spoza ASCII — jako podciągi.
 
 #### Materializacja per dostawca: przed → po {#per-vendor-materialization-before-after}
 
@@ -488,8 +491,8 @@ Tu agenci zapisują postęp podczas sesji orkiestracji. To kanoniczny magazyn pa
 | `task-board-{sessionId}.md` | Orchestrator | Przydziały zadań: agent, zadanie, priorytet, status, zależności |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | To uruchomienie | Aktualizacje tury: podjęte działania, przeczytane/zmodyfikowane pliki, bieżący status |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | To uruchomienie | Końcowy wynik: status ukończenia, podsumowanie, zmienione pliki, checklista |
-| `session-metrics.md` | Orchestrator | Zdarzenia Clarification Debt, postęp Quality Score |
-| `experiment-ledger.md` | Orchestrator/QA | Wiersze eksperymentów, gdy aktywny jest Quality Score |
+| `session-metrics.md` | Orchestrator | Istotne korekty i dowody z eksperymentów |
+| `experiment-ledger.md` | Orchestrator/QA | Wiersze dowodów dla rzeczywistych eksperymentów |
 | `session-work.md` | Workflow work | Stan sesji właściwy dla workflowu work |
 | `session-ultrawork.md` | Workflow ultrawork | Śledzenie faz workflowu ultrawork |
 | `session-cost-{sessionId}.md` | System | Telemetria kosztu uruchomień dla sesji |

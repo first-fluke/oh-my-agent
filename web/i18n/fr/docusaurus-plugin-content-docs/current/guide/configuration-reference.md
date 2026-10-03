@@ -43,7 +43,7 @@ Les clés suivantes sont lues par le schéma d’exécution actuel ou par les co
 | `telemetry` | booléen | `false` | Activation de la télémétrie des fournisseurs utilisée par l’installation, la mise à jour et la réconciliation des liens. |
 | `model_preset` | chaîne non vide | `auto` dans les nouveaux modèles | Préréglage de modèle intégré ou personnalisé. `OMA_MODEL_PRESET` le remplace pour un seul processus. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Réglages FreeLLMAPI lorsque le préréglage est `free` ; `FREELLM_BASE_URL` et `FREELLM_MODEL` remplacent les valeurs du fichier, et le nom de clé ne contient jamais le secret. Consultez [Configuration des modèles par agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `semantic_memory` | `context7`, `native`, `serena`, `agentmemory` | Sélection des fournisseurs de documentation, de recherche, d’intelligence du code et de mémoire sémantique. L’intelligence du code accepte `serena` ou `gortex` ; la mémoire sémantique accepte `agentmemory`, `honcho` ou `none`. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Sélection des fournisseurs de documentation, de recherche, d’intelligence du code et de mémoire sémantique. L’intelligence du code accepte `serena` ou `gortex` ; la mémoire sémantique accepte `agentmemory`, `honcho` ou `none`. `code_intelligence_guard` (`block` ou `off`) contrôle la garde de recherche PreToolUse. Les recherches natives limitées à des exclusions de fournisseur confirmées ou à des chemins situés hors du projet sont autorisées sans contournement. La garde lit les exclusions de Serena et les règles gitignore activées, ou la liste des exclusions de Gortex ; elle ne déduit pas les dépendances à partir des noms de répertoires. Le hook ne mentionne pas `OMA_CI_ALLOW_NATIVE`. Une recherche shell préfixée par `OMA_CI_ALLOW_NATIVE=1` contourne la garde uniquement pour des ressources situées hors du projet ou des chemins ignorés que la garde n’a pas reconnus, pas pour le code source du projet. |
 | `brave` | `api_key_env` ou `api_key_vault` | non défini | Référence aux identifiants de recherche Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Voir [Détails Honcho](#honcho-semantic-memory) | Réglages de connexion à la mémoire sémantique Honcho. |
 | `agents` | ID d’agent → `model`, `effort`, `thinking`, `memory` facultatifs | résolution du préréglage | Remplacements par agent appliqués au préréglage sélectionné. Effort vaut `none`, `low`, `medium`, `high` ou `xhigh` ; memory vaut `user`, `project` ou `local`. |
@@ -55,7 +55,7 @@ Les clés suivantes sont lues par le schéma d’exécution actuel ou par les co
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Comportement et exclusions d’analyse de `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transport MCP de Serena et comportement de mise à jour. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` ou `[]` | non défini = conserver la configuration existante | Sélection du MCP DevTools du navigateur pendant la réconciliation. Une liste vide explicite supprime les entrées de navigateur sélectionnées. |
-| `video` | map sparse appartenant à la compétence | valeur par défaut de la compétence ; voir [Génération vidéo](/docs/guide/video-generation) | Routage vidéo, ordre des fournisseurs, sortie, coût, limites et réglages de rafraîchissement Remotion. |
+| `video` | map sparse appartenant à la compétence | valeur par défaut de la compétence ; voir [Génération vidéo](/docs/guide/video-generation) | Routage vidéo, ordre des fournisseurs, sortie, coût, limites et réglages de rafraîchissement HyperFrames. |
 | `image` | map sparse appartenant à la compétence | valeur par défaut de la compétence ; voir [Génération d’images](/docs/guide/image-generation) | Fournisseur d’images, taille, qualité, sortie, comparaison et coûts. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | valeur par défaut de la compétence ; voir [Workflows de contenu et de recherche](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Profil Voicebox, sortie et réglages de longueur. |
 | `hwp` | `format`, `version.*`, `output.*` | valeur par défaut de la compétence ; voir [Workflows de contenu et de recherche](/docs/guide/content-and-research#extract-hwp-family-documents) | Format Kordoc, canal de version et emplacement de sortie. |
@@ -181,6 +181,7 @@ Sélectionnez explicitement les fournisseurs d’intelligence du code et de mém
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

@@ -34,6 +34,20 @@ oma doctor --json
 
 Met `oma update --ci` blijft de run niet-interactief. Als de configuratie van de gebruiker onverwacht is vervangen, controleer je of `--force` is gebruikt; gewone updates behouden de configuratie van de gebruiker, terwijl force-modus die kan vervangen.
 
+## Een installatie of update kan de release niet downloaden {#an-install-or-update-cannot-download-the-release}
+
+<!-- oma-docs:ignore-start -->
+`oma install`, `oma update` en de reparatie van `oma doctor` downloaden de release die `prompt-manifest.json` op `main` noemt. Ze proberen eerst het asset `agent-skills.tar.gz` van de GitHub-release `cli-v<version>`, gecontroleerd tegen het bijbehorende `.sha256`-bestand, daarna het bronarchief van die tag en vervolgens een shallow clone van de tag. Een niet-overeenkomende checksum, of een payload waarvan `.agents/skills/_version.json` een andere versie noemt, stopt de run in plaats van een andere bron te proberen.
+<!-- oma-docs:ignore-end -->
+
+Vlak nadat een release is gemaakt, kan het manifest een versie noemen waarvan de assets nog worden gepubliceerd; wacht een paar minuten en probeer het opnieuw. Om bewust nog niet uitgebrachte inhoud van de branch `main` te installeren, schakel je dat voor die run expliciet in:
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+De run toont een waarschuwing: inhoud van de main-branch is geen getagde release en is niet met een checksum geverifieerd.
+
 ## Een leverancier start niet {#a-vendor-does-not-start}
 
 Voer eerst de eigen authenticatiecontrole van de leverancier uit en bekijk daarna het opgeloste OMA-profiel:
@@ -85,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` meldt `synced`, `missing-in-os` en `orphan-in-os`. Met `schedule sync` herstel je ontbrekende jobs; voeg `--prune` alleen toe wanneer verweesde OS-jobs verwijderd moeten worden. Een preview die met `--dry-run` is gemaakt, registreert geen job. Accepteer voor een terugkerend interval OMA’s afronding met `--accept-rounded` nadat je de preview hebt bekeken. Controleer het runlog onder `~/.agents/schedule/runs/<id>/` op een niet-nul vendor-exitcode of `re-auth required`.
+`schedule list` meldt `synced`, `stale`, `missing-in-os` en `orphan-in-os`. Met `schedule sync` herstel je ontbrekende jobs en herschrijf je verouderde registraties (een regel `Unknown command: schedule:run` in het runlog betekent dat de registratie dateert van vóór de hernoeming van het commando; `oma update` synchroniseert die automatisch opnieuw); voeg `--prune` alleen toe wanneer verweesde OS-jobs verwijderd moeten worden. Een preview die met `--dry-run` is gemaakt, registreert geen job. Accepteer voor een terugkerend interval OMA’s afronding met `--accept-rounded` nadat je de preview hebt bekeken. Controleer het runlog onder `~/.agents/schedule/runs/<id>/` op een niet-nul vendor-exitcode of `re-auth required`.
 
 ## Evaluatie- of optimalisatierapporten geen dekking {#evaluation-or-optimization-reports-no-coverage}
 

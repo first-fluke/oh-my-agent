@@ -43,7 +43,7 @@ Poniższe klucze są odczytywane przez bieżący schemat runtime’u albo przez 
 | `telemetry` | boolean | `false` | Zgoda na telemetrię dostawcy używana podczas instalacji, aktualizacji i uzgadniania linków. |
 | `model_preset` | niepusty string | `auto` w nowych szablonach | Wbudowany albo własny preset modeli. `OMA_MODEL_PRESET` nadpisuje go dla jednego procesu. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Ustawienia FreeLLMAPI, gdy preset to `free`; `FREELLM_BASE_URL` i `FREELLM_MODEL` nadpisują wartości pliku, a nazwa klucza nigdy nie zawiera sekretu. Zobacz [konfigurację modeli per agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `semantic_memory` | `context7`, `native`, `serena`, `agentmemory` | Wybór dostawców dokumentacji, wyszukiwania, inteligencji kodu i pamięci semantycznej. Inteligencja kodu przyjmuje `serena` albo `gortex`, a pamięć semantyczna `agentmemory`, `honcho` albo `none`. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Wybór dostawców dokumentacji, wyszukiwania, inteligencji kodu i pamięci semantycznej. Inteligencja kodu przyjmuje `serena` albo `gortex`, a pamięć semantyczna `agentmemory`, `honcho` albo `none`. `code_intelligence_guard` (`block` albo `off`) steruje strażnikiem wyszukiwania PreToolUse. Natywne wyszukiwania ograniczone do potwierdzonych wykluczeń dostawcy lub ścieżek spoza projektu są dozwolone bez obejścia. Strażnik odczytuje wykluczenia Sereny i włączone reguły gitignore albo listę wykluczeń Gortex; nie wnioskuje zależności z nazw katalogów. Hook nie wymienia `OMA_CI_ALLOW_NATIVE`. Wyszukiwanie w powłoce z prefiksem `OMA_CI_ALLOW_NATIVE=1` omija strażnika wyłącznie dla zasobów spoza projektu lub ignorowanych ścieżek, których strażnik nie rozpoznał, a nie dla kodu źródłowego projektu. |
 | `brave` | `api_key_env` albo `api_key_vault` | nieustawione | Odwołanie do poświadczenia wyszukiwania Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Zobacz [szczegóły Honcho](#honcho-semantic-memory) | Ustawienia połączenia z pamięcią semantyczną Honcho. |
 | `agents` | ID agenta → `model`, opcjonalne `effort`, `thinking`, `memory` | rozstrzygnięcie presetu | Nadpisania per agent stosowane na wybranym presecie. Effort to `none`, `low`, `medium`, `high` albo `xhigh`; memory to `user`, `project` albo `local`. |
@@ -55,7 +55,7 @@ Poniższe klucze są odczytywane przez bieżący schemat runtime’u albo przez 
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Zachowanie `oma docs verify` i wykluczenia skanowania. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transport MCP Sereny i zachowanie aktualizacji. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` albo `[]` | nieustawione = pozostaw istniejącą konfigurację | Wybór Browser DevTools MCP podczas uzgadniania. Jawnie pusta lista usuwa wybrane wpisy przeglądarek. |
-| `video` | częściowa mapa należąca do umiejętności | domyślna umiejętności; zobacz [Generowanie wideo](/docs/guide/video-generation) | Routing wideo, kolejność dostawców, wynik, koszty, limity i ustawienia odświeżania Remotion. |
+| `video` | częściowa mapa należąca do umiejętności | domyślna umiejętności; zobacz [Generowanie wideo](/docs/guide/video-generation) | Routing wideo, kolejność dostawców, wynik, koszty, limity i ustawienia odświeżania HyperFrames. |
 | `image` | częściowa mapa należąca do umiejętności | domyślna umiejętności; zobacz [Generowanie obrazów](/docs/guide/image-generation) | Dostawca obrazów, rozmiar, jakość, wynik, porównanie i ustawienia kosztów. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | domyślna umiejętności; zobacz [Workflowy treści i badań](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Profil Voicebox, wynik i limity długości. |
 | `hwp` | `format`, `version.*`, `output.*` | domyślna umiejętności; zobacz [Workflowy treści i badań](/docs/guide/content-and-research#extract-hwp-family-documents) | Format Kordoc, kanał wersji i lokalizacja wyniku. |
@@ -181,6 +181,7 @@ Jawnie wybierz dostawców inteligencji kodu i pamięci:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

@@ -37,7 +37,7 @@ Workflow `/plan` chạy inline, không spawn subagent, và tạo kế hoạch c�
 Điều gì xảy ra:
 
 1. **Thu thập yêu cầu:** Agent PM hỏi về user mục tiêu, tính năng cốt lõi, ràng buộc và mục tiêu triển khai.
-2. **Phân tích khả thi kỹ thuật:** Dùng provider code-intelligence đã cấu hình và tìm kiếm native có phạm vi khi provider không khả dụng để quét codebase, tìm code có thể tái sử dụng và pattern kiến trúc.
+2. **Phân tích khả thi kỹ thuật:** Dùng provider code-intelligence đã cấu hình để quét codebase, tìm code có thể tái sử dụng và pattern kiến trúc. Native search chỉ dành cho path nằm ngoài project hoặc path bị ignore.
 3. **Định nghĩa API contract:** Thiết kế contract endpoint gồm method, path, schema request/response, auth và lỗi; lưu vào `.agents/results/api-contracts/` (run artifact), rồi đưa spec lâu dài vào `docs/plans/contracts/` khi commit.
 4. **Phân tách tác vụ:** Chia dự án thành các tác vụ có thể thực hiện, mỗi tác vụ có agent, title, tiêu chí chấp nhận, priority (P0-P3) và dependency.
 5. **Review kế hoạch với user:** Trình bày toàn bộ plan để xác nhận. Workflow không tiếp tục nếu chưa được user chấp thuận.
@@ -210,7 +210,7 @@ API contract là cơ chế đồng bộ giữa agent:
 1. **Định nghĩa contract trước khi bắt đầu triển khai.**
 2. **Mỗi agent nhận contract liên quan làm context.**
 3. **Contract định nghĩa boundary**, gồm method HTTP, path, schema body request/response, yêu cầu auth và format lỗi.
-4. **Vi phạm contract được phát hiện khi monitor.**
+4. **Vi phạm contract được phát hiện khi monitor.** Bước 5 của `/work` dùng provider code-intelligence đã cấu hình để xác minh các agent khớp API contract với nhau. Native search chỉ dành cho path nằm ngoài project hoặc path bị ignore.
 5. **QA review kiểm tra tuân thủ contract.**
 
 Không có contract, agent backend có thể trả `{ "user_id": 1 }` còn frontend dùng `{ "userId": 1 }`. Contract-first loại bỏ lớp lỗi tích hợp này.
@@ -344,7 +344,7 @@ Dùng `agent spawn` trực tiếp mà không ghi result contract. Chạy check �
 
 Sau khi mọi agent hoàn tất task riêng, phải xác minh tích hợp:
 
-1. **API contract:** provider code-intelligence đã cấu hình hoặc tìm kiếm native có phạm vi xác minh backend khớp contract mà frontend và mobile dùng.
+1. **API contract:** provider code-intelligence đã cấu hình xác minh backend khớp contract mà frontend và mobile dùng. Native search chỉ dành cho path nằm ngoài project hoặc path bị ignore.
 2. **Nhất quán kiểu:** TypeScript type, Python dataclass hoặc Dart model dùng chung phải giữ tên field và kiểu nhất quán.
 3. **Luồng xác thực:** nếu backend triển khai JWT, frontend phải gửi token đúng header, còn mobile phải lưu và refresh token đúng cách.
 4. **Xử lý lỗi:** mọi consumer API phải xử lý error response đã mô tả. Nếu backend trả `{ "error": "unauthorized", "code": 401 }` thì mọi client phải xử lý format này.

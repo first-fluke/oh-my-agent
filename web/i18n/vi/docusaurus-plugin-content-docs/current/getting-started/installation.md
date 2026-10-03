@@ -10,13 +10,23 @@ description: Cài đặt oh-my-agent, chọn skill và provider, hiểu các t�
 - **IDE hoặc CLI có AI**: ít nhất một host được hỗ trợ như Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot hoặc Hermes
 - **bun**: runtime JavaScript và trình quản lý package (script cài đặt tự cài nếu thiếu)
 - **uv**: trình quản lý package Python (bootstrap script đề nghị cài khi thiếu)
-- **Provider code intelligence**: Serena là provider mặc định. Gortex cũng được hỗ trợ khi chọn trong cấu hình provider. Installer có thể bootstrap Serena bằng `uv tool install`; nếu dependency tùy chọn không khả dụng, installer vẫn tiếp tục và đưa ra cảnh báo.
+- **Provider code intelligence**: Serena là provider mặc định. Gortex cũng được hỗ trợ khi chọn trong cấu hình provider. Installer có thể bootstrap Serena bằng `uv tool install`; nếu dependency tùy chọn không khả dụng, installer vẫn tiếp tục và đưa ra cảnh báo. Khi chọn Gortex, `oma install` và `oma update` ở project mode đăng ký project với Gortex daemon (`gortex track`) nếu project chưa được theo dõi, đồng thời thêm các thư mục do OMA tạo vào danh sách loại trừ của project đó thông qua Gortex CLI; không có gì được ghi vào cây thư mục của project. Bản thân Gortex phải được cài riêng.
 
 Installer nhóm các tích hợp theo capability. Vendor hook gồm Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro và Qwen; OpenCode và pi dùng extension bridge; GitHub Copilot và Hermes nhận link skill; ZCode nhận workflow command. Bạn có thể chọn nhiều vendor, nhưng task đầu tiên chỉ cần host bạn định dùng.
 
 ---
 
-## Phương pháp 1: cài một dòng (khuyến nghị)
+## Phương pháp 0: skills CLI (nhanh nhất nếu chỉ cần skill)
+
+Cài gói skill OMA vào các agent runtime được phát hiện:
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+Đây là lối vào nhẹ nhất khi bạn muốn có skill mà không cần harness đầy đủ. Với workflow, rule, hook, gate và `oma agent spawn`, hãy dùng Phương pháp 1 hoặc 2 bên dưới.
+
+## Phương pháp 1: cài một dòng (harness đầy đủ)
 
 ```bash
 # macOS / Linux
@@ -223,6 +233,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -257,7 +268,7 @@ agents:
 | `model_preset` | string | Có | Key preset đang hoạt động. `auto` theo runtime hiện tại; key cố định gồm `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` và `mixed`. Key preset tùy chỉnh cũng hợp lệ. Xem [Per-Agent Models](../guide/per-agent-models.md). |
 | `default_cli` | string | Không | CLI fallback cho `oma agent spawn` khi setting agent tường minh và preset đã chọn không resolve được vendor. |
 | `free` | map | Không | Setting gateway FreeLLMAPI khi `model_preset: free`; giữ API key trong biến môi trường. |
-| `providers` | map | Không | Provider capability: `code_intelligence` (`serena` hoặc `gortex`), `docs` (`context7`), `web` (`native` hoặc `brave`) và `semantic_memory` (`agentmemory`, `honcho` hoặc `none`). |
+| `providers` | map | Không | Provider capability: `code_intelligence` (`serena` hoặc `gortex`), `code_intelligence_guard` (`block` hoặc `off`), `docs` (`context7`), `web` (`native` hoặc `brave`) và `semantic_memory` (`agentmemory`, `honcho` hoặc `none`). |
 | `date_format` | string | Không | Định dạng timestamp (`ISO`, `US`, `EU`). Mặc định: `ISO`. |
 | `timezone` | string | Không | Định danh timezone (ví dụ `Asia/Seoul`). Giá trị bỏ trống dùng timezone của hệ thống host. |
 | `auto_update_cli` | boolean | Không | Cho phép kiểm tra CLI định kỳ cập nhật trong background hay không. Mặc định: `true` (tắt bằng `false`). |
@@ -291,7 +302,7 @@ Lệnh này kiểm tra:
 - Tệp skill tồn tại và frontmatter SKILL.md hợp lệ
 - Symlink và hook script trỏ tới target hợp lệ
 - Hook được cấu hình đúng trong tệp setting của vendor
-- Provider code-intelligence và memory đã chọn có thể truy cập
+- Provider code-intelligence và memory đã chọn có thể truy cập (với Gortex, còn kiểm tra project hiện tại có nằm trong tập được daemon theo dõi hay không)
 - `oma-config.cue` / `oma-config.yaml` hợp lệ với các field bắt buộc
 
 Nếu có vấn đề, `oma doctor` chỉ ra mục thiếu hoặc không hợp lệ và tách blocker của task đầu tiên khỏi cảnh báo tích hợp tùy chọn.

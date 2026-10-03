@@ -225,6 +225,8 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 
 これらの既定値は `.agents/skills/oma-orchestration/config/cli-config.yaml` で上書きできます。
 
+Codex は workspace-write サンドボックスを維持します。oma はネットワークアクセスを有効にし、プロジェクトルート、OMA の状態保存ディレクトリ（`~/.oma`）、既存のパッケージマネージャーのキャッシュを書き込み可能なディレクトリとして追加します。`oma update` は `cli-config.yaml` を置き換えるため、継続して使うモードは `OMA_CODEX_SANDBOX` で設定します。値は `read-only`、`workspace-write`（既定）、`danger-full-access`（サンドボックスも承認もなし）です。
+
 ### agent status {#agent-status}
 
 ```
@@ -243,7 +245,7 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 ### agent parallel {#agent-parallel}
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | フラグ | 短縮形 | 説明 | デフォルト |
@@ -346,7 +348,7 @@ oma video provider list [--output <format>]
 
 `video generate` は計画およびキャプチャ制御の `--mode`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor`、`--capture`、`--source`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop` を受け付けます。さらに `--output-dir`、`--allow-external-output`、`--max-usd`、`--seed`、`--timeout`、`--script`、`--dry-run`、`--yes`、`--output`、`--no-brief-in-manifest` も使えます。ブラウザーキャプチャには `--source web --url <url>` を使い、既定のソースは `file` です。通常のレンダーには作成済みの composition と動作する compositor が必要です。プレースホルダーは `OMA_VIDEO_MOCK=1` のテスト経路に限られます。
 
-`video doctor` は Remotion/MPT/Strudel ツールチェーンを確認または準備します。`compose` は実行用 composition の契約を準備し、`render` は型チェック、レンダー、出力検査を行います。`provider list` はプロバイダーとキーの状態を報告します。実行マニフェストと復旧手順は [動画生成](../guide/video-generation.md) を参照してください。
+`video doctor` は HyperFrames/MPT/Strudel ツールチェーンを確認または準備します。`compose` は実行用 composition の契約を準備し、`render` は lint、レンダー、出力検査を行います。`provider list` はプロバイダーとキーの状態を報告します。実行マニフェストと復旧手順は [動画生成](../guide/video-generation.md) を参照してください。
 
 ### memory init {#memory-init}
 
@@ -523,6 +525,12 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `search rss google` | `--locale <value>` | クエリ用の Google News RSS URL を組み立てます。 |
 | `harness` | なし | 分離したリポジトリタスクに対して OMA ハーネスのオーバーレイを評価します。 |
 | `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | 候補の `.agents` オーバーレイを現在のベースラインと比較します。 |
+| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | キャプチャしたインシデントから、スキルの回帰フィクスチャを導出します。 |
+| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | インシデントを昇格し、影響を受けたスキルを最適化します。 |
+| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | プロジェクトの、予算付きでスケジュールされたフィードバックサイクルを有効にします。mode は apply または propose です。 |
+| `harness evolution status` | `--json, --output <format>` | 設定、スケジュール、保留中の作業、競合、直近のサイクルを表示します。 |
+| `harness evolution disable` | `--json, --output <format>` | プロジェクトのスケジュールされたフィードバックサイクルを無効にします。 |
+| `harness evolution run` | `--json, --output <format>` | 有効なプロジェクトに保存されたモードと予算で、サイクルを 1 回実行します。 |
 | `slide` | なし | 1920×1080 の HTML スライドデッキを作成、検証、エクスポート、編集するツールキットです。 |
 | `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | puppeteer-core でスライドをレンダーし、はみ出し、重なり、フォントサイズを確認する幾何品質ゲートです。 |
 | `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | スライド単位のファイルを単一の自己完結 `.html` 成果物へまとめます。 |
@@ -555,7 +563,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `video` | なし | 短編、解説、デモ動画を生成します。 |
 | `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | brief から動画の実行ディレクトリを生成します。 |
 | `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | 動画プロバイダーと compositor の準備状況を確認します。 |
-| `video compose` | `--output <format>, --refresh, --offline` | 最新ツールチェーンと remotion-dev/skills を使って実行用 Remotion プロジェクトを作成し、作成規約を表示します。 |
+| `video compose` | `--output <format>, --refresh, --offline` | 最新ツールチェーンと heygen-com/hyperframes を使って実行用 HyperFrames プロジェクトを作成し、作成規約を表示します。 |
 | `video render` | `--output <format>` | render-spec.json から実行ディレクトリを再レンダーします。 |
 | `video provider` | なし |  |
 | `video provider list` | `--output <format>` | 動画プロバイダーと利用可能性を一覧表示します。 |
@@ -643,8 +651,13 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `skill` | なし | インストール済みスキルを確認および監査します。 |
 | `skill audit` | `--json, --output <format>` | インストール済みスキル間の frontmatter 説明の類似度を確認します。 |
 | `skill lint` | `--skill <id>, --json, --output <format>` | スキル単位の作成上の問題（frontmatter、構造、壊れた参照）を検出します。 |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --require-coverage, --neg-transfer, --json, --output <format>` | 保留したタスクで処置とベースラインを比較し、スキル単位の有用性向上を測定します。 |
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --json, --output <format>` | 測定した保留タスクの有用性向上を最大化するよう SKILL.md を最適化します。 |
+| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | 保留したタスクで処置とベースラインを比較し、スキル単位の有用性向上を測定します。 |
+| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | 測定した保留タスクの有用性向上を最大化するよう SKILL.md を最適化します。 |
+| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | 保留スキルに対して、進化手順への変更を提案して採点します。 |
+| `skill procedure` | `--export, --json, --output <format>` | 進化手順（オプティマイザ／メンテナのプロンプト、constitution）とそのハッシュを表示します。 |
+| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | 記録済みの最適化実行を、結果、メモリモード、手順ごとに集計します。 |
+| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | 1 つのスキル（`--all` ならすべてのスキルと手順）について、記録済みの SKILL.md の昇格とロールバックを説明します。 |
+| `skill rollback` | `--skill <id>, --json, --output <format>` | 直近に記録された昇格で置き換えられた SKILL.md の本文を復元します。 |
 | `schedule` | なし |  |
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | スケジュール実行するエージェントジョブを登録します。 |
 | `schedule list` | `--json, --output <format>` | OS とのドリフト状態（synced/missing-in-os/orphan-in-os）付きで、プロジェクトごとにスケジュールジョブを一覧表示します。 |

@@ -5,13 +5,13 @@ description: Complete gids voor OMA's 33-skill, tweelaagse architectuur, met SKI
 
 # Skills
 
-Skills zijn gestructureerde kennispakketten die een dispatchrol domeinguidance geven. Ze bevatten uitvoeringsprotocollen, verwijzingen naar technologiestacks, codesjablonen, error playbooks, kwaliteitschecklists en voorbeelden wanneer de skill die levert. Alles is georganiseerd in een tweelaagse architectuur die tokens bespaart.
+Skills zijn gestructureerde kennispakketten die een dispatchrol domeinrichtlijnen geven. Ze bevatten uitvoeringsprotocollen, verwijzingen naar technologiestacks, codesjablonen, error playbooks, kwaliteitschecklists en voorbeelden wanneer de skill die levert. Alles is georganiseerd in een tweelaagse architectuur die is ontworpen voor tokenefficiëntie.
 
 ---
 
 ## Het tweelaagse ontwerp
 
-### Laag 1: SKILL.md (~2.631 tokens mediaan, geladen wanneer de skill wordt gerouteerd)
+### Laag 1: SKILL.md (geladen wanneer de skill wordt gerouteerd)
 
 Elke skill heeft een `SKILL.md` in de root. Het bestand komt in het contextvenster wanneer de skill wordt gerouteerd — de injector-hook geeft een **padverwijzing**, niet de inhoud. Een niet-gerouteerde skill kost daardoor niets bovenop zijn `description`. Het bestand bevat:
 
@@ -37,9 +37,9 @@ Het veld `description` is belangrijk: het bevat de routeringswoorden waarmee het
 
 De map `resources/` bevat diepgaande uitvoeringskennis. Deze bestanden worden alleen geladen wanneer:
 1. de host of workflow de skill heeft geselecteerd (bijvoorbeeld via een native skillmatch of een expliciet commando);
-2. de specifieke resource nodig is voor het huidige taaktype en de huidige moeilijkheidsgraad.
+2. de huidige taak voldoet aan de laadvoorwaarde van de referentie.
 
-Dit laden op aanvraag wordt gestuurd door de context-loading guide (`.agents/skills/_shared/core/context-loading.md`), die per agent de vereiste resources aan taaktypen koppelt.
+Dit laden op aanvraag wordt gestuurd door de context-loading guide (`.agents/skills/_shared/core/context-loading.md`), die entry-instructies onderscheidt van door de taak geselecteerde referenties.
 
 ---
 
@@ -110,12 +110,12 @@ Dit laden op aanvraag wordt gestuurd door de context-loading guide (`.agents/ski
 
 | Resourcetype | Bestandsnaam-patroon | Doel | Wanneer geladen |
 |--------------|-----------------|---------|-------------|
-| **Execution Protocol** | `execution-protocol.md` | Stapsgewijze workflow: Analyze -> Plan -> Implement -> Verify | Altijd (met SKILL.md) |
-| **Tech Stack** | `tech-stack.md` | Gedetailleerde technologiespecificaties, versies en configuratie | Complexe taken |
+| **Execution Protocol** | `execution-protocol.md` | Stapsgewijze workflow: Analyze -> Plan -> Implement -> Verify | Geselecteerde bewerking heeft de commando- of contractdetails nodig |
+| **Tech Stack** | `tech-stack.md` | Gedetailleerde technologiespecificaties, versies en configuratie | Geselecteerd framework of stackkeuze |
 | **Error Playbook** | `error-playbook.md` | Herstelprocedures met escalatie na "3 strikes" | Alleen bij fouten |
 | **Checklist** | `checklist.md` | Domeinspecifieke kwaliteitsverificatie | Bij de Verify-stap |
-| **Snippets** | `snippets.md` | Direct kopieerbare codepatronen | Gemiddelde/complexe taken |
-| **Examples** | `examples.md` of `examples/` | Few-shot input/output-voorbeelden voor het LLM | Gemiddelde/complexe taken |
+| **Snippets** | `snippets.md` | Direct kopieerbare codepatronen | Onbekende implementatie of outputvorm |
+| **Examples** | `examples.md` of `examples/` | Few-shot input/output-voorbeelden voor het LLM | Onbekende implementatie of outputvorm |
 | **Variants** | map `variants/` | Taal- of frameworkspecifieke referenties. Backend levert seeds voor `node`, `python` en `rust`; mobile levert een schema en kan gegenereerde platformreferenties krijgen. | Wanneer een passende stack bestaat |
 | **Templates** | `component-template.tsx`, `screen-template.dart` | Boilerplate-sjablonen voor bestanden | Bij het maken van een component |
 | **Domeinreferentie** | `orm-reference.md`, `anti-patterns.md`, enzovoort | Diepgaande domeinkennis voor specifieke subtaken | Afhankelijk van het taaktype |
@@ -130,24 +130,24 @@ Alle agenten delen gemeenschappelijke fundamenten uit `.agents/skills/_shared/`.
 
 | Resource | Doel | Wanneer geladen |
 |----------|------|-------------|
-| **`skill-routing.md`** | Koppelt taak-keywords aan de juiste agent. Bevat de tabel Skill-Agent Mapping, patronen voor complexe routering, inter-agentafhankelijkheidsregels, escalatieregels en de gids met beurtlimieten. | Door orchestratie- en coördinatieskills geraadpleegd |
-| **`context-loading.md`** | Bepaalt welke resources bij welk taaktype en welke moeilijkheidsgraad worden geladen. Bevat mappingtabellen per agent en triggers voor conditionele protocollen. | Aan het begin van de workflow (stap 0 / fase 0) |
-| **`prompt-structure.md`** | Bepaalt de vier elementen die elke taakprompt moet bevatten: Goal, Context, Constraints, Done When. Bevat sjablonen voor PM-, implementatie- en QA-agenten en noemt antipatronen, waaronder starten met alleen een Goal. | Door PM-agent en alle workflows geraadpleegd |
-| **`clarification-protocol.md`** | Definieert onzekerheidsniveaus (LOW/MEDIUM/HIGH) met acties. Bevat triggers, escalatiesjablonen, vereiste verificatie per agenttype en subagentgedrag. | Bij ambigue requirements |
-| **`context-budget.md`** | Beheert het tokenbudget. Definieert leesstrategie (gebruik `find_symbol` in plaats van `read_file`), gemeten kosten per resource en voor Simple (~4.000 tokens) versus Complex (~9.000 tokens), de afgedwongen limiet voor `SKILL.md` (25.000 tekens, gecontroleerd met `oma skill audit`), grote bestanden en signalen van contextoverloop. | Aan het begin van de workflow |
-| **`difficulty-guide.md`** | Classificeert taken als Simple/Medium/Complex. Definieert verwachte beurten, protocoldoorvertakkingen (Fast Track / Standard / Extended) en herstel bij een verkeerde inschatting. | Aan het begin van de taak (stap 0) |
-| **`quality-principles.md`** | Vier universele kwaliteitsprincipes voor alle agenten. | Aan het begin van kwaliteitsworkflows (ultrawork) |
+| **`skill-routing.md`** | Routeert op basis van taakresultaat, eigenaarschap en daadwerkelijke afhankelijkheden; geen verplichte agentketen of beurtquotum. | Door orchestratie- en coördinatieskills geraadpleegd |
+| **`context-loading.md`** | Entry van de verantwoordelijke skill, conditionele referenties en laadgrenzen van de runtime. | Bij het samenstellen van context |
+| **`prompt-structure.md`** | Geeft richtlijnen voor overdrachten van onbekende taken met doel, context, echte beperkingen en acceptatiebewijs; geen verplicht sjabloon voor directe taken. | Door PM-agent en alle workflows geraadpleegd |
+| **`clarification-protocol.md`** | Lost routinedetails op uit de context en vraagt alleen om wezenlijke ontbrekende informatie of toestemming. | Bij ambigue requirements |
+| **`context-budget.md`** | Schattingen van bestandsgrootte, daadwerkelijke promptmeting, afgebakende leesacties en checkpoints. | Lange taken of diagnose van contextoverhead |
+| **`difficulty-guide.md`** | Kiest planningsdiepte en deliverables op basis van afhankelijkheden en verificatiebehoeften. | Wanneer decompositie een moeilijkheidsinschatting nodig heeft |
+| **`quality-principles.md`** | Richtlijnen voor scope, onderhoudbaarheid, bewijs en evenredige verificatie. | Aan het begin van kwaliteitsworkflows (ultrawork) |
 | **`vendor-detection.md`** | Detecteert de huidige runtime (Claude Code, Codex CLI, Antigravity, Cursor, Kiro, Qwen en CLI-fallback) via hostmarkers en ingestelde vendorstatus. | Aan het begin van de workflow |
-| **`session-metrics.md`** | Houdt Clarification Debt (CD) en sessiemetrics bij. Definieert gebeurtenistypen (clarify +10, correct +25, redo +40), drempels (CD >= 50 = RCA, CD >= 80 = pauze) en integratiepunten. | Tijdens orchestratiesessies |
-| **`common-checklist.md`** | Universele kwaliteitschecklist bij de eindverificatie van complexe taken, naast agentspecifieke checklists. | Verify-stap van complexe taken |
-| **`lessons-learned.md`** | Repository met lessen uit vorige sessies, automatisch gegenereerd na Clarification Debt-overtredingen en verworpen experimenten. Geordend per domein en met QA-evaluatielessen voor blinde vlekken. | Na fouten en aan het einde van een sessie |
-| **`api-contracts/`** | Map met het API-contractsjabloon en gegenereerde contracten. `template.md` beschrijft per endpoint de methode, het pad, request/response-schema's, auth en fouten. | Wanneer werk over grenzen heen wordt gepland |
+| **`session-metrics.md`** | Optioneel sessiebewijs zonder strafscores voor gesprekken of evaluators. | Gevraagde retrospective of wezenlijke correctie |
+| **`common-checklist.md`** | Toepasselijke domeinoverstijgende controles; geen globale limieten op het aantal regels en geen algemene catch-verplichting. | Domeinoverstijgende review wanneer relevant |
+| **`lessons-learned.md`** | Op bewijs gebaseerde lessen vastleggen en toepassen, met versie-/triggervoorwaarden; geen automatische RCA-drempel. | Na fouten en aan het einde van een sessie |
+| **`api-contracts/`** | Optioneel contractsjabloon. Hergebruik projectschema's; gegenereerde contracten staan buiten de skillbron. | Wanneer werk over grenzen heen wordt gepland |
 
 ### Runtimeresources (`.agents/skills/_shared/runtime/`)
 
 | Resource | Doel |
 |---------|---------|
-| **`memory-protocol.md`** | Formaat en bewerkingen van geheugenbestanden voor CLI-subagenten. Beschrijft On Start, During Execution en On Completion met configureerbare geheugenbewerkingen, plus de extensie voor experimenttracking. |
+| **`memory-protocol.md`** | Formaat en bewerkingen van geheugenbestanden voor CLI-subagenten. Beschrijft On Start, During Execution en On Completion met configureerbare geheugentools (lezen/schrijven/bewerken), plus de extensie voor experimenttracking. |
 | **`execution-protocols/claude.md`** | Claude Code-specifieke uitvoeringspatronen. Wordt door `oma agent spawn` geïnjecteerd wanneer de vendor claude is. |
 | **`execution-protocols/antigravity.md`** | Uitvoeringspatronen voor de Antigravity CLI (`agy`). |
 | **`execution-protocols/codex.md`** | Uitvoeringspatronen voor Codex CLI. |
@@ -165,13 +165,13 @@ Vendor-specifieke uitvoeringsprotocollen worden automatisch geïnjecteerd bij CL
 
 Deze worden alleen geladen wanneer tijdens de uitvoering aan specifieke voorwaarden is voldaan:
 
-| Resource | Triggerconditie | Geladen door | Ongeveer tokens |
-|----------|-----------------|--------------|----------------|
-| **`quality-score.md`** | VERIFY- of SHIP-fase begint in een workflow die kwaliteitsmeting ondersteunt | Orchestrator (geeft door aan QA-agentprompt) | ~250 |
-| **`experiment-ledger.md`** | Het eerste experiment wordt vastgelegd na een IMPL-baseline | Orchestrator (inline, na baselinemeting) | ~250 |
-| **`exploration-loop.md`** | Dezelfde poort faalt twee keer op hetzelfde probleem | Orchestrator (inline, vóór hypotheses te spawnen) | ~250 |
+| Resource | Triggerconditie | Geladen door |
+|----------|-----------------|--------------|
+| **`quality-score.md`** | Een gedefinieerde baseline of experimentvergelijking is nodig | Orchestrator (geeft door aan QA-agentprompt) |
+| **`experiment-ledger.md`** | Het eerste experiment wordt vastgelegd na een IMPL-baseline | Orchestrator (inline, na baselinemeting) |
+| **`exploration-loop.md`** | Herhaald herstel mislukt en alternatieven zijn binnen het budget het testen waard | Orchestrator (inline, vóór hypotheses te spawnen) |
 
-Als alle drie worden geladen, kost dat ongeveer 750 tokens. Omdat het laden conditioneel is, worden er in een doorsneesessie 1-2 geladen — verwaarloosbaar naast de ongeveer 4.000 tokens die een Simple-taak al verbruikt voor `SKILL.md` plus `execution-protocol.md`.
+Deze resources worden uitgesteld totdat hun afzonderlijke triggers van toepassing zijn. De moeilijkheidsgraad alleen injecteert ze niet.
 
 ---
 
@@ -191,10 +191,10 @@ Verzoeken over meerdere domeinen volgen vaste uitvoeringsvolgordes:
 |----------------|----------------|
 | "Maak een fullstack-app" | oma-pm -> (oma-backend + oma-frontend) parallel -> oma-qa |
 | "Maak een mobiele app" | oma-pm -> (oma-backend + oma-mobile) parallel -> oma-qa |
-| "Fix bug and review" | oma-debug -> oma-qa |
-| "Design and build a landing page" | oma-design -> oma-frontend |
-| "I have an idea for a feature" | oma-brainstorm -> oma-pm -> relevante agenten -> oma-qa |
-| "Do everything automatically" | oma-orchestration (intern: oma-pm -> agenten -> oma-qa) |
+| "Fix bug en review" | oma-debug -> oma-qa |
+| "Ontwerp en bouw een landingspagina" | oma-design -> oma-frontend |
+| "Ik heb een idee voor een feature" | oma-brainstorm -> oma-pm -> relevante agenten -> oma-qa |
+| "Doe alles automatisch" | oma-orchestration (intern: oma-pm -> agenten -> oma-qa) |
 
 ### Inter-agentafhankelijkheidsregels
 
@@ -215,76 +215,29 @@ Verzoeken over meerdere domeinen volgen vaste uitvoeringsvolgordes:
 
 ## Tokenbesparingsberekening {#token-savings-math}
 
-Deze cijfers zijn gemeten uit de skill tree, niet met de hand geschat. Leid ze op elk moment opnieuw af:
+Meet voordat je besparingen claimt:
 
 ```bash
-bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend,oma-mobile,oma-qa
+bun scripts/measure-skill-context.ts
+bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend --json
+oma agent context backend --difficulty Simple
 ```
 
-Tokenaantallen zijn **benaderingen** (bytes ÷ 4, een ruwe verhouding voor Engelse Markdown). Tabellen en codefences tokeniseren iets ongunstiger, dus deze cijfers vallen iets laag uit; gebruik een echte tokenizer tegen je doelmodel als exacte aantallen nodig zijn.
+Het script rapporteert schattingen (UTF-8-bytes / 4) voor scenario's op basis van bestandsgrootte. `routed` is alleen de entry; `simple`, `medium` en `complex` voegen hypothetische protocol-, voorbeeld- en stackbestanden toe ter vergelijking. Hun namen blijven behouden voor scriptcompatibiliteit, niet als instructies om vooraf te laden. `all` is een plafond voor de resourceomvang, geen runtimeconfiguratie. Een verse checkout kan één platformseed als proxy voor de omvang gebruiken; er wordt niet elk platform geladen.
 
-### Laadniveaus
+Het contextcommando toont de daadwerkelijke injectie van de taakcontext. Het bevat niet de rest van het gesprek of elke instructie van de host of runtime. Gebruik een samengestelde prompt of gebruikstelemetrie om de totale inputtokens, de latentie en de kosten op een benoemd model te meten. Leid die niet af uit de omvang van de repository of uit aantallen gegenereerde mirrors.
 
-Elk niveau is een toestand die een agent daadwerkelijk bereikt, volgens
-[`context-loading.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/_shared/core/context-loading.md):
+## Resources laden per taak
 
-| Niveau | Wat in de context staat |
-|------|--------------------|
-| `routed` | Alleen `SKILL.md` |
-| `simple` | + `execution-protocol.md` |
-| `medium` | + de gemapte resource voor de taak, wanneer dat bestand bestaat |
-| `complex` | + de gemapte resource en stackreferenties wanneer het project die levert |
-| `all` | `SKILL.md` + elk resourcebestand — het **plafond**, geen selecteerbare modus |
+Elk moeilijkheidsniveau begint met de verantwoordelijke skill. De graaf is een referentie-index; aangrenzende knopen geven geen toestemming om een andere specialist, een error playbook of een conditionele experimentworkflow te laden.
 
-Voor backend- en mobileskills kan `/stack-set` projectspecifieke referenties genereren onder `stack/`. Een verse checkout heeft geen gegenereerde stackmap; de rij `complex` wordt daarom gemeten tegen de meegeleverde `variants/`-seeds waarvan de generatie afleidt — een proxy voor omvang, niet een bestand dat een agent nu al laadt.
+De loader hanteert zachte budgetten van 1.500 / 4.000 / 8.000 geschatte tokens voor Simple / Medium / Complex. Een entry die het budget overschrijdt, blijft behouden en de overschrijding wordt gerapporteerd. Ondersteunende referenties blijven uitgesteld, tenzij ze expliciet worden geselecteerd nadat hun taaktrigger is vastgesteld. Een vereiste entry wordt nooit vervangen door kleinere, niet-gerelateerde documenten.
 
-### Een sessie met 5 agenten (pm, backend, frontend, mobile, qa)
-
-| Niveau | Tokens | Aandeel van plafond | Vermeden |
-|------|-------:|-----------------:|--------:|
-| `routed` | 11,497 | 15.7% | 84.3% |
-| `simple` | 17,923 | 24.4% | 75.6% |
-| `medium` | 19,125 | 26.1% | 73.9% |
-| `complex` | 39,156 | 53.4% | 46.6% |
-| `all` | 73,355 | 100% | — |
-
-Een Simple- of Medium-taak over vijf agenten houdt ongeveer **17-19K tokens** aan skillcontext vast in plaats van het plafond van 73K; een Complex-taak ongeveer **38K**. De besparing is voor normaal werk dus ~74-76% en daalt naar ~47% wanneer een taak stackreferenties laadt. Op een model met context van 128K betekent dat ongeveer 110K vrije tokens voor Simple/Medium-werk en 90K voor Complex werk.
-
-:::note Lees `all` als bovengrens, niet als alternatief
-Geen enkele runtime laadt elke resource vooraf: skills worden via `description` zichtbaar, hun body wordt gelezen wanneer ze worden gerouteerd en resources worden alleen gelezen wanneer de taak ze nodig heeft. `all` is de bovengrens van wat een skill kan kosten. Daarom zijn de percentages geformuleerd als "vermeden" en niet als vergelijking met een echte configuratie.
-:::
-
-Laag 1 is de ondergrens en die is niet klein: over de 33 geïnstalleerde skills varieert `SKILL.md` van ongeveer 1.275-5.489 tokens (mediaan ~2.631). Die ondergrens beperkt hoeveel progressief onthullen kan besparen — met alle vijf agenten gerouteerd gebruikt alleen niveau `routed` al 15% van het plafond.
-
----
-
-## Resources laden per taakmoeilijkheid
-
-De difficulty guide deelt taken in drie niveaus in. Die bepalen hoeveel van Laag 2 wordt geladen:
-
-### Eenvoudig (3-5 beurten verwacht)
-
-Eén bestandswijziging, duidelijke requirements, bestaande patronen herhalen.
-
-Laadt alleen `execution-protocol.md`. Sla analyse over, ga direct naar implementatie en gebruik een minimale checklist.
-
-### Gemiddeld (8-15 beurten verwacht)
-
-2-3 bestandswijzigingen, enkele ontwerpkeuzes nodig, patronen toepassen in nieuwe domeinen.
-
-Laadt `execution-protocol.md` plus de gemapte Medium-resource wanneer dat bestand bestaat. Gebruikt het standaardprotocol met korte analyse en volledige verificatie.
-
-### Complex (15-25 beurten verwacht)
-
-4+ bestandswijzigingen, architectuurkeuzes nodig, nieuwe patronen introduceren of afhankelijkheden van andere agenten.
-
-Laadt `execution-protocol.md` plus de gemapte resource en beschikbare verwijzingen naar `tech-stack.md` / `snippets.md`. Gebruikt het uitgebreide protocol met checkpoints, tussentijdse voortgangsregistratie en volledige verificatie inclusief `common-checklist.md`.
-
----
+Verificatie volgt het risico van de taak en de requirements van het project. Een moeilijkheidslabel vereist geen volledige testsuite, geen vast preflightantwoord en geen tweede goedkeuring voor werk waarvoor al toestemming is verleend.
 
 ## Context-loading-taakkaarten (per agent)
 
-De context-loading guide bevat gedetailleerde mappingen van taaktype naar resource. Dit zijn de belangrijkste:
+Dit zijn voorbeelden van referenties om te raadplegen wanneer de taak ze nodig heeft. Gebruik de actuele index van de verantwoordelijke skill en selecteer alleen toepasselijke secties:
 
 ### Backend agent
 
@@ -310,11 +263,11 @@ De context-loading guide bevat gedetailleerde mappingen van taaktype naar resour
 
 | Taaktype | Vereiste resources |
 |-----------|-------------------|
-| Designsystem maken | `reference/typography.md` + `reference/color-and-contrast.md` + `reference/spatial-design.md` + `design-md-spec.md` |
+| Designsysteem maken | `reference/typography.md` + `reference/color-and-contrast.md` + `reference/spatial-design.md` + `design-md-spec.md` |
 | Landingspagina ontwerpen | `reference/component-patterns.md` + `reference/motion-design.md` + `prompt-enhancement.md` |
 | Designaudit | `checklist.md` + `anti-patterns.md` |
 | Designtokens exporteren | `design-tokens.md` |
-| 3D/shader | `reference/shader-and-3d.md` + `reference/motion-design.md` |
+| 3D- en shadereffecten | `reference/shader-and-3d.md` + `reference/motion-design.md` |
 | Toegankelijkheidsreview | `reference/accessibility.md` + `checklist.md` |
 
 ### QA-agent
@@ -325,7 +278,7 @@ De context-loading guide bevat gedetailleerde mappingen van taaktype naar resour
 | Performancereview | `checklist.md` (sectie Performance) |
 | Toegankelijkheidsreview | `checklist.md` (sectie Accessibility) |
 | Volledige audit | `checklist.md` (volledig) + `self-check.md` |
-| Quality scoring | `quality-score.md` (conditioneel) |
+| Vergelijking van een gedefinieerde metric | `quality-score.md` (conditioneel) |
 
 ---
 
@@ -333,100 +286,32 @@ De context-loading guide bevat gedetailleerde mappingen van taaktype naar resour
 
 Wanneer de orchestrator prompts voor subagenten samenstelt, neemt hij alleen taakrelevante resources op:
 
-1. De kernregels uit het SKILL.md van de agent
-2. `execution-protocol.md`
+1. Pad naar het SKILL.md van de verantwoordelijke skill (de CLI-dispatch injecteert de inhoud al)
+2. De execution-protocol-sectie van een geselecteerde bewerking, wanneer nodig
 3. Resources voor het specifieke taaktype (uit de kaarten hierboven)
-4. `error-playbook.md` (altijd; herstel is essentieel)
+4. De relevante error-playbook-sectie, alleen na een waargenomen fout
 5. Memory Protocol (CLI-modus)
 
 Deze gerichte samenstelling voorkomt dat onnodige resources worden geladen en laat de subagent zoveel mogelijk context overhouden voor het eigenlijke werk.
 
 ---
 
-## Clarification Debt en sessiemetrics (verdieping)
+## Sessiebewijs en retrospectieve review
 
-Clarification Debt (CD) meet de kosten van onduidelijke requirements tijdens een sessie. De orchestrator registreert elke gebruikerscorrectie en kent punten toe:
+Sessierecords leggen wezenlijke correcties, scopewijzigingen, herwerk en beslechte reviewbevindingen met bewijs vast. Noodzakelijke verduidelijking wordt niet bestraft. De voormalige gewogen CD- en EA-scores en de door drempels getriggerde RCA-regels zijn verwijderd; het waren promptinstructies, geen door de CLI berekende metrics.
 
-| Gebeurtenistype | Punten | Beschrijving |
-|------------|-------:|-------------|
-| `clarify` | +10 | Eenvoudige verduidelijkingsvraag (verwacht bij MEDIUM-onzekerheid) |
-| `correct` | +25 | Intent verkeerd begrepen, waardoor de richting moet veranderen |
-| `redo` | +40 | Charter- of scopeovertreding, waardoor terugdraaien en opnieuw starten nodig is |
-| `blocked` | +0 | Agent stopte correct en vroeg het ontbrekende (goed gedrag, geen straf) |
+Gebruik waar mogelijk bestaande taakresultaten. Een apart `session-metrics-{sessionId}.md` is optioneel in de geconfigureerde coördinatiestore. Een herhaalde fout of een gevraagde retrospective kan een les rechtvaardigen, maar een gewone mislukte controle of een betwiste bevinding levert niet automatisch een les op. Bewaar historische logboeken; herschrijf ze niet in het nieuwe formaat.
 
-**Modifiers:** Charter niet gelezen (+15), allowlist overtreden (+20), dezelfde fout opnieuw (x1.5).
+`oma stats` rapporteert productiviteit en samenvattingen van geregistreerd gebruik en geregistreerde kosten. `oma retro` groepeert daadwerkelijke gebeurtenissen rond poorten, blockers en ontbrekende beslissingen tot suggesties. Geen van beide berekent CD- of EA-scores uit deze Markdown-artefacten.
 
-**Drempels en handhaving:**
-- **CD >= 50** -> verplichte RCA-entry in `lessons-learned.md`
-- **CD >= 80** -> sessie stopt; de gebruiker moet requirements opnieuw specificeren
-- **`redo` >= 2** -> orchestrator pauzeert en vraagt expliciete scopebevestiging
-- **CD >= 30 in 3 opeenvolgende sessies voor dezelfde agent** -> review van het agentprompt-sjabloon
+## Taakdecompositie en contextherstel
 
-Het sessielogboek staat in `.agents/state/memories/session-metrics.md`, met per gebeurtenis een rij (beurt, agent, type, punten, detail) en een samenvatting.
+Plan rond afhankelijkheden en onafhankelijk verifieerbaar gedrag. Vaste sprintaantallen, bestandsaantallen en beurtschattingen bepalen de reviewdiepte of de voltooiing niet. Houd tests en foutafhandeling samen met het gedrag dat ze verifiëren.
 
----
+Sla bij een waargenomen stilstand of verlies van bruikbare context het afgeronde werk, de resterende criteria, relevante paden en verificatiebewijs op voordat je hervat of opnieuw dispatcht. Behoud bestaand werk en voorkom dat een lopende poging wordt gedupliceerd. Een verhouding tussen beurten en voortgang vereist op zichzelf geen reset.
 
-## Evaluatornauwkeurigheid en QA-tuning
+## Conditionele meting en exploratie
 
-QA-agenten worden beter door geregistreerde beoordelingsfouten. In tegenstelling tot CD is Evaluator Accuracy (EA) retrospectief; de meeste fouten worden na afloop van de sessie ontdekt.
+Een gedefinieerde baseline of experimentvergelijking activeert meetrichtlijnen; alleen het hebben van tests of lint doet dat niet. Leg vergelijkbare metrics vast met eenheden, methode, revisie en bewijs. Vereiste controles op correctheid en beveiliging blijven onafhankelijk. OMA heeft geen standaard samengestelde formule, geen poort op basis van lettercijfers en geen rollback die door een score wordt getriggerd.
 
-**EA-gebeurtenistypen:**
-
-| Gebeurtenis | Punten | Wanneer ontdekt |
-|-------|-------:|-----------------|
-| `false_negative` | +30 | Volgende sessie of productie (bug gemist door QA) |
-| `false_positive` | +15 | Tijdens sessie (implementatieagent weerlegt bevinding met succes) |
-| `severity_mismatch` | +10 | Tijdens de sessie of bij de volgende review (verkeerde ernst) |
-| `missed_stub` | +20 | Runtimeverificatie vindt display-only feature |
-| `good_catch` | -10 | QA vond een niet voor de hand liggende bug (positief signaal) |
-
-EA wordt berekend over een voortschrijdend venster van 3 sessies. Drempels:
-- **EA >= 30** -> tuning aanbevolen: terugkerende beoordelingsfouten bekijken
-- **EA >= 50** -> tuning vereist: `execution-protocol.md` van QA bijwerken
-- **`false_negative` >= 3** in het venster -> patroon toevoegen aan `checklist.md` van QA
-- **`good_catch` >= 5** in het venster -> geslaagd patroon veralgemenen naar `common-checklist.md`
-
-Bij een overschreden drempel worden EA-gebeurtenissen bekeken, fouten gecategoriseerd, checklist of uitvoeringsprotocol aangepast en de wijziging in de volgende 3 sessies gevalideerd.
-
----
-
-## Sprintdecompositie voor complexe taken
-
-Complexe taken (4+ bestanden en architectuurkeuzes) gebruiken sprintuitvoering in plaats van één lange run:
-
-1. **Splitsen:** verdeel in 2-4 functiegerichte sprints die elk onafhankelijk testbaar zijn
-2. **Doel:** 5-8 beurten per sprint
-3. **Sprintpoort** na elke sprint:
-   - Is het sprintdeliverable af?
-   - Slagen lint/test?
-   - Duurde de sprint 2x langer dan verwacht? Schrijf dan een checkpoint en informeer de gebruiker
-4. **Doorgaan:** ga bij een geslaagde poort naar de volgende sprint
-
-**Voorbeeld:** De taak "JWT-auth + CRUD-API + tests" wordt opgesplitst in:
-- Sprint 1: Usermodel + auth-endpoints (register/login)
-- Sprint 2: CRUD-endpoints + validatie
-- Sprint 3: Tests + foutafhandeling
-
-**Herstel bij verkeerde moeilijkheidsinschatting:** Als een taak als Simple begint maar complexer blijkt, schakelt de agent halverwege over naar het Medium- of Complex-protocol en registreert die wijziging in de voortgang.
-
----
-
-## Context-resetprotocol
-
-Langlopende agenten verliezen kwaliteit wanneer de context volloopt. De orchestrator (niet de agent zelf) bewaakt dit en start resets.
-
-**Triggercondities (orchestrator controleert tijdens monitoring):**
-
-| Conditie | Detectie | Actie |
-|-----------|-----------|--------|
-| Beurtbudget op | Agent gebruikte >= 80% van verwachte beurten en minder dan 50% van de criteria is af | Context reset |
-| Voortgang staat stil | 3+ opeenvolgende monitorcycli geen update in progressbestand | Context reset |
-| Oppervlakkige output | Resultaatbestand bevat stubmarkers of TODO-placeholders | Opnieuw spawnen met expliciete instructie |
-
-**Resetprocedure:**
-1. **Checkpoint:** sla de huidige status op (afgerond, resterend, belangrijke beslissingen)
-2. **Beëindigen:** stop de huidige agentrun
-3. **Opnieuw spawnen:** start een nieuwe run met het checkpoint als context
-4. **Hervatten:** de nieuwe agent leest het checkpoint en gaat alleen verder met wat nog openstaat
-
-Voor standalone-agenten zonder orchestrator fungeert de Sprint Gate als vangnet. Duurt een sprint 2x langer dan verwacht, schrijf dan een checkpoint en informeer de gebruiker.
+Een daadwerkelijk experiment legt zijn hypothese, het bewijs voor baseline en kandidaat, de vereiste controles, de beslissing en de eigen bestanden vast. Herhaalde fouten kunnen het testen van een ander mechanisme rechtvaardigen, binnen het bestaande herstelbudget. Isoleer experimentwijzigingen, behoud niet-gerelateerde bewerkingen en verifieer de geïntegreerde kandidaat voordat je de poort hervat.

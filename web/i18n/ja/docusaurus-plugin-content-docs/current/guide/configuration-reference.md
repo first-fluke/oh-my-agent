@@ -43,7 +43,7 @@ oma doctor --profile
 | `telemetry` | boolean | `false` | install、update、link の調整で使うベンダーテレメトリのオプトイン。 |
 | `model_preset` | 空でない string | 新しいテンプレートでは `auto` | 組み込みまたはカスタムのモデルプリセット。`OMA_MODEL_PRESET` は 1 プロセスだけ上書きします。 |
 | `free` | `base_url`、`api_key_env`、`model` | `http://127.0.0.1:31415/v1`、`FREELLM_API_KEY`、`auto` | プリセットが `free` の場合の FreeLLMAPI 設定。`FREELLM_BASE_URL` と `FREELLM_MODEL` はファイルの値を上書きします。キー名に秘密情報自体を入れません。[エージェントごとのモデル設定](/docs/guide/per-agent-models#freellmapi-preset)を参照してください。 |
-| `providers` | `docs`、`web`、`code_intelligence`、`semantic_memory` | `context7`、`native`、`serena`、`agentmemory` | ドキュメント、検索、コードインテリジェンス、意味メモリのプロバイダーを選択します。コードインテリジェンスは `serena` または `gortex`、意味メモリは `agentmemory`、`honcho`、`none` を受け付けます。 |
+| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory` | `context7`、`native`、`serena`、`block`、`agentmemory` | ドキュメント、検索、コードインテリジェンス、意味メモリのプロバイダーを選択します。コードインテリジェンスは `serena` または `gortex`、意味メモリは `agentmemory`、`honcho`、`none` を受け付けます。`code_intelligence_guard`（`block` または `off`）は PreToolUse の検索ガードを制御します。確認済みのプロバイダー除外対象、またはプロジェクト外のパスだけを対象にしたネイティブ検索は、迂回策を使わずに許可されます。ガードは Serena の除外設定と有効な gitignore ルール、または Gortex の除外一覧を読み取ります。ディレクトリ名から依存関係を推測することはありません。フックは `OMA_CI_ALLOW_NATIVE` の名前を挙げません。`OMA_CI_ALLOW_NATIVE=1` を前置したシェル検索がガードを迂回できるのは、プロジェクト外のリソースや、ガードが認識しなかった無視対象のパスに限られ、プロジェクトのソースは対象外です。 |
 | `brave` | `api_key_env` または `api_key_vault` | 未設定 | Brave 検索の認証情報への参照。 |
 | `honcho` | `base_url`、`workspace_id`、`project_id`、`api_key_env`、`api_key_vault`、`timeout_ms`、`max_results`、`max_tokens`、`recall_mode` | [Honcho の詳細](#honcho-semantic-memory)を参照 | Honcho の意味メモリ接続設定。 |
 | `agents` | エージェント ID → `model`、任意の `effort`、`thinking`、`memory` | プリセットの解決結果 | 選択したプリセットに適用するエージェントごとの上書き。effort は `none`、`low`、`medium`、`high`、`xhigh`、memory は `user`、`project`、`local` です。 |
@@ -55,7 +55,7 @@ oma doctor --profile
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` の動作とスキャン除外。 |
 | `serena` | `mode: bridge\|stdio`、`auto_update` | `bridge`、`true` | Serena MCP のトランスポートと更新動作。 |
 | `mcp.devtools_browsers` | `aside`、`chrome`、`firefox`、または `[]` | 未設定 = 既存の設定をそのままにする | 調整時に使うブラウザー DevTools MCP の選択。空のリストを明示すると、選択したブラウザーのエントリを削除します。 |
-| `video` | スキルが所有する部分的なマップ | スキルのデフォルト。[動画生成](/docs/guide/video-generation)を参照 | 動画のルーティング、プロバイダー順、出力、コスト、上限、Remotion の更新設定。 |
+| `video` | スキルが所有する部分的なマップ | スキルのデフォルト。[動画生成](/docs/guide/video-generation)を参照 | 動画のルーティング、プロバイダー順、出力、コスト、上限、HyperFrames の更新設定。 |
 | `image` | スキルが所有する部分的なマップ | スキルのデフォルト。[画像生成](/docs/guide/image-generation)を参照 | 画像ベンダー、サイズ、品質、出力、比較、コストの設定。 |
 | `voice` | `notification_profile`、`asset_profile`、`output_dir`、`auto_notify_after_sec`、`max_tts_chars`、`max_stt_minutes` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#generate-speech-or-transcribe-audio)を参照 | Voicebox のプロファイル、出力、長さの設定。 |
 | `hwp` | `format`、`version.*`、`output.*` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#extract-hwp-family-documents)を参照 | Kordoc の形式、バージョンチャンネル、出力先。 |
@@ -181,6 +181,7 @@ agents:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

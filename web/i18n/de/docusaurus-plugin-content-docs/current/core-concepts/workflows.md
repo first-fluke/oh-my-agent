@@ -33,9 +33,11 @@ Die Planprüfung nutzt die bereits erteilte Autorisierung für die Aufgabe. Agen
 
 ---
 
-## Persistente Workflows
+## Persistente Workflows {#persistent-workflows}
 
 Persistente Workflows laufen weiter, bis alle Aufgaben erledigt sind. Sie halten den Zustand in `.agents/state/` und injizieren bei jeder Benutzernachricht den Kontext `[OMA PERSISTENT MODE: ...]` erneut, bis sie explizit deaktiviert werden.
+
+Der persistente Modus startet nur bei einem **expliziten Aufruf** — dem eigenen Namen des Workflows (die Liste `explicit` in `triggers.json`, z. B. "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). Die übrigen Trigger-Keywords unten sind Hinweise in natürlicher Sprache: Sie injizieren den Workflow als Vorschlag, ohne den persistenten Modus zu aktivieren, und lösen nie aus, wenn die erste oder letzte Zeile des Prompts eine mit `?` endende Frage ist.
 
 ### /orchestrate
 
@@ -46,27 +48,29 @@ Persistente Workflows laufen weiter, bis alle Aufgaben erledigt sind. Sie halten
 **Trigger-Keywords:**
 | Sprache | Keywords |
 |----------|----------|
-| Universal | "orchestrate" |
-| Englisch | "parallel", "do everything", "run everything" |
-| Koreanisch | "자동 실행", "병렬 실행", "전부 실행", "전부 해" |
-| Japanisch | "オーケストレート", "並列実行", "自動実行" |
-| Chinesisch | "编排", "并行执行", "自动执行" |
-| Spanisch | "orquestar", "paralelo", "ejecutar todo" |
-| Französisch | "orchestrer", "parallèle", "tout exécuter" |
-| Deutsch | "orchestrieren", "parallel", "alles ausführen" |
-| Portugiesisch | "orquestrar", "paralelo", "executar tudo" |
-| Russisch | "оркестровать", "параллельно", "выполнить всё" |
-| Niederländisch | "orkestreren", "parallel", "alles uitvoeren" |
-| Polnisch | "orkiestrować", "równolegle", "wykonaj wszystko" |
+| Explizit (persistent) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+| Englisch | "do everything", "run everything", "everything in parallel", "automate everything" |
+| Koreanisch | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
+| Japanisch | "全部実行", "全部並列で", "自動でやって" |
+| Chinesisch | "编排", "全部执行", "全部并行", "自动处理" |
+| Spanisch | "ejecutar todo", "todo en paralelo" |
+| Französisch | "tout exécuter", "tout en parallèle" |
+| Deutsch | "alles ausführen", "alles parallel" |
+| Portugiesisch | "executar tudo", "tudo em paralelo" |
+| Russisch | "выполнить всё", "всё параллельно" |
+| Niederländisch | "alles uitvoeren", "alles parallel" |
+| Polnisch | "wykonaj wszystko", "wszystko równolegle" |
+
+Die bloßen Wörter "parallel"/"automate" (und ihre Übersetzungen) sind keine Trigger: "run the tests in parallel" oder "automate the release notes" sind gewöhnliche Anfragen, keine Multi-Agenten-Orchestrierung.
 
 **Trigger-Regex-Muster** (Absicht + Substantiv-Whitelist, siehe [Auto-Erkennung: Pattern-Feld](#pattern-field-raw-regex)):
 | Abschnitt | Muster | Beispiele, die auslösen |
 |-----------|--------|------------------------|
-| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>` | "Baue eine TODO-App mit Benutzerauthentifizierung", "Erstelle einen guten Webservice", "Entwickle ein Backend mit PostgreSQL" |
+| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Baue eine TODO-App mit Benutzerauthentifizierung", "Erstelle einen guten Webservice", "Entwickle ein Backend mit PostgreSQL" |
 | `*` (universal) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
 | `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
 
-Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashboard, system, feature, backend, frontend, prototype, mvp, bot.
+Substantiv-Whitelist (14): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. Ein einzelnes Feature ("implement the login feature", "로그인 기능 구현해줘") oder etwas Bestehendes ("make the API faster") führt zu keinem Treffer.
 
 **Schritte:**
 1. **Schritt 0 — Vorbereitung:** Koordinations-Skill, Context-Loading-Leitfaden und Memory-Protokoll lesen. Vendor erkennen.
@@ -74,9 +78,9 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 3. **Schritt 2 — Sitzung initialisieren:** `oma-config.yaml` laden, CLI-Zuordnung anzeigen, die Sitzungs-ID aus der Planerstellung wiederverwenden oder eine neue erzeugen (`session-YYYYMMDD-HHMMSS`) und `orchestrator-session-{sessionId}.md` sowie `task-board-{sessionId}.md` im konfigurierten Memory-Speicher anlegen.
 4. **Schritt 3 — Agenten starten:** Für jede Prioritätsstufe (zuerst P0, dann P1 ...) Agenten mit der passenden Vendor-Methode starten (native Subagenten bei passendem Runtime-/Vendor-Paar, `oma agent spawn` für externe oder Cross-Vendor-Arbeit). MAX_PARALLEL nie überschreiten.
 5. **Schritt 4 — Überwachen:** Run-bezogene `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-Dateien und strukturierte Ausführungsbelege (Receipts) abfragen, dann das Task Board aktualisieren. Abschlüsse, Fehler und Abstürze beobachten.
-6. **Schritt 5 — Verifizieren:** Pro abgeschlossenem Agenten `verify.sh {agent-type} {workspace}` ausführen. Bei Fehlschlag mit Fehlerkontext erneut starten (maximal 2 Wiederholungen). Danach die Explorationsschleife aktivieren: 2–3 Hypothesen erzeugen, parallele Experimente starten, bewerten und die beste Lösung behalten.
+6. **Schritt 5 — Verifizieren:** Pro abgeschlossenem Agenten `verify.sh {agent-type} {workspace}` ausführen. Bei Fehlschlag mit Fehlerkontext erneut starten (maximal 2 Wiederholungen). Wiederholte Fehlschläge können alternative Hypothesen rechtfertigen, doch alle Versuche verbrauchen dasselbe Gesamtbudget für die Wiederherstellung. Ungeklärte Belege sichern, wenn das Budget keine Vergleichsrunde abdeckt.
 7. **Schritt 6 — Zusammentragen:** Run-bezogene Ergebnisdateien und strukturierte Ergebnisdeklarationen (Claims) lesen und die Zusammenfassung erstellen.
-8. **Schritt 7 — Abschlussbericht:** Sitzungszusammenfassung präsentieren. Wenn ein Quality Score gemessen wurde, Experiment-Ledger zusammenfassen und Lessons automatisch erzeugen.
+8. **Schritt 7 — Abschlussbericht:** Sitzungszusammenfassung präsentieren. Wenn Experimente durchgeführt wurden, Belege und Entscheidungen zusammenfassen; Lessons nur festhalten, wenn eine wiederverwendbare Ursache feststeht.
 
 **Gelesene Dateien:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, run-bezogene Fortschritts-/Ergebnisdateien und strukturierte Ausführungsbelege (Run-Receipts).
 **Geschriebene Dateien:** Run-bezogener Sitzungs- und Task-Board-Status im konfigurierten Memory-Speicher, strukturierte Ausführungsbelege (Receipts) und Ergebnisdeklarationen (Claims) sowie der Abschlussbericht.
@@ -94,13 +98,17 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 **Trigger-Keywords:**
 | Sprache | Keywords |
 |----------|----------|
-| Universal | "work", "step by step" |
-| Koreanisch | "코디네이트", "단계별" |
-| Japanisch | "コーディネート", "ステップバイステップ" |
-| Chinesisch | "协调", "逐步" |
-| Spanisch | "coordinar", "paso a paso" |
-| Französisch | "coordonner", "étape par étape" |
-| Deutsch | "koordinieren", "schritt für schritt" |
+| Explizit (persistent) | "work mode", "work workflow" |
+| Universal | "step by step" |
+| Englisch | "one by one", "one step at a time" |
+| Koreanisch | "단계별", "하나씩 해줘", "차근차근" |
+| Japanisch | "ステップバイステップ", "一歩ずつ" |
+| Chinesisch | "逐步", "一步一步" |
+| Spanisch | "paso a paso", "uno por uno" |
+| Französisch | "étape par étape", "un par un" |
+| Deutsch | "schritt für schritt", "der reihe nach" |
+
+Das bloße Wort "work" ist kein Trigger — es ist gewöhnliches Vokabular ("Does this work on Windows?").
 
 **Schritte:**
 1. **Schritt 0 — Vorbereitung:** Skills, Context-Loading, Memory-Protokoll lesen. Sitzungsstart aufzeichnen.
@@ -110,7 +118,7 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 5. **Schritt 4 — Agenten starten:** Start nach Prioritätsstufe, parallel innerhalb derselben Stufe, separate Workspaces.
 6. **Schritt 5 — Überwachen:** Fortschrittsdateien abfragen, API-Vertrags-Übereinstimmung zwischen Agenten verifizieren.
 7. **Schritt 6 — QA-Review:** QA-Agenten für Sicherheit (OWASP), Performance, Barrierefreiheit, Code-Qualität starten.
-8. **Schritt 6.1 — Qualitätsbewertung** (bedingt): Baseline messen und aufzeichnen.
+8. **Schritt 6.1 — Messungen** (bedingt): Eine Baseline aufzeichnen, wenn ein definierter Vergleich erforderlich ist.
 9. **Schritt 7 — Iterieren:** Bei CRITICAL-/HIGH-Problemen zuständige Agenten erneut starten. Besteht dasselbe Problem nach 2 Versuchen weiter, Explorationsschleife aktivieren.
 
 **Einsatzbereich:** Features über mehrere Domänen hinweg, deren Planung, Implementierung und QA Sie schrittweise koordinieren möchten.
@@ -126,7 +134,7 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 **Trigger-Keywords:**
 | Sprache | Keywords |
 |----------|----------|
-| Universal | "ultrawork", "ulw" |
+| Explizit (persistent) | "ultrawork", "ulw" |
 
 **Phasen und Schritte:**
 
@@ -140,16 +148,16 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 
 **Gate-Definitionen:**
 - **PLAN_GATE:** Plan dokumentiert, Annahmen aufgelistet, Alternativen berücksichtigt, Überarbeitungs-Review durchgeführt, Umfang autorisiert.
-- **IMPL_GATE:** Anwendbare Prüfungen ohne Dateiausgabe und Tests bestehen, nur geplante Dateien modifiziert, Baseline-Qualitätsbewertung aufgezeichnet (falls gemessen). Build-Prüfungen werden nur auf ausdrücklichen Wunsch ausgeführt.
-- **VERIFY_GATE:** Implementierung entspricht Anforderungen, null CRITICAL, null HIGH, keine Regressionen, Qualitätsbewertung >= 75 (falls gemessen).
-- **REFINE_GATE:** Keine großen Dateien/Funktionen (> 500 Zeilen / > 50 Zeilen), Integrationsmöglichkeiten erfasst, Seiteneffekte verifiziert, Code bereinigt, Qualitätsbewertung nicht rückläufig.
-- **SHIP_GATE:** Qualitätsprüfungen bestehen, UX verifiziert, verwandte Probleme gelöst, Deployment-Checkliste komplett, abschließende Qualitätsbewertung >= 75 mit nicht-negativem Delta (falls gemessen). Bestehende Autorisierung nutzen; Veröffentlichung oder Deployment erfordert eine Autorisierung für diese Aktion.
+- **IMPL_GATE:** Anwendbare Prüfungen ohne Dateiausgabe und Tests bestehen, nur geplante Dateien modifiziert, Baseline-Belege für tatsächliche Experimente aufgezeichnet. Build-Prüfungen werden nur auf ausdrücklichen Wunsch ausgeführt.
+- **VERIFY_GATE:** Implementierung entspricht Anforderungen, null CRITICAL, null HIGH, keine Regressionen, anwendbare Messziele des Projekts erreicht.
+- **REFINE_GATE:** Wartbarkeitsregeln des Projekts eingehalten, Integrationsmöglichkeiten erfasst, Seiteneffekte verifiziert, Code bereinigt, keine ungelöste Regression.
+- **SHIP_GATE:** Qualitätsprüfungen bestehen, UX verifiziert, verwandte Probleme gelöst, Deployment-Checkliste komplett, anwendbare Messziele des Projekts mit aktuellen Belegen erreicht. Bestehende Autorisierung nutzen; Veröffentlichung oder Deployment erfordert eine Autorisierung für diese Aktion.
 
 **Verhalten bei Gate-Fehlschlag:**
 - Erster Fehlschlag: zum relevanten Schritt zurückkehren, beheben und erneut versuchen.
-- Zweiter Fehlschlag beim selben Problem: Explorationsschleife aktivieren (2-3 Hypothesen generieren, jede ausprobieren, bewerten, beste beibehalten).
+- Zweiter Fehlschlag beim selben Problem: Ursache neu bewerten; wenn Alternativen im verbleibenden Budget einen Test verdienen, isolierte Experimente mit dem geforderten Verhalten und den definierten Metriken abgleichen.
 
-**Bedingte Erweiterungen:** Qualitätsbewertungsmessung, Behalten-/Verwerfen-Entscheidungen, Experimentprotokoll, Hypothesenexploration, Auto-Learning (Erkenntnisse aus verworfenen Experimenten).
+**Bedingte Erweiterungen:** Vergleiche anhand definierter Metriken, Entscheidungen und Belege zu Experimenten, budgetierte Hypothesenexploration sowie Erkenntnisse, die auf wiederverwendbaren Ursachen beruhen.
 
 **REFINE-Überspringbedingung:** Einfache Aufgaben unter 50 Zeilen.
 
@@ -166,14 +174,16 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 **Trigger-Keywords:**
 | Sprache | Keywords |
 |----------|----------|
-| Universal | "ralph" |
-| Englisch | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
-| Koreanisch | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| Explizit (persistent) | "ralph", "랄프" |
+| Englisch | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
+| Koreanisch | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
 | Japanisch | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
 | Chinesisch | "不要停", "直到完成", "全部完成", "做完为止" |
 | Spanisch | "no pares", "hasta completar", "termina todo" |
 | Französisch | "n'arrête pas", "jusqu'à complétion", "termine tout" |
 | Deutsch | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+Bloße Wiederaufnahme-Phrasen ("keep going", "carry on", "계속해", "続けて", "продолжай", …) sind keine Trigger: Benutzer tippen sie, um nach einer Unterbrechung fortzufahren.
 
 **Phasen:**
 1. **Phase 0 — INIT:** Voraussetzungen laden (Context-Loading, Memory-Protokoll, Judge-Protokoll). Mechanisch prüfbare Abschlusskriterien definieren und aufzeichnen, etwa Test-Assertions, Typprüfungen ohne Dateiausgabe, Exit-Codes oder die Existenz von Dateien. Build-Prüfungen nur auf ausdrücklichen Wunsch aufnehmen. Kriterien vorstellen und im autorisierten Umfang fortfahren. Sitzung mit `max_iterations: 5` initialisieren.
@@ -457,12 +467,12 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 
 ### /video
 
-**Beschreibung:** Den `oma-video`-Skill durchgehend ausführen: Brief -> Skript -> Narration -> Visuals -> Untertitel -> Render-Spezifikation -> versionierter Remotion- (oder MoneyPrinterTurbo-)Compositor. Der Workflow erstellt ein reproduzierbares Laufverzeichnis und gibt erst dann eine echte `.mp4` aus, wenn Compositor- und `ffprobe`-Prüfungen bestehen. Für unterstützte Asset-Fallbacks ist die Provider-Konfiguration optional; ein Compositor- oder Toolchain-Fehler bleibt ein fehlgeschlagener Lauf. Der Workflow läuft inline (kein Subagent-Spawning).
+**Beschreibung:** Den `oma-video`-Skill durchgehend ausführen: Brief -> Skript -> Narration -> Visuals -> Untertitel -> Render-Spezifikation -> verwalteter HyperFrames- (oder MoneyPrinterTurbo-)Compositor. Der Workflow erstellt ein reproduzierbares Laufverzeichnis und gibt erst dann eine echte `.mp4` aus, wenn Compositor- und `ffprobe`-Prüfungen bestehen. Für unterstützte Asset-Fallbacks ist die Provider-Konfiguration optional; ein Compositor- oder Toolchain-Fehler bleibt ein fehlgeschlagener Lauf. Der Workflow läuft inline (kein Subagent-Spawning).
 
 **Trigger-Keywords:**
 | Sprache | Keywords |
 |----------|----------|
-| Universal | "/video", "oma-video", "remotion", "shorts", "reels", "screencast" |
+| Universal | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
 | Englisch | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
 | Koreanisch | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
 | Japanisch | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
@@ -473,7 +483,7 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 2. **Skript zusammenstellen:** Szenen und Narration erzeugen (LLM bei vorhandenem Schlüssel, sonst deterministische Gliederung aus dem Brief).
 3. **Assets synthetisieren:** Narration über `oma-voice`, Visuals über `oma-image`/`oma-slide`/Stock, schlüsselfreie Untertitel-Zuordnung oder überwachten Browser-Capture für `demo --source web`. Jeder Provider fällt auf einen deterministischen Fallback zurück.
 4. **Render-Spezifikation erstellen:** `render-spec.json` (Determinismus-Grenze) sowie Assets in das Laufverzeichnis schreiben.
-5. **Rendern:** Das versionierte Remotion-Projekt (oder MoneyPrinterTurbo) als Subprozess starten. Ein normaler Compositor- oder Toolchain-Fehler lässt den Lauf fehlschlagen; der deterministische Platzhalter ist nur über den ausdrücklichen Mock-/Testpfad (`OMA_VIDEO_MOCK=1`) verfügbar. Live-Capture wird im Manifest als `nondeterministic` vermerkt.
+5. **Rendern:** Das verwaltete HyperFrames-Projekt (oder MoneyPrinterTurbo) als Subprozess starten. Ein normaler Compositor- oder Toolchain-Fehler lässt den Lauf fehlschlagen; der deterministische Platzhalter ist nur über den ausdrücklichen Mock-/Testpfad (`OMA_VIDEO_MOCK=1`) verfügbar. Live-Capture wird im Manifest als `nondeterministic` vermerkt.
 
 **Ausgabe:** Ein Laufverzeichnis unter `.agents/results/videos/{timestamp}-{shortid}-{mode}/` mit `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4` und `manifest.json`. Siehe [Anleitung zur Videogenerierung](../guide/video-generation.md).
 
@@ -523,7 +533,7 @@ oh-my-agent verwendet einen `UserPromptSubmit`-Hook, der vor der Verarbeitung je
 
 1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, in das `oma`-Binary eingebettet): Definiert Keyword-zu-Workflow-Zuordnungen für alle 11 unterstützten Sprachen (Englisch, Koreanisch, Japanisch, Chinesisch, Spanisch, Französisch, Deutsch, Portugiesisch, Russisch, Niederländisch, Polnisch).
 
-2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScript-Logik, die die Benutzereingabe gegen die Trigger-Keywords scannt, sprachspezifisches Matching berücksichtigt und den Workflow-Aktivierungskontext injiziert.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScript-Logik, die die Benutzereingabe gegen die Trigger-Keywords aller Sprachen scannt und den Workflow-Aktivierungskontext injiziert.
 
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): Erzwingt persistente Workflows, indem aktive Zustandsdateien geprüft und der Workflow-Kontext erneut injiziert wird.
 
@@ -534,8 +544,9 @@ oh-my-agent verwendet einen `UserPromptSubmit`-Hook, der vor der Verarbeitung je
 3. Der Hook bereinigt die Eingabe (entfernt Codeblöcke, zitierte Strings sowie eingefügte System-Echo-Blöcke) und scannt sie anschließend gegen `.agents/hooks/core/triggers.json` — sowohl Keyword-Listen (wörtliche Phrasen) als auch `patterns` (rohe Regex). Ein Verstärkungsschutz unterdrückt erneute Auslöser, wenn derselbe Workflow innerhalb der letzten 60 Sekunden bereits zweimal oder häufiger ausgelöst wurde.
 4. Bei einer Übereinstimmung wird geprüft, ob die Eingabe informationellen Mustern entspricht.
 5. Bei informationellem Charakter (z. B. "was ist orchestrate?") wird die Eingabe herausgefiltert — es wird kein Workflow ausgelöst.
-6. Bei handlungsrelevantem Charakter wird `[OMA WORKFLOW: {workflow-name}]` in den Kontext injiziert.
-7. Der Agent liest das injizierte Tag und lädt die entsprechende Workflow-Datei aus `.agents/workflows/`.
+6. Bei handlungsrelevantem Charakter wird `[OMA WORKFLOW: {workflow-name}]` in den Kontext injiziert. Wenn mehrere Workflows übereinstimmen, gewinnt ein expliziter Aufruf, danach das längste Keyword.
+7. Bei einem persistenten Workflow schreibt nur ein expliziter Aufruf (`explicit` in `triggers.json`) die Zustandsdatei des persistenten Modus; eine Übereinstimmung in natürlicher Sprache wird als Vorschlag injiziert, und ein mit einer Frage endender Prompt (`?` in der ersten oder letzten Zeile) löst ihn gar nicht aus.
+8. Der Agent liest das injizierte Tag und lädt die entsprechende Workflow-Datei aus `.agents/workflows/`.
 
 ### Sprachabschnitt-Konvention
 
@@ -543,11 +554,13 @@ oh-my-agent verwendet einen `UserPromptSubmit`-Hook, der vor der Verarbeitung je
 
 | Abschnitt | Verhalten |
 |-----------|-----------|
-| `*` | Universal — wird unabhängig von der Einstellung `language` in `.agents/oma-config.yaml` immer geladen. Verwenden Sie ihn für englische Inhalte (Lingua franca) und für wirklich sprachübergreifende Tokens (z. B. Workflow-Name `"orchestrate"`). |
-| `en` | Englisch — wird aus Gründen der Abwärtskompatibilität geladen. Funktional gleichwertig mit `*`. Neue englische Inhalte gehören in `*`. |
-| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | Sprachspezifisch — wird nur geladen, wenn `language: <lang>` in `.agents/oma-config.yaml` gesetzt ist. |
+| `*` | Universal. Verwenden Sie ihn für englische Inhalte (Lingua franca) und für wirklich sprachübergreifende Tokens (z. B. Workflow-Name `"orchestrate"`). |
+| `en` | Englisch. Funktional gleichwertig mit `*`. |
+| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | Sprachspezifische Formulierungen. |
 
-**Implikation**: Wenn Sie `language: en` in `.agents/oma-config.yaml` setzen, werden nur die Muster von `*` und `en` geladen. Koreanische, japanische usw. natürlichsprachliche Trigger werden nicht ausgelöst, selbst wenn der Benutzer in diesen Sprachen schreibt. Um eine nicht-englische Sprache zu aktivieren, setzen Sie `language: <code>` entsprechend. Der englische Fallback in `*` bleibt stets aktiv.
+Jeder Abschnitt wird immer geladen: Benutzer schreiben ihre Prompts in der Sprache, in der sie denken, und die Einstellung `language` in `.agents/oma-config.yaml` steuert nur die Antwortsprache. Ein in einer Sprache geschriebenes Keyword kann nur auf einen Prompt passen, der dieselbe Schrift enthält; das Zusammenführen aller Abschnitte kann daher bei Prompts ohne Bezug nicht auslösen.
+
+Wortgrenzen hängen nur vom Keyword selbst ab, nie von `language`: ASCII-Keywords passen nur auf ganze Wörter (daher passt "work" nicht auf "network" und "review" nicht auf "preview"), während Keywords mit Nicht-ASCII-Text als Teilzeichenketten passen, weil CJK-Partikel und Flexionsendungen direkt am Wort haften ("리뷰해줘").
 
 ### Pattern-Feld (rohe Regex) {#pattern-field-raw-regex}
 
@@ -558,9 +571,11 @@ Zusätzlich zu wörtlichen `keywords` kann jeder Workflow `patterns` deklarieren
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      "keywords": { "*": ["orchestrate"], "en": ["parallel", ...] },
+      // Subset of `keywords` that activates persistent mode (persistent workflows only)
+      "explicit": ["orchestrate", ...],
+      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
       "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:an?|the)\\s+...\\b"],
+        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
         "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
       }
     }
@@ -603,7 +618,7 @@ Die folgenden Workflows werden nicht per Keyword ausgelöst und müssen mit eine
 
 ### Zustandsdateien
 
-Persistente Workflows (orchestrate, ultrawork, work, ralph) erstellen Zustandsdateien in `.agents/state/`:
+Persistente Workflows (orchestrate, ultrawork, work, ralph) erstellen bei explizitem Aufruf Zustandsdateien in `.agents/state/` (siehe [Persistente Workflows](#persistent-workflows)):
 
 ```
 .agents/state/

@@ -89,7 +89,7 @@ oh-my-agent 通过专业化解决这些问题：
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
 | **oma-translation** | 上下文感知翻译 | 六阶段流程：准备、获取、推理、执行、验证、收尾。翻译方法分四步：阅读含义与受保护语法、选择语体、用目标语言重构、在适当位置保留作者风格。每种目标语言的配置（`resources/lang/{code}.md`）记录语体和排版规则。资源：`translation-rubric.md`、`anti-ai-patterns.md`、`lang/{ko,ja,zh,en}.md`。 |
-| **oma-orchestration** | 自动化多智能体协调器 | 并行启动 CLI 子智能体，通过持久的会话、任务板、进度和结果文件进行协调，并监控验证循环。可配置：MAX_PARALLEL（默认 3）、MAX_RETRIES（默认 2）、POLL_INTERVAL（默认 30s）。包含智能体间审查循环和澄清债务监控。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
+| **oma-orchestration** | 自动化多智能体协调器 | 并行启动 CLI 子智能体，通过持久的会话、任务板、进度和结果文件进行协调，并监控验证循环。可配置：MAX_PARALLEL（默认 3）、MAX_RETRIES（默认 2）、POLL_INTERVAL（默认 30s）。包含智能体间审查循环和可选的会话证据。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
 | **oma-scm** | 软件配置管理（SCM）与 Git | 处理分支策略、合并/变基/冲突工作流、工作区、基线和发布状态跟踪。还指导使用安全暂存的 Conventional Commit 消息；启用时，共同作者尾注来自有效的 `scm.co_author` 配置。 |
 | **oma-coordination** | 手动多智能体工作流指南 | 通过 CLI `oma agent spawn` 分步协调产品、前端、后端、移动端和 QA 智能体。先由产品经理分解任务，在独立工作区并行启动同优先级任务，监控按运行划分的进度和结果文件，在前端或移动端工作前对齐 API 与数据契约，最后进行 QA 审查。它是 `oma-orchestration` 的手动对应方案。 |
 
@@ -135,7 +135,7 @@ oh-my-agent 通过专业化解决这些问题：
 |-------|------|---------|
 | **oma-image** | 多供应商图像路由器 | 通过 Codex（经 ChatGPT OAuth 的 `gpt-image-2`，优先 CLI）、Antigravity Gemini 系列“nano-banana”模型（通过 `agy` CLI 和 Gemini Code Assist，具体模型在内部选择）以及 Pollinations（免费 `flux`/`zimage`）进行考虑认证的并行调度。生成前执行澄清与增强协议，最多 10 张参考图，成本达到 ≥ $0.20 时触发确认，并用 `manifest.json` 保证可复现。CLI：`oma image generate`、`oma image doctor` 和 `oma image vendor list`。 |
 | **oma-slide** | 动画丰富的 HTML 演示文稿生成器 | 在固定 1920×1080 舞台上创作具有特色、避免“AI slop”的演示文稿，然后确定性地验证几何布局，打包成单文件 HTML，并通过 `oma slide` CLI 导出 PDF/PNG/PPTX。提供样式预设和大胆模板，执行 CJK→Pretendard 规则，要求 `prefers-reduced-motion` 和可见焦点，并进行最多 3 次自动修复验证循环。图像交给 `oma-image`，也可选用 Canva MCP 导出/导入。 |
-| **oma-video** | 短视频、讲解和演示路由器 | 通过 `oma video` CLI 创建 shorts/reels（9:16）、讲解视频（16:9）和人工录制的演示（16:9）。确定性资源总线（`script.json` → `timing.json` → `render-spec.json`）把内容送入内置 Remotion 合成器；资源提供商可以使用本地回退，缺少合成或工具链，以及渲染错误都会使运行失败。人工录制不会自动处理凭据。 |
+| **oma-video** | 短视频、讲解和演示路由器 | 通过 `oma video` CLI 创建 shorts/reels（9:16）、讲解视频（16:9）和人工录制的演示（16:9）。确定性资源总线（`script.json` → `timing.json` → `render-spec.json`）把内容送入受管的 HyperFrames 合成器；资源提供商可以使用本地回退，缺少合成或工具链，以及渲染错误都会使运行失败。人工录制不会自动处理凭据。 |
 | **oma-voice** | 本地优先的 TTS 与 STT | 驱动 Voicebox MCP 服务器，在设备上生成通知、TTS 资源和转录，不进行云端调用，也不产生单次调用费用。TTS 默认输出 WAV，也可以在本地转码为 MP3；转录接受音频路径或 base64。TTS 调用上限为 5000 个字符，STT 输入上限为 30 分钟；持久化的资源或转录运行会写入清单。 |
 
 ---

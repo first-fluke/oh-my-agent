@@ -54,7 +54,7 @@ Thông tin của mục này được giữ theo registry hiện tại. `--help` 
 | `star` | `star` |
 | `visualize` | `visualize` |
 | `search` | `search` `search providers` `search web` `search fetch` `search meta` `search media` `search archive` `search trust` `search code` `search doctor` `search api` `search api fetch` `search api search` `search rss` `search rss fetch` `search rss google` |
-| `harness` | `harness` `harness eval` |
+| `harness` | `harness` `harness eval` `harness incident` `harness feedback` `harness evolution enable` `harness evolution status` `harness evolution disable` `harness evolution run` |
 | `slide` | `slide` `slide validate` `slide bundle` `slide edit` `slide doctor` `slide create` `slide preview` `slide export` `slide export pdf` `slide export png` `slide export pptx` `slide import` `slide import pptx` `slide asset` `slide asset fetch-video` `slide style` `slide style list` `slide style preview` `slide style get` |
 | `scholar` | `scholar` `scholar search` `scholar resolve` `scholar get` `scholar lint` |
 | `image` | `image` `image generate` `image doctor` `image vendor` `image vendor list` |
@@ -74,7 +74,7 @@ Thông tin của mục này được giữ theo registry hiện tại. `--help` 
 | `agent` | `agent` `agent context` `agent resume` `agent begin` `agent verify` `agent finish` `agent spawn` `agent status` `agent parallel` `agent review` |
 | `model` | `model` `model check` `model probe` `model propose` |
 | `memory` | `memory` `memory keys` `memory init` `memory setup` `memory daemon` `memory daemon status` `memory daemon start` `memory daemon stop` `memory daemon restart` `memory service` `memory service install` `memory service uninstall` `memory status` `memory retry` `memory retry drain` `memory import` `memory maintain` `memory maintain backup` `memory maintain prune` `memory maintain vacuum` `memory gc` `memory upgrade` |
-| `skill` | `skill` `skill audit` `skill lint` `skill eval` `skill optimize` |
+| `skill` | `skill` `skill audit` `skill lint` `skill eval` `skill optimize` `skill meta-optimize` `skill procedure` `skill evolution-stats` `skill promotions` `skill rollback` |
 | `schedule` | `schedule` `schedule create` `schedule list` `schedule delete` `schedule run` `schedule sync` |
 
 Thông tin của mục này được giữ theo registry hiện tại. `market run` `diagram archify`
@@ -146,7 +146,7 @@ Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 - Thông tin của mục này được giữ theo registry hiện tại. `rerere.enabled=true`
 - Thông tin của mục này được giữ theo registry hiện tại. `init.defaultBranch=main`
 - Thông tin của mục này được giữ theo registry hiện tại. `totalIssues`
-- Thông tin của mục này được giữ theo registry hiện tại. `CLAUDE.md` `AGENTS.md`
+- Tệp ngữ cảnh vendor của project (block OMA trong `AGENTS.md` khi đã cài Codex, Qwen hoặc Claude Code ≥ 2.1.277).
 - Thông tin của mục này được giữ theo registry hiện tại.
 
 Chi tiết của mục này được áp dụng theo cấu hình hiện tại. `doctor`
@@ -262,7 +262,7 @@ Thông tin của mục này được giữ theo registry hiện tại. `--global
 Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 1. Thông tin của mục này được giữ theo registry hiện tại. `.agents/agents/`
 2. Thông tin của mục này được giữ theo registry hiện tại.
-3. Thông tin của mục này được giữ theo registry hiện tại. `CLAUDE.md` `GEMINI.md` `AGENTS.md`
+3. Tạo lại block tích hợp `AGENTS.md` cho mọi vendor đã cấu hình, bao gồm cả Claude Code. `CLAUDE.md` và `GEMINI.md` không bao giờ được tạo hoặc nhận block OMA. Claude Code ≥ 2.1.277 hỗ trợ đọc `AGENTS.md` trực tiếp nhưng bỏ qua nó bất cứ khi nào tồn tại `CLAUDE.md`, vì vậy khi có `CLAUDE.md` do user sở hữu, link sẽ thêm một dòng import `@AGENTS.md` duy nhất; `oma update` cũng gỡ block OMA legacy khỏi `CLAUDE.md` khi phát hiện version đó.
 4. Thông tin của mục này được giữ theo registry hiện tại.
 
 Thông tin của mục này được giữ theo registry hiện tại. `.agents/agents/` `.agents/workflows/` `.agents/rules/`
@@ -277,7 +277,8 @@ Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 
 ### setup (workflow)
 
-Thông tin của mục này được giữ theo registry hiện tại. `/setup` `oma` `/setup`
+Workflow `/setup` (được gọi bên trong một phiên agent) cung cấp cấu hình tương tác cho ngôn ngữ, việc cài đặt CLI, kết nối MCP và ánh xạ agent-CLI. Workflow này khác với `oma` (trình cài đặt): `/setup` cấu hình một bản cài đặt đã có sẵn.
+
 ---
 
 ## Giám sát và số liệu
@@ -514,7 +515,7 @@ Thông tin của mục này được giữ theo registry hiện tại. `--json`
 Thông tin của mục này được giữ theo registry hiện tại.
 
 ```
-oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
+oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
@@ -635,7 +636,7 @@ oma agent status session-20260324-143000 qa -r /path/to/project
 Thông tin của mục này được giữ theo registry hiện tại.
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
@@ -768,7 +769,7 @@ oma goal set --workflow ultrawork --gate test --budget-minutes 120
 Thông tin của mục này được giữ theo registry hiện tại. `--cron` `--every`
 
 ```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
@@ -826,7 +827,7 @@ Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 |:-----|:-----------|
 | `--json` | Nội dung tương ứng |
 
-Chi tiết của mục này được áp dụng theo cấu hình hiện tại. `synced` `missing-in-os` `schedule sync` `orphan-in-os` `schedule sync --prune` `--prune`
+**Drift states:** `synced` (manifest và OS khớp nhau), `stale` (registration trong OS gọi một lệnh mà CLI hiện tại không còn chấp nhận; chạy `schedule sync` để ghi lại, `oma update` tự động làm việc này), `missing-in-os` (chạy `schedule sync` để sửa), `orphan-in-os` (OS có một job không có trong manifest; chạy `schedule sync --prune` để xóa).
 
 Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 ```bash
@@ -1120,6 +1121,7 @@ Thông tin của mục này được giữ theo registry hiện tại.
 Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 - Thông tin của mục này được giữ theo registry hiện tại. `statusLine` `oma hook run` `bun`
 - Thông tin của mục này được giữ theo registry hiện tại. `installPiExtension` `oma hook run`
+- Các lần giao hook trùng lặp từ việc cài đặt kép project + global bị loại bỏ ngay trong `oma hook run` (payload giống hệt do một wrapper `oma-hook.sh` khác khởi chạy); các event khác nhau, kể cả các tool call song song, luôn chạy.
 
 Thông tin của mục này được giữ theo registry hiện tại. `cli/commands/hook/command.ts` `cli/commands/hook/probe/`
 
@@ -1509,7 +1511,7 @@ oma image doctor --output json
 
 ### video
 
-Thông tin của mục này được giữ theo registry hiện tại. `generate`
+Lập kế hoạch, author và render video short-form, explainer và demo. `generate` tạo brief, script, render spec và run manifest; cần có composition và compositor hoạt động trước khi render được một MP4 thật.
 
 ```
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
@@ -1520,11 +1522,11 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-Thông tin của mục này được giữ theo registry hiện tại. `generate` `--mode shorts|explainer|demo` `--aspect` `--locale` `--captions` `--visual` `--voice` `--music` `--duration` `--compositor remotion|mpt` `--capture` `--source file|web` `--url` `--device` `--ready-selector` `--show-cursor` `--polish` `--capture-timeout` `--capture-stop duration:<seconds>|selector:<css>` `--source web --url <url>` `--source file` `--output-dir` `--allow-external-output` `$PWD` `--max-usd` `--seed` `--no-brief-in-manifest` `--dry-run` `--output text|json` `--capture-stop` `--compositor` `--mode` `--output` `--source`
+`generate` nhận `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` và `--capture-stop duration:<seconds>|selector:<css>`. Dùng `--source web --url <url>` để capture bằng browser; `--source file` là mặc định. `--output-dir` chọn run root, `--allow-external-output` cho phép path nằm ngoài `$PWD`, `--max-usd` đặt trần chi phí, `--seed` cố định input planning và `--no-brief-in-manifest` lưu hash của brief thay vì nội dung brief. `--dry-run` dừng sau bước planning. `--output text|json` điều khiển CLI envelope.
 
-Thông tin của mục này được giữ theo registry hiện tại. `doctor` `--install` `--upgrade` `--install-mpt` `--install-strudel` `provider list` `compose` `render` `OMA_VIDEO_MOCK=1`
+`doctor` kiểm tra toolchain HyperFrames/MPT đã cache và nhận `--install`, `--upgrade`, `--install-mpt` và `--install-strudel`. `provider list` báo availability và trạng thái key của provider. `compose` scaffold hoặc làm mới composition của run và báo authoring contract; `render` chạy lint, render và probe output. Thiếu compositor, composition hoặc dependency của toolchain đều là lỗi. Đường `OMA_VIDEO_MOCK=1` chỉ dành cho test là chế độ placeholder duy nhất; một lần chạy bình thường không bao giờ thay thế bằng MP4 là file text hay file rất nhỏ.
 
-Thông tin của mục này được giữ theo registry hiện tại. `runDir` `manifestPath` `scriptPath` `renderSpecPath` `compose` `AUTHORING.md` `render` `oma video doctor`
+Output JSON thành công chứa `runDir`, `manifestPath`, `scriptPath` và `renderSpecPath`; manifest ghi lại các provider đã chọn, input và asset đã tạo. Sau `compose`, hãy author composition đã sinh theo `AUTHORING.md` của nó, rồi chạy lại `render`. Nếu thiếu provider key, chạy `oma video doctor`; nếu capture thất bại, kiểm tra URL, selector, device và timeout; nếu render thất bại, sửa các diagnostics của composition trước khi thử lại.
 
 ### star
 
@@ -1977,6 +1979,24 @@ oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --
 
 Thông tin của mục này được giữ theo registry hiện tại.  [Tham chiếu](../guide/harness-eval.md)
 
+### harness incident promote
+
+Biến một sự cố đã ghi nhận thành fixture hồi quy cho skill mà agent gây lỗi đã thực thi.
+
+```
+oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
+```
+
+### harness feedback
+
+Thăng cấp mọi sự cố chưa được thăng cấp và, với `--live` hoặc `--apply`, tối ưu từng skill bị ảnh hưởng trên suite đã mở rộng của nó.
+
+```
+oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
+```
+
+Xem [hướng dẫn Ca hồi quy của sự cố](../guide/harness-incidents.md).
+
 ---
 
 ### help
@@ -2009,6 +2029,8 @@ Thông tin của mục này được giữ theo registry hiện tại.
 | `DASHBOARD_PORT` | Nội dung tương ứng | `dashboard web` |
 | `MEMORIES_DIR` | Nội dung tương ứng | `dashboard` `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | `1` `oma skill eval` | `skills eval` |
+| `OMA_HOOK_DEDUP` | Đặt thành `0` để tắt việc chặn giao trùng lặp trong `oma hook run`. | `hook` |
+| `OMA_HOOK_DEDUP_DIR` | Ghi đè thư mục claim riêng dùng để chặn các lần giao hook trùng lặp (mặc định: `$XDG_RUNTIME_DIR/oma-hook-dedup`, nếu không thì `<tmpdir>/oma-hook-dedup-<uid>`). | `hook` |
 
 ---
 

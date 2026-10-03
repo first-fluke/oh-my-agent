@@ -88,7 +88,7 @@ oh-my-agent は専門化でこの問題に対応します。
 | エージェント | 役割 | 主な機能 |
 |-------|------|-----------------|
 | **oma-translation** | コンテキストに応じた翻訳 | Prepare、Acquire、Reason、Act、Verify、Finalize の6場面を使います。翻訳方法は、意味と保護対象の構文を読む、レジスターを選ぶ、ターゲット言語で再構成する、必要な場合は著者の文体を保つ、の4段階です。ターゲット言語別プロファイル（`resources/lang/{code}.md`）にレジスターとタイポグラフィの規則があります。リソースは `translation-rubric.md`、`anti-ai-patterns.md`、`lang/{ko,ja,zh,en}.md` です。 |
-| **oma-orchestration** | 自動マルチエージェントコーディネーター | CLI サブエージェントを並列起動し、セッション、タスクボード、進捗、結果の永続ファイルで調整し、検証ループを監視します。MAX_PARALLEL（デフォルト3）、MAX_RETRIES（デフォルト2）、POLL_INTERVAL（デフォルト30秒）を設定できます。エージェント間レビューと Clarification Debt の監視も含みます。リソースは `subagent-prompt-template.md`、`memory-schema.md` です。 |
+| **oma-orchestration** | 自動マルチエージェントコーディネーター | CLI サブエージェントを並列起動し、セッション、タスクボード、進捗、結果の永続ファイルで調整し、検証ループを監視します。MAX_PARALLEL（デフォルト3）、MAX_RETRIES（デフォルト2）、POLL_INTERVAL（デフォルト30秒）を設定できます。エージェント間レビューと任意のセッションの証拠も含みます。リソースは `subagent-prompt-template.md`、`memory-schema.md` です。 |
 | **oma-scm** | ソフトウェア構成管理（SCM）と Git | ブランチ、merge/rebase/conflict、ワークツリー、ベースライン、リリース状態を扱います。安全なステージング付きの Conventional Commit メッセージも案内し、co-author の末尾情報は有効な `scm.co_author` 設定から取得します。 |
 | **oma-coordination** | 手動マルチエージェントワークフローガイド | CLI `oma agent spawn` で PM、Frontend、Backend、Mobile、QA エージェントを調整する手順を示します。PM による分解、同じ優先度のタスクを別ワークスペースで起動、実行単位の進捗と結果の監視、Frontend/Mobile 作業前の API とデータ契約の調整、QA レビューまでを扱います。`oma-orchestration` の手動版です。 |
 
@@ -134,7 +134,7 @@ oh-my-agent は専門化でこの問題に対応します。
 |-------|------|-----------------|
 | **oma-image** | マルチベンダー画像ルーター | Codex（ChatGPT OAuth 経由の `gpt-image-2`、CLI 優先）、Antigravity の Gemini 系「nano-banana」モデル（`agy` CLI + Gemini Code Assist、モデルは内部で選択）、Pollinations（無料の `flux`/`zimage`）へ、認証状態を見て並列ディスパッチします。生成前の明確化とプロンプト補強、最大10個の参照画像、0.20ドル以上でのコスト確認、再現用の `manifest.json` を備えます。CLI は `oma image generate`、`oma image doctor`、`oma image vendor list` です。 |
 | **oma-slide** | アニメーション付き HTML デッキ生成 | 固定 1920×1080 ステージで、アンチ「AI スロップ」のプレゼンデッキを作成します。ジオメトリを決定論的に検証し、単一 HTML にまとめ、`oma slide` で PDF/PNG/PPTX に出力します。スタイルプリセットとテンプレート、CJK→Pretendard 規則、`prefers-reduced-motion`、可視フォーカス、最大3回の自動修正検証ループを使います。画像は `oma-image` に委ね、Canva MCP の入出力は任意です。 |
-| **oma-video** | ショート、解説、デモのルーター | `oma video` CLI でショート/リール（9:16）、解説（16:9）、人が録画するデモ（16:9）を作成します。決定論的なアセットバス（`script.json` → `timing.json` → `render-spec.json`）が、同梱の Remotion コンポジターに入力されます。アセットプロバイダーはローカルのフォールバックを使う場合がありますが、コンポジションやツールチェーンの不足、レンダーエラーがあれば実行は失敗します。人によるキャプチャで認証情報を自動入力することはありません。 |
+| **oma-video** | ショート、解説、デモのルーター | `oma video` CLI でショート/リール（9:16）、解説（16:9）、人が録画するデモ（16:9）を作成します。決定論的なアセットバス（`script.json` → `timing.json` → `render-spec.json`）が、管理対象の HyperFrames コンポジターに入力されます。アセットプロバイダーはローカルのフォールバックを使う場合がありますが、コンポジションやツールチェーンの不足、レンダーエラーがあれば実行は失敗します。人によるキャプチャで認証情報を自動入力することはありません。 |
 | **oma-voice** | ローカル優先の TTS と STT | Voicebox MCP サーバーを使い、クラウド呼び出しや1回ごとの料金なしで、端末上の通知、アセット用 TTS、文字起こしを実行します。TTS は WAV がデフォルトで、ローカルで MP3 に変換できます。文字起こしは音声パスまたは base64 を受け付けます。TTS は5000文字、STT は30分までで、保存するアセットや文字起こしはマニフェストを書き出します。 |
 
 ---

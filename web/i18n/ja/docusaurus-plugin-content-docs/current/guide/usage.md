@@ -203,9 +203,10 @@ oma stats get
 
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
+- Qwen Code -> `.qwen/agents/*.md`（Agent ツールの `subagent_type` で選択）
 - Antigravity CLI/IDE -> `agy` 経由の `oma agent spawn`
 
-ベンダーをまたぐタスクでは引き続き `oma agent spawn` を使います。
+ベンダーをまたぐタスクと `model_preset: free` では `oma agent spawn` を使います。ネイティブディスパッチでも、検証の証拠を記録するには[結果ライフサイクル](./agent-results-and-resume.md)が必要です。
 
 ---
 
@@ -229,14 +230,14 @@ oma stats get
 **Phase 2、IMPL（Step 5、開発エージェントをスポーン）：**
 - バックエンドエージェントが Stripe 統合（Webhook、冪等性、エラーハンドリング）を実装
 - フロントエンドエージェントがチェックアウトフローと決済状態 UI を作成
-- Step 5.2：品質スコアのベースライン（テスト、lint、typecheck）を計測
+- Step 5.2：定義された計測比較が必要な場合だけ、ベースラインを記録
 - IMPL_GATE：適用対象のチェックとテストが通り、計画したファイルだけを変更。ビルドチェックは明示的に依頼された場合だけ実行
 
 **Phase 3、VERIFY（Step 6〜8、QA エージェントをスポーン）：**
 - Step 6：整合性レビュー（実装がプランに一致するか）
 - Step 7：セキュリティ/バグレビュー（OWASP、npm audit、Stripe のセキュリティベストプラクティス）
 - Step 8：改善/回帰レビュー（回帰がないか）
-- VERIFY_GATE：CRITICAL ゼロ、HIGH ゼロ、品質スコア 75 以上
+- VERIFY_GATE：CRITICAL ゼロ、HIGH ゼロ、適用対象のプロジェクト計測目標を満たす
 
 **Phase 4、REFINE（Step 9〜13、Refactor エージェントをスポーン）：**
 - Step 9：大きなファイル（500 行超）と関数（50 行超）を分割
@@ -244,7 +245,7 @@ oma stats get
 - Step 11：副作用レビュー（`find_referencing_symbols` でカスケード影響を追跡）
 - Step 12：変更全体のレビュー（命名の一貫性、スタイルの整合性）
 - Step 13：デッドコードを整理
-- REFINE_GATE：品質スコアが劣化せず、コードが整理されている
+- REFINE_GATE：未解決の計測上の回帰がなく、コードが整理されている
 
 **Phase 5、SHIP（Step 14〜17、QA エージェントをスポーン）：**
 - Step 14：コード品質レビュー（lint、型、カバレッジ）

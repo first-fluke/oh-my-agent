@@ -223,6 +223,8 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 
 이 기본값은 `.agents/skills/oma-orchestration/config/cli-config.yaml`에서 오버라이드할 수 있습니다.
 
+Codex는 workspace-write 샌드박스를 유지합니다. oma는 네트워크 접근을 활성화하고, 프로젝트 루트, OMA 상태 홈(`~/.oma`), 기존 패키지 매니저 캐시를 쓰기 가능한 디렉토리로 추가합니다. `oma update`는 `cli-config.yaml`을 교체하므로 오래 유지할 모드는 `OMA_CODEX_SANDBOX`로 설정하세요. 값은 `read-only`, `workspace-write`(기본값), `danger-full-access`(샌드박스도 승인도 없음) 중 하나입니다.
+
 ### agent status
 
 ```
@@ -241,7 +243,7 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 ### agent parallel
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | 플래그 | 축약 | 설명 | 기본값 |
@@ -342,7 +344,7 @@ oma video provider list [--output <format>]
 
 `video generate`는 계획 및 캡처 제어 옵션인 `--mode`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor`, `--capture`, `--source`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, `--capture-stop`을 받습니다. 또한 `--output-dir`, `--allow-external-output`, `--max-usd`, `--seed`, `--timeout`, `--script`, `--dry-run`, `--yes`, `--output`, `--no-brief-in-manifest`를 받습니다. 브라우저 캡처에는 `--source web --url <url>`을 사용하고, 기본 source는 `file`입니다. 일반 렌더링에는 작성된 컴포지션과 동작하는 compositor가 필요하며 placeholder는 `OMA_VIDEO_MOCK=1` 테스트 경로에만 제한됩니다.
 
-`video doctor`는 Remotion/MPT/Strudel 도구 체인을 보고하거나 준비합니다. `compose`는 실행의 컴포지션 계약을 준비하고 `render`는 타입 검사, 렌더링, 출력 검사를 수행합니다. `provider list`는 공급자와 키 상태를 보고합니다. 실행 매니페스트와 복구 순서는 [비디오 생성](../guide/video-generation.md)을 참고합니다.
+`video doctor`는 HyperFrames/MPT/Strudel 도구 체인을 보고하거나 준비합니다. `compose`는 실행의 컴포지션 계약을 준비하고 `render`는 lint, 렌더링, 출력 검사를 수행합니다. `provider list`는 공급자와 키 상태를 보고합니다. 실행 매니페스트와 복구 순서는 [비디오 생성](../guide/video-generation.md)을 참고합니다.
 
 ### memory init
 
@@ -455,8 +457,6 @@ oma describe | jq '.command.subcommands[] | {name, description}'
 # 특정 명령의 세부사항 가져오기
 oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 ```
-+
----
 
 ## 전체 공개 옵션 레지스트리 {#complete-public-option-registry}
 
@@ -524,6 +524,12 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `search rss google` | `--locale <value>` | 질의에 대한 Google News RSS URL을 만듭니다. |
 | `harness` | `없음` | 격리된 저장소 작업에서 OMA harness 오버레이를 평가합니다. |
 | `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | 후보 `.agents/` 오버레이를 기준선과 비교합니다. |
+| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | 캡처한 인시던트에서 스킬 회귀 픽스처를 도출합니다. |
+| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | 인시던트를 승격하고 영향받은 스킬을 최적화합니다. |
+| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | 프로젝트의 예산이 정해진 예약 피드백 사이클을 활성화합니다. 모드는 apply 또는 propose입니다. |
+| `harness evolution status` | `--json, --output <format>` | 설정, 스케줄, 대기 중인 작업, 충돌, 마지막 사이클을 보여줍니다. |
+| `harness evolution disable` | `--json, --output <format>` | 프로젝트의 예약 피드백 사이클을 비활성화합니다. |
+| `harness evolution run` | `--json, --output <format>` | 활성화된 프로젝트에 저장된 모드와 예산으로 사이클을 한 번 실행합니다. |
 | `slide` | `없음` | 1920×1080 HTML 프레젠테이션을 만들고 검증·내보냅니다. |
 | `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | 슬라이드의 overflow, overlap, 글꼴 크기를 품질 게이트로 검사합니다. |
 | `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | 슬라이드 파일을 자체 완결 HTML로 합칩니다. |
@@ -556,7 +562,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `video` | `없음` | 숏폼, 설명, 데모 영상을 생성합니다. |
 | `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | brief에서 비디오 실행 디렉토리를 생성합니다. |
 | `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | 비디오 공급자와 compositor 준비 상태를 점검합니다. |
-| `video compose` | `--output <format>, --refresh, --offline` | 최신 Remotion 도구 체인으로 실행 컴포지션을 준비합니다. |
+| `video compose` | `--output <format>, --refresh, --offline` | 최신 HyperFrames 도구 체인으로 실행 컴포지션을 준비합니다. |
 | `video render` | `--output <format>` | render-spec.json에서 실행 디렉토리를 다시 렌더링합니다. |
 | `video provider` | `없음` | 비디오 공급자를 관리합니다. |
 | `video provider list` | `--output <format>` | 비디오 공급자와 가용성을 나열합니다. |
@@ -644,8 +650,13 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `skill` | `없음` | 설치된 스킬을 검사하고 감사합니다. |
 | `skill audit` | `--json, --output <format>` | 설치된 스킬 설명의 유사도를 검사합니다. |
 | `skill lint` | `--skill <id>, --json, --output <format>` | 스킬 작성 문제를 감지합니다. |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --require-coverage, --neg-transfer, --json, --output <format>` | 보류된 작업에서 스킬 효용 향상을 측정합니다. |
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --json, --output <format>` | 측정된 효용 향상을 최대화하도록 스킬을 최적화합니다. |
+| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | 보류된 작업에서 스킬 효용 향상을 측정합니다. |
+| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | 측정된 효용 향상을 최대화하도록 스킬을 최적화합니다. |
+| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | 진화 절차 변경을 제안하고 보류된 스킬에서 채점합니다. |
+| `skill procedure` | `--export, --json, --output <format>` | 진화 절차(최적화기와 유지 관리 프롬프트, constitution)와 해시를 보여줍니다. |
+| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | 기록된 최적화 실행을 결과, 메모리 모드, 절차별로 집계합니다. |
+| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | 스킬의 기록된 SKILL.md 승격과 롤백을 서술하며, `--all`을 지정하면 모든 스킬과 절차를 대상으로 합니다. |
+| `skill rollback` | `--skill <id>, --json, --output <format>` | 가장 최근에 기록된 승격이 교체한 SKILL.md 본문을 복원합니다. |
 | `schedule` | `없음` | 예약된 에이전트 작업을 관리합니다. |
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | 예약된 에이전트 작업을 등록합니다. |
 | `schedule list` | `--json, --output <format>` | 예약 작업과 OS 드리프트 상태를 나열합니다. |

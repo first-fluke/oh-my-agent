@@ -13,7 +13,7 @@ description: 既存プロジェクトに oh-my-agent を追加するための完
 1. **CLI パス**：`oma`（または `npx oh-my-agent`）を実行し、対話プロンプトに従います。ほとんどのユーザーにはこの方法を推奨します。
 2. **手動パス**：ファイルをコピーし、シンボリックリンクを自分で設定します。制限された環境やカスタム構成で役立ちます。
 
-どちらの方法でも結果は同じです。`.agents/` ディレクトリ（SSOT）と、`.claude/agents/`、`.codex/agents/`、`.gemini/agents/` などのベンダー固有の生成ファイルが作成されます。
+どちらの方法でも結果は同じです。`.agents/` ディレクトリ（SSOT）と、`.claude/agents/`、`.codex/agents/`、`.qwen/agents/` などのベンダー固有の生成ファイルが作成されます。
 
 ---
 
@@ -180,7 +180,13 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link` は `.agents/agents/` から `.claude/`、`.codex/`、`.gemini/` と関連するベンダー固有ファイルを再構築します。実行時に OMA がネイティブディスパッチを使うのは、現在のランタイムのベンダーがエージェントの対象ベンダーと一致するときだけです。ベンダーが混在する構成も動作しますが、一致しないエージェントは外部の `oma agent spawn` にフォールバックします。
+`oma link` は `.agents/agents/` から `.claude/`、`.codex/`、`.qwen/` と関連するベンダー固有ファイルを再生成します。実行時に OMA がネイティブディスパッチを使うのは、現在のランタイムのベンダーがエージェントの対象ベンダーと一致するときだけです。ベンダーが混在する構成も動作しますが、一致しないエージェントは外部の `oma agent spawn` にフォールバックします。
+
+Qwen Code では、生成された Markdown 定義が `.qwen/agents/` に置かれます。OMA のロールは Agent ツールの `subagent_type` で選びます（例: `backend-engineer`）。利用できる定義は、Qwen Code の `/agents manage` で確認できます。ネイティブエージェントは、CLI スポーンと同じ[結果ライフサイクル](./agent-results-and-resume.md)（`oma agent begin`、`oma agent verify`、`oma agent finish`）を使います。`model_preset: free` の場合は、子エージェントがゲートウェイ設定を受け取れるよう `oma agent spawn` を使ってください。
+
+Qwen Code は、ほかのベンダーと同じ `code-intelligence-primer` を使います。Claude Code と同様に、共有プライマーを `SessionStart` と `UserPromptSubmit` に登録します。ガイダンスはセッションごとに 1 回、コンパクション後にもう一度注入されます。プライマーは設定されたプロバイダー（Serena または Gortex）に従い、遅延ツール（deferred tool）のガイダンスを含みます。プロバイダーが利用できない場合やタイムアウトした場合は、ネイティブ検索へのフォールバックを許可します。Qwen は、コード検索のブロックやプロバイダー結果の追跡を別途追加しません。
+
+CLI を更新したら、`oma link qwen` を実行してフック設定とラッパーを再生成し、新しい Qwen セッションを開始してください。フック出力のテストが検証するのは統合の契約であり、モデルがどのツールを選ぶかまでは保証しません。
 
 ### Step 3：ユーザー設定を構成する
 
@@ -404,7 +410,7 @@ oma dashboard web
 
 - エージェント定義（`.claude/agents/*.md`、`.codex/agents/*.toml`、`.gemini/agents/*.md`）
 - フック設定（`.claude/hooks/`、`.codex/hooks.json`）
-- 設定ファイルとベンダー統合ドキュメント（`CLAUDE.md`、`AGENTS.md`、`GEMINI.md`）
+- 設定ファイルと、共有のベンダー統合ドキュメント（`AGENTS.md` のみ。Claude Code ≥ 2.1.277 も含みます）。`CLAUDE.md` と `GEMINI.md` に OMA ブロックが追加されることはありません。ユーザーが所有する既存の `CLAUDE.md` には、Claude Code が `AGENTS.md` を読み飛ばさないよう `@AGENTS.md` のインポート行だけを追記します。
 
 Codex は一度だけ必要な信頼手順の後ろでフックを有効にするため、Codex の `/hooks` ブラウザーで一度確認するまで `.codex/hooks.json` は実行されません。詳しくは[Codex フックの信頼設定](/docs/guide/codex-hook-trust)を参照してください。
 

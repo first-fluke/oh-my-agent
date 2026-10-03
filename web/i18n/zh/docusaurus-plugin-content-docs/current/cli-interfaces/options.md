@@ -129,13 +129,13 @@ oma update mcp [-y | --yes] [--ci] [--all] [--vendor <vendors>]
 - `oma-config.yaml`是替换使用该注册表默认.
 - `mcp.json`是替换使用该注册表默认.
 - Backend `stack/`目录(语言-指定资源)是替换.
--所有其他文件是始终更新regardless的这标志.
+- 所有其他文件是始终更新regardless的这标志.
 
 **使用--ci时的行为：**
--没有`console.clear()`在启动.
+- 没有`console.clear()`在启动.
 - `@clack/prompts`是替换使用纯文本`console.log`.
--竞争工具检测提示是跳过.
--错误抛出而不是的调用`process.exit(1)`.
+- 竞争工具检测提示是跳过.
+- 错误抛出而不是的调用`process.exit(1)`.
 
 **供应商范围：**
 - `oma update`更新仅供应商目录该已经存在.
@@ -172,7 +172,7 @@ oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 - `7d`: 7天
 - `2w`: 2周
 - `1m`: 1月
--省略用于默认(7天)
+- 省略用于默认(7天)
 
 ### cleanup（清理）
 
@@ -186,8 +186,8 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 | `--yes` | `-y` |跳过所有确认提示. Cleans everything不使用asking.有用在scripts和CI. | `false` |
 
 **清理内容：**
-1.孤立PID文件: `/tmp/subagent-*.pid`其中该引用的进程是没有更长运行中.
-2.孤立日志文件: `/tmp/subagent-*.log`匹配已停止PIDs.
+1. 孤立PID文件: `/tmp/subagent-*.pid`其中该引用的进程是没有更长运行中.
+2. 孤立日志文件: `/tmp/subagent-*.log`匹配已停止PIDs.
 3. Gemini Antigravity目录: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/`.这些累积状态覆盖时间和可以增长大.
 
 ### agent spawn（生成智能体）
@@ -226,6 +226,8 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 
 这些默认值可以是覆盖在`.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
+Codex 保持其 workspace-write 沙箱。oma 会启用网络访问，并把项目根目录、OMA 状态主目录（`~/.oma`）和已有的包管理器缓存添加为可写目录。`oma update` 会替换 `cli-config.yaml`，因此请用 `OMA_CODEX_SANDBOX` 设置持久的模式：`read-only`、`workspace-write`（默认）或 `danger-full-access`（无沙箱、无审批）。
+
 ### agent status（智能体状态）
 
 ```
@@ -237,14 +239,14 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 | `--root` | `-r` |根目录路径用于locating内存文件(`.agents/state/memories/result-{agent}.md`)和PID文件. |当前可用目录|
 
 **状态确定逻辑:**
-1.如果`.agents/state/memories/result-{agent}.md`存在:读取`## Status:` header.如果没有header,报告`completed`.
-2.如果PID文件存在在`/tmp/subagent-{session-id}-{agent}.pid`:检查如果该PID是存活.报告`running`如果存活, `crashed`如果已停止.
-3.如果都不文件存在:报告`crashed`.
+1. 如果`.agents/state/memories/result-{agent}.md`存在:读取`## Status:` header.如果没有header,报告`completed`.
+2. 如果PID文件存在在`/tmp/subagent-{session-id}-{agent}.pid`:检查如果该PID是存活.报告`running`如果存活, `crashed`如果已停止.
+3. 如果都不文件存在:报告`crashed`.
 
 ### agent parallel（并行智能体）
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 |标志|简短|说明|默认|
@@ -254,9 +256,9 @@ oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 | `--no-wait` | |后台模式.启动所有智能体和returns立即不使用等待用于完成. PID列出和日志是已保存到`.agents/results/parallel-{timestamp}/`. | `false` (waits用于完成) |
 
 **内联任务格式：** `agent:task`或`agent:task:workspace`
--工作区是检测到由检查如果该最后冒号分隔的片段启动使用`./`, `/`,或等于`.`.
--示例： `backend:Implement auth API:./api` --智能体=backend,任务="Implement身份验证API",工作区=./API.
--示例： `frontend:Build login page` --智能体=frontend,任务="构建login page",工作区=自动检测.
+- 工作区是检测到由检查如果该最后冒号分隔的片段启动使用`./`, `/`,或等于`.`.
+- 示例： `backend:Implement auth API:./api` --智能体=backend,任务="Implement身份验证API",工作区=./API.
+- 示例： `frontend:Build login page` --智能体=frontend,任务="构建login page",工作区=自动检测.
 
 **YAML任务文件格式：**
 ```yaml
@@ -347,7 +349,7 @@ oma video provider list [--output <format>]
 
 `video generate`接受该规划和采集控制`--mode`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor`, `--capture`, `--source`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`,和`--capture-stop`.它也接受`--output-dir`, `--allow-external-output`, `--max-usd`, `--seed`, `--timeout`, `--script`, `--dry-run`, `--yes`, `--output`,和`--no-brief-in-manifest`.浏览器采集使用`--source web --url <url>`; `file`是该默认来源.一个正常渲染需要一个已编写合成和一个可用合成器;占位符是限制到该`OMA_VIDEO_MOCK=1`测试路径.
 
-`video doctor`报告或提供该Remotion/MPT/Strudel工具链. `compose`准备该运行's合成契约,和`render`类型检查,渲染,和探测该输出. `provider list`报告供应商和密钥状态.读取[视频生成](../guide/video-generation.md)用于该运行清单和恢复顺序.
+`video doctor`报告或提供该HyperFrames/MPT/Strudel工具链. `compose`准备该运行's合成契约,和`render` lint 检查,渲染,和探测该输出. `provider list`报告供应商和密钥状态.读取[视频生成](../guide/video-generation.md)用于该运行清单和恢复顺序.
 
 ### memory init（初始化内存）
 
@@ -524,6 +526,12 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `search rss google` | `--locale <value>` |构建Google News RSS URL用于一个查询|
 | `harness` | `—` | Evaluate OMA harness overlays针对隔离仓库任务|
 | `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` |比较候选.智能体覆盖层使用该当前基线|
+| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | 从已捕获的事故派生技能回归 fixture |
+| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | 晋升事故并优化受影响的技能 |
+| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | 启用项目受预算约束的计划反馈周期；模式为 apply 或 propose |
+| `harness evolution status` | `--json, --output <format>` | 显示配置、计划、待办工作、冲突和上一个周期 |
+| `harness evolution disable` | `--json, --output <format>` | 禁用项目的计划反馈周期 |
+| `harness evolution run` | `--json, --output <format>` | 按已启用项目保存的模式和预算运行一个周期 |
 | `slide` | `—` | HTML演示文稿toolkit ， scaffold,校验,导出,和编辑1920×1080幻灯片decks |
 | `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | Geometric quality门槛，渲染幻灯片通过puppeteer-core和检查overflow/重叠/font-规模|
 | `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` |合并每个-幻灯片文件到一个single self-contained .html deliverable |
@@ -556,7 +564,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `video` | `—` |简短-形式,解释器,和demo视频生成|
 | `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` |生成一个视频运行目录从一个概要|
 | `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` |检查视频供应商和合成器就绪|
-| `video compose` | `--output <format>, --refresh, --offline` | Scaffold该运行's Remotion项目在该最新工具链+ remotion-dev/技能;打印该编写契约|
+| `video compose` | `--output <format>, --refresh, --offline` | Scaffold该运行's HyperFrames项目在该最新工具链+ heygen-com/hyperframes;打印该编写契约|
 | `video render` | `--output <format>` | Re-渲染一个运行目录从渲染-规格.json |
 | `video provider` | `—` | |
 | `video provider list` | `--output <format>` |列出视频供应商和availability |
@@ -644,8 +652,13 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `skill` | `—` |检查和审计已安装技能|
 | `skill audit` | `--json, --output <format>` |检查frontmatter说明相似度在…之间已安装技能|
 | `skill lint` | `--skill <id>, --json, --output <format>` |检测按技能编写气味(frontmatter,结构, broken refs) |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --require-coverage, --neg-transfer, --json, --output <format>` |测量按技能效用lift (处理vs基线在留出任务) |
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --json, --output <format>` |优化技能的技能.md到maximize measured留出效用lift |
+| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` |测量按技能效用lift (处理vs基线在留出任务) |
+| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` |优化技能的技能.md到maximize measured留出效用lift |
+| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | 提出对演进流程的修改，并在留出技能上评分 |
+| `skill procedure` | `--export, --json, --output <format>` | 显示演进流程（优化器/维护者提示词、constitution）及其哈希 |
+| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | 按结果、内存模式和流程汇总已记录的优化运行 |
+| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | 梳理某个技能已记录的 SKILL.md 晋升与回滚；使用 `--all` 则梳理所有技能和演进流程 |
+| `skill rollback` | `--skill <id>, --json, --output <format>` | 恢复最近一次已记录的晋升所替换的 SKILL.md 正文 |
 | `schedule` | `—` | |
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` |注册一个计划智能体任务|
 | `schedule list` | `--json, --output <format>` |列出计划任务使用操作系统漂移状态(synced/缺少-在-操作系统/孤立-在-操作系统), grouped由项目|

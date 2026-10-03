@@ -48,7 +48,7 @@ oma agent spawn backend "Implement JWT authentication API with refresh tokens" s
 oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # Override the CLI vendor for this specific spawn
-oma agent spawn frontend "Build login form" session-01 --model claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # Retry a run while preserving its evidence chain
 oma agent spawn backend "Fix the payment gateway issue" session-01 --resumed-from run-123
@@ -152,11 +152,11 @@ Wanneer `oma agent spawn` bepaalt welke CLI wordt gebruikt:
 
 | Prioriteit | Bron | Voorbeeld |
 |---------|------|---------|
-| 1 (hoogst) | `--model`-vlag | `oma agent spawn backend "task" session-01 --model claude` |
+| 1 (hoogst) | `--vendor`-vlag | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | `agents:`-override in `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | Standaardagenten van actieve `model_preset` | preset-lookup voor de agentrol |
 
-De vlag `--model` wint altijd. Zonder vlag controleert het systeem eerst overrides onder `agents:`, daarna de presetdefaults en daarna de geconfigureerde fallback-CLI. Met `model_preset: auto` leveren de native settings van de huidige runtime het model.
+De vlag `--vendor` wint altijd. Zonder vlag controleert het systeem eerst overrides onder `agents:`, daarna de presetdefaults en daarna de geconfigureerde fallback-CLI. Met `model_preset: auto` leveren de native settings van de huidige runtime het model.
 
 ---
 

@@ -11,13 +11,23 @@ description: oh-my-agent のインストール方法、スキルとプロバイ�
 - **AI 搭載 IDE または CLI**: Claude Code、Codex CLI、Qwen Code、Antigravity CLI（`agy`）、Cursor、OpenCode、Kimi Code CLI、Kiro、CommandCode、pi、GitHub Copilot、Hermes など、サポート対象のホストを少なくとも1つ
 - **bun**: JavaScript ランタイム兼パッケージマネージャー。ない場合はインストールスクリプトが自動で導入します。
 - **uv**: Python パッケージマネージャー。ない場合はブートストラップスクリプトが導入を提案します。
-- **コードインテリジェンスプロバイダー**: デフォルトは Serena です。プロバイダー設定で選択すれば Gortex も使えます。インストーラーは `uv tool install` で Serena を導入できます。任意の依存関係が利用できなくても、警告を出して処理を続けます。
+- **コードインテリジェンスプロバイダー**: デフォルトは Serena です。プロバイダー設定で選択すれば Gortex も使えます。インストーラーは `uv tool install` で Serena を導入できます。任意の依存関係が利用できなくても、警告を出して処理を続けます。Gortex を選択している場合、プロジェクトモードの `oma install` と `oma update` は、まだ追跡されていないプロジェクトを Gortex デーモンに登録します（`gortex track`）。あわせて、OMA が生成するディレクトリを、Gortex CLI 経由でそのプロジェクトの除外リストに追加します。プロジェクトツリーには何も書き込みません。Gortex 自体は別途インストールする必要があります。
 
 インストーラーは統合を機能別に扱います。フックベンダーは Antigravity、Claude、Codex、CommandCode、Cursor、Grok、Kimi、Kiro、Qwen です。OpenCode と pi は拡張ブリッジを使い、GitHub Copilot と Hermes にはスキルリンクを作り、ZCode にはワークフローコマンドを渡します。複数のベンダーを選べますが、最初のタスクに必要なのは使う予定のホストだけです。
 
 ---
 
-## 方法1: ワンライナーインストール（推奨）
+## 方法0: skills CLI（スキルだけなら最速）
+
+検出したエージェントランタイムに OMA スキルパックをインストールします。
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+フルハーネスなしでスキルだけを使いたい場合に、最も手軽な導入方法です。ワークフロー、ルール、フック、ゲート、`oma agent spawn` が必要な場合は、下の方法1または方法2を使ってください。
+
+## 方法1: ワンライナーインストール（フルハーネス）
 
 ```bash
 # macOS / Linux
@@ -224,6 +234,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -258,7 +269,7 @@ agents:
 | `model_preset` | string | はい | アクティブなプリセットキー。`auto` は現在のランタイムに従います。固定キーには `free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro`、`mixed` があります。カスタムプリセットキーも使えます。[エージェント別モデル](../guide/per-agent-models.md)を参照してください。 |
 | `default_cli` | string | いいえ | 明示的なエージェント設定と選択したプリセットでベンダーが決まらないとき、`oma agent spawn` が使うフォールバック CLI です。 |
 | `free` | map | いいえ | `model_preset: free` のときに使う FreeLLMAPI ゲートウェイ設定です。API キーは環境変数に置いてください。 |
-| `providers` | map | いいえ | 機能プロバイダーです。`code_intelligence`（`serena` または `gortex`）、`docs`（`context7`）、`web`（`native` または `brave`）、`semantic_memory`（`agentmemory`、`honcho`、`none`）を指定します。 |
+| `providers` | map | いいえ | 機能プロバイダーです。`code_intelligence`（`serena` または `gortex`）、`code_intelligence_guard`（`block` または `off`）、`docs`（`context7`）、`web`（`native` または `brave`）、`semantic_memory`（`agentmemory`、`honcho`、`none`）を指定します。 |
 | `date_format` | string | いいえ | タイムスタンプ形式（`ISO`、`US`、`EU`）。デフォルトは `ISO` です。 |
 | `timezone` | string | いいえ | タイムゾーン識別子（例: `Asia/Seoul`）。省略するとホストのシステムタイムゾーンを使います。 |
 | `auto_update_cli` | boolean | いいえ | 通常の CLI チェックでバックグラウンド更新を許可するかどうか。デフォルトは `true` で、`false` にすると無効になります。 |
@@ -292,7 +303,7 @@ oma doctor
 - 有効な SKILL.md フロントマターを持つスキルファイルが存在すること。
 - シンボリックリンクとフックスクリプトが有効な対象を指すこと。
 - ベンダー設定ファイルでフックが正しく設定されていること。
-- 選択したコードインテリジェンスとメモリのプロバイダーに到達できること。
+- 選択したコードインテリジェンスとメモリのプロバイダーに到達できること（Gortex の場合は、現在のプロジェクトがデーモンの追跡対象に含まれているかも確認します）。
 - `oma-config.cue` または `oma-config.yaml` が必須フィールドを含む有効な設定であること。
 
 問題がある場合、`oma doctor` は欠落または無効な項目を特定し、最初のタスクを止める問題と任意の統合に関する警告を分けて表示します。

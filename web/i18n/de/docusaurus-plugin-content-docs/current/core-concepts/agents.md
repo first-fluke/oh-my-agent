@@ -413,7 +413,7 @@ Projektspezifische `stack/stack.yaml`, `stack/tech-stack.md`, Snippets und API-V
 3. Gegen-Review: QA-Agent prüft Änderungen
 4. Bei Fehlschlag: Probleme werden zur Behebung zurückgemeldet (maximal 5 Schleifendurchläufe)
 
-**Clarification-Debt-Überwachung:** Verfolgt Benutzerkorrekturen während Sitzungen. Ereignisse werden bewertet: clarify (+10), correct (+25), redo (+40). CD >= 50 löst obligatorische RCA aus. CD >= 80 pausiert die Sitzung.
+**Sitzungsbelege:** Hält bei Bedarf wesentliche Korrekturen und beurteilte Review-Befunde mit Ursache, Auswirkung und Verifikation fest. Es gibt weder eine Strafpunktzahl noch eine durch einen Punktestand ausgelöste Pause.
 
 **Ressourcen:** `subagent-prompt-template.md`, `memory-schema.md`.
 
@@ -761,7 +761,7 @@ Projektspezifische `stack/stack.yaml`, `stack/tech-stack.md`, Snippets und API-V
 
 ### oma-video
 
-**Domäne:** Kurz-, Erklär- und menschengeführte Demo-Videos über die `oma video`-CLI erzeugen; dabei Skript → Narration → Visuals → Untertitel → Remotion-Rendering komponieren.
+**Domäne:** Kurz-, Erklär- und menschengeführte Demo-Videos über die `oma video`-CLI erzeugen; dabei Skript → Narration → Visuals → Untertitel → HyperFrames-Rendering komponieren.
 
 **Einsatzbereich:** Kurzvideos (Shorts/Reels, 9:16) aus einem Thema, Erklärvideos (16:9/9:16) aus README/Code/Daten, Demos und Walkthroughs aus einem Screen-Capture (`--source file`) oder einer überwachten Browseraufnahme einer beliebigen URL (`--source web`) erzeugen sowie einen vorhandenen Lauf deterministisch neu rendern.
 
@@ -777,7 +777,7 @@ Projektspezifische `stack/stack.yaml`, `stack/tech-stack.md`, Snippets und API-V
 
 **Workflow:** PREPARE (Modus/Seitenverhältnis/Locale, Brief klären/erweitern) → ACQUIRE (Providerverfügbarkeit abfragen, Capture-Pfad validieren, Kosten prüfen) → ACT (Skript → Stimme ∥ Visuals ∥ Untertitel → Render-Spezifikation → Render) → VERIFY (Schema, Manifest-Hashes, Exit-Code, MP4) → FINALIZE (Laufverzeichnis + MP4-Pfad + Abdeckungswarnungen).
 
-**Ressourcen:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md` sowie der mitgelieferte `remotion/`-Compositor, der Web-Capture-Treiber und der `mpt/`-Fallback-Compositor; `config/video-config.yaml`.
+**Ressourcen:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md` sowie die `hyperframes-authoring/`-Modusleitfäden, der Web-Capture-Treiber und der `mpt/`-Fallback-Compositor; `config/video-config.yaml`.
 
 ---
 
@@ -944,8 +944,8 @@ Während Orchestrierungssitzungen koordinieren sich Agenten über gemeinsame Mem
 | `task-board-{sessionId}.md` | Orchestrator | Aufgabenzuweisungen, Prioritäten, Statusaktualisierungen | Nur lesend |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Dieser Lauf | Zugweiser Fortschritt: durchgeführte Aktionen, gelesene/modifizierte Dateien, aktueller Status | Orchestrator liest |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Dieser Lauf | Endergebnis: Status (abgeschlossen/fehlgeschlagen), Zusammenfassung, geänderte Dateien, Akzeptanzkriterien-Checkliste | Orchestrator liest |
-| `session-metrics.md` | Orchestrator | Clarification-Debt-Verfolgung, Qualitätsbewertungsentwicklung | QA liest |
-| `experiment-ledger.md` | Orchestrator/QA | Experimentverfolgung bei aktiver Qualitätsbewertung | Alle lesen |
+| `session-metrics.md` | Orchestrator | Optionale Sitzungsbelege und gemessene Experimentergebnisse | QA liest |
+| `experiment-ledger.md` | Orchestrator/QA | Belege für tatsächliche Experimente | Alle lesen |
 
 Memory-Tools sind konfigurierbar. Standardmäßig lesen und schreiben Agenten diese Koordinationsdateien direkt mit ihren nativen Dateitools (`Read`, `Write`, `Edit`); benutzerdefinierte Tools und ein eigener Basispfad können in `mcp.json` konfiguriert werden:
 

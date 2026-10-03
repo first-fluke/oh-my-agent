@@ -58,7 +58,7 @@ agents:
 - `auto_update_cli` の優先順位は更新コマンドに明示的に実装されています。プロジェクトインストールとグローバルインストールの両方がある場合、まずプロジェクトの値を確認し、次に HOME の値を確認します。
 - `telemetry`（デフォルトは `false`）は、各ベンダーのオプトアウト設定に対応します。`oma install`、`oma update`、`oma link` が設定を書き込みます。Claude では `DISABLE_TELEMETRY` と `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY`、Gemini と Qwen では `privacy.usageStatisticsEnabled`、Codex では `analytics.enabled` と `feedback.enabled`、Grok では `[features] telemetry`、Antigravity（agy）では `~/.gemini/antigravity-cli/settings.json` の `enableTelemetry` を使います。`telemetry: true` にすると、そのベンダーに対して oma が設定したオプトアウトを削除し、再びオプトインします。
 - `diagram`（エンジンは `auto` / `archify` / `mermaid`、設定は `explain_sidecar`、`archify.managed|channel|check_interval_min|path|quality|open`）は、`video` や `image` と同じスパースなスキル上書きセクションです。[ダイアグラムエンジン](/docs/guide/diagram-engine)を参照してください。
-- `video.remotion.check_interval_min` は、1 回の実行で使う Remotion ツールチェーンと remotion-dev/skills の最新バージョン確認を調整します（`oma video compose`、`oma update`）。
+- `video.hyperframes.check_interval_min` は、1 回の実行で使う HyperFrames ツールチェーンと heygen-com/hyperframes の最新バージョン確認を調整します（`oma video compose`、`oma update`）。
 - `market`（`managed|channel|check_interval_min|path|python|save_dir`）は、`oma market` が使う常に最新の `last30days` エンジンを設定します。[市場調査](/docs/guide/market-research)を参照してください。
 - 型付きランタイムスキーマは `providers`、`free`、`agents`、`models`、`custom_presets`、`vendors`、`session`、`docs` とスパースなスキルセクションを対象とします。配布テンプレートには `scm`、`memory`、`serena_reaper`、`mcp` など、利用側が所有するブロックも含まれます。これらのネストしたキーは各利用側が管理します。この一覧からキーの存在を推測せず、[設定リファレンス](/docs/guide/configuration-reference)と該当機能のガイドを参照してください。
 - `oma-config.yaml` を直接編集しても問題ありません。`oma install` と `oma update` は正規表現レベルでフィールドを置き換え、管理対象でないユーザー編集済みのキー（カスタムの `agents:` オーバーライドや `session.quota_cap` など）を保持します。

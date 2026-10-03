@@ -108,7 +108,7 @@ A severidade determina como o bug é tratado e com que rapidez deve ser corrigid
 
 ## O loop de debug de sete etapas em detalhe
 
-O workflow `/debug` executa estas etapas em ordem. Usa o provedor de inteligência de código configurado quando disponível, além de busca nativa e leituras de arquivos com escopo quando esse provedor está indisponível ou sofre timeout.
+O workflow `/debug` executa estas etapas em ordem. Usa o provedor de inteligência de código configurado. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados quando esse provedor está indisponível ou sofre timeout.
 
 ### Etapa 1: coletar informações do erro
 
@@ -247,11 +247,11 @@ Estes sinais indicam que o bug precisa de escalação além do loop padrão de d
 
 ### Sinal 1: a mesma correção foi tentada duas vezes
 
-Se o workflow propõe uma correção, aplica-a e o mesmo erro retorna, o problema é mais profundo que o diagnóstico inicial. Isso aciona o **Exploration Loop** nos workflows que o suportam (ultrawork, orchestrate, work):
+Se o workflow propõe uma correção, aplica-a e o mesmo erro retorna, o problema é mais profundo que o diagnóstico inicial. Reavalie a causa. Se houver alternativas que mereçam ser testadas e o orçamento de recuperação existente permitir, use o **Exploration Loop** no workflow ativo (ultrawork, orchestrate, work):
 
 - Gere 2-3 hipóteses alternativas para a causa raiz.
-- Teste cada hipótese em um workspace separado (git stash por tentativa).
-- Pontue os resultados e adote a melhor abordagem.
+- Isole cada experimento e preserve seu baseline, as evidências e o trabalho não relacionado.
+- Escolha uma abordagem que atenda ao comportamento exigido e a critérios de medição comparáveis; depois, verifique o resultado integrado.
 
 ### Sinal 2: causa raiz em vários domínios
 

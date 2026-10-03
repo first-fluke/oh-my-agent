@@ -108,7 +108,7 @@ Mức độ quyết định cách xử lý và tốc độ sửa.
 
 ## Chi tiết vòng lặp debug bảy giai đoạn
 
-Workflow `/debug` chạy các giai đoạn theo thứ tự. Nó dùng provider code-intelligence đã cấu hình; khi provider không khả dụng hoặc timeout, dùng native search có phạm vi và đọc file có mục tiêu.
+Workflow `/debug` chạy các giai đoạn theo thứ tự. Nó dùng provider code-intelligence đã cấu hình. Native search chỉ dành cho path nằm ngoài project hoặc path bị ignore khi provider không khả dụng hoặc timeout.
 
 ### Bước 1: thu thập thông tin lỗi
 
@@ -222,11 +222,11 @@ Các tín hiệu sau cho thấy lỗi cần vượt khỏi vòng lặp debug chu
 
 ### Tín hiệu 1: đã thử cùng bản sửa hai lần
 
-Nếu lỗi lặp lại, workflow kích hoạt **Exploration Loop** trong ultrawork, orchestrate hoặc work:
+Nếu lỗi lặp lại, hãy đánh giá lại nguyên nhân. Nếu các phương án thay thế đáng thử và ngân sách phục hồi hiện có cho phép, dùng **Exploration Loop** trong workflow đang chạy (ultrawork, orchestrate, work):
 
 - Tạo 2 đến 3 giả thuyết khác nhau.
-- Test từng giả thuyết trong workspace riêng, dùng git stash cho từng lần thử.
-- Chấm kết quả và chọn cách tốt nhất.
+- Cô lập từng thí nghiệm và bảo toàn baseline, bằng chứng của nó cũng như công việc không liên quan.
+- Chọn cách tiếp cận đáp ứng hành vi bắt buộc và tiêu chí đo lường có thể so sánh, rồi xác minh kết quả đã tích hợp.
 
 ### Tín hiệu 2: nguyên nhân gốc xuyên nhiều lĩnh vực
 

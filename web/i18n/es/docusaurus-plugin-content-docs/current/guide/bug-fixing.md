@@ -108,7 +108,7 @@ La severidad determina cómo se gestiona el bug y con qué rapidez debe corregir
 
 ## El bucle de depuración de siete etapas en detalle
 
-El flujo `/debug` ejecuta estas etapas en orden. Usa el proveedor configurado de inteligencia de código cuando está disponible, además de búsquedas nativas y lecturas acotadas de archivos cuando el proveedor no está disponible o agota el tiempo de espera.
+El flujo `/debug` ejecuta estas etapas en orden. Usa el proveedor configurado de inteligencia de código. La búsqueda nativa solo se usa para rutas fuera del proyecto o rutas ignoradas cuando ese proveedor no está disponible o agota el tiempo de espera.
 
 ### Paso 1: recopilar información del error
 
@@ -247,11 +247,11 @@ Estas señales indican que el bug requiere escalar más allá del bucle de depur
 
 ### Señal 1: se intentó dos veces la misma corrección
 
-Si el flujo propone una corrección, la aplica y el mismo error reaparece, el problema es más profundo que el diagnóstico inicial. Esto activa el **Bucle de exploración** en los flujos que lo admiten (ultrawork, orchestrate y work):
+Si el flujo propone una corrección, la aplica y el mismo error reaparece, el problema es más profundo que el diagnóstico inicial. Reevalúa la causa. Si hay alternativas que merezcan probarse y el presupuesto de recuperación existente lo permite, usa el **Bucle de exploración** en el flujo activo (ultrawork, orchestrate y work):
 
 - Genera 2-3 hipótesis alternativas para la causa raíz.
-- Prueba cada hipótesis en un workspace separado (un git stash por intento).
-- Puntúa los resultados y adopta el mejor enfoque.
+- Aísla cada experimento y conserva su línea base, su evidencia y el trabajo no relacionado.
+- Selecciona un enfoque que cumpla el comportamiento requerido y criterios de medición comparables, y luego verifica el resultado integrado.
 
 ### Señal 2: causa raíz que cruza dominios
 

@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci` 会保持运行过程非交互。如果用户配置意外被替换，请检查是否使用了 `--force`；普通更新会保留用户拥有的配置，强制模式可以替换它。
 
+## 安装或更新无法下载发布版本
+
+<!-- oma-docs:ignore-start -->
+`oma install`、`oma update` 和 `oma doctor` 的修复会下载 `main` 上的 `prompt-manifest.json` 所指定的发布版本。它们先尝试 `cli-v<version>` GitHub 发布版本中的 `agent-skills.tar.gz` 资源，并用其 `.sha256` 文件校验；然后尝试该标签的源码归档；最后对该标签做浅克隆。校验和不匹配，或载荷中 `.agents/skills/_version.json` 指向另一个版本时，运行会直接停止，而不会改试其他来源。
+<!-- oma-docs:ignore-end -->
+
+刚切出发布版本后，清单可能会指向一个资源仍在发布中的版本；请等待几分钟后重试。如果要有意安装 `main` 分支上尚未发布的内容，请为这次运行显式选择启用：
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+运行时会打印警告：main 分支的内容既不是带标签的发布版本，也没有经过校验和验证。
+
 ## 供应商无法启动
 
 先运行供应商自己的身份验证检查，再检查 OMA 解析出的配置档：
@@ -85,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` 会报告 `synced`、`missing-in-os` 和 `orphan-in-os`。`schedule sync` 会恢复缺失的任务；只有在需要删除孤立的操作系统任务时才添加 `--prune`。使用 `--dry-run` 创建的预览不会注册任务。对于重复间隔，检查预览后使用 `--accept-rounded` 接受 OMA 的取整。检查 `~/.agents/schedule/runs/<id>/` 下的运行日志，确认是否有非零供应商退出码或 `re-auth required`。
+`schedule list` 会报告 `synced`、`stale`、`missing-in-os` 和 `orphan-in-os`。`schedule sync` 会恢复缺失的任务并重写过时的注册项（运行日志中出现 `Unknown command: schedule:run` 一行，说明该注册项写于命令改名之前；`oma update` 会自动重新同步它）；只有在需要删除孤立的操作系统任务时才添加 `--prune`。使用 `--dry-run` 创建的预览不会注册任务。对于重复间隔，检查预览后使用 `--accept-rounded` 接受 OMA 的取整。检查 `~/.agents/schedule/runs/<id>/` 下的运行日志，确认是否有非零供应商退出码或 `re-auth required`。
 
 ## 评估或优化报告没有覆盖率
 

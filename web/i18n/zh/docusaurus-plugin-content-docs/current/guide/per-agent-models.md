@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | 所有智能体使用 Antigravity CLI（`agy`）：实现和架构使用 Gemini 3.1 Pro，编排、文档和探索使用 Gemini 3.6 Flash。模型在 `agy` 内由配置选择，不暴露 `--model` 或 `--thinking-budget` 标志。 | Antigravity CLI 用户 |
 | `claude` | 所有智能体使用 Claude（Sonnet/Opus） | Claude Max 订阅用户 |
 | `codex` | 所有智能体使用 OpenAI Codex（大多数角色使用 GPT-5.5，探索使用 GPT-5.4-mini），并带有推理强度级别 | ChatGPT Plus/Pro 用户 |
-| `qwen` | 所有智能体通过 Qwen Code 路由到外部；使用二值思考模式（没有推理强度级别） | 本地或自托管推理 |
+| `qwen` | 所有智能体使用 Qwen Code；与之匹配的 Qwen 会话可以使用生成的原生智能体，其他运行时使用 CLI 调度 | 本地或自托管推理 |
 | `kiro` | 所有智能体使用 Kiro CLI；实现和架构使用 Sonnet，编排和探索使用 Haiku | Kiro 用户 |
 | `cursor` | 所有智能体使用 Cursor 的 `composer-2.5`（编排器、qa、pm、docs、探索使用 `composer-2.5-fast`） | Cursor Pro 或 Pro Student 用户 |
 | `mixed` | 混合模式：实现角色使用 Codex，架构、qa、pm 使用 Claude，探索使用 Gemini | 无需管理逐智能体配置即可使用多供应商优势 |
@@ -99,7 +99,7 @@ oma doctor --profile
 oma agent spawn backend "Review the API error handling" free-review --vendor codex --read-only
 ```
 
-Free 模式对所有由 OMA 调度的角色使用 `free.model`，包括已有 `agents.*.model` 固定值的角色。它不会将这些固定值解析到付费订阅中。可以选择 auto、网关模型 ID，或 `auto:coding` 这类命名网关链（需先在 FreeLLMAPI 中创建该链）。
+Free 模式对所有由 OMA 调度的角色使用 `free.model`，包括已有 `agents.*.model` 固定值的角色。它不会将这些固定值解析到付费订阅中。可以选择 `auto`、网关模型 ID，或 `auto:coding` 这类命名网关链（需先在 FreeLLMAPI 中创建该链）。
 
 传输选择顺序为 `--vendor`、`OMA_RUNTIME_VENDOR`、检测到的受支持运行时、`default_cli`，最后是 `codex`。仅支持 Codex、Claude 和 Qwen 传输。显式选择不受支持的传输会报错。
 
@@ -111,7 +111,7 @@ Free 模式对所有由 OMA 调度的角色使用 `free.model`，包括已有 `a
 
 即使父进程使用同一供应商，也应使用 `oma agent spawn`。OMA 只将网关连接和凭据注入该子进程；更改预设不会改变已经打开的宿主会话或宿主原生子智能体工具的模型。Codex 通过调用参数获得自定义 Responses 供应商，而密钥留在子进程环境中。Claude 和 Qwen 会收到各自兼容的端点设置。会覆盖路由或密钥的冲突 Claude/Qwen 设置会在执行前报告；OMA 不会改写这些文件。
 
-生成和检查会在启动智能体前验证经过认证的 `GET /v1/models`。缺少密钥、连接失败和 HTTP 身份验证错误都会停止执行。`oma doctor --profile` 会显示生效的 URL、模型、环境覆盖、密钥是否存在以及服务器就绪状态，但不会打印密钥。就绪不代表模型有足够配额完成任务。
+`oma agent spawn` 和 `oma agent review` 会在启动智能体前，先用认证请求检查 `GET /v1/models`。缺少密钥、连接失败和 HTTP 身份验证错误都会停止执行。`oma doctor --profile` 会显示生效的 URL、模型、环境覆盖、密钥是否存在以及服务器就绪状态，但不会打印密钥。就绪不代表模型有足够配额完成任务。
 
 FreeLLMAPI 负责请求级供应商故障转移。OMA 基于显式检查点的供应商故障转移仍是独立的进程恢复机制；Free 模式中的每个后继进程仍必须使用受支持的 FreeLLMAPI 传输。不会自动返回付费供应商配置。
 

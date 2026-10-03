@@ -171,6 +171,7 @@ oma schedule list [--json]
 | State | Ý nghĩa |
 |---|---|
 | `synced` | Job tồn tại trong cả manifest và OS scheduler |
+| `stale` | Job đã được đăng ký, nhưng registration trong OS gọi một lệnh mà CLI hiện tại không còn chấp nhận (ví dụ `schedule:run <id>` được ghi trước khi chuẩn hóa command path). Chạy `schedule sync` để ghi lại; `oma update` tự động làm việc này. |
 | `missing-in-os` | Job có trong manifest nhưng thiếu trong OS scheduler. Chạy `schedule sync` để sửa. |
 | `orphan-in-os` | Job có trong OS scheduler nhưng không có trong manifest. Chạy `schedule sync --prune` để xóa. |
 
@@ -265,12 +266,14 @@ oma schedule sync [--prune]
 **Examples:**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
+
+`oma update` chạy cùng bước reconciliation này (không có `--prune`) sau mỗi lần cập nhật, nên một bản phát hành CLI thay đổi cách viết lệnh `oma schedule run` không thể để các registration OS hiện có trỏ tới một lệnh mà binary mới từ chối. Các registration do phiên bản cũ ghi bằng `oma schedule:run <id>` cũng vẫn hoạt động: cách viết cũ đó vẫn được chấp nhận cho các job do OS gọi.
 
 ---
 

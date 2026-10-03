@@ -131,8 +131,8 @@ De dashboards lezen uit de directory `.agents/state/memories/`. Agents en workfl
 | `progress-{agent}.md` | Elke gestarte agent | Huidige beurt, waaraan de agent werkt en tussentijdse resultaten |
 | `result-{agent}.md` | Elke voltooide agent | Eindstatus (COMPLETED/FAILED), gewijzigde bestanden, gevonden problemen en deliverables |
 | `debug-{id}.md` | `/debug`-workflow | Bugdiagnose, hoofdoorzaak, toegepaste fix en locatie van de regressietest |
-| `experiment-ledger.md` | Quality Score-systeem | Experimenttracking: basisscores, delta's en beslissingen om te behouden of te verwerpen |
-| `lessons-learned.md` | Automatisch gegenereerd aan het einde van de sessie | Lessen uit verworpen experimenten (delta <= -5) |
+| `experiment-ledger-{sessionId}.md` | Daadwerkelijke experimenten | Vergelijkbare evidence voor baseline en kandidaat, vereiste checks en beslissingen |
+| `lessons-{sessionId}.md` | Wanneer evidence een herbruikbare oorzaak onderbouwt | Lessen per sessie; geen generatie die door een score wordt geactiveerd |
 
 ### Hoe het dashboard leest
 

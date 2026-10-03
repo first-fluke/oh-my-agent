@@ -225,6 +225,8 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 
 Deze standaardwaarden kunnen worden overschreven in `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
+Codex blijft in zijn workspace-write-sandbox draaien. oma schakelt netwerktoegang in en voegt de projectroot, de OMA-statemap (`~/.oma`) en bestaande package-managercaches toe als schrijfbare mappen. `oma update` vervangt `cli-config.yaml`; stel daarom een blijvende modus in met `OMA_CODEX_SANDBOX`: `read-only`, `workspace-write` (standaard) of `danger-full-access` (geen sandbox en geen goedkeuringen).
+
 ### agent status
 
 ```
@@ -243,7 +245,7 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 ### agent parallel
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flag | Kort | Beschrijving | Standaard |
@@ -346,7 +348,7 @@ oma video provider list [--output <format>]
 
 `video generate` accepteert de plannings- en opnameopties `--mode`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor`, `--capture`, `--source`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` en `--capture-stop`. Daarnaast accepteert het `--output-dir`, `--allow-external-output`, `--max-usd`, `--seed`, `--timeout`, `--script`, `--dry-run`, `--yes`, `--output` en `--no-brief-in-manifest`. Gebruik voor browseropname `--source web --url <url>`; `file` is de standaardbron. Voor een normale render zijn een geschreven compositie en een werkende compositor nodig; placeholders zijn beperkt tot het testpad `OMA_VIDEO_MOCK=1`.
 
-`video doctor` rapporteert of installeert de Remotion/MPT/Strudel-toolchain. `compose` bereidt het compositiecontract van de run voor en `render` voert typechecks uit, rendert en controleert de uitvoer. `provider list` rapporteert de status van providers en sleutels. Lees [Video genereren](../guide/video-generation.md) voor het runmanifest en de herstelvolgorde.
+`video doctor` rapporteert of installeert de HyperFrames/MPT/Strudel-toolchain. `compose` bereidt het compositiecontract van de run voor en `render` voert lint uit, rendert en controleert de uitvoer. `provider list` rapporteert de status van providers en sleutels. Lees [Video genereren](../guide/video-generation.md) voor het runmanifest en de herstelvolgorde.
 
 ### memory init
 
@@ -524,6 +526,12 @@ De volgende matrix is gegenereerd uit het openbare commandoregister in de reposi
 | `search rss google` | `--locale <value>` | Bouw een Google News RSS-URL voor een zoekopdracht |
 | `harness` | `—` | Evalueer OMA-harness-overlays tegen geïsoleerde repositorytaken |
 | `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | Vergelijk een kandidaat-.agents-overlay met de huidige baseline |
+| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | Leid een skill-regressiefixture af uit een vastgelegd incident |
+| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | Promoot incidenten en optimaliseer de getroffen skills |
+| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | Schakel de geplande, met een budget begrensde feedbackcyclus van een project in; de modus is apply of propose |
+| `harness evolution status` | `--json, --output <format>` | Toon configuratie, schema, openstaand werk, conflicten en de laatste cyclus |
+| `harness evolution disable` | `--json, --output <format>` | Schakel de geplande feedbackcyclus van het project uit |
+| `harness evolution run` | `--json, --output <format>` | Voer één cyclus uit met de opgeslagen modus en het opgeslagen budget van het ingeschakelde project |
 | `slide` | `—` | HTML-presentatietoolkit voor het opzetten, valideren, exporteren en bewerken van slide decks van 1920×1080 |
 | `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | Geometrische kwaliteitsgate: rendert slides via puppeteer-core en controleert overflow, overlap en lettergrootte |
 | `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | Voeg bestanden per slide samen tot één zelfstandig .html-deliverable |
@@ -556,7 +564,7 @@ De volgende matrix is gegenereerd uit het openbare commandoregister in de reposi
 | `video` | `—` | Korte video-, uitleg- en demovideo's genereren |
 | `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | Genereer een videorunmap vanuit een brief |
 | `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | Controleer of videoprovider en compositor klaar zijn |
-| `video compose` | `--output <format>, --refresh, --offline` | Zet het Remotion-project van de run op met de nieuwste toolchain en remotion-dev/skills; print het authoringcontract |
+| `video compose` | `--output <format>, --refresh, --offline` | Zet het HyperFrames-project van de run op met de nieuwste toolchain en heygen-com/hyperframes; print het authoringcontract |
 | `video render` | `--output <format>` | Render een runmap opnieuw vanuit render-spec.json |
 | `video provider` | `—` | geen |
 | `video provider list` | `--output <format>` | Toon videoproviders en beschikbaarheid |
@@ -644,8 +652,13 @@ De volgende matrix is gegenereerd uit het openbare commandoregister in de reposi
 | `skill` | `—` | Inspecteer en audit geïnstalleerde skills |
 | `skill audit` | `--json, --output <format>` | Controleer gelijkenis van frontmatterbeschrijvingen tussen geïnstalleerde skills |
 | `skill lint` | `--skill <id>, --json, --output <format>` | Detecteer schrijfproblemen per skill (frontmatter, structuur en gebroken verwijzingen) |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --require-coverage, --neg-transfer, --json, --output <format>` | Meet de utiliteitswinst per skill (treatment tegenover baseline op achtergehouden taken) |
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --json, --output <format>` | Optimaliseer een SKILL.md om de gemeten utiliteitswinst op achtergehouden taken te maximaliseren |
+| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | Meet de utiliteitswinst per skill (treatment tegenover baseline op achtergehouden taken) |
+| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | Optimaliseer een SKILL.md om de gemeten utiliteitswinst op achtergehouden taken te maximaliseren |
+| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | Stel wijzigingen in de evolutieprocedure voor en scoor ze op achtergehouden skills |
+| `skill procedure` | `--export, --json, --output <format>` | Toon de evolutieprocedure (prompts van optimizer en maintainer, constitution) en de bijbehorende hashes |
+| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | Aggregeer vastgelegde optimalisatieruns op uitkomst, geheugenmodus en procedure |
+| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | Beschrijf vastgelegde SKILL.md-promoties en rollbacks voor een skill, of voor elke skill en de procedure met `--all` |
+| `skill rollback` | `--skill <id>, --json, --output <format>` | Herstel de SKILL.md-body die de meest recente vastgelegde promotie heeft vervangen |
 | `schedule` | `—` | geen |
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | Registreer een geplande agentjob |
 | `schedule list` | `--json, --output <format>` | Toon geplande jobs met OS-driftstatus (synced/missing-in-os/orphan-in-os), gegroepeerd per project |

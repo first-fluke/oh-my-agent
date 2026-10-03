@@ -43,7 +43,7 @@ oma doctor --profile
 | `telemetry` | boolean | `false` | Включение телеметрии вендора, используемое при install, update и синхронизации link. |
 | `model_preset` | непустой string | `auto` в новых шаблонах | Встроенный или пользовательский preset моделей. `OMA_MODEL_PRESET` переопределяет его для одного процесса. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Настройки FreeLLMAPI при preset `free`; `FREELLM_BASE_URL` и `FREELLM_MODEL` переопределяют значения файла, а имя ключа никогда не содержит секрет. См. [конфигурацию моделей по агентам](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `semantic_memory` | `context7`, `native`, `serena`, `agentmemory` | Выбор провайдеров документации, поиска, интеллектуального поиска по коду и семантической памяти. Для code intelligence допустимы `serena` и `gortex`, для semantic memory — `agentmemory`, `honcho` и `none`. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Выбор провайдеров документации, поиска, интеллектуального поиска по коду и семантической памяти. Для code intelligence допустимы `serena` и `gortex`, для semantic memory — `agentmemory`, `honcho` и `none`. `code_intelligence_guard` (`block` или `off`) управляет защитой поиска PreToolUse. Нативный поиск, ограниченный подтверждёнными исключениями провайдера или путями вне проекта, разрешён без обхода. Защита читает исключения Serena и включённые правила gitignore либо список исключений Gortex; она не определяет зависимости по именам каталогов. Хук не называет `OMA_CI_ALLOW_NATIVE`. Shell-поиск с префиксом `OMA_CI_ALLOW_NATIVE=1` обходит защиту только для ресурсов вне проекта или игнорируемых путей, которые защита не распознала, но не для исходного кода проекта. |
 | `brave` | `api_key_env` или `api_key_vault` | не задано | Ссылка на credential поиска Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | См. [сведения о Honcho](#honcho-semantic-memory) | Настройки подключения semantic memory Honcho. |
 | `agents` | ID агента → `model`, необязательные `effort`, `thinking`, `memory` | разрешение preset | Переопределения по агентам поверх выбранного preset. effort — `none`, `low`, `medium`, `high` или `xhigh`; memory — `user`, `project` или `local`. |
@@ -55,7 +55,7 @@ oma doctor --profile
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Поведение `oma docs verify` и исключения сканирования. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transport MCP Serena и поведение обновления. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` или `[]` | не задано = оставить существующую настройку | Выбор Browser DevTools MCP при reconciliation. Явный пустой список удаляет выбранные записи browser. |
-| `video` | sparse-карта, принадлежащая skill | default skill; см. [Генерация видео](/docs/guide/video-generation) | Маршрутизация видео, порядок provider, output, стоимость, лимиты и настройки обновления Remotion. |
+| `video` | sparse-карта, принадлежащая skill | default skill; см. [Генерация видео](/docs/guide/video-generation) | Маршрутизация видео, порядок provider, output, стоимость, лимиты и настройки обновления HyperFrames. |
 | `image` | sparse-карта, принадлежащая skill | default skill; см. [Генерация изображений](/docs/guide/image-generation) | Vendor изображений, размер, качество, output, сравнение и настройки стоимости. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | default skill; см. [workflow контента и исследований](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Профиль Voicebox, output и ограничения длины. |
 | `hwp` | `format`, `version.*`, `output.*` | default skill; см. [workflow контента и исследований](/docs/guide/content-and-research#extract-hwp-family-documents) | Формат Kordoc, канал версии и расположение output. |
@@ -181,6 +181,7 @@ agents:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

@@ -34,6 +34,20 @@ oma doctor --json
 
 `oma update --ci` läuft nicht interaktiv. Wenn eine Benutzerkonfiguration unerwartet ersetzt wurde, prüfen Sie, ob `--force` verwendet wurde. Normale Updates bewahren die benutzereigene Konfiguration, der erzwungene Modus kann sie ersetzen.
 
+## Eine Installation oder ein Update kann das Release nicht herunterladen
+
+<!-- oma-docs:ignore-start -->
+`oma install`, `oma update` und die Reparatur von `oma doctor` laden das Release herunter, das `prompt-manifest.json` auf `main` nennt. Sie versuchen zuerst das Asset `agent-skills.tar.gz` des GitHub-Releases `cli-v<version>`, geprüft gegen die zugehörige `.sha256`-Datei, danach das Quellarchiv dieses Tags und schließlich einen flachen Klon des Tags. Eine Prüfsummenabweichung oder eine Payload, deren `.agents/skills/_version.json` eine andere Version nennt, beendet den Lauf, statt eine andere Quelle zu versuchen.
+<!-- oma-docs:ignore-end -->
+
+Unmittelbar nach dem Erstellen eines Releases kann das Manifest eine Version nennen, deren Assets noch veröffentlicht werden; warten Sie einige Minuten und versuchen Sie es erneut. Um unveröffentlichte Inhalte vom Branch `main` bewusst zu installieren, aktivieren Sie dies ausdrücklich für diesen Lauf:
+
+```bash
+OMA_UPDATE_CHANNEL=main oma update
+```
+
+Der Lauf gibt eine Warnung aus: Inhalte des main-Branches sind weder ein getaggtes Release noch per Prüfsumme verifiziert.
+
 ## Ein Vendor startet nicht
 
 Führen Sie zuerst die eigene Authentifizierungsprüfung des Vendors aus und prüfen Sie anschließend OMAs aufgelöstes Profil:
@@ -85,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` meldet `synced`, `missing-in-os` und `orphan-in-os`. `schedule sync` stellt fehlende Jobs wieder her; fügen Sie `--prune` nur hinzu, wenn verwaiste OS-Jobs entfernt werden sollen. Eine mit `--dry-run` erzeugte Vorschau registriert keinen Job. Bei einem wiederkehrenden Intervall akzeptieren Sie nach Prüfung der Vorschau OMAs Rundung mit `--accept-rounded`. Prüfen Sie im Laufprotokoll unter `~/.agents/schedule/runs/<id>/` auf einen Vendor-Exit ungleich null oder `re-auth required`.
+`schedule list` meldet `synced`, `stale`, `missing-in-os` und `orphan-in-os`. `schedule sync` stellt fehlende Jobs wieder her und schreibt veraltete Registrierungen neu (eine Zeile `Unknown command: schedule:run` im Laufprotokoll bedeutet, dass die Registrierung vor der Befehlsumbenennung entstand; `oma update` synchronisiert sie automatisch neu); fügen Sie `--prune` nur hinzu, wenn verwaiste OS-Jobs entfernt werden sollen. Eine mit `--dry-run` erzeugte Vorschau registriert keinen Job. Bei einem wiederkehrenden Intervall akzeptieren Sie nach Prüfung der Vorschau OMAs Rundung mit `--accept-rounded`. Prüfen Sie im Laufprotokoll unter `~/.agents/schedule/runs/<id>/` auf einen Vendor-Exit ungleich null oder `re-auth required`.
 
 ## Evaluierung oder Optimierung meldet keine Abdeckung
 

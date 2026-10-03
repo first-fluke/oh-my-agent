@@ -54,7 +54,7 @@ description: oh-my-agent CLIの全コマンドを対象に、構文、オプシ�
 | `star` | `star` |
 | `visualize` | `visualize` |
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google` |
-| `harness` | `harness`, `harness eval` |
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get` |
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint` |
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
@@ -74,7 +74,7 @@ description: oh-my-agent CLIの全コマンドを対象に、構文、オプシ�
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize` |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 コマンドが残りの引数を別のツールに渡す場合、レジストリでは意図的にオプションを限定していません。`market run` と `diagram archify` が該当します。状態を変更する操作やネットワーク操作の前に、解決された上流ツールのヘルプを確認してください。
@@ -146,7 +146,7 @@ oma doctor [--json] [--output <format>] [--profile]
   - `rerere.enabled=true`。
   - `init.defaultBranch=main`。
   - 各不一致が `totalIssues` に加算されます。
-- プロジェクトのベンダーコンテキストファイル（対応する CLI がインストール済みなら `CLAUDE.md` / `AGENTS.md` の OMA ブロックなど）。
+- プロジェクトのベンダーコンテキストファイル（Codex、Qwen、または Claude Code ≥ 2.1.277 がインストール済みなら `AGENTS.md` の OMA ブロック）。
 - AgentMemory、state/hooks の健全性、Serena reaper の診断、関連する問題カウンター。
 
 **自動修復:** 不足しているスキルが見つかると、`doctor` は対話的なインストールを提案します。推奨 Git 設定がない、または値が違う場合は、install/update と同じオプトイン方式のグローバル修正を提案します。
@@ -262,7 +262,7 @@ oma link opencode --global
 **動作:**
 1. `.agents/agents/` からベンダー固有のエージェントファイルを再構築します。
 2. 選択したベンダーのフックとローカル設定を更新します。
-3. `CLAUDE.md`、`GEMINI.md`、`AGENTS.md` の連携ブロックを再生成します。
+3. 設定済みのすべてのベンダー（Claude Code を含む）の `AGENTS.md` 連携ブロックを再生成します。`CLAUDE.md` と `GEMINI.md` は作成せず、OMA ブロックも追加しません。Claude Code ≥ 2.1.277 は `AGENTS.md` をネイティブに読みますが、`CLAUDE.md` があるときは `AGENTS.md` を無視します。そのため、ユーザーが所有する `CLAUDE.md` がある場合、link は `@AGENTS.md` のインポート行を 1 行だけ追記します。`oma update` も、そのバージョンを検出すると従来の `CLAUDE.md` の OMA ブロックを取り除きます。
 4. 必要に応じて Cursor MCP のリンクと CLI スキルのシンボリックリンクを更新します。
 
 `.agents/agents/`、`.agents/workflows/`、`.agents/rules/`、フック定義を編集した後に使います。
@@ -278,6 +278,7 @@ oma link opencode --global
 ### setup（workflow） {#setup-workflow}
 
 エージェントセッション内で呼び出す `/setup` ワークフローは、言語、CLI のインストール、MCP 接続、エージェントと CLI の対応を対話的に設定します。`oma`（インストーラー）とは異なり、インストール済みのインスタンスを設定します。
+
 ---
 
 ## モニタリングとメトリクス {#monitoring-metrics}
@@ -514,7 +515,7 @@ oma profile run 1 -- oma state list --all-projects --json
 サブエージェントプロセスを起動します。
 
 ```
-oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
+oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 **引数:**
@@ -635,7 +636,7 @@ oma agent status session-20260324-143000 qa -r /path/to/project
 複数のサブエージェントを並列実行します。
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **引数:**
@@ -768,7 +769,7 @@ oma goal set --workflow ultrawork --gate test --budget-minutes 120
 スケジュール実行するエージェントジョブを登録します。`--cron` と `--every` のどちらか一方が必須です。
 
 ```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **引数:**
@@ -826,7 +827,7 @@ oma schedule list [--json]
 |:-----|:-----------|
 | `--json` | JSON として出力します。 |
 
-**ドリフト状態:** `synced`（マニフェストと OS が一致）、`missing-in-os`（修復には `schedule sync` を実行）、`orphan-in-os`（マニフェストにない OS ジョブ。削除には `schedule sync --prune` を実行）。
+**ドリフト状態:** `synced`（マニフェストと OS が一致）、`stale`（OS 登録が、現在の CLI が受け付けなくなったコマンドを呼び出す状態。書き換えには `schedule sync` を実行します。`oma update` は自動で書き換えます）、`missing-in-os`（修復には `schedule sync` を実行）、`orphan-in-os`（マニフェストにない OS ジョブ。削除には `schedule sync --prune` を実行）。
 
 **例:**
 ```bash
@@ -1119,6 +1120,7 @@ echo '{"tool_name":"run_shell_command","tool_input":{"command":"cat /etc/passwd"
 **スコープに関する注意:**
 - `statusLine`/hud エントリは `oma hook run` を経由しません（ホットパス表示は直接の `bun` 経路に残ります）。
 - pi ベンダーは `oma hook run` ではなく、インプロセスの `installPiExtension` ブリッジを使います。
+- プロジェクトとグローバルの二重インストールによる重複配信は、`oma hook run` の内部で破棄されます（別の `oma-hook.sh` ラッパーから起動された同一のペイロード）。異なるイベントは、並列のツール呼び出しも含めて、常に実行されます。
 
 ルーター実装は `cli/commands/hook/command.ts`（内部では「design 019」と呼びます）、ベンダー別互換マトリクスは `cli/commands/hook/probe/` を参照してください。
 
@@ -1519,9 +1521,9 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` は `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor remotion|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop duration:<seconds>|selector:<css>` を受け付けます。ブラウザーキャプチャには `--source web --url <url>` を使い、既定のソースは `--source file` です。`--output-dir` は実行ルート、`--allow-external-output` は `$PWD` 外のパス、`--max-usd` はコスト上限、`--seed` は計画入力の安定化、`--no-brief-in-manifest` は本文の代わりに brief ハッシュの保存を指定します。`--dry-run` は計画後に停止し、`--output text|json` は CLI エンベロープを制御します。
+`generate` は `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop duration:<seconds>|selector:<css>` を受け付けます。ブラウザーキャプチャには `--source web --url <url>` を使い、既定のソースは `--source file` です。`--output-dir` は実行ルート、`--allow-external-output` は `$PWD` 外のパス、`--max-usd` はコスト上限、`--seed` は計画入力の安定化、`--no-brief-in-manifest` は本文の代わりに brief ハッシュの保存を指定します。`--dry-run` は計画後に停止し、`--output text|json` は CLI エンベロープを制御します。
 
-`doctor` はキャッシュ済み Remotion/MPT ツールチェーンを確認し、`--install`、`--upgrade`、`--install-mpt`、`--install-strudel` を受け付けます。`provider list` はプロバイダーの利用可能性とキー状態を報告します。`compose` は実行用 composition を作成または更新して作成規約を示し、`render` は型チェック、レンダー、出力検査を行います。compositor、composition、ツールチェーンの不足はエラーです。テスト専用の `OMA_VIDEO_MOCK=1` だけがプレースホルダーモードで、通常の実行はテキストや小さなファイルを MP4 の代わりにしません。
+`doctor` はキャッシュ済み HyperFrames/MPT ツールチェーンを確認し、`--install`、`--upgrade`、`--install-mpt`、`--install-strudel` を受け付けます。`provider list` はプロバイダーの利用可能性とキー状態を報告します。`compose` は実行用 composition を作成または更新して作成規約を示し、`render` は lint、レンダー、出力検査を行います。compositor、composition、ツールチェーンの不足はエラーです。テスト専用の `OMA_VIDEO_MOCK=1` だけがプレースホルダーモードで、通常の実行はテキストや小さなファイルを MP4 の代わりにしません。
 
 JSON が成功すると `runDir`、`manifestPath`、`scriptPath`、`renderSpecPath` が含まれます。マニフェストには選択したプロバイダー、入力、生成アセットを記録します。`compose` の後は生成された composition を `AUTHORING.md` に従って作成し、`render` を再実行します。プロバイダーキーがない場合は `oma video doctor`、キャプチャに失敗した場合は URL、セレクター、デバイス、タイムアウト、レンダーに失敗した場合は composition の診断を確認します。
 
@@ -1976,6 +1978,24 @@ oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --
 
 詳しい形式、対応チェック、分離モデル、現在の制限は [ハーネス評価ガイド](../guide/harness-eval.md) を参照してください。
 
+### harness incident promote {#harness-incident-promote}
+
+キャプチャしたインシデントを、失敗したエージェントが使ったスキルの回帰フィクスチャに変換します。
+
+```
+oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
+```
+
+### harness feedback {#harness-feedback}
+
+昇格していないインシデントをすべて昇格し、`--live` または `--apply` を指定した場合は、影響を受けた各スキルを拡大したスイートに対して最適化します。
+
+```
+oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
+```
+
+[インシデント回帰ケースガイド](../guide/harness-incidents.md) を参照してください。
+
 ---
 
 ### help {#help}
@@ -2008,6 +2028,8 @@ oma version
 | `DASHBOARD_PORT` | Web ダッシュボードのポート | `dashboard web` |
 | `MEMORIES_DIR` | メモリーディレクトリのパスを上書きします。 | `dashboard`、`dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | `oma skill eval` でフラグにかかわらず mock モードを強制する値を `1` に設定します。 | `skills eval` |
+| `OMA_HOOK_DEDUP` | `0` に設定すると、`oma hook run` の重複配信の抑制を無効にします。 | `hook` |
+| `OMA_HOOK_DEDUP_DIR` | 重複したフック配信の抑制に使うプライベートな claim ディレクトリを上書きします（既定: `$XDG_RUNTIME_DIR/oma-hook-dedup`、なければ `<tmpdir>/oma-hook-dedup-<uid>`）。 | `hook` |
 
 ---
 

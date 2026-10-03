@@ -13,7 +13,7 @@ Istnieją dwa sposoby dodania oh-my-agent do istniejącego projektu:
 1. **Ścieżka CLI**: uruchom `oma` (albo `npx oh-my-agent`) i odpowiedz na interaktywne pytania. Zalecana dla większości użytkowników.
 2. **Ścieżka ręczna**: skopiuj pliki i samodzielnie skonfiguruj dowiązania symboliczne. Przydatna w środowiskach z ograniczeniami albo przy niestandardowych konfiguracjach.
 
-Obie ścieżki dają ten sam wynik: katalog `.agents/` (SSOT) oraz wygenerowane pliki natywne dla vendorów, takie jak `.claude/agents/`, `.codex/agents/` i `.gemini/agents/`.
+Obie ścieżki dają ten sam wynik: katalog `.agents/` (SSOT) oraz wygenerowane pliki natywne dla vendorów, takie jak `.claude/agents/`, `.codex/agents/` i `.qwen/agents/`.
 
 ---
 
@@ -179,7 +179,13 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link` przebudowuje `.claude/`, `.codex/`, `.gemini/` i powiązane pliki natywne dla vendorów na podstawie `.agents/agents/`. W czasie działania OMA używa natywnego dispatchu tylko wtedy, gdy vendor bieżącego runtime’u pasuje do docelowego vendora danego agenta. Konfiguracje mieszane vendorów nadal działają, ale niepasujący agenci przechodzą do zewnętrznego `oma agent spawn`.
+`oma link` regeneruje `.claude/`, `.codex/`, `.qwen/` i powiązane pliki natywne dla vendorów na podstawie `.agents/agents/`. W czasie działania OMA używa natywnego dispatchu tylko wtedy, gdy vendor bieżącego runtime’u pasuje do docelowego vendora danego agenta. Konfiguracje mieszane vendorów nadal działają, ale niepasujący agenci przechodzą do zewnętrznego `oma agent spawn`.
+
+W Qwen Code wygenerowane definicje Markdown znajdują się w `.qwen/agents/`. Rolę OMA wybierasz przez `subagent_type` narzędzia Agent, na przykład `backend-engineer`. Dostępne definicje sprawdzisz poleceniem `/agents manage` w Qwen Code. Natywni agenci korzystają z tego samego [cyklu życia wyniku](./agent-results-and-resume.md) co uruchomienia CLI: `oma agent begin`, `oma agent verify` i `oma agent finish`. Przy `model_preset: free` użyj `oma agent spawn`, aby uruchomienie potomne otrzymało konfigurację bramy.
+
+Qwen Code używa tego samego `code-intelligence-primer` co pozostali vendorzy. Podobnie jak Claude Code, rejestruje wspólny primer dla zdarzeń `SessionStart` i `UserPromptSubmit`: wskazówki są wstrzykiwane raz na sesję i ponownie po kompaktowaniu kontekstu. Primer podąża za skonfigurowanym dostawcą (Serena lub Gortex), zawiera wskazówki dotyczące narzędzi odroczonych i dopuszcza natywny fallback, gdy dostawca jest niedostępny lub przekracza limit czasu. Qwen nie dodaje osobnego blokowania wyszukiwania kodu ani śledzenia wyników dostawcy.
+
+Po aktualizacji CLI uruchom `oma link qwen`, aby zregenerować ustawienia hooków i skrypt opakowujący, a następnie rozpocznij nową sesję Qwen. Testy wyjścia hooków weryfikują kontrakt integracji; nie gwarantują, jakiego narzędzia użyje model.
 
 ### Krok 3: skonfiguruj preferencje użytkownika
 
@@ -403,7 +409,7 @@ Dla każdej wybranej umiejętności `installSkill()` kopiuje katalog umiejętno�
 
 - definicje agentów (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
 - konfiguracje hooków (`.claude/hooks/`, `.codex/hooks.json`)
-- pliki ustawień i dokumentację integracji vendora (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
+- pliki ustawień i wspólną dokumentację integracji vendora (tylko `AGENTS.md`, w tym dla Claude Code ≥ 2.1.277). `CLAUDE.md` i `GEMINI.md` nigdy nie otrzymują bloku OMA; istniejący, należący do użytkownika `CLAUDE.md` otrzymuje wyłącznie linię importu `@AGENTS.md`, aby Claude Code nie pomijał `AGENTS.md`
 
 Codex zabezpiecza swoje hooki jednorazowym krokiem zaufania, więc `.codex/hooks.json` nie działa, dopóki nie przejrzysz go raz w przeglądarce hooków Codex `/hooks`. Zobacz [Zaufanie do hooków Codex](/docs/guide/codex-hook-trust).
 

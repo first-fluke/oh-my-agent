@@ -13,7 +13,7 @@ Hay dos formas de añadir oh-my-agent a un proyecto existente:
 1. **Ruta de la CLI**: ejecuta `oma` (o `npx oh-my-agent`) y sigue los prompts interactivos. Es la opción recomendada para la mayoría de usuarios.
 2. **Ruta manual**: copia los archivos y configura los symlinks por tu cuenta. Resulta útil en entornos restringidos o con configuraciones personalizadas.
 
-Ambas vías producen el mismo resultado: un directorio `.agents/` (el SSOT), además de archivos generados nativos de los proveedores como `.claude/agents/`, `.codex/agents/` y `.gemini/agents/`.
+Ambas vías producen el mismo resultado: un directorio `.agents/` (el SSOT), además de archivos generados nativos de los proveedores como `.claude/agents/`, `.codex/agents/` y `.qwen/agents/`.
 
 ---
 
@@ -180,7 +180,13 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link` reconstruye `.claude/`, `.codex/`, `.gemini/` y otros archivos nativos de los proveedores a partir de `.agents/agents/`. En runtime, OMA usa el despacho nativo solo cuando el proveedor del runtime actual coincide con el proveedor objetivo de ese agente. Las configuraciones con varios proveedores siguen funcionando, pero los agentes que no coinciden recurren a `oma agent spawn` externo.
+`oma link` regenera `.claude/`, `.codex/`, `.qwen/` y los archivos nativos de los proveedores relacionados a partir de `.agents/agents/`. En runtime, OMA usa el despacho nativo solo cuando el proveedor del runtime actual coincide con el proveedor objetivo de ese agente. Las configuraciones con varios proveedores siguen funcionando, pero los agentes que no coinciden recurren a `oma agent spawn` externo.
+
+Para Qwen Code, las definiciones Markdown generadas viven en `.qwen/agents/`. Selecciona un rol de OMA mediante el `subagent_type` de la herramienta Agent, por ejemplo `backend-engineer`. Consulta las definiciones disponibles con `/agents manage` en Qwen Code. Los agentes nativos usan el mismo [ciclo de vida de resultados](./agent-results-and-resume.md) que los agentes generados mediante la CLI: `oma agent begin`, `oma agent verify` y `oma agent finish`. Con `model_preset: free`, usa `oma agent spawn` para que el hijo reciba la configuración del gateway.
+
+Qwen Code usa el mismo `code-intelligence-primer` que los demás proveedores. Igual que Claude Code, registra la guía inicial (primer) compartida en `SessionStart` y `UserPromptSubmit`: se inyecta una vez por sesión y de nuevo tras la compactación. Esta guía sigue al proveedor configurado (Serena o Gortex), incluye indicaciones sobre herramientas diferidas y permite el fallback nativo cuando el proveedor no está disponible o agota el tiempo de espera. Qwen no añade ningún bloqueo de búsqueda de código ni seguimiento de resultados del proveedor por separado.
+
+Después de actualizar la CLI, ejecuta `oma link qwen` para regenerar los ajustes de hooks y el wrapper, y luego inicia una sesión nueva de Qwen. Las pruebas de la salida de los hooks verifican el contrato de integración; no garantizan qué herramienta elegirá un modelo.
 
 ### Paso 3: configurar las preferencias del usuario
 
@@ -404,7 +410,7 @@ Para cada skill seleccionada, `installSkill()` copia el directorio de la skill a
 
 - Definiciones de agentes (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
 - Configuraciones de hooks (`.claude/hooks/`, `.codex/hooks.json`)
-- Archivos de configuración y documentación de integración del proveedor (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
+- Archivos de configuración y el documento de integración de proveedor compartido (solo `AGENTS.md`, incluido Claude Code ≥ 2.1.277). `CLAUDE.md` y `GEMINI.md` nunca reciben un bloque OMA; un `CLAUDE.md` existente propiedad del usuario solo recibe una línea de importación `@AGENTS.md` para que Claude Code no omita `AGENTS.md`
 
 Codex protege sus hooks tras un paso único de confianza, por lo que `.codex/hooks.json` no se ejecuta hasta que lo revises una vez mediante el navegador de hooks `/hooks` de Codex. Consulta [Codex Hook Trust](/docs/guide/codex-hook-trust) para obtener más información.
 

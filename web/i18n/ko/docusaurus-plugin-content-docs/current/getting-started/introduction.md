@@ -89,7 +89,7 @@ oh-my-agent은 전문화로 이를 해결합니다:
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
 | **oma-translation** | 컨텍스트 인식 번역 | 6장면 흐름: Prepare, Acquire, Reason, Act, Verify, Finalize. 번역 방법은 보호 구문과 의미를 읽고, 레지스터를 선택하고, 대상 언어로 재구성하고, 필요한 경우 저자 문체를 보존하는 네 단계입니다. 대상 언어별 프로파일(`resources/lang/{code}.md`)에 레지스터와 타이포그래피 규칙이 들어 있습니다. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
-| **oma-orchestration** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, 파일로 보존되는 세션·태스크 보드·진행·결과 파일을 통해 조율하며, 검증 루프를 모니터링합니다. 설정: MAX_PARALLEL (기본 3), MAX_RETRIES (기본 2), POLL_INTERVAL (기본 30초). 에이전트 간 리뷰 루프와 Clarification Debt 모니터링 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-orchestration** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, 파일로 보존되는 세션·태스크 보드·진행·결과 파일을 통해 조율하며, 검증 루프를 모니터링합니다. 설정: MAX_PARALLEL (기본 3), MAX_RETRIES (기본 2), POLL_INTERVAL (기본 30초). 에이전트 간 리뷰 루프와 선택적 세션 증거 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-coordination** | 수동 멀티 에이전트 워크플로우 가이드 | CLI `oma agent spawn`으로 PM, 프론트엔드, 백엔드, 모바일, QA 에이전트를 단계별로 조율합니다. PM 분해로 시작하고 같은 우선순위 태스크를 별도 워크스페이스에서 스폰하며 실행 범위가 지정된 진행·결과 파일을 모니터링하고 프론트엔드와 모바일 작업 전에 API·데이터 컨트랙트를 맞춘 뒤 QA 리뷰로 마무리합니다. `oma-orchestration`의 수동 대응물입니다. |
 | **oma-scm** | 형상관리(SCM) + Git | 브랜치 전략, 머지/리베이스/충돌 해결, 워크트리, 베이스라인, 릴리스 상태 추적을 다룹니다. 안전한 스테이징과 Conventional Commit 메시지를 안내하며 co-author trailer는 활성화된 `scm.co_author` 설정에서 가져옵니다. |
 
@@ -135,7 +135,7 @@ oh-my-agent은 전문화로 이를 해결합니다:
 |-------|------|-----------------|
 | **oma-image** | 멀티 벤더 이미지 라우터 | 인증 상태를 인지해 Codex(ChatGPT OAuth 기반 `gpt-image-2`, CLI 우선), `agy` CLI와 Gemini Code Assist를 통한 Antigravity Gemini 계열 “nano-banana” 모델(정확한 모델은 내부 선택), Pollinations(무료 `flux` / `zimage`)로 병렬 디스패치합니다. 생성 전에 명확화와 보강 프로토콜을 거치고, 참조 이미지를 최대 10개까지 받으며, 비용 가드레일(0.20달러 이상이면 확인)과 재현용 `manifest.json`을 제공합니다. CLI는 `oma image generate`, `oma image doctor`, `oma image vendor list`입니다. |
 | **oma-slide** | 애니메이션이 풍부한 HTML 덱 생성기 | 1920×1080 고정 스테이지에서 "AI slop"을 피한 개성 있는 발표 덱을 작성한 뒤, 지오메트리를 결정론적으로 검증하고 단일 파일 HTML로 묶고 `oma slide` CLI로 PDF/PNG/PPTX로 내보냅니다. 스타일 프리셋과 과감한 템플릿, CJK는 Pretendard 규칙, `prefers-reduced-motion`과 눈에 보이는 포커스 필수, 최대 3회 자동 수정 검증 루프를 제공합니다. 이미지는 `oma-image`에 위임하며, Canva MCP 내보내기와 가져오기를 선택적으로 지원합니다. |
-| **oma-video** | 숏폼·설명·데모 라우터 | `oma video` CLI로 숏폼·릴스(9:16), 설명 영상(16:9), 사람이 녹화하는 데모(16:9)를 만듭니다. 결정론적 에셋 버스(`script.json` → `timing.json` → `render-spec.json`)가 벤더링된 Remotion 컴포지터로 이어지며, 에셋 프로바이더는 로컬 폴백을 사용할 수 있지만 컴포지션·도구 체인·렌더 오류는 실행을 실패시킵니다. 사람의 캡처 과정에서 자격 증명을 자동화하지 않습니다. |
+| **oma-video** | 숏폼·설명·데모 라우터 | `oma video` CLI로 숏폼·릴스(9:16), 설명 영상(16:9), 사람이 녹화하는 데모(16:9)를 만듭니다. 결정론적 에셋 버스(`script.json` → `timing.json` → `render-spec.json`)가 관리되는 HyperFrames 컴포지터로 이어지며, 에셋 프로바이더는 로컬 폴백을 사용할 수 있지만 컴포지션·도구 체인·렌더 오류는 실행을 실패시킵니다. 사람의 캡처 과정에서 자격 증명을 자동화하지 않습니다. |
 | **oma-voice** | 로컬 우선 TTS와 STT | Voicebox MCP 서버로 클라우드 호출이나 호출당 비용 없이 온디바이스 알림, 에셋 TTS, 전사를 수행합니다. TTS 기본 출력은 WAV이고 로컬에서 MP3로 변환할 수 있으며, 전사는 오디오 경로나 base64를 받습니다. TTS 호출은 5000자, STT 입력은 30분으로 제한되며 저장된 에셋·전사 실행은 매니페스트를 기록합니다. |
 
 ---

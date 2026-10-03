@@ -42,7 +42,7 @@ model_preset: auto
 | `antigravity` | Wszystkie agenty używają Antigravity CLI (`agy`): Gemini 3.1 Pro do implementacji/architektury i Gemini 3.6 Flash do orkiestracji, dokumentacji i eksploracji. Wybór modelu odbywa się w konfiguracji `agy` — nie są udostępniane flagi `--model` ani `--thinking-budget`. | Użytkownicy Antigravity CLI |
 | `claude` | Wszystkie agenty używają Claude (Sonnet/Opus) | Posiadacze subskrypcji Claude Max |
 | `codex` | Wszystkie agenty używają OpenAI Codex (GPT-5.5 dla większości ról, GPT-5.4-mini dla eksploracji) z poziomami effort | Użytkownicy ChatGPT Plus/Pro |
-| `qwen` | Wszystkie agenty są kierowane zewnętrznie przez Qwen Code; myślenie binarne (bez poziomów effort) | Lokalne / samodzielnie hostowane wnioskowanie |
+| `qwen` | Wszystkie agenty używają Qwen Code; pasujące sesje Qwen mogą korzystać z wygenerowanych agentów natywnych, a pozostałe runtime’y używają dispatchu CLI | Lokalne / samodzielnie hostowane wnioskowanie |
 | `kiro` | Wszystkie agenty używają Kiro CLI; Sonnet obsługuje implementację/architekturę, a Haiku orkiestrację/eksplorację | Użytkownicy Kiro |
 | `cursor` | Wszystkie agenty używają Cursor `composer-2.5` (`composer-2.5-fast` dla orkiestratora/qa/pm/docs/explore) | Użytkownicy Cursor Pro / Pro Student |
 | `mixed` | Mieszany: role implementacyjne używają Codex, architektura/qa/pm Claude, a eksploracja Gemini | Siła wielu vendorów bez ręcznego zarządzania konfiguracją per agent |
@@ -175,6 +175,8 @@ Do zarejestrowanego identyfikatora używanego w `agents:` stosują się dwie reg
 2. **Specyfikacja musi być kompletna.** W czasie rozstrzygania wymagane są `cli`, `cli_model`, `auth_hint` i każda wartość logiczna `supports`. Niekompletna specyfikacja przechodzi parser konfiguracji, ale nie przechodzi walidacji rejestru modeli i po cichu wraca do głównego rejestru.
 
 > Jeśli identyfikator zdefiniowany przez użytkownika koliduje z wbudowanym identyfikatorem, wygrywa definicja użytkownika i pojawia się ostrzeżenie.
+
+---
 
 ## Presety niestandardowe
 
@@ -322,7 +324,7 @@ Co się dzieje:
 
 - Model per agent rozstrzygnięty z presetu/nadpisań (np. `openai/gpt-5.5`) jest tłumaczony do postaci `--model <provider/id>` pi, a `effort` do poziomu `--thinking` pi. **Modele per subagent działają w pi dokładnie tak jak natywnie** — różni agenci mogą uruchamiać różne modele.
 - Persona agenta (prompt systemowy) jest wstawiana z `.agents/agents/<id>.md`, ponieważ pi nie ma pliku agenta po stronie vendora.
-- Uwierzytelnianie pochodzi z konfiguracji samego pi (`~/.pi/agent/auth.json` albo klucz API vendora w środowisku). `oma doctor` zgłasza instalację i uwierzytelnienie pi obok innych CLI.
+- Uwierzytelnianie pochodzi z konfiguracji samego pi (`~/.pi/agent/auth.json` albo klucz API dostawcy w środowisku). `oma doctor` zgłasza instalację i uwierzytelnienie pi obok innych CLI.
 
 **Ograniczenie:** pi uruchamia wyłącznie modele rzeczywistych dostawców. Presety własne dla CLI (`cursor`, `kiro`, `qwen`, `antigravity`) wskazują modele istniejące tylko we własnych CLI, więc przekierowanie ich przez pi jest odrzucane wyraźnym błędem. Przy kierowaniu agentów przez pi użyj presetu rzeczywistego dostawcy (`claude`, `codex`, `gemini` albo `mixed`).
 
@@ -420,7 +422,7 @@ opencode models opencode-go                            # list everything your pl
 
 ### Uwierzytelnianie i generowane pliki
 
-- **Uwierzytelnianie:** `opencode auth login` zapisuje dane uwierzytelniające w `~/.local/share/opencode/auth.json`, po jednym wpisie na vendora. `oma auth status` / `oma doctor` zgłaszają opencode jako uwierzytelniony, gdy *dowolny* vendor ma poświadczenie. `oma doctor --profile` działa bardziej szczegółowo: każdy wiersz jest sprawdzany względem prefiksu vendora zarejestrowanego `cli_model`, więc model z `cli_model: zai-coding-plan/glm-5.3` jest sprawdzany względem poświadczenia `zai-coding-plan`. Wiersz, którego model nie ma zarejestrowanego identyfikatora w postaci `provider/model` w polu `cli_model`, zgłasza `? unknown`, a nie pewny błąd uwierzytelniania.
+- **Uwierzytelnianie:** `opencode auth login` zapisuje dane uwierzytelniające w `~/.local/share/opencode/auth.json`, po jednym wpisie na dostawcę. `oma auth status` / `oma doctor` zgłaszają opencode jako uwierzytelniony, gdy *dowolny* dostawca ma poświadczenie. `oma doctor --profile` natomiast rozróżnia dostawców: każdy wiersz jest sprawdzany względem prefiksu dostawcy zarejestrowanego `cli_model`, więc model z `cli_model: zai-coding-plan/glm-5.3` jest sprawdzany względem poświadczenia `zai-coding-plan`. Wiersz, którego model nie ma zarejestrowanego identyfikatora w postaci `provider/model` w polu `cli_model`, zgłasza `? unknown`, a nie pewny błąd uwierzytelniania.
 - **Generowane pliki:** `oma link` (albo `oma link opencode`) zapisuje jedną personę `.opencode/agents/<id>.md` na agenta oraz most `.opencode/plugins/oma/`. Są generowane z SSOT `.agents/` — nie edytuj ich bezpośrednio; uruchom ponownie `oma link`, aby je wygenerować.
 
 > **Uwaga dotycząca trwałych workflowów:** zdarzenie `session.idle` opencode (jego najbliższy odpowiednik hooka Claude `Stop`) służy tylko do powiadomień i nie może blokować zakończenia sesji. Trwałe workflowy (orchestrate / work / ultrawork) działają więc w opencode z **osłabioną semantyką Stop** — wzmocnienie workflowu następuje przy następnej wiadomości, zamiast utrzymywania otwartej sesji.
@@ -429,7 +431,7 @@ opencode models opencode-go                            # list everything your pl
 
 ## Dispatch przez Kimi Code CLI
 
-[Kimi Code CLI](https://www.kimi.com/code) odczytuje **hooki** tylko z konfiguracji globalnej (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`), dlatego `oma install`/`oma link` zapisują łańcuch hooków Kimi i dowiązania umiejętności w HOME za jawną zgodą (podobnie jak Antigravity). Kimi skanuje też bezpośrednio SSOT OMA `.agents/skills/`, więc umiejętności są rozstrzygane w całym projekcie. **MCP** nie wymaga zapisu w HOME i działa w zakresie projektu — jest zapisywany z uwzględnieniem trybu w `<cwd>/.kimi-code/mcp.json` (projekt) albo `~/.kimi-code/mcp.json` (globalnie).
+[Kimi Code CLI](https://www.kimi.com/code) odczytuje **hooki** tylko z konfiguracji globalnej (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`), dlatego `oma install`/`oma link` zapisują łańcuch hooków Kimi i dowiązania umiejętności w HOME za jawną zgodą (podobnie jak Antigravity). Kimi skanuje też bezpośrednio SSOT OMA `.agents/skills/`, więc umiejętności są rozstrzygane w całym projekcie niezależnie od tego. **MCP** nie wymaga zapisu w HOME i działa w zakresie projektu — jest zapisywany z uwzględnieniem trybu w `<cwd>/.kimi-code/mcp.json` (projekt) albo `~/.kimi-code/mcp.json` (globalnie).
 
 ### Jawny dispatch
 

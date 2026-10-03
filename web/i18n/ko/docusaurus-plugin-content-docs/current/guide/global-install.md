@@ -89,7 +89,9 @@ If you want a Windows-side install, re-run this command from PowerShell.
 
 WSL 설치와 PowerShell 설치는 서로 독립적입니다. 양쪽 모두에서 글로벌 설치 효과를 얻으려면 WSL에서 한 번, PowerShell에서 한 번 각각 `oma install --global`을 실행하세요.
 
-### cwd = HOME 경고 (프로젝트 모드)
+### cwd = HOME 가드 (프로젝트 모드)
+
+`--global` 없는 `oma link`와 `oma update`는 현재 디렉토리가 HOME인 동안 실행을 거부합니다. 프로젝트 모드에서는 `<cwd>/.claude/settings.json`이 `~/.claude/settings.json`과 같은 파일, 즉 전역 Claude Code 설정이 됩니다. 프로젝트 범위 렌더링은 이 파일의 `$HOME/.claude/hooks/...` 명령을 `$CLAUDE_PROJECT_DIR/...`로 다시 쓰므로, 자체 `.claude/hooks/`가 없는 프로젝트에서는 모든 훅과 상태 바가 깨집니다. HOME 설치에는 대신 `oma link --global` / `oma update --global`을 사용하거나, 먼저 `cd`로 프로젝트 디렉토리에 들어가세요.
 
 현재 디렉토리가 HOME인 상태에서 `--global` 없이 `oma install`을 실행하면, oma는 다음과 같이 경고합니다.
 

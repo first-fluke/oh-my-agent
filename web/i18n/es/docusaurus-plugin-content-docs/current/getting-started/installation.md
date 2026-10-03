@@ -10,13 +10,23 @@ description: Instala oh-my-agent, elige skills y proveedores, entiende los archi
 - **Un IDE o CLI con IA**: al menos un host compatible, como Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot o Hermes.
 - **bun**: runtime de JavaScript y gestor de paquetes (el script de instalación lo instala automáticamente si falta).
 - **uv**: gestor de paquetes de Python (el script de bootstrap ofrece instalarlo si falta).
-- **Proveedor de inteligencia de código**: Serena es el proveedor predeterminado. Gortex también es compatible cuando se selecciona en la configuración de proveedores. El instalador puede preparar Serena con `uv tool install`; continúa con una advertencia cuando falta una dependencia opcional.
+- **Proveedor de inteligencia de código**: Serena es el proveedor predeterminado. Gortex también es compatible cuando se selecciona en la configuración de proveedores. El instalador puede preparar Serena con `uv tool install`; continúa con una advertencia cuando falta una dependencia opcional. Con Gortex seleccionado, `oma install` y `oma update` en modo proyecto registran el proyecto en el daemon de Gortex (`gortex track`) cuando aún no está rastreado y añaden los directorios generados por OMA a la lista de exclusión de ese proyecto a través de la CLI de Gortex; no se escribe nada en el árbol del proyecto. Gortex en sí debe instalarse por separado.
 
 El instalador agrupa las integraciones por capacidad. Los proveedores de hooks incluyen Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro y Qwen; OpenCode y pi usan puentes de extensión; GitHub Copilot y Hermes reciben enlaces a skills; y ZCode recibe comandos de workflow. Puedes seleccionar más de un proveedor, pero para la primera tarea solo necesitas el host que vayas a utilizar.
 
 ---
 
-## Método 1: instalación con un solo comando (recomendado)
+## Método 0: CLI de skills (la más rápida para instalar solo skills)
+
+Instala el paquete de skills de OMA en los runtimes de agentes detectados:
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+Es la vía de entrada más ligera cuando quieres las skills sin el harness completo. Para workflows, reglas, hooks, puertas y `oma agent spawn`, usa el Método 1 o el 2 de abajo.
+
+## Método 1: instalación con un solo comando (harness completo)
 
 ```bash
 # macOS / Linux
@@ -224,6 +234,7 @@ telemetry: false
 #   docs: context7
 #   web: native
 #   code_intelligence: serena
+#   code_intelligence_guard: block   # deny native Grep/Glob/rg while serena is configured (off to disable)
 #   semantic_memory: agentmemory
 
 # Optional — browser DevTools MCP. Omit to preserve the current setup.
@@ -258,7 +269,7 @@ agents:
 | `model_preset` | string | Sí | Clave del preset activo. `auto` sigue el runtime actual; las claves fijas incluyen `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` y `mixed`. También son válidas las claves de presets personalizados. Consulta [Modelos por agente](../guide/per-agent-models.md). |
 | `default_cli` | string | No | CLI de fallback para `oma agent spawn` cuando los ajustes explícitos del agente y el preset seleccionado no resuelven un proveedor. |
 | `free` | map | No | Ajustes del gateway FreeLLMAPI usados cuando `model_preset: free`; conserva las claves API en variables de entorno. |
-| `providers` | map | No | Proveedores de capacidades: `code_intelligence` (`serena` o `gortex`), `docs` (`context7`), `web` (`native` o `brave`) y `semantic_memory` (`agentmemory`, `honcho` o `none`). |
+| `providers` | map | No | Proveedores de capacidades: `code_intelligence` (`serena` o `gortex`), `code_intelligence_guard` (`block` u `off`), `docs` (`context7`), `web` (`native` o `brave`) y `semantic_memory` (`agentmemory`, `honcho` o `none`). |
 | `date_format` | string | No | Formato de marca de tiempo (`ISO`, `US`, `EU`). Predeterminado: `ISO`. |
 | `timezone` | string | No | Identificador de zona horaria (por ejemplo, `Asia/Seoul`). Los valores omitidos usan la zona horaria del sistema anfitrión. |
 | `auto_update_cli` | boolean | No | Indica si las comprobaciones rutinarias de la CLI pueden actualizar en segundo plano. Predeterminado: `true` (desactiva con `false`). |
@@ -292,7 +303,7 @@ Este comando comprueba:
 - Que los archivos de skills existen con un frontmatter válido en SKILL.md.
 - Que los symlinks y scripts de hooks apuntan a destinos válidos.
 - Que los hooks están configurados correctamente en los archivos de ajustes del proveedor.
-- Que los proveedores seleccionados de inteligencia de código y memoria son accesibles.
+- Que los proveedores seleccionados de inteligencia de código y memoria son accesibles (con Gortex, también si el proyecto actual está en el conjunto de proyectos rastreados del daemon).
 - Que `oma-config.cue` / `.agents/oma-config.yaml` es válido y contiene los campos obligatorios.
 
 Si algo falla, `oma doctor` identifica el elemento ausente o inválido y separa los bloqueadores de la primera tarea de las advertencias de integración opcionales.

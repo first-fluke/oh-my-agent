@@ -54,7 +54,7 @@ Este mapa facilita recorrer las referencias extensas de abajo y descubrir las fa
 | `star` | `star` |
 | `visualize` | `visualize` |
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google` |
-| `harness` | `harness`, `harness eval` |
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get` |
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint` |
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
@@ -74,7 +74,7 @@ Este mapa facilita recorrer las referencias extensas de abajo y descubrir las fa
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize` |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 Cuando un comando delega los argumentos restantes a otra herramienta, el registro deja sus opciones abiertas de forma deliberada. Esto se aplica a `market run` y `diagram archify`; lee la ayuda upstream resuelta antes de ejecutar una operación que modifique datos o use la red.
@@ -146,7 +146,7 @@ oma doctor [--json] [--output <format>] [--profile]
   - `rerere.enabled=true`
   - `init.defaultBranch=main`
   - Cada discrepancia cuenta para `totalIssues`.
-- Archivos de contexto del proveedor del proyecto (por ejemplo, bloques OMA en `CLAUDE.md` / `AGENTS.md` cuando está instalado el CLI correspondiente).
+- Archivo de contexto del proveedor del proyecto (bloque OMA de `AGENTS.md` cuando está instalado Codex, Qwen o Claude Code ≥ 2.1.277).
 - Salud de AgentMemory y de state/hooks, diagnósticos del reaper de Serena y contadores de incidencias relacionados.
 
 **Reparación automática:** Si detecta skills ausentes, `doctor` ofrece instalarlas de forma interactiva. Si falta la configuración de git recomendada o es incorrecta, ofrece las mismas correcciones globales opt-in que install/update.
@@ -262,7 +262,7 @@ Sin `--global`, link apunta a `<cwd>/.agents/`; con él, apunta a `~/.agents/` (
 **Qué hace:**
 1. Reconstruye los archivos de agentes nativos de los proveedores a partir de `.agents/agents/`.
 2. Refresca los hooks y la configuración local de los proveedores seleccionados.
-3. Regenera los bloques de integración de `CLAUDE.md`, `GEMINI.md` o `AGENTS.md`.
+3. Regenera el bloque de integración de `AGENTS.md` para cada proveedor configurado, incluido Claude Code. `CLAUDE.md` y `GEMINI.md` nunca se crean ni reciben un bloque OMA. Claude Code ≥ 2.1.277 lee `AGENTS.md` de forma nativa, pero lo ignora siempre que existe un `CLAUDE.md`, así que, cuando hay un `CLAUDE.md` propiedad del usuario, link añade una única línea de importación `@AGENTS.md`; `oma update` también elimina el bloque OMA legacy de `CLAUDE.md` en cuanto se detecta esa versión.
 4. Refresca el enlace MCP de Cursor y los symlinks de skills del CLI cuando corresponde.
 
 Úsalo después de editar `.agents/agents/`, `.agents/workflows/`, `.agents/rules/` o las definiciones de hooks.
@@ -278,6 +278,7 @@ Sin `--global`, link apunta a `<cwd>/.agents/`; con él, apunta a `~/.agents/` (
 ### setup (flujo de trabajo) {#setup-workflow}
 
 El workflow `/setup` (invocado dentro de una sesión de agente) ofrece una configuración interactiva del lenguaje, las instalaciones del CLI, las conexiones MCP y la asignación agente-CLI. Es distinto de `oma` (el instalador): `/setup` configura una instancia ya instalada.
+
 ---
 
 ## Supervisión y métricas {#monitoring-metrics}
@@ -514,7 +515,7 @@ y `--json` asociadas al comando hijo.
 Inicia un proceso de subagente.
 
 ```
-oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
+oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 **Argumentos:**
@@ -635,7 +636,7 @@ oma agent status session-20260324-143000 qa -r /path/to/project
 Ejecuta varios subagentes en paralelo.
 
 ```
-oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **Argumentos:**
@@ -768,7 +769,7 @@ oma goal set --workflow ultrawork --gate test --budget-minutes 120
 Registra un trabajo de agente programado. Se requiere exactamente uno de `--cron` o `--every`.
 
 ```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **Argumentos:**
@@ -826,7 +827,7 @@ oma schedule list [--json]
 |:-----|:-----------|
 | `--json` | Salida como JSON |
 
-**Estados de drift:** `synced` (el manifiesto y el sistema operativo coinciden), `missing-in-os` (ejecuta `schedule sync` para repararlo), `orphan-in-os` (el sistema operativo tiene un trabajo que no está en el manifiesto; ejecuta `schedule sync --prune` para eliminarlo).
+**Estados de drift:** `synced` (el manifiesto y el sistema operativo coinciden), `stale` (el registro del sistema operativo invoca un comando que el CLI actual ya no acepta; ejecuta `schedule sync` para reescribirlo, `oma update` lo hace automáticamente), `missing-in-os` (ejecuta `schedule sync` para repararlo), `orphan-in-os` (el sistema operativo tiene un trabajo que no está en el manifiesto; ejecuta `schedule sync --prune` para eliminarlo).
 
 **Ejemplos:**
 ```bash
@@ -1120,6 +1121,7 @@ Un stdout vacío significa que la cadena no produjo ninguna operación para ese 
 **Notas de alcance:**
 - Las entradas `statusLine`/hud no pasan por `oma hook run` (la visualización del hot path permanece en una ruta directa de `bun`).
 - El proveedor pi usa su bridge `installPiExtension` dentro del proceso, no `oma hook run`.
+- Las entregas duplicadas de una doble instalación (proyecto + global) se descartan dentro de `oma hook run` (payload idéntico lanzado por otro wrapper `oma-hook.sh`); los eventos distintos, incluidas las llamadas paralelas a herramientas, siempre se ejecutan.
 
 Consulta `cli/commands/hook/command.ts` para la implementación del router (internamente denominada "design 019") y `cli/commands/hook/probe/` para la matriz de compatibilidad por proveedor.
 
@@ -1520,9 +1522,9 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` acepta `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor remotion|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` y `--capture-stop duration:<seconds>|selector:<css>`. Usa `--source web --url <url>` para capturar un navegador; `--source file` es el valor predeterminado. `--output-dir` selecciona la raíz de ejecución, `--allow-external-output` permite una ruta fuera de `$PWD`, `--max-usd` establece un límite de coste, `--seed` estabiliza las entradas de planificación y `--no-brief-in-manifest` guarda el hash del brief en lugar de su texto. `--dry-run` se detiene después de planificar. `--output text|json` controla el envoltorio del CLI.
+`generate` acepta `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` y `--capture-stop duration:<seconds>|selector:<css>`. Usa `--source web --url <url>` para capturar un navegador; `--source file` es el valor predeterminado. `--output-dir` selecciona la raíz de ejecución, `--allow-external-output` permite una ruta fuera de `$PWD`, `--max-usd` establece un límite de coste, `--seed` estabiliza las entradas de planificación y `--no-brief-in-manifest` guarda el hash del brief en lugar de su texto. `--dry-run` se detiene después de planificar. `--output text|json` controla el envoltorio del CLI.
 
-`doctor` comprueba la toolchain almacenada en caché de Remotion/MPT y acepta `--install`, `--upgrade`, `--install-mpt` y `--install-strudel`. `provider list` informa de la disponibilidad del proveedor y del estado de sus claves. `compose` crea o refresca la composición de la ejecución e informa del contrato de autoría; `render` comprueba los tipos, renderiza y sondea la salida. La falta de compositor, composición o dependencias de la toolchain son errores. La ruta exclusiva de pruebas `OMA_VIDEO_MOCK=1` es el único modo placeholder; una ejecución normal nunca sustituye el MP4 por un archivo de texto o diminuto.
+`doctor` comprueba la toolchain almacenada en caché de HyperFrames/MPT y acepta `--install`, `--upgrade`, `--install-mpt` y `--install-strudel`. `provider list` informa de la disponibilidad del proveedor y del estado de sus claves. `compose` crea o refresca la composición de la ejecución e informa del contrato de autoría; `render` ejecuta lint, renderiza y sondea la salida. La falta de compositor, composición o dependencias de la toolchain son errores. La ruta exclusiva de pruebas `OMA_VIDEO_MOCK=1` es el único modo placeholder; una ejecución normal nunca sustituye el MP4 por un archivo de texto o diminuto.
 
 La salida JSON correcta contiene `runDir`, `manifestPath`, `scriptPath` y `renderSpecPath`; el manifiesto registra los proveedores seleccionados, las entradas y los recursos generados. Después de `compose`, escribe la composición generada según su `AUTHORING.md` y vuelve a ejecutar `render`. Si no hay una clave de proveedor disponible, ejecuta `oma video doctor`; si falla la captura, comprueba la URL, el selector, el dispositivo y el timeout; si falla el render, corrige los diagnósticos de la composición antes de reintentarlo.
 
@@ -1977,6 +1979,24 @@ oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --
 
 Consulta la [guía de evaluación del harness](../guide/harness-eval.md) para conocer el esquema de la suite, las comprobaciones compatibles, el modelo de aislamiento y las limitaciones actuales.
 
+### harness incident promote {#harness-incident-promote}
+
+Convierte un incidente capturado en un fixture de regresión para la skill que usó el agente que falló.
+
+```
+oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
+```
+
+### harness feedback {#harness-feedback}
+
+Promueve todos los incidentes sin promover y, con `--live` o `--apply`, optimiza cada skill afectada frente a su suite ampliada.
+
+```
+oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
+```
+
+Consulta la [guía de casos de regresión de incidentes](../guide/harness-incidents.md).
+
 ---
 
 ### help {#help}
@@ -2009,6 +2029,8 @@ Imprime la versión actual del CLI y termina.
 | `DASHBOARD_PORT` | Puerto del dashboard web | `dashboard web` |
 | `MEMORIES_DIR` | Sobrescribe la ruta del directorio de memorias | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Establece `1` para forzar el modo mock en `oma skill eval` independientemente de los flags | `skills eval` |
+| `OMA_HOOK_DEDUP` | Establece `0` para desactivar la supresión de entregas duplicadas en `oma hook run`. | `hook` |
+| `OMA_HOOK_DEDUP_DIR` | Sobrescribe el directorio privado de claims usado para suprimir las entregas duplicadas de hooks (predeterminado: `$XDG_RUNTIME_DIR/oma-hook-dedup`; en caso contrario, `<tmpdir>/oma-hook-dedup-<uid>`). | `hook` |
 
 ---
 

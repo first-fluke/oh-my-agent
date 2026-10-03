@@ -43,7 +43,7 @@ model_preset: auto
 | `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 3.1 Pro cho implementation/architecture và Gemini 3.6 Flash cho orchestration, docs và explore. Model chọn theo config bên trong `agy`, không expose flag `--model` hoặc `--thinking-budget`. | Người dùng Antigravity CLI |
 | `claude` | Mọi agent dùng Claude (Sonnet/Opus). | Người dùng thuê bao Claude Max |
 | `codex` | Mọi agent dùng OpenAI Codex (GPT-5.5 cho phần lớn role, GPT-5.4-mini cho explore) với effort level. | Người dùng ChatGPT Plus/Pro |
-| `qwen` | Mọi agent định tuyến external qua Qwen Code, thinking nhị phân, không có effort level. | Inference local / self-hosted |
+| `qwen` | Mọi agent dùng Qwen Code; session Qwen khớp vendor có thể dùng native agent được sinh ra, còn runtime khác dùng CLI dispatch. | Inference local / self-hosted |
 | `kiro` | Mọi agent dùng Kiro CLI; Sonnet xử lý implementation/architecture, Haiku xử lý orchestration/explore. | Người dùng Kiro |
 | `cursor` | Mọi agent dùng Cursor `composer-2.5`, `composer-2.5-fast` cho orchestrator/qa/pm/docs/explore. | Người dùng Cursor Pro / Pro Student |
 | `mixed` | Hỗn hợp: role implementation dùng Codex, architecture/qa/pm dùng Claude, explore dùng Gemini. | Tận dụng thế mạnh nhiều vendor mà không tự quản lý config từng agent |
@@ -151,6 +151,8 @@ Agent ID hợp lệ: `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `fro
 
 Merge là shallow: mỗi field trong override thay field tương ứng của preset. Field không khai báo giữ giá trị preset.
 
+---
+
 ## Khai báo model slug inline {#inlining-model-slugs}
 
 Đăng ký model slug chưa có trong built-in registry dưới `models:`. Sau đó dùng slug trong `agents:` hoặc `custom_presets:`.
@@ -175,10 +177,12 @@ models:
 
 Hai quy tắc áp dụng cho slug đã đăng ký khi tham chiếu từ `agents:`:
 
-1. **Key phải ở dạng `owner/model`:** `agents.<id>.model` validate theo pattern owner/model, nên key trần như `my-fast-model` bị từ chối; dùng key có slash như `google/gemini-3-flash-fast` hoặc slug `provider/model` của vendor.
+1. **Key phải ở dạng `owner/model`:** `agents.<id>.model` validate theo pattern `owner/model`, nên key trần như `my-fast-model` bị từ chối; dùng key có slash như `google/gemini-3-flash-fast` hoặc slug `provider/model` của vendor.
 2. **Spec phải đầy đủ:** `cli`, `cli_model`, `auth_hint` và mọi boolean trong `supports` bắt buộc ở thời điểm resolve. Spec thiếu field có thể qua parser nhưng fail model-registry validation rồi âm thầm fallback về core registry.
 
-Nếu user-defined slug trùng built-in slug, định nghĩa user thắng và phát warning.
+> Nếu user-defined slug trùng built-in slug, định nghĩa user thắng và phát warning.
+
+---
 
 ## Custom preset
 
@@ -201,6 +205,8 @@ custom_presets:
 
 
 Không có `extends:`, hãy cung cấp default cho các canonical agent role của preset. Có `extends:` thì chỉ entry được liệt kê bị override; phần còn lại kế thừa base preset.
+
+---
 
 ## `oma doctor --profile`
 
@@ -230,6 +236,8 @@ oh-my-agent — Profile Health (preset=mixed)
 
 Mỗi dòng cho biết model slug đã resolve và source áp dụng là `(preset)` hoặc `(override)`. Dùng lệnh này khi subagent chọn vendor ngoài dự kiến.
 
+---
+
 ## Migration từ `agent_cli_mapping` cũ
 
 Migration 008 tự chạy khi gọi `oma install` và `oma update`, chuyển project cũ tại chỗ:
@@ -248,6 +256,8 @@ Original được backup vào `.agents/.backup-pre-008-{timestamp}/` trước kh
 Sau migration, `.agents/config/defaults.yaml`, `.agents/config/models.yaml` và thư mục `.agents/config/` bị xóa.
 <!-- oma-docs:ignore-end -->
 
+---
+
 ## Giới hạn quota session
 
 `session.quota_cap` giữ nguyên. Thêm vào `oma-config.yaml` để giới hạn spawn subagent mất kiểm soát:
@@ -265,6 +275,8 @@ session:
 
 
 Khi đạt cap, orchestrator từ chối spawn thêm và báo status `QUOTA_EXCEEDED`.
+
+---
 
 ## Ví dụ đầy đủ
 
@@ -322,22 +334,22 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 
 Điều gì xảy ra:
 
-- Model theo agent được resolve từ preset/override, ví dụ `openai/gpt-5.5`, chuyển thành dạng `--model <provider/id>` của pi; `effort` chuyển thành level `--thinking`. Model theo subagent hoạt động như native, mỗi agent có thể dùng model khác.
+- Model theo agent được resolve từ preset/override, ví dụ `openai/gpt-5.5`, chuyển thành dạng `--model <provider/id>` của pi; `effort` chuyển thành level `--thinking`. **Model theo subagent hoạt động trên pi y hệt như native** — mỗi agent có thể dùng model khác.
 - Persona agent, tức system prompt, được inline từ `.agents/agents/<id>.md` vì pi không có agent file phía vendor.
 - Auth do pi cấu hình, từ `~/.pi/agent/auth.json` hoặc provider API key trong environment. `oma doctor` báo install và auth của pi cùng CLI khác.
 
-**Giới hạn:** pi chỉ chạy model provider thật. Preset độc quyền CLI như `cursor`, `kiro`, `qwen` và `antigravity` chỉ có model bên CLI riêng, nên dispatch qua pi bị từ chối. Dùng preset provider thật `claude`, `codex`, `gemini` hoặc `mixed` khi định tuyến qua pi.
+**Giới hạn:** pi chỉ chạy model provider thật. Preset độc quyền CLI như `cursor`, `kiro`, `qwen` và `antigravity` chỉ có model bên CLI riêng, nên dispatch qua pi bị từ chối kèm lỗi rõ ràng. Dùng preset provider thật `claude`, `codex`, `gemini` hoặc `mixed` khi định tuyến qua pi.
 
 > Catalog model của pi theo release và bị auth gate. Nếu slug resolve không khớp catalog pi đang expose, kiểm tra `pi --list-models`; matching `--model` của pi fuzzy nên phần lớn provider slug resolve được.
 
 ### Model ngoài registry built-in của pi (ví dụ Z.ai GLM)
 
-pi resolve `--model` theo built-in model registry; setting `defaultProvider` chỉ được dùng khi không truyền model. Với Z.ai, pi chỉ ship một phần GLM ID, gồm `glm-4.7`, `glm-4.5-air`, `glm-5-turbo`, `glm-5.1` và `glm-5v-turbo` ở pi 0.80.x. Preset gọi GLM ID khác sẽ fail resolve.
+pi resolve `--model` theo **built-in model registry**; setting `defaultProvider` chỉ được dùng khi hoàn toàn không truyền model. Với Z.ai, pi chỉ ship một phần GLM ID, gồm `glm-4.7`, `glm-4.5-air`, `glm-5-turbo`, `glm-5.1` và `glm-5v-turbo` ở pi 0.80.x. Preset gọi GLM ID khác sẽ fail resolve.
 
 Có hai cách:
 
 1. **ID trong registry:** Giới hạn preset vào ID registry. Dùng dạng `provider/id`, ví dụ `zai/glm-4.7`, để pin provider; oma truyền nguyên dạng vào `--model`.
-2. **ID chưa đăng ký:** Đăng ký qua pi extension. Field `api` phải là một trong `api adapter id` của pi, như `openai-completions` hoặc `anthropic-messages`, không phải tên provider. Tên `"zai"` hoặc shorthand `"openai"` không phải adapter id và fail với `No API provider registered for api: …`.
+2. **ID chưa đăng ký:** Đăng ký qua pi extension. Field `api` phải là một trong **api adapter id** của pi, như `openai-completions` hoặc `anthropic-messages`, không phải tên provider. Tên `"zai"` hoặc shorthand `"openai"` không phải adapter id và fail với `No API provider registered for api: …`.
 
 ```typescript
 // ~/.pi/agent/extensions/zai-glm-models/index.ts  (or <project>/.pi/extensions/)
@@ -379,7 +391,7 @@ Command chạy `opencode run --agent pm --dir <workspace> "<prompt>"`. Prompt l�
 
 Để route agent cụ thể tới model opencode, đăng ký model dưới `models:` rồi tham chiếu từ `agents:`. Có hai yêu cầu, xem [Khai báo model slug inline](#inlining-model-slugs):
 
-1. **Slug dạng owner/model:** Dùng slug `provider/model` của opencode làm registry key; tên trần bị schema `agents.<id>.model` từ chối.
+1. **Slug dạng `owner/model`:** Dùng slug `provider/model` của opencode làm registry key; tên trần bị schema `agents.<id>.model` từ chối.
 2. **Spec đầy đủ:** `cli`, `cli_model`, `auth_hint` và mọi boolean `supports`. Spec thiếu fail validation và âm thầm fallback core registry, nên agent không route vào opencode.
 
 ```yaml
@@ -409,7 +421,7 @@ agents:
 ```
 
 
-Mỗi agent route sẽ dispatch `opencode run -m opencode-go/deepseek-v4-flash --agent <id> --dir <workspace> "<prompt>"`. Đây phù hợp cho role nhẹ, nhanh như pm, qa, docs và explore, còn implementation nặng giữ ở Codex/Claude.
+Mỗi agent route sẽ dispatch `opencode run -m opencode-go/deepseek-v4-flash --agent <id> --dir <workspace> "<prompt>"`. Đây phù hợp cho role nhẹ, nhanh như pm, qa, docs và explore, còn implementation nặng giữ ở Codex/Claude v.v.
 
 ### Xác minh model slug
 
@@ -434,7 +446,7 @@ opencode models opencode-go                            # list everything your pl
 
 ## Dispatch qua Kimi Code CLI
 
-[Kimi Code CLI](https://www.kimi.com/code) chỉ đọc **hook** từ global config (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`), nên `oma install`/`oma link` ghi hook chain và symlink skill vào HOME sau consent rõ ràng, giống Antigravity. Kimi cũng quét trực tiếp SSOT `.agents/skills/`, nên skill resolve trên toàn project. **MCP** không cần ghi HOME và có scope project, được ghi theo mode vào `<cwd>/.kimi-code/mcp.json` hoặc `~/.kimi-code/mcp.json`.
+[Kimi Code CLI](https://www.kimi.com/code) chỉ đọc **hook** từ global config (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`), nên `oma install`/`oma link` ghi hook chain và symlink skill vào HOME sau consent rõ ràng, giống Antigravity. Kimi cũng quét trực tiếp SSOT `.agents/skills/`, nên skill resolve trên toàn project. **MCP** không cần ghi HOME và có scope project, được ghi theo mode vào `<cwd>/.kimi-code/mcp.json` (project) hoặc `~/.kimi-code/mcp.json` (global).
 
 ### Dispatch tường minh
 
@@ -445,13 +457,13 @@ oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
 
-Lệnh chạy `kimi -p "<prompt>"`. Mode `-p` non-interactive của Kimi auto-approve tool call thường theo policy `auto`, nên oma không thêm `--yolo` hoặc `--auto` vì chúng mutually exclusive với `-p`.
+Lệnh chạy `kimi -p "<prompt>"`. Mode `-p` non-interactive của Kimi auto-approve tool call thường theo policy `auto`, nên oma **không** thêm `--yolo` hoặc `--auto` vì chúng mutually exclusive với `-p`.
 
 ### Model Kimi theo agent
 
-Giống opencode, oma không hardcode catalog Kimi vì lineup phụ thuộc provider/subscription. Để route agent cụ thể, đăng ký spec đầy đủ dưới `models:` với `cli: kimi` rồi tham chiếu từ `agents:`:
+Giống opencode, oma **không** hardcode catalog Kimi vì lineup phụ thuộc provider/subscription. Để route agent cụ thể tới model Kimi, đăng ký spec đầy đủ dưới `models:` với `cli: kimi` rồi tham chiếu từ `agents:`:
 
-Registry key phải dạng owner/model, tên trần bị schema `agents.<id>.model` từ chối; `cli_model` là alias chính xác truyền cho `kimi --model`. Alias coding được tài liệu hóa là `kimi-code/kimi-for-coding`. Xác nhận alias subscription expose bằng `kimi --model <alias>` trước khi commit.
+Registry key phải dạng `owner/model`, tên trần bị schema `agents.<id>.model` từ chối; `cli_model` là alias chính xác truyền cho `kimi --model`. Alias coding được tài liệu hóa là `kimi-code/kimi-for-coding`. Xác nhận alias subscription expose bằng `kimi --model <alias>` trước khi commit.
 
 ```yaml
 # .agents/oma-config.yaml

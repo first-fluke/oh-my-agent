@@ -33,9 +33,11 @@ Planreview hergebruikt de autorisatie die al voor de taak is gegeven. Agenten vr
 
 ---
 
-## Persistente workflows
+## Persistente workflows {#persistent-workflows}
 
 Persistente workflows blijven lopen totdat alle taken klaar zijn. Ze bewaren state in `.agents/state/` en injecteren bij elk gebruikersbericht opnieuw context met `[OMA PERSISTENT MODE: ...]` totdat ze expliciet worden gedeactiveerd.
+
+De persistente modus start alleen bij een **expliciete aanroep** — de eigen naam van de workflow (de lijst `explicit` in `triggers.json`, bijvoorbeeld "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). De overige trigger-keywords hieronder zijn natural-language-hints: ze injecteren de workflow als suggestie zonder de persistente modus te activeren, en ze gaan nooit af wanneer de eerste of laatste regel van de prompt een vraag is die op `?` eindigt.
 
 ### /orchestrate
 
@@ -46,27 +48,29 @@ Persistente workflows blijven lopen totdat alle taken klaar zijn. Ze bewaren sta
 **Trigger-keywords:**
 | Taal | Keywords |
 |----------|----------|
-| Universal | "orchestrate" |
-| English | "parallel", "do everything", "run everything" |
-| Korean | "자동 실행", "병렬 실행", "전부 실행", "전부 해" |
-| Japanese | "オーケストレート", "並列実行", "自動実行" |
-| Chinese | "编排", "并行执行", "自动执行" |
-| Spanish | "orquestar", "paralelo", "ejecutar todo" |
-| French | "orchestrer", "parallèle", "tout exécuter" |
-| German | "orchestrieren", "parallel", "alles ausführen" |
-| Portuguese | "orquestrar", "paralelo", "executar tudo" |
-| Russian | "оркестровать", "параллельно", "выполнить всё" |
-| Dutch | "orkestreren", "parallel", "alles uitvoeren" |
-| Polish | "orkiestrować", "równolegle", "wykonaj wszystko" |
+| Explicit (persistent) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+| English | "do everything", "run everything", "everything in parallel", "automate everything" |
+| Korean | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
+| Japanese | "全部実行", "全部並列で", "自動でやって" |
+| Chinese | "编排", "全部执行", "全部并行", "自动处理" |
+| Spanish | "ejecutar todo", "todo en paralelo" |
+| French | "tout exécuter", "tout en parallèle" |
+| German | "alles ausführen", "alles parallel" |
+| Portuguese | "executar tudo", "tudo em paralelo" |
+| Russian | "выполнить всё", "всё параллельно" |
+| Dutch | "alles uitvoeren", "alles parallel" |
+| Polish | "wykonaj wszystko", "wszystko równolegle" |
+
+De losse woorden "parallel"/"automate" (en hun vertalingen) zijn geen triggers: "run the tests in parallel" of "automate the release notes" zijn gewone verzoeken en geen multi-agent-orchestratie.
 
 **Trigger-regexpatronen** (intent + noun-whitelist, zie [Auto-detectie: Pattern-veld](#pattern-field-raw-regex)):
 | Sectie | Patroon | Voorbeelden die triggeren |
 |---------|---------|----------------------|
-| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
+| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
 | `*` (universal) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
 | `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
 
-Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, system, feature, backend, frontend, prototype, mvp, bot.
+Noun-whitelist (14): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. Een enkele feature ("implement the login feature", "로그인 기능 구현해줘") of iets dat al bestaat ("make the API faster") matcht niet.
 
 **Stappen:**
 1. **Stap 0, Preparation:** Lees de coördinatieskill, context-loading guide en memory protocol. Detecteer de vendor.
@@ -74,9 +78,9 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 3. **Stap 2, Initialize Session:** Laad `oma-config.yaml`, toon de CLI-mappingstabel, hergebruik de sessie-ID uit het plan of genereer er één (`session-YYYYMMDD-HHMMSS`) en maak `orchestrator-session-{sessionId}.md` en `task-board-{sessionId}.md` in de geconfigureerde geheugenopslag.
 4. **Stap 3, Spawn Agents:** Spawn voor elke prioriteitstier (eerst P0, daarna P1 enzovoort) agenten via de passende vendormethode (native subagenten wanneer huidige runtime en doelvendor overeenkomen; `oma agent spawn` voor externe of cross-vendor taken). Overschrijd MAX_PARALLEL nooit.
 5. **Stap 4, Monitor:** Poll rungebonden `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-bestanden en gestructureerde receipts, werk het task board bij en let op voltooiingen, fouten en crashes.
-6. **Stap 5, Verify:** Draai per voltooide agent `verify.sh {agent-type} {workspace}`. Bij falen spawn je opnieuw met foutcontext (maximaal 2 retries). Na 2 retries activeer je de Exploration Loop: genereer 2-3 hypotheses, spawn parallelle experimenten en scoor ze; houd de beste.
+6. **Stap 5, Verify:** Draai per voltooide agent `verify.sh {agent-type} {workspace}`. Bij falen spawn je opnieuw met foutcontext (maximaal 2 retries). Herhaalde mislukkingen kunnen alternatieve hypotheses rechtvaardigen, maar alle pogingen putten uit hetzelfde gezamenlijke herstelbudget. Bewaar onopgeloste evidence als het budget een vergelijkingsronde niet kan dekken.
 7. **Stap 6, Collect:** Lees rungebonden resultaatbestanden en gestructureerde claims en stel de samenvatting op.
-8. **Stap 7, Final Report:** Presenteer de sessiesamenvatting. Als Quality Score is gemeten, neem de Experiment Ledger op en genereer lessons automatisch.
+8. **Stap 7, Final Report:** Presenteer de sessiesamenvatting. Als er experimenten zijn uitgevoerd, vat dan evidence en beslissingen samen; leg lessons alleen vast wanneer een herbruikbare oorzaak is vastgesteld.
 
 **Bestanden gelezen:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, rungebonden voortgangs- en resultaatbestanden en gestructureerde runreceipts.
 
@@ -95,13 +99,17 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Trigger-keywords:**
 | Taal | Keywords |
 |----------|----------|
-| Universal | "work", "step by step" |
-| Korean | "코디네이트", "단계별" |
-| Japanese | "コーディネート", "ステップバイステップ" |
-| Chinese | "协调", "逐步" |
-| Spanish | "coordinar", "paso a paso" |
-| French | "coordonner", "étape par étape" |
-| German | "koordinieren", "schritt für schritt" |
+| Explicit (persistent) | "work mode", "work workflow" |
+| Universal | "step by step" |
+| English | "one by one", "one step at a time" |
+| Korean | "단계별", "하나씩 해줘", "차근차근" |
+| Japanese | "ステップバイステップ", "一歩ずつ" |
+| Chinese | "逐步", "一步一步" |
+| Spanish | "paso a paso", "uno por uno" |
+| French | "étape par étape", "un par un" |
+| German | "schritt für schritt", "der reihe nach" |
+
+Het losse woord "work" is geen trigger — het is gewone woordenschat ("Does this work on Windows?").
 
 **Stappen:**
 1. **Stap 0, Preparation:** Lees skills, context-loading en memory protocol. Registreer het begin van de sessie.
@@ -111,7 +119,7 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 5. **Stap 4, Spawn Agents:** Spawn per prioriteitstier, parallel binnen dezelfde tier en in aparte werkruimtes.
 6. **Stap 5, Monitor:** Poll voortgangsbestanden en verifieer de afstemming van API-contracten tussen agenten.
 7. **Stap 6, QA Review:** Spawn een QA-agent voor security (OWASP), prestaties, toegankelijkheid en codekwaliteit.
-8. **Stap 6.1, Quality Score** (conditioneel): Meet en registreer de baseline.
+8. **Stap 6.1, Measurements** (conditioneel): Registreer een baseline wanneer een gedefinieerde vergelijking nodig is.
 9. **Stap 7, Iterate:** Bij CRITICAL/HIGH-issues spawn je de verantwoordelijke agent opnieuw. Blijft hetzelfde probleem na 2 pogingen bestaan, activeer dan de Exploration Loop.
 
 **Wanneer gebruiken:** Features die meerdere domeinen overspannen en planning, implementatie en QA stap voor stap moeten coördineren.
@@ -127,7 +135,7 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Trigger-keywords:**
 | Taal | Keywords |
 |----------|----------|
-| Universal | "ultrawork", "ulw" |
+| Explicit (persistent) | "ultrawork", "ulw" |
 
 **Fasen en stappen:**
 
@@ -141,16 +149,16 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 **Poortdefinities:**
 - **PLAN_GATE:** Plan gedocumenteerd, aannames opgesomd, alternatieven bekeken, over-engineering gereviewd en scope geautoriseerd.
-- **IMPL_GATE:** Toepasselijke checks en tests zonder emit slagen, alleen geplande bestanden gewijzigd en baseline Quality Score vastgelegd (indien gemeten). Buildchecks alleen als die expliciet zijn gevraagd.
-- **VERIFY_GATE:** Implementatie voldoet aan requirements, nul CRITICAL, nul HIGH, geen regressies, Quality Score >= 75 (indien gemeten).
-- **REFINE_GATE:** Geen grote bestanden/functies (> 500 regels / > 50 regels), integratiekansen vastgelegd, bijwerkingen geverifieerd, code opgeruimd, Quality Score niet gedaald.
-- **SHIP_GATE:** Kwaliteitschecks slagen, UX geverifieerd, gerelateerde issues opgelost, deploymentchecklist voltooid, eindscore >= 75 met niet-negatieve delta (indien gemeten). Hergebruik bestaande autorisatie; publiceren of deployen vereist autorisatie voor die actie.
+- **IMPL_GATE:** Toepasselijke checks en tests zonder emit slagen, alleen geplande bestanden gewijzigd en baseline-evidence vastgelegd voor daadwerkelijke experimenten. Buildchecks alleen als die expliciet zijn gevraagd.
+- **VERIFY_GATE:** Implementatie voldoet aan requirements, nul CRITICAL, nul HIGH, geen regressies, toepasselijke meetdoelen van het project gehaald.
+- **REFINE_GATE:** Onderhoudbaarheidsregels van het project gevolgd, integratiekansen vastgelegd, bijwerkingen geverifieerd, code opgeruimd, geen onopgeloste regressie.
+- **SHIP_GATE:** Kwaliteitschecks slagen, UX geverifieerd, gerelateerde issues opgelost, deploymentchecklist voltooid, toepasselijke meetdoelen van het project gehaald met actuele evidence. Hergebruik bestaande autorisatie; publiceren of deployen vereist autorisatie voor die actie.
 
 **Gedrag bij falende poort:**
 - Eerste keer: ga terug naar de relevante stap, herstel en probeer opnieuw.
-- Tweede keer op hetzelfde probleem: activeer de Exploration Loop (2-3 hypotheses maken, elk experimenteren, scoren en de beste houden).
+- Tweede keer op hetzelfde probleem: heroverweeg de oorzaak; als alternatieven het testen waard zijn binnen het resterende budget, vergelijk dan geïsoleerde experimenten met het vereiste gedrag en gedefinieerde metrics.
 
-**Conditionele uitbreidingen:** Quality Score-meting, Keep/Discard-beslissingen, Experiment Ledger, hypothese-exploratie en automatisch leren (lessons uit verworpen experimenten).
+**Conditionele uitbreidingen:** Vergelijkingen op gedefinieerde metrics, experimentbeslissingen en evidence, hypothese-exploratie binnen een budget en lessons die door herbruikbare oorzaken worden onderbouwd.
 
 **Voorwaarde om REFINE over te slaan:** Simple-taken onder 50 regels.
 
@@ -167,14 +175,16 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Trigger-keywords:**
 | Taal | Keywords |
 |----------|----------|
-| Universal | "ralph" |
-| English | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
-| Korean | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| Explicit (persistent) | "ralph", "랄프" |
+| English | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
+| Korean | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
 | Japanese | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
 | Chinese | "不要停", "直到完成", "全部完成", "做完为止" |
 | Spanish | "no pares", "hasta completar", "termina todo" |
 | French | "n'arrête pas", "jusqu'à complétion", "termine tout" |
 | German | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+Losse hervatfrases ("keep going", "carry on", "계속해", "続けて", "продолжай", …) zijn geen triggers: gebruikers typen ze om na een onderbreking verder te gaan.
 
 **Fasen:**
 1. **Fase 0, INIT:** Laad prerequisites (context-loading, memory protocol, judge protocol). Definieer en registreer mechanisch verifieerbare voltooiingscriteria, zoals testassertions, checks zonder emit, exitcodes of het bestaan van bestanden. Voeg buildchecks alleen toe wanneer die expliciet zijn gevraagd. Toon de criteria en ga verder binnen de geautoriseerde scope. Initialiseer de sessie met `max_iterations: 5`.
@@ -464,12 +474,12 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ### /video
 
-**Beschrijving:** De `oma-video`-skill end-to-end aansturen: briefing -> script -> narratie -> visuals -> captions -> render-spec -> vendored Remotion (of MoneyPrinterTurbo)-compositor. De workflow maakt een reproduceerbare runmap en levert pas na compositor- en ffprobe-checks een echte `.mp4`. Providerconfiguratie is optioneel voor ondersteunde asset-fallbacks; een fout in compositor of toolchain blijft een mislukte run. Voert inline uit (zonder subagents te spawnen).
+**Beschrijving:** De `oma-video`-skill end-to-end aansturen: briefing -> script -> narratie -> visuals -> captions -> render-spec -> beheerde HyperFrames (of MoneyPrinterTurbo)-compositor. De workflow maakt een reproduceerbare runmap en levert pas na compositor- en ffprobe-checks een echte `.mp4`. Providerconfiguratie is optioneel voor ondersteunde asset-fallbacks; een fout in compositor of toolchain blijft een mislukte run. Voert inline uit (zonder subagents te spawnen).
 
 **Trigger-keywords:**
 | Taal | Keywords |
 |----------|----------|
-| Universal | "/video", "oma-video", "remotion", "shorts", "reels", "screencast" |
+| Universal | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
 | English | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
 | Korean | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
 | Japanese | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
@@ -480,7 +490,7 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 2. **Script samenstellen:** Genereer scènes + narratie (LLM wanneer een key aanwezig is, anders een deterministische outline uit de briefing).
 3. **Assets synthetiseren:** Narratie via `oma-voice`, visuals via `oma-image`/`oma-slide`/stock, key-free captionalignment of supervised browser-webcapture voor `demo --source web`. Elke provider valt terug op een deterministische fallback.
 4. **Render-spec bouwen:** Schrijf `render-spec.json` (de determinismegrens) plus assets in de runmap.
-5. **Renderen:** Spawn het vendored Remotion-project (of MoneyPrinterTurbo) als subprocess. Een normale compositor- of toolchainfout laat de run falen; de deterministische placeholder is alleen beschikbaar via het expliciete mock/testpad (`OMA_VIDEO_MOCK=1`). Live capture wordt in het manifest als `nondeterministic` vastgelegd.
+5. **Renderen:** Spawn het beheerde HyperFrames-project (of MoneyPrinterTurbo) als subprocess. Een normale compositor- of toolchainfout laat de run falen; de deterministische placeholder is alleen beschikbaar via het expliciete mock/testpad (`OMA_VIDEO_MOCK=1`). Live capture wordt in het manifest als `nondeterministic` vastgelegd.
 
 **Uitvoer:** Een runmap in `.agents/results/videos/{timestamp}-{shortid}-{mode}/` met `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4` en `manifest.json`. Zie de [Video Generation guide](../guide/video-generation.md).
 
@@ -529,7 +539,7 @@ Noun-whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruikersbericht wordt verwerkt. De settings van de vendor registreren één `<hookDir>/oma-hook.sh --vendor <v> --event <e>`-entry die naar `oma hook run` routeert; de handlerketen draait in-process. De keten bestaat uit:
 
 1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, inline in de `oma`-binary): definieert keyword-naar-workflowmappings voor alle 11 ondersteunde talen (Engels, Koreaans, Japans, Chinees, Spaans, Frans, Duits, Portugees, Russisch, Nederlands en Pools).
-2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScriptlogica die gebruikersinvoer tegen trigger-keywords scant, taalspecifieke matching respecteert en workflowactivatiecontext injecteert.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScriptlogica die gebruikersinvoer tegen de trigger-keywords van alle talen scant en workflowactivatiecontext injecteert.
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): dwingt persistente workflowuitvoering af door actieve statebestanden te controleren en workflowcontext opnieuw te injecteren.
 
 ### Detectiestroom
@@ -539,8 +549,9 @@ oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruike
 3. De hook saneert de invoer (codeblokken, geciteerde strings en geplakte system-echo-blokken strippen) en scant daarna tegen `.agents/hooks/core/triggers.json`, met zowel keywordlijsten (letterlijke zinnen) als `patterns` (ruwe regex). Een reinforcement guard onderdrukt retriggers wanneer dezelfde workflow in de afgelopen 60 seconden 2+ keer is geactiveerd.
 4. Als er een match is, controleer je of de invoer bij informatieve patronen past.
 5. Is de vraag informatief (bijvoorbeeld "what is orchestrate?"), filter die dan weg (geen workflowtrigger).
-6. Is de vraag actiegericht, injecteer dan `[OMA WORKFLOW: {workflow-name}]` in de context.
-7. De agent leest de geïnjecteerde tag en laadt het bijbehorende workflowbestand uit `.agents/workflows/`.
+6. Is de vraag actiegericht, injecteer dan `[OMA WORKFLOW: {workflow-name}]` in de context. Als meerdere workflows matchen, wint een expliciete aanroep en daarna het langste keyword.
+7. Voor een persistente workflow schrijft alleen een expliciete aanroep (`explicit` in `triggers.json`) het statebestand van de persistente modus; een natural-language-match wordt als suggestie geïnjecteerd en een prompt die op een vraag eindigt (`?` op de eerste of laatste regel) laat de workflow helemaal niet afgaan.
+8. De agent leest de geïnjecteerde tag en laadt het bijbehorende workflowbestand uit `.agents/workflows/`.
 
 ### Taalsectieconventie
 
@@ -548,11 +559,13 @@ oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruike
 
 | Sectie | Gedrag |
 |---------|---------|
-| `*` | Universal: altijd geladen, ongeacht `language` in `.agents/oma-config.yaml`. Gebruik voor Engelse inhoud (lingua franca) en echt cross-language tokens (zoals workflownaam `"orchestrate"`). |
-| `en` | Engels: geladen voor backward compatibility. Functioneel gelijk aan `*`. Nieuwe Engelse inhoud hoort in `*`. |
-| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | Taalspecifiek: alleen geladen wanneer `language: <lang>` in `.agents/oma-config.yaml` staat. |
+| `*` | Universal. Gebruik voor Engelse inhoud (lingua franca) en echt cross-language tokens (zoals workflownaam `"orchestrate"`). |
+| `en` | Engels. Functioneel gelijk aan `*`. |
+| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | Taalspecifieke formuleringen. |
 
-**Gevolg:** Als je `language: en` instelt in `.agents/oma-config.yaml`, worden alleen patronen uit `*` en `en` geladen. Koreaanse/Japanse enzovoort triggers gaan dan niet af, ook niet wanneer de gebruiker die talen gebruikt. Stel `language: <code>` in om een niet-Engelse taal in te schakelen. De Engelse fallback in `*` blijft altijd actief.
+Elke sectie wordt altijd geladen: gebruikers typen hun prompt in de taal waarin ze denken, en de instelling `language` in `.agents/oma-config.yaml` bepaalt alleen de antwoordtaal. Een keyword in één taal kan alleen matchen met een prompt die dat schrift bevat, dus het samenvoegen van alle secties kan niet afgaan op niet-gerelateerde prompts.
+
+Woordgrenzen hangen alleen af van het keyword zelf, nooit van `language`: ASCII-keywords matchen alleen hele woorden (dus "work" matcht niet met "network" en "review" niet met "preview"), terwijl keywords met niet-ASCII-tekst als substrings matchen, omdat CJK-partikels en buigingsvormen direct aan het woord vastzitten ("리뷰해줘").
 
 ### Pattern-veld (raw regex) {#pattern-field-raw-regex}
 
@@ -563,9 +576,11 @@ Naast letterlijke `keywords` kan elke workflow `patterns` declareren: ruwe regex
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      "keywords": { "*": ["orchestrate"], "en": ["parallel", ...] },
+      // Subset of `keywords` that activates persistent mode (persistent workflows only)
+      "explicit": ["orchestrate", ...],
+      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
       "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:an?|the)\\s+...\\b"],
+        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
         "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
       }
     }
@@ -608,7 +623,7 @@ De volgende workflows worden niet via keywords getriggerd en moeten met een expl
 
 ### Statebestanden
 
-Persistente workflows (orchestrate, ultrawork, work, ralph) maken statebestanden in `.agents/state/`:
+Persistente workflows (orchestrate, ultrawork, work, ralph) maken statebestanden in `.agents/state/` wanneer ze expliciet worden aangeroepen (zie [Persistente workflows](#persistent-workflows)):
 
 ```
 .agents/state/

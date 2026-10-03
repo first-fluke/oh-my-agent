@@ -48,7 +48,7 @@ oma agent spawn backend "Implement JWT authentication API with refresh tokens" s
 oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # Override the CLI vendor for this specific spawn
-oma agent spawn frontend "Build login form" session-01 --model claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # Retry a run while preserving its evidence chain
 oma agent spawn backend "Fix the payment gateway issue" session-01 --resumed-from run-123
@@ -152,11 +152,11 @@ agents:
 
 | 優先度 | ソース | 例 |
 |----------|--------|---------|
-| 1（最高） | `--model` フラグ | `oma agent spawn backend "task" session-01 --model claude` |
+| 1（最高） | `--vendor` フラグ | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | `oma-config.yaml` の `agents:` オーバーライド | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | 有効な `model_preset` のエージェントデフォルト | エージェントロールのプリセット検索 |
 
-`--model` フラグが常に優先されます。フラグがない場合は、`agents:` のオーバーライド、プリセットのデフォルト、設定済みのフォールバック CLI の順に確認します。`model_preset: auto` では、現在のランタイムのネイティブ設定がモデルを決めます。
+`--vendor` フラグが常に優先されます。フラグがない場合は、`agents:` のオーバーライド、プリセットのデフォルト、設定済みのフォールバック CLI の順に確認します。`model_preset: auto` では、現在のランタイムのネイティブ設定がモデルを決めます。
 
 ---
 
@@ -254,7 +254,9 @@ oma agent status <session-id> <agent-id>
 
 ## セッション ID 戦略
 
-- **機能ごとに 1 つのセッション：** 1 つの機能に取り組むすべてのエージェントで ID を共有します。
+セッション ID は、同じ機能に取り組むエージェントをグループ化します。ベストプラクティスは次のとおりです。
+
+- **機能ごとに 1 つのセッション：** 1 つの機能に取り組むすべてのエージェントで ID を共有します。たとえば「ユーザー認証」に取り組むエージェントは、すべて `session-auth-01` を共有します。
 - **説明的な ID：** `session-auth-01`、`session-payment-v2`、`session-20260324-143000` のような ID を使います。
 - **自動生成：** オーケストレータは `session-YYYYMMDD-HHMMSS` 形式の ID を生成します。
 - **反復で再利用：** 修正を加えて再スポーンするときも同じセッション ID を使います。
@@ -270,18 +272,28 @@ oma agent status <session-id> <agent-id>
 1. **API コントラクトを先に確定する。** `/plan` を実行してから実装エージェントをスポーンし、フロントエンドとバックエンドがエンドポイント、リクエスト/レスポンススキーマ、エラー形式について合意できるようにします。
 2. **機能ごとに 1 つのセッション ID を使う。** これでエージェントの出力がまとまり、ダッシュボードで追跡しやすくなります。
 3. **別々のワークスペースを割り当てる。** 常に `-w` を使ってエージェントを分離します。
+   ```bash
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
+   ```
 4. **積極的にモニタリングする。** ダッシュボードを開いて問題を早く見つけます。失敗したエージェントを長時間放置するとターンを消費します。
 5. **実装後に QA を実行する。** すべての実装エージェントが完了してから、QA エージェントを順番にスポーンします。
-6. **再スポーンで反復する。** 改善が必要な場合は、元のタスクと修正内容を添えて同じセッション ID で再スポーンします。
-7. **迷ったら `/work` から始める。** `/work` は計画、実行、QA の手順を順番に案内します。
+   ```bash
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
+   wait
+   oma agent spawn qa "Review all changes" session-01
+   ```
+6. **再スポーンで反復する。** 改善が必要な場合は、元のタスクと修正内容を添えて同じセッション ID で再スポーンします。新しいセッションは開始しません。
+7. **迷ったら `/work` から始める。** `/work` は計画、実行、QA の手順を順番に案内し、各ゲートでユーザーの確認を求めます。
 
 ### してはいけないこと
 
 1. **同じワークスペースにエージェントをスポーンしない。** 同じディレクトリで 2 つのエージェントが書き込むと、マージ競合や上書きが起こります。
-2. **MAX_PARALLEL（デフォルト 3）を超えない。** 同時実行数を増やしても、必ずしも速くなるとは限りません。
-3. **プランの手順を省略しない。** プランなしのスポーンは、実装の不整合につながります。
-4. **失敗したエージェントを放置しない。** 構造化された申告または実行単位の結果ファイルで失敗理由を確認し、指示を修正して再スポーンします。
-5. **関連する作業でセッション ID を混在させない。** 同じ機能のバックエンドとフロントエンドは、調整できるよう同じ ID を使います。
+2. **MAX_PARALLEL（デフォルト 3）を超えない。** 同時実行数を増やしても、必ずしも速くなるとは限りません。各エージェントにはメモリと CPU リソースが必要です。デフォルトの 3 は、ほとんどのシステムに合わせて調整されています。
+3. **プランの手順を省略しない。** プランなしのスポーンは、実装の不整合につながります。フロントエンドがある API の形に合わせて構築する一方、バックエンドは別の形で構築してしまう、といった状況です。
+4. **失敗したエージェントを放置しない。** 失敗したエージェントの作業は未完了です。構造化された申告または実行単位の結果ファイルで失敗理由を確認し、指示を修正して再スポーンします。
+5. **関連する作業でセッション ID を混在させない。** 同じ機能のバックエンドとフロントエンドは、オーケストレータが調整できるよう同じ ID を使います。
 
 ---
 

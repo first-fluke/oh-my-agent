@@ -12,7 +12,7 @@ Thực thi một skill là đường đi nhanh cho một tác vụ tập trung: 
 
 1. Chạy `oma doctor` một lần để xác nhận tích hợp host đang được chọn. Cảnh báo provider tùy chọn không chặn tác vụ không dùng provider đó.
 2. Mô tả một thay đổi khép kín bằng `Goal`, `Context`, `Constraints` và điều kiện `Done When` rõ ràng.
-3. Skill được chọn sẽ kiểm tra repository, nêu phạm vi khi execution contract đang hoạt động và báo cáo đúng những kiểm tra đã chạy.
+3. Skill được chọn sẽ kiểm tra repository, nêu phạm vi khi execution contract đang hoạt động có yêu cầu `CHARTER_CHECK` và báo cáo đúng những kiểm tra đã chạy.
 4. Nếu tác vụ lan sang ranh giới API, UI, database hoặc mobile, hãy dừng lần chạy skill đơn và chuyển sang `/work` hoặc `/orchestrate`.
 
 Với lần chạy managed bị đình trệ, dùng `oma agent status <session-id> [agent-id]`, sau đó kiểm tra receipt trong `.agents/state/agent-runs/` và đường dẫn claim đã inject trước khi retry. Xem [Important Defaults](../getting-started/important-defaults.md) để biết hành vi provider và recovery.
@@ -39,7 +39,7 @@ Dùng cách này khi tác vụ đáp ứng TẤT CẢ tiêu chí sau:
 
 **Chuyển sang nhiều agent** (`/work` hoặc `/orchestrate`) khi:
 - UI cần API contract mới (frontend + backend)
-- Một bản sửa lan sang nhiều layer
+- Một bản sửa lan sang nhiều layer (agent debug + agent triển khai)
 - Tính năng trải qua frontend, backend và database
 - Phạm vi vượt một lĩnh vực sau lần lặp đầu tiên
 
@@ -117,12 +117,14 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - `snippets.md`, gồm pattern form và Zod.
    - Pattern component hiện có và `snippets.md` khi skill cung cấp.
 4. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
+   ```
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
    - Must NOT do: backend API, database, mobile screens
    - Success criteria: form validation, accessibility, loading state, tests
    - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
+   ```
 <!-- oma-docs:ignore-start -->
 5. **Triển khai:**
    - Tạo `src/features/auth/components/login-form.tsx`, Client Component với `"use client"`.
@@ -167,13 +169,15 @@ Add tests for: auth required, pagination, status filter, empty results.
    - Tải `stack/tech-stack.md` hoặc tham chiếu tech-stack của variant nếu có.
 <!-- oma-docs:ignore-end -->
 5. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
+   ```
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
    - Must NOT do: frontend UI, mobile screens, database schema changes
    - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
    - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-6. **Triển khai:
+   ```
+6. **Triển khai:**
    - Repository: `TaskRepository.find_by_user(user_id, cursor, status, limit)` với query có tham số.
    - Service: `TaskService.get_user_tasks(user_id, cursor, status, limit)`, wrapper cho business logic.
    - Router: `GET /api/tasks` với middleware JWT, validation input và format response.
@@ -202,12 +206,14 @@ Add tests for: profile save, logout flow, offline state.
 2. **Đánh giá độ khó:** Medium, gồm màn hình settings, state management và xử lý offline.
 3. **Tải tài nguyên:** `execution-protocol.md`, `snippets.md` (template màn hình và pattern Riverpod provider), `screen-template.dart`.
 4. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
+   ```
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
    - Must NOT do: backend API changes, web frontend, database schema
    - Success criteria: profile editing, notification toggles, logout, offline
    - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
+   ```
 <!-- oma-docs:ignore-start -->
 5. **Triển khai:**
    - Screen: `lib/features/settings/presentation/settings_screen.dart`, Stateless Widget với Riverpod.
@@ -238,20 +244,26 @@ Add deliverables: data standards table, glossary, migration script.
 
 1. **Định tuyến skill:** Host hoặc workflow chọn `oma-db`; “database”, “schema”, “ERD” và “migration” là tín hiệu định tuyến.
 2. **Đánh giá độ khó:** Complex, gồm quyết định kiến trúc, nhiều entity và lập kế hoạch capacity.
-3. **Tải tài nguyên:** `execution-protocol.md`, `document-templates.md`, `examples.md` và `anti-patterns.md` để review trong bước tối ưu.
+3. **Tải tài nguyên:** `execution-protocol.md`, `document-templates.md` (cấu trúc deliverable), `examples.md` và `anti-patterns.md` để review trong bước tối ưu.
 4. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
+   ```
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
    - Must NOT do: API implementation, frontend UI, infrastructure
    - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
    - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
+   ```
 5. **Workflow:** Explore, tức entity, quan hệ, access pattern và ước tính volume; Design, tức schema external/conceptual/internal, constraint và lifecycle field; Optimize, tức index cho pattern truy vấn, chiến lược partition, kế hoạch backup và review anti-pattern.
 6. **Deliverable:**
    - Tóm tắt external schema, gồm view theo role admin, project manager và team member.
-   - Conceptual schema với ERD, gồm Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership.
+   - Conceptual schema với ERD, gồm Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership, v.v.
    - Internal schema với physical DDL, index và partitioning.
-   - Bảng data standards, glossary, bảng capacity estimate, chiến lược backup và migration script.
+   - Bảng data standards, gồm quy tắc đặt tên field và quy ước type.
+   - Glossary, gồm tenant, workspace, assignee, v.v.
+   - Bảng capacity estimate.
+   - Chiến lược backup, gồm full mỗi ngày + incremental mỗi giờ, giữ 30 ngày.
+   - Migration script.
 
 ---
 

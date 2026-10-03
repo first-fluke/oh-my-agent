@@ -1,13 +1,25 @@
 ---
 title: Inicio rápido
-description: El camino más corto desde un proyecto vacío hasta un prompt de oh-my-agent verificado, con resultados esperados y pasos de recuperación.
+description: Ejecuta una tarea acotada desde la instalación hasta la verificación, con la salida esperada y la recuperación.
 ---
 
 # Inicio rápido
 
-Usa esta página para confirmar que el harness funciona antes de leer toda la referencia. Necesitas un directorio de proyecto y al menos un CLI o IDE de IA compatible. El instalador puede preparar `bun`, `uv`, Serena y CUE en macOS, Linux o Windows; la integración con el host seleccionado es necesaria para el primer prompt, mientras que las integraciones de proveedores y del navegador son opcionales.
+Usa esta página para ejecutar una tarea pequeña y registrar un resultado concreto. Necesitas un directorio de proyecto y al menos un CLI o IDE de IA compatible. El instalador puede preparar `bun`, `uv`, Serena y CUE en macOS, Linux o Windows; la integración con el host seleccionado es necesaria para el primer prompt, mientras que las integraciones de proveedores y del navegador son opcionales.
 
-## 1. Instala el harness del proyecto
+## 1. Instala
+
+### La vía más rápida: skills en tus agentes
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+Esto instala el paquete de skills de OMA en los runtimes de agentes detectados (Claude Code, Cursor, Codex y más). Las skills enseñan al agente cómo trabajar. Para las puertas de los hooks Stop, la verificación de artefactos, los jueces independientes y el CLI `oma`, instala el harness completo de abajo.
+
+Las instalaciones solo de skills no incluyen el CLI `oma`, los hooks, los flujos de trabajo ni los jueces. Usa una skill instalada con nombre para la primera tarea de abajo; usa el harness completo cuando necesites las comprobaciones del CLI.
+
+### Harness completo (puertas, hooks, CLI)
 
 Desde el directorio del proyecto, ejecuta el instalador de arranque:
 
@@ -31,27 +43,47 @@ bunx oh-my-agent@latest
 
 Los scripts de arranque instalan en el proyecto actual. Usa `oma install --global` cuando quieras una instalación a nivel de HOME; lee [Instalación](./installation.md) antes de mezclar instalaciones de proyecto y globales.
 
-## 2. Comprueba el resultado
+## 2. Comprueba el resultado (solo con el harness completo)
 
-Ejecuta la comprobación de salud desde el mismo directorio del proyecto:
+Si instalaste el harness completo, ejecuta la comprobación de salud desde el mismo directorio del proyecto:
 
 ```bash
 oma doctor
 ```
 
-El éxito significa que la integración del proveedor seleccionado y los archivos `.agents/` están listos. Las integraciones opcionales de MCP, navegador, memoria o inteligencia de código pueden aparecer como advertencias; solo hacen falta para tareas que las utilicen. Usa `oma doctor --profile` para inspeccionar el modelo y el CLI resueltos para cada rol de agente canónico.
+El comando de texto imprime un informe con secciones como `CLI Status` y `Skills Status` y después devuelve el estado de salida del shell. Las filas exactas dependen de los hosts instalados en el proyecto:
 
-Si falta el comando, el CLI se instaló fuera de tu `PATH`; abre un shell nuevo o añade el directorio bin del gestor de paquetes. Si `oma doctor` informa de una configuración no válida, corrige el campo indicado y vuelve a ejecutarlo. No borres `.agents/oma-config.yaml` para recuperarte: es la configuración propiedad del usuario que conserva los ajustes entre actualizaciones.
+```text
+┌   🩺 oh-my-agent doctor
+◇  CLI Status ...
+◇  Skills Status ...
+$ echo $?
+0
+```
+
+Las integraciones opcionales de MCP, navegador, memoria o inteligencia de código pueden aparecer como advertencias; solo hacen falta para tareas que las utilicen. Para obtener un estado legible por máquina, `oma doctor --json` devuelve un estado distinto de cero cuando el informe contiene problemas. Usa `oma doctor --profile` para inspeccionar el modelo y el CLI resueltos para cada rol de agente canónico.
+
+Si `oma` no está disponible pero Bun está instalado, ejecuta la misma comprobación sin el comando global:
+
+```bash
+bunx oh-my-agent@latest doctor
+```
+
+Si el comando `oma` sigue sin encontrarse, abre un shell nuevo o añade el directorio bin del gestor de paquetes a tu `PATH`. Si `oma doctor` informa de una configuración no válida, corrige el campo indicado y vuelve a ejecutarlo. No borres `.agents/oma-config.yaml` para recuperarte: es la configuración propiedad del usuario que conserva los ajustes entre actualizaciones.
+
+Si instalaste solo skills, omite esta comprobación del CLI y continúa con la tarea de la skill con nombre de abajo.
 
 ## 3. Ejecuta una tarea pequeña
 
-Abre el repositorio en la herramienta de IA configurada y describe un cambio autocontenido:
+Abre el repositorio en la herramienta de IA configurada y pide una skill con nombre y un resultado autocontenido:
 
 ```text
-Add a validation message to the existing email field. Follow the project's current form and test conventions. Done when the invalid-email case is covered by a focused test.
+Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-Cuando el hook de palabras clave está habilitado para el host seleccionado, puede activar un flujo de trabajo coincidente. El host o el flujo seleccionado realiza el enrutamiento de skills, por lo que un prompt arbitrario del host no garantiza un hook, una skill concreta ni un `CHARTER_CHECK`. El contrato de ejecución debe revisar aun así las convenciones del repositorio, hacer solo el cambio dentro del alcance e informar de su verificación. Los archivos y comandos exactos dependen del proyecto; el prompt anterior es ilustrativo.
+El host debe identificar la skill seleccionada, inspeccionar un objetivo e informar de una edición específica del enlace o de que el enlace ya es válido. Incluye la salida del comando y el código de salida de cualquier comprobación que se haya ejecutado de verdad. Una instalación solo de skills no añade `/debug`, `/ralph`, hooks ni puertas de flujo de trabajo; pedir la skill con nombre mantiene esta primera tarea dentro de las capacidades instaladas.
+
+Cuando el hook de palabras clave está habilitado para el host seleccionado, puede activar un flujo de trabajo coincidente. El host o el flujo seleccionado realiza el enrutamiento de skills, por lo que un prompt arbitrario del host no garantiza un hook, una skill concreta ni un `CHARTER_CHECK`. El contrato de ejecución debe revisar aun así las convenciones del repositorio, hacer solo el cambio dentro del alcance e informar de su verificación. Los archivos y comandos exactos dependen del proyecto.
 
 Para una tarea que cruce los límites de API y UI, selecciona `/work` o `/orchestrate` explícitamente. Para un solo dominio, continúa con [Ejecución de una skill](../guide/single-skill.md). La [Guía de uso](../guide/usage.md) contiene ejemplos más largos.
 

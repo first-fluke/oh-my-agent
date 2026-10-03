@@ -33,9 +33,11 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 ---
 
-## 永続ワークフロー
+## 永続ワークフロー {#persistent-workflows}
 
 永続ワークフローはすべてのタスクが完了するまで続きます。`.agents/state/` に状態を保持し、明示的に無効化するまで各ユーザーメッセージに `[OMA PERSISTENT MODE: ...]` コンテキストを再注入します。
+
+永続モードが始まるのは、**明示的な呼び出し**があったときだけです。明示的な呼び出しとは、ワークフロー自身の名前を指します（`triggers.json` の `explicit` リスト。例："orchestrate"、"ultrawork"/"ulw"、"ralph"/"랄프"、"work mode"）。下に示すそのほかのトリガーキーワードは、自然言語のヒントです。これらは永続モードを有効にせず、ワークフローを提案として注入するだけです。プロンプトの最初または最後の行が `?` で終わる質問のときは、まったく起動しません。
 
 ### /orchestrate
 
@@ -47,28 +49,30 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 | 言語 | キーワード |
 |----------|----------|
-| Universal | "orchestrate" |
-| English | "parallel", "do everything", "run everything" |
-| Korean | "자동 실행", "병렬 실행", "전부 실행", "전부 해" |
-| Japanese | "オーケストレート", "並列実行", "自動実行" |
-| Chinese | "编排", "并行执行", "自动执行" |
-| Spanish | "orquestar", "paralelo", "ejecutar todo" |
-| French | "orchestrer", "parallèle", "tout exécuter" |
-| German | "orchestrieren", "parallel", "alles ausführen" |
-| Portuguese | "orquestrar", "paralelo", "executar tudo" |
-| Russian | "оркестровать", "параллельно", "выполнить всё" |
-| Dutch | "orkestreren", "parallel", "alles uitvoeren" |
-| Polish | "orkiestrować", "równolegle", "wykonaj wszystko" |
+| 明示的な呼び出し（永続） | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+| English | "do everything", "run everything", "everything in parallel", "automate everything" |
+| Korean | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
+| Japanese | "全部実行", "全部並列で", "自動でやって" |
+| Chinese | "编排", "全部执行", "全部并行", "自动处理" |
+| Spanish | "ejecutar todo", "todo en paralelo" |
+| French | "tout exécuter", "tout en parallèle" |
+| German | "alles ausführen", "alles parallel" |
+| Portuguese | "executar tudo", "tudo em paralelo" |
+| Russian | "выполнить всё", "всё параллельно" |
+| Dutch | "alles uitvoeren", "alles parallel" |
+| Polish | "wykonaj wszystko", "wszystko równolegle" |
+
+単独の "parallel" や "automate"（およびその翻訳語）はトリガーではありません。"run the tests in parallel" や "automate the release notes" は通常の依頼であり、マルチエージェントのオーケストレーションではありません。
 
 **トリガー正規表現パターン**（意図と名詞ホワイトリスト。[自動検出：パターンフィールド](#pattern-field-raw-regex)を参照）：
 
 | セクション | パターン | 起動する例 |
 |---------|---------|----------------------|
-| `*`（ユニバーサル） | `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
+| `*`（ユニバーサル） | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
 | `*`（ユニバーサル） | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
 | `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
 
-名詞ホワイトリスト（15 個）：app、api、service、server、cli、tool、website、dashboard、system、feature、backend、frontend、prototype、mvp、bot。
+名詞ホワイトリスト（14 個）：app、api、service、server、cli、tool、website、dashboard、system、backend、frontend、prototype、mvp、bot。単一の機能（"implement the login feature"、"로그인 기능 구현해줘"）や既存のもの（"make the API faster"）には一致しません。
 
 **ステップ：**
 
@@ -77,9 +81,9 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 3. **Step 2、セッションの初期化：** `oma-config.yaml` をロードし、CLI マッピング表を表示します。プラン作成時のセッション ID を再利用するか、`session-YYYYMMDD-HHMMSS` を生成します。設定済みのメモリストアに `orchestrator-session-{sessionId}.md` と `task-board-{sessionId}.md` を作成します。
 4. **Step 3、エージェントのスポーン：** 優先度ティアごとに、ベンダーに適した方法でエージェントをスポーンします。同じランタイムとベンダーならネイティブサブエージェントを使い、外部または異なるベンダーなら `oma agent spawn` を使います。MAX_PARALLEL を超えません。
 5. **Step 4、モニタリング：** 実行単位の `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` と構造化された実行記録をポーリングし、タスクボードを更新します。完了、失敗、クラッシュを監視します。
-6. **Step 5、検証：** 完了したエージェントごとに `verify.sh {agent-type} {workspace}` を実行します。失敗したらエラーのコンテキストを付けて最大 2 回まで再スポーンします。2 回のリトライ後も失敗したら Exploration Loop を起動し、2〜3 個の仮説を並列実験して最善のものを残します。
+6. **Step 5、検証：** 完了したエージェントごとに `verify.sh {agent-type} {workspace}` を実行します。失敗したらエラーのコンテキストを付けて最大 2 回まで再スポーンします。失敗が続く場合は別の仮説を検討する理由になり得ますが、すべての試行は同じ合計の復旧予算を消費します。予算で比較ラウンドを賄えない場合は、未解決の証拠を保全します。
 7. **Step 6、収集：** 実行単位の結果ファイルと構造化された主張を読み、サマリーを作成します。
-8. **Step 7、最終レポート：** セッションサマリーを提示します。Quality Score を測定した場合は Experiment Ledger のサマリーを含め、教訓を自動生成します。
+8. **Step 7、最終レポート：** セッションサマリーを提示します。実験を実施した場合は証拠と判断をまとめ、教訓を記録するのは再利用できる原因が特定できた場合に限ります。
 
 **読み込むファイル：** `.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、実行単位の進捗/結果ファイル、構造化された実行記録。
 
@@ -99,13 +103,17 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 | 言語 | キーワード |
 |----------|----------|
-| Universal | "work", "step by step" |
-| Korean | "코디네이트", "단계별" |
-| Japanese | "コーディネート", "ステップバイステップ" |
-| Chinese | "协调", "逐步" |
-| Spanish | "coordinar", "paso a paso" |
-| French | "coordonner", "étape par étape" |
-| German | "koordinieren", "schritt für schritt" |
+| 明示的な呼び出し（永続） | "work mode", "work workflow" |
+| Universal | "step by step" |
+| English | "one by one", "one step at a time" |
+| Korean | "단계별", "하나씩 해줘", "차근차근" |
+| Japanese | "ステップバイステップ", "一歩ずつ" |
+| Chinese | "逐步", "一步一步" |
+| Spanish | "paso a paso", "uno por uno" |
+| French | "étape par étape", "un par un" |
+| German | "schritt für schritt", "der reihe nach" |
+
+単独の "work" はトリガーではありません。日常的な語彙だからです（"Does this work on Windows?"）。
 
 **ステップ：**
 
@@ -116,7 +124,7 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 5. **Step 4、エージェントのスポーン：** 優先度ティアごとにスポーンし、同じティアでは並列実行します。ワークスペースは分けます。
 6. **Step 5、モニタリング：** 進捗ファイルをポーリングし、エージェント間の API コントラクト整合性を検証します。
 7. **Step 6、QA レビュー：** セキュリティ（OWASP）、パフォーマンス、アクセシビリティ、コード品質をレビューする QA エージェントをスポーンします。
-8. **Step 6.1、Quality Score（条件付き）：** ベースラインを計測して記録します。
+8. **Step 6.1、計測（条件付き）：** 定義された比較が必要な場合に、ベースラインを記録します。
 9. **Step 7、反復：** CRITICAL / HIGH の問題があれば担当エージェントを再スポーンします。同じ問題が 2 回続いたら Exploration Loop を起動します。
 
 **使用すべき場合：** 複数ドメインにまたがり、計画・実装・QA を段階的に調整したい機能。
@@ -133,7 +141,7 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 | 言語 | キーワード |
 |----------|----------|
-| Universal | "ultrawork", "ulw" |
+| 明示的な呼び出し（永続） | "ultrawork", "ulw" |
 
 **フェーズとステップ：**
 
@@ -148,14 +156,14 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 **ゲートの定義：**
 
 - **PLAN_GATE：** プランを文書化し、前提を列挙し、代替案を検討し、過剰エンジニアリングをレビューし、スコープを承認します。
-- **IMPL_GATE：** 適用対象の非出力チェックとテストが通り、計画したファイルだけを変更し、測定した場合は Quality Score のベースラインを記録します。ビルドチェックは明示的に依頼された場合のみ実行します。
-- **VERIFY_GATE：** 実装が要件に一致し、CRITICAL ゼロ、HIGH ゼロ、回帰なし、測定した場合は Quality Score >= 75 です。
-- **REFINE_GATE：** 大きなファイル（500 行超）や関数（50 行超）がなく、統合機会を記録し、副作用を確認してコードを整理し、Quality Score が劣化していません。
-- **SHIP_GATE：** 品質チェック、UX 検証、関連課題、デプロイ準備チェックリストが完了し、最終 Quality Score が 75 以上で差分が非負です。既存の承認を引き継ぎますが、公開またはデプロイにはその操作の承認が必要です。
+- **IMPL_GATE：** 適用対象の非出力チェックとテストが通り、計画したファイルだけを変更し、実際の実験ではベースラインの証拠を記録します。ビルドチェックは明示的に依頼された場合のみ実行します。
+- **VERIFY_GATE：** 実装が要件に一致し、CRITICAL ゼロ、HIGH ゼロ、回帰なし、適用対象のプロジェクト計測目標を満たしています。
+- **REFINE_GATE：** プロジェクトの保守性ルールに従い、統合機会を記録し、副作用を確認してコードを整理し、未解決の回帰がありません。
+- **SHIP_GATE：** 品質チェック、UX 検証、関連課題、デプロイ準備チェックリストが完了し、適用対象のプロジェクト計測目標を最新の証拠で満たしています。既存の承認を引き継ぎますが、公開またはデプロイにはその操作の承認が必要です。
 
-**ゲートに失敗した場合：** 1 回目は該当ステップへ戻って修正し、再試行します。同じ問題で 2 回目に失敗したら Exploration Loop を起動し、2〜3 個の仮説を実験して採点し、最善を残します。
+**ゲートに失敗した場合：** 1 回目は該当ステップへ戻って修正し、再試行します。同じ問題で 2 回目に失敗したら原因を再評価します。残りの予算内で試す価値のある代替案があれば、分離した実験を、必要な動作と定義済みの指標に照らして比較します。
 
-**条件付きの拡張：** Quality Score の計測、Keep / Discard 判定、Experiment Ledger、仮説探索、破棄した実験からの自動学習。
+**条件付きの拡張：** 定義済みの指標による比較、実験の判断と証拠、予算内での仮説探索、再利用できる原因に裏づけられた教訓。
 
 **REFINE のスキップ条件：** 50 行未満の単純なタスク。
 
@@ -173,14 +181,16 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 | 言語 | キーワード |
 |------|-----------|
-| Universal | "ralph" |
-| English | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
-| Korean | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| 明示的な呼び出し（永続） | "ralph", "랄프" |
+| English | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
+| Korean | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
 | Japanese | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
 | Chinese | "不要停", "直到完成", "全部完成", "做完为止" |
 | Spanish | "no pares", "hasta completar", "termina todo" |
 | French | "n'arrête pas", "jusqu'à complétion", "termine tout" |
 | German | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+単独の再開フレーズ（"keep going"、"carry on"、"계속해"、"続けて"、"продолжай" など）はトリガーではありません。ユーザーは中断後に再開するためにこれらを入力するからです。
 
 **フェーズ：**
 
@@ -481,13 +491,13 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 ### /video
 
-**説明：** `oma-video` スキルをエンドツーエンドで実行します。brief → script → narration → visuals → captions → render-spec → vendored Remotion（または MoneyPrinterTurbo）という流れです。再現可能な実行ディレクトリを作り、コンポジターと ffprobe の確認が通った場合だけ実際の `.mp4` を出力します。対応するアセットのフォールバックはキーなしでも使えますが、コンポジターやツールチェーンの失敗は失敗のままです。インラインで実行し、サブエージェントはスポーンしません。
+**説明：** `oma-video` スキルをエンドツーエンドで実行します。brief → script → narration → visuals → captions → render-spec → 管理対象の HyperFrames（または MoneyPrinterTurbo）という流れです。再現可能な実行ディレクトリを作り、コンポジターと ffprobe の確認が通った場合だけ実際の `.mp4` を出力します。対応するアセットのフォールバックはキーなしでも使えますが、コンポジターやツールチェーンの失敗は失敗のままです。インラインで実行し、サブエージェントはスポーンしません。
 
 **トリガーキーワード：**
 
 | 言語 | キーワード |
 |----------|----------|
-| Universal | `/video`、`oma-video`、`remotion`、`shorts`、`reels`、`screencast` |
+| Universal | `/video`、`oma-video`、`hyperframes`、`shorts`、`reels`、`screencast` |
 | English | `generate video`、`create a video`、`make a video`、`short-form video`、`explainer video`、`demo video`、`walkthrough video`、`video from readme`、`video from code` |
 | Korean | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
 | Japanese | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
@@ -499,7 +509,7 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 2. **script を構成：** シーンとナレーションを生成します（キーがあれば LLM、なければ brief から決定的なアウトライン）。
 3. **アセットを合成：** `oma-voice` でナレーション、`oma-image` / `oma-slide` / stock で映像、キー不要のキャプション同期、または `demo --source web` の監督付きブラウザキャプチャを使います。各プロバイダーは決定的フォールバックへ切り替わります。
 4. **render-spec を作成：** 決定性の境界となる `render-spec.json` とアセットを実行ディレクトリに書き込みます。
-5. **レンダー：** vendored Remotion プロジェクト（または MoneyPrinterTurbo）をサブプロセスとして起動します。通常のコンポジターまたはツールチェーンの失敗は失敗として扱い、決定的なプレースホルダーは明示的なモック/テスト経路（`OMA_VIDEO_MOCK=1`）でだけ使用できます。ライブキャプチャはマニフェストに `nondeterministic` と記録します。
+5. **レンダー：** 管理対象の HyperFrames プロジェクト（または MoneyPrinterTurbo）をサブプロセスとして起動します。通常のコンポジターまたはツールチェーンの失敗は失敗として扱い、決定的なプレースホルダーは明示的なモック/テスト経路（`OMA_VIDEO_MOCK=1`）でだけ使用できます。ライブキャプチャはマニフェストに `nondeterministic` と記録します。
 
 **出力：** `.agents/results/videos/{timestamp}-{shortid}-{mode}/` にある実行ディレクトリ。`script.json`、`render-spec.json`、`timing.json`、`captions.{srt,vtt}`、`audio/`、`visuals/`、`{composition}.mp4`、`manifest.json` を含みます。[動画生成ガイド](../guide/video-generation.md)を参照してください。
 
@@ -548,7 +558,7 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` フックを使います。ベンダーの設定は単一の `<hookDir>/oma-hook.sh --vendor <v> --event <e>` エントリを登録し、処理チェーンをインプロセスで実行する `oma hook run` へルーティングします。チェーンは次の 3 つで構成されます。
 
 1. **`triggers.json`**（`.agents/hooks/core/triggers.json`、`oma` バイナリに埋め込み）：11 の対応言語（英語、韓国語、日本語、中国語、スペイン語、フランス語、ドイツ語、ポルトガル語、ロシア語、オランダ語、ポーランド語）のキーワードとワークフローの対応を定義します。
-2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：ユーザー入力をトリガーキーワードと照合し、言語ごとのマッチングを守り、ワークフローの起動コンテキストを注入する TypeScript ロジックです。
+2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：ユーザー入力をすべての言語のトリガーキーワードと照合し、ワークフローの起動コンテキストを注入する TypeScript ロジックです。
 3. **`persistent-mode.ts`**（`.agents/hooks/core/persistent-mode.ts`）：状態ファイルを確認して永続ワークフローの実行を強制し、ワークフローコンテキストを再注入します。
 
 ### 検出フロー
@@ -558,8 +568,9 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 3. フックが入力をサニタイズし（コードブロック、引用符付き文字列、貼り付けたシステムエコーブロックを除去）、`.agents/hooks/core/triggers.json` に対してキーワードリスト（リテラルフレーズ）と `patterns`（生の正規表現）をスキャンします。強化ガードは、同じワークフローが直近 60 秒で 2 回以上起動していれば再トリガーを抑制します。
 4. 一致があれば、入力が情報パターンにも一致するか確認します。
 5. 情報を求める入力（例：「what is orchestrate?」）ならフィルターし、ワークフローを起動しません。
-6. 実行要求なら `[OMA WORKFLOW: {workflow-name}]` をコンテキストへ注入します。
-7. エージェントが注入されたタグを読み、`.agents/workflows/` から対応するワークフローファイルをロードします。
+6. 実行要求なら `[OMA WORKFLOW: {workflow-name}]` をコンテキストへ注入します。複数のワークフローが一致した場合は、明示的な呼び出しが優先され、次に最も長いキーワードが優先されます。
+7. 永続ワークフローでは、明示的な呼び出し（`triggers.json` の `explicit`）だけが永続モードの状態ファイルを書き込みます。自然言語での一致は提案として注入され、質問で終わるプロンプト（最初または最後の行が `?`）では一切起動しません。
+8. エージェントが注入されたタグを読み、`.agents/workflows/` から対応するワークフローファイルをロードします。
 
 ### 言語セクションの規約
 
@@ -567,11 +578,13 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 
 | セクション | 動作 |
 |---------|----------|
-| `*` | ユニバーサル。`.agents/oma-config.yaml` の `language` 設定に関わらず常にロードされます。英語コンテンツ（共通語）と、本当に言語をまたぐトークン（ワークフロー名の `"orchestrate"` など）に使います。 |
-| `en` | 英語。後方互換性のためにロードされ、機能的には `*` と同じです。新しい英語コンテンツは `*` に入れます。 |
-| `ko`、`ja`、`zh`、`es`、`fr`、`de`、`pt`、`ru`、`nl`、`pl` | 言語固有。`.agents/oma-config.yaml` に `language: <lang>` が設定されているときだけロードされます。 |
+| `*` | ユニバーサル。英語コンテンツ（共通語）と、本当に言語をまたぐトークン（ワークフロー名の `"orchestrate"` など）に使います。 |
+| `en` | 英語。機能的には `*` と同じです。 |
+| `ko`、`ja`、`zh`、`es`、`fr`、`de`、`pt`、`ru`、`nl`、`pl` | 言語固有の言い回しです。 |
 
-**含意：** `.agents/oma-config.yaml` で `language: en` を設定した場合は `*` と `en` のパターンだけがロードされます。ユーザーが韓国語や日本語などで入力しても、自然言語のトリガーは起動しません。英語以外の言語を有効にするには `language: <code>` を設定してください。`*` の英語フォールバックは常に有効です。
+すべてのセクションは常にロードされます。ユーザーは自分が考える言語でプロンプトを入力するため、`.agents/oma-config.yaml` の `language` 設定が制御するのは応答言語だけです。ある言語で書かれたキーワードは、その言語の文字を含むプロンプトにしか一致しません。そのため、すべてのセクションを統合しても、無関係なプロンプトで起動することはありません。
+
+単語境界はキーワード自体だけで決まり、`language` には左右されません。ASCII のキーワードは単語全体にだけ一致します（そのため "work" は "network" に、"review" は "preview" に一致しません）。一方、非 ASCII のテキストを含むキーワードは、CJK の助詞や活用語尾が単語に直接つながるため、部分文字列として一致します（"리뷰해줘"）。
 
 ### パターンフィールド（生の正規表現） {#pattern-field-raw-regex}
 
@@ -582,9 +595,11 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      "keywords": { "*": ["orchestrate"], "en": ["parallel", ...] },
+      // Subset of `keywords` that activates persistent mode (persistent workflows only)
+      "explicit": ["orchestrate", ...],
+      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
       "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:an?|the)\\s+...\\b"],
+        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
         "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
       }
     }
@@ -630,7 +645,7 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 
 ### 状態ファイル
 
-永続ワークフロー（orchestrate、ultrawork、work、ralph）は `.agents/state/` に状態ファイルを作成します。
+永続ワークフロー（orchestrate、ultrawork、work、ralph）は、明示的に呼び出されたとき、`.agents/state/` に状態ファイルを作成します（[永続ワークフロー](#persistent-workflows)を参照）。
 
 ```
 .agents/state/

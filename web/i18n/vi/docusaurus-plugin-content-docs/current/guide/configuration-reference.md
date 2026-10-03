@@ -43,7 +43,7 @@ Các khóa sau được runtime schema hiện tại hoặc consumer OMA được
 | `telemetry` | boolean | `false` | Opt in telemetry của vendor dùng trong install, update và link reconciliation. |
 | `model_preset` | string không rỗng | `auto` trong template mới | Model preset built-in hoặc tùy chỉnh. `OMA_MODEL_PRESET` ghi đè trong một process. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Thiết lập FreeLLMAPI khi preset là `free`; `FREELLM_BASE_URL` và `FREELLM_MODEL` ghi đè giá trị trong file, còn tên khóa không bao giờ chứa secret. Xem [Cấu hình model theo agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `semantic_memory` | `context7`, `native`, `serena`, `agentmemory` | Chọn provider cho documentation, search, code intelligence và semantic memory. Code intelligence nhận `serena` hoặc `gortex`; semantic memory nhận `agentmemory`, `honcho` hoặc `none`. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Chọn provider cho documentation, search, code intelligence và semantic memory. Code intelligence nhận `serena` hoặc `gortex`; semantic memory nhận `agentmemory`, `honcho` hoặc `none`. `code_intelligence_guard` (`block` hoặc `off`) điều khiển guard tìm kiếm PreToolUse. Các lệnh tìm kiếm native chỉ nằm trong mục loại trừ provider đã xác nhận hoặc ở path ngoài project được cho phép mà không cần bypass. Guard đọc các mục loại trừ của Serena và các rule gitignore đang bật, hoặc danh sách loại trừ của Gortex; nó không suy ra dependency từ tên thư mục. Hook không nêu tên `OMA_CI_ALLOW_NATIVE`. Lệnh tìm kiếm shell có tiền tố `OMA_CI_ALLOW_NATIVE=1` chỉ bypass guard đối với tài nguyên ngoài project hoặc các path bị ignore mà guard không nhận ra, không áp dụng cho source của project. |
 | `brave` | `api_key_env` hoặc `api_key_vault` | chưa đặt | Tham chiếu credential tìm kiếm Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Xem [Chi tiết Honcho](#honcho-semantic-memory) | Thiết lập kết nối Honcho semantic memory. |
 | `agents` | agent ID → `model`, tùy chọn `effort`, `thinking`, `memory` | preset resolution | Override theo agent được áp dụng lên preset đã chọn. `effort` là `none`, `low`, `medium`, `high` hoặc `xhigh`; `memory` là `user`, `project` hoặc `local`. |
@@ -55,7 +55,7 @@ Các khóa sau được runtime schema hiện tại hoặc consumer OMA được
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Hành vi và phạm vi loại trừ khi scan của `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena MCP transport và hành vi cập nhật. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` hoặc `[]` | chưa đặt = giữ nguyên setup hiện có | Chọn Browser DevTools MCP khi reconciliation. List rỗng rõ ràng sẽ xóa browser entry đã chọn. |
-| `video` | sparse map do skill sở hữu | skill default; xem [Tạo video](/docs/guide/video-generation) | Routing video, thứ tự provider, output, chi phí, limit và thiết lập refresh Remotion. |
+| `video` | sparse map do skill sở hữu | skill default; xem [Tạo video](/docs/guide/video-generation) | Routing video, thứ tự provider, output, chi phí, limit và thiết lập refresh HyperFrames. |
 | `image` | sparse map do skill sở hữu | skill default; xem [Tạo hình ảnh](/docs/guide/image-generation) | Thiết lập vendor hình ảnh, kích thước, chất lượng, output, so sánh và chi phí. |
 | `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | skill default; xem [Workflow nội dung và nghiên cứu](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Profile Voicebox, output và thiết lập độ dài. |
 | `hwp` | `format`, `version.*`, `output.*` | skill default; xem [Workflow nội dung và nghiên cứu](/docs/guide/content-and-research#extract-hwp-family-documents) | Định dạng Kordoc, kênh version và vị trí output. |
@@ -181,6 +181,7 @@ Chọn rõ code-intelligence và memory provider:
 ```yaml
 providers:
   code_intelligence: serena
+  code_intelligence_guard: block   # off → advisory primer only, no tool denial
   semantic_memory: none
 ```
 

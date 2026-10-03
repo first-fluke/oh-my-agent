@@ -112,7 +112,7 @@ La sévérité détermine la manière dont le bug est traité et la rapidité de
 
 ## La boucle de débogage en sept étapes en détail
 
-Le workflow `/debug` exécute ces étapes dans l'ordre. Il utilise le fournisseur d'intelligence du code configuré lorsqu'il est disponible, ainsi que la recherche native et les lectures de fichiers ciblées lorsque ce fournisseur est indisponible ou expire.
+Le workflow `/debug` exécute ces étapes dans l'ordre. Il utilise le fournisseur d'intelligence du code configuré. La recherche native est réservée aux chemins situés hors du projet ou aux chemins ignorés lorsque ce fournisseur est indisponible ou expire.
 
 ### Étape 1 : recueillir les informations sur l'erreur
 
@@ -255,11 +255,11 @@ Ces signaux indiquent qu'il faut aller au-delà de la boucle de débogage standa
 
 ### Signal 1 : la même correction est tentée deux fois
 
-Si le workflow propose et applique une correction, puis que la même erreur réapparaît, le problème est plus profond que le diagnostic initial. Cela déclenche la **boucle d'exploration** dans les workflows qui la prennent en charge (ultrawork, orchestrate, work) :
+Si le workflow propose et applique une correction, puis que la même erreur réapparaît, le problème est plus profond que le diagnostic initial. Réévaluez la cause. Si des alternatives méritent d'être testées et que le budget de récupération existant le permet, utilisez la **boucle d'exploration** dans le workflow actif (ultrawork, orchestrate, work) :
 
 - générer 2 ou 3 hypothèses alternatives sur la cause racine ;
-- tester chaque hypothèse dans un workspace séparé (un git stash par tentative) ;
-- noter les résultats et retenir la meilleure approche.
+- isoler chaque expérience et préserver son baseline, ses preuves et le travail sans rapport ;
+- retenir une approche qui respecte le comportement requis et des critères de mesure comparables, puis vérifier le résultat intégré.
 
 ### Signal 2 : cause racine multi-domaines
 

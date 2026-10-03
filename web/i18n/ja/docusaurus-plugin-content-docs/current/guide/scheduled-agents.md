@@ -171,6 +171,7 @@ oma schedule list [--json]
 | 状態 | 意味 |
 |---|---|
 | `synced` | マニフェストと OS スケジューラーの両方にジョブがある |
+| `stale` | ジョブは登録されているが、OS 登録が現在の CLI が受け付けなくなったコマンドを呼び出す（たとえば、コマンドパスの標準化前に書き込まれた `schedule:run <id>`）。`schedule sync` で書き換え。`oma update` が自動で実行 |
 | `missing-in-os` | マニフェストにはあるが OS スケジューラーにない。`schedule sync` で修復 |
 | `orphan-in-os` | OS スケジューラーにあるがマニフェストにない。`schedule sync --prune` で削除 |
 
@@ -265,12 +266,14 @@ oma schedule sync [--prune]
 **例:**
 
 ```bash
-# Repair missing-in-os jobs (does not remove orphans)
+# Repair missing-in-os jobs and rewrite stale registrations (does not remove orphans)
 oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
 oma schedule sync --prune
 ```
+
+`oma update` は更新のたびに、同じ再同期（`--prune` なし）を実行します。そのため、CLI のリリースで `oma schedule run` コマンドの綴りが変わっても、既存の OS 登録が新しいバイナリの拒否するコマンドを指したままになることはありません。古いバージョンが `oma schedule:run <id>` で書き込んだ登録も、そのまま動作します。OS から呼び出されるジョブでは、その従来の綴りが引き続き受け付けられるためです。
 
 ---
 

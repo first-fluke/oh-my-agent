@@ -220,7 +220,7 @@ your-project/
 │   │       ├── task-board-{sessionId}.md          ← Task assignments and status
 │   │       ├── progress-{agentId}-{taskId}-{runId}-{sessionId}.md ← Run-scoped progress updates
 │   │       ├── result-{agentId}-{taskId}-{runId}-{sessionId}.md   ← Run-scoped final outputs
-│   │       ├── session-metrics.md         ← Clarification Debt and Quality Score tracking
+│   │       ├── session-metrics.md         ← Session evidence and experiment results
 │   │       ├── experiment-ledger.md       ← Experiment tracking (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
@@ -385,16 +385,19 @@ MCP 服务器配置，包括：
 
 **`scm-guard.ts`**：在 `PreToolUse`（Bash/Shell 工具）上运行的纯处理器（`run()`），拒绝对可能含密钥文件执行 `git add`。它使用 `.agents/skills/oma-scm/config/commit-config.yaml` 中的 `forbidden_patterns` 减去 `allowed_exceptions` 强制执行规则（配置缺失时使用内置默认值）。在 claude、codex、cursor、grok、kimi、kiro 和 qwen 的链中先于 `test-filter` 运行；在 opencode 桥接中会通过 `tool.execute.before` 抛出异常来阻止，在 pi 桥接中会返回 `tool_call` 的 `{ block: true, reason }`；命令以 `OMA_SCM_ALLOW_SECRETS=1` 为前缀时，在用户明确批准后可以绕过保护。广泛暂存（`git add -A` / `git add .`）有意不拦截，因为该规则依赖钩子无法观察的用户同意。
 
+**`code-intelligence-guard.ts`**：在 `PreToolUse` 上运行的纯处理器（`run()`），以程序化方式强制执行“Code Search”规则。当 `providers.code_intelligence` 解析为 `serena`（或 `gortex`），且 `providers.code_intelligence_guard` 不是 `off` 时，它会拒绝原生搜索工具（Claude Code 上的 `Grep`、`Glob`），以及起始可执行文件是递归代码搜索工具的 shell 命令（`rg`、`ag`、`ack`、`fd`、`grep -r`、`find -name`/`-path`、`git grep`），拒绝原因会指明应改用的提供方工具（`search_for_pattern`、`find_file`、`find_symbol`）。非递归的 `grep`（管道过滤、单个文件）、不带名称谓词的 `find` 以及读取操作从不受影响。它在 claude、codex、cursor、grok、kimi、kiro 和 qwen 的链中紧接 `scm-guard` 之后注册；安装器会合并链中的匹配器，因此 Claude 的 `PreToolUse` 条目变为 `Bash|Grep|Glob`。包含 `OMA_CI_ALLOW_NATIVE=1` 的 shell 命令仍可绕过该保护，但它只是操作者的应急出口，用于搜索项目之外的资源，或保护未能识别的被忽略路径。拒绝原因不会提到该前缀，它也不是搜索项目源代码的回退手段。
+
 **`triggers.json`**：在构建时静态内联到 `oma` 二进制的关键词到工作流映射（源文件：`.agents/hooks/core/triggers.json`）。它定义：
-- `workflows`：工作流名称到 `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] } }` 的映射。`keywords` 是字面短语；`patterns` 是原始正则表达式字符串（用 `iu` 标志编译）。
+- `workflows`：工作流名称到 `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] }, explicit?: [...] }` 的映射。`keywords` 是字面短语；`patterns` 是原始正则表达式字符串（用 `iu` 标志编译）。`explicit`（仅限持久工作流）列出算作显式调用的关键词，只有它们会激活持久模式；其他所有匹配都会作为建议注入。
 - `informationalPatterns`：表示问题的短语（会从自动检测中过滤）
 - `excludedWorkflows`：要求显式 `/command` 调用的工作流
-- `cjkScripts`：使用 CJK 脚本的语言代码（ko、ja、zh）
 
 `keywords`、`patterns` 和 `informationalPatterns` 中的语言区段遵循以下约定：
-- `*`：通用/英语。无论 `.agents/oma-config.yaml` 的 `language` 设置如何，始终加载。
-- `en`：为向后兼容而加载。功能上等同于 `*`。新的英语内容应放入 `*`。
-- `ko`/`ja`/`zh`/等：语言专用。只有 `.agents/oma-config.yaml` 设置 `language: <code>` 时才加载。
+- `*`：通用/英语。
+- `en`：功能上等同于 `*`。
+- `ko`/`ja`/`zh`/等：特定语言的措辞。
+
+所有区段始终加载；`.agents/oma-config.yaml` 中的 `language` 设置只控制响应语言。单词边界取决于关键词本身：ASCII 关键词匹配完整单词，含有非 ASCII 文本的关键词按子串匹配。
 
 #### 供应商生成：之前与之后
 
@@ -491,8 +494,8 @@ echo '{"cwd":"/path/to/project"}' \
 | `task-board-{sessionId}.md` | 编排器 | 任务分配：智能体、任务、优先级、状态和依赖关系 |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | 该运行 | 按轮次记录的进度：执行的操作、读取或修改的文件以及当前状态 |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | 该运行 | 最终输出：完成状态、摘要、变更文件和验收标准 |
-| `session-metrics.md` | 编排器 | 澄清债务事件和质量评分进展 |
-| `experiment-ledger.md` | 编排器/QA | 质量评分启用时记录实验行 |
+| `session-metrics.md` | 编排器 | 实质性纠正和实验证据 |
+| `experiment-ledger.md` | 编排器/QA | 实际实验的证据行 |
 | `session-work.md` | work 工作流 | work 专用会话状态 |
 | `session-ultrawork.md` | ultrawork 工作流 | ultrawork 专用阶段跟踪 |
 | `session-cost-{sessionId}.md` | 系统 | 每个会话的启动成本遥测 |
