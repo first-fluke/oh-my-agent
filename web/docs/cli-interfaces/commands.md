@@ -278,6 +278,7 @@ Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`
 ### setup (workflow)
 
 The `/setup` workflow (invoked inside an agent session) provides interactive configuration of language, CLI installations, MCP connections, and agent-CLI mapping. This is different from `oma` (the installer): `/setup` configures an already-installed instance.
+
 ---
 
 ## Monitoring & metrics
