@@ -28,7 +28,8 @@ export const FORBIDDEN_VENDOR_FILES: ReadonlySet<string> = new Set<string>([
  * 1. Stamp existing target (if any) into the canonical backup location resolved
  *    by `resolveSafeWriteBackup` — `<project>/.agents/backup/safe-write/` when
  *    the target lives in a project, else a sibling dotfile for home/global
- *    vendor configs (3-tier rotation: keep last 3, delete older).
+ *    vendor configs (3-tier rotation: keep last 3, delete older). The first
+ *    copy ever taken is also kept as `<name>.original`, outside the rotation.
  * 2. Write payload to a sibling temp file `<dir>/.<name>.tmp-<Date.now()>-<pid>`.
  * 3. `fs.renameSync(tmp, target)` for atomic swap.
  *    - On `EXDEV` (cross-device link error), fall back to `fs.copyFileSync(tmp, target)` + `fs.unlinkSync(tmp)`.
@@ -161,9 +162,15 @@ export function safeWriteFile(targetPath: string, content: string): void {
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 
   // Step 1: backup existing target if it exists, into the canonical location.
+  // The first copy ever taken is also kept as `.original`, outside the
+  // rotation, so the pre-oma version of the file stays recoverable after many
+  // link/update passes.
   if (fs.existsSync(targetPath)) {
     const backup = resolveSafeWriteBackup(targetPath);
     fs.mkdirSync(backup.dir, { recursive: true });
+    if (!fs.existsSync(backup.original)) {
+      fs.copyFileSync(targetPath, backup.original);
+    }
     fs.copyFileSync(
       targetPath,
       path.join(backup.dir, `${backup.prefix}${Date.now()}-${process.pid}`),

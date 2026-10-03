@@ -271,6 +271,9 @@ export function printMemoryGc(
   const lines = [
     `Scope: ${pc.cyan(result.scope)}`,
     `Sessions: pruned ${result.prunedSessions.length}, kept ${result.keptSessions} (keep ${result.keep})`,
+    result.prunedOrphanSessions.length > 0
+      ? `Orphaned sessions (project removed): pruned ${result.prunedOrphanSessions.length}`
+      : null,
     `Serena: pruned ${result.prunedSerena.length}, kept ${result.keptSerena} (max-age ${result.maxAgeDays}d)`,
     result.prunedSessions.length > 0
       ? `Pruned sessions:\n${result.prunedSessions.map((path) => `  ${path}`).join("\n")}`

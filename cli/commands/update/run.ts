@@ -10,7 +10,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { backupRoot } from "../../io/backup.js";
+import { pruneBackupRoot } from "../../io/backup.js";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
 import { ensureGortexProject } from "../../io/gortex.js";
 import { maybeSelfUpdate } from "../../io/self-update.js";
@@ -45,6 +45,12 @@ import {
   getInstalledSkillNames,
   getInstalledWorkflowNames,
 } from "../../platform/skills-installer.js";
+import {
+  DEFAULT_KEEP_SESSIONS,
+  gcOrphanSessions,
+  gcProjectSessions,
+  loadMemoryGcConfig,
+} from "../../state/session-gc.js";
 import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import {
   isTelemetryEnabled,
@@ -420,15 +426,42 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
           setNeedsReconcile(cwd, false);
         }
 
-        // Clean up backups (no longer needed after a successful update): the
-        // canonical root plus legacy scatter from pre-consolidation versions.
-        const backupCleanupDirs = [
-          backupRoot(cwd), // .agents/backup
+        // Backups: the canonical root is NOT cleared on success. Its
+        // safe-write copies (bounded per target by safe-write) are the only
+        // way back from a merge that dropped a user setting, and a successful
+        // update says nothing about that. Other snapshots age out; the legacy
+        // scatter from pre-consolidation versions is still removed.
+        pruneBackupRoot(cwd);
+        const legacyBackupDirs = [
           join(cwd, ".migration-backup"), // legacy (migrations 011/013)
           join(cwd, ".agents", ".migration-backup"), // legacy (migration 002)
         ];
-        for (const dir of backupCleanupDirs) {
+        for (const dir of legacyBackupDirs) {
           if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
+        }
+
+        // Session GC: every workflow match opens an L1 session and nothing
+        // else prunes them. Same policy as `oma memory gc --scope sessions`
+        // (keep window from memory.gc.keep_sessions, live sessions kept),
+        // plus profile sessions of projects that no longer exist. Warn-only.
+        if (mode !== "global") {
+          try {
+            const keep = loadMemoryGcConfig(cwd).keep ?? DEFAULT_KEEP_SESSIONS;
+            const pruned =
+              gcProjectSessions(cwd, keep, false).pruned.length +
+              gcOrphanSessions().pruned.length;
+            if (pruned > 0) {
+              ui.note(
+                `Pruned ${pruned} old session(s) (keep ${keep}; see \`oma memory gc\`).`,
+                "Memory GC",
+              );
+            }
+          } catch (err) {
+            ui.note(
+              `Skipped session GC (${err instanceof Error ? err.message : String(err)}).`,
+              "Memory GC",
+            );
+          }
         }
 
         if (loadProviders(cwd).code_intelligence === "serena") {

@@ -210,6 +210,11 @@ export interface MemoryGcResult {
   prunedSessions: string[];
   /** L1 session dirs retained (incl. active + within keep window). */
   keptSessions: number;
+  /**
+   * Profile sessions pruned because their project directory no longer exists
+   * (idle past the orphan age, never an active pointer). Profile-wide.
+   */
+  prunedOrphanSessions: string[];
   /** Absolute paths of pruned Serena ephemeral memory files. */
   prunedSerena: string[];
   /** Serena ephemeral files retained (matched a prunable pattern but kept). */
