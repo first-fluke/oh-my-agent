@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.1...web-v7.0.2) (2026-10-03)
+
+
+### Bug Fixes
+
+* **agent:** run codex subagents in the workspace-write sandbox ([60db173](https://github.com/first-fluke/oh-my-agent/commit/60db1730d2b02a85b1d5fc7449d9dee4b41972cd))
+* **hook:** drop only duplicate deliveries from a second registration ([f0d5ed3](https://github.com/first-fluke/oh-my-agent/commit/f0d5ed33b90ff0bc3584f28d18ed1a9ae5f9473f))
+* **hook:** require explicit triggers for persistent workflows ([40d61f4](https://github.com/first-fluke/oh-my-agent/commit/40d61f4e470b0dd2903f721971127f8e8c7bf093))
+* **update:** install from the checksum-verified release asset ([5101552](https://github.com/first-fluke/oh-my-agent/commit/510155295a72dbf5e38141a3fbb26b0dbcb99617))
+
 ## [7.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.0...web-v7.0.1) (2026-10-01)
 
 
