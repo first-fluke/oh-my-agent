@@ -30,17 +30,16 @@ export type DashboardState = {
 
 const EMPTY_SESSION: DashboardSession = { id: "N/A", status: "UNKNOWN" };
 
-export function resolveMemoriesDir(): string {
+/**
+ * Memories directory for a project. The project comes from the caller (an
+ * explicit command option), never from positional argv: after the command
+ * path standardization `argv[3]` is the `web`/`terminal` subcommand itself.
+ */
+export function resolveMemoriesDir(projectDir: string = process.cwd()): string {
   if (process.env.MEMORIES_DIR) {
     return process.env.MEMORIES_DIR;
   }
-
-  const cliArg = process.argv[3];
-  if (cliArg) {
-    return getCoordinationStorePath(cliArg);
-  }
-
-  return getCoordinationStorePath(process.cwd());
+  return getCoordinationStorePath(projectDir);
 }
 
 function readFileSafe(filePath: string): string {

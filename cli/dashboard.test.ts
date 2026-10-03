@@ -1,4 +1,6 @@
-import { mkdtempSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { request } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -194,5 +196,171 @@ describe("startDashboard", () => {
     expect(JSON.parse(authorized.body)).toMatchObject({
       session: { id: "N/A", status: "UNKNOWN" },
     });
+  });
+});
+
+/** node:http (not fetch) so a test can present a DNS-rebound Host header. */
+function rawGet(
+  port: number,
+  path: string,
+  headers: Record<string, string>,
+): Promise<{ status: number; body: string }> {
+  return new Promise((resolve, reject) => {
+    const req = request({ host: "127.0.0.1", port, path, headers }, (res) => {
+      let body = "";
+      res.setEncoding("utf8");
+      res.on("data", (chunk) => {
+        body += chunk;
+      });
+      res.on("end", () => resolve({ status: res.statusCode ?? 0, body }));
+    });
+    req.on("error", reject);
+    req.end();
+  });
+}
+
+/** Attempt a WebSocket upgrade; resolves 101 on success, else the HTTP status. */
+function tryUpgrade(
+  port: number,
+  path: string,
+  headers: Record<string, string>,
+): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const req = request({
+      host: "127.0.0.1",
+      port,
+      path,
+      headers: {
+        Connection: "Upgrade",
+        Upgrade: "websocket",
+        "Sec-WebSocket-Version": "13",
+        "Sec-WebSocket-Key": randomBytes(16).toString("base64"),
+        ...headers,
+      },
+    });
+    req.on("upgrade", (_res, socket) => {
+      socket.destroy();
+      resolve(101);
+    });
+    req.on("response", (res) => {
+      res.resume();
+      resolve(res.statusCode ?? 0);
+    });
+    req.on("error", reject);
+    req.end();
+  });
+}
+
+describe("dashboard loopback request gate", () => {
+  let memoriesDir = "";
+  let dashboard: Awaited<ReturnType<typeof startDashboard>> | undefined;
+
+  beforeEach(() => {
+    memoriesDir = mkdtempSync(join(tmpdir(), "oma-dashboard-test-"));
+    vi.stubEnv("MEMORIES_DIR", memoriesDir);
+    vi.stubEnv(
+      "DASHBOARD_PORT",
+      String(50_000 + Math.floor(Math.random() * 5_000)),
+    );
+  });
+
+  afterEach(async () => {
+    if (dashboard) {
+      await dashboard.close();
+      dashboard = undefined;
+    }
+    vi.unstubAllEnvs();
+  });
+
+  it("never serves the token-bearing page to a DNS-rebound Host", async () => {
+    dashboard = startDashboard();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const rebound = `rebind.evil.example:${dashboard.port}`;
+
+    const page = await rawGet(dashboard.port, "/", { Host: rebound });
+    expect(page.status).toBe(421);
+    expect(page.body).not.toContain(dashboard.token);
+
+    // Even with a leaked token the API refuses a foreign Host.
+    for (const path of ["/api/state", "/api/recap?window=1d&top=1"]) {
+      const api = await rawGet(dashboard.port, path, {
+        Host: rebound,
+        "X-OMA-Dashboard-Token": dashboard.token,
+      });
+      expect(api.status).toBe(421);
+    }
+  });
+
+  it("rejects API calls from a foreign Origin", async () => {
+    dashboard = startDashboard();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const res = await rawGet(dashboard.port, "/api/state", {
+      Host: `127.0.0.1:${dashboard.port}`,
+      Origin: "https://evil.example",
+      "X-OMA-Dashboard-Token": dashboard.token,
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it("gates the WebSocket upgrade on Host, Origin, and token", async () => {
+    dashboard = startDashboard();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const port = dashboard.port;
+    const path = `/?token=${encodeURIComponent(dashboard.token)}`;
+    const host = `127.0.0.1:${port}`;
+
+    expect(
+      await tryUpgrade(port, path, { Host: `rebind.evil.example:${port}` }),
+    ).toBe(421);
+    expect(
+      await tryUpgrade(port, path, {
+        Host: host,
+        Origin: "https://evil.example",
+      }),
+    ).toBe(403);
+    expect(await tryUpgrade(port, "/?token=wrong", { Host: host })).toBe(401);
+    expect(
+      await tryUpgrade(port, path, { Host: host, Origin: `http://${host}` }),
+    ).toBe(101);
+  });
+});
+
+describe("dashboard project directory", () => {
+  let projectDir = "";
+  let dashboard: Awaited<ReturnType<typeof startDashboard>> | undefined;
+
+  beforeEach(() => {
+    projectDir = mkdtempSync(join(tmpdir(), "oma-dashboard-project-"));
+    vi.stubEnv("MEMORIES_DIR", "");
+    vi.stubEnv(
+      "DASHBOARD_PORT",
+      String(55_000 + Math.floor(Math.random() * 5_000)),
+    );
+  });
+
+  afterEach(async () => {
+    if (dashboard) {
+      await dashboard.close();
+      dashboard = undefined;
+    }
+    vi.unstubAllEnvs();
+    rmSync(projectDir, { recursive: true, force: true });
+  });
+
+  it("watches the given project, not a path taken from argv", () => {
+    // `oma dashboard web` leaves the subcommand name at argv[3].
+    const argv = process.argv;
+    process.argv = [argv[0] ?? "node", "cli.js", "dashboard", "web"];
+    try {
+      dashboard = startDashboard({ projectDir });
+    } finally {
+      process.argv = argv;
+    }
+    expect(dashboard.memoriesDir).toBe(
+      join(projectDir, ".agents", "state", "memories"),
+    );
+    expect(existsSync(dashboard.memoriesDir)).toBe(true);
+    expect(existsSync(join(process.cwd(), "web", ".agents"))).toBe(false);
   });
 });

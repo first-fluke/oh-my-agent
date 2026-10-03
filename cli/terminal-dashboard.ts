@@ -115,8 +115,10 @@ function renderDashboard(memoriesDir: string) {
   console.log(`${purple(`╚${border}╝`)}`);
 }
 
-export async function startTerminalDashboard(): Promise<void> {
-  const memoriesDir = resolveMemoriesDir();
+export async function startTerminalDashboard(
+  options: { projectDir?: string } = {},
+): Promise<void> {
+  const memoriesDir = resolveMemoriesDir(options.projectDir);
 
   if (!existsSync(memoriesDir)) {
     mkdirSync(memoriesDir, { recursive: true });

@@ -45,6 +45,9 @@ export const handleEvents = (
     Connection: "keep-alive",
     "X-Accel-Buffering": "no",
   });
+  // Send headers now; otherwise the stream stays pending until the first
+  // heartbeat or event (15 s), delaying the EventSource open.
+  res.flushHeaders();
 
   const client: SseClient = { res, editId: String(Date.now()) };
   sseClients.add(client);

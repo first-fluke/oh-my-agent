@@ -294,7 +294,7 @@
       <iframe
         id="slide-frame"
         title="Slide preview"
-        sandbox="allow-scripts allow-same-origin"
+        sandbox="allow-scripts"
         aria-label="Slide preview frame"
       ></iframe>
       <div
@@ -385,6 +385,17 @@
     const DESIGN_W = 1920;
     const DESIGN_H = 1080;
 
+    /* ── Auth: per-run token injected by the server into this page ── */
+    const EDITOR_TOKEN = window.__OMA_SLIDE_EDITOR_TOKEN__ || '';
+    function authHeaders(extra = {}) {
+      return { 'X-OMA-Slide-Token': EDITOR_TOKEN, ...extra };
+    }
+    /* EventSource and iframe src cannot set headers; pass the token in the query. */
+    function withToken(path) {
+      const sep = path.includes('?') ? '&' : '?';
+      return `${path}${sep}token=${encodeURIComponent(EDITOR_TOKEN)}`;
+    }
+
     /* ── Elements ── */
     const slideSelect      = document.getElementById('slide-select');
     const slideFrame       = document.getElementById('slide-frame');
@@ -421,7 +432,7 @@
     /* ── Slide list ── */
     async function loadSlides() {
       try {
-        const res = await fetch('/slides');
+        const res = await fetch('/slides', { headers: authHeaders() });
         if (!res.ok) throw new Error(`/slides returned ${res.status}`);
         const data = await res.json();
         slides = data.slides || [];
@@ -445,7 +456,7 @@
 
     function selectSlide(slide) {
       currentSlide = slide;
-      slideFrame.src = `/slide-file/${encodeURIComponent(slide.file)}`;
+      slideFrame.src = withToken(`/slide-file/${encodeURIComponent(slide.file)}`);
       clearBbox();
       editDone = false;
       btnSave.disabled = true;
@@ -576,7 +587,7 @@
       try {
         const res = await fetch('/screenshot', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ slideFile: currentSlide.file, bbox }),
         });
         if (!res.ok) {
@@ -628,7 +639,7 @@
       try {
         const res = await fetch('/edit', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify(payload),
         });
         if (!res.ok) {
@@ -648,7 +659,7 @@
     /* ── SSE progress ── */
     function openEventSource() {
       if (evtSource) return;
-      evtSource = new EventSource('/events');
+      evtSource = new EventSource(withToken('/events'));
 
       evtSource.addEventListener('progress', (e) => {
         log(e.data, 'log-agent');
@@ -692,7 +703,7 @@
     /* ── Reload preview ── */
     btnReload.addEventListener('click', () => {
       if (currentSlide) {
-        slideFrame.src = `/slide-file/${encodeURIComponent(currentSlide.file)}?t=${Date.now()}`;
+        slideFrame.src = `${withToken(`/slide-file/${encodeURIComponent(currentSlide.file)}`)}&t=${Date.now()}`;
         log('Preview reloaded', 'log-info');
         clearBbox();
       }
@@ -705,7 +716,7 @@
       try {
         const res = await fetch('/save', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ slideFile: currentSlide.file }),
         });
         if (!res.ok) {

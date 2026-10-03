@@ -6,6 +6,16 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 const MAX_BODY_BYTES = 5 * 1024 * 1024; // 5 MB JSON body cap
 
+/**
+ * Sent on every response. `no-referrer` keeps the per-run token (carried in
+ * iframe/EventSource URLs) out of Referer headers for slide subresources.
+ */
+const BASE_HEADERS = {
+  "Cache-Control": "no-store",
+  "Referrer-Policy": "no-referrer",
+  "X-Content-Type-Options": "nosniff",
+} as const;
+
 // ─── HTTP response helpers ─────────────────────────────────────────────────────
 
 export function sendJson(
@@ -13,7 +23,10 @@ export function sendJson(
   code: number,
   data: unknown,
 ): void {
-  res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" });
+  res.writeHead(code, {
+    ...BASE_HEADERS,
+    "Content-Type": "application/json; charset=utf-8",
+  });
   res.end(JSON.stringify(data));
 }
 
@@ -22,8 +35,13 @@ export function sendText(
   code: number,
   contentType: string,
   body: string,
+  extraHeaders: Record<string, string> = {},
 ): void {
-  res.writeHead(code, { "Content-Type": contentType });
+  res.writeHead(code, {
+    ...BASE_HEADERS,
+    ...extraHeaders,
+    "Content-Type": contentType,
+  });
   res.end(body);
 }
 

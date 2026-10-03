@@ -20,8 +20,16 @@
  *   GET  /events          — SSE progress stream for the most recent edit
  *   POST /save            — persists the edited slide (ack; agent writes directly)
  *
- * Security:
+ * Security (POST /edit spawns an agent with auto-approval, so the server is
+ * an execution surface, not just a viewer):
  *   - Binds 127.0.0.1 only.
+ *   - Every request: Host must be this loopback server, and a present Origin
+ *     must be too (DNS rebinding and cross-site requests are refused).
+ *   - Every route except GET / requires the per-run token; the token is only
+ *     injected into the editor page, which other origins cannot read.
+ *   - POST bodies must be `application/json` (no CORS-simple text/plain).
+ *   - Slide previews are served with a CSP sandbox (opaque origin), so slide
+ *     scripts cannot read the editor token or call the API same-origin.
  *   - slideFile inputs validated (no path traversal) before any FS access.
  *   - JSON request bodies are size-capped.
  *   - Per-slide write lock prevents concurrent-write races.
@@ -31,20 +39,27 @@ import { existsSync, readFileSync } from "node:fs";
 import {
   createServer as createHttpServer,
   type IncomingMessage,
+  type Server,
   type ServerResponse,
 } from "node:http";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import color from "picocolors";
+import { injectWindowToken } from "../../../utils/loopback-http.js";
 import { isLocalUrl } from "../font-hosts.js";
 import { awaitFontsReady } from "../validate/puppeteer.js";
-import { resolveWorkspace } from "../workspace.js";
+import { resolveWorkspace, type SlideMeta } from "../workspace.js";
 import type { BBox } from "./dispatch.js";
 import { assertSafeSlideFile, dispatchEdit } from "./dispatch.js";
 import { readJsonBody, sendJson, sendText } from "./server/http-helpers.js";
 import { withSlideLock } from "./server/locks.js";
 import { BIND_HOST, DEFAULT_PORT, probeFreePort } from "./server/ports.js";
 import { findChrome, loadPuppeteer } from "./server/puppeteer.js";
+import {
+  checkEditorRequest,
+  createEditorToken,
+  EDITOR_TOKEN_GLOBAL,
+} from "./server/security.js";
 import {
   broadcastSse,
   escapeSseData,
@@ -67,6 +82,40 @@ export interface RunSlideEditOptions {
   dir: string;
   port?: number;
 }
+
+export interface SlideEditServerOptions {
+  /** Absolute slide workspace directory (already validated). */
+  workDir: string;
+  meta: SlideMeta;
+  /** Port to bind on 127.0.0.1; 0 lets the OS pick one. */
+  port: number;
+  /** Editor UI override (tests). */
+  editorHtmlPath?: string;
+}
+
+export interface SlideEditServerHandle {
+  port: number;
+  /** Per-run secret required by every route except the editor page. */
+  token: string;
+  url: string;
+  server: Server;
+  close: () => Promise<void>;
+}
+
+/** Response headers for the token-bearing editor page: never framed by others. */
+const EDITOR_PAGE_HEADERS = {
+  "Content-Security-Policy": "frame-ancestors 'none'",
+  "X-Frame-Options": "DENY",
+};
+
+/**
+ * Slide previews run workspace HTML. The CSP sandbox gives the document an
+ * opaque origin, so its scripts cannot read the parent's token or make
+ * same-origin API calls (their Origin is `null`, which the gate rejects).
+ */
+const SLIDE_PREVIEW_HEADERS = {
+  "Content-Security-Policy": "sandbox allow-scripts; frame-ancestors 'self'",
+};
 
 // ─── Screenshot with bbox annotation ─────────────────────────────────────────
 
@@ -167,32 +216,9 @@ export async function captureAnnotatedScreenshot(
   }
 }
 
-// ─── Main entry ───────────────────────────────────────────────────────────────
+// ─── Server ───────────────────────────────────────────────────────────────────
 
-export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
-  // Resolve workspace
-  let ws: ReturnType<typeof resolveWorkspace>;
-  try {
-    ws = resolveWorkspace(opts.dir);
-  } catch (err) {
-    console.error(color.red((err as Error).message));
-    return 4;
-  }
-
-  const { dir: workDir, meta } = ws;
-
-  // Resolve port
-  const requestedPort = opts.port ?? 0;
-  const startPort = requestedPort > 0 ? requestedPort : DEFAULT_PORT;
-  let port: number;
-  try {
-    port = await probeFreePort(startPort);
-  } catch (err) {
-    console.error(color.red((err as Error).message));
-    return 1;
-  }
-
-  // Resolve editor UI path
+function defaultEditorHtmlPath(): string {
   const uiDir = (() => {
     try {
       return join(fileURLToPath(new URL(".", import.meta.url)), "ui");
@@ -200,7 +226,21 @@ export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
       return join(process.cwd(), "cli", "commands", "slide", "editor", "ui");
     }
   })();
-  const editorHtmlPath = join(uiDir, "editor.html");
+  return join(uiDir, "editor.html");
+}
+
+/**
+ * Start the editor HTTP server on 127.0.0.1 and resolve once it is
+ * listening. Signal handling and console output belong to runSlideEdit.
+ */
+export function startSlideEditServer(
+  opts: SlideEditServerOptions,
+): Promise<SlideEditServerHandle> {
+  const { workDir, meta } = opts;
+  const editorHtmlPath = opts.editorHtmlPath ?? defaultEditorHtmlPath();
+  const token = createEditorToken();
+  // Replaced by the OS-assigned port once listening (opts.port may be 0).
+  let port = opts.port;
 
   // ── Route handlers ───────────────────────────────────────────────────────
 
@@ -235,6 +275,7 @@ export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
       200,
       "text/html; charset=utf-8",
       readFileSync(slidePath, "utf8"),
+      SLIDE_PREVIEW_HEADERS,
     );
   };
 
@@ -370,8 +411,15 @@ export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
     res: ServerResponse,
   ): Promise<void> => {
     const method = req.method ?? "GET";
-    const url = new URL(req.url ?? "/", `http://${BIND_HOST}`);
+    const url = new URL(req.url ?? "/", `http://${BIND_HOST}:${port}`);
     const path = url.pathname;
+
+    // Gate before routing or reading any body (see header comment).
+    const denial = checkEditorRequest(req, url, { port, token });
+    if (denial) {
+      sendJson(res, denial.status, { error: denial.error });
+      return;
+    }
 
     if (method === "GET" && path === "/") {
       if (existsSync(editorHtmlPath)) {
@@ -379,7 +427,12 @@ export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
           res,
           200,
           "text/html; charset=utf-8",
-          readFileSync(editorHtmlPath, "utf8"),
+          injectWindowToken(
+            readFileSync(editorHtmlPath, "utf8"),
+            EDITOR_TOKEN_GLOBAL,
+            token,
+          ),
+          EDITOR_PAGE_HEADERS,
         );
       } else {
         sendText(res, 500, "text/plain", "Editor UI not found");
@@ -420,30 +473,18 @@ export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
   };
 
   // ─── Start server ──────────────────────────────────────────────────────────
-  return new Promise((resolve) => {
-    const server = createHttpServer((req, res) => {
-      router(req, res).catch((err) => {
-        try {
-          sendJson(res, 500, { error: (err as Error).message });
-        } catch {
-          // headers already sent — nothing to do
-        }
-      });
+  const server = createHttpServer((req, res) => {
+    router(req, res).catch((err) => {
+      try {
+        sendJson(res, 500, { error: (err as Error).message });
+      } catch {
+        // headers already sent — nothing to do
+      }
     });
+  });
 
-    server.listen(port, BIND_HOST, () => {
-      const url = `http://${BIND_HOST}:${port}`;
-      console.log(color.bold("\noma slide editor"));
-      console.log(color.green(`  Listening: ${url}`));
-      console.log(color.dim(`  Workspace: ${workDir}`));
-      console.log(color.dim(`  Slides:    ${meta.order.length}`));
-      console.log(color.dim("  Press Ctrl+C to stop.\n"));
-      console.log(`  Open: ${color.cyan(url)}`);
-    });
-
-    // Orphan prevention: clean shutdown on SIGINT / SIGTERM
-    const shutdown = () => {
-      console.log(color.dim("\nShutting down editor server…"));
+  const close = (): Promise<void> =>
+    new Promise((done) => {
       for (const client of sseClients) {
         try {
           client.res.end();
@@ -452,15 +493,80 @@ export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
         }
       }
       sseClients.clear();
-      server.close(() => {
-        resolve(0);
+      server.close(() => done());
+      server.closeAllConnections();
+    });
+
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(opts.port, BIND_HOST, () => {
+      server.removeListener("error", reject);
+      const address = server.address();
+      if (address && typeof address === "object") port = address.port;
+      resolve({
+        port,
+        token,
+        url: `http://${BIND_HOST}:${port}`,
+        server,
+        close,
       });
+    });
+  });
+}
+
+// ─── Main entry ───────────────────────────────────────────────────────────────
+
+export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
+  // Resolve workspace
+  let ws: ReturnType<typeof resolveWorkspace>;
+  try {
+    ws = resolveWorkspace(opts.dir);
+  } catch (err) {
+    console.error(color.red((err as Error).message));
+    return 4;
+  }
+
+  // Resolve port
+  const requestedPort = opts.port ?? 0;
+  const startPort = requestedPort > 0 ? requestedPort : DEFAULT_PORT;
+  let port: number;
+  try {
+    port = await probeFreePort(startPort);
+  } catch (err) {
+    console.error(color.red((err as Error).message));
+    return 1;
+  }
+
+  let handle: SlideEditServerHandle;
+  try {
+    handle = await startSlideEditServer({
+      workDir: ws.dir,
+      meta: ws.meta,
+      port,
+    });
+  } catch (err) {
+    console.error(color.red(`Server error: ${(err as Error).message}`));
+    return 1;
+  }
+
+  console.log(color.bold("\noma slide editor"));
+  console.log(color.green(`  Listening: ${handle.url}`));
+  console.log(color.dim(`  Workspace: ${ws.dir}`));
+  console.log(color.dim(`  Slides:    ${ws.meta.order.length}`));
+  console.log(color.dim("  Press Ctrl+C to stop.\n"));
+  console.log(`  Open: ${color.cyan(handle.url)}`);
+
+  return new Promise((resolve) => {
+    // Orphan prevention: clean shutdown on SIGINT / SIGTERM
+    const shutdown = () => {
+      console.log(color.dim("\nShutting down editor server…"));
+      void handle.close().then(() => resolve(0));
     };
 
     process.once("SIGINT", shutdown);
     process.once("SIGTERM", shutdown);
 
-    server.on("error", (err) => {
+    handle.server.on("error", (err) => {
       console.error(color.red(`Server error: ${(err as Error).message}`));
       process.removeListener("SIGINT", shutdown);
       process.removeListener("SIGTERM", shutdown);

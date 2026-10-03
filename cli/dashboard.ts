@@ -1,4 +1,4 @@
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync } from "node:fs";
 import { createServer, type IncomingMessage } from "node:http";
 import { basename } from "node:path";
@@ -9,6 +9,12 @@ import { buildGraphData } from "./commands/recap/internal/graph.js";
 import { collectRecap } from "./commands/recap/internal/index.js";
 import { buildFullState, resolveMemoriesDir } from "./dashboard/state.js";
 import { DASHBOARD_HTML, RECAP_HTML } from "./dashboard/templates.js";
+import {
+  injectWindowToken,
+  isLoopbackHost,
+  isLoopbackOrigin,
+  tokensMatch,
+} from "./utils/loopback-http.js";
 
 export const DASHBOARD_HOST = "127.0.0.1";
 export const DEFAULT_DASHBOARD_PORT = 9847;
@@ -19,7 +25,14 @@ export interface DashboardHandle {
   port: number;
   token: string;
   url: string;
+  memoriesDir: string;
   close: () => Promise<void>;
+}
+
+export interface DashboardOptions {
+  route?: string;
+  /** Project whose `.agents/state/memories` is watched (default: cwd). */
+  projectDir?: string;
 }
 
 export function resolveDashboardPort(
@@ -36,14 +49,6 @@ export function resolveDashboardPort(
   return port;
 }
 
-function isAuthorized(token: string, reqToken: string | null): boolean {
-  if (!reqToken) return false;
-
-  const expected = Buffer.from(token);
-  const actual = Buffer.from(reqToken);
-  return expected.length === actual.length && timingSafeEqual(expected, actual);
-}
-
 function isApiAuthorized(
   token: string,
   req: IncomingMessage,
@@ -51,42 +56,53 @@ function isApiAuthorized(
 ): boolean {
   const header = req.headers[DASHBOARD_AUTH_HEADER];
   const headerToken = Array.isArray(header) ? header[0] : header;
-  return isAuthorized(token, headerToken ?? url.searchParams.get("token"));
-}
-
-function isLoopbackOrigin(origin: string | undefined, port: number): boolean {
-  if (!origin) return true;
-  try {
-    const parsed = new URL(origin);
-    return (
-      parsed.protocol === "http:" &&
-      parsed.port === String(port) &&
-      ["127.0.0.1", "localhost", "[::1]"].includes(parsed.hostname)
-    );
-  } catch {
-    return false;
-  }
+  return tokensMatch(token, headerToken ?? url.searchParams.get("token"));
 }
 
 function withDashboardToken(html: string, token: string): string {
-  const script = `<script>window.__OMA_DASHBOARD_TOKEN__=${JSON.stringify(token)};</script>`;
-  return html.replace("</head>", `${script}\n</head>`);
+  return injectWindowToken(html, "__OMA_DASHBOARD_TOKEN__", token);
+}
+
+/**
+ * Refuse requests that are not addressed to this loopback server (DNS
+ * rebinding) or that come from a foreign page. Runs before any route so the
+ * token-bearing HTML is never served to another origin.
+ */
+function rejectForeignRequest(
+  req: IncomingMessage,
+  port: number,
+): { status: number; message: string } | null {
+  if (!isLoopbackHost(req.headers.host, port)) {
+    return { status: 421, message: "Misdirected request" };
+  }
+  if (!isLoopbackOrigin(req.headers.origin, port)) {
+    return { status: 403, message: "Cross-origin request rejected" };
+  }
+  return null;
 }
 
 export function startDashboard(
-  options: { route?: string } = {},
+  options: DashboardOptions = {},
 ): DashboardHandle {
   const port = resolveDashboardPort();
   const route = options.route ?? "/";
   const token = randomBytes(32).toString("base64url");
   const url = `http://${DASHBOARD_HOST}:${port}${route}`;
-  const memoriesDir = resolveMemoriesDir();
+  const memoriesDir = resolveMemoriesDir(options.projectDir);
   if (!existsSync(memoriesDir)) mkdirSync(memoriesDir, { recursive: true });
 
   const server = createServer(async (req, res) => {
+    const rejection = rejectForeignRequest(req, port);
+    if (rejection) {
+      res.writeHead(rejection.status, { "Content-Type": "text/plain" });
+      res.end(rejection.message);
+      return;
+    }
+
+    // Host is validated above; build URLs from the bound address instead.
     const requestUrl = new URL(
       req.url || "/",
-      `http://${req.headers.host ?? `${DASHBOARD_HOST}:${port}`}`,
+      `http://${DASHBOARD_HOST}:${port}`,
     );
 
     if (requestUrl.pathname.startsWith("/api/")) {
@@ -170,14 +186,17 @@ export function startDashboard(
   watcher.on("all", (event, filePath) => broadcast(event, basename(filePath)));
 
   server.on("upgrade", (req, socket, head) => {
+    const rejection = rejectForeignRequest(req, port);
+    if (rejection) {
+      socket.write(`HTTP/1.1 ${rejection.status} ${rejection.message}\r\n\r\n`);
+      socket.destroy();
+      return;
+    }
     const requestUrl = new URL(
       req.url || "/",
-      `http://${req.headers.host ?? `${DASHBOARD_HOST}:${port}`}`,
+      `http://${DASHBOARD_HOST}:${port}`,
     );
-    if (
-      !isLoopbackOrigin(req.headers.origin, port) ||
-      !isAuthorized(token, requestUrl.searchParams.get("token"))
-    ) {
+    if (!tokensMatch(token, requestUrl.searchParams.get("token"))) {
       socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
       socket.destroy();
       return;
@@ -239,5 +258,5 @@ export function startDashboard(
     console.log(pc.dim(`     Watching: ${memoriesDir}\n`));
   });
 
-  return { host: DASHBOARD_HOST, port, token, url, close };
+  return { host: DASHBOARD_HOST, port, token, url, memoriesDir, close };
 }

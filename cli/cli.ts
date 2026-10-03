@@ -62,22 +62,30 @@ async function registerFullCli(): Promise<void> {
   program
     .command("dashboard")
     .description("Start terminal dashboard (real-time agent monitoring)")
+    .option(
+      "--root <path>",
+      "Project whose memories to watch (default: current directory)",
+    )
     .action(
-      runAction(async () => {
+      runAction(async (options: { root?: string }) => {
         const { startTerminalDashboard } = await import(
           "./terminal-dashboard.js"
         );
-        await startTerminalDashboard();
+        await startTerminalDashboard({ projectDir: options.root });
       }),
     );
 
   program
     .command("dashboard:web")
     .description("Start web dashboard on http://127.0.0.1:9847")
+    .option(
+      "--root <path>",
+      "Project whose memories to watch (default: current directory)",
+    )
     .action(
-      runAction(async () => {
+      runAction(async (options: { root?: string }) => {
         const { startDashboard } = await import("./dashboard.js");
-        startDashboard();
+        startDashboard({ projectDir: options.root });
       }),
     );
 
