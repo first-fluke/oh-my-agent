@@ -11,18 +11,7 @@ import triggersConfig from "../../../.agents/hooks/core/triggers.json" with {
 };
 import type { TriggerCorpusEntry } from "./triggers-corpus.js";
 
-interface WorkflowDef {
-  persistent: boolean;
-  keywords: Record<string, string[]>;
-  patterns?: Record<string, string[]>;
-}
-
-interface TriggersJson {
-  workflows: Record<string, WorkflowDef>;
-  cjkScripts: string[];
-}
-
-const CONFIG = triggersConfig as unknown as TriggersJson;
+const CONFIG = triggersConfig as unknown as keywordDetector.TriggerConfig;
 
 export interface DetectionOutcome {
   entry: TriggerCorpusEntry;
@@ -61,11 +50,7 @@ function findMatchedKeyword(
     ),
   );
   const patterns = [
-    ...keywordDetector.buildPatterns(
-      def.keywords,
-      entry.lang,
-      CONFIG.cjkScripts,
-    ),
+    ...keywordDetector.buildPatterns(def.keywords),
     ...keywordDetector.buildRawPatterns(def.patterns),
   ];
   for (const pattern of patterns) {
@@ -78,9 +63,11 @@ function findMatchedKeyword(
 /**
  * Run the keyword detector against one corpus entry in an isolated scratch
  * project directory. Each entry gets its own fresh directory so:
- *  - `.agents/oma-config.yaml` can pin the language the entry was authored for
- *    (detectLanguage() reads this file; without it every entry would fall
- *    back to "en" and ko-only keyword banks would never be exercised).
+ *  - `.agents/oma-config.yaml` records the language the entry was authored
+ *    for. Detection itself no longer depends on it (keyword banks of every
+ *    language are always merged and boundaries depend only on the keyword),
+ *    which is exactly what corpus entries authored under `language: ko` with
+ *    ASCII text guard against.
  *  - the 60s/2-trigger reinforcement-suppression state (keyword-detector-state.json)
  *    and session index never leak between entries, which would otherwise
  *    make later positives for the same workflow look like false "misses".
@@ -109,13 +96,28 @@ export async function detectOne(
   }
 }
 
-/** Run detection over an entire corpus, sequentially (deterministic, no shared state). */
+/**
+ * Run detection over an entire corpus, sequentially (deterministic, no shared
+ * state). A match activates an L1 session under the OMA state home; without
+ * isolation every `oma verify triggers` run would leave one orphaned session
+ * per positive (owned by a deleted scratch project) in the user's real
+ * ~/.oma profile. Redirect the state home to a scratch directory for the run.
+ */
 export async function detectAll(
   entries: TriggerCorpusEntry[],
 ): Promise<DetectionOutcome[]> {
-  const outcomes: DetectionOutcome[] = [];
-  for (const entry of entries) {
-    outcomes.push(await detectOne(entry));
+  const stateHome = mkdtempSync(join(tmpdir(), "oma-verify-triggers-state-"));
+  const previousStateHome = process.env.OMA_STATE_HOME;
+  process.env.OMA_STATE_HOME = stateHome;
+  try {
+    const outcomes: DetectionOutcome[] = [];
+    for (const entry of entries) {
+      outcomes.push(await detectOne(entry));
+    }
+    return outcomes;
+  } finally {
+    if (previousStateHome === undefined) delete process.env.OMA_STATE_HOME;
+    else process.env.OMA_STATE_HOME = previousStateHome;
+    rmSync(stateHome, { recursive: true, force: true });
   }
-  return outcomes;
 }

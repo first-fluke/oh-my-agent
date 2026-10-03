@@ -37,6 +37,8 @@ Plan review reuses authorization already given for the task. Agents ask only for
 
 Persistent workflows keep running until all tasks are done. They maintain state in `.agents/state/` and reinject `[OMA PERSISTENT MODE: ...]` context on each user message until explicitly deactivated.
 
+Persistent mode starts only on an **explicit invocation** — the workflow's own name (the `explicit` list in `triggers.json`, e.g. "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). The other trigger keywords below are natural-language hints: they inject the workflow as a suggestion without activating persistent mode, and they never fire when the first or last line of the prompt is a question ending in `?`.
+
 ### /orchestrate
 
 **Description:** Automated CLI-based parallel agent execution. Spawns subagents via CLI, coordinates through durable run state and receipts, monitors progress, and runs verification loops.
@@ -46,27 +48,29 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 **Trigger keywords:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "orchestrate" |
-| English | "parallel", "do everything", "run everything" |
-| Korean | "자동 실행", "병렬 실행", "전부 실행", "전부 해" |
-| Japanese | "オーケストレート", "並列実行", "自動実行" |
-| Chinese | "编排", "并行执行", "自动执行" |
-| Spanish | "orquestar", "paralelo", "ejecutar todo" |
-| French | "orchestrer", "parallèle", "tout exécuter" |
-| German | "orchestrieren", "parallel", "alles ausführen" |
-| Portuguese | "orquestrar", "paralelo", "executar tudo" |
-| Russian | "оркестровать", "параллельно", "выполнить всё" |
-| Dutch | "orkestreren", "parallel", "alles uitvoeren" |
-| Polish | "orkiestrować", "równolegle", "wykonaj wszystko" |
+| Explicit (persistent) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+| English | "do everything", "run everything", "everything in parallel", "automate everything" |
+| Korean | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
+| Japanese | "全部実行", "全部並列で", "自動でやって" |
+| Chinese | "编排", "全部执行", "全部并行", "自动处理" |
+| Spanish | "ejecutar todo", "todo en paralelo" |
+| French | "tout exécuter", "tout en parallèle" |
+| German | "alles ausführen", "alles parallel" |
+| Portuguese | "executar tudo", "tudo em paralelo" |
+| Russian | "выполнить всё", "всё параллельно" |
+| Dutch | "alles uitvoeren", "alles parallel" |
+| Polish | "wykonaj wszystko", "wszystko równolegle" |
+
+Bare "parallel"/"automate" (and their translations) are not triggers: "run the tests in parallel" or "automate the release notes" are ordinary requests, not multi-agent orchestration.
 
 **Trigger regex patterns** (intent + noun whitelist, see [Auto-Detection: Pattern Field](#pattern-field-raw-regex)):
 | Section | Pattern | Examples that trigger |
 |---------|---------|----------------------|
-| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
+| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
 | `*` (universal) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
 | `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
 
-Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, system, feature, backend, frontend, prototype, mvp, bot.
+Noun whitelist (14): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. A single feature ("implement the login feature", "로그인 기능 구현해줘") or an existing thing ("make the API faster") does not match.
 
 **Steps:**
 1. **Step 0, Preparation:** Read coordination skill, context-loading guide, memory protocol. Detect vendor.
@@ -94,13 +98,17 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Trigger keywords:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "work", "step by step" |
-| Korean | "코디네이트", "단계별" |
-| Japanese | "コーディネート", "ステップバイステップ" |
-| Chinese | "协调", "逐步" |
-| Spanish | "coordinar", "paso a paso" |
-| French | "coordonner", "étape par étape" |
-| German | "koordinieren", "schritt für schritt" |
+| Explicit (persistent) | "work mode", "work workflow" |
+| Universal | "step by step" |
+| English | "one by one", "one step at a time" |
+| Korean | "단계별", "하나씩 해줘", "차근차근" |
+| Japanese | "ステップバイステップ", "一歩ずつ" |
+| Chinese | "逐步", "一步一步" |
+| Spanish | "paso a paso", "uno por uno" |
+| French | "étape par étape", "un par un" |
+| German | "schritt für schritt", "der reihe nach" |
+
+Bare "work" is not a trigger — it is ordinary vocabulary ("Does this work on Windows?").
 
 **Steps:**
 1. **Step 0, Preparation:** Read skills, context-loading, memory protocol. Record session start.
@@ -126,7 +134,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Trigger keywords:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "ultrawork", "ulw" |
+| Explicit (persistent) | "ultrawork", "ulw" |
 
 **Phases and steps:**
 
@@ -166,14 +174,16 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Trigger keywords:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "ralph" |
-| English | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
-| Korean | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| Explicit (persistent) | "ralph", "랄프" |
+| English | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
+| Korean | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
 | Japanese | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
 | Chinese | "不要停", "直到完成", "全部完成", "做完为止" |
 | Spanish | "no pares", "hasta completar", "termina todo" |
 | French | "n'arrête pas", "jusqu'à complétion", "termine tout" |
 | German | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+Bare resume phrases ("keep going", "carry on", "계속해", "続けて", "продолжай", …) are not triggers: users type them to resume after an interruption.
 
 **Phases:**
 1. **Phase 0, INIT:** Load prerequisites (context-loading, memory protocol, judge protocol). Define and record mechanically verifiable completion criteria, such as test assertions, non-emitting type checks, exit codes, or file existence. Include build checks only when explicitly requested. Show the criteria and continue within the authorized scope. Initialize session with `max_iterations: 5`.
@@ -525,7 +535,7 @@ oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is
 
 1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, inlined into the `oma` binary): Defines keyword-to-workflow mappings for all 11 supported languages (English, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, Russian, Dutch, Polish).
 
-2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScript logic that scans the user's input against the trigger keywords, respects language-specific matching, and injects workflow activation context.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScript logic that scans the user's input against the trigger keywords of every language and injects workflow activation context.
 
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): Enforces persistent workflow execution by checking for active state files and reinjecting workflow context.
 
@@ -536,8 +546,9 @@ oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is
 3. Hook sanitizes input (strips code blocks, quoted strings, pasted system-echo blocks) then scans against `.agents/hooks/core/triggers.json`, including both keyword lists (literal phrases) and `patterns` (raw regex). A reinforcement guard suppresses re-triggers if the same workflow fired 2+ times in the last 60 seconds.
 4. If a match is found, check if the input matches informational patterns
 5. If informational (e.g., "what is orchestrate?"), filter it out (no workflow triggers)
-6. If actionable, inject `[OMA WORKFLOW: {workflow-name}]` into the context
-7. The agent reads the injected tag and loads the corresponding workflow file from `.agents/workflows/`
+6. If actionable, inject `[OMA WORKFLOW: {workflow-name}]` into the context. When several workflows match, an explicit invocation wins, then the longest keyword.
+7. For a persistent workflow, only an explicit invocation (`explicit` in `triggers.json`) writes the persistent-mode state file; a natural-language match is injected as a suggestion, and a question-terminated prompt (`?` on the first or last line) does not fire it at all
+8. The agent reads the injected tag and loads the corresponding workflow file from `.agents/workflows/`
 
 ### Language section convention
 
@@ -545,11 +556,13 @@ oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is
 
 | Section | Behavior |
 |---------|----------|
-| `*` | Universal: always loaded regardless of `language` setting in `.agents/oma-config.yaml`. Use for English content (lingua franca) and truly cross-language tokens (e.g. workflow name `"orchestrate"`). |
-| `en` | English: loaded for backward compatibility. Functionally equivalent to `*`. New English content should go in `*`. |
-| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | Language-specific: loaded only when `language: <lang>` is set in `.agents/oma-config.yaml`. |
+| `*` | Universal. Use for English content (lingua franca) and truly cross-language tokens (e.g. workflow name `"orchestrate"`). |
+| `en` | English. Functionally equivalent to `*`. |
+| `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl` | Language-specific phrasing. |
 
-**Implication**: If you set `language: en` in `.agents/oma-config.yaml`, only `*` and `en` patterns load. Korean/Japanese/etc. natural-language triggers will not fire even if the user types in those languages. To enable a non-English language, set `language: <code>` accordingly. The English fallback in `*` always remains active.
+Every section is always loaded: users prompt in whichever language they think in, and the `language` setting in `.agents/oma-config.yaml` controls only the response language. A keyword written in one language can only match a prompt containing that script, so merging all sections cannot fire on unrelated prompts.
+
+Word boundaries depend only on the keyword itself, never on `language`: ASCII keywords match whole words only (so "work" does not match "network", and "review" does not match "preview"), while keywords containing non-ASCII text match as substrings because CJK particles and inflections attach directly to the word ("리뷰해줘").
 
 ### Pattern field (raw regex) {#pattern-field-raw-regex}
 
@@ -560,9 +573,11 @@ In addition to literal `keywords`, each workflow can declare `patterns`, raw reg
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      "keywords": { "*": ["orchestrate"], "en": ["parallel", ...] },
+      // Subset of `keywords` that activates persistent mode (persistent workflows only)
+      "explicit": ["orchestrate", ...],
+      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
       "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:an?|the)\\s+...\\b"],
+        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
         "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
       }
     }
@@ -605,7 +620,7 @@ The following workflows are not keyword-triggered and must be invoked with an ex
 
 ### State files
 
-Persistent workflows (orchestrate, ultrawork, work, ralph) create state files in `.agents/state/`:
+Persistent workflows (orchestrate, ultrawork, work, ralph) create state files in `.agents/state/` when invoked explicitly (see [Persistent workflows](#persistent-workflows)):
 
 ```
 .agents/state/

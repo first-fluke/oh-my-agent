@@ -47,32 +47,32 @@ describe("skill-injector", () => {
   });
 
   describe("buildTriggerPatterns", () => {
-    it("uses word boundaries for ASCII triggers in non-CJK locale", () => {
-      const [pat] = buildTriggerPatterns(["search docs"], "en", [
-        "ko",
-        "ja",
-        "zh",
-      ]);
+    it("uses word boundaries for ASCII triggers", () => {
+      const [pat] = buildTriggerPatterns(["search docs"]);
       expect(pat?.test("I want to search docs today")).toBe(true);
       expect(pat?.test("researchdocs")).toBe(false);
     });
 
-    it("drops word boundaries for CJK locale", () => {
-      const [pat] = buildTriggerPatterns(["번역해줘"], "ko", [
-        "ko",
-        "ja",
-        "zh",
-      ]);
+    it("drops word boundaries for Korean triggers", () => {
+      const [pat] = buildTriggerPatterns(["번역해줘"]);
       expect(pat?.test("이거 번역해줘요")).toBe(true);
     });
 
-    it("drops word boundaries for non-ASCII triggers even in en locale", () => {
-      const [pat] = buildTriggerPatterns(["翻訳"], "en", ["ko", "ja", "zh"]);
+    it("drops word boundaries for non-ASCII triggers", () => {
+      const [pat] = buildTriggerPatterns(["翻訳"]);
       expect(pat?.test("早く翻訳してほしい")).toBe(true);
     });
 
+    it("keeps ASCII boundaries regardless of the project language (language: ko regression)", () => {
+      // Boundaries used to be dropped for every trigger when `language` was
+      // ko/ja/zh, so "review" matched "preview" in CJK projects.
+      const [review] = buildTriggerPatterns(["review"]);
+      expect(review?.test("preview 페이지 고쳐줘")).toBe(false);
+      expect(review?.test("review 해줘")).toBe(true);
+    });
+
     it("is case-insensitive", () => {
-      const [pat] = buildTriggerPatterns(["React Component"], "en", []);
+      const [pat] = buildTriggerPatterns(["React Component"]);
       expect(pat?.test("build a react component")).toBe(true);
     });
   });
@@ -102,7 +102,6 @@ describe("skill-injector", () => {
       };
       const matches = matchSkills(
         "I want to search docs and find library references",
-        "en",
         [skillA, skillB],
         config,
       );
@@ -127,12 +126,12 @@ describe("skill-injector", () => {
           },
         },
       };
-      const matches = matchSkills("이거 번역해줘 빨리", "ko", [skillB], config);
+      const matches = matchSkills("이거 번역해줘 빨리", [skillB], config);
       expect(matches).toHaveLength(1);
       expect(matches[0]?.matchedTriggers).toContain("번역해줘");
     });
 
-    it("matches non-en triggers even when config language is en (regression)", () => {
+    it("matches every language's triggers; config language plays no part (regression)", () => {
       // Triggers used to be gated by the config `language`, so a Korean
       // prompt in a `language: en` project never matched its own ko keywords.
       const config = {
@@ -142,7 +141,7 @@ describe("skill-injector", () => {
           },
         },
       };
-      const matches = matchSkills("이거 번역해줘 빨리", "en", [skillB], config);
+      const matches = matchSkills("이거 번역해줘 빨리", [skillB], config);
       expect(matches).toHaveLength(1);
       expect(matches[0]?.matchedTriggers).toContain("번역해줘");
     });
@@ -159,12 +158,7 @@ describe("skill-injector", () => {
         },
       };
       const multiHitPrompt = "search docs translate strings find library";
-      const matches = matchSkills(
-        multiHitPrompt,
-        "en",
-        [skillA, skillB],
-        config,
-      );
+      const matches = matchSkills(multiHitPrompt, [skillA, skillB], config);
       expect(matches.map((m) => m.name)).toEqual([
         "oma-search",
         "oma-translation",
@@ -189,7 +183,7 @@ describe("skill-injector", () => {
         ),
       };
       const prompt = "trigger0 trigger1 trigger2 trigger3 trigger4";
-      const matches = matchSkills(prompt, "en", manySkills, config);
+      const matches = matchSkills(prompt, manySkills, config);
       expect(matches).toHaveLength(3);
     });
 
@@ -199,19 +193,27 @@ describe("skill-injector", () => {
           "oma-search": { keywords: { en: ["search docs"] } },
         },
       };
-      const matches = matchSkills(
-        "totally unrelated text",
-        "en",
-        [skillA],
-        config,
-      );
+      const matches = matchSkills("totally unrelated text", [skillA], config);
       expect(matches).toEqual([]);
     });
 
     it("skips skills with no triggers.json entry", () => {
       const config = { skills: {} };
-      const matches = matchSkills("search docs please", "en", [skillA], config);
+      const matches = matchSkills("search docs please", [skillA], config);
       expect(matches).toEqual([]);
+    });
+
+    it("reuses compiled triggers across calls with the same config object", () => {
+      const config = {
+        skills: { "oma-search": { keywords: { en: ["search docs"] } } },
+      };
+      const first = matchSkills("search docs", [skillA], config);
+      // Mutating the bank after the first call has no effect: the compiled
+      // patterns for this config object are cached (the embedded config is
+      // read-only, so per-prompt recompilation was pure overhead).
+      config.skills["oma-search"].keywords.en = ["something else"];
+      const second = matchSkills("search docs", [skillA], config);
+      expect(second).toEqual(first);
     });
   });
 

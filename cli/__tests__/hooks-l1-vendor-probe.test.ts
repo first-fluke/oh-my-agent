@@ -135,7 +135,7 @@ describe("L1 hook vendor probe", () => {
     input: Record<string, unknown>;
     env: Record<string, string>;
   } {
-    const prompt = "work";
+    const prompt = "work mode";
     switch (vendor) {
       case "antigravity":
         return {
@@ -243,7 +243,7 @@ describe("L1 hook vendor probe", () => {
           firstInput: {
             hook_event_name: "UserPromptSubmit",
             sessionId: "claude-session-1",
-            prompt: "work",
+            prompt: "work mode",
           },
           reopenedInput: {
             hook_event_name: "UserPromptSubmit",
@@ -259,7 +259,7 @@ describe("L1 hook vendor probe", () => {
             hook_event_name: "UserPromptSubmit",
             session_id: "codex-session-1",
             cwd: projectDir,
-            prompt: "work",
+            prompt: "work mode",
           },
           reopenedInput: {
             hook_event_name: "UserPromptSubmit",
@@ -276,7 +276,7 @@ describe("L1 hook vendor probe", () => {
             hook_event_name: "beforeSubmitPrompt",
             sessionId: "cursor-session-1",
             cwd: projectDir,
-            prompt: "work",
+            prompt: "work mode",
           },
           reopenedInput: {
             hook_event_name: "beforeSubmitPrompt",
@@ -292,7 +292,7 @@ describe("L1 hook vendor probe", () => {
           firstInput: {
             hook_event_name: "UserPromptSubmit",
             sessionId: "qwen-session-1",
-            prompt: "work",
+            prompt: "work mode",
           },
           reopenedInput: {
             hook_event_name: "UserPromptSubmit",

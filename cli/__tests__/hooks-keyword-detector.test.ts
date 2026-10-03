@@ -56,6 +56,9 @@ const {
   buildPatternEntries,
   buildRawPatternEntries,
   pickWinningCandidate,
+  // Persistent-workflow precision
+  hasQuestionLine,
+  buildWorkflowContext,
 } = await import("../../.agents/hooks/core/keyword-detector.ts");
 
 const { normalizePromptInput } = await import(
@@ -92,31 +95,46 @@ describe("keyword-detector", () => {
         en: ["parallel"],
         ko: ["병렬 실행"],
       };
-      const patterns = buildPatterns(keywords, "ko", ["ko", "ja", "zh"]);
+      const patterns = buildPatterns(keywords);
       // Should include *, en, and ko keywords
       expect(patterns).toHaveLength(3);
     });
 
-    it("should use hyphen-rejecting boundaries for non-CJK languages", () => {
+    it("should use hyphen-rejecting boundaries for ASCII keywords", () => {
       const keywords = { "*": ["debug"], en: ["fix bug"] };
-      const patterns = buildPatterns(keywords, "en", ["ko", "ja", "zh"]);
+      const patterns = buildPatterns(keywords);
       // (?:^|[^\w-]) ... (?:$|[^\w-]) — rejects hyphen as token edge
       expect(patterns[0]?.source).toContain("[^\\w-]");
     });
 
-    it("should not use word boundaries for CJK languages", () => {
+    it("should not use word boundaries for non-ASCII (CJK) keywords", () => {
       const keywords = { ko: ["디버그"] };
-      const patterns = buildPatterns(keywords, "ko", ["ko", "ja", "zh"]);
+      const patterns = buildPatterns(keywords);
       expect(patterns[0]?.source).not.toContain("[^\\w-]");
     });
 
     it("rejects hyphen-suffixed false positives (code-review-bot)", () => {
       const keywords = { "*": ["code-review"] };
-      const patterns = buildPatterns(keywords, "en", ["ko", "ja", "zh"]);
+      const patterns = buildPatterns(keywords);
       const re = patterns[0];
       expect(re?.test("please do a code-review")).toBe(true);
       expect(re?.test("code-review-bot ran")).toBe(false);
       expect(re?.test("code-review-cleanup")).toBe(false);
+    });
+
+    it("keeps ASCII boundaries regardless of the project language (language: ko regression)", () => {
+      // The boundary choice used to be gated on `language: ko|ja|zh`, which
+      // dropped the boundaries from every ASCII keyword in CJK projects.
+      const [work] = buildPatterns({ "*": ["work"] });
+      expect(work?.test("network 설정 고쳐줘")).toBe(false);
+      expect(work?.test("fix the network timeout")).toBe(false);
+      const [review] = buildPatterns({ "*": ["review"] });
+      expect(review?.test("preview 페이지 레이아웃 고쳐줘")).toBe(false);
+      const [plan] = buildPatterns({ "*": ["plan"] });
+      expect(plan?.test("explanation 문구 수정해줘")).toBe(false);
+      // A Hangul particle right after the keyword is still a boundary.
+      const [ralph] = buildPatterns({ "*": ["ralph"] });
+      expect(ralph?.test("ralph로 끝까지 해줘")).toBe(true);
     });
   });
 
@@ -362,7 +380,7 @@ describe("keyword-detector", () => {
       // Regression: non-en banks used to be dropped for `language: en`
       // projects, silently disabling all localized triggers.
       const keywords = { fr: ["débogueur"] };
-      const patterns = buildPatterns(keywords, "en", ["ko"]);
+      const patterns = buildPatterns(keywords);
       expect(patterns).toHaveLength(1);
       expect(patterns[0]?.test("lance le débogueur")).toBe(true);
     });
@@ -1826,11 +1844,10 @@ describe("keyword-detector", () => {
     // wrong, since CJK keywords compile without boundary wrapping at all).
 
     it("pairs each compiled regex with its literal keyword string, in order", () => {
-      const entries = buildPatternEntries(
-        { "*": ["review"], en: ["deepsec pr review"] },
-        "en",
-        ["ko", "ja", "zh"],
-      );
+      const entries = buildPatternEntries({
+        "*": ["review"],
+        en: ["deepsec pr review"],
+      });
       expect(entries.map((e) => e.keyword)).toEqual([
         "review",
         "deepsec pr review",
@@ -1839,18 +1856,14 @@ describe("keyword-detector", () => {
     });
 
     it("does not add word-boundary wrapping for CJK keywords", () => {
-      const entries = buildPatternEntries({ ko: ["디버그"] }, "ko", [
-        "ko",
-        "ja",
-        "zh",
-      ]);
+      const entries = buildPatternEntries({ ko: ["디버그"] });
       expect(entries[0]?.regex.source).not.toContain("[^\\w-]");
     });
 
     it("buildPatterns(...) still returns exactly the regexes from buildPatternEntries", () => {
       const keywords = { "*": ["orchestrate"], en: ["parallel"] };
-      const entries = buildPatternEntries(keywords, "en", ["ko", "ja", "zh"]);
-      const patterns = buildPatterns(keywords, "en", ["ko", "ja", "zh"]);
+      const entries = buildPatternEntries(keywords);
+      const patterns = buildPatterns(keywords);
       expect(patterns).toEqual(entries.map((e) => e.regex));
     });
 
@@ -2157,6 +2170,250 @@ memory was written by Serena into its internal store.
         { vendor: "claude", cwd: "/tmp", sid: "test-session" },
       );
       expect(result).toBeNull();
+    });
+  });
+
+  // ── Persistent-workflow precision ─────────────────────────────
+  // Only an explicit invocation (the workflow's own name, `explicit` in
+  // triggers.json) writes the persistent-mode state file the Stop hook
+  // enforces. Natural-language matches are suggestions, and yes/no questions
+  // never fire them.
+
+  describe("persistent-workflow precision", () => {
+    const stateWrites = () =>
+      (fs.writeFileSync as ReturnType<typeof vi.fn>).mock.calls
+        .map((c) => String(c[0]))
+        .filter((p) => /-state-[^/]+\.json$/.test(p));
+
+    async function runPrompt(prompt: string) {
+      return run(
+        { kind: "prompt", prompt, cwd: "/tmp" },
+        { vendor: "claude", cwd: "/tmp", sid: "precision-sess" },
+      );
+    }
+
+    function contextOf(result: Awaited<ReturnType<typeof run>>): string {
+      return result?.type === "context" ? result.additionalContext : "";
+    }
+
+    beforeEach(() => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      // Earlier blocks leave readFileSync implementations behind (vi.fn
+      // implementations survive clearAllMocks); start from a clean read.
+      (fs.readFileSync as ReturnType<typeof vi.fn>).mockReset();
+    });
+
+    // Reproduced false positives: each one used to activate (or, under
+    // `language: ko`, mis-route) a workflow.
+    const falsePositives = [
+      "Does this work on Windows?",
+      "make the retry logic work with the new queue",
+      "implement the login feature",
+      "create the settings feature for admins",
+      "run the tests in parallel",
+      "automate the release notes",
+      "keep going",
+      "carry on",
+      "계속해",
+      "fix the network timeout",
+      "Can you keep going until the tests pass?",
+    ];
+    for (const prompt of falsePositives) {
+      it(`does not fire any workflow: ${prompt}`, async () => {
+        expect(await runPrompt(prompt)).toBeNull();
+        expect(stateWrites()).toEqual([]);
+      });
+    }
+
+    const cjkConfigCases: Array<[string, string]> = [
+      ["network 설정 고쳐줘", "DEBUG"],
+      ["preview 페이지 레이아웃 고쳐줘", "DEBUG"],
+      ["explanation 문구 수정해줘", "DEBUG"],
+    ];
+    for (const [prompt, expected] of cjkConfigCases) {
+      it(`routes '${prompt}' by its real intent, not an ASCII substring`, async () => {
+        // language is irrelevant now; the oma-config read is never consulted.
+        (fs.readFileSync as ReturnType<typeof vi.fn>).mockReturnValue(
+          "language: ko\n",
+        );
+        const context = contextOf(await runPrompt(prompt));
+        expect(context).toContain(`[OMA WORKFLOW: ${expected}]`);
+      });
+    }
+
+    it("a natural-language persistent match is only suggested — no state file", async () => {
+      const context = contextOf(
+        await runPrompt("Please handle everything for this deployment."),
+      );
+      expect(context).toContain("[OMA WORKFLOW: ORCHESTRATE]");
+      expect(context).toContain("may match the /orchestrate workflow");
+      expect(context).toContain("Persistent mode was NOT activated");
+      expect(context).not.toContain("Do not ask for confirmation");
+      expect(stateWrites()).toEqual([]);
+    });
+
+    it("natural-language ralph phrasing is suggested, not persisted", async () => {
+      const context = contextOf(
+        await runPrompt("테스트 다 통과할때까지 계속해줘."),
+      );
+      expect(context).toContain("[OMA WORKFLOW: RALPH]");
+      expect(context).toContain('e.g. "ralph"');
+      expect(stateWrites()).toEqual([]);
+    });
+
+    const explicitInvocations: Array<[string, string]> = [
+      ["ultrawork로 로그인 기능 구현해줘", "ultrawork"],
+      ["ulw 이 버그 끝까지 고쳐줘", "ultrawork"],
+      ["ralph this task", "ralph"],
+      ["랄프로 끝까지 해줘", "ralph"],
+      ["Switch to work mode for this refactor.", "work"],
+      // Polite question form: the question gate exempts explicit invocations.
+      ["ultrawork로 해줄래?", "ultrawork"],
+    ];
+    for (const [prompt, workflow] of explicitInvocations) {
+      it(`explicit invocation persists: ${prompt}`, async () => {
+        const context = contextOf(await runPrompt(prompt));
+        expect(context).toContain(`[OMA WORKFLOW: ${workflow.toUpperCase()}]`);
+        expect(context).toContain("Do not ask for confirmation");
+        expect(
+          stateWrites().some((p) =>
+            p.endsWith(`${workflow}-state-precision-sess.json`),
+          ),
+        ).toBe(true);
+      });
+    }
+
+    it("an explicit invocation outranks a longer natural-language match", async () => {
+      const context = contextOf(
+        await runPrompt("Orchestrate this refactor step by step."),
+      );
+      expect(context).toContain("[OMA WORKFLOW: ORCHESTRATE]");
+      expect(
+        stateWrites().some((p) =>
+          p.endsWith("orchestrate-state-precision-sess.json"),
+        ),
+      ).toBe(true);
+    });
+
+    it("still answers analytical questions about a workflow with nothing", async () => {
+      expect(await runPrompt("What is ultrawork?")).toBeNull();
+      expect(stateWrites()).toEqual([]);
+    });
+  });
+
+  describe("hasQuestionLine", () => {
+    it("detects yes/no questions without an interrogative word", () => {
+      expect(hasQuestionLine("Does this work on Windows?")).toBe(true);
+      expect(hasQuestionLine("계속해줄래?")).toBe(true);
+    });
+
+    it("checks the first and the last non-empty line", () => {
+      expect(hasQuestionLine("why?\nplease keep going")).toBe(true);
+      expect(hasQuestionLine("context line\n\ncan you do it all?\n")).toBe(
+        true,
+      );
+      expect(hasQuestionLine("first\nmiddle?\nlast")).toBe(false);
+    });
+
+    it("ignores a '?' that does not end the line", () => {
+      expect(hasQuestionLine("왜 안 고쳐져? ultrawork로 끝까지 고쳐줘")).toBe(
+        false,
+      );
+    });
+  });
+
+  describe("pickWinningCandidate — explicit invocation (rule 0)", () => {
+    it("prefers an explicit candidate over a longer natural-language one", () => {
+      const base = {
+        persistent: true,
+        matchIndex: 0,
+        matchText: "",
+        origIndex: 0,
+        isMultiWord: false,
+        declarationIndex: 0,
+        suppressed: false,
+      };
+      const natural = {
+        ...base,
+        workflow: "work",
+        keywordLength: 12,
+        isMultiWord: true,
+      };
+      const explicit = {
+        ...base,
+        workflow: "orchestrate",
+        keywordLength: 11,
+        explicit: true,
+        declarationIndex: 1,
+      };
+      expect(pickWinningCandidate([natural, explicit])?.workflow).toBe(
+        "orchestrate",
+      );
+    });
+  });
+
+  describe("buildWorkflowContext", () => {
+    it("keeps the start-immediately wording for explicit and non-persistent workflows", () => {
+      for (const options of [
+        { persistent: true, explicit: true },
+        { persistent: false, explicit: false },
+      ]) {
+        const lines = buildWorkflowContext("review", options);
+        expect(lines[0]).toBe("[OMA WORKFLOW: REVIEW]");
+        expect(lines.join("\n")).toContain("Do not ask for confirmation");
+      }
+    });
+  });
+
+  describe("triggers.json explicit-invocation integrity", () => {
+    let liveConfig: {
+      workflows: Record<
+        string,
+        {
+          persistent: boolean;
+          keywords: Record<string, string[]>;
+          explicit?: string[];
+        }
+      >;
+    };
+
+    beforeEach(async () => {
+      const mod = await import("../../.agents/hooks/core/triggers.json", {
+        with: { type: "json" },
+      });
+      liveConfig = mod.default as unknown as typeof liveConfig;
+    });
+
+    it("declares explicit invocations for every persistent workflow, only there", () => {
+      for (const [name, def] of Object.entries(liveConfig.workflows)) {
+        if (def.persistent) {
+          expect(def.explicit?.length, name).toBeGreaterThan(0);
+        } else {
+          expect(def.explicit, name).toBeUndefined();
+        }
+      }
+    });
+
+    it("lists every explicit invocation in the workflow's keyword banks", () => {
+      for (const [name, def] of Object.entries(liveConfig.workflows)) {
+        const keywords = collectLangEntries(def.keywords).map((k) =>
+          k.toLowerCase(),
+        );
+        for (const kw of def.explicit ?? []) {
+          expect(keywords, `${name}: ${kw}`).toContain(kw.toLowerCase());
+        }
+      }
+    });
+
+    it("no longer carries the over-generic triggers", () => {
+      const all = (name: string) =>
+        collectLangEntries(liveConfig.workflows[name]?.keywords ?? {});
+      expect(all("work")).not.toContain("work");
+      expect(all("orchestrate")).not.toContain("parallel");
+      expect(all("orchestrate")).not.toContain("automate");
+      for (const phrase of ["keep going", "carry on", "계속해", "계속 해줘"]) {
+        expect(all("ralph")).not.toContain(phrase);
+      }
     });
   });
 });

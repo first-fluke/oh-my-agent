@@ -63,7 +63,7 @@ describe("SessionStart(source: compact) rehydration", () => {
     // Establish an active OMA session the way the real chain does — the L1
     // session is created when a workflow keyword triggers (probe parity).
     await runKeywordDetector(
-      { kind: "prompt", prompt: "work", cwd: projectDir },
+      { kind: "prompt", prompt: "work mode", cwd: projectDir },
       ctx("sess-1"),
     );
 

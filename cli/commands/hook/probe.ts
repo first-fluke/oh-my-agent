@@ -61,7 +61,13 @@ export function probeVendor(
 
   try {
     const vendorCase = VENDOR_CASES[vendor];
-    const first = vendorCase.build(probeDir, `${vendor}-session-1`, "work");
+    // An explicit invocation: bare "work" is ordinary vocabulary and no
+    // longer triggers the work workflow.
+    const first = vendorCase.build(
+      probeDir,
+      `${vendor}-session-1`,
+      "work mode",
+    );
 
     const keyword = runHook(
       options.hooksDir,

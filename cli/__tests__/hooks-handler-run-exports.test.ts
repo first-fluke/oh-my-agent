@@ -87,14 +87,9 @@ describe("handler run() exports — lockstep guard (T1-a)", () => {
     });
 
     it("returns null for empty prompt", async () => {
-      // readFileSync mocked to return "{}" so loadConfig/detectLanguage are safe.
+      // readFileSync mocked so the reinforcement-state read is safe.
       (fs.readFileSync as ReturnType<typeof vi.fn>).mockReturnValue(
-        JSON.stringify({
-          workflows: {},
-          informationalPatterns: {},
-          excludedWorkflows: [],
-          cjkScripts: [],
-        }),
+        JSON.stringify({ triggers: {} }),
       );
       const result = await kd.run(
         { kind: "prompt", prompt: "", cwd: "/tmp" },

@@ -2,28 +2,39 @@
   "workflows": {
     "orchestrate": {
       "persistent": true,
+      "explicit": [
+        "orchestrate",
+        "オーケストレート",
+        "orquestar",
+        "orchestrer",
+        "orchestrieren",
+        "orquestrar",
+        "оркестровать",
+        "orkestreren",
+        "orkiestrować"
+      ],
       "keywords": {
         "*": ["orchestrate"],
         "en": [
-          "parallel",
           "do everything",
           "run everything",
           "do it all",
           "run all tasks",
-          "automate",
           "execute everything",
-          "handle everything"
+          "handle everything",
+          "everything in parallel",
+          "automate everything",
+          "automate the whole",
+          "automate it all"
         ],
         "ko": [
-          "자동 실행",
-          "자동으로 실행",
           "자동으로 해",
-          "병렬 실행",
           "전부 실행",
           "전부 해",
           "전부 돌려",
           "자동으로 해줘",
-          "병렬로 해줘",
+          "전부 병렬로",
+          "병렬로 전부",
           "전부 해줘",
           "전부 돌려줘",
           "한번에 다 해줘",
@@ -34,21 +45,18 @@
         ],
         "ja": [
           "オーケストレート",
-          "並列実行",
-          "自動実行",
           "全部実行",
           "全部やって",
           "自動でやって",
-          "並列でやって",
+          "全部並列で",
           "全部お願い",
           "まとめてやって"
         ],
         "zh": [
           "编排",
-          "并行执行",
-          "自动执行",
           "全部执行",
           "全部做",
+          "全部并行",
           "自动处理",
           "一起做",
           "全做了",
@@ -56,80 +64,74 @@
         ],
         "es": [
           "orquestar",
-          "paralelo",
           "ejecutar todo",
           "hazlo todo",
           "ejecuta todo",
-          "automatiza",
+          "todo en paralelo",
           "haz todo"
         ],
         "fr": [
           "orchestrer",
-          "parallèle",
           "tout exécuter",
           "fais tout",
           "exécute tout",
-          "automatise",
+          "tout en parallèle",
           "gère tout"
         ],
         "de": [
           "orchestrieren",
-          "parallel",
           "alles ausführen",
           "mach alles",
           "alles erledigen",
-          "automatisieren",
+          "alles parallel",
           "alles auf einmal"
         ],
         "pt": [
           "orquestrar",
-          "paralelo",
           "executar tudo",
           "faça tudo",
           "execute tudo",
-          "automatize",
+          "tudo em paralelo",
           "resolva tudo"
         ],
         "ru": [
           "оркестровать",
-          "параллельно",
           "выполнить всё",
           "сделай всё",
           "запусти всё",
-          "автоматизируй",
+          "всё параллельно",
           "всё сразу"
         ],
         "nl": [
           "orkestreren",
-          "parallel",
           "alles uitvoeren",
           "doe alles",
           "voer alles uit",
-          "automatiseer",
+          "alles parallel",
           "alles tegelijk"
         ],
         "pl": [
           "orkiestrować",
-          "równolegle",
           "wykonaj wszystko",
           "zrób wszystko",
           "uruchom wszystko",
-          "zautomatyzuj",
+          "wszystko równolegle",
           "wszystko naraz"
         ]
       },
       "patterns": {
         "*": [
-          "\\b(build|create|make|develop|implement|scaffold)\\s+(?:me\\s+)?(?:an?|the)\\s+(?:[\\w-]+\\s+){0,3}(app|api|service|server|cli|tool|website|dashboard|system|feature|backend|frontend|prototype|mvp|bot)\\b",
-          "\\bi\\s+want\\s+(?:a|an)\\s+(?:[\\w-]+\\s+){0,3}(app|api|service|server|cli|tool|website|dashboard|system|feature|backend|frontend|prototype|mvp|bot)\\b"
+          "\\b(build|create|make|develop|implement|scaffold)\\s+(?:me\\s+)?(?:an?)\\s+(?:[\\w-]+\\s+){0,3}(app|api|service|server|cli|tool|website|dashboard|system|backend|frontend|prototype|mvp|bot)\\b",
+          "\\bi\\s+want\\s+(?:a|an)\\s+(?:[\\w-]+\\s+){0,3}(app|api|service|server|cli|tool|website|dashboard|system|backend|frontend|prototype|mvp|bot)\\b"
         ],
         "ko": [
-          "(앱|API|서비스|서버|CLI|도구|웹사이트|대시보드|시스템|기능|백엔드|프론트엔드|프로토타입|MVP|봇)\\s*(?:을|를|이|가)?\\s*(?:만들어\\s*(?:주세요|줘|줄래)?|구현해\\s*(?:주세요|줘|줄래)?|개발해\\s*(?:주세요|줘|줄래)?|만들자|구현하자|개발하자)"
+          "(앱|API|서비스|서버|CLI|도구|웹사이트|대시보드|시스템|백엔드|프론트엔드|프로토타입|MVP|봇)\\s*(?:을|를|이|가)?\\s*(?:만들어\\s*(?:주세요|줘|줄래)?|구현해\\s*(?:주세요|줘|줄래)?|개발해\\s*(?:주세요|줘|줄래)?|만들자|구현하자|개발하자)"
         ]
       }
     },
     "ultrawork": {
       "persistent": true,
+      "explicit": ["ultrawork", "ulw"],
       "keywords": {
         "*": ["ultrawork", "ulw"]
       }
@@ -828,8 +830,9 @@
     },
     "work": {
       "persistent": true,
+      "explicit": ["work mode", "work workflow"],
       "keywords": {
-        "*": ["work", "step by step"],
+        "*": ["step by step", "work mode", "work workflow"],
         "en": ["one by one", "one step at a time"],
         "ko": [
           "단계별",
@@ -1187,6 +1190,7 @@
     },
     "ralph": {
       "persistent": true,
+      "explicit": ["ralph", "랄프"],
       "keywords": {
         "*": ["ralph"],
         "en": [
@@ -1194,7 +1198,7 @@
           "do not stop",
           "must complete",
           "until done",
-          "keep going",
+          "keep going until",
           "finish everything",
           "complete everything",
           "run to completion",
@@ -1202,7 +1206,6 @@
           "see it through",
           "don't give up",
           "never stop",
-          "carry on",
           "push through",
           "finish it all",
           "complete all"
@@ -1221,8 +1224,7 @@
           "끝장내",
           "끝까지 해줘",
           "다 끝내줘",
-          "계속해",
-          "계속 해줘",
+          "때까지 계속",
           "그만두지마",
           "포기하지마",
           "멈추지 말아줘"
@@ -1236,7 +1238,6 @@
           "完了するまで",
           "最後までやって",
           "諦めないで",
-          "続けて",
           "中断しないで",
           "全部やりきって"
         ],
@@ -1249,7 +1250,6 @@
           "做完为止",
           "一直做到完",
           "别放弃",
-          "继续做",
           "不要中断",
           "全部做完"
         ],
@@ -1261,7 +1261,6 @@
           "no te detengas",
           "completa todo",
           "no abandones",
-          "sigue adelante",
           "acaba todo"
         ],
         "fr": [
@@ -1283,7 +1282,6 @@
           "nicht aufhören",
           "mach alles fertig",
           "gib nicht auf",
-          "mach weiter",
           "alles abschließen"
         ],
         "pt": [
@@ -1305,7 +1303,6 @@
           "не прекращай",
           "доделай всё",
           "не сдавайся",
-          "продолжай",
           "закончи всё"
         ],
         "nl": [
@@ -1316,7 +1313,6 @@
           "niet stoppen",
           "alles afronden",
           "geef niet op",
-          "ga door",
           "maak alles klaar"
         ],
         "pl": [
@@ -1327,7 +1323,6 @@
           "nie przerywaj",
           "skończ wszystko",
           "nie poddawaj się",
-          "kontynuuj",
           "zakończ wszystko"
         ]
       }
@@ -3198,7 +3193,6 @@
     ]
   },
   "excludedWorkflows": ["tools", "stack-set", "schedule", "convert"],
-  "cjkScripts": ["ko", "ja", "zh"],
   "extensionRouting": {
     "frontend-engineer": [
       "tsx",

@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -122,6 +122,43 @@ describe("triggers end-to-end (real keyword-detector, mini-corpus)", () => {
       truePositives: 2,
       recall: 1,
     });
+  });
+
+  it("keeps L1 session writes out of the caller's OMA_STATE_HOME and restores it", async () => {
+    // A positive detection activates an L1 session. `oma verify triggers`
+    // used to leave one orphaned session per positive in the user's real
+    // ~/.oma profile; detectAll now redirects the state home for the run.
+    const previous = process.env.OMA_STATE_HOME;
+    const callerHome = mkdtempSync(join(tmpdir(), "oma-verify-caller-home-"));
+    scratchFiles.push(callerHome);
+    process.env.OMA_STATE_HOME = callerHome;
+    try {
+      const outcomes = await detectAll([
+        {
+          prompt: "Review my code before I open the PR.",
+          lang: "en",
+          expected: "review",
+        },
+      ]);
+      expect(outcomes[0]?.detected).toBe("review");
+      expect(process.env.OMA_STATE_HOME).toBe(callerHome);
+      expect(readdirSync(callerHome)).toEqual([]);
+    } finally {
+      process.env.OMA_STATE_HOME = previous;
+    }
+  });
+
+  it("detects reproduced false positives as non-triggering under language: ko", async () => {
+    for (const prompt of ["fix the network timeout", "계속해"]) {
+      const outcome = await detectOne({ prompt, lang: "ko", expected: null });
+      expect(outcome.detected, prompt).toBeNull();
+    }
+    const preview = await detectOne({
+      prompt: "preview 페이지 레이아웃 고쳐줘",
+      lang: "ko",
+      expected: "debug",
+    });
+    expect(preview.detected).toBe("debug");
   });
 
   it("keeps corpus entries isolated (no reinforcement-suppression leakage across entries)", async () => {

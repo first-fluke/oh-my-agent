@@ -386,15 +386,16 @@ The handler sources are the SSOT at `.agents/hooks/core/` and run in-process via
 **`code-intelligence-guard.ts`**: Pure handler (`run()`) on `PreToolUse` that enforces the "Code Search" rule mechanically. While `providers.code_intelligence` resolves to `serena` (or `gortex`) and `providers.code_intelligence_guard` is not `off`, it denies the native search tools (`Grep`, `Glob` on Claude Code) and shell commands whose leading binary is a recursive code search (`rg`, `ag`, `ack`, `fd`, `grep -r`, `find -name`/`-path`, `git grep`), and the deny reason names the provider tool to use instead (`search_for_pattern`, `find_file`, `find_symbol`). Non-recursive `grep` (pipe filters, single files), `find` without a name predicate, and reads are never touched. Registered right after `scm-guard` for claude, codex, cursor, grok, kimi, kiro, and qwen; the installer unions the chain's matchers, so Claude's `PreToolUse` entry becomes `Bash|Grep|Glob`. A shell command containing `OMA_CI_ALLOW_NATIVE=1` still bypasses the guard, but only as an operator hatch for searches of resources outside the project or ignored paths the guard did not recognize. The deny reason does not name that prefix, and it is not a fallback for project source.
 
 **`triggers.json`**: The keyword-to-workflow mapping, statically inlined into the `oma` binary at build time (source: `.agents/hooks/core/triggers.json`). Defines:
-- `workflows`: Map of workflow name to `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] } }`. `keywords` are literal phrases; `patterns` are raw regex strings (compiled with `iu` flags).
+- `workflows`: Map of workflow name to `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] }, explicit?: [...] }`. `keywords` are literal phrases; `patterns` are raw regex strings (compiled with `iu` flags). `explicit` (persistent workflows only) lists the keywords that count as an explicit invocation — only those activate persistent mode; every other match is injected as a suggestion.
 - `informationalPatterns`: Phrases that indicate questions (filtered out from auto-detection)
 - `excludedWorkflows`: Workflows that require explicit `/command` invocation
-- `cjkScripts`: Language codes using CJK scripts (ko, ja, zh)
 
 Language sections in `keywords`, `patterns`, and `informationalPatterns` follow this convention:
-- `*`: Universal/English. Always loaded regardless of `language` setting in `.agents/oma-config.yaml`.
-- `en`: Loaded for backward compatibility. Functionally equivalent to `*`. New English content should go in `*`.
-- `ko`/`ja`/`zh`/etc.: Language-specific. Loaded only when `language: <code>` is set in `.agents/oma-config.yaml`.
+- `*`: Universal/English.
+- `en`: Functionally equivalent to `*`.
+- `ko`/`ja`/`zh`/etc.: Language-specific phrasing.
+
+Every section is always loaded; the `language` setting in `.agents/oma-config.yaml` controls only the response language. Word boundaries depend on the keyword itself: ASCII keywords match whole words, keywords containing non-ASCII text match as substrings.
 
 #### Per-vendor materialization: before → after
 

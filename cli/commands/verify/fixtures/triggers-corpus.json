@@ -22,7 +22,14 @@
   {
     "prompt": "테스트들 병렬 실행해줘, 시간 없어.",
     "lang": "ko",
-    "expected": "orchestrate"
+    "expected": null,
+    "note": "relabeled: running a test suite in parallel is a test-runner request, not multi-agent orchestration — same as the English 'run the tests in parallel' (bare 병렬 실행/parallel triggers narrowed)"
+  },
+  {
+    "prompt": "이 작업들 전부 병렬로 돌려줘, 시간 없어.",
+    "lang": "ko",
+    "expected": "orchestrate",
+    "note": "scope-wide parallel request ('전부 병렬로') still routes to orchestrate"
   },
   {
     "prompt": "이 마이그레이션 자동으로 처리해줘.",
@@ -925,5 +932,113 @@
     "lang": "ko",
     "expected": "orchestrate",
     "note": "issue #672 side effect: orchestrate's '한번에 다 해줘' was previously shadowed by ralph's shorter '다 해' substring. With '다 해' gone, the specific orchestrate keyword wins"
+  },
+  {
+    "prompt": "Does this work on Windows?",
+    "lang": "en",
+    "expected": null,
+    "note": "persistent-precision regression: bare 'work' fired the persistent work workflow on a yes/no question"
+  },
+  {
+    "prompt": "make the retry logic work with the new queue",
+    "lang": "en",
+    "expected": null,
+    "note": "persistent-precision regression: 'work' as an ordinary verb must not trigger the work workflow"
+  },
+  {
+    "prompt": "implement the login feature",
+    "lang": "en",
+    "expected": null,
+    "note": "persistent-precision regression: a single feature is not multi-agent orchestration ('the'/'feature' dropped from the build pattern)"
+  },
+  {
+    "prompt": "create the settings feature for admins",
+    "lang": "en",
+    "expected": null,
+    "note": "persistent-precision regression: same build-pattern narrowing as 'implement the login feature'"
+  },
+  {
+    "prompt": "run the tests in parallel",
+    "lang": "en",
+    "expected": null,
+    "note": "persistent-precision regression: bare 'parallel' fired orchestrate on a test-runner request"
+  },
+  {
+    "prompt": "automate the release notes",
+    "lang": "en",
+    "expected": null,
+    "note": "persistent-precision regression: 'automate X' asks for automation tooling, not orchestration (bare 'automate' removed)"
+  },
+  {
+    "prompt": "keep going",
+    "lang": "en",
+    "expected": null,
+    "note": "persistent-precision regression: a bare resume phrase fired persistent ralph"
+  },
+  {
+    "prompt": "carry on",
+    "lang": "en",
+    "expected": null,
+    "note": "persistent-precision regression: a bare resume phrase fired persistent ralph"
+  },
+  {
+    "prompt": "Can you keep going until the tests pass?",
+    "lang": "en",
+    "expected": null,
+    "note": "question gate: a '?'-terminated line suppresses natural-language persistent matches"
+  },
+  {
+    "prompt": "계속해",
+    "lang": "ko",
+    "expected": null,
+    "note": "persistent-precision regression: '계속해' (continue) is how users resume after an interruption, not a ralph request"
+  },
+  {
+    "prompt": "fix the network timeout",
+    "lang": "ko",
+    "expected": null,
+    "note": "CJK-config regression: under language: ko ASCII keywords lost their word boundaries and 'network' fired work"
+  },
+  {
+    "prompt": "network 설정 고쳐줘",
+    "lang": "ko",
+    "expected": "debug",
+    "note": "CJK-config regression: was work via 'network' under language: ko; the genuine '고쳐줘' fix request is debug"
+  },
+  {
+    "prompt": "preview 페이지 레이아웃 고쳐줘",
+    "lang": "ko",
+    "expected": "debug",
+    "note": "CJK-config regression: 'preview' fired review under language: ko"
+  },
+  {
+    "prompt": "explanation 문구 수정해줘",
+    "lang": "ko",
+    "expected": "debug",
+    "note": "CJK-config regression: 'explanation' fired plan under language: ko"
+  },
+  {
+    "prompt": "Switch to work mode for this refactor.",
+    "lang": "en",
+    "expected": "work",
+    "note": "explicit work invocation ('work mode') — activates persistent mode"
+  },
+  {
+    "prompt": "ultrawork로 해줄래?",
+    "lang": "ko",
+    "expected": "ultrawork",
+    "note": "explicit invocation phrased as a polite question still fires (question gate applies only to natural-language matches)"
+  },
+  {
+    "prompt": "Build me an app for tracking expenses.",
+    "lang": "en",
+    "expected": "orchestrate",
+    "note": "build pattern still routes new-product requests ('build me an app')"
+  },
+  {
+    "prompt": "Orchestrate this refactor step by step.",
+    "lang": "en",
+    "expected": "orchestrate",
+    "note": "explicit invocation outranks the longer natural-language 'step by step' (work)"
   }
 ]

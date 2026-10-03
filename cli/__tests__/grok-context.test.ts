@@ -23,7 +23,10 @@ describe("grok-context", () => {
   it("tracks a Grok session boundary without creating a rules-file mirror", async () => {
     const ctx: HandlerCtx = { vendor: "grok", cwd: dir, sid: "grok-1" };
 
-    await runKeywordDetector({ kind: "prompt", prompt: "work", cwd: dir }, ctx);
+    await runKeywordDetector(
+      { kind: "prompt", prompt: "work mode", cwd: dir },
+      ctx,
+    );
     const boundary = await runStateBoundary(
       { kind: "prompt", prompt: "continue", cwd: dir },
       ctx,
