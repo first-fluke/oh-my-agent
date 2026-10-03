@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.0.4](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.3...web-v7.0.4) (2026-10-03)
+
+
+### Documentation
+
+* **cli:** stop the /setup paragraph rendering as a heading ([2076a2d](https://github.com/first-fluke/oh-my-agent/commit/2076a2d46fc1660f79be9baac6dd46c5a9c2ad2c))
+* **i18n:** sync translations with the English docs ([92dd632](https://github.com/first-fluke/oh-my-agent/commit/92dd632aa668559f8f3d86bce9ecfb2f2fbb43c1))
+
 ## [7.0.3](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.2...web-v7.0.3) (2026-10-03)
 
 
