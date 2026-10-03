@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.0.13",
-  "releaseDate": "2026-10-03T02:01:57.368Z",
+  "releaseDate": "2026-10-03T02:08:38.373Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -71,8 +71,8 @@
     },
     {
       "path": ".agents/agents/variants/claude.json",
-      "sha256": "88f23e7e7542b4c5cfd6a54698e6e4f97275fc9ed78f2dc30bc6010341b30f04",
-      "size": 1197
+      "sha256": "429573b7e4fcd937e2930cda1539ba2f625824ba723429e31106ba56f4d10014",
+      "size": 821
     },
     {
       "path": ".agents/agents/variants/codex.json",
@@ -81,8 +81,8 @@
     },
     {
       "path": ".agents/agents/variants/commandcode.json",
-      "sha256": "7cf5d96435fce5c67adc4816f83489c44a38649970d4d24a87bf59e32984413c",
-      "size": 1105
+      "sha256": "5397da6a14118ce0495188ac8ffeee7ac8e6d0dd4e0f6a4458ca2b66175bf868",
+      "size": 729
     },
     {
       "path": ".agents/agents/variants/cursor.json",
@@ -91,13 +91,13 @@
     },
     {
       "path": ".agents/agents/variants/grok.json",
-      "sha256": "800d262c96db600ea5cb3eda42d1d4ada6972976fdc0da65d84f2211af25eb12",
-      "size": 860
+      "sha256": "4e63166cbd02bcdd79c8ec63aba9c483453f34bddca9dbeab508f726bb2bf27c",
+      "size": 331
     },
     {
       "path": ".agents/agents/variants/kiro.json",
-      "sha256": "784db1129fcc44828eb997be484d7cb2e9eff9e637acac5d0f28d21a0f1aabe1",
-      "size": 1039
+      "sha256": "d59d9a27b634d2f476231f30118c8e3396bf4d2b1279172af1aff0ff48ccc61f",
+      "size": 602
     },
     {
       "path": ".agents/agents/variants/opencode.json",
