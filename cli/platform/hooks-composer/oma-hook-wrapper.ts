@@ -1,5 +1,3 @@
-import { HOOK_DEDUP_PREAMBLE } from "./shell-wrapper.js";
-
 /**
  * Well-known install locations, searched (in order) only when `oma` is not on
  * the hook environment's PATH.
@@ -38,21 +36,22 @@ const OMA_BIN_CANDIDATES = [
  *   3. The well-known install locations above (GUI agents get a minimal PATH).
  *   4. If nothing resolves — `exit 0` (fail-open, never block the agent).
  *
- * The dedup preamble suppresses double-fire when both a project and global
- * install register the same event. Qwen skips the coarse time-based preamble:
- * it drops distinct tool calls and can suppress post-compaction priming.
- * The shared primer handles its own session deduplication.
+ * The wrapper does no deduplication itself: it exports its own path as
+ * `OMA_HOOK_WRAPPER`, and `oma hook run` drops only an identical payload that
+ * a different wrapper (the other registration of a project + global double
+ * install) already claimed. Distinct events — parallel tool calls, concurrent
+ * sessions — always run.
  *
  * Passes `"$@"` verbatim so `--vendor`, `--event`, `--matcher` args that
  * the settings entry emits reach `oma hook run` unchanged (no shell injection).
  */
-export function generateOmaHookWrapper(vendor?: string): string {
-  // Authored directly (NOT via generateHookShellWrapper, whose `exec ${cmd} "$@"`
-  // template is for single-command wrappers). This is a multi-statement script,
-  // and it must ALWAYS exit 0 — a non-zero hook exit (e.g. a stale oma without
-  // the `hook` command) can disrupt the vendor agent.
+export function generateOmaHookWrapper(): string {
+  // A multi-statement script that must ALWAYS exit 0 — a non-zero hook exit
+  // (e.g. a stale oma without the `hook` command) can disrupt the vendor agent.
   return `#!/usr/bin/env bash
-${vendor === "qwen" ? "# Preserve distinct Qwen events; the shared primer deduplicates by session." : HOOK_DEDUP_PREAMBLE}
+# Duplicate deliveries from a project + global double install are dropped
+# inside \`oma hook run\` (payload hash + this wrapper's path); distinct events
+# always run.
 __oma_bin=""
 if [ -n "\${OMA_BIN:-}" ] && [ -x "\${OMA_BIN}" ]; then
   __oma_bin="\${OMA_BIN}"
@@ -69,7 +68,7 @@ else
 fi
 if [ -n "$__oma_bin" ]; then
   # Run oma hook; swallow a non-zero exit so the wrapper is always fail-open.
-  "$__oma_bin" hook run "$@" || true
+  OMA_HOOK_WRAPPER="$0" "$__oma_bin" hook run "$@" || true
 fi
 exit 0
 `;

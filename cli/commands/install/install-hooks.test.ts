@@ -419,14 +419,17 @@ describe("installHooksFromVariant", () => {
     expect(wrapperWrite).toBeTruthy();
 
     const wrapperContent = wrapperWrite?.[1] as string;
-    // Dedup preamble present.
-    expect(wrapperContent).toContain("__oma_dedup_lock");
+    // No shell time-window lock: dedup happens in `oma hook run`.
+    expect(wrapperContent).not.toContain("__oma_dedup_lock");
     // oma binary resolution: recorded install path first, then PATH lookup.
     expect(wrapperContent).toContain("command -v oma");
     // Always fail-open: force exit 0 even if oma errors / lacks the hook command.
     expect(wrapperContent).toContain("exit 0");
-    // Delegates to oma hook with verbatim args, swallowing a non-zero exit.
-    expect(wrapperContent).toContain('"$__oma_bin" hook run "$@" || true');
+    // Delegates to oma hook with verbatim args and its own path, swallowing a
+    // non-zero exit.
+    expect(wrapperContent).toContain(
+      'OMA_HOOK_WRAPPER="$0" "$__oma_bin" hook run "$@" || true',
+    );
 
     // hook-output.ts patching is intentionally NOT performed (vendor is --vendor arg now).
     const hookOutputWrite = (

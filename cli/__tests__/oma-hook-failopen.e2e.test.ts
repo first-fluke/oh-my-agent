@@ -5,9 +5,9 @@
  * goes through the real command handler: stdin parsing, vendor validation,
  * dispatch, and dialect render.
  *
- * What is NOT duplicated here (already covered at unit level):
+ * What is NOT duplicated here (already covered elsewhere):
  *   - runChain merge rules (dispatch.test.ts)
- *   - selectTransport socket-absent fallback (transport.test.ts)
+ *   - duplicate-delivery suppression (dedup.test.ts, oma-hook-dedup.e2e.test.ts)
  *
  * What IS added (command/e2e level guarantees):
  *   1. Empty stdin              → empty stdout, exit 0

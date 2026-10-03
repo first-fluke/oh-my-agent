@@ -1083,7 +1083,6 @@ Leere stdout-Ausgabe bedeutet, dass die Kette für dieses Event einen No-op erze
 **Hinweise zum Geltungsbereich:**
 - `statusLine`-/Hud-Einträge werden nicht über `oma hook run` geleitet (die Anzeige im Hot Path bleibt auf einem direkten `bun`-Pfad).
 - Der pi-Vendor verwendet seine In-Process-Bridge `installPiExtension`, nicht `oma hook run`.
-- Der Daemon-Socket-Pfad (`SocketTransport`) gehört zu einer späteren Phase; der aktuelle Transport ist immer In-Process.
 
 Siehe `cli/commands/hook/command.ts` für die Router-Implementierung (intern als „Design 019“ bezeichnet) und `cli/commands/hook/probe/` für die Vendor-Kompatibilitätsmatrix.
 
@@ -1965,7 +1964,6 @@ Gibt die aktuelle CLI-Version aus und beendet sich.
 | `DASHBOARD_PORT` | Port für das Web-Dashboard | `dashboard web` |
 | `MEMORIES_DIR` | Pfad zum Memory-Verzeichnis überschreiben | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Auf `1` setzen, um im Befehl `oma skill eval` unabhängig von den Flags den Mock-Modus zu erzwingen | `skills eval` |
-| `OMA_HOOK_SOCKET` | Den von `selectTransport` geprüften Socket-Pfad des projektbezogenen Daemons überschreiben (Standard: `<cwd>/.agents/.run/oma-hook.sock`). Fällt derzeit immer auf den In-Process-Transport zurück; für eine spätere Daemon-Phase reserviert. | `hook` |
 
 ---
 

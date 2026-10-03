@@ -1121,7 +1121,6 @@ echo '{"tool_name":"run_shell_command","tool_input":{"command":"cat /etc/passwd"
 **范围notes:**
 - `statusLine`/hud条目是不routed通过`oma hook run` (hot-路径显示stays在一个direct `bun`路径).
 -该pi供应商使用其在-进程`installPiExtension` bridge,不`oma hook run`.
--该守护进程套接字路径(`SocketTransport`)是一个未来阶段;该当前transport是始终在-进程.
 
 参见`cli/commands/hook/command.ts`用于该router implementation (internally referred到作为"design 019")和`cli/commands/hook/probe/`用于该按供应商兼容性矩阵.
 
@@ -2011,7 +2010,6 @@ Outputs该当前CLI版本和退出.
 | `DASHBOARD_PORT` | Port用于该Web仪表盘| `dashboard web` |
 | `MEMORIES_DIR` |覆盖该内存目录路径| `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Set到`1`到强制模拟模式在`oma skill eval` regardless的标志| `skills eval` |
-| `OMA_HOOK_SOCKET` |覆盖该按项目守护进程套接字路径probed由`selectTransport` (默认: `<cwd>/.agents/.run/oma-hook.sock`).当前始终回退返回到在-进程transport;预留用于该未来守护进程阶段. | `hook` |
 
 ---
 

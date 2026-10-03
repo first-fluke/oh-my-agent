@@ -1119,7 +1119,6 @@ echo '{"tool_name":"run_shell_command","tool_input":{"command":"cat /etc/passwd"
 **スコープに関する注意:**
 - `statusLine`/hud エントリは `oma hook run` を経由しません（ホットパス表示は直接の `bun` 経路に残ります）。
 - pi ベンダーは `oma hook run` ではなく、インプロセスの `installPiExtension` ブリッジを使います。
-- デーモンソケットのパス（`SocketTransport`）は将来段階用で、現在のトランスポートは常にインプロセスです。
 
 ルーター実装は `cli/commands/hook/command.ts`（内部では「design 019」と呼びます）、ベンダー別互換マトリクスは `cli/commands/hook/probe/` を参照してください。
 
@@ -2009,7 +2008,6 @@ oma version
 | `DASHBOARD_PORT` | Web ダッシュボードのポート | `dashboard web` |
 | `MEMORIES_DIR` | メモリーディレクトリのパスを上書きします。 | `dashboard`、`dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | `oma skill eval` でフラグにかかわらず mock モードを強制する値を `1` に設定します。 | `skills eval` |
-| `OMA_HOOK_SOCKET` | `selectTransport` が調べるプロジェクトごとのデーモンソケットパスを上書きします（既定: `<cwd>/.agents/.run/oma-hook.sock`）。現在は常にインプロセスへフォールバックし、将来のデーモン段階用に予約されています。 | `hook` |
 
 ---
 

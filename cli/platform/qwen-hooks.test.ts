@@ -67,7 +67,6 @@ it("does not drop rapid Qwen tool events in the shell wrapper", () => {
           ...process.env,
           OMA_BIN: fakeOma,
           QWEN_PROJECT_DIR: root,
-          OMA_SESSION_ID: root.split("/").pop(),
         },
         input: `${JSON.stringify({
           agent_id,

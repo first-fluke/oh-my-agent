@@ -1120,7 +1120,7 @@ Empty stdout means the chain produced a no-op for that event. A JSON object on s
 **Scope notes:**
 - `statusLine`/hud entries are not routed through `oma hook run` (hot-path display stays on a direct `bun` path).
 - The pi vendor uses its in-process `installPiExtension` bridge, not `oma hook run`.
-- The daemon socket path (`SocketTransport`) is a future phase; the current transport is always in-process.
+- Duplicate deliveries from a project + global double install are dropped inside `oma hook run` (identical payload launched by a different `oma-hook.sh` wrapper); distinct events, including parallel tool calls, always run.
 
 See `cli/commands/hook/command.ts` for the router implementation (internally referred to as "design 019") and `cli/commands/hook/probe/` for the per-vendor compatibility matrix.
 
@@ -2028,7 +2028,8 @@ Outputs the current CLI version and exits.
 | `DASHBOARD_PORT` | Port for the web dashboard | `dashboard web` |
 | `MEMORIES_DIR` | Override the memories directory path | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Set to `1` to force mock mode in `oma skill eval` regardless of flags | `skills eval` |
-| `OMA_HOOK_SOCKET` | Override the per-project daemon socket path probed by `selectTransport` (default: `<cwd>/.agents/.run/oma-hook.sock`). Currently always falls back to in-process transport; reserved for the future daemon phase. | `hook` |
+| `OMA_HOOK_DEDUP` | Set to `0` to disable duplicate-delivery suppression in `oma hook run`. | `hook` |
+| `OMA_HOOK_DEDUP_DIR` | Override the private claim directory used to suppress duplicate hook deliveries (default: `$XDG_RUNTIME_DIR/oma-hook-dedup`, else `<tmpdir>/oma-hook-dedup-<uid>`). | `hook` |
 
 ---
 

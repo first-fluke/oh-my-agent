@@ -1123,7 +1123,6 @@ Empty stdout means the chain produced a no-op for that event. A JSON object on s
 **Примечания об области:**
 - `statusLine`/hud entries are not routed through `oma hook run` (hot-path display stays on a direct `bun` path). <!-- Перевод на русский -->
 - The pi vendor uses its in-process `installPiExtension` bridge, not `oma hook run`. <!-- Перевод на русский -->
-- The daemon socket path (`SocketTransport`) is a future phase; the current transport is always in-process. <!-- Перевод на русский -->
 
 See `cli/commands/hook/command.ts` for the router implementation (internally referred to as "design 019") and `cli/commands/hook/probe/` for the per-vendor compatibility matrix. <!-- Перевод на русский -->
 
@@ -2013,7 +2012,6 @@ Outputs the current CLI version and exits. <!-- Перевод на русски
 | `DASHBOARD_PORT` | Port for the web dashboard | `dashboard web`  <!-- Перевод на русский -->|
 | `MEMORIES_DIR` | Override the memories directory path | `dashboard`, `dashboard web`  <!-- Перевод на русский -->|
 | `OMA_SKILLEVAL_MOCK` | Set to `1` to force mock mode in `oma skill eval` regardless of flags | `skills eval`  <!-- Перевод на русский -->|
-| `OMA_HOOK_SOCKET` | Override the per-project daemon socket path probed by `selectTransport` (default: `<cwd>/.agents/.run/oma-hook.sock`). Currently always falls back to in-process transport; reserved for the future daemon phase. | `hook`  <!-- Перевод на русский -->|
 
 ---
 

@@ -1120,7 +1120,6 @@ Thông tin của mục này được giữ theo registry hiện tại.
 Chi tiết của mục này được áp dụng theo cấu hình hiện tại.
 - Thông tin của mục này được giữ theo registry hiện tại. `statusLine` `oma hook run` `bun`
 - Thông tin của mục này được giữ theo registry hiện tại. `installPiExtension` `oma hook run`
-- Thông tin của mục này được giữ theo registry hiện tại. `SocketTransport`
 
 Thông tin của mục này được giữ theo registry hiện tại. `cli/commands/hook/command.ts` `cli/commands/hook/probe/`
 
@@ -2010,7 +2009,6 @@ Thông tin của mục này được giữ theo registry hiện tại.
 | `DASHBOARD_PORT` | Nội dung tương ứng | `dashboard web` |
 | `MEMORIES_DIR` | Nội dung tương ứng | `dashboard` `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | `1` `oma skill eval` | `skills eval` |
-| `OMA_HOOK_SOCKET` | `selectTransport` `<cwd>/.agents/.run/oma-hook.sock` | `hook` |
 
 ---
 

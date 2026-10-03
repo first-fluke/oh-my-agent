@@ -33,11 +33,6 @@ export {
   mergeHookGroups,
   mergeIntoSettings,
 } from "./hooks-composer/settings-merge.js";
-export {
-  generateHookShellWrapper,
-  HOOK_DEDUP_PREAMBLE,
-  withDedup,
-} from "./hooks-composer/shell-wrapper.js";
 export type {
   HookEvent,
   HookVariant,
@@ -90,7 +85,7 @@ export function installHooksFromVariant(
 
   // 2. Write the single oma-hook wrapper (one per vendor hookDir).
   const wrapperPath = join(hooksDest, OMA_HOOK_WRAPPER_FILENAME);
-  atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(variant.vendor), {
+  atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(), {
     mode: 0o755,
   });
 

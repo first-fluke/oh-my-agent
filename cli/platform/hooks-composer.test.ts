@@ -13,69 +13,58 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
-  generateHookShellWrapper,
   generateOmaHookWrapper,
-  HOOK_DEDUP_PREAMBLE,
   type HookVariant,
   installHooksFromVariant,
   isOmaManagedHookGroup,
   mergeHookGroups,
   mergeMatchers,
   requiredVariantScripts,
-  withDedup,
 } from "./hooks-composer.js";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-describe("hook self-dedup preamble (EC-6 / T2.1)", () => {
-  it("generated hook script begins with the dedup preamble", () => {
-    const wrapper = generateHookShellWrapper(
-      'bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"',
+describe("oma-hook wrapper duplicate handling", () => {
+  it("has no time-window lock that could drop distinct events", () => {
+    const wrapper = generateOmaHookWrapper();
+    // The old preamble skipped ANY same-event run within 2s — parallel tool
+    // calls and concurrent sessions included. Dedup now lives in `oma hook run`.
+    expect(wrapper).not.toContain("/tmp/oma-hook-");
+    expect(wrapper).not.toContain("__oma_dedup_lock");
+    expect(wrapper).not.toContain("OMA_SESSION_ID");
+    // The only exit is the final fail-open one — nothing returns early.
+    expect(wrapper.match(/\bexit 0\b/g)).toHaveLength(1);
+  });
+
+  it("passes its own path so oma can tell a double registration from a repeat", () => {
+    expect(generateOmaHookWrapper()).toContain(
+      'OMA_HOOK_WRAPPER="$0" "$__oma_bin" hook run "$@" || true',
     );
-    // Strip the shebang line; the preamble must immediately follow
-    const withoutShebang = wrapper.replace(/^#!.*\n/, "");
-    expect(withoutShebang.startsWith(HOOK_DEDUP_PREAMBLE)).toBe(true);
   });
 
-  it("dedup preamble references an event-scoped /tmp/oma-hook lock", () => {
-    expect(HOOK_DEDUP_PREAMBLE).toContain(
-      // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variables
-      '"/tmp/oma-hook-${UID:-${EUID:-0}}-${OMA_SESSION_ID:-default}-${__oma_evt}.lock"',
-    );
-  });
-
-  it("dedup lock key includes the event args so different events don't collide", () => {
-    // __oma_evt is derived from "$*" — different --event values yield different
-    // lock keys, so a PreToolUse right after UserPromptSubmit is NOT suppressed.
-    expect(HOOK_DEDUP_PREAMBLE).toContain('__oma_evt="$(printf');
-  });
-
-  it("dedup preamble has the 2-second window", () => {
-    expect(HOOK_DEDUP_PREAMBLE).toContain('"$__oma_age" -lt 2');
-  });
-
-  it("withDedup prepends preamble before the provided script body", () => {
-    const body = 'exec bun .codex/hooks/persistent-mode.ts "$@"';
-    const result = withDedup(body);
-    expect(result).toMatch(
-      new RegExp(
-        `^${HOOK_DEDUP_PREAMBLE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-      ),
-    );
-    expect(result).toContain(body);
-  });
-
-  it("generateHookShellWrapper produces a valid bash script with shebang and delegating exec", () => {
-    const cmd = "bun .gemini/hooks/keyword-detector.ts";
-    const script = generateHookShellWrapper(cmd);
-    expect(script.startsWith("#!/usr/bin/env bash\n")).toBe(true);
-    expect(script).toContain(`exec ${cmd} "$@"`);
-    expect(script.endsWith("\n")).toBe(true);
-  });
-
-  it("stat fallback covers both macOS (-f %m) and Linux (-c %Y) in the preamble", () => {
-    expect(HOOK_DEDUP_PREAMBLE).toContain('stat -f %m "$__oma_dedup_lock"');
-    expect(HOOK_DEDUP_PREAMBLE).toContain('stat -c %Y "$__oma_dedup_lock"');
+  it("is identical for every vendor (no vendor-specific preamble)", () => {
+    const vendors = ["claude", "codex", "qwen", "cursor"];
+    const installed = vendors.map((vendor) => {
+      const targetDir = mkdtempSync(join(tmpdir(), `oma-wrapper-${vendor}-`));
+      try {
+        const variant = JSON.parse(
+          readFileSync(
+            join(repoRoot, ".agents", "hooks", "variants", `${vendor}.json`),
+            "utf-8",
+          ),
+        ) as HookVariant;
+        installHooksFromVariant(repoRoot, targetDir, variant);
+        return readFileSync(
+          join(targetDir, variant.hookDir, "oma-hook.sh"),
+          "utf-8",
+        );
+      } finally {
+        rmSync(targetDir, { recursive: true, force: true });
+      }
+    });
+    for (const content of installed) {
+      expect(content).toBe(generateOmaHookWrapper());
+    }
   });
 });
 
@@ -131,13 +120,15 @@ describe("Codex hook variant contract", () => {
       // carries featureFlags — the hooks install must not write config.toml.
       expect(existsSync(join(targetDir, ".codex", "config.toml"))).toBe(false);
 
-      // oma-hook.sh wrapper must be present with dedup preamble and oma resolution.
+      // oma-hook.sh wrapper must be present with its identity export and oma resolution.
       const wrapperPath = join(targetDir, ".codex", "hooks", "oma-hook.sh");
       expect(existsSync(wrapperPath)).toBe(true);
       const wrapperContent = readFileSync(wrapperPath, "utf-8");
-      expect(wrapperContent).toContain("__oma_dedup_lock");
+      expect(wrapperContent).not.toContain("__oma_dedup_lock");
       expect(wrapperContent).toContain("command -v oma");
-      expect(wrapperContent).toContain('"$__oma_bin" hook run "$@" || true');
+      expect(wrapperContent).toContain(
+        'OMA_HOOK_WRAPPER="$0" "$__oma_bin" hook run "$@" || true',
+      );
       // Always fail-open: the wrapper must force exit 0 even if oma errors.
       expect(wrapperContent).toContain("exit 0");
     } finally {
@@ -423,9 +414,11 @@ describe("generateOmaHookWrapper machine independence", () => {
       const dir = mkdtempSync(join(tmpdir(), "oma-wrapper-run-"));
       try {
         const fakeOma = join(dir, "oma");
-        writeFileSync(fakeOma, '#!/usr/bin/env bash\necho "ran: $*"\n', {
-          mode: 0o755,
-        });
+        writeFileSync(
+          fakeOma,
+          '#!/usr/bin/env bash\necho "ran: $* via $OMA_HOOK_WRAPPER"\n',
+          { mode: 0o755 },
+        );
         const wrapperPath = join(dir, "oma-hook.sh");
         writeFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
 
@@ -435,16 +428,20 @@ describe("generateOmaHookWrapper machine independence", () => {
             env: { ...process.env, PATH: "/usr/bin:/bin", ...env },
           });
 
-        // $OMA_BIN wins.
-        const found = run({ OMA_BIN: fakeOma, OMA_SESSION_ID: "wrap-found" });
+        // $OMA_BIN wins, and oma learns which wrapper launched it.
+        const found = run({ OMA_BIN: fakeOma });
         expect(found.status).toBe(0);
-        expect(found.stdout).toContain("ran: hook run --vendor claude");
+        expect(found.stdout).toContain(
+          `ran: hook run --vendor claude via ${wrapperPath}`,
+        );
+
+        // Back-to-back runs both reach oma (no time-window suppression).
+        expect(run({ OMA_BIN: fakeOma }).stdout).toContain("ran: hook run");
 
         // No oma anywhere it looks → still exit 0, no output.
         const missing = run({
           OMA_BIN: join(dir, "nope"),
           HOME: dir,
-          OMA_SESSION_ID: "wrap-missing",
         });
         expect(missing.status).toBe(0);
         expect(missing.stdout).not.toContain("ran:");

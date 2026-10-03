@@ -2,6 +2,8 @@ import type { Command } from "commander";
 import { VENDORS } from "../../constants/vendors.js";
 import { runAction } from "../../utils/cli-framework.js";
 import { extractSessionId } from "./adapters.js";
+import { shouldDispatchHookDelivery } from "./dedup.js";
+import { runHookDispatch } from "./dispatch.js";
 import {
   PROBE_VENDORS,
   type ProbeVendor,
@@ -9,7 +11,6 @@ import {
   renderProbeMatrixMarkdown,
   runHookProbe,
 } from "./probe.js";
-import { selectTransport } from "./transport.js";
 import type { HookRequest, Vendor } from "./types.js";
 
 const PROBE_FORMATS = ["text", "md", "json"] as const;
@@ -114,6 +115,20 @@ export function registerHook(program: Command): void {
           // fail-open: proceed with empty stdin
         }
 
+        // A project and a global install may both register this event; the
+        // wrapper exports its own path so the second registration's identical
+        // delivery is dropped while every distinct event still dispatches.
+        if (
+          !shouldDispatchHookDelivery({
+            vendor,
+            nativeEvent,
+            rawStdin,
+            wrapper: process.env.OMA_HOOK_WRAPPER,
+          })
+        ) {
+          return;
+        }
+
         const cwd = process.cwd();
         const sid = extractSessionId(vendor, rawStdin);
 
@@ -126,13 +141,8 @@ export function registerHook(program: Command): void {
           sid,
         };
 
-        // selectTransport: probes for daemon socket (OMA_HOOK_SOCKET or per-project
-        // default) with a 200ms connect timeout; falls back to InProcessTransport
-        // today since SocketTransport is not yet implemented (design 019 §2.7).
-        const transport = await selectTransport({ cwd });
-
         try {
-          const response = await transport.dispatch(req);
+          const response = await runHookDispatch(req);
           if (response.output) {
             process.stdout.write(response.output);
           }

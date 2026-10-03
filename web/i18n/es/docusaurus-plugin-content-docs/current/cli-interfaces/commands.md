@@ -1120,7 +1120,6 @@ Un stdout vacío significa que la cadena no produjo ninguna operación para ese 
 **Notas de alcance:**
 - Las entradas `statusLine`/hud no pasan por `oma hook run` (la visualización del hot path permanece en una ruta directa de `bun`).
 - El proveedor pi usa su bridge `installPiExtension` dentro del proceso, no `oma hook run`.
-- La ruta del socket del daemon (`SocketTransport`) pertenece a una fase futura; el transporte actual siempre es dentro del proceso.
 
 Consulta `cli/commands/hook/command.ts` para la implementación del router (internamente denominada "design 019") y `cli/commands/hook/probe/` para la matriz de compatibilidad por proveedor.
 
@@ -2010,7 +2009,6 @@ Imprime la versión actual del CLI y termina.
 | `DASHBOARD_PORT` | Puerto del dashboard web | `dashboard web` |
 | `MEMORIES_DIR` | Sobrescribe la ruta del directorio de memorias | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Establece `1` para forzar el modo mock en `oma skill eval` independientemente de los flags | `skills eval` |
-| `OMA_HOOK_SOCKET` | Sobrescribe la ruta del socket del daemon por proyecto que sondea `selectTransport` (predeterminada: `<cwd>/.agents/.run/oma-hook.sock`). Actualmente siempre usa como fallback el transporte dentro del proceso; está reservada para la futura fase del daemon. | `hook` |
 
 ---
 

@@ -1082,7 +1082,6 @@ stdout이 비어 있으면 해당 이벤트에서 체인이 아무 일도 하지
 **범위 참고:**
 - `statusLine`과 hud 항목은 `oma hook run`을 거치지 않습니다(표시 경로는 지연을 아끼려고 `bun`을 직접 호출합니다).
 - pi 벤더는 `oma hook run`이 아니라 인프로세스 `installPiExtension` 브릿지를 씁니다.
-- 데몬 소켓 경로(`SocketTransport`)는 이후 단계이며, 현재 전송은 항상 인프로세스입니다.
 
 라우터 구현은 `cli/commands/hook/command.ts`(내부적으로 "design 019"라고 부릅니다)를, 벤더별 호환성 매트릭스는 `cli/commands/hook/probe/`를 참고하세요.
 
@@ -1966,7 +1965,6 @@ oma version
 | `DASHBOARD_PORT` | 웹 대시보드의 포트 | `dashboard web` |
 | `MEMORIES_DIR` | 메모리 디렉토리 경로 오버라이드 | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | `1`로 설정하면 플래그와 무관하게 `oma skill eval`이 mock 모드로 동작 | `skills eval` |
-| `OMA_HOOK_SOCKET` | `selectTransport`가 탐색하는 프로젝트별 데몬 소켓 경로를 오버라이드(기본값: `<cwd>/.agents/.run/oma-hook.sock`). 현재는 항상 인프로세스 전송으로 폴백하며, 이후 데몬 단계를 위해 예약되어 있습니다. | `hook` |
 
 ---
 

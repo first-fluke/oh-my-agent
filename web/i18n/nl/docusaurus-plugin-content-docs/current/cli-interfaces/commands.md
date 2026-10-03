@@ -1116,7 +1116,6 @@ Lege stdout betekent dat de keten voor dat event een no-op produceerde. Een JSON
 **Notities over scope:**
 - `statusLine`/hud-items worden niet via `oma hook run` gerouteerd (weergave op het hot path blijft via een direct `bun`-pad lopen).
 - De pi-vendor gebruikt de in-process `installPiExtension`-bridge, niet `oma hook run`.
-- Het daemonsocketpad (`SocketTransport`) hoort bij een latere fase; het huidige transport is altijd in-process.
 
 Zie `cli/commands/hook/command.ts` voor de routerimplementatie (intern aangeduid als "design 019") en `cli/commands/hook/probe/` voor de compatibiliteitsmatrix per vendor.
 
@@ -2005,7 +2004,6 @@ Geeft de huidige CLI-versie terug en sluit af.
 | `DASHBOARD_PORT` | Poort voor het webdashboard | `dashboard web` |
 | `MEMORIES_DIR` | Overschrijf het pad naar de memorymap | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Stel in op `1` om mockmodus in `oma skill eval` af te dwingen, ongeacht de vlaggen | `skills eval` |
-| `OMA_HOOK_SOCKET` | Overschrijf het per-project daemonsocketpad dat door `selectTransport` wordt onderzocht (standaard: `<cwd>/.agents/.run/oma-hook.sock`). Valt momenteel altijd terug op in-process transport; gereserveerd voor de toekomstige daemonfase. | `hook` |
 
 ---
 

@@ -1120,7 +1120,6 @@ Pusty stdout oznacza, że łańcuch nie wykonał działania dla tego zdarzenia. 
 **Uwagi dotyczące zakresu:**
 - Wpisy `statusLine`/hud nie przechodzą przez `oma hook run` (wyświetlanie na szybkiej ścieżce pozostaje na bezpośredniej ścieżce `bun`).
 - Dostawca pi używa mostu `installPiExtension` w procesie, a nie `oma hook run`.
-- Ścieżka gniazda daemona (`SocketTransport`) należy do przyszłej fazy; obecny transport zawsze działa w procesie.
 
 Implementację routera znajdziesz w `cli/commands/hook/command.ts` (wewnętrznie określaną jako „design 019”), a macierz zgodności dostawców w `cli/commands/hook/probe/`.
 
@@ -2010,7 +2009,6 @@ Wypisuje bieżącą wersję CLI i kończy działanie.
 | `DASHBOARD_PORT` | Port dashboardu webowego | `dashboard web` |
 | `MEMORIES_DIR` | Nadpisuje ścieżkę katalogu pamięci | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Ustaw `1`, aby wymusić tryb mock w `oma skill eval` niezależnie od flag | `skills eval` |
-| `OMA_HOOK_SOCKET` | Nadpisuje ścieżkę gniazda daemona projektu sprawdzaną przez `selectTransport` (domyślnie: `<cwd>/.agents/.run/oma-hook.sock`). Obecnie zawsze korzysta z transportu w procesie; zarezerwowane dla przyszłej fazy daemona. | `hook` |
 
 ---
 

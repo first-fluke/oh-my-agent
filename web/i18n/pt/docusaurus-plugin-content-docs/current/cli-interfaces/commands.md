@@ -1084,7 +1084,6 @@ Uma saída stdout vide signifie que a cadeia não tem rien fait para cet evento.
 **Notas de abrangência :**
 - Os entradas `statusLine`/hud não passant pas por `oma hook run` (o affichage do caminho critique permanece em um caminho `bun` direto).
 - O fornecedor pi usa son bridge em processo `installPiExtension`, e non `oma hook run`.
-- O caminho de socket do daemon (`SocketTransport`) é prévu para uma fase future ; o transport atual é sempre em processo.
 
 Consulte `cli/commands/hook/command.ts` para o implémentation do roteador (désignée em interno como « design 019 ») e `cli/commands/hook/probe/` para a matriz de compatibilité por fornecedor.
 
@@ -1965,7 +1964,6 @@ Exibe a versão atual da CLI e sai.
 | `DASHBOARD_PORT` | Porta do tabela de bord web | `dashboard web` |
 | `MEMORIES_DIR` | Substitui o caminho do diretório de memórias | `dashboard`, `dashboard web` |
 | `OMA_SKILLEVAL_MOCK` | Definida a `1` para forcer o mode simulé em `oma skill eval` quels que sejam os indicadores | `skills eval` |
-| `OMA_HOOK_SOCKET` | Substitui o caminho de socket do daemon por projeto sondé por `selectTransport` (por padrão : `<cwd>/.agents/.run/oma-hook.sock`). Revient atualmente sempre ao transport em processo ; reservado a a future fase do daemon. | `hook` |
 
 ---
 
