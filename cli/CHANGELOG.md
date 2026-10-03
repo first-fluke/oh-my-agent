@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.12](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.11...cli-v15.0.12) (2026-10-03)
+
+
+### Bug Fixes
+
+* **image:** find codex images under CODEX_HOME by thread id ([8511372](https://github.com/first-fluke/oh-my-agent/commit/851137261dbc98550f58929b1d6eaec98edaca90))
+
 ## [15.0.11](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.10...cli-v15.0.11) (2026-10-02)
 
 
