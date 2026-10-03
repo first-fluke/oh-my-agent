@@ -312,7 +312,7 @@ export async function runChain(
 }
 
 // ---------------------------------------------------------------------------
-// runHookDispatch — central dispatch entry point called by InProcessTransport.
+// runHookDispatch — central dispatch entry point called by `oma hook run`.
 // ---------------------------------------------------------------------------
 
 export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {

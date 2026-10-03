@@ -1,14 +1,14 @@
 // Shared vendor-detection helpers for the core hook handlers.
 //
 // Previously each handler (keyword-detector, state-boundary, skill-injector,
-// serena-primer, persistent-mode, test-filter) carried its own copy of these
-// functions, which drifted (different vendor subsets). They are event-
-// independent — vendor → script path, project dir, hook dir — so they live here
-// once and every handler imports them. `detectVendor` stays per-handler because
-// the event-name → vendor mapping is hook-kind-specific (prompt/tool/stop).
+// code-intelligence-primer, persistent-mode, test-filter) carried its own copy
+// of these functions, which drifted (different vendor subsets). They live here
+// once and every handler imports them. The event-name → vendor mapping is
+// hook-kind-specific (prompt/tool/stop), so detectVendorFromInput keeps one
+// precedence list per kind.
 
 import { join } from "node:path";
-import { agyProjectDir } from "./agy-input.ts";
+import { agyProjectDir, isAgyInput } from "./agy-input.ts";
 import { resolveProjectRoot } from "./fs-utils.ts";
 import type { Vendor } from "./types.ts";
 
@@ -32,6 +32,68 @@ export function inferVendorFromScriptPath(scriptPath: string): Vendor | null {
   // alongside it and spawned as subprocesses from there.
   if (scriptPath.includes(`${join(".pi", "extensions")}`)) return "pi";
   return null;
+}
+
+/** Which hook payload a standalone handler parses. */
+export type HookPayloadKind = "prompt" | "tool" | "stop";
+
+/**
+ * Vendor of a raw hook payload, for standalone runs (`oma hook run` passes
+ * --vendor explicitly). Each kind keeps its own precedence because vendors
+ * name the same event differently (UserPromptSubmit vs userPromptSubmit vs
+ * PreInvocation, ...). `scriptPath` is the calling handler's
+ * `import.meta.filename`; prompt hooks trust their install dir first and tool
+ * hooks recognize the pi bridge dir.
+ */
+export function detectVendorFromInput(
+  input: Record<string, unknown>,
+  kind: HookPayloadKind,
+  scriptPath: string,
+): Vendor {
+  const event = input.hook_event_name as string | undefined;
+  const hookEventName = input.hookEventName as string | undefined;
+  const env = process.env;
+  // Codex sends snake_case session_id; Claude sends camelCase sessionId.
+  const codexSessionShape = "session_id" in input && !("sessionId" in input);
+
+  if (kind === "prompt") {
+    const byScriptPath = inferVendorFromScriptPath(scriptPath);
+    if (byScriptPath) return byScriptPath;
+    // agy sends no hook_event_name; detect it by its stdin shape.
+    if (isAgyInput(input)) return "antigravity";
+    if (env.GROK_WORKSPACE_ROOT) return "grok";
+    if (
+      env.KIRO_PROJECT_DIR ||
+      event === "userPromptSubmit" ||
+      hookEventName === "userPromptSubmit"
+    ) {
+      return "kiro";
+    }
+    if (event === "PreInvocation") return "antigravity";
+    if (event === "beforeSubmitPrompt") return "cursor";
+    if (event === "UserPromptSubmit" && codexSessionShape) return "codex";
+  } else if (kind === "stop") {
+    if (env.GROK_WORKSPACE_ROOT) return "grok";
+    if (env.KIRO_PROJECT_DIR || event === "stop" || hookEventName === "stop") {
+      return "kiro";
+    }
+    if (isAgyInput(input)) return "antigravity";
+    if (event === "Stop" && env.ANTIGRAVITY_PROJECT_DIR) return "antigravity";
+    if (event === "Stop" && codexSessionShape) return "codex";
+  } else {
+    // pi spawns tool hooks from `.pi/extensions/oma/`; trust that path.
+    if (scriptPath.includes(join(".pi", "extensions"))) return "pi";
+    if (env.GROK_WORKSPACE_ROOT) return "grok";
+    if (env.KIRO_PROJECT_DIR) return "kiro";
+    if (event === "preToolUse" || hookEventName === "preToolUse") return "kiro";
+    if (event === "PreToolUse" && env.ANTIGRAVITY_PROJECT_DIR) {
+      return "antigravity";
+    }
+    if (event === "PreToolUse" && codexSessionShape) return "codex";
+  }
+  // Qwen Code sets QWEN_PROJECT_DIR; Claude sets CLAUDE_PROJECT_DIR.
+  if (env.QWEN_PROJECT_DIR) return "qwen";
+  return "claude";
 }
 
 /** Resolve the OMA project root for a vendor + raw hook input. */

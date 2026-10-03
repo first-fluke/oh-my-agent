@@ -20,7 +20,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { agyConversationId, isAgyInput, readAgyPrompt } from "./agy-input.ts";
+import { agyConversationId, readAgyPrompt } from "./agy-input.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { normalizePromptInput } from "./prompt-input.ts";
 import type {
@@ -28,9 +28,8 @@ import type {
   HandlerResult,
   HookConfig,
   HookInput,
-  Vendor,
 } from "./types.ts";
-import { getProjectDir, inferVendorFromScriptPath } from "./vendor-detect.ts";
+import { detectVendorFromInput, getProjectDir } from "./vendor-detect.ts";
 
 const SESSION_TTL_MS = 60 * 60 * 1000;
 
@@ -293,32 +292,6 @@ export async function run(
 
 // ── Standalone entry (pi subprocess / direct bun invocation) ──
 
-function detectVendor(input: Record<string, unknown>): Vendor {
-  const byScriptPath = inferVendorFromScriptPath(import.meta.filename);
-  if (byScriptPath) return byScriptPath;
-  if (isAgyInput(input)) return "antigravity";
-  const event = input.hook_event_name as string | undefined;
-  const hookEventName = input.hookEventName as string | undefined;
-  if (process.env.GROK_WORKSPACE_ROOT) return "grok";
-  if (
-    process.env.KIRO_PROJECT_DIR ||
-    event === "userPromptSubmit" ||
-    hookEventName === "userPromptSubmit"
-  ) {
-    return "kiro";
-  }
-  if (event === "PreInvocation") return "antigravity";
-  if (event === "beforeSubmitPrompt") return "cursor";
-  if (
-    event === "UserPromptSubmit" &&
-    "session_id" in input &&
-    !("sessionId" in input)
-  )
-    return "codex";
-  if (process.env.QWEN_PROJECT_DIR) return "qwen";
-  return "claude";
-}
-
 function getSessionId(input: Record<string, unknown>): string {
   return (
     (input.sessionId as string) ||
@@ -337,7 +310,7 @@ export async function runStandAlone() {
     process.exit(0);
   }
 
-  const vendor = detectVendor(input);
+  const vendor = detectVendorFromInput(input, "prompt", import.meta.filename);
   const projectDir = getProjectDir(vendor, input);
   const sessionId = getSessionId(input);
   let prompt = normalizePromptInput(input.prompt);

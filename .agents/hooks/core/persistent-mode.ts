@@ -23,7 +23,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { agyConversationId, isAgyInput } from "./agy-input.ts";
+import { agyConversationId } from "./agy-input.ts";
 import { UNKNOWN_SESSION_ID } from "./constants.ts";
 import { makeBlockOutput } from "./hook-output.ts";
 import { isDeactivationRequest } from "./keyword-detector.ts";
@@ -37,7 +37,7 @@ import type {
   ModeState,
   Vendor,
 } from "./types.ts";
-import { getProjectDir } from "./vendor-detect.ts";
+import { detectVendorFromInput, getProjectDir } from "./vendor-detect.ts";
 
 const MAX_REINFORCEMENTS = 5;
 const STALE_HOURS = 2;
@@ -433,33 +433,6 @@ function loadPersistentWorkflows(): string[] {
 
 // ── Vendor Detection ──────────────────────────────────────────
 
-function detectVendor(input: Record<string, unknown>): Vendor {
-  const event = input.hook_event_name as string | undefined;
-  const hookEventName = input.hookEventName as string | undefined;
-
-  if (process.env.GROK_WORKSPACE_ROOT || hookEventName?.includes("stop")) {
-    if (process.env.GROK_WORKSPACE_ROOT) return "grok";
-  }
-
-  if (
-    process.env.KIRO_PROJECT_DIR ||
-    event === "stop" ||
-    hookEventName === "stop"
-  ) {
-    return "kiro";
-  }
-
-  // agy (Antigravity) Stop sends no hook_event_name; detect by stdin shape.
-  if (isAgyInput(input)) return "antigravity";
-  if (event === "Stop" && process.env.ANTIGRAVITY_PROJECT_DIR)
-    return "antigravity";
-  if (event === "Stop") {
-    if ("session_id" in input && !("sessionId" in input)) return "codex";
-  }
-  if (process.env.QWEN_PROJECT_DIR) return "qwen";
-  return "claude";
-}
-
 function getSessionId(input: Record<string, unknown>): string {
   return (
     (input.sessionId as string) ||
@@ -820,7 +793,7 @@ async function main() {
     process.exit(0);
   }
 
-  const vendor = detectVendor(input);
+  const vendor = detectVendorFromInput(input, "stop", import.meta.filename);
   const projectDir = getProjectDir(vendor, input);
   const sessionId = getSessionId(input);
 

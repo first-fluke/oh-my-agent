@@ -8,8 +8,8 @@
 // HandlerResult, HandlerCtx, HookHandler). It is self-contained — no imports
 // from `cli/` — so that both `cli/` and the `.agents/hooks/core/` standalone
 // scripts can import from here without creating a circular dependency.
-// `cli/commands/hook/types.ts` re-exports these symbols plus the transport
-// envelope types (HookRequest, HookResponse, HookTransport).
+// `cli/commands/hook/types.ts` re-exports these symbols plus the dispatch
+// envelope types (HookRequest, HookResponse).
 
 import type { VENDORS } from "./constants.ts";
 

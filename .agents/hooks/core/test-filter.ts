@@ -4,31 +4,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { makePreToolOutput } from "./hook-output.ts";
-import type { HandlerCtx, HandlerResult, HookInput, Vendor } from "./types.ts";
-import { getHookDir, getProjectDir } from "./vendor-detect.ts";
-
-// --- Vendor detection (same logic as keyword-detector.ts) ---
-
-function detectVendor(input: Record<string, unknown>): Vendor {
-  const event = input.hook_event_name as string | undefined;
-  const _hookEventName = input.hookEventName as string | undefined;
-
-  // pi spawns this script from `.pi/extensions/oma/`; trust the script path.
-  if (import.meta.filename.includes(`${join(".pi", "extensions")}`))
-    return "pi";
-
-  if (process.env.GROK_WORKSPACE_ROOT) return "grok";
-  if (process.env.KIRO_PROJECT_DIR) return "kiro";
-
-  if (event === "preToolUse" || _hookEventName === "preToolUse") return "kiro";
-  if (event === "PreToolUse" && process.env.ANTIGRAVITY_PROJECT_DIR)
-    return "antigravity";
-  if (event === "PreToolUse") {
-    if ("session_id" in input && !("sessionId" in input)) return "codex";
-  }
-  if (process.env.QWEN_PROJECT_DIR) return "qwen";
-  return "claude";
-}
+import type { HandlerCtx, HandlerResult, HookInput } from "./types.ts";
+import {
+  detectVendorFromInput,
+  getHookDir,
+  getProjectDir,
+} from "./vendor-detect.ts";
 
 // --- Test runner patterns ---
 
@@ -177,7 +158,7 @@ function main() {
 
   const parsed: PreToolUseInput = JSON.parse(raw);
 
-  const vendor = detectVendor(parsed);
+  const vendor = detectVendorFromInput(parsed, "tool", import.meta.filename);
   const projectDir = getProjectDir(vendor, parsed);
 
   // Build canonical HookInput and delegate to run() — single logic source.

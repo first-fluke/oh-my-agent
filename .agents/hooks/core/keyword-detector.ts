@@ -21,7 +21,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { agyConversationId, isAgyInput, readAgyPrompt } from "./agy-input.ts";
+import { agyConversationId, readAgyPrompt } from "./agy-input.ts";
 import { UNKNOWN_SESSION_ID, VENDORS } from "./constants.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { isRelayedAgentMessage, normalizePromptInput } from "./prompt-input.ts";
@@ -34,9 +34,8 @@ import type {
   HandlerResult,
   HookInput,
   ModeState,
-  Vendor,
 } from "./types.ts";
-import { getProjectDir, inferVendorFromScriptPath } from "./vendor-detect.ts";
+import { detectVendorFromInput, getProjectDir } from "./vendor-detect.ts";
 
 // ── Unicode normalization ─────────────────────────────────────
 
@@ -272,40 +271,6 @@ export function recordKwTrigger(
 }
 
 // ── Vendor Detection ──────────────────────────────────────────
-
-function detectVendor(input: Record<string, unknown>): Vendor {
-  const event = input.hook_event_name as string | undefined;
-  const hookEventName = input.hookEventName as string | undefined;
-  const byScriptPath = inferVendorFromScriptPath(import.meta.filename);
-  if (byScriptPath) return byScriptPath;
-
-  // agy (Antigravity) sends no hook_event_name; detect by its stdin shape.
-  if (isAgyInput(input)) return "antigravity";
-
-  // Grok uses hookEventName (e.g. "user_prompt_submit") + GROK_* env vars
-  if (process.env.GROK_WORKSPACE_ROOT || hookEventName?.includes("prompt")) {
-    // Prefer explicit grok signal; fall through to other checks only if ambiguous
-    if (process.env.GROK_WORKSPACE_ROOT) return "grok";
-  }
-
-  if (
-    process.env.KIRO_PROJECT_DIR ||
-    event === "userPromptSubmit" ||
-    hookEventName === "userPromptSubmit"
-  ) {
-    return "kiro";
-  }
-
-  if (event === "PreInvocation") return "antigravity";
-  if (event === "beforeSubmitPrompt") return "cursor";
-  if (event === "UserPromptSubmit") {
-    // Codex uses snake_case session_id, Claude uses camelCase sessionId
-    if ("session_id" in input && !("sessionId" in input)) return "codex";
-  }
-  // Qwen Code sets QWEN_PROJECT_DIR; Claude sets CLAUDE_PROJECT_DIR
-  if (process.env.QWEN_PROJECT_DIR) return "qwen";
-  return "claude";
-}
 
 function getSessionId(input: Record<string, unknown>): string {
   return (
@@ -1261,7 +1226,7 @@ async function main() {
   // Guard 1: Only process genuine user prompts — skip agent-generated content
   if (!isGenuineUserPrompt(input)) process.exit(0);
 
-  const vendor = detectVendor(input);
+  const vendor = detectVendorFromInput(input, "prompt", import.meta.filename);
   const projectDir = getProjectDir(vendor, input);
   const sessionId = getSessionId(input);
   let prompt = normalizePromptInput(input.prompt);
