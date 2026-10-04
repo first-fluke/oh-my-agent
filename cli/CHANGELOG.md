@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.17](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.16...cli-v15.0.17) (2026-10-04)
+
+
+### Documentation
+
+* **design:** use direct Stitch MCP setup ([50d09a9](https://github.com/first-fluke/oh-my-agent/commit/50d09a9bb762156132a04cddbe4e599f93c01dda))
+
 ## [15.0.16](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.15...cli-v15.0.16) (2026-10-04)
 
 
