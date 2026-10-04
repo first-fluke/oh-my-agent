@@ -1,7 +1,11 @@
 # OMA L1 Event Spec
 
 This file defines the minimum durable event contract for cross-runtime workflow state.
-Events are appended to `.agents/state/sessions/{sid}/events.jsonl`.
+Events are appended under the selected home profile:
+`${OMA_STATE_HOME:-~/.oma}/u/{OMA_PROFILE:-0}/sessions/{sid}/events.jsonl`.
+Use `oma state get <sid>` or `oma state list` for inspection rather than assuming
+a project-local path. `.agents/state/sessions/` is the legacy migration source;
+coordination memories and agent-run receipts retain their separate project paths.
 
 ## Common Fields
 

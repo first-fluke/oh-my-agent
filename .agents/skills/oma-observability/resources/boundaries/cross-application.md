@@ -261,15 +261,33 @@ Cross-ref `../signals/traces.md §Messaging patterns` for span link implementati
 
 CI/CD pipelines, agent workflows, and background jobs need trace context for end-to-end visibility across automated steps.
 
-Use the `TRACEPARENT` environment variable for child process context inheritance. The OTel SDK's Environment Resource Detector reads `TRACEPARENT` and applies it as the parent context for the first span created in that process.
+A parent process may explicitly inject W3C context into `TRACEPARENT` and
+optionally `TRACESTATE`, but environment inheritance alone does not establish a
+child span parent. The Environment Resource Detector populates resource attributes;
+it does not extract this carrier as active trace context. Initialize the child's
+SDK, context manager, and W3C propagator before extracting and activating context.
 
-```bash
-# CI/CD pipeline: propagate trace context to child build steps
-export TRACEPARENT="00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
-# Child process (e.g., test runner) inherits the parent span context
+```js
+// After SDK/context-manager/propagator initialization in the child process.
+// runJob is the application's job implementation.
+import { context, propagation, ROOT_CONTEXT, trace } from '@opentelemetry/api';
+
+const carrier = {};
+if (process.env.TRACEPARENT) carrier.traceparent = process.env.TRACEPARENT;
+if (process.env.TRACESTATE) carrier.tracestate = process.env.TRACESTATE;
+const parent = propagation.extract(ROOT_CONTEXT, carrier);
+const tracer = trace.getTracer('background-job');
+await context.with(parent, () => tracer.startActiveSpan('job', async span => {
+  try { return await runJob(); }
+  finally { span.end(); }
+}));
 ```
 
-This pattern enables a single trace to span from the CI trigger event through build, test, deploy, and smoke-test verification steps.
+The configured W3C propagator validates the carrier; absent/invalid trace context
+starts an independent trace. Validate inherited context against the process's
+trust boundary and verify actual parent/trace IDs in a fixture before relying on
+end-to-end correlation. Sources: <https://opentelemetry.io/docs/specs/otel/context/api-propagators/>
+and <https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-resources>.
 
 ---
 

@@ -183,11 +183,11 @@ Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md
 **Symptoms**: Mutating a property on the view model has no visual effect; the view does not re-render even though the value changed.
 
 1. Confirm the view model class is annotated with `@Observable` (Observation framework, **not** `ObservableObject`). Without the macro the view has no tracking infrastructure.
-2. Check the deployment target: `@Observable` requires **iOS 17.0+**. If the target is set to iOS 16 or earlier the macro compiles but observation tracking is absent — raise the minimum deployment target in `Package.swift` (`.iOS(.v17)`) and the Xcode project settings.
-3. Verify the view holds the VM with `@State` (not a plain `let` or `var`): `@State private var viewModel: MyViewModel`. A non-`@State` reference is not tracked by SwiftUI.
-4. If the VM is passed into a child view that needs to mutate it, use `@Bindable` in the child: `@Bindable var viewModel: MyViewModel`. Passing it as a plain argument prevents change propagation.
+2. Check framework availability against supported OS versions. SwiftUI Observation integration requires iOS 17+. Preserve an older target using its supported observation mechanism or availability-gated implementation; changing minimum support requires a product decision.
+3. Check that body reads the observable properties that should trigger an update and that those properties are not @ObservationIgnored. Plain let/var references to @Observable models can be observed. Use @State when the view owns the instance lifetime.
+4. Use @Bindable when the child needs bindings such as $viewModel.title. Passing an observable reference as a plain argument does not prevent property observation or direct mutation.
 5. Confirm properties are mutated on the **main actor**. Mutations from a background `Task` without `await MainActor.run { … }` (or `@MainActor` on the method) can update state off-main and miss the SwiftUI render pass.
-6. Avoid wrapping the `@Observable` class in another `@Published` property or `ObservableObject` — mixing the two observation systems breaks change tracking.
+6. When adapting an existing ObservableObject boundary, verify which layer owns and publishes the values read by the view instead of assuming the mechanisms automatically bridge.
 
 ---
 

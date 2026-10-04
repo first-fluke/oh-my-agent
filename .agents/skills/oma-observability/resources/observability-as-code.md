@@ -13,7 +13,7 @@ UI-edited dashboards and alerts accumulate silent debt:
 - **No DR / no rollback.** A dashboard overwritten in the Grafana UI cannot be reverted without a backup.
 - **No peer review.** Alert thresholds edited live bypass the same change-management gates required for code.
 - **Scale problem.** 100+ dashboards across N environments managed by hand drift within weeks. Each environment develops its own undocumented fork.
-- **Compliance.** SOC 2 change-management controls require an audit trail for every change to detection and response configuration. Git history provides that trail; Grafana's internal change log does not. Cross-ref `signals/audit.md` for WORM immutability requirements.
+- **Compliance.** SOC 2 change-management controls require an audit trail for every change to detection and response configuration. Git history provides that trail; Grafana's internal change log does not. Cross-ref `signals/audit.md` for evidence-specific integrity and retention controls.
 
 The non-negotiable principle: version every observability artifact; dashboards, alert rules, SLO definitions, collector config; in git, applied via CI/CD. This is design decision D9 in the design document.
 
@@ -38,13 +38,13 @@ dashboard.new('OTel Collector Health')
 + dashboard.withUid('otelcol-health-v1')
 + dashboard.withRefresh('30s')
 + dashboard.withPanels([
-  panel.timeSeries.new('Delivery Ratio — Traces')
+  panel.timeSeries.new('Synthetic Trace Delivery Ratio')
   + panel.timeSeries.withTargets([
     prometheus.new(
       '$datasource',
       |||
-        sum(rate(otelcol_exporter_sent_spans[5m]))
-          / (sum(rate(otelcol_receiver_accepted_spans[5m])) > 0)
+        sum(rate(telemetry_probe_completed_total{result="delivered"}[5m]))
+          / (sum(rate(telemetry_probe_completed_total[5m])) > 0)
       |||
     ),
   ]),
@@ -66,7 +66,7 @@ jsonnetfmt --test dashboards/*.jsonnet
 
 ### 2.2 Perses (CNCF Sandbox)
 
-Source: <https://perses.dev>; CNCF Sandbox (accepted 2023). YAML-first, vendor-neutral dashboard definition targeting a future CNCF standard for dashboards-as-code. Stricter schema than Grafana JSON; import from Grafana JSON is under development.
+Source: <https://perses.dev>; CNCF Sandbox (accepted 2024-08-29; <https://www.cncf.io/projects/perses/>). YAML-first, vendor-neutral dashboard definition targeting a future CNCF standard for dashboards-as-code. Stricter schema than Grafana JSON; import from Grafana JSON is under development.
 
 ```yaml
 # dashboards/collector-health.yaml (Perses)
@@ -87,9 +87,11 @@ spec:
                 kind: PrometheusTimeSeriesQuery
                 spec:
                   query: >
-                    sum(rate(otelcol_exporter_sent_spans[5m]))
-                    / (sum(rate(otelcol_receiver_accepted_spans[5m])) > 0)
+                    sum(rate(telemetry_probe_completed_total{result="delivered"}[5m]))
+                    / (sum(rate(telemetry_probe_completed_total[5m])) > 0)
 ```
+
+The delivery panel requires the custom completed-probe metric from `meta-observability.md §A6`; default Collector counters are not an end-to-end delivery ratio.
 
 Use Perses when vendor-neutral YAML is a hard requirement (e.g., multi-backend environments). See Section 12 for current maturity notes.
 
@@ -197,8 +199,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check PrometheusRule YAML
-        run: promtool check rules alerts/*.yaml
+      # CI runner must already provide pinned promtool, amtool, and mikefarah/yq v4.
+      - name: Extract and check Prometheus rules
+        run: |
+          mkdir -p rendered-rules
+          for rule in alerts/*.yaml; do
+            rendered="rendered-rules/$(basename "$rule")"
+            yq eval '.spec' "$rule" > "$rendered"
+            promtool check rules "$rendered"
+          done
       - name: Lint Alertmanager config
         run: amtool check-config alertmanager-config.yaml
   apply:
@@ -217,33 +226,46 @@ jobs:
 
 ### 4.1 OpenSLO YAML
 
-Source: <https://openslo.com>; community-driven (not CNCF). Adopted by Sloth, Pyrra, and Nobl9. Cross-ref `boundaries/slo.md §5` for the full OpenSLO spec example.
+Source: <https://openslo.com>; community-driven (not CNCF). Use a consumer or adapter explicitly supporting OpenSLO v1. Cross-ref `boundaries/slo.md §5` for the full OpenSLO spec example.
 
 ```yaml
-apiVersion: openslo.com/v1
+apiVersion: openslo/v1
 kind: SLO
 metadata:
   name: checkout-availability
 spec:
   service: checkout
-  sloType: Request-Based
+  budgetingMethod: Occurrences
+  timeWindow:
+    - duration: 28d
+      isRolling: true
   objectives:
     - target: 0.999
-      window: 28d
   indicator:
+    metadata:
+      name: checkout-success-ratio
     spec:
       ratioMetric:
+        counter: false # queries return window counts, not monotonic counters
         good:
           metricSource:
             type: Prometheus
             spec:
-              query: sum(rate(http_requests_total{service="checkout",status=~"2..|3.."}[{{.Window}}]))
+              query: sum(increase(http_requests_total{service="checkout",status=~"2..|3.."}[28d]))
         total:
           metricSource:
             type: Prometheus
             spec:
-              query: sum(rate(http_requests_total{service="checkout"}[{{.Window}}]))
+              query: sum(increase(http_requests_total{service="checkout"}[28d]))
 ```
+
+The v1 structure follows <https://openslo.com/specification/>.
+`metricSource.spec` is implementation-defined: verify the chosen consumer's
+Prometheus adapter, window evaluation, and counter semantics. This example
+does not imply Sloth or Pyrra directly accepts OpenSLO; native definitions
+require a verified adapter/conversion if OpenSLO is the input.
+
+---
 
 ### 4.2 Sloth: YAML to PrometheusRule
 
@@ -285,14 +307,12 @@ metadata:
 spec:
   target: "99.9"
   window: 28d
-  serviceMonitorSelector: {}
   indicator:
-    http:
-      selector:
-        matchLabels: { job: checkout }
-      errorsSelector:
-        matchExpressions:
-          - { key: code, operator: In, values: ["5xx"] }
+    ratio:
+      errors:
+        metric: http_requests_total{service="checkout",status=~"5.."}
+      total:
+        metric: http_requests_total{service="checkout"}
 ```
 
 Pyrra reconciles this into recording rules and PrometheusRule alerts automatically; no separate generation step.
@@ -389,8 +409,8 @@ Add to CI before any collector config change merges.
 
 Multi-window burn-rate alerting from `boundaries/slo.md §7`. Two alert pairs protect against fast budget exhaustion and slow invisible drain.
 
-- **Fast burn**: 2% budget consumed in 1h (14.4x rate), gated by a 5m short window to suppress transient spikes.
-- **Slow burn**: 5% budget consumed in 6h (6x rate), gated by a 30m short window.
+- **Fast burn**: about 2.14% of a 28-day budget consumed in 1h (14.4x rate), gated by a 5m short window to suppress transient spikes.
+- **Slow burn**: about 5.36% of a 28-day budget consumed in 6h (6x rate), gated by a 30m short window.
 
 Error budget denominator for 99.9% SLO: `1 - 0.999 = 0.001`.
 
@@ -425,10 +445,11 @@ spec:
             severity: critical
             slo: checkout-availability
           annotations:
-            summary: "Checkout SLO fast burn: budget exhausting in < 1h"
+            summary: "Checkout SLO fast burn above 14.4x"
             description: >
-              Error rate is {{ $value | humanizePercentage }} of the error budget rate.
-              At this pace the 28-day budget is exhausted in under 1 hour.
+              Burn rate is {{ $value }} times the budget rate.
+              At 14.4x, a full 28-day budget lasts about 46.7 hours;
+              remaining-budget exhaustion depends on budget already spent.
             runbook: "https://wiki.example.com/runbooks/checkout-slo-fast-burn"
 
         # Slow burn — 6h / 30m windows
@@ -450,8 +471,9 @@ spec:
           annotations:
             summary: "Checkout SLO slow burn: budget exhausting in < 5 days"
             description: >
-              Error rate is {{ $value | humanizePercentage }} of the error budget rate.
-              At this pace the 28-day budget is exhausted in under 5 days.
+              Burn rate is {{ $value }} times the budget rate.
+              At 6x, a full 28-day budget lasts about 4.67 days;
+              remaining-budget exhaustion depends on budget already spent.
             runbook: "https://wiki.example.com/runbooks/checkout-slo-slow-burn"
 ```
 
@@ -511,7 +533,7 @@ All observability changes flow through the same review gate as application code:
 | Step | Tool | What is checked |
 |------|------|----------------|
 | Open PR | GitHub / GitLab | Diff shows intent |
-| CI: PromQL / rule lint | `promtool check rules` | PrometheusRule validity |
+| CI: PromQL / rule lint | Extract `.spec`, then `promtool check rules` | Raw `groups` rule syntax and PromQL; validate the Kubernetes CRD separately |
 | CI: Collector config lint | `otelcol validate` | Collector YAML syntax and component graph |
 | CI: Jsonnet lint | `jsonnetfmt --test` | Grafonnet formatting |
 | CI: Dashboard lint | Grafana dashboard linter | Panel best practices (no orphan panels, datasource vars set) |
@@ -519,7 +541,7 @@ All observability changes flow through the same review gate as application code:
 | Merge → main | CI gate | All checks must pass |
 | CD apply | Argo CD / Flux | Reconciles to cluster; Argo CD marks Synced |
 
-Audit trail: git history is the authoritative change log. Cross-ref `signals/audit.md` for the WORM immutability requirement on audit logs generated from this pipeline.
+Audit trail: git history records reviewed configuration changes. Select access, integrity, and retention controls for the required evidence; see `signals/audit.md`. WORM is conditional on the approved obligation.
 
 ---
 
@@ -568,9 +590,10 @@ Never duplicate dashboard JSON per environment. Parameterize via variables; let 
 | Collector config unit test | Feed sample OTLP telemetry fixtures through `otelcol` in test mode | `otelcol_test` package; `file` exporter to assert output |
 
 ```yaml
-# promtool rule test — alerts/checkout_slo_test.yaml
+# promtool rule test — tests/checkout_slo_test.yaml
+# First extract the CRD .spec to the raw groups file referenced here.
 rule_files:
-  - checkout-slo-burn-rate.yaml
+  - ../rendered-rules/checkout-slo-burn-rate.yaml
 
 tests:
   - interval: 1m
@@ -586,6 +609,13 @@ tests:
           - exp_labels:
               severity: critical
               slo: checkout-availability
+            exp_annotations:
+              summary: "Checkout SLO fast burn above 14.4x"
+              description: >
+                Burn rate is 100 times the budget rate.
+                At 14.4x, a full 28-day budget lasts about 46.7 hours;
+                remaining-budget exhaustion depends on budget already spent.
+              runbook: "https://wiki.example.com/runbooks/checkout-slo-fast-burn"
 ```
 
 ---
@@ -616,7 +646,7 @@ Append to `anti-patterns.md §Section I: As-Code and GitOps`:
 | I-1 | Dashboards edited directly in Grafana UI | No rollback; peer review bypassed; drift from git within hours | All edits via PR; Grafana provisioning blocks UI edits (`allowUiUpdates: false`) |
 | I-2 | Alert rules without automated tests | False alarms or silent failures reach production undetected | Add `promtool test rules` fixtures to CI for every new alert |
 | I-3 | Secrets (API tokens, DSNs) committed in dashboard YAML or `values.yaml` | Credentials exposed in git history permanently | External Secrets Operator or Sealed Secrets; never inline |
-| I-4 | No CI validation for PrometheusRule or Collector config | Invalid YAML / broken PromQL deployed to production; alerts silently stop firing | `promtool check rules` + `otelcol validate` in CI gate |
+| I-4 | No CI validation for PrometheusRule or Collector config | Invalid YAML / broken PromQL deployed to production; alerts silently stop firing | Validate CRD schema, extract `.spec` for `promtool check rules`, and use `otelcol validate` with the selected Collector distribution |
 | I-5 | Environment-specific dashboards duplicated instead of parameterized | N copies of the same dashboard diverge; maintenance multiplied by N | Template variable `$env`; single parameterized source of truth |
 
 ---
@@ -631,7 +661,7 @@ Append to `anti-patterns.md §Section I: As-Code and GitOps`:
 | OTel Operator four deployment modes | `transport/collector-topology.md §1` |
 | Instrumentation CR for auto-injection | `layers/mesh.md §OTel Operator Instrumentation CR` |
 | Pipeline self-health alerts (meta) | `meta-observability.md §Section F` |
-| WORM immutability for audit trail | `signals/audit.md` |
+| Evidence-specific audit integrity and retention | `signals/audit.md` |
 | Progressive delivery (Flagger) | `boundaries/release.md` |
 | Anti-patterns full list | `anti-patterns.md` |
 

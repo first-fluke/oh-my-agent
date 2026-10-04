@@ -102,10 +102,11 @@ Design, review, optimize, and document SQL, NoSQL, vector, and retrieval-oriente
 - Optional spreadsheet or diagram artifacts when capacity or ERD output is requested
 
 ### Canonical workflow path
-```bash
-rg --files -g '*.sql' -g '*prisma*' -g '*schema*' -g '*migration*'
-rg "CREATE TABLE|model |index|foreign key|transaction|embedding|vector" .
-```
+Use the configured code-intelligence provider to locate files and inspect symbols
+or content. For Serena, use `find_file`, `search_for_pattern`,
+`get_symbols_overview`, and `find_symbol`. Native search is limited to the
+provider exclusions and non-code paths permitted by the project's search policy.
+
 
 Then run the project's migration, query-plan, or retrieval-quality commands only after identifying the database engine and migration tool.
 
@@ -132,11 +133,11 @@ Apply framework, library, architecture, and data-model defaults only when the ta
 2. For relational workloads, enforce at least **3NF** by default. Break 3NF only with explicit performance justification.
 3. For distributed/non-relational workloads, model around aggregates and access paths; document **BASE** and consistency tradeoffs.
 4. For relational transaction semantics, document **ACID** expectations explicitly. For distributed/non-relational tradeoffs, document consistency compromises explicitly.
-5. Always document the three schema layers: **external schema**, **conceptual schema**, **internal schema**.
+5. For full schema design, document external, conceptual and internal schema views. For a scoped index/query/model change, update only the affected existing views.
 6. Treat integrity as first-class: entity, domain, referential, and business-rule integrity must be explicit.
 7. Concurrency is never implicit: define transaction boundaries, locking strategy, and isolation level per critical flow.
-8. Data standards are mandatory: naming, definition, format, allowed values, and validation rules.
-9. Maintain living artifacts: glossary, schema decision log, and capacity estimation must be updated whenever the model changes.
+8. Apply existing data standards; add relevant naming, definition, format and validation rules for newly modeled data.
+9. Update affected existing glossary, decision and capacity artifacts when the change alters their assumptions. A query-only task does not require new modeling documents.
 10. Proactively flag anti-patterns and insecure shortcuts instead of silently implementing them.
 11. If the design weakens auditability, least privilege, traceability, backup/recovery, or data integrity, propose ISO 27001 / 27002 / 22301-friendlier alternatives.
 12. Vector DBs are retrieval infrastructure, not source-of-truth databases. Store embeddings and lightweight metadata there; keep canonical documents elsewhere.
@@ -159,9 +160,12 @@ Apply framework, library, architecture, and data-model defaults only when the ta
    - Validate 3NF or deliberate denormalization
    - Tune indexes, partitioning, archival strategy, hot/cold split, and backup plan
    - For vector systems, tune ANN, chunking, filtering, reranking, and observability as one pipeline
-   - Run anti-pattern review and update glossary and capacity estimation with every structural change
+   - Run the relevant anti-pattern review and update artifacts whose definitions or capacity assumptions changed
 
-### Required Deliverables
+### Deliverables by Scope
+For full modeling/design requests, use the following as applicable. Scoped tuning
+or migration work needs the relevant artifact delta, SQL/plan evidence and
+verification outcome; omit unaffected documents.
 - External schema summary by user/view/consumer
 - Conceptual schema with core entities or aggregates and relationships
 - Internal schema with physical storage, indexes, partitioning, and access paths

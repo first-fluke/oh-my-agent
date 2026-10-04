@@ -67,7 +67,7 @@ Use the relevant recovery steps. If required information or authority is missing
    - `Date.now()` or `Math.random()` in render
    - Browser-only APIs (`window`, `localStorage`) without `useEffect`
    - Conditional rendering based on client-only state
-3. Fix: wrap client-only code in `useEffect` + state, or use `'use client'`
+3. Fix: keep the server and first client render identical, then set browser-only state in `useEffect`; use a narrowly scoped `dynamic(..., { ssr: false })` boundary when rendering must be client-only
 4. If third-party component: wrap with `dynamic(() => import(...), { ssr: false })`
 
 ---
@@ -100,10 +100,10 @@ Use the relevant recovery steps. If required information or authority is missing
 
 **Symptoms**: `429`, `RESOURCE_EXHAUSTED`, `rate limit exceeded` (any vendor runtime: Claude, Codex, etc.)
 
-1. **Stop immediately**: do not make additional API calls
-2. Save current work to `progress-{agent-id}[-{sessionId}].md`
-3. Record Status: `quota_exceeded` in `result-{agent-id}[-{sessionId}].md`
-4. Specify remaining tasks
+1. Identify the source. An expected rate-limit response from the application under review is a test result, not an agent-provider quota failure.
+2. For provider quota exhaustion, stop affected provider calls and record the unavailable checks; continue independent authorized work when possible.
+3. Preserve injected session/task/run IDs and the claim path. Save progress/results under the configured memory base using the task/run-scoped names in `../../_shared/runtime/memory-protocol.md`.
+4. Use a valid claim status (`partial`, `blocked`, or `failed`) with the actual cause and unresolved work per `../../_shared/runtime/result-contract.md`; do not invent a `quota_exceeded` status.
 
 ---
 

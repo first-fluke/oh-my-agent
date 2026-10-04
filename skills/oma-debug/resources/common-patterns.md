@@ -208,9 +208,10 @@ useEffect(() => {
   <TodoItem key={todo.id} todo={todo} />
 ))}
 
-// If no ID, generate stable key
-{todos.map((todo, index) => (
-  <TodoItem key={`${todo.title}-${index}`} todo={todo} />
+// Without a server ID, assign clientId when the item is created and persist it.
+// Do not generate IDs during render.
+{todos.map(todo => (
+  <TodoItem key={todo.clientId} todo={todo} />
 ))}
 ```
 
@@ -731,5 +732,3 @@ flutter build apk --analyze-size
 7. **User testing** - Real users find real bugs
 
 ---
-
-**Remember**: The best bug is the one that never happens. Write defensive code, test thoroughly, and document lessons learned!

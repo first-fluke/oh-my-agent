@@ -44,7 +44,7 @@ Look for these, roughly in order:
 
 - **Sargability**: never wrap the indexed column in a function or cast in the predicate; move the transformation to the constant side (`created_at >= date '2026-01-01'`, not `date(created_at) = ...`)
 - **Keyset pagination** over `OFFSET`: `WHERE (created_at, id) < (?, ?) ORDER BY created_at DESC, id DESC LIMIT n`; OFFSET scans and discards everything it skips
-- **`OR` across different columns** often blocks index use: split into `UNION ALL` of index-friendly branches
+- **`OR` across different columns** often blocks index use: use a semantics-preserving `UNION` over row identity, or `UNION ALL` only when branches are provably disjoint (including NULL behavior) of index-friendly branches
 - **`EXISTS` vs `IN`**: prefer `EXISTS` for correlated membership checks against large subquery results
 - **Batch `IN` lists** instead of N+1 single-row queries from the application (see `oma-observability` DB span conventions for detecting N+1)
 - **Pre-aggregate** heavy repeated reporting queries into materialized/summary tables instead of tuning an inherently large scan

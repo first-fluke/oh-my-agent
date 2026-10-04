@@ -33,8 +33,11 @@ lsof -ti:8000  # API port
 lsof -ti:3000  # Web port
 lsof -ti:8080  # Mobile port
 
-# Kill processes
-lsof -ti:8000 | xargs kill -9
+# Inspect the owner and command before stopping a confirmed project process.
+lsof -nP -iTCP:8000 -sTCP:LISTEN
+# Set PROJECT_PID to the confirmed PID from that output.
+ps -p "$PROJECT_PID" -o pid,ppid,user,command
+kill -TERM "$PROJECT_PID" # escalate only if this same process does not stop
 ```
 
 ## Task Hangs
@@ -53,15 +56,12 @@ mise run install --yes
 ## Clean State
 
 ```bash
-# Stop all dev servers
-pkill -f "mise run"
-
-# Clean mise cache
-mise cache clear
-
-# Reinstall everything
-mise uninstall --all
-mise install
+# Stop this task with Ctrl-C in its terminal, or TERM its verified project PID.
+# Inspect the versions selected by this project before changing toolchains.
+mise ls --current
+# Repair only the confirmed tool/version, if needed and authorized.
+# Example: mise install node@<project-version>
+# Do not blanket-kill other mise tasks or uninstall the user's shared runtimes.
 ```
 
 ## Debug Configuration

@@ -1,6 +1,6 @@
-# Porter's 5 Forces — Analyst Prompt
+# Porter's Five Forces — Analyst Prompt
 
-You are filling the `## Porter's 5 Forces` section of an `oma market` brief.
+You are filling the `## Porter's Five Forces` section of an `oma market` brief.
 This framework applies when the topic is competitive positioning of a
 named subject (default for `intent=competitor`).
 
@@ -39,8 +39,10 @@ same need.
 
 - "I replaced X with Y" / "we don't need X anymore because Z"
   → High substitute threat.
-- No alternative discussion / users defend why this category is unique
-  → Low substitute threat.
+- Verified switching barriers or comparisons showing that substitutes do not
+  satisfy the same need → Low substitute threat, within the observed scope.
+- No discussion of alternatives → insufficient signal; absence of discussion
+  does not establish low threat.
 
 ### Industry rivalry
 

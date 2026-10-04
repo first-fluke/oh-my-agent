@@ -93,6 +93,8 @@ abstract interface class TodoRepository {
   /// Drift re-emits the stream automatically after each upsert, so the UI
   /// updates without any explicit refresh call.
   Stream<List<Todo>> watchAll();
+  /// Bypass TTL; complete only after the network result has been stored.
+  Future<void> refresh();
 
   /// Fetches a single todo by [id].
   ///
@@ -301,7 +303,7 @@ const Duration _kCacheTtl = Duration(minutes: 5);
 ///
 /// ## Reads (stale-while-revalidate)
 /// [watchAll] and [findById] emit the locally-cached Drift data first.
-/// A background revalidation is triggered whenever the cache is empty or
+/// Cold cache loads await the network and propagate failures. Warm revalidation runs when
 /// older than [_kCacheTtl]. After the network response is upserted into
 /// Drift, the DAO stream re-emits automatically — the UI updates without
 /// any explicit refresh call.
@@ -337,21 +339,20 @@ class TodoRepositoryImpl implements TodoRepository {
 
   @override
   Stream<List<Todo>> watchAll() async* {
-    // 1. Read the current cache snapshot to determine staleness.
     final snapshot = await _dao.watchAll().first;
     final now = DateTime.now();
-
-    // 2. Trigger background revalidation if cache is empty or stale.
-    // `ignore()` is intentional — failure is non-fatal when the cache is warm.
-    if (_isStaleOrEmpty(snapshot, now)) {
-      _revalidateAll(now).ignore();
+    if (snapshot.isEmpty) {
+      // Cold-cache failures must reach Riverpod's error state.
+      await refresh();
+    } else if (snapshot.any((row) => now.difference(row.cachedAt) > _kCacheTtl)) {
+      // Only warm-cache revalidation may degrade to the stale value.
+      refresh().ignore();
     }
-
-    // 3. Forward the live Drift stream; it re-emits after every upsert.
-    yield* _dao.watchAll().map(
-          (rows) => rows.map(_rowToEntity).toList(),
-        );
+    yield* _dao.watchAll().map((rows) => rows.map(_rowToEntity).toList());
   }
+
+  @override
+  Future<void> refresh() => _revalidateAll(DateTime.now());
 
   @override
   Future<Todo?> findById(int id) async {
@@ -422,17 +423,10 @@ class TodoRepositoryImpl implements TodoRepository {
   }
 
   Future<void> _revalidateAll(DateTime now) async {
-    try {
-      final dtos = await _remote.fetchAll();
-      // replaceAll (not upsertAll): mirror the full server list so rows the
-      // server deleted are removed instead of lingering as ghost rows.
-      await _dao.replaceAll(
-        dtos.map((dto) => _dtoToCompanion(dto, cachedAt: now)).toList(),
-      );
-    } catch (_) {
-      // Network failure is non-fatal when the cache is warm.
-      // The existing stream emission (stale data) stands silently.
-    }
+    final dtos = await _remote.fetchAll();
+    await _dao.replaceAll(
+      dtos.map((dto) => _dtoToCompanion(dto, cachedAt: now)).toList(),
+    );
   }
 
   Future<void> _revalidateById(int id, DateTime now) async {

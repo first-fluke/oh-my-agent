@@ -5,7 +5,7 @@ The parent SKILL.md owns classification and execution order. Load only the selec
 ### docs route
 1. Call Context7 `resolve-library-id` with the library/framework name
 2. If resolved: call `query-docs` with the library ID and query topic
-3. If NOT resolved: fall back to `web` route with notice to user
+3. If NOT resolved or empty: search the verified official documentation domain with notice, preserving the requested version and source constraints. A web retrieval tool does not broaden `--docs` to community sources.
 
 ### web route
 1. Use runtime native search tool (WebSearch, Google Search, Bing, etc.)

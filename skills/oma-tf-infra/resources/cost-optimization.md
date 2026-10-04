@@ -117,14 +117,7 @@ resource "aws_launch_template" "spot" {
   image_id      = data.aws_ami.amazon_linux.id
   instance_type = "t3.medium"
 
-  # Spot instance configuration
-  instance_market_options {
-    market_type = "spot"
-    spot_options {
-      max_price = "0.05"  # Maximum spot price willing to pay
-      spot_instance_type = "one-time"
-    }
-  }
+  # Mixed policy controls On-Demand/Spot distribution; omit InstanceMarketOptions.
 }
 
 resource "aws_autoscaling_group" "spot" {
@@ -136,11 +129,6 @@ resource "aws_autoscaling_group" "spot" {
   min_size         = 1
   max_size         = 10
   desired_capacity = 3
-
-  launch_template {
-    id      = aws_launch_template.spot.id
-    version = "$Latest"
-  }
 
   # Mixed instances policy for spot diversification
   mixed_instances_policy {
@@ -156,7 +144,7 @@ resource "aws_autoscaling_group" "spot" {
         instance_type = "t3a.medium"
       }
       override {
-        instance_type = "m5.medium"
+        instance_type = "m5.large"
       }
     }
 
@@ -234,7 +222,7 @@ resource "aws_autoscaling_schedule" "scale_down_evening" {
   min_size               = 1
   max_size               = 1
   desired_capacity       = 1
-  recurrence             = "0 20 * * MON-FRI"  # 8 PM weekdays
+  recurrence             = "0 20 * * MON-THU"  # Friday is handled by weekend_shutdown
   autoscaling_group_name = aws_autoscaling_group.app.name
 }
 
@@ -487,7 +475,7 @@ locals {
   common_labels = {
     environment = var.environment
     project     = var.project_name
-    owner       = var.team_email
+    owner       = var.team_label # validated lowercase label ID, not an email
     cost-center = var.cost_center
     managed-by  = "terraform"
   }
@@ -500,7 +488,7 @@ resource "google_compute_instance" "app" {
   labels = local.common_labels
 }
 
-# Export billing data to BigQuery for analysis
+# Budget alerts (configure BigQuery billing export separately)
 resource "google_billing_budget" "monthly" {
   billing_account = var.billing_account
   display_name    = "Monthly Budget"
@@ -513,10 +501,10 @@ resource "google_billing_budget" "monthly" {
   }
 
   threshold_rules {
-    threshold_percent = 50
+    threshold_percent = 0.5
   }
   threshold_rules {
-    threshold_percent = 90
+    threshold_percent = 0.9
   }
 }
 ```

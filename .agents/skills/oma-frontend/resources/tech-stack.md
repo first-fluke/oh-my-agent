@@ -12,8 +12,8 @@ These are defaults for new projects without an established stack. Preserve the t
 ## shadcn/ui Primitive Engine — Base UI vs Radix
 
 shadcn/ui ships on two interchangeable headless engines: **Radix UI** and **Base UI**
-(by the MUI team). Every component has parity docs/examples on both, and the public
-component API is identical — only the underlying primitive changes.
+(by the MUI team). They provide similar component categories, but primitive and
+wrapper APIs differ. Verify composition, props and accessibility before migration.
 
 ### How the engine is selected
 
@@ -42,9 +42,7 @@ Bootstrap with `npx shadcn create` (prompts for the engine) or `npx shadcn init`
 
 ### Project default: **Base UI**
 
-1. **New projects MUST default to Base UI** (`style: "base-*"`). Rationale: Radix slowed after
-   the WorkOS acquisition; Base UI is under active development with smaller bundles and is the
-   more future-proof bet. The API is identical, so there is no DX cost.
+1. For a new project without an engine choice, Base UI is an available default. Verify the components and integration required by the project.
 2. **Radix is an allowed fallback** — keep `radix-*` for an existing Radix codebase, or when a
    needed component is only stable on Radix. State the reason when choosing Radix.
 3. **Do NOT big-bang migrate** an existing project to Base UI just because it is the default.

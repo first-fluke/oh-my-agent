@@ -100,10 +100,11 @@ Implement or review backend APIs, authentication, database integration, server-s
 - Stack-specific templates and snippets when present
 
 ### Canonical workflow path
-```bash
-rg --files
-rg "route|router|service|repository|model|schema|migration" .
-```
+Use the configured code-intelligence provider to locate files and inspect symbols
+or content. For Serena, use `find_file`, `search_for_pattern`,
+`get_symbols_overview`, and `find_symbol`. Native search is limited to the
+provider exclusions and non-code paths permitted by the project's search policy.
+
 
 <!-- oma-docs:ignore-start -->
 Then run the project's discovered verification commands, usually lint/typecheck/tests and migrations when schema changes are involved. Prefer `stack/stack.yaml` `verify:` commands when present.
@@ -167,7 +168,7 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 8. **Explicit ORM loading strategy**: do not rely on default relation loading when query shape matters
 9. **Explicit transaction boundaries**: group one business operation into one request/service-scoped unit of work
 10. **Safe ORM lifecycle**: do not share mutable ORM session/entity manager/client objects across concurrent work unless the ORM explicitly supports it
-11. **Config from environment, with graceful fallback**: DB URLs, API keys, secrets, and feature flags come from env vars or secret managers; never hardcode in source. When integrating a third-party API (OpenAI, Anthropic, Stripe, etc.), write BOTH paths: (a) real call when the env key is present, (b) deterministic local fallback when absent, marked with `// TODO(oma-deferred): integrate <vendor> when key is provisioned`. Fallback-only leaves the spec unmet; real-call-only breaks demos when the key is missing
+11. **Validate required configuration**: DB URLs, API keys, secrets, and feature flags come from environment variables or secret managers. Missing credentials fail clearly in default and production modes. Deterministic fixtures require an explicitly selected test/demo mode; label simulated results and never treat simulated payment, authentication, mail, or other effects as completed real operations.
 12. **Stateless services**: no in-memory session or user state between requests; use external stores (DB, Redis, cache) for shared state
 13. **Backing services as resources**: DB, queue, cache, mail are swappable attached resources connected via config; Repository layer must not assume a specific instance
 
@@ -180,7 +181,7 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 ### Stack-Specific Reference
 
 <!-- oma-docs:ignore-start -->
-- **Stack manifest (SSOT)**: `stack/stack.yaml`: structured declaration (`language`, `framework`, `orm`) and `verify:` contract consumed by `oma verify backend`. Schema: `variants/stack.schema.json`.
+- **Stack manifest (SSOT)**: `stack/stack.yaml`: structured declaration (`language`, `framework`, `orm`) and `verify:` contract consumed by `oma verify agent backend`. Schema: `variants/stack.schema.json`.
 - Tech stack narrative: `stack/tech-stack.md`: human-readable reference only; `stack.yaml` wins on conflict.
 - Code snippets (copy-paste ready): `stack/snippets.md`
 - API template: `stack/api-template.*`

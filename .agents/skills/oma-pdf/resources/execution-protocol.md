@@ -2,7 +2,7 @@
 
 ## Step 0: Validate Input
 
-1. Read `config/pdf-config.yaml` for defaults (image output, struct tree, OCR languages, hybrid port, overwrite behavior); explicit user options override config values
+1. Read the `pdf:` section of `.agents/oma-config.yaml` first; use `config/pdf-config.yaml` only for unset keys (image output, struct tree, OCR languages, hybrid port, overwrite behavior). Explicit user options override both.
 2. Confirm the PDF file path exists
 3. Check file size (`wc -c` or `ls -lh`); warn if >100MB
 4. Determine output location:

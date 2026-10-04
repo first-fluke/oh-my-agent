@@ -51,8 +51,8 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 1. Resolve agent vendor routing and runtime dispatch path.
 2. Decompose request into priority-tiered tasks.
 3. For each task, classify into one or more `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`. Tasks that match no domain confidently inherit the union of their parent feature's tags.
-4. Build a per-task `exposed_skill_set` = skills whose name is in `domain_tags`. If `|exposed_skill_set| < 2` after classification, fall back to the full installed set (flat exposure) and record `exposure_fallback: true` in the task board.
-5. Create session memory and task board with `exposed_skill_set` and `exposure_fallback` per task.
+4. Select the references needed by each task. One confidently matched skill is sufficient; expand the set when classification is uncertain or a dependency requires another domain.
+5. Record selected domains, references, and any fallback reason in the task board. These are coordinator notes, not launcher-enforced exposure fields; use only reference/context controls supported by the active dispatch path.
 
 ### Scenes
 1. **PREPARE**: Plan, setup session ID, and initialize memory files.
@@ -66,7 +66,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 - If vendors differ or native path is unavailable, use fallback spawn.
 - If verify or QA fails, feed feedback back to the implementation agent.
 - If recovery limits are exceeded, preserve review history and return `partial` or `failed`; never force completion.
-- If a task's `exposed_skill_set` excludes a skill that a recovered failure indicates was needed, re-classify the task and re-dispatch with the expanded set rather than retrying against the original narrow set.
+- If recovery shows that a required domain reference was missing, update the task's reference selection without changing its frozen acceptance contract, and supply it through the supported context mechanism.
 
 ### Failure and recovery
 - Retry failed agents up to configured limits.
@@ -84,23 +84,23 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 |--------|---------------|----------|
 | Read config and task context | `READ` | oma config, routing, request |
 | Classify task into domain tags | `INFER` | task text vs each skill's `Intent signature` |
-| Compute exposed skill set | `SELECT` | intersection of domain tags and installed skills |
+| Select task references | `SELECT` | confident domain matches, dependencies, and supported context controls |
 | Select dispatch path | `SELECT` | Native vs fallback |
 | Write session state | `WRITE` | task board and memory files |
-| Spawn agents | `CALL_TOOL` | native CLI or `oma agent spawn` |
+| Spawn agents | `CALL_TOOL` | exposed native role-subagent tool or `oma agent spawn` |
 | Poll progress | `READ` | progress/result files |
 | Run verification | `CALL_TOOL` | `oma verify`, tests, QA |
 | Update retry state | `UPDATE_STATE` | loop counters and CD metrics |
 | Report final result | `NOTIFY` | compiled summary |
 
 ### Tools and instruments
-- Native CLI subagent dispatch, fallback spawn scripts, memory tools, verify script, QA agent
+- Exposed native role-subagent tools, fallback spawn scripts, memory tools, verify script, QA agent
 - Session metrics, prompt templates, task templates
 
 ### Canonical command path
 ```bash
 oma agent spawn <agent-type> <prompt-file> <session-id> --task-id <task.id> -w <workspace>
-oma verify <agent-type> --workspace <workspace> --json
+oma verify agent <agent-type> --workspace <workspace> --json
 ```
 
 When native runtime dispatch is available, prefer the runtime-specific native path listed in this skill before falling back to `oma agent spawn`.
@@ -128,13 +128,15 @@ When native runtime dispatch is available, prefer the runtime-specific native pa
 3. Otherwise fall back to `oma agent spawn`.
 4. Never exceed configured parallelism or the aggregate recovery budget. Ordinary retries and exploration hypotheses both consume it.
 5. Keep session state, task-board state, progress files, claims, and receipts aligned. Use the plan task ID on every spawn and native begin/finish path.
-6. Domain gating must be soft: prefer a narrower `exposed_skill_set`, but fall back to flat exposure when classification confidence is low rather than starving a task of a required specialist.
+6. Select references by task needs and confidence. Do not expand to all skills solely because one skill matches, or assume task-board metadata enforces runtime exposure.
 
 Current native executor paths:
 - Claude Code: Agent tool with `.claude/agents/{agent}.md` definitions (multiple Agent tool calls in one message run in parallel; results return synchronously — no polling)
 - OpenCode: native `task` tool with `subagent_type: {agent-id}`; do not use `oma agent spawn` for same-session OpenCode work because it will not appear as a native child task
-- Codex CLI: `codex exec "@agent ..."` using `.codex/agents/*.toml`
-- Gemini CLI: `gemini -p "@agent ..."` using `.gemini/agents/*.md`
+- Codex: use the current session's exposed native subagent tool with the resolved custom role from `.codex/agents/*.toml` when supported; otherwise use `oma agent spawn`.
+- Gemini: use the current session's exposed native role-subagent tool with the resolved role when supported; otherwise use `oma agent spawn`.
+
+`codex exec` and `gemini -p` start external CLI sessions. An `@agent` string in a prompt does not establish native dispatch or apply a custom-role contract.
 
 ### Configuration
 
@@ -145,7 +147,7 @@ Current native executor paths:
 | POLL_INTERVAL | 30s | Status check interval |
 | Turn guidance | role-specific | Checkpoint/resume signal, not a hard stop or approval boundary |
 
-These are workflow defaults. Resolve runtime/vendor settings from project configuration; do not depend on this skill's stale `config/cli-config.yaml` for runtime behavior.
+These are workflow defaults. Resolve model/vendor, parallelism, and budget settings from project configuration. `config/cli-config.yaml` supplies the vendor transport registry; it does not select the active vendor or override runtime execution settings.
 
 ### Memory Configuration
 
@@ -166,12 +168,12 @@ Memory provider and tool names are configurable via `.agents/mcp.json` (not the 
 
 ### Workflow Phases
 
-**PHASE 1 - Plan**: Analyze request -> decompose tasks -> generate session ID
-**PHASE 1.5 - Domain gate**: For each task, intersect `Intent signature` matches across installed skills to derive `exposed_skill_set`. Record `exposure_fallback: true` when the intersection is too small to be useful and the flat library is used instead.
-**PHASE 2 - Setup**: Create `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` (include `exposed_skill_set` per task)
-**PHASE 3 - Execute**: Spawn agents by priority tier (never exceed MAX_PARALLEL); inject only `exposed_skill_set` into each subagent's available specialist list
+**PHASE 1 - Plan**: Reuse the current valid plan or decompose the request; preserve injected session/task/run IDs.
+**PHASE 1.5 - References**: Select task references as described in Entry; record uncertainty and expansion reasons without assuming runtime enforcement.
+**PHASE 2 - Setup**: Create session/task-board artifacts with the current IDs and selected references.
+**PHASE 3 - Execute**: Dispatch ready tasks within MAX_PARALLEL using supported native or fallback context controls.
 **PHASE 4 - Monitor**: Poll every POLL_INTERVAL; handle completed/failed/crashed agents
-**PHASE 4.5 - Verify**: Run mechanical checks for every completed agent; run `oma verify {agent-type}` only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`; then run QA cross-review for every completed implementation
+**PHASE 4.5 - Verify**: Run mechanical checks for every completed agent; run `oma verify agent {agent-type}` only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`; then run QA cross-review for every completed implementation
 **PHASE 5 - Collect**: Read claims and run-scoped reports for plan tasks whose checks passed; compile summary without deleting evidence.
 
 ### Memory File Ownership
@@ -194,7 +196,7 @@ Agent completes work
     ↓
 [1] Mechanical Self-Check: lint, type-check, tests, diff scope
     ↓
-[2] Verify: For supported types, run `oma verify {agent-type} --workspace {workspace}`
+[2] Verify: For supported types, run `oma verify agent {agent-type} --workspace {workspace}`
     Unsupported (`db`, `refactor`, `architecture`, `tf-infra`, `docs`) → record SKIP and continue
     ↓ FAIL → Agent receives feedback, fixes, back to [1]
     ↓ PASS
@@ -220,7 +222,7 @@ Reason: Self-evaluation bias causes agents to consistently overrate their own ou
 
 **[2] Automated Verify**:
 ```bash
-oma verify {agent-type} --workspace {workspace} --json
+oma verify agent {agent-type} --workspace {workspace} --json
 ```
 - Run only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`.
 - For `db`, `refactor`, `architecture`, `tf-infra`, and `docs`, record that automated verify is unsupported and continue to QA cross-review after the mechanical checks.

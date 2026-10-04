@@ -118,6 +118,9 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     "attribute.repository" = "assertion.repository"
   }
 
+  # GitHub has a shared issuer: restrict tokens to your organization/repository.
+  # Prefer immutable numeric owner/repository IDs when configured by the project.
+  attribute_condition = "assertion.repository_owner == '${var.github_org}' && assertion.repository == '${var.github_repo}'"
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }

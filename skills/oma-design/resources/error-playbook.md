@@ -6,7 +6,7 @@
 
 **Fix**:
 1. Check contrast ratio with browser DevTools or axe
-2. For dark themes: use warm off-white (#f5f0eb) instead of pure white (#fff)
+2. Adjust foreground/background until the measured ratio meets the target; on a fixed dark background, replacing white with off-white lowers contrast
 3. Increase text opacity (text-white/60 → text-white/80)
 4. Darken or lighten background to increase contrast
 5. For colored backgrounds: use dark text or add a dark overlay
@@ -71,11 +71,10 @@
 **Symptom**: MCP tools not responding, authentication errors.
 
 **Fix**:
-1. Run `npx @_davideast/stitch-mcp doctor --verbose`
-2. Check API key validity or OAuth token expiry
-3. Verify API is enabled: `gcloud beta services mcp enable stitch.googleapis.com`
-4. For OAuth: re-authenticate with `npx @_davideast/stitch-mcp init`
-5. For API key: verify STITCH_API_KEY environment variable is set
+1. Follow the Troubleshooting section in `resources/stitch-integration.md`
+   for the official remote endpoint and the selected authentication method.
+2. Check the client's MCP status/logs, reconnect, and call `list_projects`
+   to verify the connection.
 
 **Fallback**: Proceed without Stitch; all workflow phases work standalone.
 

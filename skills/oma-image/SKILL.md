@@ -118,7 +118,7 @@ oma image generate --reference "<absolute-path>" --vendor codex "<prompt>"
 1. **Resolve the brief**: use supplied details and reasonable creative defaults. Ask only when a missing choice materially changes the requested result. Do not require approval of an expanded prompt when generation is already authorized.
 2. **Authentication-aware dispatch**: detect which vendor CLIs are available and run only those; with `--vendor all`, every requested vendor must be available (strict). Caveat: the `antigravity` health check verifies installation only (`agy --version`) — a signed-out agy passes health and fails at generate time with agy's own error.
 3. **Cost guardrail**: confirm before executing runs whose estimated cost is ≥ `$0.20` (configurable). `--yes` / `OMA_IMAGE_YES=1` bypass. Choose generation from the requested outcome, not keyword presence. **Non-interactive contexts** (agents, CI — no TTY on stdin): the CLI cannot prompt, so a run at/over the threshold exits 1 with a message naming `--yes`. Use `--dry-run` to estimate cost. Reuse an existing budget authorization; otherwise confirm the additional spend before re-running with `-y`.
-4. **Path safety**: output paths outside `$PWD` require `--allow-external-out`.
+4. **Path safety**: output paths outside `$PWD` require `--allow-external-output`.
 5. **Cancellable**: SIGINT/SIGTERM aborts in-flight provider calls and the orchestrator.
 6. **Deterministic outputs**: every run writes `manifest.json` next to the images for reproducibility.
 7. **Max `n` = 5**: wall-time bound.

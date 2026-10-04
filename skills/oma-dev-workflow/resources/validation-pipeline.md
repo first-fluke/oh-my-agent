@@ -1,367 +1,117 @@
 # Validation Pipeline
 
-Complete validation pipeline with local git hooks and CI/CD integration.
+Use the project's existing app commands. The examples name web, api and mobile;
+adapt that list to the repository. Shared packages, root configuration and unknown
+paths conservatively trigger every app. Build, package and install tasks remain
+subject to the execution policy.
 
-## Commitlint Configuration
+## Local hooks
 
-```json
-// commitlint.config.js
-module.exports = {
-  extends: ['@commitlint/config-conventional'],
-  rules: {
-    'type-enum': [
-      2,
-      'always',
-      ['feat', 'fix', 'perf', 'build', 'revert', 'docs', 'style', 'refactor', 'test', 'chore', 'ci', 'infra']
-    ],
-    'scope-enum': [
-      2,
-      'always',
-      ['web', 'api', 'mobile', 'worker', 'shared', 'infra', 'deps']
-    ]
-  }
-};
-```
-
-## Local Validation (Git Hooks)
-
-### Mise Hooks Setup
+Resolve the actual Git hooks directory so linked worktrees work. Preflight every
+destination before writing anything; keep existing hooks and integrate them
+through the project's chosen hook manager.
 
 ```toml
-# mise.toml
 [hooks]
 postinstall = '''
-  mkdir -p .git/hooks
-
-  # commit-msg hook
-  cat > .git/hooks/commit-msg <<'EOF'
+  hook_dir=$(git rev-parse --git-path hooks) || exit 1
+  for name in commit-msg pre-commit pre-push; do
+    if [ -e "$hook_dir/$name" ]; then
+      echo "Existing hook: $hook_dir/$name; integrate it instead of overwriting." >&2
+      exit 1
+    fi
+  done
+  mkdir -p "$hook_dir"
+  cat > "$hook_dir/commit-msg" <<'EOF'
 #!/bin/sh
 exec mise run git:commit-msg -- "$1"
 EOF
-  chmod +x .git/hooks/commit-msg
-
-  # pre-commit hook
-  cat > .git/hooks/pre-commit <<'EOF'
+  cat > "$hook_dir/pre-commit" <<'EOF'
 #!/bin/sh
 exec mise run git:pre-commit
 EOF
-  chmod +x .git/hooks/pre-commit
-
-  # pre-push hook
-  cat > .git/hooks/pre-push <<'EOF'
+  cat > "$hook_dir/pre-push" <<'EOF'
 #!/bin/sh
 exec mise run git:pre-push
 EOF
-  chmod +x .git/hooks/pre-push
+  chmod +x "$hook_dir/commit-msg" "$hook_dir/pre-commit" "$hook_dir/pre-push"
 '''
 ```
 
-### Git Hook Tasks
+A linked worktree can share these hooks with other worktrees. If the project uses
+core.hooksPath, use its existing installation process instead.
+
+Copy [affected-checks.py](affected-checks.py) to the project's
+`.mise/scripts/affected-checks.py`. It uses NUL-delimited Git paths and argv
+subprocess calls. App checks run against the working tree; staged paths select
+which apps to check. Do not run formatters that silently rewrite unstaged files.
 
 ```toml
 [tasks."git:commit-msg"]
-description = "Validate commit message using commitlint"
+description = "Validate a commit message"
 usage = 'arg "<file>"'
-run = "bunx @commitlint/cli@20 --edit $usage_file"
+run = 'bunx @commitlint/cli@20 --edit "$usage_file"'
 
 [tasks."git:pre-commit"]
-description = "Run lint on changed files"
-run = '''
-#!/usr/bin/env bash
-changed=$(git diff --cached --name-only)
-
-if echo "$changed" | grep -q "^apps/api/"; then
-    echo "[pre-commit] apps/api detected, running lint..."
-    mise run //apps/api:lint || exit 1
-fi
-
-if echo "$changed" | grep -q "^apps/web/"; then
-    echo "[pre-commit] apps/web detected, running lint..."
-    mise run //apps/web:lint || exit 1
-fi
-
-if echo "$changed" | grep -q "^apps/mobile/"; then
-    echo "[pre-commit] apps/mobile detected, running lint..."
-    mise run //apps/mobile:lint || exit 1
-fi
-'''
+description = "Lint apps affected by staged changes"
+run = "python3 .mise/scripts/affected-checks.py --staged --kind lint"
 
 [tasks."git:pre-push"]
-description = "Validate branch name and run tests"
-run = '''
-#!/usr/bin/env bash
-# Validate branch name
-bunx @gracefullight/validate-branch || exit 1
+description = "Test the complete branch change"
+# Set CHECK_BASE to this project's target branch. Missing/unavailable base runs all apps.
+run = 'python3 .mise/scripts/affected-checks.py --base "${CHECK_BASE:-origin/main}" --kind test'
 
-# Get changed files
-changed=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1)
+[tasks."lint:changed"]
+run = 'python3 .mise/scripts/affected-checks.py --base "${CHECK_BASE:-origin/main}" --kind lint'
 
-if echo "$changed" | grep -q "^apps/api/"; then
-    echo "[pre-push] apps/api detected, running test..."
-    mise run //apps/api:test || exit 1
-fi
+[tasks."test:changed"]
+run = 'python3 .mise/scripts/affected-checks.py --base "${CHECK_BASE:-origin/main}" --kind test'
 
-if echo "$changed" | grep -q "^apps/web/"; then
-    echo "[pre-push] apps/web detected, running test..."
-    mise run //apps/web:test || exit 1
-fi
-
-if echo "$changed" | grep -q "^apps/mobile/"; then
-    echo "[pre-push] apps/mobile detected, running test..."
-    mise run //apps/mobile:test || exit 1
-fi
-'''
+[tasks."validate:changed"]
+depends = ["lint:changed", "test:changed"]
 ```
 
-## CI/CD Validation (GitHub Actions)
+Use the PR target's merge base, not HEAD~1. A documentation-only final commit must
+not erase earlier feature changes from validation. Missing history must run
+conservative checks rather than report an empty affected set.
 
-### Full Workflow
+## CI
+
+Use full history and an explicit comparison base. The push before-SHA and PR
+base-SHA below are example event values; an unavailable/zero revision triggers
+all checks. Configure dependency provisioning using the repository's existing CI
+setup before these commands; this example does not install dependencies.
 
 ```yaml
-# .github/workflows/ci.yml
 name: CI
-
 on: [push, pull_request]
-
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-      - run: mise run install
-      - run: mise run lint
-      - run: mise run typecheck
-      - run: mise run test
-```
-
-### Change-Based Workflow
-
-```yaml
-# .github/workflows/ci.yml
-name: CI
-
-on: [push, pull_request]
-
-jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      web: ${{ steps.changes.outputs.web }}
-      api: ${{ steps.changes.outputs.api }}
-      mobile: ${{ steps.changes.outputs.mobile }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: changes
         with:
-          filters: |
-            web:
-              - 'apps/web/**'
-            api:
-              - 'apps/api/**'
-            mobile:
-              - 'apps/mobile/**'
-
-  lint-web:
-    needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.web == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+          fetch-depth: 0
       - uses: jdx/mise-action@v2
-      - run: mise run //apps/web:lint
-
-  lint-api:
-    needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.api == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-      - run: mise run //apps/api:lint
-
-  test-web:
-    needs: [detect-changes, lint-web]
-    if: ${{ needs.detect-changes.outputs.web == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-      - run: mise run //apps/web:test
+      # Insert the existing project dependency/cache setup here.
+      - name: Check affected apps
+        env:
+          CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          python3 .mise/scripts/affected-checks.py --base "$CHECK_BASE" --kind lint
+          python3 .mise/scripts/affected-checks.py --base "$CHECK_BASE" --kind test
+      # Use the project's existing typecheck command where applicable.
 ```
 
-## Reusable Tasks
+## Commit message configuration
 
-```toml
-# Root mise.toml
-[tasks."lint:changed"]
-description = "Lint only changed apps"
-run = '''
-#!/usr/bin/env bash
-changed_files=$(git diff --name-only HEAD~1)
-
-if echo "$changed_files" | grep -q "^apps/web/"; then
-  echo "→ Linting web..."
-  mise run //apps/web:lint || exit 1
-fi
-
-if echo "$changed_files" | grep -q "^apps/api/"; then
-  echo "→ Linting api..."
-  mise run //apps/api:lint || exit 1
-fi
-
-if echo "$changed_files" | grep -q "^apps/mobile/"; then
-  echo "→ Linting mobile..."
-  mise run //apps/mobile:lint || exit 1
-fi
-'''
-
-[tasks."test:changed"]
-description = "Test only changed apps"
-run = '''
-#!/usr/bin/env bash
-changed_files=$(git diff --name-only HEAD~1)
-
-if echo "$changed_files" | grep -q "^apps/web/"; then
-  echo "→ Testing web..."
-  mise run //apps/web:test || exit 1
-fi
-
-if echo "$changed_files" | grep -q "^apps/api/"; then
-  echo "→ Testing api..."
-  mise run //apps/api:test || exit 1
-fi
-
-if echo "$changed_files" | grep -q "^apps/mobile/"; then
-  echo "→ Testing mobile..."
-  mise run //apps/mobile:test || exit 1
-fi
-'''
-
-[tasks."validate:changed"]
-description = "Validate only changed apps"
-depends = ["lint:changed", "test:changed"]
-```
-
-## Complete Root mise.toml Example
-
-```toml
-# Required for //path:task monorepo syntax (top-level key, before any table)
-monorepo_root = true
-
-[monorepo]
-config_roots = ["apps/*", "packages/*"]
-
-[tools]
-node = "24"
-python = "3.12"
-flutter = "3"
-bun = "latest"
-
-[hooks]
-postinstall = '''
-  mkdir -p .git/hooks
-
-  cat > .git/hooks/commit-msg <<'EOF'
-#!/bin/sh
-exec mise run git:commit-msg -- "$1"
-EOF
-  chmod +x .git/hooks/commit-msg
-
-  cat > .git/hooks/pre-commit <<'EOF'
-#!/bin/sh
-exec mise run git:pre-commit
-EOF
-  chmod +x .git/hooks/pre-commit
-
-  cat > .git/hooks/pre-push <<'EOF'
-#!/bin/sh
-exec mise run git:pre-push
-EOF
-  chmod +x .git/hooks/pre-push
-'''
-
-[tasks.install]
-description = "Install dependencies for all apps"
-depends = ["//apps/api:install", "//apps/web:install", "//apps/mobile:install"]
-
-[tasks.dev]
-description = "Start all development services"
-depends = ["//apps/api:dev", "//apps/web:dev"]
-
-[tasks.lint]
-description = "Lint all apps"
-depends = ["//apps/api:lint", "//apps/web:lint", "//apps/mobile:lint"]
-
-[tasks.test]
-description = "Test all apps"
-depends = ["//apps/api:test", "//apps/web:test", "//apps/mobile:test"]
-
-[tasks."git:commit-msg"]
-description = "Validate commit message"
-usage = 'arg "<file>"'
-run = "bunx @commitlint/cli@20 --edit $usage_file"
-
-[tasks."git:pre-commit"]
-description = "Run lint on changed files"
-run = '''
-#!/usr/bin/env bash
-changed=$(git diff --cached --name-only)
-
-if echo "$changed" | grep -q "^apps/web/"; then
-    mise run //apps/web:lint || exit 1
-fi
-
-if echo "$changed" | grep -q "^apps/api/"; then
-    mise run //apps/api:lint || exit 1
-fi
-'''
-
-[tasks."git:pre-push"]
-description = "Run tests + branch validation"
-run = '''
-#!/usr/bin/env bash
-bunx @gracefullight/validate-branch || exit 1
-
-changed=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1)
-
-if echo "$changed" | grep -q "^apps/web/"; then
-    mise run //apps/web:test || exit 1
-fi
-
-if echo "$changed" | grep -q "^apps/api/"; then
-    mise run //apps/api:test || exit 1
-fi
-'''
-
-[tasks."lint:changed"]
-description = "Lint only changed apps"
-run = '''
-#!/usr/bin/env bash
-changed_files=$(git diff --name-only HEAD~1)
-
-if echo "$changed_files" | grep -q "^apps/web/"; then
-  mise run //apps/web:lint || exit 1
-fi
-
-if echo "$changed_files" | grep -q "^apps/api/"; then
-  mise run //apps/api:lint || exit 1
-fi
-'''
-
-[tasks."test:changed"]
-description = "Test only changed apps"
-run = '''
-#!/usr/bin/env bash
-changed_files=$(git diff --name-only HEAD~1)
-
-if echo "$changed_files" | grep -q "^apps/web/"; then
-  mise run //apps/web:test || exit 1
-fi
-
-if echo "$changed_files" | grep -q "^apps/api/"; then
-  mise run //apps/api:test || exit 1
-fi
-'''
+```javascript
+// commitlint.config.cjs — keep an existing project config when present.
+module.exports = {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'type-enum': [2, 'always', ['feat', 'fix', 'perf', 'build', 'revert', 'docs',
+                              'style', 'refactor', 'test', 'chore', 'ci', 'infra']],
+  },
+};
 ```

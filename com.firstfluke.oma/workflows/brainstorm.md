@@ -47,7 +47,9 @@ Do NOT proceed to Step 3 until you have a clear understanding of the user's inte
 
 ## Step 3: Propose Approaches
 
-Present **2-3 distinct approaches** to solve the problem.
+Present distinct viable approaches when a material choice remains unresolved.
+Usually two or three are enough; do not invent alternatives solely to meet a
+count or reopen a choice already settled by the user's request.
 
 ### Optional TRIZ-lite (contradiction problems only)
 
@@ -99,15 +101,15 @@ Then:
 | ... | ... | ... | ... |
 
 ## Recommendation
-**{X}** — {3–6 sentences: scenario + tradeoff + why structural fits}
+**{X}** — {scenario + tradeoff + why this option fits the goal and constraints}
 Questions that help choose: {1–2 optional prompts for the user}
 ```
 
 ### Approach rules
 
-- **Label each approach** as `tactical` (patch/workaround/quick win) or `structural` (root-cause/proper engineering).
+- If useful, label the scope as `tactical` (localized change) or `structural` (boundary or system change); the label is not a quality ranking.
 - Approaches must be **mechanistically distinct** when possible — not three intensities of the same knob.
-- **Engineering-first default:** the recommended approach MUST be `structural` — addressing the root cause with proper engineering. Deadline pressure, effort delta, and "we'll fix it properly later" are NOT valid grounds for recommending tactical. Recommending `tactical` is only allowed when the problem itself is genuinely throwaway scope (e.g., one-line config flip, deprecated module being removed). The tighter the deadline, the more important it is to do it right the first time.
+- Recommend the option that satisfies the goal and actual constraints. Compare correctness, effort, deadline, reversibility, operational cost, and residual risk; a small durable change may be sufficient. Do not rank an option higher solely because its scope is structural.
 
 Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
@@ -140,12 +142,12 @@ Groupthink and authority bias hide real gaps. A blind round, where each perspect
 
 **Procedure:**
 
-1. **Select 4-8 independent reviewer lenses** appropriate to the design domain. Examples:
+1. **Select relevant reviewer lenses in proportion to scope and risk**. Examples:
    - Software skill: backend, frontend, devops, security, QA, CTO, end-user, docs-writer
    - Infra skill: network, system, security, finops, SRE, compliance, CTO
    - Customize to the feature's stakeholder map.
 
-2. **Independent critique**: for each lens, produce 2-3 concrete criticisms of the Step 4 design without reference to other lenses' feedback. Cover missing items in their specialty, overlaps/redundancies, naming issues, implementation risks.
+2. **Independent critique**: each lens checks the Step 4 design without reference to other lenses' feedback. Report concrete supported gaps, including missing items, overlaps, or implementation risks; do not invent criticisms to fill a quota.
 
 3. **Consolidate and dedupe** into a unique issue list. Classify:
    - **Tier 1**: critical gap, must resolve before save

@@ -97,10 +97,11 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 - Lint, typecheck, tests, and browser inspection when applicable
 
 ### Canonical workflow path
-```bash
-rg --files
-rg "components/ui|shadcn|use client|generateMetadata|useQuery|i18n|design-tokens" .
-```
+Use the configured code-intelligence provider to locate files and inspect symbols
+or content. For Serena, use `find_file`, `search_for_pattern`,
+`get_symbols_overview`, and `find_symbol`. Native search is limited to the
+provider exclusions and non-code paths permitted by the project's search policy.
+
 
 Then run the project's frontend verification commands, typically lint, typecheck, tests, and browser/responsive checks when the UI changes.
 
@@ -130,7 +131,7 @@ Apply framework, library, architecture, and data-model defaults only when the ta
 5. Run the execution checklist before handoff and include relevant verification results.
 6. **Self-describing file names**: every new file follows the File Naming convention in `../../rules/frontend.md` §Naming Conventions — domain + role readable from the basename alone (`order-summary-card.tsx`, `use-order-polling.ts`, `cart.atoms.ts`). Grab-bag names (`utils.ts`, `helpers.ts`, `misc.ts`) and version suffixes (`*-v2`, `*-final`) are banned.
 7. **Request proxy convention**: when the target project uses Next.js 16+ with `proxy.ts`, preserve that convention. Check the installed framework version and routing before recommending a file rename. Diagnose wiring from code and tests.
-8. **`next/link` defaults to `prefetch={false}`**: every `<Link>` MUST pass `prefetch={false}` unless there is a stated reason not to. Next.js's default prefetching fires a request per link entering the viewport, which hammers container CPU/memory and origin bandwidth on list-heavy or nav-heavy pages. Opt back in (`prefetch` omitted, or `prefetch` / `prefetch="unstable_forceStale"`) ONLY for a small, deliberate set of high-intent targets (primary CTA, next step in a funnel), and note the reason inline. A `<Link>` without an explicit prefetch decision fails review.
+8. Use the project's Link prefetch policy; adjust specific routes only when measured behavior or the task requires it.
 9. **Angular projects follow `resources/angular-rules.md`**: standalone components + `OnPush` + signals-first, `inject()` DI, lazy routes, new control flow. **Any non-trivial RxJS pipeline MUST ship with a marble test (`TestScheduler` from `rxjs/testing`)** — a stream without a marble test fails review. React/Next.js-specific rules (shadcn workflow, `proxy.ts`, Libraries table below) do not apply in Angular projects.
 
 ### Libraries

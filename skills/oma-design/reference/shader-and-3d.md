@@ -64,7 +64,9 @@ Lightweight alternative to Three.js for 2D shader effects:
 import { Renderer, Camera, Program, Mesh, Triangle } from "ogl"
 
 useEffect(() => {
-  const renderer = new Renderer({ canvas: canvasRef.current, alpha: true })
+  const canvas = canvasRef.current
+  if (!canvas) return
+  const renderer = new Renderer({ canvas, alpha: true })
   const gl = renderer.gl
   const camera = new Camera(gl)
 
@@ -80,12 +82,21 @@ useEffect(() => {
 
   const mesh = new Mesh(gl, { geometry, program })
 
+  let frame = 0
+  let disposed = false
   function animate(t) {
+    if (disposed) return
     program.uniforms.uTime.value = t * 0.001
     renderer.render({ scene: mesh, camera })
-    requestAnimationFrame(animate)
+    frame = requestAnimationFrame(animate)
   }
-  requestAnimationFrame(animate)
+  frame = requestAnimationFrame(animate)
+  return () => {
+    disposed = true
+    cancelAnimationFrame(frame)
+    geometry.remove()
+    program.remove()
+  }
 }, [])
 ```
 
@@ -94,7 +105,9 @@ useEffect(() => {
 ```tsx
 useEffect(() => {
   const canvas = canvasRef.current
+  if (!canvas) return
   const ctx = canvas.getContext("2d")
+  if (!ctx) return
   const particles = Array.from({ length: 100 }, () => ({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
@@ -103,7 +116,10 @@ useEffect(() => {
     size: Math.random() * 2 + 1
   }))
 
+  let frame = 0
+  let disposed = false
   function animate() {
+    if (disposed) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     particles.forEach(p => {
       p.x += p.vx
@@ -119,9 +135,14 @@ useEffect(() => {
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
       ctx.fill()
     })
-    requestAnimationFrame(animate)
+    frame = requestAnimationFrame(animate)
   }
-  animate()
+  frame = requestAnimationFrame(animate)
+  return () => {
+    disposed = true
+    cancelAnimationFrame(frame)
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  }
 }, [])
 ```
 
@@ -147,17 +168,15 @@ useEffect(() => {
 - Test on actual mobile devices (not just browser responsive mode)
 
 ### Memory Management
-```tsx
-useEffect(() => {
-  return () => {
-    // Clean up on unmount
-    geometry.dispose()
-    material.dispose()
-    texture.dispose()
-    renderer.dispose()
-  }
-}, [])
-```
+
+Keep resource creation and cleanup in the same effect. Cancel the latest animation
+frame before releasing resources, including when React reruns an effect in development.
+OGL uses `geometry.remove()` and `program.remove()`; Three.js uses `dispose()` on
+owned geometries, materials, textures, and renderers. Do not dispose shared resources
+still in use by another component.
+
+For the OGL methods, see the upstream [Geometry](https://github.com/oframe/ogl/blob/master/src/core/Geometry.js)
+and [Program](https://github.com/oframe/ogl/blob/master/src/core/Program.js) implementations.
 
 ## Anti-Patterns
 - DON'T: Use Three.js for simple gradient animations (use CSS)

@@ -37,7 +37,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Check applicable items in `resources/checklist.md`
 - Use `../../_shared/core/common-checklist.md` only for cross-domain verification
 - For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../../_shared/core/test-approach.md`
-- Test on both iOS and Android (or emulators)
+- Verify supported target platforms; native Swift iOS does not require Android checks. Respect the build policy when selecting tests.
 - Verify 60fps performance (no jank)
 - Check dark mode support
 

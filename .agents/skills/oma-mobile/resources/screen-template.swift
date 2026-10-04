@@ -50,8 +50,8 @@ final class ExampleViewModel {
     // MARK: - Private
 
     private let service: ExampleServiceProtocol
-    /// Retained so it can be cancelled before re-triggering a load, and so tests can
-    /// `await viewModel.loadTask?.value` instead of sleeping.
+    /// Retained so a new load or view disappearance can cancel active work.
+    /// Tests await load() directly.
     private(set) var loadTask: Task<Void, Never>?
 
     init(service: ExampleServiceProtocol) {
@@ -61,12 +61,12 @@ final class ExampleViewModel {
     // MARK: - Intents (called by the View)
 
     /// Starts (or restarts) data loading. Safe to call multiple times.
-    func load() {
+    func load() async {
         // Cancel any in-flight request before starting a fresh one.
         loadTask?.cancel()
         viewState = .loading
 
-        loadTask = Task { [weak self] in
+        let task = Task { [weak self] in
             guard let self else { return }
             do {
                 let items = try await service.fetchItems()
@@ -75,23 +75,24 @@ final class ExampleViewModel {
             } catch is CancellationError {
                 // Ignore — another load is replacing this one.
             } catch {
+                guard !Task.isCancelled else { return }
                 viewState = .error(error.localizedDescription)
             }
+        }
+        loadTask = task
+        await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
         }
     }
 
     /// Convenience retry; identical to load() but named for the error-state button.
-    func retry() { load() }
+    func retry() async { await load() }
 
-    /// Cancel the in-flight load explicitly. `.task` already cancels its structured
-    /// child on view disappear; this only stops the unstructured `loadTask` sooner.
+    /// Cancels button/retry loads too; awaited .task forwards caller cancellation.
     func cancelLoad() { loadTask?.cancel() }
 
-    // Pitfall — do NOT cancel in `deinit`. A `deinit` is nonisolated under Swift 6
-    // strict concurrency, so it cannot touch `@MainActor`-isolated state like
-    // `loadTask` (isolated deinit / SE-0371 landed only in Swift 6.2). It is moot
-    // anyway: the `Task { [weak self] }` captures `self` weakly, so `deinit` cannot
-    // fire while a load is in flight. Rely on `.task`'s auto-cancel on disappear.
 }
 
 // MARK: - View
@@ -101,7 +102,7 @@ struct ExampleScreen: View {
     @State private var viewModel: ExampleViewModel
 
     init(service: ExampleServiceProtocol) {
-        // Wrap in State so @Observable tracking works correctly in SwiftUI.
+        // State owns the instance lifetime; Observation tracks accessed properties.
         _viewModel = State(wrappedValue: ExampleViewModel(service: service))
     }
 
@@ -115,7 +116,7 @@ struct ExampleScreen: View {
                 // is formally deprecated at iOS 27.
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        viewModel.load()
+                        Task { await viewModel.load() }
                     } label: {
                         Label("Refresh", systemImage: "arrow.clockwise")
                     }
@@ -128,7 +129,8 @@ struct ExampleScreen: View {
             }
             // .task is preferred over .onAppear for async work:
             // it creates a structured Task that is cancelled when the View disappears.
-            .task { viewModel.load() }
+            .task { await viewModel.load() }
+            .onDisappear { viewModel.cancelLoad() }
     }
 
     // MARK: - Content switch
@@ -178,7 +180,7 @@ struct ExampleScreen: View {
             }
         }
         // Pull-to-refresh triggers a fresh load.
-        .refreshable { viewModel.load() }
+        .refreshable { await viewModel.load() }
     }
 
     /// Shown when the API returns an empty collection.
@@ -208,7 +210,7 @@ struct ExampleScreen: View {
                 .padding(.horizontal, 32)
 
             Button {
-                viewModel.retry()
+                Task { await viewModel.retry() }
             } label: {
                 Label("Try Again", systemImage: "arrow.clockwise")
                     .padding(.horizontal, 8)

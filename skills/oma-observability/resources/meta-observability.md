@@ -139,18 +139,34 @@ Fluent Bit exposes its own Prometheus metrics at `:2020/api/v1/metrics/prometheu
 - `fluentbit_output_proc_records_total`: records successfully processed per output plugin
 - `fluentbit_output_errors_total`: output failures
 
-### A6. Golden Signal: End-to-End Delivery Ratio
+### A6. End-to-End Delivery Checks
 
-The single most important pipeline health metric:
+Do not divide global exporter-sent spans by global receiver-accepted spans to
+estimate delivery. Sampling and filters intentionally remove spans; fan-out and
+multiple Collector hops can count a span several times. Queueing also shifts
+the accounting windows. Diagnose each pipeline/hop separately using receiver
+refusals, exporter failures, queue depth, and expected post-policy volume.
+Collector counters alone do not establish backend ingestion.
+
+Implement an end-to-end synthetic probe: send identifiable traces expected to
+be retained under the configured policy, query the selected backend after its
+ingestion deadline, and record each completed check once. The following is a
+**team-implemented metric**, not a Collector default:
+`telemetry_probe_completed_total{pipeline="...",result="delivered|missing"}`.
+Keep pipeline labels bounded and initialize both result counters to zero for
+each pipeline, so an all-missing population still has a delivered=0 series.
+Count only completed checks in both numerator
+and denominator so ingestion lag does not compare different populations.
 
 ```promql
-# Delivery ratio for traces (1.0 = 100% delivered)
-sum(rate(otelcol_exporter_sent_spans[5m]))
+sum by (pipeline) (rate(telemetry_probe_completed_total{result="delivered"}[5m]))
   /
-sum(rate(otelcol_receiver_accepted_spans[5m]))
+(sum by (pipeline) (rate(telemetry_probe_completed_total[5m])) > 0)
 ```
 
-Alert when this ratio drops below 0.99 for 5 minutes (see Section F, Alert 1).
+Set the probe deadline, volume, and threshold for the selected pipeline; 99%
+below is an example target. Verify sampling expectations and query permissions
+before enabling the alert. Missing probe runs need a separate job-health check.
 
 ---
 
@@ -162,11 +178,12 @@ Distributed traces use wall-clock timestamps from the node where each span is re
 If two nodes have diverging clocks, the waterfall view in any tracing backend will show:
 
 - A child span appearing to start before its parent span started.
-- A child span ending after its parent span ended (`child.end_time > parent.end_time`).
 - Negative durations on synthetic computed spans.
 
-These are not code bugs. They are clock-drift artifacts. Engineers chase phantom race conditions
-or assume broken instrumentation, losing hours of incident investigation time.
+These patterns warrant investigation, not an automatic clock-drift verdict.
+An asynchronous child can legitimately outlive its parent; ending the parent
+does not end its children. Compare measured host offsets and operation semantics
+before attributing suspicious cross-host ordering to clocks.
 
 Typical NTP accuracy on well-connected cloud VMs: < 50 ms. On baremetal with good NTP: < 10 ms.
 PTP (IEEE 1588) achieves sub-millisecond accuracy for financial and telco workloads.
@@ -194,32 +211,16 @@ For sub-millisecond requirements (financial trading, high-frequency event proces
 use **PTP (IEEE 1588)** with hardware timestamping. Cloud support varies; AWS supports PTP on
 Nitro instances via the Amazon Time Sync Service; verify availability before committing.
 
-### B3. Span-Level Drift Detection
+### B3. Span Timestamp Diagnostics
 
-Flag spans where the child-ends-after-parent invariant is violated:
+Validate each span's own start/end ordering and compare suspicious cross-host
+timestamps with measured NTP/PTP offsets. The Trace API does not require child
+intervals to be contained in parent intervals. Do not emit a clock violation
+merely because a child ends later, and do not use nonexistent OTTL parent-time
+fields as an executable Collector rule. Backend diagnostics need the operation's
+actual synchronous/asynchronous semantics to classify timestamp evidence.
 
-```promql
-# PromQL: no native span-level metric; implement as a Collector transform rule
-# In otelcol, use the transform processor to emit a counter on violation:
-# counter: otelcol_span_clock_violation_total{service="...", direction="child_outlives_parent"}
-```
-
-OTel Collector `transform` processor example (append to spans pipeline):
-
-```yaml
-processors:
-  transform/clock_check:
-    error_mode: ignore
-    trace_statements:
-      - context: span
-        statements:
-          - set(attributes["clock.violation"], true)
-              where IsRootSpan() == false
-              and end_time > parent_end_time   # pseudo-field; requires OTTL extension
-```
-
-Until native OTTL parent-time access is stable, implement this check in your tracing backend's
-query layer (e.g., Tempo TraceQL, Jaeger query API) as a periodic job that emits a metric.
+Source: <https://opentelemetry.io/docs/specs/otel/trace/api/>.
 
 ### B4. chrony Offset Metric
 
@@ -337,7 +338,7 @@ and under what storage class. Failing to set explicit retention leads to either:
 |---|---|---|---|
 | Metrics | 15d full-res | 90d @ 5m resolution | 2y @ 1h resolution |
 | Logs (operational) | 7d | 30d | 90d |
-| Logs (audit; SOC2/ISO 27001) | 90d | 1y | **7y WORM** |
+| Logs (audit) | Per-class approved schedule | Per-class approved schedule | Tamper protection; WORM if required |
 | Traces (sampled, tail-based) | 30d | N/A | N/A |
 | Traces (full 100% sample) | 3d | N/A | N/A |
 | Profiles | 14d | N/A | N/A |
@@ -354,12 +355,14 @@ capacity planning without raw-data storage cost.
 within days of generation. 30d aggregated (e.g., error-count rollups) covers sprint-level
 incident retrospectives. 90d archive is a common compliance floor for operational data.
 
-**Logs (audit, 90d / 1y / 7y WORM)**: SOC2 Type II requires audit evidence covering the audit
-period (typically 1y). ISO 27001 Annex A.12.4 requires log retention that satisfies legal and
-regulatory requirements. GDPR Article 17 right-to-erasure does not apply to audit logs where
-retention is required by another legal obligation (recital 65). 7-year WORM aligns with
-financial audit requirements (e.g., SOX) and is the safe upper bound.
-Cross-ref: `signals/audit.md` for WORM immutability requirements and hash-chain tamper evidence.
+**Logs (audit)**: document the applicable obligation and purpose for each
+record class, then select retention and tamper-protection controls. There is no
+universal seven-year WORM minimum across SOC 2, ISO 27001, PCI DSS, and HIPAA.
+HIPAA's six-year requirement covers required security documentation, not every
+raw audit event. Personal audit data still requires a lawful purpose and
+eligible erasure, subject to GDPR Article 17(3) exceptions such as a legal
+obligation or legal claims. A longer lock is not automatically safer.
+Cross-ref: `signals/audit.md` for evidence-specific retention and integrity.
 
 **Traces (sampled, 30d)**: Sampled traces (tail-based, typically 1-10% of production traffic)
 are the primary debugging artifact. 30d covers cross-sprint incident investigations. No
@@ -395,7 +398,7 @@ compactor:
   retention_delete_delay: 2h
 
 # Stream-level policy in ruler or via label matchers:
-# {log_type="audit"} → 61320h (7y)
+# {log_type="audit"} → approved per-class period, with hold/erasure rules
 # {log_type="operational"} → 2160h (90d)
 # {log_type="debug"} → 168h (7d)
 ```
@@ -458,32 +461,26 @@ Cross-ref: `resources/anti-patterns.md §Section C Pipeline` for pipeline anti-p
 These five alerts MUST be in place before any other observability alerting is considered
 reliable. Without them, you cannot trust your alerts.
 
-**Alert 1; Pipeline delivery ratio below threshold**
+**Alert 1; Synthetic pipeline delivery below the selected target**
 
-```promql
-# otelcol_pipeline_delivery_ratio — traces
-(
-  sum(rate(otelcol_exporter_sent_spans[5m]))
-  /
-  sum(rate(otelcol_receiver_accepted_spans[5m]))
-) < 0.99
-```
+Requires the team-implemented completed-probe metric defined in A6; this is not
+a ratio of default Collector receiver/exporter counters.
 
 ```yaml
-# PrometheusRule CRD
-- alert: OtelcolDeliveryRatioBelowThreshold
+# Alert rule entry within a PrometheusRule.spec.groups[].rules[] list
+- alert: TelemetryProbeDeliveryBelowTarget
   expr: |
     (
-      sum(rate(otelcol_exporter_sent_spans[5m]))
+      sum by (pipeline) (rate(telemetry_probe_completed_total{result="delivered"}[5m]))
       /
-      (sum(rate(otelcol_receiver_accepted_spans[5m])) > 0)
+      (sum by (pipeline) (rate(telemetry_probe_completed_total[5m])) > 0)
     ) < 0.99
   for: 5m
   labels:
     severity: critical
   annotations:
-    summary: "OTel Collector trace delivery ratio below 99%"
-    description: "{{ $value | humanizePercentage }} of accepted spans are being delivered. Check exporter errors and backpressure queue."
+    summary: "Synthetic telemetry delivery below the selected 99% target"
+    description: "Inspect completed probes, configured sampling, backend ingestion, exporter errors, and queues."
 ```
 
 **Alert 2; Exporter send failures above 1%**
@@ -542,17 +539,20 @@ reliable. Without them, you cannot trust your alerts.
 **Alert 5; Audit log retention policy violation**
 
 This alert cannot be expressed in PromQL alone; implement it as a scheduled policy check in
-your compliance tooling or as a metric emitted by a retention audit job:
+your compliance tooling. The metric below must be implemented by that job;
+it is not automatically emitted by a storage backend or Collector. Check
+both premature expiry and unjustified over-retention against the approved
+record-class policy, and monitor job freshness separately:
 
 ```yaml
 - alert: AuditLogRetentionViolation
-  expr: audit_log_retention_days{log_type="audit"} < 2555   # 7 years = 2555 days
+  expr: audit_log_retention_compliant{log_type="audit"} == 0 # custom policy-check job: 1=compliant, 0=violation
   for: 1h
   labels:
     severity: critical
   annotations:
-    summary: "Audit log retention is below the 7-year WORM requirement"
-    description: "Verify S3 Object Lock / GCS Object Hold policy on audit log bucket. Cross-ref signals/audit.md."
+    summary: "Audit retention violates the approved record-class policy"
+    description: "Check the applicable schedule, lock/lifecycle controls, eligible erasure, and legal holds. Cross-ref signals/audit.md."
 ```
 
 ### F2. Grafana Dashboard Blueprint

@@ -1,13 +1,16 @@
-# Knows Sidecar Spec: Generation Rules (v0.9.0)
+# Knows Sidecar: Local Production Compatibility Rules (v0.9.0)
 
-This is the v0.9.0 record shape verified against `knows.academy` production sidecars
-(JSON Schema id: `https://knows.dev/schema/record-0.9.json`, profile `paper@1`).
-For the upstream natural-language description see `upstream-spec-cache.md`.
+These generation rules describe observed `knows.academy` production shapes and
+the narrower local `oma scholar lint` contract. They are not a complete
+canonical JSON Schema validator. `upstream-spec-cache.md` records the upstream
+snapshot, which also permits author objects, imported provenance, and normative
+modality. Preserve those shapes in imported records and report local-lint
+incompatibilities instead of erasing information. Set `$schema` only after
+validation against that exact schema; a clean local lint is insufficient.
 
-## Top-level Structure (paper@1 profile)
+## Local Generation Structure (paper@1 production compatibility)
 
 ```yaml
-$schema: "https://knows.dev/schema/record-0.9.json"
 knows_version: "0.9.0"
 record_id: "knows:generated/{slug}/1.0.0"   # only for published records; omit for local drafts
 profile: "paper@1"
@@ -183,7 +186,7 @@ flag them as dangling:
 | Provenance attribution | `provenance.actor` (single object) | `provenance.actors` (array) |
 | Confidence | object with `claim_strength` + `extraction_fidelity` | bare string |
 
-## Value Constraints
+## Local Generation Values (Not the Complete Canonical Enums)
 
 | Field | Allowed values |
 |-------|----------------|
@@ -230,7 +233,7 @@ Applies to: `doi`, `venue`, `year`, ORCIDs, GitHub URLs, dataset URLs.
 
 Exception: backfilling `doi`/`venue`/`year` from **OpenAlex metadata enrichment**
 (Generate Step 4) is allowed — that is a curated external source, not fabrication.
-Only placeholders and invented values are forbidden.
+Verify paper identity before using catalog metadata; title-search rank alone is insufficient. Omit ambiguous fields.
 
 ## ID Format
 
@@ -296,7 +299,10 @@ predicate: challenged_by
 
 ## Relation Wiring (CRITICAL)
 
-Average **≥1.5 relations per statement**. Minimum patterns:
+The average-ratio target **1.5** is a lint diagnostic. Add only source-supported
+relations appropriate to each statement type; do not invent links to satisfy
+a quota. Source-anchored questions or definitions need not assert empirical
+support. Common patterns:
 
 | Subject | Predicate | Object |
 |---------|-----------|--------|

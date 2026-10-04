@@ -10,25 +10,25 @@ tools:
 
 Audit trails answer **who did what when**; immutable evidence for compliance, legal hold, and forensic investigation. They are a distinct signal from both operational logs (`logs.md`) and privacy records (`privacy.md`).
 
-### Mutability model: the deliberate opposite of privacy
+### Integrity and privacy requirements
 
 | Dimension        | Audit                                  | Privacy                                |
 |------------------|----------------------------------------|----------------------------------------|
-| Retention goal   | Append-only, immutable, 7y+ minimum    | Collect less, delete on request (GDPR Art. 17) |
-| Storage model    | WORM; cannot be deleted or modified   | Erasable; must honour right to erasure |
+| Retention goal   | Preserve required evidence for the applicable schedule | Minimize collection and assess erasure grounds/exceptions |
+| Storage model    | Tamper protection; WORM when required by the selected control | Controls that honor eligible erasure and justified retention |
 | Consumers        | Auditors, legal, compliance officers   | Data subjects, DPO, engineering |
-| Default posture  | Keep everything, forever               | Keep nothing, unless justified |
+| Default posture  | Collect necessary evidence; expire under a justified schedule | Collect only justified personal data |
 
-This is why audit and privacy are separate files in this skill (design decision D5). Merging them would create contradictory retention requirements in a single data store.
+Audit and privacy are separate concerns, but both apply to personal data in an audit trail. Specify the legal basis, required evidence, access controls, retention period, and erasure exceptions together.
 
 ### Distinction from operational logs (`logs.md`)
 
 | Dimension       | Operational logs                    | Audit events                           |
 |-----------------|-------------------------------------|----------------------------------------|
-| Retention       | 7–90 days hot                       | 7 years, tiered (Section 7)           |
+| Retention       | Purpose-specific operational schedule | Law/contract/evidence-specific schedule (Section 7) |
 | Consumers       | On-call engineers, SRE              | Auditors, legal, compliance            |
-| Mutability      | May be rotated and purged           | WORM; immutable after write           |
-| Storage         | Loki / Elasticsearch / ClickHouse   | WORM object store + compliance appliance |
+| Mutability      | May be rotated and purged           | Protected against unauthorized alteration; WORM when required |
+| Storage         | Loki / Elasticsearch / ClickHouse   | Access-controlled evidence store with selected integrity/retention controls |
 | Primary tools   | Fluent Bit, OTel Collector          | Falco, auditd, pgaudit, audit pipeline |
 
 Cross-ref `../meta-observability.md §Retention Matrix` for unified policy across all signals.
@@ -39,10 +39,10 @@ Cross-ref `../meta-observability.md §Retention Matrix` for unified policy acros
 
 | Framework | Relevant controls | Audit requirement |
 |-----------|-------------------|-------------------|
-| **SOC 2 (Type I/II)** | CC7.2 monitoring activities; CC7.3 incident response | Immutable audit trail; tamper evidence; access review |
-| **ISO/IEC 27001:2022** | A.8.15 logging; A.8.16 monitoring; A.5.25 audit logging | Log protection, log administrator access control |
+| **SOC 2 (Type I/II)** | CC7.2 monitoring activities; CC7.3 incident response | Evidence supporting the selected monitoring/response controls; scope and protection depend on the engagement |
+| **ISO/IEC 27001:2022** | A.8.15 logging; A.8.16 monitoring | Log protection, log administrator access control |
 | **ISO/IEC 27002:2022** | 8.15 logging controls | Protect logs from tampering and unauthorized access |
-| **HIPAA Security Rule** | §164.312(b) audit controls | Audit logs retained ≥ 6 years |
+| **HIPAA Security Rule** | §164.312(b) audit controls; §164.316(b) documentation | Audit mechanisms for ePHI; retain required security documentation for 6 years, not a blanket 6-year rule for every raw log |
 | **PCI DSS v4.0** | Requirement 10; track and monitor all access to cardholder data | 1 year online + offline retention; tamper detection |
 | **GDPR Art. 30** | Records of processing activities | Audit of data processing operations |
 
@@ -101,7 +101,7 @@ Every audit event MUST carry these fields. Map to OTel `security.*` semconv name
 
 ## 5. Immutable WORM Storage (Write-Once-Read-Many)
 
-WORM storage is required for SOC 2 CC7.2, HIPAA §164.312(b), and PCI DSS Requirement 10.
+Select tamper protection and retention controls for the applicable obligation. These frameworks do not establish a universal WORM requirement for every audit log. WORM can implement a selected immutability requirement; document why it is needed before locking records.
 
 | Platform | Mechanism | Key constraint |
 |----------|-----------|----------------|
@@ -110,7 +110,7 @@ WORM storage is required for SOC 2 CC7.2, HIPAA §164.312(b), and PCI DSS Requir
 | **Azure Blob** | Immutability policy (time-based retention) | Legal hold override available |
 | **On-premises** | WORM tape, compliance appliances | Hardware write-protect; chain of custody required |
 
-S3 Object Lock Compliance mode policy example:
+S3 Object Lock Compliance mode example for a record class whose approved retention is 7 years (not a default for all audit data):
 
 ```json
 {
@@ -126,7 +126,7 @@ S3 Object Lock Compliance mode policy example:
 }
 ```
 
-`COMPLIANCE` mode prevents deletion by any principal, including the AWS account root. Do not use `GOVERNANCE` mode for regulatory audit logs; it allows privileged override.
+`COMPLIANCE` mode prevents deletion by any principal, including the AWS account root, during the retention period. Use it only when that irreversible behavior matches the approved requirement. `GOVERNANCE` allows privileged override and may suit a different control; choose the mode explicitly.
 
 ---
 
@@ -154,9 +154,9 @@ Source: [github.com/sigstore/rekor](https://github.com/sigstore/rekor)
 
 ---
 
-## 7. 7-Year Retention Policy
+## 7. Evidence-Specific Retention Policy
 
-Automated tiering via object lifecycle policy satisfies all regulatory minimums (HIPAA 6y, PCI 1y, SOC 2 varies) with a single 7-year baseline.
+Map each record class to its legal/contractual requirement and purpose. HIPAA required security documentation, PCI audit history, and SOC 2 engagement evidence have different scopes; one period does not prove all compliance. Set an approved retention schedule and erasure/legal-hold exceptions before configuring lifecycle or Object Lock. The table below is a 7-year example only for a record class that needs that period.
 
 | Tier | Duration | Storage | Cost tier |
 |------|----------|---------|-----------|
@@ -207,10 +207,24 @@ Kubernetes API server audit logs record every API call; essential for cluster-ad
 |-------------|---------|----------|
 | `None` | Nothing | Exclude noisy, low-value paths |
 | `Metadata` | Method, URL, user, timestamp | Default for most resources |
-| `Request` | + request body | Sensitive mutations (RBAC, secrets) |
-| `RequestResponse` | + response body | High-value targets (cluster-admin actions) |
+| `Request` | + request body | Selected non-secret mutations (e.g., RBAC), after assessing sensitive fields |
+| `RequestResponse` | + response body | Selected non-secret operations whose bodies are necessary and safe to retain |
 
-Feed Kubernetes audit logs into the audit pipeline separately from operational logs. Tag with `source: k8s_apiserver` for routing.
+Put the Secret metadata-only exception before broader body-recording rules; Kubernetes audit policies use the first matching rule. Do not record Secret `data`/`stringData` or credential response bodies in the audit archive.
+
+```yaml
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+  - level: Metadata
+    resources:
+      - group: ""
+        resources: ["secrets"]
+  # Add narrowly scoped, reviewed non-secret rules here.
+  - level: Metadata
+```
+
+Feed Kubernetes audit logs into the audit pipeline separately from operational logs. Tag with `source: k8s_apiserver` for routing. Source: <https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/>.
 
 ---
 
@@ -273,11 +287,11 @@ Append candidates for `../anti-patterns.md §Section F Security & Compliance`:
 
 | ID | Anti-pattern | Fix |
 |----|--------------|-----|
-| A-AU1 | Mutable audit storage (not WORM) | Apply S3 Object Lock Compliance mode or equivalent at bucket creation |
+| A-AU1 | Audit evidence can be altered without detection | Apply access controls and tamper protection; choose WORM only when the approved obligation requires it |
 | A-AU2 | No tamper evidence (no hash chain or notary) | Implement hash chain per Section 6; anchor Merkle root to rekor |
 | A-AU3 | PII in audit events without redaction | Hash or pseudonymize `user.id`; evaluate `ip.address` per `privacy.md` |
 | A-AU4 | Shared RBAC for operations and audit readers | Create separate `audit-reader` role; enforce in IaC |
-| A-AU5 | Retention below regulatory minimum | Use 7-year baseline; apply lifecycle policy automatically |
+| A-AU5 | Retention differs from the approved record-specific schedule | Apply the documented law/contract/purpose schedule and legal holds; expire eligible records |
 | A-AU6 | Kubernetes audit logs routed to operational log store | Separate pipeline: K8s audit → WORM cold tier |
 
 ---

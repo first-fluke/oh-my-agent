@@ -1,6 +1,6 @@
 # Style Presets — oma-slide
 
-> 12 curated, offline, self-contained presets vendored for zero-network reliability.
+> 12 vendored style presets. The CSS examples use optional Google Fonts links; offline rendering uses the listed fallback fonts unless font assets are supplied locally. Validate layout with the fonts available at delivery.
 > These are the always-safe fallback core. Use them directly or as the basis for the
 > "safe preset" preview in Phase 2 style discovery.
 

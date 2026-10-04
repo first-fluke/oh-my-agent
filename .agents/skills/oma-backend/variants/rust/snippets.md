@@ -24,7 +24,7 @@ use crate::{
 
 pub async fn create_resource(
     State(state): State<AppState>,
-    AuthUser(user): AuthUser,
+    user: AuthUser,
     Json(payload): Json<ResourceCreate>,
 ) -> Result<(StatusCode, Json<ResourceResponse>), AppError> {
     let resource = state
@@ -37,7 +37,7 @@ pub async fn create_resource(
 
 pub async fn get_resource(
     State(state): State<AppState>,
-    AuthUser(user): AuthUser,
+    user: AuthUser,
     Path(resource_id): Path<Uuid>,
 ) -> Result<Json<ResourceResponse>, AppError> {
     let resource = state
@@ -77,7 +77,7 @@ pub struct ResourceUpdate {
     #[validate(length(min = 1, max = 200))]
     pub title: Option<String>,
 
-    #[validate(length(max = 2000))]
+    #[serde(default, with = "serde_with::rust::double_option")]
     pub description: Option<Option<String>>,
 }
 
@@ -162,14 +162,17 @@ pub struct AppState {
     pub db: PgPool,
     pub resource_service: Arc<ResourceService>,
     pub user_service: Arc<UserService>,
+    pub jwt_decoding_key: Arc<jsonwebtoken::DecodingKey>,
 }
 
+// Validate the required JWT_SECRET at production startup before constructing state.
 impl AppState {
-    pub fn new(db: PgPool) -> Self {
+    pub fn new(db: PgPool, jwt_secret: &[u8]) -> Self {
         Self {
             db: db.clone(),
             resource_service: Arc::new(ResourceService::new()),
             user_service: Arc::new(UserService::new()),
+            jwt_decoding_key: Arc::new(jsonwebtoken::DecodingKey::from_secret(jwt_secret)),
         }
     }
 }
@@ -178,7 +181,7 @@ pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/api/resources", get(handlers::resource::list).post(handlers::resource::create))
         .route(
-            "/api/resources/:id",
+            "/api/resources/{id}",
             get(handlers::resource::get_resource)
                 .patch(handlers::resource::update)
                 .delete(handlers::resource::delete),
@@ -394,7 +397,7 @@ mod tests {
             .await
             .unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
-        let state = AppState::new(pool.clone());
+        let state = AppState::new(pool.clone(), b"test-only-jwt-key-with-at-least-32-bytes");
         let app = create_router(state);
         (app, pool)
     }
@@ -460,7 +463,7 @@ mod tests {
         encode(
             &Header::default(),
             &claims,
-            &EncodingKey::from_secret(b"test-secret"),
+            &EncodingKey::from_secret(b"test-only-jwt-key-with-at-least-32-bytes"),
         )
         .unwrap()
     }

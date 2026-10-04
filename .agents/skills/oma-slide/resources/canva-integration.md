@@ -42,153 +42,80 @@ The config entry shape (inside `mcpServers`):
 All config files use the same `{ "url": "https://mcp.canva.com/mcp" }` shape
 (or `{ "serverUrl": ... }` for Antigravity if that convention is detected).
 
-### Minimum Canva Plan
+### Available capabilities
 
-- **Free / Pro:** `create_design`, `upload_asset`, `export_design`, `list_designs`, `import_design` are available.
-- **Enterprise:** Adds `autofill_design` (brand template autofill). Not required for oma-slide integration.
-
----
+Use the connected server's tool list and parameter schemas as the execution contract.
+Tool availability depends on account permissions, plan, and the current server. Do not
+assume brand-template autofill or a particular export format is available.
 
 ## Canva MCP Tool Mapping
 
-| oma-slide Operation | Canva MCP Tool | Direction | Notes |
-|---|---|---|---|
-| Verify auth / connectivity | `list_designs` | probe | Returns designs if authed; errors if not |
-| Upload slide images | `upload_asset` | push | Accepts PNG/JPG; returns `asset_id` |
-| Create Canva presentation | `create_design` | push | Type: `Presentation`; attach uploaded assets as pages |
-| Export from Canva to file | `export_design` | pull | Formats: PDF, PNG, JPG, PPTX, MP4, GIF |
-| Import a Canva design | `list_designs` → `export_design` | pull | Export as PPTX → `oma slide import pptx` |
-| Browse Canva library | `list_designs` | read | Filter by query or folder |
-| Get design metadata | `get_design` | read | Title, pages, dimensions, timestamps |
+The following are names in the official remote server documentation. Client wrappers
+may normalize their names; resolve the callable tools before invoking them.
 
----
+| Operation | Documented remote tool | Contract |
+|---|---|---|
+| Browse or verify access | `search-designs` | Use the discovered query/filter schema |
+| Read a design | `get-design` | Supply an authorized design ID |
+| Export from Canva | `export-design` | Check supported formats in the tool schema |
+| Import an existing deck | `import-design-from-url` | Requires a URL Canva can retrieve; a local path is not a URL |
+| Upload an image asset | `upload-asset-from-url` | Requires a publicly accessible HTTPS asset URL |
+
+`upload-asset-from-url` uploads an asset; it does not create a presentation or map an
+array of asset IDs to pages. Do not invent a presentation-creation call that maps an asset-ID array to pages,
+or pass a local filepath to a URL-upload tool.
+
+References: [official MCP tools](https://www.canva.dev/docs/apps/mcp/tools/),
+[URL asset upload](https://www.canva.dev/docs/apps/mcp/tools/upload-asset-from-url/).
 
 ## Export Pipeline: oma-slide → Canva
 
-**Trigger:** User requests Canva export during Phase 6 (Deliver), or says "export to Canva" / "캔바로 내보내기".
+Trigger: the user requests a Canva export.
 
-### Steps
+1. Discover the connected tools and probe access with `search-designs` using its schema.
+   On authentication failure, explain the required OAuth connection and retain the local deck.
+2. Produce a local deck with `oma slide export pptx --workspace <deck-dir>`.
+3. If `import-design-from-url` is available, inspect its accepted formats and parameters.
+   Use an existing Canva-readable URL authorized for this transfer. A local filepath cannot
+   be passed to the remote server.
+4. If only local files exist, deliver the PPTX for manual Canva import or resolve a suitable
+   transfer destination with the user. Do not publish the file or enable public sharing merely
+   to satisfy the remote tool's URL requirement.
+5. Follow the tool's returned status/job schema. Report the returned Canva design URL only
+   after the complete deck has imported. A missing or failed page makes the transfer incomplete;
+   report it rather than silently skipping slides.
 
-```
-1. PROBE        → list_designs (verify Canva MCP is connected + authenticated)
-2. RENDER       → oma slide export png --workspace <slug> --output-dir <slug>/out/png/ --resolution 2160p
-3. UPLOAD       → upload_asset for each slide PNG → collect asset_ids[]
-4. CREATE       → create_design (type: "Presentation", assets: asset_ids[])
-5. REPORT       → include Canva design URL in delivery summary
-```
-
-### Step Details
-
-**Step 1 — Probe:**
-Call `list_designs` with a minimal query. If it errors (401/403/timeout), notify the user:
-> "Canva MCP is not connected or not authenticated. Skipping Canva export. Local exports are available."
-
-Do NOT retry or prompt for credentials — the OAuth flow is handled externally.
-
-**Step 2 — Render PNGs:**
-Use `oma slide export png --resolution 2160p` to produce high-resolution per-slide images (3840×2160).
-These become the raster backing for each Canva presentation page.
-
-**Step 3 — Upload Assets:**
-For each `slide-NN.png` in the output directory:
-- Call `upload_asset` with the file path.
-- Record the returned `asset_id`.
-- On individual upload failure: log, skip that slide, continue with remaining.
-
-**Step 4 — Create Presentation:**
-Call `create_design` with:
-- `type`: `"Presentation"` (or equivalent Canva preset type)
-- Uploaded assets mapped as slide pages in `meta.json` order.
-
-**Step 5 — Report:**
-Include in the Phase 6c delivery summary:
-- Canva design URL
-- Number of slides successfully pushed
-- Any skipped slides (upload failures)
-
-### Limitations
-
-> [!IMPORTANT]
-> Canva export via this pipeline produces **raster-backed slides** (PNG images per page).
-> Text is not editable in Canva. `oma slide export pptx` is also raster-backed,
-> with one full-slide PNG per PowerPoint slide, so importing it does not restore
-> editable text. Editable Canva text requires a separate text-element creation
-> path or an OOXML text-shape exporter; neither is provided by this skill.
-
----
+PPTX output is raster-backed: each slide is a PNG, so importing it does not make text
+editable. Editable Canva content requires a separately supported editing workflow.
 
 ## Import Pipeline: Canva → oma-slide
 
-**Trigger:** User provides a Canva design URL/ID, or says "import from Canva" / "캔바에서 가져오기".
-Detected in Phase 0 as `import-canva` mode.
+Trigger: the user supplies a Canva design URL/ID or requests an import.
 
-### Steps
+1. Resolve the design ID from the supplied URL or use `search-designs` when browsing is needed.
+2. Read the design with `get-design` and inspect available export formats.
+3. Request PPTX through `export-design` when supported. Follow its returned status and download
+   URL schema; do not assume a fixed polling API.
+4. Download the completed export into `<workdir>/imports/`, then use
+   `oma slide import pptx <downloaded.pptx> --workspace <deck-dir>`.
+5. Use the imported content as the base for any requested revision. If PPTX is unavailable,
+   explain the supported alternatives before changing format.
 
-```
-1. PROBE        → list_designs (verify connectivity)
-2. IDENTIFY     → parse design ID from user input (URL or raw ID)
-3. EXPORT       → export_design (format: PPTX) → download to workdir
-4. IMPORT       → oma slide import pptx <downloaded.pptx> --workspace <slug>
-5. CONTINUE     → proceed to Phase 3 (generate/enhance with style overlay)
-```
+## Browse Pipeline
 
-### Step Details
-
-**Step 1–2 — Probe + Identify:**
-Extract the Canva design ID from the user's input. Accept formats:
-- Full URL: `https://www.canva.com/design/DAF.../edit`
-- Raw ID: `DAF...`
-
-**Step 3 — Export from Canva:**
-Call `export_design` with format `PPTX`. This is an asynchronous operation —
-the Canva MCP may return a job ID; poll or await completion per MCP protocol.
-
-Download the exported file to `<workdir>/imports/`.
-
-**Step 4 — Import via CLI:**
-Run `oma slide import pptx <file> --workspace <slug>` to extract slide fragments
-into the working directory.
-
-**Step 5 — Continue:**
-The imported fragments become the generation base. The user picks a style
-(Phase 2), and the skill overlays the chosen design on top.
-
----
-
-## Browse Pipeline: Canva Library
-
-**Trigger:** User says "show my Canva designs" / "캔바 디자인 목록" before providing a specific design.
-
-### Steps
-
-```
-1. PROBE        → list_designs (verify connectivity)
-2. LIST         → list_designs (optional: filter by query)
-3. PRESENT      → show design titles + thumbnails to user
-4. SELECT       → user picks a design → proceed to Import Pipeline
-```
-
----
+Use `search-designs` with the user's query and present matching titles/URLs. Continue
+with the selected design only within the requested operation's scope.
 
 ## Error Handling
 
 | Error | Response |
 |---|---|
-| Canva MCP server not configured | Offer to auto-provision (see §Auto-Provisioning); skip if user declines |
-| OAuth not authorized (401/403) | Notify: "Canva is not authenticated. Please connect your Canva account to the MCP server." Skip Canva ops. |
-| `upload_asset` fails for one slide | Log warning; skip that slide; continue uploading remaining slides |
-| `create_design` fails | Notify user; fall back to local exports (HTML/PDF/PNG/PPTX) |
-| `export_design` timeout | Retry once after 10s; on second failure, notify and abort Canva import |
-| Design ID not found | Notify: "Design not found in your Canva account." Offer to `list_designs` instead. |
-
-### Graceful Degradation Priority
-
-```
-Canva MCP available + authed       →  full Canva export/import
-Canva MCP available + unauthed     →  notify user; local exports only
-Canva MCP not configured + user ok →  auto-provision config → retry probe
-Canva MCP not configured + decline →  silent skip; local exports only
-```
+| Server not configured | Offer the setup below when Canva was requested |
+| OAuth or permission failure | Explain the missing access; retain local outputs |
+| Local filepath supplied to URL tool | Use an authorized reachable URL or deliver a local file for manual import |
+| Unsupported import/export format | Report the capability limit and supported alternatives |
+| Transfer or job failure | Report the incomplete transfer; do not present skipped pages as success |
+| Design not found | Show the requested ID and optionally search with the supplied query |
 
 ---
 
@@ -250,7 +177,7 @@ After writing config files:
 
 1. **Notify the user** that a session restart may be needed for the MCP client to pick up
    the new server. Some runtimes (e.g., Gemini CLI) require a restart; others hot-reload.
-2. **Attempt a probe** (`list_designs`) — if it succeeds, continue with the Canva operation.
+2. **Attempt a probe** (`search-designs` using the discovered schema) — if it succeeds, continue with the Canva operation.
    If it fails (expected on first run before OAuth), notify:
    > "Canva MCP config added. You'll need to authenticate with Canva on first use.
    >  The OAuth flow will be triggered automatically by your MCP client."
@@ -270,7 +197,7 @@ After writing config files:
 ## Security Considerations
 
 1. **OAuth tokens are managed by the MCP client** — the skill never handles or stores Canva credentials.
-2. **Design data stays between Canva and the MCP server** — the skill only sends/receives files and metadata.
+2. **Design data is sent to Canva through the MCP server** — the skill only sends/receives files and metadata.
 3. **Uploaded assets are stored in the user's Canva account** — the skill does not control retention or sharing.
 4. **No Canva API calls outside MCP** — all Canva interactions go through the registered MCP server tools.
 5. **Auto-provisioning is user-approved** — the skill never writes MCP config without explicit user consent.

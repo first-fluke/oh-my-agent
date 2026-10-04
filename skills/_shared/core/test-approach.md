@@ -36,7 +36,7 @@ TDD_EVIDENCE:
   green: 12 pass, 0 fail (after implementation)
 ```
 
-Requirements (enforced by `oma verify <agent>` → "TDD Evidence" check):
+Requirements (enforced by `oma verify agent <agent>` → "TDD Evidence" check):
 
 1. Block starts with the literal marker `TDD_EVIDENCE:`
 2. Every `tdd` task id from the plan appears in the block

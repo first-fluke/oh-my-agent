@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Mobile Stack Manifest",
-  "description": "Per-variant stack declaration and verify contract consumed by `oma verify mobile` and agent structured lookup.",
+  "description": "Per-variant stack declaration and verify contract consumed by `oma verify agent mobile` and agent structured lookup.",
   "type": "object",
   "required": ["language"],
   "properties": {

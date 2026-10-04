@@ -47,21 +47,25 @@ App Pod(s)
     │ OTLP gRPC/HTTP
     ▼
 DaemonSet Agent (1 per node)
-  - hostmetrics receiver
-  - filelog receiver
-  - kubeletstats receiver
-  - k8sattributes processor (resource enrichment)
-    │ OTLP gRPC
+  - hostmetrics / filelog / kubeletstats receivers
+  - memory_limiter and k8sattributes enrichment
+  - traces: loadbalancing exporter, routing_key: traceID
+    │ consistent traceID hash to individual gateway replicas
+    │ metrics/logs may use their separately configured normal load balancing
     ▼
-Deployment Gateway (N replicas, behind ClusterIP/LB)
-  - batch processor
-  - tail_sampling processor
-  - loadbalancing exporter (to tier-2 if needed)
-  - memory_limiter processor
+Deployment Gateway (N tail-sampler replicas, per-pod discovery)
+  - memory_limiter → tail_sampling → batch
+  - backend exporter
     │ OTLP / vendor protocol
     ▼
 Observability Backend (e.g., Grafana Cloud, Jaeger, Prometheus)
 ```
+
+Do not send traces through an ordinary ClusterIP/load balancer before independent
+tail samplers. It can split one trace across replicas. The traceID-aware exporter
+must be upstream of those samplers; an exporter after sampling cannot recover
+trace completeness. Resolve individual sampler replicas (for example via a
+headless Service), and validate late-span behavior during membership changes.
 
 **Agent layer responsibilities** (must be per-host):
 - `hostmetrics` receiver: CPU, memory, disk, network from `/proc`, `/sys`
@@ -72,10 +76,10 @@ Observability Backend (e.g., Grafana Cloud, Jaeger, Prometheus)
 **Gateway layer responsibilities**:
 - `batch` processor: reduce export RPCs, improve compression
 - `tail_sampling` processor: evaluate complete traces before sampling decision
-- `loadbalancing` exporter: consistent hash routing to tail-sampler replicas
+- Backend exporter: send the gateway's already-sampled traces to the selected backend. Put `loadbalancing` upstream of any further independent tail-sampler tier, not after the only sampler.
 - `memory_limiter` processor: prevent OOM under backpressure
 
-Example agent `OpenTelemetryCollector` manifest snippet:
+Example agent `OpenTelemetryCollector` manifest snippet for host metrics/logs only (traces additionally require an OTLP receiver and the traceID-aware `loadbalancing` exporter described above and in §6):
 
 ```yaml
 apiVersion: opentelemetry.io/v1beta1

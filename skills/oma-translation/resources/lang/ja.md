@@ -167,8 +167,10 @@ See [Mechanical triples](../../../_shared/core/anti-ai-prose.md#mechanical-tripl
 ```
 EN:   a fast, reliable, and intuitive experience
 Bad:  高速で、信頼性が高く、直感的な体験
-Good: 速くて使いやすい
+Good: 速く、信頼性が高く、直感的な体験
 ```
+
+Preserve every source quality. A real three-item list is valid when all three carry meaning.
 
 ### synonym cycling
 
@@ -183,7 +185,7 @@ See [Compound adjective stacking](../../../_shared/core/anti-ai-prose.md#compoun
 
 ```
 Bad:  AI 搭載のクラウドベースのエンタープライズグレードのソリューション
-Good: クラウド上で動く AI ソリューション
+Good: クラウド上で動くエンタープライズグレードの AI ソリューション
 ```
 
 ### mechanical punctuation swap
@@ -253,7 +255,7 @@ See [Cleft Sentence Calques](../anti-ai-patterns.md#cleft-sentence-calques).
 
 ```
 Bad:  重要なのはユーザー体験であるということです
-Good: ユーザー体験が最も重要です
+Good: ユーザー体験が重要です
 ```
 
 ---

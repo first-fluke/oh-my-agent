@@ -20,7 +20,7 @@ Create a `.knows.yaml` sidecar from a paper, draft, or research notes.
 
 ### Step 2: Draft Sidecar Structure
 
-Use the v0.9.0 spec rules in `sidecar-spec.md`. Top-level structure:
+Use the local production compatibility rules in `sidecar-spec.md`; they do not establish full canonical-schema conformance. Top-level structure:
 
 - `knows_version: "0.9.0"`, `profile: "paper@1"`, `subject_ref: art:paper`
 - **Top-level metadata**: `title`, `authors`, `venue`, `year` (no `metadata` wrapper); omit `doi`/`venue`/`year` if not visible
@@ -37,8 +37,11 @@ Use the v0.9.0 spec rules in `sidecar-spec.md`. Top-level structure:
 
 ### Step 3: Wire Relations
 
-For every statement, ensure at least one `supported_by` relation pointing to evidence.
-Aim for **average ≥1.5 relations per statement**. Common patterns:
+Use relations appropriate to the statement type and supported by the source.
+Claims with evidence use `supported_by`; methods may use `uses`, `implements`,
+or `evaluates_on`. Definitions and open questions can remain source-anchored
+without invented empirical support. The lint ratio target of 1.5 is a coverage
+diagnostic, not a requirement to pad the graph. Common patterns:
 
 | Subject | Predicate | Object |
 |---------|-----------|--------|
@@ -54,16 +57,20 @@ Aim for **average ≥1.5 relations per statement**. Common patterns:
 If `OPENALEX_API_KEY` is set and DOI/venue/year are missing:
 
 ```bash
-# Sketch — actual enrichment is best done via host LLM with a curl call
-curl -s "https://api.openalex.org/works?search={title}&api_key=$OPENALEX_API_KEY" \
-  | jq '.results[0] | {doi, host_venue, publication_year}'
+# PAPER_TITLE is the source title; inspect candidates before selecting a record.
+curl -s --get "https://api.openalex.org/works" \
+  --data-urlencode "search=$PAPER_TITLE" \
+  --data-urlencode "api_key=$OPENALEX_API_KEY" \
+  | jq '.results[] | {id, title, doi, publication_year, authorships, primary_location}'
 ```
 
 If the key is not set, skip enrichment and tell the user how to set it (point to `setup-openalex.md`).
 
-Enrichment does **not** violate the anti-fabrication rule: backfilling `doi`/`venue`/`year`
-from OpenAlex is sourcing from a curated external catalog, not guessing. The rule forbids
-placeholders (`TODO`/`TBD`) and invented values; fields resolved via OpenAlex are fine.
+Verify candidate identity against the source title, authors, year, and any
+existing DOI/arXiv identifier before enrichment. A title-search ranking is not
+identity proof. Confirm a selected DOI with a DOI lookup; omit disputed fields
+when candidates remain ambiguous. A curated catalog is an external source,
+and local structural lint cannot verify that it describes the same paper.
 Mention in the final report which fields were enriched rather than extracted from source.
 
 ### Step 5: Lint
@@ -74,7 +81,7 @@ Always validate before reporting done:
 oma scholar lint {output}.knows.yaml
 ```
 
-If lint fails, fix the reported issues and re-run until clean.
+For newly generated local-profile output, fix reported issues and re-run. For imported canonical records, preserve valid wider shapes, report local-lint incompatibilities, and do not silently normalize away information.
 
 ### Step 6: Report
 

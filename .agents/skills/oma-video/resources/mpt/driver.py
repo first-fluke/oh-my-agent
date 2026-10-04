@@ -116,17 +116,15 @@ def _make_test_clip(out_path: str, width: int, height: int, seconds: int,
 
 
 def _prepare_local_materials(spec: dict, width: int, height: int,
-                             clip_duration: int):
-    """Resolve local material clips into MPT's storage/local_videos directory.
+                             clip_duration: int, local_dir: str):
+    """Resolve local material clips into a run-owned subdirectory of storage/local_videos.
 
     MPT's preprocess_video resolves each material.url *within* storage/local_videos
     (file_security.resolve_path_within_directory). So provided clips are copied in
     and synthesized clips are written there. Returns a list of MaterialInfo.
     """
     from app.models.schema import MaterialInfo  # noqa: E402  (MPT import)
-    from app.utils import utils  # noqa: E402
-
-    local_dir = utils.storage_dir("local_videos", create=True)
+    os.makedirs(local_dir, exist_ok=True)
     materials = []
 
     # MaterialInfo.url must be an ABSOLUTE path inside storage/local_videos.
@@ -197,69 +195,76 @@ def run(spec: dict) -> dict:
     from app.services import task  # noqa: E402
     from app.utils import utils  # noqa: E402
 
-    video_materials = None
-    if video_source == "local":
-        video_materials = _prepare_local_materials(
-            spec, width, height, clip_duration
-        )
-        if not video_materials:
-            return {"ok": False, "error": "no local materials available"}
-
-    params = VideoParams(
-        video_subject=subject,
-        # Injecting video_script puts MPT in custom-script mode: generate_script
-        # returns it verbatim, no LLM call (backend rule 11 key-free path).
-        video_script=script,
-        # Empty terms + local source avoids generate_terms' LLM call too.
-        video_terms=[] if video_source == "local" else None,
-        video_aspect=aspect,
-        video_concat_mode=VideoConcatMode.sequential.value,
-        video_clip_duration=clip_duration,
-        video_count=1,
-        video_source=video_source,
-        video_materials=video_materials,
-        voice_name=voice_name,
-        voice_rate=1.0,
-        bgm_type="",  # no background music (key-free, deterministic)
-        bgm_volume=0.0,
-        subtitle_enabled=subtitle,
-        n_threads=2,
-        paragraph_number=1,
-    )
-
     task_id = "oma-" + uuid.uuid4().hex[:12]
-    result = task.start(task_id=task_id, params=params, stop_at="video")
-    if not result or not result.get("videos"):
-        return {
-            "ok": False,
-            "error": "MPT task.start produced no videos (see stderr for the MPT log)",
-        }
-
-    final = result["videos"][0]
-    if not os.path.isfile(final):
-        return {"ok": False, "error": f"MPT reported video but file missing: {final}"}
-
-    os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
-    shutil.copyfile(final, out_path)
-
-    duration = 0.0
+    material_dir = None
     try:
-        duration = float(result.get("audio_duration") or 0.0)
-    except (TypeError, ValueError):
+        video_materials = None
+        if video_source == "local":
+            material_dir = os.path.join(
+                utils.storage_dir("local_videos", create=True), task_id
+            )
+            video_materials = _prepare_local_materials(
+                spec, width, height, clip_duration, material_dir
+            )
+            if not video_materials:
+                return {"ok": False, "error": "no local materials available"}
+
+        params = VideoParams(
+            video_subject=subject,
+            # Injecting video_script puts MPT in custom-script mode: generate_script
+            # returns it verbatim, no LLM call (backend rule 11 key-free path).
+            video_script=script,
+            # Empty terms + local source avoids generate_terms' LLM call too.
+            video_terms=[] if video_source == "local" else None,
+            video_aspect=aspect,
+            video_concat_mode=VideoConcatMode.sequential.value,
+            video_clip_duration=clip_duration,
+            video_count=1,
+            video_source=video_source,
+            video_materials=video_materials,
+            voice_name=voice_name,
+            voice_rate=1.0,
+            bgm_type="",  # no background music (key-free, deterministic)
+            bgm_volume=0.0,
+            subtitle_enabled=subtitle,
+            n_threads=2,
+            paragraph_number=1,
+        )
+
+        result = task.start(task_id=task_id, params=params, stop_at="video")
+        if not result or not result.get("videos"):
+            return {
+                "ok": False,
+                "error": "MPT task.start produced no videos (see stderr for the MPT log)",
+            }
+
+        final = result["videos"][0]
+        if not os.path.isfile(final):
+            return {"ok": False, "error": f"MPT reported video but file missing: {final}"}
+
+        os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
+        shutil.copyfile(final, out_path)
+
         duration = 0.0
+        try:
+            duration = float(result.get("audio_duration") or 0.0)
+        except (TypeError, ValueError):
+            duration = 0.0
 
-    # Clean up MPT's per-task storage so the cache clone does not grow unbounded.
-    try:
-        shutil.rmtree(utils.task_dir(task_id), ignore_errors=True)
-    except Exception:  # noqa: BLE001  (cleanup is best-effort)
-        pass
-
-    return {
-        "ok": True,
-        "output": os.path.abspath(out_path),
-        "duration": duration,
-        "source": video_source,
-    }
+        return {
+            "ok": True,
+            "output": os.path.abspath(out_path),
+            "duration": duration,
+            "source": video_source,
+        }
+    finally:
+        # Each run owns its materials and task storage, including failed runs.
+        if material_dir is not None:
+            shutil.rmtree(material_dir, ignore_errors=True)
+        try:
+            shutil.rmtree(utils.task_dir(task_id), ignore_errors=True)
+        except Exception:  # noqa: BLE001  (cleanup is best-effort)
+            pass
 
 
 def main() -> int:

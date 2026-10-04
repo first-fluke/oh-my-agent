@@ -15,7 +15,7 @@ git log --format=format: --name-only --since="1 year ago" | sort | uniq -c | sor
 Detect concentration risk and potential knowledge silos.
 
 ```bash
-git shortlog -sn --no-merges
+git shortlog -sn --no-merges HEAD
 ```
 
 Heuristic:

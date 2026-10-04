@@ -183,8 +183,10 @@ See [Mechanical triples](../../../_shared/core/anti-ai-prose.md#mechanical-tripl
 ```
 EN:   a fast, reliable, and intuitive experience
 Bad:  快速的、可靠的、直观的体验
-Good: 又快又好用
+Good: 快速、可靠且直观的体验
 ```
+
+Preserve every source quality. A real three-item list is valid when all three carry meaning.
 
 ### synonym cycling
 
@@ -199,7 +201,7 @@ See [Compound adjective stacking](../../../_shared/core/anti-ai-prose.md#compoun
 
 ```
 Bad:  一个 AI 驱动的、基于云的、企业级的解决方案
-Good: 一套跑在云上的 AI 方案
+Good: 一套跑在云上的企业级 AI 方案
 ```
 
 ### mechanical punctuation swap
@@ -262,7 +264,7 @@ See [Cleft Sentence Calques](../anti-ai-patterns.md#cleft-sentence-calques).
 
 ```
 Bad:  重要的是用户体验
-Good: 用户体验最重要
+Good: 用户体验重要
 ```
 
 ---

@@ -50,7 +50,7 @@
 ## Section 3: Production operations
 
 - [ ] Scrape OTel Collector self-metrics (`otelcol_*`) from a separate Prometheus instance or second Collector; Collector failures must not destroy their own observability (P0)
-- [ ] Alert on pipeline delivery ratio dropping below 99%; `(rate(otelcol_exporter_sent_spans[5m]) / rate(otelcol_receiver_accepted_spans[5m])) < 0.99` sustained for 5 minutes (P0)
+- [ ] Check pipeline health per hop/exporter and implement completed synthetic backend-delivery probes where end-to-end verification is required; set policy-aware thresholds and monitor probe job freshness (`meta-observability.md §A6`) (P0)
 - [ ] Alert on exporter send failures above 1%; `rate(otelcol_exporter_send_failed_spans[5m]) / rate(otelcol_exporter_sent_spans[5m]) > 0.01` for 5 minutes (P0)
 - [ ] Alert on `otelcol_receiver_refused_spans > 0` sustained for 2 minutes; indicates queue full or parse failures (P0)
 - [ ] Alert on Collector heap usage exceeding 75% of container memory limit; `otelcol_process_runtime_heap_alloc_bytes > 0.75 * container_limit` (P0)
@@ -81,15 +81,15 @@
 
 ## Section 5: Compliance & Audit
 
-- [ ] Store audit logs in WORM immutable storage; S3 Object Lock, GCS Object Hold, or Azure Immutable Blob Storage; minimum retention 7 years (P0)
-- [ ] Configure audit log retention alert; `audit_log_retention_days < 2555` (7 years) triggers a critical alert via scheduled compliance check (P0)
+- [ ] Map audit record classes to approved retention and erasure/legal-hold rules; configure tamper protection and WORM only when the selected obligation requires it (P0)
+- [ ] Implement a scheduled retention check against the approved per-class policy, including legal holds and eligible deletion; alert on a policy violation (P0)
 - [ ] Include all six mandatory audit event categories; authentication, authorization, data access, administrative, security events, system events; before claiming SOC 2 or ISO 27001 compliance (P0)
 - [ ] Carry required attributes on every audit event; `user.id` (pseudonymized), `actor.type`, `action`, `resource.type`, `resource.id`, `event.outcome` (P0)
 - [ ] Implement PII redaction at pipeline ingestion; apply Collector `transform` processor to scrub or hash PII fields before they reach any storage backend (P0)
 - [ ] Enforce GDPR storage limitation; raw personal data must not exceed the retention period justified by the processing purpose; default operational logs ≤ 7 days raw (P0)
-- [ ] Separate audit and privacy pipelines; same-pipeline storage would create contradictory retention requirements (WORM vs. erasable); keep distinct pipelines per `signals/audit.md` Design Decision D5 (P0)
+- [ ] Isolate record classes where their storage/access controls differ; personal audit records remain subject to privacy rules and documented erasure/retention exceptions (P0)
 - [ ] Sign a Data Processing Agreement (DPA) with every observability vendor that receives personal data; required before routing production telemetry to SaaS backends (P0)
-- [ ] Enforce cross-region data residency for EU and KR tenants; EU tenant telemetry must not transit or rest outside EEA without adequacy decision; KR tenants subject to PIPA § 29 (P0)
+- [ ] Classify personal data and document permitted destinations, applicable GDPR Chapter V/PIPA Art.28-8 transfer grounds, safeguards, and any stricter residency contract before export; enforce the approved server-side policy (P0)
 - [ ] Store pseudonymization keys separately from pseudonymized telemetry data; GDPR Art. 32 requires independent access control and audit trail for the key store (P1)
 - [ ] Verify `user.id` and `user.email` are never used as metric labels; cardinality explosion and PII in TSDB are a double violation; use `filter` processor to drop any datapoint carrying these attributes (P0)
 

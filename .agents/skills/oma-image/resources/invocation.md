@@ -19,7 +19,7 @@ This skill follows oh-my-agent's CLI-first concept: whenever a vendor's native C
 ```
 /oma-image a red apple on white background
 /oma-image --vendor all --size 1536x1024 jeju coastline at sunset
-/oma-image -n 3 --quality high --out ./hero "minimalist dashboard hero illustration"
+/oma-image -n 3 --quality high --output-dir ./hero "minimalist dashboard hero illustration"
 ```
 
 #### Shell CLI

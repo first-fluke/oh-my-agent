@@ -17,7 +17,11 @@
 //   thiserror = "1"
 //   validator = { version = "0.18", features = ["derive"] }
 //   jsonwebtoken = "9"
-//   async-trait = "0.1"
+//   anyhow = "1"
+//   tracing = "0.1"
+//   tracing-subscriber = "0.3"
+//   serde_with = "3"
+//   tower = { version = "0.5", features = ["util"] } # dev-dependency
 
 // ============================================================
 // error.rs: Centralized error type
@@ -103,13 +107,14 @@ pub struct ResourceCreate {
     pub description: Option<String>,
 }
 
-/// Request body for PATCH /api/resources/:id
+/// Request body for PATCH /api/resources/{id}
 #[derive(Debug, Deserialize, Validate)]
 pub struct ResourceUpdate {
     #[validate(length(min = 1, max = 200, message = "title must be 1-200 characters"))]
     pub title: Option<String>,
 
     /// `None` means "do not change"; `Some(None)` means "set to null"
+    #[serde(default, with = "serde_with::rust::double_option")]
     pub description: Option<Option<String>>,
 }
 
@@ -139,10 +144,8 @@ pub struct PaginatedResponse<T: Serialize> {
 // ============================================================
 
 use axum::{
-    async_trait,
     extract::FromRequestParts,
     http::{request::Parts, HeaderMap},
-    RequestPartsExt,
 };
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Deserialize;
@@ -159,11 +162,10 @@ pub struct AuthUser {
     pub id: Uuid,
 }
 
-#[async_trait]
-impl<S: Send + Sync> FromRequestParts<S> for AuthUser {
+impl FromRequestParts<AppState> for AuthUser {
     type Rejection = AppError;
 
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
         let headers: &HeaderMap = &parts.headers;
 
         let token = headers
@@ -172,11 +174,9 @@ impl<S: Send + Sync> FromRequestParts<S> for AuthUser {
             .and_then(|v| v.strip_prefix("Bearer "))
             .ok_or(AppError::Unauthorized)?;
 
-        let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
-
         let token_data = decode::<Claims>(
             token,
-            &DecodingKey::from_secret(secret.as_bytes()),
+            &state.jwt_decoding_key,
             &Validation::default(),
         )
         .map_err(|_| AppError::Unauthorized)?;
@@ -415,22 +415,23 @@ use std::sync::Arc;
 pub struct AppState {
     pub db: PgPool,
     pub resource_service: Arc<ResourceService>,
+    pub jwt_decoding_key: Arc<DecodingKey>,
 }
 
 /// GET /api/resources?page=1&size=20
 pub async fn list_resources(
     State(state): State<AppState>,
-    AuthUser(user): AuthUser,
+    user: AuthUser,
     Query(params): Query<PaginationParams>,
 ) -> Result<Json<PaginatedResponse<Resource>>, AppError> {
     let result = state.resource_service.list(&state.db, user.id, &params).await?;
     Ok(Json(result))
 }
 
-/// GET /api/resources/:id
+/// GET /api/resources/{id}
 pub async fn get_resource(
     State(state): State<AppState>,
-    AuthUser(user): AuthUser,
+    user: AuthUser,
     Path(resource_id): Path<Uuid>,
 ) -> Result<Json<Resource>, AppError> {
     let resource = state
@@ -443,7 +444,7 @@ pub async fn get_resource(
 /// POST /api/resources
 pub async fn create_resource(
     State(state): State<AppState>,
-    AuthUser(user): AuthUser,
+    user: AuthUser,
     Json(payload): Json<ResourceCreate>,
 ) -> Result<(StatusCode, Json<Resource>), AppError> {
     let resource = state
@@ -453,10 +454,10 @@ pub async fn create_resource(
     Ok((StatusCode::CREATED, Json(resource)))
 }
 
-/// PATCH /api/resources/:id
+/// PATCH /api/resources/{id}
 pub async fn update_resource(
     State(state): State<AppState>,
-    AuthUser(user): AuthUser,
+    user: AuthUser,
     Path(resource_id): Path<Uuid>,
     Json(payload): Json<ResourceUpdate>,
 ) -> Result<Json<Resource>, AppError> {
@@ -467,10 +468,10 @@ pub async fn update_resource(
     Ok(Json(resource))
 }
 
-/// DELETE /api/resources/:id
+/// DELETE /api/resources/{id}
 pub async fn delete_resource(
     State(state): State<AppState>,
-    AuthUser(user): AuthUser,
+    user: AuthUser,
     Path(resource_id): Path<Uuid>,
 ) -> Result<StatusCode, AppError> {
     state
@@ -493,7 +494,7 @@ pub fn resource_router(state: AppState) -> Router {
             routing::get(list_resources).post(create_resource),
         )
         .route(
-            "/api/resources/:id",
+            "/api/resources/{id}",
             routing::get(get_resource)
                 .patch(update_resource)
                 .delete(delete_resource),
@@ -505,6 +506,9 @@ pub fn resource_router(state: AppState) -> Router {
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
+    let jwt_secret = std::env::var("JWT_SECRET")?;
+    anyhow::ensure!(jwt_secret.len() >= 32, "JWT_SECRET must contain at least 32 bytes");
+    let jwt_decoding_key = Arc::new(DecodingKey::from_secret(jwt_secret.as_bytes()));
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = sqlx::PgPool::connect(&database_url).await?;
 
@@ -513,6 +517,7 @@ async fn main() -> anyhow::Result<()> {
     let state = AppState {
         db: pool,
         resource_service: Arc::new(ResourceService),
+        jwt_decoding_key,
     };
 
     let app = resource_router(state);
@@ -536,6 +541,7 @@ mod tests {
         http::{header, Method, Request, StatusCode},
     };
     use tower::ServiceExt;
+    const TEST_JWT_SECRET: &[u8] = b"test-only-jwt-key-with-at-least-32-bytes";
 
     async fn build_test_app() -> (Router, PgPool) {
         let pool = sqlx::PgPool::connect(&std::env::var("DATABASE_URL_TEST").unwrap())
@@ -545,6 +551,7 @@ mod tests {
         let state = AppState {
             db: pool.clone(),
             resource_service: Arc::new(ResourceService),
+            jwt_decoding_key: Arc::new(DecodingKey::from_secret(TEST_JWT_SECRET)),
         };
         (resource_router(state), pool)
     }
@@ -555,7 +562,17 @@ mod tests {
             "sub": user_id.to_string(),
             "exp": (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp(),
         });
-        encode(&Header::default(), &claims, &EncodingKey::from_secret(b"secret")).unwrap()
+        encode(&Header::default(), &claims, &EncodingKey::from_secret(TEST_JWT_SECRET)).unwrap()
+    }
+
+    #[test]
+    fn patch_description_distinguishes_missing_null_and_value() {
+        let missing: ResourceUpdate = serde_json::from_str(r#"{}"#).unwrap();
+        let cleared: ResourceUpdate = serde_json::from_str(r#"{"description":null}"#).unwrap();
+        let value: ResourceUpdate = serde_json::from_str(r#"{"description":"new"}"#).unwrap();
+        assert_eq!(missing.description, None);
+        assert_eq!(cleared.description, Some(None));
+        assert_eq!(value.description, Some(Some("new".to_owned())));
     }
 
     #[tokio::test]

@@ -238,21 +238,22 @@ Darkens the slide edges, drawing attention to the center. Use on photo-backgroun
 
 ## 4. Slide Transition Hint
 
-`deck-stage.js` manages slide visibility (`.active` / `.visible` classes). The crossfade timing
-is controlled by a CSS custom property:
+`deck-stage.js` manages `.active` / `.visible` classes. The shared CSS uses a
+350ms crossfade; it does not consume a `--slide-transition-duration` variable.
+For instant cuts, place this rule after `viewport-base.css`:
 
 ```css
-/* In viewport-base.css or a per-deck <style> block */
-:root {
-  --slide-transition-duration: 300ms;  /* default */
+.slide,
+.slide.active,
+.slide.visible {
+  transition: none;
 }
 ```
 
-Reduce to `0ms` for instant cuts (editorial, data-heavy decks). Increase to `500ms` for
-cinematic transitions (title sequences, dramatic openers).
-
-Under `prefers-reduced-motion: reduce`, `deck-stage.js` overrides this to `0ms` regardless
-of the set value — no need to conditionally set it.
+The base stylesheet also disables transitions under `prefers-reduced-motion: reduce`.
+Keep that rule after any per-deck animation overrides. For longer custom transitions,
+update the actual transition declarations and the stage's outgoing-slide cleanup guard
+together; a standalone custom property will not change either.
 
 ---
 

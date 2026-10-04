@@ -2,7 +2,7 @@
 otel_spec: "1.x (stable API/SDK)"
 otel_semconv: "1.43.0 (2026-07)"
 notes:
-  - "OpenMetrics: IETF RFC 9416 (2023-08)"
+  - "OpenMetrics: project specification (see primary source below)"
 ---
 
 # Metrics Signal
@@ -13,7 +13,7 @@ Metrics are the "M" in MELT+P (Metrics, Events, Logs, Traces + Profiles).
 
 This file covers:
 - OTel metric instrument types and their sync/async variants
-- Prometheus exposition format and OpenMetrics (RFC 9416) formalization
+- Prometheus exposition format and the OpenMetrics project specification
 - SLI computation patterns (Golden Signals, RED, USE) and healthcheck integration
 - `hostmetrics` receiver for host-level collection
 - Kubernetes metric sources
@@ -33,7 +33,7 @@ Out of scope:
 
 Source: <https://opentelemetry.io/docs/specs/otel/metrics/api/>
 
-Five instrument types are stable in the OTel API/SDK 1.x. Choose based on measurement semantics.
+Choose an OTel Meter instrument based on measurement semantics. Counter, UpDownCounter, Gauge, and Histogram have the variants below. Summary is a legacy metric data type for interoperability, not a Meter API instrument.
 
 ### 2.1 Counter
 
@@ -82,9 +82,9 @@ Prefer over Summary for all new instrumentation
 Sync variant only: `histogram.Record(ctx, value, attrs...)`.
 Configure explicit bucket boundaries per instrument to control cardinality. Default OTel SDK buckets: `[0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000]` (milliseconds; override for seconds-based metrics).
 
-### 2.5 Summary (not recommended for new code)
+### 2.5 Summary (legacy interoperability data, not a Meter instrument)
 
-Client-side quantile computation. Produces quantile values at SDK level.
+Imported Prometheus/OpenCensus-style summaries contain client-computed quantiles. The OTel metric data model can carry legacy Summary points; the Meter API does not create a Summary instrument.
 
 Limitations:
 - Quantiles are computed per-process; they cannot be aggregated across replicas.
@@ -95,8 +95,8 @@ When to keep existing Summary metrics: only if the downstream consumer cannot be
 
 ### 2.6 Temporality: Delta vs Cumulative
 
-OTel SDK default: `delta` (each export contains only the measurements since the last collection).
-Prometheus wire format requires: `cumulative` (monotonic, ever-increasing values).
+The OTLP metric exporter defaults to `cumulative`. Delta is a configurable preference for supported instrument kinds; verify the exporter and language implementation.
+Prometheus counters expose cumulative values; gauges can increase or decrease. Choose conversion according to the instrument and backend, not a blanket monotonic rule for every metric.
 
 Set the preference via environment variable:
 
@@ -104,14 +104,14 @@ Set the preference via environment variable:
 OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative
 ```
 
-Or configure per-instrument in the OTLP exporter. The `prometheusreceiver` in the OTel Collector handles delta-to-cumulative conversion if the SDK exports delta and Prometheus is the backend.
+For delta OTLP input destined for a cumulative backend, use the Collector delta-to-cumulative processor supported by the pinned distribution/version (`delta_to_cumulative`, formerly `deltatocumulative`). `prometheusreceiver` scrapes Prometheus input; it is not a delta OTLP conversion processor. Sources: <https://opentelemetry.io/docs/specs/otel/metrics/sdk_exporters/otlp/> and <https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/deltatocumulativeprocessor>.
 
 ---
 
 ## 3. Prometheus Exposition Format
 
 Source: <https://prometheus.io/docs/instrumenting/exposition_formats/>
-OpenMetrics: <https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md> (IETF RFC 9416)
+OpenMetrics: <https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md>
 
 ### 3.1 Text Format Structure
 
@@ -149,14 +149,14 @@ Low-cardinality labels only. Cross-ref `../meta-observability.md §Section C Car
 Safe label examples: `method`, `status_code`, `route` (normalized), `service`, `region`, `env`.
 Forbidden label examples: `user.id`, `request.id`, `trace.id`, `url.full` (raw), `error.message`.
 
-### 3.4 OpenMetrics Snippet (RFC 9416)
+### 3.4 OpenMetrics Snippet
 
-OpenMetrics is the IETF formalization of Prometheus text format. Key difference: `# EOF` terminator is required, and `_total` suffix is mandatory for counters in the `# TYPE counter` family.
+OpenMetrics is a project specification for a metric exposition format. Key difference: `# EOF` terminator is required, and `_total` suffix is mandatory for counters in the `# TYPE counter` family.
 
 ```
-# HELP http_requests_total Total HTTP requests received.
-# TYPE http_requests_total counter
-http_requests_total_total{method="GET",status="200"} 1234.0 1714521600.000
+# HELP http_requests Total HTTP requests received.
+# TYPE http_requests counter
+http_requests_total{method="GET",status="200"} 1234.0 1714521600.000
 # EOF
 ```
 
@@ -350,14 +350,18 @@ OpenCost (CNCF Incubating) exposes cost attribution in Prometheus format at its 
 
 ### 8.1 Key OpenCost Metrics
 
-| Metric | Type | Unit | Description |
-|--------|------|------|-------------|
-| `opencost_namespace_cost_total` | Counter | USD | Cumulative cost by Kubernetes namespace |
-| `opencost_workload_cost_total` | Counter | USD | Cumulative cost by workload (deployment/statefulset) |
-| `opencost_cpu_cost` | Gauge | USD/hr | Current CPU cost attribution |
-| `opencost_ram_cost` | Gauge | USD/hr | Current memory cost attribution |
-| `opencost_network_cost` | Gauge | USD/hr | Current network egress cost attribution |
-| `opencost_storage_cost` | Gauge | USD/hr | Current persistent storage cost attribution |
+OpenCost exposes allocation and price gauges, not automatic namespace/workload cost counters. Multiply matching quantities and rates and aggregate by namespace; see `cost.md` for the concrete compute-cost query.
+
+| Metric | Unit | Description |
+|--------|------|-------------|
+| `node_cpu_hourly_cost` | USD / core-hour | Node CPU unit price |
+| `node_ram_hourly_cost` | USD / GiB-hour | Node memory unit price |
+| `container_cpu_allocation` | cores | Container CPU allocation |
+| `container_memory_allocation_bytes` | bytes | Container memory allocation |
+| `pod_pvc_allocation` | bytes | Pod PVC allocation |
+| `pv_hourly_cost` | USD / GiB-hour | Volume unit price |
+
+Source: <https://opencost.io/docs/integrations/metrics/>. Label-based tenant/workload totals require explicit API aggregation or verified recording rules.
 
 ### 8.2 Scrape Configuration
 
@@ -412,7 +416,7 @@ Prometheus-compatible TSDBs for metrics retention beyond 15 days:
 | Backend | CNCF Status | Key Characteristic | Typical Retention |
 |---------|-------------|--------------------|-------------------|
 | Prometheus | CNCF Graduated | Local storage, no HA by default | 15d (short-term) |
-| Thanos | CNCF Graduated | Object storage long-term; Prometheus sidecar model | 1y+ |
+| Thanos | CNCF Incubating | Object storage long-term; Prometheus sidecar model | 1y+ |
 | Cortex | CNCF Incubating | Multi-tenant Prometheus; horizontally scalable | 1y+ |
 | Grafana Mimir | Not CNCF | Grafana Labs fork of Cortex; production-grade | 1y+ |
 | VictoriaMetrics | Not CNCF | High-performance; efficient storage compression | 1y+ |

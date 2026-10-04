@@ -102,7 +102,8 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 
 ## Step 4: Verify
 - Run `resources/checklist.md`
-- Confirm every schema change updated:
+- For a schema-design task, confirm affected existing artifacts were updated;
+  for scoped tuning, record SQL/plan evidence instead of creating this full set:
   - glossary
   - standards table
   - capacity estimate

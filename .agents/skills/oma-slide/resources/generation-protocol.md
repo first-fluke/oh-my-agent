@@ -31,12 +31,12 @@ Call direction is one-way: **skill calls CLI. CLI never calls skill.**
 3. For `import-pptx`: run `oma slide import pptx <file> --workspace <deck-dir>`, skip Phase 1, and continue at Phase 2
    so the user can choose the style applied to the extracted fragments in Phase 3.
 
-4. For `import-canva`: probe Canva MCP with `list_designs`.
+4. For `import-canva`: probe Canva MCP with `search-designs` using the discovered tool schema.
    - If Canva MCP is not configured: offer auto-provisioning (see `resources/canva-integration.md`
      §Auto-Provisioning). Add the `canva` entry to project MCP config files and optionally
      the agy CLI global config (`~/.gemini/antigravity-cli/mcp_config.json`) with user approval.
      Notify that a session restart may be needed, then retry the probe.
-   - If configured and authed: `export_design` (PPTX), then `oma slide import pptx` on the
+   - If configured and authed: `export-design` (PPTX, using the discovered tool schema), then `oma slide import pptx` on the
      downloaded file. Skip Phase 1 and continue at Phase 2 for style selection.
    - If configured but unauthed: notify user about OAuth; skip to local import path.
    See `resources/canva-integration.md` for full pipeline details.
@@ -96,7 +96,7 @@ Read `resources/style-presets.md` for the 12 vendored presets and `resources/sel
 
 ### 2b. Style previews (when choosing a direction)
 
-When previews are needed, write three self-contained `preview-*.html` files (cover slide only, 1920×1080, canonical DOM structure) — **do not** use `oma slide create` for these; write them inline as quick previews:
+When previews are needed, write three self-contained `preview-*.html` files (cover slide only, 1920×1080). Inline `resources/assets/viewport-base.css` in `<style>` and `resources/assets/deck-stage.js` in `<script>`; no scaffold or external asset is needed. Escape any closing script delimiter in the JS before embedding (`</script` → `<\/script`), including those in comments. These are quick previews, so do not run `oma slide create` for them:
 
 | Preview | Source | Guidance |
 |---|---|---|
@@ -105,8 +105,8 @@ When previews are needed, write three self-contained `preview-*.html` files (cov
 | `preview-wildcard.html` | Skill-authored original | Combine palette + typography outside both the presets and bold index — an unexpected interpretation of the brief. |
 
 Each preview must:
-- Follow the canonical structure: `<div class="deck-viewport"><div class="deck-stage"><section class="slide" …></section></div></div><script src="./deck-stage.js"></script>`
-- Include a link to `./assets/viewport-base.css`
+- Follow the canonical structure: `<deck-stage><div class="deck-viewport"><div class="deck-stage"><section class="slide" …></section></div></div></deck-stage>`
+- Place the inline stage script after that markup. Do not link `deck-stage.js` or `viewport-base.css` from a preview that has not copied those files.
 - Represent the deck's actual tone and content (use the real deck title + first key message)
 - Be readable side-by-side in a browser
 
@@ -329,33 +329,12 @@ After bundle/export, report:
 
 ### 6d. Canva Export (on user request, requires Canva MCP)
 
-If the user requests Canva export ("export to Canva", "캔바로 내보내기", etc.):
-
-1. **Probe**: Call `list_designs` via Canva MCP to verify authentication.
-   - If Canva MCP is not configured: offer auto-provisioning
-     (see `resources/canva-integration.md` §Auto-Provisioning). Write the `canva` entry
-     to project MCP config files with user approval, then retry.
-   - On auth failure: notify user ("Canva MCP is not authenticated.
-     Run local exports instead.") and skip.
-
-2. **Render PNGs**: Run `oma slide export png --workspace <deck-dir> --resolution 2160p`
-   to get high-resolution per-slide images.
-
-3. **Upload assets**: For each PNG, call `upload_asset` via Canva MCP.
-   Record returned `asset_id` for each slide.
-
-4. **Create presentation**: Call `create_design` with type "Presentation"
-   and the uploaded assets as pages.
-
-5. **Report**: Include the Canva design URL in the delivery summary (6c).
-
-> **Note**: Canva export produces a raster-backed presentation (images per slide).
-> Text is not editable in Canva. The current PPTX exporter is also raster-backed,
-> so importing its output cannot provide editable text. An OOXML text-shape
-> exporter or Canva text-element creation path is required for that outcome.
-
-See `resources/canva-integration.md` for detailed step-by-step pipeline,
-error handling, and security considerations.
+Follow `resources/canva-integration.md`: discover current tool schemas, export a local
+PPTX, and use `import-design-from-url` only with an authorized URL Canva can retrieve.
+If only local files exist, deliver the PPTX for manual import or resolve a transfer
+location with the user. Do not pass local paths to URL tools or publish a deck merely
+to make it importable. Report a Canva URL only after the complete import succeeds.
+The current PPTX output is raster-backed; text remains non-editable after import.
 
 ---
 
@@ -391,7 +370,7 @@ Exit codes: `0 ok · 4 invalid-input · 1 error` (timeouts surface as `1`).
 
 | Phase | Mode: new | Mode: import-pptx | Mode: import-canva | Mode: enhance |
 |---|---|---|---|---|
-| 0 Detect | detect + scaffold | run `import-pptx` | probe Canva MCP + `export_design` → `import-pptx` | detect existing workdir |
+| 0 Detect | detect + scaffold | run `oma slide import pptx` | probe Canva MCP + `export-design` → `oma slide import pptx` | detect existing workdir |
 | 1 Discover | AskUserQuestion + asset eval | (skipped) | (skipped) | (skipped) |
 | 2 Style | 3 previews → user picks | user picks style | user picks style | may reuse existing style |
 | 3 Generate | write all slides | overlay style on extracted fragments | overlay style on extracted fragments | rewrite targeted slides |

@@ -3,7 +3,7 @@
 - [ ] Mode is set or inferable (shorts / explainer / demo) and the topic/source is clear (see `prompt-tips.md`).
 - [ ] `--aspect` matches the mode (9:16 shorts, 16:9 explainer/demo) or is `auto`.
 - [ ] Duration ≤ 180s and the script stays ≤ 40 scenes.
-- [ ] `--out` is inside the project, or `--allow-external-out` is set.
+- [ ] `--output-dir` is inside the project, or `--allow-external-output` is set.
 - [ ] For `demo`: `--capture <path>` exists, is absolute + inside `$PWD`, and is a valid video format — or you accept the guided protocol.
 - [ ] Provider readiness checked with `oma video doctor` (Node/Chromium/FFmpeg · Voicebox MCP · oma-image vendors · Pixelle-MCP · Cap).
 - [ ] Paid visuals (Pexels / Pixelle) have their env key set, OR you accept the key-free oma-image fallback.
@@ -20,5 +20,5 @@
 - [ ] External assets were copied into the run dir and hashed (no URL refs).
 - [ ] The mp4 has a video stream and positive duration (the CLI ffprobe check passed). A deterministic placeholder is valid only under `OMA_VIDEO_MOCK=1` tests and is never a deliverable.
 - [ ] Re-rendering with `oma video render <runDir>` reproduces the same output from `render-spec.json`.
-- [ ] If results are consumed downstream, the consumer parses the `--format json` stdout envelope `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}` (there is no `outputs` key) and reads output/asset paths from the manifest at `manifestPath`.
+- [ ] If results are consumed downstream, the consumer parses the `--output json` stdout envelope `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}` (there is no `outputs` key) and reads output/asset paths from the manifest at `manifestPath`.
 - [ ] Old run directories under `.agents/results/videos/` are pruned **manually** when no longer needed — every run adds a new dir and the CLI never auto-deletes them.

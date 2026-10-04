@@ -117,7 +117,7 @@ registerInstrumentations({
     new UserInteractionInstrumentation(),
     new FetchInstrumentation({
       // Allow traceparent injection only to trusted origins (see §5)
-      propagateTraceHeaderCorsUrls: [/https:\/\/api\.example\.com/],
+      propagateTraceHeaderCorsUrls: [/^https:\/\/api\.example\.com(?:\/|$)/],
     }),
   ],
 });
@@ -154,20 +154,20 @@ The `FetchInstrumentation` (OTel JS) and Datadog RUM inject `traceparent` automa
 // OTel JS SDK — propagateTraceHeaderCorsUrls
 new FetchInstrumentation({
   propagateTraceHeaderCorsUrls: [
-    /https:\/\/api\.example\.com/,
-    /https:\/\/gateway\.example\.com/,
+    /^https:\/\/api\.example\.com(?:\/|$)/,
+    /^https:\/\/gateway\.example\.com(?:\/|$)/,
   ],
 });
 
 // Datadog RUM — allowedTracingUrls
 datadogRum.init({
   allowedTracingUrls: [
-    { match: 'https://api.example.com', propagatorTypes: ['tracecontext'] },
+    { match: /^https:\/\/api\.example\.com(?:\/|$)/, propagatorTypes: ['tracecontext'] },
   ],
 });
 ```
 
-The server must emit the same `trace_id` in its own spans. When the browser console shows an error, the `trace_id` links directly to the backend trace in Sentry Performance, Datadog APM, or any OTel-compatible backend.
+The SDK tracing allowlist controls injection, not server CORS permission. For cross-origin requests, configure the API's OPTIONS/preflight response and `Access-Control-Allow-Headers` for the headers actually sent (`traceparent`, `tracestate`, and `baggage` when used), and `Access-Control-Allow-Origin` for the trusted frontend origin. Credentialed requests require an explicit allowed origin and `Access-Control-Allow-Credentials: true`. Verify browser preflight behavior. The server must extract the propagated context and emit the same `trace_id` in its own spans. When the browser console shows an error, the `trace_id` links directly to the backend trace in Sentry Performance, Datadog APM, or any OTel-compatible backend.
 
 **Anti-pattern to avoid:** client retry loop on 5xx without a circuit breaker. Retrying immediately amplifies server load. Implement exponential backoff + circuit breaker in the fetch layer before enabling distributed tracing; otherwise the correlation data documents a cascading failure, not a single event. Cross-reference: anti-patterns §Section G below and `../../signals/traces.md` for retry trace patterns.
 
@@ -314,9 +314,9 @@ These are candidates for `../../anti-patterns.md §Section G Frontend/Mobile`:
 | G1 | 3rd-party script loaded without CSP monitoring | Silent XSS or supply-chain injection; no alert | Add `Content-Security-Policy` with `report-to`; pipe violations to log backend |
 | G2 | Source maps not uploaded to error vendor | Stack traces are unreadable minified symbols in production | Upload source maps on every CI release pipeline step |
 | G3 | Client retry loop on 5xx without circuit breaker | Backend saturation cascade from amplified retry storm | Implement exponential backoff + client-side circuit breaker before enabling trace correlation |
-| G4 | `user.email` as metric label | Cardinality explosion + PII violation (GDPR Article 5(1)(c)) | Use opaque `user.id` (stable hash) or remove user dimension from metrics |
+| G4 | `user.email` as metric label | Cardinality explosion + PII violation (GDPR Article 5(1)(c)) | Remove the per-user metric dimension or use a bounded, approved cohort/tier; hashing does not reduce unique-user cardinality or by itself anonymize data |
 | G5 | FID still reported in dashboards after March 2024 | Stale metric; no longer part of CWV; misleads SLO reviews | Replace FID with INP in all dashboards and SLO definitions |
-| G6 | `propagateTraceHeaderCorsUrls` / `allowedTracingUrls` not configured | Browser CORS preflight rejects `traceparent` injection; client-server correlation silently broken | Add API origins to the SDK CORS allowlist configuration |
+| G6 | SDK tracing allowlist or server CORS policy incomplete | Injection can be skipped, or browser preflight can reject tracing headers | Configure an origin-anchored SDK allowlist and the server OPTIONS/allowed-origin/allowed-header policy; verify preflight |
 | G7 | Session replay without client-side PII masking | PII (email, card numbers) captured in replay payload before masking | Enable input masking in SDK config; do not rely on server-side redaction alone |
 
 ---

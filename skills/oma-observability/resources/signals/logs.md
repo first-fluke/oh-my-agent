@@ -11,7 +11,7 @@ notes:
 
 Logs are the "L" in MELT+P. Covers: OTel LogRecord data model, structured logging, events-as-logs, systemd journal, and pipeline options.
 
-**Normative base:** `../standards.md`. **Deprecated:** Fluentd (CNCF 2025-10); use Fluent Bit or OTel Collector.
+**Normative base:** `../standards.md`. Fluentd remains CNCF Graduated. Select Fluentd, Fluent Bit, or OTel Collector from workload, plugin, and operational requirements.
 
 ---
 
@@ -143,7 +143,7 @@ Cross-ref `../vendor-categories.md §Log Pipeline Collection` (category h).
 | **OTel Collector** | Go | 30–100 MB | Incubating | Unified MELT; gateway aggregation |
 | **Vector** | Rust | 20–60 MB | Datadog OSS | Log + metric pipeline with transforms |
 | **Cribl Stream** | Proprietary | 100+ MB | Commercial | Advanced routing |
-| ~~Fluentd~~ | Ruby | 100+ MB | **Deprecated** | CNCF 2025-10 |
+| Fluentd | Ruby | Workload-dependent | CNCF Graduated | Validate plugin and resource requirements |
 
 **2026 best practice:** Fluent Bit DaemonSet (edge) → OTLP → OTel Collector gateway (enrichment, PII redaction, routing) → backends.
 
@@ -178,7 +178,7 @@ Without them, log-trace join fails during incident forensics, adding 15–30 min
 
 Apply sampling at the collection tier (Fluent Bit throttle filter or OTel Collector `probabilistic_sampler`), not at the application tier.
 
-**Tail sampling for logs:** retain 100% of records whose `trace_id` is associated with an error trace. Cross-ref `../transport/sampling-recipes.md` for the OTel Collector tail-sampling processor config.
+**Trace-correlated log retention:** the Collector `tail_sampling` processor accepts traces, not logs. Keeping logs based on a later trace outcome requires a separately implemented stateful correlation/buffering stage or backend policy keyed by `trace_id`. Until that exists, retain WARN/ERROR/FATAL through a log-specific severity policy and sample lower severities independently; the trace recipe alone cannot join the signals.
 
 ---
 
@@ -188,7 +188,7 @@ Apply sampling at the collection tier (Fluent Bit throttle filter or OTel Collec
 |---|---|---|
 | Operational (INFO/DEBUG) | 7–30 days | Hot |
 | WARN / ERROR | 90 days | Hot or warm |
-| Audit logs | 7 years | WORM object storage |
+| Audit logs | Approved schedule for the record class | Tamper protection; WORM when the selected obligation requires it |
 
 **PII redaction** MUST occur at ingestion (Fluent Bit or OTel Collector `redaction` processor), not at storage time. Cross-ref `privacy.md §PII redaction pipeline`.
 
@@ -249,7 +249,7 @@ Append candidates for `../anti-patterns.md §Logs`:
 | A-L2 | `trace_id` missing in logs | Inject via SDK hook (Section 7); enforce in CI |
 | A-L3 | `user.email` in log body | PII violation; redact at collection tier; cross-ref `privacy.md` |
 | A-L4 | Unique message IDs as log labels | Cardinality explosion in Loki; use attributes, not labels |
-| A-L5 | Fluentd as new deployment in 2026+ | Deprecated; use Fluent Bit or OTel Collector |
+| A-L5 | Log agent selected without checking plugins, routes, or resource use | Compare supported requirements and measured overhead; Fluentd is not deprecated by the CNCF migration guide |
 
 ---
 
@@ -258,6 +258,6 @@ Append candidates for `../anti-patterns.md §Logs`:
 1. OTel log data model: <https://opentelemetry.io/docs/specs/otel/logs/data-model/>
 2. OTel event API: <https://opentelemetry.io/docs/specs/otel/logs/event-api/>
 3. journaldreceiver: <https://github.com/open-telemetry/opentelemetry-collector-contrib/receiver/journaldreceiver>
-4. CNCF Fluentd migration guide: <https://cncf.io/blog/2025/10/01/fluentd-to-fluent-bit-migration-guide>
+4. CNCF Fluentd migration guide: <https://www.cncf.io/blog/2025/10/01/fluentd-to-fluent-bit-a-migration-guide/>
 5. Fluent Bit docs: <https://docs.fluentbit.io>
 6. `../standards.md` · `../matrix.md` · `../incident-forensics.md §MRA` · `../meta-observability.md §Retention Matrix` · `../transport/sampling-recipes.md` · `../vendor-categories.md`

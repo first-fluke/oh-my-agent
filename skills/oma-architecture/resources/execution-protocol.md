@@ -99,7 +99,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - `diagnosis-<topic>.md`
 - Rerunning the same topic updates the existing file; record the revision in the ADR `Status` line rather than creating a copy
 - ADR lifecycle: `Status` is `Proposed`, `Accepted`, or `Superseded by <adr-file>`. Keep a user-owned unresolved choice `Proposed`; a completed artifact or event is not acceptance. Use `Accepted` only when existing decision authority supports it. Update a prior ADR as superseded only when the replacement is authorized.
-- When running as a dispatched subagent, ALSO write the run report to `.agents/results/result-architecture.md` per the agent protocol; the report links to the durable artifact, it does not replace it
+- When dispatched, also write the injected claim and the task/run-scoped report per `../../_shared/runtime/result-contract.md` and `memory-protocol.md`. Use `result-{agentId}-{taskId}-{runId}-{sessionId}.md` under the configured memory base, preserving injected IDs. Link the architecture artifact from this report.
 - In an active OMA workflow, record and verify the actual recommendation with its authority status and current artifact revision. This records completion of the analysis without granting implementation approval:
 
 ```bash

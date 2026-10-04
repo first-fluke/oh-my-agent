@@ -124,10 +124,10 @@ outputs:
 ### Canonical workflow path
 Use the configured code-intelligence provider for structure, symbols, references, and integration points. If unavailable, use native search only for paths outside this project or ignored paths:
 
-```bash
-ls .agents/results/architecture/   # prior decisions — read before deciding
-rg --files
-rg "ADR|architecture|boundary|service|module|dependency|owner|interface" .
+```text
+1. Read prior decisions in .agents/results/architecture/.
+2. Discover the configured provider's file, symbol, reference, and pattern tools.
+3. Inspect architecture-relevant modules, ownership, and integration points within the selected scope.
 ```
 
 Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or ADR mode before writing the artifact.

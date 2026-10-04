@@ -156,9 +156,7 @@ WEB  #3  TypeError Debugging — dev.to                 [external,blog 0.40]
 Query: "htmx form validation"
 Mode: docs -> web (fallback)
 
-Could not find official docs via Context7. Showing web results.
+Could not find official docs via Context7. Searching official htmx documentation only.
 
 WEB  #1  Form Validation — htmx.org                  [verified,official-site 0.90]
-WEB  #2  htmx Validation Guide — dev.to              [external,blog 0.40]
-WEB  #3  htmx Form Patterns — reddit.com/r/htmx      [community,forum 0.55]
 ```

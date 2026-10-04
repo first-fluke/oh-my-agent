@@ -50,9 +50,10 @@ Clusters, LAWs, engine footer). Then append the framework sections for the
 intent (`frameworks/*.md`), citing only clusters that appear in the engine
 output. Comparison intent uses the upstream COMPARISON template.
 
-## Step 6 — Self-check and write (LLM)
+## Step 6 — Write, self-check, and deliver (LLM)
 
-Run the checks in `output-laws.md`. Write
+Write the candidate brief to
 `.agents/results/market/{topic-slug}-{YYYYMMDD}.md` (same day + slug
-overwrites). Preview the first 50 lines and report the path. State skipped
-sources and the engine version.
+overwrites), then run the checks in `output-laws.md` against that file. Fix
+and re-check the final bytes before delivery. Preview the first 50 lines and
+report the path, skipped sources, and engine version.

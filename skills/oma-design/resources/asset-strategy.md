@@ -1,29 +1,22 @@
 # Asset Strategy: Images, Logos, and Visual Material
 
-Landing pages and portfolios are visual products. A text-only page with
-fake-screenshot divs is slop, not minimalism. Even a restrained editorial
-page needs at least 2-3 real images (hero, one product/lifestyle shot,
-one supporting image).
+Choose visual material that supports the brief. Product demonstrations, portfolios,
+and photo-led pages often need images; documentation and operational screens can be
+text-only. Do not add images to meet a minimum count.
 
-## Source Priority (in order)
+## Source Selection
 
-1. **Image generation first.** If an image-generation path is available,
-   use it — in the oma ecosystem, route to the `oma-image` skill
-   (Codex gpt-image-2 / nano-banana / Pollinations). Generate
-   section-specific assets at the right aspect ratio: hero photography,
-   product shots, texture backgrounds, mood images. Do not skip this
-   because hand-rolled CSS feels faster.
-2. **Real web images second.** When no generation tool is available:
-   - `https://picsum.photos/seed/{descriptive-seed}/{w}/{h}` for
-     placeholder photography. The seed should describe the section
-     (e.g. `oma-cookware-kitchen`), not be random.
-   - Actual stock or brand URLs when the brief provides them.
-   - Open-license sources (Unsplash direct URL, Pexels) if explicitly allowed.
-     Never emit guessed/unverified Unsplash URLs — they break.
-3. **Last resort: tell the user.** Do NOT fill the page with hand-rolled
-   SVG illustrations or div-based fake screenshots. Leave clearly labeled
-   placeholder slots (`<!-- TODO: hero product photo, 1600x1200 -->`) and
-   report at the end: "This page needs real images at: [placements]."
+1. Prefer relevant assets already supplied by the user or project: real product
+   screenshots, approved brand marks, and photography.
+2. Generate an asset through `oma-image` when the brief needs an original image and
+   that generation is within the requested scope. Match its aspect ratio to placement.
+3. Use verified stock or placeholder URLs when allowed. Label placeholders as such;
+   do not present stock photography as the user's product or an actual customer.
+4. If a required asset is unavailable, leave a labeled slot and report the missing
+   placement. If the content does not need an image, omit the slot.
+
+Never emit guessed/unverified asset URLs. Decorative assets should not replace a
+real demonstration when the page makes a claim about an existing product.
 
 ## Logo Walls ("Trusted by" / "Used by")
 
@@ -48,11 +41,11 @@ or fake terminal windows built from styled `<div>` rectangles. If you need
 to show a product:
 
 - Use a real screenshot URL if one exists
-- Generate one via the image tool
+- Use a generated concept only when the brief asks for one, and label it as a concept rather than the actual product
 - Use a real component preview (an actual mini-version of the UI on the page)
 - Or skip the preview and use editorial photography
 
-A hero of "text + gradient blob" is a placeholder, not a hero.
+A decorative background does not substitute for a product demonstration when the brief requires one.
 
 ## Hand-Rolled SVG
 

@@ -91,10 +91,11 @@ Build, modify, and verify cross-platform mobile application features with clean 
 - Unit, widget, integration, and E2E test commands
 
 ### Canonical workflow path
-```bash
-rg --files
-rg "Riverpod|Bloc|Dio|Widget|Maestro|dispose\\(|permission" .
-```
+Use the configured code-intelligence provider to locate files and inspect symbols
+or content. For Serena, use `find_file`, `search_for_pattern`,
+`get_symbols_overview`, and `find_symbol`. Native search is limited to the
+provider exclusions and non-code paths permitted by the project's search policy.
+
 
 Then run the project's mobile verification commands, typically unit/widget tests and Maestro E2E for critical flows.
 
@@ -121,17 +122,17 @@ Apply framework, library, architecture, and data-model defaults only when the ta
 3. Material Design 3 (Android) + iOS HIG (iOS)
 4. All controllers disposed in `dispose()` method
 5. Use the platform transport with auth/retry/logging interception and offline handling: Flutter uses Dio, React Native uses axios behind TanStack Query, and Swift uses generated `Client` middleware.
-6. 60fps target; test on both platforms
+6. 60fps target; verify supported target platforms (Swift iOS needs iOS only)
 7. Use Maestro for E2E testing of critical user flows
 8. Swift native: SwiftUI + `@MainActor @Observable` view models (Observation framework, iOS 17+) — non-isolated VMs mutating observed state from a `Task` are a Swift 6 strict-concurrency error
-9. Swift native: use the generated `Client` from `swift-openapi-generator` — never hand-roll `URLRequest`/`JSONDecoder` for API calls
-10. Swift native: cache API responses at the Repository layer via a `ResponseCache` actor over `hyperoslo/Cache` — cache DECODED models (never `HTTPBody`), serve stale-while-revalidate on reads, invalidate keys on writes; view models depend on a protocol seam, not the concrete service (see `variants/swift-ios/snippets.md` §10)
+9. Swift native: use the existing API layer. When the project adopts OpenAPI generation, use its generated Client for covered endpoints; a UI-only edit does not introduce a generator.
+10. Swift native: when response caching is required, use the existing Repository cache; for a new hyperoslo/Cache implementation, use a ResponseCache actor — cache DECODED models (never `HTTPBody`), serve stale-while-revalidate on reads, invalidate keys on writes; view models depend on a protocol seam, not the concrete service (see `variants/swift-ios/snippets.md` §10)
 11. Swift native: follow `App/Core/Features/Shared` project layout
 12. Swift native: iOS Human Interface Guidelines for all UI decisions
 13. Swift native: XCTest or Swift Testing for units, XCUITest for critical flows; cancel work via structured `.task {}` (auto-cancels on disappear) — never in `deinit`, which is nonisolated and cannot touch `@MainActor` state under Swift 6 (isolated deinit requires Swift 6.2+)
 14. Swift native: restore edge swipe-back at the route layer — nav-bar-hidden screens (`.toolbar(.hidden, for: .navigationBar)`) lose it, so register push routes via a `swipeBackDestination` wrapper, not per-screen (see `variants/swift-ios/snippets.md` §9)
-15. Flutter: mandate a repository-layer offline-first cache (Drift) — read cached entities then revalidate (stale-while-revalidate), invalidate/refresh affected rows on every write; cache decoded entities at the data layer, never at the Dio transport (see `variants/flutter/snippets.md` §3, §10)
-16. React Native: server state goes through TanStack Query (the repository-layer cache) with explicit `staleTime`/`gcTime` — invalidate affected query keys on every mutation, persist the cache to MMKV for offline; screens consume query/mutation hooks, never call axios directly (see `variants/react-native/snippets.md`)
+15. Flutter: when offline response caching is required, use the existing repository cache; if adding Drift, read cached entities then revalidate (stale-while-revalidate), and invalidate/refresh affected rows on every write; cache decoded entities at the data layer, never at the Dio transport (see `variants/flutter/snippets.md` §3, §10)
+16. React Native: preserve the existing server-state layer; for TanStack Query with explicit `staleTime`/`gcTime` — invalidate affected query keys on every mutation, persist account-scoped cache to MMKV only when offline persistence is required; screens consume query/mutation hooks, never call axios directly (see `variants/react-native/snippets.md`)
 
 ## References
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`

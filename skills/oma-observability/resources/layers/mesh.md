@@ -124,6 +124,8 @@ spec:
 #       opentelemetry:
 #         service: otel-collector.observability.svc.cluster.local
 #         port: 4318
+#         http:
+#           path: /v1/traces
 #         resourceDetectors:
 #           environment: {}
 ```

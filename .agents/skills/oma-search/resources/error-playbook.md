@@ -6,15 +6,15 @@
 **Symptom**: `resolve-library-id` returns no match
 **Recovery**:
 1. Try alternative library name spellings (e.g., "nextjs" vs "next.js")
-2. If still not found: auto-fallback to `web` route
-3. Inform user: "Could not find official docs via Context7. Falling back to web search."
+2. If still not found: search the verified official documentation domain, preserving the requested library version and source constraints.
+3. Inform the user that Context7 missed and the fallback remains official documentation only; if unavailable, report the gap.
 
 ### Context7 returns empty/irrelevant docs
 **Symptom**: `query-docs` returns content that doesn't match the query topic
 **Recovery**:
 1. Try broader or narrower topic parameter
-2. Fall back to `web` route with the original query
-3. Present web results with note about docs miss
+2. Search the verified official documentation domain with the original query and version constraints.
+3. Present official results with the Context7 limitation; do not substitute community material for `--docs`.
 
 ## web Route Errors
 
@@ -67,9 +67,9 @@
 **Symptom**: `glab` not installed or not authenticated
 **Recovery**:
 1. Check if `glab` is available: `which glab`
-2. If not installed: "GitLab CLI is not installed. Using GitHub search as default."
-3. If not authenticated: "GitLab CLI requires authentication. Run `glab auth login` first."
-4. Fall back to `oma search code` with the default github host, with notice
+2. If not installed, report that the requested GitLab source is unavailable because `glab` is missing.
+3. If not authenticated, report the GitLab authentication requirement.
+4. Preserve an explicit host or repository constraint. Use GitHub only when existing authorization permits that source change or no source constraint was supplied.
 
 ### gh/glab returns 0 results
 **Symptom**: No code matches found
@@ -101,9 +101,9 @@
 ### docs mode returns 0, user wanted docs
 **Symptom**: `docs` classified correctly but Context7 has no match
 **Recovery**:
-1. Auto-add `web` search in parallel
-2. Merge results, clearly label which came from web vs docs
-3. Inform: "Official docs not found in Context7. Showing web results."
+1. Search only verified official documentation domains.
+2. Preserve the requested version and label the retrieval route.
+3. Report a missing official source if this fallback also fails; broader sources require a scope change.
 
 ## Multi-Vendor Errors
 

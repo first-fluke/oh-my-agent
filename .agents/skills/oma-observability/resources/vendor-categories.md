@@ -15,7 +15,7 @@ This file is a **category taxonomy with timestamped example vendors**. It is not
 
 1. **Vendor names rot.** Examples from this codebase's own lifetime:
    - Keptn: archived by CNCF, 2025-09
-   - Fluentd: deprecated by CNCF, 2025-10 (migration guide: Fluent Bit / OTel Collector)
+   - Fluentd remains CNCF Graduated; the 2025-10 migration guide is not a deprecation announcement
    - Pyroscope: was CNCF Sandbox; acquired by Grafana 2023; CNCF Sandbox status is uncertain post-acquisition (verify at landscape.cncf.io before citing)
 
 2. **Categories are stable.** "OSS full-stack", "SIEM", and "profiling specialist" have been coherent for years. The vendors filling them change.
@@ -187,7 +187,7 @@ When reviewing:
 
 | Vendor | CNCF status | Flag eval | Progressive delivery | Notes |
 |--------|------------|---------|---------------------|-------|
-| OpenFeature | CNCF Graduated (2024-11) | Yes (SDK standard) | No | Standardizes flag SDK; vendor-agnostic |
+| OpenFeature | CNCF Incubating (2023-11-21) | Yes (SDK standard) | No | Standardizes flag SDK; vendor-agnostic |
 | Flagger | CNCF Graduated | No | Yes (canary/A-B/blue-green) | Prometheus/Datadog metric gating |
 | Argo Rollouts | N/A (Argo project) | No | Yes (canary/blue-green) | Kubernetes CRD; integrates with analysis templates |
 | LaunchDarkly | Commercial | Yes | Partial | Mature commercial flag platform |
@@ -207,7 +207,7 @@ When reviewing:
 
 **Traits:** High-throughput log and event collection, transformation, routing, and forwarding. Runs as DaemonSet agents (preferred) or standalone pipeline. OTel Collector is the 2026 standard for new deployments.
 
-**Fluentd note:** Deprecated by CNCF 2025-10. Official migration guide: CNCF Blog 2025-10-01 "Fluentd to Fluent Bit: A Migration Guide". For migration assistance, use intent `migrate` in this skill, target category (h), with CNCF 2025-10 guide as reference.
+**Fluentd note:** CNCF lists Fluentd as Graduated. Choose migration from workload requirements, resource use, and plugin support, not a deprecation claim. The CNCF 2025-10-01 migration guide states that Fluentd and Fluent Bit configuration syntax differs substantially; validate converted plugins/routes before cutover. Sources: <https://www.cncf.io/projects/fluentd/> and <https://www.cncf.io/blog/2025/10/01/fluentd-to-fluent-bit-a-migration-guide/>.
 
 **Example vendors** (as of 2026-Q2):
 
@@ -219,7 +219,7 @@ When reviewing:
 | Cribl Stream | Commercial | Multiple | Yes | Enterprise routing + data shaping |
 
 **How to choose:**
-- Migrating from Fluentd → Fluent Bit (drop-in config compatibility)
+- Migrating from Fluentd → compare Fluent Bit plugin/route support; convert configuration and validate in parallel (not a drop-in config replacement)
 - New OTel-native deployment → OpenTelemetry Collector
 - High-throughput with Rust reliability → Vector
 - Enterprise data routing with UI + compliance → Cribl Stream
@@ -237,7 +237,7 @@ When reviewing:
 | Vendor | CNCF status | Multi-tenant | Object storage | Notes |
 |--------|------------|------------|---------------|-------|
 | Prometheus | CNCF Graduated | No (single-tenant) | No | Standard scrape source; 15d retention default |
-| Thanos | CNCF Graduated | Yes | Yes (S3/GCS/Azure) | Sidecar or receive mode; global query view |
+| Thanos | CNCF Incubating (2020-08-19) | Yes | Yes (S3/GCS/Azure) | Sidecar or receive mode; global query view |
 | Cortex | CNCF Incubating | Yes | Yes | Horizontally scalable; more complex ops |
 | Grafana Mimir | Non-CNCF (Grafana OSS) | Yes | Yes | Evolved from Cortex; simpler ops |
 | VictoriaMetrics | Non-CNCF (OSS + Commercial) | Cluster edition | Yes | High compression; low resource usage |
@@ -245,7 +245,7 @@ When reviewing:
 
 **How to choose:**
 - Starting fresh, Kubernetes, team familiar with Grafana → Grafana Mimir
-- Need CNCF Graduated status for compliance → Thanos
+- Need CNCF Graduated status for procurement → verify an eligible project with CNCF; Thanos is Incubating and does not meet a Graduated-only requirement
 - Multi-tenant with complex federation needs → Cortex
 - Resource-constrained or high compression priority → VictoriaMetrics
 - Time-series with SQL query surface needed → InfluxDB IOx
@@ -348,5 +348,5 @@ Or navigate directly to https://landscape.cncf.io; it is the authoritative live 
 
 **Known pending verifications (as of 2026-Q2):**
 - Pyroscope CNCF status post-Grafana acquisition (2023): check landscape.cncf.io before citing CNCF affiliation
-- Thanos Graduated status (confirmed 2024 per design verification log; verify remains current)
-- OpenFeature CNCF status timestamped as of 2024-11 Graduated; verify next tier/changes via landscape.cncf.io
+- Thanos: Incubating since 2020-08-19; <https://www.cncf.io/projects/thanos/> (checked 2026-10-04)
+- OpenFeature: Incubating since 2023-11-21; <https://www.cncf.io/projects/openfeature/> (checked 2026-10-04)

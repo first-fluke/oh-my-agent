@@ -227,7 +227,7 @@ W3C Trace Context reference: `../../standards.md §W3C Trace Context`.
 | Warm start time | App resumed from background to interactive | < 1 s |
 | Hot start time | Activity recreated (Android) | < 500 ms |
 | Frame rendering | Frame drop rate (jank) | iOS ≥ 60 fps (`CADisplayLink`); Android `FrameMetricsAggregator` Jank < 0.1% |
-| ANR rate | Application Not Responding (main thread blocked > 5 s) | Android-specific; < 0.47% (Play Console threshold) |
+| User-perceived ANR rate | Daily active users with a user-perceived ANR / daily active users | Android Play overall threshold: 0.47%; custom session stall rates have a different denominator |
 | iOS Hang rate | Non-responsive main thread > 250 ms | < 0.1% (MetricKit `MXHangDiagnostic`) |
 | Network latency | Per-request round-trip time | Monitor p50/p95/p99 histograms; no universal target |
 | Crash-Free Session Rate | Sessions without a crash / total sessions | Cross-reference `crash-analytics.md §CFR` |

@@ -17,7 +17,7 @@ plan when the brief is a one-liner.
    - `captions` ∈ {`tiktok`, `lower-third`, `none`}; `visual` ∈ {`auto`, `generate`, `stock`, `aigc`, `slide`}.
    - `music` ∈ {`upbeat`, `calm`, `cinematic`, `lofi`, `piano`, `none`}; `compositor` ∈ {`hyperframes`, `mpt`}.
    - `duration` ≤ `limits.max_duration_sec` (180); resulting `scenes` ≤ `limits.max_scenes` (40).
-   - `out` is inside `$PWD` unless `--allow-external-out`.
+   - `out` is inside `$PWD` unless `--allow-external-output`.
    - For `demo`: `--capture` (if given) exists, is absolute + `$PWD`-guarded, and is a valid video format.
 4. If invalid: exit code 4 with a message identifying the offending field.
 
@@ -94,7 +94,7 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
    - `[oma video] <capability> <provider> ok (Xs)`
    - `[oma video] <capability> <provider> fallback -> <fallback>`
 2. Print the run-dir path and, only on success, the validated mp4 path.
-3. For `--format json`: write `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}` to stdout as one JSON object (no `outputs` key — read output/asset paths from the manifest at `manifestPath`).
+3. For `--output json`: write `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}` to stdout as one JSON object (no `outputs` key — read output/asset paths from the manifest at `manifestPath`).
 
 ## Step 8: Exit Code Aggregation (aligned with `oma search fetch`)
 

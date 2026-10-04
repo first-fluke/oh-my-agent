@@ -149,7 +149,7 @@ class DeckStage extends HTMLElement {
 
   /** Navigate to a specific slide index (0-based). */
   goTo(index) {
-    this.#goTo(clamp(index, 0, this.#slides.length - 1));
+    this.#goTo(index);
   }
 
   /** Navigate one slide forward. */
@@ -197,8 +197,12 @@ class DeckStage extends HTMLElement {
   /* ── Private: navigation ── */
 
   #goTo(index, initial = false) {
+    if (!Number.isInteger(index) || this.#slides.length === 0) return;
+
     const prev = this.#currentIndex;
     const next = clamp(index, 0, this.#slides.length - 1);
+    const incoming = this.#slides[next];
+    if (!incoming) return;
 
     if (prev === next && !initial) return;
 
@@ -219,7 +223,6 @@ class DeckStage extends HTMLElement {
     }
 
     /* Incoming: make active */
-    const incoming = this.#slides[next];
     incoming.classList.remove("visible");
     incoming.classList.add("active");
     this.#currentIndex = next;
@@ -489,8 +492,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!viewport) return;
 
   const wrapper = document.createElement("deck-stage");
-  viewport.parentNode.insertBefore(wrapper, viewport);
+  const parent = viewport.parentNode;
+  const nextSibling = viewport.nextSibling;
   wrapper.appendChild(viewport);
+  parent.insertBefore(wrapper, nextSibling);
 });
 
 /* ─── Presenter-view helper ──────────────────────────────────────────── */
@@ -504,6 +509,6 @@ window.addEventListener("message", (e) => {
 
   const deckEl = document.querySelector("deck-stage");
   if (deckEl && typeof deckEl.goTo === "function") {
-    deckEl.goTo(Number(e.data.index));
+    deckEl.goTo(e.data.index);
   }
 });

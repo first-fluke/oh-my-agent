@@ -38,8 +38,10 @@ class Example {
 /// The presentation layer depends on this interface, never on a concrete impl.
 /// Swap the offline-first impl, a stub, or a mock behind this seam.
 abstract interface class ExampleRepository {
-  /// Emits the cached list immediately, then re-emits after network revalidation.
+  /// Emits warm cached data immediately; cold loads await network and surface errors.
   Stream<List<Example>> watchAll();
+  /// Force a network refresh, bypass TTL, and propagate failures.
+  Future<void> refresh();
 }
 
 /// DI seam. Override this in `ProviderScope(overrides: [...])` (or a codegen
@@ -74,7 +76,8 @@ class ExamplesNotifier extends _$ExamplesNotifier {
 /// helpers from `@TypedGoRoute`; the annotation and `GoRouteData` come from
 /// `package:go_router/go_router.dart`. Navigate with:
 ///   `const ExampleDetailRoute(id: 42).push(context);`
-class ExampleDetailRoute extends GoRouteData {
+@TypedGoRoute<ExampleDetailRoute>(path: '/examples/:id')
+class ExampleDetailRoute extends GoRouteData with $ExampleDetailRoute {
   const ExampleDetailRoute({required this.id});
   final int id;
 
@@ -133,8 +136,14 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            // Invalidate re-subscribes build() → fresh revalidation cycle.
-            onPressed: () => ref.invalidate(examplesNotifierProvider),
+            onPressed: () async {
+              try {
+                await ref.read(exampleRepositoryProvider).refresh();
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Refresh failed: $error')));
+              }
+            },
             tooltip: 'Refresh',
           ),
           IconButton(
@@ -167,9 +176,14 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
   /// Builds main content.
   Widget _buildContent(List<Example> items) {
     return RefreshIndicator(
-      // Await the next stream value so the spinner stays until fresh data
-      // arrives — `ref.invalidate` returns synchronously and dismisses early.
-      onRefresh: () => ref.refresh(examplesNotifierProvider.future),
+      onRefresh: () async {
+        try {
+          await ref.read(exampleRepositoryProvider).refresh();
+        } catch (error) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Refresh failed: $error')));
+        }
+      },
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [

@@ -95,10 +95,11 @@ Reproduce, diagnose, minimally fix, and regression-test bugs while preserving sc
 - Debugging checklist and bug report template
 
 ### Canonical workflow path
-```bash
-rg "<error-message-or-symbol>"
-rg --files
-```
+Use the configured code-intelligence provider to locate files and inspect symbols
+or content. For Serena, use `find_file`, `search_for_pattern`,
+`get_symbols_overview`, and `find_symbol`. Native search is limited to the
+provider exclusions and non-code paths permitted by the project's search policy.
+
 
 Then run the smallest reproduction command first, establish the causal mechanism, and follow `resources/execution-protocol.md` for the diagnosis record when an OMA workflow is active. Add the regression test and re-run the failing check plus related tests.
 

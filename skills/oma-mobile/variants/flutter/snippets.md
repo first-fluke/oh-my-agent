@@ -99,14 +99,14 @@ part 'app_router.g.dart';
     TypedGoRoute<TodoDetailRoute>(path: 'todos/:id'),
   ],
 )
-class TodosRoute extends GoRouteData {
+class TodosRoute extends GoRouteData with $TodosRoute {
   const TodosRoute();
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const TodosScreen();
 }
 
-class TodoDetailRoute extends GoRouteData {
+class TodoDetailRoute extends GoRouteData with $TodoDetailRoute {
   const TodoDetailRoute({required this.id});
   final int id;
   @override
@@ -179,9 +179,11 @@ import 'todo.dart';
 /// Abstract contract the presentation layer depends on.
 /// Concrete implementations (online, offline-first, stub) swap behind this seam.
 abstract interface class TodoRepository {
-  /// Emits the cached list immediately, then re-emits after network revalidation.
+  /// Emits a warm cached list immediately; cold loads await network and surface errors.
   /// Callers never interact with Drift or Dio directly.
   Stream<List<Todo>> watchAll();
+  /// Bypass TTL; complete only after the network result has been stored.
+  Future<void> refresh();
 
   /// Returns the cached todo for [id] immediately (or null when absent),
   /// revalidating from the network in the background only when it is stale.
@@ -391,9 +393,9 @@ const _kCacheTtl = Duration(minutes: 5);
 /// Offline-first implementation of [TodoRepository].
 ///
 /// Caching contract:
-///   - [watchAll] maps the Drift stream to domain entities and emits immediately.
+///   - [watchAll] maps a warm Drift stream to domain entities immediately.
 ///     A background revalidation triggers whenever the cache is stale (> TTL)
-///     or empty. Drift re-emits the stream automatically after each upsert.
+///     when warm; a cold cache waits for the network and surfaces failure. Drift re-emits after writes.
 ///   - Writes ([create], [toggle], [delete]) hit the network first, then upsert
 ///     or delete the local Drift row so the stream emits the change instantly.
 ///   - Cache key = logical operation, never URLs. TTL is explicit; no infinite cache.
@@ -421,25 +423,20 @@ class TodoRepositoryImpl implements TodoRepository {
 
   @override
   Stream<List<Todo>> watchAll() async* {
-    // 1. Emit cached rows immediately (may be empty on first run).
-    final initial = await _dao.watchAll().first;
+    final snapshot = await _dao.watchAll().first;
     final now = DateTime.now();
-
-    // 2. Determine whether revalidation is needed.
-    final isStale = initial.isEmpty ||
-        initial.any((row) => now.difference(row.cachedAt) > _kCacheTtl);
-
-    if (isStale) {
-      // 3. Fetch from network in the background and upsert into Drift.
-      // Drift's stream will re-emit automatically after the upsert.
-      _revalidate().ignore();
+    if (snapshot.isEmpty) {
+      // Cold-cache failures must reach Riverpod's error state.
+      await refresh();
+    } else if (snapshot.any((row) => now.difference(row.cachedAt) > _kCacheTtl)) {
+      // Only warm-cache revalidation may degrade to the stale value.
+      refresh().ignore();
     }
-
-    // 4. Forward the live Drift stream (emits on every upsert from step 3 onward).
-    yield* _dao.watchAll().map(
-          (rows) => rows.map(_rowToEntity).toList(),
-        );
+    yield* _dao.watchAll().map((rows) => rows.map(_rowToEntity).toList());
   }
+
+  @override
+  Future<void> refresh() => _revalidate();
 
   @override
   Future<Todo?> findById(int id) async {
@@ -468,18 +465,11 @@ class TodoRepositoryImpl implements TodoRepository {
   }
 
   Future<void> _revalidate() async {
-    try {
-      final dtos = await _remote.fetchAll();
-      final now = DateTime.now();
-      // replaceAll (not upsertAll): mirror the full server list so rows the
-      // server deleted are removed instead of lingering as ghost rows.
-      await _dao.replaceAll(
-        dtos.map((dto) => _dtoToCompanion(dto, cachedAt: now)).toList(),
-      );
-    } catch (_) {
-      // Network failure is non-fatal when the cache is warm.
-      // The existing stream emission (stale data) stands.
-    }
+    final dtos = await _remote.fetchAll();
+    final now = DateTime.now();
+    await _dao.replaceAll(
+      dtos.map((dto) => _dtoToCompanion(dto, cachedAt: now)).toList(),
+    );
   }
 
   Future<void> _revalidateById(int id, DateTime now) async {
@@ -773,9 +763,14 @@ class _TodosScreenState extends ConsumerState<TodosScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh',
-            // Invalidate causes build() to re-subscribe to watchAll()
-            // which triggers a fresh revalidation cycle.
-            onPressed: () => ref.invalidate(todosNotifierProvider),
+            onPressed: () async {
+              try {
+                await ref.read(todoRepositoryProvider).refresh();
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Refresh failed: $error')));
+              }
+            },
           ),
         ],
       ),
@@ -852,10 +847,14 @@ class _TodoList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return RefreshIndicator(
-      // Pull-to-refresh forces a full revalidation cycle. Await the next
-      // stream value via `.future` so the spinner stays until fresh data
-      // arrives — `ref.invalidate` returns synchronously and dismisses early.
-      onRefresh: () => ref.refresh(todosNotifierProvider.future),
+      onRefresh: () async {
+        try {
+          await ref.read(todoRepositoryProvider).refresh();
+        } catch (error) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Refresh failed: $error')));
+        }
+      },
       child: ListView.builder(
         itemCount: todos.length,
         itemBuilder: (ctx, i) => TodoListItem(
@@ -1256,6 +1255,32 @@ void main() {
     verify(() => mockRemote.fetchAll()).called(1);
   });
 
+  test('cold-cache network failure reaches the stream error state', () async {
+    when(() => mockRemote.fetchAll()).thenThrow(Exception('offline'));
+    await expectLater(repo.watchAll().first, throwsA(isA<Exception>()));
+  });
+
+  test('manual refresh bypasses a warm TTL and awaits the fresh write', () async {
+    await dao.upsertAll([
+      TodosTableCompanion.insert(id: 1, title: 'Cached', cachedAt: DateTime.now()),
+    ]);
+    final started = Completer<void>();
+    final release = Completer<void>();
+    when(() => mockRemote.fetchAll()).thenAnswer((_) async {
+      started.complete();
+      await release.future;
+      return [TodoDto(id: 1, title: 'Fresh', completed: false)];
+    });
+    var completed = false;
+    final refreshing = repo.refresh().then((_) => completed = true);
+    await started.future;
+    expect(completed, isFalse);
+    release.complete();
+    await refreshing;
+    expect((await dao.watchAll().first).single.title, 'Fresh');
+    verify(() => mockRemote.fetchAll()).called(1);
+  });
+
   test('create upserts into Drift and stream emits new item', () async {
     when(() => mockRemote.create(any()))
         .thenAnswer((_) async => TodoDto(id: 99, title: 'New', completed: false));
@@ -1316,8 +1341,7 @@ appId: com.example.my_app
 - launchApp:
     clearState: true
 - assertVisible: "Todos"          # AppBar title confirms the list screen loaded
-- tapOn:
-    id: "add"                     # FloatingActionButton tooltip/semantics label
+- tapOn: "Add todo"               # matches the FAB tooltip/accessibility label
 - assertVisible: "New Todo"       # add dialog opened
 - tapOn: "Title"                  # focus the text field
 - inputText: "Buy milk"
@@ -1325,6 +1349,5 @@ appId: com.example.my_app
 - assertVisible: "Buy milk"       # new item rendered in the list
 ```
 
-> Widgets expose stable `id`s to Maestro via `Semantics(identifier: ...)` or the
-> tooltip/label text shown above. Keep these labels in sync with §6 so the flow
-> stays green.
+Use text selectors for the tooltip/accessibility label above. The `id` selector
+requires an actual `Semantics(identifier: ...)`; a tooltip is not a resource ID.

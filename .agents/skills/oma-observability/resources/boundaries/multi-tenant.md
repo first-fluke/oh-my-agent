@@ -50,11 +50,11 @@ Most B2B SaaS organizations apply a mix of tiers: enterprise tenants get Tier 3 
 | Tier | Description | Relative Cost | Isolation Strength | Compliance Fit |
 |------|-------------|---------------|--------------------|----------------|
 | 1. Soft | Shared collector + shared backend; tenants are separated only by `tenant.id` label filtering in dashboards and queries | Low | Weak; no pipeline isolation; noisy-neighbor risk | Basic B2B without data separation requirements |
-| 2. Routing | Shared collector pool; `routing_connector` or `tail_sampling` sub-policies split pipelines by tenant tier; still shared backend | Medium | Medium; pipeline isolation; shared storage | Regulated tiers with data processing agreements |
+| 2. Routing | Shared collector pool; a verified routing connector or separate collector/exporter pipelines route by tenant tier; still shared backend | Medium | Medium; pipeline isolation; shared storage | Regulated tiers with data processing agreements |
 | 3. Dedicated collector | Per-tenant collector instance in a dedicated Kubernetes namespace; isolates ingestion and processing; shared or per-region backend | High | Strong; ingestion isolated; namespace-level blast radius | Enterprise tenants, HIPAA, ISO 27001 requirements |
 | 4. Dedicated backend | Per-tenant observability backend project or account (e.g., separate Grafana org, separate Datadog account, separate GCP project) | Highest | Strongest; full stack isolation from ingestion to storage | Highest compliance obligations (FedRAMP, SOC 2 Type II per tenant, GDPR Art. 28 sub-processor separation) |
 
-**Routing connector alpha caveat:** Tier 2 using `routing_connector` is subject to the alpha stability warning documented in `../transport/sampling-recipes.md §4`. For production Tier 2 deployments, prefer `tail_sampling` with `and` sub-policies (stable) over `routing_connector` (alpha as of 2025).
+**Routing vs sampling:** verify the routing connector stability/configuration for the pinned Collector version. `tail_sampling` `and` policies only decide keep/drop in a shared trace pipeline; they neither route signals nor provide pipeline isolation. If connector stability is unsuitable, use separately configured collector/exporter pipelines or dedicated collectors. Use per-tier sampling only when shared-pipeline retention rates satisfy the requirement.
 
 ---
 
@@ -91,50 +91,18 @@ Different tenant tiers justify different sampling rates. Enterprise tenants have
 | `pro` | 20% | Representative sample, cost-controlled |
 | `free` | 2% | Ambient visibility only |
 
-**Recommended configuration; `tail_sampling` with `and` sub-policies (stable, production-safe):**
+**Sampling configuration:** use the single tenant-aware YAML in
+`../transport/sampling-recipes.md §4`. Option A branches pipelines with a verified
+routing component; Option B changes keep/drop rates within a shared pipeline.
+Neither a tier label nor a tail-sampling policy provides tenant storage/RBAC
+isolation. Positive keep policies combine as OR, so the recipe's baseline also
+evaluates traces from other tiers; it is not an ordered fallback.
 
-```yaml
-processors:
-  tail_sampling:
-    decision_wait: 30s
-    num_traces: 100000
-    expected_new_traces_per_sec: 1000
-    policies:
-      - name: enterprise
-        type: and
-        and:
-          and_sub_policy:
-            - name: tier-check
-              type: string_attribute
-              string_attribute:
-                key: tenant.tier
-                values: ["enterprise"]
-            - name: probabilistic
-              type: probabilistic
-              probabilistic:
-                sampling_percentage: 100
-
-      - name: pro
-        type: and
-        and:
-          and_sub_policy:
-            - name: tier-check
-              type: string_attribute
-              string_attribute:
-                key: tenant.tier
-                values: ["pro"]
-            - name: probabilistic
-              type: probabilistic
-              probabilistic:
-                sampling_percentage: 20
-
-      - name: free-baseline
-        type: probabilistic
-        probabilistic:
-          sampling_percentage: 2   # catches free tier and unmatched traffic
-```
-
-Cross-ref `../transport/sampling-recipes.md §4` for the full tenant-aware sampling recipe including `routing_connector` Option A (alpha) and the combined error + cost + tenant four-policy example.
+Route by traceID to individual gateway samplers upstream of tail sampling
+(`../transport/collector-topology.md §6`). Keep the tier consistent across each trace, derive it from server-side tenant
+policy, and verify the observed retention rate and error/cost policies after
+upgrades. The table above states example rate targets, not an authorization or
+compliance requirement to collect every enterprise trace.
 
 ---
 
@@ -158,7 +126,7 @@ Cross-ref `../meta-observability.md §Retention Matrix` for the full retention p
 
 Tenant-level cost attribution enables chargeback (billing tenants for their resource consumption) and showback (internal reporting without billing).
 
-**Kubernetes workload labeling:** Tag every pod at deploy time with `tenant.id` as a Kubernetes label. OpenCost reads workload labels and produces `opencost_workload_cost_total{tenant_id="acme-corp"}` automatically.
+**Kubernetes workload labeling:** maintain a verified mapping from workload labels to tenants. Aggregate cost through the OpenCost Allocation API using that mapping and an explicit window. The default `/metrics` endpoint does not automatically create `opencost_workload_cost_total` or a per-tenant cumulative cost counter; implement and document such a counter separately if needed. See `../signals/cost.md §5`.
 
 ```yaml
 # Kubernetes Pod template label (applied via Helm values or admission webhook)
@@ -178,26 +146,29 @@ Cross-ref `../signals/cost.md §4 Cost Attribution by Dimension` for FinOps unit
 
 ## 8. Data Residency
 
-GDPR Chapter V (https://gdpr-info.eu/chapter-5/) restricts transfers of personal data outside the EU/EEA to countries or organizations that provide adequate protection. Korean PIPA (https://www.pipa.go.kr) applies equivalent restrictions for Korean resident data.
+International-transfer requirements depend on the data, destination, and legal
+basis. GDPR Chapter V permits mechanisms including adequacy decisions (Art.45),
+appropriate safeguards (Art.46), and limited derogations (Art.49). Korean PIPA
+Art.28-8 has its own permitted grounds and safeguards. Neither establishes a
+blanket ban on every cross-region telemetry export. Separately enforce stricter
+contractual residency requirements where they apply.
 
-**Routing rules:**
+**Example adopted residency policy**, for tenants whose contracts require local
+processing (not a universal statement of GDPR/PIPA):
 
-| Tenant Region | Collector Placement | Backend Placement | Cross-Region Allowed? |
-|---------------|--------------------|--------------------|----------------------|
-| EU (`eu-*`) | EU-region edge collector | EU-region backend only | No; GDPR Chapter V |
-| KR (`ap-northeast-2`) | KR-region edge collector | KR-region backend only | No; PIPA |
-| US (`us-*`) | US-region collector | US-region or global backend | Yes (to non-EU/KR) |
-| Other | Regional or global collector | Regional or global backend | Yes (check bilateral agreements) |
+| Tenant policy | Collector placement | Backend placement | Transfer decision |
+|---|---|---|---|
+| EU-local contract | Approved EU edge | Approved EU backend | Stay within the contract's residency boundary |
+| KR-local contract | Approved KR edge | Approved KR backend | Stay within the contract's residency boundary |
+| Transfer permitted | Approved source region | Approved destination | Document applicable transfer basis, safeguards, and contract scope |
 
-**Topology:** deploy per-region edge collectors that aggregate locally and export only to backends in the same region. No cross-region OTLP export for EU or KR tenants.
+Route by a server-verified tenant policy before export, including transient
+processing locations and backups. When local residency is required, deploy
+local collectors/backends; otherwise verify and document the permitted transfer
+mechanism and destination rather than assuming that a region label authorizes it.
 
-```
-EU Tenants → EU Edge Collector → EU Backend (e.g., eu-west-1 Grafana Cloud)
-KR Tenants → KR Edge Collector → KR Backend (e.g., ap-northeast-2 region)
-US Tenants → US Edge Collector → US Backend or global aggregator
-```
-
-Route by `tenant.region` at the ingress gateway before data enters the collector pipeline. Do not allow EU or KR tenant telemetry to flow through a non-compliant region, even transiently.
+Sources: <https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679>
+and <https://www.law.go.kr/LSW/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1029334957>.
 
 **Source-of-truth rule (critical)**: `tenant.region` MUST be resolved from an internal, server-side authoritative source; tenant registry service, organization metadata table, or IdP claim stamped at session start. It MUST NOT be trusted from client-supplied input (HTTP header, baggage, query string, or JWT claim the client itself controls). A misconfigured or malicious tenant could otherwise self-declare a non-EU/KR region and bypass residency routing. Enforce at the ingress gateway: reject requests where a client-declared `tenant.region` disagrees with the registry lookup keyed on `tenant.id`. In practice, strip any inbound `tenant.region` attribute and re-attach the registry-sourced value before the Collector pipeline accepts the span/log.
 
@@ -217,15 +188,26 @@ Cross-ref `../transport/collector-topology.md §7 Federated / Multi-Cluster` for
 
 Automate steps 1–6 as code; cross-ref `../observability-as-code.md` for provisioning patterns.
 
-**Offboarding; GDPR Art. 17 Right to Erasure:**
+**Offboarding and eligible erasure:**
 
-When a tenant terminates their contract, all telemetry data containing `tenant.id` must be deleted across every storage tier (hot, warm, cold) and every signal (metrics, logs, traces, profiles, cost records, audit records). This is a legal obligation under GDPR Art. 17, not an engineering convenience.
+Contract termination does not automatically require deletion of every audit,
+cost, or telemetry record. Determine which records contain personal data and
+which Art.17(1) erasure ground applies. Art.17(3) includes exceptions for legal
+obligations and legal claims; purpose-limited lawful retention may continue.
+Non-personal records and contractual retention require their own policy check.
 
 Offboarding procedure:
-1. Trigger deletion job across all backends scoped to `tenant.id`.
-2. Remove tenant from cardinality allowlist and routing rules.
-3. Deprovision collector namespace (Tier 3) or backend account (Tier 4).
-4. Emit an audit event recording the erasure action, timestamp, and operator identity.
+1. Stop new tenant ingestion and inventory records across hot/warm/cold tiers,
+   backups, audit, and cost systems; classify personal data and applicable duties.
+2. Delete eligible records through verified backend/backup procedures. Document
+   retained classes, legal basis, approved expiry, and access restrictions.
+3. Remove active routing/dashboard access and the cardinality allowlist entry.
+4. Deprovision collector/backend resources after required deletion and lawful
+   retention are handled; preserve necessary retained records under restricted access.
+5. Emit a minimized audit event recording the action, scope, time, and operator.
+
+Source: GDPR Art.17(1), Art.17(3)(b),(e),
+<https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679>.
 
 Cross-ref `../signals/audit.md` for audit event schema for offboarding erasure events.
 
@@ -286,8 +268,8 @@ The following are candidates for `../anti-patterns.md §Multi-Tenant`:
 | `tenant.id` as metric label without top-N cap | Cardinality explosion in TSDB; ingestor OOM; query timeouts for all tenants | Enforce top-N cap (100–1,000); bucket overflow as `"other"`; cross-ref `../meta-observability.md §Cardinality Guardrails` |
 | `tenant.id` in W3C Baggage crossing trust boundaries | Tenant account existence leaks to third-party services; GDPR personal data transfer without legal basis | Strip `tenant.*` baggage at egress gateway before forwarding to any external endpoint |
 | Shared backend for regulated tiers (Tier 1 for compliance tenants) | Co-mingled data violates data processing agreements; one breach affects all tenants | Upgrade regulated tenants to Tier 3 or 4; apply isolation tier based on contractual obligation, not cost convenience |
-| Cross-region OTLP export for EU or KR tenants | GDPR Chapter V violation; personal data transfer to non-adequate third country; regulatory fine risk | Route EU/KR telemetry to region-local backends exclusively; enforce at ingress gateway by `tenant.region` |
-| No tenant offboarding erasure process | GDPR Art. 17 violation; deleted tenant data persists in hot/warm/cold tiers and backup snapshots | Implement automated erasure job scoped by `tenant.id` across all storage tiers; emit audit event per erasure |
+| Cross-border export without checking data, transfer basis, safeguards, or contract | Unauthorized personal-data transfer or residency-contract breach | Verify applicable GDPR/PIPA transfer grounds and destination; enforce stricter local-residency contracts using server-side policy |
+| No policy-based offboarding process | Eligible personal data persists or required evidence is erased prematurely | Inventory record classes; delete eligible data and retain legally required evidence under restricted access and approved expiry |
 
 ---
 

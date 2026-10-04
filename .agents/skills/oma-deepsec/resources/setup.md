@@ -31,7 +31,8 @@ No custom matchers in the scaffold. Add those only when a real finding shapes on
 
 ## 2. Pick a credential
 
-Open `.deepsec/.env.local` and pick **one**:
+Configure the selected mode. Environment-based modes use `.deepsec/.env.local`;
+subscription mode reuses the selected CLI login and requires no API-key entry:
 
 | Mode | When | Set |
 |---|---|---|
@@ -45,16 +46,7 @@ Open `.deepsec/.env.local` and pick **one**:
 
 > Subscriptions are useful for evaluating deepsec but generally do not have enough headroom for full repo scans. Switch to the gateway once past evaluation.
 
-## 3. Verify the credential
-
-```bash
-bunx deepsec scan --limit 20         # cheap, no AI calls
-bunx deepsec process --limit 5       # exercises the gateway
-```
-
-If the second call returns `Missing AI credentials` or `401`, see `config.md` § Troubleshooting.
-
-## 4. Write `INFO.md` (do not skip)
+## 3. Write `INFO.md` (do not skip)
 
 `INFO.md` is what makes deepsec project-aware. It is injected into the AI prompt for every batch, so vague content here means vague findings.
 
@@ -88,6 +80,16 @@ Project-specific only:
 - Line numbers. They drift; the AI re-reads files anyway.
 - Boilerplate intro paragraphs.
 
+## 4. Verify credentials in the authorized calibration
+
+Complete `INFO.md` and record the existing backend, scope, and spend authorization
+using `decision-records.md` before any AI call. Reuse an authorized bounded
+calibration as the credential test; do not add a paid smoke test first. For
+subscription mode, use the selected CLI login rather than requiring an API key.
+`--limit` bounds files, not dollars. If authorization is missing, resolve only
+that missing decision before `process`. Authentication errors are covered in
+`config.md` § Troubleshooting.
+
 ## 5. `.gitignore` hygiene
 
 The scaffold's `.deepsec/.gitignore` already keeps `INFO.md`, `SETUP.md`, and `deepsec.config.ts` tracked (so teammates inherit project context) and ignores generated state. Do **not** unignore `data/*/files/` or `data/*/runs/` unless you have a deliberate reason (e.g. CI cache).
@@ -106,8 +108,9 @@ Each project gets its own `data/<id>/` subdirectory. Pass `--project-id <id>` to
 
 ## 7. Sanity check before the first real run
 
-- [ ] `.deepsec/.env.local` has a working credential.
+- [ ] The selected credential mode is configured: required environment values or an existing subscription login.
 - [ ] `bunx deepsec scan --limit 20` succeeds.
-- [ ] `bunx deepsec process --limit 5` succeeds and prints a per-batch cost number.
+- [ ] `INFO.md`, backend, calibration scope, and spend authorization are recorded before the first AI pass.
+- [ ] The authorized calibration verifies credentials and reports cost; no separate paid credential test precedes it.
 - [ ] `data/<id>/INFO.md` is filled in (50-100 lines, project-specific).
 - [ ] You and the user agree on a calibration scope for the first `process` run (deepsec docs default: `--limit 50 --concurrency 5`).

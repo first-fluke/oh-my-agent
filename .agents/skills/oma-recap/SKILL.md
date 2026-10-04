@@ -173,11 +173,15 @@ oma recap --tool claude,codex --json
 # Uses the system timezone; export TZ=<zone> first to override, and state the
 # timezone assumption in the recap (per the Failure and recovery rules).
 TARGET_DATE=$(date +%Y-%m-%d)
-# macOS/BSD date:
+# macOS/BSD date: advance the calendar date, then parse both local midnights.
+next_date=$(date -j -v+1d -f "%Y-%m-%d %H:%M:%S" "${TARGET_DATE} 12:00:00" +%Y-%m-%d)
 start_ts=$(date -j -f "%Y-%m-%d %H:%M:%S" "${TARGET_DATE} 00:00:00" +%s)000
-# Linux/GNU date alternative:
+end_ts=$(date -j -f "%Y-%m-%d %H:%M:%S" "${next_date} 00:00:00" +%s)000
+# Linux/GNU date alternatives (replace all three lines above):
+# next_date=$(date -d "${TARGET_DATE} 12:00:00 tomorrow" +%Y-%m-%d)
 # start_ts=$(date -d "${TARGET_DATE} 00:00:00" +%s)000
-end_ts=$((start_ts + 86400000))
+# end_ts=$(date -d "${next_date} 00:00:00" +%s)000
+# Do not add a fixed 24 hours: DST calendar days can have 23 or 25 hours.
 
 jq -r --argjson start "$start_ts" --argjson end "$end_ts" '
   select(.timestamp >= $start and .timestamp < $end and .display != null and .display != "") |

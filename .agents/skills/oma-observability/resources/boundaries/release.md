@@ -160,7 +160,7 @@ spec:
 
 ---
 
-## 5. Feature Flags via OpenFeature (CNCF Graduated, 2024-11)
+## 5. Feature Flags via OpenFeature (CNCF Incubating, 2023-11-21)
 
 Source: <https://openfeature.dev> | CNCF graduation: <https://www.cncf.io/projects/openfeature/>
 

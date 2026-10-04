@@ -209,7 +209,6 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
-  UsePipes,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -246,9 +245,8 @@ export class ResourcesController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ZodValidationPipe(CreateResourceSchema))
   create(
-    @Body() dto: CreateResourceDto,
+    @Body(new ZodValidationPipe(CreateResourceSchema)) dto: CreateResourceDto,
     @CurrentUser() user: User,
   ): Promise<Resource> {
     return this.resourcesService.create(dto, user.id);

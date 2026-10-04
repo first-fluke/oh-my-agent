@@ -23,8 +23,9 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ResourcesService } from './resources.service';
-import { CreateResourceDto } from './dto/create-resource.dto';
-import { UpdateResourceDto } from './dto/update-resource.dto';
+import { CreateResourceDto, CreateResourceSchema } from './dto/create-resource.dto';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { UpdateResourceDto, UpdateResourceSchema } from './dto/update-resource.dto';
 import { User } from '@prisma/client';
 
 @Controller('api/resources')
@@ -48,7 +49,7 @@ export class ResourcesController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(
-    @Body() dto: CreateResourceDto,
+    @Body(new ZodValidationPipe(CreateResourceSchema)) dto: CreateResourceDto,
     @CurrentUser() user: User,
   ) {
     return this.resourcesService.create(dto, user.id);
@@ -57,7 +58,7 @@ export class ResourcesController {
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateResourceDto,
+    @Body(new ZodValidationPipe(UpdateResourceSchema)) dto: UpdateResourceDto,
     @CurrentUser() user: User,
   ) {
     return this.resourcesService.update(id, dto, user.id);

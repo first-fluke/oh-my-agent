@@ -171,8 +171,8 @@ WAF events carry security significance and must be retained per the audit signal
 | All `block` actions | 1 year | Hot or warm; queryable for FP investigation |
 | All `log` (detect-only) actions | 90 days | Hot |
 | `allow` actions | Sampled at 1% (tail-keep on flagged categories) | Hot |
-| Authenticated bypass attempts (rule match + valid session) | 7 years | WORM |
-| Rule-set version change events | 7 years | WORM; tied to release-marker stream |
+| Authenticated bypass attempts (rule match + valid session) | Approved purpose/legal schedule | Access control and tamper protection; WORM if required |
+| Rule-set version change events | Approved change-evidence schedule | Tamper protection; tied to release-marker stream |
 
 Cross-ref `../../signals/audit.md §retention matrix` for the unified retention policy.
 

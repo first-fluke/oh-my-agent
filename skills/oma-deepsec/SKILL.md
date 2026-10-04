@@ -74,7 +74,7 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 1. Confirm whether `.deepsec/` already exists; if yes, treat the run as **incremental**, never re-init.
 2. Resolve `intent` from the user prompt; if ambiguous (e.g. "scan this repo"), default to `setup` then `scan` (calibration mode).
 3. Estimate scale: count source files (rough `rg --files | wc -l` excluding `node_modules`, `.git`, `dist`) to forecast cost before any AI pass.
-4. Check for an AI credential in `.env.local` or shell env; if none, route to credential setup before any `process` / `revalidate` / `triage` call.
+4. Resolve the selected credential mode and backend. Check its required environment configuration or an existing `claude` / `codex` subscription login, without echoing secrets. A valid subscription session does not require an API-key environment variable. Resolve only missing configuration before AI calls.
 5. Resolve backend, scope, and spend from existing instructions and configuration under `../_shared/core/execution-policy.md`. Before paid or custom-scope work, record the actual approved, limited, or declined action using `resources/decision-records.md`. A configured backend does not authorize additional spend; ask only for a material missing choice or new authorization.
 
 ### Transitions
@@ -89,7 +89,7 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 ### Failure and recovery
 | Failure | Recovery |
 |---------|----------|
-| `Missing AI credentials for --agent claude` / `codex` | Pick a credential mode (gateway key / OIDC / direct / subscription) per `resources/config.md` and write `.env.local`. |
+| `Missing AI credentials for --agent claude` / `codex` | Check the selected mode per `resources/config.md`: environment configuration for key/OIDC/direct modes, or CLI login for subscription mode. Do not require `.env.local` credentials for a valid subscription session. |
 | `401 Unauthorized` from gateway | OIDC: re-run `vercel env pull` (12 h expiry). API key: regenerate. Confirm `.env.local` is in the cwd deepsec runs from. |
 | `Stopped: AI Gateway credits exhausted` | Top up via the printed URL; re-run the same command, files already done are skipped. |
 | `Stopped: Claude Pro/Max subscription exhausted` | Switch to AI Gateway; subscriptions don't carry full scans. |

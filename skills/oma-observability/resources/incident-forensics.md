@@ -308,7 +308,7 @@ Alert fires: pod restart storm on `rendering-service` pods. `k8s.pod.name` shows
    - logs: pre-crash logs from `v3.1.0` pods: `WARN: template cache size = 412MB at 16:52`. Not present in `v3.0.9` pods.
    - profiles: Pyroscope heap diff between `v3.1.0` (pod alive, approaching limit) and `v3.0.9`. New allocation in `renderTemplate` retaining 400MB; a template object cache introduced in `v3.1.0` is not evicting entries.
 7. **Flagger auto-rollback check**: Flagger's canary analysis `successRate` threshold is 99%. OOMKilled pods were restarting before requests failed; success rate stayed above threshold. Flagger did NOT auto-rollback.
-8. **Action**: manual rollback of canary to `v3.0.9` via `kubectl argo rollouts undo rendering-service`. OOM storm stops within 2 minutes. Hotfix: add LRU eviction to template cache with `maxSize = 50MB`. Adjust Flagger analysis to include memory saturation metric as a custom metric gate.
+8. **Action**: restore the known-good `v3.0.9` image through the GitOps/Helm controller that owns the Flagger target, using the approved controller-specific recovery procedure. `kubectl argo rollouts undo` operates on Argo Rollout resources and does not roll back a Flagger-managed Deployment. Verify Flagger status, actual pod image versions, and OOM/restart metrics after reconciliation. Hotfix: add LRU eviction to the template cache with a justified size limit, then add memory saturation as a custom Flagger analysis gate.
 
 Reference: `boundaries/release.md` for Flagger/Argo canary analysis configuration; `signals/profiles.md` for Pyroscope heap diff workflow; `layers/L7-application/crash-analytics.md` for mobile/native crash-specific forensics.
 

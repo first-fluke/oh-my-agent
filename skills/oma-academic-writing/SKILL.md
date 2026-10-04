@@ -39,7 +39,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### Expected inputs
 - `mode`: one of `draft` | `revise` | `review`
-- `rubric_or_constraint`: assignment brief, rubric file, or word/structure limits (path or inline text)
+- Optional `rubric_or_constraint`: assignment brief, rubric file, or word/structure limits (path or inline text); draft-only revision/review does not require a rubric
 - `existing_draft`: prior text to revise or audit (path or inline text); required for `revise` and `review`
 - `source_data`: available evidence, figures, citations the writer may use
 - `target_register`: defaults to formal academic English with American spelling (en-US)
@@ -51,7 +51,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### Dependencies
 - `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`: common diagnostics and academic constraints; load together for prose audits
-- `resources/sentence-structure-reference.md`: four sentence types, length targets, common errors
+- `resources/sentence-structure-reference.md`: four sentence types, contextual rhythm guidance, common errors
 - `resources/academic-verb-tiers.md`: meaning- and evidence-based verb guidance
 - `resources/hedging-guide.md`: calibrated certainty expressions matched to evidence strength
 - `../_shared/core/context-loading.md`: task-relevant resource loading
@@ -59,7 +59,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### Control-flow features
 - Mode branching: `draft` vs `revise` vs `review` produce different output formats and pass sequences
-- Rubric-quote gate: refuses to apply a rule until the literal constraint text is quoted from the source
+- Rubric constraints: quote supplied assignment requirements before applying them; draft-only revision/review can proceed without inventing a rubric
 - Citation gap branch: when a claim lacks evidence, weaken or remove rather than fabricate; optionally hand off to `oma-scholar`
 - Language branch: non-English target hands off to `oma-translation` after the English pass
 - Iterative AUDIT: every fix loops back through the anti-AI checklist before emit
@@ -68,7 +68,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### Entry
 1. Identify the mode (`draft`, `revise`, `review`) and the rubric source.
-2. Quote the exact constraint text (word limits, structural requirements, mandatory sections, rubric rows) before applying any rule.
+2. If assignment constraints were supplied, quote their exact text before applying them. Without a rubric, revise/review the draft using the requested register and evidence; do not invent assignment rules.
 3. If revising or reviewing, read the existing draft in full first; if drafting, confirm available source data and citations.
 4. Index `resources/` and identify any claims that need a more precise verb or hedge.
 5. Apply the literal-first principle before any drafting: prefer direct statement over metaphor and flourish. When a literal phrase is available, use it.
@@ -101,7 +101,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 ### Exit
 - Success: every protocol PASSes, the Claim-Evidence Map has no unsupported entries, word count complies, and the mode-specific output format is fully populated.
 - Partial success: emit prose with explicit `needs evidence` / `pending citation` markers and report which protocol items remain at risk; flag handoff candidates.
-- Failure: refuse to emit and report the blocking ambiguity (rubric quote missing, source data absent, contradictory constraints).
+- Failure: report a material blocker such as required source data being unavailable or contradictory supplied constraints. The absence of an optional rubric alone does not block draft-only revision/review.
 
 ## Logical Operations
 
@@ -132,7 +132,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 - Output-format blocks per mode (Draft / Revision / Review)
 
 ### Canonical workflow path
-1. **READ** rubric/draft and quote the exact literal constraint text; pin word limits, mandatory sections, and rubric rows.
+1. **READ** the draft and any supplied rubric; quote actual assignment constraints and pin their requirements. If no rubric is supplied, use the requested revision/review scope without inventing constraints.
 2. **PLAN** each paragraph as Topic-Support-Conclude; identify where evidence strength or a vague claim calls for a more precise verb.
 3. **DRAFT** prose with sentence variety, clear verb choice, hedging, and Topic-Support-Conclude structure.
 4. **AUDIT** with `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`. Fix supported defects in draft/revise mode; in review mode, quote the passage, identify the defect, and recommend a local fix without a full rewrite or AI-authorship estimate.
@@ -159,10 +159,10 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### Guardrails
 1. Every sentence must be verifiable; never fabricate data, statistics, or citations.
-2. Quote-before-judgment: cite the literal constraint or rubric text before applying any rule.
+2. Quote supplied rubric constraints before judging compliance. Without a rubric, explain prose/evidence findings against the requested scope rather than inventing assignment criteria.
 3. Never combine distinct rules to invent a new constraint; apply rules exactly as written.
 4. Choose verbs for their exact meaning and support. Keep common verbs when they are accurate and natural; replace a vague verb only when the new wording states a relevant distinction without inflating the claim.
-5. Never place 3+ sentences of the same structural type consecutively; vary length (short 8–15, medium 16–25, long 26–40 words) and openers.
+5. Review repeated structure and sentence length in context. Change rhythm where it improves clarity or emphasis; do not force sentence-type quotas or rewrite clear prose merely to vary it.
 6. Match hedge strength to evidence strength per `hedging-guide.md`; never use absolute claim words (`definitely`, `clearly`, `obviously`) outside mathematical facts; never first-person `I think` / `I believe`.
 7. Apply common prose diagnostics with the academic checklist's evidence and register exceptions. Vocabulary counts trigger contextual review, not automatic replacement of precise terms.
 8. Em dashes ≤ 1 per paragraph; semicolons ≤ 2 per 1000 words; sentence-case headers; no didactic disclaimers (`It is important to note`) or summary phrases (`In summary`, `Overall`).

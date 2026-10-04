@@ -164,14 +164,13 @@ Distributed traces depend on monotonic, synchronized clocks across all nodes. Cl
 
 ### Span timestamp validation rule
 
-A valid trace satisfies:
+Validate each span against its own timestamps:
 
 ```
-parent_span.start_time <= child_span.start_time
-child_span.end_time <= parent_span.end_time
+span.start_time <= span.end_time
 ```
 
-A violation where `child_span.end_time > parent_span.end_time` is a clock-drift indicator, not necessarily a code bug. Flag these in meta-observability pipeline checks (see `resources/meta-observability.md`).
+A parent span may end before an asynchronous child completes; the OTel Trace API explicitly allows children to continue after their parent ends. Parent/child interval containment is not a validity invariant or clock-drift detector. Investigate suspicious cross-host ordering using measured clock offsets and the actual synchronous/asynchronous operation semantics. See `resources/meta-observability.md` and <https://opentelemetry.io/docs/specs/otel/trace/api/>.
 
 ### Anti-pattern
 

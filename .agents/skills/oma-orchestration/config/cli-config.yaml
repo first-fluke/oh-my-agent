@@ -1,10 +1,6 @@
-# SubAgent CLI Configuration
-# Select your preferred CLI vendor for sub-agent execution
-
-# NO LONGER READ. Set `default_cli:` in .agents/oma-config.yaml instead — this
-# file is overwritten by `oma update`, and migration 022 moves a non-default
-# value across for you. For per-agent CLI mapping, see .agents/oma-config.yaml.
-active_vendor: claude
+# Subagent vendor transport registry.
+# Select routing with model_preset/agents/default_cli in .agents/oma-config.yaml.
+# Legacy active_vendor and execution settings are not consumed by the parser.
 
 # Vendor configurations
 vendors:
@@ -94,14 +90,3 @@ vendors:
     model_flag: "--model"
     default_model: "sonnet:high"
     isolation_method: "directory"
-
-# SubAgent execution settings
-execution:
-  # Directory for subagent results
-  results_dir: ".agents/results"
-  # Timeout in seconds (0 = no timeout)
-  timeout: 600
-  # Log level: debug, info, warn, error
-  log_level: info
-  # Keep intermediate files for debugging
-  keep_temp_files: false

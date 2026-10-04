@@ -1,11 +1,14 @@
-# Post-Generation Checklist (v0.9.0)
+# Local Production Compatibility Checklist (v0.9.0)
 
-Run this after Mode 1 (Generate) or Mode 3 (Review) before reporting done.
+Run this for local-profile Generate/Review output. This checklist and local lint
+do not validate the complete canonical schema. Preserve wider canonical shapes
+in imported records (including author objects, imported provenance, and normative
+modality); report incompatibilities instead of destructively normalizing them.
 
 ## Top-Level Structure
 
 - [ ] `title` is set at the **top level** (not `metadata.title`)
-- [ ] `authors` is a top-level list of strings
+- [ ] Local-generation `authors` is a top-level list of strings; preserve author objects in canonical imported records
 - [ ] `venue`, `year`, `doi` keys present **only** if visible in source (no TODO/TBD)
 - [ ] `knows_version` set (e.g., `"0.9.0"`)
 - [ ] `profile` set (e.g., `"paper@1"`)
@@ -17,7 +20,7 @@ Run this after Mode 1 (Generate) or Mode 3 (Review) before reporting done.
 
 ## Provenance
 
-- [ ] `provenance.origin` is `machine` or `author`
+- [ ] Local-generation `provenance.origin` is `machine` or `author`; canonical imports can include `imported` (report local-lint incompatibility)
 - [ ] `provenance.actor.type` is `tool`, `person`, or `org` (never `ai`/`llm`/`model`)
 - [ ] `provenance.actor.name` is set
 - [ ] `provenance.method` describes how the sidecar was produced (e.g., `extraction`)
@@ -39,7 +42,7 @@ Run this after Mode 1 (Generate) or Mode 3 (Review) before reporting done.
 ## Statement Internals
 
 - [ ] Each statement has `statement_type` from: `claim`, `method`, `limitation`, `assumption`, `definition`, `question` (review sidecars use the same enum — no `review_comment`)
-- [ ] Each statement has `modality` from: `descriptive`, `empirical`, `theoretical`
+- [ ] Local generation uses observed modalities `descriptive`, `empirical`, `theoretical`; preserve canonical imported `normative` values
 - [ ] Each statement has `status` (commonly `asserted`)
 - [ ] `confidence` is an object: `{claim_strength: ..., extraction_fidelity: ...}`, both from `high|medium|low`
 - [ ] `source_anchors` reference a valid `representation_ref` (e.g., `rep:paper-pdf`)
@@ -54,9 +57,9 @@ Run this after Mode 1 (Generate) or Mode 3 (Review) before reporting done.
 
 ## Relations
 
-- [ ] Every statement has at least one relation (incoming or outgoing)
-- [ ] Every claim has a `supported_by` relation pointing to evidence
-- [ ] Average relations-per-statement ratio ≥ 1.5
+- [ ] Relations are source-supported and appropriate to each statement type
+- [ ] Claims with evidence use `supported_by`; source-anchored questions/definitions are not given fabricated support
+- [ ] Ratio warnings prompt a coverage review, not graph padding
 - [ ] Methods have at least one of: `implements`, `uses`, `evaluates_on`, `documents`
 - [ ] No dangling references; every `subject_ref` and `object_ref` points to an existing id
 - [ ] Review sidecars (Mode 3): cross-record refs use the `record_id#local_id` grammar (e.g., `knows:examples/resnet/1.0.0#stmt:main-contribution`) — lint accepts these; bare foreign ids are still errors
@@ -69,7 +72,7 @@ Run this after Mode 1 (Generate) or Mode 3 (Review) before reporting done.
 
 ## Lint
 
-- [ ] `oma scholar lint` returns 0 errors
+- [ ] Newly generated local-profile output passes `oma scholar lint`; imported-record incompatibilities are reported without loss of canonical data
 - [ ] Warnings reviewed (recommended-key warnings are usually acceptable for local drafts)
 
 ## Anti-Fabrication
@@ -84,6 +87,6 @@ Run this after Mode 1 (Generate) or Mode 3 (Review) before reporting done.
 Include:
 - Output file path
 - Counts: `statements`, `evidence`, `relations`, `artifacts`
-- Ratio: relations/statements (target ≥ 1.5)
+- Ratio: relations/statements (diagnostic target 1.5; no fabricated links)
 - Lint status: clean / N warnings / N errors
 - Fields explicitly omitted due to anti-fabrication (e.g., "DOI not visible; please paste if you have it")

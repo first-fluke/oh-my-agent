@@ -12,7 +12,7 @@ Run through every item before submitting your work.
 - [ ] Material Design 3 for Android
 - [ ] iOS Human Interface Guidelines followed
 - [ ] Platform-specific code guarded (Flutter: `Platform.isIOS`/`Platform.isAndroid`; RN: `Platform.OS`)
-- [ ] Tested on both iOS and Android (emulator or device)
+- [ ] Tested on supported target platforms (iOS only for native Swift)
 - [ ] Dark mode supported
 
 ## Performance
@@ -34,7 +34,7 @@ Run through every item before submitting your work.
 - [ ] Widget tests for key screens
 - [ ] E2E tests with Maestro for critical user flows
 - [ ] Edge cases: empty lists, error states, offline mode
-- [ ] Tests pass on both platforms
+- [ ] Applicable tests pass on supported target platforms
 
 ## React Native
 > Applies when `package.json` declares a `react-native` dependency. Skip for Flutter/Swift native.
@@ -58,5 +58,5 @@ Run through every item before submitting your work.
 - [ ] Loading / error (with retry) / empty / data states handled in views
 - [ ] iOS Human Interface Guidelines followed
 - [ ] Push routes registered via a `swipeBackDestination` wrapper (not bare `navigationDestination`), so nav-bar-hidden screens keep edge swipe-back; guarded pops (unsaved edits) override explicitly — see `variants/swift-ios/snippets.md` §9
-- [ ] `swift build` succeeds (runs the generator plugin) and `swift test` passes
+- [ ] Run build/generation only when the user explicitly requested a build. Otherwise perform authorized checks without triggering compilation and report verification limits; do not run swift test when it would require a prohibited build.
 - [ ] XCTest/XCUITest coverage for critical flows

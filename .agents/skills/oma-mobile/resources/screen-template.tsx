@@ -74,6 +74,7 @@ export function ExampleScreen({ navigation }: Props) {
           onPress={() => handleToggle(item.id)}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: item.completed }}
+          testID={`todo-checkbox-${item.id}`}
           accessibilityLabel={`Toggle ${item.title}`}
         >
           <Text style={styles.checkboxGlyph}>{item.completed ? '☑' : '☐'}</Text>
@@ -92,6 +93,7 @@ export function ExampleScreen({ navigation }: Props) {
         <TouchableOpacity
           onPress={() => handleDelete(item.id)}
           accessibilityRole="button"
+          testID={`todo-delete-${item.id}`}
           accessibilityLabel={`Delete ${item.title}`}
         >
           <Text style={styles.deleteIcon}>✕</Text>

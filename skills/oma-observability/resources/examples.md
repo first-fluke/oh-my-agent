@@ -205,15 +205,12 @@ receivers:
             - targets: ["opencost.opencost.svc.cluster.local:9003"]
 ```
 
-3. Per-tenant cost PromQL (daily, `signals/cost.md §5`):
-
-```promql
-sum by (tenant_id) (
-  increase(opencost_workload_cost_total[24h])
-  * on(namespace) group_left(tenant_id)
-  kube_namespace_labels
-)
-```
+3. Obtain daily per-tenant cost from the OpenCost Allocation API using a 24-hour
+   window and aggregation by the verified workload-label mapping. The stock
+   `/metrics` endpoint does not emit `opencost_workload_cost_total`. See
+   `signals/cost.md §5` for the CPU/RAM price-times-allocation PromQL and the
+   distinction between official gauges, window allocations, and team-implemented
+   cumulative cost counters. Include storage/network/shared costs before billing.
 
 4. Cardinality guard: keep top-1 000 tenants labeled, bucket overflow as `"other"` to prevent
    TSDB series explosion (`meta-observability.md §Cardinality Guardrails`, `boundaries/multi-tenant.md §13`):
@@ -246,7 +243,7 @@ Those tenants were moved to a stricter free-tier cap, reducing monthly egress sp
 ## Scenario 4: Migrating off Fluentd to Fluent Bit
 
 **Situation:** Legacy Fluentd DaemonSet is consuming 400 MB RAM per node vs. Fluent Bit's typical
-80 MB. The CNCF 2025-10 migration guide is now the normative reference. Team needs zero-downtime
+80 MB in this measured workload. Use the CNCF migration guide as an informative conversion reference; Fluentd remains Graduated. Team needs zero-downtime
 migration with log parity verification before decommission.
 
 **Intent:** `migrate`
@@ -257,7 +254,7 @@ migration with log parity verification before decommission.
 
 1. Invoke `/oma-observability --migrate "Fluentd to Fluent Bit"`.
 2. Router routes to `vendor-categories.md §(h) Log Pipeline` → **Fluent Bit** (CNCF Graduated,
-   drop-in config compatibility with Fluentd, C runtime, 5–15 MB RAM typical).
+   C runtime). Convert Fluentd syntax/plugins/routes and validate them; configuration is not drop-in compatible.
 
 **Migration phases (zero-downtime):**
 
@@ -299,11 +296,12 @@ sum by (service_name) (rate(fluentbit_output_proc_records_total[1h]))
 sum by (service_name) (rate(fluentd_output_emit_records_total[1h]))
 ```
 
-**Phase 3; Decommission Fluentd:** once parity is confirmed over 24 h, scale down Fluentd
-DaemonSet to 0 and remove its resources.
+**Phase 3; Decommission Fluentd:** after the agreed parity window, remove the
+Fluentd DaemonSet from its GitOps/Helm desired state and reconcile through its
+owner. A DaemonSet has no replica count and cannot be scaled to zero. For an
+unmanaged DaemonSet, deletion after verified cutover is the removal action:
 
 ```bash
-kubectl scale daemonset fluentd -n logging --replicas=0
 kubectl delete daemonset fluentd -n logging
 ```
 
@@ -333,34 +331,43 @@ via Argo CD; no manual UI edits.
 1. Define the SLO as OpenSLO YAML and commit to the observability repo (`boundaries/slo.md §5`):
 
 ```yaml
-# Key fields — full spec in boundaries/slo.md §5
-apiVersion: openslo.com/v1
+apiVersion: openslo/v1
 kind: SLO
 metadata:
   name: checkout-availability
 spec:
   service: checkout
-  sloType: Request-Based
+  budgetingMethod: Occurrences
+  timeWindow:
+    - duration: 28d
+      isRolling: true
   objectives:
     - target: 0.999
-      window: 28d
   indicator:
+    metadata:
+      name: checkout-success-ratio
     spec:
       ratioMetric:
+        counter: false # queries return window counts, not monotonic counters
         good:
           metricSource:
             type: Prometheus
             spec:
-              query: >
-                sum(rate(http_requests_total{service="checkout",status=~"2..|3.."}[{{.Window}}]))
+              query: sum(increase(http_requests_total{service="checkout",status=~"2..|3.."}[28d]))
         total:
           metricSource:
             type: Prometheus
             spec:
-              query: sum(rate(http_requests_total{service="checkout"}[{{.Window}}]))
+              query: sum(increase(http_requests_total{service="checkout"}[28d]))
 ```
 
-2. Generate PrometheusRule CRD via Sloth (`observability-as-code.md §4.2`):
+The v1 structure follows <https://openslo.com/specification/>.
+`metricSource.spec` is implementation-defined: verify the chosen consumer's
+Prometheus adapter, window evaluation, and counter semantics. This example
+does not imply Sloth or Pyrra directly accepts OpenSLO; native definitions
+require a verified adapter/conversion if OpenSLO is the input.
+
+2. Define the equivalent SLO in Sloth native YAML (`observability-as-code.md §4.2`) and generate its PrometheusRule. Do not pass the OpenSLO document directly unless a verified adapter converts it:
 
 ```bash
 sloth generate -i sloth/checkout-slo.yaml | kubectl apply -f -

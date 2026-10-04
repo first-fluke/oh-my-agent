@@ -38,9 +38,10 @@ Refuse research that targets a private individual's personal data before
 running the engine. Founders, creators, and public handles are allowed
 (upstream person mode).
 
-## Self-check (before writing)
+## Self-check (after writing the draft)
 
 ```bash
+# Write the candidate brief first; these checks read its actual bytes.
 f=".agents/results/market/<slug>-<date>.md"
 head -1 "$f" | grep -q '^🌐 last30days v'          || echo "FAIL: badge not first line"
 grep -nE '—|–' "$f"                               && echo "FAIL: em/en-dash"
@@ -48,5 +49,5 @@ grep -niE '^(Sources|References|Citations):' "$f" && echo "FAIL: sources block"
 grep -nE '\[[^]]+\]\(\)' "$f"                     && echo "FAIL: empty citation"
 ```
 
-Fix and re-check until clean; do not deliver a brief that fails the badge or
+Check the newly written draft, not an older output at the same path. Fix and re-check until clean; do not deliver a brief that fails the badge or
 empty-citation checks.

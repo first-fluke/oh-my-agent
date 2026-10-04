@@ -50,7 +50,7 @@ Guide manual multi-agent coordination for complex work that spans PM, frontend, 
 
 ### Entry
 1. Confirm the task is complex enough for multi-agent coordination.
-2. Start with PM task decomposition.
+2. Reuse a current plan and handoff state; use PM when task decomposition or contract changes are needed.
 3. Identify priority tiers and shared contracts.
 
 ### Scenes
@@ -62,7 +62,7 @@ Guide manual multi-agent coordination for complex work that spans PM, frontend, 
 ### Transitions
 - If task is simple, route to one specialist.
 - If user wants automated execution, use orchestrator.
-- If QA finds CRITICAL issues, re-spawn responsible agents.
+- If QA reports a blocking defect or required verification gap, route the affected work to the responsible agent within the existing recovery budget.
 
 ### Failure and recovery
 - If contracts diverge, pause downstream frontend/mobile work until backend/API contract is reconciled.
@@ -81,7 +81,7 @@ Guide manual multi-agent coordination for complex work that spans PM, frontend, 
 | Read request and domains | `READ` | User prompt and project context |
 | Select agent plan | `SELECT` | PM decomposition and priority tiers |
 | Spawn agents | `CALL_TOOL` | `oma agent spawn` |
-| Monitor progress | `READ` | `progress-{agent}[-{sessionId}].md` |
+| Monitor progress | `READ` | injected task/run-scoped progress, claims, and receipts |
 | Validate contracts | `VALIDATE` | API/data model alignment |
 | Notify coordination status | `NOTIFY` | Final coordination summary |
 
@@ -92,6 +92,7 @@ Guide manual multi-agent coordination for complex work that spans PM, frontend, 
 
 ### Canonical command path
 ```bash
+# If planning is required, dispatch the declared PM task first; otherwise reuse the current plan.
 oma agent spawn pm <pm-prompt-file> <session-id> --task-id <plan.pm_task.id> -w ./pm
 oma agent spawn backend <backend-prompt-file> <session-id> --task-id <plan.backend_task.id> -w ./backend &
 oma agent spawn frontend <frontend-prompt-file> <session-id> --task-id <plan.frontend_task.id> -w ./frontend &
@@ -112,7 +113,7 @@ Useful `agent spawn` options: `--vendor <vendor>` (CLI vendor override), `--isol
 
 ### Preconditions
 - Task requires multiple domains.
-- PM decomposition can identify independent priority tiers.
+- A current plan identifies task ownership, acceptance checks, dependencies, and priority tiers.
 
 ### Effects and side effects
 - Spawns or guides multiple agents.
@@ -120,19 +121,19 @@ Useful `agent spawn` options: `--vendor <vendor>` (CLI vendor override), `--isol
 
 ### Guardrails
 
-1. Always start with PM Agent for task decomposition
+1. Reuse a valid plan; call PM only when decomposition or contract changes are required
 2. Spawn independent tasks in parallel (same priority tier)
-3. Define API contracts before frontend/mobile tasks
+3. Reuse or update contracts for changed API boundaries before dependent frontend/mobile work
 4. QA review is always the final step
 5. Assign separate workspaces to avoid file conflicts (or use `--isolation worktree` for a git worktree per spawn)
 6. Follow `../_shared/core/code-intelligence.md`: discover configured tools, do not auto-install or track, and use native search only for paths outside this project or ignored paths when unavailable or timed out
-7. Never skip steps in the workflow; follow each step sequentially without omission
+7. Resume from the current handoff state and execute applicable steps in dependency order; record why a branch is not applicable
 
 ### Workflow
 
 #### Step 1: Plan with PM Agent
 
-PM Agent analyzes requirements, selects tech stack, creates task breakdown with priorities.
+Reuse an existing valid plan. Otherwise, PM analyzes requirements and creates the task breakdown, acceptance checks, contracts, and priorities. Preserve injected session/task/run IDs; do not regenerate a plan already frozen by dispatch.
 
 #### Step 2: Spawn Agents by Priority
 
@@ -152,13 +153,13 @@ wait
 
 #### Step 3: Monitor & Coordinate
 
-- Use memory read tool to poll `progress-{agent}[-{sessionId}].md` files (spawned agents write the session-suffixed form)
+- Read injected run artifacts and receipts. Human-readable progress/results use `{memoryConfig.basePath}/progress-{agentId}-{taskId}-{runId}-{sessionId}.md` and the corresponding `result-` name; see `../_shared/runtime/memory-protocol.md`. Keep the structured claim path unchanged.
 - Verify API contracts align between agents
 - Ensure shared data models are consistent
 
 #### Step 4: QA Review
 
-Spawn QA Agent last to review all deliverables. Address CRITICAL issues by re-spawning agents.
+Review the coordinated deliverables with QA. Resolve blocking defects and required verification gaps through the responsible agents; rerun affected checks before finalizing.
 
 ### Automated Alternative
 

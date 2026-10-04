@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { TaskContractSchema } from "../../state/task-contract.js";
 import { TEST_APPROACHES } from "./plan-checks.js";
 
 const templatePath = join(
@@ -32,5 +33,25 @@ describe("PM task-template.json contract", () => {
       e2e_tests: expect.any(String),
       performance_tests: expect.any(String),
     });
+  });
+});
+
+describe("PM executable plan examples", () => {
+  const examples = readFileSync(
+    join(__dirname, "../../..", ".agents/skills/oma-pm/resources/examples.md"),
+    "utf-8",
+  );
+  const plans = [...examples.matchAll(/```json\n([\s\S]*?)\n```/g)].map(
+    (match) => JSON.parse(match[1] ?? ""),
+  );
+
+  it("declares requirement-backed checks and replay prompts for each example task", () => {
+    const tasks = plans.flatMap((plan) => plan.tasks ?? []);
+    expect(tasks).toHaveLength(7);
+    for (const task of tasks) {
+      expect(TaskContractSchema.safeParse(task).success, task.id).toBe(true);
+      expect(task.task, task.id).toEqual(expect.any(String));
+      expect(task.task.trim(), task.id).not.toBe("");
+    }
   });
 });

@@ -86,7 +86,7 @@ outputs:
 ### Control-flow features
 - Branches by mode: new / import / import-canva / enhance (Phase 0 detection)
 - Branches by CJK content presence (→ Pretendard font required)
-- Branches by Canva availability: probes `list_designs` on startup; offers auto-provisioning if not configured; skips if unavailable or declined
+- Branches by Canva availability: probes `search-designs` using the discovered tool schema on startup; offers auto-provisioning if not configured; skips if unavailable or declined
 - Validate loop: max 3 auto-fix iterations, then surfaces diff to user
 - Defers image generation to oma-image; defers video download to `oma slide asset fetch-video`
 - Style discovery: generates 3 live previews (safe preset + bold + wildcard) → user picks
@@ -202,7 +202,7 @@ Env-var overrides: `OMA_CHROME_PATH` (Chrome binary for validate/export), `OMA_Y
 11. **oma-search is NOT a runtime dependency.** It was used to study reference repos only.
 12. **Editor binds 127.0.0.1 only.** Never expose the bbox editor server on a non-loopback interface.
 13. **Canva MCP = optional.** Never error if Canva MCP is unavailable; offer auto-provisioning, then degrade to local exports if declined.
-14. **Canva auth probe first.** Before any Canva operation, call `list_designs` to verify auth. On failure, notify user and skip.
+14. **Canva auth probe first.** Before any Canva operation, call `search-designs` using the discovered tool schema to verify auth. On failure, notify user and skip.
 15. **Canva design URL in delivery.** When Canva export succeeds, include the Canva design URL in the delivery summary.
 16. **Canva auto-provision = user-approved only.** Never write MCP config without explicit user consent. See `resources/canva-integration.md` §Auto-Provisioning.
 

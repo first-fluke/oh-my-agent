@@ -11,7 +11,7 @@ Use the relevant recovery steps. If required information or authority is missing
 
 1. Check: is the tool installed? Note missing tool in result
 2. Check: are you in the correct directory?
-3. If `npm audit`: try `npm audit --production` to skip devDependencies
+3. If `npm audit`: check the lockfile, registry access, and selected dependency scope. A narrower audit does not clear unreviewed dependencies; record exclusions.
 4. If `bandit`: check Python path; may need `python -m bandit`
 5. If `lighthouse`: requires a running server; note if server not available
 6. **If tool unavailable**: Fall back to manual review, record `tool_unavailable: ["tool_name"]` in result
@@ -25,8 +25,8 @@ Use the relevant recovery steps. If required information or authority is missing
 1. Trace the data flow: does user input actually reach the dangerous operation?
 2. Check: is there validation/sanitization upstream?
 3. Check: is the framework handling this automatically? (e.g., ORM prevents SQL injection)
-4. If uncertain: mark severity as `MEDIUM` with note "verify manually"
-5. **NEVER do this**: Mark as CRITICAL without certainty (false alarms erode trust)
+4. If still uncertain, record a hypothesis and the required evidence as a verification gap. Do not assign defect severity without confirming the defect.
+5. Classify a confirmed finding by its observed impact, prerequisites, and failure/exploit evidence; do not issue PASS while required evidence is missing.
 
 ---
 
@@ -74,23 +74,25 @@ Use the relevant recovery steps. If required information or authority is missing
 
 **Symptoms**: `429`, `RESOURCE_EXHAUSTED`, `rate limit exceeded`
 
-1. **Stop immediately**: do not make additional API calls
-2. Save current work to `progress-{agent-id}[-{sessionId}].md`
-3. Record Status: `quota_exceeded` in `result-{agent-id}[-{sessionId}].md`
-4. Specify remaining tasks
+1. Identify the source. An expected rate-limit response from the application under review is a test result, not an agent-provider quota failure.
+2. For provider quota exhaustion, stop affected provider calls and record the unavailable checks; continue independent authorized work when possible.
+3. Preserve injected session/task/run IDs and the claim path. Save progress/results under the configured memory base using the task/run-scoped names in `../../_shared/runtime/memory-protocol.md`.
+4. Use a valid claim status (`partial`, `blocked`, or `failed`) with the actual cause and unresolved work per `../../_shared/runtime/result-contract.md`; do not invent a `quota_exceeded` status.
 
 ---
 
-## Serena Memory Unavailable
+## Coordination File Unavailable
 
-1. Retry once
-2. If 2 consecutive failures: use local file `/tmp/progress-{agent-id}[-{sessionId}].md`
-3. Add `memory_fallback: true` flag to result
+Use native file tools and the configured durable memory base per the shared
+memory/result contract. Code-intelligence availability is independent of file
+memory. Record a path/permission error and preserve available evidence in an
+authorized durable artifact location; report the actual saved path rather than
+claiming a missing receipt or substituting an undisclosed `/tmp` result.
 
 ---
 
 ## General Principles
 
-- **False positive prevention**: If finding is uncertain, lower severity and mark "verify manually"
-- **Blocked**: If no progress after 5 turns, save current state, `Status: blocked`
+- **False positive prevention**: Keep uncertain hypotheses separate from confirmed defect findings; state the check needed to resolve each gap
+- **Blocked**: Record a material unavailable prerequisite and affected work; use an accurate result status and continue independent work when possible
 - **No code modification**: QA only reports; delegate code changes to the appropriate agent

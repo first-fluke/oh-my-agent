@@ -46,13 +46,13 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - The numeric tier is the **canonical** `priority` value in plan JSON (what the orchestrator fans out on).
   - Human-readable trackers (`docs/plans/work/{NNN}-{name}.md`) use the same numeric tier in their Priority column. Do not use a separate P0/P1-style scale.
 - Complexity: Low / Medium / High / Very High
-- Save to `.agents/results/plan-{sessionId}.json` and `.agents/results/result-pm.md`
-- `{sessionId}` = `{YYYYMMDD}-{HHMMSS}` at plan creation, matching the orchestrator session convention (`oma-orchestration/resources/memory-schema.md`); also record it in the plan JSON `session_id` field
+- Save to `.agents/results/plan-{sessionId}.json` using the injected session ID; record that same ID in the plan JSON `session_id` field. Do not replace an active workflow's ID with a timestamp.
+- Keep injected task/run IDs and the claim path. Write the human-readable `result-{agentId}-{taskId}-{runId}-{sessionId}.md` under the configured memory base per `../../_shared/runtime/memory-protocol.md`. An independent manual run may create local session/task/run IDs once and reuse them throughout its artifacts.
 
 ## Step 4: Validate Plan
 - Check: Can each task be done independently given its dependencies?
 - Check: Are acceptance criteria measurable and testable?
-- Check: Is `test_approach` valid where set (`tdd|test_after|not_applicable`), with rationale + alternative verification for every `not_applicable`? (`oma verify pm` enforces this contract)
+- Check: Is `test_approach` valid where set (`tdd|test_after|not_applicable`), with rationale + alternative verification for every `not_applicable`? (`oma verify agent pm` enforces this contract)
 - Check: Is security considered from the start (not deferred)?
 - Check: Are affected API boundaries settled by an existing or updated contract before dependent frontend/mobile work?
 - Check: Are major risks, owners, and approval points explicit when needed?

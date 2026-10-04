@@ -81,7 +81,7 @@ Move from a legacy tool to a modern equivalent. Applies to logging agents, APM p
 **Signals:**
 - Source tool name (Fluentd, New Relic, Datadog, old APM) + destination intent
 - "Replace", "away from", "moving off of"
-- CNCF deprecation context (Fluentd 2025-10)
+- Explicit migration requirements or measured resource/plugin constraints
 
 #### Example Queries
 
@@ -91,7 +91,7 @@ Move from a legacy tool to a modern equivalent. Applies to logging agents, APM p
 
 #### Primary Route
 
-`resources/vendor-categories.md §(h) Log Pipeline` (deprecation notes); CNCF 2025-10 Fluentd migration guide
+`resources/vendor-categories.md §(h) Log Pipeline` (support and conversion notes); CNCF 2025-10 Fluentd migration guide
 
 #### Secondary Considerations
 
@@ -283,7 +283,7 @@ When no intent is detected with confidence:
 | "How do I sample?" | `tune` | Sampling = throughput/cost optimization |
 | "Tenant data isolation" | `route` | Isolation + tenant framing |
 | "SLO alert setup" | `alert` | SLO + alarm keywords |
-| "Want to drop Fluentd" | `migrate` | Deprecation + replacement intent |
+| "Want to drop Fluentd" | `migrate` | Explicit replacement intent |
 | "Istio trace propagation" | `trace` | Mesh + trace context propagation |
 | "Something off with OTel" (no detail) | `investigate + tune` fallback | No specific signal; dispatch parallel |
 

@@ -36,10 +36,14 @@ Data sources (preferred order):
 1. PR metadata/diff from GitHub CLI or API
 2. Line-overlap detection — compare diff hunk ranges across candidate branches (no dedicated tool required):
    ```bash
-   # Changed line ranges per file for one branch vs its merge-base
-   git diff -U0 "$(git merge-base <base> <branch>)"..<branch> -- <file> | grep '^@@'
-   # Repeat per candidate branch; two branches overlap on <file> when their
-   # "+start,count" ranges from the @@ headers intersect.
+   # Resolve ONE common base for both candidate branches.
+   COMMON_BASE=$(git merge-base <branch-a> <branch-b>)
+   git diff -U0 "$COMMON_BASE" <branch-a> -- <file> | grep '^@@'
+   git diff -U0 "$COMMON_BASE" <branch-b> -- <file> | grep '^@@'
+   # Compare the "-start,count" ranges in this common original file.
+   # A missing count means 1. Pure insertions (count=0) use the boundary
+   # after start; compare insertion boundaries and edits touching them.
+   # Do not compare "+start,count": each branch has different new-line offsets.
    ```
 3. Merge simulation (GitHub mergeability/queue simulation when available)
 4. Local git history for churn/hotspot and ownership hints

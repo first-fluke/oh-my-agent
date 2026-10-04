@@ -89,11 +89,11 @@
 
 ## Assets & Imagery
 - DON'T: Div-based fake screenshots (fake dashboards, task lists, terminal windows built from styled divs) — the #1 AI-design tell
-- DON'T: Text-only pages passing as "minimalism"; even restrained pages need 2-3 real images
+- DON'T: Add decorative images merely to meet a count; choose assets that support the brief
 - DON'T: Plain text wordmarks in "Trusted by" logo walls; use real SVG logos or generated monogram marks
 - DON'T: Hand-rolled SVG icons or decorative illustrations by default
 - DON'T: Pills/labels overlaid on images, photo-credit captions as decoration, guessed Unsplash URLs
-- DO: Source priority: image generation (oma-image) → picsum seed → labeled placeholder slot + tell the user
+- DO: Prefer relevant supplied assets; generate or source images when needed and authorized; label missing assets or placeholders
 - DO: See `resources/asset-strategy.md` for full rules
 
 ## Iconography
@@ -109,7 +109,7 @@
 - DON'T: Icon + Title + Description card grid as the only layout pattern
 - DON'T: Hover-only interactions without touch/keyboard alternatives
 - DON'T: Identical card heights forced with arbitrary min-height
-- DO: Mix section patterns within a page (chess + grid + stats + testimonials)
+- DO: Choose section patterns for the content; keep comparable sections consistent
 - DO: Choose component libraries intentionally (shadcn for base, Aceternity/React Bits for accents)
 - DO: All interactive elements must have visible focus states
 - DO: Include install commands when recommending components

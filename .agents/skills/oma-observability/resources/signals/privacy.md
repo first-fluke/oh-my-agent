@@ -37,24 +37,24 @@ Primary consumers of this file: Data Protection Officers (DPO), privacy engineer
 | PIPEDA | Canada | Fair information principles; breach of security safeguards | CAD 100,000 per violation |
 | LGPD | Brazil | Art. 6 finality + necessity; Art. 18 erasure rights | 2% Brazil revenue, max BRL 50M |
 
-**Critical misclassification risk.** Claiming "anonymization" for data that is in fact pseudonymized (reversible with a key) constitutes a GDPR violation. Regulators have levied 4% penalties on this misclassification. See §3 for the definitive distinction.
+**Misclassification risk.** Treating identifiable pseudonymized data as anonymous can cause applicable GDPR duties to be missed. A theoretical maximum fine is not evidence that a particular misclassification received that penalty. Assess reasonable identification using §3.
 
 ---
 
 ## 3. Anonymization vs Pseudonymization vs Tokenization
 
-The reversibility question is the only legally meaningful test: *Can you recover the original value with information you hold?*
+Assess whether a person can reasonably be identified, directly or indirectly, using this data and other available information. GDPR Recital 26 considers means likely to be used by the controller or another person, including singling out; inability to recover the original value alone does not establish anonymity.
 
-| Technique | Reversible? | GDPR Applies? | Typical Tooling |
+| Technique | Identification/linkage assessment | GDPR Applies? | Typical Tooling |
 |-----------|-------------|---------------|-----------------|
-| Anonymization | No; irreversible | No | k-anonymity, differential privacy, aggregation, generalization |
-| Pseudonymization | Yes; with key/salt | Yes | HMAC+salt, format-preserving encryption (FPE), AES-FF1 |
-| Tokenization | Yes; with vault lookup | Yes | Payment token vaults, HSM-backed services |
-| Hashing (no salt, low entropy) | Yes; brute-force feasible | Yes (treated as pseudonymization) | SHA-256 without salt on numeric IDs |
+| Anonymization | No reasonable identification, including linkage to other available data | No, only when that assessment is met | Evaluated aggregation, generalization, or privacy-preserving methods |
+| Pseudonymization | Additional information or other reasonably available means may re-identify | Yes | HMAC with separately held key, format-preserving encryption (FPE), AES-FF1 |
+| Tokenization | Vault lookup can link the token to the person | Yes | Payment token vaults, HSM-backed services |
+| Hashing (no salt, low entropy) | Enumeration/linkage can identify despite one-way hashing | Yes when reasonably identifiable | SHA-256 without salt on numeric IDs |
 
-**Decision rule.** Ask "Could we reverse this if compelled?" If no, it is anonymization and GDPR does not apply to the result. If yes (even theoretically), GDPR applies and you have pseudonymization obligations.
+**Decision rule.** Evaluate reasonable re-identification, linkage, and singling-out risks and record the assumptions. Treat the result as personal data if identification remains reasonably possible or the assessment is unresolved. A stable hash or deletion of a local lookup key does not by itself prove anonymity.
 
-**Key separation.** GDPR Art. 32 requires that pseudonymization keys be stored separately from the pseudonymized data, with independent access control and audit trail.
+**Key separation.** Keep additional identifying information and keys separately with independent access controls. Art. 32 requires security measures appropriate to risk; it does not mandate a different geographic region. Select the storage/access boundary according to the threat model, residency policy, and applicable transfer requirements.
 
 ---
 
@@ -197,7 +197,7 @@ OTel Collector's built-in `hash` action uses SHA-256 **without salt**. On low-en
 **Requirements for safe pseudonymization:**
 
 1. Apply salt using a vault-managed key (e.g., HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager).
-2. Store the salt/key in a separate region and access-controlled vault; never co-located with the pseudonymized data (GDPR Art. 32).
+2. Store the key in an independently access-controlled vault separated from telemetry access. Geographic separation is an optional risk-based design choice, subject to residency and transfer requirements.
 3. Rotate the salt on a defined schedule (quarterly recommended); document rotation in the key management policy.
 4. Use HMAC-SHA256 with the salt, not bare SHA-256.
 5. Because the Collector `hash` action cannot inject vault-managed salts, perform HMAC at the **SDK layer** before emitting spans.
@@ -216,12 +216,12 @@ def pseudonymize_user_id(user_id: str, vault_key: bytes) -> str:
 
 | Tier | Content | Max Retention | Erasure Support |
 |------|---------|---------------|-----------------|
-| Raw (with PII) | Full spans, logs, unredacted | 7 days | Automated on data-subject request |
-| Redacted short | PII removed, full attributes | 30 days | N/A (no PII present) |
-| Anonymized long | Aggregated metrics, anonymized traces | 90+ days | N/A (irreversible) |
-| Audit events | Immutable access/action log | 7–10 years | Not erasable (legal obligation) |
+| Raw (with PII) | Full spans, logs, unredacted | Example: purpose-justified 7 days | Delete eligible records after checking grounds/exceptions |
+| Redacted short | Direct identifiers removed; assess remaining linkage | Example: 30 days | Required when remaining data is personal and an erasure ground applies |
+| Anonymized long | Data assessed as no longer reasonably identifiable | Purpose-defined period | GDPR erasure does not apply only when the anonymity assessment is met |
+| Audit events | Access/action evidence, minimized for its purpose | Applicable law/contract and purpose-specific schedule | Assess erasure grounds and documented legal-retention/legal-claim exceptions |
 
-Erasure pipeline: data-subject request → identity verification → lookup raw-tier records by pseudonymized ID → delete → log erasure action in audit trail.
+Erasure pipeline: request → verify identity and the applicable erasure ground → identify personal records across relevant tiers → check documented retention/legal-claim exceptions → delete eligible records under the approved schedule → record the action and justified exceptions. Audit records do not have a blanket exemption.
 
 Cross-reference: `../meta-observability.md §Retention Matrix` for full retention policy. Cross-reference: `audit.md` for erasure audit trail requirements.
 
@@ -328,9 +328,9 @@ The following cells in `../matrix.md` have privacy-specific guidance from this f
 
 | Anti-Pattern | Risk | Remediation |
 |-------------|------|-------------|
-| Claiming "anonymization" for pseudonymized data | 4% GDPR penalty; regulatory misrepresentation | Apply reversibility test (§3); re-classify and update ROPA |
+| Claiming anonymity from hashing or local irreversibility alone | Personal data may be misclassified and its safeguards omitted | Apply the re-identification assessment (§3); re-classify and update ROPA |
 | Hash without salt on low-entropy IDs | Rainbow-table reversal; GDPR breach | HMAC-SHA256 with vault-managed salt at SDK layer (§8) |
-| Salt/key stored in same region as pseudonymized data | Key compromise = full de-anonymization | Separate vault in independent region with independent IAM (GDPR Art. 32) |
+| Key and telemetry accessible through the same permissions | One access compromise enables re-identification | Separate vault/IAM and access audit; choose geography under the risk and residency policy |
 | Baggage crossing trust boundary without filter | PII propagated to untrusted downstream collectors | Apply baggage allowlist at service ingress (cross-ref `../boundaries/cross-application.md`) |
 | Observability backend open to all engineers (no RBAC) | PII exposure; compliance failure | Implement role-scoped access per §12 |
 | Routing to 3rd-party vendor without DPA | GDPR Art. 28 violation | Block data flow until DPA is signed (§13) |

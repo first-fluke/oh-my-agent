@@ -143,9 +143,9 @@ rule covers figurative vocabulary the model invents on the Korean side, where
 the source had a plain noun or verb. It lowers readability and shifts meaning.
 
 ```
-분석의 흐름        → 분석의 방향성
+분석의 플로우      → 분석의 흐름
 코드로 박는 자리    → 코드에 명시하는 위치
-요청을 받습니다     → 요청을 확인했습니다
+요청을 수신합니다   → 요청을 받습니다
 테스트를 태웁니다   → 테스트를 실행합니다
 ```
 
@@ -259,8 +259,10 @@ See [Mechanical triples](../../../_shared/core/anti-ai-prose.md#mechanical-tripl
 ```
 EN: a fast, reliable, and intuitive experience
 Bad: 빠르고, 안정적이며, 직관적인 경험
-Good: 빠르고 쓰기 편한 경험
+Good: 빠르고 안정적이며 직관적인 경험
 ```
+
+Preserve every source quality. A real three-item list is valid when all three carry meaning.
 
 ### synonym cycling
 
@@ -275,7 +277,7 @@ See [Compound adjective stacking](../../../_shared/core/anti-ai-prose.md#compoun
 
 ```
 Bad: AI 기반의, 클라우드 기반의, 엔터프라이즈급 솔루션
-Good: 클라우드에서 돌아가는 AI 솔루션
+Good: 클라우드에서 돌아가는 엔터프라이즈급 AI 솔루션
 
 Bad: 직관적인 UI와 강력한 성능, 원활한 연동을 제공합니다
 Good: UI는 쓰기 편하고, 성능이 좋고, 연동도 매끄럽습니다
@@ -345,7 +347,7 @@ See [Cleft Sentence Calques](../anti-ai-patterns.md#cleft-sentence-calques).
 
 ```
 Bad: 중요한 것은 사용자 경험이다
-Good: 사용자 경험이 가장 중요하다
+Good: 사용자 경험이 중요하다
 ```
 
 ---

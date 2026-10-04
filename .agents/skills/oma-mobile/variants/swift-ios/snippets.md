@@ -99,8 +99,7 @@ final class TodosViewModel {
     // Depend on the protocol seam, not the concrete service — enables protocol-based
     // mocking in tests without a third-party mock lib (see §8).
     private let service: any TodoProviding
-    // `private(set)` so tests can `await viewModel.loadTask?.value` to observe the
-    // load deterministically instead of sleeping (see §8).
+    // Retained for cancellation; tests await load() directly (see §8).
     private(set) var loadTask: Task<Void, Never>?
 
     init(service: any TodoProviding) {
@@ -109,12 +108,12 @@ final class TodosViewModel {
 
     // MARK: - Intent
 
-    func load() {
+    func load() async {
         // Cancel any in-flight task before starting a new one.
         loadTask?.cancel()
         viewState = .loading
 
-        loadTask = Task { [weak self] in
+        let task = Task { [weak self] in
             guard let self else { return }
             do {
                 // Stale-while-revalidate: the stream yields the cached list first
@@ -127,28 +126,30 @@ final class TodosViewModel {
             } catch is CancellationError {
                 // Silently ignore — another load will follow.
             } catch {
+                guard !Task.isCancelled else { return }
                 self.viewState = .error(error.localizedDescription)
             }
         }
+        loadTask = task
+        await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
     }
 
-    func retry() { load() }
+    func retry() async { await load() }
 
-    /// Cancel the in-flight load explicitly (e.g. a "Cancel" button). The `.task`
-    /// modifier already cancels its structured child on view disappear, so this is
-    /// only needed for the unstructured `loadTask` handle kept above.
+    /// Cancels button/retry loads too; awaited .task forwards caller cancellation.
     func cancelLoad() { loadTask?.cancel() }
+
 }
 ```
 
-> **Pitfall — don't cancel in `deinit`.** Under Swift 6 strict concurrency a
-> `deinit` is *nonisolated*, so it cannot touch `@MainActor`-isolated stored state
-> like `loadTask` (isolated `deinit`, SE-0371, only shipped in Swift 6.2). The
-> pattern is fragile for a second reason too: the `Task { [weak self] }` above
-> captures `self` weakly, so an in-flight load holds no strong reference — `deinit`
-> can only run *after* the task already finished, never mid-stream. Rely on `.task`'s
-> automatic cancellation on disappear (structured), and expose `cancelLoad()` for the
-> unstructured handle when you need to stop it sooner.
+The async load waits for its task and forwards caller cancellation to that task.
+The view also cancels button/retry loads in `.onDisappear`. After `guard let self`,
+the task temporarily retains the view model; a weak capture or `deinit` does not
+stop an active request.
 
 ---
 
@@ -171,7 +172,8 @@ struct TodosView: View {
         // view assumes it is already inside one and never wraps itself in a stack.
         content
             .navigationTitle("Todos")
-            .task { viewModel.load() }             // runs on appear, cancelled on disappear
+            .task { await viewModel.load() }
+            .onDisappear { viewModel.cancelLoad() }
     }
 
     // MARK: - Content switch
@@ -204,7 +206,7 @@ struct TodosView: View {
         List(todos, id: \.id) { todo in
             Label(todo.title, systemImage: todo.completed ? "checkmark.circle.fill" : "circle")
         }
-        .refreshable { viewModel.load() }
+        .refreshable { await viewModel.load() }
     }
 
     private var emptyView: some View {
@@ -222,7 +224,7 @@ struct TodosView: View {
                 .foregroundStyle(.red)
             Text(message)
                 .multilineTextAlignment(.center)
-            Button("Retry") { viewModel.retry() }
+            Button("Retry") { Task { await viewModel.retry() } }
                 .buttonStyle(.borderedProminent)
         }
         .padding()
@@ -516,8 +518,7 @@ final class MockTodoService: TodoProviding, @unchecked Sendable {
 // MARK: - Tests
 
 // The view model is `@MainActor`, so the test methods are too. Instead of polling
-// with `Task.sleep`, await the exposed `loadTask` handle — the assertion runs only
-// once the load has actually finished, so the test is deterministic and fast.
+// with `Task.sleep`, await `load()`; assertions run after the load has finished.
 @MainActor
 final class TodosViewModelTests: XCTestCase {
     // Test that a successful response transitions to .loaded.
@@ -528,8 +529,7 @@ final class TodosViewModelTests: XCTestCase {
         ]
         let sut = TodosViewModel(service: mock)
 
-        sut.load()
-        await sut.loadTask?.value          // wait for the load to complete
+        await sut.load()
 
         guard case .loaded(let todos) = sut.viewState else {
             return XCTFail("Expected .loaded, got \(sut.viewState)")
@@ -544,8 +544,7 @@ final class TodosViewModelTests: XCTestCase {
         mock.stubbedTodos = []
         let sut = TodosViewModel(service: mock)
 
-        sut.load()
-        await sut.loadTask?.value
+        await sut.load()
 
         guard case .empty = sut.viewState else {
             return XCTFail("Expected .empty, got \(sut.viewState)")
@@ -558,8 +557,7 @@ final class TodosViewModelTests: XCTestCase {
         mock.shouldThrow = URLError(.notConnectedToInternet)
         let sut = TodosViewModel(service: mock)
 
-        sut.load()
-        await sut.loadTask?.value
+        await sut.load()
 
         guard case .error = sut.viewState else {
             return XCTFail("Expected .error, got \(sut.viewState)")

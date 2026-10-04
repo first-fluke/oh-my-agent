@@ -1,17 +1,23 @@
 # QA Review Checklist
 
+Apply checks to the changed scope and the project's declared requirements,
+supported platforms, and existing architecture. Mark irrelevant checks N/A.
+Measure against adopted targets; example sizes, durations, load levels, or
+implementation patterns are not universal acceptance gates. Record required
+checks that could not run as verification gaps, not passes or defect findings.
+
 ## Security Checklist
 
 ### Authentication & Authorization
 - [ ] Passwords hashed with Argon2id (scrypt/bcrypt acceptable; never MD5/SHA1)
-- [ ] Password strength requirements enforced (min 8 chars)
-- [ ] JWT tokens properly signed and validated
+- [ ] Password policy enforced when local password authentication is used
+- [ ] JWT tokens properly signed and validated when JWT is used
 - [ ] Refresh tokens implemented (if long sessions needed)
-- [ ] Token expiry reasonable (15min access, 7day refresh)
-- [ ] Authorization checks on ALL endpoints
-- [ ] Users can only access their own data
+- [ ] Token/session expiry and rotation match the declared authentication policy
+- [ ] Protected endpoints enforce the required authorization; public endpoints are intentionally public
+- [ ] Resource ownership, tenant, and role boundaries match the access model
 - [ ] Admin functions require admin role
-- [ ] Rate limiting on auth endpoints (5-10 attempts/min)
+- [ ] Authentication abuse controls match the declared threat model and rate-limit policy
 - [ ] Account lockout after failed login attempts (optional)
 - [ ] MFA available (optional, but recommended)
 
@@ -35,16 +41,16 @@
 - [ ] Secure session management (httpOnly, secure, sameSite cookies)
 
 ### API Security
-- [ ] CORS properly configured (not `*` in production)
-- [ ] CSRF protection enabled
+- [ ] CORS matches allowed clients and credential use; public noncredentialed APIs may deliberately use wildcard origins
+- [ ] CSRF defenses apply to authentication that the browser attaches automatically
 - [ ] Rate limiting on API endpoints
 - [ ] API keys/tokens NOT in source code
-- [ ] API versioning implemented
+- [ ] API compatibility/versioning follows the affected contract's evolution policy
 - [ ] Proper error handling (no stack traces exposed)
 
 ### Dependencies
 - [ ] No high/critical vulnerabilities (npm audit / safety check)
-- [ ] Dependencies up-to-date
+- [ ] Affected dependencies are supported and satisfy project policy; unrelated upgrades are not required by this review
 - [ ] No unused dependencies
 - [ ] License compliance checked
 
@@ -53,22 +59,18 @@
 ## Performance Checklist
 
 ### Backend Performance
-- [ ] API response time < 200ms (p95)
+- [ ] Affected API latency meets the declared SLO at representative load
 - [ ] Database queries optimized (no N+1)
 - [ ] Database indexes on foreign keys and frequent queries
 - [ ] Connection pooling configured
-- [ ] Caching implemented (Redis for frequent queries)
+- [ ] Caching is appropriate where measurements or requirements justify it
 - [ ] Pagination for large result sets
 - [ ] Async operations where appropriate
 - [ ] Background jobs for heavy tasks
 
 ### Frontend Performance
-- [ ] Lighthouse Performance score > 90
-- [ ] First Contentful Paint (FCP) < 1.5s
-- [ ] Largest Contentful Paint (LCP) < 2.5s
-- [ ] Cumulative Layout Shift (CLS) < 0.1
-- [ ] Time to Interactive (TTI) < 3.5s
-- [ ] Bundle size < 500KB (main bundle)
+- [ ] Adopted frontend performance measures meet the project's thresholds on its supported devices and network conditions
+- [ ] Affected bundle sizes meet the project budget; record measured regressions and relevant baseline
 - [ ] Code splitting implemented
 - [ ] Lazy loading for non-critical components
 - [ ] Images optimized (WebP, compression)
@@ -78,9 +80,8 @@
 - [ ] Service worker for caching (optional)
 
 ### Mobile Performance
-- [ ] App size < 30MB (Android), < 50MB (iOS)
-- [ ] Cold start < 2s
-- [ ] Smooth scrolling (60fps)
+- [ ] Size and startup time meet the supported platform/device budgets
+- [ ] Scrolling and interaction meet the adopted frame-time targets
 - [ ] No memory leaks
 - [ ] Battery usage minimal
 - [ ] Offline support (if required)
@@ -133,7 +134,7 @@
 - [ ] Edge cases covered
 - [ ] Error handling tested
 - [ ] Mocks used appropriately
-- [ ] Tests run fast (< 10s total)
+- [ ] Test duration and feedback time meet the project's check/CI budget
 - [ ] No flaky tests
 
 ### Integration Tests
@@ -157,7 +158,7 @@
 - [ ] Test design technique is appropriate for risk and feature type
 
 ### Performance Tests
-- [ ] Load testing (1000 concurrent users)
+- [ ] Load tests use the adopted workload, concurrency, and traffic model where this change requires them
 - [ ] Stress testing (identify breaking point)
 - [ ] Database under load tested
 - [ ] API rate limits tested
@@ -168,21 +169,18 @@
 
 ### Architecture
 - [ ] Clear separation of concerns
-- [ ] DRY principle followed (no duplication > 5%)
+- [ ] Duplication does not create conflicting behavior or excessive change cost
 - [ ] SOLID principles followed
 - [ ] Dependency injection used
-- [ ] Repository pattern (backend)
+- [ ] Data-access boundaries match the existing backend architecture
 - [ ] Component composition (frontend)
 
 ### Code Metrics
-- [ ] Cyclomatic complexity < 10 per function
-- [ ] Function length < 50 lines
-- [ ] File length < 500 lines
-- [ ] No deeply nested code (< 4 levels)
+- [ ] Complexity, size, and nesting meet project rules and allow the affected behavior to be understood and verified
 - [ ] Meaningful variable names
 
 ### Error Handling
-- [ ] All async operations have try/catch
+- [ ] Async failures reach the appropriate handler; no swallowed errors or unhandled rejections
 - [ ] Errors logged appropriately
 - [ ] User-friendly error messages
 - [ ] No silent failures
@@ -193,7 +191,7 @@
 - [ ] API documentation (OpenAPI/Swagger)
 - [ ] Complex logic documented
 - [ ] Environment variables documented
-- [ ] No TODO/FIXME in production code
+- [ ] Known incomplete behavior is tracked and does not contradict the required release criteria
 
 ---
 
@@ -266,7 +264,7 @@
 ### Critical (Must Pass)
 - [ ] No CRITICAL security vulnerabilities
 - [ ] No HIGH security vulnerabilities
-- [ ] All E2E tests passing
+- [ ] Required checks for the changed behavior pass; missing checks and unrelated baseline failures are recorded separately
 - [ ] Performance meets requirements
 - [ ] No data loss scenarios
 
@@ -292,7 +290,7 @@
 - Complete feature breakage
 
 ### HIGH (Fix Before Launch)
-- Performance issues (> 5s load time)
+- Confirmed performance failures that violate a launch requirement or block a core workflow
 - Major accessibility violations
 - Missing auth checks
 - Broken core functionality
@@ -313,7 +311,7 @@
 
 ## Notes
 
-- Run automated tools FIRST: `npm audit`, `bandit`, `lighthouse`
+- Choose available automated checks that match the stack, changed scope, and target; do not require unrelated tools or unrequested builds
 - Use configured code intelligence or the documented native fallback for code analysis patterns
 - Browser verification follows `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), and Firefox DevTools MCP (`firefox`). Multiple selections are supported; change them with `oma update mcp`. Discover the selected server’s tools before use. Chrome-specific calls below are examples only; use supported equivalents for Aside and Firefox. An empty selection disables browser MCP verification; report unverified UI checks.
 - Document all findings with file:line references
@@ -325,6 +323,8 @@
 ## Runtime Verification (after static review)
 
 Record results in the structured table format defined in `execution-protocol.md` Step 2.5 (Recording Results).
+Run only applicable, authorized runtime checks on an available target. A static
+document/configuration review does not require starting or building an app.
 
 - [ ] Application starts without errors
 - [ ] All modified endpoints return expected status codes; verify with `list_network_requests()`

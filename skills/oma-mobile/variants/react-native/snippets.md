@@ -36,6 +36,7 @@ Screens and components **never** call axios directly — they consume hooks buil
 
     // Local storage (v4 is the Nitro module; requires RN 0.76+)
     "react-native-mmkv": "^4.3.2",
+    "react-native-nitro-modules": "0.35.9", // MMKV 4.3.2 uses this in its development dependencies
 
     // Secrets (choose one)
     "expo-secure-store": "^13.0.0",
@@ -86,16 +87,16 @@ Screens and components **never** call axios directly — they consume hooks buil
 ```typescript
 // src/shared/utils/storage.ts
 // Canonical MMKV singletons. Every module that needs MMKV imports from here —
-// never call `new MMKV(...)` anywhere else. MMKV stores plain text unless an
+// never call `createMMKV(...)` anywhere else. MMKV stores plain text unless an
 // encryptionKey is passed, so it holds NON-SECRET data only (prefs, offline
 // flags, the query cache). Secrets live in the Keychain-backed auth store (§10).
 
-import { MMKV } from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
 
-export const storage = new MMKV({ id: 'app-storage' });
+export const storage = createMMKV({ id: 'app-storage' });
 
 // Separate instance namespaced for the query cache to avoid key collisions.
-export const queryStorage = new MMKV({ id: 'query-cache' });
+export const queryStorage = createMMKV({ id: 'query-cache' });
 ```
 
 ```typescript
@@ -118,15 +119,22 @@ onlineManager.setEventListener((setOnline) =>
 // Persister adapter: TanStack Query serialises/deserialises its cache as a
 // single JSON string under the key below. MMKV provides synchronous access so
 // the cache hydrates before the first render, enabling true offline-first UX.
-export const mmkvPersister = createSyncStoragePersister({
-  storage: {
-    getItem: (key) => queryStorage.getString(key) ?? null,
-    setItem: (key, value) => queryStorage.set(key, value),
-    removeItem: (key) => queryStorage.delete(key),
-  },
-});
+let cacheSessionVersion = 0;
+export const createAccountPersister = (accountId: string) => {
+  const version = cacheSessionVersion;
+  return createSyncStoragePersister({
+    key: `query-cache:${accountId}`,
+    storage: {
+      getItem: (key) => queryStorage.getString(key) ?? null,
+      setItem: (key, value) => {
+        if (version === cacheSessionVersion) queryStorage.set(key, value);
+      },
+      removeItem: (key) => queryStorage.remove(key),
+    },
+  });
+};
 
-export const queryClient = new QueryClient({
+const createQueryClient = () => new QueryClient({
   defaultOptions: {
     queries: {
       // Data older than 60 s triggers a background revalidation on next mount.
@@ -146,27 +154,41 @@ export const queryClient = new QueryClient({
     },
   },
 });
+export let queryClient = createQueryClient();
+export async function resetAccountQueryCache(accountId: string | null): Promise<void> {
+  cacheSessionVersion += 1; // block delayed disk writes from the retired session
+  await queryClient.cancelQueries();
+  queryClient.clear();
+  if (accountId) await createAccountPersister(accountId).removeClient();
+  queryClient = createQueryClient(); // old callbacks retain an unmounted client
+}
+
 ```
 
 ```typescript
 // src/App.tsx  (provider wiring — abridged)
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { NavigationContainer } from '@react-navigation/native';
-import { queryClient, mmkvPersister } from '@api/queryClient';
+import { queryClient, createAccountPersister } from '@api/queryClient';
 import { RootNavigator } from '@navigation/RootNavigator';
-import { hydrateAuth } from '@store/authStore';
+import { hydrateAuth, useAuthStore } from '@store/authStore';
+import { LoadingView } from '@shared/components/LoadingView';
 
 // Bump on breaking changes to any cached shape to discard the persisted cache.
 // Keep it stable across a release (e.g. the app version string).
 const CACHE_BUSTER = '1.0.0';
 
 export default function App() {
-  // Restore the access token from the Keychain into the in-memory auth store
-  // before navigation reads `isAuthenticated`.
+  const [ready, setReady] = useState(false);
+  const accountId = useAuthStore((state) => state.accountId);
+  const sessionVersion = useAuthStore((state) => state.sessionVersion);
+  const persister = useMemo(() => accountId ? createAccountPersister(accountId) : null, [accountId, sessionVersion]);
   useEffect(() => {
-    hydrateAuth();
+    hydrateAuth().catch(() => useAuthStore.getState().clearToken()).finally(() => setReady(true));
   }, []);
+  if (!ready) return <LoadingView label="Restoring session" />;
+  if (!accountId || !persister) return <NavigationContainer><RootNavigator /></NavigationContainer>;
 
   return (
     // PersistQueryClientProvider restores the MMKV-persisted cache before the
@@ -174,9 +196,10 @@ export default function App() {
     // maxAge caps how long a persisted cache is trusted; it must be <= the
     // QueryClient's gcTime (24h) or entries GC out before they can be restored.
     <PersistQueryClientProvider
+      key={`${accountId}:${sessionVersion}`}
       client={queryClient}
       persistOptions={{
-        persister: mmkvPersister,
+        persister,
         maxAge: 1000 * 60 * 60 * 24,
         buster: CACHE_BUSTER,
       }}
@@ -200,6 +223,7 @@ export default function App() {
 
 import axios, {
   type AxiosInstance,
+  type AxiosRequestConfig,
   type InternalAxiosRequestConfig,
   type AxiosResponse,
   type AxiosError,
@@ -218,7 +242,15 @@ export const apiClient: AxiosInstance = axios.create({
 // --- Request interceptor: inject bearer token ---
 // Read synchronously from the in-memory auth store (hydrated from the Keychain
 // at app start, §10). Secrets NEVER live in plain-text MMKV.
-apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+export type SessionRequestConfig = AxiosRequestConfig & { _sessionVersion: number; _accountId: string | null };
+type SessionRequest = InternalAxiosRequestConfig & { _sessionVersion?: number; _accountId?: string | null; _retried?: boolean };
+apiClient.interceptors.request.use((config: SessionRequest) => {
+  config._sessionVersion ??= useAuthStore.getState().sessionVersion;
+  if (!('_accountId' in config)) config._accountId = useAuthStore.getState().accountId;
+  if (config._sessionVersion !== useAuthStore.getState().sessionVersion ||
+      config._accountId !== useAuthStore.getState().accountId) {
+    throw new axios.CanceledError('Request belongs to a retired session');
+  }
   const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`);
@@ -229,9 +261,10 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 // --- Single-flight token refresh ---
 // Only one refresh is ever in flight; concurrent 401s await the same promise
 // and then replay their original request exactly once.
-let refreshPromise: Promise<string | null> | null = null;
+let refreshPromise: { version: number; promise: Promise<string | null> } | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
+  const version = useAuthStore.getState().sessionVersion;
   try {
     // Bare axios (no interceptors/retry) so the refresh can't recurse on itself.
     const { data } = await axios.post<{ accessToken: string }>(
@@ -239,10 +272,10 @@ async function refreshAccessToken(): Promise<string | null> {
       {},
       { withCredentials: true }, // refresh token rides as an httpOnly cookie
     );
-    await useAuthStore.getState().setToken(data.accessToken);
+    if (!await useAuthStore.getState().updateToken(data.accessToken, version)) return null;
     return data.accessToken;
   } catch {
-    await useAuthStore.getState().clearToken(); // logout: clears Keychain + store
+    await useAuthStore.getState().clearToken(version);
     return null;
   }
 }
@@ -252,16 +285,22 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const original = error.config as
-      | (InternalAxiosRequestConfig & { _retried?: boolean })
+      | SessionRequest
       | undefined;
 
-    if (error.response?.status === 401 && original && !original._retried) {
+    if (error.response?.status === 401 && original && !original._retried &&
+        !original.signal?.aborted && useAuthStore.getState().isAuthenticated &&
+        original._sessionVersion === useAuthStore.getState().sessionVersion) {
       original._retried = true;
-      refreshPromise ??= refreshAccessToken().finally(() => {
-        refreshPromise = null;
-      });
-      const newToken = await refreshPromise;
-      if (newToken) {
+      const version = useAuthStore.getState().sessionVersion;
+      if (!refreshPromise || refreshPromise.version !== version) {
+        const promise = refreshAccessToken().finally(() => {
+          if (refreshPromise?.promise === promise) refreshPromise = null;
+        });
+        refreshPromise = { version, promise };
+      }
+      const newToken = await refreshPromise.promise;
+      if (newToken && version === useAuthStore.getState().sessionVersion && !original.signal?.aborted) {
         original.headers.set('Authorization', `Bearer ${newToken}`);
         return apiClient(original); // replay the original request once
       }
@@ -274,6 +313,7 @@ apiClient.interceptors.response.use(
 axiosRetry(apiClient, {
   retries: 3,
   retryCondition: (error) =>
+    ['get', 'head', 'options', 'put', 'delete'].includes(error.config?.method?.toLowerCase() ?? '') &&
     axiosRetry.isNetworkOrIdempotentRequestError(error) &&
     error.response?.status !== 401,
   retryDelay: axiosRetry.exponentialDelay,
@@ -292,7 +332,7 @@ axiosRetry(apiClient, {
 // seam: screens never import from this file directly, only through query/mutation
 // hooks (src/features/todos/queries.ts and mutations.ts).
 
-import { apiClient } from './client';
+import { apiClient, type SessionRequestConfig } from './client';
 
 // ---------------------------------------------------------------------------
 // Domain types
@@ -314,32 +354,37 @@ export interface CreateTodoInput {
 // ---------------------------------------------------------------------------
 
 /** Fetch all todos for the authenticated user. */
-export async function fetchTodos(): Promise<Todo[]> {
-  const { data } = await apiClient.get<Todo[]>('/todos');
+export async function fetchTodos(accountId: string | null, sessionVersion: number, signal?: AbortSignal): Promise<Todo[]> {
+  const config: SessionRequestConfig = { _accountId: accountId, _sessionVersion: sessionVersion, signal };
+  const { data } = await apiClient.get<Todo[]>('/todos', config);
   return data;
 }
 
 /** Fetch a single todo by ID. */
-export async function fetchTodo(id: string): Promise<Todo> {
-  const { data } = await apiClient.get<Todo>(`/todos/${id}`);
+export async function fetchTodo(id: string, accountId: string | null, sessionVersion: number, signal?: AbortSignal): Promise<Todo> {
+  const config: SessionRequestConfig = { _accountId: accountId, _sessionVersion: sessionVersion, signal };
+  const { data } = await apiClient.get<Todo>(`/todos/${id}`, config);
   return data;
 }
 
 /** Create a new todo. */
-export async function createTodo(input: CreateTodoInput): Promise<Todo> {
-  const { data } = await apiClient.post<Todo>('/todos', input);
+export async function createTodo(input: CreateTodoInput, accountId: string | null, sessionVersion: number): Promise<Todo> {
+  const config: SessionRequestConfig = { _accountId: accountId, _sessionVersion: sessionVersion };
+  const { data } = await apiClient.post<Todo>('/todos', input, config);
   return data;
 }
 
 /** Toggle the completed flag on a todo. */
-export async function toggleTodo(id: string): Promise<Todo> {
-  const { data } = await apiClient.patch<Todo>(`/todos/${id}/toggle`);
+export async function toggleTodo(id: string, accountId: string | null, sessionVersion: number): Promise<Todo> {
+  const config: SessionRequestConfig = { _accountId: accountId, _sessionVersion: sessionVersion };
+  const { data } = await apiClient.patch<Todo>(`/todos/${id}/toggle`, undefined, config);
   return data;
 }
 
 /** Permanently delete a todo. */
-export async function deleteTodo(id: string): Promise<void> {
-  await apiClient.delete(`/todos/${id}`);
+export async function deleteTodo(id: string, accountId: string | null, sessionVersion: number): Promise<void> {
+  const config: SessionRequestConfig = { _accountId: accountId, _sessionVersion: sessionVersion };
+  await apiClient.delete(`/todos/${id}`, config);
 }
 ```
 
@@ -353,22 +398,26 @@ export async function deleteTodo(id: string): Promise<void> {
 // Explicit staleTime / gcTime on every query; never rely on defaults alone.
 
 import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@store/authStore';
 import { fetchTodos, fetchTodo } from '@api/todos';
 
 // Centralise query key definitions so mutations can reference them without
-// string duplication. Key shape: [operation, ...params].
+// string duplication. Key shape: [account/tenant, operation, ...params].
 export const todoKeys = {
-  all: ['todos'] as const,
-  lists: () => [...todoKeys.all, 'list'] as const,
-  detail: (id: string) => [...todoKeys.all, 'detail', id] as const,
+  all: (accountId: string | null) => ['account', accountId, 'todos'] as const,
+  lists: (accountId: string | null) => [...todoKeys.all(accountId), 'list'] as const,
+  detail: (accountId: string | null, id: string) => [...todoKeys.all(accountId), 'detail', id] as const,
 };
 
 /** Fetch and cache the todo list. Returns stale data instantly, revalidates in
  *  the background when data is older than staleTime. */
 export function useTodosQuery() {
+  const accountId = useAuthStore((state) => state.accountId);
+  const sessionVersion = useAuthStore((state) => state.sessionVersion);
   return useQuery({
-    queryKey: todoKeys.lists(),
-    queryFn: fetchTodos,
+    queryKey: todoKeys.lists(accountId),
+    queryFn: ({ signal }) => fetchTodos(accountId, sessionVersion, signal),
+    enabled: Boolean(accountId),
     staleTime: 60_000,             // 1 minute — adjust per resource freshness requirement
     gcTime: 1000 * 60 * 60 * 24,  // 24h — must stay >= the persister maxAge (§2)
   });
@@ -376,12 +425,14 @@ export function useTodosQuery() {
 
 /** Fetch and cache a single todo. */
 export function useTodoDetailQuery(id: string) {
+  const accountId = useAuthStore((state) => state.accountId);
+  const sessionVersion = useAuthStore((state) => state.sessionVersion);
   return useQuery({
-    queryKey: todoKeys.detail(id),
-    queryFn: () => fetchTodo(id),
+    queryKey: todoKeys.detail(accountId, id),
+    queryFn: ({ signal }) => fetchTodo(id, accountId, sessionVersion, signal),
     staleTime: 60_000,
     gcTime: 1000 * 60 * 60 * 24,  // 24h — see useTodosQuery
-    enabled: Boolean(id),
+    enabled: Boolean(accountId && id),
   });
 }
 ```
@@ -393,44 +444,58 @@ export function useTodoDetailQuery(id: string) {
 // so the cache repopulates from the server on the next read.
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@store/authStore';
 import { createTodo, toggleTodo, deleteTodo, type CreateTodoInput, type Todo } from '@api/todos';
 import { todoKeys } from './queries';
 
+// A paused/optimistic mutation from an old provider must not use a new login.
+function runAccountMutation<T>(accountId: string | null, version: number, operation: (version: number) => Promise<T>): Promise<T> {
+  const current = useAuthStore.getState();
+  if (!accountId || current.accountId !== accountId || current.sessionVersion !== version) {
+    return Promise.reject(new Error('Mutation belongs to a retired session'));
+  }
+  return operation(version);
+}
+
 /** Create a new todo then invalidate the list cache. */
 export function useCreateTodo() {
+  const accountId = useAuthStore((state) => state.accountId);
+  const sessionVersion = useAuthStore((state) => state.sessionVersion);
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: CreateTodoInput) => createTodo(input),
+    mutationFn: (input: CreateTodoInput) => runAccountMutation(accountId, sessionVersion, (version) => createTodo(input, accountId, version)),
     onSuccess: () => {
       // Invalidate the list so the next useTodosQuery fetches fresh data.
-      queryClient.invalidateQueries({ queryKey: todoKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: todoKeys.lists(accountId) });
     },
   });
 }
 
 /** Toggle a todo's completed flag then invalidate list + detail caches. */
 export function useToggleTodo() {
+  const accountId = useAuthStore((state) => state.accountId);
+  const sessionVersion = useAuthStore((state) => state.sessionVersion);
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => toggleTodo(id),
+    mutationFn: (id: string) => runAccountMutation(accountId, sessionVersion, (version) => toggleTodo(id, accountId, version)),
     // Optimistic update: flip the flag in the cache immediately for instant UI
     // feedback; roll back if the mutation fails.
     onMutate: async (id) => {
       // Cancel in-flight queries for both keys so they can't clobber our patch.
-      await queryClient.cancelQueries({ queryKey: todoKeys.lists() });
-      await queryClient.cancelQueries({ queryKey: todoKeys.detail(id) });
+      await queryClient.cancelQueries({ queryKey: todoKeys.lists(accountId) });
+      await queryClient.cancelQueries({ queryKey: todoKeys.detail(accountId, id) });
 
-      const previousList = queryClient.getQueryData<Todo[]>(todoKeys.lists());
-      const previousDetail = queryClient.getQueryData<Todo>(todoKeys.detail(id));
+      const previousList = queryClient.getQueryData<Todo[]>(todoKeys.lists(accountId));
+      const previousDetail = queryClient.getQueryData<Todo>(todoKeys.detail(accountId, id));
 
       // Patch each cache entry only when it exists — returning `old` untouched
       // when undefined avoids materialising a fake empty list.
-      queryClient.setQueryData<Todo[] | undefined>(todoKeys.lists(), (old) =>
+      queryClient.setQueryData<Todo[] | undefined>(todoKeys.lists(accountId), (old) =>
         old ? old.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)) : old,
       );
-      queryClient.setQueryData<Todo | undefined>(todoKeys.detail(id), (old) =>
+      queryClient.setQueryData<Todo | undefined>(todoKeys.detail(accountId, id), (old) =>
         old ? { ...old, completed: !old.completed } : old,
       );
 
@@ -439,30 +504,32 @@ export function useToggleTodo() {
     onError: (_err, id, context) => {
       // Roll back both keys on error.
       if (context?.previousList !== undefined) {
-        queryClient.setQueryData(todoKeys.lists(), context.previousList);
+        queryClient.setQueryData(todoKeys.lists(accountId), context.previousList);
       }
       if (context?.previousDetail !== undefined) {
-        queryClient.setQueryData(todoKeys.detail(id), context.previousDetail);
+        queryClient.setQueryData(todoKeys.detail(accountId, id), context.previousDetail);
       }
     },
     onSettled: (_data, _err, id) => {
       // Reconcile with server truth for both keys once the mutation settles.
-      queryClient.invalidateQueries({ queryKey: todoKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: todoKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: todoKeys.lists(accountId) });
+      queryClient.invalidateQueries({ queryKey: todoKeys.detail(accountId, id) });
     },
   });
 }
 
 /** Delete a todo then invalidate the list cache. */
 export function useDeleteTodo() {
+  const accountId = useAuthStore((state) => state.accountId);
+  const sessionVersion = useAuthStore((state) => state.sessionVersion);
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => deleteTodo(id),
+    mutationFn: (id: string) => runAccountMutation(accountId, sessionVersion, (version) => deleteTodo(id, accountId, version)),
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: todoKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: todoKeys.lists(accountId) });
       // Remove the detail cache entry immediately — it is no longer valid.
-      queryClient.removeQueries({ queryKey: todoKeys.detail(id) });
+      queryClient.removeQueries({ queryKey: todoKeys.detail(accountId, id) });
     },
   });
 }
@@ -536,6 +603,7 @@ export function TodosScreen({ navigation }: Props) {
 
           <TouchableOpacity
             onPress={() => deleteMutation.mutate(item.id)}
+            testID={`todo-delete-${item.id}`}
             accessibilityLabel={`Delete ${item.title}`}
           >
             <Text style={styles.deleteIcon}>✕</Text>
@@ -734,7 +802,7 @@ describe('TodosScreen', () => {
 
 1. **Cache decoded objects, not bytes.** TanStack Query stores the return value of `queryFn` — a decoded TypeScript object. Never cache raw `AxiosResponse` or `ArrayBuffer`.
 2. **Explicit `staleTime` and `gcTime` on every `useQuery`.** No implicit infinite TTL. `staleTime` governs background revalidation; `gcTime` governs memory reclamation.
-3. **Query keys = `[operation, ...params]`.** Never key on URLs. Centralise key definitions in a `todoKeys` (or `<resource>Keys`) object so mutations and queries share the same reference.
+3. **Query keys = `[account/tenant, operation, ...params]`.** Never key on URLs. Centralise key definitions in a `todoKeys` (or `<resource>Keys`) object so mutations and queries share the same reference.
 4. **Invalidate on write.** Every `useMutation` calls `queryClient.invalidateQueries({ queryKey })` for all affected list and detail keys in `onSuccess`. Optimistic updates (optional) must pair a rollback in `onError`.
 5. **MMKV persistence for offline-first.** The `PersistQueryClientProvider` + MMKV persister hydrates the cache before the first render. Stale data renders immediately; revalidation runs in the background.
 6. **Repository seam.** `src/api/*.ts` functions are the only axios callers. Screens and components never import from `axios` or from `src/api/` directly — they consume query/mutation hooks.
@@ -753,44 +821,69 @@ describe('TodosScreen', () => {
 
 import { create } from 'zustand';
 import * as Keychain from 'react-native-keychain';
+import { resetAccountQueryCache } from '@api/queryClient';
 
 // Namespaces the credential entry. Use a stable, app-unique service string.
 const KEYCHAIN_SERVICE = 'com.example.app.auth';
 
 interface AuthState {
   accessToken: string | null;
+  accountId: string | null; // validated non-secret account/tenant ID from the server
+  sessionVersion: number;
   isAuthenticated: boolean;
-  setToken: (token: string) => Promise<void>;
-  clearToken: () => Promise<void>;
+  setToken: (token: string, accountId: string) => Promise<void>;
+  updateToken: (token: string, version: number) => Promise<boolean>;
+  clearToken: (expectedVersion?: number) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>()((set) => ({
+// Serialize credential writes: a late refresh cannot undo logout.
+let sessionTransition: Promise<unknown> = Promise.resolve();
+function transition<T>(operation: () => Promise<T>): Promise<T> {
+  const next = sessionTransition.then(operation);
+  sessionTransition = next.catch(() => undefined);
+  return next;
+}
+
+export const useAuthStore = create<AuthState>()((set, get) => ({
   accessToken: null,
+  accountId: null,
+  sessionVersion: 0,
   isAuthenticated: false,
-
-  // Persist to the secure enclave and mirror into memory for synchronous reads.
-  setToken: async (token) => {
-    await Keychain.setGenericPassword('accessToken', token, {
-      service: KEYCHAIN_SERVICE,
-    });
-    set({ accessToken: token, isAuthenticated: true });
-  },
-
-  // Logout: wipe both the secure enclave and the in-memory copy.
-  clearToken: async () => {
+  setToken: (token, accountId) => transition(async () => {
+    if (!accountId) throw new Error('Validated account ID is required');
+    const previousAccount = get().accountId;
+    set({ accessToken: null, accountId: null, isAuthenticated: false,
+      sessionVersion: get().sessionVersion + 1 }); // unmount old account before awaiting
+    await resetAccountQueryCache(previousAccount);
+    await Keychain.setGenericPassword(accountId, token, { service: KEYCHAIN_SERVICE });
+    set({ accessToken: token, accountId, isAuthenticated: true });
+  }),
+  updateToken: (token, version) => transition(async () => {
+    const accountId = get().accountId;
+    if (version !== get().sessionVersion || !accountId) return false;
+    await Keychain.setGenericPassword(accountId, token, { service: KEYCHAIN_SERVICE });
+    set({ accessToken: token });
+    return true;
+  }),
+  clearToken: (expectedVersion) => transition(async () => {
+    // Check inside the queue: a queued new login may have finished meanwhile.
+    if (expectedVersion !== undefined && expectedVersion !== get().sessionVersion) return;
+    const previousAccount = get().accountId;
+    set({ accessToken: null, accountId: null, isAuthenticated: false,
+      sessionVersion: get().sessionVersion + 1 });
+    await resetAccountQueryCache(previousAccount);
     await Keychain.resetGenericPassword({ service: KEYCHAIN_SERVICE });
-    set({ accessToken: null, isAuthenticated: false });
-  },
+  }),
 }));
 
-/**
- * Restore the token from the Keychain into the store at app start.
- * Call once from App.tsx before navigation reads `isAuthenticated` (§2).
- */
+// Call before mounting account providers. The username is the validated account
+// ID written by setToken; discard legacy token-only entries during migration.
 export async function hydrateAuth(): Promise<void> {
   const creds = await Keychain.getGenericPassword({ service: KEYCHAIN_SERVICE });
-  if (creds) {
-    useAuthStore.setState({ accessToken: creds.password, isAuthenticated: true });
+  if (creds && creds.username !== 'accessToken') {
+    await useAuthStore.getState().setToken(creds.password, creds.username);
+  } else if (creds) {
+    await useAuthStore.getState().clearToken();
   }
 }
 ```
@@ -898,24 +991,24 @@ const styles = StyleSheet.create({
 
 ## 13. Maestro E2E Flow
 
+Before this flow, sign into an isolated test account and seed a todo with title
+Buy milk and a known ID. Supply that ID as MAESTRO_TODO_ID. Keep the signed-in
+session: clearState would return the example navigator to Login. This example
+covers existing row actions; add/login flows belong to their actual screens.
+
 ```yaml
-# e2e/todos.yaml
-# Maestro flow exercising the todos happy path end to end. Run with `maestro test e2e/`.
 appId: com.example.app
 ---
 - launchApp:
-    clearState: true
+    clearState: false
 - assertVisible: "My Todos"
-- tapOn: "Add"
-- inputText: "Buy milk"
-- tapOn: "Save"
 - assertVisible: "Buy milk"
 - tapOn:
-    id: "todo-checkbox-Buy milk"   # toggle complete
-- tapOn: "Buy milk"                # open detail
+    id: "todo-checkbox-${MAESTRO_TODO_ID}"
+- tapOn: "Buy milk"
 - assertVisible: "Todo Detail"
 - back
 - tapOn:
-    id: "todo-delete-Buy milk"
+    id: "todo-delete-${MAESTRO_TODO_ID}"
 - assertNotVisible: "Buy milk"
 ```

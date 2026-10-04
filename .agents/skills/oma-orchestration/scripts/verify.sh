@@ -17,4 +17,4 @@ case "$AGENT_TYPE" in
     ;;
 esac
 
-exec oma verify "$AGENT_TYPE" --workspace "$WORKSPACE"
+exec oma verify agent "$AGENT_TYPE" --workspace "$WORKSPACE"

@@ -102,14 +102,14 @@ outputs:
 ```text
 1. Define API/data contracts.
 2. Decompose tasks with agent, title, priority, dependencies, and acceptance criteria.
-3. Save `.agents/results/plan-{sessionId}.json` and `.agents/results/result-pm.md`.
+3. Save `.agents/results/plan-{sessionId}.json` using the injected session ID. Write the run-scoped report from the shared memory/result contract.
 ```
 
 ### Resource scope
 | Scope | Resource target |
 |-------|-----------------|
 | `MEMORY` | Requirements, assumptions, dependencies |
-| `LOCAL_FS` | `.agents/results/plan-{sessionId}.json`, `.agents/results/result-pm.md` |
+| `LOCAL_FS` | `.agents/results/plan-{sessionId}.json`, injected claim path and task/run-scoped report |
 | `CODEBASE` | Optional project context and API/data model references |
 
 ### Preconditions
@@ -122,8 +122,8 @@ outputs:
 - Does not directly implement code.
 
 ### Guardrails
-1. API-first design: define contracts before implementation tasks
-2. Every task has: agent, title, acceptance criteria, priority tier (1 = independent, lower runs first), dependencies, scope
+1. For changed interfaces, reuse or define API/data contracts before dependent implementation tasks
+2. Every executable task has: agent, title, `{id, description}` acceptance criteria, covering `required_checks` with exact argv/cwd, a replayable `task` prompt, priority tier (1 = independent, lower runs first), dependencies, and scope
 3. Minimize dependencies for maximum parallel execution
 4. Security and testing are part of every task (not separate phases)
 5. Tasks should be completable by a single agent
@@ -139,7 +139,7 @@ outputs:
 ## References
 - Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
 
-Save plan to `.agents/results/plan-{sessionId}.json` and `.agents/results/result-pm.md`.
+- Runtime identity and run-scoped reports: `../_shared/runtime/memory-protocol.md`, `../_shared/runtime/result-contract.md`
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
 - Plan examples: `resources/examples.md`
 - ISO planning guide: `resources/iso-planning.md`
@@ -150,7 +150,7 @@ Save plan to `.agents/results/plan-{sessionId}.json` and `.agents/results/result
 - Human-readable tracker: when running inside the `/plan` workflow, also generate `docs/plans/work/{NNN}-{name}.md` per `.agents/workflows/plan.md`
 - API contract template (SSOT): `../_shared/core/api-contracts/template.md`; write generated contracts to `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
 - Context loading: `../_shared/core/context-loading.md`
-- Reasoning templates: `../_shared/core/reasoning-templates.md`
+- Planning depth: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
 - Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)

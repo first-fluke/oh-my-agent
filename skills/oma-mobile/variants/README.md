@@ -17,7 +17,7 @@ Each `variants/{platform}/` directory contains:
 - **`stack.yaml`** — the stack SSOT, validated against `stack.schema.json`.
   Declares `language`, `framework`, `state`, `navigation`, `http_client`,
   `local_storage`, `response_cache`, `structure`, `source`, and a `verify:`
-  block consumed by `oma verify mobile`.
+  block consumed by `oma verify agent mobile`.
 - **`tech-stack.md`** — human-readable narrative reference (`stack.yaml` wins on
   conflict).
 - **`snippets.md`** — copy-paste-ready, numbered code patterns.

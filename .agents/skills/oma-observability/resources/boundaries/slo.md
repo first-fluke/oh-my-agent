@@ -55,35 +55,44 @@ sum(rate(http_request_duration_seconds_bucket{le="0.3"}[28d]))
 
 ## 5. OpenSLO Spec
 
-Source: <https://openslo.com>; community-driven, not CNCF. Vendor-neutral YAML adopted by Sloth, Pyrra, Nobl9.
+Source: <https://openslo.com>; community-driven, not CNCF. Vendor-neutral YAML; validate support in the selected consumer or adapter. Sloth and Pyrra native formats are separate.
 
 ```yaml
-apiVersion: openslo.com/v1
+apiVersion: openslo/v1
 kind: SLO
 metadata:
   name: checkout-availability
 spec:
   service: checkout
-  sloType: Request-Based
+  budgetingMethod: Occurrences
+  timeWindow:
+    - duration: 28d
+      isRolling: true
+  objectives:
+    - target: 0.999
   indicator:
+    metadata:
+      name: checkout-success-ratio
     spec:
       ratioMetric:
+        counter: false # queries return window counts, not monotonic counters
         good:
           metricSource:
             type: Prometheus
             spec:
-              query: sum(rate(http_requests_total{service="checkout",status=~"2..|3.."}[{{.Window}}]))
+              query: sum(increase(http_requests_total{service="checkout",status=~"2..|3.."}[28d]))
         total:
           metricSource:
             type: Prometheus
             spec:
-              query: sum(rate(http_requests_total{service="checkout"}[{{.Window}}]))
-  objectives:
-    - target: 0.999
-  timeWindow:
-    - duration: 28d
-      isRolling: true
+              query: sum(increase(http_requests_total{service="checkout"}[28d]))
 ```
+
+The v1 structure follows <https://openslo.com/specification/>.
+`metricSource.spec` is implementation-defined: verify the chosen consumer's
+Prometheus adapter, window evaluation, and counter semantics. This example
+does not imply Sloth or Pyrra directly accepts OpenSLO; native definitions
+require a verified adapter/conversion if OpenSLO is the input.
 
 ---
 
@@ -115,12 +124,14 @@ Source: <https://sre.google/workbook/alerting-on-slos/>
 
 | Tier | Budget consumed | Long window | Short window | Multiplier | Action |
 |------|----------------|------------|-------------|-----------|--------|
-| Fast burn | 2% in 1h | 1h | 5m | 14.4× | Page immediately |
-| Slow burn | 5% in 6h | 6h | 30m | 6× | Create ticket |
+| Fast burn | About 2.14% of 28d in 1h | 1h | 5m | 14.4× | Page immediately |
+| Slow burn | About 5.36% of 28d in 6h | 6h | 30m | 6× | Create ticket |
 
-**Multiplier derivation:** `budget_fraction / (window / 720h)`
-- Fast: `2% / (1h/720h) = 14.4`
-- Slow: `5% / (6h/720h) = 6`
+**Window arithmetic:** a 28-day window is 672h. The classic 30-day
+thresholds 14.4× and 6× consume about 2.14% in 1h and 5.36% in 6h
+when used unchanged for 28d. For exactly 2% and 5%, use 13.44× and
+5.6× respectively. Full-budget exhaustion at constant burn is
+`window_hours / burn_rate`; remaining budget changes that horizon.
 
 ### 7.3 Fast Burn PromQL
 

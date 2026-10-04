@@ -94,7 +94,7 @@ Agents should prefer user-supplied explicit paths (e.g., `~/Downloads/otter.jpeg
    - `[oma image] <vendor> ok (Xs) -> <file>`
    - `[oma image] <vendor> failed (<kind>): <reason>`
 2. Print manifest path.
-3. For `--format json`: write `{exitCode, manifestPath, runs}` to stdout as one JSON object.
+3. For `--output json`: write `{exitCode, manifestPath, runs}` to stdout as one JSON object.
 
 ## Step 7: Exit Code Aggregation
 

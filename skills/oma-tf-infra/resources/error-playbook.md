@@ -3,9 +3,9 @@
 ## State Lock Error
 **Symptom:** `Error acquiring the state lock`
 **Recovery:**
-1. Check who holds the lock: `terraform force-unlock <LOCK_ID>` (use with caution)
-2. Verify no other terraform process is running
-3. If stale lock, confirm and force-unlock
+1. Read the lock owner, operation, timestamp and ID from the original lock error.
+2. Confirm the owning local/remote job has stopped; do not assume a missing local process means a remote apply ended.
+3. Only for a confirmed stale lock, use `terraform force-unlock <LOCK_ID>`. This removes a lock; it does not inspect ownership.
 
 ## Resource Already Exists
 **Symptom:** `Error: already exists` on create

@@ -65,7 +65,7 @@ Search, fetch, generate, validate, analyze, review, and compare scholarly paper 
 2. **ACQUIRE**: Fetch paper metadata, sidecar sections, or local source text.
 3. **REASON**: Extract claims, evidence, relations, provenance, or comparison structure.
 4. **ACT**: Generate, lint, review, analyze, compare, or fetch sidecar data.
-5. **VERIFY**: Validate schema, enums, IDs, relations, and provenance.
+5. **VERIFY**: Check the supported local contract, IDs, relations, and provenance; report lint limitations. Full canonical conformance requires the exact schema validator.
 6. **FINALIZE**: Return sidecar, report, summary, or comparison with caveats.
 
 ### Transitions
@@ -77,7 +77,7 @@ Search, fetch, generate, validate, analyze, review, and compare scholarly paper 
 ### Failure and recovery
 - If remote API times out, retry or use OpenAlex fallback.
 - If YAML fails parsing, fix indentation and scalar types.
-- If relation density or orphan statements warn, add supported-by relations when source evidence supports them.
+- If relation density or orphan statements warn, review coverage and type-appropriate links. Preserve source-anchored questions/definitions; never add unsupported relations to satisfy a quota.
 
 ### Exit
 - Success: requested sidecar operation completes with validation status.
@@ -127,7 +127,7 @@ oma scholar lint "<paper.knows.yaml>"
 
 ### Guardrails
 
-1. **Target spec is v0.9.0 / `paper@1` profile** (review sidecars use `review@1`): verified against production sidecars from knows.academy; see `resources/sidecar-spec.md`
+1. **Local generation targets v0.9.0 production compatibility / `paper@1`** (review sidecars use `review@1`). This is narrower than complete canonical schema conformance; see `resources/sidecar-spec.md`.
 2. **Host LLM generates sidecars**: never shell out to `anthropic` SDK or external LLM CLI; this skill runs inside an agent
 3. **Anti-fabrication**: if DOI/venue/year is not visible in source, **omit the key entirely**; never write `doi: TODO` or guess
 4. **Top-level metadata**: `title`, `authors`, `venue`, `year` live at the top level (no `metadata` wrapper)
@@ -137,14 +137,14 @@ oma scholar lint "<paper.knows.yaml>"
 8. **Coverage is an object**: `coverage.statements` (4-value enum) + `coverage.evidence` (3-value enum)
 9. **Closed enums**: actor `tool|person|org` (never `ai`/`llm`/`model`); artifact role `subject|supporting|cited`; predicates in present tense
 10. **Numbers unquoted**: `value: 22`, never `value: '22'`
-11. **Relation density**: average ≥1.5 relations per statement; every claim needs `supported_by` evidence (checklist rule — lint enforces only the average-ratio warning and a per-id warning for statements with zero relations)
+11. **Relation coverage**: review the local ratio/orphan warnings; add only source-supported, type-appropriate relations. Claims with evidence use `supported_by`; definitions and open questions can remain source-anchored. A ratio of 1.5 is diagnostic, not a graph-padding quota.
 12. **ID format**: descriptive kebab-case with prefix: `stmt:privacy-budget-tradeoff`, `ev:cifar10-accuracy-table`, `art:paper`
 13. **Validate before sharing**: run `oma scholar lint` after Generate and Review; cross-record refs (`record_id#local_id`) in review sidecars are recognized and not flagged as dangling
 14. **Remote API has no auth**: `https://knows.academy/api/proxy/*` is public; do not invent auth headers
 15. **Partial fetch param is `section` (singular)**: fixed enum `statements|evidence|relations|artifacts|citation`
 16. **Fallback API keys are optional**: `OPENALEX_API_KEY` (metadata enrichment) and `S2_API_KEY` (Semantic Scholar dedicated rate limit) both improve throughput but the cascade degrades gracefully without them
 17. **Sidecar content stays English**: schema fields, IDs, statement text follow upstream convention; user-facing responses follow `oma-config.yaml` `language`
-18. **Spec drift awareness**: our local rules track v0.9.0 production behavior, which differs from the upstream `knows.md` natural-language description; refresh `resources/upstream-spec-cache.md` periodically
+18. **Contract scope**: local generation rules and lint track production compatibility, not the complete canonical v0.9 schema. Preserve canonical imported shapes and report local-lint incompatibilities. Do not claim full schema compliance or add `$schema` without validation against that exact schema; see `resources/upstream-spec-cache.md`.
 
 ### Modes
 
@@ -253,7 +253,7 @@ Project-specific settings: `config/scholar-config.yaml`. One key is user-tunable
 | `[ERROR] *.type: use \`statement_type\` instead of \`type\`` | Rename `type` -> `statement_type` (or `evidence_type`/`predicate`/`artifact_type`) |
 | `[ERROR] provenance.actors: v0.9 spec uses singular \`actor\`` | Replace `actors: [{...}]` array with `actor: {...}` object |
 | `[ERROR] *.object_ref: reference 'X' does not match any defined id` | Fix the `subject_ref`/`object_ref` to point to a real id, OR use `--lenient` if consuming third-party data (cross-record `record_id#local_id` refs are recognized and never flagged) |
-| `[WARN] relations: avg relations/statement is N.NN (target ≥ 1.5)` | Add more `supported_by`/`depends_on` relations |
+| `[WARN] relations: avg relations/statement is N.NN (target ≥ 1.5)` | Review coverage; add only supported, type-appropriate links, never pad the graph |
 | `[WARN] statements: only N statements; most papers warrant ≥ 8` | Expected when generating from abstract only; full-paper Generate should hit 15+ |
 | `[WARN] *.predicate: past-tense '...' is suspicious` | Switch to present tense (`evaluated_on` -> `evaluates_on`) |
 | Remote API returns empty results | Try broader query; check `/api/proxy/jobs/stats`; CLI auto-falls-back to OpenAlex |

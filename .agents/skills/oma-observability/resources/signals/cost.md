@@ -77,16 +77,20 @@ The OpenCost pod reads node price data from a cloud-provider price configmap (or
 
 ### 3.2 Key Metrics Exposed
 
-| Metric | Type | Unit | Description |
-|--------|------|------|-------------|
-| `opencost_namespace_cost_total` | Counter | USD | Cumulative cost per Kubernetes namespace |
-| `opencost_workload_cost_total` | Counter | USD | Cumulative cost per Deployment / StatefulSet |
-| `opencost_cpu_cost` | Gauge | USD/hr | CPU allocation cost, current window |
-| `opencost_ram_cost` | Gauge | USD/hr | Memory allocation cost, current window |
-| `opencost_network_cost` | Gauge | USD/hr | Network egress cost attribution |
-| `opencost_storage_cost` | Gauge | USD/hr | PVC / persistent storage cost |
-| `opencost_load_balancer_cost` | Gauge | USD/hr | Cloud load balancer cost |
-| `opencost_cluster_management_cost` | Gauge | USD/hr | Managed control plane fee (GKE, EKS, AKS) |
+Source: <https://opencost.io/docs/integrations/metrics/>. OpenCost exposes allocation quantities and unit/hourly prices; it does not automatically emit namespace/workload cost counters.
+
+| Metric | Unit | Purpose |
+|--------|------|---------|
+| `node_cpu_hourly_cost` | USD / core-hour | Node CPU unit price |
+| `node_ram_hourly_cost` | USD / GiB-hour | Node memory unit price |
+| `node_total_hourly_cost` | USD / hour | Total node rate |
+| `container_cpu_allocation` | cores | Allocated container CPU |
+| `container_memory_allocation_bytes` | bytes | Allocated container memory |
+| `pod_pvc_allocation` | bytes | Allocated PVC storage |
+| `pv_hourly_cost` | USD / GiB-hour | Persistent-volume unit price |
+| `kubecost_network_internet_egress_cost` | USD / GiB | Internet egress price; multiply by attributed usage |
+| `kubecost_load_balancer_cost` | USD / hour | Load-balancer rate |
+| `kubecost_cluster_management_cost` | USD / hour | Cluster management rate |
 
 ### 3.3 Scrape Configuration (OTel Collector)
 
@@ -117,52 +121,38 @@ Three allocation categories: compute (CPU + RAM), storage (PVC), and network (eg
 | Feature | Custom pod label (`feature.name`) | `feature_name` |
 | Per-request (LLM) | `gen_ai.cost.total_usd` span attribute | trace attribute, not metric label |
 
-**Tenant attribution** is the primary B2B SaaS use case: tag every pod with `tenant.id` at deploy time and OpenCost aggregates cost by that label automatically. Cross-ref `../boundaries/multi-tenant.md §Cost Attribution` for chargeback and showback patterns. **Feature attribution** uses a custom pod label (`feature.name`); cross-ref `../boundaries/release.md` for A/B cost comparison. **Per-request attribution** for LLM workloads uses span attributes only; writing cost to a metric label at request granularity causes a cardinality explosion (see Section 10).
+**Tenant attribution** is the primary B2B SaaS use case: tag every pod with `tenant.id` at deploy time, then request the appropriate label aggregation from the OpenCost Allocation API or explicitly join allocation metrics to verified ownership metadata. Pod labels alone do not create a new cost counter at `/metrics`. Cross-ref `../boundaries/multi-tenant.md §Cost Attribution` for chargeback and showback patterns. **Feature attribution** uses a custom pod label (`feature.name`); cross-ref `../boundaries/release.md` for A/B cost comparison. **Per-request attribution** for LLM workloads uses span attributes only; writing cost to a metric label at request granularity causes a cardinality explosion (see Section 10).
 
 ---
 
 ## 5. Unit Economics
 
-Three primary PromQL formulas for cost-to-business-metric conversion:
-
-**Per-request cost (rolling 1-hour window):**
+Compute costs with matching units and attribution scope. The default OpenCost metrics support this namespace compute-cost rate (USD/hour):
 
 ```promql
-sum(rate(opencost_workload_cost_total{workload="checkout-api"}[1h])) * 3600
+sum by (namespace) (
+  container_cpu_allocation
+    * on(node) group_left node_cpu_hourly_cost
+  + container_memory_allocation_bytes
+    * on(node) group_left node_ram_hourly_cost / (1024 * 1024 * 1024)
+)
+```
+
+This covers CPU and memory only. Add PVC, attributed network usage, load-balancer, shared/idle, and management costs according to the allocation model before treating the result as a total bill. For tenant/workload daily totals, use the OpenCost Allocation API's window and aggregation controls rather than assuming a workload counter exists. Source: <https://opencost.io/docs/integrations/api/>.
+
+**Per-request cost (custom counter example, rolling 1-hour window):**
+
+The following query requires a separately implemented monotonic `workload_cost_usd_total` counter in USD and an ownership mapping to the same workload. It is a team-defined export, not an OpenCost default metric. Verify that costs and request counts cover the same scope and time window.
+
+```promql
+sum(rate(workload_cost_usd_total{workload="checkout-api"}[1h]))
   /
 sum(rate(http_requests_total{job="checkout-api"}[1h]))
 ```
 
-**Per-tenant cost (daily, aggregated):**
+Both rates are per second, so the result is USD/request; do not multiply only one side by 3600. An hourly cost gauge must instead be divided by requests/hour.
 
-```promql
-sum by (tenant_id) (
-  increase(opencost_workload_cost_total[24h])
-  * on(namespace) group_left(tenant_id)
-  kube_namespace_labels
-)
-```
-
-> **Dependency**: the query joins against `kube_namespace_labels` from kube-state-metrics. `kube-state-metrics` by default does NOT expose custom namespace labels (only a small allowlist). To surface `tenant_id`, run kube-state-metrics with `--metric-labels-allowlist=namespaces=[tenant_id,tenant_tier]` (or via Helm `metricLabelsAllowlist`). Without this flag, the query silently returns empty; a common production pitfall.
-
-**Per-namespace cost (current rate, USD/hr):**
-
-```promql
-sum by (namespace) (
-  opencost_cpu_cost + opencost_ram_cost + opencost_storage_cost + opencost_network_cost
-)
-```
-
-**SLO + cost trade-off (gold tier vs silver tier delta):**
-
-```promql
-# Gold tier: high-replica, low-latency p99
-sum(opencost_workload_cost_total{workload=~".*-gold"}) by (tenant_id)
-  /
-sum(opencost_workload_cost_total{workload=~".*-silver"}) by (tenant_id)
-```
-
-This ratio surfaces the cost multiplier of tiered SLO guarantees and feeds tier-pricing decisions.
+For gold/silver SLO cost comparisons, compare their allocated costs over the same window and attribution scope, and report the corresponding SLI measurements. Do not compare lifetime cumulative counters as a current tier-cost ratio.
 
 ---
 
@@ -291,9 +281,9 @@ Candidates for `../anti-patterns.md §Section B Cardinality & Cost`:
 | Cost label at per-request metric granularity | Cardinality explosion in TSDB; OOM on ingestor | Use `gen_ai.cost.total_usd` as span attribute; aggregate cost metrics by tenant/namespace/workload |
 | No `tenant.id` pod label | Cannot attribute cost to tenants; chargeback impossible | Apply `tenant.id` at deploy time via Helm values or admission webhook |
 | Cost dashboard with public access | Reveals tenant revenue tier and contract value | Apply Grafana RBAC; finance and engineering views are separate; no public embedding |
-| Ignoring egress cost in FinOps | Often the largest surprise cost in multi-cloud or CDN-heavy architectures | Include `opencost_network_cost` in all cost dashboards; set egress budget alerts |
+| Ignoring egress cost in FinOps | Often the largest surprise cost in multi-cloud or CDN-heavy architectures | Use the applicable egress unit-price metrics and attributed network usage or Allocation API costs; set egress budget alerts |
 | LLM spans not tail-sampled on cost threshold | Silent budget blowup: expensive spans are dropped before alerting | Configure tail-sampler rule: if `gen_ai.cost.total_usd > 0.50`, always retain |
-| One metric name per tenant for cost | Bypasses TSDB cardinality controls; cannot be aggregated | Use `opencost_workload_cost_total{tenant_id="acme"}` with top-N cap |
+| One metric name per tenant for cost | Bypasses TSDB cardinality controls; cannot be aggregated | Use one documented cost metric/API aggregation with a bounded tenant dimension; do not invent automatic workload cost counters |
 
 ---
 

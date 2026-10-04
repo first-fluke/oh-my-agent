@@ -3,7 +3,7 @@
 - [ ] Prompt is specific about scene, subject, and style (see `prompt-tips.md`).
 - [ ] `--vendor` matches available authenticated CLIs. Run `oma image doctor` if unsure.
 - [ ] `-n` is ≤ 5; wall time scales with count.
-- [ ] `--out` is inside the project, or you've set `--allow-external-out`.
+- [ ] `--output-dir` is inside the project, or you've set `--allow-external-output`.
 - [ ] Estimated cost is acceptable. Run `--dry-run` first for unfamiliar combinations.
 - [ ] Running non-interactively (agent/CI) with cost ≥ threshold? Confirm with the user first, then pass `-y` — the CLI cannot prompt without a TTY and exits 1.
 - [ ] Secrets are not in the prompt, or `--no-prompt-in-manifest` is set.
@@ -15,4 +15,4 @@
 - [ ] Each recorded run has an `ok` status or a classified error.
 - [ ] Strategy attempts are objects (not compact strings).
 - [ ] Images open without corruption.
-- [ ] If results are consumed downstream, the consumer parses `--format json` stdout rather than re-reading the manifest file.
+- [ ] If results are consumed downstream, the consumer parses `--output json` stdout rather than re-reading the manifest file.

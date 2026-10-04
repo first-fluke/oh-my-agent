@@ -71,11 +71,11 @@ deterministically. A failed count is a failed audit; fix before handoff.
 
 ### Layout counts
 - [ ] Eyebrow count: micro-labels (uppercase + letter-spacing above section headlines) <= ceil(sectionCount / 3); hero counts as one
-- [ ] Layout-family repetition: no layout family (3-col cards, image+text split, full-width quote, bento...) used for more than one section; a page of 8 sections uses >= 4 distinct families
-- [ ] Zigzag cap: max 2 consecutive image+text split sections; the 3rd consecutive one fails
+- [ ] Layout patterns follow the information structure; repeated comparable sections may share the same layout
+- [ ] Alternating rows serve a comparison or reading sequence; avoid changing alignment solely for variety
 - [ ] Marquee: max 1 horizontal marquee per page
 - [ ] Bento cell count: N items → exactly N cells; no empty filler tiles
-- [ ] Long lists (> 5 items): grouped chunks / card grid / tabs / carousel — not a default `<ul>` with a hairline under every row
+- [ ] Lists are readable and easy to scan; use grouping or interactive controls only when the task benefits from them
 
 ### Hero discipline
 - [ ] Hero fits the initial viewport: headline <= 2 lines desktop, subtext <= 20 words, primary CTA visible without scroll

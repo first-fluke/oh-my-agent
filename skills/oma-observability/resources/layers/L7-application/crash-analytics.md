@@ -49,7 +49,7 @@ Targets by application category:
 
 Near-crash experiences that degrade user perception without a fatal signal:
 
-- **Android ANR Rate** = ANRs / sessions. Two variants per `ApplicationExitInfo`: main-thread input dispatch > 5 s, or broadcast receiver not completing within 200 ms (foreground) / 60 s (background). Google Play flags apps exceeding 0.47% of sessions.
+- **Google Play user-perceived ANR rate** = daily active users experiencing at least one user-perceived ANR / daily active users. The overall bad-behavior threshold is 0.47%; it is not an ANR-events/session threshold. Input dispatch typically times out at 5 s. Broadcast receiver timeouts are 10 s (foreground) / 60 s (background) on Android 13 and lower, and 10–20 s / 60–120 s on Android 14+, depending on CPU starvation. Keep any custom session-based stall metric separate. Sources: <https://developer.android.com/topic/performance/anrs/diagnose-and-fix-anrs> and <https://developer.android.com/google/play/vitals>.
 - **iOS Hang Rate** = main-thread hangs > 250 ms / sessions. Visible in Xcode Organizer → Hangs and via MetricKit `MXHangDiagnostic` (iOS 14+).
 
 ### Supporting Metrics
@@ -295,12 +295,12 @@ ANR and hangs are near-crash events that degrade UX without generating a fatal c
 
 ### Android ANR
 
-- Definition: main thread unresponsive for more than 5 seconds during input dispatch or 200 ms during broadcast.
+- Definition: input-dispatch ANRs typically use a 5 s timeout; broadcast receiver timeouts depend on foreground/background priority and OS version (see §2). A 200 ms stall is not the broadcast ANR threshold.
 - Detection sources:
   - `ApplicationExitInfo` API (Android 11+): query ANR reasons from the OS after the fact.
   - `ANRWatchDog` library: third-party watchdog thread that detects main-thread stalls in-process.
   - Sentry, Embrace, Datadog: vendor SDK ANR detection via watchdog thread.
-- Alert threshold: Google Play considers an ANR rate >= 0.47% of sessions as bad behavior, which can suppress the app in search results or trigger a Play Console warning.
+- Alert threshold: compare the Google Play user-perceived ANR rate against 0.47% of daily active users. Do not apply that threshold to a custom ANR-events/session series.
 
 ### iOS Hang
 
@@ -335,7 +335,7 @@ Candidates for `../../anti-patterns.md §Section G — Crash Analytics`:
 | Crash report contains `user.email`, auth tokens, or card numbers without redaction filter | GDPR / PIPA breach; PII in vendor SaaS storage | Implement `beforeSend` allowlist; cross-ref Section 8 |
 | Symbol upload not automated in CI | Stack traces unreadable in production | Add symbol upload step to release pipeline; cross-ref Section 9 |
 | No release marker → cannot correlate deploy to crash spike | Crash spike investigation requires manual git bisect | Set `service.version` on every build; emit release event at deploy |
-| ANR rate unmonitored on Android | Google Play app suppression; degraded store ranking | Add ANR rate metric; alert at 0.47% of sessions |
+| ANR rate unmonitored on Android | Google Play app suppression; degraded store ranking | Monitor Play user-perceived ANRs per daily active user at the 0.47% overall threshold; define custom session metrics separately |
 | Single aggregate CFR target ignoring device-tier or OS-version distribution | p10 device users (low-end hardware) masked by p90 average | Segment CFR by `device.model`, `os.version`, and network type |
 | dSYM stored in git LFS instead of vendor symbol storage | Git LFS cost; symbol-build UUID drift | Use vendor upload; never commit dSYMs |
 

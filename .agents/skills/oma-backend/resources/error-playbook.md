@@ -38,7 +38,7 @@ Use the relevant recovery steps. If required information or authority is missing
 
 1. Read the error; is it a conflict with existing migration?
 2. Check current DB state: Check current migration state
-3. If migration conflicts: Rollback one migration step then fix migration script
+3. Inspect applied steps and partial changes first. In production or shared environments, prefer a reviewed forward fix. Roll back only in disposable development databases or with a tested, data-safe down migration; do not rewrite an already-applied migration.
 4. If schema mismatch: compare model with actual DB schema
 5. **NEVER do this**: Force-mark migrations as applied (risk of data loss)
 
@@ -72,10 +72,10 @@ Use the relevant recovery steps. If required information or authority is missing
 
 **Symptoms**: `429`, `RESOURCE_EXHAUSTED`, `rate limit exceeded` (any vendor runtime — Gemini, Claude, Codex, etc.)
 
-1. **Stop immediately**; do not make additional API calls
-2. Save current work to `progress-{agent-id}[-{sessionId}].md`
-3. Record Status: `quota_exceeded` in `result-{agent-id}[-{sessionId}].md`
-4. Specify remaining tasks so orchestrator can retry later
+1. Identify the source. An expected rate-limit response from the application under review is a test result, not an agent-provider quota failure.
+2. For provider quota exhaustion, stop affected provider calls and record the unavailable checks; continue independent authorized work when possible.
+3. Preserve injected session/task/run IDs and the claim path. Save progress/results under the configured memory base using the task/run-scoped names in `../../_shared/runtime/memory-protocol.md`.
+4. Use a valid claim status (`partial`, `blocked`, or `failed`) with the actual cause and unresolved work per `../../_shared/runtime/result-contract.md`; do not invent a `quota_exceeded` status.
 
 ---
 

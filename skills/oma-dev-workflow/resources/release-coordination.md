@@ -79,11 +79,11 @@ Release Please recognizes these commit types:
 |------|--------------|-------------|
 | `feat:` | minor | New feature |
 | `fix:` | patch | Bug fix |
-| `docs:` | patch | Documentation |
-| `style:` | patch | Code style (no logic) |
-| `refactor:` | patch | Code refactoring |
-| `test:` | patch | Tests |
-| `chore:` | patch | Maintenance |
+| `docs:` | no release by default; project config may opt in | Documentation |
+| `style:` | no release by default; project config may opt in | Code style (no logic) |
+| `refactor:` | no release by default; project config may opt in | Code refactoring |
+| `test:` | no release by default; project config may opt in | Tests |
+| `chore:` | no release by default; project config may opt in | Maintenance |
 | `feat!:` | major | Breaking change |
 | `fix!:` | major | Breaking bug fix |
 
@@ -130,12 +130,12 @@ Automatically creates a PR like:
 - Includes updated CHANGELOG.md
 - Includes version bump in package.json
 
-### 4. Automatic merge
-`.github/workflows/release-please.yml` squash-merges every open pull request labeled `autorelease: pending`. `GITHUB_TOKEN` does not emit a push event, so the same job syncs `prompt-manifest.json` and dispatches the workflow again. That second run tags the release and publishes.
+### 4. Review the release PR
 
-```bash
-gh pr list --label "autorelease: pending"
-```
+Review the version and changelog in the release PR before merging through the
+project's normal merge policy. This action alone does not auto-merge release PRs,
+sync OMA prompt manifests, or publish a package; those require explicit project
+automation.
 
 ### 5. Verify Release
 ```toml
@@ -152,17 +152,17 @@ gh release view --json assets
 '''
 ```
 
-## Manual Release Trigger
+## Release Status
 
-If needed, manually trigger release-please:
+Inspect release status without triggering a workflow:
 
 ```toml
-[tasks."release:trigger"]
-description = "Manually trigger release-please (CI will handle)"
+[tasks."release:status"]
+description = "Show release-please status"
 run = '''
 #!/usr/bin/env bash
-echo "Triggering release-please..."
-echo "Push to main will trigger the workflow automatically"
+echo "Release-please status:"
+echo "Workflow dispatch requires a separately configured workflow_dispatch trigger."
 echo ""
 echo "Current status:"
 mise run release:check

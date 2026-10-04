@@ -177,12 +177,12 @@
 **Remediation**: Deploy a minimum of 2–3 gateway replicas. Use a PodDisruptionBudget to prevent simultaneous eviction. Add a `loadbalancing` exporter upstream for trace-complete routing.
 **See also**: `transport/collector-topology.md §6 High-Throughput Gateway Scaling`
 
-### C.5 Fluentd as new log pipeline deployment in 2026+
+### C.5 Log migration based on an unsupported deprecation claim
 
-**Severity**: HIGH
-**Why it fails**: CNCF announced Fluentd deprecation on 2025-10. Choosing Fluentd for a new deployment in 2026+ means adopting a deprecated tool with no future community investment, missing Fluent Bit's OTLP native output, and incurring Ruby runtime overhead (100+ MB vs Fluent Bit's 5–15 MB).
-**Remediation**: Use Fluent Bit (CNCF Graduated, C/Rust, native OTLP output) as the edge DaemonSet log agent. Use OTel Collector for gateway aggregation, PII redaction, and routing.
-**See also**: `signals/logs.md §6 Collector and Agent Options`
+**Severity**: MEDIUM
+**Why it fails**: Fluentd remains CNCF Graduated. The CNCF migration guide does not deprecate it, and Fluent Bit configuration syntax/plugins are not a drop-in replacement. A migration without conversion and parity checks can lose logs.
+**Remediation**: Choose from actual plugin, route, resource, and support requirements. Convert configuration and validate representative records in parallel before cutover.
+**See also**: `signals/logs.md §6 Collector and Agent Options`, `vendor-categories.md §(h)`
 
 ### C.6 Prometheus receiver on multiple replicas without target allocator
 
@@ -216,19 +216,19 @@
 **Remediation**: Deploy `loadbalancing` exporter (with `routing_key: traceID`) in the tier upstream of `tail_sampling`. Use a headless Kubernetes Service so the exporter resolves per-pod DNS.
 **See also**: `transport/sampling-recipes.md §2`, `transport/collector-topology.md §6`
 
-### D.3 Audit logs not stored in WORM (mutable audit storage)
-
-**Severity**: CRITICAL
-**Why it fails**: SOC 2 CC7.2, PCI DSS Requirement 10, and HIPAA §164.312(b) require tamper-evident, immutable audit storage. Mutable audit logs can be deleted or altered, nullifying compliance evidence and enabling concealment of unauthorized actions.
-**Remediation**: Apply S3 Object Lock in **Compliance** mode (not Governance), GCS retention policy with locked bucket, or Azure Immutable Blob Storage at bucket creation time. Set 7-year retention as a baseline. Do not use Governance mode; it allows privileged override.
-**See also**: `signals/audit.md §5 Immutable WORM Storage`
-
-### D.4 Audit log retention below regulatory minimum
+### D.3 Audit evidence can be altered without detection
 
 **Severity**: HIGH
-**Why it fails**: HIPAA requires 6-year retention; PCI DSS requires 1 year online + offline; SOC 2 audit periods are typically 12 months. Flushing audit logs before the minimum period is a direct compliance violation discoverable during any audit.
-**Remediation**: Use a 7-year baseline with automated lifecycle policy (S3 → Glacier Deep Archive after 90 days). Set WORM Object Lock at write time; it cannot be applied retroactively. Monitor compliance via an `audit_log_retention_days` metric alert.
-**See also**: `signals/audit.md §7 7-Year Retention Policy`, `meta-observability.md §Section F Alert 5`
+**Why it fails**: Missing access controls and tamper protection can invalidate required audit evidence. The applicable framework and record class determine the controls; there is no common requirement that every audit log use WORM.
+**Remediation**: Record the integrity requirement, access controls, and retention/legal-hold policy. Choose Object Lock or equivalent only when justified; select Governance/Compliance mode according to the approved control and deletion obligations.
+**See also**: `signals/audit.md §5 Immutable WORM Storage`
+
+### D.4 Audit retention does not match its approved schedule
+
+**Severity**: HIGH
+**Why it fails**: Records may be erased before a required period or kept beyond their lawful purpose. HIPAA required security documentation and operational audit logs are different record classes; six years is not a blanket raw-log minimum.
+**Remediation**: Map each class to applicable legal/contractual obligations and purpose, including erasure and legal-hold exceptions. Configure lifecycle/lock controls and a scheduled policy check against that schedule rather than a universal seven-year threshold.
+**See also**: `signals/audit.md §7 Evidence-Specific Retention Policy`, `meta-observability.md §Section F Alert 5`
 
 ### D.5 No tamper evidence on audit trail
 
@@ -531,7 +531,7 @@
 
 **Severity**: HIGH
 **Why it fails**: If the OTel Collector is silently dropping 10% of traces, every SLO dashboard and alert is built on incomplete data. The pipeline degradation is invisible until SLO violations appear; at which point on-call cannot distinguish real incidents from telemetry gaps.
-**Remediation**: Alert when `sum(rate(otelcol_exporter_sent_spans[5m])) / sum(rate(otelcol_receiver_accepted_spans[5m])) < 0.99` for 5 minutes. This is the single most important meta-observability alert.
+**Remediation**: Inspect receiver refusals, exporter failures, and queues per pipeline/hop. Use completed synthetic backend-delivery probes for end-to-end checks, accounting for configured sampling/filter expectations. A global sent/accepted ratio is not a loss measure; see `meta-observability.md §A6`.
 **See also**: `meta-observability.md §Section A6`, `meta-observability.md §Section F Alert 1`
 
 ### Z.4 Tenant ID absent from multi-tenant telemetry

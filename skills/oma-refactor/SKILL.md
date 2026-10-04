@@ -33,7 +33,7 @@ Improve internal code structure - readability first - without changing observabl
 
 ### Expected inputs
 - `target`: file/module/path, smell report, SATD marker, or the feature request motivating preparatory refactoring
-- `verification`: project test command(s) per the tool registry; coverage/mutation tooling if available
+- `verification`: existing project test command(s); coverage/mutation tooling if already available
 - `constraints`: coding guide / conventions, regulated-environment flags, merge-window concerns
 - Optional: prior metric reports, hotspot data, ADRs touching the target area
 
@@ -55,8 +55,8 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 ### Dependencies
 - `resources/definition.md` (invariant definition: 5 properties, boundaries, destination principle, naming roles, inline evidence)
 - `resources/measurement.md` (4-layer measurement + git forensics commands)
-- `resources/governance.md` (org parameters: budget floor, 500-line gate, tool registry)
-- Configured code-intelligence symbol/reference tools or native inspection; project test runners per registry (vitest / pytest / flutter_test)
+- `resources/governance.md` (optional organization conventions and existing verification tools)
+- Configured code-intelligence symbol/reference tools; existing project test runners for the target language
 - Git history for churn/ownership/hotspot analysis
 
 ### Control-flow features
@@ -120,8 +120,8 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 ### Tools and instruments
 - Configured code intelligence for symbol/reference/pattern impact analysis; an available semantic rename engine for renames. Native inspection remains valid, but do not replace a semantic rename with blind text replacement
 - Deterministic transformers: IDE refactoring actions, codemods (jscodeshift / OpenRewrite / ast-grep / comby)
-- Metrics: lizard / radon (complexity) — both are PyPI packages, run via `uvx lizard` / `uvx radon` so no pre-install is required; per-language linters with `max-lines` gates
-- Test stack per registry: vitest + StrykerJS / pytest + mutmut / flutter_test (see `resources/governance.md`)
+- Metrics: use already installed complexity tools such as lizard / radon and existing project lint limits; installing or downloading additional tools requires authorization
+- Test stack: preserve the project runner and configuration; use mutation tooling only when available and appropriate (see `resources/governance.md`)
 - Git forensics one-liners (see `resources/measurement.md`)
 
 ### Canonical workflow path
@@ -166,7 +166,7 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 
 - Invariant definition (5 properties, boundaries, destination, naming roles, contexts, D&C, inline evidence): `resources/definition.md`
 - Measurement: 4 layers + git forensics commands: `resources/measurement.md`
-- Org parameters: budget floor, 500-line gate, tool registry: `resources/governance.md`
+- Optional organization conventions and existing verification tools: `resources/governance.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`
 - Adjacent skills: `oma-debug` (bugs), `oma-qa` (audits), `oma-architecture` (boundaries/ADR), `oma-db` (schema), `oma-scm` (commits)
