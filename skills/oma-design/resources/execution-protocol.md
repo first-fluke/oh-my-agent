@@ -42,10 +42,12 @@ After `.design-context.md` exists (either newly created or already present):
 ### Stitch MCP Check (Optional)
 If the user wants to use Stitch for design extraction or generation:
 1. Check if Stitch MCP is available: look for stitch-related tools
-2. If not available, offer setup:
-   - Load `resources/stitch-integration.md` for client-specific setup instructions
-   - Ask which client they use (Claude Code / Cursor / VS Code / Gemini CLI / Codex)
-   - Provide the matching setup command
+2. If not available, load `resources/stitch-integration.md` and follow its
+   Connection and Setup procedure: infer the current client, connect to
+   the official remote MCP directly, and prefer client-supported Google
+   OAuth/ADC. For the API key route, open Stitch Settings if no key is
+   configured. Run setup when authorized, reconnect, and verify
+   `list_projects` before using Stitch.
 3. If user declines: proceed without Stitch (all phases work standalone)
 
 ---
@@ -59,7 +61,8 @@ that has data; subsequent branches are fallbacks.
 1. `list_projects` → find the relevant project
 2. `get_project` → extract `designTheme` (colors, fonts, roundness)
 3. `list_screens` → enumerate all screens
-4. `get_screen_code` → download HTML/CSS for analysis
+4. `get_screen` → `htmlCode.downloadUrl` → download HTML/CSS for analysis;
+   follow the connected tool's input schema.
 5. Extract design tokens → synthesize into DESIGN.md draft
 
 ### Branch B: getdesign Vendor Seed
