@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.0.16",
-  "releaseDate": "2026-10-04T08:56:26.070Z",
+  "releaseDate": "2026-10-04T09:27:18.241Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -991,8 +991,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/execution-protocol.md",
-      "sha256": "cd7fe4471e056f0c3be6244454b9006f200dd00d92249fa07fe4a4918ea22174",
-      "size": 14798
+      "sha256": "bb9cd1c519445d3a1d800389802addc5bc561c8e06a92263cf3d29bd98cc374d",
+      "size": 15018
     },
     {
       "path": ".agents/skills/oma-design/resources/getdesign-fetcher.md",
@@ -1011,8 +1011,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/stitch-integration.md",
-      "sha256": "e01874e55d631531063f202c4e7cc02aad7feb92798dd9ed50c4c3fcb8e1e2b4",
-      "size": 3883
+      "sha256": "d4945ed5f95e173989ef16d7e96941bb1e3b7d8632b8f8abe47051d1144bd110",
+      "size": 9251
     },
     {
       "path": ".agents/skills/oma-dev-workflow/SKILL.md",
