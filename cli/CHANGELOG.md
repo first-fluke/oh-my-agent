@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.0.16](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.15...cli-v15.0.16) (2026-10-04)
+
+
+### Bug Fixes
+
+* **skills:** correct execution contracts and unsafe templates ([ff11f05](https://github.com/first-fluke/oh-my-agent/commit/ff11f05ffcd7484591dceadd211e6b7727ecc919))
+
 ## [15.0.15](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.14...cli-v15.0.15) (2026-10-03)
 
 
