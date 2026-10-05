@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use oh-my-agent in your research or work, please cite it as below."
-title: "oh-my-agent: Portable Multi-Agent Harness"
+title: "oh-my-agent: Mechanical Verification for AI Coding Agents"
 abstract: >-
-  oh-my-agent is a portable multi-agent harness for .agents-based skills and
-  workflows across Antigravity, Claude Code, Codex, OpenCode, Cursor, Gemini
-  CLI, and other AI coding environments. It splits work across specialized
-  agents (frontend, backend, architecture, QA, PM, DB, mobile, infra, debug,
-  design) with shared skills, workflows, and orchestration.
+  oh-my-agent provides mechanical verification for AI coding agents. It can
+  be installed as a portable .agents-based skills pack or as a full harness
+  with stop-hook gates, artifact checks, independent judges, and an
+  append-only event log. It supports shared skills, workflows, and
+  orchestration across multiple AI coding runtimes.
 type: software
 authors:
   - family-names: Shin
@@ -20,7 +20,9 @@ repository-code: "https://github.com/first-fluke/oh-my-agent"
 url: "https://github.com/first-fluke/oh-my-agent"
 keywords:
   - multi-agent
+  - agent-harness
   - agent-skills
+  - verification
   - orchestrator
   - claude-code
   - codex
@@ -29,7 +31,7 @@ keywords:
   - developer-tools
 preferred-citation:
   type: software
-  title: "oh-my-agent: Portable Multi-Agent Harness"
+  title: "oh-my-agent: Mechanical Verification for AI Coding Agents"
   authors:
     - family-names: Shin
       given-names: Eunkwang
