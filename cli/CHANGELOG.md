@@ -1,5 +1,18 @@
 # Changelog
 
+## [15.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.17...cli-v15.1.0) (2026-10-05)
+
+
+### Features
+
+* **dsh:** add project-scoped OMA hook integration ([e15aa96](https://github.com/first-fluke/oh-my-agent/commit/e15aa96d04f7ea91025a2925f8a6506f97d19552))
+
+
+### Bug Fixes
+
+* **dsh:** validate bash tools from their effective workdir ([3321e06](https://github.com/first-fluke/oh-my-agent/commit/3321e0642747e08d54a0133dc895cf2df5015d5e))
+* **image:** support native Antigravity image generator route ([6d96258](https://github.com/first-fluke/oh-my-agent/commit/6d962585e1f6d2d5f44ca038633bf27bc08b2218))
+
 ## [15.0.17](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.16...cli-v15.0.17) (2026-10-04)
 
 
