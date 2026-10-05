@@ -1,4 +1,4 @@
-import { renderInline, renderMarkdown } from "../markdown.js";
+import { renderInline } from "../markdown.js";
 import { escapeHtml, measure } from "../text.js";
 import {
   type Component,
@@ -7,109 +7,7 @@ import {
   fields,
 } from "./types.js";
 
-// The HTML components: they wrap with the panel, so none of them can overflow.
-
-interface TreeNode {
-  name: string;
-  note?: string;
-  children: TreeNode[];
-}
-
-function treeHtml(nodes: TreeNode[]): string {
-  const items = nodes.map((node) => {
-    const folder = node.name.endsWith("/") || node.children.length > 0;
-    const note = node.note
-      ? `<span class="oe-tree-note">${renderInline(node.note)}</span>`
-      : "";
-    const children = node.children.length > 0 ? treeHtml(node.children) : "";
-    return `<li><span class="oe-tree-row"><span class="oe-tree-name${folder ? " oe-tree-dir" : ""}">${escapeHtml(node.name)}</span>${note}</span>${children}</li>`;
-  });
-  return `<ul>${items.join("")}</ul>`;
-}
-
-export const tree: Component = {
-  name: "tree",
-  summary: "Hierarchy by indentation: files, modules, breakdowns",
-  syntax: [
-    "```tree",
-    "cli/",
-    "  commands/          # note after a # is shown beside the name",
-    "    explain/",
-    "      render.ts      # entry point",
-    "```",
-    "- Two spaces per level. Names are shown as written, including <angle> text.",
-  ].join("\n"),
-  example:
-    "```tree\ncli/\n  commands/\n    explain/   # render, validate\n  utils/\n```",
-  render(text) {
-    const lines = contentLines(text);
-    if (lines.length === 0) {
-      throw new ComponentError("tree needs at least one line", 1);
-    }
-    const roots: TreeNode[] = [];
-    const stack: Array<{ indent: number; node: TreeNode }> = [];
-    for (const { text: line, indent } of lines) {
-      const cleaned = line.replace(/^[│├└─|`+\-\s]+(?=\S)/u, "");
-      const depthShift = line.length - cleaned.length;
-      const [name, ...rest] = cleaned.split(/\s+#\s+/);
-      const node: TreeNode = {
-        name: (name ?? "").trim(),
-        note: rest.join(" # ").trim() || undefined,
-        children: [],
-      };
-      const level = indent + depthShift;
-      while (
-        stack.length > 0 &&
-        (stack[stack.length - 1]?.indent ?? 0) >= level
-      ) {
-        stack.pop();
-      }
-      const parent = stack[stack.length - 1]?.node;
-      (parent ? parent.children : roots).push(node);
-      stack.push({ indent: level, node });
-    }
-    return { html: `<div class="oe-tree">${treeHtml(roots)}</div>` };
-  },
-};
-
-export const timeline: Component = {
-  name: "timeline",
-  summary: "Events in order: history, phases, a rollout",
-  syntax: [
-    "```timeline",
-    "when | title | detail (optional)",
-    "when | title*            a trailing * marks the current or key event",
-    "```",
-  ].join("\n"),
-  example:
-    "```timeline\n2023 | Prototype | one vendor\n2024 | Stable* | eleven vendors\n2025 | Next | planned\n```",
-  render(text) {
-    const rows = contentLines(text).map(({ text: line, line: at }) => {
-      const [when, rawTitle, ...detail] = fields(line);
-      if (!when || !rawTitle) {
-        throw new ComponentError(
-          `timeline line must be "when | title | detail": "${line}"`,
-          at,
-        );
-      }
-      const key = rawTitle.endsWith("*");
-      return {
-        when,
-        title: key ? rawTitle.slice(0, -1).trim() : rawTitle,
-        detail: detail.join(" | "),
-        key,
-      };
-    });
-    if (rows.length === 0) {
-      throw new ComponentError("timeline needs at least one line", 1);
-    }
-    const items = rows.map(
-      (row) =>
-        `<li${row.key ? ' class="oe-tl-key"' : ""}><span class="oe-tl-when">${escapeHtml(row.when)}</span><span class="oe-tl-body"><strong>${renderInline(row.title)}</strong>${row.detail ? `<span>${renderInline(row.detail)}</span>` : ""}</span></li>`,
-    );
-    return { html: `<ol class="oe-timeline">${items.join("")}</ol>` };
-  },
-};
+// limits, annot, quiz: HTML components, so they wrap with the panel.
 
 const NICE = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
 
@@ -291,65 +189,6 @@ export const annot: Component = {
       return `<div class="oe-annot">${head}${group.lines.join("")}${captions}</div>`;
     });
     return { html: html.join("") };
-  },
-};
-
-export const kv: Component = {
-  name: "kv",
-  summary: "Facts as key and value pairs",
-  syntax: ["```kv", "key | value", "key | value | note (optional)", "```"].join(
-    "\n",
-  ),
-  example:
-    "```kv\nInput | Markdown draft\nOutput | one HTML file | offline\n```",
-  render(text) {
-    const rows = contentLines(text).map(({ text: line, line: at }) => {
-      const [key, value, ...note] = fields(line);
-      if (!key || value === undefined) {
-        throw new ComponentError(
-          `kv line must be "key | value": "${line}"`,
-          at,
-        );
-      }
-      return `<div class="oe-kv-row"><dt>${renderInline(key)}</dt><dd>${renderInline(value)}${note.length > 0 ? `<span class="oe-kv-note">${renderInline(note.join(" | "))}</span>` : ""}</dd></div>`;
-    });
-    if (rows.length === 0) {
-      throw new ComponentError("kv needs at least one line", 1);
-    }
-    return { html: `<dl class="oe-kv">${rows.join("")}</dl>` };
-  },
-};
-
-const CALLOUT_KINDS: Record<string, string> = {
-  note: "i",
-  tip: "✓",
-  warn: "!",
-  danger: "✕",
-  key: "★",
-};
-
-export const callout: Component = {
-  name: "callout",
-  summary: "One point the reader must not miss",
-  syntax: [
-    "```callout [note|tip|warn|danger|key] Optional title",
-    "Markdown text.",
-    "```",
-    "- At most one or two per page; a page of callouts emphasizes nothing.",
-  ].join("\n"),
-  example:
-    "```callout warn Offline only\nThe page loads no external resource.\n```",
-  render(text, args) {
-    const [first = "", ...rest] = args.split(/\s+/).filter(Boolean);
-    const known = first.toLowerCase() in CALLOUT_KINDS;
-    const kind = known ? first.toLowerCase() : "note";
-    const title = (known ? rest : [first, ...rest]).join(" ").trim();
-    if (!text.trim()) {
-      throw new ComponentError("callout needs text", 1);
-    }
-    return {
-      html: `<aside class="oe-callout oe-callout-${kind}"><span class="oe-callout-mark" aria-hidden="true">${CALLOUT_KINDS[kind]}</span><div>${title ? `<strong class="oe-callout-title">${escapeHtml(title)}</strong>` : ""}${renderMarkdown(text)}</div></aside>`,
-    };
   },
 };
 

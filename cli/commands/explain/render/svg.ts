@@ -20,28 +20,32 @@ export function svgText(
 }
 
 /**
- * Smooth path through `points`. Each segment leaves and arrives along the
- * main axis, so an arrowhead always points straight into its node.
+ * Path through `points` with rounded bends: straight at both ends, so an
+ * arrowhead points along the last segment, and a quadratic curve through the
+ * midpoints around every bend.
  */
-export function svgCurve(
-  points: Array<[number, number]>,
-  horizontal: boolean,
-): string {
-  const [start, ...rest] = points;
-  if (!start) return "";
-  let path = `M${round(start[0])},${round(start[1])}`;
-  let previous = start;
-  for (const point of rest) {
-    if (horizontal) {
-      const middle = (previous[0] + point[0]) / 2;
-      path += ` C${round(middle)},${round(previous[1])} ${round(middle)},${round(point[1])} ${round(point[0])},${round(point[1])}`;
-    } else {
-      const middle = (previous[1] + point[1]) / 2;
-      path += ` C${round(previous[0])},${round(middle)} ${round(point[0])},${round(middle)} ${round(point[0])},${round(point[1])}`;
-    }
-    previous = point;
+export function svgCurve(points: Array<[number, number]>): string {
+  const [first, ...rest] = points;
+  if (!first) return "";
+  const at = ([x, y]: [number, number]) => `${round(x)},${round(y)}`;
+  if (rest.length === 1)
+    return `M${at(first)} L${at(rest[0] as [number, number])}`;
+  const middle = (
+    a: [number, number],
+    b: [number, number],
+  ): [number, number] => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const parts = [
+    `M${at(first)}`,
+    `L${at(middle(first, points[1] as [number, number]))}`,
+  ];
+  for (let index = 1; index < points.length - 1; index++) {
+    const bend = points[index] as [number, number];
+    parts.push(
+      `Q${at(bend)} ${at(middle(bend, points[index + 1] as [number, number]))}`,
+    );
   }
-  return path;
+  parts.push(`L${at(points[points.length - 1] as [number, number])}`);
+  return parts.join(" ");
 }
 
 export function svgArrowMarker(id: string): string {
@@ -60,7 +64,8 @@ export function svgFigure(
 ): string {
   const w = Math.ceil(width);
   const h = Math.ceil(height);
-  const floor = Math.min(w, Math.max(300, Math.round(w * 0.8)));
+  // Below three quarters of its size the text is too small to read.
+  const floor = Math.min(w, Math.max(300, Math.round(w * 0.75)));
   return `<div class="oe-diagram oe-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" data-natural="${w}" style="max-width:100%;min-width:${floor}px;height:auto" role="img" aria-label="${escapeHtml(label)}">${body}</svg></div>`;
 }
 

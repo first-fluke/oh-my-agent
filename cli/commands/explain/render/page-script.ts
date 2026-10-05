@@ -5,10 +5,11 @@
 /**
  * Row planner for the panel grid. Pure: no DOM access.
  *
- * planRows({ width, gap, cols, panels }) -> { rows: [{ columns: [{ panels: [index], width }], height }] }
+ * planRows({ width, gap, cols, panels }) ->
+ *   { rows: [{ columns: [{ panels: [index], width }], height }], maxScale }
  *
  *   width, gap   container width and the space between panels, px
- *   cols         the grid the author's `span` hints refer to
+ *   cols         the grid the author's span hints refer to
  *   panels[]     in reading order:
  *     samples    [{ w, h }] measured panel height at ascending widths
  *     minWidth   narrowest width at which the panel is still readable
@@ -17,24 +18,41 @@
  *     pad        panel width that is not diagram (padding, border)
  *     span       width hint in grid columns; span >= cols keeps the panel alone
  *
- * Rows keep reading order. A row is a list of columns; a column holds one
- * panel or two consecutive panels stacked. Row breaks come from dynamic
- * programming, column widths from a stepped search. A row costs its blank
- * area (columns shorter than the tallest, panels wider than useful) plus how
- * far each panel is from its hinted width and each diagram from natural size.
- * If nothing fits, every panel gets a full-width row.
+ * Rows keep reading order. A row is a list of columns (at most six); a column
+ * holds one panel or two consecutive panels stacked. Row breaks come from
+ * dynamic programming, column widths from a search in 10px steps.
+ *
+ *   blank  = area of columns shorter than the tallest, plus area a panel
+ *            takes past its useful width
+ *   drift  = how far each panel is from its hinted width, plus how far each
+ *            diagram is from its natural size
+ *   cost   = blank / 1000 + 0.15 * drift * rowHeight
+ *
+ * Scale band: diagrams on one page stay at similar sizes. A diagram is shown
+ * at scale min(maxScale, (width - pad) / natural). The planner tries a few
+ * bands [low, low * 1.25] and keeps the cheapest plan in which no diagram is
+ * below the band and none is drawn above it, so the largest and smallest
+ * diagram scales differ by at most a quarter. One wide diagram lowers the
+ * band for the others rather than towering over them. Without a feasible
+ * band the plan has none; without any plan every panel gets a full row.
  */
 export const PLANNER_SOURCE = `
+var PLAN_STEP = 10;
+var PLAN_MAX_SCALE = 1.25;
+var PLAN_MIN_SCALE = 0.75;
 function planRows(input) {
   var width = input.width;
   var gap = input.gap || 0;
   var cols = Math.max(1, input.cols || 3);
   var panels = input.panels || [];
+  var BAND = 1.25;
+  var BAND_LOWS = [PLAN_MIN_SCALE, 0.85, 0.95, 1];
   function single() {
     return {
       rows: panels.map(function (_panel, index) {
         return { columns: [{ panels: [index], width: width }], height: 0 };
-      })
+      }),
+      maxScale: PLAN_MAX_SCALE
     };
   }
   var usable = width > 0 && panels.length > 0 && panels.every(function (panel) {
@@ -42,21 +60,33 @@ function planRows(input) {
   });
   if (!usable) return single();
 
-  var MAX_COLUMNS = Math.min(cols, 4);
+  var maxColumns = Math.min(cols, 6);
   var unit = Math.max(1, (width - gap * (cols - 1)) / cols);
-  var info = panels.map(function (panel) {
-    var span = Math.max(1, panel.span || 1);
-    return {
-      samples: panel.samples,
-      min: Math.min(width, Math.max(1, Math.ceil(panel.minWidth || 0))),
-      max: panel.maxWidth > 0 ? panel.maxWidth : Infinity,
-      natural: panel.natural > 0 ? panel.natural : 0,
-      pad: panel.pad || 0,
-      preferred: Math.min(width, span * unit + (span - 1) * gap),
-      alone: span >= cols
-    };
-  });
+  var info = [];
+  // Limits per panel for a band that starts at "low" (0 = no band).
+  function prepare(low) {
+    info = panels.map(function (panel) {
+      var span = Math.max(1, panel.span || 1);
+      var pad = panel.pad || 0;
+      var diagram = low > 0 && panel.natural > 0;
+      var cap = diagram ? Math.min(PLAN_MAX_SCALE, low * BAND) : PLAN_MAX_SCALE;
+      var least = Math.max(Math.ceil(panel.minWidth || 0), diagram ? Math.ceil(panel.natural * low + pad) : 0);
+      var most = panel.maxWidth > 0 ? panel.maxWidth : Infinity;
+      if (diagram) most = Math.min(most, panel.natural * cap + pad);
+      return {
+        samples: panel.samples,
+        min: Math.min(width, Math.max(1, least)),
+        max: most,
+        natural: panel.natural > 0 ? panel.natural : 0,
+        pad: pad,
+        cap: cap,
+        preferred: Math.min(width, span * unit + (span - 1) * gap),
+        alone: span >= cols
+      };
+    });
+  }
 
+  // Past its useful width a panel only gains blank space, so its height holds.
   function heightAt(panel, at) {
     var w = Math.min(at, panel.max);
     var samples = panel.samples;
@@ -86,7 +116,6 @@ function planRows(input) {
       rest[n] = sum;
     }
     if (rest[0] > avail) return null;
-    var step = Math.max(12, Math.round(avail / 40));
     var best = null;
     function evaluate(widths) {
       var heights = widths.map(function (w, n) { return columnHeight(columns[n], w); });
@@ -101,9 +130,9 @@ function planRows(input) {
           var off = (w - panel.preferred) / unit;
           drift += off * off;
           if (panel.natural > 0) {
-            var scale = Math.min(1, Math.max(w - panel.pad, 1) / panel.natural);
-            var shrink = Math.log(scale) / Math.log(0.8);
-            drift += 3 * shrink * shrink;
+            var scale = Math.min(panel.cap, Math.max(w - panel.pad, 1) / panel.natural);
+            var far = Math.log(scale) / Math.log(PLAN_MAX_SCALE);
+            drift += 3 * far * far;
           }
         });
       });
@@ -118,7 +147,7 @@ function planRows(input) {
         if (last >= mins[n]) evaluate(widths.concat([last]));
         return;
       }
-      for (var w = mins[n]; used + w + rest[n + 1] <= avail; w += step) {
+      for (var w = mins[n]; used + w + rest[n + 1] <= avail; w += PLAN_STEP) {
         choose(n + 1, used + w, widths.concat([w]));
       }
     }
@@ -143,7 +172,7 @@ function planRows(input) {
     }
     var best = null;
     splits(to - from + 1).forEach(function (split) {
-      if (split.length > MAX_COLUMNS) return;
+      if (split.length > maxColumns) return;
       var next = from;
       var columns = split.map(function (size) {
         var column = [];
@@ -156,40 +185,68 @@ function planRows(input) {
     return best;
   }
 
-  var count = panels.length;
-  var total = [0];
-  var cameFrom = [-1];
-  var chosen = [null];
-  for (var end = 1; end <= count; end++) {
-    total[end] = Infinity;
-    cameFrom[end] = -1;
-    chosen[end] = null;
-    for (var start = Math.max(0, end - 2 * MAX_COLUMNS); start < end; start++) {
-      if (total[start] === Infinity) continue;
-      var row = bestRow(start, end - 1);
-      if (row && total[start] + row.cost < total[end]) {
-        total[end] = total[start] + row.cost;
-        cameFrom[end] = start;
-        chosen[end] = row;
+  // Row breaks in reading order for the limits now in "info".
+  function solve() {
+    var count = panels.length;
+    var total = [0];
+    var cameFrom = [-1];
+    var chosen = [null];
+    for (var end = 1; end <= count; end++) {
+      total[end] = Infinity;
+      cameFrom[end] = -1;
+      chosen[end] = null;
+      for (var start = Math.max(0, end - 2 * maxColumns); start < end; start++) {
+        if (total[start] === Infinity) continue;
+        var row = bestRow(start, end - 1);
+        if (row && total[start] + row.cost < total[end]) {
+          total[end] = total[start] + row.cost;
+          cameFrom[end] = start;
+          chosen[end] = row;
+        }
       }
     }
+    if (total[count] === Infinity) return null;
+    var rows = [];
+    for (var at = count; at > 0; at = cameFrom[at]) {
+      var picked = chosen[at];
+      rows.unshift({
+        columns: picked.columns.map(function (column, n) {
+          return { panels: column, width: picked.widths[n] };
+        }),
+        height: picked.height
+      });
+    }
+    return { rows: rows, cost: total[count] };
   }
-  if (total[count] === Infinity) return single();
-  var rows = [];
-  for (var at = count; at > 0; at = cameFrom[at]) {
-    var picked = chosen[at];
-    rows.unshift({
-      columns: picked.columns.map(function (column, n) {
-        return { panels: column, width: picked.widths[n] };
-      }),
-      height: picked.height
+
+  var best = null;
+  var diagrams = panels.filter(function (panel) { return panel.natural > 0; });
+  if (diagrams.length > 1) {
+    // No diagram can be drawn larger than the page allows it, so the band
+    // cannot start above the smallest of those limits.
+    var reach = Math.min.apply(null, diagrams.map(function (panel) {
+      return Math.min(PLAN_MAX_SCALE, Math.max(width - (panel.pad || 0), 1) / panel.natural);
+    }));
+    var lows = BAND_LOWS.filter(function (low) { return low < reach; });
+    lows.push(reach);
+    lows.forEach(function (low) {
+      prepare(low);
+      var plan = solve();
+      if (plan && (!best || plan.cost < best.cost)) {
+        best = { rows: plan.rows, cost: plan.cost, maxScale: Math.min(PLAN_MAX_SCALE, low * BAND) };
+      }
     });
   }
-  return { rows: rows };
+  if (!best) {
+    prepare(0);
+    var plain = solve();
+    if (plain) best = { rows: plain.rows, maxScale: PLAN_MAX_SCALE };
+  }
+  return best ? { rows: best.rows, maxScale: best.maxScale } : single();
 }
 `;
 
-/** Theme toggle, print, quizzes, and the DOM side of the row planner. */
+/** Toolbar (theme, colour mode, copy draft, print), quizzes, and the DOM side of the row planner. */
 export const PAGE_SOURCE = `
 (function () {
   "use strict";
@@ -198,27 +255,65 @@ export const PAGE_SOURCE = `
   try {
     strings = JSON.parse(document.getElementById("oe-strings").textContent);
   } catch (error) {}
-
-  // Theme: the reader's choice wins over the page default and the system.
-  var THEME_KEY = "oma-explain-theme";
   var listeners = [];
-  function readTheme() {
-    try { return localStorage.getItem(THEME_KEY); } catch (error) { return null; }
+  function changed() {
+    listeners.forEach(function (listener) { listener(); });
   }
-  function effectiveTheme() {
-    var set = root.getAttribute("data-theme");
-    if (set === "light" || set === "dark") return set;
-    return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+
+  // Theme and colour mode: each button steps to the next value.
+  function bind(name, values, read, write) {
+    var button = document.querySelector('[data-oe="' + name + '"]');
+    if (!button) return;
+    var labels = (strings[name] || {});
+    function show() { button.textContent = labels[read()] || read(); }
+    show();
+    button.addEventListener("click", function () {
+      write(values[(values.indexOf(read()) + 1) % values.length]);
+      show();
+      changed();
+    });
   }
-  var saved = readTheme();
-  if (saved === "light" || saved === "dark") root.setAttribute("data-theme", saved);
-  var themeButton = document.querySelector('[data-oe="theme"]');
-  if (themeButton) {
-    themeButton.addEventListener("click", function () {
-      var next = effectiveTheme() === "dark" ? "light" : "dark";
-      root.setAttribute("data-theme", next);
-      try { localStorage.setItem(THEME_KEY, next); } catch (error) {}
-      listeners.forEach(function (listener) { listener(); });
+  bind("theme", strings.themes || ["blueprint"], function () {
+    return root.getAttribute("data-oe-theme") || "blueprint";
+  }, function (value) {
+    root.setAttribute("data-oe-theme", value);
+  });
+  bind("mode", ["auto", "light", "dark"], function () {
+    return root.getAttribute("data-theme") || "auto";
+  }, function (value) {
+    if (value === "auto") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", value);
+  });
+
+  var copyButton = document.querySelector('[data-oe="copy"]');
+  if (copyButton) {
+    copyButton.addEventListener("click", function () {
+      var draft = "";
+      try {
+        draft = JSON.parse(document.getElementById("oe-source").textContent).draft || "";
+      } catch (error) {}
+      function done() {
+        var original = copyButton.textContent;
+        copyButton.textContent = strings.copied || "Copied";
+        setTimeout(function () { copyButton.textContent = original; }, 1400);
+      }
+      function fallback() {
+        var area = document.createElement("textarea");
+        area.value = draft;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        try { document.execCommand("copy"); } catch (error) {}
+        document.body.removeChild(area);
+        done();
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(draft).then(done, fallback);
+      } else {
+        fallback();
+      }
     });
   }
   var printButton = document.querySelector('[data-oe="print"]');
@@ -272,7 +367,7 @@ export const PAGE_SOURCE = `
               .replace("{correct}", String(correct))
               .replace("{total}", String(questions.length));
           }
-          listeners.forEach(function (listener) { listener(); });
+          changed();
         });
       });
     });
@@ -290,12 +385,13 @@ export const PAGE_SOURCE = `
 
   var SINGLE_COLUMN = "(max-width: 760px)";
   var TWO_COLUMNS = "(max-width: 1100px)";
-  var SAMPLE_STEP = 24;
+  var SAMPLE_STEP = 20;
   var TEXT_MIN = 260;
-  var TEXT_MAX = 700;
-  var TABLE_COLUMN_MIN = 88;
-  var DIAGRAM_SHRINK = 0.8;
-  var tracked = [grid].concat(panels);
+  var TEXT_MAX = 720;
+  var TABLE_COLUMN_MIN = 96;
+  var DIAGRAM_MIN = 160;
+  var svgs = Array.prototype.slice.call(grid.querySelectorAll(".oe-diagram > svg"));
+  var tracked = [grid].concat(panels, svgs);
   var original = tracked.map(function (el) { return el.getAttribute("style"); });
 
   function restore() {
@@ -311,22 +407,31 @@ export const PAGE_SOURCE = `
   function naturalWidth(svg) {
     return Number(svg.getAttribute("data-natural")) || 0;
   }
+  // The diagram of a panel that holds one diagram and nothing else.
   function soleDiagram(panel) {
     var body = panel.querySelector(":scope > .oe-panel-body");
     if (!body || body.children.length !== 1) return null;
     return body.querySelector(":scope > .oe-diagram > svg");
   }
 
+  // Height (and, for panels with tables or code, the narrowest width without
+  // sideways scrolling) at sampled widths. One panel is shown at a time, so
+  // each width change lays out that panel alone.
   function measure(width) {
     grid.style.display = "block";
     panels.forEach(function (panel) {
       panel.style.display = "none";
       panel.style.boxSizing = "border-box";
     });
+    svgs.forEach(function (svg) {
+      svg.style.width = "100%";
+      svg.style.minWidth = "0";
+      svg.style.maxWidth = naturalWidth(svg) * PLAN_MAX_SCALE + "px";
+    });
     var out = panels.map(function (panel) {
       var svg = soleDiagram(panel);
-      var svgs = panel.querySelectorAll(".oe-diagram > svg");
-      var scrollers = panel.querySelectorAll(".oe-scroll");
+      var own = panel.querySelectorAll(".oe-diagram > svg");
+      var scrollers = panel.querySelectorAll(".oe-scroll:not(.oe-diagram)");
       var tableColumns = 0;
       Array.prototype.forEach.call(panel.querySelectorAll("table tr:first-child"), function (tr) {
         tableColumns = Math.max(tableColumns, tr.children.length);
@@ -336,13 +441,13 @@ export const PAGE_SOURCE = `
       var pad = svg ? panel.offsetWidth - svg.parentElement.clientWidth : 34;
       var natural = svg ? naturalWidth(svg) : 0;
       var widest = 0;
-      Array.prototype.forEach.call(svgs, function (each) {
+      Array.prototype.forEach.call(own, function (each) {
         widest = Math.max(widest, naturalWidth(each));
       });
       var floor = svg
-        ? Math.max(160, natural * DIAGRAM_SHRINK + pad)
-        : Math.max(TEXT_MIN, widest * DIAGRAM_SHRINK + pad, tableColumns * TABLE_COLUMN_MIN + pad);
-      var from = Math.min(width, Math.floor(floor / 12) * 12);
+        ? Math.max(DIAGRAM_MIN, natural * PLAN_MIN_SCALE + pad)
+        : Math.max(TEXT_MIN, widest * PLAN_MIN_SCALE + pad, tableColumns * TABLE_COLUMN_MIN + pad);
+      var from = Math.min(width, Math.floor(floor / PLAN_STEP) * PLAN_STEP);
       var samples = [];
       var fits = null;
       for (var w = from; ; w += SAMPLE_STEP) {
@@ -358,11 +463,11 @@ export const PAGE_SOURCE = `
         if (w === width) break;
       }
       panel.style.display = "none";
-      var plain = !svgs.length && !tableColumns && !panel.querySelector("pre");
+      var plain = !own.length && !tableColumns && !panel.querySelector("pre, .oe-annot-line, .oe-kv, .oe-tree-cols, .oe-timeline-h");
       return {
         samples: samples,
-        minWidth: Math.max(floor, scrollers.length ? (fits === null ? width : fits) : 0),
-        maxWidth: svg ? natural + pad : plain ? TEXT_MAX : 0,
+        minWidth: svg ? floor : Math.max(floor, scrollers.length ? (fits === null ? width : fits) : 0),
+        maxWidth: svg ? natural * PLAN_MAX_SCALE + pad : plain ? TEXT_MAX : 0,
         natural: natural,
         pad: pad,
         span: Number(panel.getAttribute("data-span")) || 1
@@ -375,6 +480,9 @@ export const PAGE_SOURCE = `
     return out;
   }
 
+  // Each column gets a fixed width. A row adds up to the full width, so the
+  // flex container breaks rows by itself. Stacked panels share a wrapper
+  // whose last panel takes the spare height.
   function apply(plan, gap) {
     grid.style.display = "flex";
     grid.style.flexWrap = "wrap";
@@ -382,6 +490,7 @@ export const PAGE_SOURCE = `
     grid.style.gap = gap + "px";
     panels.forEach(function (panel) {
       panel.style.gridColumn = "auto";
+      panel.style.gridRow = "auto";
       panel.style.flex = "0 0 auto";
     });
     plan.rows.forEach(function (row) {
@@ -400,6 +509,16 @@ export const PAGE_SOURCE = `
           box.appendChild(panels[index]);
         });
         panels[column.panels[column.panels.length - 1]].style.flex = "1 1 auto";
+      });
+    });
+    // A diagram alone in its panel is drawn at most at the top of the page's
+    // scale band; any other diagram keeps its natural size as the limit.
+    panels.forEach(function (panel) {
+      var sole = soleDiagram(panel);
+      Array.prototype.forEach.call(panel.querySelectorAll(".oe-diagram > svg"), function (svg) {
+        var scale = svg === sole ? plan.maxScale : 1;
+        svg.style.maxWidth = naturalWidth(svg) * scale + "px";
+        svg.style.minWidth = Math.min(naturalWidth(svg), Math.max(300, naturalWidth(svg) * PLAN_MIN_SCALE)) + "px";
       });
     });
   }
@@ -425,6 +544,8 @@ export const PAGE_SOURCE = `
         if (matchMedia(TWO_COLUMNS).matches) cols = Math.min(cols, 2);
         apply(planRows({ width: planned, gap: gap, cols: cols, panels: measure(planned) }), gap);
       }
+      // The width never settled: columns planned for another width would
+      // overflow or leave gaps, so the plain grid shows.
       if (planned !== containerWidth()) restore();
     } catch (error) {
       restore();
@@ -452,6 +573,8 @@ export const PAGE_SOURCE = `
     });
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(later);
+  // An image that finishes loading changes its panel's height.
+  grid.addEventListener("load", later, true);
 })();
 `;
 
@@ -469,6 +592,8 @@ export interface PlannedRows {
     columns: Array<{ panels: number[]; width: number }>;
     height: number;
   }>;
+  /** Largest scale any diagram is drawn at on this page. */
+  maxScale: number;
 }
 
 /** The page's planner, callable from Node (tests, tooling). */

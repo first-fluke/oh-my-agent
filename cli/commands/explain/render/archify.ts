@@ -79,6 +79,24 @@ function fromSequence(
   const called = new Set<string>();
   const first = 170;
   const step = 30;
+  const kept = model.messages
+    .map((message, index) => ({ message, index }))
+    .filter(({ message }) => message.from !== message.to)
+    .map(({ index }) => index);
+  const segments = model.phases.flatMap((phase) => {
+    const rows = kept
+      .map((original, row) => ({ original, row }))
+      .filter(({ original }) => original >= phase.from && original <= phase.to)
+      .map(({ row }) => row);
+    if (rows.length === 0) return [];
+    return [
+      {
+        from: first + (rows[0] as number) * step - 12,
+        to: first + (rows[rows.length - 1] as number) * step + 12,
+        label: phase.label,
+      },
+    ];
+  });
   return {
     type: "sequence",
     spec: {
@@ -97,6 +115,9 @@ function fromSequence(
         type: inferComponentType(participant.label),
         label: participant.label,
       })),
+      // A phase covers the rows of its messages; self messages are gone, so
+      // phases are re-counted over the messages that remain.
+      ...(segments.length > 0 ? { segments } : {}),
       messages: messages.map((message, index) => {
         // A dashed arrow back along an earlier call is its return.
         const answers = called.has(`${message.to}>${message.from}`);
@@ -158,6 +179,15 @@ function fromFlow(
         label: node.label,
         ...(cells.get(node.id) ?? { row: 0, col: 0 }),
       })),
+      ...(model.groups.length > 0
+        ? {
+            boundaries: model.groups.map((group) => ({
+              kind: "region",
+              label: group.label,
+              wraps: group.members,
+            })),
+          }
+        : {}),
       connections: model.edges.map((edge, index) => ({
         id: `c${index + 1}`,
         from: edge.from,

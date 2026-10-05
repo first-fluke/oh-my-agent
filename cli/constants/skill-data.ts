@@ -72,7 +72,7 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-explanation",
-      desc: `Create an offline HTML explanation of a code diff, PR, or branch. Use when an interactive code-change walkthrough is requested.`,
+      desc: `Create an offline HTML explanation of a code change (diff, PR, branch) or of a topic, system, or question. Use when a visual walkthrough document is requested.`,
     },
     {
       name: "oma-hwp",

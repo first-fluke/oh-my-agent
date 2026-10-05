@@ -4,19 +4,29 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { validateHtmlContent } from "../validate.js";
 import { inferComponentType, toArchifySpec } from "./archify.js";
-import { artifactSlug, runExplainPatch, runExplainRender } from "./command.js";
+import {
+  artifactSlug,
+  runExplainLint,
+  runExplainPatch,
+  runExplainRender,
+} from "./command.js";
 import { COMPONENTS } from "./components/index.js";
 import { DraftError, parseDraft } from "./draft.js";
 import { layoutLayered } from "./layered.js";
 import { lintDraft, splitSentences } from "./lint.js";
+import { renderInline, renderMarkdown } from "./markdown.js";
 import { planRows } from "./page-script.js";
 import {
+  contentSpan,
   extractDraftSource,
+  fillRows,
   isRenderedPage,
   patchDraft,
+  readPageSettings,
   renderDraft,
 } from "./render.js";
 import { detectLanguage, measure, wrapText } from "./text.js";
+import { themeCss } from "./theme.js";
 
 const draft = (body: string, meta = "title: Sample") =>
   `---\n${meta}\n---\n\n${body}\n`;
@@ -234,7 +244,14 @@ describe("renderDraft", () => {
 });
 
 describe("components", () => {
-  const render = (block: string) => renderDraft(draft(`## P\n\n${block}`));
+  const render = (block: string) => {
+    const result = renderDraft(draft(`## P\n\n${block}`));
+    // The stylesheet names every class; assertions are about the markup.
+    return {
+      ...result,
+      html: result.html.slice(result.html.indexOf("</style>")),
+    };
+  };
 
   it("flow: chains, fan-out, shapes, labels, and groups become one graph", () => {
     const { html, diagrams } = render(
@@ -265,7 +282,7 @@ describe("components", () => {
     const error = failure(
       draft("## P\n\n```flow\nA -> B\ngroup G: A, Missing\n```"),
     );
-    expect(error.message).toMatch(/names "Missing"/);
+    expect(error.message).toMatch(/does not exist: Missing/);
     expect(error.line).toBe(9);
   });
 
@@ -357,6 +374,21 @@ describe("lintDraft", () => {
         "en",
       ),
     ).toEqual([]);
+  });
+
+  it("reports the line of the sentence inside a wrapped paragraph or a list", () => {
+    const warnings = lintDraft(
+      parseDraft(
+        draft(
+          "## P\n\nA short line.\nWe utilize it here.\n\n1. Fine.\n2. We leverage `utilize`.",
+        ),
+      ),
+      "en",
+    );
+    expect(warnings.map((w) => [w.line, w.suggestion])).toEqual([
+      [8, "use"],
+      [11, "use"],
+    ]);
   });
 
   it("does not end a sentence at a dot inside a name", () => {
@@ -605,5 +637,497 @@ describe("explain render / patch", () => {
     expect(artifactSlug(undefined, "세션 트래젝터리")).toMatch(
       /^explain-[0-9a-f]{8}$/,
     );
+  });
+});
+
+describe("draft grammar", () => {
+  it("takes the title from a leading # heading and accepts ~~~ fences", () => {
+    const parsed = parseDraft(
+      "# From heading\n\nLead.\n\n## P\n\n~~~flow\nA -> B\n~~~\n",
+    );
+    expect(parsed.meta.title).toBe("From heading");
+    expect(parsed.lead[0]).toMatchObject({ text: "Lead." });
+    expect(parsed.panels[0]?.blocks[0]).toMatchObject({ name: "flow" });
+  });
+
+  it("keeps written ids, fills the rest, and goes past Z", () => {
+    const heads = ["## C Third", "## First", "## B1 Sub", "## Second"];
+    const parsed = parseDraft(
+      draft(heads.map((h) => `${h}\n\nx`).join("\n\n")),
+    );
+    expect(parsed.panels.map((panel) => panel.id)).toEqual([
+      "C",
+      "A",
+      "B1",
+      "B",
+    ]);
+    const many = parseDraft(
+      draft(
+        Array.from({ length: 28 }, (_v, i) => `## Panel ${i}\n\nx`).join(
+          "\n\n",
+        ),
+      ),
+    );
+    expect(many.panels.slice(25).map((panel) => panel.id)).toEqual([
+      "Z",
+      "P27",
+      "P28",
+    ]);
+    expect(() => parseDraft(draft("## A One\n\nx\n\n## A Two\n\ny"))).toThrow(
+      /two panels have the id "A"/,
+    );
+  });
+
+  it("reads rows, quoted notes, and the meta alias from a heading", () => {
+    const [panel] = parseDraft(
+      draft("## Wide {span=2 rows=2 meta='top right' bare}\n\nx"),
+    ).panels;
+    expect(panel).toMatchObject({
+      span: 2,
+      rows: 2,
+      note: "top right",
+      bare: true,
+    });
+  });
+});
+
+describe("markdown", () => {
+  it("renders nested and task lists, aligned tables, rules, and quotes", () => {
+    const html = renderMarkdown(
+      [
+        "### Head",
+        "- one",
+        "  - nested",
+        "- [x] done",
+        "",
+        "1. first",
+        "",
+        "   more",
+        "",
+        "| L | R |",
+        "| :-- | --: |",
+        "| ✓ fine | a \\| b |",
+        "",
+        "> quote",
+        "> - item",
+        "",
+        "---",
+      ].join("\n"),
+    );
+    expect(html).toContain("<h3>Head</h3>");
+    expect(html).toContain("<ul><li>one\n<ul><li>nested</li></ul></li>");
+    expect(html).toContain('class="oe-task oe-task-done"');
+    expect(html).toContain("<ol><li><p>first</p>\n<p>more</p></li></ol>");
+    expect(html).toContain('<th style="text-align:right">R</th>');
+    expect(html).toContain("oe-status-ok");
+    expect(html).toContain("a | b");
+    expect(html).toContain(
+      "<blockquote><p>quote</p>\n<ul><li>item</li></ul></blockquote>",
+    );
+    expect(html).toContain("<hr>");
+  });
+
+  it("renders inline forms and never emits an unsafe link or raw markup", () => {
+    const html = renderInline(
+      "**b** _e_ ***x*** ~~d~~ ``a ` b`` [l](https://e.com) <https://a.b> snake_case_name \\*lit\\* ![i](https://x/y.png) ![d](data:image/png;base64,AA) [bad](javascript:alert(1)) <b>raw</b>",
+    );
+    expect(html).toContain(
+      "<strong>b</strong> <em>e</em> <em><strong>x</strong></em> <del>d</del>",
+    );
+    expect(html).toContain("<code>a ` b</code>");
+    expect(html).toContain('<a href="https://e.com">l</a>');
+    expect(html).toContain('<a href="https://a.b">https://a.b</a>');
+    expect(html).toContain("snake_case_name *lit*");
+    // An external image is never loaded: it becomes a link.
+    expect(html).toContain('<a href="https://x/y.png">i</a>');
+    expect(html).toContain('<img alt="d" src="data:image/png;base64,AA">');
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain("&lt;b&gt;raw&lt;/b&gt;");
+    // A label that would parse as a block is still a label.
+    expect(renderInline("1. first <x>")).toBe("1. first &lt;x&gt;");
+  });
+
+  it("resolves reference links and collects footnotes", () => {
+    const html = renderMarkdown(
+      'See [the spec][spec] and a note.[^n]\n\n[spec]: https://e.com/spec "Spec"\n\n[^n]: The **note** text.',
+    );
+    expect(html).toContain(
+      '<a href="https://e.com/spec" title="Spec">the spec</a>',
+    );
+    expect(html).toContain('<sup class="oe-fn-ref">[1]</sup>');
+    expect(html).toContain(
+      '<ol class="oe-footnotes"><li><p>The <strong>note</strong> text.</p></li></ol>',
+    );
+  });
+});
+
+describe("templates and page shell", () => {
+  it("doc: one column with a contents list from three panels up", () => {
+    const three = renderDraft(
+      draft(
+        "## One\n\na\n\n## Two\n\nb\n\n## Three\n\nc",
+        "title: T\ntemplate: doc",
+      ),
+    );
+    expect(three.template).toBe("doc");
+    expect(three.html).toContain('<nav class="oe-toc"');
+    expect(three.html).toContain('<a href="#panel-b">B · Two</a>');
+    expect(three.html).not.toContain('class="oe-grid"');
+    const two = renderDraft(draft("## One\n\na\n\n## Two\n\nb"), {
+      template: "doc",
+    });
+    expect(two.html).toContain("oe-doc-plain");
+    expect(() =>
+      renderDraft(draft("## P\n\nx"), { template: "slides" }),
+    ).toThrow(/template must be one of sheet, doc/);
+  });
+
+  it("sheet: widens wide tables and diagrams, and leaves no hole in a row", () => {
+    const { draft: parsed } = renderDraft(
+      draft(
+        "## T\n\n| a | b | c | d | e | f |\n| - | - | - | - | - | - |\n| 1 | 2 | 3 | 4 | 5 | 6 |",
+      ),
+    );
+    expect(contentSpan(parsed.panels[0] as never, "")).toBe(3);
+    expect(
+      contentSpan(parsed.panels[0] as never, '<svg data-natural="1300">'),
+    ).toBe(3);
+    expect(fillRows([1, 1, 2, 1], 3, false)).toEqual([1, 2, 2, 1]);
+    expect(fillRows([1, 3, 1], 3, false)).toEqual([3, 3, 3]);
+    expect(fillRows([2, 5], 3, true)).toEqual([2, 3]);
+  });
+
+  it("carries every theme and a three-way colour mode in one page", () => {
+    const css = themeCss();
+    expect(css).toContain(':root[data-oe-theme="card"]{');
+    expect(css).toContain(':root[data-oe-theme="card"][data-theme="dark"]');
+    expect(css).toContain(':root[lang="ja"]');
+    const { html } = renderDraft(draft("## P\n\nx"), {
+      theme: "card",
+      mode: "dark",
+    });
+    expect(readPageSettings(html)).toMatchObject({
+      template: "sheet",
+      theme: "card",
+      mode: "dark",
+      style: "warn",
+    });
+    for (const control of ["theme", "mode", "copy", "print"]) {
+      expect(html).toContain(`data-oe="${control}"`);
+    }
+  });
+
+  it("uses zh-CN for Chinese pages and localized diagram labels", () => {
+    const { html } = renderDraft(
+      draft("## 流程\n\n```flow\n用户 -> 网关\n```", "title: 渲染器如何工作"),
+    );
+    expect(html).toContain('<html lang="zh-CN"');
+    expect(html).toContain('aria-label="流程图：用户、网关"');
+  });
+});
+
+describe("component grammar", () => {
+  const render = (block: string) => {
+    const result = renderDraft(draft(`## P\n\n${block}`));
+    // The stylesheet names every class; assertions are about the markup.
+    return {
+      ...result,
+      html: result.html.slice(result.html.indexOf("</style>")),
+    };
+  };
+  const fails = (block: string) => failure(draft(`## P\n\n${block}`)).message;
+
+  it("flow: * prefix, fullwidth punctuation, and bracketed colons", () => {
+    const { diagrams, html } = render(
+      "```flow\n*核心 -> [步骤: 一]：标签\ngroup 后端：核心，步骤: 一\n```",
+    );
+    const model = diagrams[0]?.model;
+    if (model?.kind !== "flow") throw new Error("expected a flow model");
+    expect(model.nodes.map((node) => node.label)).toEqual(["核心", "步骤: 一"]);
+    expect(model.edges[0]?.label).toBe("标签");
+    expect(model.groups[0]?.members).toHaveLength(2);
+    expect(html).toContain("oe-node-em");
+    expect(fails("```flow\nA: stray\n```")).toMatch(/cannot parse/);
+  });
+
+  it("flow: a group frame holds its members and no other node", () => {
+    const boxes = [
+      "Client",
+      "Gateway",
+      "Auth",
+      "Orders",
+      "Catalog",
+      "Queue",
+      "Worker",
+      "Cache",
+    ].map((id) => ({ id, width: 90, height: 36 }));
+    const layout = layoutLayered(
+      boxes,
+      [
+        ["Client", "Gateway"],
+        ["Gateway", "Auth"],
+        ["Gateway", "Orders"],
+        ["Gateway", "Catalog"],
+        ["Orders", "Queue"],
+        ["Queue", "Worker"],
+        ["Catalog", "Cache"],
+        ["Gateway", "Cache"],
+        ["Orders", "Catalog"],
+      ].map(([from, to]) => ({ from: from as string, to: to as string })),
+      {
+        groups: [
+          { members: ["Auth", "Orders", "Catalog"] },
+          { members: ["Queue", "Worker"] },
+        ],
+      },
+    );
+    const inside = (
+      id: string,
+      frame: { x: number; y: number; width: number; height: number },
+    ) => {
+      const node = layout.nodes.get(id) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      return (
+        node.x + node.width / 2 > frame.x &&
+        node.x - node.width / 2 < frame.x + frame.width &&
+        node.y + node.height / 2 > frame.y &&
+        node.y - node.height / 2 < frame.y + frame.height
+      );
+    };
+    const [services, async] = layout.groups as [never, never];
+    expect(
+      ["Auth", "Orders", "Catalog"].every((id) => inside(id, services)),
+    ).toBe(true);
+    expect(
+      ["Client", "Gateway", "Queue", "Worker", "Cache"].some((id) =>
+        inside(id, services),
+      ),
+    ).toBe(false);
+    expect(
+      ["Client", "Gateway", "Auth", "Orders", "Catalog", "Cache"].some((id) =>
+        inside(id, async),
+      ),
+    ).toBe(false);
+  });
+
+  it("sequence: fixed order, wide notes, dividers, and numbers", () => {
+    const { diagrams, html } = render(
+      "```sequence num\nparticipants: C, B, A\nA -> B: one\n== Phase two ==\nB --> C：two\nnote A, C: across\n```",
+    );
+    const model = diagrams[0]?.model;
+    if (model?.kind !== "sequence")
+      throw new Error("expected a sequence model");
+    expect(model.participants.map((p) => p.label)).toEqual(["C", "B", "A"]);
+    expect(model.messages[1]).toMatchObject({ label: "two", dashed: true });
+    expect(model.phases).toEqual([{ label: "Phase two", from: 1, to: 1 }]);
+    expect(html.match(/class="oe-seq-step"/g)).toHaveLength(2);
+    expect(html).toContain("oe-seq-divider");
+    expect(fails("```sequence\nnonsense\n```")).toMatch(/cannot parse/);
+  });
+
+  it("tree: org chart, side-by-side roots, and file lists", () => {
+    const org = render(
+      "```tree\nRoot | sub\n  A\n    `S1` leaf\n  *B | note\n```",
+    ).html;
+    expect(org).toContain("oe-tree-org");
+    expect(org).toContain('style="--n:2"');
+    expect(org).toContain("oe-tree-box-em");
+    expect(org).toContain('<span class="oe-tree-tag">S1</span>');
+    expect(render("```tree\nOne\nTwo\nThree\n```").html).toContain(
+      "oe-tree-cols-free",
+    );
+    const files = render(
+      "```tree\nsrc/\n  main.ts  # entry\n  lib/\n    a.ts\n```",
+    ).html;
+    expect(files).toContain("oe-tree-files");
+    expect(files).not.toContain("oe-tree-org");
+    expect(render("```tree list\nRoot\n  A\n  B\n```").html).toContain(
+      "oe-tree-files",
+    );
+  });
+
+  it("timeline: horizontal up to six events, vertical beyond or on request", () => {
+    const few = "```timeline\n*2023 | Start\n2024 | Next | detail\n```";
+    expect(render(few).html).toContain(
+      'class="oe-timeline oe-timeline-h" style="--n:2"',
+    );
+    expect(render(few).html).toContain('class="oe-tl-key"');
+    expect(render(few.replace("timeline", "timeline v")).html).toContain(
+      "oe-timeline-v",
+    );
+    const many = Array.from({ length: 7 }, (_v, i) => `${i} | e${i}`).join(
+      "\n",
+    );
+    expect(render(`\`\`\`timeline\n${many}\n\`\`\``).html).toContain(
+      "oe-timeline-v",
+    );
+  });
+
+  it("kv: colon and pipe forms, wide rows, and a column count", () => {
+    const { html } = render(
+      "```kv cols=3\n* Title: Big: one\nKey：值\nPiped | value | note\n```",
+    );
+    expect(html).toContain('style="--kv-cols:3"');
+    expect(html).toContain(
+      'class="oe-kv-cell oe-kv-wide"><dt>Title</dt><dd>Big: one</dd>',
+    );
+    expect(html).toContain("<dt>Key</dt><dd>值</dd>");
+    expect(html).toContain(
+      '<dd>value<span class="oe-kv-note">note</span></dd>',
+    );
+    expect(fails("```kv\nno separator\n```")).toMatch(/no colon/);
+  });
+
+  it("callout: kinds, their aliases, a title alone, and a misplaced type", () => {
+    expect(render("```callout warning Careful\nbody\n```").html).toContain(
+      "oe-callout-warn",
+    );
+    expect(render("```callout err\nbody\n```").html).toContain(
+      "oe-callout-err",
+    );
+    expect(render("```callout Just a title\n```").html).toContain(
+      '<strong class="oe-callout-title">Just a title</strong>',
+    );
+    expect(fails("```callout\ntype: warning\nbody\n```")).toMatch(
+      /put the kind on the fence line.*callout warn/,
+    );
+  });
+});
+
+describe("planner scale band", () => {
+  const diagram = (natural: number) => ({
+    samples: [
+      { w: natural * 0.75 + 34, h: 240 },
+      { w: natural * 1.25 + 34, h: 400 },
+    ],
+    minWidth: natural * 0.75 + 34,
+    maxWidth: natural * 1.25 + 34,
+    natural,
+    pad: 34,
+  });
+
+  it("keeps diagram scales on one page within a quarter of each other", () => {
+    const plan = planRows({
+      width: 1200,
+      gap: 16,
+      cols: 3,
+      panels: [diagram(1100), diagram(300), diagram(320)],
+    });
+    expect(plan.maxScale).toBeLessThan(1.25);
+    const scales = plan.rows.flatMap((row) =>
+      row.columns.map((column) => {
+        const natural = [1100, 300, 320][column.panels[0] as number] as number;
+        return Math.min(plan.maxScale, (column.width - 34) / natural);
+      }),
+    );
+    expect(Math.max(...scales) / Math.min(...scales)).toBeLessThanOrEqual(
+      1.2501,
+    );
+  });
+
+  it("lets a single diagram grow to a quarter above its drawn size", () => {
+    const plan = planRows({ width: 1200, gap: 16, panels: [diagram(400)] });
+    expect(plan.maxScale).toBe(1.25);
+  });
+});
+
+describe("lint word lists", () => {
+  const rules = (body: string, lang: "ko" | "en" | "ja" | "zh") =>
+    lintDraft(parseDraft(draft(`## P\n\n${body}`)), lang).map(
+      (warning) => `${warning.rule}:${warning.suggestion ?? ""}`,
+    );
+
+  it("English: inflected forms of non-approved words", () => {
+    expect(rules("We utilised it and obtained a result.", "en")).toEqual(
+      expect.arrayContaining(["word:use", "word:get"]),
+    );
+  });
+
+  it("Chinese: light verbs, wrong characters, vague amounts, open ranges", () => {
+    const found = rules("请尽快登陆并进行验证。超过 10 次以上会失败。", "zh");
+    expect(found).toEqual(
+      expect.arrayContaining([
+        "word:登录",
+        "word:写出具体期限",
+        "light-verb:直接用“验证”",
+        "word:写明端点：大于 / 不小于，小于 / 不大于",
+      ]),
+    );
+  });
+
+  it("Korean: wrong spellings; Japanese: wordy forms", () => {
+    expect(rules("설정이 됬다. 몇일 걸린다.", "ko")).toEqual([
+      "word:됐",
+      "word:며칠",
+    ]);
+    expect(rules("検証を行うことができる。", "ja")).toEqual(
+      expect.arrayContaining([
+        "light-verb:動詞を直接使う（検証を行う → 検証する）",
+      ]),
+    );
+  });
+
+  it("the lint command checks a draft whose style is off, and strict fails", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const source = draft("## P\n\nWe utilize it.", "title: T\nstyle: off");
+    expect(runExplainLint({ source, json: true })).toBe(0);
+    const report = JSON.parse(String(log.mock.calls[0]?.[0])) as {
+      warnings: unknown[];
+    };
+    expect(report.warnings).toHaveLength(1);
+    expect(runExplainLint({ source, style: "strict", json: true })).toBe(1);
+    log.mockRestore();
+  });
+});
+
+describe("patch by title and sidecar details", () => {
+  it("finds a panel by letter, title, or both, and rejects an ambiguous title", () => {
+    const source = draft("## Same\n\na\n\n## Call order\n\nb\n\n## Same\n\nc");
+    expect(patchDraft(source, "Call order", "new")).toContain(
+      "## Call order\n\nnew",
+    );
+    expect(patchDraft(source, "## B Call order {span=2}", "new")).toContain(
+      "new",
+    );
+    expect(patchDraft(source, "b", "new")).toContain("new");
+    expect(() => patchDraft(source, "Same", "x")).toThrow(
+      /more than one panel/,
+    );
+    expect(() => patchDraft(source, "B", "## One\n\nx\n\n## Two\n\ny")).toThrow(
+      /exactly one ## heading/,
+    );
+  });
+
+  it("maps flow groups to archify boundaries and phases to segments", () => {
+    const flowModel = renderDraft(
+      draft("## P\n\n```flow\nA -> B -> C\ngroup Core: A, B\n```"),
+    ).diagrams[0]?.model;
+    const architecture = toArchifySpec(flowModel as never, {
+      title: "T",
+      output: "x.archify.html",
+      quality: "standard",
+    })?.spec as { boundaries: Array<{ label: string; wraps: string[] }> };
+    expect(architecture.boundaries).toEqual([
+      { kind: "region", label: "Core", wraps: ["a", "b"] },
+    ]);
+    const sequenceModel = renderDraft(
+      draft(
+        "## P\n\n```sequence\nA -> B: one\n== Later ==\nB -> B: self\nB --> A: two\n```",
+      ),
+    ).diagrams[0]?.model;
+    const spec = toArchifySpec(sequenceModel as never, {
+      title: "T",
+      output: "x.archify.html",
+      quality: "standard",
+    })?.spec as {
+      segments: Array<{ label: string; from: number; to: number }>;
+    };
+    expect(spec.segments).toHaveLength(1);
+    expect(spec.segments[0]).toMatchObject({ label: "Later" });
+    expect(spec.segments[0]?.from).toBeLessThan(spec.segments[0]?.to ?? 0);
   });
 });

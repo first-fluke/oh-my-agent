@@ -12,12 +12,14 @@ export type DraftBlock =
     };
 
 export interface DraftPanel {
-  /** Letter id shown in the panel head: A, B, C, … */
+  /** Id shown in the panel head: A, B, C, … or the one the heading gives. */
   id: string;
   title: string;
   line: number;
-  /** Width hint in grid columns. */
+  /** Width hint in grid columns, as the author wrote it. */
   span?: number;
+  /** Height hint in grid rows; shapes the plain grid only. */
+  rows?: number;
   /** Small text shown at the right of the panel head. */
   note?: string;
   /** No title bar. */
@@ -31,6 +33,7 @@ export interface DraftMeta {
   title: string;
   subtitle?: string;
   slug?: string;
+  template?: string;
   theme?: string;
   mode?: string;
   lang?: string;
@@ -62,6 +65,7 @@ const KNOWN_META = new Set([
   "title",
   "subtitle",
   "slug",
+  "template",
   "theme",
   "mode",
   "lang",
@@ -92,55 +96,98 @@ function parseMeta(yaml: string, line: number): DraftMeta {
     title: text("title") ?? "",
     subtitle: text("subtitle"),
     slug: text("slug"),
+    template: text("template"),
     theme: text("theme"),
     mode: text("mode"),
     lang: text("lang"),
     style: text("style"),
-    cols: Number.isInteger(cols) && cols >= 1 && cols <= 4 ? cols : 3,
+    cols: Number.isInteger(cols) && cols >= 1 && cols <= 12 ? cols : 3,
     extras: Object.entries(record)
-      .filter(([key]) => !KNOWN_META.has(key))
+      .filter(
+        ([key, value]) =>
+          !KNOWN_META.has(key) && value !== null && value !== "",
+      )
       .map(([key, value]): [string, string] => [key, String(value)]),
   };
 }
 
-/** `## A Title {span=2 note="…" bare archify}` → title and attributes. */
-function parsePanelHead(
+const ATTR_BLOCK_RE = /\s*\{([^{}]*)\}\s*$/;
+const ATTR_TOKEN_RE = /([\w-]+)(?:=("[^"]*"|'[^']*'|\S+))?/g;
+const PANEL_ID_RE = /^([A-Z][0-9]?)\s+(.+)$/;
+
+/** `span=2 note="a b" bare` → { span: "2", note: "a b", bare: true }. */
+export function parseAttrs(text: string): Record<string, string | true> {
+  const attrs: Record<string, string | true> = {};
+  for (const match of text.matchAll(ATTR_TOKEN_RE)) {
+    const value = match[2];
+    attrs[match[1] as string] =
+      value === undefined ? true : value.replace(/^(["'])(.*)\1$/, "$2");
+  }
+  return attrs;
+}
+
+/** `## A Title {span=2 note="…" bare archify}` → title, optional id, attributes. */
+export function parsePanelHead(
   head: string,
   line: number,
-  ordinal: number,
-): DraftPanel {
+): Omit<DraftPanel, "id"> & { id?: string } {
   let title = head.trim();
-  let span: number | undefined;
-  let note: string | undefined;
-  let bare = false;
-  let archify = false;
-  const attrs = /\{([^{}]*)\}\s*$/.exec(title);
-  if (attrs) {
-    title = title.slice(0, attrs.index).trim();
-    const body = attrs[1] ?? "";
-    span = Number(/\bspan=(\d+)/.exec(body)?.[1]) || undefined;
-    note = /\b(?:note|meta)="([^"]*)"/.exec(body)?.[1];
-    bare = /\bbare\b/.test(body);
-    archify = /\barchify\b/.test(body);
+  let attrs: Record<string, string | true> = {};
+  const block = ATTR_BLOCK_RE.exec(title);
+  if (block) {
+    attrs = parseAttrs(block[1] ?? "");
+    title = title.slice(0, block.index).trim();
   }
-  const lettered = /^([A-Z])\s+(.+)$/.exec(title);
-  const id = lettered?.[1] ?? String.fromCharCode(65 + (ordinal % 26));
+  const lettered = PANEL_ID_RE.exec(title);
+  const count = (key: string): number | undefined => {
+    const value = Number(attrs[key]);
+    return Number.isInteger(value) && value >= 1 ? value : undefined;
+  };
+  const note = attrs.note ?? attrs.meta;
   return {
-    id,
-    title: lettered?.[2] ?? title,
+    id: lettered?.[1],
+    title: lettered?.[2]?.trim() ?? title,
     line,
-    span,
-    note,
-    bare,
-    archify,
+    span: count("span"),
+    rows: count("rows"),
+    note: typeof note === "string" ? note : undefined,
+    bare: attrs.bare === true,
+    archify: attrs.archify === true,
     blocks: [],
   };
+}
+
+/** Letters for the panels that have no id of their own; P27, P28 after Z. */
+function assignIds(
+  panels: Array<Omit<DraftPanel, "id"> & { id?: string }>,
+): DraftPanel[] {
+  const used = new Set<string>();
+  for (const panel of panels) {
+    if (!panel.id) continue;
+    if (used.has(panel.id)) {
+      throw new DraftError(
+        `two panels have the id "${panel.id}"; give each panel its own letter or leave the letters out`,
+        panel.line,
+      );
+    }
+    used.add(panel.id);
+  }
+  let code = 65;
+  const next = (): string => {
+    while (code <= 90 && used.has(String.fromCharCode(code))) code++;
+    const id = code <= 90 ? String.fromCharCode(code) : `P${code - 64}`;
+    used.add(id);
+    code++;
+    return id;
+  };
+  return panels.map((panel) => ({ ...panel, id: panel.id ?? next() }));
 }
 
 /**
  * Parse a draft: optional YAML frontmatter, an optional lead, then one panel
  * per `## ` heading. Inside a panel, a fenced block names a component
- * (```flow LR) and everything else is Markdown.
+ * (```flow LR) and everything else is Markdown. Without a frontmatter title,
+ * a leading `# Heading` is the title.
  */
 export function parseDraft(source: string): Draft {
   const lines = source.replace(/\r\n?/g, "\n").split("\n");
@@ -148,7 +195,9 @@ export function parseDraft(source: string): Draft {
   let meta = parseMeta("", 1);
 
   if (lines[0]?.trim() === "---") {
-    const end = lines.indexOf("---", 1);
+    const end = lines.findIndex(
+      (line, index) => index > 0 && line.trim() === "---",
+    );
     if (end === -1) {
       throw new DraftError("frontmatter opened with --- is never closed", 1);
     }
@@ -157,28 +206,29 @@ export function parseDraft(source: string): Draft {
   }
 
   const lead: DraftBlock[] = [];
-  const panels: DraftPanel[] = [];
+  const panels: Array<Omit<DraftPanel, "id"> & { id?: string }> = [];
   let target = lead;
   let prose: string[] = [];
   let proseLine = cursor + 1;
 
   const flushProse = () => {
-    const text = prose.join("\n").trim();
-    if (text) target.push({ type: "markdown", text, line: proseLine });
+    const text = prose.join("\n").trimEnd();
+    if (text.trim()) target.push({ type: "markdown", text, line: proseLine });
     prose = [];
   };
 
   while (cursor < lines.length) {
     const line = lines[cursor] ?? "";
-    const fence = /^(`{3,})\s*([A-Za-z][\w-]*)?\s*(.*)$/.exec(line);
+    const fence = /^(`{3,}|~{3,})\s*([^\s`]*)\s*(.*)$/.exec(line);
     if (fence) {
-      const ticks = fence[1] as string;
+      const marker = fence[1] as string;
+      const closing = new RegExp(`^${marker[0]}{${marker.length},}\\s*$`);
       const close = lines.findIndex(
-        (candidate, index) => index > cursor && candidate.trim() === ticks,
+        (candidate, index) => index > cursor && closing.test(candidate),
       );
       if (close === -1) {
         throw new DraftError(
-          `fenced block opened with ${ticks} is never closed`,
+          `fenced block opened with ${marker}${fence[2] ?? ""} is never closed`,
           cursor + 1,
         );
       }
@@ -194,18 +244,21 @@ export function parseDraft(source: string): Draft {
       proseLine = cursor + 1;
       continue;
     }
-    const heading = /^##\s+(.+)$/.exec(line);
+    const heading = /^##\s+(.+?)\s*$/.exec(line);
     if (heading) {
       flushProse();
-      const panel = parsePanelHead(
-        heading[1] as string,
-        cursor + 1,
-        panels.length,
-      );
+      const panel = parsePanelHead(heading[1] as string, cursor + 1);
       panels.push(panel);
       target = panel.blocks;
       cursor++;
       proseLine = cursor + 1;
+      continue;
+    }
+    const title = /^#\s+(.+?)\s*$/.exec(line);
+    if (title && target === lead && lead.length === 0 && prose.length === 0) {
+      // The page title, when the frontmatter gives none.
+      if (!meta.title) meta.title = title[1] as string;
+      cursor++;
       continue;
     }
     if (prose.length === 0) {
@@ -222,7 +275,7 @@ export function parseDraft(source: string): Draft {
 
   if (!meta.title) {
     throw new DraftError(
-      "the draft needs a title: add `title: …` to the frontmatter",
+      "the draft needs a title: add `title: …` to the frontmatter, or start with `# Title`",
       1,
     );
   }
@@ -232,5 +285,5 @@ export function parseDraft(source: string): Draft {
       lines.length,
     );
   }
-  return { meta, lead, panels, source };
+  return { meta, lead, panels: assignIds(panels), source };
 }

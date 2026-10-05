@@ -11,7 +11,7 @@ import {
 } from "../../diagram/resolve.js";
 import { type ArchifyQuality, toArchifySpec } from "./archify.js";
 import { COMPONENTS, findComponent } from "./components/index.js";
-import { DraftError } from "./draft.js";
+import { DraftError, parseDraft } from "./draft.js";
 import { formatWarning } from "./lint.js";
 import {
   extractDraftSource,
@@ -19,6 +19,7 @@ import {
   patchDraft,
   type RenderOptions,
   type RenderResult,
+  readPageSettings,
   renderDraft,
   sidecarSource,
 } from "./render.js";
@@ -26,6 +27,7 @@ import {
 export interface ExplainRenderOptions {
   file?: string;
   out?: string;
+  template?: string;
   theme?: string;
   mode?: string;
   style?: string;
@@ -243,7 +245,9 @@ function finish(
           ok: !strict,
           file: strict ? undefined : outPath,
           lang: result.lang,
+          template: result.template,
           theme: result.theme,
+          components: result.components,
           panels: result.draft.panels.map((panel) => ({
             id: panel.id,
             title: panel.title,
@@ -292,6 +296,7 @@ export async function runExplainRender(
   const label = draftLabel(opts);
   const json = opts.json === true;
   const renderOptions: RenderOptions = {
+    template: opts.template,
     theme: opts.theme,
     mode: opts.mode,
     style: opts.style,
@@ -379,13 +384,11 @@ export async function runExplainPatch(
       { file: opts.file, source: opts.source },
       cwd,
     );
-    const sidecarHref = /class="oe-archify" href="([^"]+)"/.exec(html)?.[1];
-    hadSidecar = sidecarHref !== undefined;
+    // The page keeps the look it was rendered with.
+    const settings = readPageSettings(html);
+    hadSidecar = settings.sidecarHref !== undefined;
     result = renderDraft(patchDraft(draft, opts.panel, replacement), {
-      // The page keeps the look it was rendered with.
-      theme: /data-oe-theme="([a-z]+)"/.exec(html)?.[1],
-      mode: /<html[^>]* data-theme="([a-z]+)"/.exec(html)?.[1],
-      sidecarHref,
+      ...settings,
       date: artifactDate(),
     });
   } catch (error) {
@@ -400,6 +403,56 @@ export async function runExplainPatch(
     : undefined;
   // Warning lines count from the top of the draft embedded in the page.
   return finish(result, htmlPath, sidecar, opts, `${opts.html} (draft)`);
+}
+
+export interface ExplainLintOptions {
+  file?: string;
+  style?: string;
+  lang?: string;
+  json?: boolean;
+  cwd?: string;
+  source?: string;
+}
+
+/** Check a draft's prose without rendering it. */
+export function runExplainLint(opts: ExplainLintOptions): number {
+  const cwd = opts.cwd ?? process.cwd();
+  const label = draftLabel(opts);
+  const json = opts.json === true;
+  try {
+    const source = readSource(opts, cwd);
+    // Rendering resolves the language and reports a malformed draft exactly
+    // as `render` would. A draft that turns its own check off is still
+    // checked here: that is what this command is for.
+    const own = parseDraft(source).meta.style;
+    const result = renderDraft(source, {
+      style: opts.style ?? (own === "off" ? "warn" : own),
+      lang: opts.lang,
+    });
+    const { warnings } = result;
+    const failed = result.style === "strict" && warnings.length > 0;
+    if (json) {
+      console.log(
+        JSON.stringify(
+          { ok: !failed, lang: result.lang, style: result.style, warnings },
+          null,
+          2,
+        ),
+      );
+    } else if (warnings.length === 0) {
+      console.log(`${color.green("✔")} ${label}: no prose warnings`);
+    } else {
+      for (const warning of warnings) {
+        console.log(color.yellow(`${label}: ${formatWarning(warning)}`));
+      }
+      console.log(
+        `${warnings.length} warning(s)${failed ? " — style: strict fails on any warning" : ""}`,
+      );
+    }
+    return failed ? 1 : 0;
+  } catch (error) {
+    return reportDraftError(error, label, json);
+  }
 }
 
 /** List the components, or print one component's syntax and example. */

@@ -7,6 +7,7 @@ import {
 } from "../../utils/cli-framework.js";
 import {
   runExplainComponents,
+  runExplainLint,
   runExplainPatch,
   runExplainRender,
 } from "./render/command.js";
@@ -69,6 +70,10 @@ export function registerExplainCommand(program: Command): void {
       "--out <path>",
       "Output file (default: .agents/results/explain/{YYYY-MM-DD}-{slug}.html)",
     )
+    .option(
+      "--template <name>",
+      "Template: sheet (panel grid) | doc (one column with contents)",
+    )
     .option("--theme <name>", "Theme: blueprint | card")
     .option("--mode <mode>", "Colour mode: auto | light | dark")
     .option("--style <level>", "Prose check: off | warn | strict")
@@ -89,6 +94,7 @@ export function registerExplainCommand(program: Command): void {
         file: string | undefined,
         opts: {
           out?: string;
+          template?: string;
           theme?: string;
           mode?: string;
           style?: string;
@@ -113,7 +119,10 @@ export function registerExplainCommand(program: Command): void {
     .description(
       "Replace one panel of a rendered page from its embedded draft (new panel from file or stdin)",
     )
-    .requiredOption("--panel <id>", "Panel letter to replace, e.g. B")
+    .requiredOption(
+      "--panel <id>",
+      'Panel to replace: its letter (B) or its title ("Call order")',
+    )
     .option("--open", "Open the page in the browser");
   addOutputOptions(patchCmd);
   patchCmd.action(
@@ -128,6 +137,31 @@ export function registerExplainCommand(program: Command): void {
           file,
           panel: opts.panel,
           open: opts.open,
+          json: resolveJsonMode(opts),
+        });
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  const lintCmd = explain
+    .command("lint [file]")
+    .description("Check the prose of a draft (file or stdin) without rendering")
+    .option("--style <level>", "warn | strict (strict exits 1 on a warning)")
+    .option(
+      "--lang <code>",
+      "Draft language: en | ko | ja | zh (default: detected)",
+    );
+  addOutputOptions(lintCmd);
+  lintCmd.action(
+    runAction(
+      async (
+        file: string | undefined,
+        opts: { style?: string; lang?: string; json?: boolean },
+      ) => {
+        process.exitCode = runExplainLint({
+          ...opts,
+          file,
           json: resolveJsonMode(opts),
         });
       },
@@ -155,6 +189,7 @@ export function registerExplainCommand(program: Command): void {
 
 export {
   runExplainComponents,
+  runExplainLint,
   runExplainPatch,
   runExplainRender,
 } from "./render/command.js";

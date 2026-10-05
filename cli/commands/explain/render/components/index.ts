@@ -1,6 +1,7 @@
-import { annot, callout, kv, limits, quiz, timeline, tree } from "./blocks.js";
+import { annot, limits, quiz } from "./blocks.js";
 import { flow } from "./flow.js";
 import { sequence } from "./sequence.js";
+import { callout, kv, timeline, tree } from "./structure.js";
 import type { Component } from "./types.js";
 
 /**

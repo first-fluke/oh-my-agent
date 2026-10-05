@@ -121,8 +121,10 @@ outputs:
    locations, await user confirmation for redacted continuation.
 4. **GENERATE**: Write the draft per `draft-format.md` and run `oma explain render`.
    Change mode: Background (two tiers), Intuition (toy data + diagrams), Code walkthrough
-   (comprehension order), Quiz, as panels in that order. Topic mode: lead answer, then 4–9
-   panels, one idea each, a diagram wherever a relation or a sequence is the point.
+   (comprehension order), Quiz, as panels in that order, with `template: doc` (linear, with
+   contents). Topic mode: lead answer, then 4–9 panels, one idea each, a diagram wherever a
+   relation or a sequence is the point; `template: sheet` for an overview, `doc` for a
+   walkthrough.
    Hand-written HTML is a fallback only for content no component can express; say so in
    the report.
 5. **VALIDATE**: Run the grep checklist from `html-contract.md` (including the final-HTML secret
@@ -167,7 +169,7 @@ outputs:
 ### Tools and instruments
 - `git`; optional `gh` (PR refs via `gh pr diff`)
 - Configured `code_intelligence` capability for surrounding-code exploration; native search only for paths outside this project or ignored paths
-- `oma explain render | components | patch | validate`
+- `oma explain render | lint | components | patch | validate`
 - `resources/draft-format.md`, `resources/document-structure.md`, `resources/html-contract.md`
 
 ### Resource scope

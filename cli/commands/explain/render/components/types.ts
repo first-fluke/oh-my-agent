@@ -15,6 +15,8 @@ export interface RenderContext {
   lang: DraftLanguage;
   /** Page-unique id, for SVG markers and aria references. */
   uid(prefix: string): string;
+  /** Names of the diagram kinds in the page language, for aria labels. */
+  labels: { flow: string; sequence: string; colon: string; separator: string };
 }
 
 /** Graph a flow block describes; the archify sidecar is derived from it. */
@@ -29,12 +31,15 @@ export interface FlowModel {
     order: number;
   }>;
   edges: Array<{ from: string; to: string; label?: string; dashed: boolean }>;
+  groups: Array<{ label: string; members: string[] }>;
 }
 
 export interface SequenceModel {
   kind: "sequence";
   participants: Array<{ id: string; label: string }>;
   messages: Array<{ from: string; to: string; label: string; dashed: boolean }>;
+  /** Phases named by `== Title ==` dividers, as message index ranges. */
+  phases: Array<{ label: string; from: number; to: number }>;
 }
 
 export type DiagramModel = FlowModel | SequenceModel;
