@@ -10,6 +10,7 @@
  *  - arguments and quoted values are preserved verbatim inside the wrapper
  */
 
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("node:fs", () => ({
@@ -126,7 +127,7 @@ describe("test-filter run() — platform and idempotency guards (#618)", () => {
       expect(result?.type).toBe("mutate");
       if (result?.type === "mutate") {
         expect(result.updatedInput.command as string).toContain(
-          'bash "/tmp/project/.claude/hooks/filter-test-output.sh"',
+          `bash "${join("/tmp/project", ".claude", "hooks", "filter-test-output.sh")}"`,
         );
       }
     });
