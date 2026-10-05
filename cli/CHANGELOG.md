@@ -1,5 +1,17 @@
 # Changelog
 
+## [15.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.1.0...cli-v15.1.1) (2026-10-05)
+
+
+### Bug Fixes
+
+* **dsh:** canonicalize hook working directories ([3ff9353](https://github.com/first-fluke/oh-my-agent/commit/3ff93533a9378b6b5f0c8753f0e853d80c99e684))
+
+
+### Documentation
+
+* align citation metadata with project description ([6b51aae](https://github.com/first-fluke/oh-my-agent/commit/6b51aae9042df219d870535a0fd853fdc9723ece))
+
 ## [15.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.0.17...cli-v15.1.0) (2026-10-05)
 
 
