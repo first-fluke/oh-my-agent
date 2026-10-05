@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.1.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.1.1...cli-v15.1.2) (2026-10-05)
+
+
+### Documentation
+
+* replace Reasonix showcase and remove sponsor sections ([180ee06](https://github.com/first-fluke/oh-my-agent/commit/180ee06d218b01e762620aa5149949a1b41658d8))
+
 ## [15.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.1.0...cli-v15.1.1) (2026-10-05)
 
 
