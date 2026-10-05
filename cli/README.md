@@ -10,13 +10,27 @@ Spawning parallel agents is the easy part. The hard part is knowing whether they
 
 oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session until your project's own `typecheck` / `test` / `lint` script exits 0. A gate command decides whether a workflow really ran by looking for the artifacts it must have left behind — and its JSON verdict, not the agent's summary, is the result. An independent judge with a fresh context re-verifies every criterion each round, including the ones that already passed. Every gate decision lands on an append-only event log you can read after the fact. Then it runs that same discipline across a dozen agent runtimes from one portable `.agents/` directory.
 
+Start with the existing [Quick Start](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/getting-started/quick-start.md) to choose an install path, ask a named skill for one scoped change, and record the file, check command, and exit status. The full-harness path includes `oma doctor`.
+
 ![oh-my-agent explainer](https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/video/oh-my-agent-explainer.gif)
 
 [Watch the full video (35s)](https://github.com/first-fluke/oh-my-agent/blob/main/docs/assets/video/oh-my-agent-explainer.mp4)
 
 ## Quick Start
 
-The install scripts below auto-install bun, uv, and serena if they're missing.
+**Fastest path — skills into your agents (Claude Code, Cursor, Codex, and more):**
+
+```bash
+npx skills add first-fluke/oh-my-agent
+```
+
+That installs the OMA skill pack into detected agent runtimes. Skills teach the agent how to work; the full harness (below) is what checks whether the work actually happened — stop-hook gates, artifact verification, independent judges, and an append-only event log.
+
+### Full harness (gates, hooks, CLI)
+
+Use this when you want workflows, rules, `oma-config.yaml`, keyword-detection hooks, and `oma agent spawn` — not just skills.
+
+The install scripts auto-install bun, uv, and serena if they're missing.
 
 ```bash
 # macOS / Linux — auto-installs bun, uv & serena if missing
@@ -47,7 +61,7 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM ships skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
+APM ships skills only. For the full harness, use `bunx oh-my-agent@latest` (or the scripts above). Prefer one distribution path per project to avoid drift — if you already used `npx skills add`, stick with skills-only unless you need gates/hooks/CLI.
 
 </details>
 
@@ -197,6 +211,21 @@ Separate from the engineering team, oma ships content and research pipelines bui
 | **oma-video** | Generates short-form, explainer, and demo videos through a key-optional HyperFrames pipeline. |
 | **oma-voice** | Generates voiceovers and transcribes audio on-device, no cloud needed. |
 
+### Orca IDE
+
+[OMA for Orca](integrations/orca/README.md) adds a sidebar panel and command-palette
+actions for project setup, review, debugging, verification, and local results.
+It uses your existing Orca agent terminal and project OMA installation. Requires
+Orca 1.4.197+ with experimental plugins enabled.
+
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](integrations/dsh/README.md) connects project OMA checks
+to DSH tool execution and turn completion through a Cordis plugin. DSH discovers
+the existing `.agents/skills` directly. The plugin ships executable JavaScript
+and requires no build. See the integration guide for installation, tested versions,
+and the supported hook events.
+
 ## How It Works
 
 Just chat. Describe what you want and oh-my-agent figures out which agents to use.
@@ -273,7 +302,7 @@ Deterministic SLM execution is therefore a separate, optional product direction 
 ## Why oh-my-agent?
 
 - **Role-based** — agents modeled like a real engineering team, not a pile of prompts
-- **Token-efficient** — two-layer skill design saves ~75% of tokens ([how it works](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/guide/usage.md))
+- **Conditional context** — dispatch loads the owning skill and defers supporting references until the task needs them. File-size scenarios and runtime loading are reported separately ([measurement guidance](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/core-concepts/skills.md#token-savings-math)).
 - **Recoverable** — after 2 failed retries, `orchestrate` spawns hypothesis variants in parallel and keeps the highest-scoring result instead of retrying a wrong approach forever
 - **Monorepo-aware** — `detectWorkspace` reads pnpm / nx / turbo / lerna and routes each agent to its workspace
 - **Multi-vendor** — mix Antigravity, Claude, Codex, Cursor, Kiro, and Qwen per agent type
@@ -330,6 +359,7 @@ flowchart TD
 
 - **[Detailed Documentation](https://github.com/first-fluke/oh-my-agent/blob/main/docs/AGENTS_SPEC.md)** — Full technical spec and architecture
 - **[Supported Agents](https://github.com/first-fluke/oh-my-agent/blob/main/docs/SUPPORTED_AGENTS.md)** — Agent support matrix across IDEs
+- **[Capability Providers](https://github.com/first-fluke/oh-my-agent/blob/main/docs/capability-providers.md)** — Experimental Gortex and Honcho configuration, routing, and limits
 - **[Benchmark Report](https://github.com/first-fluke/oh-my-agent/blob/main/benchmarks/README.md)** — Method, scores, screenshots, and caveats
 - **[Web Docs](https://first-fluke.github.io/oh-my-agent/)** — Guides, tutorials, and CLI reference
 
