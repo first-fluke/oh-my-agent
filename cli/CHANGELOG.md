@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.1.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.1.2...cli-v15.1.3) (2026-10-05)
+
+
+### Documentation
+
+* restore star invitations in all readmes ([baf7cae](https://github.com/first-fluke/oh-my-agent/commit/baf7cae5ea76730ab0d6d317c795ee1d2c759172))
+
 ## [15.1.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.1.1...cli-v15.1.2) (2026-10-05)
 
 
