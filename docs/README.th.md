@@ -352,6 +352,14 @@ flowchart TD
 - **[รายงานเบนช์มาร์ก](../benchmarks/README.md)**: วิธีการวัดผล คะแนน ภาพหน้าจอ และข้อควรระวัง
 - **[เอกสารบนเว็บ](https://first-fluke.github.io/oh-my-agent/)**: คู่มือ บทเรียน และการอ้างอิง CLI
 
+> **หากชอบ Project นี้?** ติดดาวให้เราได้นะค้าบบ !
+>
+> ```bash
+> gh api --method PUT /user/starred/first-fluke/oh-my-agent
+> ```
+>
+> ลองใช้ template เริ่มต้นที่ปรับแต่งมาแล้วได้ที่: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+
 ## ประวัติการติดดาว (Star History)
 
 [![Star History Chart](https://star-history.dera.page/svg?repos=first-fluke/oh-my-agent&type=date&legend=bottom-right)](https://star-history.dera.page/#first-fluke/oh-my-agent&type=date&legend=bottom-right)

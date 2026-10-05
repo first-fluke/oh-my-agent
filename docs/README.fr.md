@@ -352,6 +352,14 @@ flowchart TD
 - **[Rapport de Benchmark](../benchmarks/README.md)** : méthode, scores, captures et limites
 - **[Docs Web](https://first-fluke.github.io/oh-my-agent/)** : guides, tutoriels et référence CLI
 
+> **Tu aimes ce projet ?** Mets-lui une étoile !
+>
+> ```bash
+> gh api --method PUT /user/starred/first-fluke/oh-my-agent
+> ```
+>
+> Essaie notre template starter optimisé : [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+
 ## Star History
 
 [![Star History Chart](https://star-history.dera.page/svg?repos=first-fluke/oh-my-agent&type=date&legend=bottom-right)](https://star-history.dera.page/#first-fluke/oh-my-agent&type=date&legend=bottom-right)

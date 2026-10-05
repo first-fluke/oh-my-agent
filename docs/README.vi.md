@@ -352,6 +352,14 @@ flowchart TD
 - **[Báo cáo benchmark](../benchmarks/README.md)**: phương pháp, điểm số, ảnh chụp màn hình và các lưu ý
 - **[Tài liệu web](https://first-fluke.github.io/oh-my-agent/)**: hướng dẫn, tutorial và CLI reference
 
+> **Thích dự án này?** Hãy tặng một ngôi sao!
+>
+> ```bash
+> gh api --method PUT /user/starred/first-fluke/oh-my-agent
+> ```
+>
+> Thử template starter tối ưu của chúng tôi: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+
 ## Star History
 
 [![Star History Chart](https://star-history.dera.page/svg?repos=first-fluke/oh-my-agent&type=date&legend=bottom-right)](https://star-history.dera.page/#first-fluke/oh-my-agent&type=date&legend=bottom-right)

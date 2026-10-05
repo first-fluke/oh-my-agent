@@ -352,6 +352,14 @@ flowchart TD
 - **[基准测试报告](../benchmarks/README.md)**：方法、分数、截图与注意事项
 - **[Web 文档](https://first-fluke.github.io/oh-my-agent/)**：指南、教程和 CLI 参考
 
+> **喜欢这个项目？** 给个 star 吧！
+>
+> ```bash
+> gh api --method PUT /user/starred/first-fluke/oh-my-agent
+> ```
+>
+> 试试我们优化过的入门模板：[fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+
 ## Star History
 
 [![Star History Chart](https://star-history.dera.page/svg?repos=first-fluke/oh-my-agent&type=date&legend=bottom-right)](https://star-history.dera.page/#first-fluke/oh-my-agent&type=date&legend=bottom-right)

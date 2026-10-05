@@ -352,6 +352,14 @@ flowchart TD
 - **[벤치마크 리포트](../benchmarks/README.md)**: 방법론, 점수, 스크린샷, 유의사항
 - **[웹 문서](https://first-fluke.github.io/oh-my-agent/)**: 가이드, 튜토리얼, CLI 레퍼런스
 
+> **마음에 드셨나요?** 스타를 눌러주세요!
+>
+> ```bash
+> gh api --method PUT /user/starred/first-fluke/oh-my-agent
+> ```
+>
+> 최적화된 스타터 템플릿도 함께 확인해보세요: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+
 ## Star History
 
 [![Star History Chart](https://star-history.dera.page/svg?repos=first-fluke/oh-my-agent&type=date&legend=bottom-right)](https://star-history.dera.page/#first-fluke/oh-my-agent&type=date&legend=bottom-right)
