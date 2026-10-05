@@ -78,6 +78,7 @@ Ustaw tę zmienną środowiskową na `json`, aby wymusić wyjście JSON we wszys
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/D | Tak | Użyj `--output json` dla obudowy uruchomienia lub raportu gotowości |
 | `explain validate` | Tak | Tak | Raport walidacji artefaktu |
 | `explain render` / `explain patch` / `explain components` | Tak | Tak | Raport renderowania: plik, ostrzeżenia, stan sidecara |
+| `explain lint` | Tak | Tak | Ostrzeżenia dotyczące tekstu |
 | `diagram resolve` / `diagram update` | Tak | Tak | Wynik wyboru silnika lub zarządzanej pamięci podręcznej |
 | `market resolve` / `market update` | Tak | Tak | Status zarządzanego silnika badawczego |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Tak | N/D | Każda ścieżka docs ma własne opcje raportu |
@@ -575,7 +576,8 @@ Poniższa macierz jest generowana ze sprawdzonego publicznego rejestru poleceń.
 | `serena reaper disable` | `--dry-run` | Odinstalowuje cykliczne zadanie Serena Reaper |
 | `explain` | `—` | Objaśnia zarządzanie artefaktami i narzędzia walidacji jakości |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Weryfikuje samowystarczalne artefakty raportów HTML explain |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Renderuje szkic Markdown (plik lub stdin) do jednej samodzielnej strony HTML z objaśnieniem |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Renderuje szkic Markdown (plik lub stdin) do jednej samodzielnej strony HTML z objaśnieniem |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Sprawdza tekst szkicu (plik lub stdin) bez renderowania |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Podmienia jeden panel wyrenderowanej strony na podstawie osadzonego szkicu |
 | `explain components` | `--output <format>, --json` | Wypisuje komponenty dostępne w szkicu albo składnię jednego z nich |
 | `diagram` | `—` | Pomocnicze narzędzia silnika diagramów (interaktywny HTML archify lub fallback Mermaid) |

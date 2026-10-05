@@ -78,6 +78,7 @@ oma retro # outputs JSON
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | なし | Yes | 実行エンベロープまたは準備状況レポートには `--output json` を使います。 |
 | `explain validate` | Yes | Yes | 成果物の検証レポートです。 |
 | `explain render` / `explain patch` / `explain components` | Yes | Yes | レンダリング結果: ファイル、警告、サイドカーの状態 |
+| `explain lint` | Yes | Yes | 文章の警告 |
 | `diagram resolve` / `diagram update` | Yes | Yes | エンジン解決または管理キャッシュの結果です。 |
 | `market resolve` / `market update` | Yes | Yes | 管理対象のリサーチエンジンの状態です。 |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Yes | なし | 各 docs パスが固有のレポートオプションを使います。 |
@@ -575,7 +576,8 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `serena reaper disable` | `--dry-run` | Serena Reaper の定期タスクをアンインストールします。 |
 | `explain` | なし | 説明成果物の管理と品質検証ツールを扱います。 |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | 自己完結した explain HTML レポート成果物を検証します。 |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Markdown の下書き（ファイルまたは stdin）を自己完結 HTML の解説 1 ページにレンダリングします |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Markdown の下書き（ファイルまたは stdin）を自己完結 HTML の解説 1 ページにレンダリングします |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | レンダリングせずに下書き（ファイルまたは stdin）の文章を検査します |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | レンダリング済みページに埋め込まれた下書きからパネル 1 つを差し替えます |
 | `explain components` | `--output <format>, --json` | 下書きで使えるコンポーネントの一覧、または 1 つの構文を表示します |
 | `diagram` | なし | ダイアグラムエンジンのヘルパー（archify の対話型 HTML または Mermaid フォールバック）です。 |

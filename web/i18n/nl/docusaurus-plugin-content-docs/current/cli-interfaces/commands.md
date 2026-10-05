@@ -60,7 +60,7 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1654,13 +1654,15 @@ oma scholar lint paper.knows.yaml
 
 ```
 oma explain render draft.md --archify
+oma explain render draft.md --template doc --theme card
+oma explain lint draft.md
 oma explain components flow
 oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` zet een Markdown-concept (een bestand, of stdin met `-`) om in één zelfstandige HTML-pagina op `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; met `--output-file` kies je een ander pad. Het concept bevat alleen inhoud: één paneel per `## `-kop, met daarin componentblokken (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). De renderer berekent de diagramindeling, verdeelt de panelen over rijen en past het thema toe (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` bepaalt de tekstcontrole; bij `strict` mislukt het renderen al bij één waarschuwing. `--archify` leidt een interactief archify-diagram af uit een `flow`- of `sequence`-blok en linkt ernaar; als die stap mislukt, wordt de pagina toch geschreven. `components [name]` toont de syntaxis van een component. `patch` vervangt één paneel op basis van het concept dat in de pagina is ingesloten.
+`render` zet een Markdown-concept (een bestand, of stdin met `-`) om in één zelfstandige HTML-pagina op `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; met `--output-file` kies je een ander pad. Het concept bevat alleen inhoud: één paneel per `## `-kop, met daarin componentblokken (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). De renderer berekent de diagramindeling, verdeelt de panelen over rijen en past het thema toe (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` bepaalt de tekstcontrole; bij `strict` mislukt het renderen al bij één waarschuwing. `--archify` leidt een interactief archify-diagram af uit een `flow`- of `sequence`-blok en linkt ernaar; als die stap mislukt, wordt de pagina toch geschreven. `components [name]` toont de syntaxis van een component. `patch` vervangt één paneel op basis van het concept dat in de pagina is ingesloten. `lint` controleert alleen de tekst van een concept, zonder te renderen, en `--template sheet|doc` kiest tussen een raster van panelen en één kolom met inhoudsopgave.
 
 Geef een bestand of `--input-dir` op, niet beide. Validatie controleert het contract voor zelfstandig HTML en rapporteert machineleesbare fouten; de nauwkeurigheid van de uitleg wordt niet beoordeeld. Zie [Code-uitlegger](../guide/code-explainer.md).
 

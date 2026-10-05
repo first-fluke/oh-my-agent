@@ -78,6 +78,7 @@ Set this environment variable to `json` to force JSON output on all commands tha
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Yes | Use `--output json` for the run envelope or readiness report |
 | `explain validate` | Yes | Yes | Artifact validation report |
 | `explain render` / `explain patch` / `explain components` | Yes | Yes | Render report: file, warnings, sidecar status |
+| `explain lint` | Yes | Yes | Prose warnings |
 | `diagram resolve` / `diagram update` | Yes | Yes | Engine resolution or managed-cache result |
 | `market resolve` / `market update` | Yes | Yes | Managed research-engine status |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Yes | N/A | Each docs path uses its own report options |
@@ -575,7 +576,8 @@ The following matrix is generated from the checked-in public command registry. I
 | `serena reaper disable` | `--dry-run` | Uninstall the periodic Serena Reaper scheduled task |
 | `explain` | `—` | Explain artifact management and quality validation tools |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Validate self-contained explain HTML report artifacts |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Render a Markdown draft (file or stdin) into one self-contained HTML explanation |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Render a Markdown draft (file or stdin) into one self-contained HTML explanation |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Check the prose of a draft (file or stdin) without rendering |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Replace one panel of a rendered page from its embedded draft |
 | `explain components` | `--output <format>, --json` | List the components a draft can use, or print one component's syntax |
 | `diagram` | `—` | Diagram engine helpers (archify interactive HTML or Mermaid fallback) |

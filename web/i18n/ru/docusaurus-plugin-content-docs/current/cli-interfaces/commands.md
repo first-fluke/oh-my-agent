@@ -60,7 +60,7 @@ description: "Полный справочник всех команд CLI oh-my-
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1659,13 +1659,15 @@ oma scholar lint paper.knows.yaml
 
 ```
 oma explain render draft.md --archify
+oma explain render draft.md --template doc --theme card
+oma explain lint draft.md
 oma explain components flow
 oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` превращает черновик Markdown (файл или stdin через `-`) в одну самодостаточную HTML-страницу и сохраняет её в `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; другой путь задаёт `--output-file`. В черновике только содержание: одна панель на каждый заголовок `## `, а внутри — блоки компонентов (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Рендерер сам рассчитывает раскладку диаграмм, распределяет панели по строкам и применяет тему (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` задаёт строгость проверки текста; в режиме `strict` рендер завершается ошибкой при любом предупреждении. `--archify` строит интерактивную диаграмму archify из блока `flow` или `sequence` и добавляет ссылку на неё; если этот шаг не удался, страница всё равно записывается. `components [name]` выводит синтаксис компонента. `patch` заменяет одну панель, используя черновик, встроенный в страницу.
+`render` превращает черновик Markdown (файл или stdin через `-`) в одну самодостаточную HTML-страницу и сохраняет её в `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; другой путь задаёт `--output-file`. В черновике только содержание: одна панель на каждый заголовок `## `, а внутри — блоки компонентов (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Рендерер сам рассчитывает раскладку диаграмм, распределяет панели по строкам и применяет тему (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` задаёт строгость проверки текста; в режиме `strict` рендер завершается ошибкой при любом предупреждении. `--archify` строит интерактивную диаграмму archify из блока `flow` или `sequence` и добавляет ссылку на неё; если этот шаг не удался, страница всё равно записывается. `components [name]` выводит синтаксис компонента. `patch` заменяет одну панель, используя черновик, встроенный в страницу. `lint` проверяет только текст черновика, не выполняя рендер, а `--template sheet|doc` выбирает между сеткой панелей и одной колонкой с оглавлением.
 
 Передайте файл или `--input-dir`, но не то и другое одновременно. Проверка охватывает контракт автономного HTML и сообщает об ошибках в машиночитаемом виде; точность самого объяснения она не оценивает. См. [Объяснение кода](../guide/code-explainer.md).
 

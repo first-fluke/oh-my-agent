@@ -78,6 +78,7 @@ Setze diese Umgebungsvariable auf `json`, um bei allen Befehlen, die dies unters
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Yes | `--output json` für das Laufobjekt oder den Bereitschaftsbericht verwenden |
 | `explain validate` | Yes | Yes | Validierungsbericht für Artefakte |
 | `explain render` / `explain patch` / `explain components` | Yes | Yes | Render-Bericht: Datei, Warnungen, Sidecar-Status |
+| `explain lint` | Yes | Yes | Textwarnungen |
 | `diagram resolve` / `diagram update` | Yes | Yes | Auflösung der Engine oder Ergebnis des verwalteten Caches |
 | `market resolve` / `market update` | Yes | Yes | Status der verwalteten Research-Engine |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Yes | N/A | Jeder Docs-Pfad verwendet seine eigenen Berichtsoptionen |
@@ -576,7 +577,8 @@ Die folgende Matrix wird aus der eingecheckten öffentlichen Befehlsregistry erz
 | `serena reaper disable` | `--dry-run` | Periodische geplante Serena-Reaper-Aufgabe deinstallieren |
 | `explain` | `—` | Werkzeuge für Artefaktverwaltung und Qualitätsvalidierung erklären |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Eigenständige Explain-HTML-Berichtsartefakte validieren |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Rendert einen Markdown-Entwurf (Datei oder stdin) zu einer eigenständigen HTML-Erklärseite |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Rendert einen Markdown-Entwurf (Datei oder stdin) zu einer eigenständigen HTML-Erklärseite |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Prüft den Text eines Entwurfs (Datei oder stdin), ohne zu rendern |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Ersetzt ein Panel einer gerenderten Seite anhand des eingebetteten Entwurfs |
 | `explain components` | `--output <format>, --json` | Listet die Komponenten für Entwürfe auf oder gibt die Syntax einer Komponente aus |
 | `diagram` | `—` | Hilfsfunktionen für Diagramm-Engines (interaktives archify-HTML oder Mermaid-Fallback) |

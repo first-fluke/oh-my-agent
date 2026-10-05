@@ -61,7 +61,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` | 인증을 고려해 여러 벤더로 이미지를 생성합니다. |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` | 숏폼, 설명, 데모 영상을 생성합니다. |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` | Serena MCP 언어 서버 수명 주기를 관리합니다. |
-| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` | 설명서 산출물과 품질 검증 도구를 제공합니다. |
+| `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` | 설명서 산출물과 품질 검증 도구를 제공합니다. |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` | archify 또는 Mermaid 다이어그램 엔진을 관리합니다. |
 | `help` | `help` | 도움말을 표시합니다. |
 | `version` | `version` | 버전 번호를 표시합니다. |
@@ -1610,13 +1610,15 @@ oma scholar lint paper.knows.yaml
 
 ```
 oma explain render draft.md --archify
+oma explain render draft.md --template doc --theme card
+oma explain lint draft.md
 oma explain components flow
 oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render`는 Markdown 초안(파일 또는 `-`로 받는 stdin)을 자체 완결 HTML 한 장으로 만들어 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`에 저장합니다. 다른 경로는 `--output-file`로 지정합니다. 초안에는 내용만 씁니다. `## ` 제목 하나가 패널 하나이고, 그 안에 컴포넌트 블록(`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`)을 넣습니다. 다이어그램 배치, 패널 행 구성, 테마(`--theme blueprint|card`, `--mode auto|light|dark`)는 렌더러가 정합니다. `--style off|warn|strict`는 문장 검사 수준이며 `strict`에서는 경고가 하나라도 있으면 렌더가 실패합니다. `--archify`는 `flow` 또는 `sequence` 블록에서 인터랙티브 archify 다이어그램을 만들어 링크합니다. 이 단계가 실패해도 본문 페이지는 저장됩니다. `components [name]`은 컴포넌트 문법을 출력합니다. `patch`는 페이지에 들어 있는 초안을 써서 패널 하나만 바꿉니다.
+`render`는 Markdown 초안(파일 또는 `-`로 받는 stdin)을 자체 완결 HTML 한 장으로 만들어 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`에 저장합니다. 다른 경로는 `--output-file`로 지정합니다. 초안에는 내용만 씁니다. `## ` 제목 하나가 패널 하나이고, 그 안에 컴포넌트 블록(`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`)을 넣습니다. 다이어그램 배치, 패널 행 구성, 테마(`--theme blueprint|card`, `--mode auto|light|dark`)는 렌더러가 정합니다. `--style off|warn|strict`는 문장 검사 수준이며 `strict`에서는 경고가 하나라도 있으면 렌더가 실패합니다. `--archify`는 `flow` 또는 `sequence` 블록에서 인터랙티브 archify 다이어그램을 만들어 링크합니다. 이 단계가 실패해도 본문 페이지는 저장됩니다. `components [name]`은 컴포넌트 문법을 출력합니다. `patch`는 페이지에 들어 있는 초안을 써서 패널 하나만 바꿉니다. `lint`는 렌더링 없이 초안의 문장만 검사하고, `--template sheet|doc`은 패널 격자와 목차가 있는 한 열 문서 중 하나를 고릅니다.
 
 파일 또는 `--input-dir` 중 하나만 전달합니다. 검증은 자체 완결 HTML 계약을 검사하고 기계 판독 가능한 실패를 보고하지만, 설명의 정확성을 판단하지는 않습니다. [코드 설명서](../guide/code-explainer.md)를 참고합니다.
 

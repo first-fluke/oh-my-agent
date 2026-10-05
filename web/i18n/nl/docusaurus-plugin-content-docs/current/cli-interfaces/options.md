@@ -78,6 +78,7 @@ Stel deze omgevingsvariabele in op `json` om JSON-uitvoer af te dwingen voor all
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | n.v.t. | Ja | Gebruik `--output json` voor de run-envelop of het gereedheidsrapport. |
 | `explain validate` | Ja | Ja | Validatierapport van het artifact. |
 | `explain render` / `explain patch` / `explain components` | Ja | Ja | Renderrapport: bestand, waarschuwingen, sidecarstatus |
+| `explain lint` | Ja | Ja | Tekstwaarschuwingen |
 | `diagram resolve` / `diagram update` | Ja | Ja | Engine-resolutie of resultaat uit de beheerde cache. |
 | `market resolve` / `market update` | Ja | Ja | Status van de beheerde research-engine. |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Ja | n.v.t. | Elk docs-pad gebruikt zijn eigen rapportopties. |
@@ -576,7 +577,8 @@ De volgende matrix is gegenereerd uit het openbare commandoregister in de reposi
 | `serena reaper disable` | `--dry-run` | Verwijder de periodieke Serena Reaper-scheduled task |
 | `explain` | `—` | Beheer van explain-artifacts en tools voor kwaliteitsvalidatie uitleggen |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Valideer zelfstandige HTML-rapportartefacts van explain |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Rendert een Markdown-concept (bestand of stdin) tot één zelfstandige HTML-uitlegpagina |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Rendert een Markdown-concept (bestand of stdin) tot één zelfstandige HTML-uitlegpagina |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Controleert de tekst van een concept (bestand of stdin) zonder te renderen |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Vervangt één paneel van een gerenderde pagina op basis van het ingesloten concept |
 | `explain components` | `--output <format>, --json` | Toont de componenten die een concept kan gebruiken, of de syntaxis van één component |
 | `diagram` | `—` | Hulpmiddelen voor diagramengines (interactieve archify-HTML of Mermaid-fallback) |

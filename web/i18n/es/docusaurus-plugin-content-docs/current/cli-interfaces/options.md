@@ -78,6 +78,7 @@ Establece esta variable de entorno en `json` para forzar la salida JSON en todos
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Sí | Usa `--output json` para el envoltorio de ejecución o el informe de disponibilidad |
 | `explain validate` | Sí | Sí | Informe de validación del artefacto |
 | `explain render` / `explain patch` / `explain components` | Sí | Sí | Informe de renderizado: archivo, advertencias, estado del sidecar |
+| `explain lint` | Sí | Sí | Advertencias de prosa |
 | `diagram resolve` / `diagram update` | Sí | Sí | Resolución del motor o resultado de la caché gestionada |
 | `market resolve` / `market update` | Sí | Sí | Estado del motor de investigación gestionado |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Sí | N/A | Cada ruta de docs usa sus propias opciones de informe |
@@ -575,7 +576,8 @@ La siguiente matriz se genera a partir del registro público de comandos incluid
 | `serena reaper disable` | `--dry-run` | Desinstala la tarea programada periódica de Serena Reaper |
 | `explain` | `—` | Explica las herramientas de gestión de artefactos y validación de calidad |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Valida artefactos de informes HTML de explain autocontenidos |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Renderiza un borrador Markdown (archivo o stdin) como una página HTML explicativa autocontenida |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Renderiza un borrador Markdown (archivo o stdin) como una página HTML explicativa autocontenida |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Revisa la prosa de un borrador (archivo o stdin) sin renderizar |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Sustituye un panel de una página renderizada usando su borrador incrustado |
 | `explain components` | `--output <format>, --json` | Lista los componentes disponibles para un borrador o muestra la sintaxis de uno |
 | `diagram` | `—` | Ayudantes del motor de diagramas (HTML interactivo de archify o fallback a Mermaid) |

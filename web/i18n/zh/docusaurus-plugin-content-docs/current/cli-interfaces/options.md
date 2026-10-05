@@ -79,6 +79,7 @@ oma retro # outputs JSON
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | 不适用 | 是 | 使用 `--output json` 获取运行信封或就绪报告 |
 | `explain validate` | 是 | 是 | 产物校验报告 |
 | `explain render` / `explain patch` / `explain components` | 是 | 是 | 渲染报告：文件、警告、附属图状态 |
+| `explain lint` | 是 | 是 | 文字警告 |
 | `diagram resolve` / `diagram update` | 是 | 是 | 引擎解析结果或托管缓存结果 |
 | `market resolve` / `market update` | 是 | 是 | 托管研究引擎的状态 |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | 是 | 不适用 | 每个 docs 路径使用各自的报告选项 |
@@ -576,7 +577,8 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `serena reaper disable` | `--dry-run` | 卸载周期性运行的 Serena Reaper 计划任务 |
 | `explain` | `—` | explain 产物的管理和质量校验工具 |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | 校验自包含的 explain HTML 报告产物 |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | 把 Markdown 草稿（文件或 stdin）渲染成一个自包含的 HTML 讲解页面 |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | 把 Markdown 草稿（文件或 stdin）渲染成一个自包含的 HTML 讲解页面 |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | 只检查草稿（文件或 stdin）的文字，不渲染 |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | 利用页面内嵌的草稿替换其中一个面板 |
 | `explain components` | `--output <format>, --json` | 列出草稿可用的组件，或输出某个组件的语法 |
 | `diagram` | `—` | 图表引擎辅助工具（archify 交互式 HTML，或回退到 Mermaid） |

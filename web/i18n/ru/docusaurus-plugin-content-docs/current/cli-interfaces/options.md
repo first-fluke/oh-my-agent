@@ -78,6 +78,7 @@ oma retro # outputs JSON
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | Н/Д | Да | Используйте `--output json`, чтобы получить JSON envelope запуска или отчёт о готовности |
 | `explain validate` | Да | Да | Отчёт о проверке артефактов |
 | `explain render` / `explain patch` / `explain components` | Да | Да | Отчёт о рендере: файл, предупреждения, состояние сайдкара |
+| `explain lint` | Да | Да | Предупреждения о тексте |
 | `diagram resolve` / `diagram update` | Да | Да | Результат определения движка или обновления управляемого кэша |
 | `market resolve` / `market update` | Да | Да | Статус управляемого исследовательского движка |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Да | Н/Д | Каждый путь docs использует собственные опции отчётов |
@@ -575,7 +576,8 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `serena reaper disable` | `--dry-run` | Удаляет периодическую задачу Serena Reaper по расписанию |
 | `explain` | `—` | Инструменты управления артефактами explain и проверки их качества |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Проверяет самодостаточные HTML-артефакты отчётов explain |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Рендерит черновик Markdown (файл или stdin) в одну самодостаточную HTML-страницу с объяснением |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Рендерит черновик Markdown (файл или stdin) в одну самодостаточную HTML-страницу с объяснением |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Проверяет текст черновика (файл или stdin) без рендера |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Заменяет одну панель отрендеренной страницы по встроенному в неё черновику |
 | `explain components` | `--output <format>, --json` | Выводит список компонентов для черновика или синтаксис одного из них |
 | `diagram` | `—` | Вспомогательные команды движка диаграмм (интерактивный HTML archify или fallback на Mermaid) |

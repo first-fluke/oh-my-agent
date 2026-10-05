@@ -60,7 +60,7 @@ Diese Übersicht hält die ausführlichen Referenzen unten überschaubar und mac
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1613,13 +1613,15 @@ oma scholar lint paper.knows.yaml
 
 ```
 oma explain render draft.md --archify
+oma explain render draft.md --template doc --theme card
+oma explain lint draft.md
 oma explain components flow
 oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` wandelt einen Markdown-Entwurf (eine Datei oder stdin mit `-`) in eine eigenständige HTML-Seite unter `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` um; `--output-file` wählt einen anderen Pfad. Der Entwurf enthält nur Inhalt: ein Panel pro `## `-Überschrift und darin Komponentenblöcke (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Der Renderer berechnet das Diagrammlayout, verteilt die Panels auf Zeilen und wendet das Theme an (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` legt die Textprüfung fest; bei `strict` schlägt das Rendern schon bei einer Warnung fehl. `--archify` leitet aus einem `flow`- oder `sequence`-Block ein interaktives archify-Diagramm ab und verlinkt es; schlägt dieser Schritt fehl, wird die Seite trotzdem geschrieben. `components [name]` gibt die Syntax einer Komponente aus. `patch` ersetzt ein einzelnes Panel anhand des in die Seite eingebetteten Entwurfs.
+`render` wandelt einen Markdown-Entwurf (eine Datei oder stdin mit `-`) in eine eigenständige HTML-Seite unter `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` um; `--output-file` wählt einen anderen Pfad. Der Entwurf enthält nur Inhalt: ein Panel pro `## `-Überschrift und darin Komponentenblöcke (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Der Renderer berechnet das Diagrammlayout, verteilt die Panels auf Zeilen und wendet das Theme an (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` legt die Textprüfung fest; bei `strict` schlägt das Rendern schon bei einer Warnung fehl. `--archify` leitet aus einem `flow`- oder `sequence`-Block ein interaktives archify-Diagramm ab und verlinkt es; schlägt dieser Schritt fehl, wird die Seite trotzdem geschrieben. `components [name]` gibt die Syntax einer Komponente aus. `patch` ersetzt ein einzelnes Panel anhand des in die Seite eingebetteten Entwurfs. `lint` prüft nur den Text eines Entwurfs, ohne zu rendern, und `--template sheet|doc` wählt zwischen einem Panel-Raster und einer Spalte mit Inhaltsverzeichnis.
 
 Übergib entweder eine Datei oder `--input-dir`, nicht beides. Die Validierung prüft den Vertrag für eigenständiges HTML und meldet maschinenlesbare Fehler; sie bewertet nicht die inhaltliche Richtigkeit der Erklärung. Siehe [Code-Explainer](../guide/code-explainer.md).
 

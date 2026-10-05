@@ -78,6 +78,7 @@ oma retro # outputs JSON
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Có | Dùng `--output json` để lấy run envelope hoặc báo cáo mức sẵn sàng |
 | `explain validate` | Có | Có | Báo cáo kiểm tra artifact |
 | `explain render` / `explain patch` / `explain components` | Có | Có | Báo cáo kết xuất: file, cảnh báo, trạng thái sidecar |
+| `explain lint` | Có | Có | Cảnh báo về câu chữ |
 | `diagram resolve` / `diagram update` | Có | Có | Kết quả phân giải engine hoặc kết quả managed cache |
 | `market resolve` / `market update` | Có | Có | Trạng thái research engine được quản lý |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Có | N/A | Mỗi đường dẫn docs dùng tùy chọn báo cáo riêng |
@@ -575,7 +576,8 @@ Ma trận sau được tạo từ registry lệnh công khai đã được commi
 | `serena reaper disable` | `--dry-run` | Gỡ scheduled task Serena Reaper chạy định kỳ |
 | `explain` | `—` | Các công cụ quản lý và kiểm tra chất lượng artifact explain |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Kiểm tra hợp lệ các artifact báo cáo HTML explain tự chứa |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Kết xuất bản nháp Markdown (file hoặc stdin) thành một trang HTML giải thích độc lập |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Kết xuất bản nháp Markdown (file hoặc stdin) thành một trang HTML giải thích độc lập |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Kiểm tra câu chữ của bản nháp (file hoặc stdin) mà không kết xuất |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Thay một bảng của trang đã kết xuất dựa trên bản nháp được nhúng |
 | `explain components` | `--output <format>, --json` | Liệt kê các thành phần dùng được trong bản nháp hoặc in cú pháp của một thành phần |
 | `diagram` | `—` | Tiện ích engine sơ đồ (HTML tương tác của archify hoặc fallback Mermaid) |

@@ -78,6 +78,7 @@ Définissez cette variable d’environnement à `json` pour forcer une sortie JS
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Oui | Utilisez `--output json` pour l’enveloppe d’exécution ou le rapport de disponibilité |
 | `explain validate` | Oui | Oui | Rapport de validation de l’artefact |
 | `explain render` / `explain patch` / `explain components` | Oui | Oui | Rapport de rendu : fichier, avertissements, état du sidecar |
+| `explain lint` | Oui | Oui | Avertissements sur le texte |
 | `diagram resolve` / `diagram update` | Oui | Oui | Résolution du moteur ou résultat du cache géré |
 | `market resolve` / `market update` | Oui | Oui | État du moteur de recherche géré |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Oui | N/A | Chaque chemin docs possède ses propres options de rapport |
@@ -576,7 +577,8 @@ La matrice suivante est générée depuis le registre public des commandes prés
 | `serena reaper disable` | `--dry-run` | Désinstalle la tâche planifiée périodique du reaper Serena |
 | `explain` | `—` | Gestion et validation qualité des artefacts d’explication |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Valide les artefacts HTML autonomes de rapports explain |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Effectue le rendu d’un brouillon Markdown (fichier ou stdin) en une page HTML explicative autonome |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Effectue le rendu d’un brouillon Markdown (fichier ou stdin) en une page HTML explicative autonome |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Vérifie le texte d’un brouillon (fichier ou stdin) sans effectuer de rendu |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Remplace un panneau d’une page rendue à partir de son brouillon intégré |
 | `explain components` | `--output <format>, --json` | Liste les composants utilisables dans un brouillon ou affiche la syntaxe de l’un d’eux |
 | `diagram` | `—` | Assistants de moteur de diagrammes (HTML interactif archify ou repli Mermaid) |

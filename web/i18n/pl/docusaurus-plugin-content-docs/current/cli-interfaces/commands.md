@@ -60,7 +60,7 @@ Ta mapa ułatwia przeglądanie długiej referencji poniżej i pozwala znaleźć 
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1659,13 +1659,15 @@ oma scholar lint paper.knows.yaml
 
 ```
 oma explain render draft.md --archify
+oma explain render draft.md --template doc --theme card
+oma explain lint draft.md
 oma explain components flow
 oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` zamienia szkic Markdown (plik albo stdin przez `-`) w jedną samodzielną stronę HTML zapisywaną w `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; inną ścieżkę wskazuje `--output-file`. Szkic zawiera wyłącznie treść: jeden panel na każdy nagłówek `## `, a w nim bloki komponentów (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Renderer oblicza układ diagramów, rozkłada panele w wierszach i nakłada motyw (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` ustawia kontrolę tekstu; przy `strict` już jedno ostrzeżenie przerywa renderowanie. `--archify` tworzy interaktywny diagram archify z bloku `flow` lub `sequence` i dodaje do niego link; jeśli ten krok się nie powiedzie, strona i tak zostanie zapisana. `components [name]` wypisuje składnię komponentu. `patch` podmienia jeden panel na podstawie szkicu osadzonego w stronie.
+`render` zamienia szkic Markdown (plik albo stdin przez `-`) w jedną samodzielną stronę HTML zapisywaną w `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; inną ścieżkę wskazuje `--output-file`. Szkic zawiera wyłącznie treść: jeden panel na każdy nagłówek `## `, a w nim bloki komponentów (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Renderer oblicza układ diagramów, rozkłada panele w wierszach i nakłada motyw (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` ustawia kontrolę tekstu; przy `strict` już jedno ostrzeżenie przerywa renderowanie. `--archify` tworzy interaktywny diagram archify z bloku `flow` lub `sequence` i dodaje do niego link; jeśli ten krok się nie powiedzie, strona i tak zostanie zapisana. `components [name]` wypisuje składnię komponentu. `patch` podmienia jeden panel na podstawie szkicu osadzonego w stronie. `lint` sprawdza sam tekst szkicu, bez renderowania, a `--template sheet|doc` wybiera między siatką paneli a jedną kolumną ze spisem treści.
 
 Przekaż plik albo `--input-dir`, nie oba naraz. Walidacja obejmuje kontrakt samowystarczalnego HTML i raportuje błędy maszynowo; nie ocenia poprawności objaśnienia. Zobacz [Objaśnianie kodu](../guide/code-explainer.md).
 

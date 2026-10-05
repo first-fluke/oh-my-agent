@@ -60,7 +60,7 @@ Cette carte permet de parcourir plus facilement les références détaillées ci
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1613,13 +1613,15 @@ oma scholar lint paper.knows.yaml
 
 ```
 oma explain render draft.md --archify
+oma explain render draft.md --template doc --theme card
+oma explain lint draft.md
 oma explain components flow
 oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` transforme un brouillon Markdown (un fichier, ou stdin avec `-`) en une page HTML autonome enregistrée dans `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` ; `--output-file` indique un autre chemin. Le brouillon ne contient que le contenu : un panneau par titre `## ` et, à l’intérieur, des blocs de composants (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Le moteur de rendu calcule la disposition des diagrammes, répartit les panneaux en lignes et applique le thème (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` règle la vérification du texte ; avec `strict`, un seul avertissement fait échouer le rendu. `--archify` dérive un diagramme archify interactif d’un bloc `flow` ou `sequence` et ajoute le lien ; si cette étape échoue, la page est tout de même écrite. `components [name]` affiche la syntaxe d’un composant. `patch` remplace un seul panneau à partir du brouillon intégré à la page.
+`render` transforme un brouillon Markdown (un fichier, ou stdin avec `-`) en une page HTML autonome enregistrée dans `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` ; `--output-file` indique un autre chemin. Le brouillon ne contient que le contenu : un panneau par titre `## ` et, à l’intérieur, des blocs de composants (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Le moteur de rendu calcule la disposition des diagrammes, répartit les panneaux en lignes et applique le thème (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` règle la vérification du texte ; avec `strict`, un seul avertissement fait échouer le rendu. `--archify` dérive un diagramme archify interactif d’un bloc `flow` ou `sequence` et ajoute le lien ; si cette étape échoue, la page est tout de même écrite. `components [name]` affiche la syntaxe d’un composant. `patch` remplace un seul panneau à partir du brouillon intégré à la page. `lint` vérifie uniquement le texte d’un brouillon, sans rendu, et `--template sheet|doc` choisit entre une grille de panneaux et une colonne avec sommaire.
 
 Passez un fichier ou `--input-dir`, jamais les deux. La validation couvre le contrat HTML autonome et signale les échecs lisibles par machine ; elle n’évalue pas l’exactitude de l’explication. Voir [Explicateur de code](../guide/code-explainer.md).
 

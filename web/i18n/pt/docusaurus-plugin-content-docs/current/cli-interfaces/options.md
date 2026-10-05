@@ -78,6 +78,7 @@ Defina esta variável de ambiente como `json` para forçar saída JSON em todos 
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Sim | Use `--output json` para o envelope de execução ou o relatório de disponibilidade |
 | `explain validate` | Sim | Sim | Relatório de validação do artefato |
 | `explain render` / `explain patch` / `explain components` | Sim | Sim | Relatório de renderização: arquivo, avisos, estado do sidecar |
+| `explain lint` | Sim | Sim | Avisos de texto |
 | `diagram resolve` / `diagram update` | Sim | Sim | Resolução do engine ou resultado do cache gerenciado |
 | `market resolve` / `market update` | Sim | Sim | Estado do engine de pesquisa gerenciado |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Sim | N/A | Cada caminho docs tem suas próprias opções de relatório |
@@ -576,7 +577,8 @@ A matriz a seguir é gerada a partir do registro público de comandos mantido no
 | `serena reaper disable` | `--dry-run` | Desinstala a tarefa agendada periódica do Serena Reaper |
 | `explain` | `—` | Ferramentas de gerenciamento e validação de qualidade dos artefatos de explicação |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Valida os artefatos HTML autônomos de relatórios explain |
-| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Renderiza um rascunho Markdown (arquivo ou stdin) em uma página HTML explicativa autocontida |
+| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Renderiza um rascunho Markdown (arquivo ou stdin) em uma página HTML explicativa autocontida |
+| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Verifica o texto de um rascunho (arquivo ou stdin) sem renderizar |
 | `explain patch` | `--panel <id>, --open, --output <format>, --json` | Substitui um painel de uma página renderizada usando o rascunho incorporado |
 | `explain components` | `--output <format>, --json` | Lista os componentes disponíveis para um rascunho ou mostra a sintaxe de um deles |
 | `diagram` | `—` | Auxiliares do engine de diagramas (HTML interativo archify ou fallback Mermaid) |
