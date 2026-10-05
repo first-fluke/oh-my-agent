@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { emitEvent } from "../../../state/events.js";
 import { parseAntigravityRows } from "./antigravity.js";
@@ -9,8 +10,18 @@ import { parseClaudeRows } from "./claude.js";
 import { parseCodexRows } from "./codex.js";
 import { resolveLayout } from "./command.js";
 import { parseGrokRows } from "./grok.js";
-import { renderOverview, renderTrajectory } from "./render.js";
+import {
+  renderOverview as renderOverviewRaw,
+  renderTrajectory as renderTrajectoryRaw,
+} from "./render.js";
 import type { TranscriptRecord } from "./types.js";
+
+// Colour is on when the suite runs in a terminal (the pre-push hook does);
+// layout is asserted on the plain text.
+const renderOverview = (...args: Parameters<typeof renderOverviewRaw>) =>
+  stripVTControlCharacters(renderOverviewRaw(...args));
+const renderTrajectory = (...args: Parameters<typeof renderTrajectoryRaw>) =>
+  stripVTControlCharacters(renderTrajectoryRaw(...args));
 
 const at = (clock: string): string => `2026-05-25T${clock}.000Z`;
 const ms = (clock: string): number => Date.parse(at(clock));
