@@ -10,6 +10,7 @@
     "includes": [
       "cli/**",
       "integrations/orca/**",
+      "integrations/dsh/**",
       "bin/**",
       "scripts/**",
       "web/src/**",

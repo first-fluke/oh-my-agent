@@ -218,6 +218,14 @@ actions for project setup, review, debugging, verification, and local results.
 It uses your existing Orca agent terminal and project OMA installation. Requires
 Orca 1.4.197+ with experimental plugins enabled.
 
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](integrations/dsh/README.md) connects project OMA checks
+to DSH tool execution and turn completion through a Cordis plugin. DSH discovers
+the existing `.agents/skills` directly. The plugin ships executable JavaScript
+and requires no build. See the integration guide for installation, tested versions,
+and the supported hook events.
+
 ## How It Works
 
 Just chat. Describe what you want and oh-my-agent figures out which agents to use.

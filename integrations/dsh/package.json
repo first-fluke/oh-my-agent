@@ -1,0 +1,48 @@
+{
+  "name": "dsh-plugin-oma",
+  "version": "0.1.0",
+  "description": "Use OMA project skills and tool validation hooks in DeepSeek Harness.",
+  "type": "module",
+  "main": "./index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "index.mjs",
+    "bridge.mjs",
+    "protocol.mjs",
+    "runner.mjs",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test *.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "dsh-bundle",
+    "oma",
+    "agent",
+    "workflow"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/first-fluke/oh-my-agent.git",
+    "directory": "integrations/dsh"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

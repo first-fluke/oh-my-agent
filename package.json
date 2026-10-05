@@ -28,7 +28,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p web/tsconfig.json",
     "bench:oma-hook": "bun run cli/__bench__/oma-hook-latency.bench.ts",
     "web:dev": "bun run --cwd web dev",
-    "web:build": "bun run --cwd web build"
+    "web:build": "bun run --cwd web build",
+    "test:dsh": "node --test integrations/dsh/*.test.mjs"
   },
   "overrides": {
     "@types/node": "^26"

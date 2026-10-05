@@ -55,6 +55,12 @@ jobs:
       - name: Test Orca plugin (no build)
         run: bun run test:orca
 
+      - name: Lint DSH plugin
+        run: bunx biome check integrations/dsh
+
+      - name: Test DSH plugin (no build)
+        run: bun run test:dsh
+
       # Windows hangs indefinitely inside vitest (root cause TBD — likely a
       # spawn/stdin test that never closes the loop). Skip until fixed; Lint,
       # Build, and install.ps1 smoke still validate Windows (Typecheck is
