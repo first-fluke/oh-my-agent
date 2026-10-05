@@ -440,3 +440,44 @@ test("aborted tool hook returns cancel and unloading drains an active subprocess
   await ctx.dispose();
   assert.deepEqual(await second, { kind: "cancel" });
 });
+
+test("a root agent ties the active OMA session to its DSH session once", async (t) => {
+  const f = await fixture(t);
+  const ctx = install(t, f.config);
+  const agent = fakeAgent(f.cwd);
+  await ctx.handlers.get("agent/created")({ agent, source: "startup" });
+  await ctx.handlers.get("agent/created")({ agent, source: "startup" });
+  const child = fakeAgent(f.cwd);
+  child.session.header.delegationDepth = 1;
+  await ctx.handlers.get("agent/created")({ agent: child, source: "startup" });
+
+  const announcements = await f.announcements();
+  assert.equal(announcements.length, 1);
+  assert.deepEqual(announcements[0].argv, [
+    "state",
+    "emit",
+    "boundary",
+    JSON.stringify({
+      reason: "dsh-session",
+      toVendor: "dsh",
+      toVendorSid: agent.id,
+    }),
+  ]);
+  assert.equal(announcements[0].cwd, await realpath(f.cwd));
+
+  // A resumed session is tied again, to whichever OMA session is active now.
+  const resumed = fakeAgent(f.cwd, agent.id);
+  await ctx.handlers.get("agent/created")({ agent: resumed, source: "resume" });
+  assert.equal((await f.announcements()).length, 2);
+  assert.equal(resumed.contexts.length, 0);
+});
+
+test("no active OMA session leaves the agent untouched and unwarned", async (t) => {
+  const f = await fixture(t, { noSession: true });
+  const ctx = install(t, f.config);
+  const agent = fakeAgent(f.cwd);
+  await ctx.handlers.get("agent/created")({ agent, source: "startup" });
+  assert.equal((await f.announcements()).length, 1);
+  assert.equal(agent.contexts.length, 1);
+  assert.deepEqual(ctx.warnings, []);
+});

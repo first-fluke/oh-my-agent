@@ -34,7 +34,9 @@ export function createHookRunner(config = {}) {
   const active = new Set();
   let disposed = false;
 
-  function run(event, payload, { signal, owner } = {}) {
+  // `args` replaces the default `hook run` invocation for other OMA commands;
+  // such a command still gets the same isolation, limits and cancellation.
+  function run(event, payload, { signal, owner, args } = {}) {
     if (disposed || signal?.aborted) {
       return Promise.reject(new Error("OMA hook was cancelled"));
     }
@@ -104,12 +106,14 @@ export function createHookRunner(config = {}) {
           command,
           [
             ...commandArgs,
-            "hook",
-            "run",
-            "--vendor",
-            "claude",
-            "--event",
-            event,
+            ...(args ?? [
+              "hook",
+              "run",
+              "--vendor",
+              "claude",
+              "--event",
+              event,
+            ]),
           ],
           {
             cwd: payload.cwd,

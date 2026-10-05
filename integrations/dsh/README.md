@@ -60,6 +60,7 @@ becomes DSH tool decisions or model-visible follow-up context.
 | DSH event | OMA event | Behavior |
 | --- | --- | --- |
 | `agent/created` | Direct runtime note | Explains the DSH runtime and project OMA skill location. |
+| `agent/created` | `oma state emit boundary` | Ties the active OMA session to the DSH session, for `oma state trajectory`. |
 | `tools/pre-execute` | `PreToolUse` | Denies a blocked call before its tool body runs; forwards approval requests and context. |
 | `tools/post-execute` | `PostToolUse` | Adds validation feedback to the next model request. |
 | `agent/turn-stopping` | `Stop` | Queues bounded follow-up work when an OMA check blocks completion. |
@@ -69,6 +70,13 @@ argument array, without a shell. Here `claude` selects OMA's hook JSON format.
 The DSH agent and session keep their existing identities. The bridge deliberately
 omits OMA `SessionStart` and `UserPromptSubmit`: those handlers currently record
 host identity and contain Claude-specific prompt behavior.
+
+When an OMA session is active, a root agent records its DSH session id (and
+`DSH_HOME`, when set) on that session as a `boundary` event. `oma state
+trajectory` uses it to join the session's events with the DSH session log, so
+DSH turns, tool calls, and token usage appear in the trajectory. With no active
+OMA session there is nothing to attach to and nothing is recorded. Subagents
+are not recorded; their work lives in separate DSH sessions.
 
 DSH freezes tool arguments before its pre-execution hooks. If OMA requests a
 changed input, the plugin denies the call instead of executing the original

@@ -58,6 +58,7 @@ export function registerBridge(ctx, config, createUserMessage) {
   const runner = createHookRunner(config);
   const stopStates = new WeakMap();
   const initializedAgents = new WeakSet();
+  const announcedAgents = new WeakSet();
   const assistantResponses = new WeakMap();
   const maxStopBlocks = config?.maxStopBlocks ?? 2;
   if (
@@ -95,12 +96,48 @@ export function registerBridge(ctx, config, createUserMessage) {
     "oma: terminate and drain hook processes",
   );
 
-  ctx.on("agent/created", async ({ agent, source, signal }) => {
-    if (source === "resume" || initializedAgents.has(agent)) return;
-    if (await active(agent, signal)) {
-      initializedAgents.add(agent);
-      agent.inject(message(RUNTIME_NOTE));
+  // Tie the active OMA session to this DSH session, so `oma state trajectory`
+  // can join the session's events with the DSH log. The session is named in
+  // the payload: `--vendor` accepts only OMA's own vendor list. Best effort:
+  // with no active OMA session there is nothing to tie it to, and the command
+  // fails.
+  async function announce(agent, signal) {
+    const header = agent.session.header;
+    if (announcedAgents.has(agent) || (header.delegationDepth ?? 0) > 0) return;
+    announcedAgents.add(agent);
+    const vendorSid = header.id ?? agent.id;
+    const dshHome = process.env.DSH_HOME?.trim();
+    try {
+      await runner.run(
+        "boundary",
+        { cwd: await realpath(header.cwd) },
+        {
+          signal,
+          owner: agent,
+          args: [
+            "state",
+            "emit",
+            "boundary",
+            JSON.stringify({
+              reason: "dsh-session",
+              toVendor: "dsh",
+              toVendorSid: vendorSid,
+              ...(dshHome ? { vendorHome: dshHome } : {}),
+            }),
+          ],
+        },
+      );
+    } catch {
+      // No active OMA session, or an older OMA CLI.
     }
+  }
+
+  ctx.on("agent/created", async ({ agent, source, signal }) => {
+    if (!(await active(agent, signal))) return;
+    await announce(agent, signal);
+    if (source === "resume" || initializedAgents.has(agent)) return;
+    initializedAgents.add(agent);
+    agent.inject(message(RUNTIME_NOTE));
   });
   ctx.on("agent/disposed", ({ agent }) => {
     stopStates.delete(agent);

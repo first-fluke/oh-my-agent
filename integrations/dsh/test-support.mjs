@@ -7,7 +7,13 @@ const fixtureProgram = `
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 const argv = process.argv.slice(2);
-if (JSON.stringify(argv.slice(-6)) !== JSON.stringify(['hook','run','--vendor','claude','--event',argv.at(-1)])) process.exit(9);
+const stateEmit = argv[0] === 'state' && argv[1] === 'emit';
+if (!stateEmit && JSON.stringify(argv.slice(-6)) !== JSON.stringify(['hook','run','--vendor','claude','--event',argv.at(-1)])) process.exit(9);
+if (stateEmit) {
+  const settings = JSON.parse(readFileSync(new URL('./settings.json', import.meta.url), 'utf8'));
+  appendFileSync(new URL('./announcements.jsonl', import.meta.url), JSON.stringify({ argv, cwd: process.cwd() }) + '\\n');
+  process.exit(settings.noSession ? 1 : 0);
+}
 let text = '';
 for await (const chunk of process.stdin) text += chunk;
 const payload = JSON.parse(text);
@@ -57,6 +63,17 @@ export async function fixture(t, settings = {}, initialized = true) {
     async calls() {
       try {
         return (await readFile(join(cwd, "calls.jsonl"), "utf8"))
+          .trim()
+          .split("\n")
+          .map(JSON.parse);
+      } catch (error) {
+        if (error.code === "ENOENT") return [];
+        throw error;
+      }
+    },
+    async announcements() {
+      try {
+        return (await readFile(join(cwd, "announcements.jsonl"), "utf8"))
           .trim()
           .split("\n")
           .map(JSON.parse);
