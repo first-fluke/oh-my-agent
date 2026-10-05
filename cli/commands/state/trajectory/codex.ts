@@ -45,6 +45,7 @@ interface CodexRow {
     input?: unknown;
     output?: unknown;
     message?: string;
+    time_to_first_token_ms?: number;
     content?: CodexContent[];
     summary?: CodexContent[];
     info?: { last_token_usage?: CodexUsage } | null;
@@ -117,6 +118,10 @@ export function parseCodexRows(rows: CodexRow[]): TranscriptRecord[] {
     return record;
   };
 
+  // Codex reports time-to-first-token once per task, for its first response.
+  let taskFirstStep = null as TranscriptRecord | null;
+  let awaitingFirstStep = false;
+
   const closeStep = () => {
     if (!step) return;
     step.text = step.output
@@ -141,6 +146,10 @@ export function parseCodexRows(rows: CodexRow[]): TranscriptRecord[] {
       startedAt: previousTs ?? ts,
       durationMs: null,
     });
+    if (awaitingFirstStep) {
+      taskFirstStep = step;
+      awaitingFirstStep = false;
+    }
     return step;
   };
 
@@ -174,6 +183,17 @@ export function parseCodexRows(rows: CodexRow[]): TranscriptRecord[] {
         closeStep();
         turns.begin();
         previousTs = ts ?? previousTs;
+        taskFirstStep = null;
+        awaitingFirstStep = true;
+      } else if (payload.type === "task_complete") {
+        if (
+          taskFirstStep &&
+          typeof payload.time_to_first_token_ms === "number"
+        ) {
+          taskFirstStep.ttftMs = payload.time_to_first_token_ms;
+        }
+        taskFirstStep = null;
+        awaitingFirstStep = false;
       } else if (payload.type === "token_count" && step) {
         const usage = payload.info?.last_token_usage;
         if (usage) step.tokens = tokensFrom(usage);

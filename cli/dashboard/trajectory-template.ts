@@ -63,6 +63,7 @@ main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax
 .sum .a{color:var(--k-subtool);font-size:11px;margin-right:6px}
 .sum .e{color:var(--err);font-size:11px;font-weight:600;margin-right:6px}
 .empty{padding:24px 16px;color:var(--dim)}
+.more{display:block;width:100%;background:var(--surface);border:0;border-bottom:1px solid var(--bd);padding:8px 12px;font-size:12px;color:var(--accent);text-align:left}
 #inspector h2{font-size:14px;margin:0 0 8px;overflow-wrap:anywhere}
 .meta{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 12px;font-size:12px;margin-bottom:10px}
 .meta dt{color:var(--dim)}.meta dd{margin:0;overflow-wrap:anywhere}
@@ -109,7 +110,8 @@ var LABEL={oma:'OMA',user:'User',assistant:'Assistant',tool:'Tool',subtool:'Subt
 var LANE={oma:0,user:1,context:1,compacted:1,assistant:2,tool:3,subtool:3};
 var LANES=['OMA','Input','Assistant','Tool'];
 var SVGNS='http://www.w3.org/2000/svg';
-var S={traj:null,sid:null,selected:null,timed:false,query:'',hidden:{},focus:null,collapsed:{},live:true,spans:[]};
+var ROW_PAGE=400;
+var S={traj:null,sid:null,selected:null,timed:false,query:'',hidden:{},focus:null,collapsed:{},shown:{},live:true,spans:[]};
 function $(id){return document.getElementById(id)}
 function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined&&text!==null)n.textContent=text;return n}
 function svgEl(tag,attrs){var n=document.createElementNS(SVGNS,tag);for(var k in attrs)n.setAttribute(k,attrs[k]);return n}
@@ -140,8 +142,8 @@ function renderStrip(){
   var k=t.totals.tokens;
   item('in',fmtTok(k.input));item('cache read',fmtTok(k.cacheRead));item('cache write',fmtTok(k.cacheWrite));item('out',fmtTok(k.output));
   t.vendorSessions.forEach(function(v){
-    var note=v.status==='loaded'?v.records+' records':v.status==='missing'?'transcript not found':'transcript not supported';
-    var s=el('span',v.status==='loaded'?'':'warn',v.vendor+' '+v.vendorSid.slice(0,8)+' · '+note);
+    var note=v.status==='loaded'?v.records+' records'+(v.timing==='none'?' · no timestamps, whole transcript shown':v.timing==='partial'?' · only prompts timestamped':''):v.status==='missing'?'transcript not found':'transcript not supported';
+    var s=el('span',v.status==='loaded'&&v.timing!=='none'?'':'warn',v.vendor+' '+v.vendorSid.slice(0,8)+' · '+note);
     s.title=v.sourcePath||v.vendorSid;strip.appendChild(s);
   });
   if(S.focus){var b=el('button','chip','Clear focus ('+Object.keys(S.focus).length+')');b.onclick=function(){S.focus=null;renderAll()};strip.appendChild(b)}
@@ -209,6 +211,8 @@ function renderOverview(){
     if(S.focus&&!S.focus[r.index])node.setAttribute('opacity','.25');
     var title=svgEl('title',{});title.textContent='#'+r.index+' '+LABEL[r.kind]+' · '+fmtDur(r.durationMs)+'\n'+r.text;node.appendChild(title);
     svg.appendChild(node);
+    // Recorded time: shade the wait for the first token apart from decoding.
+    if(S.timed&&r.ttftMs&&r.durationMs){var wait=svgEl('rect',{x:x0,y:y,width:Math.min(w,w*r.ttftMs/r.durationMs),height:LH,rx:2,fill:'var(--bg)',opacity:'.5','pointer-events':'none'});svg.appendChild(wait)}
     S.spans.push({index:r.index,x0:x0,x1:x0+w});
   });
 }
@@ -263,7 +267,8 @@ function renderLedger(){
     head.onclick=function(){S.collapsed[g.key]=!S.collapsed[g.key];renderLedger()};
     box.appendChild(head);
     if(S.collapsed[g.key])return;
-    g.records.forEach(function(r){
+    var shown=S.shown[g.key]||ROW_PAGE;
+    g.records.slice(0,shown).forEach(function(r){
       var row=el('div','row'+(S.selected===r.id?' sel':'')+(r.agent?' nested':''));
       row.setAttribute('data-id',r.id);row.setAttribute('role','button');row.tabIndex=-1;
       row.appendChild(el('span','idx mono','#'+r.index));
@@ -279,6 +284,12 @@ function renderLedger(){
       row.onclick=function(){select(r.id,false)};
       box.appendChild(row);
     });
+    // Long turns render a page at a time to keep the page responsive.
+    if(g.records.length>shown){
+      var more=el('button','more','Show '+Math.min(ROW_PAGE,g.records.length-shown)+' more of '+(g.records.length-shown)+' rows');
+      more.onclick=function(){S.shown[g.key]=shown+ROW_PAGE;renderLedger()};
+      box.appendChild(more);
+    }
   });
 }
 
@@ -295,6 +306,7 @@ function renderInspector(){
   add('Turn',r.turn);
   add('Started',r.startedAt===null?null:new Date(r.startedAt).toLocaleString());
   add('Duration',r.durationMs===null?null:fmtDur(r.durationMs));
+  add('Time to first token',r.ttftMs===undefined||r.ttftMs===null?null:fmtDur(r.ttftMs));
   add('Vendor',r.vendor);add('Vendor session',r.vendorSid);add('Agent',r.agent);add('Model',r.model);
   add('Call id',r.callId);add('Parent call',r.parentCallId);
   if(r.isError)add('Result','error');
@@ -315,13 +327,15 @@ function selectIndex(index,scroll){
   var r=null;S.traj.records.some(function(x){if(x.index===index){r=x;return true}return false});
   if(!r)return;
   var key=r.turn===null?'pre':String(r.turn);if(S.collapsed[key])S.collapsed[key]=false;
+  var position=0;visible().some(function(x){if((x.turn===null?'pre':String(x.turn))!==key)return false;position++;return x.id===r.id});
+  if(position>(S.shown[key]||ROW_PAGE))S.shown[key]=position+ROW_PAGE;
   select(r.id,scroll);
 }
 function renderAll(){renderStrip();renderFilters();renderOverview();renderLedger();renderInspector()}
 
 $('ledger').addEventListener('keydown',function(ev){
   if(ev.key!=='ArrowDown'&&ev.key!=='ArrowUp')return;
-  var rows=visible().filter(function(r){return !S.collapsed[r.turn===null?'pre':String(r.turn)]});if(!rows.length)return;
+  var seen={};var rows=visible().filter(function(r){var k=r.turn===null?'pre':String(r.turn);if(S.collapsed[k])return false;seen[k]=(seen[k]||0)+1;return seen[k]<=(S.shown[k]||ROW_PAGE)});if(!rows.length)return;
   var at=-1;rows.some(function(r,i){if(r.id===S.selected){at=i;return true}return false});
   var next=rows[Math.max(0,Math.min(rows.length-1,at+(ev.key==='ArrowDown'?1:-1)))];
   ev.preventDefault();select(next.id,true);
@@ -331,7 +345,7 @@ function load(keep){
   if(!S.sid)return Promise.resolve();
   return api('/api/trajectory?sid='+encodeURIComponent(S.sid)).then(function(t){
     S.traj=t;
-    if(!keep){S.selected=null;S.focus=null;S.collapsed={};
+    if(!keep){S.selected=null;S.focus=null;S.collapsed={};S.shown={};
       // Long sessions open at the tail, like a live log.
       if(t.records.length>1500){for(var n=1;n<t.totals.turns;n++)S.collapsed[String(n)]=true}}
     renderAll();

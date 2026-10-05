@@ -5,7 +5,13 @@ import { collectState, viewSession } from "../sessions.js";
 import { loadAntigravityTranscript } from "./antigravity.js";
 import { loadClaudeTranscript } from "./claude.js";
 import { loadCodexTranscript } from "./codex.js";
+import { loadCursorTranscript } from "./cursor.js";
+import { loadDshTranscript } from "./dsh.js";
 import { loadGrokTranscript } from "./grok.js";
+import { loadKimiTranscript } from "./kimi.js";
+import { loadKiroTranscript } from "./kiro.js";
+import { loadCommandCodeTranscript, loadPiTranscript } from "./pi.js";
+import { loadQwenTranscript } from "./qwen.js";
 import { summarize } from "./text.js";
 import type {
   Trajectory,
@@ -21,7 +27,14 @@ const LOADERS: Record<string, TranscriptLoader> = {
   antigravity: loadAntigravityTranscript,
   claude: loadClaudeTranscript,
   codex: loadCodexTranscript,
+  commandcode: loadCommandCodeTranscript,
+  cursor: loadCursorTranscript,
+  dsh: loadDshTranscript,
   grok: loadGrokTranscript,
+  kimi: loadKimiTranscript,
+  kiro: loadKiroTranscript,
+  pi: loadPiTranscript,
+  qwen: loadQwenTranscript,
 };
 
 /**
@@ -76,19 +89,31 @@ function eventMs(event: OmaEvent): number | null {
   return Number.isFinite(ms) ? ms : null;
 }
 
+interface VendorSessionRef {
+  vendor: string;
+  vendorSid: string;
+  vendorHome?: string;
+  /** When this OMA session first touched the vendor session. */
+  firstSeen: number | null;
+}
+
 /** Vendor sessions this OMA session ran on, in first-seen order. */
-function referencedVendorSessions(
-  events: OmaEvent[],
-): Array<{ vendor: string; vendorSid: string; vendorHome?: string }> {
-  const seen = new Map<
-    string,
-    { vendor: string; vendorSid: string; vendorHome?: string }
-  >();
-  const add = (vendor: unknown, vendorSid: unknown, vendorHome?: unknown) => {
+function referencedVendorSessions(events: OmaEvent[]): VendorSessionRef[] {
+  const seen = new Map<string, VendorSessionRef>();
+  const add = (
+    event: OmaEvent,
+    vendor: unknown,
+    vendorSid: unknown,
+    vendorHome?: unknown,
+  ) => {
     if (typeof vendor !== "string" || typeof vendorSid !== "string") return;
     if (!vendor || !vendorSid || vendorSid === "unknown") return;
     const key = `${vendor}\u0000${vendorSid}`;
-    const entry = seen.get(key) ?? { vendor, vendorSid };
+    const entry = seen.get(key) ?? {
+      vendor,
+      vendorSid,
+      firstSeen: eventMs(event),
+    };
     if (typeof vendorHome === "string" && vendorHome) {
       entry.vendorHome ??= vendorHome;
     }
@@ -96,10 +121,42 @@ function referencedVendorSessions(
   };
   for (const event of events) {
     // The emitting hook ran inside the vendor process named on the event.
-    add(event.vendor, event.vendorSid, event.payload?.vendorHome);
-    add(event.payload?.toVendor, event.payload?.toVendorSid);
+    add(event, event.vendor, event.vendorSid, event.payload?.vendorHome);
+    // A runtime outside OMA's vendor list (DeepSeek Harness) names itself,
+    // and its home, only in the payload.
+    add(
+      event,
+      event.payload?.toVendor,
+      event.payload?.toVendorSid,
+      event.payload?.vendorHome,
+    );
   }
   return [...seen.values()];
+}
+
+/** How many recent sessions to search for a vendor home recorded elsewhere. */
+const VENDOR_HOME_SCAN_LIMIT = 300;
+
+/**
+ * Vendor homes other sessions of this project recorded. A session from before
+ * homes were recorded can still find its transcript under a launcher-managed
+ * home that a later session ran in.
+ */
+function recordedVendorHomes(projectDir: string, vendor: string): string[] {
+  const homes = new Set<string>();
+  const sessions = collectState(projectDir).sessions.slice(
+    0,
+    VENDOR_HOME_SCAN_LIMIT,
+  );
+  for (const session of sessions) {
+    for (const event of viewSession(session.sid, projectDir).events) {
+      const home = event.payload?.vendorHome;
+      if (event.vendor === vendor && typeof home === "string" && home) {
+        homes.add(home);
+      }
+    }
+  }
+  return [...homes];
 }
 
 /** When a later session of the same category replaced this one as active. */
@@ -120,42 +177,55 @@ function supersededAt(
   return next === null ? null : Date.parse(next);
 }
 
-function recordEnd(record: TranscriptRecord): number | null {
-  if (record.startedAt === null) return null;
-  return record.startedAt + (record.durationMs ?? 0);
+/** A transcript record with the time it is placed at in the ledger. */
+export interface PlacedTranscriptRecord {
+  record: TranscriptRecord;
+  /** Own start time, or the time inherited from the preceding record. */
+  at: number;
 }
 
 /**
  * Keep the transcript turns that overlap the OMA session window. A vendor
  * session usually outlives one workflow, so whole turns are kept or dropped:
  * the turn in flight when the session ended stays, later turns do not.
+ *
+ * Some vendors timestamp only prompts, or nothing at all. A record without a
+ * time is placed at the preceding record's time, or at `anchor` (when the
+ * session first touched this transcript) if nothing before it has one.
  */
 export function windowTranscript(
   records: TranscriptRecord[],
   from: number,
   until: number,
-): TranscriptRecord[] {
+  anchor: number | null = null,
+): PlacedTranscriptRecord[] {
+  let last = anchor;
   const ordered = records
-    .filter((record) => record.startedAt !== null)
-    .map((record, order) => ({ record, order }))
-    .sort(
-      (a, b) =>
-        (a.record.startedAt as number) - (b.record.startedAt as number) ||
-        a.order - b.order,
-    )
-    .map((entry) => entry.record);
+    .flatMap((record, order) => {
+      // Nested agent logs run on their own clock, apart from the main thread.
+      if (record.agent === undefined && record.startedAt !== null) {
+        last = record.startedAt;
+      }
+      const at = record.startedAt ?? last;
+      return at === null ? [] : [{ record, at, order }];
+    })
+    .sort((a, b) => a.at - b.at || a.order - b.order);
 
-  const turns: TranscriptRecord[][] = [];
-  for (const record of ordered) {
+  const turns: PlacedTranscriptRecord[][] = [];
+  for (const { record, at } of ordered) {
     if (record.opensTurn || turns.length === 0) turns.push([]);
-    turns[turns.length - 1]?.push(record);
+    turns[turns.length - 1]?.push({ record, at });
   }
 
-  const kept: TranscriptRecord[] = [];
+  const kept: PlacedTranscriptRecord[] = [];
   for (const turn of turns) {
-    const start = turn[0]?.startedAt as number;
-    const end = Math.max(...turn.map((record) => recordEnd(record) ?? start));
-    if (end < from) continue;
+    const start = turn[0]?.at as number;
+    const end = Math.max(
+      ...turn.map((entry) => entry.at + (entry.record.durationMs ?? 0)),
+    );
+    // The prompt that created the session is logged just before the hook
+    // emits; keep that turn even while it has no response yet.
+    if (end < from && start < from - TURN_START_SLACK_MS) continue;
     if (start >= until - TURN_START_SLACK_MS) continue;
     kept.push(...turn);
   }
@@ -174,6 +244,7 @@ export function buildTrajectory(
   const roots: TranscriptRoots = {
     home: options.home ?? homedir(),
     env: options.env ?? process.env,
+    projectDir,
   };
   const view = viewSession(sid, projectDir);
   const { events, meta } = view;
@@ -183,22 +254,31 @@ export function buildTrajectory(
     .filter((ms): ms is number => ms !== null);
   const from = eventTimes.length > 0 ? Math.min(...eventTimes) : 0;
   const ended = events.find((event) => event.kind === "session.ended");
+  const lastEvent = eventTimes.length > 0 ? Math.max(...eventTimes) : 0;
+  const superseded =
+    ended || view.archived
+      ? null
+      : supersededAt(projectDir, sid, meta.category, meta.createdAt);
+  // A successor's creation normally closes an unfinished session, but events
+  // after it show the session kept running; its last event then closes it.
+  const outlived = superseded !== null && lastEvent > superseded;
   const until =
     (ended ? eventMs(ended) : null) ??
-    (view.archived
-      ? null
-      : supersededAt(projectDir, sid, meta.category, meta.createdAt)) ??
+    (outlived ? lastEvent : superseded) ??
     Number.POSITIVE_INFINITY;
-  // A session that ended mid-turn keeps that turn; the slack only separates a
-  // successor's opening prompt.
-  const windowEnd = ended ? until + TURN_START_SLACK_MS : until;
+  // A session that stopped mid-turn keeps that turn; the slack only separates
+  // a successor's opening prompt.
+  const windowEnd = ended || outlived ? until + TURN_START_SLACK_MS : until;
 
-  const placed: Array<Omit<TrajectoryRecord, "index" | "turn">> = [];
+  const placed: Array<{
+    record: Omit<TrajectoryRecord, "index" | "turn">;
+    at: number | null;
+  }> = [];
   const vendorSessions: TrajectoryVendorSession[] = [];
 
-  for (const { vendor, vendorSid, vendorHome } of referencedVendorSessions(
-    events,
-  )) {
+  const knownHomes = new Map<string, string[]>();
+  for (const ref of referencedVendorSessions(events)) {
+    const { vendor, vendorSid } = ref;
     const loader = LOADERS[vendor];
     if (!loader) {
       vendorSessions.push({
@@ -209,47 +289,77 @@ export function buildTrajectory(
       });
       continue;
     }
-    const loaded =
+    let loaded =
       eventTimes.length > 0
-        ? loader(vendorSid, { ...roots, vendorHome })
+        ? loader(vendorSid, { ...roots, vendorHome: ref.vendorHome })
         : null;
+    if (!loaded && eventTimes.length > 0 && !view.archived) {
+      if (!knownHomes.has(vendor)) {
+        knownHomes.set(vendor, recordedVendorHomes(projectDir, vendor));
+      }
+      for (const vendorHome of knownHomes.get(vendor) ?? []) {
+        loaded = loader(vendorSid, { ...roots, vendorHome });
+        if (loaded) break;
+      }
+    }
     if (!loaded) {
       vendorSessions.push({ vendor, vendorSid, status: "missing", records: 0 });
       continue;
     }
-    const records = windowTranscript(loaded.records, from, windowEnd);
-    for (const record of records) placed.push({ ...record, vendor, vendorSid });
+    const kept = windowTranscript(
+      loaded.records,
+      from,
+      windowEnd,
+      ref.firstSeen,
+    );
+    for (const { record, at } of kept) {
+      placed.push({ record: { ...record, vendor, vendorSid }, at });
+    }
+    const timed = kept.filter((entry) => entry.record.startedAt !== null);
     vendorSessions.push({
       vendor,
       vendorSid,
       status: "loaded",
       sourcePath: loaded.sourcePath,
-      records: records.length,
+      records: kept.length,
+      timing:
+        timed.length === kept.length
+          ? "full"
+          : timed.length === 0
+            ? "none"
+            : "partial",
     });
   }
 
   for (const event of events) {
     placed.push({
-      id: `oma:${event.eventId}`,
-      kind: "oma",
-      text: eventSummary(event),
-      startedAt: eventMs(event),
-      durationMs: null,
-      vendor: event.vendor,
-      vendorSid: event.vendorSid,
-      event: {
-        eventId: event.eventId,
-        kind: event.kind,
-        payload: event.payload,
+      at: eventMs(event),
+      record: {
+        id: `oma:${event.eventId}`,
+        kind: "oma",
+        text: eventSummary(event),
+        startedAt: eventMs(event),
+        durationMs: null,
+        vendor: event.vendor,
+        vendorSid: event.vendorSid,
+        event: {
+          eventId: event.eventId,
+          kind: event.kind,
+          payload: event.payload,
+        },
       },
     });
   }
 
   const ordered = placed
-    .map((record, order) => ({ record, order }))
+    .map((entry, order) => ({ ...entry, order }))
+    // At the same instant, a record with its own time precedes the untimed
+    // records placed at it.
     .sort(
       (a, b) =>
-        (a.record.startedAt ?? 0) - (b.record.startedAt ?? 0) ||
+        (a.at ?? 0) - (b.at ?? 0) ||
+        Number(a.record.startedAt === null) -
+          Number(b.record.startedAt === null) ||
         a.order - b.order,
     );
 

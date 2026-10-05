@@ -43,6 +43,8 @@ export interface TranscriptRecord {
   callId?: string;
   isError?: boolean;
   model?: string;
+  /** Time from request start to the first streamed token, when recorded. */
+  ttftMs?: number;
   input?: string;
   output?: string;
   thinking?: string;
@@ -75,6 +77,11 @@ export interface TrajectoryVendorSession {
   sourcePath?: string;
   /** Records placed in the ledger after windowing to this OMA session. */
   records: number;
+  /**
+   * How much of the transcript carries timestamps. Without them (`none`) the
+   * whole transcript is shown, since it cannot be windowed to this session.
+   */
+  timing?: "full" | "partial" | "none";
 }
 
 export interface TrajectoryTotals {
@@ -105,6 +112,8 @@ export interface TranscriptLoadResult {
 export interface TranscriptRoots {
   home: string;
   env: NodeJS.ProcessEnv;
+  /** OMA project the session belongs to. */
+  projectDir: string;
   /** Vendor home the L1 events recorded for this vendor session, if any. */
   vendorHome?: string;
 }

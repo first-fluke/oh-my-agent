@@ -139,7 +139,11 @@ export function parseGrokRows(rows: GrokRow[]): TranscriptRecord[] {
     if (kind === "agent_thought_chunk" || kind === "agent_message_chunk") {
       // Chunks after a tool call belong to the next model response.
       if (step && stepTools.length > 0) closeStep();
+      const opening = step === null;
       const current = openStep(ts, meta?.streamStartMs);
+      if (opening && ts !== null && meta?.streamStartMs !== undefined) {
+        current.ttftMs = Math.max(0, ts - meta.streamStartMs);
+      }
       const text = chunkText(update.content);
       if (kind === "agent_thought_chunk") {
         current.thinking = capDetail(`${current.thinking ?? ""}${text}`);

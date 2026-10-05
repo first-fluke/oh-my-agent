@@ -7,8 +7,9 @@ import { parseAntigravityRows } from "./antigravity.js";
 import { buildTrajectory, windowTranscript } from "./build.js";
 import { parseClaudeRows } from "./claude.js";
 import { parseCodexRows } from "./codex.js";
+import { resolveLayout } from "./command.js";
 import { parseGrokRows } from "./grok.js";
-import { renderTrajectory } from "./render.js";
+import { renderOverview, renderTrajectory } from "./render.js";
 import type { TranscriptRecord } from "./types.js";
 
 const at = (clock: string): string => `2026-05-25T${clock}.000Z`;
@@ -538,7 +539,7 @@ describe("windowTranscript", () => {
 
   it("keeps whole turns that overlap the session window", () => {
     const kept = windowTranscript(records, ms("10:00:00"), ms("11:00:00"));
-    expect(kept.map((entry) => entry.id)).toEqual([
+    expect(kept.map((entry) => entry.record.id)).toEqual([
       "inflight",
       "inflight-answer",
     ]);
@@ -550,12 +551,37 @@ describe("windowTranscript", () => {
       ms("10:00:00"),
       Number.POSITIVE_INFINITY,
     );
-    expect(kept.map((entry) => entry.id)).toEqual([
+    expect(kept.map((entry) => entry.record.id)).toEqual([
       "inflight",
       "inflight-answer",
       "next",
       "next-answer",
     ]);
+  });
+});
+
+describe("resolveLayout", () => {
+  it("fits rows for a terminal or an explicit width, not for a pipe", () => {
+    expect(resolveLayout(undefined, { isTTY: true, columns: 120 }, {})).toEqual(
+      {
+        width: 119,
+        fitRows: true,
+      },
+    );
+    expect(resolveLayout("72", { isTTY: false }, {})).toEqual({
+      width: 72,
+      fitRows: true,
+    });
+    expect(resolveLayout(undefined, { isTTY: false }, {})).toEqual({
+      width: 80,
+      fitRows: false,
+    });
+    expect(
+      resolveLayout(undefined, { isTTY: false }, { COLUMNS: "132" }),
+    ).toEqual({ width: 132, fitRows: false });
+    expect(() =>
+      resolveLayout("wide", { isTTY: true, columns: 120 }, {}),
+    ).toThrow(/--width/);
   });
 });
 
@@ -593,13 +619,13 @@ describe("buildTrajectory", () => {
     emitEvent(projectDir, sid, {
       kind: "boundary",
       ts: at("10:00:20"),
-      vendor: "kiro",
-      vendorSid: "kiro-session-1",
+      vendor: "gemini",
+      vendorSid: "gemini-session-1",
       payload: {
         reason: "vendor-session-transition",
         fromVendor: "claude",
-        toVendor: "kiro",
-        toVendorSid: "kiro-session-1",
+        toVendor: "gemini",
+        toVendorSid: "gemini-session-1",
       },
     });
     emitEvent(projectDir, sid, {
@@ -650,7 +676,11 @@ describe("buildTrajectory", () => {
 
     expect(trajectory.vendorSessions).toMatchObject([
       { vendor: "claude", vendorSid: "claude-session-1", status: "loaded" },
-      { vendor: "kiro", vendorSid: "kiro-session-1", status: "unsupported" },
+      {
+        vendor: "gemini",
+        vendorSid: "gemini-session-1",
+        status: "unsupported",
+      },
     ]);
     // The earlier prompt and the turn resumed after session.ended are outside
     // this session; the in-flight turn is kept whole.
@@ -682,7 +712,7 @@ describe("buildTrajectory", () => {
       "debug.root-cause · invert the token check",
     );
     expect(trajectory.records[7]?.text).toBe(
-      "vendor-session-transition · claude → kiro",
+      "vendor-session-transition · claude → gemini",
     );
     expect(trajectory.totals).toMatchObject({
       records: 9,
@@ -698,7 +728,62 @@ describe("buildTrajectory", () => {
       },
     });
 
+    // 40 columns: a 10-column gutter plus 30 cells over 15s of activity.
+    const overview = renderOverview(trajectory, 40).split("\n");
+    expect(overview.map((line) => line.slice(0, 10).trimEnd())).toEqual([
+      "",
+      "OMA",
+      "Input",
+      "Assistant",
+      "Tool",
+      "",
+    ]);
+    expect(overview[0]).toBe(`${" ".repeat(10)}T1`);
+    // The prompt is an instant mark; the first request fills its 6 seconds.
+    expect(overview[2]?.slice(10, 11)).toBe("▏");
+    expect(overview[3]?.slice(10, 22)).toBe("█".repeat(12));
+    // The tool call runs from second 6 to second 9.
+    expect(overview[4]?.slice(22, 28)).toBe("█".repeat(6));
+    expect(overview[1]).toContain("◆");
+    expect(overview[5]).toContain("15.0s of activity");
+    for (const line of overview.slice(0, 5)) {
+      expect(line.length).toBeLessThanOrEqual(40);
+    }
+
+    const plain = renderOverview(trajectory, 40, { ascii: true });
+    expect(plain).toMatch(/^Assistant #{12}/m);
+    expect(plain).not.toMatch(/[█▓▒◆▏]/);
+
+    // Sequence mode: 9 records share 30 cells in ledger order, whatever
+    // their duration, so the two prompts-and-events lanes get real width.
+    const ordered = renderOverview(trajectory, 40, { sequence: true }).split(
+      "\n",
+    );
+    expect(ordered[5]).toContain("9 records in order, equal width");
+    expect(ordered[2]?.slice(10, 13)).toBe("███");
+    expect(ordered[3]?.slice(13, 16)).toBe("███");
+    expect(ordered[1]?.slice(16, 19)).toBe("◆◆◆");
+
     const rendered = renderTrajectory(trajectory);
+    expect(rendered).toContain("Overview");
+
+    // In a terminal every row is cut to the width, counting CJK as two cells.
+    const wide = { ...trajectory, records: [...trajectory.records] };
+    wide.records[0] = {
+      ...trajectory.records[0],
+      text: "한글 프롬프트 ".repeat(20),
+    } as (typeof trajectory.records)[number];
+    const fitted = renderTrajectory(wide, { width: 60, fitRows: true });
+    const promptRow = fitted.split("\n").find((line) => line.includes("한글"));
+    expect(promptRow?.endsWith("…")).toBe(true);
+    const cells = [...(promptRow ?? "")].reduce(
+      (sum, char) => sum + (/[가-힣]/.test(char) ? 2 : 1),
+      0,
+    );
+    expect(cells).toBeLessThanOrEqual(60);
+    expect(renderTrajectory(wide)).toContain(
+      "한글 프롬프트 ".repeat(20).trim(),
+    );
     expect(rendered).toContain("OMA trajectory oma-trajectory");
     expect(rendered).toContain("Turn 1");
     expect(rendered).toContain("transcript not supported");
