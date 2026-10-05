@@ -6,8 +6,11 @@ import {
   setInstallContext,
 } from "./platform/install-context.js";
 import type { CommandSurface } from "./utils/command-surface.js";
+import { installPipeSafeConsole } from "./utils/pipe-safe-console.js";
 
 const VERSION = pkg.version;
+
+installPipeSafeConsole();
 
 const program = new Command();
 let commandSurface: CommandSurface | undefined;
