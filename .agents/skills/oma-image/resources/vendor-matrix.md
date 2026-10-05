@@ -27,7 +27,7 @@ Codex requires `--skip-git-repo-check` for invocation inside a git worktree; thi
 
 ## Antigravity
 
-The Antigravity CLI (`agy`) is an agentic CLI that runs against the user's Gemini Code Assist subscription (no separate API key, no per-image charge). It exposes an internal image generation tool that drives Gemini-family image models — including the one currently called "nano-banana" — but does **not** expose a model selector to callers. We deliberately do not pretend to choose: the prompt has no model hint, the manifest records `"model": "agy-internal"`, and the output filename is `antigravity-<runShortid>.<ext>` with no model segment.
+The Antigravity CLI (`agy`) is an agentic CLI that runs against the user's Gemini Code Assist subscription (no separate API key, no per-image charge). Since 1.2.16, it routes native image requests through the built-in `image-generator` subagent; older sessions expose `generate_image` directly. OMA supports both routes and waits for generated image bytes to be saved or copied to the requested target paths. Image model selection remains internal: the prompt has no model hint, the manifest records `"model": "agy-internal"`, and the output filename is `antigravity-<runShortid>.<ext>` with no model segment.
 
 | Field | Value |
 |-------|-------|
@@ -43,7 +43,7 @@ The Antigravity CLI (`agy`) is an agentic CLI that runs against the user's Gemin
 
 - `gemini -p` runs the full agent loop and does not emit raw `inlineData` bytes on stdout (as of Gemini CLI 0.38) — it tries to invoke image-generation tools itself, often recursing back into `oma-image`.
 - The direct `generativelanguage.googleapis.com` API requires `GEMINI_API_KEY` plus billing on AI Studio. Image models are not in the free tier.
-- `agy -p` already wraps Gemini Code Assist credentials in the user's Antigravity session and exposes a working `image_gen` tool. It writes raw bytes to disk for us, so we don't have to capture them from stdout.
+- `agy -p` already wraps Gemini Code Assist credentials in the user's Antigravity session and provides native image generation. It writes raw bytes to disk for us, so we don't have to capture them from stdout.
 
 ### Output format gotcha
 

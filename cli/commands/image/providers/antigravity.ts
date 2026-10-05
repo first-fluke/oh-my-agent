@@ -260,14 +260,16 @@ export function buildInstruction(args: {
   const targetLines = args.targets.map((p, i) => `  image[${i}] -> ${p}`);
   const replyLines = args.targets.map((p) => `SAVED:${p}`);
   return [
-    `Call the \`generate_image\` tool ${args.n === 1 ? "once" : `${args.n} times`} to produce ${args.n === 1 ? "one image" : `${args.n} distinct images`}.${sizeHint}${qualityHint} Do not answer in prose, do not explain flags, do not read CLAUDE.md or any source file — just invoke \`generate_image\`.`,
+    `Generate ${args.n === 1 ? "one image" : `${args.n} distinct images`} using Antigravity's native image-generation capability.${sizeHint}${qualityHint}`,
+    "If a built-in `image-generator` subagent is available, use it; otherwise use the `generate_image` tool. Do not draw images with code or use external services.",
     `Image prompt: ${args.prompt}`,
     ...refLines,
-    "Save each result to the EXACT absolute path below — do not change directory, name, or extension. Overwrite any existing file.",
+    "Pass the image prompt, references, and size/quality hints to the native image generator. Wait for all image generation to finish before responding.",
+    "Save or copy each generated raster image to the EXACT absolute path below — do not change directory, name, or extension. Preserve the original image bytes. Overwrite any existing file.",
     ...targetLines,
     "Once every file is saved, reply with these lines and nothing else (no prose, no markdown, no code fences):",
     ...replyLines,
-    "If `generate_image` is unavailable or refuses, reply with exactly ONE of these tokens on its own line and nothing else:",
+    "If neither native image-generation route is available, or generation fails, reply with exactly ONE of these tokens on its own line and nothing else. Use NO_IMAGE_TOOL only when neither route is available:",
     "  NO_IMAGE_TOOL",
     "  CONTENT_POLICY_REFUSAL",
     "  RATE_LIMITED",

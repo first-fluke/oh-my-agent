@@ -61,7 +61,7 @@ describe("buildInstruction", () => {
     expect(out).toContain("2 distinct images");
   });
 
-  it("invokes generate_image by name without naming a model", () => {
+  it("supports native image-generator routing with legacy tool fallback", () => {
     const out = buildInstruction({
       prompt: "a red apple",
       size: "1024x1024",
@@ -70,7 +70,13 @@ describe("buildInstruction", () => {
       targets: ["/tmp/a/img.img"],
       refPaths: [],
     });
-    expect(out).toContain("generate_image");
+    expect(out).toContain("image-generator");
+    expect(out).toContain("otherwise use the `generate_image` tool");
+    expect(out).toContain("Wait for all image generation to finish");
+    expect(out).toContain("Preserve the original image bytes");
+    expect(out).toContain(
+      "If neither native image-generation route is available",
+    );
     expect(out).not.toMatch(/preferred model/i);
     expect(out).not.toMatch(/nano-banana/i);
     expect(out).not.toMatch(/gemini-\d/i);
@@ -98,7 +104,6 @@ describe("buildInstruction", () => {
       targets: ["/tmp/x.img"],
       refPaths: [],
     });
-    expect(out).toContain("once");
     expect(out).toContain("one image");
     expect(out).not.toContain("distinct images");
   });
@@ -333,6 +338,38 @@ describe("AntigravityProvider.generate", () => {
     expect(results[1]?.model).toBe("agy-internal");
     expect(results[1]?.mime).toBe("image/jpeg");
     expect(results[1]?.filePath).toMatch(/\.jpg$/);
+  });
+
+  it("generates when the session only exposes the image-generator route", async () => {
+    vi.mocked(runCapture).mockImplementation(async (_bin, args) => {
+      const instruction = args[args.length - 1] ?? "";
+      if (!instruction.includes("image-generator")) {
+        return { code: 0, stdout: "NO_IMAGE_TOOL\n", stderr: "" };
+      }
+      const fs = await import("node:fs/promises");
+      for (const match of instruction.matchAll(/image\[\d+\]\s+->\s+(\S+)/g)) {
+        if (match[1]) {
+          await fs.writeFile(
+            match[1],
+            Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
+          );
+        }
+      }
+      return { code: 0, stdout: "SAVED", stderr: "" };
+    });
+
+    const results = await new AntigravityProvider().generate({
+      prompt: "a robot with a blue umbrella",
+      size: "auto",
+      quality: "auto",
+      n: 1,
+      outDir: tmp,
+      signal: new AbortController().signal,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.mime).toBe("image/jpeg");
+    expect(results[0]?.filePath).toMatch(/\.jpg$/);
   });
 
   // Regression for 21141241: agy's `-p` (= `--print`) is a VALUE flag — it
