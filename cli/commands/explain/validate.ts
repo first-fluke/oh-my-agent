@@ -58,7 +58,12 @@ function findHtmlFiles(dirPath: string, visited = new Set<string>()): string[] {
       }
     } else if (entry.isDirectory()) {
       results.push(...findHtmlFiles(fullPath, visited));
-    } else if (entry.isFile() && entry.name.endsWith(".html")) {
+    } else if (
+      entry.isFile() &&
+      entry.name.endsWith(".html") &&
+      // An archify sidecar is archify's own document, checked by archify.
+      !entry.name.endsWith(".archify.html")
+    ) {
       results.push(fullPath);
     }
   }

@@ -2,6 +2,12 @@
 
 This resource specifies HOW the generated HTML file behaves and is validated. For content requirements, refer to the sibling `document-structure.md` file.
 
+> Pages made by `oma explain render` meet sections 1–5 by construction (inline CSS and
+> script under a `default-src 'none'` policy, `<pre>` code, light/dark themes, shuffled quiz
+> with per-option feedback). For those pages this contract reduces to section 6
+> (`oma explain validate`) and section 7 (secret gates). Sections 1–5 remain the rules for
+> hand-written HTML.
+
 ## 1. Self-contained Rule
 The generated HTML file MUST make ZERO external resource loads.
 - No CDN scripts or stylesheets.

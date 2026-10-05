@@ -5,6 +5,11 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
+import {
+  runExplainComponents,
+  runExplainPatch,
+  runExplainRender,
+} from "./render/command.js";
 import { runExplainValidate } from "./validate.js";
 
 export function registerExplainCommand(program: Command): void {
@@ -54,6 +59,103 @@ export function registerExplainCommand(program: Command): void {
       { supportsJsonOutput: true },
     ),
   );
+
+  const renderCmd = explain
+    .command("render [file]")
+    .description(
+      "Render a Markdown draft (file or stdin) into one self-contained HTML explanation",
+    )
+    .option(
+      "--out <path>",
+      "Output file (default: .agents/results/explain/{YYYY-MM-DD}-{slug}.html)",
+    )
+    .option("--theme <name>", "Theme: blueprint | card")
+    .option("--mode <mode>", "Colour mode: auto | light | dark")
+    .option("--style <level>", "Prose check: off | warn | strict")
+    .option(
+      "--lang <code>",
+      "Page language: en | ko | ja | zh (default: detected)",
+    )
+    .option("--archify", "Also build and link an interactive archify diagram")
+    .option(
+      "--no-archify",
+      "Skip the archify diagram even when the config enables it",
+    )
+    .option("--open", "Open the page in the browser");
+  addOutputOptions(renderCmd);
+  renderCmd.action(
+    runAction(
+      async (
+        file: string | undefined,
+        opts: {
+          out?: string;
+          theme?: string;
+          mode?: string;
+          style?: string;
+          lang?: string;
+          archify?: boolean;
+          open?: boolean;
+          json?: boolean;
+        },
+      ) => {
+        process.exitCode = await runExplainRender({
+          ...opts,
+          file,
+          json: resolveJsonMode(opts),
+        });
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  const patchCmd = explain
+    .command("patch <html> [file]")
+    .description(
+      "Replace one panel of a rendered page from its embedded draft (new panel from file or stdin)",
+    )
+    .requiredOption("--panel <id>", "Panel letter to replace, e.g. B")
+    .option("--open", "Open the page in the browser");
+  addOutputOptions(patchCmd);
+  patchCmd.action(
+    runAction(
+      async (
+        html: string,
+        file: string | undefined,
+        opts: { panel: string; open?: boolean; json?: boolean },
+      ) => {
+        process.exitCode = await runExplainPatch({
+          html,
+          file,
+          panel: opts.panel,
+          open: opts.open,
+          json: resolveJsonMode(opts),
+        });
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  const componentsCmd = explain
+    .command("components [name]")
+    .description(
+      "List the components a draft can use, or print one component's syntax",
+    );
+  addOutputOptions(componentsCmd);
+  componentsCmd.action(
+    runAction(
+      async (name: string | undefined, opts: { json?: boolean }) => {
+        process.exitCode = runExplainComponents(name, {
+          json: resolveJsonMode(opts),
+        });
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
 }
 
+export {
+  runExplainComponents,
+  runExplainPatch,
+  runExplainRender,
+} from "./render/command.js";
 export { runExplainValidate } from "./validate.js";
