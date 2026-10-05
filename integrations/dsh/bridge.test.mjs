@@ -77,6 +77,47 @@ test("allow preserves downstream approval and frozen input; context queues for t
   assert.equal(agent.contexts[0].content[0].text, "Check the result.");
 });
 
+test("bash hooks resolve relative and absolute workdir without changing tool arguments", async (t) => {
+  const f = await fixture(t);
+  const workdir = join(f.cwd, "cli", "deep");
+  const whitespaceWorkdir = join(f.cwd, " ");
+  await mkdir(workdir, { recursive: true });
+  await mkdir(whitespaceWorkdir);
+  const ctx = install(t, f.config);
+  const agent = fakeAgent(f.cwd);
+  for (const value of ["cli/deep", workdir, " "]) {
+    const args = Object.freeze({ command: "rg needle ../..", workdir: value });
+    const tool = execution(agent, "bash", args);
+    const pre = await ctx.handlers.get("tools/pre-execute")(tool, async () => {
+      assert.equal(tool.arguments, args);
+      return { kind: "allow" };
+    });
+    assert.equal(pre.kind, "allow");
+    await ctx.handlers.get("tools/post-execute")(
+      tool,
+      { isError: false, value: "needle", content: [] },
+      async () => ({ kind: "accept" }),
+    );
+    assert.deepEqual(args, { command: "rg needle ../..", workdir: value });
+  }
+  await ctx.handlers.get("agent/turn-stopping")({
+    agent,
+    turn: 1,
+    signal: new AbortController().signal,
+  });
+  const calls = await f.calls();
+  assert.equal(calls.length, 7);
+  for (const [index, call] of calls.slice(0, 6).entries()) {
+    assert.equal(call.payload.cwd, index < 4 ? workdir : whitespaceWorkdir);
+    assert.equal(call.payload.tool_name, "Bash");
+    assert.equal(call.payload.tool_input.command, "rg needle ../..");
+  }
+  assert.equal(calls[0].payload.tool_input.workdir, "cli/deep");
+  assert.equal(calls[2].payload.tool_input.workdir, workdir);
+  assert.equal(calls[4].payload.tool_input.workdir, " ");
+  assert.equal(calls[6].payload.cwd, f.cwd);
+});
+
 test("changed updatedInput denies dispatch because pinned DSH cannot apply mutation", async (t) => {
   const f = await fixture(t, {
     PreToolUse: { hookSpecificOutput: { updatedInput: { command: "safe" } } },

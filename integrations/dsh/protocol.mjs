@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 
 const aliases = {
@@ -16,6 +17,15 @@ export function hookPayload(event, agent, execution, result) {
     hook_event_name: event,
   };
   if (execution) {
+    const workdir = execution.arguments?.workdir;
+    if (
+      (event === "PreToolUse" || event === "PostToolUse") &&
+      execution.name === "bash" &&
+      typeof workdir === "string" &&
+      workdir.length > 0
+    ) {
+      payload.cwd = resolve(payload.cwd, workdir);
+    }
     payload.tool_name = Object.hasOwn(aliases, execution.name)
       ? aliases[execution.name]
       : execution.name;

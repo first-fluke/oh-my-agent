@@ -101,7 +101,8 @@ Override the `oma` row through your profile's `cordis.patch.yml`:
 `command` names one executable. `commandArgs` is a literal argument array,
 not a shell command. The host environment is inherited so OMA can use the
 project's configured tools. Hook processes run in the agent's actual working
-directory. Cancellation, agent disposal, and plugin unload terminate owned hook
+directory, including an explicit Bash `workdir`. Cancellation, agent disposal,
+and plugin unload terminate owned hook
 processes.
 
 A project without an OMA marker is left alone. In an initialized project, a
@@ -123,7 +124,7 @@ execution, and agent continuation. Its model responses are deterministic test
 fixtures; it makes no paid model calls.
 
 Verified on macOS with DSH `0.2.0-rc.2`, Cordis `4.0.4`, and OMA `15.0.17`:
-16 tests pass, all 33 project OMA skills are discovered, and the real OMA CLI
+17 tests pass, all 33 project OMA skills are discovered, and the real OMA CLI
 blocks a guarded tool call while allowing a benign call.
 
 ## References
