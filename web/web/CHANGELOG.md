@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.5...web-v7.1.0) (2026-10-05)
+
+
+### Features
+
+* **state:** add session trajectory viewer ([c59c821](https://github.com/first-fluke/oh-my-agent/commit/c59c8213f308569e458e9c9cb12722da67e3a21a))
+
 ## [7.0.5](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.4...web-v7.0.5) (2026-10-03)
 
 
