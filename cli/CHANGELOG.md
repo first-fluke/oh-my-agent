@@ -1,5 +1,14 @@
 # Changelog
 
+## [15.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.2.0...cli-v15.3.0) (2026-10-05)
+
+
+### Features
+
+* **dsh:** announce harness sessions to the oma event log ([1032582](https://github.com/first-fluke/oh-my-agent/commit/10325828f29a21a98d88f14e311b1b53aa0913ca))
+* **explain:** render markdown drafts into self-contained html ([ad24779](https://github.com/first-fluke/oh-my-agent/commit/ad247797694729e1c4c0f507ddcd2a634da49521))
+* **state:** extend trajectory to eleven runtimes and terminal overview ([f539196](https://github.com/first-fluke/oh-my-agent/commit/f5391966914b155cd1d8dacd2ce02a39a38ad51a))
+
 ## [15.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.1.3...cli-v15.2.0) (2026-10-05)
 
 
