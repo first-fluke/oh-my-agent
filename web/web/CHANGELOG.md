@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v7.1.0...web-v7.1.1) (2026-10-05)
+
+
+### Documentation
+
+* **cli:** document trajectory vendors and explain render ([316e372](https://github.com/first-fluke/oh-my-agent/commit/316e372db30548728f493bb1c7322ec736c96591))
+
 ## [7.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v7.0.5...web-v7.1.0) (2026-10-05)
 
 
