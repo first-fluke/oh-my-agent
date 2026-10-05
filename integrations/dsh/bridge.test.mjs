@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, realpath, symlink, writeFile } from "node:fs/promises";
+import { join, sep } from "node:path";
 import { test } from "node:test";
 import { registerBridge } from "./bridge.mjs";
 import {
@@ -51,7 +51,7 @@ test("tool denial stops dispatch and passes the public hook ABI and OMA tool ali
   ]);
   assert.equal(payload.tool_name, "Bash");
   assert.equal(payload.session_id, agent.id);
-  assert.equal(payload.cwd, f.cwd);
+  assert.equal(payload.cwd, await realpath(f.cwd));
 });
 
 test("allow preserves downstream approval and frozen input; context queues for the next step", async (t) => {
@@ -108,14 +108,107 @@ test("bash hooks resolve relative and absolute workdir without changing tool arg
   const calls = await f.calls();
   assert.equal(calls.length, 7);
   for (const [index, call] of calls.slice(0, 6).entries()) {
-    assert.equal(call.payload.cwd, index < 4 ? workdir : whitespaceWorkdir);
+    assert.equal(
+      call.payload.cwd,
+      await realpath(index < 4 ? workdir : whitespaceWorkdir),
+    );
     assert.equal(call.payload.tool_name, "Bash");
     assert.equal(call.payload.tool_input.command, "rg needle ../..");
   }
   assert.equal(calls[0].payload.tool_input.workdir, "cli/deep");
   assert.equal(calls[2].payload.tool_input.workdir, workdir);
   assert.equal(calls[4].payload.tool_input.workdir, " ");
-  assert.equal(calls[6].payload.cwd, f.cwd);
+  assert.equal(calls[6].payload.cwd, await realpath(f.cwd));
+});
+
+test("external symlinks use physical hook cwd and still activate project guards", async (t) => {
+  const f = await fixture(t, {
+    PreToolUse: {
+      hookSpecificOutput: {
+        permissionDecision: "deny",
+        permissionDecisionReason: "Use Serena.",
+      },
+    },
+  });
+  const external = await fixture(t, {}, false);
+  const nested = join(f.cwd, "cli", "deep");
+  await mkdir(nested, { recursive: true });
+  await mkdir(join(f.cwd, ".git"));
+  const alias = join(external.cwd, "project-link");
+  await symlink(
+    nested,
+    alias,
+    process.platform === "win32" ? "junction" : "dir",
+  );
+  const ctx = install(t, f.config);
+  const agent = fakeAgent(f.cwd);
+  for (const workdir of [alias, `${alias}${sep}..`]) {
+    const args = Object.freeze({ command: "rg needle ../..", workdir });
+    const tool = execution(agent, "bash", args);
+    const decision = await ctx.handlers.get("tools/pre-execute")(
+      tool,
+      async () => assert.fail("denied tool must not execute"),
+    );
+    assert.equal(decision.kind, "deny");
+    await ctx.handlers.get("tools/post-execute")(
+      tool,
+      { isError: false, value: "recorded", content: [] },
+      async () => ({ kind: "accept" }),
+    );
+    assert.equal(tool.arguments, args);
+    assert.deepEqual(args, { command: "rg needle ../..", workdir });
+  }
+  const linkedAgent = fakeAgent(alias);
+  await ctx.handlers.get("agent/created")({
+    agent: linkedAgent,
+    source: "startup",
+  });
+  assert.equal(linkedAgent.contexts.length, 1);
+  const linkedArgs = Object.freeze({ command: "rg needle ../.." });
+  const decision = await ctx.handlers.get("tools/pre-execute")(
+    execution(linkedAgent, "bash", linkedArgs),
+    async () => assert.fail("linked project must keep its guards"),
+  );
+  assert.equal(decision.kind, "deny");
+  await ctx.handlers.get("agent/turn-stopping")({
+    agent: linkedAgent,
+    turn: 1,
+    signal: new AbortController().signal,
+  });
+  const calls = await f.calls();
+  assert.equal(calls.length, 6);
+  for (const call of [calls[0], calls[1], calls[4], calls[5]]) {
+    assert.equal(call.payload.cwd, await realpath(nested));
+  }
+  assert.equal(calls[2].payload.cwd, await realpath(`${alias}${sep}..`));
+  assert.equal(calls[3].payload.cwd, await realpath(`${alias}${sep}..`));
+  assert.equal(calls[0].payload.tool_input.workdir, alias);
+  assert.equal(linkedAgent.session.header.cwd, alias);
+  assert.deepEqual(linkedArgs, { command: "rg needle ../.." });
+});
+
+test("unresolvable workdir or session cwd denies execution before invoking OMA", async (t) => {
+  const f = await fixture(t);
+  const ctx = install(t, f.config);
+  const missing = join(f.cwd, "missing");
+  for (const tool of [
+    execution(
+      fakeAgent(f.cwd),
+      "bash",
+      Object.freeze({ command: "pwd", workdir: missing }),
+    ),
+    execution(fakeAgent(missing)),
+  ]) {
+    const args = tool.arguments;
+    const decision = await ctx.handlers.get("tools/pre-execute")(
+      tool,
+      async () => assert.fail("unresolved cwd must not execute"),
+    );
+    assert.equal(decision.kind, "deny");
+    assert.match(decision.reason, /OMA hook could not validate/);
+    assert.equal(tool.arguments, args);
+  }
+  assert.deepEqual(await f.calls(), []);
 });
 
 test("changed updatedInput denies dispatch because pinned DSH cannot apply mutation", async (t) => {
@@ -257,7 +350,7 @@ test("nested project cwd inherits OMA markers up to the nearest git boundary", a
   await ctx.handlers.get("tools/pre-execute")(execution(agent), async () => ({
     kind: "allow",
   }));
-  assert.equal((await f.calls())[0].payload.cwd, nested);
+  assert.equal((await f.calls())[0].payload.cwd, await realpath(nested));
   const separate = join(f.cwd, "separate");
   await mkdir(separate);
   await writeFile(join(separate, ".git"), "gitdir: elsewhere\n");

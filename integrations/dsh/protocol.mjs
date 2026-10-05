@@ -1,4 +1,5 @@
-import { resolve } from "node:path";
+import { realpath } from "node:fs/promises";
+import { isAbsolute, sep } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 
 const aliases = {
@@ -10,7 +11,7 @@ const aliases = {
   glob: "Glob",
 };
 
-export function hookPayload(event, agent, execution, result) {
+export async function hookPayload(event, agent, execution, result) {
   const payload = {
     cwd: agent.session.header.cwd,
     session_id: agent.id ?? agent.session.header.id,
@@ -24,7 +25,9 @@ export function hookPayload(event, agent, execution, result) {
       typeof workdir === "string" &&
       workdir.length > 0
     ) {
-      payload.cwd = resolve(payload.cwd, workdir);
+      payload.cwd = isAbsolute(workdir)
+        ? workdir
+        : `${payload.cwd}${sep}${workdir}`;
     }
     payload.tool_name = Object.hasOwn(aliases, execution.name)
       ? aliases[execution.name]
@@ -38,6 +41,7 @@ export function hookPayload(event, agent, execution, result) {
       : { isError: false, value: result.value, content: result.content };
   }
   if (event === "Stop") payload.stop_hook_active = false;
+  payload.cwd = await realpath(payload.cwd);
   return payload;
 }
 

@@ -1,4 +1,4 @@
-import { stat } from "node:fs/promises";
+import { realpath, stat } from "node:fs/promises";
 import { dirname, isAbsolute, join } from "node:path";
 import {
   decodeOutput,
@@ -19,15 +19,16 @@ const RUNTIME_NOTE = [
 ].join("\n");
 
 async function initializedWorkspace(agent) {
-  const cwd = agent?.session?.header?.cwd;
+  const sessionCwd = agent?.session?.header?.cwd;
   const id = agent?.id ?? agent?.session?.header?.id;
   if (
-    typeof cwd !== "string" ||
-    !isAbsolute(cwd) ||
+    typeof sessionCwd !== "string" ||
+    !isAbsolute(sessionCwd) ||
     typeof id !== "string" ||
     !id
   )
     return false;
+  const cwd = await realpath(sessionCwd);
   let current = cwd;
   let ancestorMarker = false;
   while (true) {
@@ -81,7 +82,7 @@ export function registerBridge(ctx, config, createUserMessage) {
   async function run(event, agent, signal, execution, result) {
     const stdout = await runner.run(
       event,
-      hookPayload(event, agent, execution, result),
+      await hookPayload(event, agent, execution, result),
       { signal, owner: agent },
     );
     return decodeOutput(stdout, event);
@@ -117,8 +118,8 @@ export function registerBridge(ctx, config, createUserMessage) {
   });
   ctx.on("tools/pre-execute", async (execution, next) => {
     const agent = execution.agent;
-    if (!(await active(agent, execution.signal))) return next();
     try {
+      if (!(await active(agent, execution.signal))) return next();
       const output = await run(
         "PreToolUse",
         agent,
@@ -140,9 +141,9 @@ export function registerBridge(ctx, config, createUserMessage) {
   });
   ctx.on("tools/post-execute", async (execution, result, next) => {
     const agent = execution.agent;
-    if (!(await active(agent, execution.signal))) return next();
     let context;
     try {
+      if (!(await active(agent, execution.signal))) return next();
       context = postContext(
         await run("PostToolUse", agent, execution.signal, execution, result),
       );
@@ -161,7 +162,6 @@ export function registerBridge(ctx, config, createUserMessage) {
     };
   });
   ctx.on("agent/turn-stopping", async ({ agent, turn, signal }) => {
-    if (!(await active(agent, signal))) return;
     let state = stopStates.get(agent);
     if (state?.turn !== turn) {
       state = { turn, blocks: 0, inFlight: false, warned: false };
@@ -171,7 +171,8 @@ export function registerBridge(ctx, config, createUserMessage) {
     state.inFlight = true;
     let reason;
     try {
-      const payload = hookPayload("Stop", agent);
+      if (!(await active(agent, signal))) return;
+      const payload = await hookPayload("Stop", agent);
       const latest = assistantResponses.get(agent.session);
       if (latest?.turn === turn) payload.response = latest.text;
       const stdout = await runner.run("Stop", payload, {
