@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.4.0...cli-v15.4.1) (2026-10-05)
+
+
+### Documentation
+
+* **cli:** sync package readme with the root readme ([1dbf161](https://github.com/first-fluke/oh-my-agent/commit/1dbf161c2536770bf55fc67e00afb6c563d21d04))
+
 ## [15.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.3.0...cli-v15.4.0) (2026-10-05)
 
 
