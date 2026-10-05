@@ -4,6 +4,12 @@
 > Read this document to understand WHAT content is generated and in what tone.
 > For HOW the HTML is styled and behaves, see `html-contract.md`.
 
+> **Authoring path**: write a draft and render it with `oma explain render` (see
+> `draft-format.md`). The four sections below become panels in the same order; the renderer
+> supplies the page shell, so the TOC and diagram-markup rules in sections 1 and 6 apply
+> literally only to the hand-written HTML fallback. Topic-mode pages follow `draft-format.md`
+> and are not bound to the four sections.
+
 ---
 
 ## 1. Overall Shape
