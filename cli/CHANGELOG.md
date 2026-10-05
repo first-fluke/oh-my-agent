@@ -1,5 +1,17 @@
 # Changelog
 
+## [15.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.1.3...cli-v15.2.0) (2026-10-05)
+
+
+### Features
+
+* **state:** add session trajectory viewer ([c59c821](https://github.com/first-fluke/oh-my-agent/commit/c59c8213f308569e458e9c9cb12722da67e3a21a))
+
+
+### Bug Fixes
+
+* **cli:** keep piped console output complete under bun ([14b8387](https://github.com/first-fluke/oh-my-agent/commit/14b83878070fad8f8b4fe1f7b9b74069630d384f))
+
 ## [15.1.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.1.2...cli-v15.1.3) (2026-10-05)
 
 
