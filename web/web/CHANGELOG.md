@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.2](https://github.com/first-fluke/oh-my-agent/compare/web-v7.1.1...web-v7.1.2) (2026-10-05)
+
+
+### Documentation
+
+* **cli:** document explain lint and the template option ([8a7a85c](https://github.com/first-fluke/oh-my-agent/commit/8a7a85c3db33b14ad747123c1ca3dcee396bcd41))
+
 ## [7.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v7.1.0...web-v7.1.1) (2026-10-05)
 
 
