@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.2.0",
-  "releaseDate": "2026-10-05T09:53:30.881Z",
+  "releaseDate": "2026-10-05T14:12:35.258Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1066,18 +1066,23 @@
     },
     {
       "path": ".agents/skills/oma-explanation/SKILL.md",
-      "sha256": "e0d9d18b15480d59f2c25d5c7f3641e81a864e1878b9421fd54416cc50c968f0",
-      "size": 10294
+      "sha256": "2aac8efb90bb119423e0e913f50a778a29985ec578fc9a221070ec8eed77766a",
+      "size": 12071
     },
     {
       "path": ".agents/skills/oma-explanation/resources/document-structure.md",
-      "sha256": "391fe466108219c3db250f59e4b627105c65e768e99ab3d5f0b935ee5df5e41e",
-      "size": 5699
+      "sha256": "06888adb6279b41511ea8c70ab73c1c138794571aeb82e47aa7dcf952941c5e2",
+      "size": 6098
+    },
+    {
+      "path": ".agents/skills/oma-explanation/resources/draft-format.md",
+      "sha256": "af3accd40958c3d088b53946e6297f2ebb77077c8b4ec8bc252e857f86b18c2a",
+      "size": 7811
     },
     {
       "path": ".agents/skills/oma-explanation/resources/html-contract.md",
-      "sha256": "0cf685de3f54aa56923ab7aec3eb4bc91d973895a374935034244aba4cbed1d1",
-      "size": 7150
+      "sha256": "2ca9370aff580bbf9a3e93395356905c0258e8509657c4492623db13818f39df",
+      "size": 7527
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
@@ -2126,8 +2131,8 @@
     },
     {
       "path": ".agents/workflows/explain.md",
-      "sha256": "c082dbdfdc6dd43d536f784f86e99d238881ebfcf8c0e0093108aa82cfea99d3",
-      "size": 5895
+      "sha256": "64bfa074f93aa6794a040ed8102ec7d7234bb9454adeaf2ad17a95937f98b48c",
+      "size": 6920
     },
     {
       "path": ".agents/workflows/orchestrate.md",
@@ -2211,6 +2216,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 440
+    "totalFiles": 441
   }
 }
