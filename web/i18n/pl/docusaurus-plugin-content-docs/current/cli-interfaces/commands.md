@@ -60,7 +60,7 @@ Ta mapa ułatwia przeglądanie długiej referencji poniżej i pozwala znaleźć 
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1655,12 +1655,17 @@ oma scholar lint paper.knows.yaml
 
 ### explain
 
-`/explain` jest workflow tworzenia. CLI weryfikuje już utworzone artefakty:
+`/explain` to przepływ pracy służący do pisania. CLI renderuje szkic napisany przez ten przepływ i weryfikuje wynik:
 
 ```
+oma explain render draft.md --archify
+oma explain components flow
+oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
+
+`render` zamienia szkic Markdown (plik albo stdin przez `-`) w jedną samodzielną stronę HTML zapisywaną w `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; inną ścieżkę wskazuje `--output-file`. Szkic zawiera wyłącznie treść: jeden panel na każdy nagłówek `## `, a w nim bloki komponentów (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Renderer oblicza układ diagramów, rozkłada panele w wierszach i nakłada motyw (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` ustawia kontrolę tekstu; przy `strict` już jedno ostrzeżenie przerywa renderowanie. `--archify` tworzy interaktywny diagram archify z bloku `flow` lub `sequence` i dodaje do niego link; jeśli ten krok się nie powiedzie, strona i tak zostanie zapisana. `components [name]` wypisuje składnię komponentu. `patch` podmienia jeden panel na podstawie szkicu osadzonego w stronie.
 
 Przekaż plik albo `--input-dir`, nie oba naraz. Walidacja obejmuje kontrakt samowystarczalnego HTML i raportuje błędy maszynowo; nie ocenia poprawności objaśnienia. Zobacz [Objaśnianie kodu](../guide/code-explainer.md).
 
@@ -1695,7 +1700,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` zapisuje jedno zdarzenie L1 z jawną kategorią i metadanymi sesji. `state migrate` przenosi odziedziczone sesje do wybranego profilu. `state repair` naprawia nieprawidłowe pliki stanu. `state decisions list` i `state inject-log list|get` sprawdzają wymagane decyzje oraz wpisy audytu wstrzyknięć. `state trajectory` łączy zdarzenia L1 sesji z transkryptami sesji dostawców, w których działała (Claude Code, Codex, Antigravity i Grok). Wynikiem jest jeden rejestr, tura po turze, z promptami, odpowiedziami modelu, wywołaniami narzędzi, czasami trwania i zużyciem tokenów; `--open` wyświetla go w dashboardzie webowym pod adresem `/trajectory`. Pozostali dostawcy pojawiają się tylko ze swoimi zdarzeniami L1. Transkrypty są odczytywane z `CLAUDE_CONFIG_DIR` lub `~/.claude`, `CODEX_HOME` lub `~/.codex`, `~/.gemini/antigravity-cli` oraz `~/.grok`. `state activate`, `state archive` i `state purge` są jawnymi działaniami; stare flagi działań boolowskich są odrzucane. Archiwizuj lub usuwaj dopiero po przejrzeniu dry-run, bo te polecenia zmieniają stan lokalny.
+`state emit` zapisuje jedno zdarzenie L1 z jawną kategorią i metadanymi sesji. `state migrate` przenosi odziedziczone sesje do wybranego profilu. `state repair` naprawia nieprawidłowe pliki stanu. `state decisions list` i `state inject-log list|get` sprawdzają wymagane decyzje oraz wpisy audytu wstrzyknięć. `state trajectory` łączy zdarzenia L1 sesji z transkryptami sesji dostawców, w których działała. Wynikiem jest jeden rejestr, tura po turze, z promptami, odpowiedziami modelu, wywołaniami narzędzi, czasami trwania i zużyciem tokenów; `--open` wyświetla go w dashboardzie webowym pod adresem `/trajectory`. Transkrypty są odczytywane z magazynu sesji każdego dostawcy: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness i Cursor. Uwzględniane są `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` i `DSH_HOME`. Kiro zapisuje czas tylko dla promptów, a Cursor nie zapisuje ani czasu, ani wyników narzędzi, dlatego transkrypt Cursora jest pokazywany w całości, bez przycinania do sesji. Dostawca bez czytelnego transkryptu pojawia się tylko ze swoimi zdarzeniami L1. `state activate`, `state archive` i `state purge` są jawnymi działaniami; stare flagi działań boolowskich są odrzucane. Archiwizuj lub usuwaj dopiero po przejrzeniu dry-run, bo te polecenia zmieniają stan lokalny.
 
 ### model
 

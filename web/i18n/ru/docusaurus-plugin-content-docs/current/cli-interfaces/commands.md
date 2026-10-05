@@ -60,7 +60,7 @@ description: "Полный справочник всех команд CLI oh-my-
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1655,12 +1655,17 @@ oma scholar lint paper.knows.yaml
 
 ### explain
 
-`/explain` — рабочий процесс для создания объяснений. CLI проверяет уже созданные артефакты:
+`/explain` — это рабочий процесс подготовки материала. CLI рендерит черновик, который пишет этот процесс, и проверяет результат:
 
 ```
+oma explain render draft.md --archify
+oma explain components flow
+oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
+
+`render` превращает черновик Markdown (файл или stdin через `-`) в одну самодостаточную HTML-страницу и сохраняет её в `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; другой путь задаёт `--output-file`. В черновике только содержание: одна панель на каждый заголовок `## `, а внутри — блоки компонентов (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Рендерер сам рассчитывает раскладку диаграмм, распределяет панели по строкам и применяет тему (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` задаёт строгость проверки текста; в режиме `strict` рендер завершается ошибкой при любом предупреждении. `--archify` строит интерактивную диаграмму archify из блока `flow` или `sequence` и добавляет ссылку на неё; если этот шаг не удался, страница всё равно записывается. `components [name]` выводит синтаксис компонента. `patch` заменяет одну панель, используя черновик, встроенный в страницу.
 
 Передайте файл или `--input-dir`, но не то и другое одновременно. Проверка охватывает контракт автономного HTML и сообщает об ошибках в машиночитаемом виде; точность самого объяснения она не оценивает. См. [Объяснение кода](../guide/code-explainer.md).
 
@@ -1695,7 +1700,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` записывает одно событие L1 с явной категорией и метаданными сессии. `state migrate` переносит устаревшие сессии в выбранный профиль. `state repair` исправляет повреждённые файлы состояния. `state decisions list` и `state inject-log list|get` показывают обязательные решения и записи аудита инъекций. `state trajectory` объединяет события L1 сессии с транскриптами сессий вендоров, в которых она выполнялась (Claude Code, Codex, Antigravity и Grok). Получается единый журнал по ходам: промпты, ответы модели, вызовы инструментов, длительность и расход токенов; `--open` открывает его в веб-дашборде по адресу `/trajectory`. Для остальных вендоров отображаются только события L1. Транскрипты читаются из `CLAUDE_CONFIG_DIR` или `~/.claude`, `CODEX_HOME` или `~/.codex`, `~/.gemini/antigravity-cli` и `~/.grok`. `state activate`, `state archive` и `state purge` — явные действия; старые булевы флаги действий отклоняются. Архивируйте или удаляйте данные только после просмотра результата dry-run, потому что эти команды изменяют локальное состояние.
+`state emit` записывает одно событие L1 с явной категорией и метаданными сессии. `state migrate` переносит устаревшие сессии в выбранный профиль. `state repair` исправляет повреждённые файлы состояния. `state decisions list` и `state inject-log list|get` показывают обязательные решения и записи аудита инъекций. `state trajectory` объединяет события L1 сессии с транскриптами сессий вендоров, в которых она выполнялась. Получается единый журнал по ходам: промпты, ответы модели, вызовы инструментов, длительность и расход токенов; `--open` открывает его в веб-дашборде по адресу `/trajectory`. Транскрипты читаются из хранилища сессий каждого вендора: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness и Cursor. Учитываются `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` и `DSH_HOME`. Kiro записывает время только для промптов, а Cursor не записывает ни время, ни результаты инструментов, поэтому транскрипт Cursor показывается целиком, без обрезки по сессии. Для вендора без читаемого транскрипта отображаются только события L1. `state activate`, `state archive` и `state purge` — явные действия; старые булевы флаги действий отклоняются. Архивируйте или удаляйте данные только после просмотра результата dry-run, потому что эти команды изменяют локальное состояние.
 
 ### model
 

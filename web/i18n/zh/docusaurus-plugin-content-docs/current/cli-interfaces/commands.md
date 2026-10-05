@@ -61,7 +61,7 @@ sidebar_label: CLI 命令
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1610,12 +1610,17 @@ oma scholar lint paper.knows.yaml
 
 ### explain（解释）
 
-`/explain` 是编写工作流，CLI 负责校验已创建的产物：
+`/explain` 是撰写工作流。CLI 负责渲染工作流写出的草稿，并校验结果：
 
 ```
+oma explain render draft.md --archify
+oma explain components flow
+oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
+
+`render` 把 Markdown 草稿（文件，或用 `-` 从 stdin 读取）转换成一个自包含的 HTML 页面，保存到 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`；用 `--output-file` 可以指定其他路径。草稿只写内容：每个 `## ` 标题是一个面板，面板里放组件块（`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`）。图的布局、面板的分行和主题（`--theme blueprint|card`、`--mode auto|light|dark`）由渲染器决定。`--style off|warn|strict` 设置文字检查的级别，`strict` 下只要有一条警告，渲染就失败。`--archify` 从 `flow` 或 `sequence` 块生成可交互的 archify 图并添加链接；这一步失败时，页面仍会写出。`components [name]` 输出组件的语法。`patch` 利用页面内嵌的草稿，只替换一个面板。
 
 传入文件或 `--input-dir`，二者只能选其一。校验涵盖自包含 HTML 契约，并以机器可读的格式报告失败；它不评判讲解内容是否准确。参见[代码讲解器](../guide/code-explainer.md)。
 
@@ -1650,7 +1655,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` 记录一条带有显式类别和会话元数据的 L1 事件。`state migrate` 把旧版会话迁移到所选配置档。`state repair` 修复格式错误的状态文件。`state decisions list` 和 `state inject-log list|get` 用于查看必需的决策和注入审计条目。`state trajectory` 把会话的 L1 事件和对应供应商会话（Claude Code、Codex、Antigravity 和 Grok）的转录合并，按回合列出提示词、模型响应、工具调用、耗时和 token 用量。加上 `--open` 会在 Web 仪表盘的 `/trajectory` 中打开。其他供应商只显示 L1 事件。转录从 `CLAUDE_CONFIG_DIR` 或 `~/.claude`、`CODEX_HOME` 或 `~/.codex`、`~/.gemini/antigravity-cli` 以及 `~/.grok` 读取。`state activate`、`state archive` 和 `state purge` 是显式操作；旧的布尔操作标志会被拒绝。这些命令会改变本地状态，因此请先审查试运行结果，再执行归档或清除。
+`state emit` 记录一条带有显式类别和会话元数据的 L1 事件。`state migrate` 把旧版会话迁移到所选配置档。`state repair` 修复格式错误的状态文件。`state decisions list` 和 `state inject-log list|get` 用于查看必需的决策和注入审计条目。`state trajectory` 把会话的 L1 事件和对应供应商会话的转录合并，按回合列出提示词、模型响应、工具调用、耗时和 token 用量。加上 `--open` 会在 Web 仪表盘的 `/trajectory` 中打开。转录从各供应商自己的会话存储读取，支持 Claude Code、Codex、Antigravity、Grok、Qwen Code、Kiro、pi、Command Code、Kimi、DeepSeek Harness 和 Cursor，并遵循 `CLAUDE_CONFIG_DIR`、`CODEX_HOME`、`KIMI_SHARE_DIR` 和 `DSH_HOME`。Kiro 只给提示词记录时间，Cursor 既不记录时间也不记录工具结果，因此 Cursor 的转录不按会话范围截取，而是完整显示。无法读取转录的供应商只显示 L1 事件。`state activate`、`state archive` 和 `state purge` 是显式操作；旧的布尔操作标志会被拒绝。这些命令会改变本地状态，因此请先审查试运行结果，再执行归档或清除。
 
 ### model（模型）
 

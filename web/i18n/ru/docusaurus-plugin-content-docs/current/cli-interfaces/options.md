@@ -77,6 +77,7 @@ oma retro # outputs JSON
 | `image generate` / `image doctor` / `image vendor list` | Н/Д | Да | Используйте `--output json`; `vendor list` — канонический путь обнаружения вендоров |
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | Н/Д | Да | Используйте `--output json`, чтобы получить JSON envelope запуска или отчёт о готовности |
 | `explain validate` | Да | Да | Отчёт о проверке артефактов |
+| `explain render` / `explain patch` / `explain components` | Да | Да | Отчёт о рендере: файл, предупреждения, состояние сайдкара |
 | `diagram resolve` / `diagram update` | Да | Да | Результат определения движка или обновления управляемого кэша |
 | `market resolve` / `market update` | Да | Да | Статус управляемого исследовательского движка |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Да | Н/Д | Каждый путь docs использует собственные опции отчётов |
@@ -574,6 +575,9 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `serena reaper disable` | `--dry-run` | Удаляет периодическую задачу Serena Reaper по расписанию |
 | `explain` | `—` | Инструменты управления артефактами explain и проверки их качества |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Проверяет самодостаточные HTML-артефакты отчётов explain |
+| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Рендерит черновик Markdown (файл или stdin) в одну самодостаточную HTML-страницу с объяснением |
+| `explain patch` | `--panel <id>, --open, --output <format>, --json` | Заменяет одну панель отрендеренной страницы по встроенному в неё черновику |
+| `explain components` | `--output <format>, --json` | Выводит список компонентов для черновика или синтаксис одного из них |
 | `diagram` | `—` | Вспомогательные команды движка диаграмм (интерактивный HTML archify или fallback на Mermaid) |
 | `diagram resolve` | `--engine <engine>, --refresh, --offline, --json, --output <format>` | Сообщает, какой движок диаграмм должны использовать рабочие процессы и где находится archify |
 | `diagram update` | `--json, --output <format>` | Загружает последний релиз archify в управляемый кэш oma (~/.cache/oma-diagram/archify) |
@@ -601,7 +605,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Выводит список журналов аудита inject для каждой границы или показывает их (D52) |
 | `state inject-log get` | `--json, --output <format>` | Выводит список журналов аудита inject для каждой границы или показывает их (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Экспортирует сводку сессии в хранилище координации |
-| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Показывает траекторию сессии: события L1, объединённые с транскриптами вендоров |
+| `state trajectory` | `--category <category>, --open, --width <columns>, --sequence, --ascii, --json, --output <format>` | Показывает траекторию сессии: события L1, объединённые с транскриптами вендоров |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Проверяет, разрешено ли самовосстановление для агента |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Показывает состояние рабочих процессов OMA L1 |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Показывает состояние рабочих процессов OMA L1 |

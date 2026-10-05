@@ -75,6 +75,7 @@ oma retro    # JSON 출력
 | `image generate` / `image doctor` / `image vendor list` | 해당 없음 | 예 | `--output json`을 사용합니다. `vendor list`가 정식 탐색 경로입니다. |
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | 해당 없음 | 예 | 실행 봉투 또는 준비 상태 보고서에는 `--output json`을 사용합니다. |
 | `explain validate` | 예 | 예 | 산출물 검증 보고서 |
+| `explain render` / `explain patch` / `explain components` | 예 | 예 | 렌더 보고서: 파일, 경고, 사이드카 상태 |
 | `diagram resolve` / `diagram update` | 예 | 예 | 엔진 해석 또는 관리 캐시 결과 |
 | `market resolve` / `market update` | 예 | 예 | 관리 리서치 엔진 상태 |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | 예 | 해당 없음 | 각 docs 경로가 고유한 보고서 옵션을 사용합니다. |
@@ -573,6 +574,9 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `serena reaper disable` | `--dry-run` | 주기적인 Serena Reaper 작업을 제거합니다. |
 | `explain` | `없음` | 설명서 산출물과 품질 검증 도구를 제공합니다. |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | 자체 완결 explain HTML 산출물을 검증합니다. |
+| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Markdown 초안(파일 또는 stdin)을 자체 완결 HTML 설명서 한 장으로 렌더링합니다. |
+| `explain patch` | `--panel <id>, --open, --output <format>, --json` | 렌더링된 페이지에 들어 있는 초안으로 패널 하나를 교체합니다. |
+| `explain components` | `--output <format>, --json` | 초안에 쓸 수 있는 컴포넌트 목록 또는 컴포넌트 하나의 문법을 출력합니다. |
 | `diagram` | `없음` | archify 대화형 HTML 또는 Mermaid 폴백 엔진을 관리합니다. |
 | `diagram resolve` | `--engine <engine>, --refresh, --offline, --json, --output <format>` | 워크플로우가 사용할 다이어그램 엔진과 archify 위치를 보고합니다. |
 | `diagram update` | `--json, --output <format>` | 관리 캐시에 최신 archify 릴리스를 다운로드합니다. |
@@ -600,7 +604,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | 경계별 주입 감사 로그를 나열하거나 조회합니다. |
 | `state inject-log get` | `--json, --output <format>` | 경계별 주입 감사 로그를 조회합니다. |
 | `state summary` | `--category <category>, --json, --output <format>` | 세션 요약을 coordination store로 내보냅니다. |
-| `state trajectory` | `--category <category>, --open, --json, --output <format>` | L1 이벤트와 벤더 트랜스크립트를 합친 세션 궤적을 표시합니다. |
+| `state trajectory` | `--category <category>, --open, --width <columns>, --sequence, --ascii, --json, --output <format>` | L1 이벤트와 벤더 트랜스크립트를 합친 세션 궤적을 표시합니다. |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | 에이전트의 자체 복구 가능 여부를 확인합니다. |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | OMA L1 워크플로우 상태를 활성화합니다. |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | OMA L1 워크플로우 상태를 보관합니다. |

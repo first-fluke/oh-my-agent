@@ -77,6 +77,7 @@ Defina esta variável de ambiente como `json` para forçar saída JSON em todos 
 | `image generate` / `image doctor` / `image vendor list` | N/A | Sim | Use `--output json`; `vendor list` é o caminho canônico de descoberta |
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Sim | Use `--output json` para o envelope de execução ou o relatório de disponibilidade |
 | `explain validate` | Sim | Sim | Relatório de validação do artefato |
+| `explain render` / `explain patch` / `explain components` | Sim | Sim | Relatório de renderização: arquivo, avisos, estado do sidecar |
 | `diagram resolve` / `diagram update` | Sim | Sim | Resolução do engine ou resultado do cache gerenciado |
 | `market resolve` / `market update` | Sim | Sim | Estado do engine de pesquisa gerenciado |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Sim | N/A | Cada caminho docs tem suas próprias opções de relatório |
@@ -575,6 +576,9 @@ A matriz a seguir é gerada a partir do registro público de comandos mantido no
 | `serena reaper disable` | `--dry-run` | Desinstala a tarefa agendada periódica do Serena Reaper |
 | `explain` | `—` | Ferramentas de gerenciamento e validação de qualidade dos artefatos de explicação |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Valida os artefatos HTML autônomos de relatórios explain |
+| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Renderiza um rascunho Markdown (arquivo ou stdin) em uma página HTML explicativa autocontida |
+| `explain patch` | `--panel <id>, --open, --output <format>, --json` | Substitui um painel de uma página renderizada usando o rascunho incorporado |
+| `explain components` | `--output <format>, --json` | Lista os componentes disponíveis para um rascunho ou mostra a sintaxe de um deles |
 | `diagram` | `—` | Auxiliares do engine de diagramas (HTML interativo archify ou fallback Mermaid) |
 | `diagram resolve` | `--engine <engine>, --refresh, --offline, --json, --output <format>` | Informa qual engine de diagramas os workflows devem usar e onde o archify está |
 | `diagram update` | `--json, --output <format>` | Baixa a versão mais recente do archify para o cache gerenciado do OMA (~/.cache/oma-diagram/archify) |
@@ -602,7 +606,7 @@ A matriz a seguir é gerada a partir do registro público de comandos mantido no
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Lista ou exibe os logs de auditoria de injeção por fronteira (D52) |
 | `state inject-log get` | `--json, --output <format>` | Lista ou exibe os logs de auditoria de injeção por fronteira (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Exporta um resumo de sessão para o armazenamento de coordenação |
-| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Exibe a trajetória de uma sessão: eventos L1 combinados com as transcrições do vendor |
+| `state trajectory` | `--category <category>, --open, --width <columns>, --sequence, --ascii, --json, --output <format>` | Exibe a trajetória de uma sessão: eventos L1 combinados com as transcrições do vendor |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Verifica se o autorreparo é permitido para um agente |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspeciona o estado de workflow OMA L1 |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspeciona o estado de workflow OMA L1 |

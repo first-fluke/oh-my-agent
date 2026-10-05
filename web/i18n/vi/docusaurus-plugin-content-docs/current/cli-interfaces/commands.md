@@ -60,7 +60,7 @@ Bản đồ này giúp các phần tham chiếu dài bên dưới dễ lướt h
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1655,12 +1655,17 @@ oma scholar lint paper.knows.yaml
 
 ### explain
 
-`/explain` là workflow để author. CLI validate các artifact đã được tạo:
+`/explain` là quy trình soạn nội dung. CLI kết xuất bản nháp do quy trình viết ra và kiểm tra kết quả:
 
 ```
+oma explain render draft.md --archify
+oma explain components flow
+oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
+
+`render` chuyển một bản nháp Markdown (một file, hoặc stdin với `-`) thành một trang HTML độc lập, lưu tại `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; dùng `--output-file` để chọn đường dẫn khác. Bản nháp chỉ chứa nội dung: mỗi tiêu đề `## ` là một bảng, bên trong là các khối thành phần (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). Trình kết xuất tự tính bố cục sơ đồ, xếp các bảng thành hàng và áp dụng giao diện (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` đặt mức kiểm tra câu chữ; với `strict`, chỉ một cảnh báo cũng làm lệnh thất bại. `--archify` tạo sơ đồ archify tương tác từ một khối `flow` hoặc `sequence` rồi gắn liên kết; nếu bước này lỗi, trang vẫn được ghi. `components [name]` in cú pháp của một thành phần. `patch` thay một bảng dựa trên bản nháp được nhúng trong trang.
 
 Truyền một file hoặc `--input-dir`, không truyền cả hai. Việc validate bao quát contract HTML tự chứa và báo các lỗi dạng machine-readable; nó không đánh giá độ chính xác của phần giải thích. Xem [Code Explainer](../guide/code-explainer.md).
 
@@ -1695,7 +1700,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` ghi một L1 event với category và metadata session tường minh. `state migrate` chuyển các session legacy sang profile đã chọn. `state repair` sửa các state file bị lỗi định dạng. `state decisions list` và `state inject-log list|get` kiểm tra các quyết định bắt buộc và các mục audit về injection. `state trajectory` ghép các L1 event của một session với transcript của các vendor session tương ứng (Claude Code, Codex, Antigravity và Grok). Kết quả là một bản ghi theo từng lượt gồm prompt, phản hồi của model, tool call, thời gian thực thi và lượng token sử dụng; `--open` mở bản ghi này trong web dashboard tại `/trajectory`. Các vendor khác chỉ hiển thị L1 event. Transcript được đọc từ `CLAUDE_CONFIG_DIR` hoặc `~/.claude`, `CODEX_HOME` hoặc `~/.codex`, `~/.gemini/antigravity-cli` và `~/.grok`. `state activate`, `state archive` và `state purge` là các hành động tường minh; các flag hành động dạng boolean cũ bị từ chối. Chỉ archive hoặc purge sau khi đã xem kết quả dry-run, vì các lệnh này thay đổi state cục bộ.
+`state emit` ghi một L1 event với category và metadata session tường minh. `state migrate` chuyển các session legacy sang profile đã chọn. `state repair` sửa các state file bị lỗi định dạng. `state decisions list` và `state inject-log list|get` kiểm tra các quyết định bắt buộc và các mục audit về injection. `state trajectory` ghép các L1 event của một session với transcript của các vendor session tương ứng. Kết quả là một bản ghi theo từng lượt gồm prompt, phản hồi của model, tool call, thời gian thực thi và lượng token sử dụng; `--open` mở bản ghi này trong web dashboard tại `/trajectory`. Transcript được đọc từ kho session riêng của từng vendor: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness và Cursor. Các biến `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` và `DSH_HOME` được tôn trọng. Kiro chỉ ghi thời gian cho prompt, còn Cursor không ghi thời gian lẫn kết quả tool, nên transcript của Cursor được hiển thị toàn bộ thay vì cắt theo session. Vendor không có transcript đọc được chỉ hiển thị L1 event. `state activate`, `state archive` và `state purge` là các hành động tường minh; các flag hành động dạng boolean cũ bị từ chối. Chỉ archive hoặc purge sau khi đã xem kết quả dry-run, vì các lệnh này thay đổi state cục bộ.
 
 ### model
 

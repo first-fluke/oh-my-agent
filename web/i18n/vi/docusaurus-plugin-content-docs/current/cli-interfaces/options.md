@@ -77,6 +77,7 @@ oma retro # outputs JSON
 | `image generate` / `image doctor` / `image vendor list` | N/A | Có | Dùng `--output json`; `vendor list` là đường dẫn chuẩn để khám phá vendor |
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Có | Dùng `--output json` để lấy run envelope hoặc báo cáo mức sẵn sàng |
 | `explain validate` | Có | Có | Báo cáo kiểm tra artifact |
+| `explain render` / `explain patch` / `explain components` | Có | Có | Báo cáo kết xuất: file, cảnh báo, trạng thái sidecar |
 | `diagram resolve` / `diagram update` | Có | Có | Kết quả phân giải engine hoặc kết quả managed cache |
 | `market resolve` / `market update` | Có | Có | Trạng thái research engine được quản lý |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Có | N/A | Mỗi đường dẫn docs dùng tùy chọn báo cáo riêng |
@@ -574,6 +575,9 @@ Ma trận sau được tạo từ registry lệnh công khai đã được commi
 | `serena reaper disable` | `--dry-run` | Gỡ scheduled task Serena Reaper chạy định kỳ |
 | `explain` | `—` | Các công cụ quản lý và kiểm tra chất lượng artifact explain |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Kiểm tra hợp lệ các artifact báo cáo HTML explain tự chứa |
+| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Kết xuất bản nháp Markdown (file hoặc stdin) thành một trang HTML giải thích độc lập |
+| `explain patch` | `--panel <id>, --open, --output <format>, --json` | Thay một bảng của trang đã kết xuất dựa trên bản nháp được nhúng |
+| `explain components` | `--output <format>, --json` | Liệt kê các thành phần dùng được trong bản nháp hoặc in cú pháp của một thành phần |
 | `diagram` | `—` | Tiện ích engine sơ đồ (HTML tương tác của archify hoặc fallback Mermaid) |
 | `diagram resolve` | `--engine <engine>, --refresh, --offline, --json, --output <format>` | Báo cáo engine sơ đồ mà workflow nên dùng và vị trí cài archify |
 | `diagram update` | `--json, --output <format>` | Tải release archify mới nhất vào managed cache của oma (~/.cache/oma-diagram/archify) |
@@ -601,7 +605,7 @@ Ma trận sau được tạo từ registry lệnh công khai đã được commi
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Liệt kê hoặc xem audit log inject theo từng boundary (D52) |
 | `state inject-log get` | `--json, --output <format>` | Liệt kê hoặc xem audit log inject theo từng boundary (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Export bản tóm tắt session vào coordination store |
-| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Hiển thị trajectory của session: L1 event ghép với transcript của vendor |
+| `state trajectory` | `--category <category>, --open, --width <columns>, --sequence, --ascii, --json, --output <format>` | Hiển thị trajectory của session: L1 event ghép với transcript của vendor |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Kiểm tra xem một agent có được phép tự phục hồi hay không |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Xem trạng thái workflow L1 của OMA |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Xem trạng thái workflow L1 của OMA |

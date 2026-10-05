@@ -77,6 +77,7 @@ Set this environment variable to `json` to force JSON output on all commands tha
 | `image generate` / `image doctor` / `image vendor list` | N/A | Yes | Use `--output json`; `vendor list` is the canonical discovery path |
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Yes | Use `--output json` for the run envelope or readiness report |
 | `explain validate` | Yes | Yes | Artifact validation report |
+| `explain render` / `explain patch` / `explain components` | Yes | Yes | Render report: file, warnings, sidecar status |
 | `diagram resolve` / `diagram update` | Yes | Yes | Engine resolution or managed-cache result |
 | `market resolve` / `market update` | Yes | Yes | Managed research-engine status |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Yes | N/A | Each docs path uses its own report options |
@@ -574,6 +575,9 @@ The following matrix is generated from the checked-in public command registry. I
 | `serena reaper disable` | `--dry-run` | Uninstall the periodic Serena Reaper scheduled task |
 | `explain` | `—` | Explain artifact management and quality validation tools |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Validate self-contained explain HTML report artifacts |
+| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Render a Markdown draft (file or stdin) into one self-contained HTML explanation |
+| `explain patch` | `--panel <id>, --open, --output <format>, --json` | Replace one panel of a rendered page from its embedded draft |
+| `explain components` | `--output <format>, --json` | List the components a draft can use, or print one component's syntax |
 | `diagram` | `—` | Diagram engine helpers (archify interactive HTML or Mermaid fallback) |
 | `diagram resolve` | `--engine <engine>, --refresh, --offline, --json, --output <format>` | Report which diagram engine workflows should use, and where archify lives |
 | `diagram update` | `--json, --output <format>` | Download the latest archify release into oma's managed cache (~/.cache/oma-diagram/archify) |
@@ -601,7 +605,7 @@ The following matrix is generated from the checked-in public command registry. I
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | List or view per-boundary inject audit logs (D52) |
 | `state inject-log get` | `--json, --output <format>` | List or view per-boundary inject audit logs (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Export a session summary to the coordination store |
-| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Show a session trajectory: L1 events joined with vendor transcripts |
+| `state trajectory` | `--category <category>, --open, --width <columns>, --sequence, --ascii, --json, --output <format>` | Show a session trajectory: L1 events joined with vendor transcripts |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Check whether self-healing is allowed for an agent |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspect OMA L1 workflow state |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspect OMA L1 workflow state |

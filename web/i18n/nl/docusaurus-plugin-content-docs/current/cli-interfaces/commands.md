@@ -60,7 +60,7 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1650,12 +1650,17 @@ oma scholar lint paper.knows.yaml
 
 ### explain
 
-`/explain` is de schrijfworkflow. De CLI valideert al gemaakte artifacts:
+`/explain` is de schrijfworkflow. De CLI rendert het concept dat de workflow schrijft en valideert het resultaat:
 
 ```
+oma explain render draft.md --archify
+oma explain components flow
+oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
+
+`render` zet een Markdown-concept (een bestand, of stdin met `-`) om in één zelfstandige HTML-pagina op `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; met `--output-file` kies je een ander pad. Het concept bevat alleen inhoud: één paneel per `## `-kop, met daarin componentblokken (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). De renderer berekent de diagramindeling, verdeelt de panelen over rijen en past het thema toe (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` bepaalt de tekstcontrole; bij `strict` mislukt het renderen al bij één waarschuwing. `--archify` leidt een interactief archify-diagram af uit een `flow`- of `sequence`-blok en linkt ernaar; als die stap mislukt, wordt de pagina toch geschreven. `components [name]` toont de syntaxis van een component. `patch` vervangt één paneel op basis van het concept dat in de pagina is ingesloten.
 
 Geef een bestand of `--input-dir` op, niet beide. Validatie controleert het contract voor zelfstandig HTML en rapporteert machineleesbare fouten; de nauwkeurigheid van de uitleg wordt niet beoordeeld. Zie [Code-uitlegger](../guide/code-explainer.md).
 
@@ -1690,7 +1695,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` legt één L1-event vast met expliciete categorie- en sessiemetadata. `state migrate` verplaatst legacy-sessies naar het geselecteerde profiel. `state repair` herstelt ongeldige statusbestanden. `state decisions list` en `state inject-log list|get` inspecteren verplichte beslissingen en injectie-auditregels. `state trajectory` koppelt de L1-events van een sessie aan de transcripten van de vendorsessies waarin die draaide (Claude Code, Codex, Antigravity en Grok). Het resultaat is één overzicht, beurt voor beurt, van prompts, modelantwoorden, toolaanroepen, duur en tokengebruik; `--open` toont het in het webdashboard op `/trajectory`. Andere vendors verschijnen alleen met hun L1-events. Transcripten worden gelezen uit `CLAUDE_CONFIG_DIR` of `~/.claude`, `CODEX_HOME` of `~/.codex`, `~/.gemini/antigravity-cli` en `~/.grok`. `state activate`, `state archive` en `state purge` zijn expliciete acties; de oude booleaanse actievlaggen worden geweigerd. Archiveer of purge pas na controle van een dry-run, omdat deze commando's de lokale status wijzigen.
+`state emit` legt één L1-event vast met expliciete categorie- en sessiemetadata. `state migrate` verplaatst legacy-sessies naar het geselecteerde profiel. `state repair` herstelt ongeldige statusbestanden. `state decisions list` en `state inject-log list|get` inspecteren verplichte beslissingen en injectie-auditregels. `state trajectory` koppelt de L1-events van een sessie aan de transcripten van de vendorsessies waarin die draaide. Het resultaat is één overzicht, beurt voor beurt, van prompts, modelantwoorden, toolaanroepen, duur en tokengebruik; `--open` toont het in het webdashboard op `/trajectory`. Transcripten worden gelezen uit de sessieopslag van elke vendor: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness en Cursor. `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` en `DSH_HOME` worden gerespecteerd. Kiro legt alleen bij prompts een tijdstip vast, en Cursor legt geen tijdstippen of toolresultaten vast; een Cursor-transcript wordt daarom volledig getoond in plaats van afgebakend tot de sessie. Een vendor zonder leesbaar transcript verschijnt alleen met zijn L1-events. `state activate`, `state archive` en `state purge` zijn expliciete acties; de oude booleaanse actievlaggen worden geweigerd. Archiveer of purge pas na controle van een dry-run, omdat deze commando's de lokale status wijzigen.
 
 ### model
 

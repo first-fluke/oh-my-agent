@@ -60,7 +60,7 @@ Este mapa facilita recorrer las referencias extensas de abajo y descubrir las fa
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1655,12 +1655,17 @@ oma scholar lint paper.knows.yaml
 
 ### explain {#explain}
 
-`/explain` es el workflow de autoría. El CLI valida artefactos ya creados:
+`/explain` es el flujo de trabajo de autoría. La CLI renderiza el borrador que escribe el flujo y valida el resultado:
 
 ```
+oma explain render draft.md --archify
+oma explain components flow
+oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
+
+`render` convierte un borrador en Markdown (un archivo, o stdin con `-`) en una página HTML autocontenida en `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; `--output-file` elige otra ruta. El borrador solo contiene contenido: un panel por cada encabezado `## ` y, dentro, bloques de componentes (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). El renderizador calcula la disposición de los diagramas, reparte los paneles en filas y aplica el tema (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` fija la revisión de la prosa; con `strict`, una sola advertencia hace fallar el renderizado. `--archify` genera un diagrama interactivo de archify a partir de un bloque `flow` o `sequence` y lo enlaza; si ese paso falla, la página se escribe igualmente. `components [name]` muestra la sintaxis de un componente. `patch` sustituye un solo panel usando el borrador incrustado en la página.
 
 Pasa un archivo o `--input-dir`, pero no ambos. La validación cubre el contrato HTML autocontenido e informa de fallos legibles por máquina; no juzga la precisión de la explicación. Consulta [Explicador de código](../guide/code-explainer.md).
 
@@ -1695,7 +1700,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` registra un evento L1 con categoría y metadatos de sesión explícitos. `state migrate` mueve las sesiones legacy al perfil seleccionado. `state repair` repara los archivos de estado malformados. `state decisions list` y `state inject-log list|get` inspeccionan las decisiones requeridas y las entradas de auditoría de inyección. `state trajectory` combina los eventos L1 de una sesión con las transcripciones de las sesiones de proveedor en las que se ejecutó (Claude Code, Codex, Antigravity y Grok). El resultado es un único registro, turno a turno, de prompts, respuestas del modelo, llamadas a herramientas, duraciones y uso de tokens; `--open` lo muestra en el dashboard web, en `/trajectory`. Los demás proveedores aparecen solo con sus eventos L1. Las transcripciones se leen de `CLAUDE_CONFIG_DIR` o `~/.claude`, `CODEX_HOME` o `~/.codex`, `~/.gemini/antigravity-cli` y `~/.grok`. `state activate`, `state archive` y `state purge` son acciones explícitas; los antiguos flags booleanos de acción se rechazan. Archiva o purga solo después de revisar un dry-run, porque estos comandos cambian el estado local.
+`state emit` registra un evento L1 con categoría y metadatos de sesión explícitos. `state migrate` mueve las sesiones legacy al perfil seleccionado. `state repair` repara los archivos de estado malformados. `state decisions list` y `state inject-log list|get` inspeccionan las decisiones requeridas y las entradas de auditoría de inyección. `state trajectory` combina los eventos L1 de una sesión con las transcripciones de las sesiones de proveedor en las que se ejecutó. El resultado es un único registro, turno a turno, de prompts, respuestas del modelo, llamadas a herramientas, duraciones y uso de tokens; `--open` lo muestra en el dashboard web, en `/trajectory`. Las transcripciones se leen del almacén de sesiones de cada proveedor: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness y Cursor. Se respetan `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` y `DSH_HOME`. Kiro solo registra la hora de los prompts, y Cursor no registra ni horas ni resultados de herramientas, por lo que una transcripción de Cursor se muestra completa en lugar de recortarse a la sesión. Un proveedor sin transcripción legible aparece solo con sus eventos L1. `state activate`, `state archive` y `state purge` son acciones explícitas; los antiguos flags booleanos de acción se rechazan. Archiva o purga solo después de revisar un dry-run, porque estos comandos cambian el estado local.
 
 ### model {#model}
 

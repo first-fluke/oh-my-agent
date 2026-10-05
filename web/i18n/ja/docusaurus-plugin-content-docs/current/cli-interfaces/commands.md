@@ -60,7 +60,7 @@ description: oh-my-agent CLIの全コマンドを対象に、構文、オプシ�
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
-| `explain` | `explain`, `explain validate` |
+| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
@@ -1654,12 +1654,17 @@ oma scholar lint paper.knows.yaml
 
 ### explain {#explain}
 
-`/explain` が作成ワークフローです。CLI は作成済み成果物を検証します。
+`/explain` が作成ワークフローです。CLI はワークフローが書いた下書きをレンダリングし、結果を検証します。
 
 ```
+oma explain render draft.md --archify
+oma explain components flow
+oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
+
+`render` は Markdown の下書き（ファイル、または `-` で受け取る stdin）を自己完結 HTML 1 ページに変換し、`.agents/results/explain/{YYYY-MM-DD}-{slug}.html` に保存します。別のパスは `--output-file` で指定します。下書きには内容だけを書きます。`## ` 見出し 1 つがパネル 1 つになり、その中にコンポーネントブロック（`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`）を置きます。図のレイアウト、パネルの行組み、テーマ（`--theme blueprint|card`、`--mode auto|light|dark`）はレンダラーが決めます。`--style off|warn|strict` は文章チェックの厳しさで、`strict` では警告が 1 件でもあるとレンダリングが失敗します。`--archify` は `flow` または `sequence` ブロックからインタラクティブな archify 図を生成してリンクします。この手順が失敗してもページ本体は保存されます。`components [name]` はコンポーネントの構文を表示します。`patch` はページに埋め込まれた下書きを使い、パネル 1 つだけを差し替えます。
 
 ファイルまたは `--input-dir` のどちらか一方を渡します。検証は自己完結 HTML の契約と機械可読の失敗を確認しますが、説明の正確さは判定しません。[コード解説](../guide/code-explainer.md) を参照してください。
 
@@ -1694,7 +1699,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` はカテゴリとセッションメタデータを明示した L1 イベントを記録します。`state migrate` は従来セッションを選択プロファイルへ移します。`state repair` は壊れた状態ファイルを修復します。`state decisions list` と `state inject-log list|get` は必須判断と注入監査エントリを確認します。`state trajectory` は、セッションの L1 イベントと、そのセッションが実行されたベンダーセッション（Claude Code、Codex、Antigravity、Grok）のトランスクリプトを結合し、ターンごとの記録として表示します。記録にはプロンプト、モデル応答、ツール呼び出し、所要時間、トークン使用量が含まれます。`--open` を付けると Web ダッシュボードの `/trajectory` で開きます。それ以外のベンダーでは L1 イベントのみを表示します。トランスクリプトは `CLAUDE_CONFIG_DIR` または `~/.claude`、`CODEX_HOME` または `~/.codex`、`~/.gemini/antigravity-cli`、`~/.grok` から読み込みます。`state activate`、`state archive`、`state purge` は明示的な操作で、古い真偽値フラグは拒否されます。状態を変更するため、dry-run を確認してから archive または purge を実行します。
+`state emit` はカテゴリとセッションメタデータを明示した L1 イベントを記録します。`state migrate` は従来セッションを選択プロファイルへ移します。`state repair` は壊れた状態ファイルを修復します。`state decisions list` と `state inject-log list|get` は必須判断と注入監査エントリを確認します。`state trajectory` は、セッションの L1 イベントと、そのセッションが実行されたベンダーセッションのトランスクリプトを結合し、ターンごとの記録として表示します。記録にはプロンプト、モデル応答、ツール呼び出し、所要時間、トークン使用量が含まれます。`--open` を付けると Web ダッシュボードの `/trajectory` で開きます。トランスクリプトは各ベンダーのセッションストアから読み込み、Claude Code、Codex、Antigravity、Grok、Qwen Code、Kiro、pi、Command Code、Kimi、DeepSeek Harness、Cursor に対応しています。`CLAUDE_CONFIG_DIR`、`CODEX_HOME`、`KIMI_SHARE_DIR`、`DSH_HOME` の設定に従います。Kiro はプロンプトにしか時刻を記録せず、Cursor は時刻もツールの結果も記録しません。そのため Cursor のトランスクリプトはセッションの範囲で切り出さず、全体を表示します。トランスクリプトを読み込めないベンダーは L1 イベントのみを表示します。`state activate`、`state archive`、`state purge` は明示的な操作で、古い真偽値フラグは拒否されます。状態を変更するため、dry-run を確認してから archive または purge を実行します。
 
 ### model {#model}
 

@@ -61,7 +61,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` | 인증을 고려해 여러 벤더로 이미지를 생성합니다. |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` | 숏폼, 설명, 데모 영상을 생성합니다. |
 | `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` | Serena MCP 언어 서버 수명 주기를 관리합니다. |
-| `explain` | `explain`, `explain validate` | 설명서 산출물과 품질 검증 도구를 제공합니다. |
+| `explain` | `explain`, `explain render`, `explain patch`, `explain components`, `explain validate` | 설명서 산출물과 품질 검증 도구를 제공합니다. |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` | archify 또는 Mermaid 다이어그램 엔진을 관리합니다. |
 | `help` | `help` | 도움말을 표시합니다. |
 | `version` | `version` | 버전 번호를 표시합니다. |
@@ -1606,12 +1606,17 @@ oma scholar lint paper.knows.yaml
 
 ### explain
 
-`/explain`은 작성 워크플로우입니다. CLI는 이미 만들어진 산출물을 검증합니다.
+`/explain`은 작성 워크플로우입니다. CLI는 워크플로우가 쓴 초안을 렌더링하고 결과를 검증합니다.
 
 ```
+oma explain render draft.md --archify
+oma explain components flow
+oma explain patch .agents/results/explain/2026-09-09-change.html --panel C panel.md
 oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
+
+`render`는 Markdown 초안(파일 또는 `-`로 받는 stdin)을 자체 완결 HTML 한 장으로 만들어 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`에 저장합니다. 다른 경로는 `--output-file`로 지정합니다. 초안에는 내용만 씁니다. `## ` 제목 하나가 패널 하나이고, 그 안에 컴포넌트 블록(`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`)을 넣습니다. 다이어그램 배치, 패널 행 구성, 테마(`--theme blueprint|card`, `--mode auto|light|dark`)는 렌더러가 정합니다. `--style off|warn|strict`는 문장 검사 수준이며 `strict`에서는 경고가 하나라도 있으면 렌더가 실패합니다. `--archify`는 `flow` 또는 `sequence` 블록에서 인터랙티브 archify 다이어그램을 만들어 링크합니다. 이 단계가 실패해도 본문 페이지는 저장됩니다. `components [name]`은 컴포넌트 문법을 출력합니다. `patch`는 페이지에 들어 있는 초안을 써서 패널 하나만 바꿉니다.
 
 파일 또는 `--input-dir` 중 하나만 전달합니다. 검증은 자체 완결 HTML 계약을 검사하고 기계 판독 가능한 실패를 보고하지만, 설명의 정확성을 판단하지는 않습니다. [코드 설명서](../guide/code-explainer.md)를 참고합니다.
 
@@ -1646,7 +1651,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit`은 명시적인 category와 세션 메타데이터를 포함한 L1 이벤트를 하나 기록합니다. `state migrate`는 레거시 세션을 선택한 프로필로 옮깁니다. `state repair`는 잘못된 상태 파일을 복구합니다. `state decisions list`와 `state inject-log list|get`은 필수 결정과 주입 감사 항목을 검사합니다. `state trajectory`는 세션의 L1 이벤트를 그 세션이 실행된 벤더 세션(Claude Code, Codex, Antigravity, Grok)의 트랜스크립트와 합쳐 턴 단위로 정리한 기록 하나로 보여줍니다. 이 기록에는 프롬프트, 모델 응답, 도구 호출, 소요 시간, 토큰 사용량이 담깁니다. `--open`을 붙이면 웹 대시보드의 `/trajectory`에서 엽니다. 그 밖의 벤더 세션은 L1 이벤트만 나옵니다. 트랜스크립트는 `CLAUDE_CONFIG_DIR` 또는 `~/.claude`, `CODEX_HOME` 또는 `~/.codex`, `~/.gemini/antigravity-cli`, `~/.grok`에서 읽습니다. `state activate`, `state archive`, `state purge`는 명시적 작업이며 예전 불리언 작업 플래그는 거부됩니다. 로컬 상태를 바꾸므로 dry-run을 검토한 뒤 archive 또는 purge를 실행합니다.
+`state emit`은 명시적인 category와 세션 메타데이터를 포함한 L1 이벤트를 하나 기록합니다. `state migrate`는 레거시 세션을 선택한 프로필로 옮깁니다. `state repair`는 잘못된 상태 파일을 복구합니다. `state decisions list`와 `state inject-log list|get`은 필수 결정과 주입 감사 항목을 검사합니다. `state trajectory`는 세션의 L1 이벤트를 그 세션이 실행된 벤더 세션의 트랜스크립트와 합쳐 턴 단위로 정리한 기록 하나로 보여줍니다. 이 기록에는 프롬프트, 모델 응답, 도구 호출, 소요 시간, 토큰 사용량이 담깁니다. `--open`을 붙이면 웹 대시보드의 `/trajectory`에서 엽니다. 트랜스크립트는 각 벤더의 세션 저장소에서 읽으며, Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness, Cursor를 지원합니다. `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR`, `DSH_HOME`을 따릅니다. Kiro는 프롬프트에만 시각을 기록하고 Cursor는 시각과 도구 결과를 기록하지 않으므로, Cursor 트랜스크립트는 세션 구간으로 자르지 않고 전체를 보여줍니다. 트랜스크립트를 읽을 수 없는 벤더는 L1 이벤트만 나옵니다. `state activate`, `state archive`, `state purge`는 명시적 작업이며 예전 불리언 작업 플래그는 거부됩니다. 로컬 상태를 바꾸므로 dry-run을 검토한 뒤 archive 또는 purge를 실행합니다.
 
 ### model
 

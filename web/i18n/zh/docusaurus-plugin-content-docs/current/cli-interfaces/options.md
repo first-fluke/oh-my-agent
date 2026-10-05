@@ -78,6 +78,7 @@ oma retro # outputs JSON
 | `image generate` / `image doctor` / `image vendor list` | 不适用 | 是 | 使用 `--output json`；`vendor list` 是规范的发现路径 |
 | `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | 不适用 | 是 | 使用 `--output json` 获取运行信封或就绪报告 |
 | `explain validate` | 是 | 是 | 产物校验报告 |
+| `explain render` / `explain patch` / `explain components` | 是 | 是 | 渲染报告：文件、警告、附属图状态 |
 | `diagram resolve` / `diagram update` | 是 | 是 | 引擎解析结果或托管缓存结果 |
 | `market resolve` / `market update` | 是 | 是 | 托管研究引擎的状态 |
 | `docs verify` / `docs sync` / `docs i18n` / `docs lint` | 是 | 不适用 | 每个 docs 路径使用各自的报告选项 |
@@ -575,6 +576,9 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `serena reaper disable` | `--dry-run` | 卸载周期性运行的 Serena Reaper 计划任务 |
 | `explain` | `—` | explain 产物的管理和质量校验工具 |
 | `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | 校验自包含的 explain HTML 报告产物 |
+| `explain render` | `--output-file <path>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | 把 Markdown 草稿（文件或 stdin）渲染成一个自包含的 HTML 讲解页面 |
+| `explain patch` | `--panel <id>, --open, --output <format>, --json` | 利用页面内嵌的草稿替换其中一个面板 |
+| `explain components` | `--output <format>, --json` | 列出草稿可用的组件，或输出某个组件的语法 |
 | `diagram` | `—` | 图表引擎辅助工具（archify 交互式 HTML，或回退到 Mermaid） |
 | `diagram resolve` | `--engine <engine>, --refresh, --offline, --json, --output <format>` | 报告工作流应使用哪种图表引擎，以及 archify 所在的位置 |
 | `diagram update` | `--json, --output <format>` | 将最新的 archify 发布版下载到 oma 的托管缓存（~/.cache/oma-diagram/archify） |
@@ -602,7 +606,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | 列出或查看按边界记录的注入审计日志（D52） |
 | `state inject-log get` | `--json, --output <format>` | 列出或查看按边界记录的注入审计日志（D52） |
 | `state summary` | `--category <category>, --json, --output <format>` | 将会话摘要导出到协调存储 |
-| `state trajectory` | `--category <category>, --open, --json, --output <format>` | 显示合并了供应商转录的会话轨迹 |
+| `state trajectory` | `--category <category>, --open, --width <columns>, --sequence, --ascii, --json, --output <format>` | 显示合并了供应商转录的会话轨迹 |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | 检查是否允许某个智能体自愈 |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | 检查 OMA L1 工作流状态 |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | 检查 OMA L1 工作流状态 |
