@@ -600,6 +600,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | 경계별 주입 감사 로그를 나열하거나 조회합니다. |
 | `state inject-log get` | `--json, --output <format>` | 경계별 주입 감사 로그를 조회합니다. |
 | `state summary` | `--category <category>, --json, --output <format>` | 세션 요약을 coordination store로 내보냅니다. |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | L1 이벤트와 벤더 트랜스크립트를 합친 세션 궤적을 표시합니다. |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | 에이전트의 자체 복구 가능 여부를 확인합니다. |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | OMA L1 워크플로우 상태를 활성화합니다. |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | OMA L1 워크플로우 상태를 보관합니다. |

@@ -602,6 +602,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | 列出或查看按边界记录的注入审计日志（D52） |
 | `state inject-log get` | `--json, --output <format>` | 列出或查看按边界记录的注入审计日志（D52） |
 | `state summary` | `--category <category>, --json, --output <format>` | 将会话摘要导出到协调存储 |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | 显示合并了供应商转录的会话轨迹 |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | 检查是否允许某个智能体自愈 |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | 检查 OMA L1 工作流状态 |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | 检查 OMA L1 工作流状态 |

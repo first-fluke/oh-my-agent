@@ -601,6 +601,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Выводит список журналов аудита inject для каждой границы или показывает их (D52) |
 | `state inject-log get` | `--json, --output <format>` | Выводит список журналов аудита inject для каждой границы или показывает их (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Экспортирует сводку сессии в хранилище координации |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Показывает траекторию сессии: события L1, объединённые с транскриптами вендоров |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Проверяет, разрешено ли самовосстановление для агента |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Показывает состояние рабочих процессов OMA L1 |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Показывает состояние рабочих процессов OMA L1 |

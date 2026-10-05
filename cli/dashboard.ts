@@ -7,8 +7,12 @@ import * as pc from "picocolors";
 import { WebSocket, WebSocketServer } from "ws";
 import { buildGraphData } from "./commands/recap/internal/graph.js";
 import { collectRecap } from "./commands/recap/internal/index.js";
+import { collectState, isValidSid } from "./commands/state/sessions.js";
+import { buildTrajectory } from "./commands/state/trajectory/build.js";
 import { buildFullState, resolveMemoriesDir } from "./dashboard/state.js";
 import { DASHBOARD_HTML, RECAP_HTML } from "./dashboard/templates.js";
+import { TRAJECTORY_HTML } from "./dashboard/trajectory-template.js";
+import { resolveProjectRoot } from "./utils/fs-utils.js";
 import {
   injectWindowToken,
   isLoopbackHost,
@@ -89,6 +93,7 @@ export function startDashboard(
   const token = randomBytes(32).toString("base64url");
   const url = `http://${DASHBOARD_HOST}:${port}${route}`;
   const memoriesDir = resolveMemoriesDir(options.projectDir);
+  const projectDir = resolveProjectRoot(options.projectDir);
   if (!existsSync(memoriesDir)) mkdirSync(memoriesDir, { recursive: true });
 
   const server = createServer(async (req, res) => {
@@ -139,6 +144,48 @@ export function startDashboard(
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: String(err) }));
       }
+    } else if (requestUrl.pathname === "/api/trajectory/sessions") {
+      try {
+        const state = collectState(projectDir);
+        const body = JSON.stringify({
+          active: state.index.active.main ?? null,
+          sessions: state.sessions.map((session) => ({
+            sid: session.sid,
+            workflow: session.workflow,
+            status: session.status,
+            createdAt: session.createdAt,
+          })),
+        });
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(body);
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    } else if (requestUrl.pathname === "/api/trajectory") {
+      const sid = requestUrl.searchParams.get("sid") ?? "";
+      if (!isValidSid(sid)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "sid must be a valid session id" }));
+        return;
+      }
+      try {
+        const body = JSON.stringify(buildTrajectory(sid, { projectDir }));
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(body);
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    } else if (requestUrl.pathname === "/trajectory") {
+      res.writeHead(200, {
+        "Content-Type": "text/html",
+        "Content-Security-Policy":
+          "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer",
+      });
+      res.end(withDashboardToken(TRAJECTORY_HTML, token));
     } else if (requestUrl.pathname === "/recap") {
       res.writeHead(200, {
         "Content-Type": "text/html",
@@ -214,8 +261,17 @@ export function startDashboard(
     ws.on("error", () => ws.terminate());
   });
 
+  const onSigint = () => {
+    console.log("\nShutting down...");
+    void close().then(() => process.exit(0));
+    setTimeout(() => process.exit(1), 3000).unref();
+  };
+  const onSigterm = () => process.emit("SIGINT");
+
   const close = (): Promise<void> =>
     new Promise((resolve, reject) => {
+      process.off("SIGINT", onSigint);
+      process.off("SIGTERM", onSigterm);
       if (debounceTimer) clearTimeout(debounceTimer);
       watcher.close().catch(() => undefined);
       wss.clients.forEach((c) => {
@@ -233,12 +289,8 @@ export function startDashboard(
       });
     });
 
-  process.once("SIGINT", () => {
-    console.log("\nShutting down...");
-    void close().then(() => process.exit(0));
-    setTimeout(() => process.exit(1), 3000).unref();
-  });
-  process.once("SIGTERM", () => process.emit("SIGINT"));
+  process.once("SIGINT", onSigint);
+  process.once("SIGTERM", onSigterm);
 
   server.on("error", (err: NodeJS.ErrnoException) => {
     if (err.code === "EADDRINUSE") {

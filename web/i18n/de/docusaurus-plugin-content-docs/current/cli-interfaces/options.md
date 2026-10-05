@@ -602,6 +602,7 @@ Die folgende Matrix wird aus der eingecheckten öffentlichen Befehlsregistry erz
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Injection-Audit-Logs pro Grenze auflisten oder anzeigen (D52) |
 | `state inject-log get` | `--json, --output <format>` | Injection-Audit-Logs pro Grenze auflisten oder anzeigen (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Eine Sitzungszusammenfassung in den Coordination Store exportieren |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Eine Sitzungstrajektorie anzeigen: L1-Events, verbunden mit Vendor-Transkripten |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Prüfen, ob Self-Healing für einen Agenten zulässig ist |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | OMA-L1-Workflowstatus prüfen |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | OMA-L1-Workflowstatus prüfen |

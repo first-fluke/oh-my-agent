@@ -67,7 +67,7 @@ description: "Полный справочник всех команд CLI oh-my-
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
-| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state heal-check`, `state activate`, `state archive`, `state purge` |
+| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
@@ -1688,12 +1688,14 @@ oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
+oma state trajectory <session-id>
+oma state trajectory <session-id> --open
 oma state verify --workflow work --checkpoint complete --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` записывает одно событие L1 с явной категорией и метаданными сессии. `state migrate` переносит устаревшие сессии в выбранный профиль. `state repair` исправляет повреждённые файлы состояния. `state decisions list` и `state inject-log list|get` показывают обязательные решения и записи аудита инъекций. `state activate`, `state archive` и `state purge` — явные действия; старые булевы флаги действий отклоняются. Архивируйте или удаляйте данные только после просмотра результата dry-run, потому что эти команды изменяют локальное состояние.
+`state emit` записывает одно событие L1 с явной категорией и метаданными сессии. `state migrate` переносит устаревшие сессии в выбранный профиль. `state repair` исправляет повреждённые файлы состояния. `state decisions list` и `state inject-log list|get` показывают обязательные решения и записи аудита инъекций. `state trajectory` объединяет события L1 сессии с транскриптами сессий вендоров, в которых она выполнялась (Claude Code, Codex, Antigravity и Grok). Получается единый журнал по ходам: промпты, ответы модели, вызовы инструментов, длительность и расход токенов; `--open` открывает его в веб-дашборде по адресу `/trajectory`. Для остальных вендоров отображаются только события L1. Транскрипты читаются из `CLAUDE_CONFIG_DIR` или `~/.claude`, `CODEX_HOME` или `~/.codex`, `~/.gemini/antigravity-cli` и `~/.grok`. `state activate`, `state archive` и `state purge` — явные действия; старые булевы флаги действий отклоняются. Архивируйте или удаляйте данные только после просмотра результата dry-run, потому что эти команды изменяют локальное состояние.
 
 ### model
 

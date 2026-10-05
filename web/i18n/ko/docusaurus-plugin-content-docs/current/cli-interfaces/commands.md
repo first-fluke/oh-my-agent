@@ -68,7 +68,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` | 실시간 에이전트 모니터링 대시보드를 실행합니다. |
 | `auth` | `auth`, `auth status` | 지원 CLI 인증 상태를 관리합니다. |
 | `hook` | `hook`, `hook run`, `hook probe` | 중앙 훅 라우터를 호출합니다. |
-| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state heal-check`, `state activate`, `state archive`, `state purge` | OMA L1 워크플로우 상태를 관리합니다. |
+| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` | OMA L1 워크플로우 상태를 관리합니다. |
 | `ralph` | `ralph`, `ralph verify` | ralph 실행 산출물을 검증합니다. |
 | `goal` | `goal`, `goal set` | 지속형 워크플로우에 목표 계약을 연결합니다. |
 | `stats` | `stats`, `stats get`, `stats reset` | 생산성 메트릭을 조회하고 초기화합니다. |
@@ -1639,12 +1639,14 @@ oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
+oma state trajectory <session-id>
+oma state trajectory <session-id> --open
 oma state verify --workflow work --checkpoint complete --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit`은 명시적인 category와 세션 메타데이터를 포함한 L1 이벤트를 하나 기록합니다. `state migrate`는 레거시 세션을 선택한 프로필로 옮깁니다. `state repair`는 잘못된 상태 파일을 복구합니다. `state decisions list`와 `state inject-log list|get`은 필수 결정과 주입 감사 항목을 검사합니다. `state activate`, `state archive`, `state purge`는 명시적 작업이며 예전 불리언 작업 플래그는 거부됩니다. 로컬 상태를 바꾸므로 dry-run을 검토한 뒤 archive 또는 purge를 실행합니다.
+`state emit`은 명시적인 category와 세션 메타데이터를 포함한 L1 이벤트를 하나 기록합니다. `state migrate`는 레거시 세션을 선택한 프로필로 옮깁니다. `state repair`는 잘못된 상태 파일을 복구합니다. `state decisions list`와 `state inject-log list|get`은 필수 결정과 주입 감사 항목을 검사합니다. `state trajectory`는 세션의 L1 이벤트를 그 세션이 실행된 벤더 세션(Claude Code, Codex, Antigravity, Grok)의 트랜스크립트와 합쳐 턴 단위로 정리한 기록 하나로 보여줍니다. 이 기록에는 프롬프트, 모델 응답, 도구 호출, 소요 시간, 토큰 사용량이 담깁니다. `--open`을 붙이면 웹 대시보드의 `/trajectory`에서 엽니다. 그 밖의 벤더 세션은 L1 이벤트만 나옵니다. 트랜스크립트는 `CLAUDE_CONFIG_DIR` 또는 `~/.claude`, `CODEX_HOME` 또는 `~/.codex`, `~/.gemini/antigravity-cli`, `~/.grok`에서 읽습니다. `state activate`, `state archive`, `state purge`는 명시적 작업이며 예전 불리언 작업 플래그는 거부됩니다. 로컬 상태를 바꾸므로 dry-run을 검토한 뒤 archive 또는 purge를 실행합니다.
 
 ### model
 

@@ -7,7 +7,12 @@ import { evolutionNoticeLines } from "./evolution-notice.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { writeInjectLog } from "./inject-log.ts";
 import { normalizePromptInput } from "./prompt-input.ts";
-import { emitEvent, type OmaEvent, readEvents } from "./state-emit.ts";
+import {
+  emitEvent,
+  type OmaEvent,
+  readEvents,
+  vendorHomePayload,
+} from "./state-emit.ts";
 import { getActiveSid, readIndex, setLastSession } from "./state-marker.ts";
 import type { HandlerCtx, HandlerResult, HookInput, Vendor } from "./types.ts";
 import { detectVendorFromInput, getProjectDir } from "./vendor-detect.ts";
@@ -103,6 +108,7 @@ export async function onBoundary(
       toVendor: vendor,
       toVendorSid: vendorSid,
       previousSid: sid,
+      ...vendorHomePayload(vendor),
     },
   });
   setLastSession(projectDir, vendor, vendorSid);

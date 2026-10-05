@@ -5,11 +5,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DASHBOARD_HTML, RECAP_HTML } from "./dashboard/templates.js";
+import { TRAJECTORY_HTML } from "./dashboard/trajectory-template.js";
 import {
   DEFAULT_DASHBOARD_PORT,
   resolveDashboardPort,
   startDashboard,
 } from "./dashboard.js";
+import { emitEvent } from "./state/events.js";
 
 async function httpGet(
   url: string,
@@ -362,5 +364,75 @@ describe("dashboard project directory", () => {
     );
     expect(existsSync(dashboard.memoriesDir)).toBe(true);
     expect(existsSync(join(process.cwd(), "web", ".agents"))).toBe(false);
+  });
+});
+
+describe("dashboard trajectory routes", () => {
+  let projectDir = "";
+  let dashboard: Awaited<ReturnType<typeof startDashboard>> | undefined;
+
+  beforeEach(() => {
+    projectDir = mkdtempSync(join(tmpdir(), "oma-dashboard-trajectory-"));
+    vi.stubEnv("MEMORIES_DIR", join(projectDir, "memories"));
+    vi.stubEnv(
+      "DASHBOARD_PORT",
+      String(50_000 + Math.floor(Math.random() * 5_000)),
+    );
+  });
+
+  afterEach(async () => {
+    if (dashboard) {
+      await dashboard.close();
+      dashboard = undefined;
+    }
+    vi.unstubAllEnvs();
+    rmSync(projectDir, { recursive: true, force: true });
+  });
+
+  it("serves the viewer page under a CSP that needs no external host", async () => {
+    dashboard = startDashboard({ projectDir });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const res = await httpGetFull(
+      `http://${dashboard.host}:${dashboard.port}/trajectory?sid=oma-main`,
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-security-policy")).toContain(
+      "default-src 'none'",
+    );
+    expect(res.body).toContain("__OMA_DASHBOARD_TOKEN__");
+    expect(TRAJECTORY_HTML).not.toMatch(/https?:\/\/(?!www\.w3\.org)/);
+  });
+
+  it("returns a session trajectory to an authorized client only", async () => {
+    emitEvent(projectDir, "oma-main", {
+      kind: "session.created",
+      ts: "2026-05-25T10:00:00.000Z",
+      payload: { workflow: "debug", category: "main" },
+    });
+    dashboard = startDashboard({ projectDir });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const base = `http://${dashboard.host}:${dashboard.port}`;
+    const auth = { "X-OMA-Dashboard-Token": dashboard.token };
+
+    expect((await httpGet(`${base}/api/trajectory?sid=oma-main`)).status).toBe(
+      401,
+    );
+    expect(
+      (await httpGet(`${base}/api/trajectory?sid=..%2Fsecrets`, auth)).status,
+    ).toBe(400);
+
+    const res = await httpGet(`${base}/api/trajectory?sid=oma-main`, auth);
+    expect(res.status).toBe(200);
+    expect(JSON.parse(res.body)).toMatchObject({
+      sid: "oma-main",
+      meta: { workflow: "debug" },
+      records: [{ index: 1, kind: "oma", event: { kind: "session.created" } }],
+    });
+
+    const sessions = await httpGet(`${base}/api/trajectory/sessions`, auth);
+    expect(JSON.parse(sessions.body).sessions).toMatchObject([
+      { sid: "oma-main", workflow: "debug" },
+    ]);
   });
 });

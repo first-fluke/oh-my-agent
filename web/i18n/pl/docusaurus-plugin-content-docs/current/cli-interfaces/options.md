@@ -601,6 +601,7 @@ Poniższa macierz jest generowana ze sprawdzonego publicznego rejestru poleceń.
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Wyświetla lub przegląda dzienniki audytu inject dla każdej granicy (D52) |
 | `state inject-log get` | `--json, --output <format>` | Wyświetla lub przegląda dzienniki audytu inject dla każdej granicy (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Eksportuje podsumowanie sesji do magazynu koordynacji |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Pokazuje trajektorię sesji: zdarzenia L1 połączone z transkryptami dostawców |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Sprawdza, czy samonaprawa jest dozwolona dla agenta |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Sprawdza stan workflow OMA L1 |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Sprawdza stan workflow OMA L1 |

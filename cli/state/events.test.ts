@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   activateWorkflowSession,
   deriveMeta,
@@ -23,6 +23,7 @@ import {
   retryObservePath,
   setActiveSession,
   sortEvents,
+  vendorHomePayload,
 } from "./events.js";
 import {
   parseMemoryRetryLine,
@@ -154,6 +155,40 @@ describe("L1 state events", () => {
         reviewer: "qa",
       },
     ]);
+  });
+
+  it("records the vendor home override on session creation", () => {
+    expect(
+      vendorHomePayload("codex", { CODEX_HOME: " /accounts/work " }),
+    ).toEqual({ vendorHome: "/accounts/work" });
+    expect(
+      vendorHomePayload("claude", { CLAUDE_CONFIG_DIR: "/accounts/claude" }),
+    ).toEqual({ vendorHome: "/accounts/claude" });
+    // Another vendor's override says nothing about this vendor's transcripts.
+    expect(
+      vendorHomePayload("claude", { CODEX_HOME: "/accounts/work" }),
+    ).toEqual({});
+    expect(
+      vendorHomePayload(undefined, { CODEX_HOME: "/accounts/work" }),
+    ).toEqual({});
+
+    vi.stubEnv("CODEX_HOME", "/accounts/work");
+    try {
+      activateWorkflowSession({
+        projectDir,
+        sid: "oma-vendor-home",
+        workflow: "work",
+        vendor: "codex",
+        vendorSid: "codex-1",
+      });
+    } finally {
+      vi.unstubAllEnvs();
+    }
+    expect(readEvents(projectDir, "oma-vendor-home")[0]?.payload).toEqual({
+      workflow: "work",
+      category: "main",
+      vendorHome: "/accounts/work",
+    });
   });
 
   it("maintains active session index and writes meta on session activation", () => {

@@ -602,6 +602,7 @@ La matrice suivante est générée depuis le registre public des commandes prés
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Liste ou affiche les journaux d’audit d’injection par frontière (D52) |
 | `state inject-log get` | `--json, --output <format>` | Liste ou affiche les journaux d’audit d’injection par frontière (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Exporte un résumé de session vers le magasin de coordination |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Affiche la trajectoire d’une session : événements L1 associés aux transcriptions des fournisseurs |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Vérifie si l’auto-réparation est autorisée pour un agent |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspecte l’état de workflow OMA L1 |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspecte l’état de workflow OMA L1 |

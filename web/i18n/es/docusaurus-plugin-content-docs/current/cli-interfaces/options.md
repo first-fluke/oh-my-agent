@@ -601,6 +601,7 @@ La siguiente matriz se genera a partir del registro público de comandos incluid
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Enumera o muestra registros de auditoría de inject por frontera (D52) |
 | `state inject-log get` | `--json, --output <format>` | Enumera o muestra registros de auditoría de inject por frontera (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Exporta un resumen de sesión al almacén de coordinación |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Muestra la trayectoria de una sesión: eventos L1 combinados con las transcripciones del proveedor |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Comprueba si se permite la autorreparación para un agente |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspecciona el estado de workflow L1 de OMA |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspecciona el estado de workflow L1 de OMA |

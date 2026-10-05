@@ -67,7 +67,7 @@ Bản đồ này giúp các phần tham chiếu dài bên dưới dễ lướt h
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
-| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state heal-check`, `state activate`, `state archive`, `state purge` |
+| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
@@ -1688,12 +1688,14 @@ Các nhóm lệnh sau cung cấp workflow state bền vững và chẩn đoán m
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
+oma state trajectory <session-id>
+oma state trajectory <session-id> --open
 oma state verify --workflow work --checkpoint complete --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` ghi một L1 event với category và metadata session tường minh. `state migrate` chuyển các session legacy sang profile đã chọn. `state repair` sửa các state file bị lỗi định dạng. `state decisions list` và `state inject-log list|get` kiểm tra các quyết định bắt buộc và các mục audit về injection. `state activate`, `state archive` và `state purge` là các hành động tường minh; các flag hành động dạng boolean cũ bị từ chối. Chỉ archive hoặc purge sau khi đã xem kết quả dry-run, vì các lệnh này thay đổi state cục bộ.
+`state emit` ghi một L1 event với category và metadata session tường minh. `state migrate` chuyển các session legacy sang profile đã chọn. `state repair` sửa các state file bị lỗi định dạng. `state decisions list` và `state inject-log list|get` kiểm tra các quyết định bắt buộc và các mục audit về injection. `state trajectory` ghép các L1 event của một session với transcript của các vendor session tương ứng (Claude Code, Codex, Antigravity và Grok). Kết quả là một bản ghi theo từng lượt gồm prompt, phản hồi của model, tool call, thời gian thực thi và lượng token sử dụng; `--open` mở bản ghi này trong web dashboard tại `/trajectory`. Các vendor khác chỉ hiển thị L1 event. Transcript được đọc từ `CLAUDE_CONFIG_DIR` hoặc `~/.claude`, `CODEX_HOME` hoặc `~/.codex`, `~/.gemini/antigravity-cli` và `~/.grok`. `state activate`, `state archive` và `state purge` là các hành động tường minh; các flag hành động dạng boolean cũ bị từ chối. Chỉ archive hoặc purge sau khi đã xem kết quả dry-run, vì các lệnh này thay đổi state cục bộ.
 
 ### model
 

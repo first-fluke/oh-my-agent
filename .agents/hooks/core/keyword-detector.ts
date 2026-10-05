@@ -776,18 +776,20 @@ async function activateL1WorkflowSession(
   category = "main",
 ): Promise<string | null> {
   try {
-    const [{ setActiveSession }, { createSessionId, emitEvent }] =
-      await Promise.all([
-        import("./state-marker.ts"),
-        import("./state-emit.ts"),
-      ]);
+    const [
+      { setActiveSession },
+      { createSessionId, emitEvent, vendorHomePayload },
+    ] = await Promise.all([
+      import("./state-marker.ts"),
+      import("./state-emit.ts"),
+    ]);
     const sid = createSessionId();
     setActiveSession(projectDir, category, sid);
     await emitEvent(projectDir, sid, {
       kind: "session.created",
       vendor,
       vendorSid,
-      payload: { workflow, category },
+      payload: { workflow, category, ...vendorHomePayload(vendor) },
     });
     return sid;
   } catch (e) {

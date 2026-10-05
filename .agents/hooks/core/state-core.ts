@@ -385,6 +385,25 @@ function refreshMetaUnlocked(projectDir: string, sid: string): SessionMeta {
   return meta;
 }
 
+/**
+ * Home override the vendor process runs under, as an event payload fragment.
+ * Launchers such as Orca give each account its own home, so a vendor session's
+ * transcript is only reachable later if the event records where it lives.
+ */
+export function vendorHomePayload(
+  vendor: string | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): { vendorHome?: string } {
+  const home =
+    vendor === "codex"
+      ? env.CODEX_HOME
+      : vendor === "claude"
+        ? env.CLAUDE_CONFIG_DIR
+        : undefined;
+  const trimmed = home?.trim();
+  return trimmed ? { vendorHome: trimmed } : {};
+}
+
 export function activateWorkflowSession(args: {
   projectDir: string;
   workflow: string;
@@ -399,6 +418,10 @@ export function activateWorkflowSession(args: {
     kind: "session.created",
     vendor: args.vendor,
     vendorSid: args.vendorSid,
-    payload: { workflow: args.workflow, category },
+    payload: {
+      workflow: args.workflow,
+      category,
+      ...vendorHomePayload(args.vendor),
+    },
   });
 }

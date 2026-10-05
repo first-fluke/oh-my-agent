@@ -68,7 +68,7 @@ sidebar_label: CLI 命令
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
-| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state heal-check`, `state activate`, `state archive`, `state purge` |
+| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
@@ -1643,12 +1643,14 @@ oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
+oma state trajectory <session-id>
+oma state trajectory <session-id> --open
 oma state verify --workflow work --checkpoint complete --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` 记录一条带有显式类别和会话元数据的 L1 事件。`state migrate` 把旧版会话迁移到所选配置档。`state repair` 修复格式错误的状态文件。`state decisions list` 和 `state inject-log list|get` 用于查看必需的决策和注入审计条目。`state activate`、`state archive` 和 `state purge` 是显式操作；旧的布尔操作标志会被拒绝。这些命令会改变本地状态，因此请先审查试运行结果，再执行归档或清除。
+`state emit` 记录一条带有显式类别和会话元数据的 L1 事件。`state migrate` 把旧版会话迁移到所选配置档。`state repair` 修复格式错误的状态文件。`state decisions list` 和 `state inject-log list|get` 用于查看必需的决策和注入审计条目。`state trajectory` 把会话的 L1 事件和对应供应商会话（Claude Code、Codex、Antigravity 和 Grok）的转录合并，按回合列出提示词、模型响应、工具调用、耗时和 token 用量。加上 `--open` 会在 Web 仪表盘的 `/trajectory` 中打开。其他供应商只显示 L1 事件。转录从 `CLAUDE_CONFIG_DIR` 或 `~/.claude`、`CODEX_HOME` 或 `~/.codex`、`~/.gemini/antigravity-cli` 以及 `~/.grok` 读取。`state activate`、`state archive` 和 `state purge` 是显式操作；旧的布尔操作标志会被拒绝。这些命令会改变本地状态，因此请先审查试运行结果，再执行归档或清除。
 
 ### model（模型）
 

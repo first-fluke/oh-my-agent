@@ -601,6 +601,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | 境界ごとの inject 監査ログ（D52）を一覧表示または表示します。 |
 | `state inject-log get` | `--json, --output <format>` | 境界ごとの inject 監査ログ（D52）を一覧表示または表示します。 |
 | `state summary` | `--category <category>, --json, --output <format>` | セッション概要を調整ストアへエクスポートします。 |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | L1 イベントとベンダーのトランスクリプトを結合したセッションの軌跡を表示します。 |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | エージェントの自己修復が許可されているか確認します。 |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | OMA L1 ワークフロー状態を確認します。 |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | OMA L1 ワークフロー状態を確認します。 |

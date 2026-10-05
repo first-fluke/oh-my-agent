@@ -602,6 +602,7 @@ De volgende matrix is gegenereerd uit het openbare commandoregister in de reposi
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Toon of bekijk inject-auditlogs per boundary (D52) |
 | `state inject-log get` | `--json, --output <format>` | Toon of bekijk inject-auditlogs per boundary (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Exporteer een sessiesamenvatting naar de coordination store |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Toon een sessietraject: L1-events gekoppeld aan vendortranscripten |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Controleer of self-healing voor een agent is toegestaan |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspecteer de OMA L1-workflowstatus |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspecteer de OMA L1-workflowstatus |

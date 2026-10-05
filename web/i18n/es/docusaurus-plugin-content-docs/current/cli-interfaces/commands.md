@@ -67,7 +67,7 @@ Este mapa facilita recorrer las referencias extensas de abajo y descubrir las fa
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
-| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state heal-check`, `state activate`, `state archive`, `state purge` |
+| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
@@ -1688,12 +1688,14 @@ Las siguientes familias exponen el estado persistente de los workflows y diagnó
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
+oma state trajectory <session-id>
+oma state trajectory <session-id> --open
 oma state verify --workflow work --checkpoint complete --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` registra un evento L1 con categoría y metadatos de sesión explícitos. `state migrate` mueve las sesiones legacy al perfil seleccionado. `state repair` repara los archivos de estado malformados. `state decisions list` y `state inject-log list|get` inspeccionan las decisiones requeridas y las entradas de auditoría de inyección. `state activate`, `state archive` y `state purge` son acciones explícitas; los antiguos flags booleanos de acción se rechazan. Archiva o purga solo después de revisar un dry-run, porque estos comandos cambian el estado local.
+`state emit` registra un evento L1 con categoría y metadatos de sesión explícitos. `state migrate` mueve las sesiones legacy al perfil seleccionado. `state repair` repara los archivos de estado malformados. `state decisions list` y `state inject-log list|get` inspeccionan las decisiones requeridas y las entradas de auditoría de inyección. `state trajectory` combina los eventos L1 de una sesión con las transcripciones de las sesiones de proveedor en las que se ejecutó (Claude Code, Codex, Antigravity y Grok). El resultado es un único registro, turno a turno, de prompts, respuestas del modelo, llamadas a herramientas, duraciones y uso de tokens; `--open` lo muestra en el dashboard web, en `/trajectory`. Los demás proveedores aparecen solo con sus eventos L1. Las transcripciones se leen de `CLAUDE_CONFIG_DIR` o `~/.claude`, `CODEX_HOME` o `~/.codex`, `~/.gemini/antigravity-cli` y `~/.grok`. `state activate`, `state archive` y `state purge` son acciones explícitas; los antiguos flags booleanos de acción se rechazan. Archiva o purga solo después de revisar un dry-run, porque estos comandos cambian el estado local.
 
 ### model {#model}
 

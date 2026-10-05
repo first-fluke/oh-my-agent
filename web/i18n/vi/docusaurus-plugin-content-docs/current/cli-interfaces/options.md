@@ -601,6 +601,7 @@ Ma trận sau được tạo từ registry lệnh công khai đã được commi
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | Liệt kê hoặc xem audit log inject theo từng boundary (D52) |
 | `state inject-log get` | `--json, --output <format>` | Liệt kê hoặc xem audit log inject theo từng boundary (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Export bản tóm tắt session vào coordination store |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Hiển thị trajectory của session: L1 event ghép với transcript của vendor |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Kiểm tra xem một agent có được phép tự phục hồi hay không |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Xem trạng thái workflow L1 của OMA |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Xem trạng thái workflow L1 của OMA |

@@ -1,5 +1,5 @@
-import { spawn } from "node:child_process";
 import { startDashboard } from "../../dashboard.js";
+import { openUrl } from "../../utils/open-url.js";
 import { formatJson } from "./internal/formatters/json.js";
 import { formatMermaid } from "./internal/formatters/mermaid.js";
 import { formatTerminal } from "./internal/formatters/terminal.js";
@@ -12,20 +12,7 @@ export async function recap(
   if (options.graph) {
     const dashboard = startDashboard({ route: "/recap" });
     // Open browser after a short delay to let server start
-    setTimeout(() => {
-      const opener =
-        process.platform === "darwin"
-          ? { command: "open", args: [dashboard.url] }
-          : process.platform === "win32"
-            ? { command: "cmd", args: ["/c", "start", "", dashboard.url] }
-            : { command: "xdg-open", args: [dashboard.url] };
-      const child = spawn(opener.command, opener.args, {
-        detached: true,
-        stdio: "ignore",
-      });
-      child.on("error", () => undefined);
-      child.unref();
-    }, 500);
+    setTimeout(() => openUrl(dashboard.url), 500);
     return;
   }
 

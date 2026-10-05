@@ -601,6 +601,7 @@ The following matrix is generated from the checked-in public command registry. I
 | `state inject-log list` | `--entry <file>, --json, --output <format>` | List or view per-boundary inject audit logs (D52) |
 | `state inject-log get` | `--json, --output <format>` | List or view per-boundary inject audit logs (D52) |
 | `state summary` | `--category <category>, --json, --output <format>` | Export a session summary to the coordination store |
+| `state trajectory` | `--category <category>, --open, --json, --output <format>` | Show a session trajectory: L1 events joined with vendor transcripts |
 | `state heal-check` | `--agent <agentType>, --json, --output <format>` | Check whether self-healing is allowed for an agent |
 | `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspect OMA L1 workflow state |
 | `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Inspect OMA L1 workflow state |

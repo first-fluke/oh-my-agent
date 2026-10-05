@@ -67,7 +67,7 @@ description: oh-my-agent CLIの全コマンドを対象に、構文、オプシ�
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
-| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state heal-check`, `state activate`, `state archive`, `state purge` |
+| `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
@@ -1687,12 +1687,14 @@ oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
+oma state trajectory <session-id>
+oma state trajectory <session-id> --open
 oma state verify --workflow work --checkpoint complete --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` はカテゴリとセッションメタデータを明示した L1 イベントを記録します。`state migrate` は従来セッションを選択プロファイルへ移します。`state repair` は壊れた状態ファイルを修復します。`state decisions list` と `state inject-log list|get` は必須判断と注入監査エントリを確認します。`state activate`、`state archive`、`state purge` は明示的な操作で、古い真偽値フラグは拒否されます。状態を変更するため、dry-run を確認してから archive または purge を実行します。
+`state emit` はカテゴリとセッションメタデータを明示した L1 イベントを記録します。`state migrate` は従来セッションを選択プロファイルへ移します。`state repair` は壊れた状態ファイルを修復します。`state decisions list` と `state inject-log list|get` は必須判断と注入監査エントリを確認します。`state trajectory` は、セッションの L1 イベントと、そのセッションが実行されたベンダーセッション（Claude Code、Codex、Antigravity、Grok）のトランスクリプトを結合し、ターンごとの記録として表示します。記録にはプロンプト、モデル応答、ツール呼び出し、所要時間、トークン使用量が含まれます。`--open` を付けると Web ダッシュボードの `/trajectory` で開きます。それ以外のベンダーでは L1 イベントのみを表示します。トランスクリプトは `CLAUDE_CONFIG_DIR` または `~/.claude`、`CODEX_HOME` または `~/.codex`、`~/.gemini/antigravity-cli`、`~/.grok` から読み込みます。`state activate`、`state archive`、`state purge` は明示的な操作で、古い真偽値フラグは拒否されます。状態を変更するため、dry-run を確認してから archive または purge を実行します。
 
 ### model {#model}
 

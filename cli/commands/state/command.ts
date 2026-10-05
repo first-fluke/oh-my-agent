@@ -47,6 +47,7 @@ import {
   parseOlderThan,
   viewSession,
 } from "./sessions.js";
+import { registerTrajectory } from "./trajectory/command.js";
 import type {
   ArchivedSession,
   ArchivedStateView,
@@ -450,6 +451,8 @@ export function registerState(program: Command): void {
       { supportsJsonOutput: true },
     ),
   );
+
+  registerTrajectory(program);
 
   addOutputOptions(
     program
