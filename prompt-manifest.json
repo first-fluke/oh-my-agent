@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.1.3",
-  "releaseDate": "2026-10-05T03:25:04.032Z",
+  "releaseDate": "2026-10-05T09:49:24.672Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -176,8 +176,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "5480472cdf3c7d913d06526c3d1d22ba30d7f5a4815fe8e14b9d8cd63ee94bd3",
-      "size": 46941
+      "sha256": "aa02e5bd4ac56701e3516c66c3c2b68822db7000af3cc34dd84adb8102944243",
+      "size": 46997
     },
     {
       "path": ".agents/hooks/core/memory-adapter.ts",
@@ -226,18 +226,18 @@
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "976c73c3ee213686c40a2dc89bf039bd227ce9156974e34aa3977b6c82461d97",
-      "size": 7501
+      "sha256": "5ca0705e06ef1561b424a835e5b28cec8b5d16f643d7b40434dd93821471e6db",
+      "size": 7565
     },
     {
       "path": ".agents/hooks/core/state-core.ts",
-      "sha256": "5e91463c3fa5c03ec6ff66d6a7999acf5d008a13ea6859d614f980612eb2b787",
-      "size": 11092
+      "sha256": "c4efb886b9858d1ec14556b46891e31e9c39a76fee04d8cc26a48f56e6321a68",
+      "size": 11751
     },
     {
       "path": ".agents/hooks/core/state-emit.ts",
-      "sha256": "7270f237754b8fd83303e21230bd7184dfc3fd6b08efd554c5a79a14dd1616c5",
-      "size": 1849
+      "sha256": "2b60814bf695b0effec72197e426a8bd84f55e6b2d78b793dab825060ff96ec7",
+      "size": 1870
     },
     {
       "path": ".agents/hooks/core/state-index-lock.ts",
