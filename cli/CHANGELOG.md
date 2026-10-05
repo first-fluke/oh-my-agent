@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.3.0...cli-v15.4.0) (2026-10-05)
+
+
+### Features
+
+* **explain:** bring draft rendering to full parity with its reference ([ea3b2aa](https://github.com/first-fluke/oh-my-agent/commit/ea3b2aacdda10f5416ce4cfabf83693a0d611235))
+
 ## [15.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.2.0...cli-v15.3.0) (2026-10-05)
 
 
