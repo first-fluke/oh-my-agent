@@ -80,9 +80,9 @@ APM 只分发 skills。完整 harness 请用 `bunx oh-my-agent@latest`（或上�
 | Mobile | architecture + brainstorm + debug + mobile + pm + qa + scm |
 | Research | academic-writer + hwp + market + pdf + scholar + scm + search + translator |
 
-## 适配所有 Agent
+## Agent 集成
 
-验证要是只能绑定在一家厂商上，那价值就有限了。`oh-my-agent` 始终把 `.agents/` 作为唯一信源（SSOT），并按每个运行时的原生布局生成对应文件，所有受支持的工具因此共享同一套技能、工作流、规则和门禁，换厂商也就成了改配置，而不是做迁移。
+`oh-my-agent` 使用 `.agents/` 作为 Agent skills、workflows、rules 和验证门禁的共享来源。
 
 <table>
 <colgroup>
@@ -115,9 +115,9 @@ APM 只分发 skills。完整 harness 请用 `bunx oh-my-agent@latest`（或上�
 <sub>原生派发</sub>
 </td>
 <td align="center">
-<a href="https://github.com/esengine/DeepSeek-Reasonix"><img src="https://github.com/deepseek-ai.png?size=120" alt="Reasonix" width="48" height="48" /></a><br/>
-<strong>Reasonix</strong><br/>
-<sub>原生兼容</sub>
+<a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://github.com/deepseek-ai.png?size=120" alt="DeepSeek Harness" width="48" height="48" /></a><br/>
+<strong>DeepSeek Harness</strong><br/>
+<sub>Cordis plugin</sub>
 </td>
 </tr>
 <tr>
@@ -351,43 +351,6 @@ flowchart TD
 - **[能力提供方](./capability-providers.md)**：实验性 Gortex 与 Honcho 的配置、路由和限制
 - **[基准测试报告](../benchmarks/README.md)**：方法、分数、截图与注意事项
 - **[Web 文档](https://first-fluke.github.io/oh-my-agent/)**：指南、教程和 CLI 参考
-
-## 赞助
-
-本项目由慷慨的赞助者们支持维护。
-
-> **喜欢这个项目？** 给个 star 吧！
->
-> ```bash
-> gh api --method PUT /user/starred/first-fluke/oh-my-agent
-> ```
->
-> 试试我们优化过的入门模板：[fullstack-starter](https://github.com/first-fluke/fullstack-starter)
-
-<a href="https://github.com/sponsors/first-fluke">
-  <img src="https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=for-the-badge" alt="Sponsor" />
-</a>
-<a href="https://buymeacoffee.com/firstfluke">
-  <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-☕-FFDD00?style=for-the-badge" alt="Buy Me a Coffee" />
-</a>
-
-### 🚀 Champion
-
-<!-- Champion tier ($100/mo) logos here -->
-
-### 🛸 Booster
-
-<!-- Booster tier ($30/mo) logos here -->
-
-### ☕ Contributor
-
-<!-- Contributor tier ($10/mo) names here -->
-
-[成为赞助者 →](https://github.com/sponsors/first-fluke)
-
-完整赞助者列表请查看 [SPONSORS.md](../SPONSORS.md)。
-
-
 
 ## Star History
 

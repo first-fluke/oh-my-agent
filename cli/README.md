@@ -66,9 +66,9 @@ Pick a preset and you're ready:
 | Mobile | architecture + brainstorm + debug + mobile + pm + qa + scm |
 | Research | academic-writer + hwp + market + pdf + scholar + scm + search + translator |
 
-## Works With Every Agent
+## Agent Integrations
 
-Verification is worth little if it's locked to one vendor. `oh-my-agent` keeps `.agents/` as the single source of truth and projects it into each runtime's native layout, so every supported tool shares the same skills, workflows, rules, and gates — and switching vendors is a config change, not a migration.
+`oh-my-agent` uses `.agents/` as the shared source for agent skills, workflows, rules, and verification gates.
 
 <table>
 <colgroup>
@@ -101,9 +101,9 @@ Verification is worth little if it's locked to one vendor. `oh-my-agent` keeps `
 <sub>native dispatch</sub>
 </td>
 <td align="center">
-<a href="https://github.com/esengine/DeepSeek-Reasonix"><img src="https://github.com/deepseek-ai.png?size=120" alt="Reasonix" width="48" height="48" /></a><br/>
-<strong>Reasonix</strong><br/>
-<sub>native-compatible</sub>
+<a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://github.com/deepseek-ai.png?size=120" alt="DeepSeek Harness" width="48" height="48" /></a><br/>
+<strong>DeepSeek Harness</strong><br/>
+<sub>Cordis plugin</sub>
 </td>
 </tr>
 <tr>
@@ -332,41 +332,6 @@ flowchart TD
 - **[Supported Agents](https://github.com/first-fluke/oh-my-agent/blob/main/docs/SUPPORTED_AGENTS.md)** — Agent support matrix across IDEs
 - **[Benchmark Report](https://github.com/first-fluke/oh-my-agent/blob/main/benchmarks/README.md)** — Method, scores, screenshots, and caveats
 - **[Web Docs](https://first-fluke.github.io/oh-my-agent/)** — Guides, tutorials, and CLI reference
-
-## Sponsors
-
-This project is maintained thanks to our generous sponsors.
-
-> **Like this project?** Give it a star!
->
-> ```bash
-> gh api --method PUT /user/starred/first-fluke/oh-my-agent
-> ```
->
-> Try our optimized starter template: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
-
-<a href="https://github.com/sponsors/first-fluke">
-  <img src="https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=for-the-badge" alt="Sponsor" />
-</a>
-<a href="https://buymeacoffee.com/firstfluke">
-  <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-☕-FFDD00?style=for-the-badge" alt="Buy Me a Coffee" />
-</a>
-
-### 🚀 Champion
-
-<!-- Champion tier ($100/mo) logos here -->
-
-### 🛸 Booster
-
-<!-- Booster tier ($30/mo) logos here -->
-
-### ☕ Contributor
-
-<!-- Contributor tier ($10/mo) names here -->
-
-[Become a sponsor →](https://github.com/sponsors/first-fluke)
-
-See [SPONSORS.md](https://github.com/first-fluke/oh-my-agent/blob/main/SPONSORS.md) for a full list of supporters.
 
 ## Star History
 

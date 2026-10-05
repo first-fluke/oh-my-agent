@@ -80,9 +80,9 @@ APM แจกแค่ skills สำหรับ harness เต็มใช้ `
 | Mobile | architecture + brainstorm + debug + mobile + pm + qa + scm |
 | Research | academic-writer + hwp + market + pdf + scholar + scm + search + translator |
 
-## ใช้งานได้กับทุก Agent
+## การผสานรวม Agent
 
-การตรวจสอบจะมีค่าน้อยมากถ้ามันถูกล็อกไว้กับผู้ให้บริการรายเดียว `oh-my-agent` รักษา `.agents/` ไว้เป็นแหล่งความจริงเพียงแหล่งเดียว (SSOT) แล้วฉายไปยัง layout เนทีฟของแต่ละ runtime เครื่องมือที่รองรับทุกตัวจึงใช้ skills, workflows, กฎ และ gate ร่วมกัน — และการเปลี่ยนผู้ให้บริการก็เป็นแค่การแก้คอนฟิก ไม่ใช่การย้ายระบบ
+`oh-my-agent` ใช้ `.agents/` เป็นแหล่งข้อมูลร่วมสำหรับ skills, workflows, rules และ verification gates ของ Agent
 
 <table>
 <colgroup>
@@ -115,9 +115,9 @@ APM แจกแค่ skills สำหรับ harness เต็มใช้ `
 <sub>dispatch เนทีฟ</sub>
 </td>
 <td align="center">
-<a href="https://github.com/esengine/DeepSeek-Reasonix"><img src="https://github.com/deepseek-ai.png?size=120" alt="Reasonix" width="48" height="48" /></a><br/>
-<strong>Reasonix</strong><br/>
-<sub>เข้ากันได้แบบเนทีฟ</sub>
+<a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://github.com/deepseek-ai.png?size=120" alt="DeepSeek Harness" width="48" height="48" /></a><br/>
+<strong>DeepSeek Harness</strong><br/>
+<sub>Cordis plugin</sub>
 </td>
 </tr>
 <tr>
@@ -351,41 +351,6 @@ flowchart TD
 - **[ผู้ให้บริการความสามารถ (Capability Providers)](./capability-providers.md)**: การตั้งค่า การกำหนดเส้นทาง และข้อจำกัดของ Gortex และ Honcho ซึ่งยังอยู่ในขั้นทดลอง
 - **[รายงานเบนช์มาร์ก](../benchmarks/README.md)**: วิธีการวัดผล คะแนน ภาพหน้าจอ และข้อควรระวัง
 - **[เอกสารบนเว็บ](https://first-fluke.github.io/oh-my-agent/)**: คู่มือ บทเรียน และการอ้างอิง CLI
-
-## ผู้สนับสนุน (Sponsors)
-
-โปรเจกต์นี้ได้รับการดูแลรักษาขอบคุณผู้สนับสนุนที่ใจดีทุกท่าน
-
-> **หากชอบ Project นี้?** ติดดาวให้เราได้นะค้าบบ !
->
-> ```bash
-> gh api --method PUT /user/starred/first-fluke/oh-my-agent
-> ```
->
-> ลองใช้ template เริ่มต้นที่ปรับแต่งมาแล้วได้ที่: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
-
-<a href="https://github.com/sponsors/first-fluke">
-  <img src="https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=for-the-badge" alt="Sponsor" />
-</a>
-<a href="https://buymeacoffee.com/firstfluke">
-  <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-☕-FFDD00?style=for-the-badge" alt="Buy Me a Coffee" />
-</a>
-
-### 🚀 Champion
-
-<!-- Champion tier ($100/mo) logos here -->
-
-### 🛸 Booster
-
-<!-- Booster tier ($30/mo) logos here -->
-
-### ☕ Contributor
-
-<!-- Contributor tier ($10/mo) names here -->
-
-[เป็นผู้สนับสนุน →](https://github.com/sponsors/first-fluke)
-
-ดูรายชื่อผู้สนับสนุนทั้งหมดที่ [SPONSORS.md](../SPONSORS.md)
 
 ## ประวัติการติดดาว (Star History)
 

@@ -80,9 +80,9 @@ APM が配るのはスキルだけです。フルハーネスは `bunx oh-my-age
 | Mobile | architecture + brainstorm + debug + mobile + pm + qa + scm |
 | Research | academic-writer + hwp + market + pdf + scholar + scm + search + translator |
 
-## あらゆるエージェントで動く
+## エージェント連携
 
-検証が 1 つのベンダーに縛られていては、たいした価値になりません。`oh-my-agent` は `.agents/` を唯一の真実の源（SSOT）として保ち、各ランタイムのネイティブレイアウトに投影します。だから対応するすべてのツールが同じスキル、ワークフロー、ルール、ゲートを共有でき、ベンダーの乗り換えは移行作業ではなく設定変更で済みます。
+`oh-my-agent` は `.agents/` をエージェントのスキル、ワークフロー、ルール、検証ゲートの共通ソースとして使います。
 
 <table>
 <colgroup>
@@ -115,9 +115,9 @@ APM が配るのはスキルだけです。フルハーネスは `bunx oh-my-age
 <sub>ネイティブディスパッチ</sub>
 </td>
 <td align="center">
-<a href="https://github.com/esengine/DeepSeek-Reasonix"><img src="https://github.com/deepseek-ai.png?size=120" alt="Reasonix" width="48" height="48" /></a><br/>
-<strong>Reasonix</strong><br/>
-<sub>ネイティブ互換</sub>
+<a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://github.com/deepseek-ai.png?size=120" alt="DeepSeek Harness" width="48" height="48" /></a><br/>
+<strong>DeepSeek Harness</strong><br/>
+<sub>Cordis plugin</sub>
 </td>
 </tr>
 <tr>
@@ -351,43 +351,6 @@ flowchart TD
 - **[機能プロバイダー](./capability-providers.md)**: 実験的な Gortex と Honcho の設定、ルーティング、制限
 - **[ベンチマークレポート](../benchmarks/README.md)**: 方法論、スコア、スクリーンショット、注意点
 - **[Webドキュメント](https://first-fluke.github.io/oh-my-agent/)**: ガイド、チュートリアル、CLIリファレンス
-
-## スポンサー
-
-このプロジェクトは素敵なスポンサーの皆さんのおかげで維持されています。
-
-> **気に入りましたか？** スターをお願いします！
->
-> ```bash
-> gh api --method PUT /user/starred/first-fluke/oh-my-agent
-> ```
->
-> 最適化されたスターターテンプレートもどうぞ: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
-
-<a href="https://github.com/sponsors/first-fluke">
-  <img src="https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=for-the-badge" alt="Sponsor" />
-</a>
-<a href="https://buymeacoffee.com/firstfluke">
-  <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-☕-FFDD00?style=for-the-badge" alt="Buy Me a Coffee" />
-</a>
-
-### 🚀 Champion
-
-<!-- Champion tier ($100/mo) logos here -->
-
-### 🛸 Booster
-
-<!-- Booster tier ($30/mo) logos here -->
-
-### ☕ Contributor
-
-<!-- Contributor tier ($10/mo) names here -->
-
-[スポンサーになる →](https://github.com/sponsors/first-fluke)
-
-全サポーターの一覧は [SPONSORS.md](../SPONSORS.md) をご覧ください。
-
-
 
 ## Star History
 

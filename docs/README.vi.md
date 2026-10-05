@@ -80,9 +80,9 @@ Chọn preset là xong:
 | Mobile | architecture + brainstorm + debug + mobile + pm + qa + scm |
 | Research | academic-writer + hwp + market + pdf + scholar + scm + search + translator |
 
-## Tương thích với mọi Agent
+## Tích hợp Agent
 
-Việc kiểm chứng chẳng có mấy giá trị nếu nó bị khóa vào một nhà cung cấp. `oh-my-agent` giữ `.agents/` làm nguồn sự thật duy nhất (SSOT) và chiếu vào layout gốc của từng runtime, nhờ đó mọi công cụ được hỗ trợ đều dùng chung skills, workflows, rules và gate — và đổi nhà cung cấp chỉ là thay đổi cấu hình, không phải một cuộc di trú.
+`oh-my-agent` dùng `.agents/` làm nguồn chung cho skills, workflows, rules và cổng xác minh của agent.
 
 <table>
 <colgroup>
@@ -115,9 +115,9 @@ Việc kiểm chứng chẳng có mấy giá trị nếu nó bị khóa vào m�
 <sub>dispatch nguyên bản</sub>
 </td>
 <td align="center">
-<a href="https://github.com/esengine/DeepSeek-Reasonix"><img src="https://github.com/deepseek-ai.png?size=120" alt="Reasonix" width="48" height="48" /></a><br/>
-<strong>Reasonix</strong><br/>
-<sub>tương thích nguyên bản</sub>
+<a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://github.com/deepseek-ai.png?size=120" alt="DeepSeek Harness" width="48" height="48" /></a><br/>
+<strong>DeepSeek Harness</strong><br/>
+<sub>Cordis plugin</sub>
 </td>
 </tr>
 <tr>
@@ -351,43 +351,6 @@ flowchart TD
 - **[Capability Provider](./capability-providers.md)**: cấu hình, định tuyến và giới hạn của Gortex và Honcho (thử nghiệm)
 - **[Báo cáo benchmark](../benchmarks/README.md)**: phương pháp, điểm số, ảnh chụp màn hình và các lưu ý
 - **[Tài liệu web](https://first-fluke.github.io/oh-my-agent/)**: hướng dẫn, tutorial và CLI reference
-
-## Nhà tài trợ
-
-Dự án này được duy trì nhờ sự hỗ trợ hào phóng của các nhà tài trợ.
-
-> **Thích dự án này?** Hãy tặng một ngôi sao!
->
-> ```bash
-> gh api --method PUT /user/starred/first-fluke/oh-my-agent
-> ```
->
-> Thử template starter tối ưu của chúng tôi: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
-
-<a href="https://github.com/sponsors/first-fluke">
-  <img src="https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=for-the-badge" alt="Sponsor" />
-</a>
-<a href="https://buymeacoffee.com/firstfluke">
-  <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-☕-FFDD00?style=for-the-badge" alt="Buy Me a Coffee" />
-</a>
-
-### 🚀 Champion
-
-<!-- Champion tier ($100/mo) logos here -->
-
-### 🛸 Booster
-
-<!-- Booster tier ($30/mo) logos here -->
-
-### ☕ Contributor
-
-<!-- Contributor tier ($10/mo) names here -->
-
-[Trở thành nhà tài trợ →](https://github.com/sponsors/first-fluke)
-
-Xem danh sách đầy đủ người ủng hộ tại [SPONSORS.md](../SPONSORS.md).
-
-
 
 ## Star History
 
