@@ -1,5 +1,22 @@
 # Changelog
 
+## [15.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.4.1...cli-v15.5.0) (2026-10-06)
+
+
+### Features
+
+* **cursor-plugin:** point manifest at committed package paths ([afe76ac](https://github.com/first-fluke/oh-my-agent/commit/afe76acdab5d37fdd5b4a516a7545f194936db48))
+
+
+### Bug Fixes
+
+* **bridge:** refuse a shared serena daemon outside any project ([9f3fe93](https://github.com/first-fluke/oh-my-agent/commit/9f3fe934573e9880e9b4a50dc5d12cc143a0bda3))
+
+
+### Performance
+
+* **cli:** load only the bridge command for oma bridge ([6580e5f](https://github.com/first-fluke/oh-my-agent/commit/6580e5fdadd8c03cba317ce51aebc164468287e3))
+
 ## [15.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.4.0...cli-v15.4.1) (2026-10-05)
 
 
