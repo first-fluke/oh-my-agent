@@ -20,7 +20,10 @@ describe("parallel subprocess lifecycle", () => {
     runner = path.join(root, "runner.ts");
     fs.writeFileSync(
       runner,
-      `import { Command } from ${JSON.stringify(commanderEntry)};\nimport { registerAgentCommands } from ${JSON.stringify(path.join(cliRoot, "commands/agent/command.ts"))};\nconst program = new Command(); registerAgentCommands(program); await program.parseAsync(process.argv);\n`,
+      // Parse through the command surface like cli.ts: a bare commander
+      // program accepted the colon spelling the real CLI rejects, hiding a
+      // supervisor that never started.
+      `import { Command } from ${JSON.stringify(commanderEntry)};\nimport { registerAgentCommands } from ${JSON.stringify(path.join(cliRoot, "commands/agent/command.ts"))};\nimport { createCommandSurface } from ${JSON.stringify(path.join(cliRoot, "utils/command-surface.ts"))};\nconst program = new Command(); registerAgentCommands(program);\nconst surface = createCommandSurface(program);\nawait program.parseAsync(surface.normalize(process.argv.slice(2)), { from: "user" });\n`,
     );
     const vendor = path.join(root, "fake-qwen.cjs");
     fs.writeFileSync(
@@ -66,7 +69,7 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     cwd = root,
     extraEnv: NodeJS.ProcessEnv = {},
   ) =>
-    spawnSync("bun", [runner, "agent:parallel", ...args], {
+    spawnSync("bun", [runner, "agent", "parallel", ...args], {
       cwd,
       encoding: "utf8",
       timeout: 15_000,
@@ -99,9 +102,9 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     );
     const result = invoke([
       "--inline",
-      "--model",
+      "--vendor",
       "qwen",
-      "--session",
+      "--session-id",
       "budget-test",
       "backend:Run fixture",
     ]);
@@ -113,9 +116,9 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
   it("records one usage event when the parallel vendor exits", () => {
     invoke([
       "--inline",
-      "--model",
+      "--vendor",
       "qwen",
-      "--session",
+      "--session-id",
       "budget-test",
       "backend:Run fixture",
     ]);
@@ -131,9 +134,9 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     fs.mkdirSync(subdir);
     const args = [
       "--inline",
-      "--model",
+      "--vendor",
       "qwen",
-      "--session",
+      "--session-id",
       "budget-test",
       "backend:Subdirectory fixture",
     ];
@@ -160,9 +163,9 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     const result = invoke(
       [
         "--inline",
-        "--model",
+        "--vendor",
         "qwen",
-        "--session",
+        "--session-id",
         "budget-test",
         "backend:First fixture",
         "backend:Second fixture",
@@ -186,9 +189,9 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     const result = invoke(
       [
         "--inline",
-        "--model",
+        "--vendor",
         "qwen",
-        "--session",
+        "--session-id",
         "budget-test",
         "--no-wait",
         "backend:Background fixture",
@@ -241,9 +244,9 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
       const result = invoke(
         [
           "--inline",
-          "--model",
+          "--vendor",
           "qwen",
-          "--session",
+          "--session-id",
           "budget-test",
           "--no-wait",
           "backend:Interrupted fixture",
@@ -284,11 +287,12 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
         "bun",
         [
           runner,
-          "agent:parallel",
+          "agent",
+          "parallel",
           "--inline",
-          "--model",
+          "--vendor",
           "qwen",
-          "--session",
+          "--session-id",
           "budget-test",
           "backend:Uncooperative fixture",
         ],

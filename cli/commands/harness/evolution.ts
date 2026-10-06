@@ -26,6 +26,13 @@ import { runHarnessFeedback } from "./feedback.js";
 import { listUnpromotedIncidents } from "./incident-promote.js";
 import { scanHarnessIncidents } from "./incident-scan.js";
 
+/** Canonical spellings of the scheduler commands this file invokes. */
+export const SCHEDULE_COMMANDS = {
+  add: ["schedule", "builtin-evolution-add"],
+  remove: ["schedule", "delete"],
+  inspect: ["schedule", "inspect"],
+} as const;
+
 function invokeOma(root: string, args: string[]): string {
   const invocation = resolveOmaInvocation();
   const result = spawnSync(
@@ -49,7 +56,7 @@ function invokeOma(root: string, args: string[]): string {
 
 function scheduledJob(root: string, cron: string): string {
   const output = invokeOma(root, [
-    "schedule:builtin-evolution-add",
+    ...SCHEDULE_COMMANDS.add,
     root,
     "--cron",
     cron,
@@ -63,13 +70,13 @@ function scheduledJob(root: string, cron: string): string {
 
 function removeScheduledJob(root: string, id: string | undefined): void {
   if (!id) return;
-  invokeOma(root, ["schedule:remove", id]);
+  invokeOma(root, [...SCHEDULE_COMMANDS.remove, id]);
 }
 
 function inspectScheduledJob(root: string, id: string | undefined): unknown {
   if (!id) return { exists: false, reason: "no saved schedule id" };
   try {
-    const output = invokeOma(root, ["schedule:inspect", id]);
+    const output = invokeOma(root, [...SCHEDULE_COMMANDS.inspect, id]);
     return JSON.parse(output.trim().split("\n").at(-1) ?? "{}") as unknown;
   } catch (error) {
     return {

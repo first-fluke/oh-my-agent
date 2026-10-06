@@ -35,18 +35,18 @@ describe("Serena daemon cleanup schedule", () => {
   it("runs independently of the optional LSP reaper on macOS", () => {
     const plist = renderDaemonGcLaunchdPlist(homeDir, invocation);
     expect(plist).toContain("dev.oma.serena-daemon-gc");
-    expect(plist).toContain("<string>daemon:gc</string>");
+    expect(plist).toContain("<string>daemon</string><string>gc</string>");
     expect(plist).toContain("<key>StartInterval</key><integer>300</integer>");
     expect(plist).not.toContain("<key>KeepAlive</key>");
     expect(plist).not.toContain("serena reap");
   });
 
-  // A service PATH has no version-manager shims, so `/usr/bin/env oma` ran a
-  // stale global oma without `daemon:gc` and every cleanup run failed.
+  // A service PATH has no version-manager shims, so `/usr/bin/env oma` could
+  // run a stale global oma instead of the one that installed the timer.
   it("pins the oma that installed it instead of resolving oma on PATH", () => {
     const plist = renderDaemonGcLaunchdPlist(homeDir, invocation);
     expect(plist).toContain(
-      "<array><string>/opt/node/bin/node</string><string>/opt/oma/bin/cli.js</string><string>serena</string><string>daemon:gc</string><string>--quiet</string></array>",
+      "<array><string>/opt/node/bin/node</string><string>/opt/oma/bin/cli.js</string><string>serena</string><string>daemon</string><string>gc</string><string>--quiet</string></array>",
     );
     expect(plist).not.toContain("/usr/bin/env");
     expect(plist).toContain("<string>/opt/node/bin:");
@@ -58,7 +58,7 @@ describe("Serena daemon cleanup schedule", () => {
   it("uses the same pinned cleanup command on Linux and Windows", () => {
     expect(renderDaemonGcSystemdTimer()).toContain("OnUnitActiveSec=300s");
     expect(renderDaemonGcSystemdService(homeDir, invocation)).toContain(
-      'ExecStart="/opt/node/bin/node" "/opt/oma/bin/cli.js" "serena" "daemon:gc" "--quiet"',
+      'ExecStart="/opt/node/bin/node" "/opt/oma/bin/cli.js" "serena" "daemon" "gc" "--quiet"',
     );
     const xml = renderDaemonGcWindowsTaskXml([
       "C:\\node.exe",
@@ -66,13 +66,13 @@ describe("Serena daemon cleanup schedule", () => {
     ]);
     expect(xml).toContain("<Command>C:\\node.exe</Command>");
     expect(xml).toContain(
-      "<Arguments>&quot;C:\\oma\\cli.js&quot; serena daemon:gc --quiet</Arguments>",
+      "<Arguments>&quot;C:\\oma\\cli.js&quot; serena daemon gc --quiet</Arguments>",
     );
   });
 
   it("falls back to a PATH lookup when the entry script is unknown", () => {
     expect(renderDaemonGcSystemdService(homeDir, ["oma"])).toContain(
-      'ExecStart=/usr/bin/env "oma" "serena" "daemon:gc" "--quiet"',
+      'ExecStart=/usr/bin/env "oma" "serena" "daemon" "gc" "--quiet"',
     );
   });
 

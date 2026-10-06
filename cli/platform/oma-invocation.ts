@@ -1,4 +1,5 @@
 import { dirname, resolve } from "node:path";
+import { resolveOmaInvocation } from "../utils/oma-invocation.js";
 
 /**
  * Absolute argv that re-runs the oma currently executing: the runtime binary
@@ -6,15 +7,17 @@ import { dirname, resolve } from "node:path";
  *
  * Background services must not resolve bare `oma` through their own PATH: a
  * service PATH has no version-manager shims (mise, nvm, …), so it can land on
- * a stale global install that lacks the subcommand being scheduled. Installers
- * re-render on each run, so a moved or upgraded install is repointed the next
- * time oma installs the service.
+ * a stale global install. The entry is made absolute because a service runs
+ * from another working directory. Installers re-render on each run, so a
+ * moved or upgraded install is repointed the next time oma installs the
+ * service.
  */
 export function currentOmaInvocation(
   execPath: string = process.execPath,
   script: string | undefined = process.argv[1],
 ): string[] {
-  return script ? [execPath, resolve(script)] : ["oma"];
+  const { command, prefixArgs } = resolveOmaInvocation(execPath, script);
+  return [command, ...prefixArgs.map((arg) => resolve(arg))];
 }
 
 /** Service PATH with the pinned runtime's directory first. */

@@ -23,7 +23,8 @@ import { servicePathEnvironment } from "./serena-reaper/service-files.js";
 const LABEL = "dev.oma.serena-daemon-gc";
 const TASK_NAME = "OMA Serena Daemon GC";
 const INTERVAL_SECONDS = 300;
-const GC_ARGS = ["serena", "daemon:gc", "--quiet"];
+/** Canonical spelling; the colon form stopped routing when paths were standardized. */
+export const GC_ARGS = ["serena", "daemon", "gc", "--quiet"];
 
 type Runner = (bin: string, args: string[]) => boolean;
 

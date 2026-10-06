@@ -303,13 +303,20 @@ export function createCommandSurface(program: Command): CommandSurface {
       // OS schedulers registered before the path standardization still invoke
       // the colon spelling; map it to the canonical path instead of rejecting.
       const legacyOffset = commandOffset(argv, program);
-      const legacy = OS_INVOKED_LEGACY_PATHS[argv[legacyOffset] ?? ""];
-      if (legacy)
+      // Keys span one or two words (`schedule:run`, `serena daemon:gc`).
+      for (const length of [2, 1]) {
+        const legacy =
+          OS_INVOKED_LEGACY_PATHS[
+            argv.slice(legacyOffset, legacyOffset + length).join(" ")
+          ];
+        if (!legacy) continue;
         argv = [
           ...argv.slice(0, legacyOffset),
           ...legacy.split(" "),
-          ...argv.slice(legacyOffset + 1),
+          ...argv.slice(legacyOffset + length),
         ];
+        break;
+      }
       const found = locate(argv);
       if (!found) {
         const offset = commandOffset(argv, program);

@@ -50,6 +50,8 @@ export const COMMAND_PATHS: Record<string, string> = {
  */
 export const OS_INVOKED_LEGACY_PATHS: Readonly<Record<string, string>> = {
   "schedule:run": "schedule run",
+  // The Serena idle-daemon timer (launchd/systemd/schtasks) written by 15.x.
+  "serena daemon:gc": "serena daemon gc",
 };
 
 export function canonicalCommandPath(path: string): string {

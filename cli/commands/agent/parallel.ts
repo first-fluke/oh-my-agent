@@ -38,6 +38,10 @@ import {
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
 import { registerSignalCleanup } from "../../utils/process-signals.js";
 import { isProcessRunning } from "./common.js";
+
+/** Canonical spelling of the hidden supervisor command this file spawns. */
+export const PARALLEL_SUPERVISOR_ARGS = ["agent", "parallel-supervisor"];
+
 import {
   parseInlineTasks,
   parseTasksFile,
@@ -99,7 +103,7 @@ async function startParallelSupervisor(
   try {
     supervisor = spawnProcess(
       process.execPath,
-      [...process.execArgv, entry, "agent:parallel-supervisor", manifestFile],
+      [...process.execArgv, entry, ...PARALLEL_SUPERVISOR_ARGS, manifestFile],
       {
         cwd: process.cwd(),
         detached: true,
