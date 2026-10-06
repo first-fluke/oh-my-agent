@@ -11,9 +11,7 @@ describe("currentOmaInvocation", () => {
   });
 
   it("falls back to a PATH lookup without an entry script", () => {
-    expect(currentOmaInvocation("/opt/node/bin/node", "")).toEqual([
-      "oma",
-    ]);
+    expect(currentOmaInvocation("/opt/node/bin/node", "")).toEqual(["oma"]);
   });
 });
 
