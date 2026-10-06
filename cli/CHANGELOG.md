@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.7.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.2...cli-v15.7.3) (2026-10-06)
+
+
+### Refactoring
+
+* **cli:** move cross-slice helpers out of command slices ([33be28e](https://github.com/first-fluke/oh-my-agent/commit/33be28effd3292390961d8888a61234ce904502a))
+
 ## [15.7.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.1...cli-v15.7.2) (2026-10-06)
 
 
