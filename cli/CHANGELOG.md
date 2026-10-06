@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.5.0...cli-v15.6.0) (2026-10-06)
+
+
+### Features
+
+* **cursor-plugin:** provision runtimes in oma-bootstrap skill ([35f12f1](https://github.com/first-fluke/oh-my-agent/commit/35f12f16d26e6bfcc4510050e73639a1f3002c0a))
+
 ## [15.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.4.1...cli-v15.5.0) (2026-10-06)
 
 
