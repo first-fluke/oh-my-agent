@@ -1,4 +1,6 @@
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
+import { delimiter, dirname, join } from "node:path";
 import {
   getLocalVersion,
   readVersionInstallMode,
@@ -85,4 +87,76 @@ export async function checkDualInstall(
   }
 
   return { project, global, warnings };
+}
+
+export type OmaOnPath = { path: string; version: string };
+
+/** Version of the oh-my-agent package an `oma` entry resolves into. */
+function omaPackageVersion(bin: string): string | null {
+  let dir: string;
+  try {
+    dir = dirname(realpathSync(bin));
+  } catch {
+    return null;
+  }
+  for (let i = 0; i < 4; i++) {
+    try {
+      const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+      if (pkg.name === "oh-my-agent" && typeof pkg.version === "string") {
+        return pkg.version;
+      }
+    } catch {
+      // keep walking up
+    }
+    dir = dirname(dir);
+  }
+  return null;
+}
+
+/**
+ * Every distinct oh-my-agent install reachable as `oma` on PATH, in PATH
+ * order. Version-manager shims that do not resolve into a package are skipped.
+ */
+export function findOmaOnPath(
+  pathEnv: string = process.env.PATH ?? "",
+  platform: NodeJS.Platform = process.platform,
+): OmaOnPath[] {
+  const names = platform === "win32" ? ["oma.cmd", "oma.exe", "oma"] : ["oma"];
+  const seen = new Set<string>();
+  const found: OmaOnPath[] = [];
+  for (const dir of pathEnv.split(delimiter)) {
+    if (!dir) continue;
+    for (const name of names) {
+      const bin = join(dir, name);
+      if (!existsSync(bin)) continue;
+      let real: string;
+      try {
+        real = realpathSync(bin);
+      } catch {
+        continue;
+      }
+      if (seen.has(real)) continue;
+      seen.add(real);
+      const version = omaPackageVersion(bin);
+      if (version) found.push({ path: bin, version });
+    }
+  }
+  return found;
+}
+
+/**
+ * Warn when PATH holds oh-my-agent installs of different versions. Whichever
+ * comes first wins for vendor MCP entries and hooks that run bare `oma`, so a
+ * forgotten global install silently serves stale commands.
+ */
+export function checkOmaPathInstalls(
+  installs: OmaOnPath[] = findOmaOnPath(),
+): string[] {
+  if (new Set(installs.map((install) => install.version)).size < 2) return [];
+  const list = installs
+    .map((install) => `${install.path} (${install.version})`)
+    .join(", ");
+  return [
+    `Multiple oma versions on PATH: ${list}. The first one runs for vendor MCP entries and hooks; uninstall the stale one with the package manager that installed it.`,
+  ];
 }

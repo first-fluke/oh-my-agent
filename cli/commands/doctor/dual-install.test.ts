@@ -6,11 +6,21 @@
  * directly to a temp dir to control fixtures.
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { checkDualInstall } from "./dual-install.js";
+import {
+  checkDualInstall,
+  checkOmaPathInstalls,
+  findOmaOnPath,
+} from "./dual-install.js";
 
 // ── Temp dir lifecycle ───────────────────────────────────────────────────────
 
@@ -176,5 +186,65 @@ describe("checkDualInstall", () => {
       w.includes("pre-dates the install-mode marker"),
     );
     expect(backfillHint).toBeDefined();
+  });
+});
+
+describe("oma installs on PATH", () => {
+  // Lay out <root>/<name>/lib/oh-my-agent/{package.json,bin/cli.js} and a
+  // <root>/<name>/bin/oma symlink, the shape npm and bun global installs use.
+  function installAt(root: string, name: string, version: string): string {
+    const pkg = join(root, name, "lib", "oh-my-agent");
+    mkdirSync(join(pkg, "bin"), { recursive: true });
+    writeFileSync(
+      join(pkg, "package.json"),
+      JSON.stringify({ name: "oh-my-agent", version }),
+    );
+    writeFileSync(join(pkg, "bin", "cli.js"), "");
+    const binDir = join(root, name, "bin");
+    mkdirSync(binDir, { recursive: true });
+    symlinkSync(join(pkg, "bin", "cli.js"), join(binDir, "oma"));
+    return binDir;
+  }
+
+  it.skipIf(process.platform === "win32")(
+    "lists distinct installs in PATH order with their versions",
+    () => {
+      const root = makeTempRoot();
+      const stale = installAt(root, "homebrew", "15.0.17");
+      const current = installAt(root, "mise", "15.6.0");
+      const shimDir = join(root, "shims");
+      mkdirSync(shimDir);
+      writeFileSync(join(shimDir, "oma"), "#!/bin/sh\n");
+
+      const found = findOmaOnPath(
+        [shimDir, stale, current, stale].join(delimiter),
+        "darwin",
+      );
+
+      expect(found).toEqual([
+        { path: join(stale, "oma"), version: "15.0.17" },
+        { path: join(current, "oma"), version: "15.6.0" },
+      ]);
+    },
+  );
+
+  it("warns only when the versions on PATH differ", () => {
+    expect(
+      checkOmaPathInstalls([
+        { path: "/opt/homebrew/bin/oma", version: "15.0.17" },
+        { path: "/home/u/.bun/bin/oma", version: "15.6.0" },
+      ]),
+    ).toEqual([
+      expect.stringContaining(
+        "/opt/homebrew/bin/oma (15.0.17), /home/u/.bun/bin/oma (15.6.0)",
+      ),
+    ]);
+    expect(
+      checkOmaPathInstalls([
+        { path: "/a/oma", version: "15.6.0" },
+        { path: "/b/oma", version: "15.6.0" },
+      ]),
+    ).toEqual([]);
+    expect(checkOmaPathInstalls([])).toEqual([]);
   });
 });

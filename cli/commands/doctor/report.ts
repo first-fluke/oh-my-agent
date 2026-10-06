@@ -18,7 +18,7 @@ import { auditSkills } from "../skills/audit.js";
 import { MIN_TASKS } from "../skills/eval.js";
 import { collectEvolutionSummary } from "../skills/opt/evolution-summary.js";
 import { collectAgentMemoryCheck } from "./agent-memory.js";
-import { checkDualInstall } from "./dual-install.js";
+import { checkDualInstall, checkOmaPathInstalls } from "./dual-install.js";
 import {
   CLI_DEFINITIONS,
   checkCLI,
@@ -108,6 +108,7 @@ export async function collectDoctorReport(
   // as a phantom project install with mode=global.
   const cwd = process.cwd();
   const dualInstall = await checkDualInstall(cwd);
+  dualInstall.warnings.push(...checkOmaPathInstalls());
 
   // Probe the serena binary in the same batch as the vendor CLIs so every
   // `spawn` is created up front (migration 009's MCP transport runs
