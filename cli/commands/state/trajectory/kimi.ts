@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { readJsonlSync } from "../../recap/internal/utils/history-parser.js";
+import { readJsonlSync } from "../../../io/conversation-log.js";
 import {
   capDetail,
   isSafeVendorSid,

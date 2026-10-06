@@ -9,7 +9,7 @@ import {
   entriesFromStore,
   rawTurnsFromAgentTranscript,
 } from "./cursor/entries.js";
-import { extractMessageContent, extractUserPrompt } from "./cursor/messages.js";
+import { extractMessageContent } from "./cursor/messages.js";
 import {
   buildChatHashProjectMap,
   findAgentTranscriptFiles,
@@ -108,7 +108,6 @@ export type { CursorStoreReadSummary };
 export {
   entriesFromAgentTranscript,
   extractMessageContent,
-  extractUserPrompt,
   findAgentTranscriptFiles,
   findStoreDBs,
   hasSqlite3Cli,

@@ -13,12 +13,12 @@ import {
   makeDownload,
   makeFetchLatestRef,
   readPackageJsonVersion,
-} from "../../platform/managed-skill.js";
+} from "./managed-skill.js";
 
 export {
   type RemoteRef,
   readManagedState,
-} from "../../platform/managed-skill.js";
+} from "./managed-skill.js";
 export type { ManagedOptions };
 export type ArchifyChannel = ManagedChannel;
 export const ARCHIFY_REPO = "tt-a1i/archify";

@@ -9,7 +9,6 @@ import {
   pathToProjectName,
   preview,
   RESPONSE_PREVIEW,
-  readJsonlSync,
   streamJsonl,
 } from "./history-parser.js";
 
@@ -61,18 +60,6 @@ describe("inWindow", () => {
   it("rejects NaN and Infinity", () => {
     expect(inWindow(Number.NaN, 0, 100)).toBe(false);
     expect(inWindow(Number.POSITIVE_INFINITY, 0, 100)).toBe(false);
-  });
-});
-
-describe("readJsonlSync", () => {
-  it("skips blank and malformed lines", () => {
-    const file = join(tmp, "a.jsonl");
-    writeFileSync(file, '{"a":1}\n\n{ bad\n{"a":2}\n');
-    expect(readJsonlSync<{ a: number }>(file)).toEqual([{ a: 1 }, { a: 2 }]);
-  });
-
-  it("returns [] for a missing file", () => {
-    expect(readJsonlSync(join(tmp, "missing.jsonl"))).toEqual([]);
   });
 });
 

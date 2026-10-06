@@ -24,12 +24,12 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { loadSkillSection } from "../../platform/agent-config/skill-sections.js";
+import { loadSkillSection } from "./agent-config/skill-sections.js";
 import {
   type ArchifyChannel,
   ensureLatestArchify,
   type ManagedInstall,
-} from "./managed.js";
+} from "./archify-managed.js";
 
 export type DiagramEngine = "archify" | "mermaid";
 export type DiagramEngineRequest = DiagramEngine | "auto";

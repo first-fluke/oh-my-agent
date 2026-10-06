@@ -3,12 +3,12 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import color from "picocolors";
-import { openUrl } from "../../../utils/open-url.js";
 import {
   ARCHIFY_ENV_NO_UPDATE,
   loadDiagramConfig,
   resolveDiagramEngine,
-} from "../../diagram/resolve.js";
+} from "../../../platform/diagram-engine.js";
+import { openUrl } from "../../../utils/open-url.js";
 import { type ArchifyQuality, toArchifySpec } from "./archify.js";
 import { COMPONENTS, findComponent } from "./components/index.js";
 import { DraftError, parseDraft } from "./draft.js";

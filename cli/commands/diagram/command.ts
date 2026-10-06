@@ -2,16 +2,16 @@ import { spawnSync } from "node:child_process";
 import type { Command } from "commander";
 import color from "picocolors";
 import {
-  addOutputOptions,
-  resolveJsonMode,
-  runAction,
-} from "../../utils/cli-framework.js";
-import {
   ARCHIFY_ENV_NO_UPDATE,
   type DiagramEngineRequest,
   type DiagramResolution,
   resolveDiagramEngine,
-} from "./resolve.js";
+} from "../../platform/diagram-engine.js";
+import {
+  addOutputOptions,
+  resolveJsonMode,
+  runAction,
+} from "../../utils/cli-framework.js";
 
 function printResolution(res: DiagramResolution & { ok: boolean }): void {
   const tag =

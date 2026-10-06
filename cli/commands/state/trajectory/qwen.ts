@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
   parseTimestampMs,
   readJsonlSync,
-} from "../../recap/internal/utils/history-parser.js";
+} from "../../../io/conversation-log.js";
 import {
   capDetail,
   isSafeVendorSid,

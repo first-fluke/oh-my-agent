@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { parseTimestampMs } from "../../../../io/conversation-log.js";
 import type { MemoryRawTurn } from "../../../../types/memory.js";
 import { registerParser } from "../registry.js";
 import type { NormalizedEntry } from "../schema.js";
@@ -9,7 +10,6 @@ import {
   findResponse,
   inWindow,
   type PairMessage,
-  parseTimestampMs,
   pathToProjectName,
   preview,
   sortRawTurns,

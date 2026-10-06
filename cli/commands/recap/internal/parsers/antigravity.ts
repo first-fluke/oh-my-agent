@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { readJsonlSync } from "../../../../io/conversation-log.js";
 import { registerParser } from "../registry.js";
 import type { NormalizedEntry } from "../schema.js";
 import {
@@ -9,7 +10,6 @@ import {
   type PairMessage,
   pathToProjectName,
   preview,
-  readJsonlSync,
   streamJsonl,
 } from "../utils/history-parser.js";
 

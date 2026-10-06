@@ -502,7 +502,7 @@ mcp:
 # archify adds a sibling `<name>.archify.json` + `<name>.archify.html`.
 # Inspect with `oma diagram resolve --json`; force a refresh with
 # `oma diagram update`. Defaults: DEFAULT_DIAGRAM_CONFIG in
-# cli/commands/diagram/resolve.ts.
+# cli/platform/diagram-engine.ts.
 # diagram:
 #   engine: auto
 #   explain_sidecar: false          # /explain also writes an archify sidecar

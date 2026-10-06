@@ -11,7 +11,6 @@ import { describe, expect, it, vi } from "vitest";
 import {
   entriesFromAgentTranscript,
   extractMessageContent,
-  extractUserPrompt,
   projectSlugToName,
   projectSlugToPath,
   readStoreViaSqlite3Cli,
@@ -83,22 +82,6 @@ describe("workspacePathToProjectName", () => {
     expect(workspacePathToProjectName("/private/tmp/oma-cursor-c25-work")).toBe(
       "oma-cursor-c25-work",
     );
-  });
-});
-
-describe("extractUserPrompt", () => {
-  it("extracts text from user_query tags", () => {
-    expect(
-      extractUserPrompt(
-        "<user_query>\nDOES CHANGES FITS CURSOR-AGENT? REVIEW IT\n</user_query>",
-      ),
-    ).toBe("DOES CHANGES FITS CURSOR-AGENT? REVIEW IT");
-  });
-
-  it("returns null for user_info payloads", () => {
-    expect(
-      extractUserPrompt("<user_info>OS Version: darwin</user_info>"),
-    ).toBeNull();
   });
 });
 

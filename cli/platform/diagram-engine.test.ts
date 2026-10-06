@@ -8,7 +8,7 @@ import {
   findArchify,
   loadDiagramConfig,
   resolveDiagramEngine,
-} from "./resolve.js";
+} from "./diagram-engine.js";
 
 function fakeArchify(root: string, version = "2.16.0"): void {
   fs.mkdirSync(path.join(root, "bin"), { recursive: true });

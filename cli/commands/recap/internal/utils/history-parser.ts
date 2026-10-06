@@ -1,4 +1,4 @@
-import { createReadStream, readFileSync } from "node:fs";
+import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline";
 import type { MemoryRawTurn } from "../../../../types/memory.js";
 import { shortHash } from "../../../../utils/hash.js";
@@ -45,13 +45,6 @@ export function rawTurnIdempotencyKey(args: {
   ].join(":");
 }
 
-export function parseTimestampMs(value: unknown): number {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value !== "string") return 0;
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
 export function createRawTurn(
   args: Omit<MemoryRawTurn, "idempotencyKey">,
 ): MemoryRawTurn {
@@ -73,24 +66,6 @@ export function sortRawTurns(turns: MemoryRawTurn[]): MemoryRawTurn[] {
 }
 
 /** Parse a JSONL file synchronously, skipping blank and malformed lines. */
-export function readJsonlSync<T = unknown>(path: string): T[] {
-  let raw: string;
-  try {
-    raw = readFileSync(path, "utf-8");
-  } catch {
-    return [];
-  }
-  const rows: T[] = [];
-  for (const line of raw.split("\n")) {
-    if (!line.trim()) continue;
-    try {
-      rows.push(JSON.parse(line) as T);
-    } catch {
-      // skip malformed line
-    }
-  }
-  return rows;
-}
 
 /**
  * Stream a JSONL file line by line, skipping blank and malformed lines.

@@ -1,7 +1,9 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { extractUserPrompt } from "../../recap/internal/parsers/cursor/messages.js";
-import { readJsonlSync } from "../../recap/internal/utils/history-parser.js";
+import {
+  extractUserPrompt,
+  readJsonlSync,
+} from "../../../io/conversation-log.js";
 import {
   capDetail,
   isSafeVendorSid,

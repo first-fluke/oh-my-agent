@@ -1,18 +1,20 @@
 import { statSync } from "node:fs";
+import {
+  extractUserPrompt,
+  parseTimestampMs,
+  readJsonlSync,
+} from "../../../../../io/conversation-log.js";
 import type { MemoryRawTurn } from "../../../../../types/memory.js";
 import type { NormalizedEntry } from "../../schema.js";
 import {
   createRawTurn,
   findResponse,
   inWindow,
-  parseTimestampMs,
   preview,
-  readJsonlSync,
 } from "../../utils/history-parser.js";
 import {
   type CursorMessage,
   extractMessageContent,
-  extractUserPrompt,
   toPairMessage,
 } from "./messages.js";
 import {
