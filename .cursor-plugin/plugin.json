@@ -1,7 +1,7 @@
 {
   "name": "oma",
   "displayName": "oh-my-agent",
-  "version": "15.4.1",
+  "version": "15.5.0",
   "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
   "author": {
     "name": "First Fluke",
