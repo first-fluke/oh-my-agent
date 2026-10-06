@@ -1,4 +1,13 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  utimesSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -9,6 +18,7 @@ import {
   _setOmaStateDirForTests,
   attachClient,
   DAEMON_IDLE_GRACE_MS,
+  DAEMON_LOG_MAX_BYTES,
   daemonKey,
   detachClient,
   ensureSerenaDaemon,
@@ -1037,5 +1047,64 @@ describe("reclaimIdleDaemons — daemons missing from the registry", () => {
     );
 
     expect(Object.keys(readRegistry())).toEqual([daemonKey("/proj", "ide")]);
+  });
+});
+
+describe("reclaimIdleDaemons — daemon logs", () => {
+  const logFile = (port: number) =>
+    join(omaStateDir(), `serena-daemon-${port}.log`);
+  const age = (file: string, ms: number) => {
+    const then = new Date(Date.now() - ms);
+    utimesSync(file, then, then);
+  };
+
+  beforeEach(() => {
+    mkdirSync(omaStateDir(), { recursive: true });
+  });
+
+  it("deletes logs no daemon owns once they are past the grace period", () => {
+    writeFileSync(logFile(12341), "old run\n");
+    age(logFile(12341), DAEMON_IDLE_GRACE_MS + 60_000);
+    writeFileSync(logFile(12342), "starting\n");
+
+    reclaimIdleDaemons(
+      Date.now(),
+      () => {},
+      () => [],
+    );
+
+    expect(existsSync(logFile(12341))).toBe(false);
+    // Fresh: may be a daemon still starting, before it is registered.
+    expect(existsSync(logFile(12342))).toBe(true);
+  });
+
+  it("keeps a live daemon's log and empties it past the size cap", () => {
+    const scan = () => [
+      { pid: process.pid, port: 12389, root: "/proj", context: "ide" },
+      { pid: process.pid, port: 12390, root: "/other", context: "ide" },
+    ];
+    writeFileSync(logFile(12389), Buffer.alloc(DAEMON_LOG_MAX_BYTES + 1));
+    writeFileSync(logFile(12390), "small\n");
+    age(logFile(12389), DAEMON_IDLE_GRACE_MS * 10);
+    age(logFile(12390), DAEMON_IDLE_GRACE_MS * 10);
+
+    reclaimIdleDaemons(Date.now(), () => {}, scan);
+
+    expect(statSync(logFile(12389)).size).toBe(0);
+    expect(readFileSync(logFile(12390), "utf8")).toBe("small\n");
+  });
+
+  it("leaves unrelated files in the state directory alone", () => {
+    const other = join(omaStateDir(), "vault-index.json");
+    writeFileSync(other, "{}");
+    age(other, DAEMON_IDLE_GRACE_MS * 10);
+
+    reclaimIdleDaemons(
+      Date.now(),
+      () => {},
+      () => [],
+    );
+
+    expect(existsSync(other)).toBe(true);
   });
 });

@@ -1,12 +1,15 @@
 import { spawn, spawnSync } from "node:child_process";
 import {
   closeSync,
+  constants,
   existsSync,
   mkdirSync,
   openSync,
+  readdirSync,
   readFileSync,
   rmSync,
   statSync,
+  truncateSync,
   writeFileSync,
 } from "node:fs";
 import http from "node:http";
@@ -83,6 +86,11 @@ export function daemonRegistryPath(): string {
 function daemonLogPath(port: number): string {
   return join(omaStateDir(), `serena-daemon-${port}.log`);
 }
+
+const DAEMON_LOG_PATTERN = /^serena-daemon-(\d+)\.log$/;
+
+/** A live daemon's log is emptied once it passes this size. */
+export const DAEMON_LOG_MAX_BYTES = 20 * 1024 * 1024;
 
 function lockPath(): string {
   return join(omaStateDir(), "serena-daemons.lock");
@@ -381,7 +389,15 @@ function spawnDaemonProcess(
   context: string,
 ): number | null {
   mkdirSync(omaStateDir(), { recursive: true });
-  const log = openSync(daemonLogPath(port), "a");
+  // Fresh per start, and O_APPEND so the cleanup sweep can empty it in place
+  // while the daemon keeps writing.
+  const log = openSync(
+    daemonLogPath(port),
+    constants.O_WRONLY |
+      constants.O_CREAT |
+      constants.O_TRUNC |
+      constants.O_APPEND,
+  );
 
   // Detached on purpose: the daemon outlives the session that happened to start
   // it, so one client exiting does not tear serena out from under its peers.
@@ -853,6 +869,44 @@ export function reclaimIdleDaemons(
       delete registry[key];
     }
 
+    sweepDaemonLogs(registry, running, nowMs);
     return reclaimed;
   });
+}
+
+/**
+ * Bound the per-port daemon logs: empty a live daemon's oversized log and
+ * delete logs no daemon owns. A log touched within the grace period may
+ * belong to a daemon still starting, before it is registered.
+ */
+function sweepDaemonLogs(
+  registry: DaemonRegistry,
+  running: RunningDaemon[],
+  nowMs: number,
+): void {
+  const livePorts = new Set([
+    ...Object.values(registry).map((record) => record.port),
+    ...running.map((daemon) => daemon.port),
+  ]);
+  let names: string[];
+  try {
+    names = readdirSync(omaStateDir());
+  } catch {
+    return;
+  }
+  for (const name of names) {
+    const match = DAEMON_LOG_PATTERN.exec(name);
+    if (!match) continue;
+    const file = join(omaStateDir(), name);
+    try {
+      const stat = statSync(file);
+      if (livePorts.has(Number(match[1]))) {
+        if (stat.size > DAEMON_LOG_MAX_BYTES) truncateSync(file, 0);
+      } else if (nowMs - stat.mtimeMs > DAEMON_IDLE_GRACE_MS) {
+        rmSync(file, { force: true });
+      }
+    } catch {
+      // Removed concurrently, or unreadable: leave it for the next sweep.
+    }
+  }
 }
