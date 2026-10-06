@@ -18,14 +18,17 @@
 //    `off`. The hook cannot observe whether the MCP server is actually up.
 //    The deny reason does not name a bypass: confirmed exclusions and
 //    external paths already pass, and project source stays on the provider.
-//  - Escape hatch: a shell command containing `OMA_CI_ALLOW_NATIVE=1` still
-//    bypasses the guard. That prefix is only for a search of resources
-//    outside the project or ignored paths the guard did not recognize, never
-//    for project source. Do not advertise it in the deny reason. Grep/Glob
-//    have no argument to carry a token, so the hatch stays shell-only.
+//  - Escape hatch: a shell command containing `OMA_CI_ALLOW_NATIVE=1` passes
+//    only when every search path resolves outside the project or is ignored
+//    by git — ignored paths the provider listing did not recognize. Project
+//    source, or a path the guard cannot resolve, stays blocked with the token.
+//    Do not advertise it in the deny reason or shipped config. Grep/Glob have
+//    no argument to carry a token, so the hatch stays shell-only.
 
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { isAbsolute, resolve } from "node:path";
+import { homedir } from "node:os";
+import { isAbsolute, relative, resolve } from "node:path";
 import {
   type CodeIntelligenceProvider,
   detectCodeIntelligenceGuardMode,
@@ -289,27 +292,71 @@ function searchRoots(bin: string, args: string[]): string[] | null {
   return positional;
 }
 
+/**
+ * Redirections that only discard or merge output (`2>/dev/null`, `2>&1`,
+ * `&>/dev/null`). They never name a search path, so they must not push an
+ * otherwise resolvable search onto the unresolvable path.
+ */
+const DISCARD_REDIRECTION =
+  /(^|\s)(?:[0-9]?>>?|&>>?)\s*(?:\/dev\/null|&[0-9])(?=\s|$|[;|&])/g;
+
+function expandHome(path: string): string {
+  if (path === "~") return homedir();
+  return path.startsWith("~/") ? resolve(homedir(), path.slice(2)) : path;
+}
+
 function shellSearchRoots(
   command: string,
-  projectDir: string,
+  sessionCwd: string,
 ): string[] | null {
-  // Do not guess expansions, redirections, subshells or changing directories.
-  if (/[$`<>\\()]/.test(command)) return null;
+  const cleaned = command
+    .replace(DISCARD_REDIRECTION, "$1")
+    // `$HOME` is the one expansion agents routinely use for external paths.
+    .replace(/\$\{?HOME\}?(?=\/|\s|$)/g, homedir());
+  // Do not guess expansions, other redirections or subshells.
+  if (/[$`<>\\()]/.test(cleaned)) return null;
   const roots: string[] = [];
-  for (const segment of commandSegments(command)) {
+  // A literal `cd <dir>` moves the base later relative paths resolve from.
+  let base = sessionCwd;
+  for (const segment of commandSegments(cleaned)) {
     const tokens = stripPrefixes(tokenize(segment.trim()));
     const bin = basename(tokens[0] ?? "");
-    if (["cd", "pushd", "popd"].includes(bin)) return null;
+    if (bin === "cd") {
+      const target = tokens[1];
+      if (tokens.length !== 2 || !target || searchPathRoot(target) !== target)
+        return null;
+      base = resolve(base, expandHome(target));
+      continue;
+    }
+    if (["pushd", "popd"].includes(bin)) return null;
     if (!detectNativeSearchCommand(segment)) continue;
     const paths = searchRoots(bin, tokens.slice(1));
     if (!paths?.length) return null;
     for (const path of paths) {
       const literal = searchPathRoot(path);
       if (!literal) return null;
-      roots.push(resolve(projectDir, literal));
+      roots.push(resolve(base, expandHome(literal)));
     }
   }
   return roots;
+}
+
+/** True when `root` is outside the project, or git ignores it. */
+function bypassCovers(projectDir: string, root: string): boolean {
+  const path = relative(projectDir, root);
+  if (path === ".." || path.startsWith("../") || isAbsolute(path)) return true;
+  if (!path) return false;
+  try {
+    // Exit 0 means ignored. Tracked files report as not ignored, so committed
+    // source never qualifies even under an ignore pattern.
+    execFileSync("git", ["-C", projectDir, "check-ignore", "-q", "--", path], {
+      stdio: "ignore",
+      timeout: 5_000,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // --- Deny reasons ---
@@ -381,10 +428,11 @@ export async function run(
   if (isShell) {
     const command = toolInput.command as string | undefined;
     if (!command) return null;
-    if (command.includes(BYPASS_TOKEN)) return null;
     searchBin = detectNativeSearchCommand(command);
     if (!searchBin) return null;
   }
+  const bypass =
+    isShell && (toolInput.command as string).includes(BYPASS_TOKEN);
 
   // Config reads happen after the cheap tool/command checks so the common
   // (non-search) path never touches the filesystem.
@@ -409,6 +457,13 @@ export async function run(
     roots = [resolve(sessionCwd, toolInput.path)];
   }
   if (roots && isExcludedSearchScope(provider, projectDir, roots)) return null;
+  if (
+    bypass &&
+    roots?.length &&
+    roots.every((root) => bypassCovers(projectDir, root))
+  ) {
+    return null;
+  }
 
   if (isGrep) {
     return {
@@ -422,9 +477,12 @@ export async function run(
       reason: denyReason(provider, "glob", `native \`${toolName}\``),
     };
   }
+  const reason = denyReason(provider, "shell", `shell search \`${searchBin}\``);
   return {
     type: "block",
-    reason: denyReason(provider, "shell", `shell search \`${searchBin}\``),
+    reason: bypass
+      ? `${reason} The bypass covers only paths outside this project or ignored by git; this search reaches project source or a path the guard cannot resolve.`
+      : reason,
   };
 }
 

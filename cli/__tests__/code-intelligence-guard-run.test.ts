@@ -7,7 +7,13 @@
 
 import * as childProcess from "node:child_process";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -133,8 +139,88 @@ describe("code-intelligence-guard run() — serena configured", () => {
     }
   });
 
-  it("allows the shell escape hatch", async () => {
-    expect(await runShell(`${BYPASS_TOKEN} rg foo cli`)).toBeNull();
+  it("allows the shell escape hatch for paths outside the project", async () => {
+    expect(await runShell(`${BYPASS_TOKEN} rg foo /external/repo`)).toBeNull();
+  });
+
+  // The hatch used to pass any command carrying the token, so agents that
+  // learned it searched project source natively.
+  it("keeps project source blocked even with the escape hatch", async () => {
+    for (const command of [
+      `${BYPASS_TOKEN} rg foo cli`,
+      `${BYPASS_TOKEN} grep -rn foo .`,
+      `${BYPASS_TOKEN} cd /external && rg foo ${projectDir}/src`,
+    ]) {
+      const result = await runShell(command);
+      expect(result?.type, command).toBe("block");
+      expect((result as { reason: string }).reason).toContain(
+        "The bypass covers only paths outside this project",
+      );
+    }
+  });
+
+  it("keeps the escape hatch blocked when the search path is unresolvable", async () => {
+    expect(
+      (
+        await runShell(
+          `${BYPASS_TOKEN} rg foo $(git rev-parse --show-toplevel)`,
+        )
+      )?.type,
+    ).toBe("block");
+    expect((await runShell(`${BYPASS_TOKEN} git grep foo`))?.type).toBe(
+      "block",
+    );
+  });
+
+  it("allows the escape hatch for git-ignored paths the provider did not list", async () => {
+    execFileSync("git", ["init", "-q", projectDir]);
+    writeFileSync(join(projectDir, ".gitignore"), "generated/\n");
+    mkdirSync(join(projectDir, "generated", "out"), { recursive: true });
+    mkdirSync(join(projectDir, "src"));
+
+    expect((await runShell("rg foo generated/out"))?.type).toBe("block");
+    expect(await runShell(`${BYPASS_TOKEN} rg foo generated/out`)).toBeNull();
+    expect(
+      (await runShell(`${BYPASS_TOKEN} rg foo generated/out src`))?.type,
+    ).toBe("block");
+  });
+
+  it.each([
+    "rg foo /external/repo 2>/dev/null",
+    "grep -rn foo /external/repo 2>&1 | head -20",
+    "rg foo /external/repo &>/dev/null",
+    "cd /external/repo && rg foo src",
+    "cd /external/repo && grep -rn foo apps 2>/dev/null | head",
+    "rg foo $HOME/elsewhere",
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: a literal shell expansion
+    "rg foo ${HOME}/elsewhere",
+  ])(
+    "does not block an external search over shell syntax: %s",
+    async (command) => {
+      expect(await runShell(command)).toBeNull();
+    },
+  );
+
+  it.each([
+    "rg foo cli 2>/dev/null",
+    "rg foo /external/repo > out.txt",
+    "cd cli && rg foo .",
+    "cd - && rg foo src",
+  ])("still blocks project or unresolvable searches: %s", async (command) => {
+    expect((await runShell(command))?.type).toBe("block");
+  });
+
+  it("is not advertised in the shipped config", () => {
+    for (const file of [
+      ".agents/oma-config.yaml",
+      "com.firstfluke.oma/oma-config.yaml",
+    ]) {
+      const content = readFileSync(
+        join(import.meta.dirname, "..", "..", file),
+        "utf8",
+      );
+      expect(content, file).not.toContain(BYPASS_TOKEN);
+    }
   });
 
   it("allows non-search shell commands and non-recursive grep", async () => {
@@ -228,6 +314,7 @@ describe("code-intelligence-guard run() — excluded search scope", () => {
     "fd -e py foo packages/custom-env",
     "rg foo node_modules | head -20",
     "rg foo node_modules && rg bar third-party",
+    "cd packages && rg foo ../node_modules",
   ])("allows searches confined to excluded roots: %s", async (command) => {
     expect(await runShell(command)).toBeNull();
   });
@@ -265,7 +352,6 @@ describe("code-intelligence-guard run() — excluded search scope", () => {
     "rg --files",
     "grep -rE foo src node_modules",
     "fd -f foo src node_modules",
-    "cd src && rg foo ../node_modules",
     "find . -path '*/node_modules/*'",
   ])("keeps project searches guarded: %s", async (command) => {
     expect((await runShell(command))?.type).toBe("block");
@@ -337,6 +423,12 @@ describe("code-intelligence-guard run() — excluded search scope", () => {
       "ignored_paths: *shared\n",
     );
     expect((await runShell("rg foo third-party"))?.type).toBe("block");
+    // The escape hatch is verified too: an unreadable provider rule is not
+    // proof the path is excluded, so only a git-ignored path qualifies.
+    expect((await runShell(`${BYPASS_TOKEN} rg foo third-party`))?.type).toBe(
+      "block",
+    );
+    writeFileSync(join(projectDir, ".gitignore"), "third-party/\n");
     expect(await runShell(`${BYPASS_TOKEN} rg foo third-party`)).toBeNull();
   });
 
@@ -394,7 +486,10 @@ describe("code-intelligence-guard run() — Gortex exclusions", () => {
       throw new Error("unavailable");
     });
     expect((await runShell("rg foo third-party"))?.type).toBe("block");
-    expect(await runShell(`${BYPASS_TOKEN} rg foo third-party`)).toBeNull();
+    expect((await runShell(`${BYPASS_TOKEN} rg foo third-party`))?.type).toBe(
+      "block",
+    );
+    expect(await runShell(`${BYPASS_TOKEN} rg foo /external/repo`)).toBeNull();
   });
 
   it.each(["[workspace] !third-party/ours/\n", "unknown output\n"])(
