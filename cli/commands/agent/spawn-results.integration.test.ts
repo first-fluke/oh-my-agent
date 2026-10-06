@@ -72,7 +72,11 @@ describe("spawn structured result integration", () => {
     vi.mocked(process.exit).mockImplementation(() => undefined as never);
     await spawnAgent("qa-reviewer", "Review", "s1", root);
     child.emit("exit", 0);
-    await vi.waitFor(() => expect(process.exit).toHaveBeenCalledWith(3));
+    // The exit handler finalizes the run on disk first; under a loaded
+    // parallel suite that outlasts waitFor's 1s default.
+    await vi.waitFor(() => expect(process.exit).toHaveBeenCalledWith(3), {
+      timeout: 10_000,
+    });
     expect(listAgentRuns(root)[0]?.status).toBe("partial");
     expect(process.exit).toHaveBeenCalledWith(3);
   });
