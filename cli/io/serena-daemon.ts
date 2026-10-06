@@ -208,6 +208,19 @@ export function resolveProjectRoot(cwd: string): string {
   return resolve(cwd);
 }
 
+/**
+ * True when `root` is the filesystem root or the home directory. A client
+ * started outside any project (an app launched from `/`) resolves there, and a
+ * daemon indexing it is a whole stack spent on no project at all.
+ */
+export function isUnservableProjectRoot(
+  root: string,
+  home: string = homedir(),
+): boolean {
+  const dir = resolve(root);
+  return dirname(dir) === dir || dir === resolve(home);
+}
+
 /** Port window for daemons. Wide enough that collisions are rare, bounded so probing terminates. */
 const PORT_BASE = 12341;
 const PORT_RANGE = 100;

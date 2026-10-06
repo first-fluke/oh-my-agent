@@ -256,6 +256,18 @@ describe("bridge command", () => {
     expect(detachClient).toHaveBeenCalled();
   });
 
+  it.each(["/", "/mock/home"])(
+    "refuses to start a shared daemon for %s outside any project",
+    async (cwd) => {
+      mockFs.existsSync.mockReturnValue(false);
+      await expect(bridge(undefined, { cwd, context: "oma" })).rejects.toThrow(
+        "outside any project",
+      );
+      expect(ensureSerenaDaemon).not.toHaveBeenCalled();
+      expect(child_process.spawn).not.toHaveBeenCalled();
+    },
+  );
+
   it.each(["ide", "codex", "claude-code", "oma-antigravity", "oma"])(
     "uses the same registry context for the managed alias %s",
     async (context) => {

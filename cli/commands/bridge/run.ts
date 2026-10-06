@@ -10,6 +10,7 @@ import {
   daemonKey,
   detachClient,
   ensureSerenaDaemon,
+  isUnservableProjectRoot,
   resolveProjectRoot,
   STARTUP_PROBE_TIMEOUT_MS,
 } from "../../io/serena-daemon.js";
@@ -79,6 +80,12 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   if (explicitUrl) {
     MCP_URL = explicitUrl;
   } else {
+    if (isUnservableProjectRoot(root)) {
+      throw new Error(
+        `Shared Serena needs a project directory, but ${root} is outside any project. ` +
+          "Start the session inside a repository (a directory with .git or .serena/project.yml).",
+      );
+    }
     const runtime = context === "oma" ? prepareSerenaRuntime(root) : undefined;
     const daemon = await ensureSerenaDaemon({
       root,

@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // No module mocks here on purpose: the state dir has a direct test seam, and
 // mocking node:os routed this file's whole import graph through the mock
@@ -12,6 +12,7 @@ import {
   daemonKey,
   detachClient,
   ensureSerenaDaemon,
+  isUnservableProjectRoot,
   omaStateDir,
   parseRunningDaemons,
   preferredPort,
@@ -75,6 +76,21 @@ describe("resolveProjectRoot", () => {
 
     expect(resolveProjectRoot(join(work, "repo", "a"))).toBe(
       resolveProjectRoot(join(work, "repo", "a", "b")),
+    );
+  });
+});
+
+describe("isUnservableProjectRoot", () => {
+  it("rejects the filesystem root and the home directory", () => {
+    expect(isUnservableProjectRoot(resolve("/"), home)).toBe(true);
+    expect(isUnservableProjectRoot(home, home)).toBe(true);
+    expect(isUnservableProjectRoot(join(home, "."), home)).toBe(true);
+  });
+
+  it("accepts a project directory, including one under home", () => {
+    expect(isUnservableProjectRoot(work, home)).toBe(false);
+    expect(isUnservableProjectRoot(join(home, "workspace", "app"), home)).toBe(
+      false,
     );
   });
 });
