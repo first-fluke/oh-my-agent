@@ -1,5 +1,18 @@
 # Changelog
 
+## [15.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.6.0...cli-v15.7.0) (2026-10-06)
+
+
+### Features
+
+* **doctor:** warn when PATH holds different oma versions ([1ab25bd](https://github.com/first-fluke/oh-my-agent/commit/1ab25bd228d8800243ef62704f62fec5bcc97922))
+
+
+### Bug Fixes
+
+* **serena:** bound shared daemon logs ([ef19460](https://github.com/first-fluke/oh-my-agent/commit/ef19460d1401026cf3eda085b453e4ba2fe81fdf))
+* **serena:** pin background services to the oma that installs them ([a6f458c](https://github.com/first-fluke/oh-my-agent/commit/a6f458ca41089474663d3625bce576cdb8843104))
+
 ## [15.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.5.0...cli-v15.6.0) (2026-10-06)
 
 
