@@ -1,16 +1,32 @@
 {
   "name": "oma",
+  "displayName": "oh-my-agent",
   "version": "15.4.1",
   "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
   "author": {
     "name": "First Fluke",
-    "email": "our.first.fluke@gmail.com"
+    "email": "our.first.fluke@gmail.com",
+    "url": "https://github.com/first-fluke"
   },
+  "homepage": "https://firstfluke.com/oh-my-agent",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "license": "MIT",
-  "skills": ".cursor/skills",
-  "agents": ".cursor/agents",
-  "rules": ".cursor/rules",
-  "hooks": ".cursor/hooks/hooks.json",
-  "mcpServers": ".cursor/mcp.json"
+  "keywords": [
+    "multi-agent",
+    "orchestrator",
+    "skills",
+    "workflows",
+    "agents",
+    "rules",
+    "cursor",
+    "grok-bot"
+  ],
+  "logo": "web/static/icons/maskable/512.png",
+  "skills": [
+    "./skills",
+    "./.cursor-plugin/skills"
+  ],
+  "agents": "./com.firstfluke.oma/agents",
+  "rules": "./com.firstfluke.oma/rules",
+  "mcpServers": "./mcp.json"
 }
