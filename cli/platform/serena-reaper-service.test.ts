@@ -42,12 +42,15 @@ describe("serena-reaper service-files", () => {
       expect(content).toContain(LAUNCHD_SERENA_REAPER_LABEL);
     });
 
-    it("runs oma serena reap --quiet", () => {
-      const content = renderSerenaReaperLaunchdPlist({ homeDir });
-      expect(content).toContain("<string>oma</string>");
-      expect(content).toContain("<string>serena</string>");
-      expect(content).toContain("<string>reap</string>");
-      expect(content).toContain("<string>--quiet</string>");
+    it("runs serena reap --quiet through the oma that installed it", () => {
+      const content = renderSerenaReaperLaunchdPlist({
+        homeDir,
+        invocation: ["/opt/node/bin/node", "/opt/oma/bin/cli.js"],
+      });
+      expect(content).toContain(
+        "<array><string>/opt/node/bin/node</string><string>/opt/oma/bin/cli.js</string><string>serena</string><string>reap</string><string>--quiet</string></array>",
+      );
+      expect(content).not.toContain("/usr/bin/env");
     });
 
     it("includes PATH in EnvironmentVariables", () => {
@@ -81,9 +84,14 @@ describe("serena-reaper service-files", () => {
       expect(content).toContain("Type=oneshot");
     });
 
-    it("runs oma serena reap --quiet", () => {
-      const content = renderSerenaReaperSystemdService({ homeDir });
-      expect(content).toContain("oma serena reap --quiet");
+    it("runs serena reap --quiet through the oma that installed it", () => {
+      const content = renderSerenaReaperSystemdService({
+        homeDir,
+        invocation: ["/opt/node/bin/node", "/opt/oma/bin/cli.js"],
+      });
+      expect(content).toContain(
+        'ExecStart="/opt/node/bin/node" "/opt/oma/bin/cli.js" "serena" "reap" "--quiet"',
+      );
     });
   });
 
@@ -97,9 +105,12 @@ describe("serena-reaper service-files", () => {
       expect(content).not.toContain("<LogonTrigger>");
     });
 
-    it("runs oma serena reap --quiet", () => {
-      const content = renderSerenaReaperWindowsTaskXml();
-      expect(content).toContain("<Command>oma</Command>");
+    it("runs serena reap --quiet through the oma that installed it", () => {
+      const content = renderSerenaReaperWindowsTaskXml([
+        "C:\\node.exe",
+        "C:\\oma\\cli.js",
+      ]);
+      expect(content).toContain("<Command>C:\\node.exe</Command>");
       expect(content).toContain("serena reap --quiet");
     });
 

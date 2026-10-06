@@ -4,17 +4,26 @@ import {
   existsSync,
   mkdirSync,
   openSync,
+  readFileSync,
   rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import {
+  currentOmaInvocation,
+  launchdProgramArguments,
+  pinnedServicePath,
+  systemdExecStart,
+  windowsTaskExec,
+} from "./oma-invocation.js";
 import { servicePathEnvironment } from "./serena-reaper/service-files.js";
 
 const LABEL = "dev.oma.serena-daemon-gc";
 const TASK_NAME = "OMA Serena Daemon GC";
 const INTERVAL_SECONDS = 300;
+const GC_ARGS = ["serena", "daemon:gc", "--quiet"];
 
 type Runner = (bin: string, args: string[]) => boolean;
 
@@ -65,19 +74,19 @@ export function daemonGcServicePath(
   return undefined;
 }
 
-export function renderDaemonGcLaunchdPlist(homeDir: string): string {
+export function renderDaemonGcLaunchdPlist(
+  homeDir: string,
+  invocation: readonly string[] = currentOmaInvocation(),
+): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
   <key>Label</key><string>${LABEL}</string>
   <key>ProgramArguments</key>
-  <array>
-    <string>/usr/bin/env</string><string>oma</string><string>serena</string>
-    <string>daemon:gc</string><string>--quiet</string>
-  </array>
+  <array>${launchdProgramArguments(invocation, GC_ARGS)}</array>
   <key>EnvironmentVariables</key>
-  <dict><key>PATH</key><string>${servicePathEnvironment(homeDir)}</string></dict>
+  <dict><key>PATH</key><string>${pinnedServicePath(invocation, servicePathEnvironment(homeDir))}</string></dict>
   <key>StartInterval</key><integer>${INTERVAL_SECONDS}</integer>
   <key>StandardOutPath</key><string>/tmp/oma-serena-daemon-gc.out.log</string>
   <key>StandardErrorPath</key><string>/tmp/oma-serena-daemon-gc.err.log</string>
@@ -100,35 +109,78 @@ WantedBy=timers.target
 `;
 }
 
-export function renderDaemonGcSystemdService(homeDir: string): string {
+export function renderDaemonGcSystemdService(
+  homeDir: string,
+  invocation: readonly string[] = currentOmaInvocation(),
+): string {
   return `[Unit]
 Description=OMA Serena idle daemon cleanup
 
 [Service]
 Type=oneshot
-Environment=PATH=${servicePathEnvironment(homeDir)}
-ExecStart=/usr/bin/env oma serena daemon:gc --quiet
+Environment=PATH=${pinnedServicePath(invocation, servicePathEnvironment(homeDir))}
+ExecStart=${systemdExecStart(invocation, GC_ARGS)}
 `;
 }
 
-export function renderDaemonGcWindowsTaskXml(): string {
+export function renderDaemonGcWindowsTaskXml(
+  invocation: readonly string[] = currentOmaInvocation(),
+): string {
+  const exec = windowsTaskExec(invocation, GC_ARGS);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo><Description>OMA Serena idle daemon cleanup</Description></RegistrationInfo>
   <Triggers><TimeTrigger><Repetition><Interval>PT5M</Interval><StopAtDurationEnd>false</StopAtDurationEnd></Repetition><StartBoundary>2000-01-01T00:00:00</StartBoundary><Enabled>true</Enabled></TimeTrigger></Triggers>
   <Principals><Principal id="Author"><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals>
   <Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><StartWhenAvailable>true</StartWhenAvailable></Settings>
-  <Actions Context="Author"><Exec><Command>oma</Command><Arguments>serena daemon:gc --quiet</Arguments></Exec></Actions>
+  <Actions Context="Author"><Exec><Command>${exec.command}</Command><Arguments>${exec.arguments}</Arguments></Exec></Actions>
 </Task>
 `;
 }
 
-/** Install the idle-daemon timer once. A failed activation is retried next bridge start. */
+/** Every file the service consists of, with the content it should have. */
+function serviceFiles(
+  path: string,
+  homeDir: string,
+  platform: NodeJS.Platform,
+  invocation: readonly string[],
+): Array<[string, string]> {
+  if (platform === "darwin") {
+    return [[path, renderDaemonGcLaunchdPlist(homeDir, invocation)]];
+  }
+  if (platform === "linux") {
+    return [
+      [path, renderDaemonGcSystemdTimer()],
+      [
+        path.replace(/\.timer$/, ".service"),
+        renderDaemonGcSystemdService(homeDir, invocation),
+      ],
+    ];
+  }
+  return [[path, renderDaemonGcWindowsTaskXml(invocation)]];
+}
+
+function filesCurrent(files: Array<[string, string]>): boolean {
+  return files.every(([file, content]) => {
+    try {
+      return readFileSync(file, "utf8") === content;
+    } catch {
+      return false;
+    }
+  });
+}
+
+/**
+ * Install the idle-daemon timer, or repoint one installed by another oma.
+ * A failed activation is retried next bridge start.
+ */
 export function ensureSerenaDaemonGcService(
   options: {
     homeDir?: string;
     platform?: NodeJS.Platform;
     runner?: Runner;
+    /** Command the timer runs; defaults to the oma executing this call. */
+    invocation?: readonly string[];
   } = {},
 ): boolean {
   const homeDir = options.homeDir ?? homedir();
@@ -136,7 +188,13 @@ export function ensureSerenaDaemonGcService(
   const runner = options.runner ?? defaultRunner;
   const path = daemonGcServicePath(homeDir, platform);
   if (!path) return false;
-  if (existsSync(path) && serviceActive(platform, runner)) return true;
+  const files = serviceFiles(
+    path,
+    homeDir,
+    platform,
+    options.invocation ?? currentOmaInvocation(),
+  );
+  if (filesCurrent(files) && serviceActive(platform, runner)) return true;
 
   mkdirSync(dirname(path), { recursive: true });
   const lockPath = `${path}.lock`;
@@ -155,31 +213,35 @@ export function ensureSerenaDaemonGcService(
     }
   }
 
+  const uid = typeof process.getuid === "function" ? process.getuid() : 0;
+  const domain = `gui/${uid}`;
+  const removeFiles = () => {
+    for (const [file] of files) rmSync(file, { force: true });
+  };
+
   try {
     if (existsSync(path)) {
-      if (serviceActive(platform, runner)) return true;
-      rmSync(path, { force: true });
-      if (platform === "linux") {
-        rmSync(path.replace(/\.timer$/, ".service"), { force: true });
+      if (filesCurrent(files) && serviceActive(platform, runner)) return true;
+      // A loaded launchd job keeps its old arguments and refuses a second
+      // bootstrap, so unload it before writing the replacement.
+      if (platform === "darwin" && serviceActive(platform, runner)) {
+        runner("launchctl", ["bootout", `${domain}/${LABEL}`]);
       }
+      removeFiles();
     }
+    for (const [file, content] of files) writeFileSync(file, content);
+
     if (platform === "darwin") {
-      writeFileSync(path, renderDaemonGcLaunchdPlist(homeDir));
-      const uid = typeof process.getuid === "function" ? process.getuid() : 0;
-      const domain = `gui/${uid}`;
       const bootstrapped = runner("launchctl", ["bootstrap", domain, path]);
       const activated =
         bootstrapped && runner("launchctl", ["enable", `${domain}/${LABEL}`]);
       if (activated) return true;
       if (bootstrapped) runner("launchctl", ["bootout", domain, path]);
-      rmSync(path, { force: true });
+      removeFiles();
       return false;
     }
 
     if (platform === "linux") {
-      const unit = path.replace(/\.timer$/, ".service");
-      writeFileSync(path, renderDaemonGcSystemdTimer());
-      writeFileSync(unit, renderDaemonGcSystemdService(homeDir));
       const activated =
         runner("systemctl", ["--user", "daemon-reload"]) &&
         runner("systemctl", [
@@ -189,22 +251,17 @@ export function ensureSerenaDaemonGcService(
           "oma-serena-daemon-gc.timer",
         ]);
       if (activated) return true;
-      rmSync(path, { force: true });
-      rmSync(unit, { force: true });
+      removeFiles();
       return false;
     }
 
-    writeFileSync(path, renderDaemonGcWindowsTaskXml());
     if (runner("schtasks", ["/create", "/tn", TASK_NAME, "/xml", path, "/f"])) {
       return true;
     }
-    rmSync(path, { force: true });
+    removeFiles();
     return false;
   } catch {
-    rmSync(path, { force: true });
-    if (platform === "linux") {
-      rmSync(path.replace(/\.timer$/, ".service"), { force: true });
-    }
+    removeFiles();
     return false;
   } finally {
     closeSync(lock);

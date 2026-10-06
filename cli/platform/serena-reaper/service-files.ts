@@ -1,5 +1,14 @@
 import { join } from "node:path";
 import { servicePathEnvironment } from "../agentmemory/service-files.js";
+import {
+  currentOmaInvocation,
+  launchdProgramArguments,
+  pinnedServicePath,
+  systemdExecStart,
+  windowsTaskExec,
+} from "../oma-invocation.js";
+
+const REAP_ARGS = ["serena", "reap", "--quiet"];
 
 /**
  * Serena Reaper periodic scheduler service-file rendering.
@@ -61,7 +70,9 @@ export function serenaReaperSystemdServicePath(timerPath: string): string {
  */
 export function renderSerenaReaperLaunchdPlist(args: {
   homeDir: string;
+  invocation?: readonly string[];
 }): string {
+  const invocation = args.invocation ?? currentOmaInvocation();
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -69,17 +80,11 @@ export function renderSerenaReaperLaunchdPlist(args: {
   <key>Label</key>
   <string>${LAUNCHD_SERENA_REAPER_LABEL}</string>
   <key>ProgramArguments</key>
-  <array>
-    <string>/usr/bin/env</string>
-    <string>oma</string>
-    <string>serena</string>
-    <string>reap</string>
-    <string>--quiet</string>
-  </array>
+  <array>${launchdProgramArguments(invocation, REAP_ARGS)}</array>
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>
-    <string>${servicePathEnvironment(args.homeDir)}</string>
+    <string>${pinnedServicePath(invocation, servicePathEnvironment(args.homeDir))}</string>
   </dict>
   <key>StartInterval</key>
   <integer>${REAPER_INTERVAL_SECONDS}</integer>
@@ -117,14 +122,16 @@ WantedBy=timers.target
  */
 export function renderSerenaReaperSystemdService(args: {
   homeDir: string;
+  invocation?: readonly string[];
 }): string {
+  const invocation = args.invocation ?? currentOmaInvocation();
   return `[Unit]
 Description=OMA Serena Reaper — LSP idle-shutdown
 
 [Service]
 Type=oneshot
-Environment=PATH=${servicePathEnvironment(args.homeDir)}
-ExecStart=/usr/bin/env oma serena reap --quiet
+Environment=PATH=${pinnedServicePath(invocation, servicePathEnvironment(args.homeDir))}
+ExecStart=${systemdExecStart(invocation, REAP_ARGS)}
 StandardOutput=journal
 StandardError=journal
 `;
@@ -134,7 +141,10 @@ StandardError=journal
  * Windows Task Scheduler XML with a TimeTrigger + repetition interval.
  * Uses RepetitionInterval (PT5M) so the task repeats without needing logon.
  */
-export function renderSerenaReaperWindowsTaskXml(): string {
+export function renderSerenaReaperWindowsTaskXml(
+  invocation: readonly string[] = currentOmaInvocation(),
+): string {
+  const exec = windowsTaskExec(invocation, REAP_ARGS);
   return `<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
@@ -165,8 +175,8 @@ export function renderSerenaReaperWindowsTaskXml(): string {
   </Settings>
   <Actions Context="Author">
     <Exec>
-      <Command>oma</Command>
-      <Arguments>serena reap --quiet</Arguments>
+      <Command>${exec.command}</Command>
+      <Arguments>${exec.arguments}</Arguments>
     </Exec>
   </Actions>
 </Task>

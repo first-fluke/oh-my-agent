@@ -2,6 +2,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   utimesSync,
   writeFileSync,
@@ -29,8 +30,10 @@ describe("Serena daemon cleanup schedule", () => {
     rmSync(homeDir, { recursive: true, force: true });
   });
 
+  const invocation = ["/opt/node/bin/node", "/opt/oma/bin/cli.js"];
+
   it("runs independently of the optional LSP reaper on macOS", () => {
-    const plist = renderDaemonGcLaunchdPlist(homeDir);
+    const plist = renderDaemonGcLaunchdPlist(homeDir, invocation);
     expect(plist).toContain("dev.oma.serena-daemon-gc");
     expect(plist).toContain("<string>daemon:gc</string>");
     expect(plist).toContain("<key>StartInterval</key><integer>300</integer>");
@@ -38,13 +41,81 @@ describe("Serena daemon cleanup schedule", () => {
     expect(plist).not.toContain("serena reap");
   });
 
-  it("uses the same cleanup command on Linux and Windows", () => {
-    expect(renderDaemonGcSystemdTimer()).toContain("OnUnitActiveSec=300s");
-    expect(renderDaemonGcSystemdService(homeDir)).toContain(
-      "oma serena daemon:gc --quiet",
+  // A service PATH has no version-manager shims, so `/usr/bin/env oma` ran a
+  // stale global oma without `daemon:gc` and every cleanup run failed.
+  it("pins the oma that installed it instead of resolving oma on PATH", () => {
+    const plist = renderDaemonGcLaunchdPlist(homeDir, invocation);
+    expect(plist).toContain(
+      "<array><string>/opt/node/bin/node</string><string>/opt/oma/bin/cli.js</string><string>serena</string><string>daemon:gc</string><string>--quiet</string></array>",
     );
-    expect(renderDaemonGcWindowsTaskXml()).toContain(
-      "serena daemon:gc --quiet",
+    expect(plist).not.toContain("/usr/bin/env");
+    expect(plist).toContain("<string>/opt/node/bin:");
+    expect(renderDaemonGcLaunchdPlist(homeDir, ["/a&b/node", "/x"])).toContain(
+      "<string>/a&amp;b/node</string>",
+    );
+  });
+
+  it("uses the same pinned cleanup command on Linux and Windows", () => {
+    expect(renderDaemonGcSystemdTimer()).toContain("OnUnitActiveSec=300s");
+    expect(renderDaemonGcSystemdService(homeDir, invocation)).toContain(
+      'ExecStart="/opt/node/bin/node" "/opt/oma/bin/cli.js" "serena" "daemon:gc" "--quiet"',
+    );
+    const xml = renderDaemonGcWindowsTaskXml([
+      "C:\\node.exe",
+      "C:\\oma\\cli.js",
+    ]);
+    expect(xml).toContain("<Command>C:\\node.exe</Command>");
+    expect(xml).toContain(
+      "<Arguments>&quot;C:\\oma\\cli.js&quot; serena daemon:gc --quiet</Arguments>",
+    );
+  });
+
+  it("falls back to a PATH lookup when the entry script is unknown", () => {
+    expect(renderDaemonGcSystemdService(homeDir, ["oma"])).toContain(
+      'ExecStart=/usr/bin/env "oma" "serena" "daemon:gc" "--quiet"',
+    );
+  });
+
+  it("replaces an active timer that runs a different oma", () => {
+    const path = daemonGcServicePath(homeDir, "darwin") ?? "";
+    mkdirSync(join(homeDir, "Library", "LaunchAgents"), { recursive: true });
+    writeFileSync(
+      path,
+      renderDaemonGcLaunchdPlist(homeDir, ["/old/node", "/old/cli.js"]),
+    );
+    const runner = vi.fn(() => true);
+
+    expect(
+      ensureSerenaDaemonGcService({
+        homeDir,
+        platform: "darwin",
+        runner,
+        invocation,
+      }),
+    ).toBe(true);
+    const calls = runner.mock.calls.map((call) => (call as string[][])[1]?.[0]);
+    expect(calls.indexOf("bootout")).toBeGreaterThan(-1);
+    expect(calls.indexOf("bootout")).toBeLessThan(calls.indexOf("bootstrap"));
+    expect(readFileSync(path, "utf8")).toBe(
+      renderDaemonGcLaunchdPlist(homeDir, invocation),
+    );
+  });
+
+  it("leaves a current, active timer alone", () => {
+    const runner = vi.fn(() => true);
+    const options = {
+      homeDir,
+      platform: "darwin" as const,
+      runner,
+      invocation,
+    };
+    expect(ensureSerenaDaemonGcService(options)).toBe(true);
+    runner.mockClear();
+    expect(ensureSerenaDaemonGcService(options)).toBe(true);
+    expect(runner).toHaveBeenCalledTimes(1);
+    expect(runner).toHaveBeenCalledWith(
+      "launchctl",
+      expect.arrayContaining(["print"]),
     );
   });
 
