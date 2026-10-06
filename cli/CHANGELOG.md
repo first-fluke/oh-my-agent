@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.7.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.1...cli-v15.7.2) (2026-10-06)
+
+
+### Bug Fixes
+
+* **cli:** route oma's own invocations through canonical command paths ([71da02c](https://github.com/first-fluke/oh-my-agent/commit/71da02c85db6b2410668d90b2e2c8b779f83ab1f))
+
 ## [15.7.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.0...cli-v15.7.1) (2026-10-06)
 
 
