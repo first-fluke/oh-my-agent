@@ -169,9 +169,15 @@ async function registerFullCli(): Promise<void> {
 // wrappers (oma-hook.sh), so it must not pay the full command tree's
 // module-evaluation cost (~0.4s). Register only the hook slice; any other
 // argv shape (including `oma -g hook`) falls through to the full CLI.
+// `oma bridge` gets the same treatment for memory rather than latency: it is a
+// long-lived stdio proxy that every MCP client session keeps (codex keeps
+// several), so the full tree would stay resident in each one all session.
 if (process.argv[2] === "hook" && process.argv[3] !== "probe") {
   const { registerHook } = await import("./commands/hook/command.js");
   registerHook(program);
+} else if (process.argv[2] === "bridge") {
+  const { registerBridge } = await import("./commands/bridge/command.js");
+  registerBridge(program);
 } else {
   await registerFullCli();
 }
