@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.7.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.0...cli-v15.7.1) (2026-10-06)
+
+
+### Bug Fixes
+
+* **hooks:** verify the code-intelligence guard escape hatch ([11f46c8](https://github.com/first-fluke/oh-my-agent/commit/11f46c8813d09e5401de5841cc791a17a3ddbe27))
+
 ## [15.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.6.0...cli-v15.7.0) (2026-10-06)
 
 
