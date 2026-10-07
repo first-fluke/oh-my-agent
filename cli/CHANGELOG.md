@@ -1,5 +1,25 @@
 # Changelog
 
+## [15.7.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.3...cli-v15.7.4) (2026-10-07)
+
+
+### Bug Fixes
+
+* **boundaries:** parse imports without native ipc ([7c289c2](https://github.com/first-fluke/oh-my-agent/commit/7c289c20166b6df9fe0cfb9ec54859b5a9e91ee1))
+* **cleanup:** verify orphan process ownership and honor dry runs ([3a2f6ae](https://github.com/first-fluke/oh-my-agent/commit/3a2f6ae72cf694e24c701af6eb7fb2d7d4bdffbd))
+* **docs:** pass diff revisions safely to git ([dafc433](https://github.com/first-fluke/oh-my-agent/commit/dafc433fdc55f49a6b18614c608cc5af42724ccc))
+* **hooks:** preserve user scripts during managed hook upgrades ([3a6b1f5](https://github.com/first-fluke/oh-my-agent/commit/3a6b1f526e13d38e78a0a8dc9186f58f78de00bf))
+* **opencode:** dispatch agents in the requested workspace ([dda8bcf](https://github.com/first-fluke/oh-my-agent/commit/dda8bcf2f3ccd60352d245c04cd6b8e7922e0a68))
+* **schedule:** serialize manifest updates and resolve cli runtime ([aac9157](https://github.com/first-fluke/oh-my-agent/commit/aac9157a91e921710924d955a738fa75b8798e6f))
+* **state:** avoid nested locks when ending a session ([62c4a0c](https://github.com/first-fluke/oh-my-agent/commit/62c4a0c958b37b8a96d056c0bf8dcf9722ff1f10))
+* **uninstall:** preserve skills without managed ownership ([74ee158](https://github.com/first-fluke/oh-my-agent/commit/74ee158d4bb5fd7f4f160edf04d16b09107a3dc1))
+* **verify:** bind evidence to exact task and run receipts ([859c300](https://github.com/first-fluke/oh-my-agent/commit/859c300128372bc5db271827ef7de8302413de10))
+
+
+### Documentation
+
+* **skills:** clarify mode prerequisites and rollback scope ([9179460](https://github.com/first-fluke/oh-my-agent/commit/91794601fe389923cc3db70c238b58c88fac7256))
+
 ## [15.7.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.2...cli-v15.7.3) (2026-10-06)
 
 
