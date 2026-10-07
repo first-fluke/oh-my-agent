@@ -14,6 +14,11 @@ import {
   selectOrphanedSerenaRoots,
 } from "../../io/serena-reaper.js";
 import { runPs } from "../../io/serena-reaper-runtime.js";
+import {
+  forgetSubagentProcess,
+  isOwnedOrphan,
+  processIsAlive,
+} from "../../io/subagent-process.js";
 import type { CleanupResult } from "../../types/index.js";
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
 
@@ -89,10 +94,8 @@ export async function cleanup(
   skipConfirm = false,
 ): Promise<void> {
   const cwd = process.cwd();
-  const resultsDir = agentsPathFromRoot(
-    resolveProjectRoot(cwd),
-    AGENTS_RESULTS_DIR,
-  );
+  const projectRoot = resolveProjectRoot(cwd);
+  const resultsDir = agentsPathFromRoot(projectRoot, AGENTS_RESULTS_DIR);
   const tmpDir = tmpdir();
 
   const result: CleanupResult = {
@@ -124,23 +127,18 @@ export async function cleanup(
     } catch {}
   };
 
-  const isProcessRunning = (pid: number): boolean => {
-    try {
-      process.kill(pid, 0);
-      return true;
-    } catch {
-      return false;
-    }
-  };
+  const isProcessRunning = processIsAlive;
 
-  const killProcess = async (pid: number) => {
+  const killProcess = async (pid: number, stillOwned?: () => boolean) => {
     if (dryRun) return;
+    if (!Number.isSafeInteger(pid) || pid <= 1 || (stillOwned && !stillOwned()))
+      return;
     try {
       process.kill(pid, "SIGTERM");
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 1000));
     try {
-      if (isProcessRunning(pid)) {
+      if (isProcessRunning(pid) && (!stillOwned || stillOwned())) {
         process.kill(pid, "SIGKILL");
       }
     } catch {}
@@ -161,20 +159,29 @@ export async function cleanup(
         continue;
       }
 
-      const pid = parseInt(pidContent, 10);
-      if (Number.isNaN(pid)) {
+      const pid = /^\d+$/.test(pidContent) ? Number(pidContent) : NaN;
+      if (!Number.isSafeInteger(pid) || pid <= 1) {
         logAction(`Removing invalid PID file: ${pidPath}`);
         safeRemove(pidPath);
         continue;
       }
 
       if (isProcessRunning(pid)) {
+        if (!isOwnedOrphan(pidPath, pid, projectRoot)) {
+          logSkip(
+            `Preserving live process without verified orphan ownership: PID=${pid} (${pidPath})`,
+          );
+          continue;
+        }
         logAction(`Killing orphaned process PID=${pid} (from ${pidPath})`);
-        await killProcess(pid);
+        await killProcess(pid, () => isOwnedOrphan(pidPath, pid, projectRoot));
+        if (!dryRun && isProcessRunning(pid)) continue;
         safeRemove(pidPath);
+        if (!dryRun) forgetSubagentProcess(pidPath);
       } else {
         logAction(`Removing stale PID file (process gone): ${pidPath}`);
         safeRemove(pidPath);
+        if (!dryRun) forgetSubagentProcess(pidPath);
       }
     }
   } catch {}
@@ -186,14 +193,17 @@ export async function cleanup(
 
     for (const logFile of logFiles) {
       const logPath = join(tmpDir, logFile);
-      const pidFile = logFile.replace(".log", ".pid");
+      const pidFile = logFile.replace(
+        /(?:-failover-\d+)?(?:\.stderr)?\.log$/,
+        ".pid",
+      );
       const pidPath = join(tmpDir, pidFile);
 
       if (existsSync(pidPath)) {
         try {
           const pidContent = readFileSync(pidPath, "utf-8").trim();
-          const pid = parseInt(pidContent, 10);
-          if (!Number.isNaN(pid)) {
+          const pid = /^\d+$/.test(pidContent) ? Number(pidContent) : NaN;
+          if (Number.isSafeInteger(pid) && pid > 1) {
             if (isProcessRunning(pid)) {
               logSkip(`Log file has active process: ${logPath}`);
               continue;
@@ -223,29 +233,23 @@ export async function cleanup(
         let hasRunning = false;
         for (const line of lines) {
           const [pidStr, agent] = line.split(":");
-          const pid = parseInt(pidStr?.trim() || "", 10);
-          if (Number.isNaN(pid)) continue;
+          const value = pidStr?.trim() ?? "";
+          const pid = /^\d+$/.test(value) ? Number(value) : NaN;
+          if (!Number.isSafeInteger(pid) || pid <= 1) continue;
 
           if (isProcessRunning(pid)) {
             hasRunning = true;
-            logAction(
-              `Killing orphaned parallel agent PID=${pid} (${agent?.trim() || "unknown"})`,
+            // Legacy parallel lists carry no process identity or supervisor
+            // ownership. A live PID alone is never evidence of an orphan.
+            logSkip(
+              `Preserving live parallel process PID=${pid} (${agent?.trim() || "unknown"})`,
             );
-            await killProcess(pid);
-            safeRemove(pidsPath);
           }
         }
 
         if (!hasRunning) {
           logAction(`Removing stale PID list: ${pidsPath}`);
           safeRemove(pidsPath);
-        } else {
-          if (!dryRun) {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            try {
-              rmSync(pidsPath, { force: true });
-            } catch {}
-          }
         }
       }
     } catch {}
@@ -264,7 +268,7 @@ export async function cleanup(
   // the daemon registry, whose sweep re-adopts any that fell out of it and
   // stops the idle ones after their grace period; cleanup leaves them to it.
   try {
-    reclaimIdleDaemons();
+    if (!dryRun) reclaimIdleDaemons();
     const managed = new Set(
       Object.values(readRegistry()).map((record) => record.pid),
     );

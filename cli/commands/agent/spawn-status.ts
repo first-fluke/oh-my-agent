@@ -22,6 +22,10 @@ import {
   loadQuotaCap,
   recordUsage,
 } from "../../io/session-cost.js";
+import {
+  forgetSubagentProcess,
+  recordSubagentProcess,
+} from "../../io/subagent-process.js";
 import { detectWorkspace } from "../../io/workspaces.js";
 import {
   createWorktree,
@@ -487,6 +491,7 @@ export async function spawnAgent(
   }
 
   fs.writeFileSync(pidFile, child.pid.toString());
+  recordSubagentProcess(pidFile, child.pid, runRoot);
   // Drop any stale terminal status left by a previous run that reused this
   // session id + agent id, so a lingering "completed" cannot mask the new run
   // while it is still in flight.
@@ -537,6 +542,7 @@ export async function spawnAgent(
     if (stderrStream !== logStream) fs.closeSync(stderrStream);
     try {
       if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile);
+      forgetSubagentProcess(pidFile);
     } catch {
       // ignore
     }
