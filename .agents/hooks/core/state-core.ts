@@ -243,9 +243,19 @@ export function emitEvent(
   sid: string,
   event: Omit<Partial<OmaEvent>, "sid"> & { kind: string },
 ): OmaEvent {
-  return withSessionWriteLock(projectDir, sid, () =>
+  const enriched = withSessionWriteLock(projectDir, sid, () =>
     appendEvent(projectDir, sid, event),
   );
+  // Migration acquires index before session. Release the session lock before
+  // updating the index so a concurrent migration can finish its path switch.
+  if (enriched.kind === "session.ended") {
+    updateIndex(projectDir, (index) => {
+      for (const [category, activeSid] of Object.entries(index.active)) {
+        if (activeSid === sid) delete index.active[category];
+      }
+    });
+  }
+  return enriched;
 }
 
 function appendEvent(
@@ -296,13 +306,6 @@ function appendEvent(
     event.kind === "session.ended"
   ) {
     refreshMetaUnlocked(projectDir, sid);
-  }
-  if (event.kind === "session.ended") {
-    updateIndex(projectDir, (index) => {
-      for (const [category, activeSid] of Object.entries(index.active)) {
-        if (activeSid === sid) delete index.active[category];
-      }
-    });
   }
   return enriched;
 }
