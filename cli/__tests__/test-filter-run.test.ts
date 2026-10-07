@@ -127,7 +127,7 @@ describe("test-filter run() — platform and idempotency guards (#618)", () => {
       expect(result?.type).toBe("mutate");
       if (result?.type === "mutate") {
         expect(result.updatedInput.command as string).toContain(
-          `bash "${join("/tmp/project", ".claude", "hooks", "filter-test-output.sh")}"`,
+          `bash "${join("/tmp/project", ".claude", "hooks", "oma", "filter-test-output.sh")}"`,
         );
       }
     });
