@@ -28,6 +28,7 @@ import {
   getInstallRoot,
   isProjectModeInHome,
 } from "../../platform/install-context.js";
+import { recordUpdatedSkills } from "../../platform/managed-skill-ownership.js";
 import {
   fetchRemoteManifest,
   getLocalVersion,
@@ -389,6 +390,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
           });
         }
         const installedSkillNames = getInstalledSkillNames(cwd);
+        recordUpdatedSkills(repoDir, cwd);
 
         // Reconcile all vendor adaptations via the link kernel. agy HUD,
         // Claude .mcp.json seeding, vendor settings (Claude / Gemini / Qwen /

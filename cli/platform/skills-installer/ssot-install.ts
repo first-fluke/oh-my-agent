@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { INSTALLED_SKILLS_DIR } from "../../constants/index.js";
 import { clearNonDirectory } from "../../utils/fs-utils.js";
+import { recordManagedSkills } from "../managed-skill-ownership.js";
 
 export function installSkill(
   sourceDir: string,
@@ -38,6 +39,7 @@ export function installSkill(
     fs.rmSync(destVariantsDir, { recursive: true, force: true });
   }
 
+  recordManagedSkills(installRoot, [skillName]);
   return true;
 }
 
@@ -49,6 +51,7 @@ export function installShared(sourceDir: string, installRoot: string): void {
   clearNonDirectory(dest);
   fs.mkdirSync(dest, { recursive: true });
   fs.cpSync(src, dest, { recursive: true, force: true });
+  recordManagedSkills(installRoot, ["_shared"]);
 }
 
 export function installWorkflows(sourceDir: string, installRoot: string): void {

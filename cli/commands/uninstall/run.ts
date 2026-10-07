@@ -5,6 +5,10 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { CLI_SKILLS_DIR, INSTALLED_SKILLS_DIR } from "../../constants/index.js";
 import { getInstallRoot } from "../../platform/install-context.js";
+import {
+  readManagedSkills,
+  SKILL_OWNERSHIP_PATH,
+} from "../../platform/managed-skill-ownership.js";
 import { vendorSkillsDir } from "../../platform/skills-installer/vendor-dirs.js";
 import type { CliTool } from "../../types/index.js";
 
@@ -112,6 +116,7 @@ function isWorkflowSymlinkFile(
 function symlinkTargetsInstall(
   entryPath: string,
   installRoot: string,
+  managedSkills: ReadonlySet<string>,
 ): boolean {
   try {
     const raw = fs.readlinkSync(entryPath);
@@ -131,6 +136,12 @@ function symlinkTargetsInstall(
       // `.agents/` already gone — compare lexically.
     }
 
+    const skillRoot = path.join(agentsDir, "skills");
+    if (target.startsWith(skillRoot + path.sep)) {
+      return managedSkills.has(
+        path.relative(skillRoot, target).split(path.sep)[0] ?? "",
+      );
+    }
     return target === agentsDir || target.startsWith(agentsDir + path.sep);
   } catch {
     return false;
@@ -162,6 +173,14 @@ export function buildRemovalPlan(installRoot: string): {
 } {
   const omaOwned: RemovalEntry[] = [];
   const userOwned: RemovalEntry[] = [];
+  const managedSkills = readManagedSkills(installRoot);
+  const ownershipPath = path.join(installRoot, SKILL_OWNERSHIP_PATH);
+  if (detectKind(ownershipPath) === "file")
+    omaOwned.push({
+      path: ownershipPath,
+      kind: "file",
+      reason: "oma skill ownership metadata",
+    });
 
   // ── SSOT directories ──────────────────────────────────────────────────────
 
@@ -173,6 +192,14 @@ export function buildRemovalPlan(installRoot: string): {
     const entryPath = path.join(skillsDir, entry.name);
     const kind = detectKind(entryPath);
     if (kind === null) continue;
+    if (entry.name !== "_version.json" && !managedSkills.has(entry.name)) {
+      userOwned.push({
+        path: entryPath,
+        kind,
+        reason: "skill without oma ownership evidence",
+      });
+      continue;
+    }
 
     let reason: string;
     if (entry.name === "_version.json") {
@@ -264,7 +291,7 @@ export function buildRemovalPlan(installRoot: string): {
       if (kind === null) continue;
 
       if (kind === "symlink") {
-        if (symlinkTargetsInstall(entryPath, installRoot)) {
+        if (symlinkTargetsInstall(entryPath, installRoot, managedSkills)) {
           omaOwned.push({
             path: entryPath,
             kind: "symlink",

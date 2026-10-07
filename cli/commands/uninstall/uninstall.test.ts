@@ -6,6 +6,7 @@ import {
   _resetInstallContext,
   setInstallContext,
 } from "../../platform/install-context.js";
+import { recordManagedSkills } from "../../platform/managed-skill-ownership.js";
 import { buildRemovalPlan, uninstall } from "./run.js";
 
 // buildRemovalPlan resolves home-consent vendor dirs (hermes, antigravity,
@@ -56,6 +57,7 @@ function seedOmaLayout(root: string): void {
   fs.mkdirSync(workflowsDir, { recursive: true });
   fs.mkdirSync(rulesDir, { recursive: true });
   fs.mkdirSync(configDir, { recursive: true });
+  recordManagedSkills(root, ["oma-frontend"]);
 
   // Metadata now lives inside _version.json (see Plan A merge)
   fs.writeFileSync(
@@ -103,6 +105,22 @@ afterEach(() => {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("buildRemovalPlan", () => {
+  it("preserves unregistered SSOT skills and their vendor links", async () => {
+    const root = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    seedOmaLayout(root);
+    const userSkill = path.join(root, ".agents/skills/third-party-skill");
+    fs.mkdirSync(userSkill, { recursive: true });
+    fs.writeFileSync(path.join(userSkill, "SKILL.md"), "# Third-party skill\n");
+    const vendorLink = path.join(root, ".claude/skills/third-party-skill");
+    fs.symlinkSync(userSkill, vendorLink);
+
+    await uninstall({ yes: true });
+
+    expect(fs.existsSync(path.join(userSkill, "SKILL.md"))).toBe(true);
+    expect(fs.lstatSync(vendorLink).isSymbolicLink()).toBe(true);
+  });
+
   it("dry-run: produces expected oma-owned entries and does not modify the fs", () => {
     const root = makeTmpDir();
     setInstallContext({ installRoot: root, mode: "project" });
@@ -534,7 +552,7 @@ describe("home-consent vendor symlinks", () => {
     expect(() => fs.lstatSync(ownLink)).toThrow();
   });
 
-  it("claims dangling symlinks whose lexical target is this install", () => {
+  it("preserves dangling skill links without ownership evidence", () => {
     const root = makeTmpDir();
     mockHome = makeTmpDir();
     setInstallContext({ installRoot: root, mode: "project" });
@@ -547,8 +565,9 @@ describe("home-consent vendor symlinks", () => {
       danglingLink,
     );
 
-    const { omaOwned } = buildRemovalPlan(root);
+    const { omaOwned, userOwned } = buildRemovalPlan(root);
 
-    expect(omaOwned.some((e) => e.path === danglingLink)).toBe(true);
+    expect(omaOwned.some((e) => e.path === danglingLink)).toBe(false);
+    expect(userOwned.some((e) => e.path === danglingLink)).toBe(true);
   });
 });
