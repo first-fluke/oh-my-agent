@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "15.7.3",
-  "releaseDate": "2026-10-06T14:01:32.726Z",
+  "releaseDate": "2026-10-07T10:53:07.288Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -231,8 +231,8 @@
     },
     {
       "path": ".agents/hooks/core/state-core.ts",
-      "sha256": "c4efb886b9858d1ec14556b46891e31e9c39a76fee04d8cc26a48f56e6321a68",
-      "size": 11751
+      "sha256": "c6e26948912b0bf4d296f7170be55c1fa37ad915795898743bdde7155e13a400",
+      "size": 11939
     },
     {
       "path": ".agents/hooks/core/state-emit.ts",
@@ -251,8 +251,8 @@
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "8caeef8a89fd425916c63b8b54fbdf1e570c5af420410023efcd35182b15283c",
-      "size": 6218
+      "sha256": "f23b731c0798f63f8a2d503099397f15f2d7117a4fd269f7ee528c551daa55de",
+      "size": 6273
     },
     {
       "path": ".agents/hooks/core/triggers.json",
@@ -1066,8 +1066,8 @@
     },
     {
       "path": ".agents/skills/oma-explanation/SKILL.md",
-      "sha256": "ff985f92778515c864d6bee31b209573419f4623846ca71433cc10e5d2bb5d39",
-      "size": 12190
+      "sha256": "ee763e80a537006f23ba5f5de1c6eefd8b794ad3686b5908a84f650f7f64b320",
+      "size": 12715
     },
     {
       "path": ".agents/skills/oma-explanation/resources/document-structure.md",
@@ -1211,8 +1211,8 @@
     },
     {
       "path": ".agents/skills/oma-market/SKILL.md",
-      "sha256": "827c3a15278482350875c1d50f8e4c5946cefef4c30cbb1ed16c99e5191fb51b",
-      "size": 9280
+      "sha256": "7c33e06c5e5040e820b713017047d226a7feb408ae4afc54cc48c36d53cfaab6",
+      "size": 9408
     },
     {
       "path": ".agents/skills/oma-market/resources/checklist.md",
@@ -1691,8 +1691,8 @@
     },
     {
       "path": ".agents/skills/oma-refactor/SKILL.md",
-      "sha256": "056d33938e2f85dcaed93b6e76dd76188a4973324edd0ba2575844bed9c91284",
-      "size": 12667
+      "sha256": "20882075b0cf6d6cc052bce2706f5384b237b0747c0d6d3b842e38609ac938d4",
+      "size": 12874
     },
     {
       "path": ".agents/skills/oma-refactor/resources/definition.md",
