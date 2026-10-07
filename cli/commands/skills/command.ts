@@ -8,6 +8,7 @@ import { integerOption } from "../../utils/option-parsers.js";
 import { runSkillsAudit } from "./audit.js";
 import { runSkillsEval } from "./eval.js";
 import { runSkillsLint } from "./lint.js";
+import { registerSkillsMatrixCommand } from "./matrix/command.js";
 import { estimateLiveDispatchCalls } from "./opt/cost-preview.js";
 import { readSkillPromotions, rollbackSkillPromotion } from "./opt/lineage.js";
 import {
@@ -33,6 +34,8 @@ export function registerSkillsCommand(program: Command): void {
   const skills = program
     .command("skills")
     .description("Inspect and audit installed skills");
+
+  registerSkillsMatrixCommand(skills);
 
   addOutputOptions(
     skills

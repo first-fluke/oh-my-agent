@@ -360,6 +360,7 @@ flowchart TD
 - **[Detailed Documentation](https://github.com/first-fluke/oh-my-agent/blob/main/docs/AGENTS_SPEC.md)** — Full technical spec and architecture
 - **[Supported Agents](https://github.com/first-fluke/oh-my-agent/blob/main/docs/SUPPORTED_AGENTS.md)** — Agent support matrix across IDEs
 - **[Capability Providers](https://github.com/first-fluke/oh-my-agent/blob/main/docs/capability-providers.md)** — Experimental Gortex and Honcho configuration, routing, and limits
+- **[Skill Compatibility Matrix](https://github.com/first-fluke/oh-my-agent/blob/main/docs/skills-matrix.md)** — Check native skill content, references, and response contracts in Claude and Codex
 - **[Benchmark Report](https://github.com/first-fluke/oh-my-agent/blob/main/benchmarks/README.md)** — Method, scores, screenshots, and caveats
 - **[Web Docs](https://first-fluke.github.io/oh-my-agent/)** — Guides, tutorials, and CLI reference
 
