@@ -105,17 +105,20 @@ outputs:
 ## Structural Flow
 
 ### Entry
-1. Resolve the target ref via the Expected-inputs order; never guess an alternative ref.
+1. Select change or topic mode from the Expected inputs. In change mode, resolve the
+   target ref in the stated order; never guess an alternative ref. In topic mode,
+   resolve the question and available source material without requiring a diff.
 2. Read `resources/draft-format.md` before generating; in change mode also
    `resources/document-structure.md` and `resources/html-contract.md`.
 3. Determine reader level, output language, and quiz count.
 
 ### Scenes
-1. **RESOLVE**: Map the user's request to a concrete diff source; report which ref was chosen.
-2. **COLLECT**: Gather the diff and explore surrounding code through the configured
+1. **RESOLVE**: In change mode, map the request to a concrete diff source and report the
+   chosen ref. In topic mode, identify the question, scope, and source material.
+2. **COLLECT**: Gather the diff or topic sources and explore relevant code through the configured
    `code_intelligence` capability. If it is unavailable or times out, use native search only for paths outside this project or ignored paths
    and record that limit.
-3. **GATE**: Run the pre-generation secret scan on the diff. On hit: stop, report masked
+3. **GATE**: Run the pre-generation secret scan on the collected material. On hit: stop, report masked
    locations, await user confirmation for redacted continuation.
 4. **GENERATE**: Write the draft per `draft-format.md` and run `oma explain render`.
    Change mode: Background (two tiers), Intuition (toy data + diagrams), Code walkthrough
@@ -139,17 +142,17 @@ outputs:
 - Validation failure ×3 → stop and present the failing checklist items; do not deliver silently.
 
 ### Failure and recovery
-- Empty diff / unresolvable ref → stop; offer recent commits as candidates.
-- Binary- or generated-only diff → stop; nothing explainable.
-- PR ref with `gh` missing or unauthenticated → give install/auth guidance + local branch-diff alternative.
-- Merge/rebase in progress → stop; worktree unstable.
-- Non-git directory → stop immediately.
+- Change mode, empty diff / unresolvable ref → stop; offer recent commits as candidates.
+- Change mode, binary- or generated-only diff → stop; nothing explainable.
+- Change mode, PR ref with `gh` missing or unauthenticated → give install/auth guidance + local branch-diff alternative.
+- Change mode, merge/rebase in progress → stop; worktree unstable.
+- Change mode, non-git directory → stop immediately. Topic mode can run without git.
 - `open` failure / headless environment → warn-only; the reported path suffices.
 
 ### Exit
 - Success: validated HTML artifact exists, path reported, quiz functional.
 - Partial: artifact generated but checklist unresolved after 3 loops — failures listed explicitly.
-- Failure: unresolvable ref, non-git directory, binary/generated-only diff, or unstable worktree —
+- Change-mode failure: unresolvable ref, non-git directory, binary/generated-only diff, or unstable worktree —
   stopped before generation; no artifact produced, guidance given per Failure and recovery.
 
 ## Logical Operations
@@ -179,10 +182,11 @@ outputs:
 | `CREDENTIALS` | `gh` auth token if configured; no other secrets handled |
 
 ### Preconditions
-- Resolvable git repository, not mid-merge/rebase
-- Explainable diff for the resolved ref (non-empty, not binary-only, not generated-only or
+- Change mode: resolvable git repository, not mid-merge/rebase
+- Change mode: explainable diff for the resolved ref (non-empty, not binary-only, not generated-only or
   version-bump-only — see the predicate in `.agents/workflows/explain.md` Step 1)
-- `gh` authenticated when a PR ref is requested
+- Change mode: `gh` authenticated when a PR ref is requested
+- Topic mode: a question and enough source material to support the explanation; no git repository or diff required
 
 ### Effects and side effects
 - Writes exactly one HTML file under `.agents/results/explain/`

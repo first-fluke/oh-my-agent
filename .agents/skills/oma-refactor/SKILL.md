@@ -75,7 +75,7 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 2. **ACQUIRE**: Read target code via symbol tools; collect metrics (complexity, size, coupling) and git signals (churn, ownership); read the coding guide for conventions.
 3. **REASON**: Decompose the goal into a sequence of named atomic transformations; for stateful targets plan expand-contract; verify each step is independently verifiable and revertible.
 4. **ACT**: Apply ONE transformation; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits. When one feature spans several files after a split, consider G-5's optional header map if it helps navigation.
-5. **VERIFY**: Re-run existing tests unchanged. Pass -> commit (refactor-only) -> next transformation. Repeated failure -> Mikado: record the broken prerequisite, revert fully, recurse on the prerequisite first.
+5. **VERIFY**: Re-run existing tests unchanged. Pass -> commit (refactor-only) -> next transformation. Repeated failure -> Mikado: record the broken prerequisite, undo only this transformation's edits, recurse on the prerequisite first. Preserve pre-existing edits and other contributors' work.
 6. **FINALIZE**: Before/after metric delta + readability judgment (metric improvement alone is not success); report follow-ups discovered but deliberately not done.
 
 ### Transitions
@@ -89,7 +89,7 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 ### Failure and recovery
 | Failure | Recovery |
 |---------|----------|
-| Tests fail after a transformation | Mikado: record prerequisite, revert all, attack prerequisite first |
+| Tests fail after a transformation | Mikado: record prerequisite, undo only this transformation's edits, preserve unrelated work, attack prerequisite first |
 | No tests and code is untestable | Find a seam; apply only minimal mechanical changes to inject test access, then characterize |
 | Tests are flaky | Fix or quarantine flaky tests before refactoring - an unreliable net is no net |
 | Metric improves but readability worsens | Reject the transformation; readability is the success criterion, metrics are proxies |
@@ -129,7 +129,8 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 3. Select targets by hotspot rank (complexity x churn), not by smell aesthetics alone.
 4. Plan a sequence of named atomic transformations toward the language-idiomatic, convention-conforming form.
 5. Loop per transformation: apply (engine-first) -> re-run tests UNCHANGED -> commit `refactor:` only.
-   On repeated failure: record prerequisite, revert fully, recurse (Mikado).
+   On repeated failure: record prerequisite, undo only this transformation's edits,
+   preserve pre-existing and concurrent work, recurse (Mikado).
 6. Finish: metric delta + readability verdict; list discovered-but-deferred work; never mix in behavior changes.
 
 ### Resource scope

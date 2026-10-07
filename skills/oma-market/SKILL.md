@@ -129,7 +129,8 @@ oma market run "$TOPIC" --plan "$QUERY_PLAN_FILE" --subreddits=vscode --emit=com
 
 ### Effects and side effects
 - Writes the brief to `.agents/results/market/{topic-slug}-{YYYYMMDD}.md` and raw engine files to `market.save_dir`.
-- First run: the upstream setup wizard may write `~/.config/last30days/.env` (with user consent) and, when Python 3.12 is absent but `uv` exists, may install a managed CPython 3.12 (~28 MB) after telling the user.
+- First run: the upstream setup wizard may write `~/.config/last30days/.env` with user consent.
+- If Python 3.12+ is absent, `oma market resolve` stops before the upstream setup wizard. Relay its install hint; after an authorized interpreter installation, retry resolution. Do not expect the skipped upstream Python preflight to install it.
 
 ## References
 - Execution protocol: `resources/execution-protocol.md`
