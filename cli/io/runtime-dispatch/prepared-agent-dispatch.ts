@@ -60,7 +60,7 @@ export function prepareAgentDispatch({
     const wrapper = createOpencodeSpawnWrapper(
       agentId,
       wrapperId ?? sessionId,
-      process.cwd(),
+      workspace,
       wrapperModel,
     );
     if (swapOpencodeAgentArg(dispatchArgs, agentId, wrapper.name)) {

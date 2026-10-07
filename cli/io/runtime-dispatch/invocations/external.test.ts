@@ -361,6 +361,19 @@ describe("buildExternalInvocation — opencode", () => {
     expect(inv.args).toContain("--dir");
   });
 
+  it("opencode: targets the requested workspace instead of the parent cwd", () => {
+    const workspace = "/separate/worktree";
+    const inv = buildExternalInvocation(
+      "opencode",
+      opencodeConfig(),
+      null,
+      "my prompt",
+      "pm",
+      { workspace },
+    );
+    expect(inv.args[inv.args.indexOf("--dir") + 1]).toBe(workspace);
+  });
+
   it("opencode: --dangerously-skip-permissions present when readOnly:false", () => {
     const cfg = opencodeConfig();
     const inv = buildExternalInvocation(

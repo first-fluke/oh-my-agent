@@ -243,7 +243,7 @@ const buildExternalOpencodeInvocation: ExternalInvocationBuilder = ({
   agentId,
   options,
 }) => {
-  const { readOnly = false } = options;
+  const { readOnly = false, workspace = process.cwd() } = options;
   const command = vendorConfig.command || "opencode";
   const args: string[] = ["run"];
 
@@ -257,7 +257,7 @@ const buildExternalOpencodeInvocation: ExternalInvocationBuilder = ({
     args.push("--agent", agentId);
   }
 
-  args.push("--dir", process.cwd());
+  args.push("--dir", workspace);
 
   if (!readOnly) {
     args.push("--dangerously-skip-permissions");

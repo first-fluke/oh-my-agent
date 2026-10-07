@@ -1,5 +1,11 @@
 import { EventEmitter } from "node:events";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -41,6 +47,8 @@ describe("spawn structured result integration", () => {
   let root: string;
   let child: EventEmitter & { pid: number };
   beforeEach(() => {
+    // These result-contract tests do not exercise the user's memory daemon.
+    vi.stubEnv("OMA_NO_AGENTMEMORY", "1");
     root = mkdtempSync(join(tmpdir(), "oma-spawn-result-"));
     writeTestPlan(root, ["T1", "qa-reviewer"]);
     child = Object.assign(new EventEmitter(), { pid: 424242 });
@@ -62,6 +70,7 @@ describe("spawn structured result integration", () => {
   });
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
     rmSync(root, { recursive: true, force: true });
     for (const suffix of ["log", "pid", "status"])
       rmSync(join(tmpdir(), `subagent-s1-qa-reviewer.${suffix}`), {
@@ -120,7 +129,9 @@ describe("spawn structured result integration", () => {
     await expect(pending).rejects.toThrow("process-exit");
   });
 
-  it("wraps and removes an external OpenCode parallel subagent", async () => {
+  it("wraps and removes an external OpenCode parallel subagent in its workspace", async () => {
+    const workspace = join(root, "separate-workspace");
+    mkdirSync(workspace);
     fakePlanDispatch.mockReturnValue({
       mode: "external",
       runtimeVendor: "codex",
@@ -135,14 +146,14 @@ describe("spawn structured result integration", () => {
           "--agent",
           "qa-reviewer",
           "--dir",
-          root,
+          workspace,
           "Review",
         ],
         env: {},
       },
     });
 
-    const pending = parallelRun([`qa-reviewer:Review:${root}`], {
+    const pending = parallelRun([`qa-reviewer:Review:${workspace}`], {
       inline: true,
     });
     const args = fakeSpawn.mock.calls.at(-1)?.[1] as string[];
@@ -150,11 +161,44 @@ describe("spawn structured result integration", () => {
     const agentIndex = args.indexOf("--agent");
     const wrapperName = args[agentIndex + 1];
     expect(wrapperName).toMatch(/^oma-spawn-qa-reviewer-/);
-    const wrapperPath = join(root, ".opencode", "agents", `${wrapperName}.md`);
+    const wrapperPath = join(
+      workspace,
+      ".opencode",
+      "agents",
+      `${wrapperName}.md`,
+    );
     expect(existsSync(wrapperPath)).toBe(true);
+    expect(existsSync(join(root, ".opencode"))).toBe(false);
 
     child.emit("error", new Error("ENOENT"));
     await expect(pending).rejects.toThrow("process-exit");
+    expect(existsSync(wrapperPath)).toBe(false);
+  });
+
+  it("places a single OpenCode wrapper in the requested workspace", async () => {
+    const workspace = join(root, "single-workspace");
+    mkdirSync(workspace);
+    fakePlanDispatch.mockReturnValue({
+      mode: "external",
+      runtimeVendor: "codex",
+      targetVendor: "opencode",
+      reason: "test",
+      invocation: {
+        command: "opencode",
+        args: ["run", "--agent", "qa-reviewer", "--dir", workspace, "Review"],
+        env: {},
+      },
+    });
+    vi.mocked(process.exit).mockImplementation(() => undefined as never);
+    await spawnAgent("qa-reviewer", "Review", "s1", workspace);
+    const args = fakeSpawn.mock.calls.at(-1)?.[1] as string[];
+    const name = args[args.indexOf("--agent") + 1];
+    const wrapperPath = join(workspace, ".opencode", "agents", `${name}.md`);
+    expect(existsSync(wrapperPath)).toBe(true);
+    expect(existsSync(join(root, ".opencode"))).toBe(false);
+    expect(fakeSpawn.mock.calls.at(-1)?.[2]).toMatchObject({ cwd: workspace });
+    child.emit("exit", 0);
+    await vi.waitFor(() => expect(process.exit).toHaveBeenCalledWith(3));
     expect(existsSync(wrapperPath)).toBe(false);
   });
 
