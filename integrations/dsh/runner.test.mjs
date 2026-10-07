@@ -5,6 +5,8 @@ import { test } from "node:test";
 import { createHookRunner } from "./runner.mjs";
 import { fixture } from "./test-support.mjs";
 
+const cleanupTimer = globalThis.setTimeout;
+
 test("runner carries unsafe strings as arguments and JSON without shell interpretation", async (t) => {
   const f = await fixture(t);
   const sentinel = join(f.cwd, "shell-was-run");
@@ -28,11 +30,14 @@ test("runner carries unsafe strings as arguments and JSON without shell interpre
 
 test("timeout kills a hook that ignores SIGTERM and drains before returning", async (t) => {
   const f = await fixture(t, { hang: true });
+  t.mock.timers.enable({ apis: ["setTimeout"] });
   const runner = createHookRunner({ ...f.config, timeoutMs: 500 });
   t.after(() => runner.dispose());
   const pending = runner.run("Stop", { cwd: f.cwd, hook_event_name: "Stop" });
   const rejected = assert.rejects(pending, /timed out/);
   const pid = await f.waitStarted();
+  t.mock.timers.tick(500);
+  t.mock.timers.tick(250);
   await rejected;
   assert.throws(() => process.kill(pid, 0), /ESRCH/);
 });
@@ -41,6 +46,7 @@ test("cleanup kills descendants after the hook root exits immediately on SIGTERM
   skip: process.platform === "win32",
 }, async (t) => {
   const f = await fixture(t, { hang: true, descendant: true });
+  t.mock.timers.enable({ apis: ["setTimeout"] });
   const runner = createHookRunner({ ...f.config, timeoutMs: 500 });
   t.after(() => runner.dispose());
   const pending = runner.run("Stop", { cwd: f.cwd, hook_event_name: "Stop" });
@@ -54,6 +60,8 @@ test("cleanup kills descendants after the hook root exits immediately on SIGTERM
       process.kill(descendant, "SIGKILL");
     } catch {}
   });
+  t.mock.timers.tick(500);
+  t.mock.timers.tick(250);
   await rejected;
   for (let i = 0; i < 30; i += 1) {
     try {
@@ -62,7 +70,7 @@ test("cleanup kills descendants after the hook root exits immediately on SIGTERM
       assert.equal(error.code, "ESRCH");
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => cleanupTimer(resolve, 10));
   }
   assert.fail("descendant survived process-group cleanup");
 });

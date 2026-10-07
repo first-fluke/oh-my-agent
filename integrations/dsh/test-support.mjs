@@ -3,6 +3,9 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+// Keep fixture polling on the real clock while timeout tests control runner timers.
+const fixtureTimer = globalThis.setTimeout;
+
 const fixtureProgram = `
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
@@ -87,7 +90,7 @@ export async function fixture(t, settings = {}, initialized = true) {
         try {
           return Number(await readFile(join(cwd, "pid"), "utf8"));
         } catch {}
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => fixtureTimer(resolve, 10));
       }
       throw new Error("fixture process did not start");
     },
