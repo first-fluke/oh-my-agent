@@ -102,6 +102,15 @@ describe("agent result CLI lifecycle", () => {
   it("resumes a pending task through the real CLI dispatch and receipt lifecycle", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-resume-cli-"));
     roots.push(root);
+    // Resolve the executable before entering the fixture; a PATH shim may
+    // depend on runtime version configuration from the repository directory.
+    const runtime = spawnSync("bun", ["-p", "process.execPath"], {
+      cwd: resolve(import.meta.dirname, "../.."),
+      encoding: "utf8",
+      timeout: 10_000,
+    });
+    expect(runtime.status, runtime.stderr).toBe(0);
+    const bun = runtime.stdout.trim();
     writeTestPlan(root);
     const fixture = join(root, "vendor-fixture.cjs");
     writeFileSync(
@@ -111,7 +120,7 @@ const fs=require("node:fs"), path=require("node:path"), cp=require("node:child_p
 const dir=path.join(process.cwd(),".agents/state/agent-runs");
 const run=fs.readdirSync(dir).filter(f=>f.endsWith(".json")&&!f.endsWith(".claim.json")&&f!=="_sequence.json").map(f=>JSON.parse(fs.readFileSync(path.join(dir,f),"utf8"))).find(r=>r.status==="running");
 if(!run) process.exit(2);
-const check=cp.spawnSync("bun",[${JSON.stringify(cli)},"agent", "verify",run.runId,"--required","--project-root",process.cwd()],{stdio:"inherit"});
+const check=cp.spawnSync(${JSON.stringify(bun)},[${JSON.stringify(cli)},"agent", "verify",run.runId,"--required","--project-root",process.cwd()],{stdio:"inherit"});
 if(check.status!==0) process.exit(3);
 fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"completed",changedFiles:[],unresolved:[],artifacts:[]}));
 `,
@@ -137,21 +146,25 @@ fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"
     // Keep real model CLIs unreachable even if fixture configuration regresses.
     const bin = join(root, "fixture-bin");
     mkdirSync(bin);
-    const bun = spawnSync("which", ["bun"], { encoding: "utf8" }).stdout.trim();
     symlinkSync(bun, join(bin, "bun"));
     const result = spawnSync(
-      "bun",
+      bun,
       [cli, "agent", "resume", "s1", "--project-root", root],
       {
         cwd: root,
         encoding: "utf8",
         timeout: 30_000,
-        env: { ...process.env, PATH: bin, OMA_RUNTIME_VENDOR: "codex" },
+        env: {
+          ...process.env,
+          PATH: bin,
+          OMA_RUNTIME_VENDOR: "codex",
+          OMA_NO_AGENTMEMORY: "1",
+        },
       },
     );
     expect(result.status, result.stderr.slice(-2000)).toBe(0);
     const dry = spawnSync(
-      "bun",
+      bun,
       [cli, "agent", "resume", "s1", "--project-root", root, "--dry-run"],
       { cwd: root, encoding: "utf8", timeout: 20_000 },
     );
