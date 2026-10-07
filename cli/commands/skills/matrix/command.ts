@@ -25,6 +25,19 @@ export function registerSkillsMatrixCommand(skills: Command): void {
         "Custom JSON compatibility suite (default: three diagnostic skills)",
       )
       .option(
+        "--project-root <path>",
+        "Read installed skills from a project's .agents/skills",
+      )
+      .option(
+        "--skills <names>",
+        "Comma-separated installed skill names to audit",
+      )
+      .option(
+        "--delivery <mode>",
+        "Skill delivery: native or injected (installed audits only)",
+        "native",
+      )
+      .option(
         "--vendors <ids>",
         "Comma-separated vendors: claude,codex",
         "claude,codex",

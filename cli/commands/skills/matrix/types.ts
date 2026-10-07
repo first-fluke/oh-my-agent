@@ -1,5 +1,7 @@
 export const MATRIX_VENDORS = ["claude", "codex"] as const;
 export type MatrixVendor = (typeof MATRIX_VENDORS)[number];
+export type MatrixDelivery = "native" | "injected";
+export const MATRIX_PROTOCOL_VERSION = "oma-skill-matrix-v2";
 export type JsonValue =
   | null
   | boolean
@@ -32,6 +34,13 @@ export interface PreparedMatrixCase {
   skillRoot: string;
   contentHash: string;
   canary?: { file: string; field: string; value: string };
+  /** Installed bundles protect the complete skills tree, including shared resources. */
+  protectedRoot?: string;
+  protectedFiles?: Record<string, string>;
+  /** False when literal references are missing or outside the supported bundle boundary. */
+  coverageComplete?: boolean;
+  /** Installed audits resolve absolute paths only after creating the isolated copy. */
+  prompt?: string;
 }
 
 export interface MatrixRead {

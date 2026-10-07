@@ -1,5 +1,6 @@
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
+import { installedMatrixTreeHash } from "./bundle.js";
 import {
   matrixFixtureHash,
   matrixInstalledTreeHash,
@@ -40,8 +41,11 @@ export function gradeMatrixCase(
 ): MatrixCell {
   const checks: MatrixCheck[] = [];
   const expected = { ...prepared.testCase.expected };
-  const files = preparedMatrixFiles(prepared);
-  if (prepared.canary) expected[prepared.canary.field] = prepared.canary.value;
+  const files = prepared.protectedRoot
+    ? prepared.testCase.files
+    : preparedMatrixFiles(prepared);
+  if (!prepared.protectedRoot && prepared.canary)
+    expected[prepared.canary.field] = prepared.canary.value;
   const actual = parseFinalJson(run.output);
   const processPass =
     !run.error && run.complete && run.nativeSuccess && run.exitCode === 0;
@@ -74,6 +78,7 @@ export function gradeMatrixCase(
     );
   };
   const canaryRetrieved =
+    !prepared.protectedRoot &&
     prepared.canary &&
     actual?.[prepared.canary.field] === prepared.canary.value;
   const contentPass = canaryRetrieved || successfulRead("SKILL.md");
@@ -97,6 +102,16 @@ export function gradeMatrixCase(
       ...(passed ? { proof: canaryProof ? "canary" : "read" } : {}),
     });
   }
+  if (prepared.protectedRoot) {
+    const complete = prepared.coverageComplete === true;
+    checks.push({
+      id: "reference-coverage",
+      status: complete ? "pass" : "unverifiable",
+      detail: complete
+        ? "Installed reference coverage is complete."
+        : "Installed reference coverage is incomplete or unavailable.",
+    });
+  }
   for (const missing of prepared.testCase.missing ?? []) {
     const absolute = path.join(prepared.skillRoot, missing);
     const passed = run.reads.some(
@@ -113,8 +128,12 @@ export function gradeMatrixCase(
   }
   let unchanged = false;
   try {
-    unchanged =
-      matrixInstalledTreeHash(prepared.skillRoot) === matrixFixtureHash(files);
+    unchanged = prepared.protectedRoot
+      ? prepared.protectedFiles !== undefined &&
+        installedMatrixTreeHash(prepared.protectedRoot) ===
+          matrixFixtureHash(prepared.protectedFiles)
+      : matrixInstalledTreeHash(prepared.skillRoot) ===
+        matrixFixtureHash(files);
   } catch {
     // Links, missing files and non-regular files invalidate the protected tree.
   }
@@ -122,7 +141,9 @@ export function gradeMatrixCase(
     id: "integrity",
     status: unchanged ? "pass" : "fail",
     detail: unchanged
-      ? "Installed skill files are unchanged."
+      ? prepared.protectedRoot
+        ? "Installed skill bundle and shared files are unchanged."
+        : "Installed skill files are unchanged."
       : "Installed skill files were modified, removed, added or replaced.",
   });
   const operationalError =

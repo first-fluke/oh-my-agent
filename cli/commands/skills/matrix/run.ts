@@ -3,6 +3,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import pkg from "../../../package.json";
 import { promptConfirm } from "../eval.js";
+import {
+  type InstalledMatrixBundle,
+  installedMatrixSuiteHash,
+  loadInstalledMatrixBundle,
+  prepareInstalledMatrixCase,
+} from "./bundle.js";
 import { gradeMatrixCase } from "./grade.js";
 import { runMatrixInvocation } from "./runtime.js";
 import {
@@ -11,8 +17,10 @@ import {
   prepareMatrixCase,
 } from "./suite.js";
 import {
+  MATRIX_PROTOCOL_VERSION,
   MATRIX_VENDORS,
   type MatrixCell,
+  type MatrixDelivery,
   type MatrixInvocation,
   type MatrixRun,
   type MatrixVendor,
@@ -20,6 +28,9 @@ import {
 
 export interface MatrixOptions {
   suite?: string;
+  projectRoot?: string;
+  skills?: string;
+  delivery?: string;
   vendors?: string;
   cases?: string;
   live?: boolean;
@@ -36,6 +47,11 @@ export interface MatrixReport {
   status: "planned" | "completed" | "cancelled" | "interrupted";
   createdAt: string;
   omaVersion: string;
+  protocolVersion: typeof MATRIX_PROTOCOL_VERSION;
+  sourceKind: "synthetic" | "installed";
+  delivery: MatrixDelivery;
+  auditScope: "fixture-contract" | "read-reference";
+  bundle?: InstalledMatrixBundle["manifest"];
   host: { platform: string; arch: string; node: string };
   suiteHash: string;
   vendors: MatrixVendor[];
@@ -72,7 +88,29 @@ export async function runSkillsMatrix(
 ): Promise<MatrixReport> {
   if (options.suite !== undefined && !options.suite.trim())
     throw new Error("--suite must name a JSON suite file");
-  const suite = loadMatrixSuite(options.suite);
+  if (options.projectRoot !== undefined && !options.projectRoot.trim())
+    throw new Error("--project-root must name an installed project");
+  if (options.projectRoot !== undefined && options.suite !== undefined)
+    throw new Error("--project-root cannot be combined with --suite");
+  if ((options.projectRoot === undefined) !== (options.skills === undefined))
+    throw new Error(
+      "Use --project-root and --skills together for installed skill audits",
+    );
+  const delivery = options.delivery ?? "native";
+  if (delivery !== "native" && delivery !== "injected")
+    throw new Error("--delivery must be native or injected");
+  if (options.projectRoot === undefined && delivery !== "native")
+    throw new Error("--delivery injected requires --project-root and --skills");
+  const bundle =
+    options.projectRoot !== undefined
+      ? loadInstalledMatrixBundle(
+          options.projectRoot,
+          selections(options.skills ?? "", "--skills"),
+        )
+      : undefined;
+  const suite = bundle
+    ? { schemaVersion: 1 as const, cases: bundle.cases }
+    : loadMatrixSuite(options.suite);
   const selectedVendors = selections(
     options.vendors ?? "claude,codex",
     "--vendors",
@@ -120,12 +158,19 @@ export async function runSkillsMatrix(
     status: options.live ? "completed" : "planned",
     createdAt: new Date().toISOString(),
     omaVersion: pkg.version,
+    protocolVersion: MATRIX_PROTOCOL_VERSION,
+    sourceKind: bundle ? "installed" : "synthetic",
+    delivery,
+    auditScope: bundle ? "read-reference" : "fixture-contract",
+    ...(bundle ? { bundle: bundle.manifest } : {}),
     host: {
       platform: process.platform,
       arch: process.arch,
       node: process.versions.node,
     },
-    suiteHash: matrixSuiteHash(suite),
+    suiteHash: bundle
+      ? installedMatrixSuiteHash(bundle, delivery)
+      : matrixSuiteHash(suite),
     vendors,
     cases: cases.map(({ id, skill }) => ({ id, skill })),
     models: {
@@ -166,13 +211,21 @@ export async function runSkillsMatrix(
           mkdtempSync(join(tmpdir(), "oma-skill-matrix-")),
         );
         try {
-          const prepared = prepareMatrixCase(testCase, workspace, vendor);
+          const prepared = bundle
+            ? prepareInstalledMatrixCase(
+                bundle,
+                testCase,
+                workspace,
+                vendor,
+                delivery,
+              )
+            : prepareMatrixCase(testCase, workspace, vendor);
           let run: MatrixRun;
           try {
             run = await (dependencies.run ?? runMatrixInvocation)({
               vendor,
               workspace,
-              prompt: testCase.prompt,
+              prompt: prepared.prompt ?? testCase.prompt,
               timeoutMs: report.timeoutMs,
               model: report.models[vendor] ?? undefined,
               signal: controller.signal,
@@ -224,10 +277,23 @@ export function matrixReportFailed(report: MatrixReport): boolean {
 export function renderMatrixReport(report: MatrixReport): string {
   const lines = [
     `Skill compatibility matrix: ${report.status}`,
+    `Source: ${report.sourceKind}; delivery: ${report.delivery}; scope: ${report.auditScope}`,
     `Vendors: ${report.vendors.join(", ")}`,
     `Cases: ${report.cases.map((testCase) => testCase.id).join(", ")}`,
     `Native CLI runs: ${report.plannedCalls}; timeout: ${report.timeoutMs / 1000}s per run`,
   ];
+  if (report.bundle) {
+    lines.push(`Installed bundle: ${report.bundle.hash}`);
+    for (const skill of report.bundle.skills) {
+      if (skill.missingFiles.length || skill.excludedReferences.length)
+        lines.push(
+          `${skill.name}: incomplete reference coverage (${skill.missingFiles.length} missing, ${skill.excludedReferences.length} excluded)`,
+        );
+    }
+    lines.push(
+      "Read-access audit only; skill workflow behavior and the full Actor runtime are not evaluated.",
+    );
+  }
   if (report.mode === "plan") {
     lines.push(
       "Plan only; compatibility has not been measured. Add --live to run native CLIs.",

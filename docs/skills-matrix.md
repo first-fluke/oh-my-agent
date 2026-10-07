@@ -1,6 +1,6 @@
 # Native skill compatibility matrix
 
-`oma skills matrix` checks skill content retrieval, relative references, and final output contracts through the native Claude and Codex CLIs. It installs each case into a fresh temporary workspace instead of adding the skill instructions to the task prompt.
+`oma skills matrix` checks skill content retrieval, relative references, and final output contracts through the native Claude and Codex CLIs. Each case uses a fresh temporary workspace. The default diagnostics use native skill discovery; installed-skill audits also support the body injection format used by agent-valley.
 
 ## Plan and run
 
@@ -20,6 +20,9 @@ A live run exits nonzero if any selected cell is not a pass, execution is cancel
 | Option | Meaning |
 | --- | --- |
 | `--suite <path>` | Load a custom JSON suite instead of the built-in probes. |
+| `--project-root <path>` | Snapshot actual installed files under the project's `.agents/skills`. Use with `--skills`. |
+| `--skills <names>` | Comma-separated installed skill names; cannot be combined with `--suite`. |
+| `--delivery <mode>` | `native` (default) or `injected`; injection requires an installed-skill audit. |
 | `--vendors <ids>` | Comma-separated `claude,codex`; both are selected by default. |
 | `--cases <ids>` | Select comma-separated case IDs from the suite. |
 | `--live` | Execute native CLIs; otherwise validate and plan. |
@@ -38,7 +41,42 @@ A live run exits nonzero if any selected cell is not a pass, execution is cancel
 | `reference` | `oma-matrix-reference` | Read `references/answer.txt` relative to the skill and return its fresh value. |
 | `missing-resource` | `oma-matrix-missing-resource` | Attempt to read an intentionally absent reference, observe a not-found result, and return the required JSON. |
 
-These are diagnostic skills supplied by the matrix. Passing them does not certify the shipped OMA skills or every behavior of a vendor. Use a custom suite to test a specific skill and its contract.
+These are diagnostic skills supplied by the matrix. Passing them does not certify the shipped OMA skills or every behavior of a vendor. Use an installed audit to measure access to actual skill files, or a custom suite to test a specific fixture contract.
+
+## Audit installed skills
+
+```sh
+oma skills matrix --project-root . --skills oma-backend,oma-debug --delivery injected --json
+oma skills matrix --project-root . --skills oma-backend,oma-debug --delivery injected --live --yes --json --report installed-matrix.json
+```
+
+An installed audit snapshots actual skill files and shared resources without changing their bytes or inserting canaries. Relative reference paths remain intact in each temporary copy. The report identifies each selected skill's content hash, required files, missing files, and excluded references. Plans compute these hashes without starting a vendor process.
+
+Installed snapshots allow up to 32 skills, 2,048 UTF-8 text files, 128 KiB per file, and 8 MiB total. Links, binary files, credential material, and host control files are rejected. Shared execution protocol documents remain ordinary resources.
+
+The audit checks entry files and direct literal Markdown references. Missing references or references outside the supported skills boundary make coverage incomplete and prevent a passing cell. This is conservative: optional generated files mentioned literally, such as an unselected backend stack, can also leave coverage incomplete. Dynamic paths, conditional workflow behavior, and complete execution of a skill are outside this read-access contract. See the report's required-file list for the exact measured coverage.
+
+`--delivery injected` installs files under `.agents/skills` for both vendors and includes each selected `SKILL.md` body in the prompt with agent-valley's `## Skill` and `Source:` format. Both delivery modes require successful, matching native reads of the entry and required references. Injecting the body, reporting native activation, or returning the expected JSON alone does not prove those reads.
+
+The audit uses isolated CLI settings and restricted read tools or a read-only sandbox. Codex's sandbox does not prohibit every command. These checks measure file access under the declared delivery mode; they do not certify skill workflow correctness or reproduce every agent-valley execution setting.
+
+## Consume results in agent-valley
+
+Reports expose `protocolVersion`, `sourceKind`, `delivery`, and `auditScope`. Synthetic fixture reports have `sourceKind: "synthetic"` and `auditScope: "fixture-contract"`. Installed reports have `sourceKind: "installed"`, `auditScope: "read-reference"`, and a `bundle` manifest. The protocol for these fields is `oma-skill-matrix-v2`.
+
+agent-valley can show cached results in `av doctor` and optionally use installed read-audit evidence to filter work Actor candidates before its existing cost and success-rate ranking. Configure the local report in the target project's `av.yaml`:
+
+```yaml
+oma:
+  skill_compatibility:
+    mode: warn
+    report_path: installed-matrix.json
+    max_age_hours: 168
+```
+
+`warn` reports diagnostics without changing routing. `require` accepts only matching installed, injected, completed live results with complete reference coverage. AV recomputes current source hashes through an OMA plan and checks the protocol, OMA version, platform, architecture, CLI version, explicit observed model, and required case results. Missing, stale, or unobserved conditions remain unverified. Updating skill resources or execution conditions invalidates previous evidence.
+
+`av doctor` and work dispatch do not run live matrix calls. Generate reports separately and protect them as local operator-controlled evidence. Worktree copies and resumed missions are checked again. These reports provide read-access evidence; AV's task review and completion checks still establish whether the actual work succeeded.
 
 ## Read the evidence
 
