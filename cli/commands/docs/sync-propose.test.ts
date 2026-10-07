@@ -8,7 +8,7 @@
  *
  * Mock strategy:
  *   - vi.hoisted() to define mock factories before vi.mock() hoisting
- *   - vi.mock("node:child_process") to stub execSync (git diff)
+ *   - vi.mock("node:child_process") to stub execFileSync (git diff)
  *   - vi.mock("../../io/gitignore.js") to stub isPathGitIgnored
  *
  * Design: docs/plans/designs/008-oma-docs.md § Sync pipeline
@@ -20,14 +20,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Hoist mock factories — must be declared before any vi.mock() calls
 // ---------------------------------------------------------------------------
 
-const mockExecSync = vi.hoisted(() => vi.fn());
+const mockExecFileSync = vi.hoisted(() => vi.fn());
 const mockIsPathGitIgnored = vi.hoisted(() => vi.fn());
 
 vi.mock("node:child_process", async (importOriginal) => {
   const original = await importOriginal<typeof import("node:child_process")>();
   return {
     ...original,
-    execSync: mockExecSync,
+    execFileSync: mockExecFileSync,
   };
 });
 
@@ -81,10 +81,11 @@ const REPO_ROOT = "/fake/repo";
 // Default: git diff returns empty, no files reported as gitignored
 function setupDefaultGitMocks(changedFiles: string[] = []) {
   mockIsPathGitIgnored.mockReturnValue(false);
-  mockExecSync.mockImplementation((cmd: string) => {
+  mockExecFileSync.mockImplementation((bin: string, args: string[]) => {
+    const cmd = [bin, ...args].join(" ");
     // git diff --name-only <range>
     if (cmd.includes("git diff --name-only")) {
-      return changedFiles.join("\n");
+      return changedFiles.join("\0");
     }
     // git diff <range> -- <file> → empty diff
     if (cmd.includes("git diff") && cmd.includes(" -- ")) {
@@ -129,9 +130,10 @@ describe("proposeSyncPatches - --cached default + fallback", () => {
 
   it("uses --cached by default when no diffRange given", async () => {
     mockIsPathGitIgnored.mockReturnValue(false);
-    mockExecSync.mockImplementation((cmd: string) => {
+    mockExecFileSync.mockImplementation((bin: string, args: string[]) => {
+      const cmd = [bin, ...args].join(" ");
       if (cmd.includes("--cached") && cmd.includes("--name-only")) {
-        return "cli/commands/docs/extract.ts\n";
+        return "cli/commands/docs/extract.ts\0";
       }
       if (cmd.includes("git diff") && cmd.includes(" -- ")) return "";
       return "";
@@ -141,23 +143,25 @@ describe("proposeSyncPatches - --cached default + fallback", () => {
     const proposals = await proposeSyncPatches({ repoRoot: REPO_ROOT, index });
     expect(proposals).toHaveLength(1);
     // Verify --cached was invoked
-    const cachedCall = mockExecSync.mock.calls.find(
+    const cachedCall = mockExecFileSync.mock.calls.find(
       (call: unknown[]) =>
-        typeof call[0] === "string" &&
-        call[0].includes("--cached") &&
-        call[0].includes("--name-only"),
+        call[0] === "git" &&
+        Array.isArray(call[1]) &&
+        call[1].includes("--cached") &&
+        call[1].includes("--name-only"),
     );
     expect(cachedCall).toBeDefined();
   });
 
   it("falls back to HEAD~1..HEAD when --cached returns empty", async () => {
     mockIsPathGitIgnored.mockReturnValue(false);
-    mockExecSync.mockImplementation((cmd: string) => {
+    mockExecFileSync.mockImplementation((bin: string, args: string[]) => {
+      const cmd = [bin, ...args].join(" ");
       if (cmd.includes("--cached") && cmd.includes("--name-only")) {
         return ""; // empty staged
       }
       if (cmd.includes("HEAD~1..HEAD") && cmd.includes("--name-only")) {
-        return "cli/commands/docs/extract.ts\n";
+        return "cli/commands/docs/extract.ts\0";
       }
       if (cmd.includes("git diff") && cmd.includes(" -- ")) return "";
       return "";
@@ -166,11 +170,12 @@ describe("proposeSyncPatches - --cached default + fallback", () => {
     const index = makeIndex("docs/README.md", ["cli/commands/docs/extract.ts"]);
     const proposals = await proposeSyncPatches({ repoRoot: REPO_ROOT, index });
     expect(proposals).toHaveLength(1);
-    const fallbackCall = mockExecSync.mock.calls.find(
+    const fallbackCall = mockExecFileSync.mock.calls.find(
       (call: unknown[]) =>
-        typeof call[0] === "string" &&
-        call[0].includes("HEAD~1..HEAD") &&
-        call[0].includes("--name-only"),
+        call[0] === "git" &&
+        Array.isArray(call[1]) &&
+        call[1].includes("HEAD~1..HEAD") &&
+        call[1].includes("--name-only"),
     );
     expect(fallbackCall).toBeDefined();
   });
@@ -305,7 +310,7 @@ describe("proposeSyncPatches - secret redaction (file exclusion by pattern)", ()
       });
 
       // git diff should never be called for the secret file
-      const diffCallsForSecret = mockExecSync.mock.calls.filter(
+      const diffCallsForSecret = mockExecFileSync.mock.calls.filter(
         (call: unknown[]) =>
           typeof call[0] === "string" &&
           call[0].includes("git diff") &&
@@ -327,7 +332,7 @@ describe("getExcludedFiles - pattern-based exclusion", () => {
   });
 
   it("returns .env file as excluded", () => {
-    mockExecSync.mockImplementation(() => {
+    mockExecFileSync.mockImplementation(() => {
       throw new Error("not ignored");
     });
     const excluded = getExcludedFiles([".env", "src/auth.ts"], REPO_ROOT);
@@ -336,7 +341,7 @@ describe("getExcludedFiles - pattern-based exclusion", () => {
   });
 
   it("returns .env.production as excluded", () => {
-    mockExecSync.mockImplementation(() => {
+    mockExecFileSync.mockImplementation(() => {
       throw new Error("not ignored");
     });
     const excluded = getExcludedFiles(
@@ -348,7 +353,7 @@ describe("getExcludedFiles - pattern-based exclusion", () => {
   });
 
   it("returns *.pem files as excluded", () => {
-    mockExecSync.mockImplementation(() => {
+    mockExecFileSync.mockImplementation(() => {
       throw new Error("not ignored");
     });
     const excluded = getExcludedFiles(["private.pem", "cert.pem"], REPO_ROOT);
@@ -357,7 +362,7 @@ describe("getExcludedFiles - pattern-based exclusion", () => {
   });
 
   it("returns *.key files as excluded", () => {
-    mockExecSync.mockImplementation(() => {
+    mockExecFileSync.mockImplementation(() => {
       throw new Error("not ignored");
     });
     const excluded = getExcludedFiles(["secret.key", "api.key"], REPO_ROOT);
@@ -366,7 +371,7 @@ describe("getExcludedFiles - pattern-based exclusion", () => {
   });
 
   it("returns id_rsa as excluded", () => {
-    mockExecSync.mockImplementation(() => {
+    mockExecFileSync.mockImplementation(() => {
       throw new Error("not ignored");
     });
     const excluded = getExcludedFiles(["id_rsa"], REPO_ROOT);
@@ -374,7 +379,7 @@ describe("getExcludedFiles - pattern-based exclusion", () => {
   });
 
   it("returns id_rsa* variants as excluded", () => {
-    mockExecSync.mockImplementation(() => {
+    mockExecFileSync.mockImplementation(() => {
       throw new Error("not ignored");
     });
     const excluded = getExcludedFiles(
@@ -386,7 +391,7 @@ describe("getExcludedFiles - pattern-based exclusion", () => {
   });
 
   it("returns empty array for normal files", () => {
-    mockExecSync.mockImplementation(() => {
+    mockExecFileSync.mockImplementation(() => {
       throw new Error("not ignored");
     });
     const excluded = getExcludedFiles(

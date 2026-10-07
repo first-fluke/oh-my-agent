@@ -19,7 +19,7 @@
  * Design: docs/plans/designs/008-oma-docs.md § Sync pipeline
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { minimatch } from "minimatch";
 import { isPathGitIgnored } from "../../io/gitignore.js";
@@ -78,33 +78,37 @@ function isExcludedByPattern(filePath: string): boolean {
  * Default: --cached (staged files). If cached is empty, fallback to HEAD~1..HEAD.
  */
 function getChangedFiles(repoRoot: string, diffRange?: string): string[] {
+  const readDiff = (args: string[]): string[] =>
+    execFileSync("git", ["diff", "--name-only", "-z", ...args, "--"], {
+      cwd: repoRoot,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+    })
+      .split("\0")
+      .filter(Boolean);
+
   if (diffRange) {
+    if (
+      diffRange !== "--cached" &&
+      diffRange !== "--staged" &&
+      (diffRange.startsWith("-") || diffRange.includes("\0"))
+    ) {
+      throw new Error(
+        "Invalid diff range: provide a revision range, --cached, or --staged.",
+      );
+    }
     try {
-      const output = execSync(`git diff --name-only ${diffRange}`, {
-        cwd: repoRoot,
-        encoding: "utf-8",
-        stdio: ["pipe", "pipe", "ignore"],
+      return readDiff([diffRange]);
+    } catch (error) {
+      throw new Error(`git diff failed for ${JSON.stringify(diffRange)}`, {
+        cause: error,
       });
-      return output
-        .split("\n")
-        .map((f) => f.trim())
-        .filter(Boolean);
-    } catch {
-      return [];
     }
   }
 
   // Default: try --cached first
   try {
-    const cached = execSync("git diff --name-only --cached", {
-      cwd: repoRoot,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
-    });
-    const files = cached
-      .split("\n")
-      .map((f) => f.trim())
-      .filter(Boolean);
+    const files = readDiff(["--cached"]);
     if (files.length > 0) return files;
   } catch {
     // fall through
@@ -112,15 +116,7 @@ function getChangedFiles(repoRoot: string, diffRange?: string): string[] {
 
   // Fallback: HEAD~1..HEAD
   try {
-    const head = execSync("git diff --name-only HEAD~1..HEAD", {
-      cwd: repoRoot,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
-    });
-    return head
-      .split("\n")
-      .map((f) => f.trim())
-      .filter(Boolean);
+    return readDiff(["HEAD~1..HEAD"]);
   } catch {
     return [];
   }
