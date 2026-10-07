@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.8.0...cli-v15.9.0) (2026-10-07)
+
+
+### Features
+
+* **skills:** audit installed bundles for valley compatibility ([0243acd](https://github.com/first-fluke/oh-my-agent/commit/0243acdc2495c80e4b8d5fdc22ee63f6862cdc6a))
+
 ## [15.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.4...cli-v15.8.0) (2026-10-07)
 
 
