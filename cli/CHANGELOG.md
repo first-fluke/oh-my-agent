@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.4...cli-v15.8.0) (2026-10-07)
+
+
+### Features
+
+* **skills:** add native compatibility matrix ([63daf6d](https://github.com/first-fluke/oh-my-agent/commit/63daf6dd2917de568f4bb699e91af867ada5a859))
+
 ## [15.7.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.7.3...cli-v15.7.4) (2026-10-07)
 
 
