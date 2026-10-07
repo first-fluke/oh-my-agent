@@ -3,19 +3,9 @@
 // See cli/ARCHITECTURE.md.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import {
-  dirname,
-  extname,
-  join,
-  posix,
-  relative,
-  resolve,
-  sep,
-} from "node:path";
+import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import * as ts from "typescript/unstable/ast";
-import { createVirtualFileSystem } from "typescript/unstable/fs";
-import { API } from "typescript/unstable/sync";
+import { parse } from "@babel/parser";
 
 const CLI_DIR = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 
@@ -76,119 +66,74 @@ function sliceNameOf(commandsDir, absPath) {
 }
 
 function moduleSpecifierOf(node) {
-  if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
-    return node.moduleSpecifier;
-  }
-  if (
-    ts.isImportEqualsDeclaration(node) &&
-    ts.isExternalModuleReference(node.moduleReference)
-  ) {
-    return node.moduleReference.expression;
-  }
-  if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
-    return node.argument.literal;
-  }
-  if (
-    ts.isCallExpression(node) &&
-    (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
-      (ts.isIdentifier(node.expression) && node.expression.text === "require"))
-  ) {
-    return node.arguments[0];
+  switch (node.type) {
+    case "ImportDeclaration":
+    case "ExportNamedDeclaration":
+    case "ExportAllDeclaration":
+    case "ImportExpression":
+      return node.source;
+    case "TSImportEqualsDeclaration":
+      return node.moduleReference.type === "TSExternalModuleReference"
+        ? node.moduleReference.expression
+        : undefined;
+    case "TSImportType":
+      return node.argument;
+    case "CallExpression":
+      return node.callee.type === "Import" ||
+        (node.callee.type === "Identifier" && node.callee.name === "require")
+        ? node.arguments[0]
+        : undefined;
   }
   return undefined;
 }
 
-function isLiteralModuleSpecifier(node) {
-  return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node);
-}
-
-function collectImportsFromBatch(files) {
-  // The TypeScript virtual filesystem canonicalizes paths with `/` even on
-  // Windows. These are virtual paths only; source files keep their native paths.
-  const configPath = "/oma-boundary-check/tsconfig.json";
-  const sourceRoot = "/oma-boundary-check/files";
-  const virtualPaths = new Map(
-    files.map((file, index) => [
-      file,
-      posix.join(sourceRoot, `${index}${extname(file)}`),
-    ]),
-  );
-  const virtualFiles = Object.fromEntries(
-    files.map((file) => [virtualPaths.get(file), readFileSync(file, "utf8")]),
-  );
-  virtualFiles[configPath] = JSON.stringify({
-    compilerOptions: {
-      allowJs: true,
-      noEmit: true,
-      noLib: true,
-      noResolve: true,
-    },
-    files: [...virtualPaths.values()],
-  });
-
-  const api = new API({
-    cwd: process.cwd(),
-    fs: createVirtualFileSystem(virtualFiles),
-  });
-  try {
-    const snapshot = api.updateSnapshot({ openProjects: [configPath] });
-    try {
-      const project = snapshot.getProject(configPath);
-      if (!project) {
-        throw new Error(
-          `Could not open virtual boundary-check project at ${configPath}`,
-        );
-      }
-      const program = project.program;
-      const imports = new Map();
-      for (const file of files) {
-        const sourceFile = program.getSourceFile(virtualPaths.get(file));
-        if (!sourceFile) throw new Error(`Could not parse ${file}`);
-        const specifiers = [];
-        const visit = (node) => {
-          const specifier = moduleSpecifierOf(node);
-          if (specifier && isLiteralModuleSpecifier(specifier)) {
-            specifiers.push(specifier.text);
-          }
-          node.forEachChild(visit);
-        };
-        visit(sourceFile);
-        imports.set(file, specifiers);
-      }
-      return imports;
-    } finally {
-      snapshot.dispose();
-    }
-  } finally {
-    api.close();
+function literalModuleSpecifier(node) {
+  if (node?.type === "StringLiteral") return node.value;
+  if (node?.type === "TemplateLiteral" && node.expressions.length === 0) {
+    return node.quasis[0]?.value.cooked;
   }
+  return undefined;
 }
 
-function isTransientCompilerExit(error) {
-  return (
-    error instanceof Error &&
-    error.message.includes("Unexpected EOF while reading from child process")
-  );
-}
-
-export function collectImports(files, parseBatch = collectImportsFromBatch) {
+export function collectImports(files, parseSource = parse) {
   const imports = new Map();
-  // Bound TS 7 snapshots and retry a transient native-worker EOF. Other
-  // parser errors still fail immediately; no code is emitted.
-  for (let start = 0; start < files.length; start += 20) {
-    const batch = files.slice(start, start + 20);
-    let parsed;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        parsed = parseBatch(batch);
-        break;
-      } catch (error) {
-        if (!isTransientCompilerExit(error) || attempt === 2) throw error;
+  // Parse one file at a time in-process. No compiler worker, project graph,
+  // emitted code, or IPC lifetime is needed to inspect module specifiers.
+  for (const file of files) {
+    const extension = extname(file);
+    const plugins = [];
+    if (extension === ".ts" || extension === ".tsx") plugins.push("typescript");
+    if (extension === ".tsx" || extension === ".jsx") plugins.push("jsx");
+    let sourceFile;
+    try {
+      sourceFile = parseSource(readFileSync(file, "utf8"), {
+        sourceType: "unambiguous",
+        sourceFilename: file,
+        plugins,
+        createImportExpressions: true,
+        attachComment: false,
+      });
+    } catch (error) {
+      throw new Error(`Could not parse ${file}: ${error.message}`, {
+        cause: error,
+      });
+    }
+    const specifiers = [];
+    const visit = (node) => {
+      if (!node || typeof node !== "object" || typeof node.type !== "string")
+        return;
+      const specifier = literalModuleSpecifier(moduleSpecifierOf(node));
+      if (specifier !== undefined) specifiers.push(specifier);
+      for (const child of Object.values(node)) {
+        if (Array.isArray(child)) {
+          for (const element of child) visit(element);
+        } else {
+          visit(child);
+        }
       }
-    }
-    for (const [file, specifiers] of parsed) {
-      imports.set(file, specifiers);
-    }
+    };
+    visit(sourceFile);
+    imports.set(file, specifiers);
   }
   return imports;
 }

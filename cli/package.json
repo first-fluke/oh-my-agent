@@ -99,6 +99,7 @@
     "pptxgenjs": "^4.0.1"
   },
   "devDependencies": {
+    "@babel/parser": "7.29.3",
     "@biomejs/biome": "^2.5.6",
     "@types/better-sqlite3": "^7.6.13",
     "@types/mdast": "^4.0.4",
