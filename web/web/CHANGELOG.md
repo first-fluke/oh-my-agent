@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.3](https://github.com/first-fluke/oh-my-agent/compare/web-v7.1.2...web-v7.1.3) (2026-10-07)
+
+
+### Bug Fixes
+
+* **verify:** bind evidence to exact task and run receipts ([859c300](https://github.com/first-fluke/oh-my-agent/commit/859c300128372bc5db271827ef7de8302413de10))
+
 ## [7.1.2](https://github.com/first-fluke/oh-my-agent/compare/web-v7.1.1...web-v7.1.2) (2026-10-05)
 
 
