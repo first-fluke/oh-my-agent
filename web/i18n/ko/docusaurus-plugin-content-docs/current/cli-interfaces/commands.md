@@ -969,7 +969,7 @@ oma bridge http://localhost:12341/mcp
 서브에이전트 출력을 예상 기준에 따라 검증합니다.
 
 ```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
@@ -984,16 +984,22 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | 플래그 | 설명 | 기본값 |
 |:-------|:-----|:-------|
 | `-w, --workspace <path>` | 검증할 워크스페이스 경로 | 현재 디렉토리 |
+| `--session-id <id>` | 세션의 계획과 결과 보고서 선택 | |
+| `--task-id <id>` | 태스크 하나의 범위와 보고서 선택. 세션 또는 실행 ID 필요 | |
+| `--run-id <id>` | 해당 실행의 보고서 선택. 로컬 실행 기록에서 세션·태스크 ID 확인 | |
 | `--json` | JSON으로 출력 | |
 | `--output <format>` | 출력 형식 (`text` 또는 `json`) | |
 
-**수행 내용:** 지정된 에이전트 타입의 검증 스크립트를 실행하여 빌드 성공, 테스트 결과, 범위 준수를 확인합니다.
+**수행 내용:** 지정된 에이전트 타입에 설정된 테스트, 정적 검사, 범위 검사를 실행합니다. 태스크나 실행을 선택해도 코드 검사는 워크스페이스를 대상으로 수행합니다.
+
+여러 세션 계획이나 실행 기록이 일치하면 파일 이름으로 하나를 고르지 않고 실패하여 명시적인 ID를 요구합니다. 새 실행에 보고서가 없더라도 이전 실행의 보고서를 재사용하지 않습니다. `--run-id`는 실행 기록의 에이전트와 워크스페이스가 일치하는지 확인한 뒤 세션·태스크 ID를 사용합니다. 로컬 실행 기록이 없으면 세 ID를 모두 지정해야 합니다. 태스크·실행 구분이 없는 기존 TDD 보고서는 기존 `.agents/plan.json` 계획에서만 허용합니다.
 
 `verify triggers`는 라벨이 지정된 프롬프트 corpus를 기준으로 키워드 감지기 정확도를 측정합니다. 백분율 임계값은 게이트입니다. 등록된 경로는 `verify agent`입니다. 예전 최상위 표기는 호환 도움말에 여전히 나타날 수 있습니다.
 
 **공통 검사 (모든 에이전트 타입):**
 - **범위 검사**: `.agents/results/plan-{sessionId}.json`의 태스크 범위를 읽고, `git diff`로 변경된 파일을 정의된 범위 패턴과 비교합니다. 에이전트에 할당된 범위 외의 파일이 수정되면 실패합니다.
-- **Charter Preflight**: `result-{agent}.md`에 올바르게 채워진 `CHARTER_CHECK:` 블록이 있는지, 미입력 플레이스홀더가 없는지 확인합니다.
+- **Charter Preflight**: 선택한 결과 보고서에 올바르게 채워진 `CHARTER_CHECK:` 블록이 있는지, 미입력 플레이스홀더가 없는지 확인합니다.
+- **TDD 증거**: 해당하는 각 태스크의 보고서에 정확한 태스크 ID와 비어 있지 않은 `red:`, `green:` 항목이 모두 있어야 합니다. 다른 세션이나 재시도 보고서로 선택한 보고서를 대신할 수 없습니다.
 - **하드코딩된 시크릿**: `.py`, `.ts`, `.tsx`, `.js`, `.dart` 파일에서 `password = "..."`, `api_key = "..."` 같은 패턴을 스캔합니다 (테스트/예제 파일은 제외).
 - **TODO/FIXME 주석**: `TODO`, `FIXME`, `HACK`, `XXX` 주석 수를 집계합니다 (발견 시 경고).
 
@@ -1021,6 +1027,9 @@ oma verify agent frontend -w ./apps/web
 
 # CI용 JSON 출력
 oma verify agent backend --json
+
+# Verify one run's scope and evidence
+oma verify agent backend --run-id run-123 --json
 ```
 
 ### hook

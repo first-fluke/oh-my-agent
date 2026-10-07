@@ -32,14 +32,26 @@ import {
 function mockWorkspace(planJson: string, resultMd: string | null): void {
   mockFsFunctions.existsSync.mockReturnValue(true);
   mockFsFunctions.readdirSync.mockImplementation((dir: string) =>
-    String(dir).includes("memories")
-      ? resultMd !== null
-        ? ["result-backend.md"]
-        : []
-      : ["plan-20260806-120000.json"],
+    String(dir).includes("agent-runs")
+      ? ["run.json"]
+      : String(dir).includes("memories")
+        ? resultMd !== null
+          ? ["result-backend-task-1-run-20260806-120000.md"]
+          : []
+        : ["plan-20260806-120000.json"],
   );
   mockFsFunctions.readFileSync.mockImplementation((file: string) =>
-    String(file).endsWith(".json") ? planJson : (resultMd ?? ""),
+    String(file).endsWith("/run.json")
+      ? JSON.stringify({
+          runId: "run",
+          taskId: "task-1",
+          sessionId: "20260806-120000",
+          agentId: "backend",
+          workspace: "/workspace",
+        })
+      : String(file).endsWith(".json")
+        ? planJson
+        : (resultMd ?? ""),
   );
 }
 

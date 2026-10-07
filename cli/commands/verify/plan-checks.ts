@@ -1,16 +1,20 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import {
   AGENTS_DIR,
   AGENTS_RESULTS_DIR,
   agentsPathFromRoot,
 } from "../../constants/paths.js";
-import { getCoordinationStoreDirs } from "../../io/memory.js";
 import { TaskContractSchema } from "../../state/task-contract.js";
 import type { VerifyCheck } from "../../types/index.js";
 import { checkClosure } from "../../utils/skill-outputs.js";
 import type { AgentType } from "./agent-types.js";
 import { createCheck, runCommand } from "./check-utils.js";
+import {
+  findResultFile,
+  resolveVerifySelection,
+  type VerifySelection,
+} from "./run-selection.js";
 
 export const TEST_APPROACHES = ["tdd", "test_after", "not_applicable"] as const;
 export type TestApproach = (typeof TEST_APPROACHES)[number];
@@ -27,35 +31,23 @@ export interface PlanTask {
   alternative_verification?: string;
 }
 
-function findResultFile(workspace: string, agentType: string): string | null {
-  const pattern = new RegExp(`^result-${agentType}(?:-[\\w-]+)?\\.md$`);
-  for (const coordinationDir of getCoordinationStoreDirs(workspace)) {
-    if (!existsSync(coordinationDir)) continue;
-
-    const matches = readdirSync(coordinationDir)
-      .filter((f) => pattern.test(f))
-      .sort()
-      .reverse();
-
-    if (matches.length > 0 && matches[0]) {
-      return join(coordinationDir, matches[0]);
-    }
-  }
-  return null;
-}
-
-export function findLatestPlan(workspace: string): string | null {
+export function findLatestPlan(
+  workspace: string,
+  selection: VerifySelection = {},
+): string | null {
+  workspace = selection.artifactRoot ?? workspace;
   const resultsDir = agentsPathFromRoot(workspace, AGENTS_RESULTS_DIR);
+  if (selection.sessionId) {
+    const file = join(resultsDir, `plan-${selection.sessionId}.json`);
+    return existsSync(file) ? file : null;
+  }
   if (existsSync(resultsDir)) {
-    try {
-      const planFiles = readdirSync(resultsDir)
-        .filter((f) => f.startsWith("plan-") && f.endsWith(".json"))
-        .sort()
-        .reverse();
-      if (planFiles.length > 0 && planFiles[0]) {
-        return join(resultsDir, planFiles[0]);
-      }
-    } catch {}
+    const planFiles = readdirSync(resultsDir).filter(
+      (f) => f.startsWith("plan-") && f.endsWith(".json"),
+    );
+    if (planFiles.length > 1)
+      throw new Error("Multiple plans found; supply --session-id or --run-id");
+    if (planFiles[0]) return join(resultsDir, planFiles[0]);
   }
   const legacyPath = join(
     agentsPathFromRoot(workspace, AGENTS_DIR),
@@ -67,19 +59,29 @@ export function findLatestPlan(workspace: string): string | null {
 export function checkScopeViolation(
   workspace: string,
   agentType: AgentType,
+  selection: VerifySelection = {},
 ): VerifyCheck {
-  const planPath = findLatestPlan(workspace);
+  let planPath: string | null;
+  try {
+    planPath = findLatestPlan(workspace, selection);
+  } catch (error) {
+    return createCheck("Scope Check", "fail", (error as Error).message);
+  }
   if (!planPath)
     return createCheck("Scope Check", "skip", "No plan file found");
 
-  let plan: { tasks?: { agent?: string; scope?: string[] }[] };
+  let plan: { tasks?: { id?: string; agent?: string; scope?: string[] }[] };
   try {
     plan = JSON.parse(readFileSync(planPath, "utf-8"));
   } catch {
     return createCheck("Scope Check", "skip", "Invalid plan file");
   }
 
-  const tasks = plan.tasks?.filter((t) => t.agent?.toLowerCase() === agentType);
+  const tasks = plan.tasks?.filter(
+    (t) =>
+      t.agent?.toLowerCase() === agentType &&
+      (!selection.taskId || t.id === selection.taskId),
+  );
   if (!tasks || tasks.length === 0) {
     return createCheck("Scope Check", "skip", "No tasks for this agent");
   }
@@ -121,8 +123,23 @@ export function checkScopeViolation(
 export function checkCharterPreflight(
   workspace: string,
   agentType: AgentType,
+  selection: VerifySelection = {},
 ): VerifyCheck {
-  const resultFile = findResultFile(workspace, agentType);
+  let resultFile: string | null;
+  try {
+    resultFile = findResultFile(
+      workspace,
+      agentType,
+      selection,
+      !selection.sessionId && !selection.runId,
+    );
+  } catch {
+    return createCheck(
+      "Charter Preflight",
+      "skip",
+      "Select a task/run for per-run preflight",
+    );
+  }
   if (!resultFile) {
     return createCheck("Charter Preflight", "skip", "Result file not found");
   }
@@ -183,8 +200,16 @@ export function validateTestApproach(tasks: PlanTask[]): string[] {
   return errors;
 }
 
-export function checkPmPlan(workspace: string): VerifyCheck {
-  const planPath = findLatestPlan(workspace);
+export function checkPmPlan(
+  workspace: string,
+  selection: VerifySelection = {},
+): VerifyCheck {
+  let planPath: string | null;
+  try {
+    planPath = findLatestPlan(workspace, selection);
+  } catch (error) {
+    return createCheck("PM Plan", "fail", (error as Error).message);
+  }
   if (!planPath) return createCheck("PM Plan", "warn", "No plan file found");
   let plan: { tasks?: PlanTask[] };
   try {
@@ -220,21 +245,48 @@ export function checkPmPlan(workspace: string): VerifyCheck {
 export function checkTddEvidence(
   workspace: string,
   agentType: string,
+  identity: VerifySelection = {},
 ): VerifyCheck {
-  const planPath = findLatestPlan(workspace);
+  let selection: VerifySelection;
+  let planPath: string | null;
+  try {
+    selection = resolveVerifySelection(workspace, agentType, identity);
+    if (selection.taskId && !selection.sessionId)
+      throw new Error("--task-id requires --session-id or --run-id");
+    planPath = findLatestPlan(workspace, selection);
+  } catch (error) {
+    return createCheck("TDD Evidence", "fail", (error as Error).message);
+  }
   if (!planPath)
-    return createCheck("TDD Evidence", "skip", "No plan file found");
+    return createCheck(
+      "TDD Evidence",
+      selection.sessionId ? "fail" : "skip",
+      "No plan file found",
+    );
 
   let plan: { tasks?: PlanTask[] };
   try {
     plan = JSON.parse(readFileSync(planPath, "utf-8"));
   } catch {
-    return createCheck("TDD Evidence", "skip", "Invalid plan file");
+    return createCheck("TDD Evidence", "fail", "Invalid plan file");
   }
 
+  if (
+    selection.taskId &&
+    !(plan.tasks ?? []).some(
+      (task) =>
+        task.id === selection.taskId && task.agent?.toLowerCase() === agentType,
+    )
+  )
+    return createCheck(
+      "TDD Evidence",
+      "fail",
+      `No ${agentType} task ${selection.taskId} in the selected plan`,
+    );
   const tddTasks = (plan.tasks ?? []).filter(
     (t) =>
       t.agent?.toLowerCase() === agentType &&
+      (!selection.taskId || t.id === selection.taskId) &&
       t.test_approach === "tdd" &&
       t.tdd_evidence_required !== false,
   );
@@ -242,46 +294,65 @@ export function checkTddEvidence(
     return createCheck("TDD Evidence", "skip", "No tdd tasks for this agent");
   }
 
-  const resultFile = findResultFile(workspace, agentType);
-  if (!resultFile) {
-    return createCheck(
-      "TDD Evidence",
-      "fail",
-      `No result file for ${tddTasks.length} tdd task(s)`,
+  const sessionId =
+    selection.sessionId ??
+    (basename(planPath).startsWith("plan-")
+      ? basename(planPath, ".json").slice(5)
+      : undefined);
+  for (const task of tddTasks) {
+    let resultFile: string | null;
+    try {
+      resultFile = findResultFile(
+        workspace,
+        agentType,
+        { ...selection, sessionId, taskId: task.id },
+        basename(planPath) === "plan.json" &&
+          !identity.sessionId &&
+          !identity.runId,
+      );
+    } catch (error) {
+      return createCheck("TDD Evidence", "fail", (error as Error).message);
+    }
+    if (!resultFile)
+      return createCheck(
+        "TDD Evidence",
+        "fail",
+        `No result file for ${task.id ?? "tdd task"}`,
+      );
+    const content = readFileSync(resultFile, "utf-8");
+    const markerIndex = content.indexOf("TDD_EVIDENCE:");
+    if (markerIndex === -1)
+      return createCheck(
+        "TDD Evidence",
+        "fail",
+        `TDD_EVIDENCE block missing for ${task.id}`,
+      );
+    const entries = content
+      .slice(markerIndex)
+      .split(/(?=^[ \t]*-[ \t]*task[ \t]*[:=])/m);
+    const evidence = entries.find((entry) => {
+      const id = entry.match(
+        /^[ \t]*-[ \t]*task[ \t]*[:=][ \t]*["']?([^\s"']+)["']?[ \t]*\r?$/m,
+      )?.[1];
+      return id === task.id;
+    });
+    if (!evidence)
+      return createCheck("TDD Evidence", "fail", `No evidence for: ${task.id}`);
+    const entryLines = evidence.trimStart().split(/\r?\n/).slice(1);
+    const boundary = entryLines.findIndex(
+      (line) => line.trim() && !/^[ \t]+/.test(line),
     );
-  }
-
-  const content = readFileSync(resultFile, "utf-8");
-  const markerIndex = content.indexOf("TDD_EVIDENCE:");
-  if (markerIndex === -1) {
-    return createCheck(
-      "TDD Evidence",
-      "fail",
-      `TDD_EVIDENCE block missing for ${tddTasks.length} tdd task(s)`,
-    );
-  }
-
-  const evidence = content.slice(markerIndex);
-  const missingIds = tddTasks
-    .map((t) => t.id)
-    .filter((id): id is string => Boolean(id))
-    .filter((id) => !evidence.includes(id));
-  if (missingIds.length > 0) {
-    return createCheck(
-      "TDD Evidence",
-      "fail",
-      `No evidence for: ${missingIds.join(", ")}`,
-    );
-  }
-
-  const hasRed = /\bred\b\s*[:=]/i.test(evidence);
-  const hasGreen = /\bgreen\b\s*[:=]/i.test(evidence);
-  if (!hasRed || !hasGreen) {
-    return createCheck(
-      "TDD Evidence",
-      "fail",
-      `Evidence incomplete: missing ${[!hasRed && "RED", !hasGreen && "GREEN"].filter(Boolean).join(" and ")} entry`,
-    );
+    const fields = (
+      boundary === -1 ? entryLines : entryLines.slice(0, boundary)
+    ).join("\n");
+    const hasRed = /^[ \t]+red[ \t]*[:=][ \t]*\S/im.test(fields);
+    const hasGreen = /^[ \t]+green[ \t]*[:=][ \t]*\S/im.test(fields);
+    if (!hasRed || !hasGreen)
+      return createCheck(
+        "TDD Evidence",
+        "fail",
+        `Evidence incomplete for ${task.id}: missing ${[!hasRed && "RED", !hasGreen && "GREEN"].filter(Boolean).join(" and ")} entry`,
+      );
   }
 
   return createCheck(

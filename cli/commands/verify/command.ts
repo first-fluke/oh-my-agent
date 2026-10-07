@@ -6,6 +6,7 @@ import {
   runAction,
 } from "../../utils/cli-framework.js";
 import { collectVerifyReport, isValidAgent, VALID_AGENTS } from "./report.js";
+import type { VerifySelection } from "./run-selection.js";
 import {
   DEFAULT_MAX_FALSE_FIRE_PCT,
   DEFAULT_MAX_MISSED_FIRE_PCT,
@@ -18,6 +19,7 @@ export async function verify(
   agentType: string,
   workspace: string,
   jsonMode = false,
+  selection: VerifySelection = {},
 ): Promise<void> {
   const normalized = agentType.toLowerCase();
   if (!isValidAgent(normalized)) {
@@ -35,7 +37,7 @@ export async function verify(
     process.exit(2);
   }
 
-  const report = collectVerifyReport(normalized, resolvedWorkspace);
+  const report = collectVerifyReport(normalized, resolvedWorkspace, selection);
 
   if (jsonMode) {
     console.log(JSON.stringify(report, null, 2));
@@ -99,11 +101,27 @@ export function registerVerify(program: Command): void {
   addOutputOptions(
     verifyCmd
       .command("agent <agent-type>", { isDefault: true, hidden: true })
-      .option("-w, --workspace <path>", "Workspace path", process.cwd()),
+      .option("-w, --workspace <path>", "Workspace path", process.cwd())
+      .option(
+        "--session-id <id>",
+        "Verify the specified session plan and reports",
+      )
+      .option(
+        "--task-id <id>",
+        "Select one task's scope and report in the session",
+      )
+      .option(
+        "--run-id <id>",
+        "Verify one exact run; infer session/task from its receipt",
+      ),
   ).action(
     runAction(
       async (agentType, options) => {
-        await verify(agentType, options.workspace, resolveJsonMode(options));
+        await verify(agentType, options.workspace, resolveJsonMode(options), {
+          sessionId: options.sessionId,
+          taskId: options.taskId,
+          runId: options.runId,
+        });
       },
       { supportsJsonOutput: true },
     ),

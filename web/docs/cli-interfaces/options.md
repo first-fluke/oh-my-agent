@@ -365,13 +365,16 @@ oma memory init [--json] [--output <format>] [--force]
 ### verify
 
 ```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
 | Flag | Short | Description | Default |
 |:-----|:------|:-----------|:--------|
 | `--workspace` | `-w` | Path to the workspace directory to verify. | Current working directory |
+| `--session-id <id>` | | Select the session plan and reports. Required when multiple plans exist unless a run receipt identifies the session. | |
+| `--task-id <id>` | | Select one task's scope and report. Requires `--session-id` or `--run-id`. | |
+| `--run-id <id>` | | Select the exact run report. Infer session/task from the local receipt; if absent, supply both IDs explicitly. | |
 
 **Agent types:** `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 
@@ -500,7 +503,7 @@ The following matrix is generated from the checked-in public command registry. I
 | `cleanup` | `--dry-run, -y, --yes, --json, --output <format>` | Clean up orphaned subagent processes and temp files |
 | `bridge` | `--context <name>` | Proxy MCP stdio to a shared per-project Serena server (started on demand) |
 | `verify` | `—` | Verify subagent output (backend/frontend/mobile/qa/debug/pm), or measure keyword-detector trigger accuracy |
-| `verify agent` | `-w, --workspace <path>, --json, --output <format>` |  |
+| `verify agent` | `-w, --workspace <path>, --session-id <id>, --task-id <id>, --run-id <id>, --json, --output <format>` |  |
 | `verify triggers` | `--corpus <path>, --max-false-fire <pct>, --max-missed-fire <pct>, --json, --output <format>` | Measure keyword-detector trigger accuracy against a labeled prompt corpus |
 | `vault` | `—` | Manage API keys + secrets in the OS keychain (macOS Keychain / Linux Secret Service / Windows Credential Manager) |
 | `vault store` | `--value <value>` | Store a secret under <name> (interactive password prompt) |

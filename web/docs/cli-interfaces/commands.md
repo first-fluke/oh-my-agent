@@ -1012,7 +1012,7 @@ oma bridge http://localhost:12341/mcp
 Verify subagent output against expected criteria.
 
 ```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
@@ -1027,16 +1027,22 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | Flag | Description | Default |
 |:-----|:-----------|:--------|
 | `-w, --workspace <path>` | Workspace path to verify | Current directory |
+| `--session-id <id>` | Select the session plan and reports | |
+| `--task-id <id>` | Select one task's scope and report; requires a session or run ID | |
+| `--run-id <id>` | Select the exact run report; infer session/task from its local receipt | |
 | `--json` | Output as JSON | |
 | `--output <format>` | Output format (`text` or `json`) | |
 
-**What it does:** Runs the verification script for the specified agent type, checking build success, test results, and scope compliance.
+**What it does:** Runs the configured checks for the specified agent type, including tests, static inspections, and scope compliance. Workspace code checks still inspect the workspace when a task or run is selected.
+
+When several session plans or run receipts match, verification fails and asks for an explicit identity instead of selecting a file by name. A new run without a report cannot reuse an earlier run's report. `--run-id` checks the receipt's agent and workspace before using its session/task. Without a local receipt, supply all three IDs. Legacy unscoped TDD reports are accepted only with the legacy `.agents/plan.json` plan.
 
 `verify triggers` measures keyword-detector accuracy against a labeled prompt corpus. The percentage thresholds are gates. The registered path is `verify agent`; the old top-level spelling may still appear in compatibility help.
 
 **Common checks (all agent types):**
 - **Scope Check**: Reads `.agents/results/plan-{sessionId}.json` task scopes. Compares `git diff` changed files against defined scope patterns. Fails if files are modified outside the agent's assigned scope.
-- **Charter Preflight**: Verifies `result-{agent}.md` contains a properly filled `CHARTER_CHECK:` block with no unfilled placeholders.
+- **Charter Preflight**: Verifies the selected result report contains a properly filled `CHARTER_CHECK:` block with no unfilled placeholders.
+- **TDD Evidence**: Requires each applicable task's selected report to contain its exact task ID and its own nonempty `red:` and `green:` entries. Reports from another session or retry cannot replace the selected report.
 - **Hardcoded Secrets**: Scans `.py`, `.ts`, `.tsx`, `.js`, `.dart` files for patterns like `password = "..."`, `api_key = "..."` (excludes test/example files).
 - **TODO/FIXME Comments**: Counts `TODO`, `FIXME`, `HACK`, `XXX` comments (warns if any found).
 
@@ -1064,6 +1070,9 @@ oma verify agent frontend -w ./apps/web
 
 # JSON output for CI
 oma verify agent backend --json
+
+# Verify one run's scope and evidence
+oma verify agent backend --run-id run-123 --json
 ```
 
 ### hook

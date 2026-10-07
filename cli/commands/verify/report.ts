@@ -22,6 +22,10 @@ import {
   checkTddEvidence,
 } from "./plan-checks.js";
 import {
+  resolveVerifySelection,
+  type VerifySelection,
+} from "./run-selection.js";
+import {
   checkBackendRawSql,
   checkBackendSyntax,
   checkBackendTests,
@@ -42,6 +46,7 @@ export { hasBinary, runManifestCmd } from "./stack-checks.js";
 function runAgentChecks(
   agentType: AgentType,
   workspace: string,
+  selection: VerifySelection = {},
 ): VerifyCheck[] {
   const checks: VerifyCheck[] = [];
   switch (agentType) {
@@ -96,7 +101,7 @@ function runAgentChecks(
       }
       break;
     case "pm":
-      checks.push(checkPmPlan(workspace));
+      checks.push(checkPmPlan(workspace, selection));
       break;
   }
   return checks;
@@ -105,15 +110,32 @@ function runAgentChecks(
 export function collectVerifyReport(
   agentType: AgentType,
   workspace: string,
+  identity: VerifySelection = {},
 ): VerifyResult {
   const checks: VerifyCheck[] = [];
-  checks.push(checkScopeViolation(workspace, agentType));
-  checks.push(checkCharterPreflight(workspace, agentType));
+  let selection: VerifySelection;
+  try {
+    selection = resolveVerifySelection(workspace, agentType, identity);
+    if (selection.taskId && !selection.sessionId)
+      throw new Error("--task-id requires --session-id or --run-id");
+  } catch (error) {
+    return {
+      ok: false,
+      agent: agentType,
+      workspace,
+      checks: [
+        createCheck("Verification Identity", "fail", (error as Error).message),
+      ],
+      summary: { passed: 0, failed: 1, warned: 0 },
+    };
+  }
+  checks.push(checkScopeViolation(workspace, agentType, selection));
+  checks.push(checkCharterPreflight(workspace, agentType, selection));
   checks.push(checkHardcodedSecrets(workspace));
   checks.push(checkTodoComments(workspace));
   checks.push(checkDeclaredOutputs(workspace, agentType));
-  checks.push(checkTddEvidence(workspace, agentType));
-  checks.push(...runAgentChecks(agentType, workspace));
+  checks.push(checkTddEvidence(workspace, agentType, selection));
+  checks.push(...runAgentChecks(agentType, workspace, selection));
 
   const passed = checks.filter((c) => c.status === "pass").length;
   const failed = checks.filter((c) => c.status === "fail").length;

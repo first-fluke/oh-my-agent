@@ -361,13 +361,16 @@ oma memory init [--json] [--output <format>] [--force]
 ### verify
 
 ```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
 | 플래그 | 축약 | 설명 | 기본값 |
 |:-------|:-----|:-----|:-------|
 | `--workspace` | `-w` | 검증할 워크스페이스 디렉토리 경로. | 현재 작업 디렉토리 |
+| `--session-id <id>` | | 세션의 계획과 보고서를 선택합니다. 여러 계획이 있으면 실행 기록에서 세션을 확인할 수 있거나 이 옵션을 지정해야 합니다. | |
+| `--task-id <id>` | | 태스크 하나의 범위와 보고서를 선택합니다. `--session-id` 또는 `--run-id`가 필요합니다. | |
+| `--run-id <id>` | | 해당 실행의 보고서를 선택합니다. 로컬 실행 기록에서 세션·태스크 ID를 확인하며, 기록이 없으면 두 ID를 직접 지정해야 합니다. | |
 
 **에이전트 타입:** `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 
@@ -499,7 +502,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `cleanup` | `--dry-run, -y, --yes, --json, --output <format>` | 고아 서브에이전트 프로세스와 임시 파일을 정리합니다. |
 | `bridge` | `--context <name>` | 공유 프로젝트 Serena 서버로 MCP stdio를 중계합니다. |
 | `verify` | `없음` | 서브에이전트 결과 또는 키워드 트리거 정확도를 검증합니다. |
-| `verify agent` | `-w, --workspace <path>, --json, --output <format>` | 에이전트 출력물을 검증합니다. |
+| `verify agent` | `-w, --workspace <path>, --session-id <id>, --task-id <id>, --run-id <id>, --json, --output <format>` | 에이전트 출력물을 검증합니다. |
 | `verify triggers` | `--corpus <path>, --max-false-fire <pct>, --max-missed-fire <pct>, --json, --output <format>` | 라벨이 지정된 프롬프트 corpus에서 키워드 트리거 정확도를 측정합니다. |
 | `vault` | `없음` | 운영체제 키체인(macOS Keychain / Linux Secret Service / Windows Credential Manager)에서 API 키와 시크릿을 관리합니다. |
 | `vault store` | `--value <value>` | <name> 아래에 시크릿을 저장합니다(대화형 비밀번호 프롬프트). |
