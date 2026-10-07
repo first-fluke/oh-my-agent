@@ -32,7 +32,7 @@ export function installPiExtension(sourceDir: string, targetDir: string): void {
   const extDir = join(targetDir, PI_EXTENSION_DIR);
 
   // 1. Core scripts (also clears stale files in extDir first).
-  copyHookScripts(sourceDir, extDir);
+  copyHookScripts(sourceDir, extDir, undefined, { ownedNamespace: true });
 
   // 2. The bridge entry point.
   const shimSrc = join(

@@ -47,6 +47,12 @@ vi.mock("../../utils/safe-write.js", async () => {
 
 const mockSourceDir = "/tmp/source";
 const mockTargetDir = "/tmp/target";
+const coreEntries = () =>
+  ["hud.ts", "filter-test-output.sh"].map((name) => ({
+    name,
+    isFile: () => true,
+    isDirectory: () => false,
+  }));
 
 describe("installHooksFromVariant", () => {
   beforeEach(() => {
@@ -69,9 +75,13 @@ describe("installHooksFromVariant", () => {
     (
       childProcess.execFileSync as unknown as ReturnType<typeof vi.fn>
     ).mockReturnValue("/opt/homebrew/bin/bun\n");
-    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([]);
+    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => (n(p).endsWith("hooks/core") ? coreEntries() : []),
+    );
     (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      () => {
+      (p: string) => {
+        if (n(p).includes("hooks/core/"))
+          return { isFile: () => true, isDirectory: () => false };
         throw new Error("ENOENT");
       },
     );
@@ -112,12 +122,12 @@ describe("installHooksFromVariant", () => {
 
     expect(fs.cpSync).toHaveBeenCalledWith(
       join(mockSourceDir, ".agents", "hooks", "core", "hud.ts"),
-      join(mockTargetDir, ".claude", "hooks", "hud.ts"),
+      join(mockTargetDir, ".claude", "hooks", "oma", "hud.ts"),
       { force: true, dereference: true },
     );
     expect(fs.cpSync).toHaveBeenCalledWith(
       join(mockSourceDir, ".agents", "hooks", "core", "filter-test-output.sh"),
-      join(mockTargetDir, ".claude", "hooks", "filter-test-output.sh"),
+      join(mockTargetDir, ".claude", "hooks", "oma", "filter-test-output.sh"),
       { force: true, dereference: true },
     );
 
@@ -555,7 +565,7 @@ describe("installHooksFromVariant", () => {
     expect(beforeSubmitCmd).toContain("--event 'beforeSubmitPrompt'");
   });
 
-  it("should clear existing files before copying hooks to prevent EEXIST", () => {
+  it("preserves shared hook files while copying managed scripts into the namespace", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({
         vendor: "claude",
@@ -576,6 +586,7 @@ describe("installHooksFromVariant", () => {
     // Simulate existing files/symlinks in destination hooks directory
     (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string, opts?: { withFileTypes?: boolean }) => {
+        if (n(p).endsWith("hooks/core")) return coreEntries();
         if (
           typeof p === "string" &&
           n(p).includes(".claude/hooks") &&
@@ -597,6 +608,8 @@ describe("installHooksFromVariant", () => {
     // Simulate existing file/symlink at destination (triggers ENOENT without fix)
     (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
+        if (n(p).includes("hooks/core/"))
+          return { isFile: () => true, isDirectory: () => false };
         if (
           typeof p === "string" &&
           (n(p).endsWith("keyword-detector.ts") || n(p).endsWith("hud.ts")) &&
@@ -610,23 +623,22 @@ describe("installHooksFromVariant", () => {
 
     installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude"]);
 
-    // Should have called unlinkSync on existing files before cpSync — this
-    // also sweeps stale handler copies left by older full-copy installs.
+    // Shared files are retained; new registrations use the OMA namespace.
     const unlinkCalls = (
       fs.unlinkSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.map((c: string[]) => c[0]);
 
-    expect(unlinkCalls).toContainEqual(
+    expect(unlinkCalls).not.toContainEqual(
       join(mockTargetDir, ".claude", "hooks", "keyword-detector.ts"),
     );
-    expect(unlinkCalls).toContainEqual(
+    expect(unlinkCalls).not.toContainEqual(
       join(mockTargetDir, ".claude", "hooks", "hud.ts"),
     );
 
     // The required script (statusLine hud.ts) is recopied after cleanup.
     expect(fs.cpSync).toHaveBeenCalledWith(
       join(mockSourceDir, ".agents", "hooks", "core", "hud.ts"),
-      join(mockTargetDir, ".claude", "hooks", "hud.ts"),
+      join(mockTargetDir, ".claude", "hooks", "oma", "hud.ts"),
       { force: true, dereference: true },
     );
   });
@@ -641,7 +653,7 @@ describe("installHooksFromVariant", () => {
     expect(fs.cpSync).not.toHaveBeenCalled();
   });
 
-  it("should clear broken symlinks in destination before cpSync", () => {
+  it("preserves unknown broken links outside the OMA namespace", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({
         vendor: "claude",
@@ -659,6 +671,7 @@ describe("installHooksFromVariant", () => {
     // Simulate broken symlinks in destination (from deleted temp dir)
     (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string, opts?: { withFileTypes?: boolean }) => {
+        if (n(p).endsWith("hooks/core")) return coreEntries();
         if (
           typeof p === "string" &&
           n(p).includes(".claude/hooks") &&
@@ -680,6 +693,8 @@ describe("installHooksFromVariant", () => {
     // lstatSync sees broken symlink as non-directory
     (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
+        if (n(p).includes("hooks/core/"))
+          return { isFile: () => true, isDirectory: () => false };
         if (
           typeof p === "string" &&
           n(p).endsWith("persistent-mode.ts") &&
@@ -693,11 +708,11 @@ describe("installHooksFromVariant", () => {
 
     installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude"]);
 
-    // Broken symlink should be unlinked before cpSync
+    // Broken links in the shared directory have no ownership evidence.
     const unlinkCalls = (
       fs.unlinkSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.map((c: string[]) => c[0]);
-    expect(unlinkCalls).toContainEqual(
+    expect(unlinkCalls).not.toContainEqual(
       join(mockTargetDir, ".claude", "hooks", "persistent-mode.ts"),
     );
 
@@ -705,7 +720,7 @@ describe("installHooksFromVariant", () => {
     // per-file for the variant's required scripts (statusLine hud.ts here).
     expect(fs.cpSync).toHaveBeenCalledWith(
       join(mockSourceDir, ".agents", "hooks", "core", "hud.ts"),
-      join(mockTargetDir, ".claude", "hooks", "hud.ts"),
+      join(mockTargetDir, ".claude", "hooks", "oma", "hud.ts"),
       { force: true, dereference: true },
     );
   });

@@ -39,7 +39,7 @@ export function installOpencodePlugin(
   const pluginDir = join(targetDir, OPENCODE_PLUGIN_DIR);
 
   // 1. Core scripts (also clears stale files in pluginDir first).
-  copyHookScripts(sourceDir, pluginDir);
+  copyHookScripts(sourceDir, pluginDir, undefined, { ownedNamespace: true });
 
   // 2. The bridge entry point.
   const shimSrc = join(

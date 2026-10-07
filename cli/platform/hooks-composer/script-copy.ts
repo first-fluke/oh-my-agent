@@ -1,21 +1,29 @@
-import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
+import {
+  cpSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { clearNonDirectory } from "../../utils/fs-utils.js";
+import { atomicWriteFileSync } from "../../utils/safe-write.js";
 import type { HookVariant } from "./variant-types.js";
 
 /**
  * Compute the set of core scripts that must be materialized in a vendor's
- * hookDir for a given variant. Everything else runs in-process via `oma hook run`
- * (design 019) and must NOT be copied — stale copies are dead files that make
- * vendor directories look hand-rolled.
+ * hookDir/oma for a given variant. Everything else runs in-process via
+ * `oma hook run` (design 019).
  *
  * A script is required only when something executes or reads it from the
- * hookDir at runtime:
- *  - Hud-only events keep their `bun <hookDir>/<script>` command (T1-c), so
+ * hookDir/oma at runtime:
+ *  - Hud-only events use `bun <hookDir>/oma/<script>` (T1-c), so
  *    those scripts are materialized (gemini registers hud via events).
- *  - The statusLine entry runs `bun <hookDir>/<hook>` directly.
+ *  - The statusLine entry runs `bun <hookDir>/oma/<hook>` directly.
  *  - The in-process test-filter handler rewrites Bash commands to pipe through
- *    `<hookDir>/filter-test-output.sh` (see test-filter.ts vendorHooksDir),
+ *    `<hookDir>/oma/filter-test-output.sh` (see test-filter.ts vendorHooksDir),
  *    so that shell script must exist wherever test-filter.ts is registered.
  *
  * triggers.json is statically inlined into the oma binary and handler chains
@@ -41,43 +49,108 @@ export function requiredVariantScripts(variant: HookVariant): Set<string> {
 
 /**
  * Copy core hook scripts from .agents/hooks/core/ to a vendor's hooks directory.
- * Clears stale symlinks/files first, then copies with dereference to ensure
- * real file copies (never symlinks that break when the temp dir is deleted).
+ * Records hashes of copied scripts. Only unchanged, recorded copies may be
+ * replaced or removed; untracked files and user modifications are preserved.
  *
  * @param only - When provided, copy ONLY these basenames (the variant's
  *   runtime-required scripts — see requiredVariantScripts). Omit to copy the
  *   full core set (pi bridge, which spawns the scripts as subprocesses).
- *   The destination is cleared either way, so a re-install with a whitelist
- *   also removes stale full-copy files from older installs.
+ *   A whitelist removes stale copies from recorded installs. Legacy files
+ *   without ownership evidence are preserved.
+ * @param options.ownedNamespace - Set only for an OMA-exclusive directory.
+ *   Shipped filenames there can be adopted from pre-manifest installations.
  */
 export function copyHookScripts(
   sourceDir: string,
   hooksDest: string,
   only?: ReadonlySet<string>,
+  options: { ownedNamespace?: boolean } = {},
 ): void {
   const hooksSrc = join(sourceDir, ".agents", "hooks", "core");
   if (!existsSync(hooksSrc)) return;
 
   mkdirSync(hooksDest, { recursive: true });
 
-  // Remove ALL existing non-directory entries (files, symlinks, broken symlinks)
-  // before cpSync — Bun's cpSync fails with ENOENT on broken symlinks even with force.
-  for (const entry of readdirSync(hooksDest, { withFileTypes: true })) {
-    clearNonDirectory(join(hooksDest, entry.name));
-  }
-
-  if (only) {
-    for (const name of only) {
-      const src = join(hooksSrc, name);
-      if (!existsSync(src)) continue;
-      cpSync(src, join(hooksDest, name), { force: true, dereference: true });
+  const manifestPath = join(hooksDest, ".oma-hook-files.json");
+  const previous: Record<string, string> = {};
+  try {
+    const value = JSON.parse(readFileSync(manifestPath, "utf8"));
+    if (
+      value?.schemaVersion === 1 &&
+      value.files &&
+      typeof value.files === "object"
+    ) {
+      for (const [name, hash] of Object.entries(value.files)) {
+        if (
+          /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name) &&
+          typeof hash === "string" &&
+          /^[a-f0-9]{64}$/.test(hash)
+        )
+          previous[name] = hash;
+      }
     }
-    return;
+  } catch {
+    /* No trustworthy ownership record. */
   }
-
-  cpSync(hooksSrc, hooksDest, {
-    recursive: true,
-    force: true,
-    dereference: true,
-  });
+  const digest = (file: string): string | undefined => {
+    try {
+      if (!lstatSync(file).isFile()) return undefined;
+      return createHash("sha256").update(readFileSync(file)).digest("hex");
+    } catch {
+      return undefined;
+    }
+  };
+  const names = readdirSync(hooksSrc, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && (!only || only.has(entry.name)))
+    .map((entry) => entry.name);
+  const files: Record<string, string> = {};
+  for (const [name, hash] of Object.entries(previous)) {
+    if (names.includes(name)) continue;
+    const dest = join(hooksDest, name);
+    if (digest(dest) === hash) {
+      clearNonDirectory(dest);
+    } else {
+      try {
+        // Preserve ownership evidence for modified stale files, including
+        // replaced symlinks, in case a later release ships the name again.
+        lstatSync(dest);
+        files[name] = hash;
+      } catch {
+        /* No remaining file needs an ownership record. */
+      }
+    }
+  }
+  for (const name of names) {
+    const src = join(hooksSrc, name);
+    const dest = join(hooksDest, name);
+    const sourceHash = digest(src);
+    if (!sourceHash) continue;
+    let present = false;
+    try {
+      lstatSync(dest);
+      present = true;
+    } catch {
+      /* Missing destination. */
+    }
+    const currentHash = digest(dest);
+    if (
+      present &&
+      currentHash !== sourceHash &&
+      !(previous[name] && currentHash === previous[name]) &&
+      !(options.ownedNamespace && !previous[name])
+    ) {
+      console.warn(`Preserved user-owned hook script: ${dest}`);
+      // Retain the original fingerprint so a subsequent namespace install
+      // does not mistake this known customization for an adoptable legacy file.
+      if (previous[name]) files[name] = previous[name];
+      continue;
+    }
+    clearNonDirectory(dest);
+    cpSync(src, dest, { force: true, dereference: true });
+    files[name] = sourceHash;
+  }
+  atomicWriteFileSync(
+    manifestPath,
+    `${JSON.stringify({ schemaVersion: 1, files }, null, 2)}\n`,
+  );
 }

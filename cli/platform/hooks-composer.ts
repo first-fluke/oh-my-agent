@@ -96,10 +96,17 @@ export function installHooksFromVariant(
   variant = withQwenHookEvents(variant);
   // 1. Materialize ONLY the scripts this variant executes/reads from hookDir
   //    (hud.ts, filter-test-output.sh — see requiredVariantScripts). The
-  //    destination is cleared first, so re-install also sweeps stale handler
-  //    copies left by older full-copy installs.
+  //    unchanged copies recorded by OMA may be replaced or pruned; user files
+  //    and legacy files without ownership evidence are preserved.
   const hooksDest = join(targetDir, variant.hookDir);
-  copyHookScripts(sourceDir, hooksDest, requiredVariantScripts(variant));
+  // Standalone scripts have a dedicated namespace, so a legacy HUD can be
+  // upgraded without overwriting an ambiguous file in the shared hook dir.
+  copyHookScripts(
+    sourceDir,
+    join(hooksDest, "oma"),
+    requiredVariantScripts(variant),
+    { ownedNamespace: true },
+  );
 
   // 2. Write the single oma-hook wrapper (one per vendor hookDir).
   const wrapperPath = join(hooksDest, OMA_HOOK_WRAPPER_FILENAME);

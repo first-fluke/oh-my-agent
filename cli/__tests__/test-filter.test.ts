@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { run } from "../../.agents/hooks/core/test-filter.ts";
 
 const HOOK_PATH = join(__dirname, "../../.agents/hooks/core/test-filter.ts");
 
@@ -173,6 +174,35 @@ describe("test-filter hook", () => {
   });
 
   describe("filter script fallback resolution", () => {
+    it("prefers the owned vendor namespace over a legacy filter script", async () => {
+      const root = makeProjectDir();
+      const ownedDir = join(root, ".codex", "hooks", "oma");
+      mkdirSync(ownedDir, { recursive: true });
+      writeFileSync(
+        join(ownedDir, "filter-test-output.sh"),
+        "#!/bin/sh\ncat\n",
+      );
+      try {
+        const result = await run(
+          {
+            kind: "pre_tool",
+            toolName: "Bash",
+            toolInput: { command: "vitest --run" },
+            cwd: root,
+          },
+          { vendor: "codex", cwd: root },
+        );
+        expect(result?.type).toBe("mutate");
+        if (result?.type !== "mutate")
+          throw new Error("Expected rewritten command");
+        expect(result.updatedInput.command).toContain(
+          join(ownedDir, "filter-test-output.sh"),
+        );
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    });
+
     // opencode has no core Vendor identity: its bridge subprocess payload
     // detects as claude, whose hook dir does not exist in an opencode-only
     // install. The hook must fall back to the bridge dir, then the SSOT core

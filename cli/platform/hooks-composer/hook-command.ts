@@ -19,7 +19,7 @@ export function buildHookCmd(variant: HookVariant, script: string): string {
   // while neutralising metacharacters in the variant-controlled hookDir/script.
   const path = buildVariantPath(
     variant.projectDirEnv,
-    `${variant.hookDir}/${script}`,
+    `${variant.hookDir}/oma/${script}`,
   );
   return `${shellQuote(variant.runtime)} ${path}`;
 }

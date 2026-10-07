@@ -117,11 +117,12 @@ export async function run(
   const isExcluded = EXCLUDE_PATTERNS.some((p) => p.test(command));
   if (isExcluded) return null;
 
-  // Resolve the filter script: vendor hook dir first, then the opencode
+  // Resolve the filter script: owned vendor namespace, legacy hook dir, then the opencode
   // bridge dir (opencode has no core Vendor identity — its subprocess payload
   // detects as claude, whose hook dir is absent in opencode-only installs),
   // then the SSOT core dir as the last resort.
   const filterScript = [
+    join(getHookDir(vendor), "oma"),
     getHookDir(vendor),
     join(".opencode", "plugins", "oma"),
     join(".agents", "hooks", "core"),

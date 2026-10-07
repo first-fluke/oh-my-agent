@@ -101,7 +101,12 @@ export function installKimiHooks(sourceDir: string): KimiHookInstallResult {
 
   // 1. Materialize only the runtime-required scripts (filter-test-output.sh for
   //    the test-filter handler). Handler .ts files run in-process via `oma hook run`.
-  copyHookScripts(sourceDir, hooksDir, requiredVariantScripts(VARIANT));
+  copyHookScripts(
+    sourceDir,
+    join(hooksDir, "oma"),
+    requiredVariantScripts(VARIANT),
+    { ownedNamespace: true },
+  );
 
   // 2. Write the oma-hook wrapper that resolves oma and execs `oma hook "$@"`.
   const wrapperPath = join(hooksDir, OMA_HOOK_WRAPPER);

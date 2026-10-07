@@ -522,7 +522,7 @@ describe("requiredVariantScripts", () => {
     }
   });
 
-  it("installHooksFromVariant materializes only oma-hook.sh + required scripts and sweeps stale copies", () => {
+  it("installHooksFromVariant preserves legacy scripts without ownership evidence", () => {
     const targetDir = mkdtempSync(join(tmpdir(), "oma-hooks-whitelist-"));
     try {
       // Simulate an older full-copy install: stale handler scripts on disk.
@@ -536,10 +536,60 @@ describe("requiredVariantScripts", () => {
 
       const materialized = readdirSync(hooksDir).sort();
       expect(materialized).toEqual([
+        "keyword-detector.ts",
+        "oma",
+        "oma-hook.sh",
+        "persistent-mode.ts",
+        "triggers.json",
+      ]);
+      expect(readdirSync(join(hooksDir, "oma")).sort()).toEqual([
+        ".oma-hook-files.json",
         "filter-test-output.sh",
         "hud.ts",
-        "oma-hook.sh",
       ]);
+    } finally {
+      rmSync(targetDir, { recursive: true, force: true });
+    }
+  });
+
+  it("upgrades a legacy HUD through the OMA namespace while preserving shared hook files", () => {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-hooks-upgrade-"));
+    try {
+      const hooksDir = join(targetDir, ".claude/hooks");
+      const coreDir = join(targetDir, "release/.agents/hooks/core");
+      mkdirSync(hooksDir, { recursive: true });
+      mkdirSync(coreDir, { recursive: true });
+      writeFileSync(join(hooksDir, "hud.ts"), "// old release HUD\n");
+      writeFileSync(join(hooksDir, "user-lint.sh"), "echo user\n");
+      writeFileSync(join(coreDir, "hud.ts"), "// new release HUD\n");
+      installHooksFromVariant(
+        join(targetDir, "release"),
+        targetDir,
+        loadVariant("claude"),
+      );
+      const settings = JSON.parse(
+        readFileSync(join(targetDir, ".claude/settings.json"), "utf8"),
+      );
+      expect(settings.statusLine.command).toContain(".claude/hooks/oma/hud.ts");
+      expect(readFileSync(join(hooksDir, "oma/hud.ts"), "utf8")).toBe(
+        "// new release HUD\n",
+      );
+      expect(readFileSync(join(hooksDir, "hud.ts"), "utf8")).toBe(
+        "// old release HUD\n",
+      );
+      expect(readFileSync(join(hooksDir, "user-lint.sh"), "utf8")).toBe(
+        "echo user\n",
+      );
+      rmSync(join(hooksDir, "oma/.oma-hook-files.json"));
+      writeFileSync(join(coreDir, "hud.ts"), "// next release HUD\n");
+      installHooksFromVariant(
+        join(targetDir, "release"),
+        targetDir,
+        loadVariant("claude"),
+      );
+      expect(readFileSync(join(hooksDir, "oma/hud.ts"), "utf8")).toBe(
+        "// next release HUD\n",
+      );
     } finally {
       rmSync(targetDir, { recursive: true, force: true });
     }
@@ -623,7 +673,7 @@ describe("Cursor hook variant contract (flat entries)", () => {
       // filter-test-output.sh must be materialized for the preToolUse rewrite.
       expect(
         existsSync(
-          join(targetDir, ".cursor", "hooks", "filter-test-output.sh"),
+          join(targetDir, ".cursor", "hooks", "oma", "filter-test-output.sh"),
         ),
       ).toBe(true);
     } finally {
