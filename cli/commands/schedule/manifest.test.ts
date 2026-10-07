@@ -25,6 +25,12 @@ const mockFsFunctions = vi.hoisted(() => ({
   chmodSync: vi.fn(),
   unlinkSync: vi.fn(),
   readdirSync: vi.fn(),
+  renameSync: vi.fn(),
+  rmSync: vi.fn(),
+}));
+
+vi.mock("../../io/schedule/lock.ts", () => ({
+  withScheduleLock: (_directory: string, action: () => unknown) => action(),
 }));
 
 const mockExecSync = vi.hoisted(() => vi.fn());
@@ -147,9 +153,9 @@ describe("schedule/manifest.ts", () => {
       expect(manifest.jobs).toHaveLength(0);
       // Should have written the empty file with 0600
       expect(mockFsFunctions.writeFileSync).toHaveBeenCalledWith(
-        MANIFEST_PATH,
+        expect.stringContaining(`${MANIFEST_PATH}.`),
         makeEmptyManifest(),
-        { mode: 0o600 },
+        { mode: 0o600, flag: "wx" },
       );
     });
 
@@ -172,13 +178,13 @@ describe("schedule/manifest.ts", () => {
       writeManifest(manifest);
 
       expect(mockFsFunctions.writeFileSync).toHaveBeenCalledWith(
-        MANIFEST_PATH,
+        expect.stringContaining(`${MANIFEST_PATH}.`),
         JSON.stringify(manifest, null, 2),
-        { mode: 0o600 },
+        { mode: 0o600, flag: "wx" },
       );
-      expect(mockFsFunctions.chmodSync).toHaveBeenCalledWith(
+      expect(mockFsFunctions.renameSync).toHaveBeenCalledWith(
+        expect.stringContaining(`${MANIFEST_PATH}.`),
         MANIFEST_PATH,
-        0o600,
       );
     });
   });
@@ -196,7 +202,8 @@ describe("schedule/manifest.ts", () => {
       addJob(job);
 
       const writeCall = mockFsFunctions.writeFileSync.mock.calls.find(
-        (c: unknown[]) => c[0] === MANIFEST_PATH,
+        (c: unknown[]) =>
+          typeof c[0] === "string" && c[0].startsWith(`${MANIFEST_PATH}.`),
       ) as [string, string] | undefined;
       expect(writeCall).toBeDefined();
       const parsed = JSON.parse(writeCall?.[1] ?? "{}") as {
@@ -219,7 +226,8 @@ describe("schedule/manifest.ts", () => {
       expect(result).toBe(true);
 
       const writeCall = mockFsFunctions.writeFileSync.mock.calls.find(
-        (c: unknown[]) => c[0] === MANIFEST_PATH,
+        (c: unknown[]) =>
+          typeof c[0] === "string" && c[0].startsWith(`${MANIFEST_PATH}.`),
       ) as [string, string] | undefined;
       const parsed = JSON.parse(writeCall?.[1] ?? "{}") as {
         jobs: ScheduleJob[];
@@ -248,7 +256,8 @@ describe("schedule/manifest.ts", () => {
       updateJob("sch_aaaaaa111111", { lastFiredAt: ts });
 
       const writeCall = mockFsFunctions.writeFileSync.mock.calls.find(
-        (c: unknown[]) => c[0] === MANIFEST_PATH,
+        (c: unknown[]) =>
+          typeof c[0] === "string" && c[0].startsWith(`${MANIFEST_PATH}.`),
       ) as [string, string] | undefined;
       const parsed = JSON.parse(writeCall?.[1] ?? "{}") as {
         jobs: ScheduleJob[];

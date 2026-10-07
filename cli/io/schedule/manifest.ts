@@ -9,9 +9,11 @@
  */
 
 import { execSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import { homedir } from "node:os";
 import * as path from "node:path";
+import { withScheduleLock } from "./lock.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -93,9 +95,7 @@ function ensureManifestFile(): void {
   const manifestPath = getManifestPath();
   if (!fs.existsSync(manifestPath)) {
     const empty: ScheduleManifest = { version: 1, jobs: [] };
-    fs.writeFileSync(manifestPath, JSON.stringify(empty, null, 2), {
-      mode: 0o600,
-    });
+    writeManifestUnlocked(empty);
   }
 }
 
@@ -104,19 +104,32 @@ function ensureManifestFile(): void {
 // ---------------------------------------------------------------------------
 
 export function readManifest(): ScheduleManifest {
+  return withScheduleLock(getScheduleDir(), readManifestUnlocked);
+}
+
+function readManifestUnlocked(): ScheduleManifest {
   ensureManifestFile();
   const raw = fs.readFileSync(getManifestPath(), "utf-8");
   return JSON.parse(raw) as ScheduleManifest;
 }
 
 export function writeManifest(manifest: ScheduleManifest): void {
+  withScheduleLock(getScheduleDir(), () => writeManifestUnlocked(manifest));
+}
+
+function writeManifestUnlocked(manifest: ScheduleManifest): void {
   ensureScheduleDir();
   const manifestPath = getManifestPath();
-  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), {
-    mode: 0o600,
-  });
-  // Force 0600 even if file already existed with different perms.
-  fs.chmodSync(manifestPath, 0o600);
+  const temporary = `${manifestPath}.${process.pid}-${randomUUID()}.tmp`;
+  try {
+    fs.writeFileSync(temporary, JSON.stringify(manifest, null, 2), {
+      mode: 0o600,
+      flag: "wx",
+    });
+    fs.renameSync(temporary, manifestPath);
+  } finally {
+    fs.rmSync(temporary, { force: true });
+  }
 }
 
 export function getJobById(id: string): ScheduleJob | undefined {
@@ -125,33 +138,39 @@ export function getJobById(id: string): ScheduleJob | undefined {
 }
 
 export function addJob(job: ScheduleJob): void {
-  const manifest = readManifest();
-  manifest.jobs.push(job);
-  writeManifest(manifest);
+  withScheduleLock(getScheduleDir(), () => {
+    const manifest = readManifestUnlocked();
+    manifest.jobs.push(job);
+    writeManifestUnlocked(manifest);
+  });
 }
 
 export function updateJob(
   id: string,
   patch: Partial<ScheduleJob>,
 ): ScheduleJob | null {
-  const manifest = readManifest();
-  const index = manifest.jobs.findIndex((j) => j.id === id);
-  if (index === -1) return null;
-  const existing = manifest.jobs[index];
-  if (!existing) return null;
-  const updated = { ...existing, ...patch };
-  manifest.jobs[index] = updated;
-  writeManifest(manifest);
-  return updated;
+  return withScheduleLock(getScheduleDir(), () => {
+    const manifest = readManifestUnlocked();
+    const index = manifest.jobs.findIndex((j) => j.id === id);
+    if (index === -1) return null;
+    const existing = manifest.jobs[index];
+    if (!existing) return null;
+    const updated = { ...existing, ...patch };
+    manifest.jobs[index] = updated;
+    writeManifestUnlocked(manifest);
+    return updated;
+  });
 }
 
 export function removeJob(id: string): boolean {
-  const manifest = readManifest();
-  const before = manifest.jobs.length;
-  manifest.jobs = manifest.jobs.filter((j) => j.id !== id);
-  if (manifest.jobs.length === before) return false;
-  writeManifest(manifest);
-  return true;
+  return withScheduleLock(getScheduleDir(), () => {
+    const manifest = readManifestUnlocked();
+    const before = manifest.jobs.length;
+    manifest.jobs = manifest.jobs.filter((j) => j.id !== id);
+    if (manifest.jobs.length === before) return false;
+    writeManifestUnlocked(manifest);
+    return true;
+  });
 }
 
 // ---------------------------------------------------------------------------

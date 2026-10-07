@@ -195,6 +195,25 @@ describe("schedule/runner.ts — runScheduledJob", () => {
       expect(spawnArgv).toContain("/projects/my-app");
     });
 
+    it.each(["/repo/cli/cli.ts", "/installed/oh-my-agent/bin/cli.js"])(
+      "runs %s through the current runtime",
+      async (entry) => {
+        const previousArgv = process.argv;
+        process.argv = [process.execPath, entry];
+        try {
+          await runScheduledJob(JOB_ID);
+          expect(mockSpawnSync.mock.calls[0]?.[0]).toBe(process.execPath);
+          expect(mockSpawnSync.mock.calls[0]?.[1].slice(0, 3)).toEqual([
+            entry,
+            "agent",
+            "spawn",
+          ]);
+        } finally {
+          process.argv = previousArgv;
+        }
+      },
+    );
+
     it("does not remove job when recurring=true after success", async () => {
       await runScheduledJob(JOB_ID);
 

@@ -208,16 +208,17 @@ export async function runScheduledJob(id: string): Promise<void> {
 
   const mergedEnv: NodeJS.ProcessEnv = { ...process.env, ...extraEnv };
 
-  // Resolve the oma binary: prefer the same binary that's currently running.
-  const omaBin =
-    process.argv[0] === process.execPath ? (process.argv[1] ?? "oma") : "oma";
-
-  const result = spawnSync(omaBin, spawnArgs, {
-    env: mergedEnv,
-    encoding: "utf-8",
-    // Allow up to 1 hour for a single scheduled run
-    timeout: 60 * 60 * 1000,
-  });
+  const invocation = resolveOmaInvocation();
+  const result = spawnSync(
+    invocation.command,
+    [...invocation.prefixArgs, ...spawnArgs],
+    {
+      env: mergedEnv,
+      encoding: "utf-8",
+      // Allow up to 1 hour for a single scheduled run
+      timeout: 60 * 60 * 1000,
+    },
+  );
 
   const combinedOutput = [
     result.stdout ?? "",
