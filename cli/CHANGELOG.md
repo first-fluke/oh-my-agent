@@ -1,5 +1,13 @@
 # Changelog
 
+## [16.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v16.0.0...cli-v16.0.1) (2026-10-08)
+
+
+### Refactoring
+
+* **memory:** centralize delivery state transitions ([3396a31](https://github.com/first-fluke/oh-my-agent/commit/3396a319a252944526c85ba11566a5f49bec08f2))
+* **state:** use validated snapshots for resume progress ([7dcdc9a](https://github.com/first-fluke/oh-my-agent/commit/7dcdc9a3bf4c969c630d041ad7a22f50939eb07e))
+
 ## [16.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.10.0...cli-v16.0.0) (2026-10-08)
 
 
