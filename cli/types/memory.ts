@@ -2,6 +2,26 @@ export interface MemoryObservePayload {
   sessionId: string;
   content: string;
   source: string;
+  /** Original project context, preserved when a retry runs from another cwd. */
+  projectDir?: string;
+}
+
+/** Public routing identity only. Credentials must never be included. */
+export interface MemoryDeliveryIdentity {
+  endpoint?: string | null;
+  workspace?: string;
+  session?: string;
+  /** Stable identity for explicitly injected providers, including test doubles. */
+  identity?: string;
+}
+
+export interface MemoryDeliveryTarget {
+  version: 1;
+  provider: import("../utils/providers.js").SemanticMemoryProviderName;
+  profile: string;
+  projectId: string;
+  projectDir: string;
+  destination: MemoryDeliveryIdentity;
 }
 
 export interface MemoryRememberPayload {
@@ -44,6 +64,8 @@ export interface MemoryProviderStatus {
 
 export interface MemoryProvider {
   name: import("../utils/providers.js").SemanticMemoryProviderName;
+  /** Synchronous routing identity: obtaining it must not contact the service. */
+  deliveryIdentity?: MemoryDeliveryIdentity;
   /** False disables all delivery intentionally; transient unavailability stays enabled. */
   enabled?: boolean;
   /** False means raw event mirroring is unsupported, not a retryable failure. */

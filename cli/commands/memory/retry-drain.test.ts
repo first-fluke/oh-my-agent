@@ -17,11 +17,16 @@ import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { retryObservePath } from "../../state/events.js";
+import { createMemoryDeliveryTarget } from "../../state/memory-delivery-target.js";
 import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import type { MemoryProvider } from "../../types/memory.js";
 import { drainMemoryRetryQueue } from "./retry-drain.js";
 
-function eventLine(eventId: string, retryRemember = false): string {
+function eventLine(
+  projectDir: string,
+  eventId: string,
+  retryRemember = false,
+): string {
   return `${JSON.stringify({
     eventId,
     ts: "2026-05-27T00:00:00.000Z",
@@ -33,9 +38,11 @@ function eventLine(eventId: string, retryRemember = false): string {
       decision: eventId,
       rationale: "Keep the original delivery",
     },
-    ...(retryRemember
-      ? { memoryDelivery: { observe: true, remember: true } }
-      : {}),
+    memoryDelivery: { observe: true, remember: retryRemember },
+    memoryTarget: createMemoryDeliveryTarget(
+      projectDir,
+      provider(async () => true),
+    ),
   })}\n`;
 }
 
@@ -57,7 +64,7 @@ describe("memory retry drain concurrency", () => {
     projectDir = mkdtempSync(join(tmpdir(), "oma-retry-drain-"));
     retryPath = retryObservePath(projectDir);
     mkdirSync(dirname(retryPath), { recursive: true });
-    writeFileSync(retryPath, eventLine("first"));
+    writeFileSync(retryPath, eventLine(projectDir, "first"));
   });
 
   afterEach(() => {
@@ -68,7 +75,7 @@ describe("memory retry drain concurrency", () => {
     await drainMemoryRetryQueue({
       projectDir,
       provider: provider(async () => {
-        appendFileSync(retryPath, eventLine("later"));
+        appendFileSync(retryPath, eventLine(projectDir, "later"));
         return true;
       }),
     });
@@ -93,7 +100,7 @@ describe("memory retry drain concurrency", () => {
         projectDir,
         provider: provider(async () => true),
       });
-      appendFileSync(fd, eventLine("open-writer"));
+      appendFileSync(fd, eventLine(projectDir, "open-writer"));
     } finally {
       closeSync(fd);
     }
@@ -118,8 +125,14 @@ describe("memory retry drain concurrency", () => {
       return true;
     });
 
-    const first = drainMemoryRetryQueue({ projectDir, provider: memory });
-    const second = drainMemoryRetryQueue({ projectDir, provider: memory });
+    const first = drainMemoryRetryQueue({
+      projectDir,
+      provider: memory,
+    });
+    const second = drainMemoryRetryQueue({
+      projectDir,
+      provider: memory,
+    });
     finishFirst();
     const results = await Promise.all([first, second]);
 
@@ -128,7 +141,7 @@ describe("memory retry drain concurrency", () => {
   });
 
   it("remembers completed observations when a later observation throws", async () => {
-    appendFileSync(retryPath, eventLine("second"));
+    appendFileSync(retryPath, eventLine(projectDir, "second"));
     await expect(
       drainMemoryRetryQueue({
         projectDir,
@@ -153,20 +166,20 @@ describe("memory retry drain concurrency", () => {
     expect(readMemoryRetryQueue(projectDir)).toEqual([]);
   });
 
-  it("does not apply old acknowledgements to a replacement queue", async () => {
+  it("preserves completed delivery identities across queue replacement", async () => {
     await drainMemoryRetryQueue({
       projectDir,
       provider: provider(async () => true),
     });
     renameSync(retryPath, `${retryPath}.old`);
-    writeFileSync(retryPath, eventLine("first"));
+    writeFileSync(retryPath, eventLine(projectDir, "first"));
 
     expect(
       await drainMemoryRetryQueue({
         projectDir,
         provider: provider(async () => true),
       }),
-    ).toMatchObject({ total: 1, drained: 1 });
+    ).toMatchObject({ total: 0, drained: 0 });
   });
 
   it("checks content before applying an acknowledgement at a reused offset", async () => {
@@ -174,7 +187,7 @@ describe("memory retry drain concurrency", () => {
       projectDir,
       provider: provider(async () => true),
     });
-    writeFileSync(retryPath, eventLine("other"));
+    writeFileSync(retryPath, eventLine(projectDir, "other"));
 
     const observed: string[] = [];
     await drainMemoryRetryQueue({
@@ -188,7 +201,7 @@ describe("memory retry drain concurrency", () => {
   });
 
   it("recovers subsequent acknowledgements after a truncated checkpoint entry", async () => {
-    appendFileSync(retryPath, eventLine("second"));
+    appendFileSync(retryPath, eventLine(projectDir, "second"));
     await drainMemoryRetryQueue({
       projectDir,
       provider: provider(
@@ -205,8 +218,11 @@ describe("memory retry drain concurrency", () => {
     expect(readMemoryRetryQueue(projectDir)).toEqual([]);
   });
 
-  it("preserves byte offsets for UTF-8 rows", async () => {
-    writeFileSync(retryPath, eventLine("한글") + eventLine("second"));
+  it("distinguishes UTF-8 delivery identities", async () => {
+    writeFileSync(
+      retryPath,
+      eventLine(projectDir, "한글") + eventLine(projectDir, "second"),
+    );
     await drainMemoryRetryQueue({
       projectDir,
       provider: provider(
@@ -225,8 +241,8 @@ describe("memory retry drain concurrency", () => {
     async (dimension) => {
       writeFileSync(
         retryPath,
-        eventLine("first", dimension === "remember") +
-          eventLine("second", dimension === "remember"),
+        eventLine(projectDir, "first", dimension === "remember") +
+          eventLine(projectDir, "second", dimension === "remember"),
       );
       const modulePath = fileURLToPath(
         new URL("./retry-drain.ts", import.meta.url),

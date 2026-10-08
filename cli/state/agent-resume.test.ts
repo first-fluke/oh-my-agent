@@ -1,11 +1,12 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { hostname, tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { testTask } from "./__fixtures__/task-contract.js";
@@ -20,6 +21,7 @@ import {
   resumeSession,
 } from "./agent-resume.js";
 import { atomicWriteJson } from "./events.js";
+import { runtimeStateDir } from "./project-runtime.js";
 
 describe("session recovery", () => {
   let root: string;
@@ -30,7 +32,10 @@ describe("session recovery", () => {
     writeFileSync(join(root, "b.txt"), "b");
     plan();
   });
-  afterEach(() => rmSync(root, { recursive: true, force: true }));
+  afterEach(() => {
+    process.env.OMA_PROFILE = "0";
+    rmSync(root, { recursive: true, force: true });
+  });
   const plan = (
     extraA: Record<string, unknown> = {},
     extraB: Record<string, unknown> = {},
@@ -96,7 +101,10 @@ describe("session recovery", () => {
     expect(report.ok).toBe(true);
     expect(
       JSON.parse(
-        readFileSync(join(root, ".agents/state/agent-resume/s1.json"), "utf8"),
+        readFileSync(
+          join(runtimeStateDir(root, "agent-resume"), "s1.json"),
+          "utf8",
+        ),
       ).ok,
     ).toBe(true);
   });
@@ -135,7 +143,7 @@ describe("session recovery", () => {
   it("recovers a dead managed attempt and retains its ancestry", async () => {
     const dead = start("A", undefined, true);
     atomicWriteJson(
-      join(root, ".agents/state/agent-runs", `${dead.runId}.json`),
+      join(runtimeStateDir(root, "agent-runs"), `${dead.runId}.json`),
       { ...dead, runnerPid: 2147483647 },
     );
     expect(planSessionResume(root, "s1").tasks[0]?.status).toBe("ready");
@@ -249,6 +257,53 @@ describe("session recovery", () => {
     await first;
     expect((await resumeSession({ root, sessionId: "s1", dispatch })).ok).toBe(
       true,
+    );
+  });
+
+  it("ignores old project leases and checkpoints in every profile", async () => {
+    const legacy = join(root, ".agents/state/agent-resume");
+    mkdirSync(legacy, { recursive: true });
+    atomicWriteJson(join(legacy, "s1.lease.json"), {
+      pid: process.pid,
+      host: hostname(),
+      token: "legacy-coordinator",
+    });
+    atomicWriteJson(join(legacy, "s1.json"), { old: true });
+    const report = await resumeSession({ root, sessionId: "s1", dispatch });
+    expect(report.ok).toBe(true);
+    expect(
+      existsSync(join(runtimeStateDir(root, "agent-resume"), "s1.json")),
+    ).toBe(true);
+    expect(
+      existsSync(join(runtimeStateDir(root, "agent-resume"), "s1.lease.json")),
+    ).toBe(false);
+    expect(
+      JSON.parse(readFileSync(join(legacy, "s1.lease.json"), "utf8")).token,
+    ).toBe("legacy-coordinator");
+    expect(JSON.parse(readFileSync(join(legacy, "s1.json"), "utf8"))).toEqual({
+      old: true,
+    });
+    process.env.OMA_PROFILE = "1";
+    expect(
+      existsSync(join(runtimeStateDir(root, "agent-resume"), "s1.json")),
+    ).toBe(false);
+    expect((await resumeSession({ root, sessionId: "s1", dispatch })).ok).toBe(
+      true,
+    );
+  });
+
+  it("does not parse or replace a malformed old project lease", async () => {
+    const legacy = join(root, ".agents/state/agent-resume");
+    mkdirSync(legacy, { recursive: true });
+    writeFileSync(join(legacy, "s1.lease.json"), "invalid old lease");
+    const report = await resumeSession({ root, sessionId: "s1", dispatch });
+    expect(report.ok).toBe(true);
+    expect(
+      existsSync(join(runtimeStateDir(root, "agent-resume"), "s1.json")),
+    ).toBe(true);
+    expect(existsSync(join(legacy, "s1.json"))).toBe(false);
+    expect(readFileSync(join(legacy, "s1.lease.json"), "utf8")).toBe(
+      "invalid old lease",
     );
   });
 });

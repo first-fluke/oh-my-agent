@@ -9,15 +9,18 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import * as agentMemoryClient from "../../.agents/hooks/core/agentmemory-client.js";
 import {
   observeWithTimeout,
   recallFacts,
 } from "../../.agents/hooks/core/agentmemory-client.js";
 import { currentMemoryAdapter } from "../../.agents/hooks/core/memory-adapter.js";
 import { onBoundary } from "../../.agents/hooks/core/state-boundary.js";
+import { retryObservePath as legacyRetryPath } from "../../.agents/hooks/core/state-core.js";
 import { emitEvent as emitHookEvent } from "../../.agents/hooks/core/state-emit.js";
 import { setActiveSession } from "../../.agents/hooks/core/state-marker.js";
 import { drainMemoryRetryQueue } from "../commands/memory/retry-drain.js";
+import { http } from "../io/http.js";
 import { syncProviderMcp } from "../platform/provider-mcp.js";
 import type { MemoryProvider } from "../types/memory.js";
 import {
@@ -54,6 +57,77 @@ afterEach(() => {
 });
 
 describe("provider-aware CLI hooks", () => {
+  it("routes AgentMemory hook facts through the scoped durable queue without legacy duplication", async () => {
+    const root = project("agentmemory");
+    const provider: MemoryProvider = {
+      name: "agentmemory",
+      deliveryIdentity: { endpoint: "http://memory.test" },
+      status: async () => ({ provider: "agentmemory", reachable: true }),
+      observe: vi.fn(async () => true),
+      remember: vi.fn(async () => false),
+    };
+    vi.spyOn(semanticMemory, "createMemoryProvider").mockReturnValue(provider);
+    const event = await withSelectedHookMemory(root, () =>
+      emitHookEvent(root, "agentmemory-hook", {
+        kind: "decision.made",
+        payload: {
+          subject: "database",
+          decision: "Postgres",
+          rationale: "constraints",
+        },
+      }),
+    );
+    expect(readEvents(root, event.sid)).toEqual([event]);
+    expect(provider.observe).toHaveBeenCalledOnce();
+    expect(provider.remember).toHaveBeenCalledOnce();
+    expect(existsSync(legacyRetryPath(root))).toBe(false);
+    const pending = readMemoryRetryQueue(root);
+    expect(pending).toHaveLength(1);
+    expect(parseMemoryRetryLine(pending[0]?.line ?? "")).toMatchObject({
+      event: { eventId: event.eventId },
+      target: {
+        provider: "agentmemory",
+        destination: { endpoint: "http://memory.test" },
+      },
+    });
+  });
+
+  it("preserves AgentMemory hook project scope and score/age filtering", async () => {
+    const root = project("agentmemory");
+    vi.stubEnv("AGENTMEMORY_URL", "http://memory.test");
+    vi.spyOn(agentMemoryClient, "isAgentMemoryReachable").mockResolvedValue(
+      true,
+    );
+    const post = vi.spyOn(http, "post").mockResolvedValue({
+      status: 200,
+      data: {
+        results: [
+          { score: 0.1, observation: { narrative: "noise" } },
+          {
+            score: 5,
+            timestamp: new Date().toISOString(),
+            observation: { narrative: "current fact" },
+          },
+          {
+            score: 4,
+            timestamp: new Date(Date.now() - 31 * 86400000).toISOString(),
+            observation: { narrative: "expired fact" },
+          },
+        ],
+      },
+    });
+    expect(
+      await withSelectedHookMemory(root, () =>
+        recallFacts("decision", 5, root),
+      ),
+    ).toEqual([{ text: "current fact", score: 5, source: undefined }]);
+    expect(post).toHaveBeenCalledWith(
+      "http://memory.test/agentmemory/search",
+      expect.objectContaining({ query: "decision", limit: 5, cwd: root }),
+      expect.objectContaining({ timeout: 2000 }),
+    );
+  });
+
   it("skips malformed semantic envelopes instead of treating raw hook content as facts", async () => {
     const root = project("honcho");
     const remember = vi.fn(async () => true);
@@ -125,8 +199,8 @@ describe("provider-aware CLI hooks", () => {
       expect(pending).toHaveLength(remember ? 1 : 0);
       if (remember) {
         if (!pending[0]) throw new Error("Expected the queued hook fact");
-        expect(parseMemoryRetryLine(pending[0].line)).toEqual({
-          event,
+        expect(parseMemoryRetryLine(pending[0].line)).toMatchObject({
+          event: JSON.parse(JSON.stringify(event)),
           delivery: { observe: false, remember: true },
         });
       }
@@ -173,8 +247,8 @@ describe("provider-aware CLI hooks", () => {
       const pending = readMemoryRetryQueue(root);
       expect(pending).toHaveLength(1);
       if (!pending[0]) throw new Error("Expected the pending hook fact");
-      expect(parseMemoryRetryLine(pending[0].line)).toEqual({
-        event,
+      expect(parseMemoryRetryLine(pending[0].line)).toMatchObject({
+        event: JSON.parse(JSON.stringify(event)),
         delivery: { observe: false, remember: true },
       });
       expect(readEvents(root, event.sid)).toEqual([event]);

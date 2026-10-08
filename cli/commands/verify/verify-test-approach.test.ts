@@ -22,6 +22,7 @@ vi.mock("node:child_process", () => ({
   execSync: vi.fn(),
 }));
 
+import { runtimeStateDir } from "../../state/project-runtime.js";
 import {
   checkPmPlan,
   checkTddEvidence,
@@ -30,10 +31,13 @@ import {
 
 /** Route mocked fs reads: plan JSON for results/, result markdown for memories/. */
 function mockWorkspace(planJson: string, resultMd: string | null): void {
+  const receipts = runtimeStateDir("/workspace", "agent-runs");
   mockFsFunctions.existsSync.mockReturnValue(true);
   mockFsFunctions.readdirSync.mockImplementation((dir: string) =>
     String(dir).includes("agent-runs")
-      ? ["run.json"]
+      ? String(dir) === receipts
+        ? ["run.json"]
+        : []
       : String(dir).includes("memories")
         ? resultMd !== null
           ? ["result-backend-task-1-run-20260806-120000.md"]

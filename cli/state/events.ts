@@ -1,21 +1,33 @@
 import {
+  createEventId,
   emitEvent,
   type OmaEvent,
   SEMANTIC_EVENT_KINDS,
 } from "../../.agents/hooks/core/state-core.ts";
-import type { MemoryProvider } from "../types/memory.js";
+import type { MemoryDeliveryTarget, MemoryProvider } from "../types/memory.js";
 import { loadProviders } from "../utils/providers.js";
+import {
+  createMemoryDeliveryTarget,
+  memoryDeliveryTargetMatches,
+  sameMemoryDeliveryTarget,
+} from "./memory-delivery-target.js";
+import {
+  reconcileMemoryDeliveryOutbox,
+  writeMemoryDeliveryIntent,
+} from "./memory-outbox.js";
 import {
   acknowledgeMemoryRetryLine,
   acquireMemoryRetryDrainLock,
-  enqueueMemoryRetry,
   type MemoryRetryLine,
+  memoryRetryTarget,
   parseMemoryRetryLine,
   readMemoryRetryQueue,
 } from "./memory-retry-queue.js";
 import { createMemoryProvider } from "./semantic-memory.js";
 
 export * from "../../.agents/hooks/core/state-core.ts";
+export { reconcileMemoryDeliveryOutbox } from "./memory-outbox.js";
+export { retryObservePath } from "./memory-retry-queue.js";
 
 /**
  * Build a human-readable narrative for events worth recalling across vendor /
@@ -167,6 +179,9 @@ export async function deliverMemoryRetryEntry(
 ): Promise<boolean> {
   const record = parseMemoryRetryLine(entry.line);
   if (!record || provider.enabled === false) return false;
+  const target = memoryRetryTarget(entry);
+  if (!target || !memoryDeliveryTargetMatches(projectDir, target, provider))
+    return false;
   const { event, delivery } = record;
   let observed =
     !delivery.observe || entry.delivered?.includes("observe") === true;
@@ -178,6 +193,7 @@ export async function deliverMemoryRetryEntry(
         sessionId: event.sid,
         content: `${JSON.stringify(event)}\n`,
         source: "oma-workflow",
+        projectDir: target.projectDir,
       }),
     );
     if (observed) acknowledgeMemoryRetryLine(projectDir, entry, "observe");
@@ -202,48 +218,32 @@ export async function deliverEventMemory(
   event: OmaEvent,
   provider?: MemoryProvider,
 ): Promise<OmaEvent> {
-  const enriched = event;
-  if (!SEMANTIC_EVENT_KINDS.has(enriched.kind)) return enriched;
-  const memo = rememberContentForEvent(enriched);
-
+  if (!SEMANTIC_EVENT_KINDS.has(event.kind)) return event;
+  let prepared: { target: MemoryDeliveryTarget } | undefined;
   try {
-    provider ??= createMemoryProvider({ projectDir });
+    provider = resolveEventMemoryProvider(projectDir, provider);
+    prepared = prepareEventMemory(projectDir, event, provider);
   } catch (error) {
     console.warn(`[state] Memory provider unavailable: ${String(error)}`);
-    try {
-      const selected = loadProviders(projectDir).semantic_memory;
-      const delivery = {
-        observe: selected === "agentmemory",
-        remember:
-          memo !== null && supportsRememberKind(enriched.kind, selected),
-      };
-      if (delivery.observe || delivery.remember) {
-        enqueueMemoryRetry(projectDir, enriched, delivery);
-      }
-    } catch (queueError) {
-      console.warn(
-        `[state] Memory retry enqueue failed: ${String(queueError)}`,
-      );
-    }
-    return enriched;
+    return event;
   }
-  if (provider.enabled === false) return enriched;
-
-  const delivery = {
-    observe: provider.name !== "none" && provider.observeEvents !== false,
-    remember: memo !== null && canRememberEvent(enriched, provider),
-  };
-  if (!delivery.observe && !delivery.remember) return enriched;
+  if (!prepared) return event;
 
   let release: (() => void) | undefined;
   try {
-    // Queue before awaiting the lease or provider, so interruption leaves durable work.
-    const line = enqueueMemoryRetry(projectDir, enriched, delivery);
+    // The durable intent precedes the await. Recovery never appends another L1 event.
     release = await acquireMemoryRetryDrainLock(projectDir, 1000);
-    // A drain may have completed this row while we waited for its lease.
-    const entry = readMemoryRetryQueue(projectDir).find(
-      (candidate) => candidate.line === line,
-    );
+    reconcileMemoryDeliveryOutbox(projectDir);
+    const entry = readMemoryRetryQueue(projectDir).find((candidate) => {
+      const record = parseMemoryRetryLine(candidate.line);
+      const target = memoryRetryTarget(candidate);
+      return (
+        record?.event.eventId === event.eventId &&
+        record.event.sid === event.sid &&
+        target !== undefined &&
+        sameMemoryDeliveryTarget(target, prepared.target)
+      );
+    });
     if (entry) await deliverMemoryRetryEntry(projectDir, entry, provider);
   } catch (error) {
     console.warn(`[state] Memory delivery deferred: ${String(error)}`);
@@ -256,7 +256,57 @@ export async function deliverEventMemory(
       );
     }
   }
-  return enriched;
+  return event;
+}
+
+function resolveEventMemoryProvider(
+  projectDir: string,
+  provider?: MemoryProvider,
+): MemoryProvider {
+  if (provider) return provider;
+  try {
+    return createMemoryProvider({ projectDir });
+  } catch (error) {
+    console.warn(`[state] Memory provider unavailable: ${String(error)}`);
+    const selected = loadProviders(projectDir).semantic_memory;
+    // Retain intent with an unresolved destination; never guess after config repair.
+    return {
+      name: selected,
+      enabled: selected !== "none",
+      observeEvents: selected === "agentmemory",
+      deliveryIdentity: { endpoint: null },
+      status: async () => ({ provider: selected, reachable: false }),
+      observe: async () => false,
+      remember: async () => false,
+    };
+  }
+}
+
+function prepareEventMemory(
+  projectDir: string,
+  event: OmaEvent,
+  provider: MemoryProvider,
+): { target: MemoryDeliveryTarget } | undefined {
+  if (!SEMANTIC_EVENT_KINDS.has(event.kind) || provider.enabled === false)
+    return undefined;
+  const delivery = {
+    observe: provider.name !== "none" && provider.observeEvents !== false,
+    remember:
+      rememberContentForEvent(event) !== null &&
+      canRememberEvent(event, provider),
+  };
+  if (!delivery.observe && !delivery.remember) return undefined;
+  const target = createMemoryDeliveryTarget(projectDir, provider);
+  try {
+    writeMemoryDeliveryIntent(projectDir, event, delivery, target);
+  } catch (error) {
+    // L1 remains authoritative when optional delivery storage is unavailable.
+    console.warn(
+      `[state] Memory delivery intent write failed: ${String(error)}`,
+    );
+    return undefined;
+  }
+  return { target };
 }
 
 export async function emitEventWithMemory(
@@ -265,9 +315,29 @@ export async function emitEventWithMemory(
   event: Omit<Partial<OmaEvent>, "sid"> & { kind: string },
   provider?: MemoryProvider,
 ): Promise<OmaEvent> {
+  const normalized: OmaEvent = {
+    eventId: event.eventId ?? createEventId(),
+    ts: event.ts ?? new Date().toISOString(),
+    sid,
+    kind: event.kind,
+    writerPid: event.writerPid ?? process.pid,
+    vendor: event.vendor,
+    vendorSid: event.vendorSid,
+    parentEventId: event.parentEventId,
+    causalityKey: event.causalityKey,
+    payload: event.payload,
+  };
+  if (SEMANTIC_EVENT_KINDS.has(normalized.kind)) {
+    try {
+      provider = resolveEventMemoryProvider(projectDir, provider);
+      prepareEventMemory(projectDir, normalized, provider);
+    } catch (error) {
+      console.warn(`[state] Memory intent unavailable: ${String(error)}`);
+    }
+  }
   return deliverEventMemory(
     projectDir,
-    emitEvent(projectDir, sid, event),
+    emitEvent(projectDir, sid, normalized),
     provider,
   );
 }

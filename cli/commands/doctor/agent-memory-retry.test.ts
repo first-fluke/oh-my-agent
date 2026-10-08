@@ -3,6 +3,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { retryObservePath } from "../../state/events.js";
+import { createMemoryDeliveryTarget } from "../../state/memory-delivery-target.js";
+import { createAgentMemoryProvider } from "../../state/memory-provider.js";
 import {
   acknowledgeMemoryRetryLine,
   readMemoryRetryQueue,
@@ -38,6 +40,13 @@ describe("AgentMemory retry queue diagnostics", () => {
           kind: "decision.made",
           eventId: "success",
           ts: "2026-05-29T00:00:00.000Z",
+          memoryDelivery: { observe: true, remember: false },
+          memoryTarget: createMemoryDeliveryTarget(
+            projectDir,
+            createAgentMemoryProvider({
+              env: { AGENTMEMORY_URL: "http://127.0.0.1:3111" },
+            }),
+          ),
         }),
         "invalid-row",
         "",
@@ -45,7 +54,7 @@ describe("AgentMemory retry queue diagnostics", () => {
     );
     const first = readMemoryRetryQueue(projectDir)[0];
     if (!first) throw new Error("Expected the seeded retry entry");
-    acknowledgeMemoryRetryLine(projectDir, first);
+    acknowledgeMemoryRetryLine(projectDir, first, "observe");
 
     const check = await collectAgentMemoryCheck(projectDir);
     expect(check.retryQueue).toEqual({ path: retryPath, total: 1, invalid: 1 });
@@ -53,7 +62,7 @@ describe("AgentMemory retry queue diagnostics", () => {
     expect(check.issues).toContain("1 invalid AgentMemory retry rows");
   });
 
-  it("flags malformed pending delivery flags for a valid legacy envelope", async () => {
+  it("flags malformed delivery flags in a targeted event", async () => {
     const retryPath = retryObservePath(projectDir);
     mkdirSync(dirname(retryPath), { recursive: true });
     writeFileSync(
@@ -64,6 +73,12 @@ describe("AgentMemory retry queue diagnostics", () => {
         eventId: "pending",
         ts: "2026-10-02T00:00:00.000Z",
         memoryDelivery: { observe: true, remember: "false" },
+        memoryTarget: createMemoryDeliveryTarget(
+          projectDir,
+          createAgentMemoryProvider({
+            env: { AGENTMEMORY_URL: "http://127.0.0.1:3111" },
+          }),
+        ),
       })}\n`,
     );
     const check = await collectAgentMemoryCheck(projectDir);

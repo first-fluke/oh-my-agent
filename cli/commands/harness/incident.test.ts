@@ -1,24 +1,28 @@
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { beginAgentRun, finishAgentRun } from "../../state/agent-results.js";
 import { readEvents } from "../../state/events.js";
+import { runtimeStateDir } from "../../state/project-runtime.js";
 import {
   captureHarnessIncident,
   exportHarnessIncident,
   readHarnessIncident,
 } from "./incident.js";
 import { reproduceHarnessIncident } from "./incident-command.js";
+import { isPathInside } from "./paths.js";
 import { inspectHarnessRecord } from "./records.js";
 import { rescoreHarnessRecord } from "./replay.js";
 import { loadHarnessSuite } from "./suite.js";
@@ -209,6 +213,109 @@ describe("incident to regression", () => {
     expect(() => exportHarnessIncident(root, incident.id)).toThrow(
       "initial workspace evidence is missing",
     );
+  });
+
+  it("snapshots and verifies a HOME receipt inside the incident before runtime cleanup", () => {
+    const { root, specPath } = setup();
+    const started = beginAgentRun({
+      root,
+      workspace: root,
+      agentId: "backend",
+      sessionId: "source-session",
+      taskId: "source-task",
+      vendor: "codex",
+    });
+    const receipt = join(
+      runtimeStateDir(root, "agent-runs"),
+      `${started.runId}.json`,
+    );
+    expect(isPathInside(root, receipt)).toBe(false);
+    const sourceBytes = readFileSync(receipt);
+    const { incident, path } = captureHarnessIncident(
+      root,
+      specPath,
+      started.runId,
+    );
+    const saved = resolve(root, incident.source.record?.path ?? "");
+    expect(saved).toBe(
+      join(
+        root,
+        ".agents/results/incidents/reported-incomplete/source-run.json",
+      ),
+    );
+    expect(lstatSync(saved).isFile()).toBe(true);
+    expect(lstatSync(saved).isSymbolicLink()).toBe(false);
+    expect(readFileSync(saved)).toEqual(sourceBytes);
+    if (process.platform !== "win32") {
+      expect(lstatSync(saved).mode & 0o777).toBe(0o600);
+      expect(lstatSync(join(path, "..")).mode & 0o777).toBe(0o700);
+    }
+    rmSync(runtimeStateDir(root, "agent-runs"), { recursive: true });
+    expect(readHarnessIncident(root, incident.id).source.runId).toBe(
+      started.runId,
+    );
+    writeFileSync(saved, "tampered receipt");
+    expect(() => readHarnessIncident(root, incident.id)).toThrow(
+      "receipt integrity",
+    );
+  });
+
+  it("does not capture an old project receipt when the canonical receipt is absent", () => {
+    const { root, specPath } = setup();
+    const started = beginAgentRun({
+      root,
+      workspace: root,
+      agentId: "backend",
+      sessionId: "source-session",
+      taskId: "source-task",
+      vendor: "codex",
+    });
+    const legacy = join(root, ".agents/state/agent-runs");
+    mkdirSync(legacy, { recursive: true });
+    renameSync(
+      join(runtimeStateDir(root, "agent-runs"), `${started.runId}.json`),
+      join(legacy, `${started.runId}.json`),
+    );
+    expect(() =>
+      captureHarnessIncident(root, specPath, started.runId),
+    ).toThrow();
+    expect(existsSync(join(legacy, `${started.runId}.json`))).toBe(true);
+    expect(
+      existsSync(
+        join(
+          root,
+          ".agents/results/incidents/reported-incomplete/incident.json",
+        ),
+      ),
+    ).toBe(false);
+  });
+
+  it("keeps arbitrary evidence constrained to the project when the source receipt is in HOME", () => {
+    const { root, specPath } = setup();
+    const started = beginAgentRun({
+      root,
+      workspace: root,
+      agentId: "backend",
+      sessionId: "source-session",
+      taskId: "source-task",
+      vendor: "codex",
+    });
+    const spec = JSON.parse(readFileSync(specPath, "utf8"));
+    spec.evidence_files = [
+      join(runtimeStateDir(root, "agent-runs"), `${started.runId}.json`),
+    ];
+    writeFileSync(specPath, JSON.stringify(spec));
+    expect(() => captureHarnessIncident(root, specPath, started.runId)).toThrow(
+      "inside the project",
+    );
+    expect(
+      existsSync(
+        join(
+          root,
+          ".agents/results/incidents/reported-incomplete/incident.json",
+        ),
+      ),
+    ).toBe(false);
   });
 
   it("keeps external dependencies explicit instead of claiming full replay", () => {

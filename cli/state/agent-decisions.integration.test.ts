@@ -23,6 +23,7 @@ import {
 } from "./agent-results.js";
 import * as eventStore from "./events.js";
 import { emitEvent, eventsPath, readEvents } from "./events.js";
+import { runtimeStateDir } from "./project-runtime.js";
 
 const required = {
   subject: "backend.auth-policy",
@@ -302,7 +303,7 @@ describe("agent decision completion evidence", () => {
     verifyRequiredChecks(root, run.runId);
     const current = readAgentRun(root, run.runId);
     writeFileSync(
-      join(root, ".agents/state/agent-runs", `${run.runId}.json`),
+      join(runtimeStateDir(root, "agent-runs"), `${run.runId}.json`),
       JSON.stringify({ ...current, requiredDecisions: [] }),
     );
     const finished = finishAgentRun(root, run.runId, 0, claim);

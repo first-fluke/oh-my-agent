@@ -14,9 +14,11 @@ import {
   writeTestPlan,
 } from "../../state/__fixtures__/task-contract.js";
 import {
+  claimPath,
   readAgentRun,
   resultEvidenceValid,
 } from "../../state/agent-results.js";
+import { runtimeStateDir } from "../../state/project-runtime.js";
 
 const cli = resolve(import.meta.dirname, "../../cli.ts");
 describe("agent result CLI lifecycle", () => {
@@ -117,7 +119,7 @@ describe("agent result CLI lifecycle", () => {
       fixture,
       `
 const fs=require("node:fs"), path=require("node:path"), cp=require("node:child_process");
-const dir=path.join(process.cwd(),".agents/state/agent-runs");
+const dir=${JSON.stringify(runtimeStateDir(root, "agent-runs"))};
 const run=fs.readdirSync(dir).filter(f=>f.endsWith(".json")&&!f.endsWith(".claim.json")&&f!=="_sequence.json").map(f=>JSON.parse(fs.readFileSync(path.join(dir,f),"utf8"))).find(r=>r.status==="running");
 if(!run) process.exit(2);
 const check=cp.spawnSync(${JSON.stringify(bun)},[${JSON.stringify(cli)},"agent", "verify",run.runId,"--required","--project-root",process.cwd()],{stdio:"inherit"});
@@ -208,7 +210,7 @@ fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"
       "process.exit(0)",
     );
     expect(verified.status, verified.stderr).toBe(0);
-    const file = join(root, ".agents/state/claim.json");
+    const file = claimPath(root, runId);
     writeFileSync(
       file,
       JSON.stringify({

@@ -1,5 +1,6 @@
 import { cpSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { standaloneHookSources } from "./hooks-composer/standalone-wrapper.js";
 import { copyHookScripts } from "./hooks-composer.js";
 
 /**
@@ -20,19 +21,22 @@ export const PI_EXTENSION_DIR = join(".pi", "extensions", "oma");
 
 /**
  * Materialize the pi bridge into `<targetDir>/.pi/extensions/oma/`:
- *  1. Copy the vendor-agnostic core hook scripts (keyword-detector,
- *     skill-injector, test-filter, their deps, and `filter-test-output.sh`)
- *     so the bridge can spawn them as subprocesses.
+ *  1. Install generated Bun handler entries that dispatch through the CLI,
+ *     with supporting files such as `filter-test-output.sh`.
  *  2. Copy the bridge `index.ts` as the directory-extension entry point.
  *
- * Idempotent: `copyHookScripts` clears stale non-directory entries (including
- * a previous `index.ts`) before recopying, then the bridge is re-written.
+ * Idempotent: tracked handler entries are reconciled by their fingerprints;
+ * modified entries are preserved. The managed bridge is re-written.
  */
 export function installPiExtension(sourceDir: string, targetDir: string): void {
   const extDir = join(targetDir, PI_EXTENSION_DIR);
 
-  // 1. Core scripts (also clears stale files in extDir first).
-  copyHookScripts(sourceDir, extDir, undefined, { ownedNamespace: true });
+  // The bridge keeps its Bun/script ABI; generated handlers delegate to the
+  // CLI so semantic delivery uses its profile-scoped queue and provider config.
+  copyHookScripts(sourceDir, extDir, undefined, {
+    ownedNamespace: true,
+    generatedSources: standaloneHookSources("pi"),
+  });
 
   // 2. The bridge entry point.
   const shimSrc = join(

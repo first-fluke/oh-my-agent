@@ -1,12 +1,13 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { z } from "zod";
 import {
   type RequiredDecision,
   RequiredDecisionSchema,
 } from "./agent-decisions.js";
 import { atomicWriteJson } from "./events.js";
+import { runtimeStateDir } from "./project-runtime.js";
 
 const text = z.string().trim().min(1);
 const relativePath = text.refine(
@@ -149,7 +150,7 @@ const PlanPinSchema = z.object({
 });
 
 function planPin(root: string, kind: "sessions" | "lineages", id: string) {
-  return join(root, ".agents/state/agent-plans", kind, `${id}.json`);
+  return join(runtimeStateDir(root, "agent-plans"), kind, `${id}.json`);
 }
 
 function canonical(value: unknown): unknown {
@@ -235,8 +236,13 @@ export function pinSessionPlan(root: string, sessionId: string): void {
   const plan = loadSessionPlan(root, sessionId);
   if (!plan) return;
   const identity = planIdentity(plan, sessionId);
-  atomicWriteJson(planPin(root, "lineages", identity.lineageId), identity);
-  atomicWriteJson(planPin(root, "sessions", sessionId), identity);
+  for (const pin of [
+    planPin(root, "lineages", identity.lineageId),
+    planPin(root, "sessions", sessionId),
+  ]) {
+    mkdirSync(dirname(pin), { recursive: true, mode: 0o700 });
+    atomicWriteJson(pin, identity);
+  }
 }
 
 export function contractHash(contract: TaskContract | null): string {

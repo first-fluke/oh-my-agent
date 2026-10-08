@@ -173,6 +173,8 @@ import {
   _resetInstallContext,
   setInstallContext,
 } from "../../platform/install-context.js";
+import { createMemoryDeliveryTarget } from "../../state/memory-delivery-target.js";
+import { createAgentMemoryProvider } from "../../state/memory-provider.js";
 import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import {
   collectDoctorReport,
@@ -467,6 +469,13 @@ describe("AgentMemory doctor checks", () => {
         kind: "decision.made",
         eventId: "evt-1",
         ts: "2026-05-29T00:00:00.000Z",
+        memoryDelivery: { observe: true, remember: false },
+        memoryTarget: createMemoryDeliveryTarget(
+          process.cwd(),
+          createAgentMemoryProvider({
+            env: { AGENTMEMORY_URL: "http://127.0.0.1:3111" },
+          }),
+        ),
       }),
       "{bad json",
     ];

@@ -9,7 +9,7 @@ const AGY_DIR = join(FAKE_HOME, ".gemini/antigravity-cli");
 const SETTINGS = join(AGY_DIR, "settings.json");
 const HOME_HOOKS_DIR = join(AGY_DIR, "hooks"); // HOME copy backing statusLine
 const PROJECT_HOOKS_JSON = "/repo/.agents/hooks.json"; // agy auto-loads this
-const CORE = "/repo/.agents/hooks/core"; // project core hooks (command targets)
+const CORE = "/repo/.agents/hooks/core"; // protected project source
 const VARIANT = "/repo/.agents/hooks/variants/antigravity.json";
 
 const variantJson = JSON.stringify({
@@ -135,25 +135,25 @@ describe("installAntigravityHud", () => {
     // lifecycle (PreInvocation): handler array directly, no matcher
     expect(doc["oma-keyword-detector"].PreInvocation[0]).toMatchObject({
       type: "command",
-      command: `bun "${join(CORE, "keyword-detector.ts")}"`,
+      command: `bun "${join(HOME_HOOKS_DIR, "keyword-detector.ts")}"`,
       timeout: 5,
     });
     expect(doc["oma-state-boundary"].PreInvocation[0].command).toBe(
-      `bun "${join(CORE, "state-boundary.ts")}"`,
+      `bun "${join(HOME_HOOKS_DIR, "state-boundary.ts")}"`,
     );
     expect(doc["oma-skill-injector"].PreInvocation[0].command).toBe(
-      `bun "${join(CORE, "skill-injector.ts")}"`,
+      `bun "${join(HOME_HOOKS_DIR, "skill-injector.ts")}"`,
     );
 
     // tool event (PreToolUse): { matcher, hooks: [handler] }
     expect(doc["oma-test-filter"].PreToolUse[0].matcher).toBe("run_command");
     expect(doc["oma-test-filter"].PreToolUse[0].hooks[0].command).toBe(
-      `bun "${join(CORE, "test-filter.ts")}"`,
+      `bun "${join(HOME_HOOKS_DIR, "test-filter.ts")}"`,
     );
 
     // lifecycle (Stop): handler array directly
     expect(doc["oma-persistent-mode"].Stop[0].command).toBe(
-      `bun "${join(CORE, "persistent-mode.ts")}"`,
+      `bun "${join(HOME_HOOKS_DIR, "persistent-mode.ts")}"`,
     );
 
     // settings.json: statusLine (HOME copy) only — agy strips hooks/defaultHooksPath.

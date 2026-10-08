@@ -1,9 +1,12 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { retryObservePath } from "../../state/events.js";
-import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
+import { createMemoryDeliveryTarget } from "../../state/memory-delivery-target.js";
+import {
+  enqueueMemoryRetry,
+  readMemoryRetryQueue,
+} from "../../state/memory-retry-queue.js";
 import type {
   MemoryObservePayload,
   MemoryProvider,
@@ -120,14 +123,18 @@ describe("memory import", () => {
   });
 
   it("drains retry queue when source is retry", async () => {
-    const retryPath = retryObservePath(projectDir);
-    mkdirSync(dirname(retryPath), { recursive: true });
-    writeFileSync(retryPath, `${eventLine("ok", "sid-ok")}\n`, "utf-8");
+    const memory = providerStub({});
+    enqueueMemoryRetry(
+      projectDir,
+      JSON.parse(eventLine("ok", "sid-ok")),
+      { observe: true, remember: false },
+      createMemoryDeliveryTarget(projectDir, memory),
+    );
 
     const result = await importAgentMemory({
       source: "retry",
       projectDir,
-      provider: providerStub({}),
+      provider: memory,
     });
 
     expect(result).toMatchObject({

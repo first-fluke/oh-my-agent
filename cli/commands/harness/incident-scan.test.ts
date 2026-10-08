@@ -1,7 +1,8 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { runtimeStateDir } from "../../state/project-runtime.js";
 import { incidentSpecSkeleton, scanHarnessIncidents } from "./incident-scan.js";
 
 const roots: string[] = [];
@@ -16,7 +17,7 @@ function run(
   status: string,
   extra: Record<string, unknown> = {},
 ): void {
-  const dir = join(root, ".agents", "state", "agent-runs");
+  const dir = runtimeStateDir(root, "agent-runs");
   mkdirSync(dir, { recursive: true });
   writeFileSync(
     join(dir, `${runId}.json`),
@@ -96,13 +97,16 @@ describe("incident scan", () => {
       exitCode: 2,
       unresolved: ["boom"],
       output: {
-        path: `.agents/state/agent-runs/${a}.output.txt`,
+        path: relative(
+          root,
+          join(runtimeStateDir(root, "agent-runs"), `${a}.output.txt`),
+        ),
         bytes: 22,
         truncated: false,
       },
     });
     writeFileSync(
-      join(root, ".agents", "state", "agent-runs", `${a}.output.txt`),
+      join(runtimeStateDir(root, "agent-runs"), `${a}.output.txt`),
       `${JSON.stringify({ type: "result", is_error: false, result: "I pushed with --force." })}\n`,
     );
     const candidate = scanHarnessIncidents(root).candidates[0];

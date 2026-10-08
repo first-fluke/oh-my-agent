@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync } from "node:fs";
 import { hostname } from "node:os";
 import { join, resolve } from "node:path";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
@@ -11,6 +11,7 @@ import {
   resultEvidenceValid,
 } from "./agent-results.js";
 import { atomicWriteJson } from "./events.js";
+import { runtimeStateDir } from "./project-runtime.js";
 import {
   loadSessionPlan,
   loadTaskContract,
@@ -177,8 +178,7 @@ export function planSessionResume(
 
 function acquireResumeLease(root: string, sessionId: string): () => void {
   const file = join(
-    root,
-    ".agents/state/agent-resume",
+    runtimeStateDir(root, "agent-resume"),
     `${sessionId}.lease.json`,
   );
   const token = randomUUID();
@@ -196,6 +196,10 @@ function acquireResumeLease(root: string, sessionId: string): () => void {
       )
         throw new Error("A resume coordinator already owns this session");
     }
+    mkdirSync(runtimeStateDir(root, "agent-resume"), {
+      recursive: true,
+      mode: 0o700,
+    });
     atomicWriteJson(file, { pid: process.pid, host: hostname(), token });
   });
   return () =>
@@ -226,8 +230,7 @@ export async function resumeSession(args: {
     const planFile = sessionPlanPath(args.root, args.sessionId);
     const pinnedPlan = readFileSync(planFile, "utf8");
     const checkpoint = join(
-      args.root,
-      ".agents/state/agent-resume",
+      runtimeStateDir(args.root, "agent-resume"),
       `${args.sessionId}.json`,
     );
     atomicWriteJson(checkpoint, report);

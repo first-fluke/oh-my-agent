@@ -59,12 +59,18 @@ export function requiredVariantScripts(variant: HookVariant): Set<string> {
  *   without ownership evidence are preserved.
  * @param options.ownedNamespace - Set only for an OMA-exclusive directory.
  *   Shipped filenames there can be adopted from pre-manifest installations.
+ * @param options.generatedSources - Installed file contents for CLI-owned
+ *   entry points; fingerprinting and customization protection apply equally.
  */
 export function copyHookScripts(
   sourceDir: string,
   hooksDest: string,
   only?: ReadonlySet<string>,
-  options: { ownedNamespace?: boolean } = {},
+  options: {
+    ownedNamespace?: boolean;
+    /** Generated entry points replace copied handlers without editing SSOT. */
+    generatedSources?: ReadonlyMap<string, string>;
+  } = {},
 ): void {
   const hooksSrc = join(sourceDir, ".agents", "hooks", "core");
   if (!existsSync(hooksSrc)) return;
@@ -123,7 +129,11 @@ export function copyHookScripts(
   for (const name of names) {
     const src = join(hooksSrc, name);
     const dest = join(hooksDest, name);
-    const sourceHash = digest(src);
+    const generated = options.generatedSources?.get(name);
+    const sourceHash =
+      generated === undefined
+        ? digest(src)
+        : createHash("sha256").update(generated).digest("hex");
     if (!sourceHash) continue;
     let present = false;
     try {
@@ -146,7 +156,11 @@ export function copyHookScripts(
       continue;
     }
     clearNonDirectory(dest);
-    cpSync(src, dest, { force: true, dereference: true });
+    if (generated === undefined) {
+      cpSync(src, dest, { force: true, dereference: true });
+    } else {
+      atomicWriteFileSync(dest, generated);
+    }
     files[name] = sourceHash;
   }
   atomicWriteFileSync(

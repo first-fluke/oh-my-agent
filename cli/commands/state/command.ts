@@ -6,6 +6,10 @@ import {
   verifyRequiredDecisions,
 } from "../../state/decision-verifier.js";
 import {
+  migrateRuntimeState,
+  renderRuntimeMigration,
+} from "../../state/runtime-migration.js";
+import {
   evaluateSelfHealingGate,
   renderSelfHealingGateResult,
 } from "../../state/self-healing.js";
@@ -165,8 +169,10 @@ export function registerState(program: Command): void {
   addOutputOptions(
     program
       .command("state:migrate")
-      .description(
-        "Migrate legacy sessions to the home profile and remove verified originals",
+      .description("Migrate project state to the home profile")
+      .option(
+        "--runtime",
+        "Copy runtime files to HOME, preserve originals, and quarantine unbound retries",
       )
       .option(
         "--include-active",
@@ -176,6 +182,21 @@ export function registerState(program: Command): void {
   ).action(
     runAction(
       async (options) => {
+        if (options.runtime === true) {
+          if (options.includeActive === true)
+            throw new Error(
+              "--include-active applies only to session migration",
+            );
+          const result = await migrateRuntimeState({
+            projectDir: resolveProjectRoot(),
+            dryRun: options.dryRun === true,
+          });
+          if (resolveJsonMode(options))
+            console.log(JSON.stringify(result, null, 2));
+          else console.log(renderRuntimeMigration(result));
+          if (!result.ok) process.exitCode = 1;
+          return;
+        }
         const result = migrateLegacySessions({
           projectDir: resolveProjectRoot(),
           dryRun: options.dryRun === true,

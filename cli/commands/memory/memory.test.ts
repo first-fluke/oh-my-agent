@@ -12,6 +12,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { retryObservePath } from "../../state/events.js";
+import { createMemoryDeliveryTarget } from "../../state/memory-delivery-target.js";
 import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import type {
   MemoryObservePayload,
@@ -50,13 +51,19 @@ function providerStub(args: {
   };
 }
 
-function eventLine(eventId: string, sid = "oma-test"): string {
+function eventLine(
+  projectDir: string,
+  eventId: string,
+  sid = "oma-test",
+): string {
   return JSON.stringify({
     eventId,
     ts: "2026-05-27T00:00:00.000Z",
     sid,
     kind: "decision.made",
     writerPid: 1,
+    memoryDelivery: { observe: true, remember: false },
+    memoryTarget: createMemoryDeliveryTarget(projectDir, providerStub({})),
   });
 }
 
@@ -300,7 +307,7 @@ describe("memory commands", () => {
     mkdirSync(dirname(retryPath), { recursive: true });
     writeFileSync(
       retryPath,
-      `${eventLine("ok", "sid-ok")}\n${eventLine("fail", "sid-fail")}\nnot-json\n`,
+      `${eventLine(projectDir, "ok", "sid-ok")}\n${eventLine(projectDir, "fail", "sid-fail")}\nnot-json\n`,
       "utf-8",
     );
 
@@ -327,7 +334,7 @@ describe("memory commands", () => {
       "sid-fail",
     ]);
     expect(readMemoryRetryQueue(projectDir).map(({ line }) => line)).toEqual([
-      eventLine("fail", "sid-fail"),
+      eventLine(projectDir, "fail", "sid-fail"),
       "not-json",
     ]);
   });
@@ -335,7 +342,7 @@ describe("memory commands", () => {
   it("leaves retry file unchanged in dry-run mode", async () => {
     const retryPath = retryObservePath(projectDir);
     mkdirSync(dirname(retryPath), { recursive: true });
-    const content = `${eventLine("dry-run")}\n`;
+    const content = `${eventLine(projectDir, "dry-run")}\n`;
     writeFileSync(retryPath, content, "utf-8");
 
     const result = await drainMemoryRetryQueue({

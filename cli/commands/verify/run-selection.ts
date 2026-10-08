@@ -1,6 +1,20 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { getCoordinationStoreDirs } from "../../io/memory.js";
+import { runtimeStateDir } from "../../state/project-runtime.js";
+
+function receiptFiles(root: string): string[] {
+  const dir = runtimeStateDir(root, "agent-runs");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter(
+      (name) =>
+        name.endsWith(".json") &&
+        !name.endsWith(".claim.json") &&
+        name !== "_sequence.json",
+    )
+    .map((name) => join(dir, name));
+}
 
 export interface VerifySelection {
   sessionId?: string;
@@ -29,8 +43,7 @@ export function resolveVerifySelection(
     process.cwd(),
   ])) {
     const file = join(
-      root,
-      ".agents/state/agent-runs",
+      runtimeStateDir(root, "agent-runs"),
       `${selection.runId}.json`,
     );
     if (!existsSync(file)) continue;
@@ -80,31 +93,28 @@ export function findResultFile(
       `result-${agentType}-${selection.taskId}-${selection.runId}-${selection.sessionId}.md`,
     );
   } else if (selection.sessionId) {
-    const receipts = join(root, ".agents/state/agent-runs");
-    if (existsSync(receipts)) {
-      for (const name of readdirSync(receipts)) {
-        if (!name.endsWith(".json") || name.endsWith(".claim.json")) continue;
-        try {
-          const run = JSON.parse(readFileSync(join(receipts, name), "utf8"));
-          if (
-            run.agentId !== agentType ||
-            run.sessionId !== selection.sessionId ||
-            typeof run.workspace !== "string" ||
-            resolve(run.workspace) !== resolve(workspace) ||
-            typeof run.taskId !== "string" ||
-            !/^[\w-]+$/.test(run.taskId) ||
-            typeof run.runId !== "string" ||
-            !/^[\w-]+$/.test(run.runId) ||
-            name !== `${run.runId}.json` ||
-            (selection.taskId && run.taskId !== selection.taskId)
-          )
-            continue;
-          expected.add(
-            `result-${agentType}-${run.taskId}-${run.runId}-${run.sessionId}.md`,
-          );
-        } catch {
-          // An unreadable receipt cannot bind a report to this task/session.
-        }
+    for (const file of receiptFiles(root)) {
+      const name = basename(file);
+      try {
+        const run = JSON.parse(readFileSync(file, "utf8"));
+        if (
+          run.agentId !== agentType ||
+          run.sessionId !== selection.sessionId ||
+          typeof run.workspace !== "string" ||
+          resolve(run.workspace) !== resolve(workspace) ||
+          typeof run.taskId !== "string" ||
+          !/^[\w-]+$/.test(run.taskId) ||
+          typeof run.runId !== "string" ||
+          !/^[\w-]+$/.test(run.runId) ||
+          name !== `${run.runId}.json` ||
+          (selection.taskId && run.taskId !== selection.taskId)
+        )
+          continue;
+        expected.add(
+          `result-${agentType}-${run.taskId}-${run.runId}-${run.sessionId}.md`,
+        );
+      } catch {
+        // An unreadable receipt cannot bind a report to this task/session.
       }
     }
   }

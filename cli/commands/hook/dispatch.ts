@@ -72,7 +72,7 @@ type RunFn = (
   ctx: HandlerCtx,
 ) => Promise<HandlerResult | null>;
 
-const HANDLER_REGISTRY: Readonly<Record<string, RunFn>> = {
+export const HANDLER_REGISTRY: Readonly<Record<string, RunFn>> = {
   "keyword-detector": keywordDetector.run,
   "skill-injector": skillInjector.run,
   "code-intelligence-primer": codeIntelligencePrimer.run,

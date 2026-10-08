@@ -208,7 +208,7 @@ export function registerMemory(program: Command): void {
   addOutputOptions(
     program
       .command("memory:retry-drain")
-      .description("Drain queued AgentMemory observe retries")
+      .description("Drain queued semantic-memory deliveries")
       .option("--dry-run", "Inspect retry queue without modifying it"),
   ).action(
     runAction(

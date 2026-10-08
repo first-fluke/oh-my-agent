@@ -76,8 +76,6 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
       env: {
         ...process.env,
         OMA_RUNTIME_VENDOR: "codex",
-        OMA_STATE_HOME: path.join(root, "state-home"),
-        OMA_PROFILE: "0",
         FAKE_VENDOR_DELAY: String(delay),
         ...extraEnv,
       },
@@ -302,8 +300,6 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
           env: {
             ...process.env,
             OMA_RUNTIME_VENDOR: "codex",
-            OMA_STATE_HOME: path.join(root, "state-home"),
-            OMA_PROFILE: "0",
             FAKE_VENDOR_RELEASE_FILE: path.join(root, "unreleased-vendor"),
             FAKE_VENDOR_IGNORE_TERM: "1",
           },

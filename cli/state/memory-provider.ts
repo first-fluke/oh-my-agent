@@ -9,6 +9,7 @@ import type {
   MemoryRecallResult,
   MemoryRememberPayload,
 } from "../types/memory.js";
+import { memoryEndpointIdentity } from "./memory-delivery-target.js";
 
 function headerValue(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];
@@ -114,6 +115,7 @@ export function resolveAgentMemoryEndpoint(options: {
 export function createNoneMemoryProvider(): MemoryProvider {
   return {
     name: "none",
+    deliveryIdentity: { identity: "none" },
     enabled: false,
     async status() {
       return {
@@ -138,6 +140,10 @@ export function createAgentMemoryProvider(
   options: AgentMemoryProviderOptions = {},
 ): MemoryProvider {
   const env = options.env ?? process.env;
+  const endpoint = resolveAgentMemoryEndpoint({
+    env,
+    homeDir: options.homeDir,
+  });
   let cachedStatus: MemoryProviderStatus | null = null;
 
   async function status(): Promise<MemoryProviderStatus> {
@@ -151,10 +157,6 @@ export function createAgentMemoryProvider(
       return cachedStatus;
     }
 
-    const endpoint = resolveAgentMemoryEndpoint({
-      env,
-      homeDir: options.homeDir,
-    });
     if (!endpoint) {
       cachedStatus = {
         provider: "agentmemory",
@@ -213,6 +215,7 @@ export function createAgentMemoryProvider(
 
   return {
     name: "agentmemory",
+    deliveryIdentity: { endpoint: memoryEndpointIdentity(endpoint) },
     get enabled() {
       return env.OMA_NO_AGENTMEMORY !== "1";
     },
@@ -223,7 +226,7 @@ export function createAgentMemoryProvider(
       try {
         // AgentMemory's /observe expects a hook-event envelope
         // (hookType, sessionId, project, cwd, timestamp) carrying the content.
-        const cwd = process.cwd();
+        const cwd = payload.projectDir ?? process.cwd();
         const response = await http.post(
           `${current.endpoint}/agentmemory/observe`,
           {

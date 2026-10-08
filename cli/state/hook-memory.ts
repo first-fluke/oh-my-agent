@@ -1,13 +1,14 @@
 import { validateEventEnvelope } from "../../.agents/hooks/core/event-contract.js";
 import { withMemoryAdapter } from "../../.agents/hooks/core/memory-adapter.js";
+import type { OmaEvent } from "../../.agents/hooks/core/state-core.js";
 import type { MemoryProvider } from "../types/memory.js";
 import {
   loadProviders,
   type SemanticMemoryProviderName,
 } from "../utils/providers.js";
 import { deliverEventMemory } from "./events.js";
+import { recallAgentMemoryForHook } from "./hook-agentmemory.js";
 import { createNoneMemoryProvider } from "./memory-provider.js";
-import { parseMemoryRetryLine } from "./memory-retry-queue.js";
 import { createMemoryProvider } from "./semantic-memory.js";
 
 /**
@@ -21,7 +22,6 @@ export function withSelectedHookMemory<T>(
   selection?: SemanticMemoryProviderName,
 ): T {
   const selected = selection ?? loadProviders(projectDir).semantic_memory;
-  if (selected === "agentmemory") return run();
   let provider: MemoryProvider | undefined;
   try {
     provider =
@@ -34,12 +34,19 @@ export function withSelectedHookMemory<T>(
   return withMemoryAdapter(
     {
       recall: (query, limit) =>
-        provider?.recall?.({ query, limit }) ?? Promise.resolve([]),
+        selected === "agentmemory"
+          ? recallAgentMemoryForHook(query, limit, projectDir)
+          : (provider?.recall?.({ query, limit }) ?? Promise.resolve([])),
       async observe(payload) {
-        if (selected === "honcho") {
-          const parsed = parseMemoryRetryLine(payload.content);
-          if (parsed && validateEventEnvelope(parsed.event).length === 0)
-            await deliverEventMemory(projectDir, parsed.event, provider);
+        if (selected !== "none") {
+          let event: unknown;
+          try {
+            event = JSON.parse(payload.content);
+          } catch {
+            return true;
+          }
+          if (validateEventEnvelope(event).length === 0)
+            await deliverEventMemory(projectDir, event as OmaEvent, provider);
         }
         return true;
       },

@@ -40,9 +40,10 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { standaloneHookSources } from "../../platform/hooks-composer/standalone-wrapper.js";
 import { clearNonDirectory } from "../../utils/fs-utils.js";
 import { readJsonMergeBaseOrWarn } from "../../utils/merge-read.js";
-import { safeWriteJson } from "../../utils/safe-write.js";
+import { safeWriteFile, safeWriteJson } from "../../utils/safe-write.js";
 
 /**
  * agy `settings.json` allowlist — the ONLY top-level keys agy persists in
@@ -112,6 +113,11 @@ function copyCoreHooks(sourceDir: string, hooksDir: string): void {
     clearNonDirectory(join(hooksDir, entry.name));
   }
   cpSync(src, hooksDir, { recursive: true, force: true, dereference: true });
+  for (const [script, content] of standaloneHookSources("antigravity")) {
+    if (existsSync(join(src, script))) {
+      safeWriteFile(join(hooksDir, script), content);
+    }
+  }
 }
 
 function readAntigravityVariant(sourceDir: string): AntigravityVariant {
@@ -179,7 +185,8 @@ function mergeAgyHooksDoc(
 /**
  * Build agy's `hooks.json` document: a top-level map of hook name → event
  * config. Each OMA core hook gets its own named entry; commands point at the
- * project's core hooks by absolute path so resolution is cwd-independent.
+ * generated standalone wrappers by absolute path. Each entry dispatches only
+ * its named handler, so separate agy registrations cannot repeat a full chain.
  */
 function buildAgyHooksDoc(
   coreHooksDir: string,
@@ -258,14 +265,15 @@ export function installAntigravityHud(
     };
   }
 
-  // HOME copy of core hooks — backs the statusLine (HUD) command.
+  // HOME copy backs the HUD; generated handlers route semantic delivery
+  // through the CLI without editing the source core definitions.
   copyCoreHooks(sourceDir, hooksDir);
 
   const variant = readAntigravityVariant(sourceDir);
   const statusLineHook = variant.statusLine?.hook ?? "hud.ts";
 
   // Project hooks.json — agy auto-loads it from the workspace `.agents/` root.
-  // Commands point at the project's own core hooks (absolute, cwd-independent).
+  // Commands point at the HOME wrappers (absolute, cwd-independent).
   // MERGE, don't overwrite: the file is shared with user-registered hooks
   // (added by hand or via agy's /hooks UI) — only `oma-*` entries are ours.
   const hooksJsonPath = join(sourceDir, PROJECT_HOOKS_JSON);
@@ -278,10 +286,7 @@ export function installAntigravityHud(
       mkdirSync(join(sourceDir, ".agents"), { recursive: true });
       safeWriteJson(
         hooksJsonPath,
-        mergeAgyHooksDoc(
-          existingHooks,
-          buildAgyHooksDoc(coreHooksDir, variant),
-        ),
+        mergeAgyHooksDoc(existingHooks, buildAgyHooksDoc(hooksDir, variant)),
       );
       writtenHooksJson = hooksJsonPath;
     }

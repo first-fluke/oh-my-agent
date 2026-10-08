@@ -69,6 +69,32 @@ async function readAllStdin(): Promise<string> {
 }
 
 export function registerHook(program: Command): void {
+  program
+    .command("hook:script")
+    .description(
+      "Run one installed hook handler through the CLI memory adapter",
+    )
+    .requiredOption("--vendor <v>", "Standalone hook vendor")
+    .requiredOption("--script <name>", "Installed hook handler filename")
+    .action(
+      runAction(async (options) => {
+        const { runStandaloneHookScript } = await import("./standalone.js");
+        const vendor = String(options.vendor).trim().toLowerCase() as Vendor;
+        try {
+          const rawStdin = await readAllStdin();
+          const response = await runStandaloneHookScript({
+            vendor,
+            script: String(options.script),
+            rawStdin,
+            cwd: process.cwd(),
+            sid: extractSessionId(vendor, rawStdin),
+          });
+          if (response.output) process.stdout.write(response.output);
+        } catch {
+          process.stderr.write("oma hook script: handler failed (fail-open)\n");
+        }
+      }),
+    );
   // ---------------------------------------------------------------------------
   // oma hook — canonical ABI for vendor hook dispatch (design 019).
   // Each vendor hook event invokes: oma hook run --vendor <v> --event <e> [--matcher <m>]

@@ -9,6 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { projectIdentity } from "../../.agents/hooks/core/session-storage.ts";
 import {
   activateWorkflowSession,
   deriveMeta,
@@ -293,6 +294,7 @@ describe("L1 state events", () => {
         sessionId: "oma-memory",
         content: `${JSON.stringify(event)}\n`,
         source: "oma-workflow",
+        projectDir: projectIdentity(projectDir).projectDir,
       },
     ]);
     expect(readMemoryRetryQueue(projectDir)).toEqual([]);
@@ -324,6 +326,13 @@ describe("L1 state events", () => {
     expect(parseMemoryRetryLine(pending[0].line)).toEqual({
       event,
       delivery: { observe: true, remember: false },
+      target: expect.objectContaining({
+        version: 1,
+        provider: "agentmemory",
+        projectId: projectIdentity(projectDir).projectId,
+        projectDir: projectIdentity(projectDir).projectDir,
+        profile: "0",
+      }),
     });
   });
 

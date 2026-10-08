@@ -5,14 +5,17 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
 import { PASS_COMMAND, writeTestPlan } from "./__fixtures__/task-contract.js";
 import {
   beginAgentRun,
+  claimPath,
   finishAgentRun,
   hasCurrentChecks,
   listAgentRuns,
@@ -22,6 +25,7 @@ import {
   verifyAgentRun,
   workspaceFingerprint,
 } from "./agent-results.js";
+import { runtimeStateDir } from "./project-runtime.js";
 
 describe("agent execution evidence", () => {
   let root: string;
@@ -29,6 +33,7 @@ describe("agent execution evidence", () => {
     root = mkdtempSync(join(tmpdir(), "oma-evidence-"));
   });
   afterEach(() => {
+    process.env.OMA_PROFILE = "0";
     rmSync(root, { recursive: true, force: true });
   });
   const start = (planned = true) => {
@@ -160,7 +165,7 @@ describe("agent execution evidence", () => {
     start();
     const latest = start();
     writeFileSync(
-      join(root, ".agents/state/agent-runs", `${latest.runId}.json`),
+      join(runtimeStateDir(root, "agent-runs"), `${latest.runId}.json`),
       "{}",
     );
     expect(() => listAgentRuns(root)).toThrow("Invalid agent run record");
@@ -211,5 +216,110 @@ describe("agent execution evidence", () => {
     expect(workspaceFingerprint(root)).toBe(initial);
     writeFileSync(join(root, "untracked.txt"), "new");
     expect(workspaceFingerprint(root)).not.toBe(initial);
+  });
+
+  it("isolates run records, claims, and sequence numbers for two profiles in one checkout", () => {
+    const first = start(false);
+    const firstDirectory = runtimeStateDir(root, "agent-runs");
+    writeFileSync(claimPath(root, first.runId), JSON.stringify(claim));
+    process.env.OMA_PROFILE = "1";
+    expect(listAgentRuns(root)).toEqual([]);
+    expect(() => readAgentRun(root, first.runId)).toThrow();
+    expect(existsSync(claimPath(root, first.runId))).toBe(false);
+    const second = start(false);
+    expect(second.sequence).toBe(1);
+    expect(runtimeStateDir(root, "agent-runs")).not.toBe(firstDirectory);
+    expect(listAgentRuns(root).map((run) => run.runId)).toEqual([second.runId]);
+    process.env.OMA_PROFILE = "0";
+    expect(start(false).sequence).toBe(2);
+    expect(finishAgentRun(root, first.runId, 0).status).toBe("partial");
+  });
+
+  it("allows another profile to dispatch while the first profile holds its runtime lock", () => {
+    const first = start(false);
+    const source = new URL("./agent-results.ts", import.meta.url).href;
+    const script = `import { beginAgentRun } from ${JSON.stringify(source)};
+      const root = process.env.OMA_TEST_RUNTIME_ROOT;
+      const run = beginAgentRun({ root, workspace: root, agentId: 'qa-reviewer', sessionId: 's1', taskId: 'T1', vendor: 'test' });
+      console.log(JSON.stringify({ sequence: run.sequence, runId: run.runId }));`;
+    const second = withStateIndexLock(root, () =>
+      JSON.parse(
+        execFileSync("bun", ["-e", script], {
+          encoding: "utf8",
+          timeout: 6000,
+          env: {
+            ...process.env,
+            OMA_PROFILE: "1",
+            OMA_TEST_RUNTIME_ROOT: root,
+          },
+        }),
+      ),
+    ) as { sequence: number; runId: string };
+    expect(second.sequence).toBe(1);
+    expect(listAgentRuns(root).map((run) => run.runId)).toEqual([first.runId]);
+    if (process.platform !== "win32") {
+      expect(statSync(runtimeStateDir(root, "agent-runs")).mode & 0o777).toBe(
+        0o700,
+      );
+      expect(
+        statSync(
+          join(runtimeStateDir(root, "agent-runs"), `${first.runId}.json`),
+        ).mode & 0o777,
+      ).toBe(0o600);
+    }
+  });
+
+  it("ignores old project runs, claims, and sequence counters without migrating or deleting them", () => {
+    const run = start(false);
+    const canonical = runtimeStateDir(root, "agent-runs");
+    const legacy = join(root, ".agents/state/agent-runs");
+    mkdirSync(legacy, { recursive: true });
+    writeFileSync(join(legacy, `${run.runId}.json`), JSON.stringify(run));
+    writeFileSync(join(legacy, "_sequence.json"), "17");
+    rmSync(join(canonical, `${run.runId}.json`));
+    rmSync(join(canonical, "_sequence.json"));
+    const legacyClaim = join(legacy, `${run.runId}.claim.json`);
+    writeFileSync(
+      legacyClaim,
+      JSON.stringify({
+        ...claim,
+        verificationSkipped: "Reviewed the existing legacy execution evidence",
+      }),
+    );
+    expect(claimPath(root, run.runId)).toBe(
+      join(canonical, `${run.runId}.claim.json`),
+    );
+    expect(listAgentRuns(root)).toEqual([]);
+    expect(() => readAgentRun(root, run.runId)).toThrow();
+    expect(() => finishAgentRun(root, run.runId, 0)).toThrow();
+    expect(start(false).sequence).toBe(1);
+    expect(existsSync(join(canonical, "_sequence.json"))).toBe(true);
+    expect(readFileSync(join(legacy, "_sequence.json"), "utf8")).toBe("17");
+    expect(existsSync(legacyClaim)).toBe(true);
+    expect(
+      JSON.parse(readFileSync(join(legacy, `${run.runId}.json`), "utf8"))
+        .status,
+    ).toBe("running");
+    process.env.OMA_PROFILE = "1";
+    expect(listAgentRuns(root)).toEqual([]);
+    expect(() => readAgentRun(root, run.runId)).toThrow();
+    expect(start(false).sequence).toBe(1);
+  });
+
+  it("ignores old project shadow records when a canonical run exists", () => {
+    const run = start(false);
+    const legacy = join(root, ".agents/state/agent-runs");
+    mkdirSync(legacy, { recursive: true });
+    writeFileSync(join(legacy, `${run.runId}.json`), "invalid old record");
+    expect(readAgentRun(root, run.runId).runId).toBe(run.runId);
+    expect(claimPath(root, run.runId)).toBe(
+      join(runtimeStateDir(root, "agent-runs"), `${run.runId}.claim.json`),
+    );
+    expect(listAgentRuns(root).map((record) => record.runId)).toEqual([
+      run.runId,
+    ]);
+    expect(readFileSync(join(legacy, `${run.runId}.json`), "utf8")).toBe(
+      "invalid old record",
+    );
   });
 });

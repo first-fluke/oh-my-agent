@@ -2,6 +2,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -51,7 +52,7 @@ describe("independent event memory delivery", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it("preserves L1 and queues delivery if provider initialization throws", async () => {
+  it("preserves L1 and retains an unresolved destination if provider initialization throws", async () => {
     vi.spyOn(semanticMemory, "createMemoryProvider").mockImplementation(() => {
       throw new Error("invalid provider configuration");
     });
@@ -61,10 +62,10 @@ describe("independent event memory delivery", () => {
     expect(readMemoryRetryQueue(root)).toHaveLength(1);
     expect(
       await drainMemoryRetryQueue({ projectDir: root, provider: memory() }),
-    ).toMatchObject({ drained: 1, retained: 0 });
+    ).toMatchObject({ drained: 0, retained: 1 });
   });
 
-  it("queues only durable Honcho delivery after invalid provider initialization", async () => {
+  it("retains only durable Honcho delivery after invalid provider initialization", async () => {
     mkdirSync(join(root, ".agents"));
     writeFileSync(
       join(root, ".agents/oma-config.yaml"),
@@ -75,9 +76,9 @@ describe("independent event memory delivery", () => {
     const retry = memory({ name: "honcho", observeEvents: false });
     expect(
       await drainMemoryRetryQueue({ projectDir: root, provider: retry }),
-    ).toMatchObject({ drained: 1, retained: 0 });
+    ).toMatchObject({ drained: 0, retained: 1 });
     expect(retry.observe).not.toHaveBeenCalled();
-    expect(retry.remember).toHaveBeenCalledOnce();
+    expect(retry.remember).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -158,6 +159,7 @@ describe("independent event memory delivery", () => {
       sessionId: "s1",
       content: `${JSON.stringify(event)}\n`,
       source: "oma-workflow",
+      projectDir: realpathSync(root),
     });
   });
 

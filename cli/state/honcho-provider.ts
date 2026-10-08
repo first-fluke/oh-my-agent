@@ -4,6 +4,7 @@ import type { MemoryProvider } from "../types/memory.js";
 import { resolveProjectRoot } from "../utils/fs-utils.js";
 import { type HonchoConfig, HonchoConfigSchema } from "../utils/providers.js";
 import { recallHoncho } from "./honcho-recall.js";
+import { memoryEndpointIdentity } from "./memory-delivery-target.js";
 
 type Options = {
   projectDir?: string;
@@ -81,6 +82,11 @@ export function createHonchoMemoryProvider(options: Options): MemoryProvider {
 
   return {
     name: "honcho",
+    deliveryIdentity: {
+      endpoint: memoryEndpointIdentity(base),
+      workspace,
+      session,
+    },
     observeEvents: false,
     async status() {
       if (invalid)

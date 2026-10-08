@@ -3,12 +3,13 @@ import { createHash, randomUUID } from "node:crypto";
 import {
   existsSync,
   lstatSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
   readlinkSync,
   writeFileSync,
 } from "node:fs";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
 import { listAgentDecisionSubjects } from "./agent-decision-catalog.js";
@@ -22,6 +23,7 @@ import {
 import type { RequiredDecision } from "./decision-verifier.js";
 import { atomicWriteJson, emitEvent } from "./events.js";
 import { recordHarnessEvolutionEvidence } from "./harness-evolution.js";
+import { runtimeStateDir } from "./project-runtime.js";
 import {
   contractStillCurrent,
   loadSessionPlan,
@@ -91,7 +93,7 @@ export interface AgentRun {
 }
 
 const hashSchema = z.string().regex(/^[a-f0-9]{64}$/);
-const RunSchema = z.object({
+export const RunSchema = z.object({
   schemaVersion: z.literal(1),
   runId: z.string().uuid(),
   sequence: z.number().int().positive(),
@@ -265,7 +267,7 @@ export function workspaceFingerprint(
 
 function runPath(root: string, runId: string): string {
   if (!/^[a-zA-Z0-9_-]+$/.test(runId)) throw new Error("Invalid agent run ID");
-  return join(root, ".agents/state/agent-runs", `${runId}.json`);
+  return join(runtimeStateDir(root, "agent-runs"), `${runId}.json`);
 }
 export function claimPath(root: string, runId: string): string {
   return runPath(root, runId).replace(/\.json$/, ".claim.json");
@@ -371,7 +373,9 @@ export function beginAgentRun(args: {
       }
       pinSessionPlan(args.root, args.sessionId);
     }
-    const counter = join(args.root, ".agents/state/agent-runs/_sequence.json");
+    const directory = runtimeStateDir(args.root, "agent-runs");
+    mkdirSync(directory, { recursive: true, mode: 0o700 });
+    const counter = join(directory, "_sequence.json");
     const previous: unknown = existsSync(counter)
       ? JSON.parse(readFileSync(counter, "utf8"))
       : 0;
@@ -484,7 +488,7 @@ export function readOnlyClaim(log: string): unknown {
 export const RUN_OUTPUT_LIMIT = 64 * 1024;
 
 export function runOutputPath(root: string, runId: string): string {
-  return join(root, ".agents/state/agent-runs", `${runId}.output.txt`);
+  return join(dirname(runPath(root, runId)), `${runId}.output.txt`);
 }
 
 /** Preserve the tail of a runner log as the run's observed output. */
@@ -503,7 +507,7 @@ function preserveRunOutput(
   const truncated = Buffer.byteLength(log) > RUN_OUTPUT_LIMIT;
   const kept = truncated ? log.slice(-RUN_OUTPUT_LIMIT) : log;
   const path = runOutputPath(root, runId);
-  writeFileSync(path, kept, "utf8");
+  writeFileSync(path, kept, { encoding: "utf8", mode: 0o600 });
   return {
     path: relative(root, path),
     bytes: Buffer.byteLength(kept),
@@ -694,7 +698,7 @@ export function hasCurrentChecks(run: AgentRun): boolean {
 }
 
 export function listAgentRuns(root: string): AgentRun[] {
-  const dir = join(root, ".agents/state/agent-runs");
+  const dir = runtimeStateDir(root, "agent-runs");
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
     .filter(

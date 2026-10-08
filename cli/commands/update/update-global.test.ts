@@ -111,6 +111,16 @@ const migrationsState = vi.hoisted(() => ({
   })),
 }));
 
+const runtimeMigrationState = vi.hoisted(() => ({
+  migrateRuntimeState: vi.fn(async (options: { projectDir: string }) => ({
+    ok: true,
+    dryRun: false,
+    profile: "0",
+    projectDir: options.projectDir,
+    entries: [] as { status: string; source: string; area: string }[],
+  })),
+}));
+
 const skillsState = vi.hoisted(() => ({
   REPO: "first-fluke/oh-my-agent",
   INSTALLED_SKILLS_DIR: ".agents/skills",
@@ -217,6 +227,7 @@ vi.mock("../../utils/i18n.js", () => ({
 }));
 vi.mock("../link/run.js", () => linkState);
 vi.mock("../migrations/index.js", () => migrationsState);
+vi.mock("../../state/runtime-migration.js", () => runtimeMigrationState);
 
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
@@ -304,6 +315,15 @@ describe("update --global: _install.json lifecycle", () => {
       actions: [],
       requiresReconcile: false,
     });
+    runtimeMigrationState.migrateRuntimeState.mockImplementation(
+      async (options) => ({
+        ok: true,
+        dryRun: false,
+        profile: "0",
+        projectDir: options.projectDir,
+        entries: [],
+      }),
+    );
     selfUpdateState.maybeSelfUpdate.mockResolvedValue({
       triggered: false,
       reason: "disabled",
@@ -346,6 +366,7 @@ describe("update --global: _install.json lifecycle", () => {
 
   it("stamps refreshed installedAt + new version into _version.json after update", async () => {
     await update({ global: true, force: true, ci: true });
+    expect(runtimeMigrationState.migrateRuntimeState).not.toHaveBeenCalled();
 
     const versionPath = path.join(tmpDir, ".agents", "skills", "_version.json");
     const raw = fs.readFileSync(versionPath, "utf-8");
@@ -362,6 +383,18 @@ describe("update --global: _install.json lifecycle", () => {
     // installedAt must have been refreshed
     expect(meta.installedAt).not.toBe("2026-01-01T00:00:00.000Z");
     expect(new Date(meta.installedAt).toISOString()).toBe(meta.installedAt);
+  });
+
+  it("migrates project runtime before an already-current update returns", async () => {
+    _resetInstallContext();
+    setInstallContext({ installRoot: tmpDir, mode: "project" });
+    vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
+    manifestState.getLocalVersion.mockResolvedValue("8.1.0");
+    await update({ ci: true });
+    expect(
+      runtimeMigrationState.migrateRuntimeState,
+    ).toHaveBeenCalledExactlyOnceWith({ projectDir: tmpDir });
+    expect(tarballState.downloadAndExtract).not.toHaveBeenCalled();
   });
 
   it.each([false, true])(

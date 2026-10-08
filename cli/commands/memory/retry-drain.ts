@@ -1,12 +1,13 @@
-import { existsSync } from "node:fs";
 import {
   deliverMemoryRetryEntry,
-  retryObservePath,
+  reconcileMemoryDeliveryOutbox,
 } from "../../state/events.js";
 import {
   acquireMemoryRetryDrainLock,
   parseMemoryRetryLine,
+  readMemoryRetryEntries,
   readMemoryRetryQueue,
+  retryObservePath,
 } from "../../state/memory-retry-queue.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
 import type {
@@ -25,16 +26,6 @@ export async function drainMemoryRetryQueue(
   const projectDir = args.projectDir ?? resolveProjectRoot();
   const provider = args.provider ?? createMemoryProvider({ projectDir });
   const retryPath = retryObservePath(projectDir);
-  if (!existsSync(retryPath)) {
-    return {
-      retryPath,
-      total: 0,
-      drained: 0,
-      retained: 0,
-      invalid: 0,
-      dryRun: args.dryRun === true,
-    };
-  }
   const shouldDeliver =
     !args.dryRun && provider.name !== "none" && provider.enabled !== false;
   const release = shouldDeliver
@@ -42,9 +33,11 @@ export async function drainMemoryRetryQueue(
     : undefined;
 
   try {
+    if (shouldDeliver) reconcileMemoryDeliveryOutbox(projectDir);
     const lines = readMemoryRetryQueue(projectDir);
     let drained = 0;
     let invalid = 0;
+    const seenDeliveryIds = new Set<string>();
 
     for (const entry of lines) {
       if (!parseMemoryRetryLine(entry.line)) {
@@ -52,9 +45,18 @@ export async function drainMemoryRetryQueue(
         continue;
       }
       if (!shouldDeliver) continue;
+      if (entry.deliveryId && seenDeliveryIds.has(entry.deliveryId)) {
+        const updated = readMemoryRetryEntries(projectDir).find(
+          (candidate) =>
+            candidate.deliveryId === entry.deliveryId &&
+            candidate.delivered?.length,
+        );
+        if (updated) entry.delivered = updated.delivered;
+      }
       if (await deliverMemoryRetryEntry(projectDir, entry, provider)) {
         drained += 1;
       }
+      if (entry.deliveryId) seenDeliveryIds.add(entry.deliveryId);
     }
 
     return {

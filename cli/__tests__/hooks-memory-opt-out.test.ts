@@ -22,13 +22,18 @@ import {
   withMemoryAdapter,
 } from "../../.agents/hooks/core/memory-adapter.ts";
 import {
+  retryObservePath as legacyRetryPath,
   type OmaEvent,
-  retryObservePath,
 } from "../../.agents/hooks/core/state-core.ts";
 import { emitEvent, readEvents } from "../../.agents/hooks/core/state-emit.ts";
 import { drainMemoryRetryQueue } from "../commands/memory/retry-drain.js";
 import { installHooks } from "../platform/skills-installer/ssot-install.js";
+import { retryObservePath } from "../state/events.js";
+import { withSelectedHookMemory } from "../state/hook-memory.js";
+import { createMemoryDeliveryTarget } from "../state/memory-delivery-target.js";
 import { readMemoryRetryQueue } from "../state/memory-retry-queue.js";
+import * as semanticMemory from "../state/semantic-memory.js";
+import type { MemoryProvider } from "../types/memory.js";
 
 vi.mock("node:os", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:os")>();
@@ -89,7 +94,7 @@ describe("standalone hook observation delivery", () => {
     vi.stubEnv("OMA_NO_AGENTMEMORY", "1");
     const event = await emitEvent(projectDir, sid, decision);
     assertSingleEvent(event);
-    expect(existsSync(retryObservePath(projectDir))).toBe(false);
+    expect(existsSync(legacyRetryPath(projectDir))).toBe(false);
   });
 
   it("honors the opt-out in an installed standalone Bun hook runtime", () => {
@@ -114,7 +119,7 @@ process.stdout.write(JSON.stringify(event));`,
       },
     );
     assertSingleEvent(JSON.parse(output));
-    expect(existsSync(retryObservePath(projectDir))).toBe(false);
+    expect(existsSync(legacyRetryPath(projectDir))).toBe(false);
     expect(existsSync(join(projectDir, "cli"))).toBe(false);
   });
 
@@ -137,7 +142,7 @@ process.stdout.write(JSON.stringify(event));`,
         source: "oma-workflow",
         projectDir,
       });
-      expect(existsSync(retryObservePath(projectDir))).toBe(!observed);
+      expect(existsSync(legacyRetryPath(projectDir))).toBe(!observed);
     },
   );
 
@@ -153,16 +158,23 @@ process.stdout.write(JSON.stringify(event));`,
           projectDir,
         }),
       ).resolves.toBe(false);
-      const event = await emitEvent(projectDir, sid, decision);
+      const event = await withSelectedHookMemory(projectDir, () =>
+        emitEvent(projectDir, sid, decision),
+      );
       assertSingleEvent(event);
-      expect(readMemoryRetryQueue(projectDir)).toEqual([
-        expect.objectContaining({ line: JSON.stringify(event) }),
-      ]);
+      expect(readMemoryRetryQueue(projectDir)).toHaveLength(1);
+      expect(
+        JSON.parse(readMemoryRetryQueue(projectDir)[0]?.line ?? "{}"),
+      ).toMatchObject({
+        eventId: event.eventId,
+        memoryTarget: { provider: "agentmemory" },
+        memoryDelivery: { observe: true, remember: true },
+      });
     },
   );
 
   it("returns the L1 event once when the retry append path is blocked", async () => {
-    const retryPath = retryObservePath(projectDir);
+    const retryPath = legacyRetryPath(projectDir);
     mkdirSync(retryPath, { recursive: true });
     const stderr = vi.spyOn(process.stderr, "write").mockReturnValue(true);
     const emitted = withMemoryAdapter(
@@ -183,34 +195,44 @@ process.stdout.write(JSON.stringify(event));`,
     const truncated = '{"eventId":"interrupted"';
     writeFileSync(retryPath, truncated);
     const fd = openSync(retryPath, "a");
+    const remember = vi.fn(async () => true);
+    const provider: MemoryProvider = {
+      name: "agentmemory",
+      deliveryIdentity: { identity: "hook-test" },
+      status: async () => ({ provider: "agentmemory", reachable: true }),
+      observe: async () => false,
+      remember,
+    };
+    vi.spyOn(semanticMemory, "createMemoryProvider").mockReturnValue(provider);
+    const target = createMemoryDeliveryTarget(projectDir, provider);
     let event: OmaEvent;
     try {
-      event = await withMemoryAdapter(
-        { recall: async () => [], observe: async () => false },
-        () => emitEvent(projectDir, sid, decision),
+      event = await withSelectedHookMemory(projectDir, () =>
+        emitEvent(projectDir, sid, decision),
       );
       writeFileSync(
         fd,
-        `${JSON.stringify({ ...event, eventId: "open-writer" })}\n`,
+        `${JSON.stringify({
+          ...event,
+          eventId: "open-writer",
+          memoryDelivery: { observe: true, remember: false },
+          memoryTarget: target,
+        })}\n`,
       );
     } finally {
       closeSync(fd);
     }
     assertSingleEvent(event);
     const observed: string[] = [];
-    const remember = vi.fn(async () => true);
+    remember.mockClear();
+    provider.observe = async (payload) => {
+      observed.push(JSON.parse(payload.content).eventId);
+      return true;
+    };
     expect(
       await drainMemoryRetryQueue({
         projectDir,
-        provider: {
-          name: "agentmemory",
-          status: async () => ({ provider: "agentmemory", reachable: true }),
-          observe: async (payload) => {
-            observed.push(JSON.parse(payload.content).eventId);
-            return true;
-          },
-          remember,
-        },
+        provider,
       }),
     ).toMatchObject({ total: 3, drained: 2, retained: 1, invalid: 1 });
     expect(observed).toEqual([event.eventId, "open-writer"]);

@@ -1,6 +1,7 @@
 import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { readJsonForMerge, warnUnmergeable } from "../utils/merge-read.js";
+import { standaloneHookSources } from "./hooks-composer/standalone-wrapper.js";
 import { copyHookScripts } from "./hooks-composer.js";
 
 /**
@@ -13,7 +14,7 @@ import { copyHookScripts } from "./hooks-composer.js";
  *
  * NOTE: opencode's auto-discovery is flat — it only loads `.opencode/plugins/*`
  * files, not subdirectories. The bridge lives in a nested `oma/` subdir (it
- * spawns the core hook scripts copied alongside it), so it is invisible to
+ * spawns handler entries installed alongside it), so it is invisible to
  * auto-discovery and must be registered explicitly via `registerOpencodePlugin`.
  *
  * See `.agents/hooks/variants/opencode/oma.ts` for the bridge source.
@@ -24,13 +25,12 @@ export const OPENCODE_PLUGIN_DIR = join(".opencode", "plugins", "oma");
 
 /**
  * Materialize the opencode bridge into `<targetDir>/.opencode/plugins/oma/`:
- *  1. Copy the vendor-agnostic core hook scripts (keyword-detector,
- *     skill-injector, test-filter, their deps, and `filter-test-output.sh`)
- *     so the bridge can spawn them as subprocesses.
+ *  1. Install generated Bun handler entries that dispatch through the CLI,
+ *     with supporting files such as `filter-test-output.sh`.
  *  2. Copy the bridge `oma.ts` as the plugin entry point.
  *
- * Idempotent: `copyHookScripts` clears stale non-directory entries (including
- * a previous `oma.ts`) before recopying, then the bridge is re-written.
+ * Idempotent: tracked handler entries are reconciled by their fingerprints;
+ * modified entries are preserved. The managed bridge is re-written.
  */
 export function installOpencodePlugin(
   sourceDir: string,
@@ -38,8 +38,10 @@ export function installOpencodePlugin(
 ): void {
   const pluginDir = join(targetDir, OPENCODE_PLUGIN_DIR);
 
-  // 1. Core scripts (also clears stale files in pluginDir first).
-  copyHookScripts(sourceDir, pluginDir, undefined, { ownedNamespace: true });
+  copyHookScripts(sourceDir, pluginDir, undefined, {
+    ownedNamespace: true,
+    generatedSources: standaloneHookSources("opencode"),
+  });
 
   // 2. The bridge entry point.
   const shimSrc = join(

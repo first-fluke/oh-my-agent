@@ -9,7 +9,15 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   makeBlockOutput,
   makePreToolOutput,
@@ -148,6 +156,14 @@ describe("pi bridge handlers", () => {
 
   beforeEach(async () => {
     target = mkdtempSync(join(tmpdir(), "oma-pi-bridge-"));
+    const launcher = join(target, "oma-source-cli");
+    writeFileSync(
+      launcher,
+      `#!/usr/bin/env bun\nimport ${JSON.stringify(join(REPO_ROOT, "cli/cli.ts"))};\n`,
+      { mode: 0o700 },
+    );
+    vi.stubEnv("OMA_BIN", launcher);
+    vi.stubEnv("OMA_NO_AGENTMEMORY", "1");
     installPiExtension(REPO_ROOT, target);
     extDir = join(target, PI_EXTENSION_DIR);
 
@@ -167,6 +183,10 @@ describe("pi bridge handlers", () => {
     writeFileSync(join(extDir, "persistent-mode.ts"), fakeScript({}));
 
     handlers = await freshHandlers();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   /**

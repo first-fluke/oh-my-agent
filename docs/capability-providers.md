@@ -243,6 +243,82 @@ issue with `oma update` as the fix. It does not validate that a graph has been
 indexed or run a graph query. If Gortex is unavailable, use native search;
 OMA does not silently activate Serena as a second provider.
 
+## Local runtime state and delivery retries
+
+Agent runs, claims, plan pins, resume checkpoints, and CLI memory retries
+use `~/.oma/u/<profile>/projects/<project-hash>/`. Their locks use the same
+profile/project scope. `OMA_STATE_HOME` replaces `~/.oma`; `OMA_PROFILE` selects
+the numeric profile, defaulting to `0`. The project hash is the SHA-256 of its
+canonical absolute path. Branches at the same path share state; separate
+worktree paths do not.
+
+Let `P` be `~/.oma/u/<profile>/projects/<project-hash>`:
+
+| Data | Previous location | Current location |
+| --- | --- | --- |
+| Runs, claims, output, sequence | `.agents/state/agent-runs/` | `P/agent-runs/` |
+| Plan pins | `.agents/state/agent-plans/` | `P/agent-plans/` |
+| Resume checkpoints and leases | `.agents/state/agent-resume/` | `P/agent-resume/` |
+| CLI delivery queue and ACKs | `.agents/state/retry/` | `P/retry/` |
+| CLI delivery intents | None | `P/retry/outbox/` |
+
+These runtime readers use only the current location, including profile `0`.
+Normal runtime readers do not consult old files. Project-mode `oma update`
+runs a one-time migration before installing hooks; explicit migration is also
+available. Originals are preserved, matching copies are skipped, and conflicting
+or active records are reported instead of overwritten. L1 sessions remain under
+`~/.oma/u/<profile>/sessions/<sid>/`. Plans and reports remain under
+`.agents/results/`, and coordination Markdown remains under
+`.agents/state/memories/`.
+
+CLI retry rows require `memoryDelivery` (observe/remember flags) and
+`memoryTarget` (version, provider, profile, project ID, original project
+directory, and destination). The destination pins the non-secret endpoint and
+Honcho workspace/session where applicable. Changing provider or destination
+retains the backlog instead of sending it elsewhere. An unresolved endpoint
+is retained too. URLs containing credentials, query parameters, or fragments
+are not persisted as delivery identities. Old event-only retry rows are ignored;
+there is no adoption option or target-binding sidecar.
+
+`emitEventWithMemory()` persists a delivery intent before appending L1. Retry
+drain recovers only intents whose exact event exists in L1, without appending
+that event again. ACK records contain `deliveryId` and `dimension`: the ID is
+bound to destination, session, and event, and observe/remember are acknowledged
+separately. ACKed queue records prevent recovery from regenerating completed
+deliveries. A dry run does not recover intents or write ACKs. Remote success
+followed by a local ACK failure can still produce a duplicate remote write.
+
+CLI-dispatched hooks use this delivery queue. Installed pi, OpenCode, and
+Antigravity handler scripts forward stdin, cwd, and profile through
+`oma hook script` and run one allowlisted handler under the same memory adapter.
+Reinstall or run `oma link` with the updated CLI to refresh these generated
+wrappers. The managed `.agents/` definitions remain unchanged. Core handlers
+append L1 before calling the adapter, so the pre-L1 intent guarantee applies to
+`emitEventWithMemory()`, not that earlier hook boundary.
+
+### Migrate existing project runtime data
+
+```sh
+oma state migrate --runtime --dry-run --json
+oma state migrate --runtime --json
+```
+
+This migration copies completed run receipts, claims, outputs, plan pins, and
+resume state into profile `0` storage. It adjusts receipt output paths and
+monotonically reconciles the run sequence. Live or unknown execution owners,
+unsafe paths, and destination conflicts are reported without overwriting data.
+It leaves L1 sessions and project artifacts untouched. A dry run writes nothing,
+and rerunning the command skips identical copies.
+
+Retry migration performs no network calls. Raw queue and ACK snapshots, including
+original inode identity, are preserved under
+`P/retry/migration-unbound/<snapshot-hash>/`. Rows with no recorded destination
+remain there and are excluded from automatic delivery. Rows that already pin a
+valid destination retain that destination and their completed operation ACKs.
+The migration verifies source stability and uses queue leases when publishing.
+Old project files remain as originals; there is no permanent fallback reader.
+
+
 ## Honcho
 
 ### Configure credentials
@@ -340,8 +416,9 @@ the adapter's reciprocal-rank score is not a Honcho confidence score.
 Requests have a bounded timeout and do not follow redirects. Writes share one
 timeout across workspace/session/message operations. Failures keep local OMA
 events intact and return no remote recall; they do not upload data to another
-provider. Durable writes currently have no replay queue or deduplication, so a
-failed write may be absent remotely and repeated writes may produce duplicates.
+provider. CLI durable event writes use the scoped replay queue described above;
+direct adapter calls have no implicit replay queue. Repeated writes may produce
+duplicates because the remote API does not supply an exactly-once guarantee.
 
 For self-hosting, set `base_url` to the API origin. HTTP without a key is allowed
 only on loopback; remote endpoints require HTTPS and a key. OMA does not provision
@@ -349,10 +426,9 @@ the Honcho server, databases, model credentials, or retention/deletion policies.
 Honcho server licensing and deployment requirements should be reviewed separately
 in the [upstream repository](https://github.com/plastic-labs/honcho).
 
-The CLI event pipeline, skill optimization recall, and CLI-dispatched hooks use
-the selected provider. Standalone copied Bun hooks, including Pi/OpenCode bridge
-scripts, use the generated `.agents/state/provider-selection.json` to keep raw
-events local for Honcho/`none`; those scripts do not perform Honcho recall.
+The CLI event pipeline, skill optimization recall, and installed hooks use
+the selected provider. Generated pi/OpenCode/Antigravity wrappers route each
+handler through the CLI adapter, including Honcho recall and `none` opt-out.
 
 `oma memory status` and the provider section of `oma doctor` check Honcho workspace
 access with a read-only session-list request. They do not create a workspace.

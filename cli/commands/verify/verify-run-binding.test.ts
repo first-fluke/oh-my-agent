@@ -1,11 +1,19 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { runtimeStateDir } from "../../state/project-runtime.js";
 import { checkTddEvidence } from "./plan-checks.js";
 import { collectVerifyReport } from "./report.js";
-import { resolveVerifySelection } from "./run-selection.js";
+import { findResultFile, resolveVerifySelection } from "./run-selection.js";
 
 describe("run-scoped TDD evidence", () => {
   let workspace: string;
@@ -16,7 +24,10 @@ describe("run-scoped TDD evidence", () => {
     mkdirSync(join(workspace, ".agents/state/memories"), { recursive: true });
   });
 
-  afterEach(() => rmSync(workspace, { recursive: true, force: true }));
+  afterEach(() => {
+    process.env.OMA_PROFILE = "0";
+    rmSync(workspace, { recursive: true, force: true });
+  });
 
   function plan(session: string, tasks = ["task-api"]) {
     writeFileSync(
@@ -49,9 +60,9 @@ describe("run-scoped TDD evidence", () => {
   }
 
   function receipt(runId: string, sessionId: string, taskId = "task-api") {
-    mkdirSync(join(workspace, ".agents/state/agent-runs"), { recursive: true });
+    mkdirSync(runtimeStateDir(workspace, "agent-runs"), { recursive: true });
     writeFileSync(
-      join(workspace, `.agents/state/agent-runs/${runId}.json`),
+      join(runtimeStateDir(workspace, "agent-runs"), `${runId}.json`),
       JSON.stringify({
         runId,
         sessionId,
@@ -115,7 +126,7 @@ describe("run-scoped TDD evidence", () => {
   it("requires all three IDs for a manual report without a receipt", () => {
     plan("current");
     report("task-api", "manual", "current");
-    rmSync(join(workspace, ".agents/state/agent-runs/manual.json"));
+    rmSync(join(runtimeStateDir(workspace, "agent-runs"), "manual.json"));
     const result = checkTddEvidence(workspace, "backend", {
       sessionId: "current",
       taskId: "task-api",
@@ -192,6 +203,44 @@ describe("run-scoped TDD evidence", () => {
     expect(
       checkTddEvidence(workspace, "backend", { runId: "run-current" }).status,
     ).toBe("pass");
+  });
+
+  it("resolves HOME receipts only for the active profile", () => {
+    receipt("run-current", "current");
+    expect(
+      resolveVerifySelection(workspace, "backend", { runId: "run-current" }),
+    ).toMatchObject({ sessionId: "current", taskId: "task-api" });
+    process.env.OMA_PROFILE = "1";
+    expect(() =>
+      resolveVerifySelection(workspace, "backend", { runId: "run-current" }),
+    ).toThrow("Run receipt not found");
+  });
+
+  it("ignores old project receipts when resolving and discovering run reports", () => {
+    receipt("run-current", "current");
+    const current = join(
+      runtimeStateDir(workspace, "agent-runs"),
+      "run-current.json",
+    );
+    const legacy = join(workspace, ".agents/state/agent-runs/run-current.json");
+    mkdirSync(join(workspace, ".agents/state/agent-runs"), { recursive: true });
+    renameSync(current, legacy);
+    expect(() =>
+      resolveVerifySelection(workspace, "backend", { runId: "run-current" }),
+    ).toThrow("Run receipt not found");
+    expect(
+      findResultFile(workspace, "backend", { sessionId: "current" }),
+    ).toBeNull();
+    copyFileSync(legacy, current);
+    writeFileSync(legacy, "invalid old receipt");
+    expect(
+      resolveVerifySelection(workspace, "backend", { runId: "run-current" })
+        .sessionId,
+    ).toBe("current");
+    process.env.OMA_PROFILE = "1";
+    expect(() =>
+      resolveVerifySelection(workspace, "backend", { runId: "run-current" }),
+    ).toThrow("Run receipt not found");
   });
 
   it("rejects a receipt belonging to a different workspace or identity", () => {

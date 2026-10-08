@@ -202,6 +202,25 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
     // vendor excluded from the update never has its config rewritten.
     const migrationVendors = resolveUpdateVendors(cwd, options);
 
+    if (mode === "project") {
+      const { migrateRuntimeState } = await import(
+        "../../state/runtime-migration.js"
+      );
+      const runtime = await migrateRuntimeState({ projectDir: cwd });
+      const changed = runtime.entries.filter(
+        (entry) => entry.status !== "unchanged",
+      );
+      if (changed.length) {
+        const counts = new Map<string, number>();
+        for (const entry of changed)
+          counts.set(entry.status, (counts.get(entry.status) ?? 0) + 1);
+        ui.note(
+          `${[...counts].map(([status, count]) => `${status}: ${count}`).join(", ")}\nOriginals preserved; unbound retries are excluded from delivery.${runtime.ok ? "" : "\nReview remaining records with oma state migrate --runtime --dry-run."}`,
+          "Runtime migration",
+        );
+      }
+    }
+
     // Run all migrations (after confirming project is installed)
     const migrationStatus = runMigrationsWithStatus(cwd, {
       vendors: migrationVendors,

@@ -8,8 +8,10 @@ import {
 import { dirname, join, relative, resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { z } from "zod";
+import { withStateIndexLock } from "../../../.agents/hooks/core/state-index-lock.ts";
 import { readAgentRun } from "../../state/agent-results.js";
 import { emitEvent } from "../../state/events.js";
+import { runtimeStateDir } from "../../state/project-runtime.js";
 import { sha256Hex } from "../../utils/hash.js";
 import { redactEvolutionText } from "../skills/opt/evolution-memory.js";
 import { harnessCheckSchema } from "./check-schema.js";
@@ -164,7 +166,23 @@ export function captureHarnessIncident(
   if (runId && spec.source?.run_id && runId !== spec.source.run_id)
     throw new Error("Incident source run IDs disagree");
   const sourceId = runId ?? spec.source?.run_id;
-  const run = sourceId ? readAgentRun(root, sourceId) : undefined;
+  const source = sourceId
+    ? withStateIndexLock(root, () => {
+        const run = readAgentRun(root, sourceId);
+        const file = join(
+          runtimeStateDir(root, "agent-runs"),
+          `${sourceId}.json`,
+        );
+        assertExistingPathInside(dirname(file), file, "Incident source run");
+        const stat = lstatSync(file);
+        if (!stat.isFile() || stat.isSymbolicLink())
+          throw new Error("Incident source run must be a regular file");
+        if (stat.size > 5 * 1024 * 1024)
+          throw new Error("Incident source run exceeds 5 MiB");
+        return { run, receipt: readFileSync(file) };
+      })
+    : undefined;
+  const run = source?.run;
   const prompt = spec.prompt ?? run?.dispatch?.prompt;
   if (!prompt)
     throw new Error(
@@ -234,6 +252,13 @@ export function captureHarnessIncident(
       .filter((item) => item.fixture)
       .map((item) => reference(root, item.fixture as string)),
   ];
+  const directory = incidentDirectory(root, spec.id);
+  const path = join(directory, "incident.json");
+  if (existsSync(path))
+    throw new Error(
+      "Incident already exists; use a new ID to preserve the original evidence",
+    );
+  const sourceSnapshot = join(directory, "source-run.json");
   const payload: Omit<HarnessIncident, "manifestHash"> = {
     schemaVersion: 1,
     id: spec.id,
@@ -250,7 +275,13 @@ export function captureHarnessIncident(
           vendor: run.vendor,
           status: run.status,
           before: run.before,
-          record: reference(root, `.agents/state/agent-runs/${run.runId}.json`),
+          record: source
+            ? {
+                path: relative(root, sourceSnapshot).replaceAll("\\", "/"),
+                sha256: sha256Hex(source.receipt),
+                bytes: source.receipt.byteLength,
+              }
+            : undefined,
         }
       : { kind: "report", traceId: spec.source?.trace_id },
     observed: {
@@ -284,13 +315,9 @@ export function captureHarnessIncident(
     limitations,
   };
   const incident = { ...payload, manifestHash: sha256Hex(canonical(payload)) };
-  const directory = incidentDirectory(root, incident.id);
-  const path = join(directory, "incident.json");
-  if (existsSync(path))
-    throw new Error(
-      "Incident already exists; use a new ID to preserve the original evidence",
-    );
-  mkdirSync(directory, { recursive: true });
+  mkdirSync(directory, { recursive: true, mode: 0o700 });
+  if (source)
+    writeFileSync(sourceSnapshot, source.receipt, { flag: "wx", mode: 0o600 });
   writeFileSync(path, `${JSON.stringify(incident, null, 2)}\n`, {
     flag: "wx",
     mode: 0o600,
@@ -324,6 +351,14 @@ export function readHarnessIncident(root: string, id: string): HarnessIncident {
   )
     throw new Error("Incident manifest integrity check failed");
   if (incident.initial) validateHarnessSnapshot(incident.initial.snapshot);
+  if (incident.source.record) {
+    const saved = reference(root, incident.source.record.path);
+    if (
+      saved.sha256 !== incident.source.record.sha256 ||
+      saved.bytes !== incident.source.record.bytes
+    )
+      throw new Error("Incident source run receipt integrity check failed");
+  }
   return incident;
 }
 

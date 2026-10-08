@@ -1,8 +1,6 @@
-import { createHash } from "node:crypto";
 import {
   closeSync,
   existsSync,
-  fstatSync,
   fsyncSync,
   mkdirSync,
   openSync,
@@ -10,24 +8,35 @@ import {
   writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import {
   ensureParent,
   type OmaEvent,
-  retryObservePath,
 } from "../../.agents/hooks/core/state-core.ts";
+import type { MemoryDeliveryTarget } from "../types/memory.js";
+import {
+  isMemoryDeliveryTarget,
+  memoryDeliveryTargetKey,
+  sameMemoryDeliveryTarget,
+} from "./memory-delivery-target.js";
+import { runtimeStateDir } from "./project-runtime.js";
 
 export type MemoryRetryDimension = "observe" | "remember";
-
 export interface MemoryRetryDelivery {
   observe: boolean;
   remember: boolean;
 }
 
-export function parseMemoryRetryLine(
-  line: string,
-): { event: OmaEvent; delivery: MemoryRetryDelivery } | null {
+export function retryObservePath(projectDir: string): string {
+  return join(runtimeStateDir(projectDir, "retry"), "observe.jsonl");
+}
+
+export function parseMemoryRetryLine(line: string): {
+  event: OmaEvent;
+  delivery: MemoryRetryDelivery;
+  target: MemoryDeliveryTarget;
+} | null {
   try {
     const parsed = JSON.parse(line);
     if (
@@ -39,19 +48,21 @@ export function parseMemoryRetryLine(
       typeof parsed.ts !== "string"
     )
       return null;
-    const { memoryDelivery, ...event } = parsed;
-    if (memoryDelivery === undefined) {
-      // Old rows only retried observe; their remember outcome is unknown.
-      return { event, delivery: { observe: true, remember: false } };
-    }
+    const { memoryDelivery, memoryTarget, ...event } = parsed;
+    if (!isMemoryDeliveryTarget(memoryTarget)) return null;
+    const delivery = memoryDelivery;
     if (
-      !memoryDelivery ||
-      typeof memoryDelivery !== "object" ||
-      typeof memoryDelivery.observe !== "boolean" ||
-      typeof memoryDelivery.remember !== "boolean"
+      !delivery ||
+      typeof delivery !== "object" ||
+      typeof delivery.observe !== "boolean" ||
+      typeof delivery.remember !== "boolean"
     )
       return null;
-    return { event, delivery: memoryDelivery };
+    return {
+      event,
+      delivery,
+      target: memoryTarget,
+    };
   } catch {
     return null;
   }
@@ -61,155 +72,162 @@ export function enqueueMemoryRetry(
   projectDir: string,
   event: OmaEvent,
   delivery: MemoryRetryDelivery,
+  target: MemoryDeliveryTarget,
 ): string {
+  if (!isMemoryDeliveryTarget(target))
+    throw new Error("Invalid memory delivery target");
   const path = retryObservePath(projectDir);
   ensureParent(path);
-  const line = JSON.stringify({ ...event, memoryDelivery: delivery });
+  const line = JSON.stringify({
+    ...event,
+    memoryDelivery: delivery,
+    memoryTarget: target,
+  });
+  appendDurable(path, line);
+  return line;
+}
+
+function appendDurable(path: string, line: string): void {
+  ensureParent(path);
   const fd = openSync(path, "a", 0o600);
   try {
-    // Separate this row from an interrupted append, then persist before delivery.
     writeFileSync(fd, `\n${line}\n`, "utf-8");
     fsyncSync(fd);
   } finally {
     closeSync(fd);
   }
-  return line;
 }
 
 export interface MemoryRetryLine {
   line: string;
-  file: string;
-  offset: number;
-  hash: string;
   delivered?: MemoryRetryDimension[];
+  target?: MemoryDeliveryTarget;
+  deliveryId?: string;
 }
 
-function acknowledgementPath(projectDir: string): string {
-  return `${retryObservePath(projectDir)}.ack.jsonl`;
-}
-
-function lineKey(
-  line: Pick<MemoryRetryLine, "file" | "offset" | "hash">,
-): string {
-  return `${line.file}:${line.offset}:${line.hash}`;
+function deliveryId(event: OmaEvent, target: MemoryDeliveryTarget): string {
+  return `${memoryDeliveryTargetKey(target)}:${event.sid}:${event.eventId}`;
 }
 
 function readAcknowledgements(
-  projectDir: string,
-): Map<string, Set<MemoryRetryDimension | "all">> {
-  const path = acknowledgementPath(projectDir);
-  if (!existsSync(path)) return new Map();
-  const acknowledged = new Map<string, Set<MemoryRetryDimension | "all">>();
+  path: string,
+): Map<string, Set<MemoryRetryDimension>> {
+  const acknowledged = new Map<string, Set<MemoryRetryDimension>>();
+  if (!existsSync(path)) return acknowledged;
   for (const line of readFileSync(path, "utf-8").split("\n")) {
     try {
-      const entry = JSON.parse(line) as
-        | (Partial<MemoryRetryLine> & { dimension?: unknown })
-        | null;
+      const entry = JSON.parse(line);
       if (
-        entry &&
-        typeof entry.file === "string" &&
-        typeof entry.offset === "number" &&
-        Number.isSafeInteger(entry.offset) &&
-        entry.offset >= 0 &&
-        typeof entry.hash === "string"
-      ) {
-        if (
-          entry.dimension !== undefined &&
-          entry.dimension !== "observe" &&
-          entry.dimension !== "remember"
-        )
-          continue;
-        const key = lineKey(entry as MemoryRetryLine);
-        const delivered = acknowledged.get(key) ?? new Set();
-        delivered.add(entry.dimension ?? "all");
-        acknowledged.set(key, delivered);
-      }
+        !entry ||
+        typeof entry.deliveryId !== "string" ||
+        (entry.dimension !== "observe" && entry.dimension !== "remember")
+      )
+        continue;
+      const delivered =
+        acknowledged.get(entry.deliveryId) ?? new Set<MemoryRetryDimension>();
+      delivered.add(entry.dimension);
+      acknowledged.set(entry.deliveryId, delivered);
     } catch {
-      // An interrupted checkpoint write can cause a retry, never data loss.
+      /* Interrupted checkpoints leave work retryable. */
     }
   }
   return acknowledged;
 }
 
-export function readMemoryRetryQueue(projectDir: string): MemoryRetryLine[] {
+/** Includes completed rows so L1 outbox recovery can avoid duplicate enqueue. */
+export function readMemoryRetryEntries(projectDir: string): MemoryRetryLine[] {
   const path = retryObservePath(projectDir);
-  if (!existsSync(path)) return [];
-  let fd: number;
+  let content: string;
   try {
-    fd = openSync(path, "r");
+    content = readFileSync(path, "utf-8");
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw error;
   }
-  let content: Buffer;
-  let file: string;
-  try {
-    const stat = fstatSync(fd);
-    file = `${stat.dev}:${stat.ino}:${stat.birthtimeMs}`;
-    content = readFileSync(fd);
-  } finally {
-    closeSync(fd);
-  }
-
-  const acknowledged = readAcknowledgements(projectDir);
-  const pending: MemoryRetryLine[] = [];
-  let offset = 0;
-  while (offset < content.length) {
-    const newline = content.indexOf(10, offset);
-    const end = newline < 0 ? content.length : newline;
-    const bytes = content.subarray(offset, end);
-    const line = bytes.toString("utf-8");
-    if (line.trim()) {
-      const entry = {
-        line,
-        file,
-        offset,
-        hash: createHash("sha256").update(bytes).digest("hex"),
-      };
-      const delivered = acknowledged.get(lineKey(entry));
-      if (!delivered?.has("all")) {
-        const record = parseMemoryRetryLine(line);
-        if (
-          !record ||
-          (record.delivery.observe && !delivered?.has("observe")) ||
-          (record.delivery.remember && !delivered?.has("remember"))
-        ) {
-          pending.push(
-            delivered?.size
-              ? {
-                  ...entry,
-                  delivered: [...delivered].filter(
-                    (dimension): dimension is MemoryRetryDimension =>
-                      dimension !== "all",
-                  ),
-                }
-              : entry,
-          );
-        }
-      }
+  const acknowledged = readAcknowledgements(`${path}.ack.jsonl`);
+  const entries: MemoryRetryLine[] = [];
+  for (const line of content.split("\n")) {
+    if (!line.trim()) continue;
+    // A valid historical event without the delivery contract is unsupported.
+    // Keep malformed records visible to diagnostics, without delivering them.
+    try {
+      const value = JSON.parse(line);
+      if (
+        value &&
+        typeof value === "object" &&
+        typeof value.sid === "string" &&
+        typeof value.kind === "string" &&
+        typeof value.eventId === "string" &&
+        typeof value.ts === "string" &&
+        (value.memoryTarget === undefined || value.memoryDelivery === undefined)
+      )
+        continue;
+    } catch {
+      /* Report malformed rows below. */
     }
-    offset = end + 1;
+    const entry: MemoryRetryLine = { line };
+    const record = parseMemoryRetryLine(line);
+    if (record) {
+      entry.target = record.target;
+      entry.deliveryId = deliveryId(record.event, record.target);
+      const dimensions = [...(acknowledged.get(entry.deliveryId) ?? [])];
+      if (dimensions.length) entry.delivered = dimensions;
+    }
+    entries.push(entry);
   }
-  return pending;
+  return entries;
+}
+
+export function readMemoryRetryQueue(projectDir: string): MemoryRetryLine[] {
+  return readMemoryRetryEntries(projectDir).filter((entry) => {
+    if (
+      entry.delivered?.includes("observe") &&
+      entry.delivered.includes("remember")
+    )
+      return false;
+    const record = parseMemoryRetryLine(entry.line);
+    return (
+      !record ||
+      (record.delivery.observe && !entry.delivered?.includes("observe")) ||
+      (record.delivery.remember && !entry.delivered?.includes("remember"))
+    );
+  });
+}
+
+export function memoryRetryTarget(
+  entry: MemoryRetryLine,
+): MemoryDeliveryTarget | undefined {
+  return entry.target ?? parseMemoryRetryLine(entry.line)?.target;
+}
+
+export function hasMemoryRetryEvent(
+  projectDir: string,
+  event: OmaEvent,
+  target: MemoryDeliveryTarget,
+): boolean {
+  return readMemoryRetryEntries(projectDir).some((entry) => {
+    const parsed = parseMemoryRetryLine(entry.line);
+    const queuedTarget = memoryRetryTarget(entry);
+    return (
+      parsed?.event.eventId === event.eventId &&
+      parsed.event.sid === event.sid &&
+      queuedTarget !== undefined &&
+      sameMemoryDeliveryTarget(queuedTarget, target)
+    );
+  });
 }
 
 export function acknowledgeMemoryRetryLine(
   projectDir: string,
-  { file, offset, hash }: MemoryRetryLine,
-  dimension?: MemoryRetryDimension,
+  entry: MemoryRetryLine,
+  dimension: MemoryRetryDimension,
 ): void {
-  const fd = openSync(acknowledgementPath(projectDir), "a", 0o600);
-  try {
-    // The leading newline separates this entry from an interrupted write.
-    writeFileSync(
-      fd,
-      `\n${JSON.stringify({ file, offset, hash, dimension })}\n`,
-      "utf-8",
-    );
-    fsyncSync(fd);
-  } finally {
-    closeSync(fd);
-  }
+  if (!entry.deliveryId)
+    throw new Error("Cannot acknowledge an invalid delivery record");
+  appendDurable(
+    `${retryObservePath(projectDir)}.ack.jsonl`,
+    JSON.stringify({ deliveryId: entry.deliveryId, dimension }),
+  );
 }
 
 interface DrainLockDatabase {
@@ -217,11 +235,10 @@ interface DrainLockDatabase {
   close(): void;
 }
 
-export async function acquireMemoryRetryDrainLock(
-  projectDir: string,
-  timeoutMs = 30_000,
+async function acquireQueueLock(
+  retryPath: string,
+  timeoutMs: number,
 ): Promise<() => void> {
-  const retryPath = retryObservePath(projectDir);
   mkdirSync(dirname(retryPath), { recursive: true, mode: 0o700 });
   const require = createRequire(import.meta.url);
   const Database = (
@@ -249,9 +266,8 @@ export async function acquireMemoryRetryDrainLock(
         if (
           (error as { code?: string }).code !== "SQLITE_BUSY" ||
           Date.now() >= deadline
-        ) {
+        )
           throw error;
-        }
         await setTimeout(25);
       }
     }
@@ -259,4 +275,11 @@ export async function acquireMemoryRetryDrainLock(
     database.close();
     throw error;
   }
+}
+
+export async function acquireMemoryRetryDrainLock(
+  projectDir: string,
+  timeoutMs = 30_000,
+): Promise<() => void> {
+  return acquireQueueLock(retryObservePath(projectDir), timeoutMs);
 }

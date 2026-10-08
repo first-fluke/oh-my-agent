@@ -2,6 +2,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -22,6 +23,7 @@ import {
   verifyAgentRun,
   verifyRequiredChecks,
 } from "./agent-results.js";
+import { runtimeStateDir } from "./project-runtime.js";
 import {
   contractHash,
   loadTaskContract,
@@ -35,7 +37,10 @@ describe("acceptance contracts", () => {
     root = mkdtempSync(join(tmpdir(), "oma-contract-"));
     writeTestPlan(root);
   });
-  afterEach(() => rmSync(root, { recursive: true, force: true }));
+  afterEach(() => {
+    process.env.OMA_PROFILE = "0";
+    rmSync(root, { recursive: true, force: true });
+  });
   const start = () =>
     beginAgentRun({
       root,
@@ -176,7 +181,7 @@ describe("acceptance contracts", () => {
     );
     const saved = JSON.parse(
       readFileSync(
-        join(root, ".agents/state/agent-runs", `${run.runId}.json`),
+        join(runtimeStateDir(root, "agent-runs"), `${run.runId}.json`),
         "utf8",
       ),
     );
@@ -528,5 +533,44 @@ describe("acceptance contracts", () => {
       }),
     );
     expect(start).toThrow("Scoped inputs cannot follow symlinks");
+  });
+
+  it("isolates dispatched plan pins and attempt budgets between profiles", () => {
+    const first = start();
+    expect(first.sequence).toBe(1);
+    const initial = readFileSync(
+      join(root, ".agents/results/plan-s1.json"),
+      "utf8",
+    );
+    process.env.OMA_PROFILE = "1";
+    writeTestPlan(root, ["T2"]);
+    expect(
+      beginAgentRun({
+        root,
+        workspace: root,
+        agentId: "qa-reviewer",
+        sessionId: "s1",
+        taskId: "T2",
+        vendor: "test",
+      }).sequence,
+    ).toBe(1);
+    process.env.OMA_PROFILE = "0";
+    expect(start).toThrow("Plan is immutable after dispatch");
+    writeFileSync(join(root, ".agents/results/plan-s1.json"), initial);
+    expect(start().sequence).toBe(2);
+  });
+
+  it("ignores old project plan pins even in the default profile", () => {
+    start();
+    const legacy = join(root, ".agents/state/agent-plans");
+    mkdirSync(join(root, ".agents/state"), { recursive: true });
+    renameSync(runtimeStateDir(root, "agent-plans"), legacy);
+    writeTestPlan(root, ["T2"]);
+    expect(loadTaskContract(root, "s1", "T2")?.id).toBe("T2");
+    expect(readFileSync(join(legacy, "sessions/s1.json"), "utf8")).toContain(
+      '"lineageId": "s1"',
+    );
+    process.env.OMA_PROFILE = "1";
+    expect(loadTaskContract(root, "s1", "T2")?.id).toBe("T2");
   });
 });

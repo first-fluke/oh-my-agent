@@ -194,6 +194,7 @@ describe("AgentMemory provider", () => {
         sessionId: "oma-test",
         content: '{"kind":"decision.made"}\n',
         source: "oma-workflow",
+        projectDir: "/tmp/original-project",
       }),
     ).resolves.toBe(true);
 
@@ -202,6 +203,8 @@ describe("AgentMemory provider", () => {
       hookType: "oma-workflow",
       sessionId: "oma-test",
       content: '{"kind":"decision.made"}\n',
+      project: "original-project",
+      cwd: "/tmp/original-project",
     });
     expect(typeof parsed.project).toBe("string");
     expect(typeof parsed.cwd).toBe("string");
