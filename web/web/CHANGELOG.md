@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.2.0](https://github.com/first-fluke/oh-my-agent/compare/web-v7.1.3...web-v7.2.0) (2026-10-08)
+
+
+### Features
+
+* **state:** capture and verify agent decisions ([b4d76a7](https://github.com/first-fluke/oh-my-agent/commit/b4d76a7185d1a25fe1fc2071f58871684fafa5db))
+
 ## [7.1.3](https://github.com/first-fluke/oh-my-agent/compare/web-v7.1.2...web-v7.1.3) (2026-10-07)
 
 
