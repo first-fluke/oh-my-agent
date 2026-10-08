@@ -6,8 +6,8 @@ import {
   loadProviders,
   type SemanticMemoryProviderName,
 } from "../utils/providers.js";
-import { deliverEventMemory } from "./events.js";
 import { recallAgentMemoryForHook } from "./hook-agentmemory.js";
+import { deliverEventMemory } from "./memory-delivery.js";
 import { createNoneMemoryProvider } from "./memory-provider.js";
 import { createMemoryProvider } from "./semantic-memory.js";
 

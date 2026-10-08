@@ -10,6 +10,7 @@ import {
 } from "./agent-decisions.js";
 import * as events from "./events.js";
 import { eventsPath, readEvents } from "./events.js";
+import * as memoryDelivery from "./memory-delivery.js";
 
 describe("agent decision events", () => {
   let root: string;
@@ -132,7 +133,7 @@ describe("agent decision events", () => {
       },
     });
     const deliver = vi
-      .spyOn(events, "deliverEventMemory")
+      .spyOn(memoryDelivery, "deliverEventMemory")
       .mockResolvedValue({} as events.OmaEvent);
     deliverAgentDecisionMemory(scope);
     expect(deliver).toHaveBeenCalledTimes(2);

@@ -288,6 +288,13 @@ separately. ACKed queue records prevent recovery from regenerating completed
 deliveries. A dry run does not recover intents or write ACKs. Remote success
 followed by a local ACK failure can still produce a duplicate remote write.
 
+`memory-delivery.ts` owns provider selection, intent preparation, drain leases,
+outbox recovery, queue selection, delivery, and operation ACKs. Both immediate
+event delivery and CLI retry drain use that service. `events.ts` owns the
+intent-before-L1 append boundary and delegates delivery; the CLI drain only
+resolves arguments. The outbox, queue, and ACK files retain their distinct
+preparation, pending, and completion roles and their existing storage format.
+
 CLI-dispatched hooks use this delivery queue. Installed pi, OpenCode, and
 Antigravity handler scripts forward stdin, cwd, and profile through
 `oma hook script` and run one allowlisted handler under the same memory adapter.

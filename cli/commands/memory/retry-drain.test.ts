@@ -17,6 +17,7 @@ import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { retryObservePath } from "../../state/events.js";
+import { drainMemoryDeliveries } from "../../state/memory-delivery.js";
 import { createMemoryDeliveryTarget } from "../../state/memory-delivery-target.js";
 import { readMemoryRetryQueue } from "../../state/memory-retry-queue.js";
 import type { MemoryProvider } from "../../types/memory.js";
@@ -113,7 +114,7 @@ describe("memory retry drain concurrency", () => {
     expect(next).toMatchObject({ total: 1, drained: 1 });
   });
 
-  it("serializes simultaneous drains without observing an event twice", async () => {
+  it("serializes service and CLI drains without observing an event twice", async () => {
     let finishFirst: () => void = () => {};
     const pending = new Promise<void>((resolve) => {
       finishFirst = resolve;
@@ -125,7 +126,7 @@ describe("memory retry drain concurrency", () => {
       return true;
     });
 
-    const first = drainMemoryRetryQueue({
+    const first = drainMemoryDeliveries({
       projectDir,
       provider: memory,
     });
@@ -138,6 +139,19 @@ describe("memory retry drain concurrency", () => {
 
     expect(observed).toEqual(["first"]);
     expect(results.map((result) => result.drained)).toEqual([1, 0]);
+  });
+
+  it("returns a rejected promise when provider configuration is invalid", async () => {
+    mkdirSync(join(projectDir, ".agents"));
+    writeFileSync(
+      join(projectDir, ".agents/oma-config.yaml"),
+      "providers: { semantic_memory: unsupported-provider }\n",
+    );
+    let result: ReturnType<typeof drainMemoryRetryQueue> | undefined;
+    expect(() => {
+      result = drainMemoryRetryQueue({ projectDir });
+    }).not.toThrow();
+    await expect(result).rejects.toThrow();
   });
 
   it("remembers completed observations when a later observation throws", async () => {

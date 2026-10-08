@@ -282,6 +282,44 @@ describe("independent event memory delivery", () => {
     expect(retry.remember).not.toHaveBeenCalled();
   });
 
+  it("immediate delivery leaves unrelated backlog pending", async () => {
+    await emitEventWithMemory(
+      root,
+      "s1",
+      decision,
+      memory({ observe: async () => false, remember: async () => false }),
+    );
+    const current = memory();
+    const event = await emitEventWithMemory(
+      root,
+      "s1",
+      {
+        ...decision,
+        eventId: "decision-current",
+        payload: {
+          ...decision.payload,
+          decision: "Keep the current delivery isolated",
+        },
+      },
+      current,
+    );
+
+    expect(current.observe).toHaveBeenCalledOnce();
+    expect(current.observe).toHaveBeenCalledWith(
+      expect.objectContaining({ content: `${JSON.stringify(event)}\n` }),
+    );
+    expect(current.remember).toHaveBeenCalledOnce();
+    expect(current.remember).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("Keep the current delivery isolated"),
+      }),
+    );
+    expect(
+      readMemoryRetryQueue(root).map(({ line }) => JSON.parse(line).eventId),
+    ).toEqual([decision.eventId]);
+    expect(readEvents(root, "s1")).toHaveLength(2);
+  });
+
   it("retains unfinished remember when the selected retry provider does not support it", async () => {
     await emitEventWithMemory(
       root,

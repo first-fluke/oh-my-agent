@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { validateEventEnvelope } from "../../.agents/hooks/core/event-contract.ts";
-import { deliverEventMemory, emitEvent, readEvents } from "./events.js";
+import { emitEvent, readEvents } from "./events.js";
+import { deliverEventMemory } from "./memory-delivery.js";
 
 const text = z.string().trim().min(1);
 
