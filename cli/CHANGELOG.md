@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.9.0...cli-v15.10.0) (2026-10-08)
+
+
+### Features
+
+* **state:** capture and verify agent decisions ([b4d76a7](https://github.com/first-fluke/oh-my-agent/commit/b4d76a7185d1a25fe1fc2071f58871684fafa5db))
+
 ## [15.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.8.0...cli-v15.9.0) (2026-10-07)
 
 
