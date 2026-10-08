@@ -245,7 +245,7 @@ OMA does not silently activate Serena as a second provider.
 
 ## Local runtime state and delivery retries
 
-Agent runs, claims, plan pins, resume checkpoints, and CLI memory retries
+Agent runs, claims, plan pins, resume progress reports, and CLI memory retries
 use `~/.oma/u/<profile>/projects/<project-hash>/`. Their locks use the same
 profile/project scope. `OMA_STATE_HOME` replaces `~/.oma`; `OMA_PROFILE` selects
 the numeric profile, defaulting to `0`. The project hash is the SHA-256 of its
@@ -258,7 +258,7 @@ Let `P` be `~/.oma/u/<profile>/projects/<project-hash>`:
 | --- | --- | --- |
 | Runs, claims, output, sequence | `.agents/state/agent-runs/` | `P/agent-runs/` |
 | Plan pins | `.agents/state/agent-plans/` | `P/agent-plans/` |
-| Resume checkpoints and leases | `.agents/state/agent-resume/` | `P/agent-resume/` |
+| Resume progress reports and leases | `.agents/state/agent-resume/` | `P/agent-resume/` |
 | CLI delivery queue and ACKs | `.agents/state/retry/` | `P/retry/` |
 | CLI delivery intents | None | `P/retry/outbox/` |
 
@@ -270,6 +270,15 @@ or active records are reported instead of overwritten. L1 sessions remain under
 `~/.oma/u/<profile>/sessions/<sid>/`. Plans and reports remain under
 `.agents/results/`, and coordination Markdown remains under
 `.agents/state/memories/`.
+
+Plans and run receipts are independent sources of execution evidence; L1 is
+the source for workflow events, not a complete reconstruction of every store.
+Plan pins preserve the contract identity, claims preserve submitted evidence,
+and leases represent coordinator ownership. The resume `<sid>.json` file is a
+derived progress report. Normal resume decisions are recomputed from a
+validated plan snapshot and current run evidence, without reading that report
+as recovery input. Plan loading, task-contract lookup, and snapshot change
+detection belong to `task-contract.ts`. Report and lease paths stay unchanged.
 
 CLI retry rows require `memoryDelivery` (observe/remember flags) and
 `memoryTarget` (version, provider, profile, project ID, original project

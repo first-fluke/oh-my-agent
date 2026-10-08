@@ -13,8 +13,8 @@ import {
 import { atomicWriteJson } from "./events.js";
 import { runtimeStateDir } from "./project-runtime.js";
 import {
-  loadSessionPlan,
-  loadTaskContract,
+  loadSessionPlanSnapshot,
+  type SessionPlanSnapshot,
   sessionPlanPath,
 } from "./task-contract.js";
 
@@ -30,7 +30,8 @@ export interface ResumeTask {
   status: "reused" | "ready" | "running" | "blocked" | "completed" | "failed";
   reason: string;
 }
-export interface ResumeReport {
+/** Derived from plans and run evidence; persisted reports are never recovery input. */
+export interface ResumeProgressReport {
   sessionId: string;
   tasks: ResumeTask[];
   ok: boolean;
@@ -49,7 +50,19 @@ export function planSessionResume(
   root: string,
   sessionId: string,
   maxAttempts = 3,
-): ResumeReport {
+): ResumeProgressReport {
+  const snapshot = loadSessionPlanSnapshot(root, sessionId);
+  if (!snapshot)
+    throw new Error("Resume requires a session plan with task contracts");
+  return scheduleSessionResume(root, sessionId, maxAttempts, snapshot);
+}
+
+function scheduleSessionResume(
+  root: string,
+  sessionId: string,
+  maxAttempts: number,
+  snapshot: SessionPlanSnapshot,
+): ResumeProgressReport {
   if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1)
     throw new Error("max-attempts must be a positive integer");
   const runs = listAgentRuns(root);
@@ -58,26 +71,14 @@ export function planSessionResume(
       .filter((run) => run.sessionId === sessionId)
       .map((run) => [run.taskId, run]),
   );
-  const sessionPlan = loadSessionPlan(root, sessionId);
-  const lineageId = sessionPlan?.lineage_id ?? sessionId;
-  maxAttempts = Math.min(maxAttempts, sessionPlan?.max_attempts ?? 3);
-  const path = sessionPlanPath(root, sessionId);
-  if (!existsSync(path))
-    throw new Error("Resume requires a session plan with task contracts");
-  const plan = JSON.parse(readFileSync(path, "utf8")) as {
-    tasks?: Array<{
-      id: string;
-      agent?: string;
-      task?: string;
-      description?: string;
-      workspace?: string;
-    }>;
-  };
-  if (!Array.isArray(plan.tasks) || !plan.tasks.length)
+  const plan = snapshot.plan;
+  const lineageId = plan.lineage_id ?? sessionId;
+  maxAttempts = Math.min(maxAttempts, plan.max_attempts);
+  if (!plan.tasks.length)
     throw new Error("Resume requires a nonempty task plan");
   const tasks = new Map<string, ResumeTask>();
   for (const definition of plan.tasks) {
-    const contract = loadTaskContract(root, sessionId, definition.id);
+    const contract = snapshot.taskContract(definition.id);
     const previous = latest.get(definition.id);
     const history = goalRuns(
       runs,
@@ -144,7 +145,7 @@ export function planSessionResume(
       task.status === "reused" &&
       task.dependsOn.some((id) => tasks.get(id)?.status !== "reused")
     ) {
-      const contract = loadTaskContract(root, sessionId, id);
+      const contract = snapshot.taskContract(id);
       task.status =
         contract?.retry_policy === "safe" &&
         task.prompt &&
@@ -217,30 +218,35 @@ export async function resumeSession(args: {
   sessionId: string;
   maxAttempts?: number;
   dispatch: (task: ResumeTask) => Promise<number | null>;
-}): Promise<ResumeReport> {
-  // Validate identity before constructing lease/checkpoint paths.
+}): Promise<ResumeProgressReport> {
+  // Validate identity before constructing lease/progress report paths.
   sessionPlanPath(args.root, args.sessionId);
   const release = acquireResumeLease(args.root, args.sessionId);
   try {
-    const report = planSessionResume(
+    const snapshot = loadSessionPlanSnapshot(args.root, args.sessionId);
+    if (!snapshot)
+      throw new Error("Resume requires a session plan with task contracts");
+    const report = scheduleSessionResume(
       args.root,
       args.sessionId,
-      args.maxAttempts,
+      args.maxAttempts ?? 3,
+      snapshot,
     );
-    const planFile = sessionPlanPath(args.root, args.sessionId);
-    const pinnedPlan = readFileSync(planFile, "utf8");
-    const checkpoint = join(
+    const plan = snapshot.plan;
+    // This file reports progress for inspection. Each invocation recomputes
+    // scheduling from the validated plan and run evidence instead of reading it.
+    const progressReportPath = join(
       runtimeStateDir(args.root, "agent-resume"),
       `${args.sessionId}.json`,
     );
-    atomicWriteJson(checkpoint, report);
+    atomicWriteJson(progressReportPath, report);
     for (const task of report.tasks) {
       if (task.status !== "ready") continue;
-      if (readFileSync(planFile, "utf8") !== pinnedPlan) {
+      if (!snapshot.isCurrent()) {
         task.status = "blocked";
         task.reason =
           "Plan changed during resume; review the new plan before retrying";
-        atomicWriteJson(checkpoint, report);
+        atomicWriteJson(progressReportPath, report);
         continue;
       }
       if (
@@ -257,13 +263,12 @@ export async function resumeSession(args: {
       } else {
         // A prior dispatch can consume the shared goal budget of a different
         // task ID. Recheck before every dispatch, not just when scheduling.
-        const plan = loadSessionPlan(args.root, args.sessionId);
         const goalId =
-          plan?.tasks.find((definition) => definition.id === task.taskId)
+          plan.tasks.find((definition) => definition.id === task.taskId)
             ?.goal_id ?? task.taskId;
         const history = goalRuns(
           listAgentRuns(args.root),
-          plan?.lineage_id ?? args.sessionId,
+          plan.lineage_id ?? args.sessionId,
           goalId,
         );
         const previous = history.at(-1);
@@ -272,14 +277,14 @@ export async function resumeSession(args: {
           classifyRunFailure(previous) === "WORKFLOW_EVIDENCE_FAILURE";
         if (
           history.length >=
-            Math.min(args.maxAttempts ?? 3, plan?.max_attempts ?? 3) ||
+            Math.min(args.maxAttempts ?? 3, plan.max_attempts) ||
           evidenceFailure
         ) {
           task.status = "blocked";
           task.reason = evidenceFailure
             ? evidenceFailureHandoff(previous)
             : "Attempt limit reached";
-          atomicWriteJson(checkpoint, report);
+          atomicWriteJson(progressReportPath, report);
           continue;
         }
         const code = await args.dispatch(task);
@@ -302,7 +307,7 @@ export async function resumeSession(args: {
           task.reason = "Retry did not produce new valid acceptance evidence";
         }
       }
-      atomicWriteJson(checkpoint, report);
+      atomicWriteJson(progressReportPath, report);
     }
     // A later task can change an earlier task's inputs. Never report a reused
     // receipt as current merely because it was valid before the retry loop.
@@ -311,7 +316,7 @@ export async function resumeSession(args: {
         .filter((run) => run.sessionId === args.sessionId)
         .map((run) => [run.taskId, run]),
     );
-    const planChanged = readFileSync(planFile, "utf8") !== pinnedPlan;
+    const planChanged = !snapshot.isCurrent();
     for (const task of report.tasks) {
       if (!["reused", "completed"].includes(task.status)) continue;
       const run = finalRuns.get(task.taskId);
@@ -335,7 +340,7 @@ export async function resumeSession(args: {
     report.ok = report.tasks.every((task) =>
       ["reused", "completed"].includes(task.status),
     );
-    atomicWriteJson(checkpoint, report);
+    atomicWriteJson(progressReportPath, report);
     return report;
   } finally {
     release();

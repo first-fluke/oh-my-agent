@@ -106,8 +106,13 @@ export function loadTaskContract(
   sessionId: string,
   taskId: string,
 ): TaskContract | null {
-  const plan = loadSessionPlan(root, sessionId);
-  if (!plan) return null;
+  return loadSessionPlanSnapshot(root, sessionId)?.taskContract(taskId) ?? null;
+}
+
+function taskContractFromPlan(
+  plan: SessionPlan,
+  taskId: string,
+): TaskContract | null {
   const task = plan.tasks.find((task) => task.id === taskId);
   if (!task) throw new Error(`Unknown plan task: ${taskId}`);
   // Legacy plans remain readable, but cannot supply requirement-backed proof.
@@ -137,13 +142,24 @@ const PlanSchema = z
         .object({
           id: text,
           goal_id: text.optional(),
+          agent: z.string().optional(),
+          task: z.string().optional(),
+          description: z.string().optional(),
+          workspace: z.string().optional(),
           dependencies: z.array(text).default([]),
         })
         .passthrough(),
     ),
   })
   .passthrough();
-type SessionPlan = z.infer<typeof PlanSchema>;
+export type SessionPlan = z.infer<typeof PlanSchema>;
+export interface SessionPlanSnapshot {
+  readonly plan: SessionPlan;
+  /** Resolve contracts from this validated plan without re-reading the file. */
+  taskContract(taskId: string): TaskContract | null;
+  /** Check both the source bytes and current session/lineage pins. */
+  isCurrent(): boolean;
+}
 const PlanPinSchema = z.object({
   lineageId: text.regex(/^[\w-]+$/),
   hash: text,
@@ -184,6 +200,13 @@ export function loadSessionPlan(
   root: string,
   sessionId: string,
 ): SessionPlan | null {
+  return loadSessionPlanSnapshot(root, sessionId)?.plan ?? null;
+}
+
+export function loadSessionPlanSnapshot(
+  root: string,
+  sessionId: string,
+): SessionPlanSnapshot | null {
   const file = sessionPlanPath(root, sessionId);
   const sessionPin = planPin(root, "sessions", sessionId);
   if (!existsSync(file)) {
@@ -191,9 +214,11 @@ export function loadSessionPlan(
       throw new Error("Plan is immutable after dispatch: missing plan");
     return null;
   }
+  let contents: string;
   let rawPlan: unknown;
   try {
-    rawPlan = JSON.parse(readFileSync(file, "utf8"));
+    contents = readFileSync(file, "utf8");
+    rawPlan = JSON.parse(contents);
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`Invalid session plan JSON at ${file}: ${detail}`);
@@ -203,17 +228,23 @@ export function loadSessionPlan(
   if (new Set(ids).size !== ids.length)
     throw new Error("Plan task IDs must be unique");
   const identity = planIdentity(plan, sessionId);
-  for (const pin of [
-    sessionPin,
-    planPin(root, "lineages", identity.lineageId),
-  ]) {
-    if (!existsSync(pin)) continue;
-    const saved = PlanPinSchema.parse(JSON.parse(readFileSync(pin, "utf8")));
-    if (saved.lineageId !== identity.lineageId || saved.hash !== identity.hash)
-      throw new Error(
-        "Plan is immutable after dispatch; contract changes require an explicit new session and lineage",
-      );
-  }
+  const validatePins = (): void => {
+    for (const pin of [
+      sessionPin,
+      planPin(root, "lineages", identity.lineageId),
+    ]) {
+      if (!existsSync(pin)) continue;
+      const saved = PlanPinSchema.parse(JSON.parse(readFileSync(pin, "utf8")));
+      if (
+        saved.lineageId !== identity.lineageId ||
+        saved.hash !== identity.hash
+      )
+        throw new Error(
+          "Plan is immutable after dispatch; contract changes require an explicit new session and lineage",
+        );
+    }
+  };
+  validatePins();
   const tasks = new Map(plan.tasks.map((task) => [task.id, task]));
   const visited = new Set<string>();
   const visiting = new Set<string>();
@@ -228,7 +259,19 @@ export function loadSessionPlan(
     visited.add(id);
   };
   for (const id of ids) visit(id);
-  return plan;
+  return {
+    plan,
+    taskContract: (taskId) => taskContractFromPlan(plan, taskId),
+    isCurrent() {
+      try {
+        if (readFileSync(file, "utf8") !== contents) return false;
+        validatePins();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+  };
 }
 
 /** Caller holds the state index lock, shared with run creation. */

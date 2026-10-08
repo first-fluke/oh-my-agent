@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { hostname, tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { testTask } from "./__fixtures__/task-contract.js";
 import {
   beginAgentRun,
@@ -23,6 +23,24 @@ import {
 import { atomicWriteJson } from "./events.js";
 import { runtimeStateDir } from "./project-runtime.js";
 
+const planReadHook = vi.hoisted(() => ({
+  callback: undefined as ((file: string) => void) | undefined,
+}));
+vi.mock("node:fs", async (importOriginal) => {
+  const fs = await importOriginal<typeof import("node:fs")>();
+  return {
+    ...fs,
+    readFileSync: (
+      file: Parameters<typeof fs.readFileSync>[0],
+      options?: Parameters<typeof fs.readFileSync>[1],
+    ) => {
+      const contents = fs.readFileSync(file, options);
+      planReadHook.callback?.(String(file));
+      return contents;
+    },
+  };
+});
+
 describe("session recovery", () => {
   let root: string;
   beforeEach(() => {
@@ -33,6 +51,7 @@ describe("session recovery", () => {
     plan();
   });
   afterEach(() => {
+    planReadHook.callback = undefined;
     process.env.OMA_PROFILE = "0";
     rmSync(root, { recursive: true, force: true });
   });
@@ -75,6 +94,82 @@ describe("session recovery", () => {
     finish(task.taskId, task.previousRunId);
     return 0;
   };
+
+  it("uses normalized task definitions from the validated plan", () => {
+    plan({ id: " A " });
+    expect(
+      planSessionResume(root, "s1").tasks.map((task) => task.taskId),
+    ).toEqual(["A", "B"]);
+  });
+
+  it("keeps task definitions and contracts from one snapshot during scheduling", () => {
+    planReadHook.callback = (file) => {
+      if (file !== join(root, ".agents/results/plan-s1.json")) return;
+      planReadHook.callback = undefined;
+      plan(
+        { task: "Replacement A", retry_policy: "manual" },
+        { task: "Replacement B", dependencies: [] },
+      );
+    };
+    const original = planSessionResume(root, "s1");
+    expect(original.tasks).toMatchObject([
+      { taskId: "A", prompt: "Perform A", status: "ready", dependsOn: [] },
+      { taskId: "B", prompt: "Perform B", status: "ready", dependsOn: ["A"] },
+    ]);
+    const replacement = planSessionResume(root, "s1");
+    expect(replacement.tasks).toMatchObject([
+      { taskId: "A", prompt: "Replacement A", status: "blocked" },
+      { taskId: "B", prompt: "Replacement B", status: "ready", dependsOn: [] },
+    ]);
+  });
+
+  it("blocks dispatch when the plan changes while scheduling the resume", async () => {
+    planReadHook.callback = (file) => {
+      if (file !== join(root, ".agents/results/plan-s1.json")) return;
+      planReadHook.callback = undefined;
+      plan({ task: "Replacement A" });
+    };
+    const calls: string[] = [];
+    const report = await resumeSession({
+      root,
+      sessionId: "s1",
+      dispatch: async (task) => {
+        calls.push(task.taskId);
+        return dispatch(task);
+      },
+    });
+    expect(calls).toEqual([]);
+    expect(report.ok).toBe(false);
+    expect(
+      report.tasks.every(
+        (task) =>
+          task.status === "blocked" && task.reason.includes("Plan changed"),
+      ),
+    ).toBe(true);
+  });
+
+  it("recomputes scheduling instead of reading the persisted progress report", async () => {
+    const progressReportPath = join(
+      runtimeStateDir(root, "agent-resume"),
+      "s1.json",
+    );
+    mkdirSync(runtimeStateDir(root, "agent-resume"), { recursive: true });
+    writeFileSync(progressReportPath, '{"ok":true,"tasks":"stale progress"}');
+    const calls: string[] = [];
+    const report = await resumeSession({
+      root,
+      sessionId: "s1",
+      dispatch: async (task) => {
+        calls.push(task.taskId);
+        return dispatch(task);
+      },
+    });
+    expect(calls).toEqual(["A", "B"]);
+    expect(report.ok).toBe(true);
+    expect(JSON.parse(readFileSync(progressReportPath, "utf8"))).toEqual(
+      report,
+    );
+  });
 
   it("reuses verified tasks when only unrelated files change", () => {
     finish("A");

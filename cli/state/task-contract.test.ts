@@ -26,6 +26,7 @@ import {
 import { runtimeStateDir } from "./project-runtime.js";
 import {
   contractHash,
+  loadSessionPlanSnapshot,
   loadTaskContract,
   loadTaskDecisionRequirements,
   TaskContractSchema,
@@ -393,6 +394,33 @@ describe("acceptance contracts", () => {
     writeFileSync(file, '{"tasks": []}}');
     expect(() => loadTaskContract(root, "s1", "T1")).toThrow(
       `Invalid session plan JSON at ${file}`,
+    );
+  });
+  it("resolves contracts from one validated snapshot and detects replacement or deletion", () => {
+    const snapshot = loadSessionPlanSnapshot(root, "s1");
+    if (!snapshot) throw new Error("Expected a plan snapshot");
+    expect(snapshot.isCurrent()).toBe(true);
+    writeTestPlan(root, ["T2"]);
+    expect(snapshot.plan.tasks.map((task) => task.id)).toEqual(["T1"]);
+    expect(snapshot.taskContract("T1")?.retry_policy).toBe("safe");
+    expect(() => snapshot.taskContract("T2")).toThrow("Unknown plan task");
+    expect(snapshot.isCurrent()).toBe(false);
+
+    const current = loadSessionPlanSnapshot(root, "s1");
+    expect(current?.taskContract("T2")?.id).toBe("T2");
+    expect(current?.isCurrent()).toBe(true);
+    rmSync(join(root, ".agents/results/plan-s1.json"));
+    expect(current?.isCurrent()).toBe(false);
+  });
+  it("checks session and lineage pins when loading and rechecking a snapshot", () => {
+    start();
+    const snapshot = loadSessionPlanSnapshot(root, "s1");
+    expect(snapshot?.isCurrent()).toBe(true);
+    const pin = join(runtimeStateDir(root, "agent-plans"), "lineages/s1.json");
+    writeFileSync(pin, JSON.stringify({ lineageId: "s1", hash: "changed" }));
+    expect(snapshot?.isCurrent()).toBe(false);
+    expect(() => loadSessionPlanSnapshot(root, "s1")).toThrow(
+      "Plan is immutable after dispatch",
     );
   });
   it("rejects a new task ID or changed plan after the first dispatch", () => {
