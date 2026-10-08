@@ -11,12 +11,22 @@ import {
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
-import { atomicWriteJson } from "./events.js";
+import { listAgentDecisionSubjects } from "./agent-decision-catalog.js";
+import {
+  AgentDecisionSchema,
+  deliverAgentDecisionMemory,
+  RequiredDecisionSchema,
+  recordAgentDecisions,
+  verifyAgentDecisions,
+} from "./agent-decisions.js";
+import type { RequiredDecision } from "./decision-verifier.js";
+import { atomicWriteJson, emitEvent } from "./events.js";
 import { recordHarnessEvolutionEvidence } from "./harness-evolution.js";
 import {
   contractStillCurrent,
   loadSessionPlan,
   loadTaskContract,
+  loadTaskDecisionRequirements,
   pinSessionPlan,
   type TaskContract,
   TaskContractSchema,
@@ -27,6 +37,7 @@ export const AgentClaimSchema = z.object({
   changedFiles: z.array(z.string()),
   unresolved: z.array(z.string()),
   artifacts: z.array(z.string()),
+  decisions: z.array(AgentDecisionSchema).optional(),
   verificationSkipped: z.string().trim().min(10).optional(),
 });
 export type AgentClaim = z.infer<typeof AgentClaimSchema>;
@@ -65,6 +76,9 @@ export interface AgentRun {
   unresolved: string[];
   artifacts: Record<string, string>;
   verificationSkipped?: string;
+  decisionEventIds?: string[];
+  decisionEventHashes?: Record<string, string>;
+  requiredDecisions?: RequiredDecision[];
   contract?: TaskContract;
   dispatch?: { prompt: string; readOnly?: boolean };
   resumedFrom?: string;
@@ -113,6 +127,9 @@ const RunSchema = z.object({
   unresolved: z.array(z.string()),
   artifacts: z.record(z.string(), hashSchema),
   verificationSkipped: z.string().optional(),
+  decisionEventIds: z.array(z.string().min(1)).optional(),
+  decisionEventHashes: z.record(z.string(), hashSchema).optional(),
+  requiredDecisions: z.array(RequiredDecisionSchema).optional(),
   contract: TaskContractSchema.optional(),
   dispatch: z
     .object({ prompt: z.string(), readOnly: z.boolean().optional() })
@@ -273,6 +290,11 @@ export function beginAgentRun(args: {
 }): AgentRun {
   const contract =
     loadTaskContract(args.root, args.sessionId, args.taskId) ?? undefined;
+  const requiredDecisions = loadTaskDecisionRequirements(
+    args.root,
+    args.sessionId,
+    args.taskId,
+  );
   const plan = loadSessionPlan(args.root, args.sessionId);
   if (args.resumedFrom) {
     const previous = readAgentRun(args.root, args.resumedFrom);
@@ -304,6 +326,7 @@ export function beginAgentRun(args: {
       contract?.inputs,
     ),
     contract,
+    ...(requiredDecisions.length > 0 ? { requiredDecisions } : {}),
     dispatch: args.dispatch,
     resumedFrom: args.resumedFrom,
     checks: [],
@@ -317,6 +340,13 @@ export function beginAgentRun(args: {
     const current = loadTaskContract(args.root, args.sessionId, args.taskId);
     if (JSON.stringify(current ?? undefined) !== JSON.stringify(contract))
       throw new Error("Task acceptance contract changed before dispatch");
+    const currentDecisions = loadTaskDecisionRequirements(
+      args.root,
+      args.sessionId,
+      args.taskId,
+    );
+    if (JSON.stringify(currentDecisions) !== JSON.stringify(requiredDecisions))
+      throw new Error("Task decision requirements changed before dispatch");
     const currentPlan = loadSessionPlan(args.root, args.sessionId);
     if (JSON.stringify(currentPlan) !== JSON.stringify(plan))
       throw new Error("Plan changed before dispatch");
@@ -362,15 +392,21 @@ export function agentResultInstructions(
   run: AgentRun,
   readOnly = false,
 ): string {
+  const decisions =
+    `Required decisions: ${JSON.stringify(run.requiredDecisions ?? run.contract?.required_decisions ?? [])}. Suggested decision subjects: ${JSON.stringify(listAgentDecisionSubjects(run.agentId)[run.agentId] ?? [])}. Report material choices made during this task, including optional choices, as {"subject":"declared or relevant subject","decision":"chosen approach","rationale":"reason","alternatives":[],"evidence":[]}; decisions and rationales must be nonblank. Do not invent decisions. Only required_decisions are mandatory. The parent records decisions for this run and checks every declared subject before completion. Routine work without declared decisions may return decisions: [].\n` +
+    (["pm-planner", "pm"].includes(run.agentId)
+      ? 'When authoring a plan, declare task.required_decisions as [{"subject":"relevant subject","description":"choice the task must resolve"}] before dispatch for substantive choices downstream agents must make; omit this field for routine execution. Use oma state required-decisions --agent <agent-id> --json to find suggested subjects.\n'
+      : "");
   if (readOnly)
-    return `## Read-only result contract\nRun ${run.runId}, task ${run.taskId}, session ${run.sessionId}. Do not write coordination or result files. Return one final line: OMA_RESULT_JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[],"verificationSkipped":"specific explanation of the read-only inspection performed"}. The parent records this inspection; it does not count as executable verification.\n`;
+    return `## Read-only result contract\nRun ${run.runId}, task ${run.taskId}, session ${run.sessionId}. Do not write coordination or result files. Return one final line: OMA_RESULT_JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[],"decisions":[],"verificationSkipped":"specific explanation of the read-only inspection performed"}. The parent records this inspection; it does not count as executable verification.\n${decisions}`;
   return (
     `## Execution result contract\nRun: ${run.runId}\nTask: ${run.taskId}\nSession: ${run.sessionId}\n` +
     (run.evidenceRepair
       ? "WORKFLOW_EVIDENCE_FAILURE repair (one attempt): correct only claim/report/artifact metadata and reverify the existing checks. Preserve product inputs, task IDs, and the frozen plan. Do not spawn planning or review tasks. On failure, stop with a partial handoff.\n"
       : "") +
     `Execute the pinned required checks with: oma agent verify ${run.runId} --required (from ${JSON.stringify(root)}).\nRequired checks: ${JSON.stringify(run.contract?.required_checks ?? [])}. A missing contract cannot prove acceptance criteria; define it in the session plan before starting a new run.\n` +
-    `Write ${claimPath(root, run.runId)} as JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[]}.
+    decisions +
+    `Write ${claimPath(root, run.runId)} as JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[],"decisions":[]}.
 Paths are relative to ${run.artifactRoot}. Include the report and relevant plan/phase artifacts. A completed result requires no unresolved items and successful current verification receipts, or an explicit verificationSkipped reason for work that needs no executable check. Do not invent checks. Never run a build unless the user explicitly requested it.\n`
   );
 }
@@ -483,6 +519,7 @@ export function finishAgentRun(
   options: { logPath?: string } = {},
 ): AgentRun {
   const after = runFingerprint(readAgentRun(root, runId));
+  let newlyFinished = false;
   const finished = withStateIndexLock(root, () => {
     const run = readAgentRun(root, runId);
     if (run.status !== "running") return run;
@@ -501,6 +538,7 @@ export function finishAgentRun(
       run.changedFiles = parsed.changedFiles;
       run.unresolved = parsed.unresolved;
       run.verificationSkipped = parsed.verificationSkipped;
+      recordAgentDecisions(run, parsed.decisions ?? []);
       for (const name of parsed.artifacts)
         run.artifacts[name.replaceAll("\\", "/")] = digest(
           readFileSync(artifactPath(run.artifactRoot, name)),
@@ -512,6 +550,11 @@ export function finishAgentRun(
           run.status = "failed";
           run.unresolved.push(
             "Task acceptance contract changed during execution",
+          );
+        } else if (!hasCurrentDecisionRequirements(run)) {
+          run.status = "failed";
+          run.unresolved.push(
+            "Task decision requirements changed during execution",
           );
         } else if (run.checks.length > 0 && !hasCurrentChecks(run)) {
           run.status = "failed";
@@ -534,6 +577,44 @@ export function finishAgentRun(
         `Missing or invalid structured result: ${(error as Error).message}`,
       );
     }
+    try {
+      const requiredDecisions =
+        run.requiredDecisions ?? run.contract?.required_decisions ?? [];
+      const decisionEvidence = verifyAgentDecisions(run, requiredDecisions);
+      if (
+        requiredDecisions.length > 0 ||
+        decisionEvidence.eventIds.length > 0
+      ) {
+        run.decisionEventIds = decisionEvidence.eventIds;
+        run.decisionEventHashes = decisionEvidence.eventHashes;
+      }
+      if (!decisionEvidence.ok) {
+        if (run.status === "completed") run.status = "partial";
+        run.unresolved.push(
+          `Missing required decisions: ${decisionEvidence.missing.map((decision) => decision.subject).join(", ")}`,
+        );
+        emitEvent(run.artifactRoot, run.sessionId, {
+          kind: "decision.missing",
+          vendor: run.vendor,
+          payload: {
+            workflow: "agent",
+            checkpoint: run.agentId,
+            instanceId: run.runId,
+            runId: run.runId,
+            taskId: run.taskId,
+            agentId: run.agentId,
+            missing: decisionEvidence.missing,
+            remediation:
+              "Report decisions with each required subject, decision, and rationale in the structured claim for the metadata repair run.",
+          },
+        });
+      }
+    } catch (error) {
+      if (run.status === "completed") run.status = "partial";
+      run.unresolved.push(
+        `Missing or invalid decision evidence: ${(error as Error).message}`,
+      );
+    }
     if (exitCode !== 0) run.status = "failed";
     if (run.evidenceRepair && run.before !== run.after) {
       run.status = "failed";
@@ -542,8 +623,16 @@ export function finishAgentRun(
       );
     }
     atomicWriteJson(runPath(root, runId), run);
+    newlyFinished = true;
     return run;
   });
+  if (newlyFinished) {
+    try {
+      deliverAgentDecisionMemory(finished);
+    } catch {
+      // Memory delivery cannot change the canonical completion receipt.
+    }
+  }
   // Passive evidence capture must never change the completed run result. The
   // recorder stores only references to existing output and verification data.
   try {
@@ -552,6 +641,17 @@ export function finishAgentRun(
     // A later evolution tick can still scan the canonical agent-run state.
   }
   return finished;
+}
+
+function hasCurrentDecisionRequirements(run: AgentRun): boolean {
+  return (
+    JSON.stringify(
+      loadTaskDecisionRequirements(run.artifactRoot, run.sessionId, run.taskId),
+    ) ===
+    JSON.stringify(
+      run.requiredDecisions ?? run.contract?.required_decisions ?? [],
+    )
+  );
 }
 
 export function hasCurrentChecks(run: AgentRun): boolean {
@@ -630,7 +730,14 @@ export function resultEvidenceValid(
         run.taskId,
         run.contract,
       ) &&
+      hasCurrentDecisionRequirements(run) &&
       (!requireChecks || hasCurrentChecks(run)) &&
+      verifyAgentDecisions(
+        run,
+        run.requiredDecisions ?? run.contract?.required_decisions ?? [],
+        run.decisionEventIds ?? [],
+        run.decisionEventHashes ?? {},
+      ).ok &&
       Object.entries(run.artifacts).every(
         ([name, hash]) =>
           digest(readFileSync(artifactPath(run.artifactRoot, name))) === hash,
@@ -664,8 +771,11 @@ export function classifyRunFailure(
       run.exitCode === 0 &&
       hasCurrentChecks(run) &&
       run.after === runFingerprint(run) &&
-      run.unresolved.every((issue) =>
-        issue.startsWith("Missing or invalid structured result:"),
+      run.unresolved.every(
+        (issue) =>
+          issue.startsWith("Missing or invalid structured result:") ||
+          issue.startsWith("Missing or invalid decision evidence:") ||
+          issue.startsWith("Missing required decisions:"),
       )
     )
       return "WORKFLOW_EVIDENCE_FAILURE";

@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import {
+  listAgentDecisionSubjects,
   listRequiredDecisionCheckpoints,
   resolveDecisionVerifierSid,
   verifyRequiredDecisions,
@@ -377,10 +378,28 @@ export function registerState(program: Command): void {
   addOutputOptions(
     program
       .command("state:required-decisions [workflow]")
-      .description("List required L1 decision.made checkpoints"),
+      .description(
+        "List workflow checkpoints or available agent decision subjects",
+      )
+      .option("--agent <id>", "List decision subjects for this agent"),
   ).action(
     runAction(
       async (workflow: string | undefined, options) => {
+        if (options.agent) {
+          if (workflow)
+            throw new Error("Choose either a workflow or --agent, not both");
+          const agents = listAgentDecisionSubjects(options.agent as string);
+          if (resolveJsonMode(options)) {
+            console.log(JSON.stringify(agents, null, 2));
+            return;
+          }
+          for (const [agentId, decisions] of Object.entries(agents)) {
+            console.log(agentId);
+            for (const decision of decisions)
+              console.log(`  - ${decision.subject}: ${decision.description}`);
+          }
+          return;
+        }
         const table = listRequiredDecisionCheckpoints(workflow);
         if (resolveJsonMode(options)) {
           console.log(JSON.stringify(table, null, 2));

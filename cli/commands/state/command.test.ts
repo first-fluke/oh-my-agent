@@ -17,6 +17,58 @@ afterEach(() => {
 });
 
 describe("state command registration", () => {
+  it("lists agent decision subjects without changing workflow checkpoint output", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    await buildProgram().parseAsync([
+      "node",
+      "oma",
+      "state:required-decisions",
+      "--agent",
+      "db-engineer",
+      "--json",
+    ]);
+    const agents = JSON.parse(String(log.mock.calls.at(-1)?.[0]));
+    expect(Object.keys(agents)).toEqual(["db-engineer"]);
+    expect(agents["db-engineer"]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ subject: "db.migration-strategy" }),
+      ]),
+    );
+
+    await buildProgram().parseAsync([
+      "node",
+      "oma",
+      "state:required-decisions",
+      "debug",
+      "--json",
+    ]);
+    expect(JSON.parse(String(log.mock.calls.at(-1)?.[0]))).toEqual({
+      debug: {
+        "root-cause": [
+          expect.objectContaining({ subject: "debug.root-cause" }),
+        ],
+      },
+    });
+  });
+
+  it("rejects an agent catalog request combined with a workflow", async () => {
+    const error = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    await buildProgram().parseAsync([
+      "node",
+      "oma",
+      "state:required-decisions",
+      "debug",
+      "--agent",
+      "db-engineer",
+    ]);
+    expect(process.exitCode).toBe(1);
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("Choose either a workflow or --agent"),
+    );
+  });
+
   it("rejects aggregate mode with mutations and requires it for aggregate filters", async () => {
     const cases = [
       ["state", "--all-projects", "--activate", "oma-a"],

@@ -88,6 +88,26 @@ Use `--affected PATH...` only when the graph has a complete test selection for t
 
 ## Write and finish the claim
 
+For tasks that choose an API contract, authentication policy, data model,
+migration strategy, state owner, infrastructure access scope, or another
+decision that later work depends on, declare `required_decisions` in the task
+before dispatch:
+
+```json
+"required_decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "description": "Choose the compatibility window and rollback strategy for the account migration."
+  }
+]
+```
+
+Omit this field for tasks that follow an existing decision. Requirements are
+pinned with the task contract and cannot be removed or changed after dispatch.
+List suggested subjects for an agent with
+`oma state required-decisions --agent db-engineer --json`. These subjects are
+choices to use when relevant; the catalog does not make every choice mandatory.
+
 Write the claim file at the exact path printed by `begin`:
 
 ```json
@@ -100,6 +120,29 @@ Write the claim file at the exact path printed by `begin`:
 ```
 
 `status` is one of `completed`, `partial`, `blocked`, or `failed`. Paths are relative to the project root and every artifact must be a regular file inside the workspace. Use `verificationSkipped` only for a specific review that has no executable check; it does not turn a failed check into a pass.
+
+Include substantive decisions in the claim's optional `decisions` array:
+
+```json
+"decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "decision": "Use an expand-and-contract migration; retain the old column for one release.",
+    "rationale": "Both deployed app versions must work during the rollout; rollback switches reads to the retained column.",
+    "alternatives": ["Replace the column during a maintenance window"],
+    "evidence": ["docs/account-migration.md"]
+  }
+]
+```
+
+The parent stores each decision as a `decision.made` event in the run's session
+and attaches its actual agent, task, and run IDs. A missing required decision
+keeps the result partial, including when executable checks pass. Decisions from
+another task or attempt cannot satisfy the requirement. The receipt pins the
+decision event IDs and content hashes; reuse checks that those events still
+exist, are valid, and have unchanged contents.
+Optional decisions are recorded too. Read-only agents return the same array in
+their `OMA_RESULT_JSON` claim so the parent can persist it.
 
 Finalize a native run after writing the claim:
 

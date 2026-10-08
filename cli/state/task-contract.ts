@@ -2,6 +2,10 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
+import {
+  type RequiredDecision,
+  RequiredDecisionSchema,
+} from "./agent-decisions.js";
 import { atomicWriteJson } from "./events.js";
 
 const text = z.string().trim().min(1);
@@ -21,6 +25,14 @@ export const RequiredCheckSchema = z.object({
     .refine((argv) => Boolean(argv[0]?.trim()), "Executable is required"),
   cwd: relativePath.default("."),
 });
+export const RequiredDecisionsSchema = z
+  .array(RequiredDecisionSchema)
+  .refine(
+    (decisions) =>
+      new Set(decisions.map((decision) => decision.subject)).size ===
+      decisions.length,
+    "Required decision subjects must be unique",
+  );
 export const TaskContractSchema = z
   .object({
     id: text,
@@ -29,6 +41,7 @@ export const TaskContractSchema = z
       .array(z.object({ id: text, description: text }))
       .min(1),
     required_checks: z.array(RequiredCheckSchema).min(1),
+    required_decisions: RequiredDecisionsSchema.optional(),
     inputs: z.array(relativePath).min(1).optional(),
     dependencies: z.array(text).default([]),
     retry_policy: z.enum(["safe", "manual"]).default("manual"),
@@ -99,6 +112,19 @@ export function loadTaskContract(
   // Legacy plans remain readable, but cannot supply requirement-backed proof.
   if (!task.required_checks) return null;
   return TaskContractSchema.parse(task);
+}
+
+export function loadTaskDecisionRequirements(
+  root: string,
+  sessionId: string,
+  taskId: string,
+): RequiredDecision[] {
+  const plan = loadSessionPlan(root, sessionId);
+  if (!plan) return [];
+  const task = plan.tasks.find((task) => task.id === taskId);
+  if (!task) throw new Error(`Unknown plan task: ${taskId}`);
+  if (task.required_decisions === undefined) return [];
+  return RequiredDecisionsSchema.parse(task.required_decisions);
 }
 
 const PlanSchema = z

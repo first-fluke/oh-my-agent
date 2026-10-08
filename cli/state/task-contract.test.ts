@@ -1,6 +1,7 @@
 import {
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -16,11 +17,17 @@ import {
 import {
   beginAgentRun,
   finishAgentRun,
+  readAgentRun,
   resultEvidenceValid,
   verifyAgentRun,
   verifyRequiredChecks,
 } from "./agent-results.js";
-import { loadTaskContract, TaskContractSchema } from "./task-contract.js";
+import {
+  contractHash,
+  loadTaskContract,
+  loadTaskDecisionRequirements,
+  TaskContractSchema,
+} from "./task-contract.js";
 
 describe("acceptance contracts", () => {
   let root: string;
@@ -111,6 +118,271 @@ describe("acceptance contracts", () => {
     task.required_checks.push({ ...check, id: "duplicate" });
     expect(TaskContractSchema.safeParse(task).success).toBe(false);
   });
+  it.each([
+    { label: "a non-array decision requirement", value: {} },
+    { label: "a non-object decision requirement", value: ["api-contract"] },
+    {
+      label: "a missing description",
+      value: [{ subject: "backend.api-contract" }],
+    },
+    {
+      label: "a blank subject",
+      value: [{ subject: " \t", description: "Choose the API contract" }],
+    },
+    {
+      label: "a blank description",
+      value: [{ subject: "backend.api-contract", description: " \n" }],
+    },
+    {
+      label: "duplicate subjects after trimming",
+      value: [
+        { subject: "backend.api-contract", description: "Choose the API" },
+        { subject: " backend.api-contract ", description: "Choose again" },
+      ],
+    },
+  ])("rejects $label", ({ value }) => {
+    expect(
+      TaskContractSchema.safeParse(
+        testTask("T1", { required_decisions: value }),
+      ).success,
+    ).toBe(false);
+  });
+  it("persists normalized decision requirements in the dispatched contract", () => {
+    writeFileSync(
+      join(root, ".agents/results/plan-s1.json"),
+      JSON.stringify({
+        tasks: [
+          testTask("T1", {
+            required_decisions: [
+              {
+                subject: " backend.api-contract ",
+                description: " Choose the API compatibility strategy ",
+              },
+            ],
+          }),
+        ],
+      }),
+    );
+    const run = start();
+    const requirements = [
+      {
+        subject: "backend.api-contract",
+        description: "Choose the API compatibility strategy",
+      },
+    ];
+    expect(run.contract?.required_decisions).toEqual(requirements);
+    expect(readAgentRun(root, run.runId).contract?.required_decisions).toEqual(
+      requirements,
+    );
+    const saved = JSON.parse(
+      readFileSync(
+        join(root, ".agents/state/agent-runs", `${run.runId}.json`),
+        "utf8",
+      ),
+    );
+    expect(saved.contract.required_decisions).toEqual(requirements);
+  });
+  it.each([
+    { label: "remove requirements", requirements: {} },
+    { label: "clear requirements", requirements: { required_decisions: [] } },
+    {
+      label: "change a subject",
+      requirements: {
+        required_decisions: [
+          { subject: "backend.authentication", description: "Choose the API" },
+        ],
+      },
+    },
+    {
+      label: "change a description",
+      requirements: {
+        required_decisions: [
+          {
+            subject: "backend.api-contract",
+            description: "Choose a different compatibility policy",
+          },
+        ],
+      },
+    },
+  ])("cannot $label after dispatch", ({ requirements }) => {
+    const file = join(root, ".agents/results/plan-s1.json");
+    writeFileSync(
+      file,
+      JSON.stringify({
+        tasks: [
+          testTask("T1", {
+            required_decisions: [
+              {
+                subject: "backend.api-contract",
+                description: "Choose the API",
+              },
+            ],
+          }),
+        ],
+      }),
+    );
+    const run = start();
+    writeFileSync(
+      file,
+      JSON.stringify({ tasks: [testTask("T1", requirements)] }),
+    );
+    expect(() => loadTaskContract(root, "s1", "T1")).toThrow(
+      "Plan is immutable after dispatch",
+    );
+    expect(() => verifyRequiredChecks(root, run.runId)).toThrow(
+      "contract changed",
+    );
+    const result = finishAgentRun(root, run.runId, 0, claim);
+    expect(result.status).toBe("failed");
+    expect(result.unresolved).toContain(
+      "Task acceptance contract changed during execution",
+    );
+  });
+  it("preserves serialized contracts and hashes when no decisions are required", () => {
+    const task = testTask("T1", {
+      required_checks: [
+        {
+          id: "acceptance",
+          criteria: ["AC1"],
+          command: ["test-runner", "--acceptance"],
+          cwd: ".",
+        },
+      ],
+    });
+    const contract = TaskContractSchema.parse(task);
+    expect(JSON.stringify(contract)).toBe(
+      JSON.stringify({
+        id: "T1",
+        acceptance_criteria: task.acceptance_criteria,
+        required_checks: task.required_checks,
+        dependencies: [],
+        retry_policy: "safe",
+      }),
+    );
+    expect(contractHash(contract)).toBe(
+      "8e118da0862b47725fca32a090773ac3aa003feaf5ade028013307cba56dc94d",
+    );
+    const run = start();
+    expect(readAgentRun(root, run.runId).contract).not.toHaveProperty(
+      "required_decisions",
+    );
+    verifyRequiredChecks(root, run.runId);
+    expect(resultEvidenceValid(finishAgentRun(root, run.runId, 0, claim))).toBe(
+      true,
+    );
+  });
+  it("loads no decision requirements when the plan or declaration is absent", () => {
+    expect(loadTaskDecisionRequirements(root, "s1", "T1")).toEqual([]);
+    expect(loadTaskDecisionRequirements(root, "no-plan", "T1")).toEqual([]);
+    expect(() => loadTaskDecisionRequirements(root, "s1", "unknown")).toThrow(
+      "Unknown plan task",
+    );
+  });
+  it.each([
+    { label: "non-array", value: {} },
+    {
+      label: "blank",
+      value: [{ subject: " ", description: "Choose the API" }],
+    },
+    {
+      label: "missing description",
+      value: [{ subject: "backend.api-contract" }],
+    },
+    {
+      label: "duplicate",
+      value: [
+        { subject: "backend.api-contract", description: "Choose the API" },
+        { subject: " backend.api-contract ", description: "Choose again" },
+      ],
+    },
+  ])(
+    "rejects $label decision requirements without executable checks",
+    ({ value }) => {
+      writeFileSync(
+        join(root, ".agents/results/plan-s1.json"),
+        JSON.stringify({ tasks: [{ id: "T1", required_decisions: value }] }),
+      );
+      expect(loadTaskContract(root, "s1", "T1")).toBeNull();
+      expect(() => loadTaskDecisionRequirements(root, "s1", "T1")).toThrow();
+      expect(start).toThrow();
+    },
+  );
+  it("snapshots decision requirements without adding an executable contract", () => {
+    writeFileSync(
+      join(root, ".agents/results/plan-s1.json"),
+      JSON.stringify({
+        tasks: [
+          {
+            id: "T1",
+            required_decisions: [
+              {
+                subject: " architecture.system-boundary ",
+                description: " Choose the ownership boundary ",
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const requirements = [
+      {
+        subject: "architecture.system-boundary",
+        description: "Choose the ownership boundary",
+      },
+    ];
+    expect(loadTaskContract(root, "s1", "T1")).toBeNull();
+    expect(loadTaskDecisionRequirements(root, "s1", "T1")).toEqual(
+      requirements,
+    );
+    const run = start();
+    expect(run.contract).toBeUndefined();
+    expect(run.requiredDecisions).toEqual(requirements);
+    const saved = readAgentRun(root, run.runId);
+    expect(saved.contract).toBeUndefined();
+    expect(saved.requiredDecisions).toEqual(requirements);
+  });
+  it.each([
+    { label: "remove", task: { id: "T1" } },
+    {
+      label: "change",
+      task: {
+        id: "T1",
+        required_decisions: [
+          {
+            subject: "architecture.system-boundary",
+            description: "Choose a different boundary",
+          },
+        ],
+      },
+    },
+  ])(
+    "cannot $label decision requirements in a non-executable dispatched plan",
+    ({ task }) => {
+      const file = join(root, ".agents/results/plan-s1.json");
+      writeFileSync(
+        file,
+        JSON.stringify({
+          tasks: [
+            {
+              id: "T1",
+              required_decisions: [
+                {
+                  subject: "architecture.system-boundary",
+                  description: "Choose the ownership boundary",
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      start();
+      writeFileSync(file, JSON.stringify({ tasks: [task] }));
+      expect(() => loadTaskDecisionRequirements(root, "s1", "T1")).toThrow(
+        "Plan is immutable after dispatch",
+      );
+      expect(start).toThrow("Plan is immutable after dispatch");
+    },
+  );
   it("identifies the invalid session plan file when JSON parsing fails", () => {
     const file = join(root, ".agents/results/plan-s1.json");
     writeFileSync(file, '{"tasks": []}}');

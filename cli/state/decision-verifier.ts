@@ -9,6 +9,12 @@ import {
   readIndex,
 } from "./events.js";
 
+export {
+  AGENT_DECISIONS,
+  listAgentDecisionSubjects,
+} from "./agent-decision-catalog.js";
+export { verifyAgentDecisions } from "./agent-decisions.js";
+
 export interface RequiredDecision {
   subject: string;
   description: string;
