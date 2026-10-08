@@ -1,5 +1,16 @@
 # Changelog
 
+## [16.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.10.0...cli-v16.0.0) (2026-10-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* **memory:** runtime readers no longer load project-local state. Retry rows require destination and delivery metadata. Migrate existing state with oma state migrate --runtime.
+
+### Features
+
+* **memory:** unify runtime storage and migrate legacy data ([c5f4198](https://github.com/first-fluke/oh-my-agent/commit/c5f41987775da0eba53dccee9e66dfb45a1e7144))
+
 ## [15.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v15.9.0...cli-v15.10.0) (2026-10-08)
 
 
