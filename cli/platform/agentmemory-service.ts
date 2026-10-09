@@ -72,11 +72,26 @@ export function installAgentMemoryService(
   const servicePath = agentMemoryServicePath(homeDir, platform);
   const content =
     platform === "darwin"
-      ? renderLaunchdService({ homeDir, port })
+      ? renderLaunchdService({
+          homeDir,
+          port,
+          executable: args.executable,
+          runtimePath: args.runtimePath,
+        })
       : platform === "linux"
-        ? renderSystemdService({ homeDir, port })
+        ? renderSystemdService({
+            homeDir,
+            port,
+            executable: args.executable,
+            runtimePath: args.runtimePath,
+          })
         : platform === "win32"
-          ? renderWindowsTaskXml({ homeDir, port })
+          ? renderWindowsTaskXml({
+              homeDir,
+              port,
+              executable: args.executable,
+              runtimePath: args.runtimePath,
+            })
           : undefined;
   const commands =
     servicePath === undefined

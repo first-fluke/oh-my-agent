@@ -85,6 +85,102 @@ describe("agentmemory-service", () => {
   });
 
   describe("installAgentMemoryService", () => {
+    it.each(["darwin", "linux"] as const)(
+      "keeps the Node manager runtime directory in the %s service environment",
+      (platform) => {
+        const runtime = "/custom Node & tools/$manager/versions/26%1/bin";
+        const executable = join(homeDir, ".bun", "bin", "agentmemory");
+        const result = installAgentMemoryService({
+          homeDir,
+          platform,
+          dryRun: true,
+          executable,
+          runtimePath: `${runtime}:/usr/bin:${runtime}`,
+        });
+        if (platform === "darwin") {
+          expect(result.content).toContain(
+            `<string>${runtime.replaceAll("&", "&amp;")}:`,
+          );
+          expect(result.content).toContain(`<string>${executable}</string>`);
+        } else {
+          expect(result.content).toContain(
+            `Environment="PATH=${runtime.replaceAll("%", "%%")}:`,
+          );
+          expect(result.content).toContain(`ExecStart="${executable}"`);
+        }
+        expect(result.content?.match(/versions\/26/g)).toHaveLength(1);
+      },
+    );
+
+    it("preserves Windows runtime PATH and executable as literal encoded PowerShell values", () => {
+      const runtime = "C:\\Node tools\\$manager%NAME%&O'Brien\\bin";
+      const executable =
+        "C:\\Memory tools\\$agent%NAME%&O'Brien\\agentmemory.exe";
+      const result = installAgentMemoryService({
+        homeDir,
+        platform: "win32",
+        dryRun: true,
+        port: 3520,
+        executable,
+        runtimePath: `${runtime};${runtime}`,
+      });
+      expect(result.content).toContain("<Command>powershell.exe</Command>");
+      const encoded = result.content?.match(
+        /-NoProfile -NonInteractive -EncodedCommand ([A-Za-z0-9+/=]+)/,
+      )?.[1];
+      expect(encoded).toBeDefined();
+      const script = Buffer.from(encoded ?? "", "base64").toString("utf16le");
+      const fallback = [
+        join(homeDir, ".bun", "bin"),
+        join(homeDir, ".local", "bin"),
+      ].join(";");
+      expect(script).toBe(
+        `$env:PATH = 'C:\\Node tools\\$manager%NAME%&O''Brien\\bin;${fallback}'; $env:III_REST_PORT = '3520'; & 'C:\\Memory tools\\$agent%NAME%&O''Brien\\agentmemory.exe'; exit $LASTEXITCODE`,
+      );
+    });
+
+    it("escapes executable dollar expansion separately from literal systemd PATH values", () => {
+      const result = installAgentMemoryService({
+        homeDir,
+        platform: "linux",
+        dryRun: true,
+        executable: "/memory/$tool%1/agentmemory",
+        runtimePath: "/node/$manager%1/bin",
+      });
+      expect(result.content).toContain(
+        'ExecStart="/memory/$$tool%%1/agentmemory"',
+      );
+      expect(result.content).toContain(
+        'Environment="PATH=/node/$manager%%1/bin:',
+      );
+    });
+
+    it.each(["darwin", "linux", "win32"] as const)(
+      "pins the discovered executable in the %s service",
+      (platform) => {
+        const result = installAgentMemoryService({
+          homeDir,
+          platform,
+          dryRun: true,
+          executable: "/custom path/agent&memory%1",
+        });
+        if (platform === "darwin") {
+          expect(result.content).toContain(
+            "<string>/custom path/agent&amp;memory%1</string>",
+          );
+          expect(result.content).not.toContain("<string>/usr/bin/env</string>");
+        } else if (platform === "linux") {
+          expect(result.content).toContain(
+            'ExecStart="/custom path/agent&memory%%1"',
+          );
+        } else {
+          expect(result.content).toContain(
+            "&amp;&amp; &quot;/custom path/agent&amp;memory%1&quot;",
+          );
+        }
+      },
+    );
+
     it("renders a launchd plist with the requested port on dry run", () => {
       const result = installAgentMemoryService({
         homeDir,

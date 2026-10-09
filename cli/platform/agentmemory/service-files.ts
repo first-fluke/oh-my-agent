@@ -9,8 +9,12 @@ import { join } from "node:path";
 
 export const LAUNCHD_AGENTMEMORY_LABEL = "dev.oma.agentmemory";
 
-export function servicePathEnvironment(homeDir: string): string {
-  return [
+export function servicePathEnvironment(
+  homeDir: string,
+  runtimePath?: string,
+  platform: NodeJS.Platform = process.platform,
+): string {
+  const defaults = [
     join(homeDir, ".bun", "bin"),
     join(homeDir, ".local", "bin"),
     "/opt/homebrew/bin",
@@ -19,7 +23,13 @@ export function servicePathEnvironment(homeDir: string): string {
     "/bin",
     "/usr/sbin",
     "/sbin",
-  ].join(":");
+  ];
+  if (runtimePath === undefined) return defaults.join(":");
+  const separator = platform === "win32" ? ";" : ":";
+  const fallback = platform === "win32" ? defaults.slice(0, 2) : defaults;
+  return [
+    ...new Set([...runtimePath.split(separator).filter(Boolean), ...fallback]),
+  ].join(separator);
 }
 
 export function agentMemoryServicePath(
@@ -55,9 +65,28 @@ function agentMemoryDataHome(homeDir: string): string {
   return join(homeDir, ".agentmemory");
 }
 
+function escapeXml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+}
+
+function quoteSystemd(value: string): string {
+  return `"${value.replaceAll("\\", "\\\\").replaceAll('"', '\\"').replaceAll("%", "%%").replaceAll("\n", "\\n").replaceAll("\r", "\\r").replaceAll("\t", "\\t")}"`;
+}
+
+function quotePowerShell(value: string): string {
+  return `'${value.replaceAll("'", "''")}'`;
+}
+
 export function renderLaunchdService(args: {
   homeDir: string;
   port: number;
+  executable?: string;
+  runtimePath?: string;
 }): string {
   // AgentMemory's iii-engine writes its store to a cwd-relative `./data/`, so
   // pin WorkingDirectory to the config home (launchd otherwise defaults to `/`).
@@ -69,15 +98,14 @@ export function renderLaunchdService(args: {
   <string>${LAUNCHD_AGENTMEMORY_LABEL}</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/bin/env</string>
-    <string>agentmemory</string>
+${args.executable ? `    <string>${escapeXml(args.executable)}</string>` : "    <string>/usr/bin/env</string>\n    <string>agentmemory</string>"}
   </array>
   <key>WorkingDirectory</key>
   <string>${agentMemoryDataHome(args.homeDir)}</string>
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>
-    <string>${servicePathEnvironment(args.homeDir)}</string>
+    <string>${escapeXml(servicePathEnvironment(args.homeDir, args.runtimePath, "darwin"))}</string>
     <key>III_REST_PORT</key>
     <string>${args.port}</string>
   </dict>
@@ -97,6 +125,8 @@ export function renderLaunchdService(args: {
 export function renderSystemdService(args: {
   homeDir: string;
   port: number;
+  executable?: string;
+  runtimePath?: string;
 }): string {
   // WorkingDirectory pins AgentMemory's cwd-relative `./data/` store.
   return `[Unit]
@@ -106,9 +136,9 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=${agentMemoryDataHome(args.homeDir)}
-Environment=PATH=${servicePathEnvironment(args.homeDir)}
+Environment=${args.runtimePath === undefined ? `PATH=${servicePathEnvironment(args.homeDir)}` : quoteSystemd(`PATH=${servicePathEnvironment(args.homeDir, args.runtimePath, "linux")}`)}
 Environment=III_REST_PORT=${args.port}
-ExecStart=/usr/bin/env agentmemory
+ExecStart=${args.executable ? quoteSystemd(args.executable.replaceAll("$", "$$$$")) : "/usr/bin/env agentmemory"}
 Restart=on-failure
 RestartSec=2
 
@@ -124,8 +154,24 @@ WantedBy=default.target
 export function renderWindowsTaskXml(args: {
   homeDir: string;
   port: number;
+  executable?: string;
+  runtimePath?: string;
 }): string {
   const dataHome = agentMemoryDataHome(args.homeDir);
+  // Encoded PowerShell keeps PATH values literal; cmd.exe expands %NAME% even
+  // inside quotes. The default task retains its existing cmd invocation.
+  const encodedCommand =
+    args.runtimePath === undefined
+      ? undefined
+      : Buffer.from(
+          [
+            `$env:PATH = ${quotePowerShell(servicePathEnvironment(args.homeDir, args.runtimePath, "win32"))}`,
+            `$env:III_REST_PORT = '${args.port}'`,
+            `& ${quotePowerShell(args.executable ?? "agentmemory")}`,
+            "exit $LASTEXITCODE",
+          ].join("; "),
+          "utf16le",
+        ).toString("base64");
   return `<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
@@ -155,8 +201,8 @@ export function renderWindowsTaskXml(args: {
   </Settings>
   <Actions Context="Author">
     <Exec>
-      <Command>cmd</Command>
-      <Arguments>/c set "III_REST_PORT=${args.port}" &amp;&amp; agentmemory</Arguments>
+      <Command>${encodedCommand ? "powershell.exe" : "cmd"}</Command>
+      <Arguments>${encodedCommand ? `-NoProfile -NonInteractive -EncodedCommand ${encodedCommand}` : `/c set "III_REST_PORT=${args.port}" &amp;&amp; ${args.executable ? escapeXml(`"${args.executable}"`) : "agentmemory"}`}</Arguments>
       <WorkingDirectory>${dataHome}</WorkingDirectory>
     </Exec>
   </Actions>
