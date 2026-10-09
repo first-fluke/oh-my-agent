@@ -77,11 +77,60 @@ beforeEach(() => {
   remove.mockClear();
   listLabels.mockClear();
   listLabels.mockResolvedValue([]);
+  readCommand.mockClear();
   readCommand.mockImplementation(async (label) =>
     expectedScheduleCommand(label.replace(/^dev\.oma\./, "")),
   );
 });
 afterEach(() => vi.unstubAllEnvs());
+
+describe("schedule ownership during prune", () => {
+  const internalLabels = [
+    "dev.oma.agentmemory",
+    "dev.oma.serena-daemon-gc",
+    "dev.oma.serena-reaper",
+    "dev.oma.future-internal-job",
+  ];
+
+  it.each([false, true])(
+    "removes only a schedule orphan when a healthy manifest job is present: %s",
+    async (hasHealthyJob) => {
+      manifestState.jobs = hasHealthyJob ? [healthy] : [];
+      const orphan = "dev.oma.sch_aaaaaaaaaaaa";
+      listLabels.mockResolvedValue([
+        ...internalLabels,
+        orphan,
+        ...(hasHealthyJob ? [healthy.osJobLabel] : []),
+      ]);
+      const lines: string[] = [];
+
+      const result = await syncSchedules({
+        prune: true,
+        log: (line) => lines.push(line),
+      });
+
+      expect(result.pruned).toBe(1);
+      expect(remove.mock.calls).toEqual([[orphan]]);
+      expect(upsert).not.toHaveBeenCalled();
+      expect(writeManifest).not.toHaveBeenCalled();
+      expect(lines).toEqual([`  pruned: ${orphan}`]);
+      expect(readCommand.mock.calls.map((call) => call[0])).toEqual(
+        hasHealthyJob ? [healthy.osJobLabel] : [],
+      );
+    },
+  );
+
+  it("preserves every internal service when no schedule jobs exist", async () => {
+    listLabels.mockResolvedValue(internalLabels);
+
+    const result = await syncSchedules({ prune: true });
+
+    expect(result.pruned).toBe(0);
+    expect(remove).not.toHaveBeenCalled();
+    expect(upsert).not.toHaveBeenCalled();
+    expect(readCommand).not.toHaveBeenCalled();
+  });
+});
 
 describe("syncSchedules with malformed manifest entries", () => {
   it("rewrites an existing registration after storage or profile roots move", async () => {

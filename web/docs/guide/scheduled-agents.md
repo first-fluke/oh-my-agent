@@ -173,7 +173,9 @@ oma schedule list [--json]
 | `synced` | Job exists in both manifest and OS scheduler |
 | `stale` | Job is registered, but the OS registration invokes a command the current CLI no longer accepts (for example `schedule:run <id>` written before the command-path standardization). Run `schedule sync` to rewrite it; `oma update` does this automatically. |
 | `missing-in-os` | Job is in manifest but missing from OS scheduler. Run `schedule sync` to repair. |
-| `orphan-in-os` | Job exists in OS scheduler but not in manifest. Run `schedule sync --prune` to remove. |
+| `orphan-in-os` | An agent schedule (`dev.oma.sch_*`) exists in the OS scheduler but not in the manifest. Run `schedule sync --prune` to remove. |
+
+Internal services such as `dev.oma.agentmemory`, `dev.oma.serena-daemon-gc`, and `dev.oma.serena-reaper` have their own service managers. `schedule list` excludes them from orphan detection, and `schedule sync --prune` preserves them.
 
 **Output (text):**
 

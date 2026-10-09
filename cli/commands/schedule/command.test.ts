@@ -329,15 +329,39 @@ describe("schedule:list --json", () => {
     expect(out.jobs[0].drift).toBe("synced");
   });
 
-  it("reports OS labels absent from the manifest as orphans", async () => {
+  it("reports only schedule labels absent from the manifest as orphans", async () => {
     manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [] });
-    listLabelsSpy.mockResolvedValue(["dev.oma.orphan"]);
+    listLabelsSpy.mockResolvedValue([
+      "dev.oma.sch_aaaaaaaaaaaa",
+      "dev.oma.agentmemory",
+      "dev.oma.serena-daemon-gc",
+      "dev.oma.serena-reaper",
+      "dev.oma.future-internal-job",
+    ]);
 
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
     await run("schedule:list", "--json");
 
     const out = JSON.parse(logSpy.mock.calls.map((c) => c[0]).join("\n"));
-    expect(out.orphanOsLabels).toEqual(["dev.oma.orphan"]);
+    expect(out.orphanOsLabels).toEqual(["dev.oma.sch_aaaaaaaaaaaa"]);
+    expect(out.jobs).toEqual([]);
+  });
+
+  it("does not show internal services as orphans in table output", async () => {
+    manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [] });
+    listLabelsSpy.mockResolvedValue([
+      "dev.oma.agentmemory",
+      "dev.oma.serena-daemon-gc",
+      "dev.oma.serena-reaper",
+      "dev.oma.future-internal-job",
+    ]);
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    await run("schedule:list");
+
+    expect(logSpy.mock.calls.map((call) => String(call[0])).join("\n")).toBe(
+      "No scheduled jobs found.",
+    );
   });
 });
 

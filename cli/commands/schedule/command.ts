@@ -39,6 +39,7 @@ import {
 } from "./manifest.js";
 import {
   expectedScheduleCommand,
+  isScheduleJobLabel,
   type SchedulerPort,
   selectAdapter,
 } from "./port.js";
@@ -361,8 +362,10 @@ async function scheduleList(options: {
         : ("synced" as DriftState),
   }));
 
-  // Orphan OS labels (in OS but not in manifest)
-  const orphanLabels = [...osLabelSet].filter((l) => !manifestLabelSet.has(l));
+  // Internal services share dev.oma. but are owned by their service managers.
+  const orphanLabels = [...osLabelSet].filter(
+    (label) => isScheduleJobLabel(label) && !manifestLabelSet.has(label),
+  );
 
   if (jsonMode) {
     console.log(

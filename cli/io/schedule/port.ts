@@ -54,6 +54,11 @@ export interface SchedulerPort {
   readCommand?(label: string): Promise<string[] | null>;
 }
 
+/** Only agent schedules use this namespace; internal services share dev.oma. */
+export function isScheduleJobLabel(label: string): boolean {
+  return /^dev\.oma\.sch_[a-z0-9]+$/.test(label);
+}
+
 /** The logical argv every OS registration must carry for a manifest job. */
 export function expectedScheduleCommand(id: string): string[] {
   const invocation = resolveOmaInvocation();

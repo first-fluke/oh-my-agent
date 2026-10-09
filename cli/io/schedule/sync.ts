@@ -6,6 +6,7 @@ import {
 } from "./manifest.js";
 import {
   expectedScheduleCommand,
+  isScheduleJobLabel,
   isStaleScheduleCommand,
   type SchedulerPort,
   selectAdapter,
@@ -111,7 +112,7 @@ export async function syncSchedules(
   if (options.prune) {
     const manifestLabelSet = new Set(jobs.map((job) => job.osJobLabel));
     for (const label of osLabels) {
-      if (!manifestLabelSet.has(label)) {
+      if (isScheduleJobLabel(label) && !manifestLabelSet.has(label)) {
         await port.remove(label);
         result.pruned++;
         log(`  pruned: ${label}`);
