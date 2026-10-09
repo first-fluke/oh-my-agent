@@ -1,5 +1,21 @@
 # Changelog
 
+## [8.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v7.2.0...web-v8.0.0) (2026-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **home:** OMA_HOME selects the global data home rather than a project installation target. Global storage now uses ~/.oma by default; old paths require migration and are not read as runtime fallbacks.
+
+### Features
+
+* **home:** unify global storage and default memory setup ([b3607ff](https://github.com/first-fluke/oh-my-agent/commit/b3607ffbb4551e29e1e0523079be30edd5888d10))
+
+
+### Bug Fixes
+
+* **schedule:** preserve internal services during orphan pruning ([663574c](https://github.com/first-fluke/oh-my-agent/commit/663574c50c3652c6b257aaa4958323e4043d9edf))
+
 ## [7.2.0](https://github.com/first-fluke/oh-my-agent/compare/web-v7.1.3...web-v7.2.0) (2026-10-08)
 
 
