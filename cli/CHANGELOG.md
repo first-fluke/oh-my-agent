@@ -1,5 +1,12 @@
 # Changelog
 
+## [17.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.0.0...cli-v17.0.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **skills:** remove reduced-motion defaults ([742b594](https://github.com/first-fluke/oh-my-agent/commit/742b5942a37fb960e99f9c3b91a0288a4e92c4a9))
+
 ## [17.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v16.1.0...cli-v17.0.0) (2026-10-09)
 
 
