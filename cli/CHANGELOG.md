@@ -1,5 +1,24 @@
 # Changelog
 
+## [17.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v16.1.0...cli-v17.0.0) (2026-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **home:** OMA_HOME selects the global data home rather than a project installation target. Global storage now uses ~/.oma by default; old paths require migration and are not read as runtime fallbacks.
+
+### Features
+
+* **home:** unify global storage and default memory setup ([b3607ff](https://github.com/first-fluke/oh-my-agent/commit/b3607ffbb4551e29e1e0523079be30edd5888d10))
+* **memory:** add shared AgentMemory readiness lifecycle ([0e67915](https://github.com/first-fluke/oh-my-agent/commit/0e67915e19c652889cdd6a75937ad4ec7af77e5a))
+* **memory:** isolate AgentMemory by project and profile ([46a3bc8](https://github.com/first-fluke/oh-my-agent/commit/46a3bc8322ca7e9ae4ab01dfc3c404a097fb9097))
+
+
+### Bug Fixes
+
+* **hooks:** preserve fresh claims during concurrent deduplication ([9432e9d](https://github.com/first-fluke/oh-my-agent/commit/9432e9d073180523d49ac55553412944c88e5bd1))
+* **schedule:** preserve internal services during orphan pruning ([663574c](https://github.com/first-fluke/oh-my-agent/commit/663574c50c3652c6b257aaa4958323e4043d9edf))
+
 ## [16.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v16.0.1...cli-v16.1.0) (2026-10-09)
 
 
