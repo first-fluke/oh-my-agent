@@ -5,6 +5,8 @@ from pathlib import Path
 import subprocess
 
 APPS = ("web", "api", "mobile")
+# Adapt each entry to applicable apps; absent required tasks must fail.
+CHECK_APPS = {kind: APPS for kind in ("check", "lint", "typecheck", "test")}
 
 def affected_apps(paths):
     """Unknown/shared/root paths conservatively affect every example app."""
@@ -36,7 +38,7 @@ def changed_paths(repo, *, staged=False, base=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--kind", choices=("lint", "test"), required=True)
+    parser.add_argument("--kind", choices=tuple(CHECK_APPS), required=True)
     parser.add_argument("--staged", action="store_true")
     parser.add_argument("--base", help="PR target revision or configured target branch")
     parser.add_argument("--repo", type=Path, default=Path.cwd())
@@ -44,6 +46,7 @@ def main():
     args = parser.parse_args()
     paths = changed_paths(args.repo, staged=args.staged, base=args.base)
     apps = list(APPS) if paths is None else affected_apps(paths)
+    apps = [app for app in apps if app in CHECK_APPS[args.kind]]
     for app in apps:
         if args.list:
             print(app)

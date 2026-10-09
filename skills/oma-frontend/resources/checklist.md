@@ -13,7 +13,7 @@ Run through every item before submitting your work.
 ## TypeScript
 - [ ] Strict mode, no `any` types
 - [ ] Explicit interfaces for all component props
-- [ ] No TypeScript errors (`npx tsc --noEmit`)
+- [ ] No TypeScript errors (run the project's configured `typecheck` command; preserve framework checks and the selected TypeScript 7/native-preview executable)
 
 ## Styling
 - [ ] Tailwind CSS only (no inline styles, no CSS modules)
