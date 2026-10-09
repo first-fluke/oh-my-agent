@@ -1,5 +1,12 @@
 # Changelog
 
+## [17.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.0.1...cli-v17.0.2) (2026-10-09)
+
+
+### Bug Fixes
+
+* **emit:** stop generating CLAUDE.md ([a1e81d0](https://github.com/first-fluke/oh-my-agent/commit/a1e81d055843eda1628f98789b8944c07dc17be2))
+
 ## [17.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.0.0...cli-v17.0.1) (2026-10-09)
 
 
