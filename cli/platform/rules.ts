@@ -354,12 +354,11 @@ export function mergeRulesIndexForVendor(
 }
 
 /**
- * Render the full content of a `cli/`-scoped vendor doc (`cli/CLAUDE.md` /
- * `cli/AGENTS.md`): the vendor OMA block WITHOUT the project-rules index
- * (rules tables are a project-root concern), spliced into `existingContent`'s
- * OMA markers when present so content outside the block survives. Pure —
- * callers (emit) handle file IO, keeping scratch-base drift runs read-only
- * against the committed file.
+ * Render the full content of `cli/AGENTS.md`: the vendor OMA block WITHOUT
+ * the project-rules index (rules tables are a project-root concern), spliced
+ * into `existingContent`'s OMA markers when present so content outside the
+ * block survives. Pure — callers (emit) handle file IO, keeping scratch-base
+ * drift runs read-only against the committed file.
  */
 export function renderCliVendorDoc(
   vendor: string,

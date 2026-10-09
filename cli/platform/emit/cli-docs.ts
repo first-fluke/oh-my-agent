@@ -4,19 +4,15 @@ import { renderCliVendorDoc } from "../rules.js";
 import type { CliDocsEmitReport } from "./types.js";
 
 /**
- * Vendor → `cli/`-scoped doc mapping. These are the nested per-directory
- * instruction files the Claude Code and Codex runtimes read when working
- * under `cli/`. Historically hand-maintained mirrors of the rules.ts vendor
- * block — proven drift magnets — now generated so `check:emit-drift` keeps
- * them honest.
+ * `cli/`-scoped instruction output. The shared AGENTS.md file is generated
+ * from rules.ts so `check:emit-drift` can detect stale instructions.
  */
 const CLI_DOCS: ReadonlyArray<{ vendor: string; rel: string }> = [
-  { vendor: "claude", rel: join("cli", "CLAUDE.md") },
   { vendor: "codex", rel: join("cli", "AGENTS.md") },
 ];
 
 /**
- * Emit `cli/CLAUDE.md` + `cli/AGENTS.md` under `outDir`, splicing the fresh
+ * Emit `cli/AGENTS.md` under `outDir`, splicing the fresh
  * vendor block into the COMMITTED file's OMA markers (read from `repoRoot`)
  * so content outside the block survives and scratch-base drift runs compare
  * apples to apples.

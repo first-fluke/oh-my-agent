@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -75,27 +76,23 @@ describe("emitCliDocs", () => {
       rmSync(dir, { recursive: true, force: true });
   });
 
-  it("writes both vendor docs under outDir and reports changed against committed", () => {
+  it("writes only AGENTS.md under outDir and reports changed against committed", () => {
     const repoRoot = makeDir("oma-cli-docs-repo-");
     const outDir = makeDir("oma-cli-docs-out-");
-    // Committed claude doc is already fresh; codex doc is missing.
+    // Existing Claude instructions must not be copied into emitted output.
     mkdirSync(join(repoRoot, "cli"), { recursive: true });
     writeFileSync(
       join(repoRoot, "cli", "CLAUDE.md"),
-      renderCliVendorDoc("claude", null),
+      "# User Claude instructions\n",
     );
 
     const report = emitCliDocs(repoRoot, outDir);
 
     expect(report.target).toBe("cli-docs");
-    expect(report.files).toHaveLength(2);
-    const claude = report.files.find((f) => f.vendor === "claude");
+    expect(report.files).toHaveLength(1);
     const codex = report.files.find((f) => f.vendor === "codex");
-    expect(claude?.changed).toBe(false);
     expect(codex?.changed).toBe(true);
-    expect(readFileSync(join(outDir, "cli", "CLAUDE.md"), "utf-8")).toContain(
-      "Claude Code Agent tool",
-    );
+    expect(existsSync(join(outDir, "cli", "CLAUDE.md"))).toBe(false);
     expect(readFileSync(join(outDir, "cli", "AGENTS.md"), "utf-8")).toContain(
       ".codex/agents/{name}.toml",
     );
@@ -104,14 +101,25 @@ describe("emitCliDocs", () => {
   it("is idempotent: emitting over a fresh committed doc reports unchanged", () => {
     const repoRoot = makeDir("oma-cli-docs-repo2-");
     mkdirSync(join(repoRoot, "cli"), { recursive: true });
-    for (const vendor of ["claude", "codex"] as const) {
-      const rel = vendor === "claude" ? "CLAUDE.md" : "AGENTS.md";
-      writeFileSync(
-        join(repoRoot, "cli", rel),
-        renderCliVendorDoc(vendor, null),
-      );
-    }
+    writeFileSync(
+      join(repoRoot, "cli", "AGENTS.md"),
+      renderCliVendorDoc("codex", null),
+    );
     const report = emitCliDocs(repoRoot, repoRoot);
     expect(report.files.every((f) => f.changed === false)).toBe(true);
+    expect(existsSync(join(repoRoot, "cli", "CLAUDE.md"))).toBe(false);
+  });
+
+  it("preserves an existing user CLAUDE.md when emitting in place", () => {
+    const repoRoot = makeDir("oma-cli-docs-user-");
+    mkdirSync(join(repoRoot, "cli"), { recursive: true });
+    const claudePath = join(repoRoot, "cli", "CLAUDE.md");
+    const userContent = "# User Claude instructions\n";
+    writeFileSync(claudePath, userContent);
+
+    const report = emitCliDocs(repoRoot, repoRoot);
+
+    expect(report.files).toHaveLength(1);
+    expect(readFileSync(claudePath, "utf-8")).toBe(userContent);
   });
 });

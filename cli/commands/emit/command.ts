@@ -96,7 +96,7 @@ export function registerEmitCommand(program: Command): void {
       .description(
         "Emit standards-conformant artifacts from the .agents/ SSOT " +
           "(Agent Skills spec, Agent Plugins package, Claude Code plugin " +
-          "marketplace, AGENTS.md, cli/-scoped vendor docs)",
+          "marketplace, AGENTS.md, cli/AGENTS.md)",
       )
       .option(
         "--target <target>",

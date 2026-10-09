@@ -3,8 +3,8 @@
 // the result differs from the committed artifacts at the repo root.
 //
 // Only artifacts that something actually reads are gated: the Claude plugin
-// marketplace at `.claude-plugin/marketplace.json`, the generated vendor
-// docs `cli/{CLAUDE,AGENTS}.md`, and the Agent Plugins 1.0.0 package at the
+// marketplace at `.claude-plugin/marketplace.json`, the generated
+// `cli/AGENTS.md`, and the Agent Plugins 1.0.0 package at the
 // repo root (`plugin.json`, `skills/`, `mcp.json`, `com.firstfluke.oma/`) —
 // conformant clients discover those files at the package root, so a git
 // clone of this repo is the installable package. The agent-skills/agents-md
@@ -31,9 +31,9 @@ import { fileURLToPath } from "node:url";
 const CLI_DIR = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const REPO_ROOT = join(CLI_DIR, "..");
 const MARKETPLACE_REL = join(".claude-plugin", "marketplace.json");
-// Generated cli/-scoped vendor docs (emit --target cli-docs). Hand-editing
-// these reintroduces the drift this gate exists to prevent.
-const CLI_DOC_RELS = [join("cli", "CLAUDE.md"), join("cli", "AGENTS.md")];
+// Generated cli/AGENTS.md (emit --target cli-docs). Hand-editing this file
+// reintroduces the drift this gate exists to prevent.
+const CLI_DOC_RELS = [join("cli", "AGENTS.md")];
 // Agent Plugins package artifacts at the repo root (emit --target
 // agent-plugin). `plugin.json` is version-normalized like the marketplace.
 const AGENT_PLUGIN_FILE_RELS = ["mcp.json"];
@@ -213,7 +213,7 @@ try {
   ) {
     console.log(
       "emit drift: none — .claude-plugin/marketplace.json, " +
-        "cli/{CLAUDE,AGENTS}.md, and the root Agent Plugins package " +
+        "cli/AGENTS.md, and the root Agent Plugins package " +
         "(plugin.json, skills/, mcp.json, com.firstfluke.oma/) match a " +
         "fresh `oma emit`",
     );

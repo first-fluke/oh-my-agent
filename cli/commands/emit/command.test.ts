@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -43,6 +43,30 @@ describe("runEmit", () => {
     expect(report.agentPlugin).toBeDefined();
     expect(report.claudePlugin).toBeDefined();
     expect(report.agentsMd).toBeDefined();
+    expect(
+      report.cliDocs?.files.map((file) => path.basename(file.outPath)),
+    ).toEqual(["AGENTS.md"]);
+    expect(existsSync(path.join(outDir, "cli", "CLAUDE.md"))).toBe(false);
+  });
+
+  it("target=cli-docs emits AGENTS.md without creating CLAUDE.md", () => {
+    outDir = mkdtempSync(path.join(tmpdir(), "oma-emit-command-"));
+
+    const report = runEmit({
+      target: "cli-docs",
+      repoRoot: FIXTURES_REPO,
+      outDir,
+    });
+
+    expect(
+      report.cliDocs?.files.map((file) => path.basename(file.outPath)),
+    ).toEqual(["AGENTS.md"]);
+    expect(report.agentSkills).toBeUndefined();
+    expect(report.agentPlugin).toBeUndefined();
+    expect(report.claudePlugin).toBeUndefined();
+    expect(report.agentsMd).toBeUndefined();
+    expect(existsSync(path.join(outDir, "cli", "AGENTS.md"))).toBe(true);
+    expect(existsSync(path.join(outDir, "cli", "CLAUDE.md"))).toBe(false);
   });
 });
 
