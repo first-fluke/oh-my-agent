@@ -11,9 +11,8 @@ Every item maps to a SKILL.md guardrail or the validator contract in `fixed-stag
 - [ ] All `<img src>` / `<video src>` point to local `./assets/<file>` only — no remote URLs
 - [ ] `meta.json` is current: `{ title, order[], style, density, speakerNotes }` matches the actual `slide-NN.html` set
 
-## Accessibility and motion
+## Accessibility
 
-- [ ] All CSS animations wrapped in `@media (prefers-reduced-motion: no-preference)`
 - [ ] Nav controls have visible focus states (`.deck-nav button:focus-visible`)
 - [ ] CJK text present → Pretendard font included on those slides
 

@@ -223,7 +223,6 @@ Load `resources/checklist.md` and run all checks in order:
 2. **WCAG 2.2 Accessibility**
    - Text contrast >= 4.5:1 AA
    - Focus indicators visible
-   - prefers-reduced-motion respected
    - Semantic HTML landmarks
 
 3. **Nielsen's 10 Heuristics**
@@ -318,7 +317,6 @@ design decisions.
 
 ## Accessibility
 - **Level**: WCAG AA minimum
-- **Motion**: prefers-reduced-motion support required
 - **Contrast**: 4.5:1 for normal text, 3:1 for large text
 - **Touch targets**: 44x44pt minimum on mobile
 

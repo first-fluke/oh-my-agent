@@ -127,7 +127,7 @@ bunx getdesign@latest list
 5. Name colors semantically with hex values: "Deep Ocean Navy (#1a2332)" not "dark blue".
 6. Recommend components with install commands (shadcn CLI).
 7. ALL output must be responsive-first (mobile layout as default, enhance upward).
-8. WCAG AA minimum for all designs. Respect `prefers-reduced-motion`.
+8. WCAG AA minimum for all designs.
 9. Stitch MCP is optional; all phases work without it.
 10. Present directions when design exploration is requested or a material direction is unresolved; reuse an already chosen direction.
 11. State a material design assumption when it affects the outcome. Ask only about unresolved choices; no fixed opening phrase is required.
@@ -154,5 +154,5 @@ bunx getdesign@latest list
 - `reference/motion-design.md`: motion/react, GSAP, Three.js, ogl, Temporal UX
 - `reference/responsive-design.md`: Mobile-first, theme system
 - `reference/component-patterns.md`: shadcn/Aceternity/React Bits catalog
-- `reference/accessibility.md`: WCAG 2.2, ARIA, focus, reduced-motion
+- `reference/accessibility.md`: WCAG 2.2, ARIA, focus
 - `reference/shader-and-3d.md`: WebGL, R3F, ogl, performance

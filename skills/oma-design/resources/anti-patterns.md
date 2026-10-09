@@ -59,7 +59,6 @@
 - DON'T: Use linear easing for UI elements; looks robotic
 - DO: Animate only transform and opacity for 60fps
 - DO: 150ms for micro-interactions, 200-500ms for transitions
-- DO: Always honor prefers-reduced-motion media query
 - DO: Use Intersection Observer to trigger animations only when visible
 - DO: Pause off-screen Canvas/WebGL renderers
 

@@ -59,8 +59,7 @@
 3. Pause off-screen Canvas/WebGL with Intersection Observer
 4. Add `will-change: transform` sparingly and remove after animation completes
 5. Reduce particle count on mobile (50-75% fewer)
-6. Provide static fallback for prefers-reduced-motion
-7. Reduce canvas resolution: `renderer.setPixelRatio(Math.min(devicePixelRatio, 2))`
+6. Reduce canvas resolution: `renderer.setPixelRatio(Math.min(devicePixelRatio, 2))`
 
 **Prevention**: Test on actual mobile devices, not just browser responsive mode.
 

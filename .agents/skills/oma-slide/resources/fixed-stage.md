@@ -113,7 +113,7 @@ For `viewer.html`, the CLI injects:
 | Icon / decorative image | explicit `width`/`height` in px |
 | Background gradients | allowed (CSS); rasterized to PNG at PPTX export |
 | Clipping / overflow | `overflow: hidden` on `.slide` prevents bleed-out |
-| Animations | `transform` + `opacity` only; wrap in `@media (prefers-reduced-motion: no-preference)` |
+| Animations | `transform` + `opacity` only |
 
 ### 8-px Grid
 
@@ -192,29 +192,7 @@ For latin-only decks, distinctive display fonts are encouraged (anti-"AI slop"):
 system-font-stack restriction applies only to the **body** font fallback, not to
 the chosen heading/display typeface.
 
-## 8. prefers-reduced-motion Support
-
-Wrap all CSS animations and transitions in slide content using:
-
-```css
-@media (prefers-reduced-motion: no-preference) {
-  .animated-element {
-    animation: slideIn 0.4s ease;
-  }
-}
-```
-
-Or equivalently, use the `.motion-safe` utility class provided by `viewport-base.css`:
-
-```css
-/* viewport-base.css disables animation-duration + transition-duration
-   for .motion-safe * when prefers-reduced-motion: reduce */
-```
-
-`deck-stage.js` cross-fade transitions are also disabled when the user prefers reduced motion
-(the slide visibility swap is instant).
-
-## 9. Print / Save-as-PDF
+## 8. Print / Save-as-PDF
 
 Trigger with `Ctrl+P` / `Cmd+P` in the browser, or use `oma slide export pdf --mode print`.
 
@@ -228,7 +206,7 @@ sees the true 1920×1080 px layout. `viewport-base.css` `@media print` rules:
 
 Result: one clean 1920×1080 slide per printed page.
 
-## 10. Presenter View (embedded notes panel + postMessage API)
+## 9. Presenter View (embedded notes panel + postMessage API)
 
 The presenter view is an **embedded on-screen notes panel** — there is no separate
 presenter window. `deck-stage.js` reads speaker notes from

@@ -64,7 +64,7 @@ SECTION: Hero
 - Background: existing brand surface with measured text contrast
 - Content: verified product benefit and functional CTA; omit an announcement if none exists
 - Typography: heading clamp(2rem, 6vw, 5.5rem); body at least 16px on mobile
-- Motion: optional brief fade; content remains visible with reduced motion or JS disabled
+- Motion: optional brief fade; content remains visible with JS disabled
 - Responsive: maintain reading order; actions may stack on narrow screens
 
 SECTION: Relevant product features

@@ -17,28 +17,6 @@ Focus indicators must have >= 3:1 contrast against adjacent colors.
 
 ## Motion & Animation
 
-### prefers-reduced-motion (MANDATORY)
-
-All animations must respect this media query:
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-```
-
-In motion/react:
-```tsx
-import { useReducedMotion } from "motion/react"
-
-const prefersReduced = useReducedMotion()
-// Disable or simplify animations when true
-```
-
 ### Rules
 - Never auto-play animations that can't be paused
 - Provide a mechanism to pause all animations (e.g., a toggle)

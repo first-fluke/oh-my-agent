@@ -206,25 +206,6 @@ gsap.from(split.chars, {
 })
 ```
 
-### Reduced Motion
-```css
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-```
-
-```tsx
-// motion/react
-const prefersReducedMotion = useReducedMotion()
-<motion.div
-  animate={prefersReducedMotion ? {} : { y: [0, -10, 0] }}
-/>
-```
-
 ## Anti-Patterns
 - DON'T: Bounce easing on everything (strongest motion AI slop signal)
 - DON'T: Animation duration > 800ms for UI transitions
@@ -234,7 +215,6 @@ const prefersReducedMotion = useReducedMotion()
 - DON'T: Use `will-change` on everything; it consumes GPU memory
 - DON'T: Use `linear` easing for UI elements; looks robotic
 - DO: Animate only `transform` and `opacity` for 60fps
-- DO: Always honor `prefers-reduced-motion` media query
 - DO: Use `Intersection Observer` to trigger animations only when visible
 - DO: Pause off-screen Canvas/WebGL with Intersection Observer
 - DO: Remove `will-change` after animation completes

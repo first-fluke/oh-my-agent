@@ -13,7 +13,7 @@ alwaysApply: false
 3. Name colors semantically with hex values: "Deep Ocean Navy (#1a2332)" not "dark blue".
 4. Recommend components with install commands (shadcn CLI).
 5. ALL output must be responsive-first (mobile layout as default, enhance upward).
-6. WCAG AA minimum for all designs. Respect `prefers-reduced-motion`.
+6. WCAG AA minimum for all designs.
 7. Present directions when design exploration is requested or a material direction is unresolved; reuse an already chosen direction.
 
 ## Anti-Patterns to Avoid
@@ -21,5 +21,5 @@ alwaysApply: false
 - **Typography**: Don't default to custom Google Fonts; body text minimum 16px on mobile; test CJK at every size
 - **Color**: Avoid purple-to-blue gradient backgrounds; avoid gradient orbs/blobs; use solid colors or subtle single-hue gradients
 - **Layout**: 8px grid; works at 375px minimum; avoid nested cards inside nested cards
-- **Motion**: transform + opacity only for 60fps; 150ms micro-interactions, 200-500ms transitions; respect prefers-reduced-motion
+- **Motion**: transform + opacity only for 60fps; 150ms micro-interactions, 200-500ms transitions
 - **Components**: Use shadcn/ui for base; all interactive elements must have visible focus states

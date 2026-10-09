@@ -222,7 +222,6 @@ A well-crafted slide satisfies all of these:
 3. **Comfortable empty space** — the canvas breathes; content does not fill edge to edge.
 4. **Consistent with the deck** — the color, font, and grid choices are the same as every other slide.
 5. **Readable at scale** — body text ≥ 28 px (doctrine floor; the validator's hard gate rejects only text below 18 px); the smallest legible text at 1920×1080 passes WCAG AA.
-6. **Accessible in motion** — any animations are wrapped in `@media (prefers-reduced-motion: no-preference)`.
 
 ---
 
@@ -238,26 +237,12 @@ The difference between "it looks fine" and "this is well designed" is usually on
 
 ---
 
-## 9. Accessibility Requirements (WCAG AA + Reduced Motion)
+## 9. Accessibility Requirements (WCAG AA)
 
-### 9a. prefers-reduced-motion
-
-**All CSS animations and transitions in generated slides must be wrapped:**
-
-```css
-@media (prefers-reduced-motion: no-preference) {
-  .animated-element {
-    animation: fadeUp 0.5s ease forwards;
-    transition: opacity 0.3s ease;
-  }
-}
-```
+### 9a. Animation Performance
 
 Use `transform` + `opacity` only for animations. Avoid `width`, `height`, `margin`, `padding`
 transitions (these cause layout reflows and are expensive at 1920×1080).
-
-`deck-stage.js` cross-fade transitions are also disabled when `prefers-reduced-motion: reduce`
-is set by the system.
 
 ### 9b. Focus States
 

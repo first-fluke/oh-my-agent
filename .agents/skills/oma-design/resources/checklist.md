@@ -19,7 +19,6 @@
 - [ ] Semantic HTML landmarks (header, nav, main, footer)
 - [ ] Sequential heading hierarchy (h1 → h2 → h3, no skips)
 - [ ] One h1 per page
-- [ ] prefers-reduced-motion respected for all animations
 - [ ] All interactive elements keyboard-accessible
 - [ ] Skip-to-content link present
 - [ ] aria-label on icon-only buttons

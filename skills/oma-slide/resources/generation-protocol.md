@@ -148,9 +148,7 @@ Every slide fragment must follow this exact structure:
   <style>
     /* Slide-specific styles */
     .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
-    @media (prefers-reduced-motion: no-preference) {
-      /* animations here */
-    }
+    /* animations here */
   </style>
 </head>
 <body>

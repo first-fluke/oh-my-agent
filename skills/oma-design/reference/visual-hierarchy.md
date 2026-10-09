@@ -232,4 +232,4 @@ When auditing a DESIGN.md in Phase 6, check whether key elements
 (primary CTA, hero heading, navigation) use at least 3 of the 7
 principles to establish their hierarchy position. If an element relies
 on only one signal (e.g., just color), it is fragile and may fail for
-users with color blindness or reduced motion preferences.
+users with color blindness.

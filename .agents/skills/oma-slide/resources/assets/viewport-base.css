@@ -118,36 +118,6 @@
   z-index: 0;
 }
 
-/* ─── Reduced-motion override ────────────────────────────────────────── */
-/*
- * When the user prefers reduced motion, skip all opacity/transform
- * transitions on slides and stage. The visibility swap happens instantly.
- * This applies to slide transitions AND any CSS animations authored inside
- * individual slide fragments that follow this convention.
- */
-@media (prefers-reduced-motion: reduce) {
-  .slide,
-  .slide.active,
-  .slide.visible {
-    transition: none;
-  }
-
-  /* Authors: wrap animated elements in .motion-safe to respect this. */
-  /*
-   * !important is REQUIRED here, not a smell: per-slide author animations are
-   * scoped by the bundler to `#slide-NN .x` (an id selector, specificity ≥1,1,0),
-   * which no class-level selector can outrank. This canonical a11y reset must win
-   * regardless, so it overrides by !important — the only mechanism that defeats
-   * id specificity. Linting vendored .agents/ assets flags this as a false
-   * positive; exclude .agents/ from the consumer linter instead.
-   */
-  .motion-safe * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 /* ─── Nav controls (viewer / viewer.html) ────────────────────────────── */
 /*
  * Minimal accessible navigation buttons injected by deck-stage.js.

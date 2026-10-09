@@ -14,14 +14,12 @@ import { describe, expect, it } from "vitest";
  *     emits after the author styles (buildPrintPaginationReset), so the generic
  *     `.slide` print rule no longer needs `!important`.
  *
- * The ONLY remaining `!important` is the prefers-reduced-motion reset, which is
- * the canonical a11y override and must defeat arbitrary author animation
- * specificity — that one is intentional and must stay.
+ * The shared stylesheet no longer needs any `!important` declarations.
  *
  * These assertions lock the intent in: the asset is copied-verbatim CSS (not
  * importable) and CI has no browser to exercise the print cascade.
  */
-describe("viewport-base.css asset — !important is reserved for a11y", () => {
+describe("viewport-base.css asset — no !important declarations", () => {
   const assetPath = join(
     dirname(fileURLToPath(import.meta.url)),
     "..",
@@ -46,14 +44,8 @@ describe("viewport-base.css asset — !important is reserved for a11y", () => {
     expect(css).not.toContain("display: none !important");
   });
 
-  it("keeps !important ONLY for the reduced-motion a11y reset", () => {
-    // The reduced-motion kill-switch must outrank any author animation.
-    expect(css).toContain("animation-duration: 0.01ms !important");
-    expect(css).toContain("transition-duration: 0.01ms !important");
-
-    // Exactly the three reduced-motion declarations — nothing else.
-    const declarations = css.match(/!important;/g) ?? [];
-    expect(declarations).toHaveLength(3);
+  it("does not use !important declarations", () => {
+    expect(css).not.toMatch(/!important\s*(?:;|})/);
   });
 
   it("carries no biome suppression directives (the conflict is fixed, not hidden)", () => {

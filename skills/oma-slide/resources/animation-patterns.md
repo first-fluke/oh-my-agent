@@ -1,16 +1,15 @@
 # Animation Patterns — oma-slide
 
-> Effect-to-feeling guide, CSS entrance patterns, background effects, and reduced-motion guards.
+> Effect-to-feeling guide, CSS entrance patterns, and background effects.
 > All patterns are CSS-only and paste-able into slide `<style>` blocks.
 
 ## Ground Rules
 
 1. Use `transform` + `opacity` only — these compose on the GPU without layout reflow.
-2. Every animated element **must** be wrapped in `@media (prefers-reduced-motion: no-preference)`.
-3. Keep durations short: **150ms** for micro-interactions, **200–500ms** for entrance transitions.
-4. Do not combine more than two animation properties on a single element.
-5. Use `animation-fill-mode: both` so elements start in their pre-animated state (no flash).
-6. Stagger sibling elements with `animation-delay` increments of 60–80ms.
+2. Keep durations short: **150ms** for micro-interactions, **200–500ms** for entrance transitions.
+3. Do not combine more than two animation properties on a single element.
+4. Use `animation-fill-mode: both` so elements start in their pre-animated state (no flash).
+5. Stagger sibling elements with `animation-delay` increments of 60–80ms.
 
 ---
 
@@ -41,17 +40,15 @@ Content rises from 20 px below while fading in. The safest, most readable entran
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .enter-fade-up {
-    animation: fade-up 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-  }
-
-  /* Stagger children */
-  .enter-fade-up:nth-child(1) { animation-delay: 0ms; }
-  .enter-fade-up:nth-child(2) { animation-delay: 70ms; }
-  .enter-fade-up:nth-child(3) { animation-delay: 140ms; }
-  .enter-fade-up:nth-child(4) { animation-delay: 210ms; }
+.enter-fade-up {
+  animation: fade-up 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
+
+/* Stagger children */
+.enter-fade-up:nth-child(1) { animation-delay: 0ms; }
+.enter-fade-up:nth-child(2) { animation-delay: 70ms; }
+.enter-fade-up:nth-child(3) { animation-delay: 140ms; }
+.enter-fade-up:nth-child(4) { animation-delay: 210ms; }
 ```
 
 ### 2b. Scale-In (dramatic, bold openers)
@@ -65,10 +62,8 @@ body text lists.
   to   { opacity: 1; transform: scale(1); }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .enter-scale-in {
-    animation: scale-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
+.enter-scale-in {
+  animation: scale-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 ```
 
@@ -83,10 +78,8 @@ designs, and transitions between major sections.
   to   { opacity: 1; filter: blur(0);   transform: scale(1); }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .enter-blur-in {
-    animation: blur-in 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-  }
+.enter-blur-in {
+  animation: blur-in 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 ```
 
@@ -101,10 +94,8 @@ process flows.
   to   { opacity: 1; transform: translateX(0); }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .enter-slide-right {
-    animation: slide-right 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-  }
+.enter-slide-right {
+  animation: slide-right 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 ```
 
@@ -120,10 +111,8 @@ Do NOT use for body text (legibility suffers during overshoot).
   100% { transform: scale(1); }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .enter-scale-pop {
-    animation: scale-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
+.enter-scale-pop {
+  animation: scale-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 ```
 
@@ -132,10 +121,8 @@ Do NOT use for body text (legibility suffers during overshoot).
 Pure opacity transition. For editorial and reading-first decks where motion should be invisible.
 
 ```css
-@media (prefers-reduced-motion: no-preference) {
-  .enter-fade {
-    animation: fade-in 0.6s ease both;
-  }
+.enter-fade {
+  animation: fade-in 0.6s ease both;
 }
 
 @keyframes fade-in {
@@ -162,19 +149,10 @@ Slow, looping radial gradient shift. Use on dark-scheme slides for depth without
   100% { background-position: 0% 50%; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .bg-gradient-pulse {
-    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-    background-size: 300% 300%;
-    animation: gradient-pulse 12s ease infinite;
-  }
-}
-
-/* Without motion preference: show static midpoint */
-@media (prefers-reduced-motion: reduce) {
-  .bg-gradient-pulse {
-    background: #16213e;
-  }
+.bg-gradient-pulse {
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  background-size: 300% 300%;
+  animation: gradient-pulse 12s ease infinite;
 }
 ```
 
@@ -250,45 +228,12 @@ For instant cuts, place this rule after `viewport-base.css`:
 }
 ```
 
-The base stylesheet also disables transitions under `prefers-reduced-motion: reduce`.
-Keep that rule after any per-deck animation overrides. For longer custom transitions,
-update the actual transition declarations and the stage's outgoing-slide cleanup guard
-together; a standalone custom property will not change either.
+For longer custom transitions, update the actual transition declarations and the stage's
+outgoing-slide cleanup guard together; a standalone custom property will not change either.
 
 ---
 
-## 5. Reduced-Motion Guard Reference
-
-Always wrap CSS animations in this media query:
-
-```css
-@media (prefers-reduced-motion: no-preference) {
-  /* Animation / transition rules here */
-}
-```
-
-For properties that should have a fallback static state:
-
-```css
-/* Default (no motion): static state */
-.hero-headline { opacity: 1; transform: none; }
-
-/* Motion allowed: animated entry */
-@media (prefers-reduced-motion: no-preference) {
-  .hero-headline {
-    opacity: 0;
-    transform: translateY(24px);
-    animation: fade-up 0.5s 0.1s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-  }
-}
-```
-
-This pattern ensures content is always visible regardless of user preference — the animation
-is an enhancement, not a requirement for content visibility.
-
----
-
-## 6. Timing Reference
+## 5. Timing Reference
 
 | Use case | Duration | Easing |
 |---|---|---|
@@ -298,4 +243,3 @@ is an enhancement, not a requirement for content visibility.
 | Entrance — spring/pop | 400ms | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
 | Background pulse (continuous) | 10–15s | `ease infinite` |
 | Slide crossfade | 200–400ms | `ease` |
-| Reduced-motion override | 0ms | — |

@@ -39,7 +39,7 @@ font-family: Pretendard, 'Pretendard Variable', 'Apple SD Gothic Neo', 'Noto San
 - **Diagram Visuals:** Every diagram/visual MUST be wrapped in a `<div class="diagram-wrapper">` with `overflow-x: auto; max-width: 100%;` and use SVG `viewBox` / CSS variables (`var(...)`) to prevent mobile clipping and guarantee seamless Dark/Light theme switching.
 - **Contrast:** WCAG AA contrast in BOTH light and dark themes.
 - **Dark Mode:** Must support `prefers-color-scheme: dark` as well as explicit manual theme toggling via data attributes.
-- **Motion:** Animations are optional and must be subtle. `prefers-reduced-motion` MUST be respected.
+- **Motion:** Animations are optional and must be subtle.
 - **Focus States:** Visible focus states are required on all interactive elements.
 
 ## 5. Quiz JS Specification
