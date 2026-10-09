@@ -190,24 +190,33 @@ export function shouldDispatchHookDelivery(
   try {
     const dir = options.dir === undefined ? resolveHookDedupDir() : options.dir;
     if (!dir) return true;
-    const now = options.now ?? Date.now();
+    const now = () => options.now ?? Date.now();
     const ttl = options.ttlMs ?? HOOK_DEDUP_TTL_MS;
     const wrapper = wrapperIdentity(delivery.wrapper);
     const entry = join(dir, hookDeliveryKey(delivery));
-    const record = `${JSON.stringify({ wrapper, at: now } satisfies Claim)}\n`;
-
     for (let attempt = 0; attempt < 2; attempt++) {
+      const startedAt = now();
+      const record = `${JSON.stringify({ wrapper, at: startedAt } satisfies Claim)}\n`;
       if (publishExclusive(entry, record)) {
-        sweep(dir, now);
+        sweep(dir, startedAt);
         return true;
       }
       const prior = readClaim(entry);
-      const age = prior ? now - prior.at : Number.NaN;
-      if (prior && age >= 0 && age < ttl) {
+      // A publisher can win after our first clock sample. Judge its complete
+      // claim at read time; bounded skew also tolerates a small clock rollback.
+      const checkedAt = now();
+      const age = prior ? Math.abs(checkedAt - prior.at) : Number.NaN;
+      if (prior && age < ttl) {
         if (prior.wrapper !== wrapper) return false;
         // Same registration firing again: dispatch and restart the window so
         // the other registration's copy of this repeat is still recognized.
-        renameSync(writeTemp(entry, record), entry);
+        renameSync(
+          writeTemp(
+            entry,
+            `${JSON.stringify({ wrapper, at: checkedAt } satisfies Claim)}\n`,
+          ),
+          entry,
+        );
         return true;
       }
       // Expired or unreadable claim: replace it and retry once.

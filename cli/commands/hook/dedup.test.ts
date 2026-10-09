@@ -3,6 +3,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readdirSync,
+  readFileSync,
   rmSync,
   statSync,
   symlinkSync,
@@ -11,7 +12,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   HOOK_DEDUP_TTL_MS,
   type HookDelivery,
@@ -46,10 +47,75 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   rmSync(root, { recursive: true, force: true });
 });
 
 describe("shouldDispatchHookDelivery", () => {
+  it("keeps the winning claim when an earlier clock sample resumes after another wrapper publishes", () => {
+    const winner = preTool("git add .env", "toolu_race", PROJECT_WRAPPER);
+    const delayed = { ...winner, wrapper: GLOBAL_WRAPPER };
+    let winnerDispatched = false;
+    vi.spyOn(Date, "now")
+      .mockImplementationOnce(() => {
+        // B sampled 100, paused, and A sampled 101 and published first.
+        const captured = 100;
+        winnerDispatched = shouldDispatchHookDelivery(winner, {
+          dir,
+          now: 101,
+        });
+        return captured;
+      })
+      .mockReturnValue(102);
+
+    expect(shouldDispatchHookDelivery(delayed, { dir })).toBe(false);
+    expect(winnerDispatched).toBe(true);
+    expect(
+      JSON.parse(readFileSync(join(dir, hookDeliveryKey(winner)), "utf8")),
+    ).toEqual({ wrapper: PROJECT_WRAPPER, at: 101 });
+  });
+
+  it("keeps a fresh claim across a small clock rollback with an injected clock", () => {
+    const delivery = preTool("git add .env", "toolu_rollback", PROJECT_WRAPPER);
+    expect(shouldDispatchHookDelivery(delivery, { dir, now: 101 })).toBe(true);
+    expect(
+      shouldDispatchHookDelivery(
+        { ...delivery, wrapper: GLOBAL_WRAPPER },
+        { dir, now: 100 },
+      ),
+    ).toBe(false);
+  });
+
+  it("checks expiry after reading the winning claim and refreshes the retry timestamp", () => {
+    const winner = preTool(
+      "git add .env",
+      "toolu_delayed_expiry",
+      PROJECT_WRAPPER,
+    );
+    expect(shouldDispatchHookDelivery(winner, { dir, now: 101 })).toBe(true);
+    vi.spyOn(Date, "now").mockReturnValueOnce(100).mockReturnValue(10_000);
+
+    expect(
+      shouldDispatchHookDelivery(
+        { ...winner, wrapper: GLOBAL_WRAPPER },
+        { dir },
+      ),
+    ).toBe(true);
+    expect(
+      JSON.parse(readFileSync(join(dir, hookDeliveryKey(winner)), "utf8")),
+    ).toEqual({ wrapper: GLOBAL_WRAPPER, at: 10_000 });
+  });
+
+  it("does not trust a future timestamp outside the configured TTL", () => {
+    const delivery = preTool("git add .env", "toolu_future", PROJECT_WRAPPER);
+    expect(shouldDispatchHookDelivery(delivery, { dir, now: 101 })).toBe(true);
+    expect(
+      shouldDispatchHookDelivery(
+        { ...delivery, wrapper: GLOBAL_WRAPPER },
+        { dir, now: 100, ttlMs: 1 },
+      ),
+    ).toBe(true);
+  });
   it("dispatches distinct tool calls fired together, even from different wrappers", () => {
     const now = 1_000_000;
     expect(
