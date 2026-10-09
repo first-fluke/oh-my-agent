@@ -1,5 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { safeGetInstallMode } from "../platform/install-context.js";
+import { omaHome } from "../utils/oma-home.js";
 
 export const RECOMMENDED_CHROME_DEVTOOLS_MCP = {
   command: "npx",
@@ -225,7 +227,20 @@ export function serenaMcpEntry(
   // bare `serena` these entries have always shipped with.
   return {
     command: "oma",
-    args: ["bridge", "--context", omaSerenaContext(context)],
+    args: [
+      "bridge",
+      "--context",
+      omaSerenaContext(context),
+      ...(safeGetInstallMode() === "global"
+        ? [
+            "--oma-home",
+            omaHome(),
+            ...(process.env.OMA_STATE_HOME === undefined
+              ? []
+              : ["--oma-state-home", process.env.OMA_STATE_HOME]),
+          ]
+        : []),
+    ],
     env: { SERENA_LOG_LEVEL: "info" },
   };
 }
@@ -287,6 +302,19 @@ export function hasStaleSerenaTransport(
   if ((mode === "bridge") !== isBridgeSerenaEntry(server)) return true;
   if (!hasOmaSerenaContext(server)) return true;
   if (mode === "stdio" && !hasSerenaNoMemories(server)) return true;
+  if (mode === "bridge" && safeGetInstallMode() === "global") {
+    const args: unknown[] = Array.isArray(server?.args) ? server.args : [];
+    const rootIndex = args.indexOf("--oma-home");
+    if (rootIndex < 0 || args[rootIndex + 1] !== omaHome()) return true;
+    const stateIndex = args.indexOf("--oma-state-home");
+    if (
+      process.env.OMA_STATE_HOME !== undefined &&
+      (stateIndex < 0 || args[stateIndex + 1] !== process.env.OMA_STATE_HOME)
+    )
+      return true;
+    if (process.env.OMA_STATE_HOME === undefined && stateIndex >= 0)
+      return true;
+  }
   // 11.0.0 briefly wrote bridge entries as `<abs node> <abs script> bridge …`.
   // Those are machine-specific (and committed, for Claude's .mcp.json), so any
   // bridge entry not invoking the bare `oma` binary is due for a rewrite.

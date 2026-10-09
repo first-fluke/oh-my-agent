@@ -15,10 +15,10 @@ import type { HookConfig } from "./types.js";
 
 export interface ResolvedHookConfig {
   /**
-   * Config read from `<projectRoot>/.agents/`. Undefined when the project has
-   * no config there (a parent or global install's config never applies to a
-   * project's handlers) or when loading failed; handlers then fall back to
-   * their own readers.
+   * Full effective config only when `<projectRoot>/.agents/` owns a layer.
+   * Otherwise only effective provider preferences are projected, so global
+   * code intelligence applies without granting project hook ownership.
+   * Undefined when no provider preferences exist or loading failed.
    */
   config?: HookConfig;
   /** Semantic memory provider selected by the same load. */
@@ -34,7 +34,9 @@ export interface ResolvedHookConfig {
 export function resolveHookConfig(projectRoot: string): ResolvedHookConfig {
   let layers: ReturnType<typeof loadConfigLayers>;
   try {
-    layers = loadConfigLayers(projectRoot);
+    layers = loadConfigLayers(projectRoot, process.env, {
+      searchParents: false,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     process.stderr.write(
@@ -58,7 +60,8 @@ export function resolveHookConfig(projectRoot: string): ResolvedHookConfig {
   const ownsConfig =
     source !== undefined &&
     resolve(dirname(source)) === resolve(join(projectRoot, ".agents"));
-  return ownsConfig
-    ? { config: layers.config as HookConfig, memory }
+  if (ownsConfig) return { config: layers.config as HookConfig, memory };
+  return providers.success && layers.config.providers !== undefined
+    ? { config: { providers: providers.data }, memory }
     : { memory };
 }

@@ -39,7 +39,7 @@ export function isExtensionVendor(v: string): boolean {
  * Resolve the absolute directory where vendor skill symlinks should live.
  *
  * Mode-aware: when the active install context is "global", uses `spec.homePath`
- * under `installRoot` (= homedir() for global mode). Otherwise uses
+ * under the actual `homedir()`. Otherwise uses
  * `spec.projectPath`. Vendors with `requiresHomeConsent` always resolve under
  * the user's HOME regardless of mode (matches hermes legacy semantics).
  *
@@ -54,7 +54,7 @@ export function vendorSkillsDir(cli: CliTool, installRoot: string): string {
   }
 
   if (safeGetInstallMode() === "global") {
-    return join(installRoot, spec.homePath);
+    return join(homedir(), spec.homePath);
   }
 
   return join(installRoot, spec.projectPath);

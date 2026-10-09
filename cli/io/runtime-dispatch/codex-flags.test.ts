@@ -153,16 +153,24 @@ describe("codexWritableRoots", () => {
     }
   });
 
-  it("uses an absolute OMA_STATE_HOME and ignores a relative one", () => {
+  it("uses an absolute OMA_STATE_HOME and rejects a relative one", () => {
     const stateHome = join(base, "state");
     mkdirSync(stateHome);
     mkdirSync(join(home, ".oma"));
     expect(
       codexWritableRoots({ env: { OMA_STATE_HOME: stateHome }, home }),
     ).toEqual([stateHome]);
-    expect(
+    expect(() =>
       codexWritableRoots({ env: { OMA_STATE_HOME: "relative/state" }, home }),
-    ).toEqual([join(home, ".oma")]);
+    ).toThrow("OMA_STATE_HOME");
+  });
+
+  it("grants custom OMA_HOME when profiles have no separate override", () => {
+    const root = join(base, "oma-home");
+    expect(codexWritableRoots({ env: { OMA_HOME: root }, home })).toEqual([
+      root,
+    ]);
+    expect(existsSync(root)).toBe(true);
   });
 
   it("grants the project root when the workspace is a subdirectory", () => {

@@ -12,7 +12,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { homedir, hostname } from "node:os";
+import { hostname } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {
   profileSlot,
@@ -20,6 +20,7 @@ import {
   projectStateDir,
 } from "../../.agents/hooks/core/session-storage.ts";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
+import { profileStateHome } from "../utils/oma-home.js";
 import { AgentClaimSchema, type AgentRun, RunSchema } from "./agent-results.js";
 import { atomicWriteJson } from "./events.js";
 import { runtimeStateDir } from "./project-runtime.js";
@@ -284,7 +285,7 @@ function migrate(root: string, dryRun: boolean): RuntimeMigrationEntry[] {
         ),
       ),
     ];
-  const stateRoot = process.env.OMA_STATE_HOME ?? join(homedir(), ".oma");
+  const stateRoot = profileStateHome();
   const runs = new Map<string, AgentRun>();
   const deferredRuns = new Set<string>();
   const deferredSessions = new Set(unsafeLeaseSessions);
@@ -720,7 +721,7 @@ export async function migrateProjectRuntime(
   options: RuntimeMigrationOptions,
 ): Promise<RuntimeMigrationEntry[]> {
   const root = resolve(options.projectDir);
-  const stateRoot = process.env.OMA_STATE_HOME ?? join(homedir(), ".oma");
+  const stateRoot = profileStateHome();
   // Validate before acquiring the lock, whose own directory is in this tree.
   try {
     safeChain(stateRoot, projectStateDir(root));

@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { splitArgs } from "../../platform/agent-config.js";
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
+import { profileStateHome } from "../../utils/oma-home.js";
 
 /**
  * Codex full access: no sandbox and no approvals. Never a default; selected
@@ -111,9 +112,7 @@ export function codexWritableRoots(
     const gitDir = externalGitDir(projectRoot);
     if (gitDir) candidates.push(gitDir);
   }
-  const stateHome = env.OMA_STATE_HOME;
-  const omaStateHome =
-    stateHome && isAbsolute(stateHome) ? stateHome : join(home, ".oma");
+  const omaStateHome = profileStateHome(env, home);
   // OMA creates its state home on first use. Create it now so the grant also
   // covers the first `oma state emit` a sandboxed agent makes on a fresh machine.
   try {

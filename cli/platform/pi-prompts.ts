@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { clearNonDirectory } from "../utils/fs-utils.js";
+import { safeGetInstallMode } from "./install-context.js";
 
 const PI_PROMPT_MARKER = "<!-- oma:generated -->";
 
@@ -39,7 +40,10 @@ export function installPiPromptTemplates(
   targetDir: string,
 ): string[] {
   const workflowsDir = path.join(sourceDir, ".agents", "workflows");
-  const promptsRoot = path.join(targetDir, ".pi", "prompts");
+  const global = safeGetInstallMode() === "global";
+  const promptsRoot = global
+    ? path.join(targetDir, ".pi", "agent", "prompts")
+    : path.join(targetDir, ".pi", "prompts");
   const names = listWorkflowNames(workflowsDir);
 
   if (fs.existsSync(promptsRoot)) {
@@ -76,7 +80,10 @@ export function installPiPromptTemplates(
       const existing = fs.readFileSync(promptFile, "utf-8");
       if (!existing.includes(PI_PROMPT_MARKER)) continue;
     }
-    const body = `---\ndescription: ${description}\n---\n${PI_PROMPT_MARKER}\n\nRead and follow \`.agents/workflows/${name}.md\` step by step.\n\nUser request:\n$ARGUMENTS\n`;
+    const workflow = global
+      ? path.join(workflowsDir, `${name}.md`)
+      : `.agents/workflows/${name}.md`;
+    const body = `---\ndescription: ${description}\n---\n${PI_PROMPT_MARKER}\n\nRead and follow \`${workflow}\` step by step.\n\nUser request:\n$ARGUMENTS\n`;
     fs.writeFileSync(promptFile, body);
     written.push(path.relative(targetDir, promptFile));
   }

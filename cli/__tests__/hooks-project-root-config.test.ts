@@ -63,6 +63,7 @@ const grep = (cwd: string) =>
 
 beforeEach(() => {
   root = realpathSync(mkdtempSync(join(tmpdir(), "oma-hook-root-")));
+  vi.stubEnv("OMA_HOME", join(root, "global-home"));
   vi.stubEnv("OMA_STATE_HOME", join(root, "state-home"));
   vi.stubEnv("OMA_NO_AGENTMEMORY", "1");
   vi.stubEnv("CLAUDE_PROJECT_DIR", "");
@@ -181,7 +182,7 @@ describe("dispatcher config reaches the handlers", () => {
     expect((await grep(project)).output).toBe("");
   });
 
-  it("never applies a parent or global install's config to a project", async () => {
+  it("never applies an ancestor project's config to another project", async () => {
     const home = join(root, "home");
     write(
       join(home, ".agents", "oma-config.yaml"),

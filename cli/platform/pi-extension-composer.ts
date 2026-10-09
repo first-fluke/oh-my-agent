@@ -2,6 +2,7 @@ import { cpSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { standaloneHookSources } from "./hooks-composer/standalone-wrapper.js";
 import { copyHookScripts } from "./hooks-composer.js";
+import { safeGetInstallMode } from "./install-context.js";
 
 /**
  * Install path for the pi (Earendil pi-coding-agent) hook bridge.
@@ -29,13 +30,19 @@ export const PI_EXTENSION_DIR = join(".pi", "extensions", "oma");
  * modified entries are preserved. The managed bridge is re-written.
  */
 export function installPiExtension(sourceDir: string, targetDir: string): void {
-  const extDir = join(targetDir, PI_EXTENSION_DIR);
+  const global = safeGetInstallMode() === "global";
+  const extDir = global
+    ? join(targetDir, ".pi", "agent", "extensions", "oma")
+    : join(targetDir, PI_EXTENSION_DIR);
 
   // The bridge keeps its Bun/script ABI; generated handlers delegate to the
   // CLI so semantic delivery uses its profile-scoped queue and provider config.
   copyHookScripts(sourceDir, extDir, undefined, {
     ownedNamespace: true,
-    generatedSources: standaloneHookSources("pi"),
+    generatedSources: standaloneHookSources(
+      "pi",
+      global ? sourceDir : undefined,
+    ),
   });
 
   // 2. The bridge entry point.

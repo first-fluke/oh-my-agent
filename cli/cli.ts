@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import pkg from "./package.json";
 import {
   resolveInstallContext,
@@ -19,7 +19,22 @@ program
   .name("oh-my-agent")
   .description("Multi-Agent Orchestrator for AI IDEs")
   .version(VERSION)
-  .option("-g, --global", "operate on the user's HOME install (~/.agents/)")
+  .option(
+    "-g, --global",
+    "operate on the OMA global install ($OMA_HOME/.agents, default ~/.oma/.agents)",
+  )
+  .addOption(
+    new Option(
+      "--oma-home <path>",
+      "Global storage root for OS executors",
+    ).hideHelp(),
+  )
+  .addOption(
+    new Option(
+      "--oma-state-home <path>",
+      "Explicit profile root for OS executors",
+    ).hideHelp(),
+  )
   .showSuggestionAfterError()
   .showHelpAfterError()
   .addHelpText(
@@ -28,7 +43,14 @@ program
   );
 
 program.hook("preAction", () => {
-  const opts = program.opts<{ global?: boolean }>();
+  const opts = program.opts<{
+    global?: boolean;
+    omaHome?: string;
+    omaStateHome?: string;
+  }>();
+  if (opts.omaHome !== undefined) process.env.OMA_HOME = opts.omaHome;
+  if (opts.omaStateHome !== undefined)
+    process.env.OMA_STATE_HOME = opts.omaStateHome;
   const ctx = resolveInstallContext({ global: opts.global === true });
   setInstallContext(ctx);
 });
@@ -106,6 +128,7 @@ async function registerFullCli(): Promise<void> {
     import("./commands/state/emit.js").then((m) => m.registerEmit),
     import("./commands/state/command.js").then((m) => m.registerState),
     import("./commands/profile/command.js").then((m) => m.registerProfile),
+    import("./commands/home/command.js").then((m) => m.registerHome),
     import("./commands/ralph/command.js").then((m) => m.registerRalph),
     import("./commands/goal/command.js").then((m) => m.registerGoal),
     import("./commands/stats/command.js").then((m) => m.registerStats),

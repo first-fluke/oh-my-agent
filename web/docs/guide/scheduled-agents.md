@@ -14,17 +14,17 @@ description: Run any agent on a recurring or one-shot schedule using the OS sche
 
 When you run `oma schedule create`, oma:
 
-1. Writes a job record to the global manifest at `~/.agents/schedule/schedules.json`.
+1. Writes a job record to the global manifest at `~/.oma/schedule/schedules.json`.
 2. Registers the job with the OS scheduler (macOS launchd, Linux systemd --user, or Windows Task Scheduler). The OS job calls `oma schedule run <id>` at the configured cron interval.
-3. At fire time, `oma schedule run` looks up the job, injects any captured environment variables, calls `oma agent spawn`, and writes the run log to `~/.agents/schedule/runs/<id>/<timestamp>.md`.
+3. At fire time, `oma schedule run` looks up the job, injects any captured environment variables, calls `oma agent spawn`, and writes the run log to `~/.oma/schedule/runs/<id>/<timestamp>.md`.
 
-The manifest is the single source of truth (SSOT). The OS scheduler is just an executor. All state — job definitions, run logs, last-fired timestamps — lives under `~/.agents/schedule/`.
+The manifest is the single source of truth (SSOT). The OS scheduler is just an executor. All state — job definitions, run logs, last-fired timestamps — lives under `~/.oma/schedule/`.
 
 ### Global-only by design
 
 `oma schedule` is intentionally user-global, not per-project. Because the OS scheduler runs jobs independently of the current working directory, a single central registry is the only practical SSOT. Each job records the project it belongs to via `workspace` and `projectLabel`, so `schedule list` can group jobs by project even though the registry is shared.
 
-There is no `--global` flag; schedule commands always read and write `~/.agents/schedule/`.
+There is no `--global` flag; schedule commands use `$OMA_HOME/schedule/`, defaulting to `~/.oma/schedule/`. Registered OS jobs receive the resolved home explicitly so they open the same registry without a login shell. Run `oma schedule sync` after moving the home to refresh job commands and log paths.
 
 ### OS backends
 
@@ -100,7 +100,7 @@ oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" 
 | `-w, --workspace <path>` | Working directory for the agent at run time. Defaults to the current working directory at registration time. |
 | `--once` | One-shot mode: the job fires once and self-removes. Default is recurring. |
 | `--expires-after <duration>` | Auto-expire a recurring job after a duration such as 30d. `0` means indefinite (default). |
-| `--env <KEY1,KEY2>` | Capture the named environment variables (only those listed) into `~/.agents/schedule/env/<id>` (permissions 0600) for injection at run time. Secrets are never written to the manifest itself. |
+| `--env <KEY1,KEY2>` | Capture the named environment variables (only those listed) into `~/.oma/schedule/env/<id>` (permissions 0600) for injection at run time. Secrets are never written to the manifest itself. |
 | `--dry-run` | Print the resolved cron and any rounding note without writing a scheduler job, manifest entry, or environment file. |
 | `--accept-rounded` | Required to register a natural-language interval after OMA rounds it to a cron-expressible step. Preview it first with `--dry-run`. |
 
@@ -233,9 +233,9 @@ oma schedule run <id>
 
 The wrapper:
 1. Looks up the job ID in the manifest. Exits non-zero if not found.
-2. Loads captured environment variables from `~/.agents/schedule/env/<id>` (if present) and injects them into the spawned process.
+2. Loads captured environment variables from `~/.oma/schedule/env/<id>` (if present) and injects them into the spawned process.
 3. Calls `oma agent spawn <agentId> <prompt> <generatedSessionId> --vendor <vendor> -w <workspace>`.
-4. Writes the run result to `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`.
+4. Writes the run result to `~/.oma/schedule/runs/<id>/<ISO-timestamp>.md`.
 5. Updates `lastFiredAt` in the manifest.
 6. If `--once` was set, self-removes the job (manifest + OS scheduler).
 
@@ -279,10 +279,10 @@ oma schedule sync --prune
 
 ## Storage layout
 
-All schedule state lives under `~/.agents/schedule/`:
+All schedule state lives under `~/.oma/schedule/`:
 
 ```
-~/.agents/schedule/
+~/.oma/schedule/
 ├── schedules.json          # SSOT manifest (permissions 0600)
 ├── env/
 │   └── sch_abc123def456    # Captured env vars for this job (permissions 0600)
@@ -292,7 +292,7 @@ All schedule state lives under `~/.agents/schedule/`:
 ```
 
 Permissions:
-- `~/.agents/schedule/` directory: `0700`
+- `~/.oma/schedule/` directory: `0700`
 - `schedules.json` and `env/<id>` files: `0600`
 
 **Secrets are never written to `schedules.json`.** The `--env` flag writes only the named keys to a separate `0600` file under `env/`. Only keys explicitly listed are captured; a full environment dump is never stored.
@@ -312,8 +312,8 @@ Permissions:
 **Checking run logs:**
 
 ```bash
-ls ~/.agents/schedule/runs/sch_abc123def456/
-cat ~/.agents/schedule/runs/sch_abc123def456/2026-06-16T090000Z.md
+ls ~/.oma/schedule/runs/sch_abc123def456/
+cat ~/.oma/schedule/runs/sch_abc123def456/2026-06-16T090000Z.md
 ```
 
 **Job shows `missing-in-os` after a system restart:**

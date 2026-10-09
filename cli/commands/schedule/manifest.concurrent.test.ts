@@ -14,7 +14,7 @@ import { expect, it } from "vitest";
 
 it("preserves both a newly registered job and a concurrent last-run update", async () => {
   const home = mkdtempSync(join(tmpdir(), "oma-schedule-concurrent-"));
-  const directory = join(home, ".agents", "schedule");
+  const directory = join(home, ".oma", "schedule");
   mkdirSync(directory, { recursive: true });
   const target = join(directory, "schedules.json");
   writeFileSync(

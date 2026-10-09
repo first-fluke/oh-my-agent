@@ -15,6 +15,7 @@ import {
 } from "../../platform/hooks-composer/script-copy.js";
 import type { HookVariant } from "../../platform/hooks-composer/variant-types.js";
 import { chainTimeoutSeconds } from "../../platform/hooks-composer.js";
+import { safeGetInstallMode } from "../../platform/install-context.js";
 import { readTomlMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { atomicWriteFileSync, safeWriteFile } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
@@ -110,7 +111,13 @@ export function installKimiHooks(sourceDir: string): KimiHookInstallResult {
 
   // 2. Write the oma-hook wrapper that resolves oma and execs `oma hook "$@"`.
   const wrapperPath = join(hooksDir, OMA_HOOK_WRAPPER);
-  atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
+  atomicWriteFileSync(
+    wrapperPath,
+    generateOmaHookWrapper(
+      safeGetInstallMode() === "global" ? sourceDir : undefined,
+    ),
+    { mode: 0o755 },
+  );
 
   // 3. Merge our `[[hooks]]` entries into config.toml, preserving user config.
   //    A config that does not parse is left untouched: rewriting it from `{}`

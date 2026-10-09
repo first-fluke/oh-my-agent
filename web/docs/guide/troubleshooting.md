@@ -23,7 +23,7 @@ oma doctor --json
 oma doctor --profile
 ```
 
-Project commands read the nearest `.agents/oma-config.cue` or `.agents/oma-config.yaml`, then one local overlay. A global command reads the HOME install root. If a local CUE and local YAML file both exist, remove one. If a local file is malformed, OMA stops rather than silently ignoring the override. See [Configuration reference](/docs/guide/configuration-reference).
+Commands read global defaults from `$OMA_HOME/.agents/` (default `~/.oma/.agents/`), then the nearest project shared config and one local overlay. Different ancestor project roots are not merged. If a local CUE and local YAML file both exist, remove one. If a local file is malformed, OMA stops rather than silently ignoring the override. See [Configuration reference](/docs/guide/configuration-reference).
 
 After an update, inspect the config and generated paths:
 
@@ -99,7 +99,7 @@ oma schedule sync
 oma schedule run SCHEDULE_ID
 ```
 
-`schedule list` reports `synced`, `stale`, `missing-in-os`, and `orphan-in-os`. `schedule sync` restores missing jobs and rewrites stale registrations (an `Unknown command: schedule:run` line in the run log means the registration predates the command rename; `oma update` re-syncs it automatically); add `--prune` only when orphaned OS jobs should be removed. A preview created with `--dry-run` does not register a job. For a recurring interval, accept OMA’s rounding with `--accept-rounded` after reviewing the preview. Check the run log under `~/.agents/schedule/runs/<id>/` for a non-zero vendor exit or `re-auth required`.
+`schedule list` reports `synced`, `stale`, `missing-in-os`, and `orphan-in-os`. `schedule sync` restores missing jobs and rewrites stale registrations (an `Unknown command: schedule:run` line in the run log means the registration predates the command rename; `oma update` re-syncs it automatically); add `--prune` only when orphaned OS jobs should be removed. A preview created with `--dry-run` does not register a job. For a recurring interval, accept OMA’s rounding with `--accept-rounded` after reviewing the preview. Check the run log under `~/.oma/schedule/runs/<id>/` for a non-zero vendor exit or `re-auth required`.
 
 ## Evaluation or optimization reports no coverage
 

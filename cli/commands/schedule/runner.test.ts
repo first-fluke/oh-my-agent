@@ -55,7 +55,7 @@ const mockRemoveJob = vi.hoisted(() => vi.fn());
 const mockGetRunsDir = vi.hoisted(() => vi.fn());
 const mockGetScheduleDir = vi.hoisted(() => vi.fn());
 const mockGetEnvFilePath = vi.hoisted(() =>
-  vi.fn((id: string) => `/fake/home/.agents/schedule/env/${id}`),
+  vi.fn((id: string) => `/fake/home/.oma/schedule/env/${id}`),
 );
 
 vi.mock("./manifest.js", () => ({
@@ -81,8 +81,8 @@ vi.mock("./port.js", () => ({
 import { runScheduledJob } from "./runner.js";
 
 const JOB_ID = "sch_testjob00001";
-const RUNS_DIR = path.join(FAKE_HOME, ".agents", "schedule", "runs", JOB_ID);
-const SCHEDULE_DIR = path.join(FAKE_HOME, ".agents", "schedule");
+const RUNS_DIR = path.join(FAKE_HOME, ".oma", "schedule", "runs", JOB_ID);
+const SCHEDULE_DIR = path.join(FAKE_HOME, ".oma", "schedule");
 
 function makeSampleJob(overrides?: Record<string, unknown>) {
   return {
@@ -135,7 +135,65 @@ describe("schedule/runner.ts — runScheduledJob", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
     process.exitCode = 0;
+  });
+
+  it("binds the registered home before lookup and ignores captured home redirects", async () => {
+    vi.stubEnv("OMA_HOME", "/ambient/oma");
+    vi.stubEnv("OMA_STATE_HOME", "/ambient/profile");
+    mockGetJobById.mockImplementation(() => {
+      expect(process.env.OMA_HOME).toBe("/registered/oma");
+      expect(process.env.OMA_STATE_HOME).toBe("/registered/profile");
+      return makeSampleJob({ capturedEnvRef: `env/${JOB_ID}` });
+    });
+    mockFsFunctions.existsSync.mockReturnValue(true);
+    mockFsFunctions.readFileSync.mockReturnValue(
+      JSON.stringify({
+        OMA_HOME: "/captured/oma",
+        OMA_STATE_HOME: "/captured/profile",
+        TOKEN: "secret",
+      }),
+    );
+    await runScheduledJob(JOB_ID, {
+      omaHome: "/registered/oma",
+      omaStateHome: "/registered/profile",
+    });
+    const child = mockSpawnSync.mock.calls[0]?.[2];
+    expect(child.env).toMatchObject({
+      OMA_HOME: "/registered/oma",
+      OMA_STATE_HOME: "/registered/profile",
+      TOKEN: "secret",
+    });
+    expect(process.env.OMA_HOME).toBe("/ambient/oma");
+    expect(process.env.OMA_STATE_HOME).toBe("/ambient/profile");
+    expect(mockFsFunctions.unlinkSync).toHaveBeenCalledWith(
+      expect.stringContaining("/running/"),
+    );
+  });
+
+  it("uses the registered default profile root instead of an ambient override", async () => {
+    vi.stubEnv("OMA_STATE_HOME", "/ambient/profile");
+    mockGetJobById.mockImplementation(() => {
+      expect(process.env.OMA_STATE_HOME).toBeUndefined();
+      return undefined;
+    });
+    await runScheduledJob(JOB_ID, { omaHome: "/registered/oma" });
+    expect(process.env.OMA_STATE_HOME).toBe("/ambient/profile");
+  });
+
+  it("restores home bindings when creating the runner lease fails", async () => {
+    vi.stubEnv("OMA_HOME", "/ambient/oma");
+    vi.stubEnv("OMA_STATE_HOME", "/ambient/profile");
+    mockFsFunctions.mkdirSync.mockImplementationOnce(() => {
+      throw new Error("denied");
+    });
+    await expect(
+      runScheduledJob(JOB_ID, { omaHome: "/registered/oma" }),
+    ).rejects.toThrow("denied");
+    expect(mockGetJobById).not.toHaveBeenCalled();
+    expect(process.env.OMA_HOME).toBe("/ambient/oma");
+    expect(process.env.OMA_STATE_HOME).toBe("/ambient/profile");
   });
 
   // ---------------------------------------------------------------------------

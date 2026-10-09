@@ -56,6 +56,7 @@ vi.mock("../../../platform/skills-installer.js", () => ({
     removed: [],
   })),
   createVendorWorkflowSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
+  createGlobalSkillDiscoveryLinks: vi.fn(() => []),
   createCliSymlinks: vi.fn(() => ({ created: [], skipped: [], removed: [] })),
   detectExistingCliSymlinkDirs: vi.fn(() => []),
   applyCursorMcpConfig: vi.fn(),
@@ -150,6 +151,8 @@ describe("link kernel", () => {
     configuredVendorsForTest = [];
     agyInstalledResult = { installed: true };
     vi.clearAllMocks();
+    osMock.home = mkdtempSync(join(tmpdir(), "oma-link-native-home-"));
+    tempRoots.push(osMock.home);
   });
 
   afterEach(() => {
@@ -274,6 +277,7 @@ describe("link kernel", () => {
         expect.stringContaining("oma-link-test-"),
         "pi",
         ["pi"],
+        expect.stringContaining("oma-link-test-"),
       );
       expect(skills.installVendorAdaptations).not.toHaveBeenCalled();
       expect(result.vendors).toEqual([]);
@@ -598,6 +602,17 @@ describe("link kernel", () => {
   // so `oma link --global` from any directory other than $HOME silently
   // reconciled the wrong root (or no-op'd when that root had no .agents/).
   describe("install-root resolution (#658)", () => {
+    it("refreshes common discovery links for a global extension-only installation", () => {
+      const root = makeProject(["pi"]);
+      _resetInstallContext();
+      setInstallContext({ installRoot: root, mode: "global" });
+      link({ quiet: true });
+      expect(skills.createGlobalSkillDiscoveryLinks).toHaveBeenCalledWith(root);
+      expect(piExtension.installPiExtension).toHaveBeenCalledWith(
+        root,
+        osMock.home,
+      );
+    });
     it("reconciles the global install root, not the cwd, in global mode", () => {
       const homeRoot = makeProject(["claude"]);
       const unrelatedProject = mkdtempSync(join(tmpdir(), "oma-link-cwd-"));
@@ -611,7 +626,7 @@ describe("link kernel", () => {
       expect(result.vendors).toEqual(["claude"]);
       expect(skills.installVendorAdaptations).toHaveBeenCalledWith(
         homeRoot,
-        homeRoot,
+        osMock.home,
         ["claude"],
       );
     });
@@ -663,7 +678,7 @@ describe("link kernel", () => {
 
       expect(skills.installVendorAdaptations).toHaveBeenCalledWith(
         explicitRoot,
-        explicitRoot,
+        osMock.home,
         ["claude"],
       );
     });

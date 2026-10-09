@@ -24,10 +24,13 @@ describe("Serena daemon cleanup schedule", () => {
 
   beforeEach(() => {
     homeDir = mkdtempSync(join(tmpdir(), "oma-serena-gc-"));
+    vi.stubEnv("OMA_HOME", "/storage/oma");
+    vi.stubEnv("OMA_STATE_HOME", undefined);
   });
 
   afterEach(() => {
     rmSync(homeDir, { recursive: true, force: true });
+    vi.unstubAllEnvs();
   });
 
   const invocation = ["/opt/node/bin/node", "/opt/oma/bin/cli.js"];
@@ -46,7 +49,7 @@ describe("Serena daemon cleanup schedule", () => {
   it("pins the oma that installed it instead of resolving oma on PATH", () => {
     const plist = renderDaemonGcLaunchdPlist(homeDir, invocation);
     expect(plist).toContain(
-      "<array><string>/opt/node/bin/node</string><string>/opt/oma/bin/cli.js</string><string>serena</string><string>daemon</string><string>gc</string><string>--quiet</string></array>",
+      "<array><string>/opt/node/bin/node</string><string>/opt/oma/bin/cli.js</string><string>--oma-home</string><string>/storage/oma</string><string>serena</string><string>daemon</string><string>gc</string><string>--quiet</string></array>",
     );
     expect(plist).not.toContain("/usr/bin/env");
     expect(plist).toContain("<string>/opt/node/bin:");
@@ -58,7 +61,7 @@ describe("Serena daemon cleanup schedule", () => {
   it("uses the same pinned cleanup command on Linux and Windows", () => {
     expect(renderDaemonGcSystemdTimer()).toContain("OnUnitActiveSec=300s");
     expect(renderDaemonGcSystemdService(homeDir, invocation)).toContain(
-      'ExecStart="/opt/node/bin/node" "/opt/oma/bin/cli.js" "serena" "daemon" "gc" "--quiet"',
+      'ExecStart="/opt/node/bin/node" "/opt/oma/bin/cli.js" "--oma-home" "/storage/oma" "serena" "daemon" "gc" "--quiet"',
     );
     const xml = renderDaemonGcWindowsTaskXml([
       "C:\\node.exe",
@@ -66,13 +69,20 @@ describe("Serena daemon cleanup schedule", () => {
     ]);
     expect(xml).toContain("<Command>C:\\node.exe</Command>");
     expect(xml).toContain(
-      "<Arguments>&quot;C:\\oma\\cli.js&quot; serena daemon gc --quiet</Arguments>",
+      "<Arguments>&quot;C:\\oma\\cli.js&quot; --oma-home /storage/oma serena daemon gc --quiet</Arguments>",
     );
   });
 
   it("falls back to a PATH lookup when the entry script is unknown", () => {
     expect(renderDaemonGcSystemdService(homeDir, ["oma"])).toContain(
-      'ExecStart=/usr/bin/env "oma" "serena" "daemon" "gc" "--quiet"',
+      'ExecStart=/usr/bin/env "oma" "--oma-home" "/storage/oma" "serena" "daemon" "gc" "--quiet"',
+    );
+  });
+
+  it("pins an explicit profile override before the cleanup command", () => {
+    vi.stubEnv("OMA_STATE_HOME", "/storage/profiles");
+    expect(renderDaemonGcSystemdService(homeDir, invocation)).toContain(
+      '"--oma-state-home" "/storage/profiles" "serena"',
     );
   });
 

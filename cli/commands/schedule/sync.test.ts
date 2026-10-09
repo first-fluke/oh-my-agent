@@ -7,7 +7,7 @@
  * runs. Such rows are dropped from the manifest and reported.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ScheduleJob } from "../../io/schedule/manifest.js";
 import type { ScheduledJobSpec } from "../../io/schedule/port.js";
 
@@ -20,6 +20,9 @@ const remove = vi.hoisted(() =>
   vi.fn(async (_label: string): Promise<void> => {}),
 );
 const listLabels = vi.hoisted(() => vi.fn(async (): Promise<string[]> => []));
+const readCommand = vi.hoisted(() =>
+  vi.fn<(_label: string) => Promise<string[] | null>>(),
+);
 
 vi.mock("../../io/schedule/manifest.js", async (importOriginal) => {
   const actual =
@@ -40,11 +43,13 @@ vi.mock("../../io/schedule/port.js", async (importOriginal) => {
       upsert,
       remove,
       listLabels,
+      readCommand,
       isAvailable: async () => true,
     }),
   };
 });
 
+import { expectedScheduleCommand } from "../../io/schedule/port.js";
 import { syncSchedules } from "../../io/schedule/sync.js";
 
 const healthy: ScheduleJob = {
@@ -72,9 +77,41 @@ beforeEach(() => {
   remove.mockClear();
   listLabels.mockClear();
   listLabels.mockResolvedValue([]);
+  readCommand.mockImplementation(async (label) =>
+    expectedScheduleCommand(label.replace(/^dev\.oma\./, "")),
+  );
 });
+afterEach(() => vi.unstubAllEnvs());
 
 describe("syncSchedules with malformed manifest entries", () => {
+  it("rewrites an existing registration after storage or profile roots move", async () => {
+    manifestState.jobs = [healthy];
+    listLabels.mockResolvedValue([healthy.osJobLabel]);
+    vi.stubEnv("OMA_HOME", "/old/oma");
+    vi.stubEnv("OMA_STATE_HOME", "/old/profile");
+    readCommand.mockResolvedValue(expectedScheduleCommand(healthy.id));
+    vi.stubEnv("OMA_HOME", "/new/oma");
+    vi.stubEnv("OMA_STATE_HOME", "/new/profile");
+    expect((await syncSchedules()).resynced).toBe(1);
+    expect(upsert.mock.calls[0]?.[0].command).toEqual(
+      expectedScheduleCommand(healthy.id),
+    );
+  });
+
+  it("rewrites a registration when the CLI entrypoint changes", async () => {
+    manifestState.jobs = [healthy];
+    listLabels.mockResolvedValue([healthy.osJobLabel]);
+    const previous = process.argv;
+    try {
+      process.argv = [process.execPath, "/old/cli.ts"];
+      readCommand.mockResolvedValue(expectedScheduleCommand(healthy.id));
+      process.argv = [process.execPath, "/new/cli.ts"];
+      expect((await syncSchedules()).resynced).toBe(1);
+      expect(upsert.mock.calls[0]?.[0].command).toContain("/new/cli.ts");
+    } finally {
+      process.argv = previous;
+    }
+  });
   it("drops the bad row and still registers the healthy job", async () => {
     manifestState.jobs = [{ id: "new-job" }, healthy];
     const lines: string[] = [];

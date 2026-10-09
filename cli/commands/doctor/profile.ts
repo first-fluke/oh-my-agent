@@ -193,7 +193,13 @@ export interface ProfileRow {
 }
 
 export interface ProfileReport {
-  configSources?: { shared?: string; local?: string; environment?: string };
+  configSources?: {
+    global?: string;
+    globalLocal?: string;
+    shared?: string;
+    local?: string;
+    environment?: string;
+  };
   configError?: string;
   freeProvider?: {
     baseUrl?: string;

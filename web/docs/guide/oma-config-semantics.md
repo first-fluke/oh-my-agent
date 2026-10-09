@@ -6,12 +6,17 @@ description: How OMA selects CUE and YAML configuration layers, applies local ov
 
 ## Overview
 
-Configuration is selected from the nearest `.agents/` directory found while walking up from the current working directory:
+OMA reads global defaults from `$OMA_HOME/.agents/` (default `~/.oma/.agents/`),
+then overlays the nearest project `.agents/` found above the working directory.
+Each scope can have these layers:
 
 - **Shared**: `.agents/oma-config.cue`, or `.agents/oma-config.yaml` when CUE is absent or cannot be evaluated.
 - **Local**: `.agents/oma-config.local.cue` or `.agents/oma-config.local.yaml` (one file, overlaid on the shared file; keep this file private).
 
-OMA does not merge a project file with `~/.agents/oma-config.*` for ordinary runtime lookups. A global install reads the home file because its install root is HOME; a project command reads the nearest project layer. `auto_update_cli` is the deliberate exception: its update check looks at the project config, then the home config, then defaults to enabled. See [Configuration reference](/docs/guide/configuration-reference) for the complete model.
+Project shared and local settings override global settings. Different ancestor
+project roots are never merged; an empty nearest `.agents/` is still a project
+boundary. Global defaults do not change project identity. See
+[Configuration reference](/docs/guide/configuration-reference) for the complete model.
 
 ## Precedence table
 
@@ -19,9 +24,10 @@ OMA does not merge a project file with `~/.agents/oma-config.*` for ordinary run
 |-----|:---:|-------|
 | `OMA_MODEL_PRESET` | Highest | A non-empty environment value replaces `model_preset` for that process. |
 | Local file | Overlays shared | Plain maps merge recursively; arrays, scalars, and `null` replace the shared value. Both local file formats cannot exist together. |
+| Project scope | Overlays global | The nearest project's shared/local result wins over the global shared/local result. |
 | Shared CUE | Preferred | If CUE is absent or fails, the loader tries the shared YAML file. A local CUE error is fatal. |
 | Shared YAML | Fallback | Used when no usable shared CUE file is selected. |
-| `auto_update_cli` | Project, then home, then `true` | This update-specific fallback is implemented in `resolveAutoUpdateCli`; it is not a general global layer. |
+| `auto_update_cli` | Effective config, then `true` | The project can override its global default. |
 
 For a project-local override, put only the changed leaves in the local file. For example, a local model choice can be kept out of the shared file:
 
@@ -50,12 +56,15 @@ Run the command from the project so the nearest `.agents/` directory is selected
 
 ## Read order rationale
 
-The nearest-layer rule keeps a project’s configuration self-contained. If you want a user-wide baseline, install globally and edit `~/.agents/oma-config.yaml`; project installs can still define their own nearest layer.
+Edit `~/.oma/.agents/oma-config.yaml` (or `$OMA_HOME/.agents/oma-config.yaml`)
+for user-wide defaults. Project shared/local files override those defaults
+without inheriting unrelated ancestor projects. A project selection of `none`
+for semantic memory overrides global AgentMemory selection.
 
 ## Notes
 
 - `language` in `oma-config.yaml` controls agent response language. It is **not** used to determine install/update warning messages — those use the system locale (`$LANG`) because `oma-config.yaml` is not yet loaded at install time.
-- `auto_update_cli` precedence is explicitly implemented in the update command. When both a project install and a global install are present, the project value is consulted first, then the home value.
+- `auto_update_cli` uses project overrides before global defaults and defaults to enabled when neither scope sets it.
 - `telemetry` (default `false`) maps to each vendor's own opt-out, written by `oma install` / `oma update` / `oma link`: Claude `DISABLE_TELEMETRY` + `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY`, Gemini/Qwen `privacy.usageStatisticsEnabled`, Codex `analytics.enabled` + `feedback.enabled`, Grok `[features] telemetry`, and Antigravity (agy) `enableTelemetry` in `~/.gemini/antigravity-cli/settings.json`. Setting `telemetry: true` opts back in by removing oma's opt-out for that vendor.
 - `diagram` (engine `auto` / `archify` / `mermaid`, `explain_sidecar`, `archify.managed|channel|check_interval_min|path|quality|open`) is a sparse skill-override section like `video` / `image`; see [Diagram Engine](/docs/guide/diagram-engine).
 - `video.hyperframes.check_interval_min` throttles the latest-version checks for the per-run HyperFrames toolchain and heygen-com/hyperframes (`oma video compose`, `oma update`).

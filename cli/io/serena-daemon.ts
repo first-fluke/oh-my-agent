@@ -15,6 +15,7 @@ import {
 import http from "node:http";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { omaPaths } from "../utils/oma-home.js";
 import { serenaDaemonMcpArgs } from "../vendors/serena.js";
 
 /** Poll interval while waiting for a starting daemon to answer. */
@@ -72,11 +73,51 @@ export function _setOmaStateDirForTests(dir: string | null): void {
 }
 
 /**
- * Runtime state root, matching the `~/.config/oma/` location the vault index
- * already uses. Deliberately not `~/.agents`, which install-mode detection reads.
+ * Global daemon state under `<OMA_HOME>/state/serena/`.
  */
 export function omaStateDir(): string {
-  return stateDirOverride ?? join(homedir(), ".config", "oma");
+  return stateDirOverride ?? omaPaths().serena;
+}
+
+/** A deferred live migration must not split attached clients across registries. */
+function assertLegacySerenaQuiescent(): void {
+  if (stateDirOverride !== null) return;
+  const legacy = join(homedir(), ".config", "oma");
+  if (resolve(legacy) === resolve(omaStateDir())) return;
+  const active = (pid: unknown): boolean => {
+    if (!Number.isSafeInteger(pid) || (pid as number) <= 0) return true;
+    try {
+      process.kill(pid as number, 0);
+      return true;
+    } catch (error) {
+      return (error as NodeJS.ErrnoException).code !== "ESRCH";
+    }
+  };
+  const registry = join(legacy, "serena-daemons.json");
+  const lock = join(legacy, "serena-daemons.lock");
+  let busy = false;
+  try {
+    if (existsSync(lock)) busy = active(Number(readFileSync(lock, "utf8")));
+    if (existsSync(registry)) {
+      const records: unknown = JSON.parse(readFileSync(registry, "utf8"));
+      if (!records || typeof records !== "object" || Array.isArray(records))
+        busy = true;
+      else
+        busy ||= Object.values(records).some(
+          (record) =>
+            !record ||
+            active(record.pid) ||
+            (record.clients !== undefined &&
+              (!Array.isArray(record.clients) || record.clients.some(active))),
+        );
+    }
+  } catch {
+    busy = true;
+  }
+  if (busy)
+    throw new Error(
+      `Legacy Serena registry is still active or unreadable at ${legacy}. Close its bridge clients and daemons, then run "oma home migrate" before starting or cleaning shared Serena daemons.`,
+    );
 }
 
 export function daemonRegistryPath(): string {
@@ -443,6 +484,7 @@ async function stopStaleDaemon(pid: number): Promise<void> {
 export async function ensureSerenaDaemon(
   opts: EnsureDaemonOptions,
 ): Promise<DaemonHandle | null> {
+  assertLegacySerenaQuiescent();
   const { root, context } = opts;
   const timeoutMs = opts.timeoutMs ?? 120_000;
   const spawnFn = opts.spawnDaemon ?? spawnDaemonProcess;
@@ -637,6 +679,7 @@ export function daemonPidsWithLiveClients(): Set<number> {
 
 /** Drop registrations whose process is gone. Used by `oma doctor` / reap paths. */
 export function pruneRegistry(): DaemonRecord[] {
+  assertLegacySerenaQuiescent();
   return withRegistryLock((registry) => {
     const removed: DaemonRecord[] = [];
     for (const [key, record] of Object.entries(registry)) {
@@ -813,6 +856,7 @@ export function reclaimIdleDaemons(
   /** The acquiring caller handles this key's stop-and-wait under its startup lock. */
   protectedKey?: string,
 ): DaemonRecord[] {
+  assertLegacySerenaQuiescent();
   // The process scan runs outside the lock: it is the slow part (~tens of ms)
   // and only reads the process table.
   const running = listDaemons();

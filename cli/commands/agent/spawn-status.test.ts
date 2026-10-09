@@ -275,6 +275,7 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
+      if (n(target).endsWith("/project/.agents")) return true;
       if (n(target).endsWith("/project/.agents/oma-config.yaml")) return true;
       if (
         n(target).includes("apps/api/.agents") &&
@@ -353,6 +354,7 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
+      if (n(target).endsWith("/project/.agents")) return true;
       if (n(target).endsWith("/project/.agents/oma-config.yaml")) return true;
       if (n(target).includes("oma-config.yaml")) return false;
       if (n(target).includes("user-preferences.yaml")) return false;
@@ -432,6 +434,7 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
+      if (n(target).endsWith("/project/.agents")) return true;
       if (n(target).endsWith("/project/.agents/oma-config.yaml")) return true;
       if (n(target).includes("oma-config.yaml")) return false;
       if (n(target).includes("user-preferences.yaml")) return false;
@@ -480,6 +483,7 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
+      if (n(target).endsWith("/project/.agents")) return true;
       if (n(target).endsWith("/project/.agents/oma-config.yaml")) return true;
       if (n(target).includes("cli-config.yaml")) return false;
       if (n(target).endsWith("/project")) return true;

@@ -11,6 +11,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { omaHome } from "../utils/oma-home.js";
 import {
   currentOmaInvocation,
   launchdProgramArguments,
@@ -25,6 +26,17 @@ const TASK_NAME = "OMA Serena Daemon GC";
 const INTERVAL_SECONDS = 300;
 /** Canonical spelling; the colon form stopped routing when paths were standardized. */
 export const GC_ARGS = ["serena", "daemon", "gc", "--quiet"];
+
+function boundGcArgs(homeDir?: string): string[] {
+  return [
+    "--oma-home",
+    omaHome(process.env, homeDir),
+    ...(process.env.OMA_STATE_HOME === undefined
+      ? []
+      : ["--oma-state-home", process.env.OMA_STATE_HOME]),
+    ...GC_ARGS,
+  ];
+}
 
 type Runner = (bin: string, args: string[]) => boolean;
 
@@ -85,7 +97,7 @@ export function renderDaemonGcLaunchdPlist(
 <dict>
   <key>Label</key><string>${LABEL}</string>
   <key>ProgramArguments</key>
-  <array>${launchdProgramArguments(invocation, GC_ARGS)}</array>
+  <array>${launchdProgramArguments(invocation, boundGcArgs(homeDir))}</array>
   <key>EnvironmentVariables</key>
   <dict><key>PATH</key><string>${pinnedServicePath(invocation, servicePathEnvironment(homeDir))}</string></dict>
   <key>StartInterval</key><integer>${INTERVAL_SECONDS}</integer>
@@ -120,14 +132,14 @@ Description=OMA Serena idle daemon cleanup
 [Service]
 Type=oneshot
 Environment=PATH=${pinnedServicePath(invocation, servicePathEnvironment(homeDir))}
-ExecStart=${systemdExecStart(invocation, GC_ARGS)}
+ExecStart=${systemdExecStart(invocation, boundGcArgs(homeDir))}
 `;
 }
 
 export function renderDaemonGcWindowsTaskXml(
   invocation: readonly string[] = currentOmaInvocation(),
 ): string {
-  const exec = windowsTaskExec(invocation, GC_ARGS);
+  const exec = windowsTaskExec(invocation, boundGcArgs());
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo><Description>OMA Serena idle daemon cleanup</Description></RegistrationInfo>

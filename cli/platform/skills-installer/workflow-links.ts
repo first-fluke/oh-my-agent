@@ -145,14 +145,17 @@ export function createVendorWorkflowSymlinks(
  * workflows dir) and prunes commands whose workflow no longer exists in SSOT.
  * Never touches a user-authored real `.md` command.
  */
-export function installZcodeWorkflowCommands(installRoot: string): {
+export function installZcodeWorkflowCommands(
+  installRoot: string,
+  targetRoot = installRoot,
+): {
   created: string[];
   skipped: string[];
 } {
   const created: string[] = [];
   const skipped: string[] = [];
   const workflowsDir = resolve(installRoot, ".agents", "workflows");
-  const commandsDir = resolve(installRoot, ".zcode", "commands");
+  const commandsDir = resolve(targetRoot, ".zcode", "commands");
   const names = listWorkflowNames(workflowsDir);
 
   // Prune oma-owned command symlinks whose workflow no longer exists in SSOT.

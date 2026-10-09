@@ -9,6 +9,7 @@ import {
   deriveHookName,
   mergeMatchers,
   OMA_HOOK_WRAPPER_FILENAME,
+  shellQuote,
 } from "./hooks-composer/hook-command.js";
 import { generateOmaHookWrapper } from "./hooks-composer/oma-hook-wrapper.js";
 import {
@@ -17,6 +18,7 @@ import {
 } from "./hooks-composer/script-copy.js";
 import { mergeIntoSettings } from "./hooks-composer/settings-merge.js";
 import type { HookVariant } from "./hooks-composer/variant-types.js";
+import { safeGetInstallMode } from "./install-context.js";
 
 export { ensureFeatureFlags } from "./hooks-composer/feature-flags.js";
 export {
@@ -94,6 +96,16 @@ export function installHooksFromVariant(
   variant: HookVariant,
 ): void {
   variant = withQwenHookEvents(variant);
+  const globalHome = safeGetInstallMode() === "global" ? sourceDir : undefined;
+  const commandVariant = globalHome
+    ? {
+        ...variant,
+        projectDirEnv: null,
+        hookDir: join(targetDir, variant.hookDir),
+      }
+    : variant;
+  const bindHome = (command: string) =>
+    globalHome ? `OMA_HOME=${shellQuote(globalHome)} ${command}` : command;
   // 1. Materialize ONLY the scripts this variant executes/reads from hookDir
   //    (hud.ts, filter-test-output.sh — see requiredVariantScripts). The
   //    unchanged copies recorded by OMA may be replaced or pruned; user files
@@ -110,7 +122,7 @@ export function installHooksFromVariant(
 
   // 2. Write the single oma-hook wrapper (one per vendor hookDir).
   const wrapperPath = join(hooksDest, OMA_HOOK_WRAPPER_FILENAME);
-  atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(), {
+  atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(globalHome), {
     mode: 0o755,
   });
 
@@ -144,7 +156,7 @@ export function installHooksFromVariant(
       const hooks = configs.map((c) => ({
         name: deriveHookName(c.hook),
         type: "command",
-        command: buildHookCmd(variant, c.hook),
+        command: bindHome(buildHookCmd(commandVariant, c.hook)),
         timeout: c.timeout,
       }));
       entry = { hooks };
@@ -152,7 +164,7 @@ export function installHooksFromVariant(
     } else {
       // Handler event — route through oma hook (one entry for the whole chain).
       const handlerTimeout = chainTimeoutSeconds(nonHudConfigs);
-      const omaHookCmd = buildOmaHookCmd(variant, eventName, matcher);
+      const omaHookCmd = buildOmaHookCmd(commandVariant, eventName, matcher);
       if (variant.flatHookEntries) {
         // Flat-entry vendors (Cursor): the event array holds the hook object
         // directly — nested {matcher, hooks: [...]} groups do not fire there.
@@ -187,7 +199,7 @@ export function installHooksFromVariant(
   if (variant.statusLine) {
     const statusLineEntry = {
       type: "command",
-      command: buildHookCmd(variant, variant.statusLine.hook),
+      command: bindHome(buildHookCmd(commandVariant, variant.statusLine.hook)),
     };
     if (variant.statusLineKey) {
       // Qwen Code reads `ui.statusLine`; a root-level entry is ignored.

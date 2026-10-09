@@ -1,8 +1,10 @@
 import * as fs from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { CLI_SKILLS_DIR, INSTALLED_SKILLS_DIR } from "../../constants/index.js";
 import type { CliTool } from "../../types/index.js";
 import { createLink } from "../fs-link.js";
+import { readManagedSkills } from "../managed-skill-ownership.js";
 import { resolveEffectiveSkill } from "../skill-overlays.js";
 import { getVendorDisplayPath, resolveCliSkillsDir } from "./vendor-dirs.js";
 
@@ -118,6 +120,101 @@ export function createVendorSymlinks(
  * @deprecated Use createVendorSymlinks. Removed in a future release.
  */
 export const createCliSymlinks = createVendorSymlinks;
+
+function sameSkillTree(left: string, right: string): boolean {
+  const leftStat = fs.lstatSync(left);
+  const rightStat = fs.lstatSync(right);
+  if (leftStat.isSymbolicLink() || rightStat.isSymbolicLink()) {
+    return (
+      leftStat.isSymbolicLink() &&
+      rightStat.isSymbolicLink() &&
+      fs.readlinkSync(left) === fs.readlinkSync(right)
+    );
+  }
+  if (leftStat.isFile() || rightStat.isFile()) {
+    return (
+      leftStat.isFile() &&
+      rightStat.isFile() &&
+      fs.readFileSync(left).equals(fs.readFileSync(right))
+    );
+  }
+  if (!leftStat.isDirectory() || !rightStat.isDirectory()) return false;
+  const names = fs.readdirSync(left).sort();
+  const otherNames = fs.readdirSync(right).sort();
+  return (
+    names.length === otherNames.length &&
+    names.every(
+      (name, index) =>
+        name === otherNames[index] &&
+        sameSkillTree(join(left, name), join(right, name)),
+    )
+  );
+}
+
+/** Native shared discovery keeps user-owned skills alongside OMA projections. */
+export function createGlobalSkillDiscoveryLinks(installRoot: string): string[] {
+  const sourceDir = resolve(installRoot, INSTALLED_SKILLS_DIR);
+  const discoveryDir = join(homedir(), ".agents", "skills");
+  if (resolve(discoveryDir) === sourceDir) return [];
+  const legacyOwnership = readManagedSkills(homedir());
+  const created: string[] = [];
+  for (const name of readManagedSkills(installRoot)) {
+    const source = join(sourceDir, name);
+    if (!fs.existsSync(source)) continue;
+    const link = join(discoveryDir, name);
+    try {
+      const stat = fs.lstatSync(link);
+      if (stat.isSymbolicLink()) {
+        const existing = resolve(dirname(link), fs.readlinkSync(link));
+        if (existing === source) continue;
+        const priorRoot = dirname(dirname(dirname(existing)));
+        if (
+          existing !== resolve(priorRoot, INSTALLED_SKILLS_DIR, name) ||
+          !readManagedSkills(priorRoot).has(name)
+        )
+          continue;
+        fs.unlinkSync(link);
+      } else {
+        // A migrated OMA directory can become a discovery link only after an
+        // identical copy exists. Preserve its original bytes in the backup.
+        if (!stat.isDirectory() || !legacyOwnership.has(name)) continue;
+        if (!sameSkillTree(link, source)) {
+          throw new Error(
+            `Global skill discovery conflict: ${link} differs from ${source}`,
+          );
+        }
+        const backup = join(
+          installRoot,
+          "backup",
+          "legacy-global-skills",
+          `${Date.now()}-${process.pid}`,
+          name,
+        );
+        fs.mkdirSync(dirname(backup), { recursive: true });
+        try {
+          fs.renameSync(link, backup);
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== "EXDEV") throw error;
+          fs.cpSync(link, backup, { recursive: true, dereference: false });
+          if (!sameSkillTree(link, backup))
+            throw new Error(`Skill backup verification failed: ${backup}`);
+          fs.rmSync(link, { recursive: true });
+        }
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    fs.mkdirSync(discoveryDir, { recursive: true });
+    createLink(
+      relative(discoveryDir, source),
+      link,
+      "dir",
+      join(installRoot, ".agents"),
+    );
+    created.push(link);
+  }
+  return created;
+}
 
 export function getInstalledSkillNames(installRoot: string): string[] {
   const skillsDir = join(installRoot, INSTALLED_SKILLS_DIR);

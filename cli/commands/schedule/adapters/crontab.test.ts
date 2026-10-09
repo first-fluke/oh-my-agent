@@ -129,6 +129,22 @@ describe("CrontabAdapter", () => {
   // ---------------------------------------------------------------------------
 
   describe("upsert", () => {
+    it("preserves a quoted root with spaces, shell text, and cron percent signs", async () => {
+      const root = "/tmp/OMA 100%/'$(ignored)'";
+      const command = [ABS_OMA, "schedule", "run", JOB_ID, "--oma-home", root];
+      let content = "";
+      mockExecFileSync.mockImplementation(
+        (file: string, args: string[], options: { input?: string } = {}) => {
+          if (file === "crontab" && args[0] === "-")
+            content = options.input ?? "";
+          if (file === "crontab" && args[0] === "-l") return content;
+          return ABS_OMA;
+        },
+      );
+      await adapter.upsert({ ...sampleSpec, command });
+      expect(content).toContain("100\\%");
+      expect(await adapter.readCommand(LABEL)).toEqual(command);
+    });
     it("writes a marker block with the job line when no crontab exists", async () => {
       await adapter.upsert(sampleSpec);
 

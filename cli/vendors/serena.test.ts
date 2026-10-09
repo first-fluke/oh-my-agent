@@ -1,4 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  _resetInstallContext,
+  setInstallContext,
+} from "../platform/install-context.js";
 import {
   hasSerenaNoMemories,
   hasStaleSerenaTransport,
@@ -10,6 +14,67 @@ import {
   withSerenaNoMemories,
   withSerenaProjectFromCwd,
 } from "./serena.js";
+
+afterEach(() => {
+  _resetInstallContext();
+  vi.unstubAllEnvs();
+});
+
+describe("global Serena storage binding", () => {
+  it("pins custom storage before daemon lookup, including command-array vendors", () => {
+    vi.stubEnv("OMA_HOME", "/storage/OMA data");
+    vi.stubEnv("OMA_STATE_HOME", "/storage/profiles");
+    setInstallContext({ mode: "global", installRoot: "/storage/OMA data" });
+    const entry = serenaMcpEntry("codex");
+    expect(entry.args).toEqual([
+      "bridge",
+      "--context",
+      "oma",
+      "--oma-home",
+      "/storage/OMA data",
+      "--oma-state-home",
+      "/storage/profiles",
+    ]);
+    expect(hasStaleSerenaTransport(entry, "bridge")).toBe(false);
+    expect(
+      hasStaleSerenaTransport(
+        { command: "oma", args: ["bridge", "--context", "oma"] },
+        "bridge",
+      ),
+    ).toBe(true);
+  });
+  it("rewrites an old pinned root and removes stale profile-root overrides", () => {
+    vi.stubEnv("OMA_HOME", "/storage/new");
+    vi.stubEnv("OMA_STATE_HOME", undefined);
+    setInstallContext({ mode: "global", installRoot: "/storage/new" });
+    expect(
+      hasStaleSerenaTransport(
+        {
+          command: "oma",
+          args: ["bridge", "--context", "oma", "--oma-home", "/storage/old"],
+        },
+        "bridge",
+      ),
+    ).toBe(true);
+    expect(
+      hasStaleSerenaTransport(
+        {
+          command: "oma",
+          args: [
+            "bridge",
+            "--context",
+            "oma",
+            "--oma-home",
+            "/storage/new",
+            "--oma-state-home",
+            "/old/profiles",
+          ],
+        },
+        "bridge",
+      ),
+    ).toBe(true);
+  });
+});
 
 describe("serenaStartMcpArgs", () => {
   it("uses --project-from-cwd (not --project .)", () => {

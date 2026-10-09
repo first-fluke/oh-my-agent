@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { readJsonForMerge, warnUnmergeable } from "../utils/merge-read.js";
 import { standaloneHookSources } from "./hooks-composer/standalone-wrapper.js";
 import { copyHookScripts } from "./hooks-composer.js";
+import { safeGetInstallMode } from "./install-context.js";
 
 /**
  * Install path for the opencode (Sst opencode) plugin bridge.
@@ -36,11 +37,17 @@ export function installOpencodePlugin(
   sourceDir: string,
   targetDir: string,
 ): void {
-  const pluginDir = join(targetDir, OPENCODE_PLUGIN_DIR);
+  const global = safeGetInstallMode() === "global";
+  const pluginDir = global
+    ? join(targetDir, ".config", "opencode", "plugins", "oma")
+    : join(targetDir, OPENCODE_PLUGIN_DIR);
 
   copyHookScripts(sourceDir, pluginDir, undefined, {
     ownedNamespace: true,
-    generatedSources: standaloneHookSources("opencode"),
+    generatedSources: standaloneHookSources(
+      "opencode",
+      global ? sourceDir : undefined,
+    ),
   });
 
   // 2. The bridge entry point.
@@ -91,7 +98,10 @@ const OPENCODE_CONFIG_SCHEMA = "https://opencode.ai/config.json";
  * config that does not parse is left untouched with a warning.
  */
 export function registerOpencodePlugin(targetDir: string): void {
-  const dir = join(targetDir, ".opencode");
+  const dir =
+    safeGetInstallMode() === "global"
+      ? join(targetDir, ".config", "opencode")
+      : join(targetDir, ".opencode");
   const jsonPath = join(dir, "opencode.json");
   const jsoncPath = join(dir, "opencode.jsonc");
   const configPath = existsSync(jsonPath) ? jsonPath : jsoncPath;

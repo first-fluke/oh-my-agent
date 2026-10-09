@@ -493,7 +493,7 @@ Bare resume phrases ("keep going", "carry on", "계속해", "続けて", "про
 
 ### /schedule
 
-**Description:** Register and manage time-based agent jobs via the `oma schedule <action>` commands. Jobs live in a global registry (`~/.agents/schedule/`) and fire through the OS-native scheduler (launchd on macOS, systemd user timers on Linux, schtasks on Windows, crontab as POSIX fallback), each run re-entering the harness via `oma agent spawn`.
+**Description:** Register and manage time-based agent jobs via the `oma schedule <action>` commands. Jobs live in a global registry (`~/.oma/schedule/`) and fire through the OS-native scheduler (launchd on macOS, systemd user timers on Linux, schtasks on Windows, crontab as POSIX fallback), each run re-entering the harness via `oma agent spawn`.
 
 **Trigger keywords:** None (slash-invoked workflow for `oma schedule <action>` time-based jobs).
 

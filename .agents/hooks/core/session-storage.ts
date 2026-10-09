@@ -10,8 +10,8 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
-import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
+import { profileStateHome } from "./oma-home.ts";
 
 export const STATE_ROOT = ".agents/state/sessions";
 
@@ -40,9 +40,7 @@ export function profileSlot(): string {
 }
 
 export function profileDir(): string {
-  const root = process.env.OMA_STATE_HOME ?? join(homedir(), ".oma");
-  if (!isAbsolute(root)) throw new Error("OMA_STATE_HOME must be absolute");
-  return join(root, "u", profileSlot());
+  return join(profileStateHome(), "u", profileSlot());
 }
 
 export function projectIdentity(projectDir: string): SessionContext {

@@ -10,8 +10,10 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { ensureAgentMemory } from "../../io/agentmemory/ensure.js";
 import { pruneBackupRoot } from "../../io/backup.js";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
+import { migrateGlobalHome } from "../../io/global-home-migration.js";
 import { ensureGortexProject } from "../../io/gortex.js";
 import { maybeSelfUpdate } from "../../io/self-update.js";
 import {
@@ -41,6 +43,7 @@ import {
 } from "../../platform/manifest.js";
 import { syncProviderMcp } from "../../platform/provider-mcp.js";
 import {
+  createGlobalSkillDiscoveryLinks,
   createVendorSymlinks,
   createVendorWorkflowSymlinks,
   getInstalledSkillNames,
@@ -87,7 +90,7 @@ import {
 } from "./install-state.js";
 import { noteArtifactDiff, noteNewSkills } from "./notes.js";
 import type { UpdateOptions } from "./types.js";
-import { createUI } from "./ui.js";
+import { createUI, type UpdateUI } from "./ui.js";
 import { resolveUpdateVendors, toCliTools } from "./vendors.js";
 
 export { resolveAutoUpdateCli } from "./auto-update-config.js";
@@ -118,6 +121,19 @@ export function shouldCopyProjectAsset(src: string): boolean {
   );
 }
 
+async function prepareSharedMemory(root: string, ui: UpdateUI): Promise<void> {
+  if (loadProviders(root).semantic_memory !== "agentmemory") return;
+  const memory = await ensureAgentMemory({
+    onProgress: (message) => ui.note(message, "Memory"),
+  });
+  ui.note(
+    memory.state === "disabled"
+      ? "Shared memory disabled by OMA_NO_AGENTMEMORY."
+      : "Shared memory ready.",
+    "Memory",
+  );
+}
+
 export async function update(options: UpdateOptions = {}): Promise<void> {
   const {
     force = false,
@@ -140,6 +156,20 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
 
   const installRoot = getInstallRoot();
   const mode = getInstallMode();
+
+  if (mode === "global") {
+    const migration = await migrateGlobalHome({
+      env: { ...process.env, OMA_HOME: installRoot },
+    });
+    if (migration.conflicts.length || migration.deferred.length) {
+      throw new Error(
+        `Global home migration needs attention before update: ${[
+          ...migration.conflicts,
+          ...migration.deferred,
+        ].join("; ")}`,
+      );
+    }
+  }
 
   // Acquire install lock — prevents concurrent install/update runs
   const lock = acquireLock(installRoot);
@@ -164,8 +194,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
     );
   }
 
-  // Project-mode operations use the project cwd; global mode uses installRoot.
-  const cwd = mode === "global" ? installRoot : process.cwd();
+  const cwd = installRoot;
 
   // #788 — a project-mode update from $HOME would reconcile the user's GLOBAL
   // vendor files (~/.claude/settings.json, …) with project-relative hook paths
@@ -183,6 +212,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
   }
 
   try {
+    if (mode === "global") createGlobalSkillDiscoveryLinks(installRoot);
     const localVersion = await getLocalVersion(cwd);
     const hasExistingInstall = hasInstalledProject(cwd);
     const targetState = classifyUpdateTarget(localVersion, hasExistingInstall);
@@ -282,6 +312,8 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         !needsReconcile &&
         !withNewSkills
       ) {
+        await prepareSharedMemory(cwd, ui);
+        if (mode === "global") link({ root: cwd, quiet: true });
         spinner.stop(pc.green("Already up to date!"));
         ui.outro(`Current version: ${pc.cyan(localVersion)}`);
         await maybeSelfUpdate({
@@ -387,6 +419,9 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
           }
         }
 
+        // Preserve pending vendor work if memory preparation fails after copy.
+        setNeedsReconcile(cwd, true);
+
         // Preserve the user's skill selection. The bulk copy above drops in
         // every skill the release ships; prune the ones that are new and were
         // not already installed so an update refreshes the existing selection
@@ -410,6 +445,11 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         }
         const installedSkillNames = getInstalledSkillNames(cwd);
         recordUpdatedSkills(repoDir, cwd);
+
+        // Prune before the fallible memory step so a retry does not mistake
+        // copied release skills for the user's original selection.
+        // Use the final configuration, including force resets and local overrides.
+        await prepareSharedMemory(cwd, ui);
 
         // Reconcile all vendor adaptations via the link kernel. agy HUD,
         // Claude .mcp.json seeding, vendor settings (Claude / Gemini / Qwen /
@@ -443,9 +483,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         }
 
         // Vendor adaptations complete — clear reconcile flag
-        if (needsReconcile) {
-          setNeedsReconcile(cwd, false);
-        }
+        setNeedsReconcile(cwd, false);
 
         // Backups: the canonical root is NOT cleared on success. Its
         // safe-write copies (bounded per target by safe-write) are the only

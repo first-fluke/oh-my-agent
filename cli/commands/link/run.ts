@@ -30,6 +30,7 @@ import {
 } from "../../platform/rules.js";
 import {
   applyCursorMcpConfig,
+  createGlobalSkillDiscoveryLinks,
   createVendorSymlinks,
   createVendorWorkflowSymlinks,
   detectExistingCliSymlinkDirs,
@@ -137,11 +138,10 @@ export interface LinkOptions {
   refreshSymlinks?: boolean;
 
   /**
-   * Install root to reconcile against — the directory that holds `.agents/`
-   * and receives the generated vendor dirs (`.claude/`, `.opencode/`, …).
-   * Defaults to the process-wide install context resolved by the CLI bootstrap
-   * (`OMA_HOME` > `--global`/`OMA_INSTALL_GLOBAL=1` > `process.cwd()`), so
-   * `oma link --global` targets `$HOME` from any working directory. Callers
+   * Definition root to reconcile. Project mode writes vendor projections here;
+   * global mode reads definitions here and writes native vendor paths under HOME.
+   * Defaults to the process-wide install context resolved by the CLI bootstrap.
+   * `oma link --global` reads OMA_HOME from any working directory. Callers
    * that already resolved a root (`install` / `update`) pass it explicitly.
    */
   root?: string;
@@ -193,11 +193,12 @@ export interface LinkResult {
  * a new vendor only requires a change in this one file.
  */
 export function link(opts: LinkOptions = {}): LinkResult {
-  // Never process.cwd(): `oma link --global` must reconcile $HOME regardless of
+  // Never process.cwd(): `oma link --global` must reconcile OMA_HOME regardless of
   // the directory it was invoked from, the same way install / update / doctor
   // do. safeGetInstallRoot falls back to process.cwd() only when the context is
   // unset (unit tests), which matches project mode anyway.
   const root = opts.root ?? safeGetInstallRoot();
+  const nativeRoot = safeGetInstallMode() === "global" ? homedir() : root;
   const quiet = opts.quiet ?? false;
   const refreshSymlinks = opts.refreshSymlinks ?? true;
   const dryRun = opts.dryRun ?? false;
@@ -213,11 +214,12 @@ export function link(opts: LinkOptions = {}): LinkResult {
     plan.push({ path, kind, reason });
   };
 
+  const symlinksCreated: string[] = [];
   const empty: LinkResult = {
     vendors: [],
     agyInstalled: false,
     mergedDocs: [],
-    symlinksCreated: [],
+    symlinksCreated,
     plan,
   };
 
@@ -234,7 +236,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
     isProjectModeInHome(root, safeGetInstallMode(), homedir())
   ) {
     console.error(
-      `${pc.red("✗")} Refusing to link in HOME without --global: ${join(root, ".claude", "settings.json")} is your global Claude Code settings, and a project-mode link would rewrite its hook paths to $CLAUDE_PROJECT_DIR. ` +
+      `${pc.red("✗")} Refusing to link in HOME without --global: ${join(nativeRoot, ".claude", "settings.json")} is your global Claude Code settings, and a project-mode link would rewrite its hook paths to $CLAUDE_PROJECT_DIR. ` +
         `Run ${pc.cyan("oma link --global")} to reconcile the HOME install, or cd to a project directory first.`,
     );
     process.exitCode = 1;
@@ -253,6 +255,15 @@ export function link(opts: LinkOptions = {}): LinkResult {
     );
     process.exitCode = 1;
     return empty;
+  }
+
+  if (safeGetInstallMode() === "global") {
+    record(
+      join(nativeRoot, ".agents", "skills"),
+      "link",
+      "global common skill discovery",
+    );
+    if (!dryRun) symlinksCreated.push(...createGlobalSkillDiscoveryLinks(root));
   }
 
   // 1. Resolve vendor list
@@ -326,20 +337,39 @@ export function link(opts: LinkOptions = {}): LinkResult {
   let piMergedDocs = false;
   if (piConfigured) {
     record(
-      join(root, ".pi", "extensions", "oma"),
+      join(
+        nativeRoot,
+        ".pi",
+        ...(safeGetInstallMode() === "global" ? ["agent"] : []),
+        "extensions",
+        "oma",
+      ),
       "write",
       "installPiExtension",
     );
-    record(join(root, ".pi", "prompts"), "write", "installPiPromptTemplates");
+    record(
+      join(
+        nativeRoot,
+        ".pi",
+        ...(safeGetInstallMode() === "global" ? ["agent"] : []),
+        "prompts",
+      ),
+      "write",
+      "installPiPromptTemplates",
+    );
     if (!dryRun) {
-      installPiExtension(root, root);
-      installPiPromptTemplates(root, root);
+      installPiExtension(root, nativeRoot);
+      installPiPromptTemplates(root, nativeRoot);
     }
     if (hookVendors.length === 0) {
-      record(join(root, "AGENTS.md"), "write", "mergeRulesIndexForVendor (pi)");
+      record(
+        join(nativeRoot, "AGENTS.md"),
+        "write",
+        "mergeRulesIndexForVendor (pi)",
+      );
       piMergedDocs = dryRun
         ? false
-        : mergeRulesIndexForVendor(root, "pi", docVendors);
+        : mergeRulesIndexForVendor(nativeRoot, "pi", docVendors, root);
     }
     if (!quiet && !dryRun) {
       console.log(`${pc.green("✓")} pi (.pi/extensions/oma/, .pi/prompts/)`);
@@ -354,27 +384,48 @@ export function link(opts: LinkOptions = {}): LinkResult {
   const opencodeConfigured = extensionVendors.includes("opencode");
   if (opencodeConfigured) {
     record(
-      join(root, ".opencode", "plugins", "oma"),
+      join(
+        nativeRoot,
+        ...(safeGetInstallMode() === "global"
+          ? [".config", "opencode"]
+          : [".opencode"]),
+        "plugins",
+        "oma",
+      ),
       "write",
       "installOpencodePlugin",
     );
     record(
-      join(root, ".opencode", "agents"),
+      join(
+        nativeRoot,
+        ...(safeGetInstallMode() === "global"
+          ? [".config", "opencode"]
+          : [".opencode"]),
+        "agents",
+      ),
       "write",
       "installVendorAgents (opencode)",
     );
-    record(join(root, "opencode.jsonc"), "write", "registerOpencodePlugin");
+    record(
+      join(
+        nativeRoot,
+        ...(safeGetInstallMode() === "global" ? [".config", "opencode"] : []),
+        "opencode.jsonc",
+      ),
+      "write",
+      "registerOpencodePlugin",
+    );
     // installVendorAgents both counts and writes, so the zero-agent warning
     // below has no dry-run equivalent — the recorded targets stand in for it.
     if (!dryRun) {
-      installOpencodePlugin(root, root);
+      installOpencodePlugin(root, nativeRoot);
       // Generate `.opencode/agents/*.md` subagent personas from the SSOT variant
       // (`.agents/agents/variants/opencode.json`). Extension vendors are skipped
       // by installVendorAdaptations (hook-vendor only), so generate them here.
-      const agentsWritten = installVendorAgents(root, root, "opencode");
+      const agentsWritten = installVendorAgents(root, nativeRoot, "opencode");
       // The bridge lives in a nested subdir that opencode's flat plugin
       // auto-discovery skips, so register it explicitly in opencode.jsonc.
-      registerOpencodePlugin(root);
+      registerOpencodePlugin(nativeRoot);
       if (agentsWritten === 0) {
         // Printed even in quiet mode: a zero-agent link is silent data loss —
         // per-agent model pins in oma-config.yaml never reach .opencode/agents/.
@@ -393,12 +444,12 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // hook/extension vendors are configured, since zcode has no hook bridge.
   if (zcodeConfigured) {
     record(
-      join(root, ".zcode", "commands"),
+      join(nativeRoot, ".zcode", "commands"),
       "link",
       "installZcodeWorkflowCommands",
     );
     if (!dryRun) {
-      const { created } = installZcodeWorkflowCommands(root);
+      const { created } = installZcodeWorkflowCommands(root, nativeRoot);
       if (!quiet && created.length > 0) {
         console.log(`${pc.green("✓")} zcode (.zcode/commands/)`);
       }
@@ -431,7 +482,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
   //    whenever the command string changes, so we notify the user to re-trust
   //    when this install creates or updates the file.
   const codexConfigured = configuredVendors.includes("codex");
-  const codexHooksPath = join(root, ".codex", "hooks.json");
+  const codexHooksPath = join(nativeRoot, ".codex", "hooks.json");
   const codexHooksBefore =
     codexConfigured && existsSync(codexHooksPath)
       ? readFileSync(codexHooksPath, "utf-8")
@@ -440,9 +491,13 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // Each vendor's output dirs are declared in its variant JSON (hookDir,
   // settingsFile), not derivable from the vendor name — record the scope rather
   // than fabricate per-vendor paths the preview cannot verify.
-  record(root, "write", `installVendorAdaptations ×${hookVendors.length}`);
+  record(
+    nativeRoot,
+    "write",
+    `installVendorAdaptations ×${hookVendors.length}`,
+  );
   if (!dryRun) {
-    installVendorAdaptations(root, root, hookVendors);
+    installVendorAdaptations(root, nativeRoot, hookVendors);
   }
 
   // Codex hook-trust notice: printed even in quiet mode because untrusted hooks
@@ -461,7 +516,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // 4a. Claude `.claude/settings.json` — telemetry-aware env opt-out. A file
   //     that does not parse is left untouched (never rewritten from `{}`).
   if (configuredVendors.includes("claude")) {
-    const claudeSettingsPath = join(root, ".claude", "settings.json");
+    const claudeSettingsPath = join(nativeRoot, ".claude", "settings.json");
     const claudeSettings = readJsonMergeBaseOrWarn(claudeSettingsPath);
     const claudeOptions = {
       ...telemetryOptions,
@@ -512,7 +567,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
 
   // 4c. Qwen `.qwen/settings.json` — telemetry-aware.
   if (configuredVendors.includes("qwen")) {
-    const qwenSettingsPath = join(root, ".qwen", "settings.json");
+    const qwenSettingsPath = join(nativeRoot, ".qwen", "settings.json");
     const qwenSettings = readJsonMergeBaseOrWarn(qwenSettingsPath);
     const qwenOptions = {
       ...telemetryOptions,
@@ -530,18 +585,18 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // 4d. Copilot workflow prompt wrappers under `.github/prompts/`.
   if (configuredVendors.includes("copilot")) {
     record(
-      join(root, ".github", "prompts"),
+      join(nativeRoot, ".github", "prompts"),
       "write",
       "installCopilotWorkflowPrompts",
     );
     if (!dryRun) {
-      installCopilotWorkflowPrompts(root, root);
+      installCopilotWorkflowPrompts(root, nativeRoot);
     }
   }
 
   // 4e. Codex `.codex/config.toml`.
   if (configuredVendors.includes("codex")) {
-    const codexConfigPath = join(root, ".codex", "config.toml");
+    const codexConfigPath = join(nativeRoot, ".codex", "config.toml");
     const codexSettings = readTomlMergeBaseOrWarn(codexConfigPath);
     if (
       codexSettings &&
@@ -575,35 +630,38 @@ export function link(opts: LinkOptions = {}): LinkResult {
 
   // Grok project-level MCP servers in `.grok/config.toml` (only [mcp_servers] supported).
   // Registers Serena (and potentially others) so Grok can use the same MCPs as other vendors.
-  if (configuredVendors.includes("grok") && needsGrokProjectMcpUpdate(root)) {
+  if (
+    configuredVendors.includes("grok") &&
+    needsGrokProjectMcpUpdate(nativeRoot)
+  ) {
     record(
-      join(root, ".grok", "config.toml"),
+      join(nativeRoot, ".grok", "config.toml"),
       "write",
       "grok project [mcp_servers]",
     );
     if (!dryRun) {
-      applyGrokProjectMcp(root);
+      applyGrokProjectMcp(nativeRoot);
     }
   }
 
   // 4f-kiro. Kiro uses agent configuration for hooks and settings for MCP.
   if (configuredVendors.includes("kiro")) {
     record(
-      join(root, ".kiro", "agents", "oma-hooks.json"),
+      join(nativeRoot, ".kiro", "agents", "oma-hooks.json"),
       "write",
       "applyKiroOmaHooksAgent",
     );
     if (!dryRun) {
-      applyKiroOmaHooksAgent(root);
+      applyKiroOmaHooksAgent(nativeRoot);
     }
-    if (needsKiroMcpUpdate(root)) {
+    if (needsKiroMcpUpdate(nativeRoot)) {
       record(
-        join(root, ".kiro", "settings", "cli.json"),
+        join(nativeRoot, ".kiro", "settings", "cli.json"),
         "write",
         "kiro mcpServers",
       );
       if (!dryRun) {
-        applyKiroProjectMcp(root);
+        applyKiroProjectMcp(nativeRoot);
       }
     }
   }
@@ -613,7 +671,10 @@ export function link(opts: LinkOptions = {}): LinkResult {
   //     file is missing, seed mcpServers from the SSOT `.agents/mcp.json` so
   //     other servers (chrome-devtools, context7, etc.) are also exposed to
   //     Claude. Existing user customizations in `.mcp.json` are preserved.
-  if (configuredVendors.includes("claude")) {
+  if (
+    safeGetInstallMode() !== "global" &&
+    configuredVendors.includes("claude")
+  ) {
     const claudeMcpPath = join(root, ".mcp.json");
     const claudeMcpExists = existsSync(claudeMcpPath);
 
@@ -744,16 +805,20 @@ export function link(opts: LinkOptions = {}): LinkResult {
   //    rules + disable cursor-agent commit/PR attribution (no "Co-authored-by:
   //    Cursor" stamping).
   if (configuredVendors.includes("cursor")) {
-    record(join(root, ".cursor", "mcp.json"), "write", "applyCursorMcpConfig");
-    record(join(root, ".cursor", "rules"), "write", "applyCursorRules");
+    record(
+      join(nativeRoot, ".cursor", "mcp.json"),
+      "write",
+      "applyCursorMcpConfig",
+    );
+    record(join(nativeRoot, ".cursor", "rules"), "write", "applyCursorRules");
     record(
       join(homedir(), ".cursor", "cli-config.json"),
       "write",
       "disableCursorAgentAttribution",
     );
     if (!dryRun) {
-      applyCursorMcpConfig(root);
-      applyCursorRules(root);
+      applyCursorMcpConfig(root, nativeRoot);
+      applyCursorRules(nativeRoot, root);
       disableCursorAgentAttribution();
     }
   }
@@ -776,13 +841,13 @@ export function link(opts: LinkOptions = {}): LinkResult {
     if (mergedDocsSet.has(target) || plannedDocs.has(target)) continue;
     if (dryRun) {
       plannedDocs.add(target);
-      record(join(root, target), "write", "mergeRulesIndexForVendor");
+      record(join(nativeRoot, target), "write", "mergeRulesIndexForVendor");
       continue;
     }
-    if (mergeRulesIndexForVendor(root, v, docVendors)) {
+    if (mergeRulesIndexForVendor(nativeRoot, v, docVendors, root)) {
       mergedDocsSet.add(target);
       mergedDocs.push(target);
-      record(join(root, target), "write", "mergeRulesIndexForVendor");
+      record(join(nativeRoot, target), "write", "mergeRulesIndexForVendor");
     }
   }
   if (piConfigured && !mergedDocsSet.has("AGENTS.md")) {
@@ -790,15 +855,19 @@ export function link(opts: LinkOptions = {}): LinkResult {
       if (!plannedDocs.has("AGENTS.md")) {
         plannedDocs.add("AGENTS.md");
         record(
-          join(root, "AGENTS.md"),
+          join(nativeRoot, "AGENTS.md"),
           "write",
           "mergeRulesIndexForVendor (pi)",
         );
       }
-    } else if (mergeRulesIndexForVendor(root, "pi", docVendors)) {
+    } else if (mergeRulesIndexForVendor(nativeRoot, "pi", docVendors, root)) {
       mergedDocsSet.add("AGENTS.md");
       mergedDocs.push("AGENTS.md");
-      record(join(root, "AGENTS.md"), "write", "mergeRulesIndexForVendor (pi)");
+      record(
+        join(nativeRoot, "AGENTS.md"),
+        "write",
+        "mergeRulesIndexForVendor (pi)",
+      );
     }
   }
 
@@ -806,16 +875,15 @@ export function link(opts: LinkOptions = {}): LinkResult {
   //     CLAUDE.md imports AGENTS.md. Never create CLAUDE.md; only append the
   //     one import line to a user-owned file that would otherwise shadow the
   //     AGENTS.md block just written.
-  if (docVendors.includes("claude") && claudeMdShadowsAgentsMd(root)) {
-    record(join(root, "CLAUDE.md"), "write", "ensureAgentsMdImport");
-    if (!dryRun && ensureAgentsMdImport(root) && !quiet) {
+  if (docVendors.includes("claude") && claudeMdShadowsAgentsMd(nativeRoot)) {
+    record(join(nativeRoot, "CLAUDE.md"), "write", "ensureAgentsMdImport");
+    if (!dryRun && ensureAgentsMdImport(nativeRoot) && !quiet) {
       console.log(`${pc.green("✓")} CLAUDE.md: added @AGENTS.md import`);
     }
   }
 
   // 7. Refresh CLI skill symlinks. HOME-write vendors only proceed if
   //    already in oma-config (consent recorded by `oma install`).
-  const symlinksCreated: string[] = [];
   if (refreshSymlinks) {
     const cliTools = detectExistingCliSymlinkDirs(root);
     if (cliTools.length > 0) {

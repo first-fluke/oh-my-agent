@@ -32,7 +32,7 @@ Aside is registered as:
 
 ## Vendor coverage
 
-All 14 installable OMA vendors have an explicit browser MCP adapter. Paths below are relative to the project, or to the user's HOME where prefixed with `~/`. Global native configurations are separate from a custom `OMA_HOME` installation directory.
+All 14 installable OMA vendors have an explicit browser MCP adapter. Paths below are relative to the project, or to the user's HOME where prefixed with `~/`. Global native configurations remain in vendor-owned HOME locations, separate from OMA definitions at `$OMA_HOME/.agents/` (default `~/.oma/.agents/`).
 
 | Vendor | Project configuration | Global configuration | Server map / format |
 | --- | --- | --- | --- |

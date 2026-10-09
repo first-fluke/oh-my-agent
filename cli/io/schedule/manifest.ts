@@ -11,8 +11,8 @@
 import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
-import { homedir } from "node:os";
 import * as path from "node:path";
+import { omaPaths } from "../../utils/oma-home.ts";
 import { withScheduleLock } from "./lock.ts";
 
 // ---------------------------------------------------------------------------
@@ -101,7 +101,7 @@ export function describeManifestEntry(job: unknown): string {
 // ---------------------------------------------------------------------------
 
 export function getScheduleDir(): string {
-  return path.join(homedir(), ".agents", "schedule");
+  return omaPaths().schedule;
 }
 
 export function getManifestPath(): string {

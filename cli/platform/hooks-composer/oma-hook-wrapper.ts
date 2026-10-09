@@ -45,10 +45,11 @@ const OMA_BIN_CANDIDATES = [
  * Passes `"$@"` verbatim so `--vendor`, `--event`, `--matcher` args that
  * the settings entry emits reach `oma hook run` unchanged (no shell injection).
  */
-export function generateOmaHookWrapper(): string {
+export function generateOmaHookWrapper(omaHome?: string): string {
   // A multi-statement script that must ALWAYS exit 0 — a non-zero hook exit
   // (e.g. a stale oma without the `hook` command) can disrupt the vendor agent.
   return `#!/usr/bin/env bash
+${omaHome ? `export OMA_HOME='${omaHome.replaceAll("'", "'\"'\"'")}'\n` : ""}\
 # Duplicate deliveries from a project + global double install are dropped
 # inside \`oma hook run\` (payload hash + this wrapper's path); distinct events
 # always run.

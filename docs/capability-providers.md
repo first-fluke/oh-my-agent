@@ -1,8 +1,9 @@
 # Capability providers (experimental)
 
 OMA separates documentation, code intelligence, semantic recall, and deterministic
-workflow state. Gortex and Honcho are opt-in integrations; existing installations
-keep Context7, Serena, and the existing optional AgentMemory behavior.
+workflow state. AgentMemory supplies the default persistent semantic memory (L2).
+Gortex and Honcho are opt-in integrations; Context7 and Serena remain the defaults
+for documentation and code intelligence.
 
 | Capability | Default | Alternatives | Fallback |
 | --- | --- | --- | --- |
@@ -16,8 +17,9 @@ keep Context7, Serena, and the existing optional AgentMemory behavior.
 
 `oma install` offers a code-intelligence choice (Serena or Gortex) and a semantic
 memory choice (Agent Memory, Honcho, or none). Fresh installs default to **Serena
-and Agent Memory**. Web search offers Native (default) or Brave Search;
-reinstalling retains saved choices. For unattended installs:
+and Agent Memory**, including AgentMemory installation, startup, and a health
+check. Web search offers Native (default) or Brave Search; reinstalling retains
+saved choices. For unattended installs:
 
 ```sh
 oma install --yes --code-intelligence gortex --semantic-memory honcho \
@@ -32,7 +34,7 @@ Selecting Gortex skips Serena's binary, project, and context setup. Gortex and t
 Honcho server must be installed separately; selecting them does not start services
 or track repositories. Use `oma memory keys` to configure the credentials needed
 by your deployment, then `oma memory status` to check access. Selecting Agent
-Memory preserves its existing optional setup behavior.
+Memory enables its automatic lifecycle setup during install and update.
 
 Set the following in the project's `.agents/oma-config.yaml` through your normal
 configuration source. Omit any field to retain its default.
@@ -243,11 +245,58 @@ issue with `oma update` as the fix. It does not validate that a graph has been
 indexed or run a graph query. If Gortex is unavailable, use native search;
 OMA does not silently activate Serena as a second provider.
 
+## AgentMemory: default persistent memory
+
+`oma install` and `oma update` prepare AgentMemory when it is the selected memory
+provider. They reuse a healthy endpoint. For the managed local endpoint, they
+install a missing package and service, start the service, and wait for a health
+check before reporting success. A failed installation, service activation, or
+readiness check stops the command with a repair instruction.
+
+An explicitly configured endpoint, including `AGENTMEMORY_URL`, is checked in
+place. OMA does not overwrite it or substitute a local daemon if it is unavailable.
+Selecting Honcho or `none`, or setting `OMA_NO_AGENTMEMORY=1`, skips automatic
+AgentMemory setup. Saved provider choices are retained during update.
+
+One AgentMemory service can serve multiple projects and profiles. OMA uses
+`project: oma:<profile>:<hash>`, where the hash identifies the canonical absolute
+project path and the profile comes from `OMA_PROFILE` (default `0`). Different
+paths stay separate even when their directory names match. Vendors and sessions
+at the same canonical path and profile share memory.
+
+New remembered facts include the project identity and a scope concept marker;
+observations include the project identity and a scoped session ID. General and
+hook searches send project and working-directory filters, then verify returned
+scope markers or session IDs before accepting results. Results from another
+project or profile, and legacy results without scope, are excluded. Legacy data
+is retained without guessing its owner or migrating it automatically. These are
+OMA's write and retrieval rules, not server-side access controls.
+
+AgentMemory owns its persistent facts and search index; L1 events remain OMA's
+workflow-event source of truth. Execution decisions continue to use local plans,
+runs, and claims. Switching to Honcho does not migrate AgentMemory data.
+
+Raw transcript imports require an original absolute `projectDir` matching the
+current canonical project path before writing into the active profile. Codex and
+Qwen preserve their recorded `cwd`; Claude preserves it when the individual
+record includes it. A basename, source-file directory, or encoded project slug
+does not establish ownership. Turns without a matching original path are skipped,
+including Gemini and Cursor turns whose raw parser supplies no project directory.
+
+Use `oma memory status` to check the connection. `oma memory setup` remains the
+manual repair and endpoint-customization entrypoint:
+
+```sh
+oma memory setup --install --start
+oma memory status
+```
+
 ## Local runtime state and delivery retries
 
 Agent runs, claims, plan pins, resume progress reports, and CLI memory retries
 use `~/.oma/u/<profile>/projects/<project-hash>/`. Their locks use the same
-profile/project scope. `OMA_STATE_HOME` replaces `~/.oma`; `OMA_PROFILE` selects
+profile/project scope. `OMA_HOME` replaces `~/.oma`; an explicit `OMA_STATE_HOME`
+overrides only profile storage. `OMA_PROFILE` selects
 the numeric profile, defaulting to `0`. The project hash is the SHA-256 of its
 canonical absolute path. Branches at the same path share state; separate
 worktree paths do not.

@@ -12,6 +12,7 @@ import {
 } from "../utils/frontmatter.js";
 import { loadProviders } from "../utils/providers.js";
 import { atomicWriteFileSync } from "../utils/safe-write.js";
+import { bindDefinitionPaths } from "./definition-paths.js";
 
 /** SSOT for all rules. */
 export const RULES_DIR = ".agents/rules";
@@ -61,8 +62,11 @@ export function readRules(baseDir: string): ParsedRule[] {
  * Generate .cursor/rules/*.mdc from SSOT.
  * Cursor uses: description, globs, alwaysApply frontmatter.
  */
-export function applyCursorRules(targetDir: string): string[] {
-  const rules = readRules(targetDir);
+export function applyCursorRules(
+  targetDir: string,
+  sourceDir = targetDir,
+): string[] {
+  const rules = readRules(sourceDir);
   if (rules.length === 0) return [];
 
   const cursorDir = join(targetDir, CURSOR_RULES_DIR);
@@ -81,7 +85,9 @@ export function applyCursorRules(targetDir: string): string[] {
       "",
       header,
       "",
-      rule.body,
+      sourceDir === targetDir
+        ? rule.body
+        : bindDefinitionPaths(rule.body, join(sourceDir, ".agents")),
       "",
     ].join("\n");
 
@@ -100,8 +106,11 @@ export function applyCursorRules(targetDir: string): string[] {
  * Generate .claude/rules/*.md from SSOT.
  * Claude Code uses: paths (mapped from globs) frontmatter.
  */
-export function generateClaudeRules(targetDir: string): string[] {
-  const rules = readRules(targetDir);
+export function generateClaudeRules(
+  targetDir: string,
+  sourceDir = targetDir,
+): string[] {
+  const rules = readRules(sourceDir);
   if (rules.length === 0) return [];
 
   const claudeDir = join(targetDir, CLAUDE_RULES_DIR);
@@ -118,7 +127,11 @@ export function generateClaudeRules(targetDir: string): string[] {
       fm.paths = rule.globs;
     }
 
-    const content = serializeFrontmatter(fm, `\n${rule.body}\n`);
+    const body =
+      sourceDir === targetDir
+        ? rule.body
+        : bindDefinitionPaths(rule.body, join(sourceDir, ".agents"));
+    const content = serializeFrontmatter(fm, `\n${body}\n`);
     atomicWriteFileSync(join(claudeDir, `${rule.name}.md`), content);
     exported.push(rule.name);
   }
@@ -313,6 +326,7 @@ export function mergeRulesIndexForVendor(
   targetDir: string,
   vendor: string,
   coVendors: readonly string[] = [],
+  sourceDir = targetDir,
 ): boolean {
   const fileName = VENDOR_FILES[vendor];
   if (!fileName) return false;
@@ -325,13 +339,16 @@ export function mergeRulesIndexForVendor(
     ...coVendors.filter((v) => VENDOR_FILES[v] === fileName),
   ]);
 
-  const rules = readRules(targetDir);
-  const block = buildVendorBlock(
+  const rules = readRules(sourceDir);
+  let block = buildVendorBlock(
     vendors,
     rules,
-    loadProviders(targetDir).code_intelligence,
-    loadProviders(targetDir).web,
+    loadProviders(sourceDir).code_intelligence,
+    loadProviders(sourceDir).web,
   );
+  if (sourceDir !== targetDir) {
+    block = bindDefinitionPaths(block, join(sourceDir, ".agents"));
+  }
   mergeOmaBlock(join(targetDir, fileName), block);
   return true;
 }

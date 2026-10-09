@@ -40,7 +40,9 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { shellQuote } from "../../platform/hooks-composer/hook-command.js";
 import { standaloneHookSources } from "../../platform/hooks-composer/standalone-wrapper.js";
+import { safeGetInstallMode } from "../../platform/install-context.js";
 import { clearNonDirectory } from "../../utils/fs-utils.js";
 import { readJsonMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { safeWriteFile, safeWriteJson } from "../../utils/safe-write.js";
@@ -104,7 +106,11 @@ function homePaths() {
   return { home, settingsPath, hooksDir, staleHooksJson };
 }
 
-function copyCoreHooks(sourceDir: string, hooksDir: string): void {
+function copyCoreHooks(
+  sourceDir: string,
+  hooksDir: string,
+  omaHome?: string,
+): void {
   const src = join(sourceDir, PROJECT_CORE_HOOKS);
   if (!existsSync(src)) return;
 
@@ -113,7 +119,10 @@ function copyCoreHooks(sourceDir: string, hooksDir: string): void {
     clearNonDirectory(join(hooksDir, entry.name));
   }
   cpSync(src, hooksDir, { recursive: true, force: true, dereference: true });
-  for (const [script, content] of standaloneHookSources("antigravity")) {
+  for (const [script, content] of standaloneHookSources(
+    "antigravity",
+    omaHome,
+  )) {
     if (existsSync(join(src, script))) {
       safeWriteFile(join(hooksDir, script), content);
     }
@@ -257,6 +266,7 @@ export function installAntigravityHud(
 ): AgyInstallResult {
   const { settingsPath, hooksDir, staleHooksJson } = homePaths();
   const agyConfigDir = join(homedir(), AGY_HOME_DIR);
+  const globalHome = safeGetInstallMode() === "global" ? sourceDir : undefined;
 
   if (!existsSync(agyConfigDir)) {
     return {
@@ -267,7 +277,7 @@ export function installAntigravityHud(
 
   // HOME copy backs the HUD; generated handlers route semantic delivery
   // through the CLI without editing the source core definitions.
-  copyCoreHooks(sourceDir, hooksDir);
+  copyCoreHooks(sourceDir, hooksDir, globalHome);
 
   const variant = readAntigravityVariant(sourceDir);
   const statusLineHook = variant.statusLine?.hook ?? "hud.ts";
@@ -308,7 +318,7 @@ export function installAntigravityHud(
   const settings: AgySettings = parsedSettings;
   settings.statusLine = {
     type: "command",
-    command: `bun "${join(hooksDir, statusLineHook)}"`,
+    command: `${globalHome ? `OMA_HOME=${shellQuote(globalHome)} ` : ""}bun "${join(hooksDir, statusLineHook)}"`,
   };
   if ("hooks" in settings) delete settings.hooks;
   if ("defaultHooksPath" in settings) delete settings.defaultHooksPath;

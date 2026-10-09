@@ -18,16 +18,23 @@ The expected result is a resolved profile showing the selected preset and per-ag
 
 ## Which file wins
 
-The loader walks upward from the current directory and stops at the nearest `.agents/` directory that contains a shared or local config. In that directory:
+The loader reads global defaults from `$OMA_HOME/.agents/` (default
+`~/.oma/.agents/`), then walks upward from the current directory and stops at
+the nearest project `.agents/` directory. In each selected directory:
 
 1. `oma-config.cue` is evaluated first.
 2. `oma-config.yaml` is used when the shared CUE file is absent or cannot be evaluated.
 3. One local file (`oma-config.local.cue` or `.local.yaml`) is merged over the shared file.
-4. `OMA_MODEL_PRESET`, when set, overrides `model_preset` for that process.
+
+The project shared/local result overrides the global shared/local result.
+`OMA_MODEL_PRESET`, when set, overrides `model_preset` after all file layers.
 
 Maps merge recursively. Arrays, scalars, and `null` replace the shared value. Keeping both local formats is an error. A malformed local file is fatal so a private override cannot be silently ignored.
 
-This is a nearest-layer rule, not a general project-plus-home merge. A global install reads `~/.agents/oma-config.*` because HOME is its install root. A project command reads the nearest project layer. The update check for `auto_update_cli` is the exception: it checks the project, then HOME, then defaults to enabled.
+Different ancestor project roots are not merged. An empty nearest project
+`.agents/` still establishes that boundary. The retired `~/.agents/` installation
+is migration input and is not read as a project fallback. Global defaults do not
+change the current project's identity or memory scope.
 
 ## Top-level keys
 

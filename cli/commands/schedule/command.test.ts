@@ -82,6 +82,7 @@ vi.mock("./runner.js", () => ({ runScheduledJob: runScheduledJobSpy }));
 
 import { Command } from "commander";
 import { registerSchedule } from "./command.js";
+import { expectedScheduleCommand } from "./port.js";
 
 function buildProgram(): Command {
   const program = new Command();
@@ -97,7 +98,9 @@ async function run(...argv: string[]): Promise<void> {
 beforeEach(() => {
   vi.clearAllMocks();
   listLabelsSpy.mockResolvedValue([]);
-  readCommandSpy.mockResolvedValue(null);
+  readCommandSpy.mockImplementation(async (label: string) =>
+    expectedScheduleCommand(label.replace(/^dev\.oma\./, "")),
+  );
   process.exitCode = 0;
   vi.spyOn(console, "log").mockImplementation(() => undefined);
 });
@@ -123,12 +126,7 @@ describe("schedule:add", () => {
     );
     expect(upsertSpy).toHaveBeenCalledTimes(1);
     const spec = upsertSpy.mock.calls[0]?.[0];
-    expect(spec?.command).toEqual([
-      "oma",
-      "schedule",
-      "run",
-      "sch_testid01234",
-    ]);
+    expect(spec?.command).toEqual(expectedScheduleCommand("sch_testid01234"));
     expect(spec?.label).toBe("dev.oma.sch_testid01234");
 
     expect(manifestMock.addJob).toHaveBeenCalledTimes(1);
@@ -211,7 +209,7 @@ describe("schedule:builtin-evolution-add", () => {
       expect.objectContaining({
         id: "sch_evolution",
         cron: "15 4 * * *",
-        command: ["oma", "schedule", "run", "sch_evolution"],
+        command: expectedScheduleCommand("sch_evolution"),
       }),
     );
     expect(manifestMock.updateJob).toHaveBeenCalledWith(
@@ -225,6 +223,7 @@ describe("schedule:builtin-evolution-add", () => {
     manifestMock.readManifest.mockReturnValue({ jobs: [] });
     const prior = process.argv[1];
     process.argv[1] = "/tmp/cli.ts";
+    const expected = expectedScheduleCommand("sch_testid01234");
     try {
       await run(
         "schedule:builtin-evolution-add",
@@ -238,13 +237,7 @@ describe("schedule:builtin-evolution-add", () => {
     }
     expect(upsertSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        command: [
-          process.execPath,
-          "/tmp/cli.ts",
-          "schedule",
-          "run",
-          "sch_testid01234",
-        ],
+        command: expected,
       }),
     );
   });
@@ -326,9 +319,7 @@ describe("schedule:list --json", () => {
     listLabelsSpy.mockResolvedValue(["dev.oma.sch_a"]);
     readCommandSpy.mockResolvedValue([
       "/other/machine/oma",
-      "schedule",
-      "run",
-      "sch_a",
+      ...expectedScheduleCommand("sch_a").slice(1),
     ]);
 
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -353,7 +344,25 @@ describe("schedule:list --json", () => {
 describe("schedule:run", () => {
   it("delegates to runScheduledJob with the id", async () => {
     await run("schedule:run", "sch_z");
-    expect(runScheduledJobSpy).toHaveBeenCalledWith("sch_z");
+    expect(runScheduledJobSpy).toHaveBeenCalledWith("sch_z", {});
+  });
+
+  it("passes the roots pinned by the OS registration to the runner", async () => {
+    await run(
+      "schedule:run",
+      "sch_z",
+      "--oma-home",
+      "/selected/oma",
+      "--oma-state-home",
+      "/selected/profile",
+      "--registration",
+      "fingerprint",
+    );
+    expect(runScheduledJobSpy).toHaveBeenCalledWith("sch_z", {
+      omaHome: "/selected/oma",
+      omaStateHome: "/selected/profile",
+      registration: "fingerprint",
+    });
   });
 });
 
@@ -578,7 +587,7 @@ describe("schedule:sync", () => {
     expect(upsertSpy.mock.calls[0]?.[0]).toMatchObject({
       id: "sch_a",
       label: "dev.oma.sch_a",
-      command: ["oma", "schedule", "run", "sch_a"],
+      command: expectedScheduleCommand("sch_a"),
     });
     const logged = logSpy.mock.calls.map((c) => String(c[0])).join("\n");
     expect(logged).toContain("resynced (stale command): sch_a");
@@ -588,7 +597,10 @@ describe("schedule:sync", () => {
   it("leaves an up-to-date registration alone", async () => {
     manifestMock.readManifest.mockReturnValue({ version: 1, jobs: [job] });
     listLabelsSpy.mockResolvedValue(["dev.oma.sch_a"]);
-    readCommandSpy.mockResolvedValue(["/abs/oma", "schedule", "run", "sch_a"]);
+    readCommandSpy.mockResolvedValue([
+      "/abs/oma",
+      ...expectedScheduleCommand("sch_a").slice(1),
+    ]);
 
     await run("schedule:sync");
 

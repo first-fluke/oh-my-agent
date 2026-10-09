@@ -6,6 +6,7 @@ import {
   readVersionInstallMode,
   readVersionSchemaVersion,
 } from "../../platform/manifest.js";
+import { omaHome } from "../../utils/oma-home.js";
 
 export type InstallProbe = {
   installed: boolean;
@@ -49,7 +50,7 @@ export async function checkDualInstall(
   home: string = homedir(),
 ): Promise<DualInstallReport> {
   const project = await probe(cwd);
-  const global = await probe(home);
+  const global = await probe(omaHome(process.env, home));
   const warnings: string[] = [];
 
   if (project.installed && global.installed) {
@@ -70,7 +71,7 @@ export async function checkDualInstall(
     }
   } else if (!project.installed && !global.installed) {
     warnings.push(
-      "No oma install detected. Run `oma install` (project) or `oma install --global` (HOME).",
+      "No oma install detected. Run `oma install` (project) or `oma install --global` (OMA home).",
     );
   }
 

@@ -4,11 +4,15 @@ import { isRecord } from "./type-guards.js";
 
 export type { OmaConfig } from "../platform/agent-config.js";
 
-/** Shared config plus a project-local overlay. Invalid local intent is fatal. */
+/** Global defaults plus project/local overrides. Invalid local intent is fatal. */
 export function loadOmaConfig(cwd?: string): OmaConfig | null {
   try {
     const { config, sources } = loadConfigLayers(cwd);
-    return sources.shared || sources.local || sources.environment
+    return sources.global ||
+      sources.globalLocal ||
+      sources.shared ||
+      sources.local ||
+      sources.environment
       ? (config as OmaConfig)
       : null;
   } catch (error) {

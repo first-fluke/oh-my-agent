@@ -1,8 +1,8 @@
 /**
  * Canonical backup convention for oh-my-agent.
  *
- * RULE: every backup oma writes to disk lands under a single, gitignored root
- * `<project>/.agents/backup/`, namespaced by source:
+ * Project backups live in `<project>/.agents/backup/`; global definition and
+ * native HOME config backups live in `<OMA_HOME>/backup/`, namespaced by source:
  *
  *   .agents/backup/
  *     002-shared-layout/...   ← migration file snapshots
@@ -24,18 +24,20 @@
  * (migration snapshots, leftover stack copies) age out via
  * {@link pruneBackupRoot}.
  *
- * Files written OUTSIDE a project tree (home/global vendor configs like
- * `~/.gemini/settings.json` when no `.agents/` ancestor exists) keep
- * sibling-dotfile backups — they don't pollute any repo.
+ * Files outside both a project and native HOME keep sibling-dotfile backups.
  */
 
 import { existsSync, readdirSync, rmSync, statSync } from "node:fs";
-import { dirname, join, relative, sep } from "node:path";
+import { homedir } from "node:os";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import { omaHome, omaPaths } from "../utils/oma-home.js";
 
 export { AGENTS_BACKUP_DIR } from "../constants/paths.js";
 
-/** Absolute backup root under `cwd`. */
+/** Project-local backup root, or the common OMA backup root for global files. */
 export function backupRoot(cwd: string): string {
+  if ([omaHome(), homedir()].some((root) => resolve(root) === resolve(cwd)))
+    return omaPaths().backup;
   return join(cwd, ".agents", "backup");
 }
 
@@ -55,6 +57,8 @@ export function backupPathFromRoot(cwd: string, ...segments: string[]): string {
 export function findProjectRoot(targetPath: string): string | null {
   let dir = dirname(targetPath);
   for (let i = 0; i < 64; i++) {
+    if ([omaHome(), homedir()].some((root) => resolve(root) === resolve(dir)))
+      return dir;
     if (existsSync(join(dir, ".agents"))) return dir;
     const parent = dirname(dir);
     if (parent === dir) break;
@@ -93,7 +97,7 @@ export function resolveSafeWriteBackup(
   const root = findProjectRoot(targetPath);
   if (root) {
     const rel = relative(root, targetPath).split(sep).join("__");
-    const dir = join(root, ".agents", "backup", SAFE_WRITE_BACKUP_DIR);
+    const dir = join(backupRoot(root), SAFE_WRITE_BACKUP_DIR);
     return {
       dir,
       prefix: `${rel}.backup-`,

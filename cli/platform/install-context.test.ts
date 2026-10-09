@@ -130,24 +130,24 @@ describe("install-context", () => {
       expect(result.installRoot).toBe(process.cwd());
     });
 
-    it("--global flag set → global mode + homedir()", () => {
+    it("--global flag set → global mode + ~/.oma", () => {
       const result = resolveInstallContext({ global: true });
       expect(result.mode).toBe("global");
-      expect(result.installRoot).toBe(os.homedir());
+      expect(result.installRoot).toBe(path.join(os.homedir(), ".oma"));
     });
 
-    it("OMA_INSTALL_GLOBAL=1 env → global mode + homedir()", () => {
+    it("OMA_INSTALL_GLOBAL=1 env → global mode + ~/.oma", () => {
       process.env.OMA_INSTALL_GLOBAL = "1";
       const result = resolveInstallContext({});
       expect(result.mode).toBe("global");
-      expect(result.installRoot).toBe(os.homedir());
+      expect(result.installRoot).toBe(path.join(os.homedir(), ".oma"));
     });
 
-    it("OMA_HOME set + neither flag → installRoot = OMA_HOME, mode = project", () => {
+    it("OMA_HOME does not redirect project installs away from cwd", () => {
       const dir = makeTmpDir();
       process.env.OMA_HOME = dir;
       const result = resolveInstallContext({});
-      expect(result.installRoot).toBe(dir);
+      expect(result.installRoot).toBe(process.cwd());
       expect(result.mode).toBe("project");
     });
 
@@ -232,10 +232,26 @@ describe("install-context", () => {
       expect(() => validateOmaHome("/usr/local")).toThrow(/forbidden/);
     });
 
-    it("rejects non-existent path — error mentions the path", () => {
-      const nonExistent = "/tmp/oma-definitely-does-not-exist-xyzzy";
-      expect(() => validateOmaHome(nonExistent)).toThrow(
-        new RegExp(nonExistent.replace(/\//g, "\\/").replace(/-/g, "\\-")),
+    it("accepts a new absolute home under a writable existing ancestor", () => {
+      const nonExistent = path.join(makeTmpDir(), "new", "oma-home");
+      expect(() => validateOmaHome(nonExistent)).not.toThrow();
+      expect(fs.existsSync(nonExistent)).toBe(false);
+    });
+
+    it("rejects a new home reached through a system-directory symlink", () => {
+      if (process.platform === "win32") return;
+      const dir = makeTmpDir();
+      fs.symlinkSync("/usr", path.join(dir, "system"), "dir");
+      expect(() =>
+        validateOmaHome(path.join(dir, "system", "new-oma-home")),
+      ).toThrow(/forbidden/);
+    });
+
+    it("rejects a new home whose nearest ancestor is a file", () => {
+      const file = path.join(makeTmpDir(), "file");
+      fs.writeFileSync(file, "occupied");
+      expect(() => validateOmaHome(path.join(file, "home"))).toThrow(
+        /not a directory/,
       );
     });
 

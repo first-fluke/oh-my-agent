@@ -8,10 +8,10 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
-import { isAbsolute, join } from "node:path";
+import { join } from "node:path";
 import type { LocalProfile } from "../../.agents/hooks/core/session-storage.js";
 import { profileSlot } from "../../.agents/hooks/core/session-storage.js";
+import { profileStateHome } from "../utils/oma-home.js";
 
 export type ShellKind = "sh" | "bash" | "zsh" | "fish";
 
@@ -26,9 +26,7 @@ export function isProfileSlot(value: string): boolean {
 }
 
 export function stateHome(): string {
-  const root = process.env.OMA_STATE_HOME ?? join(homedir(), ".oma");
-  if (!isAbsolute(root)) throw new Error("OMA_STATE_HOME must be absolute");
-  return root;
+  return profileStateHome();
 }
 
 export function profilesRoot(): string {

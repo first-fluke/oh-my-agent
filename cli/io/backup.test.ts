@@ -7,9 +7,9 @@ import {
   utimesSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { listBackups, safeWriteJson } from "../utils/safe-write.js";
 import {
   AGENTS_BACKUP_DIR,
@@ -66,6 +66,19 @@ describe("backup retention", () => {
 });
 
 describe("backup paths", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("keeps global definition and native vendor backups under the selected OMA_HOME", () => {
+    vi.stubEnv("OMA_HOME", "/custom/oma");
+    expect(backupRoot("/custom/oma")).toBe("/custom/oma/backup");
+    expect(backupRoot(homedir())).toBe("/custom/oma/backup");
+    expect(
+      resolveSafeWriteBackup("/custom/oma/.agents/oma-config.yaml").dir,
+    ).toBe("/custom/oma/backup/safe-write");
+    expect(
+      resolveSafeWriteBackup(join(homedir(), ".claude", "settings.json")).dir,
+    ).toBe("/custom/oma/backup/safe-write");
+  });
   it("AGENTS_BACKUP_DIR is the canonical gitignored root", () => {
     expect(AGENTS_BACKUP_DIR).toBe(".agents/backup");
   });

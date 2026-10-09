@@ -3,7 +3,9 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { ensureAgentMemory } from "../../io/agentmemory/ensure.js";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
+import { migrateGlobalHome } from "../../io/global-home-migration.js";
 import { ensureGortexProject } from "../../io/gortex.js";
 import {
   deriveSerenaLanguages,
@@ -25,6 +27,7 @@ import {
 } from "../../platform/manifest.js";
 import { syncProviderMcp } from "../../platform/provider-mcp.js";
 import {
+  createGlobalSkillDiscoveryLinks,
   createVendorSymlinks,
   createVendorWorkflowSymlinks,
   getInstalledWorkflowNames,
@@ -49,6 +52,7 @@ import {
   DEAD_PID_GRACE_MS,
   lockPath,
 } from "../../utils/install-lock.js";
+import { loadProviders } from "../../utils/providers.js";
 import { ensureAsideInstalled } from "../../vendors/aside.js";
 import { link } from "../link/run.js";
 import { runMigrations } from "../migrations/index.js";
@@ -123,6 +127,20 @@ export async function install(options: InstallOptions = {}): Promise<void> {
   // Task 26 — context-bound installRoot (replaces process.cwd())
   const installRoot = getInstallRoot();
 
+  if (getInstallMode() === "global") {
+    const migration = await migrateGlobalHome({
+      env: { ...process.env, OMA_HOME: installRoot },
+    });
+    if (migration.conflicts.length || migration.deferred.length) {
+      throw new Error(
+        `Global home migration needs attention before installation: ${[
+          ...migration.conflicts,
+          ...migration.deferred,
+        ].join("; ")}`,
+      );
+    }
+  }
+
   // Task 38 — install/update lock (aborts on concurrent run; auto-clears stale)
   const lockResult = acquireLock(installRoot);
   if (!lockResult.ok) {
@@ -134,6 +152,8 @@ export async function install(options: InstallOptions = {}): Promise<void> {
   const releaseLock = bindInstallLockRelease(lockResult.release);
 
   try {
+    if (getInstallMode() === "global")
+      createGlobalSkillDiscoveryLinks(installRoot);
     console.clear();
     p.intro(pc.bgMagenta(pc.white(" 🛸 oh-my-agent ")));
 
@@ -195,9 +215,9 @@ export async function install(options: InstallOptions = {}): Promise<void> {
           [
             "This is your first global install of oh-my-agent.",
             "Scope:",
-            "  - SSOT: ~/.agents/  (all skills, workflows, rules)",
+            `  - SSOT: ${join(installRoot, ".agents")}/  (all skills, workflows, rules)`,
             "  - Vendor configs: ~/.claude/, ~/.codex/, ~/.gemini/, ~/.qwen/  (symlinks + settings)",
-            "  - Lock file: ~/.agents/_install.lock",
+            `  - Lock file: ${lockPath(installRoot)}`,
             "Existing per-project installs are not affected.",
           ].join("\n"),
         );
@@ -353,6 +373,18 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         // Uses regex-level replacement to preserve user-edited fields (timezone, etc.).
         patchUserConfig(installRoot, language, modelPreset, configuredVendors);
         saveProviders(installRoot, providerSelection);
+
+        if (loadProviders(installRoot).semantic_memory === "agentmemory") {
+          spinner.start("Preparing shared memory...");
+          const memory = await ensureAgentMemory({
+            onProgress: (message) => spinner.message(message),
+          });
+          spinner.stop(
+            memory.state === "disabled"
+              ? "Shared memory disabled by OMA_NO_AGENTMEMORY."
+              : "Shared memory ready!",
+          );
+        }
 
         // Reconcile all vendor adaptations via the link kernel. agy HUD,
         // Claude .mcp.json seeding, vendor settings (Claude / Gemini / Qwen /

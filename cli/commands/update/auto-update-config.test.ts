@@ -14,10 +14,12 @@ describe("resolveAutoUpdateCli", () => {
     vi.mocked(evaluateCueFile).mockReset();
     tempDir = mkdtempSync(join(tmpdir(), "oma-auto-update-test-"));
     mkdirSync(join(tempDir, ".agents"), { recursive: true });
+    vi.stubEnv("OMA_HOME", join(tempDir, "global"));
   });
 
   afterEach(() => {
     rmSync(tempDir, { recursive: true, force: true });
+    vi.unstubAllEnvs();
   });
 
   it("prioritizes oma-config.cue over oma-config.yaml", () => {
@@ -47,6 +49,17 @@ describe("resolveAutoUpdateCli", () => {
   });
 
   it("defaults to true when no config files set auto_update_cli", () => {
+    expect(resolveAutoUpdateCli(tempDir)).toBe(true);
+  });
+  it("reads custom-home defaults and lets project settings override them", () => {
+    const global = join(tempDir, "global", ".agents");
+    mkdirSync(global, { recursive: true });
+    writeFileSync(join(global, "oma-config.yaml"), "auto_update_cli: false\n");
+    expect(resolveAutoUpdateCli(tempDir)).toBe(false);
+    writeFileSync(
+      join(tempDir, ".agents", "oma-config.yaml"),
+      "auto_update_cli: true\n",
+    );
     expect(resolveAutoUpdateCli(tempDir)).toBe(true);
   });
   it("uses shared YAML when the CUE executable is unavailable", () => {

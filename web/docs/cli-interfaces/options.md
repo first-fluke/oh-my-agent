@@ -11,14 +11,14 @@ These options are available on the root `oma` / `oh-my-agent` command:
 
 | Flag | Description |
 |:-----|:-----------|
-| `-g, --global` | Operate on the HOME install (`~/.agents/`) instead of `<cwd>/.agents/` |
+| `-g, --global` | Operate on the OMA global install (`~/.oma/.agents/`, or `$OMA_HOME/.agents/`) instead of `<cwd>/.agents/` |
 | `-y, --yes` | Skip prompts where the selected command supports confirmation; command-specific safety checks still apply |
 | `-V, --version` | Output the version number and exit |
 | `-h, --help` | Display help for the command |
 
 All subcommands also support `-h, --help` to show their specific help text.
 
-`--global` sets the install root for the whole process, so `install`, `update`, `link`, and `uninstall` all resolve to `~/.agents/` regardless of the directory you run them from. `OMA_HOME=<abs-path>` overrides it — see [Global install](../guide/global-install.md).
+`--global` sets the install root for the whole process, so `install`, `update`, `link`, and `uninstall` resolve to `~/.oma/.agents/` regardless of the current directory. `OMA_HOME=<abs-path>` changes the global storage root; project installs still use cwd. See [Global install](../guide/global-install.md). `oma home --json` shows resolved locations, and `oma home migrate --dry-run` previews legacy data migration.
 
 ---
 
@@ -594,6 +594,8 @@ The following matrix is generated from the checked-in public command registry. I
 | `dashboard web` | `—` | Start web dashboard on http://127.0.0.1:9847 |
 | `auth` | `—` |  |
 | `auth status` | `--json, --output <format>` | Check authentication status of all supported CLIs |
+| `home` | `--json, --output <format>` | Inspect OMA global storage paths |
+| `home migrate` | `--dry-run, --json, --output <format>` | Copy legacy OMA global files and report conflicts or live data |
 | `hook` | `—` |  |
 | `hook run` | `--vendor <v>, --event <e>, --matcher <m>` | Dispatch a vendor hook event through the centralised oma hook router (design 019) |
 | `hook probe` | `--vendor <list>, --output <format>, --hooks-dir <dir>` | Probe per-vendor L1 hook compatibility and print a matrix (D63) |

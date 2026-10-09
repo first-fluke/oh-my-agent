@@ -20,6 +20,8 @@ import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import { homedir } from "node:os";
 import * as path from "node:path";
+import { parseCommand, systemdCommand } from "../command-line.js";
+import { getRunsDir } from "../manifest.js";
 import type { ScheduledJobSpec, SchedulerPort } from "../port.js";
 
 // ---------------------------------------------------------------------------
@@ -227,7 +229,7 @@ function buildServiceContent(
     spec.command[0] === "oma"
       ? [absOma, ...spec.command.slice(1)]
       : spec.command;
-  const execStart = resolvedCommand.join(" ");
+  const execStart = systemdCommand(resolvedCommand);
 
   return `[Unit]
 Description=oma schedule job ${spec.id}
@@ -236,10 +238,10 @@ After=network.target
 [Service]
 Type=oneshot
 ExecStart=${execStart}
-WorkingDirectory=${spec.workspace}
-Environment=PATH=${jobPath}
-StandardOutput=append:${path.join(homedir(), ".agents", "schedule", "runs", spec.id, "stdout.log")}
-StandardError=append:${path.join(homedir(), ".agents", "schedule", "runs", spec.id, "stderr.log")}
+WorkingDirectory=${spec.workspace.replace(/%/g, "%%")}
+Environment=PATH=${jobPath.replace(/%/g, "%%")}
+StandardOutput=append:${path.join(getRunsDir(spec.id), "stdout.log").replace(/%/g, "%%")}
+StandardError=append:${path.join(getRunsDir(spec.id), "stderr.log").replace(/%/g, "%%")}
 
 [Install]
 WantedBy=default.target
@@ -294,7 +296,7 @@ export class SystemdAdapter implements SchedulerPort {
     }
 
     // Ensure run log dir exists
-    const runDir = path.join(homedir(), ".agents", "schedule", "runs", spec.id);
+    const runDir = getRunsDir(spec.id);
     if (!fs.existsSync(runDir)) {
       fs.mkdirSync(runDir, { recursive: true });
     }
@@ -365,7 +367,9 @@ export class SystemdAdapter implements SchedulerPort {
         .split("\n")
         .find((l) => l.startsWith("ExecStart="));
       if (!line) return null;
-      const argv = line.slice("ExecStart=".length).trim().split(/\s+/);
+      const argv = (
+        parseCommand(line.slice("ExecStart=".length).trim()) ?? []
+      ).map((arg) => arg.replace(/\$\$/g, "$").replace(/%%/g, "%"));
       return argv.length > 0 && argv[0] ? argv : null;
     } catch {
       return null;

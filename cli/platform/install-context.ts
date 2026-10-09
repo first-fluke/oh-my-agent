@@ -1,7 +1,7 @@
 /**
  * Module-singleton install context for oma install / update commands.
  *
- * Resolution priority: OMA_HOME > --global / OMA_INSTALL_GLOBAL=1 > process.cwd()
+ * Project installs use cwd. Global installs use OMA_HOME or ~/.oma.
  *
  * The singleton is populated once per process by the commander `preAction` hook
  * at bootstrap and consumed by all downstream install / link / update functions
@@ -11,6 +11,7 @@
 import * as fs from "node:fs";
 import { homedir } from "node:os";
 import * as path from "node:path";
+import { omaHome } from "../utils/oma-home.js";
 
 export type InstallMode = "project" | "global";
 
@@ -96,20 +97,12 @@ export function _resetInstallContext(): void {
 export function resolveInstallContext(opts: {
   global?: boolean;
 }): InstallContext {
-  const omaHome = process.env.OMA_HOME;
   const isGlobal =
     opts.global === true || process.env.OMA_INSTALL_GLOBAL === "1";
-
-  if (omaHome !== undefined && omaHome !== "") {
-    validateOmaHome(omaHome);
-    return {
-      installRoot: omaHome,
-      mode: isGlobal ? "global" : "project",
-    };
-  }
-
   if (isGlobal) {
-    return { installRoot: homedir(), mode: "global" };
+    const installRoot = omaHome();
+    validateOmaHome(installRoot);
+    return { installRoot, mode: "global" };
   }
 
   return { installRoot: process.cwd(), mode: "project" };
@@ -138,8 +131,17 @@ export function validateOmaHome(p: string): void {
   }
 
   let real: string;
+  let ancestor = path.resolve(p);
   try {
-    real = fs.realpathSync(p);
+    while (!fs.existsSync(ancestor)) {
+      const parent = path.dirname(ancestor);
+      if (parent === ancestor) break;
+      ancestor = parent;
+    }
+    real = fs.realpathSync(ancestor);
+    if (!fs.statSync(real).isDirectory()) {
+      throw new Error("nearest existing ancestor is not a directory");
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`OMA_HOME=${p}: ${msg}`);
@@ -148,13 +150,13 @@ export function validateOmaHome(p: string): void {
   // Post-realpath deny check — catches symlinks pointing INTO system paths.
   for (const pf of FORBIDDEN_OMA_HOME_PREFIXES) {
     if (real === pf || real.startsWith(pf + path.sep)) {
-      throw new Error(`OMA_HOME=${real} is forbidden (system path ${pf})`);
+      throw new Error(`OMA_HOME=${p} is forbidden (system path ${pf})`);
     }
   }
 
   try {
     fs.accessSync(real, fs.constants.W_OK);
   } catch {
-    throw new Error(`OMA_HOME=${real} is not writable`);
+    throw new Error(`OMA_HOME=${p} is not writable`);
   }
 }

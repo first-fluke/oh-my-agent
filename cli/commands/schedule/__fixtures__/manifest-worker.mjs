@@ -4,7 +4,8 @@ import os from "node:os";
 import { join } from "node:path";
 
 const [home, role] = process.argv.slice(2);
-const manifestPath = join(home, ".agents", "schedule", "schedules.json");
+process.env.OMA_HOME = join(home, ".oma");
+const manifestPath = join(home, ".oma", "schedule", "schedules.json");
 const readFile = fs.readFileSync;
 const writeFile = fs.writeFileSync;
 os.homedir = () => home;

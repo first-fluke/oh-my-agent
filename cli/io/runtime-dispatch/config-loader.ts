@@ -60,7 +60,11 @@ export function loadUserConfig(
     if (typeof config.model_preset === "string") {
       assertNotLegacyPreset(
         config.model_preset,
-        sources.local ?? sources.shared ?? cwd,
+        sources.local ??
+          sources.shared ??
+          sources.globalLocal ??
+          sources.global ??
+          cwd,
       );
     }
     return config;

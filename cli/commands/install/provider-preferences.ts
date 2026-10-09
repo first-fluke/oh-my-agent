@@ -104,7 +104,7 @@ export async function promptProviders(
           {
             value: "agentmemory" as const,
             label: "Agent Memory",
-            hint: "default — optional local memory",
+            hint: "default — shared memory installed and started automatically",
           },
           {
             value: "honcho" as const,

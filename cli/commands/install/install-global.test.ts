@@ -3,6 +3,28 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const memoryState = vi.hoisted(() => ({
+  ensureAgentMemory: vi.fn(
+    async (_options?: { onProgress?: (message: string) => void }) => ({
+      state: "ready" as const,
+      endpoint: "http://127.0.0.1:25150",
+      installed: false,
+      started: false,
+      reused: true,
+    }),
+  ),
+}));
+vi.mock("../../io/agentmemory/ensure.js", () => memoryState);
+
+const migrationState = vi.hoisted(() => ({
+  migrateGlobalHome: vi.fn(async () => ({
+    copied: [] as string[],
+    conflicts: [] as string[],
+    deferred: [] as string[],
+  })),
+}));
+vi.mock("../../io/global-home-migration.js", () => migrationState);
+
 const promptState = vi.hoisted(() => ({
   select: vi.fn(),
   multiselect: vi.fn(),
@@ -83,6 +105,7 @@ const skillsState = vi.hoisted(() => ({
   installVendorAdaptations: vi.fn(),
   getInstalledWorkflowNames: vi.fn(() => []),
   createVendorWorkflowSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
+  createGlobalSkillDiscoveryLinks: vi.fn(() => []),
   createVendorSymlinks: vi.fn<
     (
       targetDir: string,
@@ -232,6 +255,16 @@ describe("install --global: _install.json schema and meta", () => {
     delete process.env.CI;
 
     vi.clearAllMocks();
+    migrationState.migrateGlobalHome
+      .mockReset()
+      .mockResolvedValue({ copied: [], conflicts: [], deferred: [] });
+    memoryState.ensureAgentMemory.mockReset().mockResolvedValue({
+      state: "ready",
+      endpoint: "http://127.0.0.1:25150",
+      installed: false,
+      started: false,
+      reused: true,
+    });
     _resetInstallContext();
     setInstallContext({ installRoot: tmpDir, mode: "global" });
 
@@ -240,9 +273,14 @@ describe("install --global: _install.json schema and meta", () => {
       p.endsWith("/.agents/oma-config.yaml"),
     );
     fsState.readdirSync.mockReturnValue([]);
-    fsState.readFileSync.mockReturnValue("language: en\n");
+    let configYaml = "language: en\n";
+    fsState.readFileSync.mockImplementation(() => configYaml);
     fsState.mkdirSync.mockReturnValue(undefined);
-    fsState.writeFileSync.mockReturnValue(undefined);
+    fsState.writeFileSync.mockImplementation((file, content) => {
+      if (file === path.join(tmpDir, ".agents", "oma-config.yaml")) {
+        configYaml = String(content);
+      }
+    });
 
     miscState.acquireLock.mockReturnValue({ ok: true, release: vi.fn() });
     miscState.readVersionInstallMode.mockReturnValue(null);
@@ -297,6 +335,105 @@ describe("install --global: _install.json schema and meta", () => {
     expect(lastCall[2]).toBe("global");
   });
 
+  it("migrates before acquiring the installation lock and projects common skills before copying", async () => {
+    await install({ yes: true });
+    expect(migrationState.migrateGlobalHome).toHaveBeenCalledExactlyOnceWith({
+      env: expect.objectContaining({ OMA_HOME: tmpDir }),
+    });
+    expect(
+      migrationState.migrateGlobalHome.mock.invocationCallOrder[0],
+    ).toBeLessThan(miscState.acquireLock.mock.invocationCallOrder[0] ?? 0);
+    expect(
+      skillsState.createGlobalSkillDiscoveryLinks.mock.invocationCallOrder[0],
+    ).toBeLessThan(skillsState.installShared.mock.invocationCallOrder[0] ?? 0);
+  });
+
+  it.each(["conflicts", "deferred"] as const)(
+    "stops before locking when migration reports %s",
+    async (field) => {
+      migrationState.migrateGlobalHome.mockResolvedValueOnce({
+        copied: [],
+        conflicts: [],
+        deferred: [],
+        [field]: ["legacy path needs attention"],
+      });
+      await expect(install({ yes: true })).rejects.toThrow(
+        "legacy path needs attention",
+      );
+      expect(miscState.acquireLock).not.toHaveBeenCalled();
+      expect(skillsState.installShared).not.toHaveBeenCalled();
+      expect(link).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not migrate a global home during project installation", async () => {
+    _resetInstallContext();
+    setInstallContext({ installRoot: tmpDir, mode: "project" });
+    await install({ yes: true });
+    expect(migrationState.migrateGlobalHome).not.toHaveBeenCalled();
+    expect(skillsState.createGlobalSkillDiscoveryLinks).not.toHaveBeenCalled();
+  });
+
+  it("prepares default shared memory after saving providers and before linking", async () => {
+    await install({ yes: true });
+
+    expect(memoryState.ensureAgentMemory).toHaveBeenCalledExactlyOnceWith({
+      onProgress: expect.any(Function),
+    });
+    const providerWriteIndex = fsState.writeFileSync.mock.calls.findIndex(
+      ([file, content]) =>
+        file === path.join(tmpDir, ".agents", "oma-config.yaml") &&
+        String(content).includes("semantic_memory: agentmemory"),
+    );
+    expect(providerWriteIndex).toBeGreaterThanOrEqual(0);
+    const prepareOrder =
+      memoryState.ensureAgentMemory.mock.invocationCallOrder[0];
+    expect(
+      fsState.writeFileSync.mock.invocationCallOrder[providerWriteIndex],
+    ).toBeLessThan(prepareOrder ?? 0);
+    expect(prepareOrder).toBeLessThan(
+      vi.mocked(link).mock.invocationCallOrder[0] ?? 0,
+    );
+    expect(prepareOrder).toBeLessThan(
+      promptState.outro.mock.invocationCallOrder[0] ?? 0,
+    );
+  });
+
+  it.each(["none", "honcho"] as const)(
+    "does not prepare AgentMemory when semantic memory is %s",
+    async (semanticMemory) => {
+      await install({ yes: true, semanticMemory });
+
+      expect(memoryState.ensureAgentMemory).not.toHaveBeenCalled();
+      expect(link).toHaveBeenCalled();
+      expect(promptState.outro).toHaveBeenCalledWith("Done!");
+    },
+  );
+
+  it("fails before linking and releases the lock when shared memory is unavailable", async () => {
+    const release = vi.fn();
+    miscState.acquireLock.mockReturnValue({ ok: true, release });
+    memoryState.ensureAgentMemory.mockRejectedValueOnce(
+      new Error("memory health check failed"),
+    );
+    vi.spyOn(process, "exit").mockImplementation(((code: number) => {
+      throw new Error(`__EXIT__${code}`);
+    }) as never);
+
+    await expect(install({ yes: true })).rejects.toThrow("__EXIT__1");
+
+    expect(promptState.log.error).toHaveBeenCalledWith(
+      "memory health check failed",
+    );
+    expect(promptState.outro).not.toHaveBeenCalled();
+    expect(link).not.toHaveBeenCalled();
+    expect(release).toHaveBeenCalledOnce();
+    const modeStampCalls = (
+      miscState.saveLocalVersion.mock.calls as unknown[][]
+    ).filter((args) => args.length === 3);
+    expect(modeStampCalls).toHaveLength(0);
+  });
+
   it("saves alternative providers before linking and skips all Serena setup", async () => {
     await install({
       yes: true,
@@ -318,6 +455,7 @@ describe("install --global: _install.json schema and meta", () => {
     expect(miscState.ensureSerenaBinary).not.toHaveBeenCalled();
     expect(miscState.ensureSerenaProject).not.toHaveBeenCalled();
     expect(miscState.ensureOmaSerenaContexts).not.toHaveBeenCalled();
+    expect(memoryState.ensureAgentMemory).not.toHaveBeenCalled();
     // Global root is $HOME, not a codebase: never tracked in Gortex either.
     expect(gortexState.ensureGortexProject).not.toHaveBeenCalled();
     expect(syncProviderMcp).toHaveBeenCalledWith(tmpDir, expect.any(Array), {

@@ -485,10 +485,9 @@ describe("resolveUpdateVendors", () => {
 
 describe("reconcile: migrations trigger full update even when version matches", () => {
   const tempRoots: string[] = [];
-  let originalHome: string | undefined;
 
   afterEach(() => {
-    process.env.HOME = originalHome;
+    vi.unstubAllEnvs();
     for (const root of tempRoots) {
       rmSync(root, { recursive: true, force: true });
     }
@@ -558,8 +557,7 @@ describe("reconcile: migrations trigger full update even when version matches", 
   it("migration 004 (global CLAUDE.md cleanup) also triggers reconcile", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-reconcile-"));
     tempRoots.push(root);
-    originalHome = process.env.HOME;
-    process.env.HOME = root;
+    vi.stubEnv("HOME", root);
 
     // Modern .agents/ setup (no legacy config)
     mkdirSync(join(root, ".agents"), { recursive: true });
@@ -587,8 +585,7 @@ describe("reconcile: migrations trigger full update even when version matches", 
   it("multiple migrations firing together all trigger reconcile", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-reconcile-"));
     tempRoots.push(root);
-    originalHome = process.env.HOME;
-    process.env.HOME = root;
+    vi.stubEnv("HOME", root);
 
     // Legacy config file
     mkdirSync(join(root, ".agents", "config"), { recursive: true });

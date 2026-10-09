@@ -62,7 +62,9 @@ $ echo $?
 0
 ```
 
-Optional MCP, browser, memory, or code-intelligence integrations may be reported as warnings; they are needed only for tasks that use them. For a machine-readable status, `oma doctor --json` returns a non-zero status when the report contains issues. Use `oma doctor --profile` to inspect the resolved model and CLI for each canonical agent role.
+`oma doctor` may report optional integration issues as warnings. Default AgentMemory preparation is checked during `oma install` and `oma update`; installation, startup, or health failures stop those commands. Selecting `providers.semantic_memory: none` or `honcho`, or setting `OMA_NO_AGENTMEMORY=1`, skips that preparation.
+
+For a machine-readable status, `oma doctor --json` returns a non-zero status when the report contains issues. Use `oma doctor --profile` to inspect the resolved model and CLI for each canonical agent role.
 
 If `oma` is unavailable but Bun is installed, run the same check without the global command:
 

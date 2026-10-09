@@ -17,6 +17,7 @@
 
 import { execFileSync } from "node:child_process";
 import * as path from "node:path";
+import { windowsCommand } from "../command-line.js";
 import type { ScheduledJobSpec, SchedulerPort } from "../port.js";
 
 // ---------------------------------------------------------------------------
@@ -238,7 +239,7 @@ export class SchtasksAdapter implements SchedulerPort {
         ? [absOma, ...spec.command.slice(1)]
         : spec.command;
 
-    const taskRun = resolvedCommand.join(" ");
+    const taskRun = windowsCommand(resolvedCommand);
     const { scheduleArgs } = cronToSchtasksFlags(spec.cron);
 
     // Build schtasks /Create args

@@ -6,10 +6,10 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import color from "picocolors";
+import { omaHome } from "../../utils/oma-home.js";
 
 const FRAME_W = 1920;
 const FRAME_H = 1080;
@@ -199,8 +199,8 @@ function walkUpForAssets(startDir: string): string | null {
 export function resolveAssetsSourceDir(): string | null {
   const startDirs: string[] = [];
 
-  const omaHome = process.env.OMA_HOME;
-  if (omaHome) startDirs.push(omaHome);
+  const configuredHome = process.env.OMA_HOME;
+  if (configuredHome) startDirs.push(configuredHome);
 
   startDirs.push(process.cwd());
 
@@ -210,7 +210,7 @@ export function resolveAssetsSourceDir(): string | null {
     // import.meta.url unavailable in some test runners — skip
   }
 
-  startDirs.push(homedir());
+  startDirs.push(omaHome());
 
   for (const startDir of startDirs) {
     const found = walkUpForAssets(startDir);

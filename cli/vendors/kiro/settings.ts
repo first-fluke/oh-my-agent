@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { shellQuote } from "../../platform/hooks-composer/hook-command.js";
+import { safeGetInstallMode } from "../../platform/install-context.js";
 import { serenaTransportMode } from "../../utils/config.js";
 import { readJsonMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
@@ -143,11 +145,28 @@ export function applyKiroProjectMcp(cwd: string): void {
   writeJson(path, updated);
 }
 
+function kiroOmaHooksAgent(cwd: string) {
+  if (safeGetInstallMode() !== "global") return OMA_KIRO_HOOKS_AGENT;
+  const wrapper = shellQuote(join(cwd, ".kiro", "hooks", "oma-hook.sh"));
+  return {
+    ...OMA_KIRO_HOOKS_AGENT,
+    hooks: Object.fromEntries(
+      Object.entries(OMA_KIRO_HOOKS_AGENT.hooks).map(([event, entries]) => [
+        event,
+        entries.map((entry) => ({
+          ...entry,
+          command: entry.command.replace(".kiro/hooks/oma-hook.sh", wrapper),
+        })),
+      ]),
+    ),
+  };
+}
+
 export function needsKiroOmaHooksAgentUpdate(cwd: string): boolean {
   const agentPath = join(cwd, KIRO_PROJECT_OMA_HOOKS_AGENT_PATH);
   const agent = readJson(agentPath);
   return (
-    JSON.stringify(agent.hooks) !== JSON.stringify(OMA_KIRO_HOOKS_AGENT.hooks)
+    JSON.stringify(agent.hooks) !== JSON.stringify(kiroOmaHooksAgent(cwd).hooks)
   );
 }
 
@@ -159,7 +178,7 @@ export function needsKiroOmaHooksAgentUpdate(cwd: string): boolean {
 export function applyKiroOmaHooksAgent(cwd: string): void {
   const agentPath = join(cwd, KIRO_PROJECT_OMA_HOOKS_AGENT_PATH);
   if (needsKiroOmaHooksAgentUpdate(cwd)) {
-    writeJson(agentPath, OMA_KIRO_HOOKS_AGENT);
+    writeJson(agentPath, kiroOmaHooksAgent(cwd));
   }
 
   const settingsPath = join(cwd, KIRO_PROJECT_SETTINGS_PATH);

@@ -8,15 +8,18 @@
  * 1b. maxAgeDays expiry: a recurring job past its window self-removes instead of firing
  * 2. Load capturedEnvRef env if present
  * 3. Run: oma agent spawn <agentId> <prompt|@promptPath> <sessionId> -m <vendor> -w <workspace>
- * 4. Write result to ~/.agents/schedule/runs/<id>/<ISO-ts>.md
+ * 4. Write result to <OMA_HOME>/schedule/runs/<id>/<ISO-ts>.md
  * 5. Update lastFiredAt; if recurring=false self-remove (port.remove + manifest delete)
  * 6. On spawn auth-expiry failure: LOUD-FAIL (exit≠0, stderr "re-auth required: <vendor>")
  *    Never silent-success.
  */
 
 import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
+import { hostname } from "node:os";
 import * as path from "node:path";
+import { omaHome } from "../../utils/oma-home.js";
 import { resolveOmaInvocation } from "../../utils/oma-invocation.js";
 import {
   getEnvFilePath,
@@ -136,7 +139,49 @@ function writeRunResult(
 // Main runner
 // ---------------------------------------------------------------------------
 
-export async function runScheduledJob(id: string): Promise<void> {
+export interface ScheduledRunOptions {
+  omaHome?: string;
+  omaStateHome?: string;
+}
+
+export async function runScheduledJob(
+  id: string,
+  options: ScheduledRunOptions = {},
+): Promise<void> {
+  const previousHome = process.env.OMA_HOME;
+  const previousState = process.env.OMA_STATE_HOME;
+  process.env.OMA_HOME = omaHome(
+    options.omaHome ? { OMA_HOME: options.omaHome } : process.env,
+  );
+  if (options.omaHome) {
+    if (options.omaStateHome) process.env.OMA_STATE_HOME = options.omaStateHome;
+    else delete process.env.OMA_STATE_HOME;
+  }
+  let lease: string | undefined;
+  try {
+    const leases = path.join(getScheduleDir(), "running");
+    fs.mkdirSync(leases, { recursive: true, mode: 0o700 });
+    lease = path.join(leases, `${process.pid}-${randomUUID()}.json`);
+    fs.writeFileSync(
+      lease,
+      JSON.stringify({ pid: process.pid, hostname: hostname(), jobId: id }),
+      { flag: "wx", mode: 0o600 },
+    );
+    await runBoundScheduledJob(id);
+  } finally {
+    if (lease) {
+      try {
+        fs.unlinkSync(lease);
+      } catch {}
+    }
+    if (previousHome === undefined) delete process.env.OMA_HOME;
+    else process.env.OMA_HOME = previousHome;
+    if (previousState === undefined) delete process.env.OMA_STATE_HOME;
+    else process.env.OMA_STATE_HOME = previousState;
+  }
+}
+
+async function runBoundScheduledJob(id: string): Promise<void> {
   // 1. Manifest lookup
   const job = getJobById(id);
   if (!job) {
@@ -185,6 +230,9 @@ export async function runScheduledJob(id: string): Promise<void> {
   if (job.capturedEnvRef) {
     const loaded = loadCapturedEnv(job.capturedEnvRef);
     if (loaded) {
+      // Registry selection belongs to the OS registration, not captured job data.
+      delete loaded.OMA_HOME;
+      delete loaded.OMA_STATE_HOME;
       Object.assign(extraEnv, loaded);
     }
   }
@@ -230,7 +278,7 @@ export async function runScheduledJob(id: string): Promise<void> {
 
   const exitCode = result.status ?? 1;
 
-  // 4. Write run result to ~/.agents/schedule/runs/<id>/<ts>.md
+  // 4. Write run result to <OMA_HOME>/schedule/runs/<id>/<ts>.md
   writeRunResult(id, sessionId, exitCode, combinedOutput);
 
   // 5. Update lastFiredAt

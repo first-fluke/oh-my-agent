@@ -102,7 +102,7 @@ export function installVendorAdaptations(
 
     // 3. Claude-specific non-hook adaptations (rules)
     if (vendor === "claude") {
-      generateClaudeRules(installRoot);
+      generateClaudeRules(installRoot, sourceDir);
     }
   }
 }

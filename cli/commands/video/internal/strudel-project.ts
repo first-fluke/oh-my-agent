@@ -12,9 +12,9 @@
 //   3. dirname(import.meta.url)   — module location (source or bundled cli/bin)
 //   4. os.homedir()               — global ~/.agents install
 import { existsSync } from "node:fs";
-import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { omaHome } from "../../../utils/oma-home.js";
 import { runCapture } from "./exec.js";
 
 /** Relative path of the vendored Strudel renderer under a project root. */
@@ -65,7 +65,7 @@ export function resolveStrudelProjectDir(): string | null {
   } catch {
     // import.meta.url unavailable in some test runners — skip
   }
-  startDirs.push(homedir());
+  startDirs.push(omaHome());
 
   for (const startDir of startDirs) {
     const found = walkUpForProject(startDir);

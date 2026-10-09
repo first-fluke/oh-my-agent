@@ -27,7 +27,7 @@ export interface SyncSchedulesResult {
 
 /**
  * Labels whose OS registration exists but carries a command the current CLI
- * no longer accepts. Adapters without `readCommand` report none.
+ * no longer accepts. Unreadable registrations are renewed conservatively.
  */
 export async function findStaleLabels(
   port: SchedulerPort,
@@ -35,14 +35,19 @@ export async function findStaleLabels(
   osLabelSet: ReadonlySet<string>,
 ): Promise<Set<string>> {
   const stale = new Set<string>();
-  if (!port.readCommand) return stale;
+  if (!port.readCommand)
+    return new Set(
+      jobs
+        .filter((job) => osLabelSet.has(job.osJobLabel))
+        .map((job) => job.osJobLabel),
+    );
   for (const job of jobs) {
     if (!osLabelSet.has(job.osJobLabel)) continue;
     try {
       const registered = await port.readCommand(job.osJobLabel);
       if (isStaleScheduleCommand(registered, job.id)) stale.add(job.osJobLabel);
     } catch {
-      // Unreadable registration — leave it as synced rather than guess.
+      stale.add(job.osJobLabel);
     }
   }
   return stale;

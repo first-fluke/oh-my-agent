@@ -13,6 +13,7 @@ export {
 } from "./skills-installer/cursor-mcp.js";
 export {
   createCliSymlinks,
+  createGlobalSkillDiscoveryLinks,
   createVendorSymlinks,
   detectExistingCliSymlinkDirs,
   getInstalledSkillNames,

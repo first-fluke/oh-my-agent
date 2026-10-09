@@ -6,6 +6,7 @@ import {
 /** Generated Bun entry; all handler logic stays in the installed CLI. */
 export function standaloneHookSources(
   vendor: StandaloneHookVendor,
+  omaHome?: string,
 ): ReadonlyMap<string, string> {
   return new Map(
     Object.keys(STANDALONE_HOOK_SCRIPTS).map((script) => [
@@ -22,7 +23,7 @@ if (import.meta.main) {
     ], {
       input: readFileSync(0),
       cwd: process.cwd(),
-      env: process.env,
+      env: ${omaHome ? `{ ...process.env, OMA_HOME: ${JSON.stringify(omaHome)} }` : "process.env"},
       encoding: "utf-8",
       timeout: ${script === "persistent-mode.ts" ? 35_000 : 7_000},
       maxBuffer: 4 * 1024 * 1024,

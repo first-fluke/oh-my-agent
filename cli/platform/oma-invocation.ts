@@ -54,7 +54,8 @@ export function systemdExecStart(
   args: readonly string[],
 ): string {
   const words = [...invocation, ...args].map(
-    (arg) => `"${arg.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`,
+    (arg) =>
+      `"${arg.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/%/g, "%%").replace(/\$/g, "$$$$")}"`,
   );
   // A bare `oma` fallback still needs a PATH lookup, which ExecStart lacks.
   return invocation[0] === "oma"
@@ -70,6 +71,15 @@ export function windowsTaskExec(
   const [command = "oma", ...rest] = invocation;
   return {
     command: escapeXml(command),
-    arguments: escapeXml([...rest.map((arg) => `"${arg}"`), ...args].join(" ")),
+    arguments: escapeXml(
+      [
+        ...rest.map((arg) => `"${arg}"`),
+        ...args.map((arg) =>
+          /[\s"]/.test(arg)
+            ? `"${arg.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/, "$1$1")}"`
+            : arg,
+        ),
+      ].join(" "),
+    ),
   };
 }

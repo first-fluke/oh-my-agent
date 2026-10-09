@@ -11,7 +11,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { Command } from "commander";
+import { type Command, Option } from "commander";
 import {
   findStaleLabels,
   type SyncSchedulesResult,
@@ -22,7 +22,7 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
-import { resolveOmaInvocation } from "../../utils/oma-invocation.js";
+
 import { parseIntervalToCron } from "./cron-nl.js";
 import {
   addJob,
@@ -37,7 +37,11 @@ import {
   updateJob,
   validateCronExpression,
 } from "./manifest.js";
-import { type SchedulerPort, selectAdapter } from "./port.js";
+import {
+  expectedScheduleCommand,
+  type SchedulerPort,
+  selectAdapter,
+} from "./port.js";
 import { runScheduledJob } from "./runner.js";
 
 export { type SyncSchedulesResult, syncSchedules };
@@ -203,13 +207,7 @@ async function scheduleAdd(
   await port.upsert({
     id,
     cron: cronExpr,
-    command: [
-      resolveOmaInvocation().command,
-      ...resolveOmaInvocation().prefixArgs,
-      "schedule",
-      "run",
-      id,
-    ],
+    command: expectedScheduleCommand(id),
     label: osJobLabel,
     workspace,
   });
@@ -238,13 +236,7 @@ async function scheduleBuiltinEvolutionAdd(
     await port.upsert({
       id: existing.id,
       cron: options.cron,
-      command: [
-        resolveOmaInvocation().command,
-        ...resolveOmaInvocation().prefixArgs,
-        "schedule",
-        "run",
-        existing.id,
-      ],
+      command: expectedScheduleCommand(existing.id),
       label: existing.osJobLabel,
       workspace,
     });
@@ -281,13 +273,7 @@ async function scheduleBuiltinEvolutionAdd(
   await port.upsert({
     id,
     cron: job.cron,
-    command: [
-      resolveOmaInvocation().command,
-      ...resolveOmaInvocation().prefixArgs,
-      "schedule",
-      "run",
-      id,
-    ],
+    command: expectedScheduleCommand(id),
     label: job.osJobLabel,
     workspace,
   });
@@ -588,9 +574,12 @@ export function registerSchedule(program: Command): void {
     .description(
       "Execute a scheduled job by id (invoked by OS scheduler; not normally called directly)",
     )
+    .addOption(new Option("--oma-home <path>").hideHelp())
+    .addOption(new Option("--oma-state-home <path>").hideHelp())
+    .addOption(new Option("--registration <identity>").hideHelp())
     .action(
-      runAction(async (id) => {
-        await runScheduledJob(id);
+      runAction(async (id, options) => {
+        await runScheduledJob(id, options);
       }),
     );
 

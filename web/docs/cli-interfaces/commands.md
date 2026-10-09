@@ -43,6 +43,7 @@ This map keeps the long references below scannable and makes the less frequently
 | `market` | `market`, `market detect-trap`, `market resolve`, `market update`, `market run` |
 | `doctor` | `doctor` |
 | `profile` | `profile`, `profile list`, `profile show`, `profile create`, `profile use`, `profile run` |
+| `home` | `home`, `home migrate` |
 | `retro` | `retro` |
 | `recap` | `recap` |
 | `docs` | `docs`, `docs verify`, `docs sync`, `docs i18n`, `docs lint` |
@@ -93,7 +94,7 @@ oma install
 oma install --web-search native --code-intelligence gortex --semantic-memory agent-memory
 ```
 
-`--web-search`, `--code-intelligence`, and `--semantic-memory` retain the saved provider choice when omitted. `--honcho-url` and `--honcho-workspace` configure a new Honcho connection when that provider is selected. The root `-y, --yes` flag skips prompts and uses defaults; `--global` targets the HOME install.
+`--web-search`, `--code-intelligence`, and `--semantic-memory` retain the saved provider choice when omitted. `--honcho-url` and `--honcho-workspace` configure a new Honcho connection when that provider is selected. The root `-y, --yes` flag skips prompts and uses defaults; `--global` targets `$OMA_HOME/.agents/` (default `~/.oma/.agents/`). Project installation stays at `<cwd>/.agents/` even when `OMA_HOME` is set.
 
 **What it does:**
 1. Checks for legacy `.agent/` directory and migrates to `.agents/` if found.
@@ -253,11 +254,11 @@ oma link
 # Regenerate only Claude and Codex files
 oma link claude codex
 
-# Regenerate the HOME install (~/.agents/) from any directory
+# Regenerate the global install (~/.oma/.agents/) from any directory
 oma link opencode --global
 ```
 
-Without `--global`, link targets `<cwd>/.agents/`; with it, `~/.agents/` (or `OMA_HOME`). See [Global install](../guide/global-install.md).
+Without `--global`, link targets `<cwd>/.agents/`; with it, `~/.oma/.agents/` (or `$OMA_HOME/.agents/`). `OMA_HOME` does not change the project target. See [Global install](../guide/global-install.md).
 
 **What it does:**
 1. Rebuilds vendor-native agent files from `.agents/agents/`
@@ -463,7 +464,31 @@ oma retro 7d --json
 
 ---
 
-## Sessions and local profiles
+## Global home, sessions, and local profiles
+
+### home migrate
+
+Copy OMA-owned global definitions and runtime metadata into the unified home:
+
+```bash
+oma home migrate --dry-run --json
+oma home migrate --json
+oma schedule sync
+```
+
+`OMA_HOME` selects the global storage root, defaulting to `~/.oma`. Definitions
+use its `.agents/`; schedules use `schedule/`; Serena and the vault key-name index
+use `state/`. Profile storage uses `u/` unless `OMA_STATE_HOME` explicitly selects
+a different profile root.
+
+The migration preserves original content, skips identical copies, merges vault
+key names, and reports destination conflicts or data in use. Verified OMA-owned
+skill directories can be archived under `$OMA_HOME/backup/legacy-global-skills/`
+before their old discovery paths become managed links to the migrated copies.
+User skills and foreign links stay in place. It does not move vendor
+authentication, OS Keychain secrets, or external memory data. Global
+install/update run this migration automatically. OS job registration is separate:
+run `oma schedule sync` after migration when schedules exist.
 
 ### state list
 
@@ -501,7 +526,7 @@ oma profile run 1 -- oma state list --all-projects --json
 current shell. It does not modify the parent shell when run on its own, change
 already-running applications, or save a separate CLI-only default. CLI commands
 and vendor hooks started from the activated shell inherit the same profile.
-The default is profile `0`; `OMA_STATE_HOME` overrides the storage root.
+The default is profile `0`; storage follows `OMA_HOME` (default `~/.oma`). An explicit `OMA_STATE_HOME` overrides only profile storage.
 `profile run <slot> -- <command> [args...]` selects the profile for only that
 command and its children. The separator keeps child options such as `--help`
 and `--json` attached to the child command.
@@ -791,11 +816,11 @@ oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" 
 | `-w, --workspace <path>` | Working directory for the agent. Defaults to current directory at registration time. |
 | `--once` | One-shot mode: fires once, then self-removes. |
 | `--expires-after <duration>` | Auto-expire recurring job after N days (`0` = indefinite). |
-| `--env <KEY1,KEY2>` | Capture named env vars into `~/.agents/schedule/env/<id>` (0600) for injection at run time. Only listed keys are captured; never a full env dump. |
+| `--env <KEY1,KEY2>` | Capture named env vars into `~/.oma/schedule/env/<id>` (0600) for injection at run time. Only listed keys are captured; never a full env dump. |
 
 **What it does:**
 1. Parses and validates the cron expression (or converts the `--every` phrase to cron).
-2. Writes the job to `~/.agents/schedule/schedules.json` (global manifest, permissions 0600).
+2. Writes the job to `~/.oma/schedule/schedules.json` (global manifest, permissions 0600).
 3. Registers the job with the OS scheduler (launchd / systemd --user / schtasks). The OS job calls `oma schedule run <id>` at the configured interval.
 
 **Examples:**
@@ -866,9 +891,9 @@ oma schedule run <id>
 
 **What it does:**
 1. Looks up `<id>` in the manifest (exits non-zero if not found).
-2. Loads captured env vars from `~/.agents/schedule/env/<id>` and injects them.
+2. Loads captured env vars from `~/.oma/schedule/env/<id>` and injects them.
 3. Calls `oma agent spawn <agentId> <prompt> <sessionId> --vendor <vendor> -w <workspace>`.
-4. Writes the result to `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`.
+4. Writes the result to `~/.oma/schedule/runs/<id>/<ISO-timestamp>.md`.
 5. Updates `lastFiredAt` in the manifest; self-removes if job is `--once`.
 6. Loud-fails on auth expiry: exits non-zero and prints `re-auth required: <vendor>` to stderr. Never silently succeeds.
 
@@ -1189,7 +1214,7 @@ oma hook probe --vendor claude,codex,antigravity
 
 ### vault
 
-Manage API keys and other secrets in the OS keychain (macOS Keychain, Linux Secret Service, or Windows Credential Manager), backed by `@napi-rs/keyring`. Values never appear in shell history or environment files; only key names are tracked in `~/.config/oma/vault-index.json` so `oma vault list` can enumerate without exposing secret values.
+Manage API keys and other secrets in the OS keychain (macOS Keychain, Linux Secret Service, or Windows Credential Manager), backed by `@napi-rs/keyring`. Values never appear in shell history or environment files; only key names are tracked in `~/.oma/state/vault-index.json` so `oma vault list` can enumerate without exposing secret values.
 
 ```
 oma vault store <name> [--value <value>]

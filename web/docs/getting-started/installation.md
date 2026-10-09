@@ -47,7 +47,7 @@ Both bootstrap scripts behave the same way:
 5. Sets up runtime integration layers (hooks, symlinks, settings for detected vendors)
 6. Configures code-intelligence and memory MCP servers
 
-The bootstrap continues after optional dependency failures and reports follow-up commands. Run `oma doctor` after the installer finishes.
+The bootstrap continues after optional dependency failures and reports follow-up commands. AgentMemory is the default semantic-memory provider: `oma install` and `oma update` fail if its installation, startup, or health check fails. Selecting `providers.semantic_memory: none` or `honcho`, or setting `OMA_NO_AGENTMEMORY=1`, skips automatic AgentMemory preparation. Run `oma doctor` after the installer finishes.
 
 ---
 

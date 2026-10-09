@@ -3,6 +3,28 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const memoryState = vi.hoisted(() => ({
+  ensureAgentMemory: vi.fn(
+    async (_options?: { onProgress?: (message: string) => void }) => ({
+      state: "ready" as const,
+      endpoint: "http://127.0.0.1:25150",
+      installed: false,
+      started: false,
+      reused: true,
+    }),
+  ),
+}));
+vi.mock("../../io/agentmemory/ensure.js", () => memoryState);
+
+const migrationState = vi.hoisted(() => ({
+  migrateGlobalHome: vi.fn(async () => ({
+    copied: [] as string[],
+    conflicts: [] as string[],
+    deferred: [] as string[],
+  })),
+}));
+vi.mock("../../io/global-home-migration.js", () => migrationState);
+
 // Version/reconciliation tests must not refresh the developer's real toolchain.
 const syncSchedulesSpy = vi.hoisted(() =>
   vi.fn(async () => ({ synced: 0, resynced: 0, pruned: 0 })),
@@ -94,7 +116,14 @@ const serenaState = vi.hoisted(() => ({
 const configState = vi.hoisted(() => ({
   isTelemetryEnabled: vi.fn(() => false),
   loadDevToolsBrowsers: vi.fn(() => undefined),
-  loadOmaConfig: vi.fn(() => ({})),
+  loadOmaConfig: vi.fn(
+    (
+      _root?: string,
+    ): ReturnType<typeof import("../../utils/config.js").loadOmaConfig> => ({
+      language: "en",
+      model_preset: "claude",
+    }),
+  ),
   loadSerenaConfig: vi.fn(() => ({ autoUpdate: false })),
 }));
 
@@ -153,7 +182,8 @@ const skillsState = vi.hoisted(() => ({
     },
     qwen: { projectPath: ".qwen/skills", homePath: ".qwen/skills" },
   },
-  getInstalledSkillNames: vi.fn(() => []),
+  getInstalledSkillNames: vi.fn((_root: string): string[] => []),
+  createGlobalSkillDiscoveryLinks: vi.fn(() => []),
   vendorRequiresHomeConsent: vi.fn(
     (cli: string) => cli === "antigravity" || cli === "hermes",
   ),
@@ -289,6 +319,16 @@ describe("update --global: _install.json lifecycle", () => {
     process.env.CI = "true";
 
     vi.clearAllMocks();
+    migrationState.migrateGlobalHome
+      .mockReset()
+      .mockResolvedValue({ copied: [], conflicts: [], deferred: [] });
+    memoryState.ensureAgentMemory.mockReset().mockResolvedValue({
+      state: "ready",
+      endpoint: "http://127.0.0.1:25150",
+      installed: false,
+      started: false,
+      reused: true,
+    });
     _resetInstallContext();
     setInstallContext({ installRoot: tmpDir, mode: "global" });
 
@@ -300,6 +340,7 @@ describe("update --global: _install.json lifecycle", () => {
     manifestState.getLocalVersion.mockResolvedValue("8.0.0");
     manifestState.hasInstalledProject.mockReturnValue(true);
     manifestState.getNeedsReconcile.mockReturnValue(false);
+    manifestState.setNeedsReconcile.mockReset();
     manifestState.snapshotArtifacts.mockReturnValue({});
     manifestState.diffArtifacts.mockReturnValue({
       addedSkills: [],
@@ -308,6 +349,7 @@ describe("update --global: _install.json lifecycle", () => {
       removedWorkflows: [],
     });
     manifestState.hasArtifactChanges.mockReturnValue(false);
+    skillsState.getInstalledSkillNames.mockReset().mockReturnValue([]);
 
     lockState.acquireLock.mockReturnValue({ ok: true, release: vi.fn() });
     migrationsState.runMigrations.mockReturnValue([]);
@@ -329,7 +371,10 @@ describe("update --global: _install.json lifecycle", () => {
       reason: "disabled",
     });
     configState.loadSerenaConfig.mockReturnValue({ autoUpdate: false });
-    configState.loadOmaConfig.mockReturnValue({});
+    configState.loadOmaConfig.mockReturnValue({
+      language: "en",
+      model_preset: "claude",
+    });
     geminiState.usesGeminiCli.mockReturnValue(false);
 
     // tarball mock — returns a distinct fake repo dir (sibling of tmpDir) with
@@ -385,6 +430,275 @@ describe("update --global: _install.json lifecycle", () => {
     expect(new Date(meta.installedAt).toISOString()).toBe(meta.installedAt);
   });
 
+  it("migrates before acquiring the update lock and projects common skills before copying", async () => {
+    await update({ global: true, force: true, ci: true });
+    expect(migrationState.migrateGlobalHome).toHaveBeenCalledExactlyOnceWith({
+      env: expect.objectContaining({ OMA_HOME: tmpDir }),
+    });
+    expect(
+      migrationState.migrateGlobalHome.mock.invocationCallOrder[0],
+    ).toBeLessThan(lockState.acquireLock.mock.invocationCallOrder[0] ?? 0);
+    expect(
+      skillsState.createGlobalSkillDiscoveryLinks.mock.invocationCallOrder[0],
+    ).toBeLessThan(
+      tarballState.downloadAndExtract.mock.invocationCallOrder[0] ?? 0,
+    );
+  });
+
+  it.each(["conflicts", "deferred"] as const)(
+    "stops before locking when migration reports %s",
+    async (field) => {
+      migrationState.migrateGlobalHome.mockResolvedValueOnce({
+        copied: [],
+        conflicts: [],
+        deferred: [],
+        [field]: ["legacy path needs attention"],
+      });
+      await expect(
+        update({ global: true, force: true, ci: true }),
+      ).rejects.toThrow("legacy path needs attention");
+      expect(lockState.acquireLock).not.toHaveBeenCalled();
+      expect(tarballState.downloadAndExtract).not.toHaveBeenCalled();
+      expect(linkState.link).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not migrate a global home during a project update", async () => {
+    _resetInstallContext();
+    setInstallContext({ installRoot: tmpDir, mode: "project" });
+    await update({ force: true, ci: true });
+    expect(migrationState.migrateGlobalHome).not.toHaveBeenCalled();
+    expect(skillsState.createGlobalSkillDiscoveryLinks).not.toHaveBeenCalled();
+  });
+
+  it("prepares shared memory before linking and reporting an updated version", async () => {
+    const output = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await update({ global: true, force: true, ci: true });
+
+    expect(memoryState.ensureAgentMemory).toHaveBeenCalledExactlyOnceWith({
+      onProgress: expect.any(Function),
+    });
+    expect(
+      memoryState.ensureAgentMemory.mock.invocationCallOrder[0],
+    ).toBeLessThan(linkState.link.mock.invocationCallOrder[0] ?? 0);
+    expect(manifestState.setNeedsReconcile).toHaveBeenCalledWith(tmpDir, false);
+    const clearIndex = manifestState.setNeedsReconcile.mock.calls.findIndex(
+      ([, pending]) => pending === false,
+    );
+    expect(
+      manifestState.setNeedsReconcile.mock.invocationCallOrder[clearIndex],
+    ).toBeGreaterThan(linkState.link.mock.invocationCallOrder[0] ?? 0);
+    const completed = output.mock.calls.findIndex(([message]) =>
+      String(message).includes("Updated to version 8.1.0"),
+    );
+    expect(completed).toBeGreaterThanOrEqual(0);
+    expect(
+      memoryState.ensureAgentMemory.mock.invocationCallOrder[0],
+    ).toBeLessThan(output.mock.invocationCallOrder[completed] ?? 0);
+  });
+
+  it("prepares shared memory when an already-current global update skips the download", async () => {
+    manifestState.getLocalVersion.mockResolvedValue("8.1.0");
+    migrationState.migrateGlobalHome.mockResolvedValueOnce({
+      copied: [path.join(tmpDir, ".agents")],
+      conflicts: [],
+      deferred: [],
+    });
+    const output = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await update({ global: true, ci: true });
+
+    expect(memoryState.ensureAgentMemory).toHaveBeenCalledOnce();
+    expect(tarballState.downloadAndExtract).not.toHaveBeenCalled();
+    expect(linkState.link).toHaveBeenCalledWith({
+      root: tmpDir,
+      quiet: true,
+    });
+    const completed = output.mock.calls.findIndex(([message]) =>
+      String(message).includes("Already up to date!"),
+    );
+    expect(completed).toBeGreaterThanOrEqual(0);
+    expect(
+      memoryState.ensureAgentMemory.mock.invocationCallOrder[0],
+    ).toBeLessThan(output.mock.invocationCallOrder[completed] ?? 0);
+  });
+
+  it.each(["none", "honcho"] as const)(
+    "respects the preserved local provider %s during a forced update",
+    async (provider) => {
+      const actualConfig = await vi.importActual<
+        typeof import("../../utils/config.js")
+      >("../../utils/config.js");
+      configState.loadOmaConfig.mockImplementation(actualConfig.loadOmaConfig);
+      fs.writeFileSync(
+        path.join(tmpDir, ".agents", "oma-config.local.yaml"),
+        `providers:\n  semantic_memory: ${provider}\n`,
+      );
+      const { dir: repoDir } = await tarballState.downloadAndExtract();
+      fs.writeFileSync(
+        path.join(repoDir, ".agents", "oma-config.yaml"),
+        "providers:\n  semantic_memory: agentmemory\n",
+      );
+
+      await update({ global: true, force: true, ci: true });
+
+      expect(memoryState.ensureAgentMemory).not.toHaveBeenCalled();
+      expect(linkState.link).toHaveBeenCalled();
+      expect(actualConfig.loadOmaConfig(tmpDir)?.providers).toMatchObject({
+        semantic_memory: provider,
+      });
+    },
+  );
+
+  it("uses the final force-reset provider instead of the previous base preference", async () => {
+    const actualConfig = await vi.importActual<
+      typeof import("../../utils/config.js")
+    >("../../utils/config.js");
+    configState.loadOmaConfig.mockImplementation(actualConfig.loadOmaConfig);
+    fs.writeFileSync(
+      path.join(tmpDir, ".agents", "oma-config.yaml"),
+      "providers:\n  semantic_memory: none\n",
+    );
+    const { dir: repoDir } = await tarballState.downloadAndExtract();
+    fs.writeFileSync(
+      path.join(repoDir, ".agents", "oma-config.yaml"),
+      "providers:\n  semantic_memory: agentmemory\n",
+    );
+
+    await update({ global: true, force: true, ci: true });
+
+    expect(memoryState.ensureAgentMemory).toHaveBeenCalledOnce();
+    expect(actualConfig.loadOmaConfig(tmpDir)?.providers).toMatchObject({
+      semantic_memory: "agentmemory",
+    });
+  });
+
+  it.each([false, true])(
+    "rejects and releases the lock when shared memory is unavailable (already-current=%s)",
+    async (alreadyCurrent) => {
+      if (alreadyCurrent)
+        manifestState.getLocalVersion.mockResolvedValue("8.1.0");
+      const release = vi.fn();
+      lockState.acquireLock.mockReturnValue({ ok: true, release });
+      memoryState.ensureAgentMemory.mockRejectedValueOnce(
+        new Error("memory health check failed"),
+      );
+      const output = vi.spyOn(console, "log").mockImplementation(() => {});
+      vi.spyOn(console, "error").mockImplementation(() => {});
+
+      await expect(update({ global: true, ci: true })).rejects.toThrow(
+        "memory health check failed",
+      );
+
+      expect(linkState.link).not.toHaveBeenCalled();
+      expect(selfUpdateState.maybeSelfUpdate).not.toHaveBeenCalled();
+      expect(release).toHaveBeenCalledOnce();
+      if (!alreadyCurrent) {
+        expect(manifestState.setNeedsReconcile).toHaveBeenCalledWith(
+          tmpDir,
+          true,
+        );
+        expect(manifestState.setNeedsReconcile).not.toHaveBeenCalledWith(
+          tmpDir,
+          false,
+        );
+      }
+      expect(output.mock.calls.flat().join("\n")).not.toMatch(
+        /Already up to date|Updated to version/,
+      );
+      const version = JSON.parse(
+        fs.readFileSync(
+          path.join(tmpDir, ".agents", "skills", "_version.json"),
+          "utf8",
+        ),
+      );
+      expect(version.version).toBe("8.0.0");
+      expect(version.installedAt).toBe("2026-01-01T00:00:00.000Z");
+    },
+  );
+
+  it("preserves the selected skills after memory failure and a same-version retry", async () => {
+    const actualManifest = await vi.importActual<
+      typeof import("../../platform/manifest.js")
+    >("../../platform/manifest.js");
+    const actualSkills = await vi.importActual<
+      typeof import("../../platform/skills-installer/skill-symlinks.js")
+    >("../../platform/skills-installer/skill-symlinks.js");
+    manifestState.getLocalVersion.mockResolvedValue("8.1.0");
+    manifestState.getNeedsReconcile.mockImplementation(() =>
+      actualManifest.getNeedsReconcile(tmpDir),
+    );
+    manifestState.setNeedsReconcile.mockImplementation(
+      actualManifest.setNeedsReconcile,
+    );
+    manifestState.snapshotArtifacts.mockImplementation(() =>
+      actualManifest.snapshotArtifacts(tmpDir),
+    );
+    skillsState.getInstalledSkillNames.mockImplementation(
+      actualSkills.getInstalledSkillNames,
+    );
+    await actualManifest.saveLocalVersion(tmpDir, "8.1.0", "global");
+    actualManifest.setNeedsReconcile(tmpDir, true);
+    const selectedSkill = path.join(
+      tmpDir,
+      ".agents",
+      "skills",
+      "oma-backend",
+      "SKILL.md",
+    );
+    fs.mkdirSync(path.dirname(selectedSkill), { recursive: true });
+    fs.writeFileSync(selectedSkill, "original backend skill");
+    const { dir: repoDir, cleanup } = await tarballState.downloadAndExtract();
+    tarballState.downloadAndExtract.mockClear();
+    tarballState.downloadAndExtract.mockResolvedValue({
+      dir: repoDir,
+      cleanup: vi.fn(),
+    });
+    for (const name of ["oma-backend", "oma-video"]) {
+      const skillPath = path.join(
+        repoDir,
+        ".agents",
+        "skills",
+        name,
+        "SKILL.md",
+      );
+      fs.mkdirSync(path.dirname(skillPath), { recursive: true });
+      fs.writeFileSync(skillPath, `updated ${name} skill`);
+    }
+    memoryState.ensureAgentMemory.mockRejectedValueOnce(
+      new Error("memory health check failed"),
+    );
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      await expect(update({ global: true, ci: true })).rejects.toThrow(
+        "memory health check failed",
+      );
+      expect(fs.readFileSync(selectedSkill, "utf8")).toBe(
+        "updated oma-backend skill",
+      );
+      expect(actualManifest.getNeedsReconcile(tmpDir)).toBe(true);
+      expect(linkState.link).not.toHaveBeenCalled();
+
+      await update({ global: true, ci: true });
+
+      expect(actualSkills.getInstalledSkillNames(tmpDir)).toEqual([
+        "oma-backend",
+      ]);
+      expect(
+        fs.existsSync(path.join(tmpDir, ".agents", "skills", "oma-video")),
+      ).toBe(false);
+      expect(memoryState.ensureAgentMemory).toHaveBeenCalledTimes(2);
+      expect(tarballState.downloadAndExtract).toHaveBeenCalledTimes(2);
+      expect(linkState.link).toHaveBeenCalledOnce();
+      expect(actualManifest.getNeedsReconcile(tmpDir)).toBe(false);
+    } finally {
+      cleanup();
+    }
+  });
+
   it("migrates project runtime before an already-current update returns", async () => {
     _resetInstallContext();
     setInstallContext({ installRoot: tmpDir, mode: "project" });
@@ -395,6 +709,7 @@ describe("update --global: _install.json lifecycle", () => {
       runtimeMigrationState.migrateRuntimeState,
     ).toHaveBeenCalledExactlyOnceWith({ projectDir: tmpDir });
     expect(tarballState.downloadAndExtract).not.toHaveBeenCalled();
+    expect(memoryState.ensureAgentMemory).toHaveBeenCalledOnce();
   });
 
   it.each([false, true])(
@@ -512,7 +827,10 @@ describe("update --global: _install.json lifecycle", () => {
     await update({ global: true, ci: true });
 
     expect(tarballState.downloadAndExtract).not.toHaveBeenCalled();
-    expect(linkState.link).not.toHaveBeenCalled();
+    expect(linkState.link).toHaveBeenCalledWith({
+      root: tmpDir,
+      quiet: true,
+    });
   });
 
   it("does not redownload for a state-only migration warning", async () => {
@@ -530,6 +848,9 @@ describe("update --global: _install.json lifecycle", () => {
     await update({ global: true, ci: true });
 
     expect(tarballState.downloadAndExtract).not.toHaveBeenCalled();
-    expect(linkState.link).not.toHaveBeenCalled();
+    expect(linkState.link).toHaveBeenCalledWith({
+      root: tmpDir,
+      quiet: true,
+    });
   });
 });

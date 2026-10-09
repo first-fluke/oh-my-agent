@@ -22,6 +22,7 @@ const mockFsFunctions = vi.hoisted(() => ({
   unlinkSync: vi.fn(),
   readdirSync: vi.fn(),
   mkdirSync: vi.fn(),
+  readFileSync: vi.fn(),
 }));
 
 const mockExecFileSync = vi.hoisted(() => vi.fn());
@@ -79,6 +80,7 @@ describe("SystemdAdapter", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   // ---------------------------------------------------------------------------
@@ -129,6 +131,28 @@ describe("SystemdAdapter", () => {
   // ---------------------------------------------------------------------------
 
   describe("upsert", () => {
+    it("preserves storage roots containing spaces, dollars, and systemd specifiers", async () => {
+      const root = "/tmp/OMA 100%/$private";
+      vi.stubEnv("OMA_HOME", root);
+      const command = [
+        "/usr/local/bin/oma",
+        "schedule",
+        "run",
+        JOB_ID,
+        "--oma-home",
+        root,
+      ];
+      await adapter.upsert({ ...sampleSpec, command });
+      const service = mockFsFunctions.writeFileSync.mock.calls.find((call) =>
+        String(call[0]).endsWith(".service"),
+      )?.[1] as string;
+      expect(service).toContain('"/tmp/OMA 100%%/$$private"');
+      expect(service).toContain(
+        `StandardOutput=append:/tmp/OMA 100%%/$private/schedule/runs/${JOB_ID}/stdout.log`,
+      );
+      mockFsFunctions.readFileSync.mockReturnValue(service);
+      expect(await adapter.readCommand(LABEL)).toEqual(command);
+    });
     it("writes .service and .timer unit files", async () => {
       await adapter.upsert(sampleSpec);
 

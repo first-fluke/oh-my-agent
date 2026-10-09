@@ -3,7 +3,7 @@
  *
  * OS-native credential storage for oma. Backed by @napi-rs/keyring,
  * which delegates to macOS Keychain, Linux Secret Service, or Windows
- * Credential Manager. A small index file under ${HOME}/.config/oma/
+ * Credential Manager. A small index file under <OMA_HOME>/state/
  * tracks the key names that have been stored (values stay in the OS
  * keychain) so `oma vault list` can enumerate without ever exposing
  * secret values.
@@ -13,9 +13,18 @@
  * store is unavailable (e.g. headless Linux without Secret Service).
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { randomUUID } from "node:crypto";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
+import { omaPaths } from "../utils/oma-home.js";
+import { acquireOwnedDirectoryLock } from "../utils/owned-directory-lock.js";
 
 const SERVICE = "oh-my-agent";
 
@@ -24,13 +33,13 @@ export interface VaultIndexEntry {
   createdAt: string;
 }
 
-interface VaultIndex {
+export interface VaultIndex {
   version: 1;
   entries: VaultIndexEntry[];
 }
 
 function indexDir(): string {
-  return path.join(homedir(), ".config", "oma");
+  return omaPaths().state;
 }
 
 function indexPath(): string {
@@ -49,13 +58,40 @@ function readIndex(): VaultIndex {
   return { version: 1, entries: [] };
 }
 
-function writeIndex(idx: VaultIndex): void {
-  const dir = indexDir();
+/** The caller holds `<indexFile>.lock` across its read/modify/write. */
+export function writeVaultIndex(indexFile: string, idx: VaultIndex): void {
+  const dir = path.dirname(indexFile);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true, mode: 0o700 });
-  writeFileSync(indexPath(), JSON.stringify(idx, null, 2), {
-    encoding: "utf-8",
-    mode: 0o600,
-  });
+  const temporary = path.join(
+    dir,
+    `.vault-index-${process.pid}-${randomUUID()}.tmp`,
+  );
+  try {
+    writeFileSync(temporary, `${JSON.stringify(idx, null, 2)}\n`, {
+      encoding: "utf-8",
+      mode: 0o600,
+      flag: "wx",
+    });
+    renameSync(temporary, indexFile);
+  } finally {
+    try {
+      unlinkSync(temporary);
+    } catch {}
+  }
+}
+
+function updateIndex(update: (idx: VaultIndex) => boolean): void {
+  const file = indexPath();
+  mkdirSync(indexDir(), { recursive: true, mode: 0o700 });
+  const lock = acquireOwnedDirectoryLock(`${file}.lock`);
+  if (!lock.ok)
+    throw new Error("Vault index is being updated; retry this command.");
+  try {
+    const idx = readIndex();
+    if (update(idx)) writeVaultIndex(file, idx);
+  } finally {
+    lock.release();
+  }
 }
 
 // Lazy-load the native module so a missing platform credential store
@@ -101,15 +137,14 @@ export async function storeSecret(
     throw new Error("Refusing to store empty value in vault.");
   }
   const entry = await makeEntry(name);
-  const existing = entry.getPassword();
-  entry.setPassword(value);
-
-  const idx = readIndex();
-  const wasIndexed = idx.entries.some((e) => e.name === name);
-  if (!wasIndexed) {
+  let existing: string | null = null;
+  updateIndex((idx) => {
+    existing = entry.getPassword();
+    entry.setPassword(value);
+    if (idx.entries.some((e) => e.name === name)) return false;
     idx.entries.push({ name, createdAt: new Date().toISOString() });
-    writeIndex(idx);
-  }
+    return true;
+  });
 
   return { overwrote: existing !== null };
 }
@@ -123,14 +158,14 @@ export async function getSecret(name: string): Promise<string | null> {
 export async function removeSecret(name: string): Promise<boolean> {
   assertValidKeyName(name);
   const entry = await makeEntry(name);
-  const removed = entry.deletePassword();
-
-  const idx = readIndex();
-  const filtered = idx.entries.filter((e) => e.name !== name);
-  if (filtered.length !== idx.entries.length) {
+  let removed = false;
+  updateIndex((idx) => {
+    removed = entry.deletePassword();
+    const filtered = idx.entries.filter((e) => e.name !== name);
+    if (filtered.length === idx.entries.length) return false;
     idx.entries = filtered;
-    writeIndex(idx);
-  }
+    return true;
+  });
 
   return removed;
 }

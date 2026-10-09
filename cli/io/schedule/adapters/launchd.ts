@@ -18,6 +18,7 @@ import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import { homedir } from "node:os";
 import * as path from "node:path";
+import { getRunsDir } from "../manifest.js";
 import type { ScheduledJobSpec, SchedulerPort } from "../port.js";
 
 // ---------------------------------------------------------------------------
@@ -227,9 +228,9 @@ ${programArguments}
   <key>WorkingDirectory</key>
   <string>${escapeXml(spec.workspace)}</string>
   <key>StandardOutPath</key>
-  <string>${escapeXml(path.join(homedir(), ".agents", "schedule", "runs", spec.id, "stdout.log"))}</string>
+  <string>${escapeXml(path.join(getRunsDir(spec.id), "stdout.log"))}</string>
   <key>StandardErrorPath</key>
-  <string>${escapeXml(path.join(homedir(), ".agents", "schedule", "runs", spec.id, "stderr.log"))}</string>
+  <string>${escapeXml(path.join(getRunsDir(spec.id), "stderr.log"))}</string>
   <key>RunAtLoad</key>
   <false/>
 </dict>
@@ -286,7 +287,7 @@ export class LaunchdAdapter implements SchedulerPort {
     }
 
     // Ensure run log dir exists
-    const runDir = path.join(homedir(), ".agents", "schedule", "runs", spec.id);
+    const runDir = getRunsDir(spec.id);
     if (!fs.existsSync(runDir)) {
       fs.mkdirSync(runDir, { recursive: true });
     }

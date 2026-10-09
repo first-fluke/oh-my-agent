@@ -105,6 +105,38 @@ afterEach(() => {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("buildRemovalPlan", () => {
+  it("global removal uses native HOME projections while preserving unrelated source and user files", async () => {
+    const root = makeTmpDir();
+    mockHome = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "global" });
+    seedOmaLayout(root);
+    const skill = path.join(root, ".agents", "skills", "oma-frontend");
+    const common = path.join(mockHome, ".agents", "skills", "oma-frontend");
+    const vendor = path.join(mockHome, ".codex", "skills", "oma-frontend");
+    for (const link of [common, vendor]) {
+      fs.mkdirSync(path.dirname(link), { recursive: true });
+      fs.symlinkSync(skill, link, "dir");
+    }
+    const user = path.join(mockHome, ".agents", "skills", "user-skill");
+    fs.mkdirSync(user);
+    fs.writeFileSync(path.join(user, "SKILL.md"), "user content");
+    const commands = path.join(mockHome, ".zcode", "commands");
+    fs.mkdirSync(commands, { recursive: true });
+    const workflow = path.join(root, ".agents", "workflows", "debug.md");
+    fs.writeFileSync(workflow, "# Debug");
+    const command = path.join(commands, "debug.md");
+    fs.symlinkSync(workflow, command);
+    const planned = buildRemovalPlan(root).omaOwned.map((entry) => entry.path);
+    expect(planned).toContain(common);
+    expect(planned).toContain(vendor);
+    expect(planned).toContain(command);
+    await uninstall({ yes: true });
+    expect(fs.existsSync(common)).toBe(false);
+    expect(fs.existsSync(vendor)).toBe(false);
+    expect(fs.readFileSync(path.join(user, "SKILL.md"), "utf8")).toBe(
+      "user content",
+    );
+  });
   it("preserves unregistered SSOT skills and their vendor links", async () => {
     const root = makeTmpDir();
     setInstallContext({ installRoot: root, mode: "project" });

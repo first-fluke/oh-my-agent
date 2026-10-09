@@ -1,6 +1,20 @@
 import * as childProcess from "node:child_process";
 import * as fs from "node:fs";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const memoryState = vi.hoisted(() => ({
+  ensureAgentMemory: vi.fn(
+    async (_options?: { onProgress?: (message: string) => void }) => ({
+      state: "ready" as const,
+      endpoint: "http://127.0.0.1:25150",
+      installed: false,
+      started: false,
+      reused: true,
+    }),
+  ),
+}));
+vi.mock("../../io/agentmemory/ensure.js", () => memoryState);
 
 const promptState = vi.hoisted(() => ({
   select: vi.fn(),
@@ -137,6 +151,9 @@ vi.mock("node:child_process", () => ({ execSync: vi.fn() }));
 
 vi.mock("../../io/github.js", () => githubState);
 vi.mock("../../platform/skills-installer.js", () => skillsState);
+vi.mock("../../platform/provider-mcp.js", () => ({
+  syncProviderMcp: vi.fn(() => []),
+}));
 vi.mock("../migrations/index.js", () => ({
   runMigrations: miscState.runMigrations,
 }));
@@ -200,6 +217,13 @@ describe("install home policy", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    memoryState.ensureAgentMemory.mockReset().mockResolvedValue({
+      state: "ready",
+      endpoint: "http://127.0.0.1:25150",
+      installed: false,
+      started: false,
+      reused: true,
+    });
     promptState.select.mockReset();
     promptState.multiselect.mockReset();
 
@@ -213,9 +237,12 @@ describe("install home policy", () => {
     delete process.env.CI;
     delete process.env.OMA_YES;
 
-    // 3 select prompts: language, modelPreset, projectType
+    // Language, three providers, model preset, then project type.
     promptState.select
       .mockResolvedValueOnce("en")
+      .mockResolvedValueOnce("serena")
+      .mockResolvedValueOnce("agentmemory")
+      .mockResolvedValueOnce("native")
       .mockResolvedValueOnce("claude")
       .mockResolvedValueOnce("custom");
     // Multiselect prompts: vendors, browsers, then skills
@@ -226,11 +253,18 @@ describe("install home policy", () => {
     // Default: any consent prompt receives "false"
     promptState.confirm.mockResolvedValue(false);
 
-    fsState.existsSync.mockImplementation((path: string) =>
-      path.endsWith("/.agents/oma-config.yaml"),
-    );
+    fsState.existsSync.mockImplementation((path: string) => {
+      const normalized = path.replaceAll("\\", "/");
+      return normalized.endsWith("/.agents/oma-config.yaml");
+    });
     fsState.readdirSync.mockReturnValue([]);
-    fsState.readFileSync.mockReturnValue("language: en\n");
+    let configYaml = "language: en\n";
+    fsState.readFileSync.mockImplementation(() => configYaml);
+    fsState.writeFileSync.mockImplementation((file, content) => {
+      if (file === join(process.cwd(), ".agents", "oma-config.yaml")) {
+        configYaml = String(content);
+      }
+    });
   });
 
   afterEach(() => {
@@ -267,6 +301,27 @@ describe("install home policy", () => {
       false,
     );
   });
+
+  it("prepares shared memory for a project install before reporting completion", async () => {
+    await install({ yes: true });
+
+    expect(memoryState.ensureAgentMemory).toHaveBeenCalledExactlyOnceWith({
+      onProgress: expect.any(Function),
+    });
+    expect(
+      memoryState.ensureAgentMemory.mock.invocationCallOrder[0],
+    ).toBeLessThan(promptState.outro.mock.invocationCallOrder[0] ?? 0);
+  });
+
+  it.each(["none", "honcho"] as const)(
+    "preserves the project memory opt-out %s",
+    async (semanticMemory) => {
+      await install({ yes: true, semanticMemory });
+
+      expect(memoryState.ensureAgentMemory).not.toHaveBeenCalled();
+      expect(promptState.outro).toHaveBeenCalledWith("Done!");
+    },
+  );
 
   // --- Gortex project setup: project mode tracks the install root ---
 
@@ -406,6 +461,12 @@ describe("install EC-12 — cwd equals homedir guard", () => {
     // nested describes — clear explicitly to prevent test bleeding.
     promptState.cancel.mockClear();
     promptState.confirm.mockClear();
+    promptState.select
+      .mockReset()
+      .mockImplementation(
+        async (options) => options.initialValue ?? options.options[0]?.value,
+      );
+    promptState.multiselect.mockReset().mockResolvedValue([]);
     // Throw on exit so install() stops at the EC-12 guard instead of running
     // the rest of the flow (multiselect mocks etc. would otherwise fire).
     exitSpy = vi.spyOn(process, "exit").mockImplementation(((code: number) => {

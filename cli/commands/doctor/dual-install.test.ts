@@ -15,7 +15,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   checkDualInstall,
   checkOmaPathInstalls,
@@ -26,11 +26,14 @@ import {
 
 const tempRoots: string[] = [];
 
+beforeEach(() => vi.stubEnv("OMA_HOME", ""));
+
 afterEach(() => {
   for (const root of tempRoots) {
     rmSync(root, { recursive: true, force: true });
   }
   tempRoots.length = 0;
+  vi.unstubAllEnvs();
 });
 
 function makeTempRoot(prefix = "oma-dual-install-"): string {
@@ -67,12 +70,25 @@ function writeVersionFile(root: string, fixture: VersionFixture): void {
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe("checkDualInstall", () => {
+  it("reads the explicit OMA home rather than the native vendor home", async () => {
+    const projectDir = makeTempRoot("proj-");
+    const homeDir = makeTempRoot("home-");
+    const omaRoot = makeTempRoot("oma-");
+    writeVersionFile(omaRoot, { version: "9.1.0", mode: "global" });
+    writeVersionFile(homeDir, { version: "8.0.0", mode: "global" });
+    vi.stubEnv("OMA_HOME", omaRoot);
+    const result = await checkDualInstall(projectDir, homeDir);
+    expect(result.global).toMatchObject({ installed: true, version: "9.1.0" });
+  });
   it("both installs present with matching version — no version-mismatch warning", async () => {
     const projectDir = makeTempRoot("proj-");
     const homeDir = makeTempRoot("home-");
 
     writeVersionFile(projectDir, { version: "8.5.0", mode: "project" });
-    writeVersionFile(homeDir, { version: "8.5.0", mode: "global" });
+    writeVersionFile(join(homeDir, ".oma"), {
+      version: "8.5.0",
+      mode: "global",
+    });
 
     const result = await checkDualInstall(projectDir, homeDir);
 
@@ -89,7 +105,10 @@ describe("checkDualInstall", () => {
     const homeDir = makeTempRoot("home-");
 
     writeVersionFile(projectDir, { version: "8.5.0", mode: "project" });
-    writeVersionFile(homeDir, { version: "9.0.0", mode: "global" });
+    writeVersionFile(join(homeDir, ".oma"), {
+      version: "9.0.0",
+      mode: "global",
+    });
 
     const result = await checkDualInstall(projectDir, homeDir);
 
@@ -122,7 +141,10 @@ describe("checkDualInstall", () => {
     const projectDir = makeTempRoot("proj-");
     const homeDir = makeTempRoot("home-");
 
-    writeVersionFile(homeDir, { version: "8.5.0", mode: "global" });
+    writeVersionFile(join(homeDir, ".oma"), {
+      version: "8.5.0",
+      mode: "global",
+    });
 
     const result = await checkDualInstall(projectDir, homeDir);
 
@@ -147,7 +169,10 @@ describe("checkDualInstall", () => {
     const homeDir = makeTempRoot("home-");
 
     writeVersionFile(projectDir, { version: "8.5.0", mode: "global" });
-    writeVersionFile(homeDir, { version: "8.5.0", mode: "global" });
+    writeVersionFile(join(homeDir, ".oma"), {
+      version: "8.5.0",
+      mode: "global",
+    });
 
     const result = await checkDualInstall(projectDir, homeDir);
 
@@ -162,7 +187,10 @@ describe("checkDualInstall", () => {
     const homeDir = makeTempRoot("home-");
 
     writeVersionFile(projectDir, { version: "8.5.0", mode: "project" });
-    writeVersionFile(homeDir, { version: "8.5.0", mode: "project" });
+    writeVersionFile(join(homeDir, ".oma"), {
+      version: "8.5.0",
+      mode: "project",
+    });
 
     const result = await checkDualInstall(projectDir, homeDir);
 

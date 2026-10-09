@@ -70,7 +70,7 @@ import {
   writeManifest,
 } from "./manifest.js";
 
-const SCHEDULE_DIR = path.join(FAKE_HOME, ".agents", "schedule");
+const SCHEDULE_DIR = path.join(FAKE_HOME, ".oma", "schedule");
 const MANIFEST_PATH = path.join(SCHEDULE_DIR, "schedules.json");
 
 function makeEmptyManifest() {
@@ -101,10 +101,12 @@ function makeSampleJob(overrides?: Partial<ScheduleJob>): ScheduleJob {
 describe("schedule/manifest.ts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("OMA_HOME", path.join(FAKE_HOME, ".oma"));
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   // ---------------------------------------------------------------------------
@@ -112,8 +114,15 @@ describe("schedule/manifest.ts", () => {
   // ---------------------------------------------------------------------------
 
   describe("getScheduleDir", () => {
-    it("returns ~/.agents/schedule", () => {
+    it("returns ~/.oma/schedule", () => {
       expect(getScheduleDir()).toBe(SCHEDULE_DIR);
+    });
+
+    it("uses OMA_HOME independently of project/profile storage", () => {
+      vi.stubEnv("OMA_HOME", "/custom/oma");
+      vi.stubEnv("OMA_STATE_HOME", "/custom/profile");
+      expect(getScheduleDir()).toBe("/custom/oma/schedule");
+      expect(getManifestPath()).toBe("/custom/oma/schedule/schedules.json");
     });
   });
 

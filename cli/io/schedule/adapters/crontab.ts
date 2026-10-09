@@ -23,6 +23,7 @@
 
 import { execFileSync } from "node:child_process";
 import * as path from "node:path";
+import { parseCommand, shellCommand } from "../command-line.js";
 import type { ScheduledJobSpec, SchedulerPort } from "../port.js";
 
 // ---------------------------------------------------------------------------
@@ -185,11 +186,11 @@ export class CrontabAdapter implements SchedulerPort {
       const line = block.find((l) => extractLabel(l) === label);
       if (!line) return null;
       // `<cron 5 fields> <argv...> # oma:<label>` → argv
-      const tokens = line
-        .replace(/\s*# oma:\S+$/, "")
-        .trim()
-        .split(/\s+/);
-      const argv = tokens.slice(5);
+      const content = line.replace(/\s*# oma:\S+$/, "").trim();
+      const command = content
+        .replace(/^(?:\S+\s+){5}/, "")
+        .replace(/\\%/g, "%");
+      const argv = parseCommand(command) ?? [];
       return argv.length > 0 ? argv : null;
     } catch {
       return null;
@@ -205,7 +206,9 @@ export class CrontabAdapter implements SchedulerPort {
         ? [absOma, ...spec.command.slice(1)]
         : spec.command;
 
-    const jobLine = `${spec.cron} ${resolvedCommand.join(" ")} # oma:${spec.label}`;
+    // Cron interprets unescaped percent signs before the shell sees quoting.
+    const command = shellCommand(resolvedCommand).replace(/%/g, "\\%");
+    const jobLine = `${spec.cron} ${command} # oma:${spec.label}`;
 
     const rawCrontab = readCrontab();
     const { before, block, after } = parseCrontab(rawCrontab);

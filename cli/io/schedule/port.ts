@@ -10,6 +10,11 @@
  * Per docs/plans/contracts/schedule-scheduler-port.md §2
  */
 
+import { createHash } from "node:crypto";
+import { omaHome } from "../../utils/oma-home.js";
+import { resolveOmaInvocation } from "../../utils/oma-invocation.js";
+import { getRunsDir } from "./manifest.js";
+
 // ---------------------------------------------------------------------------
 // Shared spec type
 // ---------------------------------------------------------------------------
@@ -19,7 +24,7 @@ export interface ScheduledJobSpec {
   id: string;
   /** 5-field cron expression */
   cron: string;
-  /** argv for the OS job — always ["oma","schedule","run","<id>"] */
+  /** Current OMA invocation plus schedule/run, storage roots, and identity. */
   command: string[];
   /** osJobLabel */
   label: string;
@@ -44,14 +49,33 @@ export interface SchedulerPort {
    * Return the argv the OS scheduler currently has registered for a label
    * (absolute binary first), or null when the job is absent or unreadable.
    * Optional: adapters that cannot read their registration back omit it and
-   * stale detection is skipped for them.
+   * their registrations are renewed on sync.
    */
   readCommand?(label: string): Promise<string[] | null>;
 }
 
 /** The logical argv every OS registration must carry for a manifest job. */
 export function expectedScheduleCommand(id: string): string[] {
-  return ["oma", "schedule", "run", id];
+  const invocation = resolveOmaInvocation();
+  const home = omaHome();
+  const stateHome = process.env.OMA_STATE_HOME || undefined;
+  const registration = createHash("sha256")
+    .update(
+      JSON.stringify({ invocation, home, stateHome, logs: getRunsDir(id) }),
+    )
+    .digest("hex");
+  return [
+    invocation.command,
+    ...invocation.prefixArgs,
+    "schedule",
+    "run",
+    id,
+    "--oma-home",
+    home,
+    ...(stateHome ? ["--oma-state-home", stateHome] : []),
+    "--registration",
+    registration,
+  ];
 }
 
 /**
@@ -63,7 +87,7 @@ export function isStaleScheduleCommand(
   registered: string[] | null | undefined,
   id: string,
 ): boolean {
-  if (!registered) return false;
+  if (!registered) return true;
   const expectedTail = expectedScheduleCommand(id).slice(1);
   const tail = registered.slice(1);
   return (

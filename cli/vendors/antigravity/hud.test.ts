@@ -2,6 +2,10 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  _resetInstallContext,
+  setInstallContext,
+} from "../../platform/install-context.js";
 import { installAntigravityHud } from "./hud.js";
 
 const FAKE_HOME = "/tmp/fake-home";
@@ -64,6 +68,7 @@ vi.mock("../../utils/safe-write.js", async () => {
 describe("installAntigravityHud", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    _resetInstallContext();
     (os.homedir as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       FAKE_HOME,
     );
@@ -76,6 +81,7 @@ describe("installAntigravityHud", () => {
   });
 
   afterEach(() => {
+    _resetInstallContext();
     vi.restoreAllMocks();
   });
 
@@ -166,6 +172,51 @@ describe("installAntigravityHud", () => {
     );
     expect(settings.hooks).toBeUndefined();
     expect(settings.defaultHooksPath).toBeUndefined();
+  });
+
+  it("binds global hooks and native HUD to the custom OMA home", () => {
+    const omaHome = "/custom OMA's $root";
+    setInstallContext({ installRoot: omaHome, mode: "global" });
+    vi.mocked(fs.existsSync).mockImplementation((path) => {
+      const value = String(path);
+      return (
+        value === AGY_DIR ||
+        value.includes(".agents/hooks/core") ||
+        value.endsWith(".agents/hooks/variants/antigravity.json")
+      );
+    });
+    vi.mocked(fs.readFileSync).mockImplementation((path) =>
+      String(path).endsWith(".agents/hooks/variants/antigravity.json")
+        ? variantJson
+        : "{}",
+    );
+
+    const result = installAntigravityHud(omaHome);
+
+    expect(result.hooksJsonPath).toBe(join(omaHome, ".agents/hooks.json"));
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      join(omaHome, ".agents/hooks/core"),
+      HOME_HOOKS_DIR,
+      { recursive: true, force: true, dereference: true },
+    );
+    const writes = vi.mocked(fs.writeFileSync).mock.calls;
+    const handler = writes.find(
+      ([path]) => path === join(HOME_HOOKS_DIR, "state-boundary.ts"),
+    );
+    expect(handler?.[1]).toContain(
+      `env: { ...process.env, OMA_HOME: ${JSON.stringify(omaHome)} }`,
+    );
+    const settingsWrite = writes.find(([path]) => path === SETTINGS);
+    const settings = JSON.parse(settingsWrite?.[1] as string);
+    expect(settings.statusLine.command).toBe(
+      `OMA_HOME='/custom OMA'\\''s $root' bun "${join(HOME_HOOKS_DIR, "hud.ts")}"`,
+    );
+    expect(
+      writes.some(
+        ([path]) =>
+          path === join(omaHome, ".gemini/antigravity-cli/settings.json"),
+      ),
+    ).toBe(false);
   });
 
   it("preserves unrelated keys and removes the legacy settings.hooks key", () => {

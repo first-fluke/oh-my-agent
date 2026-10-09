@@ -62,9 +62,11 @@ To select a profile for one process and its children, use
 child command, including its help and output-format flags. The parent shell's
 profile remains unchanged.
 
-`OMA_STATE_HOME` overrides the absolute storage root (the directory that
-contains `u/`). It is separate from `OMA_HOME`, which already controls OMA
-installation context. Both the CLI and standalone hooks use the same
+`OMA_HOME` selects the absolute OMA global storage root, defaulting to `~/.oma`.
+Profile storage normally follows it at `OMA_HOME/u/<profile>/`. An explicit
+`OMA_STATE_HOME` overrides only profile/L1/project runtime storage and points
+to the directory containing `u/`; it does not relocate global definitions,
+schedules, or service state. Both the CLI and standalone hooks use these
 environment settings; configure them consistently in their launch environment.
 
 ## Project isolation

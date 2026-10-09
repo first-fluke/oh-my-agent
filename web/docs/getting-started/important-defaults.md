@@ -15,7 +15,7 @@ Defaults are selected to make a first project usable while keeping user-owned co
 | Model routing | `auto` | The current runtime's native agent configuration is used. Unknown runtimes fall back to `default_cli` when set. | `model_preset`, `default_cli`, or `agents.<id>` |
 | Code intelligence | `serena` | A fresh install tries to install Serena and wires its MCP configuration. | `providers.code_intelligence: gortex` or `serena` |
 | Code-search guard | `block` | While a code-intelligence provider is configured, a PreToolUse hook denies native `Grep`/`Glob` and recursive shell search (`rg`, `grep -r`, `find -name`) and points the agent at the provider's tools. Searches confined to confirmed exclusions or paths outside the project are allowed. The hook does not advertise a bypass for project source. | `providers.code_intelligence_guard: off` |
-| Semantic memory | `agentmemory` | Agent Memory is selected for semantic memory when available. | `providers.semantic_memory: honcho` or `none` |
+| Semantic memory | `agentmemory` | Install and update reuse a healthy AgentMemory endpoint or install and start the managed local service, then check readiness before succeeding. Explicit custom endpoints are checked without replacement. | `providers.semantic_memory: honcho` or `none`; `OMA_NO_AGENTMEMORY=1` skips AgentMemory setup. |
 | Web search | `native` | Search uses the runtime's native web channel unless a provider is selected. | `providers.web` |
 | Documentation provider | `context7` | Documentation lookup uses the Context7 provider when a skill requests it. | `providers.docs` |
 | Telemetry | disabled | OMA writes vendor opt-out settings during linking. | `telemetry: true` |
@@ -31,7 +31,12 @@ The provider names and defaults come from the runtime loaders and installer prom
 
 ## Configuration precedence
 
-OMA searches upward from the current working directory for the nearest `.agents/` directory. It reads `oma-config.cue` when present and falls back to `oma-config.yaml` if shared CUE evaluation fails. A project-local overlay, either `oma-config.local.cue` or `oma-config.local.yaml`, is merged on top; keep only one local overlay. `OMA_MODEL_PRESET` can override `model_preset` for a process. Invalid local configuration stops loading rather than silently selecting another value.
+OMA loads global defaults from `$OMA_HOME/.agents/` (default `~/.oma/.agents/`),
+then overlays the nearest project `.agents/` shared config and its local file.
+Different ancestor project roots are not merged. Within either scope,
+`oma-config.cue` is preferred, with YAML as fallback; keep only one local overlay
+(`oma-config.local.cue` or `.yaml`). `OMA_MODEL_PRESET` overrides `model_preset`
+after file loading. Invalid local configuration stops loading.
 
 Model routing has two special cases before the fixed-preset order:
 

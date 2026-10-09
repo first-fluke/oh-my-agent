@@ -10,6 +10,19 @@ import { join } from "node:path";
 import { stripVTControlCharacters } from "node:util";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const memoryState = vi.hoisted(() => ({
+  ensureAgentMemory: vi.fn(
+    async (_options?: { onProgress?: (message: string) => void }) => ({
+      state: "ready" as const,
+      endpoint: "http://127.0.0.1:25150",
+      installed: false,
+      started: false,
+      reused: true,
+    }),
+  ),
+}));
+vi.mock("../../io/agentmemory/ensure.js", () => memoryState);
+
 const testHome = vi.hoisted(() => ({ root: "" }));
 const syncSchedulesSpy = vi.hoisted(() =>
   vi.fn(async () => ({ synced: 0, resynced: 0, pruned: 0 })),
@@ -210,6 +223,13 @@ describe("update cursor vendor adaptations", () => {
     cleanupMock = vi.fn();
     configuredVendorsForTest = [];
     vi.clearAllMocks();
+    memoryState.ensureAgentMemory.mockReset().mockResolvedValue({
+      state: "ready",
+      endpoint: "http://127.0.0.1:25150",
+      installed: false,
+      started: false,
+      reused: true,
+    });
     (
       skills.installVendorAdaptations as unknown as ReturnType<typeof vi.fn>
     ).mockImplementation(() => undefined);
@@ -274,6 +294,53 @@ describe("update cursor vendor adaptations", () => {
 
     expect(syncSchedulesSpy).toHaveBeenCalledTimes(1);
   });
+
+  it("prepares project shared memory before vendor linking and version stamping", async () => {
+    const projectDir = makeTempRoot("oma-update-memory-project-");
+    extractedRepoDir = makeTempRoot("oma-update-memory-repo-");
+    mockInstallRoot = projectDir;
+    writeRepoConfig(extractedRepoDir, ["cursor"]);
+    createExistingVendorRoots(projectDir, ["cursor"]);
+
+    process.chdir(projectDir);
+    await update({ ci: true });
+
+    expect(memoryState.ensureAgentMemory).toHaveBeenCalledExactlyOnceWith({
+      onProgress: expect.any(Function),
+    });
+    const prepareOrder =
+      memoryState.ensureAgentMemory.mock.invocationCallOrder[0];
+    expect(prepareOrder).toBeLessThan(
+      vi.mocked(skills.installVendorAdaptations).mock.invocationCallOrder[0] ??
+        0,
+    );
+    expect(prepareOrder).toBeLessThan(
+      vi.mocked(manifest.saveLocalVersion).mock.invocationCallOrder[0] ?? 0,
+    );
+  });
+
+  it.each(["none", "honcho"] as const)(
+    "does not prepare AgentMemory for project provider %s at the current version",
+    async (semantic_memory) => {
+      const projectDir = makeTempRoot("oma-update-memory-optout-project-");
+      extractedRepoDir = makeTempRoot("oma-update-memory-optout-repo-");
+      mockInstallRoot = projectDir;
+      writeRepoConfig(extractedRepoDir, ["cursor"]);
+      createExistingVendorRoots(projectDir, ["cursor"]);
+      providerState.loadProviders.mockReturnValue({
+        docs: "context7",
+        web: "native",
+        code_intelligence: "serena",
+        semantic_memory,
+      });
+      vi.mocked(manifest.getLocalVersion).mockResolvedValueOnce("9.9.9");
+
+      process.chdir(projectDir);
+      await update({ ci: true });
+
+      expect(memoryState.ensureAgentMemory).not.toHaveBeenCalled();
+    },
+  );
 
   it("installs cursor hooks and merges cursor guide on update", async () => {
     const projectDir = makeTempRoot("oma-update-cursor-project-");

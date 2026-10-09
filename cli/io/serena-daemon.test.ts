@@ -46,13 +46,40 @@ afterEach(() => {
   rmSync(home, { recursive: true, force: true });
   rmSync(work, { recursive: true, force: true });
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 describe("omaStateDir", () => {
-  it("honors the test override and falls back to ~/.config/oma", () => {
+  it("honors the test override and falls back to ~/.oma/state/serena", () => {
     expect(omaStateDir()).toBe(join(home, ".config", "oma"));
     _setOmaStateDirForTests(null);
-    expect(omaStateDir().endsWith(join(".config", "oma"))).toBe(true);
+    expect(omaStateDir().endsWith(join(".oma", "state", "serena"))).toBe(true);
+  });
+
+  it("blocks new startup and GC while an old registry still owns live clients", async () => {
+    vi.stubEnv("HOME", home);
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    _setOmaStateDirForTests(null);
+    const legacy = join(home, ".config", "oma");
+    mkdirSync(legacy, { recursive: true });
+    writeFileSync(
+      join(legacy, "serena-daemons.json"),
+      JSON.stringify({ old: { pid: process.pid, clients: [process.pid] } }),
+    );
+    const fleet = fakeFleet();
+    await expect(
+      ensureSerenaDaemon({ root: work, context: "oma", ...fleet }),
+    ).rejects.toThrow("Legacy Serena registry");
+    const scan = vi.fn(noDaemons);
+    const kill = vi.fn();
+    expect(() => reclaimIdleDaemons(Date.now(), kill, scan)).toThrow(
+      "Legacy Serena registry",
+    );
+    expect(() => pruneRegistry()).toThrow("Legacy Serena registry");
+    expect(fleet.spawnDaemon).not.toHaveBeenCalled();
+    expect(scan).not.toHaveBeenCalled();
+    expect(kill).not.toHaveBeenCalled();
+    expect(existsSync(omaStateDir())).toBe(false);
   });
 });
 

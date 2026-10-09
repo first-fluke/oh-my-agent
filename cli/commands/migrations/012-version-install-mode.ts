@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { omaHome } from "../../utils/oma-home.js";
 import type { Migration } from "./index.js";
 
 /**
@@ -46,7 +47,7 @@ function backfill(cwd: string): string[] {
   }
 
   const inferredMode: "project" | "global" =
-    cwd === homedir() ? "global" : "project";
+    cwd === homedir() || cwd === omaHome() ? "global" : "project";
 
   const next = {
     ...parsed,

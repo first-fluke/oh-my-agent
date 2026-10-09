@@ -1,8 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { parseDocument } from "yaml";
 import type { OmaConfig } from "../platform/agent-config/types.js";
 import { evaluateCueFile } from "./cue.js";
+import { omaPaths } from "./oma-home.js";
 import { isRecord } from "./type-guards.js";
 
 export const LOCAL_CONFIG_NAMES = [
@@ -22,7 +24,13 @@ export class ConfigLayerError extends Error {
 
 export interface ConfigLayers {
   config: Partial<OmaConfig>;
-  sources: { shared?: string; local?: string; environment?: string };
+  sources: {
+    global?: string;
+    globalLocal?: string;
+    shared?: string;
+    local?: string;
+    environment?: string;
+  };
 }
 
 function readConfig(file: string, local: boolean): Record<string, unknown> {
@@ -90,10 +98,62 @@ function overlay(
   return result;
 }
 
-/** Select the nearest config directory once; never mix separate project roots. */
+function readDirectoryLayers(
+  root: string,
+  env: NodeJS.ProcessEnv,
+): { config: Record<string, unknown>; sources: ConfigLayers["sources"] } {
+  const cue = join(root, "oma-config.cue");
+  const yaml = join(root, "oma-config.yaml");
+  const locals = LOCAL_CONFIG_NAMES.map((name) => join(root, name)).filter(
+    (file) => existsSync(file),
+  );
+  if (locals.length > 1) {
+    throw new ConfigLayerError(
+      `Both local CUE and YAML configs exist in ${root}; keep only one local config.`,
+      true,
+    );
+  }
+  const sources: ConfigLayers["sources"] = {};
+  let shared: Record<string, unknown> = {};
+  const strict = locals.length > 0 || env.OMA_MODEL_PRESET === "free";
+  if (existsSync(cue)) {
+    try {
+      const cueConfig = readConfig(cue, strict);
+      let yamlDefaults: Record<string, unknown> = {};
+      if (existsSync(yaml)) {
+        try {
+          yamlDefaults = readConfig(yaml, strict);
+        } catch {
+          // A valid CUE config remains authoritative over a stale YAML file.
+        }
+      }
+      // Installer preferences written only to YAML remain defaults for CUE.
+      shared = overlay(yamlDefaults, cueConfig);
+      sources.shared = cue;
+    } catch (error) {
+      if (!existsSync(yaml)) throw error;
+      console.warn(
+        `[config] CUE evaluation failed at ${cue}. Falling back to oma-config.yaml (${yaml}).`,
+      );
+    }
+  }
+  if (!sources.shared && existsSync(yaml)) {
+    shared = readConfig(yaml, strict);
+    sources.shared = yaml;
+  }
+  const local = locals[0];
+  if (local) sources.local = local;
+  return {
+    config: overlay(shared, local ? readConfig(local, true) : {}),
+    sources,
+  };
+}
+
+/** Global defaults plus one nearest project; ancestor project roots never merge. */
 export function loadConfigLayers(
   cwd = process.cwd(),
   env: NodeJS.ProcessEnv = process.env,
+  options: { searchParents?: boolean } = {},
 ): ConfigLayers {
   const finalize = (layers: ConfigLayers): ConfigLayers => {
     if (env.OMA_MODEL_PRESET !== undefined) {
@@ -104,63 +164,30 @@ export function loadConfigLayers(
     }
     return layers;
   };
+  const globalRoot = resolve(omaPaths(env).definitions);
+  const global = readDirectoryLayers(globalRoot, env);
+  const globalSources: ConfigLayers["sources"] = {
+    ...(global.sources.shared ? { global: global.sources.shared } : {}),
+    ...(global.sources.local ? { globalLocal: global.sources.local } : {}),
+  };
+  const globalOnly = () =>
+    finalize({ config: global.config, sources: globalSources });
+  const legacyGlobalRoot = resolve(join(homedir(), ".agents"));
   let dir = resolve(cwd);
   while (true) {
     const root = join(dir, ".agents");
-    const cue = join(root, "oma-config.cue");
-    const yaml = join(root, "oma-config.yaml");
-    const locals = LOCAL_CONFIG_NAMES.map((name) => join(root, name)).filter(
-      (file) => existsSync(file),
-    );
-    if (existsSync(cue) || existsSync(yaml) || locals.length) {
-      if (locals.length > 1) {
-        throw new ConfigLayerError(
-          `Both local CUE and YAML configs exist in ${root}; keep only one local config.`,
-          true,
-        );
-      }
-      const sources: ConfigLayers["sources"] = {};
-      let shared: Record<string, unknown> = {};
-      const strict = locals.length > 0 || env.OMA_MODEL_PRESET === "free";
-      if (existsSync(cue)) {
-        try {
-          const cueConfig = readConfig(cue, strict);
-          let yamlDefaults: Record<string, unknown> = {};
-          if (existsSync(yaml)) {
-            try {
-              yamlDefaults = readConfig(yaml, strict);
-            } catch {
-              // A valid CUE config remains authoritative over a stale YAML file.
-            }
-          }
-          // Update/install commands still persist some newer preferences in
-          // YAML. Retain those fields when the preferred CUE config has no
-          // corresponding value, while CUE continues to win on conflicts.
-          shared = overlay(yamlDefaults, cueConfig);
-          sources.shared = cue;
-        } catch (error) {
-          if (!existsSync(yaml)) throw error;
-          console.warn(
-            `[config] CUE evaluation failed at ${cue}. Falling back to oma-config.yaml (${yaml}).`,
-          );
-        }
-      }
-      if (!sources.shared && existsSync(yaml)) {
-        shared = readConfig(yaml, strict);
-        sources.shared = yaml;
-      }
-      const local = locals[0];
-      if (local) sources.local = local;
+    // The retired HOME/.agents install is migration input, not a project layer.
+    if (root === globalRoot || root === legacyGlobalRoot) return globalOnly();
+    if (existsSync(root)) {
+      const project = readDirectoryLayers(root, env);
       return finalize({
-        config: overlay(
-          shared,
-          local ? readConfig(local, true) : {},
-        ) as Partial<OmaConfig>,
-        sources,
+        config: overlay(global.config, project.config),
+        sources: { ...globalSources, ...project.sources },
       });
     }
+    if (options.searchParents === false) return globalOnly();
     const parent = dirname(dir);
-    if (parent === dir) return finalize({ config: {}, sources: {} });
+    if (parent === dir) return globalOnly();
     dir = parent;
   }
 }

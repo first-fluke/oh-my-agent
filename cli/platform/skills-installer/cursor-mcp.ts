@@ -16,11 +16,14 @@ import { applyRecommendedCursorSettings } from "../../vendors/cursor/settings.js
  *
  * Skips if `.agents/mcp.json` is missing.
  */
-export function applyCursorMcpConfig(installRoot: string): void {
+export function applyCursorMcpConfig(
+  installRoot: string,
+  targetRoot = installRoot,
+): void {
   const agentsMcp = join(installRoot, ".agents", "mcp.json");
   if (!fs.existsSync(agentsMcp)) return;
 
-  const cursorDir = join(installRoot, ".cursor");
+  const cursorDir = join(targetRoot, ".cursor");
   const cursorMcp = join(cursorDir, "mcp.json");
 
   let baseConfig: Record<string, unknown> = {};

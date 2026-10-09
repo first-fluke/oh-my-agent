@@ -24,7 +24,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { evaluateCueFile } from "../utils/cue.js";
+import { loadConfigLayers } from "../utils/config-layers.js";
 import type {
   ActivitySignal,
   KillAdapter,
@@ -140,20 +140,14 @@ export function buildActivityResolver(
  * (~/.agents/oma-config.yaml).
  */
 export function resolveOmaConfigPath(): string | undefined {
-  const cwd = process.cwd();
-  const projectCue = join(cwd, ".agents", "oma-config.cue");
-  if (existsSync(projectCue)) return projectCue;
-
-  const projectPath = join(cwd, ".agents", "oma-config.yaml");
-  if (existsSync(projectPath)) return projectPath;
-
-  const globalCue = join(homedir(), ".agents", "oma-config.cue");
-  if (existsSync(globalCue)) return globalCue;
-
-  const globalPath = join(homedir(), ".agents", "oma-config.yaml");
-  if (existsSync(globalPath)) return globalPath;
-
-  return undefined;
+  try {
+    const { sources } = loadConfigLayers();
+    return (
+      sources.local ?? sources.shared ?? sources.globalLocal ?? sources.global
+    );
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -161,25 +155,8 @@ export function resolveOmaConfigPath(): string | undefined {
  * Returns empty string if not found.
  */
 export function loadOmaConfigContent(): string {
-  const configPath = resolveOmaConfigPath();
-  if (!configPath) return "";
-  if (configPath.endsWith(".cue")) {
-    const result = evaluateCueFile(configPath);
-    if (result.success && result.data) {
-      return JSON.stringify(result.data);
-    }
-    const yamlFallback = configPath.replace(/\.cue$/, ".yaml");
-    if (existsSync(yamlFallback)) {
-      try {
-        return readFileSync(yamlFallback, "utf-8");
-      } catch {
-        return "";
-      }
-    }
-    return "";
-  }
   try {
-    return readFileSync(configPath, "utf-8");
+    return JSON.stringify(loadConfigLayers().config);
   } catch {
     return "";
   }

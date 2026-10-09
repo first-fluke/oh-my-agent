@@ -16,13 +16,13 @@ import {
   writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
-import { homedir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { validateEventEnvelope } from "../../.agents/hooks/core/event-contract.ts";
 import {
   profileSlot,
   projectIdentity,
 } from "../../.agents/hooks/core/session-storage.ts";
+import { profileStateHome } from "../utils/oma-home.js";
 import { memoryDeliveryTargetKey } from "./memory-delivery-target.js";
 import {
   acquireMemoryRetryDrainLock,
@@ -393,7 +393,7 @@ export async function migrateMemoryRetry(
   ): RuntimeMigrationEntry[] => [
     { area: "retry", source, destination, status, reason },
   ];
-  const anchor = process.env.OMA_STATE_HOME ?? join(homedir(), ".oma");
+  const anchor = profileStateHome();
   const destination = retryObservePath(root);
   const sourcePaths = [
     source,

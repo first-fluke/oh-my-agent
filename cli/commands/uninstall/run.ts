@@ -4,7 +4,10 @@ import * as path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { CLI_SKILLS_DIR, INSTALLED_SKILLS_DIR } from "../../constants/index.js";
-import { getInstallRoot } from "../../platform/install-context.js";
+import {
+  getInstallRoot,
+  safeGetInstallMode,
+} from "../../platform/install-context.js";
 import {
   readManagedSkills,
   SKILL_OWNERSHIP_PATH,
@@ -174,6 +177,8 @@ export function buildRemovalPlan(installRoot: string): {
   const omaOwned: RemovalEntry[] = [];
   const userOwned: RemovalEntry[] = [];
   const managedSkills = readManagedSkills(installRoot);
+  const nativeRoot =
+    safeGetInstallMode() === "global" ? homedir() : installRoot;
   const ownershipPath = path.join(installRoot, SKILL_OWNERSHIP_PATH);
   if (detectKind(ownershipPath) === "file")
     omaOwned.push({
@@ -278,6 +283,23 @@ export function buildRemovalPlan(installRoot: string): {
 
   // ── Vendor skill directories ──────────────────────────────────────────────
 
+  if (safeGetInstallMode() === "global") {
+    const discoveryDir = path.join(nativeRoot, ".agents", "skills");
+    for (const entry of listDir(discoveryDir)) {
+      const entryPath = path.join(discoveryDir, entry.name);
+      if (
+        detectKind(entryPath) === "symlink" &&
+        symlinkTargetsInstall(entryPath, installRoot, managedSkills)
+      ) {
+        omaOwned.push({
+          path: entryPath,
+          kind: "symlink",
+          reason: "global common skill discovery link",
+        });
+      }
+    }
+  }
+
   for (const vendor of Object.keys(CLI_SKILLS_DIR) as CliTool[]) {
     // Canonical mode-aware resolver: requiresHomeConsent vendors (hermes,
     // antigravity, kimi) always live under HOME, matching where
@@ -343,7 +365,7 @@ export function buildRemovalPlan(installRoot: string): {
 
   // ── .github/prompts/*.prompt.md — only oma-generated ones ────────────────
 
-  const promptsDir = path.join(installRoot, ".github", "prompts");
+  const promptsDir = path.join(nativeRoot, ".github", "prompts");
   for (const entry of listDir(promptsDir)) {
     if (!entry.isFile() || !entry.name.endsWith(".prompt.md")) continue;
     const entryPath = path.join(promptsDir, entry.name);
@@ -358,7 +380,7 @@ export function buildRemovalPlan(installRoot: string): {
 
   // ── .zcode/commands/*.md — only oma-owned workflow symlinks ──────────────
 
-  const zcodeCommandsDir = path.join(installRoot, ".zcode", "commands");
+  const zcodeCommandsDir = path.join(nativeRoot, ".zcode", "commands");
   for (const entry of listDir(zcodeCommandsDir)) {
     if (!entry.isSymbolicLink() || !entry.name.endsWith(".md")) continue;
     const entryPath = path.join(zcodeCommandsDir, entry.name);
