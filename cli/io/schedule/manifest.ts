@@ -59,6 +59,43 @@ export interface ScheduleManifest {
   jobs: ScheduleJob[];
 }
 
+/** Fields every consumer dereferences before it can do anything with a job. */
+const REQUIRED_JOB_STRING_FIELDS = [
+  "id",
+  "cron",
+  "agentId",
+  "workspace",
+  "osBackend",
+  "osJobLabel",
+] as const;
+
+/**
+ * True when a manifest entry carries every field `sync`, `list` and the OS
+ * adapters read. The manifest is written by several oma versions and, in one
+ * known case, by a test worker whose home isolation failed, so a bare
+ * `{ "id": "new-job" }` can sit next to real jobs. One such entry used to take
+ * the whole `schedule sync` down (`cron.trim` on undefined) and with it the
+ * post-update re-sync of every healthy job.
+ */
+export function isWellFormedScheduleJob(job: unknown): job is ScheduleJob {
+  if (typeof job !== "object" || job === null) return false;
+  const record = job as Record<string, unknown>;
+  return REQUIRED_JOB_STRING_FIELDS.every(
+    (field) =>
+      typeof record[field] === "string" &&
+      (record[field] as string).trim().length > 0,
+  );
+}
+
+/** Display name for a manifest entry that may lack even an id. */
+export function describeManifestEntry(job: unknown): string {
+  if (typeof job === "object" && job !== null) {
+    const id = (job as Record<string, unknown>).id;
+    if (typeof id === "string" && id.length > 0) return id;
+  }
+  return "<no id>";
+}
+
 // ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------

@@ -46,8 +46,16 @@ const readCommandSpy = vi.hoisted(() =>
 const runScheduledJobSpy = vi.hoisted(() => vi.fn());
 
 vi.mock("node:fs", () => ({ default: fsMock, ...fsMock }));
-vi.mock("./manifest.js", () => manifestMock);
-vi.mock("../../io/schedule/manifest.js", () => manifestMock);
+// Keep the pure helpers (isWellFormedScheduleJob / describeManifestEntry);
+// only the manifest I/O is faked.
+vi.mock("./manifest.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./manifest.js")>()),
+  ...manifestMock,
+}));
+vi.mock("../../io/schedule/manifest.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../io/schedule/manifest.js")>()),
+  ...manifestMock,
+}));
 vi.mock("./port.js", async (importOriginal) => ({
   // Keep the pure helpers (expectedScheduleCommand / isStaleScheduleCommand);
   // only the adapter selection is faked.
@@ -488,6 +496,59 @@ describe("schedule:add --env", () => {
     expect(fsMock.writeFileSync).not.toHaveBeenCalled();
     const job = manifestMock.addJob.mock.calls[0]?.[0];
     expect(job?.capturedEnvRef).toBeNull();
+  });
+});
+
+describe("schedule:list with a malformed manifest entry", () => {
+  const job = {
+    id: "sch_a",
+    cron: "0 9 * * *",
+    agentId: "qa",
+    vendor: null,
+    projectLabel: "proj",
+    workspace: "/ws",
+    recurring: true,
+    lastFiredAt: null,
+    osBackend: "launchd",
+    osJobLabel: "dev.oma.sch_a",
+  };
+
+  it("lists the healthy job and reports the bad row instead of crashing", async () => {
+    // A bare `{ id }` row — the shape a leaked test worker left in a real
+    // manifest — used to throw at `job.cron.padEnd` and hide every job.
+    manifestMock.readManifest.mockReturnValue({
+      version: 1,
+      jobs: [{ id: "new-job" }, job],
+    });
+    listLabelsSpy.mockResolvedValue(["dev.oma.sch_a"]);
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    await run("schedule:list", "--json");
+
+    const out = JSON.parse(logSpy.mock.calls.map((c) => c[0]).join("\n"));
+    expect(out.jobs.map((j: { id: string }) => j.id)).toEqual(["sch_a"]);
+    expect(out.jobs[0].drift).toBe("synced");
+    expect(out.malformedManifestEntries).toEqual(["new-job"]);
+  });
+
+  it("prints the skip notice on stderr in table mode", async () => {
+    manifestMock.readManifest.mockReturnValue({
+      version: 1,
+      jobs: [{ id: "new-job" }, job],
+    });
+    listLabelsSpy.mockResolvedValue(["dev.oma.sch_a"]);
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    const errSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    await run("schedule:list");
+
+    expect(logSpy.mock.calls.some((c) => String(c[0]).includes("sch_a"))).toBe(
+      true,
+    );
+    expect(errSpy.mock.calls[0]?.[0]).toContain("new-job");
+    expect(errSpy.mock.calls[0]?.[0]).toContain("oma schedule sync");
   });
 });
 

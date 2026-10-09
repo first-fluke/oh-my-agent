@@ -27,9 +27,11 @@ import { parseIntervalToCron } from "./cron-nl.js";
 import {
   addJob,
   deriveProjectLabel,
+  describeManifestEntry,
   generateJobId,
   getEnvFilePath,
   getJobById,
+  isWellFormedScheduleJob,
   readManifest,
   removeJob,
   updateJob,
@@ -329,7 +331,16 @@ async function scheduleList(options: {
   output?: string;
 }): Promise<void> {
   const jsonMode = resolveJsonMode(options);
-  const manifest = readManifest();
+  const rawManifest = readManifest();
+  // Same rule as `sync`: a row without its required fields is reported, not
+  // rendered, so it cannot crash the listing of every healthy job.
+  const malformedIds = rawManifest.jobs
+    .filter((job) => !isWellFormedScheduleJob(job))
+    .map(describeManifestEntry);
+  const manifest = {
+    ...rawManifest,
+    jobs: rawManifest.jobs.filter(isWellFormedScheduleJob),
+  };
 
   let osLabels: string[] = [];
   let port: SchedulerPort | null = null;
@@ -373,12 +384,19 @@ async function scheduleList(options: {
         {
           jobs: entries,
           orphanOsLabels: orphanLabels,
+          malformedManifestEntries: malformedIds,
         },
         null,
         2,
       ),
     );
     return;
+  }
+
+  if (malformedIds.length > 0) {
+    console.error(
+      `schedule: ${malformedIds.length} malformed manifest entr${malformedIds.length === 1 ? "y" : "ies"} skipped (${malformedIds.join(", ")}); \`oma schedule sync\` drops them.`,
+    );
   }
 
   if (entries.length === 0 && orphanLabels.length === 0) {

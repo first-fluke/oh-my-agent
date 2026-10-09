@@ -659,6 +659,12 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
               "Schedules re-synced",
             );
           }
+          if (sched.malformed > 0) {
+            ui.note(
+              `${sched.malformed} malformed manifest entr${sched.malformed === 1 ? "y" : "ies"} dropped (no cron or OS label to register).`,
+              "Schedules",
+            );
+          }
         } catch (err) {
           ui.note(
             `Could not re-sync scheduled jobs: ${err instanceof Error ? err.message : String(err)}. Run \`oma schedule sync\` manually.`,

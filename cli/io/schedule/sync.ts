@@ -1,4 +1,9 @@
-import { readManifest } from "./manifest.js";
+import {
+  describeManifestEntry,
+  isWellFormedScheduleJob,
+  readManifest,
+  writeManifest,
+} from "./manifest.js";
 import {
   expectedScheduleCommand,
   isStaleScheduleCommand,
@@ -13,6 +18,11 @@ export interface SyncSchedulesResult {
   resynced: number;
   /** Orphan OS jobs removed (only with `prune`). */
   pruned: number;
+  /**
+   * Manifest entries missing a required field, dropped from the manifest.
+   * They carry no cron to register and no label to look up, so nothing is lost.
+   */
+  malformed: number;
 }
 
 /**
@@ -42,16 +52,38 @@ export async function syncSchedules(
   options: { prune?: boolean; log?: (line: string) => void } = {},
 ): Promise<SyncSchedulesResult> {
   const log = options.log ?? (() => {});
-  const result: SyncSchedulesResult = { synced: 0, resynced: 0, pruned: 0 };
+  const result: SyncSchedulesResult = {
+    synced: 0,
+    resynced: 0,
+    pruned: 0,
+    malformed: 0,
+  };
   const manifest = readManifest();
-  if (manifest.jobs.length === 0 && !options.prune) return result;
+  // A malformed entry has no cron to register and no label to look up, so it
+  // is dropped here rather than left to crash every later sync. This is not
+  // tied to `prune`: that flag also boots out OS jobs, which is far heavier
+  // than removing a row that could never have run.
+  const jobs = manifest.jobs.filter(isWellFormedScheduleJob);
+  const malformed = manifest.jobs.filter(
+    (job) => !isWellFormedScheduleJob(job),
+  );
+  result.malformed = malformed.length;
+  if (malformed.length > 0) {
+    writeManifest({ ...manifest, jobs });
+    for (const job of malformed) {
+      log(
+        `  dropped (malformed manifest entry): ${describeManifestEntry(job)}`,
+      );
+    }
+  }
+  if (jobs.length === 0 && !options.prune) return result;
 
   const port = await selectAdapter();
   const osLabels = await port.listLabels();
   const osLabelSet = new Set(osLabels);
-  const staleLabels = await findStaleLabels(port, manifest.jobs, osLabelSet);
+  const staleLabels = await findStaleLabels(port, jobs, osLabelSet);
 
-  for (const job of manifest.jobs) {
+  for (const job of jobs) {
     const missing = !osLabelSet.has(job.osJobLabel);
     const stale = staleLabels.has(job.osJobLabel);
     if (!missing && !stale) continue;
@@ -72,9 +104,7 @@ export async function syncSchedules(
   }
 
   if (options.prune) {
-    const manifestLabelSet = new Set(
-      manifest.jobs.map((job) => job.osJobLabel),
-    );
+    const manifestLabelSet = new Set(jobs.map((job) => job.osJobLabel));
     for (const label of osLabels) {
       if (!manifestLabelSet.has(label)) {
         await port.remove(label);
