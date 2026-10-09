@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "16.1.0",
-  "releaseDate": "2026-10-09T06:00:41.746Z",
+  "releaseDate": "2026-10-09T07:18:14.650Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -185,6 +185,11 @@
       "size": 1689
     },
     {
+      "path": ".agents/hooks/core/oma-home.ts",
+      "sha256": "9a3c6be1154907c0dc42a2783d1f85be049190de2e55ec91248e56d501d592eb",
+      "size": 1122
+    },
+    {
       "path": ".agents/hooks/core/persistent-mode.ts",
       "sha256": "aa3fa0ab4ecbdf47cc0d5eb350f6cac44f077b6737a6ff27b74819b0ef4e2170",
       "size": 29097
@@ -211,8 +216,8 @@
     },
     {
       "path": ".agents/hooks/core/session-storage.ts",
-      "sha256": "22538da677399b187c6414acee2f29521630c5eab90527d75500e79bdb037bcc",
-      "size": 7138
+      "sha256": "b8a1de037c409e49bffdfe04d3ba69ce346413bba981d31e2a1e941e090d74b6",
+      "size": 7008
     },
     {
       "path": ".agents/hooks/core/session-summary.ts",
@@ -2216,6 +2221,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 441
+    "totalFiles": 442
   }
 }
