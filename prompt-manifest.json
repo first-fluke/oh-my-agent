@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "17.0.0",
-  "releaseDate": "2026-10-09T07:21:31.395Z",
+  "releaseDate": "2026-10-09T11:48:46.117Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -386,8 +386,8 @@
     },
     {
       "path": ".agents/rules/design.md",
-      "sha256": "51a98a98ee9f9ba5f6b8d887de9a3bc0f82ecf3b066175f56cc236d4c50019f5",
-      "size": 1512
+      "sha256": "f79806272fd38141e8cb51f4f1ca172e43dce773a64db359968b82a9f42cfdbc",
+      "size": 1446
     },
     {
       "path": ".agents/rules/dev-workflow.md",
@@ -396,8 +396,8 @@
     },
     {
       "path": ".agents/rules/frontend.md",
-      "sha256": "962a50f02a17390727413127998842847f688b77c1fe098a01b5aa3b0eb42e6b",
-      "size": 5215
+      "sha256": "86c2c2f569030a4b9fc65a2370f1d6f94545e8d7afe98306ec4f6c37c76f78ad",
+      "size": 5179
     },
     {
       "path": ".agents/rules/i18n-arb.md",
@@ -916,13 +916,13 @@
     },
     {
       "path": ".agents/skills/oma-design/SKILL.md",
-      "sha256": "ad45d53773b38f3bdaabd9d2e6adc011e5a7f9cad7ef2aa73d17d6545a9db0f9",
-      "size": 8291
+      "sha256": "5286ce59e3f33da0905a430a23d4e16587667132887341d07990adcb7c3cf518",
+      "size": 8241
     },
     {
       "path": ".agents/skills/oma-design/reference/accessibility.md",
-      "sha256": "489ac2f118299c012257d582e0730b322e8da7200274cfbf8096c09fdb6d2a50",
-      "size": 4504
+      "sha256": "53b711414af5d0947806939e90c3c9446de679bbac47dc19787f0e083adf6a9a",
+      "size": 4041
     },
     {
       "path": ".agents/skills/oma-design/reference/color-and-contrast.md",
@@ -936,8 +936,8 @@
     },
     {
       "path": ".agents/skills/oma-design/reference/motion-design.md",
-      "sha256": "160da778a6721182d6e9ebbe38b4a0f098ca6409f14d41b7da9631eb7cea0f08",
-      "size": 8104
+      "sha256": "3b91d166caa9a19f4db4e903d59aaf672626e9780a7f4092fcaf4ed9ed9083c3",
+      "size": 7667
     },
     {
       "path": ".agents/skills/oma-design/reference/responsive-design.md",
@@ -961,13 +961,13 @@
     },
     {
       "path": ".agents/skills/oma-design/reference/visual-hierarchy.md",
-      "sha256": "3e0a96f5157b1e0f19e877f25d799a981c77a98c205592f70c4b17cda28b0528",
-      "size": 9881
+      "sha256": "524491be79a89c7eff3a4bab02f49f5cc2798267f761c5f7ffc82002828dd964",
+      "size": 9851
     },
     {
       "path": ".agents/skills/oma-design/resources/anti-patterns.md",
-      "sha256": "4ea788b205a186e439b7e7ea56bbf438d3165e2cd46b879423ecd1eda7ffcafc",
-      "size": 8607
+      "sha256": "95dbb39741df0c3c625e1015c15de076f74a3f4960c4ddf4095f826893e36a1a",
+      "size": 8553
     },
     {
       "path": ".agents/skills/oma-design/resources/asset-strategy.md",
@@ -976,8 +976,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/checklist.md",
-      "sha256": "f90227ea8318735dcccc45393da92e4340d39f4b5124ccabd4f34c6f15b2d001",
-      "size": 5652
+      "sha256": "fb96860ac56a4d91b53b588f88fac92477a8cde60ff31da903b4de142038075e",
+      "size": 5594
     },
     {
       "path": ".agents/skills/oma-design/resources/design-md-spec.md",
@@ -991,13 +991,13 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/error-playbook.md",
-      "sha256": "303182e4231d3beab200c3e5903042d2b310fd1967e5d67167bb67007965a562",
-      "size": 4032
+      "sha256": "2b0654b2ecf09f26e7acb9726d760541b2b06ba159ca5ae8448a844fcd1b9847",
+      "size": 3978
     },
     {
       "path": ".agents/skills/oma-design/resources/execution-protocol.md",
-      "sha256": "bb9cd1c519445d3a1d800389802addc5bc561c8e06a92263cf3d29bd98cc374d",
-      "size": 15018
+      "sha256": "da6c6f2b72aa95a3302bf33b6676c8f5f8d0a3e3cb2551f55c805837fa64b444",
+      "size": 14926
     },
     {
       "path": ".agents/skills/oma-design/resources/getdesign-fetcher.md",
@@ -1006,8 +1006,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/prompt-enhancement.md",
-      "sha256": "adf7c52cc99c7b2e2b72d582dc48391b1d56c92f99e4c846bccd4173d4c5efdc",
-      "size": 3821
+      "sha256": "ade5c6d4fe3bfdf3752d720cc10f4755047a2bc927d580983692dc1e12bb0c3d",
+      "size": 3803
     },
     {
       "path": ".agents/skills/oma-design/resources/redesign-protocol.md",
@@ -1086,8 +1086,8 @@
     },
     {
       "path": ".agents/skills/oma-explanation/resources/html-contract.md",
-      "sha256": "2ca9370aff580bbf9a3e93395356905c0258e8509657c4492623db13818f39df",
-      "size": 7527
+      "sha256": "9bd0ce108f633d789714806fce18b4994618a46ac3b0a66b31e8aef71d0bd0f5",
+      "size": 7483
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
@@ -1851,13 +1851,13 @@
     },
     {
       "path": ".agents/skills/oma-slide/SKILL.md",
-      "sha256": "025416810a31d2040078bdf25d61b6a531ed720f8394972ad026f58d2a215b3d",
-      "size": 14075
+      "sha256": "ba390d7200fd91417116bbf8f2de8805d8cfea510dbc0428e2b7be80f5e478ac",
+      "size": 13958
     },
     {
       "path": ".agents/skills/oma-slide/resources/animation-patterns.md",
-      "sha256": "005b14e8d2d79f8a9a5f3b16dec0d2a332abff70c6266d69f134b664480594ec",
-      "size": 8669
+      "sha256": "01fe1e2e0755360d9c2ffb81e71d070e4daf7cd488b9fecb44d5d999e729d237",
+      "size": 7052
     },
     {
       "path": ".agents/skills/oma-slide/resources/assets/deck-stage.js",
@@ -1866,8 +1866,8 @@
     },
     {
       "path": ".agents/skills/oma-slide/resources/assets/viewport-base.css",
-      "sha256": "13c079761a9be43c3ab176d95e3c347fb657aad075121f6d43a20240be0eac6f",
-      "size": 9019
+      "sha256": "0fef8532cfd1b6d8d2617af4bd675c588e04c9ced3ada1f4a6739e586f18a714",
+      "size": 7738
     },
     {
       "path": ".agents/skills/oma-slide/resources/canva-integration.md",
@@ -1876,23 +1876,23 @@
     },
     {
       "path": ".agents/skills/oma-slide/resources/checklist.md",
-      "sha256": "666ad3316e9626b47a025d301f413c4ec75ea2d04eaa31f57014ca286e73b256",
-      "size": 1749
+      "sha256": "78620a4f926d21c23988989d9178a824d78ba3a809a1ee5bbf2c037d80cdc13d",
+      "size": 1653
     },
     {
       "path": ".agents/skills/oma-slide/resources/design-doctrine.md",
-      "sha256": "13381ac3a2f396962af4855671220a2dae023b95bfad5b4915f9289ec211c0e9",
-      "size": 11682
+      "sha256": "71e08a8fad120a70e40fb3245b1078e0925aea9d1edea12a1e74bb5542f8a088",
+      "size": 11191
     },
     {
       "path": ".agents/skills/oma-slide/resources/fixed-stage.md",
-      "sha256": "ad6d84b08ab4f1b30ed3b8db6f79d73b03b4a9359e6c30cde1a7dbcecfbc0cf5",
-      "size": 9196
+      "sha256": "7ad059c0d2bad336c0364bb14cd4da7aba13d1f8bf061db3f0faee2c471f5888",
+      "size": 8544
     },
     {
       "path": ".agents/skills/oma-slide/resources/generation-protocol.md",
-      "sha256": "bae40f2bb9220037d7bb88f07d65be36ea30fbe3801997d204003a4e28d2b307",
-      "size": 18711
+      "sha256": "06e7b5edb3df2d8a0cb0ddc7452ba5cb9c05e5f5dd272210988da1f75e6d2c1d",
+      "size": 18650
     },
     {
       "path": ".agents/skills/oma-slide/resources/selection-index.json",
