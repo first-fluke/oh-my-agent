@@ -1,5 +1,17 @@
 # Changelog
 
+## [16.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v16.0.1...cli-v16.1.0) (2026-10-09)
+
+
+### Features
+
+* **scm:** run user hooks from .githooks/commit-msg.d ([19de47b](https://github.com/first-fluke/oh-my-agent/commit/19de47b6c3c5806c996b95b0ede5287ac1a2951c))
+
+
+### Bug Fixes
+
+* **schedule:** drop malformed manifest entries instead of crashing sync ([d325817](https://github.com/first-fluke/oh-my-agent/commit/d32581760857696db8dd7d078accd30f89ffc373))
+
 ## [16.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v16.0.0...cli-v16.0.1) (2026-10-08)
 
 
