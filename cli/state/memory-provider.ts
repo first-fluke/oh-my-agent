@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { basename, join } from "node:path";
+import { join } from "node:path";
 import { http } from "../io/http.js";
 import type {
   AgentMemoryProviderOptions,
@@ -9,6 +9,12 @@ import type {
   MemoryRecallResult,
   MemoryRememberPayload,
 } from "../types/memory.js";
+import {
+  type AgentMemoryScope,
+  createAgentMemoryScope,
+  scopedAgentMemorySessionId,
+} from "./agentmemory-scope.js";
+import { searchScopedAgentMemory } from "./agentmemory-search.js";
 import { memoryEndpointIdentity } from "./memory-delivery-target.js";
 
 function headerValue(value: string | string[] | undefined): string | undefined {
@@ -144,6 +150,21 @@ export function createAgentMemoryProvider(
     env,
     homeDir: options.homeDir,
   });
+  const scopeEnv = {
+    OMA_PROFILE: env.OMA_PROFILE ?? process.env.OMA_PROFILE ?? "0",
+  };
+  let boundScope: AgentMemoryScope | undefined;
+  const scope = () =>
+    (boundScope ??= createAgentMemoryScope(options.projectDir, scopeEnv));
+  function writeScope(projectDir?: string, profile?: string) {
+    const requested = projectDir
+      ? createAgentMemoryScope(projectDir, scopeEnv)
+      : scope();
+    if (profile !== undefined && profile !== requested.profile) return null;
+    if (options.projectDir && requested.project !== scope().project)
+      return null;
+    return requested;
+  }
   let cachedStatus: MemoryProviderStatus | null = null;
 
   async function status(): Promise<MemoryProviderStatus> {
@@ -226,16 +247,17 @@ export function createAgentMemoryProvider(
       try {
         // AgentMemory's /observe expects a hook-event envelope
         // (hookType, sessionId, project, cwd, timestamp) carrying the content.
-        const cwd = payload.projectDir ?? process.cwd();
+        const owner = writeScope(payload.projectDir, payload.profile);
+        if (!owner) return false;
         const response = await http.post(
           `${current.endpoint}/agentmemory/observe`,
           {
             hookType: payload.source,
-            sessionId: payload.sessionId,
-            project: basename(cwd),
-            cwd,
+            sessionId: scopedAgentMemorySessionId(owner, payload.sessionId),
+            project: owner.project,
+            cwd: owner.projectDir,
             timestamp: new Date().toISOString(),
-            content: payload.content,
+            data: { content: payload.content },
           },
           {
             headers: { "content-type": "application/json" },
@@ -252,15 +274,19 @@ export function createAgentMemoryProvider(
       const current = await status();
       if (!current.reachable || !current.endpoint) return false;
       try {
+        const owner = writeScope(payload.projectDir, payload.profile);
+        if (!owner) return false;
         // `/remember` stores a durable, enrichable fact (type `decision`/`fact`)
         // that `/search` can recall with a meaningful relevance score — unlike
         // `/observe`, which keeps raw event envelopes that never enrich.
         const response = await http.post(
           `${current.endpoint}/agentmemory/remember`,
           {
-            sessionId: payload.sessionId,
+            sessionId: scopedAgentMemorySessionId(owner, payload.sessionId),
             content: payload.content,
             importance: payload.importance ?? 5,
+            project: owner.project,
+            concepts: [owner.concept],
           },
           {
             headers: { "content-type": "application/json" },
@@ -280,17 +306,14 @@ export function createAgentMemoryProvider(
       if (!current.reachable || !current.endpoint) return [];
       const limit = Math.max(1, Math.min(payload.limit ?? 8, 50));
       try {
-        const response = await http.post(
-          `${current.endpoint}/agentmemory/search`,
-          { query, limit },
-          {
-            headers: { "content-type": "application/json" },
-            timeout: options.recallTimeoutMs ?? 2000,
-            validateStatus: () => true,
-          },
-        );
-        if (response.status < 200 || response.status >= 300) return [];
-        return parseMemoryRecallResults(response.data, limit);
+        const results = await searchScopedAgentMemory({
+          endpoint: current.endpoint,
+          scope: scope(),
+          query,
+          limit,
+          timeoutMs: options.recallTimeoutMs,
+        });
+        return parseMemoryRecallResults(results, limit);
       } catch {
         return [];
       }

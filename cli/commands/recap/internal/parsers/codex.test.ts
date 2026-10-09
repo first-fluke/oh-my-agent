@@ -80,11 +80,13 @@ describe("codex parser", () => {
       sourcePath: sessionPath,
       vendorSessionId: "codex-session-1",
       project: "project-a",
+      projectDir: "/workspace/project-a",
     });
     expect(turns[1]).toMatchObject({
       role: "assistant",
       text: "raw import done",
       sourcePath: sessionPath,
+      projectDir: "/workspace/project-a",
     });
     expect(turns[0]?.idempotencyKey).toContain("codex:codex-session-1");
 
@@ -92,6 +94,51 @@ describe("codex parser", () => {
     expect(again.map((turn) => turn.idempotencyKey)).toEqual(
       turns.map((turn) => turn.idempotencyKey),
     );
+  });
+
+  it("preserves distinct absolute cwd values and leaves unknown scope unset", async () => {
+    const ts = new Date("2026-05-29T00:00:00.000Z").getTime();
+    const sessionDir = join(tempHome, ".codex", "sessions");
+    mkdirSync(sessionDir, { recursive: true });
+    const cwdValues = [
+      "/workspace/a/shared-name",
+      "/workspace/b/shared-name",
+      "relative/shared-name",
+      undefined,
+    ];
+    for (const [index, cwd] of cwdValues.entries()) {
+      writeFileSync(
+        join(sessionDir, `session-${index}.jsonl`),
+        [
+          JSON.stringify({
+            type: "session_meta",
+            payload: { id: `codex-session-${index}`, cwd },
+          }),
+          JSON.stringify({
+            timestamp: new Date(ts + index).toISOString(),
+            type: "response_item",
+            payload: {
+              role: "user",
+              content: [{ type: "input_text", text: `prompt ${index}` }],
+            },
+          }),
+        ].join("\n"),
+      );
+    }
+
+    const turns = rawTurns(await parser?.parseRaw?.(ts, ts + 10_000));
+    expect(turns).toHaveLength(4);
+    expect(turns.map((turn) => turn.projectDir)).toEqual([
+      "/workspace/a/shared-name",
+      "/workspace/b/shared-name",
+      undefined,
+      undefined,
+    ]);
+    expect(turns.slice(0, 3).map((turn) => turn.project)).toEqual([
+      "shared-name",
+      "shared-name",
+      "shared-name",
+    ]);
   });
 
   it("detects codex sessions without history.jsonl", async () => {

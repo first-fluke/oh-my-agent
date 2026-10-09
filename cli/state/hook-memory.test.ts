@@ -24,6 +24,10 @@ import { http } from "../io/http.js";
 import { syncProviderMcp } from "../platform/provider-mcp.js";
 import type { MemoryProvider } from "../types/memory.js";
 import {
+  createAgentMemoryScope,
+  scopedAgentMemorySessionId,
+} from "./agentmemory-scope.js";
+import {
   emitEvent,
   emitEventWithMemory,
   eventsPath,
@@ -94,6 +98,7 @@ describe("provider-aware CLI hooks", () => {
 
   it("preserves AgentMemory hook project scope and score/age filtering", async () => {
     const root = project("agentmemory");
+    const scope = createAgentMemoryScope(root);
     vi.stubEnv("AGENTMEMORY_URL", "http://memory.test");
     vi.spyOn(agentMemoryClient, "isAgentMemoryReachable").mockResolvedValue(
       true,
@@ -102,16 +107,28 @@ describe("provider-aware CLI hooks", () => {
       status: 200,
       data: {
         results: [
-          { score: 0.1, observation: { narrative: "noise" } },
+          {
+            score: 0.1,
+            observation: {
+              narrative: "noise",
+              concepts: [scope.concept],
+            },
+          },
           {
             score: 5,
             timestamp: new Date().toISOString(),
-            observation: { narrative: "current fact" },
+            observation: {
+              narrative: "current fact",
+              concepts: [scope.concept],
+            },
           },
           {
             score: 4,
             timestamp: new Date(Date.now() - 31 * 86400000).toISOString(),
-            observation: { narrative: "expired fact" },
+            observation: {
+              narrative: "expired fact",
+              concepts: [scope.concept],
+            },
           },
         ],
       },
@@ -123,9 +140,82 @@ describe("provider-aware CLI hooks", () => {
     ).toEqual([{ text: "current fact", score: 5, source: undefined }]);
     expect(post).toHaveBeenCalledWith(
       "http://memory.test/agentmemory/search",
-      expect.objectContaining({ query: "decision", limit: 5, cwd: root }),
+      {
+        query: "decision",
+        limit: 5,
+        project: scope.project,
+        cwd: scope.projectDir,
+        format: "full",
+      },
       expect.objectContaining({ timeout: 2000 }),
     );
+  });
+
+  it("shares owned facts across vendor boundaries while excluding another project's facts", async () => {
+    const root = project("agentmemory");
+    const scope = createAgentMemoryScope(root);
+    const foreign = createAgentMemoryScope(project("agentmemory"));
+    vi.stubEnv("AGENTMEMORY_URL", "http://memory.test");
+    vi.spyOn(agentMemoryClient, "isAgentMemoryReachable").mockResolvedValue(
+      true,
+    );
+    vi.spyOn(semanticMemory, "createMemoryProvider").mockReturnValue({
+      name: "agentmemory",
+      status: async () => ({ provider: "agentmemory", reachable: true }),
+      observe: vi.fn(async () => true),
+      remember: vi.fn(async () => true),
+    });
+    const post = vi.spyOn(http, "post").mockResolvedValue({
+      status: 200,
+      data: {
+        results: [
+          {
+            score: 8,
+            observation: {
+              narrative: "Claude selected Postgres",
+              sessionId: scopedAgentMemorySessionId(scope, "claude-session"),
+            },
+          },
+          {
+            score: 7,
+            observation: {
+              narrative: "Codex selected Bun",
+              concepts: [scope.concept],
+            },
+          },
+          {
+            score: 20,
+            observation: {
+              narrative: "Foreign private decision",
+              concepts: [foreign.concept],
+            },
+          },
+          {
+            score: 30,
+            observation: { narrative: "Unscoped legacy decision" },
+          },
+        ],
+      },
+    });
+    setActiveSession(root, "main", "workflow-test");
+
+    for (const vendor of ["claude", "codex"] as const) {
+      const context = await withSelectedHookMemory(root, () =>
+        onBoundary(root, vendor, `${vendor}-session`, "database choice"),
+      );
+      expect(context).toContain("Claude selected Postgres");
+      expect(context).toContain("Codex selected Bun");
+      expect(context).not.toContain("Foreign private decision");
+      expect(context).not.toContain("Unscoped legacy decision");
+    }
+    expect(post).toHaveBeenCalledTimes(2);
+    for (const [, body] of post.mock.calls) {
+      expect(body).toMatchObject({
+        project: scope.project,
+        cwd: scope.projectDir,
+        format: "full",
+      });
+    }
   });
 
   it("skips malformed semantic envelopes instead of treating raw hook content as facts", async () => {
@@ -263,6 +353,8 @@ describe("provider-aware CLI hooks", () => {
       expect(repaired.observe).not.toHaveBeenCalled();
       expect(repaired.remember).toHaveBeenCalledWith({
         sessionId: event.sid,
+        projectDir: createAgentMemoryScope(root).projectDir,
+        profile: createAgentMemoryScope(root).profile,
         content:
           "Decision [database]: Postgres Rationale: Use relational constraints",
         importance: 8,

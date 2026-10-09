@@ -136,6 +136,8 @@ describe("independent event memory delivery", () => {
       expect(retry.observe).not.toHaveBeenCalled();
       expect(retry.remember).toHaveBeenCalledWith({
         sessionId: "original-session",
+        projectDir: realpathSync(root),
+        profile: process.env.OMA_PROFILE ?? "0",
         content:
           "Decision [database]: Use Postgres Rationale: The app requires relational constraints",
         importance: 8,
@@ -160,6 +162,7 @@ describe("independent event memory delivery", () => {
       content: `${JSON.stringify(event)}\n`,
       source: "oma-workflow",
       projectDir: realpathSync(root),
+      profile: process.env.OMA_PROFILE ?? "0",
     });
   });
 

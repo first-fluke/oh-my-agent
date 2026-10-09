@@ -201,6 +201,7 @@ async function deliverMemoryRetryEntry(
         content: `${JSON.stringify(event)}\n`,
         source: "oma-workflow",
         projectDir: target.projectDir,
+        profile: target.profile,
       }),
     );
     if (observed) acknowledgeMemoryRetryLine(projectDir, entry, "observe");
@@ -211,6 +212,8 @@ async function deliverMemoryRetryEntry(
     remembered = await tryMemoryDelivery(() =>
       remember.call(provider, {
         sessionId: event.sid,
+        projectDir: target.projectDir,
+        profile: target.profile,
         ...memo,
       }),
     );

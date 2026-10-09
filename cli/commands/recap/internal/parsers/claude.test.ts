@@ -73,6 +73,41 @@ describe("claude parser", () => {
       sourcePath: sessionPath,
     });
     expect(turns[0]?.idempotencyKey).toContain("claude:claude-session-1");
+    expect(turns.every((turn) => turn.projectDir === undefined)).toBe(true);
+  });
+
+  it("preserves only each raw record's explicit absolute cwd", async () => {
+    const ts = new Date("2026-05-29T00:00:00.000Z").getTime();
+    const projectDir = join(tempHome, ".claude", "projects", "shared-name");
+    mkdirSync(projectDir, { recursive: true });
+    writeFileSync(
+      join(projectDir, "claude-session.jsonl"),
+      [
+        "/workspace/a/shared-name",
+        "/workspace/b/shared-name",
+        "relative/shared-name",
+        undefined,
+      ]
+        .map((cwd, index) =>
+          JSON.stringify({
+            type: index % 2 === 0 ? "user" : "assistant",
+            timestamp: new Date(ts + index).toISOString(),
+            cwd,
+            message: { content: `message ${index}` },
+          }),
+        )
+        .join("\n"),
+    );
+
+    const turns = rawTurns(await parser?.parseRaw?.(ts, ts + 10_000));
+    expect(turns).toHaveLength(4);
+    expect(turns.map((turn) => turn.projectDir)).toEqual([
+      "/workspace/a/shared-name",
+      "/workspace/b/shared-name",
+      undefined,
+      undefined,
+    ]);
+    expect(turns.every((turn) => turn.project === "shared-name")).toBe(true);
   });
 
   it("detects claude project sessions without history.jsonl", async () => {

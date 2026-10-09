@@ -4,6 +4,8 @@ export interface MemoryObservePayload {
   source: string;
   /** Original project context, preserved when a retry runs from another cwd. */
   projectDir?: string;
+  /** Original delivery profile; a provider with a different profile rejects it. */
+  profile?: string;
 }
 
 /** Public routing identity only. Credentials must never be included. */
@@ -26,6 +28,10 @@ export interface MemoryDeliveryTarget {
 
 export interface MemoryRememberPayload {
   sessionId: string;
+  /** Original project context, preserved during delivery retries. */
+  projectDir?: string;
+  /** Original delivery profile, preserved alongside the project path. */
+  profile?: string;
   /** Human-readable narrative the provider can enrich into a recallable fact. */
   content: string;
   /** Optional 1-10 salience hint; higher survives consolidation/eviction longer. */
@@ -94,6 +100,8 @@ export type AgentMemoryInstaller = () => Promise<MemoryCommandStatus>;
 export interface AgentMemoryProviderOptions {
   env?: NodeJS.ProcessEnv;
   homeDir?: string;
+  /** Scope shared by this project's vendors and sessions. */
+  projectDir?: string;
   healthTimeoutMs?: number;
   observeTimeoutMs?: number;
   rememberTimeoutMs?: number;
@@ -155,6 +163,8 @@ export interface MemoryServiceOptions {
   platform?: NodeJS.Platform;
   dryRun?: boolean;
   port?: number | string;
+  executable?: string;
+  runtimePath?: string;
   runner?: MemoryServiceCommandRunner;
 }
 
@@ -322,6 +332,8 @@ export interface MemoryRawTurn {
   vendorSessionId?: string;
   idempotencyKey: string;
   project?: string;
+  /** Original absolute project path, never inferred from a display name/slug. */
+  projectDir?: string;
 }
 
 export type MemoryRawTurnLoader = (
@@ -356,6 +368,7 @@ export interface MemoryImportResult {
   total: number;
   imported: number;
   failed: number;
+  skipped: number;
   dryRun: boolean;
   partial: boolean;
   warnings: string[];

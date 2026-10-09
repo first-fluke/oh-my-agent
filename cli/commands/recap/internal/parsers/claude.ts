@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import {
   parseTimestampMs,
   readJsonlSync,
@@ -46,6 +46,7 @@ interface SessionPair {
 interface ClaudeSessionRow {
   type?: string;
   timestamp?: string | number;
+  cwd?: string;
   message?: {
     content?: string | Array<{ type?: string; text?: string }>;
   };
@@ -170,6 +171,10 @@ function loadRawTurns(start: number, end: number): MemoryRawTurn[] {
           sourcePath: file.path,
           vendorSessionId: file.sessionId,
           project: file.project,
+          projectDir:
+            typeof row.cwd === "string" && isAbsolute(row.cwd)
+              ? row.cwd
+              : undefined,
         }),
       );
     }

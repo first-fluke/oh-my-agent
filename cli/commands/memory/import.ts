@@ -1,8 +1,10 @@
+import { isAbsolute } from "node:path";
 import * as p from "@clack/prompts";
 import { TZDate } from "@date-fns/tz";
 import { parse, startOfDay } from "date-fns";
 import pc from "picocolors";
 import "../recap/internal/index.js";
+import { createAgentMemoryScope } from "../../state/agentmemory-scope.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
 import type {
   MemoryImportLoadOptions,
@@ -14,6 +16,7 @@ import type {
   MemoryRawTurnLoadResult,
 } from "../../types/memory.js";
 import { loadTimezone } from "../../utils/config.js";
+import { resolveProjectRoot } from "../../utils/fs-utils.js";
 import { resolveWindowBounds } from "../../utils/time-window.js";
 import { filterParsers } from "../recap/internal/registry.js";
 import { drainMemoryRetryQueue } from "./retry-drain.js";
@@ -104,6 +107,8 @@ async function loadRawTurnsFromRecap(
 
 async function observeRawTurns(args: {
   provider: MemoryProvider;
+  projectDir: string;
+  profile: string;
   turns: MemoryRawTurn[];
   dryRun?: boolean;
 }): Promise<{ imported: number; failed: number }> {
@@ -116,6 +121,8 @@ async function observeRawTurns(args: {
       sessionId: turn.vendorSessionId ?? turn.idempotencyKey,
       source: `oma-memory-import:${turn.vendor}`,
       content: `${JSON.stringify(turn)}\n`,
+      projectDir: args.projectDir,
+      profile: args.profile,
     });
     if (ok) imported += 1;
     else failed += 1;
@@ -145,6 +152,7 @@ export async function importAgentMemory(
       total: retry.total,
       imported: retry.drained,
       failed: retry.retained,
+      skipped: 0,
       dryRun: args.dryRun === true,
       partial: false,
       warnings: [],
@@ -165,14 +173,36 @@ export async function importAgentMemory(
     start,
     end,
   });
-  const turns = Array.isArray(loaded) ? loaded : loaded.turns;
+  const allTurns = Array.isArray(loaded) ? loaded : loaded.turns;
   if (!Array.isArray(loaded)) warnings.push(...loaded.warnings);
-  const provider = args.provider ?? createMemoryProvider();
+  const projectDir = args.projectDir ?? resolveProjectRoot();
+  const scope = createAgentMemoryScope(projectDir);
+  let foreign = 0;
+  let unknown = 0;
+  const turns = allTurns.filter((turn) => {
+    if (!turn.projectDir || !isAbsolute(turn.projectDir)) {
+      unknown++;
+      return false;
+    }
+    if (createAgentMemoryScope(turn.projectDir).project !== scope.project) {
+      foreign++;
+      return false;
+    }
+    return true;
+  });
+  if (foreign || unknown) {
+    warnings.push(
+      `Skipped ${foreign} turns from other projects and ${unknown} turns without a verified project path`,
+    );
+  }
+  const provider = args.provider ?? createMemoryProvider({ projectDir });
   if (provider.observeEvents === false) {
     throw new Error(`${provider.name} does not accept raw transcript imports`);
   }
   const observed = await observeRawTurns({
     provider,
+    projectDir: scope.projectDir,
+    profile: scope.profile,
     turns,
     dryRun: args.dryRun,
   });
@@ -181,9 +211,10 @@ export async function importAgentMemory(
     source: sources.join(","),
     start,
     end,
-    total: turns.length,
+    total: allTurns.length,
     imported: observed.imported,
     failed: observed.failed,
+    skipped: foreign + unknown,
     dryRun: args.dryRun === true,
     partial: warnings.length > 0,
     warnings,
@@ -206,6 +237,7 @@ export async function printAgentMemoryImport(
       `Window: ${pc.cyan(new Date(result.start).toISOString())} - ${pc.cyan(new Date(result.end).toISOString())}`,
       `Total turns: ${result.total}`,
       `Imported: ${pc.green(String(result.imported))}`,
+      `Other or unknown project: ${result.skipped}`,
       `Failed/retained: ${result.failed > 0 ? pc.yellow(String(result.failed)) : "0"}`,
       result.partial ? pc.yellow("Partial coverage warning") : null,
       ...result.warnings.map((warning) => `Warning: ${warning}`),

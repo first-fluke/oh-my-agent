@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import {
   parseTimestampMs,
   readJsonlSync,
@@ -156,7 +156,10 @@ function scanRawDir(
 
     const sessionId = first.payload?.id;
     if (!sessionId) continue;
-    const project = pathToProjectName(first.payload?.cwd);
+    const cwd = first.payload?.cwd;
+    const project = pathToProjectName(cwd);
+    const projectDir =
+      typeof cwd === "string" && isAbsolute(cwd) ? cwd : undefined;
 
     for (const row of rows) {
       if (row.type !== "response_item") continue;
@@ -181,6 +184,7 @@ function scanRawDir(
           sourcePath: full,
           vendorSessionId: sessionId,
           project,
+          projectDir,
         }),
       );
     }

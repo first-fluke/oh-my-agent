@@ -295,6 +295,7 @@ describe("L1 state events", () => {
         content: `${JSON.stringify(event)}\n`,
         source: "oma-workflow",
         projectDir: projectIdentity(projectDir).projectDir,
+        profile: projectIdentity(projectDir).profile,
       },
     ]);
     expect(readMemoryRetryQueue(projectDir)).toEqual([]);
@@ -371,6 +372,8 @@ describe("L1 state events", () => {
     expect(remembered).toEqual([
       {
         sessionId: "oma-decide",
+        projectDir: projectIdentity(projectDir).projectDir,
+        profile: projectIdentity(projectDir).profile,
         content:
           "Decision [work.remediation-choice]: Fix the responsible QA finding. Rationale: QA flagged a HIGH issue.",
         importance: 8,

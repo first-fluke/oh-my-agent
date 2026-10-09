@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import { parseTimestampMs } from "../../../../io/conversation-log.js";
 import type { MemoryRawTurn } from "../../../../types/memory.js";
 import { registerParser } from "../registry.js";
@@ -85,6 +85,10 @@ registerParser({
             sourcePath: file,
             vendorSessionId: sessionId,
             project: pathToProjectName(row.cwd),
+            projectDir:
+              typeof row.cwd === "string" && isAbsolute(row.cwd)
+                ? row.cwd
+                : undefined,
           }),
         );
       }

@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createAgentMemoryScope } from "../../state/agentmemory-scope.js";
 import { createMemoryDeliveryTarget } from "../../state/memory-delivery-target.js";
 import {
   enqueueMemoryRetry,
@@ -44,6 +45,7 @@ function turn(overrides: Partial<MemoryRawTurn> = {}): MemoryRawTurn {
     timestamp: Date.now(),
     vendorSessionId: "codex-1",
     idempotencyKey: "codex:codex-1:user:hello",
+    projectDir: createAgentMemoryScope().projectDir,
     ...overrides,
   };
 }
@@ -117,9 +119,48 @@ describe("memory import", () => {
       failed: 0,
     });
     expect(observed[0]?.source).toBe("oma-memory-import:codex");
+    expect(observed[0]?.projectDir).toBe(createAgentMemoryScope().projectDir);
     expect(JSON.parse(observed[0]?.content ?? "{}")).toMatchObject({
       idempotencyKey: "codex:codex-1:user:hello",
     });
+  });
+
+  it("excludes other and unverified projects instead of retagging them as the current project", async () => {
+    const observed: MemoryObservePayload[] = [];
+    const own = join(projectDir, "B", "same-name");
+    const other = join(projectDir, "D", "same-name");
+    const result = await importAgentMemory({
+      source: "codex",
+      projectDir: own,
+      provider: providerStub({
+        observe(payload) {
+          observed.push(payload);
+          return true;
+        },
+      }),
+      rawTurnLoader: async () => [
+        turn({ projectDir: own, project: "same-name", text: "B only" }),
+        turn({ projectDir: other, project: "same-name", text: "D only" }),
+        turn({ projectDir: undefined, project: "same-name", text: "unknown" }),
+        turn({ projectDir: "same-name", text: "relative path" }),
+      ],
+    });
+
+    expect(result).toMatchObject({
+      total: 4,
+      imported: 1,
+      failed: 0,
+      skipped: 3,
+      partial: true,
+    });
+    expect(result.warnings).toContain(
+      "Skipped 1 turns from other projects and 2 turns without a verified project path",
+    );
+    expect(observed).toHaveLength(1);
+    expect(observed[0]?.projectDir).toBe(
+      createAgentMemoryScope(own).projectDir,
+    );
+    expect(JSON.parse(observed[0]?.content ?? "{}").text).toBe("B only");
   });
 
   it("drains retry queue when source is retry", async () => {

@@ -4,6 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  createAgentMemoryScope,
+  scopedAgentMemorySessionId,
+} from "./agentmemory-scope.js";
+import {
   createAgentMemoryProvider,
   parseMemoryRecallResults,
   resolveAgentMemoryEndpoint,
@@ -199,12 +203,13 @@ describe("AgentMemory provider", () => {
     ).resolves.toBe(true);
 
     const parsed = JSON.parse(observed) as Record<string, unknown>;
+    const scope = createAgentMemoryScope("/tmp/original-project");
     expect(parsed).toMatchObject({
       hookType: "oma-workflow",
-      sessionId: "oma-test",
-      content: '{"kind":"decision.made"}\n',
-      project: "original-project",
-      cwd: "/tmp/original-project",
+      sessionId: scopedAgentMemorySessionId(scope, "oma-test"),
+      data: { content: '{"kind":"decision.made"}\n' },
+      project: scope.project,
+      cwd: scope.projectDir,
     });
     expect(typeof parsed.project).toBe("string");
     expect(typeof parsed.cwd).toBe("string");
@@ -233,10 +238,13 @@ describe("AgentMemory provider", () => {
       }),
     ).resolves.toBe(true);
 
+    const scope = createAgentMemoryScope();
     expect(JSON.parse(remembered)).toEqual({
-      sessionId: "oma-test",
+      sessionId: scopedAgentMemorySessionId(scope, "oma-test"),
       content: "Decision [x]: do the thing.",
       importance: 8,
+      project: scope.project,
+      concepts: [scope.concept],
     });
   });
 
@@ -262,6 +270,7 @@ describe("AgentMemory provider", () => {
             score: 8.5,
             observation: {
               type: "fact",
+              concepts: [createAgentMemoryScope().concept],
               narrative: "[skill-evolution:test:suite] successful pattern",
             },
           },
@@ -285,6 +294,9 @@ describe("AgentMemory provider", () => {
     expect(JSON.parse(searchRequest)).toEqual({
       query: "skill evolution test",
       limit: 3,
+      project: createAgentMemoryScope().project,
+      cwd: createAgentMemoryScope().projectDir,
+      format: "full",
     });
   });
 

@@ -10,7 +10,7 @@ import {
 } from "./memory-provider.js";
 
 export function createMemoryProvider(
-  options: AgentMemoryProviderOptions & { projectDir?: string } = {},
+  options: AgentMemoryProviderOptions = {},
 ): MemoryProvider {
   const provider = loadProviders(options.projectDir).semantic_memory;
   if (provider === "honcho") {
