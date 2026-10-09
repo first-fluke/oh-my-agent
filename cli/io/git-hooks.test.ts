@@ -15,6 +15,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import * as cue from "../utils/cue.js";
 import {
   CO_AUTHORS_ALLOW_FILE,
+  COMMIT_MSG_USER_HOOKS_DIR,
   ensureCoAuthorGuardHook,
   OMA_HOOKS_DIR,
 } from "./git-hooks.js";
@@ -382,5 +383,82 @@ describe("the installed hook, enforced by git", () => {
     const { status } = tryCommit(repo, "e.txt", "chore: no trailer");
 
     expect(status).toBe(0);
+  });
+});
+
+// The managed hook is rewritten verbatim whenever its content drifts, so a
+// commitlint call pasted into it vanishes on the next `oma update`. User checks
+// live in commit-msg.d/ instead, which oma never writes.
+describe("user hooks in commit-msg.d", () => {
+  function writeUserHook(repo: string, name: string, body: string): string {
+    const dir = join(repo, OMA_HOOKS_DIR, COMMIT_MSG_USER_HOOKS_DIR);
+    mkdirSync(dir, { recursive: true });
+    const file = join(dir, name);
+    writeFileSync(file, body);
+    chmodSync(file, 0o755);
+    return file;
+  }
+
+  it("rejects the commit when a user hook fails, with its output", () => {
+    const repo = makeRepo();
+    writeConfig(repo, { enabled: true, email: "bot@example.com" });
+    ensureCoAuthorGuardHook(repo);
+    writeUserHook(
+      repo,
+      "10-subject",
+      `#!/bin/sh\ngrep -q '^feat' "$1" || { echo "subject must start with feat" >&2; exit 1; }\n`,
+    );
+
+    const rejected = tryCommit(repo, "h.txt", "chore: wrong type");
+    expect(rejected.status).not.toBe(0);
+    expect(rejected.stderr).toContain("subject must start with feat");
+
+    const accepted = tryCommit(repo, "i.txt", "feat: right type");
+    expect(accepted.status).toBe(0);
+  });
+
+  it("survives a regenerated managed hook and ignores non-executable files", () => {
+    const repo = makeRepo();
+    writeConfig(repo, { enabled: true, email: "bot@example.com" });
+    ensureCoAuthorGuardHook(repo);
+    writeUserHook(repo, "10-deny", "#!/bin/sh\nexit 1\n");
+    const inert = join(
+      repo,
+      OMA_HOOKS_DIR,
+      COMMIT_MSG_USER_HOOKS_DIR,
+      "README.md",
+    );
+    writeFileSync(inert, "not a hook\n");
+
+    // Simulate drift + update: the managed file is rewritten, the user dir is not.
+    writeFileSync(
+      join(repo, OMA_HOOKS_DIR, "commit-msg"),
+      "#!/bin/sh\nexit 0\n",
+    );
+    expect(ensureCoAuthorGuardHook(repo).status).toBe("written");
+
+    expect(
+      tryCommit(repo, "j.txt", "chore: blocked by user hook").status,
+    ).not.toBe(0);
+
+    rmSync(join(repo, OMA_HOOKS_DIR, COMMIT_MSG_USER_HOOKS_DIR, "10-deny"));
+    // Only the non-executable README remains; it must not be run as a hook.
+    expect(tryCommit(repo, "k.txt", "chore: passes again").status).toBe(0);
+  });
+
+  it("still runs the co-author guard after the user hooks pass", () => {
+    const repo = makeRepo();
+    writeConfig(repo, { enabled: true, email: "bot@example.com" });
+    ensureCoAuthorGuardHook(repo);
+    writeUserHook(repo, "10-ok", "#!/bin/sh\nexit 0\n");
+
+    const { status, stderr } = tryCommit(
+      repo,
+      "l.txt",
+      "feat: thing\n\nCo-authored-by: Bot <typo@example.com>",
+    );
+
+    expect(status).not.toBe(0);
+    expect(stderr).toContain("not on the allowlist");
   });
 });
