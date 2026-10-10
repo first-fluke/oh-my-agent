@@ -294,10 +294,13 @@ export async function migrateGlobalServices(
         if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
         try {
           const previous = lstatSync(path);
-          if (!previous.isFile()) return;
+          if (!previous.isFile())
+            throw new Error(`Unsafe legacy Serena startup lock: ${path}`);
           const content = readFileSync(path, "utf8");
           const pid = Number(content);
-          if (!Number.isSafeInteger(pid) || pid <= 0 || isAlive(pid)) return;
+          if (!Number.isSafeInteger(pid) || pid <= 0)
+            throw new Error(`Invalid legacy Serena startup lock: ${path}`);
+          if (isAlive(pid)) return;
           const current = lstatSync(path);
           if (
             !current.isFile() ||
@@ -310,7 +313,7 @@ export async function migrateGlobalServices(
           unlinkSync(path);
         } catch (inspectionError) {
           if ((inspectionError as NodeJS.ErrnoException).code !== "ENOENT")
-            return;
+            throw inspectionError;
         }
       }
     }
@@ -543,13 +546,17 @@ export async function migrateGlobalServices(
               // Runtime registrations belong to the canonical writer once present.
               if (name === "serena-daemons.json" && existsSync(targetRegistry))
                 continue;
-              if (allowed.test(name))
-                copyTree(
-                  join(config, name),
-                  join(target, name),
-                  undefined,
-                  true,
-                );
+              if (!allowed.test(name)) continue;
+              const targetFile = join(target, name);
+              // Ports can be reused; retain each existing canonical log and its legacy original.
+              if (
+                name !== "serena-daemons.json" &&
+                destinationSafe(targetFile) &&
+                existsSync(targetFile) &&
+                lstatSync(targetFile).isFile()
+              )
+                continue;
+              copyTree(join(config, name), targetFile, undefined, true);
             }
             finish("serena", before);
           }

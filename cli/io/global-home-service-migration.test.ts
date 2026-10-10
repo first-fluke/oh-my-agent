@@ -196,6 +196,50 @@ describe("global service migration", () => {
     expect((await migrate()).copied).toEqual([]);
   });
 
+  it("preserves a canonical daemon log when the same port has a legacy log", async () => {
+    const source = join(home, ".config/oma/serena-daemon-18500.log");
+    const target = join(destination, "state/serena/serena-daemon-18500.log");
+    file(join(home, ".config/oma/serena-daemons.json"), "{}");
+    file(join(destination, "state/serena/serena-daemons.json"), "{}");
+    file(source, "past legacy daemon output");
+    file(target, "current canonical daemon output");
+    const result = await migrate();
+    expect(result.conflicts).toEqual([]);
+    expect(result.deferred).toEqual([]);
+    expect(result.copied).not.toContain(target);
+    expect(readFileSync(source, "utf8")).toBe("past legacy daemon output");
+    expect(readFileSync(target, "utf8")).toBe(
+      "current canonical daemon output",
+    );
+    expect(await migrate()).toEqual({
+      copied: [],
+      conflicts: [],
+      deferred: [],
+    });
+  });
+
+  it.each(["directory", "symlink"])(
+    "still rejects a canonical daemon log target that is a %s",
+    async (kind) => {
+      const target = join(destination, "state/serena/serena-daemon-18500.log");
+      file(join(home, ".config/oma/serena-daemon-18500.log"), "past output");
+      if (kind === "directory") mkdirSync(target, { recursive: true });
+      else {
+        const outside = join(home, "outside-log");
+        file(outside, "keep outside output");
+        mkdirSync(join(target, ".."), { recursive: true });
+        symlinkSync(outside, target);
+      }
+      const result = await migrate();
+      expect(result.conflicts).toHaveLength(1);
+      expect(result.conflicts[0]).toContain(
+        kind === "symlink" ? "Unsafe destination" : "Differing destination",
+      );
+      if (kind === "symlink")
+        expect(readFileSync(target, "utf8")).toBe("keep outside output");
+    },
+  );
+
   it("reports a canonical registry directory and retries after reconciliation", async () => {
     const registry = join(home, ".config/oma/serena-daemons.json");
     const target = join(destination, "state/serena/serena-daemons.json");
@@ -246,12 +290,33 @@ describe("global service migration", () => {
     symlinkSync(outside, join(home, ".config/oma/serena-daemons.lock"));
     file(join(home, ".config/oma/serena-daemons.json"), "{}");
     const result = await migrate();
-    expect(result.deferred.join(" ")).toContain("Legacy Serena");
+    expect(result.conflicts.join(" ")).toContain(
+      "Unsafe legacy Serena startup lock",
+    );
+    expect(result.deferred).toEqual([]);
     expect(readFileSync(outside, "utf8")).toBe("100");
     expect(
       existsSync(join(destination, "state/serena/serena-daemons.json")),
     ).toBe(false);
   });
+
+  it.each(["invalid", "0", ""])(
+    "reports a malformed legacy startup lock as a conflict: %j",
+    async (content) => {
+      const lock = join(home, ".config/oma/serena-daemons.lock");
+      file(lock, content);
+      file(join(home, ".config/oma/serena-daemons.json"), "{}");
+      const result = await migrate();
+      expect(result.conflicts.join(" ")).toContain(
+        "Invalid legacy Serena startup lock",
+      );
+      expect(result.deferred).toEqual([]);
+      expect(readFileSync(lock, "utf8")).toBe(content);
+      expect(
+        existsSync(join(destination, "state/serena/serena-daemons.json")),
+      ).toBe(false);
+    },
+  );
 
   it("keeps dry-run Serena inspection free of legacy lock writes", async () => {
     const lock = join(home, ".config/oma/serena-daemons.lock");
