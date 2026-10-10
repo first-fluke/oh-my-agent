@@ -117,6 +117,26 @@ absent; use the installed version's generated schema rather than a stale JSON
 template. Preserve existing ESLint/Prettier configurations unless replacement was
 requested. Check framework, plugin, and file-type coverage before migrating tools.
 
+During Biome setup, explicitly set `linter.rules.performance.noReExportAll` to
+`"error"` in `biome.json` or `biome.jsonc`; `recommended: true` does not enable it.
+Merge this setting into the existing configuration and preserve unrelated rules
+and overrides:
+
+```json
+{
+  "linter": {
+    "rules": {
+      "performance": {
+        "noReExportAll": "error"
+      }
+    }
+  }
+}
+```
+
+This rejects value re-exports using `export * from` or `export * as ... from`.
+Named re-exports and type-only re-exports remain allowed.
+
 | Task | npm example using installed tools |
 | --- | --- |
 | `lint` | `npm exec --no -- biome check .` |
@@ -138,6 +158,7 @@ checker and report the limitation rather than silently skipping checks.
 
 Sources: [Biome setup](https://biomejs.dev/installation/quick-start/),
 [Biome CI](https://biomejs.dev/recipes/continuous-integration/),
+[Biome noReExportAll](https://biomejs.dev/linter/rules/no-re-export-all/),
 [TypeScript downloads](https://www.typescriptlang.org/download/),
 [native compiler command naming](https://github.com/microsoft/typescript-go#preview),
 [noEmit](https://www.typescriptlang.org/tsconfig/noEmit.html).
