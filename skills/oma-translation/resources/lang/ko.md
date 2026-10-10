@@ -2,7 +2,7 @@
 
 Load this file whenever the **target** language is Korean. It is read together
 with `../translation-rubric.md` for substantive content or review. For prose style
-review, also load `../../../_shared/core/anti-ai-prose.md` (common taxonomy) and
+review, also load `../../references/_shared/core/anti-ai-prose.md` (common taxonomy) and
 `../anti-ai-patterns.md` (translation exceptions and grammar diagnostics).
 
 Two kinds of rules live here:
@@ -231,7 +231,7 @@ Internal status keywords, workflow markers, and log levels stay in English per
 
 ### `-ing` participle phrases
 
-See [Superficial analysis](../../../_shared/core/anti-ai-prose.md#superficial-analysis).
+See [Superficial analysis](../../references/_shared/core/anti-ai-prose.md#superficial-analysis).
 
 ```
 EN: The update improves performance, ensuring a seamless experience
@@ -241,7 +241,7 @@ Good: 이번 업데이트로 성능이 개선되어 더 매끄럽게 사용할 �
 
 ### AI vocabulary overuse
 
-See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-clustering).
+See [Vocabulary clustering](../../references/_shared/core/anti-ai-prose.md#vocabulary-clustering).
 
 | Watch | Prefer |
 |---|---|
@@ -254,7 +254,7 @@ See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-cl
 
 ### rule of three
 
-See [Mechanical triples](../../../_shared/core/anti-ai-prose.md#mechanical-triples).
+See [Mechanical triples](../../references/_shared/core/anti-ai-prose.md#mechanical-triples).
 
 ```
 EN: a fast, reliable, and intuitive experience
@@ -266,14 +266,14 @@ Preserve every source quality. A real three-item list is valid when all three ca
 
 ### synonym cycling
 
-See [Synonym cycling](../../../_shared/core/anti-ai-prose.md#synonym-cycling).
+See [Synonym cycling](../../references/_shared/core/anti-ai-prose.md#synonym-cycling).
 
 Terminology consistency outranks variety. If `사용자` is right, use `사용자`
 throughout; do not rotate through `이용자`, `유저`, `참여자`.
 
 ### compound stacking
 
-See [Compound adjective stacking](../../../_shared/core/anti-ai-prose.md#compound-adjective-stacking) and [Abstract noun and adjective stacking](../../../_shared/core/anti-ai-prose.md#abstract-noun-and-adjective-stacking).
+See [Compound adjective stacking](../../references/_shared/core/anti-ai-prose.md#compound-adjective-stacking) and [Abstract noun and adjective stacking](../../references/_shared/core/anti-ai-prose.md#abstract-noun-and-adjective-stacking).
 
 ```
 Bad: AI 기반의, 클라우드 기반의, 엔터프라이즈급 솔루션
@@ -285,7 +285,7 @@ Good: UI는 쓰기 편하고, 성능이 좋고, 연동도 매끄럽습니다
 
 ### mechanical punctuation swap
 
-See [Mechanical punctuation swaps](../../../_shared/core/anti-ai-prose.md#mechanical-punctuation-swaps).
+See [Mechanical punctuation swaps](../../references/_shared/core/anti-ai-prose.md#mechanical-punctuation-swaps).
 
 ```
 Source: Documentation drift checks — broken refs and diff-affected docs

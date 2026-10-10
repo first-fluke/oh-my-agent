@@ -286,9 +286,9 @@ export function emitAgentPlugin(
     join(outDir, "skills"),
   );
 
-  // Skills reference `../_shared/...`; ship it beside them so the package is
-  // self-contained. Without a SKILL.md it is skipped by skill discovery, and
-  // it stays inside the plugin root, so both spec rules hold.
+  // Keep the package-level shared tree for consumers of the full plugin.
+  // Individual skills embed their referenced shared files as well, since
+  // skills-only installers copy each selected skill directory separately.
   const sharedDir = join(repoRoot, SKILLS_DIR, "_shared");
   if (existsSync(sharedDir)) {
     copyEntry(sharedDir, join(outDir, "skills", "_shared"));

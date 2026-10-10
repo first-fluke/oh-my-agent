@@ -12,6 +12,7 @@ import {
   parseFrontmatter,
   serializeFrontmatter,
 } from "../../utils/frontmatter.js";
+import { bundleSharedResources } from "./shared-resources.js";
 import type { SkillEmitResult, SkillValidationResult } from "./types.js";
 
 /** SSOT for all skills. */
@@ -258,6 +259,12 @@ export function emitAgentSkills(
     }
 
     copySkillAssets(join(repoRoot, SKILLS_DIR, dirName), skillOutDir);
+    bundleSharedResources(
+      repoRoot,
+      join(repoRoot, SKILLS_DIR, dirName),
+      skillOutDir,
+      EXCLUDED_RESOURCE_NAMES,
+    );
 
     results.push({
       skill: dirName,

@@ -92,7 +92,7 @@ Report created commits/refs and verification. A failed commit, rejected push, or
 Determine whether the target commit is shared using `git log --oneline @{u}..HEAD` when an upstream exists. If there is no upstream, inspect remote refs before assuming a commit is unshared. Keep unrelated staged changes out of the operation.
 
 ### Resource scope and effects
-Git operations change the index, local commits/refs, worktrees, and possibly remote refs. Read only relevant project configuration; never copy credential values into messages or reports. Apply `.agents/skills/_shared/core/execution-policy.md` to authorization and verification.
+Git operations change the index, local commits/refs, worktrees, and possibly remote refs. Read only relevant project configuration; never copy credential values into messages or reports. Apply `references/_shared/core/execution-policy.md` to authorization and verification.
 
 ## References
 - Commit syntax, types, co-author policy, and branch naming: `resources/conventional-commits.md` (commit requests)

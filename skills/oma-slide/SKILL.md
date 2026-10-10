@@ -246,6 +246,6 @@ For error recovery, see §Failure and recovery above.
 - Export pipeline details: `resources/generation-protocol.md` §Phase 6 — Bundle and Export
 - Visual editor usage: `resources/generation-protocol.md` §Phase 5c — Visual Edit
 - Pre-delivery gate: `resources/checklist.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Context budget: `../_shared/core/context-budget.md`
+- Context loading: `references/_shared/core/context-loading.md`
+- Context budget: `references/_shared/core/context-budget.md`
 - Imagery delegation: `../oma-image/SKILL.md` — oma-slide delegates all image generation here

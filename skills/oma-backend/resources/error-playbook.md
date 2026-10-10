@@ -74,14 +74,14 @@ Use the relevant recovery steps. If required information or authority is missing
 
 1. Identify the source. An expected rate-limit response from the application under review is a test result, not an agent-provider quota failure.
 2. For provider quota exhaustion, stop affected provider calls and record the unavailable checks; continue independent authorized work when possible.
-3. Preserve injected session/task/run IDs and the claim path. Save progress/results under the configured memory base using the task/run-scoped names in `../../_shared/runtime/memory-protocol.md`.
-4. Use a valid claim status (`partial`, `blocked`, or `failed`) with the actual cause and unresolved work per `../../_shared/runtime/result-contract.md`; do not invent a `quota_exceeded` status.
+3. Preserve injected session/task/run IDs and the claim path. Save progress/results under the configured memory base using the task/run-scoped names in `../references/_shared/runtime/memory-protocol.md`.
+4. Use a valid claim status (`partial`, `blocked`, or `failed`) with the actual cause and unresolved work per `../references/_shared/runtime/result-contract.md`; do not invent a `quota_exceeded` status.
 
 ---
 
 ## Workflow State Unavailable
 
-Follow `../../_shared/runtime/memory-protocol.md`; state storage is independent of the code-intelligence provider.
+Follow `../references/_shared/runtime/memory-protocol.md`; state storage is independent of the code-intelligence provider.
 
 1. Use the injected progress/result paths and session/task identity.
 2. If a file operation fails, retry once when the failure may be transient.

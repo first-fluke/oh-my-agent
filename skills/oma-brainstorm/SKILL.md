@@ -128,7 +128,7 @@ Explore user intent, constraints, and alternative approaches before planning or 
 
 ### Guardrails
 1. **No implementation or planning before design approval** - brainstorm produces a design document, not code or task plans
-2. **One question at a time** - ask clarification and approval questions through the available asynchronous question tool first, following `../_shared/core/clarification-protocol.md`; fall back to a permitted question tool or plain text. Continue independent work while waiting, and never infer approval from silence or a preselected option.
+2. **One question at a time** - ask clarification and approval questions through the available asynchronous question tool first, following `references/_shared/core/clarification-protocol.md`; fall back to a permitted question tool or plain text. Continue independent work while waiting, and never infer approval from silence or a preselected option.
 3. **Compare viable approaches** - offer two or three when they aid the decision, and explain constraints when fewer remain. Recommend according to the actual goal, effort, reversibility, and risk. Do not favor a larger structural change solely because of its label.
 4. **Explain viable approaches in prose** - state scenario, mechanism, residual risk, and effort. Use a comparison matrix when it helps the decision, then give the recommendation; a single constrained option needs its rationale, not invented alternatives
 5. **Section-by-section design** - present the design incrementally; reuse existing decisions and delegated authority, asking only for unresolved material choices under the shared execution policy
@@ -160,7 +160,7 @@ Follow the brainstorm workflow step by step:
 
 ## References
 - TRIZ-lite (optional Step 3 seeding): `resources/triz-lite.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Clarification protocol: `../_shared/core/clarification-protocol.md`
-- Quality principles: `../_shared/core/quality-principles.md`
-- Skill-to-agent mapping: `../_shared/core/skill-routing.md`
+- Context loading: `references/_shared/core/context-loading.md`
+- Clarification protocol: `references/_shared/core/clarification-protocol.md`
+- Quality principles: `references/_shared/core/quality-principles.md`
+- Skill-to-agent mapping: `references/_shared/core/skill-routing.md`

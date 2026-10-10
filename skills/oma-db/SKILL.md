@@ -188,8 +188,8 @@ verification outcome; omit unaffected documents.
 - Vector DB and RAG guide: `resources/vector-db.md`
 - ISO control guide: `resources/iso-controls.md`
 - Error recovery: `resources/error-playbook.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Clarification: `../_shared/core/clarification-protocol.md`
-- Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
+- Context loading: `references/_shared/core/context-loading.md`
+- Clarification: `references/_shared/core/clarification-protocol.md`
+- Context budget: `references/_shared/core/context-budget.md`
+- Lessons learned: `references/_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — DB span conventions (N+1, lock-wait, pool), cardinality budgets

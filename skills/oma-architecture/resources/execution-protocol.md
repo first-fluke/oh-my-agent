@@ -1,7 +1,7 @@
 # Architecture Agent - Execution Protocol
 
 ## Preparation
-Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../references/_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Frame the Problem
 - Separate symptoms from decisions
@@ -17,7 +17,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - note decisions that constrain this one
   - if this decision replaces one, plan to mark the old ADR superseded — never silently contradict it
 - Analyze only the code and docs relevant to the decision
-  - follow `../../_shared/core/code-intelligence.md` for configured symbol, reference, and pattern tools or native fallback
+  - follow `../references/_shared/core/code-intelligence.md` for configured symbol, reference, and pattern tools or native fallback
 - Map existing architecture:
   - key modules or services
   - ownership boundaries
@@ -99,7 +99,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - `diagnosis-<topic>.md`
 - Rerunning the same topic updates the existing file; record the revision in the ADR `Status` line rather than creating a copy
 - ADR lifecycle: `Status` is `Proposed`, `Accepted`, or `Superseded by <adr-file>`. Keep a user-owned unresolved choice `Proposed`; a completed artifact or event is not acceptance. Use `Accepted` only when existing decision authority supports it. Update a prior ADR as superseded only when the replacement is authorized.
-- When dispatched, also write the injected claim and the task/run-scoped report per `../../_shared/runtime/result-contract.md` and `memory-protocol.md`. Use `result-{agentId}-{taskId}-{runId}-{sessionId}.md` under the configured memory base, preserving injected IDs. Link the architecture artifact from this report.
+- When dispatched, also write the injected claim and the task/run-scoped report per `../references/_shared/runtime/result-contract.md` and `memory-protocol.md`. Use `result-{agentId}-{taskId}-{runId}-{sessionId}.md` under the configured memory base, preserving injected IDs. Link the architecture artifact from this report.
 - In an active OMA workflow, record and verify the actual recommendation with its authority status and current artifact revision. This records completion of the analysis without granting implementation approval:
 
 ```bash

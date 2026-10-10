@@ -1,6 +1,6 @@
 # Translation prose diagnostics
 
-Load `../../_shared/core/anti-ai-prose.md` and the target `lang/{code}.md` alongside
+Load `../references/_shared/core/anti-ai-prose.md` and the target `lang/{code}.md` alongside
 this file when reviewing prose style. Common pattern definitions live in the shared
 resource; this file owns fidelity exceptions and translation-specific rules.
 

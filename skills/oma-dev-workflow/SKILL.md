@@ -357,8 +357,8 @@ Follow the core workflow step by step:
 ## References
 
 - Tooling profiles: [resources/tooling-profiles.md](resources/tooling-profiles.md) (configure or change Python, JS/TS, Dart/Flutter, Dockerfile, or commitlint tooling)
-- Clarification: `../_shared/core/clarification-protocol.md`
-- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
+- Clarification: `references/_shared/core/clarification-protocol.md`
+- Task decomposition: `references/_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
 
 ### Knowledge Reference
 

@@ -153,8 +153,8 @@ Apply framework, library, architecture, and data-model defaults only when the ta
 - API service template (Flutter): `variants/flutter/api-template.dart`
 - API service template (React Native): `variants/react-native/api-template.ts`
 - Variant registry: `variants/README.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Clarification: `../_shared/core/clarification-protocol.md`
-- Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
+- Context loading: `references/_shared/core/context-loading.md`
+- Clarification: `references/_shared/core/clarification-protocol.md`
+- Context budget: `references/_shared/core/context-budget.md`
+- Lessons learned: `references/_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — offline queuing, crash analytics, battery-aware sampling

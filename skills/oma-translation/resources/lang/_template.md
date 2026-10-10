@@ -8,7 +8,7 @@ A profile exists to hold what the shared files must not: anything that is true
 of one target language and false of another. If a rule would apply equally to
 every target, put translation-specific guidance in `../anti-ai-patterns.md`.
 Put prose diagnostics that also apply to academic writing in
-`../../../_shared/core/anti-ai-prose.md`; refer to patterns by heading name.
+`../../references/_shared/core/anti-ai-prose.md`; refer to patterns by heading name.
 
 Delete every section you have nothing grounded to say about. An empty profile
 is better than an invented one, because a wrong rule is followed as confidently

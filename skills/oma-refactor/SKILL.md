@@ -163,11 +163,11 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 8. All metrics are proxies (Goodhart): a 499-line mechanical split, assertion-free coverage, or pattern-count gains are failures, not wins.
 
 ## References
-- Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
+- Local code tools: `references/_shared/core/code-intelligence.md` (code search/navigation)
 
 - Invariant definition (5 properties, boundaries, destination, naming roles, contexts, D&C, inline evidence): `resources/definition.md`
 - Measurement: 4 layers + git forensics commands: `resources/measurement.md`
 - Optional organization conventions and existing verification tools: `resources/governance.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Quality principles: `../_shared/core/quality-principles.md`
+- Context loading: `references/_shared/core/context-loading.md`
+- Quality principles: `references/_shared/core/quality-principles.md`
 - Adjacent skills: `oma-debug` (bugs), `oma-qa` (audits), `oma-architecture` (boundaries/ADR), `oma-db` (schema), `oma-scm` (commits)

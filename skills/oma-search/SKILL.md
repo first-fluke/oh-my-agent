@@ -44,7 +44,7 @@ Context7 for docs, runtime web search, `oma search`/`gh`/`glab` for remote code,
 ### Failure and recovery
 - Missing/empty documentation lookup: use web search and state the fallback.
 - A known URL cannot be fetched: use the fetch strategies in the route reference; retain authentication/blocking errors if all strategies fail.
-- Configured local tools unavailable or timed out: follow `../_shared/core/code-intelligence.md`.
+- Configured local tools unavailable or timed out: follow `references/_shared/core/code-intelligence.md`.
 - Unknown trust: retain the result as `unknown` with score `—`; do not imply verification.
 - No result satisfies `--strict`: report that outcome and offer a wider or narrower query.
 
@@ -83,4 +83,4 @@ Search may contact external services or inspect local code and spawn `gh`/`glab`
 - Recovery detail: `resources/error-playbook.md` (route failures)
 - Result checklist: `resources/checklist.md` (applicable route checks)
 - Examples: `resources/examples.md` (unfamiliar input/output contracts)
-- Local code-intelligence contract: `../_shared/core/code-intelligence.md`
+- Local code-intelligence contract: `references/_shared/core/code-intelligence.md`

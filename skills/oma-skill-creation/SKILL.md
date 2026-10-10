@@ -79,6 +79,6 @@ Skill work reads and may change local definitions/resources and generated vendor
 - Prompt behavior and model comparisons: `resources/prompt-evaluation.md` (routing, injection, authorization, or review-contract changes)
 - Skeleton and optional sections: `resources/ssl-lite-template.md` (authoring or restructuring)
 - Acceptance criteria: `resources/validation-checklist.md` (validation)
-- Context loading: `../_shared/core/context-loading.md` (resource/injection decisions)
-- Quality principles: `../_shared/core/quality-principles.md` (domain verification requirements)
+- Context loading: `references/_shared/core/context-loading.md` (resource/injection decisions)
+- Quality principles: `references/_shared/core/quality-principles.md` (domain verification requirements)
 - Eval fixtures: `web/docs/guide/skill-eval.md` (when measuring held-out task utility with `oma skill eval` or `oma skill optimize`)

@@ -2,7 +2,7 @@
 
 Load this file whenever the **target** language is Chinese. It is read together
 with `../translation-rubric.md` for substantive content or review. For prose style
-review, also load `../../../_shared/core/anti-ai-prose.md` (common taxonomy) and
+review, also load `../../references/_shared/core/anti-ai-prose.md` (common taxonomy) and
 `../anti-ai-patterns.md` (translation exceptions and grammar diagnostics).
 
 - **Localizations** of shared anti-AI patterns.
@@ -155,7 +155,7 @@ Keep the suffix when it is established terminology (`可用性`, `幂等性`,
 
 ### `-ing` participle phrases
 
-See [Superficial analysis](../../../_shared/core/anti-ai-prose.md#superficial-analysis).
+See [Superficial analysis](../../references/_shared/core/anti-ai-prose.md#superficial-analysis).
 
 ```
 EN:   The update improves performance, ensuring a seamless experience
@@ -165,7 +165,7 @@ Good: 这次更新提升了性能，用起来更顺畅
 
 ### AI vocabulary overuse
 
-See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-clustering).
+See [Vocabulary clustering](../../references/_shared/core/anti-ai-prose.md#vocabulary-clustering).
 
 | Watch | Prefer |
 |---|---|
@@ -178,7 +178,7 @@ See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-cl
 
 ### rule of three
 
-See [Mechanical triples](../../../_shared/core/anti-ai-prose.md#mechanical-triples).
+See [Mechanical triples](../../references/_shared/core/anti-ai-prose.md#mechanical-triples).
 
 ```
 EN:   a fast, reliable, and intuitive experience
@@ -190,14 +190,14 @@ Preserve every source quality. A real three-item list is valid when all three ca
 
 ### synonym cycling
 
-See [Synonym cycling](../../../_shared/core/anti-ai-prose.md#synonym-cycling).
+See [Synonym cycling](../../references/_shared/core/anti-ai-prose.md#synonym-cycling).
 
 If `用户` is right, use `用户` throughout. Do not rotate through `使用者`,
 `客户`, `终端用户`.
 
 ### compound stacking
 
-See [Compound adjective stacking](../../../_shared/core/anti-ai-prose.md#compound-adjective-stacking) and [Abstract noun and adjective stacking](../../../_shared/core/anti-ai-prose.md#abstract-noun-and-adjective-stacking).
+See [Compound adjective stacking](../../references/_shared/core/anti-ai-prose.md#compound-adjective-stacking) and [Abstract noun and adjective stacking](../../references/_shared/core/anti-ai-prose.md#abstract-noun-and-adjective-stacking).
 
 ```
 Bad:  一个 AI 驱动的、基于云的、企业级的解决方案
@@ -206,7 +206,7 @@ Good: 一套跑在云上的企业级 AI 方案
 
 ### mechanical punctuation swap
 
-See [Mechanical punctuation swaps](../../../_shared/core/anti-ai-prose.md#mechanical-punctuation-swaps).
+See [Mechanical punctuation swaps](../../references/_shared/core/anti-ai-prose.md#mechanical-punctuation-swaps).
 
 ```
 Source: Documentation drift checks — broken refs and diff-affected docs

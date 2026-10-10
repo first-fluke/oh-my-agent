@@ -1,4 +1,12 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -223,5 +231,181 @@ describe("emitAgentSkills", () => {
     );
     expect(skillMd).toContain("references/overflow.md");
     expect(overflow.length).toBeGreaterThan(0);
+  });
+
+  describe("individually installed skills", () => {
+    function emitIsolatedSkill(body?: string): string {
+      outDir = mkdtempSync(path.join(tmpdir(), "oma-portable-skill-"));
+      const repoRoot = path.join(outDir, "repo");
+      const emittedRoot = path.join(outDir, "emitted");
+      const installedSkill = path.join(outDir, "installed", "portable-skill");
+      const files: Record<string, string> = {
+        ".agents/skills/portable-skill/SKILL.md": [
+          "---",
+          "name: portable-skill",
+          "description: A skill that depends on shared resources.",
+          "---",
+          body ??
+            [
+              "Read `.agents/skills/_shared/core/policy.md`.",
+              "Read [Contract](../_shared/runtime/contract.md#result).",
+              "Follow [Guide](resources/nested/guide.md).",
+              "See https://example.test/.agents/skills/_shared/core/policy.md#remote.",
+              "Example source path: `src/_shared/core/policy.md`.",
+            ].join("\n"),
+        ].join("\n"),
+        ".agents/skills/portable-skill/resources/nested/guide.md": [
+          "# Guide",
+          "Read [Policy](../../../_shared/core/policy.md#authorization).",
+          "Read `.agents/skills/_shared/runtime/contract.md`.",
+        ].join("\n"),
+        ".agents/skills/_shared/core/policy.md": [
+          "# Policy",
+          "## Authorization",
+          "Follow [Contract](../runtime/contract.md#result).",
+        ].join("\n"),
+        ".agents/skills/_shared/runtime/contract.md": [
+          "# Contract",
+          "## Result",
+          "Read [Checklist](checklist.md#verify).",
+          "Return to [Policy](../core/policy.md#authorization).",
+        ].join("\n"),
+        ".agents/skills/_shared/runtime/checklist.md": [
+          "# Checklist",
+          "## Verify",
+          "Verify the result.",
+        ].join("\n"),
+      };
+      for (const [relativePath, content] of Object.entries(files)) {
+        const filePath = path.join(repoRoot, relativePath);
+        mkdirSync(path.dirname(filePath), { recursive: true });
+        writeFileSync(filePath, content);
+      }
+
+      emitAgentSkills(repoRoot, emittedRoot);
+      mkdirSync(path.dirname(installedSkill), { recursive: true });
+      cpSync(path.join(emittedRoot, "portable-skill"), installedSkill, {
+        recursive: true,
+      });
+      rmSync(repoRoot, { recursive: true });
+      rmSync(emittedRoot, { recursive: true });
+      return installedSkill;
+    }
+
+    it("resolves shared resources after copying only one emitted skill", () => {
+      const installedSkill = emitIsolatedSkill();
+      const skillMd = readFileSync(
+        path.join(installedSkill, "SKILL.md"),
+        "utf-8",
+      );
+      expect(skillMd).toContain("`references/_shared/core/policy.md`");
+      expect(skillMd).toContain(
+        "[Contract](references/_shared/runtime/contract.md#result)",
+      );
+      expect(skillMd).toContain("[Guide](resources/nested/guide.md)");
+
+      const policy = readFileSync(
+        path.join(installedSkill, "references/_shared/core/policy.md"),
+        "utf-8",
+      );
+      expect(policy).toContain("[Contract](../runtime/contract.md#result)");
+      const contract = readFileSync(
+        path.join(installedSkill, "references/_shared/runtime/contract.md"),
+        "utf-8",
+      );
+      expect(contract).toContain("[Checklist](checklist.md#verify)");
+      expect(contract).toContain("[Policy](../core/policy.md#authorization)");
+      expect(
+        readFileSync(
+          path.join(installedSkill, "references/_shared/runtime/checklist.md"),
+          "utf-8",
+        ),
+      ).toContain("Verify the result.");
+    });
+
+    it("rewrites nested resources while preserving URLs and unrelated source paths", () => {
+      const installedSkill = emitIsolatedSkill();
+      const guide = readFileSync(
+        path.join(installedSkill, "resources/nested/guide.md"),
+        "utf-8",
+      );
+      expect(guide).toContain(
+        "[Policy](../../references/_shared/core/policy.md#authorization)",
+      );
+      expect(guide).toContain("`../../references/_shared/runtime/contract.md`");
+      const skillMd = readFileSync(
+        path.join(installedSkill, "SKILL.md"),
+        "utf-8",
+      );
+      expect(skillMd).toContain(
+        "https://example.test/.agents/skills/_shared/core/policy.md#remote",
+      );
+      expect(skillMd).toContain("`src/_shared/core/policy.md`");
+    });
+
+    it("resolves shared paths relative to the generated overflow file", () => {
+      const body = [
+        ...Array.from({ length: 501 }, (_, index) => `line ${index}`),
+        "Read [Policy](.agents/skills/_shared/core/policy.md#authorization).",
+      ].join("\n");
+      const installedSkill = emitIsolatedSkill(body);
+      const overflow = readFileSync(
+        path.join(installedSkill, "references/overflow.md"),
+        "utf-8",
+      );
+      expect(overflow).toContain(
+        "[Policy](_shared/core/policy.md#authorization)",
+      );
+      expect(
+        existsSync(
+          path.join(installedSkill, "references/_shared/core/policy.md"),
+        ),
+      ).toBe(true);
+    });
+
+    it("removes obsolete bundled shared resources when emitting again", () => {
+      outDir = mkdtempSync(path.join(tmpdir(), "oma-portable-skill-cleanup-"));
+      const repoRoot = path.join(outDir, "repo");
+      const emittedRoot = path.join(outDir, "emitted");
+      const skillDir = path.join(repoRoot, ".agents/skills/portable-skill");
+      const sharedDir = path.join(repoRoot, ".agents/skills/_shared/core");
+      mkdirSync(path.join(skillDir, "references"), { recursive: true });
+      mkdirSync(sharedDir, { recursive: true });
+      writeFileSync(path.join(sharedDir, "policy.md"), "# Shared policy");
+      writeFileSync(
+        path.join(skillDir, "references/local.md"),
+        "# Local guide",
+      );
+      const frontmatter = [
+        "---",
+        "name: portable-skill",
+        "description: A skill whose shared dependencies change.",
+        "---",
+        "",
+      ].join("\n");
+      writeFileSync(
+        path.join(skillDir, "SKILL.md"),
+        `${frontmatter}Read \`.agents/skills/_shared/core/policy.md\`.`,
+      );
+      emitAgentSkills(repoRoot, emittedRoot);
+      const bundledPolicy = path.join(
+        emittedRoot,
+        "portable-skill/references/_shared/core/policy.md",
+      );
+      expect(existsSync(bundledPolicy)).toBe(true);
+
+      writeFileSync(
+        path.join(skillDir, "SKILL.md"),
+        `${frontmatter}Read [Local guide](references/local.md).`,
+      );
+      emitAgentSkills(repoRoot, emittedRoot);
+      expect(existsSync(bundledPolicy)).toBe(false);
+      expect(
+        readFileSync(
+          path.join(emittedRoot, "portable-skill/references/local.md"),
+          "utf-8",
+        ),
+      ).toBe("# Local guide");
+    });
   });
 });

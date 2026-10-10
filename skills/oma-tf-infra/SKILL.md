@@ -190,11 +190,11 @@ trivy config .   # tfsec is in maintenance mode; Trivy is its successor
 - Policy & testing: `resources/policy-testing-examples.md`
 - ISO controls: `resources/iso-42001-infra.md`
 - Error recovery: `resources/error-playbook.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Clarification: `../_shared/core/clarification-protocol.md`
-- Context budget: `../_shared/core/context-budget.md`
-- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
-- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
+- Context loading: `references/_shared/core/context-loading.md`
+- Clarification: `references/_shared/core/clarification-protocol.md`
+- Context budget: `references/_shared/core/context-budget.md`
+- Task decomposition: `references/_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
+- Lessons learned: `references/_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — Collector topology, transport tuning, release metadata
 
 ### Knowledge Reference

@@ -75,7 +75,7 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 2. Resolve `intent` from the user prompt; if ambiguous (e.g. "scan this repo"), default to `setup` then `scan` (calibration mode).
 3. Estimate scale: count source files (rough `rg --files | wc -l` excluding `node_modules`, `.git`, `dist`) to forecast cost before any AI pass.
 4. Resolve the selected credential mode and backend. Check its required environment configuration or an existing `claude` / `codex` subscription login, without echoing secrets. A valid subscription session does not require an API-key environment variable. Resolve only missing configuration before AI calls.
-5. Resolve backend, scope, and spend from existing instructions and configuration under `../_shared/core/execution-policy.md`. Before paid or custom-scope work, record the actual approved, limited, or declined action using `resources/decision-records.md`. A configured backend does not authorize additional spend; ask only for a material missing choice or new authorization.
+5. Resolve backend, scope, and spend from existing instructions and configuration under `references/_shared/core/execution-policy.md`. Before paid or custom-scope work, record the actual approved, limited, or declined action using `resources/decision-records.md`. A configured backend does not authorize additional spend; ask only for a material missing choice or new authorization.
 
 ### Transitions
 - If `.deepsec/` is missing and intent involves scanning → run `bunx deepsec init` (or `npx deepsec init`) and follow the printed prompt to populate `INFO.md` before any AI pass.
@@ -215,5 +215,5 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 - Upstream docs (load only when a resource file points at one):
   - Repo + README: https://github.com/vercel-labs/deepsec
   - Per-topic docs at https://github.com/vercel-labs/deepsec/tree/main/docs (`getting-started`, `reviewing-changes`, `writing-matchers`, `configuration`, `models`, `plugins`, `architecture`, `data-layout`, `vercel-setup`, `supported-tech`, `faq`)
-- Shared context loading: `../_shared/core/context-loading.md`
-- Shared quality principles: `../_shared/core/quality-principles.md`
+- Shared context loading: `references/_shared/core/context-loading.md`
+- Shared quality principles: `references/_shared/core/quality-principles.md`

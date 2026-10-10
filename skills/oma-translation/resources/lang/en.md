@@ -2,7 +2,7 @@
 
 Load this file whenever the **target** language is English. It is read together
 with `../translation-rubric.md` for substantive content or review. For prose style
-review, also load `../../../_shared/core/anti-ai-prose.md` (common taxonomy) and
+review, also load `../../references/_shared/core/anti-ai-prose.md` (common taxonomy) and
 `../anti-ai-patterns.md` (translation exceptions and grammar diagnostics).
 
 Most oma translation runs go English → other. This profile covers the reverse
@@ -133,7 +133,7 @@ colon for definitions and a comma pair for asides.
 
 ### AI vocabulary overuse
 
-See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-clustering).
+See [Vocabulary clustering](../../references/_shared/core/anti-ai-prose.md#vocabulary-clustering).
 
 The shared English watch list applies directly here: *additionally, crucial,
 delve, enhance, foster, garner, highlight, interplay, intricate, key, landscape,
@@ -152,14 +152,14 @@ Frequent CJK-source triggers:
 
 ### synonym cycling
 
-See [Synonym cycling](../../../_shared/core/anti-ai-prose.md#synonym-cycling).
+See [Synonym cycling](../../references/_shared/core/anti-ai-prose.md#synonym-cycling).
 
 Keep one term per concept. If the source uses `사용자` throughout, use "user"
 throughout; do not rotate through "client", "consumer", "end user".
 
 ### boldface and inline-header lists
 
-See [Decorative bold](../../../_shared/core/anti-ai-prose.md#decorative-bold) and [Mini-heading lists](../../../_shared/core/anti-ai-prose.md#mini-heading-lists).
+See [Decorative bold](../../references/_shared/core/anti-ai-prose.md#decorative-bold) and [Mini-heading lists](../../references/_shared/core/anti-ai-prose.md#mini-heading-lists).
 
 CJK technical writing bolds far more freely than English documentation. Do not
 carry every bold span through, and do not convert plain bullets into

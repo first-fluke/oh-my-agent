@@ -170,7 +170,7 @@ Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or
 - **ADR Mode**: concise final decision record after analysis
 
 ## References
-- Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
+- Local code tools: `references/_shared/core/code-intelligence.md` (code search/navigation)
 
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
 - Checklist (run before handoff): `resources/checklist.md`
@@ -179,7 +179,7 @@ Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or
 - Output templates: `resources/output-templates.md`
 - API evolution patterns (versioning, deprecation, lifecycle guarantees): `resources/api-evolution.md`
 - Migration/transition patterns (strangler fig, branch by abstraction, expand-contract): `resources/migration-patterns.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
-- Clarification protocol: `../_shared/core/clarification-protocol.md`
-- Quality principles: `../_shared/core/quality-principles.md`
+- Context loading: `references/_shared/core/context-loading.md`
+- Task decomposition: `references/_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
+- Clarification protocol: `references/_shared/core/clarification-protocol.md`
+- Quality principles: `references/_shared/core/quality-principles.md`

@@ -9,11 +9,9 @@
 // conformant clients discover those files at the package root, so a git
 // clone of this repo is the installable package. The agent-skills/agents-md
 // trees that `oma emit` also writes under `generated/` are NOT committed
-// here — they were a near-verbatim copy of `.agents/skills/` whose
-// `../_shared/...` references did not survive the copy, so the
-// drop-in-distribution purpose they existed for never actually held.
-// `oma emit --target agent-skills` still works for users emitting into their
-// own projects; this repo just doesn't vendor its own output. See
+// here — the portable skills are already included in the root package.
+// `oma emit --target agent-skills` also emits standalone skills for users'
+// own projects. See
 // cli/commands/emit/command.ts and cli/platform/emit/*.ts.
 
 import { execFileSync } from "node:child_process";

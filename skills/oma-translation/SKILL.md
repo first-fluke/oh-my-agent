@@ -38,7 +38,7 @@ structure.
 ### Dependencies
 - Target profile: `resources/lang/{code}.md`, if one exists.
 - `resources/translation-rubric.md` for substantive content or review.
-- `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-patterns.md` together when prose needs style review.
+- `references/_shared/core/anti-ai-prose.md` and `resources/anti-ai-patterns.md` together when prose needs style review.
 - Existing siblings and glossary when translating into a project.
 
 ### Control-flow features
@@ -174,7 +174,7 @@ the suggested revision only when warranted, and the evidence for each finding.
 ### Canonical workflow path
 1. Resolve target locale and protect exact syntax.
 2. Load the one applicable language profile and relevant siblings; load the rubric for substantive
-   content or review. For prose style review, load `../_shared/core/anti-ai-prose.md` with
+   content or review. For prose style review, load `references/_shared/core/anti-ai-prose.md` with
    `resources/anti-ai-patterns.md`; apply its fidelity exceptions before any shared style fix.
 3. Infer meaning, register, terminology, and figurative-language handling.
 4. Draft in natural target order and project style.
@@ -205,9 +205,9 @@ the suggested revision only when warranted, and the evidence for each finding.
 ## References
 
 - Translation rubric: `resources/translation-rubric.md` (load for substantive content or review)
-- Common prose diagnostics: `../_shared/core/anti-ai-prose.md` (load with translation exceptions when prose style needs review)
+- Common prose diagnostics: `references/_shared/core/anti-ai-prose.md` (load with translation exceptions when prose style needs review)
 - Translation exceptions and grammar diagnostics: `resources/anti-ai-patterns.md` (load with common diagnostics when prose style needs review)
 - Target profiles: `resources/lang/{ko,ja,zh,en}.md` (load one matching profile)
 - Profile template: `resources/lang/_template.md` (only when adding a profile)
-- Shared context loading: `../_shared/core/context-loading.md`
-- Shared quality principles: `../_shared/core/quality-principles.md`
+- Shared context loading: `references/_shared/core/context-loading.md`
+- Shared quality principles: `references/_shared/core/quality-principles.md`

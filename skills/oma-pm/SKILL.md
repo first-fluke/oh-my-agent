@@ -138,9 +138,9 @@ outputs:
 - Deferred Quality: testing is part of every task, not a final phase
 
 ## References
-- Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
+- Local code tools: `references/_shared/core/code-intelligence.md` (code search/navigation)
 
-- Runtime identity and run-scoped reports: `../_shared/runtime/memory-protocol.md`, `../_shared/runtime/result-contract.md`
+- Runtime identity and run-scoped reports: `references/_shared/runtime/memory-protocol.md`, `references/_shared/runtime/result-contract.md`
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
 - Plan examples: `resources/examples.md`
 - ISO planning guide: `resources/iso-planning.md`
@@ -149,9 +149,9 @@ outputs:
 - Ultrawork PLAN phase protocol: `resources/plan-phase-protocol.md` (used when this skill runs inside the ultrawork workflow)
 - Task board spec (orchestrator-consumed format): `../oma-orchestration/resources/memory-schema.md`
 - Human-readable tracker: when running inside the `/plan` workflow, also generate `docs/plans/work/{NNN}-{name}.md` per `.agents/workflows/plan.md`
-- API contract template (SSOT): `../_shared/core/api-contracts/template.md`; write generated contracts to `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
-- Context loading: `../_shared/core/context-loading.md`
-- Planning depth: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
-- Clarification: `../_shared/core/clarification-protocol.md`
-- Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
+- API contract template (SSOT): `references/_shared/core/api-contracts/template.md`; write generated contracts to `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
+- Context loading: `references/_shared/core/context-loading.md`
+- Planning depth: `references/_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
+- Clarification: `references/_shared/core/clarification-protocol.md`
+- Context budget: `references/_shared/core/context-budget.md`
+- Lessons learned: `references/_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)

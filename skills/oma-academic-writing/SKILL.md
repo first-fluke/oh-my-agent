@@ -50,12 +50,12 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 - `review` mode: PASS/FAIL Compliance Report across Sentence Structure, Verb Quality, Anti-AI, Specificity, Hedging, Paragraph Clarity, Rhythm/Burstiness, Claim-Evidence Alignment, plus recommended fixes
 
 ### Dependencies
-- `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`: common diagnostics and academic constraints; load together for prose audits
+- `references/_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`: common diagnostics and academic constraints; load together for prose audits
 - `resources/sentence-structure-reference.md`: four sentence types, contextual rhythm guidance, common errors
 - `resources/academic-verb-tiers.md`: meaning- and evidence-based verb guidance
 - `resources/hedging-guide.md`: calibrated certainty expressions matched to evidence strength
-- `../_shared/core/context-loading.md`: task-relevant resource loading
-- `../_shared/core/quality-principles.md`: shared quality bar
+- `references/_shared/core/context-loading.md`: task-relevant resource loading
+- `references/_shared/core/quality-principles.md`: shared quality bar
 
 ### Control-flow features
 - Mode branching: `draft` vs `revise` vs `review` produce different output formats and pass sequences
@@ -135,7 +135,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 1. **READ** the draft and any supplied rubric; quote actual assignment constraints and pin their requirements. If no rubric is supplied, use the requested revision/review scope without inventing constraints.
 2. **PLAN** each paragraph as Topic-Support-Conclude; identify where evidence strength or a vague claim calls for a more precise verb.
 3. **DRAFT** prose with sentence variety, clear verb choice, hedging, and Topic-Support-Conclude structure.
-4. **AUDIT** with `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`. Fix supported defects in draft/revise mode; in review mode, quote the passage, identify the defect, and recommend a local fix without a full rewrite or AI-authorship estimate.
+4. **AUDIT** with `references/_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`. Fix supported defects in draft/revise mode; in review mode, quote the passage, identify the defect, and recommend a local fix without a full rewrite or AI-authorship estimate.
 5. **REVERSE-OUTLINE** the section and build the Claim-Evidence Map; weaken or remove any unsupported claim.
 6. **POLISH** with read-aloud, cohesion, specificity, word-count, rhythm, and paragraph-length-variation checks; emit in the mode's output format.
 
@@ -171,10 +171,10 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 11. Apply the shared mannered-prose guidance with the academic checklist's literal-statement requirement.
 
 ## References
-- Common prose diagnostics: `../_shared/core/anti-ai-prose.md` (load with the academic checklist for prose audits)
+- Common prose diagnostics: `references/_shared/core/anti-ai-prose.md` (load with the academic checklist for prose audits)
 - Academic audit constraints: `resources/anti-ai-checklist.md`
 - Sentence-structure reference: `resources/sentence-structure-reference.md`
 - Academic verb tiers: `resources/academic-verb-tiers.md`
 - Hedging guide: `resources/hedging-guide.md`
-- Shared context loading: `../_shared/core/context-loading.md`
-- Shared quality principles: `../_shared/core/quality-principles.md`
+- Shared context loading: `references/_shared/core/context-loading.md`
+- Shared quality principles: `references/_shared/core/quality-principles.md`

@@ -88,7 +88,7 @@ Guide manual multi-agent coordination for complex work that spans PM, frontend, 
 ### Tools and instruments
 - `oma agent spawn`, PM/frontend/backend/mobile/QA agents
 - Memory/progress/result files
-- Configured code intelligence, with native fallback per `../_shared/core/code-intelligence.md`
+- Configured code intelligence, with native fallback per `references/_shared/core/code-intelligence.md`
 
 ### Canonical command path
 ```bash
@@ -126,7 +126,7 @@ Useful `agent spawn` options: `--vendor <vendor>` (CLI vendor override), `--isol
 3. Reuse or update contracts for changed API boundaries before dependent frontend/mobile work
 4. QA review is always the final step
 5. Assign separate workspaces to avoid file conflicts (or use `--isolation worktree` for a git worktree per spawn)
-6. Follow `../_shared/core/code-intelligence.md`: discover configured tools, do not auto-install or track, and use native search only for paths outside this project or ignored paths when unavailable or timed out
+6. Follow `references/_shared/core/code-intelligence.md`: discover configured tools, do not auto-install or track, and use native search only for paths outside this project or ignored paths when unavailable or timed out
 7. Resume from the current handoff state and execute applicable steps in dependency order; record why a branch is not applicable
 
 ### Workflow
@@ -153,7 +153,7 @@ wait
 
 #### Step 3: Monitor & Coordinate
 
-- Read injected run artifacts and receipts. Human-readable progress/results use `{memoryConfig.basePath}/progress-{agentId}-{taskId}-{runId}-{sessionId}.md` and the corresponding `result-` name; see `../_shared/runtime/memory-protocol.md`. Keep the structured claim path unchanged.
+- Read injected run artifacts and receipts. Human-readable progress/results use `{memoryConfig.basePath}/progress-{agentId}-{taskId}-{runId}-{sessionId}.md` and the corresponding `result-` name; see `references/_shared/runtime/memory-protocol.md`. Keep the structured claim path unchanged.
 - Verify API contracts align between agents
 - Ensure shared data models are consistent
 

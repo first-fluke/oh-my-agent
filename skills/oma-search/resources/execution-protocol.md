@@ -44,7 +44,7 @@ Flags: `--only <list>`, `--skip <list>`, `--timeout <sec>`, `--locale <v>`,
 3. Include repo name, file path, and match context
 
 ### local route
-Follow `../../_shared/core/code-intelligence.md`. Discover configured tools for named symbols, patterns, and structure. If unavailable or timed out, use native search only for paths outside this project or ignored paths; record limitations. Do not install a provider, track a repository, or silently switch providers.
+Follow `../references/_shared/core/code-intelligence.md`. Discover configured tools for named symbols, patterns, and structure. If unavailable or timed out, use native search only for paths outside this project or ignored paths; record limitations. Do not install a provider, track a repository, or silently switch providers.
 
 ## Result normalization
 

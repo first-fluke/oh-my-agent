@@ -1,6 +1,6 @@
 # Deepsec Decision Records
 
-Use these records in an active OMA L1 session. Call `oma state emit` directly and follow `../../_shared/runtime/event-spec.md`. Substitute actual values; placeholder text does not record a decision. A record preserves the choice and its evidence; it does not authorize the action or require a new approval.
+Use these records in an active OMA L1 session. Call `oma state emit` directly and follow `../references/_shared/runtime/event-spec.md`. Substitute actual values; placeholder text does not record a decision. A record preserves the choice and its evidence; it does not authorize the action or require a new approval.
 
 ## Execution scope
 
