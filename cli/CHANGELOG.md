@@ -1,5 +1,18 @@
 # Changelog
 
+## [17.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.0.2...cli-v17.1.0) (2026-10-10)
+
+
+### Features
+
+* **dev-workflow:** add tooling profiles and validation guidance ([218eb61](https://github.com/first-fluke/oh-my-agent/commit/218eb616644df177b5ee9d8c831236a835cb3f39))
+
+
+### Bug Fixes
+
+* **cli:** preserve legacy global services during home migration ([07aa576](https://github.com/first-fluke/oh-my-agent/commit/07aa5766ca9c64cf6967c81b4e4384c8a763cf05))
+* **migration:** preserve canonical Serena logs ([9ae9d65](https://github.com/first-fluke/oh-my-agent/commit/9ae9d6587647651b89acbd8455c5558ff53f509d))
+
 ## [17.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.0.1...cli-v17.0.2) (2026-10-09)
 
 
