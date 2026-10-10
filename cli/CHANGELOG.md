@@ -1,5 +1,21 @@
 # Changelog
 
+## [18.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.1.1...cli-v18.0.0) (2026-10-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **security:** replace the oma-deepsec skill and /deepsec workflow with oma-security and /security without compatibility aliases. Deepsec remains the default source scanning engine.
+
+### Features
+
+* **security:** replace deepsec workflow with security ([43200a2](https://github.com/first-fluke/oh-my-agent/commit/43200a28e580055422070d4ca62bfb0d8d0a2299))
+
+
+### Bug Fixes
+
+* **hooks:** restrict design workflow to visual requests ([464592f](https://github.com/first-fluke/oh-my-agent/commit/464592f94eb497324c471e8e00862b1f8166e5c6))
+
 ## [17.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.1.0...cli-v17.1.1) (2026-10-10)
 
 
