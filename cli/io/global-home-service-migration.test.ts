@@ -7,6 +7,7 @@ import {
   rmSync,
   statSync,
   symlinkSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { hostname, tmpdir } from "node:os";
@@ -134,6 +135,141 @@ describe("global service migration", () => {
       existsSync(join(destination, "state/serena/serena-daemon-18500.log")),
     ).toBe(false);
   });
+
+  it("holds the legacy startup lock while rechecking and copying Serena state", async () => {
+    const lock = join(home, ".config/oma/serena-daemons.lock");
+    file(join(home, ".config/oma/serena-daemons.json"), "{}");
+    file(join(home, ".config/oma/serena-daemon-18500.log"), "old log");
+    let inspected = false;
+    const result = await migrate({
+      listProcesses: () => {
+        inspected = true;
+        expect(readFileSync(lock, "utf8")).toBe(String(process.pid));
+        return "";
+      },
+    });
+    expect(inspected).toBe(true);
+    expect(result.conflicts).toEqual([]);
+    expect(result.deferred).toEqual([]);
+    expect(result.copied).toContain(
+      join(destination, "state/serena/serena-daemons.json"),
+    );
+    expect(existsSync(lock)).toBe(false);
+  });
+
+  it("defers if a live daemon is discovered in the locked registry recheck", async () => {
+    const registry = join(home, ".config/oma/serena-daemons.json");
+    const lock = join(home, ".config/oma/serena-daemons.lock");
+    file(registry, "{}");
+    const result = await migrate({
+      isProcessAlive: (pid) => pid === 101,
+      listProcesses: () => {
+        expect(readFileSync(lock, "utf8")).toBe(String(process.pid));
+        file(registry, JSON.stringify({ root: { pid: 101, clients: [] } }));
+        return "";
+      },
+    });
+    expect(result.deferred.join(" ")).toContain("Legacy Serena");
+    expect(result.copied).toEqual([]);
+    expect(existsSync(lock)).toBe(false);
+    expect(JSON.parse(readFileSync(registry, "utf8")).root.pid).toBe(101);
+  });
+
+  it("preserves the canonical registry while migrating quiescent legacy logs", async () => {
+    const registry = join(home, ".config/oma/serena-daemons.json");
+    const target = join(destination, "state/serena/serena-daemons.json");
+    const current = JSON.stringify({ canonical: { pid: 201, clients: [] } });
+    file(registry, JSON.stringify({ legacy: { pid: 100, clients: [] } }));
+    file(join(home, ".config/oma/serena-daemon-18500.log"), "old log");
+    file(target, current);
+    const result = await migrate({ isProcessAlive: (pid) => pid === 201 });
+    expect(result.conflicts).toEqual([]);
+    expect(result.deferred).toEqual([]);
+    expect(result.copied).not.toContain(target);
+    expect(readFileSync(target, "utf8")).toBe(current);
+    expect(
+      readFileSync(
+        join(destination, "state/serena/serena-daemon-18500.log"),
+        "utf8",
+      ),
+    ).toBe("old log");
+    expect((await migrate()).copied).toEqual([]);
+  });
+
+  it("reports a canonical registry directory and retries after reconciliation", async () => {
+    const registry = join(home, ".config/oma/serena-daemons.json");
+    const target = join(destination, "state/serena/serena-daemons.json");
+    file(registry, "{}");
+    mkdirSync(target, { recursive: true });
+
+    expect((await migrate()).conflicts.join(" ")).toContain(
+      "Invalid canonical Serena registry",
+    );
+    expect(statSync(target).isDirectory()).toBe(true);
+    expect(readFileSync(registry, "utf8")).toBe("{}");
+
+    rmSync(target, { recursive: true });
+    expect((await migrate()).conflicts).toEqual([]);
+    expect(readFileSync(target, "utf8")).toBe("{}");
+  });
+
+  it("recovers a dead legacy startup owner without leaving its lock behind", async () => {
+    const lock = join(home, ".config/oma/serena-daemons.lock");
+    file(lock, "100");
+    file(join(home, ".config/oma/serena-daemons.json"), "{}");
+    const result = await migrate();
+    expect(result.conflicts).toEqual([]);
+    expect(result.deferred).toEqual([]);
+    expect(existsSync(lock)).toBe(false);
+    expect(result.copied).toContain(
+      join(destination, "state/serena/serena-daemons.json"),
+    );
+  });
+
+  it("never removes an old legacy startup lock whose owner is still active", async () => {
+    const lock = join(home, ".config/oma/serena-daemons.lock");
+    file(lock, "101");
+    utimesSync(lock, new Date(0), new Date(0));
+    file(join(home, ".config/oma/serena-daemons.json"), "{}");
+    const result = await migrate({ isProcessAlive: (pid) => pid === 101 });
+    expect(result.deferred.join(" ")).toContain("Legacy Serena");
+    expect(readFileSync(lock, "utf8")).toBe("101");
+    expect(
+      existsSync(join(destination, "state/serena/serena-daemons.json")),
+    ).toBe(false);
+  });
+
+  it("does not acquire through a legacy startup lock symlink", async () => {
+    const outside = join(home, "outside-lock");
+    file(outside, "100");
+    mkdirSync(join(home, ".config/oma"), { recursive: true });
+    symlinkSync(outside, join(home, ".config/oma/serena-daemons.lock"));
+    file(join(home, ".config/oma/serena-daemons.json"), "{}");
+    const result = await migrate();
+    expect(result.deferred.join(" ")).toContain("Legacy Serena");
+    expect(readFileSync(outside, "utf8")).toBe("100");
+    expect(
+      existsSync(join(destination, "state/serena/serena-daemons.json")),
+    ).toBe(false);
+  });
+
+  it("keeps dry-run Serena inspection free of legacy lock writes", async () => {
+    const lock = join(home, ".config/oma/serena-daemons.lock");
+    file(join(home, ".config/oma/serena-daemons.json"), "{}");
+    const result = await migrate({
+      dryRun: true,
+      listProcesses: () => {
+        expect(existsSync(lock)).toBe(false);
+        return "";
+      },
+    });
+    expect(result.deferred).toEqual([]);
+    expect(result.copied).toContain(
+      join(destination, "state/serena/serena-daemons.json"),
+    );
+    expect(existsSync(destination)).toBe(false);
+    expect(existsSync(lock)).toBe(false);
+  });
   it("copies service state and secret env with private permissions, preserving originals", async () => {
     const registry = join(home, ".config/oma/serena-daemons.json");
     const env = join(home, ".agents/schedule/env/sch_one");
@@ -218,6 +354,185 @@ describe("global service migration", () => {
       { name: "added", createdAt: "old" },
     ]);
     expect((await migrate()).copied).toEqual([]);
+  });
+
+  it("merges distinct schedule jobs and identical jobs despite JSON formatting, preserving originals", async () => {
+    const source = join(home, ".agents/schedule/schedules.json");
+    const target = join(destination, "schedule/schedules.json");
+    const shared = { id: "sch_same", prompt: "same", lastFiredAt: null };
+    const incoming = {
+      version: 1,
+      jobs: [shared, { id: "sch_old", prompt: "old" }],
+    };
+    file(source, JSON.stringify(incoming));
+    file(
+      target,
+      JSON.stringify({
+        jobs: [
+          { lastFiredAt: null, prompt: "same", id: "sch_same" },
+          { id: "sch_new", prompt: "new" },
+        ],
+        version: 1,
+      }),
+    );
+    const result = await migrate();
+    expect(result.conflicts).toEqual([]);
+    expect(result.deferred).toEqual([]);
+    expect(result.copied).toContain(target);
+    expect(JSON.parse(readFileSync(target, "utf8")).jobs).toEqual([
+      shared,
+      { id: "sch_new", prompt: "new" },
+      { id: "sch_old", prompt: "old" },
+    ]);
+    expect(readFileSync(source, "utf8")).toBe(JSON.stringify(incoming));
+    expect((await migrate()).copied).toEqual([]);
+    file(target, JSON.stringify({ version: 1, jobs: [] }));
+    expect((await migrate()).conflicts).toEqual([]);
+    expect(JSON.parse(readFileSync(target, "utf8")).jobs).toEqual([]);
+    if (process.platform !== "win32")
+      expect(statSync(target).mode & 0o777).toBe(0o600);
+  });
+
+  it("does not overwrite different schedule jobs with the same ID and retries after reconciliation", async () => {
+    const source = join(home, ".agents/schedule/schedules.json");
+    const target = join(destination, "schedule/schedules.json");
+    const original = JSON.stringify({
+      version: 1,
+      jobs: [{ id: "sch_same", prompt: "new" }],
+    });
+    file(
+      source,
+      JSON.stringify({
+        version: 1,
+        jobs: [{ id: "sch_same", prompt: "old" }],
+      }),
+    );
+    file(target, original);
+    expect((await migrate()).conflicts.join(" ")).toContain(
+      "Differing schedule job sch_same",
+    );
+    expect(readFileSync(target, "utf8")).toBe(original);
+    expect((await migrate()).conflicts.join(" ")).toContain(
+      "Differing schedule job sch_same",
+    );
+    file(source, original);
+    expect((await migrate()).conflicts).toEqual([]);
+  });
+
+  it("defers a schedule merge while the canonical manifest writer owns its lock", async () => {
+    const source = join(home, ".agents/schedule/schedules.json");
+    const target = join(destination, "schedule/schedules.json");
+    file(source, '{"version":1,"jobs":[{"id":"sch_old"}]}');
+    file(target, '{"version":1,"jobs":[{"id":"sch_new"}]}');
+    const lock = acquireOwnedDirectoryLock(
+      join(destination, "schedule/manifest.lock"),
+    );
+    expect(lock.ok).toBe(true);
+    if (!lock.ok) return;
+    try {
+      expect((await migrate()).deferred.join(" ")).toContain(
+        "Schedule manifest is being updated",
+      );
+      expect(JSON.parse(readFileSync(target, "utf8")).jobs).toEqual([
+        { id: "sch_new" },
+      ]);
+    } finally {
+      lock.release();
+    }
+    expect((await migrate()).conflicts).toEqual([]);
+    expect(JSON.parse(readFileSync(target, "utf8")).jobs).toEqual([
+      { id: "sch_new" },
+      { id: "sch_old" },
+    ]);
+  });
+
+  it("previews a schedule merge without changing either manifest", async () => {
+    const source = join(home, ".agents/schedule/schedules.json");
+    const target = join(destination, "schedule/schedules.json");
+    file(source, '{"version":1,"jobs":[{"id":"sch_old"}]}');
+    const original = '{"version":1,"jobs":[{"id":"sch_new"}]}';
+    file(target, original);
+    const result = await migrate({ dryRun: true });
+    expect(result.conflicts).toEqual([]);
+    expect(result.copied).toContain(target);
+    expect(readFileSync(target, "utf8")).toBe(original);
+    expect(existsSync(join(destination, "state/migrations"))).toBe(false);
+  });
+
+  it("migrates into an already initialized empty schedule manifest", async () => {
+    const source = join(home, ".agents/schedule/schedules.json");
+    const target = join(destination, "schedule/schedules.json");
+    file(source, '{"version":1,"jobs":[{"id":"sch_old"}]}');
+    file(target, '{"version":1,"jobs":[]}');
+    expect((await migrate()).conflicts).toEqual([]);
+    expect(JSON.parse(readFileSync(target, "utf8")).jobs).toEqual([
+      { id: "sch_old" },
+    ]);
+  });
+
+  it.each([
+    { version: 2, jobs: [] },
+    { version: 1, jobs: [null] },
+    { version: 1, jobs: [{ prompt: "no ID" }] },
+    { version: 1, jobs: [{ id: "same" }, { id: "same" }] },
+  ])(
+    "rejects malformed schedule manifests without replacing current jobs: %j",
+    async (invalid) => {
+      const source = join(home, ".agents/schedule/schedules.json");
+      const target = join(destination, "schedule/schedules.json");
+      const original = '{"version":1,"jobs":[{"id":"sch_new"}]}';
+      file(source, JSON.stringify(invalid));
+      file(target, original);
+      expect((await migrate()).conflicts.join(" ")).toContain(
+        "Invalid schedule manifest",
+      );
+      expect(readFileSync(target, "utf8")).toBe(original);
+    },
+  );
+
+  it("preserves additional schedule metadata from both manifests", async () => {
+    const source = join(home, ".agents/schedule/schedules.json");
+    const target = join(destination, "schedule/schedules.json");
+    file(
+      source,
+      JSON.stringify({ version: 1, jobs: [], sourceMetadata: "keep" }),
+    );
+    file(
+      target,
+      JSON.stringify({ version: 1, jobs: [], currentMetadata: "keep" }),
+    );
+    expect((await migrate()).conflicts).toEqual([]);
+    expect(JSON.parse(readFileSync(target, "utf8"))).toEqual({
+      version: 1,
+      jobs: [],
+      sourceMetadata: "keep",
+      currentMetadata: "keep",
+    });
+  });
+
+  it("does not choose between differing schedule metadata", async () => {
+    const source = join(home, ".agents/schedule/schedules.json");
+    const target = join(destination, "schedule/schedules.json");
+    file(source, '{"version":1,"jobs":[],"metadata":"old"}');
+    const original = '{"version":1,"jobs":[],"metadata":"new"}';
+    file(target, original);
+    expect((await migrate()).conflicts.join(" ")).toContain(
+      "Differing schedule metadata metadata",
+    );
+    expect(readFileSync(target, "utf8")).toBe(original);
+  });
+
+  it("does not follow a legacy schedule manifest symlink outside the source root", async () => {
+    const outside = join(home, "outside-manifest.json");
+    file(outside, '{"version":1,"jobs":[{"id":"sch_private"}]}');
+    mkdirSync(join(home, ".agents/schedule"), { recursive: true });
+    symlinkSync(outside, join(home, ".agents/schedule/schedules.json"));
+    expect((await migrate()).conflicts.join(" ")).toContain(
+      "Unsafe schedule manifest",
+    );
+    expect(existsSync(join(destination, "schedule/schedules.json"))).toBe(
+      false,
+    );
   });
 
   it.each(["daemon", "client"])(

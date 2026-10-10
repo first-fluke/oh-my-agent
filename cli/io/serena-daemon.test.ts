@@ -52,34 +52,191 @@ afterEach(() => {
 describe("omaStateDir", () => {
   it("honors the test override and falls back to ~/.oma/state/serena", () => {
     expect(omaStateDir()).toBe(join(home, ".config", "oma"));
-    _setOmaStateDirForTests(null);
+    vi.stubEnv("OMA_HOME", join(home, ".oma"));
+    _setOmaStateDirForTests(null, join(home, ".config", "oma"));
     expect(omaStateDir().endsWith(join(".oma", "state", "serena"))).toBe(true);
   });
 
-  it("blocks new startup and GC while an old registry still owns live clients", async () => {
+  it("reuses the legacy registry and lock while its clients are active", async () => {
     vi.stubEnv("HOME", home);
+    vi.stubEnv("USERPROFILE", home);
     vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
-    _setOmaStateDirForTests(null);
+    _setOmaStateDirForTests(null, join(home, ".config", "oma"));
     const legacy = join(home, ".config", "oma");
+    const key = daemonKey(work, "oma");
     mkdirSync(legacy, { recursive: true });
     writeFileSync(
       join(legacy, "serena-daemons.json"),
-      JSON.stringify({ old: { pid: process.pid, clients: [process.pid] } }),
+      JSON.stringify({
+        [key]: {
+          root: work,
+          context: "oma",
+          port: 12389,
+          pid: process.pid,
+          clients: [process.ppid],
+          runtimeRevision: "old-runtime",
+          startedAt: new Date().toISOString(),
+        },
+      }),
     );
     const fleet = fakeFleet();
-    await expect(
-      ensureSerenaDaemon({ root: work, context: "oma", ...fleet }),
-    ).rejects.toThrow("Legacy Serena registry");
+    fleet.listening.add(12389);
+    const stopDaemon = vi.fn();
+
+    const handle = await ensureSerenaDaemon({
+      root: work,
+      context: "oma",
+      runtimeRevision: "new-runtime",
+      stopDaemon,
+      ...fleet,
+    });
+
+    expect(handle).toEqual({
+      url: "http://127.0.0.1:12389/mcp",
+      port: 12389,
+      started: false,
+    });
+    expect(omaStateDir()).toBe(legacy);
+    expect(readRegistry()[key]?.clients).toContain(process.pid);
+    expect(readRegistry()[key]?.clients).toContain(process.ppid);
+    expect(readRegistry()[key]?.runtimeRevision).toBe("old-runtime");
+    detachClient(key);
+    expect(readRegistry()[key]?.clients).toEqual([process.ppid]);
     const scan = vi.fn(noDaemons);
     const kill = vi.fn();
-    expect(() => reclaimIdleDaemons(Date.now(), kill, scan)).toThrow(
-      "Legacy Serena registry",
-    );
-    expect(() => pruneRegistry()).toThrow("Legacy Serena registry");
+    expect(reclaimIdleDaemons(Date.now(), kill, scan)).toEqual([]);
+    expect(pruneRegistry()).toEqual([]);
     expect(fleet.spawnDaemon).not.toHaveBeenCalled();
-    expect(scan).not.toHaveBeenCalled();
+    expect(stopDaemon).not.toHaveBeenCalled();
     expect(kill).not.toHaveBeenCalled();
-    expect(existsSync(omaStateDir())).toBe(false);
+    expect(existsSync(join(home, "custom-oma", "state", "serena"))).toBe(false);
+  });
+
+  it("keeps the selected directory until this process exits", () => {
+    vi.stubEnv("HOME", home);
+    vi.stubEnv("USERPROFILE", home);
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    _setOmaStateDirForTests(null, join(home, ".config", "oma"));
+    const legacy = join(home, ".config", "oma");
+    mkdirSync(legacy, { recursive: true });
+    const registry = join(legacy, "serena-daemons.json");
+    writeFileSync(registry, JSON.stringify({ old: { pid: process.pid } }));
+
+    expect(omaStateDir()).toBe(legacy);
+    writeFileSync(registry, "{}");
+    expect(omaStateDir()).toBe(legacy);
+
+    // Until migration copies the registry, later processes keep using legacy too.
+    _setOmaStateDirForTests(null, legacy);
+    expect(omaStateDir()).toBe(legacy);
+    const canonical = join(home, "custom-oma", "state", "serena");
+    mkdirSync(canonical, { recursive: true });
+    writeFileSync(join(canonical, "serena-daemons.json"), "{}");
+    _setOmaStateDirForTests(null, legacy);
+    expect(omaStateDir()).toBe(join(home, "custom-oma", "state", "serena"));
+  });
+
+  it("does not replace an unreadable legacy registry", async () => {
+    vi.stubEnv("HOME", home);
+    vi.stubEnv("USERPROFILE", home);
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    _setOmaStateDirForTests(null, join(home, ".config", "oma"));
+    const legacy = join(home, ".config", "oma");
+    mkdirSync(legacy, { recursive: true });
+    writeFileSync(join(legacy, "serena-daemons.json"), "invalid JSON");
+    const fleet = fakeFleet();
+
+    await expect(
+      ensureSerenaDaemon({ root: work, context: "oma", ...fleet }),
+    ).rejects.toThrow(/legacy Serena registry/i);
+    expect(fleet.spawnDaemon).not.toHaveBeenCalled();
+    expect(readFileSync(join(legacy, "serena-daemons.json"), "utf8")).toBe(
+      "invalid JSON",
+    );
+  });
+
+  it("uses the canonical directory after quiescent legacy state is migrated", async () => {
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    const legacy = join(home, ".config", "oma");
+    _setOmaStateDirForTests(null, legacy);
+    mkdirSync(legacy, { recursive: true });
+    const legacyPath = join(legacy, "serena-daemons.json");
+    const original = JSON.stringify({ old: { pid: 2 ** 30, clients: [] } });
+    writeFileSync(legacyPath, original);
+    const canonical = join(home, "custom-oma", "state", "serena");
+    mkdirSync(canonical, { recursive: true });
+    writeFileSync(join(canonical, "serena-daemons.json"), original);
+    const fleet = fakeFleet();
+
+    const handle = await ensureSerenaDaemon({
+      root: work,
+      context: "oma",
+      ...fleet,
+    });
+
+    expect(handle?.started).toBe(true);
+    expect(omaStateDir()).toBe(join(home, "custom-oma", "state", "serena"));
+    expect(readFileSync(legacyPath, "utf8")).toBe(original);
+    expect(readRegistry()[daemonKey(work, "oma")]?.pid).toBe(process.pid);
+  });
+
+  it("rechecks migration under the legacy lock before its first write", async () => {
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    const legacy = join(home, ".config", "oma");
+    _setOmaStateDirForTests(null, legacy);
+    mkdirSync(legacy, { recursive: true });
+    const legacyPath = join(legacy, "serena-daemons.json");
+    writeFileSync(legacyPath, "{}");
+    expect(omaStateDir()).toBe(legacy);
+
+    // Migration finishes after selection but before this bridge attaches.
+    const canonical = join(home, "custom-oma", "state", "serena");
+    mkdirSync(canonical, { recursive: true });
+    writeFileSync(join(canonical, "serena-daemons.json"), "{}");
+    const fleet = fakeFleet();
+    const handle = await ensureSerenaDaemon({
+      root: work,
+      context: "oma",
+      ...fleet,
+    });
+
+    expect(handle?.started).toBe(true);
+    expect(omaStateDir()).toBe(canonical);
+    expect(readFileSync(legacyPath, "utf8")).toBe("{}");
+    expect(existsSync(join(legacy, "serena-daemons.lock"))).toBe(false);
+    expect(readRegistry()[daemonKey(work, "oma")]?.pid).toBe(process.pid);
+  });
+
+  it("shares the legacy directory while its startup lock is held", () => {
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    const legacy = join(home, ".config", "oma");
+    _setOmaStateDirForTests(null, legacy);
+    mkdirSync(legacy, { recursive: true });
+    writeFileSync(join(legacy, "serena-daemons.lock"), String(process.pid));
+
+    expect(omaStateDir()).toBe(legacy);
+  });
+
+  it("leaves both registries untouched when each has live clients", async () => {
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    const legacy = join(home, ".config", "oma");
+    const canonical = join(home, "custom-oma", "state", "serena");
+    _setOmaStateDirForTests(null, legacy);
+    const original = JSON.stringify({ old: { pid: process.pid } });
+    for (const directory of [legacy, canonical]) {
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(join(directory, "serena-daemons.json"), original);
+    }
+    const fleet = fakeFleet();
+
+    await expect(
+      ensureSerenaDaemon({ root: work, context: "oma", ...fleet }),
+    ).rejects.toThrow("Both legacy and canonical Serena registries are active");
+    expect(fleet.spawnDaemon).not.toHaveBeenCalled();
+    for (const directory of [legacy, canonical])
+      expect(readFileSync(join(directory, "serena-daemons.json"), "utf8")).toBe(
+        original,
+      );
   });
 });
 
@@ -639,6 +796,38 @@ describe("daemon lifecycle", () => {
 
   beforeEach(() => {
     kills.length = 0;
+  });
+
+  it("never mutates a registry when another live process keeps its lock", () => {
+    mkdirSync(omaStateDir(), { recursive: true });
+    const key = daemonKey("/proj", "ide");
+    const registryPath = join(omaStateDir(), "serena-daemons.json");
+    const original = JSON.stringify({
+      [key]: {
+        root: "/proj",
+        context: "ide",
+        port: 12389,
+        pid: process.pid,
+        clients: [process.ppid],
+      },
+    });
+    writeFileSync(registryPath, original);
+    const lock = join(omaStateDir(), "serena-daemons.lock");
+    const owner = String(process.ppid);
+    writeFileSync(lock, owner);
+    const then = new Date(Date.now() - 120_000);
+    utimesSync(lock, then, then);
+    let now = Date.now();
+    vi.spyOn(Date, "now").mockImplementation(() => {
+      now += 5001;
+      return now;
+    });
+
+    expect(() => attachClient(key)).toThrow("Serena registry lock");
+    expect(() => detachClient(key, process.ppid)).not.toThrow();
+    expect(() => pruneRegistry()).toThrow("Serena registry lock");
+    expect(readFileSync(registryPath, "utf8")).toBe(original);
+    expect(readFileSync(lock, "utf8")).toBe(owner);
   });
 
   async function startDaemon(root: string, killed = { pid: 0 }) {

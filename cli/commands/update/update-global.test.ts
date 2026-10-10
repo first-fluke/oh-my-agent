@@ -23,7 +23,12 @@ const migrationState = vi.hoisted(() => ({
     deferred: [] as string[],
   })),
 }));
-vi.mock("../../io/global-home-migration.js", () => migrationState);
+vi.mock("../../io/global-home-migration.js", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("../../io/global-home-migration.js")
+  >()),
+  ...migrationState,
+}));
 
 // Version/reconciliation tests must not refresh the developer's real toolchain.
 const syncSchedulesSpy = vi.hoisted(() =>
@@ -443,6 +448,23 @@ describe("update --global: _install.json lifecycle", () => {
     ).toBeLessThan(
       tarballState.downloadAndExtract.mock.invocationCallOrder[0] ?? 0,
     );
+  });
+
+  it("continues updating and reports active legacy Serena as pending", async () => {
+    const pending = "Legacy Serena daemon or bridge is active: /legacy/oma";
+    migrationState.migrateGlobalHome.mockResolvedValueOnce({
+      copied: [],
+      conflicts: [],
+      deferred: [pending],
+    });
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await update({ global: true, force: true, ci: true });
+
+    expect(lockState.acquireLock).toHaveBeenCalled();
+    expect(tarballState.downloadAndExtract).toHaveBeenCalled();
+    expect(linkState.link).toHaveBeenCalled();
+    expect(log).toHaveBeenCalledWith(pending);
   });
 
   it.each(["conflicts", "deferred"] as const)(

@@ -34,6 +34,23 @@ export interface GlobalHomeMigrationOptions {
   env?: NodeJS.ProcessEnv;
 }
 
+const LEGACY_SERENA_ACTIVE_PREFIX =
+  "Legacy Serena daemon or bridge is active: ";
+
+/** Live legacy Serena state can remain in place while its daemon is reused. */
+export function hasBlockingGlobalHomeMigration(
+  result: GlobalHomeMigrationResult,
+): boolean {
+  return (
+    result.conflicts.length > 0 ||
+    result.deferred.some(
+      (entry) =>
+        !entry.startsWith(LEGACY_SERENA_ACTIVE_PREFIX) ||
+        !entry.slice(LEGACY_SERENA_ACTIVE_PREFIX.length).trim(),
+    )
+  );
+}
+
 const definitionDirs = [
   "agents",
   "workflows",

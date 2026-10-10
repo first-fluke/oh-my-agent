@@ -10,7 +10,10 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { migrateGlobalHome } from "./global-home-migration.js";
+import {
+  hasBlockingGlobalHomeMigration,
+  migrateGlobalHome,
+} from "./global-home-migration.js";
 
 let home: string;
 function write(relative: string, content: string) {
@@ -37,6 +40,60 @@ beforeEach(() => {
 afterEach(() => rmSync(home, { recursive: true, force: true }));
 const run = (dryRun = false) =>
   migrateGlobalHome({ homeDir: home, env: {}, dryRun });
+
+describe("global home migration status", () => {
+  it.each([
+    {
+      name: "complete migration",
+      conflicts: [],
+      deferred: [],
+      blocking: false,
+    },
+    {
+      name: "active legacy Serena only",
+      conflicts: [],
+      deferred: ["Legacy Serena daemon or bridge is active: /legacy/oma"],
+      blocking: false,
+    },
+    {
+      name: "conflict alongside active Serena",
+      conflicts: ["Differing destination: /new/schedules.json"],
+      deferred: ["Legacy Serena daemon or bridge is active: /legacy/oma"],
+      blocking: true,
+    },
+    {
+      name: "migration lock",
+      conflicts: [],
+      deferred: ["Another global home migration is running"],
+      blocking: true,
+    },
+    {
+      name: "other deferral alongside active Serena",
+      conflicts: [],
+      deferred: [
+        "Legacy Serena daemon or bridge is active: /legacy/oma",
+        "/legacy/.agents: legacy install lock exists; finish the old installer first",
+      ],
+      blocking: true,
+    },
+    {
+      name: "incomplete active Serena message",
+      conflicts: [],
+      deferred: ["Legacy Serena daemon or bridge is active: "],
+      blocking: true,
+    },
+    {
+      name: "Serena read error",
+      conflicts: [],
+      deferred: ["Cannot read legacy Serena registry: /legacy/oma"],
+      blocking: true,
+    },
+  ])("classifies $name", ({ conflicts, deferred, blocking }) => {
+    expect(
+      hasBlockingGlobalHomeMigration({ copied: [], conflicts, deferred }),
+    ).toBe(blocking);
+  });
+});
 
 describe("global OMA home migration", () => {
   it("copies managed definitions and settings, preserving originals and unrelated skills", async () => {

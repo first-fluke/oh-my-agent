@@ -13,7 +13,10 @@ import pc from "picocolors";
 import { ensureAgentMemory } from "../../io/agentmemory/ensure.js";
 import { pruneBackupRoot } from "../../io/backup.js";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
-import { migrateGlobalHome } from "../../io/global-home-migration.js";
+import {
+  hasBlockingGlobalHomeMigration,
+  migrateGlobalHome,
+} from "../../io/global-home-migration.js";
 import { ensureGortexProject } from "../../io/gortex.js";
 import { maybeSelfUpdate } from "../../io/self-update.js";
 import {
@@ -161,7 +164,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
     const migration = await migrateGlobalHome({
       env: { ...process.env, OMA_HOME: installRoot },
     });
-    if (migration.conflicts.length || migration.deferred.length) {
+    if (hasBlockingGlobalHomeMigration(migration)) {
       throw new Error(
         `Global home migration needs attention before update: ${[
           ...migration.conflicts,
@@ -169,6 +172,8 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         ].join("; ")}`,
       );
     }
+    if (migration.deferred.length)
+      ui.note(migration.deferred.join("\n"), "Global home migration deferred");
   }
 
   // Acquire install lock — prevents concurrent install/update runs

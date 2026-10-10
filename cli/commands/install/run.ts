@@ -5,7 +5,10 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { ensureAgentMemory } from "../../io/agentmemory/ensure.js";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
-import { migrateGlobalHome } from "../../io/global-home-migration.js";
+import {
+  hasBlockingGlobalHomeMigration,
+  migrateGlobalHome,
+} from "../../io/global-home-migration.js";
 import { ensureGortexProject } from "../../io/gortex.js";
 import {
   deriveSerenaLanguages,
@@ -126,12 +129,13 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
   // Task 26 — context-bound installRoot (replaces process.cwd())
   const installRoot = getInstallRoot();
+  const pendingMigration: string[] = [];
 
   if (getInstallMode() === "global") {
     const migration = await migrateGlobalHome({
       env: { ...process.env, OMA_HOME: installRoot },
     });
-    if (migration.conflicts.length || migration.deferred.length) {
+    if (hasBlockingGlobalHomeMigration(migration)) {
       throw new Error(
         `Global home migration needs attention before installation: ${[
           ...migration.conflicts,
@@ -139,6 +143,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         ].join("; ")}`,
       );
     }
+    pendingMigration.push(...migration.deferred);
   }
 
   // Task 38 — install/update lock (aborts on concurrent run; auto-clears stale)
@@ -156,6 +161,8 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       createGlobalSkillDiscoveryLinks(installRoot);
     console.clear();
     p.intro(pc.bgMagenta(pc.white(" 🛸 oh-my-agent ")));
+    for (const entry of pendingMigration)
+      p.log.info(`Global home migration deferred: ${entry}`);
 
     if (nonInteractive) {
       p.log.info(pc.dim("Non-interactive mode — using defaults."));

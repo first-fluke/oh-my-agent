@@ -2,18 +2,23 @@ import { execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import {
   chmodSync,
+  closeSync,
   existsSync,
+  fstatSync,
   linkSync,
   lstatSync,
   mkdirSync,
+  openSync,
   readdirSync,
   readFileSync,
   realpathSync,
+  renameSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { hostname } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { acquireOwnedDirectoryLock } from "../utils/owned-directory-lock.js";
 import { writeVaultIndex } from "./vault.js";
 
@@ -262,6 +267,141 @@ export async function migrateGlobalServices(
     }
   }
 
+  function acquireLegacySerenaLock(): (() => void) | undefined {
+    const path = join(config, "serena-daemons.lock");
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const fd = openSync(path, "wx", 0o600);
+        const identity = fstatSync(fd);
+        try {
+          writeFileSync(fd, String(process.pid));
+        } finally {
+          closeSync(fd);
+        }
+        return () => {
+          try {
+            const current = lstatSync(path);
+            if (
+              current.isFile() &&
+              current.dev === identity.dev &&
+              current.ino === identity.ino &&
+              readFileSync(path, "utf8") === String(process.pid)
+            )
+              unlinkSync(path);
+          } catch {}
+        };
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+        try {
+          const previous = lstatSync(path);
+          if (!previous.isFile()) return;
+          const content = readFileSync(path, "utf8");
+          const pid = Number(content);
+          if (!Number.isSafeInteger(pid) || pid <= 0 || isAlive(pid)) return;
+          const current = lstatSync(path);
+          if (
+            !current.isFile() ||
+            current.dev !== previous.dev ||
+            current.ino !== previous.ino ||
+            readFileSync(path, "utf8") !== content ||
+            isAlive(pid)
+          )
+            return;
+          unlinkSync(path);
+        } catch (inspectionError) {
+          if ((inspectionError as NodeJS.ErrnoException).code !== "ENOENT")
+            return;
+        }
+      }
+    }
+  }
+
+  function mergeScheduleManifest(sourceRoot: string, targetRoot: string): void {
+    const source = join(sourceRoot, "schedules.json");
+    const target = join(targetRoot, "schedules.json");
+    let sourceIsFile: boolean;
+    try {
+      sourceIsFile = lstatSync(source).isFile();
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+      throw error;
+    }
+    if (
+      !sourceIsFile ||
+      !within(realpathSync(sourceRoot), realpathSync(source)) ||
+      !destinationSafe(target)
+    )
+      throw new Error(`Unsafe schedule manifest: ${source} -> ${target}`);
+
+    type Manifest = Record<string, unknown> & {
+      version: 1;
+      jobs: Array<Record<string, unknown> & { id: string }>;
+    };
+    const parse = (path: string): Manifest => {
+      if (!lstatSync(path).isFile())
+        throw new Error(`Invalid schedule manifest: ${path}`);
+      const value = JSON.parse(readFileSync(path, "utf8"));
+      const ids = new Set<string>();
+      if (
+        value?.version !== 1 ||
+        !Array.isArray(value.jobs) ||
+        value.jobs.some((job: unknown) => {
+          if (!job || typeof job !== "object" || Array.isArray(job))
+            return true;
+          const id = (job as { id?: unknown }).id;
+          if (typeof id !== "string" || !id.trim() || ids.has(id)) return true;
+          ids.add(id);
+          return false;
+        })
+      )
+        throw new Error(`Invalid schedule manifest: ${path}`);
+      return value as Manifest;
+    };
+    const incoming = parse(source);
+    const existing: Manifest = existsSync(target)
+      ? parse(target)
+      : { version: 1 as const, jobs: [] };
+    for (const [key, value] of Object.entries(incoming)) {
+      if (
+        key !== "jobs" &&
+        Object.hasOwn(existing, key) &&
+        !isDeepStrictEqual(existing[key], value)
+      )
+        throw new Error(`Differing schedule metadata ${key}: ${target}`);
+    }
+    const jobs = new Map(existing.jobs.map((job) => [job.id, job]));
+    for (const job of incoming.jobs) {
+      const current = jobs.get(job.id);
+      if (current && !isDeepStrictEqual(current, job))
+        throw new Error(`Differing schedule job ${job.id}: ${target}`);
+      if (!current) jobs.set(job.id, job);
+    }
+    const merged = { ...incoming, ...existing, jobs: [...jobs.values()] };
+    if (existsSync(target) && isDeepStrictEqual(existing, merged)) {
+      if (!options.dryRun) chmodSync(target, 0o600);
+      return;
+    }
+    if (!options.dryRun) {
+      privateDirectory(targetRoot);
+      const temporary = join(
+        targetRoot,
+        `.migration-${process.pid}-${randomUUID()}.tmp`,
+      );
+      try {
+        writeFileSync(temporary, `${JSON.stringify(merged, null, 2)}\n`, {
+          mode: 0o600,
+          flag: "wx",
+        });
+        renameSync(temporary, target);
+      } finally {
+        try {
+          unlinkSync(temporary);
+        } catch {}
+      }
+    }
+    result.copied.push(target);
+  }
+
   function completed(area: string): boolean {
     try {
       const path = join(receipts, `services-${sourceKey}-${area}.json`);
@@ -336,55 +476,88 @@ export async function migrateGlobalServices(
     const safeConfig = existsSync(config) && sourceSafe(config);
     if (safeConfig && !completed("serena")) {
       const before = counts();
-      let busy = lockActive(join(config, "serena-daemons.lock"));
+      let releaseSerena: (() => void) | undefined;
       try {
-        // An old daemon may be writing its log before registering its PID.
-        // Process command lines do not expose OMA_HOME, so ambiguous matches defer.
-        busy ||= hasProcess(
-          /(?:serena\S*\s+start-mcp-server\b.*--transport(?:\s+|=)streamable-http\b|(?:oma|cli\.[cm]?[jt]s)\b.*\bbridge\b)/,
-        );
-      } catch (error) {
-        busy = true;
-        result.deferred.push(
-          `Cannot inspect legacy Serena processes: ${String(error)}`,
-        );
-      }
-      const registry = join(config, "serena-daemons.json");
-      if (existsSync(registry)) {
-        try {
-          const records = JSON.parse(readFileSync(registry, "utf8"));
-          if (!records || typeof records !== "object" || Array.isArray(records))
-            throw new Error("Invalid registry");
-          busy ||= Object.values(records).some((record) => {
-            const owner = record as { pid?: number; clients?: number[] };
-            return (
-              (typeof owner?.pid === "number" && isAlive(owner.pid)) ||
-              (Array.isArray(owner?.clients) && owner.clients.some(isAlive))
-            );
-          });
-        } catch {
+        if (!options.dryRun) releaseSerena = acquireLegacySerenaLock();
+        if (!options.dryRun && !releaseSerena) {
           result.deferred.push(
-            `Unreadable legacy Serena registry: ${registry}`,
+            `Legacy Serena daemon or bridge is active: ${config}`,
           );
-          busy = true;
-        }
-      }
-      if (busy)
-        result.deferred.push(
-          `Legacy Serena daemon or bridge is active: ${config}`,
-        );
-      else {
-        const allowed = /^(serena-daemons\.json|serena-daemon-\d+\.log)$/;
-        for (const name of readdirSync(config)) {
-          if (allowed.test(name))
-            copyTree(
-              join(config, name),
-              join(destination, "state", "serena", name),
-              undefined,
-              true,
+        } else {
+          let busy =
+            !!options.dryRun && lockActive(join(config, "serena-daemons.lock"));
+          try {
+            // An old daemon may write its log before registering its PID.
+            // Ambiguous command-line matches defer while the startup lock is held.
+            busy ||= hasProcess(
+              /(?:serena\S*\s+start-mcp-server\b.*--transport(?:\s+|=)streamable-http\b|(?:oma|cli\.[cm]?[jt]s)\b.*\bbridge\b)/,
             );
+          } catch (error) {
+            busy = true;
+            result.deferred.push(
+              `Cannot inspect legacy Serena processes: ${String(error)}`,
+            );
+          }
+          const registry = join(config, "serena-daemons.json");
+          if (existsSync(registry)) {
+            try {
+              const records = JSON.parse(readFileSync(registry, "utf8"));
+              if (
+                !records ||
+                typeof records !== "object" ||
+                Array.isArray(records)
+              )
+                throw new Error("Invalid registry");
+              busy ||= Object.values(records).some((record) => {
+                const owner = record as { pid?: number; clients?: number[] };
+                return (
+                  (typeof owner?.pid === "number" && isAlive(owner.pid)) ||
+                  (Array.isArray(owner?.clients) && owner.clients.some(isAlive))
+                );
+              });
+            } catch {
+              result.deferred.push(
+                `Unreadable legacy Serena registry: ${registry}`,
+              );
+              busy = true;
+            }
+          }
+          if (busy)
+            result.deferred.push(
+              `Legacy Serena daemon or bridge is active: ${config}`,
+            );
+          else {
+            const target = join(destination, "state", "serena");
+            const targetRegistry = join(target, "serena-daemons.json");
+            if (!destinationSafe(targetRegistry))
+              throw new Error(`Unsafe destination: ${targetRegistry}`);
+            if (
+              existsSync(targetRegistry) &&
+              !lstatSync(targetRegistry).isFile()
+            )
+              throw new Error(
+                `Invalid canonical Serena registry: ${targetRegistry}`,
+              );
+            const allowed = /^(serena-daemons\.json|serena-daemon-\d+\.log)$/;
+            for (const name of readdirSync(config)) {
+              // Runtime registrations belong to the canonical writer once present.
+              if (name === "serena-daemons.json" && existsSync(targetRegistry))
+                continue;
+              if (allowed.test(name))
+                copyTree(
+                  join(config, name),
+                  join(target, name),
+                  undefined,
+                  true,
+                );
+            }
+            finish("serena", before);
+          }
         }
-        finish("serena", before);
+      } catch (error) {
+        result.conflicts.push(`Legacy Serena migration: ${String(error)}`);
+      } finally {
+        releaseSerena?.();
       }
     }
 
@@ -494,16 +667,41 @@ export async function migrateGlobalServices(
           `Legacy schedule runner or manifest lock is active: ${schedule}`,
         );
       else {
-        copyTree(
-          schedule,
-          join(destination, "schedule"),
-          (name) =>
-            name === "manifest.lock" ||
-            name === "running" ||
-            /^owner-|\.tmp$/.test(name),
-          true,
-        );
-        finish("schedule", before);
+        const target = join(destination, "schedule");
+        let releaseSchedule: (() => void) | undefined;
+        try {
+          if (!destinationSafe(join(target, "manifest.lock")))
+            throw new Error(`Unsafe destination: ${target}`);
+          if (!options.dryRun) {
+            privateDirectory(target);
+            const lock = acquireOwnedDirectoryLock(
+              join(target, "manifest.lock"),
+            );
+            if (!lock.ok)
+              result.deferred.push(
+                `Schedule manifest is being updated: ${target}`,
+              );
+            else releaseSchedule = lock.release;
+          }
+          if (options.dryRun || releaseSchedule) {
+            mergeScheduleManifest(schedule, target);
+            copyTree(
+              schedule,
+              target,
+              (name) =>
+                name === "schedules.json" ||
+                name === "manifest.lock" ||
+                name === "running" ||
+                /^owner-|\.tmp$/.test(name),
+              true,
+            );
+            finish("schedule", before);
+          }
+        } catch (error) {
+          result.conflicts.push(`${schedule}: ${String(error)}`);
+        } finally {
+          releaseSchedule?.();
+        }
       }
     }
 

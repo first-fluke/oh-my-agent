@@ -66,58 +66,90 @@ export const STARTUP_PROBE_TIMEOUT_MS = Number.parseInt(
  * intermittently wedging exactly there under load.
  */
 let stateDirOverride: string | null = null;
+let legacyStateDirOverride: string | null = null;
+let selectedStateDir: string | null = null;
 
 /** @internal test-only */
-export function _setOmaStateDirForTests(dir: string | null): void {
+export function _setOmaStateDirForTests(
+  dir: string | null,
+  legacyDir: string | null = null,
+): void {
   stateDirOverride = dir;
+  legacyStateDirOverride = legacyDir;
+  selectedStateDir = null;
 }
 
 /**
- * Global daemon state under `<OMA_HOME>/state/serena/`.
+ * Keep every operation in this process on one registry and its matching lock.
+ * Active legacy clients continue sharing their registry until they finish.
  */
 export function omaStateDir(): string {
-  return stateDirOverride ?? omaPaths().serena;
+  if (stateDirOverride !== null) return stateDirOverride;
+  selectedStateDir ??= selectSerenaStateDir();
+  return selectedStateDir;
 }
 
-/** A deferred live migration must not split attached clients across registries. */
-function assertLegacySerenaQuiescent(): void {
-  if (stateDirOverride !== null) return;
-  const legacy = join(homedir(), ".config", "oma");
-  if (resolve(legacy) === resolve(omaStateDir())) return;
-  const active = (pid: unknown): boolean => {
-    if (!Number.isSafeInteger(pid) || (pid as number) <= 0) return true;
+function selectSerenaStateDir(heldLock?: string): string {
+  const canonical = omaPaths().serena;
+  const legacy = legacyStateDirOverride ?? join(homedir(), ".config", "oma");
+  if (resolve(legacy) === resolve(canonical)) return canonical;
+
+  function activeRegistry(directory: string): boolean {
+    const active = (pid: unknown): boolean => {
+      if (!Number.isSafeInteger(pid) || (pid as number) <= 0)
+        throw new Error("Invalid process ID");
+      try {
+        process.kill(pid as number, 0);
+        return true;
+      } catch (error) {
+        return (error as NodeJS.ErrnoException).code !== "ESRCH";
+      }
+    };
     try {
-      process.kill(pid as number, 0);
-      return true;
-    } catch (error) {
-      return (error as NodeJS.ErrnoException).code !== "ESRCH";
+      const lock = join(directory, "serena-daemons.lock");
+      let busy =
+        lock !== heldLock &&
+        existsSync(lock) &&
+        active(Number(readFileSync(lock, "utf8")));
+      const registry = join(directory, "serena-daemons.json");
+      if (existsSync(registry)) {
+        const records: unknown = JSON.parse(readFileSync(registry, "utf8"));
+        if (!records || typeof records !== "object" || Array.isArray(records))
+          throw new Error("Invalid registry");
+        for (const record of Object.values(records)) {
+          if (!record || typeof record !== "object")
+            throw new Error("Invalid daemon record");
+          if (record.clients !== undefined && !Array.isArray(record.clients))
+            throw new Error("Invalid daemon clients");
+          // Inspect every record, even when another daemon is already active.
+          const daemonActive = active(record.pid);
+          const clientsActive = (record.clients ?? [])
+            .map(active)
+            .some(Boolean);
+          busy ||= daemonActive || clientsActive;
+        }
+      }
+      return busy;
+    } catch {
+      throw new Error(
+        `Unreadable ${directory === legacy ? "legacy " : ""}Serena registry at ${directory}. Run "oma doctor" before starting or cleaning shared Serena daemons.`,
+      );
     }
-  };
-  const registry = join(legacy, "serena-daemons.json");
-  const lock = join(legacy, "serena-daemons.lock");
-  let busy = false;
-  try {
-    if (existsSync(lock)) busy = active(Number(readFileSync(lock, "utf8")));
-    if (existsSync(registry)) {
-      const records: unknown = JSON.parse(readFileSync(registry, "utf8"));
-      if (!records || typeof records !== "object" || Array.isArray(records))
-        busy = true;
-      else
-        busy ||= Object.values(records).some(
-          (record) =>
-            !record ||
-            active(record.pid) ||
-            (record.clients !== undefined &&
-              (!Array.isArray(record.clients) || record.clients.some(active))),
-        );
-    }
-  } catch {
-    busy = true;
   }
-  if (busy)
-    throw new Error(
-      `Legacy Serena registry is still active or unreadable at ${legacy}. Close its bridge clients and daemons, then run "oma home migrate" before starting or cleaning shared Serena daemons.`,
-    );
+
+  if (activeRegistry(legacy)) {
+    if (activeRegistry(canonical))
+      throw new Error(
+        `Both legacy and canonical Serena registries are active at ${legacy} and ${canonical}. Run "oma doctor" to reconcile them without interrupting attached clients.`,
+      );
+    return legacy;
+  }
+  // Keep new clients on legacy until migration has published its destination.
+  // Otherwise a fresh canonical registry would conflict with that later copy.
+  return existsSync(join(legacy, "serena-daemons.json")) &&
+    !existsSync(join(canonical, "serena-daemons.json"))
+    ? legacy
+    : canonical;
 }
 
 export function daemonRegistryPath(): string {
@@ -183,6 +215,7 @@ function writeRegistry(registry: DaemonRegistry): void {
 /** How long a synchronous registry mutation waits for the file lock. */
 const REGISTRY_LOCK_WAIT_MS = 5_000;
 const REGISTRY_LOCK_POLL_MS = 25;
+class SerenaRegistryLockTimeout extends Error {}
 
 function sleepSync(ms: number): void {
   try {
@@ -204,10 +237,9 @@ function sleepSync(ms: number): void {
  * write landed first — a daemon that had just been registered vanished from
  * the file while its process lived on, invisible to reclamation.
  *
- * Synchronous because detach runs from process exit handlers. The critical
- * sections are microseconds long, so a lock still held after the wait budget
- * is stale (its owner died mid-section) and the mutation proceeds unlocked:
- * losing one race beats a bridge that cannot exit.
+ * Synchronous because detach runs from process exit handlers. A migration can
+ * hold the same lock while copying logs, so a timeout must never bypass it.
+ * Exit-time detach can be skipped; a later sweep removes dead client PIDs.
  */
 function withRegistryLock<T>(mutate: (registry: DaemonRegistry) => T): T {
   const deadline = Date.now() + REGISTRY_LOCK_WAIT_MS;
@@ -217,6 +249,10 @@ function withRegistryLock<T>(mutate: (registry: DaemonRegistry) => T): T {
     if (release || Date.now() >= deadline) break;
     sleepSync(REGISTRY_LOCK_POLL_MS);
   }
+  if (!release)
+    throw new SerenaRegistryLockTimeout(
+      "Timed out waiting for Serena registry lock",
+    );
   try {
     const registry = readRegistry();
     const before = JSON.stringify(registry);
@@ -323,37 +359,59 @@ const LOCK_STALE_MS = 60_000;
 function acquireLock(): (() => void) | null {
   mkdirSync(omaStateDir(), { recursive: true });
   const path = lockPath();
+  let fd: number;
   try {
-    const fd = openSync(path, "wx");
-    try {
-      // writeFileSync with a descriptor does NOT close it; leaving it open
-      // leaks one fd per lock, and on Windows an open handle can make the
-      // release's rmSync fail — permanently wedging the lock.
-      writeFileSync(fd, String(process.pid));
-    } finally {
-      closeSync(fd);
-    }
-    return () => {
-      try {
-        rmSync(path, { force: true });
-      } catch {
-        // best-effort
-      }
-    };
+    fd = openSync(path, "wx");
   } catch {
     // Held by someone else — unless it is stale, in which case take it over.
     try {
       const age = Date.now() - statSync(path).mtimeMs;
+      const owner = Number(readFileSync(path, "utf8"));
+      if (!Number.isSafeInteger(owner) || owner <= 0) return null;
+      try {
+        process.kill(owner, 0);
+        return null;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ESRCH") return null;
+      }
       if (age > LOCK_STALE_MS) {
         rmSync(path, { force: true });
         return acquireLock();
       }
-    } catch {
-      // vanished between calls — retry once
-      return acquireLock();
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT")
+        return acquireLock();
     }
     return null;
   }
+  try {
+    try {
+      // Close the descriptor before publishing or releasing the lock on Windows.
+      writeFileSync(fd, String(process.pid));
+    } finally {
+      closeSync(fd);
+    }
+    if (stateDirOverride === null) {
+      // Migration uses this same legacy lock. Recheck before any mutation so a
+      // bridge that selected legacy just before migration follows its new home.
+      const selected = selectSerenaStateDir(path);
+      if (selected !== omaStateDir()) {
+        selectedStateDir = selected;
+        rmSync(path, { force: true });
+        return acquireLock();
+      }
+    }
+  } catch (error) {
+    rmSync(path, { force: true });
+    throw error;
+  }
+  return () => {
+    try {
+      rmSync(path, { force: true });
+    } catch {
+      // best-effort
+    }
+  };
 }
 
 async function waitForLock(timeoutMs: number): Promise<(() => void) | null> {
@@ -484,7 +542,7 @@ async function stopStaleDaemon(pid: number): Promise<void> {
 export async function ensureSerenaDaemon(
   opts: EnsureDaemonOptions,
 ): Promise<DaemonHandle | null> {
-  assertLegacySerenaQuiescent();
+  omaStateDir();
   const { root, context } = opts;
   const timeoutMs = opts.timeoutMs ?? 120_000;
   const spawnFn = opts.spawnDaemon ?? spawnDaemonProcess;
@@ -679,7 +737,6 @@ export function daemonPidsWithLiveClients(): Set<number> {
 
 /** Drop registrations whose process is gone. Used by `oma doctor` / reap paths. */
 export function pruneRegistry(): DaemonRecord[] {
-  assertLegacySerenaQuiescent();
   return withRegistryLock((registry) => {
     const removed: DaemonRecord[] = [];
     for (const [key, record] of Object.entries(registry)) {
@@ -822,17 +879,21 @@ function attachClientTo(record: DaemonRecord, pid = process.pid): void {
  * restart can re-attach inside the grace period.
  */
 export function detachClient(key: string, pid = process.pid): void {
-  withRegistryLock((registry) => {
-    const record = registry[key];
-    if (!record) return;
+  try {
+    withRegistryLock((registry) => {
+      const record = registry[key];
+      if (!record) return;
 
-    const clients = (record.clients ?? []).filter(
-      (client) => client !== pid && isAlive(client),
-    );
-    record.clients = clients;
-    record.idleSince =
-      clients.length === 0 ? new Date().toISOString() : undefined;
-  });
+      const clients = (record.clients ?? []).filter(
+        (client) => client !== pid && isAlive(client),
+      );
+      record.clients = clients;
+      record.idleSince =
+        clients.length === 0 ? new Date().toISOString() : undefined;
+    });
+  } catch (error) {
+    if (!(error instanceof SerenaRegistryLockTimeout)) throw error;
+  }
 }
 
 /**
@@ -856,7 +917,7 @@ export function reclaimIdleDaemons(
   /** The acquiring caller handles this key's stop-and-wait under its startup lock. */
   protectedKey?: string,
 ): DaemonRecord[] {
-  assertLegacySerenaQuiescent();
+  omaStateDir();
   // The process scan runs outside the lock: it is the slow part (~tens of ms)
   // and only reads the process table.
   const running = listDaemons();

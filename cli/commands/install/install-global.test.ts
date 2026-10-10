@@ -23,7 +23,12 @@ const migrationState = vi.hoisted(() => ({
     deferred: [] as string[],
   })),
 }));
-vi.mock("../../io/global-home-migration.js", () => migrationState);
+vi.mock("../../io/global-home-migration.js", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("../../io/global-home-migration.js")
+  >()),
+  ...migrationState,
+}));
 
 const promptState = vi.hoisted(() => ({
   select: vi.fn(),
@@ -346,6 +351,24 @@ describe("install --global: _install.json schema and meta", () => {
     expect(
       skillsState.createGlobalSkillDiscoveryLinks.mock.invocationCallOrder[0],
     ).toBeLessThan(skillsState.installShared.mock.invocationCallOrder[0] ?? 0);
+  });
+
+  it("continues installation and reports active legacy Serena as pending", async () => {
+    const pending = "Legacy Serena daemon or bridge is active: /legacy/oma";
+    migrationState.migrateGlobalHome.mockResolvedValueOnce({
+      copied: [],
+      conflicts: [],
+      deferred: [pending],
+    });
+
+    await install({ yes: true });
+
+    expect(miscState.acquireLock).toHaveBeenCalled();
+    expect(skillsState.installShared).toHaveBeenCalled();
+    expect(link).toHaveBeenCalled();
+    expect(promptState.log.info).toHaveBeenCalledWith(
+      `Global home migration deferred: ${pending}`,
+    );
   });
 
   it.each(["conflicts", "deferred"] as const)(

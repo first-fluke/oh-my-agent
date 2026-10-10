@@ -1,5 +1,8 @@
 import type { Command } from "commander";
-import { migrateGlobalHome } from "../../io/global-home-migration.js";
+import {
+  hasBlockingGlobalHomeMigration,
+  migrateGlobalHome,
+} from "../../io/global-home-migration.js";
 import {
   addOutputOptions,
   resolveJsonMode,
@@ -47,8 +50,7 @@ export function registerHome(program: Command): void {
           for (const [kind, entries] of Object.entries(result))
             for (const entry of entries) console.log(`${kind}: ${entry}`);
         }
-        if (result.conflicts.length || result.deferred.length)
-          process.exitCode = 1;
+        if (hasBlockingGlobalHomeMigration(result)) process.exitCode = 1;
       },
       { supportsJsonOutput: true },
     ),
