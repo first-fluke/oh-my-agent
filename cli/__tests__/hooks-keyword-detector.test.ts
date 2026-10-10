@@ -338,8 +338,13 @@ describe("keyword-detector", () => {
       expect(shouldSkipAllWorkflows("ultrawork this task")).toBe(false);
     });
 
-    it("KEYWORD_SKIP_PREDICATES map is initially empty (no per-workflow overrides)", () => {
-      expect(Object.keys(KEYWORD_SKIP_PREDICATES)).toHaveLength(0);
+    it("limits the design workflow to visual work", () => {
+      expect(
+        KEYWORD_SKIP_PREDICATES.design?.("네 그럼 어떻게 스킬을 디자인할거임"),
+      ).toBe(true);
+      expect(
+        KEYWORD_SKIP_PREDICATES.design?.("스킬 관리 화면을 디자인해줘"),
+      ).toBe(false);
     });
   });
 
