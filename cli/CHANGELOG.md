@@ -1,5 +1,12 @@
 # Changelog
 
+## [17.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.1.0...cli-v17.1.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **skills:** bundle shared resources for standalone installs ([7f78296](https://github.com/first-fluke/oh-my-agent/commit/7f782964c2f5deba1ba9e1f45200268657802559)), closes [#866](https://github.com/first-fluke/oh-my-agent/issues/866)
+
 ## [17.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.0.2...cli-v17.1.0) (2026-10-10)
 
 
