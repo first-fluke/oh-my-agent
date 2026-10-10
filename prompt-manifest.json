@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "17.1.1",
-  "releaseDate": "2026-10-10T01:30:41.848Z",
+  "releaseDate": "2026-10-10T02:43:28.641Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -176,8 +176,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "aa02e5bd4ac56701e3516c66c3c2b68822db7000af3cc34dd84adb8102944243",
-      "size": 46997
+      "sha256": "92b3038e91eaeb4f3cb1d5adeb1c02916cd22a87029bc7e8a5823e02bf56b147",
+      "size": 48739
     },
     {
       "path": ".agents/hooks/core/memory-adapter.ts",
@@ -261,8 +261,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "c9c0044fa16d2a0b0b5d1f9628f1c228fc2db60935294bb7e1234ac0b7d81688",
-      "size": 84361
+      "sha256": "1e6d01f46b2f5e04fee85fa554d143c4fd702135282931c4ff545034fc76467f",
+      "size": 85689
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -873,46 +873,6 @@
       "path": ".agents/skills/oma-debug/resources/execution-protocol.md",
       "sha256": "4b8c0f3cd6c228dffd51fd4843a87848777bab217e074ad8736178384689d8c5",
       "size": 2522
-    },
-    {
-      "path": ".agents/skills/oma-deepsec/SKILL.md",
-      "sha256": "6773a3a2cb80fae02590c7c38ecb1d18e3ff29b400309bbec53c4a69b29def81",
-      "size": 19487
-    },
-    {
-      "path": ".agents/skills/oma-deepsec/resources/config.md",
-      "sha256": "8d68fb1576f0350f634ff190ef905ef290d269433e8c8f0ba523444da5dc6061",
-      "size": 9374
-    },
-    {
-      "path": ".agents/skills/oma-deepsec/resources/decision-records.md",
-      "sha256": "c3d0e9297282861ea05077b4357a34fc8d5b1aa626070708462601b333c34df9",
-      "size": 3494
-    },
-    {
-      "path": ".agents/skills/oma-deepsec/resources/matchers.md",
-      "sha256": "44947387b1bf7b74065818a9e32c40f2d0c108a98ff4ab2e88edb89df0f2f117",
-      "size": 9196
-    },
-    {
-      "path": ".agents/skills/oma-deepsec/resources/pr-review.md",
-      "sha256": "dda4bedd73565ad7d4c9e392f8f20f54b7b42a9d0be46983370e0fa9c690f512",
-      "size": 8946
-    },
-    {
-      "path": ".agents/skills/oma-deepsec/resources/scanning.md",
-      "sha256": "dcbb150fa0103a05b416084c9a461107b94b53392caa09ad52beb5dea26bdfd1",
-      "size": 8592
-    },
-    {
-      "path": ".agents/skills/oma-deepsec/resources/setup.md",
-      "sha256": "aa72a9def4ac290c01cba9a35032d63e5e4f312bd055f71107c2c4cb8ace6814",
-      "size": 6567
-    },
-    {
-      "path": ".agents/skills/oma-deepsec/resources/triage.md",
-      "sha256": "5d3d3d1cca02a9092b61b673b04f1ad366bfc2ca6f06d503de5214072f57fd73",
-      "size": 6224
     },
     {
       "path": ".agents/skills/oma-design/SKILL.md",
@@ -1835,6 +1795,66 @@
       "size": 5113
     },
     {
+      "path": ".agents/skills/oma-security/SKILL.md",
+      "sha256": "237d40878e9919b477c6418107a3c89e59b32835ad0dda37f36082e940e201e7",
+      "size": 15485
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/artex.md",
+      "sha256": "d2b6b8f59dfc6138b3e266d29d2b0558dca03f542f9395d9d2e7db7dfe6c05dd",
+      "size": 9268
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/ci.md",
+      "sha256": "d327ef6ad9f5d169d1d39e26452ed60f8a84c632c88acd00797c1c6290d161c6",
+      "size": 11377
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/cisco-source.md",
+      "sha256": "be7439f9b8696920ebb37c287459d19b51129862db3f500ea9219c77cb5a3020",
+      "size": 8492
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/deepsec-config.md",
+      "sha256": "59722f6e20dc0f04489516ff03587409ddde8dd733756389eafa005f74619d89",
+      "size": 3319
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/deepsec-matchers.md",
+      "sha256": "b4241efd8302e53eb721954d10417e523852fb1b86fd032d2d3caaca5a89591b",
+      "size": 2624
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/deepsec-scanning.md",
+      "sha256": "57cc59fe7eb79d11cd3b5a0e52ce2775f5900258aa1411aefebe5c0368ac315b",
+      "size": 3021
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/deepsec-setup.md",
+      "sha256": "92425ebcfa11f738bf7145460e19f6d4bfa8ebc133ffc245b95c7d4816088db6",
+      "size": 3223
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/findings-contract.md",
+      "sha256": "9e2115966136d9ad18249843522443d38b293aacb4ebef7db47fdf5e393ed73a",
+      "size": 28305
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/mcp-scanning.md",
+      "sha256": "720fc322c79703f3c51902998c493ece0e76038cd2c8ccf020d69dd6150baa42",
+      "size": 8224
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/skill-scanning.md",
+      "sha256": "5e61f317786ce348f8cd6d4ffa8ac9428de1166d2f97239dea2266dec0eecd66",
+      "size": 7962
+    },
+    {
+      "path": ".agents/skills/oma-security/resources/validation.md",
+      "sha256": "cdd14deddcbd5021a458bc00cc4685970dbd133943438a59bec841f01d3b5d44",
+      "size": 8170
+    },
+    {
       "path": ".agents/skills/oma-skill-creation/SKILL.md",
       "sha256": "2583829593d6612be9be8621e526e160b33ae1c71e5848621bdcb0be03b8fca3",
       "size": 6043
@@ -2125,11 +2145,6 @@
       "size": 15033
     },
     {
-      "path": ".agents/workflows/deepsec.md",
-      "sha256": "79e4ee158f5fe71ca0e37a238f085be0044d05f24edd8ed87178db24035f0f91",
-      "size": 13612
-    },
-    {
       "path": ".agents/workflows/design.md",
       "sha256": "d64ce18501b303c5090573076f8e27ca49ae3e0400c4ce8c8553a252941f3c63",
       "size": 7320
@@ -2185,6 +2200,11 @@
       "size": 2094
     },
     {
+      "path": ".agents/workflows/security.md",
+      "sha256": "3b91d56a213a47cb7628c7b09d9d7a023cd43140184784b55622dcd67b7ad61e",
+      "size": 2111
+    },
+    {
       "path": ".agents/workflows/stack-set.md",
       "sha256": "47ca7792969efd88e17aaf1955347058b6cdc4e1ec88609c5083de396a0a2bfe",
       "size": 21973
@@ -2226,6 +2246,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 443
+    "totalFiles": 447
   }
 }
