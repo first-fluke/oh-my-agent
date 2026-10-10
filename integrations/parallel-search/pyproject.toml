@@ -1,0 +1,8 @@
+[project]
+name = "oma-parallel-search-example"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["mcp>=1.30,<2", "httpx>=0.28,<1"]
+
+[tool.uv]
+package = false

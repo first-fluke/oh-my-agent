@@ -125,6 +125,14 @@ credential configuration. Only advertise capabilities the adapter actually suppo
 Setting `web: you` reports `unregistered`. Registry tests use a synthetic adapter to verify dispatch,
 capability checks, cancellation, provenance, and registration isolation.
 
+## Parallel Search MCP example
+
+For free, anonymous web search and page excerpts, see the opt-in
+[Parallel Search MCP example](../integrations/parallel-search/README.md). It runs
+through the Python MCP client over Streamable HTTP with no Parallel API key.
+This standalone example does not register an OMA provider or change Native/Brave
+selection; `providers.web: parallel` is not supported.
+
 ## Brave Search
 
 Brave uses the official [Web Search API](https://api-dashboard.search.brave.com/api-reference/web/search/get)
