@@ -1,5 +1,12 @@
 # Changelog
 
+## [18.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v18.0.0...cli-v18.0.1) (2026-10-10)
+
+
+### Documentation
+
+* **dev-workflow:** require explicit biome no-re-export-all rule ([9821ad3](https://github.com/first-fluke/oh-my-agent/commit/9821ad3f91d87552cce4aefa3c07f7208f5d9a87))
+
 ## [18.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v17.1.1...cli-v18.0.0) (2026-10-10)
 
 
