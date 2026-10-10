@@ -73,7 +73,6 @@ class MCPExampleTests(unittest.IsolatedAsyncioTestCase):
             )
 
         def client(**kwargs):
-            self.assertFalse(kwargs["trust_env"])
             self.assertFalse(kwargs["follow_redirects"])
             return original_client(transport=httpx.MockTransport(respond), **kwargs)
 

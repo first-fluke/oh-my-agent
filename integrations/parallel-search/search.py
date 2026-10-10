@@ -68,7 +68,6 @@ async def run(args):
             headers=server["headers"],
             timeout=TIMEOUT_SECONDS,
             follow_redirects=False,
-            trust_env=False,
         ) as client:
             async with streamable_http_client(server["url"], http_client=client) as (
                 read,
