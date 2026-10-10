@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "17.0.2",
-  "releaseDate": "2026-10-09T23:49:07.650Z",
+  "releaseDate": "2026-10-10T00:20:57.982Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1021,13 +1021,13 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/SKILL.md",
-      "sha256": "e92116763f1e8305781391e8df91b37b373ebcffecb3b209b8c374f0405e18bc",
-      "size": 13066
+      "sha256": "886109863559c8de41698807d0273db90cb343a9d5ada6551b59aa8c9822128d",
+      "size": 15950
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/affected-checks.py",
-      "sha256": "73f9e8f46173cd8c9bc945fa79cad17323a403ac2b1e8821381f45a69871af6b",
-      "size": 2325
+      "sha256": "a9ee9407a333f9ccd1b5e90653809c8e353da6c7d8253376e5722dd6a51e5069",
+      "size": 2540
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/api-workflows.md",
@@ -1050,14 +1050,19 @@
       "size": 6060
     },
     {
+      "path": ".agents/skills/oma-dev-workflow/resources/tooling-profiles.md",
+      "sha256": "93c932591895b3a80250c2215df6c81b9bc4af10f8bb4c5185a910bc22d7f2fe",
+      "size": 10434
+    },
+    {
       "path": ".agents/skills/oma-dev-workflow/resources/troubleshooting.md",
       "sha256": "e818fc4b43fdad5a578a41be45a6a98dab9ee13f1b9237b6bc616accb92d0257",
       "size": 1482
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/validation-pipeline.md",
-      "sha256": "36b401745aae81c0a63f6bcc15caa42ac568db2366d8637357cbf2e938258d8d",
-      "size": 4071
+      "sha256": "7a9b919fcdaca92cac87f2e1502d21f4b34a8bf4caa933a3c45b4ecb76569bc5",
+      "size": 8167
     },
     {
       "path": ".agents/skills/oma-docs/SKILL.md",
@@ -1101,8 +1106,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
-      "sha256": "583bef5705c65f3d30069fade6def832647af963c2e7f63457c6e9f207edfa5e",
-      "size": 4772
+      "sha256": "e6b28e619ce34d12b5a3183fa3fd4e37257fa70290ff363e981cfb8e4a7a4805",
+      "size": 4885
     },
     {
       "path": ".agents/skills/oma-frontend/resources/error-playbook.md",
@@ -2221,6 +2226,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 442
+    "totalFiles": 443
   }
 }
