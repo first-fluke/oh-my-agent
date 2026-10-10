@@ -167,7 +167,7 @@ Em vez de uma única IA fazendo tudo (e se perdendo no meio do caminho), o oh-my
 | **oma-brainstorm** | Explora ideias com você antes de você se comprometer a construir |
 | **oma-db** | Projeta seu schema, migrations, indexes e vector stores |
 | **oma-debug** | Encontra a causa raiz, corrige o bug e escreve um teste de regressão |
-| **oma-deepsec** | Varre seu código em busca de falhas de segurança e bloqueia pull requests arriscados |
+| **oma-security** | Varre código-fonte, skills de agentes e componentes MCP; testa aplicações web implantadas e valida achados |
 | **oma-design** | Constrói design systems com tokens, acessibilidade e layouts responsivos |
 | **oma-dev-workflow** | Automatiza seu CI/CD, releases e tarefas de monorepo |
 | **oma-docs** | Verifica referências quebradas na documentação e sinaliza o que uma mudança de código afetou |
@@ -246,7 +246,7 @@ Ou use slash commands para workflows estruturados:
 | 3 | `/ultrawork` | Constrói sua feature por cinco fases de qualidade com gates; cada revisão roda numa sessão de revisor nova e isolada (revisão de contexto cruzado / cross-context review) |
 | 3 | `/ralph` | Repete `/ultrawork` até um verificador independente aprovar todos os critérios |
 | 4 | `/review` | Revisa seu código em busca de problemas de segurança, performance e acessibilidade |
-| 4 | `/deepsec` | Roda uma varredura de segurança profunda e bloqueia pull requests arriscados |
+| 4 | `/security` | Executa varreduras de segurança, valida achados e aplica gates de CI |
 | 5 | `/debug` | Encontra a causa raiz, corrige o bug e escreve um teste de regressão |
 | 5 | `/docs` | Confere sua documentação em busca de referências quebradas e corrige as que suas mudanças de código afetam |
 | 6 | `/scm` | Gerencia seus branches, merges e Conventional Commits |

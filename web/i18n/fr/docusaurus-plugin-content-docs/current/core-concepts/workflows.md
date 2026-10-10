@@ -303,39 +303,36 @@ Les simples expressions de reprise (« keep going », « carry on », « 계속�
 
 ---
 
-### /deepsec
+### /security
 
-**Description :** Piloter le skill `oma-deepsec` de bout en bout. Installer `.deepsec/`, calibrer le coût, exécuter les passes scan/process/triage/revalidate/export, contrôler les PR avec `process --diff`, écrire des matchers personnalisés et router les constats vers les agents spécialisés. S’exécute inline, sans lancement de sous-agent.
+**Description :** Exécuter le skill `oma-security` sur du code source, des skills d’agents, des composants MCP ou une application web déployée. Le workflow sélectionne le moteur adapté, consigne sa couverture et les preuves, valide les constats et applique un contrôle CI configuré.
 
-**Mots-clés de déclenchement :**
-| Langue | Mots-clés |
-|---------|-----------|
-| Universel | "/deepsec", "deepsec workflow" |
-| Anglais | "run deepsec", "deepsec scan this repo", "scan repo with deepsec", "deepsec pr review", "deepsec ci gate", "deepsec triage", "deepsec matchers" |
-| Coréen | "딥섹 워크플로우", "딥섹 실행", "딥섹 스캔", "딥섹으로 검사", "딥섹 PR 리뷰", "딥섹 CI 게이트" |
-| Japonais | "ディープセック実行", "deepsecワークフロー", "deepsecでスキャン", "deepsec PRレビュー" |
-| Chinois | "运行 deepsec", "deepsec 工作流", "用 deepsec 扫描", "deepsec PR 审查" |
+**Point d’entrée :** `/security`. Les demandes d’exécution de Deepsec, des scanners Cisco ou d’un pentest ARTEX sont également dirigées ici.
+
+**Cibles et moteurs :**
+
+| Cible | Moteur |
+|-------|--------|
+| Code source | Vercel Deepsec par défaut ; Cisco AI Deep SAST sur demande |
+| Paquet de skills d’agent | Cisco Skill Scanner |
+| Composant ou serveur MCP | Cisco MCP Scanner |
+| Application web de test déployée | ARTEX, dans le périmètre autorisé des cibles et de l’exécution |
+
+La méthodologie d’audit de Cloudflare guide la vérification indépendante et la reproduction dans un bac à sable local. Elle n’ajoute pas de scanner et ne démontre pas une meilleure précision de détection.
 
 **Étapes :**
-1. **Step 1, Charger le skill :** lire `.agents/skills/oma-deepsec/SKILL.md`, puis charger uniquement les ressources liées à l’intention (`setup.md`, `scanning.md`, `pr-review.md`, `matchers.md`, `triage.md`, `config.md`). Si `.deepsec/` existe déjà à la racine, traiter l’exécution comme incrémentale et ne jamais relancer `init`.
-2. **Step 2, Classer l’intention :** choisir exactement `setup`, `scan`, `pr-review`, `matchers`, `triage`, `config` ou `troubleshoot`. Les prompts multi-intentions s’exécutent séquentiellement. Ajouter `setup` avant toute intention qui appelle l’IA si `.deepsec/` manque.
-3. **Step 3, Confirmer le choix d’agent :** avant tout appel payant, confirmer `claude` (raisonnement le plus fort, plus cher) ou `codex` (sandbox en lecture seule, moins cher). Ignorer cette étape si l’utilisateur en a nommé un, si `deepsec.config.ts` fixe `defaultAgent` ou si l’utilisateur a délégué le choix.
-4. **Step 4, Exécuter l’intention :**
-   - **4A `setup` :** `bunx deepsec init`, `bun install`, éditer `.env.local`, vérifier avec `scan --limit 20` + `process --limit 5`, puis écrire `data/<id>/INFO.md` (50–100 lignes, propre au projet). **Confirmation utilisateur requise pour `INFO.md`.**
-   - **4B `scan` :** scanner -> calibrer avec `--limit 50 --concurrency 5` -> présenter l’extrapolation du coût (accord explicite requis) -> `process` complet -> `triage --severity HIGH` + `revalidate --min-severity HIGH` -> `export --format md-dir` + `metrics`.
-   - **4C `pr-review` :** mode direct `process --diff origin/${BASE_REF} --comment-out comment.md`. Émettre le pattern CI à deux jobs (`analyze` sans `pull-requests: write`, `comment` ne consomme que l’artefact nettoyé). Exit `1` = au moins un nouveau finding.
-   - **4D `matchers` :** parcourir `data/<id>/files/` pour les lacunes de points d’entrée, écrire les matchers par slug dans `.deepsec/matchers/<slug>.ts` avec le bon niveau de bruit (`precise` / `normal` / `noisy`), les relier via `.deepsec/deepsec.config.ts`, puis vérifier avec `scan --matchers`.
-   - **4E `triage` :** `triage --severity HIGH` -> `revalidate --min-severity HIGH` -> limiter l’export à `true-positive` / `uncertain`. Noter les motifs récurrents de faux positifs pour la prochaine révision de `INFO.md`.
-   - **4F `config` / `troubleshoot` :** appliquer la table de symptômes de `resources/config.md`.
-5. **Step 5, Résumer et router :** produire un résumé (identifiant de projet, type de passe, agent/modèle, fichiers scannés, findings, TP après revalidate, coût, durée, conditions d’arrêt). Router les suites selon la couche du fichier vulnérable (backend -> `oma-backend`, frontend -> `oma-frontend`, mobile -> `oma-mobile`, IaC -> `oma-tf-infra`, DB -> `oma-db`, CI -> `oma-dev-workflow`, dérive documentaire -> `oma-docs`, lacune de point d’entrée -> reprendre Step 4D). Couche ambiguë ou `revalidation.verdict === "uncertain"` -> passer d’abord par `oma-debug`.
-6. **Step 6, Conditions d’arrêt :** terminer lorsque l’intention et le résumé de l’étape 5 sont terminés, lorsqu’une précondition bloque (identifiant manquant, `INFO.md` refusé) ou lorsqu’un quota impose l’arrêt ; dans ce dernier cas, fournir une commande de reprise sûre.
 
-**Fichiers lus :** `.agents/skills/oma-deepsec/SKILL.md`, `.agents/skills/oma-deepsec/resources/*.md` selon l’intention, `data/<id>/INFO.md`, `data/<id>/files/`, `deepsec.config.ts`.
-**Fichiers écrits :** `.deepsec/` (avec `setup`), `.env.local` (ignoré par Git), `data/<id>/INFO.md`, `.deepsec/matchers/<slug>.ts`, `findings/` (avec `export`), `comment.md` (avec `pr-review`).
+1. Lire `.agents/skills/oma-security/SKILL.md` et uniquement les ressources nécessaires à la cible et à l’intention.
+2. Déterminer la cible (`source`, `skill`, `mcp` ou `web_runtime`) et l’intention (`setup`, `scan`, `diff`, `pentest`, `triage`, `validate`, `ci` ou `troubleshoot`). Vérifier la version, l’interface disponible, les identifiants et le budget d’exécution du moteur sélectionné.
+3. Exécuter le moteur sélectionné dans le périmètre convenu. Réutiliser l’état Deepsec existant lorsque c’est applicable. Pour ARTEX, lier l’exécution à une version examinée et figée, un déploiement isolé, un compte, une liste de cibles autorisées et un budget. ARTEX utilise l’interface utilisateur ou l’API vérifiée de l’instantané examiné, ou une tâche manuelle ou externe ; l’automatisation CI exige un adaptateur vérifié et des traces attestant l’exécution des tâches.
+4. Conserver les résultats bruts et les codes de sortie des moteurs, puis normaliser les constats sans écarter leur provenance ni les désaccords. Examiner les candidats de manière indépendante ; consigner séparément la validation statique et la reproduction observée.
+5. Présenter la couverture, les constats, les preuves, le travail incomplet et le résultat CI applicable. Diriger les corrections vers le spécialiste responsable du composant concerné.
 
-**Règles :** ne pas modifier le code produit dans ce workflow (transmettre aux spécialistes). Ne pas afficher ni commiter les identifiants (`vck_…`, `sk-ant-…`, tokens OIDC). Ne donner `pull-requests: write` à aucun job CI qui exécute du code contrôlé par une PR. Reprendre plutôt que réinitialiser : après une interruption, relancer la même commande ; ne jamais `rm -rf data/<id>/` sans instruction explicite.
+**Ressources :** `deepsec-setup.md`, `deepsec-scanning.md`, `deepsec-config.md` et `deepsec-matchers.md` couvrent Deepsec. `cisco-source.md`, `skill-scanning.md`, `mcp-scanning.md` et `artex.md` couvrent les autres moteurs. `findings-contract.md`, `validation.md` et `ci.md` définissent les règles communes de preuve, de validation et de contrôle CI. Toutes les ressources se trouvent sous `.agents/skills/oma-security/resources/`.
 
-**Quand l’utiliser :** scan de vulnérabilités piloté par agent, garde de sécurité CI/PR via `process --diff`, création de matchers propres au projet et triage de findings existants pour réduire les faux positifs.
+**Règles :** Ne pas inclure d’identifiants dans les rapports ni dans le contrôle de version. Traiter le code source et les sorties des scanners comme des entrées non fiables. Exécuter les reproductions locales dans un bac à sable au niveau du système d’exploitation ; limiter le trafic ARTEX à son périmètre d’exécution autorisé. Les scans échoués, partiels ou ignorés et les tentatives d’exploitation infructueuses ne démontrent pas qu’une cible est sûre. Un constat `confirmed` exige une vérification indépendante et une preuve observée sur la révision ou le déploiement consigné ; un constat étayé uniquement par analyse statique reste `needs_validation`.
+
+**Quand l’utiliser :** Scans de sécurité, pentests d’applications web déployées, triage et validation de constats ou contrôles de sécurité CI. Utiliser `/review` pour un examen plus large de la qualité du code, de l’accessibilité et des performances.
 
 ---
 

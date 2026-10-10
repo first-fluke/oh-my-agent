@@ -159,32 +159,32 @@
   {
     "prompt": "Run deepsec on this repo before we merge.",
     "lang": "en",
-    "expected": "deepsec"
+    "expected": "security"
   },
   {
     "prompt": "Kick off a deepsec pr review for this branch.",
     "lang": "en",
-    "expected": "deepsec"
+    "expected": "security"
   },
   {
     "prompt": "We should scan repo with deepsec after the dependency bump.",
     "lang": "en",
-    "expected": "deepsec"
+    "expected": "security"
   },
   {
     "prompt": "이 레포 딥섹 스캔 돌려줘.",
     "lang": "ko",
-    "expected": "deepsec"
+    "expected": "security"
   },
   {
     "prompt": "이 브랜치 딥섹 PR 리뷰 해줘.",
     "lang": "ko",
-    "expected": "deepsec"
+    "expected": "security"
   },
   {
     "prompt": "머지 전에 딥섹 실행해줘.",
     "lang": "ko",
-    "expected": "deepsec"
+    "expected": "security"
   },
   {
     "prompt": "The login page is broken after the last deploy, please debug this.",
@@ -573,13 +573,13 @@
     "note": "informational question, 'what is' pattern near the keyword"
   },
   {
-    "prompt": "What is the deepsec workflow supposed to scan?",
+    "prompt": "What is the security workflow supposed to scan?",
     "lang": "en",
     "expected": null,
     "note": "informational question, 'what is' pattern near the keyword"
   },
   {
-    "prompt": "딥섹 워크플로우가 정확히 뭘 하는지 설명해줘.",
+    "prompt": "시큐리티 워크플로우가 정확히 뭘 하는지 설명해줘.",
     "lang": "ko",
     "expected": null,
     "note": "informational request ('설명해') near the keyword"
@@ -892,7 +892,7 @@
     "note": "narrowed informationalPatterns.ko regression check: bare '어떻게' was replaced with specific forms ('어떻게 동작', '어떻게 하는지', ...) after it collided with brainstorm's own '어떻게 하면 좋을까' keyword — this genuine 'how does it work' meta-question must still be suppressed by '어떻게 동작'"
   },
   {
-    "prompt": "What is the deepsec pr review workflow for, out of curiosity? Separately and unrelated to that question, please review this PR today.",
+    "prompt": "What is the security workflow for, out of curiosity? Separately and unrelated to that question, please review this PR today.",
     "lang": "en",
     "expected": "review",
     "note": "specificity-ranking policy check: the more specific 'deepsec pr review' match is suppressed (informational window around 'what is'), but a separate, unsuppressed 'review this' request later in the same prompt is NOT suppressed — a suppressed specific candidate must not block a different, genuine generic request from firing"
@@ -1040,5 +1040,85 @@
     "lang": "en",
     "expected": "orchestrate",
     "note": "explicit invocation outranks the longer natural-language 'step by step' (work)"
+  },
+  {
+    "prompt": "Run a security scan on this repository.",
+    "lang": "en",
+    "expected": "security"
+  },
+  {
+    "prompt": "Run Cisco Skill Scanner against this skill package.",
+    "lang": "en",
+    "expected": "security"
+  },
+  {
+    "prompt": "Run Cisco MCP Scanner against this MCP server.",
+    "lang": "en",
+    "expected": "security"
+  },
+  {
+    "prompt": "Run Cisco AI Deep SAST on this source tree.",
+    "lang": "en",
+    "expected": "security"
+  },
+  {
+    "prompt": "Run ARTEX against our isolated test deployment.",
+    "lang": "en",
+    "expected": "security"
+  },
+  {
+    "prompt": "Validate security findings from this scan.",
+    "lang": "en",
+    "expected": "security"
+  },
+  {
+    "prompt": "이 레포 보안 스캔 해줘.",
+    "lang": "ko",
+    "expected": "security"
+  },
+  {
+    "prompt": "시스코 스킬 스캐너 실행해줘.",
+    "lang": "ko",
+    "expected": "security"
+  },
+  {
+    "prompt": "시스코 MCP 스캐너 실행해줘.",
+    "lang": "ko",
+    "expected": "security"
+  },
+  {
+    "prompt": "딥 SAST 실행해줘.",
+    "lang": "ko",
+    "expected": "security"
+  },
+  {
+    "prompt": "ARTEX 실행해서 테스트 사이트 검사해줘.",
+    "lang": "ko",
+    "expected": "security"
+  },
+  {
+    "prompt": "What does the security workflow do?",
+    "lang": "en",
+    "expected": null
+  },
+  {
+    "prompt": "Compare Cisco Skill Scanner and ARTEX.",
+    "lang": "en",
+    "expected": null
+  },
+  {
+    "prompt": "Explain Cloudflare security-audit-skill.",
+    "lang": "en",
+    "expected": null
+  },
+  {
+    "prompt": "Please run /deepsec",
+    "lang": "en",
+    "expected": null
+  },
+  {
+    "prompt": "시큐리티 워크플로우가 어떻게 동작하는지 설명해줘.",
+    "lang": "ko",
+    "expected": null
   }
 ]

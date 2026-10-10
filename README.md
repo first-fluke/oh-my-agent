@@ -167,7 +167,6 @@ Instead of one AI doing everything (and getting confused halfway through), oh-my
 | **oma-brainstorm** | Explores ideas with you before you commit to building. |
 | **oma-db** | Designs your schema, migrations, indexes, and vector stores. |
 | **oma-debug** | Finds the root cause, fixes the bug, and writes a regression test. |
-| **oma-deepsec** | Scans your code for security holes and blocks risky pull requests. |
 | **oma-design** | Builds design systems with tokens, accessibility, and responsive layouts. |
 | **oma-dev-workflow** | Automates your CI/CD, releases, and monorepo tasks. |
 | **oma-docs** | Checks your docs for broken references and flags ones a code change touched. |
@@ -180,6 +179,7 @@ Instead of one AI doing everything (and getting confused halfway through), oh-my
 | **oma-qa** | Reviews your code for OWASP security, performance, and accessibility issues. |
 | **oma-refactor** | Refactors code without changing its behavior, using hotspot targeting, characterization-test safety nets, and refactor-only commits. |
 | **oma-scm** | Manages your branches, merges, worktrees, and Conventional Commits. |
+| **oma-security** | Scans source, agent skills, and MCP components; tests deployed web apps and validates findings. |
 | **oma-search** | Routes each query to the best source and scores how much you can trust the result. |
 | **oma-tf-infra** | Provisions multi-cloud infrastructure with Terraform. |
 
@@ -254,7 +254,7 @@ Or use slash commands for structured workflows:
 | 3 | `/ultrawork` | Builds your feature through five gated quality phases; every review runs in a fresh, isolated reviewer session (cross-context review) |
 | 3 | `/ralph` | Repeats `/ultrawork` until an independent verifier passes every criterion |
 | 4 | `/review` | Reviews your code for security, performance, and accessibility issues |
-| 4 | `/deepsec` | Runs a deep security scan and blocks risky pull requests |
+| 4 | `/security` | Scans security targets, validates findings, and applies CI gates |
 | 5 | `/debug` | Finds the root cause, fixes the bug, and writes a regression test |
 | 5 | `/docs` | Checks your docs for broken references and patches the ones your code changes touched |
 | 6 | `/scm` | Manages your branches, merges, and Conventional Commits |

@@ -501,10 +501,10 @@
         ]
       }
     },
-    "deepsec": {
+    "security": {
       "persistent": false,
       "keywords": {
-        "*": ["/deepsec", "deepsec workflow"],
+        "*": ["/security", "security workflow"],
         "en": [
           "run deepsec",
           "deepsec scan this repo",
@@ -512,27 +512,52 @@
           "deepsec pr review",
           "deepsec ci gate",
           "deepsec triage",
-          "deepsec matchers"
+          "deepsec matchers",
+          "run a security scan",
+          "scan repo for vulnerabilities",
+          "scan the repo for vulnerabilities",
+          "scan this skill for vulnerabilities",
+          "scan this mcp server",
+          "run cisco skill scanner",
+          "run cisco mcp scanner",
+          "run ai deep sast",
+          "run cisco ai deep sast",
+          "run artex",
+          "artex pentest",
+          "penetration test this test site",
+          "validate security findings"
         ],
         "ko": [
-          "딥섹 워크플로우",
+          "보안 스캔",
+          "취약점 스캔",
+          "시큐리티 워크플로우",
           "딥섹 실행",
           "딥섹 스캔",
           "딥섹으로 검사",
           "딥섹 PR 리뷰",
-          "딥섹 CI 게이트"
+          "딥섹 CI 게이트",
+          "시스코 스킬 스캐너 실행",
+          "시스코 MCP 스캐너 실행",
+          "딥 SAST 실행",
+          "ARTEX 실행",
+          "ARTEX로 테스트 사이트 침투 테스트",
+          "보안 파인딩 검증"
         ],
         "ja": [
+          "セキュリティスキャン",
+          "脆弱性スキャン",
           "ディープセック実行",
-          "deepsecワークフロー",
           "deepsecでスキャン",
-          "deepsec PRレビュー"
+          "deepsec PRレビュー",
+          "ARTEXで侵入テスト"
         ],
         "zh": [
+          "安全扫描",
+          "漏洞扫描",
           "运行 deepsec",
-          "deepsec 工作流",
           "用 deepsec 扫描",
-          "deepsec PR 审查"
+          "deepsec PR 审查",
+          "运行 ARTEX"
         ]
       }
     },
@@ -2679,20 +2704,22 @@
         "zh": ["翻译一下", "帮我翻译", "多语言", "本地化", "翻成英文"]
       }
     },
-    "oma-deepsec": {
+    "oma-security": {
       "keywords": {
         "*": [
+          "oma-security",
           "deepsec",
           ".deepsec",
-          "bunx deepsec",
-          "pnpm deepsec",
-          "npx deepsec",
           "deepsec.config",
-          "process --diff",
-          "INFO.md",
-          "MatcherPlugin",
-          "noiseTier",
-          "AI_GATEWAY_API_KEY"
+          "Cisco Skill Scanner",
+          "Cisco MCP Scanner",
+          "AI Deep SAST",
+          "ai-deep-sast",
+          "skill-scanner",
+          "mcp-scanner",
+          "mcpscanner",
+          "ARTEX",
+          "security-audit-skill"
         ],
         "en": [
           "scan repo for vulnerabilities",
@@ -2706,7 +2733,11 @@
           "diff security review",
           "write a custom matcher",
           "revalidate findings",
-          "triage findings"
+          "triage findings",
+          "scan this skill for vulnerabilities",
+          "scan this mcp server",
+          "penetration test this test site",
+          "validate security findings"
         ],
         "ko": [
           "취약점 스캔",
@@ -2717,7 +2748,12 @@
           "보안 점검",
           "매처 작성",
           "파인딩 트리아지",
-          "파인딩 재검증"
+          "파인딩 재검증",
+          "시스코 스킬 스캐너",
+          "시스코 MCP 스캐너",
+          "딥 SAST",
+          "침투 테스트",
+          "보안 파인딩 검증"
         ],
         "ja": [
           "脆弱性スキャン",
@@ -3041,6 +3077,7 @@
     "*": [
       "what is",
       "what are",
+      "what does",
       "how to",
       "how does",
       "how do",

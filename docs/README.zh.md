@@ -167,7 +167,6 @@ APM 只分发 skills。完整 harness 请用 `bunx oh-my-agent@latest`（或上�
 | **oma-brainstorm** | 在动手之前，先和你一起把想法探索清楚 |
 | **oma-db** | 设计 schema、迁移、索引与 vector store |
 | **oma-debug** | 找到根因、修复 bug，并补上回归测试 |
-| **oma-deepsec** | 扫描代码中的安全漏洞，拦截高风险 pull request |
 | **oma-design** | 构建含 token、无障碍支持与响应式布局的设计系统 |
 | **oma-dev-workflow** | 自动化 CI/CD、发布流程与 monorepo 任务 |
 | **oma-docs** | 检查文档中的失效引用，并标出被代码变更波及的内容 |
@@ -180,6 +179,7 @@ APM 只分发 skills。完整 harness 请用 `bunx oh-my-agent@latest`（或上�
 | **oma-qa** | 审查代码的 OWASP 安全性、性能与无障碍合规 |
 | **oma-refactor** | 借助热点定位、特性化测试安全网和只含重构的提交，在不改变行为的前提下重构代码 |
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
+| **oma-security** | 扫描源代码、agent 技能和 MCP 组件，测试已部署的 Web 应用并验证发现 |
 | **oma-search** | 将每条查询路由至最优来源，并标注结果的可信度评分 |
 | **oma-tf-infra** | 使用 Terraform 完成多云基础设施的自动化编排 |
 
@@ -243,7 +243,7 @@ You: "做一个带用户认证的 TODO 应用"
 | 3 | `/ultrawork` | 用五个带门禁的质量阶段把你的功能做扎实；每次审查都在全新、隔离的审查者会话中进行（cross-context review） |
 | 3 | `/ralph` | 反复跑 `/ultrawork`，直到一个独立校验器确认每条标准都过关 |
 | 4 | `/review` | 审查你的代码，排查安全、性能和无障碍问题 |
-| 4 | `/deepsec` | 运行深度安全扫描，拦下有风险的 pull request |
+| 4 | `/security` | 扫描安全目标、验证发现并应用 CI 门禁 |
 | 5 | `/debug` | 找到根因、修好 bug，再补上一条回归测试 |
 | 5 | `/docs` | 检查你的文档有没有失效引用，并修补代码改动牵涉到的那些 |
 | 6 | `/scm` | 管理你的分支、合并和 Conventional Commits |

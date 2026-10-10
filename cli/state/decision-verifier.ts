@@ -105,19 +105,19 @@ export const REQUIRED_DECISIONS: RequiredDecisionTable = {
       },
     ],
   },
-  deepsec: {
+  security: {
     "execution-scope": [
       {
-        subject: "deepsec.execution-scope",
+        subject: "security.execution-scope",
         description:
-          "Authorized, limited, or declined backend, budget, and scan scope captured before the conditional paid or custom-scope branch.",
+          "Authorized, limited, or declined engine/backend, budget, target scope and effects captured before consequential paid or runtime work.",
       },
     ],
     "triage-outcome": [
       {
-        subject: "deepsec.triage-outcome",
+        subject: "security.triage-outcome",
         description:
-          "Finding identity and true-positive, false-positive, fixed, or uncertain verdict captured with causal evidence for the current analysis revision.",
+          "Finding identity and confirmed, needs_validation or rejected disposition captured with independent evidence for the current target and verdict revision.",
       },
     ],
   },

@@ -167,7 +167,7 @@ Au lieu qu'une seule IA fasse tout (et se perde en route), oh-my-agent répartit
 | **oma-brainstorm** | Explore les idées avec toi avant de te lancer dans le code |
 | **oma-db** | Conçoit tes schémas, migrations, index et vector stores |
 | **oma-debug** | Identifie la cause racine, corrige le bug et écrit un test de régression |
-| **oma-deepsec** | Scanne ton code pour détecter les failles de sécurité et bloque les pull requests à risque |
+| **oma-security** | Scanne le code source, les skills d’agents et les composants MCP ; teste les applications web déployées et valide les constats |
 | **oma-design** | Construit des systèmes de design avec tokens, accessibilité et layouts responsive |
 | **oma-dev-workflow** | Automatise ton CI/CD, tes releases et tes tâches monorepo |
 | **oma-docs** | Vérifie les références cassées dans ta doc et signale les pages touchées par un changement de code |
@@ -243,7 +243,7 @@ Ou utilise les slash commands pour des workflows structurés :
 | 3 | `/ultrawork` | Construit ta feature à travers cinq phases qualité à gates ; chaque revue s'exécute dans une session de relecteur neuve et isolée (revue à contexte croisé / cross-context review) |
 | 3 | `/ralph` | Répète `/ultrawork` jusqu'à ce qu'un vérificateur indépendant valide chaque critère |
 | 4 | `/review` | Revoit ton code pour les problèmes de sécurité, de performance et d'accessibilité |
-| 4 | `/deepsec` | Lance un scan de sécurité profond et bloque les pull requests à risque |
+| 4 | `/security` | Effectue des scans de sécurité, valide les constats et applique des contrôles CI |
 | 5 | `/debug` | Trouve la cause racine, corrige le bug et écrit un test de régression |
 | 5 | `/docs` | Vérifie tes docs pour les références cassées et corrige celles que touchent tes changements de code |
 | 6 | `/scm` | Gère tes branches, tes merges et les Conventional Commits |

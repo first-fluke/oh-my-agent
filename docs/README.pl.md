@@ -167,7 +167,7 @@ Zamiast jednego AI, które robi wszystko (i gubi się w połowie), oh-my-agent r
 | **oma-brainstorm** | Eksploruje pomysły razem z Tobą, zanim cokolwiek zaczniesz budować |
 | **oma-db** | Projektuje schematy, migracje, indeksy i vector stores |
 | **oma-debug** | Znajduje przyczynę błędu, naprawia go i pisze test regresji |
-| **oma-deepsec** | Skanuje kod w poszukiwaniu luk bezpieczeństwa i blokuje ryzykowne pull requesty |
+| **oma-security** | Skanuje kod źródłowy, umiejętności agentów i komponenty MCP; testuje wdrożone aplikacje webowe i weryfikuje ustalenia |
 | **oma-design** | Buduje design systemy z tokenami, dostępnością i responsywnymi layoutami |
 | **oma-dev-workflow** | Automatyzuje CI/CD, releasy i zadania w monorepo |
 | **oma-docs** | Sprawdza dokumentację pod kątem zepsutych referencji i wskazuje miejsca dotknięte zmianami w kodzie |
@@ -246,7 +246,7 @@ Lub użyj slash commands do ustrukturyzowanych workflow:
 | 3 | `/ultrawork` | Buduje Twoją funkcjonalność przez pięć bramkowanych faz jakości; każda rewizja działa w świeżej, izolowanej sesji recenzenta (cross-context review) |
 | 3 | `/ralph` | Powtarza `/ultrawork`, aż niezależny weryfikator zaliczy wszystkie kryteria |
 | 4 | `/review` | Przegląda Twój kod pod kątem bezpieczeństwa, wydajności i dostępności |
-| 4 | `/deepsec` | Wykonuje głęboki skan bezpieczeństwa i blokuje ryzykowne pull requesty |
+| 4 | `/security` | Skanuje wskazane cele pod kątem bezpieczeństwa, weryfikuje ustalenia i stosuje bramki CI |
 | 5 | `/debug` | Znajduje przyczynę, naprawia błąd i pisze test regresji |
 | 5 | `/docs` | Sprawdza Twoją dokumentację pod kątem zepsutych odwołań i łata te, których dotykają zmiany w kodzie |
 | 6 | `/scm` | Zarządza Twoimi gałęziami, scaleniami i Conventional Commits |

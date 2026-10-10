@@ -167,7 +167,7 @@ In plaats van een enkele AI die alles doet (en halverwege de draad kwijtraakt), 
 | **oma-brainstorm** | Verkent ideeën samen met jou voordat je begint met bouwen |
 | **oma-db** | Ontwerpt je schema, migraties, indexes en vector stores |
 | **oma-debug** | Zoekt de root cause, lost de bug op en schrijft een regressietest |
-| **oma-deepsec** | Scant je code op beveiligingslekken en blokkeert riskante pull requests |
+| **oma-security** | Scant broncode, agentskills en MCP-componenten; test gedeployde webapps en valideert bevindingen |
 | **oma-design** | Bouwt design systems met tokens, toegankelijkheid en responsive layouts |
 | **oma-dev-workflow** | Automatiseert je CI/CD, releases en monorepo-taken |
 | **oma-docs** | Controleert je docs op gebroken verwijzingen en markeert wat een codewijziging heeft geraakt |
@@ -243,7 +243,7 @@ Of gebruik slash commands voor gestructureerde workflows:
 | 3 | `/ultrawork` | Bouwt je feature door vijf gated kwaliteitsfasen; elke review draait in een verse, geïsoleerde reviewer-sessie (cross-context review) |
 | 3 | `/ralph` | Herhaalt `/ultrawork` tot een onafhankelijke verificator elk criterium goedkeurt |
 | 4 | `/review` | Bekijkt je code op beveiligings-, performance- en toegankelijkheidsproblemen |
-| 4 | `/deepsec` | Draait een diepe security scan en blokkeert riskante pull requests |
+| 4 | `/security` | Scant beveiligingsdoelen, valideert bevindingen en past CI-gates toe |
 | 5 | `/debug` | Vindt de root cause, fixt de bug en schrijft een regressietest |
 | 5 | `/docs` | Controleert je docs op kapotte verwijzingen en patcht die welke je codewijzigingen raken |
 | 6 | `/scm` | Beheert je branches, merges en Conventional Commits |

@@ -167,7 +167,7 @@ Statt dass eine einzige KI alles erledigt (und sich auf halbem Weg verheddert), 
 | **oma-brainstorm** | Erkundet Ideen gemeinsam mit dir, bevor du dich für einen Weg entscheidest |
 | **oma-db** | Entwirft dein Schema, Migrationen, Indizes und Vector Stores |
 | **oma-debug** | Findet die Ursache, behebt den Bug und schreibt einen Regressionstest |
-| **oma-deepsec** | Scannt deinen Code auf Sicherheitslücken und blockiert riskante Pull Requests |
+| **oma-security** | Scannt Quellcode, Agenten-Skills und MCP-Komponenten; testet bereitgestellte Webanwendungen und validiert Befunde |
 | **oma-design** | Baut Design-Systeme mit Tokens, Barrierefreiheit und Responsive Layouts |
 | **oma-dev-workflow** | Automatisiert deine CI/CD, Releases und Monorepo-Aufgaben |
 | **oma-docs** | Prüft deine Docs auf defekte Referenzen und markiert Stellen, die ein Code-Change berührt hat |
@@ -243,7 +243,7 @@ Oder nutz Slash Commands für strukturierte Workflows:
 | 3 | `/ultrawork` | Baut dein Feature durch fünf gegatete Qualitätsphasen; jedes Review läuft in einer frischen, isolierten Reviewer-Session (Cross-Context-Review) |
 | 3 | `/ralph` | Wiederholt `/ultrawork`, bis ein unabhängiger Prüfer jedes Kriterium besteht |
 | 4 | `/review` | Prüft deinen Code auf Sicherheits-, Performance- und Barrierefreiheits-Probleme |
-| 4 | `/deepsec` | Führt einen tiefen Security-Scan durch und blockiert riskante Pull Requests |
+| 4 | `/security` | Führt Sicherheitsscans durch, validiert Befunde und wendet CI-Gates an |
 | 5 | `/debug` | Findet die Ursache, behebt den Bug und schreibt einen Regressionstest |
 | 5 | `/docs` | Prüft deine Docs auf kaputte Verweise und patcht die, die deine Code-Änderungen betreffen |
 | 6 | `/scm` | Verwaltet deine Branches, Merges und Conventional Commits |

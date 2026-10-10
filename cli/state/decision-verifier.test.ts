@@ -197,9 +197,9 @@ describe("required decision verifier", () => {
           { subject: "review.severity-classification" },
         ],
       },
-      deepsec: {
-        "execution-scope": [{ subject: "deepsec.execution-scope" }],
-        "triage-outcome": [{ subject: "deepsec.triage-outcome" }],
+      security: {
+        "execution-scope": [{ subject: "security.execution-scope" }],
+        "triage-outcome": [{ subject: "security.triage-outcome" }],
       },
       docs: {
         "sync-patch-approval": [{ subject: "docs.sync-patch-approval" }],
@@ -207,6 +207,7 @@ describe("required decision verifier", () => {
     });
     expect(table).not.toHaveProperty("scm");
     expect(table).not.toHaveProperty("ralph");
+    expect(table).not.toHaveProperty("deepsec");
     expect(table.ultrawork).not.toHaveProperty("impl-plan-locked");
     expect(table.orchestrate).not.toHaveProperty("fanout-strategy");
   });
@@ -233,9 +234,9 @@ describe("required decision verifier", () => {
       expect(body, `${workflow} should reference the L1 event spec`).toContain(
         ".agents/skills/_shared/runtime/event-spec.md",
       );
-      if (workflow === "deepsec") {
+      if (workflow === "security") {
         const resource =
-          ".agents/skills/oma-deepsec/resources/decision-records.md";
+          ".agents/skills/oma-security/resources/findings-contract.md";
         expect(body).toContain(resource);
         body += readFileSync(
           new URL(`../../${resource}`, import.meta.url),
@@ -259,6 +260,57 @@ describe("required decision verifier", () => {
         }
       }
     }
+  });
+
+  it.each(["execution-scope", "triage-outcome"])(
+    "requires a current security subject for %s",
+    async (checkpoint) => {
+      const sid = "oma-security";
+      const instanceId = "finding-1:revision-2";
+      emitEvent(projectDir, sid, {
+        kind: "decision.made",
+        payload: {
+          subject: `deepsec.${checkpoint}`,
+          decision: "Reuse a prior scanner decision.",
+          rationale: "This event uses the retired workflow subject.",
+          instanceId,
+        },
+      });
+      const args = {
+        projectDir,
+        sid,
+        workflow: "security",
+        checkpoint,
+        instanceId,
+        emitMissing: false,
+      };
+      expect((await verifyRequiredDecisions(args)).ok).toBe(false);
+
+      emitEvent(projectDir, sid, {
+        kind: "decision.made",
+        payload: {
+          subject: `security.${checkpoint}`,
+          decision: "Use the recorded scope and current finding evidence.",
+          rationale: "The security decision matches the current revision.",
+          instanceId,
+        },
+      });
+      expect((await verifyRequiredDecisions(args)).ok).toBe(true);
+    },
+  );
+
+  it("rejects the retired deepsec workflow checkpoint", async () => {
+    await expect(
+      verifyRequiredDecisions({
+        projectDir,
+        sid: "oma-security",
+        workflow: "deepsec",
+        checkpoint: "execution-scope",
+        instanceId: "scope-v1",
+      }),
+    ).rejects.toThrow(
+      "Unknown required decision checkpoint: deepsec/execution-scope",
+    );
   });
 
   it("emits decision.missing when a required decision is absent", async () => {

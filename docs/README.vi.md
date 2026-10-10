@@ -167,7 +167,7 @@ Thay vì một AI làm tất cả mọi thứ (rồi bị lạc hướng giữa 
 | **oma-brainstorm** | Cùng bạn khám phá ý tưởng trước khi bắt tay vào xây dựng |
 | **oma-db** | Thiết kế schema, migration, index và vector store cho dự án của bạn |
 | **oma-debug** | Tìm nguyên nhân gốc rễ, sửa lỗi và viết regression test |
-| **oma-deepsec** | Quét lỗ hổng bảo mật trong code và chặn pull request rủi ro |
+| **oma-security** | Quét mã nguồn, skill của agent và thành phần MCP; kiểm thử ứng dụng web đã triển khai và xác minh phát hiện |
 | **oma-design** | Xây dựng hệ thống thiết kế với token, accessibility và responsive layout |
 | **oma-dev-workflow** | Tự động hóa CI/CD, release và các tác vụ monorepo |
 | **oma-docs** | Kiểm tra tài liệu có tham chiếu bị hỏng và đánh dấu những tài liệu bị ảnh hưởng bởi thay đổi code |
@@ -243,7 +243,7 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 | 3 | `/ultrawork` | Xây dựng tính năng của bạn qua năm giai đoạn chất lượng có cổng kiểm soát; mọi lượt đánh giá đều chạy trong một phiên đánh giá mới, tách biệt (cross-context review) |
 | 3 | `/ralph` | Lặp lại `/ultrawork` cho đến khi một trình kiểm chứng độc lập đạt mọi tiêu chí |
 | 4 | `/review` | Rà soát code của bạn về các vấn đề bảo mật, hiệu suất và accessibility |
-| 4 | `/deepsec` | Quét bảo mật chuyên sâu và chặn các pull request rủi ro |
+| 4 | `/security` | Quét bảo mật các mục tiêu, xác minh phát hiện và áp dụng cổng kiểm tra CI |
 | 5 | `/debug` | Tìm nguyên nhân gốc, sửa lỗi và viết regression test |
 | 5 | `/docs` | Kiểm tra tài liệu của bạn về tham chiếu hỏng và vá những phần mà thay đổi code chạm tới |
 | 6 | `/scm` | Quản lý branch, merge và Conventional Commits của bạn |

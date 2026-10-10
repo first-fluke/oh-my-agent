@@ -63,10 +63,6 @@ export const SKILLS: SkillsRegistry = {
       desc: `Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests.`,
     },
     {
-      name: "oma-deepsec",
-      desc: `Set up and run Deepsec vulnerability scans, triage, and CI gates. Use for Deepsec work or an explicitly requested agent-powered vulnerability scan.`,
-    },
-    {
       name: "oma-docs",
       desc: `Check documentation references, sync docs to code changes, and detect translation drift. Use for documentation maintenance in a repository.`,
     },
@@ -109,6 +105,10 @@ export const SKILLS: SkillsRegistry = {
     {
       name: "oma-search",
       desc: `Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools.`,
+    },
+    {
+      name: "oma-security",
+      desc: `Scan application source, agent skills, and MCP components; run penetration tests against scoped web test deployments, validate findings, and configure scan gates. Use oma-qa for broad quality reviews and domain skills for remediation.`,
     },
     {
       name: "oma-skill-creation",

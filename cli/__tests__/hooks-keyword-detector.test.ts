@@ -1947,21 +1947,25 @@ describe("keyword-detector", () => {
 
     it("rule 1: longest keyword wins regardless of declaration order", () => {
       // Mirrors the live fix: 'deepsec pr review' (18) beats 'review' (6)
-      // even though review is declared before deepsec in triggers.json.
+      // even though review is declared before security in triggers.json.
       const review = candidate({
         workflow: "review",
         keywordLength: 6,
         declarationIndex: 0,
       });
-      const deepsec = candidate({
-        workflow: "deepsec",
+      const security = candidate({
+        workflow: "security",
         keywordLength: 18,
         isMultiWord: true,
         declarationIndex: 4,
       });
-      expect(pickWinningCandidate([review, deepsec])?.workflow).toBe("deepsec");
+      expect(pickWinningCandidate([review, security])?.workflow).toBe(
+        "security",
+      );
       // Order in the input array must not matter.
-      expect(pickWinningCandidate([deepsec, review])?.workflow).toBe("deepsec");
+      expect(pickWinningCandidate([security, review])?.workflow).toBe(
+        "security",
+      );
     });
 
     it("rule 2: on equal length, a multi-word candidate beats a single word", () => {
@@ -2025,7 +2029,7 @@ describe("keyword-detector", () => {
       // the shorter, unsuppressed 'review' candidate still wins — it is not
       // blocked just because a more specific sibling match was suppressed.
       const suppressedSpecific = candidate({
-        workflow: "deepsec",
+        workflow: "security",
         keywordLength: 18,
         isMultiWord: true,
         suppressed: true,
@@ -2045,7 +2049,7 @@ describe("keyword-detector", () => {
 
     it("a suppressed candidate with no unsuppressed alternative yields no winner", () => {
       const onlySuppressed = candidate({
-        workflow: "deepsec",
+        workflow: "security",
         keywordLength: 18,
         suppressed: true,
       });
@@ -2071,7 +2075,7 @@ describe("keyword-detector", () => {
       );
       expect(result?.type).toBe("context");
       if (result?.type === "context") {
-        expect(result.additionalContext).toContain("[OMA WORKFLOW: DEEPSEC]");
+        expect(result.additionalContext).toContain("[OMA WORKFLOW: SECURITY]");
       }
     });
 
@@ -2127,7 +2131,7 @@ describe("keyword-detector", () => {
         {
           kind: "prompt",
           prompt:
-            "What is the deepsec pr review workflow for, out of curiosity? Separately and unrelated to that question, please review this PR today.",
+            "What is the security workflow for, out of curiosity? Separately and unrelated to that question, please review this PR today.",
           cwd: "/tmp",
         },
         ctx,
