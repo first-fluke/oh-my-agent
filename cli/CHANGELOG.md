@@ -1,5 +1,12 @@
 # Changelog
 
+## [18.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v18.0.1...cli-v18.0.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* **state:** migrate runtime receipts without live owners ([ce4e4a0](https://github.com/first-fluke/oh-my-agent/commit/ce4e4a01fc437f58e838536e0aac009c64cdb089))
+
 ## [18.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v18.0.0...cli-v18.0.1) (2026-10-10)
 
 
