@@ -368,12 +368,18 @@ oma state migrate --runtime --dry-run --json
 oma state migrate --runtime --json
 ```
 
-This migration copies completed run receipts, claims, outputs, plan pins, and
-resume state into profile `0` storage. It adjusts receipt output paths and
-monotonically reconciles the run sequence. Live or unknown execution owners,
-unsafe paths, and destination conflicts are reported without overwriting data.
-It leaves L1 sessions and project artifacts untouched. A dry run writes nothing,
-and rerunning the command skips identical copies.
+This migration copies run receipts, claims, outputs, plan pins, and resume state
+into profile `0` storage. A legacy `running` receipt with a missing or dead
+`runnerPid` is copied without changing its status; no manual `failed` or
+`completed` edit is needed. A live `runnerPid` or a resume lease that cannot be
+proved inactive still defers migration. If current storage already contains a
+terminal receipt with matching run identity, it takes precedence and the entire
+stale legacy run bundle is skipped.
+
+The migration adjusts receipt output paths and monotonically reconciles the run
+sequence. Unsafe paths and destination conflicts are reported without
+overwriting data. It leaves L1 sessions and project artifacts untouched. A dry
+run writes nothing, and rerunning the command skips identical copies.
 
 Retry migration performs no network calls. Raw queue and ACK snapshots, including
 original inode identity, are preserved under

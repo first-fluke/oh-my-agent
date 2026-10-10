@@ -225,42 +225,184 @@ describe("project runtime migration", () => {
     expect(existsSync(stateHome)).toBe(false);
   });
 
-  it("defers an unknown running owner and its references while copying independent completed runs", async () => {
-    const active = receipt({
+  it.each([undefined, 2147483647])(
+    "copies a stale native run and its references with runnerPid %s without changing its outcome",
+    async (runnerPid) => {
+      const files = completedSessionFiles({
+        status: "running",
+        finishedAt: undefined,
+        exitCode: undefined,
+        runnerPid,
+      });
+      const originals = files.map((file) => readFileSync(file));
+      receipt({ runId: secondId, sequence: 9, sessionId: "independent" });
+
+      const reports = await migrateProjectRuntime({ projectDir: root });
+
+      expect(reports.every((item) => item.status === "copied")).toBe(true);
+      expect(readAgentRun(root, firstId).status).toBe("running");
+      expect(readAgentRun(root, firstId).runnerPid).toBe(runnerPid);
+      expect(readAgentRun(root, firstId).finishedAt).toBeUndefined();
+      expect(readAgentRun(root, firstId).exitCode).toBeUndefined();
+      expect(readAgentRun(root, secondId).status).toBe("completed");
+      for (const [index, file] of files.entries()) {
+        expect(readFileSync(file)).toEqual(originals[index]);
+        const report = reports.find((item) => item.source === file);
+        expect(report?.status, file).toBe("copied");
+        if (file !== source("agent-runs", `${firstId}.json`)) {
+          expect(readFileSync(report?.destination ?? "")).toEqual(
+            originals[index],
+          );
+        }
+      }
+
+      const repeated = await migrateProjectRuntime({ projectDir: root });
+      expect(repeated.every((item) => item.status === "unchanged")).toBe(true);
+      expect(readAgentRun(root, firstId).status).toBe("running");
+    },
+  );
+
+  it("defers a running receipt whose runner still owns the legacy paths", async () => {
+    const files = completedSessionFiles({
       status: "running",
       finishedAt: undefined,
       exitCode: undefined,
-      lineageId: "active-lineage",
-    });
-    output(active);
-    put("agent-runs", `${active.runId}.claim.json`, claim);
-    put("agent-plans", "sessions/session-1.json", {
-      lineageId: "active-lineage",
-      hash: "b".repeat(64),
-    });
-    put("agent-plans", "lineages/active-lineage.json", {
-      lineageId: "active-lineage",
-      hash: "b".repeat(64),
-    });
-    put("agent-resume", "session-1.json", {
-      sessionId: "session-1",
-      tasks: [],
-      ok: false,
+      runnerPid: process.pid,
     });
     receipt({ runId: secondId, sequence: 9, sessionId: "independent" });
+
     const reports = await migrateProjectRuntime({ projectDir: root });
+
+    for (const file of files) {
+      expect(reports.find((item) => item.source === file)?.status, file).toBe(
+        "deferred",
+      );
+    }
+    expect(readAgentRun(root, secondId).status).toBe("completed");
+    expect(() => readAgentRun(root, firstId)).toThrow();
+  });
+
+  it("preserves a finished HOME bundle instead of reviving its stale native run", async () => {
+    const stale = receipt({
+      status: "running",
+      finishedAt: undefined,
+      exitCode: undefined,
+    });
+    const outputFile = output(stale);
+    const claimFile = put("agent-runs", `${firstId}.claim.json`, claim);
+    const files = [
+      source("agent-runs", `${firstId}.json`),
+      outputFile,
+      claimFile,
+    ];
+    const originals = files.map((file) => readFileSync(file));
+    const destination = runtimeStateDir(root, "agent-runs");
+    mkdirSync(destination, { recursive: true });
+    const targetReceipt = join(destination, `${firstId}.json`);
+    const targetOutput = join(destination, `${firstId}.output.txt`);
+    const targetClaim = join(destination, `${firstId}.claim.json`);
+    writeFileSync(
+      targetReceipt,
+      JSON.stringify({
+        ...stale,
+        status: "completed",
+        finishedAt: "2026-10-08T00:01:00.000Z",
+        exitCode: 0,
+        after: "c".repeat(64),
+        output: { ...stale.output, path: relative(root, targetOutput) },
+      }),
+    );
+    writeFileSync(targetOutput, "finished canonical output");
+    writeFileSync(
+      targetClaim,
+      JSON.stringify({ ...claim, changedFiles: ["updated.ts"] }),
+    );
+    const targetFiles = [targetReceipt, targetOutput, targetClaim];
+    const canonical = targetFiles.map((file) => readFileSync(file));
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const reports = await migrateProjectRuntime({ projectDir: root });
+      expect(
+        reports
+          .filter((item) => item.source.includes(firstId))
+          .every((item) => item.status === "unchanged"),
+      ).toBe(true);
+      expect(readAgentRun(root, firstId).status).toBe("completed");
+      for (const [index, file] of files.entries()) {
+        expect(readFileSync(file)).toEqual(originals[index]);
+      }
+      for (const [index, file] of targetFiles.entries()) {
+        expect(readFileSync(file)).toEqual(canonical[index]);
+      }
+    }
+  });
+
+  it("rejects a canonical receipt with a different immutable task identity", async () => {
+    const stale = receipt({
+      status: "running",
+      finishedAt: undefined,
+      exitCode: undefined,
+    });
+    output(stale);
+    put("agent-runs", `${firstId}.claim.json`, claim);
+    const destination = runtimeStateDir(root, "agent-runs");
+    mkdirSync(destination, { recursive: true });
+    const target = join(destination, `${firstId}.json`);
+    const canonical = JSON.stringify({
+      ...stale,
+      status: "completed",
+      taskId: "another-task",
+      finishedAt: "2026-10-08T00:01:00.000Z",
+      exitCode: 0,
+    });
+    writeFileSync(target, canonical);
+
+    const reports = await migrateProjectRuntime({ projectDir: root });
+
     expect(
       reports
         .filter((item) => item.source.includes(firstId))
-        .every((item) => item.status === "deferred"),
+        .every((item) => item.status === "conflict"),
     ).toBe(true);
+    expect(readFileSync(target, "utf8")).toBe(canonical);
+    expect(existsSync(join(destination, `${firstId}.claim.json`))).toBe(false);
+    expect(existsSync(join(destination, `${firstId}.output.txt`))).toBe(false);
+  });
+
+  it("keeps a live coordinator protected even when HOME has the finished run", async () => {
+    const stale = receipt({
+      status: "running",
+      finishedAt: undefined,
+      exitCode: undefined,
+    });
+    const destination = runtimeStateDir(root, "agent-runs");
+    mkdirSync(destination, { recursive: true });
+    const target = join(destination, `${firstId}.json`);
+    const canonical = JSON.stringify({
+      ...stale,
+      status: "completed",
+      finishedAt: "2026-10-08T00:01:00.000Z",
+      exitCode: 0,
+    });
+    writeFileSync(target, canonical);
+    const lease = put("agent-resume", "session-1.lease.json", {
+      pid: process.pid,
+      host: hostname(),
+      token: "active",
+    });
+
+    const reports = await migrateProjectRuntime({ projectDir: root });
+
     expect(
-      reports
-        .filter((item) => item.area !== "agent-runs")
-        .every((item) => item.status === "deferred"),
-    ).toBe(true);
-    expect(readAgentRun(root, secondId).status).toBe("completed");
-    expect(() => readAgentRun(root, firstId)).toThrow();
+      reports.find(
+        (item) => item.source === source("agent-runs", `${firstId}.json`),
+      )?.status,
+    ).toBe("deferred");
+    expect(reports.find((item) => item.source === lease)?.status).toBe(
+      "deferred",
+    );
+    expect(readFileSync(target, "utf8")).toBe(canonical);
+    expect(JSON.parse(readFileSync(lease, "utf8")).token).toBe("active");
   });
 
   it("defers only a live coordinator's session and preserves its lease", async () => {

@@ -81,6 +81,30 @@ function canonical(value: unknown): string {
       .join(",")}}`;
   return JSON.stringify(value);
 }
+function sameRunIdentity(source: AgentRun, destination: AgentRun): boolean {
+  const origin = (run: AgentRun) => ({
+    schemaVersion: run.schemaVersion,
+    runId: run.runId,
+    sequence: run.sequence,
+    taskId: run.taskId,
+    sessionId: run.sessionId,
+    lineageId: run.lineageId,
+    goalId: run.goalId,
+    evidenceRepair: run.evidenceRepair,
+    agentId: run.agentId,
+    vendor: run.vendor,
+    runnerPid: run.runnerPid,
+    workspace: run.workspace,
+    artifactRoot: run.artifactRoot,
+    startedAt: run.startedAt,
+    before: run.before,
+    contract: run.contract,
+    requiredDecisions: run.requiredDecisions,
+    dispatch: run.dispatch,
+    resumedFrom: run.resumedFrom,
+  });
+  return canonical(origin(source)) === canonical(origin(destination));
+}
 function safeChain(base: string, target: string): void {
   const suffix = relative(base, target);
   if (
@@ -324,16 +348,14 @@ function migrate(root: string, dryRun: boolean): RuntimeMigrationEntry[] {
             "Run identity or project ownership does not match the source",
           );
         runs.set(run.runId, run);
-        if (run.status === "running") {
+        if (run.status === "running" && run.runnerPid && alive(run.runnerPid)) {
           deferredRuns.add(run.runId);
           deferredSessions.add(run.sessionId);
           deferredLineages.add(run.lineageId ?? run.sessionId);
           item.result = entry(
             item,
             "deferred",
-            run.runnerPid && !alive(run.runnerPid)
-              ? "Running receipt has a dead PID but its old claim path needs explicit resolution"
-              : "Running receipt has a live or unknown owner; old claim path is preserved",
+            "Running receipt has a live runner; old claim path is preserved",
           );
         }
       } else if (item.area === "agent-resume") {
@@ -397,8 +419,8 @@ function migrate(root: string, dryRun: boolean): RuntimeMigrationEntry[] {
       if (item.runId === run.runId && !item.result)
         item.result = entry(item, "conflict", reason);
   };
+  const canonicalRuns = new Map<string, AgentRun>();
   try {
-    const canonicalRuns: AgentRun[] = [];
     const destinationRuns = runtimeStateDir(root, "agent-runs");
     safeChain(stateRoot, destinationRuns);
     if (existsSync(destinationRuns))
@@ -409,13 +431,13 @@ function migrate(root: string, dryRun: boolean): RuntimeMigrationEntry[] {
         const run = RunSchema.parse(JSON.parse(readFileSync(path, "utf8")));
         if (run.runId !== file.slice(0, -5))
           throw new Error(`Canonical run identity does not match ${path}`);
-        canonicalRuns.push(run);
+        canonicalRuns.set(run.runId, run);
       }
     for (const run of runs.values()) {
       // A receipt already present under the same ID keeps its immutable,
       // idempotent comparison below; only newly published history can reorder it.
       if (
-        canonicalRuns.some((current) => current.runId === run.runId) ||
+        canonicalRuns.has(run.runId) ||
         items.some(
           (item) =>
             item.kind === "run" && item.runId === run.runId && item.result,
@@ -423,14 +445,14 @@ function migrate(root: string, dryRun: boolean): RuntimeMigrationEntry[] {
       )
         continue;
       if (
-        [...canonicalRuns, ...runs.values()].some(
+        [...canonicalRuns.values(), ...runs.values()].some(
           (other) =>
             other.runId !== run.runId && other.sequence === run.sequence,
         )
       )
         conflictRun(run, "Sequence is already owned by a different run");
       else if (
-        canonicalRuns.some(
+        [...canonicalRuns.values()].some(
           (current) =>
             !runs.has(current.runId) &&
             current.sequence < run.sequence &&
@@ -506,6 +528,20 @@ function migrate(root: string, dryRun: boolean): RuntimeMigrationEntry[] {
         } else if (item.kind === "output")
           throw new Error("Orphan output is not referenced by its run");
         if (item.kind === "claim") AgentClaimSchema.parse(json(item));
+        const current = canonicalRuns.get(run.runId);
+        if (
+          run.status === "running" &&
+          current &&
+          current.status !== "running" &&
+          sameRunIdentity(run, current)
+        ) {
+          item.result = entry(
+            item,
+            "unchanged",
+            "Existing terminal HOME receipt is authoritative; original bundle is preserved",
+          );
+          continue;
+        }
       } else if (item.kind === "pin") {
         const [kind, file] = item.name.split("/");
         const id = file?.slice(0, -5) ?? "";
