@@ -10,7 +10,7 @@ Parallele Agenten zu spawnen ist der einfache Teil. Schwierig wird die Frage, ob
 
 oh-my-agent macht diese Behauptung falsifizierbar. Ein Stop-Hook weigert sich, deine Session zu beenden, solange das projekteigene `typecheck`- / `test`- / `lint`-Skript nicht mit Exit-Code 0 durchläuft. Ein Gate-Command entscheidet anhand der Artefakte, die ein Workflow hinterlassen haben muss, ob er wirklich gelaufen ist — und maßgeblich ist sein JSON-Verdikt, nicht die Zusammenfassung des Agenten. Ein unabhängiger Judge mit frischem Kontext verifiziert in jeder Runde jedes Kriterium neu, auch die bereits bestandenen. Jede Gate-Entscheidung landet in einem Append-only-Event-Log, das du im Nachhinein lesen kannst. Und dieselbe Disziplin läuft über ein Dutzend Agenten-Runtimes hinweg, aus einem einzigen portablen `.agents/`-Verzeichnis.
 
-Beginne mit dem bestehenden [Schnellstart](../web/docs/getting-started/quick-start.md), um einen Installationsweg zu wählen, einen benannten Skill um eine abgegrenzte Änderung zu bitten und Datei, Prüfbefehl und Exit-Status festzuhalten. Der Full-Harness-Weg enthält `oma doctor`.
+Folge dem [Schnellstart](../web/docs/getting-started/quick-start.md), um ein Skill-Preset zu wählen, `oma doctor` auszuführen und einen benannten Skill um eine abgegrenzte Änderung zu bitten. Halte Datei, Prüfbefehl und Exit-Status fest.
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ Beginne mit dem bestehenden [Schnellstart](../web/docs/getting-started/quick-sta
 
 ## Schnellstart
 
-**Schnellster Weg — Skills in deine Agents (Claude Code, Cursor, Codex und mehr):**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Das installiert das OMA-Skill-Pack in erkannte Agent-Runtimes. Skills bringen dem Agenten bei, *wie* er arbeiten soll; das Full Harness (unten) prüft, ob die Arbeit *tatsächlich* passiert ist — Stop-Hook-Gates, Artifact-Verification, unabhängige Judges und ein Append-only Event-Log.
-
-### Full Harness (Gates, Hooks, CLI)
-
-Nimm das, wenn du Workflows, Regeln, `oma-config.yaml`, Keyword-Detection-Hooks und `oma agent spawn` willst — nicht nur Skills.
+Führe den OMA-Installer aus und wähle ein Skill-Preset für dein Projekt.
 
 Die Install-Scripts installieren bun, uv und serena automatisch, falls sie fehlen.
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # Oder manuell (jedes OS, braucht bun + uv + serena)
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>Oder Skills mit Microsofts <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) installieren. Aufklappen.</summary>
-
-> Nicht zu verwechseln mit dem APM (Application Performance Monitoring) von `oma-observability`.
-
-```bash
-# Alle Skills, in jede erkannte Runtime
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# Ein einzelner Skill
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM liefert nur Skills. Für das Full Harness nimm `bunx oh-my-agent@latest` (oder die Scripts oben). Pro Projekt eine Distribution — wenn du schon `npx skills add` genutzt hast, bleib bei skills-only, bis du Gates/Hooks/CLI brauchst.
-
-</details>
 
 Preset wählen und loslegen:
 

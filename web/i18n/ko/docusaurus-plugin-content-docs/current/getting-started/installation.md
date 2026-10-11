@@ -16,17 +16,7 @@ description: oh-my-agent 설치, 스킬과 프로바이더 선택, 생성된 프
 
 ---
 
-## 방법 0: skills CLI (스킬만 쓸 때 가장 빠름)
-
-감지된 에이전트 런타임에 OMA 스킬 팩을 설치합니다:
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-전체 하네스 없이 스킬만 쓰고 싶을 때 가장 가볍게 시작하는 방법입니다. 워크플로우, 규칙, 훅, 게이트, `oma agent spawn`이 필요하면 아래 방법 1 또는 방법 2를 사용하세요.
-
-## 방법 1: 한 줄 설치 (전체 하네스)
+## 방법 1: 한 줄 설치
 
 ```bash
 # macOS / Linux

@@ -16,17 +16,7 @@ El instalador agrupa las integraciones por capacidad. Los proveedores de hooks i
 
 ---
 
-## Método 0: CLI de skills (la más rápida para instalar solo skills)
-
-Instala el paquete de skills de OMA en los runtimes de agentes detectados:
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Es la vía de entrada más ligera cuando quieres las skills sin el harness completo. Para workflows, reglas, hooks, puertas y `oma agent spawn`, usa el Método 1 o el 2 de abajo.
-
-## Método 1: instalación con un solo comando (harness completo)
+## Método 1: instalación con un solo comando
 
 ```bash
 # macOS / Linux

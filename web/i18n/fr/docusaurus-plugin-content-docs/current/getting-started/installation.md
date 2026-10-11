@@ -17,17 +17,7 @@ L'installateur regroupe les intégrations par capacité. Les fournisseurs de hoo
 
 ---
 
-## Méthode 0 : CLI skills (la plus rapide pour les compétences uniquement) {#method-0-skills-cli-fastest-for-skills-only}
-
-Installez le pack de compétences OMA dans les runtimes d'agents détectés :
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-C'est la voie d'accès la plus légère lorsque vous voulez les compétences sans le harnais complet. Pour les workflows, les règles, les hooks, les portes et `oma agent spawn`, utilisez la méthode 1 ou 2 ci-dessous.
-
-## Méthode 1 : installation en une commande (harnais complet) {#method-1-one-liner-install-full-harness}
+## Méthode 1 : installation en une commande {#method-1-one-liner-install-full-harness}
 
 ```bash
 # macOS / Linux

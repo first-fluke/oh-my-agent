@@ -223,6 +223,7 @@ function copySkillAssets(sourceDir: string, destDir: string): void {
 export function emitAgentSkills(
   repoRoot: string,
   outDir: string,
+  options: { sharedResources?: "bundled" | "package" } = {},
 ): SkillEmitResult[] {
   const dirNames = discoverSkillDirs(repoRoot);
   const results: SkillEmitResult[] = [];
@@ -264,6 +265,9 @@ export function emitAgentSkills(
       join(repoRoot, SKILLS_DIR, dirName),
       skillOutDir,
       EXCLUDED_RESOURCE_NAMES,
+      options.sharedResources === "package"
+        ? join(outDir, "_shared")
+        : undefined,
     );
 
     results.push({

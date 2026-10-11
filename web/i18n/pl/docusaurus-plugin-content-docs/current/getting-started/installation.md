@@ -16,17 +16,7 @@ Instalator grupuje integracje według możliwości. Dostawcy hooków to Antigrav
 
 ---
 
-## Metoda 0: CLI skills (najszybsza dla samych umiejętności) {#method-0-skills-cli-fastest-for-skills-only}
-
-Zainstaluj pakiet umiejętności OMA w wykrytych runtime'ach agentów:
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-To najlżejsza ścieżka wejścia, gdy chcesz mieć umiejętności bez pełnego harnessu. Dla workflowów, reguł, hooków, bramek i `oma agent spawn` użyj Metody 1 lub 2 poniżej.
-
-## Metoda 1: instalacja jednym wierszem (pełny harness) {#method-1-one-liner-install-full-harness}
+## Metoda 1: instalacja jednym wierszem {#method-1-one-liner-install-full-harness}
 
 ```bash
 # macOS / Linux

@@ -9,18 +9,6 @@ Use this page to run one small task and record a concrete result. You need a pro
 
 ## 1. Install
 
-### Fastest path — skills into your agents
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-This installs the OMA skill pack into detected agent runtimes (Claude Code, Cursor, Codex, and more). Skills teach the agent how to work. For stop-hook gates, artifact verification, independent judges, and the `oma` CLI, install the full harness below.
-
-Skills-only installs do not provide the `oma` CLI, hooks, workflows, or judges. Use a named installed skill for the first task below; use the full harness when you need the CLI checks.
-
-### Full harness (gates, hooks, CLI)
-
 From the project directory, run the bootstrap installer:
 
 ```bash
@@ -44,9 +32,9 @@ bunx oh-my-agent@latest
 The bootstrap scripts install into the current project. Use `oma install --global` when you want a HOME-level install; read [Installation](./installation.md) before mixing project and global installs.
 
 
-## 2. Check the result (full harness only)
+## 2. Check the result
 
-If you installed the full harness, run the health check from the same project directory:
+Run the health check from the same project directory:
 
 ```bash
 oma doctor
@@ -74,8 +62,6 @@ bunx oh-my-agent@latest doctor
 
 If the bare command is still missing, open a new shell or add the package manager's bin directory to `PATH`. If `oma doctor` reports an invalid configuration, fix the named field and run it again. Do not delete `.agents/oma-config.yaml` to recover: it is the user-owned configuration that preserves settings across updates.
 
-If you installed skills only, skip this CLI check and continue to the named-skill task below.
-
 ## 3. Run one small task
 
 Open the repository in the configured AI tool and ask for one named skill and one self-contained result:
@@ -84,7 +70,7 @@ Open the repository in the configured AI tool and ask for one named skill and on
 Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-The host should identify the selected skill, inspect one target, and report either a focused link edit or that the link is already valid. Include the command output and exit status for any check that actually ran. A skills-only install does not add `/debug`, `/ralph`, hooks, or workflow gates; asking for the named skill keeps this first task within the installed capabilities.
+The host should identify the selected skill, inspect one target, and report either a focused link edit or that the link is already valid. Include the command output and exit status for any check that actually ran.
 
 When the keyword hook is enabled for the selected host, it can activate a matching workflow. Skill routing is performed by the host or the selected workflow, so an arbitrary host prompt does not guarantee a hook, a particular skill, or a `CHARTER_CHECK`. The execution contract should still inspect repository conventions, make only the scoped change, and report its verification. The exact files and command depend on the project.
 

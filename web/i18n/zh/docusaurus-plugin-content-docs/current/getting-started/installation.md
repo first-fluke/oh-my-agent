@@ -16,17 +16,7 @@ description: 安装 oh-my-agent，选择技能和能力提供商，了解生成�
 
 ---
 
-## 方式零：skills CLI（仅安装技能时最快）
-
-将 OMA 技能包安装到检测到的智能体运行时中：
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-只需要技能、不需要完整 harness 时，这是最轻量的入门方式。如需工作流、规则、钩子、关卡和 `oma agent spawn`，请使用下面的方式一或方式二。
-
-## 方式一：一键安装（完整 harness）
+## 方式一：一键安装
 
 ```bash
 # macOS / Linux

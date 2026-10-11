@@ -10,7 +10,7 @@
 
 oh-my-agent делает это утверждение фальсифицируемым. Stop-хук не даёт завершить сессию, пока скрипт `typecheck` / `test` / `lint` вашего собственного проекта не завершится с кодом 0. Команда-гейт решает, действительно ли workflow был выполнен, по артефактам, которые он обязан был оставить, — и результатом считается её JSON-вердикт, а не резюме агента. Независимый судья со свежим контекстом заново проверяет каждый критерий на каждом круге, включая уже пройденные. Каждое решение гейта попадает в журнал событий, доступный только для добавления, который можно прочитать уже постфактум. И ровно эта дисциплина работает в десятке агентных runtime из одной портативной директории `.agents/`.
 
-Начните с существующего [Быстрого старта](../web/docs/getting-started/quick-start.md), чтобы выбрать способ установки, попросить именованный skill выполнить одно ограниченное изменение и зафиксировать файл, команду проверки и код завершения. Путь с полным harness включает `oma doctor`.
+Следуйте [Быстрому старту](../web/docs/getting-started/quick-start.md), чтобы выбрать preset навыков, запустить `oma doctor` и попросить именованный навык выполнить одно ограниченное изменение. Зафиксируйте файл, команду проверки и код завершения.
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ oh-my-agent делает это утверждение фальсифициру�
 
 ## Быстрый старт
 
-**Самый быстрый путь — skills в ваши агенты (Claude Code, Cursor, Codex и др.):**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Это ставит пакет skills OMA в обнаруженные runtime агентов. Skills учат агента *как* работать; полный harness (ниже) проверяет, что работа *действительно* произошла — stop-hook гейты, проверка артефактов, независимые судьи и append-only event log.
-
-### Полный harness (гейты, хуки, CLI)
-
-Берите это, когда нужны workflow, правила, `oma-config.yaml`, хуки детекции ключевых слов и `oma agent spawn` — не только skills.
+Запустите установщик OMA и выберите preset навыков для проекта.
 
 Скрипты установки сами поставят bun, uv и serena, если их нет.
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # Или вручную (любая ОС, нужны bun + uv + serena)
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>Или поставьте skills через <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) от Microsoft. Раскрыть.</summary>
-
-> Не путать с APM (Application Performance Monitoring) из `oma-observability`.
-
-```bash
-# Все skills во все обнаруженные runtime
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# Один skill
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM поставляет только skills. Для полного harness используйте `bunx oh-my-agent@latest` (или скрипты выше). Один способ дистрибуции на проект — если уже сделали `npx skills add`, оставайтесь на skills-only, пока не нужны гейты/хуки/CLI.
-
-</details>
 
 Выберите пресет и можно начинать:
 

@@ -10,7 +10,7 @@ Parallelle agents spawnen is het makkelijke deel. Het moeilijke deel is weten of
 
 oh-my-agent maakt die bewering falsifieerbaar. Een Stop-hook weigert je sessie te beëindigen zolang het `typecheck`- / `test`- / `lint`-script van je eigen project niet met exitcode 0 afsluit. Een gate-commando bepaalt of een workflow echt heeft gedraaid door te kijken naar de artefacten die hij moet hebben achtergelaten — en het JSON-oordeel daarvan is het resultaat, niet de samenvatting van de agent. Een onafhankelijke judge met een verse context verifieert elke ronde opnieuw elk criterium, ook de criteria die al geslaagd waren. Elke gate-beslissing komt terecht in een append-only event log dat je achteraf kunt lezen. En diezelfde discipline draait over een tiental agent-runtimes heen, vanuit één draagbare `.agents/`-map.
 
-Begin met de bestaande pagina [Snel starten](../web/docs/getting-started/quick-start.md) om een installatiepad te kiezen, een benoemde skill om één afgebakende wijziging te vragen en het bestand, het controlecommando en de exitstatus vast te leggen. Het pad met de full harness bevat `oma doctor`.
+Volg [Snel starten](../web/docs/getting-started/quick-start.md) om een skillpreset te kiezen, `oma doctor` uit te voeren en een benoemde skill om één afgebakende wijziging te vragen. Leg het bestand, het controlecommando en de exitstatus vast.
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ Begin met de bestaande pagina [Snel starten](../web/docs/getting-started/quick-s
 
 ## Snel starten
 
-**Snelste pad — skills in je agents (Claude Code, Cursor, Codex en meer):**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Dat zet het OMA-skillpack in gedetecteerde agent-runtimes. Skills leren de agent *hoe* te werken; de full harness (hieronder) controleert of het werk *echt* is gebeurd — stop-hook gates, artifact-verificatie, onafhankelijke judges en een append-only event log.
-
-### Full harness (gates, hooks, CLI)
-
-Gebruik dit als je workflows, regels, `oma-config.yaml`, keyword-detection-hooks en `oma agent spawn` wilt — niet alleen skills.
+Voer de OMA-installer uit en kies een skillpreset voor je project.
 
 De installatiescripts installeren bun, uv en serena automatisch als ze ontbreken.
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # Of handmatig (elk OS, vereist bun + uv + serena)
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>Of installeer skills met Microsofts <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM). Uitklappen.</summary>
-
-> Niet te verwarren met de APM (Application Performance Monitoring) van `oma-observability`.
-
-```bash
-# Alle skills, naar elke gedetecteerde runtime
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# Eén skill
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM levert alleen skills. Voor de full harness gebruik je `bunx oh-my-agent@latest` (of de scripts hierboven). Eén distributie per project — als je al `npx skills add` hebt gebruikt, blijf bij skills-only tot je gates/hooks/CLI nodig hebt.
-
-</details>
 
 Kies een preset en je bent klaar:
 

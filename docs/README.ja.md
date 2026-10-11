@@ -10,7 +10,7 @@
 
 oh-my-agent はその主張を反証可能にします。Stop hook は、プロジェクト自身の `typecheck` / `test` / `lint` スクリプトが 0 で終了するまでセッションの終了を拒みます。ゲートコマンドは、ワークフローが本当に走ったかどうかを、走ったなら必ず残っているはずの成果物があるかどうかで判定します。結果になるのはエージェントの要約ではなく、このコマンドが返す JSON の判定です。独立した judge は毎ラウンド、まっさらなコンテキストですべての基準を検証し直します。すでに通過した基準も含めてです。ゲートの判定はひとつ残らず、あとから読める append-only のイベントログに積み上がります。そしてこの規律を、移植可能な `.agents/` ディレクトリひとつから十数種類のエージェントランタイムに同じように適用します。
 
-まず既存の[クイックスタート](../web/docs/getting-started/quick-start.md)で、インストール方法を選び、名前を指定したスキルに範囲を絞った変更を 1 つ依頼し、ファイル、チェックコマンド、終了ステータスを記録してください。フルハーネスの経路には `oma doctor` が含まれます。
+[クイックスタート](../web/docs/getting-started/quick-start.md)に従ってスキルプリセットを選び、`oma doctor` を実行してから、名前を指定したスキルに範囲を絞った変更を 1 つ依頼してください。ファイル、チェックコマンド、終了ステータスを記録します。
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ oh-my-agent はその主張を反証可能にします。Stop hook は、プロ�
 
 ## クイックスタート
 
-**最短ルート — エージェントにスキルを入れる（Claude Code、Cursor、Codex など）:**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-検出されたエージェントランタイムに OMA スキルパックを入れます。スキルはエージェントに *どう* 動くかを教え、下のフルハーネスは仕事が *本当に* 終わったかを検証します — ストップフックゲート、成果物検証、独立ジャッジ、追記専用イベントログ。
-
-### フルハーネス（ゲート・フック・CLI）
-
-ワークフロー、ルール、`oma-config.yaml`、キーワード検出フック、`oma agent spawn` まで欲しいときの経路です。スキルだけでは足りない場合に使います。
+OMA インストーラーを実行し、プロジェクトに合うスキルプリセットを選んでください。
 
 インストールスクリプトは bun / uv / serena がなければ自動インストールします。
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # または手動（任意 OS、bun + uv + serena が必要）
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>または Microsoft の <a href="https://github.com/microsoft/apm">Agent Package Manager</a>（APM）でスキルだけ入れる。展開。</summary>
-
-> `oma-observability` の APM（Application Performance Monitoring）とは別物です。
-
-```bash
-# 全スキルを、検出された全ランタイムへ
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# 単一スキル
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM が配るのはスキルだけです。フルハーネスは `bunx oh-my-agent@latest`（または上のスクリプト）を使ってください。すでに `npx skills add` を使っているなら、ゲート/フック/CLI が必要になるまでは skills-only のままがドリフトを減らせます。
-
-</details>
 
 プリセットを選べばすぐ始められます:
 

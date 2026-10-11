@@ -9,18 +9,6 @@ Usa esta página para ejecutar una tarea pequeña y registrar un resultado concr
 
 ## 1. Instala
 
-### La vía más rápida: skills en tus agentes
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Esto instala el paquete de skills de OMA en los runtimes de agentes detectados (Claude Code, Cursor, Codex y más). Las skills enseñan al agente cómo trabajar. Para las puertas de los hooks Stop, la verificación de artefactos, los jueces independientes y el CLI `oma`, instala el harness completo de abajo.
-
-Las instalaciones solo de skills no incluyen el CLI `oma`, los hooks, los flujos de trabajo ni los jueces. Usa una skill instalada con nombre para la primera tarea de abajo; usa el harness completo cuando necesites las comprobaciones del CLI.
-
-### Harness completo (puertas, hooks, CLI)
-
 Desde el directorio del proyecto, ejecuta el instalador de arranque:
 
 ```bash
@@ -43,9 +31,9 @@ bunx oh-my-agent@latest
 
 Los scripts de arranque instalan en el proyecto actual. Usa `oma install --global` cuando quieras una instalación a nivel de HOME; lee [Instalación](./installation.md) antes de mezclar instalaciones de proyecto y globales.
 
-## 2. Comprueba el resultado (solo con el harness completo)
+## 2. Comprueba el resultado
 
-Si instalaste el harness completo, ejecuta la comprobación de salud desde el mismo directorio del proyecto:
+Ejecuta la comprobación de salud desde el mismo directorio del proyecto:
 
 ```bash
 oma doctor
@@ -71,8 +59,6 @@ bunx oh-my-agent@latest doctor
 
 Si el comando `oma` sigue sin encontrarse, abre un shell nuevo o añade el directorio bin del gestor de paquetes a tu `PATH`. Si `oma doctor` informa de una configuración no válida, corrige el campo indicado y vuelve a ejecutarlo. No borres `.agents/oma-config.yaml` para recuperarte: es la configuración propiedad del usuario que conserva los ajustes entre actualizaciones.
 
-Si instalaste solo skills, omite esta comprobación del CLI y continúa con la tarea de la skill con nombre de abajo.
-
 ## 3. Ejecuta una tarea pequeña
 
 Abre el repositorio en la herramienta de IA configurada y pide una skill con nombre y un resultado autocontenido:
@@ -81,7 +67,7 @@ Abre el repositorio en la herramienta de IA configurada y pide una skill con nom
 Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-El host debe identificar la skill seleccionada, inspeccionar un objetivo e informar de una edición específica del enlace o de que el enlace ya es válido. Incluye la salida del comando y el código de salida de cualquier comprobación que se haya ejecutado de verdad. Una instalación solo de skills no añade `/debug`, `/ralph`, hooks ni puertas de flujo de trabajo; pedir la skill con nombre mantiene esta primera tarea dentro de las capacidades instaladas.
+El host debe identificar la skill seleccionada, inspeccionar un objetivo e informar de una edición específica del enlace o de que el enlace ya es válido. Incluye la salida del comando y el código de salida de cualquier comprobación que se haya ejecutado de verdad.
 
 Cuando el hook de palabras clave está habilitado para el host seleccionado, puede activar un flujo de trabajo coincidente. El host o el flujo seleccionado realiza el enrutamiento de skills, por lo que un prompt arbitrario del host no garantiza un hook, una skill concreta ni un `CHARTER_CHECK`. El contrato de ejecución debe revisar aun así las convenciones del repositorio, hacer solo el cambio dentro del alcance e informar de su verificación. Los archivos y comandos exactos dependen del proyecto.
 

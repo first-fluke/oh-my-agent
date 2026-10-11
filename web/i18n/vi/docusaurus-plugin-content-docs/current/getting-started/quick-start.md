@@ -9,18 +9,6 @@ Dùng trang này để chạy một task nhỏ và ghi lại một kết quả c
 
 ## 1. Cài đặt
 
-### Cách nhanh nhất — cài skill vào các agent của bạn
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Lệnh này cài gói skill OMA vào các agent runtime được phát hiện (Claude Code, Cursor, Codex và nhiều hơn nữa). Skill dạy agent cách làm việc. Nếu cần stop-hook gate, xác minh artifact, judge độc lập và CLI `oma`, hãy cài harness đầy đủ bên dưới.
-
-Bản cài chỉ có skill không cung cấp CLI `oma`, hook, workflow hay judge. Hãy dùng một skill đã cài có nêu tên cho task đầu tiên bên dưới; dùng harness đầy đủ khi bạn cần các bước kiểm tra bằng CLI.
-
-### Harness đầy đủ (gate, hook, CLI)
-
 Từ thư mục dự án, chạy bootstrap installer:
 
 ```bash
@@ -43,9 +31,9 @@ bunx oh-my-agent@latest
 
 Bootstrap script cài đặt vào dự án hiện tại. Dùng `oma install --global` khi muốn cài ở cấp HOME; đọc [Cài đặt](./installation.md) trước khi kết hợp cài đặt theo dự án và cài đặt toàn cục.
 
-## 2. Kiểm tra kết quả (chỉ với harness đầy đủ)
+## 2. Kiểm tra kết quả
 
-Nếu đã cài harness đầy đủ, chạy health check từ cùng thư mục dự án:
+Chạy health check từ cùng thư mục dự án:
 
 ```bash
 oma doctor
@@ -71,8 +59,6 @@ bunx oh-my-agent@latest doctor
 
 Nếu lệnh trần vẫn không tìm thấy, mở shell mới hoặc thêm thư mục bin của package manager vào `PATH`. Nếu `oma doctor` báo cấu hình không hợp lệ, sửa trường được nêu rồi chạy lại. Không xóa `.agents/oma-config.yaml` để khôi phục: đây là cấu hình do người dùng sở hữu và giữ lại thiết lập qua các lần cập nhật.
 
-Nếu bạn chỉ cài skill, bỏ qua bước kiểm tra CLI này và tiếp tục với task dùng skill có tên bên dưới.
-
 ## 3. Chạy một task nhỏ
 
 Mở repository trong AI tool đã cấu hình và yêu cầu một skill có tên cụ thể cùng một kết quả độc lập:
@@ -81,7 +67,7 @@ Mở repository trong AI tool đã cấu hình và yêu cầu một skill có t�
 Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-Host cần nêu rõ skill đã chọn, kiểm tra một mục tiêu và báo cáo một chỉnh sửa link có trọng tâm hoặc cho biết link vốn đã hợp lệ. Hãy kèm output lệnh và exit status cho mọi bước kiểm tra thực sự đã chạy. Bản cài chỉ có skill không thêm `/debug`, `/ralph`, hook hay workflow gate; việc yêu cầu skill có tên giúp task đầu tiên này nằm trong các khả năng đã cài.
+Host cần nêu rõ skill đã chọn, kiểm tra một mục tiêu và báo cáo một chỉnh sửa link có trọng tâm hoặc cho biết link vốn đã hợp lệ. Hãy kèm output lệnh và exit status cho mọi bước kiểm tra thực sự đã chạy.
 
 Khi keyword hook được bật cho host đã chọn, nó có thể kích hoạt workflow phù hợp. Host hoặc workflow đã chọn thực hiện skill routing, vì vậy prompt tùy ý của host không đảm bảo có hook, skill cụ thể hoặc `CHARTER_CHECK`. Execution contract vẫn phải kiểm tra quy ước của repository, chỉ thực hiện thay đổi trong phạm vi và báo cáo kết quả xác minh. File và lệnh chính xác phụ thuộc vào dự án.
 

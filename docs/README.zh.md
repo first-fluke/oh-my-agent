@@ -10,7 +10,7 @@
 
 oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，直到项目自己的 `typecheck` / `test` / `lint` 脚本以 0 退出为止。门禁命令判断某个工作流是否真的跑过，靠的是它跑过就必然留下的产出物；最终结果以这条命令给出的 JSON 判定为准，而不是 agent 的自述。独立的 judge 每一轮都会在全新上下文里重新校验每一条标准，包括那些已经通过的。每一次门禁判定都会落到一份只追加的事件日志上，事后可以逐条翻看。同一套纪律，再从一个可移植的 `.agents/` 目录铺到十几种 agent 运行时上。
 
-从现有的[快速开始](../web/docs/getting-started/quick-start.md)入手：选择安装路径，请一个指定的 skill 做一项范围明确的改动，并记录文件、检查命令和退出状态。完整 harness 路径包含 `oma doctor`。
+按照[快速开始](../web/docs/getting-started/quick-start.md)选择技能预设，运行 `oma doctor`，再指定技能完成一项范围明确的修改。记录文件、检查命令和退出状态。
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，�
 
 ## 快速开始
 
-**最快路径 — 把 skills 装进你的 agents（Claude Code、Cursor、Codex 等）：**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-这会把 OMA skill 包装进检测到的 agent 运行时。Skills 教 agent *怎么* 干活；下面的完整 harness 负责检查活 *有没有真干完* —— stop-hook 门禁、产物校验、独立评审，以及只追加的事件日志。
-
-### 完整 harness（门禁、hooks、CLI）
-
-需要 workflow、规则、`oma-config.yaml`、关键词检测 hook 和 `oma agent spawn` 时用这条路径——不只是 skills。
+运行 OMA 安装器，选择适合项目的技能预设。
 
 安装脚本会在缺少 bun、uv、serena 时自动安装。
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # 或手动（任意 OS，需要 bun + uv + serena）
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>或用微软的 <a href="https://github.com/microsoft/apm">Agent Package Manager</a>（APM）只装 skills。展开。</summary>
-
-> 别和 `oma-observability` 的 APM（Application Performance Monitoring）搞混。
-
-```bash
-# 全部 skills，部署到每个检测到的运行时
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# 单个 skill
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM 只分发 skills。完整 harness 请用 `bunx oh-my-agent@latest`（或上面的脚本）。每个项目只用一种分发方式——如果已经用了 `npx skills add`，在需要门禁/hooks/CLI 之前就保持 skills-only。
-
-</details>
 
 选一个预设就可以开始：
 

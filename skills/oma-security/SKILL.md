@@ -64,7 +64,7 @@ Use an installed/pinned native interface; inspect its version and help before ch
 Deepsec `init` can configure models and start AI review; do not treat it as free scaffolding or run it before the selected scope/spend is authorized.
 Use native cost/duration controls verified against the installed engine; record when a hard bound cannot be enforced.
 ARTEX uses a verified snapshot-specific UI/API or manual/external integration; it has no assumed scanner command.
-Authorization, clarification, spend, build restrictions, and completion follow `references/_shared/core/execution-policy.md`.
+Authorization, clarification, spend, build restrictions, and completion follow `../_shared/core/execution-policy.md`.
 Existing backend/scope/spend authorization persists. A key, login, or installed tool alone does not authorize paid calls or changed scope.
 
 ## Structural Flow
@@ -168,5 +168,5 @@ Keep raw originals unchanged and access-controlled; shared/normalized copies omi
 - Independent proof and final-record review: `resources/validation.md` (triage/validation or candidate review).
 - JSON schemas, provenance, deduplication and statuses: `resources/findings-contract.md` (results retained/normalized).
 - Native exit differences and evidence gates: `resources/ci.md` (CI requested).
-- Authorization/completion: `references/_shared/core/execution-policy.md` (scope, spend, or completion decisions).
-- Context loading: `references/_shared/core/context-loading.md` (resource/injection decisions).
+- Authorization/completion: `../_shared/core/execution-policy.md` (scope, spend, or completion decisions).
+- Context loading: `../_shared/core/context-loading.md` (resource/injection decisions).

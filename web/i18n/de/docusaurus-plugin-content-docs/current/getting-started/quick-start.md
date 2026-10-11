@@ -9,18 +9,6 @@ Verwenden Sie diese Seite, um eine kleine Aufgabe auszuführen und ein konkretes
 
 ## 1. Installieren
 
-### Schnellster Weg — Skills in Ihre Agenten
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Dadurch wird das OMA-Skill-Paket in die erkannten Agent-Laufzeiten installiert (Claude Code, Cursor, Codex und weitere). Skills bringen dem Agenten bei, wie er arbeiten soll. Für Stop-Hook-Gates, Artefaktverifizierung, unabhängige Judges und die `oma`-CLI installieren Sie unten das vollständige Harness.
-
-Reine Skill-Installationen stellen die `oma`-CLI, Hooks, Workflows und Judges nicht bereit. Verwenden Sie für die erste Aufgabe unten einen benannten, installierten Skill; verwenden Sie das vollständige Harness, wenn Sie die CLI-Prüfungen benötigen.
-
-### Vollständiges Harness (Gates, Hooks, CLI)
-
 Führen Sie aus dem Projektverzeichnis den Bootstrap-Installer aus:
 
 ```bash
@@ -43,9 +31,9 @@ bunx oh-my-agent@latest
 
 Die Bootstrap-Skripte installieren OMA im aktuellen Projekt. Verwenden Sie `oma install --global` für eine Installation auf HOME-Ebene; lesen Sie [Installation](./installation.md), bevor Sie Projekt- und globale Installationen mischen.
 
-## 2. Ergebnis prüfen (nur vollständiges Harness)
+## 2. Ergebnis prüfen
 
-Wenn Sie das vollständige Harness installiert haben, führen Sie die Gesundheitsprüfung aus demselben Projektverzeichnis aus:
+Führen Sie die Gesundheitsprüfung aus demselben Projektverzeichnis aus:
 
 ```bash
 oma doctor
@@ -71,8 +59,6 @@ bunx oh-my-agent@latest doctor
 
 Fehlt der Befehl `oma` selbst weiterhin, öffnen Sie eine neue Shell oder fügen Sie das Bin-Verzeichnis des Paketmanagers Ihrem `PATH` hinzu. Meldet `oma doctor` eine ungültige Konfiguration, korrigieren Sie das genannte Feld und führen Sie den Befehl erneut aus. Löschen Sie `.agents/oma-config.yaml` nicht zur Wiederherstellung: Diese benutzereigene Konfiguration bewahrt Ihre Einstellungen über Updates hinweg.
 
-Wenn Sie nur Skills installiert haben, überspringen Sie diese CLI-Prüfung und fahren Sie mit der Aufgabe mit benanntem Skill weiter unten fort.
-
 ## 3. Eine kleine Aufgabe ausführen
 
 Öffnen Sie das Repository im konfigurierten KI-Tool und fordern Sie einen benannten Skill und ein in sich geschlossenes Ergebnis an:
@@ -81,7 +67,7 @@ Wenn Sie nur Skills installiert haben, überspringen Sie diese CLI-Prüfung und 
 Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-Der Host sollte den ausgewählten Skill identifizieren, ein Ziel prüfen und entweder eine gezielte Änderung des Links oder die Feststellung melden, dass der Link bereits gültig ist. Für jede tatsächlich ausgeführte Prüfung gehören Befehlsausgabe und Exit-Status in den Bericht. Eine reine Skill-Installation fügt `/debug`, `/ralph`, Hooks und Workflow-Gates nicht hinzu; die Anforderung des benannten Skills hält diese erste Aufgabe im Rahmen der installierten Fähigkeiten.
+Der Host sollte den ausgewählten Skill identifizieren, ein Ziel prüfen und entweder eine gezielte Änderung des Links oder die Feststellung melden, dass der Link bereits gültig ist. Für jede tatsächlich ausgeführte Prüfung gehören Befehlsausgabe und Exit-Status in den Bericht.
 
 Wenn der Keyword-Hook für den ausgewählten Host aktiviert ist, kann er einen passenden Workflow starten. Das Skill-Routing erfolgt durch den Host oder den ausgewählten Workflow. Ein beliebiger Host-Prompt garantiert daher keinen Hook, keinen bestimmten Skill und keinen `CHARTER_CHECK`. Der Ausführungsvertrag sollte trotzdem die Repository-Konventionen prüfen, nur die abgegrenzte Änderung vornehmen und die Verifizierung melden. Die konkreten Dateien und Befehle hängen vom Projekt ab.
 

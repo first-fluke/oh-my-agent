@@ -10,7 +10,7 @@ Spawning parallel agents is the easy part. The hard part is knowing whether they
 
 oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session until your project's own `typecheck` / `test` / `lint` script exits 0. A gate command decides whether a workflow really ran by looking for the artifacts it must have left behind — and its JSON verdict, not the agent's summary, is the result. An independent judge with a fresh context re-verifies every criterion each round, including the ones that already passed. Every gate decision lands on an append-only event log you can read after the fact. Then it runs that same discipline across a dozen agent runtimes from one portable `.agents/` directory.
 
-Start with the existing [Quick Start](./web/docs/getting-started/quick-start.md) to choose an install path, ask a named skill for one scoped change, and record the file, check command, and exit status. The full-harness path includes `oma doctor`.
+Follow [Quick Start](./web/docs/getting-started/quick-start.md) to choose a skill preset, run `oma doctor`, and ask a named skill for one scoped change. Record the file, check command, and exit status.
 
 ![oh-my-agent explainer](./docs/assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ Start with the existing [Quick Start](./web/docs/getting-started/quick-start.md)
 
 ## Quick Start
 
-**Fastest path — skills into your agents (Claude Code, Cursor, Codex, and more):**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-That installs the OMA skill pack into detected agent runtimes. Skills teach the agent how to work; the full harness (below) is what checks whether the work actually happened — stop-hook gates, artifact verification, independent judges, and an append-only event log.
-
-### Full harness (gates, hooks, CLI)
-
-Use this when you want workflows, rules, `oma-config.yaml`, keyword-detection hooks, and `oma agent spawn` — not just skills.
+Run the OMA installer and choose a skill preset for your project.
 
 The install scripts auto-install bun, uv, and serena if they're missing.
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # Or manual (any OS, requires bun + uv + serena)
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>Or install skills with Microsoft's <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM). Click to expand.</summary>
-
-> Not to be confused with `oma-observability`'s APM (Application Performance Monitoring).
-
-```bash
-# All skills, deployed to every detected runtime
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# A single skill
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM ships skills only. For the full harness, use `bunx oh-my-agent@latest` (or the scripts above). Prefer one distribution path per project to avoid drift — if you already used `npx skills add`, stick with skills-only unless you need gates/hooks/CLI.
-
-</details>
 
 Pick a preset and you're ready:
 

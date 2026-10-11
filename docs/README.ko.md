@@ -10,7 +10,7 @@
 
 oh-my-agent는 그 주장을 반증 가능하게 만듭니다. Stop hook은 프로젝트 자체의 `typecheck` / `test` / `lint` 스크립트가 0으로 종료되기 전까지 세션 종료를 거부합니다. 게이트 커맨드는 워크플로우가 정말 돌았는지를, 돌았다면 반드시 남아 있어야 할 산출물이 있는지로 판정합니다. 결과가 되는 것은 에이전트의 요약이 아니라 이 커맨드의 JSON 판정입니다. 독립 judge는 매 라운드마다 새 컨텍스트에서 모든 기준을 다시 검증합니다. 이미 통과한 기준까지 포함해서요. 모든 게이트 판정은 나중에 읽어볼 수 있는 append-only 이벤트 로그에 쌓입니다. 그리고 이 규율을 하나의 이식 가능한 `.agents/` 디렉터리에서 열 개가 넘는 에이전트 런타임에 똑같이 적용합니다.
 
-기존 [빠른 시작](../web/docs/getting-started/quick-start.md)에서 시작해 설치 경로를 고르고, 이름을 지정한 스킬에 범위가 정해진 변경 하나를 요청한 뒤, 파일, 검사 명령, 종료 코드를 기록해 보세요. 풀 하네스 경로에는 `oma doctor`가 포함됩니다.
+[빠른 시작](../web/docs/getting-started/quick-start.md)에서 스킬 프리셋을 선택하고 `oma doctor`로 설치를 확인한 뒤, 스킬 하나에 범위가 정해진 변경을 요청하세요. 변경 파일, 검사 명령, 종료 코드를 기록하세요.
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ oh-my-agent는 그 주장을 반증 가능하게 만듭니다. Stop hook은 프�
 
 ## 빠른 시작
 
-**가장 빠른 경로 — 에이전트에 스킬 설치 (Claude Code, Cursor, Codex 등):**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-감지된 에이전트 런타임에 OMA 스킬 팩을 넣습니다. 스킬은 에이전트에게 *어떻게* 일할지 가르치고, 아래 풀 하네스는 일이 *실제로* 끝났는지 검증합니다 — stop-hook 게이트, 아티팩트 검증, 독립 판정, append-only 이벤트 로그.
-
-### 풀 하네스 (게이트, 훅, CLI)
-
-워크플로, 규칙, `oma-config.yaml`, 키워드 감지 훅, `oma agent spawn`까지 필요할 때 쓰세요. 스킬만으로는 부족할 때의 경로입니다.
+OMA 설치 프로그램을 실행하고 프로젝트에 맞는 스킬 프리셋을 선택하세요.
 
 아래 설치 스크립트는 bun, uv, serena가 없으면 자동으로 설치합니다.
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # 또는 수동 (모든 OS, bun + uv + serena 필요)
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>또는 Microsoft <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM)로 스킬만 설치. 펼치기.</summary>
-
-> `oma-observability`의 APM(Application Performance Monitoring)과 다릅니다.
-
-```bash
-# 모든 스킬, 감지된 모든 런타임에 배포
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# 단일 스킬
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM은 스킬만 제공합니다. 풀 하네스는 `bunx oh-my-agent@latest`(또는 위 스크립트)를 쓰세요. 이미 `npx skills add`를 썼다면, 게이트/훅/CLI가 필요할 때까지 스킬 전용으로 유지하는 편이 드리프트를 줄입니다.
-
-</details>
 
 프리셋을 고르면 바로 시작할 수 있습니다:
 

@@ -10,18 +10,6 @@ sidebar_label: 快速开始
 
 ## 1. 安装
 
-### 最快路径：把技能装进你的智能体
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-这会把 OMA 技能包安装到检测到的智能体运行时中（Claude Code、Cursor、Codex 等）。技能教智能体如何工作。如需 Stop 钩子关卡、产物验证、独立 judge 和 `oma` CLI，请安装下面的完整脚手架。
-
-仅安装技能时，不会提供 `oma` CLI、钩子、工作流或 judge。下面的第一个任务请使用已安装的指定技能；需要 CLI 检查时，请使用完整脚手架。
-
-### 完整脚手架（关卡、钩子、CLI）
-
 在项目目录中运行引导安装器：
 
 ```bash
@@ -44,9 +32,9 @@ bunx oh-my-agent@latest
 
 引导脚本会安装到当前项目中。如果要进行 HOME 级别的安装，请使用 `oma install --global`。在混用项目级和全局安装前，请阅读[安装](./installation.md)。
 
-## 2. 检查结果（仅限完整脚手架）
+## 2. 检查结果
 
-如果你安装了完整脚手架，请在同一项目目录中运行健康检查：
+在同一项目目录中运行健康检查：
 
 ```bash
 oma doctor
@@ -72,8 +60,6 @@ bunx oh-my-agent@latest doctor
 
 如果仍然找不到 `oma` 命令，请打开新的 shell，或将包管理器的 bin 目录加入 `PATH`。如果 `oma doctor` 报告配置无效，请修复指出的字段后再次运行。不要删除 `.agents/oma-config.yaml` 来恢复，它是用户拥有的配置文件，用于在更新之间保留设置。
 
-如果只安装了技能，请跳过这项 CLI 检查，继续下面使用指定技能的任务。
-
 ## 3. 运行一个小任务
 
 在已配置的 AI 工具中打开仓库，请求使用一个指定技能，并要求一个自包含的结果：
@@ -82,7 +68,7 @@ bunx oh-my-agent@latest doctor
 Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-宿主应当识别所选技能，检查一个目标，并报告：要么对链接做了有针对性的修改，要么该链接本来就有效。对于实际运行过的检查，请附上命令输出和退出状态。仅安装技能不会增加 `/debug`、`/ralph`、钩子或工作流关卡；点名指定技能可以让这个首个任务保持在已安装的能力范围内。
+宿主应当识别所选技能，检查一个目标，并报告：要么对链接做了有针对性的修改，要么该链接本来就有效。对于实际运行过的检查，请附上命令输出和退出状态。
 
 为所选宿主启用关键词钩子后，它可以激活匹配的工作流。技能路由由宿主或所选工作流执行，因此任意宿主提示都不能保证触发钩子、使用某个特定技能或生成 `CHARTER_CHECK`。执行契约仍应检查仓库约定，只进行范围内的修改，并报告验证结果。具体文件和命令取决于项目。
 

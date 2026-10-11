@@ -16,15 +16,17 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 const FILE_PATH =
   /(?<![\w./:\\-])(?:\.{1,2}\/)*(?:[\w.-]+\/)*[\w.-]+\.[a-zA-Z0-9]+(?![\w./-])/g;
 
-/** Keep shared references usable when an installer copies just one skill. */
+/** Place shared references inside a skill bundle or a package-level tree. */
 export function bundleSharedResources(
   repoRoot: string,
   sourceDir: string,
   outDir: string,
   excludedNames: ReadonlySet<string>,
+  sharedOutDir?: string,
 ): void {
   const sharedDir = resolve(repoRoot, ".agents/skills/_shared");
   const bundledDir = join(outDir, "references", "_shared");
+  const destinationDir = sharedOutDir ?? bundledDir;
   const copied = new Set<string>();
   rmSync(bundledDir, { recursive: true, force: true });
 
@@ -49,7 +51,7 @@ export function bundleSharedResources(
         return literal;
       }
 
-      const bundledFile = join(bundledDir, sharedPath);
+      const bundledFile = join(destinationDir, sharedPath);
       if (!copied.has(target)) {
         copied.add(target);
         mkdirSync(dirname(bundledFile), { recursive: true });

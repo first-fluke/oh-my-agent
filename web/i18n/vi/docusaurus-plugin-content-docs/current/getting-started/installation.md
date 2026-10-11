@@ -16,17 +16,7 @@ Installer nhóm các tích hợp theo capability. Vendor hook gồm Antigravity,
 
 ---
 
-## Phương pháp 0: skills CLI (nhanh nhất nếu chỉ cần skill)
-
-Cài gói skill OMA vào các agent runtime được phát hiện:
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Đây là lối vào nhẹ nhất khi bạn muốn có skill mà không cần harness đầy đủ. Với workflow, rule, hook, gate và `oma agent spawn`, hãy dùng Phương pháp 1 hoặc 2 bên dưới.
-
-## Phương pháp 1: cài một dòng (harness đầy đủ)
+## Phương pháp 1: cài một dòng
 
 ```bash
 # macOS / Linux

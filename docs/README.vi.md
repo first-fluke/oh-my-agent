@@ -10,7 +10,7 @@ Chạy song song nhiều agent là phần dễ. Phần khó là biết được 
 
 oh-my-agent làm cho tuyên bố ấy có thể bị bác bỏ. Một Stop hook không cho kết thúc phiên làm việc cho đến khi script `typecheck` / `test` / `lint` của chính dự án bạn thoát với mã 0. Một lệnh gate quyết định workflow có thực sự chạy hay không bằng cách tìm những artifact mà nó bắt buộc phải để lại — và kết quả chính là phán quyết JSON của lệnh đó, không phải bản tóm tắt của agent. Một trọng tài độc lập với ngữ cảnh hoàn toàn mới kiểm chứng lại mọi tiêu chí ở từng vòng, kể cả những tiêu chí đã đạt. Mọi quyết định của gate đều được ghi vào một nhật ký sự kiện chỉ-thêm mà bạn có thể đọc lại sau. Rồi oh-my-agent áp dụng đúng kỷ luật đó trên cả chục agent runtime, từ một thư mục `.agents/` di động duy nhất.
 
-Hãy bắt đầu với [Bắt đầu nhanh](../web/docs/getting-started/quick-start.md) có sẵn để chọn đường cài đặt, yêu cầu một skill có tên cụ thể thực hiện một thay đổi có phạm vi, rồi ghi lại file, lệnh kiểm tra và exit status. Đường full harness có bao gồm `oma doctor`.
+Làm theo [Bắt đầu nhanh](../web/docs/getting-started/quick-start.md) để chọn preset skill, chạy `oma doctor` và yêu cầu một skill có tên cụ thể thực hiện một thay đổi có phạm vi. Ghi lại file, lệnh kiểm tra và exit status.
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ Hãy bắt đầu với [Bắt đầu nhanh](../web/docs/getting-started/quick-s
 
 ## Bắt đầu nhanh
 
-**Đường nhanh nhất — đưa skills vào agents (Claude Code, Cursor, Codex, …):**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-Lệnh này cài gói skills OMA vào các runtime agent được phát hiện. Skills dạy agent *cách* làm việc; full harness (bên dưới) kiểm tra việc đó *đã thực sự xảy ra* chưa — stop-hook gate, kiểm chứng artifact, judge độc lập và event log append-only.
-
-### Full harness (gates, hooks, CLI)
-
-Dùng khi bạn cần workflow, rule, `oma-config.yaml`, hook phát hiện từ khóa và `oma agent spawn` — không chỉ skills.
+Chạy trình cài đặt OMA và chọn preset skill cho dự án.
 
 Script cài đặt sẽ tự cài bun, uv và serena nếu thiếu.
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # Hoặc thủ công (mọi OS, cần bun + uv + serena)
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>Hoặc cài skills bằng <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) của Microsoft. Mở rộng.</summary>
-
-> Đừng nhầm với APM (Application Performance Monitoring) của `oma-observability`.
-
-```bash
-# Mọi skills, tới mọi runtime được phát hiện
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# Một skill
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM chỉ phân phối skills. Với full harness dùng `bunx oh-my-agent@latest` (hoặc script trên). Một cách phân phối mỗi dự án — nếu đã dùng `npx skills add`, giữ skills-only cho tới khi cần gates/hooks/CLI.
-
-</details>
 
 Chọn preset là xong:
 

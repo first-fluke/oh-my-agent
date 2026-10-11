@@ -10,7 +10,7 @@
 
 oh-my-agent ทำให้คำกล่าวอ้างนั้นพิสูจน์ผิดได้ Stop hook จะไม่ยอมให้จบเซสชันจนกว่าสคริปต์ `typecheck` / `test` / `lint` ของโปรเจกต์คุณเองจะจบด้วย exit code 0 คำสั่ง gate ตัดสินว่าเวิร์กโฟลว์ได้รันจริงหรือไม่ ด้วยการมองหาอาร์ติแฟกต์ที่มันต้องทิ้งไว้ — และผลลัพธ์คือคำตัดสิน JSON ของคำสั่งนั้น ไม่ใช่บทสรุปของเอเจนต์ ผู้ตัดสินอิสระที่มีคอนเท็กซ์ใหม่จะตรวจสอบทุกเกณฑ์ซ้ำในทุกรอบ รวมถึงเกณฑ์ที่ผ่านไปแล้วด้วย ทุกการตัดสินของ gate จะถูกบันทึกลง event log แบบเพิ่มได้อย่างเดียวที่คุณย้อนอ่านได้ภายหลัง จากนั้นก็ใช้วินัยชุดเดียวกันนี้กับ agent runtime อีกนับสิบตัว จากไดเรกทอรี `.agents/` ที่พกพาไปได้เพียงชุดเดียว
 
-เริ่มจาก [Quick Start](../web/docs/getting-started/quick-start.md) ที่มีอยู่แล้ว เพื่อเลือกเส้นทางการติดตั้ง ขอให้ skill ที่ระบุชื่อทำการเปลี่ยนแปลงที่มีขอบเขตชัดเจนหนึ่งอย่าง แล้วจดไฟล์ที่เปลี่ยน คำสั่งตรวจสอบ และ exit status ไว้ เส้นทาง harness เต็มมี `oma doctor` รวมอยู่ด้วย
+ทำตาม [Quick Start](../web/docs/getting-started/quick-start.md) เพื่อเลือก preset ของ skill เรียกใช้ `oma doctor` แล้วขอให้ skill ที่ระบุชื่อทำการเปลี่ยนแปลงที่มีขอบเขตชัดเจนหนึ่งอย่าง จดไฟล์ที่เปลี่ยน คำสั่งตรวจสอบ และ exit status ไว้
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
@@ -18,17 +18,7 @@ oh-my-agent ทำให้คำกล่าวอ้างนั้นพิ�
 
 ## Quick Start
 
-**ทางลัดที่เร็วสุด — ใส่ skills ลง agents (Claude Code, Cursor, Codex และอื่น ๆ):**
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-คำสั่งนี้ติดตั้งแพ็ก skills ของ OMA ลง runtime ของ agent ที่ตรวจเจอ Skills สอน agent ว่า *ทำยังไง*; harness เต็ม (ด้านล่าง) ตรวจว่างาน *เกิดจริง* หรือยัง — stop-hook gate, ตรวจ artifact, ผู้ตัดสินอิสระ และ event log แบบ append-only
-
-### Full harness (gates, hooks, CLI)
-
-ใช้เมื่อต้องการ workflow, rules, `oma-config.yaml`, hook ตรวจจับคำสำคัญ และ `oma agent spawn` — ไม่ใช่แค่ skills
+เรียกใช้ตัวติดตั้ง OMA แล้วเลือก preset ของ skill ให้เหมาะกับโปรเจกต์
 
 สคริปต์ติดตั้งจะลง bun, uv และ serena ให้อัตโนมัติถ้ายังไม่มี
 
@@ -46,24 +36,6 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 # หรือทำเอง (ทุก OS ต้องมี bun + uv + serena)
 bunx oh-my-agent@latest
 ```
-
-<details>
-<summary>หรือติดตั้ง skills ด้วย <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) ของ Microsoft กดขยาย</summary>
-
-> อย่าสับสนกับ APM (Application Performance Monitoring) ของ `oma-observability`
-
-```bash
-# skills ทั้งหมด ไปยังทุก runtime ที่ตรวจเจอ
-# (.claude, .cursor, .codex, .opencode, .github, .agents)
-apm install first-fluke/oh-my-agent
-
-# skill เดียว
-apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
-```
-
-APM แจกแค่ skills สำหรับ harness เต็มใช้ `bunx oh-my-agent@latest` (หรือสคริปต์ด้านบน) เลือกวิธีแจกจ่ายเดียวต่อโปรเจกต์ — ถ้าใช้ `npx skills add` ไปแล้ว อยู่แบบ skills-only จนกว่าจะต้องการ gates/hooks/CLI
-
-</details>
 
 เลือก preset แล้วเริ่มได้เลย:
 

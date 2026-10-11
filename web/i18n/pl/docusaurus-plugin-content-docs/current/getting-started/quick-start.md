@@ -9,18 +9,6 @@ Użyj tej strony, aby uruchomić jedno małe zadanie i zapisać konkretny wynik.
 
 ## 1. Zainstaluj
 
-### Najszybsza ścieżka — umiejętności do Twoich agentów
-
-```bash
-npx skills add first-fluke/oh-my-agent
-```
-
-To instaluje pakiet umiejętności OMA w wykrytych runtime'ach agentów (Claude Code, Cursor, Codex i inne). Umiejętności uczą agenta, jak pracować. Aby uzyskać bramki hooka Stop, weryfikację artefaktów, niezależnych sędziów i CLI `oma`, zainstaluj poniżej pełny harness.
-
-Instalacje samych umiejętności nie dostarczają CLI `oma`, hooków, workflowów ani sędziów. Do pierwszego zadania poniżej użyj nazwanej, zainstalowanej umiejętności; pełnego harnessu użyj, gdy potrzebujesz kontroli CLI.
-
-### Pełny harness (bramki, hooki, CLI)
-
 W katalogu projektu uruchom instalator początkowy:
 
 ```bash
@@ -43,9 +31,9 @@ bunx oh-my-agent@latest
 
 Skrypty początkowe instalują się w bieżącym projekcie. Użyj `oma install --global`, gdy potrzebujesz instalacji na poziomie HOME; przed łączeniem instalacji projektowej i globalnej przeczytaj [Instalację](./installation.md).
 
-## 2. Sprawdź wynik (tylko pełny harness)
+## 2. Sprawdź wynik
 
-Jeśli zainstalowano pełny harness, uruchom kontrolę stanu z tego samego katalogu projektu:
+Uruchom kontrolę stanu z tego samego katalogu projektu:
 
 ```bash
 oma doctor
@@ -71,8 +59,6 @@ bunx oh-my-agent@latest doctor
 
 Jeśli samo polecenie nadal nie jest dostępne, otwórz nową powłokę albo dodaj katalog binarny menedżera pakietów do `PATH`. Jeśli `oma doctor` zgłosi nieprawidłową konfigurację, popraw wskazane pole i uruchom polecenie ponownie. Nie usuwaj `.agents/oma-config.yaml` w ramach odzyskiwania: to konfiguracja należąca do użytkownika, która zachowuje ustawienia podczas aktualizacji.
 
-Jeśli zainstalowano same umiejętności, pomiń tę kontrolę CLI i przejdź do zadania z nazwaną umiejętnością poniżej.
-
 ## 3. Uruchom jedno małe zadanie
 
 Otwórz repozytorium w skonfigurowanym narzędziu AI i poproś o jedną nazwaną umiejętność i jeden samodzielny wynik:
@@ -81,7 +67,7 @@ Otwórz repozytorium w skonfigurowanym narzędziu AI i poproś o jedną nazwaną
 Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
 ```
 
-Host powinien zidentyfikować wybraną umiejętność, sprawdzić jeden cel i zgłosić albo punktową zmianę linku, albo że link jest już poprawny. Dołącz wyjście polecenia i status wyjścia każdej kontroli, która faktycznie została uruchomiona. Instalacja samych umiejętności nie dodaje `/debug`, `/ralph`, hooków ani bramek workflowów; poproszenie o nazwaną umiejętność utrzymuje to pierwsze zadanie w granicach zainstalowanych możliwości.
+Host powinien zidentyfikować wybraną umiejętność, sprawdzić jeden cel i zgłosić albo punktową zmianę linku, albo że link jest już poprawny. Dołącz wyjście polecenia i status wyjścia każdej kontroli, która faktycznie została uruchomiona.
 
 Gdy hook słów kluczowych jest włączony dla wybranego hosta, może uruchomić pasujący workflow. Routing umiejętności wykonuje host albo wybrany workflow, więc dowolny prompt hosta nie gwarantuje hooka, konkretnej umiejętności ani `CHARTER_CHECK`. Kontrakt wykonania powinien mimo to sprawdzić konwencje repozytorium, wprowadzić wyłącznie zmianę w wyznaczonym zakresie i zgłosić jej weryfikację. Dokładne pliki i polecenie zależą od projektu.
 
