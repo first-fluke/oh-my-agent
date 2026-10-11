@@ -1,5 +1,16 @@
 # Changelog
 
+## [19.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v18.0.2...cli-v19.0.0) (2026-10-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **emit:** Root plugin skills now require the shared skills tree. Use OMA preset installation instead of npx skills or APM installation.
+
+### Bug Fixes
+
+* **emit:** share resources once in full plugin packages ([0f7024e](https://github.com/first-fluke/oh-my-agent/commit/0f7024ea329d2cc7ab8b9d9fadb5e175048b204d))
+
 ## [18.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v18.0.1...cli-v18.0.2) (2026-10-10)
 
 
