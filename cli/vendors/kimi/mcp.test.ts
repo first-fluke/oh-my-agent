@@ -1,5 +1,6 @@
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -17,6 +18,26 @@ import { serenaMcpEntry } from "../serena.js";
 import { applyKimiMcp, installKimiMcp, needsKimiMcpUpdate } from "./mcp.js";
 
 describe("applyKimiMcp / needsKimiMcpUpdate", () => {
+  it("repairs a pinned local bridge without dropping server customizations", () => {
+    const serena = {
+      command: "oma",
+      args: ["bridge", "http://127.0.0.1:12389/mcp", "--context", "oma"],
+      env: { OMA_BRIDGE_TEST: "preserved" },
+      timeout: 120,
+    };
+    const other = { command: "my-other-mcp", args: ["--flag"] };
+    const existing = { mcpServers: { serena, other } };
+
+    expect(needsKimiMcpUpdate(existing)).toBe(true);
+    const next = applyKimiMcp(existing);
+    expect(next.mcpServers?.serena).toEqual({
+      ...serena,
+      args: ["bridge", "--context", "oma"],
+    });
+    expect(next.mcpServers?.other).toEqual(other);
+    expect(needsKimiMcpUpdate(next)).toBe(false);
+  });
+
   it("adds serena to an empty config", () => {
     const next = applyKimiMcp({});
     expectOmaSerenaEntry(next.mcpServers?.serena, "ide");
@@ -118,6 +139,33 @@ describe("installKimiMcp — project mode (in-project)", () => {
   afterEach(() => {
     _resetInstallContext();
     rmSync(projectDir, { recursive: true, force: true });
+  });
+
+  it("preserves an explicitly configured remote bridge", () => {
+    const configPath = join(projectDir, ".kimi-code", "mcp.json");
+    mkdirSync(join(projectDir, ".kimi-code"));
+    const original = JSON.stringify({
+      mcpServers: {
+        serena: {
+          command: "oma",
+          args: [
+            "bridge",
+            "https://serena.example.com/mcp",
+            "--context",
+            "oma",
+          ],
+          env: { OMA_BRIDGE_TEST: "preserved" },
+          timeout: 120,
+        },
+      },
+    });
+    writeFileSync(configPath, original);
+
+    expect(installKimiMcp(projectDir)).toEqual({
+      installed: true,
+      path: configPath,
+    });
+    expect(readFileSync(configPath, "utf-8")).toBe(original);
   });
 
   it("writes <cwd>/.kimi-code/mcp.json without needing ~/.kimi-code", () => {

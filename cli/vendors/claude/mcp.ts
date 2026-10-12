@@ -1,6 +1,7 @@
 import { serenaTransportMode } from "../../utils/config.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
+  hasPinnedLocalSerenaBridge,
   hasSerenaDashboardOpenDisabled,
   hasStaleSerenaTransport,
   isBridgeSerenaEntry,
@@ -103,7 +104,8 @@ export function needsClaudeMcpUpdate(
  * Merge the managed serena entry and any missing SSOT servers into `.mcp.json`.
  * Existing user customizations are preserved: a server already present in
  * `.mcp.json` is never overwritten (only genuinely missing SSOT servers are
- * added). serena is always reset to the claude-code recommended value.
+ * added). Serena is reset to the recommended transport; repairing a pinned
+ * local bridge keeps the existing server options.
  */
 export function applyClaudeMcp(
   raw: unknown,
@@ -116,7 +118,16 @@ export function applyClaudeMcp(
   for (const [name, def] of Object.entries(ssotServers ?? {})) {
     if (missing.has(name)) merged[name] = def;
   }
-  merged.serena = { ...RECOMMENDED_CLAUDE_MCP.serena } as ClaudeMcpServer;
+  const currentSerena = currentMcp.serena as ClaudeMcpServer | undefined;
+  const recommended = RECOMMENDED_CLAUDE_MCP.serena;
+  merged.serena = hasPinnedLocalSerenaBridge(currentSerena)
+    ? {
+        ...recommended,
+        ...currentSerena,
+        command: recommended.command,
+        args: recommended.args,
+      }
+    : { ...recommended };
   base.mcpServers = merged;
   return base;
 }

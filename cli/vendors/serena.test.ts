@@ -355,3 +355,43 @@ describe("hasStaleSerenaTransport — absolute-path bridge repair", () => {
     ).toBe(true);
   });
 });
+
+describe("hasStaleSerenaTransport — pinned local bridge repair", () => {
+  it.each([
+    "http://127.0.0.1:12389/mcp",
+    "https://localhost:12389/mcp",
+    "http://[::1]:12389/mcp",
+  ])("flags an OMA bridge pinned to %s", (url) => {
+    expect(
+      hasStaleSerenaTransport(
+        { command: "oma", args: ["bridge", url, "--context", "oma"] },
+        "bridge",
+      ),
+    ).toBe(true);
+  });
+
+  it.each([
+    {
+      command: "oma",
+      args: ["bridge", "https://serena.example.com/mcp", "--context", "oma"],
+    },
+    {
+      command: "oma",
+      args: ["bridge", "http://127.example.com/mcp", "--context", "oma"],
+    },
+    {
+      command: "oma",
+      args: ["bridge", "http://127.0.0.1:12389/mcp", "--context", "my-team"],
+    },
+    {
+      command: "oma",
+      args: ["bridge", "http://127.0.0.1:12389/custom", "--context", "oma"],
+    },
+    {
+      command: "my-serena-wrapper",
+      args: ["--endpoint", "http://127.0.0.1:12389/mcp"],
+    },
+  ])("preserves an explicit custom transport: $command $args", (server) => {
+    expect(hasStaleSerenaTransport(server, "bridge")).toBe(false);
+  });
+});

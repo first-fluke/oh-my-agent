@@ -12,6 +12,7 @@ import { readJsonForMerge, warnUnmergeable } from "../../utils/merge-read.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
+  hasPinnedLocalSerenaBridge,
   hasSerenaDashboardOpenDisabled,
   hasStaleSerenaTransport,
   isLegacyUvxSerena,
@@ -92,9 +93,20 @@ export function applyKimiMcp(
 ): KimiMcpConfig {
   const base: KimiMcpConfig = isRecord(raw) ? (raw as KimiMcpConfig) : {};
   const currentMcp = isRecord(base.mcpServers) ? base.mcpServers : {};
+  const currentSerena = currentMcp.serena as KimiMcpServer | undefined;
+  const recommended = withSerenaDashboardOpenDisabled({
+    ...RECOMMENDED_KIMI_MCP.serena,
+  });
   const next: Record<string, KimiMcpServer> = {
     ...currentMcp,
-    serena: withSerenaDashboardOpenDisabled({ ...RECOMMENDED_KIMI_MCP.serena }),
+    serena: hasPinnedLocalSerenaBridge(currentSerena)
+      ? {
+          ...recommended,
+          ...currentSerena,
+          command: recommended.command,
+          args: recommended.args,
+        }
+      : recommended,
   };
   if (withChromeDevtools) {
     next["chrome-devtools"] =

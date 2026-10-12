@@ -69,4 +69,43 @@ describe("kiro settings", () => {
     });
     expectOmaSerenaEntry(parsed.mcpServers.serena, "ide");
   });
+
+  it("repairs a local Serena bridge pin while preserving its environment", () => {
+    const root = tempRoot();
+    const path = join(root, KIRO_PROJECT_SETTINGS_PATH);
+    mkdirSync(join(root, ".kiro", "settings"), { recursive: true });
+    const environment = {
+      SERENA_LOG_LEVEL: "debug",
+      CUSTOM_SERENA_SETTING: "custom-value",
+    };
+    const settings = {
+      "chat.defaultAgent": "custom-agent",
+      mcpServers: {
+        serena: {
+          command: "oma",
+          args: ["bridge", "http://127.0.0.1:12389/mcp", "--context", "oma"],
+          env: environment,
+        },
+        "chrome-devtools": { command: "custom-chrome-mcp" },
+        other: { url: "https://other.example.com/mcp" },
+      },
+    };
+    writeFileSync(path, `${JSON.stringify(settings)}\n`);
+
+    expect(needsKiroMcpUpdate(root)).toBe(true);
+    applyKiroProjectMcp(root);
+
+    const repairedText = readFileSync(path, "utf-8");
+    const repaired = JSON.parse(repairedText);
+    expectOmaSerenaEntry(repaired.mcpServers.serena, "ide");
+    expect(repaired.mcpServers.serena.env).toEqual(environment);
+    expect(repaired.mcpServers["chrome-devtools"]).toEqual(
+      settings.mcpServers["chrome-devtools"],
+    );
+    expect(repaired.mcpServers.other).toEqual(settings.mcpServers.other);
+    expect(repaired["chat.defaultAgent"]).toBe("custom-agent");
+    expect(needsKiroMcpUpdate(root)).toBe(false);
+    applyKiroProjectMcp(root);
+    expect(readFileSync(path, "utf-8")).toBe(repairedText);
+  });
 });

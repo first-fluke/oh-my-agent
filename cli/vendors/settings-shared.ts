@@ -9,6 +9,7 @@
 import { serenaTransportMode } from "../utils/config.js";
 import { isRecord } from "../utils/type-guards.js";
 import {
+  hasPinnedLocalSerenaBridge,
   hasSerenaDashboardOpenDisabled,
   hasStaleSerenaTransport,
   isLegacyUvxSerena,
@@ -84,7 +85,14 @@ export function applyRecommendedMcpServers<T extends McpServerEntry>(
   const nextSerena = withSerenaDashboardOpenDisabled(
     keepCurrent
       ? currentSerena
-      : ({ ...(currentSerena || {}), ...recommended.serena } as T),
+      : ({
+          ...(currentSerena || {}),
+          ...recommended.serena,
+          ...(hasPinnedLocalSerenaBridge(currentSerena) &&
+          currentSerena?.env !== undefined
+            ? { env: currentSerena.env }
+            : {}),
+        } as T),
   );
 
   return {

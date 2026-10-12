@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { isIP } from "node:net";
 import { join } from "node:path";
 import { safeGetInstallMode } from "../platform/install-context.js";
 import { omaHome } from "../utils/oma-home.js";
@@ -253,6 +254,39 @@ export function isBridgeSerenaEntry(
   return server.args.includes("bridge") && server.args.includes("--context");
 }
 
+/** A fixed local daemon URL bypasses OMA's project lookup and cold start. */
+export function hasPinnedLocalSerenaBridge(
+  server: SerenaMcpServerLike | undefined,
+): boolean {
+  if (server?.command !== "oma" || !isBridgeSerenaEntry(server)) return false;
+  const args: unknown[] = Array.isArray(server.args) ? server.args : [];
+  const context = args[args.indexOf("--context") + 1];
+  if (
+    typeof context !== "string" ||
+    !(
+      context === OMA_SERENA_CONTEXT ||
+      OMA_SERENA_BASE_CONTEXT_SET.has(context) ||
+      OMA_SERENA_LEGACY_CONTEXT_SET.has(context)
+    )
+  )
+    return false;
+  return args.slice(args.indexOf("bridge") + 1).some((arg) => {
+    if (typeof arg !== "string") return false;
+    try {
+      const url = new URL(arg);
+      return (
+        (url.protocol === "http:" || url.protocol === "https:") &&
+        (url.pathname === "/mcp" || url.pathname === "/mcp/") &&
+        (url.hostname === "localhost" ||
+          url.hostname === "[::1]" ||
+          (isIP(url.hostname) === 4 && url.hostname.startsWith("127.")))
+      );
+    } catch {
+      return false;
+    }
+  });
+}
+
 /**
  * True for an entry that launches serena in any form oma recognizes:
  * the `oma bridge` proxy, the `serena` binary, or a `uv`/`uvx` invocation of the
@@ -286,7 +320,7 @@ export function isSerenaLauncherEntry(
 /**
  * True when an oma-written entry disagrees with what oma would write now:
  * wrong transport for the configured mode, or a bridge entry that still
- * launches oma by absolute path.
+ * launches oma by absolute path or pins a local daemon URL.
  *
  * Every vendor's "does this config need rewriting?" check has to consult this.
  * The entries left behind by earlier oma versions are otherwise perfectly
@@ -300,6 +334,7 @@ export function hasStaleSerenaTransport(
 ): boolean {
   if (!isSerenaLauncherEntry(server)) return false;
   if ((mode === "bridge") !== isBridgeSerenaEntry(server)) return true;
+  if (hasPinnedLocalSerenaBridge(server)) return true;
   if (!hasOmaSerenaContext(server)) return true;
   if (mode === "stdio" && !hasSerenaNoMemories(server)) return true;
   if (mode === "bridge" && safeGetInstallMode() === "global") {

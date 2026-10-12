@@ -11,6 +11,7 @@ import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
 import type { EffortLevel } from "../../platform/model-registry.js";
 import { serenaTransportMode } from "../../utils/config.js";
 import {
+  hasPinnedLocalSerenaBridge,
   hasSerenaDashboardOpenDisabled,
   hasStaleSerenaTransport,
   isLegacyUvxSerena,
@@ -229,6 +230,14 @@ export function applyCodexSettings(
         : { ...(currentSerena || {}), ...RECOMMENDED_CODEX_MCP.serena },
     ),
   );
+  // A stale local pin must not keep Codex from starting when Serena is down.
+  if (hasPinnedLocalSerenaBridge(currentSerena)) {
+    delete nextSerena.required;
+    if (currentSerena?.env !== undefined) nextSerena.env = currentSerena.env;
+    if (typeof currentSerena?.startup_timeout_sec === "number") {
+      nextSerena.startup_timeout_sec = currentSerena.startup_timeout_sec;
+    }
+  }
 
   base.mcp_servers = {
     ...currentMcp,

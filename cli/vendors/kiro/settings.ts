@@ -8,6 +8,7 @@ import { readJsonMergeBaseOrWarn } from "../../utils/merge-read.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
+  hasPinnedLocalSerenaBridge,
   hasSerenaDashboardOpenDisabled,
   hasStaleSerenaTransport,
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
@@ -138,6 +139,10 @@ export function applyKiroProjectMcp(cwd: string): void {
       serena: withSerenaDashboardOpenDisabled({
         ...currentSerena,
         ...RECOMMENDED_KIRO_MCP.serena,
+        ...(hasPinnedLocalSerenaBridge(currentSerena) &&
+        currentSerena.env !== undefined
+          ? { env: currentSerena.env }
+          : {}),
       }),
     },
   };

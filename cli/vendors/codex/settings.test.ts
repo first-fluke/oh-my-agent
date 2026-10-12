@@ -324,6 +324,78 @@ describe("codex settings", () => {
     expectOmaSerenaEntry(result.mcp_servers?.serena, "codex");
   });
 
+  it.each([
+    "http://127.0.0.1:12389/mcp",
+    "https://localhost:12389/mcp",
+    "http://[::1]:12389/mcp",
+  ])("repairs a required OMA bridge pinned to %s", (url) => {
+    const settings = applyCodexSettings({});
+    const other = {
+      command: "custom-mcp",
+      args: ["--flag"],
+      required: true,
+    };
+    settings.mcp_servers = {
+      ...settings.mcp_servers,
+      other,
+      serena: {
+        command: "oma",
+        args: ["bridge", url, "--context", "oma"],
+        required: true,
+        env: { OMA_BRIDGE_TEST: "preserved" },
+        startup_timeout_sec: 120,
+      },
+    };
+
+    expect(needsCodexSettingsUpdate(settings)).toBe(true);
+    const result = applyCodexSettings(settings);
+    expect(result.mcp_servers?.serena).toEqual({
+      command: "oma",
+      args: ["bridge", "--context", "oma"],
+      env: { OMA_BRIDGE_TEST: "preserved" },
+      startup_timeout_sec: 120,
+    });
+    expect(result.mcp_servers?.other).toEqual(other);
+    expect(needsCodexSettingsUpdate(result)).toBe(false);
+    const serialized = serializeCodexConfig(result);
+    expect(serializeCodexConfig(applyCodexSettings(result))).toBe(serialized);
+  });
+
+  it.each([
+    {
+      command: "oma",
+      args: ["bridge", "https://serena.example.com/mcp", "--context", "oma"],
+    },
+    {
+      command: "oma",
+      args: ["bridge", "http://127.example.com/mcp", "--context", "oma"],
+    },
+    {
+      command: "oma",
+      args: ["bridge", "http://127.0.0.1:12389/mcp", "--context", "my-team"],
+    },
+    {
+      command: "my-serena-wrapper",
+      args: ["--endpoint", "http://127.0.0.1:12389/mcp"],
+    },
+    { command: "oma", args: ["bridge", "--context", "oma"] },
+  ])(
+    "preserves required for custom or unpinned transport: $command $args",
+    (transport) => {
+      const settings = applyCodexSettings({});
+      const serena = {
+        ...transport,
+        required: true,
+        env: { OMA_BRIDGE_TEST: "preserved" },
+        startup_timeout_sec: 120,
+      };
+      settings.mcp_servers = { ...settings.mcp_servers, serena };
+
+      expect(needsCodexSettingsUpdate(settings)).toBe(false);
+      expect(applyCodexSettings(settings).mcp_servers?.serena).toEqual(serena);
+    },
+  );
+
   it("migrates only the legacy Serena entry without changing other settings", () => {
     const settings = {
       features: { user_flag: true },

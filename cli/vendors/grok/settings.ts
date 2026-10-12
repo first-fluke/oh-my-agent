@@ -11,6 +11,7 @@ import {
 import { safeWriteFile } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
+  hasPinnedLocalSerenaBridge,
   hasSerenaDashboardOpenDisabled,
   hasStaleSerenaTransport,
   isLegacyUvxSerena,
@@ -160,6 +161,10 @@ export function applyGrokProjectMcp(cwd: string): void {
     nextMcp.serena = {
       ...currentSerena,
       ...withSerenaDashboardOpenDisabled(RECOMMENDED_GROK_MCP.serena),
+      ...(hasPinnedLocalSerenaBridge(currentSerena) &&
+      currentSerena.env !== undefined
+        ? { env: currentSerena.env }
+        : {}),
     };
   } else if (!hasSerenaDashboardOpenDisabled(currentSerena)) {
     nextMcp.serena = withSerenaDashboardOpenDisabled(currentSerena);
@@ -198,6 +203,7 @@ export function needsGrokProjectMcpUpdate(cwd: string): boolean {
   return !(
     (typeof serena.command === "string" || typeof serena.url === "string") &&
     !isLegacyUvxSerena(serena) &&
+    !hasStaleSerenaTransport(serena, serenaTransportMode()) &&
     hasSerenaDashboardOpenDisabled(serena) &&
     (typeof chromeDevtools.command === "string" ||
       typeof chromeDevtools.url === "string")

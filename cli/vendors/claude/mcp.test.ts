@@ -62,6 +62,44 @@ describe("needsClaudeMcpUpdate — SSOT drift", () => {
 });
 
 describe("applyClaudeMcp — SSOT back-fill", () => {
+  it("repairs a pinned local bridge without dropping server customizations", () => {
+    const serena = {
+      command: "oma",
+      args: ["bridge", "http://127.0.0.1:12389/mcp", "--context", "oma"],
+      env: { OMA_BRIDGE_TEST: "preserved" },
+      timeout: 120,
+    };
+    const other = { command: "my-other-mcp", args: ["--flag"] };
+    const existing = { mcpServers: { serena, other } };
+
+    expect(needsClaudeMcpUpdate(existing)).toBe(true);
+    const next = applyClaudeMcp(existing);
+    expect(next.mcpServers?.serena).toEqual({
+      ...serena,
+      args: ["bridge", "--context", "oma"],
+    });
+    expect(next.mcpServers?.other).toEqual(other);
+    expect(needsClaudeMcpUpdate(next)).toBe(false);
+  });
+
+  it("does not request a rewrite for an explicit remote bridge", () => {
+    expect(
+      needsClaudeMcpUpdate({
+        mcpServers: {
+          serena: {
+            command: "oma",
+            args: [
+              "bridge",
+              "https://serena.example.com/mcp",
+              "--context",
+              "oma",
+            ],
+          },
+        },
+      }),
+    ).toBe(false);
+  });
+
   it("seeds all SSOT servers into an empty config", () => {
     const next = applyClaudeMcp({}, SSOT_SERVERS);
     expect(Object.keys(next.mcpServers ?? {}).sort()).toEqual([
