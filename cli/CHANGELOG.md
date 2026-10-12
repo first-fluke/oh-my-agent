@@ -1,5 +1,12 @@
 # Changelog
 
+## [19.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v19.0.0...cli-v19.0.1) (2026-10-12)
+
+
+### Bug Fixes
+
+* **mcp:** repair pinned local serena bridge settings ([28ecef5](https://github.com/first-fluke/oh-my-agent/commit/28ecef524dc50cf077e3667f4558039cfdc2dc4a))
+
 ## [19.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v18.0.2...cli-v19.0.0) (2026-10-11)
 
 
