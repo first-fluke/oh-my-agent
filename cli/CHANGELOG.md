@@ -1,5 +1,17 @@
 # Changelog
 
+## [19.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v19.0.1...cli-v19.0.2) (2026-10-13)
+
+
+### Bug Fixes
+
+* **cli:** absolutize every relative link in the package readme ([c03ba50](https://github.com/first-fluke/oh-my-agent/commit/c03ba5068391886e14d22d9d697c07e7a4dccb93))
+
+
+### Documentation
+
+* **readme:** correct verification claims and event log lookup ([2859b73](https://github.com/first-fluke/oh-my-agent/commit/2859b73bf647719c3cef1ea14c280674b85f29dc))
+
 ## [19.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v19.0.0...cli-v19.0.1) (2026-10-12)
 
 
