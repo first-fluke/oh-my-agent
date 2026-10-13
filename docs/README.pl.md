@@ -8,7 +8,7 @@
 
 Uruchomienie równoległych agentów to łatwa część. Trudne jest ustalenie, czy naprawdę wykonali pracę. „Testy przechodzą, wszystkie kryteria spełnione” nic agenta nie kosztuje, a w obrębie tej samej sesji nic nie może temu zaprzeczyć.
 
-oh-my-agent czyni tę deklarację falsyfikowalną. Hook Stop odmawia zakończenia sesji, dopóki projektowy skrypt `typecheck` / `test` / `lint` nie zakończy się kodem 0. Komenda bramkująca rozstrzyga, czy workflow faktycznie się wykonał, szukając artefaktów, które musiał po sobie zostawić — i to jej werdykt w JSON jest wynikiem, a nie podsumowanie agenta. Niezależny sędzia ze świeżym kontekstem w każdej rundzie weryfikuje od nowa każde kryterium, także te już zaliczone. Każda decyzja bramki trafia do dziennika zdarzeń tylko do dopisywania, który możesz przeczytać po fakcie. A ta sama dyscyplina działa w kilkunastu środowiskach agentowych z jednego przenośnego katalogu `.agents/`.
+oh-my-agent czyni tę deklarację falsyfikowalną. Hook Stop odmawia zakończenia sesji, dopóki projektowy skrypt `typecheck` / `test` / `lint` nie zakończy się kodem 0. Komenda bramkująca rozstrzyga, czy workflow faktycznie się wykonał, szukając artefaktów, które musiał po sobie zostawić — i to jej werdykt w JSON jest wynikiem, a nie podsumowanie agenta. W `/ralph` prompt workflowu zleca uruchomienie sędziego, poinstruowanego wyłącznie o kryteriach, który w każdej rundzie weryfikuje od nowa każde kryterium, także te już zaliczone. Decyzje bramek są dopisywane do dziennika zdarzeń danej sesji, który możesz później przeczytać za pomocą `oma state`. A ta sama dyscyplina działa w kilkunastu środowiskach agentowych z jednego przenośnego katalogu `.agents/`.
 
 Skorzystaj z [Szybkiego startu](../web/docs/getting-started/quick-start.md), aby wybrać preset umiejętności, uruchomić `oma doctor` i poprosić nazwaną umiejętność o jedną zmianę o ograniczonym zakresie. Zapisz plik, polecenie kontrolne i kod wyjścia.
 
@@ -216,7 +216,7 @@ Lub użyj slash commands do ustrukturyzowanych workflow:
 | 3 | `/work` | Buduje Twoją funkcjonalność krok po kroku, korzystając z wielu agentów |
 | 3 | `/orchestrate` | Uruchamia wielu agentów równolegle, by szybciej zbudować Twoją funkcjonalność |
 | 3 | `/ultrawork` | Buduje Twoją funkcjonalność przez pięć bramkowanych faz jakości; każda rewizja działa w świeżej, izolowanej sesji recenzenta (cross-context review) |
-| 3 | `/ralph` | Powtarza `/ultrawork`, aż niezależny weryfikator zaliczy wszystkie kryteria |
+| 3 | `/ralph` | Powtarza `/ultrawork`, aż jego sędzia zaliczy wszystkie kryteria |
 | 4 | `/review` | Przegląda Twój kod pod kątem bezpieczeństwa, wydajności i dostępności |
 | 4 | `/security` | Skanuje wskazane cele pod kątem bezpieczeństwa, weryfikuje ustalenia i stosuje bramki CI |
 | 5 | `/debug` | Znajduje przyczynę, naprawia błąd i pisze test regresji |
@@ -224,7 +224,7 @@ Lub użyj slash commands do ustrukturyzowanych workflow:
 | 6 | `/scm` | Zarządza Twoimi gałęziami, scaleniami i Conventional Commits |
 | - | `/schedule` | Planuje zadanie agenta do cyklicznego uruchamiania w zadanym interwale |
 
-**Autodetekcja**: Nie musisz nawet używać slash commands. Słowa takie jak "architektura", "plan", "review" i "debug" w Twojej wiadomości (w 11 językach!) automatycznie uruchamiają odpowiedni workflow. Trafność detekcji jest mierzona, a nie zakładana: `oma verify triggers` ocenia detektor na oznaczonym korpusie 171 promptów (obecnie **0% missed-fire**, poniżej 10% false-fire) i na tej podstawie blokuje CI.
+**Autodetekcja**: Nie musisz nawet używać slash commands. Słowa takie jak "architektura", "plan", "review" i "debug" w Twojej wiadomości (w 11 językach!) automatycznie uruchamiają odpowiedni workflow. Trafność detekcji jest mierzona, a nie zakładana: `oma verify triggers` ocenia detektor na oznaczonym korpusie angielskich i koreańskich promptów, a CI kończy się niepowodzeniem, gdy odsetek false-fire przekroczy 10% lub odsetek missed-fire przekroczy 20% (ponowny pomiar z 2026-10-13: **0% missed-fire**, 5.3% false-fire).
 
 ### Modele per agent
 
@@ -244,16 +244,18 @@ agents:
 
 ## Weryfikacja zamiast narracji
 
-Każdy z poniższych mechanizmów jest mechaniczny: komenda kończy się kodem 0 albo nie, plik jest na dysku albo go nie ma. Żaden LLM nie jest pytany, czy praca „wygląda poprawnie”.
+Każdy z poniższych mechanizmów, z wyjątkiem sędziego sterowanego promptem, jest mechaniczny: komenda kończy się kodem 0 albo nie, plik jest na dysku albo go nie ma. Żaden z pozostałych mechanizmów nie pyta LLM, czy praca „wygląda poprawnie”.
 
 | Mechanizm | Co jest sprawdzane mechanicznie | Gdzie się znajduje |
 |-----------|----------------------------------|--------------------|
 | **Bramka hooka Stop** | Blokuje zakończenie sesji, dopóki trwa persystentny workflow, i przed zezwoleniem na stop uruchamia skonfigurowany skrypt bramki. Wykonywalne są wyłącznie `typecheck`, `test` i `lint` — jeśli agent wpisze do pliku stanu cokolwiek innego, zostanie to zignorowane i nigdy nie uruchomione. Limit 5 wzmocnień sprawia, że trwale czerwona bramka Cię nie zablokuje. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
 | **Anti-Circumvention Gate** | `oma ralph verify --json` sprawdza cztery artefakty, których nie da się podrobić skrótem: zapisy faz ultrawork, JSON planu, plik wyniku **osobnego agenta QA** oraz plik wyniku **osobnego agenta refactor**. Brak artefaktów oznacza, że faza się nie wykonała — cokolwiek twierdzi narracja. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **Niezależny sędzia** | Uruchamiany jako osobny agent ze świeżym kontekstem, poinstruowany wyłącznie o kryteriach — nigdy o tym, co implementujący rzekomo naprawił. W każdej iteracji weryfikuje od nowa **każde** kryterium, także wcześniejsze PASS-y, bo naprawa C2 to typowa droga do cichej regresji C1. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Stan oparty na zdarzeniach** | Każde zaliczenie bramki, każde jej niepowodzenie i każda decyzja dopisuje jedną linię JSON do `~/.oma/u/0/sessions/{sid}/events.jsonl`, ostemplowaną vendorem i identyfikatorem sesji runtime'u. Tylko do dopisywania, ponad vendorami, audytowalne po zakończeniu biegu. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Sędzia sterowany promptem** | Nie jest mechaniczny: prompt workflowu `/ralph` poleca orkiestratorowi uruchomić sędziego jako osobnego agenta ze świeżym kontekstem, poinstruowanego wyłącznie o kryteriach — nigdy o tym, co implementujący rzekomo naprawił — oraz w każdej iteracji weryfikować od nowa **każde** kryterium, także wcześniejsze PASS-y, bo naprawa C2 to typowa droga do cichej regresji C1. Nic nie sprawdza, czy do tego uruchomienia doszło: `oma ralph verify` bramkuje artefakty EXEC, nie sędziego, a runtime, który nie może uruchamiać subagentów, dostaje polecenie, by pełnić rolę sędziego inline i zapisać `ralph.judge-inline-fallback`. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Stan oparty na zdarzeniach** | W sesji OMA każde zaliczenie bramki, każde jej niepowodzenie i każda decyzja dopisuje jedną linię JSON do pliku `events.jsonl` tej sesji, ostemplowaną vendorem i identyfikatorem sesji runtime'u. Tylko do dopisywania, ponad vendorami, audytowalne po zakończeniu biegu. Znajdź sesję za pomocą `oma state list` i odczytaj jej zdarzenia przez `oma state get <sid>`; lokalizacja pliku zależy od `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE` oraz starszych folderów sesji w katalogu projektu, więc nie wpisuj jej na sztywno. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **Bateria sprawdzeń per agent** | `oma verify <agent>` uruchamia wspólny rdzeń (scope violation, charter alignment, twardo zakodowane sekrety, skan TODO, declared outputs) plus sprawdzenia specyficzne dla typu (TypeScript strict, testy, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
 | **Harness ewaluacji skilli** | `oma skill eval` mierzy przyrost użyteczności na zadaniach odłożonych — wariant testowany kontra baseline — zamiast zakładać, że skill pomaga. `oma skill optimize` zachowuje tylko te zmiany, które poprawiają zmierzony przyrost. | [przewodnik skill-eval](../web/docs/guide/skill-eval.md) |
+
+> **Bez sesji nie ma śladu.** Hook Stop zapisuje zdarzenia bramek w sesji OMA otwartej w chwili startu persystentnego workflowu. Jeśli tej sesji nie udało się utworzyć (na stderr pojawia się `[oma] L1 session activation failed`), niezaliczona bramka nadal blokuje zatrzymanie, ale żadna linia `gate.failed` nie zostaje zapisana. Zanim zaczniesz polegać na tym śladzie albo go zademonstrujesz, sprawdź, czy `oma state list` wyświetla aktywną sesję.
 
 Budżety są egzekwowane tak samo. `session.quota_cap` ogranicza tokeny, liczbę spawnów i wydatki per vendor; orkiestrator odmawia kolejnego spawnu, gdy któryś z wymiarów zostanie przekroczony. Gdy skończy się budżet czasu, hook Stop zatrzymuje się uczciwie i zapisuje status częściowy w dzienniku zdarzeń, zamiast udawać ukończenie.
 

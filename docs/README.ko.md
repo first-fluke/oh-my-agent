@@ -8,7 +8,7 @@
 
 에이전트를 병렬로 띄우는 건 쉬운 쪽입니다. 어려운 건 그 에이전트들이 실제로 일을 했는지 아는 것이죠. "테스트 통과, 모든 기준 충족"이라는 말은 에이전트에게 아무 비용도 들지 않고, 같은 세션 안에는 그 말을 반박할 수 있는 게 아무것도 없습니다.
 
-oh-my-agent는 그 주장을 반증 가능하게 만듭니다. Stop hook은 프로젝트 자체의 `typecheck` / `test` / `lint` 스크립트가 0으로 종료되기 전까지 세션 종료를 거부합니다. 게이트 커맨드는 워크플로우가 정말 돌았는지를, 돌았다면 반드시 남아 있어야 할 산출물이 있는지로 판정합니다. 결과가 되는 것은 에이전트의 요약이 아니라 이 커맨드의 JSON 판정입니다. 독립 judge는 매 라운드마다 새 컨텍스트에서 모든 기준을 다시 검증합니다. 이미 통과한 기준까지 포함해서요. 모든 게이트 판정은 나중에 읽어볼 수 있는 append-only 이벤트 로그에 쌓입니다. 그리고 이 규율을 하나의 이식 가능한 `.agents/` 디렉터리에서 열 개가 넘는 에이전트 런타임에 똑같이 적용합니다.
+oh-my-agent는 그 주장을 반증 가능하게 만듭니다. Stop hook은 프로젝트 자체의 `typecheck` / `test` / `lint` 스크립트가 0으로 종료되기 전까지 세션 종료를 거부합니다. 게이트 커맨드는 워크플로우가 정말 돌았는지를, 돌았다면 반드시 남아 있어야 할 산출물이 있는지로 판정합니다. 결과가 되는 것은 에이전트의 요약이 아니라 이 커맨드의 JSON 판정입니다. `/ralph`에서는 워크플로우 프롬프트가 기준만 넘겨 띄우는 judge가 매 라운드마다 모든 기준을 다시 검증합니다. 이미 통과한 기준까지 포함해서요. 게이트 판정은 나중에 `oma state`로 읽어볼 수 있는 세션별 이벤트 로그에 추가됩니다. 그리고 이 규율을 하나의 이식 가능한 `.agents/` 디렉터리에서 열 개가 넘는 에이전트 런타임에 똑같이 적용합니다.
 
 [빠른 시작](../web/docs/getting-started/quick-start.md)에서 스킬 프리셋을 선택하고 `oma doctor`로 설치를 확인한 뒤, 스킬 하나에 범위가 정해진 변경을 요청하세요. 변경 파일, 검사 명령, 종료 코드를 기록하세요.
 
@@ -213,7 +213,7 @@ You: "사용자 인증이 있는 TODO 앱 만들어줘"
 | 3 | `/work` | 여러 에이전트로 기능을 단계별로 구축 |
 | 3 | `/orchestrate` | 여러 에이전트를 병렬로 돌려 기능을 더 빠르게 구축 |
 | 3 | `/ultrawork` | 다섯 개의 게이트가 있는 품질 페이즈로 기능을 구축하며, 모든 리뷰는 새로 격리된 리뷰어 세션에서 실행됩니다(cross-context review) |
-| 3 | `/ralph` | 독립 검증기가 모든 기준을 통과할 때까지 `/ultrawork` 반복 |
+| 3 | `/ralph` | judge가 모든 기준을 통과로 판정할 때까지 `/ultrawork` 반복 |
 | 4 | `/review` | 보안, 성능, 접근성 관점에서 코드 리뷰 |
 | 4 | `/security` | 보안 대상을 스캔하고 발견 사항을 검증하며 CI 게이트 적용 |
 | 5 | `/debug` | 근본 원인을 찾아 버그를 고치고 회귀 테스트 작성 |
@@ -221,7 +221,7 @@ You: "사용자 인증이 있는 TODO 앱 만들어줘"
 | 6 | `/scm` | 브랜치, 머지, Conventional Commits 관리 |
 | - | `/schedule` | 에이전트 작업을 주기적으로 실행하도록 예약 |
 
-**자동 감지**: 슬래시 커맨드를 쓰지 않아도, 메시지에 "아키텍처", "계획", "리뷰", "디버그" 같은 키워드만 있으면 (11개 언어 지원!) 맞는 워크플로우가 자동으로 실행됩니다. 감지 정확도는 가정하지 않고 측정합니다. `oma verify triggers`가 라벨링된 171개 프롬프트 코퍼스로 감지기를 채점하고(현재 **미발화 0%**, 오발화 10% 미만) 이를 CI 게이트로 사용합니다.
+**자동 감지**: 슬래시 커맨드를 쓰지 않아도, 메시지에 "아키텍처", "계획", "리뷰", "디버그" 같은 키워드만 있으면 (11개 언어 지원!) 맞는 워크플로우가 자동으로 실행됩니다. 감지 정확도는 가정하지 않고 측정합니다. `oma verify triggers`가 라벨링된 영어·한국어 프롬프트 코퍼스로 감지기를 채점하며, 오발화가 10%를 넘거나 미발화가 20%를 넘으면 CI가 실패합니다(2026-10-13 재측정: **미발화 0%**, 오발화 5.3%).
 
 ### 에이전트별 모델
 
@@ -241,16 +241,18 @@ agents:
 
 ## 서술이 아니라 검증
 
-아래 메커니즘은 전부 기계적입니다. 커맨드는 0으로 끝나거나 끝나지 않고, 파일은 디스크에 있거나 없습니다. 작업이 "맞아 보이는지"를 LLM에게 묻지 않습니다.
+아래 메커니즘은 프롬프트 기반 judge를 제외하면 전부 기계적입니다. 커맨드는 0으로 끝나거나 끝나지 않고, 파일은 디스크에 있거나 없습니다. 기계적인 메커니즘은 어느 것도 작업이 "맞아 보이는지"를 LLM에게 묻지 않습니다.
 
 | 메커니즘 | 기계적으로 확인하는 것 | 위치 |
 |----------|------------------------|------|
 | **Stop hook 게이트** | persistent workflow가 활성인 동안 세션 종료를 막고, 종료를 허용하기 전에 설정된 게이트 스크립트를 실행합니다. 실행할 수 있는 건 `typecheck`, `test`, `lint` 셋뿐입니다. 에이전트가 상태 파일에 그 밖의 것을 써 넣어도 무시될 뿐 절대 실행되지 않습니다. 재강제는 5회로 제한되어 계속 빨간 게이트에 발이 묶이는 일은 없습니다. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
 | **Anti-Circumvention 게이트** | `oma ralph verify --json`은 지름길로 위조할 수 없는 네 가지 산출물을 확인합니다. ultrawork의 phase 기록, plan JSON, **별개의 QA 에이전트**가 남긴 result 파일, **별개의 refactor 에이전트**가 남긴 result 파일입니다. 산출물이 없다면 서술이 무엇이라 말하든 그 phase는 실행되지 않은 것입니다. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **독립 judge** | 새 컨텍스트를 가진 별도 에이전트로 띄우고 기준만 브리핑합니다. 구현자가 무엇을 고쳤다고 주장하는지는 알려주지 않습니다. 매 iteration마다 이미 PASS한 것까지 포함해 **모든** 기준을 다시 검증합니다. C2를 고치다가 C1이 조용히 깨지는 게 바로 그런 식이기 때문입니다. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **이벤트 소싱 상태** | 게이트 통과, 게이트 실패, 판정 하나하나가 `~/.oma/u/0/sessions/{sid}/events.jsonl`에 JSON 한 줄로 추가되고 벤더와 런타임 세션 id가 함께 찍힙니다. append-only, 크로스 벤더, 실행이 끝난 뒤에도 감사 가능합니다. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **프롬프트 기반 judge** | 기계적이지 않습니다. `/ralph` 워크플로우 프롬프트는 오케스트레이터에게 judge를 새 컨텍스트를 가진 별도 에이전트로 띄워 기준만 브리핑하고, 구현자가 무엇을 고쳤다고 주장하는지는 절대 알려주지 말라고 지시합니다. 매 iteration마다 이미 PASS한 것까지 포함해 **모든** 기준을 다시 검증하라고도 지시합니다. C2를 고치다가 C1이 조용히 깨지는 게 바로 그런 식이기 때문입니다. judge를 실제로 띄웠는지 확인하는 장치는 없습니다. `oma ralph verify`는 judge가 아니라 EXEC 산출물을 검사하는 게이트이고, 서브에이전트를 띄울 수 없는 런타임은 인라인으로 판정하고 `ralph.judge-inline-fallback`을 기록하라는 지시를 받습니다. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **이벤트 소싱 상태** | OMA 세션 안에서는 게이트 통과, 게이트 실패, 판정 하나하나가 해당 세션의 `events.jsonl`에 JSON 한 줄로 추가되고 벤더와 런타임 세션 id가 함께 찍힙니다. append-only, 크로스 벤더, 실행이 끝난 뒤에도 감사 가능합니다. 세션은 `oma state list`로 찾고 이벤트는 `oma state get <sid>`로 읽으세요. 파일 위치는 `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE`과 예전 프로젝트 로컬 세션 폴더에 따라 달라지므로 하드코딩하지 마세요. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **에이전트별 체크 배터리** | `oma verify <agent>`는 공통 코어(스코프 위반, charter alignment, 하드코딩 시크릿, TODO 스캔, declared outputs)에 유형별 체크(TypeScript strict, 테스트, raw SQL, Flutter analyze, 인라인 스타일)를 더해 실행합니다. | `oma verify <agent>` |
 | **스킬 eval 하네스** | `oma skill eval`은 스킬이 도움이 된다고 가정하는 대신, 홀드아웃 태스크에서 treatment와 baseline을 비교해 유용성 향상폭을 측정합니다. `oma skill optimize`는 측정된 향상폭을 높이는 수정만 남깁니다. | [skill-eval 가이드](../web/docs/guide/skill-eval.md) |
+
+> **세션이 없으면 기록도 없습니다.** Stop hook은 persistent workflow가 시작될 때 열린 OMA 세션에 게이트 이벤트를 기록합니다. 그 세션을 만들지 못하면 stderr에 `[oma] L1 session activation failed`가 출력됩니다. 이때도 실패한 게이트는 종료를 막지만 `gate.failed` 줄은 기록되지 않습니다. 이벤트 기록에 의존하거나 데모로 보여주기 전에 `oma state list`에 활성 세션이 표시되는지 확인하세요.
 
 예산도 같은 방식으로 강제됩니다. `session.quota_cap`은 토큰, spawn 횟수, 벤더별 지출에 상한을 걸고, 한도 중 하나라도 넘어서면 오케스트레이터가 다음 spawn을 거부합니다. 실행 시간 예산이 바닥나면 Stop hook은 완료한 척하는 대신 부분 상태를 이벤트 로그에 남기고 정직하게 멈춥니다.
 

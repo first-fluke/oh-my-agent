@@ -8,7 +8,7 @@
 
 Spawning parallel agents is the easy part. The hard part is knowing whether they actually did the work. "Tests pass, all criteria met" costs an agent nothing to say, and nothing inside that same session can contradict it.
 
-oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session until your project's own `typecheck` / `test` / `lint` script exits 0. A gate command decides whether a workflow really ran by looking for the artifacts it must have left behind — and its JSON verdict, not the agent's summary, is the result. An independent judge with a fresh context re-verifies every criterion each round, including the ones that already passed. Every gate decision lands on an append-only event log you can read after the fact. Then it runs that same discipline across a dozen agent runtimes from one portable `.agents/` directory.
+oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session until your project's own `typecheck` / `test` / `lint` script exits 0. A gate command decides whether a workflow really ran by looking for the artifacts it must have left behind — and its JSON verdict, not the agent's summary, is the result. In `/ralph`, the workflow prompt dispatches a judge, briefed on the criteria only, that re-verifies every criterion each round, including the ones that already passed. Gate decisions are appended to a per-session event log that you can read afterwards with `oma state`. Then it runs that same discipline across a dozen agent runtimes from one portable `.agents/` directory.
 
 Follow [Quick Start](./web/docs/getting-started/quick-start.md) to choose a skill preset, run `oma doctor`, and ask a named skill for one scoped change. Record the file, check command, and exit status.
 
@@ -224,7 +224,7 @@ Or use slash commands for structured workflows:
 | 3 | `/work` | Builds your feature step by step across multiple agents |
 | 3 | `/orchestrate` | Runs multiple agents in parallel to build your feature faster |
 | 3 | `/ultrawork` | Builds your feature through five gated quality phases; every review runs in a fresh, isolated reviewer session (cross-context review) |
-| 3 | `/ralph` | Repeats `/ultrawork` until an independent verifier passes every criterion |
+| 3 | `/ralph` | Repeats `/ultrawork` until its judge passes every criterion |
 | 4 | `/review` | Reviews your code for security, performance, and accessibility issues |
 | 4 | `/security` | Scans security targets, validates findings, and applies CI gates |
 | 5 | `/debug` | Finds the root cause, fixes the bug, and writes a regression test |
@@ -232,7 +232,7 @@ Or use slash commands for structured workflows:
 | 6 | `/scm` | Manages your branches, merges, and Conventional Commits |
 | - | `/schedule` | Schedules an agent job to run on a recurring interval |
 
-**Auto-detection**: You don't even need slash commands — keywords like "architecture", "plan", "review", and "debug" in your message (in 11 languages!) auto-activate the right workflow. Detection accuracy is measured, not assumed: `oma verify triggers` scores the detector against a labeled 171-prompt corpus (currently **0% missed-fire**, under 10% false-fire) and gates CI on it.
+**Auto-detection**: You don't even need slash commands — keywords like "architecture", "plan", "review", and "debug" in your message (in 11 languages!) auto-activate the right workflow. Detection accuracy is measured, not assumed: `oma verify triggers` scores the detector against a labeled English and Korean prompt corpus, and CI fails if false fires exceed 10% or missed fires exceed 20% (re-measured 2026-10-13: **0% missed-fire**, 5.3% false-fire).
 
 ### Per-Agent Models
 
@@ -252,16 +252,18 @@ agents:
 
 ## Verification, Not Narration
 
-Each mechanism below is mechanical: a command exits 0 or it doesn't, a file is on disk or it isn't. No LLM is asked whether the work "looks correct."
+Every mechanism below except the prompted judge is mechanical: a command exits 0 or it doesn't, a file is on disk or it isn't. None of those asks an LLM whether the work "looks correct."
 
 | Mechanism | What it mechanically checks | Where it lives |
 |-----------|------------------------------|----------------|
 | **Stop-hook gate** | Blocks session termination while a persistent workflow is active, and runs the configured gate script before allowing a stop. Only `typecheck`, `test`, and `lint` are executable — an agent that writes anything else into the state file gets it ignored, never run. Capped at 5 reinforcements so a permanently red gate can't trap you. | [`.agents/hooks/core/persistent-mode.ts`](./.agents/hooks/core/persistent-mode.ts) |
 | **Anti-Circumvention Gate** | `oma ralph verify --json` checks four artifacts a shortcut can't fake: ultrawork's phase records, the plan JSON, a **distinct QA agent's** result file, and a **distinct refactor agent's** result file. Missing artifacts mean the phase did not run, whatever the narration says. | [`.agents/workflows/ralph.md`](./.agents/workflows/ralph.md) |
-| **Independent judge** | Spawned as a separate agent with fresh context, briefed on the criteria only — never on what the implementer claims it fixed. Re-verifies **every** criterion each iteration, including prior PASSes, because fixing C2 is how C1 silently regresses. | [`judge-protocol.md`](./.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Event-sourced state** | Every gate pass, gate failure, and decision appends one JSON line to `~/.oma/u/0/sessions/{sid}/events.jsonl`, stamped with vendor and runtime session id. Append-only, cross-vendor, auditable after the run. | [`event-spec.md`](./.agents/skills/_shared/runtime/event-spec.md) |
+| **Prompted judge** | Not mechanical: the `/ralph` workflow prompt tells the orchestrator to spawn the judge as a separate agent with fresh context, briefed on the criteria only — never on what the implementer claims it fixed — and to re-verify **every** criterion each iteration, including prior PASSes, because fixing C2 is how C1 silently regresses. Nothing checks that the spawn happened: `oma ralph verify` gates the EXEC artifacts, not the judge, and a runtime that cannot spawn subagents is told to judge inline and record `ralph.judge-inline-fallback`. | [`judge-protocol.md`](./.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Event-sourced state** | In an OMA session, every gate pass, gate failure, and decision appends one JSON line to the session's `events.jsonl`, stamped with vendor and runtime session id. Append-only, cross-vendor, auditable after the run. Find the session with `oma state list` and read its events with `oma state get <sid>`; the file's location depends on `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE`, and older project-local session folders, so don't hard-code it. | [`state-core.ts`](./.agents/hooks/core/state-core.ts) · [`event-spec.md`](./.agents/skills/_shared/runtime/event-spec.md) |
 | **Per-agent check battery** | `oma verify <agent>` runs a shared core (scope violation, charter alignment, hardcoded secrets, TODO scan, declared outputs) plus type-specific checks (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
 | **Skill eval harness** | `oma skill eval` measures utility lift on held-out tasks — treatment vs. baseline — instead of assuming a skill helps. `oma skill optimize` keeps only edits that improve the measured lift. | [skill-eval guide](./web/docs/guide/skill-eval.md) |
+
+> **No session, no trail.** The Stop hook records gate events under the OMA session opened when the persistent workflow started. If that session could not be created (stderr shows `[oma] L1 session activation failed`), a failing gate still blocks the stop, but no `gate.failed` line is written. Before you rely on the trail, or demo it, check that `oma state list` shows an active session.
 
 Budgets are enforced the same way. `session.quota_cap` caps tokens, spawn count, and per-vendor spend; the orchestrator refuses the next spawn when a dimension is exceeded. When the wall-clock budget runs out, the Stop hook stops honestly with partial status recorded on the event log, rather than pretending completion.
 

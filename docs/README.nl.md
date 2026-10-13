@@ -8,7 +8,7 @@
 
 Parallelle agents spawnen is het makkelijke deel. Het moeilijke deel is weten of ze het werk daadwerkelijk hebben gedaan. "Tests slagen, aan alle criteria voldaan" kost een agent niets om te zeggen, en niets binnen diezelfde sessie kan het tegenspreken.
 
-oh-my-agent maakt die bewering falsifieerbaar. Een Stop-hook weigert je sessie te beëindigen zolang het `typecheck`- / `test`- / `lint`-script van je eigen project niet met exitcode 0 afsluit. Een gate-commando bepaalt of een workflow echt heeft gedraaid door te kijken naar de artefacten die hij moet hebben achtergelaten — en het JSON-oordeel daarvan is het resultaat, niet de samenvatting van de agent. Een onafhankelijke judge met een verse context verifieert elke ronde opnieuw elk criterium, ook de criteria die al geslaagd waren. Elke gate-beslissing komt terecht in een append-only event log dat je achteraf kunt lezen. En diezelfde discipline draait over een tiental agent-runtimes heen, vanuit één draagbare `.agents/`-map.
+oh-my-agent maakt die bewering falsifieerbaar. Een Stop-hook weigert je sessie te beëindigen zolang het `typecheck`- / `test`- / `lint`-script van je eigen project niet met exitcode 0 afsluit. Een gate-commando bepaalt of een workflow echt heeft gedraaid door te kijken naar de artefacten die hij moet hebben achtergelaten — en het JSON-oordeel daarvan is het resultaat, niet de samenvatting van de agent. In `/ralph` zet de workflowprompt een judge in die uitsluitend op de criteria is gebriefd en elke ronde opnieuw elk criterium verifieert, ook de criteria die al geslaagd waren. Gate-beslissingen worden toegevoegd aan een event log per sessie dat je achteraf met `oma state` kunt lezen. En diezelfde discipline draait over een tiental agent-runtimes heen, vanuit één draagbare `.agents/`-map.
 
 Volg [Snel starten](../web/docs/getting-started/quick-start.md) om een skillpreset te kiezen, `oma doctor` uit te voeren en een benoemde skill om één afgebakende wijziging te vragen. Leg het bestand, het controlecommando en de exitstatus vast.
 
@@ -213,7 +213,7 @@ Of gebruik slash commands voor gestructureerde workflows:
 | 3 | `/work` | Bouwt je feature stap voor stap over meerdere agents |
 | 3 | `/orchestrate` | Draait meerdere agents parallel om je feature sneller te bouwen |
 | 3 | `/ultrawork` | Bouwt je feature door vijf gated kwaliteitsfasen; elke review draait in een verse, geïsoleerde reviewer-sessie (cross-context review) |
-| 3 | `/ralph` | Herhaalt `/ultrawork` tot een onafhankelijke verificator elk criterium goedkeurt |
+| 3 | `/ralph` | Herhaalt `/ultrawork` tot zijn judge elk criterium goedkeurt |
 | 4 | `/review` | Bekijkt je code op beveiligings-, performance- en toegankelijkheidsproblemen |
 | 4 | `/security` | Scant beveiligingsdoelen, valideert bevindingen en past CI-gates toe |
 | 5 | `/debug` | Vindt de root cause, fixt de bug en schrijft een regressietest |
@@ -221,7 +221,7 @@ Of gebruik slash commands voor gestructureerde workflows:
 | 6 | `/scm` | Beheert je branches, merges en Conventional Commits |
 | - | `/schedule` | Plant een agent-job in om met een terugkerend interval te draaien |
 
-**Autodetectie**: Je hebt de slash commands niet eens nodig. Woorden als "architectuur", "plan", "review" en "debug" in je bericht (in 11 talen!) activeren automatisch de juiste workflow. Detectienauwkeurigheid wordt gemeten, niet aangenomen: `oma verify triggers` scoort de detector tegen een gelabeld corpus van 171 prompts (momenteel **0% missed-fire**, onder de 10% false-fire) en gebruikt dat als CI-gate.
+**Autodetectie**: Je hebt de slash commands niet eens nodig. Woorden als "architectuur", "plan", "review" en "debug" in je bericht (in 11 talen!) activeren automatisch de juiste workflow. Detectienauwkeurigheid wordt gemeten, niet aangenomen: `oma verify triggers` scoort de detector tegen een gelabeld corpus van Engelse en Koreaanse prompts, en CI faalt bij meer dan 10% false-fire of meer dan 20% missed-fire (opnieuw gemeten op 2026-10-13: **0% missed-fire**, 5.3% false-fire).
 
 ### Modellen per agent
 
@@ -241,16 +241,18 @@ agents:
 
 ## Verificatie, geen narratief
 
-Elk mechanisme hieronder is mechanisch: een commando eindigt met exitcode 0 of niet, een bestand staat op schijf of niet. Geen enkele LLM wordt gevraagd of het werk er "correct uitziet".
+Elk mechanisme hieronder, behalve de promptgestuurde judge, is mechanisch: een commando eindigt met exitcode 0 of niet, een bestand staat op schijf of niet. Geen van die mechanismen vraagt een LLM of het werk er "correct uitziet".
 
 | Mechanisme | Wat er mechanisch wordt gecontroleerd | Waar het zit |
 |------------|----------------------------------------|--------------|
 | **Stop-hook-gate** | Blokkeert het beëindigen van de sessie zolang een persistente workflow actief is, en draait het geconfigureerde gate-script voordat stoppen wordt toegestaan. Alleen `typecheck`, `test` en `lint` zijn uitvoerbaar — schrijft een agent iets anders in het state-bestand, dan wordt dat genegeerd en nooit uitgevoerd. Begrensd op 5 reinforcements, zodat een permanent rode gate je niet gevangen houdt. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
 | **Anti-Circumvention Gate** | `oma ralph verify --json` controleert vier artefacten die met een shortcut niet te faken zijn: de fase-records van ultrawork, de plan-JSON, het resultaatbestand van een **aparte QA-agent** en dat van een **aparte refactor-agent**. Ontbrekende artefacten betekenen dat de fase niet heeft gedraaid, wat het verhaal ook beweert. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **Onafhankelijke judge** | Draait als aparte agent met verse context, uitsluitend gebriefd op de criteria — nooit op wat de implementator beweert te hebben opgelost. Verifieert elke iteratie **elk** criterium opnieuw, ook eerdere PASSes, want C2 repareren is precies hoe C1 stilletjes regresseert. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Event-sourced state** | Elke geslaagde gate, elke gefaalde gate en elke beslissing voegt één JSON-regel toe aan `~/.oma/u/0/sessions/{sid}/events.jsonl`, gestempeld met vendor en runtime-sessie-id. Append-only, vendoroverstijgend, achteraf auditeerbaar. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Promptgestuurde judge** | Niet mechanisch: de workflowprompt van `/ralph` draagt de orchestrator op om de judge als aparte agent met verse context te spawnen, uitsluitend gebriefd op de criteria — nooit op wat de implementator beweert te hebben opgelost — en om elke iteratie **elk** criterium opnieuw te verifiëren, ook eerdere PASSes, want C2 repareren is precies hoe C1 stilletjes regresseert. Niets controleert of die spawn echt heeft plaatsgevonden: `oma ralph verify` is een gate voor de EXEC-artefacten, niet voor de judge, en een runtime die geen subagents kan spawnen, krijgt de opdracht om inline te oordelen en `ralph.judge-inline-fallback` vast te leggen. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Event-sourced state** | In een OMA-sessie voegt elke geslaagde gate, elke gefaalde gate en elke beslissing één JSON-regel toe aan het `events.jsonl`-bestand van die sessie, gestempeld met vendor en runtime-sessie-id. Append-only, vendoroverstijgend, achteraf auditeerbaar. Zoek de sessie op met `oma state list` en lees de bijbehorende events met `oma state get <sid>`; de locatie van het bestand hangt af van `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE` en oudere sessiemappen binnen het project, dus hardcode die niet. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **Check-batterij per agent** | `oma verify <agent>` draait een gedeelde kern (scope violation, charter alignment, hardcoded secrets, TODO-scan, declared outputs) plus type-specifieke checks (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
 | **Skill-eval-harnas** | `oma skill eval` meet de utility lift op achtergehouden taken — treatment tegenover baseline — in plaats van aan te nemen dat een skill helpt. `oma skill optimize` behoudt alleen wijzigingen die de gemeten lift verbeteren. | [skill-eval-gids](../web/docs/guide/skill-eval.md) |
+
+> **Geen sessie, geen spoor.** De Stop-hook legt gate-events vast onder de OMA-sessie die bij de start van de persistente workflow is geopend. Kon die sessie niet worden aangemaakt (op stderr verschijnt `[oma] L1 session activation failed`), dan blokkeert een falende gate het stoppen nog steeds, maar er wordt geen `gate.failed`-regel geschreven. Controleer of `oma state list` een actieve sessie toont voordat je op dat spoor vertrouwt of het in een demo laat zien.
 
 Budgetten worden op dezelfde manier afgedwongen. `session.quota_cap` begrenst tokens, het aantal spawns en de uitgaven per vendor; de orchestrator weigert de volgende spawn zodra een dimensie wordt overschreden. Loopt het tijdbudget af, dan stopt de Stop-hook eerlijk en legt de deelstatus vast in het event log, in plaats van voltooiing voor te wenden.
 

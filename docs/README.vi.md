@@ -8,7 +8,7 @@
 
 Chạy song song nhiều agent là phần dễ. Phần khó là biết được chúng có thực sự làm việc hay không. Câu "test đã pass, mọi tiêu chí đều đạt" chẳng tốn gì của một agent, và không có gì bên trong chính phiên đó phản bác lại được.
 
-oh-my-agent làm cho tuyên bố ấy có thể bị bác bỏ. Một Stop hook không cho kết thúc phiên làm việc cho đến khi script `typecheck` / `test` / `lint` của chính dự án bạn thoát với mã 0. Một lệnh gate quyết định workflow có thực sự chạy hay không bằng cách tìm những artifact mà nó bắt buộc phải để lại — và kết quả chính là phán quyết JSON của lệnh đó, không phải bản tóm tắt của agent. Một trọng tài độc lập với ngữ cảnh hoàn toàn mới kiểm chứng lại mọi tiêu chí ở từng vòng, kể cả những tiêu chí đã đạt. Mọi quyết định của gate đều được ghi vào một nhật ký sự kiện chỉ-thêm mà bạn có thể đọc lại sau. Rồi oh-my-agent áp dụng đúng kỷ luật đó trên cả chục agent runtime, từ một thư mục `.agents/` di động duy nhất.
+oh-my-agent làm cho tuyên bố ấy có thể bị bác bỏ. Một Stop hook không cho kết thúc phiên làm việc cho đến khi script `typecheck` / `test` / `lint` của chính dự án bạn thoát với mã 0. Một lệnh gate quyết định workflow có thực sự chạy hay không bằng cách tìm những artifact mà nó bắt buộc phải để lại — và kết quả chính là phán quyết JSON của lệnh đó, không phải bản tóm tắt của agent. Trong `/ralph`, prompt của workflow cử ra một trọng tài chỉ được cho biết các tiêu chí, và trọng tài này kiểm chứng lại mọi tiêu chí ở từng vòng, kể cả những tiêu chí đã đạt. Các quyết định của gate được ghi thêm vào một nhật ký sự kiện theo từng phiên mà bạn có thể đọc lại sau bằng `oma state`. Rồi oh-my-agent áp dụng đúng kỷ luật đó trên cả chục agent runtime, từ một thư mục `.agents/` di động duy nhất.
 
 Làm theo [Bắt đầu nhanh](../web/docs/getting-started/quick-start.md) để chọn preset skill, chạy `oma doctor` và yêu cầu một skill có tên cụ thể thực hiện một thay đổi có phạm vi. Ghi lại file, lệnh kiểm tra và exit status.
 
@@ -213,7 +213,7 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 | 3 | `/work` | Xây dựng tính năng của bạn từng bước qua nhiều agent |
 | 3 | `/orchestrate` | Chạy nhiều agent song song để xây tính năng của bạn nhanh hơn |
 | 3 | `/ultrawork` | Xây dựng tính năng của bạn qua năm giai đoạn chất lượng có cổng kiểm soát; mọi lượt đánh giá đều chạy trong một phiên đánh giá mới, tách biệt (cross-context review) |
-| 3 | `/ralph` | Lặp lại `/ultrawork` cho đến khi một trình kiểm chứng độc lập đạt mọi tiêu chí |
+| 3 | `/ralph` | Lặp lại `/ultrawork` cho đến khi trọng tài của nó chấm đạt mọi tiêu chí |
 | 4 | `/review` | Rà soát code của bạn về các vấn đề bảo mật, hiệu suất và accessibility |
 | 4 | `/security` | Quét bảo mật các mục tiêu, xác minh phát hiện và áp dụng cổng kiểm tra CI |
 | 5 | `/debug` | Tìm nguyên nhân gốc, sửa lỗi và viết regression test |
@@ -221,7 +221,7 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 | 6 | `/scm` | Quản lý branch, merge và Conventional Commits của bạn |
 | - | `/schedule` | Lên lịch một job agent chạy theo chu kỳ lặp lại |
 
-**Tự động phát hiện**: Bạn không nhất thiết cần slash command. Các từ khóa như "kiến trúc", "kế hoạch", "đánh giá", "debug" trong tin nhắn (hỗ trợ 11 ngôn ngữ!) sẽ tự động kích hoạt workflow phù hợp. Độ chính xác phát hiện được đo lường chứ không phải phỏng đoán: `oma verify triggers` chấm điểm bộ phát hiện dựa trên một corpus 171 prompt đã gán nhãn (hiện tại **0% bỏ sót**, dưới 10% kích hoạt nhầm) và dùng nó làm cổng gác CI.
+**Tự động phát hiện**: Bạn không nhất thiết cần slash command. Các từ khóa như "kiến trúc", "kế hoạch", "đánh giá", "debug" trong tin nhắn (hỗ trợ 11 ngôn ngữ!) sẽ tự động kích hoạt workflow phù hợp. Độ chính xác phát hiện được đo lường chứ không phải phỏng đoán: `oma verify triggers` chấm điểm bộ phát hiện dựa trên một corpus prompt tiếng Anh và tiếng Hàn đã gán nhãn, và CI sẽ thất bại nếu tỷ lệ kích hoạt nhầm vượt quá 10% hoặc tỷ lệ bỏ sót vượt quá 20% (đo lại ngày 2026-10-13: **0% bỏ sót**, 5.3% kích hoạt nhầm).
 
 ### Model theo từng agent
 
@@ -241,16 +241,18 @@ agents:
 
 ## Kiểm chứng, không phải kể chuyện
 
-Mọi cơ chế dưới đây đều mang tính máy móc: một lệnh hoặc thoát với mã 0 hoặc không, một file hoặc có trên đĩa hoặc không. Không LLM nào bị hỏi rằng công việc "trông có vẻ đúng" hay chưa.
+Mọi cơ chế dưới đây, trừ trọng tài theo prompt, đều mang tính máy móc: một lệnh hoặc thoát với mã 0 hoặc không, một file hoặc có trên đĩa hoặc không. Không cơ chế nào trong số đó hỏi một LLM rằng công việc "trông có vẻ đúng" hay chưa.
 
 | Cơ chế | Kiểm tra máy móc điều gì | Nằm ở đâu |
 |--------|--------------------------|-----------|
 | **Stop-hook gate** | Chặn việc kết thúc phiên khi còn một persistent workflow đang chạy, và chạy gate script đã cấu hình trước khi cho phép dừng. Chỉ `typecheck`, `test` và `lint` mới được thực thi — agent ghi bất cứ thứ gì khác vào file trạng thái thì thứ đó bị bỏ qua, không bao giờ được chạy. Giới hạn 5 lần nhắc lại để một gate đỏ vĩnh viễn không giam bạn lại. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
 | **Anti-Circumvention Gate** | `oma ralph verify --json` kiểm tra bốn artifact mà việc đi tắt không thể giả mạo: bản ghi các phase của ultrawork, file JSON kế hoạch, file kết quả của **một QA agent riêng biệt** và file kết quả của **một refactor agent riêng biệt**. Thiếu artifact nghĩa là phase đó không hề chạy, bất kể lời kể ra sao. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **Trọng tài độc lập** | Được spawn như một agent riêng với ngữ cảnh mới tinh, chỉ biết các tiêu chí — không bao giờ biết bên thực thi tuyên bố đã sửa những gì. Kiểm chứng lại **mọi** tiêu chí ở từng iteration, kể cả những tiêu chí đã PASS, vì sửa C2 chính là cách C1 âm thầm regression. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Trạng thái event-sourced** | Mỗi lần gate pass, gate fail và mỗi quyết định đều thêm một dòng JSON vào `~/.oma/u/0/sessions/{sid}/events.jsonl`, kèm dấu vendor và session id của runtime. Chỉ-thêm, xuyên vendor, kiểm toán được sau khi chạy xong. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Trọng tài theo prompt** | Không mang tính máy móc: prompt của workflow `/ralph` yêu cầu orchestrator spawn trọng tài như một agent riêng với ngữ cảnh mới tinh, chỉ biết các tiêu chí — không bao giờ biết bên thực thi tuyên bố đã sửa những gì — và kiểm chứng lại **mọi** tiêu chí ở từng iteration, kể cả những tiêu chí đã PASS, vì sửa C2 chính là cách C1 âm thầm regression. Không có gì kiểm tra xem việc spawn đó có thực sự diễn ra hay không: `oma ralph verify` gác cổng các artifact EXEC chứ không phải trọng tài, và runtime nào không spawn được subagent thì được yêu cầu tự chấm inline rồi ghi lại `ralph.judge-inline-fallback`. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Trạng thái event-sourced** | Trong một phiên OMA, mỗi lần gate pass, gate fail và mỗi quyết định đều thêm một dòng JSON vào `events.jsonl` của phiên đó, kèm dấu vendor và session id của runtime. Chỉ-thêm, xuyên vendor, kiểm toán được sau khi chạy xong. Tìm phiên bằng `oma state list` và đọc các event của phiên đó bằng `oma state get <sid>`; vị trí của file phụ thuộc vào `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE` và các thư mục phiên kiểu cũ nằm trong dự án, nên đừng hardcode vị trí này. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **Bộ kiểm tra theo từng agent** | `oma verify <agent>` chạy phần core dùng chung (scope violation, charter alignment, secret hardcode, quét TODO, declared outputs) cộng thêm các kiểm tra theo loại (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
 | **Bộ đo hiệu quả skill** | `oma skill eval` đo mức cải thiện hữu ích trên các task giữ riêng — treatment so với baseline — thay vì mặc định tin rằng một skill có ích. `oma skill optimize` chỉ giữ lại những chỉnh sửa làm tăng mức cải thiện đo được. | [hướng dẫn skill-eval](../web/docs/guide/skill-eval.md) |
+
+> **Không có phiên, không có dấu vết.** Stop hook ghi các event của gate vào phiên OMA được mở khi persistent workflow bắt đầu. Nếu không tạo được phiên đó (stderr in ra `[oma] L1 session activation failed`), một gate thất bại vẫn chặn việc dừng, nhưng sẽ không có dòng `gate.failed` nào được ghi. Trước khi dựa vào dấu vết này, hoặc đem nó ra demo, hãy kiểm tra xem `oma state list` có hiển thị một phiên đang hoạt động hay không.
 
 Ngân sách cũng được thực thi theo đúng cách đó. `session.quota_cap` giới hạn token, số lần spawn và chi phí theo từng vendor; orchestrator từ chối lần spawn kế tiếp khi một chiều vượt hạn mức. Khi hết ngân sách thời gian thực, Stop hook dừng một cách trung thực và ghi trạng thái dở dang vào nhật ký sự kiện, thay vì giả vờ đã hoàn thành.
 

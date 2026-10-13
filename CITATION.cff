@@ -4,8 +4,8 @@ title: "oh-my-agent: Mechanical Verification for AI Coding Agents"
 abstract: >-
   oh-my-agent provides mechanical verification for AI coding agents. It can
   be installed as a portable .agents-based skills pack or as a full harness
-  with stop-hook gates, artifact checks, independent judges, and an
-  append-only event log. It supports shared skills, workflows, and
+  with stop-hook gates, artifact checks, a prompted fresh-context judge,
+  and an append-only event log. It supports shared skills, workflows, and
   orchestration across multiple AI coding runtimes.
 type: software
 authors:

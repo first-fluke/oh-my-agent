@@ -8,7 +8,7 @@
 
 并行拉起一堆 agent 是容易的那部分，难的是判断它们到底有没有把活干完。“测试全过，所有标准达标”这句话对 agent 来说毫无成本，而同一个会话里也没有任何东西能反驳它。
 
-oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，直到项目自己的 `typecheck` / `test` / `lint` 脚本以 0 退出为止。门禁命令判断某个工作流是否真的跑过，靠的是它跑过就必然留下的产出物；最终结果以这条命令给出的 JSON 判定为准，而不是 agent 的自述。独立的 judge 每一轮都会在全新上下文里重新校验每一条标准，包括那些已经通过的。每一次门禁判定都会落到一份只追加的事件日志上，事后可以逐条翻看。同一套纪律，再从一个可移植的 `.agents/` 目录铺到十几种 agent 运行时上。
+oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，直到项目自己的 `typecheck` / `test` / `lint` 脚本以 0 退出为止。门禁命令判断某个工作流是否真的跑过，靠的是它跑过就必然留下的产出物；最终结果以这条命令给出的 JSON 判定为准，而不是 agent 的自述。在 `/ralph` 中，由工作流 prompt 派发、只拿到标准本身的 judge，每一轮都会重新校验每一条标准，包括那些已经通过的。门禁判定会追加写入每个会话各自的事件日志，事后可以用 `oma state` 翻看。同一套纪律，再从一个可移植的 `.agents/` 目录铺到十几种 agent 运行时上。
 
 按照[快速开始](../web/docs/getting-started/quick-start.md)选择技能预设，运行 `oma doctor`，再指定技能完成一项范围明确的修改。记录文件、检查命令和退出状态。
 
@@ -213,7 +213,7 @@ You: "做一个带用户认证的 TODO 应用"
 | 3 | `/work` | 跨多个 agent，一步步帮你把功能做出来 |
 | 3 | `/orchestrate` | 并行调度多个 agent，更快地把你的功能做出来 |
 | 3 | `/ultrawork` | 用五个带门禁的质量阶段把你的功能做扎实；每次审查都在全新、隔离的审查者会话中进行（cross-context review） |
-| 3 | `/ralph` | 反复跑 `/ultrawork`，直到一个独立校验器确认每条标准都过关 |
+| 3 | `/ralph` | 反复跑 `/ultrawork`，直到它的 judge 确认每条标准都过关 |
 | 4 | `/review` | 审查你的代码，排查安全、性能和无障碍问题 |
 | 4 | `/security` | 扫描安全目标、验证发现并应用 CI 门禁 |
 | 5 | `/debug` | 找到根因、修好 bug，再补上一条回归测试 |
@@ -221,7 +221,7 @@ You: "做一个带用户认证的 TODO 应用"
 | 6 | `/scm` | 管理你的分支、合并和 Conventional Commits |
 | - | `/schedule` | 安排一个 agent 任务，按固定周期反复运行 |
 
-**自动检测**：不用斜杠命令也行，消息里出现“架构”“计划”“审查”“调试”等关键词（支持 11 种语言！）就会自动激活对应工作流。检测准确率是实测的，不是假设的：`oma verify triggers` 会用一个带标注的 171 条提示语料给检测器打分（当前 **漏检 0%**，误检低于 10%），并以此作为 CI 门禁。
+**自动检测**：不用斜杠命令也行，消息里出现“架构”“计划”“审查”“调试”等关键词（支持 11 种语言！）就会自动激活对应工作流。检测准确率是实测的，不是假设的：`oma verify triggers` 会用一份带标注的英文和韩文提示语料给检测器打分，误检超过 10% 或漏检超过 20% 时 CI 就会失败（2026-10-13 重新实测：**漏检 0%**，误检 5.3%）。
 
 ### 按 agent 配置模型
 
@@ -241,16 +241,18 @@ agents:
 
 ## 只看验证，不听自述
 
-下面这些机制都是机械的：命令要么以 0 退出，要么没有；文件要么在磁盘上，要么不在。没有任何一步会去问 LLM 这活儿“看起来对不对”。
+下面这些机制里，除了 prompt 驱动的 judge，其余都是机械的：命令要么以 0 退出，要么没有；文件要么在磁盘上，要么不在。这些机械机制没有一个会去问 LLM 这活儿“看起来对不对”。
 
 | 机制 | 机械核查的内容 | 位置 |
 |------|---------------|------|
 | **Stop hook 门禁** | persistent workflow 处于激活状态时阻止会话终止，并在放行前运行配置好的门禁脚本。可执行的只有 `typecheck`、`test`、`lint` 三个；agent 往状态文件里写别的东西只会被忽略，绝不会被执行。加固次数上限为 5 次，因此一个始终飘红的门禁不会把你困住。 | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
 | **Anti-Circumvention 门禁** | `oma ralph verify --json` 会核查四样抄近路伪造不了的产出物：ultrawork 的 phase 记录、plan JSON、一个**独立 QA agent** 的 result 文件，以及一个**独立 refactor agent** 的 result 文件。产出物缺失就说明这个 phase 没跑过，自述里怎么写都不算数。 | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **独立 judge** | 作为拥有全新上下文的独立 agent 启动，只告知标准本身，绝不告知实现方声称自己修好了什么。每次 iteration 都会重新校验**每一条**标准，已经 PASS 的也不例外，因为 C1 悄悄回退往往正是修 C2 时发生的。 | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **事件溯源状态** | 每一次门禁通过、门禁失败和判定，都会向 `~/.oma/u/0/sessions/{sid}/events.jsonl` 追加一行 JSON，并盖上厂商与运行时会话 id。只追加、跨厂商、跑完之后仍可审计。 | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **prompt 驱动的 judge** | 不是机械的：`/ralph` 的工作流 prompt 要求编排器单独 spawn 一个拥有全新上下文的 agent 来担任 judge，只告知它标准本身，绝不告知实现方声称自己修好了什么；并要求每次 iteration 都重新校验**每一条**标准，已经 PASS 的也不例外，因为 C1 悄悄回退往往正是修 C2 时发生的。没有任何东西会检查这次 spawn 是否真的发生过：`oma ralph verify` 把关的是 EXEC 产出物，而不是 judge；无法 spawn 子 agent 的运行时则会被要求以内联方式判定，并记录 `ralph.judge-inline-fallback`。 | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **事件溯源状态** | 在 OMA 会话中，每一次门禁通过、门禁失败和判定，都会向该会话的 `events.jsonl` 追加一行 JSON，并盖上厂商与运行时会话 id。只追加、跨厂商、跑完之后仍可审计。用 `oma state list` 找到会话，再用 `oma state get <sid>` 读取它的事件；这个文件的位置取决于 `OMA_HOME`、`OMA_STATE_HOME`、`OMA_PROFILE` 以及旧版的项目本地会话目录，所以不要把路径写死。 | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **按 agent 的检查组合** | `oma verify <agent>` 会运行共享核心检查（scope 越界、charter alignment、硬编码密钥、TODO 扫描、declared outputs），再加上按类型的检查（TypeScript strict、tests、raw SQL、Flutter analyze、inline styles）。 | `oma verify <agent>` |
 | **skill 评测框架** | `oma skill eval` 不去假定某个 skill 有用，而是在留出任务上对比 treatment 与 baseline，测出实际的效用增益。`oma skill optimize` 只保留那些能提高实测增益的改动。 | [skill-eval 指南](../web/docs/guide/skill-eval.md) |
+
+> **没有会话，就没有留痕。** Stop hook 会把门禁事件记在 persistent workflow 启动时开启的那个 OMA 会话下。如果这个会话没能创建（stderr 中会出现 `[oma] L1 session activation failed`），失败的门禁仍然会阻止会话终止，但不会写下任何一行 `gate.failed`。在依赖这份留痕或拿它做演示之前，先确认 `oma state list` 显示有一个处于激活状态的会话。
 
 预算也用同一套办法约束。`session.quota_cap` 会限定 token 数、spawn 次数和单厂商开销，任何一个维度超标，编排器都会拒绝下一次 spawn。当挂钟时间预算耗尽时，Stop hook 也会诚实地停下来，把部分完成状态记入事件日志，而不是假装已经收工。
 
