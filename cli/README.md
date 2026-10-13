@@ -72,7 +72,7 @@ Pick a preset and you're ready:
 <sub>native + adapter</sub>
 </td>
 <td align="center">
-<a href="https://antigravity.google"><img src="./docs/assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<a href="https://antigravity.google"><img src="https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
 <strong>Antigravity</strong><br/>
 <sub>native SSOT</sub>
 </td>
@@ -94,17 +94,17 @@ Pick a preset and you're ready:
 </tr>
 <tr>
 <td align="center">
-<a href="https://pi.dev/"><img src="./docs/assets/agents/pi.svg" alt="Pi" width="48" height="48" /></a><br/>
+<a href="https://pi.dev/"><img src="https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/agents/pi.svg" alt="Pi" width="48" height="48" /></a><br/>
 <strong>Pi</strong><br/>
 <sub>native-compatible</sub>
 </td>
 <td align="center">
-<a href="https://github.com/anomalyco/opencode"><img src="./docs/assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>
+<a href="https://github.com/anomalyco/opencode"><img src="https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>
 <strong>OpenCode</strong><br/>
 <sub>native-compatible</sub>
 </td>
 <td align="center">
-<a href="https://ampcode.com"><img src="./docs/assets/agents/amp.png" alt="Amp" width="48" height="48" /></a><br/>
+<a href="https://ampcode.com"><img src="https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/agents/amp.png" alt="Amp" width="48" height="48" /></a><br/>
 <strong>Amp</strong><br/>
 <sub>native-compatible</sub>
 </td>
@@ -114,19 +114,19 @@ Pick a preset and you're ready:
 <sub>symlinked skills</sub>
 </td>
 <td align="center">
-<a href="https://grok.x.ai"><img src="./docs/assets/agents/grok.png" alt="Grok Build" width="48" height="48" /></a><br/>
+<a href="https://grok.x.ai"><img src="https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/agents/grok.png" alt="Grok Build" width="48" height="48" /></a><br/>
 <strong>Grok Build</strong><br/>
 <sub>native hooks</sub>
 </td>
 <td align="center">
-<a href="https://kiro.dev"><img src="./docs/assets/agents/kiro.png" alt="Kiro CLI" width="48" height="48" /></a><br/>
+<a href="https://kiro.dev"><img src="https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/agents/kiro.png" alt="Kiro CLI" width="48" height="48" /></a><br/>
 <strong>Kiro CLI</strong><br/>
 <sub>native hooks + agents</sub>
 </td>
 </tr>
 </table>
 
-<p align="center"><sub><a href="./docs/SUPPORTED_AGENTS.md">& more</a></sub></p>
+<p align="center"><sub><a href="https://github.com/first-fluke/oh-my-agent/blob/main/docs/SUPPORTED_AGENTS.md">& more</a></sub></p>
 
 ## Your Engineering Team
 
@@ -139,7 +139,6 @@ Instead of one AI doing everything (and getting confused halfway through), oh-my
 | **oma-brainstorm** | Explores ideas with you before you commit to building. |
 | **oma-db** | Designs your schema, migrations, indexes, and vector stores. |
 | **oma-debug** | Finds the root cause, fixes the bug, and writes a regression test. |
-| **oma-deepsec** | Scans your code for security holes and blocks risky pull requests. |
 | **oma-design** | Builds design systems with tokens, accessibility, and responsive layouts. |
 | **oma-dev-workflow** | Automates your CI/CD, releases, and monorepo tasks. |
 | **oma-docs** | Checks your docs for broken references and flags ones a code change touched. |
@@ -152,6 +151,7 @@ Instead of one AI doing everything (and getting confused halfway through), oh-my
 | **oma-qa** | Reviews your code for OWASP security, performance, and accessibility issues. |
 | **oma-refactor** | Refactors code without changing its behavior, using hotspot targeting, characterization-test safety nets, and refactor-only commits. |
 | **oma-scm** | Manages your branches, merges, worktrees, and Conventional Commits. |
+| **oma-security** | Scans source, agent skills, and MCP components; tests deployed web apps and validates findings. |
 | **oma-search** | Routes each query to the best source and scores how much you can trust the result. |
 | **oma-tf-infra** | Provisions multi-cloud infrastructure with Terraform. |
 
@@ -185,14 +185,14 @@ Separate from the engineering team, oma ships content and research pipelines bui
 
 ### Orca IDE
 
-[OMA for Orca](integrations/orca/README.md) adds a sidebar panel and command-palette
+[OMA for Orca](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/orca/README.md) adds a sidebar panel and command-palette
 actions for project setup, review, debugging, verification, and local results.
 It uses your existing Orca agent terminal and project OMA installation. Requires
 Orca 1.4.197+ with experimental plugins enabled.
 
 ### DeepSeek Harness
 
-[OMA for DeepSeek Harness](integrations/dsh/README.md) connects project OMA checks
+[OMA for DeepSeek Harness](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/dsh/README.md) connects project OMA checks
 to DSH tool execution and turn completion through a Cordis plugin. DSH discovers
 the existing `.agents/skills` directly. The plugin ships executable JavaScript
 and requires no build. See the integration guide for installation, tested versions,
@@ -226,7 +226,7 @@ Or use slash commands for structured workflows:
 | 3 | `/ultrawork` | Builds your feature through five gated quality phases; every review runs in a fresh, isolated reviewer session (cross-context review) |
 | 3 | `/ralph` | Repeats `/ultrawork` until an independent verifier passes every criterion |
 | 4 | `/review` | Reviews your code for security, performance, and accessibility issues |
-| 4 | `/deepsec` | Runs a deep security scan and blocks risky pull requests |
+| 4 | `/security` | Scans security targets, validates findings, and applies CI gates |
 | 5 | `/debug` | Finds the root cause, fixes the bug, and writes a regression test |
 | 5 | `/docs` | Checks your docs for broken references and patches the ones your code changes touched |
 | 6 | `/scm` | Manages your branches, merges, and Conventional Commits |
