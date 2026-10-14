@@ -1,5 +1,12 @@
 # Changelog
 
+## [19.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v19.0.2...cli-v19.1.0) (2026-10-14)
+
+
+### Features
+
+* **cli:** generate the docs CLI registry and skill catalog ([3cc2c80](https://github.com/first-fluke/oh-my-agent/commit/3cc2c806a001d774f877f7b467de04468c7a6ed6))
+
 ## [19.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v19.0.1...cli-v19.0.2) (2026-10-13)
 
 
