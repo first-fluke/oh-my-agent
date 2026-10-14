@@ -132,10 +132,17 @@ export async function retro(
     return;
   }
 
-  console.clear();
-  p.intro(pc.bgMagenta(pc.white(" retro ")));
+  // JSON mode writes exactly one JSON document to stdout: no screen clear,
+  // banner, spinner, or notes, and errors go through runAction's JSON path.
+  const json = options.json === true;
+  if (!json) {
+    console.clear();
+    p.intro(pc.bgMagenta(pc.white(" retro ")));
+  }
 
-  const s = p.spinner();
+  const s = json
+    ? { start: (_msg?: string) => {}, stop: (_msg?: string) => {} }
+    : p.spinner();
   s.start("Fetching origin...");
   fetchOrigin(cwd);
   s.stop("Origin fetched");
@@ -155,16 +162,7 @@ export async function retro(
     const previousSnapshot = analyze(cwd, previous);
     s.stop("Previous window analyzed");
 
-    if (
-      currentSnapshot.metrics.commits === 0 &&
-      previousSnapshot.metrics.commits === 0
-    ) {
-      p.note(pc.yellow("No commits found in either window."), "Empty");
-      p.outro(pc.dim("Try a wider window: oma retro compare 30d"));
-      return;
-    }
-
-    if (options.json) {
+    if (json) {
       console.log(
         JSON.stringify(
           { current: currentSnapshot, previous: previousSnapshot },
@@ -172,6 +170,15 @@ export async function retro(
           2,
         ),
       );
+      return;
+    }
+
+    if (
+      currentSnapshot.metrics.commits === 0 &&
+      previousSnapshot.metrics.commits === 0
+    ) {
+      p.note(pc.yellow("No commits found in either window."), "Empty");
+      p.outro(pc.dim("Try a wider window: oma retro --compare 30d"));
       return;
     }
 
@@ -204,6 +211,7 @@ export async function retro(
   try {
     window = parseTimeWindow(windowArg);
   } catch (e) {
+    if (json) throw e;
     p.note(
       [
         "Usage: oma retro [window]",
@@ -228,14 +236,14 @@ export async function retro(
   const harnessSignals = collectHarnessSignals(cwd, window.days);
   s.stop(`Analysis complete (${snapshot.metrics.commits} commits)`);
 
-  if (snapshot.metrics.commits === 0) {
-    p.note(pc.yellow("No commits found in this window."), "Empty");
-    p.outro(pc.dim("Try a wider window: oma retro 30d"));
+  if (json) {
+    console.log(JSON.stringify({ ...snapshot, harnessSignals }, null, 2));
     return;
   }
 
-  if (options.json) {
-    console.log(JSON.stringify({ ...snapshot, harnessSignals }, null, 2));
+  if (snapshot.metrics.commits === 0) {
+    p.note(pc.yellow("No commits found in this window."), "Empty");
+    p.outro(pc.dim("Try a wider window: oma retro 30d"));
     return;
   }
 
