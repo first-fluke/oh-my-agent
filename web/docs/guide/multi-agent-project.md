@@ -25,11 +25,21 @@ If your task fits entirely within one domain, use the specific agent directly in
 
 The recommended multi-agent workflow follows a strict four-step pipeline.
 
+```mermaid
+flowchart LR
+  plan["/plan"] --> planFile["plan-{sessionId}.json"]
+  planFile -->|"loaded by"| orch["/orchestrate (automated)"]
+  plan -.->|"or run"| work["/work (step-by-step; its PM step writes the plan)"]
+  work --> spawn["Agents per priority tier (native subagents or oma agent spawn)"]
+  orch --> spawn
+  spawn --> review["/review (QA)"]
+```
+
 ### Step 1: /plan for requirements and task decomposition
 
 The `/plan` workflow runs inline (no subagent spawning) and produces a structured plan.
 
-```
+```text
 /plan
 ```
 
@@ -38,7 +48,7 @@ What happens:
 1. **Gather requirements**: The PM agent asks about target users, core features, constraints, and deployment targets.
 2. **Analyze technical feasibility**: Uses the configured code-intelligence provider to scan the existing codebase for reusable code and architecture patterns. Native search is only for paths outside the project or ignored paths.
 3. **Define API contracts**: Designs endpoint contracts (method, path, request/response schemas, auth, error responses) and saves them to `.agents/results/api-contracts/` (run artifacts), promoting durable specs to `docs/plans/contracts/` when committed.
-4. **Decompose into tasks**: Breaks the project into actionable tasks, each with assigned agent, title, acceptance criteria, priority (P0-P3), and dependencies.
+4. **Decompose into tasks**: Breaks the project into actionable tasks, each with assigned agent, title, acceptance criteria, priority tier (1 runs first), and dependencies.
 5. **Review plan with user**: Presents the full plan for confirmation. The workflow will not proceed without explicit user approval.
 6. **Save plan**: Writes the approved plan to `.agents/results/plan-{sessionId}.json` and records a summary in memory.
 
@@ -58,31 +68,31 @@ You have two execution paths:
 
 #### /work: interactive multi-agent pipeline
 
-```
+```text
 /work
 ```
 
 1. Analyzes the user's request and identifies involved domains.
-2. Runs the PM agent for task decomposition (creates plan-\{sessionId\}.json).
+2. Runs the PM agent for task decomposition (creates `plan-{sessionId}.json`).
 3. Presents plan for user confirmation. **Blocks until confirmed.**
-4. Spawns agents by priority tier (P0 first, then P1, etc.), with each same-priority task running in parallel.
+4. Spawns agents by priority tier (tier 1 first, then tier 2, and so on), with each same-tier task running in parallel.
 5. Monitors agent progress via memory files.
 6. Runs QA agent review on all deliverables (OWASP Top 10, performance, accessibility, code quality).
 7. If QA finds CRITICAL or HIGH issues, re-spawns the responsible agent with QA findings. Repeats up to 2 times per issue. If the same issue persists, activates the **Exploration Loop**: generates 2-3 alternative approaches, spawns the same agent type with different hypothesis prompts in separate workspaces, QA scores each, and the best result is adopted.
 
 #### /orchestrate: automated parallel execution
 
-```
+```text
 /orchestrate
 ```
 
 1. Loads `.agents/results/plan-{sessionId}.json`, creating a plan inline through `/plan` when no usable plan exists.
 2. Initializes a session with ID format `session-YYYYMMDD-HHMMSS`.
-3. Creates `orchestrator-session.md` and `task-board.md` in the memory directory.
+3. Creates `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` in the memory directory.
 4. Spawns agents per priority tier, each getting: task description, API contracts, and context.
-5. Monitors progress by polling `progress-{agent}.md` files.
+5. Monitors progress by polling `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files.
 6. Verifies each completed agent via `verify.sh`. PASS (exit 0) accepts; FAIL (exit 1) re-spawns with error context (max 2 retries); persistent failure triggers the Exploration Loop.
-7. Collects all `result-{agent}.md` files and compiles a final report.
+7. Collects all `result-{agentId}-{taskId}-{runId}-{sessionId}.md` files and compiles a final report.
 
 ### Step 3: agent spawn for CLI-Level agent management
 
@@ -92,7 +102,7 @@ The `agent spawn` command is the low-level mechanism that workflows call interna
 oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-**All flags:**
+**All flags** (`oma agent spawn --help`):
 
 | Flag | Description |
 |:-----|:-----------|
@@ -101,6 +111,8 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 | `--task-id <id>` | Binds the spawn to a task in the session plan; defaults to the agent ID. |
 | `--isolation worktree` | Creates a git worktree for the spawn; the default is no extra isolation. |
 | `--read-only` | Restricts the child to inspection tools and suppresses auto-approve flags. |
+| `--resumed-from <run-id>` | Links a retry to its preceding run. |
+| `--fallback-vendors <vendors>` | Ordered, comma-separated fallback vendor chain for this spawn. |
 
 **Vendor resolution order** (first match wins):
 
@@ -116,7 +128,7 @@ See [Per-Agent Models](./per-agent-models.md) for configuration details.
 
 ### Step 4: /review for QA verification
 
-```
+```text
 /review
 ```
 
@@ -126,7 +138,7 @@ The review workflow runs a full QA pipeline:
 2. **Automated security checks**: Runs `npm audit`, `bandit`, or equivalent.
 3. **OWASP Top 10 manual review**: Injection, broken auth, sensitive data, access control, misconfig, insecure deserialization, vulnerable components, insufficient logging.
 4. **Performance analysis**: N+1 queries, missing indexes, unbounded pagination, memory leaks, unnecessary re-renders, bundle sizes.
-5. **Accessibility**: WCAG 2.1 AA, including semantic HTML, ARIA, keyboard nav, color contrast, focus management.
+5. **Accessibility**: WCAG 2.2 AA, including semantic HTML, ARIA, keyboard nav, color contrast, focus management.
 6. **Code quality**: Naming, error handling, test coverage, TypeScript strict mode, unused imports, async/await patterns.
 7. **Report**: Findings categorized as CRITICAL / HIGH / MEDIUM / LOW with `file:line`, description, and remediation code.
 
@@ -138,7 +150,7 @@ For large scopes, the workflow delegates to the QA agent subagent. With the `--f
 
 Every orchestration session gets a unique identifier in the format:
 
-```
+```text
 session-YYYYMMDD-HHMMSS
 ```
 
@@ -146,9 +158,9 @@ Example: `session-20260324-143052`
 
 The session ID is used to:
 
-- Name memory files (`orchestrator-session.md`, `task-board.md`)
-- Track agent processes via PID files in the system temp directory (`/tmp/subagent-{session-id}-{agent-id}.pid`)
-- Correlate log files (`/tmp/subagent-{session-id}-{agent-id}.log`)
+- Name memory files (`orchestrator-session-{sessionId}.md`, `task-board-{sessionId}.md`)
+- Track agent processes via PID files in the OS temp directory (`$TMPDIR` on macOS, usually `/tmp` on Linux, `%TEMP%` on Windows): `subagent-{session-id}-{agent-id}.pid`
+- Correlate log files in the same directory: `subagent-{session-id}-{agent-id}.log`
 - Group results in `.agents/results/parallel-{timestamp}/`
 
 The session ID is generated at Step 2 of `/orchestrate` and passed to all spawned agents. This ensures all agents, logs, and PID files for a single run can be traced back to one session.
@@ -248,7 +260,7 @@ In the ultrawork workflow, these translate into explicit **phase gates** (PLAN_G
 ### Single agent spawn
 
 ```bash
-# Spawn backend agent with Gemini (default)
+# Spawn backend agent; the vendor comes from the resolution order above
 oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Spawn frontend agent with Claude, explicit workspace
@@ -328,11 +340,11 @@ Trying to manually merge agent outputs instead of letting the verification and Q
 
 ### 6. Over-parallelization
 
-Running P1 tasks before P0 tasks complete. Priority tiers exist because P1 tasks often depend on P0 outputs. The workflows enforce tier ordering automatically.
+Running tier 2 tasks before tier 1 tasks complete. Priority tiers exist because later-tier tasks often depend on earlier-tier outputs. The workflows enforce tier ordering automatically.
 
 ### 7. Skipping verification
 
-Using `agent spawn` directly without recording the result contract afterward. Run the task's pinned checks and finish a structured claim; see [Agent results and resume](/docs/guide/agent-results-and-resume). The workflow's verification step then catches failed checks and scope drift before results are reused.
+Using `agent spawn` directly without recording the result contract afterward. Run the task's pinned checks and finish a structured claim; see [Agent results and resume](./agent-results-and-resume.md). The workflow's verification step then catches failed checks and scope drift before results are reused.
 
 ---
 
@@ -365,3 +377,13 @@ A multi-agent project is complete when:
 - Build succeeds and all tests pass.
 - The final report is written to memory and presented to the user.
 - User gives final approval (in `/work` and ultrawork's SHIP_GATE).
+
+---
+
+## Next steps
+
+- Watch the run: [Dashboard Monitoring](./dashboard-monitoring.md)
+- Audit or resume results: [Results and Resume](./agent-results-and-resume.md)
+- Something failed: [Troubleshooting](./troubleshooting.md)
+- Pin vendors and models per agent: [Per-Agent Models](./per-agent-models.md)
+- Terms such as [plan](../getting-started/glossary.md#plan) and [persistent workflow](../getting-started/glossary.md#persistent-workflow): [Glossary](../getting-started/glossary.md)

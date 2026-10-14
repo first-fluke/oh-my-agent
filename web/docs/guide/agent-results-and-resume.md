@@ -8,7 +8,36 @@ description: Record agent work with verifiable claims, inspect native context, a
 
 OMA treats an agent result as a small evidence record, not just the process exit code. A run records the task and session IDs, the workspace fingerprint, verification receipts, changed files, unresolved work, and artifact hashes. This lets a coordinator reuse a completed task only while its acceptance contract and inputs still match.
 
-Use the lifecycle directly when you are running a native agent. Workflows and `oma agent spawn` create the same records for you and leave the managed run’s finalization to the parent coordinator.
+Use the lifecycle directly when you are running a native agent. Workflows and `oma agent spawn` create the same records for you and leave the managed run’s finalization to the parent coordinator. For the terms used here, see [Run record and claim](../getting-started/glossary.md#run-record-and-claim) and [Plan](../getting-started/glossary.md#plan) in the glossary.
+
+## Lifecycle at a glance
+
+| Step | Command | Records | Keep |
+| --- | --- | --- | --- |
+| 1. Contract | Edit `.agents/results/plan-SESSION_ID.json` | Task `acceptance_criteria` and `required_checks` | Session ID, task ID |
+| 2. Begin | `oma agent begin AGENT TASK SESSION_ID --workspace .` | Run record with status `running` | `runId`, `claimPath` |
+| 3. Context (optional) | `oma agent context AGENT --difficulty Medium` | Nothing | Prompt context |
+| 4. Verify | `oma agent verify RUN_ID --required` | One receipt per check | Exit code |
+| 5. Claim | Write JSON at `claimPath` | Claim file | Nothing |
+| 6. Finish | `oma agent finish RUN_ID CLAIM_PATH` | Final status | `status` |
+| 7. Recover | `oma agent resume SESSION_ID --dry-run`, then without `--dry-run` | Recovery checkpoint and session lease | Per-task status |
+
+`oma agent spawn` and `oma agent parallel` perform steps 2 and 6 for you: the parent process begins the run and finalizes it when the child exits.
+
+```mermaid
+flowchart TD
+  plan["Task contract in plan-SESSION_ID.json"] --> begin["oma agent begin, or spawn"]
+  begin --> running(["running"])
+  running -->|"oma agent verify"| running
+  running --> claim["Claim written at claimPath"]
+  claim --> finish["oma agent finish, or the spawning parent"]
+  finish -->|"claim completed, current receipts, nothing unresolved"| completed(["completed"])
+  finish -->|"unresolved items, missing checks or decisions, invalid claim"| partial(["partial"])
+  finish -->|"claim reports blocked"| blocked(["blocked"])
+  finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
+```
+
+A claim can also report `partial` or `failed` directly. Finish never upgrades a claim: it downgrades a `completed` claim whose evidence does not hold, and a non-zero exit code makes any run `failed`.
 
 ## Start a native run
 
@@ -105,7 +134,7 @@ before dispatch:
 Omit this field for tasks that follow an existing decision. Requirements are
 pinned with the task contract and cannot be removed or changed after dispatch.
 List suggested subjects for an agent with
-`oma state required-decisions --agent db-engineer --json`. These subjects are
+`oma state decisions list --agent db-engineer --json`. These subjects are
 choices to use when relevant; the catalog does not make every choice mandatory.
 
 Write the claim file at the exact path printed by `begin`:
@@ -168,7 +197,20 @@ First ask what OMA would do:
 oma agent resume SESSION_ID --dry-run
 ```
 
-The report classifies each task as `reused`, `ready`, `running`, or `blocked`, and includes the reason. A valid completed receipt is reused only when its contract, inputs, artifact hashes, and dependency evidence remain current. A live managed process, or a native run without liveness evidence, is not duplicated.
+The report classifies each task as `reused`, `ready`, `running`, or `blocked`, and includes the reason:
+
+```mermaid
+flowchart TD
+  task["Plan task and its latest run"] --> live{"Latest run still running, with a live or unknown process?"}
+  live -->|yes| running(["running"])
+  live -->|no| valid{"Completed evidence still current?"}
+  valid -->|yes| reused(["reused"])
+  valid -->|no| safe{"retry_policy safe, replayable prompt and agent, attempts left?"}
+  safe -->|yes| ready(["ready"])
+  safe -->|no| blocked(["blocked"])
+```
+
+A dependency that is not `reused` turns a dependent `reused` task back into `ready` (or `blocked` when it cannot be replayed), and a `ready` task whose dependency is `blocked` or `running` becomes `blocked`. A valid completed receipt is reused only when its contract, inputs, artifact hashes, and dependency evidence remain current. A live managed process, or a native run without liveness evidence, is not duplicated.
 
 When the report is safe to execute, resume ready tasks in dependency order:
 
@@ -196,4 +238,9 @@ Resume starts a new attempt; it does not restore the interrupted model conversat
 | The plan or inputs changed | Start a new run after the plan is stable. | The new run snapshots the new contract; old evidence is not reused. |
 | A task needs a decision | Record it as `blocked` with an explanation. | Resume leaves it blocked until the decision and prompt are available. |
 
-For parse errors, missing vendor tools, dashboard state, schedules, and stale evaluation data, see [Troubleshooting](/docs/guide/troubleshooting).
+## Next steps
+
+- Error messages from `begin`, `verify`, `finish`, and `resume`: [Troubleshooting](./troubleshooting.md#find-your-error)
+- Parse errors, missing vendor tools, dashboard state, schedules, and stale evaluation data: [Troubleshooting](./troubleshooting.md)
+- Watch managed runs while they work: [Dashboard Monitoring](./dashboard-monitoring.md)
+- Define plans with task contracts: [Multi-Agent Projects](./multi-agent-project.md)

@@ -9,7 +9,7 @@ The core advantage of oh-my-agent is running multiple specialized agents simulta
 
 ---
 
-## agent:spawn: single agent spawning
+## oma agent spawn: single agent spawning {#agentspawn-single-agent-spawning}
 
 ### Basic syntax
 
@@ -93,7 +93,7 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel: inline parallel mode
+## oma agent parallel: inline parallel mode {#agentparallel-inline-parallel-mode}
 
 For a cleaner syntax that handles background process management automatically:
 
@@ -120,10 +120,10 @@ oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-The `--inline` flag parses each `agent:task` argument. Add a third colon-delimited path (`agent:task:workspace`) when the task needs a specific workspace. Without `--inline`, pass a YAML task file with `{tasks: [{id?, agent, task, workspace?}]}`. `--session` associates parallel results with an existing session.
+The `--inline` flag parses each `agent:task` argument. Add a third colon-delimited path (`agent:task:workspace`) when the task needs a specific workspace. Without `--inline`, pass a YAML task file with `{tasks: [{id?, agent, task, workspace?}]}`. `--session-id` binds the results to an existing session and the task IDs from the YAML file.
 
 ---
 
@@ -174,7 +174,8 @@ The spawn mechanism varies by IDE/CLI:
 | **CLI Fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Evidence-backed result poll |
 
 When running inside Claude Code, the workflow uses the `Agent` tool directly:
-```
+
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
@@ -210,7 +211,7 @@ The dashboard watches `.agents/state/memories/` for real-time updates. It refres
 
 ```bash
 oma dashboard web
-# Opens http://localhost:9847
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 Features:
@@ -224,20 +225,11 @@ Features:
 
 Use 3 terminals for optimal visibility:
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard terminal         │   Agent spawn        │
-│   (live monitoring)     │   commands           │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   Terminal 3:                                  │
-│   Test/build logs, git operations              │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| Terminal | Run | Purpose |
+|----------|-----|---------|
+| 1 | `oma dashboard terminal` | Live monitoring |
+| 2 | `oma agent spawn …` or `oma agent parallel …` | Agent spawn commands |
+| 3 | Tests, build logs, git | Verification and git operations |
 
 ### Checking individual agent status
 
@@ -321,19 +313,33 @@ oma agent spawn backend "Implement JWT auth API with registration, login, refres
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: Monitor in a separate terminal
-# Terminal 2:
-oma dashboard terminal
-
-# Step 4: Wait for all implementation agents
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: Run QA review
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: If QA finds issues, re-spawn specific agents with fixes
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: Re-run QA to verify fixes
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+Run the dashboard in a second terminal while the agents work. It keeps running until you press Ctrl+C, so do not paste it into the same shell as the spawn commands:
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## See also
+
+- [Agent results and resume](../guide/agent-results-and-resume.md): run receipts, claims, and `oma agent resume`
+- [Dashboard monitoring](../guide/dashboard-monitoring.md)
+- [Multi-agent project guide](../guide/multi-agent-project.md)
+- [Per-agent models](../guide/per-agent-models.md)
+- [The /orchestrate workflow](./workflows.md#orchestrate)
+- [CLI commands reference](../cli-interfaces/commands.md)

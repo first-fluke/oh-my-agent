@@ -15,7 +15,7 @@ By default, `oma install` scopes everything to the current project directory: th
 | SSOT location | `<cwd>/.agents/` | `~/.oma/.agents/` |
 | Vendor configs | `<cwd>/.claude/`, `<cwd>/.codex/`, etc. | `~/.claude/`, `~/.codex/`, etc. |
 | Lock file | `<cwd>/.agents/_install.lock` | `~/.oma/.agents/_install.lock` |
-| Metadata | `<cwd>/.agents/_version.json (schemaVersion=2)` | `~/.oma/.agents/_version.json (schemaVersion=2)` |
+| Metadata | `<cwd>/.agents/skills/_version.json` (schemaVersion 2) | `~/.oma/.agents/skills/_version.json` (schemaVersion 2) |
 | Use case | Per-project customization | Personal default across all projects |
 | oma-config.yaml scope | Project-specific | User-wide baseline |
 
@@ -24,17 +24,17 @@ Both modes can coexist. `oma doctor` reports both installs if present and flags 
 After a successful global install, verify the user-rooted files and resolved profile:
 
 ```bash
-oma doctor --json
-oma doctor --profile
+oma doctor --global --json
+oma doctor --global --profile
 ```
 
-The first command reports install and vendor health; the profile command shows the model plan used by agents. Run these from any project when the global install is the one you want to inspect.
+The first command reports install and vendor health; the profile command shows the model plan used by agents. Keep `--global` (or `-g`): without it, both commands inspect the project in the current directory, with that project's configuration overlaid on the global defaults.
 
 ## First-run setup
 
 The first time you run `oma install --global` on a machine, the install shows an explanatory note before proceeding:
 
-```
+```text
 This is your first global install of oh-my-agent.
 Scope:
   - SSOT: ~/.oma/.agents/  (all skills, workflows, rules)
@@ -49,7 +49,7 @@ Confirm to continue. The install then follows the same interactive flow as a pro
 
 After a successful install, the next steps are shown:
 
-```
+```text
 1. Open your project in your IDE
 2. Type /orchestrate to spawn a multi-agent workflow
 3. Run `oma doctor` if anything looks off
@@ -61,7 +61,7 @@ After a successful install, the next steps are shown:
 
 `oma install` (in any mode) exits immediately when run under `sudo`:
 
-```
+```text
 Refusing to install under sudo. Re-run as the target user (without sudo) — oma writes to your HOME and runs as your user.
 ```
 
@@ -71,17 +71,17 @@ Run the command as your normal user without `sudo`.
 
 Running `oma install --global` inside a CI pipeline modifies the CI runner's HOME directory. This is usually undesirable. If you do need it (e.g., a bootstrapping pipeline), oma emits a warning:
 
-```
-Running `oma install --global` in CI. This will modify the CI user's HOME.
+```text
+Running `oma install --global` in CI. This will modify the CI user's HOME. Proceeding because --yes / non-interactive mode is set.
 ```
 
-The install proceeds if `--yes` / `OMA_YES=1` is set. Without it, the warning is shown and the install continues interactively (which will hang in most CI setups).
+The warning appears when `CI` is `true` or `1`. Those values already make the install non-interactive, so it proceeds with defaults and does not wait for input. Outside CI, `--yes` or `OMA_YES=1` gives the same non-interactive behavior.
 
 ### WSL: Linux HOME vs Windows USERPROFILE
 
 When oma detects it is running inside Windows Subsystem for Linux, it prints:
 
-```
+```text
 WSL detected: your $HOME (/home/<user>) is the WSL Linux home and is distinct
 from your Windows %USERPROFILE%. oma will install only to the WSL HOME.
 If you want a Windows-side install, re-run this command from PowerShell.
@@ -95,7 +95,7 @@ A WSL install and a PowerShell install are independent. If you want global cover
 
 If you run `oma install` (without `--global`) while your current directory is your HOME, oma warns you:
 
-```
+```text
 You're running oma in your HOME directory without --global. This will scatter
 files in ~/. Are you sure?
 ```
@@ -126,7 +126,7 @@ oma uninstall --global --dry-run
 oma uninstall --global
 ```
 
-The uninstall command separates oma-owned files from user-owned files. User-owned content (oma-config.yaml, mcp.json, custom skills without the `<!-- oma:generated -->` marker) is never deleted.
+The uninstall command separates oma-owned files from user-owned files. It removes only the skills recorded as OMA-managed in `managed-skills.json` under `.agents/state/`; the `<!-- oma:generated -->` marker identifies generated Copilot prompt files. User-owned content (`oma-config.yaml`, `mcp.json`, and skills not recorded as managed) is never deleted. Run `--dry-run` first to see the exact list.
 
 To uninstall a project install, omit `--global`:
 
@@ -148,19 +148,20 @@ OMA_HOME=/tmp/oma-test oma install --global
 
 ## Global storage layout
 
-Let `H` be `OMA_HOME`, defaulting to `~/.oma`:
+Global data lives under `~/.oma` by default. When `OMA_HOME` is set, replace `~/.oma` with its value:
 
 | Data | Location |
 |---|---|
-| Global definitions, config, install metadata | `H/.agents/` |
-| Schedule manifest, captured environment, run logs | `H/schedule/` |
-| Global backups | `H/backup/` |
-| Serena registry, locks, logs | `H/state/serena/` |
-| Vault key-name index | `H/state/vault-index.json` |
-| Profiles, L1 sessions, project runtime | `H/u/<profile>/` |
+| Global definitions, config, install metadata | `~/.oma/.agents/` |
+| Schedule manifest, captured environment, run logs | `~/.oma/schedule/` |
+| Global backups | `~/.oma/backup/` |
+| Serena registry, locks, logs | `~/.oma/state/serena/` |
+| Vault key-name index | `~/.oma/state/vault-index.json` |
+| Profiles, L1 sessions, project runtime | `~/.oma/u/<profile>/` (`<OMA_STATE_HOME>/u/<profile>/` when `OMA_STATE_HOME` is set) |
 
 Global config supplies defaults. The nearest project `.agents/oma-config.*` and
 its local overlay override them; different ancestor project roots are not merged.
+See [Configuration loading](./oma-config-semantics.md#precedence-table) for the full order.
 A project selecting `semantic_memory: none` keeps memory disabled even when the
 global config selects AgentMemory.
 
@@ -169,7 +170,7 @@ global config selects AgentMemory.
 The home migration copies OMA-owned data from `~/.agents/` and `~/.config/oma/`
 into the new layout. Originals remain, except verified OMA-owned skill directories
 converted to discovery links: their original content is archived under
-`H/backup/legacy-global-skills/` before the old path becomes a link to the migrated
+`~/.oma/backup/legacy-global-skills/` before the old path becomes a link to the migrated
 skill. Existing destination files are not overwritten; conflicts and data in use
 are reported for retry. Vault indexes
 merge key names, without moving secret values out of the OS keychain. User
@@ -188,3 +189,9 @@ Project install/update use the unified roots without migrating unrelated global
 data. The migration does not change OS job registrations; run `oma schedule sync`
 after migration if schedules exist. Active services or runners can defer data;
 finish those processes and rerun the migration.
+
+## See also
+
+- [Configuration loading](./oma-config-semantics.md): how global, project, and local config files merge
+- [Existing project integration](./integration.md): project-mode install, verification, and rollback
+- [Automated updates](./automated-updates.md): run `oma update` from CI

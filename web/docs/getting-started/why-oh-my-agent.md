@@ -5,7 +5,7 @@ description: Choose oh-my-agent when you need repository-owned agent skills, wor
 
 # Why oh-my-agent
 
-oh-my-agent adds a repository-owned layer around the agent CLIs your team already uses. The `.agents/` directory stores skills, workflows, agent definitions, rules, and model configuration. Vendor-native files are generated from that source of truth, so the behavior can be reviewed and changed with the project.
+oh-my-agent adds a repository-owned layer around the agent CLIs your team already uses. The `.agents/` directory stores [skills](./glossary.md#skill), [workflows](./glossary.md#workflow), [agent definitions](./glossary.md#agent-definition), rules, and model configuration. Vendor-native files are generated from that [source of truth](./glossary.md#ssot), so the behavior can be reviewed and changed with the project.
 
 ## Choose it when the repository needs the coordination layer
 
@@ -22,7 +22,7 @@ If a project uses one host and does not need shared skills, workflows, or vendor
 
 Run `oma verify agent <agent-type> --workspace <path>` when you want the checks for a backend, frontend, mobile, QA, debug, or planning role. The verifier combines static inspections with configured commands such as tests, type checks, SQL checks, or `flutter analyze`; see [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). The report shows the result of each check. Passing these checks does not establish that a feature meets its product or domain requirements, so the task's acceptance criteria still need review.
 
-`/ralph` adds a separate judge phase when you select that workflow. It rechecks the declared criteria across iterations and records the workflow artifacts; it is not a gate that runs for every ordinary prompt. Skill loading also does not start every workflow or verification command.
+`/ralph` adds a separate [judge](./glossary.md#judge) phase when you select that workflow. It rechecks the declared criteria across iterations and records the workflow artifacts; it is not a gate that runs for every ordinary prompt. Skill loading also does not start every workflow or verification command.
 
 ## Dispatch remains visible
 
@@ -37,3 +37,11 @@ Optional coordination controls are documented in the [session quota cap](../guid
 OMA gives a team a shared place to define routing, execution steps, checks, and output files. In return, the team has to keep that repository configuration current and decide which workflows or verification commands belong in its acceptance contract. That trade-off is useful when consistency across contributors matters more than the smallest possible install.
 
 For the original positioning discussion, see [issue #155](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589).
+
+## Next steps
+
+- [Quick Start](./quick-start.md): install, check the setup, and run one scoped task
+- [Important Defaults](./important-defaults.md): what the installer turns on and how to change it
+- [Installation](./installation.md#presets): pick a skill preset that covers the workflows you plan to use
+- [Workflows](../core-concepts/workflows.md): when to use `/work`, `/orchestrate`, `/ultrawork`, and `/ralph`
+- [Troubleshooting](../guide/troubleshooting.md): fixes for install, vendor, and hook problems

@@ -48,7 +48,7 @@ That is the minimal configuration. When an installed component changes, the acti
 | Input | Type | Required | Default | Description |
 |:------|:-----|:---------|:--------|:-----------|
 | `mode` | string | No | `"pr"` | How to apply changes. `"pr"` creates a pull request. `"commit"` pushes directly to the base branch. |
-| `base-branch` | string | No | `"main"` | Base branch for the PR (in `pr` mode) or the target branch for direct commits (in `commit` mode). |
+| `base-branch` | string | No | `"main"` | Base branch for the PR (in `pr` mode) or the target branch for direct commits (in `commit` mode). It does not change what is checked out; set `actions/checkout` `ref:` to the same branch. |
 | `force` | string | No | `"false"` | Pass `--force` to `oma update`. When `"true"`, overwrites user-customized config files (`oma-config.yaml`, `mcp.json`) and `stack/` directories. Normally these are preserved. |
 | `pr-title` | string | No | `"chore(deps): update oh-my-agent skills"` | Custom title for the pull request. Only used in `pr` mode. |
 | `pr-labels` | string | No | `"dependencies,automated"` | Comma-separated labels to add to the PR. Only used in `pr` mode. |
@@ -131,6 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: develop
           token: ${{ secrets.OH_MY_AGENT_PAT }}
 
       - uses: first-fluke/oma-update-action@v1
@@ -142,7 +143,7 @@ jobs:
 ```
 
 **What happens:**
-- Checks out `develop` branch using a PAT.
+- Checks out `develop` using a PAT. `ref: develop` is required: `base-branch` only sets the push target, and the action pushes whatever `HEAD` the checkout produced.
 - Runs `oma update --ci`.
 - If changes exist, configures git as `github-actions[bot]` and commits directly to `develop`.
 - The PAT ensures the commit triggers any workflows that listen for pushes on `develop`.
@@ -226,7 +227,18 @@ jobs:
 
 ## How it works under the hood
 
-The action is a [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) defined in `action/action.yml`. It executes 4 steps:
+The action is a [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) defined in `action/action.yml`. It first validates that `mode` is `pr` or `commit`, then runs the steps below and finishes with a pull request or a direct commit:
+
+```mermaid
+flowchart TD
+  validate["Validate inputs: mode is pr or commit"] --> bun["Setup Bun"]
+  bun --> install["bun install -g oh-my-agent"]
+  install --> update["oma update --ci (plus --force when force is true)"]
+  update --> changes{"Changes in .agents/ or .claude/?"}
+  changes -->|no| noop(["updated=false"])
+  changes -->|"yes, mode: pr"| pr["peter-evans/create-pull-request@v8"]
+  changes -->|"yes, mode: commit"| commit["git add .agents/ .claude/, commit, push to base-branch"]
+```
 
 ### Step 1: setup Bun
 
@@ -246,13 +258,20 @@ Installs the CLI globally from the npm registry. This gives access to the `oma` 
 
 ### Step 3: run oma update
 
-```bash
-FLAGS="--ci"
-if [ "${{ inputs.force }}" = "true" ]; then
-  FLAGS="$FLAGS --force"
-fi
-oma update $FLAGS
+```yaml
+- name: Run oma update
+  shell: bash
+  env:
+    FORCE: ${{ inputs.force }}
+  run: |
+    FLAGS="--ci"
+    if [ "$FORCE" = "true" ]; then
+      FLAGS="$FLAGS --force"
+    fi
+    oma update $FLAGS
 ```
+
+Inputs reach the script through `env:` rather than `${{ }}` interpolation inside `run:`, which keeps an input value from being executed as shell code.
 
 The `--ci` flag runs the update in non-interactive mode (skips all prompts, outputs plain text instead of spinner animations). The `--force` flag, when enabled, overwrites user-customized config files.
 
@@ -265,7 +284,7 @@ What `oma update --ci` does internally:
 5. Preserves user-customized files (unless `--force`): `oma-config.yaml`, `mcp.json`, and stack directories.
 6. Copies new files over the existing `.agents/` directory.
 7. Restores preserved files.
-8. Updates vendor adaptations (hooks, settings, agent definitions) for all vendors.
+8. Updates vendor adaptations (hooks, settings, agent definitions) for the vendors in the config's `vendors:` list (an empty list means none). Without a `vendors:` list, it updates only vendors whose project directories already exist.
 9. Refreshes CLI symlinks.
 
 The action invokes `oma update --ci` without `--with-new-skills`. That refreshes the installed skill set and reports newly available skills; run `oma update --with-new-skills` deliberately when a project should add new skills as part of the update.
@@ -275,17 +294,27 @@ The action invokes `oma update --ci` without `--with-new-skills`. That refreshes
 ```bash
 if [ -n "$(git status --porcelain .agents/ .claude/ 2>/dev/null)" ]; then
   echo "updated=true" >> "$GITHUB_OUTPUT"
-  VERSION=$(jq -r '.version' .agents/skills/_version.json)
-  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  if [ -f ".agents/skills/_version.json" ]; then
+    VERSION=$(jq -r '.version' .agents/skills/_version.json)
+    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  fi
 else
   echo "updated=false" >> "$GITHUB_OUTPUT"
 fi
 ```
 
-Checks if `oma update` actually changed any files in `.agents/` or `.claude/`. Sets the `updated` and `version` outputs accordingly.
+Checks if `oma update` actually changed any files in `.agents/` or `.claude/`. Sets the `updated` and `version` outputs accordingly. Changes outside those two directories (for example `.codex/` or `AGENTS.md`) do not set `updated=true`.
 
 After this, depending on the `mode` input:
 
 - **`pr` mode:** Uses `peter-evans/create-pull-request@v8` to create a PR on branch `chore/update-oh-my-agent`. The PR includes the new version number, a link to the oh-my-agent repo, and the configured labels. If the branch already exists (from a previous unclosed PR), it updates the existing PR.
 
 - **`commit` mode:** Configures git as `github-actions[bot]`, stages `.agents/` and `.claude/`, commits with the configured message, and pushes to the base branch.
+
+---
+
+## See also
+
+- [Global install](./global-install.md): `oma update --global` and CI caveats for user-wide installs
+- [Configuration reference](./configuration-reference.md#update-and-ownership-rules): which config files `oma update` preserves
+- [Existing project integration](./integration.md): the files `oma update` refreshes in a project

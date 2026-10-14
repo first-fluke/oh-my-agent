@@ -21,7 +21,7 @@ On Windows PowerShell, run:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-The interactive setup asks for the response language, CLI vendors, capability providers, model preset, project skill preset, and any stack variant. For a first run, keep the defaults, select the vendor you already use, and choose the project preset closest to the repository.
+The interactive setup asks for the response language, CLI vendors, [capability providers](./glossary.md#capability-provider), [model preset](./glossary.md#model-preset), project [skill preset](./glossary.md#skill-preset), and any stack variant. For a first run, keep the defaults, select the vendor you already use, and choose the project preset closest to the repository. See [Presets](./installation.md#presets) for each preset's skills and for [workflows that need skills outside a preset](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 If you already have `bun`, use the installer directly:
 
@@ -29,7 +29,7 @@ If you already have `bun`, use the installer directly:
 bunx oh-my-agent@latest
 ```
 
-The bootstrap scripts install into the current project. Use `oma install --global` when you want a HOME-level install; read [Installation](./installation.md) before mixing project and global installs.
+The bootstrap scripts install into the current project. Use `oma install --global` when you want a HOME-level install; read [Global Install](../guide/global-install.md) before mixing project and global installs.
 
 
 ## 2. Check the result
@@ -60,7 +60,7 @@ If `oma` is unavailable but Bun is installed, run the same check without the glo
 bunx oh-my-agent@latest doctor
 ```
 
-If the bare command is still missing, open a new shell or add the package manager's bin directory to `PATH`. If `oma doctor` reports an invalid configuration, fix the named field and run it again. Do not delete `.agents/oma-config.yaml` to recover: it is the user-owned configuration that preserves settings across updates.
+If the bare command is still missing, open a new shell or add the package manager's bin directory to `PATH`; [Installation](./installation.md#method-3-global-install) shows how to install the `oma` command. If `oma doctor` reports an invalid configuration, fix the named field and run it again. Do not delete `.agents/oma-config.yaml` to recover: it is the user-owned configuration that preserves settings across updates.
 
 ## 3. Run one small task
 
@@ -80,7 +80,7 @@ For a task that crosses API and UI boundaries, select `/work` or `/orchestrate` 
 
 OMA starts with `model_preset: auto`, Serena for code intelligence, Agent Memory for semantic memory, native web search, and telemetry disabled. Serena uses the shared `bridge` transport and automatically updates unless configured otherwise. Browser DevTools MCP is opt-in; a fresh interactive setup offers Aside first. See [Important Defaults](./important-defaults.md) for the consequences and the override keys.
 
-If a managed task stalls, start with `oma agent status <session-id> [agent-id]`, then inspect its receipt under `.agents/state/agent-runs/` and the injected structured claim path. Those records show the run, task, workspace, exit code, and verification status. Human-readable `result-*.md` and `progress-*.md` files under `.agents/state/memories/` add context when present. Rerun only the smallest failed command after confirming the run is no longer active. A persistent workflow remains active until it completes or you say `workflow done`; see [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) for state-file recovery.
+If a managed task stalls, start with `oma agent status <session-id> [agent-id]`, then inspect its receipt under `.agents/state/agent-runs/` and the injected structured claim path. Those records show the run, task, workspace, exit code, and verification status. Human-readable `result-*.md` and `progress-*.md` files under `.agents/state/memories/` add context when present. Rerun only the smallest failed command after confirming the run is no longer active. A [persistent workflow](./glossary.md#persistent-workflow) remains active until it completes or you say `workflow done`; see [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) for state-file recovery.
 
 ## Next steps
 
@@ -88,3 +88,4 @@ If a managed task stalls, start with `oma agent status <session-id> [agent-id]`,
 - [Installation](./installation.md) for presets, vendor setup, global installs, and updates
 - [Agents](../core-concepts/agents.md) for the 33 skill packages and dispatch roles
 - [Workflows](../core-concepts/workflows.md) for planning, parallel execution, QA, and persistent modes
+- [Troubleshooting](../guide/troubleshooting.md) when the install, a vendor, or a hook does not behave as expected

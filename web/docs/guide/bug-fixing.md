@@ -1,7 +1,7 @@
 ---
 title: "Guide: Bug Fixing"
 sidebar_label: Bug Fixing
-description: Structured seven-stage debugging workflow with severity triage, escalation signals, source-backed diagnosis, and post-fix validation.
+description: Structured seven-step debugging workflow with severity triage, escalation signals, source-backed diagnosis, and post-fix validation.
 ---
 
 # Guide: Bug Fixing
@@ -10,7 +10,7 @@ description: Structured seven-stage debugging workflow with severity triage, esc
 
 Use `/debug` (or say "fix bug", "fix error", "debug" in natural language) when you have a specific bug to diagnose and fix. The workflow provides a structured, reproducible approach to debugging that avoids the common trap of fixing symptoms instead of root causes.
 
-The debug workflow supports all configured vendors. Stages 1-5 run inline. Stage 6 (similar pattern scanning) may delegate to a `debug-investigator` subagent when the scan scope is broad (10+ files or multi-domain errors), followed by stage 7’s memory record.
+The debug workflow supports all configured vendors. Steps 1-5 run inline. Step 6 (similar pattern scanning) may delegate to a `debug-investigator` subagent when the scan scope is broad (10+ files or multi-domain errors), followed by step 7’s memory record.
 
 ---
 
@@ -74,7 +74,7 @@ Severity determines how the bug is handled and how quickly it should be fixed.
 - Mobile app crashes on launch for Android 14 devices.
 - Password reset emails are not sent (email service integration broken).
 
-**Debug approach:** Full seven-stage loop. QA review recommended after fix.
+**Debug approach:** Full seven-step loop. QA review recommended after fix.
 
 ### P2: medium (this sprint)
 
@@ -88,7 +88,7 @@ Severity determines how the bug is handled and how quickly it should be fixed.
 - API response time for /users endpoint is 8 seconds (should be under 1s).
 - Pagination shows "Page 1 of 0" when the list is empty.
 
-**Debug approach:** Full seven-stage loop. Include in QA regression suite.
+**Debug approach:** Full seven-step loop. Include in QA regression suite.
 
 ### P3: low (backlog)
 
@@ -106,9 +106,15 @@ Severity determines how the bug is handled and how quickly it should be fixed.
 
 ---
 
-## The seven-stage debug loop in detail
+## The seven-step debug loop in detail {#the-seven-stage-debug-loop-in-detail}
 
-The `/debug` workflow executes these stages in order. It uses the configured code-intelligence provider. Native search is only for paths outside the project or ignored paths when that provider is unavailable or times out.
+The `/debug` workflow executes these steps in order. It uses the configured code-intelligence provider. Native search is only for paths outside the project or ignored paths when that provider is unavailable or times out.
+
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
 
 ### Step 1: collect error information
 
@@ -187,7 +193,6 @@ Vendor-specific spawn methods:
 |:-------|:------------|
 | Claude Code | Agent tool with `.claude/agents/debug-investigator.md` |
 | Codex CLI | Model-mediated subagent request, results as JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / Fallback | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 All similar vulnerable locations are reported. Confirmed instances are fixed as part of the same session.
@@ -206,7 +211,7 @@ The workflow writes a memory file with:
 
 When triggering the debug workflow, you can provide a structured prompt:
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -233,7 +238,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 For simpler bugs, a shorter prompt works:
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -299,3 +304,11 @@ The debug workflow is complete when:
 4. The codebase has been scanned for similar patterns, and all confirmed instances are addressed.
 5. A bug report is recorded in memory with: symptom, root cause, fix applied, files changed, regression test location, and similar patterns found.
 6. All existing tests continue to pass after the fix.
+
+---
+
+## Next steps
+
+- The root cause crosses domains: [Multi-Agent Projects](./multi-agent-project.md)
+- Record or resume the fix run: [Results and Resume](./agent-results-and-resume.md)
+- Something in OMA itself failed: [Troubleshooting](./troubleshooting.md)

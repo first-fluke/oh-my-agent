@@ -12,7 +12,31 @@ The research itself runs on the upstream [**last30days**](https://github.com/mva
 
 ---
 
-## Always the latest engine — nothing to install
+## Quick start
+
+Ask your agent in plain language. Phrases such as "market research", "pain points", "competitor analysis", "voice of customer", or "trend detection" activate the `oma-market` skill:
+
+```text
+Find the top pain points developers report about VS Code remote containers in the last 30 days.
+Compare Cursor vs Windsurf community sentiment over the last 90 days, frameworks swot,5f.
+```
+
+| Steer with | Effect |
+|---|---|
+| "A vs B", or `--vs B` | Competitor intent: upstream comparison flow + SWOT + Porter's 5F |
+| `--days 7`, `30`, `90`, or `180` | Research window |
+| `--intent pain`, `trend`, `competitor`, or `discovery` | Overrides the automatic intent classification |
+| `--frameworks none`, or a list such as `swot,5f,pestel` | Turns framework sections off, or picks them |
+
+The result is one brief at `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`. Its first line is the engine badge (`🌐 last30days v<version> · synced <date>`), followed by ranked evidence clusters with links, the framework sections, and the engine footer that lists skipped sources.
+
+| Runs without keys | Needs the upstream setup wizard (keys or cookies) |
+|---|---|
+| Reddit, Hacker News, GitHub, Polymarket, arXiv, Techmeme, Digg, web | X, YouTube transcripts, TikTok, Instagram, and other keyed sources; skipped sources are listed in the footer |
+
+---
+
+## Always the latest engine (Python 3.12+ required) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
 # Illustrative output; the release tag, cache path, and Python version vary.
@@ -21,13 +45,14 @@ oma market resolve
 # reason:   last30days 3.21.1 via managed:v3.21.1 (current)
 # root:     ~/.cache/oma-market/last30days/v3.21.1
 # skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
 - Cache: `~/.cache/oma-market/last30days/<tag>/` + `state.json`.
 - Before each use, `resolve` asks GitHub for the latest release (throttled to once per `check_interval_min`, default 60 min), downloads a newer tag into its own directory (older tags pruned), and otherwise reuses the cache. Network failures reuse the cached copy and report `stale`.
-- Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14 … python3` on PATH (must be ≥ 3.12) → `uv python find '>=3.12'`. If none is found, `resolve` is not ok and prints the install hint; the skill stops rather than degrade to web-search-only research.
+- Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` on PATH (must be ≥ 3.12) → `uv python find '>=3.12'`. If none is found, `resolve` is not ok and prints the install hint; the skill stops rather than degrade to web-search-only research.
 - Engine configuration and API keys live in `~/.config/last30days/` (written by the upstream setup wizard with your consent), so they survive engine upgrades.
 
 Resolution order (first hit wins): `market.path` → `LAST30DAYS_HOME` → **managed latest** → user-installed copies (`.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days` in the project and under `~`, then the Claude Code plugin cache).
@@ -35,7 +60,7 @@ Resolution order (first hit wins): `market.path` → `LAST30DAYS_HOME` → **man
 ```bash
 oma market update            # force a check / download now
 oma market resolve --offline # never touch the network
-oma market run --help        # the engine's own flags
+oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
 
 ---
@@ -56,7 +81,18 @@ market:
 
 ## How a run works
 
-1. `oma market detect-trap "<topic>"` — refuses keyword-trap and demographic-shopping topics (exit 2) with a reframe suggestion.
+```mermaid
+flowchart TD
+  trap["oma market detect-trap"] -->|"exit 2: refused"| reframe["Show the reframe; engine not run"]
+  trap -->|ok| resolve["oma market resolve --json"]
+  resolve -->|"ok: false"| stopNode["Stop with the update or Python hint"]
+  resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
+  contract --> run["oma market run (same args as upstream)"]
+  run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
+  synth --> check["Self-check, write the brief"]
+```
+
+1. `oma market detect-trap "<topic>"` — refuses keyword-trap and demographic-shopping topics (exit 2) with a reframe suggestion. An empty topic or one over 200 characters exits 4.
 2. `oma market resolve --json` — engine + Python; stops on `ok: false`.
 3. The agent reads the resolved engine's `SKILL.md` top to bottom and follows it: first-run setup wizard, pre-research resolution of handles / subreddits / hashtags (when WebSearch is available), query planning, the precondition gate.
 4. `oma market run "<topic>" <flags> --emit=compact` — identical arguments to the upstream `python3 scripts/last30days.py` call; `--save-dir` is added from `market.save_dir`.
@@ -79,14 +115,16 @@ market:
 |---|---|
 | Topic refused by detect-trap | Reframe shown; engine not run. `--force` only after explicit user reconfirmation |
 | No engine cached and offline | `ok: false` → run `oma market update` once online |
-| No Python 3.12+ | `ok: false` with install hint (brew / apt / `uv python install 3.12`); no web-search-only substitute |
+| No Python 3.12+ | `ok: false` with install hint (brew / apt / `uv python install 3.12`), or set `LAST30DAYS_PYTHON` / `market.python`; no web-search-only substitute |
 | Release check fails | Cached engine used, reported as `stale` |
 | Sources without keys | Skipped inside the engine and listed in the footer; enable via the upstream setup wizard |
 
 ---
 
-## Related
+## Next steps
 
-- [Diagram Engine](/docs/guide/diagram-engine) — the same managed-latest pattern for archify
-- [oma-config.yaml semantics](/docs/guide/oma-config-semantics)
+- [Content and Research Workflows](./content-and-research.md) — pick the right capability for other research and document tasks
+- [Diagram Engine](./diagram-engine.md) — the same managed-latest pattern for archify
+- [oma-config.yaml semantics](./oma-config-semantics.md) — how the `market:` section is merged
+- [CLI Commands: market](../cli-interfaces/commands.md#market) — full option list
 - Upstream: [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

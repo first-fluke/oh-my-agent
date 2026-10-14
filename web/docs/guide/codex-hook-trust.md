@@ -14,7 +14,7 @@ This is a Codex-side safety mechanism, not an oh-my-agent limitation. This guide
 
 ## The one-time step: review hooks in Codex
 
-After `oma` (install), `oma link`, or `oma update` writes `.codex/hooks.json` in a project Codex has not seen before, the hooks do **not** run yet. You must open Codex and review them once:
+After `oma` (install), `oma link`, or `oma update` writes `.codex/hooks.json` in a project Codex has not seen before (for a global install, `~/.codex/hooks.json`), the hooks do **not** run yet. You must open Codex and review them once:
 
 1. Open the project in the Codex CLI.
 2. Run `/hooks` to open the hook browser (TUI).
@@ -22,8 +22,8 @@ After `oma` (install), `oma link`, or `oma update` writes `.codex/hooks.json` in
 
 Until you do this, the hooks stay untrusted and are skipped silently. This is why oh-my-agent prints a notice whenever it creates or changes `.codex/hooks.json`:
 
-```
-Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run)
+```text
+⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
 Verify the generated file before opening Codex:
@@ -62,7 +62,7 @@ This flag is applied **only** to Codex processes that oh-my-agent spawns. It is 
 
 ## No `[features] hooks` flag needed
 
-Older setups required enabling `[features] hooks = true` in Codex config. Hooks have been stable and on by default since Codex CLI ~0.14x, so this is no longer needed. oh-my-agent no longer writes it, and it actively strips the deprecated `child_agents_md` flag from Codex config when it finds it.
+Older oh-my-agent releases wrote `[features] codex_hooks = true` in Codex config. Codex 0.124 renamed that flag to `hooks` and made hooks a stable, default-on feature, so no flag is needed. oh-my-agent writes neither key, and it strips the deprecated `codex_hooks` and `child_agents_md` flags from the `[features]` table when it finds them.
 
 ---
 
@@ -74,3 +74,8 @@ Older setups required enabling `[features] hooks = true` in Codex config. Hooks 
 | `oma update` with unchanged hook commands | Nothing — trust is preserved |
 | `oma update` that changes a hook command | Re-run `/hooks` to re-trust (installer prints a notice) |
 | Codex subprocess spawned by oh-my-agent | Nothing — bypass is applied automatically |
+
+## See also
+
+- [Existing project integration](./integration.md): what the installer writes for each vendor
+- [Global install](./global-install.md): user-wide installs that write `~/.codex/`

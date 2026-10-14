@@ -12,8 +12,8 @@ Defaults are selected to make a first project usable while keeping user-owned co
 | Area | Default | Consequence | Override |
 |---|---|---|---|
 | Response language | `en` | Agent and workflow responses use English unless the project config selects another supported language. An explicit user or session language instruction can still override the project default where the host/workflow supports it. | `language` in `.agents/oma-config.yaml` or `.cue` |
-| Model routing | `auto` | The current runtime's native agent configuration is used. Unknown runtimes fall back to `default_cli` when set. | `model_preset`, `default_cli`, or `agents.<id>` |
-| Code intelligence | `serena` | A fresh install tries to install Serena and wires its MCP configuration. | `providers.code_intelligence: gortex` or `serena` |
+| Model routing ([model preset](./glossary.md#model-preset)) | `auto` | The current runtime's native agent configuration is used. Unknown runtimes fall back to `default_cli` when set. | `model_preset`, `default_cli`, or `agents.<id>` |
+| Code intelligence ([capability provider](./glossary.md#capability-provider)) | `serena` | A fresh install tries to install Serena and wires its MCP configuration. | `providers.code_intelligence: gortex` or `serena` |
 | Code-search guard | `block` | While a code-intelligence provider is configured, a PreToolUse hook denies native `Grep`/`Glob` and recursive shell search (`rg`, `grep -r`, `find -name`) and points the agent at the provider's tools. Searches confined to confirmed exclusions or paths outside the project are allowed. The hook does not advertise a bypass for project source. | `providers.code_intelligence_guard: off` |
 | Semantic memory | `agentmemory` | Install and update reuse a healthy AgentMemory endpoint or install and start the managed local service, then check readiness before succeeding. Explicit custom endpoints are checked without replacement. | `providers.semantic_memory: honcho` or `none`; `OMA_NO_AGENTMEMORY=1` skips AgentMemory setup. |
 | Web search | `native` | Search uses the runtime's native web channel unless a provider is selected. | `providers.web` |
@@ -67,8 +67,8 @@ The default telemetry setting is opt-out. Setting `telemetry: true` removes OMA'
 | Vendor files are stale | `oma doctor` and `oma link --dry-run` | Run `oma link <vendor>` after editing `.agents/`; preserve the SSOT as the source. |
 | A model is not accepted | `oma doctor --profile` | Switch to `auto`, use a built-in preset, or define a model slug under `models:`. |
 | Serena tools time out | `oma doctor` and the provider section | Try `serena.mode: stdio`; if memory pressure is the issue, preview with `oma serena reap --dry-run`. |
-| A persistent workflow will not stop | `.agents/state/*-state.json` | Say `workflow done`; inspect the state file only when the workflow did not clean up. |
+| A [persistent workflow](./glossary.md#persistent-workflow) will not stop | `.agents/state/*-state.json` | Say `workflow done`; inspect the state file only when the workflow did not clean up. |
 | A scheduled reaper does nothing | `oma doctor` Serena Reaper section | Set `serena_reaper.enabled: true`, then run `oma serena reaper enable`. |
 | Local config breaks startup | `oma doctor` error path | Fix or remove the local overlay; do not create both `.cue` and `.yaml` overlays. |
 
-Continue with [Installation](./installation.md), [Per-Agent Models](../guide/per-agent-models.md), or [OMA configuration semantics](../guide/oma-config-semantics.md).
+Continue with [Installation](./installation.md), [Per-Agent Models](../guide/per-agent-models.md), or [OMA configuration semantics](../guide/oma-config-semantics.md). For problems not listed here, see [Troubleshooting](../guide/troubleshooting.md).

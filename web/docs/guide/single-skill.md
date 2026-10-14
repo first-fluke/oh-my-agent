@@ -49,7 +49,7 @@ Tests and acceptance criteria are part of single-skill work too; they do not by 
 
 ## Preflight checklist
 
-Before prompting, answer these four questions (they map to the [Prompt Structure](/docs/core-concepts/skills) four elements):
+Before prompting, answer these four questions:
 
 | Element | Question | Why It Matters |
 |---------|----------|----------------|
@@ -111,10 +111,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **Difficulty assessment:** Medium (2-3 files, some design decisions around validation UX)
 3. **Resources loaded:**
    - `execution-protocol.md` (always)
-   - `snippets.md` (form + Zod patterns)
-   - existing component patterns and `snippets.md` when supplied by the skill
+   - `snippets.md` (form and Zod patterns, plus existing component patterns when the skill supplies them)
 4. **Execution contract (when enabled) may emit `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -165,7 +164,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - matching `stack/tech-stack.md` or variant tech-stack references if available
 <!-- oma-docs:ignore-end -->
 5. **Execution contract (when enabled) may emit `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -204,7 +203,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md` (screen template, Riverpod provider pattern)
    - `screen-template.dart`
 4. **Execution contract (when enabled) may emit `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -247,7 +246,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`
    - `anti-patterns.md` (review during optimization)
 4. **Execution contract (when enabled) may emit `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -324,10 +323,20 @@ Watch for these signals that indicate you should switch from single-skill to mul
 | Agent's CHARTER_CHECK shows "Must NOT do" items that are actually needed | Scope exceeds one domain | Plan the full feature with `/plan` first |
 | Fix cascades into 3+ files across different layers | One fix affects multiple domains | Use `/debug` with broader scope, or `/work` |
 | Agent discovers an API contract mismatch | Frontend/backend disagreement | Run `/plan` to define contracts, then re-spawn both agents |
-| Quality gate fails on integration points | Components do not connect properly | Add QA review step: `oma agent spawn qa "Review integration"` |
+| Quality gate fails on integration points | Components do not connect properly | Run `/review`, or add a QA pass: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | Task grows from "one component" to "three components + new route + API" | Scope creep during execution | Stop, run `/plan` to decompose, then `/orchestrate` |
 | Agent blocks with HIGH clarification | Requirements fundamentally ambiguous | Answer the agent's questions or run `/brainstorm` to clarify approach |
 
 ### Rule of thumb
 
 If you re-spawn the same agent more than twice with refinements, the task is probably multi-domain. Run `/work`, or at least `/plan`, to decompose it.
+
+---
+
+## Next steps
+
+- The task spans several domains: [Multi-Agent Projects](./multi-agent-project.md)
+- The task is a bug: [Bug Fixing](./bug-fixing.md)
+- Audit or resume a run: [Results and Resume](./agent-results-and-resume.md)
+- Something failed: [Troubleshooting](./troubleshooting.md)
+- Choose between a skill and a workflow: [Workflows](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

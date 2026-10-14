@@ -1,12 +1,12 @@
 ---
 title: "Guide: Diagram Engine (archify)"
 sidebar_label: Diagrams
-description: How oh-my-agent chooses between Mermaid and the optional tt-a1i/archify agent skill for architecture, sequence, and data-flow diagrams — the diagram config section, oma diagram resolve / oma diagram archify, how /architecture and /explain use it, and the unbounded validate-repair-deliver loop.
+description: How oh-my-agent chooses between Mermaid and the optional tt-a1i/archify agent skill for architecture, sequence, and data-flow diagrams — the diagram config section, oma diagram resolve / oma diagram archify, how /architecture and /explain use it, and the bounded validate-repair-deliver loop.
 ---
 
 # Diagram Engine
 
-`/architecture` (ADRs, recommendations, reviews) and `/explain` (code-change explainers) both emit structural diagrams. Those are always **Mermaid** blocks inside the Markdown artifact, and — whenever [archify](https://github.com/tt-a1i/archify) can be resolved, which is the normal case — additionally an **interactive, validated HTML diagram** next to the artifact: dark/light theme, pan-zoom, search, relationship tracing, PNG/SVG/WebM export, rendered from a typed JSON spec.
+`/architecture` (ADRs, recommendations, reviews) and `/explain` (code-change explainers) both emit structural diagrams. For `/architecture` those are always **Mermaid** blocks inside the Markdown artifact (`/explain` draws its own inline SVG diagrams), and — whenever [archify](https://github.com/tt-a1i/archify) can be resolved, which is the normal case — additionally an **interactive, validated HTML diagram** next to the artifact: dark/light theme, pan-zoom, search, relationship tracing, PNG/SVG/WebM export, rendered from a typed JSON spec.
 
 Mermaid never goes away: it is the text SSOT that lives in the Markdown and in git diffs. archify is a derived artifact.
 
@@ -27,7 +27,10 @@ oma diagram resolve
 # engine:   archify  (requested: auto)
 # reason:   archify 2.15.0 via managed:v2.15.0 (current)
 # root:     /Users/you/.cache/oma-diagram/archify/v2.15.0
+# bin:      /Users/you/.cache/oma-diagram/archify/v2.15.0/bin/archify.mjs
+# version:  2.15.0
 # quality:  showcase
+# sidecar:  off (explain)
 oma diagram resolve --offline   # never touch the network
 ```
 
@@ -61,13 +64,19 @@ diagram:
     open: false               # pass --open to deliver
 ```
 
-| `engine` | Behaviour |
-|---|---|
-| `auto` (default) | archify whenever it resolves (managed latest, pin, or skill dir), otherwise Mermaid |
-| `archify` | Require archify. `oma diagram resolve` exits 1 when nothing resolves (first run offline); workflows stop instead of silently downgrading |
-| `mermaid` | Never call archify |
+### Which engine runs
 
-A prompt can override the config for one run (`/explain 640 with archify`).
+One decision covers the config value, whether archify resolves, and what the workflow delivers. "Resolves" means any step of the [resolution order](#always-the-latest-archify--nothing-to-install) finds an install: a pin, the managed latest copy, or a user-installed skill dir.
+
+| `diagram.engine` | archify resolves? | `oma diagram resolve --json` | `/architecture` result |
+|---|---|---|---|
+| `auto` (default) | yes | `engine: archify`, `ok: true` | Mermaid block + linked `.archify.html` |
+| `auto` | no (for example first run offline, or `managed: false` with no skill dir) | `engine: mermaid`, `ok: true` | Mermaid only; the report says to run `oma diagram update` once online |
+| `archify` | yes | `engine: archify`, `ok: true` | Mermaid block + linked `.archify.html` |
+| `archify` | no | `engine: mermaid`, `ok: false`, exit 1 | Workflow stops with the `oma diagram update` hint instead of silently downgrading |
+| `mermaid` | not checked | `engine: mermaid`, `ok: true` | Mermaid only; archify is never called |
+
+`oma diagram resolve --engine <auto|archify|mermaid>` overrides the config for one call, and a prompt can do the same for one run (`/explain 640 with archify`).
 
 ---
 
@@ -79,13 +88,15 @@ oma diagram update  [--json]
 oma diagram archify <archify args…>
 ```
 
+`oma diagram update` forces a refresh and exits 1 when no archify install can be resolved.
+
 `oma diagram archify` runs the resolved archify executable with `ARCHIFY_UPDATE_CHECK_DISABLED=1` (no network) and propagates the exit code, so `validate` / `deliver` / `visual-check` behave exactly as archify documents them:
 
 ```bash
 oma diagram archify guide "show the auth request lifecycle" --json
 oma diagram archify validate architecture adr-auth.archify.json --quality showcase --json
 oma diagram archify deliver  architecture adr-auth.archify.json adr-auth.archify.html --quality showcase --json
-oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Chrome, reported as skipped
+oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Chrome (skipped), or archify itself could not be resolved
 ```
 
 `--json` on `resolve` returns `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source, status?, note? }, reason, probed }` — `source` is `managed:<tag>`, `config:…`, `env:…`, or a skill-dir label; `status` (`fresh` / `current` / `stale`) and `note` are set for managed copies.
@@ -94,19 +105,32 @@ oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Ch
 
 ## How the workflows use it
 
-The shared protocol lives in `.agents/skills/_shared/conditional/diagram-engine.md`. Both workflows follow the same sequence:
+The shared protocol lives in `.agents/skills/_shared/conditional/diagram-engine.md`. `/architecture` follows this sequence:
 
 1. `oma diagram resolve --json`
 2. Author the Mermaid block first (always).
 3. If `engine: archify`: translate the Mermaid topology into archify's JSON IR (`architecture` / `sequence` / `dataflow` / `lifecycle` / `workflow`), reading only the matching schema and one example from the install.
-4. `validate` → repair → `deliver`. **There is no fixed iteration cap.** The agent keeps repairing while archify's objective error count improves and stops only on archify's own convergence rule (two consecutive rounds without improvement). Semantic labels are never deleted just to pass.
+4. `validate` → repair → `deliver`, bounded: stop when the spec passes, when archify's convergence rule fires, after 3 repair attempts, after 10 minutes in total, or when the same diagnostic repeats. Semantic labels are never deleted just to pass.
 5. Link the HTML — never embed it.
+
+```mermaid
+flowchart TD
+  resolve["oma diagram resolve --json"] -->|"ok: false"| stop["Stop: run oma diagram update once online"]
+  resolve -->|"ok: true"| author["Author the Mermaid block"]
+  author --> engine{"engine?"}
+  engine -->|mermaid| mermaidOnly["Deliver the Mermaid block"]
+  engine -->|archify| spec["Translate the topology into .archify.json"]
+  spec --> loop["validate and repair (bounded)"]
+  loop -->|passes| deliver["deliver .archify.html"]
+  loop -->|"bound or convergence reached"| keep["Keep Mermaid, leave .archify.json, report diagnostics"]
+  deliver --> link["Link the HTML from the Markdown"]
+```
 
 ### `/architecture`
 
 Only for structural decisions (boundaries, dependencies, data flow). Output next to the Markdown artifact under `.agents/results/architecture/`:
 
-```
+```text
 adr-notification-service.md            # Mermaid block + "Interactive:" link
 adr-notification-service.archify.json  # frozen spec (kept even on failure)
 adr-notification-service.archify.html  # delivered viewer
@@ -114,24 +138,28 @@ adr-notification-service.archify.html  # delivered viewer
 
 ### `/explain`
 
-Opt-in, because the explainer's own contract (single self-contained file, CSS-variable theming) does not allow embedding a second full HTML document. Enable with `diagram.explain_sidecar: true` or ask in the prompt. The sidecar `{date}-{slug}.archify.html` is derived from the explainer's primary System/Data-Flow diagram and linked with a plain `<a href>`; a sidecar failure never blocks the explainer.
+Opt-in, because the explainer's own contract (single self-contained file, CSS-variable theming) does not allow embedding a second full HTML document. Enable with `diagram.explain_sidecar: true`, pass `oma explain render --archify`, or ask in the prompt ("with archify"). There is no Mermaid block and no hand-written JSON: the renderer derives the archify spec from a `flow` or `sequence` block of the draft (the panel marked `{archify}`), runs `deliver` (falling back once from `showcase` to `standard` quality), and links `{date}-{slug}.archify.html` with a plain `<a href>`. The command reports `linked`, `skipped` (with the reason), or `failed` (first diagnostic). The workflow does not loop on a failed sidecar, and a sidecar failure never blocks the explainer.
 
 ---
 
 ## Failure modes
 
+Unresolvable archify is covered by the [engine decision table](#which-engine-runs). The remaining cases:
+
 | Situation | Result |
 |---|---|
 | Update check fails (offline, rate-limited) | Cached copy is used and reported as `stale` with the reason |
-| No cache, no network, no skill dir, `engine: auto` | Mermaid only; the report says to run `oma diagram update` once online |
-| Same, but `engine: archify` | Workflow stops (`ok: false`) with the `oma diagram update` hint |
 | `validate` never converges | Mermaid remains the delivered diagram; the last `.archify.json` is left for a human; diagnostics are reported verbatim |
 | Chrome missing for `visual-check` | Reported as `skipped`, never as a pass |
+| `oma diagram archify …` exits 2 | Either Chrome is missing (`visual-check`) or archify could not be resolved; check `oma diagram resolve --json` first |
 
 ---
 
-## Related
+## Next steps
 
-- [Code Explainer](/docs/guide/code-explainer) — `/explain` workflow
-- [oma-config.yaml semantics](/docs/guide/oma-config-semantics)
+- [Code Explainer](./code-explainer.md) — the `/explain` workflow and its optional archify sidecar
+- [`/architecture` workflow](../core-concepts/workflows.md#architecture) — ADRs and reviews that carry the Mermaid block
+- [oma-config.yaml semantics](./oma-config-semantics.md) — how the `diagram:` section is merged
+- [CLI Commands: diagram](../cli-interfaces/commands.md#diagram) — full option list
+- [Market Research](./market-research.md) — the same managed-latest pattern for the last30days engine
 - archify upstream: [tt-a1i/archify](https://github.com/tt-a1i/archify)

@@ -28,11 +28,11 @@ There is no `--global` flag; schedule commands use `$OMA_HOME/schedule/`, defaul
 
 ### OS backends
 
-| Platform | Primary backend | Fallback |
-|---|---|---|
-| macOS | launchd (plist + `launchctl`) | user `crontab` |
-| Linux | systemd --user timer | user `crontab` |
-| Windows | Task Scheduler (`schtasks`) | — |
+| Platform | Primary backend | Fallback | stderr of `oma schedule run` |
+|---|---|---|---|
+| macOS | launchd (plist + `launchctl`) | — | `runs/<id>/stderr.log` |
+| Linux | systemd --user timer | user `crontab` when `systemctl --user` is unavailable | `runs/<id>/stderr.log` (systemd); not saved (crontab) |
+| Windows | Task Scheduler (`schtasks`) | — | Not saved |
 
 oma selects the available backend automatically. You do not configure this manually.
 
@@ -61,14 +61,32 @@ oma schedule create qa-reviewer "Run QA review on the latest changes" --cron "0 
 # Run a backend agent every 2 hours using natural-language syntax
 oma schedule create backend "Check for slow queries in the API logs" --every "2h"
 
-# One-shot: run once at 3 PM today (cron syntax) and self-remove
+# One-shot: run at the next 15:00 and remove the job after a successful run
 oma schedule create pm "Generate weekly plan" --cron "0 15 * * *" --once
 
 # Check what is scheduled
 oma schedule list
 
 # Remove a job
-oma schedule delete sch_abc123def456
+oma schedule delete sch_abcdefgh2345
+```
+
+`schedule create` prints the job ID that `run` and `delete` need:
+
+```text
+Scheduled job registered: sch_abcdefgh2345
+  Agent:   qa-reviewer
+  Cron:    0 9 * * 1-5
+  Vendor:  auto
+  Project: my-project
+  Once:    false
+```
+
+Fire a new job once by hand to check the prompt and vendor credentials before its first scheduled run:
+
+```bash
+oma schedule run sch_abcdefgh2345
+ls ~/.oma/schedule/runs/sch_abcdefgh2345/
 ```
 
 ---
@@ -79,15 +97,15 @@ oma schedule delete sch_abc123def456
 
 Register a scheduled agent job.
 
-```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
+```bash
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <Nd>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
 ```
 
 **Arguments:**
 
 | Argument | Required | Description |
 |---|---|---|
-| `agent-id` | Yes | Agent type to spawn: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `agent-id` | Yes | Agent passed to `oma agent spawn`: a canonical ID (`orchestrator`, `architecture`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `qa`, `docs`, `tf-infra`, `explore`) or a definition name such as `qa-reviewer` or `backend-engineer`. It is not validated at registration, so run `oma schedule run <id>` once after creating the job. |
 | `prompt` | Yes | Task description passed to the agent at run time |
 
 **Options:**
@@ -98,8 +116,8 @@ oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" 
 | `--every "<phrase>"` | Natural-language interval (see table below). Mutually exclusive with `--cron`. |
 | `--vendor <vendor>` | CLI vendor override passed to `oma agent spawn`: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Defaults to auto-detect from `oma-config.yaml`. |
 | `-w, --workspace <path>` | Working directory for the agent at run time. Defaults to the current working directory at registration time. |
-| `--once` | One-shot mode: the job fires once and self-removes. Default is recurring. |
-| `--expires-after <duration>` | Auto-expire a recurring job after a duration such as 30d. `0` means indefinite (default). |
+| `--once` | One-shot mode: the job removes itself after the first run that exits 0. A failed run keeps the job, so it fires again at the next cron match. Default is recurring. |
+| `--expires-after <duration>` | Remove a recurring job at its first fire after this age. Use whole days with a unit, such as `30d`; a bare number (`30`) is rejected. `0` means indefinite (default). |
 | `--env <KEY1,KEY2>` | Capture the named environment variables (only those listed) into `~/.oma/schedule/env/<id>` (permissions 0600) for injection at run time. Secrets are never written to the manifest itself. |
 | `--dry-run` | Print the resolved cron and any rounding note without writing a scheduler job, manifest entry, or environment file. |
 | `--accept-rounded` | Required to register a natural-language interval after OMA rounds it to a cron-expressible step. Preview it first with `--dry-run`. |
@@ -124,6 +142,7 @@ Preview a rounded interval before registering it:
 ```bash
 oma schedule create backend "Check logs" --every 7m --dry-run
 # Preview: requested interval resolves to */6 * * * *
+# Note: Requested every 7m -- 7 is not a divisor of 60; rounded to every 6m (*/6 * * * *).
 # Preview only: no OS job, manifest entry, or env file was written.
 oma schedule create backend "Check logs" --every 7m --accept-rounded
 ```
@@ -156,7 +175,7 @@ oma schedule create backend "Sync external API data" --cron "0 * * * *" --env SY
 
 List all scheduled jobs across all projects, grouped by project, with OS drift state.
 
-```
+```bash
 oma schedule list [--json]
 ```
 
@@ -181,16 +200,18 @@ Internal services such as `dev.oma.agentmemory`, `dev.oma.serena-daemon-gc`, and
 
 Jobs are grouped by project label. Each row shows: ID, cron expression, agent, vendor, OS backend, whether recurring, and drift state.
 
-```
+```text
 [my-project]
 ID                 CRON           AGENT              VENDOR   BACKEND  RECUR  STATE
 ------------------------------------------------------------------------------------------
-sch_abc123def456   0 9 * * 1-5    qa-reviewer        auto     launchd  true   synced
-sch_xyz789ghi012   */30 * * * *   backend            claude   launchd  true   missing-in-os
+sch_abcdefgh2345   0 9 * * 1-5    qa-reviewer        auto     launchd  true   synced
+sch_mnopqrst4567   */30 * * * *   backend            claude   launchd  true   missing-in-os
 
 [orphan-in-os]
   dev.oma.sch_old (in OS scheduler but not in manifest)
 ```
+
+Jobs created by `oma harness evolution enable` are listed with agent `__builtin__`; they run `oma harness evolution run --scheduled` in that project. Manage them with `oma harness evolution enable` and `disable` (see [Project Harness Evolution](./harness-evolution.md)) rather than `oma schedule delete`. `oma schedule builtin-evolution-add` and `oma schedule inspect`, which appear in `oma schedule --help`, are internal helpers for that command.
 
 **Examples:**
 
@@ -205,7 +226,7 @@ oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 
 Remove a scheduled job from both the manifest and the OS scheduler.
 
-```
+```bash
 oma schedule delete <id>
 ```
 
@@ -220,7 +241,7 @@ If the OS scheduler removal fails (e.g. the backend is temporarily unavailable),
 **Example:**
 
 ```bash
-oma schedule delete sch_abc123def456
+oma schedule delete sch_abcdefgh2345
 ```
 
 ---
@@ -229,24 +250,24 @@ oma schedule delete sch_abc123def456
 
 Execute a scheduled job by ID. This is invoked by the OS scheduler at fire time and is not normally called by hand.
 
-```
+```bash
 oma schedule run <id>
 ```
 
 The wrapper:
-1. Looks up the job ID in the manifest. Exits non-zero if not found.
+1. Looks up the job ID in the manifest. Exits non-zero if not found. If `--expires-after` has elapsed, removes the job instead of running it.
 2. Loads captured environment variables from `~/.oma/schedule/env/<id>` (if present) and injects them into the spawned process.
 3. Calls `oma agent spawn <agentId> <prompt> <generatedSessionId> --vendor <vendor> -w <workspace>`.
 4. Writes the run result to `~/.oma/schedule/runs/<id>/<ISO-timestamp>.md`.
 5. Updates `lastFiredAt` in the manifest.
-6. If `--once` was set, self-removes the job (manifest + OS scheduler).
+6. If `--once` was set and the agent exited 0, removes the job (manifest + OS scheduler).
 
-**Authentication failures are loud:** if vendor credentials are expired, the job exits with a non-zero code and prints `re-auth required: <vendor>` to stderr. It does not silently succeed. An optional `oma-voice` notification can be configured.
+**Authentication failures are loud:** if vendor credentials are expired, the job exits with a non-zero code and prints `re-auth required: <vendor>` to stderr (saved in `runs/<id>/stderr.log` on launchd and systemd). The vendor shows as `unknown` when the job was created without `--vendor`. It does not silently succeed.
 
 You can invoke `schedule run` manually for debugging:
 
 ```bash
-oma schedule run sch_abc123def456
+oma schedule run sch_abcdefgh2345
 ```
 
 ---
@@ -255,7 +276,7 @@ oma schedule run sch_abc123def456
 
 Re-synchronize the manifest to the OS scheduler. Use after system migrations, OS scheduler resets, or to repair drift.
 
-```
+```bash
 oma schedule sync [--prune]
 ```
 
@@ -283,14 +304,17 @@ oma schedule sync --prune
 
 All schedule state lives under `~/.oma/schedule/`:
 
-```
+```text
 ~/.oma/schedule/
 ├── schedules.json          # SSOT manifest (permissions 0600)
 ├── env/
-│   └── sch_abc123def456    # Captured env vars for this job (permissions 0600)
+│   └── sch_abcdefgh2345    # Captured env vars for this job (permissions 0600)
+├── running/                # Lease files while a job runs
 └── runs/
-    └── sch_abc123def456/
-        └── 2026-06-16T090000Z.md   # Run log
+    └── sch_abcdefgh2345/
+        ├── 2026-06-16T09-00-00-000Z.md   # One log per fire: session, exit code, agent output
+        ├── stdout.log                    # launchd and systemd only: stdout of oma schedule run
+        └── stderr.log                    # launchd and systemd only: stderr, e.g. re-auth required
 ```
 
 Permissions:
@@ -314,8 +338,8 @@ Permissions:
 **Checking run logs:**
 
 ```bash
-ls ~/.oma/schedule/runs/sch_abc123def456/
-cat ~/.oma/schedule/runs/sch_abc123def456/2026-06-16T090000Z.md
+ls ~/.oma/schedule/runs/sch_abcdefgh2345/
+cat ~/.oma/schedule/runs/sch_abcdefgh2345/2026-06-16T09-00-00-000Z.md
 ```
 
 **Job shows `missing-in-os` after a system restart:**
@@ -324,7 +348,11 @@ Run `oma schedule sync` to re-register all manifest jobs with the OS scheduler.
 
 **Job fired but vendor credentials were expired:**
 
-Check the run log for `re-auth required: <vendor>`. Re-authenticate with the vendor CLI (e.g. `claude login`, `codex login`) and run `oma schedule run <id>` manually to verify before the next scheduled fire.
+On macOS (launchd) and Linux (systemd), check `~/.oma/schedule/runs/<id>/stderr.log` for `re-auth required: <vendor>`. The `<timestamp>.md` run log holds the agent's own output and exit code. The crontab and Task Scheduler backends do not keep this stderr; run `oma schedule run <id>` in a terminal to see it. Re-authenticate with the vendor CLI (e.g. `claude login`, `codex login`) and run `oma schedule run <id>` manually to verify before the next scheduled fire.
+
+**Changing a job:**
+
+There is no `schedule update`. Create the replacement first, then delete the old ID with `oma schedule delete <old-id>`. `--env` copies variable values when the job is created, so after rotating a secret, re-create the job with the new value exported in your shell.
 
 **`--every` rounded my interval:**
 
@@ -340,6 +368,15 @@ oma schedule list --json | jq -r '.jobs[] | select(.projectLabel == "my-project"
 
 **Windows support:**
 
-On Windows, oma uses `schtasks` to register jobs. The `schedule list` drift detection and `schedule sync` commands work the same way across all platforms.
+On Windows, oma uses `schtasks` to register jobs. Task Scheduler registrations cannot be read back, so `schedule list` reports every registered job as `stale`, and `schedule sync` (also run by `oma update`) re-registers all of them. On Windows, treat `stale` as expected; `missing-in-os` and `orphan-in-os` still indicate drift.
 
 Note that `schtasks` cannot express every cron shape. Supported shapes are: `*/N * * * *` (every N minutes), `M * * * *` (hourly at :M), `M H * * *` (daily), `M H * * D` (weekly; `D` may be a single day, a range like `1-5`, or a comma list like `1,3,5`), and `M H D * *` (monthly). Other expressions (e.g. a comma list in the minute field) are rejected at `schedule create` time on Windows.
+
+`--every` produces a supported shape only for minute intervals that divide 60 (for example `--every 5m` or `--every 30m`). Hour and day intervals (`--every 2h`, `--every "every 6 hours"`, `--every 1d`) and hour steps such as `--cron "0 */4 * * *"` produce `0 */N * * *` or `0 0 */N * *`, which Task Scheduler rejects at `schedule create`. On Windows, use a fixed time instead, for example `--cron "0 9 * * 1-5"`.
+
+---
+
+## See also
+
+- [Project Harness Evolution](./harness-evolution.md) — the built-in `__builtin__` job that runs budgeted skill improvement.
+- [Harness Evaluation](./harness-eval.md) — how the evaluation commands fit together.

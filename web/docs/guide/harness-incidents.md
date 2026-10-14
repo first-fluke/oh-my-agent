@@ -8,6 +8,23 @@ description: Capture an observed agent failure, preserve its evidence, and evalu
 
 `oma harness incident` connects an observed failure to a regression case and the candidate evaluation that follows. It records observations separately from causal hypotheses. A failed process alone does not establish that the model caused the incident.
 
+The diagram shows the incident lifecycle. Promotion feeds skill optimization; export feeds harness evaluation.
+
+```mermaid
+flowchart TD
+  RUN["Failed, blocked, or partial agent run"] --> SCAN["incident scan<br/>--skeleton RUN_ID"]
+  SCAN --> SPEC["Edit the spec: expected_checks,<br/>initial_workspace"]
+  SPEC --> CAP["incident capture --spec --run"]
+  RUN -->|"feedback --scan-runs<br/>(run has a task contract)"| CAP
+  CAP --> MAN[".agents/results/incidents/ID/incident.json"]
+  MAN --> SHOW["incident show"]
+  MAN --> EXP["incident export<br/>(needs initial_workspace)"]
+  EXP --> REP["incident reproduce --candidate<br/>(live, inspect, rescore, fixture-replay, rerun)"]
+  MAN --> PRO["incident promote, or harness feedback"]
+  PRO --> FIX[".agents/eval/SKILL/incident-ID.yaml"]
+  FIX --> OPT["harness feedback --live or --apply<br/>runs skill optimize"]
+```
+
 ## Find candidates
 
 ```bash
@@ -16,7 +33,10 @@ oma harness incident scan --json
 oma harness incident scan --skeleton <run-id> > incidents/run-failure.json
 ```
 
-The scan reads `.agents/state/agent-runs/`, keeps runs whose status is `failed`, `blocked`, or `partial`, and drops any run a captured incident already references through `source.runId`. `--skeleton` prints a specification for one run with the id, agent, source run, observed failure, exit code, and, when the runner preserved it, the tail of the agent's output filled in; `expected_checks` is left as a `TODO` because the correct behavior is a decision the scan cannot make. `oma agent spawn` and `oma agent parallel` keep the last 64 KiB of each run's log as `.agents/state/agent-runs/<run-id>.output.txt` and reference it from the run record, so `capture --run` imports that output as the observation when the specification omits one and `incident promote` can validate the derived fixture against it. Fill it in, then capture with `--run <run-id>` so the run's identity and workspace fingerprint are preserved.
+1. `oma harness incident scan` lists tracked runs whose status is `failed`, `blocked`, or `partial` and drops any run a captured incident already references through `source.runId`. `--limit <n>` caps the list. Runs come from the project's run records in the OMA profile state directory (by default `~/.oma/u/0/projects/<project-id>/agent-runs/`, where `<project-id>` is the SHA-256 of the canonical project path; `OMA_STATE_HOME` and `OMA_PROFILE` change the root and profile). `oma agent spawn` and `oma agent parallel` keep the last 64 KiB of each run's log next to its record as `<run-id>.output.txt`.
+2. `--skeleton <run-id>` prints a specification with the id, agent, source run, observed failure, exit code, and, when the runner preserved it, the tail of the agent's output. `expected_checks` is left as a `TODO` because the correct behavior is a decision the scan cannot make.
+3. Replace the placeholder check. To make the incident runnable, also add `"initial_workspace": "<dir>"` pointing to a copy of the task files as they were before the run. Without it the incident can be captured and promoted, but `incident export` and `reproduce` stop with `Cannot export a runnable regression: initial workspace evidence is missing`.
+4. Capture with `--run <run-id>` so the run's prompt, identity, and workspace fingerprint are preserved. `capture --run` imports the preserved output as the observation when the specification omits one, and `incident promote` can validate the derived fixture against it.
 
 ## Capture a failed run automatically
 
@@ -59,7 +79,7 @@ Save a JSON specification inside the project:
 }
 ```
 
-`initial_workspace`, `evidence_files`, and dependency fixture paths are relative to the specification file. A command check's `checker` path is project-relative. Check syntax matches [Harness Evaluation](../harness-eval/). The initial directory must be a supplied pre-run task fixture without OMA/vendor instruction files; the harness under evaluation is injected separately.
+`initial_workspace`, `evidence_files`, and dependency fixture paths are relative to the specification file. A command check's `checker` path is project-relative. Check syntax matches [Harness Evaluation](./harness-eval.md). The initial directory must be a supplied pre-run task fixture without OMA/vendor instruction files; the harness under evaluation is injected separately.
 
 ```bash
 oma harness incident capture --spec incidents/incomplete-result.json --json
@@ -69,7 +89,7 @@ oma harness incident show incomplete-result --json
 oma harness incident capture --spec incidents/run-failure.json --run <run-id> --json
 ```
 
-`--run` refers to an existing `.agents/state/agent-runs/<run-id>.json`. It preserves the run/session identity, vendor, status, and original workspace fingerprint. A supplied prompt takes precedence over the run's recorded prompt. `source.trace_id` can link a reported incident to an external trace without fetching or uploading it.
+`--run` takes a run ID listed by `oma harness incident scan`; run records live in the profile state directory described under [Find candidates](#find-candidates), not in `.agents/state/`. It preserves the run/session identity, vendor, status, and original workspace fingerprint. A supplied prompt takes precedence over the run's recorded prompt. `source.trace_id` can link a reported incident to an external trace without fetching or uploading it.
 
 The captured manifest lives at `.agents/results/incidents/<id>/incident.json`. It includes the initial snapshot when supplied, hashes of source evidence and checker files, acceptance checks, limitations, and a manifest hash. Existing IDs cannot be overwritten. Sensitive observation text is redacted; redaction is reported as a limit on exact replay. Snapshot collection rejects unsupported files and has file/count/total-size bounds. Evidence references preserve hashes and paths, not copies of every referenced source file.
 
@@ -88,10 +108,16 @@ The checker comes from the acceptance checks. When every check is `output_contai
 ## Close the loop
 
 ```bash
-oma harness feedback                 # promote every unpromoted incident, report what changed
+oma harness feedback                 # promote every unpromoted incident, report what changed (routing, drafting, and judge model calls)
 oma harness feedback --live          # also run one optimization epoch per affected skill (dry-run)
-oma harness feedback --apply --json  # write edits that pass every gate
+oma harness feedback --apply --json  # also write edits that pass every gate (implies --live)
 ```
+
+`--incident <ids...>` limits the run to the listed incidents. `--max-epochs <n>` (default 1) sets optimization epochs per skill for `--live` and `--apply`.
+
+:::caution Model cost and write target
+`feedback` does not show a cost preview. Even without `--live`, promotion routes each incident to a skill with a model call and may draft and judge rubrics. `--live` and `--apply` run `oma skill optimize --live --yes` for each affected skill, and `--apply` writes the managed `SKILL.md` directly, including `oma-*` skills that `oma update` overwrites. For a confirmed, previewed run use `oma skill optimize --skill <id> --live`; for a budgeted cycle with project overlays use [project harness evolution](./harness-evolution.md).
+:::
 
 `feedback` is the deployment feedback loop in one command: with `--scan-runs` every uncaptured failed run with a contract is captured first (see above), then every captured incident without a fixture is promoted (drafting rubrics when needed), affected skills are grouped, and with `--live` each is optimized once against its enlarged suite under the normal gates (held-in/held-out acceptance, confirmed negative transfer, runner-owned final test). The report under `.agents/results/feedback/feedback-<ts>.json` lists promotions, skipped incidents with reasons, and each skill's outcome with the diff, so the chain from an observed failure to a candidate edit is one auditable record. For scheduled operation with a shared model-call allowance, persistent retries, and project skill overlays, enable [project harness evolution](./harness-evolution.md). The next session's state snapshot announces applied changes.
 
@@ -108,6 +134,8 @@ oma harness incident reproduce incomplete-result --candidate candidates/fix \
 Export materializes the saved initial snapshot and a one-case exploratory suite. The manifest hash and source run/trace identity travel with the task into the evaluation and recording. Changes to exported files, prompt, agent, checks, or pinned checker sources invalidate reuse. Create a new incident ID to change the acceptance contract.
 
 By default, `reproduce` starts a new live baseline/candidate comparison and records it. The normal live cost confirmation applies unless `--yes` is supplied. This command uses the harness task's configured agent vendor, including Codex; it does not impose the skill optimizer's protected compiler profile on task execution.
+
+An exported incident suite has exactly one task, so `reproduce` always prints `coverage: insufficient` (five scored tasks are required for a verdict), and the decision is `INSUFFICIENT` unless an arm failed to dispatch (`FAIL`). Read the task lines instead: the incident ID under `corrected:` means the baseline failed and the candidate passed; under `regressed:` it means the candidate broke a passing case; `none` in both means the arms behaved the same. In JSON these fields are `score.correctedTaskIds` and `score.regressedTaskIds`.
 
 If no initial state was captured, `capture` and `show` still work, but runnable export and execution reproduction stop with a missing-evidence error. A historical run's current working tree cannot establish its original state. Even a separately supplied initial snapshot does not prove equivalence to that historical run; the report states this limitation.
 
@@ -135,7 +163,7 @@ oma harness incident reproduce incomplete-result --candidate candidates/fix \
 | `fixture-replay` | Replays supplied tool response data and file changes against the recorded initial state. No model or tool process runs. |
 | `rerun` | Starts actual baseline/candidate agent calls from the recorded initial state. This incurs normal model usage. |
 
-For a revised acceptance contract, create a separate harness suite and use `oma harness eval --action rescore` with the same suite/task/incident identity and prompt. An exported incident suite itself is immutable. See [recording and replay details](../harness-eval/) for raw evidence requirements and the tool transcript schema.
+For a revised acceptance contract, create a separate harness suite and use `oma harness eval --action rescore` with the same suite/task/incident identity and prompt. An exported incident suite itself is immutable. See [recording and replay details](./harness-eval.md#reuse-a-recording) for raw evidence requirements and the tool transcript schema.
 
 Declare external dependencies as `{ "name": "service", "repeatability": "fixture|live|unavailable", "reason": "...", "fixture": "response.json" }`. A fixture dependency points to a file using the complete harness transcript schema, with the incident ID as `taskId`. Offline incident replay rejects live/unavailable dependencies, missing fixture files, changed fixture hashes, missing named responses, and requests/responses/file changes that differ from the pinned transcript. It still cannot attest that the author declared every external dependency. A live rerun also cannot guarantee that an external service behaves as it did historically.
 

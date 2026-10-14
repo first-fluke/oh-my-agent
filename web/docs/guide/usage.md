@@ -9,18 +9,29 @@ description: Usage guide for OMA, covering reader-first task selection, single-s
 ## Quick start
 
 1. Open your project in a selected AI-powered IDE or CLI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen, or another supported host)
-2. The selected host can load skills from `.agents/skills/`; enabled hooks can detect workflows from natural-language keywords
+2. The selected host can load [skills](../getting-started/glossary.md#skill) from `.agents/skills/`; enabled hooks can detect [workflows](../getting-started/glossary.md#workflow) from natural-language keywords
 3. Describe what you want in natural language. The host or selected workflow routes the task to the relevant skill
 4. For multi-agent work, use `/work` or `/orchestrate`
 
 Single-domain tasks need no special syntax. Use the [skill and workflow selection guide](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) to choose between a single skill, `/work`, `/orchestrate`, `/ultrawork`, and `/ralph`. See [Quick Start](../getting-started/quick-start.md) for setup and [Important Defaults](../getting-started/important-defaults.md) before changing providers.
+
+## Pick a guide
+
+| Your task | Start with | Guide |
+|-----------|------------|-------|
+| One change in one domain | A plain prompt (skill routing) | [Single Skill](./single-skill.md) |
+| A feature across API, UI, mobile, or database | `/work` (step-by-step) or `/orchestrate` (automated) | [Multi-Agent Projects](./multi-agent-project.md) |
+| A bug with an error message | `/debug` plus the error and reproduction steps | [Bug Fixing](./bug-fixing.md) |
+| Watching agents while they run | `oma dashboard terminal` | [Dashboard Monitoring](./dashboard-monitoring.md) |
+| Auditing or resuming agent results | `oma agent resume SESSION_ID --dry-run` | [Results and Resume](./agent-results-and-resume.md) |
+| Something failed | `oma doctor --json` | [Troubleshooting](./troubleshooting.md) |
 
 ---
 
 ## Example 1: simple single task
 
 **You type:**
-```
+```text
 Create a login form component with email and password fields, client-side validation, and accessible labels using Tailwind CSS
 ```
 
@@ -30,10 +41,9 @@ Create a login form component with email and password fields, client-side valida
 2. Layer 1 (SKILL.md) is already loaded with agent identity, core rules, and library list
 3. Layer 2 resources load on-demand:
    - `execution-protocol.md`: the 4-step workflow (Analyze, Plan, Implement, Verify)
-   - `snippets.md`: form + Zod validation patterns
-   - existing component patterns and `snippets.md` when supplied by the skill
+   - `snippets.md`: form and Zod validation patterns, plus existing component patterns when the skill supplies them
 4. Agent outputs a **CHARTER_CHECK**:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -57,7 +67,7 @@ Create a login form component with email and password fields, client-side valida
 ## Example 2: multi-domain project
 
 **You type:**
-```
+```text
 Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ```
 
@@ -68,38 +78,40 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 **Using `/work` (step-by-step with user control):**
 
-```
+```text
 /work Build a TODO app with user authentication, task CRUD, and a mobile app
 ```
 
 3. **Step 1, PM Agent plans:**
    - Identifies domains: backend (auth API, task CRUD), frontend (login, task list UI), mobile (Flutter app)
    - Defines API contracts: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /tasks`, `POST /tasks`, `PUT /tasks/:id`, `DELETE /tasks/:id`
-   - Creates prioritized task breakdown:
-     - P0: Backend auth API, Backend task CRUD API
-     - P1: Frontend login/register, Frontend task list, Mobile auth screens, Mobile task list
-     - P2: QA review
+   - Creates a task breakdown by priority tier (lower tiers run first):
+     - Tier 1: Backend auth API, Backend task CRUD API
+     - Tier 2: Frontend login/register, Frontend task list, Mobile auth screens, Mobile task list
+     - Tier 3: QA review
    - Saves to `.agents/results/plan-{sessionId}.json`
 
 4. **Step 2, Review the plan:** The agent presents the plan and continues within existing authorization, asking only for a material missing decision or new authorization.
 
-5. **Step 3, Agents spawn by priority:**
+5. **Step 3, Agents spawn by priority tier:**
    ```bash
-   # P0 tier (parallel)
-   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent spawn db "User and task schema design" session-todo-01 &
+   # Tier 1 (parallel). Task IDs come from .agents/results/plan-session-todo-01.json
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 --task-id api-auth -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 --task-id db-schema &
    wait
 
-   # P1 tier (parallel, after P0 completes)
-   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   # Tier 2 (parallel, after tier 1 completes)
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 --task-id web-ui -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 --task-id mobile-ui -w ./apps/mobile &
    wait
    ```
+
+   `--task-id` must match a task `id` in the session plan; without it the task ID defaults to the agent ID, and a planned session rejects an ID it does not contain (`Unknown plan task`). Ad-hoc sessions without a plan can omit it.
 
 6. **Step 4, QA Agent reviews:**
    - Security: OWASP Top 10 compliance (JWT validation, CSRF, SQL injection check)
    - Performance: N+1 query check, pagination verification
-   - Accessibility: WCAG 2.1 AA on all frontend components
+   - Accessibility: WCAG 2.2 AA on all frontend components
    - Cross-domain: API contract alignment between frontend, mobile, and backend
 
 7. **Step 5, Iterate:** If QA finds CRITICAL issues, re-spawn the responsible agent with the QA report.
@@ -109,7 +121,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ## Example 3: bug fixing
 
 **You type:**
-```
+```text
 There's a bug. Clicking the save button shows "Cannot read property 'map' of undefined" in the task list
 ```
 
@@ -140,7 +152,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 ## Example 4: design system
 
 **You type:**
-```
+```text
 Design a dark premium landing page for my B2B SaaS analytics product
 ```
 
@@ -186,7 +198,7 @@ oma link claude codex antigravity
 
 # Monitor while agents work (separate terminal)
 oma dashboard terminal        # Terminal UI with live table
-oma dashboard web    # Web UI at http://localhost:9847
+oma dashboard web             # Web UI; prints http://127.0.0.1:9847/
 
 # After implementation, run QA
 oma agent spawn qa "Review notification feature across all platforms" session-notif-01
@@ -209,7 +221,7 @@ Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispat
 ## Example 6: ultrawork for maximum quality
 
 **You type:**
-```
+```text
 /ultrawork Build a payment processing module with Stripe integration
 ```
 
@@ -262,6 +274,7 @@ Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispat
 | `/brainstorm` | Non-persistent | Design-first ideation with 2-3 approach proposals | Before committing to an implementation approach |
 | `/deepinit` | Non-persistent | Full project initialization (AGENTS.md, ARCHITECTURE.md, docs/) | Setting up oh-my-agent in an existing codebase |
 | `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality | Before merging code, pre-deployment review |
+| `/security` | Non-persistent | Scan application source, agent skills, or MCP components; run scoped web penetration tests against a test deployment; validate findings and configure security gates through `oma-security` | Before a release, or when a change needs a security scan or gate |
 | `/debug` | Non-persistent | Structured debugging: reproduce, diagnose, fix, regression test, scan | Investigating bugs and errors |
 | `/design` | Non-persistent | 7-phase design workflow producing DESIGN.md with tokens | Building design systems, landing pages, UI redesigns |
 | `/scm` | Non-persistent | SCM workflow for Git (branch/merge/conflict/worktree/baseline) plus Conventional Commit generation with auto type/scope detection and feature splitting | After completing code changes or when handling repository configuration management tasks |
@@ -274,7 +287,7 @@ Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispat
 | `/recap` | Non-persistent | Summarize work across supported AI tool histories | Daily or period retrospectives |
 | `/schedule` | Non-persistent | Register recurring agent jobs | Nightly recaps, scans, or housekeeping |
 | `/video` | Non-persistent | Compose reproducible videos from scripts, narration, and visuals | Shorts, explainers, and demos |
-| `/ralph` | Persistent | Repeated ultrawork execution with an independent judge and loop safeguards | Explicit requests to repeat execution until mechanical completion criteria pass |
+| `/ralph` | Persistent | Repeated ultrawork execution with a prompted judge and loop safeguards | Explicit requests to repeat execution until mechanical completion criteria pass |
 
 ---
 
@@ -330,7 +343,7 @@ The installer’s `all` preset follows the live registry. The table groups every
 | **oma-coordination** | Manual multi-agent coordination | Step-by-step task and handoff guidance |
 | **oma-db** | Schema design, ERD, query tuning, capacity planning | Schema documentation, migrations, and recovery plan |
 | **oma-debug** | Bug reproduction and root cause analysis | Minimal fix, regression evidence, and pattern scan |
-| **oma-deepsec** | Agent-powered vulnerability scanning | Scan, triage, revalidation, and gate reports |
+| **oma-security** | Source, agent-skill, and MCP security scanning; scoped web penetration tests | Validated findings and scan-gate configuration |
 | **oma-design** | Design systems, landing pages, tokens | `DESIGN.md`, tokens, and component guidance |
 | **oma-dev-workflow** | CI/CD, monorepos, migrations, release automation | Workflow configuration and release checks |
 | **oma-docs** | Broken references and documentation drift | Verify report or diff-targeted sync candidates |
@@ -361,37 +374,21 @@ The installer’s `all` preset follows the live registry. The table groups every
 
 ## Dashboard setup
 
-### Terminal dashboard
-
 ```bash
-oma dashboard terminal
+oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
+oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Displays a live-updating table in your terminal:
-- Session ID and overall status (RUNNING / COMPLETED / FAILED)
-- Per-agent rows: status, turn count, latest activity, elapsed time
-- Watches `.agents/state/memories/` for real-time progress updates
+Both commands watch `.agents/state/memories/` under the current directory. Pass `--project-root <path>` to watch another project, or set `MEMORIES_DIR`. The agent table has four columns:
 
-### Web dashboard
+| Column | Source |
+|--------|--------|
+| Agent | `task-board.md`, or agent names discovered in memory files |
+| Status | Terminal symbols: ● running (green), ✓ completed (cyan), ✗ failed (red), ○ blocked (yellow), ◌ pending (dim) |
+| Turn | `turn: N` in the agent's `progress-<agent>*.md` file |
+| Task | Task text from the task board or the agent's file |
 
-```bash
-oma dashboard web
-# Opens http://localhost:9847
-```
-
-Features:
-- Real-time updates via WebSocket (no manual refresh)
-- Auto-reconnect on connection drops
-- Session status with color-coded agent indicators (green=complete, yellow=running, red=failed)
-- Activity log streaming from progress and result files
-- Historical session data
-
-### Recommended layout
-
-Use 3 terminals:
-1. **Dashboard terminal:** `oma dashboard terminal` for continuous monitoring
-2. **Command terminal:** Agent spawn commands, workflow commands
-3. **Build terminal:** Test runs, build logs, git operations
+Below the table, both dashboards list the latest activity from the five most recently modified memory files. Layouts, data sources, and recovery steps are in [Dashboard Monitoring](./dashboard-monitoring.md).
 
 ---
 
@@ -457,13 +454,15 @@ The `-w` flag on `agent spawn` isolates an agent to a specific directory. This i
 
 ## Troubleshooting
 
+Common problems are below. For error messages, run-result failures, schedules, and hooks, see [Troubleshooting](./troubleshooting.md).
+
 | Problem | Cause | Fix |
 |---------|-------|-----|
 | Skills not detected in IDE | `.agents/skills/` missing or no `SKILL.md` files | Run the installer (`bunx oh-my-agent@latest`), verify symlinks in `.claude/skills/`, restart IDE |
-| CLI not found when spawning | Selected AI CLI not installed or outside `PATH` | Run `which <selected-cli>` (for example, `claude`, `codex`, `agy`, `qwen`, or `kiro`), open a new shell, or install it per the installation guide |
+| CLI not found when spawning | Selected AI CLI not installed or outside `PATH` | Run `which <selected-cli>` (for example, `claude`, `codex`, `agy`, `qwen`, or `kiro-cli`), open a new shell, or install it per the installation guide |
 | Agents producing conflicting code | No workspace isolation | Use separate workspaces: `-w ./apps/api`, `-w ./apps/web` |
-| Dashboard shows "No agents detected" | Agents have not written to memory yet | Wait for agents to start (first write at turn 1), or verify session ID matches |
-| Web dashboard will not start | Dependencies not installed | Run `bun install` in the web/ directory first |
+| Dashboard shows "No agents detected yet" | Agents have not written to memory yet, or the dashboard watches another directory | Wait for the first progress file; run from the project root or pass `--project-root <path>` |
+| `oma dashboard web` exits with "port 9847 is already in use" | Another process holds the port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA report has 50+ issues | Normal for first review of large codebases | Focus on CRITICAL and HIGH severity first. Document MEDIUM/LOW for future sprints. |
 | Auto-detection triggers wrong workflow | Keyword ambiguity | Use explicit `/command` instead of natural language. Report false triggers for improvement. |
 | Persistent workflow will not stop | State file still exists | Say "workflow done" in the chat, or manually delete the state file from `.agents/state/` |
@@ -474,5 +473,13 @@ The `-w` flag on `agent spawn` isolates an agent to a specific directory. This i
 
 ---
 
-For single-domain task patterns, see [Single Skill Guide](./single-skill.md).
-For project integration details, see [Integration Guide](./integration.md).
+## Next steps
+
+- One change in one domain: [Single Skill](./single-skill.md)
+- A feature across several domains: [Multi-Agent Projects](./multi-agent-project.md)
+- A bug with an error message: [Bug Fixing](./bug-fixing.md)
+- Watch a run: [Dashboard Monitoring](./dashboard-monitoring.md)
+- Audit or resume agent results: [Results and Resume](./agent-results-and-resume.md)
+- Something failed: [Troubleshooting](./troubleshooting.md)
+- Project integration details: [Integration Guide](./integration.md)
+- Terms used in these guides: [Glossary](../getting-started/glossary.md)

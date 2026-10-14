@@ -6,6 +6,10 @@ description: Evaluate a complete OMA harness overlay with paired, isolated repos
 
 # Harness Evaluation
 
+:::tip How these fit together
+[Skill evaluation](./skill-eval.md) measures whether one `SKILL.md` helps, and [skill optimization](./skill-opt.md) edits that body under held-out gates. Harness evaluation (this page) compares a whole `.agents/` overlay on repository tasks. [Incident regression cases](./harness-incidents.md) turn observed failures into evaluation cases and skill fixtures. [Project harness evolution](./harness-evolution.md) runs incident capture and skill optimization as a budgeted cycle, and [scheduled agents](./scheduled-agents.md) is the OS scheduler that fires it.
+:::
+
 `oma harness eval` measures whether a candidate OMA harness improves a fixed target agent without changing that agent's model. It adapts the test-time evaluation pattern from [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): keep the target model fixed, change the harness, and compare outcomes on the same tasks.
 
 This command evaluates a larger unit than `oma skill eval`:
@@ -16,6 +20,14 @@ This command evaluates a larger unit than `oma skill eval`:
 | `oma harness eval` | A scoped `.agents/` overlay | Files and output produced in a repository workspace |
 
 Use skill eval to answer “does this skill help?” Use harness eval to answer “does this combination of skills, workflows, rules, and agent instructions make the fixed agent complete repository tasks more reliably?”
+
+**Before the first run:**
+
+- Record the first run with `--live --record`. `inspect` (the default action), `rescore`, `fixture-replay`, and `rerun` all read that record.
+- A verdict needs at least five scored tasks in the selected partition. `pass` needs at least 5 points of lift and no regressions.
+- `inspect`, `rescore`, and `fixture-replay` make no model calls. `--live` and `--action rerun` make two per selected task.
+- `promotionReady` is always `false`. A pass is evidence for a human decision, not an automatic promotion.
+- Live runs need a vendor with project-local skill discovery (see [Run and record](#run-and-record)).
 
 ## Evaluation model
 
@@ -28,6 +40,28 @@ A live run evaluates each task as a paired experiment:
 5. Deterministic checks inspect the resulting workspace and optional agent output. Trusted command checks run afterward in a fresh copy of the task artifacts.
 
 The real project is never used as the arm's working directory. OMA captures raw output and final task artifacts before checks and temporary workspace cleanup. The selected vendor's own process sandbox remains the authority for access outside the working directory.
+
+The diagram shows how paired arms reach a decision. Offline actions re-enter at the pairing step from a stored record.
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
 
 ## Candidate layout
 
@@ -91,7 +125,7 @@ tasks:
         path: docs/feature.md
 ```
 
-Version 2 requires both `validation` and `final-test` tasks. Each task must declare its partition. Validation is the default; use `--partition final-test` for a separate final run after candidate selection. The two partitions cannot share or nest fixture directories. Keep recording files outside fixture directories, candidate overlays, and evaluator inputs; these locations are rejected to prevent later runs from seeing final checks. Version 1 suites still run as `exploratory`; they cannot be selected as final-test.
+Version 2 requires both `validation` and `final-test` tasks. Each task must declare its partition. Validation is the default; use `--partition final-test` for a separate final run after candidate selection. Each run scores only the selected partition, so a decisive validation run needs at least five `validation` tasks and a final-test run needs at least five `final-test` tasks. The example above is kept short for readability and always reports `INSUFFICIENT`. The two partitions cannot share or nest fixture directories. Keep recording files outside fixture directories, candidate overlays, and evaluator inputs; these locations are rejected to prevent later runs from seeing final checks. Version 1 suites still run as `exploratory`; they cannot be selected as final-test.
 
 Task IDs must be unique. Fixture paths and check paths must remain inside the project and task workspace. Suites and fixtures must also stay outside the baseline definitions copied into every arm. Fixtures cannot contain symlinks or agent-harness control surfaces such as `.agents`, `.codex`, `.claude`, vendor skill directories, or root agent-instruction files. This prevents task data from shadowing either arm's controlled harness.
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Use `--yes` for non-interactive execution and `--timeout-minutes` to set the same per-arm wall-clock limit. Live execution requires a vendor that discovers harness files relative to the project workspace. OMA refuses HOME-based discovery because the baseline could see globally installed candidate content.
+Use `--yes` for non-interactive execution and `--timeout <duration>` to set the same per-arm wall-clock limit (default `15m`; a unit is required, for example `--timeout 45m`). `oma harness incident reproduce` accepts the same flag. Live execution requires a vendor that discovers harness files relative to the project workspace. OMA refuses HOME-based discovery because the baseline could see globally installed candidate content.
+
+The vendor comes from the suite's `agent`, resolved through the project model configuration:
+
+| Vendor | Live `harness eval`, `--action rerun`, `incident reproduce` |
+|---|---|
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Allowed: project-local skill directory |
+| `antigravity`, `hermes`, `kimi` | Refused: HOME-based skill discovery |
+| Any vendor without a known project skill directory | Refused |
+
+Offline actions (`inspect`, `rescore`, `fixture-replay`) do not dispatch, so this check does not apply to them.
 
 `--record` writes an immutable version 2 JSON record. The default location is `_runs/` next to the suite, with baseline/candidate hashes in the filename. Use a new `--record-file` for another live run; an existing destination is rejected before dispatch. Records preserve:
 
@@ -326,12 +370,31 @@ OMA also reports:
 
 - corrected tasks: baseline failed and candidate passed;
 - regressed tasks: baseline passed and candidate failed;
-- coverage: at least five paired, scoreable tasks are required.
+- coverage: at least five paired, scoreable tasks in the selected partition are required.
 
-The score decision is `pass` when lift is at least 5 percentage points and there are no regressions. Any regression fails the candidate. A non-negative lift below 5 points warns, and fewer than five paired tasks produces an `insufficient` decision. Add `--require-coverage` to make insufficient coverage exit non-zero in CI. A score is not evidence when an arm is missing, a record hash is stale, or a deterministic check is incomplete. Live dispatch and evaluator-integrity errors force a failing decision; they cannot count as successful lift. Rescoring and fixture replay omit arms with insufficient evidence from scoreable pairs and report an `insufficient` decision instead of treating missing evidence as a candidate regression.
+The score decision is `pass` when lift is at least 5 percentage points and there are no regressions. Any regression or negative lift fails the candidate. A non-negative lift below 5 points warns, and fewer than five paired tasks produces an `insufficient` decision. Add `--require-coverage` to make insufficient coverage exit non-zero in CI. A score is not evidence when an arm is missing, a record hash is stale, or a deterministic check is incomplete. Live dispatch and evaluator-integrity errors force a failing decision; they cannot count as successful lift. Rescoring and fixture replay omit arms with insufficient evidence from scoreable pairs and report an `insufficient` decision instead of treating missing evidence as a candidate regression.
 
 A passing score does not establish promotion eligibility. Reports include the partition, evaluator hash, `promotionReady: false`, and explicit blockers. Legacy and validation runs lack final-test evidence. Current dispatch routes do not attest filesystem access confinement, so even a final-test run cannot claim protected final evaluation or authorize promotion. This field stays false until an execution provider can establish that boundary.
 
+## Troubleshooting
+
+| Message or symptom | Cause | Fix |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | The default action is `inspect`, which reads a stored record. | Run `--live --record` once, or pass an existing record with `--record-file`. |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect` requires every recorded hash to match. | Record a new run with a new `--record-file`. Use `--action rescore` when you want current checks applied to the stored bytes. |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore` or `fixture-replay` was pointed at a record from other inputs. | Select the matching `--record-file` and `--partition`, or record again. |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record` would overwrite an existing file. | Pass a new `--record-file` path. |
+| `--record requires --live or --action rerun` | `--record` was combined with an offline action. | Drop `--record`, or use `--live`. |
+| `--action fixture-replay requires --transcript` | No transcript was supplied. | Add `--transcript <path>`. |
+| `Removed option --timeout-minutes. Use --timeout.` | Old flag spelling. | Use `--timeout 30m` (a unit is required). |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | The suite agent resolves to a HOME-discovery vendor or one without a project skill directory. | Route the suite agent to a vendor in the table under [Run and record](#run-and-record). |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | `--candidate .` or a path inside `.agents/`. | Keep overlays elsewhere, for example `candidates/fix/.agents/`. |
+| `Candidate file is not allowed: <path>` | The overlay contains files outside `agents/`, `rules/`, `skills/`, or `workflows/`. | Remove those files from the overlay. |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | Protected frontmatter differs from the baseline. | Restore `model`, `tools`, `effort`, and the other protected fields. |
+| `Suite requires at least one final-test task` | A `schema_version: 2` suite needs both partitions. | Add a task with `partition: final-test`. |
+| `decision: INSUFFICIENT` | Fewer than five scored tasks in the selected partition, or missing arms. | Add tasks until the partition has five, and read the `replay limitation:` lines. |
+| `decision: FAIL` | A dispatch error (followed by `<task>/<arm>: ...` lines), a regression (task IDs under `regressed:`), or negative lift. | For a dispatch error, read the `exit=... timedOut=... stderr=...` line under each failed arm. For a regression, compare the two arms of the listed tasks. |
+
 ## Current boundary
 
-Candidate overlays are produced externally; this command does not implement a builder or an automated `harness opt` loop. Artifact capture, offline rescoring, tool fixture replay, pinned-file reruns, partition selection, snapshotted evaluators, execution manifests, an environment allowlist, and linked trace events are available, but OS-level secrecy for held-out data, network or credential confinement, repeated stochastic trials, token accounting, and forced model pinning for nested subagent calls are not established. The environment allowlist limits which variables a vendor process inherits; it does not stop a vendor CLI from reading its own credential store or reaching the network. Until nested-call pinning exists, suites intended to measure one fixed model should avoid candidate workflows that spawn other configured agent roles.
+Candidate overlays are produced externally; this command does not implement a builder or an automated `harness opt` loop. Artifact capture, offline rescoring, tool fixture replay, pinned-file reruns, partition selection, snapshotted evaluators, execution manifests, an environment allowlist, and linked trace events are available, but OS-level secrecy for held-out data, network or credential confinement, repeated stochastic trials, and forced model pinning for nested subagent calls are not established. Token and cost usage is recorded per arm and summed when the vendor reports it (see [Usage](#usage)). The environment allowlist limits which variables a vendor process inherits; it does not stop a vendor CLI from reading its own credential store or reaching the network. Until nested-call pinning exists, suites intended to measure one fixed model should avoid candidate workflows that spawn other configured agent roles.
