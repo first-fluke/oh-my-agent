@@ -65,32 +65,93 @@ export const EXPANDED_COMMANDS = [
     source: "state",
     prefix: ["--activate"],
     args: "<session-id>",
+    description: "Set the active session for a category",
   },
-  { path: "state archive", source: "state", prefix: ["--archive"], args: "" },
-  { path: "state purge", source: "state", prefix: ["--purge"], args: "" },
-  { path: "stats reset", source: "stats", prefix: ["--reset"], args: "" },
+  {
+    path: "state archive",
+    source: "state",
+    prefix: ["--archive"],
+    args: "",
+    description: "Move inactive terminal sessions to the state archive",
+  },
+  {
+    path: "state purge",
+    source: "state",
+    prefix: ["--purge"],
+    args: "",
+    description: "Delete inactive sessions older than --older-than",
+  },
+  {
+    path: "stats reset",
+    source: "stats",
+    prefix: ["--reset"],
+    args: "",
+    description: "Reset productivity metrics data",
+  },
   {
     path: "memory maintain backup",
     source: "memory:maintain",
     prefix: ["backup"],
     args: "",
+    description: "Back up AgentMemory local storage",
   },
   {
     path: "memory maintain prune",
     source: "memory:maintain",
     prefix: ["prune"],
     args: "",
+    description: "Delete AgentMemory backups beyond --keep",
   },
   {
     path: "memory maintain vacuum",
     source: "memory:maintain",
     prefix: ["vacuum"],
     args: "",
+    description: "Run SQLite VACUUM on AgentMemory storage",
   },
   {
     path: "state inject-log get",
     source: "state:inject-log",
     prefix: [],
     args: "<session-id> <file>",
+    description: "Print one inject audit log entry for a session",
   },
 ] as const;
+
+/**
+ * Paths that other OMA processes invoke (installed hooks, OS schedulers,
+ * supervisors). They stay runnable but are hidden from help and describe.
+ */
+export const INTERNAL_COMMAND_PATHS: ReadonlySet<string> = new Set([
+  "agent parallel-supervisor",
+  "hook script",
+  "schedule inspect",
+  "schedule builtin-evolution-add",
+]);
+
+/** Descriptions for command groups that exist only as public path prefixes. */
+export const GROUP_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  agent: "Spawn, verify, review, and inspect agent runs",
+  auth: "Check vendor CLI authentication",
+  dashboard: "Monitor agents in the terminal or a browser",
+  goal: "Attach a goal contract to a persistent workflow",
+  hook: "Run and probe vendor hook integration",
+  memory: "Set up and maintain OMA memory",
+  "memory retry": "Retry queued semantic-memory deliveries",
+  model: "Check, probe, and propose model configuration",
+  ralph: "Check ralph execution artifacts",
+  schedule: "Create and manage scheduled agent jobs",
+  "search api": "Fetch through or search platform APIs",
+  "search rss": "Fetch RSS feeds or search Google News",
+  "serena daemon": "Stop idle shared Serena daemons",
+  "serena reaper": "Install or remove the periodic Serena Reaper task",
+  "slide asset": "Download media assets into a deck",
+  "slide export": "Export a deck to PDF, PNG, or PPTX",
+  "slide import": "Import an existing deck",
+  state: "Inspect and maintain OMA sessions and events",
+  "state decisions": "List workflow checkpoints and decision subjects",
+  "state inject-log": "List or read inject audit logs",
+  stats: "View or reset productivity metrics",
+  "image vendor": "List image generation vendors",
+  "video provider": "List video generation providers",
+};

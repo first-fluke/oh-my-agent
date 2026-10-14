@@ -121,6 +121,9 @@ export function registerHarnessIncidentCommands(harness: Command): void {
   addOutputOptions(
     incident
       .command("capture")
+      .description(
+        "Record a failure from an incident spec as a captured incident",
+      )
       .requiredOption("--spec <path>", "Incident specification JSON")
       .option(
         "--run <id>",
@@ -209,6 +212,9 @@ export function registerHarnessIncidentCommands(harness: Command): void {
   addOutputOptions(
     incident
       .command("promote")
+      .description(
+        "Turn a captured incident into a regression fixture for a skill",
+      )
       .argument("<id>", "Captured incident ID")
       .option(
         "--skill <id>",
@@ -316,7 +322,10 @@ export function registerHarnessIncidentCommands(harness: Command): void {
     ),
   );
   addOutputOptions(
-    incident.command("show").argument("<id>", "Captured incident ID"),
+    incident
+      .command("show")
+      .description("Show a captured incident and its provenance")
+      .argument("<id>", "Captured incident ID"),
     "Output incident provenance as JSON",
   ).action(
     runAction(
@@ -330,7 +339,10 @@ export function registerHarnessIncidentCommands(harness: Command): void {
     ),
   );
   addOutputOptions(
-    incident.command("export").argument("<id>", "Captured incident ID"),
+    incident
+      .command("export")
+      .description("Export a captured incident as a one-task eval suite")
+      .argument("<id>", "Captured incident ID"),
     "Output exported fixture path as JSON",
   ).action(
     runAction(
@@ -347,6 +359,9 @@ export function registerHarnessIncidentCommands(harness: Command): void {
   addOutputOptions(
     incident
       .command("reproduce")
+      .description(
+        "Inspect, rescore, replay, or rerun a captured incident against a candidate",
+      )
       .argument("<id>", "Captured incident ID")
       .requiredOption(
         "--candidate <path>",

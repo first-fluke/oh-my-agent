@@ -101,6 +101,9 @@ export function registerVerify(program: Command): void {
   addOutputOptions(
     verifyCmd
       .command("agent <agent-type>", { isDefault: true, hidden: true })
+      .description(
+        "Run the check battery on one agent's output (backend, frontend, mobile, qa, debug, pm)",
+      )
       .option("-w, --workspace <path>", "Workspace path", process.cwd())
       .option(
         "--session-id <id>",

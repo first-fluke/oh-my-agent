@@ -39,7 +39,7 @@ export function registerDocsCommands(program: Command): void {
   docs
     .command("verify [path]")
     .description(
-      "Extract L2 references from docs and report broken targets. " +
+      "Extract file, link, and script references from docs and report broken targets. " +
         "Regenerates docs/generated/doc-refs.json as a side effect. " +
         "Exit code: 0 = clean, 1 = broken refs found. " +
         "URL link checking is delegated to `lychee` (install: brew install lychee).",

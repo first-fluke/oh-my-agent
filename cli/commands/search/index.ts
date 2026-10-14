@@ -160,7 +160,7 @@ export function registerSearchCommand(program: Command): void {
 
   search
     .command("api <url>")
-    .description("Fetch via matched platform API (Phase 0)")
+    .description("Fetch a URL through its matched platform API")
     .option("--timeout <seconds>", "Timeout", "15")
     .option("--locale <value>", "Accept-Language", "en-US,en;q=0.9")
     .option("--pretty", "Pretty-print JSON")

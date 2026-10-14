@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { describe, expect, it, vi } from "vitest";
+import { printDescribe } from "./cli-framework.js";
 import { createCommandSurface } from "./command-surface.js";
 
 function fixture() {
@@ -348,6 +349,41 @@ describe("canonical command surface", () => {
     };
     expect(option(["state", "list"], "--older-than")).toBe("90d");
     expect(option(["search", "api", "search"], "--timeout")).toBe("30s");
+  });
+
+  it("hides internal commands from help and describe but keeps them runnable", () => {
+    const program = new Command("oma").exitOverride();
+    program.command("schedule:inspect <id>").action(() => {});
+    program
+      .command("schedule:list")
+      .description("List jobs")
+      .action(() => {});
+    program
+      .command("state [sid]")
+      .option("--archive", "Archive sessions")
+      .action(() => {});
+    const surface = createCommandSurface(program);
+    const schedule = surface.help.commands.find((c) => c.name() === "schedule");
+    expect(schedule?.description()).toBe(
+      "Create and manage scheduled agent jobs",
+    );
+    expect(schedule?.helpInformation()).toContain("list");
+    expect(schedule?.helpInformation()).not.toContain("inspect");
+    expect(surface.normalize(["schedule", "inspect", "job"])).toEqual([
+      "schedule:inspect",
+      "job",
+    ]);
+
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    printDescribe(surface.help);
+    const described = JSON.stringify(JSON.parse(log.mock.calls[0]?.[0]));
+    log.mockRestore();
+    expect(described).toContain('"schedule list"');
+    expect(described).not.toContain('"schedule inspect"');
+    const state = surface.help.commands.find((c) => c.name() === "state");
+    expect(
+      state?.commands.find((c) => c.name() === "archive")?.description(),
+    ).toBe("Move inactive terminal sessions to the state archive");
   });
 
   it("exposes nested help without invoking an action", () => {

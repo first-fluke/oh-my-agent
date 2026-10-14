@@ -3,6 +3,8 @@ import { standardOption } from "./command-options.js";
 import {
   canonicalCommandPath,
   EXPANDED_COMMANDS,
+  GROUP_DESCRIPTIONS,
+  INTERNAL_COMMAND_PATHS,
   OS_INVOKED_LEGACY_PATHS,
 } from "./command-paths.js";
 
@@ -12,6 +14,7 @@ type Route = {
   source: Command;
   prefix?: readonly string[];
   args?: string;
+  description?: string;
 };
 
 export type CommandSurface = {
@@ -211,6 +214,7 @@ export function createCommandSurface(program: Command): CommandSurface {
         source,
         prefix: entry.prefix,
         args: entry.args,
+        description: entry.description,
       });
   }
   // Prefer the primary registration over an alias converging on the same path.
@@ -235,12 +239,14 @@ export function createCommandSurface(program: Command): CommandSurface {
       prefix = `${prefix} ${name}`.trim();
       let child = nodes.get(prefix);
       if (!child) {
-        child = parent.command(name);
+        child = parent.command(name, {
+          hidden: INTERNAL_COMMAND_PATHS.has(prefix),
+        });
         nodes.set(prefix, child);
       }
       parent = child;
     }
-    parent.description(route.source.description());
+    parent.description(route.description ?? route.source.description());
     if (route.args !== undefined) {
       if (route.args) parent.arguments(route.args);
     } else if (route.sourcePath !== "state") {
@@ -282,6 +288,9 @@ export function createCommandSurface(program: Command): CommandSurface {
       parent.addOption(projected);
     }
   }
+  for (const [prefix, node] of nodes)
+    if (!node.description() && GROUP_DESCRIPTIONS[prefix])
+      node.description(GROUP_DESCRIPTIONS[prefix]);
   const canonicalOrdered = [...canonicalRoutes.values()].sort(
     (a, b) => b.path.split(" ").length - a.path.split(" ").length,
   );

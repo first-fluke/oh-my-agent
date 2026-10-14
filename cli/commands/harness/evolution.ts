@@ -424,6 +424,7 @@ export function registerHarnessEvolutionCommand(harness: Command): void {
   addOutputOptions(
     evolution
       .command("enable")
+      .description("Enable scheduled harness evolution with a dispatch budget")
       .requiredOption(
         "--max-dispatches <n>",
         "Finite model dispatch budget per tick",
@@ -459,7 +460,11 @@ export function registerHarnessEvolutionCommand(harness: Command): void {
         }),
       ),
   );
-  addOutputOptions(evolution.command("disable")).action(
+  addOutputOptions(
+    evolution
+      .command("disable")
+      .description("Disable harness evolution and remove its scheduled job"),
+  ).action(
     runAction(async () => {
       const root = resolve(process.cwd());
       const config = readHarnessEvolutionConfig(root);
@@ -473,7 +478,13 @@ export function registerHarnessEvolutionCommand(harness: Command): void {
       console.log(JSON.stringify({ enabled: false }, null, 2));
     }),
   );
-  addOutputOptions(evolution.command("status")).action(
+  addOutputOptions(
+    evolution
+      .command("status")
+      .description(
+        "Show the evolution config, schedule, pending retries, and overlay conflicts",
+      ),
+  ).action(
     runAction(async () => {
       const root = resolve(process.cwd());
       const config = readHarnessEvolutionConfig(root);
@@ -496,6 +507,7 @@ export function registerHarnessEvolutionCommand(harness: Command): void {
   addOutputOptions(
     evolution
       .command("run")
+      .description("Run one harness evolution tick now")
       .option("--scheduled", "Internal scheduler invocation"),
   ).action(
     runAction(async () => {

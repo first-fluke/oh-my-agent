@@ -103,7 +103,7 @@ export function registerHook(program: Command): void {
   program
     .command("hook")
     .description(
-      "Dispatch a vendor hook event through the centralised oma hook router (design 019)",
+      "Dispatch a vendor hook event through the centralised oma hook router",
     )
     .requiredOption(
       "--vendor <v>",
@@ -185,9 +185,7 @@ export function registerHook(program: Command): void {
 
   program
     .command("hook:probe")
-    .description(
-      "Probe per-vendor L1 hook compatibility and print a matrix (D63)",
-    )
+    .description("Probe per-vendor L1 hook compatibility and print a matrix")
     .option(
       "--vendor <list>",
       `Comma-separated vendors (default: ${PROBE_VENDORS.join(",")})`,

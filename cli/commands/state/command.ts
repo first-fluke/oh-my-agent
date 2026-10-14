@@ -443,7 +443,7 @@ export function registerState(program: Command): void {
   addOutputOptions(
     program
       .command("state:inject-log <sid>")
-      .description("List or view per-boundary inject audit logs (D52)")
+      .description("List or view per-boundary inject audit logs")
       .option("--entry <file>", "Print a specific inject-log entry"),
   ).action(
     runAction(

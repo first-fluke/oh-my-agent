@@ -282,6 +282,8 @@ function commandSupportsDryRun(command: Command): boolean {
   return command.options.some((option) => option.long === "--dry-run");
 }
 
+type HiddenCommand = Command & { _hidden?: boolean };
+
 function describeCommand(command: Command): DescribeCommand {
   return {
     name: command.name(),
@@ -292,9 +294,11 @@ function describeCommand(command: Command): DescribeCommand {
     options: describeOptions(command),
     supportsJsonOutput: commandSupportsJson(command),
     supportsDryRun: commandSupportsDryRun(command),
-    subcommands: command.commands.map((subcommand) =>
-      describeCommand(subcommand),
-    ),
+    // Hidden commands are internal entry points (installed hooks, OS
+    // schedulers, supervisors); describe lists only the public surface.
+    subcommands: command.commands
+      .filter((subcommand) => !(subcommand as HiddenCommand)._hidden)
+      .map((subcommand) => describeCommand(subcommand)),
   };
 }
 
