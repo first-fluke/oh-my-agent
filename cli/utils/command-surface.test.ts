@@ -328,6 +328,28 @@ describe("canonical command surface", () => {
     ).toThrow("conflicts");
   });
 
+  it("adds a unit only to unitless duration defaults in projected help", () => {
+    const program = new Command("oma").exitOverride();
+    program
+      .command("state [sid]")
+      .option("--older-than <duration>", "Purge age threshold", "90d")
+      .action(() => {});
+    const search = program.command("search");
+    search
+      .command("api:search <query>")
+      .option("--timeout <seconds>", "Request timeout", "30")
+      .action(() => {});
+    const { help } = createCommandSurface(program);
+    const option = (path: string[], long: string) => {
+      let command: Command | undefined = help;
+      for (const name of path)
+        command = command?.commands.find((c) => c.name() === name);
+      return command?.options.find((o) => o.long === long)?.defaultValue;
+    };
+    expect(option(["state", "list"], "--older-than")).toBe("90d");
+    expect(option(["search", "api", "search"], "--timeout")).toBe("30s");
+  });
+
   it("exposes nested help without invoking an action", () => {
     const { surface, calls } = fixture();
     const output: string[] = [];

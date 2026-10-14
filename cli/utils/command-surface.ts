@@ -270,8 +270,11 @@ export function createCommandSurface(program: Command): CommandSurface {
             : option.long === "--max-age-days"
               ? "d"
               : "s";
+        // Only bare numbers carry an implied legacy unit; a default such as
+        // "90d" already names its unit and is shown as is.
         projected.default(
-          spelling.flags.includes("<duration>")
+          spelling.flags.includes("<duration>") &&
+            /^\d+(?:\.\d+)?$/.test(String(option.defaultValue))
             ? `${option.defaultValue}${durationUnit}`
             : option.defaultValue,
         );
