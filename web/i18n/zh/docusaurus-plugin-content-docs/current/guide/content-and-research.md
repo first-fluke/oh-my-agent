@@ -1,25 +1,31 @@
 ---
 title: "指南：内容与研究工作流"
 sidebar_label: 概览
-description: 选择适合 PDF 和 HWP 提取、语音、学术研究、幻灯片、回顾、翻译及学术写作的 oh-my-agent 路径。
+description: 为 PDF 和 HWP 提取、语音、学术与 Web 研究、幻灯片、图像、视频、代码讲解、图表、市场研究、回顾、翻译及学术写作选择合适的 oh-my-agent 路径，并了解各自的前置条件。
 ---
 
 # 内容与研究工作流
 
-本指南将文档、音频、研究和演示文稿工作导向负责相应任务的能力。先确定需要的产物，再使用能生成可审阅结果的最小命令或技能入口。
+本指南将文档、音频、研究、媒体和演示文稿工作导向负责相应任务的能力。先确定需要的产物，再使用能生成可审阅结果的最小命令或技能入口。拥有独立指南的能力会在最后一列链接到该指南；其余能力在本页说明。
 
-| 需求 | 入口 | 首个结果 |
-|---|---|---|
-| 提取 PDF | `oma-pdf` 技能，或下方的 `uvx opendataloader-pdf` 命令 | Markdown、文本、JSON 或简短提取报告 |
-| 提取 HWP/HWPX/HWPML | `oma-hwp` 技能和 `bunx kordoc@latest` | Markdown 或结构化 JSON/分块 |
-| 播放语音或转录音频 | `/oma-voice` | 音频和清单，或 `transcript.md` 与清单 |
-| 查找并验证论文 | `oma scholar` | 搜索结果、获取的 sidecar 或 lint 报告 |
-| 制作演示文稿 | `oma-slide` 技能和 `oma slide` | 已验证的 HTML 幻灯片和可选导出文件 |
-| 汇总智能体对话 | `oma recap` | 带证据状态的日期化 Markdown 回顾 |
-| 翻译或审阅本地化文本 | `oma-translation` 技能 | 目标语言文本或有证据支持的审阅结果 |
-| 起草或审计学术文本 | `oma-academic-writing` 技能 | 草稿、修订稿或带 Claim-Evidence Map 的合规报告 |
+| 需求 | 入口 | 前置条件 | 首个结果 | 指南 |
+|---|---|---|---|---|
+| 提取 PDF | `oma-pdf` 技能，或下方的 `uvx opendataloader-pdf` 命令 | `uv`（用于 `uvx`） | Markdown、文本、JSON 或简短提取报告 | [见下文](#extract-pdf-content) |
+| 提取 HWP/HWPX/HWPML | `oma-hwp` 技能和 `bunx kordoc@latest` | Bun | Markdown 或结构化 JSON/分块 | [见下文](#extract-hwp-family-documents) |
+| 播放语音或转录音频 | `/oma-voice` | 运行在 `127.0.0.1:17493` 上的 Voicebox 应用 | 音频和清单，或 `transcript.md` 与清单 | [见下文](#generate-speech-or-transcribe-audio) |
+| 查找并验证论文 | `oma scholar` | 无；可选 `S2_API_KEY`、`OPENALEX_EMAIL` | 搜索结果、获取的 sidecar 或 lint 报告 | [见下文](#search-and-validate-scholarly-material) |
+| 搜索 Web 或获取页面 | `oma-search` 技能、`oma search` | 可选 Chrome、Python `curl_cffi`、`yt-dlp`、`gh`（用 `oma search doctor` 检查） | stdout 上的 JSON | [CLI 命令：search](../cli-interfaces/commands.md#search) |
+| 制作演示文稿 | `oma-slide` 技能和 `oma slide` | Chrome，或 `OMA_CHROME_PATH` | 已验证的 HTML 幻灯片和可选导出文件 | [见下文](#slides-and-presentations) |
+| 生成图像 | `oma-image` 技能、`oma image generate` | `POLLINATIONS_API_KEY`、`codex login` 或已登录的 `agy` 之一 | `.agents/results/images/` 下的图像和 `manifest.json` | [图像生成](./image-generation.md) |
+| 制作短视频、讲解视频或演示视频 | `/video`、`oma video` | Node.js 22+、FFmpeg，然后运行 `oma video doctor --install` | `.agents/results/videos/` 下的运行目录；`oma video render` 后得到 MP4 | [视频生成](./video-generation.md) |
+| 用一个页面讲解变更或主题 | `/explain`、`oma explain` | 变更模式需要 git；PR 引用需要 `gh` | `.agents/results/explain/` 下的自包含 HTML | [代码讲解器](./code-explainer.md) |
+| 交互式架构图 | `/architecture`、`oma diagram` | 无；archify 在首次使用时获取 | Mermaid 代码块，archify 解析成功时另有 `.archify.html` | [图表引擎](./diagram-engine.md) |
+| 社区市场研究 | `oma-market` 技能、`oma market` | Python 3.12+ | `.agents/results/market/` 下的简报 | [市场研究](./market-research.md) |
+| 汇总智能体对话 | `/recap`、`oma recap` | 无 | CLI 输出回顾 JSON；`/recap` 生成带日期的 Markdown 回顾 | [见下文](#recap-agent-conversations) |
+| 翻译或审阅本地化文本 | `oma-translation` 技能 | 无 | 目标语言文本或有证据支持的审阅结果 | [见下文](#translate-or-review-localized-content) |
+| 起草或审计学术文本 | `oma-academic-writing` 技能 | 无 | 草稿、修订稿或带 Claim-Evidence Map 的合规报告 | [见下文](#draft-or-audit-academic-writing) |
 
-本页的 `oma` 命令名称都是已注册的公共命令。`uvx`、`bunx` 和 `bun` 是由所属技能记录的外部转换工具。其余技能通过自然语言或斜杠命令进入，没有单独的 `oma pdf`、`oma hwp`、`oma voice`、`oma translation` 或 `oma academic-writing` 命令。
+本页的 `oma` 命令名称都是已注册的公共命令。`uvx`、`bunx` 和 `bun` 是由所属技能记录的外部转换工具。其余[技能](../getting-started/glossary.md#skill)通过自然语言或斜杠命令进入，没有单独的 `oma pdf`、`oma hwp`、`oma voice`、`oma translation` 或 `oma academic-writing` 命令。
 
 ## 提取 PDF 内容 {#extract-pdf-content}
 
@@ -80,7 +86,7 @@ bun "$HWP_SKILL_DIR/resources/flatten-tables.ts" "$OUT"
 bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 ```
 
-默认输出为 Markdown。需要结构化 AST 时请求 `json`，需要面向检索的分块时请求 `chunks`。转换选项 `--dedupe-headers`、`--keep-empty-cols` 和 `--inline-images` 控制常见的表格和图像情况。将结果交给其他技能前，检查标题、嵌套或合并表格、列表、图像、脚注和链接。
+默认输出为 Markdown。需要结构化 AST 时使用 `bunx kordoc@latest "<input.hwp>" --format json`；需要面向检索的分块时使用 `--format chunks`。转换选项 `--dedupe-headers`、`--keep-empty-cols` 和 `--inline-images` 控制常见的表格和图像情况。将结果交给其他技能前，检查标题、嵌套或合并表格、列表、图像、脚注和链接。
 
 `bun` 和 `bunx` 是前置条件。空输出可能表示内容是扫描图像，应将其交给支持 OCR 的工作流。加密或受 DRM 限制的材料可能不完整。即使 `kordoc` 还有其他创作和解析子命令，PDF、DOCX 和 XLSX 输入仍应交给对应技能。
 
@@ -115,7 +121,7 @@ oma scholar lint --fail-on-warning paper.knows.yaml
 
 Knows 会优先尝试，失败后使用 OpenAlex 和 Semantic Scholar。`--section` 可请求 `statements`、`evidence`、`relations`、`artifacts` 或 `citation`。本地组装期间预期存在悬空跨记录引用时使用 `--lenient`；严格 CI 门槛使用 `--fail-on-warning`。搜索结果或获取的 sidecar 只能作为发现证据，不能证明论文支持每个结论。在智能体中生成或修订 sidecar 后，再运行 `oma scholar lint`，然后分享。
 
-如果远程服务超时，重试更宽泛的查询，或让 CLI 使用回退服务。Semantic Scholar 返回 429 可能是匿名池达到限制；稍后重试，或配置其 API key。如果 sidecar 出现 provenance 枚举错误，请使用 `tool`、`person` 或 `org`；如果仍有关系密度警告，只在来源确实支持时添加证据关系。
+如果远程服务超时，重试更宽泛的查询，或让 CLI 使用回退服务；`--always-fallback` 即使在 Knows 有命中时也会查询 OpenAlex 和 Semantic Scholar。Semantic Scholar 返回 429 可能是匿名池达到限制；稍后重试，或设置 `S2_API_KEY`。设置 `OPENALEX_EMAIL`（以及可选的 `OPENALEX_API_KEY`）以标识你的 OpenAlex 请求。如果 sidecar 出现 provenance 枚举错误，请使用 `tool`、`person` 或 `org`；如果仍有关系密度警告，只在来源确实支持时添加证据关系。
 
 ## 幻灯片与演示文稿 {#slides-and-presentations}
 
@@ -140,9 +146,9 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 需要单页检查时使用 `--slide <file>`，其他进程需要结果时，将 `--report-file <path>` 与 JSON 输出配合使用。`slide import pptx <file>` 会启动导入工作流；`slide asset fetch-video <url>` 会下载视频素材；`slide style list|preview|get <slug>` 会检查样式。PPTX 输出基于栅格，因此不提供可编辑的文本或形状图层。验证和导出需要 Chrome/puppeteer；可执行文件无法自动发现时设置 `OMA_CHROME_PATH`。如果验证经过三次自动修复仍无法收敛，请根据报告的几何问题编辑受影响的片段。
 
-## 回顾智能体对话
+## 回顾智能体对话 {#recap-agent-conversations}
 
-使用 `oma recap` 生成基于证据的工作摘要。日历日期和滚动时间窗口是不同的输入：
+使用 `/recap`（或请智能体做回顾）生成基于证据的工作摘要；它会运行 `oma recap` 收集历史记录。日历日期和滚动时间窗口是不同的输入：
 
 ```bash
 # A calendar day
@@ -155,11 +161,11 @@ oma recap --json
 oma recap --window 7d --tool claude,codex --json
 ```
 
-结果保存在 `.agents/results/recap/` 下，通常单日回顾使用 `{date}.md`，时间范围使用 `{start-date}~{end-date}.md`。回顾按工作内容分组，分别标记已请求、进行中和已完成的工作，并记录缺失的工具历史。需要更窄范围或可视化结果时，使用 `--top`、`--sort`、`--mermaid` 或 `--graph`。如果 CLI 不可用，技能可以使用已记录的 Claude 历史回退路径，但必须说明覆盖范围缩小。
+这些命令会打印收集到的历史记录（默认为终端文本，使用 `--json` 时为 JSON，使用 `--mermaid` 时为 Mermaid 甘特图），而 `--graph` 则改为在浏览器中打开交互式图；CLI 本身不写入任何文件。`/recap` 会把 Markdown 回顾保存在 `.agents/results/recap/` 下，通常单日回顾使用 `{date}.md`，时间范围使用 `{start-date}~{end-date}.md`。回顾按工作内容分组，分别标记已请求、进行中和已完成的工作，并记录缺失的工具历史。需要更窄范围时，使用 `--top` 或 `--sort`。如果 CLI 不可用，技能可以使用已记录的 Claude 历史回退路径，但必须说明覆盖范围缩小。
 
 使用 `oma retro` 进行基于 Git 的工程回顾。它回答的问题不同于对话回顾，还可以通过 `--compare` 比较相邻时间窗口。
 
-## 翻译或审阅本地化内容
+## 翻译或审阅本地化内容 {#translate-or-review-localized-content}
 
 `oma-translation` 适用于 UI 字符串、文档、报告、营销文案或学术文本。用自然语言调用，或使用 `/oma-translation` 技能入口；没有公开的 `oma translation` 命令。
 
@@ -167,7 +173,7 @@ oma recap --window 7d --tool claude,codex --json
 
 对于文档，应在锚点和命令示例确定后翻译稳定的英文页面。CLI 名称、标志、路径、环境变量和代码块必须保持不变，只翻译周围说明，并根据英文结构验证目标页面。源文含义不明确时，应标记问题，不要默默猜测。
 
-## 起草或审计学术写作
+## 起草或审计学术写作 {#draft-or-audit-academic-writing}
 
 使用 `oma-academic-writing` 处理英文论文、报告、文献综述、分析、执行摘要、结论和修订。选择一种模式，并提供评分标准或源文本约束：
 
@@ -181,7 +187,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 起草前使用 `oma scholar` 发现来源并获取 sidecar 证据。如果缺少引用或评分标准，将论断标为待定，或询问缺少的约束；不要用臆造来源填补空白。可交付的成果应是正文加证据图或审计报告，而不是没有可追溯依据的通用“润色”段落。
 
-## 故障恢复检查表
+## 故障恢复检查表 {#recovery-checklist}
 
 | 症状 | 下一步 |
 |---|---|
@@ -189,8 +195,12 @@ Review this draft in review mode and return the compliance report with recommend
 | 本地技能无法连接 | 修改内容请求前，检查所属本地服务或 CLI（`Voicebox`、`Chrome`、`uvx`、`bunx`）。 |
 | 研究结果过少 | 扩大查询范围，检查回退或来源状态，并在报告中保留不确定性。 |
 | 幻灯片导出失败 | 运行 `oma slide validate --workspace <dir> --output json`，修复几何或字体问题，然后重试导出。 |
-| 回顾夸大了完成情况 | 重新检查收据和产物；单独的提示或工具调用不能证明工作已完成。 |
+| 回顾夸大了完成情况 | 重新检查回执和产物；单独的提示或工具调用不能证明工作已完成。 |
 | 翻译改动了代码语法 | 恢复受保护名称，重新运行结构检查，然后再审阅文本质量。 |
 | 学术文本包含缺少支持的论断 | 删除或弱化该论断，通过 scholar 路径补充证据，然后重新运行 Claim-Evidence Map。 |
 
-完整的已注册 CLI 路径和选项别名请参阅 [CLI Commands](../cli-interfaces/commands.md) 和 [CLI Options](../cli-interfaces/options.md)。
+## 后续步骤 {#next-steps}
+
+- [图像生成](./image-generation.md)、[视频生成](./video-generation.md)、[代码讲解器](./code-explainer.md)、[图表引擎](./diagram-engine.md)和[市场研究](./market-research.md)：上表中各项能力的指南
+- [CLI 命令](../cli-interfaces/commands.md)和 [CLI 选项](../cli-interfaces/options.md)：完整的已注册 CLI 路径和选项别名
+- [配置参考](./configuration-reference.md)：`pdf`、`hwp`、`voice` 和 `scholar` 配置区段

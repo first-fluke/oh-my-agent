@@ -6,7 +6,7 @@ description: Waarom Codex-hooks pas na een eenmalige controle uitvoeren, wat er 
 
 # Gids: Codex-hookvertrouwen {#guide-codex-hook-trust}
 
-Wanneer oh-my-agent in een project wordt geïnstalleerd, schrijft het vendor-native hookconfiguraties, waaronder `.codex/hooks.json` voor de Codex CLI. In tegenstelling tot Claude Code voert Codex deze hooks niet automatisch uit. Het gebruikt Trust-On-First-Use (TOFU) als poort voor elke niet-beheerde command-hook: een hook wordt pas uitgevoerd nadat je die één keer hebt bekeken en ingeschakeld.
+Wanneer oh-my-agent in een project wordt geïnstalleerd, schrijft het vendor-native hookconfiguraties, waaronder `.codex/hooks.json` voor de Codex CLI. In tegenstelling tot Claude Code voert Codex deze hooks niet automatisch uit. Het gebruikt Trust-On-First-Use (TOFU) als gate voor elke niet-beheerde command-hook: een hook wordt pas uitgevoerd nadat je die één keer hebt bekeken en ingeschakeld.
 
 Dit is een veiligheidsmechanisme aan de kant van Codex en geen beperking van oh-my-agent. In deze gids lees je welke eenmalige stap je moet uitvoeren, wat er bij updates gebeurt en wat OMA automatisch voor je afhandelt.
 
@@ -14,7 +14,7 @@ Dit is een veiligheidsmechanisme aan de kant van Codex en geen beperking van oh-
 
 ## De eenmalige stap: controleer hooks in Codex {#the-one-time-step-review-hooks-in-codex}
 
-Nadat `oma` (install), `oma link` of `oma update` in een project dat Codex nog niet kent `.codex/hooks.json` heeft geschreven, worden de hooks nog **niet** uitgevoerd. Open Codex en controleer ze één keer:
+Nadat `oma` (install), `oma link` of `oma update` in een project dat Codex nog niet kent `.codex/hooks.json` heeft geschreven (bij een globale installatie `~/.codex/hooks.json`), worden de hooks nog **niet** uitgevoerd. Open Codex en controleer ze één keer:
 
 1. Open het project in de Codex CLI.
 2. Voer `/hooks` uit om de hookbrowser (TUI) te openen.
@@ -22,8 +22,8 @@ Nadat `oma` (install), `oma link` of `oma update` in een project dat Codex nog n
 
 Tot je dit hebt gedaan, blijven de hooks onvertrouwd en worden ze stil overgeslagen. Daarom toont oh-my-agent een melding wanneer het `.codex/hooks.json` aanmaakt of wijzigt:
 
-```
-Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run)
+```text
+⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
 Controleer het gegenereerde bestand voordat je Codex opent:
@@ -62,7 +62,7 @@ Deze vlag wordt **alleen** toegepast op Codex-processen die oh-my-agent zelf sta
 
 ## Geen vlag `[features] hooks` nodig {#no-features-hooks-flag-needed}
 
-Bij oudere setups moest je `[features] hooks = true` in de Codex-configuratie inschakelen. Hooks zijn sinds ongeveer Codex CLI 0.14x stabiel en standaard ingeschakeld, dus dat is niet meer nodig. oh-my-agent schrijft deze instelling niet meer en verwijdert de verouderde vlag `child_agents_md` actief uit de Codex-configuratie wanneer die wordt aangetroffen.
+Oudere releases van oh-my-agent schreven `[features] codex_hooks = true` in de Codex-configuratie. Codex 0.124 hernoemde die vlag naar `hooks` en maakte hooks een stabiele, standaard ingeschakelde feature, dus er is geen vlag meer nodig. oh-my-agent schrijft geen van beide sleutels en verwijdert de verouderde vlaggen `codex_hooks` en `child_agents_md` uit de tabel `[features]` wanneer het die aantreft.
 
 ---
 
@@ -74,3 +74,8 @@ Bij oudere setups moest je `[features] hooks = true` in de Codex-configuratie in
 | `oma update` met ongewijzigde hookcommando’s | Niets — het vertrouwen blijft behouden |
 | `oma update` die een hookcommando wijzigt | Voer `/hooks` opnieuw uit om opnieuw vertrouwen te geven (de installer toont een melding) |
 | Codex-subproces dat door oh-my-agent is gespawnd | Niets — de bypass wordt automatisch toegepast |
+
+## Zie ook {#see-also}
+
+- [Integratie in een bestaand project](./integration.md): wat de installer voor elke vendor schrijft
+- [Globale installatie](./global-install.md): gebruikersbrede installaties die naar `~/.codex/` schrijven

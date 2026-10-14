@@ -14,25 +14,25 @@ Met `oma schedule` kun je elke agent volgens een tijdplanning uitvoeren, onafhan
 
 Wanneer je `oma schedule create` uitvoert, doet oma het volgende:
 
-1. Het schrijft een jobrecord naar het globale manifest op `~/.agents/schedule/schedules.json`.
+1. Het schrijft een jobrecord naar het globale manifest op `~/.oma/schedule/schedules.json`.
 2. Het registreert de job bij de OS-scheduler (macOS launchd, Linux systemd --user of Windows Task Scheduler). De OS-job roept op het ingestelde croninterval `oma schedule run <id>` aan.
-3. Op het uitvoertijdstip zoekt `oma schedule run` de job op, injecteert vastgelegde omgevingsvariabelen, roept `oma agent spawn` aan en schrijft het runlog naar `~/.agents/schedule/runs/<id>/<timestamp>.md`.
+3. Op het uitvoertijdstip zoekt `oma schedule run` de job op, injecteert vastgelegde omgevingsvariabelen, roept `oma agent spawn` aan en schrijft het runlog naar `~/.oma/schedule/runs/<id>/<timestamp>.md`.
 
-Het manifest is de single source of truth (SSOT). De OS-scheduler is alleen een uitvoerder. Alle state — jobdefinities, runlogs en timestamps van de laatste uitvoering — staat onder `~/.agents/schedule/`.
+Het manifest is de single source of truth (SSOT). De OS-scheduler is alleen een uitvoerder. Alle state — jobdefinities, runlogs en timestamps van de laatste uitvoering — staat onder `~/.oma/schedule/`.
 
 ### Alleen globaal ontworpen {#global-only-by-design}
 
 `oma schedule` is bewust globaal voor de gebruiker en niet per project. Omdat de OS-scheduler jobs onafhankelijk van de huidige werkmap uitvoert, is één centraal register de enige praktische SSOT. Elke job legt via `workspace` en `projectLabel` vast bij welk project die hoort, zodat `schedule list` jobs per project kan groeperen terwijl het register gedeeld blijft.
 
-Er is geen vlag `--global`; schedulecommando’s lezen en schrijven altijd naar `~/.agents/schedule/`.
+Er is geen vlag `--global`; schedulecommando’s gebruiken `$OMA_HOME/schedule/`, standaard `~/.oma/schedule/`. Geregistreerde OS-jobs krijgen de opgeloste home expliciet mee, zodat ze zonder login-shell hetzelfde register openen. Voer `oma schedule sync` uit nadat je de home hebt verplaatst, om jobcommando’s en logpaden te vernieuwen.
 
 ### OS-backends {#os-backends}
 
-| Platform | Primaire backend | Fallback |
-|---|---|---|
-| macOS | launchd (plist + `launchctl`) | user `crontab` |
-| Linux | systemd --user timer | user `crontab` |
-| Windows | Task Scheduler (`schtasks`) | — |
+| Platform | Primaire backend | Fallback | stderr van `oma schedule run` |
+|---|---|---|---|
+| macOS | launchd (plist + `launchctl`) | — | `runs/<id>/stderr.log` |
+| Linux | systemd --user timer | user `crontab` wanneer `systemctl --user` niet beschikbaar is | `runs/<id>/stderr.log` (systemd); niet opgeslagen (crontab) |
+| Windows | Task Scheduler (`schtasks`) | — | Niet opgeslagen |
 
 oma selecteert automatisch de beschikbare backend. Je hoeft dit niet handmatig te configureren.
 
@@ -48,7 +48,7 @@ Deze drie functies worden soms door elkaar gehaald omdat ze allemaal betekenen d
 | `ralph` | Voltooiing (Stop-hooklus) | Cross-vendor | Alleen zolang de huidige sessie actief is; ralph is een lus die doorgaat tot de taak klaar is, geen timer |
 | Claude Code `/loop` | Tijd (cron in proces) | Alleen Claude-runtime | Nee — wordt alleen geactiveerd zolang Claude Code draait |
 
-Gebruik `schedule` wanneer je een job elke werkdag om 9:00 wilt uitvoeren. Gebruik `ralph` wanneer je wilt dat een agent blijft itereren tot een kwaliteitsdrempel is bereikt. Gebruik `/loop` alleen al binnen Claude Code wanneer je geen cross-vendor-portabiliteit nodig hebt.
+Gebruik `schedule` wanneer je een job elke werkdag om 9:00 wilt uitvoeren. Gebruik `ralph` wanneer je wilt dat een agent blijft itereren tot een kwaliteitsdrempel is bereikt. Gebruik `/loop` alleen wanneer je al binnen Claude Code werkt en geen cross-vendor-portabiliteit nodig hebt.
 
 ---
 
@@ -61,14 +61,32 @@ oma schedule create qa-reviewer "Run QA review on the latest changes" --cron "0 
 # Run a backend agent every 2 hours using natural-language syntax
 oma schedule create backend "Check for slow queries in the API logs" --every "2h"
 
-# One-shot: run once at 3 PM today (cron syntax) and self-remove
+# One-shot: run at the next 15:00 and remove the job after a successful run
 oma schedule create pm "Generate weekly plan" --cron "0 15 * * *" --once
 
 # Check what is scheduled
 oma schedule list
 
 # Remove a job
-oma schedule delete sch_abc123def456
+oma schedule delete sch_abcdefgh2345
+```
+
+`schedule create` print de job-ID die `run` en `delete` nodig hebben:
+
+```text
+Scheduled job registered: sch_abcdefgh2345
+  Agent:   qa-reviewer
+  Cron:    0 9 * * 1-5
+  Vendor:  auto
+  Project: my-project
+  Once:    false
+```
+
+Activeer een nieuwe job één keer handmatig om de prompt en de vendorcredentials te controleren vóór de eerste geplande uitvoering:
+
+```bash
+oma schedule run sch_abcdefgh2345
+ls ~/.oma/schedule/runs/sch_abcdefgh2345/
 ```
 
 ---
@@ -79,15 +97,15 @@ oma schedule delete sch_abc123def456
 
 Registreer een job voor een geplande agent.
 
-```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
+```bash
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <Nd>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
 ```
 
 **Argumenten:**
 
 | Argument | Vereist | Beschrijving |
 |---|---|---|
-| `agent-id` | Ja | Agenttype dat moet worden gespawnd: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `agent-id` | Ja | Agent die aan `oma agent spawn` wordt doorgegeven: een canonieke ID (`orchestrator`, `architecture`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `qa`, `docs`, `tf-infra`, `explore`) of een definitienaam zoals `qa-reviewer` of `backend-engineer`. Deze wordt bij registratie niet gevalideerd, dus voer na het aanmaken van de job één keer `oma schedule run <id>` uit. |
 | `prompt` | Ja | Taakbeschrijving die tijdens runtime aan de agent wordt doorgegeven |
 
 **Opties:**
@@ -98,9 +116,9 @@ oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" 
 | `--every "<phrase>"` | Interval in natuurlijke taal (zie de tabel hieronder). Wederzijds exclusief met `--cron`. |
 | `--vendor <vendor>` | CLI-vendoroverride die aan `oma agent spawn` wordt doorgegeven: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Standaard wordt de vendor automatisch gedetecteerd uit `oma-config.yaml`. |
 | `-w, --workspace <path>` | Werkmap voor de agent tijdens runtime. Standaard de huidige werkmap op het moment van registratie. |
-| `--once` | Eenmalige modus: de job wordt één keer uitgevoerd en daarna zelf verwijderd. Standaard is de job terugkerend. |
-| `--expires-after <duration>` | Laat een terugkerende job na een duur zoals 30d automatisch verlopen. `0` betekent onbeperkt (standaard). |
-| `--env <KEY1,KEY2>` | Legt de genoemde omgevingsvariabelen (alleen de opgesomde) vast in `~/.agents/schedule/env/<id>` (rechten 0600), zodat ze tijdens runtime kunnen worden geïnjecteerd. Geheimen worden nooit in het manifest zelf geschreven. |
+| `--once` | Eenmalige modus: de job verwijdert zichzelf na de eerste run die met 0 eindigt. Een mislukte run laat de job staan, zodat die bij de volgende cronmatch opnieuw wordt uitgevoerd. Standaard is de job terugkerend. |
+| `--expires-after <duration>` | Verwijdert een terugkerende job bij de eerste uitvoering nadat deze leeftijd is bereikt. Gebruik hele dagen met een eenheid, zoals `30d`; een kaal getal (`30`) wordt geweigerd. `0` betekent onbeperkt (standaard). |
+| `--env <KEY1,KEY2>` | Legt de genoemde omgevingsvariabelen (alleen de opgesomde) vast in `~/.oma/schedule/env/<id>` (rechten 0600), zodat ze tijdens runtime kunnen worden geïnjecteerd. Geheimen worden nooit in het manifest zelf geschreven. |
 | `--dry-run` | Print de opgeloste cron en een afrondingsnotitie zonder een schedulerjob, manifestitem of omgevingsbestand te schrijven. |
 | `--accept-rounded` | Vereist om een interval in natuurlijke taal te registreren nadat OMA het heeft afgerond naar een stap die cron kan uitdrukken. Bekijk het eerst met `--dry-run`. |
 
@@ -124,6 +142,7 @@ Bekijk een afgerond interval voordat je het registreert:
 ```bash
 oma schedule create backend "Check logs" --every 7m --dry-run
 # Preview: requested interval resolves to */6 * * * *
+# Note: Requested every 7m -- 7 is not a divisor of 60; rounded to every 6m (*/6 * * * *).
 # Preview only: no OS job, manifest entry, or env file was written.
 oma schedule create backend "Check logs" --every 7m --accept-rounded
 ```
@@ -156,7 +175,7 @@ oma schedule create backend "Sync external API data" --cron "0 * * * *" --env SY
 
 Toon alle geplande jobs voor alle projecten, gegroepeerd per project en met de driftstatus van het OS.
 
-```
+```bash
 oma schedule list [--json]
 ```
 
@@ -173,22 +192,26 @@ oma schedule list [--json]
 | `synced` | De job bestaat zowel in het manifest als in de OS-scheduler |
 | `stale` | De job is geregistreerd, maar de OS-registratie roept een commando aan dat de huidige CLI niet meer accepteert (bijvoorbeeld `schedule:run <id>`, geschreven vóór de standaardisatie van de commandopaden). Voer `schedule sync` uit om de registratie te herschrijven; `oma update` doet dit automatisch. |
 | `missing-in-os` | De job staat in het manifest maar ontbreekt in de OS-scheduler. Voer `schedule sync` uit om dit te herstellen. |
-| `orphan-in-os` | De job bestaat in de OS-scheduler maar niet in het manifest. Voer `schedule sync --prune` uit om die te verwijderen. |
+| `orphan-in-os` | Een agentschedule (`dev.oma.sch_*`) bestaat in de OS-scheduler maar niet in het manifest. Voer `schedule sync --prune` uit om die te verwijderen. |
+
+Interne services zoals `dev.oma.agentmemory`, `dev.oma.serena-daemon-gc` en `dev.oma.serena-reaper` hebben hun eigen servicemanagers. `schedule list` sluit ze uit van de orphan-detectie en `schedule sync --prune` laat ze staan.
 
 **Uitvoer (tekst):**
 
 Jobs worden gegroepeerd op projectlabel. Elke rij toont: ID, cronexpressie, agent, vendor, OS-backend, of de job terugkerend is en de driftstatus.
 
-```
+```text
 [my-project]
 ID                 CRON           AGENT              VENDOR   BACKEND  RECUR  STATE
 ------------------------------------------------------------------------------------------
-sch_abc123def456   0 9 * * 1-5    qa-reviewer        auto     launchd  true   synced
-sch_xyz789ghi012   */30 * * * *   backend            claude   launchd  true   missing-in-os
+sch_abcdefgh2345   0 9 * * 1-5    qa-reviewer        auto     launchd  true   synced
+sch_mnopqrst4567   */30 * * * *   backend            claude   launchd  true   missing-in-os
 
 [orphan-in-os]
   dev.oma.sch_old (in OS scheduler but not in manifest)
 ```
+
+Jobs die door `oma harness evolution enable` zijn aangemaakt, worden vermeld met agent `__builtin__`; ze voeren `oma harness evolution run --scheduled` uit in dat project. Beheer ze met `oma harness evolution enable` en `disable` (zie [Project Harness Evolution](./harness-evolution.md)) in plaats van met `oma schedule delete`. `oma schedule builtin-evolution-add` en `oma schedule inspect`, die in `oma schedule --help` verschijnen, zijn interne hulpcommando’s voor dat commando.
 
 **Voorbeelden:**
 
@@ -203,7 +226,7 @@ oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 
 Verwijder een geplande job uit zowel het manifest als de OS-scheduler.
 
-```
+```bash
 oma schedule delete <id>
 ```
 
@@ -218,7 +241,7 @@ Als het verwijderen uit de OS-scheduler mislukt (bijvoorbeeld omdat de backend t
 **Voorbeeld:**
 
 ```bash
-oma schedule delete sch_abc123def456
+oma schedule delete sch_abcdefgh2345
 ```
 
 ---
@@ -227,24 +250,24 @@ oma schedule delete sch_abc123def456
 
 Voer een geplande job uit op basis van de ID. De OS-scheduler roept dit aan op het uitvoertijdstip; normaal voer je het niet handmatig uit.
 
-```
+```bash
 oma schedule run <id>
 ```
 
 De wrapper:
-1. Zoekt de job-ID op in het manifest. Eindigt met een niet-nul exitcode als die niet wordt gevonden.
-2. Laadt vastgelegde omgevingsvariabelen uit `~/.agents/schedule/env/<id>` (als het bestand aanwezig is) en injecteert die in het gespawnde proces.
+1. Zoekt de job-ID op in het manifest. Eindigt met een niet-nul exitcode als die niet wordt gevonden. Als `--expires-after` is verstreken, verwijdert hij de job in plaats van die uit te voeren.
+2. Laadt vastgelegde omgevingsvariabelen uit `~/.oma/schedule/env/<id>` (als het bestand aanwezig is) en injecteert die in het gespawnde proces.
 3. Roept `oma agent spawn <agentId> <prompt> <generatedSessionId> --vendor <vendor> -w <workspace>` aan.
-4. Schrijft het runresultaat naar `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`.
+4. Schrijft het runresultaat naar `~/.oma/schedule/runs/<id>/<ISO-timestamp>.md`.
 5. Werkt `lastFiredAt` in het manifest bij.
-6. Verwijdert de job zelf (manifest + OS-scheduler) als `--once` was ingesteld.
+6. Verwijdert de job (manifest + OS-scheduler) als `--once` was ingesteld en de agent met 0 eindigde.
 
-**Authenticatiefouten zijn zichtbaar:** als vendorcredentials zijn verlopen, eindigt de job met een niet-nul code en schrijft die `re-auth required: <vendor>` naar stderr. De job slaagt niet stilzwijgend. Je kunt optioneel een `oma-voice`-melding configureren.
+**Authenticatiefouten zijn zichtbaar:** als vendorcredentials zijn verlopen, eindigt de job met een niet-nul code en schrijft die `re-auth required: <vendor>` naar stderr (opgeslagen in `runs/<id>/stderr.log` bij launchd en systemd). De vendor wordt als `unknown` getoond wanneer de job zonder `--vendor` is aangemaakt. De job slaagt niet stilzwijgend.
 
 Je kunt `schedule run` handmatig voor debugging aanroepen:
 
 ```bash
-oma schedule run sch_abc123def456
+oma schedule run sch_abcdefgh2345
 ```
 
 ---
@@ -253,7 +276,7 @@ oma schedule run sch_abc123def456
 
 Synchroniseer het manifest opnieuw met de OS-scheduler. Gebruik dit na systeemmigraties, resets van de OS-scheduler of om drift te herstellen.
 
-```
+```bash
 oma schedule sync [--prune]
 ```
 
@@ -279,20 +302,23 @@ oma schedule sync --prune
 
 ## Opslagindeling {#storage-layout}
 
-Alle schedule-state staat onder `~/.agents/schedule/`:
+Alle schedule-state staat onder `~/.oma/schedule/`:
 
-```
-~/.agents/schedule/
+```text
+~/.oma/schedule/
 ├── schedules.json          # SSOT manifest (permissions 0600)
 ├── env/
-│   └── sch_abc123def456    # Captured env vars for this job (permissions 0600)
+│   └── sch_abcdefgh2345    # Captured env vars for this job (permissions 0600)
+├── running/                # Lease files while a job runs
 └── runs/
-    └── sch_abc123def456/
-        └── 2026-06-16T090000Z.md   # Run log
+    └── sch_abcdefgh2345/
+        ├── 2026-06-16T09-00-00-000Z.md   # One log per fire: session, exit code, agent output
+        ├── stdout.log                    # launchd and systemd only: stdout of oma schedule run
+        └── stderr.log                    # launchd and systemd only: stderr, e.g. re-auth required
 ```
 
 Rechten:
-- Map `~/.agents/schedule/`: `0700`
+- Map `~/.oma/schedule/`: `0700`
 - Bestanden `schedules.json` en `env/<id>`: `0600`
 
 **Geheimen worden nooit naar `schedules.json` geschreven.** De vlag `--env` schrijft alleen de genoemde sleutels naar een afzonderlijk `0600`-bestand onder `env/`. Alleen expliciet vermelde sleutels worden vastgelegd; een volledige omgevingsdump wordt nooit opgeslagen.
@@ -303,7 +329,7 @@ Rechten:
 
 - `schedule create` is een bewerking op een trusted path: alleen de geauthenticeerde gebruiker kan jobs registreren. Stel `schedule create` niet bloot aan externe of onvertrouwde input. Een geplande prompt is willekeurige code die op een later tijdstip wordt uitgevoerd.
 - `schedule run` voert alleen jobs uit waarvan de ID in het manifest bestaat. Willekeurige argv-injectie is niet mogelijk.
-- Vendorcredentials op schijf (bijvoorbeeld `~/.codex/auth.json` en `~/.grok/auth.json`) worden ongewijzigd gebruikt voor headless dispatch. Er wordt geen extra authenticatiepoort toegepast. Als credentials verlopen, faalt de job zichtbaar.
+- Vendorcredentials op schijf (bijvoorbeeld `~/.codex/auth.json` en `~/.grok/auth.json`) worden ongewijzigd gebruikt voor headless dispatch. Er wordt geen extra authenticatiegate toegepast. Als credentials verlopen, faalt de job zichtbaar.
 
 ---
 
@@ -312,8 +338,8 @@ Rechten:
 **Runlogs controleren:**
 
 ```bash
-ls ~/.agents/schedule/runs/sch_abc123def456/
-cat ~/.agents/schedule/runs/sch_abc123def456/2026-06-16T090000Z.md
+ls ~/.oma/schedule/runs/sch_abcdefgh2345/
+cat ~/.oma/schedule/runs/sch_abcdefgh2345/2026-06-16T09-00-00-000Z.md
 ```
 
 **Job toont `missing-in-os` na een systeemherstart:**
@@ -322,7 +348,11 @@ Voer `oma schedule sync` uit om alle manifestjobs opnieuw bij de OS-scheduler te
 
 **Job is uitgevoerd, maar vendorcredentials waren verlopen:**
 
-Controleer het runlog op `re-auth required: <vendor>`. Authenticeer opnieuw met de vendor-CLI (bijvoorbeeld `claude login` of `codex login`) en voer `oma schedule run <id>` handmatig uit om dit te controleren vóór de volgende geplande uitvoering.
+Controleer op macOS (launchd) en Linux (systemd) `~/.oma/schedule/runs/<id>/stderr.log` op `re-auth required: <vendor>`. Het runlog `<timestamp>.md` bevat de eigen uitvoer en exitcode van de agent. De backends crontab en Task Scheduler bewaren deze stderr niet; voer `oma schedule run <id>` in een terminal uit om hem te zien. Authenticeer opnieuw met de vendor-CLI (bijvoorbeeld `claude login` of `codex login`) en voer `oma schedule run <id>` handmatig uit om dit te controleren vóór de volgende geplande uitvoering.
+
+**Een job wijzigen:**
+
+Er is geen `schedule update`. Maak eerst de vervangende job aan en verwijder daarna de oude ID met `oma schedule delete <old-id>`. `--env` kopieert de waarden van variabelen op het moment dat de job wordt aangemaakt; maak de job na het roteren van een geheim dus opnieuw aan met de nieuwe waarde geëxporteerd in je shell.
 
 **`--every` heeft mijn interval afgerond:**
 
@@ -338,6 +368,15 @@ oma schedule list --json | jq -r '.jobs[] | select(.projectLabel == "my-project"
 
 **Windows-ondersteuning:**
 
-Op Windows gebruikt oma `schtasks` om jobs te registreren. De driftcontrole van `schedule list` en de commando’s `schedule sync` werken op alle platforms hetzelfde.
+Op Windows gebruikt oma `schtasks` om jobs te registreren. Registraties in Task Scheduler kunnen niet worden teruggelezen, dus `schedule list` meldt elke geregistreerde job als `stale`, en `schedule sync` (ook uitgevoerd door `oma update`) registreert ze allemaal opnieuw. Beschouw `stale` op Windows als verwacht; `missing-in-os` en `orphan-in-os` wijzen nog steeds op drift.
 
 Let op: `schtasks` kan niet elke cronvorm uitdrukken. Ondersteunde vormen zijn `*/N * * * *` (elke N minuten), `M * * * *` (elk uur op :M), `M H * * *` (dagelijks), `M H * * D` (wekelijks; `D` kan één dag zijn, een bereik zoals `1-5` of een kommagescheiden lijst zoals `1,3,5`) en `M H D * *` (maandelijks). Andere expressies (bijvoorbeeld een kommagescheiden lijst in het minuutveld) worden op Windows tijdens `schedule create` geweigerd.
+
+`--every` levert alleen een ondersteunde vorm op voor minuutintervallen die 60 delen (bijvoorbeeld `--every 5m` of `--every 30m`). Uur- en dagintervallen (`--every 2h`, `--every "every 6 hours"`, `--every 1d`) en uurstappen zoals `--cron "0 */4 * * *"` leveren `0 */N * * *` of `0 0 */N * *` op, die Task Scheduler bij `schedule create` weigert. Gebruik op Windows in plaats daarvan een vast tijdstip, bijvoorbeeld `--cron "0 9 * * 1-5"`.
+
+---
+
+## Zie ook {#see-also}
+
+- [Project Harness Evolution](./harness-evolution.md) — de ingebouwde `__builtin__`-job die skillverbetering binnen een budget uitvoert.
+- [Harness Evaluation](./harness-eval.md) — hoe de evaluatiecommando’s samenhangen.

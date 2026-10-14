@@ -9,18 +9,29 @@ description: Hướng dẫn sử dụng OMA, bao quát cách chọn task theo ng
 ## Bắt đầu nhanh
 
 1. Mở project trong IDE hoặc CLI hỗ trợ AI đã chọn (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen hoặc host được hỗ trợ khác)
-2. Host đã chọn có thể tải skill từ `.agents/skills/`; hook đã bật có thể phát hiện workflow từ từ khóa ngôn ngữ tự nhiên
+2. Host đã chọn có thể tải [skill](../getting-started/glossary.md#skill) từ `.agents/skills/`; hook đã bật có thể phát hiện [workflow](../getting-started/glossary.md#workflow) từ từ khóa ngôn ngữ tự nhiên
 3. Mô tả điều bạn muốn bằng ngôn ngữ tự nhiên. Host hoặc workflow đã chọn định tuyến task tới skill phù hợp
 4. Với công việc đa agent, dùng `/work` hoặc `/orchestrate`
 
 Task đơn lĩnh vực không cần cú pháp đặc biệt. Dùng [hướng dẫn chọn skill và workflow](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) để chọn giữa skill đơn, `/work`, `/orchestrate`, `/ultrawork` và `/ralph`. Xem [Quick Start](../getting-started/quick-start.md) để setup và [Important Defaults](../getting-started/important-defaults.md) trước khi đổi provider.
+
+## Chọn hướng dẫn
+
+| Task của bạn | Bắt đầu với | Hướng dẫn |
+|-----------|------------|-------|
+| Một thay đổi trong một domain | Prompt thông thường (định tuyến skill) | [Skill đơn](./single-skill.md) |
+| Tính năng trải qua API, UI, mobile hoặc database | `/work` (từng bước) hoặc `/orchestrate` (tự động) | [Dự án nhiều agent](./multi-agent-project.md) |
+| Bug có thông báo lỗi | `/debug` kèm lỗi và các bước tái hiện | [Sửa lỗi](./bug-fixing.md) |
+| Theo dõi agent khi đang chạy | `oma dashboard terminal` | [Giám sát dashboard](./dashboard-monitoring.md) |
+| Kiểm tra hoặc resume kết quả agent | `oma agent resume SESSION_ID --dry-run` | [Agent result và resume](./agent-results-and-resume.md) |
+| Có gì đó thất bại | `oma doctor --json` | [Khắc phục sự cố](./troubleshooting.md) |
 
 ---
 
 ## Ví dụ 1: task đơn giản
 
 **Bạn nhập:**
-```
+```text
 Create a login form component with email and password fields, client-side validation, and accessible labels using Tailwind CSS
 ```
 
@@ -30,10 +41,9 @@ Create a login form component with email and password fields, client-side valida
 2. Tầng 1 (SKILL.md) đã tải với danh tính agent, quy tắc cốt lõi và danh sách thư viện
 3. Tài nguyên tầng 2 tải theo nhu cầu:
    - `execution-protocol.md`: workflow 4 bước (Analyze, Plan, Implement, Verify)
-   - `snippets.md`: mẫu form + xác thực Zod
-   - mẫu component hiện có và `snippets.md` nếu skill cung cấp
+   - `snippets.md`: mẫu form và xác thực Zod, cùng mẫu component hiện có khi skill cung cấp
 4. Agent xuất **CHARTER_CHECK**:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -58,7 +68,7 @@ Create a login form component with email and password fields, client-side valida
 ## Ví dụ 2: dự án đa lĩnh vực
 
 **Bạn nhập:**
-```
+```text
 Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ```
 
@@ -69,39 +79,40 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 **Dùng `/work` (từng bước với quyền kiểm soát của người dùng):**
 
-```
+```text
 /work Build a TODO app with user authentication, task CRUD, and a mobile app
 ```
 
 3. **Bước 1, Agent PM lập kế hoạch:**
    - Xác định domain: backend (auth API, task CRUD), frontend (login, task list UI), mobile (ứng dụng Flutter)
    - Định nghĩa API contract: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /tasks`, `POST /tasks`, `PUT /tasks/:id`, `DELETE /tasks/:id`
-   - Tạo phân rã task theo ưu tiên:
-     - P0: Backend auth API, Backend task CRUD API
-     - P1: Frontend login/register, Frontend task list, Mobile auth screens, Mobile task list
-     - P2: QA review
+   - Tạo phân rã task theo tầng ưu tiên (tầng thấp chạy trước):
+     - Tầng 1: Backend auth API, Backend task CRUD API
+     - Tầng 2: Frontend login/register, Frontend task list, Mobile auth screens, Mobile task list
+     - Tầng 3: QA review
    - Lưu vào `.agents/results/plan-{sessionId}.json`
 
 4. **Bước 2, Review kế hoạch:** Agent trình bày kế hoạch và tiếp tục trong phạm vi quyền hiện có, chỉ hỏi khi thiếu quyết định quan trọng hoặc cần quyền mới.
 
-5. **Bước 3, Spawn agent theo ưu tiên:**
+5. **Bước 3, Spawn agent theo tầng ưu tiên:**
    ```bash
-   # P0 tier (parallel)
-   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent spawn db "User and task schema design" session-todo-01 &
+   # Tier 1 (parallel). Task IDs come from .agents/results/plan-session-todo-01.json
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 --task-id api-auth -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 --task-id db-schema &
    wait
 
-   # P1 tier (parallel, after P0 completes)
-   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   # Tier 2 (parallel, after tier 1 completes)
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 --task-id web-ui -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 --task-id mobile-ui -w ./apps/mobile &
    wait
    ```
 
+   `--task-id` phải khớp với một task `id` trong plan của session; nếu không truyền, task ID mặc định là agent ID, và session có plan sẽ từ chối ID không có trong plan (`Unknown plan task`). Session ad-hoc không có plan có thể bỏ qua flag này.
 
 6. **Bước 4, Agent QA review:**
    - Bảo mật: tuân thủ OWASP Top 10 (xác thực JWT, CSRF, kiểm tra SQL injection)
    - Hiệu suất: kiểm tra truy vấn N+1, xác minh pagination
-   - Accessibility: WCAG 2.1 AA trên mọi component frontend
+   - Accessibility: WCAG 2.2 AA trên mọi component frontend
    - Liên domain: API contract giữa frontend, mobile và backend nhất quán
 
 7. **Bước 5, Lặp:** Nếu QA tìm thấy vấn đề CRITICAL, spawn lại agent chịu trách nhiệm với báo cáo QA.
@@ -111,7 +122,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ## Ví dụ 3: sửa lỗi
 
 **Bạn nhập:**
-```
+```text
 There's a bug. Clicking the save button shows "Cannot read property 'map' of undefined" in the task list
 ```
 
@@ -142,7 +153,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 ## Ví dụ 4: design system
 
 **Bạn nhập:**
-```
+```text
 Design a dark premium landing page for my B2B SaaS analytics product
 ```
 
@@ -188,7 +199,7 @@ oma link claude codex antigravity
 
 # Monitor while agents work (separate terminal)
 oma dashboard terminal        # Terminal UI with live table
-oma dashboard web    # Web UI at http://localhost:9847
+oma dashboard web             # Web UI; prints http://127.0.0.1:9847/
 
 # After implementation, run QA
 oma agent spawn qa "Review notification feature across all platforms" session-notif-01
@@ -211,7 +222,7 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 ## Ví dụ 6: ultrawork để đạt chất lượng tối đa
 
 **Bạn nhập:**
-```
+```text
 /ultrawork Build a payment processing module with Stripe integration
 ```
 
@@ -264,6 +275,7 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 | `/brainstorm` | Không liên tục | Khám phá ý tưởng ưu tiên thiết kế với 2-3 đề xuất hướng tiếp cận | Trước khi cam kết hướng triển khai |
 | `/deepinit` | Không liên tục | Khởi tạo project đầy đủ (AGENTS.md, ARCHITECTURE.md, docs/) | Thiết lập oh-my-agent trong codebase hiện có |
 | `/review` | Không liên tục | Pipeline QA: bảo mật OWASP, hiệu suất, accessibility, chất lượng code | Trước khi merge code hoặc review trước triển khai |
+| `/security` | Không liên tục | Quét mã nguồn ứng dụng, agent skill hoặc thành phần MCP; chạy penetration test web có phạm vi trên bản triển khai thử nghiệm; xác thực phát hiện và cấu hình security gate qua `oma-security` | Trước release, hoặc khi thay đổi cần security scan hoặc gate |
 | `/debug` | Không liên tục | Debug có cấu trúc: tái hiện, chẩn đoán, sửa, regression test, quét | Điều tra bug và error |
 | `/design` | Không liên tục | Workflow design 7 giai đoạn tạo DESIGN.md với token | Xây design system, landing page, UI redesign |
 | `/scm` | Không liên tục | Workflow SCM cho Git (branch/merge/conflict/worktree/baseline) và tạo Conventional Commit với tự động phát hiện type/scope, tách feature | Sau thay đổi code hoặc task quản lý cấu hình repository |
@@ -276,7 +288,7 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 | `/recap` | Không liên tục | Tóm tắt công việc qua lịch sử các tool AI được hỗ trợ | Retrospective theo ngày hoặc kỳ |
 | `/schedule` | Không liên tục | Đăng ký job agent lặp lại | Recap, scan hoặc housekeeping ban đêm |
 | `/video` | Không liên tục | Soạn video có thể tái lập từ script, narration và visual | Shorts, explainer và demo |
-| `/ralph` | Liên tục | Lặp ultrawork với judge độc lập và cơ chế bảo vệ vòng lặp | Khi muốn lặp tới khi tiêu chí hoàn thành kiểm chứng được bằng máy đạt |
+| `/ralph` | Liên tục | Lặp ultrawork với judge được prompt và cơ chế bảo vệ vòng lặp | Khi muốn lặp tới khi tiêu chí hoàn thành kiểm chứng được bằng máy đạt |
 
 ---
 
@@ -286,27 +298,27 @@ oh-my-agent phát hiện từ khóa workflow trong 11 ngôn ngữ. Ví dụ:
 
 | Bạn nhập | Workflow phát hiện | Ngôn ngữ |
 |----------|-------------------|----------|
-| "plan the authentication feature" | `/plan` | English |
-| "do everything in parallel" | `/orchestrate` | English |
-| "review the code for security" | `/review` | English |
-| "brainstorm some ideas for the dashboard" | `/brainstorm` | English |
-| "design a landing page for our product" | `/design` | English |
-| "fix the login bug" | `/debug` | English |
-| "계획 세워줘" | `/plan` | Korean |
-| "버그 수정해줘" | `/debug` | Korean |
-| "디자인 시스템 만들어줘" | `/design` | Korean |
-| "자동으로 실행해" | `/orchestrate` | Korean |
-| "コードレビューして" | `/review` | Japanese |
-| "計画を立てて" | `/plan` | Japanese |
-| "修复这个 bug" | `/debug` | Chinese |
-| "设计一个着陆页" | `/design` | Chinese |
-| "revisar código" | `/review` | Spanish |
-| "diseña la página" | `/design` | Spanish |
-| "debuggen" | `/debug` | German |
-| "coordonner étape par étape" | `/work` | French |
-| "don't stop until it's done" | `/ralph` | English |
-| "끝까지 해" | `/ralph` | Korean |
-| "最後までやって" | `/ralph` | Japanese |
+| "plan the authentication feature" | `/plan` | Tiếng Anh |
+| "do everything in parallel" | `/orchestrate` | Tiếng Anh |
+| "review the code for security" | `/review` | Tiếng Anh |
+| "brainstorm some ideas for the dashboard" | `/brainstorm` | Tiếng Anh |
+| "design a landing page for our product" | `/design` | Tiếng Anh |
+| "fix the login bug" | `/debug` | Tiếng Anh |
+| "계획 세워줘" | `/plan` | Tiếng Hàn |
+| "버그 수정해줘" | `/debug` | Tiếng Hàn |
+| "디자인 시스템 만들어줘" | `/design` | Tiếng Hàn |
+| "자동으로 실행해" | `/orchestrate` | Tiếng Hàn |
+| "コードレビューして" | `/review` | Tiếng Nhật |
+| "計画を立てて" | `/plan` | Tiếng Nhật |
+| "修复这个 bug" | `/debug` | Tiếng Trung |
+| "设计一个着陆页" | `/design` | Tiếng Trung |
+| "revisar código" | `/review` | Tiếng Tây Ban Nha |
+| "diseña la página" | `/design` | Tiếng Tây Ban Nha |
+| "debuggen" | `/debug` | Tiếng Đức |
+| "coordonner étape par étape" | `/work` | Tiếng Pháp |
+| "don't stop until it's done" | `/ralph` | Tiếng Anh |
+| "끝까지 해" | `/ralph` | Tiếng Hàn |
+| "最後までやって" | `/ralph` | Tiếng Nhật |
 
 **Câu hỏi thông tin được lọc:**
 
@@ -332,7 +344,7 @@ Preset `all` của installer bám theo registry đang chạy. Bảng nhóm mọi
 | **oma-coordination** | Điều phối đa agent thủ công | Hướng dẫn task và bàn giao từng bước |
 | **oma-db** | Thiết kế schema, ERD, tuning query, capacity | Tài liệu schema, migration và kế hoạch phục hồi |
 | **oma-debug** | Tái hiện bug và phân tích nguyên nhân gốc | Sửa tối thiểu, evidence hồi quy và quét pattern |
-| **oma-deepsec** | Quét lỗ hổng bằng agent | Báo cáo scan, triage, revalidation và gate |
+| **oma-security** | Quét bảo mật mã nguồn, agent skill và MCP; penetration test web có phạm vi | Phát hiện đã xác thực và cấu hình scan gate |
 | **oma-design** | Design system, landing page, token | `DESIGN.md`, token và hướng dẫn component |
 | **oma-dev-workflow** | CI/CD, monorepo, migration, release automation | Cấu hình workflow và kiểm tra release |
 | **oma-docs** | Ref hỏng và drift tài liệu | Báo cáo verify hoặc ứng viên sync theo diff |
@@ -363,37 +375,21 @@ Preset `all` của installer bám theo registry đang chạy. Bảng nhóm mọi
 
 ## Thiết lập dashboard
 
-### Dashboard terminal
-
 ```bash
-oma dashboard terminal
+oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
+oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Hiển thị bảng cập nhật liên tục trong terminal:
-- Session ID và trạng thái tổng thể (RUNNING / COMPLETED / FAILED)
-- Hàng theo agent: trạng thái, số lượt, hoạt động gần nhất, thời gian đã trôi qua
-- Theo dõi `.agents/state/memories/` để cập nhật progress thời gian thực
+Cả hai lệnh theo dõi `.agents/state/memories/` dưới thư mục hiện tại. Truyền `--project-root <path>` để theo dõi project khác, hoặc đặt `MEMORIES_DIR`. Bảng agent có bốn cột:
 
-### Dashboard web
+| Cột | Nguồn |
+|--------|--------|
+| Agent | `task-board.md`, hoặc tên agent được phát hiện trong file memory |
+| Status | Ký hiệu terminal: ● running (xanh lá), ✓ completed (cyan), ✗ failed (đỏ), ○ blocked (vàng), ◌ pending (mờ) |
+| Turn | `turn: N` trong file `progress-<agent>*.md` của agent |
+| Task | Nội dung task từ task board hoặc file của agent |
 
-```bash
-oma dashboard web
-# Opens http://localhost:9847
-```
-
-Tính năng:
-- Cập nhật thời gian thực qua WebSocket, không cần refresh
-- Tự kết nối lại khi mất kết nối
-- Trạng thái session với chỉ báo agent theo màu (xanh=hoàn thành, vàng=đang chạy, đỏ=thất bại)
-- Luồng log từ file progress và result
-- Dữ liệu session lịch sử
-
-### Bố cục khuyến nghị
-
-Dùng 3 terminal:
-1. **Dashboard terminal:** `oma dashboard terminal` để giám sát liên tục
-2. **Command terminal:** lệnh spawn agent, lệnh workflow
-3. **Build terminal:** test, log build, thao tác git
+Bên dưới bảng, cả hai dashboard liệt kê hoạt động mới nhất từ năm file memory được sửa gần nhất. Bố cục, nguồn dữ liệu và các bước phục hồi có trong [Giám sát dashboard](./dashboard-monitoring.md).
 
 ---
 
@@ -443,29 +439,39 @@ Flag `-w` của `agent spawn` cô lập agent trong thư mục cụ thể. Đi�
 6. **Chọn điều phối theo task.** Bắt đầu bằng skill đơn cho một domain; dùng [hướng dẫn chọn](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) khi task cần phối hợp hoặc workflow chất lượng tường minh.
 7. **Dùng `/brainstorm` trước `/plan` cho ý tưởng mơ hồ.** Brainstorm làm rõ ý định và hướng trước khi PM agent phân tách task.
 8. **Chạy `/deepinit` trên codebase mới.** Nó tạo AGENTS.md và ARCHITECTURE.md giúp mọi agent hiểu cấu trúc project.
-9. **Cấu hình `model_preset`.** Bắt đầu với `auto`, chọn preset cố định như `claude`, `antigravity`, `codex`, `qwen`, `cursor`, `kiro` hoặc `mixed`, hay dùng `free` với gateway local. Thêm override `agents:` để điều chỉnh chi tiết. Xem [Per-Agent Models](./per-agent-models.md).
+9. **Cấu hình `model_preset`.** Bắt đầu với `auto`, chọn preset cố định như `claude`, `antigravity`, `codex`, `qwen`, `cursor`, `kiro` hoặc `mixed`, hay dùng `free` với gateway local. Thêm override `agents:` để điều chỉnh chi tiết. Xem [Cấu hình model theo từng agent](./per-agent-models.md).
 10. **Dùng `/ultrawork` khi bạn muốn toàn bộ quy trình review của nó.** Workflow 5 giai đoạn chạy 12 bước review cô lập; chỉ tải skill không chạy các kiểm tra đó.
 
 ---
 
-## Khắc phục sự cố
+## Khắc phục sự cố {#troubleshooting}
+
+Các vấn đề thường gặp được liệt kê bên dưới. Với thông báo lỗi, lỗi run result, schedule và hook, xem [Khắc phục sự cố](./troubleshooting.md).
 
 | Vấn đề | Nguyên nhân | Cách xử lý |
 |---------|-------|-----|
 | IDE không phát hiện skill | Thiếu `.agents/skills/` hoặc không có file `SKILL.md` | Chạy installer (`bunx oh-my-agent@latest`), kiểm tra symlink trong `.claude/skills/`, khởi động lại IDE |
-| Không tìm thấy CLI khi spawn | CLI AI đã chọn chưa cài hoặc nằm ngoài `PATH` | Chạy `which <selected-cli>` (ví dụ `claude`, `codex`, `agy`, `qwen` hoặc `kiro`), mở shell mới hoặc cài theo installation guide |
+| Không tìm thấy CLI khi spawn | CLI AI đã chọn chưa cài hoặc nằm ngoài `PATH` | Chạy `which <selected-cli>` (ví dụ `claude`, `codex`, `agy`, `qwen` hoặc `kiro-cli`), mở shell mới hoặc cài theo installation guide |
 | Agent tạo code xung đột | Không cô lập workspace | Dùng workspace riêng: `-w ./apps/api`, `-w ./apps/web` |
-| Dashboard hiện "No agents detected" | Agent chưa ghi vào memory | Đợi agent khởi động (ghi đầu tiên ở lượt 1), hoặc xác minh session ID khớp |
-| Dashboard web không khởi động | Chưa cài dependency | Chạy `bun install` trong thư mục web/ trước |
+| Dashboard hiện "No agents detected yet" | Agent chưa ghi vào memory, hoặc dashboard đang theo dõi thư mục khác | Đợi file progress đầu tiên; chạy từ project root hoặc truyền `--project-root <path>` |
+| `oma dashboard web` thoát với "port 9847 is already in use" | Process khác đang giữ port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | Báo cáo QA có hơn 50 vấn đề | Bình thường ở lần review đầu của codebase lớn | Tập trung CRITICAL và HIGH trước. Ghi MEDIUM/LOW cho sprint tương lai. |
 | Tự động phát hiện kích hoạt sai workflow | Từ khóa mơ hồ | Dùng `/command` tường minh thay vì ngôn ngữ tự nhiên. Ghi nhận false trigger để cải thiện. |
 | Workflow liên tục không dừng | File trạng thái vẫn tồn tại | Nói "workflow done" trong chat hoặc xóa thủ công file trạng thái từ `.agents/state/` |
 | Agent bị chặn ở clarification HIGH | Yêu cầu quá mơ hồ | Cung cấp câu trả lời cụ thể agent yêu cầu, rồi chạy lại |
 | Tool MCP không hoạt động | Serena chưa cấu hình hoặc chưa chạy | Chạy `oma doctor` để xác minh cấu hình MCP |
 | Agent vượt ngân sách thực thi | Task quá phức tạp cho một run | Phân tách task, dùng workflow có ranh giới rõ hoặc retry với acceptance contract hẹp hơn |
-| Agent dùng sai CLI | Chưa cấu hình `model_preset` hoặc thiếu override agent | Chạy `oma install` để cấu hình hoặc đặt `model_preset` trong `oma-config.yaml`. Xem [Per-Agent Models](./per-agent-models.md). |
+| Agent dùng sai CLI | Chưa cấu hình `model_preset` hoặc thiếu override agent | Chạy `oma install` để cấu hình hoặc đặt `model_preset` trong `oma-config.yaml`. Xem [Cấu hình model theo từng agent](./per-agent-models.md). |
 
 ---
 
-Xem [Hướng dẫn skill đơn](./single-skill.md) cho mẫu task một lĩnh vực.
-Xem [Hướng dẫn tích hợp](./integration.md) để biết chi tiết tích hợp project.
+## Bước tiếp theo
+
+- Một thay đổi trong một domain: [Skill đơn](./single-skill.md)
+- Tính năng trải qua nhiều domain: [Dự án nhiều agent](./multi-agent-project.md)
+- Bug có thông báo lỗi: [Sửa lỗi](./bug-fixing.md)
+- Theo dõi một run: [Giám sát dashboard](./dashboard-monitoring.md)
+- Kiểm tra hoặc resume kết quả agent: [Agent result và resume](./agent-results-and-resume.md)
+- Có gì đó thất bại: [Khắc phục sự cố](./troubleshooting.md)
+- Chi tiết tích hợp project: [Hướng dẫn tích hợp](./integration.md)
+- Thuật ngữ dùng trong các hướng dẫn này: [Bảng thuật ngữ](../getting-started/glossary.md)

@@ -1,14 +1,23 @@
 ---
 title: "가이드: 코드 설명서"
 sidebar_label: 코드 설명서
-description: oh-my-agent의 /explain 워크플로우와 oma-explanation 스킬을 다루는 완전 가이드입니다. diff, PR, 브랜치, 커밋 범위를 Background / Intuition / Code / Quiz 절을 갖춘 자체 완결형 인터랙티브 HTML 문서로 바꾸며, ref 해석, 독자 수준, 시크릿 게이트, 검증 체크리스트, 엣지 케이스를 설명합니다.
+description: oh-my-agent의 /explain 워크플로우와 oma-explanation 스킬을 다루는 완전 가이드입니다. diff, PR, 브랜치, 커밋 범위, 또는 주제를 자체 완결형 인터랙티브 HTML 문서로 바꾸며, 두 가지 모드, ref 해석, 독자 수준, 초안에서 렌더링까지의 파이프라인, 시크릿 게이트, 검증 체크리스트, 엣지 케이스를 설명합니다.
 ---
 
 # 코드 설명서
 
-`/explain`은 코드 변경을 풍부한 자체 완결형 HTML 문서로 바꿔, 무엇이 어떻게 왜 바뀌었는지 독자에게 가르칩니다. 처음 보는 사람을 위한 건너뛸 수 있는 깊은 배경 설명, 장난감 데이터로 짚는 핵심 직관 절, 사람이 이해하기 좋은 순서로 배열한 코드 워크스루, 그리고 다섯 문제짜리 퀴즈로 구성됩니다. 결과물은 다이어그램과 콜아웃, 접근성 있는 퀴즈를 담은 오프라인 가능한 `.html` 파일 하나이며, `.agents/results/explain/` 아래에 저장하고 전달하기 전에 결정론적 체크리스트로 검증합니다.
+`/explain`은 코드 변경을 풍부한 자체 완결형 HTML 문서로 바꿔, 무엇이 왜 바뀌었는지 독자에게 가르칩니다. 처음 보는 사람을 위한 건너뛸 수 있는 깊은 배경 설명, 장난감 데이터로 짚는 핵심 직관 절, 사람이 이해하기 좋은 순서로 배열한 코드 워크스루, 그리고 다섯 문제짜리 퀴즈로 구성됩니다. 결과물은 다이어그램과 콜아웃, 접근성 있는 퀴즈를 담은 오프라인 가능한 `.html` 파일 하나이며, `.agents/results/explain/` 아래에 저장하고 전달하기 전에 결정론적 체크리스트로 검증합니다.
 
 `/explain`은 슬래시로만 호출합니다. 자연어로 자동 활성화되지 않습니다. "explain"은 일상 어휘라서 의도적으로 키워드 감지에서 제외했습니다(`/convert`와 같은 선례입니다). `/explain`이라고 명시적으로 말하거나, 다른 스킬에 "설명서"를 위임 산출물로 요청하세요.
+
+## 두 가지 모드
+
+| 모드 | 입력 | git 필요 여부 | 페이지가 설명하는 것 |
+|---|---|---|---|
+| Change | `/explain`, `/explain #640`, `/explain a..b`, `/explain <branch>` | 필요(PR ref에는 `gh`도 필요) | 코드 변경: Background, Intuition, Code, Quiz |
+| Topic | `/explain how does session windowing work`(PR, 브랜치, SHA 범위 중 어느 것으로도 해석되지 않는 텍스트) | 불필요 | 개념, 시스템, 또는 질문에 대한 답을 한 장짜리 시각 자료로 설명합니다. 먼저 핵심 답을 제시하고, 이어서 다이어그램, 표, 짧은 산문으로 된 패널을 배치합니다 |
+
+텍스트가 브랜치 이름일 수도 있고 주제일 수도 있다면, 워크플로우는 먼저 git ref로 확인합니다. ref로 해석되면 ref가 우선합니다.
 
 ---
 
@@ -17,13 +26,14 @@ description: oh-my-agent의 /explain 워크플로우와 oma-explanation 스킬�
 - PR, 브랜치, 커밋 범위, 또는 현재 스테이징·미스테이징 변경을 문서로 설명할 때
 - 자기가 쓰지 않은 변경에 동료를 온보딩할 때
 - 크거나 미묘한 변경이 반영된 뒤 검토 가능한 학습 자료를 남길 때
+- 아키텍처, 프로토콜, 비교, 또는 긴 답변을 한 장짜리 시각 자료로 만들 때(Topic 모드)
 
 ## 사용하지 말아야 할 때
 
-- 내레이션이 있는 설명 *영상*을 원할 때 → [`oma-video`](/docs/guide/video-generation)의 explainer 모드를 쓰세요. `/explain`은 영상이 아니라 HTML 문서를 만듭니다
+- 내레이션이 있는 설명 *영상*을 원할 때 → [`oma-video`](./video-generation.md)의 explainer 모드를 쓰세요. `/explain`은 영상이 아니라 HTML 문서를 만듭니다
 - 문서가 아직 코드베이스와 맞는지 확인할 때 → `oma-docs`(드리프트 탐지)를 쓰세요
 - 발표 덱이나 슬라이드를 만들 때 → `oma-slide`(1920×1080 고정 덱 계약)를 쓰세요
-- 결함을 찾거나 리뷰 판정을 내릴 때 → `/review`나 `code-review`를 쓰세요. `/explain`은 변경을 교육적으로 서술할 뿐 평가하지 않습니다
+- 결함을 찾거나 리뷰 판정을 내릴 때 → `oma-qa`나 `/review` 워크플로우를 쓰세요. `/explain`은 변경을 교육적으로 서술할 뿐 평가하지 않습니다
 
 ---
 
@@ -44,12 +54,26 @@ description: oh-my-agent의 /explain 워크플로우와 oma-explanation 스킬�
 | `/explain 640`, `/explain #640` | `gh pr diff`로 가져온 PR #640 | `onboarding` |
 | `/explain a..b` | SHA 범위 `a..b`(또는 `a...b`) | `onboarding` |
 | `/explain feature-branch for reviewer` | `git diff main...feature-branch` | `reviewer` |
+| `/explain how does the row planner work` | Topic 모드: ref가 없고, 에이전트가 주제와 관련된 코드와 문서를 수집합니다 | 해당 없음 |
 
 명시적 ref가 없고 스테이징된 변경과 더티 워킹 트리가 모두 비어 있으면 `HEAD~1..HEAD`로 폴백합니다.
+
+```mermaid
+flowchart TD
+  resolveRef["Resolve the target: ref or topic"] --> collect["Collect the diff or the subject's code and docs"]
+  collect --> preGate["Pre-generation secret gate"]
+  preGate --> draft["Write the Markdown draft"]
+  draft --> render["oma explain render"]
+  render --> validate["oma explain validate + final-HTML secret scan"]
+  validate -->|"fails, up to 3 fix loops"| draft
+  validate -->|passes| deliver["Open the page, report TL;DR and path"]
+```
 
 ---
 
 ## ref 해석 순서
+
+Change 모드에만 해당합니다. Topic 모드는 ref 해석을 건너뜁니다.
 
 1. **명시적 인자**: PR 번호(`#640`), 브랜치 이름, SHA 범위(`a..b` / `a...b`)
 2. **스테이징된 변경**: `git diff --cached`
@@ -73,7 +97,7 @@ diff가 비었거나 ref를 해석할 수 없으면 워크플로우를 멈춥니
 
 ## 문서에 담기는 내용
 
-모든 설명서는 길게 스크롤되는 한 장짜리 페이지입니다(탭도, 여러 페이지 내비게이션도 없습니다). 목차 뒤에 고정된 네 절이 순서대로 이어집니다.
+이 절은 Change 모드를 설명합니다. Change 모드 설명서는 길게 스크롤되는 한 장짜리 페이지입니다(탭도, 여러 페이지 내비게이션도 없습니다). 목차 뒤에 고정된 네 절이 순서대로 이어집니다.
 
 1. **Background**: Tier A(시스템과 아키텍처를 깊이 설명하며 "이미 시스템을 안다면 건너뛰어도 됩니다"라고 표시)와 Tier B(이번 변경에 한정된 좁은 맥락)
 2. **Intuition**: 변경의 핵심을 장난감 데이터 예시와 함께 짚습니다. 재사용되는 다이어그램 계열 2~3개(단순화한 UI 목업, 예시 데이터를 실은 시스템·데이터 흐름도, 변경 전후 상태)로 보강하며, 전부 HTML과 인라인 SVG로만 그립니다. ASCII 아트는 쓰지 않습니다
@@ -84,12 +108,28 @@ diff가 비었거나 ref를 해석할 수 없으면 워크플로우를 멈춥니
 
 ---
 
+## 페이지를 만드는 방식
+
+에이전트가 Markdown 초안을 쓰면 `oma explain render`가 이를 페이지로 바꿉니다. 레이아웃, 테마, 다이어그램 형상, 퀴즈 스크립트는 모델이 아니라 렌더러가 만듭니다.
+
+| 명령 | 용도 |
+|---|---|
+| `oma explain render draft.md` | 초안(파일 또는 stdin)을 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`로 렌더링합니다. 옵션으로 `--template sheet\|doc`, `--theme`, `--mode`, `--archify`, `--open`이 있습니다. |
+| `oma explain lint draft.md` | 렌더링하지 않고 산문만 검사합니다(`--style strict`는 경고가 있으면 1로 종료합니다). |
+| `oma explain components [name]` | 초안에서 쓸 수 있는 컴포넌트(`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`)를 나열하거나, 컴포넌트 하나의 문법을 출력합니다. |
+| `oma explain patch <page.html> --panel <id>` | 렌더링된 페이지에서 패널 하나(문자나 제목으로 지정)만 교체하고 나머지는 유지합니다. |
+| `oma explain validate <file>` | 아래에서 설명하는 결정론적 사후 검사를 실행합니다. |
+
+---
+
 ## HTML 계약
+
+`oma explain render`로 만든 페이지는 이 규칙을 자동으로 충족합니다. HTML을 검사하거나 직접 수정할 때 이 규칙이 중요합니다.
 
 생성된 파일은 `file://`로 오프라인에서 제대로 열려야 하며, **외부 리소스를 전혀 불러오지 않아야** 합니다. CDN 스크립트나 스타일시트, 웹폰트, 외부 이미지를 쓸 수 없습니다(인라인 SVG나 data URI만 허용). 하이퍼링크 앵커(`<a href="https://...">`)는 허용합니다. 금지 대상은 리소스 *로딩*뿐입니다.
 
 - 코드 블록은 `<pre>`를 쓰고, 커스텀 컨테이너를 만들면 `white-space: pre-wrap`을 선언합니다. 외부 문법 강조 라이브러리는 쓰지 않습니다.
-- 폰트 스택은 `local()` Pretendard(CJK용)를 먼저 두고, 그다음 시스템 CJK 폰트, 마지막에 `system-ui`입니다.
+- 폰트 스택은 로컬에 설치된 Pretendard를 패밀리 이름으로 먼저 찾고(페이지는 폰트를 내려받지 않으며 CSS `local()` 함수도 쓰지 않습니다), 그다음 `system-ui`와 시스템 CJK 폰트를 씁니다. 일본어와 중국어 페이지는 Pretendard를 건너뛰고 `system-ui`와 해당 언어용 폰트부터 시작합니다.
 - 375px부터 반응형이고, 라이트와 다크 테마 모두에서 WCAG AA 대비를 지키며, `prefers-color-scheme: dark`를 지원하고 `prefers-reduced-motion`을 존중합니다.
 - 퀴즈는 바닐라 JS입니다. 선택지는 `<button>` 요소로 만들고, 정답과 오답 피드백을 `aria-live="polite"` 영역으로 즉시 알리며, 정답 위치를 무작위로 분산하고, 마지막에 점수 요약을 보여주며, 키보드로 전부 조작할 수 있어야 합니다.
 
@@ -123,23 +163,35 @@ oma explain validate .agents/results/explain/2026-09-09-payment-refactor.html
 oma explain validate --input-dir .agents/results/explain --output json
 ```
 
-첫 번째 형식은 HTML 파일 하나를 확인합니다. 디렉토리 형식은 디렉토리의 모든 보고서를 확인하고 기계 판독 가능한 결과를 반환합니다. JSON 결과를 저장하려면 `--report-file <path>`를 사용합니다(레거시 표기는 `--out-file`입니다). 종료 코드가 0이 아니면 결정론적 검사 중 하나 이상이 실패한 것이며, 설명의 교육적 정확성이나 퀴즈 답변 자체를 평가한 결과는 아닙니다.
+예상 출력(파일 이름은 예시입니다):
+
+```text
+$ oma explain validate .agents/results/explain/2026-09-09-payment-refactor.html
+✔ Explain validation passed: 1/1 file(s) valid
+
+$ oma explain validate ".agents/results/explain/payment refactor.html"
+✖ Explain validation failed: 1/1 file(s) failed
+File: .agents/results/explain/payment refactor.html
+  - [error] filename-format: Filename 'payment refactor.html' does not match format {YYYY-MM-DD}-{slug}.html
+```
+
+첫 번째 형식은 HTML 파일 하나를 확인합니다. 디렉토리 형식은 디렉토리의 모든 보고서를 확인하고 기계 판독 가능한 결과를 반환합니다. JSON 결과를 저장하려면 `--report-file <path>`를 사용합니다. 예전 표기인 `--out-file`은 이제 `Removed option --out-file. Use --report-file.` 오류로 실패합니다. 종료 코드가 0이 아니면 결정론적 검사 중 하나 이상이 실패한 것이며, 설명의 교육적 정확성이나 퀴즈 답변 자체를 평가한 결과는 아닙니다.
 
 ---
 
 ## 출력
 
-```
+```text
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-날짜는 Asia/Seoul 기준으로 지역화합니다. 같은 날짜와 슬러그로 다시 실행하면 이전 파일을 덮어쓰므로, 앞선 실행 결과를 남기는 것은 사용자 몫입니다. 검증이 통과하면 워크플로우가 `open <path>`를 시도하고(경고만 하므로 헤드리스이거나 `open`이 없는 환경에서는 경로 보고로 넘어갑니다), TL;DR과 파일 경로를 보고합니다.
+날짜는 Asia/Seoul 기준으로 지역화합니다. 같은 날짜와 슬러그로 다시 실행하면 이전 파일을 덮어쓰므로, 앞선 실행 결과를 남기는 것은 사용자 몫입니다. 검증이 통과하면 워크플로우가 페이지 열기를 시도하고(경고만 하므로 헤드리스 환경에서는 경로 보고로 넘어갑니다), TL;DR과 파일 경로를 보고합니다. `oma explain render --open`을 쓰면 브라우저에서 페이지를 바로 엽니다.
 
 ---
 
 ## 선택적 archify 사이드카
 
-`oma-config.yaml`에서 `diagram.explain_sidecar: true`를 설정하거나(`/explain 640 with archify`처럼 요청하면), `/explain`은 설명서의 기본 흐름 다이어그램에서 대화형 `{date}-{slug}.archify.html`을 추가로 만들고 일반 앵커로 연결합니다. 설명서는 하나의 자체 완결형 HTML 문서로 유지되며 사이드카는 삽입하지 않습니다. 사이드카가 실패해도 설명서 전달을 막지 않습니다. [다이어그램 엔진](/docs/guide/diagram-engine)을 참고하세요.
+`oma-config.yaml`에서 `diagram.explain_sidecar: true`를 설정하거나 직접 요청하면(`/explain 640 with archify`), `/explain`은 `--archify`로 렌더링합니다. 초안의 `flow` 또는 `sequence` 블록에서 대화형 `{date}-{slug}.archify.html`을 만들고 일반 앵커로 연결합니다. 사이드카는 절대 삽입하지 않으므로 설명서는 자체 완결형 파일 하나로 유지되며, 사이드카가 실패해도 전달을 막지 않습니다. [다이어그램 엔진](./diagram-engine.md#explain)을 참고하세요.
 
 ## 엣지 케이스
 
@@ -150,13 +202,16 @@ oma explain validate --input-dir .agents/results/explain --output json
 | 바이너리나 생성 파일만 있는 diff | 중단. 설명할 것이 없음 |
 | `gh` CLI가 없거나 인증되지 않음 (PR ref) | 설치·인증 안내와 함께 로컬 브랜치 diff 대안 제시 |
 | 머지나 리베이스가 진행 중 | 중단. 워크트리가 불안정함 |
-| git 디렉토리가 아님 | 즉시 중단 |
+| git 디렉토리가 아님 | Change 모드: 즉시 중단. Topic 모드는 git 없이 실행됨 |
 | 수정 루프 3회 뒤에도 검증 실패 | 중단하고 실패한 체크리스트 항목을 보여줌 |
 | `open` 실패 또는 헤드리스 환경 | 경고만 함. 보고된 경로로 충분함 |
 
 ---
 
-## 관련 문서
+## 다음 단계
 
-- [`/explain` 워크플로우](/docs/core-concepts/workflows): ref 해석 → 수집 → 시크릿 게이트 → 생성 → 검증 → 전달 파이프라인
-- [영상 생성](/docs/guide/video-generation): `oma-video`의 explainer *모드*는 HTML 문서 대신 내레이션이 있는 영상을 만듭니다
+- [`/explain` 워크플로우](../core-concepts/workflows.md#explain): ref 해석 → 수집 → 시크릿 게이트 → 생성 → 검증 → 전달 파이프라인
+- [다이어그램 엔진](./diagram-engine.md): 선택적 archify 사이드카
+- [CLI 명령: explain](../cli-interfaces/commands.md#explain): 모든 `oma explain` 옵션
+- [영상 생성](./video-generation.md): `oma-video`의 explainer *모드*는 HTML 문서 대신 내레이션이 있는 영상을 만듭니다
+- [콘텐츠와 리서치 워크플로우](./content-and-research.md): 다른 문서·리서치 기능

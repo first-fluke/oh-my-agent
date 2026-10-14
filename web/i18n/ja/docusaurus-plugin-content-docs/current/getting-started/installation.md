@@ -37,7 +37,7 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 5. 検出したベンダーにランタイム統合層（フック、シンボリックリンク、設定）を設定します。
 6. コードインテリジェンスとメモリの MCP サーバーを設定します。
 
-任意の依存関係で失敗してもブートストラップは処理を続け、後で実行するコマンドを表示します。インストーラーが終わったら `oma doctor` を実行してください。
+任意の依存関係で失敗してもブートストラップは処理を続け、後で実行するコマンドを表示します。AgentMemory はデフォルトのセマンティックメモリプロバイダーです。そのインストール、起動、ヘルスチェックのいずれかに失敗すると、`oma install` と `oma update` は失敗します。`providers.semantic_memory: none` または `honcho` を選ぶか、`OMA_NO_AGENTMEMORY=1` を設定すると、AgentMemory の自動準備をスキップします。インストーラーが終わったら `oma doctor` を実行してください。
 
 ---
 
@@ -49,24 +49,46 @@ bunx oh-my-agent@latest
 
 このコマンドは依存関係のブートストラップなしで対話式インストーラーを起動します。事前に bun をインストールしてください。
 
-インストーラーでスキルプリセットを選びます。現在のプリセットは `cli/constants/skill-data.ts` で定義されています。
+インストーラーで[スキルプリセット](./glossary.md#skill-preset)を選びます。現在のプリセットは `cli/constants/skill-data.ts` の `PRESETS` で定義されています。
 
-### プリセット
+### プリセット {#presets}
 
-| プリセット | 含まれるスキル |
-|--------|----------------|
-| **all** | 現在の33個のスキルパッケージすべて |
-| **fullstack** | アーキテクチャ、ブレインストーミング、デザイン、フロントエンド、バックエンド、モバイル、データベース、PM、QA、デバッグ、SCM、Terraform、開発ワークフロー |
-| **fullstack-web** | フルスタック Web 実装、アーキテクチャ、デザイン、PM、QA、デバッグ、SCM、開発ワークフロー |
-| **fullstack-mobile** | モバイル中心のフルスタック実装、アーキテクチャ、デザイン、PM、QA、デバッグ、SCM、開発ワークフロー |
-| **frontend** | アーキテクチャ、ブレインストーミング、デザイン、フロントエンド、PM、QA、デバッグ、SCM |
-| **backend** | アーキテクチャ、ブレインストーミング、バックエンド、データベース、PM、QA、デバッグ、SCM、開発ワークフロー |
-| **mobile** | アーキテクチャ、ブレインストーミング、モバイル、PM、QA、デバッグ、SCM |
-| **devops** | アーキテクチャ、ブレインストーミング、Terraform、開発ワークフロー、オブザーバビリティ、PM、QA、デバッグ、SCM |
-| **research** | Scholar、Market、PDF、HWP、Academic Writing、Search、Translation、SCM |
-| **content** | Design、Image、Voice、Academic Writing、Translation、SCM |
+リポジトリで必要な作業に合うプリセットを選んでください。下の表のスキル名は `oma-` 接頭辞を省略しています。
 
-プリセットはスキルのまとまりです。スキルごとにサブエージェント定義を1つ作るものではありません。`all` プリセットは実行時のスキルレジストリから展開されるため、リポジトリに追加されたスキルも一覧に反映されます。ドメインプリセットには、その用途に必要なスキルだけが含まれます。
+| プリセット | 選ぶ場面（プロジェクトの種類） | 含まれるスキル | 数 |
+|--------|-------------------------------|-----------------|-------|
+| **all** | 任意のプロジェクト、またはすべてのワークフローをそのまま使いたい場合 | レジストリ内のすべてのスキル | 33 |
+| **fullstack** | バックエンドと Terraform インフラを持つ Web とモバイルのクライアント | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
+| **fullstack-web** | バックエンドとデータベースを持つ Web フロントエンド | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **fullstack-mobile** | バックエンドとデータベースを持つモバイルアプリ | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **frontend** | Web UI のみ | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
+| **backend** | データベースを持つ API またはサービス | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
+| **mobile** | モバイルアプリのみ | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
+| **devops** | インフラ、CI/CD、オブザーバビリティの作業 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **research** | 論文、市場調査、PDF/HWP の変換 | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
+| **content** | デザインアセット、画像、音声、文章コンテンツ | design, image, voice, academic-writing, translation, scm | 6 |
+
+プリセットはスキルのまとまりです。スキルごとにサブエージェント定義を1つ作るものではありません。`all` プリセットは実行時のスキルレジストリから展開されるため、リポジトリに追加されたスキルも一覧に反映されます。ドメインプリセットには、その用途のスキルだけが含まれます。
+
+### プリセット外のスキルが必要なワークフロー {#workflows-that-need-skills-outside-a-preset}
+
+どのプリセットもワークフローとエージェントの定義をすべてインストールします。ただし、いくつかのワークフローはドメインプリセットがインストールしないスキルを読み込みます。ドメインプリセットを選ぶ前に、この表を確認してください。
+
+| ワークフロー | 読み込むスキル | そのスキルを含むプリセット |
+|----------|-------------|-------------------------|
+| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
+| `/ultrawork`, `/ralph` | oma-coordination。起動される `refactor-engineer` エージェントは oma-refactor を使う | all |
+| `/docs` | oma-docs | all |
+| `/explain` | oma-explanation | all |
+| `/security` | oma-security | all |
+| `/recap` | oma-recap | all |
+| `/video` | oma-video | all |
+| `/convert`（PDF、HWP） | oma-pdf, oma-hwp | all, research |
+| `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
+| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/scm` | oma-scm | すべてのプリセット |
+
+不足しているスキルを後から追加するには、プロジェクトルートで `oma doctor` を実行し、不足スキルのプロンプトを受け入れて **Select individually** を選びます。
 
 共有リソース（`_shared/`）はプリセットに関係なく常にインストールされます。コアルーティング、コンテキスト読み込み、プロンプト構造、ベンダー検出、実行プロトコル、メモリプロトコルが含まれます。
 
@@ -74,43 +96,49 @@ bunx oh-my-agent@latest
 
 インストール後、プロジェクトには次のファイルとディレクトリができます。
 
-```
+```text
 .agents/
-├── oma-config.yaml # Your preferences
-├── oma-config.cue # Optional schema-backed configuration
+├── oma-config.yaml          # Your preferences
+├── oma-config.cue           # Optional schema-backed configuration
+├── mcp.json                 # MCP server configuration
 ├── skills/
-│ ├── _shared/ # Shared resources (always installed)
-│ │ ├── core/ # skill-routing, context-loading, etc.
-│ │ ├── runtime/ # memory-protocol, execution-protocols/
-│ │ └── conditional/ # quality-score, experiment-ledger, etc.
-│ ├── oma-frontend/ # Per preset
-│ │ ├── SKILL.md
-│ │ └── resources/
-│ └── ... # Other selected skills
-├── workflows/ # Current workflow definitions (21 in this checkout)
-├── agents/ # Subagent definitions
-├── mcp.json # MCP server configuration
-├── results/ # Plans and agent results (populated by workflows)
-└── state/ # Persistent workflow and coordination state
+│   ├── _shared/             # Shared resources (always installed)
+│   │   ├── core/            # skill-routing, context-loading, etc.
+│   │   ├── runtime/         # memory-protocol, execution-protocols/
+│   │   └── conditional/     # quality-score, experiment-ledger, etc.
+│   ├── oma-frontend/        # Per preset
+│   │   ├── SKILL.md
+│   │   └── resources/
+│   └── ...                  # Other selected skills
+├── workflows/               # Workflow definitions (all 21, every preset)
+├── agents/                  # Subagent definitions (all 12, every preset)
+├── hooks/                   # Hook sources (core/, variants/)
+├── rules/                   # Project rules
+├── config/                  # Shipped defaults (defaults.yaml)
+├── results/                 # Plans and agent results (populated by workflows)
+└── state/                   # Persistent workflow and coordination state
+    └── memories/            # Runtime coordination state
 
 .claude/
-├── settings.json # Vendor settings, when Claude Code is selected
-├── hooks/oma-hook.sh # Generated wrapper for the in-process hook chain
-├── hooks/hud.ts # Optional [OMA] statusline indicator
-├── skills/ # Symlinks → .agents/skills/
-└── agents/ # Generated native subagent files, when supported
-
-.agents/state/memories/
-└── ... # Runtime coordination state
+├── settings.json            # Vendor settings, when Claude Code is selected
+├── hooks/
+│   ├── oma-hook.sh          # Generated wrapper for the in-process hook chain
+│   └── hud.ts               # Optional [OMA] statusline indicator
+├── skills/                  # Symlinks → .agents/skills/
+└── agents/                  # Generated native subagent files, when supported
 ```
 
 インストーラーは、選択したホストのベンダーディレクトリだけを作成します。フックのソースは `.agents/hooks/core/` に残り、ベンダー側に生成されるファイルは統合の出力です。古いプロジェクトでは、Serena が従来の `.serena/memories/` ディレクトリを使う場合もあります。
 
 ---
 
-## 方法3: グローバルインストール
+## 方法3: グローバルインストール {#method-3-global-install}
 
 ダッシュボード、エージェントのスポーン、診断など CLI レベルで使う場合は、oh-my-agent をグローバルにインストールします。
+
+:::note
+この節では `oma` コマンドをインストールします。`oma install --global` とは別物です。`oma install --global` は、スキル、ワークフロー、ルールを OMA のグローバルホーム（`~/.oma/.agents/`）にインストールし、すべてのプロジェクトで使えるようにします。[グローバルインストール](../guide/global-install.md)を参照してください。
+:::
 
 ### Homebrew (macOS/Linux)
 
@@ -132,7 +160,7 @@ npm install --global oh-my-agent
 oma doctor # Health check
 oma doctor --profile # Show resolved model/CLI per dispatch role
 oma dashboard terminal # Terminal monitoring
-oma dashboard web # Web dashboard at http://localhost:9847
+oma dashboard web # Web dashboard at http://127.0.0.1:9847
 oma agent spawn # Spawn agents from terminal
 oma agent parallel # Parallel agent execution
 oma agent status # Check agent status
@@ -142,17 +170,16 @@ oma skill audit # Audit skill routing descriptions
 oma stats get # Session statistics
 oma recap # Conversation history recap across AI tools
 oma link # Regenerate vendor-native files from `.agents/` SSOT
-oma update # Update oh-my-agent
+oma update # Update installed skills from the registry
 oma verify agent <agent-type> # Verify agent output (build/test/scope/secrets)
 oma describe # Introspect CLI commands as JSON
-oma bridge # MCP stdio ↔ Streamable HTTP bridge
+oma bridge # Proxy MCP stdio to a shared per-project Serena server
 oma memory init # Initialize coordination memory schema
 oma auth status # Check CLI auth status
-oma search # Mechanical search primitives (alias: `oma s`)
-oma image # Multi-vendor AI image generation (alias: `oma img`)
+oma search # Mechanical search primitives
+oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma export # Export skills for external IDEs (e.g. cursor)
 oma star # Star the repository
 ```
 
@@ -256,7 +283,7 @@ agents:
 | フィールド | 型 | 必須 | 説明 |
 |-------|------|-------------|-------------|
 | `language` | string | はい | 応答言語コード。en、ko、ja、zh、es、fr、de、pt、ru、nl、pl に対応します。 |
-| `model_preset` | string | はい | アクティブなプリセットキー。`auto` は現在のランタイムに従います。固定キーには `free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro`、`mixed` があります。カスタムプリセットキーも使えます。[エージェント別モデル](../guide/per-agent-models.md)を参照してください。 |
+| `model_preset` | string | はい | アクティブな[モデルプリセット](./glossary.md#model-preset)キー。`auto` は現在のランタイムに従います。固定キーには `free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro`、`mixed` があります。カスタムプリセットキーも使えます。[エージェント別モデル](../guide/per-agent-models.md)を参照してください。 |
 | `default_cli` | string | いいえ | 明示的なエージェント設定と選択したプリセットでベンダーが決まらないとき、`oma agent spawn` が使うフォールバック CLI です。 |
 | `free` | map | いいえ | `model_preset: free` のときに使う FreeLLMAPI ゲートウェイ設定です。API キーは環境変数に置いてください。 |
 | `providers` | map | いいえ | 機能プロバイダーです。`code_intelligence`（`serena` または `gortex`）、`code_intelligence_guard`（`block` または `off`）、`docs`（`context7`）、`web`（`native` または `brave`）、`semantic_memory`（`agentmemory`、`honcho`、`none`）を指定します。 |
@@ -334,14 +361,14 @@ bunx oh-my-agent@latest
 
 選択した AI IDE または CLI でプロジェクトを開き、oh-my-agent を使い始めます。スキルのルーティングはホストに依存し、有効なフックはワークフローを検出できます。次を試してください。
 
-```
+```text
 "Build a login form with email validation using Tailwind CSS"
 ```
 
 または、ワークフローコマンドを使います。
 
-```
+```text
 /plan authentication feature with JWT and refresh tokens
 ```
 
-詳しい例は[使い方ガイド](/docs/guide/usage)を、各スペシャリストの役割は[エージェント](/docs/core-concepts/agents)を参照してください。
+詳しい例は[使い方ガイド](/docs/guide/usage)を、各スペシャリストの役割は[エージェント](/docs/core-concepts/agents)を参照してください。インストールやフックが期待どおりに動かない場合は、[トラブルシューティング](../guide/troubleshooting.md)を参照してください。

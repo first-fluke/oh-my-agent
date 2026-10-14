@@ -12,10 +12,10 @@ Die Standardwerte machen ein neues Projekt sofort nutzbar und bewahren zugleich 
 | Bereich | Standardwert | Auswirkung | Überschreibung |
 |---|---|---|---|
 | Antwortsprache | `en` | Agenten- und Workflow-Antworten sind Englisch, sofern die Projektkonfiguration keine andere unterstützte Sprache auswählt. Eine ausdrückliche Sprachvorgabe des Benutzers oder der Sitzung kann den Projektstandard weiterhin überschreiben, wenn Host oder Workflow dies unterstützt. | `language` in `.agents/oma-config.yaml` oder `.cue` |
-| Modell-Routing | `auto` | Die native Agentenkonfiguration der aktuellen Laufzeit wird verwendet. Unbekannte Laufzeiten greifen auf `default_cli` zurück, sofern dieser gesetzt ist. | `model_preset`, `default_cli` oder `agents.<id>` |
-| Code-Intelligenz | `serena` | Eine neue Installation versucht, Serena zu installieren und dessen MCP-Konfiguration zu verknüpfen. | `providers.code_intelligence: gortex` oder `serena` |
+| Modell-Routing ([Modell-Preset](./glossary.md#model-preset)) | `auto` | Die native Agentenkonfiguration der aktuellen Laufzeit wird verwendet. Unbekannte Laufzeiten greifen auf `default_cli` zurück, sofern dieser gesetzt ist. | `model_preset`, `default_cli` oder `agents.<id>` |
+| Code-Intelligenz ([Fähigkeits-Provider](./glossary.md#capability-provider)) | `serena` | Eine neue Installation versucht, Serena zu installieren und dessen MCP-Konfiguration zu verknüpfen. | `providers.code_intelligence: gortex` oder `serena` |
 | Code-Such-Guard | `block` | Solange ein Code-Intelligenz-Provider konfiguriert ist, blockiert ein PreToolUse-Hook die nativen Tools `Grep`/`Glob` sowie rekursive Shell-Suchen (`rg`, `grep -r`, `find -name`) und verweist den Agenten auf die Tools des Providers. Suchen, die auf bestätigte Ausschlüsse oder Pfade außerhalb des Projekts beschränkt sind, sind erlaubt. Der Hook weist nicht auf einen Bypass für Projektquellcode hin. | `providers.code_intelligence_guard: off` |
-| Semantischer Speicher | `agentmemory` | Wenn verfügbar, wird Agent Memory für den semantischen Speicher ausgewählt. | `providers.semantic_memory: honcho` oder `none` |
+| Semantischer Speicher | `agentmemory` | Installation und Update verwenden einen funktionierenden AgentMemory-Endpunkt weiter oder installieren und starten den verwalteten lokalen Dienst und prüfen anschließend dessen Bereitschaft, bevor sie erfolgreich abschließen. Ausdrücklich angegebene benutzerdefinierte Endpunkte werden geprüft, ohne ersetzt zu werden. | `providers.semantic_memory: honcho` oder `none`; `OMA_NO_AGENTMEMORY=1` überspringt die AgentMemory-Einrichtung. |
 | Websuche | `native` | Die Suche verwendet den nativen Web-Kanal der Laufzeit, sofern kein Provider ausgewählt ist. | `providers.web` |
 | Dokumentations-Provider | `context7` | Für von einem Skill angeforderte Dokumentationsabfragen wird der Context7-Provider verwendet. | `providers.docs` |
 | Telemetrie | deaktiviert | OMA schreibt beim Verknüpfen Opt-out-Einstellungen für die Anbieter. | `telemetry: true` |
@@ -31,7 +31,12 @@ Die Namen und Standardwerte der Provider stammen aus den Laufzeit-Loadern und de
 
 ## Vorrang der Konfiguration
 
-OMA sucht vom aktuellen Arbeitsverzeichnis aus aufwärts nach dem nächsten `.agents/`-Verzeichnis. Wenn vorhanden, liest es `oma-config.cue` und verwendet `oma-config.yaml`, falls die gemeinsame CUE-Auswertung fehlschlägt. Ein projektlokales Overlay (`oma-config.local.cue` oder `oma-config.local.yaml`) wird darüber zusammengeführt; behalten Sie nur eines dieser lokalen Overlays. `OMA_MODEL_PRESET` kann `model_preset` für einen Prozess überschreiben. Eine ungültige lokale Konfiguration beendet das Laden, statt stillschweigend einen anderen Wert auszuwählen.
+OMA lädt globale Standardwerte aus `$OMA_HOME/.agents/` (Standard `~/.oma/.agents/`)
+und legt darüber die gemeinsame Konfiguration des nächstgelegenen Projektverzeichnisses `.agents/` und dessen lokale Datei.
+Verschiedene übergeordnete Projektstämme werden nicht zusammengeführt. In beiden Bereichen
+wird `oma-config.cue` bevorzugt, mit YAML als Fallback; behalten Sie nur ein lokales Overlay
+(`oma-config.local.cue` oder `.yaml`). `OMA_MODEL_PRESET` überschreibt `model_preset`
+nach dem Laden der Dateien. Eine ungültige lokale Konfiguration beendet das Laden.
 
 Vor der festen Preset-Reihenfolge gelten zwei Sonderfälle für das Modell-Routing:
 
@@ -62,8 +67,8 @@ Die standardmäßige Telemetrie ist Opt-out. `telemetry: true` entfernt OMA-Opt-
 | Vendor-Dateien sind veraltet | `oma doctor` und `oma link --dry-run` | Führen Sie nach Änderungen unter `.agents/` `oma link <vendor>` aus und verwenden Sie die SSOT als Quelle. |
 | Ein Modell wird nicht akzeptiert | `oma doctor --profile` | Wechseln Sie zu `auto`, verwenden Sie ein integriertes Preset oder definieren Sie einen Modell-Slug unter `models:`. |
 | Serena-Tools laufen in ein Timeout | `oma doctor` und der Provider-Abschnitt | Versuchen Sie `serena.mode: stdio`; bei Speicherdruck prüfen Sie zuerst mit `oma serena reap --dry-run`. |
-| Ein dauerhafter Workflow lässt sich nicht stoppen | `.agents/state/*-state.json` | Sagen Sie `workflow done`; prüfen Sie die Zustandsdatei nur, wenn der Workflow nicht aufgeräumt hat. |
+| Ein [persistenter Workflow](./glossary.md#persistent-workflow) lässt sich nicht stoppen | `.agents/state/*-state.json` | Sagen Sie `workflow done`; prüfen Sie die Zustandsdatei nur, wenn der Workflow nicht aufgeräumt hat. |
 | Ein geplanter Reaper tut nichts | Abschnitt Serena Reaper in `oma doctor` | Setzen Sie `serena_reaper.enabled: true` und führen Sie danach `oma serena reaper enable` aus. |
 | Lokale Konfiguration verhindert den Start | Fehlerpfad von `oma doctor` | Korrigieren oder entfernen Sie das lokale Overlay; erstellen Sie nicht gleichzeitig `.cue`- und `.yaml`-Overlays. |
 
-Fahren Sie mit [Installation](./installation.md), [Modelle pro Agent](../guide/per-agent-models.md) oder [OMA-Konfigurationssemantik](../guide/oma-config-semantics.md) fort.
+Fahren Sie mit [Installation](./installation.md), [Modelle pro Agent](../guide/per-agent-models.md) oder [OMA-Konfigurationssemantik](../guide/oma-config-semantics.md) fort. Bei Problemen, die hier nicht aufgeführt sind, siehe [Fehlerbehebung](../guide/troubleshooting.md).

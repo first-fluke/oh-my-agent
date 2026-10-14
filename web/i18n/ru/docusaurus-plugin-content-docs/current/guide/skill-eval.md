@@ -1,7 +1,7 @@
 ---
 title: "Оценка полезности skill"
 sidebar_label: Оценка skill
-description: Как создавать fixture задач evaluation для oma skill eval, использовать соглашение каталога .agents/eval/, типы checker и режимы mock/live.
+description: Как создавать fixture задач evaluation для oma skill eval, использовать соглашение каталога .agents/eval/, типы checker, режимы выполнения mock/live и исправление распространённых ошибок.
 ---
 
 # Оценка полезности skill
@@ -21,7 +21,7 @@ description: Как создавать fixture задач evaluation для oma 
 
 Каждая сторона получает оценку (0 = fail, 1 = pass) через checker задачи. Главная метрика:
 
-```
+```text
 utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
@@ -29,11 +29,93 @@ Skill проходит, когда `utilityLift ≥ 5%`. Ниже этого п�
 
 ---
 
+## Быстрый старт {#a-minimal-working-fixture-set}
+
+Для verdict требуется пять fixture (`MIN_TASKS = 5`). Вот минимальный набор для условного skill `oma-scholar`. Четыре fixture используют judge по умолчанию; `structured-output` использует детерминированный checker `assert`.
+
+```yaml
+# .agents/eval/oma-scholar/claims-only.yaml
+id: claims-only
+skill: oma-scholar
+domain: research
+prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
+rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/entity-lookup.yaml
+id: entity-lookup
+skill: oma-scholar
+domain: research
+prompt: "Look up the entity knows:concept/attention-mechanism"
+rubric: "Does the answer return the entity name, description, and at least one related concept?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/partial-fetch.yaml
+id: partial-fetch
+skill: oma-scholar
+domain: research
+prompt: "Fetch only the methods section of knows:generated/reconvla/1.0.0"
+rubric: "Does the answer request only the methods section instead of the full paper?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/structured-output.yaml
+id: structured-output
+skill: oma-scholar
+domain: research
+prompt: "List the claims of knows:generated/reconvla/1.0.0 as JSON objects with id and statement fields"
+checker:
+  type: assert
+  expect_contains:
+    - "statement"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/edge-empty-response.yaml
+id: edge-empty-response
+skill: oma-scholar
+domain: research
+prompt: "Fetch the claims of knows:generated/does-not-exist/0.0.0"
+rubric: "Does the answer report that no record exists instead of inventing claims?"
+weight: 1
+```
+
+Затем запустите:
+
+```bash
+# Seed rollouts (local only — re-run after any SKILL.md edit)
+oma skill eval --skill oma-scholar --live --record --yes
+
+# Offline replay
+oma skill eval --skill oma-scholar --json
+```
+
+Перед dispatch live run печатает preview. С этими пятью fixture он показывает две arm на каждую task плюс два вызова judge на каждую task с judge (vendor зависит от вашей конфигурации):
+
+```text
+Skill eval live run preview:
+  skill: oma-scholar
+  tasks: 5  trials: 1  spawns: 10 arm + 8 judge = 18 dispatches
+  vendor/model: claude
+  read-only: enforced (all spawns use readOnly: true)
+  record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
+```
+
+Далее прочитайте результат, как описано в разделе [Чтение report](#reading-the-report). Разделы после этого — справочный материал.
+
+---
+
 ## Соглашение `.agents/eval/<skill>/`
 
 Размещайте task fixture в `.agents/eval/<skill>/`. Этот путь находится внутри `.agents/`, но за пределами каталога skill, поэтому `oma update` не перезапишет созданные пользователем eval.
 
-```
+```text
 .agents/eval/
 └── oma-scholar/
     ├── claims-only.yaml        ← task fixture
@@ -76,9 +158,9 @@ weight: 1
 
 ### Типы checker
 
-#### judge (по умолчанию)
+#### judge (по умолчанию) {#judge-default}
 
-LLM оценивает output arm по rubric и возвращает PASS или FAIL. Это default, когда `checker` отсутствует или `checker.type` не задан.
+LLM-[judge](../getting-started/glossary.md#judge) оценивает output arm по rubric и возвращает PASS или FAIL. Это default, когда `checker` отсутствует или `checker.type` не задан.
 
 ```yaml
 checker:
@@ -156,7 +238,7 @@ oma skill eval --skill oma-scholar
 
 ### --live
 
-Запускает реальные arm агентов через `oma agent spawn --read-only`. Каждая arm задачи работает в собственном временном workspace, поэтому файлы, созданные одной arm, не влияют на другую. Сбои процесса, конверты ошибок API и сбои judge исключают всё парное сравнение из оценки и записи; частичный output — это диагностические данные.
+Отправляет каждую arm в режиме read-only в CLI роли агента `eval` (см. [Выбор моделей для оценки и optimizer](#choose-the-evaluation-and-optimizer-models)). Каждая arm задачи работает в собственном временном workspace, поэтому файлы, созданные одной arm, не влияют на другую. Сбои процесса, конверты ошибок API и сбои judge исключают всё парное сравнение из оценки и записи; частичный output — это диагностические данные.
 
 Перед dispatch команда печатает предварительную оценку стоимости: количество задач, dispatch arm, dispatch judge и разрешённый вендор. Подтвердите `y` или пропустите с `--yes`.
 
@@ -178,6 +260,18 @@ oma skill eval --skill oma-scholar --live
 # Skip confirmation
 oma skill eval --skill oma-scholar --live --yes
 ```
+
+#### Выбор моделей для оценки и optimizer {#choose-the-evaluation-and-optimizer-models}
+
+Arm задач, judge и зондирующие запросы маршрутизации разрешают роль агента `eval`. Закрепите её в `.agents/oma-config.yaml`:
+
+```yaml
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+```
+
+Maintainer и Proposer команды `oma skill optimize` разрешают роль `opt-agent`. В карте `agents:` нет ключа `opt` (схема config отклоняет неизвестные ключи), поэтому эта роль всегда следует активному `model_preset` или `default_cli` при `model_preset: auto`. Без `agents.eval` роль `eval` использует тот же fallback. Для продвижения нужен `isolation: enforced`, который обеспечивают только защищённые профили Claude и нативного Codex (см. [Изоляцию skill](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Измерение negative transfer
 
@@ -202,7 +296,7 @@ oma skill eval --skill oma-scholar --live --yes
 | `unavailable` | Vendor использует HOME (например, **antigravity**, который читает `~/.gemini/antigravity-cli/skills`); чистый cwd не может скрыть skill. Печатается warning, результат имеет низкую уверенность. |
 | n/a | Mock mode — live dispatch отсутствует. |
 
-Другие runtime-профили остаются доступными для exploratory-оценки, но результаты `best-effort` и `unavailable` блокируют продвижение live-оптимизации. Eval vendor следует конфигурации моделей проекта. Codex использует собственный вход в CLI и настроенные модель/провайдер через `app-server`; он не переключается молча на Claude или клиент с API-ключом. Защищённый контракт Codex рассчитан на CLI 0.154.x на macOS/Linux с нативным файловым хранилищем credential и существующим `auth.json`. Приватный временный config home ссылается на исходные файлы config/auth и исключает общее bootstrap-состояние; credential не копируются, а нативное обновление использует исходный файл auth. Хранилища credential keyring, auto и ephemeral сейчас не поддерживаются. Неподдерживаемые версии, режимы хранилища и сбои контракта становятся ошибками dispatch.
+Другие runtime-профили остаются доступными для exploratory-оценки, но результаты `best-effort` и `unavailable` блокируют продвижение live-оптимизации. Вендор eval определяется ролью агента `eval`. Codex использует собственный вход в CLI и настроенные модель/провайдер через `app-server`; он не переключается молча на Claude или клиент с API-ключом. Защищённый контракт Codex рассчитан на CLI 0.154.x на macOS/Linux с нативным файловым хранилищем credential и существующим `auth.json`. Приватный временный config home ссылается на исходные файлы config/auth и исключает общее bootstrap-состояние; credential не копируются, а нативное обновление использует исходный файл auth. Хранилища credential keyring, auto и ephemeral сейчас не поддерживаются. Неподдерживаемые версии, режимы хранилища и сбои контракта становятся ошибками dispatch.
 
 Judge запускаются в свежих временных каталогах с отключённой памятью оптимизации. Judge Claude и Codex используют тот же защищённый текстовый transport, что и arm оценки. Конфигурация vendor judge фиксируется на время запуска.
 
@@ -258,62 +352,29 @@ JSON-report содержит `routing` с полями `status`, счётчик�
 
 Так измеряется описание относительно каталога через защищённый transport. Это не задействует собственный механизм discovery vendor, который защищённый профиль намеренно отключает, и не измеряет, соблюдается ли процедура загруженного skill; это остаётся предметом измерения utility.
 
-## Минимальный рабочий набор fixture
-
-Для verdict требуется пять fixture (`MIN_TASKS = 5`). Вот минимальный набор для условного skill `oma-scholar`:
-
-```yaml
-# .agents/eval/oma-scholar/claims-only.yaml
-id: claims-only
-skill: oma-scholar
-domain: research
-prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
-rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
-weight: 1
-```
-
-```yaml
-# .agents/eval/oma-scholar/entity-lookup.yaml
-id: entity-lookup
-skill: oma-scholar
-domain: research
-prompt: "Look up the entity knows:concept/attention-mechanism"
-rubric: "Does the answer return the entity name, description, and at least one related concept?"
-weight: 1
-```
-
-Повторите для ещё минимум трёх task. Затем запустите:
-
-```bash
-# Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skill eval --skill oma-scholar --live --record --yes
-
-# Offline replay
-oma skill eval --skill oma-scholar --json
-```
-
 ---
 
-## Чтение report
+## Чтение report {#reading-the-report}
 
 **Текстовый вывод:**
 
-```
+```text
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
   isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
+  repeatability: single-trial  trials: 1  lift 95% CI: [9.2%, 48.0%]  within-task stddev: n/a
   [PASS]
-  Skill shows positive utility lift >= 5%.
+  Skill shows positive utility lift ≥ 5%.
 
   Per-task findings:
     claims-only: baseline=0 treatment=1 lift=+1.000
     entity-lookup: baseline=1 treatment=1 lift=+0.000
     ...
 
-  Thresholds: fail <= 0%, warn < 5%
+  Thresholds: fail ≤ 0%, warn < 5%
 ```
 
 **JSON output** (через `--json`):
@@ -383,3 +444,23 @@ Mock determinism сохраняется так: во время `--live --record
 ## Поставка eval task вместе со skill
 
 Skill может содержать набор eval task, если fixture размещены в `.agents/eval/<skill>/`. Это созданные пользователем файлы за пределами каталога skill, поэтому они сохраняются после `oma update`. Создавая новый skill с `oma-skill-creation`, добавьте соответствующий набор fixture в `eval/`, чтобы будущие авторы могли проверить эффект skill. Workflow авторинга описан в `.agents/skills/oma-skill-creation/SKILL.md`.
+
+---
+
+## Устранение неполадок {#troubleshooting}
+
+Эти сообщения выводят `oma skill eval` и `oma skill optimize`.
+
+| Сообщение или симптом | Причина | Исправление |
+|---|---|---|
+| `[oma skill opt] no eval coverage for skill "<id>": found N task fixture(s), need at least 5.` | В `.agents/eval/<id>/` меньше пяти корректных fixture, или не указан `--skill` (тогда читается `_all`). | Добавьте fixture (см. [Быстрый старт](#a-minimal-working-fixture-set)) и передайте `--skill <id>`. |
+| `[oma skill eval] skipped <file>: does not match TaskFixture schema` | В fixture отсутствует `id`, `skill`, `domain`, `prompt` или числовой `weight`. | Добавьте недостающее поле, например `weight: 1`. |
+| `[oma skill eval] discarded N stale rollout entries from _rollouts/<file>: <reason>. Re-run --live --record to refresh.` | После записи изменились body skill, prompt, checker или протокол evaluator. | Снова выполните `--live --record`. |
+| `INSUFFICIENT COVERAGE — fewer than 5 tasks found.` | После пропусков и исключений оценено меньше пяти task. | Исправьте warning, напечатанные выше этого сообщения, затем снова сделайте запись. |
+| `[oma skill eval] isolation: <status> for vendor <vendor> — baseline may be contaminated; result is low-confidence.` | Роль `eval` разрешается в vendor без защищённого профиля. | Задайте в `agents.eval` модель Claude или Codex (см. [Выбор моделей для оценки и optimizer](#choose-the-evaluation-and-optimizer-models)). |
+| `[oma skill eval] dispatch timed out after <N>s.` | Вызов arm или judge превысил `OMA_SKILL_EVAL_TIMEOUT_MS`. | Увеличьте `OMA_SKILL_EVAL_TIMEOUT_MS` для fixture, которым нужны длинные ответы. |
+| `Choose either --live or --mock` | Переданы оба флага. | Передайте только один из них. |
+| `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` запущен без `--live`. | Добавьте `--live` или используйте `oma skill eval --mock` для offline-проверок. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Роль `opt-agent` разрешается в vendor без защищённого текстового transport. | Выберите `model_preset` (или, при `model_preset: auto`, `default_cli`), который разрешается в Claude или Codex. |
+| `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (ничего не записано) | `--apply` для skill `oma-*` без `--yes`. | Сохраните diff из dry-run и отправьте его upstream или перезапустите с `--yes`. |
+| `[oma skill opt] an active project overlay owns this skill; ...` | [Эволюция harness проекта](./harness-evolution.md) установила overlay для этого skill. | Сначала выполните `oma skill rollback --skill <id>` или позвольте циклу эволюции применить изменение. |

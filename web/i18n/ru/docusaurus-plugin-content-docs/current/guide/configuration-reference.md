@@ -18,18 +18,27 @@ oma doctor --profile
 
 ## Какой файл имеет приоритет
 
-Загрузчик поднимается от текущего каталога вверх и останавливается на ближайшем каталоге `.agents/`, содержащем общую или локальную конфигурацию. В этом каталоге:
+Загрузчик читает глобальные значения по умолчанию из `$OMA_HOME/.agents/` (по умолчанию
+`~/.oma/.agents/`), затем поднимается от текущего каталога вверх и останавливается на
+ближайшем каталоге `.agents/` проекта. В каждом выбранном каталоге:
 
-1. Сначала вычисляется `oma-config.cue`.
-2. `oma-config.yaml` используется, если общего файла CUE нет или его нельзя вычислить.
-3. Один локальный файл (`oma-config.local.cue` или `.local.yaml`) сливается поверх общего файла.
-4. Установленный `OMA_MODEL_PRESET` переопределяет `model_preset` для этого процесса.
+1. `oma-config.yaml` задаёт общие значения.
+2. `oma-config.cue`, если он есть и корректен, переопределяет каждый заданный в нём ключ; ключи YAML, которые он не задаёт, сохраняются. Если файл CUE нельзя вычислить, OMA выводит предупреждение и использует только файл YAML.
+3. Один локальный файл (`oma-config.local.cue` или `.local.yaml`) сливается поверх общего результата.
+
+Общий/локальный результат проекта переопределяет общий/локальный глобальный результат.
+Установленный `OMA_MODEL_PRESET` переопределяет `model_preset` после всех файловых слоёв.
+Полный порядок, схема потока и устранение неполадок описаны в разделе
+[Загрузка конфигурации](/docs/guide/oma-config-semantics#precedence-table).
 
 Карты сливаются рекурсивно. Массивы, скаляры и `null` заменяют общее значение. Одновременное наличие обоих локальных форматов является ошибкой. Ошибка в локальном файле завершает загрузку, чтобы частное переопределение не было молча проигнорировано.
 
-Это правило ближайшего слоя, а не общее слияние проекта и HOME. Глобальная установка читает `~/.agents/oma-config.*`, потому что HOME является её корнем установки. Команда проекта читает ближайший слой проекта. Исключение — проверка `auto_update_cli`: она проверяет проект, затем HOME, а затем использует включённое значение по умолчанию.
+Корни разных проектов-предков не объединяются. Пустой ближайший каталог проекта
+`.agents/` всё равно устанавливает эту границу. Выведенная из употребления установка `~/.agents/`
+служит входными данными для миграции и не читается как fallback проекта. Глобальные значения по умолчанию не
+меняют идентичность текущего проекта и область его памяти.
 
-## Ключи верхнего уровня
+## Ключи верхнего уровня {#top-level-keys}
 
 Следующие ключи читаются текущей runtime-схемой или поставляемыми потребителями OMA. Ключ с пометкой sparse намеренно частичный: пропустите вложенное значение, чтобы сохранить значение по умолчанию в коде.
 
@@ -43,14 +52,14 @@ oma doctor --profile
 | `telemetry` | boolean | `false` | Включение телеметрии вендора, используемое при install, update и синхронизации link. |
 | `model_preset` | непустой string | `auto` в новых шаблонах | Встроенный или пользовательский preset моделей. `OMA_MODEL_PRESET` переопределяет его для одного процесса. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Настройки FreeLLMAPI при preset `free`; `FREELLM_BASE_URL` и `FREELLM_MODEL` переопределяют значения файла, а имя ключа никогда не содержит секрет. См. [конфигурацию моделей по агентам](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Выбор провайдеров документации, поиска, интеллектуального поиска по коду и семантической памяти. Для code intelligence допустимы `serena` и `gortex`, для semantic memory — `agentmemory`, `honcho` и `none`. `code_intelligence_guard` (`block` или `off`) управляет защитой поиска PreToolUse. Нативный поиск, ограниченный подтверждёнными исключениями провайдера или путями вне проекта, разрешён без обхода. Защита читает исключения Serena и включённые правила gitignore либо список исключений Gortex; она не определяет зависимости по именам каталогов. Хук не называет `OMA_CI_ALLOW_NATIVE`. Shell-поиск с префиксом `OMA_CI_ALLOW_NATIVE=1` обходит защиту только для ресурсов вне проекта или игнорируемых путей, которые защита не распознала, но не для исходного кода проекта. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Выбор провайдеров документации, поиска, code intelligence и semantic memory. См. [Провайдеры](#providers). |
 | `brave` | `api_key_env` или `api_key_vault` | не задано | Ссылка на credential поиска Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | См. [сведения о Honcho](#honcho-semantic-memory) | Настройки подключения semantic memory Honcho. |
 | `agents` | ID агента → `model`, необязательные `effort`, `thinking`, `memory` | разрешение preset | Переопределения по агентам поверх выбранного preset. effort — `none`, `low`, `medium`, `high` или `xhigh`; memory — `user`, `project` или `local`. |
 | `models` | slug модели → отображение CLI | не задано | Встроенные определения моделей для поддерживаемых CLI-вендоров. |
 | `custom_presets` | preset → description, необязательные `extends`, `agent_defaults` | не задано | Пользовательские preset; `extends` может наследовать встроенный preset. |
-| `vendors` | YAML: `string[]` выбранных ID vendor; шаблон CUE: необязательная fallback-карта `vendors.pi` | все vendor, доступные для link в YAML-списке | Выбор интеграций vendor, которые `oma install` и `oma update` проектируют в YAML. Карта capabilities dispatch находится в управляемой конфигурации orchestration; см. [выбор vendor и метаданные dispatch](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | string | fallback consumer | Устаревший fallback только по vendor, если план модели не разрешён. |
+| `vendors` | YAML: `string[]` выбранных ID vendor; шаблон CUE: необязательная fallback-карта `vendors.pi` | при отсутствии: `oma link` использует все vendor, доступные для link, `oma update` — vendor, у которых есть каталоги проекта | Выбор интеграций vendor, которые `oma install` и `oma update` проектируют в YAML. Карта capabilities dispatch находится в управляемой конфигурации orchestration; см. [выбор vendor и метаданные dispatch](#vendor-selection-and-dispatch-metadata). |
+| `default_cli` | ID vendor (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` для transport `free` | Vendor, используемый, когда ничто другое его не выбирает: необнаруженный runtime при `auto` или transport `free` после `--vendor`, `OMA_RUNTIME_VENDOR` и обнаруженного runtime. См. [как OMA разрешает модель и CLI агента](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
 | `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | каждый пропущенный размер не ограничен | Жёсткие лимиты token и spawn, проверяемые перед следующим spawn агента; см. [лимиты квоты сессии](#session-quota-caps). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Поведение `oma docs verify` и исключения сканирования. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transport MCP Serena и поведение обновления. |
@@ -73,9 +82,25 @@ oma doctor --profile
 | `refactor_guard` | `enabled`, `max_lines` | `false`, `500` | Включает stop-hook guard бюджета строк и задаёт бюджет кода для файла. |
 | `scm` | `conventional_commits`, `branching_strategy`, `require_pr_for_default_branch`, `co_author.*`, `forbidden_patterns`, `allowed_exceptions` | поставляемый шаблон включает conventional commits и защиту PR, используя заданные в шаблоне co-author и списки имён файлов | Управляет SCM skill, commit hook и guard паттернов секретов. Перед включением co-author trailers замените значения identity из шаблона своими. |
 
-Эти блоки принимаются через passthrough конфигурации и интерпретируются соответствующей функцией или workflow. Parser `serena_reaper` читает показанные выше ключи snake_case, хотя в старых комментариях шаблона использовались имена camelCase. Перед добавлением вложенных ключей изучите руководство соответствующей функции; эта страница не добавляет ключи вне перечисленных consumer.
+Эти блоки принимаются через passthrough конфигурации и интерпретируются соответствующей функцией или workflow. Parser `serena_reaper` читает только показанные выше ключи snake_case и игнорирует camelCase. Поставляемые шаблоны всё ещё показывают camelCase (`keepWarm`, `idleMinutes`, `graceSeconds`), а поставляемая схема CUE отклоняет ключи snake_case внутри своего блока схемы (`field not allowed`), поэтому задавайте их в `oma-config.yaml` или локальном overlay YAML. Перед добавлением вложенных ключей изучите руководство соответствующей функции; эта страница не добавляет ключи вне перечисленных consumer.
 
 ## Точные вложенные объекты
+
+### Провайдеры {#providers}
+
+`providers` выбирает одного провайдера для каждой возможности:
+
+| Ключ | Допустимые значения | По умолчанию |
+| --- | --- | --- |
+| `docs` | `context7` | `context7` |
+| `web` | ID провайдера поиска (строчные буквы, цифры, `_`, `-`), например `native` или `brave` | `native` |
+| `code_intelligence` | `serena`, `gortex` | `serena` |
+| `code_intelligence_guard` | `block`, `off` | `block` |
+| `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
+
+`code_intelligence_guard` управляет защитой поиска PreToolUse. Нативный поиск, ограниченный подтверждёнными исключениями провайдера или путями вне проекта, разрешён без обхода. Защита читает исключения Serena и включённые правила gitignore либо список исключений Gortex; она не определяет зависимости по именам каталогов.
+
+Хук не называет `OMA_CI_ALLOW_NATIVE`. Shell-поиск с префиксом `OMA_CI_ALLOW_NATIVE=1` обходит защиту только для ресурсов вне проекта или игнорируемых путей, которые защита не распознала, но не для исходного кода проекта.
 
 ### Semantic memory Honcho {#honcho-semantic-memory}
 
@@ -113,7 +138,7 @@ honcho:
 
 ### Лимиты квоты сессии {#session-quota-caps}
 
-`session.quota_cap` — частичная карта. Каждое поле необязательно; пропущенное поле оставляет соответствующее измерение без лимита. Значения должны быть неотрицательными integer, а `per_vendor` отображает имена vendor на бюджеты token:
+`session.quota_cap` — частичная карта. Каждое поле необязательно; пропущенное поле оставляет соответствующее измерение без лимита. Значения должны быть неотрицательными integer, записанными без разделителей `_` (YAML читает `2_000_000` как string, и это измерение остаётся без лимита). `per_vendor` отображает ID vendor для dispatch, например `claude`, `codex` или `antigravity`, на бюджеты token:
 
 ```yaml
 session:
@@ -138,7 +163,7 @@ vendors:
   - pi
 ```
 
-Отсутствующий или пустой список выбирает все ID из реестра linkable vendor OMA. Список управляет проекциями install/update; это не карта возможностей команд по vendor.
+Список выбирает ровно эти vendor, а `vendors: []` не выбирает ни одного. Без ключа `vendors` `oma link` обращается ко всем vendor из реестра linkable vendor OMA, а `oma update` — только к vendor, каталоги проекта которых уже существуют. Список управляет проекциями install/update; это не карта возможностей команд по vendor.
 
 Поставляемая схема `.agents/oma-config.cue` также допускает объект `vendors.pi` с полями `command`, `prompt_flag`, `model_flag`, `default_model` и `thinking_flag`. Этот блок — типизированная fallback-форма в шаблоне CUE; текущий dispatch агентов разрешает поля capabilities из расположенного ниже управляемого реестра orchestration, поэтому не используйте `vendors.pi` вместо списка YAML.
 
@@ -162,13 +187,19 @@ vendors:
 
 ## Типовые изменения
 
-Выберите фиксированный preset для проекта, сохранив личное переопределение локально:
+Выберите фиксированный preset для проекта, сохранив личное переопределение локально.
+
+**Общий файл** (коммитится):
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
 model_preset: mixed
+```
 
+**Локальный overlay** (игнорируется Git):
+
+```yaml
 # .agents/oma-config.local.yaml
 agents:
   backend:
@@ -193,7 +224,7 @@ mcp:
   devtools_browsers: []
 ```
 
-## Правила обновления и владения
+## Правила обновления и владения {#update-and-ownership-rules}
 
 `.agents/oma-config.yaml` принадлежит пользователю. `oma update` сохраняет существующее содержимое и может добавить новые ключи верхнего уровня поставляемого шаблона под маркером `# Added by oma update`. `oma update --force` может заменить пользовательскую конфигурацию, конфигурацию MCP и каталоги stack; используйте его только при намеренном сбросе этих настроек. Локальные overlay-файлы остаются приватным местом для значений конкретной машины.
 

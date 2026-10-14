@@ -106,9 +106,15 @@ A severidade determina como o bug é tratado e com que rapidez deve ser corrigid
 
 ---
 
-## O loop de debug de sete etapas em detalhe
+## O loop de debug de sete etapas em detalhe {#the-seven-stage-debug-loop-in-detail}
 
-O workflow `/debug` executa estas etapas em ordem. Usa o provedor de inteligência de código configurado. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados quando esse provedor está indisponível ou sofre timeout.
+O workflow `/debug` executa estas etapas em ordem. Usa o provider de inteligência de código configurado. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados quando esse provider está indisponível ou sofre timeout.
+
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
 
 ### Etapa 1: coletar informações do erro
 
@@ -187,7 +193,6 @@ Métodos de criação específicos do vendor:
 |:-------|:------------|
 | Claude Code | Ferramenta Agent com `.claude/agents/debug-investigator.md` |
 | Codex CLI | Solicitação de subagente mediada pelo modelo, resultados como JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / Fallback | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 Todas as localizações vulneráveis similares são relatadas. Instâncias confirmadas são corrigidas na mesma sessão.
@@ -206,7 +211,7 @@ O workflow escreve um arquivo de memória com:
 
 Ao acionar o workflow de debug, você pode fornecer um prompt estruturado:
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -233,7 +238,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 Para bugs mais simples, um prompt mais curto funciona:
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -299,3 +304,11 @@ O workflow de debug está concluído quando:
 4. O codebase foi procurado por padrões similares, e todas as instâncias confirmadas foram tratadas.
 5. Um relatório de bug está registrado na memória com sintoma, causa raiz, correção aplicada, arquivos alterados, localização do teste de regressão e padrões similares encontrados.
 6. Todos os testes existentes continuam passando após a correção.
+
+---
+
+## Próximos passos
+
+- A causa raiz atravessa domínios: [Projetos Multi-Agente](./multi-agent-project.md)
+- Registre ou retome a execução da correção: [Resultados e retomada](./agent-results-and-resume.md)
+- Algo no próprio OMA falhou: [Solução de problemas](./troubleshooting.md)

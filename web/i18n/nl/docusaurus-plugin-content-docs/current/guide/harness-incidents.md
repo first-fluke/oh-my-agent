@@ -8,7 +8,24 @@ description: Leg een waargenomen agentfout vast, behoud de evidence en evalueer 
 
 `oma harness incident` verbindt een waargenomen fout met een regressiegeval en de evaluatie van de kandidaat die daarop volgt. Het legt waarnemingen apart van causale hypothesen vast. Dat een proces faalt, bewijst op zichzelf nog niet dat het model het incident heeft veroorzaakt.
 
-## Kandidaten vinden
+Het diagram toont de levenscyclus van een incident. Promotie voedt de skilloptimalisatie; export voedt de harness-evaluatie.
+
+```mermaid
+flowchart TD
+  RUN["Failed, blocked, or partial agent run"] --> SCAN["incident scan<br/>--skeleton RUN_ID"]
+  SCAN --> SPEC["Edit the spec: expected_checks,<br/>initial_workspace"]
+  SPEC --> CAP["incident capture --spec --run"]
+  RUN -->|"feedback --scan-runs<br/>(run has a task contract)"| CAP
+  CAP --> MAN[".agents/results/incidents/ID/incident.json"]
+  MAN --> SHOW["incident show"]
+  MAN --> EXP["incident export<br/>(needs initial_workspace)"]
+  EXP --> REP["incident reproduce --candidate<br/>(live, inspect, rescore, fixture-replay, rerun)"]
+  MAN --> PRO["incident promote, or harness feedback"]
+  PRO --> FIX[".agents/eval/SKILL/incident-ID.yaml"]
+  FIX --> OPT["harness feedback --live or --apply<br/>runs skill optimize"]
+```
+
+## Kandidaten vinden {#find-candidates}
 
 ```bash
 oma harness incident scan            # failed/blocked/partial runs with no captured incident
@@ -16,9 +33,12 @@ oma harness incident scan --json
 oma harness incident scan --skeleton <run-id> > incidents/run-failure.json
 ```
 
-De scan leest `.agents/state/agent-runs/`, houdt runs waarvan de status `failed`, `blocked` of `partial` is, en slaat elke run over waarnaar een vastgelegd incident al via `source.runId` verwijst. `--skeleton` print een specificatie voor één run waarin de id, de agent, de bronrun, de waargenomen fout, de exitcode en, wanneer de runner die heeft bewaard, de staart van de uitvoer van de agent zijn ingevuld; `expected_checks` blijft een `TODO`, omdat het juiste gedrag een beslissing is die de scan niet kan nemen. `oma agent spawn` en `oma agent parallel` bewaren de laatste 64 KiB van het logboek van elke run als `.agents/state/agent-runs/<run-id>.output.txt` en verwijzen vanuit het runrecord ernaar, zodat `capture --run` die uitvoer importeert als waarneming wanneer de specificatie er geen bevat en `incident promote` de afgeleide fixture eraan kan toetsen. Vul de specificatie in en leg daarna vast met `--run <run-id>`, zodat de identiteit en de workspacefingerprint van de run behouden blijven.
+1. `oma harness incident scan` toont bijgehouden runs waarvan de status `failed`, `blocked` of `partial` is, en slaat elke run over waarnaar een vastgelegd incident al via `source.runId` verwijst. `--limit <n>` begrenst de lijst. De runs komen uit de runrecords van het project in de statusmap van het OMA-profiel (standaard `~/.oma/u/0/projects/<project-id>/agent-runs/`, waarbij `<project-id>` de SHA-256 van het canonieke projectpad is; `OMA_STATE_HOME` en `OMA_PROFILE` wijzigen de root en het profiel). `oma agent spawn` en `oma agent parallel` bewaren de laatste 64 KiB van het logboek van elke run naast het record als `<run-id>.output.txt`.
+2. `--skeleton <run-id>` print een specificatie met de id, de agent, de bronrun, de waargenomen fout, de exitcode en, wanneer de runner die heeft bewaard, de staart van de uitvoer van de agent. `expected_checks` blijft een `TODO`, omdat het juiste gedrag een beslissing is die de scan niet kan nemen.
+3. Vervang de placeholdercontrole. Voeg ook `"initial_workspace": "<dir>"` toe, verwijzend naar een kopie van de taakbestanden zoals ze vóór de run waren, om het incident uitvoerbaar te maken. Zonder dat veld kan het incident worden vastgelegd en gepromoot, maar stoppen `incident export` en `reproduce` met `Cannot export a runnable regression: initial workspace evidence is missing`.
+4. Leg vast met `--run <run-id>`, zodat de prompt, de identiteit en de workspacefingerprint van de run behouden blijven. `capture --run` importeert de bewaarde uitvoer als waarneming wanneer de specificatie er geen bevat, en `incident promote` kan de afgeleide fixture daaraan toetsen.
 
-## Een mislukte run automatisch vastleggen
+## Een mislukte run automatisch vastleggen {#capture-a-failed-run-automatically}
 
 ```bash
 oma harness feedback --scan-runs            # capture, promote, report
@@ -29,7 +49,7 @@ Een mislukte, geblokkeerde of gedeeltelijke run waarvan de taak een contract had
 
 `output_judge` is een beoordeeld contract. De mechanische harness-evaluator meldt het als niet geëvalueerd; het doel ervan is de skill-regressiefixture die `incident promote` ervan afleidt met dezelfde rubric.
 
-## Een incident vastleggen
+## Een incident vastleggen {#capture-an-incident}
 
 Sla een JSON-specificatie in het project op:
 
@@ -69,13 +89,13 @@ oma harness incident show incomplete-result --json
 oma harness incident capture --spec incidents/run-failure.json --run <run-id> --json
 ```
 
-`--run` verwijst naar een bestaand `.agents/state/agent-runs/<run-id>.json`. Het behoudt de identiteit van run en sessie, de vendor, de status en de oorspronkelijke workspacefingerprint. Een meegeleverde prompt heeft voorrang op de opgetekende prompt van de run. `source.trace_id` kan een gerapporteerd incident koppelen aan een externe trace zonder die op te halen of te uploaden.
+`--run` neemt een run-ID die door `oma harness incident scan` wordt vermeld; runrecords staan in de statusmap van het profiel die onder [Kandidaten vinden](#find-candidates) is beschreven, niet in `.agents/state/`. Het behoudt de identiteit van run en sessie, de vendor, de status en de oorspronkelijke workspacefingerprint. Een meegeleverde prompt heeft voorrang op de opgetekende prompt van de run. `source.trace_id` kan een gerapporteerd incident koppelen aan een externe trace zonder die op te halen of te uploaden.
 
 Het vastgelegde manifest staat in `.agents/results/incidents/<id>/incident.json`. Het bevat de beginmomentopname wanneer die is meegeleverd, hashes van bron-evidence en checkerbestanden, acceptatiecontroles, beperkingen en een manifesthash. Bestaande ID’s kunnen niet worden overschreven. Gevoelige observatietekst wordt gemaskeerd; maskering wordt gerapporteerd als een limiet op exacte replay. Het verzamelen van momentopnames wijst niet-ondersteunde bestanden af en kent grenzen voor bestanden, aantallen en totale omvang. Evidenceverwijzingen behouden hashes en paden, geen kopieën van elk verwezen bronbestand.
 
 Het optionele object `cause` bevat `category`, `hypothesis`, `confidence` en `evidence`. De categorieën zijn `model`, `tool`, `config`, `context`, `application`, `evaluator` en `unknown`. Als je het weglaat, blijft de oorzaak `unknown`.
 
-## Promoveren naar een skillfixture
+## Promoveren naar een skillfixture {#promote-to-a-skill-fixture}
 
 ```bash
 oma harness incident promote <id> [--skill <id>] [--draft] [--force] --json
@@ -85,19 +105,25 @@ Een vastgelegd incident wordt een regressiefixture voor de skill waar de falende
 
 De checker komt uit de acceptatiecontroles. Wanneer elke controle `output_contains` is, is de fixture een deterministische `assert`. Anders kunnen de controles niet draaien in een skill-evaluatie (er zijn geen bestanden of commando’s), zodat `--draft` de opt-agent om een judge-rubric vraagt die begint met `PASS only if` en de waargenomen fout noemt. In beide gevallen wordt de fixture alleen toegelaten wanneer de opgenomen mislukte uitvoer erin faalt: een assert waaraan de waargenomen uitvoer al voldoet, of een opgestelde rubric die de judge op die uitvoer doorlaat, wordt geweigerd omdat het geen regressiegeval is. Een incident zonder waargenomen uitvoer kan niet worden gevalideerd en heeft `--force` nodig, wat als beperking wordt vastgelegd.
 
-## De lus sluiten
+## De lus sluiten {#close-the-loop}
 
 ```bash
-oma harness feedback                 # promote every unpromoted incident, report what changed
+oma harness feedback                 # promote every unpromoted incident, report what changed (routing, drafting, and judge model calls)
 oma harness feedback --live          # also run one optimization epoch per affected skill (dry-run)
-oma harness feedback --apply --json  # write edits that pass every gate
+oma harness feedback --apply --json  # also write edits that pass every gate (implies --live)
 ```
 
-`feedback` is de feedbacklus voor deployment in één commando: met `--scan-runs` wordt eerst elke niet-vastgelegde mislukte run met een contract vastgelegd (zie hierboven), daarna wordt elk vastgelegd incident zonder fixture gepromoot (met opgestelde rubrics wanneer nodig), worden de getroffen skills gegroepeerd en wordt elk ervan met `--live` één keer geoptimaliseerd tegen zijn uitgebreide suite onder de normale gates (acceptatie met held-in/held-out, bevestigde negative transfer, door de runner beheerde final test). Het rapport onder `.agents/results/feedback/feedback-<ts>.json` noemt de promoties, de overgeslagen incidenten met redenen en de uitkomst van elke skill met de diff, zodat de keten van een waargenomen fout tot een kandidaat-edit één controleerbaar record is. Schakel de [evolutie van de projectharness](/docs/guide/harness-evolution) in voor geplande uitvoering met een gedeelde limiet voor modelaanroepen, persistente nieuwe pogingen en skilloverlays voor het project. De momentopname van de staat van de volgende sessie kondigt toegepaste wijzigingen aan.
+`--incident <ids...>` beperkt de run tot de vermelde incidenten. `--max-epochs <n>` (standaard 1) stelt het aantal optimalisatie-epochs per skill in voor `--live` en `--apply`.
+
+:::caution Modelkosten en schrijfdoel
+`feedback` toont geen kostenvoorbeeld. Ook zonder `--live` routeert de promotie elk incident met een modelaanroep naar een skill en kan die rubrics opstellen en beoordelen. `--live` en `--apply` voeren `oma skill optimize --live --yes` uit voor elke getroffen skill, en `--apply` schrijft rechtstreeks naar de beheerde `SKILL.md`, ook bij `oma-*`-skills die `oma update` overschrijft. Gebruik voor een bevestigde run met voorbeeld `oma skill optimize --skill <id> --live`; gebruik voor een cyclus met budget en projectoverlays de [evolutie van de projectharness](./harness-evolution.md).
+:::
+
+`feedback` is de feedbacklus voor deployment in één commando: met `--scan-runs` wordt eerst elke niet-vastgelegde mislukte run met een contract vastgelegd (zie hierboven), daarna wordt elk vastgelegd incident zonder fixture gepromoot (met opgestelde rubrics wanneer nodig), worden de getroffen skills gegroepeerd en wordt elk ervan met `--live` één keer geoptimaliseerd tegen zijn uitgebreide suite onder de normale gates (acceptatie met held-in/held-out, bevestigde negative transfer, door de runner beheerde final test). Het rapport onder `.agents/results/feedback/feedback-<ts>.json` noemt de promoties, de overgeslagen incidenten met redenen en de uitkomst van elke skill met de diff, zodat de keten van een waargenomen fout tot een kandidaat-edit één controleerbaar record is. Schakel de [evolutie van de projectharness](./harness-evolution.md) in voor geplande uitvoering met een gedeelde limiet voor modelaanroepen, persistente nieuwe pogingen en skilloverlays voor het project. De momentopname van de staat van de volgende sessie kondigt toegepaste wijzigingen aan.
 
 Wat een menselijke beslissing blijft: een run zonder taakcontract heeft geen vastgelegd verwacht gedrag, dus wordt ze door `incident scan` vermeld en alleen via een specificatie vastgelegd; `--skeleton` stelt er een op.
 
-## Exporteren en evalueren
+## Exporteren en evalueren {#export-and-evaluate}
 
 ```bash
 oma harness incident export incomplete-result --json
@@ -109,9 +135,11 @@ Het exporteren materialiseert de opgeslagen beginmomentopname en een verkennende
 
 `reproduce` start standaard een nieuwe livevergelijking tussen baseline en kandidaat en legt die vast. De normale bevestiging van de livekosten is van toepassing, tenzij `--yes` wordt meegegeven. Dit commando gebruikt de geconfigureerde agentvendor van de harness-taak, inclusief Codex; het legt het beschermde compilerprofiel van de skilloptimizer niet op aan de taakuitvoering.
 
+Een geëxporteerde incident-suite heeft precies één taak, dus `reproduce` print altijd `coverage: insufficient` (voor een oordeel zijn vijf beoordeelde taken nodig), en de beslissing is `INSUFFICIENT`, tenzij een arm niet kon worden gedispatcht (`FAIL`). Lees in plaats daarvan de taakregels: het incident-ID onder `corrected:` betekent dat de baseline faalde en de kandidaat slaagde; onder `regressed:` betekent het dat de kandidaat een geslaagd geval heeft gebroken; `none` in beide betekent dat de armen zich hetzelfde gedroegen. In JSON zijn deze velden `score.correctedTaskIds` en `score.regressedTaskIds`.
+
 Als er geen begintoestand is vastgelegd, werken `capture` en `show` nog, maar stoppen de uitvoerbare export en de reproductie van de uitvoering met een fout over ontbrekende evidence. De huidige werkboom kan de oorspronkelijke toestand van een historische run niet vaststellen. Zelfs een apart aangeleverde beginmomentopname bewijst geen equivalentie met die historische run; het rapport vermeldt deze beperking.
 
-## De evidencebewerking kiezen
+## De evidencebewerking kiezen {#choose-the-evidence-operation}
 
 ```bash
 oma harness incident reproduce incomplete-result --candidate candidates/fix \
@@ -135,7 +163,7 @@ oma harness incident reproduce incomplete-result --candidate candidates/fix \
 | `fixture-replay` | Speelt aangeleverde data over toolreacties en bestandswijzigingen af tegen de vastgelegde begintoestand. Er draait geen model- of toolproces. |
 | `rerun` | Start echte agentaanroepen voor baseline en kandidaat vanuit de vastgelegde begintoestand. Dit brengt normaal modelgebruik met zich mee. |
 
-Gebruik voor een herzien acceptatiecontract een aparte harness-suite en voer `oma harness eval --action rescore` uit met dezelfde suite-/taak-/incident-identiteit en prompt. Een geëxporteerde incident-suite is zelf onveranderlijk. Zie [details over vastleggen en replay](./harness-eval.md) voor de vereisten voor ruwe evidence en het schema van de tooltranscript.
+Gebruik voor een herzien acceptatiecontract een aparte harness-suite en voer `oma harness eval --action rescore` uit met dezelfde suite-/taak-/incident-identiteit en prompt. Een geëxporteerde incident-suite is zelf onveranderlijk. Zie [details over vastleggen en replay](./harness-eval.md#reuse-a-recording) voor de vereisten voor ruwe evidence en het schema van de tooltranscript.
 
 Declareer externe afhankelijkheden als `{ "name": "service", "repeatability": "fixture|live|unavailable", "reason": "...", "fixture": "response.json" }`. Een fixture-afhankelijkheid wijst naar een bestand dat het volledige harness-transcriptschema gebruikt, met het incident-ID als `taskId`. Offline incidentreplay verwerpt live- of niet-beschikbare afhankelijkheden, ontbrekende fixturebestanden, gewijzigde fixturehashes, ontbrekende genoemde reacties en verzoeken, reacties of bestandswijzigingen die afwijken van het vastgezette transcript. Het kan nog steeds niet bevestigen dat de auteur elke externe afhankelijkheid heeft gedeclareerd. Een live-herrun kan ook niet garanderen dat een externe dienst zich gedraagt zoals in het verleden.
 

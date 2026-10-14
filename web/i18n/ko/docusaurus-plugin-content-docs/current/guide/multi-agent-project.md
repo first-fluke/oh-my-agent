@@ -25,20 +25,30 @@ description: 프론트엔드, 백엔드, 데이터베이스, 모바일, QA 전�
 
 권장되는 멀티 에이전트 워크플로우는 엄격한 4단계 파이프라인을 따릅니다.
 
+```mermaid
+flowchart LR
+  plan["/plan"] --> planFile["plan-{sessionId}.json"]
+  planFile -->|"loaded by"| orch["/orchestrate (automated)"]
+  plan -.->|"or run"| work["/work (step-by-step; its PM step writes the plan)"]
+  work --> spawn["Agents per priority tier (native subagents or oma agent spawn)"]
+  orch --> spawn
+  spawn --> review["/review (QA)"]
+```
+
 ### 1단계: /plan (요구사항 및 태스크 분해)
 
-`/plan` 워크플로우는 인라인으로 실행되며(서브에이전트 생성 없음) 구조화된 계획을 생성합니다.
+`/plan` 워크플로우는 인라인으로 실행되며(서브에이전트 스폰 없음) 구조화된 계획을 생성합니다.
 
-```
+```text
 /plan
 ```
 
 수행 과정:
 
 1. **요구사항 수집**: PM 에이전트가 대상 사용자, 핵심 기능, 제약 조건, 배포 대상에 대해 질문합니다.
-2. **기술적 타당성 분석**: 설정된 코드 인텔리전스 provider를 사용하여 기존 코드베이스에서 재사용 가능한 코드와 아키텍처 패턴을 스캔합니다. native search는 프로젝트 밖 경로나 무시 대상 경로에만 사용합니다.
+2. **기술적 타당성 분석**: 설정된 코드 인텔리전스 프로바이더를 사용하여 기존 코드베이스에서 재사용 가능한 코드와 아키텍처 패턴을 스캔합니다. 네이티브 검색는 프로젝트 밖 경로나 무시 대상 경로에만 사용합니다.
 3. **API 컨트랙트 정의**: 엔드포인트 컨트랙트(메서드, 경로, 요청/응답 스키마, 인증, 오류 응답)를 설계하고 `.agents/results/api-contracts/`에 실행 아티팩트로 저장합니다. 커밋할 장기 보존 사양은 `docs/plans/contracts/`로 승격합니다.
-4. **태스크 분해**: 프로젝트를 실행 가능한 태스크로 분해합니다. 각 태스크에는 담당 에이전트, 제목, 인수 조건, 우선순위(P0-P3), 의존성이 포함됩니다.
+4. **태스크 분해**: 프로젝트를 실행 가능한 태스크로 분해합니다. 각 태스크에는 담당 에이전트, 제목, 인수 조건, 우선순위 티어(1이 먼저 실행됨), 의존성이 포함됩니다.
 5. **사용자와 계획 검토**: 확인을 받기 위해 전체 계획을 제시합니다. 사용자의 명시적 승인 없이는 워크플로우가 진행되지 않습니다.
 6. **계획 저장**: 승인된 계획을 `.agents/results/plan-{sessionId}.json`에 저장하고 메모리에 요약을 기록합니다.
 
@@ -53,36 +63,36 @@ description: 프론트엔드, 백엔드, 데이터베이스, 모바일, QA 전�
 | **상호작용** | 대화형 (사용자가 각 단계에서 확인) | 자동화 (완료까지 자동 실행) |
 | **PM 기획** | 내장 (2단계에서 PM 에이전트 실행) | 계획이 있으면 로드하고, 없으면 인라인으로 생성 |
 | **사용자 체크포인트** | 계획 검토 후 (3단계) | 인라인 계획도 fan-out 전에 검토 게이트를 통과 |
-| **영구 모드** | 예 (완료까지 종료 불가) | 예 (완료까지 종료 불가) |
+| **지속 모드** | 예 (완료까지 종료 불가) | 예 (완료까지 종료 불가) |
 | **적합한 경우** | 첫 사용, 감독이 필요한 복잡한 프로젝트 | 반복 실행, 잘 정의된 태스크 |
 
 #### /work (대화형 멀티 에이전트 파이프라인)
 
-```
+```text
 /work
 ```
 
 1. 사용자의 요청을 분석하고 관련 도메인을 식별합니다.
-2. 태스크 분해를 위해 PM 에이전트를 실행합니다 (plan-\{sessionId\}.json 생성).
+2. 태스크 분해를 위해 PM 에이전트를 실행합니다 (`plan-{sessionId}.json` 생성).
 3. 사용자 확인을 위해 계획을 제시합니다(**확인될 때까지 차단됩니다**).
-4. 우선순위 티어별로 에이전트를 생성합니다 (P0 먼저, 그다음 P1 등). 같은 우선순위의 태스크는 병렬로 실행됩니다.
+4. 우선순위 티어별로 에이전트를 스폰합니다 (티어 1 먼저, 그다음 티어 2 순). 같은 티어의 태스크는 병렬로 실행됩니다.
 5. 메모리 파일을 통해 에이전트 진행 상황을 모니터링합니다.
 6. 모든 산출물에 대해 QA 에이전트 리뷰를 실행합니다 (OWASP Top 10, 성능, 접근성, 코드 품질).
 7. QA에서 CRITICAL 또는 HIGH 이슈가 발견되면, QA 결과와 함께 담당 에이전트를 재생성합니다. 이슈당 최대 2회 반복합니다. 같은 이슈가 계속되면 **탐색 루프**를 활성화합니다. 2-3개의 대안을 생성하고, 같은 유형의 에이전트를 별도 워크스페이스에서 서로 다른 가설 프롬프트로 실행한 뒤, QA가 각각 점수를 매겨 최상의 결과를 채택합니다.
 
 #### /orchestrate (자동화된 병렬 실행)
 
-```
+```text
 /orchestrate
 ```
 
 1. `.agents/results/plan-{sessionId}.json`을 로드합니다. 사용 가능한 계획이 없으면 `/plan`을 통해 인라인으로 생성합니다.
 2. `session-YYYYMMDD-HHMMSS` 형식의 ID로 세션을 초기화합니다.
-3. 메모리 디렉토리에 `orchestrator-session.md`와 `task-board.md`를 생성합니다.
-4. 우선순위 티어별로 에이전트를 생성합니다. 각 에이전트에게 태스크 설명, API 컨트랙트, 컨텍스트를 전달합니다.
-5. `progress-{agent}.md` 파일을 폴링하여 진행 상황을 모니터링합니다.
+3. 메모리 디렉토리에 `orchestrator-session-{sessionId}.md`와 `task-board-{sessionId}.md`를 생성합니다.
+4. 우선순위 티어별로 에이전트를 스폰합니다. 각 에이전트에게 태스크 설명, API 컨트랙트, 컨텍스트를 전달합니다.
+5. `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 파일을 폴링하여 진행 상황을 모니터링합니다.
 6. `verify.sh`를 통해 완료된 각 에이전트를 검증합니다. PASS (종료 코드 0)이면 수락, FAIL (종료 코드 1)이면 오류 컨텍스트와 함께 재생성 (최대 2회 재시도), 지속적 실패 시 탐색 루프를 트리거합니다.
-7. 모든 `result-{agent}.md` 파일을 수집하고 최종 보고서를 작성합니다.
+7. 모든 `result-{agentId}-{taskId}-{runId}-{sessionId}.md` 파일을 수집하고 최종 보고서를 작성합니다.
 
 ### 3단계: agent spawn (CLI 수준 에이전트 관리)
 
@@ -92,15 +102,17 @@ description: 프론트엔드, 백엔드, 데이터베이스, 모바일, QA 전�
 oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-**모든 플래그:**
+**모든 플래그** (`oma agent spawn --help`):
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `--vendor <vendor>` | CLI 벤더 오버라이드 (antigravity/claude/codex/cursor/opencode/qwen/grok/pi). 이 spawn의 모델 해석을 오버라이드합니다. |
+| `--vendor <vendor>` | CLI 벤더 오버라이드 (antigravity/claude/codex/cursor/opencode/qwen/grok/pi). 이 스폰의 모델 해석을 오버라이드합니다. |
 | `-w, --workspace <path>` | 에이전트의 작업 디렉토리. 생략 시 모노레포 설정에서 자동 감지. |
-| `--task-id <id>` | 세션 계획의 태스크에 spawn을 바인딩합니다. 기본값은 에이전트 ID입니다. |
-| `--isolation worktree` | spawn용 git worktree를 만듭니다. 기본값은 추가 격리 없음입니다. |
+| `--task-id <id>` | 세션 계획의 태스크에 스폰을 바인딩합니다. 기본값은 에이전트 ID입니다. |
+| `--isolation worktree` | 스폰용 git worktree를 만듭니다. 기본값은 추가 격리 없음입니다. |
 | `--read-only` | 자식을 검사 도구로 제한하고 auto-approve 플래그를 억제합니다. |
+| `--resumed-from <run-id>` | 재시도를 직전 실행에 연결합니다. |
+| `--fallback-vendors <vendors>` | 이 spawn에 쓸 폴백 벤더 체인으로, 순서대로 쉼표로 구분합니다. |
 
 **벤더 해석 순서** (첫 번째 매치 사용):
 
@@ -116,7 +128,7 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 ### 4단계: /review (QA 검증)
 
-```
+```text
 /review
 ```
 
@@ -126,19 +138,19 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 2. **자동화된 보안 검사**: `npm audit`, `bandit` 또는 동등한 도구를 실행합니다.
 3. **OWASP Top 10 수동 리뷰**: 인젝션, 인증 결함, 민감 데이터, 접근 제어, 설정 오류, 안전하지 않은 역직렬화, 취약한 컴포넌트, 불충분한 로깅.
 4. **성능 분석**: N+1 쿼리, 누락된 인덱스, 무한 페이지네이션, 메모리 누수, 불필요한 리렌더, 번들 크기.
-5. **접근성**: WCAG 2.1 AA. 시맨틱 HTML, ARIA, 키보드 내비게이션, 색상 대비, 포커스 관리.
+5. **접근성**: WCAG 2.2 AA. 시맨틱 HTML, ARIA, 키보드 내비게이션, 색상 대비, 포커스 관리.
 6. **코드 품질**: 명명 규칙, 오류 처리, 테스트 커버리지, TypeScript strict 모드, 미사용 임포트, async/await 패턴.
 7. **보고서**: 발견 사항을 CRITICAL / HIGH / MEDIUM / LOW로 분류하여 `파일:라인`, 설명, 수정 코드와 함께 제시합니다.
 
-범위가 큰 경우 워크플로우는 QA 에이전트 서브에이전트에 위임합니다. `--fix` 옵션을 사용하면 Fix-Verify 루프에 진입합니다: 도메인 에이전트를 생성하여 CRITICAL/HIGH 이슈를 수정하고, 다시 리뷰하고, 최대 3회 반복합니다.
+범위가 큰 경우 워크플로우는 QA 에이전트 서브에이전트에 위임합니다. `--fix` 옵션을 사용하면 Fix-Verify 루프에 진입합니다: 도메인 에이전트를 스폰하여 CRITICAL/HIGH 이슈를 수정하고, 다시 리뷰하고, 최대 3회 반복합니다.
 
 ---
 
-## 세션 ID 전략
+## 세션 ID 전략 {#session-id-strategy}
 
 모든 오케스트레이션 세션은 다음 형식의 고유 식별자를 받습니다:
 
-```
+```text
 session-YYYYMMDD-HHMMSS
 ```
 
@@ -146,9 +158,9 @@ session-YYYYMMDD-HHMMSS
 
 세션 ID는 다음 용도로 사용됩니다:
 
-- 메모리 파일 명명 (`orchestrator-session.md`, `task-board.md`)
-- 시스템 임시 디렉토리의 PID 파일로 에이전트 프로세스 추적 (`/tmp/subagent-{session-id}-{agent-id}.pid`)
-- 로그 파일 상관관계 (`/tmp/subagent-{session-id}-{agent-id}.log`)
+- 메모리 파일 명명 (`orchestrator-session-{sessionId}.md`, `task-board-{sessionId}.md`)
+- OS 임시 디렉토리(macOS는 `$TMPDIR`, Linux는 보통 `/tmp`, Windows는 `%TEMP%`)의 PID 파일로 에이전트 프로세스 추적: `subagent-{session-id}-{agent-id}.pid`
+- 같은 디렉토리의 로그 파일 상관관계: `subagent-{session-id}-{agent-id}.log`
 - `.agents/results/parallel-{timestamp}/`에 결과 그룹화
 
 세션 ID는 `/orchestrate`의 2단계에서 생성되어 모든 생성된 에이전트에 전달됩니다. 이를 통해 단일 실행의 모든 에이전트, 로그, PID 파일을 하나의 세션으로 추적할 수 있습니다.
@@ -202,7 +214,7 @@ API 컨트랙트는 에이전트 간의 동기화 메커니즘입니다. 컨트�
 
 1. **구현 시작 전에 컨트랙트가 정의됩니다.** `/plan` 워크플로우의 3단계에서 `.agents/skills/_shared/core/api-contracts/`에 저장되는 API 컨트랙트를 생성합니다.
 
-2. **모든 에이전트가 관련 컨트랙트를 컨텍스트로 받습니다.** `/orchestrate`가 3단계에서 에이전트를 생성할 때, 각 에이전트에게 "태스크 설명, API 컨트랙트, 관련 컨텍스트"를 전달합니다.
+2. **모든 에이전트가 관련 컨트랙트를 컨텍스트로 받습니다.** `/orchestrate`가 3단계에서 에이전트를 스폰할 때, 각 에이전트에게 "태스크 설명, API 컨트랙트, 관련 컨텍스트"를 전달합니다.
 
 3. **컨트랙트는 인터페이스 경계를 정의합니다.** 컨트랙트는 다음을 명시합니다:
    - HTTP 메서드와 경로
@@ -211,7 +223,7 @@ API 컨트랙트는 에이전트 간의 동기화 메커니즘입니다. 컨트�
    - 인증 요구사항
    - 오류 응답 형식
 
-4. **모니터링 중 컨트랙트 위반이 감지됩니다.** `/work`의 5단계에서 설정된 코드 인텔리전스 provider를 사용하여 에이전트 간 API 컨트랙트 정합성을 확인합니다. native search는 프로젝트 밖 경로나 무시 대상 경로에만 사용합니다.
+4. **모니터링 중 컨트랙트 위반이 감지됩니다.** `/work`의 5단계에서 설정된 코드 인텔리전스 프로바이더를 사용하여 에이전트 간 API 컨트랙트 정합성을 확인합니다. 네이티브 검색는 프로젝트 밖 경로나 무시 대상 경로에만 사용합니다.
 
 5. **QA 리뷰가 컨트랙트 준수를 확인합니다.** QA 에이전트의 정합성 리뷰 (ultrawork의 6단계)에서 API 컨트랙트를 포함하여 구현을 계획과 명시적으로 비교합니다.
 
@@ -245,20 +257,20 @@ ultrawork 워크플로우에서 이러한 조건은 진행 전 모든 항목이 
 
 ## 실행 예제
 
-### 단일 에이전트 생성
+### 단일 에이전트 스폰
 
 ```bash
-# Gemini(기본)로 백엔드 에이전트 생성
+# Spawn backend agent; the vendor comes from the resolution order above
 oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
-# Claude로 프론트엔드 에이전트 생성, 명시적 워크스페이스
+# Spawn frontend agent with Claude, explicit workspace
 oma agent spawn frontend "Build user dashboard with React" session-20260324-143000 --vendor claude -w ./apps/web
 
-# 프롬프트 파일에서 생성
+# Spawn from a prompt file
 oma agent spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### agent:parallel을 통한 병렬 실행
+### agent parallel을 통한 병렬 실행
 
 YAML 태스크 파일 사용:
 
@@ -293,7 +305,7 @@ oma agent parallel --inline \
 
 ```bash
 oma agent parallel tasks.yaml --no-wait
-# 즉시 반환, 결과는 .agents/results/parallel-{timestamp}/에 기록
+# Returns immediately, results written to .agents/results/parallel-{timestamp}/
 ```
 
 벤더 오버라이드:
@@ -308,7 +320,7 @@ oma agent parallel tasks.yaml --vendor claude
 
 ### 1. 계획을 형식적으로 승인하기
 
-사용 가능한 계획 파일이 없을 때 `/orchestrate`가 `/plan`을 통해 인라인 계획을 만들 수 있습니다. 인라인 계획도 `/plan`의 검토 게이트를 통과하며, 다음 단계의 fan-out은 승인된 분해를 따릅니다. 대규모 멀티 도메인 작업에서는 `/plan`을 먼저 실행하여 `docs/plans/work/`에 영속 tracker를 만들고 에이전트를 생성하기 전에 분해를 다듬으세요.
+사용 가능한 계획 파일이 없을 때 `/orchestrate`가 `/plan`을 통해 인라인 계획을 만들 수 있습니다. 인라인 계획도 `/plan`의 검토 게이트를 통과하며, 다음 단계의 fan-out은 승인된 분해를 따릅니다. 대규모 멀티 도메인 작업에서는 `/plan`을 먼저 실행하여 `docs/plans/work/`에 영속 tracker를 만들고 에이전트를 스폰하기 전에 분해를 다듬으세요.
 
 ### 2. 워크스페이스 겹침
 
@@ -316,7 +328,7 @@ oma agent parallel tasks.yaml --vendor claude
 
 ### 3. API 컨트랙트 미정의
 
-컨트랙트를 먼저 정의하지 않고 백엔드와 프론트엔드 에이전트를 생성하는 것. 데이터 형식, 필드 이름, 오류 처리에 대해 호환되지 않는 가정을 하게 됩니다.
+컨트랙트를 먼저 정의하지 않고 백엔드와 프론트엔드 에이전트를 스폰하는 것. 데이터 형식, 필드 이름, 오류 처리에 대해 호환되지 않는 가정을 하게 됩니다.
 
 ### 4. QA 발견 사항 무시
 
@@ -328,11 +340,11 @@ QA 리뷰를 선택 사항으로 취급하는 것. CRITICAL과 HIGH 발견 사�
 
 ### 6. 과도한 병렬화
 
-P0 태스크가 완료되기 전에 P1 태스크를 실행하는 것. 우선순위 티어가 존재하는 이유는 P1 태스크가 종종 P0 출력에 의존하기 때문입니다. 워크플로우는 티어 순서를 자동으로 강제합니다.
+티어 1 태스크가 완료되기 전에 티어 2 태스크를 실행하는 것. 우선순위 티어가 존재하는 이유는 뒤쪽 티어의 태스크가 종종 앞쪽 티어의 출력에 의존하기 때문입니다. 워크플로우는 티어 순서를 자동으로 강제합니다.
 
 ### 7. 검증 건너뛰기
 
-그 뒤 결과 컨트랙트를 기록하지 않고 `agent spawn`을 직접 사용하는 것입니다. 태스크에 고정된 검사를 실행하고 구조화된 claim을 완료하세요. [에이전트 결과 및 재개](/docs/guide/agent-results-and-resume)를 참고하세요. 워크플로우의 검증 단계는 결과를 재사용하기 전에 검사 실패와 범위 드리프트를 잡습니다.
+그 뒤 결과 컨트랙트를 기록하지 않고 `agent spawn`을 직접 사용하는 것입니다. 태스크에 고정된 검사를 실행하고 구조화된 claim을 완료하세요. [에이전트 결과 및 재개](./agent-results-and-resume.md)를 참고하세요. 워크플로우의 검증 단계는 결과를 재사용하기 전에 검사 실패와 범위 드리프트를 잡습니다.
 
 ---
 
@@ -340,7 +352,7 @@ P0 태스크가 완료되기 전에 P1 태스크를 실행하는 것. 우선순�
 
 모든 에이전트가 개별 태스크를 완료한 후, 크로스 도메인 통합을 검증해야 합니다:
 
-1. **API 컨트랙트 정합성**: 설정된 코드 인텔리전스 provider가 백엔드 구현이 프론트엔드와 모바일이 사용하는 컨트랙트와 일치하는지 확인합니다. native search는 프로젝트 밖 경로나 무시 대상 경로에만 사용합니다.
+1. **API 컨트랙트 정합성**: 설정된 코드 인텔리전스 프로바이더가 백엔드 구현이 프론트엔드와 모바일이 사용하는 컨트랙트와 일치하는지 확인합니다. 네이티브 검색는 프로젝트 밖 경로나 무시 대상 경로에만 사용합니다.
 
 2. **타입 일관성**: 도메인 간에 공유되는 TypeScript 타입, Python dataclass, Dart 모델은 일관된 필드 이름과 타입을 사용해야 합니다.
 
@@ -365,3 +377,13 @@ QA 에이전트의 정합성 리뷰 (ultrawork의 6단계, work의 6단계)가 �
 - 빌드가 성공했고 모든 테스트가 통과합니다.
 - 최종 보고서를 메모리에 기록하고 사용자에게 제시했습니다.
 - 사용자가 최종 승인했습니다 (`/work`와 ultrawork의 SHIP_GATE에서).
+
+---
+
+## 다음 단계
+
+- 실행 지켜보기: [대시보드 모니터링](./dashboard-monitoring.md)
+- 결과 감사 또는 재개: [결과 확인과 재개](./agent-results-and-resume.md)
+- 무언가 실패했을 때: [문제 해결](./troubleshooting.md)
+- 에이전트별 벤더와 모델 고정: [에이전트별 모델](./per-agent-models.md)
+- [계획](../getting-started/glossary.md#plan), [지속 워크플로우](../getting-started/glossary.md#persistent-workflow) 같은 용어: [용어집](../getting-started/glossary.md)

@@ -49,7 +49,7 @@ Testy i kryteria akceptacji również należą do pracy z jedną umiejętności�
 
 ## Checklista preflight
 
-Przed napisaniem promptu odpowiedz na te cztery pytania (odpowiadają czterem elementom [struktury promptu](/docs/core-concepts/skills)):
+Przed napisaniem promptu odpowiedz na te cztery pytania:
 
 | Element | Pytanie | Dlaczego to ważne |
 |---------|---------|------------------|
@@ -111,10 +111,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **Ocena trudności:** Medium (2–3 pliki, kilka decyzji projektowych dotyczących UX walidacji)
 3. **Załadowane zasoby:**
    - `execution-protocol.md` (zawsze)
-   - `snippets.md` (wzorce formularzy i Zod)
-   - istniejące wzorce komponentów oraz `snippets.md`, gdy umiejętność je dostarcza
+   - `snippets.md` (wzorce formularzy i Zod oraz istniejące wzorce komponentów, gdy umiejętność je dostarcza)
 4. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -165,7 +164,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - pasujące `stack/tech-stack.md` albo odwołania do tech-stack z wariantu, jeśli są dostępne
 <!-- oma-docs:ignore-end -->
 5. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -204,7 +203,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md` (szablon ekranu, wzorzec providera Riverpod)
    - `screen-template.dart`
 4. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -247,7 +246,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`
    - `anti-patterns.md` (przegląd podczas optymalizacji)
 4. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -324,10 +323,20 @@ Zwróć uwagę na sygnały oznaczające, że należy przejść z wykonania jedne
 | CHARTER_CHECK agenta pokazuje elementy „Must NOT do”, które są jednak potrzebne | Zakres przekracza jedną domenę | Najpierw zaplanuj pełną funkcję przez `/plan` |
 | Poprawka rozchodzi się na co najmniej 3 pliki w różnych warstwach | Jedna poprawka dotyka wielu domen | Użyj `/debug` z szerszym zakresem albo `/work` |
 | Agent odkrywa niezgodność kontraktu API | Frontend i backend się nie zgadzają | Uruchom `/plan`, zdefiniuj kontrakty, potem uruchom ponownie obu agentów |
-| Bramka jakości nie przechodzi w punktach integracji | Komponenty nie łączą się poprawnie | Dodaj etap przeglądu QA: `oma agent spawn qa "Review integration"` |
+| Bramka jakości nie przechodzi w punktach integracji | Komponenty nie łączą się poprawnie | Uruchom `/review` albo dodaj przebieg QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | Zadanie rośnie z „jednego komponentu” do „trzech komponentów + nowej trasy + API” | Zakres rozszerza się podczas wykonania | Zatrzymaj pracę, uruchom `/plan`, rozłóż zadanie, a potem `/orchestrate` |
 | Agent blokuje się przy doprecyzowaniu HIGH | Wymagania są zasadniczo niejednoznaczne | Odpowiedz na pytania agenta albo uruchom `/brainstorm`, aby doprecyzować podejście |
 
 ### Reguła praktyczna
 
 Jeśli uruchamiasz tego samego agenta ponownie więcej niż dwa razy z poprawkami, zadanie prawdopodobnie obejmuje wiele domen. Uruchom `/work` albo przynajmniej `/plan`, aby je rozłożyć.
+
+---
+
+## Następne kroki
+
+- Zadanie obejmuje kilka domen: [Projekty wieloagentowe](./multi-agent-project.md)
+- Zadanie to błąd: [Naprawianie błędów](./bug-fixing.md)
+- Audyt albo wznowienie uruchomienia: [Wyniki i wznawianie](./agent-results-and-resume.md)
+- Coś się nie powiodło: [Rozwiązywanie problemów](./troubleshooting.md)
+- Wybór między umiejętnością a workflowem: [Workflowy](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

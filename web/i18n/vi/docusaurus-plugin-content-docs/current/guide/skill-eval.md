@@ -1,7 +1,7 @@
 ---
 title: "Đánh giá Utility của Skill"
 sidebar_label: Đánh giá Skill
-description: Cách viết eval task fixture cho oma skill eval, quy ước thư mục .agents/eval/, các checker type và chế độ chạy mock/live.
+description: Cách viết eval task fixture cho oma skill eval, quy ước thư mục .agents/eval/, các checker type, chế độ chạy mock/live và cách sửa các lỗi thường gặp.
 ---
 
 # Đánh giá Utility của Skill {#skill-utility-eval}
@@ -21,11 +21,91 @@ Với mỗi task fixture, command chạy hai arm:
 
 Mỗi arm được checker của task chấm điểm (0 = fail, 1 = pass). Metric chính là:
 
-```
+```text
 utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
 Skill pass khi `utilityLift ≥ 5%`. Dưới ngưỡng đó sẽ cảnh báo (lift biên) hoặc fail (không có lift). Cần ít nhất 5 task có thể chấm để đưa ra verdict.
+
+## Bắt đầu nhanh {#a-minimal-working-fixture-set}
+
+Cần năm fixture để có verdict (`MIN_TASKS = 5`). Đây là bộ tối thiểu cho skill `oma-scholar` giả định. Bốn fixture dùng judge mặc định; `structured-output` dùng checker `assert` deterministic.
+
+```yaml
+# .agents/eval/oma-scholar/claims-only.yaml
+id: claims-only
+skill: oma-scholar
+domain: research
+prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
+rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/entity-lookup.yaml
+id: entity-lookup
+skill: oma-scholar
+domain: research
+prompt: "Look up the entity knows:concept/attention-mechanism"
+rubric: "Does the answer return the entity name, description, and at least one related concept?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/partial-fetch.yaml
+id: partial-fetch
+skill: oma-scholar
+domain: research
+prompt: "Fetch only the methods section of knows:generated/reconvla/1.0.0"
+rubric: "Does the answer request only the methods section instead of the full paper?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/structured-output.yaml
+id: structured-output
+skill: oma-scholar
+domain: research
+prompt: "List the claims of knows:generated/reconvla/1.0.0 as JSON objects with id and statement fields"
+checker:
+  type: assert
+  expect_contains:
+    - "statement"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/edge-empty-response.yaml
+id: edge-empty-response
+skill: oma-scholar
+domain: research
+prompt: "Fetch the claims of knows:generated/does-not-exist/0.0.0"
+rubric: "Does the answer report that no record exists instead of inventing claims?"
+weight: 1
+```
+
+Sau đó chạy:
+
+```bash
+# Seed rollouts (local only — re-run after any SKILL.md edit)
+oma skill eval --skill oma-scholar --live --record --yes
+
+# Offline replay
+oma skill eval --skill oma-scholar --json
+```
+
+Live run in một preview trước khi dispatch. Với năm fixture này, preview hiển thị hai arm cho mỗi task cộng hai judge call cho mỗi judge task (vendor tùy thuộc vào cấu hình của bạn):
+
+```text
+Skill eval live run preview:
+  skill: oma-scholar
+  tasks: 5  trials: 1  spawns: 10 arm + 8 judge = 18 dispatches
+  vendor/model: claude
+  read-only: enforced (all spawns use readOnly: true)
+  record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
+```
+
+Tiếp theo, đọc kết quả như mô tả trong [Đọc report](#reading-the-report). Các phần sau phần này là tài liệu tham khảo.
 
 ---
 
@@ -33,7 +113,7 @@ Skill pass khi `utilityLift ≥ 5%`. Dưới ngưỡng đó sẽ cảnh báo (li
 
 Đặt task fixture dưới `.agents/eval/<skill>/`. Path này nằm trong `.agents/` nhưng bên ngoài chính skill directory, nên tồn tại qua `oma update` mà không ghi đè eval do người dùng viết.
 
-```
+```text
 .agents/eval/
 └── oma-scholar/
     ├── claims-only.yaml        ← task fixture
@@ -78,7 +158,7 @@ weight: 1
 
 #### judge (mặc định) {#judge-default}
 
-LLM đánh giá agent output theo rubric và trả về PASS hoặc FAIL. Đây là mặc định khi bỏ qua `checker` hoặc không có `checker.type`.
+Một LLM [judge](../getting-started/glossary.md#judge) đánh giá agent output theo rubric và trả về PASS hoặc FAIL. Đây là mặc định khi bỏ qua `checker` hoặc không có `checker.type`.
 
 ```yaml
 checker:
@@ -156,7 +236,7 @@ oma skill eval --skill oma-scholar
 
 ### `--live` {#live}
 
-Spawn agent arm thật qua `oma agent spawn --read-only`. Mỗi task arm chạy trong workspace tạm riêng của nó, nên file do một arm tạo ra không ảnh hưởng arm khác. Process failure, API error envelope và judge failure loại toàn bộ so sánh ghép cặp khỏi việc chấm và ghi; partial output là dữ liệu diagnostic.
+Dispatch mỗi arm ở chế độ read-only tới CLI của agent role `eval` (xem [Chọn model cho evaluation và optimizer](#choose-the-evaluation-and-optimizer-models)). Mỗi task arm chạy trong workspace tạm riêng của nó, nên file do một arm tạo ra không ảnh hưởng arm khác. Process failure, API error envelope và judge failure loại toàn bộ so sánh ghép cặp khỏi việc chấm và ghi; partial output là dữ liệu diagnostic.
 
 Trước khi dispatch, command in cost preview gồm số task, số arm dispatch, số judge dispatch và vendor đã resolve. Xác nhận bằng `y` hoặc bỏ qua bằng `--yes`.
 
@@ -178,6 +258,18 @@ oma skill eval --skill oma-scholar --live
 # Skip confirmation
 oma skill eval --skill oma-scholar --live --yes
 ```
+
+#### Chọn model cho evaluation và optimizer {#choose-the-evaluation-and-optimizer-models}
+
+Task arm, judge và routing probe resolve agent role `eval`. Pin nó trong `.agents/oma-config.yaml`:
+
+```yaml
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+```
+
+Maintainer và Proposer của `oma skill optimize` resolve role `opt-agent`. Map `agents:` không có key `opt` (config schema từ chối key không xác định), nên role này luôn theo `model_preset` đang hoạt động, hoặc `default_cli` khi dùng `model_preset: auto`. Khi không có `agents.eval`, role `eval` dùng cùng fallback đó. Việc thăng cấp cần `isolation: enforced`, điều mà chỉ protected profile của Claude và Codex native cung cấp (xem [Skill isolation](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Đo negative transfer {#negative-transfer-measurement}
 
@@ -202,7 +294,7 @@ Working directory sạch che việc tìm skill cục bộ của project, nhưng 
 | `unavailable` | Vendor dựa trên HOME (ví dụ **antigravity**, đọc từ `~/.gemini/antigravity-cli/skills`); cwd sạch không thể che nó. In cảnh báo và đánh dấu kết quả độ tin cậy thấp. |
 | n/a | Mock mode — không dispatch live. |
 
-Các runtime profile khác vẫn dùng được cho exploratory evaluation, nhưng kết quả `best-effort` và `unavailable` chặn việc thăng cấp trong live optimization. Eval vendor theo cấu hình model của project. Codex dùng CLI login native và model/provider đã cấu hình của nó qua `app-server`; nó không âm thầm chuyển sang Claude hay một API-key client. Protected Codex contract nhắm tới CLI 0.154.x trên macOS/Linux với native file credential storage và một `auth.json` đã có sẵn. Một config home tạm riêng tư tham chiếu tới các config/auth file gốc đồng thời loại trừ shared bootstrap state; credential không được copy, và việc native refresh dùng auth file gốc. Các credential store keyring, auto và ephemeral hiện chưa được hỗ trợ. Phiên bản không được hỗ trợ, storage mode và lỗi contract trở thành dispatch error.
+Các runtime profile khác vẫn dùng được cho exploratory evaluation, nhưng kết quả `best-effort` và `unavailable` chặn việc thăng cấp trong live optimization. Eval vendor theo agent role `eval`. Codex dùng CLI login native và model/provider đã cấu hình của nó qua `app-server`; nó không âm thầm chuyển sang Claude hay một API-key client. Protected Codex contract nhắm tới CLI 0.154.x trên macOS/Linux với native file credential storage và một `auth.json` đã có sẵn. Một config home tạm riêng tư tham chiếu tới các config/auth file gốc đồng thời loại trừ shared bootstrap state; credential không được copy, và việc native refresh dùng auth file gốc. Các credential store keyring, auto và ephemeral hiện chưa được hỗ trợ. Phiên bản không được hỗ trợ, storage mode và lỗi contract trở thành dispatch error.
 
 Judge chạy trong các thư mục tạm mới với optimization memory bị tắt. Judge Claude và Codex dùng cùng protected text transport như các evaluation arm. Cấu hình judge vendor được cố định trong suốt run.
 
@@ -258,62 +350,29 @@ JSON report mang `routing` với `status`, các count, `activationRate`, `misrou
 
 Phép đo này đánh giá description so với catalog qua protected transport. Nó không thực thi cơ chế discovery riêng của vendor, thứ mà protected profile cố ý tắt, và không đo xem procedure của skill đã load có được tuân theo hay không; đó vẫn là phép đo utility.
 
-## Một bộ fixture hoạt động tối thiểu {#a-minimal-working-fixture-set}
-
-Cần năm fixture để có verdict (`MIN_TASKS = 5`). Đây là bộ tối thiểu cho skill `oma-scholar` giả định:
-
-```yaml
-# .agents/eval/oma-scholar/claims-only.yaml
-id: claims-only
-skill: oma-scholar
-domain: research
-prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
-rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
-weight: 1
-```
-
-```yaml
-# .agents/eval/oma-scholar/entity-lookup.yaml
-id: entity-lookup
-skill: oma-scholar
-domain: research
-prompt: "Look up the entity knows:concept/attention-mechanism"
-rubric: "Does the answer return the entity name, description, and at least one related concept?"
-weight: 1
-```
-
-Lặp lại cho ít nhất ba task nữa. Sau đó chạy:
-
-```bash
-# Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skill eval --skill oma-scholar --live --record --yes
-
-# Offline replay
-oma skill eval --skill oma-scholar --json
-```
-
 ---
 
 ## Đọc report {#reading-the-report}
 
 **Text output:**
 
-```
+```text
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
   isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
+  repeatability: single-trial  trials: 1  lift 95% CI: [9.2%, 48.0%]  within-task stddev: n/a
   [PASS]
-  Skill shows positive utility lift >= 5%.
+  Skill shows positive utility lift ≥ 5%.
 
   Per-task findings:
     claims-only: baseline=0 treatment=1 lift=+1.000
     entity-lookup: baseline=1 treatment=1 lift=+0.000
     ...
 
-  Thresholds: fail <= 0%, warn < 5%
+  Thresholds: fail ≤ 0%, warn < 5%
 ```
 
 **JSON output** (qua `--json`):
@@ -383,3 +442,23 @@ Nếu mock run báo coverage không đủ, kiểm tra cảnh báo về `_rollout
 ## Phân phối eval task cùng skill {#shipping-eval-tasks-with-a-skill}
 
 Skill có thể kèm task set bằng cách đặt fixture tại `.agents/eval/<skill>/`. Đây là file do người dùng sở hữu bên ngoài skill directory, nên tồn tại qua `oma update`. Khi tạo skill mới bằng `oma-skill-creation`, thêm bộ fixture `eval/` tương ứng để tác giả sau này có cách xác minh tác động của skill. Xem `.agents/skills/oma-skill-creation/SKILL.md` để biết workflow soạn skill.
+
+---
+
+## Khắc phục sự cố {#troubleshooting}
+
+Các thông báo này đến từ `oma skill eval` và `oma skill optimize`.
+
+| Thông báo hoặc triệu chứng | Nguyên nhân | Cách sửa |
+|---|---|---|
+| `[oma skill opt] no eval coverage for skill "<id>": found N task fixture(s), need at least 5.` | Có ít hơn năm fixture hợp lệ trong `.agents/eval/<id>/`, hoặc đã bỏ qua `--skill` (khi đó lệnh đọc `_all`). | Thêm fixture (xem [Bắt đầu nhanh](#a-minimal-working-fixture-set)) và truyền `--skill <id>`. |
+| `[oma skill eval] skipped <file>: does not match TaskFixture schema` | Fixture thiếu `id`, `skill`, `domain`, `prompt` hoặc `weight` dạng số. | Thêm trường còn thiếu, ví dụ `weight: 1`. |
+| `[oma skill eval] discarded N stale rollout entries from _rollouts/<file>: <reason>. Re-run --live --record to refresh.` | Skill body, prompt, checker hoặc evaluator protocol đã thay đổi kể từ lúc ghi. | Chạy lại `--live --record`. |
+| `INSUFFICIENT COVERAGE — fewer than 5 tasks found.` | Có ít hơn năm task được chấm sau khi bỏ qua và loại trừ. | Sửa các cảnh báo được in phía trên thông báo này, rồi ghi lại. |
+| `[oma skill eval] isolation: <status> for vendor <vendor> — baseline may be contaminated; result is low-confidence.` | Role `eval` resolve tới một vendor không có protected profile. | Đặt `agents.eval` thành một model Claude hoặc Codex (xem [Chọn model cho evaluation và optimizer](#choose-the-evaluation-and-optimizer-models)). |
+| `[oma skill eval] dispatch timed out after <N>s.` | Một arm hoặc judge call vượt quá `OMA_SKILL_EVAL_TIMEOUT_MS`. | Nâng `OMA_SKILL_EVAL_TIMEOUT_MS` cho các fixture cần câu trả lời dài. |
+| `Choose either --live or --mock` | Đã truyền cả hai flag. | Chỉ truyền một trong hai. |
+| `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` chạy mà không có `--live`. | Thêm `--live`, hoặc dùng `oma skill eval --mock` cho các check offline. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Role `opt-agent` resolve tới một vendor không có protected text transport. | Chọn một `model_preset` (hoặc, với `model_preset: auto`, một `default_cli`) resolve tới Claude hoặc Codex. |
+| `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (không ghi gì) | `--apply` trên một skill `oma-*` mà không có `--yes`. | Giữ diff của dry-run và đưa nó lên upstream, hoặc chạy lại với `--yes`. |
+| `[oma skill opt] an active project overlay owns this skill; ...` | [Project harness evolution](./harness-evolution.md) đã cài một overlay cho skill này. | Chạy `oma skill rollback --skill <id>` trước, hoặc để evolution cycle áp dụng thay đổi. |

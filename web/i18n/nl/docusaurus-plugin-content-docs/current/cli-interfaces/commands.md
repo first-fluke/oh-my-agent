@@ -7,7 +7,9 @@ description: Volledige referentie voor alle CLI-commando's van oh-my-agent, met 
 
 Gebruik na een globale installatie (`bun install --global oh-my-agent`) `oma` of `oh-my-agent`. Gebruik `npx oh-my-agent` voor eenmalig gebruik zonder installatie.
 
-Je kunt de omgevingsvariabele `OH_MY_AG_OUTPUT_FORMAT` instellen op `json` om machineleesbare uitvoer af te dwingen voor commando's die dit ondersteunen. Dit is gelijk aan `--json` doorgeven aan elk commando.
+Je kunt de omgevingsvariabele `OH_MY_AG_OUTPUT_FORMAT` instellen op `json` om JSON de standaarduitvoer te maken voor commando's die de gedeelde opties `--json` / `--output` gebruiken. Een expliciete `--output text` heeft nog steeds voorrang.
+
+Als een commando mislukt met `Unknown command`, `Unexpected argument` of `Removed option`, zie dan [Verwijderde schrijfwijzen](#aliases) op deze pagina; voor problemen met installatie, hooks en runtime, zie [Probleemoplossing](../guide/troubleshooting.md).
 
 ## Begin met een taak
 
@@ -25,8 +27,10 @@ Kies het kleinste commando dat je vraag beantwoordt. Elk commando hieronder prin
 | Een paper converteren of inspecteren | `oma scholar search "<query>"` | Zoekresultaten van Knows, OpenAlex of Semantic Scholar; haal een sidecar op met `oma scholar get`. |
 | Een slide deck bouwen | `oma slide create --output-dir <dir>` | Een werkmap die je kunt schrijven, valideren, bundelen en exporteren. |
 | Documentatiedrift controleren | `oma docs verify --json` | Een gestructureerd rapport met gebroken verwijzingen en een opnieuw gegenereerde verwijzingsindex. |
+| Een terugkerende agent plannen | `oma schedule create backend "<task>" --every 2h --dry-run` | De opgeloste cronexpressie; er wordt niets geregistreerd totdat je het commando opnieuw uitvoert zonder `--dry-run`. |
+| De kwaliteit van skills of harness controleren | `oma skill lint` of `oma skill audit` | Offline rapporten; lees [Een skill- of harnesscommando kiezen](#choosing-a-skill-or-harness-command) voordat je een commando gebruikt dat modellen aanroept. |
 
-Deze commandokaart gebruikt het vastgelegde register als bron. De canonieke ontdekkingsnamen hieronder komen uit `oma describe`; interactieve help kan compatibiliteitsaliassen tonen zoals `slide new`, `slide viewer`, `image list-vendors` of `video list-providers`.
+De canonieke namen hieronder komen uit `oma describe`. Alleen deze door spaties gescheiden paden worden geaccepteerd: oudere schrijfwijzen zoals `slide new`, `slide viewer`, `image list-vendors` en `video list-providers`, vormen met een dubbele punt zoals `agent:parallel` en de korte namen `viz`, `s` en `img` mislukken met `Unknown command` of `Unexpected argument`. Zie [Aliassen en verwijderde schrijfwijzen](#aliases).
 
 ## Huidig commandolandschap
 
@@ -43,6 +47,7 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `market` | `market`, `market detect-trap`, `market resolve`, `market update`, `market run` |
 | `doctor` | `doctor` |
 | `profile` | `profile`, `profile list`, `profile show`, `profile create`, `profile use`, `profile run` |
+| `home` | `home`, `home migrate` |
 | `retro` | `retro` |
 | `recap` | `recap` |
 | `docs` | `docs`, `docs verify`, `docs sync`, `docs i18n`, `docs lint` |
@@ -54,19 +59,19 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `star` | `star` |
 | `visualize` | `visualize` |
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google` |
-| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness incident scan`, `harness incident capture`, `harness incident show`, `harness incident export`, `harness incident promote`, `harness incident reproduce`, `harness feedback`, `harness evolution`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get` |
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint` |
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
-| `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
+| `serena` | `serena`, `serena check`, `serena setup`, `serena reap`, `serena daemon`, `serena daemon gc`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
 | `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe` |
+| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -75,7 +80,10 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
+| `skills` | `skills matrix` (het enige commando dat de groepsnaam in het meervoud behoudt; `oma skill matrix` wordt geweigerd) |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
+
+`oma describe` toont ook `agent parallel-supervisor`, `schedule inspect` en `schedule builtin-evolution-add`. Andere commando's roepen deze intern aan; je voert ze niet handmatig uit.
 
 Wanneer een commando de resterende argumenten doorgeeft aan een andere tool, laat het register de opties bewust open. Dit geldt voor `market run` en `diagram archify`; lees de opgeloste upstream-help voordat je een wijzigende of netwerkgebonden bewerking uitvoert.
 
@@ -87,13 +95,21 @@ Wanneer een commando de resterende argumenten doorgeeft aan een andere tool, laa
 
 `oma` zonder argumenten start de interactieve installer. `oma install` is de expliciete vorm en accepteert opties voor providerselectie.
 
-```
+```bash
 oma
 oma install
-oma install --web-search native --code-intelligence gortex --semantic-memory agent-memory
+oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
-`--web-search`, `--code-intelligence` en `--semantic-memory` behouden de opgeslagen providerkeuze wanneer je ze weglaat. `--honcho-url` en `--honcho-workspace` configureren een nieuwe Honcho-verbinding wanneer die provider is geselecteerd. De rootvlag `-y, --yes` slaat vragen over en gebruikt standaardwaarden; `--global` richt zich op de HOME-installatie.
+| Optie | Toegestane waarden |
+|:-------|:----------------|
+| `--web-search <provider>` | `native`, `brave` |
+| `--code-intelligence <provider>` | `serena`, `gortex` |
+| `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
+| `--honcho-url <url>` | Origin van de Honcho-API (standaard voor een nieuwe verbinding: `http://127.0.0.1:8000`) |
+| `--honcho-workspace <id>` | ID van de Honcho-workspace (standaard voor een nieuwe verbinding: `oma`) |
+
+`--web-search`, `--code-intelligence` en `--semantic-memory` behouden de opgeslagen providerkeuze wanneer je ze weglaat. `--honcho-url` en `--honcho-workspace` configureren een nieuwe Honcho-verbinding wanneer die provider is geselecteerd. De rootvlag `-y, --yes` slaat vragen over en gebruikt standaardwaarden; `--global` richt zich op `$OMA_HOME/.agents/` (standaard `~/.oma/.agents/`). Een projectinstallatie blijft in `<cwd>/.agents/`, ook wanneer `OMA_HOME` is ingesteld.
 
 **Wat het doet:**
 1. Controleert op de legacy-map `.agent/` en migreert die naar `.agents/` als die bestaat.
@@ -106,7 +122,7 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 8. Installeert vendor-aanpassingen voor geselecteerde vendors (projectlokale instellingen; geen stille vendor-schrijfacties op HOME-niveau).
 9. Maakt CLI-symlinks aan.
 10. Biedt aanbevolen **globale** git-configuratie aan (bevestiging via opt-in):
-    - `rerere.enabled=true` — hergebruik van mergeconflicten tussen agents
+    - `rerere.enabled=true` — hergebruik van mergeconflicten tussen agenten
     - `init.defaultBranch=main` — een consistente standaardbranch voor nieuwe repositories
     - Wordt volledig overgeslagen onder `--yes` / CI (print in plaats daarvan handmatige hersteltips)
 11. Biedt aan MCP te configureren waar dat van toepassing is.
@@ -123,29 +139,30 @@ oma
 
 Gezondheidscontrole voor CLI-installaties, MCP-configuraties en skillstatus.
 
-```
-oma doctor [--json] [--output <format>] [--profile]
+```text
+oma doctor [--json] [--output <format>] [--profile] [--heal-check <agent-type>]
 ```
 
 **Opties:**
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `--json` | Geef uitvoer als JSON |
+| `--json` | Geef uitvoer als JSON. Het commando sluit af met `1` wanneer het aantal `issues` in het rapport groter is dan nul. |
 | `--output <format>` | Uitvoerformaat (`text` of `json`) |
 | `--profile` | Toon de profielgezondheidsmatrix. Toont per agent de opgeloste modelslug, CLI en authenticatiestatus uit de actieve `model_preset`- en `agents:`-overschrijvingen. Zie [Modellen per agent](../guide/per-agent-models.md). |
+| `--heal-check <agent-type>` | Neem de self-healing-gatecontrole voor die agent op in het rapport. |
 
 **Wat het controleert:**
-- CLI-installaties: agy, claude, codex, qwen (versie en pad).
+- CLI-installaties: `claude`, `codex`, `qwen`, `agy`, `grok`, `kiro-cli`, `kimi` en `pi` (versie en pad).
 - Authenticatiestatus voor elke CLI.
-- MCP-configuratie: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
+- MCP-configuratie voor Claude Code (`~/.claude.json`) en Codex (`~/.codex/config.toml`).
 - Geïnstalleerde skills: welke skills aanwezig zijn en wat hun status is.
 - Map van de memorystore: aanwezigheid en aantal bestanden van `.agents/state/memories/` (oudere projecten vallen terug op het legacy-pad `.serena/memories/`).
 - Markeringen voor dubbele installatie (project tegenover globaal) en bijbehorende waarschuwingen.
 - Aanbevolen **globale** git-configuratie (`gitRecommended` in JSON):
   - `rerere.enabled=true`
   - `init.defaultBranch=main`
-  - Elke afwijking telt mee in `totalIssues`
+  - Elke afwijking telt mee in het totaal aantal problemen (`issues` in JSON)
 - Vendorcontextbestand van het project (OMA-blok in `AGENTS.md` wanneer Codex, Qwen of Claude Code ≥ 2.1.277 is geïnstalleerd).
 - Gezondheid van AgentMemory en state/hooks, Serena Reaper-diagnostiek en bijbehorende probleemtellers.
 
@@ -170,8 +187,8 @@ oma doctor --profile
 
 Werk skills bij naar de nieuwste versie uit het register.
 
-```
-oma update [-f | --force] [--with-new-skills] [--ci] [-y | --yes] [--all] [--vendor <vendors>]
+```text
+oma update [-f, --force] [--with-new-skills] [--ci] [-y, --yes] [--all] [--vendor <vendors>]
 ```
 
 **Opties:**
@@ -229,7 +246,7 @@ oma update mcp --ci
 
 Bekijk vooraf of verwijder bestanden die OMA beheert uit de geselecteerde installatieroot:
 
-```
+```bash
 oma uninstall --dry-run
 oma uninstall --yes
 ```
@@ -240,24 +257,29 @@ oma uninstall --yes
 
 Genereer vendor-native bestanden opnieuw vanuit de `.agents/`-bron van waarheid, zonder opnieuw te installeren.
 
+```text
+oma link [vendors...] [--dry-run] [--global]
 ```
-oma link [vendors...] [--global]
-```
+
+`--dry-run` toont vooraf wat zou worden geschreven, zonder bestanden te wijzigen.
 
 **Voorbeelden:**
 
 ```bash
+# Preview the files link would write
+oma link --dry-run
+
 # Regenerate all configured vendors
 oma link
 
 # Regenerate only Claude and Codex files
 oma link claude codex
 
-# Regenerate the HOME install (~/.agents/) from any directory
+# Regenerate the global install (~/.oma/.agents/) from any directory
 oma link opencode --global
 ```
 
-Zonder `--global` richt link zich op `<cwd>/.agents/`; met deze vlag op `~/.agents/` (of `OMA_HOME`). Zie [Globale installatie](../guide/global-install.md).
+Zonder `--global` richt link zich op `<cwd>/.agents/`; met deze vlag op `~/.oma/.agents/` (of `$OMA_HOME/.agents/`). `OMA_HOME` verandert het projectdoel niet. Zie [Globale installatie](../guide/global-install.md).
 
 **Wat het doet:**
 1. Bouwt vendor-native agentbestanden opnieuw op vanuit `.agents/agents/`
@@ -275,23 +297,23 @@ Gebruik dit na het bewerken van `.agents/agents/`, `.agents/workflows/`, `.agent
 - Als de doelvendor overeenkomt met de huidige runtime en die runtime native rolagents ondersteunt, gebruikt OMA native dispatch.
 - Anders valt OMA terug op `oma agent spawn`.
 
-### setup (workflow)
+### Een bestaande installatie opnieuw configureren {#setup-workflow}
 
-De workflow `/setup` (aangeroepen binnen een agentsessie) biedt interactieve configuratie van taal, CLI-installaties, MCP-verbindingen en agent-CLI-koppeling. Dit verschilt van `oma` (de installer): `/setup` configureert een al geïnstalleerde instantie.
+Er is geen `/setup`-workflow. Om een geïnstalleerd project te wijzigen, voer je `oma install` opnieuw uit, gebruik je `oma update mcp` voor alleen de browser-MCP-servers, of voer je `/tools` uit binnen een agentsessie om MCP-tools in of uit te schakelen. Controleer de modelresolutie per agent met `oma doctor --profile`; modelpins per agent staan onder `agents:` in `.agents/oma-config.yaml` ([Modellen per agent](../guide/per-agent-models.md)).
 
 ---
 
 ## Monitoring en metrieken
 
-### dashboard
+### dashboard terminal {#dashboard}
 
 Start het terminaldashboard voor realtime agentbewaking.
 
-```
-oma dashboard terminal
+```text
+oma dashboard terminal [--project-root <path>]
 ```
 
-Geen opties. Bewaakt `.agents/state/memories/` in de huidige map (oudere projecten vallen terug op het legacy-pad `.serena/memories/`). Toont een box-drawinginterface met sessiestatus, agenttabel en activiteitenfeed. Wordt bij elke bestandswijziging bijgewerkt. Druk op `Ctrl+C` om af te sluiten.
+Bewaakt `<project>/.agents/state/memories/`, waarbij het project `--project-root` is (standaard: de huidige map). Er is geen automatische terugval op het legacy-pad `.serena/memories/`. Toont een box-drawinginterface met sessiestatus, agenttabel en activiteitenfeed. Wordt bij elke bestandswijziging bijgewerkt. Druk op `Ctrl+C` om af te sluiten.
 
 Je kunt de memorymap overschrijven met de omgevingsvariabele `MEMORIES_DIR`.
 
@@ -308,18 +330,18 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal
 
 Start het webdashboard.
 
-```
-oma dashboard web
+```text
+oma dashboard web [--project-root <path>]
 ```
 
-Start een HTTP-server op `http://localhost:9847` met een WebSocket-verbinding voor live updates. Open de URL in een browser om het dashboard te bekijken.
+Start een HTTP-server op `http://127.0.0.1:9847` met een WebSocket-verbinding voor live updates. Open de geprinte URL in een browser om het dashboard te bekijken.
 
 **Omgevingsvariabelen:**
 
 | Variabele | Standaard | Beschrijving |
 |:---------|:--------|:-----------|
 | `DASHBOARD_PORT` | `9847` | Poort voor de HTTP/WebSocket-server |
-| `MEMORIES_DIR` | `{cwd}/.agents/state/memories` | Pad naar de memorymap (valt voor oudere projecten terug op het legacy-pad `{cwd}/.serena/memories`) |
+| `MEMORIES_DIR` | `<project-root>/.agents/state/memories` | Pad naar de memorymap; heeft voorrang op `--project-root` |
 
 **Voorbeeld:**
 ```bash
@@ -334,7 +356,7 @@ DASHBOARD_PORT=8080 oma dashboard web
 
 Bekijk productiviteitsmetrieken.
 
-```
+```text
 oma stats get [--json] [--output <format>]
 oma stats reset [--json] [--output <format>]
 ```
@@ -378,9 +400,9 @@ oma stats reset
 
 ### recap
 
-Vat de gespreksgeschiedenis van AI-tools in Claude-, Codex-, Qwen- en Cursorsessies samen.
+Vat de gespreksgeschiedenis van AI-tools in Claude-, Codex-, Gemini-, Antigravity-, Qwen-, Cursor- en Groksessies samen.
 
-```
+```text
 oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
 ```
 
@@ -390,7 +412,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:--------|
 | `--window <period>` | Tijdvenster: `1d`, `3d`, `7d`, `2w`, `30d` | `1d` |
 | `--date <date>` | Specifieke datum (`YYYY-MM-DD`); heeft voorrang op `--window` | |
-| `--tool <tools>` | Kommagescheiden filter: `grok,claude,codex,qwen,cursor,antigravity` | alle |
+| `--tool <tools>` | Kommagescheiden filter: `grok,claude,codex,gemini,qwen,cursor,antigravity` | alle |
 | `--top <n>` | Toon de bovenste N projecten/onderwerpen | |
 | `--sort <metric>` | Sorteer op `count` of `duration` | `count` |
 | `--mermaid` | Geef een Mermaid-Gantt-grafiek terug | |
@@ -411,7 +433,7 @@ oma recap --window 30d --graph                # Interactive browser graph
 
 Technische terugblik met metrieken en trends.
 
-```
+```text
 oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 ```
 
@@ -419,7 +441,7 @@ oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 
 | Argument | Beschrijving | Standaard |
 |:---------|:-----------|:--------|
-| `window` | Tijdvenster voor analyse (bijvoorbeeld `7d`, `2w`, `1m`) | Afgelopen 7 dagen |
+| `window` | Tijdvenster `<n>h`, `<n>d` of `<n>w` (bijvoorbeeld `24h`, `7d`, `2w`). Maanden worden niet geaccepteerd; gebruik `30d`. | Afgelopen 7 dagen |
 
 **Opties:**
 
@@ -463,7 +485,32 @@ oma retro 7d --json
 
 ---
 
-## Sessies en lokale profielen
+## Globale home, sessies en lokale profielen
+
+### home migrate
+
+Kopieer globale definities en runtimemetadata die OMA beheert naar de uniforme home:
+
+```bash
+oma home migrate --dry-run --json
+oma home migrate --json
+oma schedule sync
+```
+
+`OMA_HOME` selecteert de globale opslagroot, standaard `~/.oma`. Definities
+gebruiken de `.agents/` daarin; schedules gebruiken `schedule/`; Serena en de index
+met vault-sleutelnamen gebruiken `state/`. Profielopslag gebruikt `u/`, tenzij
+`OMA_STATE_HOME` expliciet een andere profielroot selecteert.
+
+De migratie behoudt de oorspronkelijke inhoud, slaat identieke kopieën over, voegt
+vault-sleutelnamen samen en meldt conflicten op de bestemming of gegevens die in gebruik zijn.
+Geverifieerde skillmappen die OMA beheert, kunnen worden gearchiveerd onder
+`$OMA_HOME/backup/legacy-global-skills/` voordat hun oude ontdekkingspaden beheerde
+links naar de gemigreerde kopieën worden. Skills van gebruikers en vreemde links blijven
+op hun plaats. Vendorauthenticatie, secrets in de OS-keychain en externe memorygegevens
+worden niet verplaatst. Een globale install/update voert deze migratie automatisch uit.
+Registratie van OS-jobs staat hier los van: voer na de migratie `oma schedule sync` uit
+wanneer er schedules bestaan.
 
 ### state list
 
@@ -500,7 +547,7 @@ oma profile run 1 -- oma state list --all-projects --json
 `profile use` print shellactivatie; bij evaluatie wordt `OMA_PROFILE` in de
 huidige shell ingesteld. Het wijzigt de bovenliggende shell niet wanneer je het op zichzelf uitvoert, verandert al draaiende applicaties niet en slaat geen afzonderlijke CLI-standaard op. CLI-commando's
 en vendorhooks die vanuit de geactiveerde shell starten, erven hetzelfde profiel.
-Het standaardprofiel is `0`; `OMA_STATE_HOME` overschrijft de opslagroot.
+Het standaardprofiel is `0`; de opslag volgt `OMA_HOME` (standaard `~/.oma`). Een expliciete `OMA_STATE_HOME` overschrijft alleen de profielopslag.
 `profile run <slot> -- <command> [args...]` selecteert het profiel alleen voor dat
 commando en zijn kinderen. De scheiding zorgt dat opties zoals `--help`
 en `--json` aan het kindcommando gekoppeld blijven.
@@ -513,7 +560,7 @@ en `--json` aan het kindcommando gekoppeld blijven.
 
 Spawn een subagentproces.
 
-```
+```text
 oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
@@ -534,10 +581,10 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 | `--resumed-from <run-id>` | Koppelt een nieuwe poging aan de run-ID van de vorige run. |
 | `--task-id <id>` | Taak-ID uit het sessieplan. Standaard de agent-ID. |
 | `--isolation <mode>` | Isolatiemodus per spawn. Ondersteunt momenteel `worktree`: maakt een verse git-worktree aan op `${tmpdir}/oma-worktrees/{sessionId}/{agentId}` op branch `oma/{sessionId}/{agentId}` en voert de agent daar uit. De worktree blijft na afloop behouden; merge- of discard-commando's worden afgedrukt voor handmatige beoordeling (geen automatische merge). |
-| `--read-only` | Beperk de gespawnde agent tot niet-destructieve tools (onderdrukt auto-approve-flags). Intern gebruikt door `oma skill eval --live` voor beide evalarmen. |
+| `--read-only` | Beperk de gespawnde agent tot niet-destructieve tools (onderdrukt auto-approve-vlaggen). Intern gebruikt door `oma skill eval --live` voor beide evalarmen. |
 | `--fallback-vendors <vendors>` | Kies expliciet voor een geordende, kommagescheiden keten van maximaal drie geconfigureerde CLI-vendors. Doorgaan vereist een herkende quota-, rate-limit- of tijdelijke fout en een nieuw safe-handoff-checkpoint. |
 
-**Volgorde voor vendorresolutie:** vlag `--vendor` > `agents:`-overschrijving in `oma-config.yaml` > standaardwaarden van agents in de actieve `model_preset`.
+**Volgorde voor vendorresolutie:** vlag `--vendor` > `agents:`-overschrijving in `oma-config.yaml` > standaardwaarden van agenten in de actieve `model_preset`.
 
 **Promptresolutie:** als het promptargument een pad naar een bestaand bestand is, wordt de bestandsinhoud als prompt gebruikt. Anders wordt het argument als inline tekst gebruikt. Vendorspecifieke uitvoeringsprotocollen worden automatisch toegevoegd.
 
@@ -545,9 +592,12 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | Code | Betekenis |
 |:-----|:--------|
-| `0` | Het vendorproces eindigde met 0 en er bestaat een sessieresultaat-artifact in de workspace. |
-| `3` | Het vendorproces eindigde met 0 maar schreef **geen sessieresultaat-artifact** in de workspace (bijvoorbeeld agy dat naar zijn eigen vertrouwde root schrijft in plaats van naar `-w`). Een `blocker.raised`-event wordt aan het sessiespoor toegevoegd en `agent status` meldt `no-artifact`. Beschouw de spawn niet als voltooid. |
+| `0` | Het runrecord is geëindigd als `completed`. |
+| `3` | Het vendorproces eindigde met 0, maar de run eindigde niet als geverifieerde `completed`-run (bijvoorbeeld `partial`, `blocked` of `failed`), en er wordt een `blocker.raised`-event met code `spawn.incomplete-result` vastgelegd. Wordt ook teruggegeven wanneer een opvolger uit `--fallback-vendors` niet kan starten. Beschouw de spawn niet als voltooid. |
+| `130` | Onderbroken (Ctrl+C of SIGTERM). |
 | overige | Het vendorproces zelf is mislukt; de exitcode wordt doorgegeven. |
+
+Zie [Agentresultaten en hervatten](../guide/agent-results-and-resume.md) voor het runrecord en de claim die bepalen of een run `completed` is.
 
 **Voorbeelden:**
 ```bash
@@ -581,7 +631,7 @@ Wanneer failover is ingeschakeld, krijgt de taak instructies om een
 run-specifiek safe-handoffrecord onder `.agents/results/` voor te bereiden. Een opvolger leest
 dat record en controleert de workspace voordat het resterende werk doorgaat.
 Uitputting van het quota zonder bruikbaar checkpoint stopt met een needs-reviewrecord.
-Annulering, gewone taalfouten en voltooide runs starten geen nieuwe poging. `--read-only`
+Annulering, gewone taakfouten en voltooide runs starten geen nieuwe poging. `--read-only`
 heft de checkpointverplichting niet op.
 
 Sessiegebeurtenissen leggen de overgangsreden en bron-/doelvendors vast; elke
@@ -593,8 +643,8 @@ Als je `--fallback-vendors` weglaat, blijft de gebruikelijke uitvoering met éé
 
 Controleer de status van een of meer subagents.
 
-```
-oma agent status <session-id> [agent-ids...] [-r <root>]
+```text
+oma agent status <session-id> [agent-ids...] [--project-root <path>]
 ```
 
 **Argumenten:**
@@ -608,13 +658,14 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 
 | Vlag | Beschrijving | Standaard |
 |:-----|:-----------|:--------|
-| `-r, --root <path>` | Rootpad voor memorycontroles | Huidige map |
+| `--project-root <path>` | Project waarvan runrecords, memories en PID-bestanden worden gecontroleerd | Huidige map |
 
 **Statuswaarden:**
-- `completed`: het resultaatbestand bestaat (met optionele statusheader).
-- `running`: het PID-bestand bestaat en het proces leeft.
-- `crashed`: het PID-bestand bestaat maar het proces is gestopt, of er is geen PID-/resultaatbestand gevonden.
-- `no-artifact`: het vendorproces eindigde met 0 maar schreef geen sessieresultaat-artifact in de workspace (stille verkeerd gerichte schrijfactie — zie exitcode `3` van `agent spawn`). Behandel dit als een mislukte spawn.
+- `running`, `completed`, `partial`, `blocked`, `failed`: de status van het nieuwste runrecord voor die agent in de sessie. Een `running`-record waarvan het runnerproces is verdwenen, wordt gemeld als `failed`.
+- `stale`: de run is vastgelegd als `completed`, maar het bewijs ervan valideert niet meer.
+- `legacy-<status>`, `unverified`, `legacy-completed`: gelezen uit een ouder `result-<agent>.md`-bestand of een tijdelijk statusbestand wanneer er geen runrecord bestaat.
+- `running` / `crashed` uit een PID-bestand: het proces leeft, of het is verdwenen.
+- `crashed`: er is geen runrecord, resultaatbestand, statusbestand of PID-bestand gevonden.
 
 **Uitvoerformaat:** één regel per agent: `{agent-id}:{status}`
 
@@ -627,16 +678,16 @@ oma agent status session-20260324-143000 backend frontend
 # backend:running
 # frontend:completed
 
-# Check with custom root
-oma agent status session-20260324-143000 qa -r /path/to/project
+# Check another project
+oma agent status session-20260324-143000 qa --project-root /path/to/project
 ```
 
 ### agent parallel
 
 Voer meerdere subagents parallel uit.
 
-```
-oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
+```text
+oma agent parallel [tasks...] [--session-id <id>] [--vendor <vendor>] [-i, --inline] [--no-wait]
 ```
 
 **Argumenten:**
@@ -649,24 +700,28 @@ oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `--vendor <vendor>` | Overschrijving van de CLI-vendor voor alle agents |
+| `--session-id <id>` | Koppel resultaten aan een bestaande sessie; YAML-waarden voor `id` worden de taak-ID's |
+| `--vendor <vendor>` | Overschrijving van de CLI-vendor voor alle agenten |
 | `-i, --inline` | Inline-modus: geef taken op als argumenten in de vorm `agent:task[:workspace]` |
-| `--no-wait` | Achtergrondmodus (start agents en keert direct terug) |
+| `--no-wait` | Achtergrondmodus (start agenten en keert direct terug) |
 
 **Indeling van het YAML-takenbestand:**
 ```yaml
 tasks:
-- agent: backend
-task: "Implement user API"
-workspace: ./api # optional, auto-detected if omitted
-- agent: frontend
-task: "Build user dashboard"
-workspace: ./web
+  - id: user-api        # optional task ID
+    agent: backend
+    task: "Implement user API"
+    workspace: ./api    # optional, auto-detected if omitted
+  - agent: frontend
+    task: "Build user dashboard"
+    workspace: ./web
 ```
 
-**Indeling van inline-taken:** `agent:task` of `agent:task:workspace` (workspace moet beginnen met `./` of `/`).
+`id`, `agent`, `task` en `workspace` horen bij hetzelfde lijstitem; spring ze daarom in onder de `-`.
 
-**Resultatenmap:** `.agents/results/parallel-{timestamp}/` bevat logbestanden voor elke agent.
+**Indeling van inline-taken:** `agent:task` of `agent:task:workspace` (workspace moet `.` zijn of beginnen met `./` of `/`).
+
+**Resultatenmap:** `<project-root>/.agents/results/parallel-<timestamp>-<id>/` bevat logbestanden voor elke agent.
 
 **Voorbeelden:**
 ```bash
@@ -687,7 +742,7 @@ oma agent parallel tasks.yaml --vendor claude
 
 Voer een codereview uit met een externe AI-CLI (codex, claude, qwen of grok).
 
-```
+```text
 oma agent review [--vendor <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
@@ -732,23 +787,25 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 Koppel een doelcontract aan een actieve persistente workflow (orchestrate, ultrawork, work, ralph). Het contract wordt mechanisch afgedwongen door de Stop-hook van de persistente modus; voltooiing is daardoor geen inschatting van het model.
 
-```
+```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
 ```
+
+Geef minstens één van `--gate`, `--budget-minutes` of `--description` op; anders mislukt het commando met `Nothing to set`. Zie [Persistente workflow](../getting-started/glossary.md#persistent-workflow) en [Stop gate](../getting-started/glossary.md#stop-gate) in de woordenlijst.
 
 **Opties:**
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `--gate <keyword>` | Deterministische stopgate: `typecheck`, `test` of `lint`. Koppelt aan het gelijknamige script in package.json, uitgevoerd als argv-array zonder shell. Zolang deze is ingesteld, mag de Stop-hook de workflow **alleen beëindigen wanneer dit script slaagt**; bij een fout blokkeert de hook met het einde van de uitvoer zodat de agent weet wat moet worden hersteld. Vrije commando's worden geweigerd — de gatewaarde staat in een door de agent beschrijfbaar statusbestand, dus willekeurige tekenreeksen daaruit uitvoeren zou de toestemmingslaag omzeilen. |
+| `--gate <keyword>` | Deterministische stop gate: `typecheck`, `test` of `lint`. Koppelt aan het gelijknamige script in package.json, uitgevoerd als argv-array zonder shell. Zolang deze is ingesteld, mag de Stop-hook de workflow **alleen beëindigen wanneer dit script slaagt**; bij een fout blokkeert de hook met het einde van de uitvoer zodat de agent weet wat moet worden hersteld. Vrije commando's worden geweigerd — de gatewaarde staat in een door de agent beschrijfbaar statusbestand, dus willekeurige tekenreeksen daaruit uitvoeren zou de toestemmingslaag omzeilen. |
 | `--budget-minutes <n>` | Klokbudget gemeten vanaf workflowactivatie. Wanneer dit wordt overschreden, deactiveert de Stop-hook de workflow en staat een eerlijke gedeeltelijke stop toe (machineverdict, vastgelegd als `gate.failed` met `gate: "budget"` in het sessiegebeurtenisspoor). |
 | `--description <text>` | Menselijke beschrijving van het doel. Alleen informatief. |
 | `--workflow <name>` | Doelworkflow wanneer meerdere persistente workflows actief zijn. |
-| `--session <id>` | Achtervoegsel van het sessie-ID in het statusbestand. |
+| `--session-id <id>` | Achtervoegsel met de vendorsessie-ID in het statusbestand; alleen nodig wanneer meerdere persistente workflows actief zijn. |
 
 **Gedragsnotities:**
 - Gate geslaagd → de workflow wordt gedeactiveerd, `gate.passed` wordt uitgegeven en de stop wordt toegestaan.
-- Een gatefout en time-out (harde limiet van 60 s) tellen beide mee voor de reinforcementlimiet (5), zodat een permanent rode gate stops niet eindeloos blokkeert; de vervaltijd van 2 uur bij veroudering blijft de laatste beveiliging.
+- Elke gaterun heeft een budget van 25 seconden (`OMA_GATE_TIMEOUT_MS` kan dit alleen verlagen). Een gatefout en een time-out tellen beide mee voor de reinforcementlimiet (5), zodat een permanent rode gate stops niet eindeloos blokkeert; de vervaltijd van 2 uur bij veroudering blijft de laatste beveiliging. Gebruik `--gate test` alleen wanneer het `test`-script ruim binnen dat budget klaar is.
 - Zonder doelcontract gedraagt de persistente modus zich precies als voorheen (alleen reinforcementprompts); het contract is volledig opt-in.
 
 **Voorbeelden:**
@@ -757,26 +814,61 @@ oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budge
 oma goal set --gate typecheck
 
 # Bound an autonomous run: stop honestly after 2 hours even if incomplete
-oma goal set --workflow ultrawork --gate test --budget-minutes 120
+oma goal set --workflow ultrawork --gate typecheck --budget-minutes 120
 ```
 
 ---
 
-## Geplande agents
+## Geplande agents {#scheduled-agents}
+
+### Levenscyclus van een schedule
+
+Een geplande job doorloopt de commando's hieronder. De OS-scheduler start elke run, niet een draaiend `oma`-proces.
+
+```mermaid
+flowchart TD
+  create["oma schedule create"] --> dry{"--dry-run?"}
+  dry -->|yes| preview["Print the resolved cron; write nothing"]
+  dry -->|no| rounded{"--every rounded without --accept-rounded?"}
+  rounded -->|yes| refuse["Fail and ask for --accept-rounded"]
+  rounded -->|no| envfile["Write the optional --env file"]
+  envfile --> osjob["Register OS job dev.oma.sch_ID"]
+  osjob --> manifest["Write the manifest entry"]
+  manifest --> fire["OS scheduler runs: oma schedule run ID"]
+  fire --> expired{"Recurring job past --expires-after?"}
+  expired -->|yes| remove["Remove the job"]
+  expired -->|no| spawn["oma agent spawn, 1-hour timeout"]
+  spawn --> runlog["Write run log and update lastFiredAt"]
+  runlog --> once{"--once job that exited 0?"}
+  once -->|yes| remove
+  once -->|no| fire
+```
+
+| Fase | Gestart door | Wat er gebeurt | Vastgelegd in |
+|:------|:-------------|:-------------|:------------|
+| Preview | `schedule create ... --dry-run` | Lost de cronexpressie op en print een eventuele afrondingsnotitie voor `--every` | alleen stdout |
+| Registreren | `schedule create` | Schrijft het `--env`-bestand wanneer dat is gevraagd, registreert de OS-job en schrijft daarna de manifestvermelding | OS-scheduler; `~/.oma/schedule/schedules.json`; `~/.oma/schedule/env/<id>` |
+| Starten | OS-scheduler | Voert `oma schedule run <id>` uit; een terugkerende job die ouder is dan zijn `--expires-after`-leeftijd wordt verwijderd in plaats van uitgevoerd | — |
+| Uitvoeren | `schedule run` | Voert `oma agent spawn` uit voor de job met een time-out van 1 uur | `~/.oma/schedule/runs/<id>/` |
+| Vastleggen | `schedule run` | Werkt `lastFiredAt` bij; verwijdert een `--once`-job pas na een run die met 0 eindigt | manifest |
+| Inspecteren en herstellen | `schedule list`, `schedule sync` | Vergelijkt het manifest met de OS-scheduler en herstelt drift | — |
+| Verwijderen | `schedule delete <id>` | Verwijdert de job uit het manifest en de OS-scheduler | — |
+
+`~/.oma` is de standaard-`OMA_HOME`. Zie [Probleemoplossing](../guide/troubleshooting.md) voor symptomen zoals een job die nooit start.
 
 ### schedule create
 
 Registreer een geplande agentjob. Precies één van `--cron` of `--every` is verplicht.
 
-```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+```text
+oma schedule create <agent-id> <prompt> (--cron <expr> | --every <phrase>) [--vendor <vendor>] [-w <path>] [--once] [--expires-after <duration>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
 ```
 
 **Argumenten:**
 
 | Argument | Verplicht | Beschrijving |
 |:---------|:---------|:-----------|
-| `agent-id` | Ja | Agenttype: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `agent-id` | Ja | Agent-ID die op het startmoment aan `oma agent spawn` wordt doorgegeven, bijvoorbeeld `backend`, `frontend`, `qa` of een alias uit een agentbestand zoals `qa-reviewer`. De waarde wordt pas gevalideerd wanneer de job start. |
 | `prompt` | Ja | Taakomschrijving die op het startmoment aan de agent wordt doorgegeven |
 
 **Opties:**
@@ -784,17 +876,20 @@ oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" 
 | Vlag | Beschrijving |
 |:-----|:-----------|
 | `--cron "<expr>"` | Cronexpressie met 5 velden (bijvoorbeeld `"0 9 * * *"`). Kan niet samen met `--every`. |
-| `--every "<phrase>"` | Interval in natuurlijke taal: `5m`, `2h`, `1d`, `every 20m`, `every 5 minutes`. Rondt af naar de dichtstbijzijnde in cron uitdrukbare stap en print een notitie. Kan niet samen met `--cron`. |
+| `--every "<phrase>"` | Interval in natuurlijke taal: `5m`, `2h`, `1d`, `every 20m`, `every 5 minutes`. Een waarde die geen zuivere cronstap is (bijvoorbeeld `7m`), wordt afgerond, en de job wordt **niet** geregistreerd tenzij je `--accept-rounded` toevoegt. Kan niet samen met `--cron`. |
 | `--vendor <vendor>` | CLI-vendoroverschrijving die aan `oma agent spawn` wordt doorgegeven: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Standaard automatische detectie. |
 | `-w, --workspace <path>` | Werkmap voor de agent. Standaard de huidige map op het registratiemoment. |
-| `--once` | Eenmalige modus: wordt één keer uitgevoerd en verwijdert zichzelf daarna. |
-| `--expires-after <duration>` | Laat een terugkerende job automatisch na N dagen vervallen (`0` = onbeperkt). |
-| `--env <KEY1,KEY2>` | Sla benoemde env-vars op in `~/.agents/schedule/env/<id>` (0600) voor injectie tijdens de run. Alleen de opgegeven sleutels worden vastgelegd; nooit een volledige env-dump. |
+| `--once` | Eenmalige modus: wordt één keer uitgevoerd en verwijdert zichzelf na een geslaagde run. |
+| `--expires-after <duration>` | Verwijder een terugkerende job bij de eerste start nadat deze leeftijd is bereikt. Geef hele dagen op met de eenheid `d`, bijvoorbeeld `30d`; `0` betekent nooit. Een kaal getal zoals `30` en waarden zoals `12h` of `2w` worden geweigerd. |
+| `--env <KEY1,KEY2>` | Sla benoemde env-vars op in `~/.oma/schedule/env/<id>` (0600) voor injectie tijdens de run. Alleen de opgegeven sleutels worden vastgelegd; nooit een volledige env-dump. |
+| `--dry-run` | Print de opgeloste cron en een eventuele afrondingsnotitie zonder een OS-job, manifestvermelding of env-bestand aan te maken. |
+| `--accept-rounded` | Registreer een interval dat `--every` heeft afgerond, nadat je de preview hebt bekeken. |
 
 **Wat het doet:**
-1. Parseert en valideert de cronexpressie (of zet de `--every`-zin om naar cron).
-2. Schrijft de job naar `~/.agents/schedule/schedules.json` (globaal manifest, rechten 0600).
-3. Registreert de job bij de OS-scheduler (launchd / systemd --user / schtasks). De OS-job roept `oma schedule run <id>` aan volgens het geconfigureerde interval.
+1. Parseert en valideert de cronexpressie (of zet de `--every`-zin om naar cron). Met `--dry-run` stopt het hier.
+2. Met `--env` schrijft het de opgegeven variabelen naar `~/.oma/schedule/env/<id>`.
+3. Registreert de job bij de OS-scheduler: launchd op macOS; op Linux een systemd-`--user`-timer, of de crontab van de gebruiker wanneer systemd niet beschikbaar is; Task Scheduler (`schtasks`) op Windows; crontab op andere POSIX-systemen. De OS-job roept `oma schedule run <id>` aan volgens het geconfigureerde interval.
+4. Schrijft de job naar `~/.oma/schedule/schedules.json` (globaal manifest, rechten 0600).
 
 **Voorbeelden:**
 ```bash
@@ -809,6 +904,21 @@ oma schedule create pm "Generate sprint plan" --cron "0 9 * * 1" --once --vendor
 
 # Capture specific env vars for the job
 oma schedule create backend "Sync external data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
+
+# Expire a recurring job after 30 days
+oma schedule create backend "Check for slow queries" --every "2h" --expires-after 30d
+
+# Preview a rounded interval, then register it
+oma schedule create backend "Check logs" --every 7m --dry-run
+oma schedule create backend "Check logs" --every 7m --accept-rounded
+```
+
+De preview voor `--every 7m` print:
+
+```text
+Preview: requested interval resolves to */6 * * * *
+Note: Requested every 7m -- 7 is not a divisor of 60; rounded to every 6m (*/6 * * * *).
+Preview only: no OS job, manifest entry, or env file was written.
 ```
 
 Zie de [gids voor geplande agents](../guide/scheduled-agents.md) voor een volledige rondleiding.
@@ -817,8 +927,8 @@ Zie de [gids voor geplande agents](../guide/scheduled-agents.md) voor een volled
 
 Toon alle geplande jobs in alle projecten, gegroepeerd per project, met de OS-driftstatus.
 
-```
-oma schedule list [--json]
+```text
+oma schedule list [--json] [--output <format>]
 ```
 
 **Opties:**
@@ -826,8 +936,16 @@ oma schedule list [--json]
 | Vlag | Beschrijving |
 |:-----|:-----------|
 | `--json` | Geef uitvoer als JSON |
+| `--output <format>` | Uitvoerformaat (`text` of `json`) |
 
-**Driftstatussen:** `synced` (manifest en OS zijn gelijk), `stale` (de OS-registratie roept een commando aan dat de huidige CLI niet meer accepteert; voer `schedule sync` uit om die te herschrijven, `oma update` doet dat automatisch), `missing-in-os` (voer `schedule sync` uit om te herstellen), `orphan-in-os` (OS heeft een job die niet in het manifest staat; voer `schedule sync --prune` uit om die te verwijderen).
+**Driftstatussen:**
+
+| Status | Betekenis | Herstel |
+|:------|:--------|:-------|
+| `synced` | De manifestvermelding en de OS-job komen overeen | — |
+| `stale` | De OS-registratie roept een commando aan dat de huidige CLI niet meer accepteert | `oma schedule sync` (`oma update` doet dit ook) |
+| `missing-in-os` | Een manifestvermelding heeft geen OS-job | `oma schedule sync` |
+| `orphan-in-os` | Het OS heeft een job die niet in het manifest staat | `oma schedule sync --prune` |
 
 **Voorbeelden:**
 ```bash
@@ -839,7 +957,7 @@ oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 
 Verwijder een geplande job uit zowel het manifest als de OS-scheduler.
 
-```
+```text
 oma schedule delete <id>
 ```
 
@@ -847,40 +965,41 @@ oma schedule delete <id>
 
 | Argument | Verplicht | Beschrijving |
 |:---------|:---------|:-----------|
-| `id` | Ja | Job-ID uit `schedule list` (formaat: `sch_<base32-12>`) |
+| `id` | Ja | Job-ID uit `schedule list` (formaat: `sch_` gevolgd door 12 tekens uit `a-z` en `2-7`) |
 
 **Voorbeeld:**
 ```bash
-oma schedule delete sch_abc123def456
+oma schedule delete sch_k7d2mq4xa3pz
 ```
 
 ### schedule run
 
 Voer een geplande job uit op ID. Dit is het ingangspunt dat de OS-scheduler op het startmoment aanroept. Normaal niet handmatig uitvoeren, maar wel bruikbaar om een job te debuggen.
 
-```
+```text
 oma schedule run <id>
 ```
 
 **Wat het doet:**
 1. Zoekt `<id>` op in het manifest (sluit af met een niet-nulcode als het niet wordt gevonden).
-2. Laadt vastgelegde env-vars uit `~/.agents/schedule/env/<id>` en injecteert ze.
-3. Roept `oma agent spawn <agentId> <prompt> <sessionId> --vendor <vendor> -w <workspace>` aan.
-4. Schrijft het resultaat naar `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`.
-5. Werkt `lastFiredAt` in het manifest bij; verwijdert zichzelf als de job `--once` is.
-6. Faalt luid bij verlopen authenticatie: sluit af met een niet-nulcode en print `re-auth required: <vendor>` naar stderr. Slaagt nooit stilzwijgend.
+2. Verwijdert een terugkerende job waarvan de `--expires-after`-leeftijd is verstreken, in plaats van die uit te voeren.
+3. Laadt vastgelegde env-vars uit `~/.oma/schedule/env/<id>` en injecteert ze.
+4. Roept `oma agent spawn <agentId> <prompt> schedule-<id>-<epoch-ms> [--vendor <vendor>] --workspace <workspace>` aan met een time-out van 1 uur. `--vendor` wordt alleen doorgegeven wanneer de job er een heeft.
+5. Schrijft het resultaat naar `~/.oma/schedule/runs/<id>/<timestamp>.md`.
+6. Werkt `lastFiredAt` in het manifest bij. Een `--once`-job wordt pas verwijderd na een run die met 0 eindigt; een mislukte eenmalige job start opnieuw op het volgende passende tijdstip.
+7. Faalt luid bij verlopen authenticatie: sluit af met een niet-nulcode en print `re-auth required: <vendor>` naar stderr. Andere fouten sluiten ook af met een niet-nulcode. Slaagt nooit stilzwijgend.
 
 **Voorbeeld:**
 ```bash
 # Invoke manually to debug a job
-oma schedule run sch_abc123def456
+oma schedule run sch_k7d2mq4xa3pz
 ```
 
 ### schedule sync
 
 Synchroniseer het manifest opnieuw met de OS-scheduler. Herstelt drift na systeemmigraties of resets van de OS-scheduler.
 
-```
+```text
 oma schedule sync [--prune]
 ```
 
@@ -907,7 +1026,7 @@ oma schedule sync --prune
 
 Initialiseer het schema van de coordination memory store.
 
-```
+```text
 oma memory init [--json] [--output <format>] [--force]
 ```
 
@@ -919,7 +1038,7 @@ oma memory init [--json] [--output <format>] [--force]
 | `--output <format>` | Uitvoerformaat (`text` of `json`) |
 | `--force` | Overschrijf lege of bestaande schemabestanden |
 
-**Wat het doet:** Creates the `.agents/state/memories/` directory structure with initial schema files that agents and workflows use for reading and writing coordination state.
+**Wat het doet:** maakt de mapstructuur `.agents/state/memories/` aan met initiële schemabestanden die agenten en workflows gebruiken om coördinatiestatus te lezen en te schrijven.
 
 **Voorbeelden:**
 ```bash
@@ -938,7 +1057,7 @@ oma memory init --force
 
 Controleer de authenticatiestatus van alle ondersteunde CLI's.
 
-```
+```text
 oma auth status [--json] [--output <format>]
 ```
 
@@ -949,7 +1068,7 @@ oma auth status [--json] [--output <format>]
 | `--json` | Geef uitvoer als JSON |
 | `--output <format>` | Uitvoerformaat (`text` of `json`) |
 
-**Controles:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI en Qwen CLI.
+**Controles:** GitHub CLI (`gh`), Claude CLI, Codex CLI, Command Code, Cursor CLI, Qwen CLI, Antigravity CLI (`agy`), Grok, Kimi Code CLI, Kiro CLI, pi en OpenCode CLI. `--json` print één booleaanse waarde per sleutel, bijvoorbeeld `{ "github": true, "claude": true, "codex": false, ... }`.
 
 **Voorbeelden:**
 ```bash
@@ -961,7 +1080,7 @@ oma auth status --json
 
 Proxy MCP-stdio naar een gedeelde Serena-server per project.
 
-```
+```text
 oma bridge [url] [--context <name>]
 ```
 
@@ -969,8 +1088,13 @@ oma bridge [url] [--context <name>]
 
 | Argument | Verplicht | Beschrijving |
 |:---------|:---------|:-----------|
-| `url` | Nee | Maak verbinding met een door de aanroeper beheerd endpoint in plaats van een gedeelde daemon op te lossen |
-| `--context` | Nee | Serena-context voor de daemon (standaard `ide`); daemons worden hierop gesleuteld |
+| `url` | Nee | Maak verbinding met een door de aanroeper beheerd endpoint in plaats van een gedeelde daemon op te lossen. `OMA_BRIDGE_URL` heeft hetzelfde effect. |
+
+**Opties:**
+
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `--context <name>` | Serena-context voor de daemon (standaard `ide`); daemons worden hierop gesleuteld |
 
 **Wat het doet:** dit is wat de serena-MCP-entry van elke vendor standaard uitvoert —
 je roept het niet handmatig aan. Serena's stdio-transport geeft elke agentsessie
@@ -983,17 +1107,22 @@ Het vastzetten van `--project` is belangrijk — een server die zonder deze vlag
 tool `activate_project` beschikbaar, waarmee elke sessie het project onder alle andere sessies vandaan kan wisselen.
 
 **Architectuur:**
-```
-session A --stdio--> oma bridge --.
-                                   >-- HTTP --> one Serena server (+ LSPs)
-session B --stdio--> oma bridge --'
+
+```mermaid
+flowchart LR
+  sessionA["Agent session A"] -->|stdio| bridgeA["oma bridge"]
+  sessionB["Agent session B"] -->|stdio| bridgeB["oma bridge"]
+  bridgeA -->|HTTP| server["One Serena server per project, with its language servers"]
+  bridgeB -->|HTTP| server
 ```
 
 **Levenscyclus:** de eerste sessie start de server, latere sessies hergebruiken hem en
 elke proxy registreert zichzelf als client. Wanneer de laatste sessie loskoppelt, blijft de
 server 10 minuten warm — een restart koppelt opnieuw — en anders wordt hij door de
-volgende bridge die start afgesloten. Als de gedeelde server niet bereikbaar is,
-valt de proxy terug op een sessielokale stdio-serena.
+volgende bridge die start afgesloten. Er is geen automatische terugval op stdio: als
+de gedeelde server niet kan starten, mislukt de MCP-verbinding met
+`Shared Serena is unavailable for <root>`. Voer `oma doctor` uit en probeer daarna de
+MCP-verbinding opnieuw.
 
 Schakel dit uit met `serena.mode: stdio` in `.agents/oma-config.yaml`.
 
@@ -1007,8 +1136,8 @@ oma bridge http://localhost:12341/mcp
 
 Verifieer subagentuitvoer aan de hand van de verwachte criteria.
 
-```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+```text
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
@@ -1023,16 +1152,22 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | Vlag | Beschrijving | Standaard |
 |:-----|:-----------|:--------|
 | `-w, --workspace <path>` | Te verifiëren workspacepad | Huidige map |
+| `--session-id <id>` | Selecteer het sessieplan en de rapporten | |
+| `--task-id <id>` | Selecteer de scope en het rapport van één taak; vereist een sessie- of run-ID | |
+| `--run-id <id>` | Selecteer het exacte runrapport; leidt sessie/taak af uit de lokale receipt | |
 | `--json` | Geef uitvoer als JSON | |
 | `--output <format>` | Uitvoerformaat (`text` of `json`) | |
 
-**Wat het doet:** voert het verificatiescript voor het opgegeven agenttype uit en controleert buildsucces, testresultaten en scopeconformiteit.
+**Wat het doet:** voert de geconfigureerde controles voor het opgegeven agenttype uit, waaronder tests, statische inspecties en scopeconformiteit. Codecontroles van de workspace inspecteren de workspace ook wanneer een taak of run is geselecteerd.
 
-`verify triggers` meet de nauwkeurigheid van de keyworddetector op een gelabeld promptcorpus. De procentuele drempels zijn gates. Het geregistreerde pad is `verify agent`; de oude spelling op hoofdniveau kan nog in compatibiliteitshelp voorkomen.
+Wanneer meerdere sessieplannen of run-receipts overeenkomen, faalt de verificatie en vraagt die om een expliciete identiteit, in plaats van een bestand op naam te kiezen. Een nieuwe run zonder rapport kan het rapport van een eerdere run niet hergebruiken. `--run-id` controleert de agent en workspace van de receipt voordat de sessie/taak ervan wordt gebruikt. Geef zonder lokale receipt alle drie de ID's op. Legacy TDD-rapporten zonder scope worden alleen geaccepteerd met het legacy-plan `.agents/plan.json`.
+
+`verify triggers` meet de nauwkeurigheid van de keyworddetector op een gelabeld promptcorpus. De procentuele drempels zijn gates. Het geregistreerde pad is `verify agent`; de oude spelling op hoofdniveau `oma verify <agent-type>` wordt geweigerd met `Unexpected argument`.
 
 **Gemeenschappelijke controles (alle agenttypen):**
 - **Scopecontrole**: leest taakscope uit `.agents/results/plan-{sessionId}.json`. Vergelijkt gewijzigde bestanden uit `git diff` met de gedefinieerde scopepatronen. Faalt als bestanden buiten de toegewezen agentscope zijn gewijzigd.
-- **Charter-preflight**: controleert of `result-{agent}.md` een juist ingevuld blok `CHARTER_CHECK:` zonder open placeholders bevat.
+- **Charter-preflight**: controleert of het geselecteerde resultaatrapport een juist ingevuld blok `CHARTER_CHECK:` zonder open placeholders bevat.
+- **TDD-bewijs**: vereist dat het geselecteerde rapport van elke toepasselijke taak de exacte taak-ID en eigen, niet-lege `red:`- en `green:`-items bevat. Rapporten uit een andere sessie of nieuwe poging kunnen het geselecteerde rapport niet vervangen.
 - **Hardcoded secrets**: scant `.py`-, `.ts`-, `.tsx`-, `.js`- en `.dart`-bestanden op patronen zoals `password = "..."` en `api_key = "..."` (test- en voorbeeldbestanden uitgesloten).
 - **TODO/FIXME-commentaar**: telt commentaren met `TODO`, `FIXME`, `HACK` en `XXX` (waarschuwt als er een wordt gevonden).
 
@@ -1060,13 +1195,16 @@ oma verify agent frontend -w ./apps/web
 
 # JSON output for CI
 oma verify agent backend --json
+
+# Verify one run's scope and evidence
+oma verify agent backend --run-id run-123 --json
 ```
 
-### hook
+### hook run {#hook}
 
-Stuur een vendor-hookevent door de gecentraliseerde oma-hookrouter (design 019). Dit is de canonieke ABI die door de gegenereerde `oma-hook.sh`-wrapper van elke vendor wordt aangeroepen. Je kunt het ook rechtstreeks gebruiken om handlerketens geïsoleerd te debuggen of te testen.
+Stuur een vendor-hookevent door het enkele hookingangspunt van oma. Dit is de canonieke ABI die door de gegenereerde `oma-hook.sh`-wrapper van elke vendor wordt aangeroepen. Je kunt het ook rechtstreeks gebruiken om handlerketens geïsoleerd te debuggen of te testen.
 
-```
+```text
 oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
 ```
 
@@ -1084,14 +1222,15 @@ oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
 - **exitcode**: altijd `0` (fail-open — fouten worden naar stderr geschreven en de agent wordt nooit geblokkeerd).
 
 **Gegevensstroom tijdens runtime:**
-```
-vendor fires: oma-hook.sh --vendor claude --event UserPromptSubmit
-  stdin: {"prompt":"...","cwd":"/project","sessionId":"..."}
-  → oma hook resolves handler chain from .agents/hooks/variants/claude.json
-  → runs: keyword-detector → state-boundary → skill-injector (in-process)
-  → merges HandlerResult values (context: concat; pre_tool: last mutate wins; stop: any block)
-  → emits vendor dialect to stdout
-  → exit 0
+
+```mermaid
+flowchart TD
+  fire["Vendor fires oma-hook.sh --vendor claude --event UserPromptSubmit"] --> stdin["stdin: vendor JSON payload with prompt, cwd, sessionId"]
+  stdin --> resolve["Resolve the handler chain from the route table built into the CLI (source: .agents/hooks/variants/claude.json)"]
+  resolve --> run["Run in-process: keyword-detector, state-boundary, skill-injector, code-intelligence-primer"]
+  run --> merge["Merge results: context concatenates; pre_tool last mutate wins; stop any block wins"]
+  merge --> emit["Emit vendor dialect JSON on stdout"]
+  emit --> exit["Exit 0"]
 ```
 
 **Handlerketens geïsoleerd debuggen:**
@@ -1101,27 +1240,27 @@ vendor fires: oma-hook.sh --vendor claude --event UserPromptSubmit
 echo '{"prompt":"orchestrate the auth feature","cwd":"/path/to/project"}' \
   | oma hook run --vendor claude --event UserPromptSubmit
 
-# Test a Bash pre_tool block (Claude)
-echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"},"cwd":"/path/to/project"}' \
+# Test a Bash pre_tool block (Claude): scm-guard denies staging a likely-secret file
+echo '{"tool_name":"Bash","tool_input":{"command":"git add .env"},"cwd":"/path/to/project"}' \
   | oma hook run --vendor claude --event PreToolUse --matcher Bash
 
 # Test persistent-mode Stop enforcement (Codex)
 echo '{"cwd":"/path/to/project"}' \
   | oma hook run --vendor codex --event Stop
 
-# Test an Antigravity BeforeTool event
-echo '{"tool_name":"run_shell_command","tool_input":{"command":"cat /etc/passwd"},"cwd":"/path/to/project"}' \
-  | oma hook run --vendor antigravity --event BeforeTool
+# Test Antigravity prompt-time injection (agy fires PreInvocation)
+echo '{"prompt":"brainstorm","cwd":"/path/to/project"}' \
+  | oma hook run --vendor antigravity --event PreInvocation
 ```
 
-Lege stdout betekent dat de keten voor dat event een no-op produceerde. Een JSON-object op stdout is het vendordialect dat de agentsessie zou ontvangen.
+Lege stdout betekent dat de keten voor dat event een no-op produceerde. Een eventnaam die niet in de routetabel van de vendor is geregistreerd (bijvoorbeeld `BeforeTool` voor `antigravity`), voert een lege keten uit en print niets. Een JSON-object op stdout is het vendordialect dat de agentsessie zou ontvangen.
 
 **Notities over scope:**
 - `statusLine`/hud-items worden niet via `oma hook run` gerouteerd (weergave op het hot path blijft via een direct `bun`-pad lopen).
 - De pi-vendor gebruikt de in-process `installPiExtension`-bridge, niet `oma hook run`.
 - Dubbele leveringen van een dubbele installatie (project + globaal) worden binnen `oma hook run` genegeerd (identieke payload die door een andere `oma-hook.sh`-wrapper is gestart); verschillende events, waaronder parallelle toolaanroepen, worden altijd uitgevoerd.
 
-Zie `cli/commands/hook/command.ts` voor de routerimplementatie (intern aangeduid als "design 019") en `cli/commands/hook/probe/` voor de compatibiliteitsmatrix per vendor.
+Zie `cli/commands/hook/command.ts` voor de routerimplementatie en `cli/commands/hook/probe/` voor de compatibiliteitsmatrix per vendor.
 
 **Voorbeelden:**
 ```bash
@@ -1134,8 +1273,10 @@ echo '{"cwd":"'$(pwd)'"}' | oma hook run --vendor qwen --event Stop
 
 # Check Antigravity hook output format
 echo '{"prompt":"brainstorm","cwd":"'$(pwd)'"}' \
-  | oma hook run --vendor antigravity --event BeforeAgent
+  | oma hook run --vendor antigravity --event PreInvocation
 ```
+
+`oma hook script --vendor <v> --script <name>` voert één geïnstalleerde hookhandler uit via de memoryadapter van de CLI.
 
 ---
 
@@ -1143,7 +1284,7 @@ echo '{"prompt":"brainstorm","cwd":"'$(pwd)'"}' \
 
 Controleer hookcompatibiliteit per vendor en print een dekkingsmatrix.
 
-```
+```text
 oma hook probe [--vendor <list>] [--output <fmt>] [--hooks-dir <dir>]
 ```
 
@@ -1151,7 +1292,7 @@ oma hook probe [--vendor <list>] [--output <fmt>] [--hooks-dir <dir>]
 
 | Vlag | Beschrijving | Standaard |
 |:-----|:-----------|:--------|
-| `--vendor <list>` | Kommagescheiden vendors om te controleren | Alle ondersteunde vendors |
+| `--vendor <list>` | Kommagescheiden vendors om te controleren | `claude,codex,cursor,grok,kimi,kiro,qwen,antigravity` |
 | `--output <fmt>` | Uitvoerformaat: `text`, `md` of `json` | `text` |
 | `--hooks-dir <dir>` | Overschrijf de map `.agents/hooks/core` | Automatisch gedetecteerd |
 
@@ -1176,9 +1317,9 @@ oma hook probe --vendor claude,codex,antigravity
 
 ### vault
 
-Beheer API-sleutels en andere secrets in de OS-keychain (macOS Keychain, Linux Secret Service of Windows Credential Manager), met `@napi-rs/keyring` als backend. Waarden verschijnen nooit in shellgeschiedenis of omgevingsbestanden; alleen sleutelnamen worden bijgehouden in `~/.config/oma/vault-index.json`, zodat `oma vault list` ze kan opsommen zonder geheime waarden bloot te geven.
+Beheer API-sleutels en andere secrets in de OS-keychain (macOS Keychain, Linux Secret Service of Windows Credential Manager), met `@napi-rs/keyring` als backend. Waarden verschijnen nooit in shellgeschiedenis of omgevingsbestanden; alleen sleutelnamen worden bijgehouden in `~/.oma/state/vault-index.json`, zodat `oma vault list` ze kan opsommen zonder geheime waarden bloot te geven.
 
-```
+```text
 oma vault store <name> [--value <value>]
 oma vault get <name>
 oma vault list [--json]
@@ -1192,7 +1333,7 @@ oma vault delete <name>
 | `store <name>` | Vraagt om een secretwaarde (verborgen invoer) en schrijft die onder `name` naar de OS-keychain. `--value <value>` accepteert de waarde inline voor niet-interactief gebruik (zichtbaar in shellgeschiedenis; gebruik bij voorkeur de prompt). |
 | `get <name>` | Print de opgeslagen waarde zonder opmaak naar stdout zodat die in shells kan worden gebruikt: `export ANTHROPIC_API_KEY=$(oma vault get anthropic)`. Sluit af met code `2` als de sleutel niet bestaat. |
 | `list` | Toont opgeslagen sleutelnamen met hun tijdstempels `createdAt`. Waarden worden nooit getoond. |
-| `rm <name>` | Verwijdert het secret uit de keychain en de index. |
+| `delete <name>` | Verwijdert het secret uit de keychain en de index. De oude schrijfwijze `vault rm` wordt geweigerd. |
 
 **Regels voor sleutelnamen:** 1–64 tekens uit `[A-Za-z0-9._-]`. Voorbeelden: `anthropic`, `openai-prod`, `github_pat`, `sentry.dsn`.
 
@@ -1221,8 +1362,8 @@ oma vault delete anthropic
 
 Ruim verweesde subagentprocessen en tijdelijke bestanden op.
 
-```
-oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
+```text
+oma cleanup [--dry-run] [-y, --yes] [--json] [--output <format>]
 ```
 
 **Opties:**
@@ -1235,8 +1376,8 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 | `--output <format>` | Uitvoerformaat (`text` of `json`) |
 
 **Wat het opschoont:**
-- Verweesde PID-bestanden in de tijdelijke systeemmap (`/tmp/subagent-*.pid`).
-- Verweesde logbestanden (`/tmp/subagent-*.log`).
+- Verweesde `subagent-*.pid`-bestanden in de tijdelijke map van het OS (`os.tmpdir()`: meestal `/tmp` op Linux, `$TMPDIR` op macOS, `%TEMP%` op Windows).
+- Verweesde `subagent-*.log`-bestanden in dezelfde map.
 - **Verweesde Serena-language-servers** — wanneer een MCP-client (bijvoorbeeld Claude) afsluit, wordt `serena start-mcp-server` aan init gekoppeld en blijven de LSP-kindprocessen (`tsserver`, `pyright`, …, honderden MB) zonder client draaien. Deze worden hier opgeruimd. Het geval *inactief maar nog gekoppeld* wordt apart afgehandeld door [`serena reap`](#serena).
 - Gemini Antigravity-mappen (brain, implicit, knowledge) onder `.gemini/antigravity/`.
 
@@ -1262,10 +1403,13 @@ stack (`tsserver`, `pyright`, …, ~300 MB) en houdt die de hele sessie warm —
 inactieve LSP-kindprocessen; Serena herstelt zichzelf en spawnt ze opnieuw bij de volgende toolcall (geen
 restart nodig).
 
-```
+```text
 oma serena reap [--dry-run] [--quiet]
 oma serena reaper enable [--dry-run]
 oma serena reaper disable [--dry-run]
+oma serena daemon gc [--quiet]
+oma serena check [--project <path>] [--dart-sdk <path>] [--timeout <duration>] [--staged]
+oma serena setup
 ```
 
 **Subcommando's:**
@@ -1276,6 +1420,9 @@ oma serena reaper disable [--dry-run]
 | `serena reap --dry-run` | Bekijk opruimdoelen en verwachte vrijgemaakte geheugenruimte; beëindigt nooit processen. |
 | `serena reaper enable` | Installeer een achtergrondtaak die elke 5 minuten `serena reap --quiet` uitvoert (launchd / systemd-timer / Windows Task Scheduler). |
 | `serena reaper disable` | Verwijder de achtergrondtaak. |
+| `serena daemon gc` | Stop gedeelde Serena-daemons die gedurende de inactieve respijtperiode geen clients hebben gehad. `--quiet` onderdrukt uitvoer voor de periodieke opschoontaak. |
+| `serena check` | Analyseer een Dart-package via de beheerde gedeelde Serena-LSP. `--project` is standaard `apps/mobile`; `--timeout` (standaard `60s`) geldt voor het opstarten en voor de analyse; `--staged` weigert invoer die afwijkt van de Git-index. |
+| `serena setup` | Herstel de beheerde adapter en installeer de compatibiliteitslauncher `oma-dart-check`. |
 
 **Beleid:** `lru` (standaard) houdt de meest recent actieve projecten volgens `keepWarm`
 warm en ruimt de rest op; `idle` ruimt elk project op dat langer dan `idleMinutes` inactief is. Een
@@ -1316,35 +1463,33 @@ oma serena reaper disable
 
 Visualiseer de projectstructuur als afhankelijkheidsgraaf.
 
+```text
+oma visualize [--focus <node-or-path>] [--affected <paths...>] [--json] [--output <format>]
 ```
-oma visualize [--json] [--output <format>]
-oma viz [--json] [--output <format>]
-```
-
-`viz` is een ingebouwde alias voor `visualize`.
 
 **Opties:**
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
+| `--focus <node-or-path>` | Selecteer alleen de verwijzingen die de node of het pad (transitief) nodig heeft |
+| `--affected <paths...>` | Vind definities, workflows en controles die worden geraakt door wijzigingen in deze paden |
 | `--json` | Geef uitvoer als JSON |
 | `--output <format>` | Uitvoerformaat (`text` of `json`) |
 
-**Wat het doet:** analyseert de projectstructuur en genereert een afhankelijkheidsgraaf die relaties tussen skills, agents, workflows en gedeelde resources toont.
+**Wat het doet:** analyseert de projectstructuur en genereert een afhankelijkheidsgraaf die relaties tussen skills, agenten, workflows en gedeelde resources toont.
 
 **Voorbeelden:**
 ```bash
 oma visualize
-oma viz --json
+oma visualize --json
 ```
 
 ### search
 
-Mechanische zoekprimitieven voor fetch, metadata, RSS, media, code en trustscoring. Heeft alias `oma s`. Alle subcommando's schrijven JSON naar stdout (één object per regel, of mooi opgemaakt met `--pretty`).
+Mechanische zoekprimitieven voor fetch, metadata, RSS, media, code en trustscoring. De meeste subcommando's schrijven JSON naar stdout (mooi opgemaakt met `--pretty`); `rss google` print een URL.
 
-```
+```text
 oma search <subcommand> ...
-oma s <subcommand> ...
 ```
 
 **Subcommando's:**
@@ -1352,11 +1497,13 @@ oma s <subcommand> ...
 | Subcommando | Doel |
 |:-----------|:--------|
 | `fetch <url>` | Haal een URL op via een strategie-pipeline die automatisch opschaalt (api → probe → impersonate → browser → archive) |
-| `api <url>` | Haal op via de passende platform-API-handler (fase 0) |
-| `api:search <query>` | Zoek de trefwoorden uit over platforms die dit ondersteunen (`--platforms <list>`) |
+| `api fetch <url>` | Haal op via de passende platform-API-handler (de eerste strategie die `fetch` probeert) |
+| `api search <query>` | Zoek de trefwoorden uit over platforms die dit ondersteunen (`--platforms <list>`) |
 | `meta <url>` | Haal OGP- / JSON-LD- / Schema.org-metadata op |
-| `rss <url>` | Ontdek en parse een RSS- / Atom-feed |
-| `rss:google <query>` | Bouw een Google News RSS-URL voor een query |
+| `rss fetch <url>` | Ontdek en parse een RSS- / Atom-feed |
+| `rss google <query>` | Bouw een Google News RSS-URL voor een query (`--locale`, standaard `en-US`) |
+| `web <query>` | Zoek met de geselecteerde webprovider (`--provider`, `--limit`, `--timeout`) |
+| `providers` | Toon geregistreerde providers zonder een netwerkverzoek te doen |
 | `media <url>` | Haal mediametadata op via `yt-dlp` (1858 sites) |
 | `archive <url>` | Haal op via AMP / archive.today / Wayback als fallback |
 | `trust <domain>` | Bepaal het vertrouwensniveau en de score van een domein |
@@ -1367,7 +1514,7 @@ oma s <subcommand> ...
 
 | Vlag | Beschrijving | Standaard |
 |:-----|:-----------|:--------|
-| `--timeout <seconds>` | Time-out per strategie | `15` (`30` voor `media`) |
+| `--timeout <duration>` | Time-out per strategie, bijvoorbeeld `15s` (niet geaccepteerd door `trust` of `code`) | `15s` (`30s` voor `media`) |
 | `--locale <value>` | `Accept-Language`-header | `en-US,en;q=0.9` |
 | `--pretty` | Maak JSON-uitvoer leesbaar op | `false` |
 
@@ -1441,15 +1588,14 @@ oma search rss fetch https://example.com/feed.xml --pretty
 oma search rss google "browser automation"
 ```
 
-`search` geeft ook zonder `--json` JSON uit. `--pretty` verandert alleen de presentatie en niet het resultschema. `search web` accepteert `--provider`, `--limit`, `--timeout`, `--json` en `--pretty`. Als een strategie is geblokkeerd of een afhankelijkheid ontbreekt, gebruik dan de bovenstaande exitcodetabel en voer `oma search doctor` opnieuw uit voordat je strategieën wijzigt.
+`search` geeft ook zonder `--json` JSON uit (behalve `rss google`, dat een URL print). `--pretty` verandert alleen de presentatie en niet het resultschema. `search web` accepteert `--provider`, `--limit`, `--timeout`, `--json` en `--pretty`. Als een strategie is geblokkeerd of een afhankelijkheid ontbreekt, gebruik dan de bovenstaande exitcodetabel en voer `oma search doctor` opnieuw uit voordat je strategieën wijzigt.
 
 ### image
 
-AI-afbeeldingen genereren met meerdere vendors en authenticatiebewuste parallelle dispatch. Heeft alias `oma img`.
+AI-afbeeldingen genereren met meerdere vendors en authenticatiebewuste parallelle dispatch.
 
-```
+```text
 oma image <subcommand> ...
-oma img <subcommand> ...
 ```
 
 **Subcommando's:**
@@ -1465,13 +1611,13 @@ oma img <subcommand> ...
 | Vlag | Beschrijving | Standaard |
 |:-----|:-----------|:--------|
 | `--vendor <name>` | `auto` \| `pollinations` \| `codex` \| `antigravity` \| `all` | `auto` |
-| `--size <size>` | Elke `WxH` met randen deelbaar door 16, 16–3840 en beeldverhouding 1:3–3:1; `auto` is ook toegestaan. | vendorstandaard |
-| `--quality <level>` | `low` \| `medium` \| `high` \| `auto` | vendorstandaard |
+| `--size <size>` | Elke `WxH` met randen deelbaar door 16, 16–3840 en beeldverhouding 1:3–3:1; `auto` is ook toegestaan. | `1024x1024` |
+| `--quality <level>` | `low` \| `medium` \| `high` \| `auto` | `auto` |
 | `-n, --count <n>` | Aantal afbeeldingen (1..5) | `1` |
-| `--output-dir <path>` | Uitvoermap | `.agents/results/images/{timestamp}/` |
+| `--output-dir <path>` | Uitvoermap | `.agents/results/images/{timestamp}-{shortid}/` (achtervoegsel `-compare` wanneer meerdere vendors draaien) |
 | `--allow-external-output` | Sta uitvoerpaden buiten `$PWD` toe | `false` |
 | `--model <name>` | Vendorspecifieke modeloverschrijving; wordt genegeerd door `antigravity`, waarvan het model ondoorzichtig is. | vendorstandaard |
-| `--timeout <duration>` | Time-out per afbeelding | vendorstandaard |
+| `--timeout <duration>` | Time-out per afbeelding | `180s` |
 | `-r, --reference <path>` | Referentieafbeelding(en); herhaalbaar of kommagescheiden. Ondersteund op `codex` en `antigravity`; afgewezen op `pollinations`. Elke afbeelding ≤5MB PNG/JPEG/GIF/WebP (magic bytes gevalideerd), maximaal 10. | |
 | `-y, --yes` | Sla kostenbevestiging over | `false` |
 | `--no-prompt-in-manifest` | Sla de SHA256 van de prompt op in plaats van de ruwe tekst | `false` |
@@ -1483,7 +1629,8 @@ Elke run schrijft naast de gegenereerde afbeeldingen een `manifest.json` met ven
 **Voorbeelden:**
 
 ```bash
-# Free, no-config generation
+# Needs at least one authenticated vendor: POLLINATIONS_API_KEY (free key),
+# a Codex login, or a signed-in agy. Check first with: oma image doctor
 oma image generate "minimalist sunrise over mountains"
 
 # Specific vendor + size + count, skip cost prompt
@@ -1510,7 +1657,7 @@ oma image doctor --output json
 
 Plan, schrijf en render korte uitleg- en demovideo's. `generate` maakt de brief, het script, de renderspecificatie en het runmanifest; voor een echte MP4 zijn eerst een compositie en werkende compositor nodig.
 
-```
+```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
 oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
 oma video doctor --output json
@@ -1529,7 +1676,7 @@ Geslaagde JSON-uitvoer bevat `runDir`, `manifestPath`, `scriptPath` en `renderSp
 
 Geef oh-my-agent een GitHub-star.
 
-```
+```text
 oma star
 ```
 
@@ -1544,7 +1691,7 @@ oma star
 
 Beschrijf CLI-commando's als JSON voor runtime-introspectie.
 
-```
+```text
 oma describe [command-path]
 ```
 
@@ -1554,7 +1701,7 @@ oma describe [command-path]
 |:---------|:---------|:-----------|
 | `command-path` | Nee | Het te beschrijven commando. Zonder waarde wordt het hoofdprogramma beschreven. |
 
-**Wat het doet:** geeft een JSON-object met de naam, beschrijving, argumenten, opties en subcommando's van het commando. AI-agents gebruiken dit om de beschikbare CLI-mogelijkheden te begrijpen.
+**Wat het doet:** geeft een JSON-object met de naam, beschrijving, argumenten, opties en subcommando's van het commando. AI-agents gebruiken dit om de beschikbare CLI-mogelijkheden te begrijpen. Paden gebruiken spaties, bijvoorbeeld `skill eval`; vormen met een dubbele punt en andere verwijderde schrijfwijzen geven `Unknown command` terug.
 
 **Voorbeelden:**
 ```bash
@@ -1565,7 +1712,7 @@ oma describe
 oma describe "agent spawn"
 
 # Describe a subcommand
-oma describe "agent:parallel"
+oma describe "agent parallel"
 ```
 
 ---
@@ -1578,7 +1725,7 @@ Deze families zijn nuttig wanneer de uitvoer een onderzoeksartifact, presentatie
 
 Stel productwerk voor op basis van markt- en repositorysignalen:
 
-```
+```bash
 oma intel suggest --topic "developer onboarding" --target ./my-product --dry-run
 oma intel suggest --config .agents/intel.yaml --json
 ```
@@ -1589,20 +1736,20 @@ oma intel suggest --config .agents/intel.yaml --json
 
 De marketfamilie delegeert naar de opgeloste upstream-engine `last30days`. Begin met de gate en resolver:
 
-```
+```bash
 TOPIC="browser automation pain points"
 oma market detect-trap "$TOPIC"
 oma market resolve --output json
 oma market run "$TOPIC" --days 30 --emit=compact
 ```
 
-`market detect-trap` geeft exitcode 2 terug met een herformulering voor keyword traps of te brede onderwerpen; `--force` omzeilt die gate alleen wanneer de gebruiker expliciet wil doorgaan. `market resolve` accepteert `--refresh` en `--offline`, en `market update` vernieuwt de cache van de beheerde engine. `market run` geeft de resterende argumenten door aan de opgeloste Python-engine en voegt `--save-dir` uit `market.save_dir` toe wanneer een onderwerp is opgegeven. Lees [Marktonderzoek](../guide/market-research.md) voordat je upstreamflags kiest; de `--help`-uitvoer hoort bij de beheerde engine en verandert per release.
+`market detect-trap` geeft exitcode 2 terug met een herformulering voor keyword traps of te brede onderwerpen; `--force` omzeilt die gate alleen wanneer de gebruiker expliciet wil doorgaan. `market resolve` accepteert `--refresh` en `--offline`, en `market update` vernieuwt de cache van de beheerde engine. `market run` geeft de resterende argumenten door aan de opgeloste Python-engine en voegt `--save-dir` uit `market.save_dir` toe wanneer een onderwerp is opgegeven. Lees [Marktonderzoek](../guide/market-research.md) voordat je upstreamvlaggen kiest; de `--help`-uitvoer hoort bij de beheerde engine en verandert per release.
 
 ### docs
 
 Gebruik de docs-familie om documentatiedrift te inspecteren. De commando's zijn rapportgericht; `sync` geeft kandidaten aan de host-agent en bewerkt zelf geen bestanden.
 
-```
+```bash
 oma docs verify --json
 oma docs verify --no-urls --report-file .agents/results/docs-drift.md
 oma docs sync HEAD~3..HEAD --json
@@ -1616,7 +1763,7 @@ oma docs lint --json --locales ko,ja
 
 `oma slide` werkt op een werkmap met HTML-slidefragmenten van 1920×1080. Een minimaal werkpad is:
 
-```
+```bash
 oma slide create --output-dir .agents/results/slides/demo
 # author slide-01.html and meta.json in that directory
 oma slide validate --workspace .agents/results/slides/demo --output json
@@ -1626,7 +1773,7 @@ oma slide bundle --workspace .agents/results/slides/demo
 
 De kwaliteitsgate rapporteert bevindingen over overflow, overlap en lettergrootte. Gebruik `--slide <file>` voor controle van één slide en `--report-file <path>` met JSON-uitvoer. Exporteer pas na validatie:
 
-```
+```text
 oma slide export pdf --workspace <dir> --output-file <file> --mode capture
 oma slide export png --workspace <dir> --output-dir <dir> --resolution 1080p
 oma slide export pptx --workspace <dir> --output-file <file>
@@ -1638,7 +1785,7 @@ PPTX-export is experimenteel en rastergebaseerd. `slide import pptx <file>`, `sl
 
 Zoek papers en werkmetadata en valideer sidecars voordat je ze deelt:
 
-```
+```bash
 oma scholar search "vision language action" --limit 10
 oma scholar resolve "Attention Is All You Need"
 oma scholar get --section statements "knows:generated/reconvla/1.0.0"
@@ -1652,7 +1799,7 @@ oma scholar lint paper.knows.yaml
 
 `/explain` is de schrijfworkflow. De CLI rendert het concept dat de workflow schrijft en valideert het resultaat:
 
-```
+```bash
 oma explain render draft.md --archify
 oma explain render draft.md --template doc --theme card
 oma explain lint draft.md
@@ -1662,7 +1809,7 @@ oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` zet een Markdown-concept (een bestand, of stdin met `-`) om in één zelfstandige HTML-pagina op `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; met `--output-file` kies je een ander pad. Het concept bevat alleen inhoud: één paneel per `## `-kop, met daarin componentblokken (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). De renderer berekent de diagramindeling, verdeelt de panelen over rijen en past het thema toe (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` bepaalt de tekstcontrole; bij `strict` mislukt het renderen al bij één waarschuwing. `--archify` leidt een interactief archify-diagram af uit een `flow`- of `sequence`-blok en linkt ernaar; als die stap mislukt, wordt de pagina toch geschreven. `components [name]` toont de syntaxis van een component. `patch` vervangt één paneel op basis van het concept dat in de pagina is ingesloten. `lint` controleert alleen de tekst van een concept, zonder te renderen, en `--template sheet|doc` kiest tussen een raster van panelen en één kolom met inhoudsopgave.
+`render` zet een Markdown-concept (een bestand, of stdin met `-`) om in één zelfstandige HTML-pagina op `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; met `--output-file` kies je een ander pad. Het concept bevat alleen inhoud: één paneel per `## `-kop, met daarin componentblokken (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). De renderer berekent de diagramindeling, verdeelt de panelen over rijen en past het thema toe (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` bepaalt de tekstcontrole; bij `strict` mislukt het renderen al bij één waarschuwing. `--archify` leidt een interactief archify-diagram af uit een `flow`- of `sequence`-blok en linkt ernaar; als die stap mislukt, wordt de pagina toch geschreven. `components [name]` toont de syntaxis van een component. `patch` vervangt één paneel op basis van het concept dat in de pagina is ingesloten. `render --template sheet|doc` kiest tussen een raster van panelen en één kolom met inhoudsopgave. `lint` controleert alleen de tekst van een concept, zonder te renderen.
 
 Geef een bestand of `--input-dir` op, niet beide. Validatie controleert het contract voor zelfstandig HTML en rapporteert machineleesbare fouten; de nauwkeurigheid van de uitleg wordt niet beoordeeld. Zie [Code-uitlegger](../guide/code-explainer.md).
 
@@ -1670,7 +1817,7 @@ Geef een bestand of `--input-dir` op, niet beide. Validatie controleert het cont
 
 Bepaal de engine voordat een workflow een structureel diagram genereert:
 
-```
+```text
 oma diagram resolve --output json
 oma diagram resolve --engine mermaid --offline
 oma diagram update
@@ -1686,22 +1833,25 @@ De volgende families geven toegang tot persistente workflowstatus en model-/prov
 
 ### state
 
-```
+```text
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
 oma state trajectory <session-id>
 oma state trajectory <session-id> --open
-oma state verify --workflow work --checkpoint complete --json
+oma state decisions list work --json
+oma state verify --workflow work --checkpoint remediation-choice --instance <finding-id> --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` legt één L1-event vast met expliciete categorie- en sessiemetadata. `state migrate` verplaatst legacy-sessies naar het geselecteerde profiel. `state repair` herstelt ongeldige statusbestanden. `state decisions list` en `state inject-log list|get` inspecteren verplichte beslissingen en injectie-auditregels. `state trajectory` koppelt de L1-events van een sessie aan de transcripten van de vendorsessies waarin die draaide. Het resultaat is één overzicht, beurt voor beurt, van prompts, modelantwoorden, toolaanroepen, duur en tokengebruik; `--open` toont het in het webdashboard op `/trajectory`. Transcripten worden gelezen uit de sessieopslag van elke vendor: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness en Cursor. `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` en `DSH_HOME` worden gerespecteerd. Kiro legt alleen bij prompts een tijdstip vast, en Cursor legt geen tijdstippen of toolresultaten vast; een Cursor-transcript wordt daarom volledig getoond in plaats van afgebakend tot de sessie. Een vendor zonder leesbaar transcript verschijnt alleen met zijn L1-events. `state activate`, `state archive` en `state purge` zijn expliciete acties; de oude booleaanse actievlaggen worden geweigerd. Archiveer of purge pas na controle van een dry-run, omdat deze commando's de lokale status wijzigen.
+`state verify` vereist `--workflow`, `--checkpoint` en `--instance`; toon de checkpoints van een workflow met `state decisions list <workflow>`. `state summary [session-id]` exporteert een sessiesamenvatting naar de coördinatieopslag, en `state heal-check --agent <type>` meldt of self-healing voor een agent is toegestaan.
+
+`state emit` legt één [L1](../getting-started/glossary.md#l1-and-l2-memory)-event vast met expliciete categorie- en sessiemetadata. `state migrate` verplaatst legacy-sessies naar het geselecteerde profiel. `state repair` herstelt ongeldige statusbestanden. `state decisions list` en `state inject-log list|get` inspecteren verplichte beslissingen en injectie-auditregels. `state trajectory` koppelt de L1-events van een sessie aan de transcripten van de vendorsessies waarin die draaide. Het resultaat is één overzicht, beurt voor beurt, van prompts, modelantwoorden, toolaanroepen, duur en tokengebruik; `--open` toont het in het webdashboard op `/trajectory`. Transcripten worden gelezen uit de sessieopslag van elke vendor: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness en Cursor. `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` en `DSH_HOME` worden gerespecteerd. Kiro legt alleen bij prompts een tijdstip vast, en Cursor legt geen tijdstippen of toolresultaten vast; een Cursor-transcript wordt daarom volledig getoond in plaats van afgebakend tot de sessie. Een vendor zonder leesbaar transcript verschijnt alleen met zijn L1-events. `state activate`, `state archive` en `state purge` zijn expliciete acties; de oude booleaanse actievlaggen worden geweigerd. Archiveer of purge pas na controle van een dry-run, omdat deze commando's de lokale status wijzigen.
 
 ### model
 
-```
+```bash
 oma model check --json
 oma model check --owner openai --fail-on-drift
 oma model probe openai/gpt-5 --timeout 30s --json
@@ -1714,37 +1864,67 @@ oma model propose --owner anthropic --json
 
 Native agentruns gebruiken een op bewijs gebaseerde reeks:
 
-```
+```bash
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
 oma agent context docs --difficulty Medium
 oma agent begin docs docs "$SESSION_ID" --workspace .
 # Use the runId and claimPath printed by begin.
 oma agent verify "<run-id>" --required
+# Or record one check and its real exit code
+oma agent verify "<run-id>" -- bun run test
 oma agent finish "<run-id>" "<claim-path>"
+# Inspect, then resume a session
+oma agent resume "$SESSION_ID" --dry-run
 ```
 
-`agent context` laadt grafiekgeselecteerde context; `begin` start een run en print een gegenereerd run-ID plus claimpad; `verify` ontvangt dat run-ID en voert de vastgelegde controles uit (`--required`) of beperkt ze met `--affected`; `finish` ontvangt het run-ID en het pad naar het claimbestand. `agent resume --dry-run` meldt welke taken klaar en herbruikbaar zijn, en `agent resume --max-attempts <n>` probeert alleen taken opnieuw die volgens het plan zijn toegestaan. Zie [Agentresultaten en hervatten](../guide/agent-results-and-resume.md) voor plan en claimvorm. Deze commando's zijn voor het OMA-uitvoeringscontract; voor gewoon gebruikerswerk kun je `agent spawn`, `agent parallel` of `agent review` gebruiken.
+`agent context` laadt grafiekgeselecteerde context; `begin` start een run en print een gegenereerd run-ID plus claimpad; `verify` ontvangt dat run-ID en voert de vastgelegde controles uit (`--required`), beperkt ze met `--affected`, of voert het commando na `--` uit en legt de exitcode ervan vast; `finish` ontvangt het run-ID en het pad naar het claimbestand. `agent resume <session-id> --dry-run` meldt welke taken klaar en herbruikbaar zijn, en `agent resume <session-id> --max-attempts <n>` (standaard `3`) probeert alleen taken opnieuw die volgens het plan zijn toegestaan. `agent verify` en `agent resume` accepteren `--project-root <path>` om een ander project te targeten. Zie [Agentresultaten en hervatten](../guide/agent-results-and-resume.md) voor plan en claimvorm. Deze commando's zijn voor het OMA-uitvoeringscontract; voor gewoon gebruikerswerk kun je `agent spawn`, `agent parallel` of `agent review` gebruiken.
 
 ### memory
 
-```
+```bash
 oma memory status --json
 oma memory keys --kind connection --dry-run --json
 oma memory init --json
-oma memory setup --endpoint http://127.0.0.1:8000 --dry-run --json
+oma memory setup --port 3111 --dry-run --json
 oma memory import --source claude --since 7d --dry-run --json
-oma memory gc --scope project --keep 20 --dry-run --json
+oma memory gc --scope sessions --keep 20 --dry-run --json
 ```
+
+`memory gc --scope` accepteert `all` (standaard), `sessions` of `serena`. `--max-age <duration>` heeft een eenheid nodig, bijvoorbeeld `50d`; `0` schakelt opschonen op basis van leeftijd uit.
 
 `memory keys` configureert Honcho-verbinding of embeddingcredentials; `--dry-run` toont bestemmingen zonder sleutels te lezen of schrijven. `memory setup` bereidt een AgentMemory-endpoint voor en kan dit optioneel `--install`eren of `--start`en. `memory daemon` en `memory service` beheren lokale processen of OS-service-integratie. `memory maintain backup|prune|vacuum`, `memory retry drain`, `memory upgrade` en `memory gc` zijn onderhoudsacties; inspecteer hun JSON- of dry-run-uitvoer voordat je ze toepast.
 
 ## Skillbeheer
 
-### skills audit
+### Een skill- of harnesscommando kiezen {#choosing-a-skill-or-harness-command}
+
+Begin met de offline commando's. Commando's die als **live** zijn gemarkeerd, roepen modellen aan via je geconfigureerde vendor-CLI's, wat quota of geld kost; de meeste printen een kostenpreview en vragen om bevestiging, tenzij je `--yes` meegeeft.
+
+| Doel | Commando | Modelaanroepen | Schrijft | Voorwaarde |
+|:-----|:--------|:------------|:-------|:-------------|
+| Overlap tussen skillbeschrijvingen controleren | `oma skill audit` | Geen | Niets | Geïnstalleerde skills |
+| SKILL.md-authoring linten | `oma skill lint [--skill <id>]` | Geen | Niets | Geïnstalleerde skills |
+| Vastgelegde utilityverdicten opnieuw afspelen | `oma skill eval --skill <id>` (mock, de standaard) | Geen | Niets | Taakfixtures in `.agents/eval/<id>/` met vastgelegde `_rollouts/`; minstens 5 scorebare taken voor een beslissing |
+| Skillutility meten | `oma skill eval --skill <id> --live [--record]` | **Live**: een baseline- en een treatment-arm per taak (herhaald met `--trials`), plus judge-aanroepen | `_rollouts/` alleen met `--record` | Taakfixtures |
+| SKILL.md-edits voorstellen | `oma skill optimize --skill <id> --live` | **Live**, elke epoch | Evolutiebewijs; SKILL.md blijft ongewijzigd | Minstens 5 taakfixtures |
+| Een verbeterende edit toepassen | `oma skill optimize --skill <id> --live --apply` | **Live**, elke epoch | SKILL.md (origineel eerst geback-upt); `oma-*`-skills hebben ook `--yes` nodig | Validatie- en eindtestlift verbeteren allebei strikt |
+| De laatst toegepaste edit ongedaan maken | `oma skill rollback --skill <id>` | Geen | SKILL.md | Een vastgelegde promotie |
+| Evolutiegeschiedenis bekijken | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | Geen | Niets | Vastgelegde optimalisatieruns |
+| De optimizer zelf afstemmen | `oma skill meta-optimize --skill <ids...> --live` | **Live**, veel interne runs (`--live` is verplicht) | Procedurebestand alleen met `--apply` | Achtergehouden skills met fixtures |
+| Native skilldiscovery controleren | `oma skills matrix [--live]` | **Live** alleen met `--live` (voert de CLI's `claude` en `codex` uit); print anders het plan | Een JSON-rapport alleen met `--report <path>` | De vendor-CLI's zijn geïnstalleerd |
+| Een harnessvergelijking opnieuw afspelen | `oma harness eval --suite <yaml> --candidate <dir>` (mock, de standaard) | Geen | Niets | Een vastgelegde run die overeenkomt met de suite, baseline en kandidaat |
+| Een harness-overlay vergelijken | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **Live**: een baseline- en een kandidaatarm per taak | Een opname alleen met `--record` | Suite en fixtures binnen het project |
+| Een mislukte run omzetten in een fixture | `oma harness incident scan`, daarna `capture --spec <file>`, daarna `promote <id>` | Alleen `promote`: een routingaanroep wanneer `--skill` ontbreekt; met `--draft` een rubricconcept van de opt-agent en een judgecontrole | Incidentrecord; regressiefixture | Een mislukte, geblokkeerde of gedeeltelijke agentrun |
+| De skills achter incidenten optimaliseren | `oma harness feedback [--live \| --apply]` | **Live** alleen met `--live` of `--apply` | Fixtures; geaccepteerde SKILL.md-edits alleen met `--apply` | Vastgelegde incidenten, of `--scan-runs` |
+| Feedback volgens een schema uitvoeren | `oma harness evolution enable --max-dispatches <n>` | **Live**, tot het budget per geplande run | Een geplande job (zie [Geplande agents](#scheduled-agents)); standaard `--mode apply`, of `--mode propose` | Een OS-scheduler |
+
+`skill optimize` zonder `--live` sluit af met `1`: de CLI heeft geen vastgelegde voorstelbron voor mock-optimalisatie. Gebruik `oma skill eval` om evaluaties offline opnieuw af te spelen. Zie [Probleemoplossing](../guide/troubleshooting.md) voor resultaten als "no coverage" of "insufficient".
+
+### skill audit {#skills-audit}
 
 Controleer geïnstalleerde skills op overlappende beschrijvingen, black-hole-generalisme en routingverval door bibliotheekgrootte.
 
-```
+```text
 oma skill audit [--json] [--output <format>]
 ```
 
@@ -1769,11 +1949,11 @@ oma skill audit
 oma skill audit --json | jq '.findings'
 ```
 
-### skills lint
+### skill lint {#skills-lint}
 
-Detecteer schrijfproblemen per skill: kwaliteitsgebreken binnen één `SKILL.md`, in tegenstelling tot `skills audit`, dat relaties *tussen* skills controleert. Gebaseerd op de skill-smell-taxonomie van arXiv:2607.01456 (meer dan 99% van de SKILL.md-bestanden uit het wild bevat minstens één smell).
+Detecteer schrijfproblemen per skill: kwaliteitsgebreken binnen één `SKILL.md`, in tegenstelling tot `skill audit`, dat relaties *tussen* skills controleert. Gebaseerd op de skill-smell-taxonomie van arXiv:2607.01456 (meer dan 99% van de SKILL.md-bestanden uit het wild bevat minstens één smell).
 
-```
+```text
 oma skill lint [--skill <id>] [--json] [--output <format>]
 ```
 
@@ -1795,6 +1975,9 @@ oma skill lint [--skill <id>] [--json] [--output <format>]
 | `body-too-long` | warn | SKILL.md-body langer dan 500 regels — verplaats details naar `resources/` achter progressive disclosure |
 | `template-placeholder` | warn | achtergebleven tekst `{Placeholder}` buiten codespans |
 | `broken-reference` | fail | verwijst naar een niet-bestaand bestand in `resources/`, `config/`, `scripts/` of `assets/` |
+| `verbose-description` | warn | beschrijving langer dan 350 tekens — houd routingtriggers en uitsluitingen erin en verplaats operationele details naar referenties |
+| `malformed-frontmatter` | fail | SKILL.md begint niet met een geldige YAML-frontmattermapping |
+| `invalid-directory`, `missing-skill-file`, `unreadable-skill-file` | fail | de met `--skill` geselecteerde skill is geen map, heeft geen SKILL.md of kan niet worden gelezen |
 
 **SSL-lite-smells** (SSL-lite-validatie is verplicht wanneer de gedeclareerde naam van een skill of de zichtbare directory-/aliasnaam met `oma-` begint, ook zonder `## Scheduling`; een alias zonder voorvoegsel kan een gedeclareerde `oma-`-naam niet omzeilen. Gewone skills zonder voorvoegsel kiezen voor het formaat door `## Scheduling` op te nemen):
 
@@ -1814,14 +1997,15 @@ oma skill lint --skill oma-scholar
 oma skill lint --json | jq '.smells'
 ```
 
-### skills eval
+### skill eval {#skills-eval}
 
-Meet de bruikbaarheid per skill: verbetert het laden van een skill de resultaten op achtergehouden taken? Dit is de *utility*-tegenhanger van `skills audit` (die overlap tussen beschrijvingsgrenzen meet). Waar `audit` vraagt "zijn twee skills redundant?", vraagt `eval` "helpt deze skill?"
+Meet de bruikbaarheid per skill: verbetert het laden van een skill de resultaten op achtergehouden taken? Dit is de *utility*-tegenhanger van `skill audit` (die overlap tussen beschrijvingsgrenzen meet). Waar `audit` vraagt "zijn twee skills redundant?", vraagt `eval` "helpt deze skill?"
 
-```
+```text
 oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
-                [--task-dir <path>] [--max-tasks <n>] [--require-coverage]
-                [--json] [--output <format>]
+               [--task-dir <path>] [--max-tasks <n>] [--trials <n>]
+               [--neg-transfer] [--routing] [--require-coverage]
+               [--json] [--output <format>]
 ```
 
 **Opties:**
@@ -1830,11 +2014,14 @@ oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
 |:-----|:-----------|
 | `--skill <id>` | Te evalueren skill-ID (eenvoudige naam, zonder padscheidingstekens). Standaard `_all`. |
 | `--mock` | Speel vastgelegde rollouts uit `_rollouts/` opnieuw af (standaard; deterministisch, zonder LLM-dispatch). Veilig voor CI. |
-| `--live` | Live agent-dispatch — start per taak twee armen (baseline en treatment) via `oma agent spawn --read-only`. Print een kostenpreview en vraag om bevestiging, tenzij `--yes`. |
+| `--live` | Live agent-dispatch — voert per taak twee armen (baseline en treatment) uit via interne dispatch. Print een kostenpreview en vraagt om bevestiging, tenzij `--yes`. |
 | `--record` | Schrijf vastgelegde live-rollouts (inclusief judgeverdicten) naar `_rollouts/` voor later afspelen met `--mock`. Alleen zinvol met `--live`. |
 | `--yes` | Sla de bevestigingsvraag voor de kostenpreview over. Alleen zinvol met `--live`. |
 | `--task-dir <path>` | Overschrijf de map met taakfixtures (moet binnen de workspaceroot liggen). Standaard: `.agents/eval/<skill>/`. |
 | `--max-tasks <n>` | Beperk het aantal geëvalueerde taken (toegepast in deterministische sorteervolgorde). |
+| `--trials <n>` | Herhaal elke arm n keer in afwisselende volgorde (1–10; alleen met `--live`). |
+| `--neg-transfer` | Neem ook buurtaken uit hetzelfde domein mee om negatieve transfer te detecteren (standaard uit). |
+| `--routing` | Meet activatie: welke geïnstalleerde skill het model voor elke taak zou laden (`--live` meet; mock speelt de opname opnieuw af). |
 | `--require-coverage` | Sluit af met een niet-nulcode wanneer minder dan 5 taken zijn gevonden (voorkomt stilgroen in CI). |
 | `--json` | Geef uitvoer als JSON voor CI/CD |
 | `--output <format>` | Uitvoerformaat (`text` of `json`) |
@@ -1858,13 +2045,13 @@ Voor elke taakfixture in `.agents/eval/<skill>/`:
 
 **Aanbevolen modus:** gebruik `--live` met judgecheckers om de werkelijke skillutility te meten. Gebruik `--mock` om vastgelegde judgeverdicten offline opnieuw af te spelen of deterministische `assert`/`regex`-contractcontroles uit te voeren.
 
-**Omgevingsvariabele:** `OMA_SKILLEVAL_MOCK=1` forceert mockmodus ongeacht de vlaggen.
+**Modusselectie:** alleen de vlaggen bepalen de modus. Een run is alleen live wanneer `--live` wordt meegegeven; mock-replay is de standaard. Geen enkele omgevingsvariabele overschrijft dit, dus houd `--live` uit CI-commando's.
 
 **Exitcodes:** `0` pass of warn; `1` fail of onvoldoende dekking met `--require-coverage`.
 
 **Voorbeelden:**
 ```bash
-# Dry-run on recorded rollouts (CI-safe)
+# Replay recorded rollouts (CI-safe)
 oma skill eval --skill oma-scholar
 
 # Live run with cost preview
@@ -1887,14 +2074,14 @@ Zie de [gids voor Skill Utility Eval](../guide/skill-eval.md) voor het fixturefo
 
 ---
 
-### skills opt
+### skill optimize {#skills-opt}
 
 Optimaliseer een `SKILL.md` volgens persistente evolutie in WikiSkill-stijl. Een Maintainer bundelt waarneembaar rolloutbewijs tot afgebakende kennis, een Proposer geeft begrensde add/delete/replace-edits uit en afgewezen uitkomsten blijven tussen runs bestaan. Kandidaten moeten de achtergehouden validatiesplit strikt verbeteren; `--apply` vereist daarnaast strikte verbetering op een door de runner beheerde eindtestsplitsing. Onderzoeksbasis: WikiSkill (arXiv:2608.27454).
 
-```
-oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
-               [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes] [--json] [--output <format>]
+```text
+oma skill optimize [--skill <id>] --live [--dry-run | --apply]
+                   [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
+                   [--memory <mode>] [--yes] [--json] [--output <format>]
 ```
 
 **Opties:**
@@ -1904,11 +2091,12 @@ oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
 | `--skill <id>` | `_all` | Te optimaliseren skill-ID (eenvoudige naam, zonder padscheidingstekens). |
 | `--dry-run` | **ja (standaard)** | Stel edits voor en print de diff zonder `SKILL.md` te wijzigen; gegenereerd evolutiebewijs wordt nog steeds vastgelegd. |
 | `--apply` | — | Pas geaccepteerde edits toe; maakt vóór een atomische schrijfactie een back-up van het origineel en schrijft alleen een gevalideerde verbetering. |
-| `--mock` | **ja (standaard)** | Speel vastgelegde optimizer-edits en evalverdicten opnieuw af (deterministisch, offline). Veilig voor CI. |
-| `--live` | — | Live LLM-optimizerdispatch — maakt per epoch echte modelcalls. Print een kostenpreview en vraagt om bevestiging, tenzij `--yes`. |
+| `--mock` | — | Niet uitvoerbaar vanuit de CLI: optimalisatie heeft geen vastgelegde voorstelbron en sluit af met `1`. Gebruik `oma skill eval --mock` om evaluaties opnieuw af te spelen. |
+| `--live` | verplicht | Live LLM-optimizerdispatch — maakt per epoch echte modelcalls. Print een kostenpreview en vraagt om bevestiging, tenzij `--yes`. |
 | `--max-epochs <n>` | `8` | Maximum aantal optimalisatie-epochs. |
 | `--edits-per-epoch <k>` | `4` | Aantal voorgestelde kandidaat-edits per epoch. |
 | `--lr <chars>` | `600` | Tekstueel learning-ratebudget: maximale netto tekenwijziging per edit. |
+| `--memory <mode>` | `recall` | `recall` hergebruikt persistente evolutiekennis; `none` begint met een leeg geheugen voor een vergelijking met hetzelfde budget. |
 | `--yes` | — | Sla de kostenpreviewbevestiging over (alleen met `--live`). |
 | `--json` | — | Geef uitvoer als JSON voor CI/CD. |
 | `--output <format>` | `text` | Uitvoerformaat (`text` of `json`). |
@@ -1917,29 +2105,27 @@ oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
 
 **Train/validation/test-splitsing:** fixtures worden deterministisch verdeeld in 60/20/20. De Maintainer en Proposer zien alleen TRAIN-bewijs, kandidaatselectie gebruikt achtergehouden VALIDATION-taken en de door de runner beheerde TEST-split blijft verborgen tot de evolutie klaar is. `--apply` schrijft alleen wanneer zowel validatie- als eindtestlift strikt verbetert.
 
-**SSOT-opmerking:** skills met een ID dat met `oma-` begint, worden overschreven door `oma update`. Voor zulke skills wordt `--apply` afgeraden — gebruik de standaard `--dry-run` en stuur de voorgestelde diff upstream. Op skills van gebruikers kan dit vrij worden toegepast.
+**SSOT-opmerking:** skills met een ID dat met `oma-` begint, worden overschreven door `oma update`. Voor zulke skills wordt `--apply` afgeraden — gebruik de standaard `--dry-run` en stuur de voorgestelde diff upstream. Voor `oma-*`-skills schrijft `--apply` alleen wanneer ook `--yes` is meegegeven; anders print het een waarschuwing en schrijft het niets. Op skills van gebruikers kan dit vrij worden toegepast.
 
-**Exitcodes:** `0` optimalisatie voltooid; `1` onvoldoende fixtures of ongeldig argument.
+**Exitcodes:** `0` optimalisatie voltooid; `1` onvoldoende fixtures, een run zonder `--live` of een ongeldig argument.
 
 **Voorbeelden:**
 ```bash
-# Propose edits (dry-run, mock — does not change SKILL.md, fully offline)
-oma skill optimize --skill oma-scholar --mock --dry-run
-
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --mock --apply
-
-# Live optimizer with cost preview
+# Propose edits with a cost preview (SKILL.md unchanged)
 oma skill optimize --skill oma-scholar --live
 
-# Live optimizer, skip confirmation, apply if improved
+# Skip confirmation and apply only if validation and final-test lift improve
+# (--yes is also required to apply to an oma-* skill)
 oma skill optimize --skill oma-scholar --live --apply --yes
 
-# JSON output for CI
-oma skill optimize --skill oma-scholar --json
+# JSON output
+oma skill optimize --skill oma-scholar --live --json
 
 # Tune epochs and edits budget
-oma skill optimize --skill oma-scholar --max-epochs 4 --edits-per-epoch 2 --lr 300
+oma skill optimize --skill oma-scholar --live --max-epochs 4 --edits-per-epoch 2 --lr 300
+
+# Offline alternative: replay recorded evaluations
+oma skill eval --skill oma-scholar --json
 ```
 
 Zie de [gids voor Skill Optimization](../guide/skill-opt.md) voor de volledige walkthrough en details over SSOT- en overfittingbewaking.
@@ -1950,10 +2136,11 @@ Zie de [gids voor Skill Optimization](../guide/skill-opt.md) voor de volledige w
 
 Vergelijk een kandidaat-overlay van `.agents/` met de huidige OMA-harness op gekoppelde, geïsoleerde repositorytaken. De doelagent en vendorroute blijven vast; deterministische controles scoren de bestanden en uitvoer die elke arm produceert.
 
-```
-oma harness eval --suite <path> --candidate <path> [--mock | --live]
+```text
+oma harness eval --suite <path> --candidate <path> [--partition <name>]
+                 [--mock | --live | --action <mode>] [--transcript <path>]
                  [--record] [--record-file <path>] [--yes]
-                 [--timeout-minutes <n>] [--require-coverage]
+                 [--timeout <duration>] [--require-coverage]
                  [--json] [--output <format>]
 ```
 
@@ -1961,17 +2148,20 @@ oma harness eval --suite <path> --candidate <path> [--mock | --live]
 |:-----|:------------|
 | `--suite <path>` | Vereiste suite-YAML. De suite- en fixtureworkspaces moeten binnen de projectroot liggen. |
 | `--candidate <path>` | Vereiste kandidaatroot met een scoped `.agents/`-overlay. |
-| `--mock` | Speel een vastgelegde run met overeenkomende hash opnieuw af (standaard; deterministisch en offline). |
+| `--partition <name>` | `validation` (standaard) of `final-test`. |
+| `--mock` | Inspecteer de vastgelegde verdicten die overeenkomen met de suite, baseline en kandidaat (standaard; geen agentreplay). |
+| `--action <mode>` | `inspect`, `rescore`, `fixture-replay` of `rerun`. |
+| `--transcript <path>` | Transcript van de toolfixture voor `fixture-replay`. |
 | `--live` | Voer baseline- en kandidaatarmen uit via de doelagent van de suite. |
 | `--record` | Bewaar een live-run voor later afspelen met mock. Vereist `--live`. |
 | `--record-file <path>` | Overschrijf het opnamepad; dit moet binnen de projectroot blijven. |
 | `--yes` | Sla de kostenbevestiging voor de live-run over. |
-| `--timeout-minutes <n>` | Time-out per arm, gelijk voor baseline en kandidaat. Standaard: `15`. |
+| `--timeout <duration>` | Time-out per arm met een eenheid, gelijk voor baseline en kandidaat. Standaard: `15m`. De oude schrijfwijze `--timeout-minutes` wordt geweigerd. |
 | `--require-coverage` | Sluit af met een niet-nulcode wanneer minder dan vijf gekoppelde taken scorebaar zijn. |
 | `--json` | Geef de volledige evaluatie als JSON. |
 | `--output <format>` | Uitvoerformaat (`text` of `json`). |
 
-**Beslissingsgate:** pass vereist minstens 5 gekoppelde taken, een lift van minstens 5 procentpunten en nul regressies. Een regressie faalt altijd. Dekking onder het minimum is `insufficient` en geeft alleen met `--require-coverage` een niet-nulcode.
+**Beslissingsgate:** pass vereist minstens 5 gescoorde gekoppelde taken, een lift van minstens 5 procentpunten en nul regressies. Met minstens 5 paren faalt elke regressie of negatieve lift, en is een lift onder 5 punten zonder regressies `warn`. Een dispatchfout faalt altijd. Dekking onder het minimum is `insufficient` en geeft alleen met `--require-coverage` een niet-nulcode.
 
 **Isolatie:** kandidaatbestanden mogen alleen inhoud in `.agents/agents`, `.agents/rules`, `.agents/skills` en `.agents/workflows` vervangen in de tijdelijke kandidaatarm. Hooks, configuratie, status, evalfixtures, symlinks, vendorvarianten, beschermde wijzigingen aan frontmatter voor agentuitvoering en vendor-harnessbestanden die bij fixtures horen, worden geweigerd. Een arm faalt als die tijdens uitvoering beschermde definities wijzigt. Vendordiscovery via HOME wordt voor live-evaluatie geweigerd. De primaire agentroute ligt vast; modelpinnen van geneste subagents worden nog niet afgedwongen.
 
@@ -1989,19 +2179,46 @@ Zie de [gids voor Harness Evaluation](../guide/harness-eval.md) voor het suitesc
 
 Maak van een vastgelegd incident een regressiefixture voor de skill waar de falende agent gebruik van maakte.
 
-```
+```text
 oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
 ```
+
+Zonder `--skill` kiest een live routingaanroep de skill, met de skill uit de agentdefinitie als fallback. `--draft` vraagt de opt-agent een judgerubric op te stellen wanneer de controles geen uitvoerassertions zijn. `--force` laat een fixture toe die niet tegen de waargenomen uitvoer kan worden gevalideerd.
+
+De overige incidentcommando's:
+
+| Commando | Doel | Belangrijkste opties |
+|:--------|:--------|:------------|
+| `oma harness incident scan` | Toon mislukte, geblokkeerde of gedeeltelijke agentruns waarnaar nog geen vastgelegd incident verwijst | `--limit <n>`, `--skeleton <run-id>` (print een specificatieskelet) |
+| `oma harness incident capture --spec <path>` | Leg een incident vast vanuit een specificatie-JSON | `--run <id>` importeert waarneembare metadata uit een agentrun |
+| `oma harness incident show <id>` | Toon de herkomst van een incident | `--json` |
+| `oma harness incident export <id>` | Exporteer de incidentfixture | `--json` |
+| `oma harness incident reproduce <id> --candidate <path>` | Evalueer een kandidaat-overlay van `.agents/` op het incident; start zonder `--action` een nieuwe live-run | `--action inspect\|rescore\|fixture-replay\|rerun`, `--record`, `--record-file`, `--transcript`, `--yes`, `--timeout <duration>` (`15m`) |
 
 ### harness feedback
 
 Promoot elk incident dat nog niet is gepromoot en optimaliseer, met `--live` of `--apply`, elke getroffen skill tegen zijn uitgebreide suite.
 
-```
+```text
 oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
 ```
 
+`--apply` impliceert `--live` en schrijft alleen geaccepteerde edits die elke gate doorstaan. `--max-epochs` is standaard `1`. `--scan-runs` legt eerst nog niet vastgelegde mislukte runs vast als incidenten op basis van hun taakcontracten.
+
 Zie de [gids voor Incident Regression Cases](../guide/harness-incidents.md).
+
+### harness evolution
+
+Plan feedbackcycli met een budget voor het huidige project.
+
+```text
+oma harness evolution enable --max-dispatches <n> [--cron <expr>] [--mode apply|propose]
+oma harness evolution status
+oma harness evolution run
+oma harness evolution disable
+```
+
+`enable` registreert een geplande job (standaardcron `0 3 * * *`, standaardmodus `apply`) met een eindig budget voor modeldispatches per run; `disable` verwijdert die. `run` start nu één cyclus, en `status` toont de configuratie en de bijbehorende geplande job. Zie de [gids voor Harness Evolution](../guide/harness-evolution.md).
 
 ---
 
@@ -2009,7 +2226,7 @@ Zie de [gids voor Incident Regression Cases](../guide/harness-incidents.md).
 
 Toon helpinformatie.
 
-```
+```text
 oma help
 ```
 
@@ -2019,7 +2236,7 @@ Toont de volledige helptekst met alle beschikbare commando's.
 
 Toon het versienummer.
 
-```
+```text
 oma version
 ```
 
@@ -2027,21 +2244,55 @@ Geeft de huidige CLI-versie terug en sluit af.
 
 ---
 
+## Probleemoplossing
+
+| Symptoom | Oorzaak | Oplossing |
+|:--------|:------|:----|
+| `Unknown command: ... Use oma --help.` | Een korte alias (`viz`, `s`, `img`), een schrijfwijze met dubbele punt (`agent:parallel`, `memory:init`) of een meervoudsvorm `skills audit` / `lint` / `eval` / `opt` | Gebruik het canonieke pad uit [Aliassen en verwijderde schrijfwijzen](#aliases) |
+| `Unexpected argument for oma <path>. Use --help.` | Een hernoemd subcommando, zoals `vault rm`, `search api <url>` of `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Removed option -r. Use --project-root.` (ook `--root`, `--session`, `--timeout-minutes`, `--max-age-days`) | De optie is hernoemd | Gebruik de schrijfwijze die de melding print: `--project-root`, `--session-id`, `--timeout`, `--expires-after` of `--max-age` |
+| `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | Een duuroptie zoals `--expires-after` of `--max-age` kreeg een kaal getal | Voeg een eenheid toe, bijvoorbeeld `30d` |
+| `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | De waarde van `--every` is geen zuivere cronstap | Bekijk de preview met `--dry-run` en voeg daarna `--accept-rounded` toe of gebruik `--cron` |
+| `Nothing to set: pass at least one of --gate, --budget-minutes, --description` | `oma goal set` is uitgevoerd zonder contract | Voeg `--gate`, `--budget-minutes` of `--description` toe |
+
+Zie de [gids voor probleemoplossing](../guide/troubleshooting.md) voor problemen met installatie, vendors, hooks, het dashboard en schedules.
+
+---
+
 ## Omgevingsvariabelen
 
 | Variabele | Beschrijving | Gebruikt door |
 |:---------|:-----------|:--------|
-| `OH_MY_AG_OUTPUT_FORMAT` | Stel in op `json` om JSON-uitvoer af te dwingen op alle commando's die dit ondersteunen | Alle commando's met vlag `--json` |
+| `OH_MY_AG_OUTPUT_FORMAT` | Stel in op `json` om JSON de standaarduitvoer te maken; een expliciete `--output text` heeft voorrang | Commando's die de gedeelde opties `--json` / `--output` gebruiken |
 | `DASHBOARD_PORT` | Poort voor het webdashboard | `dashboard web` |
-| `MEMORIES_DIR` | Overschrijf het pad naar de memorymap | `dashboard`, `dashboard web` |
-| `OMA_SKILLEVAL_MOCK` | Stel in op `1` om mockmodus in `oma skill eval` af te dwingen, ongeacht de vlaggen | `skills eval` |
-| `OMA_HOOK_DEDUP` | Stel in op `0` om het onderdrukken van dubbele leveringen in `oma hook run` uit te schakelen. | `hook` |
-| `OMA_HOOK_DEDUP_DIR` | Overschrijf de privémap voor claims die wordt gebruikt om dubbele hookleveringen te onderdrukken (standaard: `$XDG_RUNTIME_DIR/oma-hook-dedup`, anders `<tmpdir>/oma-hook-dedup-<uid>`). | `hook` |
+| `MEMORIES_DIR` | Overschrijf het pad naar de memorymap | `dashboard terminal`, `dashboard web` |
+| `OMA_BRIDGE_URL` | Verbind `oma bridge` met een door de aanroeper beheerd Serena-endpoint, net als het argument `url` | `bridge` |
+| `OMA_GATE_TIMEOUT_MS` | Verlaag het budget van 25 seconden voor de stop gate dat met `oma goal set --gate` is ingesteld | Stop-hook van de persistente modus |
+| `OMA_HOOK_DEDUP` | Stel in op `0` om het onderdrukken van dubbele leveringen in `oma hook run` uit te schakelen. | `hook run` |
+| `OMA_HOOK_DEDUP_DIR` | Overschrijf de privémap voor claims die wordt gebruikt om dubbele hookleveringen te onderdrukken (standaard: `$XDG_RUNTIME_DIR/oma-hook-dedup`, anders `<tmpdir>/oma-hook-dedup-<uid>`). | `hook run` |
+
+`oma skill eval` heeft geen omgevingsoverschrijving voor de modus; alleen `--live` maakt een run live.
 
 ---
 
-## Aliassen
+## Aliassen en verwijderde schrijfwijzen {#aliases}
 
-| Alias | Volledig commando |
-|:------|:------------|
-| `viz` | `visualize` |
+`oma` is de enige alias: het is de korte binaire naam voor `oh-my-agent`, en beide worden met het pakket geïnstalleerd.
+
+Oudere schrijfwijzen worden geweigerd met `Unknown command`, `Unexpected argument` of `Removed option`. Gebruik de canonieke vorm:
+
+| Oude schrijfwijze | Gebruik |
+|:-------------|:----|
+| `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
+| Vormen met dubbele punt zoals `agent:parallel`, `memory:init`, `schedule:add` | `agent parallel`, `memory init`, `schedule create` |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize` (alleen `skills matrix` behoudt de meervoudsgroep) |
+| `verify <agent-type>` | `verify agent <agent-type>` |
+| `vault rm` | `vault delete` |
+| `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |
+| `slide new`, `slide viewer`, `image list-vendors`, `video list-providers` | `slide create`, `slide preview`, `image vendor list`, `video provider list` |
+| `-r`, `--root` | `--project-root` |
+| `--session` | `--session-id` |
+| `--timeout-minutes <n>` | `--timeout <duration>` |
+| `--max-age-days <n>` | `--expires-after <duration>` (`schedule create`) of `--max-age <duration>` (`memory gc`) |
+
+Alleen `schedule:run` en `serena daemon:gc` worden nog herkend, zodat OS-schedulervermeldingen die door oudere versies zijn geregistreerd blijven werken.

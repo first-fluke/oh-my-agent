@@ -21,7 +21,7 @@ Dans Windows PowerShell, lancez :
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-L’installation interactive vous demande la langue des réponses, les fournisseurs CLI, les fournisseurs de capacités, le préréglage de modèle, le préréglage de compétences du projet et toute variante de pile. Pour un premier lancement, gardez les valeurs par défaut, sélectionnez le fournisseur que vous utilisez déjà et choisissez le préréglage de projet le plus proche du dépôt.
+L’installation interactive vous demande la langue des réponses, les fournisseurs CLI, les [fournisseurs de capacités](./glossary.md#capability-provider), le [preset de modèles](./glossary.md#model-preset), le [preset de compétences](./glossary.md#skill-preset) du projet et toute variante de pile. Pour un premier lancement, gardez les valeurs par défaut, sélectionnez le fournisseur que vous utilisez déjà et choisissez le preset de projet le plus proche du dépôt. Consultez [Presets](./installation.md#presets) pour les compétences de chaque preset et pour les [workflows qui nécessitent des compétences hors d’un preset](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Si vous avez déjà `bun`, utilisez directement l’installateur :
 
@@ -29,7 +29,7 @@ Si vous avez déjà `bun`, utilisez directement l’installateur :
 bunx oh-my-agent@latest
 ```
 
-Les scripts d’amorçage installent dans le projet courant. Utilisez `oma install --global` pour une installation au niveau de HOME ; consultez [Installation](./installation.md) avant de mélanger des installations de projet et globales.
+Les scripts d’amorçage installent dans le projet courant. Utilisez `oma install --global` pour une installation au niveau de HOME ; consultez [Installation globale](../guide/global-install.md) avant de mélanger des installations de projet et globales.
 
 ## 2. Vérifier le résultat
 
@@ -49,7 +49,9 @@ $ echo $?
 0
 ```
 
-Les intégrations MCP, navigateur, mémoire ou intelligence du code facultatives peuvent apparaître comme des avertissements ; elles ne sont nécessaires que pour les tâches qui les utilisent. Pour un état lisible par machine, `oma doctor --json` renvoie un code de sortie non nul lorsque le rapport contient des problèmes. Utilisez `oma doctor --profile` pour examiner le modèle et le CLI résolus pour chaque rôle d’agent canonique.
+`oma doctor` peut signaler les problèmes d’intégrations facultatives sous forme d’avertissements. La préparation par défaut d’AgentMemory est vérifiée pendant `oma install` et `oma update` ; un échec de l’installation, du démarrage ou du contrôle de santé interrompt ces commandes. Sélectionner `providers.semantic_memory: none` ou `honcho`, ou définir `OMA_NO_AGENTMEMORY=1`, permet d’ignorer cette préparation.
+
+Pour un état lisible par machine, `oma doctor --json` renvoie un code de sortie non nul lorsque le rapport contient des problèmes. Utilisez `oma doctor --profile` pour examiner le modèle et le CLI résolus pour chaque rôle d’agent canonique.
 
 Si `oma` est indisponible mais que Bun est installé, lancez le même contrôle sans la commande globale :
 
@@ -57,7 +59,7 @@ Si `oma` est indisponible mais que Bun est installé, lancez le même contrôle 
 bunx oh-my-agent@latest doctor
 ```
 
-Si la commande `oma` reste introuvable, ouvrez un nouveau shell ou ajoutez le répertoire bin du gestionnaire de paquets à `PATH`. Si `oma doctor` signale une configuration invalide, corrigez le champ nommé et relancez-le. Ne supprimez pas `.agents/oma-config.yaml` pour récupérer : c’est la configuration appartenant à l’utilisateur qui conserve les réglages lors des mises à jour.
+Si la commande `oma` reste introuvable, ouvrez un nouveau shell ou ajoutez le répertoire bin du gestionnaire de paquets à `PATH` ; [Installation](./installation.md#method-3-global-install) montre comment installer la commande `oma`. Si `oma doctor` signale une configuration invalide, corrigez le champ nommé et relancez-le. Ne supprimez pas `.agents/oma-config.yaml` pour récupérer : c’est la configuration appartenant à l’utilisateur qui conserve les réglages lors des mises à jour.
 
 ## 3. Exécuter une petite tâche
 
@@ -77,11 +79,12 @@ Pour une tâche qui traverse les frontières API et interface utilisateur, séle
 
 OMA démarre avec `model_preset: auto`, Serena pour l’intelligence du code, Agent Memory pour la mémoire sémantique, la recherche web native et la télémétrie désactivée. Serena utilise le transport partagé `bridge` et se met à jour automatiquement sauf configuration contraire. Le MCP DevTools du navigateur est facultatif ; une installation interactive neuve propose d’abord Aside. Consultez [Valeurs par défaut importantes](./important-defaults.md) pour les conséquences et les clés de remplacement.
 
-Si une tâche gérée se bloque, commencez par `oma agent status <session-id> [agent-id]`, puis examinez son reçu dans `.agents/state/agent-runs/` et le chemin de claim structuré injecté. Ces enregistrements indiquent l’exécution, la tâche, l’espace de travail, le code de sortie et l’état de vérification. Les fichiers lisibles `result-*.md` et `progress-*.md` dans `.agents/state/memories/` ajoutent du contexte lorsqu’ils existent. Ne relancez que la plus petite commande en échec après avoir confirmé que l’exécution n’est plus active. Un workflow persistant reste actif jusqu’à sa fin ou jusqu’à ce que vous disiez `workflow done` ; consultez [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) pour récupérer un fichier d’état.
+Si une tâche gérée se bloque, commencez par `oma agent status <session-id> [agent-id]`, puis examinez son reçu dans `.agents/state/agent-runs/` et le chemin de claim structuré injecté. Ces enregistrements indiquent l’exécution, la tâche, l’espace de travail, le code de sortie et l’état de vérification. Les fichiers lisibles `result-*.md` et `progress-*.md` dans `.agents/state/memories/` ajoutent du contexte lorsqu’ils existent. Ne relancez que la plus petite commande en échec après avoir confirmé que l’exécution n’est plus active. Un [workflow persistant](./glossary.md#persistent-workflow) reste actif jusqu’à sa fin ou jusqu’à ce que vous disiez `workflow done` ; consultez [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) pour récupérer un fichier d’état.
 
 ## Étapes suivantes
 
 - [Valeurs par défaut importantes](./important-defaults.md) pour la priorité, les fournisseurs et les choix de récupération
-- [Installation](./installation.md) pour les préréglages, la configuration des fournisseurs, les installations globales et les mises à jour
+- [Installation](./installation.md) pour les presets, la configuration des fournisseurs, les installations globales et les mises à jour
 - [Agents](../core-concepts/agents.md) pour les 33 paquets de compétences et rôles de répartition
 - [Workflows](../core-concepts/workflows.md) pour la planification, l’exécution parallèle, l’assurance qualité et les modes persistants
+- [Dépannage](../guide/troubleshooting.md) lorsque l’installation, un fournisseur ou un hook ne se comporte pas comme prévu

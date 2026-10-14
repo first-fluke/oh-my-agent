@@ -1,13 +1,39 @@
 ---
 title: ワークフロー
-description: oh-my-agent の 21 ワークフローを網羅するリファレンスです。スラッシュコマンド、永続・非永続モード、11 言語のトリガーキーワード、フェーズとステップ、読み書きするファイル、`triggers.json` と `keyword-detector.ts` による自動検出、情報パターンのフィルタリング、永続モードの状態管理を説明します。
+description: oh-my-agent の 21 ワークフローを網羅するリファレンスです。スラッシュコマンド、永続・非永続モード、11 言語のトリガーキーワード、フェーズとステップ、読み書きするファイル、`triggers.json` と `keyword-detector.ts` による自動検出、情報パターンのフィルターリング、永続モードの状態管理を説明します。
 ---
 
 # ワークフロー
 
 ワークフローは、スラッシュコマンドまたは自然言語のキーワードで起動する、構造化された複数ステップのプロセスです。単一フェーズのユーティリティから、5 フェーズの複雑な品質ゲートまで、エージェントがタスクでどう協力するかを定義します。
 
-21 個のワークフローがあり、そのうち 4 個は永続的です。永続ワークフローは状態を維持し、誤って中断されません。
+21 個のワークフローがあり、そのうち 4 個は[永続的](../getting-started/glossary.md#persistent-workflow)です。永続ワークフローは状態を維持し、誤って中断されません。
+
+## ワークフロー一覧
+
+| ワークフロー | 用途 | 永続 |
+|---|---|---|
+| [`/orchestrate`](#orchestrate) | プランに基づく自動並列エージェント実行と検証ループ | はい |
+| [`/work`](#work) | 複数ドメインの段階的な調整：計画、実装、QA、修正 | はい |
+| [`/ultrawork`](#ultrawork) | 12 個の分離レビューステップを持つ 5 フェーズの品質ワークフロー | はい |
+| [`/ralph`](#ralph) | 機械的に検証できる基準が通るまで ultrawork を繰り返す | はい |
+| [`/plan`](#plan) | 依存関係と API コントラクトを含む PM のタスク分解 | いいえ |
+| [`/brainstorm`](#brainstorm) | 計画前のデザインファーストのアイデア出し | いいえ |
+| [`/architecture`](#architecture) | アーキテクチャの意思決定、レビュー、ADR | いいえ |
+| [`/deepinit`](#deepinit) | 既存のコードベース向けに AGENTS.md、ARCHITECTURE.md、`docs/` を生成 | いいえ |
+| [`/review`](#review) | QA レビュー：セキュリティ、パフォーマンス、アクセシビリティ、コード品質 | いいえ |
+| [`/security`](#security) | セキュリティスキャン、デプロイ済み Web のペネトレーションテスト、指摘の検証、CI ゲート | いいえ |
+| [`/debug`](#debug) | 回帰テストを伴うバグの診断と修正 | いいえ |
+| [`/design`](#design) | トークン、コンポーネントパターン、アクセシビリティルールを含む DESIGN.md | いいえ |
+| [`/scm`](#scm) | Git 操作と Conventional Commits | いいえ |
+| [`/tools`](#tools) | MCP ツールの可視性と制限 | いいえ |
+| [`/convert`](#convert) | ドキュメントとメディアの形式変換 | いいえ |
+| [`/docs`](#docs) | ドキュメントのドリフト検出と同期 | いいえ |
+| [`/recap`](#recap) | AI ツールをまたいだ日次または期間ごとの作業の振り返り | いいえ |
+| [`/stack-set`](#stack-set) | ドメインスキル向けのスタック固有リファレンス | いいえ |
+| [`/video`](#video) | `oma-video` スキルによる MP4 生成 | いいえ |
+| [`/schedule`](#schedule) | 定期的・時間ベースのエージェントジョブ | いいえ |
+| [`/explain`](#explain) | コード変更またはトピックのインタラクティブな HTML 解説 | いいえ |
 
 ---
 
@@ -21,11 +47,11 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 | 計画、実装、QA を段階的に行う複数ドメイン | `/work` | API 変更と Web / モバイルクライアントを調整する |
 | 独立したタスクの自動委任と並列実行 | `/orchestrate` | 依存関係を解決してからバックエンドとフロントエンドを並列実装する |
 | 明示的に依頼された包括的な品質プロセス | `/ultrawork` | 計画、実装、検証、改善、リリース準備のレビューを一通り実行する |
-| 機械的に検証できる基準を満たすまで繰り返すという明示的な依頼 | `/ralph` | ループのセーフガード内で、指定した回帰チェックが通るまで実装と独立検証を繰り返す |
+| 機械的に検証できる基準を満たすまで繰り返すという明示的な依頼 | `/ralph` | ループのセーフガード内で、指定した回帰チェックが通るまで実装と judge による検証を繰り返す |
 
 `/orchestrate` は、エージェントをスポーンする前に使えるプランをロードするか、`/plan` で作成します。先に `/plan` を実行する必要はありません。既存のプランがあるかどうかで `/work` と `/orchestrate` を区別せず、作業をどう調整したいかで選びます。どちらも独立したタスクを並列実行できます。
 
-受入基準とテストは単一スキルのタスクにも含めます。それだけでは `/ralph` は必要になりません。Ralph は各イテレーションで ultrawork の全プロセスと独立した判定を実行するため、検証ループを繰り返したい場合に選びます。セーフガードが適用されると、未完了またはブロックされた作業を残して停止することがあります。
+受入基準とテストは単一スキルのタスクにも含めます。それだけでは `/ralph` は必要になりません。Ralph は各イテレーションで ultrawork の全プロセスと judge による判定を実行するため、検証ループを繰り返したい場合に選びます。セーフガードが適用されると、未完了またはブロックされた作業を残して停止することがあります。
 
 この表は選択の助言であり、自動ワークフロールーターではありません。ホストエージェントは適切な方法を推奨できますが、ワークフローを推奨・説明するだけでは実行を開始しません。スラッシュコマンドが明示的な選択です。キーワード検出フックが有効なら、情報を尋ねる入力のフィルターに該当しない限り、設定済みキーワードまたはパターンへの一致でも起動します。検出器はドメイン数を分類せず、プランの準備状況も確認せず、この表を優先順位アルゴリズムとしても使いません。
 
@@ -43,7 +69,7 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 **説明：** CLI による自動並列エージェント実行です。サブエージェントを CLI でスポーンし、永続的な実行状態と実行記録で調整し、進捗を監視して検証ループを実行します。
 
-**永続：** はい。状態ファイルは `.agents/state/orchestrate-state.json` です。
+**永続：** はい。状態ファイルは `.agents/state/orchestrate-state-{sessionId}.json` です。
 
 **トリガーキーワード：**
 
@@ -79,15 +105,35 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 1. **Step 0、準備：** coordination スキル、context-loading ガイド、memory protocol を読み、ベンダーを検出します。
 2. **Step 1、プランのロード/作成：** `.agents/results/plan-{sessionId}.json`、次に最新の `plan-*.json` を確認します。プランがない場合、またはエージェント、優先度ティア、依存関係、受入基準のいずれかが欠けていて実行可能でない場合は、同じセッション ID を保ったまま `/plan` にインラインで作成を委任します。プランを提示し、既存の承認を引き継ぎます。委任前に確認するのは、重要な未決定事項または新しい承認が必要な場合だけです。
 3. **Step 2、セッションの初期化：** `oma-config.yaml` をロードし、CLI マッピング表を表示します。プラン作成時のセッション ID を再利用するか、`session-YYYYMMDD-HHMMSS` を生成します。設定済みのメモリストアに `orchestrator-session-{sessionId}.md` と `task-board-{sessionId}.md` を作成します。
-4. **Step 3、エージェントのスポーン：** 優先度ティアごとに、ベンダーに適した方法でエージェントをスポーンします。同じランタイムとベンダーならネイティブサブエージェントを使い、外部または異なるベンダーなら `oma agent spawn` を使います。MAX_PARALLEL を超えません。
+4. **Step 3、エージェントのスポーン：** 優先度ティアごとに（低い番号から順に、ティア 1、次にティア 2 と進みます）、ベンダーに適した方法でエージェントをスポーンします。同じランタイムとベンダーならネイティブサブエージェントを使い、外部または異なるベンダーなら `oma agent spawn` を使います。MAX_PARALLEL を超えません。
 5. **Step 4、モニタリング：** 実行単位の `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` と構造化された実行記録をポーリングし、タスクボードを更新します。完了、失敗、クラッシュを監視します。
-6. **Step 5、検証：** 完了したエージェントごとに `verify.sh {agent-type} {workspace}` を実行します。失敗したらエラーのコンテキストを付けて最大 2 回まで再スポーンします。失敗が続く場合は別の仮説を検討する理由になり得ますが、すべての試行は同じ合計の復旧予算を消費します。予算で比較ラウンドを賄えない場合は、未解決の証拠を保全します。
-7. **Step 6、収集：** 実行単位の結果ファイルと構造化された主張を読み、サマリーを作成します。
+6. **Step 5、検証：** 完了したエージェントごとに、機械的なセルフチェック（lint、型チェック、テスト、diff の範囲。最大 3 サイクル）を実行し、次に `verify.sh {agent-type} {workspace}` を実行します（対象は backend、frontend、mobile、qa、debug、pm で、それ以外のエージェントタイプは `SKIP` を記録します）。最後に QA クロスレビューを行います。verify に失敗したら、エラーのコンテキストを付けて最大 2 回まで再スポーンします。失敗が続く場合は別の仮説を検討する理由になり得ますが、すべての試行は同じ合計の復旧予算（`max_attempts`、元の試行を含めてデフォルト 3）を消費します。予算で比較ラウンドを賄えない場合は、未解決の証拠を保全します。
+7. **Step 6、収集：** 実行単位の結果ファイルと構造化された申告を読み、サマリーを作成します。
 8. **Step 7、最終レポート：** セッションサマリーを提示します。実験を実施した場合は証拠と判断をまとめ、教訓を記録するのは再利用できる原因が特定できた場合に限ります。
 
-**読み込むファイル：** `.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、実行単位の進捗/結果ファイル、構造化された実行記録。
+```mermaid
+flowchart TD
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task board, domain gate"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
+```
 
-**書き込むファイル：** 設定済みメモリストアの実行単位のセッション/タスクボード状態、構造化された実行記録と主張、最終レポート。
+**読み込むファイル：** `.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、実行単位の進捗/結果ファイル、構造化された実行記録。
+**書き込むファイル：** 設定済みメモリストアの実行単位のセッション/タスクボード状態、構造化された実行記録と申告、最終レポート。
 
 **使用すべき場合：** 自動調整で最大限の並列処理が必要な大規模プロジェクト。
 
@@ -97,7 +143,7 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 **説明：** 複数ドメインの作業を段階的に調整します。PM が最初に計画し、エージェントが承認済みの範囲で実行し、QA レビューと問題修正を続けます。
 
-**永続：** はい。状態ファイルは `.agents/state/work-state.json` です。
+**永続：** はい。状態ファイルは `.agents/state/work-state-{sessionId}.json` です。
 
 **トリガーキーワード：**
 
@@ -133,9 +179,9 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 ### /ultrawork
 
-**説明：** 品質に焦点を当てたワークフローです。5 フェーズ、全 17 ステップ、12 個の分離レビューを持ち、各フェーズにゲートがあります。
+**説明：** 品質に焦点を当てたワークフローです。5 フェーズ、全 17 ステップ、12 個の分離レビューを持ちます。各フェーズには、次に進む前に通過しなければならないゲートがあります。
 
-**永続：** はい。状態ファイルは `.agents/state/ultrawork-state.json` です。
+**永続：** はい。状態ファイルは `.agents/state/ultrawork-state-{sessionId}.json` です。
 
 **トリガーキーワード：**
 
@@ -147,21 +193,50 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 | フェーズ | ステップ | エージェント | レビュー観点 |
 |-------|-------|-------|-------------------|
-| **PLAN** | 1-4 | PM Agent（インライン） | 完全性、メタレビュー、過剰エンジニアリング/シンプルさ |
+| **PLAN** | 1-4 | PM Agent（作成者、Step 1）+ CCR レビュアー（Steps 2-4） | 完全性、メタレビュー、過剰エンジニアリング/シンプルさ |
 | **IMPL** | 5 | Dev Agents（スポーン） | 実装 |
-| **VERIFY** | 6-8 | QA Agent（スポーン） | 整合性、安全性（OWASP）、回帰防止 |
-| **REFINE** | 9-13 | Refactor Agent（スポーン） | ファイル分割、再利用性、カスケード影響、一貫性、デッドコード |
-| **SHIP** | 14-17 | QA Agent（スポーン） | コード品質（lint / coverage）、UX フロー、関連課題、デプロイ準備 |
+| **VERIFY** | 6-8 | CCR レビュアー | 整合性、安全性（OWASP）、回帰防止 |
+| **REFINE** | 9-13 | Refactor Agent（Steps 9、11、13）+ CCR レビュアー（Steps 10、12） | ファイル分割、再利用性、カスケード影響、一貫性、デッドコード |
+| **SHIP** | 14-17 | CCR レビュアー | コード品質（lint / coverage）、UX フロー、関連課題、デプロイ準備 |
+
+各レビューステップは、それぞれ新しいコンテキストを持つ専用のレビュアーサブエージェントとして実行されます（[クロスコンテキストレビュー](../getting-started/glossary.md#cross-context-review-ccr)）。PM Agent が自分のプランをインラインでレビューすることはありません。
 
 **ゲートの定義：**
 
-- **PLAN_GATE：** プランを文書化し、前提を列挙し、代替案を検討し、過剰エンジニアリングをレビューし、スコープを承認します。
-- **IMPL_GATE：** 適用対象の非出力チェックとテストが通り、計画したファイルだけを変更し、実際の実験ではベースラインの証拠を記録します。ビルドチェックは明示的に依頼された場合のみ実行します。
+- **PLAN_GATE：** プランが文書化され、前提が列挙され、代替案が検討され、過剰エンジニアリングのレビューが完了し、スコープが承認されています。
+- **IMPL_GATE：** 適用対象の、出力ファイルを生成しないチェックとテストが通り、計画したファイルだけを変更し、実際の実験ではベースラインの証拠を記録します。ビルドチェックは明示的に依頼された場合のみ実行します。
 - **VERIFY_GATE：** 実装が要件に一致し、CRITICAL ゼロ、HIGH ゼロ、回帰なし、適用対象のプロジェクト計測目標を満たしています。
 - **REFINE_GATE：** プロジェクトの保守性ルールに従い、統合機会を記録し、副作用を確認してコードを整理し、未解決の回帰がありません。
 - **SHIP_GATE：** 品質チェック、UX 検証、関連課題、デプロイ準備チェックリストが完了し、適用対象のプロジェクト計測目標を最新の証拠で満たしています。既存の承認を引き継ぎますが、公開またはデプロイにはその操作の承認が必要です。
 
-**ゲートに失敗した場合：** 1 回目は該当ステップへ戻って修正し、再試行します。同じ問題で 2 回目に失敗したら原因を再評価します。残りの予算内で試す価値のある代替案があれば、分離した実験を、必要な動作と定義済みの指標に照らして比較します。
+**ゲートに失敗した場合：**
+- 1 回目の失敗：該当ステップへ戻って修正し、再試行します。
+- 同じ問題で 2 回目の失敗：原因を再評価します。残りの予算内で試す価値のある代替案があれば、分離した実験を、必要な動作と定義済みの指標に照らして比較します。
+- 上限：PLAN の失敗で Step 1 に戻れるのは、最初のタスクをディスパッチする前だけです（以降、プランは変更できません）。VERIFY と REFINE の再試行は、ゲート失敗回数が設定済みの上限（デフォルトは VERIFY + REFINE で 5 サイクル）に達するか、セッションのコスト上限を超えると停止します。
+
+```mermaid
+flowchart TD
+  S1["Step 1: PM Agent writes the plan JSON"] --> PR["Steps 2-4: 3 CCR reviewers, completeness, meta-review, simplicity"]
+  PR --> PG{"PLAN_GATE"}
+  PG -->|"fail, before first dispatch"| S1
+  PG -->|pass| S5["Step 5: implementation agents in parallel"]
+  S5 --> IG{"IMPL_GATE"}
+  IG -->|"fail: re-spawn failed agents"| S5
+  IG -->|pass| VR["Steps 6-8: 3 CCR reviewers, alignment, safety, regression"]
+  VR --> VG{"VERIFY_GATE"}
+  VG -->|fail| VL{"cycle limit or cost cap reached?"}
+  VL -->|"no: root-cause fix"| S5
+  VG -->|pass| RF["Steps 9-13: 2 CCR reviews, then refactor actions"]
+  RF --> RG{"REFINE_GATE"}
+  RG -->|fail| RL{"cycle limit or cost cap reached?"}
+  RL -->|"no: re-spawn Refactor Agent"| RF
+  RG -->|"pass, or recorded skip"| SR["Steps 14-17: 4 CCR reviewers, quality, UX, related issues, deployment"]
+  SR --> SG{"SHIP_GATE"}
+  SG -->|"fail: re-run affected steps"| SR
+  SG -->|pass| DONE(["Final results; optional oma docs verify"])
+  VL -->|yes| STOP(["Stop: save step results, report unresolved items"])
+  RL -->|yes| STOP
+```
 
 **条件付きの拡張：** 定義済みの指標による比較、実験の判断と証拠、予算内での仮説探索、再利用できる原因に裏づけられた教訓。
 
@@ -173,9 +248,9 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 ### /ralph
 
-**説明：** 自己参照型の永続実行ループです。ultrawork を独立した検証担当で包み、各イテレーション後に完了基準を確認します。すべての基準が PASS なら完全完了、PASS と BLOCKED だけが残るなら部分完了を報告し、セーフガードが発動したら停止します。
+**説明：** 自己参照型の永続実行ループです。ultrawork を [judge](../getting-started/glossary.md#judge) で包み、各イテレーション後に完了基準を確認します。すべての基準が PASS なら完全完了、PASS と BLOCKED だけが残るなら部分完了を報告し、セーフガードが発動したら停止します。
 
-**永続：** はい。状態ファイルは `.agents/state/ralph-state.json` です。
+**永続：** はい。状態ファイルは `.agents/state/ralph-state-{sessionId}.json` です。
 
 **トリガーキーワード：**
 
@@ -194,19 +269,37 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 **フェーズ：**
 
-1. **Phase 0、INIT：** 前提（context-loading、memory protocol、judge protocol）をロードします。テストのアサーション、非出力型チェック、終了コード、ファイルの存在など、機械的に検証できる完了基準を定義して記録します。ビルドチェックは明示的に依頼された場合だけ含めます。基準を提示して承認済みの範囲で続行し、`max_iterations: 5` でセッションを初期化します。
-2. **Phase 1、WORK：** ultrawork（PLAN → IMPL → VERIFY → REFINE → SHIP）を 1 回のイテレーションとして実行します。
-3. **Phase 2、JUDGE：** 独立した検証担当が、承認済みのチェックを実行してファイルの存在を確認します。実際のプロジェクト状態に対する根拠と、PASS、FAIL、REGRESSED、BLOCKED の基準状態を記録します。
-4. **Phase 3、DECIDE：** すべての基準が PASS なら完全完了を報告します。PASS と BLOCKED だけなら部分完了を報告します。FAIL または REGRESSED があれば、セーフガードの範囲内で失敗のコンテキストを次のイテレーションへ渡します。
-5. **セーフガード：** `current_iteration >= max_iterations`（デフォルト 5）に達した場合、または同じ根本原因で同じ基準が 3 回連続して失敗した場合（スタック検出）にループを停止します。
+1. **Phase 0、INIT：** 前提（context-loading、memory protocol、judge protocol）をロードします。テストのアサーション、出力ファイルを生成しない型チェック、終了コード、ファイルの存在など、機械的に検証できる完了基準を定義して記録します。ビルドチェックは明示的に依頼された場合だけ含めます。基準を提示して承認済みの範囲で続行し、`max_iterations: 5` でセッションを初期化します。
+2. **Phase 1、EXEC：** ultrawork（PLAN → IMPL → VERIFY → REFINE → SHIP）を、Ralph のセッション ID のもとで 1 回のイテレーションとして実行します。続いてアーティファクトゲート `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>` を実行します。ゲートに失敗した場合、そのイテレーションは実行されなかったものとして扱います。Ralph は違反を記録し、作業を修復してからゲートを再実行します。
+3. **Phase 2、JUDGE：** judge が、承認済みのチェックを実行してファイルの存在を確認し、各完了基準を実際のプロジェクト状態に照らして確認します。ワークフローのプロンプトは、オーケストレーターに対して、基準だけを伝えた新しいコンテキストの別エージェントとして judge をスポーンするよう指示します。スポーンを機械的に確認する仕組みはありません。サブエージェントをスポーンできないランタイムには、インラインで判定して `ralph.judge-inline-fallback` を記録するよう指示します。根拠と、PASS、FAIL、REGRESSED、BLOCKED の基準状態を記録します。
+4. **判定ゲート：** すべての基準が PASS なら完全完了を報告します。PASS と BLOCKED だけなら部分完了を報告します。FAIL または REGRESSED があれば、セーフガードの範囲内で失敗のコンテキストを次のイテレーションへ渡します。
+5. **Phase 3、REPLAN：** 次のイテレーションの対象を FAIL と REGRESSED の項目に絞り（diff を踏まえて診断します）、BLOCKED の項目はスキップし、PASS の基準は judge の確認範囲に残します。その後 Phase 1 に戻ります。
+6. **セーフガード：** `current_iteration >= max_iterations`（デフォルト 5）に達するとループを停止します。同じ根本原因で 3 回連続して失敗した基準は BLOCKED となり、再試行されません（スタック検出）。
 
-**/ultrawork との主な違い：** Ultrawork は 5 フェーズのプロセスを実行し、フェーズのゲートに失敗すると再試行します。Ralph は ultrawork をリトライループに包み、独立した判定担当が完了を客観的に検証します。ループは完全完了、ブロックされた作業を残す部分完了、またはセーフガードレポートで終了します。
+```mermaid
+flowchart TD
+  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
+  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
+  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
+  REPAIR --> GATE
+  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
+  JUDGE --> VERDICT{"verdict"}
+  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
+  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
+  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
+  LIMIT -->|yes| SAFE(["Safeguard report"])
+  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
+  REPLAN --> EXEC
+```
+
+judge ノードは Phase 2 で説明した、プロンプトで指示される judge です。ワークフローはオーケストレーターに新しいコンテキストで judge をスポーンするよう指示し、サブエージェントをスポーンできないランタイムはインラインで判定してフォールバックを記録します。
+
+**/ultrawork との主な違い：** Ultrawork は 5 フェーズのプロセスを実行し、フェーズのゲートに失敗すると再試行します。Ralph は ultrawork をリトライループに包み、プロンプトで指示された judge がプロジェクトの証拠に照らしてすべての基準を再検証します。ループは完全完了、ブロックされた作業を残す部分完了、またはセーフガードレポートで終了します。
 
 **読み込むファイル：** `.agents/workflows/ralph/resources/judge-protocol.md`、ultrawork の全ファイル。
+**書き込むファイル：** `session-ralph-{sessionId}.md`（メモリ）、イテレーションログ、最終レポート。
 
-**書き込むファイル：** `session-ralph.md`（メモリ）、イテレーションログ、最終レポート。
-
-**使用すべき場合：** 機械的に検証できる完了基準に対して、実行と独立検証を繰り返すことを明示的に希望する場合。テストがあるだけでは Ralph は必要ありません。各イテレーションで ultrawork 全体を実行し、セーフガードを考慮します。
+**使用すべき場合：** 機械的に検証できる完了基準に対して、実行と judge による再検証を繰り返すことを明示的に希望する場合。テストがあるだけでは Ralph は必要ありません。各イテレーションで ultrawork 全体を実行し、セーフガードを考慮します。
 
 ---
 
@@ -444,8 +537,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 **ルール：** Sync パッチを自動適用しません（文書ごとに `[y]` の確認が必要）。`.agents/`（SSOT）を変更しません。`oma docs` がない場合はインストール案内を表示して終了し、手動 grep にフォールバックしません。
 
 **読み込むファイル：** 対象 Markdown（`**/*.md` または指定 glob）、Sync の `git diff` にある `changedFiles`。
-
-**書き込むファイル：** Verify で常に再生成する `docs/generated/doc-refs.json`、URL チェック時の `docs/generated/url-drift.json`、Sync で承認されたドキュメントパッチ。
+**書き込むファイル：** Verify で常に再生成する `docs/generated/doc-refs.json`、URL チェック時の `docs/generated/url-drift.json`、Sync の `[y]` で承認されたドキュメントパッチ。
 
 **使用すべき場合：** 壊れたファイルパス、CLI コマンド、設定キー、環境変数など、ドキュメントがコードベースと一致するか確認するとき、またはコード変更後にパッチを提案するとき。
 
@@ -453,7 +545,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 ### /recap
 
-**説明：** `oma-recap` による日次または期間の作業リキャップです。自然言語から日付または期間を解決し、複数の AI ツール履歴（Grok、Claude、Codex、Qwen、Cursor、Antigravity）に対して `oma recap --json` を実行し、テーマ分析と Markdown 形式への整形をスキルに委任して、保存先と TL;DR を報告します。インラインで実行し、サブエージェントはスポーンしません。
+**説明：** `oma-recap` による日次または期間の作業リキャップです。自然言語から日付または期間を解決し、複数の AI ツール履歴（Grok、Claude、Codex、Qwen、Cursor、Antigravity）に対して `oma recap --json` を実行し、テーマ分析と Markdown 形式への整形をスキルに委任して、保存先と TL;DR を報告します。インラインで実行し、サブエージェントはスポーンしません。ベンダーに関わらず `oma recap` を直接呼び出します。
 
 **トリガーキーワード：** Universal：`recap`。Korean：`리캡`。Japanese：`リキャップ`。
 
@@ -462,7 +554,6 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 **ルール：** `.agents/`（SSOT）を変更しません。保存するリキャップの技術用語（プロジェクト名、ツール名、CLI フラグ）を自動翻訳しません。ソースがない場合はリキャップを作りません。
 
 **読み込むファイル：** `oma recap` 経由の AI ツールの会話履歴。
-
 **書き込むファイル：** `.agents/results/recap/{date}.md` または `.agents/results/recap/{start}~{end}.md`。
 
 **使用すべき場合：** AI ツールをまたいだ日または期間（週/月）の作業を要約するとき。特定のツールだけに絞ることもできます。
@@ -511,7 +602,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 ### /schedule
 
-**説明：** `oma schedule <action>` コマンドで時間ベースのエージェントジョブを登録・管理します。ジョブはグローバルレジストリ（`~/.agents/schedule/`）に保存され、OS ネイティブのスケジューラ（macOS の launchd、Linux の systemd user timers、Windows の schtasks、POSIX フォールバックの crontab）で起動します。各実行は `oma agent spawn` でハーネスに戻ります。
+**説明：** `oma schedule <action>` コマンドで時間ベースのエージェントジョブを登録・管理します。ジョブはグローバルレジストリ（`~/.oma/schedule/`）に保存され、OS ネイティブのスケジューラ（macOS の launchd、Linux の systemd user timers、Windows の schtasks、POSIX フォールバックの crontab）で起動します。各実行は `oma agent spawn` でハーネスに戻ります。
 
 **トリガーキーワード：** なし（`oma schedule <action>` の時間ベースジョブをスラッシュで起動）。
 
@@ -607,7 +698,7 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 - 自動的な単語境界ラップはありません。パターンの作成者が `\b` を自分で扱います。
 - 無効な正規表現は実行時に黙ってスキップされます（設定編集時にはテスト失敗で確認できます）。
 
-### 情報パターンのフィルタリング
+### 情報パターンのフィルターリング
 
 `.agents/hooks/core/triggers.json` の `informationalPatterns` セクションには、コマンドではなく質問を示すフレーズを定義します。各ワークフロー候補の一致の前後 60 文字のウィンドウを確認します。
 
@@ -641,15 +732,15 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 
 永続ワークフロー（orchestrate、ultrawork、work、ralph）は、明示的に呼び出されたとき、`.agents/state/` に状態ファイルを作成します（[永続ワークフロー](#persistent-workflows)を参照）。
 
-```
+```text
 .agents/state/
-├── orchestrate-state.json
-├── ultrawork-state.json
-├── work-state.json
-└── ralph-state.json
+├── orchestrate-state-{sessionId}.json
+├── ultrawork-state-{sessionId}.json
+├── work-state-{sessionId}.json
+└── ralph-state-{sessionId}.json
 ```
 
-状態ファイルにはワークフロー名、現在のフェーズ/ステップ、セッション ID、タイムスタンプ、保留中の状態が含まれます。
+`{sessionId}` はホストのセッション ID なので、同時に実行しているセッションがファイルを共有することはありません。ファイルにはワークフロー名、セッション ID、アクティベーション時刻、再強化の回数を記録し、`oma goal set` の後は goal contract も記録します。フェーズの進捗はここではなく、`session-ultrawork.md` などのメモリファイルに保存します。
 
 ### 再注入
 
@@ -678,50 +769,24 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 
 ## 典型的なワークフローシーケンス
 
-### 単一ドメインの機能
+| 目的 | シーケンス |
+|------|----------|
+| 単一ドメインの機能 | タスクを説明 → 関連スキル → 実装 → 対象を絞った検証 |
+| 複雑なマルチドメインプロジェクト | `/work` → PM が計画 → 承認済みの範囲でレビュー → エージェントをスポーン → QA レビュー → 問題を修正 → レポート |
+| 自動並列実装 | `/orchestrate` → プランをロードまたは作成 → 依存関係を解決 → 独立したタスクをスポーン → 検証 → レポート |
+| 最高品質のデリバリー | `/ultrawork` → PLAN（プラン + 3 レビュー） → IMPL → VERIFY（3 レビュー） → REFINE（2 レビュー + 3 リファクタリング） → SHIP（4 レビュー） |
+| バグ調査 | `/debug` → 再現 → 根本原因 → 最小限の修正 → 回帰テスト → 類似パターンの調査 |
+| デザインから実装へ | `/brainstorm` → 設計ドキュメント → `/plan` → タスク分解 → `/orchestrate` → 並列実装 → `/review` → `/scm` |
+| 新しいコードベースのセットアップ | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
+| judge による検証を伴う反復実行 | `/ralph` → 基準を定義 → ultrawork → アーティファクトゲート → judge → 必要に応じて繰り返し → 完了、部分完了、またはセーフガードレポート |
 
-```
-Describe the task → relevant skill → implement → focused verification
-```
+---
 
-### 複雑なマルチドメインプロジェクト
+## 関連項目
 
-```
-/work → PM plans → review within authorized scope → agents spawn → QA reviews → fix issues → report
-```
-
-### 自動並列実装
-
-```
-/orchestrate → load or create plan → resolve dependencies → spawn independent tasks → verify → report
-```
-
-### 最高品質のデリバリー
-
-```
-/ultrawork → PLAN (4 review steps) → IMPL → VERIFY (3 review steps) → REFINE (5 review steps) → SHIP (4 review steps)
-```
-
-### バグ調査
-
-```
-/debug → reproduce → root cause → minimal fix → regression test → similar pattern scan
-```
-
-### デザインから実装へ
-
-```
-/brainstorm → design document → /plan → task breakdown → /orchestrate → parallel implementation → /review → /scm
-```
-
-### 新しいコードベースのセットアップ
-
-```
-/deepinit → AGENTS.md + ARCHITECTURE.md + docs/
-```
-
-### 独立検証を伴う反復実行
-
-```
-/ralph → define criteria → ultrawork → judge → repeat as needed → completion, partial completion, or safeguard report
-```
+- [並列実行](./parallel-execution.md)：`oma agent spawn`、`oma agent parallel`、モニタリング
+- [プロジェクト構造](./project-structure.md)：ワークフローの状態ファイルとメモリファイルの場所
+- [`oma goal set`](../cli-interfaces/commands.md#goal-set)：永続ワークフローの停止ゲートと予算
+- [マルチエージェントプロジェクトガイド](../guide/multi-agent-project.md)
+- [トラブルシューティング](../guide/troubleshooting.md)
+- [用語集](../getting-started/glossary.md)

@@ -1,7 +1,7 @@
 ---
 title: "Przewodnik: naprawianie błędów"
 sidebar_label: Naprawianie błędów
-description: "Ustrukturyzowany, siedmioetapowy workflow debugowania z triage ważności, sygnałami eskalacji, diagnozą opartą na źródłach i walidacją po poprawce."
+description: "Ustrukturyzowany, siedmiokrokowy workflow debugowania z triage ważności, sygnałami eskalacji, diagnozą opartą na źródłach i walidacją po poprawce."
 ---
 
 # Przewodnik: naprawianie błędów
@@ -10,7 +10,7 @@ description: "Ustrukturyzowany, siedmioetapowy workflow debugowania z triage wa�
 
 Użyj `/debug` (albo powiedz w języku naturalnym „fix bug”, „fix error” lub „debug”), gdy masz konkretny błąd do zdiagnozowania i naprawienia. Workflow daje uporządkowane, odtwarzalne podejście do debugowania, które pomaga uniknąć typowej pułapki naprawiania objawów zamiast przyczyn źródłowych.
 
-Workflow debugowania obsługuje wszystkich skonfigurowanych dostawców. Etapy 1–5 działają inline. Etap 6 (wyszukiwanie podobnych wzorców) może delegować zadanie do subagenta `debug-investigator`, gdy zakres skanu jest szeroki (co najmniej 10 plików albo błędy obejmują wiele domen), a następnie etap 7 zapisuje wynik w pamięci.
+Workflow debugowania obsługuje wszystkich skonfigurowanych dostawców. Kroki 1–5 działają inline. Krok 6 (wyszukiwanie podobnych wzorców) może delegować zadanie do subagenta `debug-investigator`, gdy zakres skanu jest szeroki (co najmniej 10 plików albo błędy obejmują wiele domen), a następnie krok 7 zapisuje wynik w pamięci.
 
 ---
 
@@ -74,7 +74,7 @@ Ważność określa sposób obsługi błędu i szybkość naprawy.
 - Aplikacja mobilna wyłącza się podczas uruchamiania na urządzeniach z Androidem 14.
 - E-maile resetowania hasła nie są wysyłane (integracja usługi e-mail jest zepsuta).
 
-**Podejście debugowania:** Pełna pętla siedmiu etapów. Po poprawce zalecany jest przegląd QA.
+**Podejście debugowania:** Pełna pętla siedmiu kroków. Po poprawce zalecany jest przegląd QA.
 
 ### P2: średni (w tym sprincie)
 
@@ -88,7 +88,7 @@ Ważność określa sposób obsługi błędu i szybkość naprawy.
 - Czas odpowiedzi endpointu /users wynosi 8 sekund (powinien być krótszy niż 1 s).
 - Paginacja pokazuje „Page 1 of 0”, gdy lista jest pusta.
 
-**Podejście debugowania:** Pełna pętla siedmiu etapów. Dodaj wynik do zestawu regresji QA.
+**Podejście debugowania:** Pełna pętla siedmiu kroków. Dodaj wynik do zestawu regresji QA.
 
 ### P3: niski (backlog)
 
@@ -106,9 +106,15 @@ Ważność określa sposób obsługi błędu i szybkość naprawy.
 
 ---
 
-## Szczegółowa siedmioetapowa pętla debugowania
+## Szczegółowa siedmiokrokowa pętla debugowania {#the-seven-stage-debug-loop-in-detail}
 
-Workflow `/debug` wykonuje poniższe etapy w kolejności. Korzysta ze skonfigurowanego dostawcy code intelligence. Natywne wyszukiwanie służy wyłącznie do ścieżek spoza projektu lub ścieżek ignorowanych, gdy ten dostawca jest niedostępny lub przekracza limit czasu.
+Workflow `/debug` wykonuje poniższe kroki w kolejności. Korzysta ze skonfigurowanego dostawcy code intelligence. Natywne wyszukiwanie służy wyłącznie do ścieżek spoza projektu lub ścieżek ignorowanych, gdy ten dostawca jest niedostępny lub przekracza limit czasu.
+
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
 
 ### Krok 1: zbierz informacje o błędzie
 
@@ -187,7 +193,6 @@ Metody uruchamiania zależne od dostawcy:
 |:-------|:------------|
 | Claude Code | Narzędzie agenta z `.claude/agents/debug-investigator.md` |
 | Codex CLI | Prośba o subagenta pośredniczona przez model, wyniki jako JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / fallback | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 Raportowane są wszystkie podatne lokalizacje podobnych wzorców. Potwierdzone przypadki naprawia się w tej samej sesji.
@@ -206,7 +211,7 @@ Workflow zapisuje w pamięci plik zawierający:
 
 Przy wywoływaniu workflowu debugowania możesz podać prompt w uporządkowanej formie:
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -233,7 +238,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 Dla prostszych błędów wystarczy krótszy prompt:
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -299,3 +304,11 @@ Workflow debugowania jest ukończony, gdy:
 4. Bazę kodu przeskanowano pod kątem podobnych wzorców, a wszystkie potwierdzone przypadki obsłużono.
 5. W pamięci zapisano raport błędu z: objawem, przyczyną źródłową, zastosowaną poprawką, zmienionymi plikami, lokalizacją testu regresji i znalezionymi podobnymi wzorcami.
 6. Po poprawce wszystkie istniejące testy nadal przechodzą.
+
+---
+
+## Następne kroki
+
+- Przyczyna źródłowa przekracza granice domen: [Projekty wieloagentowe](./multi-agent-project.md)
+- Zapisz albo wznów uruchomienie poprawki: [Wyniki i wznawianie](./agent-results-and-resume.md)
+- Coś zawiodło w samym OMA: [Rozwiązywanie problemów](./troubleshooting.md)

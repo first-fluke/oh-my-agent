@@ -1,6 +1,6 @@
 ---
 title: "CLI 命令"
-description: "CLI 全部命令的完整参考，涵盖语法、选项、示例，并按类别组织。"
+description: "oh-my-agent 全部 CLI 命令的完整参考，涵盖语法、选项、示例，并按类别组织。"
 sidebar_label: CLI 命令
 ---
 
@@ -8,9 +8,11 @@ sidebar_label: CLI 命令
 
 全局安装（`bun install --global oh-my-agent`）后，使用 `oma` 或 `oh-my-agent`。如果不想安装、只需临时使用一次，运行 `npx oh-my-agent`。
 
-将环境变量 `OH_MY_AG_OUTPUT_FORMAT` 设为 `json`，即可让支持此功能的命令强制输出机器可读格式。这等同于为每个命令传入 `--json`。
+将环境变量 `OH_MY_AG_OUTPUT_FORMAT` 设为 `json`，即可让使用共享 `--json` / `--output` 选项的命令默认输出 JSON。显式传入 `--output text` 时仍以它为准。
 
-## 从任务开始
+如果命令因 `Unknown command`、`Unexpected argument` 或 `Removed option` 而失败，请参阅本页的[已移除的写法](#aliases)；安装、钩子和运行时问题请参阅[故障排除](../guide/troubleshooting.md)。
+
+## 从任务开始 {#start-with-a-task}
 
 选择能回答当前问题的最小命令。下面的每个命令都会打印路径或报告，检查后再进入下一步。
 
@@ -26,14 +28,16 @@ sidebar_label: CLI 命令
 | 转换或查看论文 | `oma scholar search "<query>"` | 来自 Knows、OpenAlex 或 Semantic Scholar 的搜索结果；用 `oma scholar get` 获取 sidecar。 |
 | 制作幻灯片 | `oma slide create --output-dir <dir>` | 可在其中编写、校验、打包和导出的工作目录。 |
 | 检查文档漂移 | `oma docs verify --json` | 结构化的失效引用报告，以及重新生成的引用索引。 |
+| 计划重复运行的智能体 | `oma schedule create backend "<task>" --every 2h --dry-run` | 解析出的 cron 表达式；在去掉 `--dry-run` 重新运行之前，不会注册任何内容。 |
+| 检查技能或 harness 质量 | `oma skill lint` 或 `oma skill audit` | 离线报告；在运行任何会调用模型的命令之前，请先参阅[选择技能或 harness 命令](#choosing-a-skill-or-harness-command)。 |
 
-已签入的注册表是此命令映射的来源。下面的规范发现名称来自 `oma describe` 返回的路径；交互式帮助可能显示兼容性别名，例如 `slide new`、`slide viewer`、`image list-vendors` 或 `video list-providers`。
+下面的规范名称来自 `oma describe`。只接受这些以空格分隔的路径：旧写法（例如 `slide new`、`slide viewer`、`image list-vendors`、`video list-providers`）、冒号形式（例如 `agent:parallel`）以及简称 `viz`、`s` 和 `img`，都会以 `Unknown command` 或 `Unexpected argument` 失败。参见[别名与已移除的写法](#aliases)。
 
-## 当前命令范围
+## 当前命令范围 {#current-command-surface}
 
 此映射让下面的长参考内容更易扫描，也便于发现不常用的命令族。要查看确切的参数语法，请使用各命令族的 `--help` 或 `oma describe <path>`；完整的注册表标志矩阵见 [CLI 选项](./options.md)。
 
-|命令族|注册路径|
+| 命令族 | 注册路径 |
 |:-------|:-----------------|
 | `install` | `install` |
 | `describe` | `describe` |
@@ -44,6 +48,7 @@ sidebar_label: CLI 命令
 | `market` | `market`, `market detect-trap`, `market resolve`, `market update`, `market run` |
 | `doctor` | `doctor` |
 | `profile` | `profile`, `profile list`, `profile show`, `profile create`, `profile use`, `profile run` |
+| `home` | `home`, `home migrate` |
 | `retro` | `retro` |
 | `recap` | `recap` |
 | `docs` | `docs`, `docs verify`, `docs sync`, `docs i18n`, `docs lint` |
@@ -55,19 +60,19 @@ sidebar_label: CLI 命令
 | `star` | `star` |
 | `visualize` | `visualize` |
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google` |
-| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness incident scan`, `harness incident capture`, `harness incident show`, `harness incident export`, `harness incident promote`, `harness incident reproduce`, `harness feedback`, `harness evolution`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get` |
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint` |
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
-| `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
+| `serena` | `serena`, `serena check`, `serena setup`, `serena reap`, `serena daemon`, `serena daemon gc`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
 | `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe` |
+| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -76,25 +81,36 @@ sidebar_label: CLI 命令
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
+| `skills` | `skills matrix`（唯一保留复数命令组名的命令；`oma skill matrix` 会被拒绝） |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
+
+`oma describe` 还会列出 `agent parallel-supervisor`、`schedule inspect` 和 `schedule builtin-evolution-add`。这些命令由其他命令在内部调用，无需手动运行。
 
 当命令把剩余参数交给其他工具时，注册表会有意不限定它的选项。`market run` 和 `diagram archify` 就属于这种情况；在执行会修改状态或访问网络的操作之前，请先阅读解析出的上游工具帮助。
 
 ---
 
-## 设置与安装
+## 设置与安装 {#setup--installation}
 
-### install（安装）
+### install（安装） {#install}
 
 不带参数运行 `oma` 会启动交互式安装器。`oma install` 是显式形式，并接受用于选择提供方的选项。
 
-```
+```bash
 oma
 oma install
-oma install --web-search native --code-intelligence gortex --semantic-memory agent-memory
+oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
-省略 `--web-search`、`--code-intelligence` 和 `--semantic-memory` 时，会沿用已保存的提供方选择。选中 Honcho 提供方时，`--honcho-url` 和 `--honcho-workspace` 用于配置新的 Honcho 连接。根级 `-y, --yes` 标志会跳过提示并使用默认值；`--global` 以 HOME 安装为目标。
+| 选项 | 可接受的值 |
+|:-------|:----------------|
+| `--web-search <provider>` | `native`、`brave` |
+| `--code-intelligence <provider>` | `serena`、`gortex` |
+| `--semantic-memory <provider>` | `agentmemory`、`honcho`、`none` |
+| `--honcho-url <url>` | Honcho API 源地址（新连接的默认值：`http://127.0.0.1:8000`） |
+| `--honcho-workspace <id>` | Honcho 工作区 ID（新连接的默认值：`oma`） |
+
+省略 `--web-search`、`--code-intelligence` 和 `--semantic-memory` 时，会沿用已保存的提供方选择。选中 Honcho 提供方时，`--honcho-url` 和 `--honcho-workspace` 用于配置新的 Honcho 连接。根级 `-y, --yes` 标志会跳过提示并使用默认值；`--global` 以 `$OMA_HOME/.agents/`（默认为 `~/.oma/.agents/`）为目标。即使设置了 `OMA_HOME`，项目安装仍位于 `<cwd>/.agents/`。
 
 **功能**：
 1. 检查是否存在旧版 `.agent/` 目录，如果找到，则迁移到 `.agents/`。
@@ -124,29 +140,30 @@ oma
 
 检查 CLI 安装、MCP 配置和技能状态。
 
-```
-oma doctor [--json] [--output <format>] [--profile]
+```text
+oma doctor [--json] [--output <format>] [--profile] [--heal-check <agent-type>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
-| `--json` | 以 JSON 格式输出 |
+| `--json` | 以 JSON 格式输出。报告中的 `issues` 计数大于零时，命令以 `1` 退出。 |
 | `--output <format>` | 输出格式（`text` 或 `json`） |
 | `--profile` | 显示配置档健康矩阵。根据当前生效的 `model_preset` 和 `agents:` 覆盖项，列出每个智能体解析出的模型 slug、CLI 和身份验证状态。参见[按智能体配置模型](../guide/per-agent-models.md)。 |
+| `--heal-check <agent-type>` | 在报告中包含该智能体的自愈关卡检查。 |
 
 **检查内容**：
-- CLI 安装情况：agy、claude、codex、qwen（版本和路径）。
+- CLI 安装情况：`claude`、`codex`、`qwen`、`agy`、`grok`、`kiro-cli`、`kimi` 和 `pi`（版本和路径）。
 - 每个 CLI 的身份验证状态。
-- MCP 配置：`~/.gemini/settings.json`、`~/.claude.json`、`~/.codex/config.toml`。
+- Claude Code（`~/.claude.json`）和 Codex（`~/.codex/config.toml`）的 MCP 配置。
 - 已安装的技能：有哪些技能及其状态。
 - 内存存储目录：`.agents/state/memories/` 是否存在以及文件数量（较旧的项目会回退到旧版 `.serena/memories/` 路径）。
 - 双重安装标记（项目与全局）及相关警告。
 - 推荐的**全局** Git 配置（JSON 中的 `gitRecommended`）：
   - `rerere.enabled=true`
   - `init.defaultBranch=main`
-  - 每处不一致都会计入 `totalIssues`
+  - 每处不一致都会计入问题总数（JSON 中的 `issues`）
 - 项目供应商上下文文件（已安装 Codex、Qwen 或 Claude Code ≥ 2.1.277 时，检查 `AGENTS.md` 中的 OMA 区块）。
 - AgentMemory、状态与钩子的健康情况、Serena 回收器诊断，以及相关的问题计数。
 
@@ -167,17 +184,17 @@ oma doctor --json | jq '.clis[] | select(.installed == false)'
 oma doctor --profile
 ```
 
-### update（更新）
+### update（更新） {#update}
 
 从注册表将技能更新到最新版本。
 
-```
-oma update [-f | --force] [--with-new-skills] [--ci] [-y | --yes] [--all] [--vendor <vendors>]
+```text
+oma update [-f, --force] [--with-new-skills] [--ci] [-y, --yes] [--all] [--vendor <vendors>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `-f, --force` | 覆盖用户自定义的配置文件（`oma-config.yaml`、`mcp.json`、`stack/` 目录） |
 | `--with-new-skills` | 安装此版本新增的技能；不使用时，只刷新已安装的技能。 |
@@ -226,11 +243,11 @@ oma update mcp --ci
 
 `oma update mcp` 有自己的 `--yes`、`--ci`、`--all` 和 `--vendor <vendors>` 选项。它为所选的项目级供应商选择受支持的浏览器 MCP 服务器（Aside、Chrome DevTools 或 Firefox DevTools）。
 
-### uninstall（卸载）
+### uninstall（卸载） {#uninstall}
 
 预览或删除选定安装根目录中由 OMA 管理的文件：
 
-```
+```bash
 oma uninstall --dry-run
 oma uninstall --yes
 ```
@@ -241,24 +258,29 @@ oma uninstall --yes
 
 以 `.agents/` 为事实来源重新生成供应商原生文件，无需重新安装。
 
+```text
+oma link [vendors...] [--dry-run] [--global]
 ```
-oma link [vendors...] [--global]
-```
+
+`--dry-run` 预览将要写入的内容，不修改文件。
 
 **示例**：
 
 ```bash
+# Preview the files link would write
+oma link --dry-run
+
 # Regenerate all configured vendors
 oma link
 
 # Regenerate only Claude and Codex files
 oma link claude codex
 
-# Regenerate the HOME install (~/.agents/) from any directory
+# Regenerate the global install (~/.oma/.agents/) from any directory
 oma link opencode --global
 ```
 
-不使用 `--global` 时，link 以 `<cwd>/.agents/` 为目标；使用时，则以 `~/.agents/`（或 `OMA_HOME`）为目标。参见[全局安装](../guide/global-install.md)。
+不使用 `--global` 时，link 以 `<cwd>/.agents/` 为目标；使用时，则以 `~/.oma/.agents/`（或 `$OMA_HOME/.agents/`）为目标。`OMA_HOME` 不会改变项目目标。参见[全局安装](../guide/global-install.md)。
 
 **功能**：
 1. 根据 `.agents/agents/` 重建供应商原生智能体文件
@@ -276,23 +298,23 @@ oma link opencode --global
 - 如果目标供应商与当前运行时一致，并且当前运行时支持原生角色智能体，OMA 会使用原生调度。
 - 否则，OMA 回退到 `oma agent spawn`。
 
-### setup（工作流）
+### 重新配置已有安装 {#setup-workflow}
 
-`/setup` 工作流（在智能体会话内调用）以交互方式配置语言、CLI 安装、MCP 连接以及智能体与 CLI 的映射。它与 `oma`（安装器）不同：`/setup` 用于配置已经安装好的实例。
+没有 `/setup` 工作流。要更改已安装的项目，请重新运行 `oma install`；如果只需调整浏览器 MCP 服务器，使用 `oma update mcp`；也可以在智能体会话中运行 `/tools` 来启用或禁用 MCP 工具。用 `oma doctor --profile` 检查各智能体的模型解析结果；按智能体固定的模型位于 `.agents/oma-config.yaml` 的 `agents:` 下（[按智能体配置模型](../guide/per-agent-models.md)）。
 
 ---
 
-## 监控与指标
+## 监控与指标 {#monitoring--metrics}
 
-### dashboard（仪表盘）
+### dashboard terminal（终端仪表盘） {#dashboard}
 
 启动终端仪表盘，实时监控智能体。
 
-```
-oma dashboard terminal
+```text
+oma dashboard terminal [--project-root <path>]
 ```
 
-没有选项。监视当前目录中的 `.agents/state/memories/`（较旧的项目会回退到旧版 `.serena/memories/` 路径）。用方框绘制字符渲染界面，显示会话状态、智能体表格和活动动态。每次文件变更都会刷新。按 `Ctrl+C` 退出。
+监视 `<project>/.agents/state/memories/`，其中项目由 `--project-root` 指定（默认为当前目录）。不会自动回退到旧版 `.serena/memories/` 路径。用方框绘制字符渲染界面，显示会话状态、智能体表格和活动动态。每次文件变更都会刷新。按 `Ctrl+C` 退出。
 
 可以用 `MEMORIES_DIR` 环境变量覆盖内存目录。
 
@@ -305,22 +327,22 @@ oma dashboard terminal
 MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal
 ```
 
-### dashboard web（Web 仪表盘）
+### dashboard web（Web 仪表盘） {#dashboard-web}
 
 启动 Web 仪表盘。
 
-```
-oma dashboard web
+```text
+oma dashboard web [--project-root <path>]
 ```
 
-在 `http://localhost:9847` 上启动 HTTP 服务器，并通过 WebSocket 连接推送实时更新。在浏览器中打开此 URL 即可查看仪表盘。
+在 `http://127.0.0.1:9847` 上启动 HTTP 服务器，并通过 WebSocket 连接推送实时更新。在浏览器中打开打印出的 URL 即可查看仪表盘。
 
 **环境变量**：
 
-|变量|默认|说明|
+| 变量 | 默认 | 说明 |
 |:---------|:--------|:-----------|
 | `DASHBOARD_PORT` | `9847` | HTTP/WebSocket 服务器的端口 |
-| `MEMORIES_DIR` | `{cwd}/.agents/state/memories` | 内存目录的路径（较旧的项目会回退到旧版 `{cwd}/.serena/memories`） |
+| `MEMORIES_DIR` | `<project-root>/.agents/state/memories` | 内存目录的路径；优先于 `--project-root` |
 
 **示例**：
 ```bash
@@ -331,18 +353,18 @@ oma dashboard web
 DASHBOARD_PORT=8080 oma dashboard web
 ```
 
-### stats（统计）
+### stats（统计） {#stats}
 
 查看生产力指标。
 
-```
+```text
 oma stats get [--json] [--output <format>]
 oma stats reset [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--json` | 以 JSON 格式输出 |
 | `--output <format>` | 输出格式（`text` 或 `json`） |
@@ -377,26 +399,26 @@ oma stats get --json
 oma stats reset
 ```
 
-### recap（回顾）
+### recap（回顾） {#recap}
 
-回顾 Claude、Codex、Qwen 和 Cursor 会话中的 AI 工具对话历史。
+回顾 Claude、Codex、Gemini、Antigravity、Qwen、Cursor 和 Grok 会话中的 AI 工具对话历史。
 
-```
+```text
 oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|说明|默认|
+| 标志 | 说明 | 默认 |
 |:-----|:-----------|:--------|
 | `--window <period>` | 时间窗口：`1d`、`3d`、`7d`、`2w`、`30d` | `1d` |
 | `--date <date>` | 指定日期（`YYYY-MM-DD`）；优先于 `--window` | |
-| `--tool <tools>` | 逗号分隔的过滤条件：`grok,claude,codex,qwen,cursor,antigravity` | 全部 |
+| `--tool <tools>` | 逗号分隔的过滤条件：`grok,claude,codex,gemini,qwen,cursor,antigravity` | 全部 |
 | `--top <n>` | 显示前 N 个项目或主题 | |
 | `--sort <metric>` | 按 `count` 或 `duration` 排序 | `count` |
 | `--mermaid` | 输出为 Mermaid 甘特图 | |
 | `--graph` | 在浏览器中打开交互式图形 | |
-| `--json` / `--output <format>` |机器可读输出| `text` |
+| `--json` / `--output <format>` | 机器可读输出 | `text` |
 
 **示例**：
 
@@ -408,23 +430,23 @@ oma recap --window 7d --mermaid > week.mmd
 oma recap --window 30d --graph                # Interactive browser graph
 ```
 
-### retro（复盘）
+### retro（复盘） {#retro}
 
 查看包含指标和趋势的工程复盘。
 
-```
+```text
 oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 ```
 
 **参数**：
 
-|参数|说明|默认|
+| 参数 | 说明 | 默认 |
 |:---------|:-----------|:--------|
-| `window` | 分析的时间窗口（例如 `7d`、`2w`、`1m`） | 最近 7 天 |
+| `window` | 时间窗口，格式为 `<n>h`、`<n>d` 或 `<n>w`（例如 `24h`、`7d`、`2w`）。不接受月份单位，请使用 `30d`。 | 最近 7 天 |
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--json` | 以 JSON 格式输出 |
 | `--output <format>` | 输出格式（`text` 或 `json`） |
@@ -464,9 +486,23 @@ oma retro 7d --json
 
 ---
 
-## 会话与本地配置档
+## 全局主目录、会话与本地配置档 {#global-home-sessions-and-local-profiles}
 
-### state list（列出状态）
+### home migrate（迁移主目录） {#home-migrate}
+
+将 OMA 拥有的全局定义和运行时元数据复制到统一的主目录：
+
+```bash
+oma home migrate --dry-run --json
+oma home migrate --json
+oma schedule sync
+```
+
+`OMA_HOME` 用于选择全局存储根目录，默认为 `~/.oma`。定义使用其下的 `.agents/`；计划任务使用 `schedule/`；Serena 和 vault 键名索引使用 `state/`。配置档存储使用 `u/`，除非 `OMA_STATE_HOME` 显式指定了其他配置档根目录。
+
+迁移会保留原始内容，跳过完全相同的副本，合并 vault 键名，并报告目标位置冲突或正在使用中的数据。经过验证、由 OMA 拥有的技能目录可以先归档到 `$OMA_HOME/backup/legacy-global-skills/`，然后它们原来的发现路径会变为指向迁移后副本的受管链接。用户技能和外部链接保持不变。迁移不会移动供应商身份验证信息、操作系统钥匙串中的密钥或外部内存数据。全局 install/update 会自动执行此迁移。操作系统任务注册是独立的：如果存在计划任务，请在迁移后运行 `oma schedule sync`。
+
+### state list（列出状态） {#state-list}
 
 列出当前项目的 OMA 工作流会话。显式启用全局发现时，会列出所选本地配置档中所有项目的会话：
 
@@ -479,7 +515,7 @@ oma state list --all-projects --search migration
 
 `--all-projects` 是只读的，不能与会话激活或维护操作组合使用。普通的会话读写仍限定在各自的项目范围内。其他仓库中的旧版会话必须先迁移到主目录存储，才会出现在汇总列表中。
 
-### profile（配置档）
+### profile（配置档） {#profile}
 
 管理 `~/.oma/u/<slot>/` 下的本地存储配置档。槽位是非负十进制整数，与模型预设和提供方登录账户相互独立。
 
@@ -492,23 +528,23 @@ oma profile show
 oma profile run 1 -- oma state list --all-projects --json
 ```
 
-`profile use` 会打印 shell 激活代码；用 eval 执行后，会在当前 shell 中设置 `OMA_PROFILE`。单独运行时，它不会修改父 shell，不会改变已在运行的应用，也不会另存一个仅供 CLI 使用的默认值。从已激活的 shell 启动的 CLI 命令和供应商钩子会继承同一配置档。默认配置档为 `0`；`OMA_STATE_HOME` 可覆盖存储根目录。`profile run <slot> -- <command> [args...]` 只为这条命令及其子进程选择配置档。分隔符确保 `--help`、`--json` 等子命令选项留给子命令处理。
+`profile use` 会打印 shell 激活代码；用 eval 执行后，会在当前 shell 中设置 `OMA_PROFILE`。单独运行时，它不会修改父 shell，不会改变已在运行的应用，也不会另存一个仅供 CLI 使用的默认值。从已激活的 shell 启动的 CLI 命令和供应商钩子会继承同一配置档。默认配置档为 `0`；存储位置遵循 `OMA_HOME`（默认为 `~/.oma`）。显式设置的 `OMA_STATE_HOME` 只覆盖配置档存储。`profile run <slot> -- <command> [args...]` 只为这条命令及其子进程选择配置档。分隔符确保 `--help`、`--json` 等子命令选项留给子命令处理。
 
 ---
 
-## 智能体管理
+## 智能体管理 {#agent-management}
 
-### agent spawn（生成智能体）
+### agent spawn（生成智能体） {#agent-spawn}
 
 生成一个子智能体进程。
 
-```
+```text
 oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 **参数**：
 
-|参数|必填|说明|
+| 参数 | 必填 | 说明 |
 |:---------|:---------|:-----------|
 | `agent-id` | 是 | 智能体类型，取值为以下之一：`orchestrator`、`architecture`、`qa`、`pm`、`backend`、`frontend`、`mobile`、`db`、`debug`、`refactor`、`docs`、`tf-infra`、`explore` |
 | `prompt` | 是 | 任务说明。可以是内联文本，也可以是文件路径。 |
@@ -516,7 +552,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--vendor <vendor>` | 覆盖 CLI 供应商：`antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok`、`pi` |
 | `-w, --workspace <path>` | 智能体的工作目录。省略时根据 monorepo 配置自动检测。 |
@@ -532,11 +568,14 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 **退出码**：
 
-|代码|含义|
+| 代码 | 含义 |
 |:-----|:--------|
-| `0` | 供应商进程以 0 退出，且工作区下存在会话结果产物。 |
-| `3` | 供应商进程以 0 退出，但在工作区下**没有写入会话结果产物**（例如 agy 写入了它自己的受信任根目录，而不是 `-w` 指定的目录）。会话轨迹中会追加一条 `blocker.raised` 事件，`agent status` 报告 `no-artifact`。不要把这次启动视为已完成。 |
+| `0` | 运行记录以 `completed` 结束。 |
+| `3` | 供应商进程以 0 退出，但这次运行没有以经过验证的 `completed` 结束（例如 `partial`、`blocked` 或 `failed`），并记录一条代码为 `spawn.incomplete-result` 的 `blocker.raised` 事件。`--fallback-vendors` 的后继供应商无法启动时，也会返回此代码。不要把这次启动视为已完成。 |
+| `130` | 被中断（Ctrl+C 或 SIGTERM）。 |
 | 其他 | 供应商进程本身失败，其退出码会原样传出。 |
+
+决定 `completed` 的运行记录和声明，请参阅[智能体结果与恢复](../guide/agent-results-and-resume.md)。
 
 **示例**：
 ```bash
@@ -566,32 +605,33 @@ oma agent spawn backend "Try a Drizzle-based rewrite" session-20260324-143000 --
 
 会话事件会记录切换原因以及来源和目标供应商；每次尝试都有独立的运行标识，后继运行会链接到其前驱。此机制适用于 `oma agent spawn` 启动的子进程，不会自动切换供应商应用中已有的交互式对话。省略 `--fallback-vendors` 时，仍按通常的单供应商方式执行。
 
-### agent status（智能体状态）
+### agent status（智能体状态） {#agent-status}
 
 检查一个或多个子智能体的状态。
 
-```
-oma agent status <session-id> [agent-ids...] [-r <root>]
+```text
+oma agent status <session-id> [agent-ids...] [--project-root <path>]
 ```
 
 **参数**：
 
-|参数|必填|说明|
+| 参数 | 必填 | 说明 |
 |:---------|:---------|:-----------|
 | `session-id` | 是 | 要检查的会话 ID |
 | `agent-ids` | 否 | 以空格分隔的智能体 ID 列表。省略时不输出任何内容。 |
 
 **选项**：
 
-|标志|说明|默认|
+| 标志 | 说明 | 默认 |
 |:-----|:-----------|:--------|
-| `-r, --root <path>` | 检查内存文件时使用的根路径 | 当前目录 |
+| `--project-root <path>` | 要检查其运行记录、内存和 PID 文件的项目 | 当前目录 |
 
 **状态值**：
-- `completed`：结果文件存在（状态标头可选）。
-- `running`：PID 文件存在，且进程仍在运行。
-- `crashed`：PID 文件存在但进程已终止，或者找不到 PID 文件和结果文件。
-- `no-artifact`：供应商进程以 0 退出，但没有在工作区下写入会话结果产物（静默写到了错误位置，参见 `agent spawn` 的退出码 `3`）。应视为启动失败。
+- `running`、`completed`、`partial`、`blocked`、`failed`：该智能体在本会话中最新一条运行记录的状态。如果一条 `running` 记录的运行进程已经不存在，则报告为 `failed`。
+- `stale`：运行被记录为 `completed`，但其证据已无法通过验证。
+- `legacy-<status>`、`unverified`、`legacy-completed`：没有运行记录时，从较旧的 `result-<agent>.md` 文件或临时状态文件中读取。
+- 来自 PID 文件的 `running` / `crashed`：进程仍在运行，或已经不存在。
+- `crashed`：找不到运行记录、结果文件、状态文件或 PID 文件。
 
 **输出格式**：每个智能体一行：`{agent-id}:{status}`
 
@@ -604,28 +644,29 @@ oma agent status session-20260324-143000 backend frontend
 # backend:running
 # frontend:completed
 
-# Check with custom root
-oma agent status session-20260324-143000 qa -r /path/to/project
+# Check another project
+oma agent status session-20260324-143000 qa --project-root /path/to/project
 ```
 
-### agent parallel（并行智能体）
+### agent parallel（并行智能体） {#agent-parallel}
 
 并行运行多个子智能体。
 
-```
-oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
+```text
+oma agent parallel [tasks...] [--session-id <id>] [--vendor <vendor>] [-i, --inline] [--no-wait]
 ```
 
 **参数**：
 
-|参数|必填|说明|
+| 参数 | 必填 | 说明 |
 |:---------|:---------|:-----------|
 | `tasks` | 是 | YAML 任务文件路径，或内联任务规格（需配合 `--inline`） |
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
+| `--session-id <id>` | 将结果绑定到已有会话；YAML 中的 `id` 值会成为任务 ID |
 | `--vendor <vendor>` | 为所有智能体覆盖 CLI 供应商 |
 | `-i, --inline` | 内联模式：以 `agent:task[:workspace]` 参数形式指定任务 |
 | `--no-wait` | 后台模式（启动智能体后立即返回） |
@@ -633,17 +674,20 @@ oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 **YAML 任务文件格式**：
 ```yaml
 tasks:
-- agent: backend
-task: "Implement user API"
-workspace: ./api # optional, auto-detected if omitted
-- agent: frontend
-task: "Build user dashboard"
-workspace: ./web
+  - id: user-api        # optional task ID
+    agent: backend
+    task: "Implement user API"
+    workspace: ./api    # optional, auto-detected if omitted
+  - agent: frontend
+    task: "Build user dashboard"
+    workspace: ./web
 ```
 
-**内联任务格式**：`agent:task` 或 `agent:task:workspace`（workspace 必须以 `./` 或 `/` 开头）。
+`id`、`agent`、`task` 和 `workspace` 属于同一个列表项，因此要缩进到 `-` 之下。
 
-**结果目录**：`.agents/results/parallel-{timestamp}/` 包含每个智能体的日志文件。
+**内联任务格式**：`agent:task` 或 `agent:task:workspace`（workspace 必须是 `.`，或以 `./` 或 `/` 开头）。
+
+**结果目录**：`<project-root>/.agents/results/parallel-<timestamp>-<id>/` 包含每个智能体的日志文件。
 
 **示例**：
 ```bash
@@ -660,17 +704,17 @@ oma agent parallel tasks.yaml --no-wait
 oma agent parallel tasks.yaml --vendor claude
 ```
 
-### agent review（智能体审查）
+### agent review（智能体审查） {#agent-review}
 
 使用外部 AI CLI（codex、claude、qwen 或 grok）运行代码审查。
 
-```
+```text
 oma agent review [--vendor <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--vendor <vendor>` | 要使用的 CLI 供应商：`codex`、`claude`、`qwen` 或 `grok`。如果从配置解析出的供应商不受支持，则默认使用 `codex`。 |
 | `-p, --prompt <prompt>` | 自定义审查提示词。省略时使用默认的代码审查提示词。 |
@@ -707,26 +751,28 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 ### goal set（设置目标） {#goal-set}
 
-为处于活动状态的持久工作流（orchestrate、ultrawork、work、ralph）附加目标契约。契约由持久模式的 Stop 钩子以机械方式强制执行，是否完成不再由模型自行判断。
+为处于活动状态的持久化工作流（orchestrate、ultrawork、work、ralph）附加目标契约。契约由持久化模式的 Stop 钩子以机械方式强制执行，是否完成不再由模型自行判断。
 
-```
+```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
 ```
 
+`--gate`、`--budget-minutes` 和 `--description` 至少要传入一个，否则命令会以 `Nothing to set` 失败。参见术语表中的[持久化工作流](../getting-started/glossary.md#persistent-workflow)和[停止关卡](../getting-started/glossary.md#stop-gate)。
+
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--gate <keyword>` | 确定性停止关卡：`typecheck`、`test` 或 `lint`。对应 package.json 中的同名脚本，以 argv 数组形式运行，不经过 shell。设置后，Stop 钩子**只有在这个脚本通过时**才允许工作流结束；失败时会阻止结束，并附上输出末尾，让智能体知道要修复什么。自由格式的命令会被拒绝：关卡值保存在智能体可写的状态文件中，如果执行其中的任意字符串，就会绕过权限层。 |
 | `--budget-minutes <n>` | 从工作流激活时开始计算的挂钟时间预算。超出后，Stop 钩子会停用工作流，并允许如实报告部分完成后停止（由机器判定，在会话事件轨迹中记录为带有 `gate: "budget"` 的 `gate.failed`）。 |
 | `--description <text>` | 面向人的目标说明，仅供参考。 |
-| `--workflow <name>` | 多个持久工作流同时处于活动状态时，指定目标工作流。 |
-| `--session <id>` | 目标状态文件的会话 ID 后缀。 |
+| `--workflow <name>` | 多个持久化工作流同时处于活动状态时，指定目标工作流。 |
+| `--session-id <id>` | 状态文件的供应商会话 ID 后缀；仅在多个持久化工作流同时处于活动状态时需要。 |
 
 **行为说明**：
 - 关卡通过 → 工作流停用，发出 `gate.passed`，允许停止。
-- 关卡失败和超时（硬性上限 60 秒）都会计入强化次数上限（5 次），因此始终失败的关卡不会永远阻止停止；2 小时的过期失效机制仍是最后一道保障。
-- 没有目标契约时，持久模式的行为与以前完全相同（只有强化提示）；契约完全由用户选择启用。
+- 每次关卡运行的预算为 25 秒（`OMA_GATE_TIMEOUT_MS` 只能调低它）。关卡失败和超时都会计入强化次数上限（5 次），因此始终失败的关卡不会永远阻止停止；2 小时的过期失效机制仍是最后一道保障。只有当 `test` 脚本能在这个预算内轻松完成时，才优先使用 `--gate test`。
+- 没有目标契约时，持久化模式的行为与以前完全相同（只有强化提示）；契约完全由用户选择启用。
 
 **示例**：
 ```bash
@@ -734,44 +780,82 @@ oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budge
 oma goal set --gate typecheck
 
 # Bound an autonomous run: stop honestly after 2 hours even if incomplete
-oma goal set --workflow ultrawork --gate test --budget-minutes 120
+oma goal set --workflow ultrawork --gate typecheck --budget-minutes 120
 ```
 
 ---
 
-## 计划智能体
+## 计划智能体 {#scheduled-agents}
 
-### schedule create（创建计划任务）
+### 计划任务生命周期 {#schedule-lifecycle}
+
+计划任务会依次经过下面的命令。每次运行由操作系统调度器触发，而不是由正在运行的 `oma` 进程触发。
+
+```mermaid
+flowchart TD
+  create["oma schedule create"] --> dry{"--dry-run?"}
+  dry -->|yes| preview["Print the resolved cron; write nothing"]
+  dry -->|no| rounded{"--every rounded without --accept-rounded?"}
+  rounded -->|yes| refuse["Fail and ask for --accept-rounded"]
+  rounded -->|no| envfile["Write the optional --env file"]
+  envfile --> osjob["Register OS job dev.oma.sch_ID"]
+  osjob --> manifest["Write the manifest entry"]
+  manifest --> fire["OS scheduler runs: oma schedule run ID"]
+  fire --> expired{"Recurring job past --expires-after?"}
+  expired -->|yes| remove["Remove the job"]
+  expired -->|no| spawn["oma agent spawn, 1-hour timeout"]
+  spawn --> runlog["Write run log and update lastFiredAt"]
+  runlog --> once{"--once job that exited 0?"}
+  once -->|yes| remove
+  once -->|no| fire
+```
+
+| 阶段 | 触发方式 | 发生什么 | 记录位置 |
+|:------|:-------------|:-------------|:------------|
+| 预览 | `schedule create ... --dry-run` | 解析 cron 表达式，并打印 `--every` 的取整提示（如有） | 仅 stdout |
+| 注册 | `schedule create` | 按需写入 `--env` 文件，注册操作系统任务，然后写入清单条目 | 操作系统调度器；`~/.oma/schedule/schedules.json`；`~/.oma/schedule/env/<id>` |
+| 触发 | 操作系统调度器 | 运行 `oma schedule run <id>`；超过 `--expires-after` 期限的重复任务会被移除，而不是运行 | — |
+| 运行 | `schedule run` | 以 1 小时超时为该任务运行 `oma agent spawn` | `~/.oma/schedule/runs/<id>/` |
+| 记录 | `schedule run` | 更新 `lastFiredAt`；`--once` 任务只有在某次运行以 0 退出后才会被移除 | 清单 |
+| 检查与修复 | `schedule list`、`schedule sync` | 比较清单与操作系统调度器，并修复漂移 | — |
+| 移除 | `schedule delete <id>` | 从清单和操作系统调度器中移除任务 | — |
+
+`~/.oma` 是 `OMA_HOME` 的默认值。如果遇到任务始终不触发等症状，请参阅[故障排除](../guide/troubleshooting.md)。
+
+### schedule create（创建计划任务） {#schedule-create}
 
 注册计划智能体任务。`--cron` 和 `--every` 必须且只能指定一个。
 
-```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+```text
+oma schedule create <agent-id> <prompt> (--cron <expr> | --every <phrase>) [--vendor <vendor>] [-w <path>] [--once] [--expires-after <duration>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
 ```
 
 **参数**：
 
-|参数|必填|说明|
+| 参数 | 必填 | 说明 |
 |:---------|:---------|:-----------|
-| `agent-id` | 是 | 智能体类型：`backend`、`frontend`、`mobile`、`qa`、`debug`、`pm` |
+| `agent-id` | 是 | 触发时传给 `oma agent spawn` 的智能体 ID，例如 `backend`、`frontend`、`qa`，或 `qa-reviewer` 这样的智能体文件别名。在任务触发之前不会校验。 |
 | `prompt` | 是 | 触发时传给智能体的任务说明 |
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--cron "<expr>"` | 五字段 cron 表达式（例如 `"0 9 * * *"`）。不能与 `--every` 同时使用。 |
-| `--every "<phrase>"` | 自然语言间隔：`5m`、`2h`、`1d`、`every 20m`、`every 5 minutes`。会取整到最近的可由 cron 表达的步长，并打印提示。不能与 `--cron` 同时使用。 |
+| `--every "<phrase>"` | 自然语言间隔：`5m`、`2h`、`1d`、`every 20m`、`every 5 minutes`。无法精确表示为 cron 步长的值（例如 `7m`）会被取整，并且除非加上 `--accept-rounded`，否则**不会**注册任务。不能与 `--cron` 同时使用。 |
 | `--vendor <vendor>` | 传给 `oma agent spawn` 的 CLI 供应商覆盖值：`antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok`、`pi`。默认自动检测。 |
 | `-w, --workspace <path>` | 智能体的工作目录。默认为注册时的当前目录。 |
-| `--once` | 一次性模式：触发一次后自行移除。 |
-| `--expires-after <duration>` | N 天后自动让重复任务过期（`0` 表示无限期）。 |
-| `--env <KEY1,KEY2>` | 将指定的环境变量捕获到 `~/.agents/schedule/env/<id>`（权限 0600），以便运行时注入。只捕获列出的键，绝不会转储整个环境。 |
+| `--once` | 一次性模式：触发一次，运行成功后自行移除。 |
+| `--expires-after <duration>` | 重复任务达到此期限后，在下一次触发时将其移除。以 `d` 为单位给出整天数，例如 `30d`；`0` 表示永不过期。像 `30` 这样的纯数字，以及 `12h` 或 `2w` 这样的值都会被拒绝。 |
+| `--env <KEY1,KEY2>` | 将指定的环境变量捕获到 `~/.oma/schedule/env/<id>`（权限 0600），以便运行时注入。只捕获列出的键，绝不会转储整个环境。 |
+| `--dry-run` | 打印解析出的 cron 和取整提示（如有），不创建操作系统任务、清单条目或环境变量文件。 |
+| `--accept-rounded` | 查看预览后，注册被 `--every` 取整的间隔。 |
 
 **功能**：
-1. 解析并校验 cron 表达式（或将 `--every` 短语转换为 cron）。
-2. 将任务写入 `~/.agents/schedule/schedules.json`（全局清单，权限 0600）。
-3. 向操作系统调度器（launchd / systemd --user / schtasks）注册任务。操作系统任务会按配置的间隔调用 `oma schedule run <id>`。
+1. 解析并校验 cron 表达式（或将 `--every` 短语转换为 cron）。使用 `--dry-run` 时，到此为止。
+2. 使用 `--env` 时，将列出的变量写入 `~/.oma/schedule/env/<id>`。
+3. 向操作系统调度器注册任务：macOS 上使用 launchd；Linux 上使用 systemd `--user` 计时器，systemd 不可用时使用用户 crontab；Windows 上使用任务计划程序（`schtasks`）；其他 POSIX 系统上使用 crontab。操作系统任务会按配置的间隔调用 `oma schedule run <id>`。
+4. 将任务写入 `~/.oma/schedule/schedules.json`（全局清单，权限 0600）。
 
 **示例**：
 ```bash
@@ -786,25 +870,48 @@ oma schedule create pm "Generate sprint plan" --cron "0 9 * * 1" --once --vendor
 
 # Capture specific env vars for the job
 oma schedule create backend "Sync external data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
+
+# Expire a recurring job after 30 days
+oma schedule create backend "Check for slow queries" --every "2h" --expires-after 30d
+
+# Preview a rounded interval, then register it
+oma schedule create backend "Check logs" --every 7m --dry-run
+oma schedule create backend "Check logs" --every 7m --accept-rounded
+```
+
+`--every 7m` 的预览会打印：
+
+```text
+Preview: requested interval resolves to */6 * * * *
+Note: Requested every 7m -- 7 is not a divisor of 60; rounded to every 6m (*/6 * * * *).
+Preview only: no OS job, manifest entry, or env file was written.
 ```
 
 完整演练参见[计划智能体指南](../guide/scheduled-agents.md)。
 
-### schedule list（列出计划任务）
+### schedule list（列出计划任务） {#schedule-list}
 
 按项目分组列出所有项目的计划任务及操作系统漂移状态。
 
-```
-oma schedule list [--json]
+```text
+oma schedule list [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--json` | 以 JSON 格式输出 |
+| `--output <format>` | 输出格式（`text` 或 `json`） |
 
-**漂移状态**：`synced`（清单与操作系统一致）、`stale`（操作系统中的注册项调用了当前 CLI 已不再接受的命令；运行 `schedule sync` 重写，`oma update` 会自动完成）、`missing-in-os`（运行 `schedule sync` 修复）、`orphan-in-os`（操作系统中有清单里没有的任务；运行 `schedule sync --prune` 移除）。
+**漂移状态**：
+
+| 状态 | 含义 | 修复 |
+|:------|:--------|:-------|
+| `synced` | 清单条目与操作系统任务一致 | — |
+| `stale` | 操作系统中的注册项调用了当前 CLI 已不再接受的命令 | `oma schedule sync`（`oma update` 也会执行） |
+| `missing-in-os` | 清单条目没有对应的操作系统任务 | `oma schedule sync` |
+| `orphan-in-os` | 操作系统中有清单里没有的任务 | `oma schedule sync --prune` |
 
 **示例**：
 ```bash
@@ -812,58 +919,59 @@ oma schedule list
 oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 ```
 
-### schedule delete（删除计划任务）
+### schedule delete（删除计划任务） {#schedule-delete}
 
 从清单和操作系统调度器中删除计划任务。
 
-```
+```text
 oma schedule delete <id>
 ```
 
 **参数**：
 
-|参数|必填|说明|
+| 参数 | 必填 | 说明 |
 |:---------|:---------|:-----------|
-| `id` | 是 | 来自 `schedule list` 的任务 ID（格式：`sch_<base32-12>`） |
+| `id` | 是 | 来自 `schedule list` 的任务 ID（格式：`sch_` 后跟 12 个取自 `a-z` 和 `2-7` 的字符） |
 
 **示例**：
 ```bash
-oma schedule delete sch_abc123def456
+oma schedule delete sch_k7d2mq4xa3pz
 ```
 
-### schedule run（运行计划任务）
+### schedule run（运行计划任务） {#schedule-run}
 
 按 ID 执行计划任务。这是操作系统调度器在触发时调用的入口。通常不需要手动调用，但可以用来调试任务。
 
-```
+```text
 oma schedule run <id>
 ```
 
 **功能**：
 1. 在清单中查找 `<id>`（找不到时以非零状态退出）。
-2. 从 `~/.agents/schedule/env/<id>` 加载捕获的环境变量并注入。
-3. 调用 `oma agent spawn <agentId> <prompt> <sessionId> --vendor <vendor> -w <workspace>`。
-4. 将结果写入 `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`。
-5. 更新清单中的 `lastFiredAt`；如果是 `--once` 任务，则自行移除。
-6. 身份验证过期时会明确报错：以非零状态退出，并向 stderr 打印 `re-auth required: <vendor>`。绝不会静默地报告成功。
+2. 如果重复任务已超过 `--expires-after` 期限，则将其移除，而不是运行。
+3. 从 `~/.oma/schedule/env/<id>` 加载捕获的环境变量并注入。
+4. 以 1 小时超时调用 `oma agent spawn <agentId> <prompt> schedule-<id>-<epoch-ms> [--vendor <vendor>] --workspace <workspace>`。只有任务指定了供应商时才会传入 `--vendor`。
+5. 将结果写入 `~/.oma/schedule/runs/<id>/<timestamp>.md`。
+6. 更新清单中的 `lastFiredAt`。`--once` 任务只有在某次运行以 0 退出后才会被移除；失败的一次性任务会在下一个匹配时间再次触发。
+7. 身份验证过期时会明确报错：以非零状态退出，并向 stderr 打印 `re-auth required: <vendor>`。其他失败同样以非零状态退出。绝不会静默地报告成功。
 
 **示例**：
 ```bash
 # Invoke manually to debug a job
-oma schedule run sch_abc123def456
+oma schedule run sch_k7d2mq4xa3pz
 ```
 
-### schedule sync（同步计划任务）
+### schedule sync（同步计划任务） {#schedule-sync}
 
 将清单重新同步到操作系统调度器。系统迁移或操作系统调度器重置后，可用它修复漂移。
 
-```
+```text
 oma schedule sync [--prune]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--prune` | 同时移除操作系统中存在、但清单中没有的任务（orphan-in-os）。不使用 `--prune` 时，只报告孤立任务，不移除。 |
 
@@ -878,23 +986,23 @@ oma schedule sync --prune
 
 ---
 
-## 内存管理
+## 内存管理 {#memory-management}
 
-### memory init（初始化内存）
+### memory init（初始化内存） {#memory-init}
 
 初始化协调内存存储架构。
 
-```
+```text
 oma memory init [--json] [--output <format>] [--force]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--json` | 以 JSON 格式输出 |
 | `--output <format>` | 输出格式（`text` 或 `json`） |
-| `--force` |覆盖空或现有架构文件|
+| `--force` | 覆盖空的或已有的架构文件 |
 
 **功能**：创建 `.agents/state/memories/` 目录结构及初始架构文件，智能体和工作流通过这些文件读写协调状态。
 
@@ -909,24 +1017,24 @@ oma memory init --force
 
 ---
 
-## 集成与工具
+## 集成与工具 {#integration--utilities}
 
-### auth status（身份验证状态）
+### auth status（身份验证状态） {#auth-status}
 
 检查所有受支持 CLI 的身份验证状态。
 
-```
+```text
 oma auth status [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--json` | 以 JSON 格式输出 |
 | `--output <format>` | 输出格式（`text` 或 `json`） |
 
-**检查**：GitHub CLI（`gh`）、Antigravity CLI（`agy`）、Gemini CLI、Claude CLI、Codex CLI、Cursor CLI、Qwen CLI。
+**检查**：GitHub CLI（`gh`）、Claude CLI、Codex CLI、Command Code、Cursor CLI、Qwen CLI、Antigravity CLI（`agy`）、Grok、Kimi Code CLI、Kiro CLI、pi 和 OpenCode CLI。`--json` 为每个键输出一个布尔值，例如 `{ "github": true, "claude": true, "codex": false, ... }`。
 
 **示例**：
 ```bash
@@ -934,33 +1042,41 @@ oma auth status
 oma auth status --json
 ```
 
-### bridge（桥接）
+### bridge（桥接） {#bridge}
 
 将 MCP stdio 代理到按项目共享的 Serena 服务器。
 
-```
+```text
 oma bridge [url] [--context <name>]
 ```
 
 **参数**：
 
-|参数|必填|说明|
+| 参数 | 必填 | 说明 |
 |:---------|:---------|:-----------|
-| `url` | 否 | 连接到调用方自行管理的端点，而不是解析共享守护进程 |
-| `--context` | 否 | 守护进程使用的 Serena 上下文（默认 `ide`）；守护进程按此值区分 |
+| `url` | 否 | 连接到调用方自行管理的端点，而不是解析共享守护进程。`OMA_BRIDGE_URL` 的效果相同。 |
+
+**选项**：
+
+| 标志 | 说明 |
+|:-----|:-----------|
+| `--context <name>` | 守护进程使用的 Serena 上下文（默认 `ide`）；守护进程按此值区分 |
 
 **功能**：每个供应商的 serena MCP 条目默认都运行此命令，你不需要手动调用。Serena 的 stdio 传输会为每个智能体会话分配独立的 Python 进程和一整套语言服务器栈，因此开销随打开的会话数增长。bridge 把它收敛为每个项目一个服务器：根据工作目录解析项目根目录；如果没有正在运行的服务器，就启动一个用 `--project` 固定项目的 Serena HTTP 服务器，然后把会话代理到这个服务器上。
 
 固定 `--project` 很重要：不带此参数启动的服务器会公开 `activate_project` 工具，任何会话都能借此切换项目，影响其他所有会话。
 
 **架构**：
-```
-session A --stdio--> oma bridge --.
-                                   >-- HTTP --> one Serena server (+ LSPs)
-session B --stdio--> oma bridge --'
+
+```mermaid
+flowchart LR
+  sessionA["Agent session A"] -->|stdio| bridgeA["oma bridge"]
+  sessionB["Agent session B"] -->|stdio| bridgeB["oma bridge"]
+  bridgeA -->|HTTP| server["One Serena server per project, with its language servers"]
+  bridgeB -->|HTTP| server
 ```
 
-**生命周期**：第一个会话启动服务器，之后的会话复用它，每个代理都会把自己注册为客户端。最后一个会话断开后，服务器会保持预热 10 分钟，在此期间重启的会话会重新连接；否则，下一个启动的 bridge 会关闭它。如果无法连接共享服务器，代理会回退到会话本地的 stdio serena。
+**生命周期**：第一个会话启动服务器，之后的会话复用它，每个代理都会把自己注册为客户端。最后一个会话断开后，服务器会保持预热 10 分钟，在此期间重启的会话会重新连接；否则，下一个启动的 bridge 会关闭它。不会自动回退到 stdio：如果共享服务器无法启动，MCP 连接会以 `Shared Serena is unavailable for <root>` 失败。请运行 `oma doctor`，然后重试 MCP 连接。
 
 在 `.agents/oma-config.yaml` 中设置 `serena.mode: stdio` 可停用此功能。
 
@@ -970,42 +1086,48 @@ session B --stdio--> oma bridge --'
 oma bridge http://localhost:12341/mcp
 ```
 
-### verify（验证）
+### verify（验证） {#verify}
 
 根据预期标准验证子智能体输出。
 
-```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+```text
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
 **`verify agent` 参数**：
 
-|参数|必填|说明|
+| 参数 | 必填 | 说明 |
 |:---------|:---------|:-----------|
 | `agent-type` | 是 | 取值为以下之一：`backend`、`frontend`、`mobile`、`qa`、`debug`、`pm` |
 
 **选项**：
 
-|标志|说明|默认|
+| 标志 | 说明 | 默认 |
 |:-----|:-----------|:--------|
 | `-w, --workspace <path>` | 要验证的工作区路径 | 当前目录 |
+| `--session-id <id>` | 选择会话计划和报告 | |
+| `--task-id <id>` | 选择单个任务的范围和报告；需要会话 ID 或运行 ID | |
+| `--run-id <id>` | 选择确切的运行报告；根据其本地回执推断会话和任务 | |
 | `--json` | 以 JSON 格式输出 | |
 | `--output <format>` | 输出格式（`text` 或 `json`） | |
 
-**功能**：运行指定智能体类型的验证脚本，检查构建是否成功、测试结果以及是否遵守范围限制。
+**功能**：针对指定的智能体类型运行已配置的检查，包括测试、静态检查和范围合规性检查。选中某个任务或运行时，工作区代码检查仍会检查整个工作区。
 
-`verify triggers` 根据带标签的提示词语料库衡量关键词检测器的准确率，百分比阈值即为关卡。注册路径是 `verify agent`；旧的顶层写法可能仍会出现在兼容帮助中。
+如果匹配到多个会话计划或运行回执，验证会失败，并要求提供明确的标识，而不会按名称挑选文件。没有报告的新运行不能复用之前运行的报告。`--run-id` 会先检查回执中的智能体和工作区，再使用其中的会话和任务。没有本地回执时，请提供全部三个 ID。旧版的、不限定范围的 TDD 报告只在配合旧版 `.agents/plan.json` 计划时才被接受。
+
+`verify triggers` 根据带标签的提示词语料库衡量关键词检测器的准确率，百分比阈值即为关卡。注册路径是 `verify agent`；旧的顶层写法 `oma verify <agent-type>` 会以 `Unexpected argument` 被拒绝。
 
 **通用检查**（所有智能体类型）：
 - **范围检查**：读取 `.agents/results/plan-{sessionId}.json` 中的任务范围，将 `git diff` 中的变更文件与定义的范围模式比较。如果修改了智能体分配范围之外的文件，则检查失败。
-- **Charter Preflight**：验证 `result-{agent}.md` 包含正确填写的 `CHARTER_CHECK:` 块，且没有未填写的占位符。
+- **Charter Preflight**：验证所选的结果报告包含正确填写的 `CHARTER_CHECK:` 块，且没有未填写的占位符。
+- **TDD 证据**：要求每个适用任务所选的报告包含确切的任务 ID，以及属于该任务的非空 `red:` 和 `green:` 条目。来自其他会话或重试的报告不能替代所选的报告。
 - **硬编码机密**：扫描 `.py`、`.ts`、`.tsx`、`.js`、`.dart` 文件中类似 `password = "..."`、`api_key = "..."` 的模式（排除测试和示例文件）。
 - **TODO/FIXME 注释**：统计 `TODO`、`FIXME`、`HACK`、`XXX` 注释（发现任何一条都会警告）。
 
 **按智能体类型的附加检查**：
 
-|智能体类型|附加检查|
+| 智能体类型 | 附加检查 |
 |:-----------|:-----------------|
 | `backend` | Python 语法校验（`py_compile`）、SQL 注入检测（f-string + SQL 关键字）、Python 测试执行（`pytest`） |
 | `frontend` | TypeScript 编译（`tsc --noEmit`）、内联样式检测（`style={{`）、`any` 类型使用情况（超过 3 处则失败）、前端测试（`vitest`） |
@@ -1027,19 +1149,22 @@ oma verify agent frontend -w ./apps/web
 
 # JSON output for CI
 oma verify agent backend --json
+
+# Verify one run's scope and evidence
+oma verify agent backend --run-id run-123 --json
 ```
 
-### hook（钩子）
+### hook run（运行钩子） {#hook}
 
-通过集中式 oma 钩子路由器（design 019）分发供应商钩子事件。这是每个供应商生成的 `oma-hook.sh` 包装脚本调用的标准 ABI，也可以直接用它单独调试或测试处理器链。
+通过 oma 唯一的钩子入口点分发供应商钩子事件。这是每个供应商生成的 `oma-hook.sh` 包装脚本调用的标准 ABI，也可以直接用它单独调试或测试处理器链。
 
-```
+```text
 oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
 ```
 
 **选项**：
 
-|标志|必填|说明|
+| 标志 | 必填 | 说明 |
 |:-----|:---------|:-----------|
 | `--vendor <v>` | 是 | 供应商标识，取值为以下之一：`antigravity`、`claude`、`codex`、`commandcode`、`cursor`、`grok`、`kimi`、`kiro` 或 `qwen`。（`pi` 供应商在这里**无效**：它使用进程内的 `installPiExtension` 桥接，而不是 `oma hook run`。） |
 | `--event <e>` | 是 | 在供应商设置中注册的原生钩子事件名称（例如 `UserPromptSubmit`、`PreToolUse`、`Stop`） |
@@ -1051,14 +1176,15 @@ oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
 - **退出码**：始终为 `0`（故障开放：错误写入 stderr，智能体永远不会被阻塞）。
 
 **运行时数据流**：
-```
-vendor fires: oma-hook.sh --vendor claude --event UserPromptSubmit
-  stdin: {"prompt":"...","cwd":"/project","sessionId":"..."}
-  → oma hook resolves handler chain from .agents/hooks/variants/claude.json
-  → runs: keyword-detector → state-boundary → skill-injector (in-process)
-  → merges HandlerResult values (context: concat; pre_tool: last mutate wins; stop: any block)
-  → emits vendor dialect to stdout
-  → exit 0
+
+```mermaid
+flowchart TD
+  fire["Vendor fires oma-hook.sh --vendor claude --event UserPromptSubmit"] --> stdin["stdin: vendor JSON payload with prompt, cwd, sessionId"]
+  stdin --> resolve["Resolve the handler chain from the route table built into the CLI (source: .agents/hooks/variants/claude.json)"]
+  resolve --> run["Run in-process: keyword-detector, state-boundary, skill-injector, code-intelligence-primer"]
+  run --> merge["Merge results: context concatenates; pre_tool last mutate wins; stop any block wins"]
+  merge --> emit["Emit vendor dialect JSON on stdout"]
+  emit --> exit["Exit 0"]
 ```
 
 **单独调试处理器链**：
@@ -1068,27 +1194,27 @@ vendor fires: oma-hook.sh --vendor claude --event UserPromptSubmit
 echo '{"prompt":"orchestrate the auth feature","cwd":"/path/to/project"}' \
   | oma hook run --vendor claude --event UserPromptSubmit
 
-# Test a Bash pre_tool block (Claude)
-echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"},"cwd":"/path/to/project"}' \
+# Test a Bash pre_tool block (Claude): scm-guard denies staging a likely-secret file
+echo '{"tool_name":"Bash","tool_input":{"command":"git add .env"},"cwd":"/path/to/project"}' \
   | oma hook run --vendor claude --event PreToolUse --matcher Bash
 
 # Test persistent-mode Stop enforcement (Codex)
 echo '{"cwd":"/path/to/project"}' \
   | oma hook run --vendor codex --event Stop
 
-# Test an Antigravity BeforeTool event
-echo '{"tool_name":"run_shell_command","tool_input":{"command":"cat /etc/passwd"},"cwd":"/path/to/project"}' \
-  | oma hook run --vendor antigravity --event BeforeTool
+# Test Antigravity prompt-time injection (agy fires PreInvocation)
+echo '{"prompt":"brainstorm","cwd":"/path/to/project"}' \
+  | oma hook run --vendor antigravity --event PreInvocation
 ```
 
-stdout 为空表示处理器链对此事件没有执行任何操作。stdout 上的 JSON 对象就是智能体会话将收到的供应商方言内容。
+stdout 为空表示处理器链对此事件没有执行任何操作。供应商路由表中未注册的事件名称（例如 `antigravity` 的 `BeforeTool`）会运行一条空链，不打印任何内容。stdout 上的 JSON 对象就是智能体会话将收到的供应商方言内容。
 
 **范围说明**：
 - `statusLine`/hud 条目不经过 `oma hook run` 路由（热路径显示仍直接走 `bun` 路径）。
 - pi 供应商使用进程内的 `installPiExtension` 桥接，而不是 `oma hook run`。
 - 项目安装与全局安装并存造成的重复投递，会在 `oma hook run` 内部被丢弃（由不同的 `oma-hook.sh` 包装脚本启动的相同负载）；不同的事件，包括并行的工具调用，始终会运行。
 
-路由器实现参见 `cli/commands/hook/command.ts`（内部称为“design 019”），按供应商的兼容性矩阵参见 `cli/commands/hook/probe/`。
+路由器实现参见 `cli/commands/hook/command.ts`，按供应商的兼容性矩阵参见 `cli/commands/hook/probe/`。
 
 **示例**：
 ```bash
@@ -1101,24 +1227,26 @@ echo '{"cwd":"'$(pwd)'"}' | oma hook run --vendor qwen --event Stop
 
 # Check Antigravity hook output format
 echo '{"prompt":"brainstorm","cwd":"'$(pwd)'"}' \
-  | oma hook run --vendor antigravity --event BeforeAgent
+  | oma hook run --vendor antigravity --event PreInvocation
 ```
+
+`oma hook script --vendor <v> --script <name>` 通过 CLI 内存适配器运行一个已安装的钩子处理器。
 
 ---
 
-### hook probe（探测钩子）
+### hook probe（探测钩子） {#hook-probe}
 
 探测各供应商的钩子兼容性，并打印覆盖矩阵。
 
-```
+```text
 oma hook probe [--vendor <list>] [--output <fmt>] [--hooks-dir <dir>]
 ```
 
 **选项**：
 
-|标志|说明|默认|
+| 标志 | 说明 | 默认 |
 |:-----|:-----------|:--------|
-| `--vendor <list>` | 要探测的供应商，以逗号分隔 | 所有受支持的供应商 |
+| `--vendor <list>` | 要探测的供应商，以逗号分隔 | `claude,codex,cursor,grok,kimi,kiro,qwen,antigravity` |
 | `--output <fmt>` | 输出格式：`text`、`md` 或 `json` | `text` |
 | `--hooks-dir <dir>` | 覆盖 `.agents/hooks/core` 目录 | 自动检测 |
 
@@ -1141,11 +1269,11 @@ oma hook probe --vendor claude,codex,antigravity
 
 ---
 
-### vault（密钥库）
+### vault（密钥库） {#vault}
 
-在操作系统钥匙串（macOS 钥匙串、Linux Secret Service 或 Windows 凭据管理器）中管理 API 密钥和其他机密，底层由 `@napi-rs/keyring` 提供支持。值永远不会出现在 shell 历史或环境文件中；`~/.config/oma/vault-index.json` 只记录键名，因此 `oma vault list` 可以列出条目而不暴露机密值。
+在操作系统钥匙串（macOS 钥匙串、Linux Secret Service 或 Windows 凭据管理器）中管理 API 密钥和其他机密，底层由 `@napi-rs/keyring` 提供支持。值永远不会出现在 shell 历史或环境文件中；`~/.oma/state/vault-index.json` 只记录键名，因此 `oma vault list` 可以列出条目而不暴露机密值。
 
-```
+```text
 oma vault store <name> [--value <value>]
 oma vault get <name>
 oma vault list [--json]
@@ -1159,7 +1287,7 @@ oma vault delete <name>
 | `store <name>` | 提示输入机密值（输入内容隐藏），并以 `name` 为名写入操作系统钥匙串。`--value <value>` 以内联方式接受值，用于非交互场景（会出现在 shell 历史中；建议使用提示输入）。 |
 | `get <name>` | 将存储的值原样打印到 stdout，不加任何修饰，便于在 shell 中使用：`export ANTHROPIC_API_KEY=$(oma vault get anthropic)`。键不存在时以退出码 `2` 退出。 |
 | `list` | 列出已存储的键名及其 `createdAt` 时间戳。永远不会显示值。 |
-| `rm <name>` | 从钥匙串和索引中删除这项机密。 |
+| `delete <name>` | 从钥匙串和索引中删除这项机密。旧的 `vault rm` 写法会被拒绝。 |
 
 **键名规则**：1 到 64 个字符，取自 `[A-Za-z0-9._-]`。示例：`anthropic`、`openai-prod`、`github_pat`、`sentry.dsn`。
 
@@ -1188,13 +1316,13 @@ oma vault delete anthropic
 
 清理孤立的子智能体进程和临时文件。
 
-```
-oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
+```text
+oma cleanup [--dry-run] [-y, --yes] [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--dry-run` | 显示将清理的内容，不做任何修改 |
 | `-y, --yes` | 跳过确认提示，清理全部内容 |
@@ -1202,8 +1330,8 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 | `--output <format>` | 输出格式（`text` 或 `json`） |
 
 **清理内容**：
-- 系统临时目录中的孤立 PID 文件（`/tmp/subagent-*.pid`）。
-- 孤立的日志文件（`/tmp/subagent-*.log`）。
+- 系统临时目录（`os.tmpdir()`：Linux 上通常为 `/tmp`，macOS 上为 `$TMPDIR`，Windows 上为 `%TEMP%`）中孤立的 `subagent-*.pid` 文件。
+- 同一目录中孤立的 `subagent-*.log` 文件。
 - **孤立的 Serena 语言服务器**：MCP 客户端（例如 Claude）退出后，它的 `serena start-mcp-server` 进程会被重新挂到 init 下，其 LSP 子进程（`tsserver`、`pyright` 等，占用数百 MB）在没有客户端的情况下继续运行。这些进程由此命令回收。*空闲但仍处于连接状态*的情况由 [`serena reap`](#serena) 单独处理。
 - `.gemini/antigravity/` 下的 Gemini Antigravity 目录（brain、implicit、knowledge）。
 
@@ -1226,20 +1354,26 @@ oma cleanup --json
 
 回收 Serena 按项目启动的语言服务器所占用的内存。Serena 会为每个打开的项目启动一套 LSP 栈（`tsserver`、`pyright` 等，约 300 MB），并在整个会话期间保持预热；同时打开多个项目时，占用会不断累积。回收器会终止空闲的 LSP 子进程；Serena 会自我修复，在下一次工具调用时重新启动它们（无需重启）。
 
-```
+```text
 oma serena reap [--dry-run] [--quiet]
 oma serena reaper enable [--dry-run]
 oma serena reaper disable [--dry-run]
+oma serena daemon gc [--quiet]
+oma serena check [--project <path>] [--dart-sdk <path>] [--timeout <duration>] [--staged]
+oma serena setup
 ```
 
 **子命令**：
 
-|命令|说明|
+| 命令 | 说明 |
 |:--------|:-----------|
 | `serena reap` | 立即回收一次空闲的 LSP。交互式运行总会执行；`--quiet`（计划任务使用的路径）则遵循 `enabled` 选择启用设置。 |
 | `serena reap --dry-run` | 预览回收目标和预计释放的内存，不会终止任何进程。 |
 | `serena reaper enable` | 安装每 5 分钟运行一次 `serena reap --quiet` 的后台任务（launchd / systemd timer / Windows 任务计划程序）。 |
 | `serena reaper disable` | 移除后台任务。 |
+| `serena daemon gc` | 停止在空闲宽限期内一直没有客户端的共享 Serena 守护进程。`--quiet` 会为周期性清理任务抑制输出。 |
+| `serena check` | 通过受管的共享 Serena LSP 分析 Dart 包。`--project` 默认为 `apps/mobile`；`--timeout`（默认 `60s`）同时适用于启动和分析；`--staged` 会拒绝与 Git 索引不一致的输入。 |
+| `serena setup` | 修复受管适配器，并安装 `oma-dart-check` 兼容启动器。 |
 
 **策略**：`lru`（默认）让最近最活跃的 `keepWarm` 个项目保持预热，回收其余项目；`idle` 回收空闲时间超过 `idleMinutes` 的所有项目。`graceSeconds` 时间窗口用于保护正在进行的工具调用。
 
@@ -1272,21 +1406,20 @@ oma serena reaper enable
 oma serena reaper disable
 ```
 
-### visualize（可视化）
+### visualize（可视化） {#visualize}
 
 将项目结构可视化为依赖图。
 
+```text
+oma visualize [--focus <node-or-path>] [--affected <paths...>] [--json] [--output <format>]
 ```
-oma visualize [--json] [--output <format>]
-oma viz [--json] [--output <format>]
-```
-
-`viz` 是 `visualize` 的内置别名。
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
+| `--focus <node-or-path>` | 只选取该节点或路径（传递性地）所需的引用 |
+| `--affected <paths...>` | 查找受这些路径变更影响的定义、工作流和检查 |
 | `--json` | 以 JSON 格式输出 |
 | `--output <format>` | 输出格式（`text` 或 `json`） |
 
@@ -1295,28 +1428,29 @@ oma viz [--json] [--output <format>]
 **示例**：
 ```bash
 oma visualize
-oma viz --json
+oma visualize --json
 ```
 
-### search（搜索）
+### search（搜索） {#search}
 
-机械式搜索原语，涵盖抓取、元数据、RSS、媒体、代码和信任评分。别名为 `oma s`。所有子命令都向 stdout 输出 JSON（每行一个对象，或使用 `--pretty` 美化输出）。
+机械式搜索原语，涵盖抓取、元数据、RSS、媒体、代码和信任评分。大多数子命令向 stdout 输出 JSON（使用 `--pretty` 可美化输出）；`rss google` 输出一个 URL。
 
-```
+```text
 oma search <subcommand> ...
-oma s <subcommand> ...
 ```
 
 **子命令**：
 
-|子命令|用途|
+| 子命令 | 用途 |
 |:-----------|:--------|
 | `fetch <url>` | 通过自动升级的策略流水线抓取 URL（api → probe → impersonate → browser → archive） |
-| `api <url>` | 通过匹配的平台 API 处理器抓取（Phase 0） |
-| `api:search <query>` | 在支持关键词搜索的平台上并行展开搜索（`--platforms <list>`） |
+| `api fetch <url>` | 通过匹配的平台 API 处理器抓取（`fetch` 尝试的第一种策略） |
+| `api search <query>` | 在支持关键词搜索的平台上并行展开搜索（`--platforms <list>`） |
 | `meta <url>` | 提取 OGP / JSON-LD / Schema.org 元数据 |
-| `rss <url>` | 发现并解析 RSS / Atom feed |
-| `rss:google <query>` | 为查询构建 Google News RSS URL |
+| `rss fetch <url>` | 发现并解析 RSS / Atom feed |
+| `rss google <query>` | 为查询构建 Google News RSS URL（`--locale`，默认 `en-US`） |
+| `web <query>` | 使用所选的 Web 提供方搜索（`--provider`、`--limit`、`--timeout`） |
+| `providers` | 列出已注册的提供方，不发起网络请求 |
 | `media <url>` | 通过 `yt-dlp` 提取媒体元数据（支持 1858 个站点） |
 | `archive <url>` | 通过 AMP / archive.today / Wayback 回退抓取 |
 | `trust <domain>` | 解析域名的信任级别和评分 |
@@ -1325,15 +1459,15 @@ oma s <subcommand> ...
 
 **URL/查询类子命令的通用选项**：
 
-|标志|说明|默认|
+| 标志 | 说明 | 默认 |
 |:-----|:-----------|:--------|
-| `--timeout <seconds>` | 每种策略的超时时间 | `15`（`media` 为 `30`） |
+| `--timeout <duration>` | 每种策略的超时时间，例如 `15s`（`trust` 和 `code` 不接受此选项） | `15s`（`media` 为 `30s`） |
 | `--locale <value>` | `Accept-Language` 请求头 | `en-US,en;q=0.9` |
 | `--pretty` | 美化输出 JSON | `false` |
 
 **`fetch` 额外选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--only <strategies>` | 要运行的策略，以逗号分隔（`api,probe,impersonate,browser,archive`） |
 | `--skip <strategies>` | 要跳过的策略，以逗号分隔 |
@@ -1341,7 +1475,7 @@ oma s <subcommand> ...
 
 **`media` 额外选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--subs` | 写入字幕 |
 | `--sub-lang <list>` | 字幕语言，以逗号分隔（默认：`en`） |
@@ -1349,9 +1483,9 @@ oma s <subcommand> ...
 
 **`code` 额外选项**：
 
-|标志|说明|默认|
+| 标志 | 说明 | 默认 |
 |:-----|:-----------|:--------|
-| `--host <github\|gitlab>` |主机| `github` |
+| `--host <github\|gitlab>` | 主机 | `github` |
 | `--language <lang>` | 语言过滤 | |
 | `--repo <owner/repo>` | 限定到某个仓库 | |
 | `--limit <n>` | 最大结果数 | `20` |
@@ -1401,20 +1535,19 @@ oma search rss fetch https://example.com/feed.xml --pretty
 oma search rss google "browser automation"
 ```
 
-即使不加 `--json`，`search` 也会输出 JSON。`--pretty` 只改变呈现方式，不改变结果架构。`search web` 接受 `--provider`、`--limit`、`--timeout`、`--json` 和 `--pretty`。如果某个策略被阻止或缺少依赖，请对照上面的退出码表，并在更换策略前重新运行 `oma search doctor`。
+即使不加 `--json`，`search` 也会输出 JSON（`rss google` 除外，它输出一个 URL）。`--pretty` 只改变呈现方式，不改变结果架构。`search web` 接受 `--provider`、`--limit`、`--timeout`、`--json` 和 `--pretty`。如果某个策略被阻止或缺少依赖，请对照上面的退出码表，并在更换策略前重新运行 `oma search doctor`。
 
-### image（图像）
+### image（图像） {#image}
 
-多供应商 AI 图像生成，根据身份验证状态并行调度。别名为 `oma img`。
+多供应商 AI 图像生成，根据身份验证状态并行调度。
 
-```
+```text
 oma image <subcommand> ...
-oma img <subcommand> ...
 ```
 
 **子命令**：
 
-|子命令|用途|
+| 子命令 | 用途 |
 |:-----------|:--------|
 | `generate <prompt...>` | 通过 `pollinations`（flux/zimage，免费）、`codex`（通过 ChatGPT OAuth 使用 gpt-image-2）或 `antigravity`（通过 Gemini Code Assist 订阅使用 nano-banana，无需密钥）生成图像 |
 | `doctor` | 检查每个供应商的身份验证和安装状态 |
@@ -1422,18 +1555,18 @@ oma img <subcommand> ...
 
 **`image generate` 选项**：
 
-|标志|说明|默认|
+| 标志 | 说明 | 默认 |
 |:-----|:-----------|:--------|
 | `--vendor <name>` | `auto` \| `pollinations` \| `codex` \| `antigravity` \| `all` | `auto` |
-| `--size <size>` | 任意 `WxH`，边长须能被 16 整除且介于 16 到 3840 之间，宽高比介于 1:3 到 3:1 之间；也接受 `auto`。 | 供应商默认 |
-| `--quality <level>` | `low` \| `medium` \| `high` \| `auto` |供应商默认|
+| `--size <size>` | 任意 `WxH`，边长须能被 16 整除且介于 16 到 3840 之间，宽高比介于 1:3 到 3:1 之间；也接受 `auto`。 | `1024x1024` |
+| `--quality <level>` | `low` \| `medium` \| `high` \| `auto` | `auto` |
 | `-n, --count <n>` | 图像数量（1..5） | `1` |
-| `--output-dir <path>` |输出目录| `.agents/results/images/{timestamp}/` |
+| `--output-dir <path>` | 输出目录 | `.agents/results/images/{timestamp}-{shortid}/`（运行多个供应商时带 `-compare` 后缀） |
 | `--allow-external-output` | 允许输出路径位于 `$PWD` 之外 | `false` |
 | `--model <name>` | 供应商专用的模型覆盖；`antigravity` 会忽略此选项，因为它的模型不对外公开。 | 供应商默认 |
-| `--timeout <duration>` | 每张图像的超时时间 | 供应商默认 |
+| `--timeout <duration>` | 每张图像的超时时间 | `180s` |
 | `-r, --reference <path>` | 参考图像；可重复指定，也可用逗号分隔。`codex` 和 `antigravity` 支持，`pollinations` 会拒绝。每张须为不超过 5MB 的 PNG/JPEG/GIF/WebP（按魔数字节校验），最多 10 张。 | |
-| `-y, --yes` |跳过成本确认| `false` |
+| `-y, --yes` | 跳过成本确认 | `false` |
 | `--no-prompt-in-manifest` | 存储提示词的 SHA256，而不是原始文本 | `false` |
 | `--dry-run` | 打印计划和成本估算，不实际执行 | `false` |
 | `--output <format>` | CLI 输出格式：`text` \| `json` | `text` |
@@ -1443,7 +1576,8 @@ oma img <subcommand> ...
 **示例**：
 
 ```bash
-# Free, no-config generation
+# Needs at least one authenticated vendor: POLLINATIONS_API_KEY (free key),
+# a Codex login, or a signed-in agy. Check first with: oma image doctor
 oma image generate "minimalist sunrise over mountains"
 
 # Specific vendor + size + count, skip cost prompt
@@ -1466,11 +1600,11 @@ oma image generate "blend these styles" --vendor antigravity -r a.png,b.png
 oma image doctor --output json
 ```
 
-### video（视频）
+### video（视频） {#video}
 
 规划、编写并渲染短视频、讲解视频和演示视频。`generate` 会创建简述、脚本、渲染规格和运行清单；要渲染出真实的 MP4，还需要组合和可用的合成器。
 
-```
+```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
 oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
 oma video doctor --output json
@@ -1485,11 +1619,11 @@ oma video render <runDir> --output json
 
 成功时的 JSON 输出包含 `runDir`、`manifestPath`、`scriptPath` 和 `renderSpecPath`；清单记录所选的提供方、输入和生成的素材。运行 `compose` 后，按照生成的 `AUTHORING.md` 编写组合，然后重新运行 `render`。如果缺少提供方密钥，运行 `oma video doctor`；如果采集失败，检查 URL、选择器、设备和超时设置；如果渲染失败，先修复组合诊断中报告的问题再重试。
 
-### star（Star）
+### star（Star） {#star}
 
 在 GitHub 上为 oh-my-agent 加星。
 
-```
+```text
 oma star
 ```
 
@@ -1500,21 +1634,21 @@ oma star
 oma star
 ```
 
-### describe（描述）
+### describe（描述） {#describe}
 
 以 JSON 形式描述 CLI 命令，用于运行时内省。
 
-```
+```text
 oma describe [command-path]
 ```
 
 **参数**：
 
-|参数|必填|说明|
+| 参数 | 必填 | 说明 |
 |:---------|:---------|:-----------|
 | `command-path` | 否 | 要描述的命令。省略时描述根程序。 |
 
-**功能**：输出一个 JSON 对象，包含命令的名称、说明、参数、选项和子命令。AI 智能体用它了解可用的 CLI 功能。
+**功能**：输出一个 JSON 对象，包含命令的名称、说明、参数、选项和子命令。AI 智能体用它了解可用的 CLI 功能。路径以空格分隔，例如 `skill eval`；冒号形式和其他已移除的写法会返回 `Unknown command`。
 
 **示例**：
 ```bash
@@ -1525,31 +1659,31 @@ oma describe
 oma describe "agent spawn"
 
 # Describe a subcommand
-oma describe "agent:parallel"
+oma describe "agent parallel"
 ```
 
 ---
 
-## 研究与产物命令
+## 研究与产物命令 {#research-and-artifact-commands}
 
 当输出是研究产物、演示文稿或报告时，这些命令族很有用。这里有意写得很简短；链接的指南会说明工作流和恢复方式。
 
-### intel suggest（智能建议）
+### intel suggest（智能建议） {#intel-suggest}
 
 根据市场和仓库信号建议产品工作：
 
-```
+```bash
 oma intel suggest --topic "developer onboarding" --target ./my-product --dry-run
 oma intel suggest --config .agents/intel.yaml --json
 ```
 
 `--config` 提供完整配置。一次性运行时，用 `--topic`、`--target`、`--repos`、`--since` 和 `--last-commits` 选择输入。`--output-dir` 控制本地报告的位置，`--fixture` 提供本地 JSON fixture，用于确定性审查。`--create-issue` 会把已接受的候选提交为 GitHub issue，需要已配置的目标并经过确认；搭配 `--base-repo <owner/name>` 选择仓库，只有在已获批准的自动化环境中才搭配 `--yes`。`--dry-run` 和 `--json` 是安全的检查方式。
 
-### market（市场研究）
+### market（市场研究） {#market}
 
 market 命令族会把工作交给解析出的上游 `last30days` 引擎。先运行关卡和解析器：
 
-```
+```bash
 TOPIC="browser automation pain points"
 oma market detect-trap "$TOPIC"
 oma market resolve --output json
@@ -1558,11 +1692,11 @@ oma market run "$TOPIC" --days 30 --emit=compact
 
 遇到关键词陷阱或过于宽泛的主题时，`market detect-trap` 会以退出码 2 退出，并给出重新表述的建议；只有当用户明确希望继续时，才用 `--force` 绕过这道关卡。`market resolve` 接受 `--refresh` 和 `--offline`，`market update` 会刷新受管引擎的缓存。`market run` 会把剩余参数传给解析出的 Python 引擎；提供了主题时，还会根据 `market.save_dir` 添加 `--save-dir`。选择上游标志前，请先阅读[市场研究](../guide/market-research.md)；其 `--help` 输出来自受管引擎，会随发布版本变化。
 
-### docs（文档）
+### docs（文档） {#docs}
 
 使用 docs 命令族检查文档漂移。这些命令以生成报告为主；`sync` 会为宿主智能体列出候选文档，本身不会编辑文件。
 
-```
+```bash
 oma docs verify --json
 oma docs verify --no-urls --report-file .agents/results/docs-drift.md
 oma docs sync HEAD~3..HEAD --json
@@ -1572,11 +1706,11 @@ oma docs lint --json --locales ko,ja
 
 `verify` 检查本地引用并重新生成 `docs/generated/doc-refs.json`；`--urls-sync` 会等待可选的 `lychee` URL 检查完成。`sync` 默认使用暂存区的变更，没有暂存变更时改用 `HEAD~1..HEAD`，并输出 `{doc, changedFiles, matchedRefs}` 形式的候选。`i18n` 报告英文原文与译文之间的结构漂移，`lint` 报告译文的风格问题。这些子命令都不会自动编辑文档。
 
-### slide（幻灯片）
+### slide（幻灯片） {#slide}
 
 `oma slide` 处理由 1920×1080 HTML 幻灯片片段组成的工作目录。最小可行流程如下：
 
-```
+```bash
 oma slide create --output-dir .agents/results/slides/demo
 # author slide-01.html and meta.json in that directory
 oma slide validate --workspace .agents/results/slides/demo --output json
@@ -1586,7 +1720,7 @@ oma slide bundle --workspace .agents/results/slides/demo
 
 质量关卡会报告溢出、重叠和字号方面的问题。用 `--slide <file>` 检查单张幻灯片，用 `--report-file <path>` 搭配 JSON 输出。通过校验后再导出：
 
-```
+```text
 oma slide export pdf --workspace <dir> --output-file <file> --mode capture
 oma slide export png --workspace <dir> --output-dir <dir> --resolution 1080p
 oma slide export pptx --workspace <dir> --output-file <file>
@@ -1594,11 +1728,11 @@ oma slide export pptx --workspace <dir> --output-file <file>
 
 PPTX 导出仍处于实验阶段，基于栅格图像实现。`slide import pptx <file>`、`slide asset fetch-video <url>` 和 `slide style list|preview|get <slug>` 用于处理输入素材和发现样式。编写方面的决策和固定舞台的约束，参见 [oma-slide](../guide/content-and-research.md#slides-and-presentations)。
 
-### scholar（学术检索）
+### scholar（学术检索） {#scholar}
 
 搜索论文和工作元数据，并在共享前验证 sidecar：
 
-```
+```bash
 oma scholar search "vision language action" --limit 10
 oma scholar resolve "Attention Is All You Need"
 oma scholar get --section statements "knows:generated/reconvla/1.0.0"
@@ -1608,11 +1742,11 @@ oma scholar lint paper.knows.yaml
 
 `search` 可以用 `--year-min` 限制 OpenAlex 结果，用 `--always-fallback` 强制使用回退提供方。`get --section` 接受 `statements`、`evidence`、`relations`、`artifacts` 或 `citation`。`lint --lenient` 会把悬空的跨记录引用降级为警告；`--fail-on-warning` 让警告在 CI 中也算失败。CLI 先搜索 Knows，再回退到 OpenAlex 和 Semantic Scholar；它不会向上游提交 sidecar。
 
-### explain（解释）
+### explain（解释） {#explain}
 
 `/explain` 是撰写工作流。CLI 负责渲染工作流写出的草稿，并校验结果：
 
-```
+```bash
 oma explain render draft.md --archify
 oma explain render draft.md --template doc --theme card
 oma explain lint draft.md
@@ -1622,15 +1756,15 @@ oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` 把 Markdown 草稿（文件，或用 `-` 从 stdin 读取）转换成一个自包含的 HTML 页面，保存到 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`；用 `--output-file` 可以指定其他路径。草稿只写内容：每个 `## ` 标题是一个面板，面板里放组件块（`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`）。图的布局、面板的分行和主题（`--theme blueprint|card`、`--mode auto|light|dark`）由渲染器决定。`--style off|warn|strict` 设置文字检查的级别，`strict` 下只要有一条警告，渲染就失败。`--archify` 从 `flow` 或 `sequence` 块生成可交互的 archify 图并添加链接；这一步失败时，页面仍会写出。`components [name]` 输出组件的语法。`patch` 利用页面内嵌的草稿，只替换一个面板。 `lint` 只检查草稿的文字，不渲染页面；`--template sheet|doc` 在面板网格和带目录的单栏文档之间选择。
+`render` 把 Markdown 草稿（文件，或用 `-` 从 stdin 读取）转换成一个自包含的 HTML 页面，保存到 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`；用 `--output-file` 可以指定其他路径。草稿只写内容：每个 `## ` 标题是一个面板，另加组件块（`flow`、`sequence`、`tree`、`timeline`、`limits`、`annot`、`kv`、`callout`、`quiz`）。图的布局、面板的分行和主题（`--theme blueprint|card`、`--mode auto|light|dark`）由渲染器决定。`--style off|warn|strict` 设置文字检查的级别，`strict` 下只要有一条警告，渲染就失败。`--archify` 从 `flow` 或 `sequence` 块生成可交互的 archify 图并添加链接；这一步失败时，页面仍会写出。`components [name]` 输出组件的语法。`patch` 利用页面内嵌的草稿，只替换一个面板。`render --template sheet|doc` 在面板网格和带目录的单栏文档之间选择。`lint` 只检查草稿的文字，不渲染页面。
 
 传入文件或 `--input-dir`，二者只能选其一。校验涵盖自包含 HTML 契约，并以机器可读的格式报告失败；它不评判讲解内容是否准确。参见[代码讲解器](../guide/code-explainer.md)。
 
-### diagram（图表）
+### diagram（图表） {#diagram}
 
 在工作流输出结构图之前，先解析引擎：
 
-```
+```text
 oma diagram resolve --output json
 oma diagram resolve --engine mermaid --offline
 oma diagram update
@@ -1640,28 +1774,31 @@ oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html
 
 `diagram resolve` 接受 `--engine auto|archify|mermaid`、`--refresh` 和 `--offline`。`diagram update` 刷新受管的 archify 副本。`diagram archify` 把剩余参数转发给解析出的上游可执行文件，并传回其退出码。Mermaid 仍是 Markdown 中的事实来源；HTML 是派生产物。参见[图表引擎](../guide/diagram-engine.md)。
 
-## 状态、模型与内存检查
+## 状态、模型与内存检查 {#state-model-and-memory-inspection}
 
 以下命令族用于查看持久的工作流状态，以及模型和提供方诊断。对清理类操作，优先使用 `--dry-run`；结果要交给其他程序处理时，使用 `--json`。
 
-### state（状态）
+### state（状态） {#state}
 
-```
+```text
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
 oma state trajectory <session-id>
 oma state trajectory <session-id> --open
-oma state verify --workflow work --checkpoint complete --json
+oma state decisions list work --json
+oma state verify --workflow work --checkpoint remediation-choice --instance <finding-id> --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` 记录一条带有显式类别和会话元数据的 L1 事件。`state migrate` 把旧版会话迁移到所选配置档。`state repair` 修复格式错误的状态文件。`state decisions list` 和 `state inject-log list|get` 用于查看必需的决策和注入审计条目。`state trajectory` 把会话的 L1 事件和对应供应商会话的转录合并，按回合列出提示词、模型响应、工具调用、耗时和 token 用量。加上 `--open` 会在 Web 仪表盘的 `/trajectory` 中打开。转录从各供应商自己的会话存储读取，支持 Claude Code、Codex、Antigravity、Grok、Qwen Code、Kiro、pi、Command Code、Kimi、DeepSeek Harness 和 Cursor，并遵循 `CLAUDE_CONFIG_DIR`、`CODEX_HOME`、`KIMI_SHARE_DIR` 和 `DSH_HOME`。Kiro 只给提示词记录时间，Cursor 既不记录时间也不记录工具结果，因此 Cursor 的转录不按会话范围截取，而是完整显示。无法读取转录的供应商只显示 L1 事件。`state activate`、`state archive` 和 `state purge` 是显式操作；旧的布尔操作标志会被拒绝。这些命令会改变本地状态，因此请先审查试运行结果，再执行归档或清除。
+`state verify` 需要 `--workflow`、`--checkpoint` 和 `--instance`；用 `state decisions list <workflow>` 列出某个工作流的检查点。`state summary [session-id]` 将会话摘要导出到协调存储，`state heal-check --agent <type>` 报告某个智能体是否允许自愈。
 
-### model（模型）
+`state emit` 记录一条带有显式类别和会话元数据的 [L1](../getting-started/glossary.md#l1-and-l2-memory) 事件。`state migrate` 把旧版会话迁移到所选配置档。`state repair` 修复格式错误的状态文件。`state decisions list` 和 `state inject-log list|get` 用于查看必需的决策和注入审计条目。`state trajectory` 把会话的 L1 事件和对应供应商会话的转录合并，按回合列出提示词、模型响应、工具调用、耗时和 token 用量；加上 `--open` 会在 Web 仪表盘的 `/trajectory` 中打开。转录从各供应商自己的会话存储读取：Claude Code、Codex、Antigravity、Grok、Qwen Code、Kiro、pi、Command Code、Kimi、DeepSeek Harness 和 Cursor。会遵循 `CLAUDE_CONFIG_DIR`、`CODEX_HOME`、`KIMI_SHARE_DIR` 和 `DSH_HOME`。Kiro 只给提示词记录时间，Cursor 既不记录时间也不记录工具结果，因此 Cursor 的转录不按会话范围截取，而是完整显示。无法读取转录的供应商只显示 L1 事件。`state activate`、`state archive` 和 `state purge` 是显式操作；旧的布尔操作标志会被拒绝。这些命令会改变本地状态，因此请先审查试运行结果，再执行归档或清除。
 
-```
+### model（模型） {#model}
+
+```bash
 oma model check --json
 oma model check --owner openai --fail-on-drift
 oma model probe openai/gpt-5 --timeout 30s --json
@@ -1670,47 +1807,77 @@ oma model propose --owner anthropic --json
 
 `model check` 将注册表与供应商的实时列表比较，并可以探测新的候选模型。`model probe` 用对应供应商的 CLI 测试单个 slug。`model propose` 输出 `oma-config` 的 `models:` 补丁；只有在确实要修改配置时才使用 `--write`。即使注册表条目有效，供应商的可用性和配额也可能导致探测失败。
 
-### agent evidence commands（智能体证据命令）
+### agent evidence commands（智能体证据命令） {#agent-evidence-commands}
 
 原生智能体运行使用有证据支持的流程：
 
-```
+```bash
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
 oma agent context docs --difficulty Medium
 oma agent begin docs docs "$SESSION_ID" --workspace .
 # Use the runId and claimPath printed by begin.
 oma agent verify "<run-id>" --required
+# Or record one check and its real exit code
+oma agent verify "<run-id>" -- bun run test
 oma agent finish "<run-id>" "<claim-path>"
+# Inspect, then resume a session
+oma agent resume "$SESSION_ID" --dry-run
 ```
 
-`agent context` 加载按图选出的上下文；`begin` 启动一次运行，并打印生成的运行 ID 和声明文件路径；`verify` 接收这个运行 ID，执行固定的检查（`--required`），或用 `--affected` 缩小检查范围；`finish` 接收运行 ID 和声明文件路径。`agent resume --dry-run` 报告已就绪和可复用的任务，`agent resume --max-attempts <n>` 只重试计划允许的任务。计划和声明的结构参见[智能体结果与恢复](../guide/agent-results-and-resume.md)。这些命令服务于 OMA 执行契约；普通的用户工作可以改用 `agent spawn`、`agent parallel` 或 `agent review`。
+`agent context` 加载按图选出的上下文；`begin` 启动一次运行，并打印生成的运行 ID 和声明文件路径；`verify` 接收这个运行 ID，执行固定的检查（`--required`）、用 `--affected` 缩小检查范围，或者运行 `--` 之后的命令并记录其退出码；`finish` 接收运行 ID 和声明文件路径。`agent resume <session-id> --dry-run` 报告已就绪和可复用的任务，`agent resume <session-id> --max-attempts <n>`（默认 `3`）只重试计划允许的任务。`agent verify` 和 `agent resume` 接受 `--project-root <path>`，用于指定其他项目。计划和声明的结构参见[智能体结果与恢复](../guide/agent-results-and-resume.md)。这些命令服务于 OMA 执行契约；普通的用户工作可以改用 `agent spawn`、`agent parallel` 或 `agent review`。
 
-### memory（内存）
+### memory（内存） {#memory}
 
-```
+```bash
 oma memory status --json
 oma memory keys --kind connection --dry-run --json
 oma memory init --json
-oma memory setup --endpoint http://127.0.0.1:8000 --dry-run --json
+oma memory setup --port 3111 --dry-run --json
 oma memory import --source claude --since 7d --dry-run --json
-oma memory gc --scope project --keep 20 --dry-run --json
+oma memory gc --scope sessions --keep 20 --dry-run --json
 ```
+
+`memory gc --scope` 接受 `all`（默认）、`sessions` 或 `serena`。`--max-age <duration>` 需要带单位，例如 `50d`；`0` 表示禁用按时间清理。
 
 `memory keys` 配置 Honcho 连接或嵌入凭据；`--dry-run` 只预览写入位置，不读取也不写入密钥。`memory setup` 准备 AgentMemory 端点，并可选择用 `--install` 安装或用 `--start` 启动它。`memory daemon` 和 `memory service` 管理本地进程或操作系统服务集成。`memory maintain backup|prune|vacuum`、`memory retry drain`、`memory upgrade` 和 `memory gc` 属于维护操作；执行前请先检查它们的 JSON 或试运行输出。
 
-## 技能管理
+## 技能管理 {#skill-management}
 
-### skills audit（技能审计）
+### 选择技能或 harness 命令 {#choosing-a-skill-or-harness-command}
+
+先从离线命令开始。标为 **live** 的命令会通过你配置的供应商 CLI 调用模型，因而会消耗配额或费用；其中大多数会先打印成本预览并请求确认，除非传入 `--yes`。
+
+| 目标 | 命令 | 模型调用 | 写入内容 | 前提条件 |
+|:-----|:--------|:------------|:-------|:-------------|
+| 检查技能之间的描述重叠 | `oma skill audit` | 无 | 无 | 已安装的技能 |
+| 检查 SKILL.md 的编写质量 | `oma skill lint [--skill <id>]` | 无 | 无 | 已安装的技能 |
+| 重放已记录的效用判定 | `oma skill eval --skill <id>`（mock，默认） | 无 | 无 | `.agents/eval/<id>/` 中的任务 fixture 及已记录的 `_rollouts/`；做出决策至少需要 5 个可评分任务 |
+| 衡量技能效用 | `oma skill eval --skill <id> --live [--record]` | **Live**：每个任务一个基线分支和一个处理分支（使用 `--trials` 时重复），另加 judge 调用 | 仅在使用 `--record` 时写入 `_rollouts/` | 任务 fixture |
+| 提议 SKILL.md 编辑 | `oma skill optimize --skill <id> --live` | **Live**，每个 epoch 都调用 | 演进证据；SKILL.md 保持不变 | 至少 5 个任务 fixture |
+| 应用带来提升的编辑 | `oma skill optimize --skill <id> --live --apply` | **Live**，每个 epoch 都调用 | SKILL.md（先备份原文件）；`oma-*` 技能还需要 `--yes` | 验证提升和最终测试提升都严格提高 |
+| 撤销最近一次应用的编辑 | `oma skill rollback --skill <id>` | 无 | SKILL.md | 一条已记录的晋升 |
+| 查看演进历史 | `oma skill promotions --skill <id>`、`oma skill evolution-stats --skill <id>` | 无 | 无 | 已记录的优化运行 |
+| 调优优化器本身 | `oma skill meta-optimize --skill <ids...> --live` | **Live**，包含多次内部运行（必须使用 `--live`） | 仅在使用 `--apply` 时写入流程文件 | 带 fixture 的保留技能 |
+| 检查原生技能发现 | `oma skills matrix [--live]` | 仅在使用 `--live` 时为 **Live**（运行 `claude` 和 `codex` CLI）；否则只打印计划 | 仅在使用 `--report <path>` 时写入 JSON 报告 | 已安装供应商 CLI |
+| 重放 harness 比较 | `oma harness eval --suite <yaml> --candidate <dir>`（mock，默认） | 无 | 无 | 与套件、基线和候选都匹配的已记录运行 |
+| 比较 harness 覆盖层 | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **Live**：每个任务一个基线分支和一个候选分支 | 仅在使用 `--record` 时写入记录 | 位于项目内的套件和 fixture |
+| 把失败的运行转成 fixture | 先运行 `oma harness incident scan`，再运行 `capture --spec <file>`，然后运行 `promote <id>` | 仅 `promote`：省略 `--skill` 时发起一次路由调用；使用 `--draft` 时，由 opt-agent 起草评分标准并进行 judge 检查 | 事故记录；回归 fixture | 一次失败、受阻或部分完成的智能体运行 |
+| 优化事故背后的技能 | `oma harness feedback [--live \| --apply]` | 仅在使用 `--live` 或 `--apply` 时为 **Live** | fixture；仅在使用 `--apply` 时写入已接受的 SKILL.md 编辑 | 已捕获的事故，或 `--scan-runs` |
+| 按计划运行反馈 | `oma harness evolution enable --max-dispatches <n>` | **Live**，每次计划运行不超过预算 | 一个计划任务（参见[计划智能体](#scheduled-agents)）；默认 `--mode apply`，也可用 `--mode propose` | 操作系统调度器 |
+
+不带 `--live` 的 `skill optimize` 会以 `1` 退出：CLI 没有可用于 mock 优化的已记录提议来源。要离线重放评估，请使用 `oma skill eval`。遇到“no coverage”或“insufficient”结果时，请参阅[故障排除](../guide/troubleshooting.md)。
+
+### skill audit（技能审计） {#skills-audit}
 
 检查已安装技能是否存在描述重叠、黑洞式泛化和库规模导致的路由衰减。
 
-```
+```text
 oma skill audit [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--json` | 以 JSON 格式输出，供 CI/CD 使用 |
 | `--output <format>` | 输出格式（`text` 或 `json`） |
@@ -1729,17 +1896,17 @@ oma skill audit
 oma skill audit --json | jq '.findings'
 ```
 
-### skills lint（技能检查）
+### skill lint（技能检查） {#skills-lint}
 
-检测单个技能的编写异味，即单个 `SKILL.md` 内部的质量缺陷；`skills audit` 检查的则是技能*之间*的关系。依据 arXiv:2607.01456 的技能异味分类法（在实际使用中的 SKILL.md 文件里，超过 99% 至少带有一种异味）。
+检测单个技能的编写异味，即单个 `SKILL.md` 内部的质量缺陷；`skill audit` 检查的则是技能*之间*的关系。依据 arXiv:2607.01456 的技能异味分类法（在实际使用中的 SKILL.md 文件里，超过 99% 至少带有一种异味）。
 
-```
+```text
 oma skill lint [--skill <id>] [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--skill <id>` | 只检查单个技能 |
 | `--json` | 以 JSON 格式输出，供 CI/CD 使用 |
@@ -1755,6 +1922,9 @@ oma skill lint [--skill <id>] [--json] [--output <format>]
 | `body-too-long` | warn | SKILL.md 正文超过 500 行；应将细节移到 `resources/`，通过渐进式披露加载 |
 | `template-placeholder` | warn | 代码片段之外残留了 `{Placeholder}` 文本 |
 | `broken-reference` | fail | 引用了不存在的 `resources/`、`config/`、`scripts/` 或 `assets/` 文件 |
+| `verbose-description` | warn | description 超过 350 个字符；只在其中保留路由触发条件和排除条件，把操作细节移到参考文档 |
+| `malformed-frontmatter` | fail | SKILL.md 不是以有效的 YAML frontmatter 映射开头 |
+| `invalid-directory`、`missing-skill-file`、`unreadable-skill-file` | fail | 用 `--skill` 选中的技能不是目录、没有 SKILL.md，或无法读取 |
 
 **SSL-lite 异味**（当技能的声明名称或公开的目录/别名名称以 `oma-` 开头时，即使没有 `## Scheduling` 也必须进行 SSL-lite 校验；没有前缀的别名不能绕过声明为 `oma-` 的名称。普通的无前缀技能通过包含 `## Scheduling` 选择使用该格式）：
 
@@ -1774,27 +1944,31 @@ oma skill lint --skill oma-scholar
 oma skill lint --json | jq '.smells'
 ```
 
-### skills eval（技能评估）
+### skill eval（技能评估） {#skills-eval}
 
-衡量每个技能的效用：加载某个技能后，保留集任务的结果是否真的变好？它是与 `skills audit`（衡量描述边界的重叠）相对应的*效用*评估。`audit` 问的是“两个技能是否重复？”，`eval` 问的是“这个技能有没有帮助？”
+衡量每个技能的效用：加载某个技能后，保留集任务的结果是否真的变好？它是与 `skill audit`（衡量描述边界的重叠）相对应的*效用*评估。`audit` 问的是“两个技能是否重复？”，`eval` 问的是“这个技能有没有帮助？”
 
-```
+```text
 oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
-                [--task-dir <path>] [--max-tasks <n>] [--require-coverage]
-                [--json] [--output <format>]
+               [--task-dir <path>] [--max-tasks <n>] [--trials <n>]
+               [--neg-transfer] [--routing] [--require-coverage]
+               [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:-----------|
 | `--skill <id>` | 要评估的技能 ID（简单名称，不能包含路径分隔符）。默认为 `_all`。 |
 | `--mock` | 重放 `_rollouts/` 中已记录的 rollout（默认；确定性，不调度 LLM）。可安全用于 CI。 |
-| `--live` | 实时调度智能体：通过 `oma agent spawn --read-only` 为每个任务启动两个分支（基线和处理）。会打印成本预览，除非使用 `--yes`，否则请求确认。 |
+| `--live` | 实时调度智能体：通过内部调度为每个任务运行两个分支（基线和处理）。会打印成本预览，除非使用 `--yes`，否则请求确认。 |
 | `--record` | 将捕获的实时 rollout（包括 judge 判定）写入 `_rollouts/`，供以后 `--mock` 重放。仅在搭配 `--live` 时有意义。 |
 | `--yes` | 跳过成本预览的确认提示。仅在搭配 `--live` 时有意义。 |
 | `--task-dir <path>` | 覆盖任务 fixture 目录（必须位于工作区根目录内）。默认：`.agents/eval/<skill>/`。 |
 | `--max-tasks <n>` | 限制评估的任务数量（按确定性的排序顺序截取）。 |
+| `--trials <n>` | 以交替顺序将每个分支重复运行 n 次（1–10；仅搭配 `--live`）。 |
+| `--neg-transfer` | 同时抽取同领域的相邻任务，以检测负迁移（默认关闭）。 |
+| `--routing` | 衡量激活情况：对每个任务，模型会加载哪个已安装的技能（`--live` 实际衡量；mock 重放记录）。 |
 | `--require-coverage` | 找到的任务少于 5 个时以非零状态退出（避免 CI 在没有覆盖时也悄悄显示通过）。 |
 | `--json` | 以 JSON 格式输出，供 CI/CD 使用 |
 | `--output <format>` | 输出格式（`text` 或 `json`） |
@@ -1818,13 +1992,13 @@ oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
 
 **推荐模式**：用 `--live` 搭配 judge 检查器，衡量技能的实际效用。用 `--mock` 离线重放已记录的 judge 判定，或运行确定性的 `assert`/`regex` 契约检查。
 
-**环境变量**：无论使用什么标志，`OMA_SKILLEVAL_MOCK=1` 都会强制使用 mock 模式。
+**模式选择**：模式只由标志决定。只有传入 `--live` 时才是实时运行；默认是 mock 重放。没有任何环境变量能覆盖这一点，因此不要在 CI 命令中使用 `--live`。
 
 **退出码**：`0` 表示 pass 或 warn；`1` 表示 fail，或在使用 `--require-coverage` 时覆盖不足（insufficient）。
 
 **示例**：
 ```bash
-# Dry-run on recorded rollouts (CI-safe)
+# Replay recorded rollouts (CI-safe)
 oma skill eval --skill oma-scholar
 
 # Live run with cost preview
@@ -1847,91 +2021,94 @@ oma skill eval --skill oma-scholar --max-tasks 10
 
 ---
 
-### skills opt（技能优化）
+### skill optimize（技能优化） {#skills-opt}
 
 以 WikiSkill 风格的持久演进方式优化技能的 `SKILL.md`。Maintainer 把可观察到的 rollout 证据整理成有范围的知识，Proposer 生成有边界的添加、删除和替换编辑，被拒绝的结果会跨运行保留。候选必须在保留集验证拆分上严格提升；`--apply` 还要求在运行器拥有的最终测试拆分上严格提升。研究依据：WikiSkill（arXiv:2608.27454）。
 
-```
-oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
-               [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes] [--json] [--output <format>]
+```text
+oma skill optimize [--skill <id>] --live [--dry-run | --apply]
+                   [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
+                   [--memory <mode>] [--yes] [--json] [--output <format>]
 ```
 
 **选项**：
 
-|标志|默认|说明|
+| 标志 | 默认 | 说明 |
 |:-----|:--------|:-----------|
 | `--skill <id>` | `_all` | 要优化的技能 ID（简单名称，不能包含路径分隔符）。 |
 | `--dry-run` | **是**（默认） | 提议编辑并打印 diff，不修改 `SKILL.md`；生成的演进证据仍会记录。 |
-| `--apply` | 无 | 应用已接受的编辑；原子写入前先备份原文件，并且只写入经过验证的改进。 |
-| `--mock` | **是**（默认） | 重放已记录的优化器编辑和评估判定（确定性、离线）。可安全用于 CI。 |
-| `--live` | 无 | 实时调度 LLM 优化器，每个 epoch 都会产生真实的模型调用。会打印成本预览，除非使用 `--yes`，否则提示确认。 |
+| `--apply` | — | 应用已接受的编辑；原子写入前先备份原文件，并且只写入经过验证的改进。 |
+| `--mock` | — | 无法从 CLI 运行：优化没有已记录的提议来源，会以 `1` 退出。要重放评估，请使用 `oma skill eval --mock`。 |
+| `--live` | 必需 | 实时调度 LLM 优化器，每个 epoch 都会产生真实的模型调用。会打印成本预览，除非使用 `--yes`，否则提示确认。 |
 | `--max-epochs <n>` | `8` | 最大优化 epoch 数。 |
 | `--edits-per-epoch <k>` | `4` | 每个 epoch 提议的候选编辑数。 |
 | `--lr <chars>` | `600` | 文本学习率预算：每次编辑允许的最大净字符变化。 |
-| `--yes` | 无 | 跳过成本预览确认（仅搭配 `--live`）。 |
-| `--json` | 无 | 以 JSON 格式输出，供 CI/CD 使用。 |
+| `--memory <mode>` | `recall` | `recall` 复用持久的演进知识；`none` 从空记忆开始，用于同等预算下的比较。 |
+| `--yes` | — | 跳过成本预览确认（仅搭配 `--live`）。 |
+| `--json` | — | 以 JSON 格式输出，供 CI/CD 使用。 |
 | `--output <format>` | `text` | 输出格式（`text` 或 `json`）。 |
 
 **硬性依赖**：`.agents/eval/<skill>/` 中至少需要 5 个任务 fixture。数量不足时会报错并给出明确信息。如何编写 fixture，参见[技能效用评估指南](../guide/skill-eval.md)。
 
 **训练/验证/测试拆分**：fixture 按 60/20/20 确定性地拆分。Maintainer 和 Proposer 只能看到 TRAIN 证据，候选选择使用保留的 VALIDATION 任务，运行器拥有的 TEST 拆分在演进结束前保持隐藏。只有验证提升和最终测试提升都严格提高时，`--apply` 才会写入。
 
-**SSOT 注意事项**：ID 以 `oma-` 开头的技能会被 `oma update` 覆盖。对这些技能，不建议使用 `--apply`，请使用默认的 `--dry-run`，并把提议的 diff 提交到上游。用户编写的技能可以放心应用。
+**SSOT 注意事项**：ID 以 `oma-` 开头的技能会被 `oma update` 覆盖。对这些技能，不建议使用 `--apply`，请使用默认的 `--dry-run`，并把提议的 diff 提交到上游。对于 `oma-*` 技能，只有同时传入 `--yes` 时 `--apply` 才会写入；否则只打印警告，不写入任何内容。用户编写的技能可以放心应用。
 
-**退出码**：`0` 表示优化完成；`1` 表示 fixture 不足或参数无效。
+**退出码**：`0` 表示优化完成；`1` 表示 fixture 不足、未使用 `--live` 运行，或参数无效。
 
 **示例**：
 ```bash
-# Propose edits (dry-run, mock — does not change SKILL.md, fully offline)
-oma skill optimize --skill oma-scholar --mock --dry-run
-
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --mock --apply
-
-# Live optimizer with cost preview
+# Propose edits with a cost preview (SKILL.md unchanged)
 oma skill optimize --skill oma-scholar --live
 
-# Live optimizer, skip confirmation, apply if improved
+# Skip confirmation and apply only if validation and final-test lift improve
+# (--yes is also required to apply to an oma-* skill)
 oma skill optimize --skill oma-scholar --live --apply --yes
 
-# JSON output for CI
-oma skill optimize --skill oma-scholar --json
+# JSON output
+oma skill optimize --skill oma-scholar --live --json
 
 # Tune epochs and edits budget
-oma skill optimize --skill oma-scholar --max-epochs 4 --edits-per-epoch 2 --lr 300
+oma skill optimize --skill oma-scholar --live --max-epochs 4 --edits-per-epoch 2 --lr 300
+
+# Offline alternative: replay recorded evaluations
+oma skill eval --skill oma-scholar --json
 ```
 
 完整的端到端演练，以及 SSOT 和过拟合防护的细节，参见[技能优化指南](../guide/skill-opt.md)。
 
 ---
 
-### harness eval（harness 评估）
+### harness eval（harness 评估） {#harness-eval}
 
 在成对、隔离的仓库任务上，比较候选 `.agents/` 覆盖层与当前的 OMA harness。目标智能体和供应商路由保持不变；确定性检查会为每个分支产生的文件和输出评分。
 
-```
-oma harness eval --suite <path> --candidate <path> [--mock | --live]
+```text
+oma harness eval --suite <path> --candidate <path> [--partition <name>]
+                 [--mock | --live | --action <mode>] [--transcript <path>]
                  [--record] [--record-file <path>] [--yes]
-                 [--timeout-minutes <n>] [--require-coverage]
+                 [--timeout <duration>] [--require-coverage]
                  [--json] [--output <format>]
 ```
 
-|标志|说明|
+| 标志 | 说明 |
 |:-----|:------------|
 | `--suite <path>` | 必需的套件 YAML。套件和 fixture 工作区都必须位于项目根目录内。 |
 | `--candidate <path>` | 必需的候选根目录，其中包含限定范围的 `.agents/` 覆盖层。 |
-| `--mock` | 重放哈希匹配的已记录运行（默认；确定性、离线）。 |
+| `--partition <name>` | `validation`（默认）或 `final-test`。 |
+| `--mock` | 查看与套件、基线和候选都匹配的已记录判定（默认；不重放智能体）。 |
+| `--action <mode>` | `inspect`、`rescore`、`fixture-replay` 或 `rerun`。 |
+| `--transcript <path>` | 用于 `fixture-replay` 的工具 fixture 转录。 |
 | `--live` | 通过套件的目标智能体运行基线分支和候选分支。 |
 | `--record` | 保存实时运行，供以后 mock 重放。需要搭配 `--live`。 |
 | `--record-file <path>` | 覆盖记录路径；路径必须位于项目根目录内。 |
 | `--yes` | 跳过实时运行的成本确认。 |
-| `--timeout-minutes <n>` | 每个分支的超时时间，基线和候选相同。默认：`15`。 |
+| `--timeout <duration>` | 每个分支的超时时间，需带单位，基线和候选相同。默认：`15m`。旧的 `--timeout-minutes` 写法会被拒绝。 |
 | `--require-coverage` | 可评分的成对任务少于五个时，以非零状态退出。 |
 | `--json` | 以 JSON 格式输出完整的评估结果。 |
 | `--output <format>` | 输出格式（`text` 或 `json`）。 |
 
-**决策关卡**：通过需要至少 5 个成对任务、至少 5 个百分点的提升，并且没有任何回归。只要出现回归就判定失败。覆盖低于最低要求时为 `insufficient`，仅在使用 `--require-coverage` 时以非零状态退出。
+**决策关卡**：通过需要至少 5 个已评分的成对任务、至少 5 个百分点的提升，并且没有任何回归。成对任务达到 5 个时，只要出现回归或提升为负就判定失败；没有回归但提升低于 5 个百分点时为 `warn`。调度错误总是判定失败。覆盖低于最低要求时为 `insufficient`，仅在使用 `--require-coverage` 时以非零状态退出。
 
 **隔离**：在临时的候选分支中，候选文件只能替换 `.agents/agents`、`.agents/rules`、`.agents/skills` 和 `.agents/workflows` 中的内容。钩子、配置、状态、评估 fixture、符号链接、供应商变体、对受保护的智能体执行 frontmatter 的修改，以及 fixture 自带的供应商 harness 文件，都会被拒绝。分支如果在执行期间修改受保护的定义，就会判定失败。实时评估拒绝基于 HOME 的供应商发现。主智能体路由固定不变；目前尚未强制固定嵌套子智能体的模型。
 
@@ -1945,41 +2122,68 @@ oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --
 
 套件架构、支持的检查、隔离模型和当前限制，参见 [Harness 评估指南](../guide/harness-eval.md)。
 
-### harness incident promote（晋升事故）
+### harness incident promote（晋升事故） {#harness-incident-promote}
 
 为失败智能体当时执行的技能，把已捕获的事故转成回归 fixture。
 
-```
+```text
 oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
 ```
 
-### harness feedback（harness 反馈）
+不使用 `--skill` 时，由一次实时路由调用选择技能，并以智能体定义中的技能作为回退。检查项不是输出断言时，`--draft` 会让 opt-agent 起草一份 judge 评分标准。`--force` 会接纳无法根据观察到的输出进行验证的 fixture。
+
+其他事故命令：
+
+| 命令 | 用途 | 主要选项 |
+|:--------|:--------|:------------|
+| `oma harness incident scan` | 列出尚未被任何已捕获事故引用的失败、受阻或部分完成的智能体运行 | `--limit <n>`、`--skeleton <run-id>`（打印规格骨架） |
+| `oma harness incident capture --spec <path>` | 根据规格 JSON 捕获事故 | `--run <id>` 从某次智能体运行导入可观察的元数据 |
+| `oma harness incident show <id>` | 显示事故的来源信息 | `--json` |
+| `oma harness incident export <id>` | 导出事故 fixture | `--json` |
+| `oma harness incident reproduce <id> --candidate <path>` | 在该事故上评估候选 `.agents/` 覆盖层；不带 `--action` 时启动一次新的实时运行 | `--action inspect\|rescore\|fixture-replay\|rerun`、`--record`、`--record-file`、`--transcript`、`--yes`、`--timeout <duration>`（`15m`） |
+
+### harness feedback（harness 反馈） {#harness-feedback}
 
 晋升每个尚未晋升的事故；加上 `--live` 或 `--apply` 时，还会针对扩大后的套件优化每个受影响的技能。
 
-```
+```text
 oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
 ```
 
+`--apply` 隐含 `--live`，并且只写入通过所有关卡的已接受编辑。`--max-epochs` 默认为 `1`。`--scan-runs` 会先根据任务契约，把尚未捕获的失败运行捕获为事故。
+
 参见[事故回归用例指南](../guide/harness-incidents.md)。
+
+### harness evolution（harness 演进） {#harness-evolution}
+
+为当前项目计划有预算限制的反馈周期。
+
+```text
+oma harness evolution enable --max-dispatches <n> [--cron <expr>] [--mode apply|propose]
+oma harness evolution status
+oma harness evolution run
+oma harness evolution disable
+```
+
+`enable` 注册一个计划任务（默认 cron 为 `0 3 * * *`，默认模式为 `apply`），每次运行都有有限的模型调度预算；`disable` 将其移除。`run` 立即启动一个周期，`status` 显示配置及其计划任务。参见 [Harness 演进指南](../guide/harness-evolution.md)。
 
 ---
 
-### help（帮助）
+### help（帮助） {#help}
 
 显示帮助信息。
 
-```
+```text
 oma help
 ```
 
 显示包含所有可用命令的完整帮助文本。
 
-### version（版本）
+### version（版本） {#version}
 
 显示版本号。
 
-```
+```text
 oma version
 ```
 
@@ -1987,21 +2191,55 @@ oma version
 
 ---
 
-## 环境变量
+## 故障排除 {#troubleshooting}
 
-| 变量 | 说明 | 使用方 |
-|:---------|:-----------|:--------|
-| `OH_MY_AG_OUTPUT_FORMAT` | 设为 `json`，让所有支持的命令强制输出 JSON | 所有带 `--json` 标志的命令 |
-| `DASHBOARD_PORT` | Web 仪表盘的端口 | `dashboard web` |
-| `MEMORIES_DIR` | 覆盖内存目录路径 | `dashboard`, `dashboard web` |
-| `OMA_SKILLEVAL_MOCK` | 设为 `1` 时，无论使用什么标志，`oma skill eval` 都强制使用 mock 模式 | `skills eval` |
-| `OMA_HOOK_DEDUP` | 设置为 `0` 可禁用 `oma hook run` 中的重复投递抑制。 | `hook` |
-| `OMA_HOOK_DEDUP_DIR` | 覆盖用于抑制重复钩子投递的私有 claim 目录（默认：`$XDG_RUNTIME_DIR/oma-hook-dedup`，否则为 `<tmpdir>/oma-hook-dedup-<uid>`）。 | `hook` |
+| 症状 | 原因 | 修复 |
+|:--------|:------|:----|
+| `Unknown command: ... Use oma --help.` | 使用了简称（`viz`、`s`、`img`）、冒号写法（`agent:parallel`、`memory:init`），或复数形式 `skills audit` / `lint` / `eval` / `opt` | 使用[别名与已移除的写法](#aliases)中的规范路径 |
+| `Unexpected argument for oma <path>. Use --help.` | 使用了已重命名的子命令，例如 `vault rm`、`search api <url>` 或 `verify backend` | `vault delete`、`search api fetch <url>`、`verify agent backend` |
+| `Removed option -r. Use --project-root.`（还有 `--root`、`--session`、`--timeout-minutes`、`--max-age-days`） | 选项已重命名 | 使用消息中打印的写法：`--project-root`、`--session-id`、`--timeout`、`--expires-after` 或 `--max-age` |
+| `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | `--expires-after` 或 `--max-age` 等时长选项收到了不带单位的数字 | 加上单位，例如 `30d` |
+| `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | `--every` 的值无法精确表示为 cron 步长 | 先用 `--dry-run` 预览，再加上 `--accept-rounded`，或改用 `--cron` |
+| `Nothing to set: pass at least one of --gate, --budget-minutes, --description` | 运行 `oma goal set` 时没有提供契约 | 加上 `--gate`、`--budget-minutes` 或 `--description` |
+
+安装、供应商、钩子、仪表盘和计划任务方面的问题，请参阅[故障排除指南](../guide/troubleshooting.md)。
 
 ---
 
-## 别名
+## 环境变量 {#environment-variables}
 
-|别名|完整命令|
-|:------|:------------|
-| `viz` | `visualize` |
+| 变量 | 说明 | 使用方 |
+|:---------|:-----------|:--------|
+| `OH_MY_AG_OUTPUT_FORMAT` | 设为 `json` 时，默认输出 JSON；显式传入 `--output text` 时以它为准 | 使用共享 `--json` / `--output` 选项的命令 |
+| `DASHBOARD_PORT` | Web 仪表盘的端口 | `dashboard web` |
+| `MEMORIES_DIR` | 覆盖内存目录路径 | `dashboard terminal`、`dashboard web` |
+| `OMA_BRIDGE_URL` | 让 `oma bridge` 连接到调用方自行管理的 Serena 端点，作用与 `url` 参数相同 | `bridge` |
+| `OMA_GATE_TIMEOUT_MS` | 调低由 `oma goal set --gate` 设置的 25 秒停止关卡预算 | 持久化模式的 Stop 钩子 |
+| `OMA_HOOK_DEDUP` | 设置为 `0` 可禁用 `oma hook run` 中的重复投递抑制。 | `hook run` |
+| `OMA_HOOK_DEDUP_DIR` | 覆盖用于抑制重复钩子投递的私有 claim 目录（默认：`$XDG_RUNTIME_DIR/oma-hook-dedup`，否则为 `<tmpdir>/oma-hook-dedup-<uid>`）。 | `hook run` |
+
+`oma skill eval` 没有用于覆盖其模式的环境变量；只有 `--live` 会让运行成为实时运行。
+
+---
+
+## 别名与已移除的写法 {#aliases}
+
+`oma` 是唯一的别名：它是 `oh-my-agent` 的简短二进制名称，两者都会随软件包一起安装。
+
+旧写法会以 `Unknown command`、`Unexpected argument` 或 `Removed option` 被拒绝。请使用规范形式：
+
+| 旧写法 | 改用 |
+|:-------------|:----|
+| `viz`、`s`、`img`、`vid`、`sl` | `visualize`、`search`、`image`、`video`、`slide` |
+| 冒号形式，例如 `agent:parallel`、`memory:init`、`schedule:add` | `agent parallel`、`memory init`、`schedule create` |
+| `skills audit`、`skills lint`、`skills eval`、`skills opt` | `skill audit`、`skill lint`、`skill eval`、`skill optimize`（只有 `skills matrix` 保留复数命令组名） |
+| `verify <agent-type>` | `verify agent <agent-type>` |
+| `vault rm` | `vault delete` |
+| `search api <url>`、`search api:search`、`search rss <url>`、`search rss:google` | `search api fetch <url>`、`search api search`、`search rss fetch <url>`、`search rss google` |
+| `slide new`、`slide viewer`、`image list-vendors`、`video list-providers` | `slide create`、`slide preview`、`image vendor list`、`video provider list` |
+| `-r`、`--root` | `--project-root` |
+| `--session` | `--session-id` |
+| `--timeout-minutes <n>` | `--timeout <duration>` |
+| `--max-age-days <n>` | `--expires-after <duration>`（`schedule create`）或 `--max-age <duration>`（`memory gc`） |
+
+只有 `schedule:run` 和 `serena daemon:gc` 仍可解析，这样旧版本注册的操作系统调度器条目可以继续工作。

@@ -12,10 +12,10 @@ description: ルーティング、モデル選択、プロバイダー、更新�
 | 項目 | デフォルト | 影響 | 上書き方法 |
 |---|---|---|---|
 | 応答言語 | `en` | プロジェクト設定で別の対応言語を選ばない限り、エージェントとワークフローの応答は英語になります。ホストやワークフローが対応していれば、ユーザーまたはセッションで明示した言語指定がプロジェクトのデフォルトを上書きできます。 | `.agents/oma-config.yaml` または `.cue` の `language` |
-| モデルルーティング | `auto` | 現在のランタイムのネイティブなエージェント設定を使います。ランタイムが不明で `default_cli` が設定されていれば、そこにフォールバックします。 | `model_preset`、`default_cli`、`agents.<id>` |
-| コードインテリジェンス | `serena` | 新規インストールでは Serena のインストールを試み、MCP 設定を接続します。 | `providers.code_intelligence: gortex` または `serena` |
+| モデルルーティング（[モデルプリセット](./glossary.md#model-preset)） | `auto` | 現在のランタイムのネイティブなエージェント設定を使います。ランタイムが不明で `default_cli` が設定されていれば、そこにフォールバックします。 | `model_preset`、`default_cli`、`agents.<id>` |
+| コードインテリジェンス（[機能プロバイダー](./glossary.md#capability-provider)） | `serena` | 新規インストールでは Serena のインストールを試み、MCP 設定を接続します。 | `providers.code_intelligence: gortex` または `serena` |
 | コード検索ガード | `block` | コードインテリジェンスのプロバイダーが設定されている間、PreToolUse フックがネイティブの `Grep`/`Glob` と再帰的なシェル検索（`rg`、`grep -r`、`find -name`）を拒否し、プロバイダーのツールを使うようエージェントに案内します。確認済みの除外対象、またはプロジェクト外のパスだけを対象にした検索は許可されます。フックは、プロジェクトのソースに対する迂回方法を案内しません。 | `providers.code_intelligence_guard: off` |
-| 意味メモリ | `agentmemory` | 利用できる場合は Agent Memory を意味メモリに選びます。 | `providers.semantic_memory: honcho` または `none` |
+| 意味メモリ | `agentmemory` | インストールと更新では、正常な AgentMemory エンドポイントを再利用するか、管理対象のローカルサービスをインストールして起動し、準備完了を確認してから成功とします。明示したカスタムエンドポイントは置き換えずに確認だけします。 | `providers.semantic_memory: honcho` または `none`。`OMA_NO_AGENTMEMORY=1` で AgentMemory のセットアップを省略します。 |
 | Web 検索 | `native` | プロバイダーを選ばない限り、ランタイムのネイティブ Web チャネルで検索します。 | `providers.web` |
 | ドキュメントプロバイダー | `context7` | スキルが要求したとき、Context7 プロバイダーでドキュメントを検索します。 | `providers.docs` |
 | テレメトリ | 無効 | OMA はリンク時にベンダーのオプトアウト設定を書き込みます。 | `telemetry: true` |
@@ -31,7 +31,12 @@ description: ルーティング、モデル選択、プロバイダー、更新�
 
 ## 設定の優先順位
 
-OMA は現在の作業ディレクトリから上に向かって、最も近い `.agents/` ディレクトリを探します。`oma-config.cue` があれば読み込み、共有 CUE の評価に失敗した場合は `oma-config.yaml` にフォールバックします。プロジェクトローカルのオーバーレイ（`oma-config.local.cue` または `oma-config.local.yaml`）を上からマージします。ローカルオーバーレイは 1 つだけ残してください。`OMA_MODEL_PRESET` はプロセス単位で `model_preset` を上書きできます。ローカル設定が無効な場合は、別の値を黙って選ばず読み込みを停止します。
+OMA は `$OMA_HOME/.agents/`（デフォルトは `~/.oma/.agents/`）からグローバルのデフォルトを読み込みます。
+その上に、最も近いプロジェクトの `.agents/` の共有設定と、そのローカルファイルを重ねます。
+異なる祖先のプロジェクトルート同士はマージしません。どちらのスコープでも
+`oma-config.cue` を優先し、YAML をフォールバックにします。ローカルオーバーレイは 1 つだけにしてください
+（`oma-config.local.cue` または `.yaml`）。`OMA_MODEL_PRESET` はファイルの読み込み後に `model_preset` を上書きします。
+ローカル設定が無効な場合は読み込みを停止します。
 
 固定された優先順位より前に、モデルルーティングには 2 つの特別なケースがあります。
 
@@ -62,8 +67,8 @@ OMA は現在の作業ディレクトリから上に向かって、最も近い 
 | ベンダーのファイルが古い | `oma doctor` と `oma link --dry-run` | `.agents/` を編集した後に `oma link <vendor>` を実行します。SSOT はソースとして保持してください。 |
 | モデルが受け付けられない | `oma doctor --profile` | `auto` に切り替えるか、組み込みプリセットを使うか、`models:` の下にモデルスラッグを定義します。 |
 | Serena ツールがタイムアウトする | `oma doctor` とプロバイダーのセクション | `serena.mode: stdio` を試します。メモリ不足が原因なら、`oma serena reap --dry-run` で確認します。 |
-| 持続ワークフローが停止しない | `.agents/state/*-state.json` | `workflow done` と指示します。ワークフローが後始末しなかった場合だけ状態ファイルを確認してください。 |
+| [永続ワークフロー](./glossary.md#persistent-workflow)が停止しない | `.agents/state/*-state.json` | `workflow done` と指示します。ワークフローが後始末しなかった場合だけ状態ファイルを確認してください。 |
 | スケジュールされた reaper が何もしない | `oma doctor` の Serena Reaper セクション | `serena_reaper.enabled: true` にしてから `oma serena reaper enable` を実行します。 |
 | ローカル設定で起動できない | `oma doctor` のエラーパス | ローカルオーバーレイを修正または削除します。`.cue` と `.yaml` のオーバーレイを両方作らないでください。 |
 
-[インストール](./installation.md)、[エージェントごとのモデル](../guide/per-agent-models.md)、または [OMA の設定セマンティクス](../guide/oma-config-semantics.md)に進んでください。
+[インストール](./installation.md)、[エージェント別モデル](../guide/per-agent-models.md)、または [OMA の設定セマンティクス](../guide/oma-config-semantics.md)に進んでください。ここにない問題については、[トラブルシューティング](../guide/troubleshooting.md)を参照してください。

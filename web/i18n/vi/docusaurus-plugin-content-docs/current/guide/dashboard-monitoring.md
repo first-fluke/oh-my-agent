@@ -13,9 +13,9 @@ oh-my-agent cung cấp hai dashboard thời gian thực để theo dõi hoạt �
 | Lệnh | Giao diện | URL | Công nghệ |
 |:--------|:---------|:----|:-----------|
 | `oma dashboard terminal` | Terminal (TUI) | N/A (render trong terminal) | chokidar file watcher, picocolors rendering |
-| `oma dashboard web` | Browser | `http://127.0.0.1:9847` (token in lúc khởi động) | HTTP server, WebSocket, chokidar file watcher |
+| `oma dashboard web` | Browser | `http://127.0.0.1:9847/` (in ra lúc khởi động) | HTTP server, WebSocket, chokidar file watcher |
 
-Cả hai dashboard mặc định theo dõi `.agents/state/memories/`. Đặt `MEMORIES_DIR` khi file điều phối nằm ở nơi khác. Dashboard không tự fallback về `.serena/memories/`.
+Cả hai dashboard mặc định theo dõi `.agents/state/memories/` dưới thư mục hiện tại. Truyền `--project-root <path>` để theo dõi project khác, hoặc đặt `MEMORIES_DIR` khi file điều phối nằm ở nơi khác. Dashboard không tự fallback về `.serena/memories/`.
 
 ### Dashboard terminal
 
@@ -23,30 +23,14 @@ Cả hai dashboard mặc định theo dõi `.agents/state/memories/`. Đặt `ME
 oma dashboard terminal
 ```
 
+Giao diện box-drawing được render trực tiếp trong terminal. Nó tự cập nhật khi file memory thay đổi. Nhấn `Ctrl+C` để thoát. Màn hình có bốn vùng, từ trên xuống dưới:
 
-Giao diện box-drawing được render trực tiếp trong terminal. Nó tự cập nhật khi file memory thay đổi. Nhấn `Ctrl+C` để thoát.
-
-```
-╔════════════════════════════════════════════════════════╗
-║  OMA Memory Dashboard                                 ║
-║  Session: session-20260324-143052  [RUNNING]          ║
-╠════════════════════════════════════════════════════════╣
-║  Agent        Status       Turn   Task                ║
-║  ──────────── ──────────── ────── ──────────────────  ║
-║  backend      ● running    3      Implement user API  ║
-║  frontend     ● running    2      Build login page    ║
-║  mobile       ✓ completed  5      Auth screens done   ║
-║  qa           ○ blocked    -                          ║
-╠════════════════════════════════════════════════════════╣
-║  Latest Activity:                                     ║
-║  [backend] Implementing JWT token validation          ║
-║  [frontend] Creating login form components            ║
-║  [mobile] Completed biometric auth integration        ║
-╠════════════════════════════════════════════════════════╣
-║  Updated: 03/24/2026, 02:31:15 PM  |  Ctrl+C to exit ║
-╚════════════════════════════════════════════════════════╝
-```
-
+| Vùng | Hiển thị | Nguồn |
+|:-------|:------|:-------|
+| Header | `OMA Memory Dashboard` và `Session: <id> [<status>]` | `orchestrator-session.md`, nếu không có thì `session-*.md` mới nhất; `N/A [UNKNOWN]` khi không có file nào |
+| Bảng agent | Agent, Status, Turn và Task (20 ký tự đầu); `No agents detected yet` khi rỗng | `task-board.md`, nếu không có thì các agent được phát hiện trong file memory |
+| Latest Activity | Tối đa năm dòng `[<name>] <message>`; `No activity yet` khi rỗng | Dòng có ý nghĩa cuối cùng của năm file `.md` được sửa gần nhất |
+| Footer | `Updated: <time>  \|  Ctrl+C to exit` | Thời điểm vẽ lại gần nhất |
 
 **Ký hiệu trạng thái:**
 - `●` (xanh lá): đang chạy
@@ -61,8 +45,7 @@ Giao diện box-drawing được render trực tiếp trong terminal. Nó tự c
 oma dashboard web
 ```
 
-
-Khởi động web server chỉ trên loopback ở port 9847, có thể cấu hình qua `DASHBOARD_PORT`. OMA in URL chứa `127.0.0.1`; mở đúng URL và giữ token. Trang dùng token cho `/api/state`, `/api/recap` và cập nhật WebSocket. Request thiếu token trả `401`.
+Khởi động web server chỉ trên loopback ở port 9847, có thể cấu hình qua `DASHBOARD_PORT`. Lệnh in ra `http://127.0.0.1:9847/` và `Watching: <memories dir>`. Mỗi lần khởi động sẽ tạo một access token mới và nhúng nó vào trang được phục vụ, nên chỉ cần mở URL được in ra; không có gì phải sao chép. Trang gửi token kèm các request `/api/state`, `/api/recap` và WebSocket; request thiếu token trả `401`.
 
 ```bash
 # Custom port
@@ -71,9 +54,8 @@ DASHBOARD_PORT=8080 oma dashboard web
 # Custom memories directory
 MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 
-# The process also serves the recap view at /recap; use the tokenized URL it prints.
+# Recap view from the same process: http://127.0.0.1:9847/recap
 ```
-
 
 Web dashboard hiển thị cùng thông tin với terminal dashboard, nhưng dùng UI dark-theme có style:
 
@@ -89,35 +71,11 @@ Web dashboard hiển thị cùng thông tin với terminal dashboard, nhưng dù
 
 Với workflow nhiều agent, nên dùng ba pane terminal:
 
-```
-┌────────────────────────────────┬────────────────────────────────┐
-│                                │                                │
-│   Terminal 1: Main Agent       │   Terminal 2: Dashboard        │
-│                                │                                │
-│   $ gemini                     │   $ oma dashboard terminal              │
-│   > /orchestrate               │                                │
-│   ...                          │   ╔═══════════════════════╗    │
-│                                │   ║ Serena Dashboard      ║    │
-│                                │   ║ Session: ...          ║    │
-│                                │   ╚═══════════════════════╝    │
-│                                │                                │
-├────────────────────────────────┴────────────────────────────────┤
-│                                                                 │
-│   Terminal 3: Ad-hoc commands                                   │
-│                                                                 │
-│   $ oma agent status session-20260324-143052 backend frontend   │
-│   $ oma stats get                                                   │
-│   $ oma verify agent backend -w ./api                           │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-
-**Terminal 1** chạy session agent chính, như Gemini CLI, Claude Code hoặc Codex, nơi bạn tương tác với `/orchestrate` hoặc `/work`.
-
-**Terminal 2** chạy dashboard để theo dõi thụ động và tự cập nhật, không cần tương tác.
-
-**Terminal 3** dành cho lệnh ad-hoc: kiểm tra trạng thái agent, chạy verification, xem stats hoặc debug.
+| Pane | Chạy | Mục đích |
+|:-----|:----|:--------|
+| 1. Agent chính | Host CLI của bạn (`claude`, `codex`, `agy`, `qwen`, v.v.), rồi `/orchestrate` hoặc `/work` | Điều khiển workflow |
+| 2. Dashboard | `oma dashboard terminal` (hoặc `oma dashboard web`) | Theo dõi tiến độ thụ động; tự cập nhật, không cần tương tác |
+| 3. Lệnh ad-hoc | `oma agent status session-20260324-143052 backend frontend`, `oma stats get`, `oma verify agent backend -w ./api` | Kiểm tra trạng thái agent, chạy verification, xem stats hoặc debug |
 
 ---
 
@@ -189,7 +147,7 @@ Dashboard phát hiện hoàn tất khi file này xuất hiện và cập nhật 
 
 ---
 
-## Runbook khắc phục sự cố
+## Runbook khắc phục sự cố {#troubleshooting-runbook}
 
 ### Tín hiệu 1: agent hiện “running” nhưng turn không tiến
 
@@ -201,7 +159,7 @@ Dashboard phát hiện hoàn tất khi file này xuất hiện và cập nhật 
 - Agent đang chờ input user, điều này không nên xảy ra ở auto-approve mode.
 
 **Hành động:**
-1. Kiểm tra log agent: `cat /tmp/subagent-{session-id}-{agent-id}.log`.
+1. Kiểm tra log agent. `oma agent spawn` in đường dẫn log dưới dạng `Log: ...`; file nằm trong thư mục temp của OS: `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"`
 2. Kiểm tra process thật sự chạy: `oma agent status {session-id} {agent-id}`.
 3. Nếu process không chạy nhưng status còn “running”, agent đã crash. Spawn lại với context lỗi.
 
@@ -215,7 +173,7 @@ Dashboard phát hiện hoàn tất khi file này xuất hiện và cập nhật 
 - CLI vendor chưa cài hoặc chưa auth.
 
 **Hành động:**
-1. Kiểm tra log: `cat /tmp/subagent-{session-id}-{agent-id}.log`.
+1. Kiểm tra log để xem chi tiết lỗi: `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"` (đường dẫn `Log:` do `oma agent spawn` in ra).
 2. Kiểm tra CLI: `oma doctor`.
 3. Kiểm tra auth: `oma auth status`.
 4. Spawn lại bằng command cũ: `oma agent spawn {agent-id} "{task}" {session-id} -w {workspace}`.
@@ -232,7 +190,7 @@ Dashboard phát hiện hoàn tất khi file này xuất hiện và cập nhật 
 **Hành động:**
 1. Xác minh thư mục memory: `ls -la .agents/state/memories/`.
 2. Kiểm tra workflow còn ở phase planning không.
-3. Đảm bảo dashboard theo dõi đúng project directory; dashboard resolve memory path từ current working directory.
+3. Đảm bảo dashboard theo dõi đúng project directory; dashboard resolve memory path từ current working directory. Chạy từ project root, hoặc truyền `--project-root /path/to/project`. `oma dashboard web` in đường dẫn đang theo dõi dưới dạng `Watching: <path>`.
 4. Nếu dùng path tùy chỉnh: `MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal`.
 
 ### Tín hiệu 4: web dashboard hiện “disconnected”
@@ -241,14 +199,13 @@ Dashboard phát hiện hoàn tất khi file này xuất hiện và cập nhật 
 
 **Nguyên nhân có thể:**
 - Process `oma dashboard web` đã bị terminate.
-- Browser dùng URL cũ hoặc thiếu startup token.
-- Port đang bị process khác dùng.
+- Process `oma dashboard web` đã được khởi động lại, và tab đang mở vẫn giữ token của process trước.
 
 **Hành động:**
 1. Kiểm tra process: `ps aux | grep dashboard`.
-2. Mở lại đúng URL có token do process in ra; không xóa token.
-3. Thử port khác: `DASHBOARD_PORT=8080 oma dashboard web`.
-4. Kiểm tra port: `lsof -i :9847`.
+2. Nếu bạn đã khởi động lại dashboard, tải lại trang để trang nhận token mới.
+3. Nếu process đã dừng, chạy lại `oma dashboard web`, rồi tải lại trang.
+4. Nếu khởi động thất bại với `Dashboard failed: port 9847 is already in use`, kiểm tra port (`lsof -i :9847`) và thử port khác: `DASHBOARD_PORT=8080 oma dashboard web`.
 5. Web dashboard tự reconnect bằng exponential backoff, bắt đầu 1s, tối đa 10s. Chờ vài giây.
 
 ---
@@ -283,7 +240,7 @@ Giám sát dashboard hoàn tất khi:
 
 - **Theo dõi file:** Dùng [chokidar](https://github.com/paulmillr/chokidar) với `awaitWriteFinish`, ngưỡng ổn định 200ms và poll interval 50ms để tránh render file chưa hoàn chỉnh.
 - **Render:** Xóa và vẽ lại toàn terminal ở mỗi file change event; dùng `picocolors` cho màu ANSI và ký tự box-drawing Unicode cho border.
-- **Thư mục memory:** Resolve từ `MEMORIES_DIR`, rồi argument dashboard nếu được truyền, rồi `{cwd}/.agents/state/memories`.
+- **Thư mục memory:** `MEMORIES_DIR` khi được đặt; nếu không thì `<project>/.agents/state/memories`, trong đó `<project>` là `--project-root <path>` hoặc thư mục hiện tại. Thư mục chưa tồn tại sẽ được tạo rỗng.
 - **Tắt an toàn:** Bắt `SIGINT` và `SIGTERM`, đóng watcher chokidar rồi thoát sạch.
 
 ### Dashboard web (oma dashboard web)
@@ -295,3 +252,11 @@ Giám sát dashboard hoàn tất khi:
 - **Auto-reconnect:** Browser reconnect bằng exponential backoff, initial 1s, multiplier 1.5x, max 10s khi WebSocket drop.
 - **Port:** Mặc định 9847, cấu hình bằng env `DASHBOARD_PORT`. API request nhận `X-OMA-Dashboard-Token` hoặc `?token=...`; token thiếu hoặc sai trả `401`.
 - **Dựng state:** Function `buildFullState()` gộp session info, task board, agent status, số turn và activity feed vào một JSON object ở mỗi update.
+
+---
+
+## Bước tiếp theo
+
+- Kiểm tra hoặc resume kết quả sau một lần chạy: [Agent result và resume](./agent-results-and-resume.md)
+- Lỗi dashboard và lỗi chạy theo triệu chứng: [Khắc phục sự cố](./troubleshooting.md)
+- Lập kế hoạch và chạy công việc nhiều agent: [Dự án nhiều agent](./multi-agent-project.md)

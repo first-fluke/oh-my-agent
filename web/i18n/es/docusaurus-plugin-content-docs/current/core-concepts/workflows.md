@@ -7,7 +7,33 @@ description: Referencia completa de los 21 flujos de trabajo de oh-my-agent, inc
 
 Los flujos de trabajo son procesos estructurados de varios pasos que se activan mediante comandos slash o palabras clave en lenguaje natural. Definen cómo colaboran los agentes en las tareas, desde utilidades de una sola fase hasta puertas de calidad complejas de 5 fases.
 
-Hay 21 flujos de trabajo, 4 de ellos persistentes (mantienen el estado y no se pueden interrumpir accidentalmente).
+Hay 21 flujos de trabajo, 4 de ellos [persistentes](../getting-started/glossary.md#persistent-workflow) (mantienen el estado y no se pueden interrumpir accidentalmente).
+
+## Flujos de trabajo de un vistazo
+
+| Flujo | Úsalo para | Persistente |
+|---|---|---|
+| [`/orchestrate`](#orchestrate) | Ejecución paralela automatizada de agentes a partir de un plan, con bucles de verificación | Sí |
+| [`/work`](#work) | Coordinación multidominio paso a paso: planificar, implementar, QA y corregir | Sí |
+| [`/ultrawork`](#ultrawork) | El flujo de calidad de 5 fases con 12 pasos de revisión aislados | Sí |
+| [`/ralph`](#ralph) | Repetir ultrawork hasta que pasen criterios verificables mecánicamente | Sí |
+| [`/plan`](#plan) | Desglose de tareas del PM con dependencias y contratos de API | No |
+| [`/brainstorm`](#brainstorm) | Ideación centrada en el diseño antes de planificar | No |
+| [`/architecture`](#architecture) | Decisiones de arquitectura, revisiones y ADRs | No |
+| [`/deepinit`](#deepinit) | Generar AGENTS.md, ARCHITECTURE.md y `docs/` para un código base existente | No |
+| [`/review`](#review) | Revisión QA: seguridad, rendimiento, accesibilidad y calidad de código | No |
+| [`/security`](#security) | Escaneos de seguridad, pentests de aplicaciones web desplegadas, validación de hallazgos y puertas de CI | No |
+| [`/debug`](#debug) | Diagnóstico y corrección de bugs con una prueba de regresión | No |
+| [`/design`](#design) | DESIGN.md con tokens, patrones de componentes y reglas de accesibilidad | No |
+| [`/scm`](#scm) | Operaciones de Git y Conventional Commits | No |
+| [`/tools`](#tools) | Visibilidad y restricciones de las herramientas MCP | No |
+| [`/convert`](#convert) | Convertir documentos y contenido multimedia entre formatos | No |
+| [`/docs`](#docs) | Detección de desviaciones en la documentación y sincronización | No |
+| [`/recap`](#recap) | Resumen del trabajo diario o de un periodo en varias herramientas de IA | No |
+| [`/stack-set`](#stack-set) | Referencias específicas del stack para una habilidad de dominio | No |
+| [`/video`](#video) | Generación de MP4 mediante la habilidad `oma-video` | No |
+| [`/schedule`](#schedule) | Trabajos de agentes recurrentes y programados por tiempo | No |
+| [`/explain`](#explain) | Una explicación HTML interactiva de un cambio de código o de un tema | No |
 
 ---
 
@@ -21,11 +47,11 @@ Elige según la coordinación y la verificación que necesite la tarea. Si ya ha
 | Varios dominios con planificación, implementación y QA paso a paso | `/work` | Coordinar un cambio de API con sus clientes web y mobile |
 | Delegación automatizada de tareas independientes en paralelo | `/orchestrate` | Implementar tareas de backend y frontend en paralelo después de resolver las dependencias |
 | Un proceso completo de calidad solicitado explícitamente | `/ultrawork` | Ejecutar las revisiones completas de planificación, implementación, verificación, refinamiento y preparación para la publicación |
-| Una solicitud explícita de repetir la ejecución hasta que pasen criterios verificables mecánicamente | `/ralph` | Repetir la implementación y la verificación independiente hasta que pasen las comprobaciones de regresión indicadas, dentro de las salvaguardas del bucle |
+| Una solicitud explícita de repetir la ejecución hasta que pasen criterios verificables mecánicamente | `/ralph` | Repetir la implementación y la verificación del juez hasta que pasen las comprobaciones de regresión indicadas, dentro de las salvaguardas del bucle |
 
 `/orchestrate` carga un plan utilizable o crea uno mediante `/plan` antes de generar agentes. No necesitas ejecutar `/plan` primero. La existencia de un plan no distingue, por tanto, `/work` de `/orchestrate`; elige según cómo quieras coordinar el trabajo. Ambos pueden ejecutar tareas independientes en paralelo.
 
-Los criterios de aceptación y las pruebas también forman parte de las tareas con una sola habilidad. Su presencia por sí sola no requiere `/ralph`: cada iteración de Ralph ejecuta el proceso completo de ultrawork y un juez independiente, así que elígelo cuando quieras ese bucle de verificación repetida. Puede detenerse con trabajo incompleto o bloqueado cuando se aplican las salvaguardas.
+Los criterios de aceptación y las pruebas también forman parte de las tareas con una sola habilidad. Su presencia por sí sola no requiere `/ralph`: cada iteración de Ralph ejecuta el proceso completo de ultrawork y una pasada del juez, así que elígelo cuando quieras ese bucle de verificación repetida. Puede detenerse con trabajo incompleto o bloqueado cuando se aplican las salvaguardas.
 
 Esta tabla es una recomendación de selección, no un enrutador automático de flujos. El agente host puede recomendar un enfoque adecuado; recomendar o explicar un flujo no lo inicia. Un comando slash lo selecciona explícitamente. Cuando el hook de detección de palabras clave está habilitado, las coincidencias con palabras clave o patrones configurados también pueden activar un flujo, sujeto a sus filtros de consultas informativas. El detector no clasifica la cantidad de dominios, no comprueba si el plan está listo ni aplica la tabla como algoritmo de prioridades.
 
@@ -43,7 +69,7 @@ El modo persistente solo se inicia con una **invocación explícita**: el propio
 
 **Descripción:** Ejecución paralela automatizada de agentes basada en CLI. Genera subagentes mediante CLI, coordina con estado de ejecución y recibos persistentes, monitorea el progreso y ejecuta bucles de verificación.
 
-**Persistente:** Sí. Archivo de estado: `.agents/state/orchestrate-state.json`.
+**Persistente:** Sí. Archivo de estado: `.agents/state/orchestrate-state-{sessionId}.json`.
 
 **Palabras clave de activación:**
 | Idioma | Palabras clave |
@@ -76,11 +102,32 @@ Lista blanca de sustantivos (14): app, api, service, server, cli, tool, website,
 1. **Paso 0, Preparación:** Lee la habilidad de coordinación, la guía de carga de contexto y el protocolo de memoria. Detecta el proveedor.
 2. **Paso 1, Cargar o crear el plan:** Comprueba `.agents/results/plan-{sessionId}.json` y después el `plan-*.json` más reciente. Si no existe ninguno, o el plan no está listo para ejecutarse (a una tarea le falta agente, nivel de prioridad, dependencias o criterios de aceptación), delega en `/plan` dentro del mismo flujo para crear uno conservando el mismo ID de sesión. Presenta el plan y reutiliza la autorización existente; pregunta solo por una decisión relevante o una autorización nueva antes de delegar.
 3. **Paso 2, Inicializar la sesión:** Carga `oma-config.yaml`, muestra la tabla de asignación de CLI, reutiliza el ID de sesión creado con el plan o genera uno (`session-YYYYMMDD-HHMMSS`) y crea `orchestrator-session-{sessionId}.md` y `task-board-{sessionId}.md` en el almacén de memoria configurado.
-4. **Paso 3, Generar agentes:** Para cada nivel de prioridad (primero P0 y después P1...), genera agentes mediante el método apropiado del proveedor (subagentes nativos cuando el runtime actual y el proveedor de destino coinciden; `oma agent spawn` para trabajo externo o entre proveedores). No superes MAX_PARALLEL.
+4. **Paso 3, Generar agentes:** Para cada nivel de prioridad (de menor a mayor: primero el nivel 1, después el nivel 2, y así sucesivamente), genera agentes mediante el método apropiado del proveedor (subagentes nativos cuando el runtime actual y el proveedor de destino coinciden; `oma agent spawn` para trabajo externo o entre proveedores). No superes MAX_PARALLEL.
 5. **Paso 4, Monitorear:** Sondea los archivos de ámbito de ejecución `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` y los recibos estructurados, y actualiza el task board. Vigila completaciones, fallos y crashes.
-6. **Paso 5, Verificar:** Ejecuta `verify.sh {agent-type} {workspace}` por cada agente completado. Si falla, vuelve a generarlo con el contexto del error (máximo 2 reintentos). Los fallos repetidos pueden justificar hipótesis alternativas, pero todos los intentos consumen el mismo presupuesto de recuperación agregado. Conserva la evidencia sin resolver si el presupuesto no alcanza para una ronda de comparación.
+6. **Paso 5, Verificar:** Para cada agente completado, ejecuta una autocomprobación mecánica (lint, typecheck, pruebas y alcance del diff; hasta 3 ciclos), después `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug y pm; los demás tipos de agente registran `SKIP`) y, por último, una revisión cruzada de QA. Si falla la verificación, vuelve a generarlo con el contexto del error (máximo 2 reintentos). Los fallos repetidos pueden justificar hipótesis alternativas, pero todos los intentos consumen el mismo presupuesto de recuperación agregado (`max_attempts`, 3 por defecto incluido el intento original). Conserva la evidencia sin resolver si el presupuesto no alcanza para una ronda de comparación.
 7. **Paso 6, Recopilar:** Lee los archivos de resultados de ámbito de ejecución y los claims estructurados, y compila el resumen.
 8. **Paso 7, Informe final:** Presenta el resumen de la sesión. Si se ejecutaron experimentos, resume la evidencia y las decisiones; captura lecciones solo cuando se haya establecido una causa reutilizable.
+
+```mermaid
+flowchart TD
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task board, domain gate"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
+```
 
 **Archivos leídos:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, archivos de progreso y resultados de ámbito de ejecución y recibos estructurados de ejecución.
 **Archivos escritos:** estado de sesión y task board de ámbito de ejecución en el almacén de memoria configurado, recibos y claims estructurados y el informe final.
@@ -93,7 +140,7 @@ Lista blanca de sustantivos (14): app, api, service, server, cli, tool, website,
 
 **Descripción:** Coordinación multidominio paso a paso. PM planifica primero, después los agentes ejecutan dentro del alcance autorizado y finalmente QA revisa y se corrigen los problemas.
 
-**Persistente:** Sí. Archivo de estado: `.agents/state/work-state.json`.
+**Persistente:** Sí. Archivo de estado: `.agents/state/work-state-{sessionId}.json`.
 
 **Palabras clave de activación:**
 | Idioma | Palabras clave |
@@ -129,7 +176,7 @@ La palabra "work" por sí sola no es un activador: es vocabulario normal ("Does 
 
 **Descripción:** Flujo centrado en la calidad. Tiene 5 fases, 17 pasos en total y 12 pasos de revisión aislados. Cada fase tiene una puerta que debe pasar antes de continuar.
 
-**Persistente:** Sí. Archivo de estado: `.agents/state/ultrawork-state.json`.
+**Persistente:** Sí. Archivo de estado: `.agents/state/ultrawork-state-{sessionId}.json`.
 
 **Palabras clave de activación:**
 | Idioma | Palabras clave |
@@ -140,11 +187,13 @@ La palabra "work" por sí sola no es un activador: es vocabulario normal ("Does 
 
 | Fase | Pasos | Agente | Perspectiva de revisión |
 |------|-------|--------|-------------------------|
-| **PLAN** | 1-4 | Agente PM (inline) | Integridad, meta-revisión, sobreingeniería/simplicidad |
+| **PLAN** | 1-4 | Agente PM (autor, paso 1) + revisores CCR (pasos 2-4) | Integridad, meta-revisión, sobreingeniería/simplicidad |
 | **IMPL** | 5 | Agentes de desarrollo (generados) | Implementación |
-| **VERIFY** | 6-8 | Agente QA (generado) | Alineación, seguridad (OWASP), prevención de regresiones |
-| **REFINE** | 9-13 | Agente de refactorización (generado) | División de archivos, reutilización, impacto en cascada, consistencia, código muerto |
-| **SHIP** | 14-17 | Agente QA (generado) | Calidad de código (lint/cobertura), flujo UX, problemas relacionados, preparación para el despliegue |
+| **VERIFY** | 6-8 | Revisores CCR | Alineación, seguridad (OWASP), prevención de regresiones |
+| **REFINE** | 9-13 | Agente de refactorización (pasos 9, 11 y 13) + revisores CCR (pasos 10 y 12) | División de archivos, reutilización, impacto en cascada, consistencia, código muerto |
+| **SHIP** | 14-17 | Revisores CCR | Calidad de código (lint/cobertura), flujo UX, problemas relacionados, preparación para el despliegue |
+
+Cada paso de revisión se ejecuta en su propio subagente revisor con contexto nuevo ([revisión entre contextos](../getting-started/glossary.md#cross-context-review-ccr)). El agente PM no revisa su propio plan inline.
 
 **Definiciones de las puertas:**
 - **PLAN_GATE:** Plan documentado, suposiciones enumeradas, alternativas consideradas, revisión de sobreingeniería completada y alcance autorizado.
@@ -156,6 +205,31 @@ La palabra "work" por sí sola no es un activador: es vocabulario normal ("Does 
 **Comportamiento ante el fallo de una puerta:**
 - Primer fallo: vuelve al paso relevante, corrige y reintenta.
 - Segundo fallo del mismo problema: reevalúa la causa; si hay alternativas que merezcan probarse dentro del presupuesto restante, compara experimentos aislados con el comportamiento requerido y las métricas definidas.
+- Límites: un fallo de PLAN vuelve al paso 1 solo antes del primer despacho de tareas (después, el plan es inmutable). Los reintentos de VERIFY y REFINE se detienen cuando el número de fallos de puerta alcanza el máximo configurado (5 ciclos de VERIFY + REFINE por defecto) o cuando se supera el límite de coste de la sesión.
+
+```mermaid
+flowchart TD
+  S1["Step 1: PM Agent writes the plan JSON"] --> PR["Steps 2-4: 3 CCR reviewers, completeness, meta-review, simplicity"]
+  PR --> PG{"PLAN_GATE"}
+  PG -->|"fail, before first dispatch"| S1
+  PG -->|pass| S5["Step 5: implementation agents in parallel"]
+  S5 --> IG{"IMPL_GATE"}
+  IG -->|"fail: re-spawn failed agents"| S5
+  IG -->|pass| VR["Steps 6-8: 3 CCR reviewers, alignment, safety, regression"]
+  VR --> VG{"VERIFY_GATE"}
+  VG -->|fail| VL{"cycle limit or cost cap reached?"}
+  VL -->|"no: root-cause fix"| S5
+  VG -->|pass| RF["Steps 9-13: 2 CCR reviews, then refactor actions"]
+  RF --> RG{"REFINE_GATE"}
+  RG -->|fail| RL{"cycle limit or cost cap reached?"}
+  RL -->|"no: re-spawn Refactor Agent"| RF
+  RG -->|"pass, or recorded skip"| SR["Steps 14-17: 4 CCR reviewers, quality, UX, related issues, deployment"]
+  SR --> SG{"SHIP_GATE"}
+  SG -->|"fail: re-run affected steps"| SR
+  SG -->|pass| DONE(["Final results; optional oma docs verify"])
+  VL -->|yes| STOP(["Stop: save step results, report unresolved items"])
+  RL -->|yes| STOP
+```
 
 **Mejoras condicionales:** comparaciones de métricas definidas, decisiones y evidencia de experimentos, exploración de hipótesis con presupuesto y lecciones respaldadas por causas reutilizables.
 
@@ -167,9 +241,9 @@ La palabra "work" por sí sola no es un activador: es vocabulario normal ("Does 
 
 ### /ralph
 
-**Descripción:** Bucle persistente de ejecución autorreferente. Envuelve ultrawork con un verificador independiente que comprueba los criterios de finalización después de cada iteración. Informa de finalización completa cuando todos pasan, de finalización parcial cuando solo quedan criterios PASS y BLOCKED, o se detiene cuando se activan las salvaguardas.
+**Descripción:** Bucle persistente de ejecución autorreferente. Envuelve ultrawork con un [juez](../getting-started/glossary.md#judge) que comprueba los criterios de finalización después de cada iteración. Informa de finalización completa cuando todos pasan, de finalización parcial cuando solo quedan criterios PASS y BLOCKED, o se detiene cuando se activan las salvaguardas.
 
-**Persistente:** Sí. Archivo de estado: `.agents/state/ralph-state.json`.
+**Persistente:** Sí. Archivo de estado: `.agents/state/ralph-state-{sessionId}.json`.
 
 **Palabras clave de activación:**
 | Idioma | Palabras clave |
@@ -187,17 +261,36 @@ Las frases sueltas para reanudar ("keep going", "carry on", "계속해", "続け
 
 **Fases:**
 1. **Fase 0, INIT:** Carga los prerrequisitos (carga de contexto, protocolo de memoria y protocolo del juez). Define y registra criterios de finalización verificables mecánicamente, como aserciones de pruebas, comprobaciones de tipos que no emiten archivos, códigos de salida o existencia de archivos. Incluye comprobaciones de build solo cuando se solicitan explícitamente. Muestra los criterios y continúa dentro del alcance autorizado. Inicializa la sesión con `max_iterations: 5`.
-2. **Fase 1, WORK:** Ejecuta ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) como una sola iteración.
-3. **Fase 2, JUDGE:** Un verificador independiente comprueba cada criterio contra el estado real del proyecto (ejecuta comprobaciones autorizadas y verifica la existencia de archivos). Registra la evidencia y el estado del criterio, incluyendo PASS, FAIL, REGRESSED o BLOCKED.
-4. **Fase 3, DECIDE:** Si todos los criterios son PASS → informa de finalización completa. Si solo quedan PASS y BLOCKED → informa de finalización parcial. Si hay FAIL o REGRESSED → devuelve el contexto del fallo a la siguiente iteración, sujeto a las salvaguardas.
-5. **Salvaguardas:** El bucle se detiene si `current_iteration >= max_iterations` (5 por defecto), o si el mismo criterio falla 3 veces consecutivas por la misma causa raíz (detección de atasco).
+2. **Fase 1, EXEC:** Ejecuta ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) como una sola iteración con el ID de sesión de Ralph. Después ejecuta la puerta de artefactos `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>`. Si falla, la iteración cuenta como no realizada: Ralph registra la infracción, repara el trabajo y vuelve a ejecutar la puerta.
+3. **Fase 2, JUDGE:** Un juez comprueba cada criterio contra el estado real del proyecto (ejecuta comprobaciones autorizadas y verifica la existencia de archivos). El prompt del flujo indica al orquestador que genere el juez como un agente aparte con contexto nuevo, informado solo de los criterios; nada confirma mecánicamente esa generación, y a un runtime que no puede generar subagentes se le indica que juzgue inline y registre `ralph.judge-inline-fallback`. Registra la evidencia y el estado del criterio, incluyendo PASS, FAIL, REGRESSED o BLOCKED.
+4. **Puerta de decisión:** Si todos los criterios son PASS → informa de finalización completa. Si solo quedan PASS y BLOCKED → informa de finalización parcial. Si hay FAIL o REGRESSED → devuelve el contexto del fallo a la siguiente iteración, sujeto a las salvaguardas.
+5. **Fase 3, REPLAN:** Limita la siguiente iteración a los elementos FAIL y REGRESSED (diagnóstico basado en el diff), omite los elementos BLOCKED y mantiene los criterios PASS dentro del alcance del juez. Vuelve a la fase 1.
+6. **Salvaguardas:** El bucle se detiene si `current_iteration >= max_iterations` (5 por defecto). Un criterio que falla 3 veces consecutivas por la misma causa raíz pasa a BLOCKED y no se reintenta (detección de atasco).
 
-**Diferencia principal con /ultrawork:** Ultrawork ejecuta un proceso de 5 fases con reintentos cuando falla una puerta. Ralph envuelve ultrawork en un bucle de reintentos con un juez independiente que comprueba objetivamente la finalización. El bucle termina con un informe de finalización completa, un informe de finalización parcial para el trabajo bloqueado o un informe de salvaguarda.
+```mermaid
+flowchart TD
+  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
+  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
+  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
+  REPAIR --> GATE
+  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
+  JUDGE --> VERDICT{"verdict"}
+  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
+  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
+  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
+  LIMIT -->|yes| SAFE(["Safeguard report"])
+  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
+  REPLAN --> EXEC
+```
+
+El nodo del juez es el juez que se genera por indicación del prompt, descrito en la fase 2: el flujo indica al orquestador que lo genere con contexto nuevo, y un runtime que no puede generar subagentes juzga inline y registra el recurso alternativo.
+
+**Diferencia principal con /ultrawork:** Ultrawork ejecuta un proceso de 5 fases con reintentos cuando falla una puerta. Ralph envuelve ultrawork en un bucle de reintentos con un juez, generado por indicación del prompt, que vuelve a verificar cada criterio contra la evidencia del proyecto. El bucle termina con un informe de finalización completa, un informe de finalización parcial para el trabajo bloqueado o un informe de salvaguarda.
 
 **Archivos leídos:** `.agents/workflows/ralph/resources/judge-protocol.md`, todos los archivos de ultrawork.
-**Archivos escritos:** `session-ralph.md` (memoria), registros de iteración e informe final.
+**Archivos escritos:** `session-ralph-{sessionId}.md` (memoria), registros de iteración e informe final.
 
-**Cuándo usar:** Cuando quieres explícitamente una ejecución repetida y una verificación independiente contra criterios de finalización mecánicos. Las pruebas por sí solas no requieren Ralph; considera todo el proceso ultrawork en cada iteración y sus salvaguardas.
+**Cuándo usar:** Cuando quieres explícitamente una ejecución repetida y una nueva verificación del juez contra criterios de finalización mecánicos. Las pruebas por sí solas no requieren Ralph; considera todo el proceso ultrawork en cada iteración y sus salvaguardas.
 
 ---
 
@@ -619,15 +712,15 @@ Los siguientes flujos no se activan por palabras clave y deben invocarse mediant
 
 Los flujos persistentes (orchestrate, ultrawork, work, ralph) crean archivos de estado en `.agents/state/` cuando se invocan explícitamente (consulta [Flujos de trabajo persistentes](#persistent-workflows)):
 
-```
+```text
 .agents/state/
-├── orchestrate-state.json
-├── ultrawork-state.json
-├── work-state.json
-└── ralph-state.json
+├── orchestrate-state-{sessionId}.json
+├── ultrawork-state-{sessionId}.json
+├── work-state-{sessionId}.json
+└── ralph-state-{sessionId}.json
 ```
 
-Estos archivos contienen: nombre del flujo, fase/paso actual, ID de sesión, marca de tiempo y cualquier estado pendiente.
+`{sessionId}` es el ID de sesión del host, de modo que las sesiones concurrentes no comparten archivo. Un archivo registra el nombre del flujo, el ID de sesión, la hora de activación y el recuento de refuerzos, además del contrato de objetivo después de `oma goal set`. El progreso de las fases se guarda en archivos de memoria como `session-ultrawork.md`, no aquí.
 
 ### Refuerzo
 
@@ -655,42 +748,24 @@ El flujo también puede terminar de forma natural cuando se completan todos los 
 
 ## Secuencias habituales de flujos
 
-### Funcionalidad de un solo dominio
-```
-Describe the task → relevant skill → implement → focused verification
-```
+| Objetivo | Secuencia |
+|----------|-----------|
+| Funcionalidad de un solo dominio | Describe la tarea → habilidad correspondiente → implementación → verificación focalizada |
+| Proyecto multidominio complejo | `/work` → el PM planifica → revisión dentro del alcance autorizado → se generan los agentes → QA revisa → corrección de problemas → informe |
+| Implementación paralela automatizada | `/orchestrate` → cargar o crear el plan → resolver dependencias → generar tareas independientes → verificar → informe |
+| Entrega de máxima calidad | `/ultrawork` → PLAN (plan + 3 revisiones) → IMPL → VERIFY (3 revisiones) → REFINE (2 revisiones + 3 acciones de refactorización) → SHIP (4 revisiones) |
+| Investigación de bugs | `/debug` → reproducir → causa raíz → corrección mínima → prueba de regresión → búsqueda de patrones similares |
+| Pipeline de diseño a implementación | `/brainstorm` → documento de diseño → `/plan` → desglose de tareas → `/orchestrate` → implementación en paralelo → `/review` → `/scm` |
+| Configuración de un código base nuevo | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
+| Ejecución repetida con verificación del juez | `/ralph` → definir criterios → ultrawork → puerta de artefactos → juez → repetir según sea necesario → informe de finalización completa, finalización parcial o salvaguarda |
 
-### Proyecto multidominio complejo
-```
-/work → PM plans → review within authorized scope → agents spawn → QA reviews → fix issues → report
-```
+---
 
-### Implementación paralela automatizada
-```
-/orchestrate → load or create plan → resolve dependencies → spawn independent tasks → verify → report
-```
+## Ver también
 
-### Entrega de máxima calidad
-```
-/ultrawork → PLAN (4 review steps) → IMPL → VERIFY (3 review steps) → REFINE (5 review steps) → SHIP (4 review steps)
-```
-
-### Investigación de bugs
-```
-/debug → reproduce → root cause → minimal fix → regression test → similar pattern scan
-```
-
-### Pipeline de diseño a implementación
-```
-/brainstorm → design document → /plan → task breakdown → /orchestrate → parallel implementation → /review → /scm
-```
-
-### Configuración de un código base nuevo
-```
-/deepinit → AGENTS.md + ARCHITECTURE.md + docs/
-```
-
-### Ejecución repetida con verificación independiente
-```
-/ralph → define criteria → ultrawork → judge → repeat as needed → completion, partial completion, or safeguard report
-```
+- [Ejecución en paralelo](./parallel-execution.md): `oma agent spawn`, `oma agent parallel` y monitoreo
+- [Estructura del proyecto](./project-structure.md): dónde viven los archivos de estado y de memoria de los flujos
+- [`oma goal set`](../cli-interfaces/commands.md#goal-set): puerta de parada y presupuesto para flujos persistentes
+- [Guía de proyectos multiagente](../guide/multi-agent-project.md)
+- [Solución de problemas](../guide/troubleshooting.md)
+- [Glosario](../getting-started/glossary.md)

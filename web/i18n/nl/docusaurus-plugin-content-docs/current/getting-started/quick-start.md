@@ -21,7 +21,7 @@ Voer in Windows PowerShell het volgende uit:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-De interactieve setup vraagt naar de antwoordtaal, CLI-leveranciers, capabilityproviders, modelpreset, skillpreset voor het project en eventuele stackvariant. Houd voor een eerste run de standaardwaarden aan, selecteer de leverancier die je al gebruikt en kies de projectpreset die het beste bij de repository past.
+De interactieve setup vraagt naar de antwoordtaal, CLI-vendors, [capabilityproviders](./glossary.md#capability-provider), [modelpreset](./glossary.md#model-preset), [skillpreset](./glossary.md#skill-preset) voor het project en eventuele stackvariant. Houd voor een eerste run de standaardwaarden aan, selecteer de vendor die je al gebruikt en kies de projectpreset die het beste bij de repository past. Zie [Presets](./installation.md#presets) voor de skills van elke preset en voor [workflows die skills buiten een preset nodig hebben](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Als je `bun` al hebt, gebruik je de installer rechtstreeks:
 
@@ -29,7 +29,7 @@ Als je `bun` al hebt, gebruik je de installer rechtstreeks:
 bunx oh-my-agent@latest
 ```
 
-De bootstrap-scripts installeren in het huidige project. Gebruik `oma install --global` als je op HOME-niveau wilt installeren; lees [Installatie](./installation.md) voordat je project- en globale installaties combineert.
+De bootstrap-scripts installeren in het huidige project. Gebruik `oma install --global` als je op HOME-niveau wilt installeren; lees [Globale installatie](../guide/global-install.md) voordat je project- en globale installaties combineert.
 
 
 ## 2. Controleer het resultaat
@@ -58,7 +58,7 @@ Als `oma` niet beschikbaar is maar Bun wel is geïnstalleerd, voer je dezelfde c
 bunx oh-my-agent@latest doctor
 ```
 
-Als het commando `oma` nog steeds ontbreekt, open je een nieuwe shell of voeg je de bin-map van de pakketbeheerder toe aan `PATH`. Als `oma doctor` een ongeldige configuratie meldt, herstel je het genoemde veld en voer je het commando opnieuw uit. Verwijder `.agents/oma-config.yaml` niet om te herstellen: dit is de configuratie van de gebruiker en die bewaart instellingen tijdens updates.
+Als het commando `oma` nog steeds ontbreekt, open je een nieuwe shell of voeg je de bin-map van de pakketbeheerder toe aan `PATH`; [Installatie](./installation.md#method-3-global-install) laat zien hoe je het commando `oma` installeert. Als `oma doctor` een ongeldige configuratie meldt, herstel je het genoemde veld en voer je het commando opnieuw uit. Verwijder `.agents/oma-config.yaml` niet om te herstellen: dit is de configuratie van de gebruiker en die bewaart instellingen tijdens updates.
 
 ## 3. Voer één kleine taak uit
 
@@ -78,11 +78,12 @@ Kies voor een taak die API- en UI-grenzen overschrijdt expliciet `/work` of `/or
 
 OMA start met `model_preset: auto`, Serena voor code-intelligence, Agent Memory voor semantisch geheugen, native web search en uitgeschakelde telemetrie. Serena gebruikt de gedeelde `bridge`-transportlaag en wordt automatisch bijgewerkt tenzij je dat anders configureert. Browser DevTools MCP is opt-in; een nieuwe interactieve setup biedt eerst Aside aan. Zie [Belangrijke standaardinstellingen](./important-defaults.md) voor de gevolgen en de sleutels waarmee je dit overschrijft.
 
-Als een beheerde taak vastloopt, begin je met `oma agent status <session-id> [agent-id]`. Bekijk daarna de receipt onder `.agents/state/agent-runs/` en het geïnjecteerde gestructureerde claimpad. Deze records tonen de run, taak, workspace, exitcode en verificatiestatus. Mensleesbare `result-*.md`- en `progress-*.md`-bestanden onder `.agents/state/memories/` geven extra context als ze aanwezig zijn. Voer alleen het kleinste mislukte commando opnieuw uit nadat je hebt gecontroleerd dat de run niet meer actief is. Een persistente workflow blijft actief tot die klaar is of je `workflow done` zegt; zie [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) voor herstel van het statebestand.
+Als een beheerde taak vastloopt, begin je met `oma agent status <session-id> [agent-id]`. Bekijk daarna de receipt onder `.agents/state/agent-runs/` en het geïnjecteerde gestructureerde claimpad. Deze records tonen de run, taak, workspace, exitcode en verificatiestatus. Mensleesbare `result-*.md`- en `progress-*.md`-bestanden onder `.agents/state/memories/` geven extra context als ze aanwezig zijn. Voer alleen het kleinste mislukte commando opnieuw uit nadat je hebt gecontroleerd dat de run niet meer actief is. Een [persistente workflow](./glossary.md#persistent-workflow) blijft actief tot die klaar is of je `workflow done` zegt; zie [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) voor herstel van het statusbestand.
 
 ## Volgende stappen
 
 - [Belangrijke standaardinstellingen](./important-defaults.md) voor voorrang, providers en herstelkeuzes
-- [Installatie](./installation.md) voor presets, leverancierssetup, globale installaties en updates
-- [Agents](../core-concepts/agents.md) voor de 33 skillpakketten en dispatchrollen
+- [Installatie](./installation.md) voor presets, vendorsetup, globale installaties en updates
+- [Agenten](../core-concepts/agents.md) voor de 33 skillpakketten en dispatchrollen
 - [Workflows](../core-concepts/workflows.md) voor planning, parallelle uitvoering, QA en persistente modi
+- [Probleemoplossing](../guide/troubleshooting.md) wanneer de installatie, een vendor of een hook zich niet gedraagt zoals verwacht

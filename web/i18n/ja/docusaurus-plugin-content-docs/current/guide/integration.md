@@ -49,17 +49,7 @@ oma
 
 ### 4. プロジェクト種別を選択する
 
-インストーラーには次のプリセットがあります。
-
-| プリセット | 含まれるスキル |
-|:-------|:---------------|
-| **All** | 利用可能なすべてのスキル |
-| **Fullstack** | Frontend + Backend + PM + QA |
-| **Frontend** | React/Next.js のスキル |
-| **Backend** | Python/Node.js/Rust のバックエンドスキル |
-| **Mobile** | Flutter/Dart のモバイルスキル |
-| **DevOps** | Terraform + CI/CD + Workflow のスキル |
-| **Custom** | 全リストから個別のスキルを選択 |
+インストーラーは **What type of project?** と尋ね、[スキルプリセット](../getting-started/glossary.md#skill-preset)として All、Fullstack、Fullstack Web、Fullstack Mobile、Frontend、Backend、Mobile、DevOps、Research、Content、Custom（個別のスキルを選択）を提示します。非対話型の実行では All を使います。各プリセットに含まれるスキルは[インストール → プリセット](../getting-started/installation.md#presets)に記載しています。
 
 ### 5. バックエンド言語を選択する（該当する場合）
 
@@ -72,11 +62,9 @@ oma
 
 ### 6. IDE のシンボリックリンクを設定する
 
-インストーラーは常に Claude Code のシンボリックリンク（`.claude/skills/`）を作成します。また、選択したベンダー向けのネイティブエージェントファイル、フック、設定、統合ファイルも生成します。現在のベンダーファミリーには Antigravity、Claude、Codex、Cursor、Kiro、Kimi、Qwen と、pi および OpenCode の拡張パスが含まれます。`.github/` ディレクトリがあれば、GitHub Copilot のシンボリックリンクも自動作成できます。**ZCode** を選ぶと、`.zcode/commands/*.md` のシンボリックリンクでワークフローをスラッシュコマンドとして公開します（ワークフローのみで、エージェントファイルやフックはありません）。それ以外の場合は、次の質問が表示されます。
+インストーラーは **CLI tools to configure (deselect all to skip):** と尋ね、Claude Code、Codex、Command Code、GitHub Copilot、Cursor、Grok、Kiro CLI、OpenCode、pi (Earendil)、Antigravity CLI (agy)、Hermes Agent、Kimi Code CLI、Qwen Code、ZCode を提示します。Antigravity CLI、Hermes Agent、Kimi Code CLI は、Windows 上や `CI` が設定されている場合には表示されません。
 
-```
-Also create symlinks for GitHub Copilot? (.github/skills/)
-```
+選択した各ツールについて、スキルのシンボリックリンク（たとえば Claude Code なら `.claude/skills/`）を作成し、ベンダーのネイティブエージェントファイル、フック、設定、統合ファイルを生成します。pi と OpenCode は拡張パスです。**ZCode** を選ぶと、`.zcode/commands/*.md` のシンボリックリンクでワークフローをスラッシュコマンドとして公開します（ワークフローのみで、エージェントファイルやフックはありません）。
 
 ### 7. 推奨するグローバル Git 設定
 
@@ -89,7 +77,7 @@ Also create symlinks for GitHub Copilot? (.github/skills/)
 
 値がないか異なる場合、CLI は対話型の確認を表示します。デフォルトは**yes**です。
 
-```
+```text
 Enable git rerere? (Recommended for multi-agent merge conflict reuse) (unset)
 Set git init.defaultBranch to main? (Recommended global default) (currently "master")
 ```
@@ -107,37 +95,21 @@ git config --global init.defaultBranch main
 
 ### 8. MCP を設定する
 
-Antigravity IDE の MCP 設定（`~/.gemini/antigravity/mcp_config.json`）がある場合、インストーラーは Serena MCP ブリッジの設定を提案します。
-
-```
-Configure Serena MCP with bridge? (Required for full functionality)
-```
-
-承認すると、次の設定を作成します。
+MCP 用の個別のプロンプトはありません。Serena がコードインテリジェンスのプロバイダー（デフォルト）の場合、install と update は選択したベンダー向けに Serena の MCP エントリを書き込みます。プロジェクトインストールでは、エントリは次のようになります。
 
 ```json
 {
   "mcpServers": {
     "serena": {
-      "command": "npx",
-      "args": ["-y", "oh-my-agent@latest", "bridge", "http://localhost:12341/mcp"],
-      "disabled": false
+      "command": "oma",
+      "args": ["bridge", "--context", "oma"],
+      "env": { "SERENA_LOG_LEVEL": "info" }
     }
   }
 }
 ```
 
-同様に、Gemini CLI の設定（`~/.gemini/settings.json`）がある場合は、Gemini CLI の HTTP モードで Serena を設定するかどうかを尋ねます。
-
-```json
-{
-  "mcpServers": {
-    "serena": {
-      "url": "http://localhost:12341/mcp"
-    }
-  }
-}
-```
+`oma bridge` は Serena サーバーを自分で起動するか、既存のものを再利用します。グローバルインストールでは `args` に `--oma-home <OMA_HOME>` が追加されます。`npx -y oh-my-agent@latest bridge http://localhost:12341/mcp` を実行する古いスニペットはコピーしないでください。そのポートは終了している可能性のあるデーモンのもので、クライアントが無期限に待ち続けるおそれがあります。マイグレーション 027 は、Antigravity Desktop の設定にあるこの廃止済みエントリを書き換えます。
 
 ### 9. 完了
 
@@ -152,7 +124,7 @@ Configure Serena MCP with bridge? (Required for full functionality)
 
 ## 手動パス
 
-対話型 CLI を利用できない環境（CI パイプライン、制限されたシェル、企業内のマシンなど）で使います。
+対話型インストーラーを実行できない環境（CI パイプライン、制限されたシェル、企業内のマシンなど）で使います。`oma link` と `oma memory init` のために `oma` CLI は引き続き必要です。手動で行うのはリリースのダウンロードとプロンプトへの対応だけです。
 
 ### Step 1：ダウンロードして展開する
 
@@ -172,8 +144,9 @@ tar -xzf agent-skills.tar.gz
 ### Step 2：プロジェクトへファイルをコピーする
 
 ```bash
-# Copy the core .agents/ directory
-cp -r .agents/ /path/to/your/project/.agents/
+# Copy the contents of the core .agents/ directory (works whether or not the target exists)
+mkdir -p /path/to/your/project/.agents
+cp -R .agents/. /path/to/your/project/.agents/
 
 # Regenerate vendor-native files from the SSOT
 cd /path/to/your/project
@@ -196,9 +169,11 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-model_preset: antigravity
+model_preset: auto
 EOF
 ```
+
+コピーした `.agents/` に `oma-config.cue` も含まれている場合、そこで設定したキーはこの YAML ファイルの同じキーより優先されます。それらのキーは CUE ファイルで編集するか、[設定の読み込み](./oma-config-semantics.md#precedence-table)を参照してください。
 
 ### Step 4：メモリディレクトリを初期化する
 
@@ -222,7 +197,7 @@ oma doctor
 oma doctor --json
 ```
 
-doctor コマンドは次を確認します。
+doctor コマンドは、主に次を確認します。
 
 | チェック | 確認内容 |
 |:------|:----------------|
@@ -243,8 +218,8 @@ ls .agents/skills/
 # Verify symlinks point to correct targets
 ls -la .claude/skills/
 
-# Verify config exists
-cat .agents/oma-config.yaml
+# Verify config exists (CUE, YAML, or both)
+ls .agents/oma-config.*
 
 # Verify memory directory
 ls .agents/state/memories/ 2>/dev/null || echo "Memory not initialized"
@@ -261,7 +236,7 @@ oh-my-agent は Single Source of Truth（SSOT）アーキテクチャを使い�
 
 ### ディレクトリ構成
 
-```
+```text
 your-project/
   .agents/                          # SSOT — the real files live here
     agents/                         # Agent definition files
@@ -329,7 +304,14 @@ your-project/
 
 ### ロールバック
 
-プロジェクトから oh-my-agent を完全に削除するには、次を実行します。
+まずアンインストーラーで、OMA が管理するファイルをプレビューしてから削除します。
+
+```bash
+oma uninstall --dry-run
+oma uninstall
+```
+
+`oma-config.yaml`、`mcp.json`、OMA がインストールしていないスキルは残ります。残りを手動で削除するには、次を実行します。
 
 ```bash
 # Remove the SSOT directory
@@ -394,7 +376,7 @@ oma dashboard web
 
 ### 5. ワークフローのインストール
 
-`installWorkflows()` はすべてのワークフローファイルを `.agents/workflows/` にコピーします。ここには `/orchestrate`、`/work`、`/ultrawork`、`/plan`、`/brainstorm`、`/deepinit`、`/review`、`/debug`、`/design`、`/scm`、`/tools`、`/stack-set` の定義が入ります。
+`installWorkflows()` は、`/orchestrate`、`/work`、`/ultrawork`、`/plan` の定義など、すべてのワークフローファイルを `.agents/workflows/` にコピーします。完全な一覧は[ワークフロー](../core-concepts/workflows.md)を参照してください。あわせて、`installHooks()`、`installAgents()`、`installRules()` がフック、エージェント定義、ルールのソースを `.agents/` にコピーします。
 
 ### 6. 設定のインストール
 
@@ -408,7 +390,7 @@ oma dashboard web
 
 `installVendorAdaptations()` は、選択した対応ベンダー向けに IDE 固有のファイルをインストールします。
 
-- エージェント定義（`.claude/agents/*.md`、`.codex/agents/*.toml`、`.gemini/agents/*.md`）
+- エージェント定義（`.claude/agents/*.md`、`.codex/agents/*.toml`、`.qwen/agents/*.md`）
 - フック設定（`.claude/hooks/`、`.codex/hooks.json`）
 - 設定ファイルと、共有のベンダー統合ドキュメント（`AGENTS.md` のみ。Claude Code ≥ 2.1.277 も含みます）。`CLAUDE.md` と `GEMINI.md` に OMA ブロックが追加されることはありません。ユーザーが所有する既存の `CLAUDE.md` には、Claude Code が `AGENTS.md` を読み飛ばさないよう `@AGENTS.md` のインポート行だけを追記します。
 
@@ -416,11 +398,11 @@ Codex は一度だけ必要な信頼手順の後ろでフックを有効にす�
 
 ### 9. CLI シンボリックリンク
 
-`createCliSymlinks()` は IDE 固有のディレクトリから SSOT へのシンボリックリンクを作成します。
+`createVendorSymlinks()` と `createVendorWorkflowSymlinks()` は IDE 固有のディレクトリから SSOT へのシンボリックリンクを作成します。
 
 - `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
-- `.claude/skills/{workflow}.md` -> `../../.agents/workflows/{workflow}.md`
-- `.github/skills/{skill}` -> `../../.agents/skills/{skill}`（Copilot を有効にした場合）
+- `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
+- `.github/skills/{skill}` -> `../../.agents/skills/{skill}`（Copilot を選択した場合）
 
 ベンダー固有のネイティブエージェントファイルは直接シンボリックリンクするのではなく、`oma link`、`oma install`、`oma update` が `.agents/agents/` から生成します。
 
@@ -431,3 +413,13 @@ Codex は一度だけ必要な信頼手順の後ろでフックを有効にす�
 ### 11. 推奨 Git 設定と MCP
 
 CLI パスで説明したとおり、install と update は対話的な同意を得て推奨する**グローバル** Git 設定（`rerere.enabled`、`init.defaultBranch`）を任意で構成し、該当する場合は MCP 設定も構成します。
+
+---
+
+## 関連項目
+
+- [グローバルインストール](./global-install.md)：すべてのプロジェクト向けに一度だけインストールする
+- [設定の読み込み](./oma-config-semantics.md)：CUE、YAML、ローカルオーバーレイの組み合わせ方
+- [エージェントごとのモデル設定](./per-agent-models.md)：エージェントごとにモデルと CLI を選ぶ
+- [Codex フックの信頼設定](./codex-hook-trust.md)：Codex で一度だけ必要な `/hooks` の手順
+- [自動更新](./automated-updates.md)：CI からインストールを最新に保つ

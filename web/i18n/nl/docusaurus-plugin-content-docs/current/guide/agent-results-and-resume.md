@@ -8,7 +8,36 @@ description: Leg agentwerk vast met verifieerbare claims, inspecteer native cont
 
 OMA behandelt een agentresultaat als een klein bewijsrecord, niet alleen als de exitcode van het proces. Een run legt de taak- en sessie-ID’s, de workspacefingerprint, verificatiereceipts, gewijzigde bestanden, onopgelost werk en artifact-hashes vast. Zo kan een coördinator een voltooide taak alleen opnieuw gebruiken zolang het acceptatiecontract en de inputs nog overeenkomen.
 
-Gebruik de lifecycle rechtstreeks wanneer je een native agent uitvoert. Workflows en `oma agent spawn` maken dezelfde records voor je aan en laten de finalisering van de beheerde run over aan de parent-coördinator.
+Gebruik de lifecycle rechtstreeks wanneer je een native agent uitvoert. Workflows en `oma agent spawn` maken dezelfde records voor je aan en laten de finalisering van de beheerde run over aan de parent-coördinator. Zie voor de hier gebruikte termen [Runrecord en claim](../getting-started/glossary.md#run-record-and-claim) en [Plan](../getting-started/glossary.md#plan) in de woordenlijst.
+
+## Lifecycle in één oogopslag {#lifecycle-at-a-glance}
+
+| Stap | Commando | Legt vast | Bewaar |
+| --- | --- | --- | --- |
+| 1. Contract | Bewerk `.agents/results/plan-SESSION_ID.json` | `acceptance_criteria` en `required_checks` van de taak | Sessie-ID, taak-ID |
+| 2. Begin | `oma agent begin AGENT TASK SESSION_ID --workspace .` | Runrecord met status `running` | `runId`, `claimPath` |
+| 3. Context (optioneel) | `oma agent context AGENT --difficulty Medium` | Niets | Promptcontext |
+| 4. Verifiëren | `oma agent verify RUN_ID --required` | Eén receipt per controle | Exitcode |
+| 5. Claim | Schrijf JSON op `claimPath` | Claimbestand | Niets |
+| 6. Afronden | `oma agent finish RUN_ID CLAIM_PATH` | Eindstatus | `status` |
+| 7. Herstellen | `oma agent resume SESSION_ID --dry-run`, daarna zonder `--dry-run` | Herstelcheckpoint en sessielease | Status per taak |
+
+`oma agent spawn` en `oma agent parallel` voeren stap 2 en 6 voor je uit: het parentproces begint de run en finaliseert die wanneer de child eindigt.
+
+```mermaid
+flowchart TD
+  plan["Task contract in plan-SESSION_ID.json"] --> begin["oma agent begin, or spawn"]
+  begin --> running(["running"])
+  running -->|"oma agent verify"| running
+  running --> claim["Claim written at claimPath"]
+  claim --> finish["oma agent finish, or the spawning parent"]
+  finish -->|"claim completed, current receipts, nothing unresolved"| completed(["completed"])
+  finish -->|"unresolved items, missing checks or decisions, invalid claim"| partial(["partial"])
+  finish -->|"claim reports blocked"| blocked(["blocked"])
+  finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
+```
+
+Een claim kan ook rechtstreeks `partial` of `failed` melden. Finish waardeert een claim nooit op: het waardeert een `completed`-claim af waarvan het bewijs niet standhoudt, en een exitcode die niet nul is, maakt elke run `failed`.
 
 ## Start een native run {#start-a-native-run}
 
@@ -40,7 +69,7 @@ Deze controle bewijst alleen dat de Git-diff geen witruimtefouten bevat; vervang
 oma agent begin docs docs SESSION_ID --workspace .
 ```
 
-Vervang `SESSION_ID` door de session-ID uit het plan. Het commando print JSON met een gegenereerde UUID `runId` en een `claimPath`, bijvoorbeeld:
+Vervang `SESSION_ID` door de sessie-ID uit het plan. Het commando print JSON met een gegenereerde UUID `runId` en een `claimPath`, bijvoorbeeld:
 
 ```json
 {
@@ -86,6 +115,25 @@ Gebruik `--affected PATH...` alleen wanneer de graaf een volledige testselectie 
 
 ## Schrijf de claim en rond de run af {#write-and-finish-the-claim}
 
+Declareer voor taken die een API-contract, authenticatiebeleid, datamodel,
+migratiestrategie, state-eigenaar, toegangsscope voor infrastructuur of een andere
+beslissing kiezen waarvan later werk afhangt, vóór de dispatch `required_decisions` in de taak:
+
+```json
+"required_decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "description": "Choose the compatibility window and rollback strategy for the account migration."
+  }
+]
+```
+
+Laat dit veld weg bij taken die een bestaande beslissing volgen. Vereisten worden
+met het taakcontract vastgezet en kunnen na de dispatch niet worden verwijderd of gewijzigd.
+Toon voorgestelde onderwerpen voor een agent met
+`oma state decisions list --agent db-engineer --json`. Deze onderwerpen zijn
+keuzes om te gebruiken wanneer ze relevant zijn; de catalogus maakt niet elke keuze verplicht.
+
 Schrijf het claimbestand op exact het pad dat `begin` heeft geprint:
 
 ```json
@@ -98,6 +146,29 @@ Schrijf het claimbestand op exact het pad dat `begin` heeft geprint:
 ```
 
 `status` is een van `completed`, `partial`, `blocked` of `failed`. Paden zijn relatief aan de projectroot en elk artifact moet een gewoon bestand binnen de workspace zijn. Gebruik `verificationSkipped` alleen voor een specifieke review waarvoor geen uitvoerbare controle bestaat; daarmee wordt een mislukte controle niet alsnog geslaagd.
+
+Neem inhoudelijke beslissingen op in de optionele array `decisions` van de claim:
+
+```json
+"decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "decision": "Use an expand-and-contract migration; retain the old column for one release.",
+    "rationale": "Both deployed app versions must work during the rollout; rollback switches reads to the retained column.",
+    "alternatives": ["Replace the column during a maintenance window"],
+    "evidence": ["docs/account-migration.md"]
+  }
+]
+```
+
+De parent slaat elke beslissing op als een `decision.made`-event in de sessie van de run
+en koppelt daaraan de werkelijke agent-, taak- en run-ID's. Een ontbrekende vereiste beslissing
+houdt het resultaat partial, ook wanneer uitvoerbare controles slagen. Beslissingen uit
+een andere taak of poging kunnen niet aan de vereiste voldoen. De receipt zet de
+event-ID's en inhoudshashes van de beslissingen vast; hergebruik controleert of die events nog
+bestaan, geldig zijn en een ongewijzigde inhoud hebben.
+Optionele beslissingen worden ook vastgelegd. Read-only agenten retourneren dezelfde array in
+hun `OMA_RESULT_JSON`-claim, zodat de parent die kan bewaren.
 
 Finaliseer daarna een native run nadat je de claim hebt geschreven:
 
@@ -123,7 +194,20 @@ Vraag eerst wat OMA zou doen:
 oma agent resume SESSION_ID --dry-run
 ```
 
-Het rapport deelt elke taak in als `reused`, `ready`, `running` of `blocked` en vermeldt de reden. Een geldige voltooide receipt wordt alleen hergebruikt als het contract, de inputs, de artifact-hashes en het bewijs van afhankelijkheden nog actueel zijn. Een live beheerd proces of een native run zonder bewijs dat die nog leeft, wordt niet gedupliceerd.
+Het rapport deelt elke taak in als `reused`, `ready`, `running` of `blocked` en vermeldt de reden:
+
+```mermaid
+flowchart TD
+  task["Plan task and its latest run"] --> live{"Latest run still running, with a live or unknown process?"}
+  live -->|yes| running(["running"])
+  live -->|no| valid{"Completed evidence still current?"}
+  valid -->|yes| reused(["reused"])
+  valid -->|no| safe{"retry_policy safe, replayable prompt and agent, attempts left?"}
+  safe -->|yes| ready(["ready"])
+  safe -->|no| blocked(["blocked"])
+```
+
+Een afhankelijkheid die niet `reused` is, zet een afhankelijke `reused`-taak terug naar `ready` (of `blocked` wanneer die niet opnieuw kan worden afgespeeld), en een `ready`-taak waarvan de afhankelijkheid `blocked` of `running` is, wordt `blocked`. Een geldige voltooide receipt wordt alleen hergebruikt als het contract, de inputs, de artifact-hashes en het bewijs van afhankelijkheden nog actueel zijn. Een live beheerd proces of een native run zonder bewijs dat die nog leeft, wordt niet gedupliceerd.
 
 Wanneer het rapport veilig uitvoeren aangeeft, hervat je de ready-taken in volgorde van afhankelijkheid:
 
@@ -151,4 +235,9 @@ Hervatten start een nieuwe poging; het herstelt de onderbroken modelconversatie 
 | Het plan of de inputs zijn gewijzigd | Begin een nieuwe run nadat het plan stabiel is. | De nieuwe run legt het nieuwe contract vast; oud bewijs wordt niet hergebruikt. |
 | Een taak heeft een beslissing nodig | Registreer de taak als `blocked` met uitleg. | Hervatten laat de taak geblokkeerd tot de beslissing en prompt beschikbaar zijn. |
 
-Zie voor parsefouten, ontbrekende vendortools, dashboardstatus, planningen en verouderde evaluatiegegevens [Probleemoplossing](/docs/guide/troubleshooting).
+## Volgende stappen {#next-steps}
+
+- Foutmeldingen van `begin`, `verify`, `finish` en `resume`: [Probleemoplossing](./troubleshooting.md#find-your-error)
+- Parsefouten, ontbrekende vendortools, dashboardstatus, planningen en verouderde evaluatiegegevens: [Probleemoplossing](./troubleshooting.md)
+- Beheerde runs volgen terwijl ze werken: [Dashboardmonitoring](./dashboard-monitoring.md)
+- Plannen met taakcontracten definiëren: [Multi-agentprojecten](./multi-agent-project.md)

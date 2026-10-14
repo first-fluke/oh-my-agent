@@ -25,11 +25,21 @@ Als je taak volledig binnen één domein past, gebruik je rechtstreeks de specif
 
 De aanbevolen multi-agentworkflow volgt een vaste pipeline met vier stappen.
 
+```mermaid
+flowchart LR
+  plan["/plan"] --> planFile["plan-{sessionId}.json"]
+  planFile -->|"loaded by"| orch["/orchestrate (automated)"]
+  plan -.->|"or run"| work["/work (step-by-step; its PM step writes the plan)"]
+  work --> spawn["Agents per priority tier (native subagents or oma agent spawn)"]
+  orch --> spawn
+  spawn --> review["/review (QA)"]
+```
+
 ### Stap 1: /plan voor requirements en taakdecompositie
 
 De workflow `/plan` draait inline (zonder subagents te starten) en maakt een gestructureerd plan.
 
-```
+```text
 /plan
 ```
 
@@ -38,7 +48,7 @@ Wat er gebeurt:
 1. **Requirements verzamelen:** De PM-agent vraagt naar doelgebruikers, kernfeatures, beperkingen en deploymentdoelen.
 2. **Technische haalbaarheid analyseren:** Gebruikt de geconfigureerde code-intelligenceprovider om herbruikbare code en architectuurpatronen in de bestaande codebase te vinden. Native search is alleen voor paden buiten het project of genegeerde paden.
 3. **API-contracten definiëren:** Ontwerpt endpointcontracten (methode, pad, request-/responseschema's, auth en foutresponses) en slaat ze op in `.agents/results/api-contracts/` (runartefacten). Duurzame specs worden gepromoveerd naar `docs/plans/contracts/` wanneer ze worden gecommit.
-4. **Opsplitsen in taken:** Deelt het project op in uitvoerbare taken, elk met een toegewezen agent, titel, acceptatiecriteria, prioriteit (P0–P3) en afhankelijkheden.
+4. **Opsplitsen in taken:** Deelt het project op in uitvoerbare taken, elk met een toegewezen agent, titel, acceptatiecriteria, prioriteitstier (tier 1 draait als eerste) en afhankelijkheden.
 5. **Plan met de gebruiker reviewen:** Presenteert het volledige plan ter bevestiging. De workflow gaat pas verder na expliciete goedkeuring.
 6. **Plan opslaan:** Schrijft het goedgekeurde plan naar `.agents/results/plan-{sessionId}.json` en legt een samenvatting vast in het geheugen.
 
@@ -58,31 +68,31 @@ Je hebt twee uitvoeringspaden:
 
 #### /work: interactieve multi-agentpipeline
 
-```
+```text
 /work
 ```
 
 1. Analyseert het verzoek van de gebruiker en identificeert de betrokken domeinen.
 2. Start de PM-agent voor taakdecompositie (maakt `plan-{sessionId}.json`).
 3. Presenteert het plan ter bevestiging. **Blokkeert tot bevestiging.**
-4. Start agents per prioriteitstier (eerst P0, daarna P1 enzovoort); taken met dezelfde prioriteit draaien parallel.
-5. Monitort de voortgang van agents via memorybestanden.
+4. Start agenten per prioriteitstier (eerst tier 1, daarna tier 2 enzovoort); taken binnen dezelfde tier draaien parallel.
+5. Monitort de voortgang van agenten via memorybestanden.
 6. Start een QA-agentreview over alle deliverables (OWASP Top 10, performance, toegankelijkheid en codekwaliteit).
 7. Als QA CRITICAL- of HIGH-problemen vindt, start de verantwoordelijke agent opnieuw met de bevindingen. Dit gebeurt maximaal 2 keer per probleem. Als hetzelfde probleem blijft bestaan, activeert de workflow de **Exploration Loop**: genereert 2–3 alternatieve aanpakken, start hetzelfde agenttype met verschillende hypotheseprompts in afzonderlijke workspaces, laat QA elke aanpak scoren en neemt de beste uitkomst over.
 
 #### /orchestrate: geautomatiseerde parallelle uitvoering
 
-```
+```text
 /orchestrate
 ```
 
 1. Laadt `.agents/results/plan-{sessionId}.json`, en maakt inline een plan via `/plan` wanneer er geen bruikbaar planbestand is.
 2. Initialiseert een sessie met een ID in de vorm `session-YYYYMMDD-HHMMSS`.
-3. Maakt `orchestrator-session.md` en `task-board.md` in de memorydirectory.
-4. Start agents per prioriteitstier; elke agent ontvangt de taakomschrijving, API-contracten en context.
-5. Monitort de voortgang door `progress-{agent}.md` te pollen.
+3. Maakt `orchestrator-session-{sessionId}.md` en `task-board-{sessionId}.md` in de memorydirectory.
+4. Start agenten per prioriteitstier; elke agent ontvangt de taakomschrijving, API-contracten en context.
+5. Monitort de voortgang door bestanden `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` te pollen.
 6. Verifieert elke voltooide agent via `verify.sh`. PASS (exit 0) accepteert het resultaat; FAIL (exit 1) start opnieuw met foutcontext (maximaal 2 retries). Aanhoudende mislukking activeert de Exploration Loop.
-7. Verzamelt alle `result-{agent}.md`-bestanden en stelt een eindrapport samen.
+7. Verzamelt alle bestanden `result-{agentId}-{taskId}-{runId}-{sessionId}.md` en stelt een eindrapport samen.
 
 ### Stap 3: agent spawn voor CLI-agentbeheer
 
@@ -92,23 +102,25 @@ Het commando `agent spawn` is het low-levelmechanisme dat workflows intern gebru
 oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-**Alle flags:**
+**Alle vlaggen** (`oma agent spawn --help`):
 
-| Flag | Beschrijving |
+| Vlag | Beschrijving |
 |:-----|:-------------|
 | `--vendor <vendor>` | Overschrijving van de CLI-vendor (antigravity/claude/codex/cursor/opencode/qwen/grok/pi). Overschrijft de modelresolutie voor deze spawn. |
 | `-w, --workspace <path>` | Werkdirectory voor de agent. Wordt automatisch uit de monorepo-configuratie afgeleid als deze ontbreekt. |
 | `--task-id <id>` | Koppelt de spawn aan een taak in het sessieplan; standaard de agent-ID. |
 | `--isolation worktree` | Maakt een git-worktree voor de spawn; standaard is er geen extra isolatie. |
-| `--read-only` | Beperkt het child tot inspectietools en onderdrukt auto-approveflags. |
+| `--read-only` | Beperkt het child tot inspectietools en onderdrukt auto-approve-vlaggen. |
+| `--resumed-from <run-id>` | Koppelt een retry aan de voorafgaande run. |
+| `--fallback-vendors <vendors>` | Geordende, door komma's gescheiden keten van fallbackvendors voor deze spawn. |
 
 **Volgorde voor vendorresolutie** (eerste match wint):
 
-1. De `--vendor`-flag op de commandoregel
+1. De `--vendor`-vlag op de commandoregel
 2. De `agents:`-override in `oma-config.yaml` voor deze agent
 3. De standaardagenten van de actieve `model_preset`
 
-Zie [Per-Agent Models](./per-agent-models.md) voor configuratiedetails.
+Zie [Modellen per agent](./per-agent-models.md) voor configuratiedetails.
 
 **Automatische workspace-detectie** controleert monorepo-configuraties in deze volgorde: `pnpm-workspace.yaml`, `package.json` workspaces, `lerna.json`, `nx.json`, `turbo.json`, `mise.toml`. Elke workspacedirectory krijgt een score op basis van trefwoorden voor het agenttype (zoals "web", "frontend", "client" voor de frontendagent). Als er geen monorepo-configuratie wordt gevonden, valt de detectie terug op vaste kandidaten zoals `apps/web`, `apps/frontend`, `frontend/` enzovoort.
 
@@ -116,7 +128,7 @@ Zie [Per-Agent Models](./per-agent-models.md) voor configuratiedetails.
 
 ### Stap 4: /review voor QA-verificatie
 
-```
+```text
 /review
 ```
 
@@ -126,7 +138,7 @@ De reviewworkflow voert een volledige QA-pipeline uit:
 2. **Geautomatiseerde securitycontroles:** Voert `npm audit`, `bandit` of het equivalent uit.
 3. **Handmatige review volgens OWASP Top 10:** Injection, broken auth, gevoelige data, toegangscontrole, misconfiguratie, onveilige deserialisatie, kwetsbare componenten en onvoldoende logging.
 4. **Performanceanalyse:** N+1-queries, ontbrekende indexen, onbegrensde paginering, memory leaks, onnodige rerenders en bundelgroottes.
-5. **Toegankelijkheid:** WCAG 2.1 AA, inclusief semantische HTML, ARIA, toetsenbordnavigatie, kleurcontrast en focusbeheer.
+5. **Toegankelijkheid:** WCAG 2.2 AA, inclusief semantische HTML, ARIA, toetsenbordnavigatie, kleurcontrast en focusbeheer.
 6. **Codekwaliteit:** Naamgeving, foutafhandeling, testdekking, TypeScript strict mode, ongebruikte imports en async/await-patronen.
 7. **Rapport:** Bevindingen worden ingedeeld als CRITICAL / HIGH / MEDIUM / LOW met `file:line`, beschrijving en herstelcode.
 
@@ -134,11 +146,11 @@ Voor grote scopes delegeert de workflow aan de QA-agent. Met de optie `--fix` st
 
 ---
 
-## Sessie-ID-strategie
+## Sessie-ID-strategie {#session-id-strategy}
 
 Elke orchestratiesessie krijgt een unieke identifier in de vorm:
 
-```
+```text
 session-YYYYMMDD-HHMMSS
 ```
 
@@ -146,12 +158,12 @@ Voorbeeld: `session-20260324-143052`
 
 De sessie-ID wordt gebruikt voor:
 
-- Memorybestanden (`orchestrator-session.md`, `task-board.md`)
-- Het volgen van agentprocessen via PID-bestanden in de tijdelijke systeemdirectory (`/tmp/subagent-{session-id}-{agent-id}.pid`)
-- Het koppelen van logbestanden (`/tmp/subagent-{session-id}-{agent-id}.log`)
+- Het benoemen van memorybestanden (`orchestrator-session-{sessionId}.md`, `task-board-{sessionId}.md`)
+- Het volgen van agentprocessen via PID-bestanden in de tijdelijke map van het OS (`$TMPDIR` op macOS, meestal `/tmp` op Linux, `%TEMP%` op Windows): `subagent-{session-id}-{agent-id}.pid`
+- Het koppelen van logbestanden in dezelfde map: `subagent-{session-id}-{agent-id}.log`
 - Het groeperen van resultaten in `.agents/results/parallel-{timestamp}/`
 
-De sessie-ID wordt in stap 2 van `/orchestrate` gegenereerd en aan alle gestarte agents doorgegeven. Zo kunnen alle agents, logs en PID's van één run worden teruggevoerd naar die run.
+De sessie-ID wordt in stap 2 van `/orchestrate` gegenereerd en aan alle gestarte agenten doorgegeven. Zo kunnen alle agenten, logs en PID's van één run worden teruggevoerd naar die run.
 
 ---
 
@@ -182,7 +194,7 @@ Als er geen monorepo-configuratie bestaat, controleert de CLI deze paden in deze
 
 - **frontend:** `apps/web`, `apps/frontend`, `apps/client`, `packages/web`, `packages/frontend`, `frontend`, `web`, `client`
 - **backend:** `apps/api`, `apps/backend`, `apps/server`, `packages/api`, `packages/backend`, `backend`, `api`, `server`
-- **mobile:** `apps/mobile`, `apps/app`, `packages/mobile`, `packages/app`, `mobile`, `app`
+- **mobile:** `apps/mobile`, `apps/app`, `packages/mobile`, `mobile`, `app`
 
 Als niets matcht, draait de agent in de huidige directory (`.`).
 
@@ -198,11 +210,11 @@ oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 
 ## Contract-first-regel
 
-API-contracten zijn het synchronisatiemechanisme tussen agents. De contract-first-regel betekent:
+API-contracten zijn het synchronisatiemechanisme tussen agenten. De contract-first-regel betekent:
 
 1. **Contracten worden gedefinieerd voordat de implementatie begint.** Stap 3 van de `/plan`-workflow maakt API-contracten aan en slaat ze op in `.agents/results/api-contracts/` (of in `docs/plans/contracts/` voor duurzame specs).
 
-2. **Elke agent ontvangt de relevante contracten als context.** Wanneer `/orchestrate` agents start in stap 3, ontvangt elke agent de taakomschrijving, API-contracten en relevante context.
+2. **Elke agent ontvangt de relevante contracten als context.** Wanneer `/orchestrate` agenten start in stap 3, ontvangt elke agent de taakomschrijving, API-contracten en relevante context.
 
 3. **Contracten definiëren de interfacegrens.** Een contract specificeert:
    - HTTP-methode en pad
@@ -211,7 +223,7 @@ API-contracten zijn het synchronisatiemechanisme tussen agents. De contract-firs
    - Authenticatievereisten
    - Formaten van foutresponses
 
-4. **Contractschendingen worden tijdens monitoring gevonden.** Stap 5 van `/work` gebruikt de geconfigureerde code-intelligenceprovider om te controleren of API-implementaties overeenkomen tussen agents. Native search is alleen voor paden buiten het project of genegeerde paden.
+4. **Contractschendingen worden tijdens monitoring gevonden.** Stap 5 van `/work` gebruikt de geconfigureerde code-intelligenceprovider om te controleren of API-implementaties overeenkomen tussen agenten. Native search is alleen voor paden buiten het project of genegeerde paden.
 
 5. **QA controleert naleving van contracten.** De Alignment Review van de QA-agent (stap 6 in ultrawork) vergelijkt de implementatie systematisch met het plan, inclusief API-contracten.
 
@@ -225,7 +237,7 @@ Multi-agentwerk is pas klaar wanneer aan vier voorwaarden is voldaan:
 
 ### 1. Aangegeven controles slagen
 
-Elke acceptatiecriteria heeft een passende controle en de controles uit het plan slagen. Een build wordt alleen meegenomen wanneer de projectgate dat vereist; het result contract legt de werkelijke argv en exitcode vast.
+Elk acceptatiecriterium heeft een passende controle en de controles uit het plan slagen. Een build wordt alleen meegenomen wanneer de projectgate dat vereist; het result contract legt de werkelijke argv en exitcode vast.
 
 ### 2. Tests slagen
 
@@ -233,13 +245,13 @@ Alle bestaande tests blijven slagen en nieuwe tests dekken de geïmplementeerde 
 
 ### 3. Alleen geplande bestanden gewijzigd
 
-Agents wijzigen geen bestanden buiten hun toegewezen scope. De verificatiestap controleert dat alleen bestanden die bij de taak horen zijn veranderd. Zo worden onbedoelde neveneffecten in gedeelde code voorkomen.
+Agenten wijzigen geen bestanden buiten hun toegewezen scope. De verificatiestap controleert dat alleen bestanden die bij de taak horen zijn veranderd. Zo worden onbedoelde neveneffecten in gedeelde code voorkomen.
 
 ### 4. QA-review is schoon
 
 Er blijven geen CRITICAL- of HIGH-bevindingen over uit de QA-review. MEDIUM- en LOW-bevindingen mogen voor toekomstige sprints worden gedocumenteerd, maar blockers moeten worden opgelost.
 
-In de ultrawork-workflow worden deze voorwaarden expliciete fasepoorten (PLAN_GATE, IMPL_GATE, VERIFY_GATE, REFINE_GATE, SHIP_GATE) met checkboxcriteria die allemaal moeten slagen voordat je doorgaat.
+In de ultrawork-workflow worden deze voorwaarden expliciete fasegates (PLAN_GATE, IMPL_GATE, VERIFY_GATE, REFINE_GATE, SHIP_GATE) met checkboxcriteria die allemaal moeten slagen voordat je doorgaat.
 
 ---
 
@@ -248,7 +260,7 @@ In de ultrawork-workflow worden deze voorwaarden expliciete fasepoorten (PLAN_GA
 ### Eén agent starten
 
 ```bash
-# Spawn backend agent with Gemini (default)
+# Spawn backend agent; the vendor comes from the resolution order above
 oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Spawn frontend agent with Claude, explicit workspace
@@ -308,11 +320,11 @@ oma agent parallel tasks.yaml --vendor claude
 
 ### 1. Het plan klakkeloos goedkeuren
 
-`/orchestrate` kan inline een plan maken via `/plan` wanneer er geen bruikbaar planbestand is. Ook dat inline plan doorloopt de reviewgate van `/plan`, waarna de fan-out de goedgekeurde decompositie volgt. Voor grote multi-domeinprojecten is het beter `/plan` vooraf te draaien, zodat je een duurzame tracker in `docs/plans/work/` hebt en ruimte om de decompositie te verfijnen voordat agents starten.
+`/orchestrate` kan inline een plan maken via `/plan` wanneer er geen bruikbaar planbestand is. Ook dat inline plan doorloopt de reviewgate van `/plan`, waarna de fan-out de goedgekeurde decompositie volgt. Voor grote multi-domeinprojecten is het beter `/plan` vooraf te draaien, zodat je een duurzame tracker in `docs/plans/work/` hebt en ruimte om de decompositie te verfijnen voordat agenten starten.
 
 ### 2. Overlappende workspaces
 
-Twee agents aan dezelfde workspacedirectory toewijzen. Dit veroorzaakt bestandsconflicten waarbij de wijzigingen van de ene agent die van de andere overschrijven. Gebruik altijd afzonderlijke workspaces.
+Twee agenten aan dezelfde workspacedirectory toewijzen. Dit veroorzaakt bestandsconflicten waarbij de wijzigingen van de ene agent die van de andere overschrijven. Gebruik altijd afzonderlijke workspaces.
 
 ### 3. API-contracten overslaan
 
@@ -328,17 +340,17 @@ Agentresultaten handmatig proberen samen te voegen in plaats van de verificatie-
 
 ### 6. Te veel parallelliseren
 
-P1-taken starten voordat P0-taken klaar zijn. Prioriteitstiers bestaan omdat P1-taken vaak afhankelijk zijn van P0-resultaten. De workflows handhaven automatisch de volgorde per tier.
+Taken van tier 2 starten voordat taken van tier 1 klaar zijn. Prioriteitstiers bestaan omdat taken in latere tiers vaak afhankelijk zijn van de resultaten van eerdere tiers. De workflows handhaven automatisch de volgorde per tier.
 
 ### 7. Verificatie overslaan
 
-`agent spawn` rechtstreeks gebruiken zonder daarna het result contract vast te leggen. Voer de vastgelegde controles voor de taak uit en sluit af met een gestructureerde claim; zie [Agentresultaten en hervatten](/docs/guide/agent-results-and-resume). De verificatiestap van de workflow vangt daarna mislukte controles en scope-afwijkingen op voordat resultaten opnieuw worden gebruikt.
+`agent spawn` rechtstreeks gebruiken zonder daarna het result contract vast te leggen. Voer de vastgelegde controles voor de taak uit en sluit af met een gestructureerde claim; zie [Agentresultaten en hervatten](./agent-results-and-resume.md). De verificatiestap van de workflow vangt daarna mislukte controles en scope-afwijkingen op voordat resultaten opnieuw worden gebruikt.
 
 ---
 
 ## Cross-domeinintegratie valideren
 
-Nadat alle agents hun individuele taken hebben afgerond, moet de cross-domeinintegratie worden gevalideerd:
+Nadat alle agenten hun individuele taken hebben afgerond, moet de cross-domeinintegratie worden gevalideerd:
 
 1. **Afstemming van API-contracten:** De geconfigureerde code-intelligenceprovider controleert of backendimplementaties overeenkomen met de contracten die frontend en mobile gebruiken. Native search is alleen voor paden buiten het project of genegeerde paden.
 
@@ -358,10 +370,20 @@ De Alignment Review van de QA-agent (stap 6 in ultrawork en stap 6 in work) voer
 
 Een multi-agentproject is klaar wanneer:
 
-- Alle agents in alle prioriteitstiers succesvol zijn afgerond.
+- Alle agenten in alle prioriteitstiers succesvol zijn afgerond.
 - Verificatiescripts voor elke agent slagen (exitcode 0).
 - De QA-review nul CRITICAL- en nul HIGH-bevindingen meldt.
 - De afstemming van cross-domein-API-contracten is bevestigd.
 - De build slaagt en alle tests slagen.
 - Het eindrapport in memory is geschreven en aan de gebruiker is gepresenteerd.
 - De gebruiker finale goedkeuring geeft (in `/work` en de SHIP_GATE van ultrawork).
+
+---
+
+## Volgende stappen
+
+- De run volgen: [Dashboardmonitoring](./dashboard-monitoring.md)
+- Resultaten controleren of hervatten: [Resultaten en hervatten](./agent-results-and-resume.md)
+- Er ging iets mis: [Probleemoplossing](./troubleshooting.md)
+- Vendors en modellen per agent vastzetten: [Modellen per agent](./per-agent-models.md)
+- Termen zoals [plan](../getting-started/glossary.md#plan) en [persistente workflow](../getting-started/glossary.md#persistent-workflow): [Woordenlijst](../getting-started/glossary.md)

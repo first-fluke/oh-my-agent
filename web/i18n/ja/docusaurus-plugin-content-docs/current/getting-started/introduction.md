@@ -8,11 +8,11 @@ description: 33個のスキルパッケージ、12個のサブエージェント
 
 oh-my-agent は、AI 搭載 IDE と CLI ツール向けのマルチエージェント・オーケストレーションフレームワークです。1つの AI アシスタントにすべてを任せるのではなく、33個のスキルパッケージと13個の標準ディスパッチロールに作業を振り分けます。12個のリポジトリ内サブエージェント定義ファイルが、実装、レビュー、計画、デバッグ、ドキュメント、リサーチ、インフラの役割を再利用できる形で提供します。`research-explorer.md` は標準の `explore` ロールに対応し、`orchestrator` は個別の定義ファイルを持たないランタイム調整ロールです。
 
-OMA は、明示的に呼び出したとき、またはそのチェックを含むワークフローを選んだときに機械的なチェックを実行します。`oma verify agent <agent-type>` は選択したエージェント種別のチェックを実行し、`/ralph` は成果物を使った検証と judge ループを追加します。有効なベンダーの Stop フックは、設定されたチェックが実行される間、ワークフローを継続できます。スキルを読み込んだだけでは受入は成立せず、通常のプロンプトだけで全ワークフローのゲートが自動実行されるわけでもありません。ワークフローの受入基準と生成されたファイルを使って、完了を判断してください。
+OMA は、明示的に呼び出したとき、またはそのチェックを含むワークフローを選んだときに機械的なチェックを実行します。`oma verify agent <agent-type>` は選択したエージェント種別のチェックを実行し、`/ralph` は成果物を使った検証と [judge](./glossary.md#judge) ループを追加します。有効なベンダーの Stop フック（[停止ゲート](./glossary.md#stop-gate)）は、設定されたチェックが実行される間、ワークフローを継続できます。スキルを読み込んだだけでは受入は成立せず、通常のプロンプトだけで全ワークフローのゲートが自動実行されるわけでもありません。ワークフローの受入基準と生成されたファイルを使って、完了を判断してください。
 
 システム全体は、プロジェクト内の可搬な `.agents/` ディレクトリに保存されます。Claude Code、Codex CLI、Antigravity CLI または IDE、Cursor、OpenCode など、サポート対象のツールを切り替えても、エージェント設定はコードと一緒に移動します。
 
-OMA を初めて使う場合は、まず [クイックスタート](./quick-start.md)、続いて[重要なデフォルト](./important-defaults.md)を読んでください。インストールで SSOT とベンダー統合が作られます。最初に役立つ確認は `oma doctor` で、最初のタスクには小さな単一ドメインの変更を選ぶとよいでしょう。調整が必要になったら `/work` や `/orchestrate` に進みます。
+OMA を初めて使う場合は、まず [クイックスタート](./quick-start.md)、続いて[重要なデフォルト](./important-defaults.md)を読んでください。インストールで [SSOT](./glossary.md#ssot) とベンダー統合が作られます。最初に役立つ確認は `oma doctor` で、最初のタスクには小さな単一ドメインの変更を選ぶとよいでしょう。調整が必要になったら `/work` や `/orchestrate` に進みます。
 
 ---
 
@@ -28,7 +28,7 @@ oh-my-agent は専門化でこの問題に対応します。
 
 1. **各スキルには主なドメインがあります。** フロントエンドスキルは React/Next.js、shadcn/ui、TailwindCSS v4、FSD-lite アーキテクチャを扱います。バックエンドスキルは Repository-Service-Router パターン、パラメーター化クエリ、JWT 認証を扱います。ドメインの境界では重なりもあるため、2つ目のスキルや調整ワークフローが必要かどうかは、タスクの受入基準で判断してください。
 2. **エージェントは並列で実行できます。** バックエンドエージェントが API を構築している間、フロントエンドエージェントは自分のワークスペースで作業できます。オーケストレーターはファイルとして保存される実行単位の状態と実行記録を介して調整します。
-3. **品質に関するガイダンスが組み込まれています。** スキルにはドメイン別のチェックリスト、エラー対応手順、チャーター規則があります。チャータープリフライトでコードを書く前に範囲を絞り、選択したワークフローに含まれる場合、または依頼した場合に QA レビューを実行します。
+3. **品質に関するガイダンスが組み込まれています。** スキルにはドメイン別のチェックリスト、エラー対応手順、[チャーター](./glossary.md#charter)規則があります。チャータープリフライトでコードを書く前に範囲を絞り、選択したワークフローに含まれる場合、または依頼した場合に QA レビューを実行します。
 
 ---
 
@@ -36,9 +36,9 @@ oh-my-agent は専門化でこの問題に対応します。
 
 カタログでは、混同しやすい3つを分けています。
 
-- **スキル**は `.agents/skills/*/SKILL.md` にある33個のドメイン知識パッケージです。自然言語の意図からルーティングし、リソースを段階的に読み込みます。
-- **エージェント定義**は `.agents/agents/` にある12個のファイルです。ベンダーのネイティブなサブエージェント人格を提供し、1つ以上のスキルを参照します。
-- **ワークフロー**は `.agents/workflows/` にある21個のプロセス定義です。4つ（`orchestrate`、`work`、`ultrawork`、`ralph`）が永続的で、残りはレポートまで実行して永続モードを維持しません。
+- **[スキル](./glossary.md#skill)**は `.agents/skills/*/SKILL.md` にある33個のドメイン知識パッケージです。自然言語の意図からルーティングし、リソースを段階的に読み込みます。
+- **[エージェント定義](./glossary.md#agent-definition)**は `.agents/agents/` にある12個のファイルです。ベンダーのネイティブなサブエージェント人格を提供し、1つ以上のスキルを参照します。
+- **[ワークフロー](./glossary.md#workflow)**は `.agents/workflows/` にある21個のプロセス定義です。4つ（`orchestrate`、`work`、`ultrawork`、`ralph`）が[永続的](./glossary.md#persistent-workflow)で、残りはレポートまで実行して永続モードを維持しません。
 
 以下では詳細なスキルカタログを保持します。名前や説明が変わった場合は、各 `SKILL.md` のフロントマターが最新の基準です。
 
@@ -79,7 +79,7 @@ oh-my-agent は専門化でこの問題に対応します。
 
 | エージェント | 役割 | 主な機能 |
 |-------|------|-----------------|
-| **oma-qa** | 品質保証 | OWASP Top 10 のセキュリティ監査、パフォーマンス分析、WCAG 2.2 AA のアクセシビリティ、コード品質レビューを行います。CRITICAL/HIGH/MEDIUM/LOW の重要度に `file:line` と修正コードを添付します。ISO/IEC 25010 の品質特性と ISO/IEC 29119 のテスト整合性に対応します。リソースは `execution-protocol.md`、`iso-quality.md`、`checklist.md`、`self-check.md`、`error-playbook.md` です。 |
+| **oma-qa** | 品質保証 | OWASP Top 10 のセキュリティ監査、パフォーマンス分析、WCAG 2.2 AA のアクセシビリティ、コード品質レビューを行います。CRITICAL/HIGH/MEDIUM/LOW の重要度に `file:line` と修正コードを添付します。ISO/IEC 25010 の品質特性と ISO/IEC 29119 のテスト整合性に対応します。リソースは `execution-protocol.md`、`iso-quality.md`、`checklist.md`、`verify-ship-protocol.md`、`error-playbook.md` です。 |
 | **oma-debug** | バグの診断と修正 | 再現を先に行います。根本原因分析、最小限の修正、必須の回帰テスト、類似パターンの検索を含みます。シンボル追跡にはコードインテリジェンス MCP ツール（Gortex または Serena）を使います。リソースは `execution-protocol.md`、`common-patterns.md`、`debugging-checklist.md`、`bug-report-template.md`、`error-playbook.md` です。 |
 | **oma-refactor** | 挙動を保ったリファクタリング | 特性テストの安全網で段階的な再構成を確認します。ホットスポット（複雑度 × 変更頻度）の特定、コードスメル/SATD の選択、失敗時の Mikado 法による復元、状態を持つ変更の expand-contract、挙動を混ぜないリファクタリング専用コミットを扱います。IDE のリネームや jscodeshift/ast-grep を使うエンジン優先の変換と、`uvx lizard` / `uvx radon` による指標を使います。成功基準は読みやすさであり、指標は代理値です。 |
 
@@ -112,7 +112,7 @@ oh-my-agent は専門化でこの問題に対応します。
 
 | エージェント | 役割 | 主な機能 |
 |-------|------|-----------------|
-| **oma-deepsec** | エージェント型脆弱性スキャナーのドライバー | Vercel の `deepsec`（`bunx deepsec`）をエンドツーエンドで操作します。`.deepsec/` ワークスペースを `init` し、プロジェクト固有の `INFO.md` を書き、コストを考慮して `scan`/`process`/`triage`/`revalidate`/`export` を実行し、2ジョブの CI パターンで `process --diff` による PR ゲートを設定し、カスタムマッチャーを作成します。大規模な実行の前に `--limit 50 --concurrency 5` で較正し、有料処理の前にドル単位の見積もりを示します。コストはリポジトリの規模とバックエンドで変わります。エージェントのバックエンドは `codex`（gpt-5.5）または `claude`（claude-opus-4-8）です。 |
+| **oma-security** | セキュリティスキャンと検証 | アプリケーションのソース、エージェントスキル、MCP コンポーネントをスキャンし、スコープを限定した Web テスト環境に対してペネトレーションテストを実行し、指摘を検証してスキャンゲートを設定します。対象ごとのデフォルトエンジンは、アプリケーションのソースや差分には Deepsec、エージェントスキルのパッケージには Cisco Skill Scanner、MCP コンポーネントには Cisco MCP Scanner、Web テスト環境には ARTEX です。幅広い品質レビューには `oma-qa` を、修正にはドメインスキルを使います。 |
 
 ### ドキュメントとメタツール
 
@@ -157,19 +157,21 @@ oh-my-agent は、コンテキストウィンドウの枯渇を防ぐために2�
 
 oh-my-agent に必要なものはすべて `.agents/` ディレクトリにあります。
 
-```
+```text
 .agents/
-├── oma-config.yaml         # Shared preferences and provider/model settings
-├── oma-config.cue          # Optional schema-backed configuration
-├── skills/                 # 33 skill directories + _shared resources
-│   ├── _shared/            # Core resources used by all agents
-│   └── oma-{skill}/         # Per-skill SKILL.md + resources/variants
-├── workflows/              # 21 workflow definitions
-├── agents/                 # 12 subagent definitions
-├── results/plan-{sessionId}.json               # Generated plan output
-├── state/                  # Active workflow state files
-├── results/                # Agent result files
-└── mcp.json                # MCP server configuration
+├── oma-config.yaml   # Shared preferences and provider/model settings
+├── oma-config.cue    # Optional schema-backed configuration
+├── mcp.json          # MCP server configuration
+├── skills/           # 33 skill directories + _shared resources
+│   ├── _shared/      # Core resources used by all agents
+│   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
+├── workflows/        # 21 workflow definitions
+├── agents/           # 12 subagent definitions
+├── hooks/            # Hook sources, including core/triggers.json
+├── rules/            # Project rules projected into vendor files
+├── config/           # Shipped defaults (defaults.yaml)
+├── results/          # Plans (plan-{sessionId}.json) and agent results
+└── state/            # Active workflow state files
 ```
 
 `.claude/` ディレクトリは IDE 統合層としてだけ存在します。`.agents/` を指すシンボリックリンク、キーワード検出と HUD ステータスラインのフックを含みます。`.agents/state/memories/` はオーケストレーション中のランタイム調整状態を保存し、古いプロジェクトでは従来の `.serena/memories/` にフォールバックします。
@@ -198,25 +200,53 @@ oh-my-agent は、ネイティブのスキル／プロンプト読み込みま�
 
 ---
 
+## リクエストの流れ
+
+この図は、プロンプトから結果が完成するまでに何が起こるかを示します。キーワードフック、スキルインジェクター、Stop フックは、フック統合が有効なホストでだけ動作します。キーワードフックとスキルインジェクターは同じプロンプトに対して順番に実行され、それぞれが注入したコンテキストは結合されます。
+
+```mermaid
+flowchart TD
+  P["User prompt"] --> SL{"Starts with a /command?"}
+  SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
+  SL -->|no| KD["Keyword hook checks triggers.json"]
+  KD -->|"workflow keyword (explicit keyword for persistent ones)"| CTX["Inject OMA WORKFLOW context"]
+  CTX --> WF
+  KD -->|"persistent workflow, natural language only"| SUG["Workflow suggested; agent decides"]
+  SUG -.->|"if the request calls for it"| WF
+  KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
+  SI --> HOST["Host picks skills by name and description"]
+  WF --> SK["Skills: .agents/skills/*/SKILL.md"]
+  HOST --> SK
+  WF --> AG["Agents: native subagent or oma agent spawn"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
+```
+
+出典：`.agents/hooks/core/keyword-detector.ts`（スラッシュコマンドのスキップ、トリガーの照合、永続ワークフローの提案）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`、および `.agents/workflows/` 配下のワークフローファイル。すべてのワークフローがすべてのゲートを持つわけではありません。`/orchestrate` は検証スクリプトを、`/review` は QA レビューを実行し、`/ralph` は [judge](./glossary.md#judge) を追加します。
+
+---
+
 ## スキルルーティングシステム
 
-プロンプトを送ると、oh-my-agent はスキルルーティングマップ（`.agents/skills/_shared/core/skill-routing.md`）で担当エージェントを決めます。
+ホストは、インストール済みスキルの名前と説明からスキルを選びます。OMA のルーティングマップ（`.agents/skills/_shared/core/skill-routing.md`）は、どのスキルがどの成果を担当するかを定義します。キーワードだけで判断せず、求められている成果とその依存関係でルーティングしてください。スキルを選んでも、ワークフローが開始されたり委任が承認されたりするわけではありません。
 
-| ドメインキーワード | ルーティング先 |
-|----------------|-----------|
-| API、endpoint、REST、GraphQL、database、migration | oma-backend |
-| auth、JWT、login、register、password | oma-backend |
-| UI、component、page、form、screen（Web） | oma-frontend |
-| style、Tailwind、responsive、CSS | oma-frontend |
-| mobile、iOS、Android、Flutter、React Native、Swift、SwiftUI、app | oma-mobile |
-| bug、error、crash、broken、slow | oma-debug |
-| review、security、performance、accessibility | oma-qa |
-| UI design、design system、landing page、DESIGN.md | oma-design |
-| brainstorm、ideate、explore、idea | oma-brainstorm |
-| plan、breakdown、task、sprint | oma-pm |
-| automatic、parallel、orchestrate | oma-orchestration |
+| 求められている成果 | 担当スキル |
+|---|---|
+| アプリケーション API、サーバー認証、サービス/データアクセスのロジック | oma-backend |
+| スキーマ、マイグレーション設計、インデックス、クエリ調整、データベース運用 | oma-db |
+| Web コンポーネント、ページ、フォーム、クライアント状態 | oma-frontend |
+| モバイル画面、ウィジェット、プラットフォーム統合 | oma-mobile |
+| システム境界、アーキテクチャのトレードオフ、ADR | oma-architecture |
+| 誤った挙動の診断と修正 | oma-debug |
+| 正確性、セキュリティ、アクセシビリティ、パフォーマンスのレビュー | oma-qa |
+| ビジュアルシステム、DESIGN.md、再設計の方向性 | oma-design |
+| 依頼されたアイデア出しや代替案の検討 | oma-brainstorm |
+| 要件、依存関係、受入基準 | oma-pm |
+| 依頼された専門エージェントの並列実行 | oma-orchestration |
+| 依頼された手動のマルチエージェント調整 | oma-coordination |
+| Git ブランチ、コミット、マージ、リポジトリ履歴 | oma-scm |
 
-複数ドメインにまたがる複雑なリクエストでは、ルーティングは決められた実行順序に従います。たとえば「フルスタックアプリを作成」は、oma-pm（計画）→ oma-backend + oma-frontend（並列実装）→ oma-qa（レビュー）にルーティングされます。
+その他のドメインでは、ホストがインストール済みスキルの説明から選びます。複数ドメインの作業に固定の順序はありません。未確定のアーキテクチャや製品の判断を先に解決し、共有する API コントラクトが使える状態になれば、バックエンドとクライアントの作業は並列に進められます。
 
 ---
 
@@ -237,9 +267,10 @@ HUD は Claude Code の `statusLine` フック機能を使う `.claude/hooks/hud
 `/command` を入力しなくてもワークフローを起動できます。oh-my-agent のフックシステムは、`.agents/hooks/core/triggers.json` に定義されたキーワードトリガー（oma バイナリにインライン化され、すべてのベンダーで共有されます）に対して自然言語の入力をスキャンします。対応言語は11言語（英語、韓国語、日本語、中国語、スペイン語、フランス語、ドイツ語、ポルトガル語、ロシア語、オランダ語、ポーランド語）です。
 
 - **実行可能な入力**（例: 「認証機能を plan する」）→ ワークフローを自動的に読み込みます。
-- **情報を尋ねる入力**（例: 「orchestrate とは？」）→ フィルタリングされ、ワークフローは起動しません。
+- **情報を尋ねる入力**（例: 「orchestrate とは？」）→ フィルターリングされ、ワークフローは起動しません。
 - **明示的な `/command`** → 重複を避けるため、フックは検出をスキップします。
-- **永続ワークフロー** → 「workflow done」と言うまで、メッセージごとにコンテキストを再注入します。
+- **永続ワークフロー**（`orchestrate`、`work`、`ultrawork`、`ralph`）は、自然言語だけで一致した場合は提案されるだけで、開始されません。プロンプトにワークフローの明示的なキーワード（例：`ultrawork` や `ralph`）が含まれると、永続モードが有効になります。
+- **実行中の永続ワークフロー** → 「workflow done」と言うまで、メッセージごとにコンテキストを再注入します。
 
 すべてのフックイベントは `oma hook run` の標準 ABI を通ります。ベンダーは `oma-hook.sh --vendor <v> --event <nativeEvent>` を起動し、インプロセスのハンドラーチェーンへ渡してベンダー固有の形式を標準出力に出します（常に終了コード0で、失敗時もエージェントを止めません）。
 

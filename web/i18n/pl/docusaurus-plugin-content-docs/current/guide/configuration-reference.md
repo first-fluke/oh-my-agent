@@ -18,18 +18,27 @@ Oczekiwany wynik to rozstrzygnięty profil pokazujący wybrany preset i plan mod
 
 ## Który plik wygrywa
 
-Loader przechodzi w górę od bieżącego katalogu i zatrzymuje się przy najbliższym katalogu `.agents/`, który zawiera wspólną albo lokalną konfigurację. W tym katalogu:
+Loader odczytuje globalne wartości domyślne z `$OMA_HOME/.agents/` (domyślnie
+`~/.oma/.agents/`), a następnie przechodzi w górę od bieżącego katalogu i zatrzymuje się przy
+najbliższym projektowym katalogu `.agents/`. W każdym wybranym katalogu:
 
-1. Najpierw oceniany jest `oma-config.cue`.
-2. `oma-config.yaml` jest używany, gdy wspólny plik CUE nie istnieje albo nie może zostać oceniony.
-3. Jeden plik lokalny (`oma-config.local.cue` albo `.local.yaml`) jest scalany na wierzchu pliku wspólnego.
-4. Ustawione `OMA_MODEL_PRESET` nadpisuje `model_preset` dla tego procesu.
+1. `oma-config.yaml` dostarcza wspólne wartości.
+2. `oma-config.cue`, jeśli istnieje i jest poprawny, nadpisuje każdy klucz, który ustawia; klucze YAML, których nie ustawia, pozostają. Jeśli pliku CUE nie można ocenić, OMA ostrzega i używa wyłącznie pliku YAML.
+3. Jeden plik lokalny (`oma-config.local.cue` albo `.local.yaml`) jest scalany na wierzchu wspólnego wyniku.
+
+Wspólny/lokalny wynik projektu nadpisuje wspólny/lokalny wynik globalny.
+Ustawione `OMA_MODEL_PRESET` nadpisuje `model_preset` po wszystkich warstwach plików.
+Pełną kolejność, diagram przepływu i rozwiązywanie problemów opisano w
+[Ładowaniu konfiguracji](/docs/guide/oma-config-semantics#precedence-table).
 
 Mapy są scalane rekurencyjnie. Tablice, skalary i `null` zastępują wartość wspólną. Obecność obu lokalnych formatów jest błędem. Błędny lokalny plik kończy działanie, aby prywatne nadpisanie nie mogło zostać po cichu pominięte.
 
-To reguła najbliższej warstwy, a nie ogólne scalanie projektu z katalogiem HOME. Instalacja globalna odczytuje `~/.agents/oma-config.*`, ponieważ HOME jest jej katalogiem instalacyjnym. Polecenie projektu odczytuje najbliższą warstwę projektu. Wyjątkiem jest sprawdzanie `auto_update_cli`: najpierw sprawdza projekt, potem HOME, a na końcu przyjmuje wartość domyślną włączoną.
+Różne nadrzędne katalogi główne projektów nie są scalane. Pusty najbliższy projektowy
+`.agents/` nadal wyznacza tę granicę. Wycofana instalacja `~/.agents/`
+jest wejściem migracji i nie jest odczytywana jako zapasowa warstwa projektu. Globalne wartości domyślne nie
+zmieniają tożsamości bieżącego projektu ani zakresu jego pamięci.
 
-## Klucze najwyższego poziomu
+## Klucze najwyższego poziomu {#top-level-keys}
 
 Poniższe klucze są odczytywane przez bieżący schemat runtime’u albo przez dostarczonych konsumentów OMA. Klucz oznaczony jako sparse jest celowo częściowy: pomiń zagnieżdżoną wartość, aby zachować domyślne ustawienie kodu.
 
@@ -43,14 +52,14 @@ Poniższe klucze są odczytywane przez bieżący schemat runtime’u albo przez 
 | `telemetry` | boolean | `false` | Zgoda na telemetrię dostawcy używana podczas instalacji, aktualizacji i uzgadniania linków. |
 | `model_preset` | niepusty string | `auto` w nowych szablonach | Wbudowany albo własny preset modeli. `OMA_MODEL_PRESET` nadpisuje go dla jednego procesu. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Ustawienia FreeLLMAPI, gdy preset to `free`; `FREELLM_BASE_URL` i `FREELLM_MODEL` nadpisują wartości pliku, a nazwa klucza nigdy nie zawiera sekretu. Zobacz [konfigurację modeli per agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Wybór dostawców dokumentacji, wyszukiwania, inteligencji kodu i pamięci semantycznej. Inteligencja kodu przyjmuje `serena` albo `gortex`, a pamięć semantyczna `agentmemory`, `honcho` albo `none`. `code_intelligence_guard` (`block` albo `off`) steruje strażnikiem wyszukiwania PreToolUse. Natywne wyszukiwania ograniczone do potwierdzonych wykluczeń dostawcy lub ścieżek spoza projektu są dozwolone bez obejścia. Strażnik odczytuje wykluczenia Sereny i włączone reguły gitignore albo listę wykluczeń Gortex; nie wnioskuje zależności z nazw katalogów. Hook nie wymienia `OMA_CI_ALLOW_NATIVE`. Wyszukiwanie w powłoce z prefiksem `OMA_CI_ALLOW_NATIVE=1` omija strażnika wyłącznie dla zasobów spoza projektu lub ignorowanych ścieżek, których strażnik nie rozpoznał, a nie dla kodu źródłowego projektu. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Wybór dostawców dokumentacji, wyszukiwania, inteligencji kodu i pamięci semantycznej. Zobacz [Dostawcy](#providers). |
 | `brave` | `api_key_env` albo `api_key_vault` | nieustawione | Odwołanie do poświadczenia wyszukiwania Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Zobacz [szczegóły Honcho](#honcho-semantic-memory) | Ustawienia połączenia z pamięcią semantyczną Honcho. |
 | `agents` | ID agenta → `model`, opcjonalne `effort`, `thinking`, `memory` | rozstrzygnięcie presetu | Nadpisania per agent stosowane na wybranym presecie. Effort to `none`, `low`, `medium`, `high` albo `xhigh`; memory to `user`, `project` albo `local`. |
 | `models` | slug modelu → mapowanie CLI | nieustawione | Wbudowane definicje modeli dla obsługiwanych CLI dostawców. |
 | `custom_presets` | preset → opis, opcjonalne `extends`, `agent_defaults` | nieustawione | Presety użytkownika; `extends` może dziedziczyć po wbudowanym presecie. |
-| `vendors` | YAML: `string[]` wybranych ID dostawców; szablon CUE: opcjonalna mapa zapasowa `vendors.pi` | wszyscy dostawcy możliwi do linkowania dla listy YAML | Wybór integracji dostawców, które `oma install` i `oma update` projektują w YAML. Mapa możliwości dispatchu znajduje się w zarządzanej konfiguracji orkiestracji; zobacz [metadane wyboru dostawcy i dispatchu](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | string | zapasowa wartość konsumenta | Starszy zapasowy wybór samego dostawcy, gdy nie rozstrzyga się żaden plan modelu. |
+| `vendors` | YAML: `string[]` wybranych ID dostawców; szablon CUE: opcjonalna mapa zapasowa `vendors.pi` | brak: `oma link` używa każdego dostawcy możliwego do linkowania, `oma update` używa dostawców, których katalogi projektu istnieją | Wybór integracji dostawców, które `oma install` i `oma update` projektują w YAML. Mapa możliwości dispatchu znajduje się w zarządzanej konfiguracji orkiestracji; zobacz [metadane wyboru dostawcy i dispatchu](#vendor-selection-and-dispatch-metadata). |
+| `default_cli` | ID dostawcy (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` dla transportu `free` | Dostawca używany, gdy nic innego go nie wybiera: niewykryty runtime przy `auto` albo transport `free` po `--vendor`, `OMA_RUNTIME_VENDOR` i wykrytym runtime’ie. Zobacz [Jak OMA rozstrzyga model i CLI agenta](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
 | `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | każdy pominięty wymiar nie ma limitu | Twarde limity tokenów i uruchomień sprawdzane przed kolejnym uruchomieniem agenta; zobacz [limity kwot sesji](#session-quota-caps). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Zachowanie `oma docs verify` i wykluczenia skanowania. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transport MCP Sereny i zachowanie aktualizacji. |
@@ -73,9 +82,25 @@ Dostarczony szablon zawiera też bloki należące do konsumentów. Ich bieżące
 | `refactor_guard` | `enabled`, `max_lines` | `false`, `500` | Włącza guard hooka stop i ustawia budżet kodu na plik. |
 | `scm` | `conventional_commits`, `branching_strategy`, `require_pr_for_default_branch`, `co_author.*`, `forbidden_patterns`, `allowed_exceptions` | dostarczony szablon włącza conventional commits i ochronę PR, z tożsamością współautora oraz listami nazw plików z szablonu | Steruje umiejętnością SCM, hookiem commita i guardem wzorców sekretów. Przed włączeniem trailerów współautora zastąp wartości tożsamości z szablonu własnymi. |
 
-Bloki te są akceptowane przez przekazywanie konfiguracji i interpretowane przez odpowiednią funkcję albo workflow. Parser `serena_reaper` odczytuje pokazane wyżej klucze snake_case, choć starsze komentarze szablonu używały nazw camelCase. Przed dodaniem zagnieżdżonych kluczy przeczytaj odpowiedni przewodnik funkcji; ta strona nie wymyśla kluczy spoza wymienionych tu konsumentów.
+Bloki te są akceptowane przez przekazywanie konfiguracji i interpretowane przez odpowiednią funkcję albo workflow. Parser `serena_reaper` odczytuje wyłącznie pokazane wyżej klucze snake_case i ignoruje camelCase. Dostarczone szablony nadal pokazują camelCase (`keepWarm`, `idleMinutes`, `graceSeconds`), a dostarczony schemat CUE odrzuca klucze snake_case w swoim bloku schematu (`field not allowed`), więc ustawiaj je w `oma-config.yaml` albo w lokalnej nakładce YAML. Przed dodaniem zagnieżdżonych kluczy przeczytaj odpowiedni przewodnik funkcji; ta strona nie wymyśla kluczy spoza wymienionych tu konsumentów.
 
 ## Dokładne obiekty zagnieżdżone
+
+### Dostawcy {#providers}
+
+`providers` wybiera jednego dostawcę dla każdej możliwości:
+
+| Klucz | Akceptowane wartości | Wartość domyślna |
+| --- | --- | --- |
+| `docs` | `context7` | `context7` |
+| `web` | ID dostawcy wyszukiwania (małe litery, cyfry, `_`, `-`), na przykład `native` albo `brave` | `native` |
+| `code_intelligence` | `serena`, `gortex` | `serena` |
+| `code_intelligence_guard` | `block`, `off` | `block` |
+| `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
+
+`code_intelligence_guard` steruje strażnikiem wyszukiwania PreToolUse. Natywne wyszukiwania ograniczone do potwierdzonych wykluczeń dostawcy lub ścieżek spoza projektu są dozwolone bez obejścia. Strażnik odczytuje wykluczenia Sereny i włączone reguły gitignore albo listę wykluczeń Gortex; nie wnioskuje zależności z nazw katalogów.
+
+Hook nie wymienia `OMA_CI_ALLOW_NATIVE`. Wyszukiwanie w powłoce z prefiksem `OMA_CI_ALLOW_NATIVE=1` omija strażnika wyłącznie dla zasobów spoza projektu lub ignorowanych ścieżek, których strażnik nie rozpoznał, a nie dla kodu źródłowego projektu.
 
 ### Pamięć semantyczna Honcho {#honcho-semantic-memory}
 
@@ -113,7 +138,7 @@ Podczas interaktywnego albo nieinteraktywnego konfigurowania Honcho bez zapisane
 
 ### Limity kwot sesji {#session-quota-caps}
 
-`session.quota_cap` to częściowa mapa. Każde pole jest opcjonalne; pominięte pole pozostawia ten wymiar bez limitu. Wartości muszą być nieujemnymi liczbami całkowitymi, a `per_vendor` mapuje nazwy dostawców na budżety tokenów:
+`session.quota_cap` to częściowa mapa. Każde pole jest opcjonalne; pominięte pole pozostawia ten wymiar bez limitu. Wartości muszą być nieujemnymi liczbami całkowitymi zapisanymi bez separatorów `_` (YAML odczytuje `2_000_000` jako string, co pozostawia ten wymiar bez limitu). `per_vendor` mapuje ID dostawców dispatchu, takie jak `claude`, `codex` albo `antigravity`, na budżety tokenów:
 
 ```yaml
 session:
@@ -138,7 +163,7 @@ vendors:
   - pi
 ```
 
-Brak listy albo pusta lista wybiera wszystkie ID z rejestru dostawców, które można linkować w OMA. Lista steruje projekcjami instalacji i aktualizacji; nie jest mapą możliwości poleceń per dostawca.
+Lista wybiera dokładnie tych dostawców, a `vendors: []` nie wybiera żadnego. Bez klucza `vendors` `oma link` obejmuje każdego dostawcę z rejestru dostawców, których można linkować w OMA, natomiast `oma update` obejmuje tylko dostawców, których katalogi projektu już istnieją. Lista steruje projekcjami instalacji i aktualizacji; nie jest mapą możliwości poleceń per dostawca.
 
 Dostarczony schemat `.agents/oma-config.cue` dopuszcza też obiekt `vendors.pi` z polami `command`, `prompt_flag`, `model_flag`, `default_model` i `thinking_flag`. Ten blok jest typowanym kształtem zapasowym w szablonie CUE; bieżąca ścieżka dispatchu agentów rozstrzyga pola możliwości z zarządzanego rejestru orkiestracji poniżej, więc nie używaj `vendors.pi` zamiast listy wyboru YAML.
 
@@ -162,13 +187,19 @@ Zarządzany plik możliwości jest odtwarzany przez aktualizacje OMA. Do wyboru 
 
 ## Typowe zmiany
 
-Wybierz stały preset dla projektu, zachowując osobiste nadpisanie lokalnie:
+Wybierz stały preset dla projektu, zachowując osobiste nadpisanie lokalnie.
+
+**Plik wspólny** (commitowany):
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
 model_preset: mixed
+```
 
+**Nakładka lokalna** (ignorowana przez Git):
+
+```yaml
 # .agents/oma-config.local.yaml
 agents:
   backend:
@@ -193,7 +224,7 @@ mcp:
   devtools_browsers: []
 ```
 
-## Zasady aktualizacji i własności
+## Zasady aktualizacji i własności {#update-and-ownership-rules}
 
 `.agents/oma-config.yaml` należy do użytkownika. `oma update` zachowuje istniejącą treść i może dopisać nowo dostarczone klucze najwyższego poziomu szablonu pod znacznikiem `# Added by oma update`. `oma update --force` może zastąpić konfigurację użytkownika, konfigurację MCP i katalogi stosu; używaj go tylko wtedy, gdy chcesz zresetować te dostosowania. Lokalne pliki nakładek pozostają prywatnym miejscem na wartości właściwe dla komputera.
 

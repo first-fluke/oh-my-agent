@@ -29,7 +29,6 @@ bun install --global oh-my-agent
 npx oh-my-agent
 ```
 
-
 Sau khi cài global, command `oma` hoặc `oh-my-agent` có sẵn.
 
 ### 2. Đi tới project root
@@ -37,7 +36,6 @@ Sau khi cài global, command `oma` hoặc `oh-my-agent` có sẵn.
 ```bash
 cd /path/to/your/project
 ```
-
 
 Chạy installer từ project muốn cấu hình. OMA ghi SSOT tương đối với install root; nên dùng Git repository để review và rollback, nhưng installer không bắt buộc phải có Git.
 
@@ -47,22 +45,11 @@ Chạy installer từ project muốn cấu hình. OMA ghi SSOT tương đối v�
 oma
 ```
 
-
 Command mặc định, không có subcommand, mở installer interactive.
 
 ### 4. Chọn loại project
 
-Installer hiển thị các preset:
-
-| Preset | Skill bao gồm |
-|:-------|:---------------|
-| **All** | Mọi skill có sẵn |
-| **Fullstack** | Frontend + Backend + PM + QA |
-| **Frontend** | Skill React/Next.js |
-| **Backend** | Skill backend Python/Node.js/Rust |
-| **Mobile** | Skill mobile Flutter/Dart |
-| **DevOps** | Skill Terraform + CI/CD + Workflow |
-| **Custom** | Chọn skill riêng lẻ từ danh sách đầy đủ |
+Installer hỏi **What type of project?** và đưa ra một [skill preset](../getting-started/glossary.md#skill-preset): All, Fullstack, Fullstack Web, Fullstack Mobile, Frontend, Backend, Mobile, DevOps, Research, Content hoặc Custom (chọn từng skill riêng lẻ). Run non-interactive dùng All. Danh sách skill trong từng preset có tại [Installation → Presets](../getting-started/installation.md#presets).
 
 ### 5. Chọn ngôn ngữ backend (nếu áp dụng)
 
@@ -75,12 +62,9 @@ Nếu preset gồm backend skill, bạn chọn variant ngôn ngữ:
 
 ### 6. Cấu hình symlink IDE
 
-Installer luôn tạo symlink Claude Code (`.claude/skills/`). Nó cũng sinh agent file, hook, setting và file tích hợp native cho vendor đã chọn. Các họ vendor hiện có gồm Antigravity, Claude, Codex, Cursor, Kiro, Kimi, Qwen, cùng đường mở rộng cho pi và OpenCode. Nếu có thư mục `.github/`, installer có thể tự tạo symlink GitHub Copilot. Nếu chọn **ZCode**, workflow được expose thành slash-command qua symlink `.zcode/commands/*.md`, chỉ dành cho workflow, không có agent file hoặc hook. Nếu không, installer hỏi:
+Installer hỏi **CLI tools to configure (deselect all to skip):** và đưa ra Claude Code, Codex, Command Code, GitHub Copilot, Cursor, Grok, Kiro CLI, OpenCode, pi (Earendil), Antigravity CLI (agy), Hermes Agent, Kimi Code CLI, Qwen Code và ZCode. Antigravity CLI, Hermes Agent và Kimi Code CLI không được đưa ra trên Windows hoặc khi đặt `CI`.
 
-```
-Also create symlinks for GitHub Copilot? (.github/skills/)
-```
-
+Với mỗi tool được chọn, installer tạo symlink skill (ví dụ `.claude/skills/` cho Claude Code) và sinh agent file, hook, setting và file tích hợp native của vendor. pi và OpenCode là đường mở rộng. Nếu chọn **ZCode**, workflow được expose thành slash-command qua symlink `.zcode/commands/*.md`, chỉ dành cho workflow, không có agent file hoặc hook.
 
 ### 7. Git config global khuyến nghị
 
@@ -93,11 +77,10 @@ Gần cuối `oma install` và `oma update`, CLI kiểm tra hai global git setti
 
 Nếu value thiếu hoặc khác, CLI hỏi interactive với mặc định **yes**:
 
-```
+```text
 Enable git rerere? (Recommended for multi-agent merge conflict reuse) (unset)
 Set git init.defaultBranch to main? (Recommended global default) (currently "master")
 ```
-
 
 Chấp nhận sẽ chạy tương đương:
 
@@ -106,47 +89,27 @@ git config --global rerere.enabled true
 git config --global init.defaultBranch main
 ```
 
-
 Đường non-interactive (`--yes`, `--ci` hoặc `CI=true`) không bao giờ ghi global git config; chỉ in ghi chú skip kèm command sửa thủ công.
 
 `oma doctor` báo cùng các check dưới **Git Config**, tính mismatch là issue, expose qua `gitRecommended` trong output `--json` và có thể apply fix interactive.
 
 ### 8. Cấu hình MCP
 
-Nếu tồn tại config MCP của Antigravity IDE (`~/.gemini/antigravity/mcp_config.json`), installer đề nghị cấu hình Serena MCP bridge:
-
-```
-Configure Serena MCP with bridge? (Required for full functionality)
-```
-
-
-Nếu chấp nhận, nó thiết lập:
+Không có prompt MCP riêng. Khi Serena là code-intelligence provider (mặc định), install và update ghi entry Serena MCP cho các vendor đã chọn. Trong project install, entry trông như sau:
 
 ```json
 {
   "mcpServers": {
     "serena": {
-      "command": "npx",
-      "args": ["-y", "oh-my-agent@latest", "bridge", "http://localhost:12341/mcp"],
-      "disabled": false
+      "command": "oma",
+      "args": ["bridge", "--context", "oma"],
+      "env": { "SERENA_LOG_LEVEL": "info" }
     }
   }
 }
 ```
 
-
-Tương tự, nếu có settings Gemini CLI (`~/.gemini/settings.json`), installer đề nghị cấu hình Serena cho Gemini CLI ở HTTP mode:
-
-```json
-{
-  "mcpServers": {
-    "serena": {
-      "url": "http://localhost:12341/mcp"
-    }
-  }
-}
-```
-
+`oma bridge` tự khởi động hoặc dùng lại Serena server. Global install thêm `--oma-home <OMA_HOME>` vào `args`. Đừng copy các snippet cũ chạy `npx -y oh-my-agent@latest bridge http://localhost:12341/mcp`: port đó thuộc về một daemon có thể đã thoát, nên client có thể chờ nó vô thời hạn. Migration 027 viết lại entry đã ngừng dùng đó trong config của Antigravity Desktop.
 
 ### 9. Hoàn tất
 
@@ -161,7 +124,7 @@ Installer hiển thị summary mọi thứ đã cài:
 
 ## Đường thủ công
 
-Dùng khi CLI interactive không khả dụng, chẳng hạn CI pipeline, shell hạn chế hoặc máy doanh nghiệp.
+Dùng khi installer interactive không thể chạy, chẳng hạn CI pipeline, shell hạn chế hoặc máy doanh nghiệp. Bạn vẫn cần CLI `oma` cho `oma link` và `oma memory init`; chỉ phần tải release và các prompt là làm thủ công.
 
 ### Bước 1: tải và giải nén
 
@@ -178,18 +141,17 @@ sha256sum -c agent-skills.tar.gz.sha256
 tar -xzf agent-skills.tar.gz
 ```
 
-
 ### Bước 2: copy file vào project
 
 ```bash
-# Copy the core .agents/ directory
-cp -r .agents/ /path/to/your/project/.agents/
+# Copy the contents of the core .agents/ directory (works whether or not the target exists)
+mkdir -p /path/to/your/project/.agents
+cp -R .agents/. /path/to/your/project/.agents/
 
 # Regenerate vendor-native files from the SSOT
 cd /path/to/your/project
 oma link
 ```
-
 
 `oma link` tạo lại `.claude/`, `.codex/`, `.qwen/` và file native vendor liên quan từ `.agents/agents/`. Khi runtime, OMA chỉ dùng native dispatch khi vendor runtime hiện tại khớp vendor đích của agent. Setup nhiều vendor vẫn hoạt động, nhưng agent không khớp sẽ fallback về external `oma agent spawn`.
 
@@ -207,10 +169,11 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-model_preset: antigravity
+model_preset: auto
 EOF
 ```
 
+Nếu `.agents/` được copy cũng chứa `oma-config.cue`, mọi key được đặt ở đó sẽ ghi đè cùng key trong file YAML này. Hãy sửa file CUE cho các key đó, hoặc xem [Nạp cấu hình](./oma-config-semantics.md#precedence-table).
 
 ### Bước 4: khởi tạo thư mục memory
 
@@ -219,7 +182,6 @@ oma memory init
 # Or manually:
 mkdir -p /path/to/your/project/.agents/state/memories
 ```
-
 
 ---
 
@@ -235,8 +197,7 @@ oma doctor
 oma doctor --json
 ```
 
-
-Command doctor kiểm tra:
+Command doctor kiểm tra, cùng một số mục khác:
 
 | Check | Xác minh |
 |:------|:----------------|
@@ -257,8 +218,8 @@ ls .agents/skills/
 # Verify symlinks point to correct targets
 ls -la .claude/skills/
 
-# Verify config exists
-cat .agents/oma-config.yaml
+# Verify config exists (CUE, YAML, or both)
+ls .agents/oma-config.*
 
 # Verify memory directory
 ls .agents/state/memories/ 2>/dev/null || echo "Memory not initialized"
@@ -266,7 +227,6 @@ ls .agents/state/memories/ 2>/dev/null || echo "Memory not initialized"
 # Check version
 cat .agents/skills/_version.json 2>/dev/null
 ```
-
 
 ---
 
@@ -276,7 +236,7 @@ oh-my-agent dùng kiến trúc Single Source of Truth (SSOT). Thư mục `.agent
 
 ### Layout thư mục
 
-```
+```text
 your-project/
   .agents/                          # SSOT — the real files live here
     agents/                         # Agent definition files
@@ -319,7 +279,6 @@ your-project/
     metrics.json                    # Productivity metrics
 ```
 
-
 ### Vì sao dùng symlink?
 
 Khi `oma update` refresh `.agents/`, mọi IDE trỏ tới đó đều nhận thay đổi. Skill được lưu một lần thay vì copy theo IDE. Xóa `.claude/` không xóa skill vì SSOT trong `.agents/` vẫn còn. Symlink cũng nhỏ và diff sạch trong Git.
@@ -343,10 +302,16 @@ Khi `oma update` refresh `.agents/`, mọi IDE trỏ tới đó đều nhận th
 .serena/
 ```
 
-
 ### Rollback
 
-Để xóa hoàn toàn oh-my-agent khỏi project:
+Trước tiên, hãy xem trước và gỡ các file do OMA quản lý bằng uninstaller:
+
+```bash
+oma uninstall --dry-run
+oma uninstall
+```
+
+Uninstaller giữ lại `oma-config.yaml`, `mcp.json` và các skill mà nó không cài. Để gỡ phần còn lại thủ công:
 
 ```bash
 # Remove the SSOT directory
@@ -360,14 +325,12 @@ rm -rf .github/skills/  # if created
 rm -rf .serena/
 ```
 
-
 Hoặc revert bằng Git:
 
 ```bash
 git checkout -- .agents/ .claude/
 git clean -fd .agents/ .claude/ .serena/
 ```
-
 
 ---
 
@@ -384,7 +347,6 @@ oma dashboard terminal
 # Web dashboard (browser-based; OMA prints a tokenized loopback URL)
 oma dashboard web
 ```
-
 
 ---
 
@@ -414,7 +376,7 @@ Installer tải release tarball mới nhất từ GitHub release của oh-my-age
 
 ### 5. Cài workflow
 
-`installWorkflows()` copy mọi workflow vào `.agents/workflows/`: `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools` và `/stack-set`.
+`installWorkflows()` copy mọi workflow file vào `.agents/workflows/`, chẳng hạn definition của `/orchestrate`, `/work`, `/ultrawork` và `/plan`. Xem [Các workflow](../core-concepts/workflows.md) để có danh sách đầy đủ. Song song đó, `installHooks()`, `installAgents()` và `installRules()` copy nguồn hook, agent definition và rule vào `.agents/`.
 
 ### 6. Cài config
 
@@ -428,7 +390,7 @@ Với mỗi skill được chọn, `installSkill()` copy thư mục skill vào `
 
 `installVendorAdaptations()` cài file riêng cho IDE của vendor được hỗ trợ:
 
-- Agent definition (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`).
+- Agent definition (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.qwen/agents/*.md`).
 - Hook config (`.claude/hooks/`, `.codex/hooks.json`).
 - Settings và tài liệu tích hợp vendor dùng chung (chỉ `AGENTS.md`, kể cả Claude Code ≥ 2.1.277). `CLAUDE.md` và `GEMINI.md` không bao giờ nhận block OMA; `CLAUDE.md` có sẵn do user sở hữu chỉ nhận thêm một dòng import `@AGENTS.md` để Claude Code không bỏ qua `AGENTS.md`.
 
@@ -436,11 +398,11 @@ Codex gate hook sau bước trust một lần, nên `.codex/hooks.json` không c
 
 ### 9. CLI symlink
 
-`createCliSymlinks()` tạo symlink từ thư mục IDE tới SSOT:
+`createVendorSymlinks()` và `createVendorWorkflowSymlinks()` tạo symlink từ thư mục IDE tới SSOT:
 
 - `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`.
-- `.claude/skills/{workflow}.md` -> `../../.agents/workflows/{workflow}.md`.
-- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` nếu bật Copilot.
+- `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`.
+- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` nếu chọn Copilot.
 
 File agent native được sinh từ `.agents/agents/` bởi `oma link`, `oma install` hoặc `oma update`, không symlink trực tiếp.
 
@@ -451,3 +413,13 @@ File agent native được sinh từ `.agents/agents/` bởi `oma link`, `oma in
 ### 11. Git config và MCP khuyến nghị
 
 Như mô tả ở đường CLI, install/update tùy chọn cấu hình global git setting khuyến nghị (`rerere.enabled`, `init.defaultBranch`) sau consent interactive, đồng thời có thể cấu hình MCP khi phù hợp.
+
+---
+
+## Xem thêm
+
+- [Cài đặt toàn cục](./global-install.md): cài một lần cho mọi project
+- [Nạp cấu hình](./oma-config-semantics.md): cách CUE, YAML và local overlay kết hợp với nhau
+- [Cấu hình model theo từng agent](./per-agent-models.md): chọn model và CLI cho từng agent
+- [Codex hook trust](./codex-hook-trust.md): bước `/hooks` một lần cho Codex
+- [Cập nhật tự động](./automated-updates.md): giữ bản cài luôn mới từ CI

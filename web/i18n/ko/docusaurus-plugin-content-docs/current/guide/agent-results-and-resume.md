@@ -1,16 +1,45 @@
 ---
 title: "가이드: 에이전트 결과 및 재개"
 sidebar_label: 결과 확인과 재개
-description: 검증 가능한 결과 보고(`claim`)로 에이전트 작업을 기록하고, 네이티브 컨텍스트를 확인하며, 오래된 증거를 재사용하지 않고 미완료 세션을 복구합니다.
+description: 검증 가능한 클레임(`claim`)으로 에이전트 작업을 기록하고, 네이티브 컨텍스트를 확인하며, 오래된 증거를 재사용하지 않고 미완료 세션을 복구합니다.
 ---
 
 # 에이전트 결과 및 재개
 
 OMA는 에이전트 결과를 단순한 프로세스 종료 코드가 아니라 작은 증거 기록으로 취급합니다. 실행 기록에는 작업 및 세션 ID, 워크스페이스 지문(`fingerprint`), 검증 기록(`receipt`), 변경 파일, 미해결 작업, 산출물 해시가 포함됩니다. 따라서 작업 완료 조건과 입력이 여전히 일치하는 동안에만 조정자가 완료된 작업을 재사용할 수 있습니다.
 
-네이티브 에이전트를 직접 실행할 때는 이 생명주기를 사용하세요. 워크플로와 `oma agent spawn`은 같은 기록을 자동으로 만들고, 관리되는 실행의 최종 처리는 상위 조정자가 담당합니다.
+네이티브 에이전트를 직접 실행할 때는 이 생명주기를 사용하세요. 워크플로우와 `oma agent spawn`은 같은 기록을 자동으로 만들고, 관리되는 실행의 최종 처리는 상위 조정자가 담당합니다. 여기서 쓰는 용어는 용어집의 [실행 기록과 클레임](../getting-started/glossary.md#run-record-and-claim)과 [계획](../getting-started/glossary.md#plan)을 참고하세요.
 
-## 네이티브 실행 시작
+## 생명주기 한눈에 보기
+
+| 단계 | 명령 | 기록되는 것 | 보관할 것 |
+| --- | --- | --- | --- |
+| 1. 계약 | `.agents/results/plan-SESSION_ID.json` 편집 | 작업의 `acceptance_criteria`와 `required_checks` | 세션 ID, 작업 ID |
+| 2. 시작 | `oma agent begin AGENT TASK SESSION_ID --workspace .` | 상태가 `running`인 실행 기록 | `runId`, `claimPath` |
+| 3. 컨텍스트(선택) | `oma agent context AGENT --difficulty Medium` | 없음 | 프롬프트 컨텍스트 |
+| 4. 검증 | `oma agent verify RUN_ID --required` | 검사마다 검증 기록 하나 | 종료 코드 |
+| 5. 클레임 | `claimPath`에 JSON 작성 | 클레임 파일 | 없음 |
+| 6. 종료 | `oma agent finish RUN_ID CLAIM_PATH` | 최종 상태 | `status` |
+| 7. 복구 | `oma agent resume SESSION_ID --dry-run` 실행 후 `--dry-run` 없이 실행 | 복구 체크포인트와 세션 잠금 | 작업별 상태 |
+
+`oma agent spawn`과 `oma agent parallel`은 2단계와 6단계를 대신 수행합니다. 상위 프로세스가 실행을 시작하고, 자식이 종료되면 실행을 마무리합니다.
+
+```mermaid
+flowchart TD
+  plan["Task contract in plan-SESSION_ID.json"] --> begin["oma agent begin, or spawn"]
+  begin --> running(["running"])
+  running -->|"oma agent verify"| running
+  running --> claim["Claim written at claimPath"]
+  claim --> finish["oma agent finish, or the spawning parent"]
+  finish -->|"claim completed, current receipts, nothing unresolved"| completed(["completed"])
+  finish -->|"unresolved items, missing checks or decisions, invalid claim"| partial(["partial"])
+  finish -->|"claim reports blocked"| blocked(["blocked"])
+  finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
+```
+
+클레임이 직접 `partial`이나 `failed`를 보고할 수도 있습니다. `finish`는 클레임을 절대 상향하지 않습니다. 증거가 성립하지 않는 `completed` 클레임은 하향하고, 종료 코드가 0이 아니면 어떤 실행이든 `failed`가 됩니다.
+
+## 네이티브 실행 시작 {#start-a-native-run}
 
 먼저 `.agents/results/plan-SESSION_ID.json`의 계획에 작업의 `acceptance_criteria`와 `required_checks`를 정의합니다. 작은 일반 프로젝트 검사라면 다음처럼 하나의 작업을 둘 수 있습니다.
 
@@ -86,7 +115,25 @@ oma agent verify RUN_ID -- git diff --check
 
 ## 클레임 작성 및 종료
 
-`begin`이 출력한 정확한 경로에 결과 보고 파일을 씁니다.
+API 계약, 인증 정책, 데이터 모델, 마이그레이션 전략, 상태 소유자, 인프라 접근 범위처럼
+이후 작업이 의존하는 결정을 내리는 작업이라면, 디스패치 전에 작업에 `required_decisions`를
+선언하세요.
+
+```json
+"required_decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "description": "Choose the compatibility window and rollback strategy for the account migration."
+  }
+]
+```
+
+기존 결정을 따르는 작업에는 이 필드를 생략합니다. 요구 사항은 작업 계약과 함께
+고정되므로 디스패치 뒤에는 제거하거나 바꿀 수 없습니다. 에이전트에 제안되는 주제 목록은
+`oma state decisions list --agent db-engineer --json`으로 확인하세요. 이 주제는 관련이 있을 때
+쓰는 선택지이며, 카탈로그에 있다고 해서 모든 결정이 필수가 되지는 않습니다.
+
+`begin`이 출력한 정확한 경로에 클레임 파일을 씁니다.
 
 ```json
 {
@@ -99,7 +146,29 @@ oma agent verify RUN_ID -- git diff --check
 
 `status`는 `completed`, `partial`, `blocked`, `failed` 중 하나입니다. 경로는 프로젝트 루트를 기준으로 하며 모든 artifact는 워크스페이스 안의 일반 파일이어야 합니다. 실행 가능한 검사가 없는 특정 검토에는 `verificationSkipped`를 사용할 수 있지만, 실패한 검사를 성공으로 바꾸지는 않습니다.
 
-결과 보고를 작성한 뒤 네이티브 실행을 종료합니다.
+실질적인 결정은 클레임의 선택 필드인 `decisions` 배열에 넣으세요.
+
+```json
+"decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "decision": "Use an expand-and-contract migration; retain the old column for one release.",
+    "rationale": "Both deployed app versions must work during the rollout; rollback switches reads to the retained column.",
+    "alternatives": ["Replace the column during a maintenance window"],
+    "evidence": ["docs/account-migration.md"]
+  }
+]
+```
+
+상위 프로세스는 각 결정을 실행 세션에 `decision.made` 이벤트로 저장하고,
+실제 에이전트, 작업, 실행 ID를 붙입니다. 필수 결정이 빠지면 실행 가능한 검사가 통과하더라도
+결과는 `partial`로 남습니다. 다른 작업이나 다른 시도에서 나온 결정으로는 요구 사항을
+충족할 수 없습니다. 검증 기록(`receipt`)은 결정 이벤트 ID와 내용 해시를 고정하며, 재사용할 때는
+그 이벤트가 여전히 존재하고 유효하며 내용이 바뀌지 않았는지 확인합니다.
+선택적인 결정도 기록됩니다. 읽기 전용 에이전트는 상위 프로세스가 저장할 수 있도록
+`OMA_RESULT_JSON` 클레임에 같은 배열을 담아 반환합니다.
+
+클레임을 작성한 뒤 네이티브 실행을 종료합니다.
 
 ```bash
 oma agent finish RUN_ID CLAIM_PATH
@@ -123,7 +192,20 @@ oma agent finish RUN_ID CLAIM_PATH
 oma agent resume SESSION_ID --dry-run
 ```
 
-보고서는 각 작업을 `reused`, `ready`, `running`, `blocked`로 분류하고 이유를 포함합니다. 유효한 완료 실행 기록(`receipt`)은 계약, 입력, 산출물 해시, 종속성 증거가 여전히 최신일 때만 재사용됩니다. 관리되는 실행 중 프로세스 또는 활성 상태 증거가 없는 네이티브 실행은 중복 실행하지 않습니다.
+보고서는 각 작업을 `reused`, `ready`, `running`, `blocked`로 분류하고 이유를 포함합니다.
+
+```mermaid
+flowchart TD
+  task["Plan task and its latest run"] --> live{"Latest run still running, with a live or unknown process?"}
+  live -->|yes| running(["running"])
+  live -->|no| valid{"Completed evidence still current?"}
+  valid -->|yes| reused(["reused"])
+  valid -->|no| safe{"retry_policy safe, replayable prompt and agent, attempts left?"}
+  safe -->|yes| ready(["ready"])
+  safe -->|no| blocked(["blocked"])
+```
+
+`reused`가 아닌 종속성이 있으면 그에 의존하는 `reused` 작업은 다시 `ready`가 되며(재실행할 수 없으면 `blocked`), 종속성이 `blocked`나 `running`인 `ready` 작업은 `blocked`가 됩니다. 유효한 완료 실행 기록(`receipt`)은 계약, 입력, 산출물 해시, 종속성 증거가 여전히 최신일 때만 재사용됩니다. 관리되는 실행 중 프로세스 또는 활성 상태 증거가 없는 네이티브 실행은 중복 실행하지 않습니다.
 
 실행해도 안전하다는 보고서가 나오면 종속성 순서에 따라 `ready` 작업을 재개합니다.
 
@@ -151,4 +233,9 @@ OMA는 `.agents/state/agent-resume/`에 복구 체크포인트를 쓰고 세션 
 | 계획 또는 입력이 변경됨 | 계획이 안정된 뒤 새 실행을 시작합니다. | 새 실행은 새 계약의 스냅샷을 생성하며 이전 증거는 재사용하지 않습니다. |
 | 작업에 결정이 필요함 | 설명과 함께 `blocked`로 기록합니다. | 결정과 프롬프트가 준비될 때까지 `resume`도 `blocked` 상태로 둡니다. |
 
-구문 분석 오류, 벤더 도구 누락, 대시보드 상태, 스케줄, 오래된 평가 데이터는 [문제 해결](/docs/guide/troubleshooting)을 참고하세요.
+## 다음 단계
+
+- `begin`, `verify`, `finish`, `resume`의 오류 메시지: [문제 해결](./troubleshooting.md#find-your-error)
+- 구문 분석 오류, 벤더 도구 누락, 대시보드 상태, 스케줄, 오래된 평가 데이터: [문제 해결](./troubleshooting.md)
+- 관리되는 실행이 작업하는 동안 지켜보기: [대시보드 모니터링](./dashboard-monitoring.md)
+- 작업 계약이 담긴 계획 정의하기: [멀티 에이전트 프로젝트](./multi-agent-project.md)

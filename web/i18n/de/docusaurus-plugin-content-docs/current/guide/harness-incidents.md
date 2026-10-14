@@ -8,7 +8,24 @@ description: Einen beobachteten Agentenausfall erfassen, seine Belege sichern un
 
 `oma harness incident` verbindet einen beobachteten Ausfall mit einem Regressionsfall und der folgenden Kandidaten-Evaluierung. Dabei werden Beobachtungen getrennt von Kausalhypothesen aufgezeichnet. Ein fehlgeschlagener Prozess allein belegt nicht, dass das Modell den Incident verursacht hat.
 
-## Kandidaten finden
+Das Diagramm zeigt den Lebenszyklus eines Incidents. Die Hochstufung speist die Skill-Optimierung; der Export speist die Harness-Evaluierung.
+
+```mermaid
+flowchart TD
+  RUN["Failed, blocked, or partial agent run"] --> SCAN["incident scan<br/>--skeleton RUN_ID"]
+  SCAN --> SPEC["Edit the spec: expected_checks,<br/>initial_workspace"]
+  SPEC --> CAP["incident capture --spec --run"]
+  RUN -->|"feedback --scan-runs<br/>(run has a task contract)"| CAP
+  CAP --> MAN[".agents/results/incidents/ID/incident.json"]
+  MAN --> SHOW["incident show"]
+  MAN --> EXP["incident export<br/>(needs initial_workspace)"]
+  EXP --> REP["incident reproduce --candidate<br/>(live, inspect, rescore, fixture-replay, rerun)"]
+  MAN --> PRO["incident promote, or harness feedback"]
+  PRO --> FIX[".agents/eval/SKILL/incident-ID.yaml"]
+  FIX --> OPT["harness feedback --live or --apply<br/>runs skill optimize"]
+```
+
+## Kandidaten finden {#find-candidates}
 
 ```bash
 oma harness incident scan            # failed/blocked/partial runs with no captured incident
@@ -16,7 +33,10 @@ oma harness incident scan --json
 oma harness incident scan --skeleton <run-id> > incidents/run-failure.json
 ```
 
-Der Scan liest `.agents/state/agent-runs/`, behält Läufe mit dem Status `failed`, `blocked` oder `partial` und verwirft jeden Lauf, auf den ein erfasster Incident bereits über `source.runId` verweist. `--skeleton` gibt eine Spezifikation für einen Lauf aus, in der id, agent, Quell-Lauf, beobachteter Ausfall und Exit-Code ausgefüllt sind, ebenso das Ende der Agentenausgabe, sofern der Runner sie aufbewahrt hat; `expected_checks` bleibt ein `TODO`, weil das korrekte Verhalten eine Entscheidung ist, die der Scan nicht treffen kann. `oma agent spawn` und `oma agent parallel` bewahren die letzten 64 KiB des Logs jedes Laufs als `.agents/state/agent-runs/<run-id>.output.txt` auf und verweisen aus dem Laufdatensatz darauf, weshalb `capture --run` diese Ausgabe als Beobachtung importiert, wenn die Spezifikation keine enthält, und `incident promote` die daraus abgeleitete Fixture dagegen prüfen kann. Füllen Sie die Spezifikation aus und erfassen Sie sie danach mit `--run <run-id>`, damit Laufidentität und Workspace-Fingerprint erhalten bleiben.
+1. `oma harness incident scan` listet nachverfolgte Läufe mit dem Status `failed`, `blocked` oder `partial` auf und verwirft jeden Lauf, auf den ein erfasster Incident bereits über `source.runId` verweist. `--limit <n>` begrenzt die Liste. Die Läufe stammen aus den Laufdatensätzen des Projekts im Zustandsverzeichnis des OMA-Profils (standardmäßig `~/.oma/u/0/projects/<project-id>/agent-runs/`, wobei `<project-id>` der SHA-256 des kanonischen Projektpfads ist; `OMA_STATE_HOME` und `OMA_PROFILE` ändern Stamm und Profil). `oma agent spawn` und `oma agent parallel` bewahren die letzten 64 KiB des Logs jedes Laufs neben dessen Datensatz als `<run-id>.output.txt` auf.
+2. `--skeleton <run-id>` gibt eine Spezifikation mit id, agent, Quell-Lauf, beobachtetem Ausfall, Exit-Code und, sofern der Runner sie aufbewahrt hat, dem Ende der Agentenausgabe aus. `expected_checks` bleibt ein `TODO`, weil das korrekte Verhalten eine Entscheidung ist, die der Scan nicht treffen kann.
+3. Ersetzen Sie die Platzhalterprüfung. Um den Incident ausführbar zu machen, ergänzen Sie außerdem `"initial_workspace": "<dir>"` mit einem Verweis auf eine Kopie der Aufgabendateien im Zustand vor dem Lauf. Ohne diese Angabe kann der Incident erfasst und hochgestuft werden, aber `incident export` und `reproduce` stoppen mit `Cannot export a runnable regression: initial workspace evidence is missing`.
+4. Erfassen Sie mit `--run <run-id>`, damit Prompt, Identität und Workspace-Fingerprint des Laufs erhalten bleiben. `capture --run` importiert die erhaltene Ausgabe als Beobachtung, wenn die Spezifikation keine enthält, und `incident promote` kann die daraus abgeleitete Fixture dagegen prüfen.
 
 ## Fehlgeschlagenen Lauf automatisch erfassen
 
@@ -29,7 +49,7 @@ Ein fehlgeschlagener, blockierter oder teilweiser Lauf, dessen Aufgabe einen Ver
 
 `output_judge` ist ein bewerteter Vertrag. Der mechanische Harness-Evaluator meldet ihn als nicht bewertet; sein Zweck ist die Skill-Regressions-Fixture, die `incident promote` mit derselben Rubrik daraus ableitet.
 
-## Incident erfassen
+## Incident erfassen {#capture-an-incident}
 
 Speichern Sie eine JSON-Spezifikation im Projekt:
 
@@ -69,7 +89,7 @@ oma harness incident show incomplete-result --json
 oma harness incident capture --spec incidents/run-failure.json --run <run-id> --json
 ```
 
-`--run` verweist auf eine vorhandene `.agents/state/agent-runs/<run-id>.json`. Dabei bleiben Lauf- und Sitzungsidentität, Vendor, Status und ursprünglicher Workspace-Fingerprint erhalten. Ein mitgegebener Prompt hat Vorrang vor dem aufgezeichneten Prompt des Laufs. `source.trace_id` kann einen gemeldeten Incident mit einem externen Trace verbinden, ohne ihn abzurufen oder hochzuladen.
+`--run` nimmt eine Lauf-ID entgegen, die `oma harness incident scan` auflistet; Laufdatensätze liegen im unter [Kandidaten finden](#find-candidates) beschriebenen Zustandsverzeichnis des Profils, nicht in `.agents/state/`. Dabei bleiben Lauf- und Sitzungsidentität, Vendor, Status und ursprünglicher Workspace-Fingerprint erhalten. Ein mitgegebener Prompt hat Vorrang vor dem aufgezeichneten Prompt des Laufs. `source.trace_id` kann einen gemeldeten Incident mit einem externen Trace verbinden, ohne ihn abzurufen oder hochzuladen.
 
 Das erfasste Manifest liegt unter `.agents/results/incidents/<id>/incident.json`. Es enthält den Anfangs-Snapshot, sofern mitgegeben, Hashes von Quellbelegen und Prüfer-Dateien, Abnahmeprüfungen, Grenzen und einen Manifest-Hash. Vorhandene IDs können nicht überschrieben werden. Vertraulicher Beobachtungstext wird geschwärzt; die Schwärzung wird als Grenze der exakten Wiedergabe gemeldet. Die Snapshot-Erfassung lehnt nicht unterstützte Dateien ab und hat Grenzen für Dateien, Anzahl und Gesamtgröße. Belegverweise bewahren Hashes und Pfade, nicht Kopien jeder referenzierten Quelldatei.
 
@@ -81,19 +101,25 @@ Das optionale `cause`-Objekt hat `category`, `hypothesis`, `confidence` und `evi
 oma harness incident promote <id> [--skill <id>] [--draft] [--force] --json
 ```
 
-Ein erfasster Incident wird eine Regressions-Fixture für den Skill, den der fehlgeschlagene Agent ausgeübt hat, damit `oma skill optimize` den Skill dagegen reparieren kann. Die Skill wird ausgewählt, indem der Incident-Prompt gegen den installierten Skill-Katalog mit derselben Sonde auf Beschreibungsebene geroutet wird, die `oma skill eval --routing` verwendet (ein Modellaufruf); wenn das Routing nichts wählt, wird der erste `skills:`-Eintrag der Agentendefinition unter `.agents/agents/<agent>.md` verwendet, sonst der installierte Skill namens `oma-<agent>`. `--skill` übersteuert das, und die Hochstufung zeichnet auf, welcher der drei Wege entschieden hat (`attribution`). Die Fixture wird nach `.agents/eval/<skill>/incident-<id>.yaml` mit `group: incident-<id>` geschrieben, damit sie nie über die Aufteilung in train/validation/test hinwegreicht, und die Hochstufung wird neben dem Incident als `promotion.json` aufgezeichnet. Ein Incident wird genau einmal hochgestuft.
+Ein erfasster Incident wird eine Regressions-Fixture für den Skill, den der fehlgeschlagene Agent ausgeübt hat, damit `oma skill optimize` den Skill dagegen reparieren kann. Der Skill wird ausgewählt, indem der Incident-Prompt gegen den installierten Skill-Katalog mit derselben Sonde auf Beschreibungsebene geroutet wird, die `oma skill eval --routing` verwendet (ein Modellaufruf); wenn das Routing nichts wählt, wird der erste `skills:`-Eintrag der Agentendefinition unter `.agents/agents/<agent>.md` verwendet, sonst der installierte Skill namens `oma-<agent>`. `--skill` übersteuert das, und die Hochstufung zeichnet auf, welcher der drei Wege entschieden hat (`attribution`). Die Fixture wird nach `.agents/eval/<skill>/incident-<id>.yaml` mit `group: incident-<id>` geschrieben, damit sie nie über die Aufteilung in train/validation/test hinwegreicht, und die Hochstufung wird neben dem Incident als `promotion.json` aufgezeichnet. Ein Incident wird genau einmal hochgestuft.
 
 Der Prüfer kommt aus den Abnahmeprüfungen. Wenn jede Prüfung `output_contains` ist, ist die Fixture ein deterministisches `assert`. Sonst können die Prüfungen in einer Skill-Evaluierung nicht laufen (es gibt keine Dateien oder Befehle), deshalb bittet `--draft` den Opt-Agenten um eine Judge-Rubrik, die mit `PASS only if` beginnt und den beobachteten Ausfall nennt. In beiden Fällen wird die Fixture nur angenommen, wenn die aufgezeichnete fehlgeschlagene Ausgabe sie nicht besteht: ein assert, das die beobachtete Ausgabe bereits erfüllt, oder eine entworfene Rubrik, die der Judge auf dieser Ausgabe besteht, wird abgelehnt, weil sie kein Regressionsfall ist. Ein Incident ohne beobachtete Ausgabe kann nicht validiert werden und braucht `--force`, was als Grenze aufgezeichnet wird.
 
 ## Den Kreis schließen
 
 ```bash
-oma harness feedback                 # promote every unpromoted incident, report what changed
+oma harness feedback                 # promote every unpromoted incident, report what changed (routing, drafting, and judge model calls)
 oma harness feedback --live          # also run one optimization epoch per affected skill (dry-run)
-oma harness feedback --apply --json  # write edits that pass every gate
+oma harness feedback --apply --json  # also write edits that pass every gate (implies --live)
 ```
 
-`feedback` ist die Rückkopplungsschleife der Auslieferung in einem Befehl: mit `--scan-runs` wird zuerst jeder nicht erfasste fehlgeschlagene Lauf mit Vertrag erfasst (siehe oben), dann jeder erfasste Incident ohne Fixture hochgestuft, wobei bei Bedarf Rubriken entworfen werden, die betroffenen Skills werden gruppiert, und mit `--live` wird jeder einmal gegen die vergrößerte Suite unter den normalen Gates optimiert (Akzeptanz mit gehaltenen und zurückgehaltenen Daten, bestätigter negativer Übertragung, vom Runner verwalteter Final-Test). Der Bericht unter `.agents/results/feedback/feedback-<ts>.json` listet Hochstufungen, übersprungene Incidents mit Grund und das Ergebnis jedes Skills mit dem Diff auf, sodass die Kette von einem beobachteten Ausfall bis zu einer Kandidatenänderung ein einziger prüfbarer Datensatz ist. Für den geplanten Betrieb mit einem gemeinsamen Kontingent an Modellaufrufen, dauerhaften Wiederholungsversuchen und Projekt-Skill-Overlays aktivieren Sie die [Projekt-Harness-Evolution](/docs/guide/harness-evolution). Der Zustands-Snapshot der nächsten Sitzung meldet angewendete Änderungen.
+`--incident <ids...>` beschränkt den Lauf auf die aufgeführten Incidents. `--max-epochs <n>` (Standard 1) legt die Optimierungsepochen pro Skill für `--live` und `--apply` fest.
+
+:::caution Modellkosten und Schreibziel
+`feedback` zeigt keine Kostenvorschau an. Auch ohne `--live` routet die Hochstufung jeden Incident mit einem Modellaufruf zu einem Skill und kann Rubriken entwerfen und bewerten. `--live` und `--apply` führen für jeden betroffenen Skill `oma skill optimize --live --yes` aus, und `--apply` schreibt die verwaltete `SKILL.md` direkt, einschließlich der `oma-*`-Skills, die `oma update` überschreibt. Für einen bestätigten Lauf mit Vorschau verwenden Sie `oma skill optimize --skill <id> --live`; für einen budgetierten Zyklus mit Projekt-Overlays verwenden Sie die [Projekt-Harness-Evolution](./harness-evolution.md).
+:::
+
+`feedback` ist die Rückkopplungsschleife der Auslieferung in einem Befehl: mit `--scan-runs` wird zuerst jeder nicht erfasste fehlgeschlagene Lauf mit Vertrag erfasst (siehe oben), dann jeder erfasste Incident ohne Fixture hochgestuft, wobei bei Bedarf Rubriken entworfen werden, die betroffenen Skills werden gruppiert, und mit `--live` wird jeder einmal gegen die vergrößerte Suite unter den normalen Gates optimiert (Akzeptanz mit gehaltenen und zurückgehaltenen Daten, bestätigter negativer Übertragung, vom Runner verwalteter Final-Test). Der Bericht unter `.agents/results/feedback/feedback-<ts>.json` listet Hochstufungen, übersprungene Incidents mit Grund und das Ergebnis jedes Skills mit dem Diff auf, sodass die Kette von einem beobachteten Ausfall bis zu einer Kandidatenänderung ein einziger prüfbarer Datensatz ist. Für den geplanten Betrieb mit einem gemeinsamen Kontingent an Modellaufrufen, dauerhaften Wiederholungsversuchen und Projekt-Skill-Overlays aktivieren Sie die [Projekt-Harness-Evolution](./harness-evolution.md). Der Zustands-Snapshot der nächsten Sitzung meldet angewendete Änderungen.
 
 Was eine menschliche Entscheidung bleibt: ein Lauf ohne Aufgabenvertrag hat kein aufgezeichnetes erwartetes Verhalten, deshalb listet ihn `incident scan` auf und er wird nur über eine Spezifikation erfasst; `--skeleton` entwirft eine.
 
@@ -108,6 +134,8 @@ oma harness incident reproduce incomplete-result --candidate candidates/fix \
 Der Export materialisiert den gespeicherten Anfangs-Snapshot und eine explorative Suite mit einem Fall. Manifest-Hash und die Identität von Quell-Lauf und Trace wandern mit der Aufgabe in die Evaluierung und die Aufzeichnung. Änderungen an exportierten Dateien, Prompt, Agent, Prüfungen oder festgeschriebenen Prüfer-Quellen entwerten die Wiederverwendung. Legen Sie eine neue Incident-ID an, um den Abnahmevertrag zu ändern.
 
 Standardmäßig startet `reproduce` einen neuen Live-Vergleich von Baseline und Kandidat und zeichnet ihn auf. Die normale Bestätigung der Live-Kosten gilt, außer wenn `--yes` angegeben wird. Dieser Befehl verwendet den für die Harness-Aufgabe konfigurierten Agent-Vendor, einschließlich Codex; er zwingt der Aufgaben-Ausführung nicht das geschützte Compiler-Profil des Skill-Optimierers auf.
+
+Eine exportierte Incident-Suite hat genau eine Aufgabe. Daher gibt `reproduce` immer `coverage: insufficient` aus (für ein Urteil sind fünf bewertete Aufgaben erforderlich), und die Entscheidung lautet `INSUFFICIENT`, sofern nicht ein Arm beim Dispatch fehlgeschlagen ist (`FAIL`). Lesen Sie stattdessen die Aufgabenzeilen: Die Incident-ID unter `corrected:` bedeutet, dass die Baseline durchgefallen ist und der Kandidat bestanden hat; unter `regressed:` bedeutet sie, dass der Kandidat einen bestandenen Fall gebrochen hat; `none` in beiden bedeutet, dass sich die Arme gleich verhalten haben. In JSON heißen diese Felder `score.correctedTaskIds` und `score.regressedTaskIds`.
 
 Wenn kein Anfangszustand erfasst wurde, funktionieren `capture` und `show` weiterhin, aber ausführbarer Export und Ausführungs-Reproduktion stoppen mit einem Fehler über fehlende Belege. Der aktuelle Working Tree eines historischen Laufs kann seinen ursprünglichen Zustand nicht belegen. Auch ein separat mitgegebener Anfangs-Snapshot beweist keine Gleichwertigkeit mit diesem historischen Lauf; der Bericht nennt diese Grenze.
 
@@ -135,7 +163,7 @@ oma harness incident reproduce incomplete-result --candidate candidates/fix \
 | `fixture-replay` | Spielt mitgelieferte Werkzeugantwort-Daten und Dateiänderungen gegen den aufgezeichneten Anfangszustand ab. Es laufen kein Modell und kein Werkzeugprozess. |
 | `rerun` | Startet tatsächliche Baseline- und Kandidaten-Agentenaufrufe aus dem aufgezeichneten Anfangszustand. Das verursacht normale Modellnutzung. |
 
-Für einen geänderten Abnahmevertrag legen Sie eine separate Harness-Suite an und verwenden `oma harness eval --action rescore` mit derselben Suite-, Task- und Incident-Identität und demselben Prompt. Eine exportierte Incident-Suite ist selbst unveränderlich. Siehe [Details zu Aufzeichnung und Wiedergabe](./harness-eval.md) für Anforderungen an rohe Belege und das Werkzeug-Transkript-Schema.
+Für einen geänderten Abnahmevertrag legen Sie eine separate Harness-Suite an und verwenden `oma harness eval --action rescore` mit derselben Suite-, Task- und Incident-Identität und demselben Prompt. Eine exportierte Incident-Suite ist selbst unveränderlich. Siehe [Details zu Aufzeichnung und Wiedergabe](./harness-eval.md#reuse-a-recording) für Anforderungen an rohe Belege und das Werkzeug-Transkript-Schema.
 
 Externe Abhängigkeiten erklären Sie als `{ "name": "service", "repeatability": "fixture|live|unavailable", "reason": "...", "fixture": "response.json" }`. Eine Fixture-Abhängigkeit zeigt auf eine Datei, die das vollständige Harness-Transkript-Schema verwendet, mit der Incident-ID als `taskId`. Die Offline-Incident-Wiedergabe lehnt Live- und nicht verfügbare Abhängigkeiten, fehlende Fixture-Dateien, geänderte Fixture-Hashes, fehlende benannte Antworten sowie Anfrage-, Antwort- und Dateiänderungen ab, die vom festgeschriebenen Transkript abweichen. Sie kann weiterhin nicht belegen, dass der Autor jede externe Abhängigkeit erklärt hat. Auch eine Live-Neuausführung kann nicht garantieren, dass sich ein externer Dienst so verhält wie historisch.
 

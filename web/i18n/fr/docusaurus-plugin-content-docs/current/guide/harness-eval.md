@@ -6,6 +6,10 @@ description: Évaluer une superposition complète de harnais OMA avec des tâche
 
 # Évaluation du harnais
 
+:::tip Comment ces outils s’articulent
+L’[évaluation des compétences](./skill-eval.md) mesure si un `SKILL.md` aide, et l’[optimisation des compétences](./skill-opt.md) modifie ce corps sous des portes held-out. L’évaluation du harnais (cette page) compare une superposition `.agents/` entière sur des tâches de dépôt. Les [cas de régression d’incident](./harness-incidents.md) transforment les échecs observés en cas d’évaluation et en fixtures de compétences. L’[évolution du harnais du projet](./harness-evolution.md) exécute la capture d’incidents et l’optimisation des compétences sous forme de cycle budgété, et les [agents planifiés](./scheduled-agents.md) constituent le planificateur du système d’exploitation qui le déclenche.
+:::
+
 `oma harness eval` mesure si un harnais OMA candidat améliore un agent cible fixe sans modifier le modèle de cet agent. La commande adapte le protocole d’évaluation au moment du test de [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307) : garder le modèle cible fixe, modifier le harnais et comparer les résultats sur les mêmes tâches.
 
 Cette commande évalue une unité plus grande que `oma skill eval` :
@@ -17,6 +21,14 @@ Cette commande évalue une unité plus grande que `oma skill eval` :
 
 Utilisez l’évaluation de compétence pour répondre à « cette compétence aide-t-elle ? ». Utilisez l’évaluation du harnais pour répondre à « cette combinaison de compétences, workflows, règles et instructions d’agent permet-elle à l’agent fixe d’accomplir les tâches du dépôt de manière plus fiable ? ».
 
+**Avant la première exécution :**
+
+- Enregistrez la première exécution avec `--live --record`. `inspect` (l’action par défaut), `rescore`, `fixture-replay` et `rerun` lisent tous cet enregistrement.
+- Un verdict exige au moins cinq tâches notées dans la partition sélectionnée. `pass` exige un lift d’au moins 5 points et aucune régression.
+- `inspect`, `rescore` et `fixture-replay` n’effectuent aucun appel de modèle. `--live` et `--action rerun` en effectuent deux par tâche sélectionnée.
+- `promotionReady` vaut toujours `false`. Une réussite constitue une preuve pour une décision humaine, pas une promotion automatique.
+- Les exécutions live exigent un fournisseur avec découverte des compétences locale au projet (voir [Exécuter et enregistrer](#run-and-record)).
+
 ## Modèle d’évaluation
 
 Une exécution live évalue chaque tâche comme une expérience appariée :
@@ -24,10 +36,32 @@ Une exécution live évalue chaque tâche comme une expérience appariée :
 1. OMA capture la fixture initiale de la tâche. Un instantané complet initialise les deux bras afin qu’ils partent des mêmes fichiers, même si la fixture source change pendant l’exécution.
 2. OMA copie les définitions actuelles `agents`, `config`, `rules`, `skills` et `workflows` dans cet espace de travail et les projette dans le format du fournisseur sélectionné.
 3. OMA répète l’installation dans un second espace de travail neuf et y applique la superposition candidate.
-4. Le même agent principal, la même route fournisseur, la même autorisation d’écriture et le même délai d’expiration sont utilisés pour les deux bras.
+4. Le même agent principal, la même route fournisseur, la même invite, les mêmes autorisations d’écriture et le même délai d’expiration sont utilisés pour les deux bras.
 5. Des vérifications déterministes inspectent l’espace de travail produit et la sortie facultative de l’agent. Les vérifications de commande de confiance s’exécutent ensuite dans une copie neuve des artefacts de la tâche.
 
 Le vrai projet n’est jamais utilisé comme répertoire de travail d’un bras. OMA capture la sortie brute et les artefacts finaux de la tâche avant les vérifications et le nettoyage de l’espace de travail temporaire. Le bac à sable du processus propre au fournisseur sélectionné reste l’autorité pour les accès en dehors du répertoire de travail.
+
+Le diagramme montre comment les bras appariés aboutissent à une décision. Les actions hors ligne reprennent à l’étape d’appariement à partir d’un enregistrement stocké.
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
 
 ## Structure du candidat
 
@@ -91,7 +125,7 @@ tasks:
         path: docs/feature.md
 ```
 
-La version 2 exige à la fois des tâches `validation` et `final-test`. Chaque tâche doit déclarer sa partition. La validation est la valeur par défaut ; utilisez `--partition final-test` pour une exécution finale distincte après la sélection du candidat. Les deux partitions ne peuvent ni partager ni imbriquer de répertoires de fixtures. Conservez les fichiers d’enregistrement en dehors des répertoires de fixtures, des superpositions candidates et des entrées de l’évaluateur ; ces emplacements sont rejetés pour empêcher les exécutions ultérieures de voir les vérifications finales. Les suites de version 1 s’exécutent toujours en tant que `exploratory` ; elles ne peuvent pas être sélectionnées comme test final.
+La version 2 exige à la fois des tâches `validation` et `final-test`. Chaque tâche doit déclarer sa partition. La validation est la valeur par défaut ; utilisez `--partition final-test` pour une exécution finale distincte après la sélection du candidat. Chaque exécution ne note que la partition sélectionnée ; une exécution de validation décisive exige donc au moins cinq tâches `validation`, et une exécution de test final au moins cinq tâches `final-test`. L’exemple ci-dessus est volontairement court pour rester lisible et rapporte toujours `INSUFFICIENT`. Les deux partitions ne peuvent ni partager ni imbriquer de répertoires de fixtures. Conservez les fichiers d’enregistrement en dehors des répertoires de fixtures, des superpositions candidates et des entrées de l’évaluateur ; ces emplacements sont rejetés pour empêcher les exécutions ultérieures de voir les vérifications finales. Les suites de version 1 s’exécutent toujours en tant que `exploratory` ; elles ne peuvent pas être sélectionnées comme test final.
 
 Les ID de tâches doivent être uniques. Les chemins de fixtures et de vérifications doivent rester dans le projet et l’espace de travail de la tâche. Les suites et les fixtures doivent également rester en dehors des définitions de référence copiées dans chaque bras. Les fixtures ne peuvent pas contenir de liens symboliques ni de surfaces de contrôle du harnais d’agent telles que `.agents`, `.codex`, `.claude`, des répertoires de compétences fournisseur ou des fichiers d’instructions d’agent à la racine. Cela empêche les données de tâche d’usurper l’identité du harnais contrôlé de l’un ou l’autre bras.
 
@@ -130,7 +164,7 @@ Avant la répartition, OMA prend un instantané des octets source du vérificate
 
 Les vérifications et les chemins des vérificateurs ne sont pas ajoutés à l’invite de l’agent ni à la fixture. L’entrée de la tâche sélectionnée est nécessairement visible pendant son exécution. Cela protège l’intégrité de l’évaluateur et sépare les partitions ; cela n’empêche pas un processus du même utilisateur de lire d’autres fichiers de l’hôte.
 
-## Exécuter et enregistrer
+## Exécuter et enregistrer {#run-and-record}
 
 Le mode live lance deux répartitions par tâche sélectionnée, affiche un aperçu des répartitions et demande une confirmation :
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Utilisez `--yes` pour une exécution non interactive et `--timeout-minutes` pour définir une limite de temps murale identique pour chaque bras. L’exécution live exige un fournisseur qui découvre les fichiers du harnais relativement à l’espace de travail du projet. OMA refuse la découverte fondée sur HOME, car la référence pourrait voir du contenu candidat installé globalement.
+Utilisez `--yes` pour une exécution non interactive et `--timeout <duration>` pour définir une limite de temps murale identique pour chaque bras (`15m` par défaut ; une unité est obligatoire, par exemple `--timeout 45m`). `oma harness incident reproduce` accepte la même option. L’exécution live exige un fournisseur qui découvre les fichiers du harnais relativement à l’espace de travail du projet. OMA refuse la découverte fondée sur HOME, car la référence pourrait voir du contenu candidat installé globalement.
+
+Le fournisseur provient de l’`agent` de la suite, résolu via la configuration de modèles du projet :
+
+| Fournisseur | `harness eval` live, `--action rerun`, `incident reproduce` |
+|---|---|
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Autorisé : répertoire de compétences local au projet |
+| `antigravity`, `hermes`, `kimi` | Refusé : découverte des compétences fondée sur HOME |
+| Tout fournisseur sans répertoire de compétences de projet connu | Refusé |
+
+Les actions hors ligne (`inspect`, `rescore`, `fixture-replay`) n’effectuent aucune répartition ; ce contrôle ne s’applique donc pas à elles.
 
 `--record` écrit un enregistrement JSON immuable de version 2. L’emplacement par défaut est `_runs/` à côté de la suite, avec les hachages de référence et de candidat dans le nom de fichier. Utilisez un nouveau `--record-file` pour une autre exécution live ; une destination existante est rejetée avant la répartition. Les enregistrements préservent :
 
@@ -178,7 +222,7 @@ Les deux bras reçoivent le même environnement filtré par une liste d’autori
 
 Définissez `OMA_HARNESS_ENV_PASSTHROUGH=NAME1,NAME2` pour transmettre des variables supplémentaires dont une tâche a réellement besoin. Les noms apparaissent dans le manifeste sous `environmentPolicy.extra`. Pour un fournisseur sans jeu de préfixes connu, le manifeste indique `vendorKnown: false` et seules les entrées de base, `OMA_*` et de transmission atteignent le processus.
 
-## Réutiliser un enregistrement
+## Réutiliser un enregistrement {#reuse-a-recording}
 
 La commande distingue quatre actions :
 
@@ -287,7 +331,7 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 
 La version de la CLI n’est sondée lors du rejeu que si l’enregistrement porte lui-même une version sondée ; une paire non sondée est signalée comme non comparable plutôt que comme égale. Les verdicts enregistrés restent consultables dans leurs conditions d’origine. Ils ne constituent pas une preuve pour le candidat dans les conditions actuelles tant qu’une évaluation live ou en nouvelle exécution n’a pas produit un enregistrement dont le manifeste correspond.
 
-### Consommation
+### Consommation {#usage}
 
 Chaque bras stocke `usage` lorsque le fournisseur l’a rapporté : tokens d’entrée et de sortie, coût en USD, temps mural et modèle ayant produit la plus grande partie de la sortie. L’évaluation les additionne dans `usage`, avec un `status` valant `actual`, `partial` (certains bras n’ont rien rapporté) ou `unknown`. Les enveloppes de résultat du fournisseur sont ouvertes avant l’exécution des vérifications et avant l’enregistrement de la sortie, de sorte que `output_contains` et `output_json_equals` voient la réponse de l’agent plutôt que les métadonnées JSON qui l’entourent ; l’usage contenu dans l’enveloppe est ce qui alimente ce champ.
 
@@ -326,12 +370,31 @@ OMA signale également :
 
 - tâches corrigées : la référence a échoué et le candidat a réussi ;
 - tâches en régression : la référence a réussi et le candidat a échoué ;
-- couverture : au moins cinq tâches appariées et évaluables sont requises.
+- couverture : au moins cinq tâches appariées et évaluables dans la partition sélectionnée sont requises.
 
-La décision de score est `pass` lorsque le lift atteint au moins 5 points de pourcentage et qu’il n’y a aucune régression. Toute régression fait échouer le candidat. Un lift non négatif inférieur à 5 points déclenche un avertissement, et moins de cinq tâches appariées produit la décision `insufficient`. Ajoutez `--require-coverage` pour qu’une couverture insuffisante retourne un code non nul dans la CI. Un score ne constitue pas une preuve lorsqu’un bras manque, qu’un hachage d’enregistrement est obsolète ou qu’une vérification déterministe est incomplète. Les erreurs de répartition live et d’intégrité de l’évaluateur forcent une décision d’échec ; elles ne peuvent pas compter comme un lift réussi. Le rescoring et le rejeu de fixtures écartent des paires évaluables les bras dont les preuves sont insuffisantes et rapportent une décision `insufficient` au lieu de traiter l’absence de preuve comme une régression du candidat.
+La décision de score est `pass` lorsque le lift atteint au moins 5 points de pourcentage et qu’il n’y a aucune régression. Toute régression ou tout lift négatif fait échouer le candidat. Un lift non négatif inférieur à 5 points déclenche un avertissement, et moins de cinq tâches appariées produit la décision `insufficient`. Ajoutez `--require-coverage` pour qu’une couverture insuffisante retourne un code non nul dans la CI. Un score ne constitue pas une preuve lorsqu’un bras manque, qu’un hachage d’enregistrement est obsolète ou qu’une vérification déterministe est incomplète. Les erreurs de répartition live et d’intégrité de l’évaluateur forcent une décision d’échec ; elles ne peuvent pas compter comme un lift réussi. Le rescoring et le rejeu de fixtures écartent des paires évaluables les bras dont les preuves sont insuffisantes et rapportent une décision `insufficient` au lieu de traiter l’absence de preuve comme une régression du candidat.
 
 Un score réussi n’établit pas l’éligibilité à la promotion. Les rapports incluent la partition, le hachage de l’évaluateur, `promotionReady: false` et des blocages explicites. Les exécutions héritées et de validation n’ont pas de preuve de test final. Les routes de répartition actuelles n’attestent pas le confinement des accès au système de fichiers ; même une exécution de test final ne peut donc pas revendiquer une évaluation finale protégée ni autoriser une promotion. Ce champ reste faux tant qu’un fournisseur d’exécution ne peut pas établir cette frontière.
 
+## Dépannage
+
+| Message ou symptôme | Cause | Correction |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | L’action par défaut est `inspect`, qui lit un enregistrement stocké. | Exécutez `--live --record` une fois, ou passez un enregistrement existant avec `--record-file`. |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect` exige que chaque hachage enregistré corresponde. | Enregistrez une nouvelle exécution avec un nouveau `--record-file`. Utilisez `--action rescore` pour appliquer les vérifications courantes aux octets stockés. |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore` ou `fixture-replay` a été pointé vers un enregistrement issu d’autres entrées. | Sélectionnez le `--record-file` et la `--partition` correspondants, ou enregistrez à nouveau. |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record` écraserait un fichier existant. | Passez un nouveau chemin `--record-file`. |
+| `--record requires --live or --action rerun` | `--record` a été combiné avec une action hors ligne. | Retirez `--record`, ou utilisez `--live`. |
+| `--action fixture-replay requires --transcript` | Aucune transcription n’a été fournie. | Ajoutez `--transcript <path>`. |
+| `Removed option --timeout-minutes. Use --timeout.` | Ancienne graphie de l’option. | Utilisez `--timeout 30m` (une unité est obligatoire). |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | L’agent de la suite se résout vers un fournisseur à découverte fondée sur HOME ou sans répertoire de compétences de projet. | Routez l’agent de la suite vers un fournisseur du tableau de la section [Exécuter et enregistrer](#run-and-record). |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | `--candidate .` ou un chemin situé dans `.agents/`. | Conservez les superpositions ailleurs, par exemple `candidates/fix/.agents/`. |
+| `Candidate file is not allowed: <path>` | La superposition contient des fichiers hors de `agents/`, `rules/`, `skills/` ou `workflows/`. | Retirez ces fichiers de la superposition. |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | Le frontmatter protégé diffère de la référence. | Restaurez `model`, `tools`, `effort` et les autres champs protégés. |
+| `Suite requires at least one final-test task` | Une suite `schema_version: 2` a besoin des deux partitions. | Ajoutez une tâche avec `partition: final-test`. |
+| `decision: INSUFFICIENT` | Moins de cinq tâches notées dans la partition sélectionnée, ou bras manquants. | Ajoutez des tâches jusqu’à en avoir cinq dans la partition, et lisez les lignes `replay limitation:`. |
+| `decision: FAIL` | Une erreur de répartition (suivie de lignes `<task>/<arm>: ...`), une régression (ID de tâches sous `regressed:`) ou un lift négatif. | Pour une erreur de répartition, lisez la ligne `exit=... timedOut=... stderr=...` sous chaque bras échoué. Pour une régression, comparez les deux bras des tâches listées. |
+
 ## Limite actuelle
 
-Les superpositions candidates sont produites à l’extérieur ; cette commande n’implémente ni constructeur ni boucle automatique `harness opt`. La capture d’artefacts, le rescoring hors ligne, le rejeu de fixtures d’outils, les nouvelles exécutions à partir de fichiers épinglés, la sélection de partition, les instantanés d’évaluateur, les manifestes d’exécution, une liste d’autorisation d’environnement et les événements de trace liés sont disponibles, mais le secret des données retenues au niveau du système d’exploitation, le confinement du réseau ou des identifiants, les essais stochastiques répétés, la comptabilisation des tokens et l’épinglage forcé du modèle pour les appels de sous-agents imbriqués ne sont pas établis. La liste d’autorisation d’environnement limite les variables dont hérite un processus fournisseur ; elle n’empêche pas une CLI de fournisseur de lire son propre magasin d’identifiants ni d’accéder au réseau. Tant que l’épinglage des appels imbriqués n’existe pas, les suites destinées à mesurer un modèle fixe doivent éviter les workflows candidats qui créent d’autres rôles d’agents configurés.
+Les superpositions candidates sont produites à l’extérieur ; cette commande n’implémente ni constructeur ni boucle automatique `harness opt`. La capture d’artefacts, le rescoring hors ligne, le rejeu de fixtures d’outils, les nouvelles exécutions à partir de fichiers épinglés, la sélection de partition, les instantanés d’évaluateur, les manifestes d’exécution, une liste d’autorisation d’environnement et les événements de trace liés sont disponibles, mais le secret des données retenues au niveau du système d’exploitation, le confinement du réseau ou des identifiants, les essais stochastiques répétés et l’épinglage forcé du modèle pour les appels de sous-agents imbriqués ne sont pas établis. La consommation de tokens et le coût sont enregistrés par bras et additionnés lorsque le fournisseur les rapporte (voir [Consommation](#usage)). La liste d’autorisation d’environnement limite les variables dont hérite un processus fournisseur ; elle n’empêche pas une CLI de fournisseur de lire son propre magasin d’identifiants ni d’accéder au réseau. Tant que l’épinglage des appels imbriqués n’existe pas, les suites destinées à mesurer un modèle fixe doivent éviter les workflows candidats qui créent d’autres rôles d’agents configurés.

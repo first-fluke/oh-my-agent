@@ -12,9 +12,9 @@ oh-my-agent をインストールすると、プロジェクトには2つの中�
 
 ## 代表的なディレクトリツリー
 
-次のツリーでは、共有リソースと代表的なドメインスキルを詳しく示します。現在のカタログには33個のスキルディレクトリがあります。省略したスキルも、`SKILL.md` と、必要に応じた `resources/`、`variants/`、スキル固有のディレクトリという同じ構成です。生成されたファイルや任意のファイルがない場合は、実際の `.agents/` ツリーを基準にしてください。
+次のツリーでは、共有リソースと代表的なドメインスキルを詳しく示します。現在のカタログには33個のスキルディレクトリがあります。省略したスキルも、`SKILL.md` と、必要に応じた `resources/`、`stack/`、スキル固有のディレクトリという同じ構成です。生成されたファイルや任意のファイルがない場合は、実際の `.agents/` ツリーを基準にしてください。
 
-```
+```text
 your-project/
 ├── .agents/                          ← Single Source of Truth (SSOT)
 │   ├── oma-config.cue / .yaml    ← Language, model_preset, providers, agent overrides
@@ -23,6 +23,8 @@ your-project/
 │   │   ├── _shared/                  ← Resources used by ALL agents
 │   │   │   ├── README.md
 │   │   │   ├── core/
+│   │   │   │   ├── execution-policy.md
+│   │   │   │   ├── code-intelligence.md
 │   │   │   │   ├── skill-routing.md
 │   │   │   │   ├── context-loading.md
 │   │   │   │   ├── prompt-structure.md
@@ -34,22 +36,27 @@ your-project/
 │   │   │   │   ├── session-metrics.md
 │   │   │   │   ├── common-checklist.md
 │   │   │   │   ├── lessons-learned.md
+│   │   │   │   ├── test-approach.md
+│   │   │   │   ├── anti-ai-prose.md
 │   │   │   │   └── api-contracts/
 │   │   │   │       ├── README.md
 │   │   │   │       └── template.md
 │   │   │   ├── runtime/
 │   │   │   │   ├── memory-protocol.md
+│   │   │   │   ├── result-contract.md
+│   │   │   │   ├── event-spec.md
 │   │   │   │   └── execution-protocols/
 │   │   │   │       ├── claude.md
 │   │   │   │       ├── antigravity.md
 │   │   │   │       ├── codex.md
-│   │   │   │       ├── commandcode.md / kimi.md / kiro.md
+│   │   │   │       ├── commandcode.md / grok.md / kimi.md / kiro.md
 │   │   │   │       ├── opencode.md / pi.md
 │   │   │   │       └── qwen.md
 │   │   │   └── conditional/
 │   │   │       ├── quality-score.md
 │   │   │       ├── experiment-ledger.md
-│   │   │       └── exploration-loop.md
+│   │   │       ├── exploration-loop.md
+│   │   │       └── diagram-engine.md
 │   │   │
 │   │   ├── oma-frontend/
 │   │   │   ├── SKILL.md
@@ -58,12 +65,12 @@ your-project/
 │   │   ├── oma-backend/
 │   │   │   ├── SKILL.md
 │   │   │   ├── resources/              ← execution, ORM, checklist, recovery
-│   │   │   └── variants/               ← node, python, rust seeds / generated refs
+│   │   │   └── stack/                  ← chosen backend variant (python, node, or rust) or /stack-set output
 │   │   │
 │   │   ├── oma-mobile/
 │   │   │   ├── SKILL.md
 │   │   │   ├── resources/              ← execution, tech stack, screen templates, checks
-│   │   │   └── variants/               ← stack schema and generated platform refs
+│   │   │   └── stack/                  ← created by /stack-set (Flutter, React Native, or Swift)
 │   │   │
 │   │   ├── oma-db/
 │   │   │   ├── SKILL.md
@@ -89,6 +96,9 @@ your-project/
 │   │   │   │   ├── design-tokens.md
 │   │   │   │   ├── prompt-enhancement.md
 │   │   │   │   ├── stitch-integration.md
+│   │   │   │   ├── redesign-protocol.md
+│   │   │   │   ├── asset-strategy.md
+│   │   │   │   ├── getdesign-fetcher.md
 │   │   │   │   └── error-playbook.md
 │   │   │   └── reference/
 │   │   │       ├── typography.md
@@ -98,6 +108,7 @@ your-project/
 │   │   │       ├── responsive-design.md
 │   │   │       ├── component-patterns.md
 │   │   │       ├── accessibility.md
+│   │   │       ├── visual-hierarchy.md
 │   │   │       └── shader-and-3d.md
 │   │   │
 │   │   ├── oma-pm/
@@ -116,7 +127,6 @@ your-project/
 │   │   │       ├── execution-protocol.md
 │   │   │       ├── iso-quality.md
 │   │   │       ├── checklist.md
-│   │   │       ├── self-check.md
 │   │   │       ├── error-playbook.md
 │   │   │       └── verify-ship-protocol.md
 │   │   │
@@ -128,8 +138,7 @@ your-project/
 │   │   │       ├── debugging-checklist.md
 │   │   │       ├── bug-report-template.md
 │   │   │       ├── checklist.md
-│   │   │       ├── error-playbook.md
-│   │   │       └── ...
+│   │   │       └── error-playbook.md
 │   │   │
 │   │   ├── oma-tf-infra/
 │   │   │   ├── SKILL.md
@@ -151,6 +160,8 @@ your-project/
 │   │   │       ├── api-workflows.md
 │   │   │       ├── i18n-patterns.md
 │   │   │       ├── release-coordination.md
+│   │   │       ├── tooling-profiles.md
+│   │   │       ├── affected-checks.py
 │   │   │       └── troubleshooting.md
 │   │   │
 │   │   ├── oma-translation/
@@ -179,19 +190,19 @@ your-project/
 │   │   │       └── cli-config.yaml
 │   │   │
 │   │   ├── oma-brainstorm/
-│   │   │   └── SKILL.md
-│   │   │
-│   │   ├── oma-coordination/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
-│   │   │       └── examples.md
+│   │   │       └── triz-lite.md
+│   │   │
+│   │   ├── oma-coordination/
+│   │   │   └── SKILL.md
 │   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
-│   │       ├── config/
-│   │       │   └── commit-config.yaml
 │   │       └── resources/
-│   │           └── conventional-commits.md
+│   │           ├── conventional-commits.md
+│   │           ├── merge-risk.md
+│   │           └── ...
 │   │
 │   ├── workflows/                    ← 21 process definitions
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
@@ -199,7 +210,7 @@ your-project/
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
 │   │   ├── ralph.md                   ← Persistent: repeated execution + judge
 │   │   ├── plan.md / brainstorm.md / architecture.md
-│   │   ├── deepinit.md / review.md / debug.md / design.md
+│   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / tools.md / stack-set.md / convert.md
 │   │   ├── docs.md / explain.md / recap.md / schedule.md / video.md
 │   │   └── ...                         ← Keep this list aligned with `.agents/workflows/`
@@ -210,21 +221,26 @@ your-project/
 │   │   ├── frontend-engineer.md / mobile-engineer.md / pm-planner.md
 │   │   ├── qa-reviewer.md / refactor-engineer.md
 │   │   ├── research-explorer.md / tf-infra-engineer.md
+│   │   └── variants/                  ← per-vendor generation settings (destination, model, tools)
 │   │
 │   ├── results/                       ← Plans, claims, reports, and generated artifacts
 │   ├── state/                         ← Active workflow state files
-│   │   ├── orchestrate-state.json     ← (exists only when workflow is active)
-│   │   ├── ultrawork-state.json
-│   │   ├── work-state.json
+│   │   ├── orchestrate-state-{sessionId}.json ← (exists only while the workflow is active)
+│   │   ├── work-state-{sessionId}.json
+│   │   ├── ultrawork-state-{sessionId}.json
+│   │   ├── ralph-state-{sessionId}.json
+│   │   ├── keyword-detector-state.json    ← Keyword re-trigger guard
 │   │   └── memories/                  ← Coordination memory store (canonical path)
 │   │       ├── orchestrator-session-{sessionId}.md ← Session ID, status, phase tracking
 │   │       ├── task-board-{sessionId}.md          ← Task assignments and status
 │   │       ├── progress-{agentId}-{taskId}-{runId}-{sessionId}.md ← Run-scoped progress updates
 │   │       ├── result-{agentId}-{taskId}-{runId}-{sessionId}.md   ← Run-scoped final outputs
 │   │       ├── session-metrics.md         ← Session evidence and experiment results
-│   │       ├── experiment-ledger.md       ← Experiment tracking (conditional)
+│   │       ├── experiment-ledger-{sessionId}.md ← Experiment tracking (conditional)
+│   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
+│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -234,8 +250,9 @@ your-project/
 │   ├── settings.json                  ← Hooks registration and permissions
 │   ├── hooks/                         ← Only the variant's runtime-required files (see below)
 │   │   ├── oma-hook.sh                ← Generated wrapper: resolves oma binary, exec oma hook "$@"
-│   │   ├── hud.ts                     ← [OMA] statusline indicator (bun path, not routed via oma hook)
-│   │   └── filter-test-output.sh      ← Test-output filter; in-process test-filter pipes Bash test commands through it
+│   │   └── oma/                       ← OMA-owned scripts this vendor needs at runtime
+│   │       ├── hud.ts                 ← [OMA] statusline indicator (bun path, not routed via oma hook)
+│   │       └── filter-test-output.sh  ← Test-output filter; in-process test-filter pipes Bash test commands through it
 │   ├── skills/                        ← Symlinks → .agents/skills/
 │   │   ├── oma-frontend -> ../../.agents/skills/oma-frontend
 │   │   ├── oma-backend -> ../../.agents/skills/oma-backend
@@ -254,7 +271,7 @@ your-project/
 
 ---
 
-## `.agents/`: 信頼できるソース
+## `.agents/`: 信頼できるソース {#agents-the-source-of-truth}
 
 ここはエージェントの動作を定める中心ディレクトリです。エージェントに必要なものはすべてここにあり、他のディレクトリはここから派生します。
 
@@ -267,25 +284,27 @@ your-project/
 - `model_preset`: アクティブなモデルプリセットキー（デフォルトは `auto`、または固定／カスタムプリセット）
 - `providers`: docs、web、コードインテリジェンス、セマンティックメモリの機能プロバイダー
 - `auto_update_cli`: CLI のバックグラウンド更新（デフォルトは `true`、`false` で無効）
-- `telemetry`: ベンダーテレメトリーへの同意
+- `telemetry`: ベンダーテレメトリーへの同意（デフォルトは `false`）
 - `mcp.devtools_browsers`: 任意のブラウザーリスト。未設定なら既存の項目を保持します。
 - `agents`: エージェントごとの任意のオーバーライド（オブジェクト型の `AgentSpec` のみ）
 - `models`: 任意のユーザー定義モデルスラッグ
 - `custom_presets`: `extends:` を持つ任意のユーザー定義プリセット
+
+この一覧はよく使うキーだけを示しています。サポートされるキー、その型、デフォルト値は[設定リファレンス](../guide/configuration-reference.md)を、`.cue`、`.yaml`、ローカルのオーバーレイファイルがどう組み合わさるかは [oma-config のセマンティクス](../guide/oma-config-semantics.md)を参照してください。
 
 ### skills/
 
 現在のカタログには、`_shared` リソースを含めて33個のスキルディレクトリがあります。`all` プリセットはこのライブツリーから生成されます。
 
 **`_shared/`** は全エージェントが使うリソースです。
-- `core/`: ルーティング、コンテキスト読み込み、プロンプト構造、明確化プロトコル、コンテキスト予算、難易度評価、推論テンプレート、品質原則、ベンダー検出、セッション指標、共通チェックリスト、学び、API コントラクトテンプレート
+- `core/`: 実行ポリシー、コードインテリジェンスのルール、ルーティング、コンテキスト読み込み、プロンプト構造、明確化プロトコル、コンテキスト予算、難易度評価、品質原則、テストのアプローチ、ベンダー検出、セッション指標、共通チェックリスト、学び、API コントラクトテンプレート
 - `runtime/`: メモリプロトコル、イベント仕様、結果コントラクト、ベンダー固有の実行プロトコル
-- `conditional/`: Quality Score、Experiment Ledger、Exploration Loop の測定。トリガーされたときだけ読み込みます。
+- `conditional/`: Quality Score の測定、Experiment Ledger による追跡、Exploration Loop プロトコル、ダイアグラムエンジン。トリガーされたときだけ読み込みます。
 
 **`oma-{skill}/`** はスキルごとのディレクトリです。それぞれに次があります。
 - `SKILL.md`: スキルがルーティングされたときに読み込む Layer 1。役割、ルーティング、コアルールを定義します。
 - `resources/`: オンデマンドで読む Layer 2。実行プロトコル、例、チェックリスト、エラー対応手順、技術スタック、スニペット、テンプレートを含みます。
-- 一部のスキルには `variants/`（backend/mobile の種）、`stack/`（`/stack-set` が生成するリファレンス）、`reference/`（oma-design）、スキル固有のスクリプトや設定もあります。
+- 一部のスキルには追加のサブディレクトリがあります。`stack/`（インストール時に選んだ backend の variant、または `/stack-set` が生成するリファレンス。ソースリポジトリでは種を `variants/` に置きます）、`reference/`（oma-design）、スキル固有のスクリプトや設定です。
 
 ### workflows/
 
@@ -296,16 +315,15 @@ your-project/
 - 手順ごとの実行プロトコル
 - 永続ワークフローのゲート定義
 
-永続ワークフローは `orchestrate.md`、`work.md`、`ultrawork.md`、`ralph.md` です。非永続ワークフローには `plan.md`、`brainstorm.md`、`architecture.md`、`deepinit.md`、`review.md`、`debug.md`、`design.md`、`scm.md`、`tools.md`、`stack-set.md`、`convert.md`、`docs.md`、`explain.md`、`recap.md`、`schedule.md`、`video.md` があります。
+永続ワークフローは `orchestrate.md`、`work.md`、`ultrawork.md`、`ralph.md` です。非永続ワークフローには `plan.md`、`brainstorm.md`、`architecture.md`、`deepinit.md`、`review.md`、`security.md`、`debug.md`、`design.md`、`scm.md`、`tools.md`、`stack-set.md`、`convert.md`、`docs.md`、`explain.md`、`recap.md`、`schedule.md`、`video.md` があります。
 
 ### agents/
 
-Task tool（Claude Code）または CLI からサブエージェントをスポーンするときに使う、12個の定義ファイルがあります。各ファイルには次を定義します。
+Agent tool（Claude Code）または CLI からサブエージェントをスポーンするときに使う12個の定義ファイルと、`variants/` にあるベンダーごとの設定です。各ファイルには次を定義します。
 - フロントマターの `name`、`description`、`skills`（読み込むスキル）
-- 実行プロトコルへの参照
-- Charter Preflight（`CHARTER_CHECK`）テンプレート
+- 実行プロトコルへの参照（結果コントラクトと実行単位の結果ファイル）
 - アーキテクチャ概要
-- ドメイン固有の10個のルール
+- 番号付きのドメイン固有ルール
 - 「`.agents/` ファイルを変更しない」という記載
 
 ### plan-\{sessionId\}.json
@@ -314,15 +332,20 @@ Task tool（Claude Code）または CLI からサブエージェントをスポ�
 
 ### state/
 
-永続ワークフローのアクティブな状態ファイルです。永続ワークフローの実行中だけ存在し、削除すると非アクティブになります。
+永続ワークフローのアクティブな状態ファイルです。これらの JSON ファイルは永続ワークフローの実行中だけ存在します。削除する（または「workflow done」と伝える）とワークフローは非アクティブになります。
+
+`state/memories/` サブディレクトリは、調整用メモリの標準のストアです。オーケストレーターのセッション状態、タスクボード、エージェントごとの進捗ファイルと結果ファイル、セッション指標、コストテレメトリーを保存します。ダッシュボードが監視し、CLI が最初に解決するパスです（古いプロジェクトでは従来の `.serena/memories/` にフォールバックします）。下の [.agents/state/memories/: ランタイム状態](#agentsstatememories-runtime-state)を参照してください。
 
 ### results/
 
-エージェントが完了したときの結果ファイルです。ステータス、サマリー、変更ファイル、受入基準チェックリストを保存します。
+エージェントの結果ファイルです。完了したエージェントが、ステータス（completed/failed）、サマリー、変更ファイル、受入基準チェックリストを書き込みます。オーケストレーターが収集時に読み取り、ダッシュボードがモニタリングに使います。
 
 ### mcp.json
 
-MCP サーバー設定です。サーバー定義、メモリ設定（`memoryConfig`）、`/tools` 管理用のツールグループ定義を含みます。
+MCP サーバー設定です。次を含みます。
+- サーバー定義（Serena など）
+- メモリ設定：`memoryConfig.provider`、`memoryConfig.basePath`、`memoryConfig.tools`（読み取り／書き込み／編集のツール名）
+- `/tools` 管理用のツールグループ定義
 
 ---
 
@@ -332,7 +355,7 @@ MCP サーバー設定です。サーバー定義、メモリ設定（`memoryCon
 
 ### settings.json
 
-Claude Code のフックと権限を登録します。
+Claude Code のフックと権限を登録します。各イベントフックのエントリは、`oma hook run` の正式な ABI を使います。
 
 ```json
 {
@@ -342,8 +365,8 @@ Claude Code のフックと権限を登録します。
         "hooks": [{
           "name": "oma-hook-UserPromptSubmit",
           "type": "command",
-          "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/oma-hook.sh --vendor claude --event UserPromptSubmit",
-          "timeout": 25
+          "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/oma-hook.sh\" --vendor 'claude' --event 'UserPromptSubmit'",
+          "timeout": 15
         }]
       }
     ]
@@ -361,7 +384,7 @@ Claude Code のフックと権限を登録します。
 
 **`hud.ts`** はステータスバーの `[OMA]` インジケーターを描画し、モデル名、コンテキスト使用率（緑／黄／赤）、アクティブなワークフロー状態を表示します。ホットパスの表示遅延を保つため、`oma hook run` ではなく `statusLine` に直接登録します。`statusLine` または HUD 専用イベントを登録する variant（例: claude、antigravity、qwen）だけに配置されます。自身のインストール先からベンダーの形式を推定するため、ベンダーごとのコピーにも意味があります。
 
-**`filter-test-output.sh`** はテストランナーのノイズを削るシェルフィルターです。インプロセスの test-filter ハンドラーが、検出した Bash のテストコマンドを `<hookDir>/filter-test-output.sh` にパイプするよう書き換えます。そのため、`test-filter.ts` を登録する variant（cursor 以外）に配置されます。
+**`filter-test-output.sh`** はテストランナーのノイズを削るシェルフィルターです。インプロセスの test-filter ハンドラーが、検出した Bash のテストコマンドを `<hookDir>/oma/filter-test-output.sh` にパイプするよう書き換えます。そのため、`test-filter.ts` を登録する variant（cursor 以外）に配置されます。
 
 #### ハンドラーロジックの実体
 
@@ -396,7 +419,7 @@ Claude Code のフックと権限を登録します。
 
 以前のインストールでは、インプロセスのディスパッチにより大半が不要なコピーになっていたにもかかわらず、`.agents/hooks/core/` 全体（約20ファイル）を各ベンダーのフックディレクトリにコピーしていました。
 
-```
+```text
 # BEFORE — every vendor hookDir (.claude/hooks, .codex/hooks, .cursor/hooks, …)
 hooks/
 ├── oma-hook.sh            ← executed (event dispatch)
@@ -416,27 +439,20 @@ hooks/
 └── …
 ```
 
-現在は、インストーラーがベンダー variant の JSON（`cli/platform/hooks-composer.ts` の `requiredVariantScripts`）から許可リストを作り、そのベンダーが実行または読み取るファイルだけを配置します。
+現在は、インストーラーがベンダー variant の JSON（`cli/platform/hooks-composer.ts` の `requiredVariantScripts`）から許可リストを作り、そのベンダーが実行または読み取るファイルだけを配置します。`oma-hook.sh` はフックディレクトリの直下に置き、その他のスクリプトは `oma/` サブディレクトリに置きます。
 
-```
-# AFTER
-.claude/hooks/              .codex/hooks/  .grok/hooks/  .kiro/hooks/
-├── oma-hook.sh             ├── oma-hook.sh
-├── hud.ts                  └── filter-test-output.sh
-└── filter-test-output.sh
-                            .cursor/hooks/  .commandcode/hooks/
-.qwen/hooks/  .kiro/hooks/  └── oma-hook.sh
-(same as .claude where the variant needs it)
-```
+<!-- oma-docs:ignore-start -->
 
 | ベンダー | 配置されるファイル | 理由 |
 |---|---|---|
-| claude, qwen | `oma-hook.sh`、`hud.ts`、`filter-test-output.sh` | statusLine + test-filter |
-| codex, grok, kiro | `oma-hook.sh`、`filter-test-output.sh` | test-filter、statusLine なし |
+| claude, qwen | `oma-hook.sh`、`oma/hud.ts`、`oma/filter-test-output.sh` | statusLine + test-filter |
+| codex, grok, kiro | `oma-hook.sh`、`oma/filter-test-output.sh` | test-filter、statusLine なし |
 | cursor | `oma-hook.sh` | statusLine なし、test-filter なし |
 | commandcode | `oma-hook.sh` | Stop のみ。Command Code にはプロンプトイベントがなく、PreToolUse で入力を書き換えられません（[hooks リファレンス](https://commandcode.ai/docs/hooks/reference)）。 |
 | antigravity | なし（プロジェクト）。`hud.ts` とコアフックは `~/.gemini/antigravity-cli/hooks/` にコピー | agy は HOME の設定と `.agents/hooks.json` のワークスペースフックだけを読みます。ワークスペースフックは `.agents/hooks/core/` からハンドラーを直接実行します。プロジェクトの `.gemini/antigravity-cli/` は読み込まれません（`homeOnly` variant フラグ）。 |
 | pi | `.agents/hooks/core/` 一式を `.pi/extensions/oma/` に配置 | pi ブリッジが設定フックではなくハンドラーをサブプロセスとして起動するため |
+
+<!-- oma-docs:ignore-end -->
 
 移行先のディレクトリはコピー前に消去されます。そのため、古いインストールで `oma install`、`oma update`、`oma link` を再実行すると、以前の全コピーに含まれていた不要なファイルも自動的に削除されます。
 
@@ -460,9 +476,9 @@ echo '{"cwd":"/path/to/project"}' \
 
 `oma hook run` は常に終了コード0（fail-open）で終了します。標準出力が空なら、そのイベントのチェーンは何もしません。ハンドラーが起動すると、ベンダー形式の JSON（または kiro のプロンプトではプレーンテキスト）が標準出力に書かれます。
 
-#### pre-019 インストールからの移行
+#### oma 8.43.0 より前のインストールのアップグレード {#migration-from-pre-019-installs}
 
-古い `bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"` エントリがある既存のインストールは、次に `oma install`、`oma update`、`oma link` を実行したときに自動移行されます。インストーラーはマーカーを使って置き換えます。`name` や `command` のパターンで OMA 管理のフックグループだけを特定して置き換え、追加した独自のフックグループは元の順序のまま保持します。`statusLine` と HUD のパスは変わりません。pi のインプロセスブリッジも影響を受けません。ルーターの実装は `cli/commands/hook/command.ts`（内部では「design 019」）を、ベンダーごとの materialization は `cli/platform/hooks-composer/` を参照してください。
+oma 8.43.0 より前のインストールで、古い `bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"` エントリがあるものは、次に `oma install`、`oma update`、`oma link` を実行したときに自動移行されます。インストーラーはマーカーを使って置き換えます。`name` や `command` のパターンで OMA 管理のフックグループだけを特定して置き換え、追加した独自のフックグループは元の順序のまま保持します。`statusLine` と HUD のパスは変わりません。pi のインプロセスブリッジも影響を受けません。ルーターの実装は `cli/commands/hook/command.ts` を、ベンダーごとの materialization は `cli/platform/hooks-composer/` を参照してください。
 
 ### skills/
 
@@ -470,11 +486,11 @@ echo '{"cwd":"/path/to/project"}' \
 
 ### agents/
 
-Claude Code の Agent tool 用に整形されたサブエージェント定義です。スキルファイルを参照し、`CHARTER_CHECK` テンプレートを含みます。
+Claude Code の Agent tool 用に整形されたサブエージェント定義で、`.agents/agents/` から生成されます。スキルファイルを参照します。
 
 ---
 
-## `.agents/state/memories/`: ランタイム状態
+## `.agents/state/memories/`: ランタイム状態 {#agentsstatememories-runtime-state}
 
 オーケストレーション中にエージェントが書き込む場所です。`state/memories/` サブディレクトリが調整用メモリの標準パスで、CLI は最初にここを解決します。古いプロジェクトでは従来の `.serena/memories/` にフォールバックします。セッションとタスクボードのファイルにはセッション ID が付き、進捗と結果のファイルにはエージェント、タスク、実行、セッションの ID が付きます。ダッシュボードはこのディレクトリを監視します。
 
@@ -485,9 +501,11 @@ Claude Code の Agent tool 用に整形されたサブエージェント定義�
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | その実行 | ターンごとの進捗、読んだ／変更したファイル、現在の状態 |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | その実行 | 最終出力、完了状況、変更ファイル、受入基準 |
 | `session-metrics.md` | オーケストレーター | 重要な訂正と実験の証拠 |
-| `experiment-ledger.md` | オーケストレーター／QA | 実際の実験の証拠記録 |
+| `experiment-ledger-{sessionId}.md` | オーケストレーター／QA | 実際の実験の証拠記録 |
+| `lessons-{sessionId}.md` | オーケストレーター | 実験の証拠に裏づけられた教訓（条件付き） |
 | `session-work.md` | Work ワークフロー | Work ワークフローのセッション状態 |
 | `session-ultrawork.md` | Ultrawork ワークフロー | Ultrawork ワークフローのセッション状態 |
+| `session-ralph-{sessionId}.md` | Ralph ワークフロー | 1 回の Ralph 実行の基準、イテレーション記録、judge の結果 |
 | `session-cost-{sessionId}.md` | システム | セッションごとのコストテレメトリー |
 | `archive/metrics-{date}.md` | システム | アーカイブしたセッション指標（30日保持） |
 
@@ -501,23 +519,31 @@ Serena 自身のオンボーディングメモリ（`code_style.md`、`project_p
 
 oh-my-agent 自体を開発する場合（単に使う場合ではなく）、リポジトリはモノレポです。
 
-```
+```text
 oh-my-agent/
+├── .agents/              ← EDITABLE in source repo (this IS the source)
 ├── cli/                  ← CLI tool source (TypeScript, run with bun)
 │   ├── cli.ts / bin/     ← CLI entry points
 │   ├── commands/         ← User-facing command families
-│   ├── platform/         ← Agent, vendor, skill, and hook adapters
-│   ├── vendors/ / utils/ / types/
+│   ├── platform/         ← Agent, vendor, skill, hook, and emit adapters
+│   ├── state/ / io/      ← Run receipts, sessions, runtime dispatch
+│   ├── vendors/ / utils/ / types/ / dashboard/
 │   ├── package.json
-│   └── install.sh        ← Bootstrap installer
+│   ├── install.sh        ← Bootstrap installer (macOS, Linux)
+│   └── install.ps1       ← Bootstrap installer (Windows)
 ├── web/                  ← Documentation site (Docusaurus)
 │   ├── docs/             ← English documentation pages (base locale)
 │   └── i18n/             ← Translated documentation pages
 ├── action/               ← GitHub Action for automated skill updates
+├── benchmarks/           ← Benchmark harness and results
+├── integrations/         ← dsh, orca, and serena integrations
 ├── docs/                 ← Translated READMEs and specifications
-├── .agents/              ← EDITABLE in source repo (this IS the source)
+├── plugin.json / skills/ / mcp.json / com.firstfluke.oma/
+│                         ← Agent Plugins package generated from .agents/ by `oma emit` (do not edit)
+├── generated/            ← `oma emit` output: agent-skills/, agents-md/ (do not edit)
+├── .claude-plugin/       ← Claude Code plugin marketplace generated by `oma emit`
 ├── .claude/              ← IDE integration
-├── CLAUDE.md             ← Project instructions for Claude Code
+├── AGENTS.md / CLAUDE.md ← Project instructions for agents
 └── package.json          ← Root workspace config
 ```
 
@@ -529,3 +555,15 @@ oh-my-agent/
 - `bun run build`: CLI のビルド
 - `bun run typecheck`: CLI と web の型チェック
 - コミットは Conventional Commit 形式に従う必要があります（commitlint が強制します）。
+
+---
+
+## 関連項目
+
+- [ワークフロー](./workflows.md)：`.agents/workflows/` の各ファイルの役割
+- [並列実行](./parallel-execution.md)：実行単位のメモリファイルがどう作られるか
+- [グローバルインストール](../guide/global-install.md)：プロジェクトモードとグローバルモード
+- [設定リファレンス](../guide/configuration-reference.md)
+- [oma-config のセマンティクス](../guide/oma-config-semantics.md)
+- [トラブルシューティング](../guide/troubleshooting.md)
+- [用語集](../getting-started/glossary.md)

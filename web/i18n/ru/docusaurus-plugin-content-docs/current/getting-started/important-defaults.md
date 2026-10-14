@@ -12,8 +12,8 @@ description: Значения oh-my-agent по умолчанию, влияющ�
 | Область | По умолчанию | Следствие | Переопределение |
 |---|---|---|---|
 | Язык ответов | `en` | Ответы агентов и workflow используют английский, если конфигурация проекта не выбирает другой поддерживаемый язык. Явная инструкция пользователя или сессии всё ещё может переопределить значение проекта, если это поддерживает host/workflow. | `language` в `.agents/oma-config.yaml` или `.cue` |
-| Маршрутизация моделей | `auto` | Используется нативная конфигурация агента текущего runtime. Неизвестные runtime переключаются на `default_cli`, если он задан. | `model_preset`, `default_cli` или `agents.<id>` |
-| Интеллектуальный поиск по коду | `serena` | Новая установка пытается установить Serena и подключает её конфигурацию MCP. | `providers.code_intelligence: gortex` или `serena` |
+| Маршрутизация моделей ([пресет моделей](./glossary.md#model-preset)) | `auto` | Используется нативная конфигурация агента текущего runtime. Неизвестные runtime переключаются на `default_cli`, если он задан. | `model_preset`, `default_cli` или `agents.<id>` |
+| Интеллектуальный поиск по коду ([провайдер возможности](./glossary.md#capability-provider)) | `serena` | Новая установка пытается установить Serena и подключает её конфигурацию MCP. | `providers.code_intelligence: gortex` или `serena` |
 | Защита поиска по коду | `block` | Пока настроен провайдер интеллектуального поиска по коду, хук PreToolUse запрещает нативные `Grep`/`Glob` и рекурсивный shell-поиск (`rg`, `grep -r`, `find -name`) и направляет агента к инструментам провайдера. Поиск, ограниченный подтверждёнными исключениями или путями вне проекта, разрешён. Хук не сообщает об обходе для исходного кода проекта. | `providers.code_intelligence_guard: off` |
 | Семантическая память | `agentmemory` | При наличии выбирается Agent Memory для семантической памяти. | `providers.semantic_memory: honcho` или `none` |
 | Веб-поиск | `native` | Если провайдер не выбран, поиск использует нативный веб-канал runtime. | `providers.web` |
@@ -62,8 +62,8 @@ Preset `free` задаёт значения по умолчанию для вс�
 | Файлы вендора устарели | `oma doctor` и `oma link --dry-run` | После изменения `.agents/` выполните `oma link <vendor>`; SSOT должен оставаться источником. |
 | Модель не принимается | `oma doctor --profile` | Переключитесь на `auto`, используйте встроенный preset или задайте slug модели в `models:`. |
 | Инструменты Serena завершаются по таймауту | `oma doctor` и раздел провайдера | Попробуйте `serena.mode: stdio`; если причина в памяти, сначала выполните `oma serena reap --dry-run`. |
-| Постоянный workflow не останавливается | `.agents/state/*-state.json` | Скажите `workflow done`; проверяйте state-файл, только если workflow не очистил его. |
+| [Постоянный рабочий процесс](./glossary.md#persistent-workflow) не останавливается | `.agents/state/*-state.json` | Скажите `workflow done`; проверяйте state-файл, только если workflow не очистил его. |
 | Планировщик reaper ничего не делает | Раздел Serena Reaper в `oma doctor` | Задайте `serena_reaper.enabled: true`, затем выполните `oma serena reaper enable`. |
 | Локальная конфигурация ломает запуск | Путь ошибки `oma doctor` | Исправьте или удалите local overlay; не создавайте одновременно overlay `.cue` и `.yaml`. |
 
-Продолжите с разделом [Установка](./installation.md), [Модели агентов](../guide/per-agent-models.md) или [Семантика конфигурации OMA](../guide/oma-config-semantics.md).
+Продолжите с разделом [Установка](./installation.md), [Модели агентов](../guide/per-agent-models.md) или [Семантика конфигурации OMA](../guide/oma-config-semantics.md). Проблемы, не перечисленные здесь, описаны в разделе [Устранение неполадок](../guide/troubleshooting.md).

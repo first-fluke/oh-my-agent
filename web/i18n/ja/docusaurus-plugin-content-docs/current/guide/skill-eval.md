@@ -1,7 +1,7 @@
 ---
 title: "スキルユーティリティ評価"
 sidebar_label: スキル評価
-description: oma skill eval の評価タスク用フィクスチャ、.agents/eval/ のディレクトリ規約、チェッカーの種類、モックとライブの実行モードを説明します。
+description: oma skill eval の評価タスク用フィクスチャ、.agents/eval/ のディレクトリ規約、チェッカーの種類、モックとライブの実行モード、よくあるエラーの対処法を説明します。
 ---
 
 # スキルユーティリティ評価
@@ -21,7 +21,7 @@ description: oma skill eval の評価タスク用フィクスチャ、.agents/ev
 
 各実験群をタスクのチェッカーで採点します。0 は失敗、1 は合格です。主な指標は次のとおりです。
 
-```
+```text
 utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
@@ -29,11 +29,93 @@ utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 
 ---
 
+## クイックスタート {#a-minimal-working-fixture-set}
+
+判定には 5 個のフィクスチャ（`MIN_TASKS = 5`）が必要です。架空の `oma-scholar` スキル用の最小セットを示します。4 つはデフォルトの judge を使い、`structured-output` は決定的な `assert` チェッカーを使います。
+
+```yaml
+# .agents/eval/oma-scholar/claims-only.yaml
+id: claims-only
+skill: oma-scholar
+domain: research
+prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
+rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/entity-lookup.yaml
+id: entity-lookup
+skill: oma-scholar
+domain: research
+prompt: "Look up the entity knows:concept/attention-mechanism"
+rubric: "Does the answer return the entity name, description, and at least one related concept?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/partial-fetch.yaml
+id: partial-fetch
+skill: oma-scholar
+domain: research
+prompt: "Fetch only the methods section of knows:generated/reconvla/1.0.0"
+rubric: "Does the answer request only the methods section instead of the full paper?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/structured-output.yaml
+id: structured-output
+skill: oma-scholar
+domain: research
+prompt: "List the claims of knows:generated/reconvla/1.0.0 as JSON objects with id and statement fields"
+checker:
+  type: assert
+  expect_contains:
+    - "statement"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/edge-empty-response.yaml
+id: edge-empty-response
+skill: oma-scholar
+domain: research
+prompt: "Fetch the claims of knows:generated/does-not-exist/0.0.0"
+rubric: "Does the answer report that no record exists instead of inventing claims?"
+weight: 1
+```
+
+次のように実行します。
+
+```bash
+# Seed rollouts (local only — re-run after any SKILL.md edit)
+oma skill eval --skill oma-scholar --live --record --yes
+
+# Offline replay
+oma skill eval --skill oma-scholar --json
+```
+
+ライブ実行は、ディスパッチの前にプレビューを表示します。この 5 つのフィクスチャでは、タスクごとに 2 つの実験群と、judge タスクごとに 2 回の judge 呼び出しが表示されます（ベンダーは設定によって変わります）。
+
+```text
+Skill eval live run preview:
+  skill: oma-scholar
+  tasks: 5  trials: 1  spawns: 10 arm + 8 judge = 18 dispatches
+  vendor/model: claude
+  read-only: enforced (all spawns use readOnly: true)
+  record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
+```
+
+次に、[レポートを読む](#reading-the-report)の説明に従って結果を読みます。この後の節はリファレンスです。
+
+---
+
 ## `.agents/eval/<skill>/` の規約
 
 タスクフィクスチャは `.agents/eval/<skill>/` に置きます。このパスは `.agents/` の中にありますが、スキルディレクトリ自体の外にあるため、`oma update` でユーザーが作成した評価が上書きされません。
 
-```
+```text
 .agents/eval/
 └── oma-scholar/
     ├── claims-only.yaml        ← task fixture
@@ -46,6 +128,8 @@ utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
 `_` で始まるファイルはタスクフィクスチャを読み込むときにスキップされます。`_rollouts/` サブディレクトリには、過去の `--live --record` 実行で記録した出力があります。
+
+---
 
 ## タスクフィクスチャのスキーマ
 
@@ -74,9 +158,9 @@ weight: 1
 
 ### チェッカーの種類
 
-#### judge（デフォルト）
+#### judge（デフォルト） {#judge-default}
 
-LLM がルーブリックに従って実験群の出力を評価し、PASS または FAIL を返します。`checker` を省略した場合、または `checker.type` がない場合のデフォルトです。
+LLM の [judge](../getting-started/glossary.md#judge) がルーブリックに従って実験群の出力を評価し、PASS または FAIL を返します。`checker` を省略した場合、または `checker.type` がない場合のデフォルトです。
 
 ```yaml
 checker:
@@ -127,6 +211,8 @@ checker:
 
 200 文字を超えるパターンは 0 点です（ReDoS 対策）。照合前に出力を 10,000 文字へ切り詰めます。
 
+---
+
 ## 実行モード
 
 ### `--mock`（デフォルト）
@@ -152,7 +238,7 @@ oma skill eval --skill oma-scholar
 
 ### `--live`
 
-`oma agent spawn --read-only` で実際のエージェント実験群を起動します。各タスクの実験群はそれぞれ専用の一時ワークスペースで実行されるため、一方の実験群が生成したファイルが他方に影響することはありません。プロセスの失敗、API のエラーエンベロープ、judge の失敗があると、そのペア比較全体が採点と記録の対象から除外されます。部分的な出力は診断データとして扱われます。
+各実験群を、`eval` エージェントロールの CLI へ読み取り専用でディスパッチします（[評価と最適化のモデルを選ぶ](#choose-the-evaluation-and-optimizer-models)を参照）。各タスクの実験群はそれぞれ専用の一時ワークスペースで実行されるため、一方の実験群が生成したファイルが他方に影響することはありません。プロセスの失敗、API のエラーエンベロープ、judge の失敗があると、そのペア比較全体が採点と記録の対象から除外されます。部分的な出力は診断データとして扱われます。
 
 ディスパッチ前に、タスク数、実験群のディスパッチ数、judge のディスパッチ数、判定されたベンダーを含むコストプレビューを表示します。`y` で確認するか、`--yes` で省略します。
 
@@ -175,6 +261,18 @@ oma skill eval --skill oma-scholar --live
 oma skill eval --skill oma-scholar --live --yes
 ```
 
+#### 評価と最適化のモデルを選ぶ {#choose-the-evaluation-and-optimizer-models}
+
+タスクの実験群、judge、ルーティングのプローブは `eval` エージェントロールを解決します。`.agents/oma-config.yaml` で固定します。
+
+```yaml
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+```
+
+`oma skill optimize` の Maintainer と Proposer は `opt-agent` ロールを解決します。`agents:` マップには `opt` キーがありません（設定スキーマは未知のキーを拒否します）。そのため、このロールは常にアクティブな `model_preset` に従い、`model_preset: auto` では `default_cli` に従います。`agents.eval` がない場合、`eval` ロールも同じフォールバックを使います。昇格には `isolation: enforced` が必要で、これを提供するのは保護された Claude とネイティブ Codex のプロファイルだけです（[スキルの隔離](#skill-isolation-keeping-the-baseline-honest)を参照）。
+
 #### 負の転移の測定
 
 `--neg-transfer` を指定すると、選択した各近隣タスクが 2 回実行されます。まず候補を含まない新しいベースライン、次に候補本文をそのまま注入した処置群です。近隣タスクとは、同じ `domain` にある他のスキルのタスクを指します。同じドメインを共有する他のスキルがない場合は、代わりに、他のスキルに分散させた上限付きのドメイン横断サンプル（最大 6 タスク）を使い、`negativeTransferCoverage.scope` は `cross-domain` を報告します。この代替は、注入された本文による干渉が自身のドメインに限られず、ドメインが一意だからといってチェックが不可能になってはならないためです。どちらの実験群も、同じ評価器と、別々の空のワークスペースを使います。差分（delta）は処置群のスコアからベースラインのスコアを引いた値で、負の値は候補がその近隣タスクに悪影響を与えたことを意味します。ライブのプレビューには、これらの追加の実験群と judge のディスパッチが含まれます。`--max-tasks` は近隣サンプルにも上限を設け、タスクが省かれる場合は警告を表示します。
@@ -187,7 +285,7 @@ oma skill eval --skill oma-scholar --live --yes
 
 `utilityLift` は、**ベースライン実験群が対象スキルなしで実行される場合だけ**意味があります。ディスパッチされたエージェントはランタイムにインストールされた全スキルを自動ロードするため、単純なベースラインでも測定対象のスキルを読み込むことがあります。これでは比較が汚染され、ベースラインと処置群がほぼ同じになり、改善幅がほぼ 0 になります。
 
-これを防ぐため、`--live` は**両方の実験群を別々の一時ワークスペース**で実行します。保護された Claude と Codex のプロファイルは、スキルと指示の自動検出、およびエージェントツールを無効にします。処置群は、注入された `SKILL.md` **だけ**を通じて対象スキルを受け取ります。探索用のプロファイルは、対象を除いたフィルタ済みの skills ディレクトリを使いますが、それだけでは隔離が保たれた証明にはなりません。
+これを防ぐため、`--live` は**両方の実験群を別々の一時ワークスペース**で実行します。保護された Claude と Codex のプロファイルは、スキルと指示の自動検出、およびエージェントツールを無効にします。処置群は、注入された `SKILL.md` **だけ**を通じて対象スキルを受け取ります。探索用のプロファイルは、対象を除いたフィルター済みの skills ディレクトリを使いますが、それだけでは隔離が保たれた証明にはなりません。
 
 クリーンな作業ディレクトリは、プロジェクトローカルのスキル検出を隠せます。ただし、ランタイムの隔離はベンダーのプロファイルにも左右されます。レポートの `isolation` フィールドには、検証された隔離の水準が示されます。
 
@@ -198,7 +296,7 @@ oma skill eval --skill oma-scholar --live --yes
 | `unavailable` | HOME ベースのベンダー（例: `~/.gemini/antigravity-cli/skills` を読む **antigravity**）。クリーンな cwd では隠せない。警告を表示し、結果を低信頼度として扱う。 |
 | `n/a` | モックモード。ライブのディスパッチはありません。 |
 
-他のランタイムプロファイルも探索的な評価には使えますが、`best-effort` と `unavailable` の結果は、ライブ最適化の昇格をブロックします。評価ベンダーはプロジェクトのモデル設定に従います。Codex は、ネイティブの CLI ログインと設定済みのモデル／プロバイダーを `app-server` 経由で使い、黙って Claude や API キーのクライアントへ切り替えることはありません。保護された Codex の契約は、macOS/Linux 上の CLI 0.154.x で、ネイティブのファイル認証情報ストレージと既存の `auth.json` を使う構成を対象とします。専用の一時的な設定ホームが、元の設定ファイルと認証ファイルを参照しつつ、共有のブートストラップ状態は除外します。認証情報はコピーされず、ネイティブのリフレッシュは元の認証ファイルを使います。keyring、auto、ephemeral の認証情報ストアは、現時点では未対応です。未対応のバージョン、ストレージモード、契約の失敗は、ディスパッチエラーになります。
+他のランタイムプロファイルも探索的な評価には使えますが、`best-effort` と `unavailable` の結果は、ライブ最適化の昇格をブロックします。評価ベンダーは `eval` エージェントロールに従います。Codex は、ネイティブの CLI ログインと設定済みのモデル／プロバイダーを `app-server` 経由で使い、黙って Claude や API キーのクライアントへ切り替えることはありません。保護された Codex の契約は、macOS/Linux 上の CLI 0.154.x で、ネイティブのファイル認証情報ストレージと既存の `auth.json` を使う構成を対象とします。専用の一時的な設定ホームが、元の設定ファイルと認証ファイルを参照しつつ、共有のブートストラップ状態は除外します。認証情報はコピーされず、ネイティブのリフレッシュは元の認証ファイルを使います。keyring、auto、ephemeral の認証情報ストアは、現時点では未対応です。未対応のバージョン、ストレージモード、契約の失敗は、ディスパッチエラーになります。
 
 judge は、最適化メモリを無効にした新しい一時ディレクトリで実行されます。Claude と Codex の judge は、評価の実験群と同じ保護されたテキストトランスポートを使います。judge のベンダー設定は、その実行中は固定されます。
 
@@ -254,62 +352,29 @@ JSON レポートには、`status`、件数、`activationRate`、`misroutedTo`�
 
 これは、保護されたトランスポートを通じて、カタログに対する `description` の働きを測ります。ベンダー独自の検出の仕組みは働かせません。保護されたプロファイルが意図的に無効にしているためです。また、読み込まれたスキルの手順が守られるかどうかも測定しません。それは効用の測定の役割です。
 
-## 最小限の動作するフィクスチャセット
-
-判定には 5 個のフィクスチャ（`MIN_TASKS = 5`）が必要です。架空の `oma-scholar` スキル用の最小セットを示します。
-
-```yaml
-# .agents/eval/oma-scholar/claims-only.yaml
-id: claims-only
-skill: oma-scholar
-domain: research
-prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
-rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
-weight: 1
-```
-
-```yaml
-# .agents/eval/oma-scholar/entity-lookup.yaml
-id: entity-lookup
-skill: oma-scholar
-domain: research
-prompt: "Look up the entity knows:concept/attention-mechanism"
-rubric: "Does the answer return the entity name, description, and at least one related concept?"
-weight: 1
-```
-
-少なくとも 3 つのタスクを追加してから実行します。
-
-```bash
-# Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skill eval --skill oma-scholar --live --record --yes
-
-# Offline replay
-oma skill eval --skill oma-scholar --json
-```
-
 ---
 
-## レポートを読む
+## レポートを読む {#reading-the-report}
 
 **テキスト出力：**
 
-```
+```text
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
   isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
+  repeatability: single-trial  trials: 1  lift 95% CI: [9.2%, 48.0%]  within-task stddev: n/a
   [PASS]
-  Skill shows positive utility lift >= 5%.
+  Skill shows positive utility lift ≥ 5%.
 
   Per-task findings:
     claims-only: baseline=0 treatment=1 lift=+1.000
     entity-lookup: baseline=1 treatment=1 lift=+0.000
     ...
 
-  Thresholds: fail <= 0%, warn < 5%
+  Thresholds: fail ≤ 0%, warn < 5%
 ```
 
 **JSON 出力**（`--json`）：
@@ -349,6 +414,8 @@ Skill utility eval  (skill: oma-scholar)
 
 `ok` が `true` になるのは、`coverage === "ok"` かつ `decision === "pass"` で、要求した負の転移チェックがあればそのカバレッジが十分な場合だけです。`isolation` フィールドは、ベースライン実験群が対象スキルなしで実際に実行されたかを示します。[スキルの隔離](#skill-isolation-keeping-the-baseline-honest)を参照してください。`--mock` モードでは `isolation` は `"n/a"` です。
 
+---
+
 ## CI への統合
 
 ```bash
@@ -360,6 +427,8 @@ oma skill eval --skill oma-scholar --json --require-coverage
 - `0` の場合は `pass` または `warn` です。
 - `1` の場合は `fail`、または `--require-coverage` 使用時のタスクまたは負の転移のカバレッジ不足です。
 
+---
+
 ## `live` と `mock` の選び方
 
 オープンエンドのタスクで実際の効用を測るには、judge チェッカーと `--live` を使います。以前記録した judge 判定をオフラインで再生する場合、または決定的な `assert`／`regex` 契約チェックを行う場合は `--mock` を使います。
@@ -370,6 +439,28 @@ oma skill eval --skill oma-scholar --json --require-coverage
 
 モック実行でカバレッジ不足が出た場合は、破棄または欠落した `_rollouts` エントリの警告を確認し、フィクスチャまたはスキルを修正してからライブ記録を行います。ライブでの昇格には、動作する保護された Claude または Codex のプロファイルと `isolation: "enforced"` が必要です。他のプロファイルは探索用のままです。
 
+---
+
 ## スキルと一緒に評価タスクを配布する
 
 スキルは `.agents/eval/<skill>/` にフィクスチャを置くことで評価タスクセットを含められます。これはスキルディレクトリ外のユーザー作成ファイルなので、`oma update` 後も残ります。`oma-skill-creation` で新しいスキルを作る場合は、将来の作成者がスキルの効果を確認できるよう、対応する `eval/` フィクスチャセットを追加します。スキル作成のワークフローは `.agents/skills/oma-skill-creation/SKILL.md` を参照してください。
+
+---
+
+## トラブルシューティング {#troubleshooting}
+
+以下のメッセージは `oma skill eval` と `oma skill optimize` が出力します。
+
+| メッセージまたは症状 | 原因 | 対処法 |
+|---|---|---|
+| `[oma skill opt] no eval coverage for skill "<id>": found N task fixture(s), need at least 5.` | `.agents/eval/<id>/` の有効なフィクスチャが 5 つ未満、または `--skill` を省略した（その場合は `_all` を読み込む）。 | フィクスチャを追加し（[クイックスタート](#a-minimal-working-fixture-set)を参照）、`--skill <id>` を渡す。 |
+| `[oma skill eval] skipped <file>: does not match TaskFixture schema` | フィクスチャに `id`、`skill`、`domain`、`prompt`、または数値の `weight` がない。 | 不足しているフィールド（例: `weight: 1`）を追加する。 |
+| `[oma skill eval] discarded N stale rollout entries from _rollouts/<file>: <reason>. Re-run --live --record to refresh.` | 記録後にスキル本文、プロンプト、チェッカー、評価器プロトコルのいずれかが変わった。 | `--live --record` を再実行する。 |
+| `INSUFFICIENT COVERAGE — fewer than 5 tasks found.` | スキップと除外の後に採点されたタスクが 5 つ未満。 | その上に表示された警告を修正してから、再度記録する。 |
+| `[oma skill eval] isolation: <status> for vendor <vendor> — baseline may be contaminated; result is low-confidence.` | `eval` ロールが、保護されたプロファイルを持たないベンダーに解決される。 | `agents.eval` に Claude または Codex のモデルを設定する（[評価と最適化のモデルを選ぶ](#choose-the-evaluation-and-optimizer-models)を参照）。 |
+| `[oma skill eval] dispatch timed out after <N>s.` | 実験群または judge の呼び出しが `OMA_SKILL_EVAL_TIMEOUT_MS` を超えた。 | 長い回答が必要なフィクスチャでは `OMA_SKILL_EVAL_TIMEOUT_MS` を引き上げる。 |
+| `Choose either --live or --mock` | 両方のフラグを渡した。 | どちらか一方を渡す。 |
+| `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` を `--live` なしで実行した。 | `--live` を追加するか、オフラインでの確認には `oma skill eval --mock` を使う。 |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | `opt-agent` ロールが、保護されたテキストトランスポートを持たないベンダーに解決される。 | Claude または Codex に解決される `model_preset`（`model_preset: auto` の場合は `default_cli`）を選ぶ。 |
+| `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...`（何も書き込まれない） | `oma-*` スキルに `--yes` なしで `--apply` を使った。 | dry-run の diff を残してアップストリームに提出するか、`--yes` を付けて再実行する。 |
+| `[oma skill opt] an active project overlay owns this skill; ...` | [プロジェクトのハーネス進化](./harness-evolution.md)がこのスキルにオーバーレイをインストールした。 | 先に `oma skill rollback --skill <id>` を実行するか、進化サイクルに変更を適用させる。 |

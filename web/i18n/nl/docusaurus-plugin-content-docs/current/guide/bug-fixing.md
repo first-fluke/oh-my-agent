@@ -1,7 +1,7 @@
 ---
 title: "Gids: Bugs oplossen"
 sidebar_label: Bugs oplossen
-description: Gestructureerde debugworkflow in zeven fasen met ernsttriage, escalatiesignalen, een diagnose op basis van broncode en validatie na de fix.
+description: Gestructureerde debugworkflow in zeven stappen met ernsttriage, escalatiesignalen, een diagnose op basis van broncode en validatie na de fix.
 ---
 
 # Bugs oplossen
@@ -10,7 +10,7 @@ description: Gestructureerde debugworkflow in zeven fasen met ernsttriage, escal
 
 Gebruik `/debug` (of zeg in natuurlijke taal "fix bug", "fix error" of "debug") wanneer je een specifieke bug wilt diagnosticeren en oplossen. De workflow biedt een gestructureerde, reproduceerbare aanpak die de veelgemaakte fout voorkomt waarbij alleen symptomen worden opgelost in plaats van de hoofdoorzaak.
 
-De debugworkflow ondersteunt alle geconfigureerde vendors. Fasen 1–5 draaien inline. Fase 6 (scannen op vergelijkbare patronen) kan een `debug-investigator`-subagent delegeren wanneer de scope breed is (10+ bestanden of fouten over meerdere domeinen), gevolgd door de geheugenregistratie in fase 7.
+De debugworkflow ondersteunt alle geconfigureerde vendors. Stappen 1–5 draaien inline. Stap 6 (scannen op vergelijkbare patronen) kan een `debug-investigator`-subagent delegeren wanneer de scope breed is (10+ bestanden of fouten over meerdere domeinen), gevolgd door de geheugenregistratie in stap 7.
 
 ---
 
@@ -76,7 +76,7 @@ De ernst bepaalt hoe de bug wordt behandeld en hoe snel deze moet worden opgelos
 - De mobileapp crasht bij het opstarten op Android 14-apparaten.
 - E-mails voor het opnieuw instellen van een wachtwoord worden niet verzonden (de integratie met de e-mailservice is defect).
 
-**Debugaanpak:** Doorloop de volledige lus van zeven fasen. Een QA-review na de fix wordt aanbevolen.
+**Debugaanpak:** Doorloop de volledige lus van zeven stappen. Een QA-review na de fix wordt aanbevolen.
 
 ### P2: gemiddeld (deze sprint)
 
@@ -91,7 +91,7 @@ De ernst bepaalt hoe de bug wordt behandeld en hoe snel deze moet worden opgelos
 - De responstijd van het `/users`-endpoint is 8 seconden (deze hoort minder dan 1 seconde te zijn).
 - Paginering toont "Pagina 1 van 0" wanneer de lijst leeg is.
 
-**Debugaanpak:** Doorloop de volledige lus van zeven fasen. Neem de bug op in de QA-regressiesuite.
+**Debugaanpak:** Doorloop de volledige lus van zeven stappen. Neem de bug op in de QA-regressiesuite.
 
 ### P3: laag (backlog)
 
@@ -110,9 +110,15 @@ De ernst bepaalt hoe de bug wordt behandeld en hoe snel deze moet worden opgelos
 
 ---
 
-## De debuglus in zeven fasen
+## De debuglus in zeven stappen in detail {#the-seven-stage-debug-loop-in-detail}
 
-De workflow `/debug` voert deze fasen in volgorde uit. Hij gebruikt de geconfigureerde code-intelligenceprovider. Native search is alleen bedoeld voor paden buiten het project of genegeerde paden wanneer die provider niet beschikbaar is of een timeout geeft.
+De workflow `/debug` voert deze stappen in volgorde uit. Hij gebruikt de geconfigureerde code-intelligenceprovider. Native search is alleen bedoeld voor paden buiten het project of genegeerde paden wanneer die provider niet beschikbaar is of een timeout geeft.
+
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
 
 ### Stap 1: foutinformatie verzamelen
 
@@ -194,7 +200,6 @@ Vendorspecifieke spawnmethoden:
 |:-------|:-------------|
 | Claude Code | Agenttool met `.claude/agents/debug-investigator.md` |
 | Codex CLI | Modelgestuurd subagentverzoek, resultaten als JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / fallback | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 Alle kwetsbare locaties die overeenkomen worden gerapporteerd. Bevestigde gevallen worden in dezelfde sessie opgelost.
@@ -214,7 +219,7 @@ De workflow schrijft een memorybestand met:
 
 Bij het starten van de debugworkflow kun je een gestructureerde prompt geven:
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -241,7 +246,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 Voor eenvoudiger bugs werkt een kortere prompt:
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -308,3 +313,11 @@ De debugworkflow is voltooid wanneer:
 4. De codebase op vergelijkbare patronen is gescand en alle bevestigde gevallen zijn aangepakt.
 5. Een bugrapport in memory is vastgelegd met symptoom, hoofdoorzaak, toegepaste fix, gewijzigde bestanden, locatie van de regressietest en gevonden vergelijkbare patronen.
 6. Alle bestaande tests blijven slagen na de fix.
+
+---
+
+## Volgende stappen {#next-steps}
+
+- De hoofdoorzaak overschrijdt domeinen: [Multi-agentprojecten](./multi-agent-project.md)
+- De fixrun vastleggen of hervatten: [Resultaten en hervatten](./agent-results-and-resume.md)
+- Er ging iets mis in OMA zelf: [Probleemoplossing](./troubleshooting.md)

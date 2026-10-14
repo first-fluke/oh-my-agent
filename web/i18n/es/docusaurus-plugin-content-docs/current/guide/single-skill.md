@@ -49,7 +49,7 @@ Las pruebas y los criterios de aceptación también forman parte del trabajo con
 
 ## Lista de verificación previa
 
-Antes de escribir el prompt, responde estas cuatro preguntas (corresponden a los cuatro elementos de la [Estructura del prompt](/docs/core-concepts/skills)):
+Antes de escribir el prompt, responde estas cuatro preguntas:
 
 | Elemento | Pregunta | Por qué importa |
 |---------|----------|-----------------|
@@ -111,10 +111,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **Evaluación de dificultad:** Media (2-3 archivos y algunas decisiones de diseño sobre la experiencia de validación).
 3. **Recursos cargados:**
    - `execution-protocol.md` (siempre).
-   - `snippets.md` (patrones de formularios y Zod).
-   - patrones de componentes existentes y `snippets.md` cuando la skill los proporcione.
+   - `snippets.md` (patrones de formularios y Zod, además de los patrones de componentes existentes cuando la skill los proporcione).
 4. **El contrato de ejecución puede emitir `CHARTER_CHECK` cuando está habilitado:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -165,7 +164,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - `stack/tech-stack.md` coincidente o referencias de stack de la variante si están disponibles.
 <!-- oma-docs:ignore-end -->
 5. **El contrato de ejecución puede emitir `CHARTER_CHECK` cuando está habilitado:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -204,7 +203,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md` (plantilla de pantalla y patrón de proveedor Riverpod).
    - `screen-template.dart`.
 4. **El contrato de ejecución puede emitir `CHARTER_CHECK` cuando está habilitado:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -247,7 +246,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`.
    - `anti-patterns.md` (revisión durante la optimización).
 4. **El contrato de ejecución puede emitir `CHARTER_CHECK` cuando está habilitado:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -324,10 +323,20 @@ Observa estas señales que indican que deberías cambiar de una skill individual
 | El `CHARTER_CHECK` del agente muestra elementos «Must NOT do» que en realidad son necesarios | El alcance supera un dominio | Planifica primero toda la funcionalidad con `/plan`. |
 | Una corrección se propaga a 3+ archivos de distintas capas | Una corrección afecta a varios dominios | Usa `/debug` con un alcance mayor o `/work`. |
 | El agente descubre un desajuste en un contrato API | Hay un desacuerdo entre frontend y backend | Ejecuta `/plan` para definir los contratos y vuelve a generar ambos agentes. |
-| La puerta de calidad falla en puntos de integración | Los componentes no se conectan correctamente | Agrega un paso de revisión QA: `oma agent spawn qa "Review integration"`. |
+| La puerta de calidad falla en puntos de integración | Los componentes no se conectan correctamente | Ejecuta `/review` o agrega una pasada de QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only`. |
 | La tarea pasa de «un componente» a «tres componentes + una ruta nueva + API» | El alcance crece durante la ejecución | Detén el trabajo, ejecuta `/plan` para descomponerlo y después `/orchestrate`. |
 | El agente se bloquea con una aclaración HIGH | Los requisitos son fundamentalmente ambiguos | Responde las preguntas del agente o ejecuta `/brainstorm` para aclarar el enfoque. |
 
 ### Regla general
 
 Si vuelves a generar el mismo agente más de dos veces con refinamientos, probablemente la tarea abarca varios dominios. Ejecuta `/work` o, como mínimo, `/plan` para descomponerla.
+
+---
+
+## Próximos pasos
+
+- La tarea abarca varios dominios: [Proyectos multiagente](./multi-agent-project.md)
+- La tarea es un bug: [Corrección de bugs](./bug-fixing.md)
+- Auditar o reanudar una ejecución: [Resultados y reanudación](./agent-results-and-resume.md)
+- Algo falló: [Solución de problemas](./troubleshooting.md)
+- Elegir entre una skill y un workflow: [Workflows](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

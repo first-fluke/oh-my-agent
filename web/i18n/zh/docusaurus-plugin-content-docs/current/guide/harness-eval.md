@@ -6,6 +6,10 @@ description: "使用成对、隔离的仓库任务和确定性产物检查，评
 
 # Harness 评估
 
+:::tip 这些功能如何配合
+[技能评估](./skill-eval.md)衡量单个 `SKILL.md` 是否有帮助，[技能优化](./skill-opt.md)则在保留集关卡下编辑该正文。Harness 评估（本页）在仓库任务上比较整个 `.agents/` 覆盖层。[事件回归用例](./harness-incidents.md)把观察到的故障转化为评估用例和技能 fixture。[项目 harness 演进](./harness-evolution.md)把事件捕获和技能优化作为有预算的周期来运行，[计划智能体](./scheduled-agents.md)则是触发它的操作系统调度器。
+:::
+
 `oma harness eval` 用于衡量候选 OMA harness 是否能在不改变目标智能体模型的情况下提升它的表现。它采用 [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307) 中的测试时评估模式：固定目标模型，改变 harness，并在同一组任务上比较结果。
 
 该命令评估的单元比 `oma skill eval` 更大：
@@ -17,7 +21,15 @@ description: "使用成对、隔离的仓库任务和确定性产物检查，评
 
 用技能评估回答“这个技能有帮助吗？”，用 harness 评估回答“这组技能、工作流、规则和智能体指令，能否让固定智能体更可靠地完成仓库任务？”
 
-## 评估模型
+**首次运行前：**
+
+- 首次运行请使用 `--live --record` 记录。`inspect`（默认操作）、`rescore`、`fixture-replay` 和 `rerun` 都会读取该记录。
+- 得出判定至少需要所选分区中有五个已评分任务。`pass` 需要至少 5 个百分点的提升且没有回归。
+- `inspect`、`rescore` 和 `fixture-replay` 不调用模型。`--live` 和 `--action rerun` 会为每个所选任务调用两次。
+- `promotionReady` 始终为 `false`。通过只是供人工决策的证据，不会自动晋升。
+- 实时运行需要支持项目本地技能发现的供应商（请参阅[运行并记录](#run-and-record)）。
+
+## 评估模型 {#evaluation-model}
 
 实时运行会把每个任务作为成对实验来评估：
 
@@ -29,7 +41,29 @@ description: "使用成对、隔离的仓库任务和确定性产物检查，评
 
 真实项目永远不会作为任一分支的工作目录。OMA 会在检查和清理临时工作区之前，捕获原始输出和最终任务产物。所选供应商自己的进程沙箱仍是访问该工作目录以外内容的权威边界。
 
-## 候选目录布局
+下图展示成对分支如何得出决策。离线操作会从已存储的记录出发，在配对步骤重新进入流程。
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
+
+## 候选目录布局 {#candidate-layout}
 
 候选路径是包含部分 `.agents/` 树的目录：
 
@@ -49,7 +83,7 @@ candidate/
 
 只接受 `.agents/agents`、`.agents/rules`、`.agents/skills` 和 `.agents/workflows` 下的文件。钩子、评估 fixture、状态、结果、配置文件、符号链接和供应商智能体变体都会被拒绝。受保护的智能体 frontmatter 字段，例如 `model`、`tools`、`effort` 和执行限制，必须与基线一致。若运行中的智能体在评分前修改受保护的 `.agents/` 定义，该分支也会失败。
 
-## 套件格式
+## 套件格式 {#suite-format}
 
 套件由一个 YAML 文件和每个任务一个 fixture 目录组成：
 
@@ -91,13 +125,13 @@ tasks:
         path: docs/feature.md
 ```
 
-版本 2 要求同时包含 `validation` 和 `final-test` 任务。每个任务都必须声明其分区。默认为 validation；候选选定后如需单独的最终运行，请使用 `--partition final-test`。两个分区不能共享或嵌套 fixture 目录。请将记录文件保存在 fixture 目录、候选覆盖层和评估器输入之外；放在这些位置会被拒绝，以防止后续运行看到最终检查。版本 1 的套件仍作为 `exploratory` 运行，不能被选为 final-test。
+版本 2 要求同时包含 `validation` 和 `final-test` 任务。每个任务都必须声明其分区。默认为 validation；候选选定后如需单独的最终运行，请使用 `--partition final-test`。每次运行只对所选分区评分，因此得出明确结论的 validation 运行至少需要五个 `validation` 任务，final-test 运行至少需要五个 `final-test` 任务。上面的示例为便于阅读而保持简短，始终会报告 `INSUFFICIENT`。两个分区不能共享或嵌套 fixture 目录。请将记录文件保存在 fixture 目录、候选覆盖层和评估器输入之外；放在这些位置会被拒绝，以防止后续运行看到最终检查。版本 1 的套件仍作为 `exploratory` 运行，不能被选为 final-test。
 
 任务 ID 必须唯一。fixture 路径和检查路径必须保持在项目与任务工作区内。套件和 fixture 还必须位于复制到每个分支的基线定义之外。fixture 不能包含符号链接，也不能包含 `.agents`、`.codex`、`.claude`、供应商技能目录或根目录智能体指令文件等 harness 控制面。这样可以防止任务数据遮蔽两个分支所使用的受控 harness。
 
 像 `node_modules` 和 `.venv` 这样的生成依赖目录不会从基线 harness 复制。将确定性的辅助源代码和依赖清单提交到技能中；检查需要运行时依赖时，在任务 fixture 中提供它们。
 
-### 检查类型
+### 检查类型 {#check-types}
 
 | 类型 | 字段 | 通过条件 |
 |:-----|:-------|:---------------|
@@ -130,7 +164,7 @@ JSON 断言比较解析后的值，包括类型；表示成功的文字描述无
 
 检查及检查程序路径不会加入智能体提示或 fixture。所选任务的输入在其运行期间必然可见。这样既保护评估器的完整性，又能分隔各分区；它不能阻止同一用户的进程读取主机上的其他文件。
 
-## 运行并记录
+## 运行并记录 {#run-and-record}
 
 实时模式会为每个所选任务发起两次调度，打印调度预览，并要求确认：
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-使用 `--yes` 进行非交互式执行，使用 `--timeout-minutes` 设置两个分支相同的墙钟限制。实时执行要求供应商能相对于项目工作区发现 harness 文件。OMA 拒绝基于 HOME 的发现，因为这样基线可能看到全局安装的候选内容。
+使用 `--yes` 进行非交互式执行，使用 `--timeout <duration>` 设置两个分支相同的墙钟限制（默认 `15m`；必须带单位，例如 `--timeout 45m`）。`oma harness incident reproduce` 接受同一标志。实时执行要求供应商能相对于项目工作区发现 harness 文件。OMA 拒绝基于 HOME 的发现，因为这样基线可能看到全局安装的候选内容。
+
+供应商来自套件的 `agent`，通过项目模型配置解析：
+
+| 供应商 | 实时 `harness eval`、`--action rerun`、`incident reproduce` |
+|---|---|
+| `claude`、`codex`、`commandcode`、`copilot`、`cursor`、`kiro`、`opencode`、`qwen` | 允许：项目本地技能目录 |
+| `antigravity`、`hermes`、`kimi` | 拒绝：基于 HOME 的技能发现 |
+| 任何没有已知项目技能目录的供应商 | 拒绝 |
+
+离线操作（`inspect`、`rescore`、`fixture-replay`）不会调度，因此不适用此检查。
 
 `--record` 会写入不可变的版本 2 JSON 记录。默认位置是套件旁的 `_runs/`，文件名中带有基线/候选哈希。再次实时运行时请使用新的 `--record-file`；已存在的目标会在调度前被拒绝。记录会保留：
 
@@ -155,7 +199,7 @@ oma harness eval \
 
 记录有自己的完整性哈希。记录或产物哈希发生变化会被拒绝。这些哈希用于标识证据；它们不能证明进程的访问受到限制，也不会使结果具备晋升条件。
 
-### 执行条件
+### 执行条件 {#execution-conditions}
 
 每次实时或重跑评估都会在第一次调度之前解析出执行清单，并以 `manifest` 存入记录。它写明判定所描述的条件，使已保存的评分不会被误认为是关于另一个模型、CLI 或 OMA 构建的证据：
 
@@ -172,13 +216,13 @@ oma harness eval \
 
 清单只是描述，不是证明：它记录 OMA 解析出的内容，其 confinement 字段也明确说明网络和凭据隔离并未强制执行。`promotionReady` 保持为 `false`。
 
-### 环境策略
+### 环境策略 {#environment-policy}
 
 两个分支收到相同的经允许列表过滤的环境。基础变量（`PATH`、`HOME`、区域设置、临时目录、代理和证书设置）、所有 `OMA_*` 变量，以及目标供应商的凭据和运行时检测前缀会传入进程；调度构建器为本次调用添加的条目也会保留。其余变量一律丢弃，使候选不会意外拿到部署令牌或其他提供商的密钥。`OMA_NO_AGENTMEMORY=1` 被强制设置，使供应商内存无法在基线和候选分支之间传递上下文。
 
 设置 `OMA_HARNESS_ENV_PASSTHROUGH=NAME1,NAME2` 可透传任务确实需要的额外变量。这些名称会出现在清单的 `environmentPolicy.extra` 下。供应商没有已知前缀集时，清单会报告 `vendorKnown: false`，只有基础变量、`OMA_*` 和透传条目会到达进程。
 
-## 复用记录
+## 复用记录 {#reuse-a-recording}
 
 该命令区分四种操作：
 
@@ -191,7 +235,7 @@ oma harness eval \
 
 `--action inspect` 是默认值。`--mock` 是 `inspect` 的别名，不能与其他操作组合使用。`inspect` 和 `fixture-replay` 都不会重新运行智能体。
 
-### 查看已保存的判定
+### 查看已保存的判定 {#inspect-stored-verdicts}
 
 ```bash
 oma harness eval \
@@ -203,7 +247,7 @@ oma harness eval \
 
 `inspect` 要求原始套件、分区、评估器、基线和候选的哈希全部匹配。它会显示已记录的评分，而不调用检查程序，也不重新评估输出。版本 1 的记录在所需来源信息匹配时仍可用于查看。缺少分区/评估器来源信息的更早记录无法通过当前 CLI 的校验。旧版判定不能被重新标记为新的原始证据：如需重新评分、fixture 重放或固定文件重跑，请收集新的实时记录。
 
-### 重新评分原始证据
+### 重新评分原始证据 {#rescore-original-evidence}
 
 ```bash
 oma harness eval \
@@ -217,7 +261,7 @@ oma harness eval \
 
 命令检查不足以支持离线重新评分，因为记录没有固定外部运行时和环境。针对被排除或不完整产物的检查同样不足。失败的原始调度只留下诊断输出，无法通过重新评分变成有效的测量。当前验收标准需要执行命令时，请使用实时重跑。
 
-### 重放工具 fixture
+### 重放工具 fixture {#replay-tool-fixtures}
 
 转录文件包含一个对象，或包含任务 ID 互不相同的对象数组。请为每个所选任务提供一份转录：
 
@@ -261,7 +305,7 @@ oma harness eval \
 
 两个已记录的分支必须具有相同的完整初始快照。OMA 对每个分支应用相同的转录，并运行当前的输出/文件检查。命令检查需要实时重跑。这些结果只表明所提供的 fixture 序列可以被重放；它们不能证明候选在行为上有改进，也不能证明模型可复现。
 
-### 基于固定的初始文件重跑智能体
+### 基于固定的初始文件重跑智能体 {#rerun-the-agent-from-pinned-initial-files}
 
 ```bash
 oma harness eval \
@@ -277,7 +321,7 @@ oma harness eval \
 
 固定的文件无法复现外部服务状态、时钟行为或模型采样。重跑是在所述条件下新得到的行为证据，并不意味着原始智能体轨迹被确定性地复现。
 
-### 重放时的已记录条件
+### 重放时的已记录条件 {#recorded-conditions-on-replay}
 
 `inspect`、`rescore` 和 `fixture-replay` 会报告记录中保存的清单，并带有 `conditions: "recorded"`；早于清单出现的记录则为 `conditions: "unavailable"`。OMA 还会解析当前条件，并把供应商、调度模式、模型、effort、thinking、CLI 版本、OMA 版本或主机上的每一处差异列为重放限制和晋升阻碍项：
 
@@ -287,15 +331,15 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 
 只有当记录本身带有已探测的版本时，重放才会探测 CLI 版本；缺少探测结果的版本对会被报告为不可比较，而不是相等。已记录的判定仍可在其原始条件下查看。在实时或重跑评估产生清单匹配的记录之前，它们不能作为候选在当前条件下的证据。
 
-### 用量
+### 用量 {#usage}
 
 供应商报告用量时，每个分支都会存储 `usage`：输入和输出 token、以美元计的费用、墙钟时间，以及产生大部分输出的模型。评估会把它们汇总为 `usage`，其 `status` 为 `actual`、`partial`（部分分支没有报告任何内容）或 `unknown`。供应商的结果信封会在检查运行之前、输出被记录之前解包，因此 `output_contains` 和 `output_json_equals` 看到的是智能体的答案，而不是它外面的 JSON 记账信息；信封中的用量正是此字段的来源。
 
-### 报告标签
+### 报告标签 {#report-labels}
 
 报告包含 `executionMode`、`evidenceStatus`（`complete`、`insufficient` 或 `legacy`）、`replayLimitations`，以及可用时的 `sourceRecordHash`。实时和重跑报告还会加入 `manifest`、`conditions: "current"` 和 `traceSession`。证据完整性描述当前操作能够查看或评估的内容。即使当前的文件捕获是完整的，继承而来的事故限制仍然可见。`promotionReady` 在每种模式下都保持为 `false`。
 
-## Trace 事件
+## Trace 事件 {#trace-events}
 
 每次实时或重跑评估都会向本地会话 `oma-harness-<suite-id>` 写入相互关联的事件：
 
@@ -314,7 +358,7 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 
 失败的分支因此会保留其部分输出、stderr 末尾、退出状态和文件改动，使最后一个错误可以追溯到该分支改动了什么。缺失的观察会被记录为一种状态；它绝不会被读成一次干净的运行。
 
-## 指标和决策关卡
+## 指标和决策关卡 {#metrics-and-decision-gate}
 
 只有每项检查都通过时，任务才通过。评分是成对任务的加权平均值：
 
@@ -326,12 +370,31 @@ OMA 还会报告：
 
 - 已修正任务：基线失败而候选通过；
 - 已回归任务：基线通过而候选失败；
-- 覆盖率：至少需要五个成对且可评分的任务。
+- 覆盖率：所选分区中至少需要五个成对且可评分的任务。
 
-评分决策在提升值至少为 5 个百分点且没有回归时为 `pass`。任何回归都会使候选失败。非负但低于 5 个百分点的提升会发出警告，成对任务少于五个会产生 `insufficient` 决策。在 CI 中添加 `--require-coverage`，让覆盖不足以非零状态退出。如果某个分支缺失、记录哈希过期或确定性检查未完成，评分不构成证据。实时调度错误和评估器完整性错误会强制得到失败决策；它们不能算作成功的提升。重新评分和 fixture 重放会把证据不足的分支从可评分的成对任务中剔除，并报告 `insufficient` 决策，而不是把缺失的证据当作候选回归。
+评分决策在提升值至少为 5 个百分点且没有回归时为 `pass`。任何回归或负提升都会使候选失败。非负但低于 5 个百分点的提升会发出警告，成对任务少于五个会产生 `insufficient` 决策。在 CI 中添加 `--require-coverage`，让覆盖不足以非零状态退出。如果某个分支缺失、记录哈希过期或确定性检查未完成，评分不构成证据。实时调度错误和评估器完整性错误会强制得到失败决策；它们不能算作成功的提升。重新评分和 fixture 重放会把证据不足的分支从可评分的成对任务中剔除，并报告 `insufficient` 决策，而不是把缺失的证据当作候选回归。
 
 评分通过并不意味着具备晋升资格。报告包含分区、评估器哈希、`promotionReady: false` 以及明确的阻碍项。旧版运行和 validation 运行都缺少 final-test 证据。当前的调度路由无法证明文件系统访问受到限制，因此即使是 final-test 运行，也不能声称完成了受保护的最终评估，或批准晋升。在执行提供方能够建立这一边界之前，该字段始终为 false。
 
-## 当前边界
+## 故障排查 {#troubleshooting}
 
-候选覆盖层由外部生成；该命令不实现构建器，也不实现自动化的 `harness opt` 循环。目前已提供产物捕获、离线重新评分、工具 fixture 重放、固定文件重跑、分区选择、做过快照的评估器、执行清单、环境允许列表和相互关联的 trace 事件，但对保留数据的操作系统级保密、网络或凭据的访问限制、重复的随机试验、token 记账，以及为嵌套子智能体调用强制固定模型，都尚未建立。环境允许列表限制供应商进程继承哪些变量；它不能阻止供应商 CLI 读取自己的凭据存储或访问网络。在嵌套调用固定功能存在前，计划测量一个固定模型的套件应避免会生成其他已配置智能体角色的候选工作流。
+| 消息或症状 | 原因 | 解决方法 |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | 默认操作是 `inspect`，它读取已存储的记录。 | 先运行一次 `--live --record`，或用 `--record-file` 传入已有记录。 |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect` 要求每个已记录的哈希都匹配。 | 用新的 `--record-file` 记录一次新运行。如果想把当前检查应用到已存储的字节上，请使用 `--action rescore`。 |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore` 或 `fixture-replay` 指向了来自其他输入的记录。 | 选择匹配的 `--record-file` 和 `--partition`，或重新记录。 |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record` 会覆盖已有文件。 | 传入新的 `--record-file` 路径。 |
+| `--record requires --live or --action rerun` | `--record` 与离线操作同时使用。 | 去掉 `--record`，或使用 `--live`。 |
+| `--action fixture-replay requires --transcript` | 没有提供 transcript。 | 添加 `--transcript <path>`。 |
+| `Removed option --timeout-minutes. Use --timeout.` | 旧的标志写法。 | 使用 `--timeout 30m`（必须带单位）。 |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | 套件智能体解析到基于 HOME 发现的供应商，或没有项目技能目录的供应商。 | 将套件智能体路由到[运行并记录](#run-and-record)下表中的供应商。 |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | 使用了 `--candidate .` 或 `.agents/` 内的路径。 | 把覆盖层放在其他位置，例如 `candidates/fix/.agents/`。 |
+| `Candidate file is not allowed: <path>` | 覆盖层包含 `agents/`、`rules/`、`skills/` 或 `workflows/` 之外的文件。 | 从覆盖层中移除这些文件。 |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | 受保护的 frontmatter 与基线不同。 | 恢复 `model`、`tools`、`effort` 及其他受保护字段。 |
+| `Suite requires at least one final-test task` | `schema_version: 2` 套件需要两个分区。 | 添加一个 `partition: final-test` 的任务。 |
+| `decision: INSUFFICIENT` | 所选分区中已评分任务少于五个，或缺少分支。 | 添加任务直到该分区有五个，并阅读 `replay limitation:` 行。 |
+| `decision: FAIL` | 调度错误（后跟 `<task>/<arm>: ...` 行）、回归（任务 ID 列在 `regressed:` 下）或负提升。 | 对于调度错误，阅读每个失败分支下的 `exit=... timedOut=... stderr=...` 行。对于回归，比较所列任务的两个分支。 |
+
+## 当前边界 {#current-boundary}
+
+候选覆盖层由外部生成；该命令不实现构建器，也不实现自动化的 `harness opt` 循环。目前已提供产物捕获、离线重新评分、工具 fixture 重放、固定文件重跑、分区选择、做过快照的评估器、执行清单、环境允许列表和相互关联的 trace 事件，但对保留数据的操作系统级保密、网络或凭据的访问限制、重复的随机试验，以及为嵌套子智能体调用强制固定模型，都尚未建立。供应商报告 token 和费用用量时，会按分支记录并汇总（请参阅[用量](#usage)）。环境允许列表限制供应商进程继承哪些变量；它不能阻止供应商 CLI 读取自己的凭据存储或访问网络。在嵌套调用固定功能存在前，计划测量一个固定模型的套件应避免会生成其他已配置智能体角色的候选工作流。

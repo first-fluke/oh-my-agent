@@ -8,9 +8,38 @@ description: Registra el trabajo de los agentes mediante declaraciones de result
 
 OMA trata el resultado de un agente como un pequeño registro de evidencia, no solo como el código de salida del proceso. Una ejecución registra los identificadores de tarea y sesión, la huella del workspace, los registros de verificación (receipts), los archivos modificados, el trabajo sin resolver y los hashes de los artefactos. Esto permite que un coordinador reutilice una tarea completada solo mientras su contrato de aceptación y sus entradas sigan coincidiendo.
 
-Usa directamente este ciclo de vida cuando ejecutes un agente nativo. Los flujos de trabajo y `oma agent spawn` crean los mismos registros y dejan la finalización de la ejecución gestionada al coordinador padre.
+Usa directamente este ciclo de vida cuando ejecutes un agente nativo. Los flujos de trabajo y `oma agent spawn` crean los mismos registros y dejan la finalización de la ejecución gestionada al coordinador padre. Para los términos que se usan aquí, consulta [Registro de ejecución y claim](../getting-started/glossary.md#run-record-and-claim) y [Plan](../getting-started/glossary.md#plan) en el glosario.
 
-## Inicia una ejecución nativa
+## El ciclo de vida de un vistazo
+
+| Paso | Comando | Registra | Conserva |
+| --- | --- | --- | --- |
+| 1. Contrato | Edita `.agents/results/plan-SESSION_ID.json` | `acceptance_criteria` y `required_checks` de la tarea | ID de sesión, ID de tarea |
+| 2. Inicio | `oma agent begin AGENT TASK SESSION_ID --workspace .` | Registro de ejecución con estado `running` | `runId`, `claimPath` |
+| 3. Contexto (opcional) | `oma agent context AGENT --difficulty Medium` | Nada | Contexto del prompt |
+| 4. Verificación | `oma agent verify RUN_ID --required` | Un registro de verificación por comprobación | Código de salida |
+| 5. Declaración | Escribe JSON en `claimPath` | Archivo de la declaración de resultados | Nada |
+| 6. Finalización | `oma agent finish RUN_ID CLAIM_PATH` | Estado final | `status` |
+| 7. Recuperación | `oma agent resume SESSION_ID --dry-run` y después sin `--dry-run` | Checkpoint de recuperación y lease de sesión | Estado de cada tarea |
+
+`oma agent spawn` y `oma agent parallel` realizan los pasos 2 y 6 por ti: el proceso padre inicia la ejecución y la finaliza cuando el hijo termina.
+
+```mermaid
+flowchart TD
+  plan["Task contract in plan-SESSION_ID.json"] --> begin["oma agent begin, or spawn"]
+  begin --> running(["running"])
+  running -->|"oma agent verify"| running
+  running --> claim["Claim written at claimPath"]
+  claim --> finish["oma agent finish, or the spawning parent"]
+  finish -->|"claim completed, current receipts, nothing unresolved"| completed(["completed"])
+  finish -->|"unresolved items, missing checks or decisions, invalid claim"| partial(["partial"])
+  finish -->|"claim reports blocked"| blocked(["blocked"])
+  finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
+```
+
+Una declaración de resultados también puede informar directamente `partial` o `failed`. La finalización nunca mejora una declaración: rebaja una declaración `completed` cuya evidencia no se sostiene, y un código de salida distinto de cero convierte cualquier ejecución en `failed`.
+
+## Inicia una ejecución nativa {#start-a-native-run}
 
 Define primero la tarea y sus `acceptance_criteria` y `required_checks` en un plan ubicado en `.agents/results/plan-SESSION_ID.json`. Para una comprobación genérica pequeña del proyecto, el plan puede contener una tarea como esta:
 
@@ -86,6 +115,26 @@ Usa `--affected PATH...` solo cuando el grafo tenga una selección completa de p
 
 ## Escribe y finaliza la declaración de resultados
 
+Para las tareas que eligen un contrato de API, una política de autenticación, un modelo de datos,
+una estrategia de migración, un propietario del estado, un alcance de acceso a la infraestructura u otra
+decisión de la que depende el trabajo posterior, declara `required_decisions` en la tarea
+antes del despacho:
+
+```json
+"required_decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "description": "Choose the compatibility window and rollback strategy for the account migration."
+  }
+]
+```
+
+Omite este campo en las tareas que siguen una decisión existente. Los requisitos quedan
+fijados con el contrato de la tarea y no se pueden eliminar ni cambiar después del despacho.
+Enumera los temas sugeridos para un agente con
+`oma state decisions list --agent db-engineer --json`. Estos temas son
+opciones para usar cuando sean pertinentes; el catálogo no hace obligatoria cada elección.
+
 Escribe el archivo de la declaración de resultados en la ruta exacta que mostró `begin`:
 
 ```json
@@ -98,6 +147,29 @@ Escribe el archivo de la declaración de resultados en la ruta exacta que mostr�
 ```
 
 `status` puede ser `completed`, `partial`, `blocked` o `failed`. Las rutas son relativas a la raíz del proyecto y cada artefacto debe ser un archivo normal dentro del workspace. Usa `verificationSkipped` solo para una revisión concreta que no tenga una comprobación ejecutable; no convierte una comprobación fallida en aprobada.
+
+Incluye las decisiones sustanciales en el array opcional `decisions` de la declaración de resultados:
+
+```json
+"decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "decision": "Use an expand-and-contract migration; retain the old column for one release.",
+    "rationale": "Both deployed app versions must work during the rollout; rollback switches reads to the retained column.",
+    "alternatives": ["Replace the column during a maintenance window"],
+    "evidence": ["docs/account-migration.md"]
+  }
+]
+```
+
+El padre guarda cada decisión como un evento `decision.made` en la sesión de la ejecución
+y le adjunta los IDs reales de agente, tarea y ejecución. Si falta una decisión requerida,
+el resultado se mantiene parcial, incluso cuando pasan las comprobaciones ejecutables. Las decisiones de
+otra tarea u otro intento no pueden satisfacer el requisito. El registro de verificación fija los
+IDs de los eventos de decisión y los hashes de su contenido; la reutilización comprueba que esos eventos todavía
+existen, son válidos y su contenido no ha cambiado.
+Las decisiones opcionales también se registran. Los agentes de solo lectura devuelven el mismo array en
+su declaración `OMA_RESULT_JSON` para que el padre pueda persistirlo.
 
 Finaliza una ejecución nativa después de escribir la declaración de resultados:
 
@@ -123,7 +195,20 @@ Primero pregunta qué haría OMA:
 oma agent resume SESSION_ID --dry-run
 ```
 
-El informe clasifica cada tarea como `reused`, `ready`, `running` o `blocked` e incluye el motivo. Un registro de ejecución completado válido se reutiliza solo cuando su contrato, sus entradas, los hashes de los artefactos y la evidencia de dependencias siguen vigentes. No se duplica un proceso gestionado activo ni una ejecución nativa sin evidencia de actividad.
+El informe clasifica cada tarea como `reused`, `ready`, `running` o `blocked` e incluye el motivo:
+
+```mermaid
+flowchart TD
+  task["Plan task and its latest run"] --> live{"Latest run still running, with a live or unknown process?"}
+  live -->|yes| running(["running"])
+  live -->|no| valid{"Completed evidence still current?"}
+  valid -->|yes| reused(["reused"])
+  valid -->|no| safe{"retry_policy safe, replayable prompt and agent, attempts left?"}
+  safe -->|yes| ready(["ready"])
+  safe -->|no| blocked(["blocked"])
+```
+
+Una dependencia que no está en `reused` devuelve a `ready` una tarea dependiente `reused` (o a `blocked` cuando no se puede repetir), y una tarea `ready` cuya dependencia está en `blocked` o `running` pasa a `blocked`. Un registro de ejecución completado válido se reutiliza solo cuando su contrato, sus entradas, los hashes de los artefactos y la evidencia de dependencias siguen vigentes. No se duplica un proceso gestionado activo ni una ejecución nativa sin evidencia de actividad.
 
 Cuando el informe indique que es seguro ejecutar, reanuda las tareas ready en orden de dependencia:
 
@@ -151,4 +236,9 @@ La reanudación inicia un intento nuevo; no restaura la conversación interrumpi
 | Cambió el plan o las entradas | Inicia una nueva ejecución cuando el plan sea estable. | La nueva ejecución toma una instantánea del contrato nuevo; la evidencia anterior no se reutiliza. |
 | La tarea necesita una decisión | Regístrala como `blocked` con una explicación. | La reanudación la mantiene bloqueada hasta que estén disponibles la decisión y el prompt. |
 
-Para errores de análisis, herramientas de proveedor ausentes, estado del dashboard, programaciones y datos de evaluación obsoletos, consulta [Solución de problemas](/docs/guide/troubleshooting).
+## Próximos pasos
+
+- Mensajes de error de `begin`, `verify`, `finish` y `resume`: [Solución de problemas](./troubleshooting.md#find-your-error)
+- Errores de análisis, herramientas de proveedor ausentes, estado del dashboard, programaciones y datos de evaluación obsoletos: [Solución de problemas](./troubleshooting.md)
+- Observa las ejecuciones gestionadas mientras trabajan: [Monitoreo del dashboard](./dashboard-monitoring.md)
+- Define planes con contratos de tarea: [Proyectos multiagente](./multi-agent-project.md)

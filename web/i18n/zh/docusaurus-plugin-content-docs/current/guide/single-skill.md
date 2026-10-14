@@ -8,7 +8,7 @@ description: oh-my-agent 单领域任务的详细指南，涵盖适用时机、�
 
 单技能执行是快速路径：一个智能体、一个领域、一个聚焦任务。它没有编排开销和多智能体协调。宿主或选定的工作流可以将自然语言提示路由到该技能；钩子系统自身负责检测工作流，路由行为取决于所选运行时。
 
-## 快速路径
+## 快速路径 {#quick-path}
 
 1. 运行一次 `oma doctor`，确认选定的宿主集成。任务不使用相关供应商时，可选供应商警告不会阻塞任务。
 2. 描述一个自包含的变更，明确写出 **Goal**、**Context**、**Constraints** 和 **Done When** 条件。
@@ -19,7 +19,7 @@ description: oh-my-agent 单领域任务的详细指南，涵盖适用时机、�
 
 ---
 
-## 何时使用单技能
+## 何时使用单技能 {#when-to-use-single-skill}
 
 当你的任务满足以下所有条件时使用：
 
@@ -47,9 +47,9 @@ description: oh-my-agent 单领域任务的详细指南，涵盖适用时机、�
 
 ---
 
-## 预检清单
+## 预检清单 {#preflight-checklist}
 
-提示之前，回答以下四个问题（它们对应[提示结构](/docs/core-concepts/skills)的四个要素）：
+提示之前，回答以下四个问题：
 
 | 要素 | 问题 | 为什么重要 |
 |------|------|----------|
@@ -65,7 +65,7 @@ description: oh-my-agent 单领域任务的详细指南，涵盖适用时机、�
 
 ---
 
-## 提示模板
+## 提示模板 {#prompt-template}
 
 ```text
 Build <specific artifact> using <stack/framework>.
@@ -77,7 +77,7 @@ Acceptance criteria:
 Add tests for: <critical test cases>.
 ```
 
-### 模板拆解
+### 模板拆解 {#template-breakdown}
 
 | 部分 | 目的 | 示例 |
 |------|------|------|
@@ -89,9 +89,9 @@ Add tests for: <critical test cases>.
 
 ---
 
-## 真实示例
+## 真实示例 {#real-examples}
 
-### 前端：登录表单
+### 前端：登录表单 {#frontend-login-form}
 
 ```text
 Create a login form component in React + TypeScript + Tailwind CSS.
@@ -111,16 +111,15 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **难度评估**：中等（2-3 个文件，需要在验证 UX 上做一些设计决策）。
 3. **加载的资源：**
    - `execution-protocol.md`（始终加载）
-   - `snippets.md`（表单 + Zod 模式）
-   - 现有组件模式；如果技能提供，则加载 `snippets.md`
-4. **执行契约（启用时可能输出 `CHARTER_CHECK`）：**
-   ```
-`CHARTER_CHECK`:
+   - `snippets.md`（表单和 Zod 模式；如果技能提供，还包括现有组件模式）
+4. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
+   ```text
+   CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
    - Must NOT do: backend API, database, mobile screens
    - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, `@tanstack/react-form` + Zod, shadcn/ui, FSD-lite architecture
+   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
    ```
 <!-- oma-docs:ignore-start -->
 5. **实现：**
@@ -140,7 +139,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 
 ---
 
-### 后端：REST API 端点
+### 后端：REST API 端点 {#backend-rest-api-endpoint}
 
 ```text
 Add a paginated GET /api/tasks endpoint that returns tasks for the authenticated user.
@@ -155,7 +154,7 @@ Add tests for: auth required, pagination, status filter, empty results.
 
 **预期执行流程：**
 
-1. **技能激活：** `oma-backend` 激活（关键词："API"、"endpoint"、"REST"）
+1. **技能路由**：宿主或工作流选择 `oma-backend`（"API"、"endpoint" 和 "REST" 等关键词是路由信号）
 2. **栈检测**：读取 `pyproject.toml` 或 `package.json` 确定语言和框架。如果生成的 `stack/` 参考或随附 `variants/` 存在，则从中加载约定。
 3. **难度评估**：中等（2 到 3 个文件：路由、服务、仓储，加上测试）
 4. **加载的资源：**
@@ -164,8 +163,8 @@ Add tests for: auth required, pagination, status filter, empty results.
    - 如果可用，加载匹配的 `stack/snippets.md` 或 `variants/{node,python,rust}/snippets.md`
    - 如果可用，加载匹配的 `stack/tech-stack.md` 或变体技术栈参考
 <!-- oma-docs:ignore-end -->
-5. **CHARTER_CHECK：**
-   ```
+5. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -181,7 +180,7 @@ Add tests for: auth required, pagination, status filter, empty results.
 
 ---
 
-### 移动端：设置界面
+### 移动端：设置界面 {#mobile-settings-screen}
 
 ```text
 Build a settings screen in Flutter with profile editing (name, email, avatar), notification preferences (toggle switches), and a logout button.
@@ -197,14 +196,14 @@ Add tests for: profile save, logout flow, offline state.
 
 **预期执行流程：**
 
-1. **技能激活：** `oma-mobile` 激活（关键词："Flutter"、"screen"、"mobile"）
+1. **技能路由**：宿主或工作流选择 `oma-mobile`（"Flutter"、"screen" 和 "mobile" 等关键词是路由信号）
 2. **难度评估：** 中等（设置界面 + 状态管理 + 离线处理）
 3. **加载的资源：**
    - `execution-protocol.md`
    - `snippets.md`（界面模板、Riverpod provider 模式）
    - `screen-template.dart`
-4. **CHARTER_CHECK：**
-   ```
+4. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -223,7 +222,7 @@ Add tests for: profile save, logout flow, offline state.
 
 ---
 
-### 数据库：模式设计
+### 数据库：模式设计 {#database-schema-design}
 
 ```text
 Design a database schema for a multi-tenant SaaS project management tool. Entities: Organization, Project, Task, User, TeamMembership.
@@ -239,15 +238,15 @@ Add deliverables: data standards table, glossary, migration script.
 
 **预期执行流程：**
 
-1. **技能激活：** `oma-db` 激活（关键词："database"、"schema"、"ERD"、"migration"）
+1. **技能路由**：宿主或工作流选择 `oma-db`（"database"、"schema"、"ERD" 和 "migration" 等关键词是路由信号）
 2. **难度评估：** 复杂（架构决策、多实体、容量规划）
 3. **加载的资源：**
    - `execution-protocol.md`
    - `document-templates.md`（交付物结构）
    - `examples.md`
    - `anti-patterns.md`（优化时审查）
-4. **CHARTER_CHECK：**
-   ```
+4. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -268,11 +267,11 @@ Add deliverables: data standards table, glossary, migration script.
 
 ---
 
-## 质量关卡检查清单
+## 质量关卡检查清单 {#quality-gate-checklist}
 
 智能体交付输出后，在接受之前验证以下项目：
 
-### 通用检查（所有智能体）
+### 通用检查（所有智能体） {#universal-checks-all-agents}
 
 - [ ] **行为符合验收标准**：提示中的每个标准都得到满足
 - [ ] **测试覆盖正常路径和关键边界情况**：不仅仅是正常路径
@@ -281,7 +280,7 @@ Add deliverables: data standards table, glossary, migration script.
 - [ ] **章程被遵守**："Must NOT do" 约束得到尊重
 - [ ] **Lint、类型检查、构建通过**：运行项目的标准检查
 
-### 前端特定
+### 前端特定 {#frontend-specific}
 
 - [ ] 无障碍：交互元素有 `aria-label`、语义化标题、键盘导航有效
 - [ ] 移动端：在 320px、768px、1024px、1440px 断点正确渲染
@@ -290,7 +289,7 @@ Add deliverables: data standards table, glossary, migration script.
 - [ ] shadcn/ui 组件未被直接修改（使用包装器）
 - [ ] 使用 `@/` 绝对导入（无相对路径 `../../`）
 
-### 后端特定
+### 后端特定 {#backend-specific}
 
 - [ ] 整洁架构保持：路由处理器中无业务逻辑
 - [ ] 所有输入已验证（不信任用户输入）
@@ -298,14 +297,14 @@ Add deliverables: data standards table, glossary, migration script.
 - [ ] 通过集中错误模块处理自定义异常（不使用原始 HTTP 异常）
 - [ ] 认证端点已限速
 
-### 移动端特定
+### 移动端特定 {#mobile-specific}
 
 - [ ] 所有控制器在 `dispose()` 方法中释放
 - [ ] 离线优雅处理
 - [ ] 60fps 目标保持（无卡顿）
 - [ ] 在 iOS 和 Android 上均已测试
 
-### 数据库特定
+### 数据库特定 {#database-specific}
 
 - [ ] 至少 3NF（或有文档化的反规范化理由）
 - [ ] 三个模式层均已文档化（外部、概念、内部）
@@ -314,7 +313,7 @@ Add deliverables: data standards table, glossary, migration script.
 
 ---
 
-## 升级信号
+## 升级信号 {#escalation-signals}
 
 注意以下信号，它们表明你应该从单技能切换到多智能体执行：
 
@@ -324,10 +323,20 @@ Add deliverables: data standards table, glossary, migration script.
 | 智能体的 CHARTER_CHECK 显示的 "Must NOT do" 项实际上是需要的 | 范围超出单一领域 | 先用 `/plan` 规划完整功能 |
 | 修复级联到 3+ 个不同层的文件 | 一个修复影响多个领域 | 使用更广范围的 `/debug`，或 `/work` |
 | 智能体发现 API 契约不匹配 | 前端/后端不一致 | 运行 `/plan` 定义契约，然后重新启动两个智能体 |
-| 质量关卡在集成点失败 | 组件未正确连接 | 添加 QA 审查步骤：`oma agent spawn qa "Review integration"` |
+| 质量关卡在集成点失败 | 组件未正确连接 | 运行 `/review`，或添加一次 QA 检查：`oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | 任务从"一个组件"增长为"三个组件 + 新路由 + API" | 执行期间范围蔓延 | 停止，运行 `/plan` 分解，然后 `/orchestrate` |
 | 智能体以 HIGH 澄清阻塞 | 需求根本性模糊 | 回答智能体的问题或运行 `/brainstorm` 澄清方案 |
 
-### 一般规则
+### 一般规则 {#rule-of-thumb}
 
-如果你发现自己对同一个智能体带修正重新启动超过两次，这个任务很可能是多领域的，需要 `/work` 或至少需要 `/plan` 步骤来正确分解。
+如果你对同一个智能体带修正重新启动超过两次，这个任务很可能是多领域的。请运行 `/work`，或至少运行 `/plan` 来分解它。
+
+---
+
+## 后续步骤 {#next-steps}
+
+- 任务跨越多个领域：[多智能体项目](./multi-agent-project.md)
+- 任务是一个 Bug：[Bug 修复](./bug-fixing.md)
+- 审计或恢复一次运行：[结果与恢复](./agent-results-and-resume.md)
+- 出现故障：[故障排查](./troubleshooting.md)
+- 在技能和工作流之间选择：[工作流](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

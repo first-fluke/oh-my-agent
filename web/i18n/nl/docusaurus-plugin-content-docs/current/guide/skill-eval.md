@@ -1,7 +1,7 @@
 ---
 title: "Evaluatie van skillnut"
 sidebar_label: Skill-evaluatie
-description: Schrijf evaluatietaakfixtures voor oma skill eval, gebruik de conventie voor de map .agents/eval/ en begrijp de checker-typen en mock/live-uitvoermodi.
+description: Schrijf evaluatietaakfixtures voor oma skill eval, gebruik de conventie voor de map .agents/eval/ begrijp de checker-typen en mock/live-uitvoermodi, en los veelvoorkomende fouten op.
 ---
 
 # Evaluatie van skillnut {#skill-utility-eval}
@@ -21,7 +21,7 @@ Voor elke taakfixture voert het commando twee armen uit:
 
 Elke arm krijgt een score (0 = mislukt, 1 = geslaagd) van de checker van de taak. De primaire metriek is:
 
-```
+```text
 utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
@@ -29,11 +29,93 @@ Een skill slaagt wanneer `utilityLift ≥ 5%`. Onder die drempel krijgt de skill
 
 ---
 
+## Snel starten {#a-minimal-working-fixture-set}
+
+Voor een beslissing zijn vijf fixtures nodig (`MIN_TASKS = 5`). Dit is een minimale set voor een denkbeeldige skill `oma-scholar`. Vier fixtures gebruiken de standaard-judge; `structured-output` gebruikt een deterministische `assert`-checker.
+
+```yaml
+# .agents/eval/oma-scholar/claims-only.yaml
+id: claims-only
+skill: oma-scholar
+domain: research
+prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
+rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/entity-lookup.yaml
+id: entity-lookup
+skill: oma-scholar
+domain: research
+prompt: "Look up the entity knows:concept/attention-mechanism"
+rubric: "Does the answer return the entity name, description, and at least one related concept?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/partial-fetch.yaml
+id: partial-fetch
+skill: oma-scholar
+domain: research
+prompt: "Fetch only the methods section of knows:generated/reconvla/1.0.0"
+rubric: "Does the answer request only the methods section instead of the full paper?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/structured-output.yaml
+id: structured-output
+skill: oma-scholar
+domain: research
+prompt: "List the claims of knows:generated/reconvla/1.0.0 as JSON objects with id and statement fields"
+checker:
+  type: assert
+  expect_contains:
+    - "statement"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/edge-empty-response.yaml
+id: edge-empty-response
+skill: oma-scholar
+domain: research
+prompt: "Fetch the claims of knows:generated/does-not-exist/0.0.0"
+rubric: "Does the answer report that no record exists instead of inventing claims?"
+weight: 1
+```
+
+Voer daarna uit:
+
+```bash
+# Seed rollouts (local only — re-run after any SKILL.md edit)
+oma skill eval --skill oma-scholar --live --record --yes
+
+# Offline replay
+oma skill eval --skill oma-scholar --json
+```
+
+De live run print vóór het dispatchen een preview. Met deze vijf fixtures toont die twee armen per taak plus twee judge-aanroepen per judge-taak (de vendor hangt af van je configuratie):
+
+```text
+Skill eval live run preview:
+  skill: oma-scholar
+  tasks: 5  trials: 1  spawns: 10 arm + 8 judge = 18 dispatches
+  vendor/model: claude
+  read-only: enforced (all spawns use readOnly: true)
+  record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
+```
+
+Lees daarna het resultaat zoals beschreven in [Het rapport lezen](#reading-the-report). De secties hierna zijn referentiemateriaal.
+
+---
+
 ## De conventie `.agents/eval/<skill>/` {#the-agentsevalskill-convention}
 
 Plaats taakfixtures onder `.agents/eval/<skill>/`. Dit pad staat binnen `.agents/` maar buiten de skillmap zelf, zodat `oma update` de door de gebruiker gemaakte evaluaties niet overschrijft.
 
-```
+```text
 .agents/eval/
 └── oma-scholar/
     ├── claims-only.yaml        ← task fixture
@@ -76,7 +158,7 @@ weight: 1
 
 #### judge (standaard) {#judge-default}
 
-Een LLM beoordeelt de armuitvoer aan de hand van een rubric en retourneert PASS of FAIL. Dit is de standaard wanneer `checker` ontbreekt of wanneer `checker.type` niet is ingesteld.
+Een LLM-[judge](../getting-started/glossary.md#judge) beoordeelt de armuitvoer aan de hand van een rubric en retourneert PASS of FAIL. Dit is de standaard wanneer `checker` ontbreekt of wanneer `checker.type` niet is ingesteld.
 
 ```yaml
 checker:
@@ -154,7 +236,7 @@ oma skill eval --skill oma-scholar
 
 ### --live {#live}
 
-Start echte agentarmen via `oma agent spawn --read-only`. Elke taakarm draait in een eigen tijdelijke workspace, zodat bestanden die door de ene arm worden geproduceerd, geen invloed hebben op een andere. Procesfouten, API-foutenveloppen en judge-fouten sluiten de volledige gepaarde vergelijking uit van scoring en vastlegging; gedeeltelijke uitvoer is diagnostische data.
+Dispatcht elke arm read-only naar de CLI van de agentrol `eval` (zie [De evaluatie- en optimizermodellen kiezen](#choose-the-evaluation-and-optimizer-models)). Elke taakarm draait in een eigen tijdelijke workspace, zodat bestanden die door de ene arm worden geproduceerd, geen invloed hebben op een andere. Procesfouten, API-foutenveloppen en judge-fouten sluiten de volledige gepaarde vergelijking uit van scoring en vastlegging; gedeeltelijke uitvoer is diagnostische data.
 
 Voor dispatchen print het commando een kostenpreview met het aantal taken, arm-dispatches, judge-dispatches en de opgeloste vendor. Bevestig met `y` of sla de bevestiging over met `--yes`.
 
@@ -176,6 +258,18 @@ oma skill eval --skill oma-scholar --live
 # Skip confirmation
 oma skill eval --skill oma-scholar --live --yes
 ```
+
+#### De evaluatie- en optimizermodellen kiezen {#choose-the-evaluation-and-optimizer-models}
+
+Taakarmen, judges en routingprobes lossen de agentrol `eval` op. Pin die in `.agents/oma-config.yaml`:
+
+```yaml
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+```
+
+De Maintainer en Proposer van `oma skill optimize` lossen de rol `opt-agent` op. De map `agents:` heeft geen sleutel `opt` (het configuratieschema weigert onbekende sleutels), dus deze rol volgt altijd de actieve `model_preset`, of `default_cli` bij `model_preset: auto`. Zonder `agents.eval` gebruikt de rol `eval` dezelfde fallback. Promotie vereist `isolation: enforced`, wat alleen de beschermde Claude- en native Codex-profielen bieden (zie [Skillisolatie](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Meting van negative transfer {#negative-transfer-measurement}
 
@@ -200,7 +294,7 @@ Een schone werkmap verbergt de ontdekking van projectlokale skills, maar de runt
 | `unavailable` | HOME-gebaseerde vendor (bijvoorbeeld **antigravity**, die `~/.gemini/antigravity-cli/skills` leest); een schone CWD kan die niet verbergen. Er wordt een waarschuwing geprint en het resultaat krijgt lage betrouwbaarheid. |
 | n/a | mock-modus — geen live dispatch. |
 
-Andere runtimeprofielen blijven beschikbaar voor exploratieve evaluatie, maar resultaten met `best-effort` en `unavailable` blokkeren promotie bij live optimalisatie. De eval-vendor volgt de modelconfiguratie van het project. Codex gebruikt zijn native CLI-login en het geconfigureerde model en de geconfigureerde provider via `app-server`; het schakelt niet stilzwijgend over op Claude of een API-key-client. Het beschermde Codex-contract richt zich op CLI 0.154.x op macOS/Linux met native bestandsopslag voor credentials en een bestaande `auth.json`. Een privé tijdelijke config-home verwijst naar de originele config- en auth-bestanden en sluit gedeelde bootstrapstatus uit; credentials worden niet gekopieerd en native verversing gebruikt het originele auth-bestand. Credentialopslag via keyring, auto en ephemeral wordt momenteel niet ondersteund. Niet-ondersteunde versies, opslagmodi en contractfouten worden dispatchfouten.
+Andere runtimeprofielen blijven beschikbaar voor exploratieve evaluatie, maar resultaten met `best-effort` en `unavailable` blokkeren promotie bij live optimalisatie. De eval-vendor volgt de agentrol `eval`. Codex gebruikt zijn native CLI-login en het geconfigureerde model en de geconfigureerde provider via `app-server`; het schakelt niet stilzwijgend over op Claude of een API-key-client. Het beschermde Codex-contract richt zich op CLI 0.154.x op macOS/Linux met native bestandsopslag voor credentials en een bestaande `auth.json`. Een privé tijdelijke config-home verwijst naar de originele config- en auth-bestanden en sluit gedeelde bootstrapstatus uit; credentials worden niet gekopieerd en native verversing gebruikt het originele auth-bestand. Credentialopslag via keyring, auto en ephemeral wordt momenteel niet ondersteund. Niet-ondersteunde versies, opslagmodi en contractfouten worden dispatchfouten.
 
 Judges draaien in verse tijdelijke mappen met uitgeschakeld optimalisatiegeheugen. Claude- en Codex-judges gebruiken hetzelfde beschermde teksttransport als de evaluatiearmen. De vendorconfiguratie van de judge ligt vast voor de duur van de run.
 
@@ -256,62 +350,29 @@ Het JSON-rapport bevat `routing` met `status`, aantallen, `activationRate`, `mis
 
 Dit meet de beschrijving ten opzichte van de catalogus via het beschermde transport. Het test niet het eigen discoverymechanisme van de vendor, dat het beschermde profiel bewust uitschakelt, en het meet niet of de procedure van de geladen skill wordt gevolgd; dat blijft de utility-meting.
 
-## Een minimale fixtureset die werkt {#a-minimal-working-fixture-set}
-
-Voor een beslissing zijn vijf fixtures nodig (`MIN_TASKS = 5`). Dit is een minimale set voor een denkbeeldige skill `oma-scholar`:
-
-```yaml
-# .agents/eval/oma-scholar/claims-only.yaml
-id: claims-only
-skill: oma-scholar
-domain: research
-prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
-rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
-weight: 1
-```
-
-```yaml
-# .agents/eval/oma-scholar/entity-lookup.yaml
-id: entity-lookup
-skill: oma-scholar
-domain: research
-prompt: "Look up the entity knows:concept/attention-mechanism"
-rubric: "Does the answer return the entity name, description, and at least one related concept?"
-weight: 1
-```
-
-Herhaal dit voor minstens drie andere taken. Voer daarna uit:
-
-```bash
-# Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skill eval --skill oma-scholar --live --record --yes
-
-# Offline replay
-oma skill eval --skill oma-scholar --json
-```
-
 ---
 
 ## Het rapport lezen {#reading-the-report}
 
 **Tekstuitvoer:**
 
-```
+```text
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
   isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
+  repeatability: single-trial  trials: 1  lift 95% CI: [9.2%, 48.0%]  within-task stddev: n/a
   [PASS]
-  Skill shows positive utility lift >= 5%.
+  Skill shows positive utility lift ≥ 5%.
 
   Per-task findings:
     claims-only: baseline=0 treatment=1 lift=+1.000
     entity-lookup: baseline=1 treatment=1 lift=+0.000
     ...
 
-  Thresholds: fail <= 0%, warn < 5%
+  Thresholds: fail ≤ 0%, warn < 5%
 ```
 
 **JSON-uitvoer** (via `--json`):
@@ -381,3 +442,23 @@ Als een mock-run onvoldoende dekking meldt, inspecteer je de waarschuwing op weg
 ## Evaluatietaken met een skill meeleveren {#shipping-eval-tasks-with-a-skill}
 
 Skills kunnen een evaluatietaakset bevatten door fixtures te plaatsen op `.agents/eval/<skill>/`. Dit zijn door de gebruiker geschreven bestanden buiten de skillmap, zodat ze een `oma update` overleven. Voeg bij het maken van een nieuwe skill met `oma-skill-creation` een bijpassende `eval/`-fixtureset toe, zodat toekomstige auteurs het effect van de skill kunnen controleren. Zie `.agents/skills/oma-skill-creation/SKILL.md` voor de workflow voor skill-auteurs.
+
+---
+
+## Probleemoplossing {#troubleshooting}
+
+Deze meldingen komen van `oma skill eval` en `oma skill optimize`.
+
+| Melding of symptoom | Oorzaak | Oplossing |
+|---|---|---|
+| `[oma skill opt] no eval coverage for skill "<id>": found N task fixture(s), need at least 5.` | Minder dan vijf geldige fixtures in `.agents/eval/<id>/`, of `--skill` is weggelaten (dan wordt `_all` gelezen). | Voeg fixtures toe (zie [Snel starten](#a-minimal-working-fixture-set)) en geef `--skill <id>` mee. |
+| `[oma skill eval] skipped <file>: does not match TaskFixture schema` | Een fixture mist `id`, `skill`, `domain`, `prompt` of een numeriek `weight`. | Voeg het ontbrekende veld toe, bijvoorbeeld `weight: 1`. |
+| `[oma skill eval] discarded N stale rollout entries from _rollouts/<file>: <reason>. Re-run --live --record to refresh.` | De skillbody, prompt, checker of het evaluatorprotocol is sinds de opname gewijzigd. | Voer `--live --record` opnieuw uit. |
+| `INSUFFICIENT COVERAGE — fewer than 5 tasks found.` | Na overslaan en uitsluitingen zijn minder dan vijf taken gescoord. | Los de waarschuwingen op die erboven worden geprint en neem daarna opnieuw op. |
+| `[oma skill eval] isolation: <status> for vendor <vendor> — baseline may be contaminated; result is low-confidence.` | De rol `eval` wordt opgelost naar een vendor zonder beschermd profiel. | Stel `agents.eval` in op een Claude- of Codex-model (zie [De evaluatie- en optimizermodellen kiezen](#choose-the-evaluation-and-optimizer-models)). |
+| `[oma skill eval] dispatch timed out after <N>s.` | Een arm- of judge-aanroep overschreed `OMA_SKILL_EVAL_TIMEOUT_MS`. | Verhoog `OMA_SKILL_EVAL_TIMEOUT_MS` voor fixtures die lange antwoorden nodig hebben. |
+| `Choose either --live or --mock` | Beide vlaggen zijn meegegeven. | Geef er één mee. |
+| `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` draaide zonder `--live`. | Voeg `--live` toe, of gebruik `oma skill eval --mock` voor offline controles. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | De rol `opt-agent` wordt opgelost naar een vendor zonder beschermd teksttransport. | Kies een `model_preset` (of, bij `model_preset: auto`, een `default_cli`) die naar Claude of Codex oplost. |
+| `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (er wordt niets geschreven) | `--apply` op een `oma-*`-skill zonder `--yes`. | Bewaar de dry-run-diff en lever die upstream aan, of voer opnieuw uit met `--yes`. |
+| `[oma skill opt] an active project overlay owns this skill; ...` | [Project-harness-evolutie](./harness-evolution.md) heeft een overlay voor deze skill geïnstalleerd. | Voer eerst `oma skill rollback --skill <id>` uit, of laat de evolutiecyclus de wijziging toepassen. |

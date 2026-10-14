@@ -18,17 +18,41 @@ description: oma skill optimize を使い、決定的な学習、検証、実行
 
 `oma skill optimize` は評価タスクのフィクスチャなしでは実行できません。`.agents/eval/<skill>/` に少なくとも **5 個のタスクフィクスチャ**（`MIN_TASKS = 5`）が必要です。5 個未満の場合、コマンドはすぐにエラーになります。
 
-```
+```text
 [oma skill opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
 ```
 
-`.agents/eval/<skill>/` のディレクトリ規約、フィクスチャスキーマ、チェッカーの種類、モック再生用のロールアウトの準備については、[スキルユーティリティ評価ガイド](/docs/guide/skill-eval)を参照してください。
+`.agents/eval/<skill>/` のディレクトリ規約、フィクスチャスキーマ、チェッカーの種類、モック再生用のロールアウトの準備については、[スキルユーティリティ評価ガイド](./skill-eval.md)を参照してください。
 
 昇格には、他のスキルに属する同一ドメインの近隣タスクが、空でない集合として必要です。候補ごとの検証スコアと最終候補のスコアは、いずれも、評価した分割の近隣タスクを、候補本文そのものを使って測定している必要があります。近隣タスクがない場合や、ペアの記録が不完全な場合は、負の転移がないことを立証できません。オフライン評価で再生できるのは、一致する候補の記録だけです。新しい候補を生成して評価するには、ライブ最適化を使ってください。
 
 再生とスイート単位の知識は、適用されるデフォルトの judge ルーブリックと採点器プロトコルのリビジョンを含む、タスクと評価器の契約全体に結び付いています。この出所情報のアップグレード以降は、古い記録と既存の知識スコープに新しい証拠が必要です。古いスコアに新しいハッシュを付け直しても、有効な測定にはなりません。
 
+---
+
 ## 動作
+
+次の図は 1 回の最適化実行を示します。評価が不完全な場合や予算が尽きた場合も、エポックのループは早期に終了します。
+
+```mermaid
+flowchart TD
+  FX["5+ fixtures in .agents/eval/SKILL_ID/"] --> SP["Deterministic split by task ID<br/>train 60% / validation 20% / final-test 20%"]
+  SP --> BL["Score the original body on VALIDATION"]
+  BL --> TR["Epoch: score the best body on TRAIN"]
+  TR --> MT["Wiki Maintainer turns failures<br/>and successes into patterns"]
+  MT --> PR["Proposer emits up to<br/>--edits-per-epoch edits"]
+  PR --> GT["Per edit: validate, check --lr budget,<br/>re-score VALIDATION (with neighbors) and TRAIN"]
+  GT --> AC{"Best edit loses nothing on either split,<br/>gains on one, fully measured?"}
+  AC -->|yes| AE["Accept the edit, reset patience"]
+  AC -->|no| RJ["Record rejected or inconclusive edits,<br/>patience + 1"]
+  AE --> MORE{"Epochs left and<br/>patience below 2?"}
+  RJ --> MORE
+  MORE -->|yes| TR
+  MORE -->|no| FT["Runner-owned FINAL TEST<br/>candidate lift >= original lift"]
+  FT --> AP{"--apply, final test passed,<br/>promotion eligible?"}
+  AP -->|no| DR["Print report and diff,<br/>SKILL.md unchanged"]
+  AP -->|yes| WR["Back up, atomic write,<br/>record promotion lineage"]
+```
 
 フィクスチャはタスク ID で並べ替え、**学習（train）**、**検証用保留（held-out validation）**、**実行側が所有する最終テスト（runner-owned final-test）** に決定的に分割されます。5 個以上ある場合、目標比率は 60/20/20 で、各分割に少なくとも 1 タスクを入れます。たとえば、フィクスチャが 8 個の場合、丸め後は学習 4 個、検証 1 個、最終テスト 3 個のタスクになります。同じ `group` を宣言したフィクスチャはまとめて割り当てられるため、言い換えた兄弟タスクが学習に、元のタスクが最終テストに入ることはありません。グループが 3 つ未満の場合、分割はタスク ID にフォールバックし、警告を出します。最終テストのタスクはこのローカルフィクスチャセットから選ばれ、メンテナーと提案者からは隠されます。最終テストのタスク ID の重複や、開発用の分割との重なりは拒否されます。
 
@@ -50,13 +74,15 @@ description: oma skill optimize を使い、決定的な学習、検証、実行
 
 測定されなかった候補は、`insufficient-coverage`、`negative-transfer-unmeasured`、`unverified-isolation` などの理由とともに `inconclusive` として記録されます。学習用の却下履歴からは除外され、評価条件が修復された後に再試行できます。確認済みの近隣タスクの回帰、どちらかの分割での悪化（`split-regression`）、どちらの分割でも改善がないこと（`no-validation-lift`）は却下になります。評価の不完全さや、メンテナーの劣化（`degraded`）を示す診断は、昇格をブロックします。
 
+---
+
 ## 使い方
 
-```
+```bash
 oma skill optimize --skill <id> --live
                [--dry-run | --apply]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes]
+               [--memory recall|none] [--yes]
                [--json] [--output <format>]
 ```
 
@@ -64,7 +90,7 @@ oma skill optimize --skill <id> --live
 
 | フラグ | デフォルト | 説明 |
 |:-----|:--------|:-----------|
-| `--skill <id>` | `_all` | 最適化するスキル ID（単純名。パス区切りなし）。 |
+| `--skill <id>` | 必須 | 最適化するスキル ID（単純名。パス区切りなし）。指定しない場合、コマンドは `.agents/eval/_all/` を読み、`no eval coverage for skill "_all"` で停止します。全スキルを対象にするモードはありません。 |
 | `--dry-run` | **yes（デフォルト）** | `SKILL.md` を変更せずに編集案と diff を表示します。生成された証拠と進化イベントは保存されます。 |
 | `--apply` | なし | すべての昇格ゲートに合格した、検証済みの候補を書き込みます。最終テストと負の転移の証拠が完全であることも含みます。アトミックな書き込み前に元ファイルをバックアップします。OMA 所有のスキルには `--yes` も必要です。 |
 | `--mock` | 非ライブのデフォルト | CLI での提案の再生は実装されていないため、この経路は評価の前に停止します。オフラインの評価再生には `oma skill eval --mock` を使います。 |
@@ -72,9 +98,12 @@ oma skill optimize --skill <id> --live
 | `--max-epochs <n>` | `8` | 最大の最適化エポック数。 |
 | `--edits-per-epoch <k>` | `4` | 1 エポックあたりに最適化 LLM が提案する候補編集数。 |
 | `--lr <chars>` | `600` | 文章上の学習率予算。受け入れる編集 1 件あたりの正味文字変更上限。 |
+| `--memory <mode>` | `recall` | `none` は、同じ予算での比較のために空の進化知識から開始します（[メモリのアブレーション](#memory-ablation-and-long-run-statistics)を参照）。 |
 | `--yes` | なし | ライブのコストプレビューの確認を省略します。OMA 所有のスキルへ適用する場合は、上書きの動作を承知したものとして扱います。 |
 | `--json` | なし | CI/CD 用に JSON で出力します。 |
 | `--output <format>` | `text` | 出力形式（`text` または `json`）。 |
+
+---
 
 ## 最小のエンドツーエンド例
 
@@ -85,7 +114,7 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1
 
 8 個のフィクスチャと、すべての昇格ゲートに合格する候補を想定した出力例:
 
-```
+```text
 [oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 1, test: 3), dry-run: true
 
 Skill opt  (skill: oma-scholar)
@@ -107,13 +136,15 @@ Skill opt  (skill: oma-scholar)
 
 diff は最適化が書き込む内容を示します。`SKILL.md` は変更されませんが、生成された進化の証拠とスコープ付きゲート結果は今後の実行に向けて保存されます。
 
+---
+
 ## 検証済みの改善を適用する
 
 候補の diff を確認して問題がなければ、`--apply` で再実行します。
 
 ```bash
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Apply accepted edits to a user-authored skill (backs up the original first)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 ### アーティファクトとしての手順
@@ -132,13 +163,27 @@ oma skill optimize --skill oma-scholar --live --apply --yes
 
 オプティマイザの応答は、書式に限って寛容に読み取られます。コードフェンスと空行は無視されますが、有効な `EDIT:` 行（または単独の `NO_ACTION`）ではない内容行は `parse-error` になります。診断には最初の問題行も含まれるようになり、失敗の原因をたどれます。
 
-### メモリのアブレーションと長期実行の統計
+### メモリのアブレーションと長期実行の統計 {#memory-ablation-and-long-run-statistics}
 
 `--memory none` は、空の知識（想起されたパターンもゲート履歴もなし）から実行を開始しますが、実行の記録は残します。同じ予算で `--memory recall`（デフォルト）と `--memory none` の実行を比べることが、永続知識が役に立つかどうかの検証です。ループが経験から学ぶという主張に必要なのはこの比較であり、メモリが存在することではありません。
 
 `oma skill evolution-stats --skill <id>` は、`.agents/results/skill-evolution/<id>/*.jsonl` にあるスキルの記録済みの実行をすべて集計します。内容は、ステータス別の実行数、ゲート結果別の提案数と受け入れ率、検証済みの改善（最終テストに合格し、昇格の資格がある）、適用とロールバック、最終改善幅の平均、計測された実行でのモデル呼び出し数と検証済みの改善 1 件あたりの呼び出し数（1 回の実行ではなく、プロセス全体のコスト）、そして同じ数値をメモリモード別と手順ハッシュ別に分けたものです。メタ最適化のレポートには、現在の手順と各候補について、内側の実行 1 回あたりの平均呼び出し数が表示されます。そのため、多くのコストをかけて改善幅で勝つ手順を、そうと見分けられます。
 
-### メタ最適化：手順を候補にする
+### メタ最適化：手順を候補にする {#meta-optimization-the-procedure-as-the-candidate}
+
+| フラグ | デフォルト | 説明 |
+|:-----|:--------|:-----------|
+| `--target <part>` | `optimizer` | 最適化する手順の部分：`optimizer` または `maintainer`。 |
+| `--skill <ids...>` | なし | 候補の手順を採点する保留スキル（スペース区切り）。 |
+| `--anchor <ids...>` | constitution の `anchors` | 選択には一切使わないスキル。ドリフトを見るために前後で報告します。 |
+| `--repeats <n>` | `3` | スキルと手順ごとの内側の実行回数。 |
+| `--candidates <n>` | `2` | 提案する手順の候補数。 |
+| `--max-epochs <n>` | `1` | 内側の実行のエポック数。すべての手順で同じです。 |
+| `--edits-per-epoch <k>` | `4` | 内側の実行の 1 エポックあたりの編集数。すべての手順で同じです。 |
+| `--live` | なし | 必須です。内側の実行は実際のモデルを呼び出します。 |
+| `--apply` | なし | 勝者の手順ファイルを系譜とともに書き込みます。 |
+| `--memory <mode>` | `none` | 内側の実行のメモリモード：`recall` または `none`。 |
+| `--yes` | なし | コストの確認を省略します。 |
 
 `oma skill meta-optimize --target optimizer --skill <a> <b> ... --live` は、オプティマイザ（またはメンテナー）のプロンプトを検証対象として扱います。名前を指定した保留スキルごとに、現在の手順で内側のループ（`oma skill optimize --dry-run`）を `--repeats` 回実行します。次に提案者へ、テンプレートに対する小さな編集を最大 `--candidates` 件求めます。各候補の手順でも、同じ `--max-epochs` と `--edits-per-epoch` の予算で内側のループをもう一度実行します。そして、内側のループが達成した学習の改善幅と検証の改善幅の合計について、各候補を現在の手順と（スキル、繰り返し）の組ごとにペア比較します。
 
@@ -175,9 +220,11 @@ oma harness evolution status --json
 
 自動サイクルは、合格した変更をプロジェクトのオーバーレイとして適用し、未完了の作業は再試行のために保持し、サイクル全体で 1 つのディスパッチ上限を共有します。デフォルトのスケジュールは毎日ローカル時刻 03:00 です。適用せずに評価だけ実行するには `--mode propose` を、スケジュールを止めるには `oma harness evolution disable` を使います。手順のメタ最適化は、引き続き別の手動コマンドです。
 
+---
+
 ## ライブモード
 
-ライブモードは実際のメンテナーと提案者を呼び出し、エポックごとに評価の実験群をライブで再実行します。コストが高くなります。採点するタスクごとにベースラインと処置群の呼び出しがあり、判定フィクスチャが追加の採点呼び出しを行い、最終テストでは元の本文と候補本文を採点します。プレビューには、実際の分割から計算した上限が表示されます。内訳は、最初の検証ベースライン、学習とコンパイラの呼び出し、候補の検証呼び出し、2 回の最終テスト採点、そしてすべての候補と最終候補に対するペアの近隣チェックです。各呼び出しのタイムアウトは 120 秒です。保護された Claude と Codex の実験群は、ツール、指示の自動検出、MCP、最適化メモリを無効にします。
+ライブモードは実際のメンテナーと提案者を呼び出し、エポックごとに評価の実験群をライブで再実行します。コストが高くなります。採点するタスクごとにベースラインと処置群の呼び出しがあり、判定フィクスチャが追加の採点呼び出しを行い、最終テストでは元の本文と候補本文を採点します。プレビューには、実際の分割から計算した上限が表示されます。内訳は、最初の検証ベースライン、学習とコンパイラの呼び出し、候補の検証呼び出し、2 回の最終テスト採点、そしてすべての候補と最終候補に対するペアの近隣チェックです。各呼び出しは `OMA_SKILL_EVAL_TIMEOUT_MS` ミリ秒後に強制終了されます（デフォルトは 180000 で、`oma skill eval` と同じ上限です）。保護された Claude と Codex の実験群は、ツール、指示の自動検出、MCP、最適化メモリを無効にします。
 
 ```bash
 # Cost preview + confirm
@@ -186,15 +233,17 @@ oma skill optimize --skill oma-scholar --live
 # Skip confirmation
 oma skill optimize --skill oma-scholar --live --yes
 
-# Live opt, then apply if improved
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Live opt, then apply if improved (user-authored skill)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 コストプレビューには、LLM 呼び出しを始める前に基礎モデルの呼び出し上限が表示されます。
 
-メンテナー、提案者、評価の実験群、judge は、新しい一時ディレクトリの中で、保護されたテキストトランスポートを共有します。Claude は制限付きの CLI プロファイルを使います。Codex はネイティブの `codex app-server` を使い、既存の CLI ログイン、選択したモデルとプロバイダー、推論の effort を引き継ぎます。API キーのクライアントに置き換えることも、Claude にフォールバックすることもありません。Codex プロファイルは、macOS/Linux 上の CLI 0.154.x で、ネイティブのファイル認証情報ストレージと既存の `auth.json` を使う構成を対象とします。各呼び出しは、認証情報の内容をコピーせずに元の設定ファイルと認証ファイルを参照する、専用の一時的な `CODEX_HOME` を用意します。ネイティブのトークン更新は、引き続き元の認証ファイルを使います。共有のブートストラップ状態は除外され、一時的な状態は後で削除されます。keyring、auto、ephemeral の認証情報ストアは、現時点では未対応です。スレッドの契約はモデルへの入力を送る前に検査され、未対応のバージョン、ストレージモード、プロトコルの失敗はディスパッチを終了させます。ツール、起動時の指示の検出、MCP アクセス、セッションの永続化は無効になっており、コンパイラのプロセスがエージェントツールを通じて、伏せられているフィクスチャを読めないようにしています。他のコンパイラのベンダーは、検証済みのトランスポートを持つまで、明示的に失敗します。
+メンテナー、提案者、評価の実験群、judge は、[スキルの隔離](./skill-eval.md#skill-isolation-keeping-the-baseline-honest)で説明している保護されたテキストトランスポートを共有します。Claude の制限付き CLI プロファイル、またはネイティブ Codex の `app-server` プロファイルを使い、どちらも新しい一時ディレクトリの中で、ツール、起動時の指示の検出、MCP アクセス、セッションの永続化を無効にして実行します。そのため、コンパイラのプロセスがエージェントツールを通じて、伏せられているフィクスチャを読むことはできません。他のコンパイラのベンダーは、検証済みのトランスポートを持つまで `[oma skill opt] protected compiler is unavailable for <vendor>` で停止します。メンテナーと提案者は `model_preset` または `default_cli` に従う `opt-agent` ロールを使い、実験群と judge は `eval` ロールを使います（[評価モデルと最適化モデルを選ぶ](./skill-eval.md#choose-the-evaluation-and-optimizer-models)を参照）。
 
 オプティマイザは、有効な編集には `proposed` を、明示的な `NO_ACTION` 応答にだけ `no-action` を報告します。プロセスや API の失敗は `dispatch-error` に、有効な編集を含まない不正な応答は `parse-error` になります。これらのエラーが空の編集リストになることはありません。メンテナーが検証済みのパターンを提供できない場合は、ディスパッチまたはパースの理由とともに `degraded` を報告します。フォールバックのパターンは永続知識から除外され、その実行で候補を昇格することはできません。評価の失敗は、学習用の却下履歴ではなく、`diagnostics` と提案ゲートの記録に現れます。
+
+---
 
 ## JSON 出力
 
@@ -261,21 +310,29 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
 
 再試行する前に、`diagnostics`、`promotion.reasons`、`finalTest.blocker` があればそれも確認してください。結論の出なかった（`inconclusive`）提案では `rejectedCount` は増えません。測定済みの最終テストの失敗は、その実行の監査用の却下数を増やすことがありますが、永続的な却下の知識からは除外されたままです。
 
+---
+
 ## `oma-*` スキルの SSOT に関する注意
 
-ID が `oma-` で始まるスキルは oh-my-agent が所有し、`oma update` で上書きされます。これらのスキルでは `--apply` は推奨しません。デフォルトの `--dry-run` を使い、意味のある改善ならレジストリへ反映してください。ユーザーが作成したスキルでは `--apply` を安全に使えます。
+ID が `oma-` で始まるスキルは oh-my-agent が所有し、**`oma update` で上書きされます**。これらのスキルでは `--apply` は推奨しません。`--dry-run`（デフォルト）を使い、提案された diff をレビューして、意味のある改善ならレジストリへ反映してください。ユーザーが作成したスキルでは `--apply` を安全に使えます。
 
-OMA 所有のスキルを対象にすると、コマンドは次の警告を表示します。
+すべてのゲートに合格しても、対象が OMA 所有のスキルで `--yes` がない場合、`--apply` は何も書き込まず、次を表示します。
 
+```text
+[oma skill opt] WARNING: "oma-scholar" is an oma-owned skill. oma-owned skills are overwritten by `oma update` — applying edits here may be lost. Re-run with --yes to proceed, or use --dry-run to review the proposed diff.
 ```
-[oma skill opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
-```
+
+`--yes` を付けると警告は表示されず、書き込みが行われます。
+
+---
 
 ## 過学習ガード
 
 メンテナーと提案者が受け取るのは TRAIN のロールアウト証拠です。候補の選択には保持した VALIDATION 分割を使い、実行側が別の TEST 分割を所有します。ツールを使わないコンパイラの実行により、伏せられているそれらのフィクスチャと評価器に、ワークスペースからアクセスすることはできません。
 
 最終テストが失敗すると適用できません。その結果は監査用に残りますが、最終テストのゲート結果も、結論の出なかった提案も、永続的な最適化の知識にはなりません。記録処理、履歴の再読み込み、セマンティック想起の各経路も、レガシーの最終テスト結果を除外するため、後の実行が以前の最終テストの成功や失敗を学習フィードバックとして使うことはできません。
+
+---
 
 ## CI への統合
 
@@ -285,13 +342,17 @@ OMA 所有のスキルを対象にすると、コマンドは次の警告を表�
 oma skill eval --skill oma-scholar --mock --neg-transfer --require-coverage --json
 ```
 
-CLI の最適化自体には `--live` が必要です。記録済みの提案を再生するアダプターはまだありません。`oma skill optimize --mock` を完全なオフラインのオプティマイザとして説明していた以前の案内は誤りでした。オフラインの再生ジョブは `oma skill eval --mock` に移すか、ライブ最適化とそのモデルコストを明示的に有効にしてください。最適化の実行では、JSON の `ok` と `promotion.eligible` を確認してください。昇格できる候補が見つからなかった完了済みの実行も、終了コードは 0 になります。
+CLI の最適化自体には `--live` が必要です。記録済みの提案を再生するアダプターはまだありません。`oma skill optimize --mock` を完全なオフラインのオプティマイザとして説明していた以前の案内は誤りでした。オフラインの再生ジョブは `oma skill eval --mock` に移すか、ライブ最適化とそのモデルコストを明示的に有効にしてください。最適化の実行では、JSON の `ok` と `promotion.eligible` を確認してください。昇格できる候補が見つからなかった完了済みの実行も、終了コードは 0 になります。エラーメッセージについては[トラブルシューティング](./skill-eval.md#troubleshooting)を参照してください。
 
 最適化の終了コード：
 - `0` の場合は、改善の有無にかかわらず最適化が完了しています。
 - `1` の場合は、入力が無効、または実行に失敗しています。非ライブの CLI 最適化、`--live` と `--mock` の同時指定、フィクスチャ数の不足、未対応のコンパイラベンダー、オプティマイザのディスパッチ失敗、不正なオプティマイザ出力が含まれます。
 
+---
+
 ## 関連項目
 
-- [スキルユーティリティ評価](/docs/guide/skill-eval)。タスクフィクスチャ、チェッカー、モックとライブのモード、`_rollouts/` ディレクトリの作成方法を説明します。
-- [CLI コマンド](/docs/cli-interfaces/commands)。すべてのスキル管理コマンドのフラグを参照できます。
+- [スキルユーティリティ評価](./skill-eval.md)。タスクフィクスチャの作成、チェッカーの種類、モックとライブのモード、`_rollouts/` ディレクトリ、トラブルシューティングを説明します。
+- [プロジェクトハーネス進化](./harness-evolution.md)。プロジェクトのオーバーレイを使った、スケジュール実行される予算付きの最適化です。
+- [インシデント回帰ケース](./harness-incidents.md)。観測された失敗をスキルフィクスチャに変えます。
+- [CLI コマンド](../cli-interfaces/commands.md)。すべてのスキル管理コマンドのフラグを参照できます。

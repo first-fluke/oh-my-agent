@@ -5,7 +5,7 @@ description: 저장소가 관리하는 에이전트 스킬, 워크플로우, 멀
 
 # oh-my-agent을 선택하는 이유
 
-oh-my-agent은 팀이 이미 사용하는 에이전트 CLI 주변에 저장소가 관리하는 계층을 추가합니다. `.agents/` 디렉토리에 스킬, 워크플로우, 에이전트 정의, 규칙, 모델 설정이 들어갑니다. 벤더 네이티브 파일은 이 원본에서 생성되므로 동작을 프로젝트와 함께 검토하고 변경할 수 있습니다.
+oh-my-agent은 팀이 이미 사용하는 에이전트 CLI 주변에 저장소가 관리하는 계층을 추가합니다. `.agents/` 디렉토리에 [스킬](./glossary.md#skill), [워크플로우](./glossary.md#workflow), [에이전트 정의](./glossary.md#agent-definition), 규칙, 모델 설정이 들어갑니다. 벤더 네이티브 파일은 이 [단일 진실 원천](./glossary.md#ssot)에서 생성되므로 동작을 프로젝트와 함께 검토하고 변경할 수 있습니다.
 
 ## 저장소에 조율 계층이 필요할 때 선택하세요
 
@@ -22,7 +22,7 @@ oh-my-agent은 팀이 이미 사용하는 에이전트 CLI 주변에 저장소�
 
 backend, frontend, mobile, QA, debug 또는 planning 역할에 해당하는 검사를 실행하려면 `oma verify agent <agent-type> --workspace <path>`를 사용합니다. 검증기는 정적 검사와 테스트, 타입 검사, SQL 검사, `flutter analyze` 같은 설정된 명령을 함께 실행합니다. 자세한 내용은 [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts)를 참고하세요. 보고서에는 각 검사 결과가 표시됩니다. 이 검사를 통과해도 기능이 제품 또는 도메인 요구사항을 충족한다는 뜻은 아니므로 태스크의 인수 기준을 계속 검토해야 합니다.
 
-`/ralph`를 선택하면 별도의 judge 단계가 추가됩니다. 반복마다 선언한 기준을 다시 확인하고 워크플로우 아티팩트를 기록하지만, 일반 프롬프트마다 실행되는 게이트는 아닙니다. 스킬 로딩만으로 모든 워크플로우나 검증 명령이 시작되지도 않습니다.
+`/ralph`를 선택하면 별도의 [judge](./glossary.md#judge) 단계가 추가됩니다. 반복마다 선언한 기준을 다시 확인하고 워크플로우 아티팩트를 기록하지만, 일반 프롬프트마다 실행되는 게이트는 아닙니다. 스킬 로딩만으로 모든 워크플로우나 검증 명령이 시작되지도 않습니다.
 
 ## 디스패치 결과를 확인할 수 있습니다
 
@@ -37,3 +37,11 @@ backend, frontend, mobile, QA, debug 또는 planning 역할에 해당하는 검�
 OMA는 라우팅, 실행 단계, 검사, 출력 파일을 정의할 공용 장소를 팀에 제공합니다. 대신 팀은 저장소 설정을 최신 상태로 유지하고 어떤 워크플로우와 검증 명령을 인수 계약에 포함할지 결정해야 합니다. 구성원 사이의 일관성이 가장 작은 설치보다 중요할 때 이 절충이 유용합니다.
 
 이 포지셔닝을 처음 논의한 내용은 [issue #155](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589)에서 확인할 수 있습니다.
+
+## 다음 단계
+
+- [빠른 시작](./quick-start.md): 설치하고, 설정을 확인하고, 범위가 정해진 태스크 하나를 실행합니다
+- [중요한 기본값](./important-defaults.md): 설치 프로그램이 켜는 기능과 변경 방법
+- [설치](./installation.md#presets): 사용할 워크플로우를 포함하는 스킬 프리셋을 고릅니다
+- [워크플로우](../core-concepts/workflows.md): `/work`, `/orchestrate`, `/ultrawork`, `/ralph`를 언제 사용하는지
+- [문제 해결](../guide/troubleshooting.md): 설치, 벤더, 훅 문제를 해결하는 방법

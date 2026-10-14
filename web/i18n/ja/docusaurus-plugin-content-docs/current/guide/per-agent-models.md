@@ -1,7 +1,7 @@
 ---
 title: "ガイド：エージェントごとのモデル設定"
 sidebar_label: エージェントモデル
-description: oma-config.yaml の model_preset で、各エージェントが使う AI モデルを設定します。組み込みプリセット、エージェントごとの上書き、インラインモデル定義、extends を使うカスタムプリセット、oma doctor --profile、レガシーな agent_cli_mapping からの移行を扱います。
+description: oma-config.yaml の model_preset で、各エージェントが使う AI モデルを設定します。組み込みプリセットとロールごとのモデル、モデルと CLI の解決表、エージェントごとの上書き、インラインモデル定義、extends を使うカスタムプリセット、oma doctor --profile、クォータ上限、pi/OpenCode/Kimi のトランスポートを扱います。
 ---
 
 # ガイド：エージェントごとのモデル設定
@@ -10,22 +10,25 @@ description: oma-config.yaml の model_preset で、各エージェントが使�
 
 新規インストールでは `model_preset: auto` がデフォルトです。設定していないエージェントは、現在のベンダーに固有のエージェント定義とモデル設定を使います。固定プリセットを選んでモデルを固定することも、別のモデルやベンダーが必要なエージェントだけを上書きすることもできます。明示的に設定した既存のプリセットは、再インストールや更新でも保持されます。
 
-共有設定は `.agents/oma-config.cue` または `.agents/oma-config.yaml` に置きます。任意の Git 無視対象ローカルファイルで、自分のマシン用に設定を上書きできます。
+共有設定は `.agents/oma-config.yaml` に置きます。`.agents/oma-config.cue` がある場合は、そのキーが YAML の同じキーを上書きします。任意の Git 無視対象ローカルファイルで、自分のマシン用に設定を上書きできます。
 
 トップレベルキーと優先順位の完全なリファレンスは、[設定リファレンス](/docs/guide/configuration-reference)を参照してください。
 
 このページでは次の内容を扱います。
 
-1. 組み込みプリセット
-2. `agents:` マップで個別のエージェントを上書きする方法
-3. `models:` でカスタムモデルスラッグをインライン定義する方法
-4. `custom_presets:` と `extends:` でカスタムプリセットを定義する方法
-5. `oma doctor --profile` で解決済み設定を確認する方法
-6. レガシーな `agent_cli_mapping` から移行する方法
+1. 組み込みプリセットと各ロールに割り当てられるモデル
+2. OMA がエージェントのモデルと CLI を解決する方法
+3. ローカル設定と FreeLLMAPI（`free`）プリセット
+4. `agents:` マップで個別のエージェントを上書きする方法
+5. `models:` でカスタムモデルスラッグをインライン定義する方法
+6. `custom_presets:` と `extends:` でカスタムプリセットを定義する方法
+7. `oma doctor --profile` で解決済み設定を確認する方法
+8. レガシーな `agent_cli_mapping` からの移行とセッションのクォータ上限
+9. pi、OpenCode、Kimi Code CLI を介したディスパッチ
 
 ---
 
-## 組み込みプリセット
+## 組み込みプリセット {#built-in-presets}
 
 `model_preset` に組み込みキーのいずれかを設定します。
 
@@ -39,23 +42,54 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | 現在のランタイムのエージェントとモデル設定に従います。モデルや effort フラグは注入しません。 | 新規インストールのデフォルト |
 | `free` | OMA が起動する Codex、Claude、Qwen プロセス向けの特殊なゲートウェイモードです。組み込みプリセットレジストリとは別に解決されます。 | ローカルの FreeLLMAPI ゲートウェイ |
-| `antigravity` | すべてのエージェントが Antigravity CLI（`agy`）を使います。実装とアーキテクチャには Gemini 3.1 Pro、オーケストレーション、ドキュメント、探索には Gemini 3.6 Flash を使います。モデル選択は `agy` 内部の設定で行うため、`--model` や `--thinking-budget` フラグは公開されません。 | Antigravity CLI の利用者 |
-| `claude` | すべてのエージェントが Claude（Sonnet/Opus）を使います。 | Claude Max の契約者 |
+| `antigravity` | すべてのエージェントが Antigravity CLI（`agy`）を使います。実装、アーキテクチャ、QA には Gemini 3.1 Pro、オーケストレーション、PM、ドキュメント、探索には Gemini 3.6 Flash を使います。agy 1.1 以降では、OMA は `agy models` の表示 ID を渡し（例: `--model "Gemini 3.1 Pro (High)"`）、`effort` をモデルが公開している段階に対応付けます。agy 1.0 には `--model` がないため、agy 自身の設定で決まります。agy には `--thinking-budget` はありません。 | Antigravity CLI の利用者 |
+| `claude` | すべてのエージェントが Claude を使います。architecture は Opus、explore は Haiku、それ以外のロールはすべて Sonnet です。 | Claude Max の契約者 |
 | `codex` | ほとんどのロールでは GPT-5.5、explore では GPT-5.4-mini を使う OpenAI Codex を、effort レベル付きで利用します。 | ChatGPT Plus/Pro の利用者 |
 | `qwen` | すべてのエージェントが Qwen Code を使います。ランタイムが一致する Qwen セッションでは生成されたネイティブエージェントを使え、ほかのランタイムでは CLI ディスパッチを使います。 | ローカルまたはセルフホスト推論 |
 | `kiro` | すべてのエージェントが Kiro CLI を使います。実装とアーキテクチャは Sonnet、オーケストレーションと探索は Haiku が担当します。 | Kiro の利用者 |
 | `cursor` | すべてのエージェントが Cursor の `composer-2.5` を使います。orchestrator、qa、pm、docs、explore では `composer-2.5-fast` を使います。 | Cursor Pro / Pro Student の利用者 |
-| `mixed` | 混成構成です。実装ロールは Codex、アーキテクチャ、qa、pm は Claude、explore は Gemini を使います。 | エージェントごとの設定を管理せず、ベンダーごとの強みを使う場合 |
+| `mixed` | orchestrator、architecture（Opus）、qa、pm、docs は Claude、実装ロールは Codex の GPT-5.5、explore は GPT-5.4-mini を使います。 | エージェントごとの設定を管理せず、ベンダーごとの強みを使う場合 |
 
 組み込みプリセットは CLI パッケージに含まれており、`oh-my-agent` をアップグレードすると自動的に更新されます。`gemini` は `antigravity` へリダイレクトする互換エイリアスで、現在の独立したプリセットではありません。ローカルのプリセットファイルは必要ありません。
 
+### ロールごとのモデル {#models-per-role}
+
+固定プリセットは次のレジストリスラッグを割り当てます。所有者の接頭辞は省略しています。最初の 6 列はそれぞれ `antigravity/`、`anthropic/`、`openai/`、`qwen/`、`kiro/`、`cursor/`、`mixed` では Claude のモデルが `anthropic/`、GPT のモデルが `openai/` です。正となるソースは `cli/platform/built-in-presets.ts` です。
+
+| ロール | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
+|:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
+| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+
+括弧内の値は、プリセットの `effort`（Codex）または `thinking: true`（Qwen）です。プリセットに記載されていないロール（`eval` など）は、そのプリセットの `orchestrator` エントリを使います。
+
 ---
+
+## OMA がエージェントのモデルと CLI を解決する方法 {#how-oma-resolves-an-agents-model-and-cli}
+
+`OMA_MODEL_PRESET` が設定されている場合は、まずそれが `model_preset` を置き換えます（[設定の読み込み](/docs/guide/oma-config-semantics#precedence-table)を参照）。その後、リゾルバーは次の表から 1 行を選びます。
+
+| `model_preset` | `agents.<id>` の設定 | CLI に渡すモデル | エージェントを実行する CLI |
+|:---------------|:-------------------|:----------------------|:------------------------|
+| `free` | 無視される | `FREELLM_MODEL`、なければ `free.model`、なければ `auto`（すべてのロール） | `--vendor`、なければ `OMA_RUNTIME_VENDOR`、なければ検出したランタイム（Codex、Claude、Qwen の場合）、なければ `default_cli`、なければ `codex`。受け付けるのは `codex`、`claude`、`qwen` だけ。 |
+| `auto` | なし | なし。ベンダー固有のエージェント設定とセッション設定が適用される。 | `--vendor`、なければサポート対象の `OMA_RUNTIME_VENDOR`、なければ検出したランタイム、なければ `default_cli`、なければ `claude`。サポートされない値はエラー。 |
+| `auto` | あり | 上書きの `model` | そのモデルの `cli`。その後、下記のベンダー上書き規則を適用 |
+| 組み込み、エイリアス、カスタム | なし | そのロールに対するプリセットのエントリ、なければプリセットの `orchestrator` エントリ | そのモデルの `cli`。その後、下記のベンダー上書き規則を適用 |
+| 組み込み、エイリアス、カスタム | あり | プリセットのエントリに上書きを浅くマージしたもの（上書きのフィールドが優先） | そのモデルの `cli`。その後、下記のベンダー上書き規則を適用 |
+
+残りの要素は次のように組み合わさります。
+
+- **プリセットの検索。** OMA はまず組み込みの名前、次にエイリアス（`gemini` は警告付きで `antigravity` にリダイレクト）、最後に `custom_presets` を確認します。組み込みと同じ名前のカスタムプリセットは無視されます。未知の名前は `Unknown model_preset "..."` で停止し、有効な名前の一覧を表示します。
+- **モデルの検索。** スラッグはまず `models:`、次に組み込みレジストリで検索されます。未知のスラッグ、または `api_only: true` の仕様では、ディスパッチが停止します。
+- **ベンダー上書き規則。** モデルに基づく行で `--vendor` または `OMA_RUNTIME_VENDOR` がベンダーを指定した場合、`pi` は常に優先されます（実プロバイダーのモデルのみ。[pi を介したディスパッチ](#dispatching-through-pi-transport-runtime)を参照）。それ以外のベンダーが優先されるのは、モデルの `supports.native_dispatch_from` に記載されている場合だけです。そうでなければ OMA は警告し、モデル自身の `cli` を維持します。
+- **Effort。** CLI に effort フラグがないモデル（Claude Code）では、`effort` は警告付きで破棄されます。pi では維持され、`--thinking` に対応付けられます。
 
 ## 自動ディスパッチ
 
-`auto` では、明示した `agents.<id>` のモデル上書きが最優先されます。それ以外の場合、OMA は現在のランタイムを検出し、利用できればそのネイティブなサブエージェントパスを使います。ベンダーが異なるエージェントやネイティブディスパッチに対応しないランタイムでは、`oma agent spawn` を使います。`auto` が固定ベンダーのプリセットに展開されることはありません。
-
-CLI ディスパッチでは、`--vendor` で対象を明示できます。指定しない場合は、検出したランタイム、検出に失敗したときは `default_cli` の順に使います（省略時の `default_cli` は `claude` です）。継承したプランには OMA のモデルフラグや effort フラグを注入しません。ベンダー固有のエージェントまたはセッション設定がそれらを提供します。外部 CLI プロセスは、その CLI に保存されたデフォルト値を使うため、親セッションだけで選んだモデルとは異なることがあります。
+`auto` では、OMA は利用できれば現在のランタイムのネイティブなサブエージェントパスを使います。ベンダーが異なるエージェントやネイティブディスパッチに対応しないランタイムでは、`oma agent spawn` を使います。`auto` が固定ベンダーのプリセットに展開されることはありません。継承したプランには OMA のモデルフラグや effort フラグを注入しません。外部 CLI プロセスは、その CLI に保存されたデフォルト値を使うため、親セッションだけで選んだモデルとは異なることがあります。
 
 `oma doctor --profile` は、継承したエージェントには `(vendor agent default)` と表示し、明示した上書きには解決済みモデルを表示します。ネイティブエージェントファイルにはベンダー固有の定義が残ります。`auto` モードで同じベンダーの上書きを指定した場合、そのファイルが install または update で生成されるときに適用されます。
 
@@ -63,7 +97,7 @@ CLI ディスパッチでは、`--vendor` で対象を明示できます。指�
 
 共有設定の隣に `.agents/oma-config.local.cue` または `.agents/oma-config.local.yaml` の**どちらか 1 つ**を作成します。install、link、update は両方のパスを `.gitignore` に追加します。`--force` を使った場合も、既存のローカルファイルは保持されます。
 
-OMA は最も近いプロジェクト設定ディレクトリを選びます。そのディレクトリ内では共有 CUE が共有 YAML より優先され、ローカルファイルが共有値を上書きします。CUE ファイルはマージ前に個別に評価されるため、共有設定の `model_preset: "auto"` をローカルの `"free"` で置き換えられます。オブジェクトは再帰的にマージし、配列、スカラー、`null` は共有値を置き換えます。壊れたローカルファイル、ローカル CUE に必要な CUE 実行ファイルの欠落、ローカル形式の同時存在はエラーになります。共有のデフォルトを使うための許可とは解釈されません。
+OMA は最も近いプロジェクト設定ディレクトリを選びます。そのディレクトリ内では、共有 CUE で設定したキーが共有 YAML の同じキーを上書きし、ローカルファイルが共有値を上書きします。完全な順序は[優先順位表](/docs/guide/oma-config-semantics#precedence-table)にあります。CUE ファイルはマージ前に個別に評価されるため、共有設定の `model_preset: "auto"` をローカルの `"free"` で置き換えられます。オブジェクトは再帰的にマージし、配列、スカラー、`null` は共有値を置き換えます。壊れたローカルファイル、ローカル CUE に必要な CUE 実行ファイルの欠落、ローカル形式の同時存在はエラーになります。共有のデフォルトを使うための許可とは解釈されません。
 
 コマンドオプションとサポートされる環境変数の上書きは、有効なファイル設定より優先されます。`oma doctor --profile` で使用したファイルを確認できます。ローカルファイルは Git クローンや新しい worktree には付いてきません。Free モードのサブプロセスは `OMA_MODEL_PRESET=free` と解決済みゲートウェイ環境を継承するため、ネストした OMA の spawn でも同じ経路を保てます。個別に起動したセッションには、そのセッション用のローカル設定または環境変数が必要です。install や setup コマンドが保存する設定は共有設定を対象としますが、実行時には引き続きローカル上書きが優先されます。
 
@@ -101,7 +135,7 @@ oma agent spawn backend "Review the API error handling" free-review --vendor cod
 
 Free モードは、既存の `agents.*.model` の固定指定があるロールも含め、OMA がディスパッチするすべてのロールで `free.model` を使います。固定指定を有料サブスクリプション向けに解決することはありません。`auto`、ゲートウェイのモデル ID、`auto:coding` のような名前付きゲートウェイチェーンのいずれかを選びます。名前付きチェーンは、あらかじめ FreeLLMAPI で作成してください。
 
-トランスポートの選択順は、`--vendor`、`OMA_RUNTIME_VENDOR`、サポート対象として検出されたランタイム、`default_cli`、`codex` です。サポートされるトランスポートは Codex、Claude、Qwen だけです。サポートされないトランスポートを明示するとエラーになります。
+トランスポートは、[OMA がエージェントのモデルと CLI を解決する方法](#how-oma-resolves-an-agents-model-and-cli)の `free` の行に従います。サポートされるトランスポートは Codex、Claude、Qwen だけです。サポートされないトランスポートを明示するとエラーになります。
 
 | トランスポート | ゲートウェイエンドポイント | CLI のベース URL |
 |:--|:--|:--|
@@ -142,7 +176,7 @@ agents:
 | `thinking` | boolean | いいえ | 拡張 thinking を有効にします。モデルによって異なります。 |
 | `memory` | `user` \| `project` \| `local` | いいえ | エージェントのメモリスコープ |
 
-有効なエージェント ID は `orchestrator`、`architecture`、`qa`、`pm`、`backend`、`frontend`、`mobile`、`db`、`debug`、`refactor`、`docs`、`tf-infra`、`explore` です。
+有効なエージェント ID は `orchestrator`、`architecture`、`qa`、`pm`、`backend`、`frontend`、`mobile`、`db`、`debug`、`refactor`、`docs`、`tf-infra`、`explore`、`eval` です。組み込みプリセットは `eval` を定義していないため、上書きしない限り、プリセットの `orchestrator` エントリを使います。
 
 マージは浅いマージです。上書きで指定した各フィールドが、同じフィールドのプリセット値を置き換えます。省略したフィールドはプリセット値を保持します。
 
@@ -155,24 +189,24 @@ agents:
 ```yaml
 # .agents/oma-config.yaml
 models:
-  google/gemini-3-flash-fast:
-    cli: gemini
-    cli_model: gemini-3-flash
-    auth_hint: "Google AI Pro"
+  antigravity/gemini-3.1-pro-low:
+    cli: antigravity
+    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
       apply_patch: false
       task_budget: false
-      prompt_cache: false
+      prompt_cache: true
       computer_use: false
-      native_dispatch_from: [gemini]
+      native_dispatch_from: [antigravity]
       api_only: false
 ```
 
 `agents:` から登録済みスラッグを参照するときは、次の 2 つの規則があります。
 
-1. **キーは `owner/model` 形式でなければなりません。** `agents.<id>.model` は `owner/model` パターンで検証されるため、`my-fast-model` のような裸のキーは拒否されます。`google/gemini-3-flash-fast` のようにスラッシュを含むキー、またはベンダー固有の `provider/model` スラッグを使ってください。
-2. **仕様は完全でなければなりません。** 解決時には `cli`、`cli_model`、`auth_hint`、すべての `supports` ブール値が必要です。不完全な仕様は設定パーサーでは受け入れられますが、モデルレジストリの検証で失敗し、コアレジストリへ暗黙にフォールバックします。
+1. **キーは `owner/model` 形式でなければなりません。** `agents.<id>.model` は `owner/model` パターンで検証されるため、`my-fast-model` のような裸のキーは拒否されます。`antigravity/gemini-3.1-pro-low` のようにスラッシュを含むキー、またはベンダー固有の `provider/model` スラッグを使ってください。
+2. **仕様は完全かつ有効でなければなりません。** 解決時には `cli`、`cli_model`、`auth_hint`、すべての `supports` フィールドが必要です。`cli` は `antigravity`、`claude`、`codex`、`commandcode`、`cursor`、`grok`、`kimi`、`kiro`、`qwen`、`opencode` のいずれか、`native_dispatch_from` のエントリは `antigravity`、`claude`、`codex`、`cursor`、`kimi`、`kiro`、`opencode`、`qwen` のいずれかでなければなりません。`gemini` はどちらにも有効な値ではありません。無効な仕様では `[model-registry] User inline model "<slug>" failed validation — falling back to core registry` がログに出力されます。コアレジストリにそのスラッグがない場合、ディスパッチは未知のスラッグのエラーで停止します。
 
 > ユーザー定義のスラッグが組み込みスラッグと衝突すると、ユーザー定義が優先され、警告が出ます。
 
@@ -197,7 +231,7 @@ custom_presets:
       # all other agents inherited from claude
 ```
 
-`extends:` を指定しない場合は、そのプリセットで使う正規エージェントロールのデフォルトを指定します。`extends:` を指定した場合は、記載したエントリだけが上書きされ、残りはベースプリセットから継承されます。
+`extends:` を指定しない場合は、少なくとも `orchestrator` を定義してください。プリセットで省略したロールはすべて `orchestrator` エントリを使います。`extends:` を指定した場合は、記載したエントリだけが上書きされ、残りはベースプリセットから継承されます。`extends` には組み込みプリセットまたは別のカスタムプリセットを指定でき、循環する継承はエラーになります。組み込みと同じ名前（例: `claude`）のカスタムプリセットは無視され、組み込みが優先されます。
 
 ---
 
@@ -209,23 +243,29 @@ custom_presets:
 oma doctor --profile
 ```
 
-**出力例：**
+**出力例**（抜粋: `backend` を上書きした `model_preset: mixed`。実際の実行では 13 個のロールがすべて表示され、ターミナルは各セクションを枠で囲みます）：
 
+```text
+ Profile Health (mixed)
+
+ Configuration sources
+   shared: <project>/.agents/oma-config.yaml
+
+ Auth Status Matrix
+┌──────────────┬────────────────────────────────────┬──────────────┬────────────────┐
+│ Role         │ Model                              │ CLI          │ Auth Status    │
+├──────────────┼────────────────────────────────────┼──────────────┼────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
+│ architecture │ anthropic/claude-opus-4-7          │ claude       │ ✓ logged in    │
+│ qa (preset)  │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
+│ backend (over│ openai/gpt-5.5                     │ codex        │ ✓ logged in    │
+│ explore (pres│ openai/gpt-5.4-mini                │ codex        │ ✓ logged in    │
+└──────────────┴────────────────────────────────────┴──────────────┴────────────────┘
+
+ Profile health check complete (mixed)
 ```
-oh-my-agent — Profile Health (preset=mixed)
 
-┌──────────────┬──────────────────────────────┬──────────┬──────────────────┬──────────┐
-│ Role         │ Model                        │ CLI      │ Auth Status      │ Source   │
-├──────────────┼──────────────────────────────┼──────────┼──────────────────┼──────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │ (preset) │
-│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │ (preset) │
-│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │ (preset) │
-│ backend      │ openai/gpt-5.5         │ codex    │ ✗ not logged in  │ (override)│
-│ explore    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │ (preset) │
-└──────────────┴──────────────────────────────┴──────────┴──────────────────┴──────────┘
-```
-
-各行には、解決済みのモデルスラッグと、適用されたソース（`(preset)` または `(override)`）が表示されます。サブエージェントが予想外のベンダーを選んだ場合は、この情報を確認してください。
+各行には、ロール、解決済みのモデルスラッグ、それを実行する CLI、認証状態が表示されます。ロールのセルにはソースのタグが付きます。`(preset)`、`(override)`、または `auto` でベンダー設定を継承するエージェントの `(vendor)` です。Role 列の幅は 14 文字なので、上の例のように長いタグは途中で切れます。サブエージェントが予想外のベンダーを選んだ場合は、この情報を確認してください。
 
 ---
 
@@ -235,13 +275,13 @@ Migration 008 は `oma install` と `oma update` で自動的に実行されま�
 
 | レガシー設定 | Migration 008 後の結果 |
 |:-------------|:--------------------------|
-| すべてのエントリが同じベンダー（例：すべて `gemini`） | `model_preset: gemini`、`agents:` なし |
+| すべてのエントリが同じベンダー（例：すべて `claude`） | `model_preset` をそのベンダーのプリセットに設定（レガシーな `gemini` は `antigravity` に対応）、`agents:` なし |
 | ベンダーが混在 | 最も多いベンダーを `model_preset` にし、それ以外を `agents:` の上書きにします |
 | `AgentSpec` オブジェクトの値 | そのまま `agents:` に移します |
 | `models.yaml` の内容 | `oma-config.yaml.models` にインライン化します |
 | カスタマイズした `defaults.yaml` | `custom_presets.user-customized` として、警告付きで保持します |
 
-変更前に、元のファイルを `.agents/.backup-pre-008-{timestamp}/` にバックアップします。移行は冪等です。すでに `model_preset` がある場合はスキップします。
+変更前に、元のファイルを `.agents/backup/008-model-preset/<timestamp>-<pid>/` にバックアップします（グローバルインストールでは `~/.oma/backup/008-model-preset/...`）。移行は冪等です。すでに `model_preset` がある場合はスキップします。
 
 <!-- oma-docs:ignore-start -->
 移行後、`.agents/config/defaults.yaml`、`.agents/config/models.yaml`、`.agents/config/` ディレクトリは削除されます。
@@ -251,20 +291,20 @@ Migration 008 は `oma install` と `oma update` で自動的に実行されま�
 
 ## セッションのクォータ上限
 
-`session.quota_cap` は変更されません。サブエージェントの過剰な spawn を制限するには、`oma-config.yaml` に追加します。
+サブエージェントの過剰な spawn を制限するには、`oma-config.yaml` に `session.quota_cap` を追加します。
 
 ```yaml
 session:
   quota_cap:
-    tokens: 2_000_000
+    tokens: 2000000      # plain digits: YAML reads 2_000_000 as a string, which disables the cap
     spawn_count: 40
-    per_vendor:
-      claude: 1_200_000
-      openai: 600_000
-      google: 200_000
+    per_vendor:          # dispatch vendor IDs (claude, codex, antigravity, ...), not model owners
+      claude: 1200000
+      codex: 600000
+      antigravity: 200000
 ```
 
-上限に達すると、オーケストレーターはそれ以上の spawn を拒否し、`QUOTA_EXCEEDED` ステータスを表示します。
+上限に達すると、`oma agent spawn` は次の spawn を拒否し、`[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)` で失敗します。トークン使用量はプロンプトの長さから推定されるため、最も予測しやすい上限は `spawn_count` です。フィールドの規則は[セッションのクォータ上限](/docs/guide/configuration-reference#session-quota-caps)を参照してください。
 
 ---
 
@@ -279,17 +319,17 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  google/gemini-3-flash-fast:
-    cli: gemini
-    cli_model: gemini-3-flash
-    auth_hint: "Google AI Pro"
+  antigravity/gemini-3.1-pro-low:
+    cli: antigravity
+    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
       apply_patch: false
       task_budget: false
-      prompt_cache: false
+      prompt_cache: true
       computer_use: false
-      native_dispatch_from: [gemini]
+      native_dispatch_from: [antigravity]
       api_only: false
 
 custom_presets:
@@ -302,7 +342,7 @@ custom_presets:
 
 session:
   quota_cap:
-    tokens: 2_000_000
+    tokens: 2000000
     spawn_count: 40
 ```
 
@@ -310,7 +350,7 @@ session:
 
 ---
 
-## pi を介したディスパッチ（トランスポートランタイム）
+## pi を介したディスパッチ（トランスポートランタイム） {#dispatching-through-pi-transport-runtime}
 
 [pi](https://github.com/earendil-works/pi)（Earendil）は、モデルの所有者ではなく、複数のプロバイダーを扱うプロキシランタイムです。1 つの CLI から Anthropic、OpenAI、Google の実モデルを実行できます。oma は pi を**トランスポートオーバーレイ**として扱います。`model_preset` と `agents:` の上書きはそのまま保持され、特定のエージェントを実行する CLI として pi が使われます。
 
@@ -326,7 +366,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 - pi にはベンダー側のエージェントファイルを参照する仕組みがないため、エージェントのペルソナ（システムプロンプト）は `.agents/agents/<id>.md` からインライン化されます。
 - 認証は pi 自体の設定に従います（`~/.pi/agent/auth.json` または環境変数のプロバイダー API キー）。`oma doctor` は他の CLI と並べて pi のインストールと認証状態を報告します。
 
-**制約：** pi は実プロバイダーのモデルだけを実行します。CLI 内部だけに存在するモデルを名前に持つ `cursor`、`kiro`、`qwen`、`antigravity` のプリセットを pi 経由でディスパッチすると、明確なエラーで拒否されます。pi にルーティングする場合は、実プロバイダーを使う `claude`、`codex`、`gemini`、`mixed` のいずれかを使ってください。
+**制約：** pi は実プロバイダーのモデルだけを実行します。CLI 内部だけに存在するモデルを名前に持つ `cursor`、`kiro`、`qwen`、`antigravity` のプリセットを pi 経由でディスパッチすると、明確なエラーで拒否されます。pi にルーティングする場合は、`claude`、`codex`、`mixed` のいずれか、またはモデルが `anthropic/`、`openai/`、`google/` のスラッグである `agents.<id>` の上書きを使ってください。`gemini` は `antigravity` のエイリアスなので、pi は拒否します。
 
 > pi のモデルカタログはリリースと認証の状態に左右されます。解決したスラッグがインストールした pi にない場合は `pi --list-models` を確認してください。pi の `--model` 一致はあいまい検索なので、ほとんどのプロバイダーのスラッグはそのまま解決されます。
 
@@ -378,7 +418,7 @@ oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 特定のエージェントを OpenCode のモデルへルーティングするには、モデルを `models:` に登録して `agents:` から参照します。要件は 2 つあります（[モデルスラッグをインライン定義する](#inlining-model-slugs)を参照）。
 
 1. **スラッグは `owner/model` 形式でなければなりません。** レジストリキーには OpenCode の `provider/model` スラッグを使います。裸の名前は `agents.<id>.model` スキーマで拒否されます。
-2. **仕様は完全でなければなりません。** `cli`、`cli_model`、`auth_hint`、すべての `supports` ブール値が必要です。不完全な仕様は検証に失敗し、コアレジストリへ暗黙にフォールバックします。その場合、エージェントは OpenCode へルーティングされません。
+2. **仕様は完全でなければなりません。** `cli`、`cli_model`、`auth_hint`、すべての `supports` フィールドが必要です。不完全な仕様は検証に失敗し、OMA は警告をログに出力してコアレジストリへフォールバックします。その場合、エージェントは OpenCode へルーティングされません。
 
 ```yaml
 # .agents/oma-config.yaml

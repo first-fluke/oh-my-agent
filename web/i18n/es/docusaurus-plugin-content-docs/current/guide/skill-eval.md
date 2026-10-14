@@ -1,7 +1,7 @@
 ---
 title: "Evaluación de utilidad de skills"
 sidebar_label: Evaluación de skills
-description: Cómo escribir fixtures de tareas de evaluación para oma skill eval, la convención del directorio .agents/eval/, los tipos de comprobador y los modos de ejecución mock/live.
+description: Cómo escribir fixtures de tareas de evaluación para oma skill eval, la convención del directorio .agents/eval/, los tipos de comprobador, los modos de ejecución mock/live y las soluciones a los errores comunes.
 ---
 
 # Evaluación de utilidad de skills
@@ -12,7 +12,7 @@ El diseño sigue dos hallazgos de investigación: WikiSkill (arXiv:2608.27454) s
 
 ---
 
-## Cómo funciona
+## Cómo funciona {#how-it-works}
 
 Para cada fixture de tarea, el comando ejecuta dos brazos:
 
@@ -21,7 +21,7 @@ Para cada fixture de tarea, el comando ejecuta dos brazos:
 
 Cada brazo recibe una puntuación (0 = falla, 1 = pasa) mediante el comprobador de la tarea. La métrica principal es:
 
-```
+```text
 utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
@@ -29,11 +29,93 @@ Una skill aprueba cuando `utilityLift ≥ 5%`. Por debajo de ese umbral se marca
 
 ---
 
-## Convención `.agents/eval/<skill>/`
+## Inicio rápido {#a-minimal-working-fixture-set}
+
+Para emitir un veredicto se necesitan cinco fixtures (`MIN_TASKS = 5`). Este es un conjunto mínimo para una skill `oma-scholar` imaginaria. Cuatro usan el juez predeterminado; `structured-output` usa un comprobador `assert` determinista.
+
+```yaml
+# .agents/eval/oma-scholar/claims-only.yaml
+id: claims-only
+skill: oma-scholar
+domain: research
+prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
+rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/entity-lookup.yaml
+id: entity-lookup
+skill: oma-scholar
+domain: research
+prompt: "Look up the entity knows:concept/attention-mechanism"
+rubric: "Does the answer return the entity name, description, and at least one related concept?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/partial-fetch.yaml
+id: partial-fetch
+skill: oma-scholar
+domain: research
+prompt: "Fetch only the methods section of knows:generated/reconvla/1.0.0"
+rubric: "Does the answer request only the methods section instead of the full paper?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/structured-output.yaml
+id: structured-output
+skill: oma-scholar
+domain: research
+prompt: "List the claims of knows:generated/reconvla/1.0.0 as JSON objects with id and statement fields"
+checker:
+  type: assert
+  expect_contains:
+    - "statement"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/edge-empty-response.yaml
+id: edge-empty-response
+skill: oma-scholar
+domain: research
+prompt: "Fetch the claims of knows:generated/does-not-exist/0.0.0"
+rubric: "Does the answer report that no record exists instead of inventing claims?"
+weight: 1
+```
+
+Después ejecuta:
+
+```bash
+# Seed rollouts (local only — re-run after any SKILL.md edit)
+oma skill eval --skill oma-scholar --live --record --yes
+
+# Offline replay
+oma skill eval --skill oma-scholar --json
+```
+
+La ejecución live muestra una vista previa antes del despacho. Con estos cinco fixtures muestra dos brazos por tarea más dos llamadas al juez por cada tarea judge (el proveedor depende de tu configuración):
+
+```text
+Skill eval live run preview:
+  skill: oma-scholar
+  tasks: 5  trials: 1  spawns: 10 arm + 8 judge = 18 dispatches
+  vendor/model: claude
+  read-only: enforced (all spawns use readOnly: true)
+  record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
+```
+
+A continuación, lee el resultado como se describe en [Leer el informe](#reading-the-report). Las secciones siguientes son material de referencia.
+
+---
+
+## Convención `.agents/eval/<skill>/` {#the-agentsevalskill-convention}
 
 Coloca los fixtures de tareas bajo `.agents/eval/<skill>/`. Esta ruta está dentro de `.agents/`, pero fuera del propio directorio de la skill, por lo que sobrevive a `oma update` sin sobrescribir evaluaciones escritas por el usuario.
 
-```
+```text
 .agents/eval/
 └── oma-scholar/
     ├── claims-only.yaml        ← task fixture
@@ -45,9 +127,11 @@ Coloca los fixtures de tareas bajo `.agents/eval/<skill>/`. Esta ruta está dent
         └── a3f1b2c4d5e6f7a8.json   ← recorded arm outputs + judge verdicts
 ```
 
-Los archivos cuyo nombre empieza por `_` se omiten al cargar los fixtures. El subdirectorio `_rollouts/` contiene las salidas registradas de los brazos de ejecuciones anteriores con `--live --record`.
+Los archivos cuyo nombre empieza por `_` se omiten al cargar los fixtures. El subdirectorio `_rollouts/` contiene las salidas registradas de ejecuciones anteriores con `--live --record`.
 
-## Esquema del fixture de tarea
+---
+
+## Esquema del fixture de tarea {#task-fixture-schema}
 
 Cada fixture es un archivo YAML con los campos siguientes:
 
@@ -72,11 +156,11 @@ weight: 1
 | `weight` | Sí | Peso relativo para la media ponderada (usa `1` salvo que las tareas tengan distinta importancia) |
 | `group` | No | Etiqueta de familia. `oma skill optimize` mantiene los fixtures que comparten un grupo en la misma partición de train/validación/prueba final, de modo que un fixture casi duplicado no pueda filtrarse a través de la división. |
 
-### Tipos de comprobador
+### Tipos de comprobador {#checker-types}
 
-#### judge (predeterminado)
+#### judge (predeterminado) {#judge-default}
 
-Un LLM evalúa la salida del brazo contra una rúbrica y devuelve PASS o FAIL. Es el valor predeterminado cuando se omite `checker` o `checker.type`.
+Un [juez](../getting-started/glossary.md#judge) LLM evalúa la salida del brazo contra una rúbrica y devuelve PASS o FAIL. Es el valor predeterminado cuando se omite `checker` o `checker.type`.
 
 ```yaml
 checker:
@@ -101,7 +185,7 @@ weight: 1
 
 Lo mismo ocurre con cualquier tipo de comprobador cuando falta por completo un brazo: la tarea se excluye en vez de recibir una puntuación 0. La ausencia de datos no es una respuesta fallida; puntuarla haría que ambos brazos fueran 0 y un lift cero se leería como `decision: "fail"`. Si las exclusiones reducen el recuento puntuado por debajo de `MIN_TASKS`, se muestra `coverage: "insufficient"`.
 
-#### assert (opt-in)
+#### assert (opt-in) {#assert-opt-in}
 
 Comprobación determinista de subcadenas. Úsala para verificar contratos, formatos o llamadas a herramientas donde la salida esperada sea exacta.
 
@@ -115,7 +199,7 @@ checker:
 
 Aprueba cuando cada string de `expect_contains` está presente en la salida del brazo.
 
-#### regex (opt-in)
+#### regex (opt-in) {#regex-opt-in}
 
 Coincidencia determinista de expresión regular. Úsala cuando se necesite un patrón en lugar de una cadena exacta.
 
@@ -129,9 +213,9 @@ Los patrones de más de 200 caracteres reciben una puntuación 0 (protección co
 
 ---
 
-## Modos de ejecución
+## Modos de ejecución {#execution-modes}
 
-### --mock (predeterminado)
+### --mock (predeterminado) {#--mock-default}
 
 Reproduce los rollouts registrados desde `_rollouts/`. Es completamente determinista y funciona sin conexión: no se llama a ningún LLM.
 
@@ -140,7 +224,7 @@ Reproduce los rollouts registrados desde `_rollouts/`. Es completamente determin
 
 Si una tarea judge no tiene una puntuación registrada en `_rollouts/`, se excluye del informe (con una advertencia en consola). Así el modo mock permanece estrictamente sin conexión.
 
-Las grabaciones también se comprueban para detectar obsolescencia. Los cambios en el cuerpo de la skill, los prompts, los contratos de tarea y de comprobador, las rúbricas efectivas del juez y las revisiones del protocolo del evaluador invalidan las entradas afectadas. También se descartan, con una advertencia que nombra el archivo y el recuento, las entradas sin procedencia. Si quedan menos de `MIN_TASKS` tareas puntuables, la ejecución informa `coverage: "insufficient"` en lugar de un veredicto.
+Las grabaciones también se comprueban para detectar obsolescencia antes de usarlas. Los cambios en el cuerpo de la skill, los prompts, los contratos de tarea y de comprobador, las rúbricas efectivas del juez y las revisiones del protocolo del evaluador invalidan las entradas afectadas. También se descartan, con una advertencia que nombra el archivo y el recuento, las entradas sin procedencia. Si quedan menos de `MIN_TASKS` tareas puntuables, la ejecución informa `coverage: "insufficient"` en lugar de un veredicto.
 
 :::note `oma skill optimize --mock`
 El optimizador puntúa cuerpos candidatos de SKILL.md. Como una grabación solo es válida para el cuerpo con el que se creó, los cuerpos candidatos no tienen rollouts coincidentes y aparecen como no cubiertos. Usa `--live` para puntuar candidatos.
@@ -152,9 +236,9 @@ Seguro para CI. Define `OMA_SKILLEVAL_MOCK=1` para forzar este modo.
 oma skill eval --skill oma-scholar
 ```
 
-### --live
+### --live {#--live}
 
-Crea brazos de agente reales mediante `oma agent spawn --read-only`. Cada brazo de tarea se ejecuta en su propio workspace temporal, de modo que los archivos producidos por un brazo no afectan a otro. Los fallos de proceso, los envoltorios de error de la API y los fallos del juez excluyen toda la comparación emparejada de la puntuación y del registro; la salida parcial es un dato de diagnóstico.
+Despacha cada brazo en modo de solo lectura a la CLI del rol de agente `eval` (consulta [Elegir los modelos de evaluación y del optimizador](#choose-the-evaluation-and-optimizer-models)). Cada brazo de tarea se ejecuta en su propio workspace temporal, de modo que los archivos producidos por un brazo no afectan a otro. Los fallos de proceso, los envoltorios de error de la API y los fallos del juez excluyen toda la comparación emparejada de la puntuación y del registro; la salida parcial es un dato de diagnóstico.
 
 Antes del despacho, el comando muestra una vista previa del costo con el número de tareas, despachos de brazos, despachos del juez y proveedor resuelto. Confirma con `y` o salta la confirmación con `--yes`.
 
@@ -177,7 +261,19 @@ oma skill eval --skill oma-scholar --live
 oma skill eval --skill oma-scholar --live --yes
 ```
 
-#### Medición de la transferencia negativa
+#### Elegir los modelos de evaluación y del optimizador {#choose-the-evaluation-and-optimizer-models}
+
+Los brazos de tarea, los jueces y las sondas de enrutamiento resuelven el rol de agente `eval`. Fíjalo en `.agents/oma-config.yaml`:
+
+```yaml
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+```
+
+El Maintainer y el Proposer de `oma skill optimize` resuelven el rol `opt-agent`. El mapa `agents:` no tiene clave `opt` (el esquema de configuración rechaza las claves desconocidas), así que este rol siempre sigue el `model_preset` activo, o `default_cli` con `model_preset: auto`. Sin `agents.eval`, el rol `eval` usa la misma alternativa. La promoción necesita `isolation: enforced`, que solo proporcionan los perfiles protegidos de Claude y de Codex nativo (consulta [Aislamiento de la skill](#skill-isolation-keeping-the-baseline-honest)).
+
+#### Medición de la transferencia negativa {#negative-transfer-measurement}
 
 Con `--neg-transfer`, cada tarea vecina seleccionada se ejecuta dos veces: primero una base nueva, sin el candidato, y después un tratamiento con el cuerpo exacto del candidato inyectado. Los vecinos son las tareas de otras skills del mismo `domain`. Cuando ninguna otra skill comparte el dominio, se usa en su lugar una muestra acotada entre dominios (hasta seis tareas, repartidas entre las demás skills) y `negativeTransferCoverage.scope` informa `cross-domain`; la interferencia de un cuerpo inyectado no se limita a su propio dominio, y un dominio único no debe imposibilitar la comprobación. Ambos brazos usan el mismo evaluador y workspaces vacíos separados. El delta es la puntuación de tratamiento menos la puntuación base; un valor negativo significa que el candidato perjudicó esa tarea vecina. La vista previa live incluye estos despachos adicionales de brazos y del juez. `--max-tasks` también limita la muestra de vecinos, con una advertencia cuando se omiten tareas.
 
@@ -187,7 +283,7 @@ Cada entrada de `negativeTransfer` incluye `trials` (las comparaciones emparejad
 
 #### Aislamiento de la skill (mantener honesta la base) {#skill-isolation-keeping-the-baseline-honest}
 
-`utilityLift` solo tiene sentido si el **brazo base se ejecuta sin la skill objetivo**. El problema es que un agente enviado carga automáticamente todas las skills instaladas en su runtime, por lo que una base ingenua también recogería la skill que se supone que se mide; la comparación quedaría contaminada (base ≈ tratamiento y lift ≈ 0).
+`utilityLift` solo tiene sentido si el **brazo base se ejecuta sin la skill objetivo**. El problema es que un agente enviado carga automáticamente todas las skills instaladas en su runtime, por lo que una base ingenua también recogería la skill que se supone que se mide *sin* ella; la comparación quedaría contaminada (base ≈ tratamiento y lift ≈ 0).
 
 Para evitarlo, `--live` ejecuta **ambos brazos en workspaces temporales separados**. Los perfiles protegidos de Claude y Codex desactivan el descubrimiento automático de skills e instrucciones y las herramientas del agente. El tratamiento recibe la skill objetivo **solo** mediante el `SKILL.md` inyectado. Los perfiles exploratorios usan un directorio de skills filtrado sin la skill objetivo, pero eso por sí solo no demuestra el aislamiento.
 
@@ -200,11 +296,11 @@ Un directorio de trabajo limpio oculta el descubrimiento de skills local del pro
 | `unavailable` | Proveedor basado en HOME (por ejemplo, **antigravity**, que lee `~/.gemini/antigravity-cli/skills`); un cwd limpio no puede ocultarlo. Se muestra una advertencia y el resultado queda marcado como de baja confianza. |
 | n/a | Modo mock: no hay despacho live. |
 
-Otros perfiles de runtime siguen disponibles para la evaluación exploratoria, pero los resultados `best-effort` y `unavailable` bloquean la promoción de la optimización live. El proveedor de evaluación sigue la configuración de modelos del proyecto. Codex usa su inicio de sesión nativo de la CLI y el modelo y proveedor configurados mediante `app-server`; no cambia silenciosamente a Claude ni a un cliente con clave de API. El contrato protegido de Codex apunta a la CLI 0.154.x en macOS/Linux con almacenamiento nativo de credenciales en archivo y un `auth.json` existente. Un directorio de configuración temporal privado hace referencia a los archivos originales de configuración y autenticación y excluye el estado de arranque compartido; las credenciales no se copian y la renovación nativa usa el archivo de autenticación original. Los almacenes de credenciales keyring, auto y efímero no se admiten actualmente. Las versiones, los modos de almacenamiento y los fallos de contrato no admitidos se convierten en errores de despacho.
+Otros perfiles de runtime siguen disponibles para la evaluación exploratoria, pero los resultados `best-effort` y `unavailable` bloquean la promoción de la optimización live. El proveedor de evaluación sigue el rol de agente `eval`. Codex usa su inicio de sesión nativo de la CLI y el modelo y proveedor configurados mediante `app-server`; no cambia silenciosamente a Claude ni a un cliente con clave de API. El contrato protegido de Codex apunta a la CLI 0.154.x en macOS/Linux con almacenamiento nativo de credenciales en archivo y un `auth.json` existente. Un directorio de configuración temporal privado hace referencia a los archivos originales de configuración y autenticación y excluye el estado de arranque compartido; las credenciales no se copian y la renovación nativa usa el archivo de autenticación original. Los almacenes de credenciales keyring, auto y efímero no se admiten actualmente. Las versiones, los modos de almacenamiento y los fallos de contrato no admitidos se convierten en errores de despacho.
 
 Los jueces se ejecutan en directorios temporales nuevos con la memoria de optimización desactivada. Los jueces de Claude y Codex usan el mismo transporte de texto protegido que los brazos de evaluación. La configuración del proveedor del juez queda fija durante la ejecución.
 
-### --live --record
+### --live --record {#--live---record}
 
 Ejecuta brazos live y escribe las salidas capturadas (incluidos los veredictos del juez para tareas con comprobador judge) en `_rollouts/<hash>.json`. El nombre es un hash SHA-256 determinista del conjunto de IDs de tareas, no una fecha ni un valor aleatorio.
 
@@ -227,7 +323,7 @@ El brazo base oculta la skill, así que editar solo SKILL.md no invalida su grab
 Las grabaciones anteriores a la procedencia completa de tarea y evaluador deben regenerarse con `--live --record` (y `--neg-transfer` para las comparaciones de vecinos); añadir hashes nuevos a puntuaciones antiguas no permite verificarlas. El mismo contrato participa en la identidad de la suite de optimización, de modo que el conocimiento anterior acotado a la suite no se reutiliza bajo el contrato actualizado. Mantén `SKILL_EVAL_PROTOCOL_REVISION` incrementándolo cuando cambie el comportamiento del puntuador, los prompts y el análisis de veredictos del juez, u otro comportamiento implícito del evaluador.
 
 :::caution `_rollouts/` es solo local: no lo confirmes
-Una grabación solo se reproduce para el cuerpo exacto de SKILL.md con el que se creó. Edita una skill y sus grabaciones de tratamiento se descartan en la siguiente ejecución `--mock`, así que una grabación incluida en el repositorio quedaría obsoleta cuando alguien descargue el siguiente cambio y mostraría advertencias.
+Una grabación solo se reproduce para el cuerpo exacto de SKILL.md con el que se creó. Si editas una skill, sus grabaciones de tratamiento se descartan en la siguiente ejecución `--mock`, así que una grabación confirmada en el repositorio quedaría obsoleta con el siguiente cambio de SKILL.md y mostraría advertencias a todos los que la descarguen. El directorio está en gitignore; graba localmente.
 :::
 
 ```bash
@@ -238,13 +334,13 @@ Después de una ejecución live correcta, el informe incluye recuentos de base y
 
 ---
 
-### Concurrencia y tiempos de espera de despacho
+### Concurrencia y tiempos de espera de despacho {#concurrency-and-dispatch-timeouts}
 
 Los brazos live, los brazos vecinos, las llamadas al juez y las sondas de enrutamiento se ejecutan mediante un pool acotado de `OMA_SKILL_EVAL_CONCURRENCY` subprocesos (4 de forma predeterminada, 16 como máximo). Los dos brazos de un ensayo siempre se ejecutan juntos en directorios vacíos separados, y el brazo que se inicia primero alterna entre ensayos; los resultados conservan el orden de las tareas, de modo que las grabaciones y las puntuaciones son las mismas que en una ejecución en serie. Define la variable en 1 para serializar.
 
 Cada brazo live y cada llamada al juez se termina a la fuerza tras `OMA_SKILL_EVAL_TIMEOUT_MS` (180000 de forma predeterminada). Un despacho que agota el tiempo de espera se reintenta una vez antes de excluir la tarea del informe, porque una respuesta lenta es un fallo de transporte, no una respuesta; un segundo tiempo de espera agotado excluye la tarea (y, en la optimización, hace fallar la cobertura de la división). Aumenta el límite para los fixtures que legítimamente necesitan respuestas largas.
 
-## Enrutamiento: ¿se selecciona la skill?
+## Enrutamiento: ¿se selecciona la skill? {#routing-does-the-skill-get-selected}
 
 El lift de utilidad mide lo que hace el cuerpo una vez cargado. Los proveedores deciden si cargar una skill a partir de su `description` del frontmatter, así que un cuerpo mejor que nunca se selecciona no es una mejora. `--routing` envía el prompt de cada tarea, junto con el nombre y la descripción de cada skill instalada, al mismo modelo protegido y le pide la única skill que cargaría (o `NONE`). Que se elija la skill objetivo es una activación; que se elija otra skill es un enrutamiento erróneo; `NONE` es un fallo.
 
@@ -256,62 +352,29 @@ El informe JSON incluye `routing` con `status`, los recuentos, `activationRate`,
 
 Esto mide la descripción frente al catálogo a través del transporte protegido. No ejercita el mecanismo de descubrimiento propio del proveedor, que el perfil protegido desactiva deliberadamente, ni mide si se sigue el procedimiento de la skill cargada; eso sigue siendo la medición de utilidad.
 
-## Un conjunto mínimo de fixtures funcionales
-
-Para emitir un veredicto se necesitan cinco fixtures (`MIN_TASKS = 5`). Este es un conjunto mínimo para una skill `oma-scholar` imaginaria:
-
-```yaml
-# .agents/eval/oma-scholar/claims-only.yaml
-id: claims-only
-skill: oma-scholar
-domain: research
-prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
-rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
-weight: 1
-```
-
-```yaml
-# .agents/eval/oma-scholar/entity-lookup.yaml
-id: entity-lookup
-skill: oma-scholar
-domain: research
-prompt: "Look up the entity knows:concept/attention-mechanism"
-rubric: "Does the answer return the entity name, description, and at least one related concept?"
-weight: 1
-```
-
-Repite el proceso para al menos tres tareas más. Después ejecuta:
-
-```bash
-# Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skill eval --skill oma-scholar --live --record --yes
-
-# Offline replay
-oma skill eval --skill oma-scholar --json
-```
-
 ---
 
-## Leer el informe
+## Leer el informe {#reading-the-report}
 
 **Salida de texto:**
 
-```
+```text
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
   isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
+  repeatability: single-trial  trials: 1  lift 95% CI: [9.2%, 48.0%]  within-task stddev: n/a
   [PASS]
-  Skill shows positive utility lift >= 5%.
+  Skill shows positive utility lift ≥ 5%.
 
   Per-task findings:
     claims-only: baseline=0 treatment=1 lift=+1.000
     entity-lookup: baseline=1 treatment=1 lift=+0.000
     ...
 
-  Thresholds: fail <= 0%, warn < 5%
+  Thresholds: fail ≤ 0%, warn < 5%
 ```
 
 **Salida JSON** (mediante `--json`):
@@ -353,7 +416,7 @@ Skill utility eval  (skill: oma-scholar)
 
 ---
 
-## Integración con CI
+## Integración con CI {#ci-integration}
 
 ```bash
 # Fail the build if the skill regresses or has insufficient coverage
@@ -366,7 +429,7 @@ Códigos de salida:
 
 ---
 
-## Elegir live o mock
+## Elegir live o mock {#choosing-live-or-mock}
 
 Usa `--live` con comprobadores judge para medir la utilidad real en tareas abiertas. Usa `--mock` para reproducir veredictos judge registrados previamente sin conexión o para ejecutar comprobaciones de contrato deterministas `assert`/`regex`.
 
@@ -378,6 +441,26 @@ Si una ejecución mock informa de cobertura insuficiente, inspecciona la adverte
 
 ---
 
-## Distribuir tareas de evaluación con una skill
+## Distribuir tareas de evaluación con una skill {#shipping-eval-tasks-with-a-skill}
 
 Las skills pueden incluir un conjunto de tareas de evaluación colocando fixtures en `.agents/eval/<skill>/`. Son archivos escritos por el usuario fuera del directorio de la skill, por lo que sobreviven a `oma update`. Al crear una skill nueva con `oma-skill-creation`, añade un conjunto de fixtures `eval/` correspondiente para que los autores futuros puedan verificar el efecto de la skill. Consulta `.agents/skills/oma-skill-creation/SKILL.md` para el flujo de autoría de skills.
+
+---
+
+## Solución de problemas {#troubleshooting}
+
+Estos mensajes proceden de `oma skill eval` y `oma skill optimize`.
+
+| Mensaje o síntoma | Causa | Solución |
+|---|---|---|
+| `[oma skill opt] no eval coverage for skill "<id>": found N task fixture(s), need at least 5.` | Hay menos de cinco fixtures válidos en `.agents/eval/<id>/`, o se omitió `--skill` (en ese caso lee `_all`). | Añade fixtures (consulta [Inicio rápido](#a-minimal-working-fixture-set)) y pasa `--skill <id>`. |
+| `[oma skill eval] skipped <file>: does not match TaskFixture schema` | A un fixture le falta `id`, `skill`, `domain`, `prompt` o un `weight` numérico. | Añade el campo que falta, por ejemplo `weight: 1`. |
+| `[oma skill eval] discarded N stale rollout entries from _rollouts/<file>: <reason>. Re-run --live --record to refresh.` | El cuerpo de la skill, el prompt, el comprobador o el protocolo del evaluador cambiaron desde la grabación. | Vuelve a ejecutar `--live --record`. |
+| `INSUFFICIENT COVERAGE — fewer than 5 tasks found.` | Se puntuaron menos de cinco tareas después de las omisiones y exclusiones. | Corrige las advertencias que aparecen encima y vuelve a grabar. |
+| `[oma skill eval] isolation: <status> for vendor <vendor> — baseline may be contaminated; result is low-confidence.` | El rol `eval` se resuelve en un proveedor sin perfil protegido. | Define `agents.eval` con un modelo de Claude o Codex (consulta [Elegir los modelos de evaluación y del optimizador](#choose-the-evaluation-and-optimizer-models)). |
+| `[oma skill eval] dispatch timed out after <N>s.` | Un brazo o una llamada al juez superó `OMA_SKILL_EVAL_TIMEOUT_MS`. | Aumenta `OMA_SKILL_EVAL_TIMEOUT_MS` para los fixtures que necesiten respuestas largas. |
+| `Choose either --live or --mock` | Se pasaron ambos flags. | Pasa solo uno de ellos. |
+| `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` se ejecutó sin `--live`. | Añade `--live`, o usa `oma skill eval --mock` para comprobaciones sin conexión. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | El rol `opt-agent` se resuelve en un proveedor sin transporte de texto protegido. | Elige un `model_preset` (o, con `model_preset: auto`, un `default_cli`) que se resuelva en Claude o Codex. |
+| `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (no se escribe nada) | `--apply` sobre una skill `oma-*` sin `--yes`. | Conserva el diff de dry-run y envíalo upstream, o vuelve a ejecutar con `--yes`. |
+| `[oma skill opt] an active project overlay owns this skill; ...` | La [evolución del harness del proyecto](./harness-evolution.md) instaló un overlay para esta skill. | Ejecuta primero `oma skill rollback --skill <id>`, o deja que el ciclo de evolución aplique el cambio. |

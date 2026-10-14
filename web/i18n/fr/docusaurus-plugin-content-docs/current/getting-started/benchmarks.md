@@ -10,11 +10,13 @@ Cinq harnais Claude Code ont construit le même MVP de plateforme créative d'ap
 
 > Conditions d'exécution : `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. OAuth via le CLI `claude` connecté de l'utilisateur (sans `ANTHROPIC_API_KEY`).
 
+---
+
 ## Harnais comparés {#harnesses-compared}
 
 | Harnais | Mécanisme |
 |---|---|
-| `vanilla` | Claude Code utilisé seul, sans plugin ni skill (référence) |
+| `vanilla` | Claude Code utilisé seul, sans plugin ni compétence (référence) |
 | `oma` | `oh-my-agent` initialisé depuis la source (`.agents/` + `.claude/`) |
 | `omc` | `oh-my-claudecode` via `--plugin-dir` |
 | `ecc` | `everything-claude-code` installé dans `~/.claude/` |

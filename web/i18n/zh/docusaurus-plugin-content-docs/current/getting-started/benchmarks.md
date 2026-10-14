@@ -11,7 +11,7 @@ description: 五个 Claude Code 框架基于完全相同的提示构建同一款
 
 ---
 
-## 参与对比的框架
+## 参与对比的框架 {#harnesses-compared}
 
 | 框架 | 机制 |
 |---|---|
@@ -23,7 +23,7 @@ description: 五个 Claude Code 框架基于完全相同的提示构建同一款
 
 ---
 
-## 最终评分榜
+## 最终评分榜 {#final-scoreboard}
 
 | 排名 | 框架 | **总分** | 功能/35 | 规格/15 | 视觉/20 | 工程/20 | 效率/10 |
 |---|---|---|---|---|---|---|---|
@@ -33,7 +33,7 @@ description: 五个 Claude Code 框架基于完全相同的提示构建同一款
 | 4 | vanilla | 70.7 | 28.5 | 11.7 | 12 | 12.5 | 6 |
 | 5 | ecc | 70.2 | 28.5 | 9.7 | 13 | 15 | 4 |
 
-### 运行经济性
+### 运行经济性 {#run-economics}
 
 | 框架 | 轮次 | 时长 | 成本 | 文件数（src） |
 |---|---|---|---|---|
@@ -45,7 +45,7 @@ description: 五个 Claude Code 框架基于完全相同的提示构建同一款
 
 ---
 
-## 着陆页对比
+## 着陆页对比 {#landing-page-comparison}
 
 | vanilla | oma | omc | ecc | superpowers |
 |---|---|---|---|---|
@@ -55,7 +55,7 @@ description: 五个 Claude Code 框架基于完全相同的提示构建同一款
 
 ---
 
-## 各维度的计算方式
+## 各维度的计算方式 {#how-the-axes-are-computed}
 
 | 维度 | 权重 | 关键信号 | 工具链 |
 |---|---|---|---|
@@ -69,7 +69,7 @@ description: 五个 Claude Code 框架基于完全相同的提示构建同一款
 
 ---
 
-## 注意事项
+## 注意事项 {#caveats}
 
 1. **superpowers 的提示覆盖**：这是该框架在非交互模式下正常运作的必要条件（其 `<HARD-GATE>` 头脑风暴技能会阻断单次运行）。其结果反映的是“绕过该关卡后 superpowers 能做到什么”，并非纯粹的同等条件对比。
 2. **规格与视觉采用多轮评审平均，用户旅程仅单轮**：用户旅程评审需要一个运行中的 dev 服务器，因此保持单轮。约 2 分以内的旅程差距可视为噪声。每个框架的样本量为 1 次构建。
@@ -78,7 +78,7 @@ description: 五个 Claude Code 框架基于完全相同的提示构建同一款
 
 ---
 
-## 复现
+## 复现 {#reproduce}
 
 ```bash
 # Run all harnesses (sequential, ~45 min, ~$15-20 in API spend)

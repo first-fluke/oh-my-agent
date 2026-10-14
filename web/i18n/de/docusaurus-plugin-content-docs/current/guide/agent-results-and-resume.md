@@ -6,11 +6,40 @@ description: Agentenarbeit mit überprüfbaren Ergebnisdeklarationen protokollie
 
 # Agentenergebnisse und Fortsetzen
 
-OMA behandelt ein Agentenergebnis als kleinen Evidenzdatensatz und nicht nur als Exit-Code des Prozesses. Ein Lauf zeichnet Task- und Sitzungs-IDs, den Workspace-Fingerprint, Ausführungs- und Verifizierungsbelege (Receipts), geänderte Dateien, offene Arbeit und Artefakt-Hashes auf. Dadurch kann ein Koordinator eine erledigte Aufgabe nur so lange wiederverwenden, wie ihr Abnahmevertrag und ihre Eingaben übereinstimmen.
+OMA behandelt ein Agentenergebnis als kleinen Evidenzdatensatz und nicht nur als Exit-Code des Prozesses. Ein Lauf zeichnet Task- und Sitzungs-IDs, den Workspace-Fingerprint, Verifizierungsbelege (Receipts), geänderte Dateien, offene Arbeit und Artefakt-Hashes auf. Dadurch kann ein Koordinator eine erledigte Aufgabe nur so lange wiederverwenden, wie ihr Abnahmevertrag und ihre Eingaben noch übereinstimmen.
 
-Verwenden Sie diesen Lebenszyklus direkt, wenn Sie einen nativen Agenten ausführen. Workflows und `oma agent spawn` erzeugen dieselben Datensätze für Sie und überlassen die abschließende Verarbeitung des verwalteten Laufs dem übergeordneten Koordinator.
+Verwenden Sie diesen Lebenszyklus direkt, wenn Sie einen nativen Agenten ausführen. Workflows und `oma agent spawn` erzeugen dieselben Datensätze für Sie und überlassen die abschließende Verarbeitung des verwalteten Laufs dem übergeordneten Koordinator. Die hier verwendeten Begriffe finden Sie im Glossar unter [Laufdatensatz und Claim](../getting-started/glossary.md#run-record-and-claim) und [Plan](../getting-started/glossary.md#plan).
 
-## Nativen Lauf starten
+## Lebenszyklus im Überblick
+
+| Schritt | Befehl | Zeichnet auf | Behalten |
+| --- | --- | --- | --- |
+| 1. Vertrag | `.agents/results/plan-SESSION_ID.json` bearbeiten | `acceptance_criteria` und `required_checks` der Aufgabe | Sitzungs-ID, Task-ID |
+| 2. Start | `oma agent begin AGENT TASK SESSION_ID --workspace .` | Laufdatensatz mit Status `running` | `runId`, `claimPath` |
+| 3. Kontext (optional) | `oma agent context AGENT --difficulty Medium` | Nichts | Prompt-Kontext |
+| 4. Verifizieren | `oma agent verify RUN_ID --required` | Ein Ausführungsbeleg pro Prüfung | Exit-Code |
+| 5. Claim | JSON unter `claimPath` schreiben | Claim-Datei | Nichts |
+| 6. Abschließen | `oma agent finish RUN_ID CLAIM_PATH` | Endstatus | `status` |
+| 7. Wiederherstellen | `oma agent resume SESSION_ID --dry-run`, danach ohne `--dry-run` | Wiederherstellungs-Checkpoint und Sitzungs-Lease | Status pro Aufgabe |
+
+`oma agent spawn` und `oma agent parallel` führen die Schritte 2 und 6 für Sie aus: Der übergeordnete Prozess startet den Lauf und finalisiert ihn, wenn das Kind endet.
+
+```mermaid
+flowchart TD
+  plan["Task contract in plan-SESSION_ID.json"] --> begin["oma agent begin, or spawn"]
+  begin --> running(["running"])
+  running -->|"oma agent verify"| running
+  running --> claim["Claim written at claimPath"]
+  claim --> finish["oma agent finish, or the spawning parent"]
+  finish -->|"claim completed, current receipts, nothing unresolved"| completed(["completed"])
+  finish -->|"unresolved items, missing checks or decisions, invalid claim"| partial(["partial"])
+  finish -->|"claim reports blocked"| blocked(["blocked"])
+  finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
+```
+
+Ein Claim kann auch direkt `partial` oder `failed` melden. Finish stuft einen Claim nie herauf: Es stuft einen `completed`-Claim herab, dessen Belege nicht standhalten, und ein Exit-Code ungleich null macht jeden Lauf zu `failed`.
+
+## Nativen Lauf starten {#start-a-native-run}
 
 Definieren Sie Aufgabe, `acceptance_criteria` und `required_checks` zuerst in einem Plan unter `.agents/results/plan-SESSION_ID.json`. Für eine kleine allgemeine Projektprüfung kann der Plan eine einzelne Aufgabe wie diese enthalten:
 
@@ -86,6 +115,19 @@ Verwenden Sie `--affected PATH...` nur, wenn der Graph eine vollständige Testau
 
 ## Ergebnisdeklaration (Claim) schreiben und Lauf beenden
 
+Für Aufgaben, die einen API-Vertrag, eine Authentifizierungsrichtlinie, ein Datenmodell, eine Migrationsstrategie, einen Zustandseigentümer, einen Zugriffsbereich für Infrastruktur oder eine andere Entscheidung festlegen, auf die spätere Arbeit aufbaut, deklarieren Sie vor dem Dispatch `required_decisions` in der Aufgabe:
+
+```json
+"required_decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "description": "Choose the compatibility window and rollback strategy for the account migration."
+  }
+]
+```
+
+Lassen Sie dieses Feld bei Aufgaben weg, die einer bereits bestehenden Entscheidung folgen. Anforderungen werden mit dem Aufgabenvertrag festgeschrieben und können nach dem Dispatch weder entfernt noch geändert werden. Vorgeschlagene Themen für einen Agenten listen Sie mit `oma state decisions list --agent db-engineer --json` auf. Diese Themen sind Auswahlmöglichkeiten für den Bedarfsfall; der Katalog macht nicht jede Entscheidung verpflichtend.
+
 Schreiben Sie die Datei der Ergebnisdeklaration an den exakten, von `begin` ausgegebenen Pfad:
 
 ```json
@@ -98,6 +140,22 @@ Schreiben Sie die Datei der Ergebnisdeklaration an den exakten, von `begin` ausg
 ```
 
 `status` ist einer von `completed`, `partial`, `blocked` oder `failed`. Pfade sind relativ zum Projekt-Root, und jedes Artefakt muss eine reguläre Datei innerhalb des Workspace sein. Verwenden Sie `verificationSkipped` nur für eine bestimmte Prüfung ohne ausführbaren Check; damit wird eine fehlgeschlagene Prüfung nicht erfolgreich.
+
+Nehmen Sie wesentliche Entscheidungen in das optionale Array `decisions` der Ergebnisdeklaration auf:
+
+```json
+"decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "decision": "Use an expand-and-contract migration; retain the old column for one release.",
+    "rationale": "Both deployed app versions must work during the rollout; rollback switches reads to the retained column.",
+    "alternatives": ["Replace the column during a maintenance window"],
+    "evidence": ["docs/account-migration.md"]
+  }
+]
+```
+
+Der übergeordnete Prozess speichert jede Entscheidung als Ereignis `decision.made` in der Sitzung des Laufs und hängt die tatsächlichen Agenten-, Task- und Lauf-IDs an. Fehlt eine erforderliche Entscheidung, bleibt das Ergebnis partial, auch wenn die ausführbaren Prüfungen bestehen. Entscheidungen aus einer anderen Aufgabe oder einem anderen Versuch können die Anforderung nicht erfüllen. Der Ausführungsbeleg schreibt die IDs und Inhalts-Hashes der Entscheidungsereignisse fest; bei der Wiederverwendung wird geprüft, ob diese Ereignisse noch existieren, gültig sind und unveränderte Inhalte haben. Optionale Entscheidungen werden ebenfalls aufgezeichnet. Schreibgeschützte Agenten geben dasselbe Array in ihrem `OMA_RESULT_JSON`-Claim zurück, damit der übergeordnete Prozess es speichern kann.
 
 Finalisieren Sie einen nativen Lauf nach dem Schreiben der Ergebnisdeklaration:
 
@@ -123,7 +181,20 @@ Fragen Sie zuerst ab, was OMA tun würde:
 oma agent resume SESSION_ID --dry-run
 ```
 
-Der Bericht ordnet jede Aufgabe als `reused`, `ready`, `running` oder `blocked` ein und nennt den Grund. Ein gültiger abgeschlossener Ausführungsbeleg wird nur wiederverwendet, wenn Vertrag, Eingaben, Artefakt-Hashes und Abhängigkeitsbelege weiterhin aktuell sind. Ein laufender verwalteter Prozess oder ein nativer Lauf ohne Nachweis, dass der Prozess noch aktiv ist, wird nicht dupliziert.
+Der Bericht ordnet jede Aufgabe als `reused`, `ready`, `running` oder `blocked` ein und nennt den Grund:
+
+```mermaid
+flowchart TD
+  task["Plan task and its latest run"] --> live{"Latest run still running, with a live or unknown process?"}
+  live -->|yes| running(["running"])
+  live -->|no| valid{"Completed evidence still current?"}
+  valid -->|yes| reused(["reused"])
+  valid -->|no| safe{"retry_policy safe, replayable prompt and agent, attempts left?"}
+  safe -->|yes| ready(["ready"])
+  safe -->|no| blocked(["blocked"])
+```
+
+Eine Abhängigkeit, die nicht `reused` ist, setzt eine abhängige `reused`-Aufgabe zurück auf `ready` (oder auf `blocked`, wenn sie nicht wiederholt werden kann), und eine `ready`-Aufgabe, deren Abhängigkeit `blocked` oder `running` ist, wird zu `blocked`. Ein gültiger abgeschlossener Ausführungsbeleg wird nur wiederverwendet, wenn Vertrag, Eingaben, Artefakt-Hashes und Abhängigkeitsbelege weiterhin aktuell sind. Ein laufender verwalteter Prozess oder ein nativer Lauf ohne Nachweis, dass der Prozess noch aktiv ist, wird nicht dupliziert.
 
 Wenn der Bericht die Ausführung zulässt, setzen Sie bereite Aufgaben in Abhängigkeitsreihenfolge fort:
 
@@ -137,7 +208,7 @@ Automatisches Wiederholen erfordert `retry_policy: "safe"` sowie einen wiederhol
 oma agent resume SESSION_ID --max-attempts 2
 ```
 
-OMA schreibt den Wiederherstellungs-Checkpoint unter `.agents/state/agent-resume/` und verwendet ein Sitzungs-Lease, damit zwei Koordinatoren dieselbe Sitzung nicht gleichzeitig erneut versuchen. Während der Wiederherstellung bleibt der Plan unverändert. Wenn sich Plan oder Abhängigkeit ändern oder ein späterer Versuch eine frühere Eingabe ändert, werden die betroffenen Aufgaben blockiert und benötigen einen neuen Verifizierungslauf.
+OMA schreibt den Wiederherstellungs-Checkpoint unter `.agents/state/agent-resume/` und verwendet ein Sitzungs-Lease, damit zwei Koordinatoren dieselbe Sitzung nicht gleichzeitig erneut versuchen. Während der Wiederherstellung bleibt der Plan festgeschrieben. Wenn sich Plan oder Abhängigkeit ändern oder ein späterer Versuch eine frühere Eingabe ändert, werden die betroffenen Aufgaben blockiert und benötigen einen neuen Verifizierungslauf.
 
 Das Fortsetzen startet einen neuen Versuch; die unterbrochene Modellunterhaltung wird nicht wiederhergestellt. Markieren Sie vor dem Fortsetzen eines unterbrochenen nativen Laufs den alten Lauf mit seinem tatsächlichen Ergebnis und offenen Arbeiten als `partial` oder `failed`. Prüfen Sie anschließend den Dry-Run-Bericht und versuchen Sie nur Aufgaben mit einem sicheren Wiederholungsweg erneut.
 
@@ -151,4 +222,9 @@ Das Fortsetzen startet einen neuen Versuch; die unterbrochene Modellunterhaltung
 | Plan oder Eingaben haben sich geändert | Nach Stabilisierung des Plans einen neuen Lauf starten. | Der neue Lauf speichert den neuen Vertrag; alte Belege werden nicht wiederverwendet. |
 | Eine Aufgabe benötigt eine Entscheidung | Mit Erklärung als `blocked` aufzeichnen. | Das Fortsetzen lässt sie blockiert, bis Entscheidung und Prompt verfügbar sind. |
 
-Bei Parse-Fehlern, fehlenden Vendor-Tools, Dashboard-Zustand, Zeitplänen und veralteten Evaluierungsdaten siehe [Fehlerbehebung](/docs/guide/troubleshooting).
+## Nächste Schritte
+
+- Fehlermeldungen von `begin`, `verify`, `finish` und `resume`: [Fehlerbehebung](./troubleshooting.md#find-your-error)
+- Parse-Fehler, fehlende Vendor-Tools, Dashboard-Zustand, Zeitpläne und veraltete Evaluierungsdaten: [Fehlerbehebung](./troubleshooting.md)
+- Verwaltete Läufe während der Arbeit beobachten: [Dashboard-Überwachung](./dashboard-monitoring.md)
+- Pläne mit Aufgabenverträgen definieren: [Multi-Agenten-Projekte](./multi-agent-project.md)

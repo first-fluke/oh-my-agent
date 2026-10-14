@@ -49,7 +49,7 @@ Tests und Akzeptanzkriterien gehören auch zur Arbeit mit einem einzelnen Skill;
 
 ## Preflight-Checkliste
 
-Beantworten Sie vor dem Prompt diese vier Fragen (sie entsprechen den vier Elementen der [Prompt-Struktur](/docs/core-concepts/skills)):
+Beantworten Sie vor dem Prompt diese vier Fragen:
 
 | Element | Frage | Warum es wichtig ist |
 |---------|----------|----------------|
@@ -111,10 +111,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **Schwierigkeitsbewertung:** Mittel (2-3 Dateien, einige Designentscheidungen zur Validierungs-UX)
 3. **Geladene Ressourcen:**
    - `execution-protocol.md` (immer)
-   - `snippets.md` (Formular- + Zod-Muster)
-   - vorhandene Komponenten-Muster und `snippets.md`, sofern vom Skill bereitgestellt
+   - `snippets.md` (Formular- und Zod-Muster sowie vorhandene Komponenten-Muster, sofern der Skill sie bereitstellt)
 4. **Ausführungsvertrag (falls aktiviert) kann `CHARTER_CHECK` ausgeben:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -165,7 +164,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - passende `stack/tech-stack.md` oder Verweise auf den Varianten-Tech-Stack, falls verfügbar
 <!-- oma-docs:ignore-end -->
 5. **Ausführungsvertrag (falls aktiviert) kann `CHARTER_CHECK` ausgeben:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -204,7 +203,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md` (Bildschirmvorlage, Riverpod-Provider-Muster)
    - `screen-template.dart`
 4. **Ausführungsvertrag (falls aktiviert) kann `CHARTER_CHECK` ausgeben:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -247,7 +246,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`
    - `anti-patterns.md` (Review während der Optimierung)
 4. **Ausführungsvertrag (falls aktiviert) kann `CHARTER_CHECK` ausgeben:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -324,10 +323,20 @@ Auf diese Signale achten, die anzeigen, dass von Einzelner-Skill- zu Multi-Agent
 | CHARTER_CHECK des Agenten zeigt "Must NOT do"-Elemente, die tatsächlich benötigt werden | Umfang überschreitet eine Domäne | Das vollständige Feature zuerst mit `/plan` planen |
 | Korrektur kaskadiert in 3+ Dateien über verschiedene Schichten | Eine Korrektur betrifft mehrere Domänen | `/debug` mit breiterem Umfang verwenden, oder `/work` |
 | Agent entdeckt eine API-Vertrags-Diskrepanz | Frontend-/Backend-Unstimmigkeit | `/plan` zur Vertragsdefinition ausführen, dann beide Agenten erneut starten |
-| Qualitäts-Gate scheitert an Integrationspunkten | Komponenten passen nicht richtig zusammen | QA-Review-Schritt hinzufügen: `oma agent spawn qa "Review integration"` |
+| Qualitäts-Gate scheitert an Integrationspunkten | Komponenten passen nicht richtig zusammen | `/review` ausführen oder einen QA-Durchgang hinzufügen: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | Aufgabe wächst von "eine Komponente" zu "drei Komponenten + neue Route + API" | Scope-Creep während der Ausführung | Stoppen, `/plan` zur Zerlegung ausführen, dann `/orchestrate` |
 | Agent blockiert mit HIGH-Klärung | Anforderungen grundlegend mehrdeutig | Die Fragen des Agenten beantworten oder `/brainstorm` zur Klärung des Ansatzes ausführen |
 
 ### Die allgemeine Regel
 
-Wenn Sie feststellen, dass Sie denselben Agenten mehr als zweimal mit Verfeinerungen erneut starten, ist die Aufgabe wahrscheinlich domänenübergreifend und benötigt `/work` oder zumindest einen `/plan`-Schritt zur ordnungsgemäßen Zerlegung.
+Wenn Sie denselben Agenten mehr als zweimal mit Verfeinerungen erneut starten, ist die Aufgabe wahrscheinlich domänenübergreifend. Führen Sie `/work` oder zumindest `/plan` aus, um sie zu zerlegen.
+
+---
+
+## Nächste Schritte
+
+- Die Aufgabe erstreckt sich über mehrere Domänen: [Multi-Agent-Projekte](./multi-agent-project.md)
+- Die Aufgabe ist ein Bug: [Bugfixing](./bug-fixing.md)
+- Einen Lauf prüfen oder fortsetzen: [Ergebnisse und Fortsetzen](./agent-results-and-resume.md)
+- Etwas ist fehlgeschlagen: [Fehlerbehebung](./troubleshooting.md)
+- Zwischen einem Skill und einem Workflow wählen: [Workflows](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

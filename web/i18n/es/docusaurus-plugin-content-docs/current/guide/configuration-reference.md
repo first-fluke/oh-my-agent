@@ -18,18 +18,27 @@ El resultado esperado es un perfil resuelto que muestra el preset seleccionado y
 
 ## Qué archivo gana
 
-El cargador sube desde el directorio actual y se detiene en el directorio `.agents/` más cercano que contenga una configuración compartida o local. En ese directorio:
+El cargador lee los valores predeterminados globales desde `$OMA_HOME/.agents/` (por defecto
+`~/.oma/.agents/`), después sube desde el directorio actual y se detiene en
+el directorio `.agents/` de proyecto más cercano. En cada directorio seleccionado:
 
-1. Se evalúa primero `oma-config.cue`.
-2. `oma-config.yaml` se usa cuando falta el archivo CUE compartido o no se puede evaluar.
-3. Un archivo local (`oma-config.local.cue` o `.local.yaml`) se combina sobre el archivo compartido.
-4. `OMA_MODEL_PRESET`, cuando está definido, sobrescribe `model_preset` para ese proceso.
+1. `oma-config.yaml` aporta los valores compartidos.
+2. `oma-config.cue`, cuando existe y es válido, sobrescribe cada clave que define; las claves YAML que no define se mantienen. Si el archivo CUE no se puede evaluar, OMA muestra una advertencia y usa solo el archivo YAML.
+3. Un archivo local (`oma-config.local.cue` o `.local.yaml`) se combina sobre el resultado compartido.
+
+El resultado compartido/local del proyecto sobrescribe el resultado compartido/local global.
+`OMA_MODEL_PRESET`, cuando está definido, sobrescribe `model_preset` después de todas las capas de archivos.
+El orden completo, un diagrama de flujo y la solución de problemas están en
+[Carga de la configuración](/docs/guide/oma-config-semantics#precedence-table).
 
 Los mapas se combinan recursivamente. Los arrays, escalares y `null` sustituyen el valor compartido. Mantener ambos formatos locales es un error. Un archivo local mal formado detiene la carga para evitar que una sobrecarga privada se ignore en silencio.
 
-Esta es una regla de capa más cercana, no una combinación general entre proyecto y HOME. Una instalación global lee `~/.agents/oma-config.*` porque HOME es su raíz de instalación. Un comando de proyecto lee la capa de proyecto más cercana. La comprobación de actualización de `auto_update_cli` es la excepción: revisa el proyecto, después HOME y finalmente usa el valor predeterminado activado.
+Las raíces de proyecto de distintos ancestros no se combinan. Un `.agents/` de proyecto
+más cercano vacío sigue estableciendo ese límite. La instalación retirada de `~/.agents/`
+es una entrada de migración y no se lee como fallback de proyecto. Los valores predeterminados globales no
+cambian la identidad ni el ámbito de memoria del proyecto actual.
 
-## Claves de nivel superior
+## Claves de nivel superior {#top-level-keys}
 
 Las siguientes claves las lee el esquema del runtime actual o los consumidores incluidos con OMA. Una clave marcada como sparse es intencionadamente parcial: omite un valor anidado para conservar el valor predeterminado del código.
 
@@ -43,14 +52,14 @@ Las siguientes claves las lee el esquema del runtime actual o los consumidores i
 | `telemetry` | boolean | `false` | Activación de telemetría del proveedor usada por install, update y link. |
 | `model_preset` | string no vacío | `auto` en las plantillas nuevas | Preset de modelo integrado o personalizado. `OMA_MODEL_PRESET` lo sobrescribe para un proceso. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Ajustes de FreeLLMAPI cuando el preset es `free`; `FREELLM_BASE_URL` y `FREELLM_MODEL` sobrescriben los valores del archivo, y el nombre de la clave nunca contiene el secreto. Consulta [Configuración de modelos por agente](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Selecciona los proveedores de documentación, búsqueda, inteligencia de código y memoria semántica. La inteligencia de código acepta `serena` o `gortex`; la memoria semántica acepta `agentmemory`, `honcho` o `none`. `code_intelligence_guard` (`block` u `off`) controla el guard de búsqueda de PreToolUse. Las búsquedas nativas limitadas a exclusiones confirmadas del proveedor o a rutas fuera del proyecto se permiten sin necesidad de omitir el guard. El guard lee las exclusiones de Serena y las reglas de gitignore habilitadas, o el listado de exclusiones de Gortex; no infiere dependencias a partir de los nombres de directorio. El hook no nombra `OMA_CI_ALLOW_NATIVE`. Una búsqueda de shell con el prefijo `OMA_CI_ALLOW_NATIVE=1` omite el guard solo para recursos fuera del proyecto o rutas ignoradas que el guard no reconoció, no para el código fuente del proyecto. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Selecciona los proveedores de documentación, búsqueda, inteligencia de código y memoria semántica. Consulta [Proveedores](#providers). |
 | `brave` | `api_key_env` o `api_key_vault` | sin definir | Referencia de credenciales de búsqueda de Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Consulta [Detalles de Honcho](#honcho-semantic-memory) | Ajustes de conexión de la memoria semántica de Honcho. |
 | `agents` | ID de agente → `model`, `effort`, `thinking`, `memory` opcionales | resolución del preset | Sobrescrituras por agente aplicadas sobre el preset seleccionado. El nivel de esfuerzo es `none`, `low`, `medium`, `high` o `xhigh`; el tipo de memoria es `user`, `project` o `local`. |
 | `models` | identificador de modelo → asignación de CLI | sin definir | Definiciones de modelo en línea para CLIs de proveedores compatibles. |
 | `custom_presets` | preset → descripción, `extends` y `agent_defaults` opcionales | sin definir | Presets definidos por el usuario; `extends` puede heredar uno integrado. |
-| `vendors` | YAML: `string[]` de IDs de proveedores seleccionados; plantilla CUE: mapa opcional de fallback `vendors.pi` | todos los proveedores enlazables para la lista YAML | Selecciona qué integraciones proyectan `oma install` y `oma update` en YAML. El mapa de capacidades de despacho está en la configuración de orquestación gestionada; consulta [Selección de proveedores y metadatos de despacho](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | string | fallback del consumidor | Fallback antiguo solo de proveedor cuando no se resuelve ningún plan de modelos. |
+| `vendors` | YAML: `string[]` de IDs de proveedores seleccionados; plantilla CUE: mapa opcional de fallback `vendors.pi` | si falta: `oma link` usa todos los proveedores enlazables y `oma update` usa los proveedores cuyos directorios de proyecto existen | Selecciona qué integraciones proyectan `oma install` y `oma update` en YAML. El mapa de capacidades de despacho está en la configuración de orquestación gestionada; consulta [Selección de proveedores y metadatos de despacho](#vendor-selection-and-dispatch-metadata). |
+| `default_cli` | ID de proveedor (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` para el transporte `free` | Proveedor que se usa cuando nada más selecciona uno: un runtime no detectado con `auto`, o el transporte `free` después de `--vendor`, `OMA_RUNTIME_VENDOR` y el runtime detectado. Consulta [Cómo resuelve OMA el modelo y la CLI de un agente](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
 | `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | cada dimensión omitida queda sin límite | Límites estrictos de tokens y spawns comprobados antes del siguiente spawn; consulta [Límites de cuota de sesión](#session-quota-caps). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Comportamiento y exclusiones de escaneo de `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transporte MCP y comportamiento de actualización de Serena. |
@@ -73,9 +82,25 @@ La plantilla incluida también contiene bloques gestionados por los consumidores
 | `refactor_guard` | `enabled`, `max_lines` | `false`, `500` | Activa el guard de presupuesto de líneas del stop-hook y define el presupuesto de código por archivo. |
 | `scm` | `conventional_commits`, `branching_strategy`, `require_pr_for_default_branch`, `co_author.*`, `forbidden_patterns`, `allowed_exceptions` | la plantilla activa commits convencionales y protección del PR, e incluye sus listas de coautoría y nombres de archivo | Gobierna la skill SCM, el hook de commits y el guard de patrones secretos. Sustituye los valores de identidad de la plantilla por los tuyos antes de activar los trailers de coautor. |
 
-Estos bloques se aceptan mediante el passthrough de configuración y los interpreta la funcionalidad o el flujo de trabajo correspondiente. El parser de `serena_reaper` lee las claves snake_case mostradas arriba, aunque los comentarios de plantillas antiguas usaban nombres camelCase. Lee la guía de la funcionalidad correspondiente antes de añadir claves anidadas; esta página no inventa claves fuera de los consumidores enumerados aquí.
+Estos bloques se aceptan mediante el passthrough de configuración y los interpreta la funcionalidad o el flujo de trabajo correspondiente. El parser de `serena_reaper` lee solo las claves snake_case mostradas arriba e ignora camelCase. Las plantillas incluidas siguen mostrando camelCase (`keepWarm`, `idleMinutes`, `graceSeconds`), y el esquema CUE incluido rechaza las claves snake_case dentro de su bloque de esquema (`field not allowed`), así que defínelas en `oma-config.yaml` o en una sobrecarga YAML local. Lee la guía de la funcionalidad correspondiente antes de añadir claves anidadas; esta página no inventa claves fuera de los consumidores enumerados aquí.
 
 ## Objetos anidados exactos
+
+### Proveedores {#providers}
+
+`providers` selecciona un proveedor por capacidad:
+
+| Clave | Valores aceptados | Valor predeterminado |
+| --- | --- | --- |
+| `docs` | `context7` | `context7` |
+| `web` | ID de proveedor de búsqueda (letras minúsculas, dígitos, `_`, `-`), como `native` o `brave` | `native` |
+| `code_intelligence` | `serena`, `gortex` | `serena` |
+| `code_intelligence_guard` | `block`, `off` | `block` |
+| `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
+
+`code_intelligence_guard` controla el guard de búsqueda de PreToolUse. Las búsquedas nativas limitadas a exclusiones confirmadas del proveedor o a rutas fuera del proyecto se permiten sin necesidad de omitir el guard. El guard lee las exclusiones de Serena y las reglas de gitignore habilitadas, o el listado de exclusiones de Gortex; no infiere dependencias a partir de los nombres de directorio.
+
+El hook no nombra `OMA_CI_ALLOW_NATIVE`. Una búsqueda de shell con el prefijo `OMA_CI_ALLOW_NATIVE=1` omite el guard solo para recursos fuera del proyecto o rutas ignoradas que el guard no reconoció, no para el código fuente del proyecto.
 
 ### Memoria semántica de Honcho {#honcho-semantic-memory}
 
@@ -113,7 +138,7 @@ El instalador usa `http://127.0.0.1:8000` como URL inicial al configurar Honcho 
 
 ### Límites de cuota de sesión {#session-quota-caps}
 
-`session.quota_cap` es un mapa parcial. Todos los campos son opcionales; un campo omitido deja esa dimensión sin límite. Los valores deben ser enteros no negativos y `per_vendor` asigna nombres de proveedor a presupuestos de tokens:
+`session.quota_cap` es un mapa parcial. Todos los campos son opcionales; un campo omitido deja esa dimensión sin límite. Los valores deben ser enteros no negativos escritos sin separadores `_` (YAML lee `2_000_000` como un string, lo que deja esa dimensión sin límite). `per_vendor` asigna IDs de proveedor de despacho como `claude`, `codex` o `antigravity` a presupuestos de tokens:
 
 ```yaml
 session:
@@ -138,7 +163,7 @@ vendors:
   - pi
 ```
 
-Una lista ausente o vacía selecciona todos los IDs del registro de proveedores enlazables de OMA. La lista controla las proyecciones de instalación/actualización; no es el mapa de capacidades de comandos por proveedor.
+Una lista selecciona exactamente esos proveedores, y `vendors: []` no selecciona ninguno. Sin la clave `vendors`, `oma link` apunta a todos los proveedores del registro de proveedores enlazables de OMA, mientras que `oma update` apunta solo a los proveedores cuyos directorios de proyecto ya existen. La lista controla las proyecciones de instalación/actualización; no es el mapa de capacidades de comandos por proveedor.
 
 El esquema `.agents/oma-config.cue` incluido también permite un objeto `vendors.pi` con los campos `command`, `prompt_flag`, `model_flag`, `default_model` y `thinking_flag`. Ese bloque es una forma de fallback tipada en la plantilla CUE; la ruta actual de despacho de agentes resuelve sus campos de capacidad desde el registro de orquestación gestionado que aparece abajo, así que no uses `vendors.pi` como sustituto de la lista de selección YAML.
 
@@ -162,13 +187,19 @@ El archivo de capacidades gestionado se regenera con las actualizaciones de OMA.
 
 ## Cambios habituales
 
-Elige un preset fijo para un proyecto mientras mantienes local una sobrescritura personal:
+Elige un preset fijo para un proyecto mientras mantienes local una sobrescritura personal.
+
+**Archivo compartido** (incluido en el commit):
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
 model_preset: mixed
+```
 
+**Sobrecarga local** (ignorada por Git):
+
+```yaml
 # .agents/oma-config.local.yaml
 agents:
   backend:
@@ -193,7 +224,7 @@ mcp:
   devtools_browsers: []
 ```
 
-## Reglas de actualización y propiedad
+## Reglas de actualización y propiedad {#update-and-ownership-rules}
 
 `.agents/oma-config.yaml` pertenece al usuario. `oma update` conserva el contenido existente y puede añadir nuevas claves de nivel superior de la plantilla bajo un marcador `# Added by oma update`. `oma update --force` puede sustituir la configuración del usuario, la configuración MCP y los directorios de stack; úsalo solo cuando pretendas restablecer esas personalizaciones. Los archivos de sobrecarga local siguen siendo el lugar privado para valores específicos de la máquina.
 

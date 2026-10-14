@@ -1,7 +1,7 @@
 ---
 title: "Hướng dẫn: Cấu hình model theo từng agent"
 sidebar_label: Model theo agent
-description: Cấu hình model AI của từng agent qua model_preset trong oma-config.yaml. Bao gồm preset có sẵn, override theo agent, định nghĩa model inline, custom preset với extends, oma doctor --profile và migration từ agent_cli_mapping cũ.
+description: Cấu hình model AI của từng agent qua model_preset trong oma-config.yaml. Bao gồm preset có sẵn và model theo từng role của chúng, bảng resolve model và CLI, override theo agent, định nghĩa model inline, custom preset với extends, oma doctor --profile, quota cap và các transport pi/OpenCode/Kimi.
 ---
 
 # Hướng dẫn: Cấu hình model theo từng agent
@@ -10,22 +10,25 @@ description: Cấu hình model AI của từng agent qua model_preset trong oma-
 
 `model_preset: auto` là mặc định của install mới. Agent chưa cấu hình dùng agent definition và model setting native của runtime hiện tại. Chọn preset cố định để pin model, hoặc override từng agent khi cần model/vendor khác. Preset explicit hiện có được giữ khi reinstall và update.
 
-Cấu hình shared nằm trong `.agents/oma-config.cue` hoặc `.agents/oma-config.yaml`. File local tùy chọn, được Git ignore, dùng để override setting trên máy của bạn.
+Cấu hình shared nằm trong `.agents/oma-config.yaml` và, khi có, `.agents/oma-config.cue`, với các key ghi đè cùng key trong YAML. File local tùy chọn, được Git ignore, dùng để override setting trên máy của bạn.
 
 Xem [Configuration reference](/docs/guide/configuration-reference) để biết key top-level và precedence đầy đủ.
 
 Trang này gồm:
 
-1. Preset có sẵn.
-2. Override agent riêng qua map `agents:`.
-3. Khai báo model slug tùy biến qua `models:`.
-4. Định nghĩa custom preset với `custom_presets:` và `extends:`.
-5. Xem config đã resolve qua `oma doctor --profile`.
-6. Migration từ `agent_cli_mapping` cũ.
+1. Preset có sẵn và model mà mỗi role nhận được.
+2. Cách OMA resolve model và CLI cho một agent.
+3. Cấu hình local và preset FreeLLMAPI (`free`).
+4. Override agent riêng qua map `agents:`.
+5. Khai báo model slug tùy biến qua `models:`.
+6. Định nghĩa custom preset với `custom_presets:` và `extends:`.
+7. Xem config đã resolve qua `oma doctor --profile`.
+8. Migration từ `agent_cli_mapping` cũ và session quota cap.
+9. Dispatch qua pi, OpenCode và Kimi Code CLI.
 
 ---
 
-## Preset có sẵn
+## Preset có sẵn {#built-in-presets}
 
 Đặt `model_preset` thành một key có sẵn:
 
@@ -40,23 +43,54 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | Theo setting agent/model của runtime hiện tại mà không inject model hoặc effort flag. | Mặc định cho install mới |
 | `free` | Gateway mode đặc biệt cho process Codex, Claude hoặc Qwen do OMA spawn; được resolve tách khỏi built-in preset registry. | Gateway FreeLLMAPI local |
-| `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 3.1 Pro cho implementation/architecture và Gemini 3.6 Flash cho orchestration, docs và explore. Model chọn theo config bên trong `agy`, không expose flag `--model` hoặc `--thinking-budget`. | Người dùng Antigravity CLI |
-| `claude` | Mọi agent dùng Claude (Sonnet/Opus). | Người dùng thuê bao Claude Max |
+| `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 3.1 Pro cho implementation, architecture và QA; Gemini 3.6 Flash cho orchestration, PM, docs và explore. Trên agy 1.1+, OMA truyền display ID lấy từ `agy models` (ví dụ `--model "Gemini 3.1 Pro (High)"`) và map `effort` sang một tier mà model công bố. agy 1.0 không có `--model`, nên config riêng của nó quyết định. agy không có `--thinking-budget`. | Người dùng Antigravity CLI |
+| `claude` | Mọi agent dùng Claude: Opus cho architecture, Haiku cho explore, Sonnet cho mọi role còn lại. | Người dùng thuê bao Claude Max |
 | `codex` | Mọi agent dùng OpenAI Codex (GPT-5.5 cho phần lớn role, GPT-5.4-mini cho explore) với effort level. | Người dùng ChatGPT Plus/Pro |
 | `qwen` | Mọi agent dùng Qwen Code; session Qwen khớp vendor có thể dùng native agent được sinh ra, còn runtime khác dùng CLI dispatch. | Inference local / self-hosted |
 | `kiro` | Mọi agent dùng Kiro CLI; Sonnet xử lý implementation/architecture, Haiku xử lý orchestration/explore. | Người dùng Kiro |
 | `cursor` | Mọi agent dùng Cursor `composer-2.5`, `composer-2.5-fast` cho orchestrator/qa/pm/docs/explore. | Người dùng Cursor Pro / Pro Student |
-| `mixed` | Hỗn hợp: role implementation dùng Codex, architecture/qa/pm dùng Claude, explore dùng Gemini. | Tận dụng thế mạnh nhiều vendor mà không tự quản lý config từng agent |
+| `mixed` | Claude cho orchestrator, architecture (Opus), qa, pm và docs; Codex GPT-5.5 cho các role implementation và GPT-5.4-mini cho explore. | Tận dụng thế mạnh nhiều vendor mà không tự quản lý config từng agent |
 
 Preset built-in ship trong package CLI và tự update khi nâng cấp `oh-my-agent`. `gemini` là compatibility alias chuyển tới `antigravity`, không phải preset riêng hiện tại. Không cần file preset local.
 
+### Model theo role {#models-per-role}
+
+Các fixed preset gán những registry slug sau. Tiền tố owner được lược bỏ: `antigravity/`, `anthropic/`, `openai/`, `qwen/`, `kiro/` và `cursor/` cho sáu cột đầu, và `anthropic/` cho model Claude hoặc `openai/` cho model GPT trong `mixed`. Nguồn chuẩn là `cli/platform/built-in-presets.ts`.
+
+| Role | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
+|:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
+| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+
+Giá trị trong ngoặc là `effort` của preset (Codex) hoặc `thinking: true` (Qwen). Role mà preset không liệt kê, như `eval`, dùng entry `orchestrator` của preset đó.
+
 ---
 
-## Auto dispatch
+## Cách OMA resolve model và CLI của một agent {#how-oma-resolves-an-agents-model-and-cli}
 
-Với `auto`, override model explicit ở `agents.<id>` có ưu tiên. Nếu không có, OMA phát hiện runtime hiện tại và dùng native subagent path khi có; agent hoặc runtime cross-vendor không có native dispatch dùng `oma agent spawn`. Auto không mở rộng thành preset vendor cố định.
+`OMA_MODEL_PRESET`, khi được đặt, sẽ thay thế `model_preset` trước tiên (xem [Nạp cấu hình](/docs/guide/oma-config-semantics#precedence-table)). Sau đó resolver chọn một dòng:
 
-Trong CLI dispatch, `--vendor` chọn target rõ ràng. Nếu bỏ qua, OMA dùng runtime phát hiện được rồi tới `default_cli` khi detection fail, mặc định `claude` nếu không đặt. Plan kế thừa không inject model hoặc effort flag của OMA; agent/session config của vendor tự cung cấp. Process CLI external dùng persisted default của CLI đó, có thể khác model chỉ chọn trong parent session.
+| `model_preset` | Có đặt `agents.<id>`? | Model gửi tới CLI | CLI chạy agent |
+|:---------------|:-------------------|:----------------------|:------------------------|
+| `free` | Bị bỏ qua | `FREELLM_MODEL`, nếu không có thì `free.model`, nếu không có thì `auto` (mọi role) | `--vendor`, nếu không có thì `OMA_RUNTIME_VENDOR`, nếu không có thì runtime phát hiện được nếu đó là Codex, Claude hoặc Qwen, nếu không có thì `default_cli`, nếu không có thì `codex`. Chỉ chấp nhận `codex`, `claude` và `qwen`. |
+| `auto` | Không | Không có. Setting agent và session của chính vendor được áp dụng. | `--vendor`, nếu không có thì `OMA_RUNTIME_VENDOR` được hỗ trợ, nếu không có thì runtime phát hiện được, nếu không có thì `default_cli`, nếu không có thì `claude`. Giá trị không được hỗ trợ là lỗi. |
+| `auto` | Có | `model` của override | `cli` của model đó, sau đó áp dụng quy tắc vendor override bên dưới |
+| Built-in, alias hoặc custom | Không | Entry của preset cho role, nếu không có thì entry `orchestrator` của preset | `cli` của model đó, sau đó áp dụng quy tắc vendor override bên dưới |
+| Built-in, alias hoặc custom | Có | Entry của preset được shallow-merge với override (field của override thắng) | `cli` của model đó, sau đó áp dụng quy tắc vendor override bên dưới |
+
+Cách các phần còn lại khớp vào:
+
+- **Tra cứu preset.** OMA kiểm tra tên built-in trước, sau đó đến alias (`gemini` chuyển tới `antigravity` kèm warning), rồi đến `custom_presets`. Custom preset trùng tên built-in bị bỏ qua. Tên không xác định sẽ dừng với `Unknown model_preset "..."`, thông báo này liệt kê các tên hợp lệ.
+- **Tra cứu model.** Slug được tra trong `models:` trước, sau đó trong built-in registry. Slug không xác định, hoặc spec có `api_only: true`, sẽ dừng dispatch.
+- **Quy tắc vendor override.** Khi `--vendor` hoặc `OMA_RUNTIME_VENDOR` chỉ định một vendor cho dòng có model, `pi` luôn tiếp quản (chỉ với model của provider thật; xem [Dispatch qua pi](#dispatching-through-pi-transport-runtime)). Vendor khác chỉ tiếp quản nếu được liệt kê trong `supports.native_dispatch_from` của model. Nếu không, OMA cảnh báo và giữ `cli` riêng của model.
+- **Effort.** `effort` bị bỏ, kèm warning, với model mà CLI không có effort flag (Claude Code). Nó được giữ cho pi, vốn map nó sang `--thinking`.
+
+## Auto dispatch {#auto-dispatch}
+
+Với `auto`, OMA dùng native subagent path của runtime hiện tại khi có. Agent cross-vendor và runtime không có native dispatch dùng `oma agent spawn`. Auto không mở rộng thành preset vendor cố định. Plan kế thừa không inject model hoặc effort flag của OMA. Process CLI external dùng persisted default của CLI đó, có thể khác model chỉ chọn trong parent session.
 
 `oma doctor --profile` hiển thị `(vendor agent default)` cho agent kế thừa và model resolve cho override explicit. Native agent file giữ vendor definition; override cùng vendor ở mode auto được áp dụng khi install/update sinh file.
 
@@ -64,7 +98,7 @@ Trong CLI dispatch, `--vendor` chọn target rõ ràng. Nếu bỏ qua, OMA dùn
 
 Tạo **một trong hai** `.agents/oma-config.local.cue` hoặc `.agents/oma-config.local.yaml` cạnh config shared. Install, link và update thêm cả hai path vào `.gitignore`; update giữ file local, kể cả khi có `--force`.
 
-OMA chọn thư mục config project gần nhất. Trong thư mục đó, CUE shared ưu tiên YAML shared, file local override giá trị shared. File CUE được evaluate độc lập trước khi merge, nên `model_preset: "auto"` shared có thể bị local `"free"` thay thế. Object merge đệ quy; array, scalar và `null` thay shared. Local file malformed, local CUE thiếu executable hoặc có cả hai format local đều là lỗi, không phải lý do dùng default shared.
+OMA chọn thư mục config project gần nhất. Trong thư mục đó, key đặt trong CUE shared ghi đè cùng key trong YAML shared, và file local override giá trị shared. Thứ tự đầy đủ có trong [bảng precedence](/docs/guide/oma-config-semantics#precedence-table). File CUE được evaluate độc lập trước khi merge, nên `model_preset: "auto"` shared có thể bị local `"free"` thay thế. Object merge đệ quy; array, scalar và `null` thay shared. Local file malformed, local CUE thiếu executable hoặc có cả hai format local đều là lỗi, không phải lý do dùng default shared.
 
 Command option và environment override được hỗ trợ có ưu tiên hơn effective file config. `oma doctor --profile` hiển thị file đã dùng. File local không đi theo Git clone hoặc worktree mới. Process free mode kế thừa `OMA_MODEL_PRESET=free` và gateway environment đã resolve để nested OMA spawn giữ route; session khởi chạy độc lập cần config local hoặc environment riêng. Setting do install/setup ghi vẫn target config shared, còn local override tiếp tục thắng lúc runtime.
 
@@ -105,7 +139,7 @@ oma agent spawn backend "Review the API error handling" free-review --vendor cod
 
 Free mode dùng `free.model` cho mọi role do OMA dispatch, kể cả role đã pin `agents.*.model`. Nó không resolve pin đó thành thuê bao trả phí. Chọn `auto`, gateway model ID hoặc chain có tên như `auto:coding`, được tạo trước trong FreeLLMAPI.
 
-Transport được chọn theo thứ tự `--vendor`, `OMA_RUNTIME_VENDOR`, runtime phát hiện được và hỗ trợ, `default_cli` rồi `codex`. Chỉ transport Codex, Claude và Qwen được hỗ trợ. Chọn transport không hỗ trợ một cách explicit là lỗi.
+Transport theo dòng `free` trong [Cách OMA resolve model và CLI của một agent](#how-oma-resolves-an-agents-model-and-cli). Chỉ transport Codex, Claude và Qwen được hỗ trợ. Chọn transport không hỗ trợ một cách explicit là lỗi.
 
 | Transport | Gateway endpoint | CLI base URL |
 |:--|:--|:--|
@@ -147,7 +181,7 @@ Mỗi entry là object `AgentSpec`:
 | `thinking` | boolean | Không | Bật extended thinking theo model |
 | `memory` | `user` \| `project` \| `local` | Không | Phạm vi memory của agent |
 
-Agent ID hợp lệ: `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra`, `explore`.
+Agent ID hợp lệ: `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra`, `explore` và `eval`. Built-in preset không định nghĩa `eval`, nên nó dùng entry `orchestrator` của preset trừ khi bạn override.
 
 Merge là shallow: mỗi field trong override thay field tương ứng của preset. Field không khai báo giữ giá trị preset.
 
@@ -160,25 +194,25 @@ Merge là shallow: mỗi field trong override thay field tương ứng của pre
 ```yaml
 # .agents/oma-config.yaml
 models:
-  google/gemini-3-flash-fast:
-    cli: gemini
-    cli_model: gemini-3-flash
-    auth_hint: "Google AI Pro"
+  antigravity/gemini-3.1-pro-low:
+    cli: antigravity
+    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
       apply_patch: false
       task_budget: false
-      prompt_cache: false
+      prompt_cache: true
       computer_use: false
-      native_dispatch_from: [gemini]
+      native_dispatch_from: [antigravity]
       api_only: false
 ```
 
 
 Hai quy tắc áp dụng cho slug đã đăng ký khi tham chiếu từ `agents:`:
 
-1. **Key phải ở dạng `owner/model`:** `agents.<id>.model` validate theo pattern `owner/model`, nên key trần như `my-fast-model` bị từ chối; dùng key có slash như `google/gemini-3-flash-fast` hoặc slug `provider/model` của vendor.
-2. **Spec phải đầy đủ:** `cli`, `cli_model`, `auth_hint` và mọi boolean trong `supports` bắt buộc ở thời điểm resolve. Spec thiếu field có thể qua parser nhưng fail model-registry validation rồi âm thầm fallback về core registry.
+1. **Key phải ở dạng `owner/model`:** `agents.<id>.model` validate theo pattern `owner/model`, nên key trần như `my-fast-model` bị từ chối; dùng key có slash như `antigravity/gemini-3.1-pro-low` hoặc slug `provider/model` của vendor.
+2. **Spec phải đầy đủ và hợp lệ:** `cli`, `cli_model`, `auth_hint` và mọi field trong `supports` bắt buộc ở thời điểm resolve. `cli` phải là một trong `antigravity`, `claude`, `codex`, `commandcode`, `cursor`, `grok`, `kimi`, `kiro`, `qwen` hoặc `opencode`; các entry của `native_dispatch_from` phải là `antigravity`, `claude`, `codex`, `cursor`, `kimi`, `kiro`, `opencode` hoặc `qwen`. `gemini` không phải giá trị hợp lệ cho cả hai. Spec không hợp lệ sẽ log `[model-registry] User inline model "<slug>" failed validation — falling back to core registry`; nếu core registry không có slug đó, dispatch dừng với lỗi unknown-slug.
 
 > Nếu user-defined slug trùng built-in slug, định nghĩa user thắng và phát warning.
 
@@ -204,7 +238,7 @@ custom_presets:
 ```
 
 
-Không có `extends:`, hãy cung cấp default cho các canonical agent role của preset. Có `extends:` thì chỉ entry được liệt kê bị override; phần còn lại kế thừa base preset.
+Không có `extends:`, hãy định nghĩa ít nhất `orchestrator`: mọi role mà preset bỏ qua đều dùng entry `orchestrator` của nó. Có `extends:` thì chỉ entry được liệt kê bị override; phần còn lại kế thừa base preset. `extends` có thể chỉ tới một built-in preset hoặc một custom preset khác, và chuỗi vòng tròn là lỗi. Custom preset đặt tên giống built-in (ví dụ `claude`) bị bỏ qua; built-in thắng.
 
 ---
 
@@ -217,24 +251,30 @@ oma doctor --profile
 ```
 
 
-**Output mẫu:**
+**Output mẫu** (rút gọn: `model_preset: mixed` với một override `backend`; một lần chạy thật liệt kê cả 13 role, và terminal vẽ mỗi section trong một khung):
 
+```text
+ Profile Health (mixed)
+
+ Configuration sources
+   shared: <project>/.agents/oma-config.yaml
+
+ Auth Status Matrix
+┌──────────────┬────────────────────────────────────┬──────────────┬────────────────┐
+│ Role         │ Model                              │ CLI          │ Auth Status    │
+├──────────────┼────────────────────────────────────┼──────────────┼────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
+│ architecture │ anthropic/claude-opus-4-7          │ claude       │ ✓ logged in    │
+│ qa (preset)  │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
+│ backend (over│ openai/gpt-5.5                     │ codex        │ ✓ logged in    │
+│ explore (pres│ openai/gpt-5.4-mini                │ codex        │ ✓ logged in    │
+└──────────────┴────────────────────────────────────┴──────────────┴────────────────┘
+
+ Profile health check complete (mixed)
 ```
-oh-my-agent — Profile Health (preset=mixed)
-
-┌──────────────┬──────────────────────────────┬──────────┬──────────────────┬──────────┐
-│ Role         │ Model                        │ CLI      │ Auth Status      │ Source   │
-├──────────────┼──────────────────────────────┼──────────┼──────────────────┼──────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │ (preset) │
-│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │ (preset) │
-│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │ (preset) │
-│ backend      │ openai/gpt-5.5         │ codex    │ ✗ not logged in  │ (override)│
-│ explore    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │ (preset) │
-└──────────────┴──────────────────────────────┴──────────┴──────────────────┴──────────┘
-```
 
 
-Mỗi dòng cho biết model slug đã resolve và source áp dụng là `(preset)` hoặc `(override)`. Dùng lệnh này khi subagent chọn vendor ngoài dự kiến.
+Mỗi dòng cho biết role, model slug đã resolve, CLI chạy nó và auth status. Ô role mang một source tag: `(preset)`, `(override)`, hoặc `(vendor)` cho agent kế thừa vendor setting dưới `auto`. Cột Role rộng 14 ký tự, nên tag dài bị cắt bớt, như ở trên. Dùng lệnh này khi subagent chọn vendor ngoài dự kiến.
 
 ---
 
@@ -244,13 +284,13 @@ Migration 008 tự chạy khi gọi `oma install` và `oma update`, chuyển pro
 
 | Config legacy | Kết quả sau migration 008 |
 |:-------------|:--------------------------|
-| Mọi entry cùng vendor, ví dụ tất cả `gemini` | `model_preset: gemini`, không có `agents:` |
+| Mọi entry cùng vendor, ví dụ tất cả `claude` | `model_preset` được đặt thành preset của vendor đó (`gemini` legacy map sang `antigravity`), không có `agents:` |
 | Vendor hỗn hợp | Vendor xuất hiện nhiều nhất -> `model_preset`; phần còn lại -> override `agents:` |
 | Giá trị object `AgentSpec` | Chuyển nguyên trạng vào `agents:` |
 | Nội dung `models.yaml` | Inline vào `oma-config.yaml.models` |
 | `defaults.yaml` tùy biến | Giữ dưới dạng `custom_presets.user-customized` kèm warning |
 
-Original được backup vào `.agents/.backup-pre-008-{timestamp}/` trước khi đổi. Migration idempotent; nếu `model_preset` đã có, nó bỏ qua.
+Original được backup vào `.agents/backup/008-model-preset/<timestamp>-<pid>/` trước khi đổi (`~/.oma/backup/008-model-preset/...` với global install). Migration idempotent; nếu `model_preset` đã có, nó bỏ qua.
 
 <!-- oma-docs:ignore-start -->
 Sau migration, `.agents/config/defaults.yaml`, `.agents/config/models.yaml` và thư mục `.agents/config/` bị xóa.
@@ -260,21 +300,21 @@ Sau migration, `.agents/config/defaults.yaml`, `.agents/config/models.yaml` và 
 
 ## Giới hạn quota session
 
-`session.quota_cap` giữ nguyên. Thêm vào `oma-config.yaml` để giới hạn spawn subagent mất kiểm soát:
+Thêm `session.quota_cap` vào `oma-config.yaml` để giới hạn spawn subagent mất kiểm soát:
 
 ```yaml
 session:
   quota_cap:
-    tokens: 2_000_000
+    tokens: 2000000      # plain digits: YAML reads 2_000_000 as a string, which disables the cap
     spawn_count: 40
-    per_vendor:
-      claude: 1_200_000
-      openai: 600_000
-      google: 200_000
+    per_vendor:          # dispatch vendor IDs (claude, codex, antigravity, ...), not model owners
+      claude: 1200000
+      codex: 600000
+      antigravity: 200000
 ```
 
 
-Khi đạt cap, orchestrator từ chối spawn thêm và báo status `QUOTA_EXCEEDED`.
+Khi đạt cap, `oma agent spawn` từ chối lần spawn tiếp theo và thất bại với `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Token usage được ước tính từ độ dài prompt, nên `spawn_count` là giới hạn dễ dự đoán nhất. Quy tắc field: [Session quota caps](/docs/guide/configuration-reference#session-quota-caps).
 
 ---
 
@@ -289,17 +329,17 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  google/gemini-3-flash-fast:
-    cli: gemini
-    cli_model: gemini-3-flash
-    auth_hint: "Google AI Pro"
+  antigravity/gemini-3.1-pro-low:
+    cli: antigravity
+    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
       apply_patch: false
       task_budget: false
-      prompt_cache: false
+      prompt_cache: true
       computer_use: false
-      native_dispatch_from: [gemini]
+      native_dispatch_from: [antigravity]
       api_only: false
 
 custom_presets:
@@ -312,7 +352,7 @@ custom_presets:
 
 session:
   quota_cap:
-    tokens: 2_000_000
+    tokens: 2000000
     spawn_count: 40
 ```
 
@@ -321,7 +361,7 @@ Chạy `oma doctor --profile` để xác nhận resolution rồi khởi động 
 
 ---
 
-## Dispatch qua pi (runtime transport)
+## Dispatch qua pi (runtime transport) {#dispatching-through-pi-transport-runtime}
 
 [pi](https://github.com/earendil-works/pi) (Earendil) là proxy runtime nhiều provider, không phải owner model; nó chạy model provider thật như Anthropic, OpenAI và Google qua một CLI. oma coi pi là **transport overlay**: `model_preset` và override `agents:` giữ nguyên, còn pi trở thành CLI thực thi cho agent cụ thể.
 
@@ -338,7 +378,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 - Persona agent, tức system prompt, được inline từ `.agents/agents/<id>.md` vì pi không có agent file phía vendor.
 - Auth do pi cấu hình, từ `~/.pi/agent/auth.json` hoặc provider API key trong environment. `oma doctor` báo install và auth của pi cùng CLI khác.
 
-**Giới hạn:** pi chỉ chạy model provider thật. Preset độc quyền CLI như `cursor`, `kiro`, `qwen` và `antigravity` chỉ có model bên CLI riêng, nên dispatch qua pi bị từ chối kèm lỗi rõ ràng. Dùng preset provider thật `claude`, `codex`, `gemini` hoặc `mixed` khi định tuyến qua pi.
+**Giới hạn:** pi chỉ chạy model provider thật. Preset độc quyền CLI như `cursor`, `kiro`, `qwen` và `antigravity` chỉ có model bên CLI riêng, nên dispatch qua pi bị từ chối kèm lỗi rõ ràng. Dùng `claude`, `codex` hoặc `mixed`, hoặc override `agents.<id>` có model là slug `anthropic/`, `openai/` hoặc `google/`, khi định tuyến agent qua pi. `gemini` là alias của `antigravity`, nên pi từ chối nó.
 
 > Catalog model của pi theo release và bị auth gate. Nếu slug resolve không khớp catalog pi đang expose, kiểm tra `pi --list-models`; matching `--model` của pi fuzzy nên phần lớn provider slug resolve được.
 
@@ -392,7 +432,7 @@ Command chạy `opencode run --agent pm --dir <workspace> "<prompt>"`. Prompt l�
 Để route agent cụ thể tới model opencode, đăng ký model dưới `models:` rồi tham chiếu từ `agents:`. Có hai yêu cầu, xem [Khai báo model slug inline](#inlining-model-slugs):
 
 1. **Slug dạng `owner/model`:** Dùng slug `provider/model` của opencode làm registry key; tên trần bị schema `agents.<id>.model` từ chối.
-2. **Spec đầy đủ:** `cli`, `cli_model`, `auth_hint` và mọi boolean `supports`. Spec thiếu fail validation và âm thầm fallback core registry, nên agent không route vào opencode.
+2. **Spec đầy đủ:** `cli`, `cli_model`, `auth_hint` và mọi field `supports`. Spec thiếu fail validation; OMA log một warning và fallback về core registry, nên agent không route vào opencode.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -440,7 +480,7 @@ opencode models opencode-go                            # list everything your pl
 - **Auth:** `opencode auth login` lưu credential tại `~/.local/share/opencode/auth.json`, mỗi provider một entry. `oma auth status` / `oma doctor` báo opencode authenticated khi bất kỳ provider nào có credential. `oma doctor --profile` phân biệt provider: mỗi dòng kiểm tra prefix provider trong `cli_model` đã đăng ký; model có `cli_model: zai-coding-plan/glm-5.3` được kiểm tra theo credential `zai-coding-plan`. Row không có model với `cli_model` dạng `provider/model` đã đăng ký báo `? unknown` thay vì khẳng định auth fail.
 - **File sinh:** `oma link` hoặc `oma link opencode` ghi persona `.opencode/agents/<id>.md` cho từng agent và bridge `.opencode/plugins/oma/`. Chúng sinh từ SSOT `.agents/`, không sửa trực tiếp; chạy lại `oma link` để tạo lại.
 
-> **Lưu ý workflow persistent:** event `session.idle` của opencode, gần nhất với hook `Stop` của Claude, chỉ thông báo và không chặn session kết thúc. Vì vậy workflow persistent (orchestrate / work / ultrawork) chạy với **ngữ nghĩa Stop suy giảm** dưới opencode; reinforcement xảy ra ở message tiếp theo thay vì giữ session mở.
+> **Lưu ý workflow liên tục:** event `session.idle` của opencode, gần nhất với hook `Stop` của Claude, chỉ thông báo và không chặn session kết thúc. Vì vậy workflow liên tục (orchestrate / work / ultrawork) chạy với **ngữ nghĩa Stop suy giảm** dưới opencode; reinforcement xảy ra ở message tiếp theo thay vì giữ session mở.
 
 ---
 
@@ -489,4 +529,4 @@ agents:
 
 Mỗi agent route sẽ dispatch `kimi --model kimi-code/kimi-for-coding -p "<prompt>"`.
 
-> **Lưu ý workflow persistent:** Đường Stop-blocking được Kimi tài liệu hóa là exit-code 2 / stderr, nhưng router `oma hook run` luôn exit 0 và emit dialect stdout. OMA phát best-effort `permissionDecision: "deny"` cùng `decision: "block"` kiểu Claude để workflow persistent degrade gracefully dưới Kimi.
+> **Lưu ý workflow liên tục:** Đường Stop-blocking được Kimi tài liệu hóa là exit-code 2 / stderr, nhưng router `oma hook run` luôn exit 0 và emit dialect stdout. OMA phát best-effort `permissionDecision: "deny"` cùng `decision: "block"` kiểu Claude để workflow liên tục degrade gracefully dưới Kimi.

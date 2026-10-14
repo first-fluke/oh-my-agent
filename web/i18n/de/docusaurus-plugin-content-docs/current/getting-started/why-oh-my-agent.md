@@ -5,7 +5,7 @@ description: Entscheiden Sie sich für oh-my-agent, wenn Ihr Repository eigene A
 
 # Warum oh-my-agent
 
-oh-my-agent ergänzt die Agenten-CLIs Ihres Teams um eine vom Repository verwaltete Ebene. Im Verzeichnis `.agents/` liegen Skills, Workflows, Agentendefinitionen, Regeln und die Modellkonfiguration. Vendor-native Dateien werden aus dieser Wahrheitsquelle erzeugt. Dadurch kann das Projektverhalten gemeinsam geprüft und geändert werden.
+oh-my-agent ergänzt die Agenten-CLIs Ihres Teams um eine vom Repository verwaltete Ebene. Im Verzeichnis `.agents/` liegen [Skills](./glossary.md#skill), [Workflows](./glossary.md#workflow), [Agentendefinitionen](./glossary.md#agent-definition), Regeln und die Modellkonfiguration. Vendor-native Dateien werden aus dieser [Wahrheitsquelle](./glossary.md#ssot) erzeugt. Dadurch kann das Projektverhalten gemeinsam geprüft und geändert werden.
 
 ## Wählen Sie es, wenn das Repository die Koordinationsebene braucht
 
@@ -22,7 +22,7 @@ Wenn ein Projekt nur einen Host verwendet und keine gemeinsamen Skills, Workflow
 
 Führen Sie `oma verify agent <agent-type> --workspace <path>` aus, wenn Sie die Prüfungen für eine Backend-, Frontend-, Mobile-, QA-, Debug- oder Planungsrolle benötigen. Der Verifizierer verbindet statische Inspektionen mit konfigurierten Befehlen wie Tests, Typprüfungen, SQL-Prüfungen oder `flutter analyze`. Einzelheiten stehen in [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). Der Bericht zeigt das Ergebnis jeder Prüfung. Bestehende Prüfungen beweisen allein nicht, dass ein Feature seine Produkt- oder Domänenanforderungen erfüllt; die Akzeptanzkriterien der Aufgabe müssen weiterhin geprüft werden.
 
-`/ralph` fügt eine eigene Judge-Phase hinzu, wenn Sie diesen Workflow auswählen. Er prüft die erklärten Kriterien über mehrere Iterationen erneut und zeichnet die Workflow-Artefakte auf. Er ist kein Gate, das bei jeder gewöhnlichen Eingabe ausgeführt wird. Auch das Laden eines Skills startet nicht automatisch jeden Workflow oder jeden Verifikationsbefehl.
+`/ralph` fügt eine eigene [Judge](./glossary.md#judge)-Phase hinzu, wenn Sie diesen Workflow auswählen. Er prüft die erklärten Kriterien über mehrere Iterationen erneut und zeichnet die Workflow-Artefakte auf. Er ist kein Gate, das bei jeder gewöhnlichen Eingabe ausgeführt wird. Auch das Laden eines Skills startet nicht automatisch jeden Workflow oder jeden Verifikationsbefehl.
 
 ## Dispatch bleibt sichtbar
 
@@ -37,3 +37,11 @@ Optionale Koordinationsgrenzen sind in der [Session-Quota-Grenze](../guide/confi
 OMA gibt einem Team einen gemeinsamen Ort für Routing, Ausführungsschritte, Prüfungen und Ausgabedateien. Dafür muss das Team diese Repository-Konfiguration aktuell halten und entscheiden, welche Workflows oder Verifikationsbefehle zu seinem Akzeptanzvertrag gehören. Dieser Kompromiss ist sinnvoll, wenn Konsistenz zwischen Mitwirkenden wichtiger ist als die kleinstmögliche Installation.
 
 Die ursprüngliche Diskussion zur Positionierung finden Sie in [Issue #155](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589).
+
+## Nächste Schritte
+
+- [Schnellstart](./quick-start.md): installieren, die Einrichtung prüfen und eine abgegrenzte Aufgabe ausführen
+- [Wichtige Standardwerte](./important-defaults.md): was der Installer aktiviert und wie Sie es ändern
+- [Installation](./installation.md#presets): ein Skill-Preset wählen, das die geplanten Workflows abdeckt
+- [Workflows](../core-concepts/workflows.md): wann Sie `/work`, `/orchestrate`, `/ultrawork` und `/ralph` verwenden
+- [Fehlerbehebung](../guide/troubleshooting.md): Lösungen für Probleme mit Installation, Vendors und Hooks

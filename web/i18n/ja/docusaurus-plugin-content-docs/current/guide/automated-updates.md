@@ -48,7 +48,7 @@ jobs:
 | 入力 | 型 | 必須 | デフォルト | 説明 |
 |:------|:-----|:---------|:--------|:-----------|
 | `mode` | string | いいえ | `"pr"` | 変更の適用方法です。`"pr"` はプルリクエストを作成し、`"commit"` はベースブランチへ直接プッシュします。 |
-| `base-branch` | string | いいえ | `"main"` | `pr` モードでは PR のベースブランチ、`commit` モードでは直接コミットする対象ブランチです。 |
+| `base-branch` | string | いいえ | `"main"` | `pr` モードでは PR のベースブランチ、`commit` モードでは直接コミットする対象ブランチです。チェックアウトする内容は変わりません。`actions/checkout` の `ref:` を同じブランチに設定してください。 |
 | `force` | string | いいえ | `"false"` | `oma update` に `--force` を渡します。`"true"` にすると、ユーザーがカスタマイズした設定ファイル（`oma-config.yaml`、`mcp.json`）と `stack/` ディレクトリを上書きします。通常は保持されます。 |
 | `pr-title` | string | いいえ | `"chore(deps): update oh-my-agent skills"` | プルリクエストのタイトルです。`pr` モードでのみ使います。 |
 | `pr-labels` | string | いいえ | `"dependencies,automated"` | PR に付けるラベルをカンマ区切りで指定します。`pr` モードでのみ使います。 |
@@ -131,6 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: develop
           token: ${{ secrets.OH_MY_AGENT_PAT }}
 
       - uses: first-fluke/oma-update-action@v1
@@ -142,7 +143,7 @@ jobs:
 ```
 
 **実行される処理：**
-- PAT を使って `develop` ブランチをチェックアウトします。
+- PAT を使って `develop` をチェックアウトします。`ref: develop` は必須です。`base-branch` はプッシュ先を設定するだけで、Action はチェックアウトで得られた `HEAD` をそのままプッシュします。
 - `oma update --ci` を実行します。
 - 変更がある場合は Git を `github-actions[bot]` として設定し、`develop` に直接コミットします。
 - PAT により、`develop` へのプッシュを監視するワークフローがそのコミットで起動します。
@@ -226,7 +227,18 @@ jobs:
 
 ## 内部での動作
 
-この Action は `action/action.yml` で定義された[複合アクション](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)です。4 つのステップを実行します。
+この Action は `action/action.yml` で定義された[複合アクション](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)です。まず `mode` が `pr` または `commit` であることを検証し、次のステップを実行して、最後にプルリクエストまたは直接コミットで終了します。
+
+```mermaid
+flowchart TD
+  validate["Validate inputs: mode is pr or commit"] --> bun["Setup Bun"]
+  bun --> install["bun install -g oh-my-agent"]
+  install --> update["oma update --ci (plus --force when force is true)"]
+  update --> changes{"Changes in .agents/ or .claude/?"}
+  changes -->|no| noop(["updated=false"])
+  changes -->|"yes, mode: pr"| pr["peter-evans/create-pull-request@v8"]
+  changes -->|"yes, mode: commit"| commit["git add .agents/ .claude/, commit, push to base-branch"]
+```
 
 ### Step 1：Bun のセットアップ
 
@@ -246,13 +258,20 @@ npm レジストリから CLI をグローバルにインストールします�
 
 ### Step 3：oma update の実行
 
-```bash
-FLAGS="--ci"
-if [ "${{ inputs.force }}" = "true" ]; then
-  FLAGS="$FLAGS --force"
-fi
-oma update $FLAGS
+```yaml
+- name: Run oma update
+  shell: bash
+  env:
+    FORCE: ${{ inputs.force }}
+  run: |
+    FLAGS="--ci"
+    if [ "$FORCE" = "true" ]; then
+      FLAGS="$FLAGS --force"
+    fi
+    oma update $FLAGS
 ```
+
+入力は `run:` 内の `${{ }}` 補間ではなく `env:` を通じてスクリプトに渡されます。これにより、入力値がシェルコードとして実行されるのを防ぎます。
 
 `--ci` フラグは更新を非対話型モードで実行し、すべてのプロンプトを省略してスピナーアニメーションの代わりにプレーンテキストを出力します。有効にした `--force` フラグは、ユーザーがカスタマイズした設定ファイルを上書きします。
 
@@ -265,7 +284,7 @@ oma update $FLAGS
 5. `--force` がない限り、ユーザーがカスタマイズした `oma-config.yaml`、`mcp.json`、stack ディレクトリを保持します。
 6. 既存の `.agents/` ディレクトリに新しいファイルをコピーします。
 7. 保持していたファイルを戻します。
-8. すべてのベンダーのベンダー適応（フック、設定、エージェント定義）を更新します。
+8. 設定の `vendors:` リストにあるベンダーのベンダー適応（フック、設定、エージェント定義）を更新します（空のリストは対象なしを意味します）。`vendors:` リストがない場合は、プロジェクトディレクトリがすでに存在するベンダーだけを更新します。
 9. CLI シンボリックリンクを更新します。
 
 Action は `--with-new-skills` なしで `oma update --ci` を呼び出します。インストール済みのスキルセットを更新し、新しく利用できるスキルを報告する動作です。更新の一部として新しいスキルを追加する場合は、意図的に `oma update --with-new-skills` を実行してください。
@@ -275,17 +294,27 @@ Action は `--with-new-skills` なしで `oma update --ci` を呼び出します
 ```bash
 if [ -n "$(git status --porcelain .agents/ .claude/ 2>/dev/null)" ]; then
   echo "updated=true" >> "$GITHUB_OUTPUT"
-  VERSION=$(jq -r '.version' .agents/skills/_version.json)
-  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  if [ -f ".agents/skills/_version.json" ]; then
+    VERSION=$(jq -r '.version' .agents/skills/_version.json)
+    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  fi
 else
   echo "updated=false" >> "$GITHUB_OUTPUT"
 fi
 ```
 
-`.agents/` または `.claude/` 内で `oma update` が実際にファイルを変更したか確認し、`updated` と `version` の出力をそれに応じて設定します。
+`.agents/` または `.claude/` 内で `oma update` が実際にファイルを変更したか確認し、`updated` と `version` の出力をそれに応じて設定します。この 2 つのディレクトリ以外の変更（たとえば `.codex/` や `AGENTS.md`）では `updated=true` になりません。
 
 その後、`mode` 入力に応じて次の処理を行います。
 
 - **`pr` モード：** `peter-evans/create-pull-request@v8` を使い、`chore/update-oh-my-agent` ブランチに PR を作成します。PR には新しいバージョン番号、oh-my-agent リポジトリへのリンク、設定したラベルが含まれます。前回作成した PR が閉じられずに同じブランチが残っている場合は、既存の PR を更新します。
 
 - **`commit` モード：** Git を `github-actions[bot]` として設定し、`.agents/` と `.claude/` をステージングして、設定したメッセージでコミットし、ベースブランチへプッシュします。
+
+---
+
+## 関連項目
+
+- [グローバルインストール](./global-install.md)：`oma update --global` と、ユーザー全体のインストールにおける CI の注意点
+- [設定リファレンス](./configuration-reference.md#update-and-ownership-rules)：`oma update` が保持する設定ファイル
+- [既存プロジェクトとの統合](./integration.md)：プロジェクト内で `oma update` が更新するファイル

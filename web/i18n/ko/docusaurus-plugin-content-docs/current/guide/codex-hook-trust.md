@@ -14,7 +14,7 @@ oh-my-agent를 프로젝트에 설치하면 벤더 네이티브 훅 설정을 �
 
 ## 한 번만 하면 되는 단계: Codex에서 훅 검토
 
-`oma`(설치), `oma link`, `oma update`가 Codex가 본 적 없는 프로젝트에 `.codex/hooks.json`을 쓰고 나면, 훅은 아직 실행되지 **않습니다**. Codex를 열고 한 번 검토해야 합니다.
+`oma`(설치), `oma link`, `oma update`가 Codex가 본 적 없는 프로젝트에 `.codex/hooks.json`(전역 설치라면 `~/.codex/hooks.json`)을 쓰고 나면, 훅은 아직 실행되지 **않습니다**. Codex를 열고 한 번 검토해야 합니다.
 
 1. Codex CLI에서 프로젝트를 엽니다.
 2. `/hooks`를 실행해 훅 브라우저(TUI)를 엽니다.
@@ -22,8 +22,8 @@ oh-my-agent를 프로젝트에 설치하면 벤더 네이티브 훅 설정을 �
 
 이 과정을 거치기 전까지 훅은 신뢰되지 않은 상태로 남아 조용히 건너뛰어집니다. 그래서 oh-my-agent는 `.codex/hooks.json`을 만들거나 바꿀 때마다 다음과 같이 안내합니다.
 
-```
-Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run)
+```text
+⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
 Codex를 열기 전에 생성된 파일을 확인합니다.
@@ -62,7 +62,7 @@ oh-my-agent가 직접 Codex 서브프로세스를 스폰할 때, 예를 들어 `
 
 ## `[features] hooks` 플래그는 필요 없습니다
 
-예전 설정에서는 Codex 설정에 `[features] hooks = true`를 켜야 했습니다. Codex CLI 0.14x 무렵부터 훅이 안정화되고 기본으로 켜져 있어서 이제는 필요 없습니다. oh-my-agent는 이 값을 더 이상 쓰지 않으며, Codex 설정에서 사용 중단된 `child_agents_md` 플래그를 발견하면 적극적으로 제거합니다.
+예전 oh-my-agent 릴리스는 Codex 설정에 `[features] codex_hooks = true`를 기록했습니다. Codex 0.124에서 이 플래그의 이름이 `hooks`로 바뀌었고 훅이 기본으로 켜지는 안정 기능이 되었으므로 이제 플래그가 필요 없습니다. oh-my-agent는 두 키 모두 기록하지 않으며, `[features]` 테이블에서 사용 중단된 `codex_hooks`와 `child_agents_md` 플래그를 발견하면 제거합니다.
 
 ---
 
@@ -74,3 +74,8 @@ oh-my-agent가 직접 Codex 서브프로세스를 스폰할 때, 예를 들어 `
 | 훅 명령이 그대로인 `oma update` | 없음. 신뢰가 유지됩니다 |
 | 훅 명령이 바뀐 `oma update` | `/hooks`를 다시 실행해 재신뢰 (설치 프로그램이 안내를 출력합니다) |
 | oh-my-agent가 스폰한 Codex 서브프로세스 | 없음. 우회가 자동으로 적용됩니다 |
+
+## 함께 보기
+
+- [기존 프로젝트 통합](./integration.md): 설치 프로그램이 벤더별로 기록하는 파일
+- [전역 설치](./global-install.md): `~/.codex/`에 기록하는 사용자 전역 설치

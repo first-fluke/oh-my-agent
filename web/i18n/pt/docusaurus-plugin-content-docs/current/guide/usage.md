@@ -9,19 +9,29 @@ description: "Guia de uso do OMA, cobrindo a seleção de tarefas orientada ao l
 ## Início rápido
 
 1. Abra seu projeto em uma IDE ou CLI selecionada com IA (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen ou outro host compatível)
-2. O host selecionado pode carregar skills de `.agents/skills/`; hooks habilitados podem detectar workflows por palavras-chave em linguagem natural
+2. O host selecionado pode carregar [skills](../getting-started/glossary.md#skill) de `.agents/skills/`; hooks habilitados podem detectar [workflows](../getting-started/glossary.md#workflow) por palavras-chave em linguagem natural
 3. Descreva em linguagem natural o que você quer. O host ou workflow selecionado encaminha a tarefa para a skill relevante
 4. Para trabalho com vários agentes, use `/work` ou `/orchestrate`
 
-Tarefas de um único domínio não precisam de sintaxe especial. Use o [guia de seleção de skills e workflows](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) para escolher entre uma skill única, `/work`, `/orchestrate`, `/ultrawork` e `/ralph`. Consulte o [Início rápido](../getting-started/quick-start.md) para a configuração e [Padrões importantes](../getting-started/important-defaults.md) antes de trocar os fornecedores.
+Tarefas de um único domínio não precisam de sintaxe especial. Use o [guia de seleção de skills e workflows](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) para escolher entre uma skill única, `/work`, `/orchestrate`, `/ultrawork` e `/ralph`. Consulte o [Início rápido](../getting-started/quick-start.md) para a configuração e [Padrões importantes](../getting-started/important-defaults.md) antes de trocar os providers.
+
+## Escolha um guia
+
+| Sua tarefa | Comece com | Guia |
+|------------|------------|------|
+| Uma mudança em um único domínio | Um prompt simples (roteamento de skills) | [Skill única](./single-skill.md) |
+| Uma funcionalidade que abrange API, UI, mobile ou banco de dados | `/work` (passo a passo) ou `/orchestrate` (automatizado) | [Projetos multiagente](./multi-agent-project.md) |
+| Um bug com mensagem de erro | `/debug` mais o erro e os passos de reprodução | [Correção de bugs](./bug-fixing.md) |
+| Acompanhar os agentes enquanto executam | `oma dashboard terminal` | [Monitoramento do dashboard](./dashboard-monitoring.md) |
+| Auditar ou retomar resultados de agentes | `oma agent resume SESSION_ID --dry-run` | [Resultados e retomada](./agent-results-and-resume.md) |
+| Algo falhou | `oma doctor --json` | [Solução de problemas](./troubleshooting.md) |
 
 ---
 
 ## Exemplo 1: tarefa única simples
 
 **Você digita:**
-
-```
+```text
 Create a login form component with email and password fields, client-side validation, and accessible labels using Tailwind CSS
 ```
 
@@ -31,10 +41,9 @@ Create a login form component with email and password fields, client-side valida
 2. A camada 1 (SKILL.md) já está carregada com a identidade do agente, as regras centrais e a lista de bibliotecas
 3. Os recursos da camada 2 são carregados sob demanda:
    - `execution-protocol.md`: o workflow de 4 etapas (Analyze, Plan, Implement, Verify)
-   - `snippets.md`: padrões de formulário e validação com Zod
-   - padrões de componentes existentes e `snippets.md` quando fornecidos pela skill
+   - `snippets.md`: padrões de formulário e validação com Zod, além de padrões de componentes existentes quando a skill os fornece
 4. O agente produz um **CHARTER_CHECK**:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -58,8 +67,7 @@ Create a login form component with email and password fields, client-side valida
 ## Exemplo 2: projeto multi-domínio
 
 **Você digita:**
-
-```
+```text
 Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ```
 
@@ -70,38 +78,40 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 **Usando `/work` (passo a passo com controle do usuário):**
 
-```
+```text
 /work Build a TODO app with user authentication, task CRUD, and a mobile app
 ```
 
 3. **Etapa 1, o agente PM planeja:**
    - Identifica os domínios: backend (API de auth, CRUD de tarefas), frontend (login, UI da lista de tarefas), mobile (app Flutter)
    - Define contratos de API: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /tasks`, `POST /tasks`, `PUT /tasks/:id`, `DELETE /tasks/:id`
-   - Cria um breakdown de tarefas priorizado:
-     - P0: API de auth do backend, API de CRUD de tarefas do backend
-     - P1: login/registro do frontend, lista de tarefas do frontend, telas de auth mobile, lista de tarefas mobile
-     - P2: revisão QA
+   - Cria um breakdown de tarefas por nível de prioridade (níveis mais baixos executam primeiro):
+     - Nível 1: API de auth do backend, API de CRUD de tarefas do backend
+     - Nível 2: login/registro do frontend, lista de tarefas do frontend, telas de auth mobile, lista de tarefas mobile
+     - Nível 3: revisão QA
    - Salva em `.agents/results/plan-{sessionId}.json`
 
 4. **Etapa 2, revisar o plano:** O agente apresenta o plano e continua dentro da autorização existente, perguntando somente quando falta uma decisão relevante ou uma nova autorização.
 
-5. **Etapa 3, iniciar agentes por prioridade:**
+5. **Etapa 3, iniciar agentes por nível de prioridade:**
    ```bash
-   # P0 tier (parallel)
-   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent spawn db "User and task schema design" session-todo-01 &
+   # Tier 1 (parallel). Task IDs come from .agents/results/plan-session-todo-01.json
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 --task-id api-auth -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 --task-id db-schema &
    wait
 
-   # P1 tier (parallel, after P0 completes)
-   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   # Tier 2 (parallel, after tier 1 completes)
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 --task-id web-ui -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 --task-id mobile-ui -w ./apps/mobile &
    wait
    ```
+
+   `--task-id` deve corresponder a um `id` de tarefa no plano da sessão; sem ele, o ID da tarefa assume o ID do agente, e uma sessão com plano rejeita um ID que ele não contém (`Unknown plan task`). Sessões ad hoc sem plano podem omiti-lo.
 
 6. **Etapa 4, o agente QA revisa:**
    - Segurança: conformidade com OWASP Top 10 (validação JWT, CSRF, verificação de injeção SQL)
    - Performance: verificação de queries N+1 e paginação
-   - Acessibilidade: WCAG 2.1 AA em todos os componentes frontend
+   - Acessibilidade: WCAG 2.2 AA em todos os componentes frontend
    - Entre domínios: alinhamento do contrato de API entre frontend, mobile e backend
 
 7. **Etapa 5, iterar:** Se o QA encontrar problemas CRITICAL, inicie novamente o agente responsável com o relatório de QA.
@@ -111,8 +121,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ## Exemplo 3: correção de bug
 
 **Você digita:**
-
-```
+```text
 There's a bug. Clicking the save button shows "Cannot read property 'map' of undefined" in the task list
 ```
 
@@ -143,8 +152,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 ## Exemplo 4: sistema de design
 
 **Você digita:**
-
-```
+```text
 Design a dark premium landing page for my B2B SaaS analytics product
 ```
 
@@ -190,7 +198,7 @@ oma link claude codex antigravity
 
 # Monitor while agents work (separate terminal)
 oma dashboard terminal        # Terminal UI with live table
-oma dashboard web    # Web UI at http://localhost:9847
+oma dashboard web             # Web UI; prints http://127.0.0.1:9847/
 
 # After implementation, run QA
 oma agent spawn qa "Review notification feature across all platforms" session-notif-01
@@ -213,8 +221,7 @@ Tarefas entre vendors e `model_preset: free` usam `oma agent spawn`. O dispatch 
 ## Exemplo 6: ultrawork para qualidade máxima
 
 **Você digita:**
-
-```
+```text
 /ultrawork Build a payment processing module with Stripe integration
 ```
 
@@ -267,6 +274,7 @@ Tarefas entre vendors e `model_preset: free` usam `oma agent spawn`. O dispatch 
 | `/brainstorm` | Não persistente | Ideação orientada ao design com propostas de 2-3 abordagens | Antes de se comprometer com uma abordagem de implementação |
 | `/deepinit` | Não persistente | Inicialização completa do projeto (AGENTS.md, ARCHITECTURE.md, docs/) | Configurar o oh-my-agent em um codebase existente |
 | `/review` | Não persistente | Pipeline de QA: segurança OWASP, performance, acessibilidade e qualidade do código | Antes de fazer merge, revisão pré-deploy |
+| `/security` | Não persistente | Faz varreduras no código-fonte da aplicação, em skills de agentes ou em componentes MCP; executa testes de penetração web com escopo definido contra uma implantação de teste; valida achados e configura gates de segurança por meio de `oma-security` | Antes de um release, ou quando uma mudança precisa de varredura ou gate de segurança |
 | `/debug` | Não persistente | Debugging estruturado: reproduzir, diagnosticar, corrigir, teste de regressão e varredura | Investigar bugs e erros |
 | `/design` | Não persistente | Workflow de design em 7 fases que produz DESIGN.md com tokens | Construir sistemas de design, landing pages e redesigns de UI |
 | `/scm` | Não persistente | Workflow de SCM para Git (branch/merge/conflito/worktree/baseline) e geração de Conventional Commit com detecção automática de tipo/escopo e divisão por funcionalidade | Depois de concluir mudanças de código ou ao tratar tarefas de gerenciamento de configuração do repositório |
@@ -279,22 +287,22 @@ Tarefas entre vendors e `model_preset: free` usam `oma agent spawn`. O dispatch 
 | `/recap` | Não persistente | Resume o trabalho nos históricos das ferramentas de IA compatíveis | Retrospectivas diárias ou por período |
 | `/schedule` | Não persistente | Registra jobs recorrentes de agentes | Recaps noturnos, scans ou manutenção |
 | `/video` | Não persistente | Compõe vídeos reproduzíveis a partir de scripts, narração e visuais | Shorts, explainers e demos |
-| `/ralph` | Persistente | Execução repetida de ultrawork com um juiz independente e salvaguardas de loop | Solicitações explícitas para repetir a execução até que os critérios mecânicos de conclusão passem |
+| `/ralph` | Persistente | Execução repetida de ultrawork com um juiz instruído por prompt e salvaguardas de loop | Solicitações explícitas para repetir a execução até que os critérios mecânicos de conclusão passem |
 
 ---
 
 ## Exemplos de auto-detecção
 
-oh-my-agent detecta palavras-chave de workflows em 11 idiomas. Estes exemplos mostram como a linguagem natural aciona workflows:
+O oh-my-agent detecta palavras-chave de workflows em 11 idiomas. Estes exemplos mostram como a linguagem natural aciona workflows:
 
 | Você digita | Workflow detectado | Idioma |
 |-------------|-------------------|--------|
-| "planeje a funcionalidade de autenticação" | `/plan` | Português |
-| "faça tudo em paralelo" | `/orchestrate` | Português |
-| "revise o código quanto à segurança" | `/review` | Português |
-| "faça brainstorming de ideias para o dashboard" | `/brainstorm` | Português |
-| "crie uma landing page para nosso produto" | `/design` | Português |
-| "corrija o bug de login" | `/debug` | Português |
+| "plan the authentication feature" | `/plan` | Inglês |
+| "do everything in parallel" | `/orchestrate` | Inglês |
+| "review the code for security" | `/review` | Inglês |
+| "brainstorm some ideas for the dashboard" | `/brainstorm` | Inglês |
+| "design a landing page for our product" | `/design` | Inglês |
+| "fix the login bug" | `/debug` | Inglês |
 | "계획 세워줘" | `/plan` | Coreano |
 | "버그 수정해줘" | `/debug` | Coreano |
 | "디자인 시스템 만들어줘" | `/design` | Coreano |
@@ -307,7 +315,7 @@ oh-my-agent detecta palavras-chave de workflows em 11 idiomas. Estes exemplos mo
 | "diseña la página" | `/design` | Espanhol |
 | "debuggen" | `/debug` | Alemão |
 | "coordonner étape par étape" | `/work` | Francês |
-| "não pare até terminar" | `/ralph` | Português |
+| "don't stop until it's done" | `/ralph` | Inglês |
 | "끝까지 해" | `/ralph` | Coreano |
 | "最後までやって" | `/ralph` | Japonês |
 
@@ -315,8 +323,8 @@ oh-my-agent detecta palavras-chave de workflows em 11 idiomas. Estes exemplos mo
 
 | Você digita | Resultado |
 |-------------|----------|
-| "o que é orchestrate?" | Nenhum workflow é acionado (padrão informativo: "what is") |
-| "explique como funciona /plan" | Nenhum workflow é acionado (padrão informativo: "explain") |
+| "what is orchestrate?" | Nenhum workflow é acionado (padrão informativo: "what is") |
+| "explain how /plan works" | Nenhum workflow é acionado (padrão informativo: "explain") |
 | "어떻게 사용해?" | Nenhum workflow é acionado (padrão informativo: "어떻게") |
 | "レビューとは何ですか" | Nenhum workflow é acionado (padrão informativo: "とは") |
 
@@ -335,7 +343,7 @@ O preset `all` do instalador segue o registro ativo. A tabela agrupa cada skill 
 | **oma-coordination** | Coordenação manual de vários agentes | Orientação passo a passo para tarefas e handoffs |
 | **oma-db** | Design de schema, ERD, ajuste de queries e planejamento de capacidade | Documentação de schema, migrações e plano de recuperação |
 | **oma-debug** | Reprodução de bugs e análise de causa raiz | Correção mínima, evidência de regressão e varredura de padrões |
-| **oma-deepsec** | Varredura de vulnerabilidades com agentes | Relatórios de scan, triagem, revalidação e gates |
+| **oma-security** | Varredura de segurança de código-fonte, skills de agentes e MCP; testes de penetração web com escopo definido | Achados validados e configuração de gates de varredura |
 | **oma-design** | Sistemas de design, landing pages e tokens | `DESIGN.md`, tokens e orientação de componentes |
 | **oma-dev-workflow** | CI/CD, monorepos, migrações e automação de releases | Configuração de workflow e verificações de release |
 | **oma-docs** | Referências quebradas e deriva documental | Relatório de verificação ou candidatos de sync por diff |
@@ -351,56 +359,36 @@ O preset `all` do instalador segue o registro ativo. A tabela agrupa cada skill 
 | **oma-pm** | Requisitos, breakdown de tarefas e contratos de API | `.agents/results/plan-{sessionId}.json` e quadro de tarefas |
 | **oma-qa** | Revisão de segurança, performance, acessibilidade e qualidade | Relatório de achados com severidade e evidência de correção |
 | **oma-recap** | Retrospectivas de trabalho entre ferramentas | Recap diário ou por período em `.agents/results/recap/` |
-| **oma-refactor** | Refatoração segura orientada por comportamento | Mudança incremental com métricas e segurança de caracterização |
-| **oma-scholar** | Pesquisa acadêmica e sidecars de artigos | Sidecar `.knows.yaml` validado ou síntese de literatura |
-| **oma-scm** | SCM, Git e gerenciamento de worktrees | Commits convencionais e orientação de baseline |
+| **oma-refactor** | Reestruturação que preserva o comportamento | Mudanças de refatoração com evidências de caracterização e de qualidade |
+| **oma-scholar** | Pesquisa acadêmica e sidecars de artigos | Operações validadas sobre sidecars `.knows.yaml` |
+| **oma-scm** | Branches Git, worktrees, baselines e higiene de commits | Plano de SCM ou saída de Conventional Commit |
 | **oma-search** | Busca com pontuação de confiança em docs, web, código e recursos locais | Resultados de busca roteados com rótulos de confiança |
 | **oma-skill-creation** | Criar e auditar skills OMA | Arquivos de skill SSL-lite e resultados de `oma skill audit` |
-| **oma-slide** | Decks HTML e exportação multimodal | Deck HTML acessível com notas e artefatos exportados |
-| **oma-tf-infra** | Provisionamento Terraform multi-cloud | Módulos Terraform, políticas IAM e controles de infraestrutura |
-| **oma-translation** | Localização contextual de UI, docs e prosa | Texto traduzido com placeholders, estrutura e registro preservados |
-| **oma-video** | Vídeos curtos, explainers e demos | Execução de vídeo reproduzível com manifest |
-| **oma-voice** | TTS/STT local e voiceovers | Áudio sintetizado ou transcrição local |
+| **oma-slide** | Decks de apresentação HTML e exportações | HTML empacotado validado, PDF, PNG ou PPTX |
+| **oma-tf-infra** | Infraestrutura Terraform, IAM e policy-as-code | Módulos, planos e controles Terraform |
+| **oma-translation** | Localização de UI, documentação e marketing | Conteúdo traduzido que preserva o contexto |
+| **oma-video** | Shorts, explainers e demos | Execução de vídeo reproduzível com assets e manifest |
+| **oma-voice** | TTS, STT e voiceovers locais | Artefatos de áudio ou transcrição com manifest |
 
 ---
 
 ## Configuração de dashboard
 
-### Dashboard no terminal
-
 ```bash
-oma dashboard terminal
+oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
+oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Exibe uma tabela com atualização ao vivo no terminal:
-- ID da sessão e status geral
-- Status por agente (running, completed, failed)
-- Contagem de turnos
-- Atividade mais recente dos arquivos de progresso
-- Tempo decorrido
+Os dois comandos observam `.agents/state/memories/` no diretório atual. Passe `--project-root <path>` para observar outro projeto ou defina `MEMORIES_DIR`. A tabela de agentes tem quatro colunas:
 
-O dashboard observa `.agents/state/memories/` para atualizações de progresso em tempo real.
+| Coluna | Origem |
+|--------|--------|
+| Agent | `task-board.md` ou nomes de agentes descobertos nos arquivos de memória |
+| Status | Símbolos do terminal: ● running (verde), ✓ completed (ciano), ✗ failed (vermelho), ○ blocked (amarelo), ◌ pending (esmaecido) |
+| Turn | `turn: N` no arquivo `progress-<agent>*.md` do agente |
+| Task | Texto da tarefa vindo do quadro de tarefas ou do arquivo do agente |
 
-### Dashboard web
-
-```bash
-oma dashboard web
-# Opens http://localhost:9847
-```
-
-Recursos:
-- Atualizações em tempo real via WebSocket (sem refresh manual)
-- Reconexão automática após quedas de conexão
-- Status da sessão com indicadores de agente codificados por cor (verde=concluído, amarelo=executando, vermelho=falhou)
-- Streaming do log de atividade dos arquivos de progresso e resultado
-- Dados históricos da sessão
-
-### Layout recomendado
-
-Use 3 terminais:
-1. **Terminal de dashboard:** `oma dashboard terminal` para monitoramento contínuo
-2. **Terminal de comandos:** comandos de criação de agentes e comandos de workflow
-3. **Terminal de build:** execuções de teste, logs de build e operações Git
+Abaixo da tabela, os dois dashboards listam a atividade mais recente dos cinco arquivos de memória modificados mais recentemente. Layouts, fontes de dados e passos de recuperação estão em [Monitoramento do dashboard](./dashboard-monitoring.md).
 
 ---
 
@@ -443,27 +431,38 @@ A flag `-w` em `agent spawn` isola um agente em um diretório específico. Isso 
 ## Dicas
 
 1. **Seja específico nos prompts.** "Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL" produz resultados melhores que "make an app."
+
 2. **Use workspaces para agentes paralelos.** Sempre passe `-w ./path` para evitar conflitos de arquivo entre agentes em execução simultânea.
+
 3. **Trave os contratos de API antes de criar agentes de implementação.** Execute `/plan` primeiro para que os agentes frontend e backend concordem sobre as formas dos endpoints.
+
 4. **Monitore ativamente.** Abra um terminal de dashboard para detectar agentes com falha cedo, em vez de descobrir problemas depois que todos terminarem.
+
 5. **Itere criando agentes novamente.** Se a saída de um agente não estiver correta, recrie-o com a tarefa original e o contexto da correção. Não recomece do zero.
+
 6. **Ajuste a coordenação à tarefa.** Comece com uma skill única para um domínio; use o [guia de seleção](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) quando a tarefa precisar de coordenação ou de um processo explícito de qualidade.
+
 7. **Use `/brainstorm` antes de `/plan` para ideias ambíguas.** O brainstorm esclarece a intenção e a abordagem antes de o agente PM decompor as tarefas.
+
 8. **Execute `/deepinit` em codebases novos.** Ele cria AGENTS.md e ARCHITECTURE.md, que ajudam todos os agentes a entender a estrutura do projeto.
+
 9. **Configure `model_preset`.** Comece com `auto`, escolha um preset fixo como `claude`, `antigravity`, `codex`, `qwen`, `cursor`, `kiro` ou `mixed`, ou use `free` com seu gateway local. Adicione substituições `agents:` para controle detalhado. Consulte [Modelos por agente](./per-agent-models.md).
+
 10. **Use `/ultrawork` quando quiser explicitamente seu processo completo de revisão.** O workflow de 5 fases executa 12 etapas de revisão isoladas; carregar skills, por si só, não executa essas verificações.
 
 ---
 
-## Solução de problemas
+## Solução de problemas {#troubleshooting}
+
+Os problemas comuns estão abaixo. Para mensagens de erro, falhas no resultado de execuções, agendamentos e hooks, consulte [Solução de problemas](./troubleshooting.md).
 
 | Problema | Causa | Correção |
 |---------|-------|---------|
 | Skills não detectadas na IDE | `.agents/skills/` ausente ou sem arquivos `SKILL.md` | Execute o instalador (`bunx oh-my-agent@latest`), verifique os symlinks em `.claude/skills/` e reinicie a IDE |
-| CLI não encontrada ao criar agente | CLI de IA selecionada não instalada ou fora do `PATH` | Execute `which <selected-cli>` (por exemplo, `claude`, `codex`, `agy`, `qwen` ou `kiro`), abra um novo shell ou instale-a conforme o guia de instalação |
+| CLI não encontrada ao criar agente | CLI de IA selecionada não instalada ou fora do `PATH` | Execute `which <selected-cli>` (por exemplo, `claude`, `codex`, `agy`, `qwen` ou `kiro-cli`), abra um novo shell ou instale-a conforme o guia de instalação |
 | Agentes produzindo código conflitante | Sem isolamento de workspace | Use workspaces separados: `-w ./apps/api`, `-w ./apps/web` |
-| Dashboard mostra "No agents detected" | Os agentes ainda não escreveram na memória | Aguarde os agentes iniciarem (primeira escrita no turno 1) ou verifique se o ID de sessão corresponde |
-| Dashboard web não inicia | Dependências não instaladas | Execute `bun install` no diretório web/ primeiro |
+| Dashboard mostra "No agents detected yet" | Os agentes ainda não escreveram na memória, ou o dashboard observa outro diretório | Aguarde o primeiro arquivo de progresso; execute a partir da raiz do projeto ou passe `--project-root <path>` |
+| `oma dashboard web` encerra com "port 9847 is already in use" | Outro processo está usando a porta | `DASHBOARD_PORT=8080 oma dashboard web` |
 | Relatório QA tem mais de 50 problemas | Normal na primeira revisão de codebases grandes | Concentre-se primeiro na severidade CRITICAL e HIGH. Documente MEDIUM/LOW para sprints futuras. |
 | Auto-detecção aciona o workflow errado | Ambiguidade de palavras-chave | Use `/command` explícito em vez de linguagem natural. Relate falsos acionamentos para melhoria. |
 | Workflow persistente não para | O arquivo de estado ainda existe | Diga "workflow done" no chat ou exclua manualmente o arquivo de estado de `.agents/state/` |
@@ -474,5 +473,13 @@ A flag `-w` em `agent spawn` isola um agente em um diretório específico. Isso 
 
 ---
 
-Para padrões de tarefas de domínio único, consulte o [Guia de Skill Única](./single-skill.md).
-Para detalhes de integração em projetos, consulte o [Guia de Integração](./integration.md).
+## Próximos passos
+
+- Uma mudança em um único domínio: [Skill única](./single-skill.md)
+- Uma funcionalidade em vários domínios: [Projetos multiagente](./multi-agent-project.md)
+- Um bug com mensagem de erro: [Correção de bugs](./bug-fixing.md)
+- Acompanhar uma execução: [Monitoramento do dashboard](./dashboard-monitoring.md)
+- Auditar ou retomar resultados de agentes: [Resultados e retomada](./agent-results-and-resume.md)
+- Algo falhou: [Solução de problemas](./troubleshooting.md)
+- Detalhes de integração no projeto: [Guia de integração](./integration.md)
+- Termos usados nestes guias: [Glossário](../getting-started/glossary.md)

@@ -63,7 +63,7 @@ description: 5つの Claude Code ハーネスが同じプロンプトから子�
 | **Functional** | 35 | build の終了コード、開発サーバーの起動（HTTP 200 ≤45s）、5つのユーザージャーニーチェック、lint、ts-clean | `pm install/build/lint`、curl、chrome-devtools MCP、`tsc --noEmit` |
 | **Spec** | 15 | プロンプトに明示された13の成果物、real-API ボーナス | brace-balanced JSON extractor を使う LLM judge |
 | **Visual** | 20 | アンチパターン、子ども向け UX、デザインシステムの一貫性、アクセシビリティ | スクリーンショットに対する LLM judge |
-| **Engineering** | 20 | コードの幅、TS strict、最大ファイルサイズとフォルダ深度、deferred-stub マーカー、ハードコードされたキーがないこと | 静的解析（jq + grep + find） |
+| **Engineering** | 20 | コードの幅、TS strict、最大ファイルサイズとフォルダー深度、deferred-stub マーカー、ハードコードされたキーがないこと | 静的解析（jq + grep + find） |
 | **Efficiency** | 10 | 完了までのターン数、経過時間、ファイル単位のコスト | `claude -p` の結果 JSON |
 
 Spec と Visual の judge は、`judge-multi.sh` によりハーネスごとに3回実行され、項目ごとのスコアはラウンド間で平均されます。実装は [`benchmarks/scoring/multiaxis/`](https://github.com/first-fluke/oh-my-agent/tree/main/benchmarks/scoring/multiaxis)にあります。

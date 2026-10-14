@@ -18,11 +18,11 @@ CLI optimization hiện yêu cầu `--live` và phát sinh model call. Luồng m
 
 `oma skill optimize` không thể chạy nếu thiếu eval task fixture. Nó cần ít nhất **5 task fixture** (`MIN_TASKS = 5`) trong `.agents/eval/<skill>/`. Nếu tìm thấy ít hơn, command báo lỗi ngay:
 
-```
+```text
 [oma skill opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
 ```
 
-Xem [Hướng dẫn Skill Utility Eval](/docs/guide/skill-eval) về quy ước directory `.agents/eval/<skill>/`, fixture schema, checker type và cách seed rollout cho mock replay.
+Xem [Hướng dẫn Skill Utility Eval](./skill-eval.md) về quy ước directory `.agents/eval/<skill>/`, fixture schema, checker type và cách seed rollout cho mock replay.
 
 Việc thăng cấp cũng yêu cầu một tập không rỗng các neighbor task cùng domain thuộc skill khác. Mọi validation score của candidate và final score của candidate phải đo các neighbor của split được đánh giá với đúng candidate body. Neighbor bị thiếu hay recording ghép cặp không đầy đủ không thể xác lập rằng không có negative transfer. Offline evaluation chỉ có thể replay các candidate recording khớp; hãy dùng live optimization để tạo và đánh giá candidate mới.
 
@@ -31,6 +31,28 @@ Replay và suite-scoped knowledge gắn với toàn bộ task/evaluator contract
 ---
 
 ## Cách hoạt động {#how-it-works}
+
+Diagram cho thấy một lần chạy optimization. Một evaluation chưa đầy đủ hoặc budget đã cạn cũng kết thúc vòng lặp epoch sớm.
+
+```mermaid
+flowchart TD
+  FX["5+ fixtures in .agents/eval/SKILL_ID/"] --> SP["Deterministic split by task ID<br/>train 60% / validation 20% / final-test 20%"]
+  SP --> BL["Score the original body on VALIDATION"]
+  BL --> TR["Epoch: score the best body on TRAIN"]
+  TR --> MT["Wiki Maintainer turns failures<br/>and successes into patterns"]
+  MT --> PR["Proposer emits up to<br/>--edits-per-epoch edits"]
+  PR --> GT["Per edit: validate, check --lr budget,<br/>re-score VALIDATION (with neighbors) and TRAIN"]
+  GT --> AC{"Best edit loses nothing on either split,<br/>gains on one, fully measured?"}
+  AC -->|yes| AE["Accept the edit, reset patience"]
+  AC -->|no| RJ["Record rejected or inconclusive edits,<br/>patience + 1"]
+  AE --> MORE{"Epochs left and<br/>patience below 2?"}
+  RJ --> MORE
+  MORE -->|yes| TR
+  MORE -->|no| FT["Runner-owned FINAL TEST<br/>candidate lift >= original lift"]
+  FT --> AP{"--apply, final test passed,<br/>promotion eligible?"}
+  AP -->|no| DR["Print report and diff,<br/>SKILL.md unchanged"]
+  AP -->|yes| WR["Back up, atomic write,<br/>record promotion lineage"]
+```
 
 Fixture được sort theo task ID và tách xác định thành tập **train**, **held-out validation** và **runner-owned final-test**. Với ít nhất năm fixture, tỷ lệ mục tiêu là 60/20/20 và mỗi partition có ít nhất một task. Ví dụ, tám fixture tạo ra bốn task train, một task validation và ba task final-test sau khi làm tròn. Các fixture khai báo cùng một `group` được gán cùng nhau, nên một bản diễn đạt lại không thể nằm ở train trong khi bản gốc nằm ở final test; với ít hơn ba group, split quay về dùng task ID và đưa ra cảnh báo. Task final-test đến từ local fixture set này và được giữ khỏi Maintainer và Proposer. Task ID final-test trùng lặp và việc chồng lấn với một development split bị từ chối.
 
@@ -56,11 +78,11 @@ Candidate chưa được đo được ghi là `inconclusive`, với các lý do 
 
 ## Cách dùng {#usage}
 
-```
+```bash
 oma skill optimize --skill <id> --live
                [--dry-run | --apply]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes]
+               [--memory recall|none] [--yes]
                [--json] [--output <format>]
 ```
 
@@ -68,7 +90,7 @@ oma skill optimize --skill <id> --live
 
 | Flag | Mặc định | Mô tả |
 |:-----|:--------|:-----------|
-| `--skill <id>` | `_all` | Skill ID cần tối ưu (tên đơn giản, không có path separator). |
+| `--skill <id>` | bắt buộc | Skill ID cần tối ưu (tên đơn giản, không có path separator). Thiếu flag này, command đọc `.agents/eval/_all/` và dừng với `no eval coverage for skill "_all"`; không có mode cho mọi skill. |
 | `--dry-run` | **yes (default)** | Đề xuất edit và in diff mà không đổi `SKILL.md`; evidence tạo ra và evolution event vẫn được lưu. |
 | `--apply` | — | Ghi candidate đã validate sau khi mọi promotion gate pass, gồm cả evidence final-test và negative-transfer đầy đủ; backup original trước atomic write. Skill do OMA sở hữu còn cần `--yes`. |
 | `--mock` | Mặc định khi không live | CLI chưa triển khai proposal replay, nên luồng này dừng trước khi evaluation. Dùng `oma skill eval --mock` để replay evaluation offline. |
@@ -76,6 +98,7 @@ oma skill optimize --skill <id> --live
 | `--max-epochs <n>` | `8` | Số epoch tối ưu tối đa. |
 | `--edits-per-epoch <k>` | `4` | Số candidate edit optimizer LLM đề xuất mỗi epoch. |
 | `--lr <chars>` | `600` | Textual learning-rate budget: net character change tối đa cho mỗi edit được chấp nhận. |
+| `--memory <mode>` | `recall` | `none` bắt đầu từ evolution knowledge rỗng để so sánh ở cùng budget (xem [Memory ablation](#memory-ablation-and-long-run-statistics)). |
 | `--yes` | — | Bỏ qua cost-preview confirmation của live và xác nhận hành vi ghi đè khi áp dụng cho skill do OMA sở hữu. |
 | `--json` | — | Xuất JSON cho CI/CD. |
 | `--output <format>` | `text` | Output format (`text` hoặc `json`). |
@@ -91,7 +114,7 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1
 
 Output minh họa cho tám fixture và một candidate pass mọi promotion gate:
 
-```
+```text
 [oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 1, test: 3), dry-run: true
 
 Skill opt  (skill: oma-scholar)
@@ -120,8 +143,8 @@ Diff cho biết optimizer sẽ ghi gì. `SKILL.md` không đổi, còn evolution
 Khi hài lòng với proposed diff, chạy lại với `--apply`:
 
 ```bash
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Apply accepted edits to a user-authored skill (backs up the original first)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 ### Quy trình như một artifact {#the-procedure-as-an-artifact}
@@ -147,6 +170,20 @@ Phản hồi của optimizer được đọc một cách khoan dung chỉ về m
 `oma skill evolution-stats --skill <id>` tổng hợp mọi run đã ghi của một skill từ `.agents/results/skill-evolution/<id>/*.jsonl`: số run theo status, các proposal theo gate outcome và acceptance rate, các cải thiện đã xác minh (final test pass và đủ điều kiện thăng cấp), số lần apply và rollback, final lift trung bình, số model call trên các run có đo và số call cho mỗi cải thiện đã xác minh (chi phí của quá trình chứ không phải của một run), cùng các số liệu đó chia theo memory mode và theo procedure hash. Báo cáo meta-optimization cho thấy số call trung bình cho mỗi inner run của procedure hiện tại và từng candidate, nên một procedure thắng về gain bằng cách tiêu tốn nhiều hơn sẽ hiện rõ là như vậy.
 
 ### Meta-optimization: quy trình là candidate {#meta-optimization-the-procedure-as-the-candidate}
+
+| Flag | Mặc định | Mô tả |
+|:-----|:--------|:-----------|
+| `--target <part>` | `optimizer` | Phần procedure cần tối ưu: `optimizer` hoặc `maintainer`. |
+| `--skill <ids...>` | — | Các held-out skill dùng để chấm candidate procedure (phân tách bằng khoảng trắng). |
+| `--anchor <ids...>` | `anchors` của constitution | Các skill không bao giờ dùng để chọn; được báo trước và sau để theo dõi drift. |
+| `--repeats <n>` | `3` | Số inner run cho mỗi skill và procedure. |
+| `--candidates <n>` | `2` | Số procedure candidate cần đề xuất. |
+| `--max-epochs <n>` | `1` | Số epoch của inner run, như nhau cho mọi arm. |
+| `--edits-per-epoch <k>` | `4` | Số edit mỗi epoch của inner run, như nhau cho mọi arm. |
+| `--live` | — | Bắt buộc: inner run gọi model thật. |
+| `--apply` | — | Ghi procedure file thắng cùng lineage. |
+| `--memory <mode>` | `none` | Memory mode của inner run: `recall` hoặc `none`. |
+| `--yes` | — | Bỏ qua bước xác nhận chi phí. |
 
 `oma skill meta-optimize --target optimizer --skill <a> <b> ... --live` coi prompt của optimizer (hoặc maintainer) là đối tượng đang được thử nghiệm. Nó chạy inner loop (`oma skill optimize --dry-run`) trên từng held-out skill được nêu tên, `--repeats` lần, dưới procedure hiện tại; yêu cầu một proposer đưa ra tối đa `--candidates` edit nhỏ cho template; chạy lại inner loop dưới từng candidate với cùng budget `--max-epochs` và `--edits-per-epoch`; và so sánh từng candidate với procedure hiện tại theo từng cặp (skill, repeat) trên tổng training-lift và validation-lift gain mà inner loop đạt được.
 
@@ -187,7 +224,7 @@ Các chu kỳ tự động áp dụng các thay đổi đạt dưới dạng pro
 
 ## Live mode {#live-mode}
 
-Live mode gọi Maintainer và Proposer thật, đồng thời chạy lại live eval arm ở mỗi epoch. Nó tốn kém: mỗi task được chấm có baseline và treatment call, judge fixture thêm grading call, và final test chấm body gốc cùng candidate body. Preview báo upper bound theo split thật, gồm validation baseline ban đầu, các call training và compiler, các call validation của candidate, hai final-test score, và các neighbor check ghép cặp cho mọi candidate cộng với candidate cuối cùng. Mỗi call timeout 120 giây. Arm Claude và Codex được bảo vệ (protected) tắt tool, automatic instruction discovery, MCP và optimization memory.
+Live mode gọi Maintainer và Proposer thật, đồng thời chạy lại live eval arm ở mỗi epoch. Nó tốn kém: mỗi task được chấm có baseline và treatment call, judge fixture thêm grading call, và final test chấm body gốc cùng candidate body. Preview báo upper bound theo split thật, gồm validation baseline ban đầu, các call training và compiler, các call validation của candidate, hai final-test score, và các neighbor check ghép cặp cho mọi candidate cộng với candidate cuối cùng. Mỗi call bị kill sau `OMA_SKILL_EVAL_TIMEOUT_MS` mili giây (mặc định 180000, cùng giới hạn với `oma skill eval`). Arm Claude và Codex được bảo vệ (protected) tắt tool, automatic instruction discovery, MCP và optimization memory.
 
 ```bash
 # Cost preview + confirm
@@ -196,13 +233,13 @@ oma skill optimize --skill oma-scholar --live
 # Skip confirmation
 oma skill optimize --skill oma-scholar --live --yes
 
-# Live opt, then apply if improved
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Live opt, then apply if improved (user-authored skill)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 Cost preview liệt kê upper bound của model call nền trước khi có LLM call nào.
 
-Maintainer, Proposer, các evaluation arm và judge dùng chung một protected text transport trong các thư mục tạm mới. Claude dùng restricted CLI profile của nó. Codex dùng `codex app-server` native với CLI login hiện có, model/provider đã chọn và reasoning effort; nó không thay bằng một API-key client hay fallback sang Claude. Codex profile nhắm tới CLI 0.154.x trên macOS/Linux với native file credential storage và một `auth.json` đã có sẵn. Mỗi call chuẩn bị một `CODEX_HOME` tạm riêng tư tham chiếu tới các config/auth file gốc mà không copy nội dung credential. Việc native token refresh vẫn dùng auth file gốc. Shared bootstrap state bị loại trừ, và state tạm được dọn sau đó. Các credential store keyring, auto và ephemeral hiện chưa được hỗ trợ. Thread contract được kiểm tra trước khi gửi model input; phiên bản không được hỗ trợ, storage mode và lỗi protocol sẽ chấm dứt dispatch. Tool, startup instruction discovery, MCP access và session persistence bị tắt để các compiler process không thể đọc các fixture bị giữ kín qua agent tool. Các compiler vendor khác thất bại một cách tường minh cho đến khi chúng có một verified transport.
+Maintainer, Proposer, các evaluation arm và judge dùng chung protected text transport được mô tả trong [Skill isolation](./skill-eval.md#skill-isolation-keeping-the-baseline-honest): restricted CLI profile của Claude hoặc profile `app-server` native của Codex, mỗi cái chạy trong một thư mục tạm mới với tool, startup instruction discovery, MCP access và session persistence bị tắt, để các compiler process không thể đọc các fixture bị giữ kín qua agent tool. Các compiler vendor khác dừng với `[oma skill opt] protected compiler is unavailable for <vendor>` cho đến khi chúng có một verified transport. Maintainer và Proposer dùng role `opt-agent`, đi theo `model_preset` hoặc `default_cli`; arm và judge dùng role `eval` (xem [Chọn evaluation model và optimizer model](./skill-eval.md#choose-the-evaluation-and-optimizer-models)).
 
 Optimizer báo `proposed` cho các edit hợp lệ và `no-action` chỉ khi có phản hồi `NO_ACTION` tường minh. Lỗi process/API trở thành `dispatch-error`; phản hồi sai định dạng không có edit hợp lệ trở thành `parse-error`. Các lỗi này không thể biến thành danh sách edit rỗng. Nếu Maintainer không thể cung cấp pattern đã được validate, nó báo `degraded` kèm lý do dispatch hoặc parsing; các fallback pattern bị loại khỏi persistent knowledge, và run không thể thăng cấp candidate. Lỗi evaluation xuất hiện trong `diagnostics` và các proposal gate record thay vì learned rejection history.
 
@@ -277,13 +314,15 @@ Hãy kiểm tra `diagnostics`, `promotion.reasons` và mọi `finalTest.blocker`
 
 ## Lưu ý SSOT cho skill `oma-*` {#ssot-caveat-for-oma-skills}
 
-Skill có ID bắt đầu bằng `oma-` do oh-my-agent sở hữu và bị `oma update` ghi đè. Với các skill này, không khuyến khích `--apply` — dùng `--dry-run` (mặc định), review diff đề xuất và upstream thay đổi vào registry nếu cải tiến có ý nghĩa. Với skill do người dùng viết, `--apply` an toàn.
+Skill có ID bắt đầu bằng `oma-` do oh-my-agent sở hữu và **bị `oma update` ghi đè**. Với các skill này, không khuyến khích `--apply` — dùng `--dry-run` (mặc định), review diff đề xuất và upstream thay đổi vào registry nếu cải tiến có ý nghĩa. Với skill do người dùng viết, `--apply` an toàn.
 
-Command in cảnh báo khi target skill do OMA sở hữu:
+Khi mọi gate đều pass nhưng target là skill do OMA sở hữu và không có `--yes`, `--apply` không ghi gì và in ra:
 
+```text
+[oma skill opt] WARNING: "oma-scholar" is an oma-owned skill. oma-owned skills are overwritten by `oma update` — applying edits here may be lost. Re-run with --yes to proceed, or use --dry-run to review the proposed diff.
 ```
-[oma skill opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
-```
+
+Với `--yes`, không có cảnh báo nào được in và việc ghi tiếp tục.
 
 ---
 
@@ -303,7 +342,7 @@ Dùng evaluation replay cho một kiểm tra CI offline đối với các candid
 oma skill eval --skill oma-scholar --mock --neg-transfer --require-coverage --json
 ```
 
-Bản thân CLI optimization yêu cầu `--live`; nó chưa có recorded-proposal replay adapter. Hướng dẫn trước đây mô tả `oma skill optimize --mock` là một optimizer offline hoàn chỉnh là không chính xác. Hãy chuyển các job replay offline sang `oma skill eval --mock`, hoặc bật live optimization một cách tường minh cùng chi phí model của nó. Với các lần chạy optimization, hãy kiểm tra JSON `ok` và `promotion.eligible`: exit zero cũng bao gồm các run hoàn tất mà không tìm thấy candidate nào có thể thăng cấp.
+Bản thân CLI optimization yêu cầu `--live`; nó chưa có recorded-proposal replay adapter. Hướng dẫn trước đây mô tả `oma skill optimize --mock` là một optimizer offline hoàn chỉnh là không chính xác. Hãy chuyển các job replay offline sang `oma skill eval --mock`, hoặc bật live optimization một cách tường minh cùng chi phí model của nó. Với các lần chạy optimization, hãy kiểm tra JSON `ok` và `promotion.eligible`: exit zero cũng bao gồm các run hoàn tất mà không tìm thấy candidate nào có thể thăng cấp. Về các thông báo lỗi, xem [Khắc phục sự cố](./skill-eval.md#troubleshooting).
 
 Exit code của optimization:
 - `0` — optimization hoàn tất (có hoặc không có cải thiện)
@@ -313,5 +352,7 @@ Exit code của optimization:
 
 ## Xem thêm {#see-also}
 
-- [Skill Utility Eval](/docs/guide/skill-eval) — soạn task fixture, checker type, mock/live mode và directory `_rollouts/`.
-- [CLI Commands](/docs/cli-interfaces/commands) — tham chiếu flag cho mọi skill management command.
+- [Skill Utility Eval](./skill-eval.md) — soạn task fixture, checker type, mock/live mode, directory `_rollouts/` và khắc phục sự cố.
+- [Tiến hóa Harness của dự án](./harness-evolution.md) — optimization theo lịch, có budget, với project overlay.
+- [Ca hồi quy của sự cố](./harness-incidents.md) — biến các lỗi đã quan sát thành skill fixture.
+- [CLI Commands](../cli-interfaces/commands.md) — tham chiếu flag cho mọi skill management command.

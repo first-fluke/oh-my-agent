@@ -25,20 +25,30 @@ Se sua tarefa couber inteiramente em um domínio, use diretamente o agente espec
 
 O workflow multi-agente recomendado segue um pipeline rígido de quatro etapas.
 
+```mermaid
+flowchart LR
+  plan["/plan"] --> planFile["plan-{sessionId}.json"]
+  planFile -->|"loaded by"| orch["/orchestrate (automated)"]
+  plan -.->|"or run"| work["/work (step-by-step; its PM step writes the plan)"]
+  work --> spawn["Agents per priority tier (native subagents or oma agent spawn)"]
+  orch --> spawn
+  spawn --> review["/review (QA)"]
+```
+
 ### Etapa 1: /plan para requisitos e decomposição da tarefa
 
 O workflow `/plan` executa inline (sem iniciar subagentes) e produz um plano estruturado.
 
-```
+```text
 /plan
 ```
 
 **O que acontece:**
 
 1. **Coletar requisitos:** O agente PM pergunta sobre usuários-alvo, funcionalidades principais, restrições e destinos de deploy.
-2. **Analisar viabilidade técnica:** Usa o provedor de inteligência de código configurado para examinar o codebase existente em busca de código reutilizável e padrões de arquitetura. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
+2. **Analisar viabilidade técnica:** Usa o provider de inteligência de código configurado para examinar o codebase existente em busca de código reutilizável e padrões de arquitetura. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
 3. **Definir contratos de API:** Projeta contratos de endpoint (método, caminho, schemas de request/response, auth, respostas de erro) e os salva em `.agents/results/api-contracts/` (artefatos da execução), promovendo especificações duráveis para `docs/plans/contracts/` quando forem commitadas.
-4. **Decompor em tarefas:** Divide o projeto em tarefas acionáveis, cada uma com agente atribuído, título, critérios de aceitação, prioridade (P0-P3) e dependências.
+4. **Decompor em tarefas:** Divide o projeto em tarefas acionáveis, cada uma com agente atribuído, título, critérios de aceitação, tier de prioridade (o 1 é executado primeiro) e dependências.
 5. **Revisar o plano com o usuário:** Apresenta o plano completo para confirmação. O workflow não prossegue sem aprovação explícita do usuário.
 6. **Salvar o plano:** Escreve o plano aprovado em `.agents/results/plan-{sessionId}.json` e registra um resumo na memória.
 
@@ -58,31 +68,31 @@ Você tem dois caminhos de execução:
 
 #### /work: pipeline multi-agente interativo
 
-```
+```text
 /work
 ```
 
 1. Analisa a solicitação do usuário e identifica os domínios envolvidos.
-2. Executa o agente PM para decomposição da tarefa (cria plan-\{sessionId\}.json).
+2. Executa o agente PM para decomposição da tarefa (cria `plan-{sessionId}.json`).
 3. Apresenta o plano para confirmação do usuário. **Bloqueia até a confirmação.**
-4. Inicia agentes por tier de prioridade (P0 primeiro, depois P1 etc.), com cada tarefa de mesma prioridade executando em paralelo.
+4. Inicia agentes por tier de prioridade (tier 1 primeiro, depois tier 2 e assim por diante), com cada tarefa do mesmo tier executando em paralelo.
 5. Monitora o progresso dos agentes por meio de arquivos de memória.
 6. Executa a revisão do agente QA em todos os entregáveis (OWASP Top 10, performance, acessibilidade e qualidade do código).
 7. Se o QA encontrar problemas CRITICAL ou HIGH, inicia novamente o agente responsável com os achados do QA. Repete até 2 vezes por problema. Se o mesmo problema persistir, ativa o **Exploration Loop**: gera 2-3 abordagens alternativas, inicia o mesmo tipo de agente com prompts de hipóteses diferentes em workspaces separados, faz o QA pontuar cada uma e adota o melhor resultado.
 
 #### /orchestrate: execução paralela automatizada
 
-```
+```text
 /orchestrate
 ```
 
 1. Carrega `.agents/results/plan-{sessionId}.json`, criando um plano inline por meio de `/plan` quando não existe um plano utilizável.
 2. Inicializa uma sessão com o formato de ID `session-YYYYMMDD-HHMMSS`.
-3. Cria `orchestrator-session.md` e `task-board.md` no diretório de memória.
+3. Cria `orchestrator-session-{sessionId}.md` e `task-board-{sessionId}.md` no diretório de memória.
 4. Inicia agentes por tier de prioridade, cada um recebendo: descrição da tarefa, contratos de API e contexto.
-5. Monitora o progresso consultando os arquivos `progress-{agent}.md`.
+5. Monitora o progresso consultando os arquivos `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`.
 6. Verifica cada agente concluído por meio de `verify.sh`. PASS (exit 0) aceita; FAIL (exit 1) inicia novamente com o contexto do erro (no máximo 2 retries); uma falha persistente ativa o Exploration Loop.
-7. Coleta todos os arquivos `result-{agent}.md` e compila um relatório final.
+7. Coleta todos os arquivos `result-{agentId}-{taskId}-{runId}-{sessionId}.md` e compila um relatório final.
 
 ### Etapa 3: agent spawn para gerenciamento de agentes no nível da CLI
 
@@ -92,7 +102,7 @@ O comando `agent spawn` é o mecanismo de baixo nível usado internamente pelos 
 oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-**Todas as flags:**
+**Todas as flags** (`oma agent spawn --help`):
 
 | Flag | Descrição |
 |:-----|:-----------|
@@ -101,6 +111,8 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 | `--task-id <id>` | Vincula a criação a uma tarefa do plano da sessão; usa o ID do agente por padrão. |
 | `--isolation worktree` | Cria um worktree Git para a criação; o padrão é não adicionar isolamento. |
 | `--read-only` | Restringe o processo filho a ferramentas de inspeção e suprime flags de auto-aprovação. |
+| `--resumed-from <run-id>` | Vincula uma nova tentativa à execução anterior. |
+| `--fallback-vendors <vendors>` | Cadeia ordenada e separada por vírgulas de vendors de fallback para esta criação. |
 
 **Ordem de resolução do vendor** (a primeira correspondência vence):
 
@@ -116,7 +128,7 @@ Consulte [Modelos por agente](./per-agent-models.md) para detalhes de configura�
 
 ### Etapa 4: /review para verificação QA
 
-```
+```text
 /review
 ```
 
@@ -126,7 +138,7 @@ O workflow de revisão executa um pipeline QA completo:
 2. **Verificações de segurança automatizadas:** Executa `npm audit`, `bandit` ou equivalente.
 3. **Revisão manual do OWASP Top 10:** Injeção, auth quebrada, dados sensíveis, controle de acesso, configuração incorreta, desserialização insegura, componentes vulneráveis e logging insuficiente.
 4. **Análise de performance:** Queries N+1, índices ausentes, paginação sem limite, vazamentos de memória, re-renders desnecessários e tamanho de bundles.
-5. **Acessibilidade:** WCAG 2.1 AA, incluindo HTML semântico, ARIA, navegação por teclado, contraste de cores e gerenciamento de foco.
+5. **Acessibilidade:** WCAG 2.2 AA, incluindo HTML semântico, ARIA, navegação por teclado, contraste de cores e gerenciamento de foco.
 6. **Qualidade do código:** Nomes, tratamento de erros, cobertura de testes, modo estrito do TypeScript, imports não usados e padrões async/await.
 7. **Relatório:** Achados categorizados como CRITICAL / HIGH / MEDIUM / LOW com `file:line`, descrição e código de correção.
 
@@ -134,11 +146,11 @@ Para escopos grandes, o workflow delega ao subagente QA. Com a opção `--fix`, 
 
 ---
 
-## Estratégia de ID de sessão
+## Estratégia de ID de sessão {#session-id-strategy}
 
 Cada sessão de orquestração recebe um identificador único no formato:
 
-```
+```text
 session-YYYYMMDD-HHMMSS
 ```
 
@@ -146,9 +158,9 @@ Exemplo: `session-20260324-143052`
 
 O ID da sessão é usado para:
 
-- Nomear arquivos de memória (`orchestrator-session.md`, `task-board.md`)
-- Rastrear processos de agente por arquivos PID no diretório temporário do sistema (`/tmp/subagent-{session-id}-{agent-id}.pid`)
-- Correlacionar arquivos de log (`/tmp/subagent-{session-id}-{agent-id}.log`)
+- Nomear arquivos de memória (`orchestrator-session-{sessionId}.md`, `task-board-{sessionId}.md`)
+- Rastrear processos de agente por arquivos PID no diretório temporário do sistema operacional (`$TMPDIR` no macOS, normalmente `/tmp` no Linux, `%TEMP%` no Windows): `subagent-{session-id}-{agent-id}.pid`
+- Correlacionar arquivos de log no mesmo diretório: `subagent-{session-id}-{agent-id}.log`
 - Agrupar resultados em `.agents/results/parallel-{timestamp}/`
 
 O ID da sessão é gerado na Etapa 2 de `/orchestrate` e passado a todos os agentes iniciados. Isso garante que todos os agentes, logs e arquivos PID de uma execução possam ser rastreados até uma sessão.
@@ -211,7 +223,7 @@ Os contratos de API são o mecanismo de sincronização entre agentes. A regra d
    - Requisitos de autenticação
    - Formatos das respostas de erro
 
-4. **Violações de contrato são detectadas durante o monitoramento.** A Etapa 5 de `/work` usa o provedor de inteligência de código configurado para verificar o alinhamento do contrato de API entre agentes. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
+4. **Violações de contrato são detectadas durante o monitoramento.** A Etapa 5 de `/work` usa o provider de inteligência de código configurado para verificar o alinhamento do contrato de API entre agentes. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
 
 5. **A revisão QA verifica a aderência ao contrato.** A Revisão de Alinhamento do agente QA (Etapa 6 do ultrawork) compara explicitamente a implementação com o plano, incluindo contratos de API.
 
@@ -248,7 +260,7 @@ No workflow ultrawork, isso se traduz em **portões de fase** explícitos (PLAN_
 ### Criação de um agente único
 
 ```bash
-# Spawn backend agent with Gemini (default)
+# Spawn backend agent; the vendor comes from the resolution order above
 oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Spawn frontend agent with Claude, explicit workspace
@@ -328,11 +340,11 @@ Tentar mesclar manualmente as saídas dos agentes em vez de deixar o pipeline de
 
 ### 6. Paralelização excessiva
 
-Executar tarefas P1 antes de concluir as tarefas P0. Tiers de prioridade existem porque tarefas P1 frequentemente dependem das saídas de P0. Os workflows impõem a ordem dos tiers automaticamente.
+Executar tarefas do tier 2 antes de concluir as tarefas do tier 1. Tiers de prioridade existem porque tarefas de tiers posteriores frequentemente dependem das saídas de tiers anteriores. Os workflows impõem a ordem dos tiers automaticamente.
 
 ### 7. Pular a verificação
 
-Usar `agent spawn` diretamente sem registrar depois o contrato de resultado. Execute as verificações fixadas da tarefa e conclua um claim estruturado; consulte [Resultados e retomada de agentes](/docs/guide/agent-results-and-resume). A etapa de verificação do workflow então detecta verificações reprovadas e deriva de escopo antes de os resultados serem reutilizados.
+Usar `agent spawn` diretamente sem registrar depois o contrato de resultado. Execute as verificações fixadas da tarefa e conclua um claim estruturado; consulte [Resultados e retomada de agentes](./agent-results-and-resume.md). A etapa de verificação do workflow então detecta verificações reprovadas e deriva de escopo antes de os resultados serem reutilizados.
 
 ---
 
@@ -340,7 +352,7 @@ Usar `agent spawn` diretamente sem registrar depois o contrato de resultado. Exe
 
 Depois que todos os agentes concluírem suas tarefas individuais, a integração entre domínios deve ser validada:
 
-1. **Alinhamento do contrato de API:** O provedor de inteligência de código configurado verifica se as implementações do backend correspondem aos contratos consumidos pelo frontend e mobile. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
+1. **Alinhamento do contrato de API:** O provider de inteligência de código configurado verifica se as implementações do backend correspondem aos contratos consumidos pelo frontend e mobile. A busca nativa é usada apenas para caminhos fora do projeto ou caminhos ignorados.
 
 2. **Consistência de tipos:** Tipos TypeScript, dataclasses Python ou modelos Dart compartilhados entre domínios devem usar nomes e tipos de campo consistentes.
 
@@ -365,3 +377,13 @@ Um projeto multi-agente está concluído quando:
 - O build é bem-sucedido e todos os testes passam.
 - O relatório final é escrito na memória e apresentado ao usuário.
 - O usuário dá a aprovação final (em `/work` e no SHIP_GATE do ultrawork).
+
+---
+
+## Próximos passos
+
+- Acompanhe a execução: [Monitoramento pelo dashboard](./dashboard-monitoring.md)
+- Audite ou retome resultados: [Resultados e retomada](./agent-results-and-resume.md)
+- Algo falhou: [Solução de problemas](./troubleshooting.md)
+- Fixe vendors e modelos por agente: [Modelos por agente](./per-agent-models.md)
+- Termos como [plano](../getting-started/glossary.md#plan) e [workflow persistente](../getting-started/glossary.md#persistent-workflow): [Glossário](../getting-started/glossary.md)

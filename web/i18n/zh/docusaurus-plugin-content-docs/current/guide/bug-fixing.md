@@ -1,13 +1,12 @@
 ---
 title: "指南：Bug 修复"
 sidebar_label: Bug 修复
-description: 结构化的七阶段调试工作流，涵盖严重度分级、升级信号、基于源代码的诊断和修复后验证。
+description: 结构化的七步调试工作流，涵盖严重度分级、升级信号、基于源代码的诊断和修复后验证。
 ---
 
 # 指南：Bug 修复
 
-
-## 何时使用调试工作流
+## 何时使用调试工作流 {#when-to-use-the-debug-workflow}
 
 当你有一个需要诊断和修复的特定 bug 时，使用 `/debug`（或用自然语言说 "fix bug"、"fix error"、"debug"）。该工作流提供结构化、可重现的调试方法，避免常见的修复表象而非根因的陷阱。
 
@@ -15,11 +14,11 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 ---
 
-## Bug 报告模板
+## Bug 报告模板 {#bug-report-template}
 
 报告 bug 时，尽可能提供以下信息。每个字段都有助于调试工作流更快缩小搜索范围。
 
-### 必填字段
+### 必填字段 {#required-fields}
 
 | 字段 | 说明 | 示例 |
 |:-----|:-----|:-----|
@@ -28,7 +27,7 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 | **预期行为** | 应该发生什么 | 用户被删除并从列表中移除。 |
 | **实际行为** | 实际发生了什么 | 页面崩溃，显示白屏。 |
 
-### 可选字段（强烈建议提供）
+### 可选字段（强烈建议提供） {#optional-fields-highly-recommended}
 
 <!-- oma-docs:ignore-start -->
 | 字段 | 说明 | 示例 |
@@ -45,11 +44,11 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 ---
 
-## 严重度分级（P0-P3）
+## 严重度分级（P0-P3） {#severity-triage-p0-p3}
 
 严重度决定 bug 的处理方式和修复速度。
 
-### P0：严重（立即响应）
+### P0：严重（立即响应） {#p0-critical-immediate-response}
 
 **定义：** 生产环境宕机、数据正在丢失或损坏、安全漏洞正在发生。
 
@@ -63,7 +62,7 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 **调试方法：** 跳过完整模板。提供错误消息和堆栈跟踪即可。工作流立即从步骤 2（复现）开始。
 
-### P1：高（当前会话内）
+### P1：高（当前会话内） {#p1-high-same-session}
 
 **定义：** 核心功能对大量用户不可用。可能存在变通方案但长期不可接受。
 
@@ -75,9 +74,9 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 - 移动应用在 Android 14 设备上启动时崩溃。
 - 密码重置邮件未发送（邮件服务集成损坏）。
 
-**调试方法：** 完整七阶段循环。修复后建议进行 QA 审查。
+**调试方法：** 完整七步循环。修复后建议进行 QA 审查。
 
-### P2：中（当前冲刺内）
+### P2：中（当前冲刺内） {#p2-medium-this-sprint}
 
 **定义：** 功能可用但行为降级。影响可用性但不影响功能。
 
@@ -89,9 +88,9 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 - /users 端点的 API 响应时间为 8 秒（应低于 1 秒）。
 - 列表为空时分页显示"第 1 页，共 0 页"。
 
-**调试方法：** 完整七阶段循环。纳入 QA 回归测试套件。
+**调试方法：** 完整七步循环。纳入 QA 回归测试套件。
 
-### P3：低（待办）
+### P3：低（待办） {#p3-low-backlog}
 
 **定义：** 美观问题、边缘情况或轻微不便。
 
@@ -107,11 +106,17 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 ---
 
-## 七阶段调试循环详解
+## 七步调试循环详解 {#the-seven-stage-debug-loop-in-detail}
 
-`/debug` 工作流按严格顺序执行这些阶段。它使用已配置的代码智能提供商。该提供商不可用或超时时，原生搜索仅用于项目之外的路径或被忽略的路径。
+`/debug` 工作流按顺序执行这些步骤。它使用已配置的代码智能提供商。该提供商不可用或超时时，原生搜索仅用于项目之外的路径或被忽略的路径。
 
-### 步骤 1：收集错误信息
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
+
+### 步骤 1：收集错误信息 {#step-1-collect-error-information}
 
 工作流询问（或从用户接收）：
 - 错误消息和堆栈跟踪
@@ -121,15 +126,15 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 如果提示词中已提供错误消息，工作流立即进入步骤 2。
 
-### 步骤 2：复现 Bug
+### 步骤 2：复现 Bug {#step-2-reproduce-the-bug}
 
 **使用的工具：** 配置的搜索和符号工具；配置的工具不可用时，使用原生 `rg` 和限定范围的文件读取。
 
 目标是在代码库中定位错误，找到抛出异常的精确行、产生错误输出的精确函数，或导致意外行为的精确条件。
 
-此步骤将用户报告的症状（"页面崩溃了"）转化为代码库级别的定位（`src/api/users.ts:47, `deleteUser()` throws TypeError`）。
+此步骤将用户报告的症状（"页面崩溃了"）转化为代码库级别的定位（`src/api/users.ts:47, deleteUser() throws TypeError`）。
 
-### 步骤 3：诊断根因
+### 步骤 3：诊断根因 {#step-3-diagnose-root-cause}
 
 **使用的工具：** 可用时进行引用和符号导航，不可用时再进行定向的原生读取。
 
@@ -144,9 +149,9 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 | **过期状态** | React 状态未更新、缓存值未失效、闭包捕获了旧值 |
 | **缺少验证** | 用户输入未清理、API 请求体未验证、边界条件未检查 |
 
-关键纪律：诊断**根因**，而非症状。如果 `user.id` 是 undefined，问题不是"如何检查 undefined？"，而是"为什么 user 在执行路径的这个点是 undefined？"
+诊断根因，而非症状。如果 `user.id` 是 undefined，要问的是为什么 user 在执行路径的这个点是 undefined，而不是如何防范 undefined。
 
-### 步骤 4：提出最小修复方案
+### 步骤 4：提出最小修复方案 {#step-4-propose-minimal-fix}
 
 工作流展示：
 1. 已识别的根因（带代码追踪的证据）。
@@ -157,7 +162,7 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 **最小修复原则：** 修改尽可能少的行。不重构、不改善代码风格、不添加无关功能。修复应在 2 分钟内完成审查。
 
-### 步骤 5：应用修复并编写回归测试
+### 步骤 5：应用修复并编写回归测试 {#step-5-apply-fix-and-write-regression-test}
 
 此步骤执行两个操作：
 
@@ -169,13 +174,13 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 回归测试是调试工作流最重要的输出。没有它，同样的 bug 可能被任何未来变更重新引入。
 
-### 步骤 6：扫描类似模式
+### 步骤 6：扫描类似模式 {#step-6-scan-for-similar-patterns}
 
 修复应用后，工作流扫描整个代码库以查找导致 bug 的相同模式。
 
 **使用的工具：** 配置的模式搜索；不可用时，使用以根因为模式的限定范围原生搜索。
 
-例如，如果 bug 是由于访问 `user.`organization`.id` 而未检查 `organization` 是否为 null 引起的，扫描会查找所有其他无空值检查的 `organization.id` 访问。
+例如，如果 bug 是由于访问 `user.organization.id` 而未检查 `organization` 是否为 null 引起的，扫描会查找所有其他无空值检查的 `organization.id` 访问。
 
 **子智能体委派条件**：工作流在以下情况启动 `debug-investigator` 子智能体：
 - 错误跨越多个领域（例如，frontend 和 backend 都受影响）。
@@ -186,14 +191,13 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 | 供应商 | 启动方式 |
 |:-------|:---------|
-| Claude Code | 使用 `.claude/agents/`debug-investigator`.md` 的 Agent 工具 |
+| Claude Code | 使用 `.claude/agents/debug-investigator.md` 的 Agent 工具 |
 | Codex CLI | 模型协调的子智能体请求，结果为 JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / 回退 | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 所有类似的脆弱位置都会被报告。确认的实例作为同一会话的一部分修复。
 
-### 步骤 7：记录 Bug
+### 步骤 7：记录 Bug {#step-7-document-the-bug}
 
 工作流写入内存文件，包含：
 - 症状和根因
@@ -203,11 +207,11 @@ description: 结构化的七阶段调试工作流，涵盖严重度分级、升�
 
 ---
 
-## `/debug` 的提示词模板
+## `/debug` 的提示词模板 {#prompt-template-for-debug}
 
 触发调试工作流时，你可以提供结构化提示词：
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -234,7 +238,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 对于较简单的 bug，较短的提示词即可：
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -242,11 +246,11 @@ Environment: Node 22.1, PostgreSQL 16
 
 ---
 
-## 升级信号
+## 升级信号 {#escalation-signals}
 
 这些信号表明 bug 需要超出标准调试循环的升级处理：
 
-### 信号 1：同一修复尝试了两次
+### 信号 1：同一修复尝试了两次 {#signal-1-same-fix-attempted-twice}
 
 如果工作流提出修复、应用后同一错误再次出现，问题比初始诊断更深。请重新评估原因。如果其他方案值得测试，且现有的恢复预算允许，则在当前工作流（ultrawork、orchestrate、work）中使用**探索循环**：
 
@@ -254,13 +258,13 @@ Environment: Node 22.1, PostgreSQL 16
 - 隔离每个实验，并保留其基线、证据和无关的工作。
 - 选择既满足所需行为、又符合可比测量标准的方案，再验证整合后的结果。
 
-### 信号 2：多领域根因
+### 信号 2：多领域根因 {#signal-2-multi-domain-root-cause}
 
 frontend 的错误由 backend 的变更引起，而 backend 的变更又由数据库 schema 迁移引起。当根因跨越领域边界时，升级到 `/work` 或 `/orchestrate` 以引入相关领域智能体。
 
 **示例：** Frontend 显示用户名为 "undefined"。Backend 对 `user.display_name` 返回 null。数据库迁移添加了该列但现有行有 NULL 值。修复需要：数据库迁移（回填）、backend 空值处理和 frontend 回退显示。
 
-### 信号 3：缺少复现环境
+### 信号 3：缺少复现环境 {#signal-3-missing-reproduction-environment}
 
 Bug 仅在生产环境中出现，本地无法复现。信号包括：
 - 环境特定的配置差异。
@@ -269,7 +273,7 @@ Bug 仅在生产环境中出现，本地无法复现。信号包括：
 
 **行动：** 收集生产日志，请求生产监控访问权限，在尝试修复前考虑添加插桩/日志。
 
-### 信号 4：测试基础设施故障
+### 信号 4：测试基础设施故障 {#signal-4-test-infrastructure-failure}
 
 无法编写回归测试，因为测试基础设施损坏、缺失或不足。
 
@@ -277,7 +281,7 @@ Bug 仅在生产环境中出现，本地无法复现。信号包括：
 
 ---
 
-## 修复后验证清单
+## 修复后验证清单 {#post-fix-validation-checklist}
 
 应用修复和回归测试后，验证：
 
@@ -290,7 +294,7 @@ Bug 仅在生产环境中出现，本地无法复现。信号包括：
 
 ---
 
-## 完成标准
+## 完成标准 {#done-criteria}
 
 调试工作流在以下条件满足时完成：
 
@@ -301,4 +305,10 @@ Bug 仅在生产环境中出现，本地无法复现。信号包括：
 5. Bug 报告已记录在内存中，包含：症状、根因、应用的修复、变更的文件、回归测试位置和找到的类似模式。
 6. 修复后所有现有测试继续通过。
 
-相关命令、路径和标识符： `src/api/users.ts:47, deleteUser() throws TypeError`、`.claude/agents/debug-investigator.md`、`user.organization.id`。
+---
+
+## 后续步骤 {#next-steps}
+
+- 根因跨越多个领域：[多智能体项目](./multi-agent-project.md)
+- 记录或恢复修复运行：[结果与恢复](./agent-results-and-resume.md)
+- OMA 本身出现故障：[故障排查](./troubleshooting.md)

@@ -1,30 +1,101 @@
 ---
 title: "Tùy chọn CLI"
-description: "Tham chiếu đầy đủ cho mọi tùy chọn CLI, gồm cờ toàn cục, điều khiển đầu ra, tùy chọn theo lệnh và các mẫu sử dụng thực tế."
+description: "Tham chiếu các tùy chọn của oma CLI, gồm cờ toàn cục, điều khiển output, các cách viết đã đổi tên, tùy chọn theo lệnh, mã thoát và một registry được tạo từ oma describe."
 ---
 
 # Tùy chọn CLI
 
-## Tùy chọn toàn cục
+## Tra cứu nhanh
+
+| Tôi muốn... | Dùng |
+|:-------------|:----|
+| Chạy mà không có prompt | `-y` / `--yes` (cũng được chấp nhận: `OMA_YES=1`, `CI=true`); `oma update --ci` để có output thuần, không tương tác |
+| Lấy JSON | `--json`, `--output json` hoặc `OH_MY_AG_OUTPUT_FORMAT=json`. Xem [Tùy chọn output](#output-options) để biết các ngoại lệ |
+| Nhắm tới bản cài đặt toàn cục | `-g` / `--global` hoặc `OMA_INSTALL_GLOBAL=1`; `OMA_HOME` dời thư mục gốc lưu trữ toàn cục |
+| Xem trước khi thay đổi bất cứ thứ gì | `--dry-run` ở những lệnh có liệt kê flag này. Xem [Các lệnh hỗ trợ JSON](#commands-supporting-json-output) |
+| Xem các flag của một lệnh | `oma <command> --help`, `oma describe "<command>"` hoặc [registry](#complete-public-option-registry) ở cuối trang này |
+| Sửa một script bị hỏng sau khi nâng cấp | [Lệnh và tùy chọn đã đổi tên](#renamed-commands-and-options) |
+| Rẽ nhánh theo lỗi trong script | [Mã thoát](#exit-codes) |
+
+---
+
+## Tùy chọn toàn cục {#global-options}
 
 Các tùy chọn này có sẵn trên lệnh gốc `oma` / `oh-my-agent`:
 
 | Flag | Mô tả |
 |:-----|:-----------|
-| `-g, --global` | Thao tác trên bản cài đặt ở HOME (`~/.agents/`) thay vì `<cwd>/.agents/` |
-| `-y, --yes` | Bỏ qua prompt ở những lệnh có hỗ trợ xác nhận; các kiểm tra an toàn riêng của từng lệnh vẫn được áp dụng |
+| `-g, --global` | Thao tác trên bản cài đặt toàn cục của OMA (`~/.oma/.agents/` hoặc `$OMA_HOME/.agents/`) thay vì `<cwd>/.agents/` |
+| `-y, --yes` | Bỏ qua prompt ở những lệnh có hỗ trợ xác nhận; các kiểm tra an toàn riêng của từng lệnh vẫn được áp dụng. Cũng chấp nhận `OMA_YES=1` và `CI=true` |
 | `-V, --version` | Xuất số phiên bản rồi thoát |
 | `-h, --help` | Hiển thị trợ giúp cho lệnh |
 
 Mọi lệnh con cũng hỗ trợ `-h, --help` để hiển thị nội dung trợ giúp riêng của lệnh đó.
 
-`--global` đặt thư mục gốc cài đặt cho toàn bộ tiến trình, nên `install`, `update`, `link` và `uninstall` đều phân giải về `~/.agents/` bất kể bạn chạy chúng từ thư mục nào. `OMA_HOME=<abs-path>` ghi đè thiết lập này — xem [Cài đặt toàn cục](../guide/global-install.md).
+`--global` đặt thư mục gốc cài đặt cho toàn bộ tiến trình, nên `install`, `update`, `link` và `uninstall` đều phân giải về bản cài đặt toàn cục bất kể thư mục hiện tại:
+
+| Chế độ | Cách chọn | Vị trí `.agents/` |
+|:-----|:-----------------|:--------------------|
+| Project (mặc định) | không cần gì | `<cwd>/.agents/` |
+| Toàn cục | `--global` hoặc `OMA_INSTALL_GLOBAL=1` | `$OMA_HOME/.agents/` (mặc định `~/.oma/.agents/`) |
+
+`OMA_HOME=<abs-path>` thay đổi thư mục gốc lưu trữ toàn cục; giá trị này phải là đường dẫn tuyệt đối. Bản cài đặt project vẫn dùng cwd. Chạy `oma home --json` để hiển thị các vị trí đã phân giải, và `oma home migrate --dry-run` để xem trước việc di chuyển dữ liệu cũ. Xem [Cài đặt toàn cục](../guide/global-install.md).
+
+---
+
+## Lệnh và tùy chọn đã đổi tên {#renamed-commands-and-options}
+
+Đường dẫn lệnh dùng dấu cách, không dùng dấu hai chấm, và một số lệnh cũng như tùy chọn đã được đổi tên. Các cách viết cũ bị từ chối, không được giữ lại làm bí danh:
+
+- Một lệnh cũ thất bại với `Unknown command: ... Use oma --help.` hoặc `Unexpected argument for oma <group>. Use --help.`
+- Các tên nhóm đứng riêng `dashboard`, `state` và `stats` giờ in trợ giúp của nhóm thay vì chạy.
+- Một tùy chọn cũ thất bại với `Removed option <old>. Use <new>.`; các flag hành động đã bị xóa của `state` và `stats` thất bại với `Removed option <old>. Use an explicit action; see oma --help.`
+
+Chỉ `schedule:run` và `serena daemon:gc` vẫn còn được phân giải, để các mục OS scheduler do phiên bản cũ ghi vẫn tiếp tục hoạt động.
+
+| Lệnh cũ | Dùng bây giờ |
+|:------------|:--------|
+| mọi đường dẫn dấu hai chấm `a:b` (`agent:spawn`, `state:emit`, ...) | đường dẫn phân tách bằng dấu cách (`agent spawn`, `state emit`) |
+| `dashboard`, `dashboard:web` | `dashboard terminal`, `dashboard web` |
+| `hook --vendor ...` | `hook run --vendor ...` |
+| `intel run` | `intel suggest` |
+| `state`, `state:get <id>` | `state list`, `state get <id>` |
+| `state --activate` / `--archive` / `--purge` | `state activate` / `state archive` / `state purge` |
+| `state:required-decisions` | `state decisions list` |
+| `state:inject-log ... --entry <file>` | `state inject-log list`, `state inject-log get <session-id> <file>` |
+| `stats`, `stats --reset` | `stats get`, `stats reset` |
+| `memory:retry-drain` | `memory retry drain` |
+| `vault rm` | `vault delete` |
+| `search api <url>`, `search rss <url>` | `search api fetch <url>`, `search rss fetch <url>` |
+| `search api:search`, `search rss:google` | `search api search`, `search rss google` |
+| `skills audit` / `lint` / `eval` / `promotions` / `rollback` / `procedure` / `meta-optimize` / `evolution-stats` | `skill ...` (số ít; `skills matrix` giữ dạng số nhiều) |
+| `skills opt` | `skill optimize` |
+| `slide new`, `slide viewer` | `slide create`, `slide preview` |
+| `slide pdf` / `png` / `pptx` | `slide export pdf` / `png` / `pptx` |
+| `slide import-pptx`, `slide fetch-video`, `slide styles ...` | `slide import pptx`, `slide asset fetch-video`, `slide style ...` |
+| `image list-vendors`, `video list-providers` | `image vendor list`, `video provider list` |
+| `schedule:add`, `schedule:remove` | `schedule create`, `schedule delete` |
+| `verify <agent-type>` | `verify agent <agent-type>` |
+
+| Tùy chọn cũ | Dùng bây giờ |
+|:-----------|:--------|
+| `-m, --model <vendor>` | `--vendor <vendor>` |
+| `-r, --root <path>` | `--project-root <path>` |
+| `--sid`, `--session` | `--session-id <id>` |
+| `--format <fmt>` | `--output <format>` (`search media --format` không thay đổi) |
+| `--out <dir>`, `--out-dir` | `--output-dir <path>` |
+| `--out <file>`, `--out-file` | `--output-file <path>`; `--report-file <path>` trên `slide validate` và `explain validate` |
+| `--dir` | `--workspace <path>` trên các lệnh `slide`, `--output-dir <path>` trên `slide create`, `--input-dir <path>` trên `explain validate` |
+| `--max` | `--limit <n>` trên `scholar search` |
+| `--allow-external-out` | `--allow-external-output` |
+| `--timeout <seconds>`, `--timeout <ms>`, `--timeout-minutes` | `--timeout <duration>` (`30s`, `2m`). Bắt buộc có đơn vị ở những chỗ giá trị cũ tính bằng mili giây hoặc phút |
+| `--max-age-days` | `--max-age <duration>`; `--expires-after <duration>` trên `schedule create` |
 
 ---
 
 ## Tùy chọn output {#output-options}
 
-Nhiều lệnh hỗ trợ output machine-readable cho pipeline CI/CD và tự động hóa. Có ba cách yêu cầu output JSON, theo thứ tự ưu tiên:
+Nhiều lệnh hỗ trợ output machine-readable cho pipeline CI/CD và tự động hóa. Có ba cách yêu cầu output JSON.
 
 ### 1. Flag --json
 
@@ -34,7 +105,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-Flag `--json` chỉ có trên những đường dẫn lệnh cụ thể có khai báo flag này. Đừng suy ra khả năng hỗ trợ từ cả một nhóm lệnh: ví dụ, các lệnh con cấp cuối của `image`, `video` và `slide` cung cấp `--output` ở những chỗ registry liệt kê, còn `search` có luồng JSON riêng. Ma trận registry ở cuối trang này là danh sách chính thức theo từng đường dẫn lệnh.
+Flag `--json` chỉ có trên những đường dẫn lệnh có liệt kê flag này. Đừng suy ra khả năng hỗ trợ từ cả một nhóm lệnh: ví dụ, các lệnh con cấp cuối của `image`, `video` và `slide` cung cấp `--output` ở những chỗ registry liệt kê, còn `search` luôn in JSON.
 
 ### 2. Flag --output
 
@@ -43,7 +114,7 @@ oma stats get --output json
 oma doctor --output text
 ```
 
-Flag `--output` nhận `text` hoặc `json`. Flag này có cùng chức năng với `--json` nhưng còn cho phép bạn yêu cầu rõ output dạng text (hữu ích khi biến môi trường được đặt thành json nhưng bạn muốn text cho một lệnh cụ thể).
+Trên hầu hết các lệnh, `--output` nhận `text` hoặc `json`. Flag này có cùng chức năng với `--json` nhưng còn cho phép bạn yêu cầu rõ output dạng text, hữu ích khi biến môi trường được đặt thành `json`.
 
 **Kiểm tra hợp lệ:** Nếu truyền định dạng không hợp lệ, CLI báo lỗi: `Invalid output format: {value}. Expected one of text, json`.
 
@@ -56,33 +127,39 @@ oma doctor # outputs JSON
 oma retro # outputs JSON
 ```
 
-Đặt biến môi trường này thành `json` để buộc output JSON trên mọi lệnh có hỗ trợ. Chỉ `json` được nhận dạng; mọi giá trị khác đều bị bỏ qua và mặc định là text.
+Đặt biến môi trường này thành `json` để JSON trở thành mặc định trên các lệnh có hỗ trợ. Chỉ `json` được nhận dạng; mọi giá trị khác đều bị bỏ qua và output vẫn là text.
 
-**Thứ tự phân giải:** Flag `--json` > flag `--output` > biến môi trường `OH_MY_AG_OUTPUT_FORMAT` > `text` (mặc định).
+### Cách chọn định dạng
 
-### Các lệnh hỗ trợ output JSON
+Flag trên dòng lệnh được ưu tiên hơn biến môi trường. Truyền cả `--json` lẫn một `--output` không phải JSON là lỗi, không phải một quy tắc ưu tiên.
 
-| Lệnh | `--json` | `--output` | Ghi chú |
-|:--------|:---------|:----------|:------|
-| `doctor` | Có | Có | Gồm kiểm tra CLI, trạng thái MCP, trạng thái skill |
-| `stats` | Có | Có | Đối tượng số liệu đầy đủ |
-| `retro` | Có | Có | Snapshot gồm số liệu, tác giả, loại commit |
-| `cleanup` | Có | Có | Danh sách các item đã dọn |
-| `auth status` | Có | Có | Trạng thái xác thực theo từng CLI |
-| `memory init` | Có | Có | Kết quả khởi tạo |
-| `verify agent` / `verify triggers` | Có | Có | Kết quả xác minh theo từng kiểm tra |
-| `visualize` | Có | Có | Đồ thị phụ thuộc dạng JSON |
-| `describe` | Luôn là JSON | N/A | Luôn xuất JSON (lệnh introspection) |
-| `recap` | Có | Có | Lịch sử hội thoại theo công cụ/phiên |
-| `image generate` / `image doctor` / `image vendor list` | N/A | Có | Dùng `--output json`; `vendor list` là đường dẫn chuẩn để khám phá vendor |
-| `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/A | Có | Dùng `--output json` để lấy run envelope hoặc báo cáo mức sẵn sàng |
-| `explain validate` | Có | Có | Báo cáo kiểm tra artifact |
-| `explain render` / `explain patch` / `explain components` | Có | Có | Báo cáo kết xuất: file, cảnh báo, trạng thái sidecar |
-| `explain lint` | Có | Có | Cảnh báo về câu chữ |
-| `diagram resolve` / `diagram update` | Có | Có | Kết quả phân giải engine hoặc kết quả managed cache |
-| `market resolve` / `market update` | Có | Có | Trạng thái research engine được quản lý |
-| `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Có | N/A | Mỗi đường dẫn docs dùng tùy chọn báo cáo riêng |
-| `search ...` | Luôn là JSON | N/A | Mọi subcommand `search` đều stream JSON; dùng `--pretty` để con người dễ đọc |
+| Bạn truyền | Biến chưa được đặt | `OH_MY_AG_OUTPUT_FORMAT=json` |
+|:---------|:---------------|:------------------------------|
+| không truyền gì | text | JSON |
+| `--json` hoặc `--output json` | JSON | JSON |
+| `--output text` | text | text |
+| `--json --output text` | lỗi: `--json conflicts with --output. Choose one output format.` | cùng lỗi đó |
+
+Một số lệnh dùng giá trị định dạng riêng:
+
+| Lệnh | Điều khiển định dạng |
+|:---------|:---------------|
+| `search ...` | Luôn là JSON; `--pretty` chỉ thụt lề. `search providers` và `search web` cũng nhận `--json` |
+| `describe` | Luôn là JSON |
+| `image ...`, `video ...` | `--output text\|json` (mặc định `text`) |
+| `slide validate` | `--output json\|concise` (mặc định `concise`) |
+| `explain validate` | `--output concise\|json` (mặc định `concise`) hoặc `--json` |
+| `hook probe` | `--output text\|md\|json` |
+
+### Các lệnh hỗ trợ JSON {#commands-supporting-json-output}
+
+Mọi lệnh nhận `--json` hoặc `--output` đều báo `supportsJsonOutput: true` trong `oma describe`, và [registry](#complete-public-option-registry) ở cuối trang này liệt kê các flag theo từng đường dẫn. Các lệnh luôn in JSON mà không cần flag (`describe` và hầu hết các subcommand `search`) không được đánh dấu. Để liệt kê các đường dẫn này từ CLI:
+
+```bash
+oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .path'
+```
+
+Dùng `select(.supportsDryRun? == true)` theo cách tương tự để tìm các lệnh có `--dry-run`.
 
 ---
 
@@ -90,7 +167,7 @@ oma retro # outputs JSON
 
 ### install
 
-```
+```text
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
@@ -98,8 +175,8 @@ Trình cài đặt tương tác ghi các thiết lập provider đã chọn vào
 
 ### doctor
 
-```
-oma doctor [--json] [--output <format>] [--profile]
+```text
+oma doctor [--json] [--output <format>] [--profile] [--heal-check <agentType>]
 ```
 
 | Flag | Mô tả | Mặc định |
@@ -107,10 +184,13 @@ oma doctor [--json] [--output <format>] [--profile]
 | `--json` | Xuất JSON thay vì văn bản đã định dạng. | `false` |
 | `--output <format>` | Định dạng output tường minh (`text` hoặc `json`). Xem [Tùy chọn output](#output-options). | `text` |
 | `--profile` | Hiển thị ma trận sức khỏe profile (slug model đã phân giải, CLI và trạng thái xác thực của từng agent theo `model_preset` đang hoạt động và các override `agents:`). Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md). | `false` |
+| `--heal-check <agentType>` | Bao gồm kiểm tra cổng tự phục hồi (self-healing gate) cho một agent. | |
+
+Với `--json`, báo cáo có các trường cấp cao nhất `ok` và `issues`, và `doctor` thoát với mã `1` khi `issues` lớn hơn 0.
 
 ### update
 
-```
+```text
 oma update [-f | --force] [--with-new-skills] [--ci] [-y | --yes] [--all] [--vendor <vendors>]
 oma update mcp [-y | --yes] [--ci] [--all] [--vendor <vendors>]
 ```
@@ -146,38 +226,44 @@ oma update mcp [-y | --yes] [--ci] [--all] [--vendor <vendors>]
 
 ### stats
 
-```
-oma stats get [--json] [--output <format>]
-oma stats reset
+```text
+oma stats get [--json | --output <format>]
+oma stats reset [--json | --output <format>]
 ```
 
 | Flag | Mô tả | Mặc định |
 |:-----|:-----------|:--------|
-| `--json` | Xuất kết quả reset dưới dạng JSON. | `false` |
+| `--json` | Xuất JSON. `stats get` in đối tượng số liệu; `stats reset` in `{"reset":true}`. | `false` |
 | `--output <format>` | Xuất `text` hoặc `json`. | `text` |
 
-`oma stats reset` là lệnh reset. Cách viết cũ `oma stats get --reset` không còn thuộc bộ lệnh public hiện tại.
+`oma stats reset` là lệnh reset; `oma stats get --reset` thất bại với `Removed option --reset`.
+
+:::note
+`stats get` không chỉ đọc dữ liệu. Mỗi lần gọi được tính là một session và cộng diff của 10 commit gần nhất vào các bộ đếm file và dòng tích lũy trong `.agents/state/metrics.json`, vì vậy đừng poll lệnh này.
+:::
 
 ### retro
 
-```
+```text
 oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 ```
 
 | Flag | Mô tả | Mặc định |
 |:-----|:-----------|:--------|
-| `--interactive` | Chế độ tương tác với nhập liệu thủ công. Hỏi thêm ngữ cảnh không thể thu thập từ git (ví dụ: tâm trạng, sự kiện đáng chú ý). | `false` |
+| `--interactive` | Luồng nhập có hướng dẫn kiểu cũ: hỏi bạn đã hoàn thành những gì, các bài học chính và bước tiếp theo. Bỏ qua window, `--compare` và `--json`. | `false` |
 | `--compare` | So sánh khoảng thời gian hiện tại với khoảng trước đó có cùng độ dài. Hiển thị số liệu chênh lệch (ví dụ: commit +12, dòng thêm -340). | `false` |
 
-**Định dạng đối số window:**
+**Định dạng đối số window:** một số theo sau là `h`, `d` hoặc `w`.
+- `24h`: 24 giờ
 - `7d`: 7 ngày
 - `2w`: 2 tuần
-- `1m`: 1 tháng
 - Bỏ trống để dùng mặc định (7 ngày)
+
+Không hỗ trợ đơn vị tháng: `oma retro 1m` thất bại với `Invalid window: 1m. Use: 24h, 7d, 14d, 30d, 2w`.
 
 ### cleanup
 
-```
+```text
 oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 ```
 
@@ -193,7 +279,7 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 
 ### agent spawn
 
-```
+```text
 oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
@@ -202,15 +288,14 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | `--resumed-from` | — | Liên kết lần retry với run ID trước đó. | |
 | `--fallback-vendors` | — | Chuỗi vendor fallback tường minh, có thứ tự, phân tách bằng dấu phẩy. | |
 | `--task-id` | — | Task ID từ session plan. | Agent ID |
-| `--vendor` | — | Ghi đè vendor CLI. Runtime chấp nhận `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` hoặc `pi`. | Phân giải từ config |
+| `--vendor` | — | Ghi đè vendor CLI. `--help` liệt kê `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` và `pi`. | Phân giải từ config |
 | `--workspace` | `-w` | Thư mục làm việc cho agent. Nếu bỏ qua hoặc đặt thành `.`, CLI tự phát hiện workspace từ các file cấu hình monorepo (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Tự phát hiện hoặc `.` |
 | `--isolation` | — | Chế độ cô lập: `worktree` tạo một git worktree cho mỗi lần spawn; mặc định là `none`. | `none` |
 | `--read-only` | — | Giới hạn agent được spawn ở các tool không phá hủy và tắt các flag tự động duyệt. | `false` |
 
 **Kiểm tra hợp lệ:**
-- `agent-id` phải là một trong: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
-- `session-id` không được chứa `..`, `?`, `#`, `%` hoặc ký tự điều khiển.
-- `vendor` phải là một trong: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`.
+- `agent-id` và `session-id` không được chứa `..`, `?`, `#`, `%` hoặc ký tự điều khiển. `agent spawn` không có danh sách agent ID cố định; việc định tuyến model và vendor nhận diện `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra` và `explore`, cùng các bí danh như `backend-engineer`, `qa-reviewer` và `research-explorer`.
+- `--vendor` phải là một vendor ID của oma: `antigravity`, `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `grok`, `hermes`, `kimi`, `kiro`, `opencode`, `pi`, `qwen` hoặc `zcode`. Bảng bên dưới bao quát tám vendor mà `--help` nêu tên.
 
 **Hành vi riêng theo vendor:**
 
@@ -231,30 +316,53 @@ Codex giữ nguyên sandbox workspace-write của nó. oma bật quyền truy c�
 
 ### agent status
 
-```
-oma agent status <session-id> [agent-ids...] [-r <root>]
+```text
+oma agent status <session-id> [agent-ids...] [--project-root <path>]
 ```
 
-| Flag | Viết tắt | Mô tả | Mặc định |
-|:-----|:------|:-----------|:--------|
-| `--root` | `-r` | Đường dẫn gốc để tìm file memory (`.agents/state/memories/result-{agent}.md`) và file PID. | Thư mục làm việc hiện tại |
+| Flag | Mô tả | Mặc định |
+|:-----|:-----------|:--------|
+| `--project-root <path>` | Project có agent-run registry và các file `.agents/state/memories/result-{agent}.md` được đọc. `-r` và `--root` đã bị xóa và thất bại với `Removed option -r. Use --project-root.` | Thư mục làm việc hiện tại |
 
-**Logic xác định trạng thái:**
-1. Nếu `.agents/state/memories/result-{agent}.md` tồn tại: đọc header `## Status:`. Nếu không có header, báo `completed`.
-2. Nếu file PID tồn tại tại `/tmp/subagent-{session-id}-{agent}.pid`: kiểm tra PID còn sống hay không. Báo `running` nếu còn sống, `crashed` nếu đã chết.
-3. Nếu không có file nào tồn tại: báo `crashed`.
+Lệnh in một dòng `{agent-id}:{status}` cho mỗi agent được yêu cầu. Với mỗi agent, lệnh dùng nguồn đầu tiên tồn tại:
+
+```mermaid
+flowchart TD
+  start["agent status SESSION AGENT"] --> reg{"Run for this session and agent in the agent-run registry?"}
+  reg -->|yes| regStatus["Registry status, downgraded to failed or stale"]
+  reg -->|no| result{"result-AGENT.md exists?"}
+  result -->|yes| legacy["legacy-STATUS, or unverified without a header"]
+  result -->|no| statusFile{"subagent-SESSION-AGENT.status in the OS temp dir?"}
+  statusFile -->|yes| exited["legacy-completed, or the status in the file"]
+  statusFile -->|no| pidFile{"subagent-SESSION-AGENT.pid alive?"}
+  pidFile -->|yes| running["running"]
+  pidFile -->|"no, or no PID file"| crashed["crashed"]
+```
+
+| Trạng thái | Ý nghĩa |
+|:-------|:--------|
+| `running`, `completed`, `partial`, `blocked`, `failed` | Trạng thái được ghi trong agent-run registry |
+| `failed` | Cũng được báo khi một run đã đăng ký đang ở `running` nhưng tiến trình runner của nó không còn |
+| `stale` | Run đã đăng ký ở trạng thái `completed`, nhưng evidence kết quả của nó không còn hợp lệ |
+| `legacy-<status>` | Không có run đã đăng ký; `result-{agent}.md` có header `## Status: <status>` |
+| `unverified` | Không có run đã đăng ký; `result-{agent}.md` không có header trạng thái |
+| `legacy-completed` | Không có run hay file kết quả; file `.status` của session ghi `completed` (mọi giá trị khác được in nguyên trạng) |
+| `crashed` | Không tìm thấy gì, hoặc file PID cũ trỏ tới một tiến trình đã chết |
+
+Xem [Kết quả agent và resume](../guide/agent-results-and-resume.md) để biết cách các run được ghi lại.
 
 ### agent parallel
 
-```
-oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
+```text
+oma agent parallel [tasks...] [--session-id <id>] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flag | Viết tắt | Mô tả | Mặc định |
 |:-----|:------|:-----------|:--------|
+| `--session-id <id>` | — | Session ID cho mọi run được spawn. Truyền cùng ID này cho `oma agent status`. | Tên thư mục run, `parallel-<timestamp>-<suffix>` |
 | `--vendor` | — | Ghi đè vendor CLI áp dụng cho mọi agent được spawn. | Phân giải theo từng agent từ config |
 | `--inline` | `-i` | Diễn giải đối số task thành chuỗi `agent:task[:workspace]` thay vì đường dẫn file. | `false` |
-| `--no-wait` | | Chế độ nền. Khởi động mọi agent và trả về ngay, không chờ hoàn tất. Danh sách PID và log được lưu vào `.agents/results/parallel-{timestamp}/`. | `false` (chờ hoàn tất) |
+| `--no-wait` | | Chế độ nền. Khởi động mọi agent và trả về ngay, không chờ hoàn tất. Danh sách PID và log được lưu vào `.agents/results/parallel-<timestamp>-<suffix>/`. | `false` (chờ hoàn tất) |
 
 **Định dạng task inline:** `agent:task` hoặc `agent:task:workspace`
 - Workspace được phát hiện bằng cách kiểm tra đoạn cuối cùng (phân tách bởi dấu hai chấm) có bắt đầu bằng `./`, `/` hoặc bằng đúng `.` hay không.
@@ -262,57 +370,59 @@ oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 - Ví dụ: `frontend:Build login page` -- agent=frontend, task="Build login page", workspace=tự phát hiện.
 
 **Định dạng file task YAML:**
+
 ```yaml
 tasks:
-- agent: backend
-task: "Implement user API"
-workspace: ./api # optional
-- agent: frontend
-task: "Build user dashboard"
+  - id: api            # optional; default <agent>-<index>
+    agent: backend
+    task: "Implement user API"
+    workspace: ./api   # optional; auto-detected when omitted
+  - agent: frontend
+    task: "Build user dashboard"
 ```
 
 ### recap
 
-```
+```text
 oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
 ```
 
 | Flag | Mô tả | Mặc định |
 |:-----|:-----------|:--------|
-| `--window <period>` | Khoảng thời gian: `1d`, `3d`, `7d`, `2w`, `30d`. Bị bỏ qua khi đặt `--date`. | `1d` |
+| `--window <period>` | Khoảng thời gian dạng `<n>h`, `<n>d` hoặc `<n>w` (ví dụ `1d`, `3d`, `7d`, `2w`, `30d`). Giá trị trên 30 ngày bị giới hạn ở 30 ngày kèm cảnh báo. Bị bỏ qua khi đặt `--date`. | `1d` |
 | `--date <date>` | Ngày cụ thể (`YYYY-MM-DD`). Được ưu tiên hơn `--window`. | |
-| `--tool <tools>` | Lọc phiên theo công cụ. Phân tách bằng dấu phẩy: `grok`, `claude`, `codex`, `qwen`, `cursor`, `antigravity`. | mọi công cụ |
+| `--tool <tools>` | Lọc session theo công cụ. Phân tách bằng dấu phẩy: `antigravity`, `claude`, `codex`, `cursor`, `gemini`, `grok`, `qwen`. | mọi công cụ |
 | `--top <n>` | Chỉ hiển thị N project/chủ đề hàng đầu trong phần tóm tắt. | không giới hạn |
-| `--sort <metric>` | Sắp xếp phiên theo `count` hoặc `duration`. | `count` |
-| `--mermaid` | Xuất biểu đồ Gantt Mermaid thay cho phần tóm tắt mặc định. | `false` |
-| `--graph` | Mở đồ thị tương tác trong trình duyệt. Không dùng chung được với `--mermaid`. | `false` |
-
-> **Lưu ý:** Việc tạo file rule cho vendor (ví dụ `.cursor/rules`) từ các skill đã cài do [`oma link <vendor>`](./commands.md#link) đảm nhận, không phải một lệnh `export` riêng.
+| `--sort <metric>` | Sắp xếp session theo `count` hoặc `duration`. | `count` |
+| `--mermaid` | Xuất biểu đồ Gantt Mermaid thay cho phần tóm tắt mặc định. `--json` được ưu tiên hơn. | `false` |
+| `--graph` | Mở đồ thị tương tác trong web dashboard (`/recap`). Được ưu tiên hơn `--mermaid` và `--json`. | `false` |
 
 ### search
 
-```
+```text
 oma search <subcommand> [...]
 ```
 
-Nhóm `search` có sẵn output JSON riêng (không có flag `--json` / `--output`). Dùng `--pretty` trên các subcommand URL/query để in kết quả dễ đọc, và dựa vào các tùy chọn riêng của từng subcommand bên dưới:
+Mọi subcommand `search` đều ghi JSON ra stdout mà không cần flag nào; `providers` và `web` cũng nhận `--json`. Không subcommand nào nhận `--output`. `--pretty` chỉ thay đổi cách thụt lề.
 
 | Subcommand | Tùy chọn đáng chú ý |
 |:-----------|:---------------|
-| `fetch <url>` | `--only`, `--skip`, `--include-archive`, `--timeout`, `--locale`, `--pretty` |
-| `api <url>` / `meta <url>` / `rss <url>` / `archive <url>` | `--timeout`, `--locale`, `--pretty` |
-| `api:search <query>` | `--platforms <list>`, `--timeout`, `--locale`, `--pretty` |
-| `rss:google <query>` | `--locale` (mặc định `en-US`) |
-| `media <url>` | `--subs`, `--sub-lang <list>` (mặc định `en`), `--format <spec>`, `--timeout` (mặc định `30`), `--pretty` |
+| `providers` | `--json`, `--pretty` |
+| `web <query>` | `--provider <id>`, `--limit <n>` (mặc định `10`), `--timeout <duration>` (mặc định `15s`), `--json`, `--pretty` |
+| `fetch <url>` | `--only`, `--skip`, `--include-archive`, `--timeout <duration>` (mặc định `15s`), `--locale`, `--pretty` |
+| `meta <url>` / `archive <url>` / `api fetch <url>` / `rss fetch <url>` | `--timeout <duration>` (mặc định `15s`), `--locale` (mặc định `en-US,en;q=0.9`), `--pretty` |
+| `api search <query>` | `--platforms <list>`, `--timeout <duration>`, `--locale`, `--pretty` |
+| `rss google <query>` | `--locale` (mặc định `en-US`) |
+| `media <url>` | `--subs`, `--sub-lang <list>` (mặc định `en`), `--format <spec>`, `--timeout <duration>` (mặc định `30s`), `--pretty` |
 | `code <query>` | `--host <github\|gitlab>` (mặc định `github`), `--language`, `--repo`, `--limit` (mặc định `20`), `--pretty` |
 | `trust <domain>` | `--pretty` |
 | `doctor` | không có (chạy kiểm tra binary cho Chrome / `python3 curl_cffi` / `yt-dlp` / `gh`) |
 
-**Mã thoát:** `0` ok, `1` error, `2` blocked, `3` not-found, `4` invalid-input, `5` auth-required, `6` timeout. Dùng các mã này trong script để phân biệt trường hợp bị chặn tạm thời với input không hợp lệ.
+`search` dùng thang mã thoát chung; xem [Mã thoát](#exit-codes).
 
 ### image
 
-```
+```text
 oma image <subcommand> [...]
 ```
 
@@ -336,11 +446,11 @@ oma image <subcommand> [...]
 | `--dry-run` | | In kế hoạch và ước tính chi phí; không thực thi. | `false` |
 | `--output <format>` | | `text` \| `json`. | `text` |
 
-`image doctor` và `image vendor list` chấp nhận `--output <text|json>`. `image list-vendors` vẫn là một bí danh trợ giúp; `vendor list` là đường dẫn chuẩn để khám phá vendor.
+`image doctor` và `image vendor list` chấp nhận `--output <text|json>`. Dùng `image vendor list` để khám phá vendor; cách viết cũ `image list-vendors` sẽ thất bại.
 
 ### video
 
-```
+```text
 oma video generate <brief...> [options]
 oma video doctor [--output <format>] [--install|--upgrade|--install-mpt|--install-strudel]
 oma video compose <run-dir> [--output <format>] [--refresh] [--offline]
@@ -354,7 +464,7 @@ oma video provider list [--output <format>]
 
 ### memory init
 
-```
+```text
 oma memory init [--json] [--output <format>] [--force]
 ```
 
@@ -364,18 +474,47 @@ oma memory init [--json] [--output <format>] [--force]
 
 ### verify
 
-```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+```text
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
 | Flag | Viết tắt | Mô tả | Mặc định |
 |:-----|:------|:-----------|:--------|
 | `--workspace` | `-w` | Đường dẫn tới thư mục workspace cần xác minh. | Thư mục làm việc hiện tại |
+| `--session-id <id>` | | Chọn session plan và các báo cáo. Bắt buộc khi có nhiều plan, trừ khi một run receipt xác định được session. | |
+| `--task-id <id>` | | Chọn phạm vi và báo cáo của một task. Cần `--session-id` hoặc `--run-id`. | |
+| `--run-id <id>` | | Chọn chính xác báo cáo của một run. Suy ra session/task từ receipt local; nếu không có receipt, hãy truyền rõ cả hai ID. | |
 
 **Loại agent:** `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 
-`verify triggers` đo độ chính xác của keyword detector trên một corpus đã gắn nhãn. Các ngưỡng phần trăm đóng vai trò cổng kiểm tra; dùng output JSON khi job CI cần xem từng phát hiện riêng lẻ. Cách viết cũ `oma verify <agent-type>` chỉ là dạng trợ giúp để tương thích; `verify agent` mới là đường dẫn đã đăng ký.
+`verify triggers` đo độ chính xác của keyword detector trên một corpus đã gắn nhãn. Các ngưỡng phần trăm đóng vai trò cổng kiểm tra; dùng output JSON khi job CI cần xem từng phát hiện riêng lẻ. Cách viết cũ `oma verify <agent-type>` sẽ thất bại; hãy dùng `verify agent <agent-type>`.
+
+---
+
+## Mã thoát {#exit-codes}
+
+**Thang chung (`image`, `video`, `search`):**
+
+| Mã | Ý nghĩa |
+|:-----|:--------|
+| `0` | thành công |
+| `1` | lỗi chung |
+| `2` | bị chặn, hoặc provider từ chối vì lý do an toàn |
+| `3` | không tìm thấy |
+| `4` | input không hợp lệ |
+| `5` | cần xác thực, hoặc binary của provider chưa được cài |
+| `6` | hết thời gian chờ (timeout) |
+
+**Theo từng lệnh:**
+
+| Lệnh | Mã |
+|:--------|:------|
+| `doctor --json` | `0` không có vấn đề, `1` có một hoặc nhiều vấn đề |
+| `verify agent` | `0` mọi kiểm tra đều đạt, `1` một kiểm tra thất bại hoặc loại agent không hợp lệ, `2` không tìm thấy workspace |
+| `verify triggers` | `0` nằm trong ngưỡng, `1` vượt quá một ngưỡng |
+| `docs verify` | `1` tìm thấy tham chiếu hỏng |
+| `vault get` | `1` tên key không hợp lệ, `2` không có mục đó |
 
 ---
 
@@ -384,28 +523,22 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 ### Pipeline CI: cập nhật và xác minh
 
 ```bash
-# Update in CI mode, then run doctor to verify installation
+# Update in CI mode, then fail the job when doctor reports any issue
 oma update --ci
-oma doctor --json | jq '.healthy'
-```
-
-### Thu thập số liệu tự động
-
-```bash
-# Collect metrics as JSON and pipe to a monitoring system
-export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma doctor --json | jq -e '.ok' > /dev/null
 ```
 
 ### Thực thi agent hàng loạt kèm giám sát trạng thái
 
 ```bash
-# Start agents in background
-oma agent parallel tasks.yaml --no-wait
-
-# Check status periodically
+# Choose the session ID first and pass it to both commands
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
+oma agent parallel tasks.yaml --session-id "$SESSION_ID" --no-wait
+
+# Check status every 5 seconds
 watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
+# Without `watch` (stock macOS), loop instead:
+# while sleep 5; do oma agent status "$SESSION_ID" backend frontend mobile; done
 ```
 
 ### Dọn dẹp trong CI sau khi chạy test
@@ -429,27 +562,26 @@ oma verify agent mobile -w ./apps/mobile
 ```bash
 # Two-week sprint retro with comparison to previous sprint
 oma retro 2w --compare
-
-# Save as JSON for sprint report
-oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
 ```
 
 ### Script kiểm tra sức khỏe đầy đủ
 
 ```bash
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 echo "=== oh-my-agent Health Check ==="
 
+report="$(mktemp)"
+# doctor exits 1 when it finds issues; keep the report and continue
+oma doctor --json > "$report" || true
+
 # Check CLI installations
-oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
+jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version // "unknown"))" else "MISSING" end)"' "$report"
+jq -r '"Issues: \(.issues)"' "$report"
 
-# Check auth status
-oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
-
-# Check metrics
-oma stats get --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+# Check auth status (an object of booleans keyed by github and each vendor ID)
+oma auth status --json | jq -r 'to_entries[] | "\(.key): \(if .value then "authenticated" else "not authenticated" end)"'
 
 echo "=== Done ==="
 ```
@@ -463,211 +595,208 @@ oma describe | jq '.command.subcommands[] | {name, description}'
 # Get details about a specific command
 oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 ```
-## Registry tùy chọn public đầy đủ
 
-Ma trận sau được tạo từ registry lệnh công khai đã được commit trong kho mã. Đây là chỉ mục bao phủ của trang này: hàng có `—` không có tùy chọn dành riêng cho lệnh, còn các cờ gốc dùng chung và bí danh trợ giúp được mô tả ở trên. Chạy `oma describe "<path>"` để xem trợ giúp thời gian chạy khi cú pháp giá trị thay đổi.
+---
 
-| Đường dẫn lệnh | Tùy chọn public | Mục đích |
-|---|---|---|
-| `install` | `--web-search <provider>, --code-intelligence <provider>, --semantic-memory <provider>, --honcho-url <url>, --honcho-workspace <id>` | Cài đặt skill và cấu hình của oh-my-agent |
-| `describe` | `—` | Mô tả các lệnh CLI dưới dạng JSON để introspection lúc runtime |
-| `uninstall` | `--dry-run, -y, --yes` | Xóa các file do oh-my-agent sở hữu (giữ lại oma-config.yaml, mcp.json và các skill do người dùng tự viết) |
-| `update` | `-f, --force, --with-new-skills, --ci, -y, --yes, --all, --vendor <vendors>` | Cập nhật skill lên phiên bản mới nhất từ registry |
-| `update mcp` | `-y, --yes, --ci, --all, --vendor <vendors>` | Chọn browser MCP server (Aside, Chrome DevTools, Firefox DevTools) |
-| `link` | `--dry-run` | Tạo lại các file vendor (.claude/, .cursor/, v.v.) từ SSOT .agents/ |
-| `intel` | `—` | Pipeline product intelligence: nghiên cứu, khoảng trống, PRD, đề xuất issue |
-| `intel suggest` | `--config <path>, --topic <topic>, --target <target>, --repos <repos>, --since <window>, --last-commits <n>, --output-dir <path>, --dry-run, --fixture <path>, --create-issue, --base-repo <owner/name>, --yes, --json, --output <format>` | Đề xuất công việc sản phẩm có giá trị cao từ market/code intelligence |
-| `market` | `—` | Nghiên cứu thị trường từ tín hiệu cộng đồng qua engine last30days luôn ở bản mới nhất |
-| `market detect-trap` | `--force` | Kiểm tra preflight để từ chối các truy vấn keyword-trap |
-| `market resolve` | `--refresh, --offline, --json, --output <format>` | Báo cáo engine last30days mà oma sẽ chạy (bản mới nhất được quản lý, bản pin hoặc bản sao local) và Python mà engine đó dùng |
-| `market update` | `--json, --output <format>` | Tải release last30days mới nhất vào managed cache của oma (~/.cache/oma-market/last30days) |
-| `market run` | `—` | Chạy engine last30days (scripts/last30days.py) với các đối số đã cho; --save-dir mặc định lấy từ market.save_dir |
-| `doctor` | `--profile, --heal-check <agentType>, --json, --output <format>` | Kiểm tra cài đặt CLI, cấu hình MCP và trạng thái skill |
-| `profile` | `—` | Quản lý các profile thực thi OMA local |
-| `profile list` | `--json, --output <format>` | Liệt kê các profile local |
-| `profile show` | `--json, --output <format>` | Hiển thị một profile local |
-| `profile create` | `--json, --output <format>` | Tạo một profile local |
-| `profile use` | `--shell <shell>, --json, --output <format>` | In mã shell để kích hoạt một profile hiện có |
-| `profile run` | `—` | Chạy một lệnh với OMA_PROFILE được đặt cho tiến trình con |
-| `retro` | `--interactive, --compare, --json, --output <format>` | Retrospective kỹ thuật kèm số liệu và xu hướng |
-| `recap` | `--window <period>, --date <date>, --tool <tools>, --top <n>, --sort <metric>, --mermaid, --graph, --json, --output <format>` | Tóm tắt lịch sử hội thoại của các công cụ AI |
-| `docs` | `—` | Phát hiện drift tài liệu: xác minh tham chiếu và đề xuất cập nhật cho các tài liệu bị diff ảnh hưởng |
-| `docs verify` | `--json, --report-file <path>, --no-urls, --urls-sync` | Trích xuất tham chiếu L2 từ tài liệu và báo cáo các đích bị hỏng. Tạo lại docs/generated/doc-refs.json như một side effect. Exit code: 0 = sạch, 1 = có tham chiếu hỏng. Việc kiểm tra liên kết URL được giao cho `lychee` (cài đặt: brew install lychee). |
-| `docs sync` | `--json` | Với một git diff, liệt kê các tài liệu tham chiếu đến các file đã thay đổi. Host LLM (skill runtime) được kỳ vọng sẽ đọc danh sách này cùng với diff và đề xuất patch theo contract của SKILL.md — CLI không bao giờ tự động sửa tài liệu. Khoảng diff mặc định: --cached (các thay đổi đã stage), fallback về HEAD~1..HEAD. |
-| `docs i18n` | `--json, --min-severity <level>` | Phát hiện drift giữa tài liệu nguồn tiếng Anh (web/docs) và bản dịch i18n (web/i18n/{lang}/...). Xuất các tín hiệu cấu trúc (số dòng, số heading, timestamp của commit gần nhất) cho từng cặp để host LLM quyết định bản dịch nào cần patch diff-sync. CLI không bao giờ sửa bản dịch. |
-| `docs lint` | `--json, --locales <list>` | Lint tài liệu đã dịch để tìm anti-pattern ở mức nội dung (em-dash trong ngôn ngữ đích CJK, v.v.). Bổ sung cho `oma docs i18n` (drift cấu trúc) bằng các kiểm tra style/anti-pattern theo oma-translation SKILL.md § Stage 4. CLI không bao giờ tự sửa; nó chỉ báo cáo vấn đề để host LLM cấu trúc lại. |
-| `emit` | `--target <target>, --output-dir <path>, --json, --output <format>` | Xuất các artifact tuân thủ chuẩn từ SSOT .agents/ (Agent Skills spec, gói Agent Plugins, Claude Code plugin marketplace, AGENTS.md, tài liệu vendor trong phạm vi cli/) |
-| `cleanup` | `--dry-run, -y, --yes, --json, --output <format>` | Dọn các tiến trình subagent mồ côi và file tạm |
-| `bridge` | `--context <name>` | Proxy MCP stdio tới một Serena server dùng chung theo từng project (khởi động khi cần) |
-| `verify` | `—` | Xác minh output của subagent (backend/frontend/mobile/qa/debug/pm), hoặc đo độ chính xác trigger của keyword detector |
-| `verify agent` | `-w, --workspace <path>, --json, --output <format>` |  |
-| `verify triggers` | `--corpus <path>, --max-false-fire <pct>, --max-missed-fire <pct>, --json, --output <format>` | Đo độ chính xác trigger của keyword detector trên một corpus prompt đã gắn nhãn |
-| `vault` | `—` | Quản lý API key + secret trong keychain của hệ điều hành (macOS Keychain / Linux Secret Service / Windows Credential Manager) |
-| `vault store` | `--value <value>` | Lưu một secret dưới tên <name> (prompt nhập mật khẩu tương tác) |
-| `vault get` | `—` | In giá trị đã lưu ra stdout (dùng cho: export KEY=$(oma vault get <name>)) |
-| `vault list` | `--json` | Liệt kê tên các secret đã lưu (không bao giờ hiển thị giá trị) |
-| `vault delete` | `—` | Xóa một secret khỏi keychain và index |
-| `star` | `—` | Gắn sao cho oh-my-agent trên GitHub |
-| `visualize` | `--focus <node-or-path>, --affected <paths...>, --json, --output <format>` | Trực quan hóa cấu trúc project dưới dạng đồ thị phụ thuộc |
-| `search` | `—` | Các primitive tìm kiếm cơ học: fetch, meta, rss, media, trust, code |
-| `search providers` | `--json, --pretty` | Liệt kê các search provider đã đăng ký và kiểm tra lựa chọn mà không gọi mạng |
-| `search web` | `--provider <id>, --limit <n>, --timeout <duration>, --json, --pretty` | Tìm kiếm bằng web provider đã chọn (Brave có CLI adapter) |
-| `search fetch` | `--only <strategies>, --skip <strategies>, --include-archive, --timeout <duration>, --locale <value>, --pretty` | Fetch URL qua pipeline chiến lược tự động leo thang |
-| `search meta` | `--timeout <duration>, --locale <value>, --pretty` | Trích xuất OGP / JSON-LD / Schema.org từ URL |
-| `search media` | `--subs, --sub-lang <list>, --format <spec>, --timeout <duration>, --pretty` | Trích xuất metadata media qua yt-dlp (1858 trang web) |
-| `search archive` | `--timeout <duration>, --locale <value>, --pretty` | Fetch qua AMP / archive.today / Wayback |
-| `search trust` | `--pretty` | Xác định mức tin cậy / điểm tin cậy của một domain |
-| `search code` | `--host <github\|gitlab>, --language <lang>, --repo <owner/repo>, --limit <n>, --pretty` | Tìm kiếm mã nguồn qua gh / glab |
-| `search doctor` | `—` | Kiểm tra các dependency (Chrome, python3 curl_cffi, yt-dlp, gh) |
-| `search api` | `—` |  |
-| `search api fetch` | `--timeout <duration>, --locale <value>, --pretty` | Fetch qua API của nền tảng khớp (Phase 0) |
-| `search api search` | `--platforms <list>, --timeout <duration>, --locale <value>, --pretty` | Tìm kiếm keyword dạng fan-out trên các nền tảng có hỗ trợ |
-| `search rss` | `—` |  |
-| `search rss fetch` | `--timeout <duration>, --locale <value>, --pretty` | Tìm và phân tích feed RSS/Atom cho một URL |
-| `search rss google` | `--locale <value>` | Tạo URL RSS Google News cho một truy vấn |
-| `harness` | `—` | Đánh giá các overlay harness OMA trên các task repository được cô lập |
-| `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | So sánh một overlay .agents ứng viên với baseline hiện tại |
-| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | Dẫn xuất fixture hồi quy skill từ một sự cố đã ghi nhận |
-| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | Thăng cấp các sự cố và tối ưu các skill bị ảnh hưởng |
-| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | Bật chu trình feedback theo lịch có ngân sách của project; mode là apply hoặc propose |
-| `harness evolution status` | `--json, --output <format>` | Hiển thị cấu hình, lịch, công việc đang chờ, xung đột và chu trình gần nhất |
-| `harness evolution disable` | `--json, --output <format>` | Tắt chu trình feedback theo lịch của project |
-| `harness evolution run` | `--json, --output <format>` | Chạy một chu trình theo mode và ngân sách đã lưu của project đang được bật |
-| `slide` | `—` | Bộ công cụ trình chiếu HTML: scaffold, validate, export và chỉnh sửa slide deck 1920×1080 |
-| `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | Cổng chất lượng hình học: render slide qua puppeteer-core và kiểm tra overflow/overlap/font-size |
-| `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | Gộp các file theo từng slide thành một file .html tự chứa duy nhất để bàn giao |
-| `slide edit` | `--workspace <path>, --port <n>` | Mở trình chỉnh sửa bbox trên browser (server node:http tại 127.0.0.1, dispatch tới oma agent runner) |
-| `slide doctor` | `—` | Kiểm tra các dependency bắt buộc (chrome, puppeteer-core) và tùy chọn (yt-dlp, pptxgenjs) |
-| `slide create` | `--output-dir <path>, --force` | Scaffold một thư mục làm việc slide mới với HTML khởi đầu, assets/ và meta.json |
-| `slide preview` | `--workspace <path>` | Tạo viewer.html (web component deck-stage + panel speaker notes, bật/tắt bằng `n`) |
-| `slide export` | `—` |  |
-| `slide export pdf` | `--workspace <path>, --output-file <path>, --mode <mode>` | Export slide sang PDF qua puppeteer-core |
-| `slide export png` | `--workspace <path>, --output-dir <path>, --resolution <res>` | Export từng slide thành ảnh PNG qua puppeteer-core |
-| `slide export pptx` | `--workspace <path>, --output-file <path>` | [THỬ NGHIỆM] Export sang PPTX qua pptxgenjs (dựa trên raster, gradient bị raster hóa) |
-| `slide import` | `—` |  |
-| `slide import pptx` | `--workspace <path>` | Import một file .pptx thành các slide fragment qua officeparser (bunx, best-effort) |
-| `slide asset` | `—` |  |
-| `slide asset fetch-video` | `--workspace <path>, --output-name <name>` | Tải video qua yt-dlp vào ./assets/ và in ref local |
-| `slide style` | `—` | Duyệt và tải các preset style thiết kế |
-| `slide style list` | `—` | Liệt kê các preset style có sẵn (vendored + index bold-template) |
-| `slide style preview` | `—` | Xem trước một preset style trong terminal |
-| `slide style get` | `--refresh` | Tải design.md của một bold template (luôn lấy main mới nhất; được cache để fallback khi offline) |
-| `scholar` | `—` | Sidecar bài báo Knows.academy (fallback OpenAlex + Semantic Scholar) |
-| `scholar search` | `--limit <n>, --year-min <year>, --always-fallback` | Tìm kiếm bài báo (knows.academy → OpenAlex → Semantic Scholar) |
-| `scholar resolve` | `—` | Tìm bài báo khớp nhất trên knows.academy, OpenAlex, Semantic Scholar |
-| `scholar get` | `--section <name>` | Lấy một sidecar (knows record_id) hoặc metadata của work (W-id, DOI, arXiv:<id>, CorpusId:<n>, S2 paperId) |
-| `scholar lint` | `--lenient, --fail-on-warning` | Kiểm tra hợp lệ một sidecar .knows.yaml hoặc .knows.json (v0.9.0) |
-| `image` | `—` | Tạo ảnh AI đa vendor: dispatch song song có nhận biết xác thực |
-| `image generate` | `--vendor <name>, --size <size>, --quality <level>, -n, --count <n>, --output-dir <path>, --allow-external-output, --model <name>, --timeout <duration>, -r, --reference <path>, -y, --yes, --no-prompt-in-manifest, --dry-run, --output <format>` | Tạo ảnh qua pollinations (flux/zimage, miễn phí), codex (gpt-image-2, ChatGPT OAuth) hoặc antigravity (gemini nano-banana qua CLI `agy`, miễn phí khi đăng nhập Gemini Code Assist) |
-| `image doctor` | `--output <format>` | Kiểm tra trạng thái xác thực và cài đặt theo từng vendor |
-| `image vendor` | `—` |  |
-| `image vendor list` | `--output <format>` | Liệt kê các vendor đã đăng ký và các model được hỗ trợ |
-| `video` | `—` | Tạo video short-form, explainer và demo |
-| `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | Tạo run directory video từ một brief |
-| `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | Kiểm tra mức sẵn sàng của video provider và compositor |
-| `video compose` | `--output <format>, --refresh, --offline` | Scaffold project HyperFrames của run trên toolchain mới nhất + heygen-com/hyperframes; in authoring contract |
-| `video render` | `--output <format>` | Render lại một run directory từ render-spec.json |
-| `video provider` | `—` |  |
-| `video provider list` | `--output <format>` | Liệt kê các video provider và tình trạng khả dụng |
-| `serena` | `—` | Tiện ích quản lý vòng đời language server của Serena MCP |
-| `serena reap` | `--dry-run, --quiet` | Kết thúc các tiến trình con LSP của Serena đang rảnh để thu hồi bộ nhớ (Serena tự phục hồi ở lần gọi tool tiếp theo) |
-| `serena reaper` | `—` |  |
-| `serena reaper enable` | `--dry-run` | Cài scheduled task Serena Reaper chạy định kỳ (mỗi 5 phút) |
-| `serena reaper disable` | `--dry-run` | Gỡ scheduled task Serena Reaper chạy định kỳ |
-| `explain` | `—` | Các công cụ quản lý và kiểm tra chất lượng artifact explain |
-| `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Kiểm tra hợp lệ các artifact báo cáo HTML explain tự chứa |
-| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Kết xuất bản nháp Markdown (file hoặc stdin) thành một trang HTML giải thích độc lập |
-| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Kiểm tra câu chữ của bản nháp (file hoặc stdin) mà không kết xuất |
-| `explain patch` | `--panel <id>, --open, --output <format>, --json` | Thay một bảng của trang đã kết xuất dựa trên bản nháp được nhúng |
-| `explain components` | `--output <format>, --json` | Liệt kê các thành phần dùng được trong bản nháp hoặc in cú pháp của một thành phần |
-| `diagram` | `—` | Tiện ích engine sơ đồ (HTML tương tác của archify hoặc fallback Mermaid) |
-| `diagram resolve` | `--engine <engine>, --refresh, --offline, --json, --output <format>` | Báo cáo engine sơ đồ mà workflow nên dùng và vị trí cài archify |
-| `diagram update` | `--json, --output <format>` | Tải release archify mới nhất vào managed cache của oma (~/.cache/oma-diagram/archify) |
-| `diagram archify` | `—` | Chạy CLI archify đã cài đặt (doctor \| guide \| validate \| deliver \| visual-check …) với kiểm tra cập nhật bị tắt |
-| `help` | `—` | Hiển thị thông tin trợ giúp |
-| `version` | `—` | Hiển thị số phiên bản |
-| `dashboard` | `—` |  |
-| `dashboard terminal` | `—` | Khởi động dashboard terminal (giám sát agent theo thời gian thực) |
-| `dashboard web` | `—` | Khởi động dashboard web tại http://127.0.0.1:9847 |
-| `auth` | `—` |  |
-| `auth status` | `--json, --output <format>` | Kiểm tra trạng thái xác thực của mọi CLI được hỗ trợ |
-| `hook` | `—` |  |
-| `hook run` | `--vendor <v>, --event <e>, --matcher <m>` | Dispatch một hook event của vendor qua hook router tập trung của oma (design 019) |
-| `hook probe` | `--vendor <list>, --output <format>, --hooks-dir <dir>` | Kiểm tra khả năng tương thích hook L1 theo từng vendor và in ra ma trận (D63) |
-| `state` | `—` |  |
-| `state emit` | `--session-id <id>, --category <category>, --vendor <vendor>, --vendor-sid <vendorSid>, --parent-event-id <eventId>, --causality-key <key>, --ts <iso>, --no-mirror, --json, --output <format>` | Ghi thêm một workflow event L1 của OMA |
-| `state migrate` | `--include-active, --dry-run, --json, --output <format>` | Di chuyển các session cũ sang home profile và xóa các bản gốc đã được xác minh |
-| `state get` | `--json, --output <format>` | Xem một session L1 của OMA theo ID |
-| `state list` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Xem trạng thái workflow L1 của OMA |
-| `state repair` | `--dry-run, --json, --output <format>` | Sửa các file trạng thái workflow L1 của OMA |
-| `state verify` | `--workflow <workflow>, --checkpoint <checkpoint>, --session-id <id>, --category <category>, --no-emit-missing, --json, --output <format>` | Xác minh các event L1 bắt buộc cho một checkpoint của workflow |
-| `state decisions` | `—` |  |
-| `state decisions list` | `--json, --output <format>` | Liệt kê các checkpoint L1 decision.made bắt buộc |
-| `state inject-log` | `—` |  |
-| `state inject-log list` | `--entry <file>, --json, --output <format>` | Liệt kê hoặc xem audit log inject theo từng boundary (D52) |
-| `state inject-log get` | `--json, --output <format>` | Liệt kê hoặc xem audit log inject theo từng boundary (D52) |
-| `state summary` | `--category <category>, --json, --output <format>` | Export bản tóm tắt session vào coordination store |
-| `state trajectory` | `--category <category>, --open, --width <columns>, --sequence, --ascii, --json, --output <format>` | Hiển thị trajectory của session: L1 event ghép với transcript của vendor |
-| `state heal-check` | `--agent <agentType>, --json, --output <format>` | Kiểm tra xem một agent có được phép tự phục hồi hay không |
-| `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Xem trạng thái workflow L1 của OMA |
-| `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Xem trạng thái workflow L1 của OMA |
-| `state purge` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Xem trạng thái workflow L1 của OMA |
-| `ralph` | `—` |  |
-| `ralph verify` | `--session-id <id>, --newer-than <iso>, --no-emit, --json, --output <format>` | Xác minh các artifact EXEC của ralph (cổng chống lách, ralph.md Step 1.3) |
-| `goal` | `—` |  |
-| `goal set` | `--workflow <name>, --session-id <id>, --gate <keyword>, --budget-minutes <n>, --description <text>, --json, --output <format>` | Gắn một goal contract (cổng dừng xác định / ngân sách thời gian thực) vào một persistent workflow đang hoạt động |
-| `stats` | `—` |  |
-| `stats get` | `--json, --output <format>` | Xem số liệu năng suất |
-| `stats reset` | `--json, --output <format>` | Xem số liệu năng suất |
-| `agent` | `—` |  |
-| `agent context` | `--project-root <path>, --difficulty <level>` | Tải context được chọn theo graph cho một prompt native dispatch |
-| `agent resume` | `--project-root <path>, --dry-run, --max-attempts <count>` | Tiếp tục các task an toàn chưa hoàn tất, dùng lại acceptance evidence hiện tại |
-| `agent begin` | `--project-root <path>, -w, --workspace <path>` | Bắt đầu một run agent native có evidence làm căn cứ |
-| `agent verify` | `--project-root <path>, --required, --affected <paths...>` | Thực thi argv xác minh sau -- và ghi lại exit code thực của nó |
-| `agent finish` | `--project-root <path>` | Kiểm tra kết quả của agent native dựa trên các receipt xác minh của nó |
-| `agent spawn` | `--resumed-from <run-id>, --fallback-vendors <vendors>, --task-id <id>, --vendor <vendor>, -w, --workspace <path>, --isolation <mode>, --read-only` | Spawn một subagent (prompt có thể là text inline hoặc đường dẫn file) |
-| `agent status` | `--project-root <path>` | Kiểm tra trạng thái của các subagent |
-| `agent parallel` | `--session-id <id>, --vendor <vendor>, -i, --inline, --no-wait` | Chạy nhiều sub-agent song song |
-| `agent review` | `--vendor <vendor>, -p, --prompt <prompt>, -w, --workspace <path>, --no-uncommitted` | Chạy code review bằng CLI bên ngoài (codex/claude/qwen/grok) |
-| `model` | `—` |  |
-| `model check` | `--json, --fail-on-drift, --owner <name>, --probe` | Đối chiếu model registry với danh sách model live của vendor |
-| `model probe` | `--json, --timeout <duration>` | Thử một slug model với CLI của vendor tương ứng để xác minh slug đó được chấp nhận |
-| `model propose` | `--json, --owner <name>, --write, --timeout <duration>` | Chạy model:check --probe ở bên trong và tạo patch `models:` cho oma-config với các ứng viên được chấp nhận |
-| `memory` | `—` |  |
-| `memory keys` | `--kind <kind>, --profile <name>, --key-env <name>, --from-env <name>, --dry-run, --json, --output <format>` | Cấu hình kết nối Honcho hoặc credential embedding local |
-| `memory init` | `--force, --json, --output <format>` | Khởi tạo coordination store trong .agents/state/memories |
-| `memory setup` | `--endpoint <url>, --port <port>, --install, --start, --dry-run, --json, --output <format>` | Chuẩn bị cấu hình endpoint AgentMemory |
-| `memory daemon` | `—` | Quản lý tiến trình daemon AgentMemory do OMA sở hữu |
-| `memory daemon status` | `--json, --output <format>` | Hiển thị trạng thái daemon |
-| `memory daemon start` | `--port <port>, --dry-run, --json, --output <format>` | Khởi động AgentMemory ở chế độ nền |
-| `memory daemon stop` | `--dry-run, --json, --output <format>` | Dừng daemon AgentMemory do OMA sở hữu |
-| `memory daemon restart` | `--port <port>, --dry-run, --json, --output <format>` | Khởi động lại daemon AgentMemory do OMA sở hữu |
-| `memory service` | `—` | Quản lý integration của AgentMemory với service của hệ điều hành |
-| `memory service install` | `--port <port>, --dry-run, --json, --output <format>` | Cài integration service launchd/systemd cho AgentMemory |
-| `memory service uninstall` | `--dry-run, --json, --output <format>` | Gỡ integration service launchd/systemd của AgentMemory |
-| `memory status` | `--json, --output <format>` | Hiển thị tình trạng sức khỏe của semantic-memory provider đã chọn |
-| `memory retry` | `—` |  |
-| `memory retry drain` | `--dry-run, --json, --output <format>` | Xử lý hết các lần retry observe của AgentMemory đang trong hàng đợi |
-| `memory import` | `--source <source>, --since <since>, --dry-run, --force-partial, --json, --output <format>` | Import lịch sử hội thoại của vendor vào AgentMemory |
-| `memory maintain` | `--keep <count>, --dry-run, --json, --output <format>` | Bảo trì storage local của AgentMemory: backup, prune, vacuum |
-| `memory maintain backup` | `--keep <count>, --dry-run, --json, --output <format>` | Bảo trì storage local của AgentMemory: backup, prune, vacuum |
-| `memory maintain prune` | `--keep <count>, --dry-run, --json, --output <format>` | Bảo trì storage local của AgentMemory: backup, prune, vacuum |
-| `memory maintain vacuum` | `--keep <count>, --dry-run, --json, --output <format>` | Bảo trì storage local của AgentMemory: backup, prune, vacuum |
-| `memory gc` | `--scope <scope>, --keep <count>, --max-age <duration>, --dry-run, --json, --output <format>` | Thu gom rác memory local của project: prune các session L1 cũ và các file Serena tạm thời |
-| `memory upgrade` | `--port <port>, --dry-run, --json, --output <format>` | Dừng, backup, nâng cấp, khởi động lại và kiểm tra sức khỏe AgentMemory |
-| `skill` | `—` | Xem xét và audit các skill đã cài |
-| `skill audit` | `--json, --output <format>` | Kiểm tra độ tương đồng của description trong frontmatter giữa các skill đã cài |
-| `skill lint` | `--skill <id>, --json, --output <format>` | Phát hiện authoring smell theo từng skill (frontmatter, cấu trúc, tham chiếu hỏng) |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | Đo utility lift theo từng skill (treatment so với baseline trên các task held-out) |
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | Tối ưu SKILL.md của một skill để tối đa hóa utility lift held-out đo được |
-| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | Đề xuất và chấm điểm các thay đổi đối với quy trình evolution trên các skill held-out |
-| `skill procedure` | `--export, --json, --output <format>` | Hiển thị quy trình evolution (prompt optimizer/maintainer, constitution) cùng các hash của nó |
-| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | Tổng hợp các lần chạy optimization đã ghi theo kết quả, memory mode và quy trình |
-| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | Tường thuật các lần thăng cấp và rollback SKILL.md đã ghi cho một skill, hoặc cho mọi skill và quy trình khi dùng `--all` |
-| `skill rollback` | `--skill <id>, --json, --output <format>` | Khôi phục phần body SKILL.md đã bị thay bởi lần thăng cấp được ghi gần nhất |
-| `schedule` | `—` |  |
-| `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | Đăng ký một job agent theo lịch |
-| `schedule list` | `--json, --output <format>` | Liệt kê các job theo lịch kèm trạng thái drift với OS (synced/missing-in-os/orphan-in-os), nhóm theo project |
-| `schedule delete` | `—` | Xóa một job theo lịch khỏi manifest và OS scheduler |
-| `schedule run` | `—` | Thực thi một job theo lịch theo id (được OS scheduler gọi; thường không gọi trực tiếp) |
-| `schedule sync` | `--prune` | Đồng bộ lại manifest → OS scheduler. Dùng --prune để xóa các job OS mồ côi. |
+## Registry tùy chọn public đầy đủ {#complete-public-option-registry}
+
+Mỗi hàng là một đường dẫn lệnh chạy được độc lập; các nhóm chỉ in trợ giúp bị lược bỏ, và các cờ gốc dùng chung được mô tả ở [Tùy chọn toàn cục](#global-options). Giá trị mặc định xuất hiện cạnh tùy chọn tương ứng. Chạy `oma describe "<path>"` để xem JSON đầy đủ của một đường dẫn.
+
+:::note
+Bảng này được tạo từ `oma describe`. Đừng sửa bằng tay: chạy `node cli/scripts/generate-cli-reference.mjs` để tạo lại, hoặc thêm `--check` để báo lỗi khi bảng đã lỗi thời.
+:::
+
+<!-- oma:generated cli-registry:start -->
+
+| Command | Arguments | Options | Description |
+|:--|:--|:--|:--|
+| `agent begin` | `<agent-id> <task-id> <session-id>` | `--project-root <path>`, `-w, --workspace <path>` | Start an evidence-backed native agent run |
+| `agent context` | `<agent-id>` | `--project-root <path>`, `--difficulty <level>` (default: `Medium`) | Load graph-selected context for a native dispatch prompt |
+| `agent finish` | `<run-id> <result-file>` | `--project-root <path>` | Validate a native agent result against its verification receipts |
+| `agent parallel` | `[tasks...]` | `--session-id <id>`, `--vendor <vendor>`, `-i, --inline`, `--no-wait` | Run multiple sub-agents in parallel |
+| `agent parallel-supervisor` | `<manifest>` | — | — |
+| `agent resume` | `<session-id>` | `--project-root <path>`, `--dry-run`, `--max-attempts <count>` (default: `3`) | Resume safe incomplete tasks, reusing current acceptance evidence |
+| `agent review` | — | `--vendor <vendor>`, `-p, --prompt <prompt>`, `-w, --workspace <path>`, `--no-uncommitted` | Run code review using external CLI (codex/claude/qwen/grok) |
+| `agent spawn` | `<agent-id> <prompt> <session-id>` | `--resumed-from <run-id>`, `--fallback-vendors <vendors>`, `--task-id <id>`, `--vendor <vendor>`, `-w, --workspace <path>`, `--isolation <mode>`, `--read-only` | Spawn a subagent (prompt can be inline text or a file path) |
+| `agent status` | `<session-id> [agent-ids...]` | `--project-root <path>` (default: current directory) | Check status of subagents |
+| `agent verify` | `<run-id> [command...]` | `--project-root <path>`, `--required`, `--affected <paths...>` | Execute verification argv after -- and record its real exit code |
+| `auth status` | — | `--json`, `--output <format>` | Check authentication status of all supported CLIs |
+| `bridge` | `[url]` | `--context <name>` (default: `ide`), `--oma-home <path>`, `--oma-state-home <path>` | Proxy MCP stdio to a shared per-project Serena server (started on demand) |
+| `cleanup` | — | `--dry-run`, `-y, --yes`, `--json`, `--output <format>` | Clean up orphaned subagent processes and temp files |
+| `dashboard terminal` | — | `--project-root <path>` | Start terminal dashboard (real-time agent monitoring) |
+| `dashboard web` | — | `--project-root <path>` | Start web dashboard on http://127.0.0.1:9847 |
+| `describe` | `[command-path]` | — | Describe CLI commands as JSON for runtime introspection |
+| `diagram archify` | `[args...]` | — | Run the installed archify CLI (doctor \| guide \| validate \| deliver \| visual-check …) with update checks disabled |
+| `diagram resolve` | — | `--engine <engine>`, `--refresh`, `--offline`, `--json`, `--output <format>` | Report which diagram engine workflows should use, and where archify lives |
+| `diagram update` | — | `--json`, `--output <format>` | Download the latest archify release into oma's managed cache (~/.cache/oma-diagram/archify) |
+| `docs i18n` | — | `--json`, `--min-severity <level>` (default: `MEDIUM`) | Detect drift between English source docs (web/docs) and i18n translations (web/i18n/{lang}/...). Emits structural signals (line count, heading count, last-commit timestamp) per pair so the host LLM can decide which translations need a diff-sync patch. The CLI never edits translations. |
+| `docs lint` | — | `--json`, `--locales <list>` | Lint translated docs for content-level anti-patterns (em-dashes in CJK targets, etc.). Complements `oma docs i18n` (structural drift) with style/anti-pattern checks per oma-translation SKILL.md § Stage 4. The CLI never auto-fixes — it only reports issues for the host LLM to restructure. |
+| `docs sync` | `[diff-range]` | `--json` | Given a git diff, list docs that reference changed files. The host LLM (skill runtime) is expected to read this list plus the diff and propose patches per the SKILL.md contract — the CLI never auto-edits docs. Default diff-range: --cached (staged changes), fallback to HEAD~1..HEAD. |
+| `docs verify` | `[path]` | `--json`, `--report-file <path>`, `--no-urls`, `--urls-sync` | Extract L2 references from docs and report broken targets. Regenerates docs/generated/doc-refs.json as a side effect. Exit code: 0 = clean, 1 = broken refs found. URL link checking is delegated to `lychee` (install: brew install lychee). |
+| `doctor` | — | `--profile`, `--heal-check <agentType>`, `--json`, `--output <format>` | Check CLI installations, MCP configs, and skill status |
+| `emit` | — | `--target <target>` (default: `all`), `--output-dir <path>` (default: `.`), `--json`, `--output <format>` | Emit standards-conformant artifacts from the .agents/ SSOT (Agent Skills spec, Agent Plugins package, Claude Code plugin marketplace, AGENTS.md, cli/AGENTS.md) |
+| `explain components` | `[name]` | `--json`, `--output <format>` | List the components a draft can use, or print one component's syntax |
+| `explain lint` | `[file]` | `--style <level>`, `--lang <code>`, `--json`, `--output <format>` | Check the prose of a draft (file or stdin) without rendering |
+| `explain patch` | `<html> [file]` | `--panel <id>`, `--open`, `--json`, `--output <format>` | Replace one panel of a rendered page from its embedded draft (new panel from file or stdin) |
+| `explain render` | `[file]` | `--output-file <path>`, `--template <name>`, `--theme <name>`, `--mode <mode>`, `--style <level>`, `--lang <code>`, `--archify`, `--no-archify`, `--open`, `--json`, `--output <format>` | Render a Markdown draft (file or stdin) into one self-contained HTML explanation |
+| `explain validate` | `[file]` | `--input-dir <path>`, `--output <format>` (default: `concise`), `--report-file <path>`, `--json` | Validate self-contained explain HTML report artifacts |
+| `goal set` | — | `--workflow <name>`, `--session-id <id>`, `--gate <keyword>`, `--budget-minutes <n>`, `--description <text>`, `--json`, `--output <format>` | Attach a goal contract (deterministic stop gate / wall-clock budget) to an active persistent workflow |
+| `harness eval` | — | `--suite <path>`, `--candidate <path>`, `--partition <name>` (default: `validation`), `--mock`, `--action <mode>`, `--transcript <path>`, `--live`, `--record`, `--record-file <path>`, `--yes`, `--timeout <duration>` (default: `15m`), `--require-coverage`, `--json`, `--output <format>` | Compare a candidate .agents overlay with the current baseline |
+| `harness evolution disable` | — | `--json`, `--output <format>` | — |
+| `harness evolution enable` | — | `--max-dispatches <n>`, `--cron <expr>` (default: `0 3 * * *`), `--mode <mode>` (default: `apply`), `--json`, `--output <format>` | — |
+| `harness evolution run` | — | `--scheduled`, `--json`, `--output <format>` | — |
+| `harness evolution status` | — | `--json`, `--output <format>` | — |
+| `harness feedback` | — | `--live`, `--apply`, `--max-epochs <n>` (default: `1`), `--incident <ids...>`, `--scan-runs`, `--json`, `--output <format>` | Promote captured incidents to skill fixtures and optimize the affected skills |
+| `harness incident capture` | — | `--spec <path>`, `--run <id>`, `--json`, `--output <format>` | — |
+| `harness incident export` | `<id>` | `--json`, `--output <format>` | — |
+| `harness incident promote` | `<id>` | `--skill <id>`, `--draft`, `--force`, `--json`, `--output <format>` | — |
+| `harness incident reproduce` | `<id>` | `--candidate <path>`, `--action <mode>`, `--record-file <path>`, `--transcript <path>`, `--record`, `--yes`, `--timeout <duration>` (default: `15m`), `--json`, `--output <format>` | — |
+| `harness incident scan` | — | `--limit <n>`, `--skeleton <run-id>`, `--json`, `--output <format>` | List failed, blocked, or partial agent runs that no captured incident references yet |
+| `harness incident show` | `<id>` | `--json`, `--output <format>` | — |
+| `help` | — | — | Show help information |
+| `home` | — | `--json`, `--output <format>` | Inspect and migrate OMA global storage |
+| `home migrate` | — | `--dry-run`, `--json`, `--output <format>` | Copy legacy OMA global files; preserve originals |
+| `hook probe` | — | `--vendor <list>`, `--output <format>` (default: `text`), `--hooks-dir <dir>` | Probe per-vendor L1 hook compatibility and print a matrix (D63) |
+| `hook run` | — | `--vendor <v>`, `--event <e>`, `--matcher <m>` | Dispatch a vendor hook event through the centralised oma hook router (design 019) |
+| `hook script` | — | `--vendor <v>`, `--script <name>` | Run one installed hook handler through the CLI memory adapter |
+| `image doctor` | — | `--output <format>` (default: `text`) | Check authentication and install status per vendor |
+| `image generate` | `<prompt...>` | `--vendor <name>` (default: `auto`), `--size <size>`, `--quality <level>`, `-n, --count <n>`, `--output-dir <path>`, `--allow-external-output`, `--model <name>`, `--timeout <duration>`, `-r, --reference <path>`, `-y, --yes`, `--no-prompt-in-manifest`, `--dry-run`, `--output <format>` (default: `text`) | Generate images via pollinations (flux/zimage, free), codex (gpt-image-2, ChatGPT OAuth), or antigravity (gemini nano-banana via `agy` CLI, free with Gemini Code Assist sign-in) |
+| `image vendor list` | — | `--output <format>` (default: `text`) | List registered vendors and supported models |
+| `install` | — | `--web-search <provider>`, `--code-intelligence <provider>`, `--semantic-memory <provider>`, `--honcho-url <url>`, `--honcho-workspace <id>` | Install oh-my-agent skills and configurations |
+| `intel suggest` | — | `--config <path>`, `--topic <topic>`, `--target <target>`, `--repos <repos>`, `--since <window>`, `--last-commits <n>`, `--output-dir <path>`, `--dry-run`, `--fixture <path>`, `--create-issue`, `--base-repo <owner/name>`, `--yes`, `--json`, `--output <format>` | Suggest high-value product work from market/code intelligence |
+| `link` | `[vendors...]` | `--dry-run` | Regenerate vendor files (.claude/, .cursor/, etc.) from .agents/ SSOT |
+| `market detect-trap` | `<topic>` | `--force` | Preflight check that refuses keyword-trap queries |
+| `market resolve` | — | `--refresh`, `--offline`, `--json`, `--output <format>` | Report the last30days engine oma will run (managed latest, pin, or local copy) and the Python it uses |
+| `market run` | `[args...]` | — | Run the last30days engine (scripts/last30days.py) with the given arguments; --save-dir defaults to market.save_dir |
+| `market update` | — | `--json`, `--output <format>` | Download the latest last30days release into oma's managed cache (~/.cache/oma-market/last30days) |
+| `memory daemon restart` | — | `--port <port>` (default: `3111`), `--dry-run`, `--json`, `--output <format>` | Restart the OMA-owned AgentMemory daemon |
+| `memory daemon start` | — | `--port <port>` (default: `3111`), `--dry-run`, `--json`, `--output <format>` | Start AgentMemory in the background |
+| `memory daemon status` | — | `--json`, `--output <format>` | Show daemon status |
+| `memory daemon stop` | — | `--dry-run`, `--json`, `--output <format>` | Stop the OMA-owned AgentMemory daemon |
+| `memory gc` | — | `--scope <scope>` (default: `all`), `--keep <count>`, `--max-age <duration>`, `--dry-run`, `--json`, `--output <format>` | Garbage-collect project-local memory: prune old L1 sessions and ephemeral Serena files |
+| `memory import` | — | `--source <source>` (default: `all`), `--since <since>` (default: `30d`), `--dry-run`, `--force-partial`, `--json`, `--output <format>` | Import vendor conversation history into AgentMemory |
+| `memory init` | — | `--force`, `--json`, `--output <format>` | Initialize the coordination store in .agents/state/memories |
+| `memory keys` | — | `--kind <kind>` (default: `connection`), `--profile <name>` (default: `oma`), `--key-env <name>` (default: `LLM_OPENAI_API_KEY`), `--from-env <name>`, `--dry-run`, `--json`, `--output <format>` | Configure Honcho connection or local embedding credentials |
+| `memory maintain` | `<action>` | `--keep <count>` (default: `5`), `--dry-run`, `--json`, `--output <format>` | Maintain AgentMemory local storage: backup, prune, vacuum |
+| `memory maintain backup` | — | `--keep <count>` (default: `5`), `--dry-run`, `--json`, `--output <format>` | Maintain AgentMemory local storage: backup, prune, vacuum |
+| `memory maintain prune` | — | `--keep <count>` (default: `5`), `--dry-run`, `--json`, `--output <format>` | Maintain AgentMemory local storage: backup, prune, vacuum |
+| `memory maintain vacuum` | — | `--keep <count>` (default: `5`), `--dry-run`, `--json`, `--output <format>` | Maintain AgentMemory local storage: backup, prune, vacuum |
+| `memory retry drain` | — | `--dry-run`, `--json`, `--output <format>` | Drain queued semantic-memory deliveries |
+| `memory service install` | — | `--port <port>` (default: `3111`), `--dry-run`, `--json`, `--output <format>` | Install AgentMemory launchd/systemd service integration |
+| `memory service uninstall` | — | `--dry-run`, `--json`, `--output <format>` | Uninstall AgentMemory launchd/systemd service integration |
+| `memory setup` | — | `--endpoint <url>`, `--port <port>`, `--install`, `--start`, `--dry-run`, `--json`, `--output <format>` | Prepare AgentMemory endpoint configuration |
+| `memory status` | — | `--json`, `--output <format>` | Show selected semantic-memory provider health |
+| `memory upgrade` | — | `--port <port>`, `--dry-run`, `--json`, `--output <format>` | Stop, backup, upgrade, restart, and health-check AgentMemory |
+| `model check` | — | `--json`, `--fail-on-drift`, `--owner <name>`, `--probe` | Check model registry against live vendor model lists |
+| `model probe` | `<slug>` | `--json`, `--timeout <duration>` | Probe a model slug against its vendor CLI to verify it is accepted |
+| `model propose` | — | `--json`, `--owner <name>`, `--write`, `--timeout <duration>` | Run model:check --probe internally and generate an oma-config `models:` patch for accepted candidates |
+| `profile create` | `<slot>` | `--json`, `--output <format>` | Create a local profile |
+| `profile list` | — | `--json`, `--output <format>` | List local profiles |
+| `profile run` | `<slot> <command> [args...]` | — | Run one command with OMA_PROFILE set for the child process |
+| `profile show` | `[slot]` | `--json`, `--output <format>` | Show a local profile |
+| `profile use` | `<slot>` | `--shell <shell>`, `--json`, `--output <format>` | Print shell code to activate an existing profile |
+| `ralph verify` | — | `--session-id <id>`, `--newer-than <iso>`, `--no-emit`, `--json`, `--output <format>` | Verify ralph EXEC artifacts (anti-circumvention gate, ralph.md Step 1.3) |
+| `recap` | — | `--window <period>` (default: `1d`), `--date <date>`, `--tool <tools>`, `--top <n>`, `--sort <metric>` (default: `count`), `--mermaid`, `--graph`, `--json`, `--output <format>` | Recap AI tool conversation history |
+| `retro` | `[window]` | `--interactive`, `--compare`, `--json`, `--output <format>` | Engineering retrospective with metrics & trends |
+| `schedule builtin-evolution-add` | `<workspace>` | `--cron <expr>` | — |
+| `schedule create` | `<agent-id> <prompt>` | `--cron <expr>`, `--every <phrase>`, `--vendor <vendor>`, `-w, --workspace <path>`, `--once`, `--expires-after <duration>`, `--env <keys>`, `--dry-run`, `--accept-rounded` | Register a scheduled agent job |
+| `schedule delete` | `<id>` | — | Remove a scheduled job from manifest and OS scheduler |
+| `schedule inspect` | `<id>` | — | Inspect one scheduler manifest entry for internal callers |
+| `schedule list` | — | `--json`, `--output <format>` | List scheduled jobs with OS drift state (synced/stale/missing-in-os/orphan-in-os), grouped by project |
+| `schedule run` | `<id>` | `--oma-home <path>`, `--oma-state-home <path>`, `--registration <identity>` | Execute a scheduled job by id (invoked by OS scheduler; not normally called directly) |
+| `schedule sync` | — | `--prune` | Re-sync manifest → OS scheduler (registers missing jobs, rewrites stale commands). Use --prune to remove orphan OS jobs. |
+| `scholar get` | `<id>` | `--section <name>` | Fetch a sidecar (knows record_id) or work metadata (W-id, DOI, arXiv:&lt;id&gt;, CorpusId:&lt;n&gt;, S2 paperId) |
+| `scholar lint` | `<file>` | `--lenient`, `--fail-on-warning` | Validate a .knows.yaml or .knows.json sidecar (v0.9.0) |
+| `scholar resolve` | `<query...>` | — | Find best paper match across knows.academy, OpenAlex, Semantic Scholar |
+| `scholar search` | `<query...>` | `--limit <n>` (default: `10`), `--year-min <year>`, `--always-fallback` | Search papers (knows.academy → OpenAlex → Semantic Scholar) |
+| `search api fetch` | `<url>` | `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Fetch via matched platform API (Phase 0) |
+| `search api search` | `<query>` | `--platforms <list>`, `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Fan-out keyword search across platforms that support it |
+| `search archive` | `<url>` | `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Fetch via AMP / archive.today / Wayback |
+| `search code` | `<query>` | `--host <github\|gitlab>` (default: `github`), `--language <lang>`, `--repo <owner/repo>`, `--limit <n>` (default: `20`), `--pretty` | Search code via gh / glab |
+| `search doctor` | — | — | Check dependencies (Chrome, python3 curl_cffi, yt-dlp, gh) |
+| `search fetch` | `<url>` | `--only <strategies>`, `--skip <strategies>`, `--include-archive`, `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Fetch URL via auto-escalating strategy pipeline |
+| `search media` | `<url>` | `--subs`, `--sub-lang <list>` (default: `en`), `--format <spec>`, `--timeout <duration>` (default: `30s`), `--pretty` | Extract media metadata via yt-dlp (1858 sites) |
+| `search meta` | `<url>` | `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Extract OGP / JSON-LD / Schema.org from URL |
+| `search providers` | — | `--json`, `--pretty` | List registered search providers and inspect selection without network calls |
+| `search rss fetch` | `<url>` | `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Discover and parse RSS/Atom feed for a URL |
+| `search rss google` | `<query>` | `--locale <value>` (default: `en-US`) | Build Google News RSS URL for a query |
+| `search trust` | `<domain>` | `--pretty` | Resolve trust level / score for a domain |
+| `search web` | `<query>` | `--provider <id>`, `--limit <n>` (default: `10`), `--timeout <duration>` (default: `15s`), `--json`, `--pretty` | Search with the selected web provider (Brave has a CLI adapter) |
+| `serena check` | — | `--project <path>` (default: `apps/mobile`), `--dart-sdk <path>`, `--timeout <duration>` (default: `60s`), `--staged` | Analyze a Dart package using the managed shared Serena LSP |
+| `serena daemon gc` | — | `--quiet` | Stop shared Serena daemons with no clients after the idle grace period |
+| `serena reap` | — | `--dry-run`, `--quiet` | Kill idle Serena LSP children to reclaim memory (Serena self-heals on next tool call) |
+| `serena reaper disable` | — | `--dry-run` | Uninstall the periodic Serena Reaper scheduled task |
+| `serena reaper enable` | — | `--dry-run` | Install the periodic Serena Reaper scheduled task (runs every 5 minutes) |
+| `serena setup` | — | — | Repair the managed adapter and install the oma-dart-check compatibility launcher |
+| `skill audit` | — | `--json`, `--output <format>` | Check frontmatter description similarity between installed skills |
+| `skill eval` | — | `--skill <id>`, `--mock`, `--live`, `--record`, `--yes`, `--task-dir <path>`, `--max-tasks <n>`, `--trials <n>`, `--require-coverage`, `--neg-transfer`, `--routing`, `--json`, `--output <format>` | Measure per-skill utility lift (treatment vs baseline on held-out tasks) |
+| `skill evolution-stats` | — | `--skill <id>`, `--json`, `--output <format>` | Aggregate recorded optimization runs: proposals, acceptance, verified improvements, rollbacks, by memory mode and procedure |
+| `skill lint` | — | `--skill <id>`, `--json`, `--output <format>` | Detect per-skill authoring smells (frontmatter, structure, broken refs) |
+| `skill meta-optimize` | — | `--target <part>` (default: `optimizer`), `--skill <ids...>`, `--anchor <ids...>`, `--repeats <n>` (default: `3`), `--candidates <n>` (default: `2`), `--max-epochs <n>` (default: `1`), `--edits-per-epoch <k>` (default: `4`), `--live`, `--apply`, `--memory <mode>` (default: `none`), `--yes`, `--json`, `--output <format>` | Propose and score changes to the evolution procedure itself on held-out skills; promote only with a paired bootstrap interval above zero |
+| `skill optimize` | — | `--skill <id>`, `--dry-run`, `--apply`, `--mock`, `--live`, `--max-epochs <n>` (default: `8`), `--edits-per-epoch <k>` (default: `4`), `--lr <chars>` (default: `600`), `--yes`, `--memory <mode>` (default: `recall`), `--json`, `--output <format>` | Optimize a skill's SKILL.md to maximize measured held-out utility lift |
+| `skill procedure` | — | `--export`, `--json`, `--output <format>` | Show the evolution procedure (optimizer/maintainer prompts, constitution) and its hashes; --export writes editable defaults |
+| `skill promotions` | — | `--skill <id>`, `--all`, `--json`, `--output <format>` | List recorded SKILL.md promotions and rollbacks for a skill, or every skill and the procedure with --all |
+| `skill rollback` | — | `--skill <id>`, `--json`, `--output <format>` | Restore the SKILL.md body replaced by the most recent recorded promotion |
+| `skills matrix` | — | `--suite <path>`, `--project-root <path>`, `--skills <names>`, `--delivery <mode>` (default: `native`), `--vendors <ids>` (default: `claude,codex`), `--cases <ids>`, `--live`, `--yes`, `--timeout-seconds <n>` (default: `120`), `--claude-model <model>`, `--codex-model <model>`, `--report <path>`, `--json`, `--output <format>` | Test native skill discovery, references and output contracts across CLI vendors |
+| `slide asset fetch-video` | `<url>` | `--workspace <path>`, `--output-name <name>` | Download video via yt-dlp into ./assets/ and print local ref |
+| `slide bundle` | — | `--workspace <path>`, `--output-file <path>`, `--inline-fonts` | Merge per-slide files into a single self-contained .html deliverable |
+| `slide create` | — | `--output-dir <path>` (default: `my-deck`), `--force` | Scaffold a new slide working directory with starter HTML, assets/, and meta.json |
+| `slide doctor` | — | — | Probe required deps (chrome, puppeteer-core) and optional deps (yt-dlp, pptxgenjs) |
+| `slide edit` | — | `--workspace <path>`, `--port <n>` (default: `0`) | Open browser bbox editor (node:http server at 127.0.0.1, dispatches to oma agent runner) |
+| `slide export pdf` | — | `--workspace <path>`, `--output-file <path>`, `--mode <mode>` (default: `capture`) | Export slides to PDF via puppeteer-core |
+| `slide export png` | — | `--workspace <path>`, `--output-dir <path>`, `--resolution <res>` (default: `1080p`) | Export each slide as a PNG image via puppeteer-core |
+| `slide export pptx` | — | `--workspace <path>`, `--output-file <path>` | [EXPERIMENTAL] Export to PPTX via pptxgenjs (raster-backed, gradients rasterized) |
+| `slide import pptx` | `<file>` | `--workspace <path>` | Import a .pptx file into slide fragments via officeparser (bunx, best-effort) |
+| `slide preview` | — | `--workspace <path>` | Build viewer.html (deck-stage web component + speaker-notes panel, toggle with `n`) |
+| `slide style get` | `<slug>` | `--refresh` | Fetch a bold template design.md (always-latest main; cached for offline fallback) |
+| `slide style list` | — | — | List available style presets (vendored + bold-template index) |
+| `slide style preview` | `<slug>` | — | Preview a style preset in the terminal |
+| `slide validate` | — | `--workspace <path>`, `--output <format>` (default: `concise`), `--slide <file>`, `--report-file <path>` | Geometric quality gate — renders slides via puppeteer-core and checks overflow/overlap/font-size |
+| `star` | — | — | Star oh-my-agent on GitHub |
+| `state activate` | `<session-id>` | `--category <category>` (default: `main`), `--archived`, `--all-projects`, `--project <project>`, `--search <text>`, `--older-than <duration>` (default: `90ds`), `--dry-run`, `--json`, `--output <format>` | Inspect OMA L1 workflow state |
+| `state archive` | — | `--category <category>` (default: `main`), `--archived`, `--all-projects`, `--project <project>`, `--search <text>`, `--older-than <duration>` (default: `90ds`), `--dry-run`, `--json`, `--output <format>` | Inspect OMA L1 workflow state |
+| `state decisions list` | `[workflow]` | `--agent <id>`, `--json`, `--output <format>` | List workflow checkpoints or available agent decision subjects |
+| `state emit` | `<kind> [payload]` | `--session-id <id>`, `--category <category>` (default: `main`), `--vendor <vendor>`, `--vendor-sid <vendorSid>`, `--parent-event-id <eventId>`, `--causality-key <key>`, `--ts <iso>`, `--no-mirror`, `--json`, `--output <format>` | Append an OMA L1 workflow event |
+| `state get` | `<sid>` | `--json`, `--output <format>` | Inspect one OMA L1 session by ID |
+| `state heal-check` | — | `--agent <agentType>`, `--json`, `--output <format>` | Check whether self-healing is allowed for an agent |
+| `state inject-log get` | `<session-id> <file>` | `--json`, `--output <format>` | List or view per-boundary inject audit logs (D52) |
+| `state inject-log list` | `<sid>` | `--entry <file>`, `--json`, `--output <format>` | List or view per-boundary inject audit logs (D52) |
+| `state list` | — | `--category <category>` (default: `main`), `--archived`, `--all-projects`, `--project <project>`, `--search <text>`, `--older-than <duration>` (default: `90ds`), `--dry-run`, `--json`, `--output <format>` | Inspect OMA L1 workflow state |
+| `state migrate` | — | `--runtime`, `--include-active`, `--dry-run`, `--json`, `--output <format>` | Migrate project state to the home profile |
+| `state purge` | — | `--category <category>` (default: `main`), `--archived`, `--all-projects`, `--project <project>`, `--search <text>`, `--older-than <duration>` (default: `90ds`), `--dry-run`, `--json`, `--output <format>` | Inspect OMA L1 workflow state |
+| `state repair` | — | `--dry-run`, `--json`, `--output <format>` | Repair OMA L1 workflow state files |
+| `state summary` | `[sid]` | `--category <category>` (default: `main`), `--json`, `--output <format>` | Export a session summary to the coordination store |
+| `state trajectory` | `[sid]` | `--category <category>` (default: `main`), `--open`, `--width <columns>`, `--sequence`, `--ascii`, `--json`, `--output <format>` | Show a session trajectory: L1 events joined with vendor transcripts |
+| `state verify` | — | `--workflow <workflow>`, `--checkpoint <checkpoint>`, `--instance <id>`, `--session-id <id>`, `--category <category>` (default: `main`), `--no-emit-missing`, `--json`, `--output <format>` | Verify required L1 events for a workflow checkpoint |
+| `stats get` | — | `--json`, `--output <format>` | View productivity metrics |
+| `stats reset` | — | `--json`, `--output <format>` | View productivity metrics |
+| `uninstall` | — | `--dry-run`, `-y, --yes` | Remove oh-my-agent's owned files (preserves oma-config.yaml, mcp.json, and user-authored skills) |
+| `update` | — | `-f, --force`, `--with-new-skills`, `--ci`, `-y, --yes`, `--all`, `--vendor <vendors>` | Update skills to latest version from registry |
+| `update mcp` | — | `-y, --yes`, `--ci`, `--all`, `--vendor <vendors>` | Choose browser MCP servers (Aside, Chrome DevTools, Firefox DevTools) |
+| `vault delete` | `<name>` | — | Remove a secret from the keychain and the index |
+| `vault get` | `<name>` | — | Print stored value to stdout (for: export KEY=$(oma vault get &lt;name&gt;)) |
+| `vault list` | — | `--json` | List stored secret names (values never displayed) |
+| `vault store` | `<name>` | `--value <value>` | Store a secret under &lt;name&gt; (interactive password prompt) |
+| `verify agent` | `<agent-type>` | `-w, --workspace <path>` (default: current directory), `--session-id <id>`, `--task-id <id>`, `--run-id <id>`, `--json`, `--output <format>` | — |
+| `verify triggers` | — | `--corpus <path>`, `--max-false-fire <pct>`, `--max-missed-fire <pct>`, `--json`, `--output <format>` | Measure keyword-detector trigger accuracy against a labeled prompt corpus |
+| `version` | — | — | Show version number |
+| `video compose` | `<runDir>` | `--output <format>` (default: `text`), `--refresh`, `--offline` | Scaffold the run's Hyperframes project on the latest toolchain + heygen-com/hyperframes; prints the authoring contract |
+| `video doctor` | — | `--output <format>` (default: `text`), `--install`, `--upgrade`, `--install-mpt`, `--install-strudel` | Check video provider and compositor readiness |
+| `video generate` | `<brief...>` | `--mode <mode>`, `--aspect <aspect>`, `--locale <lang>`, `--captions <style>`, `--visual <mode>`, `--voice <profile>`, `--music <mode>`, `--duration <sec>`, `--compositor <name>`, `--capture <path>`, `--source <kind>` (default: `file`), `--url <url>`, `--device <name>`, `--ready-selector <css>`, `--show-cursor`, `--polish`, `--capture-timeout <sec>`, `--capture-stop <mode>`, `--output-dir <path>`, `--allow-external-output`, `--max-usd <n>`, `--seed <n>`, `--timeout <duration>`, `-y, --yes`, `--dry-run`, `--script <path>`, `--output <format>` (default: `text`), `--no-brief-in-manifest` | Generate a video run directory from a brief |
+| `video provider list` | — | `--output <format>` (default: `text`) | List video providers and availability |
+| `video render` | `<runDir>` | `--output <format>` (default: `text`) | Re-render a run directory from render-spec.json |
+| `visualize` | — | `--focus <node-or-path>`, `--affected <paths...>`, `--json`, `--output <format>` | Visualize project structure as a dependency graph |
+
+<!-- oma:generated cli-registry:end -->
+
+---
+
+## Xem thêm
+
+- [Lệnh CLI](./commands.md): hành vi và ví dụ theo từng lệnh.
+- Các file rule của vendor (`.cursor/rules`, ...) được tạo lại bằng [`oma link <vendor>`](./commands.md#link), không phải bằng một lệnh `export` riêng.
+- [Tham chiếu cấu hình](../guide/configuration-reference.md): các key cấu hình mà những flag này ghi đè.
+- [Cập nhật tự động](../guide/automated-updates.md): chạy `oma update` từ GitHub Action.
+- [Giám sát dashboard](../guide/dashboard-monitoring.md): `agent status` và các dashboard.
+- [Cài đặt toàn cục](../guide/global-install.md): thư mục gốc cài đặt project và toàn cục.
+- [Khắc phục sự cố](../guide/troubleshooting.md)

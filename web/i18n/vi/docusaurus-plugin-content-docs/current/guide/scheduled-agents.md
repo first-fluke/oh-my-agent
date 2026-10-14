@@ -14,25 +14,25 @@ description: Chạy agent bất kỳ theo lịch lặp lại hoặc một lần 
 
 Khi chạy `oma schedule create`, oma:
 
-1. Ghi job record vào global manifest tại `~/.agents/schedule/schedules.json`.
+1. Ghi job record vào global manifest tại `~/.oma/schedule/schedules.json`.
 2. Đăng ký job với OS scheduler (macOS launchd, Linux systemd --user hoặc Windows Task Scheduler). OS job gọi `oma schedule run <id>` theo cron interval đã cấu hình.
-3. Khi đến giờ, `oma schedule run` tra job, inject environment variable đã capture, gọi `oma agent spawn` và ghi run log vào `~/.agents/schedule/runs/<id>/<timestamp>.md`.
+3. Khi đến giờ, `oma schedule run` tra job, inject environment variable đã capture, gọi `oma agent spawn` và ghi run log vào `~/.oma/schedule/runs/<id>/<timestamp>.md`.
 
-Manifest là source of truth duy nhất (SSOT). OS scheduler chỉ là executor. Toàn bộ state — job definition, run log và timestamp chạy lần cuối — nằm dưới `~/.agents/schedule/`.
+Manifest là source of truth duy nhất (SSOT). OS scheduler chỉ là executor. Toàn bộ state — job definition, run log và timestamp chạy lần cuối — nằm dưới `~/.oma/schedule/`.
 
 ### Thiết kế chỉ dùng global {#global-only-by-design}
 
 `oma schedule` chủ ý là user-global, không theo từng project. Vì OS scheduler chạy job độc lập với working directory hiện tại, một registry trung tâm duy nhất là SSOT thực tế duy nhất. Mỗi job ghi project mà nó thuộc về qua `workspace` và `projectLabel`, nên `schedule list` có thể nhóm job theo project dù registry dùng chung.
 
-Không có flag `--global`; schedule command luôn đọc và ghi `~/.agents/schedule/`.
+Không có flag `--global`; schedule command dùng `$OMA_HOME/schedule/`, mặc định là `~/.oma/schedule/`. Các OS job đã đăng ký nhận home đã resolve một cách tường minh, nên chúng mở đúng registry đó mà không cần login shell. Chạy `oma schedule sync` sau khi di chuyển home để làm mới command và log path của job.
 
 ### OS backend {#os-backends}
 
-| Nền tảng | Backend chính | Fallback |
-|---|---|---|
-| macOS | launchd (plist + `launchctl`) | user `crontab` |
-| Linux | systemd --user timer | user `crontab` |
-| Windows | Task Scheduler (`schtasks`) | — |
+| Nền tảng | Backend chính | Fallback | stderr của `oma schedule run` |
+|---|---|---|---|
+| macOS | launchd (plist + `launchctl`) | — | `runs/<id>/stderr.log` |
+| Linux | systemd --user timer | user `crontab` khi `systemctl --user` không khả dụng | `runs/<id>/stderr.log` (systemd); không lưu (crontab) |
+| Windows | Task Scheduler (`schtasks`) | — | Không lưu |
 
 oma tự động chọn backend khả dụng. Bạn không cần cấu hình thủ công.
 
@@ -61,14 +61,32 @@ oma schedule create qa-reviewer "Run QA review on the latest changes" --cron "0 
 # Run a backend agent every 2 hours using natural-language syntax
 oma schedule create backend "Check for slow queries in the API logs" --every "2h"
 
-# One-shot: run once at 3 PM today (cron syntax) and self-remove
+# One-shot: run at the next 15:00 and remove the job after a successful run
 oma schedule create pm "Generate weekly plan" --cron "0 15 * * *" --once
 
 # Check what is scheduled
 oma schedule list
 
 # Remove a job
-oma schedule delete sch_abc123def456
+oma schedule delete sch_abcdefgh2345
+```
+
+`schedule create` in ra job ID mà `run` và `delete` cần:
+
+```text
+Scheduled job registered: sch_abcdefgh2345
+  Agent:   qa-reviewer
+  Cron:    0 9 * * 1-5
+  Vendor:  auto
+  Project: my-project
+  Once:    false
+```
+
+Kích hoạt thủ công job mới một lần để kiểm tra prompt và vendor credential trước lần chạy theo lịch đầu tiên:
+
+```bash
+oma schedule run sch_abcdefgh2345
+ls ~/.oma/schedule/runs/sch_abcdefgh2345/
 ```
 
 ---
@@ -79,15 +97,15 @@ oma schedule delete sch_abc123def456
 
 Đăng ký scheduled agent job.
 
-```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
+```bash
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <Nd>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
 ```
 
 **Arguments:**
 
 | Argument | Bắt buộc | Mô tả |
 |---|---|---|
-| `agent-id` | Có | Agent type cần spawn: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `agent-id` | Có | Agent truyền cho `oma agent spawn`: một canonical ID (`orchestrator`, `architecture`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `qa`, `docs`, `tf-infra`, `explore`) hoặc tên definition như `qa-reviewer` hay `backend-engineer`. Giá trị này không được xác thực lúc đăng ký, nên hãy chạy `oma schedule run <id>` một lần sau khi tạo job. |
 | `prompt` | Có | Mô tả task truyền cho agent lúc chạy |
 
 **Options:**
@@ -98,9 +116,9 @@ oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" 
 | `--every "<phrase>"` | Interval ngôn ngữ tự nhiên (xem bảng bên dưới). Loại trừ lẫn nhau với `--cron`. |
 | `--vendor <vendor>` | Ghi đè CLI vendor truyền cho `oma agent spawn`: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Mặc định tự phát hiện từ `oma-config.yaml`. |
 | `-w, --workspace <path>` | Working directory cho agent lúc chạy. Mặc định là working directory hiện tại lúc đăng ký. |
-| `--once` | Chế độ một lần: job chạy một lần rồi tự xóa. Mặc định là lặp lại. |
-| `--expires-after <duration>` | Tự hết hạn scheduled job lặp sau duration như 30d. `0` nghĩa là vô thời hạn (mặc định). |
-| `--env <KEY1,KEY2>` | Capture các environment variable được nêu (chỉ các biến đó) vào `~/.agents/schedule/env/<id>` (permission 0600) để inject lúc chạy. Secret không bao giờ được ghi vào manifest. |
+| `--once` | Chế độ một lần: job tự xóa sau lần chạy đầu tiên thoát với code 0. Lần chạy thất bại sẽ giữ lại job, nên job lại được kích hoạt ở lần cron khớp tiếp theo. Mặc định là lặp lại. |
+| `--expires-after <duration>` | Xóa job lặp ở lần kích hoạt đầu tiên sau khi job đạt độ tuổi này. Dùng số ngày nguyên kèm đơn vị, như `30d`; số trần (`30`) bị từ chối. `0` nghĩa là vô thời hạn (mặc định). |
+| `--env <KEY1,KEY2>` | Capture các environment variable được nêu (chỉ các biến đó) vào `~/.oma/schedule/env/<id>` (permission 0600) để inject lúc chạy. Secret không bao giờ được ghi vào manifest. |
 | `--dry-run` | In cron đã resolve và ghi chú rounding nếu có mà không ghi scheduler job, manifest entry hoặc environment file. |
 | `--accept-rounded` | Bắt buộc để đăng ký natural-language interval sau khi OMA làm tròn nó thành bước cron có thể biểu diễn. Xem trước bằng `--dry-run`. |
 
@@ -124,6 +142,7 @@ Xem trước interval đã làm tròn trước khi đăng ký:
 ```bash
 oma schedule create backend "Check logs" --every 7m --dry-run
 # Preview: requested interval resolves to */6 * * * *
+# Note: Requested every 7m -- 7 is not a divisor of 60; rounded to every 6m (*/6 * * * *).
 # Preview only: no OS job, manifest entry, or env file was written.
 oma schedule create backend "Check logs" --every 7m --accept-rounded
 ```
@@ -156,7 +175,7 @@ oma schedule create backend "Sync external API data" --cron "0 * * * *" --env SY
 
 Liệt kê mọi scheduled job trên tất cả project, nhóm theo project và kèm OS drift state.
 
-```
+```bash
 oma schedule list [--json]
 ```
 
@@ -179,16 +198,18 @@ oma schedule list [--json]
 
 Job được nhóm theo project label. Mỗi dòng cho biết: ID, cron expression, agent, vendor, OS backend, có lặp hay không và drift state.
 
-```
+```text
 [my-project]
 ID                 CRON           AGENT              VENDOR   BACKEND  RECUR  STATE
 ------------------------------------------------------------------------------------------
-sch_abc123def456   0 9 * * 1-5    qa-reviewer        auto     launchd  true   synced
-sch_xyz789ghi012   */30 * * * *   backend            claude   launchd  true   missing-in-os
+sch_abcdefgh2345   0 9 * * 1-5    qa-reviewer        auto     launchd  true   synced
+sch_mnopqrst4567   */30 * * * *   backend            claude   launchd  true   missing-in-os
 
 [orphan-in-os]
   dev.oma.sch_old (in OS scheduler but not in manifest)
 ```
+
+Job do `oma harness evolution enable` tạo được liệt kê với agent `__builtin__`; chúng chạy `oma harness evolution run --scheduled` trong project đó. Hãy quản lý chúng bằng `oma harness evolution enable` và `disable` (xem [Tiến hóa Harness của dự án](./harness-evolution.md)) thay vì `oma schedule delete`. `oma schedule builtin-evolution-add` và `oma schedule inspect`, xuất hiện trong `oma schedule --help`, là helper nội bộ cho lệnh đó.
 
 **Examples:**
 
@@ -203,7 +224,7 @@ oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 
 Xóa scheduled job khỏi cả manifest và OS scheduler.
 
-```
+```bash
 oma schedule delete <id>
 ```
 
@@ -218,7 +239,7 @@ Nếu xóa khỏi OS scheduler thất bại (ví dụ backend tạm thời khôn
 **Example:**
 
 ```bash
-oma schedule delete sch_abc123def456
+oma schedule delete sch_abcdefgh2345
 ```
 
 ---
@@ -227,24 +248,24 @@ oma schedule delete sch_abc123def456
 
 Thực thi scheduled job theo ID. OS scheduler gọi command này lúc đến giờ và thường không gọi thủ công.
 
-```
+```bash
 oma schedule run <id>
 ```
 
 Wrapper:
-1. Tra job ID trong manifest. Thoát khác 0 nếu không tìm thấy.
-2. Load environment variable đã capture từ `~/.agents/schedule/env/<id>` (nếu có) và inject vào process được spawn.
+1. Tra job ID trong manifest. Thoát khác 0 nếu không tìm thấy. Nếu `--expires-after` đã hết hạn, xóa job thay vì chạy.
+2. Load environment variable đã capture từ `~/.oma/schedule/env/<id>` (nếu có) và inject vào process được spawn.
 3. Gọi `oma agent spawn <agentId> <prompt> <generatedSessionId> --vendor <vendor> -w <workspace>`.
-4. Ghi run result vào `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`.
+4. Ghi run result vào `~/.oma/schedule/runs/<id>/<ISO-timestamp>.md`.
 5. Cập nhật `lastFiredAt` trong manifest.
-6. Nếu đã đặt `--once`, tự xóa job (manifest + OS scheduler).
+6. Nếu đã đặt `--once` và agent thoát với code 0, xóa job (manifest + OS scheduler).
 
-**Authentication failure được báo rõ:** nếu vendor credential hết hạn, job thoát với code khác 0 và in `re-auth required: <vendor>` ra stderr. Nó không thành công âm thầm. Có thể cấu hình notification `oma-voice` tùy chọn.
+**Authentication failure được báo rõ:** nếu vendor credential hết hạn, job thoát với code khác 0 và in `re-auth required: <vendor>` ra stderr (lưu trong `runs/<id>/stderr.log` trên launchd và systemd). Vendor hiển thị là `unknown` khi job được tạo không có `--vendor`. Nó không thành công âm thầm.
 
 Có thể gọi `schedule run` thủ công để debug:
 
 ```bash
-oma schedule run sch_abc123def456
+oma schedule run sch_abcdefgh2345
 ```
 
 ---
@@ -253,7 +274,7 @@ oma schedule run sch_abc123def456
 
 Đồng bộ lại manifest với OS scheduler. Dùng sau system migration, OS scheduler reset hoặc để sửa drift.
 
-```
+```bash
 oma schedule sync [--prune]
 ```
 
@@ -279,20 +300,23 @@ oma schedule sync --prune
 
 ## Bố cục lưu trữ {#storage-layout}
 
-Toàn bộ schedule state nằm dưới `~/.agents/schedule/`:
+Toàn bộ schedule state nằm dưới `~/.oma/schedule/`:
 
-```
-~/.agents/schedule/
+```text
+~/.oma/schedule/
 ├── schedules.json          # SSOT manifest (permissions 0600)
 ├── env/
-│   └── sch_abc123def456    # Captured env vars for this job (permissions 0600)
+│   └── sch_abcdefgh2345    # Captured env vars for this job (permissions 0600)
+├── running/                # Lease files while a job runs
 └── runs/
-    └── sch_abc123def456/
-        └── 2026-06-16T090000Z.md   # Run log
+    └── sch_abcdefgh2345/
+        ├── 2026-06-16T09-00-00-000Z.md   # One log per fire: session, exit code, agent output
+        ├── stdout.log                    # launchd and systemd only: stdout of oma schedule run
+        └── stderr.log                    # launchd and systemd only: stderr, e.g. re-auth required
 ```
 
 Permission:
-- Thư mục `~/.agents/schedule/`: `0700`
+- Thư mục `~/.oma/schedule/`: `0700`
 - File `schedules.json` và `env/<id>`: `0600`
 
 **Secret không bao giờ được ghi vào `schedules.json`.** Flag `--env` chỉ ghi key được nêu vào file riêng `0600` dưới `env/`. Chỉ các key được liệt kê rõ mới được capture; không bao giờ lưu toàn bộ environment dump.
@@ -312,8 +336,8 @@ Permission:
 **Kiểm tra run log:**
 
 ```bash
-ls ~/.agents/schedule/runs/sch_abc123def456/
-cat ~/.agents/schedule/runs/sch_abc123def456/2026-06-16T090000Z.md
+ls ~/.oma/schedule/runs/sch_abcdefgh2345/
+cat ~/.oma/schedule/runs/sch_abcdefgh2345/2026-06-16T09-00-00-000Z.md
 ```
 
 **Job hiện `missing-in-os` sau system restart:**
@@ -322,7 +346,11 @@ Chạy `oma schedule sync` để đăng ký lại mọi manifest job với OS sc
 
 **Job đã chạy nhưng vendor credential hết hạn:**
 
-Kiểm tra run log để tìm `re-auth required: <vendor>`. Authenticate lại bằng vendor CLI (ví dụ `claude login`, `codex login`) và chạy `oma schedule run <id>` thủ công để xác minh trước lần kích hoạt theo lịch tiếp theo.
+Trên macOS (launchd) và Linux (systemd), kiểm tra `~/.oma/schedule/runs/<id>/stderr.log` để tìm `re-auth required: <vendor>`. Run log `<timestamp>.md` chứa output và exit code của chính agent. Backend crontab và Task Scheduler không giữ stderr này; hãy chạy `oma schedule run <id>` trong terminal để xem. Authenticate lại bằng vendor CLI (ví dụ `claude login`, `codex login`) và chạy `oma schedule run <id>` thủ công để xác minh trước lần kích hoạt theo lịch tiếp theo.
+
+**Thay đổi một job:**
+
+Không có `schedule update`. Hãy tạo job thay thế trước, rồi xóa ID cũ bằng `oma schedule delete <old-id>`. `--env` sao chép giá trị biến lúc tạo job, nên sau khi xoay vòng (rotate) một secret, hãy tạo lại job với giá trị mới đã export trong shell.
 
 **`--every` làm tròn interval của tôi:**
 
@@ -338,6 +366,15 @@ oma schedule list --json | jq -r '.jobs[] | select(.projectLabel == "my-project"
 
 **Hỗ trợ Windows:**
 
-Trên Windows, oma dùng `schtasks` để đăng ký job. `schedule list` drift detection và `schedule sync` hoạt động giống nhau trên mọi platform.
+Trên Windows, oma dùng `schtasks` để đăng ký job. Không thể đọc ngược registration của Task Scheduler, nên `schedule list` báo mọi job đã đăng ký là `stale`, và `schedule sync` (cũng được `oma update` chạy) đăng ký lại tất cả. Trên Windows, hãy coi `stale` là bình thường; `missing-in-os` và `orphan-in-os` vẫn cho biết có drift.
 
 Lưu ý rằng `schtasks` không biểu diễn được mọi cron shape. Các shape được hỗ trợ là: `*/N * * * *` (mỗi N phút), `M * * * *` (mỗi giờ tại :M), `M H * * *` (hằng ngày), `M H * * D` (hằng tuần; `D` có thể là một ngày, range như `1-5` hoặc comma list như `1,3,5`) và `M H D * *` (hằng tháng). Expression khác (ví dụ comma list ở minute field) bị từ chối lúc `schedule create` trên Windows.
+
+`--every` chỉ tạo ra shape được hỗ trợ với interval phút chia hết 60 (ví dụ `--every 5m` hoặc `--every 30m`). Interval giờ và ngày (`--every 2h`, `--every "every 6 hours"`, `--every 1d`) cùng bước giờ như `--cron "0 */4 * * *"` tạo ra `0 */N * * *` hoặc `0 0 */N * *`, bị Task Scheduler từ chối lúc `schedule create`. Trên Windows, hãy dùng thời điểm cố định, ví dụ `--cron "0 9 * * 1-5"`.
+
+---
+
+## Xem thêm {#see-also}
+
+- [Tiến hóa Harness của dự án](./harness-evolution.md) — job `__builtin__` tích hợp sẵn chạy cải thiện skill có giới hạn ngân sách.
+- [Đánh giá Harness](./harness-eval.md) — cách các lệnh đánh giá kết hợp với nhau.

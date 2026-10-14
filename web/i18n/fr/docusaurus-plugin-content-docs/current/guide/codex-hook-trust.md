@@ -14,7 +14,7 @@ Il s’agit d’un mécanisme de sécurité côté Codex, pas d’une limitation
 
 ## L’étape unique : examiner les hooks dans Codex
 
-Après que `oma` (install), `oma link` ou `oma update` a écrit `.codex/hooks.json` dans un projet que Codex n’a encore jamais vu, les hooks ne s’exécutent **pas encore**. Ouvrez Codex et examinez-les une fois :
+Après que `oma` (install), `oma link` ou `oma update` a écrit `.codex/hooks.json` dans un projet que Codex n’a encore jamais vu (pour une installation globale, `~/.codex/hooks.json`), les hooks ne s’exécutent **pas encore**. Ouvrez Codex et examinez-les une fois :
 
 1. Ouvrez le projet dans le CLI Codex.
 2. Lancez `/hooks` pour ouvrir le navigateur de hooks (TUI).
@@ -22,8 +22,8 @@ Après que `oma` (install), `oma link` ou `oma update` a écrit `.codex/hooks.js
 
 Tant que vous ne l’avez pas fait, les hooks restent non approuvés et sont ignorés silencieusement. C’est pourquoi oh-my-agent affiche une notification chaque fois qu’il crée ou modifie `.codex/hooks.json` :
 
-```
-Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run)
+```text
+⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
 Vérifiez le fichier généré avant d’ouvrir Codex :
@@ -62,7 +62,7 @@ Cette option s’applique **uniquement** aux processus Codex qu’oh-my-agent cr
 
 ## Aucun indicateur `[features] hooks` requis
 
-Les anciennes configurations exigeaient d’activer `[features] hooks = true` dans la configuration Codex. Les hooks sont stables et activés par défaut depuis environ Codex CLI 0.14x ; ce n’est donc plus nécessaire. oh-my-agent ne l’écrit plus et supprime activement l’indicateur obsolète `child_agents_md` de la configuration Codex lorsqu’il le trouve.
+Les anciennes versions d’oh-my-agent écrivaient `[features] codex_hooks = true` dans la configuration Codex. Codex 0.124 a renommé cet indicateur en `hooks` et a fait des hooks une fonctionnalité stable, activée par défaut ; aucun indicateur n’est donc nécessaire. oh-my-agent n’écrit aucune de ces deux clés et supprime les indicateurs obsolètes `codex_hooks` et `child_agents_md` de la table `[features]` lorsqu’il les trouve.
 
 ---
 
@@ -74,3 +74,8 @@ Les anciennes configurations exigeaient d’activer `[features] hooks = true` da
 | `oma update` avec des commandes de hooks inchangées | Rien — la confiance est conservée |
 | `oma update` qui modifie une commande de hook | Relancer `/hooks` pour redonner la confiance (l’installateur affiche une notification) |
 | Sous-processus Codex créé par oh-my-agent | Rien — le contournement est appliqué automatiquement |
+
+## Voir aussi
+
+- [Intégration à un projet existant](./integration.md) : ce que l’installateur écrit pour chaque fournisseur
+- [Installation globale](./global-install.md) : installations à l’échelle de l’utilisateur qui écrivent `~/.codex/`

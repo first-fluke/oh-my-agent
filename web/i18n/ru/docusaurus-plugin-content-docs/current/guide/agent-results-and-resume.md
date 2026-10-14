@@ -8,9 +8,38 @@ description: Записывайте работу агентов проверяе
 
 OMA рассматривает результат агента как небольшую запись evidence, а не только как exit code процесса. Run сохраняет ID task и session, fingerprint workspace, verification receipt, изменённые файлы, нерешённую работу и hash artifact. Благодаря этому coordinator может повторно использовать завершённую задачу, только пока её acceptance contract и input остаются совпадающими.
 
-Используйте этот жизненный цикл напрямую при запуске native agent. Workflow и `oma agent spawn` создают те же записи автоматически и оставляют завершение managed run parent coordinator.
+Используйте этот жизненный цикл напрямую при запуске native agent. Рабочие процессы и `oma agent spawn` создают те же записи автоматически и оставляют завершение управляемого run родительскому координатору. Термины, используемые здесь, описаны в глоссарии: [запись запуска и claim](../getting-started/glossary.md#run-record-and-claim) и [план](../getting-started/glossary.md#plan).
 
-## Запуск native run
+## Жизненный цикл вкратце
+
+| Шаг | Команда | Что записывается | Что сохранить |
+| --- | --- | --- | --- |
+| 1. Contract | Отредактируйте `.agents/results/plan-SESSION_ID.json` | `acceptance_criteria` и `required_checks` task | ID сессии, ID task |
+| 2. Begin | `oma agent begin AGENT TASK SESSION_ID --workspace .` | Запись run со статусом `running` | `runId`, `claimPath` |
+| 3. Context (необязательно) | `oma agent context AGENT --difficulty Medium` | Ничего | Context для prompt |
+| 4. Verify | `oma agent verify RUN_ID --required` | Один receipt на каждую проверку | Exit code |
+| 5. Claim | Запишите JSON по пути `claimPath` | Файл claim | Ничего |
+| 6. Finish | `oma agent finish RUN_ID CLAIM_PATH` | Итоговый статус | `status` |
+| 7. Recover | `oma agent resume SESSION_ID --dry-run`, затем без `--dry-run` | Checkpoint восстановления и lease сессии | Статус каждой task |
+
+`oma agent spawn` и `oma agent parallel` выполняют шаги 2 и 6 за вас: parent-процесс начинает run и завершает его, когда child выходит.
+
+```mermaid
+flowchart TD
+  plan["Task contract in plan-SESSION_ID.json"] --> begin["oma agent begin, or spawn"]
+  begin --> running(["running"])
+  running -->|"oma agent verify"| running
+  running --> claim["Claim written at claimPath"]
+  claim --> finish["oma agent finish, or the spawning parent"]
+  finish -->|"claim completed, current receipts, nothing unresolved"| completed(["completed"])
+  finish -->|"unresolved items, missing checks or decisions, invalid claim"| partial(["partial"])
+  finish -->|"claim reports blocked"| blocked(["blocked"])
+  finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
+```
+
+Claim также может напрямую сообщить `partial` или `failed`. Finish никогда не повышает claim: он понижает claim `completed`, если его evidence не подтверждается, а ненулевой exit code делает любой run `failed`.
+
+## Запуск native run {#start-a-native-run}
 
 Сначала определите task и его `acceptance_criteria` и `required_checks` в плане `.agents/results/plan-SESSION_ID.json`. Для небольшой общей проверки проекта план может содержать одну task, например:
 
@@ -86,6 +115,26 @@ oma agent verify RUN_ID -- git diff --check
 
 ## Запишите claim и завершите run
 
+Для task, которые выбирают API contract, политику аутентификации, модель данных,
+стратегию миграции, владельца состояния, область доступа к инфраструктуре или другое
+решение, от которого зависит дальнейшая работа, объявите `required_decisions` в task
+до dispatch:
+
+```json
+"required_decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "description": "Choose the compatibility window and rollback strategy for the account migration."
+  }
+]
+```
+
+Не указывайте это поле для task, которые следуют уже принятому решению. Требования
+закрепляются вместе с task contract и не могут быть удалены или изменены после dispatch.
+Список предлагаемых subject для agent можно получить командой
+`oma state decisions list --agent db-engineer --json`. Эти subject — варианты
+выбора, которые стоит использовать при необходимости; каталог не делает каждый выбор обязательным.
+
 Запишите файл claim по точному пути, который вернул `begin`:
 
 ```json
@@ -98,6 +147,29 @@ oma agent verify RUN_ID -- git diff --check
 ```
 
 `status` принимает одно из значений `completed`, `partial`, `blocked` или `failed`. Пути задаются относительно корня проекта, каждый artifact должен быть обычным файлом внутри workspace. Используйте `verificationSkipped` только для конкретного review, у которого нет исполняемой проверки; это не превращает неудачную проверку в успешную.
+
+Включите существенные решения в необязательный массив `decisions` в claim:
+
+```json
+"decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "decision": "Use an expand-and-contract migration; retain the old column for one release.",
+    "rationale": "Both deployed app versions must work during the rollout; rollback switches reads to the retained column.",
+    "alternatives": ["Replace the column during a maintenance window"],
+    "evidence": ["docs/account-migration.md"]
+  }
+]
+```
+
+Parent сохраняет каждое решение как событие `decision.made` в сессии run
+и прикрепляет к нему фактические ID agent, task и run. Отсутствие обязательного решения
+оставляет результат partial, даже если исполняемые проверки прошли. Решения из
+другой task или попытки не могут удовлетворить требование. Receipt закрепляет
+ID событий решений и hash их содержимого; при повторном использовании проверяется, что эти события
+по-прежнему существуют, корректны и их содержимое не изменилось.
+Необязательные решения тоже записываются. Read-only agent возвращают тот же массив в
+своём claim `OMA_RESULT_JSON`, чтобы parent мог его сохранить.
 
 После записи claim завершите native run:
 
@@ -123,7 +195,20 @@ oma agent finish RUN_ID CLAIM_PATH
 oma agent resume SESSION_ID --dry-run
 ```
 
-Отчёт классифицирует каждую task как `reused`, `ready`, `running` или `blocked` и указывает причину. Корректный завершённый receipt используется повторно только тогда, когда его contract, input, hash artifact и evidence зависимостей по-прежнему актуальны. Живой managed process или native run без evidence активности не дублируется.
+Отчёт классифицирует каждую task как `reused`, `ready`, `running` или `blocked` и указывает причину:
+
+```mermaid
+flowchart TD
+  task["Plan task and its latest run"] --> live{"Latest run still running, with a live or unknown process?"}
+  live -->|yes| running(["running"])
+  live -->|no| valid{"Completed evidence still current?"}
+  valid -->|yes| reused(["reused"])
+  valid -->|no| safe{"retry_policy safe, replayable prompt and agent, attempts left?"}
+  safe -->|yes| ready(["ready"])
+  safe -->|no| blocked(["blocked"])
+```
+
+Зависимость, которая не находится в состоянии `reused`, возвращает зависимую task `reused` в `ready` (или в `blocked`, если её нельзя воспроизвести), а task `ready`, зависимость которой находится в `blocked` или `running`, становится `blocked`. Корректный завершённый receipt используется повторно только тогда, когда его contract, input, hash artifact и evidence зависимостей по-прежнему актуальны. Живой managed process или native run без evidence активности не дублируется.
 
 Когда отчёт разрешает безопасное выполнение, возобновите готовые task в порядке зависимостей:
 
@@ -151,4 +236,9 @@ OMA записывает checkpoint восстановления в `.agents/sta
 | Изменились план или input | После стабилизации плана начните новый run. | Новый run сохраняет snapshot нового contract; старое evidence не используется повторно. |
 | Task требует решения | Запишите её как `blocked` с объяснением. | Resume оставит её blocked, пока не будут предоставлены решение и prompt. |
 
-Ошибки разбора, отсутствие инструментов vendor, состояние dashboard, расписания и устаревшие данные evaluation описаны в разделе [Устранение неполадок](/docs/guide/troubleshooting).
+## Дальнейшие шаги
+
+- Сообщения об ошибках `begin`, `verify`, `finish` и `resume`: [Устранение неполадок](./troubleshooting.md#find-your-error)
+- Ошибки разбора, отсутствие инструментов vendor, состояние dashboard, расписания и устаревшие данные evaluation: [Устранение неполадок](./troubleshooting.md)
+- Наблюдение за managed run во время работы: [Мониторинг через dashboard](./dashboard-monitoring.md)
+- Определение планов с task contract: [Мультиагентные проекты](./multi-agent-project.md)

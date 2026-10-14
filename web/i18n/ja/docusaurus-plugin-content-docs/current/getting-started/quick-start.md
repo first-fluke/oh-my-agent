@@ -21,7 +21,7 @@ Windows PowerShell では次を実行します。
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-対話式のセットアップでは、応答言語、CLI ベンダー、機能プロバイダー、モデルプリセット、プロジェクトのスキルプリセット、スタックのバリアントを指定します。最初の実行ではデフォルトを使い、普段使っているベンダーを選び、リポジトリに最も近いプロジェクトプリセットを選択してください。
+対話式のセットアップでは、応答言語、CLI ベンダー、[機能プロバイダー](./glossary.md#capability-provider)、[モデルプリセット](./glossary.md#model-preset)、プロジェクトの[スキルプリセット](./glossary.md#skill-preset)、スタックのバリアントを指定します。最初の実行ではデフォルトを使い、普段使っているベンダーを選び、リポジトリに最も近いプロジェクトプリセットを選択してください。各プリセットに含まれるスキルと、[プリセット外のスキルが必要なワークフロー](./installation.md#workflows-that-need-skills-outside-a-preset)については、[プリセット](./installation.md#presets)を参照してください。
 
 すでに `bun` がある場合は、インストーラーを直接実行できます。
 
@@ -29,7 +29,8 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 bunx oh-my-agent@latest
 ```
 
-ブートストラップスクリプトは現在のプロジェクトにインストールします。HOME 単位でインストールしたい場合は `oma install --global` を使います。プロジェクト単位とグローバルインストールを組み合わせる前に、[インストール](./installation.md)を読んでください。
+ブートストラップスクリプトは現在のプロジェクトにインストールします。HOME 単位でインストールしたい場合は `oma install --global` を使います。プロジェクト単位とグローバルインストールを組み合わせる前に、[グローバルインストール](../guide/global-install.md)を読んでください。
+
 
 ## 2. 結果を確認する
 
@@ -49,7 +50,9 @@ $ echo $?
 0
 ```
 
-任意の MCP、ブラウザー、メモリ、コードインテリジェンス統合は警告として表示されることがあります。これらは利用するタスクにだけ必要です。機械可読な形式で確認する場合は `oma doctor --json` を使います。レポートに問題が含まれていると、ゼロ以外の終了ステータスを返します。各標準エージェントロールで解決されたモデルと CLI を確認するには `oma doctor --profile` を使います。
+`oma doctor` は、任意の統合の問題を警告として報告することがあります。デフォルトの AgentMemory の準備は `oma install` と `oma update` の実行中に確認されます。インストール、起動、ヘルスチェックのいずれかに失敗すると、これらのコマンドは停止します。`providers.semantic_memory: none` または `honcho` を選ぶか、`OMA_NO_AGENTMEMORY=1` を設定すると、この準備を省略します。
+
+機械可読な形式で確認する場合は `oma doctor --json` を使います。レポートに問題が含まれていると、ゼロ以外の終了ステータスを返します。各標準エージェントロールで解決されたモデルと CLI を確認するには `oma doctor --profile` を使います。
 
 `oma` が使えなくても Bun がインストールされている場合は、グローバルコマンドなしで同じチェックを実行できます。
 
@@ -57,7 +60,7 @@ $ echo $?
 bunx oh-my-agent@latest doctor
 ```
 
-それでも `oma` コマンドが見つからない場合は、新しいシェルを開くか、パッケージマネージャーの bin ディレクトリを `PATH` に追加してください。`oma doctor` が無効な設定を報告した場合は、指定されたフィールドを修正してもう一度実行します。復旧のために `.agents/oma-config.yaml` を削除しないでください。このファイルはユーザーが管理する設定で、更新後も設定を保持します。
+それでも `oma` コマンドが見つからない場合は、新しいシェルを開くか、パッケージマネージャーの bin ディレクトリを `PATH` に追加してください。`oma` コマンドのインストール方法は[インストール](./installation.md#method-3-global-install)にあります。`oma doctor` が無効な設定を報告した場合は、指定されたフィールドを修正してもう一度実行します。復旧のために `.agents/oma-config.yaml` を削除しないでください。このファイルはユーザーが管理する設定で、更新後も設定を保持します。
 
 ## 3. 小さなタスクを 1 つ実行する
 
@@ -77,11 +80,12 @@ API と UI の両方にまたがるタスクでは、`/work` または `/orchest
 
 OMA は初期状態で `model_preset: auto`、コードインテリジェンスに Serena、意味メモリに Agent Memory、Web 検索にネイティブ検索を使い、テレメトリを無効にします。Serena は共有 `bridge` トランスポートを使い、設定しない限り自動更新されます。ブラウザー DevTools MCP はオプトインで、初回の対話式セットアップでは Aside が先に提示されます。動作への影響と上書きキーは[重要なデフォルト](./important-defaults.md)を参照してください。
 
-管理対象のタスクが停止した場合は、まず `oma agent status <session-id> [agent-id]` を実行し、`.agents/state/agent-runs/` にある receipt（実行記録）と、注入された claim（構造化された結果宣言）のパスを確認します。これらの記録には、実行、タスク、ワークスペース、終了コード、検証状態が含まれます。`.agents/state/memories/` の人間向け `result-*.md` と `progress-*.md` は、存在する場合に追加の文脈を提供します。実行が終了したことを確認してから、失敗した最小のコマンドだけを再実行してください。持続実行ワークフローは完了するか `workflow done` と指示するまでアクティブです。状態ファイルからの復旧については、[ワークフロー](../core-concepts/workflows.md#persistent-mode-mechanics)を参照してください。
+管理対象のタスクが停止した場合は、まず `oma agent status <session-id> [agent-id]` を実行し、`.agents/state/agent-runs/` にある受領記録と、注入された申告（claim）のパスを確認します。これらの記録には、実行、タスク、ワークスペース、終了コード、検証状態が含まれます。`.agents/state/memories/` の人間向け `result-*.md` と `progress-*.md` は、存在する場合に追加の文脈を提供します。実行が終了したことを確認してから、失敗した最小のコマンドだけを再実行してください。[永続ワークフロー](./glossary.md#persistent-workflow)は完了するか `workflow done` と指示するまでアクティブです。状態ファイルからの復旧については、[ワークフロー](../core-concepts/workflows.md#persistent-mode-mechanics)を参照してください。
 
 ## 次のステップ
 
 - [重要なデフォルト](./important-defaults.md): 優先順位、プロバイダー、復旧方法
 - [インストール](./installation.md): プリセット、ベンダー設定、グローバルインストール、更新
 - [エージェント](../core-concepts/agents.md): 33 個のスキルパッケージとディスパッチロール
-- [ワークフロー](../core-concepts/workflows.md): 計画、並列実行、QA、持続モード
+- [ワークフロー](../core-concepts/workflows.md): 計画、並列実行、QA、永続モード
+- [トラブルシューティング](../guide/troubleshooting.md): インストール、ベンダー、フックが期待どおりに動かない場合

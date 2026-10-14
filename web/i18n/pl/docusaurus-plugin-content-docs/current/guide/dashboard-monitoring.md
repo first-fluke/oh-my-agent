@@ -13,9 +13,9 @@ oh-my-agent udostępnia dwa dashboardy czasu rzeczywistego do monitorowania akty
 | Komenda | Interfejs | URL | Technologia |
 |:--------|:---------|:----|:-----------|
 | `oma dashboard terminal` | Terminal (TUI) | N/D (renderuje w terminalu) | watcher plików chokidar, renderowanie picocolors |
-| `oma dashboard web` | Przeglądarka | `http://127.0.0.1:9847` (token wypisywany przy uruchomieniu) | serwer HTTP, WebSocket, watcher plików chokidar |
+| `oma dashboard web` | Przeglądarka | `http://127.0.0.1:9847/` (wypisywany przy uruchomieniu) | serwer HTTP, WebSocket, watcher plików chokidar |
 
-Oba dashboardy domyślnie obserwują `.agents/state/memories/`. Ustaw `MEMORIES_DIR`, gdy pliki koordynacji znajdują się gdzie indziej. Dashboard nie przełącza się automatycznie na `.serena/memories/`.
+Oba dashboardy domyślnie obserwują `.agents/state/memories/` w bieżącym katalogu. Przekaż `--project-root <path>`, aby obserwować inny projekt, albo ustaw `MEMORIES_DIR`, gdy pliki koordynacji znajdują się gdzie indziej. Dashboard nie przełącza się automatycznie na `.serena/memories/`.
 
 ### Dashboard terminalowy
 
@@ -23,28 +23,14 @@ Oba dashboardy domyślnie obserwują `.agents/state/memories/`. Ustaw `MEMORIES_
 oma dashboard terminal
 ```
 
-Renderuje bezpośrednio w terminalu interfejs z ramkami znakowymi. Aktualizuje się automatycznie po zmianie plików pamięci. Naciśnij `Ctrl+C`, aby wyjść.
+Renderuje bezpośrednio w terminalu interfejs z ramkami znakowymi. Aktualizuje się automatycznie po zmianie plików pamięci. Naciśnij `Ctrl+C`, aby wyjść. Ekran ma cztery obszary, od góry do dołu:
 
-```
-╔════════════════════════════════════════════════════════╗
-║  OMA Memory Dashboard                                 ║
-║  Session: session-20260324-143052  [RUNNING]          ║
-╠════════════════════════════════════════════════════════╣
-║  Agent        Status       Turn   Task                ║
-║  ──────────── ──────────── ────── ──────────────────  ║
-║  backend      ● running    3      Implement user API  ║
-║  frontend     ● running    2      Build login page    ║
-║  mobile       ✓ completed  5      Auth screens done   ║
-║  qa           ○ blocked    -                          ║
-╠════════════════════════════════════════════════════════╣
-║  Latest Activity:                                     ║
-║  [backend] Implementing JWT token validation          ║
-║  [frontend] Creating login form components            ║
-║  [mobile] Completed biometric auth integration        ║
-╠════════════════════════════════════════════════════════╣
-║  Updated: 03/24/2026, 02:31:15 PM  |  Ctrl+C to exit ║
-╚════════════════════════════════════════════════════════╝
-```
+| Obszar | Pokazuje | Źródło |
+|:-------|:------|:-------|
+| Nagłówek | `OMA Memory Dashboard` i `Session: <id> [<status>]` | `orchestrator-session.md`, a w przeciwnym razie najnowszy `session-*.md`; `N/A [UNKNOWN]`, gdy żaden nie istnieje |
+| Tabela agentów | Agent, Status, Turn i Task (pierwsze 20 znaków); `No agents detected yet`, gdy jest pusta | `task-board.md`, a w przeciwnym razie agenci wykryci w plikach pamięci |
+| Latest Activity | Do pięciu wierszy `[<name>] <message>`; `No activity yet`, gdy nie ma aktywności | Ostatnia znacząca linia pięciu ostatnio zmodyfikowanych plików `.md` |
+| Stopka | `Updated: <time>  \|  Ctrl+C to exit` | Czas ostatniego odświeżenia |
 
 **Symbole statusu:**
 - `●` (zielony): działanie
@@ -59,7 +45,7 @@ Renderuje bezpośrednio w terminalu interfejs z ramkami znakowymi. Aktualizuje s
 oma dashboard web
 ```
 
-Uruchamia wyłącznie loopbackowy serwer webowy na porcie 9847 (możesz go zmienić przez `DASHBOARD_PORT`). OMA wypisuje URL zawierający `127.0.0.1`; otwórz dokładny URL i zachowaj token. Strona używa tokenu dla `/api/state`, `/api/recap` i aktualizacji WebSocket. Żądania bez tokenu zwracają `401`.
+Uruchamia wyłącznie loopbackowy serwer webowy na porcie 9847 (możesz go zmienić przez `DASHBOARD_PORT`). Komenda wypisuje `http://127.0.0.1:9847/` i `Watching: <memories dir>`. Każde uruchomienie tworzy nowy token dostępu i osadza go w udostępnianej stronie, więc otwórz wypisany URL; niczego nie trzeba kopiować. Strona wysyła token z żądaniami `/api/state`, `/api/recap` i WebSocket; żądania bez niego zwracają `401`.
 
 ```bash
 # Custom port
@@ -68,7 +54,7 @@ DASHBOARD_PORT=8080 oma dashboard web
 # Custom memories directory
 MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 
-# The process also serves the recap view at /recap; use the tokenized URL it prints.
+# Recap view from the same process: http://127.0.0.1:9847/recap
 ```
 
 Dashboard webowy pokazuje te same informacje co dashboard terminalowy, ale w stylizowanym interfejsie z ciemnym motywem, który zawiera:
@@ -84,34 +70,11 @@ Dashboard webowy pokazuje te same informacje co dashboard terminalowy, ale w sty
 
 W workflowach wieloagentowych zalecana konfiguracja używa trzech paneli terminala:
 
-```
-┌────────────────────────────────┬────────────────────────────────┐
-│                                │                                │
-│   Terminal 1: Main Agent       │   Terminal 2: Dashboard        │
-│                                │                                │
-│   $ gemini                     │   $ oma dashboard terminal              │
-│   > /orchestrate               │                                │
-│   ...                          │   ╔═══════════════════════╗    │
-│                                │   ║ Serena Dashboard      ║    │
-│                                │   ║ Session: ...          ║    │
-│                                │   ╚═══════════════════════╝    │
-│                                │                                │
-├────────────────────────────────┴────────────────────────────────┤
-│                                                                 │
-│   Terminal 3: Ad-hoc commands                                   │
-│                                                                 │
-│   $ oma agent status session-20260324-143052 backend frontend   │
-│   $ oma stats get                                                   │
-│   $ oma verify agent backend -w ./api                           │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Terminal 1** uruchamia główną sesję agenta (Gemini CLI, Claude Code, Codex itd.), w której pracujesz z workflowami takimi jak `/orchestrate` albo `/work`.
-
-**Terminal 2** uruchamia dashboard do biernego monitorowania. Aktualizuje się automatycznie i nie wymaga interakcji.
-
-**Terminal 3** służy do komend ad hoc: sprawdzania statusu agentów, uruchamiania weryfikacji, przeglądania statystyk i diagnozowania problemów.
+| Panel | Uruchom | Cel |
+|:-----|:----|:--------|
+| 1. Główny agent | CLI hosta (`claude`, `codex`, `agy`, `qwen` itd.), a następnie `/orchestrate` albo `/work` | Prowadzenie workflowu |
+| 2. Dashboard | `oma dashboard terminal` (albo `oma dashboard web`) | Bierne obserwowanie postępu; aktualizuje się bez interakcji |
+| 3. Komendy ad hoc | `oma agent status session-20260324-143052 backend frontend`, `oma stats get`, `oma verify agent backend -w ./api` | Sprawdzanie statusu agentów, uruchamianie weryfikacji, przeglądanie statystyk albo diagnozowanie problemów |
 
 ---
 
@@ -179,7 +142,7 @@ Dashboard wykrywa ukończenie po obecności tego pliku i odpowiednio aktualizuje
 
 ---
 
-## Runbook rozwiązywania problemów
+## Runbook rozwiązywania problemów {#troubleshooting-runbook}
 
 ### Sygnał 1: agent pokazuje „running”, ale numer tury się nie zmienia
 
@@ -191,7 +154,7 @@ Dashboard wykrywa ukończenie po obecności tego pliku i odpowiednio aktualizuje
 - Agent czeka na dane od użytkownika (w trybie automatycznej akceptacji nie powinno się to zdarzyć).
 
 **Działania:**
-1. Sprawdź plik logu agenta: `cat /tmp/subagent-{session-id}-{agent-id}.log`
+1. Sprawdź plik logu agenta. `oma agent spawn` wypisuje jego ścieżkę jako `Log: ...`; znajduje się w katalogu tymczasowym systemu: `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"`
 2. Sprawdź, czy proces rzeczywiście działa: `oma agent status {session-id} {agent-id}`
 3. Jeśli proces nie działa, ale status pokazuje „running”, agent uległ awarii. Uruchom ponownie z kontekstem błędu.
 
@@ -205,7 +168,7 @@ Dashboard wykrywa ukończenie po obecności tego pliku i odpowiednio aktualizuje
 - CLI dostawcy nie jest zainstalowane albo nie jest uwierzytelnione.
 
 **Działania:**
-1. Sprawdź plik logu pod kątem szczegółów błędu: `cat /tmp/subagent-{session-id}-{agent-id}.log`
+1. Sprawdź plik logu pod kątem szczegółów błędu: `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"` (ścieżka `Log:` wypisana przez `oma agent spawn`)
 2. Sprawdź instalację CLI: `oma doctor`
 3. Sprawdź uwierzytelnienie: `oma auth status`
 4. Uruchom agenta ponownie z tym samym zadaniem: `oma agent spawn {agent-id} "{task}" {session-id} -w {workspace}`
@@ -222,7 +185,7 @@ Dashboard wykrywa ukończenie po obecności tego pliku i odpowiednio aktualizuje
 **Działania:**
 1. Sprawdź katalog pamięci: `ls -la .agents/state/memories/`
 2. Sprawdź, czy workflow nadal jest w fazie planowania (agenci nie zostali jeszcze uruchomieni).
-3. Upewnij się, że dashboard obserwuje właściwy katalog projektu: ścieżkę pamięci rozstrzyga na podstawie bieżącego katalogu.
+3. Upewnij się, że dashboard obserwuje właściwy katalog projektu: ścieżkę pamięci rozstrzyga na podstawie bieżącego katalogu roboczego. Uruchom go z katalogu głównego projektu albo przekaż `--project-root /path/to/project`. `oma dashboard web` wypisuje obserwowaną ścieżkę jako `Watching: <path>`.
 4. Przy ścieżce niestandardowej: `MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal`
 
 ### Sygnał 4: dashboard webowy pokazuje „disconnected”
@@ -231,15 +194,14 @@ Dashboard wykrywa ukończenie po obecności tego pliku i odpowiednio aktualizuje
 
 **Możliwe przyczyny:**
 - Proces `oma dashboard web` został zakończony.
-- Przeglądarka używa nieaktualnego URL-a albo brakuje tokenu uruchomienia.
-- Port jest zajęty przez inny proces.
+- Proces `oma dashboard web` został uruchomiony ponownie, a otwarta karta nadal przechowuje token poprzedniego procesu.
 
 **Działania:**
 1. Sprawdź, czy proces dashboardu działa: `ps aux | grep dashboard`
-2. Otwórz ponownie dokładny URL z tokenem wypisany przez proces; nie usuwaj tokenu.
-3. Spróbuj innego portu: `DASHBOARD_PORT=8080 oma dashboard web`
-4. Sprawdź dostępność portu: `lsof -i :9847`
-5. Dashboard webowy automatycznie łączy się ponownie z wykładniczym backoffem (start 1 s, mnożnik 1,5, maksimum 10 s), gdy połączenie WebSocket zostanie zerwane. Odczekaj kilka sekund na ponowne połączenie.
+2. Jeśli dashboard został uruchomiony ponownie, przeładuj stronę, aby pobrała nowy token.
+3. Jeśli proces się zatrzymał, uruchom ponownie `oma dashboard web`, a następnie przeładuj stronę.
+4. Jeśli uruchomienie kończy się błędem `Dashboard failed: port 9847 is already in use`, sprawdź port (`lsof -i :9847`) i spróbuj innego: `DASHBOARD_PORT=8080 oma dashboard web`
+5. Dashboard webowy automatycznie łączy się ponownie z wykładniczym backoffem (start 1 s, maksimum 10 s). Odczekaj kilka sekund na ponowne połączenie.
 
 ---
 
@@ -272,7 +234,7 @@ Monitorowanie dashboardu jest ukończone, gdy:
 
 - **Obserwowanie plików:** Używa [chokidar](https://github.com/paulmillr/chokidar) z `awaitWriteFinish` (próg stabilności 200 ms, interwał odpytywania 50 ms), aby nie renderować częściowych zapisów plików.
 - **Renderowanie:** Czyści i ponownie rysuje cały terminal przy każdym zdarzeniu zmiany pliku. Używa `picocolors` do kolorów ANSI i znaków Unicode do obramowania.
-- **Katalog pamięci:** Rozstrzygany z `MEMORIES_DIR`, następnie z argumentu CLI dashboardu, a potem z `{cwd}/.agents/state/memories`.
+- **Katalog pamięci:** `MEMORIES_DIR`, jeśli ustawiono; w przeciwnym razie `<project>/.agents/state/memories`, gdzie `<project>` to `--project-root <path>` albo bieżący katalog. Brakujący katalog jest tworzony jako pusty.
 - **Łagodne zamknięcie:** Przechwytuje `SIGINT` i `SIGTERM`, zamyka watcher chokidar i kończy się bez błędu.
 
 ### Dashboard webowy (oma dashboard web)
@@ -284,3 +246,11 @@ Monitorowanie dashboardu jest ukończone, gdy:
 - **Automatyczne ponowne łączenie:** Klient przeglądarkowy łączy się ponownie z wykładniczym backoffem (początkowo 1 s, mnożnik 1,5, maks. 10 s), gdy połączenie WebSocket zostanie przerwane.
 - **Port:** Domyślnie 9847, konfigurowalny przez zmienną środowiskową `DASHBOARD_PORT`. Żądania API przyjmują `X-OMA-Dashboard-Token` albo `?token=...`; brakujące albo nieprawidłowe tokeny zwracają `401`.
 - **Budowanie stanu:** Funkcja `buildFullState()` agreguje informacje o sesji, task board, statusy agentów, liczniki tur i strumień aktywności w jeden obiekt JSON przy każdej aktualizacji.
+
+---
+
+## Dalsze kroki
+
+- Audyt albo wznawianie wyników po przebiegu: [Wyniki i wznawianie](./agent-results-and-resume.md)
+- Awarie dashboardu i przebiegów według objawów: [Rozwiązywanie problemów](./troubleshooting.md)
+- Planowanie i prowadzenie pracy wieloagentowej: [Projekty wieloagentowe](./multi-agent-project.md)

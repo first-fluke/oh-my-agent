@@ -13,9 +13,9 @@ oh-my-agent은 멀티 에이전트 워크플로우 중 에이전트 활동을 �
 | 명령 | 인터페이스 | URL | 기술 |
 |:-----|:---------|:----|:-----|
 | `oma dashboard terminal` | 터미널 (TUI) | 해당 없음 (터미널에서 렌더링) | chokidar 파일 감시자, picocolors 렌더링 |
-| `oma dashboard web` | 브라우저 | `http://127.0.0.1:9847` (시작 시 token 출력) | HTTP 서버, WebSocket, chokidar 파일 감시자 |
+| `oma dashboard web` | 브라우저 | `http://127.0.0.1:9847/` (시작 시 출력) | HTTP 서버, WebSocket, chokidar 파일 감시자 |
 
-두 대시보드는 기본적으로 `.agents/state/memories/`를 감시합니다. 조정 파일이 다른 위치에 있으면 `MEMORIES_DIR`을 설정하세요. 대시보드는 `.serena/memories/`로 자동 폴백하지 않습니다.
+두 대시보드는 기본적으로 현재 디렉토리의 `.agents/state/memories/`를 감시합니다. 다른 프로젝트를 감시하려면 `--project-root <path>`를 전달하고, 조정 파일이 다른 위치에 있으면 `MEMORIES_DIR`을 설정하세요. 대시보드는 `.serena/memories/`로 자동 폴백하지 않습니다.
 
 ### 터미널 대시보드
 
@@ -23,28 +23,14 @@ oh-my-agent은 멀티 에이전트 워크플로우 중 에이전트 활동을 �
 oma dashboard terminal
 ```
 
-터미널에서 직접 박스 그리기 UI를 렌더링합니다. 메모리 파일이 변경되면 자동으로 업데이트됩니다. `Ctrl+C`를 눌러 종료합니다.
+터미널에서 직접 박스 그리기 UI를 렌더링합니다. 메모리 파일이 변경되면 자동으로 업데이트됩니다. `Ctrl+C`를 눌러 종료합니다. 화면은 위에서 아래로 네 영역으로 구성됩니다.
 
-```
-╔════════════════════════════════════════════════════════╗
-║  OMA Memory Dashboard                                 ║
-║  Session: session-20260324-143052  [RUNNING]          ║
-╠════════════════════════════════════════════════════════╣
-║  Agent        Status       Turn   Task                ║
-║  ──────────── ──────────── ────── ──────────────────  ║
-║  backend      ● running    3      Implement user API  ║
-║  frontend     ● running    2      Build login page    ║
-║  mobile       ✓ completed  5      Auth screens done   ║
-║  qa           ○ blocked    -                          ║
-╠════════════════════════════════════════════════════════╣
-║  Latest Activity:                                     ║
-║  [backend] Implementing JWT token validation          ║
-║  [frontend] Creating login form components            ║
-║  [mobile] Completed biometric auth integration        ║
-╠════════════════════════════════════════════════════════╣
-║  Updated: 03/24/2026, 02:31:15 PM  |  Ctrl+C to exit ║
-╚════════════════════════════════════════════════════════╝
-```
+| 영역 | 표시 내용 | 출처 |
+|:-------|:------|:-------|
+| 헤더 | `OMA Memory Dashboard`와 `Session: <id> [<status>]` | `orchestrator-session.md`, 없으면 가장 최근의 `session-*.md`. 둘 다 없으면 `N/A [UNKNOWN]` |
+| 에이전트 테이블 | Agent, Status, Turn, Task(앞 20자). 비어 있으면 `No agents detected yet` | `task-board.md`, 없으면 메모리 파일에서 발견한 에이전트 |
+| Latest Activity | 최대 다섯 줄의 `[<name>] <message>`. 비어 있으면 `No activity yet` | 가장 최근에 수정된 `.md` 파일 다섯 개의 마지막 의미 있는 줄 |
+| 푸터 | `Updated: <time>  \|  Ctrl+C to exit` | 마지막으로 다시 그린 시각 |
 
 **상태 기호:**
 - `●` (녹색): 실행 중
@@ -59,16 +45,16 @@ oma dashboard terminal
 oma dashboard web
 ```
 
-`DASHBOARD_PORT`로 설정할 수 있는 포트 9847에서 loopback 전용 웹 서버를 시작합니다. OMA는 `127.0.0.1`과 token이 포함된 URL을 출력하므로 정확한 URL을 열고 token을 유지하세요. 페이지는 `/api/state`, `/api/recap`, WebSocket 업데이트에 token을 사용하며, token이 없는 요청은 `401`을 반환합니다.
+`DASHBOARD_PORT`로 설정할 수 있는 포트 9847에서 loopback 전용 웹 서버를 시작합니다. 명령은 `http://127.0.0.1:9847/`과 `Watching: <memories dir>`를 출력합니다. 시작할 때마다 새 접근 token을 만들어 제공하는 페이지에 포함하므로, 출력된 URL을 열기만 하면 되고 따로 복사할 것은 없습니다. 페이지는 `/api/state`, `/api/recap`, WebSocket 요청에 token을 함께 보내며, token이 없는 요청은 `401`을 반환합니다.
 
 ```bash
-# 커스텀 포트
+# Custom port
 DASHBOARD_PORT=8080 oma dashboard web
 
-# 커스텀 메모리 디렉토리
+# Custom memories directory
 MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 
-# 프로세스는 /recap 보기에도 응답합니다. 출력된 token 포함 URL을 사용하세요.
+# Recap view from the same process: http://127.0.0.1:9847/recap
 ```
 
 웹 대시보드는 터미널 대시보드와 같은 정보를 보여주면서, 다크 테마 UI에 다음 기능을 더합니다:
@@ -84,34 +70,11 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 
 멀티 에이전트 워크플로우에서 권장되는 설정은 세 개의 터미널 패인을 사용합니다:
 
-```
-┌────────────────────────────────┬────────────────────────────────┐
-│                                │                                │
-│   터미널 1: 메인 에이전트      │   터미널 2: 대시보드            │
-│                                │                                │
-│   $ gemini                     │   $ oma dashboard terminal              │
-│   > /orchestrate               │                                │
-│   ...                          │   ╔═══════════════════════╗    │
-│                                │   ║ Serena Dashboard      ║    │
-│                                │   ║ Session: ...          ║    │
-│                                │   ╚═══════════════════════╝    │
-│                                │                                │
-├────────────────────────────────┴────────────────────────────────┤
-│                                                                 │
-│   터미널 3: 임시 명령                                            │
-│                                                                 │
-│   $ oma agent status session-20260324-143052 backend frontend   │
-│   $ oma stats get                                                   │
-│   $ oma verify agent backend -w ./api                           │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**터미널 1**은 `/orchestrate` 또는 `/work`와 같은 워크플로우와 상호작용하는 주 에이전트 세션(Gemini CLI, Claude Code, Codex 등)을 실행합니다.
-
-**터미널 2**는 모니터링용 대시보드를 실행합니다. 자동으로 갱신되므로 별도 조작이 필요 없습니다.
-
-**터미널 3**은 임시 명령용입니다: 에이전트 상태 확인, 검증 실행, 통계 확인, 문제 디버깅.
+| 패인 | 실행 | 목적 |
+|:-----|:----|:--------|
+| 1. 메인 에이전트 | 호스트 CLI(`claude`, `codex`, `agy`, `qwen` 등)를 실행한 뒤 `/orchestrate` 또는 `/work` | 워크플로우 진행 |
+| 2. 대시보드 | `oma dashboard terminal`(또는 `oma dashboard web`) | 진행 상황을 지켜보기만 합니다. 조작 없이 자동으로 갱신됩니다 |
+| 3. 임시 명령 | `oma agent status session-20260324-143052 backend frontend`, `oma stats get`, `oma verify agent backend -w ./api` | 에이전트 상태 확인, 검증 실행, 통계 확인, 문제 디버깅 |
 
 ---
 
@@ -183,7 +146,7 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 
 ---
 
-## 문제 해결 런북
+## 문제 해결 런북 {#troubleshooting-runbook}
 
 ### 신호 1: 에이전트가 "running"으로 표시되지만 턴 진행 없음
 
@@ -195,7 +158,7 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 - 에이전트가 사용자 입력을 기다리고 있음 (자동 승인 모드에서는 발생하지 않아야 함).
 
 **조치:**
-1. 에이전트의 로그 파일 확인: `cat /tmp/subagent-{session-id}-{agent-id}.log`
+1. 에이전트의 로그 파일을 확인합니다. `oma agent spawn`은 그 경로를 `Log: ...`로 출력하며, 파일은 OS 임시 디렉토리에 있습니다: `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"`
 2. 프로세스가 실제로 실행 중인지 확인: `oma agent status {session-id} {agent-id}`
 3. 프로세스가 실행 중이 아닌데 상태가 "running"이면 에이전트가 비정상 종료된 것입니다. 오류 정보와 함께 다시 생성하세요.
 
@@ -209,7 +172,7 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 - 벤더 CLI가 설치되지 않았거나 인증되지 않음.
 
 **조치:**
-1. 로그 파일에서 오류 세부사항 확인: `cat /tmp/subagent-{session-id}-{agent-id}.log`
+1. 로그 파일에서 오류 세부사항 확인: `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"` (`oma agent spawn`이 출력한 `Log:` 경로)
 2. CLI 설치 확인: `oma doctor`
 3. 인증 확인: `oma auth status`
 4. 같은 태스크로 에이전트 재생성: `oma agent spawn {agent-id} "{task}" {session-id} -w {workspace}`
@@ -219,14 +182,14 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 **증상:** 대시보드가 실행 중이지만 에이전트가 표시되지 않음.
 
 **가능한 원인:**
-- 워크플로우가 아직 에이전트 생성 단계에 도달하지 않음.
+- 워크플로우가 아직 에이전트 스폰 단계에 도달하지 않음.
 - `.agents/state/memories/` 디렉토리가 비어 있음.
 - 대시보드가 잘못된 디렉토리를 감시 중.
 
 **조치:**
 1. 메모리 디렉토리 확인: `ls -la .agents/state/memories/`
 2. 워크플로우가 아직 기획 단계에 있는지 확인 (에이전트가 아직 생성되지 않음).
-3. 대시보드가 올바른 프로젝트 디렉토리를 감시하고 있는지 확인: 대시보드는 현재 작업 디렉토리에서 메모리 경로를 해석합니다.
+3. 대시보드가 올바른 프로젝트 디렉토리를 감시하고 있는지 확인: 대시보드는 현재 작업 디렉토리에서 메모리 경로를 해석합니다. 프로젝트 루트에서 실행하거나 `--project-root /path/to/project`를 전달하세요. `oma dashboard web`은 감시 중인 경로를 `Watching: <path>`로 출력합니다.
 4. 커스텀 경로를 사용하는 경우: `MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal`
 
 ### 신호 4: 웹 대시보드에 "Disconnected" 표시
@@ -234,15 +197,15 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 **증상:** 웹 대시보드의 연결 뱃지가 빨간색 "Disconnected"를 표시.
 
 **가능한 원인:**
-- 브라우저가 오래된 URL을 사용하거나 시작 token이 없음.
-- 다른 프로세스가 포트를 사용 중.
+- `oma dashboard web` 프로세스가 종료됨.
+- `oma dashboard web` 프로세스가 재시작되었고, 열려 있는 탭이 이전 프로세스의 token을 여전히 갖고 있음.
 
 **조치:**
 1. 대시보드 프로세스가 실행 중인지 확인: `ps aux | grep dashboard`
-2. 프로세스가 출력한 token 포함 URL을 다시 엽니다. URL에서 token을 제거하지 마세요.
-3. 다른 포트 시도: `DASHBOARD_PORT=8080 oma dashboard web`
-4. 포트 가용성 확인: `lsof -i :9847`
-5. 웹 대시보드는 지수 백오프(1초 초기, 1.5배 승수, 10초 최대)로 자동 재연결합니다. 재연결을 위해 몇 초 기다리세요.
+2. 대시보드를 재시작했다면 새 token을 받도록 페이지를 새로고침합니다.
+3. 프로세스가 멈췄다면 `oma dashboard web`을 다시 시작한 뒤 페이지를 새로고침합니다.
+4. 시작 시 `Dashboard failed: port 9847 is already in use`로 실패하면 포트를 확인하고(`lsof -i :9847`) 다른 포트를 시도합니다: `DASHBOARD_PORT=8080 oma dashboard web`
+5. 웹 대시보드는 지수 백오프(1초에서 시작, 최대 10초)로 자동 재연결합니다. 재연결을 위해 몇 초 기다리세요.
 
 ---
 
@@ -275,7 +238,7 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 
 - **파일 감시:** [chokidar](https://github.com/paulmillr/chokidar)를 `awaitWriteFinish` (200ms 안정성 임계값, 50ms 폴링 간격)와 함께 사용하여 파일이 다 쓰이기 전에 렌더링되는 것을 방지합니다.
 - **렌더링:** 모든 파일 변경 이벤트에서 전체 터미널을 지우고 다시 그립니다. ANSI 색상 출력에 `picocolors`를 사용하고 테두리에 유니코드 박스 그리기 문자를 사용합니다.
-- **메모리 디렉토리:** `MEMORIES_DIR`, 지정된 경우 대시보드 CLI 인자, 그다음 `{cwd}/.agents/state/memories` 순서로 해석됩니다.
+- **메모리 디렉토리:** `MEMORIES_DIR`이 설정되어 있으면 그 값을, 아니면 `<project>/.agents/state/memories`를 사용합니다. `<project>`는 `--project-root <path>` 또는 현재 디렉토리입니다. 디렉토리가 없으면 빈 디렉토리로 생성합니다.
 - **안전 종료:** `SIGINT`와 `SIGTERM` 시그널을 수신하면 chokidar 감시자를 닫고 깔끔하게 종료합니다.
 
 ### 웹 대시보드 (oma dashboard web)
@@ -287,3 +250,11 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 - **자동 재연결:** 브라우저 클라이언트가 WebSocket 연결이 끊기면 지수 백오프(1초 초기, 1.5배 승수, 10초 최대)로 재연결합니다.
 - **포트:** 기본값 9847, `DASHBOARD_PORT` 환경 변수로 설정 가능합니다. API 요청은 `X-OMA-Dashboard-Token` 또는 `?token=...`을 허용하며, token이 없거나 유효하지 않으면 `401`을 반환합니다.
 - **상태 빌드:** `buildFullState()` 함수가 매 업데이트마다 세션 정보, 태스크 보드, 에이전트 상태, 턴 카운트, 활동 피드를 하나의 JSON 객체로 집계합니다.
+
+---
+
+## 다음 단계
+
+- 실행 후 결과 감사 또는 재개: [결과 확인과 재개](./agent-results-and-resume.md)
+- 증상별 대시보드 및 실행 실패: [문제 해결](./troubleshooting.md)
+- 멀티 에이전트 작업 계획과 실행: [멀티 에이전트 프로젝트](./multi-agent-project.md)

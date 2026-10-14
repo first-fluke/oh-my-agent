@@ -18,16 +18,25 @@ Kết quả mong đợi là profile đã resolve, hiển thị preset được c
 
 ## File nào được ưu tiên {#which-file-wins}
 
-Loader đi ngược lên từ thư mục hiện tại và dừng ở `.agents/` gần nhất có shared config hoặc local config. Trong thư mục đó:
+Loader đọc mặc định global từ `$OMA_HOME/.agents/` (mặc định
+`~/.oma/.agents/`), sau đó đi ngược lên từ thư mục hiện tại và dừng ở
+thư mục `.agents/` của project gần nhất. Trong mỗi thư mục được chọn:
 
-1. Đánh giá `oma-config.cue` trước.
-2. Dùng `oma-config.yaml` khi shared CUE file không có hoặc không thể đánh giá.
-3. Merge một local file (`oma-config.local.cue` hoặc `.local.yaml`) lên shared file.
-4. Khi được đặt, `OMA_MODEL_PRESET` ghi đè `model_preset` cho process đó.
+1. `oma-config.yaml` cung cấp các giá trị shared.
+2. `oma-config.cue`, khi có và hợp lệ, ghi đè mọi khóa mà nó đặt; các khóa YAML mà nó không đặt vẫn được giữ. Nếu không thể đánh giá file CUE, OMA cảnh báo và chỉ dùng file YAML.
+3. Một local file (`oma-config.local.cue` hoặc `.local.yaml`) được merge lên kết quả shared.
+
+Kết quả shared/local của project ghi đè kết quả shared/local của global.
+Khi được đặt, `OMA_MODEL_PRESET` ghi đè `model_preset` sau tất cả các file layer.
+Thứ tự đầy đủ, sơ đồ luồng và cách xử lý sự cố có trong
+[Configuration loading](/docs/guide/oma-config-semantics#precedence-table).
 
 Map được merge đệ quy. Array, scalar và `null` thay thế giá trị shared. Giữ cả hai local format là lỗi. Local file malformed là lỗi nghiêm trọng để private override không bị bỏ qua âm thầm.
 
-Đây là quy tắc layer gần nhất, không phải phép merge tổng quát giữa project và HOME. Global install đọc `~/.agents/oma-config.*` vì HOME là install root của nó. Project command đọc project layer gần nhất. Kiểm tra cập nhật cho `auto_update_cli` là ngoại lệ: kiểm tra project, rồi HOME, sau đó mới dùng mặc định bật.
+Các project root ở cấp tổ tiên khác nhau không được merge. Một thư mục `.agents/` rỗng của project gần nhất
+vẫn xác lập ranh giới đó. Bản cài `~/.agents/` đã ngừng dùng
+chỉ là input cho migration và không được đọc như fallback của project. Mặc định global không
+thay đổi danh tính hay phạm vi memory của project hiện tại.
 
 ## Các khóa cấp cao nhất {#top-level-keys}
 
@@ -43,14 +52,14 @@ Các khóa sau được runtime schema hiện tại hoặc consumer OMA được
 | `telemetry` | boolean | `false` | Opt in telemetry của vendor dùng trong install, update và link reconciliation. |
 | `model_preset` | string không rỗng | `auto` trong template mới | Model preset built-in hoặc tùy chỉnh. `OMA_MODEL_PRESET` ghi đè trong một process. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Thiết lập FreeLLMAPI khi preset là `free`; `FREELLM_BASE_URL` và `FREELLM_MODEL` ghi đè giá trị trong file, còn tên khóa không bao giờ chứa secret. Xem [Cấu hình model theo agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Chọn provider cho documentation, search, code intelligence và semantic memory. Code intelligence nhận `serena` hoặc `gortex`; semantic memory nhận `agentmemory`, `honcho` hoặc `none`. `code_intelligence_guard` (`block` hoặc `off`) điều khiển guard tìm kiếm PreToolUse. Các lệnh tìm kiếm native chỉ nằm trong mục loại trừ provider đã xác nhận hoặc ở path ngoài project được cho phép mà không cần bypass. Guard đọc các mục loại trừ của Serena và các rule gitignore đang bật, hoặc danh sách loại trừ của Gortex; nó không suy ra dependency từ tên thư mục. Hook không nêu tên `OMA_CI_ALLOW_NATIVE`. Lệnh tìm kiếm shell có tiền tố `OMA_CI_ALLOW_NATIVE=1` chỉ bypass guard đối với tài nguyên ngoài project hoặc các path bị ignore mà guard không nhận ra, không áp dụng cho source của project. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Chọn provider cho documentation, search, code intelligence và semantic memory. Xem [Providers](#providers). |
 | `brave` | `api_key_env` hoặc `api_key_vault` | chưa đặt | Tham chiếu credential tìm kiếm Brave. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Xem [Chi tiết Honcho](#honcho-semantic-memory) | Thiết lập kết nối Honcho semantic memory. |
 | `agents` | agent ID → `model`, tùy chọn `effort`, `thinking`, `memory` | preset resolution | Override theo agent được áp dụng lên preset đã chọn. `effort` là `none`, `low`, `medium`, `high` hoặc `xhigh`; `memory` là `user`, `project` hoặc `local`. |
 | `models` | model slug → CLI mapping | chưa đặt | Định nghĩa model inline cho vendor CLI được hỗ trợ. |
 | `custom_presets` | preset → description, tùy chọn `extends`, `agent_defaults` | chưa đặt | Preset do người dùng định nghĩa; `extends` có thể kế thừa built-in. |
-| `vendors` | YAML: `string[]` gồm vendor ID được chọn; CUE template: fallback map `vendors.pi` tùy chọn | tất cả vendor có thể link trong YAML list | Chọn vendor integration mà `oma install` và `oma update` project vào YAML. Capability map cho dispatch nằm trong managed orchestration config; xem [Vendor selection và dispatch metadata](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | string | consumer fallback | Vendor-only fallback cũ khi không resolve được model plan. |
+| `vendors` | YAML: `string[]` gồm vendor ID được chọn; CUE template: fallback map `vendors.pi` tùy chọn | khi thiếu: `oma link` dùng mọi vendor có thể link, `oma update` dùng các vendor đã có thư mục trong project | Chọn vendor integration mà `oma install` và `oma update` project vào YAML. Capability map cho dispatch nằm trong managed orchestration config; xem [Vendor selection và dispatch metadata](#vendor-selection-and-dispatch-metadata). |
+| `default_cli` | vendor ID (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` cho transport `free` | Vendor được dùng khi không có gì khác chọn vendor: runtime không phát hiện được dưới `auto`, hoặc transport `free` sau `--vendor`, `OMA_RUNTIME_VENDOR` và runtime đã phát hiện. Xem [How OMA resolves an agent's model and CLI](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
 | `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | mỗi dimension bị bỏ qua là không giới hạn | Token và spawn limit cứng được kiểm tra trước agent spawn tiếp theo; xem [Session quota caps](#session-quota-caps). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Hành vi và phạm vi loại trừ khi scan của `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena MCP transport và hành vi cập nhật. |
@@ -73,9 +82,25 @@ Template được phát hành cũng có các block do consumer sở hữu. Các 
 | `refactor_guard` | `enabled`, `max_lines` | `false`, `500` | Opt in stop-hook line-budget guard và đặt code budget theo file. |
 | `scm` | `conventional_commits`, `branching_strategy`, `require_pr_for_default_branch`, `co_author.*`, `forbidden_patterns`, `allowed_exceptions` | template được phát hành bật conventional commit và PR protection, cùng identity và filename list của template | Điều khiển SCM skill, commit hook và secret-pattern guard. Thay identity trong template bằng thông tin của bạn trước khi bật co-author trailer. |
 
-Các block này được chấp nhận qua configuration passthrough và được feature hoặc workflow tương ứng diễn giải. Parser `serena_reaper` đọc các snake_case key ở trên, dù comment template cũ dùng tên camelCase. Đọc feature guide tương ứng trước khi thêm khóa lồng nhau; trang này không tự thêm khóa ngoài các consumer được liệt kê.
+Các block này được chấp nhận qua configuration passthrough và được feature hoặc workflow tương ứng diễn giải. Parser `serena_reaper` chỉ đọc các snake_case key ở trên và bỏ qua camelCase. Các template được phát hành vẫn dùng camelCase (`keepWarm`, `idleMinutes`, `graceSeconds`), còn CUE schema được phát hành từ chối các snake_case key bên trong schema block của nó (`field not allowed`), vì vậy hãy đặt chúng trong `oma-config.yaml` hoặc một local YAML overlay. Đọc feature guide tương ứng trước khi thêm khóa lồng nhau; trang này không tự thêm khóa ngoài các consumer được liệt kê.
 
 ## Các object lồng nhau chính xác {#exact-nested-objects}
+
+### Providers {#providers}
+
+`providers` chọn một provider cho mỗi capability:
+
+| Khóa | Giá trị được chấp nhận | Mặc định |
+| --- | --- | --- |
+| `docs` | `context7` | `context7` |
+| `web` | search provider ID (chữ thường, chữ số, `_`, `-`), chẳng hạn `native` hoặc `brave` | `native` |
+| `code_intelligence` | `serena`, `gortex` | `serena` |
+| `code_intelligence_guard` | `block`, `off` | `block` |
+| `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
+
+`code_intelligence_guard` điều khiển guard tìm kiếm PreToolUse. Các lệnh tìm kiếm native chỉ nằm trong mục loại trừ provider đã xác nhận hoặc ở path ngoài project được cho phép mà không cần bypass. Guard đọc các mục loại trừ của Serena và các rule gitignore đang bật, hoặc danh sách loại trừ của Gortex; nó không suy ra dependency từ tên thư mục.
+
+Hook không nêu tên `OMA_CI_ALLOW_NATIVE`. Lệnh tìm kiếm shell có tiền tố `OMA_CI_ALLOW_NATIVE=1` chỉ bypass guard đối với tài nguyên ngoài project hoặc các path bị ignore mà guard không nhận ra, không áp dụng cho source của project.
 
 ### Semantic memory Honcho {#honcho-semantic-memory}
 
@@ -113,7 +138,7 @@ Installer dùng `http://127.0.0.1:8000` làm URL ban đầu khi thiết lập Ho
 
 ### Session quota caps {#session-quota-caps}
 
-`session.quota_cap` là partial map. Mọi trường đều tùy chọn; trường bỏ qua giữ dimension đó không giới hạn. Giá trị phải là non-negative integer, còn `per_vendor` map tên vendor tới token budget:
+`session.quota_cap` là partial map. Mọi trường đều tùy chọn; trường bỏ qua giữ dimension đó không giới hạn. Giá trị phải là non-negative integer viết không có dấu phân cách `_` (YAML đọc `2_000_000` thành string, khiến dimension đó không bị giới hạn). `per_vendor` map dispatch vendor ID như `claude`, `codex` hoặc `antigravity` tới token budget:
 
 ```yaml
 session:
@@ -138,7 +163,7 @@ vendors:
   - pi
 ```
 
-List bị bỏ qua hoặc rỗng sẽ chọn mọi ID trong linkable-vendor registry của OMA. List điều khiển projection khi install/update; nó không phải capability map theo vendor.
+Một list chọn đúng các vendor đó, còn `vendors: []` không chọn vendor nào. Khi không có khóa `vendors`, `oma link` nhắm tới mọi vendor trong linkable-vendor registry của OMA, còn `oma update` chỉ nhắm tới các vendor đã có thư mục trong project. List điều khiển projection khi install/update; nó không phải capability map theo vendor.
 
 Schema `.agents/oma-config.cue` được phát hành cũng cho phép object `vendors.pi` với các trường `command`, `prompt_flag`, `model_flag`, `default_model` và `thinking_flag`. Block đó là fallback shape có kiểu trong CUE template; agent dispatch path hiện tại resolve capability field từ managed orchestration registry bên dưới, vì vậy không dùng `vendors.pi` thay cho YAML selection list.
 
@@ -162,13 +187,19 @@ Capability file được quản lý sẽ được OMA update tạo lại. Hãy s
 
 ## Các thay đổi thường gặp {#common-changes}
 
-Chọn fixed preset cho project nhưng giữ personal override ở local:
+Chọn fixed preset cho project nhưng giữ personal override ở local.
+
+**Shared file** (được commit):
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
 model_preset: mixed
+```
 
+**Local overlay** (bị Git ignore):
+
+```yaml
 # .agents/oma-config.local.yaml
 agents:
   backend:

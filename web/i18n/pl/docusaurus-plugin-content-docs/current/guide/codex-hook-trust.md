@@ -6,7 +6,7 @@ description: Dlaczego hooki Codex nie działają, dopóki raz ich nie przejrzysz
 
 # Przewodnik: zaufanie hookom Codex
 
-Gdy oh-my-agent instaluje się w projekcie, zapisuje natywne dla dostawców konfiguracje hooków, w tym `.codex/hooks.json` dla CLI Codex. W przeciwieństwie do Claude Code Codex nie uruchamia tych hooków automatycznie. Każdy niezależnie zarządzany hook polecenia jest chroniony przez Trust-On-First-Use (TOFU): hook działa dopiero po jednorazowym przejrzeniu i włączeniu.
+Gdy oh-my-agent instaluje się w projekcie, zapisuje natywne dla dostawców konfiguracje hooków, w tym `.codex/hooks.json` dla CLI Codex. W przeciwieństwie do Claude Code Codex nie uruchamia tych hooków automatycznie. Każdy niezarządzany hook polecenia jest chroniony przez Trust-On-First-Use (TOFU): hook działa dopiero po jednorazowym przejrzeniu i włączeniu.
 
 To mechanizm bezpieczeństwa po stronie Codex, a nie ograniczenie oh-my-agent. Ten przewodnik wyjaśnia jednorazowy krok, który trzeba wykonać, zachowanie podczas aktualizacji oh-my-agent i czynności wykonywane automatycznie.
 
@@ -14,7 +14,7 @@ To mechanizm bezpieczeństwa po stronie Codex, a nie ograniczenie oh-my-agent. T
 
 ## Jednorazowy krok: przejrzyj hooki w Codex
 
-Po tym, jak `oma` (install), `oma link` albo `oma update` zapisze `.codex/hooks.json` w projekcie, którego Codex wcześniej nie widział, hooki **jeszcze nie działają**. Otwórz Codex i przejrzyj je raz:
+Po tym, jak `oma` (install), `oma link` albo `oma update` zapisze `.codex/hooks.json` w projekcie, którego Codex wcześniej nie widział (przy instalacji globalnej `~/.codex/hooks.json`), hooki **jeszcze nie działają**. Otwórz Codex i przejrzyj je raz:
 
 1. Otwórz projekt w CLI Codex.
 2. Uruchom `/hooks`, aby otworzyć przeglądarkę hooków (TUI).
@@ -22,8 +22,8 @@ Po tym, jak `oma` (install), `oma link` albo `oma update` zapisze `.codex/hooks.
 
 Do tego czasu hooki pozostają niezaufane i są po cichu pomijane. Dlatego oh-my-agent wypisuje komunikat za każdym razem, gdy tworzy albo zmienia `.codex/hooks.json`:
 
-```
-Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run)
+```text
+⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
 Przed otwarciem Codex sprawdź wygenerowany plik:
@@ -62,7 +62,7 @@ Ta flaga jest stosowana **wyłącznie** do procesów Codex uruchamianych przez o
 
 ## Flaga `[features] hooks` nie jest potrzebna
 
-Starsze konfiguracje wymagały włączenia `[features] hooks = true` w konfiguracji Codex. Hooki są stabilne i domyślnie włączone od wersji Codex CLI około 0.14x, więc nie jest to już potrzebne. oh-my-agent przestał ją zapisywać i aktywnie usuwa przestarzałą flagę `child_agents_md` z konfiguracji Codex, gdy ją znajdzie.
+Starsze wydania oh-my-agent zapisywały `[features] codex_hooks = true` w konfiguracji Codex. Codex 0.124 zmienił nazwę tej flagi na `hooks` i uczynił hooki stabilną, domyślnie włączoną funkcją, więc żadna flaga nie jest potrzebna. oh-my-agent nie zapisuje żadnego z tych kluczy i usuwa przestarzałe flagi `codex_hooks` oraz `child_agents_md` z tabeli `[features]`, gdy je znajdzie.
 
 ---
 
@@ -74,3 +74,8 @@ Starsze konfiguracje wymagały włączenia `[features] hooks = true` w konfigura
 | `oma update` bez zmian w poleceniach hooków | Nic — zaufanie zostaje zachowane |
 | `oma update`, które zmienia polecenie hooka | Ponownie uruchom `/hooks`, aby zaufać hookowi (instalator wypisze komunikat) |
 | Podproces Codex uruchomiony przez oh-my-agent | Nic — obejście jest stosowane automatycznie |
+
+## Zobacz także
+
+- [Integracja z istniejącym projektem](./integration.md): co instalator zapisuje dla każdego dostawcy
+- [Instalacja globalna](./global-install.md): instalacje dla całego użytkownika, które zapisują `~/.codex/`

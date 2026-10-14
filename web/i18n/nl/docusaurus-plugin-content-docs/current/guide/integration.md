@@ -29,15 +29,13 @@ bun install --global oh-my-agent
 npx oh-my-agent
 ```
 
-
-Na een globale installatie zijn de commando’s `oma` (of `oh-my-agent`) beschikbaar.
+Na een globale installatie is het commando `oma` (of `oh-my-agent`) beschikbaar.
 
 ### 2. Ga naar de projectroot
 
 ```bash
 cd /path/to/your/project
 ```
-
 
 Voer de installer uit vanuit de projectmap die je wilt configureren. OMA schrijft de SSOT relatief ten opzichte van de installatieroot. Een Git-repository wordt aanbevolen voor review en rollback, maar de installer vereist die niet.
 
@@ -47,22 +45,11 @@ Voer de installer uit vanuit de projectmap die je wilt configureren. OMA schrijf
 oma
 ```
 
-
 De standaardopdracht zonder subcommando start de interactieve installer.
 
 ### 4. Kies het projecttype
 
-De installer toont deze presets:
-
-| Preset | Inbegrepen skills |
-|:-------|:---------------|
-| **All** | Alle beschikbare skills |
-| **Fullstack** | Frontend + Backend + PM + QA |
-| **Frontend** | React/Next.js-skills |
-| **Backend** | Python/Node.js/Rust-backendskills |
-| **Mobile** | Flutter/Dart-skills voor mobiel |
-| **DevOps** | Terraform-, CI/CD- en workflow-skills |
-| **Custom** | Afzonderlijke skills kiezen uit de volledige lijst |
+De installer vraagt **What type of project?** en biedt een [skillpreset](../getting-started/glossary.md#skill-preset) aan: All, Fullstack, Fullstack Web, Fullstack Mobile, Frontend, Backend, Mobile, DevOps, Research, Content of Custom (afzonderlijke skills kiezen). Niet-interactieve runs gebruiken All. De skills in elke preset staan in [Installatie → Presets](../getting-started/installation.md#presets).
 
 ### 5. Kies de backendtaal (indien van toepassing)
 
@@ -75,12 +62,9 @@ Als je een preset met de backendskill kiest, vraagt de installer om een taalvari
 
 ### 6. Configureer IDE-symlinks
 
-De installer maakt altijd Claude Code-symlinks aan (`.claude/skills/`). Ook genereert hij native agentbestanden, hooks, settings en integratiebestanden voor de geselecteerde vendor. De huidige vendorfamilies zijn Antigravity, Claude, Codex, Cursor, Kiro, Kimi en Qwen, met extensiepaden voor pi en OpenCode. Als er een map `.github/` bestaat, kan hij automatisch GitHub Copilot-symlinks aanmaken. Wanneer je **ZCode** selecteert, maakt hij workflows als slash-commands beschikbaar via symlinks naar `.zcode/commands/*.md` (alleen workflows, zonder agentbestanden of hooks). Anders vraagt hij:
+De installer vraagt **CLI tools to configure (deselect all to skip):** en biedt Claude Code, Codex, Command Code, GitHub Copilot, Cursor, Grok, Kiro CLI, OpenCode, pi (Earendil), Antigravity CLI (agy), Hermes Agent, Kimi Code CLI, Qwen Code en ZCode aan. Antigravity CLI, Hermes Agent en Kimi Code CLI worden niet aangeboden op Windows of wanneer `CI` is ingesteld.
 
-```
-Also create symlinks for GitHub Copilot? (.github/skills/)
-```
-
+Voor elke geselecteerde tool maakt hij skill-symlinks aan (bijvoorbeeld `.claude/skills/` voor Claude Code) en genereert hij de native agentbestanden, hooks, settings en integratiebestanden van de vendor. pi en OpenCode zijn extensiepaden. Wanneer je **ZCode** selecteert, maakt hij workflows als slash-commands beschikbaar via symlinks naar `.zcode/commands/*.md` (alleen workflows, zonder agentbestanden of hooks).
 
 ### 7. Aanbevolen globale Git-configuratie
 
@@ -88,16 +72,15 @@ Aan het einde van `oma install` en `oma update` controleert de CLI twee **global
 
 | Sleutel | Gewenste waarde | Waarom |
 |:----|:--------------|:----|
-| `rerere.enabled` | `true` | Opgeslagen oplossingen hergebruiken: merges met meerdere agents raken vaak dezelfde conflicten en rerere speelt je eerdere fix opnieuw af |
+| `rerere.enabled` | `true` | Opgeslagen oplossingen hergebruiken: merges met meerdere agenten raken vaak dezelfde conflicten en rerere speelt je eerdere fix opnieuw af |
 | `init.defaultBranch` | `main` | Een consistente standaardbranchnaam voor nieuwe repositories |
 
 Als een waarde ontbreekt of anders is, vraagt de CLI interactief om bevestiging (standaard **ja**):
 
-```
+```text
 Enable git rerere? (Recommended for multi-agent merge conflict reuse) (unset)
 Set git init.defaultBranch to main? (Recommended global default) (currently "master")
 ```
-
 
 Als je bevestigt, voert de CLI het equivalent uit van:
 
@@ -106,52 +89,31 @@ git config --global rerere.enabled true
 git config --global init.defaultBranch main
 ```
 
-
 **Niet-interactieve paden** (`--yes`, `--ci`, `CI=true`) schrijven nooit naar de globale Git-configuratie. Ze tonen alleen een overslaanmelding met de commando’s voor de handmatige oplossing.
 
 `oma doctor` rapporteert dezelfde controles onder **Git Config**, telt afwijkingen als problemen, toont ze als `gitRecommended` in de JSON-uitvoer van `--json` en kan fixes interactief toepassen.
 
 ### 8. MCP-configuratie
 
-Als er een Antigravity IDE-MCP-configuratie bestaat (`~/.gemini/antigravity/mcp_config.json`), biedt de installer aan om de Serena MCP-bridge te configureren:
-
-```
-Configure Serena MCP with bridge? (Required for full functionality)
-```
-
-
-Als je dit accepteert, wordt het volgende ingesteld:
+Er is geen aparte MCP-prompt. Wanneer Serena de code-intelligence-provider is (de standaard), schrijven install en update de Serena-MCP-entry voor de geselecteerde vendors. Bij een projectinstallatie ziet de entry er zo uit:
 
 ```json
 {
   "mcpServers": {
     "serena": {
-      "command": "npx",
-      "args": ["-y", "oh-my-agent@latest", "bridge", "http://localhost:12341/mcp"],
-      "disabled": false
+      "command": "oma",
+      "args": ["bridge", "--context", "oma"],
+      "env": { "SERENA_LOG_LEVEL": "info" }
     }
   }
 }
 ```
 
-
-Als de Gemini CLI-instellingen bestaan (`~/.gemini/settings.json`), biedt de installer op dezelfde manier aan om Serena voor Gemini CLI in HTTP-modus te configureren:
-
-```json
-{
-  "mcpServers": {
-    "serena": {
-      "url": "http://localhost:12341/mcp"
-    }
-  }
-}
-```
-
+`oma bridge` start de Serena-server zelf of hergebruikt die. Een globale installatie voegt `--oma-home <OMA_HOME>` toe aan `args`. Kopieer geen oudere snippets die `npx -y oh-my-agent@latest bridge http://localhost:12341/mcp` uitvoeren: die poort hoorde bij een daemon die mogelijk is gestopt, waardoor clients er eindeloos op konden wachten. Migratie 027 herschrijft die afgeschafte entry in de configuratie van Antigravity Desktop.
 
 ### 9. Voltooiing
 
 De installer toont een samenvatting van alles wat is geïnstalleerd:
-
 - Lijst met geïnstalleerde skills
 - Locatie van de skillsmap
 - Aangemaakte symlinks
@@ -161,7 +123,7 @@ De installer toont een samenvatting van alles wat is geïnstalleerd:
 
 ## Handmatig pad
 
-Voor omgevingen waarin de interactieve CLI niet beschikbaar is, zoals CI-pipelines, beperkte shells of bedrijfscomputers.
+Voor omgevingen waarin de interactieve installer niet kan draaien (CI-pipelines, beperkte shells, bedrijfscomputers). Je hebt de `oma`-CLI nog steeds nodig voor `oma link` en `oma memory init`; alleen de releasedownload en de prompts zijn handmatig.
 
 ### Stap 1: downloaden en uitpakken
 
@@ -178,22 +140,21 @@ sha256sum -c agent-skills.tar.gz.sha256
 tar -xzf agent-skills.tar.gz
 ```
 
-
 ### Stap 2: bestanden naar je project kopiëren
 
 ```bash
-# Copy the core .agents/ directory
-cp -r .agents/ /path/to/your/project/.agents/
+# Copy the contents of the core .agents/ directory (works whether or not the target exists)
+mkdir -p /path/to/your/project/.agents
+cp -R .agents/. /path/to/your/project/.agents/
 
 # Regenerate vendor-native files from the SSOT
 cd /path/to/your/project
 oma link
 ```
 
+`oma link` genereert `.claude/`, `.codex/`, `.qwen/` en verwante vendor-native bestanden opnieuw vanuit `.agents/agents/`. Tijdens runtime gebruikt OMA alleen native dispatch als de vendor van de huidige runtime overeenkomt met de doelvendor van die agent. Gemengde vendorsetups blijven werken; agenten die niet overeenkomen vallen terug op een externe `oma agent spawn`.
 
-`oma link` genereert `.claude/`, `.codex/`, `.qwen/` en verwante vendor-native bestanden opnieuw vanuit `.agents/agents/`. Tijdens runtime gebruikt OMA alleen native dispatch als de vendor van de huidige runtime overeenkomt met de doelvendor van die agent. Gemengde vendorsetups blijven werken; agents die niet overeenkomen vallen terug op een externe `oma agent spawn`.
-
-Voor Qwen Code staan de gegenereerde Markdown-definities in `.qwen/agents/`. Selecteer een OMA-rol via de `subagent_type` van de Agent-tool, bijvoorbeeld `backend-engineer`. Controleer de beschikbare definities met `/agents manage` in Qwen Code. Native agents gebruiken dezelfde [resultaatlevenscyclus](./agent-results-and-resume.md) als CLI-spawns: `oma agent begin`, `oma agent verify` en `oma agent finish`. Gebruik bij `model_preset: free` het commando `oma agent spawn`, zodat het kindproces de gatewayconfiguratie ontvangt.
+Voor Qwen Code staan de gegenereerde Markdown-definities in `.qwen/agents/`. Selecteer een OMA-rol via de `subagent_type` van de Agent-tool, bijvoorbeeld `backend-engineer`. Controleer de beschikbare definities met `/agents manage` in Qwen Code. Native agenten gebruiken dezelfde [resultaatlevenscyclus](./agent-results-and-resume.md) als CLI-spawns: `oma agent begin`, `oma agent verify` en `oma agent finish`. Gebruik bij `model_preset: free` het commando `oma agent spawn`, zodat het kindproces de gatewayconfiguratie ontvangt.
 
 Qwen Code gebruikt dezelfde `code-intelligence-primer` als de andere vendors. Net als Claude Code registreert het de gedeelde primer op `SessionStart` en `UserPromptSubmit`: de richtlijnen worden eenmaal per sessie geïnjecteerd en opnieuw na compactie. De primer volgt de geconfigureerde provider (Serena of Gortex), bevat richtlijnen voor uitgestelde tools en staat een native fallback toe wanneer de provider niet beschikbaar is of een timeout geeft. Qwen voegt geen aparte blokkering van codezoekopdrachten of tracking van providerresultaten toe.
 
@@ -207,10 +168,11 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-model_preset: antigravity
+model_preset: auto
 EOF
 ```
 
+Als de gekopieerde `.agents/` ook `oma-config.cue` bevat, overschrijft elke sleutel die daar is ingesteld dezelfde sleutel in dit YAML-bestand. Bewerk voor die sleutels het CUE-bestand, of zie [Configuratie laden](./oma-config-semantics.md#precedence-table).
 
 ### Stap 4: de memorymap initialiseren
 
@@ -219,7 +181,6 @@ oma memory init
 # Or manually:
 mkdir -p /path/to/your/project/.agents/state/memories
 ```
-
 
 ---
 
@@ -235,11 +196,10 @@ oma doctor
 oma doctor --json
 ```
 
-
-De doctor-opdracht controleert:
+De doctor-opdracht controleert onder meer:
 
 | Controle | Wat wordt gecontroleerd |
-|:----------------|:----------------|
+|:------|:----------------|
 | **CLI-installaties** | agy, claude, codex en qwen (versie en beschikbaarheid) |
 | **Authenticatie** | API-key- of OAuth-status voor elke CLI |
 | **MCP-configuratie** | Serena MCP-serverconfiguratie voor elke CLI-omgeving |
@@ -257,8 +217,8 @@ ls .agents/skills/
 # Verify symlinks point to correct targets
 ls -la .claude/skills/
 
-# Verify config exists
-cat .agents/oma-config.yaml
+# Verify config exists (CUE, YAML, or both)
+ls .agents/oma-config.*
 
 # Verify memory directory
 ls .agents/state/memories/ 2>/dev/null || echo "Memory not initialized"
@@ -266,7 +226,6 @@ ls .agents/state/memories/ 2>/dev/null || echo "Memory not initialized"
 # Check version
 cat .agents/skills/_version.json 2>/dev/null
 ```
-
 
 ---
 
@@ -276,7 +235,7 @@ oh-my-agent gebruikt een Single Source of Truth-architectuur (SSOT). De map `.ag
 
 ### Directory-indeling
 
-```
+```text
 your-project/
   .agents/                          # SSOT — the real files live here
     agents/                         # Agent definition files
@@ -319,7 +278,6 @@ your-project/
     metrics.json                    # Productivity metrics
 ```
 
-
 ### Waarom symlinks?
 
 Wanneer `oma update` `.agents/` vernieuwt, neemt elke IDE die ernaar verwijst de wijziging over. Skills worden één keer opgeslagen in plaats van per IDE te worden gekopieerd. Als je `.claude/` verwijdert, verwijder je je skills niet: de SSOT in `.agents/` blijft intact. Symlinks zijn bovendien klein en geven in Git een schone diff.
@@ -343,10 +301,16 @@ Wanneer `oma update` `.agents/` vernieuwt, neemt elke IDE die ernaar verwijst de
 .serena/
 ```
 
-
 ### Rollback
 
-Verwijder oh-my-agent volledig uit een project met:
+Bekijk en verwijder eerst de door OMA beheerde bestanden met de uninstaller:
+
+```bash
+oma uninstall --dry-run
+oma uninstall
+```
+
+Die behoudt `oma-config.yaml`, `mcp.json` en skills die hij niet zelf heeft geïnstalleerd. Om de rest handmatig te verwijderen:
 
 ```bash
 # Remove the SSOT directory
@@ -360,7 +324,6 @@ rm -rf .github/skills/  # if created
 rm -rf .serena/
 ```
 
-
 Of zet de wijzigingen eenvoudig terug met Git:
 
 ```bash
@@ -368,12 +331,11 @@ git checkout -- .agents/ .claude/
 git clean -fd .agents/ .claude/ .serena/
 ```
 
-
 ---
 
 ## Dashboard instellen
 
-Na de installatie kun je realtime monitoring instellen. Zie de [Dashboard Monitoring-gids](/docs/guide/dashboard-monitoring) voor alle details.
+Na de installatie kun je realtime monitoring instellen. Zie de [gids voor dashboardmonitoring](/docs/guide/dashboard-monitoring) voor alle details.
 
 Snelle setup:
 
@@ -384,7 +346,6 @@ oma dashboard terminal
 # Web dashboard (browser-based; OMA prints a tokenized loopback URL)
 oma dashboard web
 ```
-
 
 ---
 
@@ -414,11 +375,11 @@ De installer downloadt de nieuwste releasetarball uit de GitHub-releases van oh-
 
 ### 5. Workflows installeren
 
-`installWorkflows()` kopieert alle workflowbestanden naar `.agents/workflows/`. Dit zijn de definities voor `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools` en `/stack-set`.
+`installWorkflows()` kopieert elk workflowbestand naar `.agents/workflows/`, zoals de definities voor `/orchestrate`, `/work`, `/ultrawork` en `/plan`. Zie [Workflows](../core-concepts/workflows.md) voor de volledige lijst. Daarnaast kopiëren `installHooks()`, `installAgents()` en `installRules()` de bronnen voor hooks, agentdefinities en regels naar `.agents/`.
 
 ### 6. Configuratie installeren
 
-`installConfigs()` kopieert aanvullende bestanden naar `.agents/config/`, maakt `.agents/mcp.json` aan en initialiseert de gebruikersconfiguratie `.agents/oma-config.yaml` of `.agents/oma-config.cue`. Bestaande gebruikersbestanden blijven behouden tenzij `--force` wordt gebruikt. `oma update` behoudt de gebruikersconfiguratie ook en voegt indien nodig nieuwe top-level-sleutels uit het sjabloon toe.
+`installConfigs()` kopieert aanvullende bestanden naar `.agents/config/`, maakt `.agents/mcp.json` aan en initialiseert de gebruikersconfiguratie `.agents/oma-config.yaml` of `.agents/oma-config.cue`. Bestaande gebruikersbestanden blijven behouden tenzij `--force` wordt gebruikt; `oma update` behoudt de gebruikersconfiguratie ook en voegt indien nodig nieuwe top-level-sleutels uit het sjabloon toe.
 
 ### 7. Skills installeren
 
@@ -428,7 +389,7 @@ Voor elke geselecteerde skill kopieert `installSkill()` de skillmap naar `.agent
 
 `installVendorAdaptations()` installeert IDE-specifieke bestanden voor de geselecteerde ondersteunde vendors:
 
-- Agentdefinities (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
+- Agentdefinities (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.qwen/agents/*.md`)
 - Hookconfiguraties (`.claude/hooks/`, `.codex/hooks.json`)
 - Settingsbestanden en de gedeelde vendorgids (alleen `AGENTS.md`, Claude Code ≥ 2.1.277 inbegrepen). `CLAUDE.md` en `GEMINI.md` krijgen nooit een OMA-blok; een bestaand `CLAUDE.md` van de gebruiker krijgt alleen een importregel `@AGENTS.md`, zodat Claude Code `AGENTS.md` niet overslaat
 
@@ -436,11 +397,11 @@ Codex beveiligt zijn hooks achter een eenmalige vertrouwensstap. `.codex/hooks.j
 
 ### 9. CLI-symlinks
 
-`createCliSymlinks()` maakt symlinks van IDE-specifieke mappen naar de SSOT:
+`createVendorSymlinks()` en `createVendorWorkflowSymlinks()` maken symlinks van IDE-specifieke mappen naar de SSOT:
 
-- `.claude/skills/{skill}` → `../../.agents/skills/{skill}`
-- `.claude/skills/{workflow}.md` → `../../.agents/workflows/{workflow}.md`
-- `.github/skills/{skill}` → `../../.agents/skills/{skill}` (als Copilot is ingeschakeld)
+- `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
+- `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
+- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (als Copilot is geselecteerd)
 
 Vendor-native agentbestanden worden door `oma link`, `oma install` of `oma update` uit `.agents/agents/` gegenereerd en niet rechtstreeks als symlink aangemaakt.
 
@@ -451,3 +412,13 @@ Vendor-native agentbestanden worden door `oma link`, `oma install` of `oma updat
 ### 11. Aanbevolen Git-configuratie + MCP
 
 Zoals hierboven in het CLI-pad beschreven, configureren install en update optioneel de aanbevolen **globale** Git-instellingen (`rerere.enabled`, `init.defaultBranch`) na interactieve toestemming. Waar van toepassing kunnen ze ook MCP-instellingen configureren.
+
+---
+
+## Zie ook
+
+- [Globale installatie](./global-install.md): één keer installeren voor elk project
+- [Configuratie laden](./oma-config-semantics.md): hoe CUE, YAML en lokale overlays samenwerken
+- [Modelconfiguratie per agent](./per-agent-models.md): kies het model en de CLI voor elke agent
+- [Codex hook trust](./codex-hook-trust.md): de eenmalige `/hooks`-stap voor Codex
+- [Geautomatiseerde updates](./automated-updates.md): houd de installatie actueel vanuit CI

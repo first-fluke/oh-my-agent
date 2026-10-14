@@ -6,6 +6,10 @@ description: Oceniaj kompletną nakładkę harnessu OMA za pomocą sparowanych, 
 
 # Ewaluacja harnessu
 
+:::tip Jak to się łączy
+[Ewaluacja umiejętności](./skill-eval.md) mierzy, czy jeden `SKILL.md` pomaga, a [optymalizacja umiejętności](./skill-opt.md) edytuje jego treść pod kontrolą bramek held-out. Ewaluacja harnessu (ta strona) porównuje całą nakładkę `.agents/` na zadaniach repozytorium. [Przypadki regresji z incydentów](./harness-incidents.md) zamieniają zaobserwowane porażki w przypadki ewaluacyjne i fixture’y umiejętności. [Ewolucja harnessu projektu](./harness-evolution.md) uruchamia przechwytywanie incydentów i optymalizację umiejętności jako cykl z budżetem, a [zaplanowani agenci](./scheduled-agents.md) to harmonogram systemu operacyjnego, który go wyzwala.
+:::
+
 `oma harness eval` mierzy, czy kandydat na harness OMA poprawia działanie ustalonego agenta bez zmiany jego modelu. Polecenie adaptuje wzorzec ewaluacji w czasie testu z pracy [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): pozostaw model docelowy bez zmian, zmień harness i porównaj wyniki dla tych samych zadań.
 
 To polecenie ocenia większą jednostkę niż `oma skill eval`:
@@ -16,6 +20,14 @@ To polecenie ocenia większą jednostkę niż `oma skill eval`:
 | `oma harness eval` | Ograniczona nakładka `.agents/` | Pliki i wynik utworzone w workspace repozytorium |
 
 Użyj ewaluacji umiejętności, aby odpowiedzieć na pytanie „czy ta umiejętność pomaga?”. Użyj ewaluacji harnessu, aby sprawdzić, czy ta kombinacja umiejętności, workflowów, reguł i instrukcji agenta sprawia, że ustalony agent bardziej niezawodnie kończy zadania repozytorium.
+
+**Przed pierwszym uruchomieniem:**
+
+- Zapisz pierwsze uruchomienie z `--live --record`. `inspect` (akcja domyślna), `rescore`, `fixture-replay` i `rerun` odczytują ten zapis.
+- Werdykt wymaga co najmniej pięciu ocenionych zadań w wybranej partycji. `pass` wymaga przyrostu co najmniej 5 punktów i braku regresji.
+- `inspect`, `rescore` i `fixture-replay` nie wywołują modeli. `--live` i `--action rerun` wykonują dwa wywołania na każde wybrane zadanie.
+- `promotionReady` ma zawsze wartość `false`. Wynik pozytywny jest dowodem do decyzji człowieka, a nie automatyczną promocją.
+- Uruchomienia live wymagają dostawcy z wyszukiwaniem umiejętności lokalnym dla projektu (zobacz [Uruchomienie i zapis](#run-and-record)).
 
 ## Model ewaluacji
 
@@ -28,6 +40,28 @@ Uruchomienie live ocenia każde zadanie jako sparowany eksperyment:
 5. Deterministyczne kontrole sprawdzają wynikowy workspace oraz opcjonalny wynik agenta. Zaufane kontrole poleceń są uruchamiane później na świeżej kopii artefaktów zadania.
 
 Rzeczywisty projekt nigdy nie jest katalogiem roboczym wariantu. OMA przechwytuje surowy wynik i końcowe artefakty zadania przed wykonaniem kontroli i usunięciem tymczasowych workspace’ów. Własny sandbox procesu wybranego dostawcy pozostaje źródłem prawdy dla dostępu poza katalogiem roboczym.
+
+Diagram pokazuje, jak sparowane warianty prowadzą do decyzji. Akcje offline wchodzą ponownie na etapie parowania, korzystając z zapisanego rekordu.
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
 
 ## Układ kandydata
 
@@ -91,7 +125,7 @@ tasks:
         path: docs/feature.md
 ```
 
-Wersja 2 wymaga zadań zarówno `validation`, jak i `final-test`. Każde zadanie musi zadeklarować swoją partycję. Wartością domyślną jest validation; użyj `--partition final-test` do osobnego uruchomienia końcowego po wyborze kandydata. Obie partycje nie mogą współdzielić ani zagnieżdżać katalogów fixture’ów. Pliki zapisu przechowuj poza katalogami fixture’ów, nakładkami kandydata i wejściami ewaluatora; takie lokalizacje są odrzucane, aby późniejsze uruchomienia nie widziały kontroli końcowych. Zestawy w wersji 1 nadal działają jako `exploratory`; nie można ich wybrać jako final-test.
+Wersja 2 wymaga zadań zarówno `validation`, jak i `final-test`. Każde zadanie musi zadeklarować swoją partycję. Wartością domyślną jest validation; użyj `--partition final-test` do osobnego uruchomienia końcowego po wyborze kandydata. Każde uruchomienie ocenia tylko wybraną partycję, więc rozstrzygające uruchomienie walidacyjne wymaga co najmniej pięciu zadań `validation`, a uruchomienie final-test co najmniej pięciu zadań `final-test`. Powyższy przykład jest krótki dla czytelności i zawsze raportuje `INSUFFICIENT`. Obie partycje nie mogą współdzielić ani zagnieżdżać katalogów fixture’ów. Pliki zapisu przechowuj poza katalogami fixture’ów, nakładkami kandydata i wejściami ewaluatora; takie lokalizacje są odrzucane, aby późniejsze uruchomienia nie widziały kontroli końcowych. Zestawy w wersji 1 nadal działają jako `exploratory`; nie można ich wybrać jako final-test.
 
 ID zadań muszą być unikatowe. Ścieżki fixture’ów i kontroli muszą pozostać wewnątrz projektu i workspace’u zadania. Zestawy i fixture’y muszą też pozostać poza bazowymi definicjami kopiowanymi do każdego wariantu. Fixture’y nie mogą zawierać dowiązań symbolicznych ani powierzchni sterowania harnessu agenta, takich jak `.agents`, `.codex`, `.claude`, katalogi umiejętności dostawców lub główne pliki instrukcji agenta. Zapobiega to zasłonięciu kontrolowanego harnessu któregokolwiek wariantu przez dane zadania.
 
@@ -130,7 +164,7 @@ Przed dispatch’em OMA tworzy migawkę bajtów źródła checkera oraz oblicza 
 
 Kontrole i ścieżki checkerów nie są dodawane do promptu agenta ani do fixture’a. Wejście wybranego zadania jest siłą rzeczy widoczne podczas jego uruchomienia. Chroni to integralność ewaluatora i rozdziela partycje; nie zapobiega odczytowi innych plików hosta przez proces tego samego użytkownika.
 
-## Uruchomienie i zapis
+## Uruchomienie i zapis {#run-and-record}
 
 Tryb live wykonuje dwa dispatch’e na każde wybrane zadanie, wyświetla podgląd dispatchów i wymaga potwierdzenia:
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Użyj `--yes` do wykonania bez interakcji i `--timeout-minutes`, aby ustawić ten sam limit czasu zegarowego dla obu wariantów. Wykonanie live wymaga dostawcy, który wyszukuje pliki harnessu względem workspace’u projektu. OMA odmawia wyszukiwania względem HOME, ponieważ wariant bazowy mógłby zobaczyć globalnie zainstalowaną treść kandydata.
+Użyj `--yes` do wykonania bez interakcji i `--timeout <duration>`, aby ustawić ten sam limit czasu zegarowego dla obu wariantów (domyślnie `15m`; jednostka jest wymagana, na przykład `--timeout 45m`). `oma harness incident reproduce` przyjmuje tę samą flagę. Wykonanie live wymaga dostawcy, który wyszukuje pliki harnessu względem workspace’u projektu. OMA odmawia wyszukiwania względem HOME, ponieważ wariant bazowy mógłby zobaczyć globalnie zainstalowaną treść kandydata.
+
+Dostawca pochodzi z pola `agent` zestawu i jest rozstrzygany przez konfigurację modeli projektu:
+
+| Dostawca | Live `harness eval`, `--action rerun`, `incident reproduce` |
+|---|---|
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Dozwolone: lokalny dla projektu katalog umiejętności |
+| `antigravity`, `hermes`, `kimi` | Odrzucane: wyszukiwanie umiejętności względem HOME |
+| Każdy dostawca bez znanego projektowego katalogu umiejętności | Odrzucane |
+
+Akcje offline (`inspect`, `rescore`, `fixture-replay`) nie wykonują dispatchu, więc ta kontrola ich nie dotyczy.
 
 `--record` zapisuje niezmienny rekord JSON w wersji 2. Domyślną lokalizacją jest `_runs/` obok zestawu, ze skrótami wariantu bazowego i kandydata w nazwie pliku. Użyj nowego `--record-file` dla kolejnego uruchomienia live; istniejący plik docelowy jest odrzucany przed dispatch’em. Rekordy zachowują:
 
@@ -178,7 +222,7 @@ Oba warianty otrzymują to samo środowisko ograniczone listą dozwolonych zmien
 
 Ustaw `OMA_HARNESS_ENV_PASSTHROUGH=NAME1,NAME2`, aby przekazać dodatkowe zmienne, których zadanie rzeczywiście potrzebuje. Nazwy pojawiają się w manifeście w `environmentPolicy.extra`. Dla dostawcy bez znanego zestawu prefiksów manifest zgłasza `vendorKnown: false`, a do procesu docierają tylko wpisy bazowe, `OMA_*` i przekazane przez passthrough.
 
-## Ponowne użycie zapisu
+## Ponowne użycie zapisu {#reuse-a-recording}
 
 Polecenie rozróżnia cztery akcje:
 
@@ -287,7 +331,7 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 
 Wersja CLI jest sondowana podczas odtwarzania tylko wtedy, gdy sam rekord zawiera wersję uzyskaną przez sondę; para, w której nie sondowano wersji, jest zgłaszana jako nieporównywalna, a nie jako równa. Zapisane werdykty pozostają dostępne do wglądu w swoich oryginalnych warunkach. Nie są dowodem dla kandydata w bieżących warunkach, dopóki ewaluacja live lub ponowne uruchomienie nie wytworzy rekordu z pasującym manifestem.
 
-### Zużycie
+### Zużycie {#usage}
 
 Każdy wariant zapisuje `usage`, gdy dostawca je zgłosił: tokeny wejściowe i wyjściowe, koszt w USD, czas zegarowy oraz model, który wytworzył większość wyniku. Ewaluacja sumuje je jako `usage` z polem `status` o wartości `actual`, `partial` (niektóre warianty nic nie zgłosiły) albo `unknown`. Opakowania wyników dostawców są rozpakowywane przed uruchomieniem kontroli i przed zapisem wyniku, więc `output_contains` i `output_json_equals` widzą odpowiedź agenta, a nie otaczające ją pomocnicze dane JSON; zużycie z opakowania zasila to pole.
 
@@ -326,12 +370,31 @@ OMA raportuje też:
 
 - zadania naprawione: bazowe nie przeszło, a kandydat przeszedł;
 - zadania z regresją: bazowe przeszło, a kandydat nie przeszedł;
-- pokrycie: wymaganych jest co najmniej pięć sparowanych zadań, dla których można obliczyć wynik.
+- pokrycie: wymaganych jest co najmniej pięć sparowanych zadań w wybranej partycji, dla których można obliczyć wynik.
 
-Decyzja dotycząca wyniku to `pass`, gdy przyrost wynosi co najmniej 5 punktów procentowych i nie ma regresji. Każda regresja kończy się niepowodzeniem kandydata. Nieujemny przyrost poniżej 5 punktów generuje ostrzeżenie, a mniej niż pięć sparowanych zadań daje decyzję `insufficient`. Dodaj `--require-coverage`, aby w CI niewystarczające pokrycie kończyło się niezerowym kodem wyjścia. Wynik nie jest dowodem, gdy brakuje wariantu, skrót rekordu jest nieaktualny albo deterministyczna kontrola jest niekompletna. Błędy dispatchu live i integralności ewaluatora wymuszają decyzję o niepowodzeniu; nie mogą być liczone jako udany przyrost. Ponowna ocena i odtwarzanie fixture’ów pomijają warianty z niewystarczającymi dowodami w parach, dla których można obliczyć wynik, i raportują decyzję `insufficient`, zamiast traktować brakujące dowody jako regresję kandydata.
+Decyzja dotycząca wyniku to `pass`, gdy przyrost wynosi co najmniej 5 punktów procentowych i nie ma regresji. Każda regresja albo ujemny przyrost kończy się niepowodzeniem kandydata. Nieujemny przyrost poniżej 5 punktów generuje ostrzeżenie, a mniej niż pięć sparowanych zadań daje decyzję `insufficient`. Dodaj `--require-coverage`, aby w CI niewystarczające pokrycie kończyło się niezerowym kodem wyjścia. Wynik nie jest dowodem, gdy brakuje wariantu, skrót rekordu jest nieaktualny albo deterministyczna kontrola jest niekompletna. Błędy dispatchu live i integralności ewaluatora wymuszają decyzję o niepowodzeniu; nie mogą być liczone jako udany przyrost. Ponowna ocena i odtwarzanie fixture’ów pomijają warianty z niewystarczającymi dowodami w parach, dla których można obliczyć wynik, i raportują decyzję `insufficient`, zamiast traktować brakujące dowody jako regresję kandydata.
 
 Pozytywny wynik nie ustanawia kwalifikowalności do promocji. Raporty zawierają partycję, skrót ewaluatora, `promotionReady: false` i jawne blokady. Uruchomienia legacy i validation nie mają dowodów final-test. Obecne trasy dispatchu nie poświadczają izolacji dostępu do systemu plików, więc nawet uruchomienie final-test nie może twierdzić, że zapewnia chronioną ewaluację końcową, ani autoryzować promocji. To pole pozostaje `false`, dopóki dostawca wykonania nie będzie w stanie ustanowić tej granicy.
 
+## Rozwiązywanie problemów
+
+| Komunikat lub objaw | Przyczyna | Rozwiązanie |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | Akcją domyślną jest `inspect`, która odczytuje zapisany rekord. | Uruchom raz `--live --record` albo wskaż istniejący rekord przez `--record-file`. |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect` wymaga zgodności każdego zapisanego skrótu. | Zapisz nowe uruchomienie z nowym `--record-file`. Użyj `--action rescore`, gdy chcesz zastosować bieżące kontrole do zapisanych bajtów. |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore` albo `fixture-replay` wskazano na rekord z innych danych wejściowych. | Wybierz pasujące `--record-file` i `--partition` albo zapisz uruchomienie ponownie. |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record` nadpisałoby istniejący plik. | Podaj nową ścieżkę `--record-file`. |
+| `--record requires --live or --action rerun` | `--record` połączono z akcją offline. | Usuń `--record` albo użyj `--live`. |
+| `--action fixture-replay requires --transcript` | Nie podano transkryptu. | Dodaj `--transcript <path>`. |
+| `Removed option --timeout-minutes. Use --timeout.` | Stara pisownia flagi. | Użyj `--timeout 30m` (jednostka jest wymagana). |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | Agent zestawu rozstrzyga się do dostawcy z wyszukiwaniem względem HOME albo bez projektowego katalogu umiejętności. | Skieruj agenta zestawu do dostawcy z tabeli w sekcji [Uruchomienie i zapis](#run-and-record). |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | `--candidate .` albo ścieżka wewnątrz `.agents/`. | Przechowuj nakładki gdzie indziej, na przykład w `candidates/fix/.agents/`. |
+| `Candidate file is not allowed: <path>` | Nakładka zawiera pliki poza `agents/`, `rules/`, `skills/` lub `workflows/`. | Usuń te pliki z nakładki. |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | Chroniony frontmatter różni się od wariantu bazowego. | Przywróć `model`, `tools`, `effort` i pozostałe chronione pola. |
+| `Suite requires at least one final-test task` | Zestaw `schema_version: 2` wymaga obu partycji. | Dodaj zadanie z `partition: final-test`. |
+| `decision: INSUFFICIENT` | Mniej niż pięć ocenionych zadań w wybranej partycji albo brakujące warianty. | Dodawaj zadania, aż partycja będzie miała pięć, i przeczytaj wiersze `replay limitation:`. |
+| `decision: FAIL` | Błąd dispatchu (po nim następują wiersze `<task>/<arm>: ...`), regresja (ID zadań pod `regressed:`) albo ujemny przyrost. | W przypadku błędu dispatchu przeczytaj wiersz `exit=... timedOut=... stderr=...` pod każdym nieudanym wariantem. W przypadku regresji porównaj oba warianty wymienionych zadań. |
+
 ## Obecna granica
 
-Nakładki kandydatów są tworzone zewnętrznie; to polecenie nie implementuje buildera ani automatycznej pętli `harness opt`. Dostępne są przechwytywanie artefaktów, ponowna ocena offline, odtwarzanie fixture’ów narzędzi, ponowne uruchomienia z przypiętych plików, wybór partycji, ewaluatory utrwalane w migawce, manifesty wykonania, lista dozwolonych zmiennych środowiskowych i powiązane zdarzenia trace, ale nie zapewniono tajności danych held-out na poziomie systemu operacyjnego, izolacji sieci ani poświadczeń, powtarzanych prób stochastycznych, rozliczania tokenów ani wymuszania przypięcia modelu dla zagnieżdżonych wywołań subagentów. Lista dozwolonych zmiennych środowiskowych ogranicza, które zmienne dziedziczy proces dostawcy; nie powstrzymuje CLI dostawcy przed odczytem własnego magazynu poświadczeń ani przed dostępem do sieci. Dopóki nie istnieje przypinanie zagnieżdżonych wywołań, zestawy mierzące jeden ustalony model powinny unikać workflowów kandydata, które uruchamiają inne skonfigurowane role agentów.
+Nakładki kandydatów są tworzone zewnętrznie; to polecenie nie implementuje buildera ani automatycznej pętli `harness opt`. Dostępne są przechwytywanie artefaktów, ponowna ocena offline, odtwarzanie fixture’ów narzędzi, ponowne uruchomienia z przypiętych plików, wybór partycji, ewaluatory utrwalane w migawce, manifesty wykonania, lista dozwolonych zmiennych środowiskowych i powiązane zdarzenia trace, ale nie zapewniono tajności danych held-out na poziomie systemu operacyjnego, izolacji sieci ani poświadczeń, powtarzanych prób stochastycznych ani wymuszania przypięcia modelu dla zagnieżdżonych wywołań subagentów. Zużycie tokenów i koszt są zapisywane dla każdego wariantu i sumowane, gdy dostawca je raportuje (zobacz [Zużycie](#usage)). Lista dozwolonych zmiennych środowiskowych ogranicza, które zmienne dziedziczy proces dostawcy; nie powstrzymuje CLI dostawcy przed odczytem własnego magazynu poświadczeń ani przed dostępem do sieci. Dopóki nie istnieje przypinanie zagnieżdżonych wywołań, zestawy mierzące jeden ustalony model powinny unikać workflowów kandydata, które uruchamiają inne skonfigurowane role agentów.

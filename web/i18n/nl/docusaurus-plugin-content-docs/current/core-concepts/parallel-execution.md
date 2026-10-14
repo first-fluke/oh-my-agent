@@ -9,7 +9,7 @@ Het belangrijkste voordeel van oh-my-agent is dat je meerdere gespecialiseerde a
 
 ---
 
-## agent:spawn: één agent spawnen
+## oma agent spawn: één agent spawnen {#agentspawn-single-agent-spawning}
 
 ### Basissyntax
 
@@ -28,7 +28,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 
 ### Opties
 
-| Flag | Kort | Beschrijving |
+| Vlag | Kort | Beschrijving |
 |-------|-------|-------------|
 | `--workspace <path>` | `-w` | Werkdirectory voor de agent. Agenten wijzigen alleen bestanden binnen deze directory. |
 | `--vendor <vendor>` | | Overschrijf de CLI-vendor voor deze spawn (`antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` of `pi`). |
@@ -93,7 +93,7 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel: inline parallelle modus
+## oma agent parallel: inline parallelle modus {#agentparallel-inline-parallel-mode}
 
 Voor een kortere syntax die het beheer van backgroundprocessen automatisch afhandelt:
 
@@ -120,10 +120,10 @@ oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-De vlag `--inline` parseert elk argument `agent:task`. Voeg een derde, door dubbele punten gescheiden pad (`agent:task:workspace`) toe wanneer de taak een specifieke werkruimte nodig heeft. Zonder `--inline` geef je een YAML-taskbestand door met `{tasks: [{id?, agent, task, workspace?}]}`. Met `--session` koppel je parallelle resultaten aan een bestaande sessie.
+De vlag `--inline` parseert elk argument `agent:task`. Voeg een derde, door dubbele punten gescheiden pad (`agent:task:workspace`) toe wanneer de taak een specifieke werkruimte nodig heeft. Zonder `--inline` geef je een YAML-taskbestand door met `{tasks: [{id?, agent, task, workspace?}]}`. `--session-id` koppelt de resultaten aan een bestaande sessie en aan de task-ID's uit het YAML-bestand.
 
 ---
 
@@ -144,7 +144,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-Ingebouwde presets: `auto`, `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` en `mixed`. Zie [Per-Agent Models](../guide/per-agent-models.md) voor details.
+Ingebouwde presets: `auto`, `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` en `mixed`. Zie [Modellen per agent](../guide/per-agent-models.md) voor details.
 
 ### Vendorresolutie
 
@@ -167,14 +167,15 @@ De spawnmechaniek verschilt per IDE/CLI:
 | Vendor | Hoe agenten worden gespawnd | Resultaatverwerking |
 |---------|----------------------|-----------------|
 | **Claude Code** | Taken binnen dezelfde vendor gebruiken de Agent-tool met `.claude/agents/{name}.md`; cross-vendor taken vallen terug op `oma agent spawn`. | Synchrone return |
-| **Codex CLI** | Taken binnen dezelfde vendor gebruiken native custom agents uit `.codex/agents/{name}.toml`; cross-vendor taken vallen terug op `oma agent spawn`. | JSON-output |
+| **Codex CLI** | Taken binnen dezelfde vendor gebruiken native custom agenten uit `.codex/agents/{name}.toml`; cross-vendor taken vallen terug op `oma agent spawn`. | JSON-output |
 | **Antigravity CLI/IDE** | `oma agent spawn` via de `agy`-runtime; native custom subagenten zijn niet vereist | Duurzame receipt en poll van resultaatbestand |
 | **Cursor** | Gebruikt waar beschikbaar de gegenereerde Cursor-integratie; anders `oma agent spawn` | Poll van resultaatbestand |
 | **OpenCode / pi** | Gebruikt de in-process extension bridge wanneer geselecteerd; cross-vendor werk gebruikt `oma agent spawn` | Poll van resultaatbestand |
 | **CLI-fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Evidence-backed result poll |
 
 Binnen Claude Code gebruikt de workflow direct de `Agent`-tool:
-```
+
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
@@ -210,7 +211,7 @@ Het dashboard bewaakt `.agents/state/memories/` op realtime updates. Het ververs
 
 ```bash
 oma dashboard web
-# Opens http://localhost:9847
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 Mogelijkheden:
@@ -224,20 +225,11 @@ Mogelijkheden:
 
 Gebruik 3 terminals voor goed zicht:
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard terminal         │   Agent spawn        │
-│   (live monitoring)     │   commands           │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   Terminal 3:                                  │
-│   Test/build logs, git operations              │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| Terminal | Uitvoeren | Doel |
+|----------|-----|---------|
+| 1 | `oma dashboard terminal` | Live monitoring |
+| 2 | `oma agent spawn …` of `oma agent parallel …` | Commando's om agenten te spawnen |
+| 3 | Tests, buildlogs, git | Verificatie en git-bewerkingen |
 
 ### Individuele agentstatus controleren
 
@@ -291,13 +283,13 @@ Sessie-ID's bepalen:
 
 6. **Itereer met respawns.** Als output verfijning nodig heeft, spawn je de agent opnieuw met de oorspronkelijke taak plus correctiecontext. Begin geen nieuwe sessie.
 
-7. **Start bij twijfel met `/work`.** De work-workflow begeleidt je stap voor stap, met gebruikersbevestiging bij elke poort.
+7. **Start bij twijfel met `/work`.** De work-workflow begeleidt je stap voor stap, met gebruikersbevestiging bij elke gate.
 
 ### Niet doen
 
 1. **Spawn geen agenten in dezelfde werkruimte.** Twee agenten die dezelfde directory schrijven maken mergeconflicten en overschrijven elkaars werk.
 
-2. **Overschrijd MAX_PARALLEL niet (standaard 3).** Meer gelijktijdige agenten zijn niet altijd sneller. De standaard 3 is voor de meeste systemen afgestemd.
+2. **Overschrijd MAX_PARALLEL niet (standaard 3).** Meer gelijktijdige agenten zijn niet altijd sneller. Elke agent heeft geheugen en CPU nodig. De standaard 3 is voor de meeste systemen afgestemd.
 
 3. **Sla de planstap niet over.** Agenten spawnen zonder plan leidt tot misalignment, bijvoorbeeld wanneer frontend en backend verschillende API-vormen bouwen.
 
@@ -321,19 +313,33 @@ oma agent spawn backend "Implement JWT auth API with registration, login, refres
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: Monitor in a separate terminal
-# Terminal 2:
-oma dashboard terminal
-
-# Step 4: Wait for all implementation agents
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: Run QA review
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: If QA finds issues, re-spawn specific agents with fixes
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: Re-run QA to verify fixes
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+Draai het dashboard in een tweede terminal terwijl de agenten werken. Het blijft draaien tot je op Ctrl+C drukt, dus plak het niet in dezelfde shell als de spawncommando's:
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## Zie ook
+
+- [Agentresultaten en hervatten](../guide/agent-results-and-resume.md): run-receipts, claims en `oma agent resume`
+- [Dashboardmonitoring](../guide/dashboard-monitoring.md)
+- [Gids voor multi-agentprojecten](../guide/multi-agent-project.md)
+- [Modellen per agent](../guide/per-agent-models.md)
+- [De workflow /orchestrate](./workflows.md#orchestrate)
+- [Referentie van CLI-commando's](../cli-interfaces/commands.md)

@@ -23,8 +23,8 @@ name: Update oh-my-agent
 
 on:
   schedule:
-    - cron: '0 9 * * 1'  # 매주 월요일 오전 9시 UTC
-  workflow_dispatch:        # 수동 트리거 허용
+    - cron: '0 9 * * 1'  # Every Monday at 9am UTC
+  workflow_dispatch:        # Allow manual trigger
 
 permissions:
   contents: write
@@ -48,7 +48,7 @@ jobs:
 | 입력 | 타입 | 필수 | 기본값 | 설명 |
 |:-----|:-----|:-----|:-------|:-----|
 | `mode` | string | 아니요 | `"pr"` | 변경 적용 방법. `"pr"`은 풀 리퀘스트를 생성합니다. `"commit"`은 베이스 브랜치에 직접 푸시합니다. |
-| `base-branch` | string | 아니요 | `"main"` | PR의 베이스 브랜치(`pr` 모드) 또는 직접 커밋의 대상 브랜치(`commit` 모드). |
+| `base-branch` | string | 아니요 | `"main"` | PR의 베이스 브랜치(`pr` 모드) 또는 직접 커밋의 대상 브랜치(`commit` 모드). 체크아웃 대상은 바꾸지 않으므로 `actions/checkout`의 `ref:`를 같은 브랜치로 설정하세요. |
 | `force` | string | 아니요 | `"false"` | `oma update`에 `--force`를 전달합니다. `"true"`이면 사용자가 커스터마이즈한 설정 파일(`oma-config.yaml`, `mcp.json`)과 `stack/` 디렉토리를 덮어씁니다. 평소에는 그대로 보존합니다. |
 | `pr-title` | string | 아니요 | `"chore(deps): update oh-my-agent skills"` | 풀 리퀘스트의 커스텀 제목. `pr` 모드에서만 사용됩니다. |
 | `pr-labels` | string | 아니요 | `"dependencies,automated"` | PR에 추가할 쉼표로 구분된 라벨. `pr` 모드에서만 사용됩니다. |
@@ -119,7 +119,7 @@ name: Update oh-my-agent (Direct)
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # 매일 오전 6시 UTC
+    - cron: '0 6 * * *'  # Daily at 6am UTC
   workflow_dispatch:
 
 permissions:
@@ -131,6 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: develop
           token: ${{ secrets.OH_MY_AGENT_PAT }}
 
       - uses: first-fluke/oma-update-action@v1
@@ -142,7 +143,7 @@ jobs:
 ```
 
 **수행 과정:**
-- PAT를 사용하여 `develop` 브랜치를 체크아웃합니다.
+- PAT를 사용하여 `develop`을 체크아웃합니다. `ref: develop`은 필수입니다. `base-branch`는 푸시 대상만 정하며, action은 체크아웃으로 만들어진 `HEAD`를 그대로 푸시합니다.
 - `oma update --ci`를 실행합니다.
 - 변경이 있으면 `github-actions[bot]`으로 git을 설정하고 `develop`에 직접 커밋합니다.
 - PAT를 사용하면 커밋이 `develop` 브랜치의 푸시 이벤트를 감지하는 모든 워크플로우를 트리거할 수 있습니다.
@@ -200,7 +201,7 @@ jobs:
 name: Update oh-my-agent (Force)
 
 on:
-  workflow_dispatch:  # 강제 업데이트는 수동 트리거만
+  workflow_dispatch:  # Manual trigger only for force updates
 
 permissions:
   contents: write
@@ -226,7 +227,18 @@ jobs:
 
 ## 내부 동작 원리
 
-이 action은 `action/action.yml`에 정의된 [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)입니다. 4단계를 실행합니다:
+이 action은 `action/action.yml`에 정의된 [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)입니다. 먼저 `mode`가 `pr` 또는 `commit`인지 검증한 뒤, 아래 단계를 실행하고 풀 리퀘스트나 직접 커밋으로 마무리합니다.
+
+```mermaid
+flowchart TD
+  validate["Validate inputs: mode is pr or commit"] --> bun["Setup Bun"]
+  bun --> install["bun install -g oh-my-agent"]
+  install --> update["oma update --ci (plus --force when force is true)"]
+  update --> changes{"Changes in .agents/ or .claude/?"}
+  changes -->|no| noop(["updated=false"])
+  changes -->|"yes, mode: pr"| pr["peter-evans/create-pull-request@v8"]
+  changes -->|"yes, mode: commit"| commit["git add .agents/ .claude/, commit, push to base-branch"]
+```
 
 ### 1단계: Bun 설정
 
@@ -246,13 +258,20 @@ npm 레지스트리에서 CLI를 전역으로 설치합니다. `oma` 명령에 �
 
 ### 3단계: oma update 실행
 
-```bash
-FLAGS="--ci"
-if [ "${{ inputs.force }}" = "true" ]; then
-  FLAGS="$FLAGS --force"
-fi
-oma update $FLAGS
+```yaml
+- name: Run oma update
+  shell: bash
+  env:
+    FORCE: ${{ inputs.force }}
+  run: |
+    FLAGS="--ci"
+    if [ "$FORCE" = "true" ]; then
+      FLAGS="$FLAGS --force"
+    fi
+    oma update $FLAGS
 ```
+
+입력은 `run:` 안의 `${{ }}` 보간이 아니라 `env:`를 거쳐 스크립트에 전달되므로, 입력 값이 셸 코드로 실행되지 않습니다.
 
 `--ci` 플래그는 비대화형 모드로 업데이트를 실행합니다(모든 프롬프트를 건너뛰고, 스피너 애니메이션 대신 일반 텍스트를 출력합니다). `--force` 플래그가 활성화되면 사용자가 커스터마이즈한 설정 파일을 덮어씁니다.
 
@@ -265,7 +284,7 @@ oma update $FLAGS
 5. 사용자가 커스터마이즈한 파일을 보존합니다(`--force` 제외): `oma-config.yaml`, `mcp.json`, stack 디렉토리.
 6. 기존 `.agents/` 디렉토리 위에 새 파일을 복사합니다.
 7. 보존된 파일을 복원합니다.
-8. 모든 벤더의 벤더 적응(훅, 설정, 에이전트 정의)을 업데이트합니다.
+8. 설정의 `vendors:` 목록에 있는 벤더의 벤더 적응(훅, 설정, 에이전트 정의)을 업데이트합니다(빈 목록이면 아무 벤더도 업데이트하지 않습니다). `vendors:` 목록이 없으면 프로젝트 디렉토리가 이미 있는 벤더만 업데이트합니다.
 9. CLI 심볼릭 링크를 갱신합니다.
 
 이 action은 `--with-new-skills` 없이 `oma update --ci`를 실행합니다. 설치된 스킬을 갱신하고 새로 제공되는 스킬을 보고하지만, 프로젝트에 새 스킬을 추가하려면 `oma update --with-new-skills`를 명시적으로 실행해야 합니다.
@@ -275,17 +294,27 @@ oma update $FLAGS
 ```bash
 if [ -n "$(git status --porcelain .agents/ .claude/ 2>/dev/null)" ]; then
   echo "updated=true" >> "$GITHUB_OUTPUT"
-  VERSION=$(jq -r '.version' .agents/skills/_version.json)
-  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  if [ -f ".agents/skills/_version.json" ]; then
+    VERSION=$(jq -r '.version' .agents/skills/_version.json)
+    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  fi
 else
   echo "updated=false" >> "$GITHUB_OUTPUT"
 fi
 ```
 
-`oma update`가 `.agents/` 또는 `.claude/`의 파일을 실제로 변경했는지 확인합니다. 그에 따라 `updated`와 `version` 출력을 설정합니다.
+`oma update`가 `.agents/` 또는 `.claude/`의 파일을 실제로 변경했는지 확인합니다. 그에 따라 `updated`와 `version` 출력을 설정합니다. 이 두 디렉토리 밖의 변경(예: `.codex/`나 `AGENTS.md`)은 `updated=true`를 설정하지 않습니다.
 
 이후 `mode` 입력에 따라:
 
 - **`pr` 모드:** `peter-evans/create-pull-request@v8`을 사용하여 `chore/update-oh-my-agent` 브랜치에 PR을 생성합니다. PR에는 새 버전 번호, oh-my-agent 리포 링크, 설정된 라벨이 포함됩니다. 브랜치가 이미 존재하면(이전에 닫지 않은 PR에서) 기존 PR을 업데이트합니다.
 
 - **`commit` 모드:** `github-actions[bot]`으로 git을 설정하고, `.agents/`와 `.claude/`를 스테이징하고, 설정된 메시지로 커밋하고, 베이스 브랜치에 푸시합니다.
+
+---
+
+## 함께 보기
+
+- [글로벌 설치](./global-install.md): `oma update --global`과 사용자 전체 설치에서의 CI 주의 사항
+- [설정 레퍼런스](./configuration-reference.md#update-and-ownership-rules): `oma update`가 보존하는 설정 파일
+- [기존 프로젝트 통합](./integration.md): `oma update`가 프로젝트에서 갱신하는 파일

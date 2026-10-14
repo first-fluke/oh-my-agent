@@ -48,7 +48,7 @@ Esta es la configuración mínima. Cuando cambia un componente instalado, la act
 | Entrada | Tipo | Obligatoria | Predeterminado | Descripción |
 |:------|:-----|:---------|:--------|:-----------|
 | `mode` | string | No | `"pr"` | Cómo aplicar los cambios. `"pr"` crea un pull request. `"commit"` hace push directamente a la rama base. |
-| `base-branch` | string | No | `"main"` | Rama base del PR (en modo `pr`) o rama de destino de los commits directos (en modo `commit`). |
+| `base-branch` | string | No | `"main"` | Rama base del PR (en modo `pr`) o rama de destino de los commits directos (en modo `commit`). No cambia lo que se extrae con checkout; establece `ref:` de `actions/checkout` en la misma rama. |
 | `force` | string | No | `"false"` | Pasa `--force` a `oma update`. Si vale `"true"`, sobrescribe los archivos de configuración personalizados por el usuario (`oma-config.yaml`, `mcp.json`) y los directorios `stack/`. Normalmente se conservan. |
 | `pr-title` | string | No | `"chore(deps): update oh-my-agent skills"` | Título personalizado del pull request. Solo se usa en modo `pr`. |
 | `pr-labels` | string | No | `"dependencies,automated"` | Etiquetas separadas por comas que se añadirán al PR. Solo se usan en modo `pr`. |
@@ -131,6 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: develop
           token: ${{ secrets.OH_MY_AGENT_PAT }}
 
       - uses: first-fluke/oma-update-action@v1
@@ -142,7 +143,7 @@ jobs:
 ```
 
 **Qué ocurre:**
-- Se hace checkout de la rama `develop` usando un PAT.
+- Se hace checkout de `develop` usando un PAT. `ref: develop` es obligatorio: `base-branch` solo establece el destino del push, y la action hace push del `HEAD` que haya producido el checkout.
 - Se ejecuta `oma update --ci`.
 - Si hay cambios, se configura git como `github-actions[bot]` y se hace commit directamente en `develop`.
 - El PAT garantiza que el commit active los workflows que escuchan los pushes en `develop`.
@@ -226,7 +227,18 @@ jobs:
 
 ## Cómo funciona internamente
 
-La action es una [acción compuesta](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) definida en `action/action.yml`. Ejecuta cuatro pasos:
+La action es una [acción compuesta](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) definida en `action/action.yml`. Primero valida que `mode` sea `pr` o `commit`, después ejecuta los pasos siguientes y termina con un pull request o un commit directo:
+
+```mermaid
+flowchart TD
+  validate["Validate inputs: mode is pr or commit"] --> bun["Setup Bun"]
+  bun --> install["bun install -g oh-my-agent"]
+  install --> update["oma update --ci (plus --force when force is true)"]
+  update --> changes{"Changes in .agents/ or .claude/?"}
+  changes -->|no| noop(["updated=false"])
+  changes -->|"yes, mode: pr"| pr["peter-evans/create-pull-request@v8"]
+  changes -->|"yes, mode: commit"| commit["git add .agents/ .claude/, commit, push to base-branch"]
+```
 
 ### Paso 1: configurar Bun
 
@@ -246,13 +258,20 @@ Instala la CLI globalmente desde el registro de npm. Esto proporciona acceso al 
 
 ### Paso 3: ejecutar oma update
 
-```bash
-FLAGS="--ci"
-if [ "${{ inputs.force }}" = "true" ]; then
-  FLAGS="$FLAGS --force"
-fi
-oma update $FLAGS
+```yaml
+- name: Run oma update
+  shell: bash
+  env:
+    FORCE: ${{ inputs.force }}
+  run: |
+    FLAGS="--ci"
+    if [ "$FORCE" = "true" ]; then
+      FLAGS="$FLAGS --force"
+    fi
+    oma update $FLAGS
 ```
+
+Las entradas llegan al script mediante `env:` en lugar de interpolar `${{ }}` dentro de `run:`, lo que impide que el valor de una entrada se ejecute como código de shell.
 
 El flag `--ci` ejecuta la actualización en modo no interactivo (omite todos los prompts y muestra texto plano en lugar de animaciones de spinner). El flag `--force`, cuando está habilitado, sobrescribe los archivos de configuración personalizados por el usuario.
 
@@ -265,7 +284,7 @@ Esto es lo que hace internamente `oma update --ci`:
 5. Conserva los archivos personalizados por el usuario (salvo con `--force`): `oma-config.yaml`, `mcp.json` y los directorios `stack/`.
 6. Copia los archivos nuevos sobre el directorio `.agents/` existente.
 7. Restaura los archivos conservados.
-8. Actualiza las adaptaciones de los proveedores (hooks, configuraciones y definiciones de agentes) para todos los proveedores.
+8. Actualiza las adaptaciones de los proveedores (hooks, configuraciones y definiciones de agentes) para los proveedores de la lista `vendors:` de la configuración (una lista vacía significa ninguno). Sin una lista `vendors:`, solo actualiza los proveedores cuyos directorios de proyecto ya existen.
 9. Actualiza los symlinks de la CLI.
 
 La action invoca `oma update --ci` sin `--with-new-skills`. Así actualiza el conjunto de skills instalado y muestra las skills nuevas disponibles; ejecuta deliberadamente `oma update --with-new-skills` cuando el proyecto deba añadir skills nuevas como parte de la actualización.
@@ -275,17 +294,27 @@ La action invoca `oma update --ci` sin `--with-new-skills`. Así actualiza el co
 ```bash
 if [ -n "$(git status --porcelain .agents/ .claude/ 2>/dev/null)" ]; then
   echo "updated=true" >> "$GITHUB_OUTPUT"
-  VERSION=$(jq -r '.version' .agents/skills/_version.json)
-  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  if [ -f ".agents/skills/_version.json" ]; then
+    VERSION=$(jq -r '.version' .agents/skills/_version.json)
+    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  fi
 else
   echo "updated=false" >> "$GITHUB_OUTPUT"
 fi
 ```
 
-Comprueba si `oma update` cambió realmente algún archivo en `.agents/` o `.claude/`. Establece las salidas `updated` y `version` según corresponda.
+Comprueba si `oma update` cambió realmente algún archivo en `.agents/` o `.claude/`. Establece las salidas `updated` y `version` según corresponda. Los cambios fuera de esos dos directorios (por ejemplo, `.codex/` o `AGENTS.md`) no establecen `updated=true`.
 
 Después, según la entrada `mode`:
 
 - **Modo `pr`:** Usa `peter-evans/create-pull-request@v8` para crear un PR en la rama `chore/update-oh-my-agent`. El PR incluye el nuevo número de versión, un enlace al repositorio de oh-my-agent y las etiquetas configuradas. Si la rama ya existe (por un PR anterior que sigue abierto), actualiza el PR existente.
 
 - **Modo `commit`:** Configura git como `github-actions[bot]`, prepara `.agents/` y `.claude/`, hace commit con el mensaje configurado y ejecuta push a la rama base.
+
+---
+
+## Consulta también
+
+- [Instalación global](./global-install.md): `oma update --global` y advertencias de CI para instalaciones a nivel de usuario
+- [Referencia de configuración](./configuration-reference.md#update-and-ownership-rules): qué archivos de configuración conserva `oma update`
+- [Integración de un proyecto existente](./integration.md): los archivos que `oma update` actualiza en un proyecto

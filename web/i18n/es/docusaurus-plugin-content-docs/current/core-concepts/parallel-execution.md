@@ -9,7 +9,7 @@ La principal ventaja de oh-my-agent es ejecutar varios agentes especializados al
 
 ---
 
-## `agent:spawn`: generación de un solo agente
+## oma agent spawn: generación de un solo agente {#agentspawn-single-agent-spawning}
 
 ### Sintaxis básica
 
@@ -93,7 +93,7 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## `agent:parallel`: modo paralelo inline
+## oma agent parallel: modo paralelo inline {#agentparallel-inline-parallel-mode}
 
 Para usar una sintaxis más sencilla que gestione automáticamente los procesos en segundo plano:
 
@@ -120,10 +120,10 @@ oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-El flag `--inline` analiza cada argumento con formato `agent:task`. Añade una tercera ruta separada por dos puntos (`agent:task:workspace`) cuando la tarea necesita un workspace específico. Sin `--inline`, pasa un archivo YAML de tareas con `{tasks: [{id?, agent, task, workspace?}]}`. `--session` asocia los resultados paralelos con una sesión existente.
+El flag `--inline` analiza cada argumento con formato `agent:task`. Añade una tercera ruta separada por dos puntos (`agent:task:workspace`) cuando la tarea necesita un workspace específico. Sin `--inline`, pasa un archivo YAML de tareas con `{tasks: [{id?, agent, task, workspace?}]}`. `--session-id` vincula los resultados con una sesión existente y con los IDs de tarea del archivo YAML.
 
 ---
 
@@ -175,7 +175,7 @@ El mecanismo de generación varía según la IDE o CLI:
 
 Cuando se ejecuta dentro de Claude Code, el flujo usa directamente la herramienta `Agent`:
 
-```
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
@@ -211,7 +211,7 @@ El dashboard observa `.agents/state/memories/` para recibir actualizaciones en t
 
 ```bash
 oma dashboard web
-# Opens http://localhost:9847
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 Incluye:
@@ -225,20 +225,11 @@ Incluye:
 
 Usa 3 terminales para tener una visibilidad adecuada:
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard terminal         │   Agent spawn        │
-│   (live monitoring)     │   commands           │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   Terminal 3:                                  │
-│   Test/build logs, git operations              │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| Terminal | Ejecuta | Propósito |
+|----------|---------|-----------|
+| 1 | `oma dashboard terminal` | Monitoreo en vivo |
+| 2 | `oma agent spawn …` o `oma agent parallel …` | Comandos de generación de agentes |
+| 3 | Pruebas, logs de compilación, git | Verificación y operaciones de git |
 
 ### Comprobar el estado de un agente individual
 
@@ -299,7 +290,7 @@ Los IDs de sesión determinan:
 
 1. **No generes agentes en el mismo workspace.** Dos agentes que escriben en el mismo directorio crean conflictos y pueden sobrescribir trabajo.
 
-2. **No superes MAX_PARALLEL (3 por defecto).** Más concurrencia no siempre es más rápida. El valor predeterminado está ajustado para la mayoría de los sistemas.
+2. **No superes MAX_PARALLEL (3 por defecto).** Más agentes simultáneos no siempre significan resultados más rápidos. Cada agente necesita recursos de memoria y CPU. El valor predeterminado de 3 está ajustado para la mayoría de los sistemas.
 
 3. **No omitas la planificación.** Generar agentes sin un plan provoca desalineación: por ejemplo, frontend puede implementar una forma de API distinta de la de backend.
 
@@ -311,7 +302,7 @@ Los IDs de sesión determinan:
 
 ## Ejemplo de extremo a extremo
 
-Un flujo completo para una funcionalidad de autenticación de usuarios:
+Un flujo completo de ejecución en paralelo para crear una funcionalidad de autenticación de usuarios:
 
 ```bash
 # Step 1: Plan the feature
@@ -323,19 +314,33 @@ oma agent spawn backend "Implement JWT auth API with registration, login, refres
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: Monitor in a separate terminal
-# Terminal 2:
-oma dashboard terminal
-
-# Step 4: Wait for all implementation agents
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: Run QA review
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: If QA finds issues, re-spawn specific agents with fixes
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: Re-run QA to verify fixes
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+Ejecuta el dashboard en una segunda terminal mientras trabajan los agentes. Sigue en ejecución hasta que pulses Ctrl+C, así que no lo pegues en la misma shell que los comandos de generación:
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## Ver también
+
+- [Resultados de agentes y reanudación](../guide/agent-results-and-resume.md): recibos de ejecución, claims y `oma agent resume`
+- [Monitoreo con el dashboard](../guide/dashboard-monitoring.md)
+- [Guía de proyectos multiagente](../guide/multi-agent-project.md)
+- [Modelos por agente](../guide/per-agent-models.md)
+- [El flujo de trabajo /orchestrate](./workflows.md#orchestrate)
+- [Referencia de comandos de la CLI](../cli-interfaces/commands.md)

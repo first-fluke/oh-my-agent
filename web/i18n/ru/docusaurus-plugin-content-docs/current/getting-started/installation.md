@@ -36,7 +36,7 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 5. Настраивают слои интеграции runtime (хуки, символические ссылки, настройки обнаруженных поставщиков)
 6. Настраивают MCP-серверы code intelligence и памяти
 
-Bootstrap продолжает работу после сбоев необязательных зависимостей и выводит команды для дальнейших действий. После завершения установщика запустите `oma doctor`.
+Bootstrap продолжает работу после сбоев необязательных зависимостей и выводит команды для дальнейших действий. AgentMemory является провайдером семантической памяти по умолчанию: `oma install` и `oma update` завершаются ошибкой, если не удаётся его установка, запуск или проверка работоспособности. Выбор `providers.semantic_memory: none` или `honcho` либо задание `OMA_NO_AGENTMEMORY=1` отключает автоматическую подготовку AgentMemory. После завершения установщика запустите `oma doctor`.
 
 ---
 
@@ -48,24 +48,46 @@ bunx oh-my-agent@latest
 
 Эта команда запускает интерактивный установщик без bootstrap зависимостей. bun уже должен быть установлен.
 
-Установщик предложит выбрать пресет навыков. Текущие пресеты определены в `cli/constants/skill-data.ts`:
+Установщик предложит выбрать [пресет навыков](./glossary.md#skill-preset). Текущие пресеты определены в `PRESETS` в файле `cli/constants/skill-data.ts`:
 
-### Пресеты
+### Пресеты {#presets}
 
-| Пресет | Включённые навыки |
-|--------|------------------|
-| **all** | Все 33 текущих пакета навыков |
-| **fullstack** | Архитектура, мозговой штурм, дизайн, frontend, backend, mobile, базы данных, PM, QA, отладка, SCM, Terraform и рабочий процесс разработки |
-| **fullstack-web** | Полная веб-разработка, архитектура, дизайн, PM, QA, отладка, SCM и рабочий процесс разработки |
-| **fullstack-mobile** | Fullstack-разработка с фокусом на mobile, архитектура, дизайн, PM, QA, отладка, SCM и рабочий процесс разработки |
-| **frontend** | Архитектура, мозговой штурм, дизайн, frontend, PM, QA, отладка и SCM |
-| **backend** | Архитектура, мозговой штурм, backend, базы данных, PM, QA, отладка, SCM и рабочий процесс разработки |
-| **mobile** | Архитектура, мозговой штурм, mobile, PM, QA, отладка и SCM |
-| **devops** | Архитектура, мозговой штурм, Terraform, рабочий процесс разработки, observability, PM, QA, отладка и SCM |
-| **research** | Scholar, market, PDF, HWP, academic writing, search, translation и SCM |
-| **content** | Design, image, voice, academic writing, translation и SCM |
+Выберите пресет, соответствующий работе, которая нужна репозиторию. В названиях навыков ниже опущен префикс `oma-`.
 
-Пресеты — это наборы навыков; они не создают отдельное определение субагента для каждого навыка. Пресет `all` строится из актуального реестра навыков, поэтому список может расти вместе с репозиторием. Предметные пресеты включают только навыки, нужные для соответствующего фокуса.
+| Пресет | Выбирайте, если проект — это | Включённые навыки | Количество |
+|--------|-------------------------------|-----------------|-------|
+| **all** | Любой проект, или вы хотите, чтобы все рабочие процессы работали сразу | Все навыки из реестра | 33 |
+| **fullstack** | Веб- и мобильные клиенты с backend и инфраструктурой Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
+| **fullstack-web** | Веб-frontend с backend и базой данных | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **fullstack-mobile** | Мобильное приложение с backend и базой данных | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **frontend** | Только веб-интерфейс | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
+| **backend** | API или сервис с базой данных | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
+| **mobile** | Только мобильное приложение | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
+| **devops** | Работа с инфраструктурой, CI/CD и observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **research** | Научные статьи, исследование рынка и конвертация PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
+| **content** | Дизайн-ассеты, изображения, голос и текстовый контент | design, image, voice, academic-writing, translation, scm | 6 |
+
+Пресеты — это наборы навыков; они не создают отдельное определение субагента для каждого навыка. Пресет `all` строится из актуального реестра навыков, поэтому список может расти вместе с репозиторием. Предметные пресеты включают только навыки для соответствующего фокуса.
+
+### Рабочие процессы, которым нужны навыки вне пресета {#workflows-that-need-skills-outside-a-preset}
+
+Каждый пресет устанавливает все определения рабочих процессов и агентов, но несколько рабочих процессов читают навык, который предметные пресеты не устанавливают. Сверьтесь с этой таблицей, прежде чем выбирать предметный пресет:
+
+| Рабочий процесс | Читает навык | Пресеты, которые его включают |
+|----------|-------------|-------------------------|
+| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
+| `/ultrawork`, `/ralph` | oma-coordination; запускаемый им агент `refactor-engineer` использует oma-refactor | all |
+| `/docs` | oma-docs | all |
+| `/explain` | oma-explanation | all |
+| `/security` | oma-security | all |
+| `/recap` | oma-recap | all |
+| `/video` | oma-video | all |
+| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
+| `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
+| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/scm` | oma-scm | все пресеты |
+
+Чтобы добавить недостающий навык позже, запустите `oma doctor` из корня проекта, согласитесь на предложение установить недостающий навык и выберите **Select individually**.
 
 Общие ресурсы (`_shared/`) устанавливаются при любом пресете. В них входят базовая маршрутизация, загрузка контекста, структура prompt, обнаружение поставщиков, протоколы выполнения и протокол памяти.
 
@@ -73,43 +95,49 @@ bunx oh-my-agent@latest
 
 После установки проект будет содержать:
 
-```
+```text
 .agents/
-├── oma-config.yaml # Your preferences
-├── oma-config.cue # Optional schema-backed configuration
+├── oma-config.yaml          # Your preferences
+├── oma-config.cue           # Optional schema-backed configuration
+├── mcp.json                 # MCP server configuration
 ├── skills/
-│ ├── _shared/ # Shared resources (always installed)
-│ │ ├── core/ # skill-routing, context-loading, etc.
-│ │ ├── runtime/ # memory-protocol, execution-protocols/
-│ │ └── conditional/ # quality-score, experiment-ledger, etc.
-│ ├── oma-frontend/ # Per preset
-│ │ ├── SKILL.md
-│ │ └── resources/
-│ └── ... # Other selected skills
-├── workflows/ # Current workflow definitions (21 in this checkout)
-├── agents/ # Subagent definitions
-├── mcp.json # MCP server configuration
-├── results/ # Plans and agent results (populated by workflows)
-└── state/ # Persistent workflow and coordination state
+│   ├── _shared/             # Shared resources (always installed)
+│   │   ├── core/            # skill-routing, context-loading, etc.
+│   │   ├── runtime/         # memory-protocol, execution-protocols/
+│   │   └── conditional/     # quality-score, experiment-ledger, etc.
+│   ├── oma-frontend/        # Per preset
+│   │   ├── SKILL.md
+│   │   └── resources/
+│   └── ...                  # Other selected skills
+├── workflows/               # Workflow definitions (all 21, every preset)
+├── agents/                  # Subagent definitions (all 12, every preset)
+├── hooks/                   # Hook sources (core/, variants/)
+├── rules/                   # Project rules
+├── config/                  # Shipped defaults (defaults.yaml)
+├── results/                 # Plans and agent results (populated by workflows)
+└── state/                   # Persistent workflow and coordination state
+    └── memories/            # Runtime coordination state
 
 .claude/
-├── settings.json # Vendor settings, when Claude Code is selected
-├── hooks/oma-hook.sh # Generated wrapper for the in-process hook chain
-├── hooks/hud.ts # Optional [OMA] statusline indicator
-├── skills/ # Symlinks → .agents/skills/
-└── agents/ # Generated native subagent files, when supported
-
-.agents/state/memories/
-└── ... # Runtime coordination state
+├── settings.json            # Vendor settings, when Claude Code is selected
+├── hooks/
+│   ├── oma-hook.sh          # Generated wrapper for the in-process hook chain
+│   └── hud.ts               # Optional [OMA] statusline indicator
+├── skills/                  # Symlinks → .agents/skills/
+└── agents/                  # Generated native subagent files, when supported
 ```
 
 Установщик создаёт каталоги поставщиков только для выбранных хостов. Исходный код хуков остаётся в `.agents/hooks/core/`; создаваемые файлы поставщиков являются результатами интеграции. В старых проектах Serena также может использовать устаревший каталог `.serena/memories/`.
 
 ---
 
-## Способ 3: глобальная установка
+## Способ 3: глобальная установка {#method-3-global-install}
 
 Для использования CLI на уровне системы (дашборды, запуск агентов, диагностика) установите oh-my-agent глобально:
+
+:::note
+Этот раздел устанавливает команду `oma`. Это не то же самое, что `oma install --global`, которая устанавливает навыки, рабочие процессы и правила в глобальный home OMA (`~/.oma/.agents/`) для всех проектов. См. [Глобальная установка](../guide/global-install.md).
+:::
 
 ### Homebrew (macOS/Linux)
 
@@ -131,7 +159,7 @@ npm install --global oh-my-agent
 oma doctor # Health check
 oma doctor --profile # Show resolved model/CLI per dispatch role
 oma dashboard terminal # Terminal monitoring
-oma dashboard web # Web dashboard at http://localhost:9847
+oma dashboard web # Web dashboard at http://127.0.0.1:9847
 oma agent spawn # Spawn agents from terminal
 oma agent parallel # Parallel agent execution
 oma agent status # Check agent status
@@ -141,17 +169,16 @@ oma skill audit # Audit skill routing descriptions
 oma stats get # Session statistics
 oma recap # Conversation history recap across AI tools
 oma link # Regenerate vendor-native files from `.agents/` SSOT
-oma update # Update oh-my-agent
+oma update # Update installed skills from the registry
 oma verify agent <agent-type> # Verify agent output (build/test/scope/secrets)
 oma describe # Introspect CLI commands as JSON
-oma bridge # MCP stdio ↔ Streamable HTTP bridge
+oma bridge # Proxy MCP stdio to a shared per-project Serena server
 oma memory init # Initialize coordination memory schema
 oma auth status # Check CLI auth status
-oma search # Mechanical search primitives (alias: `oma s`)
-oma image # Multi-vendor AI image generation (alias: `oma img`)
+oma search # Mechanical search primitives
+oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma export # Export skills for external IDEs (e.g. cursor)
 oma star # Star the repository
 ```
 
@@ -255,7 +282,7 @@ agents:
 | Поле | Тип | Обязательно | Описание |
 |-------|------|----------|-------------|
 | `language` | string | Да | Код языка ответов. Поддерживаются en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Да | Ключ активного пресета. `auto` следует настройкам модели текущего runtime; фиксированные ключи включают `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` и `mixed`. Допустимы и пользовательские ключи пресетов. См. [модели для агентов](../guide/per-agent-models.md). |
+| `model_preset` | string | Да | Ключ активного [пресета моделей](./glossary.md#model-preset). `auto` следует настройкам модели текущего runtime; фиксированные ключи включают `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` и `mixed`. Допустимы и пользовательские ключи пресетов. См. [модели для агентов](../guide/per-agent-models.md). |
 | `default_cli` | string | Нет | Резервный CLI для `oma agent spawn`, если явные настройки агента и выбранный пресет не определяют поставщика. |
 | `free` | map | Нет | Настройки шлюза FreeLLMAPI, используемые при `model_preset: free`; API-ключи следует хранить в переменных окружения. |
 | `providers` | map | Нет | Провайдеры возможностей: `code_intelligence` (`serena` или `gortex`), `code_intelligence_guard` (`block` или `off`), `docs` (`context7`), `web` (`native` или `brave`) и `semantic_memory` (`agentmemory`, `honcho` или `none`). |
@@ -333,14 +360,14 @@ bunx oh-my-agent@latest
 
 Откройте проект в выбранной AI IDE или CLI и начните пользоваться oh-my-agent. Маршрутизация навыков зависит от хоста; включённые хуки могут обнаруживать рабочие процессы. Попробуйте:
 
-```
+```text
 "Build a login form with email validation using Tailwind CSS"
 ```
 
 Или используйте команду рабочего процесса:
 
-```
+```text
 /plan authentication feature with JWT and refresh tokens
 ```
 
-Подробные примеры приведены в [руководстве по использованию](/docs/guide/usage), а описание каждой специализации — в разделе [агенты](/docs/core-concepts/agents).
+Подробные примеры приведены в [руководстве по использованию](/docs/guide/usage), а описание каждой специализации — в разделе [агенты](/docs/core-concepts/agents). Если установка или хук ведут себя не так, как ожидалось, см. [Устранение неполадок](../guide/troubleshooting.md).

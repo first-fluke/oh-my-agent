@@ -1,25 +1,31 @@
 ---
 title: "Gids: Inhouds- en onderzoeksworkflows"
 sidebar_label: Overzicht
-description: Kies het juiste oh-my-agent-pad voor PDF- en HWP-extractie, spraak, wetenschappelijk onderzoek, dia's, recaps, vertaling en academisch schrijven.
+description: Kies het juiste oh-my-agent-pad, met de bijbehorende vereisten, voor PDF- en HWP-extractie, spraak, wetenschappelijk en webonderzoek, dia's, afbeeldingen, video, code-uitleggers, diagrammen, marktonderzoek, recaps, vertaling en academisch schrijven.
 ---
 
 # Inhouds- en onderzoeksworkflows {#content-and-research-workflows}
 
-Deze gids koppelt werk met documenten, audio, onderzoek en presentaties aan de capability die ervoor verantwoordelijk is. Begin met het gewenste artifact en gebruik vervolgens het kleinste commando of skill-entrypoint dat een controleerbaar resultaat oplevert.
+Deze gids koppelt werk met documenten, audio, onderzoek, media en presentaties aan de capability die ervoor verantwoordelijk is. Begin met het gewenste artifact en gebruik vervolgens het kleinste commando of skill-entrypoint dat een controleerbaar resultaat oplevert. Capabilities met een eigen gids linken daarnaar in de laatste kolom; de rest wordt op deze pagina behandeld.
 
-| Behoefte | Entry point | Eerste resultaat |
-|---|---|---|
-| Een PDF extraheren | Skill `oma-pdf` of de onderstaande commando's van `uvx opendataloader-pdf` | Markdown, tekst, JSON of een kort extractierapport |
-| HWP/HWPX/HWPML extraheren | Skill `oma-hwp` en `bunx kordoc@latest` | Markdown of gestructureerde JSON/chunks |
-| Audio inspreken of transcriberen | `/oma-voice` | Audio plus een manifest, of `transcript.md` plus een manifest |
-| Papers vinden en valideren | `oma scholar` | Zoekresultaten, een opgehaald sidecar-bestand of een lint-rapport |
-| Een presentatie bouwen | Skill `oma-slide` en `oma slide` | Gevalideerde HTML-dia's en optionele exports |
-| Agentgesprekken samenvatten | `oma recap` | Een gedateerde Markdown-recap met bewijsstatus |
-| Gelokaliseerde tekst vertalen of reviewen | Skill `oma-translation` | Tekst in de doeltaal of een review met onderbouwd bewijs |
-| Academische tekst opstellen of auditen | Skill `oma-academic-writing` | Concept, revisie of compliance-rapport met een Claim-Evidence Map |
+| Behoefte | Entry point | Vereisten | Eerste resultaat | Gids |
+|---|---|---|---|---|
+| Een PDF extraheren | Skill `oma-pdf` of de onderstaande commando's van `uvx opendataloader-pdf` | `uv` (voor `uvx`) | Markdown, tekst, JSON of een kort extractierapport | [hieronder](#extract-pdf-content) |
+| HWP/HWPX/HWPML extraheren | Skill `oma-hwp` en `bunx kordoc@latest` | Bun | Markdown of gestructureerde JSON/chunks | [hieronder](#extract-hwp-family-documents) |
+| Audio inspreken of transcriberen | `/oma-voice` | Voicebox-app op `127.0.0.1:17493` | Audio plus een manifest, of `transcript.md` plus een manifest | [hieronder](#generate-speech-or-transcribe-audio) |
+| Papers vinden en valideren | `oma scholar` | geen; optioneel `S2_API_KEY`, `OPENALEX_EMAIL` | Zoekresultaten, een opgehaald sidecar-bestand of een lint-rapport | [hieronder](#search-and-validate-scholarly-material) |
+| Het web doorzoeken of een pagina ophalen | Skill `oma-search`, `oma search` | optioneel Chrome, Python `curl_cffi`, `yt-dlp`, `gh` (controleer met `oma search doctor`) | JSON op stdout | [CLI-commando's: search](../cli-interfaces/commands.md#search) |
+| Een presentatie bouwen | Skill `oma-slide` en `oma slide` | Chrome, of `OMA_CHROME_PATH` | Gevalideerde HTML-dia's en optionele exports | [hieronder](#slides-and-presentations) |
+| Afbeeldingen genereren | Skill `oma-image`, `oma image generate` | een van `POLLINATIONS_API_KEY`, `codex login` of een aangemelde `agy` | Afbeeldingen plus `manifest.json` onder `.agents/results/images/` | [Afbeeldingen genereren](./image-generation.md) |
+| Een korte video, uitlegvideo of demovideo maken | `/video`, `oma video` | Node.js 22+, FFmpeg, daarna `oma video doctor --install` | Een runmap onder `.agents/results/videos/`; een MP4 na `oma video render` | [Video genereren](./video-generation.md) |
+| Een wijziging of onderwerp op één pagina uitleggen | `/explain`, `oma explain` | git voor de wijzigingsmodus; `gh` voor PR-refs | Zelfstandige HTML onder `.agents/results/explain/` | [Code-uitlegger](./code-explainer.md) |
+| Interactief architectuurdiagram | `/architecture`, `oma diagram` | geen; archify wordt bij het eerste gebruik opgehaald | Mermaid-blok, plus `.archify.html` wanneer archify wordt gevonden | [Diagramengine](./diagram-engine.md) |
+| Marktonderzoek in communities | Skill `oma-market`, `oma market` | Python 3.12+ | Een brief onder `.agents/results/market/` | [Marktonderzoek](./market-research.md) |
+| Agentgesprekken samenvatten | `/recap`, `oma recap` | geen | Recap-JSON van de CLI; een gedateerde Markdown-recap van `/recap` | [hieronder](#recap-agent-conversations) |
+| Gelokaliseerde tekst vertalen of reviewen | Skill `oma-translation` | geen | Tekst in de doeltaal of een review met onderbouwd bewijs | [hieronder](#translate-or-review-localized-content) |
+| Academische tekst opstellen of auditen | Skill `oma-academic-writing` | geen | Concept, revisie of compliance-rapport met een Claim-Evidence Map | [hieronder](#draft-or-audit-academic-writing) |
 
-De `oma`-commandonamen op deze pagina zijn geregistreerde publieke commando's. `uvx`, `bunx` en `bun` zijn externe conversietools die door hun eigen skills worden gedocumenteerd. De overige skills zijn entrypoints in natuurlijke taal of slash-commando's; er is geen zelfstandig commando `oma pdf`, `oma hwp`, `oma voice`, `oma translation` of `oma academic-writing`.
+De `oma`-commandonamen op deze pagina zijn geregistreerde publieke commando's. `uvx`, `bunx` en `bun` zijn externe conversietools die door hun eigen skills worden gedocumenteerd. De overige [skills](../getting-started/glossary.md#skill) zijn entrypoints in natuurlijke taal of slash-commando's; er is geen zelfstandig commando `oma pdf`, `oma hwp`, `oma voice`, `oma translation` of `oma academic-writing`.
 
 ## PDF-inhoud extraheren {#extract-pdf-content}
 
@@ -80,7 +86,7 @@ Gebruik voor een batch een expliciete uitvoermap:
 bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 ```
 
-De standaarduitvoer is Markdown. Vraag `json` op voor een gestructureerde AST of `chunks` voor retrievalgerichte chunks wanneer je die indelingen nodig hebt. De conversieopties `--dedupe-headers`, `--keep-empty-cols` en `--inline-images` sturen veelvoorkomende problemen met tabellen, samengevoegde kolommen en afbeeldingen. Controleer koppen, geneste of samengevoegde tabellen, lijsten, afbeeldingen, voetnoten en links in het resultaat voordat je het aan een andere skill doorgeeft.
+De standaarduitvoer is Markdown. Gebruik voor een gestructureerde AST `bunx kordoc@latest "<input.hwp>" --format json`; gebruik voor retrievalgerichte chunks `--format chunks`. De conversieopties `--dedupe-headers`, `--keep-empty-cols` en `--inline-images` sturen veelvoorkomende problemen met tabellen, samengevoegde kolommen en afbeeldingen. Controleer koppen, geneste of samengevoegde tabellen, lijsten, afbeeldingen, voetnoten en links in het resultaat voordat je het aan een andere skill doorgeeft.
 
 `bun` en `bunx` zijn vereisten. Lege uitvoer kan betekenen dat de inhoud alleen uit gescande afbeeldingen bestaat; stuur dat geval naar een OCR-workflow. Versleutelde of door DRM beperkte inhoud kan onvolledig blijven. PDF-, DOCX- en XLSX-invoer hoort bij de bijbehorende skills, ook al heeft `kordoc` andere commando's voor schrijven en parseren.
 
@@ -115,7 +121,7 @@ oma scholar lint --fail-on-warning paper.knows.yaml
 
 Knows wordt eerst geprobeerd, met OpenAlex en Semantic Scholar als fallbacks. Met `--section` kun je `statements`, `evidence`, `relations`, `artifacts` of `citation` opvragen. Gebruik `--lenient` wanneer tijdens lokale samenstelling dangling cross-record-references worden verwacht; gebruik `--fail-on-warning` voor een strikte CI-gate. Een zoekresultaat of opgehaald sidecar is bewijs voor discovery, geen claim dat de paper elke conclusie ondersteunt. Genereer of herzie een sidecar in de agent en voer daarna `oma scholar lint` uit voordat je het deelt.
 
-Als een remote service een time-out geeft, probeer dan een bredere query of laat de fallback van de CLI zijn werk doen. Een 429 van Semantic Scholar kan een limiet van de anonieme pool zijn; probeer later opnieuw of configureer de API-key. Als een sidecar een fout in de provenance-enum heeft, gebruik je `tool`, `person` of `org`; als er waarschuwingen over relation density overblijven, voeg je alleen ondersteunde bewijsrelaties toe waar de bron die ondersteunt.
+Als een remote service een time-out geeft, probeer dan een bredere query of laat de fallback van de CLI zijn werk doen; `--always-fallback` bevraagt OpenAlex en Semantic Scholar ook wanneer Knows resultaten heeft. Een 429 van Semantic Scholar kan een limiet van de anonieme pool zijn; probeer later opnieuw, of stel `S2_API_KEY` in. Stel `OPENALEX_EMAIL` (en optioneel `OPENALEX_API_KEY`) in om je OpenAlex-verzoeken te identificeren. Als een sidecar een fout in de provenance-enum heeft, gebruik je `tool`, `person` of `org`; als er waarschuwingen over relation density overblijven, voeg je alleen ondersteunde bewijsrelaties toe waar de bron die ondersteunt.
 
 ## Dia's en presentaties {#slides-and-presentations}
 
@@ -142,7 +148,7 @@ Gebruik `--slide <file>` voor een controle van één dia en `--report-file <path
 
 ## Agentgesprekken samenvatten {#recap-agent-conversations}
 
-Gebruik `oma recap` voor evidence-based samenvattingen van werk. Een kalenderdatum en een voortschrijdend venster zijn verschillende invoeren:
+Gebruik `/recap` (of vraag de agent om een recap) voor evidence-based samenvattingen van werk; dat voert `oma recap` uit om de geschiedenis te verzamelen. Een kalenderdatum en een voortschrijdend venster zijn verschillende invoeren:
 
 ```bash
 # A calendar day
@@ -155,7 +161,7 @@ oma recap --json
 oma recap --window 7d --tool claude,codex --json
 ```
 
-Het resultaat wordt opgeslagen onder `.agents/results/recap/`, normaal als `{date}.md` voor een dagelijkse recap of `{start-date}~{end-date}.md` voor een periode. De recap groepeert op werk, markeert gevraagd en lopend werk afzonderlijk van afgerond werk en registreert ontbrekende toolgeschiedenis. Gebruik `--top`, `--sort`, `--mermaid` of `--graph` wanneer het rapport een smallere scope of een visualisatie nodig heeft. Als de CLI niet beschikbaar is, kan de skill de gedocumenteerde fallback voor de Claude-geschiedenis gebruiken, maar de beperktere brondekking moet worden vermeld.
+Deze commando's printen de verzamelde geschiedenis (standaard als terminaltekst, als JSON met `--json` of als Mermaid-ganttdiagram met `--mermaid`), en `--graph` opent in plaats daarvan een interactieve grafiek in de browser; de CLI zelf schrijft geen bestand. `/recap` slaat de Markdown-recap op onder `.agents/results/recap/`, normaal als `{date}.md` voor een dagelijkse recap of `{start-date}~{end-date}.md` voor een periode. De recap groepeert op werk, markeert gevraagd en lopend werk afzonderlijk van afgerond werk en registreert ontbrekende toolgeschiedenis. Gebruik `--top` of `--sort` wanneer het rapport een smallere scope nodig heeft. Als de CLI niet beschikbaar is, kan de skill de gedocumenteerde fallback voor de Claude-geschiedenis gebruiken, maar de beperktere brondekking moet worden vermeld.
 
 Gebruik `oma retro` voor een gitgebaseerde engineering-retrospective. Die beantwoordt een andere vraag dan een conversation recap en kan aangrenzende perioden vergelijken met `--compare`.
 
@@ -165,7 +171,7 @@ Gebruik `oma-translation` voor UI-strings, documentatie, rapporten, marketingtek
 
 Geef de skill de bron, doellocale, het contenttype en aan of het om vertaling, review of synchronisatie met bronwijzigingen gaat. De skill laadt één passend taalprofiel uit de skillresources wanneer dat beschikbaar is, bewaart placeholders, links, Markdown-structuur en beschermde syntax en volgt de siblingvertalingen en glossary. Voor een lange pagina of review past de skill ook de vertaalrubric toe. Als er geen doelprofiel is, gebruikt de skill de gedeelde regels en meldt hij die beperking één keer.
 
-Voor documentatie vertaal je de stabiele Engelse pagina nadat anchors en commandovoorbeelden zijn vastgesteld. Houd CLI-namen, flags, paden, omgevingsvariabelen en codeblokken exact; vertaal de omliggende uitleg en controleer de structuur van de doelpagina met de Engelse versie. Een onduidelijke bronbetekenis moet je markeren, niet stilzwijgend raden.
+Voor documentatie vertaal je de stabiele Engelse pagina nadat anchors en commandovoorbeelden zijn vastgesteld. Houd CLI-namen, vlaggen, paden, omgevingsvariabelen en codeblokken exact; vertaal de omliggende uitleg en controleer de structuur van de doelpagina met de Engelse versie. Een onduidelijke bronbetekenis moet je markeren, niet stilzwijgend raden.
 
 ## Academische tekst opstellen of auditen {#draft-or-audit-academic-writing}
 
@@ -193,4 +199,8 @@ Gebruik `oma scholar` voor bronontdekking en sidecar-bewijs voordat je schrijft.
 | Een vertaling verandert codesyntax | Herstel beschermde namen en voer de structuurcontroles opnieuw uit voordat je de prozabetekenis reviewt. |
 | Academische tekst bevat onbewezen claims | Verwijder of nuanceer de claim, voeg bewijs toe via het scholar-pad en voer de Claim-Evidence Map opnieuw uit. |
 
-Voor de volledige geregistreerde CLI-paden en option aliases zie [CLI-commando's](../cli-interfaces/commands.md) en [CLI-opties](../cli-interfaces/options.md).
+## Volgende stappen {#next-steps}
+
+- [Afbeeldingen genereren](./image-generation.md), [Video genereren](./video-generation.md), [Code-uitlegger](./code-explainer.md), [Diagramengine](./diagram-engine.md) en [Marktonderzoek](./market-research.md) — de gidsen voor de capabilities in de tabel hierboven
+- [CLI-commando's](../cli-interfaces/commands.md) en [CLI-opties](../cli-interfaces/options.md) — de volledige geregistreerde CLI-paden en option aliases
+- [Configuratiereferentie](./configuration-reference.md) — de configuratiesecties `pdf`, `hwp`, `voice` en `scholar`

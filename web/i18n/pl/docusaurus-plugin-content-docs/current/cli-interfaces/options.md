@@ -1,30 +1,101 @@
 ---
 title: "Opcje CLI"
-description: Wyczerpująca referencja wszystkich opcji CLI — flagi globalne, kontrola wyjścia, opcje poleceń i praktyczne wzorce użycia.
+description: Referencja opcji CLI oma — flagi globalne, kontrola wyjścia, zmienione nazwy, opcje poszczególnych poleceń, kody wyjścia oraz rejestr generowany z oma describe.
 ---
 
 # Opcje CLI
 
-## Opcje globalne
+## Szybka referencja {#quick-reference}
+
+| Chcę... | Użyj |
+|:-------------|:----|
+| Uruchomić bez pytań | `-y` / `--yes` (honorowane są też `OMA_YES=1` i `CI=true`); `oma update --ci` daje zwykłe, nieinteraktywne wyjście |
+| Otrzymać JSON | `--json`, `--output json` lub `OH_MY_AG_OUTPUT_FORMAT=json`. Wyjątki opisuje sekcja [Opcje wyjścia](#output-options) |
+| Działać na instalacji globalnej | `-g` / `--global` lub `OMA_INSTALL_GLOBAL=1`; `OMA_HOME` przenosi katalog główny przechowywania globalnego |
+| Podejrzeć zmiany przed ich wprowadzeniem | `--dry-run` tam, gdzie polecenie je wymienia. Zobacz [Które polecenia obsługują JSON](#commands-supporting-json-output) |
+| Zobaczyć flagi polecenia | `oma <command> --help`, `oma describe "<command>"` lub [rejestr](#complete-public-option-registry) na końcu tej strony |
+| Naprawić skrypt, który przestał działać po aktualizacji | [Zmienione nazwy poleceń i opcji](#renamed-commands-and-options) |
+| Rozgałęzić skrypt w zależności od błędu | [Kody wyjścia](#exit-codes) |
+
+---
+
+## Opcje globalne {#global-options}
 
 Te opcje są dostępne dla głównego polecenia `oma` / `oh-my-agent`:
 
 | Flaga | Opis |
-| :----- | :----------- |
-| `-g, --global` | Działa na instalacji HOME (`~/.agents/`) zamiast na `<cwd>/.agents/` |
-| `-y, --yes` | Pomija pytania, gdy wybrane polecenie obsługuje potwierdzenie; kontrole bezpieczeństwa danego polecenia nadal obowiązują |
+|:-----|:-----------|
+| `-g, --global` | Działa na globalnej instalacji OMA (`~/.oma/.agents/` lub `$OMA_HOME/.agents/`) zamiast na `<cwd>/.agents/` |
+| `-y, --yes` | Pomija pytania, gdy wybrane polecenie obsługuje potwierdzenie; kontrole bezpieczeństwa danego polecenia nadal obowiązują. Honoruje też `OMA_YES=1` i `CI=true` |
 | `-V, --version` | Wypisuje numer wersji i kończy działanie |
 | `-h, --help` | Wyświetla pomoc dla polecenia |
 
 Wszystkie podpolecenia obsługują również `-h, --help`, aby wyświetlić własny tekst pomocy.
 
-`--global` ustawia katalog główny instalacji dla całego procesu, więc `install`, `update`, `link` i `uninstall` zawsze używają `~/.agents/`, niezależnie od katalogu, z którego je uruchamiasz. `OMA_HOME=<abs-path>` nadpisuje to ustawienie — zobacz [Instalacja globalna](../guide/global-install.md).
+`--global` ustawia katalog główny instalacji dla całego procesu, więc `install`, `update`, `link` i `uninstall` używają instalacji globalnej niezależnie od bieżącego katalogu:
+
+| Tryb | Jak go wybrać | Położenie `.agents/` |
+|:-----|:-----------------|:--------------------|
+| Projekt (domyślnie) | nic | `<cwd>/.agents/` |
+| Globalny | `--global` lub `OMA_INSTALL_GLOBAL=1` | `$OMA_HOME/.agents/` (domyślnie `~/.oma/.agents/`) |
+
+`OMA_HOME=<abs-path>` zmienia katalog główny przechowywania globalnego; musi to być ścieżka bezwzględna. Instalacje projektowe nadal używają cwd. Uruchom `oma home --json`, aby wyświetlić rozpoznane lokalizacje, oraz `oma home migrate --dry-run`, aby podejrzeć migrację starszych danych. Zobacz [Instalacja globalna](../guide/global-install.md).
+
+---
+
+## Zmienione nazwy poleceń i opcji {#renamed-commands-and-options}
+
+Ścieżki poleceń używają spacji, a nie dwukropków, a kilka poleceń i opcji zmieniło nazwy. Stare formy są odrzucane, a nie traktowane jako aliasy:
+
+- Stare polecenie kończy się błędem `Unknown command: ... Use oma --help.` lub `Unexpected argument for oma <group>. Use --help.`
+- Same nazwy grup `dashboard`, `state` i `stats` wyświetlają teraz pomoc grupy zamiast uruchamiać polecenie.
+- Stara opcja kończy się błędem `Removed option <old>. Use <new>.`; usunięte flagi akcji `state` i `stats` kończą się błędem `Removed option <old>. Use an explicit action; see oma --help.`
+
+Rozpoznawane są nadal tylko `schedule:run` i `serena daemon:gc`, dzięki czemu wpisy systemowego harmonogramu utworzone przez starsze wersje nadal działają.
+
+| Stare polecenie | Użyj teraz |
+|:------------|:--------|
+| dowolna ścieżka z dwukropkiem `a:b` (`agent:spawn`, `state:emit`, ...) | ścieżka rozdzielona spacjami (`agent spawn`, `state emit`) |
+| `dashboard`, `dashboard:web` | `dashboard terminal`, `dashboard web` |
+| `hook --vendor ...` | `hook run --vendor ...` |
+| `intel run` | `intel suggest` |
+| `state`, `state:get <id>` | `state list`, `state get <id>` |
+| `state --activate` / `--archive` / `--purge` | `state activate` / `state archive` / `state purge` |
+| `state:required-decisions` | `state decisions list` |
+| `state:inject-log ... --entry <file>` | `state inject-log list`, `state inject-log get <session-id> <file>` |
+| `stats`, `stats --reset` | `stats get`, `stats reset` |
+| `memory:retry-drain` | `memory retry drain` |
+| `vault rm` | `vault delete` |
+| `search api <url>`, `search rss <url>` | `search api fetch <url>`, `search rss fetch <url>` |
+| `search api:search`, `search rss:google` | `search api search`, `search rss google` |
+| `skills audit` / `lint` / `eval` / `promotions` / `rollback` / `procedure` / `meta-optimize` / `evolution-stats` | `skill ...` (liczba pojedyncza; `skills matrix` zachowuje liczbę mnogą) |
+| `skills opt` | `skill optimize` |
+| `slide new`, `slide viewer` | `slide create`, `slide preview` |
+| `slide pdf` / `png` / `pptx` | `slide export pdf` / `png` / `pptx` |
+| `slide import-pptx`, `slide fetch-video`, `slide styles ...` | `slide import pptx`, `slide asset fetch-video`, `slide style ...` |
+| `image list-vendors`, `video list-providers` | `image vendor list`, `video provider list` |
+| `schedule:add`, `schedule:remove` | `schedule create`, `schedule delete` |
+| `verify <agent-type>` | `verify agent <agent-type>` |
+
+| Stara opcja | Użyj teraz |
+|:-----------|:--------|
+| `-m, --model <vendor>` | `--vendor <vendor>` |
+| `-r, --root <path>` | `--project-root <path>` |
+| `--sid`, `--session` | `--session-id <id>` |
+| `--format <fmt>` | `--output <format>` (`search media --format` pozostaje bez zmian) |
+| `--out <dir>`, `--out-dir` | `--output-dir <path>` |
+| `--out <file>`, `--out-file` | `--output-file <path>`; `--report-file <path>` w `slide validate` i `explain validate` |
+| `--dir` | `--workspace <path>` w poleceniach `slide`, `--output-dir <path>` w `slide create`, `--input-dir <path>` w `explain validate` |
+| `--max` | `--limit <n>` w `scholar search` |
+| `--allow-external-out` | `--allow-external-output` |
+| `--timeout <seconds>`, `--timeout <ms>`, `--timeout-minutes` | `--timeout <duration>` (`30s`, `2m`). Jednostka jest wymagana tam, gdzie stara wartość była w milisekundach lub minutach |
+| `--max-age-days` | `--max-age <duration>`; `--expires-after <duration>` w `schedule create` |
 
 ---
 
 ## Opcje wyjścia {#output-options}
 
-Wiele poleceń obsługuje wyjście maszynowe dla potoków CI/CD i automatyzacji. Wyjście JSON można zażądać na trzy sposoby, w następującej kolejności priorytetu:
+Wiele poleceń obsługuje wyjście maszynowe dla potoków CI/CD i automatyzacji. Wyjście JSON można zażądać na trzy sposoby.
 
 ### 1. Flaga --json
 
@@ -34,7 +105,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-Flaga `--json` jest dostępna tylko na ścieżkach, które ją deklarują. Nie wyciągaj wniosków z samej rodziny poleceń: na przykład końcowe ścieżki `image`, `video` i `slide` udostępniają `--output` tam, gdzie wymienia je rejestr, a `search` ma własny strumień JSON. Macierz rejestru na końcu strony jest źródłem prawdy dla poszczególnych ścieżek.
+Flaga `--json` jest dostępna tylko na ścieżkach, które ją wymieniają. Nie wyciągaj wniosków z samej rodziny poleceń: na przykład końcowe ścieżki `image`, `video` i `slide` udostępniają `--output` tam, gdzie wymienia je rejestr, a `search` zawsze wypisuje JSON.
 
 ### 2. Flaga --output
 
@@ -43,7 +114,7 @@ oma stats get --output json
 oma doctor --output text
 ```
 
-Flaga `--output` przyjmuje `text` lub `json`. Zapewnia tę samą funkcję co `--json`, ale pozwala jawnie zażądać wyjścia tekstowego (przydatne, gdy zmienna środowiskowa jest ustawiona na json, a dla konkretnego polecenia potrzebujesz tekstu).
+W większości poleceń `--output` przyjmuje `text` lub `json`. Zapewnia tę samą funkcję co `--json`, ale pozwala też jawnie zażądać wyjścia tekstowego, co przydaje się, gdy zmienna środowiskowa jest ustawiona na `json`.
 
 **Walidacja:** Jeśli podano nieprawidłowy format, CLI zgłasza: `Invalid output format: {value}. Expected one of text, json`.
 
@@ -56,41 +127,47 @@ oma doctor # outputs JSON
 oma retro # outputs JSON
 ```
 
-Ustaw tę zmienną środowiskową na `json`, aby wymusić wyjście JSON we wszystkich obsługujących je poleceniach. Rozpoznawane jest tylko `json`; każda inna wartość jest ignorowana, a domyślnie używany jest tekst.
+Ustaw tę zmienną środowiskową na `json`, aby JSON był domyślnym formatem w poleceniach, które go obsługują. Rozpoznawane jest tylko `json`; każda inna wartość jest ignorowana, a wyjście pozostaje tekstowe.
 
-**Kolejność rozstrzygania:** flaga `--json` > flaga `--output` > zmienna środowiskowa `OH_MY_AG_OUTPUT_FORMAT` > `text` (domyślnie).
+### Jak wybierany jest format {#how-the-format-is-chosen}
 
-### Polecenia obsługujące wyjście JSON
+Flaga w wierszu poleceń wygrywa ze zmienną środowiskową. Podanie jednocześnie `--json` i `--output` z wartością inną niż JSON jest błędem, a nie regułą pierwszeństwa.
 
-| Polecenie | `--json` | `--output` | Uwagi |
-| :-------- | :--------- | :---------- | :------ |
-| `doctor` | Tak | Tak | Obejmuje kontrole CLI, status MCP i status umiejętności |
-| `stats` | Tak | Tak | Pełny obiekt metryk |
-| `retro` | Tak | Tak | Snapshot z metrykami, autorami i typami commitów |
-| `cleanup` | Tak | Tak | Lista wyczyszczonych elementów |
-| `auth status` | Tak | Tak | Status uwierzytelnienia dla każdego CLI |
-| `memory init` | Tak | Tak | Wynik inicjalizacji |
-| `verify agent` / `verify triggers` | Tak | Tak | Wyniki weryfikacji każdej kontroli |
-| `visualize` | Tak | Tak | Graf zależności jako JSON |
-| `describe` | Zawsze JSON | N/D | Zawsze wypisuje JSON (polecenie introspekcji) |
-| `recap` | Tak | Tak | Historia rozmów według narzędzia/sesji |
-| `image generate` / `image doctor` / `image vendor list` | N/D | Tak | Użyj `--output json`; `vendor list` jest kanoniczną ścieżką wykrywania |
-| `video generate` / `video doctor` / `video compose` / `video render` / `video provider list` | N/D | Tak | Użyj `--output json` dla obudowy uruchomienia lub raportu gotowości |
-| `explain validate` | Tak | Tak | Raport walidacji artefaktu |
-| `explain render` / `explain patch` / `explain components` | Tak | Tak | Raport renderowania: plik, ostrzeżenia, stan sidecara |
-| `explain lint` | Tak | Tak | Ostrzeżenia dotyczące tekstu |
-| `diagram resolve` / `diagram update` | Tak | Tak | Wynik wyboru silnika lub zarządzanej pamięci podręcznej |
-| `market resolve` / `market update` | Tak | Tak | Status zarządzanego silnika badawczego |
-| `docs verify` / `docs sync` / `docs i18n` / `docs lint` | Tak | N/D | Każda ścieżka docs ma własne opcje raportu |
-| `search ...` | Zawsze JSON | N/D | Wszystkie podpolecenia `search` strumieniują JSON; do czytania użyj `--pretty` |
+| Podajesz | Zmienna nieustawiona | `OH_MY_AG_OUTPUT_FORMAT=json` |
+|:---------|:---------------|:------------------------------|
+| nic | tekst | JSON |
+| `--json` lub `--output json` | JSON | JSON |
+| `--output text` | tekst | tekst |
+| `--json --output text` | błąd: `--json conflicts with --output. Choose one output format.` | ten sam błąd |
+
+Niektóre polecenia używają własnych wartości formatu:
+
+| Polecenia | Kontrola formatu |
+|:---------|:---------------|
+| `search ...` | Zawsze JSON; `--pretty` dodaje tylko wcięcia. `search providers` i `search web` przyjmują też `--json` |
+| `describe` | Zawsze JSON |
+| `image ...`, `video ...` | `--output text\|json` (domyślnie `text`) |
+| `slide validate` | `--output json\|concise` (domyślnie `concise`) |
+| `explain validate` | `--output concise\|json` (domyślnie `concise`) lub `--json` |
+| `hook probe` | `--output text\|md\|json` |
+
+### Które polecenia obsługują JSON {#commands-supporting-json-output}
+
+Każde polecenie przyjmujące `--json` lub `--output` zgłasza `supportsJsonOutput: true` w `oma describe`, a [rejestr](#complete-public-option-registry) na końcu tej strony wymienia flagi dla każdej ścieżki. Polecenia, które zawsze wypisują JSON bez flagi (`describe` i większość podpoleceń `search`), nie są oznaczone. Aby wyświetlić te ścieżki z poziomu CLI:
+
+```bash
+oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .path'
+```
+
+W ten sam sposób użyj `select(.supportsDryRun? == true)`, aby znaleźć polecenia z `--dry-run`.
 
 ---
 
-## Opcje poszczególnych poleceń
+## Opcje poszczególnych poleceń {#per-command-options}
 
 ### install
 
-```
+```text
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
@@ -98,31 +175,34 @@ Instalator interaktywny zapisuje ustawienia wybranego dostawcy w `.agents/oma-co
 
 ### doctor
 
-```
-oma doctor [--json] [--output <format>] [--profile]
+```text
+oma doctor [--json] [--output <format>] [--profile] [--heal-check <agentType>]
 ```
 
 | Flaga | Opis | Domyślnie |
-| :----- | :----------- | :-------- |
+|:-----|:-----------|:--------|
 | `--json` | Emituje JSON zamiast sformatowanego tekstu. | `false` |
 | `--output <format>` | Jawny format wyjścia (`text` lub `json`). Zobacz [Opcje wyjścia](#output-options). | `text` |
-| `--profile` | Wyświetla macierz zdrowia profilu (rozpoznany slug modelu, CLI i status uwierzytelnienia agenta z aktywnego `model_preset` oraz nadpisań `agents:`). Zobacz [Modele per agent](../guide/per-agent-models.md). | `false` |
+| `--profile` | Wyświetla macierz zdrowia profilu (rozpoznany slug modelu, CLI i status uwierzytelnienia każdego agenta z aktywnego `model_preset` oraz nadpisań `agents:`). Zobacz [Modele per agent](../guide/per-agent-models.md). | `false` |
+| `--heal-check <agentType>` | Dołącza kontrolę bramki samonaprawy dla agenta. | |
+
+Z `--json` raport ma pola najwyższego poziomu `ok` i `issues`, a `doctor` kończy się kodem `1`, gdy `issues` jest większe od zera.
 
 ### update
 
-```
+```text
 oma update [-f | --force] [--with-new-skills] [--ci] [-y | --yes] [--all] [--vendor <vendors>]
 oma update mcp [-y | --yes] [--ci] [--all] [--vendor <vendors>]
 ```
 
 | Flaga | Skrót | Opis | Domyślnie |
-| :----- | :------ | :----------- | :-------- |
+|:-----|:------|:-----------|:--------|
 | `--force` | `-f` | Nadpisuje dostosowane przez użytkownika pliki konfiguracji podczas aktualizacji. Dotyczy: `oma-config.yaml`, `mcp.json`, katalogów `stack/`. Bez tej flagi pliki są kopiowane zapasowo przed aktualizacją i przywracane po niej. | `false` |
-| `--with-new-skills` |  | Instaluje umiejętności dodane do rejestru od bieżącej instalacji. | `false` |
-| `--ci` |  | Uruchamia nieinteraktywny tryb CI. Pomija wszystkie pytania o potwierdzenie i używa zwykłego wyjścia konsoli zamiast spinnerów i animacji. Wymagane w potokach CI/CD bez stdin. | `false` |
+| `--with-new-skills` | | Instaluje umiejętności dodane do rejestru od bieżącej instalacji. | `false` |
+| `--ci` | | Uruchamia nieinteraktywny tryb CI. Pomija wszystkie pytania o potwierdzenie i używa zwykłego wyjścia konsoli zamiast spinnerów i animacji. Wymagane w potokach CI/CD bez stdin. | `false` |
 | `--yes` | `-y` | Pomija pytania. Nie tworzy brakujących katalogów dostawców, chyba że użyto `--all` lub `--vendor`. | `false` |
-| `--all` |  | Tworzy lub aktualizuje wszystkich obsługiwanych dostawców zakresu projektu. | `false` |
-| `--vendor <vendors>` |  | Tworzy lub aktualizuje listę dostawców rozdzielaną przecinkami, np. `claude,qwen`. | Tylko istniejące katalogi dostawców |
+| `--all` | | Tworzy lub aktualizuje wszystkich obsługiwanych dostawców zakresu projektu. | `false` |
+| `--vendor <vendors>` | | Tworzy lub aktualizuje listę dostawców rozdzielaną przecinkami, np. `claude,qwen`. | Tylko istniejące katalogi dostawców |
 
 `oma update mcp` używa tych samych opcji `--yes`, `--ci`, `--all` i `--vendor` przy wyborze serwerów MCP przeglądarki. Nie używa `--force` ani `--with-new-skills`.
 
@@ -134,9 +214,9 @@ oma update mcp [-y | --yes] [--ci] [--all] [--vendor <vendors>]
 
 **Działanie z --ci:**
 - Brak `console.clear()` przy starcie.
-- `@clack/prompts` zastępuje zwykłe `console.log`.
+- `@clack/prompts` zostaje zastąpione zwykłym `console.log`.
 - Pytania o wykrycie konkurencyjnych narzędzi są pomijane.
-- Błędy są zgłaszane zamiast wywołania `process.exit(1)`.
+- Błędy są zgłaszane jako wyjątki zamiast wywołania `process.exit(1)`.
 
 **Zakres dostawców:**
 - `oma update` aktualizuje tylko katalogi dostawców, które już istnieją.
@@ -146,44 +226,50 @@ oma update mcp [-y | --yes] [--ci] [--all] [--vendor <vendors>]
 
 ### stats
 
-```
-oma stats get [--json] [--output <format>]
-oma stats reset
+```text
+oma stats get [--json | --output <format>]
+oma stats reset [--json | --output <format>]
 ```
 
 | Flaga | Opis | Domyślnie |
-| :----- | :----------- | :-------- |
-| `--json` | Emituje wynik resetowania jako JSON. | `false` |
+|:-----|:-----------|:--------|
+| `--json` | Emituje JSON. `stats get` wypisuje obiekt metryk; `stats reset` wypisuje `{"reset":true}`. | `false` |
 | `--output <format>` | Emituje `text` lub `json`. | `text` |
 
-`oma stats reset` jest poleceniem resetowania. Dawna forma `oma stats get --reset` nie należy do bieżącej publicznej listy.
+`oma stats reset` jest poleceniem resetowania; `oma stats get --reset` kończy się błędem `Removed option --reset`.
+
+:::note
+`stats get` nie jest tylko do odczytu. Każde wywołanie liczy się jako sesja i dodaje diff ostatnich 10 commitów do skumulowanych liczników plików i wierszy w `.agents/state/metrics.json`, więc nie odpytuj go cyklicznie.
+:::
 
 ### retro
 
-```
+```text
 oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 ```
 
 | Flaga | Opis | Domyślnie |
-| :----- | :----------- | :-------- |
-| `--interactive` | Tryb interaktywny z ręcznym wprowadzaniem danych. Pyta o kontekst, którego nie można pobrać z git (np. nastrój, ważne wydarzenia). | `false` |
+|:-----|:-----------|:--------|
+| `--interactive` | Starszy tryb prowadzony: pyta, co udało się osiągnąć, jakie są kluczowe wnioski i kolejne kroki. Ignoruje okno, `--compare` i `--json`. | `false` |
 | `--compare` | Porównuje bieżące okno czasowe z poprzednim o tej samej długości. Pokazuje metryki delta (np. commity +12, dodane wiersze -340). | `false` |
 
-**Format argumentu window:**
+**Format argumentu window:** liczba, po której następuje `h`, `d` lub `w`.
+- `24h`: 24 godziny
 - `7d`: 7 dni
 - `2w`: 2 tygodnie
-- `1m`: 1 miesiąc
 - Pominięcie oznacza wartość domyślną (7 dni)
+
+Miesiące nie są obsługiwane: `oma retro 1m` kończy się błędem `Invalid window: 1m. Use: 24h, 7d, 14d, 30d, 2w`.
 
 ### cleanup
 
-```
+```text
 oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 ```
 
 | Flaga | Skrót | Opis | Domyślnie |
-| :----- | :------ | :----------- | :-------- |
-| `--dry-run` |  | Tryb podglądu. Wyświetla elementy do wyczyszczenia, ale nie zmienia plików. Kod wyjścia 0 niezależnie od wyników. | `false` |
+|:-----|:------|:-----------|:--------|
+| `--dry-run` | | Tryb podglądu. Wyświetla elementy do wyczyszczenia, ale niczego nie zmienia. Kod wyjścia 0 niezależnie od wyników. | `false` |
 | `--yes` | `-y` | Pomija wszystkie pytania o potwierdzenie. Czyści wszystko bez pytania. Przydatne w skryptach i CI. | `false` |
 
 **Co zostaje wyczyszczone:**
@@ -193,37 +279,36 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 
 ### agent spawn
 
-```
+```text
 oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
 | Flaga | Skrót | Opis | Domyślnie |
-| :----- | :------ | :----------- | :-------- |
-| `--resumed-from` | — | Łączy ponowienie z poprzednim identyfikatorem uruchomienia. |  |
-| `--fallback-vendors` | — | Jawny, uporządkowany łańcuch dostawców fallbacku rozdzielony przecinkami. |  |
+|:-----|:------|:-----------|:--------|
+| `--resumed-from` | — | Łączy ponowienie z poprzednim identyfikatorem uruchomienia. | |
+| `--fallback-vendors` | — | Jawny, uporządkowany łańcuch dostawców fallbacku rozdzielony przecinkami. | |
 | `--task-id` | — | ID zadania z planu sesji. | ID agenta |
-| `--vendor` | — | Nadpisanie dostawcy CLI. Runtime przyjmuje `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` lub `pi`. | Rozpoznany z konfiguracji |
+| `--vendor` | — | Nadpisanie dostawcy CLI. `--help` wymienia `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok` i `pi`. | Rozpoznany z konfiguracji |
 | `--workspace` | `-w` | Katalog roboczy agenta. Jeśli pominięty lub ustawiony na `.`, CLI automatycznie wykrywa workspace na podstawie plików konfiguracji monorepo (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Wykryty automatycznie lub `.` |
 | `--isolation` | — | Tryb izolacji: `worktree` tworzy git worktree przy każdym uruchomieniu; domyślnie `none`. | `none` |
 | `--read-only` | — | Ogranicza uruchomionego agenta do narzędzi niedestrukcyjnych i wyłącza flagi automatycznej zgody. | `false` |
 
 **Walidacja:**
-- `agent-id` musi być jedną z wartości: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
-- `session-id` nie może zawierać `..`, `?`, `#`, `%` ani znaków sterujących.
-- `vendor` musi być jedną z wartości: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`.
+- `agent-id` i `session-id` nie mogą zawierać `..`, `?`, `#`, `%` ani znaków sterujących. `agent spawn` nie ma stałej listy identyfikatorów agentów; routing modeli i dostawców rozpoznaje `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra` i `explore`, a także aliasy takie jak `backend-engineer`, `qa-reviewer` i `research-explorer`.
+- `--vendor` musi być identyfikatorem dostawcy oma: `antigravity`, `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `grok`, `hermes`, `kimi`, `kiro`, `opencode`, `pi`, `qwen` lub `zcode`. Poniższa tabela obejmuje osiem dostawców wymienionych przez `--help`.
 
 **Działanie zależne od dostawcy:**
 
 | Dostawca | Polecenie | Flaga automatycznej zgody | Flaga promptu |
-| :------- | :-------- | :----------------- | :----------- |
+|:-------|:--------|:-----------------|:-----------|
 | antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
-| claude | `claude` | (none) | `-p` |
-| codex | `codex` | `--sandbox workspace-write` | (none; prompt is positional) |
-| cursor | `cursor-agent` | vendor-specific | `-p` |
-| opencode | `opencode` | vendor-specific | `-p` |
+| claude | `claude` | (brak) | `-p` |
+| codex | `codex` | `--sandbox workspace-write` | (brak; prompt jest pozycyjny) |
+| cursor | `cursor-agent` | zależna od dostawcy | `-p` |
+| opencode | `opencode` | zależna od dostawcy | `-p` |
 | qwen | `qwen` | `--yolo` | `-p` |
-| grok | `grok` | vendor-specific | `-p` |
-| pi | `pi` | suppressed in `--read-only` mode | prompt is positional |
+| grok | `grok` | zależna od dostawcy | `-p` |
+| pi | `pi` | wyłączona w trybie `--read-only` | prompt jest pozycyjny |
 
 Te wartości domyślne można nadpisać w `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
@@ -231,88 +316,113 @@ Codex zachowuje swój sandbox workspace-write. oma włącza dostęp do sieci i d
 
 ### agent status
 
-```
-oma agent status <session-id> [agent-ids...] [-r <root>]
+```text
+oma agent status <session-id> [agent-ids...] [--project-root <path>]
 ```
 
-| Flaga | Skrót | Opis | Domyślnie |
-| :----- | :------ | :----------- | :-------- |
-| `--root` | `-r` | Katalog główny do wyszukiwania plików pamięci (`.agents/state/memories/result-{agent}.md`) i plików PID. | Bieżący katalog roboczy |
+| Flaga | Opis | Domyślnie |
+|:-----|:-----------|:--------|
+| `--project-root <path>` | Projekt, z którego odczytywany jest rejestr uruchomień agentów i pliki `.agents/state/memories/result-{agent}.md`. `-r` i `--root` zostały usunięte i kończą się błędem `Removed option -r. Use --project-root.` | Bieżący katalog roboczy |
 
-**Logika ustalania statusu:**
-1. Jeśli istnieje `.agents/state/memories/result-{agent}.md`: odczytuje nagłówek `## Status:`. Bez nagłówka zgłasza `completed`.
-2. Jeśli istnieje plik PID pod `/tmp/subagent-{session-id}-{agent}.pid`: sprawdza, czy PID działa. Zgłasza `running`, gdy działa, i `crashed`, gdy nie działa.
-3. Jeśli nie istnieje żaden z plików: zgłasza `crashed`.
+Polecenie wypisuje jeden wiersz `{agent-id}:{status}` dla każdego żądanego agenta. Dla każdego agenta używa pierwszego istniejącego źródła:
+
+```mermaid
+flowchart TD
+  start["agent status SESSION AGENT"] --> reg{"Run for this session and agent in the agent-run registry?"}
+  reg -->|yes| regStatus["Registry status, downgraded to failed or stale"]
+  reg -->|no| result{"result-AGENT.md exists?"}
+  result -->|yes| legacy["legacy-STATUS, or unverified without a header"]
+  result -->|no| statusFile{"subagent-SESSION-AGENT.status in the OS temp dir?"}
+  statusFile -->|yes| exited["legacy-completed, or the status in the file"]
+  statusFile -->|no| pidFile{"subagent-SESSION-AGENT.pid alive?"}
+  pidFile -->|yes| running["running"]
+  pidFile -->|"no, or no PID file"| crashed["crashed"]
+```
+
+| Status | Znaczenie |
+|:-------|:--------|
+| `running`, `completed`, `partial`, `blocked`, `failed` | Status zapisany w rejestrze uruchomień agentów |
+| `failed` | Zgłaszany także wtedy, gdy zarejestrowane uruchomienie ma status `running`, ale jego proces runnera już nie istnieje |
+| `stale` | Zarejestrowane uruchomienie ma status `completed`, ale dowody wyniku nie przechodzą już walidacji |
+| `legacy-<status>` | Brak zarejestrowanego uruchomienia; `result-{agent}.md` ma nagłówek `## Status: <status>` |
+| `unverified` | Brak zarejestrowanego uruchomienia; `result-{agent}.md` nie ma nagłówka statusu |
+| `legacy-completed` | Brak uruchomienia i pliku wyniku; plik `.status` sesji zawiera `completed` (każda inna wartość jest wypisywana bez zmian) |
+| `crashed` | Nic nie znaleziono albo starszy plik PID wskazuje na nieaktywny proces |
+
+Sposób zapisywania uruchomień opisuje [Wyniki agentów i wznawianie](../guide/agent-results-and-resume.md).
 
 ### agent parallel
 
-```
-oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
+```text
+oma agent parallel [tasks...] [--session-id <id>] [--vendor <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flaga | Skrót | Opis | Domyślnie |
-| :----- | :------ | :----------- | :-------- |
+|:-----|:------|:-----------|:--------|
+| `--session-id <id>` | — | ID sesji dla każdego uruchomienia. Przekaż to samo ID do `oma agent status`. | Nazwa katalogu uruchomienia, `parallel-<timestamp>-<suffix>` |
 | `--vendor` | — | Nadpisanie dostawcy CLI stosowane do wszystkich uruchamianych agentów. | Rozpoznany dla agenta z konfiguracji |
 | `--inline` | `-i` | Traktuje argumenty zadań jako ciągi `agent:task[:workspace]` zamiast ścieżki pliku. | `false` |
-| `--no-wait` |  | Background mode. Starts all agents and returns immediately without waiting for completion. PID list and logs are saved to `.agents/results/parallel-{timestamp}/`. | `false` (waits dla completion) |
+| `--no-wait` | | Tryb w tle. Uruchamia wszystkich agentów i natychmiast wraca, nie czekając na zakończenie. Lista PID-ów i dzienniki są zapisywane w `.agents/results/parallel-<timestamp>-<suffix>/`. | `false` (czeka na zakończenie) |
 
 **Format zadań inline:** `agent:task` lub `agent:task:workspace`
 - Workspace jest wykrywany przez sprawdzenie, czy ostatni segment rozdzielony dwukropkiem zaczyna się od `./`, `/` lub jest równy `.`.
-- Przykład: `backend:Implement auth API:./api` — agent=backend, task="Implement auth API", workspace=./api.
-- Przykład: `frontend:Build login page` — agent=frontend, task="Build login page", workspace=wykryty automatycznie.
+- Przykład: `backend:Implement auth API:./api` -- agent=backend, task="Implement auth API", workspace=./api.
+- Przykład: `frontend:Build login page` -- agent=frontend, task="Build login page", workspace=wykryty automatycznie.
 
 **Format pliku z zadaniami YAML:**
+
 ```yaml
 tasks:
-- agent: backend
-task: "Implement user API"
-workspace: ./api # optional
-- agent: frontend
-task: "Build user dashboard"
+  - id: api            # optional; default <agent>-<index>
+    agent: backend
+    task: "Implement user API"
+    workspace: ./api   # optional; auto-detected when omitted
+  - agent: frontend
+    task: "Build user dashboard"
 ```
 
 ### recap
 
-```
+```text
 oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
 ```
 
 | Flaga | Opis | Domyślnie |
-| :----- | :----------- | :-------- |
-| `--window <period>` | Time window: `1d`, `3d`, `7d`, `2w`, `30d`. Ignored when `--date` is set. | `1d` |
-| `--date <date>` | Konkretna data (`YYYY-MM-DD`). Ma pierwszeństwo przed `--window`. |  |
-| `--tool <tools>` | Filtruje sesje według narzędzia. Wartości rozdzielane przecinkami: `grok`, `claude`, `codex`, `qwen`, `cursor`, `antigravity`. | wszystkie narzędzia |
+|:-----|:-----------|:--------|
+| `--window <period>` | Okno czasowe w postaci `<n>h`, `<n>d` lub `<n>w` (na przykład `1d`, `3d`, `7d`, `2w`, `30d`). Wartości powyżej 30 dni są przycinane do 30 dni z ostrzeżeniem. Ignorowane, gdy ustawiono `--date`. | `1d` |
+| `--date <date>` | Konkretna data (`YYYY-MM-DD`). Ma pierwszeństwo przed `--window`. | |
+| `--tool <tools>` | Filtruje sesje według narzędzia. Wartości rozdzielane przecinkami: `antigravity`, `claude`, `codex`, `cursor`, `gemini`, `grok`, `qwen`. | wszystkie narzędzia |
 | `--top <n>` | Pokazuje w podsumowaniu tylko N najważniejszych projektów/tematów. | bez limitu |
 | `--sort <metric>` | Sortuje sesje według `count` lub `duration`. | `count` |
-| `--mermaid` | Zamiast domyślnego podsumowania wypisuje wykres Gantta Mermaid. | `false` |
-| `--graph` | Otwiera interaktywny graf w przeglądarce. Wyklucza się z `--mermaid`. | `false` |
-
-> **Uwaga:** Generowanie plików reguł dostawcy (np. `.cursor/rules`) z zainstalowanych umiejętności obsługuje [`oma link <vendor>`](./commands.md#link), a nie osobne polecenie `export`.
+| `--mermaid` | Zamiast domyślnego podsumowania wypisuje wykres Gantta Mermaid. `--json` ma pierwszeństwo. | `false` |
+| `--graph` | Otwiera interaktywny graf w dashboardzie webowym (`/recap`). Ma pierwszeństwo przed `--mermaid` i `--json`. | `false` |
 
 ### search
 
-```
+```text
 oma search <subcommand> [...]
 ```
 
-Grupa `search` ma własne wyjście JSON (bez flag `--json` / `--output`). Użyj `--pretty` w podpoleceniach URL/zapytania, aby sformatować wyniki, i korzystaj z opcji właściwych podpoleceniom poniżej:
+Każde podpolecenie `search` wypisuje JSON na stdout bez żadnej flagi; `providers` i `web` przyjmują też `--json`. Żadne nie przyjmuje `--output`. `--pretty` zmienia tylko wcięcia.
 
 | Podpolecenie | Ważne opcje |
-| :----------- | :--------------- |
-| `fetch <url>` | `--only`, `--skip`, `--include-archive`, `--timeout`, `--locale`, `--pretty` |
-| `api <url>` / `meta <url>` / `rss <url>` / `archive <url>` | `--timeout`, `--locale`, `--pretty` |
-| `api:search <query>` | `--platforms <list>`, `--timeout`, `--locale`, `--pretty` |
-| `rss:google <query>` | `--locale` (domyślnie `en-US`) |
-| `media <url>` | `--subs`, `--sub-lang <list>` (domyślnie `en`), `--format <spec>`, `--timeout` (domyślnie `30`), `--pretty` |
+|:-----------|:---------------|
+| `providers` | `--json`, `--pretty` |
+| `web <query>` | `--provider <id>`, `--limit <n>` (domyślnie `10`), `--timeout <duration>` (domyślnie `15s`), `--json`, `--pretty` |
+| `fetch <url>` | `--only`, `--skip`, `--include-archive`, `--timeout <duration>` (domyślnie `15s`), `--locale`, `--pretty` |
+| `meta <url>` / `archive <url>` / `api fetch <url>` / `rss fetch <url>` | `--timeout <duration>` (domyślnie `15s`), `--locale` (domyślnie `en-US,en;q=0.9`), `--pretty` |
+| `api search <query>` | `--platforms <list>`, `--timeout <duration>`, `--locale`, `--pretty` |
+| `rss google <query>` | `--locale` (domyślnie `en-US`) |
+| `media <url>` | `--subs`, `--sub-lang <list>` (domyślnie `en`), `--format <spec>`, `--timeout <duration>` (domyślnie `30s`), `--pretty` |
 | `code <query>` | `--host <github\|gitlab>` (domyślnie `github`), `--language`, `--repo`, `--limit` (domyślnie `20`), `--pretty` |
 | `trust <domain>` | `--pretty` |
 | `doctor` | brak (uruchamia kontrole binariów Chrome / `python3 curl_cffi` / `yt-dlp` / `gh`) |
 
-**Kody wyjścia:** `0` powodzenie, `1` błąd, `2` zablokowane, `3` nie znaleziono, `4` nieprawidłowe dane wejściowe, `5` wymagane uwierzytelnienie, `6` timeout. Używaj ich w skryptach, aby odróżniać przejściowe blokady od nieprawidłowych danych.
+`search` używa wspólnej skali kodów wyjścia; zobacz [Kody wyjścia](#exit-codes).
 
 ### image
 
-```
+```text
 oma image <subcommand> [...]
 ```
 
@@ -321,26 +431,26 @@ Format wyjścia jest kontrolowany osobno dla każdego podpolecenia przez `--outp
 `image generate` przyjmuje:
 
 | Flaga | Skrót | Opis | Domyślnie |
-| :----- | :------ | :----------- | :-------- |
-| `--vendor <name>` |  | `auto` \| `pollinations` \| `codex` \| `antigravity` \| `all`. `auto` rozpoznaje dostawcę na podstawie aktywnej konfiguracji `image:` i dostępnego uwierzytelnienia. | `auto` |
-| `--size <size>` |  | `WxH` z obiema krawędziami podzielnymi przez 16, w zakresie 16–3840 i proporcją 1:3–3:1, albo `auto`. | domyślne dostawcy |
-| `--quality <level>` |  | `low` \| `medium` \| `high` \| `auto`. | domyślne dostawcy |
+|:-----|:------|:-----------|:--------|
+| `--vendor <name>` | | `auto` \| `pollinations` \| `codex` \| `antigravity` \| `all`. `auto` rozpoznaje dostawcę na podstawie aktywnej konfiguracji `image:` i dostępnego uwierzytelnienia. | `auto` |
+| `--size <size>` | | `WxH` z obiema krawędziami podzielnymi przez 16, w zakresie 16–3840 i proporcją 1:3–3:1, albo `auto`. | domyślne dostawcy |
+| `--quality <level>` | | `low` \| `medium` \| `high` \| `auto`. | domyślne dostawcy |
 | `--count <n>` | `-n` | Liczba obrazów, 1..5. | `1` |
-| `--output-dir <dir>` |  | Katalog wyjściowy. Musi znajdować się w `$PWD`, chyba że ustawiono `--allow-external-output`. | `.agents/results/images/{timestamp}/` |
-| `--allow-external-output` |  | Zezwala na ścieżki `--output-dir` poza `$PWD`. | `false` |
-| `--model <name>` |  | Nadpisanie modelu dostawcy. Model antigravity wybiera `agy`. | domyślne dostawcy |
-| `--timeout <duration>` |  | Timeout obrazu podany jako czas trwania. | domyślne dostawcy |
-| `--reference <path>` | `-r` | Obraz referencyjny do przeniesienia stylu/tematu. Można powtarzać (`-r a.png -r b.png`) lub podać listę rozdzielaną przecinkami. Sprawdzany jest rozmiar (≤5 MB), format (PNG/JPEG/GIF/WebP przez magic bytes) i liczba (≤10). Obsługiwane przez `codex` i `antigravity`; przez `pollinations` odrzucane z kodem 4. |  |
+| `--output-dir <dir>` | | Katalog wyjściowy. Musi znajdować się w `$PWD`, chyba że ustawiono `--allow-external-output`. | `.agents/results/images/{timestamp}/` |
+| `--allow-external-output` | | Zezwala na ścieżki `--output-dir` poza `$PWD`. | `false` |
+| `--model <name>` | | Nadpisanie modelu dostawcy. Model antigravity wybiera `agy`. | domyślne dostawcy |
+| `--timeout <duration>` | | Timeout obrazu podany jako czas trwania. | domyślne dostawcy |
+| `--reference <path>` | `-r` | Obraz referencyjny do przeniesienia stylu/tematu. Można powtarzać (`-r a.png -r b.png`) lub podać listę rozdzielaną przecinkami. Sprawdzany jest rozmiar (≤5 MB), format (PNG/JPEG/GIF/WebP przez magic bytes) i liczba (≤10). Obsługiwane przez `codex` i `antigravity`; przez `pollinations` odrzucane z kodem 4. | |
 | `--yes` | `-y` | Pomija pytanie o potwierdzenie kosztu. | `false` |
-| `--no-prompt-in-manifest` |  | Zapisuje SHA256 promptu zamiast tekstu źródłowego w `manifest.json`. | `false` |
-| `--dry-run` |  | Wypisuje plan i szacowany koszt; niczego nie uruchamia. | `false` |
-| `--output <format>` |  | `text` \| `json`. | `text` |
+| `--no-prompt-in-manifest` | | Zapisuje SHA256 promptu zamiast tekstu źródłowego w `manifest.json`. | `false` |
+| `--dry-run` | | Wypisuje plan i szacowany koszt; niczego nie uruchamia. | `false` |
+| `--output <format>` | | `text` \| `json`. | `text` |
 
-`image doctor` i `image vendor list` przyjmują `--output <text|json>`. `image list-vendors` pozostaje aliasem w pomocy; `vendor list` jest kanoniczną ścieżką wykrywania.
+`image doctor` i `image vendor list` przyjmują `--output <text|json>`. Do wykrywania dostawców używaj `image vendor list`; stara forma `image list-vendors` kończy się błędem.
 
 ### video
 
-```
+```text
 oma video generate <brief...> [options]
 oma video doctor [--output <format>] [--install|--upgrade|--install-mpt|--install-strudel]
 oma video compose <run-dir> [--output <format>] [--refresh] [--offline]
@@ -354,68 +464,91 @@ oma video provider list [--output <format>]
 
 ### memory init
 
-```
+```text
 oma memory init [--json] [--output <format>] [--force]
 ```
 
 | Flaga | Opis | Domyślnie |
-| :----- | :----------- | :-------- |
+|:-----|:-----------|:--------|
 | `--force` | Nadpisuje puste lub istniejące pliki schematu w `.agents/state/memories/`. Bez tej flagi istniejące pliki pozostają nietknięte. | `false` |
 
 ### verify
 
-```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+```text
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
 | Flaga | Skrót | Opis | Domyślnie |
-| :----- | :------ | :----------- | :-------- |
+|:-----|:------|:-----------|:--------|
 | `--workspace` | `-w` | Ścieżka katalogu workspace do weryfikacji. | Bieżący katalog roboczy |
+| `--session-id <id>` | | Wybiera plan sesji i raporty. Wymagane, gdy istnieje wiele planów, chyba że potwierdzenie uruchomienia identyfikuje sesję. | |
+| `--task-id <id>` | | Wybiera zakres i raport jednego zadania. Wymaga `--session-id` lub `--run-id`. | |
+| `--run-id <id>` | | Wybiera raport konkretnego uruchomienia. Sesja i zadanie są ustalane z lokalnego potwierdzenia; jeśli go brak, podaj oba identyfikatory jawnie. | |
 
 **Typy agentów:** `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 
-`verify triggers` mierzy dokładność detektora słów kluczowych na oznaczonym korpusie. Progi procentowe są bramkami; użyj wyjścia JSON, gdy zadanie CI musi sprawdzić poszczególne wyniki. Stara forma `oma verify <agent-type>` pozostaje formą pomocy zgodności; zarejestrowana ścieżka to `verify agent`.
+`verify triggers` mierzy dokładność detektora słów kluczowych na oznaczonym korpusie. Progi procentowe są bramkami; użyj wyjścia JSON, gdy zadanie CI musi sprawdzić poszczególne wyniki. Stara forma `oma verify <agent-type>` kończy się błędem; użyj `verify agent <agent-type>`.
 
 ---
 
-## Praktyczne przykłady
+## Kody wyjścia {#exit-codes}
 
-### Pipeline CI: aktualizacja i weryfikacja
+**Wspólna skala (`image`, `video`, `search`):**
+
+| Kod | Znaczenie |
+|:-----|:--------|
+| `0` | powodzenie |
+| `1` | błąd ogólny |
+| `2` | zablokowane lub odmowa ze względów bezpieczeństwa po stronie dostawcy |
+| `3` | nie znaleziono |
+| `4` | nieprawidłowe dane wejściowe |
+| `5` | wymagane uwierzytelnienie lub binarium dostawcy nie jest zainstalowane |
+| `6` | timeout |
+
+**Zależne od polecenia:**
+
+| Polecenie | Kody |
+|:--------|:------|
+| `doctor --json` | `0` brak problemów, `1` jeden lub więcej problemów |
+| `verify agent` | `0` wszystkie kontrole przeszły, `1` kontrola nie przeszła lub typ agenta jest nieprawidłowy, `2` nie znaleziono workspace |
+| `verify triggers` | `0` w granicach progów, `1` przekroczono próg |
+| `docs verify` | `1` znaleziono uszkodzone referencje |
+| `vault get` | `1` nieprawidłowa nazwa klucza, `2` brak takiego wpisu |
+
+---
+
+## Praktyczne przykłady {#practical-examples}
+
+### Pipeline CI: aktualizacja i weryfikacja {#ci-pipeline-update-and-verify}
 
 ```bash
-# Update in CI mode, then run doctor to verify installation
+# Update in CI mode, then fail the job when doctor reports any issue
 oma update --ci
-oma doctor --json | jq '.healthy'
+oma doctor --json | jq -e '.ok' > /dev/null
 ```
 
-### Automatyczne zbieranie metryk
+### Wsadowe uruchamianie agentów z monitoringiem statusu {#batch-agent-execution-with-status-monitoring}
 
 ```bash
-# Collect metrics as JSON and pipe to a monitoring system
-export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
-```
-
-### Wsadowe uruchamianie agentów z monitoringiem statusu
-
-```bash
-# Start agents in background
-oma agent parallel tasks.yaml --no-wait
-
-# Check status periodically
+# Choose the session ID first and pass it to both commands
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
+oma agent parallel tasks.yaml --session-id "$SESSION_ID" --no-wait
+
+# Check status every 5 seconds
 watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
+# Without `watch` (stock macOS), loop instead:
+# while sleep 5; do oma agent status "$SESSION_ID" backend frontend mobile; done
 ```
 
-### Czyszczenie w CI po testach
+### Czyszczenie w CI po testach {#cleanup-in-ci-after-tests}
 
 ```bash
 # Clean up all orphaned processes without prompts
 oma cleanup --yes --json
 ```
 
-### Weryfikacja uwzględniająca workspace
+### Weryfikacja uwzględniająca workspace {#workspace-aware-verification}
 
 ```bash
 # Verify each domain in its workspace
@@ -424,37 +557,36 @@ oma verify agent frontend -w ./apps/web
 oma verify agent mobile -w ./apps/mobile
 ```
 
-### Retro z porównaniem do przeglądu sprintu
+### Retro z porównaniem do przeglądu sprintu {#retro-with-comparison-for-sprint-reviews}
 
 ```bash
 # Two-week sprint retro with comparison to previous sprint
 oma retro 2w --compare
-
-# Save as JSON for sprint report
-oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
 ```
 
-### Pełny skrypt kontroli zdrowia
+### Pełny skrypt kontroli zdrowia {#full-health-check-script}
 
 ```bash
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 echo "=== oh-my-agent Health Check ==="
 
+report="$(mktemp)"
+# doctor exits 1 when it finds issues; keep the report and continue
+oma doctor --json > "$report" || true
+
 # Check CLI installations
-oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
+jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version // "unknown"))" else "MISSING" end)"' "$report"
+jq -r '"Issues: \(.issues)"' "$report"
 
-# Check auth status
-oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
-
-# Check metrics
-oma stats get --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+# Check auth status (an object of booleans keyed by github and each vendor ID)
+oma auth status --json | jq -r 'to_entries[] | "\(.key): \(if .value then "authenticated" else "not authenticated" end)"'
 
 echo "=== Done ==="
 ```
 
-### Describe do introspekcji agentów
+### Describe do introspekcji agentów {#describe-for-agent-introspection}
 
 ```bash
 # An AI agent can discover available commands
@@ -463,211 +595,208 @@ oma describe | jq '.command.subcommands[] | {name, description}'
 # Get details about a specific command
 oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 ```
-## Pełny publiczny rejestr opcji
 
-Poniższa macierz jest generowana ze sprawdzonego publicznego rejestru poleceń. To indeks pokrycia tej strony: wiersz z `—` nie ma opcji właściwych poleceniu, a współdzielone flagi główne i aliasy pomocy opisano powyżej. Uruchom `oma describe "<path>"`, aby sprawdzić pomoc runtime, gdy zmieni się gramatyka wartości.
+---
 
-| Ścieżka polecenia | Publiczne opcje | Cel |
-| --- | --- | --- |
-| `install` | `--web-search <provider>, --code-intelligence <provider>, --semantic-memory <provider>, --honcho-url <url>, --honcho-workspace <id>` | Instaluje umiejętności i konfiguracje oh-my-agent |
-| `describe` | `—` | Opisuje polecenia CLI jako JSON do introspekcji w czasie działania |
-| `uninstall` | `--dry-run, -y, --yes` | Usuwa pliki należące do oh-my-agent (zachowuje oma-config.yaml, mcp.json i umiejętności użytkownika) |
-| `update` | `-f, --force, --with-new-skills, --ci, -y, --yes, --all, --vendor <vendors>` | Aktualizuje umiejętności do najnowszej wersji z rejestru |
-| `update mcp` | `-y, --yes, --ci, --all, --vendor <vendors>` | Wybiera serwery MCP przeglądarki (Aside, Chrome DevTools, Firefox DevTools) |
-| `link` | `--dry-run` | Regeneruje pliki dostawców (.claude/, .cursor/ itd.) z SSOT .agents/ |
-| `intel` | `—` | Potok inteligencji produktu: badania, luki, PRD i propozycje issue |
-| `intel suggest` | `--config <path>, --topic <topic>, --target <target>, --repos <repos>, --since <window>, --last-commits <n>, --output-dir <path>, --dry-run, --fixture <path>, --create-issue, --base-repo <owner/name>, --yes, --json, --output <format>` | Sugeruje wartościową pracę nad produktem na podstawie inteligencji rynkowej i kodu |
-| `market` | `—` | Badania rynku na podstawie sygnałów społeczności przez zawsze aktualny silnik last30days |
-| `market detect-trap` | `--force` | Kontrola preflight odrzucająca zapytania będące pułapką słów kluczowych |
-| `market resolve` | `--refresh, --offline, --json, --output <format>` | Raportuje silnik last30days, który uruchomi oma (zarządzana wersja, przypięta wersja lub kopia lokalna), oraz używanego Pythona |
-| `market update` | `--json, --output <format>` | Pobiera najnowsze wydanie last30days do zarządzanej pamięci podręcznej oma (~/.cache/oma-market/last30days) |
-| `market run` | `—` | Uruchamia silnik last30days (scripts/last30days.py) z podanymi argumentami; --save-dir domyślnie używa market.save_dir |
-| `doctor` | `--profile, --heal-check <agentType>, --json, --output <format>` | Sprawdza instalacje CLI, konfiguracje MCP i status umiejętności |
-| `profile` | `—` | Zarządza lokalnymi profilami wykonywania OMA |
-| `profile list` | `--json, --output <format>` | Wyświetla lokalne profile |
-| `profile show` | `--json, --output <format>` | Wyświetla lokalny profil |
-| `profile create` | `--json, --output <format>` | Tworzy lokalny profil |
-| `profile use` | `--shell <shell>, --json, --output <format>` | Wypisuje kod powłoki aktywujący istniejący profil |
-| `profile run` | `—` | Uruchamia jedno polecenie z OMA_PROFILE ustawionym dla procesu potomnego |
-| `retro` | `--interactive, --compare, --json, --output <format>` | Retrospektywa inżynierska z metrykami i trendami |
-| `recap` | `--window <period>, --date <date>, --tool <tools>, --top <n>, --sort <metric>, --mermaid, --graph, --json, --output <format>` | Tworzy podsumowanie historii rozmów narzędzi AI |
-| `docs` | `—` | Wykrywanie rozbieżności dokumentacji: weryfikuje referencje i proponuje aktualizacje dokumentów dotkniętych diffem |
-| `docs verify` | `--json, --report-file <path>, --no-urls, --urls-sync` | Wyodrębnia referencje L2 z dokumentów i raportuje uszkodzone cele. Przy okazji regeneruje docs/generated/doc-refs.json. Kod wyjścia: 0 = czysto, 1 = znaleziono uszkodzone referencje. Sprawdzanie URL przekazuje do `lychee` (instalacja: brew install lychee). |
-| `docs sync` | `--json` | Na podstawie diffu git wyświetla dokumenty odwołujące się do zmienionych plików. LLM hosta (runtime umiejętności) powinien odczytać tę listę wraz z diffem i zaproponować poprawki zgodnie z kontraktem SKILL.md — CLI nigdy nie edytuje dokumentów automatycznie. Domyślny zakres diffu: --cached (zmiany staged), fallback do HEAD~1..HEAD. |
-| `docs i18n` | `--json, --min-severity <level>` | Wykrywa rozbieżność między angielskimi dokumentami źródłowymi (web/docs) a tłumaczeniami i18n (web/i18n/{lang}/...). Dla każdej pary emituje sygnały strukturalne (liczba wierszy, nagłówków i znacznik czasu ostatniego commita), aby LLM hosta mógł zdecydować, które tłumaczenia wymagają synchronizacji z diffem. CLI nigdy nie edytuje tłumaczeń. |
-| `docs lint` | `--json, --locales <list>` | Lintuje przetłumaczone dokumenty pod kątem antywzorców treści (np. em dash w celach CJK). Uzupełnia `oma docs i18n` (rozbieżność strukturalna) o kontrole stylu i antywzorców według oma-translation SKILL.md § Etap 4. CLI nigdy nie naprawia automatycznie — tylko raportuje problemy, aby LLM hosta mógł przebudować tekst. |
-| `emit` | `--target <target>, --output-dir <path>, --json, --output <format>` | Emituje artefakty zgodne ze standardami z SSOT .agents/ (specyfikacja Agent Skills, pakiet Agent Plugins, marketplace pluginów Claude Code, AGENTS.md i dokumenty dostawców zakresu cli/) |
-| `cleanup` | `--dry-run, -y, --yes, --json, --output <format>` | Czyści osierocone procesy subagentów i pliki tymczasowe |
-| `bridge` | `--context <name>` | Przekazuje MCP stdio do współdzielonego serwera Serena dla projektu (uruchamianego na żądanie) |
-| `verify` | `—` | Weryfikuje wynik subagenta (backend/frontend/mobile/qa/debug/pm) albo mierzy dokładność wyzwalacza detektora słów kluczowych |
-| `verify agent` | `-w, --workspace <path>, --json, --output <format>` |  |
-| `verify triggers` | `--corpus <path>, --max-false-fire <pct>, --max-missed-fire <pct>, --json, --output <format>` | Mierzy dokładność wyzwalacza detektora słów kluczowych na oznaczonym korpusie promptów |
-| `vault` | `—` | Zarządza kluczami API i sekretami w systemowym magazynie kluczy (macOS Keychain / Linux Secret Service / Windows Credential Manager) |
-| `vault store` | `--value <value>` | Zapisuje sekret pod <name> (interaktywny prompt hasła) |
-| `vault get` | `—` | Wypisuje zapisaną wartość na stdout (do: export KEY=$(oma vault get <name>)) |
-| `vault list` | `--json` | Wyświetla nazwy zapisanych sekretów (wartości nigdy nie są pokazywane) |
-| `vault delete` | `—` | Usuwa sekret z magazynu kluczy i indeksu |
-| `star` | `—` | Dodaje gwiazdkę oh-my-agent na GitHubie |
-| `visualize` | `--focus <node-or-path>, --affected <paths...>, --json, --output <format>` | Wizualizuje strukturę projektu jako graf zależności |
-| `search` | `—` | Mechanizmy wyszukiwania — fetch, meta, rss, media, trust i code |
-| `search providers` | `--json, --pretty` | Wyświetla zarejestrowanych dostawców wyszukiwania i sprawdza wybór bez połączeń sieciowych |
-| `search web` | `--provider <id>, --limit <n>, --timeout <duration>, --json, --pretty` | Wyszukuje wybranym dostawcą sieci (Brave ma adapter CLI) |
-| `search fetch` | `--only <strategies>, --skip <strategies>, --include-archive, --timeout <duration>, --locale <value>, --pretty` | Pobiera URL przez potok strategii o rosnącym poziomie |
-| `search meta` | `--timeout <duration>, --locale <value>, --pretty` | Wyodrębnia OGP / JSON-LD / Schema.org z URL |
-| `search media` | `--subs, --sub-lang <list>, --format <spec>, --timeout <duration>, --pretty` | Wyodrębnia metadane mediów przez yt-dlp (1858 witryn) |
-| `search archive` | `--timeout <duration>, --locale <value>, --pretty` | Pobiera przez AMP / archive.today / Wayback |
-| `search trust` | `--pretty` | Rozpoznaje poziom / wynik zaufania domeny |
-| `search code` | `--host <github\|gitlab>, --language <lang>, --repo <owner/repo>, --limit <n>, --pretty` | Wyszukuje kod przez gh / glab |
-| `search doctor` | `—` | Sprawdza zależności (Chrome, python3 curl_cffi, yt-dlp, gh) |
-| `search api` | `—` |  |
-| `search api fetch` | `--timeout <duration>, --locale <value>, --pretty` | Pobiera przez dopasowane API platformy (faza 0) |
-| `search api search` | `--platforms <list>, --timeout <duration>, --locale <value>, --pretty` | Rozsyła wyszukiwanie słów kluczowych do obsługujących je platform |
-| `search rss` | `—` |  |
-| `search rss fetch` | `--timeout <duration>, --locale <value>, --pretty` | Wykrywa i analizuje kanał RSS/Atom dla URL |
-| `search rss google` | `--locale <value>` | Buduje URL RSS Google News dla zapytania |
-| `harness` | `—` | Ocenia nakładki harness OMA na izolowanych zadaniach repozytorium |
-| `harness eval` | `--suite <path>, --candidate <path>, --mock, --live, --record, --record-file <path>, --yes, --timeout <duration>, --require-coverage, --json, --output <format>` | Porównuje nakładkę .agents kandydata z bieżącym baseline |
-| `harness incident promote` | `--skill <id>, --draft, --force, --json, --output <format>` | Wywodzi fixture regresji umiejętności z zapisanego incydentu |
-| `harness feedback` | `--live, --apply, --max-epochs <n>, --incident <ids...>, --scan-runs, --json, --output <format>` | Promuje incydenty i optymalizuje objęte umiejętności |
-| `harness evolution enable` | `--max-dispatches <n>, --cron <expr>, --mode <mode>, --json, --output <format>` | Włącza budżetowany, zaplanowany cykl sprzężenia zwrotnego projektu; tryb to apply lub propose |
-| `harness evolution status` | `--json, --output <format>` | Pokazuje konfigurację, harmonogram, oczekującą pracę, konflikty i ostatni cykl |
-| `harness evolution disable` | `--json, --output <format>` | Wyłącza zaplanowany cykl sprzężenia zwrotnego projektu |
-| `harness evolution run` | `--json, --output <format>` | Uruchamia jeden cykl w zapisanym trybie i budżecie włączonego projektu |
-| `slide` | `—` | Narzędzia prezentacji HTML — tworzenie szkieletu, walidacja, eksport i edycja prezentacji 1920×1080 |
-| `slide validate` | `--workspace <path>, --output <format>, --slide <file>, --report-file <path>` | Geometryczna bramka jakości — renderuje slajdy przez puppeteer-core i sprawdza przepełnienie/nakładanie/rozmiar czcionki |
-| `slide bundle` | `--workspace <path>, --output-file <path>, --inline-fonts` | Łączy pliki slajdów w jeden samowystarczalny artefakt .html |
-| `slide edit` | `--workspace <path>, --port <n>` | Otwiera edytor bbox w przeglądarce (serwer node:http pod 127.0.0.1 przekazuje do runnera agenta oma) |
-| `slide doctor` | `—` | Bada wymagane zależności (chrome, puppeteer-core) i opcjonalne (yt-dlp, pptxgenjs) |
-| `slide create` | `--output-dir <path>, --force` | Tworzy katalog roboczy slajdów ze startowym HTML, assets/ i meta.json |
-| `slide preview` | `--workspace <path>` | Buduje viewer.html (deck-stage web component + speaker-notes panel, toggle z `n`) |
-| `slide export` | `—` |  |
-| `slide export pdf` | `--workspace <path>, --output-file <path>, --mode <mode>` | Eksportuje slajdy do PDF przez puppeteer-core |
-| `slide export png` | `--workspace <path>, --output-dir <path>, --resolution <res>` | Eksportuje każdy slajd jako PNG przez puppeteer-core |
-| `slide export pptx` | `--workspace <path>, --output-file <path>` | [EKSPERYMENTALNE] Eksportuje do PPTX przez pptxgenjs (oparte na rastrze, gradienty rastrowane) |
-| `slide import` | `—` |  |
-| `slide import pptx` | `--workspace <path>` | Importuje plik .pptx do fragmentów slajdów przez officeparser (bunx, best-effort) |
-| `slide asset` | `—` |  |
-| `slide asset fetch-video` | `--workspace <path>, --output-name <name>` | Pobiera wideo przez yt-dlp do ./assets/ i wypisuje lokalną referencję |
-| `slide style` | `—` | Przegląda i pobiera presety stylu projektu |
-| `slide style list` | `—` | Wyświetla dostępne presety stylu (vendored + indeks bold-template) |
-| `slide style preview` | `—` | Wyświetla podgląd presetu stylu w terminalu |
-| `slide style get` | `--refresh` | Pobiera design.md pogrubionego szablonu (zawsze aktualny main; buforowany jako fallback offline) |
-| `scholar` | `—` | Sidecary artykułów Knows.academy (fallbacki OpenAlex + Semantic Scholar) |
-| `scholar search` | `--limit <n>, --year-min <year>, --always-fallback` | Wyszukuje artykuły (knows.academy → OpenAlex → Semantic Scholar) |
-| `scholar resolve` | `—` | Znajduje najlepsze dopasowanie artykułu w knows.academy, OpenAlex i Semantic Scholar |
-| `scholar get` | `--section <name>` | Pobiera sidecar (knows record_id) lub metadane pracy (W-id, DOI, arXiv:<id>, CorpusId:<n>, S2 paperId) |
-| `scholar lint` | `--lenient, --fail-on-warning` | Weryfikuje sidecar .knows.yaml lub .knows.json (v0.9.0) |
-| `image` | `—` | Generowanie obrazów AI u wielu dostawców — równoległy dispatch uwzględniający uwierzytelnienie |
-| `image generate` | `--vendor <name>, --size <size>, --quality <level>, -n, --count <n>, --output-dir <path>, --allow-external-output, --model <name>, --timeout <duration>, -r, --reference <path>, -y, --yes, --no-prompt-in-manifest, --dry-run, --output <format>` | Generuje images przez pollinations (flux/zimage, free), codex (gpt-image-2, ChatGPT OAuth), lub antigravity (gemini nano-banana przez `agy` CLI, free z Gemini Code Assist sign-in) |
-| `image doctor` | `--output <format>` | Sprawdza uwierzytelnienie i status instalacji każdego dostawcy |
-| `image vendor` | `—` |  |
-| `image vendor list` | `--output <format>` | Wyświetla zarejestrowanych dostawców i obsługiwane modele |
-| `video` | `—` | Generowanie krótkich filmów, objaśnień i dem |
-| `video generate` | `--mode <mode>, --aspect <aspect>, --locale <lang>, --captions <style>, --visual <mode>, --voice <profile>, --music <mode>, --duration <sec>, --compositor <name>, --capture <path>, --source <kind>, --url <url>, --device <name>, --ready-selector <css>, --show-cursor, --polish, --capture-timeout <sec>, --capture-stop <mode>, --output-dir <path>, --allow-external-output, --max-usd <n>, --seed <n>, --timeout <duration>, -y, --yes, --dry-run, --script <path>, --output <format>, --no-brief-in-manifest` | Generuje katalog uruchomienia wideo z briefu |
-| `video doctor` | `--output <format>, --install, --upgrade, --install-mpt, --install-strudel` | Sprawdza gotowość dostawcy wideo i kompozytora |
-| `video compose` | `--output <format>, --refresh, --offline` | Tworzy szkielet projektu HyperFrames uruchomienia na najnowszym toolchainie + heygen-com/hyperframes; wypisuje kontrakt autorstwa |
-| `video render` | `--output <format>` | Ponownie renderuje katalog uruchomienia z render-spec.json |
-| `video provider` | `—` |  |
-| `video provider list` | `--output <format>` | Wyświetla dostawców wideo i ich dostępność |
-| `serena` | `—` | Narzędzia cyklu życia serwera językowego Serena MCP |
-| `serena reap` | `--dry-run, --quiet` | Kończy bezczynne procesy potomne LSP Sereny, aby odzyskać pamięć (Serena sama się naprawia przy następnym wywołaniu) |
-| `serena reaper` | `—` |  |
-| `serena reaper enable` | `--dry-run` | Instaluje cykliczne zadanie Serena Reaper (uruchamiane co 5 minut) |
-| `serena reaper disable` | `--dry-run` | Odinstalowuje cykliczne zadanie Serena Reaper |
-| `explain` | `—` | Objaśnia zarządzanie artefaktami i narzędzia walidacji jakości |
-| `explain validate` | `--input-dir <path>, --output <format>, --report-file <path>, --json` | Weryfikuje samowystarczalne artefakty raportów HTML explain |
-| `explain render` | `--output-file <path>, --template <name>, --theme <name>, --mode <mode>, --style <level>, --lang <code>, --archify, --no-archify, --open, --output <format>, --json` | Renderuje szkic Markdown (plik lub stdin) do jednej samodzielnej strony HTML z objaśnieniem |
-| `explain lint` | `--style <level>, --lang <code>, --output <format>, --json` | Sprawdza tekst szkicu (plik lub stdin) bez renderowania |
-| `explain patch` | `--panel <id>, --open, --output <format>, --json` | Podmienia jeden panel wyrenderowanej strony na podstawie osadzonego szkicu |
-| `explain components` | `--output <format>, --json` | Wypisuje komponenty dostępne w szkicu albo składnię jednego z nich |
-| `diagram` | `—` | Pomocnicze narzędzia silnika diagramów (interaktywny HTML archify lub fallback Mermaid) |
-| `diagram resolve` | `--engine <engine>, --refresh, --offline, --json, --output <format>` | Raportuje, którego silnika diagramów powinny używać workflow, i gdzie znajduje się archify |
-| `diagram update` | `--json, --output <format>` | Pobiera najnowsze wydanie archify do zarządzanej pamięci podręcznej oma (~/.cache/oma-diagram/archify) |
-| `diagram archify` | `—` | Run the installed archify CLI (doctor \| guide \| validate \| deliver \|visual-check …) z update checks disabled |
-| `help` | `—` | Wyświetla informacje pomocy |
-| `version` | `—` | Wyświetla numer wersji |
-| `dashboard` | `—` |  |
-| `dashboard terminal` | `—` | Uruchamia terminalowy dashboard (monitoring agentów w czasie rzeczywistym) |
-| `dashboard web` | `—` | Uruchamia dashboard webowy pod http://127.0.0.1:9847 |
-| `auth` | `—` |  |
-| `auth status` | `--json, --output <format>` | Sprawdza status uwierzytelnienia wszystkich obsługiwanych CLI |
-| `hook` | `—` |  |
-| `hook run` | `--vendor <v>, --event <e>, --matcher <m>` | Przekazuje zdarzenie hooka dostawcy przez scentralizowany router hooków oma (design 019) |
-| `hook probe` | `--vendor <list>, --output <format>, --hooks-dir <dir>` | Bada zgodność hooków L1 dostawców i wypisuje macierz (D63) |
-| `state` | `—` |  |
-| `state emit` | `--session-id <id>, --category <category>, --vendor <vendor>, --vendor-sid <vendorSid>, --parent-event-id <eventId>, --causality-key <key>, --ts <iso>, --no-mirror, --json, --output <format>` | Dopisuje zdarzenie workflow OMA L1 |
-| `state migrate` | `--include-active, --dry-run, --json, --output <format>` | Migruje odziedziczone sesje do profilu domowego i usuwa zweryfikowane oryginały |
-| `state get` | `--json, --output <format>` | Sprawdza jedną sesję OMA L1 po ID |
-| `state list` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Sprawdza stan workflow OMA L1 |
-| `state repair` | `--dry-run, --json, --output <format>` | Naprawia pliki stanu workflow OMA L1 |
-| `state verify` | `--workflow <workflow>, --checkpoint <checkpoint>, --session-id <id>, --category <category>, --no-emit-missing, --json, --output <format>` | Weryfikuje wymagane zdarzenia L1 dla punktu kontrolnego workflow |
-| `state decisions` | `—` |  |
-| `state decisions list` | `--json, --output <format>` | Wyświetla wymagane punkty kontrolne L1 decision.made |
-| `state inject-log` | `—` |  |
-| `state inject-log list` | `--entry <file>, --json, --output <format>` | Wyświetla lub przegląda dzienniki audytu inject dla każdej granicy (D52) |
-| `state inject-log get` | `--json, --output <format>` | Wyświetla lub przegląda dzienniki audytu inject dla każdej granicy (D52) |
-| `state summary` | `--category <category>, --json, --output <format>` | Eksportuje podsumowanie sesji do magazynu koordynacji |
-| `state trajectory` | `--category <category>, --open, --width <columns>, --sequence, --ascii, --json, --output <format>` | Pokazuje trajektorię sesji: zdarzenia L1 połączone z transkryptami dostawców |
-| `state heal-check` | `--agent <agentType>, --json, --output <format>` | Sprawdza, czy samonaprawa jest dozwolona dla agenta |
-| `state activate` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Sprawdza stan workflow OMA L1 |
-| `state archive` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Sprawdza stan workflow OMA L1 |
-| `state purge` | `--category <category>, --archived, --all-projects, --project <project>, --search <text>, --older-than <duration>, --dry-run, --json, --output <format>` | Sprawdza stan workflow OMA L1 |
-| `ralph` | `—` |  |
-| `ralph verify` | `--session-id <id>, --newer-than <iso>, --no-emit, --json, --output <format>` | Weryfikuje artefakty ralph EXEC (bramka antyobejściowa, ralph.md krok 1.3) |
-| `goal` | `—` |  |
-| `goal set` | `--workflow <name>, --session-id <id>, --gate <keyword>, --budget-minutes <n>, --description <text>, --json, --output <format>` | Dołącza kontrakt celu (deterministyczna bramka zatrzymania / budżet czasu rzeczywistego) do aktywnego trwałego workflow |
-| `stats` | `—` |  |
-| `stats get` | `--json, --output <format>` | Wyświetla metryki produktywności |
-| `stats reset` | `--json, --output <format>` | Wyświetla metryki produktywności |
-| `agent` | `—` |  |
-| `agent context` | `--project-root <path>, --difficulty <level>` | Ładuje kontekst wybrany przez graf do promptu natywnego dispatchu |
-| `agent resume` | `--project-root <path>, --dry-run, --max-attempts <count>` | Wznawia bezpieczne nieukończone zadania, ponownie używając bieżących dowodów akceptacji |
-| `agent begin` | `--project-root <path>, -w, --workspace <path>` | Rozpoczyna natywne uruchomienie agenta oparte na dowodach |
-| `agent verify` | `--project-root <path>, --required, --affected <paths...>` | Wykonuje argv weryfikacji po -- i zapisuje rzeczywisty kod wyjścia |
-| `agent finish` | `--project-root <path>` | Weryfikuje wynik natywnego agenta względem potwierdzeń weryfikacji |
-| `agent spawn` | `--resumed-from <run-id>, --fallback-vendors <vendors>, --task-id <id>, --vendor <vendor>, -w, --workspace <path>, --isolation <mode>, --read-only` | Uruchamia subagenta (prompt może być tekstem inline lub ścieżką pliku) |
-| `agent status` | `--project-root <path>` | Sprawdza status subagentów |
-| `agent parallel` | `--session-id <id>, --vendor <vendor>, -i, --inline, --no-wait` | Uruchamia wiele subagentów równolegle |
-| `agent review` | `--vendor <vendor>, -p, --prompt <prompt>, -w, --workspace <path>, --no-uncommitted` | Uruchamia przegląd kodu przez zewnętrzne CLI (codex/claude/qwen/grok) |
-| `model` | `—` |  |
-| `model check` | `--json, --fail-on-drift, --owner <name>, --probe` | Porównuje rejestr modeli z bieżącymi listami modeli dostawców |
-| `model probe` | `--json, --timeout <duration>` | Bada slug modelu przez CLI dostawcy, aby sprawdzić, czy jest akceptowany |
-| `model propose` | `--json, --owner <name>, --write, --timeout <duration>` | Uruchamia model:check --probe internally i generate an oma-config `models:` patch dla accepted candidates |
-| `memory` | `—` |  |
-| `memory keys` | `--kind <kind>, --profile <name>, --key-env <name>, --from-env <name>, --dry-run, --json, --output <format>` | Konfiguruje połączenie Honcho lub lokalne dane uwierzytelniające embeddingów |
-| `memory init` | `--force, --json, --output <format>` | Inicjalizuje magazyn koordynacji w .agents/state/memories |
-| `memory setup` | `--endpoint <url>, --port <port>, --install, --start, --dry-run, --json, --output <format>` | Przygotowuje konfigurację punktu końcowego AgentMemory |
-| `memory daemon` | `—` | Zarządza procesem daemona AgentMemory należącym do OMA |
-| `memory daemon status` | `--json, --output <format>` | Wyświetla status daemona |
-| `memory daemon start` | `--port <port>, --dry-run, --json, --output <format>` | Uruchamia AgentMemory w tle |
-| `memory daemon stop` | `--dry-run, --json, --output <format>` | Zatrzymuje daemona AgentMemory należącego do OMA |
-| `memory daemon restart` | `--port <port>, --dry-run, --json, --output <format>` | Ponownie uruchamia daemona AgentMemory należącego do OMA |
-| `memory service` | `—` | Zarządza integracją usługi systemowej AgentMemory |
-| `memory service install` | `--port <port>, --dry-run, --json, --output <format>` | Instaluje integrację usługi AgentMemory launchd/systemd |
-| `memory service uninstall` | `--dry-run, --json, --output <format>` | Odinstalowuje integrację usługi AgentMemory launchd/systemd |
-| `memory status` | `--json, --output <format>` | Wyświetla zdrowie wybranego dostawcy pamięci semantycznej |
-| `memory retry` | `—` |  |
-| `memory retry drain` | `--dry-run, --json, --output <format>` | Opróżnia kolejkę ponowień obserwacji AgentMemory |
-| `memory import` | `--source <source>, --since <since>, --dry-run, --force-partial, --json, --output <format>` | Importuje historię rozmów dostawcy do AgentMemory |
-| `memory maintain` | `--keep <count>, --dry-run, --json, --output <format>` | Konserwuje lokalne przechowywanie AgentMemory: kopia zapasowa, przycinanie, vacuum |
-| `memory maintain backup` | `--keep <count>, --dry-run, --json, --output <format>` | Konserwuje lokalne przechowywanie AgentMemory: kopia zapasowa, przycinanie, vacuum |
-| `memory maintain prune` | `--keep <count>, --dry-run, --json, --output <format>` | Konserwuje lokalne przechowywanie AgentMemory: kopia zapasowa, przycinanie, vacuum |
-| `memory maintain vacuum` | `--keep <count>, --dry-run, --json, --output <format>` | Konserwuje lokalne przechowywanie AgentMemory: kopia zapasowa, przycinanie, vacuum |
-| `memory gc` | `--scope <scope>, --keep <count>, --max-age <duration>, --dry-run, --json, --output <format>` | Wykonuje garbage collection pamięci lokalnej projektu: usuwa stare sesje L1 i tymczasowe pliki Sereny |
-| `memory upgrade` | `--port <port>, --dry-run, --json, --output <format>` | Zatrzymuje, tworzy kopię, aktualizuje, ponownie uruchamia i sprawdza zdrowie AgentMemory |
-| `skill` | `—` | Sprawdza i audytuje zainstalowane umiejętności |
-| `skill audit` | `--json, --output <format>` | Sprawdza podobieństwo opisów frontmatter między zainstalowanymi umiejętnościami |
-| `skill lint` | `--skill <id>, --json, --output <format>` | Wykrywa problemy autorskie umiejętności (frontmatter, struktura, uszkodzone referencje) |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | Mierzy wzrost użyteczności umiejętności (treatment względem baseline na zadaniach odłożonych) |
-| `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | Optymalizuje SKILL.md umiejętności, aby zmaksymalizować zmierzony wzrost użyteczności na zadaniach odłożonych |
-| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | Proponuje i ocenia zmiany procedury ewolucji na odłożonych umiejętnościach |
-| `skill procedure` | `--export, --json, --output <format>` | Pokazuje procedurę ewolucji (prompty optymalizatora/Maintainera, konstytucję) i jej hashe |
-| `skill evolution-stats` | `--skill <id>, --json, --output <format>` | Agreguje zapisane przebiegi optymalizacji według wyniku, trybu pamięci i procedury |
-| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | Opisuje zapisane promocje i wycofania SKILL.md dla umiejętności albo, z `--all`, dla każdej umiejętności i procedury |
-| `skill rollback` | `--skill <id>, --json, --output <format>` | Przywraca treść SKILL.md zastąpioną przez ostatnią zapisaną promocję |
-| `schedule` | `—` |  |
-| `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | Rejestruje zaplanowane zadanie agenta |
-| `schedule list` | `--json, --output <format>` | Wyświetla zaplanowane zadania ze stanem rozbieżności z systemem (synced/missing-in-os/orphan-in-os), pogrupowane według projektu |
-| `schedule delete` | `—` | Usuwa zaplanowane zadanie z manifestu i systemowego harmonogramu |
-| `schedule run` | `—` | Wykonuje zaplanowane zadanie po id (wywoływane przez systemowy harmonogram; zwykle nie wywołuje się bezpośrednio) |
-| `schedule sync` | `--prune` | Ponownie synchronizuje manifest → harmonogram systemowy. Użyj --prune, aby usunąć osierocone zadania systemowe. |
+## Pełny publiczny rejestr opcji {#complete-public-option-registry}
+
+Każdy wiersz to ścieżka polecenia, które działa samodzielnie; grupy, które tylko wyświetlają pomoc, pominięto, a wspólne flagi główne opisuje sekcja [Opcje globalne](#global-options). Wartości domyślne podano obok opcji. Uruchom `oma describe "<path>"`, aby uzyskać pełny JSON jednej ścieżki.
+
+:::note
+Ta tabela jest generowana z `oma describe`. Nie edytuj jej ręcznie: uruchom `node cli/scripts/generate-cli-reference.mjs`, aby ją wygenerować ponownie, albo dodaj `--check`, aby zakończyć z błędem, gdy jest nieaktualna.
+:::
+
+<!-- oma:generated cli-registry:start -->
+
+| Command | Arguments | Options | Description |
+|:--|:--|:--|:--|
+| `agent begin` | `<agent-id> <task-id> <session-id>` | `--project-root <path>`, `-w, --workspace <path>` | Start an evidence-backed native agent run |
+| `agent context` | `<agent-id>` | `--project-root <path>`, `--difficulty <level>` (default: `Medium`) | Load graph-selected context for a native dispatch prompt |
+| `agent finish` | `<run-id> <result-file>` | `--project-root <path>` | Validate a native agent result against its verification receipts |
+| `agent parallel` | `[tasks...]` | `--session-id <id>`, `--vendor <vendor>`, `-i, --inline`, `--no-wait` | Run multiple sub-agents in parallel |
+| `agent parallel-supervisor` | `<manifest>` | — | — |
+| `agent resume` | `<session-id>` | `--project-root <path>`, `--dry-run`, `--max-attempts <count>` (default: `3`) | Resume safe incomplete tasks, reusing current acceptance evidence |
+| `agent review` | — | `--vendor <vendor>`, `-p, --prompt <prompt>`, `-w, --workspace <path>`, `--no-uncommitted` | Run code review using external CLI (codex/claude/qwen/grok) |
+| `agent spawn` | `<agent-id> <prompt> <session-id>` | `--resumed-from <run-id>`, `--fallback-vendors <vendors>`, `--task-id <id>`, `--vendor <vendor>`, `-w, --workspace <path>`, `--isolation <mode>`, `--read-only` | Spawn a subagent (prompt can be inline text or a file path) |
+| `agent status` | `<session-id> [agent-ids...]` | `--project-root <path>` (default: current directory) | Check status of subagents |
+| `agent verify` | `<run-id> [command...]` | `--project-root <path>`, `--required`, `--affected <paths...>` | Execute verification argv after -- and record its real exit code |
+| `auth status` | — | `--json`, `--output <format>` | Check authentication status of all supported CLIs |
+| `bridge` | `[url]` | `--context <name>` (default: `ide`), `--oma-home <path>`, `--oma-state-home <path>` | Proxy MCP stdio to a shared per-project Serena server (started on demand) |
+| `cleanup` | — | `--dry-run`, `-y, --yes`, `--json`, `--output <format>` | Clean up orphaned subagent processes and temp files |
+| `dashboard terminal` | — | `--project-root <path>` | Start terminal dashboard (real-time agent monitoring) |
+| `dashboard web` | — | `--project-root <path>` | Start web dashboard on http://127.0.0.1:9847 |
+| `describe` | `[command-path]` | — | Describe CLI commands as JSON for runtime introspection |
+| `diagram archify` | `[args...]` | — | Run the installed archify CLI (doctor \| guide \| validate \| deliver \| visual-check …) with update checks disabled |
+| `diagram resolve` | — | `--engine <engine>`, `--refresh`, `--offline`, `--json`, `--output <format>` | Report which diagram engine workflows should use, and where archify lives |
+| `diagram update` | — | `--json`, `--output <format>` | Download the latest archify release into oma's managed cache (~/.cache/oma-diagram/archify) |
+| `docs i18n` | — | `--json`, `--min-severity <level>` (default: `MEDIUM`) | Detect drift between English source docs (web/docs) and i18n translations (web/i18n/{lang}/...). Emits structural signals (line count, heading count, last-commit timestamp) per pair so the host LLM can decide which translations need a diff-sync patch. The CLI never edits translations. |
+| `docs lint` | — | `--json`, `--locales <list>` | Lint translated docs for content-level anti-patterns (em-dashes in CJK targets, etc.). Complements `oma docs i18n` (structural drift) with style/anti-pattern checks per oma-translation SKILL.md § Stage 4. The CLI never auto-fixes — it only reports issues for the host LLM to restructure. |
+| `docs sync` | `[diff-range]` | `--json` | Given a git diff, list docs that reference changed files. The host LLM (skill runtime) is expected to read this list plus the diff and propose patches per the SKILL.md contract — the CLI never auto-edits docs. Default diff-range: --cached (staged changes), fallback to HEAD~1..HEAD. |
+| `docs verify` | `[path]` | `--json`, `--report-file <path>`, `--no-urls`, `--urls-sync` | Extract L2 references from docs and report broken targets. Regenerates docs/generated/doc-refs.json as a side effect. Exit code: 0 = clean, 1 = broken refs found. URL link checking is delegated to `lychee` (install: brew install lychee). |
+| `doctor` | — | `--profile`, `--heal-check <agentType>`, `--json`, `--output <format>` | Check CLI installations, MCP configs, and skill status |
+| `emit` | — | `--target <target>` (default: `all`), `--output-dir <path>` (default: `.`), `--json`, `--output <format>` | Emit standards-conformant artifacts from the .agents/ SSOT (Agent Skills spec, Agent Plugins package, Claude Code plugin marketplace, AGENTS.md, cli/AGENTS.md) |
+| `explain components` | `[name]` | `--json`, `--output <format>` | List the components a draft can use, or print one component's syntax |
+| `explain lint` | `[file]` | `--style <level>`, `--lang <code>`, `--json`, `--output <format>` | Check the prose of a draft (file or stdin) without rendering |
+| `explain patch` | `<html> [file]` | `--panel <id>`, `--open`, `--json`, `--output <format>` | Replace one panel of a rendered page from its embedded draft (new panel from file or stdin) |
+| `explain render` | `[file]` | `--output-file <path>`, `--template <name>`, `--theme <name>`, `--mode <mode>`, `--style <level>`, `--lang <code>`, `--archify`, `--no-archify`, `--open`, `--json`, `--output <format>` | Render a Markdown draft (file or stdin) into one self-contained HTML explanation |
+| `explain validate` | `[file]` | `--input-dir <path>`, `--output <format>` (default: `concise`), `--report-file <path>`, `--json` | Validate self-contained explain HTML report artifacts |
+| `goal set` | — | `--workflow <name>`, `--session-id <id>`, `--gate <keyword>`, `--budget-minutes <n>`, `--description <text>`, `--json`, `--output <format>` | Attach a goal contract (deterministic stop gate / wall-clock budget) to an active persistent workflow |
+| `harness eval` | — | `--suite <path>`, `--candidate <path>`, `--partition <name>` (default: `validation`), `--mock`, `--action <mode>`, `--transcript <path>`, `--live`, `--record`, `--record-file <path>`, `--yes`, `--timeout <duration>` (default: `15m`), `--require-coverage`, `--json`, `--output <format>` | Compare a candidate .agents overlay with the current baseline |
+| `harness evolution disable` | — | `--json`, `--output <format>` | — |
+| `harness evolution enable` | — | `--max-dispatches <n>`, `--cron <expr>` (default: `0 3 * * *`), `--mode <mode>` (default: `apply`), `--json`, `--output <format>` | — |
+| `harness evolution run` | — | `--scheduled`, `--json`, `--output <format>` | — |
+| `harness evolution status` | — | `--json`, `--output <format>` | — |
+| `harness feedback` | — | `--live`, `--apply`, `--max-epochs <n>` (default: `1`), `--incident <ids...>`, `--scan-runs`, `--json`, `--output <format>` | Promote captured incidents to skill fixtures and optimize the affected skills |
+| `harness incident capture` | — | `--spec <path>`, `--run <id>`, `--json`, `--output <format>` | — |
+| `harness incident export` | `<id>` | `--json`, `--output <format>` | — |
+| `harness incident promote` | `<id>` | `--skill <id>`, `--draft`, `--force`, `--json`, `--output <format>` | — |
+| `harness incident reproduce` | `<id>` | `--candidate <path>`, `--action <mode>`, `--record-file <path>`, `--transcript <path>`, `--record`, `--yes`, `--timeout <duration>` (default: `15m`), `--json`, `--output <format>` | — |
+| `harness incident scan` | — | `--limit <n>`, `--skeleton <run-id>`, `--json`, `--output <format>` | List failed, blocked, or partial agent runs that no captured incident references yet |
+| `harness incident show` | `<id>` | `--json`, `--output <format>` | — |
+| `help` | — | — | Show help information |
+| `home` | — | `--json`, `--output <format>` | Inspect and migrate OMA global storage |
+| `home migrate` | — | `--dry-run`, `--json`, `--output <format>` | Copy legacy OMA global files; preserve originals |
+| `hook probe` | — | `--vendor <list>`, `--output <format>` (default: `text`), `--hooks-dir <dir>` | Probe per-vendor L1 hook compatibility and print a matrix (D63) |
+| `hook run` | — | `--vendor <v>`, `--event <e>`, `--matcher <m>` | Dispatch a vendor hook event through the centralised oma hook router (design 019) |
+| `hook script` | — | `--vendor <v>`, `--script <name>` | Run one installed hook handler through the CLI memory adapter |
+| `image doctor` | — | `--output <format>` (default: `text`) | Check authentication and install status per vendor |
+| `image generate` | `<prompt...>` | `--vendor <name>` (default: `auto`), `--size <size>`, `--quality <level>`, `-n, --count <n>`, `--output-dir <path>`, `--allow-external-output`, `--model <name>`, `--timeout <duration>`, `-r, --reference <path>`, `-y, --yes`, `--no-prompt-in-manifest`, `--dry-run`, `--output <format>` (default: `text`) | Generate images via pollinations (flux/zimage, free), codex (gpt-image-2, ChatGPT OAuth), or antigravity (gemini nano-banana via `agy` CLI, free with Gemini Code Assist sign-in) |
+| `image vendor list` | — | `--output <format>` (default: `text`) | List registered vendors and supported models |
+| `install` | — | `--web-search <provider>`, `--code-intelligence <provider>`, `--semantic-memory <provider>`, `--honcho-url <url>`, `--honcho-workspace <id>` | Install oh-my-agent skills and configurations |
+| `intel suggest` | — | `--config <path>`, `--topic <topic>`, `--target <target>`, `--repos <repos>`, `--since <window>`, `--last-commits <n>`, `--output-dir <path>`, `--dry-run`, `--fixture <path>`, `--create-issue`, `--base-repo <owner/name>`, `--yes`, `--json`, `--output <format>` | Suggest high-value product work from market/code intelligence |
+| `link` | `[vendors...]` | `--dry-run` | Regenerate vendor files (.claude/, .cursor/, etc.) from .agents/ SSOT |
+| `market detect-trap` | `<topic>` | `--force` | Preflight check that refuses keyword-trap queries |
+| `market resolve` | — | `--refresh`, `--offline`, `--json`, `--output <format>` | Report the last30days engine oma will run (managed latest, pin, or local copy) and the Python it uses |
+| `market run` | `[args...]` | — | Run the last30days engine (scripts/last30days.py) with the given arguments; --save-dir defaults to market.save_dir |
+| `market update` | — | `--json`, `--output <format>` | Download the latest last30days release into oma's managed cache (~/.cache/oma-market/last30days) |
+| `memory daemon restart` | — | `--port <port>` (default: `3111`), `--dry-run`, `--json`, `--output <format>` | Restart the OMA-owned AgentMemory daemon |
+| `memory daemon start` | — | `--port <port>` (default: `3111`), `--dry-run`, `--json`, `--output <format>` | Start AgentMemory in the background |
+| `memory daemon status` | — | `--json`, `--output <format>` | Show daemon status |
+| `memory daemon stop` | — | `--dry-run`, `--json`, `--output <format>` | Stop the OMA-owned AgentMemory daemon |
+| `memory gc` | — | `--scope <scope>` (default: `all`), `--keep <count>`, `--max-age <duration>`, `--dry-run`, `--json`, `--output <format>` | Garbage-collect project-local memory: prune old L1 sessions and ephemeral Serena files |
+| `memory import` | — | `--source <source>` (default: `all`), `--since <since>` (default: `30d`), `--dry-run`, `--force-partial`, `--json`, `--output <format>` | Import vendor conversation history into AgentMemory |
+| `memory init` | — | `--force`, `--json`, `--output <format>` | Initialize the coordination store in .agents/state/memories |
+| `memory keys` | — | `--kind <kind>` (default: `connection`), `--profile <name>` (default: `oma`), `--key-env <name>` (default: `LLM_OPENAI_API_KEY`), `--from-env <name>`, `--dry-run`, `--json`, `--output <format>` | Configure Honcho connection or local embedding credentials |
+| `memory maintain` | `<action>` | `--keep <count>` (default: `5`), `--dry-run`, `--json`, `--output <format>` | Maintain AgentMemory local storage: backup, prune, vacuum |
+| `memory maintain backup` | — | `--keep <count>` (default: `5`), `--dry-run`, `--json`, `--output <format>` | Maintain AgentMemory local storage: backup, prune, vacuum |
+| `memory maintain prune` | — | `--keep <count>` (default: `5`), `--dry-run`, `--json`, `--output <format>` | Maintain AgentMemory local storage: backup, prune, vacuum |
+| `memory maintain vacuum` | — | `--keep <count>` (default: `5`), `--dry-run`, `--json`, `--output <format>` | Maintain AgentMemory local storage: backup, prune, vacuum |
+| `memory retry drain` | — | `--dry-run`, `--json`, `--output <format>` | Drain queued semantic-memory deliveries |
+| `memory service install` | — | `--port <port>` (default: `3111`), `--dry-run`, `--json`, `--output <format>` | Install AgentMemory launchd/systemd service integration |
+| `memory service uninstall` | — | `--dry-run`, `--json`, `--output <format>` | Uninstall AgentMemory launchd/systemd service integration |
+| `memory setup` | — | `--endpoint <url>`, `--port <port>`, `--install`, `--start`, `--dry-run`, `--json`, `--output <format>` | Prepare AgentMemory endpoint configuration |
+| `memory status` | — | `--json`, `--output <format>` | Show selected semantic-memory provider health |
+| `memory upgrade` | — | `--port <port>`, `--dry-run`, `--json`, `--output <format>` | Stop, backup, upgrade, restart, and health-check AgentMemory |
+| `model check` | — | `--json`, `--fail-on-drift`, `--owner <name>`, `--probe` | Check model registry against live vendor model lists |
+| `model probe` | `<slug>` | `--json`, `--timeout <duration>` | Probe a model slug against its vendor CLI to verify it is accepted |
+| `model propose` | — | `--json`, `--owner <name>`, `--write`, `--timeout <duration>` | Run model:check --probe internally and generate an oma-config `models:` patch for accepted candidates |
+| `profile create` | `<slot>` | `--json`, `--output <format>` | Create a local profile |
+| `profile list` | — | `--json`, `--output <format>` | List local profiles |
+| `profile run` | `<slot> <command> [args...]` | — | Run one command with OMA_PROFILE set for the child process |
+| `profile show` | `[slot]` | `--json`, `--output <format>` | Show a local profile |
+| `profile use` | `<slot>` | `--shell <shell>`, `--json`, `--output <format>` | Print shell code to activate an existing profile |
+| `ralph verify` | — | `--session-id <id>`, `--newer-than <iso>`, `--no-emit`, `--json`, `--output <format>` | Verify ralph EXEC artifacts (anti-circumvention gate, ralph.md Step 1.3) |
+| `recap` | — | `--window <period>` (default: `1d`), `--date <date>`, `--tool <tools>`, `--top <n>`, `--sort <metric>` (default: `count`), `--mermaid`, `--graph`, `--json`, `--output <format>` | Recap AI tool conversation history |
+| `retro` | `[window]` | `--interactive`, `--compare`, `--json`, `--output <format>` | Engineering retrospective with metrics & trends |
+| `schedule builtin-evolution-add` | `<workspace>` | `--cron <expr>` | — |
+| `schedule create` | `<agent-id> <prompt>` | `--cron <expr>`, `--every <phrase>`, `--vendor <vendor>`, `-w, --workspace <path>`, `--once`, `--expires-after <duration>`, `--env <keys>`, `--dry-run`, `--accept-rounded` | Register a scheduled agent job |
+| `schedule delete` | `<id>` | — | Remove a scheduled job from manifest and OS scheduler |
+| `schedule inspect` | `<id>` | — | Inspect one scheduler manifest entry for internal callers |
+| `schedule list` | — | `--json`, `--output <format>` | List scheduled jobs with OS drift state (synced/stale/missing-in-os/orphan-in-os), grouped by project |
+| `schedule run` | `<id>` | `--oma-home <path>`, `--oma-state-home <path>`, `--registration <identity>` | Execute a scheduled job by id (invoked by OS scheduler; not normally called directly) |
+| `schedule sync` | — | `--prune` | Re-sync manifest → OS scheduler (registers missing jobs, rewrites stale commands). Use --prune to remove orphan OS jobs. |
+| `scholar get` | `<id>` | `--section <name>` | Fetch a sidecar (knows record_id) or work metadata (W-id, DOI, arXiv:&lt;id&gt;, CorpusId:&lt;n&gt;, S2 paperId) |
+| `scholar lint` | `<file>` | `--lenient`, `--fail-on-warning` | Validate a .knows.yaml or .knows.json sidecar (v0.9.0) |
+| `scholar resolve` | `<query...>` | — | Find best paper match across knows.academy, OpenAlex, Semantic Scholar |
+| `scholar search` | `<query...>` | `--limit <n>` (default: `10`), `--year-min <year>`, `--always-fallback` | Search papers (knows.academy → OpenAlex → Semantic Scholar) |
+| `search api fetch` | `<url>` | `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Fetch via matched platform API (Phase 0) |
+| `search api search` | `<query>` | `--platforms <list>`, `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Fan-out keyword search across platforms that support it |
+| `search archive` | `<url>` | `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Fetch via AMP / archive.today / Wayback |
+| `search code` | `<query>` | `--host <github\|gitlab>` (default: `github`), `--language <lang>`, `--repo <owner/repo>`, `--limit <n>` (default: `20`), `--pretty` | Search code via gh / glab |
+| `search doctor` | — | — | Check dependencies (Chrome, python3 curl_cffi, yt-dlp, gh) |
+| `search fetch` | `<url>` | `--only <strategies>`, `--skip <strategies>`, `--include-archive`, `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Fetch URL via auto-escalating strategy pipeline |
+| `search media` | `<url>` | `--subs`, `--sub-lang <list>` (default: `en`), `--format <spec>`, `--timeout <duration>` (default: `30s`), `--pretty` | Extract media metadata via yt-dlp (1858 sites) |
+| `search meta` | `<url>` | `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Extract OGP / JSON-LD / Schema.org from URL |
+| `search providers` | — | `--json`, `--pretty` | List registered search providers and inspect selection without network calls |
+| `search rss fetch` | `<url>` | `--timeout <duration>` (default: `15s`), `--locale <value>` (default: `en-US,en;q=0.9`), `--pretty` | Discover and parse RSS/Atom feed for a URL |
+| `search rss google` | `<query>` | `--locale <value>` (default: `en-US`) | Build Google News RSS URL for a query |
+| `search trust` | `<domain>` | `--pretty` | Resolve trust level / score for a domain |
+| `search web` | `<query>` | `--provider <id>`, `--limit <n>` (default: `10`), `--timeout <duration>` (default: `15s`), `--json`, `--pretty` | Search with the selected web provider (Brave has a CLI adapter) |
+| `serena check` | — | `--project <path>` (default: `apps/mobile`), `--dart-sdk <path>`, `--timeout <duration>` (default: `60s`), `--staged` | Analyze a Dart package using the managed shared Serena LSP |
+| `serena daemon gc` | — | `--quiet` | Stop shared Serena daemons with no clients after the idle grace period |
+| `serena reap` | — | `--dry-run`, `--quiet` | Kill idle Serena LSP children to reclaim memory (Serena self-heals on next tool call) |
+| `serena reaper disable` | — | `--dry-run` | Uninstall the periodic Serena Reaper scheduled task |
+| `serena reaper enable` | — | `--dry-run` | Install the periodic Serena Reaper scheduled task (runs every 5 minutes) |
+| `serena setup` | — | — | Repair the managed adapter and install the oma-dart-check compatibility launcher |
+| `skill audit` | — | `--json`, `--output <format>` | Check frontmatter description similarity between installed skills |
+| `skill eval` | — | `--skill <id>`, `--mock`, `--live`, `--record`, `--yes`, `--task-dir <path>`, `--max-tasks <n>`, `--trials <n>`, `--require-coverage`, `--neg-transfer`, `--routing`, `--json`, `--output <format>` | Measure per-skill utility lift (treatment vs baseline on held-out tasks) |
+| `skill evolution-stats` | — | `--skill <id>`, `--json`, `--output <format>` | Aggregate recorded optimization runs: proposals, acceptance, verified improvements, rollbacks, by memory mode and procedure |
+| `skill lint` | — | `--skill <id>`, `--json`, `--output <format>` | Detect per-skill authoring smells (frontmatter, structure, broken refs) |
+| `skill meta-optimize` | — | `--target <part>` (default: `optimizer`), `--skill <ids...>`, `--anchor <ids...>`, `--repeats <n>` (default: `3`), `--candidates <n>` (default: `2`), `--max-epochs <n>` (default: `1`), `--edits-per-epoch <k>` (default: `4`), `--live`, `--apply`, `--memory <mode>` (default: `none`), `--yes`, `--json`, `--output <format>` | Propose and score changes to the evolution procedure itself on held-out skills; promote only with a paired bootstrap interval above zero |
+| `skill optimize` | — | `--skill <id>`, `--dry-run`, `--apply`, `--mock`, `--live`, `--max-epochs <n>` (default: `8`), `--edits-per-epoch <k>` (default: `4`), `--lr <chars>` (default: `600`), `--yes`, `--memory <mode>` (default: `recall`), `--json`, `--output <format>` | Optimize a skill's SKILL.md to maximize measured held-out utility lift |
+| `skill procedure` | — | `--export`, `--json`, `--output <format>` | Show the evolution procedure (optimizer/maintainer prompts, constitution) and its hashes; --export writes editable defaults |
+| `skill promotions` | — | `--skill <id>`, `--all`, `--json`, `--output <format>` | List recorded SKILL.md promotions and rollbacks for a skill, or every skill and the procedure with --all |
+| `skill rollback` | — | `--skill <id>`, `--json`, `--output <format>` | Restore the SKILL.md body replaced by the most recent recorded promotion |
+| `skills matrix` | — | `--suite <path>`, `--project-root <path>`, `--skills <names>`, `--delivery <mode>` (default: `native`), `--vendors <ids>` (default: `claude,codex`), `--cases <ids>`, `--live`, `--yes`, `--timeout-seconds <n>` (default: `120`), `--claude-model <model>`, `--codex-model <model>`, `--report <path>`, `--json`, `--output <format>` | Test native skill discovery, references and output contracts across CLI vendors |
+| `slide asset fetch-video` | `<url>` | `--workspace <path>`, `--output-name <name>` | Download video via yt-dlp into ./assets/ and print local ref |
+| `slide bundle` | — | `--workspace <path>`, `--output-file <path>`, `--inline-fonts` | Merge per-slide files into a single self-contained .html deliverable |
+| `slide create` | — | `--output-dir <path>` (default: `my-deck`), `--force` | Scaffold a new slide working directory with starter HTML, assets/, and meta.json |
+| `slide doctor` | — | — | Probe required deps (chrome, puppeteer-core) and optional deps (yt-dlp, pptxgenjs) |
+| `slide edit` | — | `--workspace <path>`, `--port <n>` (default: `0`) | Open browser bbox editor (node:http server at 127.0.0.1, dispatches to oma agent runner) |
+| `slide export pdf` | — | `--workspace <path>`, `--output-file <path>`, `--mode <mode>` (default: `capture`) | Export slides to PDF via puppeteer-core |
+| `slide export png` | — | `--workspace <path>`, `--output-dir <path>`, `--resolution <res>` (default: `1080p`) | Export each slide as a PNG image via puppeteer-core |
+| `slide export pptx` | — | `--workspace <path>`, `--output-file <path>` | [EXPERIMENTAL] Export to PPTX via pptxgenjs (raster-backed, gradients rasterized) |
+| `slide import pptx` | `<file>` | `--workspace <path>` | Import a .pptx file into slide fragments via officeparser (bunx, best-effort) |
+| `slide preview` | — | `--workspace <path>` | Build viewer.html (deck-stage web component + speaker-notes panel, toggle with `n`) |
+| `slide style get` | `<slug>` | `--refresh` | Fetch a bold template design.md (always-latest main; cached for offline fallback) |
+| `slide style list` | — | — | List available style presets (vendored + bold-template index) |
+| `slide style preview` | `<slug>` | — | Preview a style preset in the terminal |
+| `slide validate` | — | `--workspace <path>`, `--output <format>` (default: `concise`), `--slide <file>`, `--report-file <path>` | Geometric quality gate — renders slides via puppeteer-core and checks overflow/overlap/font-size |
+| `star` | — | — | Star oh-my-agent on GitHub |
+| `state activate` | `<session-id>` | `--category <category>` (default: `main`), `--archived`, `--all-projects`, `--project <project>`, `--search <text>`, `--older-than <duration>` (default: `90ds`), `--dry-run`, `--json`, `--output <format>` | Inspect OMA L1 workflow state |
+| `state archive` | — | `--category <category>` (default: `main`), `--archived`, `--all-projects`, `--project <project>`, `--search <text>`, `--older-than <duration>` (default: `90ds`), `--dry-run`, `--json`, `--output <format>` | Inspect OMA L1 workflow state |
+| `state decisions list` | `[workflow]` | `--agent <id>`, `--json`, `--output <format>` | List workflow checkpoints or available agent decision subjects |
+| `state emit` | `<kind> [payload]` | `--session-id <id>`, `--category <category>` (default: `main`), `--vendor <vendor>`, `--vendor-sid <vendorSid>`, `--parent-event-id <eventId>`, `--causality-key <key>`, `--ts <iso>`, `--no-mirror`, `--json`, `--output <format>` | Append an OMA L1 workflow event |
+| `state get` | `<sid>` | `--json`, `--output <format>` | Inspect one OMA L1 session by ID |
+| `state heal-check` | — | `--agent <agentType>`, `--json`, `--output <format>` | Check whether self-healing is allowed for an agent |
+| `state inject-log get` | `<session-id> <file>` | `--json`, `--output <format>` | List or view per-boundary inject audit logs (D52) |
+| `state inject-log list` | `<sid>` | `--entry <file>`, `--json`, `--output <format>` | List or view per-boundary inject audit logs (D52) |
+| `state list` | — | `--category <category>` (default: `main`), `--archived`, `--all-projects`, `--project <project>`, `--search <text>`, `--older-than <duration>` (default: `90ds`), `--dry-run`, `--json`, `--output <format>` | Inspect OMA L1 workflow state |
+| `state migrate` | — | `--runtime`, `--include-active`, `--dry-run`, `--json`, `--output <format>` | Migrate project state to the home profile |
+| `state purge` | — | `--category <category>` (default: `main`), `--archived`, `--all-projects`, `--project <project>`, `--search <text>`, `--older-than <duration>` (default: `90ds`), `--dry-run`, `--json`, `--output <format>` | Inspect OMA L1 workflow state |
+| `state repair` | — | `--dry-run`, `--json`, `--output <format>` | Repair OMA L1 workflow state files |
+| `state summary` | `[sid]` | `--category <category>` (default: `main`), `--json`, `--output <format>` | Export a session summary to the coordination store |
+| `state trajectory` | `[sid]` | `--category <category>` (default: `main`), `--open`, `--width <columns>`, `--sequence`, `--ascii`, `--json`, `--output <format>` | Show a session trajectory: L1 events joined with vendor transcripts |
+| `state verify` | — | `--workflow <workflow>`, `--checkpoint <checkpoint>`, `--instance <id>`, `--session-id <id>`, `--category <category>` (default: `main`), `--no-emit-missing`, `--json`, `--output <format>` | Verify required L1 events for a workflow checkpoint |
+| `stats get` | — | `--json`, `--output <format>` | View productivity metrics |
+| `stats reset` | — | `--json`, `--output <format>` | View productivity metrics |
+| `uninstall` | — | `--dry-run`, `-y, --yes` | Remove oh-my-agent's owned files (preserves oma-config.yaml, mcp.json, and user-authored skills) |
+| `update` | — | `-f, --force`, `--with-new-skills`, `--ci`, `-y, --yes`, `--all`, `--vendor <vendors>` | Update skills to latest version from registry |
+| `update mcp` | — | `-y, --yes`, `--ci`, `--all`, `--vendor <vendors>` | Choose browser MCP servers (Aside, Chrome DevTools, Firefox DevTools) |
+| `vault delete` | `<name>` | — | Remove a secret from the keychain and the index |
+| `vault get` | `<name>` | — | Print stored value to stdout (for: export KEY=$(oma vault get &lt;name&gt;)) |
+| `vault list` | — | `--json` | List stored secret names (values never displayed) |
+| `vault store` | `<name>` | `--value <value>` | Store a secret under &lt;name&gt; (interactive password prompt) |
+| `verify agent` | `<agent-type>` | `-w, --workspace <path>` (default: current directory), `--session-id <id>`, `--task-id <id>`, `--run-id <id>`, `--json`, `--output <format>` | — |
+| `verify triggers` | — | `--corpus <path>`, `--max-false-fire <pct>`, `--max-missed-fire <pct>`, `--json`, `--output <format>` | Measure keyword-detector trigger accuracy against a labeled prompt corpus |
+| `version` | — | — | Show version number |
+| `video compose` | `<runDir>` | `--output <format>` (default: `text`), `--refresh`, `--offline` | Scaffold the run's Hyperframes project on the latest toolchain + heygen-com/hyperframes; prints the authoring contract |
+| `video doctor` | — | `--output <format>` (default: `text`), `--install`, `--upgrade`, `--install-mpt`, `--install-strudel` | Check video provider and compositor readiness |
+| `video generate` | `<brief...>` | `--mode <mode>`, `--aspect <aspect>`, `--locale <lang>`, `--captions <style>`, `--visual <mode>`, `--voice <profile>`, `--music <mode>`, `--duration <sec>`, `--compositor <name>`, `--capture <path>`, `--source <kind>` (default: `file`), `--url <url>`, `--device <name>`, `--ready-selector <css>`, `--show-cursor`, `--polish`, `--capture-timeout <sec>`, `--capture-stop <mode>`, `--output-dir <path>`, `--allow-external-output`, `--max-usd <n>`, `--seed <n>`, `--timeout <duration>`, `-y, --yes`, `--dry-run`, `--script <path>`, `--output <format>` (default: `text`), `--no-brief-in-manifest` | Generate a video run directory from a brief |
+| `video provider list` | — | `--output <format>` (default: `text`) | List video providers and availability |
+| `video render` | `<runDir>` | `--output <format>` (default: `text`) | Re-render a run directory from render-spec.json |
+| `visualize` | — | `--focus <node-or-path>`, `--affected <paths...>`, `--json`, `--output <format>` | Visualize project structure as a dependency graph |
+
+<!-- oma:generated cli-registry:end -->
+
+---
+
+## Zobacz też {#see-also}
+
+- [Polecenia CLI](./commands.md): działanie i przykłady dla każdego polecenia.
+- Pliki reguł dostawców (`.cursor/rules`, ...) są regenerowane przez [`oma link <vendor>`](./commands.md#link), a nie przez osobne polecenie `export`.
+- [Referencja konfiguracji](../guide/configuration-reference.md): klucze konfiguracji, które nadpisują te flagi.
+- [Automatyczne aktualizacje](../guide/automated-updates.md): uruchamianie `oma update` z GitHub Action.
+- [Monitorowanie dashboardu](../guide/dashboard-monitoring.md): `agent status` i dashboardy.
+- [Instalacja globalna](../guide/global-install.md): katalogi główne instalacji projektowej i globalnej.
+- [Rozwiązywanie problemów](../guide/troubleshooting.md)

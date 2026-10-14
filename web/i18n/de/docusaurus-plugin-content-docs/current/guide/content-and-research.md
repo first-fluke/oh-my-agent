@@ -1,25 +1,31 @@
 ---
 title: "Anleitung: Content- und Research-Workflows"
 sidebar_label: Übersicht
-description: Den passenden oh-my-agent-Weg für PDF- und HWP-Extraktion, Sprachausgabe, wissenschaftliche Recherche, Folien, Recaps, Übersetzung und akademisches Schreiben auswählen.
+description: Den passenden oh-my-agent-Weg samt Voraussetzungen für PDF- und HWP-Extraktion, Sprachausgabe, wissenschaftliche und Web-Recherche, Folien, Bilder, Video, Code-Erklärungen, Diagramme, Marktforschung, Recaps, Übersetzung und akademisches Schreiben auswählen.
 ---
 
 # Content- und Research-Workflows
 
-Diese Anleitung ordnet Dokument-, Audio-, Recherche- und Präsentationsaufgaben der zuständigen Fähigkeit zu. Wählen Sie zunächst das benötigte Artefakt und verwenden Sie anschließend den kleinsten Befehls- oder Skill-Einstiegspunkt, der ein prüfbares Ergebnis liefert.
+Diese Anleitung ordnet Dokument-, Audio-, Recherche-, Medien- und Präsentationsaufgaben der zuständigen Fähigkeit zu. Wählen Sie zunächst das benötigte Artefakt und verwenden Sie anschließend den kleinsten Befehls- oder Skill-Einstiegspunkt, der ein prüfbares Ergebnis liefert. Fähigkeiten mit einer eigenen Anleitung verlinken diese in der letzten Spalte; die übrigen werden auf dieser Seite behandelt.
 
-| Bedarf | Einstiegspunkt | Erstes Ergebnis |
-|---|---|---|
-| PDF extrahieren | Skill `oma-pdf` oder die folgenden `uvx opendataloader-pdf`-Befehle | Markdown, Text, JSON oder ein kurzer Extraktionsbericht |
-| HWP/HWPX/HWPML extrahieren | Skill `oma-hwp` und `bunx kordoc@latest` | Markdown oder strukturiertes JSON/Chunks |
-| Sprachausgabe erzeugen oder Audio transkribieren | `/oma-voice` | Audio mit Manifest oder `transcript.md` mit Manifest |
-| Paper finden und validieren | `oma scholar` | Suchergebnisse, ein abgerufenes Sidecar oder ein Lint-Bericht |
-| Präsentation erstellen | Skill `oma-slide` und `oma slide` | Validierte HTML-Folien und optionale Exporte |
-| Agentengespräche zusammenfassen | `oma recap` | Ein datierter Markdown-Recap mit Evidenzstatus |
-| Lokalisierte Prosa übersetzen oder prüfen | Skill `oma-translation` | Zielsprachentext oder evidenzbasierte Prüfung |
-| Akademische Prosa entwerfen oder prüfen | Skill `oma-academic-writing` | Entwurf, Überarbeitung oder Compliance-Bericht mit Claim-Evidence-Map |
+| Bedarf | Einstiegspunkt | Voraussetzungen | Erstes Ergebnis | Anleitung |
+|---|---|---|---|---|
+| PDF extrahieren | Skill `oma-pdf` oder die folgenden `uvx opendataloader-pdf`-Befehle | `uv` (für `uvx`) | Markdown, Text, JSON oder ein kurzer Extraktionsbericht | [unten](#extract-pdf-content) |
+| HWP/HWPX/HWPML extrahieren | Skill `oma-hwp` und `bunx kordoc@latest` | Bun | Markdown oder strukturiertes JSON/Chunks | [unten](#extract-hwp-family-documents) |
+| Sprachausgabe erzeugen oder Audio transkribieren | `/oma-voice` | Voicebox-App auf `127.0.0.1:17493` | Audio mit Manifest oder `transcript.md` mit Manifest | [unten](#generate-speech-or-transcribe-audio) |
+| Paper finden und validieren | `oma scholar` | keine; optional `S2_API_KEY`, `OPENALEX_EMAIL` | Suchergebnisse, ein abgerufenes Sidecar oder ein Lint-Bericht | [unten](#search-and-validate-scholarly-material) |
+| Im Web suchen oder eine Seite abrufen | Skill `oma-search`, `oma search` | optional Chrome, Python `curl_cffi`, `yt-dlp`, `gh` (mit `oma search doctor` prüfen) | JSON auf stdout | [CLI-Befehle: search](../cli-interfaces/commands.md#search) |
+| Präsentation erstellen | Skill `oma-slide` und `oma slide` | Chrome oder `OMA_CHROME_PATH` | Validierte HTML-Folien und optionale Exporte | [unten](#slides-and-presentations) |
+| Bilder generieren | Skill `oma-image`, `oma image generate` | eines von `POLLINATIONS_API_KEY`, `codex login` oder ein angemeldetes `agy` | Bilder mit `manifest.json` unter `.agents/results/images/` | [Bildgenerierung](./image-generation.md) |
+| Ein Short-, Erklär- oder Demovideo erstellen | `/video`, `oma video` | Node.js 22+, FFmpeg, danach `oma video doctor --install` | Ein Laufverzeichnis unter `.agents/results/videos/`; ein MP4 nach `oma video render` | [Videogenerierung](./video-generation.md) |
+| Eine Änderung oder ein Thema auf einer Seite erklären | `/explain`, `oma explain` | git für den Änderungsmodus; `gh` für PR-Referenzen | Eigenständiges HTML unter `.agents/results/explain/` | [Code-Erklärer](./code-explainer.md) |
+| Interaktives Architekturdiagramm | `/architecture`, `oma diagram` | keine; archify wird bei der ersten Nutzung abgerufen | Mermaid-Block, plus `.archify.html`, wenn archify aufgelöst wird | [Diagramm-Engine](./diagram-engine.md) |
+| Marktforschung in Communitys | Skill `oma-market`, `oma market` | Python 3.12+ | Ein Briefing unter `.agents/results/market/` | [Marktforschung](./market-research.md) |
+| Agentengespräche zusammenfassen | `/recap`, `oma recap` | keine | Recap-JSON aus der CLI; ein datierter Markdown-Recap aus `/recap` | [unten](#recap-agent-conversations) |
+| Lokalisierte Prosa übersetzen oder prüfen | Skill `oma-translation` | keine | Zielsprachentext oder evidenzbasierte Prüfung | [unten](#translate-or-review-localized-content) |
+| Akademische Prosa entwerfen oder prüfen | Skill `oma-academic-writing` | keine | Entwurf, Überarbeitung oder Compliance-Bericht mit Claim-Evidence-Map | [unten](#draft-or-audit-academic-writing) |
 
-Die in dieser Seite genannten `oma`-Befehle sind registrierte öffentliche Befehle. `uvx`, `bunx` und `bun` sind externe Konvertierungswerkzeuge, die von ihren zuständigen Skills dokumentiert werden. Die übrigen Skills sind Einstiege über natürliche Sprache oder Slash-Befehle; es gibt keinen eigenständigen Befehl `oma pdf`, `oma hwp`, `oma voice`, `oma translation` oder `oma academic-writing`.
+Die in dieser Seite genannten `oma`-Befehle sind registrierte öffentliche Befehle. `uvx`, `bunx` und `bun` sind externe Konvertierungswerkzeuge, die von ihren zuständigen Skills dokumentiert werden. Die übrigen [Skills](../getting-started/glossary.md#skill) sind Einstiege über natürliche Sprache oder Slash-Befehle; es gibt keinen eigenständigen Befehl `oma pdf`, `oma hwp`, `oma voice`, `oma translation` oder `oma academic-writing`.
 
 ## PDF-Inhalte extrahieren {#extract-pdf-content}
 
@@ -80,7 +86,7 @@ Verwenden Sie für einen Batch ein ausdrückliches Ausgabeverzeichnis:
 bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 ```
 
-Die Standardausgabe ist Markdown. Fordern Sie `json` für einen strukturierten AST oder `chunks` für auf Retrieval ausgerichtete Chunks an, wenn diese Formate benötigt werden. Die Konvertierungsoptionen `--dedupe-headers`, `--keep-empty-cols` und `--inline-images` steuern häufige Tabellen- und Bildfälle. Prüfen Sie Überschriften, verschachtelte oder zusammengeführte Tabellen, Listen, Bilder, Fußnoten und Links im Ergebnis, bevor Sie es an einen anderen Skill übergeben.
+Die Standardausgabe ist Markdown. Für einen strukturierten AST verwenden Sie `bunx kordoc@latest "<input.hwp>" --format json`; für auf Retrieval ausgerichtete Chunks verwenden Sie `--format chunks`. Die Konvertierungsoptionen `--dedupe-headers`, `--keep-empty-cols` und `--inline-images` steuern häufige Tabellen- und Bildfälle. Prüfen Sie Überschriften, verschachtelte oder zusammengeführte Tabellen, Listen, Bilder, Fußnoten und Links im Ergebnis, bevor Sie es an einen anderen Skill übergeben.
 
 `bun` und `bunx` sind Voraussetzungen. Eine leere Ausgabe kann auf gescannte Bildinhalte hinweisen; leiten Sie diesen Fall an einen OCR-fähigen Workflow weiter. Verschlüsselte oder DRM-beschränkte Inhalte können unvollständig bleiben. PDF-, DOCX- und XLSX-Eingaben gehören zu den passenden Skills, auch wenn `kordoc` weitere Erstellungs- und Parsing-Unterbefehle besitzt.
 
@@ -115,7 +121,7 @@ oma scholar lint --fail-on-warning paper.knows.yaml
 
 Knows wird zuerst verwendet; OpenAlex und Semantic Scholar dienen als Fallback. Mit `--section` können `statements`, `evidence`, `relations`, `artifacts` oder `citation` angefordert werden. Verwenden Sie `--lenient`, wenn bei der lokalen Zusammenstellung verwaiste Querverweise auf Datensätze zu erwarten sind; verwenden Sie `--fail-on-warning` als striktes CI-Gate. Ein Suchergebnis oder ein abgerufenes Sidecar ist Evidenz für die Entdeckung, nicht die Behauptung, dass das Paper jede Schlussfolgerung unterstützt. Erzeugen oder überarbeiten Sie ein Sidecar im Agenten und führen Sie vor dem Teilen `oma scholar lint` aus.
 
-Bei einem Timeout eines Remote-Service versuchen Sie eine allgemeinere Abfrage oder lassen Sie den Fallback der CLI zu. Ein 429 von Semantic Scholar kann eine Begrenzung des anonymen Pools sein; versuchen Sie es später erneut oder konfigurieren Sie den API-Schlüssel. Wenn ein Sidecar einen Provenance-Enum-Fehler enthält, verwenden Sie `tool`, `person` oder `org`. Bleiben Warnungen zur Beziehungsdichte bestehen, fügen Sie unterstützte Evidenzbeziehungen nur dort hinzu, wo die Quelle sie belegt.
+Bei einem Timeout eines Remote-Service versuchen Sie eine allgemeinere Abfrage oder lassen Sie den Fallback der CLI zu; `--always-fallback` fragt OpenAlex und Semantic Scholar auch dann ab, wenn Knows Treffer liefert. Ein 429 von Semantic Scholar kann eine Begrenzung des anonymen Pools sein; versuchen Sie es später erneut oder setzen Sie `S2_API_KEY`. Setzen Sie `OPENALEX_EMAIL` (und optional `OPENALEX_API_KEY`), um Ihre OpenAlex-Anfragen zu identifizieren. Wenn ein Sidecar einen Provenance-Enum-Fehler enthält, verwenden Sie `tool`, `person` oder `org`. Bleiben Warnungen zur Beziehungsdichte bestehen, fügen Sie unterstützte Evidenzbeziehungen nur dort hinzu, wo die Quelle sie belegt.
 
 ## Folien und Präsentationen {#slides-and-presentations}
 
@@ -140,9 +146,9 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Verwenden Sie `--slide <file>` für eine Prüfung einer einzelnen Folie und `--report-file <path>` mit JSON-Ausgabe, wenn ein anderer Prozess die Befunde benötigt. `slide import pptx <file>` startet einen Import-Workflow; `slide asset fetch-video <url>` lädt ein Video-Asset; `slide style list|preview|get <slug>` untersucht Styles. Die PPTX-Ausgabe basiert auf Rasterbildern und bietet daher keine editierbaren Text- oder Shape-Ebenen. Validierung und Export benötigen Chrome/Puppeteer; setzen Sie `OMA_CHROME_PATH`, wenn die ausführbare Datei nicht gefunden wird. Wenn die Validierung nach drei automatischen Korrekturschleifen nicht konvergiert, bearbeiten Sie die betroffenen Fragmente anhand der gemeldeten Geometriebefunde.
 
-## Agentengespräche zusammenfassen
+## Agentengespräche zusammenfassen {#recap-agent-conversations}
 
-Verwenden Sie `oma recap` für evidenzbasierte Arbeitszusammenfassungen. Ein Kalenderdatum und ein gleitendes Fenster sind unterschiedliche Eingaben:
+Verwenden Sie `/recap` (oder bitten Sie den Agenten um einen Recap) für evidenzbasierte Arbeitszusammenfassungen; der Befehl führt `oma recap` aus, um die Historie zu sammeln. Ein Kalenderdatum und ein gleitendes Fenster sind unterschiedliche Eingaben:
 
 ```bash
 # A calendar day
@@ -155,11 +161,11 @@ oma recap --json
 oma recap --window 7d --tool claude,codex --json
 ```
 
-Das Ergebnis wird unter `.agents/results/recap/` gespeichert, normalerweise als `{date}.md` für einen Tages-Recap oder `{start-date}~{end-date}.md` für einen Zeitraum. Der Recap gruppiert nach Arbeitsinhalt, kennzeichnet angeforderte und laufende Arbeiten getrennt von abgeschlossenen und zeichnet fehlende Tool-Historie auf. Verwenden Sie `--top`, `--sort`, `--mermaid` oder `--graph`, wenn der Bericht enger oder visuell sein soll. Wenn die CLI nicht verfügbar ist, kann der Skill den dokumentierten Claude-History-Fallback nutzen; die reduzierte Quellenabdeckung muss angegeben werden.
+Diese Befehle geben die gesammelte Historie aus (standardmäßig als Terminaltext, mit `--json` als JSON oder mit `--mermaid` als Mermaid-Gantt-Diagramm); `--graph` öffnet stattdessen einen interaktiven Graphen im Browser. Die CLI selbst schreibt keine Datei. `/recap` speichert den Markdown-Recap unter `.agents/results/recap/`, normalerweise als `{date}.md` für einen Tages-Recap oder `{start-date}~{end-date}.md` für einen Zeitraum. Der Recap gruppiert nach Arbeitsinhalt, kennzeichnet angeforderte und laufende Arbeiten getrennt von abgeschlossenen und zeichnet fehlende Tool-Historie auf. Verwenden Sie `--top` oder `--sort`, wenn der Bericht enger gefasst sein soll. Wenn die CLI nicht verfügbar ist, kann der Skill den dokumentierten Claude-History-Fallback nutzen; die reduzierte Quellenabdeckung muss angegeben werden.
 
 Verwenden Sie `oma retro` für eine Git-basierte technische Retrospektive. Der Befehl beantwortet eine andere Frage als ein Gesprächs-Recap und kann benachbarte Zeitfenster mit `--compare` vergleichen.
 
-## Lokalisierte Inhalte übersetzen oder prüfen
+## Lokalisierte Inhalte übersetzen oder prüfen {#translate-or-review-localized-content}
 
 Verwenden Sie `oma-translation` für UI-Strings, Dokumentation, Berichte, Marketingtexte oder akademische Prosa. Rufen Sie den Skill in natürlicher Sprache oder über den Einstiegspunkt `/oma-translation` auf; es gibt keinen öffentlichen Befehl `oma translation`.
 
@@ -167,7 +173,7 @@ Geben Sie Quelle, Ziellocale, Inhaltstyp und an, ob es sich um Übersetzung, Rev
 
 Bei Dokumentation übersetzen Sie die stabile englische Seite, sobald Anker und Befehlsbeispiele feststehen. Behalten Sie CLI-Namen, Flags, Pfade, Umgebungsvariablen und Codeblöcke exakt bei; übersetzen Sie die umgebende Erklärung und prüfen Sie die Struktur der Zielseite gegen Englisch. Eine mehrdeutige Bedeutung sollte markiert statt stillschweigend geraten werden.
 
-## Akademische Prosa entwerfen oder prüfen
+## Akademische Prosa entwerfen oder prüfen {#draft-or-audit-academic-writing}
 
 Verwenden Sie `oma-academic-writing` für englische Essays, Berichte, Literaturübersichten, Analysen, Executive Summaries, Schlussfolgerungen und Überarbeitungen. Wählen Sie einen Modus und geben Sie Rubrik oder Quellenbedingungen an:
 
@@ -193,4 +199,8 @@ Verwenden Sie `oma scholar` zur Quellenentdeckung und Sidecar-Evidenz vor dem En
 | Eine Übersetzung ändert Codesyntax | Geschützte Namen wiederherstellen und Strukturprüfungen erneut ausführen, bevor die Prosa geprüft wird. |
 | Akademische Prosa enthält unbelegte Behauptungen | Behauptung entfernen oder abschwächen, Evidenz über den Scholar-Pfad ergänzen und die Claim-Evidence-Map erneut ausführen. |
 
-Die vollständigen registrierten CLI-Pfade und Options-Aliase finden Sie unter [CLI-Befehle](../cli-interfaces/commands.md) und [CLI-Optionen](../cli-interfaces/options.md).
+## Nächste Schritte
+
+- [Bildgenerierung](./image-generation.md), [Videogenerierung](./video-generation.md), [Code-Erklärer](./code-explainer.md), [Diagramm-Engine](./diagram-engine.md) und [Marktforschung](./market-research.md) — die Anleitungen zu den Fähigkeiten in der Tabelle oben
+- [CLI-Befehle](../cli-interfaces/commands.md) und [CLI-Optionen](../cli-interfaces/options.md) — die vollständigen registrierten CLI-Pfade und Options-Aliase
+- [Konfigurationsreferenz](./configuration-reference.md) — die Konfigurationsabschnitte `pdf`, `hwp`, `voice` und `scholar`

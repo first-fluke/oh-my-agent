@@ -1,25 +1,31 @@
 ---
 title: "Hướng dẫn: Workflow nội dung và nghiên cứu"
 sidebar_label: Tổng quan
-description: Chọn pathway oh-my-agent phù hợp cho trích xuất PDF và HWP, voice, nghiên cứu học thuật, slide, recap, dịch thuật và viết học thuật.
+description: Chọn pathway oh-my-agent phù hợp, kèm prerequisite, cho trích xuất PDF và HWP, voice, nghiên cứu học thuật và web, slide, hình ảnh, video, code explainer, diagram, nghiên cứu thị trường, recap, dịch thuật và viết học thuật.
 ---
 
 # Workflow nội dung và nghiên cứu {#content-and-research-workflows}
 
-Hướng dẫn này định tuyến công việc về tài liệu, âm thanh, nghiên cứu và thuyết trình đến capability sở hữu nó. Bắt đầu từ artifact cần tạo, sau đó dùng command hoặc skill entry point nhỏ nhất để tạo kết quả có thể review.
+Hướng dẫn này định tuyến công việc về tài liệu, âm thanh, nghiên cứu, media và thuyết trình đến capability sở hữu nó. Bắt đầu từ artifact cần tạo, sau đó dùng command hoặc skill entry point nhỏ nhất để tạo kết quả có thể review. Capability nào có hướng dẫn riêng sẽ có link ở cột cuối; phần còn lại được trình bày ngay trên trang này.
 
-| Nhu cầu | Entry point | Kết quả đầu tiên |
-|---|---|---|
-| Trích xuất PDF | Skill `oma-pdf` hoặc command `uvx opendataloader-pdf` bên dưới | Markdown, text, JSON hoặc extraction report ngắn |
-| Trích xuất HWP/HWPX/HWPML | Skill `oma-hwp` và `bunx kordoc@latest` | Markdown hoặc JSON/chunk có cấu trúc |
-| Phát hoặc transcript audio | `/oma-voice` | Audio kèm manifest, hoặc `transcript.md` kèm manifest |
-| Tìm và xác minh paper | `oma scholar` | Search result, sidecar đã fetch hoặc lint report |
-| Tạo presentation | Skill `oma-slide` và `oma slide` | HTML slide đã validate và export tùy chọn |
-| Tóm tắt hội thoại agent | `oma recap` | Recap Markdown theo ngày kèm trạng thái evidence |
-| Dịch hoặc review prose đã localize | Skill `oma-translation` | Text ngôn ngữ đích hoặc review có evidence |
-| Soạn hoặc audit prose học thuật | Skill `oma-academic-writing` | Draft, revision hoặc compliance report kèm Claim-Evidence Map |
+| Nhu cầu | Entry point | Prerequisite | Kết quả đầu tiên | Hướng dẫn |
+|---|---|---|---|---|
+| Trích xuất PDF | Skill `oma-pdf` hoặc command `uvx opendataloader-pdf` bên dưới | `uv` (cho `uvx`) | Markdown, text, JSON hoặc extraction report ngắn | [bên dưới](#extract-pdf-content) |
+| Trích xuất HWP/HWPX/HWPML | Skill `oma-hwp` và `bunx kordoc@latest` | Bun | Markdown hoặc JSON/chunk có cấu trúc | [bên dưới](#extract-hwp-family-documents) |
+| Phát hoặc transcript audio | `/oma-voice` | Ứng dụng Voicebox tại `127.0.0.1:17493` | Audio kèm manifest, hoặc `transcript.md` kèm manifest | [bên dưới](#generate-speech-or-transcribe-audio) |
+| Tìm và xác minh paper | `oma scholar` | không có; tùy chọn `S2_API_KEY`, `OPENALEX_EMAIL` | Search result, sidecar đã fetch hoặc lint report | [bên dưới](#search-and-validate-scholarly-material) |
+| Tìm kiếm web hoặc fetch một trang | Skill `oma-search`, `oma search` | tùy chọn Chrome, Python `curl_cffi`, `yt-dlp`, `gh` (kiểm tra bằng `oma search doctor`) | JSON trên stdout | [CLI Commands: search](../cli-interfaces/commands.md#search) |
+| Tạo presentation | Skill `oma-slide` và `oma slide` | Chrome, hoặc `OMA_CHROME_PATH` | HTML slide đã validate và export tùy chọn | [bên dưới](#slides-and-presentations) |
+| Tạo hình ảnh | Skill `oma-image`, `oma image generate` | một trong `POLLINATIONS_API_KEY`, `codex login` hoặc `agy` đã đăng nhập | Hình ảnh kèm `manifest.json` dưới `.agents/results/images/` | [Tạo hình ảnh](./image-generation.md) |
+| Làm video ngắn, explainer hoặc demo | `/video`, `oma video` | Node.js 22+, FFmpeg, sau đó `oma video doctor --install` | Run directory dưới `.agents/results/videos/`; MP4 sau `oma video render` | [Tạo video](./video-generation.md) |
+| Giải thích một thay đổi hoặc một chủ đề trong một trang | `/explain`, `oma explain` | git cho change mode; `gh` cho PR ref | HTML độc lập dưới `.agents/results/explain/` | [Code Explainer](./code-explainer.md) |
+| Diagram kiến trúc tương tác | `/architecture`, `oma diagram` | không có; archify được tải ở lần dùng đầu tiên | Mermaid block, kèm `.archify.html` khi archify resolve được | [Diagram Engine](./diagram-engine.md) |
+| Nghiên cứu thị trường từ cộng đồng | Skill `oma-market`, `oma market` | Python 3.12+ | Một brief dưới `.agents/results/market/` | [Nghiên cứu thị trường](./market-research.md) |
+| Tóm tắt hội thoại agent | `/recap`, `oma recap` | không có | Recap JSON từ CLI; recap Markdown theo ngày từ `/recap` | [bên dưới](#recap-agent-conversations) |
+| Dịch hoặc review prose đã localize | Skill `oma-translation` | không có | Text ngôn ngữ đích hoặc review có evidence | [bên dưới](#translate-or-review-localized-content) |
+| Soạn hoặc audit prose học thuật | Skill `oma-academic-writing` | không có | Draft, revision hoặc compliance report kèm Claim-Evidence Map | [bên dưới](#draft-or-audit-academic-writing) |
 
-Tên command `oma` trong trang này là public command đã đăng ký. `uvx`, `bunx` và `bun` là external conversion tool được skill sở hữu ghi nhận. Các skill còn lại là natural-language hoặc slash-command entry point; không có command standalone `oma pdf`, `oma hwp`, `oma voice`, `oma translation` hoặc `oma academic-writing`.
+Tên command `oma` trong trang này là public command đã đăng ký. `uvx`, `bunx` và `bun` là external conversion tool được skill sở hữu ghi nhận. Các [skill](../getting-started/glossary.md#skill) còn lại là natural-language hoặc slash-command entry point; không có command standalone `oma pdf`, `oma hwp`, `oma voice`, `oma translation` hoặc `oma academic-writing`.
 
 ## Trích xuất nội dung PDF {#extract-pdf-content}
 
@@ -80,7 +86,7 @@ Dùng output directory rõ ràng cho batch:
 bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 ```
 
-Output mặc định là Markdown. Yêu cầu `json` cho AST có cấu trúc hoặc `chunks` cho chunk hướng retrieval khi cần. Các option conversion `--dedupe-headers`, `--keep-empty-cols` và `--inline-images` điều khiển các trường hợp table và image phổ biến. Kiểm tra heading, table lồng hoặc merge, list, image, footnote và link trong result trước khi chuyển cho skill khác.
+Output mặc định là Markdown. Để có AST có cấu trúc, dùng `bunx kordoc@latest "<input.hwp>" --format json`; để có chunk hướng retrieval, dùng `--format chunks`. Các option conversion `--dedupe-headers`, `--keep-empty-cols` và `--inline-images` điều khiển các trường hợp table và image phổ biến. Kiểm tra heading, table lồng hoặc merge, list, image, footnote và link trong result trước khi chuyển cho skill khác.
 
 `bun` và `bunx` là prerequisite. Output rỗng có thể cho thấy nội dung là scanned image; chuyển trường hợp đó sang workflow có OCR. Tài liệu bị mã hóa hoặc giới hạn DRM có thể vẫn thiếu. Input PDF, DOCX và XLSX thuộc skill tương ứng dù `kordoc` có subcommand authoring và parsing khác.
 
@@ -115,7 +121,7 @@ oma scholar lint --fail-on-warning paper.knows.yaml
 
 Knows được thử trước, với OpenAlex và Semantic Scholar làm fallback. `--section` có thể yêu cầu `statements`, `evidence`, `relations`, `artifacts` hoặc `citation`. Dùng `--lenient` khi dangling cross-record reference được mong đợi trong local assembly; dùng `--fail-on-warning` cho strict CI gate. Search result hoặc sidecar đã fetch là evidence cho discovery, không phải claim rằng paper hỗ trợ mọi kết luận. Tạo hoặc sửa sidecar trong agent, sau đó chạy `oma scholar lint` trước khi chia sẻ.
 
-Nếu remote service timeout, thử lại query rộng hơn hoặc cho phép fallback của CLI. HTTP 429 từ Semantic Scholar có thể là anonymous-pool limit; thử lại sau hoặc cấu hình API key. Nếu sidecar có lỗi provenance enum, dùng `tool`, `person` hoặc `org`; nếu relation-density warning còn, chỉ thêm evidence relation được source hỗ trợ.
+Nếu remote service timeout, thử lại query rộng hơn hoặc cho phép fallback của CLI; `--always-fallback` truy vấn OpenAlex và Semantic Scholar ngay cả khi Knows có kết quả. HTTP 429 từ Semantic Scholar có thể là anonymous-pool limit; thử lại sau, hoặc đặt `S2_API_KEY`. Đặt `OPENALEX_EMAIL` (và tùy chọn `OPENALEX_API_KEY`) để định danh request tới OpenAlex. Nếu sidecar có lỗi provenance enum, dùng `tool`, `person` hoặc `org`; nếu relation-density warning còn, chỉ thêm evidence relation được source hỗ trợ.
 
 ## Slide và presentation {#slides-and-presentations}
 
@@ -142,7 +148,7 @@ Dùng `--slide <file>` cho single-slide check và `--report-file <path>` cùng J
 
 ## Recap hội thoại agent {#recap-agent-conversations}
 
-Dùng `oma recap` cho work summary dựa trên evidence. Calendar date và rolling window là hai input khác nhau:
+Dùng `/recap` (hoặc yêu cầu agent tạo recap) cho work summary dựa trên evidence; nó chạy `oma recap` để thu thập lịch sử. Calendar date và rolling window là hai input khác nhau:
 
 ```bash
 # A calendar day
@@ -155,7 +161,7 @@ oma recap --json
 oma recap --window 7d --tool claude,codex --json
 ```
 
-Result được lưu dưới `.agents/results/recap/`, thường là `{date}.md` cho daily recap hoặc `{start-date}~{end-date}.md` cho range. Recap nhóm theo nội dung công việc, đánh dấu riêng work được yêu cầu và đang tiến hành so với work đã hoàn tất, đồng thời ghi tool history bị thiếu. Dùng `--top`, `--sort`, `--mermaid` hoặc `--graph` khi report cần phạm vi hẹp hơn hoặc góc nhìn trực quan. Nếu CLI không khả dụng, skill có thể dùng Claude-history fallback đã ghi nhận, nhưng phải nêu rõ source coverage bị giảm.
+Các command này in ra lịch sử đã thu thập (mặc định là text trên terminal, JSON với `--json`, hoặc Mermaid gantt chart với `--mermaid`), còn `--graph` mở graph tương tác trong trình duyệt; bản thân CLI không ghi file nào. `/recap` lưu recap Markdown dưới `.agents/results/recap/`, thường là `{date}.md` cho daily recap hoặc `{start-date}~{end-date}.md` cho range. Recap nhóm theo nội dung công việc, đánh dấu riêng work được yêu cầu và đang tiến hành so với work đã hoàn tất, đồng thời ghi tool history bị thiếu. Dùng `--top` hoặc `--sort` khi report cần phạm vi hẹp hơn. Nếu CLI không khả dụng, skill có thể dùng Claude-history fallback đã ghi nhận, nhưng phải nêu rõ source coverage bị giảm.
 
 Dùng `oma retro` cho engineering retrospective dựa trên git. Nó trả lời câu hỏi khác với conversation recap và có thể so sánh các window liền kề bằng `--compare`.
 
@@ -193,4 +199,8 @@ Dùng `oma scholar` để discovery source và sidecar evidence trước khi so�
 | Translation làm đổi code syntax | Khôi phục protected name và chạy lại structure check trước khi review prose. |
 | Academic prose có claim không được hỗ trợ | Xóa hoặc hedge claim, thêm evidence qua scholar path và chạy lại Claim-Evidence Map. |
 
-Xem [CLI Commands](../cli-interfaces/commands.md) và [CLI Options](../cli-interfaces/options.md) để biết toàn bộ CLI path và option alias đã đăng ký.
+## Bước tiếp theo {#next-steps}
+
+- [Tạo hình ảnh](./image-generation.md), [Tạo video](./video-generation.md), [Code Explainer](./code-explainer.md), [Diagram Engine](./diagram-engine.md) và [Nghiên cứu thị trường](./market-research.md) — hướng dẫn cho các capability trong bảng trên
+- [CLI Commands](../cli-interfaces/commands.md) và [CLI Options](../cli-interfaces/options.md) — toàn bộ CLI path và option alias đã đăng ký
+- [Tham chiếu cấu hình](./configuration-reference.md) — các config section `pdf`, `hwp`, `voice` và `scholar`

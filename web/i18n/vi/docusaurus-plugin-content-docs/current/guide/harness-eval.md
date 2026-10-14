@@ -6,6 +6,10 @@ description: Đánh giá một OMA harness overlay hoàn chỉnh bằng các tas
 
 # Đánh giá Harness {#harness-evaluation}
 
+:::tip Các phần này liên kết với nhau thế nào
+[Skill evaluation](./skill-eval.md) đo xem một `SKILL.md` có giúp ích không, và [skill optimization](./skill-opt.md) sửa body đó dưới các held-out gate. Harness evaluation (trang này) so sánh toàn bộ một `.agents/` overlay trên các task repository. [Ca hồi quy của sự cố](./harness-incidents.md) biến các lỗi đã quan sát thành evaluation case và skill fixture. [Tiến hóa Harness của dự án](./harness-evolution.md) chạy việc ghi nhận sự cố và skill optimization thành một chu kỳ có budget, và [scheduled agents](./scheduled-agents.md) là OS scheduler kích hoạt nó.
+:::
+
 `oma harness eval` đo xem một OMA harness candidate có cải thiện target agent cố định mà không đổi model của agent đó hay không. Nó áp dụng mô hình đánh giá lúc test từ [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): giữ target model cố định, thay harness và so sánh kết quả trên cùng task.
 
 Command này đánh giá unit lớn hơn `oma skill eval`:
@@ -16,6 +20,14 @@ Command này đánh giá unit lớn hơn `oma skill eval`:
 | `oma harness eval` | Một `.agents/` overlay có phạm vi | File và output tạo ra trong repository workspace |
 
 Dùng skill eval để trả lời “skill này có giúp không?”. Dùng harness eval để trả lời “tổ hợp skill, workflow, rule và agent instruction này có giúp agent cố định hoàn tất task repository đáng tin cậy hơn không?”
+
+**Trước lần chạy đầu tiên:**
+
+- Ghi lần chạy đầu tiên bằng `--live --record`. `inspect` (action mặc định), `rescore`, `fixture-replay` và `rerun` đều đọc record đó.
+- Một verdict cần ít nhất năm task được chấm trong partition đã chọn. `pass` cần lift ít nhất 5 point và không có regression.
+- `inspect`, `rescore` và `fixture-replay` không gọi model nào. `--live` và `--action rerun` gọi hai lần cho mỗi task được chọn.
+- `promotionReady` luôn là `false`. Một kết quả pass là bằng chứng cho quyết định của con người, không phải một lần thăng cấp tự động.
+- Live run cần một vendor có project-local skill discovery (xem [Chạy và ghi nhận](#run-and-record)).
 
 ## Mô hình đánh giá {#evaluation-model}
 
@@ -28,6 +40,28 @@ Một live run đánh giá mỗi task như một paired experiment:
 5. Deterministic check kiểm tra workspace kết quả và agent output tùy chọn. Trusted command check chạy sau đó trong một bản copy mới của task artifact.
 
 Project thật không bao giờ được dùng làm working directory của arm. OMA capture raw output và task artifact cuối cùng trước khi chạy check và dọn workspace tạm. Process sandbox riêng của vendor đã chọn vẫn là authority cho quyền truy cập bên ngoài working directory.
+
+Diagram cho thấy cách các arm ghép cặp đi tới một quyết định. Các offline action quay lại ở bước ghép cặp từ một record đã lưu.
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
 
 ## Bố cục candidate {#candidate-layout}
 
@@ -91,7 +125,7 @@ tasks:
         path: docs/feature.md
 ```
 
-Phiên bản 2 yêu cầu cả task `validation` và task `final-test`. Mỗi task phải khai báo partition của nó. Validation là mặc định; dùng `--partition final-test` cho một lần chạy cuối riêng sau khi đã chọn candidate. Hai partition không được dùng chung hoặc lồng nhau các fixture directory. Giữ recording file bên ngoài fixture directory, candidate overlay và evaluator input; những vị trí này bị từ chối để ngăn các lần chạy sau nhìn thấy final check. Suite phiên bản 1 vẫn chạy dưới dạng `exploratory`; không thể chọn chúng làm final-test.
+Phiên bản 2 yêu cầu cả task `validation` và task `final-test`. Mỗi task phải khai báo partition của nó. Validation là mặc định; dùng `--partition final-test` cho một lần chạy cuối riêng sau khi đã chọn candidate. Mỗi lần chạy chỉ chấm partition đã chọn, nên một validation run có tính quyết định cần ít nhất năm task `validation` và một final-test run cần ít nhất năm task `final-test`. Ví dụ ở trên được giữ ngắn cho dễ đọc và luôn báo `INSUFFICIENT`. Hai partition không được dùng chung hoặc lồng nhau các fixture directory. Giữ recording file bên ngoài fixture directory, candidate overlay và evaluator input; những vị trí này bị từ chối để ngăn các lần chạy sau nhìn thấy final check. Suite phiên bản 1 vẫn chạy dưới dạng `exploratory`; không thể chọn chúng làm final-test.
 
 Task ID phải duy nhất. Fixture path và check path phải nằm trong project và task workspace. Suite và fixture cũng phải nằm bên ngoài baseline definition được copy vào mỗi arm. Fixture không được chứa symlink hoặc harness control surface như `.agents`, `.codex`, `.claude`, vendor skill directory hoặc root agent-instruction file. Điều này ngăn task data che khuất harness được kiểm soát của cả hai arm.
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Dùng `--yes` cho execution không tương tác và `--timeout-minutes` để đặt cùng wall-clock limit cho mỗi arm. Live execution yêu cầu một vendor tìm harness file tương đối với project workspace. OMA từ chối discovery dựa trên HOME vì baseline có thể nhìn thấy candidate content cài toàn cục.
+Dùng `--yes` cho execution không tương tác và `--timeout <duration>` để đặt cùng wall-clock limit cho mỗi arm (mặc định `15m`; bắt buộc có đơn vị, ví dụ `--timeout 45m`). `oma harness incident reproduce` nhận cùng flag này. Live execution yêu cầu một vendor tìm harness file tương đối với project workspace. OMA từ chối discovery dựa trên HOME vì baseline có thể nhìn thấy candidate content cài toàn cục.
+
+Vendor đến từ `agent` của suite, được resolve qua model configuration của project:
+
+| Vendor | Live `harness eval`, `--action rerun`, `incident reproduce` |
+|---|---|
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Cho phép: skill directory project-local |
+| `antigravity`, `hermes`, `kimi` | Từ chối: skill discovery dựa trên HOME |
+| Mọi vendor không có project skill directory đã biết | Từ chối |
+
+Các offline action (`inspect`, `rescore`, `fixture-replay`) không dispatch, nên check này không áp dụng cho chúng.
 
 `--record` ghi một JSON record phiên bản 2 bất biến. Vị trí mặc định là `_runs/` cạnh suite, với hash của baseline/candidate trong tên file. Dùng một `--record-file` mới cho live run khác; destination đã tồn tại sẽ bị từ chối trước khi dispatch. Record giữ lại:
 
@@ -326,12 +370,31 @@ OMA cũng báo cáo:
 
 - corrected task: baseline fail và candidate pass;
 - regressed task: baseline pass và candidate fail;
-- coverage: cần ít nhất năm paired, scoreable task.
+- coverage: cần ít nhất năm paired, scoreable task trong partition đã chọn.
 
-Score decision là `pass` khi lift ít nhất 5 percentage point và không có regression. Bất kỳ regression nào cũng làm candidate fail. Lift không âm dưới 5 point tạo cảnh báo, còn ít hơn năm task ghép cặp tạo decision `insufficient`. Thêm `--require-coverage` để coverage không đủ trả về non-zero trong CI. Score không phải bằng chứng khi một arm bị thiếu, record hash cũ hoặc deterministic check chưa hoàn tất. Lỗi live dispatch và lỗi toàn vẹn của evaluator buộc decision thành fail; chúng không thể được tính là lift thành công. Rescore và fixture replay loại các arm có bằng chứng không đủ khỏi các cặp có thể chấm và báo decision `insufficient`, thay vì coi bằng chứng bị thiếu là một regression của candidate.
+Score decision là `pass` khi lift ít nhất 5 percentage point và không có regression. Bất kỳ regression hoặc lift âm nào cũng làm candidate fail. Lift không âm dưới 5 point tạo cảnh báo, còn ít hơn năm task ghép cặp tạo decision `insufficient`. Thêm `--require-coverage` để coverage không đủ trả về non-zero trong CI. Score không phải bằng chứng khi một arm bị thiếu, record hash cũ hoặc deterministic check chưa hoàn tất. Lỗi live dispatch và lỗi toàn vẹn của evaluator buộc decision thành fail; chúng không thể được tính là lift thành công. Rescore và fixture replay loại các arm có bằng chứng không đủ khỏi các cặp có thể chấm và báo decision `insufficient`, thay vì coi bằng chứng bị thiếu là một regression của candidate.
 
 Một score đạt không xác lập việc đủ điều kiện thăng cấp. Report gồm partition, evaluator hash, `promotionReady: false` và các blocker tường minh. Các run legacy và validation thiếu bằng chứng final-test. Các dispatch route hiện tại không chứng thực việc giới hạn quyền truy cập filesystem, nên ngay cả một final-test run cũng không thể tuyên bố đã có đánh giá final được bảo vệ hay cho phép thăng cấp. Field này giữ ở false cho đến khi một execution provider có thể xác lập ranh giới đó.
 
+## Khắc phục sự cố {#troubleshooting}
+
+| Thông báo hoặc triệu chứng | Nguyên nhân | Cách sửa |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | Action mặc định là `inspect`, đọc một record đã lưu. | Chạy `--live --record` một lần, hoặc truyền record có sẵn bằng `--record-file`. |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect` yêu cầu mọi hash đã ghi đều khớp. | Ghi một run mới với `--record-file` mới. Dùng `--action rescore` khi muốn áp các check hiện tại lên các byte đã lưu. |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore` hoặc `fixture-replay` được trỏ tới record từ input khác. | Chọn `--record-file` và `--partition` khớp, hoặc ghi lại. |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record` sẽ ghi đè một file đã có. | Truyền một path `--record-file` mới. |
+| `--record requires --live or --action rerun` | `--record` được kết hợp với một offline action. | Bỏ `--record`, hoặc dùng `--live`. |
+| `--action fixture-replay requires --transcript` | Không có transcript nào được cung cấp. | Thêm `--transcript <path>`. |
+| `Removed option --timeout-minutes. Use --timeout.` | Cách viết flag cũ. | Dùng `--timeout 30m` (bắt buộc có đơn vị). |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | Suite agent resolve sang vendor discovery dựa trên HOME hoặc vendor không có project skill directory. | Định tuyến suite agent sang một vendor trong bảng ở [Chạy và ghi nhận](#run-and-record). |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | `--candidate .` hoặc một path bên trong `.agents/`. | Đặt overlay ở nơi khác, ví dụ `candidates/fix/.agents/`. |
+| `Candidate file is not allowed: <path>` | Overlay chứa file bên ngoài `agents/`, `rules/`, `skills/` hoặc `workflows/`. | Xóa các file đó khỏi overlay. |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | Frontmatter được bảo vệ khác với baseline. | Khôi phục `model`, `tools`, `effort` và các field được bảo vệ khác. |
+| `Suite requires at least one final-test task` | Suite `schema_version: 2` cần cả hai partition. | Thêm một task với `partition: final-test`. |
+| `decision: INSUFFICIENT` | Ít hơn năm task được chấm trong partition đã chọn, hoặc thiếu arm. | Thêm task cho đến khi partition có năm task, và đọc các dòng `replay limitation:`. |
+| `decision: FAIL` | Một dispatch error (theo sau là các dòng `<task>/<arm>: ...`), một regression (task ID dưới `regressed:`), hoặc lift âm. | Với dispatch error, đọc dòng `exit=... timedOut=... stderr=...` dưới mỗi arm thất bại. Với regression, so sánh hai arm của các task được liệt kê. |
+
 ## Ranh giới hiện tại {#current-boundary}
 
-Candidate overlay được tạo từ bên ngoài; command này không triển khai builder hay loop `harness opt` tự động. Artifact capture, offline rescore, tool fixture replay, rerun từ file đã pin, chọn partition, evaluator có snapshot, execution manifest, environment allowlist và các trace event được liên kết đã có sẵn, nhưng việc giữ bí mật ở cấp OS cho dữ liệu held-out, giới hạn network hoặc credential, stochastic trial lặp lại, token accounting và ép model pin cho nested subagent call thì chưa được xác lập. Environment allowlist giới hạn những biến mà một vendor process kế thừa; nó không ngăn một vendor CLI đọc credential store của chính nó hay truy cập network. Cho đến khi có nested-call pinning, suite nhằm đo một model cố định nên tránh candidate workflow spawn các agent role đã cấu hình khác.
+Candidate overlay được tạo từ bên ngoài; command này không triển khai builder hay loop `harness opt` tự động. Artifact capture, offline rescore, tool fixture replay, rerun từ file đã pin, chọn partition, evaluator có snapshot, execution manifest, environment allowlist và các trace event được liên kết đã có sẵn, nhưng việc giữ bí mật ở cấp OS cho dữ liệu held-out, giới hạn network hoặc credential, stochastic trial lặp lại và ép model pin cho nested subagent call thì chưa được xác lập. Token và chi phí sử dụng được ghi theo từng arm và cộng dồn khi vendor báo cáo (xem [Mức sử dụng](#usage)). Environment allowlist giới hạn những biến mà một vendor process kế thừa; nó không ngăn một vendor CLI đọc credential store của chính nó hay truy cập network. Cho đến khi có nested-call pinning, suite nhằm đo một model cố định nên tránh candidate workflow spawn các agent role đã cấu hình khác.

@@ -1,25 +1,31 @@
 ---
 title: "Guide : Workflows de contenu et de recherche"
 sidebar_label: Vue d’ensemble
-description: Choisir le bon parcours oh-my-agent pour l’extraction PDF et HWP, la voix, la recherche scientifique, les diapositives, les récapitulatifs, la traduction et la rédaction académique.
+description: Choisir le bon parcours oh-my-agent, avec ses prérequis, pour l’extraction PDF et HWP, la voix, la recherche scientifique et web, les diapositives, les images, la vidéo, les explications de code, les diagrammes, l’étude de marché, les récapitulatifs, la traduction et la rédaction académique.
 ---
 
 # Workflows de contenu et de recherche
 
-Ce guide achemine les travaux documentaires, audio, de recherche et de présentation vers la capacité qui en est responsable. Commencez par l’artefact dont vous avez besoin, puis utilisez le plus petit point d’entrée de commande ou de compétence qui produit un résultat révisable.
+Ce guide achemine les travaux documentaires, audio, de recherche, multimédias et de présentation vers la capacité qui en est responsable. Commencez par l’artefact dont vous avez besoin, puis utilisez le plus petit point d’entrée de commande ou de compétence qui produit un résultat révisable. Les capacités qui disposent de leur propre guide y renvoient dans la dernière colonne ; les autres sont traitées sur cette page.
 
-| Besoin | Point d’entrée | Premier résultat |
-|---|---|---|
-| Extraire un PDF | compétence `oma-pdf`, ou les commandes `uvx opendataloader-pdf` ci-dessous | Markdown, texte, JSON ou court rapport d’extraction |
-| Extraire du HWP/HWPX/HWPML | compétence `oma-hwp` et `bunx kordoc@latest` | Markdown ou JSON/chunks structuré |
-| Lire ou transcrire de l’audio | `/oma-voice` | Audio avec manifeste, ou `transcript.md` avec manifeste |
-| Trouver et valider des articles | `oma scholar` | Résultats de recherche, sidecar récupéré ou rapport de lint |
-| Construire une présentation | compétence `oma-slide` et `oma slide` | Diapositives HTML validées et exports facultatifs |
-| Résumer des conversations d’agents | `oma recap` | Récapitulatif Markdown daté avec état des preuves |
-| Traduire ou réviser une prose localisée | compétence `oma-translation` | Texte dans la langue cible ou revue fondée sur les preuves |
-| Rédiger ou auditer une prose académique | compétence `oma-academic-writing` | Brouillon, révision ou rapport de conformité avec une Claim-Evidence Map |
+| Besoin | Point d’entrée | Prérequis | Premier résultat | Guide |
+|---|---|---|---|---|
+| Extraire un PDF | compétence `oma-pdf`, ou les commandes `uvx opendataloader-pdf` ci-dessous | `uv` (pour `uvx`) | Markdown, texte, JSON ou court rapport d’extraction | [ci-dessous](#extract-pdf-content) |
+| Extraire du HWP/HWPX/HWPML | compétence `oma-hwp` et `bunx kordoc@latest` | Bun | Markdown ou JSON/chunks structuré | [ci-dessous](#extract-hwp-family-documents) |
+| Lire ou transcrire de l’audio | `/oma-voice` | Application Voicebox sur `127.0.0.1:17493` | Audio avec manifeste, ou `transcript.md` avec manifeste | [ci-dessous](#generate-speech-or-transcribe-audio) |
+| Trouver et valider des articles | `oma scholar` | aucun ; `S2_API_KEY`, `OPENALEX_EMAIL` facultatifs | Résultats de recherche, sidecar récupéré ou rapport de lint | [ci-dessous](#search-and-validate-scholarly-material) |
+| Rechercher sur le web ou récupérer une page | compétence `oma-search`, `oma search` | Chrome, Python `curl_cffi`, `yt-dlp`, `gh` facultatifs (à vérifier avec `oma search doctor`) | JSON sur stdout | [Commandes CLI : search](../cli-interfaces/commands.md#search) |
+| Construire une présentation | compétence `oma-slide` et `oma slide` | Chrome, ou `OMA_CHROME_PATH` | Diapositives HTML validées et exports facultatifs | [ci-dessous](#slides-and-presentations) |
+| Générer des images | compétence `oma-image`, `oma image generate` | l’un de `POLLINATIONS_API_KEY`, `codex login` ou un `agy` connecté | Images avec `manifest.json` sous `.agents/results/images/` | [Génération d’images](./image-generation.md) |
+| Réaliser une vidéo courte, explicative ou de démonstration | `/video`, `oma video` | Node.js 22+, FFmpeg, puis `oma video doctor --install` | Un répertoire d’exécution sous `.agents/results/videos/` ; un MP4 après `oma video render` | [Génération de vidéos](./video-generation.md) |
+| Expliquer un changement ou un sujet en une page | `/explain`, `oma explain` | git pour le mode changement ; `gh` pour les références de PR | HTML autonome sous `.agents/results/explain/` | [Explication de code](./code-explainer.md) |
+| Diagramme d’architecture interactif | `/architecture`, `oma diagram` | aucun ; archify est récupéré à la première utilisation | Bloc Mermaid, plus `.archify.html` lorsque archify est résolu | [Moteur de diagrammes](./diagram-engine.md) |
+| Étude de marché communautaire | compétence `oma-market`, `oma market` | Python 3.12+ | Un brief sous `.agents/results/market/` | [Étude de marché](./market-research.md) |
+| Résumer des conversations d’agents | `/recap`, `oma recap` | aucun | JSON de récapitulatif depuis le CLI ; récapitulatif Markdown daté depuis `/recap` | [ci-dessous](#recap-agent-conversations) |
+| Traduire ou réviser une prose localisée | compétence `oma-translation` | aucun | Texte dans la langue cible ou revue fondée sur les preuves | [ci-dessous](#translate-or-review-localized-content) |
+| Rédiger ou auditer une prose académique | compétence `oma-academic-writing` | aucun | Brouillon, révision ou rapport de conformité avec une Claim-Evidence Map | [ci-dessous](#draft-or-audit-academic-writing) |
 
-Les noms de commande `oma` de cette page sont des commandes publiques enregistrées. `uvx`, `bunx` et `bun` sont des outils de conversion externes documentés par leurs compétences propriétaires. Les autres compétences sont des points d’entrée en langage naturel ou en commande slash ; il n’existe pas de commande autonome `oma pdf`, `oma hwp`, `oma voice`, `oma translation` ou `oma academic-writing`.
+Les noms de commande `oma` de cette page sont des commandes publiques enregistrées. `uvx`, `bunx` et `bun` sont des outils de conversion externes documentés par leurs compétences propriétaires. Les autres [compétences](../getting-started/glossary.md#skill) sont des points d’entrée en langage naturel ou en commande slash ; il n’existe pas de commande autonome `oma pdf`, `oma hwp`, `oma voice`, `oma translation` ou `oma academic-writing`.
 
 ## Extraire le contenu PDF {#extract-pdf-content}
 
@@ -80,7 +86,7 @@ Utilisez un répertoire de sortie explicite pour un lot :
 bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 ```
 
-La sortie par défaut est Markdown. Demandez `json` pour un AST structuré ou `chunks` pour des fragments orientés récupération lorsque ces formats sont nécessaires. Les options de conversion `--dedupe-headers`, `--keep-empty-cols` et `--inline-images` contrôlent les cas courants de tableaux et d’images. Vérifiez les titres, tableaux imbriqués ou fusionnés, listes, images, notes de bas de page et liens du résultat avant de le transmettre à une autre compétence.
+La sortie par défaut est Markdown. Pour un AST structuré, utilisez `bunx kordoc@latest "<input.hwp>" --format json` ; pour des fragments orientés récupération, utilisez `--format chunks`. Les options de conversion `--dedupe-headers`, `--keep-empty-cols` et `--inline-images` contrôlent les cas courants de tableaux et d’images. Vérifiez les titres, tableaux imbriqués ou fusionnés, listes, images, notes de bas de page et liens du résultat avant de le transmettre à une autre compétence.
 
 `bun` et `bunx` sont des prérequis. Une sortie vide peut indiquer un contenu sous forme d’image numérisée ; acheminez ce cas vers un workflow capable d’OCR. Un contenu chiffré ou limité par DRM peut rester incomplet. Les entrées PDF, DOCX et XLSX appartiennent à leurs compétences correspondantes, même si `kordoc` possède d’autres sous-commandes d’écriture et d’analyse.
 
@@ -115,7 +121,7 @@ oma scholar lint --fail-on-warning paper.knows.yaml
 
 Knows est essayé en premier, avec des replis OpenAlex et Semantic Scholar. `--section` peut demander `statements`, `evidence`, `relations`, `artifacts` ou `citation`. Utilisez `--lenient` lorsque des références croisées pendantes sont attendues pendant l’assemblage local ; utilisez `--fail-on-warning` pour une porte CI stricte. Un résultat de recherche ou un sidecar récupéré constitue une preuve de découverte, pas une affirmation que l’article soutient chaque conclusion. Générez ou révisez un sidecar dans l’agent, puis lancez `oma scholar lint` avant de le partager.
 
-Si un service distant expire, réessayez une requête plus large ou autorisez le repli du CLI. Un 429 de Semantic Scholar peut être une limite du pool anonyme ; réessayez plus tard ou configurez sa clé API. Si un sidecar contient une erreur d’énumération de provenance, utilisez `tool`, `person` ou `org` ; si des avertissements de densité des relations persistent, ajoutez uniquement les relations de preuve prises en charge lorsque la source les justifie.
+Si un service distant expire, réessayez une requête plus large ou autorisez le repli du CLI ; `--always-fallback` interroge OpenAlex et Semantic Scholar même lorsque Knows renvoie des résultats. Un 429 de Semantic Scholar peut être une limite du pool anonyme ; réessayez plus tard, ou définissez `S2_API_KEY`. Définissez `OPENALEX_EMAIL` (et éventuellement `OPENALEX_API_KEY`) pour identifier vos requêtes OpenAlex. Si un sidecar contient une erreur d’énumération de provenance, utilisez `tool`, `person` ou `org` ; si des avertissements de densité des relations persistent, ajoutez uniquement les relations de preuve prises en charge lorsque la source les justifie.
 
 ## Diapositives et présentations {#slides-and-presentations}
 
@@ -140,9 +146,9 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Utilisez `--slide <file>` pour une vérification sur une seule diapositive et `--report-file <path>` avec une sortie JSON lorsqu’un autre processus a besoin des résultats. `slide import pptx <file>` démarre un workflow d’importation ; `slide asset fetch-video <url>` télécharge un élément vidéo ; `slide style list|preview|get <slug>` examine les styles. La sortie PPTX est fondée sur un raster et ne fournit donc ni texte ni calques de formes modifiables. La validation et l’export nécessitent Chrome/puppeteer ; définissez `OMA_CHROME_PATH` lorsque l’exécutable n’est pas détectable. Si la validation ne converge pas après trois itérations d’auto-correction, utilisez les problèmes de géométrie signalés pour modifier le fragment concerné.
 
-## Récapituler les conversations d’agents
+## Récapituler les conversations d’agents {#recap-agent-conversations}
 
-Utilisez `oma recap` pour des synthèses de travail fondées sur les preuves. Une date calendaire et une fenêtre glissante sont des entrées différentes :
+Utilisez `/recap` (ou demandez un récapitulatif à l’agent) pour des synthèses de travail fondées sur les preuves ; il exécute `oma recap` pour collecter l’historique. Une date calendaire et une fenêtre glissante sont des entrées différentes :
 
 ```bash
 # A calendar day
@@ -155,11 +161,11 @@ oma recap --json
 oma recap --window 7d --tool claude,codex --json
 ```
 
-Le résultat est enregistré sous `.agents/results/recap/`, normalement sous la forme `{date}.md` pour un récapitulatif quotidien ou `{start-date}~{end-date}.md` pour une plage. Le récapitulatif regroupe par contenu de travail, distingue le travail demandé et en cours du travail terminé et consigne l’historique manquant des outils. Utilisez `--top`, `--sort`, `--mermaid` ou `--graph` lorsque le rapport doit être plus ciblé ou visuel. Si le CLI est indisponible, la compétence peut utiliser le repli documenté de l’historique Claude, mais la couverture réduite de la source doit être indiquée.
+Ces commandes affichent l’historique collecté (texte de terminal par défaut, JSON avec `--json` ou diagramme de Gantt Mermaid avec `--mermaid`), et `--graph` ouvre à la place un graphe interactif dans le navigateur ; le CLI lui-même n’écrit aucun fichier. `/recap` enregistre le récapitulatif Markdown sous `.agents/results/recap/`, normalement sous la forme `{date}.md` pour un récapitulatif quotidien ou `{start-date}~{end-date}.md` pour une plage. Le récapitulatif regroupe par contenu de travail, distingue le travail demandé et en cours du travail terminé et consigne l’historique manquant des outils. Utilisez `--top` ou `--sort` lorsque le rapport doit être plus ciblé. Si le CLI est indisponible, la compétence peut utiliser le repli documenté de l’historique Claude, mais la couverture réduite de la source doit être indiquée.
 
 Utilisez `oma retro` pour une rétrospective technique fondée sur git. Elle répond à une question différente d’un récapitulatif de conversation et peut comparer des fenêtres adjacentes avec `--compare`.
 
-## Traduire ou réviser du contenu localisé
+## Traduire ou réviser du contenu localisé {#translate-or-review-localized-content}
 
 Utilisez `oma-translation` pour les chaînes d’interface, la documentation, les rapports, le texte marketing ou la prose académique. Invoquez-la en langage naturel ou avec le point d’entrée de compétence `/oma-translation` ; il n’existe pas de commande publique `oma translation`.
 
@@ -167,7 +173,7 @@ Donnez à la compétence la source, la locale cible, le type de contenu et indiq
 
 Pour la documentation, traduisez la page anglaise stable après la mise en place de ses ancres et exemples de commandes. Gardez les noms de CLI, flags, chemins, variables d’environnement et blocs de code exacts ; traduisez l’explication autour et vérifiez la structure de la page cible par rapport à l’anglais. Une signification ambiguë dans la source doit être signalée plutôt que devinée silencieusement.
 
-## Rédiger ou auditer une écriture académique
+## Rédiger ou auditer une écriture académique {#draft-or-audit-academic-writing}
 
 Utilisez `oma-academic-writing` pour les essais, rapports, revues de littérature, analyses, synthèses, conclusions et révisions en anglais. Sélectionnez un mode et fournissez la grille ou les contraintes de source :
 
@@ -193,4 +199,8 @@ Utilisez `oma scholar` pour découvrir les sources et les preuves sidecar avant 
 | Une traduction modifie la syntaxe du code | Restaurez les noms protégés et relancez les vérifications de structure avant de réviser la prose. |
 | La prose académique contient des claims non étayés | Supprimez ou nuancez le claim, ajoutez des preuves via le parcours scholar et relancez la Claim-Evidence Map. |
 
-Pour les chemins CLI enregistrés complets et les alias d’options, consultez [Commandes CLI](../cli-interfaces/commands.md) et [Options CLI](../cli-interfaces/options.md).
+## Étapes suivantes
+
+- [Génération d’images](./image-generation.md), [Génération de vidéos](./video-generation.md), [Explication de code](./code-explainer.md), [Moteur de diagrammes](./diagram-engine.md) et [Étude de marché](./market-research.md) — les guides des capacités du tableau ci-dessus
+- [Commandes CLI](../cli-interfaces/commands.md) et [Options CLI](../cli-interfaces/options.md) — les chemins CLI enregistrés complets et les alias d’options
+- [Référence de configuration](./configuration-reference.md) — les sections de configuration `pdf`, `hwp`, `voice` et `scholar`

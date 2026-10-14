@@ -12,10 +12,10 @@ description: 라우팅, 모델 선택, 프로바이더, 업데이트, 텔레메�
 | 영역 | 기본값 | 결과 | 오버라이드 |
 |---|---|---|---|
 | 응답 언어 | `en` | 프로젝트 설정이 다른 지원 언어를 선택하지 않으면 에이전트와 워크플로우가 영어로 응답합니다. 호스트나 워크플로우가 지원하는 경우 사용자의 명시적인 언어 지시나 세션 언어가 프로젝트 기본값을 덮어쓸 수 있습니다. | `.agents/oma-config.yaml` 또는 `.cue`의 `language` |
-| 모델 라우팅 | `auto` | 현재 런타임의 네이티브 에이전트 설정을 사용합니다. 알 수 없는 런타임은 `default_cli`가 설정된 경우 그 값으로 폴백합니다. | `model_preset`, `default_cli`, `agents.<id>` |
-| 코드 인텔리전스 | `serena` | 새로 설치하면 Serena 설치를 시도하고 MCP 설정을 연결합니다. | `providers.code_intelligence: gortex` 또는 `serena` |
+| 모델 라우팅([모델 프리셋](./glossary.md#model-preset)) | `auto` | 현재 런타임의 네이티브 에이전트 설정을 사용합니다. 알 수 없는 런타임은 `default_cli`가 설정된 경우 그 값으로 폴백합니다. | `model_preset`, `default_cli`, `agents.<id>` |
+| 코드 인텔리전스([기능 프로바이더](./glossary.md#capability-provider)) | `serena` | 새로 설치하면 Serena 설치를 시도하고 MCP 설정을 연결합니다. | `providers.code_intelligence: gortex` 또는 `serena` |
 | 코드 검색 가드 | `block` | 코드 인텔리전스 프로바이더가 설정된 동안에는 PreToolUse 훅이 네이티브 `Grep`/`Glob`과 재귀 셸 검색(`rg`, `grep -r`, `find -name`)을 거부하고, 에이전트가 프로바이더의 도구를 쓰도록 안내합니다. 확인된 제외 대상 안에서만 이루어지는 검색과 프로젝트 밖 경로의 검색은 허용됩니다. 훅은 프로젝트 소스용 우회 방법을 안내하지 않습니다. | `providers.code_intelligence_guard: off` |
-| 시맨틱 메모리 | `agentmemory` | 사용 가능한 경우 Agent Memory를 시맨틱 메모리로 선택합니다. | `providers.semantic_memory: honcho` 또는 `none` |
+| 시맨틱 메모리 | `agentmemory` | 설치와 업데이트 시 정상 동작하는 AgentMemory 엔드포인트를 재사용하거나 관리형 로컬 서비스를 설치하고 시작한 다음, 준비 상태를 확인한 뒤에 성공으로 처리합니다. 명시적으로 지정한 사용자 정의 엔드포인트는 교체하지 않고 확인만 합니다. | `providers.semantic_memory: honcho` 또는 `none`. `OMA_NO_AGENTMEMORY=1`이면 AgentMemory 설정을 건너뜁니다. |
 | 웹 검색 | `native` | 별도 프로바이더를 선택하지 않으면 런타임의 네이티브 웹 채널을 사용합니다. | `providers.web` |
 | 문서 프로바이더 | `context7` | 스킬이 요청하면 Context7 프로바이더로 문서를 조회합니다. | `providers.docs` |
 | 텔레메트리 | 비활성화 | 링크할 때 OMA가 벤더 옵트아웃 설정을 작성합니다. | `telemetry: true` |
@@ -31,7 +31,12 @@ description: 라우팅, 모델 선택, 프로바이더, 업데이트, 텔레메�
 
 ## 설정 우선순위
 
-OMA는 현재 작업 디렉토리에서 위로 올라가며 가장 가까운 `.agents/` 디렉토리를 찾습니다. `oma-config.cue`가 있으면 읽고, 공유 CUE 평가에 실패할 때 `oma-config.yaml`로 폴백합니다. 프로젝트 로컬 오버레이인 `oma-config.local.cue` 또는 `oma-config.local.yaml`은 그 위에 병합됩니다. 로컬 오버레이는 하나만 유지하세요. `OMA_MODEL_PRESET`은 프로세스의 `model_preset`을 덮어쓸 수 있습니다. 로컬 설정이 잘못되면 다른 값을 조용히 선택하지 않고 로딩이 중단됩니다.
+OMA는 `$OMA_HOME/.agents/`(기본값 `~/.oma/.agents/`)에서 전역 기본값을 읽은 다음,
+가장 가까운 프로젝트 `.agents/`의 공유 설정과 로컬 파일을 그 위에 덮어씁니다.
+서로 다른 상위 프로젝트 루트는 병합하지 않습니다. 어느 범위에서든
+`oma-config.cue`를 우선하고 YAML을 폴백으로 사용합니다. 로컬 오버레이는
+하나만 유지하세요(`oma-config.local.cue` 또는 `.yaml`). 파일을 읽은 뒤에는
+`OMA_MODEL_PRESET`이 `model_preset`을 덮어씁니다. 로컬 설정이 잘못되면 로딩이 중단됩니다.
 
 고정 프리셋 순서를 적용하기 전에 모델 라우팅에는 두 가지 예외가 있습니다.
 
@@ -62,8 +67,8 @@ OMA는 현재 작업 디렉토리에서 위로 올라가며 가장 가까운 `.a
 | 벤더 파일이 오래됨 | `oma doctor`와 `oma link --dry-run` | `.agents/`를 원본으로 유지하면서 `oma link <vendor>`를 실행합니다. |
 | 모델이 허용되지 않음 | `oma doctor --profile` | `auto`로 전환하거나 빌트인 프리셋을 사용하거나 `models:` 아래에 모델 슬러그를 정의합니다. |
 | Serena 도구가 시간 초과됨 | `oma doctor`와 프로바이더 섹션 | `serena.mode: stdio`를 시도합니다. 메모리 압력이 원인이면 `oma serena reap --dry-run`으로 미리 확인합니다. |
-| 지속 워크플로우가 멈추지 않음 | `.agents/state/*-state.json` | `workflow done`이라고 말하고, 워크플로우가 정리되지 않은 경우에만 상태 파일을 확인합니다. |
+| [지속 워크플로우](./glossary.md#persistent-workflow)가 멈추지 않음 | `.agents/state/*-state.json` | `workflow done`이라고 말하고, 워크플로우가 정리되지 않은 경우에만 상태 파일을 확인합니다. |
 | 예약된 reaper가 아무 일도 하지 않음 | `oma doctor`의 Serena Reaper 섹션 | `serena_reaper.enabled: true`로 설정한 다음 `oma serena reaper enable`을 실행합니다. |
 | 로컬 설정으로 시작이 깨짐 | `oma doctor`의 오류 경로 | 로컬 오버레이를 고치거나 제거합니다. `.cue`와 `.yaml` 오버레이를 둘 다 만들지 마세요. |
 
-[설치](./installation.md), [에이전트별 모델](../guide/per-agent-models.md), [OMA 설정 의미](../guide/oma-config-semantics.md)로 이어서 읽을 수 있습니다.
+[설치](./installation.md), [에이전트별 모델](../guide/per-agent-models.md), [OMA 설정 의미](../guide/oma-config-semantics.md)로 이어서 읽을 수 있습니다. 여기에 없는 문제는 [문제 해결](../guide/troubleshooting.md)을 참고하세요.

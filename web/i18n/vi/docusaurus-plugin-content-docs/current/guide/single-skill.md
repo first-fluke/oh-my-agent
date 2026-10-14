@@ -49,7 +49,7 @@ Test và tiêu chí chấp nhận vẫn là một phần của tác vụ dùng m
 
 ## Checklist preflight
 
-Trước khi viết prompt, trả lời bốn câu hỏi sau. Chúng tương ứng với bốn thành phần của [Prompt Structure](/docs/core-concepts/skills):
+Trước khi viết prompt, trả lời bốn câu hỏi sau:
 
 | Thành phần | Câu hỏi | Vì sao quan trọng |
 |---------|----------|----------------|
@@ -114,10 +114,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **Đánh giá độ khó:** Medium, với 2 đến 3 file và quyết định thiết kế về UX validation.
 3. **Tải tài nguyên:**
    - `execution-protocol.md`, luôn được tải.
-   - `snippets.md`, gồm pattern form và Zod.
-   - Pattern component hiện có và `snippets.md` khi skill cung cấp.
+   - `snippets.md` (pattern form và Zod, cùng pattern component hiện có khi skill cung cấp).
 4. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -169,7 +168,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - Tải `stack/tech-stack.md` hoặc tham chiếu tech-stack của variant nếu có.
 <!-- oma-docs:ignore-end -->
 5. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -204,9 +203,12 @@ Add tests for: profile save, logout flow, offline state.
 
 1. **Định tuyến skill:** Host hoặc workflow chọn `oma-mobile`; “Flutter”, “screen” và “mobile” là tín hiệu định tuyến.
 2. **Đánh giá độ khó:** Medium, gồm màn hình settings, state management và xử lý offline.
-3. **Tải tài nguyên:** `execution-protocol.md`, `snippets.md` (template màn hình và pattern Riverpod provider), `screen-template.dart`.
+3. **Tải tài nguyên:**
+   - `execution-protocol.md`
+   - `snippets.md` (template màn hình, pattern Riverpod provider)
+   - `screen-template.dart`
 4. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -244,9 +246,13 @@ Add deliverables: data standards table, glossary, migration script.
 
 1. **Định tuyến skill:** Host hoặc workflow chọn `oma-db`; “database”, “schema”, “ERD” và “migration” là tín hiệu định tuyến.
 2. **Đánh giá độ khó:** Complex, gồm quyết định kiến trúc, nhiều entity và lập kế hoạch capacity.
-3. **Tải tài nguyên:** `execution-protocol.md`, `document-templates.md` (cấu trúc deliverable), `examples.md` và `anti-patterns.md` để review trong bước tối ưu.
+3. **Tải tài nguyên:**
+   - `execution-protocol.md`
+   - `document-templates.md` (cấu trúc deliverable)
+   - `examples.md`
+   - `anti-patterns.md` (review trong bước tối ưu)
 4. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -323,10 +329,20 @@ Các tín hiệu sau cho thấy nên chuyển từ thực thi một skill sang n
 | CHARTER_CHECK có mục “Must NOT do” nhưng mục đó thật sự cần | Phạm vi vượt một lĩnh vực. | Lập kế hoạch đầy đủ bằng `/plan` trước. |
 | Một bản sửa lan sang 3+ file ở các layer khác nhau | Một thay đổi ảnh hưởng nhiều lĩnh vực. | Dùng `/debug` phạm vi rộng hơn hoặc `/work`. |
 | Agent phát hiện API contract không khớp | Frontend và backend đang bất đồng. | Chạy `/plan` để định nghĩa contract rồi spawn lại cả hai agent. |
-| Cổng chất lượng thất bại ở điểm tích hợp | Các component kết nối không đúng. | Thêm bước QA review: `oma agent spawn qa "Review integration"`. |
+| Cổng chất lượng thất bại ở điểm tích hợp | Các component kết nối không đúng. | Chạy `/review`, hoặc thêm một lượt QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only`. |
 | Tác vụ từ “một component” thành “ba component + route + API” | Phạm vi phình ra trong lúc chạy. | Dừng, chạy `/plan` để phân tách rồi `/orchestrate`. |
 | Agent bị chặn vì clarification HIGH | Yêu cầu cơ bản còn mơ hồ. | Trả lời câu hỏi hoặc chạy `/brainstorm` để làm rõ. |
 
 ### Quy tắc chung
 
 Nếu phải spawn lại cùng một agent hơn hai lần để tinh chỉnh, có lẽ tác vụ đã trở thành đa lĩnh vực. Hãy chạy `/work` hoặc ít nhất `/plan` để phân tách.
+
+---
+
+## Bước tiếp theo
+
+- Tác vụ trải qua nhiều domain: [Dự án đa agent](./multi-agent-project.md)
+- Tác vụ là một lỗi: [Sửa lỗi](./bug-fixing.md)
+- Kiểm tra hoặc tiếp tục một lần chạy: [Kết quả và Resume](./agent-results-and-resume.md)
+- Có gì đó thất bại: [Troubleshooting](./troubleshooting.md)
+- Chọn giữa skill và workflow: [Các workflow](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

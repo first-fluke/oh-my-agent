@@ -7,11 +7,11 @@ description: Подробный обзор oh-my-agent — фреймворка 
 
 oh-my-agent — это фреймворк оркестрации нескольких агентов для IDE и CLI с поддержкой AI. Вместо того чтобы поручать всё одному AI-помощнику, oh-my-agent распределяет работу между 33 пакетами навыков и 13 каноническими ролями диспетчеризации. Двенадцать хранимых в репозитории файлов определений субагентов предоставляют повторно используемые роли для реализации, ревью, планирования, отладки, документации, исследований и инфраструктуры. `research-explorer.md` сопоставляется с канонической ролью `explore`; `orchestrator` — это runtime-роль координации без отдельного файла определения.
 
-OMA выполняет механические проверки, когда вы вызываете их или выбираете рабочий процесс, в который они входят. `oma verify agent <agent-type>` запускает проверки для выбранного типа агента; `/ralph` добавляет проверку на основе артефактов и цикл судьи; включённые Stop-хуки поставщика могут удерживать рабочий процесс открытым, пока выполняются его настроенные проверки. Одной загрузки навыка недостаточно для приёмки, а обычный prompt не запускает автоматически все шлюзы рабочего процесса. Определяйте завершённость по критериям приёмки рабочего процесса и созданным файлам.
+OMA выполняет механические проверки, когда вы вызываете их или выбираете рабочий процесс, в который они входят. `oma verify agent <agent-type>` запускает проверки для выбранного типа агента; `/ralph` добавляет проверку на основе артефактов и цикл [judge](./glossary.md#judge); включённые Stop-хуки поставщика ([stop gate](./glossary.md#stop-gate)) могут удерживать рабочий процесс открытым, пока выполняются его настроенные проверки. Одной загрузки навыка недостаточно для приёмки, а обычный prompt не запускает автоматически все шлюзы рабочего процесса. Определяйте завершённость по критериям приёмки рабочего процесса и созданным файлам.
 
 Вся система находится в переносимом каталоге `.agents/` внутри проекта. Можно переключаться между Claude Code, Codex CLI, Antigravity CLI или IDE, Cursor, OpenCode и другими поддерживаемыми инструментами, сохраняя конфигурацию агента вместе с кодом.
 
-Если вы только знакомитесь с OMA, начните с [быстрого старта](./quick-start.md), затем прочитайте [важные настройки по умолчанию](./important-defaults.md). Установка создаёт SSOT и интеграции поставщиков; первой полезной проверкой будет `oma doctor`, а первой полезной задачей — небольшое изменение в одной предметной области. Переходите к `/work` или `/orchestrate`, только если задаче нужна координация.
+Если вы только знакомитесь с OMA, начните с [быстрого старта](./quick-start.md), затем прочитайте [важные настройки по умолчанию](./important-defaults.md). Установка создаёт [SSOT](./glossary.md#ssot) и интеграции поставщиков; первой полезной проверкой будет `oma doctor`, а первой полезной задачей — небольшое изменение в одной предметной области. Переходите к `/work` или `/orchestrate`, только если задаче нужна координация.
 
 ---
 
@@ -29,7 +29,7 @@ oh-my-agent решает эту проблему специализацией:
 
 2. **Агенты могут работать параллельно.** Пока backend-агент создаёт API, frontend-агент может работать в собственном workspace. Оркестратор координирует работу через долговечные файлы и квитанции, привязанные к запуску.
 
-3. **Рекомендации по качеству встроены.** Навыки содержат предметные чек-листы, инструкции по ошибкам и правила charter. Charter preflight сужает область до написания кода; ревью QA запускается, когда его включает выбранный рабочий процесс или когда вы сами его запрашиваете.
+3. **Рекомендации по качеству встроены.** Навыки содержат предметные чек-листы, инструкции по ошибкам и правила [charter](./glossary.md#charter). Charter preflight сужает область до написания кода; ревью QA запускается, когда его включает выбранный рабочий процесс или когда вы сами его запрашиваете.
 
 ---
 
@@ -37,9 +37,9 @@ oh-my-agent решает эту проблему специализацией:
 
 Каталог разделяет три вещи, которые легко перепутать:
 
-- **Навыки** — 33 пакета знаний предметных областей в `.agents/skills/*/SKILL.md`. Они маршрутизируются по намерению, выраженному естественным языком, и постепенно загружают ресурсы.
-- **Определения агентов** — 12 файлов в `.agents/agents/`. Они предоставляют нативные для поставщиков роли субагентов и ссылаются на один или несколько навыков.
-- **Рабочие процессы** — 21 определение процессов в `.agents/workflows/`. Четыре процесса постоянные (`orchestrate`, `work`, `ultrawork` и `ralph`); остальные завершаются отчётом и не сохраняют постоянный режим.
+- **[Навыки](./glossary.md#skill)** — 33 пакета знаний предметных областей в `.agents/skills/*/SKILL.md`. Они маршрутизируются по намерению, выраженному естественным языком, и постепенно загружают ресурсы.
+- **[Определения агентов](./glossary.md#agent-definition)** — 12 файлов в `.agents/agents/`. Они предоставляют нативные для поставщиков роли субагентов и ссылаются на один или несколько навыков.
+- **[Рабочие процессы](./glossary.md#workflow)** — 21 определение процессов в `.agents/workflows/`. Четыре процесса [постоянные](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` и `ralph`); остальные завершаются отчётом и не сохраняют постоянный режим.
 
 Ниже сохранён подробный каталог навыков. Если имя или описание меняется, авторитетным источником служит frontmatter актуального `SKILL.md`.
 
@@ -80,7 +80,7 @@ oh-my-agent решает эту проблему специализацией:
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-qa** | Контроль качества | Аудит безопасности (OWASP Top 10), анализ производительности, доступность (WCAG 2.2 AA), ревью качества кода. Уровни: CRITICAL/HIGH/MEDIUM/LOW с file:line и кодом исправления. Поддерживает характеристики качества ISO/IEC 25010 и соответствие тестирования ISO/IEC 29119. Ресурсы: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
+| **oma-qa** | Контроль качества | Аудит безопасности (OWASP Top 10), анализ производительности, доступность (WCAG 2.2 AA), ревью качества кода. Уровни: CRITICAL/HIGH/MEDIUM/LOW с file:line и кодом исправления. Поддерживает характеристики качества ISO/IEC 25010 и соответствие тестирования ISO/IEC 29119. Ресурсы: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `verify-ship-protocol.md`, `error-playbook.md`. |
 | **oma-debug** | Диагностика и исправление ошибок | Методология с приоритетом воспроизведения. Анализ первопричины, минимальные исправления, обязательные регрессионные тесты, поиск похожих паттернов. Использует MCP-инструменты code intelligence (Gortex или Serena) для трассировки символов. Ресурсы: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 | **oma-refactor** | Рефакторинг с сохранением поведения | Безопасная поэтапная перестройка, защищённая characterization-тестами. Поиск горячих точек (complexity × churn), выбор code-smell/SATD, откат по методу Mikado при сбое, expand-contract для состояния, коммиты только рефакторинга (без смешивания изменения поведения). Преобразования с приоритетом движка (переименование IDE, jscodeshift/ast-grep), метрики через `uvx lizard` / `uvx radon`. Успех определяется читаемостью; метрики — лишь приближение. |
 
@@ -113,7 +113,7 @@ oh-my-agent решает эту проблему специализацией:
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-deepsec** | Драйвер сканера уязвимостей на агентах | Полностью работает с Vercel `deepsec` (`bunx deepsec`): выполняет `init` для workspace `.deepsec/`, записывает проектный `INFO.md`, выполняет экономные проходы `scan`/`process`/`triage`/`revalidate`/`export`, защищает PR через `process --diff` по двухзадачному CI-паттерну и создаёт пользовательские matchers. Перед большим проходом калибрует `--limit 50 --concurrency 5` и до платной работы сообщает прогноз в долларах; стоимость зависит от размера репозитория и backend. Backend агентов: `codex` (gpt-5.5) или `claude` (claude-opus-4-8). |
+| **oma-security** | Сканирование и проверка безопасности | Сканирует исходный код приложений, навыки агентов и MCP-компоненты; проводит тесты на проникновение для ограниченных тестовых веб-развёртываний, проверяет находки и настраивает шлюзы сканирования. Движки по умолчанию в зависимости от цели: Deepsec для исходного кода приложения или diff, Cisco Skill Scanner для пакетов навыков агентов, Cisco MCP Scanner для MCP-компонентов и ARTEX для тестовых веб-развёртываний. Для широкого ревью качества используйте `oma-qa`, а для исправлений — навыки соответствующих областей. |
 
 ### Документация и мета-инструменты
 
@@ -158,19 +158,21 @@ oh-my-agent использует двухслойную архитектуру �
 
 Всё необходимое oh-my-agent находится в каталоге `.agents/`:
 
-```
+```text
 .agents/
-├── oma-config.yaml         # Shared preferences and provider/model settings
-├── oma-config.cue          # Optional schema-backed configuration
-├── skills/                 # 33 skill directories + _shared resources
-│   ├── _shared/            # Core resources used by all agents
-│   └── oma-{skill}/         # Per-skill SKILL.md + resources/variants
-├── workflows/              # 21 workflow definitions
-├── agents/                 # 12 subagent definitions
-├── results/plan-{sessionId}.json               # Generated plan output
-├── state/                  # Active workflow state files
-├── results/                # Agent result files
-└── mcp.json                # MCP server configuration
+├── oma-config.yaml   # Shared preferences and provider/model settings
+├── oma-config.cue    # Optional schema-backed configuration
+├── mcp.json          # MCP server configuration
+├── skills/           # 33 skill directories + _shared resources
+│   ├── _shared/      # Core resources used by all agents
+│   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
+├── workflows/        # 21 workflow definitions
+├── agents/           # 12 subagent definitions
+├── hooks/            # Hook sources, including core/triggers.json
+├── rules/            # Project rules projected into vendor files
+├── config/           # Shipped defaults (defaults.yaml)
+├── results/          # Plans (plan-{sessionId}.json) and agent results
+└── state/            # Active workflow state files
 ```
 
 Каталог `.claude/` существует только как слой интеграции с IDE. Он содержит символические ссылки обратно в `.agents/`, а также хуки для обнаружения ключевых слов и статусную строку HUD. Каталог `.agents/state/memories/` хранит runtime-состояние координации во время сессий оркестрации (в старых проектах используется устаревший путь `.serena/memories/`).
@@ -199,25 +201,53 @@ oh-my-agent работает с выбранными IDE и CLI с поддер�
 
 ---
 
+## Как проходит запрос
+
+Диаграмма показывает, что происходит между prompt и готовым результатом. Хук ключевых слов, инжектор навыков и Stop-хук работают только на хостах, где включена интеграция хуков. Хук ключевых слов и инжектор навыков последовательно обрабатывают один и тот же prompt, а внедрённый ими контекст объединяется.
+
+```mermaid
+flowchart TD
+  P["User prompt"] --> SL{"Starts with a /command?"}
+  SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
+  SL -->|no| KD["Keyword hook checks triggers.json"]
+  KD -->|"workflow keyword (explicit keyword for persistent ones)"| CTX["Inject OMA WORKFLOW context"]
+  CTX --> WF
+  KD -->|"persistent workflow, natural language only"| SUG["Workflow suggested; agent decides"]
+  SUG -.->|"if the request calls for it"| WF
+  KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
+  SI --> HOST["Host picks skills by name and description"]
+  WF --> SK["Skills: .agents/skills/*/SKILL.md"]
+  HOST --> SK
+  WF --> AG["Agents: native subagent or oma agent spawn"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
+```
+
+Источники: `.agents/hooks/core/keyword-detector.ts` (пропуск slash-команд, сопоставление триггеров, предложение постоянных рабочих процессов), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` и файлы рабочих процессов в `.agents/workflows/`. Не в каждом рабочем процессе есть все шлюзы: `/orchestrate` запускает скрипт проверки, `/review` — ревью QA, а `/ralph` добавляет [judge](./glossary.md#judge).
+
+---
+
 ## Система маршрутизации навыков
 
-Получив prompt, oh-my-agent определяет агента-исполнителя по карте маршрутизации навыков (`.agents/skills/_shared/core/skill-routing.md`):
+Хост выбирает навык по именам и описаниям установленных навыков. Карта маршрутизации OMA (`.agents/skills/_shared/core/skill-routing.md`) определяет, какой навык отвечает за какой результат; маршрутизируйте по запрошенному результату и его зависимостям, а не только по ключевому слову. Выбор навыка не запускает рабочий процесс и не разрешает делегирование.
 
-| Ключевые слова предметной области | Маршрут |
-|----------------|-----------|
-| API, endpoint, REST, GraphQL, database, migration | oma-backend |
-| auth, JWT, login, register, password | oma-backend |
-| UI, component, page, form, screen (web) | oma-frontend |
-| style, Tailwind, responsive, CSS | oma-frontend |
-| mobile, iOS, Android, Flutter, React Native, Swift, SwiftUI, app | oma-mobile |
-| bug, error, crash, broken, slow | oma-debug |
-| review, security, performance, accessibility | oma-qa |
-| UI design, design system, landing page, DESIGN.md | oma-design |
-| brainstorm, ideate, explore, idea | oma-brainstorm |
-| plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestration |
+| Запрошенный результат | Ответственный навык |
+|---|---|
+| API приложения, серверная аутентификация, логика сервисов и доступа к данным | oma-backend |
+| Схема, проектирование миграций, индексация, настройка запросов, эксплуатация баз данных | oma-db |
+| Веб-компоненты, страницы, формы, состояние клиента | oma-frontend |
+| Мобильные экраны, виджеты, интеграция с платформой | oma-mobile |
+| Границы системы, архитектурные компромиссы, ADR | oma-architecture |
+| Диагностика и исправление некорректного поведения | oma-debug |
+| Ревью корректности, безопасности, доступности, производительности | oma-qa |
+| Визуальная система, DESIGN.md, направление редизайна | oma-design |
+| Запрошенный поиск идей или исследование альтернатив | oma-brainstorm |
+| Требования, зависимости, критерии приёмки | oma-pm |
+| Запрошенное параллельное выполнение специалистами | oma-orchestration |
+| Запрошенная ручная координация нескольких агентов | oma-coordination |
+| Ветки Git, коммиты, слияния, история репозитория | oma-scm |
 
-Для сложных запросов, затрагивающих несколько областей, маршрутизация следует установленному порядку выполнения. Например, «Create a fullstack app» направляется к oma-pm (plan), затем к oma-backend + oma-frontend (parallel implementation), а потом к oma-qa (review).
+Для других областей хост выбирает навык по описаниям установленных навыков. У работы на несколько областей нет фиксированной цепочки: сначала решается неустоявшийся архитектурный или продуктовый вопрос, а работа над backend и клиентом может идти параллельно, как только их общий API-контракт пригоден к использованию.
 
 ---
 
@@ -239,7 +269,8 @@ HUD работает через `.claude/hooks/hud.ts`, используя во�
 - **Действенный ввод** (например, «plan the auth feature») → рабочий процесс загружается автоматически
 - **Информационный ввод** (например, «what is orchestrate?») → отфильтровывается, рабочий процесс не запускается
 - **Явный `/command`** → хук пропускает обнаружение, чтобы избежать дублирования
-- **Постоянные рабочие процессы** повторно внедряют контекст в каждое сообщение, пока вы не скажете «workflow done»
+- **Постоянные рабочие процессы** (`orchestrate`, `work`, `ultrawork`, `ralph`), найденные только по естественному языку, предлагаются, но не запускаются; постоянный режим включается, когда prompt содержит явное ключевое слово рабочего процесса (например, `ultrawork` или `ralph`)
+- **Активные постоянные рабочие процессы** повторно внедряют контекст в каждое сообщение, пока вы не скажете «workflow done»
 
 Каждое событие хука проходит через канонический ABI `oma hook run`: поставщик вызывает `oma-hook.sh --vendor <v> --event <nativeEvent>`, который передаёт событие встроенной цепочке обработчиков и выводит в stdout диалект поставщика (всегда завершается с кодом 0 и работает в режиме fail-open).
 

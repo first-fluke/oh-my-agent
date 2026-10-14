@@ -1,7 +1,7 @@
 ---
 title: "스킬 유용성 평가"
 sidebar_label: 스킬 평가
-description: oma skill eval용 평가 태스크 픽스처를 작성하는 방법, .agents/eval/ 디렉토리 규칙, 체커 종류, mock과 live 실행 모드를 다룹니다.
+description: oma skill eval용 평가 태스크 픽스처를 작성하는 방법, .agents/eval/ 디렉토리 규칙, 체커 종류, mock과 live 실행 모드, 자주 발생하는 오류의 해결 방법을 다룹니다.
 ---
 
 # 스킬 유용성 평가
@@ -12,7 +12,7 @@ description: oma skill eval용 평가 태스크 픽스처를 작성하는 방법
 
 ---
 
-## 동작 방식
+## 동작 방식 {#how-it-works}
 
 태스크 픽스처마다 두 갈래를 실행합니다.
 
@@ -21,7 +21,7 @@ description: oma skill eval용 평가 태스크 픽스처를 작성하는 방법
 
 각 갈래는 태스크의 체커가 채점합니다(0은 실패, 1은 통과). 주요 지표는 다음과 같습니다.
 
-```
+```text
 utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
@@ -29,11 +29,93 @@ utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 
 ---
 
+## 빠른 시작 {#a-minimal-working-fixture-set}
+
+판정을 내리려면 픽스처가 5개 필요합니다(`MIN_TASKS = 5`). 가상의 `oma-scholar` 스킬을 위한 최소 세트는 다음과 같습니다. 네 개는 기본 judge를 쓰고, `structured-output`은 결정론적인 `assert` 체커를 씁니다.
+
+```yaml
+# .agents/eval/oma-scholar/claims-only.yaml
+id: claims-only
+skill: oma-scholar
+domain: research
+prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
+rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/entity-lookup.yaml
+id: entity-lookup
+skill: oma-scholar
+domain: research
+prompt: "Look up the entity knows:concept/attention-mechanism"
+rubric: "Does the answer return the entity name, description, and at least one related concept?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/partial-fetch.yaml
+id: partial-fetch
+skill: oma-scholar
+domain: research
+prompt: "Fetch only the methods section of knows:generated/reconvla/1.0.0"
+rubric: "Does the answer request only the methods section instead of the full paper?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/structured-output.yaml
+id: structured-output
+skill: oma-scholar
+domain: research
+prompt: "List the claims of knows:generated/reconvla/1.0.0 as JSON objects with id and statement fields"
+checker:
+  type: assert
+  expect_contains:
+    - "statement"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/edge-empty-response.yaml
+id: edge-empty-response
+skill: oma-scholar
+domain: research
+prompt: "Fetch the claims of knows:generated/does-not-exist/0.0.0"
+rubric: "Does the answer report that no record exists instead of inventing claims?"
+weight: 1
+```
+
+그다음 실행합니다.
+
+```bash
+# Seed rollouts (local only — re-run after any SKILL.md edit)
+oma skill eval --skill oma-scholar --live --record --yes
+
+# Offline replay
+oma skill eval --skill oma-scholar --json
+```
+
+live 실행은 디스패치 전에 미리보기를 출력합니다. 이 다섯 픽스처라면 태스크마다 갈래 2개, judge 태스크마다 judge 호출 2개가 표시됩니다(벤더는 설정에 따라 달라집니다).
+
+```text
+Skill eval live run preview:
+  skill: oma-scholar
+  tasks: 5  trials: 1  spawns: 10 arm + 8 judge = 18 dispatches
+  vendor/model: claude
+  read-only: enforced (all spawns use readOnly: true)
+  record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
+```
+
+이어서 [보고서 읽기](#reading-the-report)에 설명된 대로 결과를 읽으세요. 이 섹션 다음부터는 레퍼런스 자료입니다.
+
+---
+
 ## `.agents/eval/<skill>/` 규칙
 
 태스크 픽스처는 `.agents/eval/<skill>/` 아래에 둡니다. 이 경로는 `.agents/` 안이지만 스킬 디렉토리 밖이므로, `oma update`가 사용자가 작성한 평가를 덮어쓰지 않고 살려 둡니다.
 
-```
+```text
 .agents/eval/
 └── oma-scholar/
     ├── claims-only.yaml        ← task fixture
@@ -49,7 +131,7 @@ utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 
 ---
 
-## 태스크 픽스처 스키마
+## 태스크 픽스처 스키마 {#task-fixture-schema}
 
 각 픽스처는 다음 필드를 갖는 YAML 파일입니다.
 
@@ -74,11 +156,11 @@ weight: 1
 | `weight` | 예 | 가중 평균에 쓰는 상대 가중치(태스크 중요도가 다르지 않다면 `1`을 쓰세요) |
 | `group` | 아니오 | 계열 라벨입니다. `oma skill optimize`는 같은 group을 공유하는 픽스처를 같은 train/validation/final-test 분할에 두므로, 거의 중복인 픽스처가 분할 경계를 넘어 새지 않습니다. |
 
-### 체커 종류
+### 체커 종류 {#checker-types}
 
-#### judge (기본값)
+#### judge (기본값) {#judge-default}
 
-LLM이 루브릭을 기준으로 갈래 출력을 평가해 PASS 또는 FAIL을 반환합니다. `checker`를 생략하거나 `checker.type`이 없으면 이 방식이 기본값입니다.
+LLM [judge](../getting-started/glossary.md#judge)가 루브릭을 기준으로 갈래 출력을 평가해 PASS 또는 FAIL을 반환합니다. `checker`를 생략하거나 `checker.type`이 없으면 이 방식이 기본값입니다.
 
 ```yaml
 checker:
@@ -103,7 +185,7 @@ weight: 1
 
 갈래 자체가 통째로 빠진 경우에는 체커 종류와 무관하게 같은 규칙이 적용됩니다. 0점으로 채점하지 않고 태스크를 제외합니다. 데이터가 없는 것은 틀린 답이 아니며, 0점으로 매기면 두 갈래가 모두 0이 되어 향상이 0인 결과가 `decision: "fail"`로 읽히기 때문입니다. 제외 때문에 채점 개수가 `MIN_TASKS` 아래로 내려가면 `coverage: "insufficient"`로 드러납니다.
 
-#### assert (선택)
+#### assert (선택) {#assert-opt-in}
 
 결정론적 부분 문자열 검사입니다. 기대 출력이 정확히 정해진 계약·형식·도구 호출 검증에 쓰세요.
 
@@ -117,7 +199,7 @@ checker:
 
 `expect_contains`의 모든 문자열이 갈래 출력에 있으면 통과합니다.
 
-#### regex (선택)
+#### regex (선택) {#regex-opt-in}
 
 결정론적 정규식 매칭입니다. 정확한 문자열이 아니라 패턴이 필요할 때 쓰세요.
 
@@ -131,7 +213,7 @@ checker:
 
 ---
 
-## 실행 모드
+## 실행 모드 {#execution-modes}
 
 ### --mock (기본값)
 
@@ -156,7 +238,7 @@ oma skill eval --skill oma-scholar
 
 ### --live
 
-`oma agent spawn --read-only`로 실제 에이전트 갈래를 스폰합니다. 태스크의 각 갈래는 자기만의 임시 워크스페이스에서 돌기 때문에, 한 갈래가 만든 파일이 다른 갈래에 영향을 주지 않습니다. 프로세스 실패, API 오류 엔벨로프(envelope), judge 실패가 생기면 짝지은 비교 전체를 채점과 기록에서 제외하며, 부분 출력은 진단용 데이터입니다.
+각 갈래를 `eval` 에이전트 역할의 CLI로 읽기 전용 디스패치합니다([평가 및 최적화기 모델 선택](#choose-the-evaluation-and-optimizer-models) 참고). 태스크의 각 갈래는 자기만의 임시 워크스페이스에서 돌기 때문에, 한 갈래가 만든 파일이 다른 갈래에 영향을 주지 않습니다. 프로세스 실패, API 오류 엔벨로프(envelope), judge 실패가 생기면 짝지은 비교 전체를 채점과 기록에서 제외하며, 부분 출력은 진단용 데이터입니다.
 
 디스패치 전에 태스크 수, 갈래 디스패치 수, judge 디스패치 수, 해석된 벤더를 나열한 비용 미리보기를 출력합니다. `y`로 확인하거나 `--yes`로 건너뛰세요.
 
@@ -169,7 +251,7 @@ oma skill eval --skill oma-scholar
 | `--trials <n>` | 모든 갈래를 `n`회(1~10) 반복합니다. 먼저 시작하는 갈래는 시행마다 번갈아 바뀌고, 태스크별 점수는 평균을 내며, 보고서에 태스크 내 분산이 추가됩니다. `--neg-transfer`의 이웃 태스크는 한 번만 실행합니다. |
 | `--neg-transfer` | 다른 스킬에 속한 동일 도메인 태스크에서 후보 스킬을 측정합니다. 기본값은 꺼짐입니다. |
 | `--routing` | 활성화(activation)를 측정합니다. 태스크마다 모든 스킬의 `description`을 근거로 설치된 스킬 중 어느 것이 로딩될지 묻습니다. live는 직접 측정하고(태스크당 디스패치 1회 추가), mock은 같은 카탈로그에서 만든 라우팅 기록을 재생합니다. |
-| `--require-coverage` | scoreable paired task가 5개 미만으로 남거나 요청한 음의 전이 검사가 불완전하면 non-zero로 종료합니다. |
+| `--require-coverage` | 채점 가능한 짝지은 태스크가 5개 미만으로 남거나 요청한 음의 전이 검사가 불완전하면 0이 아닌 코드로 종료합니다. |
 
 ```bash
 # Preview and confirm
@@ -179,7 +261,19 @@ oma skill eval --skill oma-scholar --live
 oma skill eval --skill oma-scholar --live --yes
 ```
 
-#### 음의 전이 측정
+#### 평가 및 최적화기 모델 선택 {#choose-the-evaluation-and-optimizer-models}
+
+태스크 갈래, judge, 라우팅 프로브는 `eval` 에이전트 역할을 해석합니다. `.agents/oma-config.yaml`에서 고정하세요.
+
+```yaml
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+```
+
+`oma skill optimize`의 Maintainer와 Proposer는 `opt-agent` 역할을 해석합니다. `agents:` 맵에는 `opt` 키가 없으므로(설정 스키마가 알 수 없는 키를 거부합니다) 이 역할은 항상 활성 `model_preset`을 따르며, `model_preset: auto`에서는 `default_cli`를 따릅니다. `agents.eval`이 없으면 `eval` 역할도 같은 폴백을 사용합니다. 승격에는 `isolation: enforced`가 필요하며, 이는 보호된 Claude 프로필과 네이티브 Codex 프로필만 제공합니다([스킬 격리](#skill-isolation-keeping-the-baseline-honest) 참고).
+
+#### 음의 전이 측정 {#negative-transfer-measurement}
 
 `--neg-transfer`를 쓰면 선택한 이웃 태스크마다 두 번 실행합니다. 먼저 후보 없이 새 baseline을 돌리고, 이어서 후보 본문을 그대로 주입한 treatment를 돌립니다. 이웃은 같은 `domain`에 속한 다른 스킬의 태스크입니다. 같은 도메인을 공유하는 다른 스킬이 없으면 대신 범위가 제한된 교차 도메인 샘플(최대 6개 태스크, 다른 스킬들에 고르게 분산)을 쓰며, 이때 `negativeTransferCoverage.scope`는 `cross-domain`을 보고합니다. 이는 주입된 본문의 간섭이 자기 도메인 안에만 머무르지 않고, 도메인이 하나뿐이라는 이유로 검사가 불가능해져서는 안 되기 때문입니다. 두 갈래는 같은 평가자와 서로 분리된 빈 워크스페이스를 씁니다. 델타는 treatment 점수에서 baseline 점수를 뺀 값이며, 음수는 후보가 그 이웃 태스크를 해쳤다는 뜻입니다. live 미리보기에는 이런 추가 갈래와 judge 디스패치도 포함됩니다. `--max-tasks`는 이웃 샘플에도 상한을 두며, 태스크가 빠지면 경고합니다.
 
@@ -202,7 +296,7 @@ oma skill eval --skill oma-scholar --live --yes
 | `unavailable` | HOME 기반 벤더입니다(예: `~/.gemini/antigravity-cli/skills`를 읽는 **antigravity**). 깨끗한 cwd로는 감출 수 없습니다. 경고를 출력하고 결과를 신뢰도 낮음으로 표시합니다. |
 | n/a | mock 모드입니다. 라이브 디스패치가 없습니다. |
 
-다른 런타임 프로필은 탐색용 평가에 계속 쓸 수 있지만, `best-effort`와 `unavailable` 결과는 라이브 최적화의 승격을 막습니다. 평가 벤더는 프로젝트의 모델 설정을 따릅니다. Codex는 `app-server` 위에서 네이티브 CLI 로그인과 설정된 모델/제공자를 사용하며, 조용히 Claude나 API 키 클라이언트로 바꾸지 않습니다. 보호된 Codex 계약은 macOS/Linux에서 네이티브 파일 자격 증명 저장소와 기존 `auth.json`이 있는 CLI 0.154.x를 대상으로 합니다. 비공개 임시 설정 홈은 원본 설정/인증 파일을 참조하되 공유 부트스트랩 상태는 제외하며, 자격 증명은 복사하지 않고 네이티브 갱신은 원본 인증 파일을 사용합니다. 키링, 자동(auto), 임시(ephemeral) 자격 증명 저장소는 현재 지원하지 않습니다. 지원하지 않는 버전, 저장 방식, 계약 실패는 디스패치 오류가 됩니다.
+다른 런타임 프로필은 탐색용 평가에 계속 쓸 수 있지만, `best-effort`와 `unavailable` 결과는 라이브 최적화의 승격을 막습니다. 평가 벤더는 `eval` 에이전트 역할을 따릅니다. Codex는 `app-server` 위에서 네이티브 CLI 로그인과 설정된 모델/프로바이더를 사용하며, 조용히 Claude나 API 키 클라이언트로 바꾸지 않습니다. 보호된 Codex 계약은 macOS/Linux에서 네이티브 파일 자격 증명 저장소와 기존 `auth.json`이 있는 CLI 0.154.x를 대상으로 합니다. 비공개 임시 설정 홈은 원본 설정/인증 파일을 참조하되 공유 부트스트랩 상태는 제외하며, 자격 증명은 복사하지 않고 네이티브 갱신은 원본 인증 파일을 사용합니다. 키링, 자동(auto), 임시(ephemeral) 자격 증명 저장소는 현재 지원하지 않습니다. 지원하지 않는 버전, 저장 방식, 계약 실패는 디스패치 오류가 됩니다.
 
 judge는 새 임시 디렉토리에서 최적화 메모리를 끈 채 실행됩니다. Claude와 Codex judge는 평가 갈래와 같은 보호된 텍스트 전송 경로를 씁니다. judge 벤더 설정은 그 실행 동안 고정됩니다.
 
@@ -236,17 +330,17 @@ baseline 갈래는 스킬을 빼고 돌리므로 SKILL.md만 고쳐서는 그 �
 oma skill eval --skill oma-scholar --live --record --yes
 ```
 
-성공한 live 실행의 보고서에는 baseline 및 treatment 수, `utilityLift`, `coverage: "ok"`, 격리 상태, pass/warn/fail 판정이 포함됩니다. 이후 mock 실행은 태스크 프롬프트와 treatment skill 본문이 여전히 일치하는 기록만 재사용합니다.
+성공한 live 실행의 보고서에는 baseline 및 treatment 수, `utilityLift`, `coverage: "ok"`, 격리 상태, pass/warn/fail 판정이 포함됩니다. 이후 mock 실행은 태스크 프롬프트와 treatment 스킬 본문이 여전히 일치하는 기록만 재사용합니다.
 
 ---
 
-### 동시성과 디스패치 타임아웃
+### 동시성과 디스패치 타임아웃 {#concurrency-and-dispatch-timeouts}
 
 live 갈래, 이웃 갈래, judge 호출, 라우팅 프로브는 `OMA_SKILL_EVAL_CONCURRENCY`가 정하는 크기(기본 4, 최대 16)의 서브프로세스 풀에서 실행됩니다. 한 시행의 두 갈래는 항상 서로 분리된 빈 디렉토리에서 함께 실행되고, 먼저 시작하는 갈래는 시행마다 번갈아 바뀌며, 결과는 태스크 순서를 유지하므로 기록과 점수는 직렬 실행과 같습니다. 직렬로 실행하려면 이 변수를 1로 설정하세요.
 
-각 live 갈래와 judge 호출은 `OMA_SKILL_EVAL_TIMEOUT_MS`(기본 180000)가 지나면 강제 종료됩니다. 한 번의 느린 응답은 답이 아니라 전송 실패이므로, 시간 초과된 디스패치는 태스크를 보고서에서 제외하기 전에 한 번 재시도합니다. 두 번째 시간 초과는 그 태스크를 제외하며(최적화에서는 해당 분할의 커버리지가 실패합니다), 정당하게 긴 답이 필요한 픽스처에는 한도를 높이세요.
+각 live 갈래와 judge 호출은 `OMA_SKILL_EVAL_TIMEOUT_MS`(기본 180000)가 지나면 강제 종료됩니다. 한 번의 느린 응답은 답이 아니라 전송 실패이므로, 시간 초과된 디스패치는 태스크를 보고서에서 제외하기 전에 한 번 재시도합니다. 두 번째 시간 초과는 그 태스크를 제외합니다(최적화에서는 해당 분할의 커버리지가 실패합니다). 정당하게 긴 답이 필요한 픽스처에는 한도를 높이세요.
 
-## 라우팅: 스킬이 선택되는가?
+## 라우팅: 스킬이 선택되는가? {#routing-does-the-skill-get-selected}
 
 `utilityLift`는 본문이 로딩된 뒤 무엇을 하는지를 측정합니다. 스킬을 로딩할지는 벤더가 프론트매터의 `description`을 보고 정하므로, 더 나은 본문이라도 한 번도 선택되지 않으면 개선이 아닙니다. `--routing`은 태스크 프롬프트를 설치된 모든 스킬의 이름과 설명과 함께 같은 보호된 모델에 보내, 로딩할 스킬 하나(또는 `NONE`)를 고르게 합니다. 대상 스킬이 선택되면 활성화(activation), 다른 스킬이 선택되면 오라우팅(misroute), `NONE`이면 미선택(miss)입니다.
 
@@ -254,66 +348,33 @@ live 갈래, 이웃 갈래, judge 호출, 라우팅 프로브는 `OMA_SKILL_EVAL
   routing: measured  activated 5/6 (83%)  misrouted 1 [oma-docs×1]  none 0  unparsed 0  catalog 33
 ```
 
-JSON 보고서에는 `status`, 개수, `activationRate`, `misroutedTo`, `catalogSize`를 담은 `routing`이 들어가며, `findings`의 각 항목에는 `routing: target | other | none | unparsed`가 들어 있습니다. `--record`를 쓰면 선택 결과가 카탈로그 해시와 함께 `_rollouts/<hash>.routing.json`에 저장됩니다. 이후의 `--mock --routing`은 모든 description과 태스크가 그대로일 때만 이를 재생하며, 그렇지 않으면 `status`가 `stale`이 되고 아무것도 집계하지 않습니다.
+JSON 보고서에는 `status`, 개수, `activationRate`, `misroutedTo`, `catalogSize`를 담은 `routing`이 들어가며, 각 finding에는 `routing: target | other | none | unparsed`가 들어 있습니다. `--record`를 쓰면 선택 결과가 카탈로그 해시와 함께 `_rollouts/<hash>.routing.json`에 저장됩니다. 이후의 `--mock --routing`은 모든 description과 태스크가 그대로일 때만 이를 재생하며, 그렇지 않으면 `status`가 `stale`이 되고 아무것도 집계하지 않습니다.
 
 이 측정은 보호된 전송 경로에서 description을 카탈로그와 견주어 평가합니다. 보호된 프로필이 의도적으로 끄는 벤더 자체의 탐색 메커니즘은 사용하지 않으며, 로딩된 스킬의 절차가 지켜지는지도 측정하지 않습니다. 그것은 여전히 유용성 측정의 몫입니다.
 
-## 최소한으로 동작하는 픽스처 세트
-
-판정을 내리려면 픽스처가 5개 필요합니다(`MIN_TASKS = 5`). 가상의 `oma-scholar` 스킬을 위한 최소 세트는 다음과 같습니다.
-
-```yaml
-# .agents/eval/oma-scholar/claims-only.yaml
-id: claims-only
-skill: oma-scholar
-domain: research
-prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
-rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
-weight: 1
-```
-
-```yaml
-# .agents/eval/oma-scholar/entity-lookup.yaml
-id: entity-lookup
-skill: oma-scholar
-domain: research
-prompt: "Look up the entity knows:concept/attention-mechanism"
-rubric: "Does the answer return the entity name, description, and at least one related concept?"
-weight: 1
-```
-
-같은 식으로 최소 세 개를 더 만드세요. 그다음 실행합니다.
-
-```bash
-# Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skill eval --skill oma-scholar --live --record --yes
-
-# Offline replay
-oma skill eval --skill oma-scholar --json
-```
-
 ---
 
-## 보고서 읽기
+## 보고서 읽기 {#reading-the-report}
 
 **텍스트 출력:**
 
-```
+```text
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
   isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
+  repeatability: single-trial  trials: 1  lift 95% CI: [9.2%, 48.0%]  within-task stddev: n/a
   [PASS]
-  Skill shows positive utility lift >= 5%.
+  Skill shows positive utility lift ≥ 5%.
 
   Per-task findings:
     claims-only: baseline=0 treatment=1 lift=+1.000
     entity-lookup: baseline=1 treatment=1 lift=+0.000
     ...
 
-  Thresholds: fail <= 0%, warn < 5%
+  Thresholds: fail ≤ 0%, warn < 5%
 ```
 
 **JSON 출력** (`--json`):
@@ -355,7 +416,7 @@ Skill utility eval  (skill: oma-scholar)
 
 ---
 
-## CI 통합
+## CI 통합 {#ci-integration}
 
 ```bash
 # Fail the build if the skill regresses or has insufficient coverage
@@ -368,7 +429,7 @@ oma skill eval --skill oma-scholar --json --require-coverage
 
 ---
 
-## live와 mock 선택하기
+## live와 mock 선택하기 {#choosing-live-or-mock}
 
 열린 형태의 태스크에서 실제 유용성을 측정할 때는 judge 체커와 함께 `--live`를 사용합니다. `--mock`은 이전에 기록한 judge 판정을 오프라인으로 재생하거나 결정론적 `assert`/`regex` 계약 검사를 실행할 때 사용합니다.
 
@@ -380,6 +441,26 @@ mock 실행이 커버리지 부족을 보고하면 폐기되었거나 누락된 
 
 ---
 
-## 스킬과 함께 평가 태스크 배포하기
+## 스킬과 함께 평가 태스크 배포하기 {#shipping-eval-tasks-with-a-skill}
 
 스킬은 `.agents/eval/<skill>/`에 픽스처를 두는 방식으로 평가 태스크 세트를 함께 배포할 수 있습니다. 이 파일은 스킬 디렉토리 밖에 있는 사용자 작성 파일이므로 `oma update`에도 살아남습니다. `oma-skill-creation`로 새 스킬을 만들 때 대응하는 `eval/` 픽스처 세트를 함께 추가하면, 이후 작성자가 스킬의 효과를 검증할 수단을 갖게 됩니다. 스킬 작성 워크플로우는 `.agents/skills/oma-skill-creation/SKILL.md`를 참고하세요.
+
+---
+
+## 문제 해결 {#troubleshooting}
+
+아래 메시지는 `oma skill eval`과 `oma skill optimize`가 출력합니다.
+
+| 메시지 또는 증상 | 원인 | 해결 |
+|---|---|---|
+| `[oma skill opt] no eval coverage for skill "<id>": found N task fixture(s), need at least 5.` | `.agents/eval/<id>/`에 유효한 픽스처가 5개 미만이거나, `--skill`을 생략함(이때는 `_all`을 읽음). | 픽스처를 추가하고([빠른 시작](#a-minimal-working-fixture-set) 참고) `--skill <id>`를 전달하세요. |
+| `[oma skill eval] skipped <file>: does not match TaskFixture schema` | 픽스처에 `id`, `skill`, `domain`, `prompt`, 또는 숫자 `weight`가 없음. | 빠진 필드를 추가하세요(예: `weight: 1`). |
+| `[oma skill eval] discarded N stale rollout entries from _rollouts/<file>: <reason>. Re-run --live --record to refresh.` | 기록 이후 스킬 본문, 프롬프트, 체커, 평가자 프로토콜이 바뀜. | `--live --record`를 다시 실행하세요. |
+| `INSUFFICIENT COVERAGE — fewer than 5 tasks found.` | 건너뛰기와 제외 후 채점된 태스크가 5개 미만임. | 그 위에 출력된 경고를 해결한 뒤 다시 기록하세요. |
+| `[oma skill eval] isolation: <status> for vendor <vendor> — baseline may be contaminated; result is low-confidence.` | `eval` 역할이 보호된 프로필이 없는 벤더로 해석됨. | `agents.eval`을 Claude 또는 Codex 모델로 설정하세요([평가 및 최적화기 모델 선택](#choose-the-evaluation-and-optimizer-models) 참고). |
+| `[oma skill eval] dispatch timed out after <N>s.` | 갈래 또는 judge 호출이 `OMA_SKILL_EVAL_TIMEOUT_MS`를 초과함. | 긴 답이 필요한 픽스처라면 `OMA_SKILL_EVAL_TIMEOUT_MS`를 높이세요. |
+| `Choose either --live or --mock` | 두 플래그를 모두 전달함. | 둘 중 하나만 전달하세요. |
+| `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize`를 `--live` 없이 실행함. | `--live`를 추가하거나, 오프라인 검사에는 `oma skill eval --mock`을 쓰세요. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | `opt-agent` 역할이 보호된 텍스트 전송 경로가 없는 벤더로 해석됨. | Claude 또는 Codex로 해석되는 `model_preset`(또는 `model_preset: auto`에서는 `default_cli`)을 선택하세요. |
+| `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (아무것도 쓰지 않음) | `--yes` 없이 `oma-*` 스킬에 `--apply`를 실행함. | dry-run diff를 보관해 업스트림에 반영하거나, `--yes`로 다시 실행하세요. |
+| `[oma skill opt] an active project overlay owns this skill; ...` | [프로젝트 하네스 진화](./harness-evolution.md)가 이 스킬에 오버레이를 설치함. | 먼저 `oma skill rollback --skill <id>`를 실행하거나, 진화 사이클이 변경을 적용하도록 두세요. |

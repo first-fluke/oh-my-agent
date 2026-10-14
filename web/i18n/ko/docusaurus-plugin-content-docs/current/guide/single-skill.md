@@ -49,7 +49,7 @@ description: oh-my-agent의 단일 도메인 태스크에 대한 상세 가이�
 
 ## 사전검증 체크리스트
 
-프롬프트를 작성하기 전에 다음 네 가지 질문에 답해 보세요 ([프롬프트 구조](/docs/core-concepts/skills)의 네 가지 요소에 해당합니다):
+프롬프트를 작성하기 전에 다음 네 가지 질문에 답해 보세요.
 
 | 요소 | 질문 | 중요한 이유 |
 |------|------|------------|
@@ -111,10 +111,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **난이도 평가:** 중간 (2-3개 파일, 유효성 검사 UX에 대한 일부 설계 결정)
 3. **로드된 리소스:**
    - `execution-protocol.md` (항상)
-   - `snippets.md` (폼 + Zod 패턴)
-   - 스킬이 제공하는 기존 컴포넌트 패턴과 `snippets.md`
+   - `snippets.md` (폼과 Zod 패턴, 스킬이 제공하는 경우 기존 컴포넌트 패턴 포함)
 4. **실행 계약(활성화된 경우)이 `CHARTER_CHECK`를 출력:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -165,7 +164,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - 가용할 때 `stack/tech-stack.md` 또는 변형별 tech-stack 레퍼런스
 <!-- oma-docs:ignore-end -->
 5. **실행 계약(활성화된 경우)이 `CHARTER_CHECK`를 출력:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -204,7 +203,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md` (화면 템플릿, Riverpod 프로바이더 패턴)
    - `screen-template.dart`
 4. **실행 계약(활성화된 경우)이 `CHARTER_CHECK`를 출력:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -247,7 +246,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`
    - `anti-patterns.md` (최적화 시 검토)
 4. **실행 계약(활성화된 경우)이 `CHARTER_CHECK`를 출력:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -324,10 +323,20 @@ Add deliverables: data standards table, glossary, migration script.
 | 에이전트의 CHARTER_CHECK가 실제로는 필요한 항목을 "Must NOT do"로 분류함 | 범위가 하나의 도메인을 초과 | 먼저 `/plan`으로 전체 기능을 계획 |
 | 수정이 다른 레이어의 3개 이상 파일로 연쇄됨 | 하나의 수정이 여러 도메인에 영향 | 더 넓은 범위의 `/debug` 사용 또는 `/work` |
 | 에이전트가 API 컨트랙트 불일치를 발견 | 프론트엔드/백엔드 불일치 | `/plan`으로 컨트랙트를 정의한 후 두 에이전트를 재생성 |
-| 통합 지점에서 품질 게이트 실패 | 컴포넌트가 제대로 연결되지 않음 | QA 리뷰 단계 추가: `oma agent spawn qa "Review integration"` |
+| 통합 지점에서 품질 게이트 실패 | 컴포넌트가 제대로 연결되지 않음 | `/review`를 실행하거나 QA 단계 추가: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | 태스크가 "컴포넌트 하나"에서 "컴포넌트 세 개 + 새 라우트 + API"로 성장 | 실행 중 범위 확대 | 중단, `/plan`으로 분해 후 `/orchestrate` |
 | 에이전트가 HIGH 명확화로 차단됨 | 요구사항이 근본적으로 모호함 | 에이전트의 질문에 답변하거나 `/brainstorm`으로 접근 방식을 명확히 |
 
 ### 일반 원칙
 
 같은 에이전트에 수정 사항을 덧붙여가며 두 번 넘게 재생성하고 있다면, 해당 태스크는 멀티 도메인일 가능성이 높으며 `/work`나 최소한 `/plan` 단계로 적절히 분해해야 합니다.
+
+---
+
+## 다음 단계
+
+- 태스크가 여러 도메인에 걸칠 때: [멀티 에이전트 프로젝트](./multi-agent-project.md)
+- 태스크가 버그일 때: [버그 수정](./bug-fixing.md)
+- 실행을 감사하거나 재개할 때: [결과 확인과 재개](./agent-results-and-resume.md)
+- 무언가 실패했을 때: [문제 해결](./troubleshooting.md)
+- 스킬과 워크플로우 중 하나를 고를 때: [워크플로우](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

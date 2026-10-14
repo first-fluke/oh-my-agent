@@ -16,7 +16,7 @@ Installer nhóm các tích hợp theo capability. Vendor hook gồm Antigravity,
 
 ---
 
-## Phương pháp 1: cài một dòng
+## Phương pháp 1: cài một dòng {#method-1-one-liner-install}
 
 ```bash
 # macOS / Linux
@@ -36,11 +36,11 @@ Hai bootstrap script hoạt động giống nhau:
 5. Thiết lập lớp tích hợp runtime (hook, symlink, setting cho vendor được phát hiện)
 6. Cấu hình code-intelligence và memory MCP server
 
-Bootstrap vẫn tiếp tục sau lỗi dependency tùy chọn và báo các lệnh cần chạy tiếp. Sau khi installer hoàn tất, hãy chạy `oma doctor`.
+Bootstrap vẫn tiếp tục sau lỗi dependency tùy chọn và báo các lệnh cần chạy tiếp. AgentMemory là semantic-memory provider mặc định: `oma install` và `oma update` sẽ thất bại nếu bước cài đặt, khởi động hoặc health check của nó thất bại. Chọn `providers.semantic_memory: none` hoặc `honcho`, hoặc đặt `OMA_NO_AGENTMEMORY=1`, sẽ bỏ qua bước chuẩn bị AgentMemory tự động. Sau khi installer hoàn tất, hãy chạy `oma doctor`.
 
 ---
 
-## Phương pháp 2: cài thủ công qua bunx
+## Phương pháp 2: cài thủ công qua bunx {#method-2-manual-install-via-bunx}
 
 ```bash
 bunx oh-my-agent@latest
@@ -48,24 +48,46 @@ bunx oh-my-agent@latest
 
 Lệnh này khởi chạy installer tương tác mà không bootstrap dependency. Bạn cần cài bun trước.
 
-Installer yêu cầu bạn chọn preset skill. Các preset hiện tại được định nghĩa trong `cli/constants/skill-data.ts`:
+Installer yêu cầu bạn chọn một [preset skill](./glossary.md#skill-preset). Các preset hiện tại được định nghĩa trong `PRESETS` tại `cli/constants/skill-data.ts`:
 
-### Preset
+### Preset {#presets}
 
-| Preset | Skill bao gồm |
-|--------|----------------|
-| **all** | Tất cả 33 gói skill hiện tại |
-| **fullstack** | Architecture, brainstorming, design, frontend, backend, mobile, database, PM, QA, debugging, SCM, Terraform và developer workflow |
-| **fullstack-web** | Triển khai web fullstack, architecture, design, PM, QA, debugging, SCM và developer workflow |
-| **fullstack-mobile** | Triển khai fullstack tập trung vào mobile, architecture, design, PM, QA, debugging, SCM và developer workflow |
-| **frontend** | Architecture, brainstorming, design, frontend, PM, QA, debugging và SCM |
-| **backend** | Architecture, brainstorming, backend, database, PM, QA, debugging, SCM và developer workflow |
-| **mobile** | Architecture, brainstorming, mobile, PM, QA, debugging và SCM |
-| **devops** | Architecture, brainstorming, Terraform, developer workflow, observability, PM, QA, debugging và SCM |
-| **research** | Scholar, market, PDF, HWP, academic writing, search, translation và SCM |
-| **content** | Design, image, voice, academic writing, translation và SCM |
+Chọn preset khớp với công việc mà repository cần. Tên skill bên dưới đã bỏ tiền tố `oma-`.
+
+| Preset | Chọn khi project là | Skill bao gồm | Số lượng |
+|--------|-------------------------------|-----------------|-------|
+| **all** | Bất kỳ project nào, hoặc khi bạn muốn mọi workflow hoạt động ngay | Mọi skill trong registry | 33 |
+| **fullstack** | Client web và mobile có backend và hạ tầng Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
+| **fullstack-web** | Web frontend có backend và database | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **fullstack-mobile** | Ứng dụng mobile có backend và database | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **frontend** | Chỉ web UI | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
+| **backend** | API hoặc service có database | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
+| **mobile** | Chỉ ứng dụng mobile | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
+| **devops** | Công việc hạ tầng, CI/CD và observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **research** | Paper, nghiên cứu thị trường và chuyển đổi PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
+| **content** | Design asset, hình ảnh, giọng nói và nội dung viết | design, image, voice, academic-writing, translation, scm | 6 |
 
 Preset là các bundle skill, không tạo một định nghĩa subagent cho mỗi skill. Preset `all` mở rộng từ registry skill đang chạy, nên danh sách có thể tăng cùng repository. Preset domain chỉ bao gồm skill cần cho trọng tâm đó.
+
+### Workflow cần skill nằm ngoài preset {#workflows-that-need-skills-outside-a-preset}
+
+Mọi preset đều cài tất cả định nghĩa workflow và agent, nhưng một số workflow đọc skill mà preset domain không cài. Hãy xem bảng này trước khi chọn một preset domain:
+
+| Workflow | Đọc skill | Preset bao gồm skill đó |
+|----------|-------------|-------------------------|
+| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
+| `/ultrawork`, `/ralph` | oma-coordination; agent `refactor-engineer` mà nó spawn dùng oma-refactor | all |
+| `/docs` | oma-docs | all |
+| `/explain` | oma-explanation | all |
+| `/security` | oma-security | all |
+| `/recap` | oma-recap | all |
+| `/video` | oma-video | all |
+| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
+| `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
+| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/scm` | oma-scm | mọi preset |
+
+Để thêm skill còn thiếu sau này, chạy `oma doctor` từ project root, chấp nhận lời nhắc về skill bị thiếu và chọn **Select individually**.
 
 Tài nguyên dùng chung (`_shared/`) luôn được cài đặt bất kể preset. Chúng gồm định tuyến cốt lõi, tải context, cấu trúc prompt, phát hiện vendor, protocol thực thi và protocol memory.
 
@@ -73,43 +95,49 @@ Tài nguyên dùng chung (`_shared/`) luôn được cài đặt bất kể pres
 
 Sau khi cài đặt, project của bạn sẽ có:
 
-```
+```text
 .agents/
-├── oma-config.yaml # Your preferences
-├── oma-config.cue # Optional schema-backed configuration
+├── oma-config.yaml          # Your preferences
+├── oma-config.cue           # Optional schema-backed configuration
+├── mcp.json                 # MCP server configuration
 ├── skills/
-│ ├── _shared/ # Shared resources (always installed)
-│ │ ├── core/ # skill-routing, context-loading, etc.
-│ │ ├── runtime/ # memory-protocol, execution-protocols/
-│ │ └── conditional/ # quality-score, experiment-ledger, etc.
-│ ├── oma-frontend/ # Per preset
-│ │ ├── SKILL.md
-│ │ └── resources/
-│ └── ... # Other selected skills
-├── workflows/ # Current workflow definitions (21 in this checkout)
-├── agents/ # Subagent definitions
-├── mcp.json # MCP server configuration
-├── results/ # Plans and agent results (populated by workflows)
-└── state/ # Persistent workflow and coordination state
+│   ├── _shared/             # Shared resources (always installed)
+│   │   ├── core/            # skill-routing, context-loading, etc.
+│   │   ├── runtime/         # memory-protocol, execution-protocols/
+│   │   └── conditional/     # quality-score, experiment-ledger, etc.
+│   ├── oma-frontend/        # Per preset
+│   │   ├── SKILL.md
+│   │   └── resources/
+│   └── ...                  # Other selected skills
+├── workflows/               # Workflow definitions (all 21, every preset)
+├── agents/                  # Subagent definitions (all 12, every preset)
+├── hooks/                   # Hook sources (core/, variants/)
+├── rules/                   # Project rules
+├── config/                  # Shipped defaults (defaults.yaml)
+├── results/                 # Plans and agent results (populated by workflows)
+└── state/                   # Persistent workflow and coordination state
+    └── memories/            # Runtime coordination state
 
 .claude/
-├── settings.json # Vendor settings, when Claude Code is selected
-├── hooks/oma-hook.sh # Generated wrapper for the in-process hook chain
-├── hooks/hud.ts # Optional [OMA] statusline indicator
-├── skills/ # Symlinks → .agents/skills/
-└── agents/ # Generated native subagent files, when supported
-
-.agents/state/memories/
-└── ... # Runtime coordination state
+├── settings.json            # Vendor settings, when Claude Code is selected
+├── hooks/
+│   ├── oma-hook.sh          # Generated wrapper for the in-process hook chain
+│   └── hud.ts               # Optional [OMA] statusline indicator
+├── skills/                  # Symlinks → .agents/skills/
+└── agents/                  # Generated native subagent files, when supported
 ```
 
 Installer chỉ tạo thư mục vendor cho host bạn chọn. Nguồn hook vẫn nằm trong `.agents/hooks/core/`; tệp vendor được tạo là output tích hợp. Serena cũng có thể dùng thư mục legacy `.serena/memories/` trong project cũ.
 
 ---
 
-## Phương pháp 3: cài global
+## Phương pháp 3: cài global {#method-3-global-install}
 
 Để dùng ở cấp CLI (dashboard, spawn agent, chẩn đoán), cài oh-my-agent global:
+
+:::note
+Phần này cài lệnh `oma`. Nó không giống `oma install --global`, lệnh cài skill, workflow và rule vào OMA global home (`~/.oma/.agents/`) cho mọi project. Xem [Cài đặt global](../guide/global-install.md).
+:::
 
 ### Homebrew (macOS/Linux)
 
@@ -131,7 +159,7 @@ Cách này cài lệnh `oma` global, cho phép truy cập mọi lệnh CLI từ 
 oma doctor # Health check
 oma doctor --profile # Show resolved model/CLI per dispatch role
 oma dashboard terminal # Terminal monitoring
-oma dashboard web # Web dashboard at http://localhost:9847
+oma dashboard web # Web dashboard at http://127.0.0.1:9847
 oma agent spawn # Spawn agents from terminal
 oma agent parallel # Parallel agent execution
 oma agent status # Check agent status
@@ -141,17 +169,16 @@ oma skill audit # Audit skill routing descriptions
 oma stats get # Session statistics
 oma recap # Conversation history recap across AI tools
 oma link # Regenerate vendor-native files from `.agents/` SSOT
-oma update # Update oh-my-agent
+oma update # Update installed skills from the registry
 oma verify agent <agent-type> # Verify agent output (build/test/scope/secrets)
 oma describe # Introspect CLI commands as JSON
-oma bridge # MCP stdio ↔ Streamable HTTP bridge
+oma bridge # Proxy MCP stdio to a shared per-project Serena server
 oma memory init # Initialize coordination memory schema
 oma auth status # Check CLI auth status
-oma search # Mechanical search primitives (alias: `oma s`)
-oma image # Multi-vendor AI image generation (alias: `oma img`)
+oma search # Mechanical search primitives
+oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma export # Export skills for external IDEs (e.g. cursor)
 oma star # Star the repository
 ```
 
@@ -255,7 +282,7 @@ agents:
 | Field | Kiểu | Bắt buộc | Mô tả |
 |-------|------|----------|-------------|
 | `language` | string | Có | Mã ngôn ngữ phản hồi. Hỗ trợ en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Có | Key preset đang hoạt động. `auto` theo runtime hiện tại; key cố định gồm `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` và `mixed`. Key preset tùy chỉnh cũng hợp lệ. Xem [Per-Agent Models](../guide/per-agent-models.md). |
+| `model_preset` | string | Có | Key [model preset](./glossary.md#model-preset) đang hoạt động. `auto` theo runtime hiện tại; key cố định gồm `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` và `mixed`. Key preset tùy chỉnh cũng hợp lệ. Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md). |
 | `default_cli` | string | Không | CLI fallback cho `oma agent spawn` khi setting agent tường minh và preset đã chọn không resolve được vendor. |
 | `free` | map | Không | Setting gateway FreeLLMAPI khi `model_preset: free`; giữ API key trong biến môi trường. |
 | `providers` | map | Không | Provider capability: `code_intelligence` (`serena` hoặc `gortex`), `code_intelligence_guard` (`block` hoặc `off`), `docs` (`context7`), `web` (`native` hoặc `brave`) và `semantic_memory` (`agentmemory`, `honcho` hoặc `none`). |
@@ -265,7 +292,7 @@ agents:
 | `telemetry` | boolean | Không | Cho phép telemetry của vendor. Mặc định: `false`. |
 | `agents` | map | Không | Override từng agent một phần (object-only `AgentSpec`). Merge nông lên default của preset. |
 | `models` | map | Không | Slug model do người dùng định nghĩa, trước đây nằm trong `models.yaml`. |
-| `custom_presets` | map | Không | Preset do người dùng định nghĩa. Hỗ trợ `extends:` để kế thừa một phần từ preset dựng sẵn. |
+| `custom_presets` | map | Không | Preset do người dùng định nghĩa. Hỗ trợ `extends:` để kế thừa một phần từ preset có sẵn. |
 | `mcp.devtools_browsers` | list | Không | Browser cho DevTools MCP: `aside`, `chrome` hoặc `firefox`. Bỏ trống để giữ setup hiện có; `[]` tắt rõ ràng browser server. |
 | `serena.mode` | string | Không | `bridge` chia sẻ Serena server theo project và là mặc định; `stdio` chọn một process cho mỗi session. |
 | `serena.auto_update` | boolean | Không | `oma update` có nâng cấp Serena hay không. Mặc định: `true`. |
@@ -274,7 +301,7 @@ agents:
 
 ### Resolve vendor
 
-Khi spawn agent, CLI resolve setting theo thứ tự: `agents.<id>`, `model_preset` đã chọn, fallback orchestrator của preset, rồi `default_cli`. Với `model_preset: auto`, cấu hình native của runtime hiện tại cung cấp model; runtime không biết sẽ fallback về `default_cli`. Xem [Per-Agent Models](../guide/per-agent-models.md) để biết ma trận đầy đủ.
+Khi spawn agent, CLI resolve setting theo thứ tự: `agents.<id>`, `model_preset` đã chọn, fallback orchestrator của preset, rồi `default_cli`. Với `model_preset: auto`, cấu hình native của runtime hiện tại cung cấp model; runtime không biết sẽ fallback về `default_cli`. Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md) để biết ma trận đầy đủ.
 
 ---
 
@@ -303,7 +330,7 @@ Nếu có vấn đề, `oma doctor` chỉ ra mục thiếu hoặc không hợp l
 oma doctor --profile
 ```
 
-Xem [Per-Agent Models](../guide/per-agent-models.md) để biết ma trận đầy đủ và chi tiết migration.
+Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md) để biết ma trận đầy đủ và chi tiết migration.
 
 ---
 
@@ -333,14 +360,14 @@ Installer phát hiện cài đặt hiện có và đề nghị cập nhật, đ�
 
 Mở project bằng IDE hoặc CLI có AI đã chọn và bắt đầu dùng oh-my-agent. Định tuyến skill phụ thuộc vào host; hook đã bật có thể phát hiện workflow. Hãy thử:
 
-```
+```text
 "Build a login form with email validation using Tailwind CSS"
 ```
 
 Hoặc dùng lệnh workflow:
 
-```
+```text
 /plan authentication feature with JWT and refresh tokens
 ```
 
-Xem [Usage Guide](/docs/guide/usage) để biết ví dụ chi tiết, hoặc tìm hiểu [Agents](/docs/core-concepts/agents) để biết mỗi specialist làm gì.
+Xem [Hướng dẫn sử dụng](/docs/guide/usage) để biết ví dụ chi tiết, hoặc tìm hiểu [Các agent](/docs/core-concepts/agents) để biết mỗi specialist làm gì. Nếu bước cài đặt hoặc một hook không hoạt động như mong đợi, xem [Khắc phục sự cố](../guide/troubleshooting.md).

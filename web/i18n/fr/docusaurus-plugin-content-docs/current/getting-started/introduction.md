@@ -8,11 +8,11 @@ description: Vue d'ensemble complète d'oh-my-agent, le framework d'orchestratio
 
 oh-my-agent est un framework d'orchestration multi-agents pour les IDE et outils CLI propulsés par l'IA. Au lieu de dépendre d'un seul assistant IA pour tout, oh-my-agent répartit le travail entre 33 paquets de compétences et 13 rôles canoniques de dispatch. Douze fichiers de définition de sous-agents versionnés fournissent des personas réutilisables pour l'implémentation, la revue, la planification, le débogage, la documentation, la recherche et l'infrastructure. `research-explorer.md` correspond au rôle canonique `explore` ; `orchestrator` est un rôle de coordination du runtime sans fichier de définition distinct.
 
-OMA effectue des vérifications mécaniques lorsque vous les appelez ou que vous sélectionnez un workflow qui les inclut. `oma verify agent <agent-type>` exécute les vérifications du type d'agent sélectionné ; `/ralph` ajoute une vérification fondée sur les artefacts et une boucle de jugement ; les hooks Stop des fournisseurs activés peuvent maintenir un workflow ouvert pendant l'exécution de ses vérifications configurées. Le simple chargement d'une compétence ne constitue pas une acceptation, et un prompt ordinaire n'exécute pas automatiquement toutes les portes du workflow. Appuyez-vous sur les critères d'acceptation du workflow et sur les fichiers produits pour décider de ce qui est terminé.
+OMA effectue des vérifications mécaniques lorsque vous les appelez ou que vous sélectionnez un workflow qui les inclut. `oma verify agent <agent-type>` exécute les vérifications du type d'agent sélectionné ; `/ralph` ajoute une vérification fondée sur les artefacts et une boucle de [juge](./glossary.md#judge) ; les hooks Stop des fournisseurs activés (la [porte d'arrêt](./glossary.md#stop-gate)) peuvent maintenir un workflow ouvert pendant l'exécution de ses vérifications configurées. Le simple chargement d'une compétence ne constitue pas une acceptation, et un prompt ordinaire n'exécute pas automatiquement toutes les portes du workflow. Appuyez-vous sur les critères d'acceptation du workflow et sur les fichiers produits pour décider de ce qui est terminé.
 
 L'ensemble du système réside dans un répertoire `.agents/` portable au sein de votre projet. Passez de Claude Code à Codex CLI, Antigravity CLI ou IDE, Cursor, OpenCode et d'autres outils pris en charge : la configuration de vos agents reste avec votre code.
 
-Si vous découvrez OMA, commencez par le [Démarrage rapide](./quick-start.md), puis lisez les [Valeurs par défaut importantes](./important-defaults.md). L'installation crée la SSOT et les intégrations des fournisseurs ; la première vérification utile est `oma doctor`, et la première tâche utile est une petite modification dans un seul domaine. Passez à `/work` ou `/orchestrate` uniquement lorsque la tâche nécessite une coordination.
+Si vous découvrez OMA, commencez par le [Démarrage rapide](./quick-start.md), puis lisez les [Valeurs par défaut importantes](./important-defaults.md). L'installation crée la [SSOT](./glossary.md#ssot) et les intégrations des fournisseurs ; la première vérification utile est `oma doctor`, et la première tâche utile est une petite modification dans un seul domaine. Passez à `/work` ou `/orchestrate` uniquement lorsque la tâche nécessite une coordination.
 
 ---
 
@@ -30,7 +30,7 @@ oh-my-agent résout ce problème par la spécialisation :
 
 2. **Les agents peuvent s'exécuter en parallèle.** Pendant qu'un agent backend construit une API, un agent frontend peut travailler dans son propre workspace. L'orchestrateur coordonne le travail à l'aide de fichiers durables propres à l'exécution et de reçus.
 
-3. **Les indications de qualité sont intégrées.** Les compétences contiennent des checklists de domaine, des guides de résolution d'erreurs et des règles de charter. Le charter preflight délimite le périmètre avant l'écriture du code ; la revue QA s'exécute lorsque le workflow sélectionné l'inclut ou lorsque vous la demandez.
+3. **Les indications de qualité sont intégrées.** Les compétences contiennent des checklists de domaine, des guides de résolution d'erreurs et des règles de [charter](./glossary.md#charter). Le charter preflight délimite le périmètre avant l'écriture du code ; la revue QA s'exécute lorsque le workflow sélectionné l'inclut ou lorsque vous la demandez.
 
 ---
 
@@ -38,9 +38,9 @@ oh-my-agent résout ce problème par la spécialisation :
 
 Le catalogue sépare trois éléments qu'il est facile de confondre :
 
-- **Les compétences** sont les 33 paquets de connaissances de domaine sous `.agents/skills/*/SKILL.md`. Elles partent d'une intention en langage naturel et chargent progressivement leurs ressources.
-- **Les définitions d'agents** sont les 12 fichiers sous `.agents/agents/`. Elles fournissent des personas de sous-agents propres aux fournisseurs et référencent une ou plusieurs compétences.
-- **Les workflows** sont les 21 définitions de processus sous `.agents/workflows/`. Quatre sont persistants (`orchestrate`, `work`, `ultrawork` et `ralph`) ; les autres produisent un rapport sans maintenir un mode persistant actif.
+- **Les [compétences](./glossary.md#skill)** sont les 33 paquets de connaissances de domaine sous `.agents/skills/*/SKILL.md`. Elles partent d'une intention en langage naturel et chargent progressivement leurs ressources.
+- **Les [définitions d'agents](./glossary.md#agent-definition)** sont les 12 fichiers sous `.agents/agents/`. Elles fournissent des personas de sous-agents propres aux fournisseurs et référencent une ou plusieurs compétences.
+- **Les [workflows](./glossary.md#workflow)** sont les 21 définitions de processus sous `.agents/workflows/`. Quatre sont [persistants](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` et `ralph`) ; les autres produisent un rapport sans maintenir un mode persistant actif.
 
 Les sections suivantes conservent le catalogue détaillé des compétences. Lorsqu'un nom ou une description change, le frontmatter du fichier `SKILL.md` actif fait foi.
 
@@ -81,7 +81,7 @@ Les 12 fichiers de définition versionnés couvrent les 13 rôles du runtime gr�
 
 | Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-qa** | Assurance qualité | Audit de sécurité (OWASP Top 10), analyse de performance, accessibilité (WCAG 2.2 AA) et revue de qualité du code. Sévérités : CRITICAL/HIGH/MEDIUM/LOW avec fichier:ligne et code de remédiation. Prend en charge les caractéristiques de qualité ISO/IEC 25010 et l'alignement des tests ISO/IEC 29119. Ressources : `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
+| **oma-qa** | Assurance qualité | Audit de sécurité (OWASP Top 10), analyse de performance, accessibilité (WCAG 2.2 AA) et revue de qualité du code. Sévérités : CRITICAL/HIGH/MEDIUM/LOW avec fichier:ligne et code de remédiation. Prend en charge les caractéristiques de qualité ISO/IEC 25010 et l'alignement des tests ISO/IEC 29119. Ressources : `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `verify-ship-protocol.md`, `error-playbook.md`. |
 | **oma-debug** | Diagnostic et correction des bugs | Méthodologie « reproduire d'abord ». Analyse de la cause profonde, corrections minimales, tests de régression obligatoires et recherche de motifs similaires. Utilise les outils d'intelligence du code (Gortex ou Serena) pour suivre les symboles. Ressources : `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md` et `error-playbook.md`. |
 | **oma-refactor** | Refactoring qui préserve le comportement | Restructuration incrémentale sûre, protégée par des tests de caractérisation. Ciblage des points chauds (complexité × fréquence de modification), sélection des code smells et SATD, retour selon la méthode Mikado en cas d'échec, expand-contract pour les changements avec état, commits limités au refactoring (aucun changement de comportement mélangé). Transformations d'abord pilotées par le moteur (renommage IDE, jscodeshift/ast-grep), métriques avec `uvx lizard` / `uvx radon`. Le critère de réussite est la lisibilité ; les métriques restent des indicateurs indirects. |
 
@@ -114,7 +114,7 @@ Les 12 fichiers de définition versionnés couvrent les 13 rôles du runtime gr�
 
 | Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-deepsec** | Pilote du scanner de vulnérabilités piloté par des agents | Pilote de bout en bout le scanner `deepsec` de Vercel (`bunx deepsec`) : exécute `init` pour préparer l'espace `.deepsec/`, écrit un fichier `INFO.md` propre au projet, exécute les passes `scan`/`process`/`triage`/`revalidate`/`export` en tenant compte des coûts, protège les PR avec `process --diff` et un pattern CI à deux jobs, et écrit des matchers personnalisés. Calibre avec `--limit 50 --concurrency 5` avant un grand passage et donne une prévision en dollars avant tout travail payant ; le coût dépend de la taille du dépôt et du backend. Backends d'agents : `codex` (gpt-5.5) ou `claude` (claude-opus-4-8). |
+| **oma-security** | Analyse et validation de sécurité | Analyse le code source applicatif, les compétences d'agents et les composants MCP ; exécute des tests d'intrusion sur des déploiements web de test délimités, valide les constats et configure les gates d'analyse. Moteurs par défaut selon la cible : Deepsec pour le code source applicatif ou les diffs, Cisco Skill Scanner pour les paquets de compétences d'agents, Cisco MCP Scanner pour les composants MCP et ARTEX pour les déploiements web de test. Utilisez `oma-qa` pour les revues de qualité générales et les compétences de domaine pour la remédiation. |
 
 ### Documentation et méta-outillage {#documentation-and-meta-tooling}
 
@@ -159,19 +159,21 @@ La quantité de contexte économisée dépend des compétences et de la tâche :
 
 Tout ce dont oh-my-agent a besoin réside dans le répertoire `.agents/` :
 
-```
+```text
 .agents/
-├── oma-config.yaml         # Shared preferences and provider/model settings
-├── oma-config.cue          # Optional schema-backed configuration
-├── skills/                 # 33 skill directories + _shared resources
-│   ├── _shared/            # Core resources used by all agents
-│   └── oma-{skill}/         # Per-skill SKILL.md + resources/variants
-├── workflows/              # 21 workflow definitions
-├── agents/                 # 12 subagent definitions
-├── results/plan-{sessionId}.json               # Generated plan output
-├── state/                  # Active workflow state files
-├── results/                # Agent result files
-└── mcp.json                # MCP server configuration
+├── oma-config.yaml   # Shared preferences and provider/model settings
+├── oma-config.cue    # Optional schema-backed configuration
+├── mcp.json          # MCP server configuration
+├── skills/           # 33 skill directories + _shared resources
+│   ├── _shared/      # Core resources used by all agents
+│   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
+├── workflows/        # 21 workflow definitions
+├── agents/           # 12 subagent definitions
+├── hooks/            # Hook sources, including core/triggers.json
+├── rules/            # Project rules projected into vendor files
+├── config/           # Shipped defaults (defaults.yaml)
+├── results/          # Plans (plan-{sessionId}.json) and agent results
+└── state/            # Active workflow state files
 ```
 
 Le répertoire `.claude/` existe uniquement comme couche d'intégration IDE. Il contient des symlinks qui pointent vers `.agents/`, ainsi que des hooks pour la détection des mots-clés et la barre d'état HUD. Le répertoire `.agents/state/memories/` conserve l'état de coordination du runtime pendant les sessions d'orchestration (les projets plus anciens utilisent en repli le chemin historique `.serena/memories/`).
@@ -196,29 +198,57 @@ oh-my-agent fonctionne avec les IDE et CLI sélectionnés grâce à leur chargem
 | **OpenCode** | Compétences + pont de plugin in-process + sous-agents générés (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 | **Kimi Code CLI** | Hooks + compétences dans `~/.kimi-code/` (écriture dans HOME soumise au consentement ; lit aussi nativement les compétences SSOT `.agents/skills/`) ; serveur MCP Serena limité au projet | `oma agent spawn --vendor kimi` |
 
-Le lancement des agents s'adapte au fournisseur sélectionné grâce à la détection du fournisseur et à la configuration active. Les runtimes d'un même fournisseur peuvent utiliser des sous-agents natifs ; les agents inter-fournisseurs lancés par la CLI lisent également cette source de vérité. Voir [Exécution parallèle](../core-concepts/parallel-execution.md) pour les règles de dispatch.
+Le lancement des agents s'adapte au fournisseur sélectionné grâce à la détection du fournisseur et à la configuration active. Les runtimes d'un même fournisseur peuvent utiliser des sous-agents natifs ; le travail inter-fournisseurs se rabat sur `oma agent spawn`. Voir [Exécution parallèle](../core-concepts/parallel-execution.md) pour les règles de dispatch.
+
+---
+
+## Cheminement d'une requête {#how-a-request-flows}
+
+Le diagramme montre ce qui se passe entre un prompt et un résultat terminé. Le hook de mots-clés, l'injecteur de compétences et le hook Stop ne s'exécutent que sur les hôtes dont l'intégration des hooks est activée. Le hook de mots-clés et l'injecteur de compétences s'exécutent l'un après l'autre sur le même prompt, et leurs contextes injectés sont combinés.
+
+```mermaid
+flowchart TD
+  P["User prompt"] --> SL{"Starts with a /command?"}
+  SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
+  SL -->|no| KD["Keyword hook checks triggers.json"]
+  KD -->|"workflow keyword (explicit keyword for persistent ones)"| CTX["Inject OMA WORKFLOW context"]
+  CTX --> WF
+  KD -->|"persistent workflow, natural language only"| SUG["Workflow suggested; agent decides"]
+  SUG -.->|"if the request calls for it"| WF
+  KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
+  SI --> HOST["Host picks skills by name and description"]
+  WF --> SK["Skills: .agents/skills/*/SKILL.md"]
+  HOST --> SK
+  WF --> AG["Agents: native subagent or oma agent spawn"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
+```
+
+Sources : `.agents/hooks/core/keyword-detector.ts` (saut des commandes slash, correspondance des déclencheurs, suggestion persistante), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` et les fichiers de workflow sous `.agents/workflows/`. Tous les workflows n'ont pas toutes les portes : `/orchestrate` exécute le script de vérification, `/review` exécute la revue QA et `/ralph` ajoute le [juge](./glossary.md#judge).
 
 ---
 
 ## Système de routage des compétences {#skill-routing-system}
 
-Lorsque vous envoyez un prompt, oh-my-agent détermine quel agent le traite grâce à la carte de routage des compétences (`.agents/skills/_shared/core/skill-routing.md`) :
+L'hôte choisit une compétence à partir des noms et descriptions des compétences installées. La carte de routage d'OMA (`.agents/skills/_shared/core/skill-routing.md`) définit quelle compétence possède quel résultat ; routez selon le résultat demandé et ses dépendances, pas selon un simple mot-clé. Choisir une compétence ne démarre pas de workflow et n'autorise pas de délégation.
 
-| Mots-clés du domaine | Routé vers |
-|----------------------|-----------|
-| API, endpoint, REST, GraphQL, database, migration | oma-backend |
-| auth, JWT, login, register, password | oma-backend |
-| UI, component, page, form, screen (web) | oma-frontend |
-| style, Tailwind, responsive, CSS | oma-frontend |
-| mobile, iOS, Android, Flutter, React Native, Swift, SwiftUI, app | oma-mobile |
-| bug, error, crash, broken, slow | oma-debug |
-| review, security, performance, accessibility | oma-qa |
-| UI design, design system, landing page, DESIGN.md | oma-design |
-| brainstorm, ideate, explore, idea | oma-brainstorm |
-| plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestration |
+| Résultat demandé | Compétence responsable |
+|---|---|
+| API applicative, authentification serveur, logique de service et d'accès aux données | oma-backend |
+| Schéma, conception de migrations, indexation, optimisation de requêtes, opérations de base de données | oma-db |
+| Composants web, pages, formulaires, état client | oma-frontend |
+| Écrans mobiles, widgets, intégration plateforme | oma-mobile |
+| Frontières système, compromis d'architecture, ADR | oma-architecture |
+| Diagnostiquer et corriger un comportement incorrect | oma-debug |
+| Revue de l'exactitude, de la sécurité, de l'accessibilité et des performances | oma-qa |
+| Système visuel, DESIGN.md, direction de refonte | oma-design |
+| Idéation demandée ou exploration d'alternatives | oma-brainstorm |
+| Exigences, dépendances, critères d'acceptation | oma-pm |
+| Exécution parallèle de spécialistes demandée | oma-orchestration |
+| Coordination multi-agents manuelle demandée | oma-coordination |
+| Branches Git, commits, merges, historique du dépôt | oma-scm |
 
-Pour les demandes complexes qui couvrent plusieurs domaines, le routage suit des ordres d'exécution établis. Par exemple, « Create a fullstack app » est routé vers : oma-pm (planification), puis oma-backend + oma-frontend (implémentation en parallèle), puis oma-qa (revue).
+Pour les autres domaines, l'hôte choisit parmi les descriptions des compétences installées. Le travail multi-domaines n'a pas de chaîne fixe : une décision d'architecture ou de produit non tranchée est résolue en premier, puis le travail backend et client peut avancer en parallèle dès que leur contrat d'API commun est utilisable.
 
 ---
 
@@ -240,13 +270,16 @@ Vous n'avez pas besoin de saisir `/command` pour déclencher un workflow. Le sys
 - **Saisie actionnable** (par exemple « plan the auth feature ») → charge automatiquement le workflow
 - **Saisie informationnelle** (par exemple « what is orchestrate? ») → filtrée, aucun workflow déclenché
 - **`/command` explicite** → le hook ignore la détection pour éviter les doublons
-- **Workflows persistants** → le contexte est réinjecté à chaque message jusqu'à ce que vous disiez « workflow done »
+- **Workflows persistants** (`orchestrate`, `work`, `ultrawork`, `ralph`) détectés uniquement à partir du langage naturel → suggérés, pas démarrés ; le mode persistant s'active lorsque le prompt utilise le mot-clé explicite du workflow (par exemple `ultrawork` ou `ralph`)
+- **Workflows persistants actifs** → le contexte est réinjecté à chaque message jusqu'à ce que vous disiez « workflow done »
+
+Chaque événement de hook passe par l'ABI canonique `oma hook run` : le fournisseur déclenche `oma-hook.sh --vendor <v> --event <nativeEvent>`, qui route l'événement vers la chaîne de handlers in-process et écrit le dialecte propre au fournisseur sur stdout (toujours avec le code 0, en fail-open).
 
 ---
 
 ## Prise en charge multi-fournisseurs {#cross-vendor-support}
 
-oh-my-agent ne se limite pas à Claude Code. Chaque événement de hook passe par l'ABI canonique `oma hook run` : le fournisseur déclenche `oma-hook.sh --vendor <v> --event <nativeEvent>`, qui route l'événement vers la chaîne de handlers in-process et écrit le dialecte propre au fournisseur sur stdout (toujours avec le code 0, en fail-open). Les fournisseurs d'extension utilisent leur pont in-process :
+oh-my-agent ne se limite pas à Claude Code. Les fournisseurs compatibles avec les hooks partagent la même ABI `oma hook run`, tandis que les fournisseurs d'extension utilisent leur pont in-process :
 
 | Fournisseur | Livraison des hooks | Barre d'état |
 |----------|----------|----------|

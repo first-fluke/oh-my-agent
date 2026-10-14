@@ -39,7 +39,6 @@ jobs:
       - uses: first-fluke/oma-update-action@v1
 ```
 
-
 Đây là cấu hình tối thiểu. Khi component đã cài có thay đổi, action kết thúc với `updated=true`, output version và pull request. Khi không có file đổi, action kết thúc với `updated=false` và không có PR.
 
 ---
@@ -49,7 +48,7 @@ jobs:
 | Input | Kiểu | Bắt buộc | Mặc định | Mô tả |
 |:------|:-----|:---------|:--------|:-----------|
 | `mode` | string | Không | `"pr"` | Cách áp dụng thay đổi. `"pr"` tạo pull request. `"commit"` push trực tiếp vào base branch. |
-| `base-branch` | string | Không | `"main"` | Base branch cho PR ở mode `pr` hoặc branch đích cho direct commit ở mode `commit`. |
+| `base-branch` | string | Không | `"main"` | Base branch cho PR ở mode `pr` hoặc branch đích cho direct commit ở mode `commit`. Input này không thay đổi branch được checkout; hãy đặt `ref:` của `actions/checkout` thành cùng branch đó. |
 | `force` | string | Không | `"false"` | Truyền `--force` cho `oma update`. Khi `"true"`, ghi đè config user tùy chỉnh, gồm `oma-config.yaml`, `mcp.json` và thư mục `stack/`. Bình thường các file này được giữ. |
 | `pr-title` | string | Không | `"chore(deps): update oh-my-agent skills"` | Tiêu đề PR tùy chỉnh, chỉ dùng ở mode `pr`. |
 | `pr-labels` | string | Không | `"dependencies,automated"` | Label phân tách bằng comma thêm vào PR, chỉ dùng ở mode `pr`. |
@@ -73,7 +72,7 @@ jobs:
 
 ### Ví dụ 1: mode PR mặc định
 
-Thiết lập phổ biến nhất, tạo PR mỗi thứ Hai nếu có update:
+Thiết lập phổ biến nhất, tạo PR mỗi thứ Hai nếu có update.
 
 ```yaml
 name: Update oh-my-agent
@@ -102,7 +101,6 @@ jobs:
           echo "Updated to version ${{ steps.update.outputs.version }}"
           echo "PR: ${{ steps.update.outputs.pr-url }}"
 ```
-
 
 **Điều gì xảy ra:**
 - Checkout repository.
@@ -133,6 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: develop
           token: ${{ secrets.OH_MY_AGENT_PAT }}
 
       - uses: first-fluke/oma-update-action@v1
@@ -143,9 +142,8 @@ jobs:
           base-branch: develop
 ```
 
-
 **Điều gì xảy ra:**
-- Checkout branch `develop` bằng PAT.
+- Checkout branch `develop` bằng PAT. `ref: develop` là bắt buộc: `base-branch` chỉ đặt đích push, còn action push bất kỳ `HEAD` nào mà bước checkout tạo ra.
 - Chạy `oma update --ci`.
 - Nếu có thay đổi, cấu hình git là `github-actions[bot]` rồi commit trực tiếp vào `develop`.
 - PAT bảo đảm commit trigger mọi workflow lắng nghe push trên `develop`.
@@ -154,7 +152,7 @@ jobs:
 
 ### Ví dụ 3: thông báo có điều kiện
 
-Update kèm Slack notification khi version mới có sẵn:
+Update kèm Slack notification khi version mới có sẵn.
 
 ```yaml
 name: Update oh-my-agent
@@ -193,12 +191,11 @@ jobs:
         run: echo "Already up to date, no notification needed."
 ```
 
-
 **Pattern chính:** Dùng `steps.update.outputs.updated == 'true'` để chỉ chạy downstream step khi update thật sự xảy ra. Điều này tránh noise từ run “no changes”.
 
 ### Ví dụ 4: force mode với label tùy chỉnh
 
-Dùng cho project muốn reset toàn bộ config về default khi update:
+Dùng cho project muốn reset toàn bộ config về default khi update.
 
 ```yaml
 name: Update oh-my-agent (Force)
@@ -224,21 +221,30 @@ jobs:
           commit-message: "chore(deps): force-update oh-my-agent skills"
 ```
 
-
 **Cảnh báo:** Force mode ghi đè `oma-config.yaml`, `mcp.json` và thư mục `stack/`. Chỉ dùng khi muốn reset mọi tùy biến; update bình thường thì bỏ input `force`.
 
 ---
 
 ## Cách hoạt động bên trong
 
-Action là [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) được định nghĩa trong `action/action.yml`. Nó chạy 4 bước:
+Action là [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) được định nghĩa trong `action/action.yml`. Đầu tiên nó kiểm tra `mode` là `pr` hoặc `commit`, sau đó chạy các bước dưới đây và kết thúc bằng pull request hoặc direct commit:
+
+```mermaid
+flowchart TD
+  validate["Validate inputs: mode is pr or commit"] --> bun["Setup Bun"]
+  bun --> install["bun install -g oh-my-agent"]
+  install --> update["oma update --ci (plus --force when force is true)"]
+  update --> changes{"Changes in .agents/ or .claude/?"}
+  changes -->|no| noop(["updated=false"])
+  changes -->|"yes, mode: pr"| pr["peter-evans/create-pull-request@v8"]
+  changes -->|"yes, mode: commit"| commit["git add .agents/ .claude/, commit, push to base-branch"]
+```
 
 ### Bước 1: thiết lập Bun
 
 ```yaml
 - uses: oven-sh/setup-bun@v2
 ```
-
 
 Cài runtime Bun, cần để chạy CLI oh-my-agent.
 
@@ -248,19 +254,24 @@ Cài runtime Bun, cần để chạy CLI oh-my-agent.
 bun install -g oh-my-agent
 ```
 
-
 Cài CLI global từ npm registry, cung cấp command `oma`.
 
 ### Bước 3: chạy oma update
 
-```bash
-FLAGS="--ci"
-if [ "${{ inputs.force }}" = "true" ]; then
-  FLAGS="$FLAGS --force"
-fi
-oma update $FLAGS
+```yaml
+- name: Run oma update
+  shell: bash
+  env:
+    FORCE: ${{ inputs.force }}
+  run: |
+    FLAGS="--ci"
+    if [ "$FORCE" = "true" ]; then
+      FLAGS="$FLAGS --force"
+    fi
+    oma update $FLAGS
 ```
 
+Input được đưa vào script qua `env:` thay vì interpolation `${{ }}` bên trong `run:`, nhờ đó giá trị input không bị thực thi như shell code.
 
 Flag `--ci` chạy update ở non-interactive mode, bỏ prompt và in text thường thay spinner. Flag `--force` khi bật sẽ ghi đè config user đã tùy chỉnh.
 
@@ -273,7 +284,7 @@ Flag `--ci` chạy update ở non-interactive mode, bỏ prompt và in text thư
 5. Giữ file user tùy chỉnh, trừ khi có `--force`: `oma-config.yaml`, `mcp.json` và thư mục stack.
 6. Copy file mới lên thư mục `.agents/` hiện có.
 7. Khôi phục file đã giữ.
-8. Update adaptation của mọi vendor, gồm hook, setting và agent definition.
+8. Update adaptation (hook, setting, agent definition) cho các vendor trong danh sách `vendors:` của config (danh sách rỗng nghĩa là không vendor nào). Khi không có danh sách `vendors:`, chỉ update các vendor có thư mục project đã tồn tại.
 9. Refresh CLI symlink.
 
 Action gọi `oma update --ci` không có `--with-new-skills`. Lệnh này refresh skill set đã cài và báo skill mới; chạy `oma update --with-new-skills` có chủ ý khi project cần thêm skill mới trong update.
@@ -283,17 +294,27 @@ Action gọi `oma update --ci` không có `--with-new-skills`. Lệnh này refre
 ```bash
 if [ -n "$(git status --porcelain .agents/ .claude/ 2>/dev/null)" ]; then
   echo "updated=true" >> "$GITHUB_OUTPUT"
-  VERSION=$(jq -r '.version' .agents/skills/_version.json)
-  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  if [ -f ".agents/skills/_version.json" ]; then
+    VERSION=$(jq -r '.version' .agents/skills/_version.json)
+    echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  fi
 else
   echo "updated=false" >> "$GITHUB_OUTPUT"
 fi
 ```
 
-
-Kiểm tra `oma update` có thực sự đổi file trong `.agents/` hoặc `.claude/` không, rồi đặt output `updated` và `version` tương ứng.
+Kiểm tra `oma update` có thực sự đổi file trong `.agents/` hoặc `.claude/` không, rồi đặt output `updated` và `version` tương ứng. Thay đổi bên ngoài hai thư mục đó (ví dụ `.codex/` hoặc `AGENTS.md`) không đặt `updated=true`.
 
 Sau đó, tùy input `mode`:
 
 - **Mode `pr`:** Dùng `peter-evans/create-pull-request@v8` tạo PR trên branch `chore/update-oh-my-agent`. PR có version mới, link repository oh-my-agent và label đã cấu hình. Nếu branch đã tồn tại từ PR cũ chưa đóng, action cập nhật PR hiện có.
+
 - **Mode `commit`:** Cấu hình git là `github-actions[bot]`, stage `.agents/` và `.claude/`, commit bằng message đã cấu hình rồi push lên base branch.
+
+---
+
+## Xem thêm
+
+- [Global install](./global-install.md): `oma update --global` và các lưu ý CI cho cài đặt cấp user
+- [Configuration reference](./configuration-reference.md#update-and-ownership-rules): những config file mà `oma update` giữ nguyên
+- [Tích hợp vào project hiện có](./integration.md): các file mà `oma update` refresh trong project

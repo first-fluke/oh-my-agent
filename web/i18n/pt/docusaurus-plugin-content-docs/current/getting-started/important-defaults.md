@@ -12,12 +12,12 @@ Os padrões são escolhidos para tornar o primeiro projeto utilizável e manter 
 | Área | Padrão | Consequência | Substituição |
 |---|---|---|---|
 | Idioma das respostas | `en` | Respostas de agentes e workflows usam inglês, a menos que a configuração do projeto selecione outro idioma compatível. Uma instrução explícita de idioma do usuário ou da sessão ainda pode substituir o padrão onde o host/workflow oferecer suporte. | `language` em `.agents/oma-config.yaml` ou `.cue` |
-| Roteamento de modelos | `auto` | Usa a configuração nativa de agente do runtime atual. Runtimes desconhecidos recorrem a `default_cli` quando definido. | `model_preset`, `default_cli` ou `agents.<id>` |
-| Inteligência de código | `serena` | Uma instalação nova tenta instalar Serena e configura sua integração MCP. | `providers.code_intelligence: gortex` ou `serena` |
+| Roteamento de modelos ([preset de modelo](./glossary.md#model-preset)) | `auto` | Usa a configuração nativa de agente do runtime atual. Runtimes desconhecidos recorrem a `default_cli` quando definido. | `model_preset`, `default_cli` ou `agents.<id>` |
+| Inteligência de código ([provider de capacidade](./glossary.md#capability-provider)) | `serena` | Uma instalação nova tenta instalar Serena e configura sua integração MCP. | `providers.code_intelligence: gortex` ou `serena` |
 | Guard de busca de código | `block` | Enquanto um provider de inteligência de código estiver configurado, um hook PreToolUse nega `Grep`/`Glob` nativos e buscas recursivas no shell (`rg`, `grep -r`, `find -name`) e direciona o agente para as ferramentas do provider. Buscas restritas a exclusões confirmadas ou a caminhos fora do projeto são permitidas. O hook não divulga nenhuma forma de contornar a regra para o código-fonte do projeto. | `providers.code_intelligence_guard: off` |
-| Memória semântica | `agentmemory` | Agent Memory é selecionado para memória semântica quando disponível. | `providers.semantic_memory: honcho` ou `none` |
+| Memória semântica | `agentmemory` | A instalação e a atualização reutilizam um endpoint AgentMemory saudável ou instalam e iniciam o serviço local gerenciado e, em seguida, verificam a prontidão antes de concluir com sucesso. Endpoints personalizados explícitos são verificados sem substituição. | `providers.semantic_memory: honcho` ou `none`; `OMA_NO_AGENTMEMORY=1` pula a configuração do AgentMemory. |
 | Busca web | `native` | A busca usa o canal web nativo do runtime, a menos que um provider seja selecionado. | `providers.web` |
-| Provider de documentação | `context7` | A consulta de documentação usa Context7 quando uma skill solicita isso. | `providers.docs` |
+| Provider de documentação | `context7` | A consulta de documentação usa o provider Context7 quando uma skill solicita isso. | `providers.docs` |
 | Telemetria | desabilitada | O OMA escreve configurações de opt-out do vendor durante o link. | `telemetry: true` |
 | Atualização automática da CLI | habilitada | A CLI verifica atualizações, salvo se desabilitada. | `auto_update_cli: false` |
 | Formato de data | `ISO` | Datas usam formato ISO quando o projeto não define formato. | `date_format: US` ou `EU` |
@@ -31,7 +31,12 @@ Os nomes e padrões dos providers vêm dos loaders de runtime e dos prompts do i
 
 ## Precedência da configuração
 
-O OMA sobe a partir do diretório de trabalho atual em busca do diretório `.agents/` mais próximo. Ele lê `oma-config.cue` quando presente e recorre a `oma-config.yaml` se a avaliação do CUE compartilhado falhar. Um overlay local de projeto, `oma-config.local.cue` ou `oma-config.local.yaml`, é mesclado por cima; mantenha somente um overlay local. `OMA_MODEL_PRESET` pode substituir `model_preset` para um processo. Uma configuração local inválida interrompe o carregamento, em vez de selecionar outro valor silenciosamente.
+O OMA carrega os padrões globais de `$OMA_HOME/.agents/` (padrão `~/.oma/.agents/`)
+e, em seguida, sobrepõe a configuração compartilhada do `.agents/` de projeto mais próximo e seu arquivo local.
+Raízes de projeto ancestrais diferentes não são mescladas. Em qualquer um dos escopos,
+`oma-config.cue` tem preferência, com YAML como fallback; mantenha somente um overlay local
+(`oma-config.local.cue` ou `.yaml`). `OMA_MODEL_PRESET` substitui `model_preset`
+depois do carregamento dos arquivos. Uma configuração local inválida interrompe o carregamento.
 
 O roteamento de modelos tem dois casos especiais antes da ordem de presets fixos:
 
@@ -62,8 +67,8 @@ A configuração padrão de telemetria é opt-out. Definir `telemetry: true` rem
 | Arquivos do vendor estão desatualizados | `oma doctor` e `oma link --dry-run` | Execute `oma link <vendor>` depois de editar `.agents/`; mantenha o SSOT como fonte. |
 | Um modelo não é aceito | `oma doctor --profile` | Troque para `auto`, use um preset integrado ou defina um slug sob `models:`. |
 | Ferramentas Serena expiram | `oma doctor` e a seção do provider | Tente `serena.mode: stdio`; se o problema for pressão de memória, faça preview com `oma serena reap --dry-run`. |
-| Um workflow persistente não para | `.agents/state/*-state.json` | Diga `workflow done`; inspecione o arquivo de estado somente se o workflow não tiver feito a limpeza. |
+| Um [workflow persistente](./glossary.md#persistent-workflow) não para | `.agents/state/*-state.json` | Diga `workflow done`; inspecione o arquivo de estado somente se o workflow não tiver feito a limpeza. |
 | Um reaper agendado não faz nada | Seção Serena Reaper do `oma doctor` | Defina `serena_reaper.enabled: true` e execute `oma serena reaper enable`. |
 | A configuração local quebra a inicialização | Caminho do erro exibido por `oma doctor` | Corrija ou remova o overlay local; não crie overlays `.cue` e `.yaml` juntos. |
 
-Continue com [Instalação](./installation.md), [Modelos por agente](../guide/per-agent-models.md) ou [Semântica de configuração OMA](../guide/oma-config-semantics.md).
+Continue com [Instalação](./installation.md), [Modelos por agente](../guide/per-agent-models.md) ou [Semântica de configuração OMA](../guide/oma-config-semantics.md). Para problemas não listados aqui, consulte [Solução de problemas](../guide/troubleshooting.md).

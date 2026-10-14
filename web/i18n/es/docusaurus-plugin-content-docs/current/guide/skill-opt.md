@@ -18,11 +18,11 @@ La optimización mediante la CLI requiere actualmente `--live` y genera llamadas
 
 `oma skill optimize` no puede ejecutarse sin fixtures de tareas de evaluación. Requiere al menos **5 fixtures de tareas** (`MIN_TASKS = 5`) en `.agents/eval/<skill>/`. Si encuentra menos, el comando falla inmediatamente:
 
-```
+```text
 [oma skill opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
 ```
 
-Consulta la [guía de evaluación de utilidad de skills](/docs/guide/skill-eval) para la convención del directorio `.agents/eval/<skill>/`, el esquema de fixtures, los tipos de comprobador y cómo preparar rollouts para la reproducción simulada.
+Consulta la [guía de evaluación de utilidad de skills](./skill-eval.md) para la convención del directorio `.agents/eval/<skill>/`, el esquema de fixtures, los tipos de comprobador y cómo preparar rollouts para la reproducción simulada.
 
 La promoción también requiere un conjunto no vacío de tareas vecinas del mismo dominio que pertenezcan a otras skills. Cada puntuación de validación del candidato y la puntuación final del candidato deben medir las tareas vecinas de su división evaluada con el cuerpo exacto del candidato. La ausencia de vecinos o de grabaciones emparejadas completas no permite establecer que no haya transferencia negativa. La evaluación sin conexión solo puede reproducir grabaciones coincidentes del candidato; usa la optimización live para generar y evaluar candidatos nuevos.
 
@@ -31,6 +31,28 @@ La reproducción y el conocimiento acotado a la suite están ligados al contrato
 ---
 
 ## Cómo funciona
+
+El diagrama muestra una ejecución de optimización. Una evaluación incompleta o un presupuesto agotado también terminan antes el bucle de épocas.
+
+```mermaid
+flowchart TD
+  FX["5+ fixtures in .agents/eval/SKILL_ID/"] --> SP["Deterministic split by task ID<br/>train 60% / validation 20% / final-test 20%"]
+  SP --> BL["Score the original body on VALIDATION"]
+  BL --> TR["Epoch: score the best body on TRAIN"]
+  TR --> MT["Wiki Maintainer turns failures<br/>and successes into patterns"]
+  MT --> PR["Proposer emits up to<br/>--edits-per-epoch edits"]
+  PR --> GT["Per edit: validate, check --lr budget,<br/>re-score VALIDATION (with neighbors) and TRAIN"]
+  GT --> AC{"Best edit loses nothing on either split,<br/>gains on one, fully measured?"}
+  AC -->|yes| AE["Accept the edit, reset patience"]
+  AC -->|no| RJ["Record rejected or inconclusive edits,<br/>patience + 1"]
+  AE --> MORE{"Epochs left and<br/>patience below 2?"}
+  RJ --> MORE
+  MORE -->|yes| TR
+  MORE -->|no| FT["Runner-owned FINAL TEST<br/>candidate lift >= original lift"]
+  FT --> AP{"--apply, final test passed,<br/>promotion eligible?"}
+  AP -->|no| DR["Print report and diff,<br/>SKILL.md unchanged"]
+  AP -->|yes| WR["Back up, atomic write,<br/>record promotion lineage"]
+```
 
 Los fixtures se ordenan por ID de tarea y se dividen de forma determinista en conjuntos de **train**, **validación reservada** y **prueba final reservada al runner**. Con al menos cinco fixtures, las proporciones objetivo son 60/20/20 y cada partición contiene al menos una tarea. Por ejemplo, ocho fixtures producen cuatro tareas de train, una de validación y tres de prueba final tras el redondeo. Los fixtures que declaran el mismo `group` se asignan juntos, de modo que un hermano reformulado no pueda quedar en train mientras el original queda en la prueba final; con menos de tres grupos, la división vuelve a basarse en los ID de tarea y emite una advertencia. Las tareas de la prueba final proceden de este conjunto local de fixtures y se ocultan al Maintainer y al Proposer. Se rechazan los ID de tarea duplicados de la prueba final y el solapamiento con una división de desarrollo.
 
@@ -56,11 +78,11 @@ Los candidatos no medidos se registran como `inconclusive`, con motivos como `in
 
 ## Uso
 
-```
+```bash
 oma skill optimize --skill <id> --live
                [--dry-run | --apply]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes]
+               [--memory recall|none] [--yes]
                [--json] [--output <format>]
 ```
 
@@ -68,7 +90,7 @@ oma skill optimize --skill <id> --live
 
 | Flag | Valor predeterminado | Descripción |
 |:-----|:---------------------|:------------|
-| `--skill <id>` | `_all` | ID de la skill que se optimizará (nombre simple, sin separadores de ruta). |
+| `--skill <id>` | obligatorio | ID de la skill que se optimizará (nombre simple, sin separadores de ruta). Sin él, el comando lee `.agents/eval/_all/` y se detiene con `no eval coverage for skill "_all"`; no existe un modo para todas las skills. |
 | `--dry-run` | **sí (predeterminado)** | Propone ediciones e imprime el diff sin cambiar `SKILL.md`; la evidencia generada y los eventos de evolución se conservan igualmente. |
 | `--apply` | — | Escribe el candidato validado cuando pasan todos los gates de promoción, incluida la evidencia completa de prueba final y de transferencia negativa; hace una copia de seguridad del original antes de una escritura atómica. Una skill propiedad de OMA también requiere `--yes`. |
 | `--mock` | Predeterminado sin `--live` | La reproducción de propuestas en la CLI no está implementada, así que esta ruta se detiene antes de la evaluación. Usa `oma skill eval --mock` para la reproducción de evaluaciones sin conexión. |
@@ -76,6 +98,7 @@ oma skill optimize --skill <id> --live
 | `--max-epochs <n>` | `8` | Número máximo de épocas de optimización. |
 | `--edits-per-epoch <k>` | `4` | Número de ediciones candidatas que propone el LLM optimizador por época. |
 | `--lr <chars>` | `600` | Presupuesto textual de tasa de aprendizaje: cambio neto máximo de caracteres por edición aceptada. |
+| `--memory <mode>` | `recall` | `none` parte de un conocimiento de evolución vacío para una comparación con el mismo presupuesto (consulta [Ablación de memoria](#memory-ablation-and-long-run-statistics)). |
 | `--yes` | — | Omite la confirmación de la vista previa del coste live y reconoce el comportamiento de sobrescritura al aplicar una skill propiedad de OMA. |
 | `--json` | — | Produce JSON para CI/CD. |
 | `--output <format>` | `text` | Formato de salida (`text` o `json`). |
@@ -91,7 +114,7 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1
 
 Salida ilustrativa para ocho fixtures y un candidato que supera todos los gates de promoción:
 
-```
+```text
 [oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 1, test: 3), dry-run: true
 
 Skill opt  (skill: oma-scholar)
@@ -120,8 +143,8 @@ El diff muestra lo que escribiría el optimizador. `SKILL.md` no cambia, mientra
 Cuando estés conforme con el diff propuesto, vuelve a ejecutarlo con `--apply`:
 
 ```bash
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Apply accepted edits to a user-authored skill (backs up the original first)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 ### El procedimiento como artefacto
@@ -140,13 +163,27 @@ Los prompts del optimizador y del maintainer son el procedimiento de mejora. Se 
 
 La respuesta del optimizador se lee con tolerancia solo en cuanto al formato: se ignoran las vallas de código y las líneas en blanco, pero cualquier línea de contenido que no sea una línea `EDIT:` válida (o un `NO_ACTION` aislado) es un `parse-error`, y ahora el diagnóstico incluye la primera línea infractora para poder rastrear el fallo.
 
-### Ablación de memoria y estadísticas a largo plazo
+### Ablación de memoria y estadísticas a largo plazo {#memory-ablation-and-long-run-statistics}
 
 `--memory none` inicia una ejecución sin conocimiento previo (sin patrones recuperados ni historial de gates) y aun así la registra. Comparar ejecuciones con `--memory recall` (valor predeterminado) y con `--memory none` con el mismo presupuesto es la prueba de si el conocimiento persistente ayuda; afirmar que el bucle aprende de la experiencia requiere esa comparación, no la mera presencia de una memoria.
 
 `oma skill evolution-stats --skill <id>` agrega todas las ejecuciones registradas de una skill a partir de `.agents/results/skill-evolution/<id>/*.jsonl`: ejecuciones por estado, propuestas por resultado de gate y la tasa de aceptación, mejoras verificadas (prueba final superada y promoción elegible), aplicaciones y reversiones, mejora final media, llamadas de modelo en las ejecuciones con medición y llamadas por mejora verificada (el coste del proceso y no el de una ejecución), y las mismas cifras desglosadas por modo de memoria y por hash de procedimiento. El informe de metaoptimización muestra las llamadas medias por ejecución interna para el procedimiento actual y para cada candidato, de modo que un procedimiento que obtiene más ganancia gastando más se vea como tal.
 
-### Metaoptimización: el procedimiento como candidato
+### Metaoptimización: el procedimiento como candidato {#meta-optimization-the-procedure-as-the-candidate}
+
+| Flag | Valor predeterminado | Descripción |
+|:-----|:---------------------|:------------|
+| `--target <part>` | `optimizer` | Parte del procedimiento que se optimizará: `optimizer` o `maintainer`. |
+| `--skill <ids...>` | — | Skills reservadas con las que se puntúa el procedimiento candidato (separadas por espacios). |
+| `--anchor <ids...>` | `anchors` de la constitución | Skills que nunca se usan para la selección; se informan antes y después para detectar desviaciones. |
+| `--repeats <n>` | `3` | Ejecuciones internas por skill y procedimiento. |
+| `--candidates <n>` | `2` | Procedimientos candidatos que se propondrán. |
+| `--max-epochs <n>` | `1` | Épocas de las ejecuciones internas, iguales para todos los brazos. |
+| `--edits-per-epoch <k>` | `4` | Ediciones por época de las ejecuciones internas, iguales para todos los brazos. |
+| `--live` | — | Obligatorio: las ejecuciones internas llaman a modelos reales. |
+| `--apply` | — | Escribe el archivo del procedimiento ganador con su linaje. |
+| `--memory <mode>` | `none` | Modo de memoria de las ejecuciones internas: `recall` o `none`. |
+| `--yes` | — | Omite la confirmación del coste. |
 
 `oma skill meta-optimize --target optimizer --skill <a> <b> ... --live` trata el prompt del optimizador (o del maintainer) como el objeto bajo prueba. Ejecuta el bucle interno (`oma skill optimize --dry-run`) en cada skill reservada indicada, `--repeats` veces, con el procedimiento actual; pide a un proposer hasta `--candidates` ediciones pequeñas de la plantilla; vuelve a ejecutar el bucle interno con cada candidato con el mismo presupuesto de `--max-epochs` y `--edits-per-epoch`; y compara cada candidato con el procedimiento actual por pares (skill, repetición) según la suma de las ganancias en la mejora de entrenamiento y en la de validación que logró el bucle interno.
 
@@ -187,7 +224,7 @@ Los ciclos automáticos aplican los cambios que pasan como superposiciones del p
 
 ## Modo live
 
-El modo live llama al Maintainer y al Proposer reales y vuelve a ejecutar los brazos de evaluación en vivo en cada época. Es costoso: cada tarea puntuada tiene llamadas de línea base y tratamiento, los fixtures de juez añaden llamadas de evaluación y la prueba final puntúa el cuerpo original y el candidato. La vista previa informa de un límite superior calculado a partir de la división real, que incluye la línea base inicial de validación, las llamadas de entrenamiento y del compilador, las llamadas de validación de los candidatos, las dos puntuaciones de la prueba final y las comprobaciones emparejadas con vecinos de cada candidato más el candidato final. Cada llamada tiene un tiempo de espera de 120 segundos. Los brazos protegidos de Claude y Codex desactivan las herramientas, el descubrimiento automático de instrucciones, MCP y la memoria de optimización.
+El modo live llama al Maintainer y al Proposer reales y vuelve a ejecutar los brazos de evaluación en vivo en cada época. Es costoso: cada tarea puntuada tiene llamadas de línea base y tratamiento, los fixtures de juez añaden llamadas de evaluación y la prueba final puntúa el cuerpo original y el candidato. La vista previa informa de un límite superior calculado a partir de la división real, que incluye la línea base inicial de validación, las llamadas de entrenamiento y del compilador, las llamadas de validación de los candidatos, las dos puntuaciones de la prueba final y las comprobaciones emparejadas con vecinos de cada candidato más el candidato final. Cada llamada se termina después de `OMA_SKILL_EVAL_TIMEOUT_MS` milisegundos (180000 por defecto, el mismo límite que `oma skill eval`). Los brazos protegidos de Claude y Codex desactivan las herramientas, el descubrimiento automático de instrucciones, MCP y la memoria de optimización.
 
 ```bash
 # Cost preview + confirm
@@ -196,13 +233,13 @@ oma skill optimize --skill oma-scholar --live
 # Skip confirmation
 oma skill optimize --skill oma-scholar --live --yes
 
-# Live opt, then apply if improved
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Live opt, then apply if improved (user-authored skill)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 La vista previa del coste muestra el límite superior de llamadas de modelo subyacentes antes de realizar cualquier llamada LLM.
 
-El Maintainer, el Proposer, los brazos de evaluación y los jueces comparten un transporte de texto protegido en directorios temporales nuevos. Claude usa su perfil restringido de la CLI. Codex usa el `codex app-server` nativo con el inicio de sesión de la CLI existente, el modelo y proveedor seleccionados y el esfuerzo de razonamiento; no sustituye un cliente con clave de API ni recurre a Claude. El perfil de Codex apunta a la CLI 0.154.x en macOS/Linux con almacenamiento nativo de credenciales en archivo y un `auth.json` existente. Cada llamada prepara un `CODEX_HOME` temporal privado que hace referencia a los archivos originales de configuración y autenticación sin copiar el contenido de las credenciales. La renovación nativa de tokens sigue usando el archivo de autenticación original. Se excluye el estado de arranque compartido y el estado temporal se limpia después. Los almacenes de credenciales keyring, auto y efímero no se admiten actualmente. El contrato del hilo se comprueba antes de enviar la entrada al modelo; las versiones, los modos de almacenamiento y los fallos de protocolo no admitidos terminan el despacho. Las herramientas, el descubrimiento de instrucciones al inicio, el acceso a MCP y la persistencia de sesión están desactivados para que los procesos del compilador no puedan leer fixtures ocultos mediante herramientas del agente. Los demás proveedores de compilador fallan de forma explícita hasta que dispongan de un transporte verificado.
+El Maintainer, el Proposer, los brazos de evaluación y los jueces comparten el transporte de texto protegido que se describe en [Aislamiento de la skill](./skill-eval.md#skill-isolation-keeping-the-baseline-honest): el perfil restringido de la CLI de Claude o el perfil nativo `app-server` de Codex, cada uno en un directorio temporal nuevo con las herramientas, el descubrimiento de instrucciones al inicio, el acceso a MCP y la persistencia de sesión desactivados, para que los procesos del compilador no puedan leer fixtures ocultos mediante herramientas del agente. Los demás proveedores de compilador se detienen con `[oma skill opt] protected compiler is unavailable for <vendor>` hasta que dispongan de un transporte verificado. El Maintainer y el Proposer usan el rol `opt-agent`, que sigue `model_preset` o `default_cli`; los brazos y los jueces usan el rol `eval` (consulta [Elegir los modelos de evaluación y del optimizador](./skill-eval.md#choose-the-evaluation-and-optimizer-models)).
 
 El optimizador informa `proposed` para las ediciones válidas y `no-action` solo ante una respuesta `NO_ACTION` explícita. Los fallos de proceso o de API se convierten en `dispatch-error`; las respuestas mal formadas sin ediciones válidas se convierten en `parse-error`. Estos errores no pueden convertirse en listas de ediciones vacías. Si el Maintainer no puede proporcionar patrones validados, informa `degraded` con un motivo de despacho o de análisis; los patrones de respaldo se excluyen del conocimiento persistente y la ejecución no puede promover un candidato. Los fallos de evaluación aparecen en `diagnostics` y en los registros de gates de propuesta, no en el historial de rechazos aprendido.
 
@@ -277,11 +314,15 @@ Inspecciona `diagnostics`, `promotion.reasons` y cualquier `finalTest.blocker` a
 
 ## Advertencia de SSOT para skills `oma-*`
 
-Las skills cuyo ID empieza por `oma-` son propiedad de oh-my-agent y `oma update` las sobrescribe. Para estas skills, se desaconseja `--apply`: usa `--dry-run` (el valor predeterminado), revisa el diff propuesto y sube los cambios al registro si la mejora es significativa. En las skills escritas por el usuario, `--apply` es seguro. La CLI muestra una advertencia cuando el objetivo pertenece a OMA:
+Las skills cuyo ID empieza por `oma-` son propiedad de oh-my-agent y `oma update` las sobrescribe. Para estas skills, se desaconseja `--apply`: usa `--dry-run` (el valor predeterminado), revisa el diff propuesto y sube los cambios al registro si la mejora es significativa. En las skills escritas por el usuario, `--apply` es seguro.
 
+Cuando todos los gates pasan pero el objetivo es una skill propiedad de OMA y falta `--yes`, `--apply` no escribe nada e imprime:
+
+```text
+[oma skill opt] WARNING: "oma-scholar" is an oma-owned skill. oma-owned skills are overwritten by `oma update` — applying edits here may be lost. Re-run with --yes to proceed, or use --dry-run to review the proposed diff.
 ```
-[oma skill opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
-```
+
+Con `--yes`, no se imprime ninguna advertencia y la escritura continúa.
 
 ---
 
@@ -301,7 +342,7 @@ Usa la reproducción de la evaluación para una comprobación de CI sin conexió
 oma skill eval --skill oma-scholar --mock --neg-transfer --require-coverage --json
 ```
 
-La propia optimización mediante la CLI requiere `--live`; todavía no tiene un adaptador de reproducción de propuestas registradas. La guía anterior que describía `oma skill optimize --mock` como un optimizador completo sin conexión era incorrecta. Traslada los trabajos de reproducción sin conexión a `oma skill eval --mock`, o habilita de forma explícita la optimización live y su coste de modelo. En las ejecuciones de optimización, inspecciona `ok` y `promotion.eligible` del JSON: el código de salida cero también cubre las ejecuciones completadas que no encontraron ningún candidato promovible.
+La propia optimización mediante la CLI requiere `--live`; todavía no tiene un adaptador de reproducción de propuestas registradas. La guía anterior que describía `oma skill optimize --mock` como un optimizador completo sin conexión era incorrecta. Traslada los trabajos de reproducción sin conexión a `oma skill eval --mock`, o habilita de forma explícita la optimización live y su coste de modelo. En las ejecuciones de optimización, inspecciona `ok` y `promotion.eligible` del JSON: el código de salida cero también cubre las ejecuciones completadas que no encontraron ningún candidato promovible. Para los mensajes de error, consulta [Solución de problemas](./skill-eval.md#troubleshooting).
 
 Códigos de salida de la optimización:
 
@@ -312,5 +353,7 @@ Códigos de salida de la optimización:
 
 ## Consulta también
 
-- [Evaluación de utilidad de skills](/docs/guide/skill-eval) — creación de fixtures de tareas, tipos de comprobador, modos mock/live y el directorio `_rollouts/`.
-- [Comandos de la CLI](/docs/cli-interfaces/commands) — referencia de flags para todos los comandos de gestión de skills.
+- [Evaluación de utilidad de skills](./skill-eval.md) — creación de fixtures de tareas, tipos de comprobador, modos mock/live, el directorio `_rollouts/` y solución de problemas.
+- [Evolución del harness del proyecto](./harness-evolution.md) — optimización programada y con presupuesto mediante superposiciones del proyecto.
+- [Casos de regresión de incidentes](./harness-incidents.md) — convertir los fallos observados en fixtures de skills.
+- [Comandos de la CLI](../cli-interfaces/commands.md) — referencia de flags para todos los comandos de gestión de skills.

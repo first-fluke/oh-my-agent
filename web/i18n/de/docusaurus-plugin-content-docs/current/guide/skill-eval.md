@@ -1,7 +1,7 @@
 ---
 title: "Skill-Nutzwert-Evaluierung"
 sidebar_label: Skill-Evaluierung
-description: Aufgabefixtures für oma skill eval, die Konvention des Verzeichnisses .agents/eval/, Prüfertypen und Mock-/Live-Ausführungsmodi erstellen.
+description: Aufgaben-Fixtures für oma skill eval erstellen, die Konvention des Verzeichnisses .agents/eval/, Prüfertypen, die Mock-/Live-Ausführungsmodi und Lösungen für häufige Fehler.
 ---
 
 # Skill-Nutzwert-Evaluierung
@@ -21,7 +21,7 @@ Für jede Aufgaben-Fixture führt der Befehl zwei Arme aus:
 
 Jeder Arm wird vom Checker der Aufgabe bewertet (0 = nicht bestanden, 1 = bestanden). Die primäre Kennzahl ist:
 
-```
+```text
 utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
@@ -29,11 +29,93 @@ Ein Skill besteht, wenn `utilityLift ≥ 5%`. Unterhalb dieser Schwelle gibt es 
 
 ---
 
+## Schnellstart {#a-minimal-working-fixture-set}
+
+Für ein Urteil sind fünf Fixtures erforderlich (`MIN_TASKS = 5`). Hier ist ein minimales Set für einen imaginären Skill `oma-scholar`. Vier verwenden den Standard-Judge; `structured-output` verwendet einen deterministischen `assert`-Prüfer.
+
+```yaml
+# .agents/eval/oma-scholar/claims-only.yaml
+id: claims-only
+skill: oma-scholar
+domain: research
+prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
+rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/entity-lookup.yaml
+id: entity-lookup
+skill: oma-scholar
+domain: research
+prompt: "Look up the entity knows:concept/attention-mechanism"
+rubric: "Does the answer return the entity name, description, and at least one related concept?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/partial-fetch.yaml
+id: partial-fetch
+skill: oma-scholar
+domain: research
+prompt: "Fetch only the methods section of knows:generated/reconvla/1.0.0"
+rubric: "Does the answer request only the methods section instead of the full paper?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/structured-output.yaml
+id: structured-output
+skill: oma-scholar
+domain: research
+prompt: "List the claims of knows:generated/reconvla/1.0.0 as JSON objects with id and statement fields"
+checker:
+  type: assert
+  expect_contains:
+    - "statement"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/edge-empty-response.yaml
+id: edge-empty-response
+skill: oma-scholar
+domain: research
+prompt: "Fetch the claims of knows:generated/does-not-exist/0.0.0"
+rubric: "Does the answer report that no record exists instead of inventing claims?"
+weight: 1
+```
+
+Führen Sie danach aus:
+
+```bash
+# Seed rollouts (local only — re-run after any SKILL.md edit)
+oma skill eval --skill oma-scholar --live --record --yes
+
+# Offline replay
+oma skill eval --skill oma-scholar --json
+```
+
+Der Live-Lauf gibt vor dem Dispatch eine Vorschau aus. Mit diesen fünf Fixtures zeigt sie zwei Arme pro Aufgabe plus zwei Judge-Aufrufe pro judge-Aufgabe (der Vendor hängt von Ihrer Konfiguration ab):
+
+```text
+Skill eval live run preview:
+  skill: oma-scholar
+  tasks: 5  trials: 1  spawns: 10 arm + 8 judge = 18 dispatches
+  vendor/model: claude
+  read-only: enforced (all spawns use readOnly: true)
+  record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
+```
+
+Lesen Sie anschließend das Ergebnis wie unter [Bericht lesen](#reading-the-report) beschrieben. Die Abschnitte nach diesem sind Referenzmaterial.
+
+---
+
 ## Die Konvention `.agents/eval/<skill>/`
 
 Legen Sie Aufgaben-Fixtures unter `.agents/eval/<skill>/` ab. Dieser Pfad liegt innerhalb von `.agents/`, aber außerhalb des Skill-Verzeichnisses selbst. Dadurch bleibt er bei `oma update` erhalten und überschreibt keine benutzererstellten Evaluierungen.
 
-```
+```text
 .agents/eval/
 └── oma-scholar/
     ├── claims-only.yaml        ← task fixture
@@ -76,9 +158,9 @@ weight: 1
 
 ### Prüfertypen
 
-#### judge (Standard)
+#### judge (Standard) {#judge-default}
 
-Ein LLM bewertet die Ausgabe des Arms anhand einer Rubrik und gibt PASS oder FAIL zurück. Dies ist der Standard, wenn `checker` fehlt oder `checker.type` nicht vorhanden ist.
+Ein LLM-[Judge](../getting-started/glossary.md#judge) bewertet die Ausgabe des Arms anhand einer Rubrik und gibt PASS oder FAIL zurück. Dies ist der Standard, wenn `checker` fehlt oder `checker.type` nicht vorhanden ist.
 
 ```yaml
 checker:
@@ -156,7 +238,7 @@ oma skill eval --skill oma-scholar
 
 ### --live
 
-Startet echte Agentenarme über `oma agent spawn --read-only`. Jeder Aufgabenarm läuft in einem eigenen temporären Workspace, sodass von einem Arm erzeugte Dateien keinen anderen Arm beeinflussen. Prozessfehler, API-Fehler-Envelopes und Judge-Fehler schließen den gesamten gepaarten Vergleich von Bewertung und Aufzeichnung aus; Teilausgaben sind Diagnosedaten.
+Verteilt jeden Arm schreibgeschützt an die CLI der Agentenrolle `eval` (siehe [Modelle für Evaluierung und Optimierer wählen](#choose-the-evaluation-and-optimizer-models)). Jeder Aufgabenarm läuft in einem eigenen temporären Workspace, sodass von einem Arm erzeugte Dateien keinen anderen Arm beeinflussen. Prozessfehler, API-Fehler-Envelopes und Judge-Fehler schließen den gesamten gepaarten Vergleich von Bewertung und Aufzeichnung aus; Teilausgaben sind Diagnosedaten.
 
 Vor dem Dispatch gibt der Befehl eine Kostenvorschau mit Zahl der Aufgaben, Arm-Dispatches, Judge-Dispatches und aufgelöstem Vendor aus. Bestätigen Sie mit `y` oder überspringen Sie mit `--yes`.
 
@@ -178,6 +260,18 @@ oma skill eval --skill oma-scholar --live
 # Skip confirmation
 oma skill eval --skill oma-scholar --live --yes
 ```
+
+#### Modelle für Evaluierung und Optimierer wählen {#choose-the-evaluation-and-optimizer-models}
+
+Aufgabenarme, Judges und Routing-Sonden lösen die Agentenrolle `eval` auf. Pinnen Sie sie in `.agents/oma-config.yaml`:
+
+```yaml
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+```
+
+Maintainer und Proposer von `oma skill optimize` lösen die Rolle `opt-agent` auf. Die `agents:`-Map hat keinen Schlüssel `opt` (das Konfigurationsschema lehnt unbekannte Schlüssel ab), daher folgt diese Rolle immer dem aktiven `model_preset` bzw. unter `model_preset: auto` dem `default_cli`. Ohne `agents.eval` verwendet die Rolle `eval` denselben Fallback. Die Hochstufung erfordert `isolation: enforced`, was nur die geschützten Claude- und nativen Codex-Profile bieten (siehe [Skill-Isolierung](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Messung der negativen Übertragung
 
@@ -202,7 +296,7 @@ Ein sauberes Arbeitsverzeichnis verbirgt die projektlokale Skill-Erkennung, doch
 | `unavailable` | HOME-basierter Vendor (z. B. **antigravity**, der `~/.gemini/antigravity-cli/skills` liest); ein sauberes CWD kann ihn nicht verbergen. Warnung und geringe Sicherheit. |
 | n/a | Mock-Modus — kein Live-Dispatch. |
 
-Andere Laufzeitprofile bleiben für die explorative Evaluierung verfügbar, aber Ergebnisse mit `best-effort` und `unavailable` blockieren die Hochstufung bei der Live-Optimierung. Der Evaluations-Vendor folgt der Modellkonfiguration des Projekts. Codex verwendet seinen nativen CLI-Login und das konfigurierte Modell bzw. den konfigurierten Provider über `app-server`; es wechselt nicht stillschweigend zu Claude oder zu einem API-Key-Client. Der geschützte Codex-Vertrag zielt auf CLI 0.154.x unter macOS/Linux mit nativer dateibasierter Credential-Speicherung und einer vorhandenen `auth.json`. Ein privates temporäres Konfigurationsverzeichnis verweist auf die ursprünglichen Konfigurations- und Auth-Dateien und schließt dabei den gemeinsamen Bootstrap-Zustand aus; Credentials werden nicht kopiert, und die native Erneuerung verwendet die ursprüngliche Auth-Datei. Keyring-, Auto- und flüchtige Credential-Speicher werden derzeit nicht unterstützt. Nicht unterstützte Versionen, Speichermodi und Vertragsfehler werden zu Dispatch-Fehlern.
+Andere Laufzeitprofile bleiben für die explorative Evaluierung verfügbar, aber Ergebnisse mit `best-effort` und `unavailable` blockieren die Hochstufung bei der Live-Optimierung. Der Evaluations-Vendor folgt der Agentenrolle `eval`. Codex verwendet seinen nativen CLI-Login und das konfigurierte Modell bzw. den konfigurierten Provider über `app-server`; es wechselt nicht stillschweigend zu Claude oder zu einem API-Key-Client. Der geschützte Codex-Vertrag zielt auf CLI 0.154.x unter macOS/Linux mit nativer dateibasierter Credential-Speicherung und einer vorhandenen `auth.json`. Ein privates temporäres Konfigurationsverzeichnis verweist auf die ursprünglichen Konfigurations- und Auth-Dateien und schließt dabei den gemeinsamen Bootstrap-Zustand aus; Credentials werden nicht kopiert, und die native Erneuerung verwendet die ursprüngliche Auth-Datei. Keyring-, Auto- und flüchtige Credential-Speicher werden derzeit nicht unterstützt. Nicht unterstützte Versionen, Speichermodi und Vertragsfehler werden zu Dispatch-Fehlern.
 
 Judges laufen in frischen temporären Verzeichnissen mit deaktiviertem Optimierungsspeicher. Claude- und Codex-Judges verwenden denselben geschützten Text-Transport wie die Evaluierungsarme. Die Vendor-Konfiguration des Judges ist für den Lauf fest.
 
@@ -258,62 +352,29 @@ Der JSON-Bericht enthält `routing` mit `status`, Zählwerten, `activationRate`,
 
 Dies misst die Beschreibung gegenüber dem Katalog über den geschützten Transport. Es testet nicht den eigenen Erkennungsmechanismus des Vendors, den das geschützte Profil absichtlich deaktiviert, und misst nicht, ob der Ablauf des geladenen Skills befolgt wird; das bleibt Aufgabe der Nutzwert-Messung.
 
-## Ein minimales funktionierendes Fixture-Set
-
-Für ein Urteil sind fünf Fixtures erforderlich (`MIN_TASKS = 5`). Hier ist ein minimales Set für einen imaginären Skill `oma-scholar`:
-
-```yaml
-# .agents/eval/oma-scholar/claims-only.yaml
-id: claims-only
-skill: oma-scholar
-domain: research
-prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
-rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
-weight: 1
-```
-
-```yaml
-# .agents/eval/oma-scholar/entity-lookup.yaml
-id: entity-lookup
-skill: oma-scholar
-domain: research
-prompt: "Look up the entity knows:concept/attention-mechanism"
-rubric: "Does the answer return the entity name, description, and at least one related concept?"
-weight: 1
-```
-
-Wiederholen Sie dies für mindestens drei weitere Aufgaben. Führen Sie danach aus:
-
-```bash
-# Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skill eval --skill oma-scholar --live --record --yes
-
-# Offline replay
-oma skill eval --skill oma-scholar --json
-```
-
 ---
 
-## Bericht lesen
+## Bericht lesen {#reading-the-report}
 
 **Textausgabe:**
 
-```
+```text
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
   isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
+  repeatability: single-trial  trials: 1  lift 95% CI: [9.2%, 48.0%]  within-task stddev: n/a
   [PASS]
-  Skill shows positive utility lift >= 5%.
+  Skill shows positive utility lift ≥ 5%.
 
   Per-task findings:
     claims-only: baseline=0 treatment=1 lift=+1.000
     entity-lookup: baseline=1 treatment=1 lift=+0.000
     ...
 
-  Thresholds: fail <= 0%, warn < 5%
+  Thresholds: fail ≤ 0%, warn < 5%
 ```
 
 **JSON-Ausgabe** (über `--json`):
@@ -383,3 +444,23 @@ Wenn ein Mock-Lauf unzureichende Coverage meldet, prüfen Sie die Warnung auf ve
 ## Evaluierungsaufgaben mit einem Skill ausliefern
 
 Skills können ein Evaluierungsaufgaben-Set enthalten, indem Fixtures unter `.agents/eval/<skill>/` abgelegt werden. Diese benutzererstellten Dateien liegen außerhalb des Skill-Verzeichnisses und bleiben daher bei `oma update` erhalten. Beim Erstellen eines neuen Skills mit `oma-skill-creation` fügen Sie ein passendes `eval/`-Fixture-Set hinzu, damit künftige Autoren die Wirkung des Skills prüfen können. Siehe `.agents/skills/oma-skill-creation/SKILL.md` für den Workflow zur Skill-Erstellung.
+
+---
+
+## Fehlerbehebung {#troubleshooting}
+
+Diese Meldungen stammen von `oma skill eval` und `oma skill optimize`.
+
+| Meldung oder Symptom | Ursache | Korrektur |
+|---|---|---|
+| `[oma skill opt] no eval coverage for skill "<id>": found N task fixture(s), need at least 5.` | Weniger als fünf gültige Fixtures in `.agents/eval/<id>/`, oder `--skill` wurde ausgelassen (dann wird `_all` gelesen). | Fügen Sie Fixtures hinzu (siehe [Schnellstart](#a-minimal-working-fixture-set)) und übergeben Sie `--skill <id>`. |
+| `[oma skill eval] skipped <file>: does not match TaskFixture schema` | Einer Fixture fehlt `id`, `skill`, `domain`, `prompt` oder ein numerisches `weight`. | Ergänzen Sie das fehlende Feld, zum Beispiel `weight: 1`. |
+| `[oma skill eval] discarded N stale rollout entries from _rollouts/<file>: <reason>. Re-run --live --record to refresh.` | Skill-Text, Prompt, Prüfer oder Evaluator-Protokoll haben sich seit der Aufzeichnung geändert. | Führen Sie `--live --record` erneut aus. |
+| `INSUFFICIENT COVERAGE — fewer than 5 tasks found.` | Nach Überspringungen und Ausschlüssen wurden weniger als fünf Aufgaben bewertet. | Beheben Sie die darüber ausgegebenen Warnungen und zeichnen Sie danach erneut auf. |
+| `[oma skill eval] isolation: <status> for vendor <vendor> — baseline may be contaminated; result is low-confidence.` | Die Rolle `eval` wird zu einem Vendor ohne geschütztes Profil aufgelöst. | Setzen Sie `agents.eval` auf ein Claude- oder Codex-Modell (siehe [Modelle für Evaluierung und Optimierer wählen](#choose-the-evaluation-and-optimizer-models)). |
+| `[oma skill eval] dispatch timed out after <N>s.` | Ein Arm- oder Judge-Aufruf hat `OMA_SKILL_EVAL_TIMEOUT_MS` überschritten. | Erhöhen Sie `OMA_SKILL_EVAL_TIMEOUT_MS` für Fixtures, die lange Antworten benötigen. |
+| `Choose either --live or --mock` | Beide Flags wurden übergeben. | Übergeben Sie eines davon. |
+| `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` lief ohne `--live`. | Fügen Sie `--live` hinzu, oder verwenden Sie `oma skill eval --mock` für Offline-Prüfungen. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Die Rolle `opt-agent` wird zu einem Vendor ohne geschützten Text-Transport aufgelöst. | Wählen Sie ein `model_preset` (oder bei `model_preset: auto` ein `default_cli`), das zu Claude oder Codex aufgelöst wird. |
+| `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (nichts geschrieben) | `--apply` für einen `oma-*`-Skill ohne `--yes`. | Behalten Sie den Dry-Run-Diff und reichen Sie ihn upstream ein, oder führen Sie den Befehl mit `--yes` erneut aus. |
+| `[oma skill opt] an active project overlay owns this skill; ...` | Die [Projekt-Harness-Evolution](./harness-evolution.md) hat für diesen Skill ein Overlay installiert. | Führen Sie zuerst `oma skill rollback --skill <id>` aus, oder lassen Sie den Evolutionszyklus die Änderung anwenden. |

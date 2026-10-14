@@ -8,7 +8,9 @@ description: "Полное руководство по генерации изо
 
 `oma-image` — это мультивендорный маршрутизатор изображений для oh-my-agent. Он генерирует изображения из промптов на естественном языке, отправляет их в CLI того вендора, в котором вы аутентифицированы, и записывает рядом с результатом manifest с входными данными и решениями провайдера, необходимыми для аудита или повторения запуска. Результат работающего провайдера всё равно может отличаться.
 
-Навык автоматически активируется по ключевым словам *image*, *illustration*, *visual asset*, *concept art* либо когда другому навыку требуется изображение как побочный результат (hero-кадр, миниатюра, продуктовое фото).
+Навык активируется по фразам вроде «generate an image», «create an image», «make a picture», «draw me …» или «image of …», по имени вендора (`gpt-image`, `nano-banana`, `pollinations`) либо когда другому навыку требуется изображение как побочный результат (hero-кадр, миниатюра, продуктовое фото).
+
+> **TL;DR** Нужно одно из трёх: `POLLINATIONS_API_KEY` (бесплатные `flux` / `zimage`), `codex login` (gpt-image-2 по вашему тарифу ChatGPT) или `agy` с выполненным входом. Запустите `oma image doctor`, затем `oma image generate "<prompt>" --vendor pollinations`. Изображения и `manifest.json` сохраняются в `.agents/results/images/{timestamp}-{shortid}/`.
 
 ---
 
@@ -16,7 +18,7 @@ description: "Полное руководство по генерации изо
 
 - Генерация изображений, иллюстраций, продуктовых фото, концепт-арта, hero- и landing-визуалов
 - Сравнение одного промпта на нескольких моделях бок о бок (`--vendor all`)
-- Создание ассетов внутри редакторского workflow (Claude Code, Codex, Gemini CLI)
+- Создание ассетов в любом runtime, который загружает навыки oma (Claude Code, Codex CLI, Antigravity, Cursor и другие)
 - Вызов другим навыком (дизайн, маркетинг, документация) image-конвейера как общей инфраструктуры
 
 ## Когда НЕ использовать
@@ -34,11 +36,19 @@ description: "Полное руководство по генерации изо
 
 | Вендор | Стратегия | Модели | Триггер | Стоимость |
 |---|---|---|---|---|
-| `pollinations` | Прямой HTTP | Бесплатные: `flux`, `zimage`. По кредитам: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | Задана `POLLINATIONS_API_KEY` (бесплатная регистрация на https://enter.pollinations.ai) | Бесплатно для `flux` / `zimage` |
+| `pollinations` | Прямой HTTP | Бесплатные: `flux`, `zimage`. По кредитам: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | Задана `POLLINATIONS_API_KEY` (бесплатная регистрация на [enter.pollinations.ai](https://enter.pollinations.ai)) | Бесплатно для `flux` / `zimage` |
 | `codex` | CLI-first через `codex exec` (ChatGPT OAuth) | `gpt-image-2` | `codex login` (API-ключ не нужен) | Списывается с тарифа ChatGPT |
 | `antigravity` | CLI `agy` через подписку Gemini Code Assist | Модель выбирается самим `agy` | `agy` установлен и выполнен вход | За изображение отдельно не взимается плата через Code Assist |
 
-Встроенный режим вендора — `auto`: он запускает провайдеры, прошедшие health checks. Модели Pollinations `flux` и `zimage` бесплатны за изображение, но всё равно требуют `POLLINATIONS_API_KEY`; Codex и Antigravity требуют собственного входа. Для платных оценок по-прежнему действует защита подтверждением стоимости.
+Как `--vendor` выбирает вендоров для запуска:
+
+| `--vendor` | Какие вендоры запускаются | Каталог вывода | Exit 5, когда |
+|---|---|---|---|
+| `auto` (по умолчанию) | каждый вендор, прошедший health check | `{timestamp}-{shortid}-compare/`, если запущено два и более | ни один вендор не исправен |
+| `all` | каждый включённый вендор | `{timestamp}-{shortid}-compare/`, если запущено два и более | любой запрошенный вендор неисправен |
+| `codex`, `pollinations` или `antigravity` | этот вендор | `{timestamp}-{shortid}/` | этот вендор неисправен |
+
+Встроенный режим вендора — `auto`: он параллельно запускает **каждый** провайдер, прошедший health check. Передайте `--vendor pollinations`, чтобы остаться на бесплатном пути. Модели Pollinations `flux` и `zimage` бесплатны за изображение, но всё равно требуют `POLLINATIONS_API_KEY`; Codex и Antigravity требуют собственного входа. Для платных оценок по-прежнему действует защита подтверждением стоимости.
 
 ---
 
@@ -58,8 +68,11 @@ codex login
 ```
 
 ```bash
-# Auto-selects the healthy provider; cost and auth depend on that provider.
+# Runs every vendor whose health check passes; cost and auth depend on those vendors.
 oma image generate "minimalist sunrise over mountains"
+
+# Stay on the free Pollinations path.
+oma image generate "minimalist sunrise over mountains" --vendor pollinations
 
 # Run all configured vendors; every selected vendor must be healthy or the command stops.
 oma image generate "cat astronaut" --vendor all
@@ -70,14 +83,18 @@ oma image generate "logo concept" --vendor codex --size 1024x1024 -n 3 -y
 # Cost estimate without spending
 oma image generate "test prompt" --dry-run
 
-# Inspect authentication and install status per vendor
-oma image doctor
-
-# List registered vendors and supported models
+# List registered vendors and their default model (supported models: oma image doctor)
 oma image vendor list
 ```
 
-`oma img` — это алиас для `oma image`.
+Успешный запуск в текстовом режиме выводит примерно такой прогресс (пути приведены для иллюстрации):
+
+```text
+[oma image] using: pollinations
+[oma image] pollinations generating... 5s
+[oma image] pollinations ok (7.4s) -> /path/to/project/.agents/results/images/20261014-101500-ab12cd/pollinations-flux-ab12cd.jpg
+[oma image] manifest: /path/to/project/.agents/results/images/20261014-101500-ab12cd/manifest.json
+```
 
 ---
 
@@ -87,7 +104,7 @@ oma image vendor list
 
 ### 1. Естественный язык (автоактивация)
 
-В Claude Code, Codex CLI или Gemini CLI просто опишите изображение. Навык сопоставляет такие ключевые слова, как *image*, *illustration*, *visual asset*, *concept art*, *hero shot*, *thumbnail*, *product photo*.
+В любом runtime, который загружает навыки oma (Claude Code, Codex CLI, Antigravity, Cursor и другие), просто опишите изображение. Навык активируют фразы вроде «generate an image», «make a picture», «draw me …» или «image of …»; runtime, сопоставляющие навыки по описанию, могут подхватить его и для запросов вроде «concept art» или «hero shot».
 
 Запоминать CLI-флаги не нужно. Опишите запрос обычными словами, и навык сопоставит его с нужными параметрами:
 
@@ -108,7 +125,7 @@ oma image vendor list
 > "Compare a ceramic mug product photo across all vendors, three variations each."
 > "Use codex to make this otter photo dramatic and nighttime." (с прикреплённым эталоном)
 
-Агент выполняет [протокол уточнений](#clarification-protocol), при необходимости расширяет промпт и вызывает `oma image generate` с выведенными флагами. Используйте slash-команду, если нужен явный контроль над точными значениями флагов.
+Агент [разбирает бриф](#clarification-protocol), заполняет пробелы значениями по умолчанию и вызывает `oma image generate` с выведенными флагами. Используйте slash-команду, если нужен явный контроль над точными значениями флагов.
 
 ### 2. Явная slash-команда
 
@@ -128,7 +145,7 @@ oma image vendor list
 oma image generate "<prompt>" --output json
 ```
 
-Записываемый в stdout manifest содержит пути к результатам, вендора, модель и стоимость, поэтому его легко разобрать и использовать в цепочке.
+С `--output json` stdout содержит один JSON-объект `{exitCode, manifestPath, runs}`; каждая запись в `runs` сообщает вендора, статус и файлы вывода. Полную запись читайте по `manifestPath`. `--dry-run` печатает перед планом текстовый заголовок `[oma image] dry-run plan:`, поэтому при разборе пропускайте эту строку.
 
 ---
 
@@ -138,11 +155,11 @@ oma image generate "<prompt>" --output json
 oma image generate "<prompt>"
   [--vendor auto|codex|pollinations|antigravity|all]
   [-n 1..5]
-  [--size 1024x1024|1024x1536|1536x1024|auto]
+  [--size WxH|auto]
   [--quality low|medium|high|auto]
   [--output-dir <dir>] [--allow-external-output]
   [-r <path>]...
-  [--timeout 180] [-y] [--no-prompt-in-manifest]
+  [--timeout <duration>] [-y] [--no-prompt-in-manifest]
   [--dry-run] [--output text|json]
 
 oma image doctor
@@ -154,18 +171,18 @@ oma image vendor list
 | Флаг | Назначение |
 |---|---|
 | `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity` или `all`. В режиме `all` каждый запрошенный вендор должен быть исправен (строгий режим). |
-| `-n, --count <n>` | Количество изображений на вендора: 1–5 (ограничение wall-time). |
-| `--size <size>` | Соотношение сторон: `1024x1024` (квадрат), `1024x1536` (портрет), `1536x1024` (пейзаж) или `auto`. |
-| `--quality <level>` | `low`, `medium`, `high` или `auto` (значение по умолчанию вендора). |
-| `--output-dir <dir>` | Каталог вывода. По умолчанию `.agents/results/images/{timestamp}/`. Для путей за пределами `$PWD` требуется `--allow-external-output`. |
+| `-n, --count <n>` | Количество изображений на вендора: 1–5 (ограничение wall-time). По умолчанию 1. |
+| `--size <size>` | `WxH`, где каждая сторона кратна 16 и лежит в диапазоне от 16 до 3840, а соотношение сторон — от 1:3 до 3:1 (например, `512x512`, `1024x1024`, `1024x1536`, `1536x1024`), или `auto`. По умолчанию `1024x1024`. |
+| `--quality <level>` | `low`, `medium`, `high` или `auto` (по умолчанию). |
+| `--output-dir <dir>` | Каталог вывода; файлы записываются прямо в него. По умолчанию `.agents/results/images/{timestamp}-{shortid}/`. Для путей за пределами `$PWD` требуется `--allow-external-output`. |
 | `--allow-external-output` | Разрешает каталог вывода за пределами `$PWD`. |
-| `--model <name>` | Переопределяет модель выбранного вендора для этого запуска. `antigravity` игнорирует этот параметр, поскольку модель выбирает `agy`. |
+| `--model <name>` | Переопределяет модель для **каждого** вендора в запуске, поэтому сочетайте его с одним `--vendor` (например, `--vendor pollinations --model zimage`). `antigravity` игнорирует этот параметр, поскольку модель выбирает `agy`. |
 | `-r, --reference <path>` | До 10 эталонных изображений (PNG/JPEG/GIF/WebP, ≤ 5 МБ каждое). Можно повторять флаг или передать пути через запятую. Поддерживается в `codex` и `antigravity`, отклоняется в `pollinations`. |
 | `-y, --yes` | Пропускает подтверждение стоимости для запусков с оценкой ≥ `$0.20`. Также доступно через `OMA_IMAGE_YES=1`. |
 | `--no-prompt-in-manifest` | Записывает в `manifest.json` SHA-256 промпта вместо исходного текста. |
 | `--dry-run` | Печатает план и оценку стоимости без расходов. |
 | `--output text\|json` | Формат вывода CLI. JSON — точка интеграции для других навыков. |
-| `--timeout <duration>` | Тайм-аут для каждого изображения. |
+| `--timeout <duration>` | Тайм-аут для каждого изображения. По умолчанию 180 секунд. |
 
 ---
 
@@ -197,16 +214,17 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 
 ## Структура вывода
 
-Каждый запуск записывается в `.agents/results/images/` в каталог с временной меткой и hash-суффиксом:
+По умолчанию каждый запуск записывается в каталог с временной меткой и hash-суффиксом внутри `.agents/results/images/`; с `--output-dir` файлы записываются прямо в указанный каталог:
 
-```
+```text
 .agents/results/images/
-├── 20260424-143052-ab12cd/                 # single-vendor run
-│   ├── pollinations-flux.jpg
+├── 20260424-143052-ab12cd/                 # one vendor ran
+│   ├── pollinations-flux-ab12cd.jpg        # -1, -2, ... suffixes when -n > 1
 │   └── manifest.json
-└── 20260424-143122-7z9kqw-compare/         # --vendor all run
-    ├── codex-gpt-image-2.png
-    ├── pollinations-flux.jpg
+└── 20260424-143122-7z9kqw-compare/         # two or more vendors ran
+    ├── codex-gpt-image-2-7z9kqw.png
+    ├── pollinations-flux-7z9kqw.jpg
+    ├── antigravity-7z9kqw.jpg              # no model segment: agy picks the model
     └── manifest.json
 ```
 
@@ -216,7 +234,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 
 ## Стоимость, безопасность и отмена
 
-1. **Защита от расходов:** для запусков с оценкой ≥ `$0.20` запрашивается подтверждение. Обойти его можно через `-y` или `OMA_IMAGE_YES=1`. Встроенный `pollinations` (`flux`/`zimage`) бесплатен, поэтому для него запрос автоматически пропускается.
+1. **Защита от расходов:** для запусков с оценкой ≥ `$0.20` запрашивается подтверждение; без интерактивного терминала запуск завершается с кодом 1 и сообщением, в котором упоминается `--yes`. Обойти его можно через `-y` или `OMA_IMAGE_YES=1`. Гарантированно бесплатен только `--vendor pollinations` с `flux` / `zimage`; `auto` может также задействовать Codex, если в нём выполнен вход.
 2. **Безопасность путей:** для путей за пределами `$PWD` требуется `--allow-external-output`, чтобы избежать неожиданных записей.
 3. **Отмена:** `Ctrl+C` (SIGINT/SIGTERM) прерывает все текущие вызовы провайдеров и оркестратор.
 4. **Стабильная запись запуска:** `manifest.json` всегда записывается рядом с изображениями.
@@ -225,28 +243,17 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 
 ---
 
-## Протокол уточнений {#clarification-protocol}
+## Как агент разбирает бриф {#clarification-protocol}
 
-Перед вызовом `oma image generate` вызывающий агент проходит этот чек-лист. Если чего-то не хватает и это нельзя вывести из контекста, он сначала задаёт вопрос либо расширяет промпт и показывает расширение для подтверждения.
+Агент использует то, что вы сказали, и заполняет пробелы разумными творческими значениями по умолчанию для окружения, стиля, освещения и соотношения сторон. Вопрос он задаёт, только если недостающий выбор существенно изменит результат, и не останавливается ради подтверждения расширенного промпта, если вы уже попросили сгенерировать изображение. Явные формулировки, текст на изображении и назначение эталонов сохраняются как есть.
 
-**Обязательно:**
-- **Субъект:** что является главным объектом изображения? (предмет, человек, сцена)
-- **Окружение / фон:** где это происходит?
+| Вы говорите | Что происходит |
+|---|---|
+| "a red apple" | Изображение генерируется сразу; агент сам задаёт окружение, стиль, освещение и размер |
+| "a red apple as a flat vector icon, 512x512" | Ваши стиль и размер используются как есть |
+| "something for the homepage" | Один вопрос о субъекте, потому что от него зависит результат |
 
-**Настоятельно рекомендуется (спросить, если отсутствует и не выводится из контекста):**
-- **Стиль:** фотореализм, иллюстрация, 3D-рендер, масляная живопись, концепт-арт, плоский вектор?
-- **Настроение / освещение:** яркое или мрачное, тёплое или холодное, драматичное или минималистичное
-- **Контекст использования:** hero-изображение, иконка, миниатюра, продуктовый кадр, постер?
-- **Соотношение сторон:** квадрат, портрет или пейзаж
-
-Для короткого промпта вроде *"a red apple"* агент **не** задаёт дополнительных вопросов. Вместо этого он расширяет запрос inline и показывает пользователю:
-
-> User: "a red apple"
-> Agent: "I'll generate this as: *a single glossy red apple centered on a clean white background, soft studio lighting, photorealistic, shallow depth of field, 1024×1024*. Shall I proceed, or would you like a different style/composition?"
-
-Если пользователь сам составил полный творческий бриф (≥ 2 из: субъект + стиль + освещение + композиция), его промпт сохраняется дословно: без уточнений и расширения.
-
-**Язык вывода.** Промпты для генерации отправляются провайдеру на английском (модели изображений в основном обучены на англоязычных подписях). Если пользователь написал на другом языке, агент переводит промпт и показывает перевод при расширении, чтобы пользователь мог исправить неверное толкование.
+Чтобы увидеть, что именно было отправлено провайдеру, проверьте поле `prompt` в `manifest.json` (с `--no-prompt-in-manifest` там хранится SHA-256).
 
 ---
 
@@ -254,7 +261,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 
 - **Конфигурация проекта:** секция `image:` в `.agents/oma-config.yaml`. Устаревший `config/image-config.yaml` больше не читается.
 - **Переменные окружения:**
-  - `OMA_IMAGE_DEFAULT_VENDOR`: переопределяет вендора по умолчанию (иначе `pollinations`)
+  - `OMA_IMAGE_DEFAULT_VENDOR`: переопределяет настроенного вендора по умолчанию (`auto`). Сам флаг `--vendor` по умолчанию равен `auto`, поэтому, если нужен конкретный вендор, передавайте `--vendor` в каждой команде.
   - `OMA_IMAGE_DEFAULT_OUT`: переопределяет каталог вывода по умолчанию
   - `OMA_IMAGE_YES`: `1`, чтобы обходить подтверждение стоимости
   - `POLLINATIONS_API_KEY`: требуется для вендора pollinations (бесплатная регистрация)
@@ -270,13 +277,17 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 | `--reference` не распознаётся | Локальный CLI устарел | Выполните `oma update` и повторите попытку. Не заменяйте эталон словесным описанием. |
 | Подтверждение стоимости блокирует автоматизацию | Оценка запуска составляет ≥ `$0.20` | Передайте `-y` или установите `OMA_IMAGE_YES=1`. Лучше переключиться на бесплатный `pollinations`. |
 | `--vendor all` сразу прерывается | Один из запрошенных вендоров неисправен (строгий режим) | Установите и авторизуйте отсутствующего вендора либо выберите конкретный `--vendor`. |
-| Результат записан в неожиданный каталог | По умолчанию используется `.agents/results/images/{timestamp}/` | Передайте `--output-dir <dir>`. Для путей за пределами `$PWD` нужен `--allow-external-output`. |
+| Результат записан в неожиданный каталог | По умолчанию используется `.agents/results/images/{timestamp}-{shortid}/` | Передайте `--output-dir <dir>`. Для путей за пределами `$PWD` нужен `--allow-external-output`. |
+| `--out path "…" is outside $PWD. Use --allow-external-out to override.` (exit 1) | `--output-dir` указывает за пределы проекта | Повторите запуск с `--allow-external-output` (в сообщении по-прежнему старое имя флага) или выберите каталог внутри проекта. |
+| Запустились несколько вендоров, и имя каталога заканчивается на `-compare` | `--vendor auto` запускает каждого исправного вендора | Передайте один `--vendor`, чтобы запустить одного вендора. |
 | Antigravity не работает после успешной health check | `agy --version` доказывает установку, но не вход в аккаунт | Войдите в Gemini Code Assist, затем повторите `oma image doctor` и запуск с `--vendor antigravity`. |
 
 ---
 
-## Связанные материалы
+## Дальнейшие шаги
 
-- [Навыки](/docs/core-concepts/skills): двухуровневая архитектура навыков, на которой работает `oma-image`
-- [Команды CLI](/docs/cli-interfaces/commands): полная справка по команде `oma image`
-- [Опции CLI](/docs/cli-interfaces/options): общая матрица опций
+- [Генерация видео](./video-generation.md): `oma-video` использует `oma-image` как визуального провайдера
+- [Workflow контента и исследований](./content-and-research.md): другие возможности для контента и их предварительные условия
+- [Навыки](../core-concepts/skills.md): двухуровневая архитектура навыков, на которой работает `oma-image`
+- [Команды CLI: image](../cli-interfaces/commands.md#image): полная справка по команде `oma image`
+- [Опции CLI](../cli-interfaces/options.md): общая матрица опций

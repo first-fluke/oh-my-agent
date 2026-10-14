@@ -12,10 +12,10 @@ Các mặc định được chọn để dự án đầu tiên có thể sử d�
 | Phạm vi | Mặc định | Hệ quả | Ghi đè |
 |---|---|---|---|
 | Ngôn ngữ phản hồi | `en` | Phản hồi của agent và workflow dùng tiếng Anh trừ khi cấu hình dự án chọn ngôn ngữ được hỗ trợ khác. Chỉ dẫn ngôn ngữ rõ ràng từ người dùng hoặc session vẫn có thể ghi đè mặc định dự án khi host/workflow hỗ trợ. | `language` trong `.agents/oma-config.yaml` hoặc `.cue` |
-| Model routing | `auto` | Dùng cấu hình agent/model native của runtime hiện tại. Runtime không xác định sẽ dùng `default_cli` nếu có. | `model_preset`, `default_cli` hoặc `agents.<id>` |
-| Code intelligence | `serena` | Cài đặt mới cố gắng cài Serena và kết nối cấu hình MCP của nó. | `providers.code_intelligence: gortex` hoặc `serena` |
+| Model routing ([model preset](./glossary.md#model-preset)) | `auto` | Dùng cấu hình agent/model native của runtime hiện tại. Runtime không xác định sẽ dùng `default_cli` nếu có. | `model_preset`, `default_cli` hoặc `agents.<id>` |
+| Code intelligence ([capability provider](./glossary.md#capability-provider)) | `serena` | Cài đặt mới cố gắng cài Serena và kết nối cấu hình MCP của nó. | `providers.code_intelligence: gortex` hoặc `serena` |
 | Code-search guard | `block` | Khi đã cấu hình provider code intelligence, hook PreToolUse từ chối `Grep`/`Glob` native và việc tìm kiếm shell đệ quy (`rg`, `grep -r`, `find -name`), đồng thời hướng agent sang các tool của provider. Các lệnh tìm kiếm chỉ nằm trong mục loại trừ đã được xác nhận hoặc ở path ngoài project thì được cho phép. Hook không quảng bá cách bypass đối với source của project. | `providers.code_intelligence_guard: off` |
-| Semantic memory | `agentmemory` | Chọn Agent Memory cho semantic memory khi khả dụng. | `providers.semantic_memory: honcho` hoặc `none` |
+| Semantic memory | `agentmemory` | Install và update tái sử dụng endpoint AgentMemory đang hoạt động tốt, hoặc cài đặt và khởi động service local được quản lý, rồi kiểm tra readiness trước khi báo thành công. Endpoint tùy chỉnh được chỉ định rõ sẽ được kiểm tra mà không bị thay thế. | `providers.semantic_memory: honcho` hoặc `none`; `OMA_NO_AGENTMEMORY=1` bỏ qua thiết lập AgentMemory. |
 | Web search | `native` | Search dùng kênh web native của runtime trừ khi chọn provider khác. | `providers.web` |
 | Documentation provider | `context7` | Tra cứu documentation dùng Context7 khi skill yêu cầu. | `providers.docs` |
 | Telemetry | tắt | OMA ghi thiết lập opt-out của vendor khi linking. | `telemetry: true` |
@@ -31,7 +31,12 @@ Tên và mặc định của provider đến từ runtime loader và installer p
 
 ## Thứ tự ưu tiên cấu hình
 
-OMA tìm ngược lên từ thư mục làm việc hiện tại để tìm `.agents/` gần nhất. Nó đọc `oma-config.cue` khi có và fallback sang `oma-config.yaml` nếu đánh giá CUE dùng chung thất bại. Project-local overlay, `oma-config.local.cue` hoặc `oma-config.local.yaml`, được merge lên trên; chỉ giữ một local overlay. `OMA_MODEL_PRESET` có thể ghi đè `model_preset` cho một process. Cấu hình local không hợp lệ sẽ dừng việc load thay vì âm thầm chọn giá trị khác.
+OMA tải mặc định global từ `$OMA_HOME/.agents/` (mặc định `~/.oma/.agents/`),
+rồi phủ lên trên cấu hình dùng chung `.agents/` của project gần nhất cùng file local của nó.
+Các project root ở cấp tổ tiên khác nhau không được merge. Trong mỗi phạm vi,
+`oma-config.cue` được ưu tiên, YAML là fallback; chỉ giữ một local overlay
+(`oma-config.local.cue` hoặc `.yaml`). `OMA_MODEL_PRESET` ghi đè `model_preset`
+sau khi load file. Cấu hình local không hợp lệ sẽ dừng việc load.
 
 Model routing có hai trường hợp đặc biệt trước thứ tự preset cố định:
 
@@ -62,8 +67,8 @@ Thiết lập telemetry mặc định là opt-out. Đặt `telemetry: true` sẽ
 | Vendor file đã cũ | `oma doctor` và `oma link --dry-run` | Chạy `oma link <vendor>` sau khi sửa `.agents/`; giữ SSOT làm nguồn. |
 | Model không được chấp nhận | `oma doctor --profile` | Chuyển sang `auto`, dùng built-in preset hoặc định nghĩa model slug dưới `models:`. |
 | Serena tool timeout | `oma doctor` và provider section | Thử `serena.mode: stdio`; nếu vấn đề là memory pressure, xem trước bằng `oma serena reap --dry-run`. |
-| Persistent workflow không dừng | `.agents/state/*-state.json` | Nói `workflow done`; chỉ kiểm tra state file khi workflow không tự dọn dẹp. |
+| [Workflow liên tục](./glossary.md#persistent-workflow) không dừng | `.agents/state/*-state.json` | Nói `workflow done`; chỉ kiểm tra state file khi workflow không tự dọn dẹp. |
 | Scheduled reaper không làm gì | Phần Serena Reaper của `oma doctor` | Đặt `serena_reaper.enabled: true`, rồi chạy `oma serena reaper enable`. |
 | Local config làm startup lỗi | Đường dẫn lỗi của `oma doctor` | Sửa hoặc xóa local overlay; không tạo cả overlay `.cue` và `.yaml`. |
 
-Tiếp tục với [Cài đặt](./installation.md), [Model theo agent](../guide/per-agent-models.md) hoặc [Ngữ nghĩa oma-config](../guide/oma-config-semantics.md).
+Tiếp tục với [Cài đặt](./installation.md), [Model theo agent](../guide/per-agent-models.md) hoặc [Ngữ nghĩa oma-config](../guide/oma-config-semantics.md). Với các vấn đề không có ở đây, xem [Troubleshooting](../guide/troubleshooting.md).

@@ -5,18 +5,18 @@ description: Installeer oh-my-agent, kies skills en providers, bekijk de gegener
 
 # Installatie
 
-## Vereisten
+## Vereisten {#prerequisites}
 
 - **Een AI-aangedreven IDE of CLI**: minstens één ondersteunde host, zoals Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot of Hermes
 - **bun**: JavaScript-runtime en pakketbeheerder (wordt automatisch door het installatiescript geïnstalleerd als deze ontbreekt)
 - **uv**: Python-pakketbeheerder (het bootstrap-script biedt installatie aan als deze ontbreekt)
 - **Code-intelligenceprovider**: Serena is de standaardprovider. Gortex wordt ook ondersteund wanneer je die in de providerconfiguratie selecteert. De installer kan Serena bootstrappen met `uv tool install` en gaat met een waarschuwing verder wanneer een optionele dependency niet beschikbaar is. Bij een geselecteerde Gortex registreren `oma install` en `oma update` in projectmodus het project bij de Gortex-daemon (`gortex track`) wanneer het nog niet wordt getrackt, en voegen ze de door OMA gegenereerde mappen via de Gortex-CLI toe aan de uitsluitlijst van dat project; er wordt niets in de projectmap geschreven. Gortex zelf moet apart worden geïnstalleerd.
 
-De installer groepeert integraties op basis van capability. Hook-leveranciers zijn Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro en Qwen; OpenCode en pi gebruiken extension bridges; GitHub Copilot en Hermes krijgen skill-links; en ZCode krijgt workflowcommando's. Je kunt meer dan één leverancier selecteren, maar voor je eerste taak heb je alleen de host nodig die je wilt gebruiken.
+De installer groepeert integraties op basis van capability. Hook-vendors zijn Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro en Qwen; OpenCode en pi gebruiken extension bridges; GitHub Copilot en Hermes krijgen skill-links; en ZCode krijgt workflowcommando's. Je kunt meer dan één vendor selecteren, maar voor je eerste taak heb je alleen de host nodig die je wilt gebruiken.
 
 ---
 
-## Methode 1: installatie met één regel
+## Methode 1: installatie met één regel {#method-1-one-liner-install}
 
 ```bash
 # macOS / Linux
@@ -33,14 +33,14 @@ Beide bootstrap-scripts werken hetzelfde:
 2. Controleert op bun en uv (en op serena als je die kiest) en installeert ze als ze ontbreken
 3. Start de interactieve installer met selectie van preset en provider
 4. Maakt `.agents/` aan met de door jou geselecteerde skills en configuratie
-5. Stelt runtime-integratielagen in (hooks, symlinks en instellingen voor gedetecteerde leveranciers)
+5. Stelt runtime-integratielagen in (hooks, symlinks en instellingen voor gedetecteerde vendors)
 6. Configureert code-intelligence- en memory-MCP-servers
 
 De bootstrap gaat door na fouten met optionele dependencies en geeft vervolgcommando's. Voer `oma doctor` uit nadat de installer klaar is.
 
 ---
 
-## Methode 2: handmatige installatie via bunx
+## Methode 2: handmatige installatie via bunx {#method-2-manual-install-via-bunx}
 
 ```bash
 bunx oh-my-agent@latest
@@ -48,68 +48,96 @@ bunx oh-my-agent@latest
 
 Dit start de interactieve installer zonder de dependency-bootstrap. bun moet al geïnstalleerd zijn.
 
-De installer vraagt je een skill-preset te kiezen. De huidige presets zijn gedefinieerd in `cli/constants/skill-data.ts`:
+De installer vraagt je een [skillpreset](./glossary.md#skill-preset) te kiezen. De huidige presets zijn gedefinieerd in `PRESETS` in `cli/constants/skill-data.ts`:
 
 ### Presets
 
-| Preset | Inbegrepen skills |
-|--------|------------------|
-| **all** | Alle 33 huidige skill-pakketten |
-| **fullstack** | Architectuur, brainstormen, design, frontend, backend, mobile, database, PM, QA, debugging, SCM, Terraform en developer workflow |
-| **fullstack-web** | Fullstack-webimplementatie, architectuur, design, PM, QA, debugging, SCM en developer workflow |
-| **fullstack-mobile** | Mobilegerichte fullstackimplementatie, architectuur, design, PM, QA, debugging, SCM en developer workflow |
-| **frontend** | Architectuur, brainstormen, design, frontend, PM, QA, debugging en SCM |
-| **backend** | Architectuur, brainstormen, backend, database, PM, QA, debugging, SCM en developer workflow |
-| **mobile** | Architectuur, brainstormen, mobile, PM, QA, debugging en SCM |
-| **devops** | Architectuur, brainstormen, Terraform, developer workflow, observability, PM, QA, debugging en SCM |
-| **research** | Scholar, market, PDF, HWP, academic writing, search, translation en SCM |
-| **content** | Design, image, voice, academic writing, translation en SCM |
+Kies de preset die past bij het werk dat de repository nodig heeft. In de onderstaande skillnamen is het voorvoegsel `oma-` weggelaten.
 
-Presets zijn bundels van skills; ze maken niet voor elke skill één subagentdefinitie aan. De `all`-preset wordt opgebouwd uit het live skillregister, dus de lijst kan meegroeien met de repository. Domeinpresets bevatten alleen de skills die voor hun focus nodig zijn.
+| Preset | Kies deze voor | Inbegrepen skills | Aantal |
+|--------|-------------------------------|-----------------|-------|
+| **all** | Elk project, of wanneer je wilt dat elke workflow direct werkt | Elke skill in het register | 33 |
+| **fullstack** | Web- en mobiele clients met een backend en Terraform-infrastructuur | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
+| **fullstack-web** | Een webfrontend met een backend en database | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **fullstack-mobile** | Een mobiele app met een backend en database | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **frontend** | Alleen een web-UI | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
+| **backend** | Een API of service met een database | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
+| **mobile** | Alleen een mobiele app | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
+| **devops** | Werk aan infrastructuur, CI/CD en observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **research** | Papers, marktonderzoek en PDF/HWP-conversie | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
+| **content** | Design-assets, afbeeldingen, voice en geschreven content | design, image, voice, academic-writing, translation, scm | 6 |
 
-De gedeelde resources (`_shared/`) worden altijd geïnstalleerd, ongeacht de preset. Dit omvat core-routing, context loading, promptstructuur, leveranciersdetectie, uitvoeringsprotocollen en het memoryprotocol.
+Presets zijn bundels van skills; ze maken niet voor elke skill één subagentdefinitie aan. De `all`-preset wordt opgebouwd uit het live skillregister, dus de lijst kan meegroeien met de repository. Domeinpresets bevatten alleen de skills voor hun focus.
 
-### Wat wordt aangemaakt
+### Workflows die skills buiten een preset nodig hebben {#workflows-that-need-skills-outside-a-preset}
+
+Elke preset installeert alle workflow- en agentdefinities, maar verschillende workflows lezen een skill die domeinpresets niet installeren. Bekijk deze tabel voordat je een domeinpreset kiest:
+
+| Workflow | Leest skill | Presets die deze bevatten |
+|----------|-------------|-------------------------|
+| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
+| `/ultrawork`, `/ralph` | oma-coordination; de `refactor-engineer`-agent die het spawnt, gebruikt oma-refactor | all |
+| `/docs` | oma-docs | all |
+| `/explain` | oma-explanation | all |
+| `/security` | oma-security | all |
+| `/recap` | oma-recap | all |
+| `/video` | oma-video | all |
+| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
+| `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
+| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/scm` | oma-scm | elke preset |
+
+Om later een ontbrekende skill toe te voegen, voer je `oma doctor` uit vanuit de projectroot, accepteer je de prompt voor de ontbrekende skill en kies je **Select individually**.
+
+De gedeelde resources (`_shared/`) worden altijd geïnstalleerd, ongeacht de preset. Dit omvat core-routing, context loading, promptstructuur, vendordetectie, uitvoeringsprotocollen en het memoryprotocol.
+
+### Wat wordt aangemaakt {#what-gets-created}
 
 Na de installatie bevat je project:
 
-```
+```text
 .agents/
-├── oma-config.yaml # Your preferences
-├── oma-config.cue # Optional schema-backed configuration
+├── oma-config.yaml          # Your preferences
+├── oma-config.cue           # Optional schema-backed configuration
+├── mcp.json                 # MCP server configuration
 ├── skills/
-│ ├── _shared/ # Shared resources (always installed)
-│ │ ├── core/ # skill-routing, context-loading, etc.
-│ │ ├── runtime/ # memory-protocol, execution-protocols/
-│ │ └── conditional/ # quality-score, experiment-ledger, etc.
-│ ├── oma-frontend/ # Per preset
-│ │ ├── SKILL.md
-│ │ └── resources/
-│ └── ... # Other selected skills
-├── workflows/ # Current workflow definitions (21 in this checkout)
-├── agents/ # Subagent definitions
-├── mcp.json # MCP server configuration
-├── results/ # Plans and agent results (populated by workflows)
-└── state/ # Persistent workflow and coordination state
+│   ├── _shared/             # Shared resources (always installed)
+│   │   ├── core/            # skill-routing, context-loading, etc.
+│   │   ├── runtime/         # memory-protocol, execution-protocols/
+│   │   └── conditional/     # quality-score, experiment-ledger, etc.
+│   ├── oma-frontend/        # Per preset
+│   │   ├── SKILL.md
+│   │   └── resources/
+│   └── ...                  # Other selected skills
+├── workflows/               # Workflow definitions (all 21, every preset)
+├── agents/                  # Subagent definitions (all 12, every preset)
+├── hooks/                   # Hook sources (core/, variants/)
+├── rules/                   # Project rules
+├── config/                  # Shipped defaults (defaults.yaml)
+├── results/                 # Plans and agent results (populated by workflows)
+└── state/                   # Persistent workflow and coordination state
+    └── memories/            # Runtime coordination state
 
 .claude/
-├── settings.json # Vendor settings, when Claude Code is selected
-├── hooks/oma-hook.sh # Generated wrapper for the in-process hook chain
-├── hooks/hud.ts # Optional [OMA] statusline indicator
-├── skills/ # Symlinks → .agents/skills/
-└── agents/ # Generated native subagent files, when supported
-
-.agents/state/memories/
-└── ... # Runtime coordination state
+├── settings.json            # Vendor settings, when Claude Code is selected
+├── hooks/
+│   ├── oma-hook.sh          # Generated wrapper for the in-process hook chain
+│   └── hud.ts               # Optional [OMA] statusline indicator
+├── skills/                  # Symlinks → .agents/skills/
+└── agents/                  # Generated native subagent files, when supported
 ```
 
 De installer maakt alleen vendor-directories aan voor de hosts die je selecteert. De hookbron blijft in `.agents/hooks/core/`; gegenereerde vendorbestanden zijn integratie-output. In oudere projecten kan Serena ook de legacy-directory `.serena/memories/` gebruiken.
 
 ---
 
-## Methode 3: globale installatie
+## Methode 3: globale installatie {#method-3-global-install}
 
 Voor gebruik op CLI-niveau (dashboards, agent-spawning en diagnostiek) installeer je oh-my-agent globaal:
+
+:::note
+Deze sectie installeert het `oma`-commando. Dat is niet hetzelfde als `oma install --global`, dat skills, workflows en regels voor elk project installeert in de globale OMA-home (`~/.oma/.agents/`). Zie [Globale installatie](../guide/global-install.md).
+:::
 
 ### Homebrew (macOS/Linux)
 
@@ -131,7 +159,7 @@ Hiermee installeer je het `oma`-commando globaal, zodat je vanuit elke directory
 oma doctor # Health check
 oma doctor --profile # Show resolved model/CLI per dispatch role
 oma dashboard terminal # Terminal monitoring
-oma dashboard web # Web dashboard at http://localhost:9847
+oma dashboard web # Web dashboard at http://127.0.0.1:9847
 oma agent spawn # Spawn agents from terminal
 oma agent parallel # Parallel agent execution
 oma agent status # Check agent status
@@ -141,17 +169,16 @@ oma skill audit # Audit skill routing descriptions
 oma stats get # Session statistics
 oma recap # Conversation history recap across AI tools
 oma link # Regenerate vendor-native files from `.agents/` SSOT
-oma update # Update oh-my-agent
+oma update # Update installed skills from the registry
 oma verify agent <agent-type> # Verify agent output (build/test/scope/secrets)
 oma describe # Introspect CLI commands as JSON
-oma bridge # MCP stdio ↔ Streamable HTTP bridge
+oma bridge # Proxy MCP stdio to a shared per-project Serena server
 oma memory init # Initialize coordination memory schema
 oma auth status # Check CLI auth status
-oma search # Mechanical search primitives (alias: `oma s`)
-oma image # Multi-vendor AI image generation (alias: `oma img`)
+oma search # Mechanical search primitives
+oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma export # Export skills for external IDEs (e.g. cursor)
 oma star # Star the repository
 ```
 
@@ -159,9 +186,9 @@ oma star # Star the repository
 
 ---
 
-## Installatie van AI CLI-tools
+## Installatie van AI CLI-tools {#ai-cli-tool-installation}
 
-Je hebt minstens één AI CLI-tool nodig. oh-my-agent ondersteunt meerdere leveranciers. Je kunt ze combineren door verschillende CLI's voor verschillende agenten te gebruiken via de agent-CLI-mapping.
+Je hebt minstens één AI CLI-tool nodig. oh-my-agent ondersteunt meerdere vendors. Je kunt ze combineren door verschillende CLI's voor verschillende agenten te gebruiken via de agent-CLI-mapping.
 
 ### Claude Code
 
@@ -250,19 +277,19 @@ agents:
 #       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
-### Veldreferentie
+### Veldreferentie {#field-reference}
 
 | Veld | Type | Verplicht | Beschrijving |
 |-------|------|----------|-------------|
 | `language` | string | Ja | Code voor de antwoordtaal. Ondersteunt en, ko, ja, zh, es, fr, de, pt, ru, nl en pl. |
-| `model_preset` | string | Ja | Actieve presetsleutel. `auto` volgt de huidige runtime; vaste sleutels zijn onder meer `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` en `mixed`. Aangepaste presetsleutels zijn ook geldig. Zie [Modellen per agent](../guide/per-agent-models.md). |
-| `default_cli` | string | Nee | Fallback-CLI voor `oma agent spawn` wanneer expliciete agentinstellingen en de geselecteerde preset geen leverancier opleveren. |
+| `model_preset` | string | Ja | Sleutel van de actieve [modelpreset](./glossary.md#model-preset). `auto` volgt de huidige runtime; vaste sleutels zijn onder meer `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` en `mixed`. Aangepaste presetsleutels zijn ook geldig. Zie [Modellen per agent](../guide/per-agent-models.md). |
+| `default_cli` | string | Nee | Fallback-CLI voor `oma agent spawn` wanneer expliciete agentinstellingen en de geselecteerde preset geen vendor opleveren. |
 | `free` | map | Nee | Gatewayinstellingen voor FreeLLMAPI wanneer `model_preset: free` wordt gebruikt; bewaar API-sleutels in omgevingsvariabelen. |
 | `providers` | map | Nee | Capability-providers: `code_intelligence` (`serena` of `gortex`), `code_intelligence_guard` (`block` of `off`), `docs` (`context7`), `web` (`native` of `brave`) en `semantic_memory` (`agentmemory`, `honcho` of `none`). |
 | `date_format` | string | Nee | Tijdstempelformaat (`ISO`, `US`, `EU`). Standaard: `ISO`. |
 | `timezone` | string | Nee | Tijdzone-identificator (bijvoorbeeld `Asia/Seoul`). Weggelaten waarden gebruiken de tijdzone van het hostsysteem. |
 | `auto_update_cli` | boolean | Nee | Of routinematige CLI-controles op de achtergrond mogen bijwerken. Standaard: `true` (uitschakelen met `false`). |
-| `telemetry` | boolean | Nee | Opt-in voor telemetrie van leveranciers. Standaard: `false`. |
+| `telemetry` | boolean | Nee | Opt-in voor telemetrie van vendors. Standaard: `false`. |
 | `agents` | map | Nee | Gedeeltelijke overschrijvingen per agent (alleen object-`AgentSpec`). Worden ondiep samengevoegd met de standaardwaarden van de preset. |
 | `models` | map | Nee | Door de gebruiker gedefinieerde modelslugs, voorheen in `models.yaml`. |
 | `custom_presets` | map | Nee | Door de gebruiker gedefinieerde presets. Ondersteunt `extends:` voor gedeeltelijke overerving van een ingebouwde preset. |
@@ -272,13 +299,13 @@ agents:
 
 > **Configuratieformaat:** Een geldige `.agents/oma-config.cue` wordt als gedeelde configuratie geëvalueerd. Als de gedeelde CUE-evaluatie mislukt, kan de loader terugvallen op `.agents/oma-config.yaml`; een lokale overlay (`oma-config.local.cue` of `.yaml`) is optioneel, maar een ongeldige lokale intentie is fataal. `OMA_MODEL_PRESET` overschrijft de bestandswaarde voor het huidige proces.
 
-### Leveranciersresolutie
+### Vendorresolutie {#vendor-resolution}
 
 Bij het spawnen van een agent lost de CLI de instellingen op in deze volgorde: `agents.<id>`, de geselecteerde `model_preset`, de orchestrator-fallback van de preset en daarna `default_cli`. Met `model_preset: auto` levert de native configuratie van de huidige runtime het model; een onbekende runtime valt terug op `default_cli`. Zie [Modellen per agent](../guide/per-agent-models.md) voor de volledige matrix.
 
 ---
 
-## Verificatie: `oma doctor`
+## Verificatie: `oma doctor` {#verification-oma-doctor}
 
 Controleer na installatie en setup of alles werkt:
 
@@ -291,7 +318,7 @@ Dit commando controleert:
 - Of geconfigureerde MCP-serververmeldingen geldig zijn (bijvoorbeeld Serena, Gortex, Context7 of DevTools)
 - Of skillbestanden bestaan met geldige SKILL.md-frontmatter
 - Of symlinks en hookscripts naar geldige doelen wijzen
-- Of hooks correct zijn geconfigureerd in de instellingenbestanden van de leverancier
+- Of hooks correct zijn geconfigureerd in de instellingenbestanden van de vendor
 - Of de geselecteerde code-intelligence- en memoryproviders bereikbaar zijn (bij Gortex ook of het huidige project zich in de getrackte set van de daemon bevindt)
 - Of `oma-config.cue` / `oma-config.yaml` geldig is en de vereiste velden bevat
 
@@ -307,9 +334,9 @@ Zie [Modellen per agent](../guide/per-agent-models.md) voor de volledige matrix 
 
 ---
 
-## Bijwerken
+## Bijwerken {#updating}
 
-### CLI bijwerken
+### CLI bijwerken {#cli-update}
 
 ```bash
 oma update
@@ -317,7 +344,7 @@ oma update
 
 Hiermee werk je de globale oh-my-agent-CLI bij naar de nieuwste versie.
 
-### Projectskills bijwerken
+### Projectskills bijwerken {#project-skills-update}
 
 Skills en workflows in een project kunnen via de GitHub Action (`action/`) automatisch worden bijgewerkt, of handmatig door de installer opnieuw uit te voeren:
 
@@ -329,18 +356,18 @@ De installer detecteert bestaande installaties en biedt aan deze bij te werken, 
 
 ---
 
-## Wat volgt
+## Wat volgt {#what-is-next}
 
 Open je project in de geselecteerde AI-IDE of CLI en begin oh-my-agent te gebruiken. Skill-routing is afhankelijk van de host; ingeschakelde hooks kunnen workflows detecteren. Probeer:
 
-```
+```text
 "Build a login form with email validation using Tailwind CSS"
 ```
 
 Of gebruik een workflowcommando:
 
-```
+```text
 /plan authentication feature with JWT and refresh tokens
 ```
 
-Zie de [Gebruiksgids](/docs/guide/usage) voor gedetailleerde voorbeelden, of lees over [Agenten](/docs/core-concepts/agents) om te begrijpen wat elke specialist doet.
+Zie de [Gebruiksgids](/docs/guide/usage) voor gedetailleerde voorbeelden, of lees over [Agenten](/docs/core-concepts/agents) om te begrijpen wat elke specialist doet. Als de installatie of een hook zich niet gedraagt zoals verwacht, zie dan [Probleemoplossing](../guide/troubleshooting.md).

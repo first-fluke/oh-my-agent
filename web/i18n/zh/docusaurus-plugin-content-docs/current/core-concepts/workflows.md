@@ -7,7 +7,33 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 工作流是由斜杠命令或自然语言关键词触发的结构化多步骤流程。它们定义智能体如何协作处理任务，范围从单阶段工具到包含 5 个阶段的复杂质量关卡。
 
-共有 21 个工作流，其中 4 个是持久化工作流（会维护状态，不能被意外中断）。
+共有 21 个工作流，其中 4 个是[持久化工作流](../getting-started/glossary.md#persistent-workflow)（会维护状态，不能被意外中断）。
+
+## 工作流概览 {#workflows-at-a-glance}
+
+| 工作流 | 用途 | 持久化 |
+|---|---|---|
+| [`/orchestrate`](#orchestrate) | 基于计划自动并行执行智能体，并运行验证循环 | 是 |
+| [`/work`](#work) | 逐步协调多个领域：规划、实现、QA、修复 | 是 |
+| [`/ultrawork`](#ultrawork) | 包含 12 个隔离审查步骤的 5 阶段质量工作流 | 是 |
+| [`/ralph`](#ralph) | 反复执行 ultrawork，直到可用程序验证的标准通过 | 是 |
+| [`/plan`](#plan) | PM 任务分解，包含依赖关系和 API 契约 | 否 |
+| [`/brainstorm`](#brainstorm) | 规划前以设计为先的创意探索 | 否 |
+| [`/architecture`](#architecture) | 架构决策、评审和 ADR | 否 |
+| [`/deepinit`](#deepinit) | 为现有代码库生成 AGENTS.md、ARCHITECTURE.md 和 `docs/` | 否 |
+| [`/review`](#review) | QA 审查：安全、性能、无障碍、代码质量 | 否 |
+| [`/security`](#security) | 安全扫描、已部署 Web 应用的渗透测试、发现验证、CI 关卡 | 否 |
+| [`/debug`](#debug) | 诊断并修复 bug，附带回归测试 | 否 |
+| [`/design`](#design) | 包含 token、组件模式和无障碍规则的 DESIGN.md | 否 |
+| [`/scm`](#scm) | Git 操作和 Conventional Commits | 否 |
+| [`/tools`](#tools) | MCP 工具的可见性和限制 | 否 |
+| [`/convert`](#convert) | 在不同格式之间转换文档和媒体 | 否 |
+| [`/docs`](#docs) | 文档漂移检测与同步 | 否 |
+| [`/recap`](#recap) | 跨 AI 工具的每日或周期工作回顾 | 否 |
+| [`/stack-set`](#stack-set) | 为领域技能生成技术栈专用参考资料 | 否 |
+| [`/video`](#video) | 通过 `oma-video` 技能生成 MP4 | 否 |
+| [`/schedule`](#schedule) | 按时间重复运行的智能体作业 | 否 |
+| [`/explain`](#explain) | 针对代码变更或主题生成交互式 HTML 讲解 | 否 |
 
 ---
 
@@ -21,11 +47,11 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 | 多个领域，需要逐步规划、实现和 QA | `/work` | 协调 API 变更及其 Web 和移动端客户端的修改 |
 | 自动分派独立任务，并行执行 | `/orchestrate` | 解决依赖关系后并行实现后端和前端任务 |
 | 明确要求完整的质量流程 | `/ultrawork` | 完整执行规划、实现、验证、改进和发布就绪审查 |
-| 明确要求反复执行，直到可用程序验证的标准通过 | `/ralph` | 在循环安全措施允许的范围内，反复实现并独立验证，直到指定的回归检查通过 |
+| 明确要求反复执行，直到可用程序验证的标准通过 | `/ralph` | 在循环安全措施允许的范围内，反复实现并由 judge 验证，直到指定的回归检查通过 |
 
 `/orchestrate` 会先加载可用计划，或通过 `/plan` 创建计划，再启动智能体。你无需先运行 `/plan`。因此，是否已有计划并不是 `/work` 和 `/orchestrate` 的区别；应根据所需的协调方式选择。两者都能并行执行独立任务。
 
-单技能任务也需要验收标准和测试。仅有这些要求不意味着要用 `/ralph`：Ralph 每次迭代都会执行完整的 ultrawork 流程，并由独立 judge 验证，适合明确需要这种重复验证循环的任务。安全措施触发时，即使还有未完成或受阻的工作，循环也可能停止。
+单技能任务也需要验收标准和测试。仅有这些要求不意味着要用 `/ralph`：Ralph 每次迭代都会执行完整的 ultrawork 流程，并进行一轮 judge 检查，适合明确需要这种重复验证循环的任务。安全措施触发时，即使还有未完成或受阻的工作，循环也可能停止。
 
 此表提供选择建议，并非自动工作流路由器。宿主智能体可以推荐合适的方式；推荐或解释工作流不会启动它。斜杠命令可以明确选择工作流。启用关键词检测钩子后，匹配配置中的关键词或模式也可能激活工作流，但仍受信息性查询过滤规则约束。检测器不会判断领域数量、检查计划是否可执行，也不会把此表用作优先级算法。
 
@@ -37,13 +63,13 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 持久化工作流持续运行直到所有任务完成。它们在 `.agents/state/` 中维护状态，并在每条用户消息中重新注入 `[OMA PERSISTENT MODE: ...]` 上下文，直到显式停用。
 
-只有**显式调用**才会启动持久模式，即工作流自己的名称（`triggers.json` 中的 `explicit` 列表，例如“orchestrate”、“ultrawork”/“ulw”、“ralph”/“랄프”、“work mode”）。下面的其他触发关键词是自然语言提示：它们只会把工作流作为建议注入，不会激活持久模式；当提示的第一行或最后一行是以 `?` 结尾的问句时，它们也绝不会触发。
+只有**显式调用**才会启动持久化模式，即工作流自己的名称（`triggers.json` 中的 `explicit` 列表，例如“orchestrate”、“ultrawork”/“ulw”、“ralph”/“랄프”、“work mode”）。下面的其他触发关键词是自然语言提示：它们只会把工作流作为建议注入，不会激活持久化模式；当提示的第一行或最后一行是以 `?` 结尾的问句时，它们也绝不会触发。
 
 ### /orchestrate
 
 **说明**：基于 CLI 的自动化并行智能体执行。通过 CLI 启动子智能体，使用持久化运行状态和回执协调它们，监控进度并运行验证循环。
 
-**持久化：** 是。状态文件：`.agents/state/orchestrate-state.json`。
+**持久化：** 是。状态文件：`.agents/state/orchestrate-state-{sessionId}.json`。
 
 **触发关键词：**
 | 语言 | 关键词 |
@@ -76,22 +102,45 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 1. **步骤 0，准备**：读取协调技能、上下文加载指南和内存协议。检测供应商。
 2. **步骤 1，加载或创建计划**：先检查 `.agents/results/plan-{sessionId}.json`，再检查最新的 `plan-*.json`。如果没有计划，或计划尚不可执行（任务缺少智能体、优先级层、依赖关系或验收标准），则在当前流程中内联委派 `/plan` 创建计划，并沿用同一会话 ID。展示计划并沿用已有授权；只有缺少关键决策或需要新增授权时，才在委派前询问。
 3. **步骤 2，初始化会话**：加载 `oma-config.yaml`，显示 CLI 映射表，沿用创建计划时的会话 ID，或生成新的会话 ID（`session-YYYYMMDD-HHMMSS`），并在配置的内存存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`。
-4. **步骤 3，启动智能体**：按优先级层处理每个任务（先 P0，再 P1……），使用供应商适配的方法启动智能体（当前运行时和目标供应商相同时使用原生子智能体；外部或跨供应商工作使用 `oma agent spawn`）。绝不超过 MAX_PARALLEL。
+4. **步骤 3，启动智能体**：按优先级层依次处理（从最低层开始：先第 1 层，再第 2 层，依此类推），使用供应商适配的方法启动智能体（当前运行时和目标供应商相同时使用原生子智能体；外部或跨供应商工作使用 `oma agent spawn`）。绝不超过 MAX_PARALLEL。
 5. **步骤 4，监控**：轮询运行范围内的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件和结构化回执，然后更新任务板。留意完成、失败和崩溃。
-6. **步骤 5，验证**：对每个完成的智能体运行 `verify.sh {agent-type} {workspace}`。失败时带上错误上下文重新启动（最多重试 2 次）。反复失败时，可以考虑尝试其他假设，但所有尝试共用同一份恢复总预算。如果预算不足以支撑一轮对比，则保留未解决的证据。
+6. **步骤 5，验证**：对每个完成的智能体，先运行机械自检（lint、类型检查、测试、diff 范围；最多 3 轮），再运行 `verify.sh {agent-type} {workspace}`（支持 backend、frontend、mobile、qa、debug 和 pm；其他智能体类型记录 `SKIP`），然后进行 QA 交叉审查。验证失败时，带上错误上下文重新启动（最多重试 2 次）。反复失败时，可以考虑尝试其他假设，但所有尝试共用同一份恢复总预算（`max_attempts`，默认 3 次，含首次尝试）。如果预算不足以支撑一轮对比，则保留未解决的证据。
 7. **步骤 6，收集**：读取运行范围内的结果文件和结构化声明，然后编写摘要。
 8. **步骤 7，最终报告**：呈现会话摘要。如果运行了实验，则总结证据和决策；仅在确认了可复用的原因时才记录经验教训。
+
+```mermaid
+flowchart TD
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task board, domain gate"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
+```
 
 **读取文件：**`.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、运行范围内的进度和结果文件，以及结构化运行回执。
 **写入文件**：配置内存存储中的运行范围会话和任务板状态、结构化回执和声明，以及最终报告。
 
 **何时使用**：需要最大并行度和自动化协调的大型项目。
 
+---
+
 ### /work
 
 **说明：** 逐步多领域协调。PM 先规划，然后智能体在授权范围内执行，接着完成 QA 审查和问题修复。
 
-**持久化：** 是。状态文件：`.agents/state/work-state.json`。
+**持久化：** 是。状态文件：`.agents/state/work-state-{sessionId}.json`。
 
 **触发关键词：**
 | 语言 | 关键词 |
@@ -113,7 +162,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 2. **步骤 1：分析需求** 识别涉及的领域。如果是单一领域，建议直接使用智能体。
 3. **步骤 2：PM 智能体规划** PM 分解需求，定义 API 契约，创建优先级任务分解，保存到 `.agents/results/plan-{sessionId}.json`。
 4. **步骤 3：审查计划** 展示计划，并在已有授权范围内继续执行。只有缺少关键决策或需要新增授权时才询问。
-5. **步骤 4：启动智能体** 按优先级层启动，同层并行，独立工作空间。
+5. **步骤 4：启动智能体** 按优先级层启动，同层并行，使用各自的工作区。
 6. **步骤 5：监控** 轮询进度文件，验证智能体间的 API 契约对齐。
 7. **步骤 6：QA 审查** 启动 QA 智能体进行安全（OWASP）、性能、无障碍、代码质量审查。
 8. **步骤 6.1：测量**（条件）：需要做明确定义的对比时，记录基线。
@@ -127,7 +176,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 **说明**：以质量为核心的工作流。包含 5 个阶段、17 个总步骤和 12 个隔离审查步骤。每个阶段都有必须通过才能继续的关卡。
 
-**持久化：** 是。状态文件：`.agents/state/ultrawork-state.json`。
+**持久化：** 是。状态文件：`.agents/state/ultrawork-state-{sessionId}.json`。
 
 **触发关键词：**
 | 语言 | 关键词 |
@@ -138,11 +187,13 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 | 阶段 | 步骤 | 智能体 | 审查视角 |
 |------|------|-------|---------|
-| **PLAN** | 1-4 | PM 智能体（内联） | 完整性、元审查、过度工程/简洁性 |
+| **PLAN** | 1-4 | PM 智能体（编写者，步骤 1）+ CCR 审查者（步骤 2-4） | 完整性、元审查、过度工程/简洁性 |
 | **IMPL** | 5 | 开发智能体（启动） | 实现 |
-| **VERIFY** | 6-8 | QA 智能体（启动） | 对齐性、安全性（OWASP）、回归预防 |
-| **REFINE** | 9-13 | 重构智能体（启动） | 文件拆分、复用性、级联影响、一致性、死代码 |
-| **SHIP** | 14-17 | QA 智能体（启动） | 代码质量（lint/覆盖率）、UX 流程、相关问题、部署就绪 |
+| **VERIFY** | 6-8 | CCR 审查者 | 对齐性、安全性（OWASP）、回归预防 |
+| **REFINE** | 9-13 | 重构智能体（步骤 9、11、13）+ CCR 审查者（步骤 10、12） | 文件拆分、复用性、级联影响、一致性、死代码 |
+| **SHIP** | 14-17 | CCR 审查者 | 代码质量（lint/覆盖率）、UX 流程、相关问题、部署就绪 |
+
+每个审查步骤都由各自的全新上下文审查子智能体执行（[跨上下文审查](../getting-started/glossary.md#cross-context-review-ccr)）。PM 智能体不会在流程内审查自己的计划。
 
 **关卡定义：**
 - **PLAN_GATE：** 计划已文档化、假设已列出、替代方案已考虑、过度工程审查已完成、工作范围已获授权。
@@ -154,6 +205,31 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 **关卡失败行为：**
 - 第一次失败：返回相关步骤，修复，重试。
 - 同一问题第二次失败：重新评估原因；如果剩余预算内值得测试其他方案，则对照所需行为和已定义的指标，比较相互隔离的实验。
+- 限制：PLAN 失败只有在首次分派任务之前才会返回步骤 1（此后计划不可更改）。当关卡失败次数达到配置的上限（默认 5 轮 VERIFY + REFINE）或超出会话成本上限时，VERIFY 和 REFINE 停止重试。
+
+```mermaid
+flowchart TD
+  S1["Step 1: PM Agent writes the plan JSON"] --> PR["Steps 2-4: 3 CCR reviewers, completeness, meta-review, simplicity"]
+  PR --> PG{"PLAN_GATE"}
+  PG -->|"fail, before first dispatch"| S1
+  PG -->|pass| S5["Step 5: implementation agents in parallel"]
+  S5 --> IG{"IMPL_GATE"}
+  IG -->|"fail: re-spawn failed agents"| S5
+  IG -->|pass| VR["Steps 6-8: 3 CCR reviewers, alignment, safety, regression"]
+  VR --> VG{"VERIFY_GATE"}
+  VG -->|fail| VL{"cycle limit or cost cap reached?"}
+  VL -->|"no: root-cause fix"| S5
+  VG -->|pass| RF["Steps 9-13: 2 CCR reviews, then refactor actions"]
+  RF --> RG{"REFINE_GATE"}
+  RG -->|fail| RL{"cycle limit or cost cap reached?"}
+  RL -->|"no: re-spawn Refactor Agent"| RF
+  RG -->|"pass, or recorded skip"| SR["Steps 14-17: 4 CCR reviewers, quality, UX, related issues, deployment"]
+  SR --> SG{"SHIP_GATE"}
+  SG -->|"fail: re-run affected steps"| SR
+  SG -->|pass| DONE(["Final results; optional oma docs verify"])
+  VL -->|yes| STOP(["Stop: save step results, report unresolved items"])
+  RL -->|yes| STOP
+```
 
 **条件增强：** 已定义指标的对比、实验决策与证据、有预算限制的假设探索，以及有可复用原因支撑的经验教训。
 
@@ -165,9 +241,9 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 ### /ralph
 
-**说明：** 持久化的自引用执行循环。用独立验证器包装 ultrawork，在每次迭代后检查完成标准。所有标准通过时报告全部完成，只剩已通过和受阻的标准时报告部分完成，安全措施触发时则停止。
+**说明：** 持久化的自引用执行循环。用 [judge](../getting-started/glossary.md#judge) 包装 ultrawork，在每次迭代后检查完成标准。所有标准通过时报告全部完成，只剩已通过和受阻的标准时报告部分完成，安全措施触发时则停止。
 
-**持久化：** 是。状态文件：`.agents/state/ralph-state.json`。
+**持久化：** 是。状态文件：`.agents/state/ralph-state-{sessionId}.json`。
 
 **触发关键词：**
 | 语言 | 关键词 |
@@ -185,21 +261,40 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 **阶段：**
 1. **Phase 0：INIT** 加载前置条件（context-loading、内存协议、judge 协议）。定义并记录可用程序验证的完成标准，例如测试断言、不生成产物的类型检查、退出码或文件是否存在。只有明确要求时才纳入构建检查。展示标准，并在授权范围内继续执行。以 `max_iterations: 5` 初始化会话。
-2. **Phase 1：WORK** 将 ultrawork（PLAN → IMPL → VERIFY → REFINE → SHIP）作为一次迭代执行。
-3. **Phase 2：JUDGE** 独立验证器将每个完成标准与项目实际状态核对（运行已授权的检查，并验证文件是否存在）。记录证据和标准状态，包括 PASS、FAIL、REGRESSED 或 BLOCKED。
-4. **Phase 3：DECIDE** 若所有标准 PASS → 报告全部完成。若只剩 PASS 和 BLOCKED → 报告部分完成。若存在 FAIL 或 REGRESSED → 在安全措施允许的范围内，将失败上下文带入下一次迭代。
-5. **安全措施：** 当 `current_iteration >= max_iterations`（默认 5）达到时，或同一标准因相同根本原因连续失败 3 次时（卡住检测），循环停止。
+2. **Phase 1：EXEC** 在 Ralph 的会话 ID 下，将 ultrawork（PLAN → IMPL → VERIFY → REFINE → SHIP）作为一次迭代执行。随后运行产物关卡 `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>`。如果关卡失败，本次迭代视为未执行：Ralph 记录违规，修复工作，然后重新运行关卡。
+3. **Phase 2：JUDGE** judge 将每个完成标准与项目实际状态核对（运行已授权的检查，并验证文件是否存在）。工作流提示会要求编排器将 judge 作为单独的智能体启动，使用全新上下文，并只向其说明完成标准；但没有任何机制能确认它确实已被启动。无法启动子智能体的运行时会被告知在流程内直接评判，并记录 `ralph.judge-inline-fallback`。记录证据和标准状态，包括 PASS、FAIL、REGRESSED 或 BLOCKED。
+4. **决策关卡：** 若所有标准 PASS → 报告全部完成。若只剩 PASS 和 BLOCKED → 报告部分完成。若存在 FAIL 或 REGRESSED → 在安全措施允许的范围内，将失败上下文带入下一次迭代。
+5. **Phase 3：REPLAN** 将下一次迭代收窄到 FAIL 项和 REGRESSED 项（基于 diff 诊断），跳过 BLOCKED 项，并将 PASS 标准保留在 judge 的检查范围内。然后返回 Phase 1。
+6. **安全措施：** 当 `current_iteration >= max_iterations`（默认 5）时，循环停止。同一标准因相同根本原因连续失败 3 次时，会变为 BLOCKED 且不再重试（卡住检测）。
 
-**与 /ultrawork 的主要区别：** Ultrawork 执行 5 阶段流程，阶段关卡失败时会重试。Ralph 将 ultrawork 包装在重试循环中，由独立 judge 客观验证完成情况。循环结束时会报告全部完成、因工作受阻而部分完成，或触发了安全措施。
+```mermaid
+flowchart TD
+  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
+  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
+  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
+  REPAIR --> GATE
+  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
+  JUDGE --> VERDICT{"verdict"}
+  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
+  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
+  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
+  LIMIT -->|yes| SAFE(["Safeguard report"])
+  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
+  REPLAN --> EXEC
+```
+
+judge 节点就是 Phase 2 所述、通过提示驱动的 judge：工作流要求编排器以全新上下文启动它；无法启动子智能体的运行时会在流程内直接评判，并记录这一回退。
+
+**与 /ultrawork 的主要区别：** Ultrawork 执行 5 阶段流程，阶段关卡失败时会重试。Ralph 将 ultrawork 包装在重试循环中，由提示驱动的 judge 依据项目证据重新验证每个标准。循环结束时会给出全部完成报告、针对受阻工作的部分完成报告，或安全措施报告。
 
 **读取文件：** `.agents/workflows/ralph/resources/judge-protocol.md`，以及所有 ultrawork 文件。
-**写入文件：** `session-ralph.md`（内存）、迭代日志、最终报告。
+**写入文件：** `session-ralph-{sessionId}.md`（内存）、迭代日志、最终报告。
 
-**何时使用：** 明确需要反复执行，并独立验证可用程序检查的完成标准时。仅有测试要求并不需要 Ralph；选择时应考虑每次迭代都包含完整的 ultrawork 流程，以及循环本身的安全措施。
+**何时使用：** 明确需要反复执行，并由 judge 依据可用程序检查的完成标准重新验证时。仅有测试要求并不需要 Ralph；选择时应考虑每次迭代都包含完整的 ultrawork 流程，以及循环本身的安全措施。
 
 ---
 
-## 非持久化工作流
+## 非持久化工作流 {#non-persistent-workflows}
 
 ### /plan
 
@@ -220,6 +315,8 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 **执行方式**：内联执行（不启动子智能体）。由 `/orchestrate` 或 `/work` 消费，后者会在执行期间更新任务和状态字段。
 
+---
+
 ### /brainstorm
 
 **说明：** 设计优先的创意探索。探索意图，澄清约束，提出方案，在规划前产出一份经批准的设计文档。
@@ -233,7 +330,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 | 日语 | "ブレインストーミング"、"アイデア"、"設計探索" |
 | 中文 | "头脑风暴"、"创意"、"设计探索" |
 
-**步骤：** 探索项目上下文（MCP 分析）-> 逐一提出澄清问题 -> 提出 2-3 个方案并分析权衡 -> 逐节展示设计（每步需用户批准）-> 保存设计文档到 `docs/plans/` -> 过渡：建议运行 `/plan`。
+**步骤：** 探索项目上下文（MCP 分析）-> 逐一提出澄清问题 -> 提出 2-3 个方案并分析权衡 -> 逐节展示设计（每步需用户批准）-> 保存设计文档到 `docs/plans/designs/{NNN}-{name}.md` -> 过渡：建议运行 `/plan`。
 
 **规则：** 设计批准前不进行实现或规划。不输出代码。遵循 YAGNI 原则。
 
@@ -301,7 +398,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 ### /security
 
-**说明：** 针对源代码、agent 技能、MCP 组件或已部署的 Web 应用运行 `oma-security` 技能。工作流会选择相应引擎，记录覆盖范围和证据，验证发现，并应用已配置的 CI 门禁。
+**说明：** 针对源代码、智能体技能、MCP 组件或已部署的 Web 应用运行 `oma-security` 技能。工作流会选择相应引擎，记录覆盖范围和证据，验证发现，并应用已配置的 CI 关卡。
 
 **入口：** `/security`。运行 Deepsec、Cisco 扫描器或 ARTEX 渗透测试的请求也会路由到此工作流。
 
@@ -310,7 +407,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 | 目标 | 引擎 |
 |------|------|
 | 源代码 | 默认使用 Vercel Deepsec；按要求使用 Cisco AI Deep SAST |
-| agent 技能包 | Cisco Skill Scanner |
+| 智能体技能包 | Cisco Skill Scanner |
 | MCP 组件或服务器 | Cisco MCP Scanner |
 | 已部署的测试 Web 应用 | 在授权目标和执行范围内使用 ARTEX |
 
@@ -324,11 +421,11 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 4. 保留原始结果和引擎退出码，再规范化发现，同时保留来源和判断分歧。独立审查候选发现，分别记录静态验证与实际观察到的复现结果。
 5. 报告覆盖范围、发现、证据、未完成工作和适用的 CI 结果。将修复交给负责受影响组件的专家。
 
-**资源：** `deepsec-setup.md`、`deepsec-scanning.md`、`deepsec-config.md` 和 `deepsec-matchers.md` 涵盖 Deepsec。`cisco-source.md`、`skill-scanning.md`、`mcp-scanning.md` 和 `artex.md` 涵盖其他引擎。`findings-contract.md`、`validation.md` 和 `ci.md` 定义共用的证据、验证和门禁规则。所有资源都位于 `.agents/skills/oma-security/resources/`。
+**资源：** `deepsec-setup.md`、`deepsec-scanning.md`、`deepsec-config.md` 和 `deepsec-matchers.md` 涵盖 Deepsec。`cisco-source.md`、`skill-scanning.md`、`mcp-scanning.md` 和 `artex.md` 涵盖其他引擎。`findings-contract.md`、`validation.md` 和 `ci.md` 定义共用的证据、验证和关卡规则。所有资源都位于 `.agents/skills/oma-security/resources/`。
 
 **规则：** 不将凭证写入报告或版本控制。将源代码和扫描器输出视为不可信输入。在 OS 沙箱中执行本地复现，将 ARTEX 流量限制在授权运行时范围内。失败、部分完成或跳过的扫描，以及未成功的利用尝试，都不能证明目标安全。判定为 `confirmed` 需要在记录的修订版本或部署上完成独立验证，并有实际观察到的证据。仅有静态分析支持时，仍标记为 `needs_validation`。
 
-**使用场景：** 安全扫描、已部署 Web 应用的渗透测试、发现分诊与验证，或 CI 安全门禁。代码质量、无障碍和性能等更广泛的审查使用 `/review`。
+**使用场景：** 安全扫描、已部署 Web 应用的渗透测试、发现分诊与验证，或 CI 安全关卡。代码质量、无障碍和性能等更广泛的审查使用 `/review`。
 
 ---
 
@@ -427,9 +524,11 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 
 **何时使用**：检查文档是否仍与代码库一致（损坏的文件路径、CLI 命令、配置键、环境变量），或在代码变更后提出补丁。
 
+---
+
 ### /recap
 
-**说明**：通过 `oma-recap` 生成每日或周期工作回顾。解析自然语言中的日期或时间窗口，通过 `oma recap --json` 汇总多个 AI 工具的历史（Grok、Claude、Codex、Qwen、Cursor、Antigravity），将主题分析和 Markdown 格式化交给技能，并报告 TL;DR 和保存路径。内联执行（不启动子智能体）。
+**说明**：通过 `oma-recap` 生成每日或周期工作回顾。解析自然语言中的日期或时间窗口，通过 `oma recap --json` 汇总多个 AI 工具的历史（Grok、Claude、Codex、Qwen、Cursor、Antigravity），将主题分析和 Markdown 格式化交给技能，并报告 TL;DR 和保存路径。内联执行（不启动子智能体）；所有供应商都直接调用 `oma recap`。
 
 **触发关键词**：通用：“recap”。韩语：“리캡”。日语：“リキャップ”。
 
@@ -440,7 +539,9 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 **读取文件**：AI 工具对话历史（通过 `oma recap`）。
 **写入文件：**`.agents/results/recap/{date}.md` 或 `.agents/results/recap/{start}~{end}.md`。
 
-**何时使用**：总结某一天或某个周期内跨 AI 工具完成的工作，可选按工具过滤。
+**何时使用**：总结某一天或某个周期（周/月）内跨 AI 工具完成的工作，可选按特定工具过滤。
+
+---
 
 ### /stack-set
 
@@ -454,6 +555,7 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 
 **输出**：写入已解析领域技能的 `stack/` 目录，例如 `.agents/skills/oma-backend/stack/` 或 `.agents/skills/oma-mobile/stack/`。不会修改 SKILL.md 或 `resources/`。
 
+---
 
 ### /video
 
@@ -477,9 +579,11 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 
 **输出：**`.agents/results/videos/{timestamp}-{shortid}-{mode}/` 下的运行目录，包含 `script.json`、`render-spec.json`、`timing.json`、`captions.{srt,vtt}`、`audio/`、`visuals/`、`{composition}.mp4` 和 `manifest.json`。参见[视频生成指南](../guide/video-generation.md)。
 
+---
+
 ### /schedule
 
-**说明**：通过 `oma schedule <action>` 命令注册和管理基于时间的智能体作业。作业保存在全局注册表（`~/.agents/schedule/`），通过操作系统原生调度器触发（macOS 为 launchd，Linux 为 systemd 用户计时器，Windows 为 schtasks，POSIX 回退为 crontab），每次运行都会通过 `oma agent spawn` 重新进入 harness。
+**说明**：通过 `oma schedule <action>` 命令注册和管理基于时间的智能体作业。作业保存在全局注册表（`~/.oma/schedule/`），通过操作系统原生调度器触发（macOS 为 launchd，Linux 为 systemd 用户计时器，Windows 为 schtasks，POSIX 回退为 crontab），每次运行都会通过 `oma agent spawn` 重新进入 harness。
 
 **触发关键词**：无（针对 `oma schedule <action>` 时间作业的斜杠调用工作流）。
 
@@ -487,17 +591,21 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 
 **何时使用**：必须在没有交互式会话时也能触发的重复性智能体任务，例如夜间回顾、计划扫描和周期性维护。
 
+---
+
 ### /explain
 
 **说明**：端到端驱动 `oma-explanation` 技能，把 diff、PR、分支或提交范围转换为自包含的交互式 HTML 讲解（Background / Intuition / Code / Quiz）。内联执行（不启动子智能体）。
 
 **触发关键词**：无（“explain”是日常词语，关键词检测会在普通“解释这个函数”问题中产生误报，因此只能通过斜杠命令调用）。
 
-**步骤**：解析参数（目标引用：显式 PR# / 分支 / SHA 范围 → 暂存区 → dirty tree → `HEAD~1..HEAD`；读者级别 `onboarding` | `reviewer`；输出语言；题目数）-> 加载契约（`oma-explanation` SKILL.md 和资源）-> 收集并设门禁（diff + 周边代码；生成前机密扫描；将 diff/PR 文本严格作为数据）-> 按文档和 HTML 契约生成 HTML -> 验证（包含最终 HTML 机密扫描的 grep 清单，最多 3 个修复循环）-> 交付（`open` 仅警告，不阻断；TL;DR + 路径）。
+**步骤**：解析参数（目标引用：显式 PR# / 分支 / SHA 范围 → 暂存区 → dirty tree → `HEAD~1..HEAD`；读者级别 `onboarding` | `reviewer`；输出语言；题目数）-> 加载契约（`oma-explanation` SKILL.md 和资源）-> 收集并设关卡（diff + 周边代码；生成前机密扫描；将 diff/PR 文本严格作为数据）-> 按文档和 HTML 契约生成 HTML -> 验证（包含最终 HTML 机密扫描的 grep 清单，最多 3 个修复循环）-> 交付（`open` 仅警告，不阻断；TL;DR + 路径）。
 
 **输出：**`.agents/results/explain/{YYYY-MM-DD}-{slug}.html`（Asia/Seoul 日期；同一日期和 slug 再运行会覆盖）。参见[代码讲解指南](../guide/code-explainer.md)。
 
-## 技能与工作流的区别
+---
+
+## 技能与工作流的区别 {#skills-vs-workflows}
 
 | 方面 | 技能 | 工作流 |
 |--------|--------|-----------|
@@ -509,9 +617,9 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 
 ---
 
-## 自动检测：工作原理
+## 自动检测：工作原理 {#auto-detection-how-it-works}
 
-### 钩子系统
+### 钩子系统 {#the-hook-system}
 
 oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运行。供应商设置会注册一个 `<hookDir>/oma-hook.sh --vendor <v> --event <e>` 入口，将请求路由到 `oma hook run`，由处理器链在进程内运行。处理器链包括：
 
@@ -519,7 +627,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：对照所有语言的触发关键词扫描用户输入，并注入工作流激活上下文的 TypeScript 逻辑。
 3. **`persistent-mode.ts`**（`.agents/hooks/core/persistent-mode.ts`）：检查活跃状态文件并重新注入工作流上下文，以强制执行持久化工作流。
 
-### 检测流程
+### 检测流程 {#detection-flow}
 
 1. 用户输入自然语言。
 2. 钩子检查是否存在显式 `/command`。如果存在，则跳过检测以避免重复。
@@ -527,10 +635,10 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 4. 如果找到匹配项，检查输入是否匹配信息性模式。
 5. 如果属于信息性问题（例如“什么是 orchestrate？”），将其过滤，不触发工作流。
 6. 如果属于可执行请求，将 `[OMA WORKFLOW: {workflow-name}]` 注入上下文。多个工作流同时匹配时，显式调用优先，其次是最长的关键词。
-7. 对于持久化工作流，只有显式调用（`triggers.json` 中的 `explicit`）才会写入持久模式状态文件；自然语言匹配只会作为建议注入，以问句结尾的提示（第一行或最后一行有 `?`）则完全不会触发它。
+7. 对于持久化工作流，只有显式调用（`triggers.json` 中的 `explicit`）才会写入持久化模式状态文件；自然语言匹配只会作为建议注入，以问句结尾的提示（第一行或最后一行有 `?`）则完全不会触发它。
 8. 智能体读取注入的标签，并从 `.agents/workflows/` 加载对应的工作流文件。
 
-### 语言分节约定
+### 语言分节约定 {#language-section-convention}
 
 `.agents/hooks/core/triggers.json` 对 `keywords`、`patterns` 和 `informationalPatterns` 使用按语言分节的结构：
 
@@ -571,7 +679,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 - 不会自动包裹单词边界，模式作者要自行处理 `\b`。
 - 无效正则会在运行时静默跳过，但可在配置编辑时通过测试失败发现。
 
-### 信息性模式过滤
+### 信息性模式过滤 {#informational-pattern-filtering}
 
 `.agents/hooks/core/triggers.json` 的 `informationalPatterns` 部分定义表示提问而非命令的短语。系统会在每个潜在工作流匹配项周围 60 个字符的窗口内检查这些短语：
 
@@ -587,7 +695,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 - `"How do you build a TODO app?"`：`*` 中的 `how do` 会阻止 orchestrate 意图正则。
 - `"orchestrate 트리거 해주면 되나요?"`：`ko` 中的 `트리거` 会阻止 orchestrate 关键词。
 
-### 排除的工作流
+### 排除的工作流 {#excluded-workflows}
 
 以下工作流不会由关键词触发，必须使用显式 `/command` 调用。`/tools` 和 `/stack-set` 位于 `excludedWorkflows` 中，已特意从关键词检测中移除；`/convert` 不附带触发关键词（`oma-pdf` 和 `oma-hwp` 技能各自携带关键词检测）；`/schedule` 是斜杠调用工作流（用于 `oma schedule <action>` 时间作业）；`/explain` 不附带触发关键词，因为“explain”是日常词语，关键词检测会不断产生误报：
 
@@ -597,30 +705,29 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 - `/schedule`
 - `/explain`
 
-
 ---
 
 ## 持久化模式机制 {#persistent-mode-mechanics}
 
-### 状态文件
+### 状态文件 {#state-files}
 
 持久化工作流（orchestrate、ultrawork、work、ralph）在被显式调用时会在 `.agents/state/` 中创建状态文件（参见[持久化工作流](#persistent-workflows)）：
 
-```
+```text
 .agents/state/
-├── orchestrate-state.json
-├── ultrawork-state.json
-├── work-state.json
-└── ralph-state.json
+├── orchestrate-state-{sessionId}.json
+├── ultrawork-state-{sessionId}.json
+├── work-state-{sessionId}.json
+└── ralph-state-{sessionId}.json
 ```
 
-这些文件包含工作流名称、当前阶段或步骤、会话 ID、时间戳和任何待处理状态。
+`{sessionId}` 是宿主会话 ID，因此并发会话不会共用同一个文件。文件记录工作流名称、会话 ID、激活时间和强化次数；执行 `oma goal set` 后还会记录目标契约。阶段进度保存在 `session-ultrawork.md` 等内存文件中，不在这里。
 
-### 强化
+### 强化 {#reinforcement}
 
 持久化工作流活跃时，`persistent-mode.ts` 钩子会在每条用户消息中注入 `[OMA PERSISTENT MODE: {workflow-name}]`。即使跨越多次对话轮次，工作流也会继续执行。
 
-### 目标契约（可选的停止关卡和预算）
+### 目标契约（可选的停止关卡和预算） {#goal-contract-optional-stop-gate--budget}
 
 `oma goal set` 会为活跃的持久化工作流附加机械完成契约：
 
@@ -629,7 +736,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 
 没有契约时，持久化模式仍按上文运行，契约是可选项。参见 [CLI 命令参考](../cli-interfaces/commands.md#goal-set) 中的 `goal set`。
 
-### 停用
+### 停用 {#deactivation}
 
 要停用持久化工作流，用户说“workflow done”（或配置语言中的等价表达）。这会：
 
@@ -639,55 +746,28 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 
 当所有步骤完成且最终关卡通过时，工作流也可以自然结束。配置了 `goal set` 关卡时，关卡通过会自动停用工作流。
 
+---
+
+## 典型工作流序列 {#typical-workflow-sequences}
+
+| 目标 | 序列 |
+|------|----------|
+| 单领域功能 | 描述任务 → 相关技能 → 实现 → 针对性验证 |
+| 复杂多领域项目 | `/work` → PM 规划 → 在授权范围内审查 → 启动智能体 → QA 审查 → 修复问题 → 报告 |
+| 自动并行实现 | `/orchestrate` → 加载或创建计划 → 解析依赖关系 → 启动独立任务 → 验证 → 报告 |
+| 最高质量交付 | `/ultrawork` → PLAN（计划 + 3 次审查）→ IMPL → VERIFY（3 次审查）→ REFINE（2 次审查 + 3 个重构操作）→ SHIP（4 次审查） |
+| Bug 调查 | `/debug` → 复现 → 根本原因 → 最小修复 → 回归测试 → 类似模式扫描 |
+| 设计到实现的流水线 | `/brainstorm` → 设计文档 → `/plan` → 任务分解 → `/orchestrate` → 并行实现 → `/review` → `/scm` |
+| 新代码库设置 | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
+| 反复执行并由 judge 验证 | `/ralph` → 定义标准 → ultrawork → 产物关卡 → judge → 按需重复 → 全部完成、部分完成或安全措施报告 |
 
 ---
 
-## 典型工作流序列
+## 另请参阅 {#see-also}
 
-### 单领域功能
-
-```
-Describe the task → relevant skill → implement → focused verification
-```
-
-### 复杂多领域项目
-
-```
-/work → PM plans → review within authorized scope → agents spawn → QA reviews → fix issues → report
-```
-
-### 自动并行实现
-
-```
-/orchestrate → load or create plan → resolve dependencies → spawn independent tasks → verify → report
-```
-
-### 最高质量交付
-
-```
-/ultrawork → PLAN (4 review steps) → IMPL → VERIFY (3 review steps) → REFINE (5 review steps) → SHIP (4 review steps)
-```
-
-### Bug 调查
-
-```
-/debug → reproduce → root cause → minimal fix → regression test → similar pattern scan
-```
-
-### 设计到实现的流水线
-
-```
-/brainstorm → design document → /plan → task breakdown → /orchestrate → parallel implementation → /review → /scm
-```
-
-### 新代码库设置
-
-```
-/deepinit → AGENTS.md + ARCHITECTURE.md + docs/
-```
-
-### 反复执行并独立验证
-
-```
-/ralph → define criteria → ultrawork → judge → repeat as needed → completion, partial completion, or safeguard report
-```
+- [并行执行](./parallel-execution.md)：`oma agent spawn`、`oma agent parallel` 和监控
+- [项目结构](./project-structure.md)：工作流状态和内存文件的存放位置
+- [`oma goal set`](../cli-interfaces/commands.md#goal-set)：持久化工作流的停止关卡和预算
+- [多智能体项目指南](../guide/multi-agent-project.md)
+- [故障排除](../guide/troubleshooting.md)
+- [术语表](../getting-started/glossary.md)

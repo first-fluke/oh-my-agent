@@ -14,7 +14,7 @@ description: Почему hooks Codex не запускаются до одно�
 
 ## Однократный шаг: проверьте hooks в Codex
 
-После того как `oma` (install), `oma link` или `oma update` записывает `.codex/hooks.json` в проект, Codex ещё **не** запускает ранее не виденные hooks. Откройте Codex и один раз проверьте их:
+После того как `oma` (install), `oma link` или `oma update` записывает `.codex/hooks.json` в проект, который Codex ещё не видел (при глобальной установке — `~/.codex/hooks.json`), hooks пока **не** запускаются. Откройте Codex и один раз проверьте их:
 
 1. Откройте проект в Codex CLI.
 2. Выполните `/hooks`, чтобы открыть список hooks в интерфейсе Codex.
@@ -22,8 +22,8 @@ description: Почему hooks Codex не запускаются до одно�
 
 До этого шага hooks остаются недоверенными и молча пропускаются. Поэтому oh-my-agent печатает уведомление всякий раз, когда создаёт или изменяет `.codex/hooks.json`:
 
-```
-Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run)
+```text
+⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
 Перед открытием Codex проверьте созданный файл:
@@ -62,7 +62,7 @@ oma link codex
 
 ## Flag `[features] hooks` не требуется
 
-В старых настройках нужно было включать `[features] hooks = true` в конфигурации Codex. Hooks стабильны и включены по умолчанию примерно с Codex CLI ~0.14x, поэтому теперь это не нужно. oh-my-agent больше не записывает этот ключ и удаляет устаревший флаг `child_agents_md` из конфигурации Codex, если обнаруживает его.
+Старые выпуски oh-my-agent записывали `[features] codex_hooks = true` в конфигурацию Codex. В Codex 0.124 этот флаг переименован в `hooks`, а hooks стали стабильной функцией, включённой по умолчанию, поэтому флаг не нужен. oh-my-agent не записывает ни один из этих ключей и удаляет устаревшие флаги `codex_hooks` и `child_agents_md` из таблицы `[features]`, если обнаруживает их.
 
 ---
 
@@ -74,3 +74,8 @@ oma link codex
 | `oma update` без изменения команд hooks | Ничего — доверие сохраняется |
 | `oma update` изменил команду hook | Снова выполните `/hooks`, чтобы повторно доверить hook (установщик печатает уведомление) |
 | Subprocess Codex, запущенный oh-my-agent | Ничего — bypass применяется автоматически |
+
+## См. также
+
+- [Интеграция в существующий проект](./integration.md): что установщик записывает для каждого вендора
+- [Глобальная установка](./global-install.md): установки для всего пользователя, которые записывают `~/.codex/`

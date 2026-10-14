@@ -1,7 +1,7 @@
 ---
 title: "Anleitung: Bugfixing"
 sidebar_label: Bugfixing
-description: Strukturierter siebenstufiger Debugging-Workflow mit Schweregrad-Triage, Eskalationssignalen, quellengestützter Diagnose und Post-Fix-Validierung.
+description: Strukturierter Debugging-Workflow in sieben Schritten mit Schweregrad-Triage, Eskalationssignalen, quellengestützter Diagnose und Post-Fix-Validierung.
 ---
 
 # Anleitung: Bugfixing
@@ -10,7 +10,7 @@ description: Strukturierter siebenstufiger Debugging-Workflow mit Schweregrad-Tr
 
 Verwenden Sie `/debug` (oder sagen Sie in natürlicher Sprache "fix bug", "fix error", "debug"), wenn Sie einen bestimmten Bug diagnostizieren und beheben möchten. Der Workflow bietet einen strukturierten, reproduzierbaren Ansatz zum Debuggen, der die häufige Falle vermeidet, Symptome statt Ursachen zu beheben.
 
-Der Debug-Workflow unterstützt alle konfigurierten Anbieter. Die Stufen 1-5 werden inline ausgeführt. Stufe 6 (Scan nach ähnlichen Mustern) kann an einen `debug-investigator`-Subagenten delegiert werden, wenn der Scan-Umfang groß ist (10+ Dateien oder domänenübergreifende Fehler); anschließend legt Stufe 7 den Memory-Eintrag an.
+Der Debug-Workflow unterstützt alle konfigurierten Anbieter. Die Schritte 1-5 werden inline ausgeführt. Schritt 6 (Scan nach ähnlichen Mustern) kann an einen `debug-investigator`-Subagenten delegiert werden, wenn der Scan-Umfang groß ist (10+ Dateien oder domänenübergreifende Fehler); anschließend legt Schritt 7 den Memory-Eintrag an.
 
 ---
 
@@ -74,7 +74,7 @@ Der Schweregrad bestimmt, wie der Bug behandelt wird und wie schnell er behoben 
 - Mobile App stürzt beim Start auf Android-14-Geräten ab.
 - Passwort-Zurücksetzen-E-Mails werden nicht gesendet (E-Mail-Service-Integration defekt).
 
-**Debug-Ansatz:** Vollständige siebenstufige Schleife. QA-Review nach der Behebung empfohlen.
+**Debug-Ansatz:** Vollständige Schleife mit sieben Schritten. QA-Review nach der Behebung empfohlen.
 
 ### P2 — Mittel (dieser Sprint)
 
@@ -88,7 +88,7 @@ Der Schweregrad bestimmt, wie der Bug behandelt wird und wie schnell er behoben 
 - API-Antwortzeit für den /users-Endpunkt beträgt 8 Sekunden (sollte unter 1 s liegen).
 - Seitenumbruch zeigt "Seite 1 von 0" an, wenn die Liste leer ist.
 
-**Debug-Ansatz:** Vollständige siebenstufige Schleife. In die QA-Regressions-Suite aufnehmen.
+**Debug-Ansatz:** Vollständige Schleife mit sieben Schritten. In die QA-Regressions-Suite aufnehmen.
 
 ### P3 — Niedrig (Backlog)
 
@@ -106,9 +106,15 @@ Der Schweregrad bestimmt, wie der Bug behandelt wird und wie schnell er behoben 
 
 ---
 
-## Die siebenstufige Debug-Schleife im Detail
+## Die Debug-Schleife mit sieben Schritten im Detail {#the-seven-stage-debug-loop-in-detail}
 
-Der `/debug`-Workflow führt diese Stufen in der angegebenen Reihenfolge aus. Er verwendet den konfigurierten Code-Intelligence-Anbieter. Native Suche ist nur für Pfade außerhalb des Projekts oder für ignorierte Pfade vorgesehen, wenn dieser Anbieter nicht verfügbar ist oder eine Zeitüberschreitung auftritt.
+Der `/debug`-Workflow führt diese Schritte in der angegebenen Reihenfolge aus. Er verwendet den konfigurierten Code-Intelligence-Anbieter. Native Suche ist nur für Pfade außerhalb des Projekts oder für ignorierte Pfade vorgesehen, wenn dieser Anbieter nicht verfügbar ist oder eine Zeitüberschreitung auftritt.
+
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
 
 ### Schritt 1: Fehlerinformationen sammeln
 
@@ -187,7 +193,6 @@ Vendor-spezifische Startmethoden:
 |:-------|:------------|
 | Claude Code | Agent-Tool mit `.claude/agents/debug-investigator.md` |
 | Codex CLI | Modellvermittelte Subagenten-Anfrage, Ergebnisse als JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / Fallback | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 Alle ähnlichen verwundbaren Stellen werden gemeldet. Bestätigte Fälle werden in derselben Sitzung behoben.
@@ -206,7 +211,7 @@ Der Workflow schreibt eine Memory-Datei mit:
 
 Beim Auslösen des Debug-Workflows kann ein strukturierter Prompt angegeben werden:
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -233,7 +238,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 Für einfachere Bugs genügt ein kürzerer Prompt:
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -299,3 +304,11 @@ Der Debug-Workflow ist abgeschlossen, wenn:
 4. Die Codebasis nach ähnlichen Mustern gescannt wurde und alle bestätigten Fälle behandelt sind.
 5. Ein Fehlerbericht im Memory mit folgenden Informationen hinterlegt ist: Symptom, Grundursache, angewendete Korrektur, geänderte Dateien, Regressionstest-Speicherort und gefundene ähnliche Muster.
 6. Alle vorhandenen Tests nach der Korrektur weiterhin bestehen.
+
+---
+
+## Nächste Schritte
+
+- Die Grundursache reicht über Domänen hinweg: [Multi-Agent-Projekte](./multi-agent-project.md)
+- Den Korrekturlauf aufzeichnen oder fortsetzen: [Ergebnisse und Fortsetzen](./agent-results-and-resume.md)
+- Etwas in OMA selbst ist fehlgeschlagen: [Fehlerbehebung](./troubleshooting.md)

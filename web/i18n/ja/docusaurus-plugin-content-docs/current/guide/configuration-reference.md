@@ -18,18 +18,27 @@ oma doctor --profile
 
 ## どのファイルが優先されるか
 
-ローダーは現在のディレクトリから上に向かって検索し、共有設定またはローカル設定を含む最も近い `.agents/` ディレクトリで停止します。そのディレクトリでは次の順に処理します。
+ローダーは `$OMA_HOME/.agents/`（デフォルトは
+`~/.oma/.agents/`）からグローバルのデフォルトを読み込み、次に現在のディレクトリから上に向かって検索し、
+最も近いプロジェクトの `.agents/` ディレクトリで停止します。選ばれた各ディレクトリでは次のように処理します。
 
-1. `oma-config.cue` を最初に評価します。
-2. 共有 CUE ファイルがない、または評価できない場合は `oma-config.yaml` を使います。
-3. 1 つのローカルファイル（`oma-config.local.cue` または `.local.yaml`）を共有ファイルにマージします。
-4. `OMA_MODEL_PRESET` が設定されていれば、そのプロセスの `model_preset` を上書きします。
+1. `oma-config.yaml` が共有の値を提供します。
+2. `oma-config.cue` が存在して有効な場合は、それが設定するすべてのキーを上書きします。CUE が設定しない YAML のキーは残ります。CUE ファイルを評価できない場合、OMA は警告を出して YAML ファイルだけを使います。
+3. 1 つのローカルファイル（`oma-config.local.cue` または `.local.yaml`）を共有の結果にマージします。
+
+プロジェクトの共有／ローカルの結果は、グローバルの共有／ローカルの結果を上書きします。
+`OMA_MODEL_PRESET` が設定されていれば、すべてのファイルレイヤーの後で `model_preset` を上書きします。
+完全な順序、フロー図、トラブルシューティングは
+[設定の読み込み](/docs/guide/oma-config-semantics#precedence-table)にあります。
 
 マップは再帰的にマージされます。配列、スカラー、`null` は共有値を置き換えます。ローカル形式を両方残すとエラーになります。ローカルファイルが不正な場合は、プライベートな上書きを黙って無視できないよう致命的エラーになります。
 
-これは一般的なプロジェクトと HOME のマージ規則ではなく、最も近いレイヤーの規則です。グローバルインストールは HOME がインストールルートなので、`~/.agents/oma-config.*` を読み込みます。プロジェクトのコマンドは最も近いプロジェクトレイヤーを読み込みます。`auto_update_cli` の更新確認だけは例外で、プロジェクト、HOME、デフォルト（有効）の順に確認します。
+異なる祖先のプロジェクトルート同士はマージされません。最も近いプロジェクトの
+`.agents/` が空でも、その境界は成立します。廃止された `~/.agents/` のインストールは
+移行の入力であり、プロジェクトのフォールバックとしては読み込まれません。グローバルのデフォルトは、
+現在のプロジェクトの識別情報やメモリのスコープを変更しません。
 
-## トップレベルキー
+## トップレベルキー {#top-level-keys}
 
 次のキーは、現在のランタイムスキーマまたは OMA に同梱された利用側で読み込まれます。「部分的」と示したキーは、意図的に一部だけを指定します。ネストした値を省略するとコードのデフォルトが使われます。
 
@@ -43,14 +52,14 @@ oma doctor --profile
 | `telemetry` | boolean | `false` | install、update、link の調整で使うベンダーテレメトリのオプトイン。 |
 | `model_preset` | 空でない string | 新しいテンプレートでは `auto` | 組み込みまたはカスタムのモデルプリセット。`OMA_MODEL_PRESET` は 1 プロセスだけ上書きします。 |
 | `free` | `base_url`、`api_key_env`、`model` | `http://127.0.0.1:31415/v1`、`FREELLM_API_KEY`、`auto` | プリセットが `free` の場合の FreeLLMAPI 設定。`FREELLM_BASE_URL` と `FREELLM_MODEL` はファイルの値を上書きします。キー名に秘密情報自体を入れません。[エージェントごとのモデル設定](/docs/guide/per-agent-models#freellmapi-preset)を参照してください。 |
-| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory` | `context7`、`native`、`serena`、`block`、`agentmemory` | ドキュメント、検索、コードインテリジェンス、意味メモリのプロバイダーを選択します。コードインテリジェンスは `serena` または `gortex`、意味メモリは `agentmemory`、`honcho`、`none` を受け付けます。`code_intelligence_guard`（`block` または `off`）は PreToolUse の検索ガードを制御します。確認済みのプロバイダー除外対象、またはプロジェクト外のパスだけを対象にしたネイティブ検索は、迂回策を使わずに許可されます。ガードは Serena の除外設定と有効な gitignore ルール、または Gortex の除外一覧を読み取ります。ディレクトリ名から依存関係を推測することはありません。フックは `OMA_CI_ALLOW_NATIVE` の名前を挙げません。`OMA_CI_ALLOW_NATIVE=1` を前置したシェル検索がガードを迂回できるのは、プロジェクト外のリソースや、ガードが認識しなかった無視対象のパスに限られ、プロジェクトのソースは対象外です。 |
+| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory` | `context7`、`native`、`serena`、`block`、`agentmemory` | ドキュメント、検索、コードインテリジェンス、意味メモリのプロバイダーを選択します。[プロバイダー](#providers)を参照してください。 |
 | `brave` | `api_key_env` または `api_key_vault` | 未設定 | Brave 検索の認証情報への参照。 |
 | `honcho` | `base_url`、`workspace_id`、`project_id`、`api_key_env`、`api_key_vault`、`timeout_ms`、`max_results`、`max_tokens`、`recall_mode` | [Honcho の詳細](#honcho-semantic-memory)を参照 | Honcho の意味メモリ接続設定。 |
 | `agents` | エージェント ID → `model`、任意の `effort`、`thinking`、`memory` | プリセットの解決結果 | 選択したプリセットに適用するエージェントごとの上書き。effort は `none`、`low`、`medium`、`high`、`xhigh`、memory は `user`、`project`、`local` です。 |
 | `models` | モデルスラッグ → CLI マッピング | 未設定 | 対応するベンダー CLI 用のインラインモデル定義。 |
 | `custom_presets` | プリセット → description、任意の `extends`、`agent_defaults` | 未設定 | ユーザー定義プリセット。`extends` で組み込みプリセットを継承できます。 |
-| `vendors` | YAML: 選択したベンダー ID の `string[]`。CUE テンプレート: 任意の `vendors.pi` フォールバックマップ | YAML リストではリンク可能な全ベンダー | `oma install` と `oma update` が YAML に投影するベンダー統合を選択します。ディスパッチの機能マップは管理対象のオーケストレーション設定にあります。[ベンダー選択とディスパッチメタデータ](#vendor-selection-and-dispatch-metadata)を参照してください。 |
-| `default_cli` | string | 利用側のフォールバック | モデルプランが解決しない場合の、旧来のベンダー専用フォールバック。 |
+| `vendors` | YAML: 選択したベンダー ID の `string[]`。CUE テンプレート: 任意の `vendors.pi` フォールバックマップ | 省略時: `oma link` はリンク可能なすべてのベンダー、`oma update` はプロジェクトディレクトリが存在するベンダーを使う | `oma install` と `oma update` が YAML に投影するベンダー統合を選択します。ディスパッチの機能マップは管理対象のオーケストレーション設定にあります。[ベンダー選択とディスパッチメタデータ](#vendor-selection-and-dispatch-metadata)を参照してください。 |
+| `default_cli` | ベンダー ID（`claude`、`codex`、`cursor`、`antigravity`、`qwen`、`grok`、`kimi`、`kiro`、`opencode`、`pi`） | `claude`。`free` トランスポートでは `codex` | ほかに何もベンダーを選ばないときに使うベンダー。`auto` でランタイムを検出できない場合、または `free` トランスポートで `--vendor`、`OMA_RUNTIME_VENDOR`、検出したランタイムのいずれも該当しない場合です。[OMA がエージェントのモデルと CLI を解決する方法](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli)を参照してください。 |
 | `session.quota_cap` | `tokens`、`spawn_count`、`per_vendor: map<string, integer>` | 省略した各次元は上限なし | 次のエージェント起動前に確認するトークン数と起動数の上限。[セッションのクォータ上限](#session-quota-caps)を参照してください。 |
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` の動作とスキャン除外。 |
 | `serena` | `mode: bridge\|stdio`、`auto_update` | `bridge`、`true` | Serena MCP のトランスポートと更新動作。 |
@@ -73,9 +82,25 @@ oma doctor --profile
 | `refactor_guard` | `enabled`、`max_lines` | `false`、`500` | stop-hook の行数ガードを選び、ファイルごとのコード予算を設定します。 |
 | `scm` | `conventional_commits`、`branching_strategy`、`require_pr_for_default_branch`、`co_author.*`、`forbidden_patterns`、`allowed_exceptions` | 同梱テンプレートでは Conventional Commits と PR 保護を有効にし、テンプレートの co-author とファイル名リストを使う | SCM スキル、コミットフック、秘密パターンガードを制御します。有効にする前に、テンプレートの本人情報を自分のものへ置き換えてください。 |
 
-これらのブロックは設定の passthrough で受け付けられ、対応する機能またはワークフローが解釈します。`serena_reaper` パーサーは上記の snake_case キーを読みます。古いテンプレートのコメントで camelCase が使われていても同じです。ネストしたキーを追加する前に対応する機能ガイドを読んでください。このページでは、列挙した利用側の外にキーを作りません。
+これらのブロックは設定の passthrough で受け付けられ、対応する機能またはワークフローが解釈します。`serena_reaper` パーサーは上記の snake_case キーだけを読み、camelCase は無視します。同梱テンプレートはまだ camelCase（`keepWarm`、`idleMinutes`、`graceSeconds`）を示しており、同梱の CUE スキーマはそのスキーマブロック内の snake_case キーを拒否します（`field not allowed`）。そのため、これらは `oma-config.yaml` またはローカルの YAML オーバーレイで設定してください。ネストしたキーを追加する前に対応する機能ガイドを読んでください。このページでは、列挙した利用側の外にキーを作りません。
 
 ## 正確なネストオブジェクト
+
+### プロバイダー {#providers}
+
+`providers` は機能ごとに 1 つのプロバイダーを選びます。
+
+| キー | 受け付ける値 | デフォルト |
+| --- | --- | --- |
+| `docs` | `context7` | `context7` |
+| `web` | 検索プロバイダー ID（英小文字、数字、`_`、`-`）。`native` や `brave` など | `native` |
+| `code_intelligence` | `serena`、`gortex` | `serena` |
+| `code_intelligence_guard` | `block`、`off` | `block` |
+| `semantic_memory` | `agentmemory`、`honcho`、`none` | `agentmemory` |
+
+`code_intelligence_guard` は PreToolUse の検索ガードを制御します。確認済みのプロバイダー除外対象、またはプロジェクト外のパスだけを対象にしたネイティブ検索は、迂回策を使わずに許可されます。ガードは Serena の除外設定と有効な gitignore ルール、または Gortex の除外一覧を読み取ります。ディレクトリ名から依存関係を推測することはありません。
+
+フックは `OMA_CI_ALLOW_NATIVE` の名前を挙げません。`OMA_CI_ALLOW_NATIVE=1` を前置したシェル検索がガードを迂回できるのは、プロジェクト外のリソースや、ガードが認識しなかった無視対象のパスに限られ、プロジェクトのソースは対象外です。
 
 ### Honcho の意味メモリ {#honcho-semantic-memory}
 
@@ -113,7 +138,7 @@ Honcho を対話式または保存済み URL なしの非対話式で初期設�
 
 ### セッションのクォータ上限 {#session-quota-caps}
 
-`session.quota_cap` は部分マップです。すべてのフィールドは任意で、省略するとその次元に上限を設けません。値は 0 以上の整数で、`per_vendor` はベンダー名をトークン予算へ対応付けます。
+`session.quota_cap` は部分マップです。すべてのフィールドは任意で、省略するとその次元に上限を設けません。値は `_` 区切りを使わずに書いた 0 以上の整数でなければなりません（YAML は `2_000_000` を文字列として読むため、その次元は上限なしになります）。`per_vendor` は、`claude`、`codex`、`antigravity` などのディスパッチ用ベンダー ID をトークン予算へ対応付けます。
 
 ```yaml
 session:
@@ -138,7 +163,7 @@ vendors:
   - pi
 ```
 
-リストを省略するか空にすると、OMA のリンク可能なベンダーレジストリにあるすべての ID を選びます。このリストが制御するのはインストールと更新の投影であり、ベンダーごとのコマンド機能マップではありません。
+リストを指定するとそのベンダーだけを選び、`vendors: []` は何も選びません。`vendors` キーがない場合、`oma link` は OMA のリンク可能なベンダーレジストリにあるすべてのベンダーを対象にし、`oma update` はプロジェクトディレクトリがすでに存在するベンダーだけを対象にします。このリストが制御するのはインストールと更新の投影であり、ベンダーごとのコマンド機能マップではありません。
 
 同梱の `.agents/oma-config.cue` スキーマでは、`command`、`prompt_flag`、`model_flag`、`default_model`、`thinking_flag` フィールドを持つ `vendors.pi` オブジェクトも使えます。このブロックは CUE テンプレートの型付きフォールバック形状です。現在のエージェントディスパッチ経路は、下記の管理対象オーケストレーションレジストリから機能フィールドを解決します。そのため、`vendors.pi` を YAML の選択リストの代わりに使わないでください。
 
@@ -164,11 +189,17 @@ vendors:
 
 プロジェクトには固定プリセットを選びつつ、個人用の上書きをローカルに保管します。
 
+**共有ファイル**（コミットする）:
+
 ```yaml
 # .agents/oma-config.yaml
 language: en
 model_preset: mixed
+```
 
+**ローカルオーバーレイ**（Git で無視する）:
+
+```yaml
 # .agents/oma-config.local.yaml
 agents:
   backend:
@@ -193,7 +224,7 @@ mcp:
   devtools_browsers: []
 ```
 
-## 更新と所有権のルール
+## 更新と所有権のルール {#update-and-ownership-rules}
 
 `.agents/oma-config.yaml` はユーザーが所有します。`oma update` は既存の内容を保持し、`# Added by oma update` マーカーの下に新しく同梱されたトップレベルテンプレートキーを追加することがあります。`oma update --force` はユーザー設定、MCP 設定、スタックディレクトリを置き換える可能性があります。カスタマイズをリセットする意図がある場合だけ使ってください。ローカルオーバーレイはマシン固有の値を置く場所です。
 

@@ -10,12 +10,12 @@ A execução com uma única skill é o caminho rápido: um agente, um domínio e
 
 ## Caminho rápido
 
-1. Execute `oma doctor` uma vez para confirmar a integração do host selecionado. Avisos opcionais de fornecedores não bloqueiam uma tarefa que não use esses fornecedores.
+1. Execute `oma doctor` uma vez para confirmar a integração do host selecionado. Avisos opcionais de providers não bloqueiam uma tarefa que não use esses providers.
 2. Descreva uma mudança autocontida com **Goal**, **Context**, **Constraints** e uma condição **Done When** clara.
 3. Espere que a skill selecionada inspecione o repositório, declare seu escopo quando o contrato de execução ativo exigir um `CHARTER_CHECK` e informe quais verificações realmente foram executadas.
 4. Se a tarefa crescer entre limites de API, UI, banco de dados ou mobile, pare a execução com uma skill única e mude para `/work` ou `/orchestrate`.
 
-Para execuções gerenciadas paradas, use `oma agent status <session-id> [agent-id]`; depois inspecione os recibos em `.agents/state/agent-runs/` e o caminho de claim injetado antes de tentar novamente. Consulte [Padrões importantes](../getting-started/important-defaults.md) para o comportamento de fornecedores e recuperação.
+Para execuções gerenciadas paradas, use `oma agent status <session-id> [agent-id]`; depois inspecione os recibos em `.agents/state/agent-runs/` e o caminho de claim injetado antes de tentar novamente. Consulte [Padrões importantes](../getting-started/important-defaults.md) para o comportamento de providers e recuperação.
 
 ---
 
@@ -49,7 +49,7 @@ Testes e critérios de aceitação também fazem parte do trabalho com uma skill
 
 ## Checklist de preflight
 
-Antes de criar o prompt, responda a estas quatro perguntas (elas correspondem aos quatro elementos da [Estrutura do prompt](/docs/core-concepts/skills)):
+Antes de criar o prompt, responda a estas quatro perguntas:
 
 | Elemento | Pergunta | Por que isso importa |
 |----------|----------|----------------------|
@@ -111,10 +111,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **Avaliação de dificuldade:** Média (2-3 arquivos, algumas decisões de design sobre UX de validação)
 3. **Recursos carregados:**
    - `execution-protocol.md` (sempre)
-   - `snippets.md` (padrões de formulário + Zod)
-   - padrões de componentes existentes e `snippets.md` quando fornecidos pela skill
+   - `snippets.md` (padrões de formulário e Zod, além dos padrões de componentes existentes quando a skill os fornece)
 4. **Contrato de execução (quando habilitado) pode emitir `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -165,7 +164,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - `stack/tech-stack.md` correspondente ou referências de tech-stack da variante quando disponíveis
 <!-- oma-docs:ignore-end -->
 5. **Contrato de execução (quando habilitado) pode emitir `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -204,7 +203,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md` (template de tela, padrão de provider Riverpod)
    - `screen-template.dart`
 4. **Contrato de execução (quando habilitado) pode emitir `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -247,7 +246,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`
    - `anti-patterns.md` (revisão durante a otimização)
 4. **Contrato de execução (quando habilitado) pode emitir `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -324,10 +323,20 @@ Observe estes sinais de que você deve mudar da execução com uma skill única 
 | O CHARTER_CHECK do agente mostra itens "Must NOT do" que são realmente necessários | O escopo excede um domínio | Planeje a funcionalidade completa com `/plan` primeiro |
 | A correção se propaga para 3+ arquivos em camadas diferentes | Uma correção afeta vários domínios | Use `/debug` com escopo mais amplo ou `/work` |
 | O agente descobre uma incompatibilidade de contrato de API | Há desacordo entre frontend e backend | Execute `/plan` para definir contratos e depois crie ambos novamente |
-| O portão de qualidade falha em pontos de integração | Os componentes não se conectam corretamente | Adicione uma etapa de revisão QA: `oma agent spawn qa "Review integration"` |
+| O portão de qualidade falha em pontos de integração | Os componentes não se conectam corretamente | Execute `/review` ou adicione uma passada de QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | A tarefa cresce de "um componente" para "três componentes + nova rota + API" | O escopo aumentou durante a execução | Pare, execute `/plan` para decompor e depois use `/orchestrate` |
 | O agente bloqueia com esclarecimento HIGH | Os requisitos são fundamentalmente ambíguos | Responda às perguntas do agente ou execute `/brainstorm` para esclarecer a abordagem |
 
 ### Regra de bolso
 
 Se você recriar o mesmo agente mais de duas vezes com refinamentos, a tarefa provavelmente abrange vários domínios. Execute `/work`, ou pelo menos `/plan`, para decompô-la.
+
+---
+
+## Próximos passos
+
+- A tarefa abrange vários domínios: [Projetos Multi-Agente](./multi-agent-project.md)
+- A tarefa é um bug: [Correção de Bugs](./bug-fixing.md)
+- Audite ou retome uma execução: [Resultados e retomada](./agent-results-and-resume.md)
+- Algo falhou: [Solução de problemas](./troubleshooting.md)
+- Escolha entre uma skill e um workflow: [Workflows](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

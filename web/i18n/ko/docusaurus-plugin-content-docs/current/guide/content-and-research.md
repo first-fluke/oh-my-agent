@@ -1,25 +1,31 @@
 ---
 title: "가이드: 콘텐츠 및 리서치 워크플로우"
 sidebar_label: 개요
-description: PDF와 HWP 추출, 음성, 학술 조사, 슬라이드, 리캡, 번역, 학술 글쓰기에 맞는 oh-my-agent 경로를 선택합니다.
+description: PDF와 HWP 추출, 음성, 학술 및 웹 리서치, 슬라이드, 이미지, 영상, 코드 설명서, 다이어그램, 시장 조사, 리캡, 번역, 학술 글쓰기에 맞는 oh-my-agent 경로와 전제 조건을 선택합니다.
 ---
 
 # 콘텐츠 및 리서치 워크플로우 {#content-and-research-workflows}
 
-이 가이드는 문서, 오디오, 리서치, 프레젠테이션 작업을 해당 기능이 담당하는 경로로 연결합니다. 필요한 산출물부터 정한 다음 검토 가능한 결과를 만드는 가장 작은 명령이나 스킬 진입점을 사용합니다.
+이 가이드는 문서, 오디오, 리서치, 미디어, 프레젠테이션 작업을 해당 기능이 담당하는 경로로 연결합니다. 필요한 산출물부터 정한 다음 검토 가능한 결과를 만드는 가장 작은 명령이나 스킬 진입점을 사용합니다. 별도 가이드가 있는 기능은 마지막 열에서 해당 가이드로 연결되며, 나머지는 이 페이지에서 다룹니다.
 
-| 필요한 작업 | 진입점 | 첫 결과 |
-|---|---|---|
-| PDF 추출 | `oma-pdf` 스킬 또는 아래의 `uvx opendataloader-pdf` 명령 | Markdown, 텍스트, JSON 또는 짧은 추출 보고서 |
-| HWP/HWPX/HWPML 추출 | `oma-hwp` 스킬과 `bunx kordoc@latest` | Markdown 또는 구조화된 JSON/청크 |
-| 음성 생성 또는 전사 | `/oma-voice` | 오디오와 매니페스트 또는 `transcript.md`와 매니페스트 |
-| 논문 검색 및 검증 | `oma scholar` | 검색 결과, 가져온 사이드카 또는 린트 보고서 |
-| 프레젠테이션 제작 | `oma-slide` 스킬과 `oma slide` | 검증된 HTML 슬라이드와 선택적 내보내기 파일 |
-| 에이전트 대화 요약 | `oma recap` | 증거 상태가 포함된 날짜별 Markdown 리캡 |
-| 현지화된 문장 번역 또는 검토 | `oma-translation` 스킬 | 대상 언어 텍스트 또는 증거 기반 검토 |
-| 학술 문장 초안 또는 검토 | `oma-academic-writing` 스킬 | Claim-Evidence Map이 포함된 초안, 수정본 또는 준수 보고서 |
+| 필요한 작업 | 진입점 | 전제 조건 | 첫 결과 | 가이드 |
+|---|---|---|---|---|
+| PDF 추출 | `oma-pdf` 스킬 또는 아래의 `uvx opendataloader-pdf` 명령 | `uv`(`uvx`용) | Markdown, 텍스트, JSON 또는 짧은 추출 보고서 | [아래](#extract-pdf-content) |
+| HWP/HWPX/HWPML 추출 | `oma-hwp` 스킬과 `bunx kordoc@latest` | Bun | Markdown 또는 구조화된 JSON/청크 | [아래](#extract-hwp-family-documents) |
+| 음성 생성 또는 전사 | `/oma-voice` | `127.0.0.1:17493`에서 실행 중인 Voicebox 앱 | 오디오와 매니페스트 또는 `transcript.md`와 매니페스트 | [아래](#generate-speech-or-transcribe-audio) |
+| 논문 검색 및 검증 | `oma scholar` | 없음. 선택적으로 `S2_API_KEY`, `OPENALEX_EMAIL` | 검색 결과, 가져온 사이드카 또는 린트 보고서 | [아래](#search-and-validate-scholarly-material) |
+| 웹 검색 또는 페이지 가져오기 | `oma-search` 스킬, `oma search` | 선택적으로 Chrome, Python `curl_cffi`, `yt-dlp`, `gh`(`oma search doctor`로 확인) | stdout의 JSON | [CLI 명령: search](../cli-interfaces/commands.md#search) |
+| 프레젠테이션 제작 | `oma-slide` 스킬과 `oma slide` | Chrome 또는 `OMA_CHROME_PATH` | 검증된 HTML 슬라이드와 선택적 내보내기 파일 | [아래](#slides-and-presentations) |
+| 이미지 생성 | `oma-image` 스킬, `oma image generate` | `POLLINATIONS_API_KEY`, `codex login`, 로그인된 `agy` 중 하나 | `.agents/results/images/` 아래의 이미지와 `manifest.json` | [이미지 생성](./image-generation.md) |
+| 숏폼, 설명, 데모 영상 제작 | `/video`, `oma video` | Node.js 22 이상, FFmpeg, 이후 `oma video doctor --install` | `.agents/results/videos/` 아래의 실행 디렉토리, `oma video render` 후에는 MP4 | [영상 생성](./video-generation.md) |
+| 변경 사항이나 주제를 한 페이지로 설명 | `/explain`, `oma explain` | 변경 모드에는 git, PR 참조에는 `gh` | `.agents/results/explain/` 아래의 독립 실행형 HTML | [코드 설명서](./code-explainer.md) |
+| 인터랙티브 아키텍처 다이어그램 | `/architecture`, `oma diagram` | 없음. archify는 처음 사용할 때 가져옵니다 | Mermaid 블록, archify가 해석되면 `.archify.html`도 생성 | [다이어그램 엔진](./diagram-engine.md) |
+| 커뮤니티 시장 조사 | `oma-market` 스킬, `oma market` | Python 3.12 이상 | `.agents/results/market/` 아래의 브리프 | [시장 조사](./market-research.md) |
+| 에이전트 대화 요약 | `/recap`, `oma recap` | 없음 | CLI에서는 리캡 JSON, `/recap`에서는 날짜가 붙은 Markdown 리캡 | [아래](#recap-agent-conversations) |
+| 현지화된 문장 번역 또는 검토 | `oma-translation` 스킬 | 없음 | 대상 언어 텍스트 또는 증거 기반 검토 | [아래](#translate-or-review-localized-content) |
+| 학술 문장 초안 또는 검토 | `oma-academic-writing` 스킬 | 없음 | Claim-Evidence Map이 포함된 초안, 수정본 또는 준수 보고서 | [아래](#draft-or-audit-academic-writing) |
 
-이 페이지의 **`oma` 명령 이름**은 등록된 공개 명령입니다. `uvx`, `bunx`, `bun`은 담당 스킬이 문서화하는 외부 변환 도구입니다. 나머지 스킬은 자연어 또는 슬래시 명령 진입점이며 독립적인 `oma pdf`, `oma hwp`, `oma voice`, `oma translation`, `oma academic-writing` 명령은 없습니다.
+이 페이지의 `oma` 명령 이름은 등록된 공개 명령입니다. `uvx`, `bunx`, `bun`은 담당 스킬이 문서화하는 외부 변환 도구입니다. 나머지 [스킬](../getting-started/glossary.md#skill)은 자연어 또는 슬래시 명령 진입점이며 독립적인 `oma pdf`, `oma hwp`, `oma voice`, `oma translation`, `oma academic-writing` 명령은 없습니다.
 
 ## PDF 콘텐츠 추출 {#extract-pdf-content}
 
@@ -44,7 +50,7 @@ uvx mdformat "$OUT/<document>.md"
 스캔했거나 이미지 기반인 PDF는 hybrid 서버를 먼저 시작한 뒤 변환기를 실행합니다.
 
 ```bash
-# 터미널 1: 변환이 실행되는 동안 이 로컬 서버를 계속 실행합니다.
+# Terminal 1: leave this local server running while the conversion runs.
 uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid \
   --port 5002 --force-ocr --ocr-lang "ko,en"
 ```
@@ -57,7 +63,7 @@ uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full \
   "<input.pdf>" --format markdown --output-dir "$OUT"
 ```
 
-성공한 산출물은 선택한 출력 디렉토리의 Markdown 또는 텍스트 파일이며 페이지 수와 품질 메모가 함께 제공됩니다. 암호화된 PDF에는 잠금 해제된 사본이나 비밀번호가 필요합니다. 큰 파일은 동일한 basename을 덮어쓰지 않도록 별도 페이지 범위와 출력 디렉토리를 사용할 수 있습니다. OCR 추측을 원본의 사실로 취급하지 말고 불확실하거나 누락된 표를 보고합니다.
+성공한 산출물은 선택한 출력 디렉토리의 Markdown 또는 텍스트 파일이며 페이지 수와 품질 메모가 함께 제공됩니다. 암호화된 PDF에는 잠금 해제된 사본이나 비밀번호가 필요합니다. 큰 파일은 반복 실행이 같은 basename을 덮어쓰지 않도록 페이지 범위와 출력 디렉토리를 나눠야 할 수 있습니다. OCR 추측을 원본의 사실로 취급하지 말고 불확실하거나 누락된 표를 보고합니다.
 
 ## HWP 계열 문서 추출 {#extract-hwp-family-documents}
 
@@ -67,7 +73,7 @@ uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full \
 OUT=".agents/results/hwp/<document>.md"
 bunx kordoc@latest "<input.hwp>" -o "$OUT"
 
-# 스킬의 정리 도우미입니다. 프로젝트 또는 전역 oma-hwp 스킬 디렉토리로 설정합니다.
+# The skill's cleanup helper; set this to the project or global oma-hwp skill directory.
 HWP_SKILL_DIR=".agents/skills/oma-hwp"
 bun "$HWP_SKILL_DIR/resources/flatten-tables.ts" "$OUT"
 ```
@@ -80,7 +86,7 @@ bun "$HWP_SKILL_DIR/resources/flatten-tables.ts" "$OUT"
 bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 ```
 
-기본 출력은 Markdown입니다. 구조화된 AST가 필요하면 `json`, 검색 지향 청크가 필요하면 `chunks`를 요청합니다. `--dedupe-headers`, `--keep-empty-cols`, `--inline-images` 변환 옵션은 일반적인 표와 이미지 문제를 제어합니다. 결과를 다른 스킬에 넘기기 전에 제목, 중첩 또는 병합된 표, 목록, 이미지, 각주, 링크를 확인합니다.
+기본 출력은 Markdown입니다. 구조화된 AST가 필요하면 `bunx kordoc@latest "<input.hwp>" --format json`을, 검색 지향 청크가 필요하면 `--format chunks`를 사용합니다. `--dedupe-headers`, `--keep-empty-cols`, `--inline-images` 변환 옵션은 일반적인 표와 이미지 문제를 제어합니다. 결과를 다른 스킬에 넘기기 전에 제목, 중첩 또는 병합된 표, 목록, 이미지, 각주, 링크를 확인합니다.
 
 `bun`과 `bunx`가 전제 조건입니다. 빈 출력은 스캔된 이미지 콘텐츠를 의미할 수 있으므로 OCR이 가능한 워크플로우로 보냅니다. 암호화되었거나 DRM으로 제한된 자료는 불완전한 상태로 남을 수 있습니다. PDF, DOCX, XLSX 입력은 `kordoc`에 다른 작성·파싱 하위 명령이 있더라도 해당 스킬에 맡깁니다.
 
@@ -100,7 +106,7 @@ TTS는 호출당 최대 5,000자를 받고 Voicebox 음성 프로필이 필요�
 
 ## 학술 자료 검색 및 검증 {#search-and-validate-scholarly-material}
 
-Knows 사이드카와 논문 메타데이터에는 `oma scholar` CLI를 사용합니다. search와 resolve는 발견 작업이고, `get`은 레코드나 선택한 절을 가져오며, `lint`는 공유 게이트입니다.
+Knows 사이드카와 논문 메타데이터에는 `oma scholar` CLI를 사용합니다. search와 resolve는 발견 작업이고, `get`은 레코드나 선택한 섹션을 가져오며, `lint`는 공유 게이트입니다.
 
 ```bash
 oma scholar search "vision language action" --limit 10
@@ -115,7 +121,7 @@ oma scholar lint --fail-on-warning paper.knows.yaml
 
 Knows를 먼저 시도하고 OpenAlex와 Semantic Scholar로 폴백합니다. `--section`은 `statements`, `evidence`, `relations`, `artifacts`, `citation`을 요청할 수 있습니다. 로컬 조립 중 연결되지 않은 레코드 간 참조가 예상되면 `--lenient`를 사용하고, 엄격한 CI 게이트에는 `--fail-on-warning`을 사용합니다. 검색 결과나 가져온 사이드카는 발견을 위한 증거이지 논문이 모든 결론을 지지한다는 주장이 아닙니다. 에이전트에서 사이드카를 만들거나 수정한 뒤 공유하기 전에 `oma scholar lint`를 실행합니다.
 
-원격 서비스가 시간 초과되면 더 넓은 질의로 재시도하거나 CLI의 폴백을 허용합니다. Semantic Scholar의 429는 익명 풀 제한일 수 있으므로 나중에 재시도하거나 API 키를 설정합니다. 사이드카에 provenance enum 오류가 있으면 `tool`, `person`, `org` 중 하나를 사용합니다. relation-density 경고가 남으면 원본이 뒷받침하는 경우에만 지원되는 증거 관계를 추가합니다.
+원격 서비스가 시간 초과되면 더 넓은 질의로 재시도하거나 CLI의 폴백을 허용합니다. `--always-fallback`을 사용하면 Knows에 결과가 있어도 OpenAlex와 Semantic Scholar를 함께 조회합니다. Semantic Scholar의 429는 익명 풀 제한일 수 있으므로 나중에 재시도하거나 `S2_API_KEY`를 설정합니다. OpenAlex 요청에 신원을 밝히려면 `OPENALEX_EMAIL`(선택적으로 `OPENALEX_API_KEY`)을 설정합니다. 사이드카에 provenance enum 오류가 있으면 `tool`, `person`, `org` 중 하나를 사용합니다. relation-density 경고가 남으면 원본이 뒷받침하는 경우에만 지원되는 증거 관계를 추가합니다.
 
 ## 슬라이드 및 프레젠테이션 {#slides-and-presentations}
 
@@ -124,7 +130,7 @@ Knows를 먼저 시도하고 OpenAlex와 Semantic Scholar로 폴백합니다. `-
 ```bash
 DECK_DIR=".agents/results/slides/<session-id>"
 oma slide create --output-dir "$DECK_DIR"
-# "$DECK_DIR"에 slide-01.html과 meta.json 작성
+# author slide-01.html and meta.json in "$DECK_DIR"
 oma slide validate --workspace "$DECK_DIR" --output json
 oma slide preview --workspace "$DECK_DIR"
 oma slide bundle --workspace "$DECK_DIR"
@@ -142,20 +148,20 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 ## 에이전트 대화 리캡 {#recap-agent-conversations}
 
-증거 기반 작업 요약에는 `oma recap`을 사용합니다. 달력 날짜와 이동 시간 창은 서로 다른 입력입니다.
+증거 기반 작업 요약에는 `/recap`을 사용하거나 에이전트에게 리캡을 요청합니다. 이 경로는 `oma recap`을 실행해 이력을 수집합니다. 달력 날짜와 이동 시간 창은 서로 다른 입력입니다.
 
 ```bash
-# 달력의 하루
+# A calendar day
 oma recap --date "$(date +%F)" --json
 
-# 지금으로 끝나는 이동 24시간 창
+# A rolling 24-hour window ending now
 oma recap --json
 
-# 최대 30일인 여러 날 이동 창
+# A rolling multi-day window, capped at 30 days
 oma recap --window 7d --tool claude,codex --json
 ```
 
-결과는 `.agents/results/recap/` 아래에 저장됩니다. 하루 리캡은 보통 `{date}.md`, 범위는 `{start-date}~{end-date}.md`입니다. 리캡은 작업 내용별로 묶고 요청·진행 중 작업과 완료 작업을 구분하며 누락된 도구 이력을 기록합니다. 보고서가 더 좁거나 시각적이어야 하면 `--top`, `--sort`, `--mermaid`, `--graph`를 사용합니다. CLI를 사용할 수 없으면 스킬이 문서화된 Claude 이력 폴백을 사용할 수 있지만 줄어든 소스 범위를 밝혀야 합니다.
+이 명령은 수집한 이력을 출력합니다(기본은 터미널 텍스트, `--json`이면 JSON, `--mermaid`면 Mermaid 간트 차트). `--graph`를 사용하면 대신 브라우저에서 인터랙티브 그래프를 엽니다. CLI 자체는 파일을 쓰지 않습니다. `/recap`은 Markdown 리캡을 `.agents/results/recap/` 아래에 저장하며, 하루 리캡은 보통 `{date}.md`, 범위는 `{start-date}~{end-date}.md`입니다. 리캡은 작업 내용별로 묶고 요청·진행 중 작업과 완료 작업을 구분하며 누락된 도구 이력을 기록합니다. 보고서를 더 좁게 봐야 하면 `--top` 또는 `--sort`를 사용합니다. CLI를 사용할 수 없으면 스킬이 문서화된 Claude 이력 폴백을 사용할 수 있지만 줄어든 소스 범위를 밝혀야 합니다.
 
 git 기반 엔지니어링 회고에는 `oma retro`를 사용합니다. 이는 대화 리캡과 다른 질문에 답하며 인접한 시간 창을 `--compare`로 비교할 수 있습니다.
 
@@ -163,13 +169,13 @@ git 기반 엔지니어링 회고에는 `oma retro`를 사용합니다. 이는 �
 
 UI 문자열, 문서, 보고서, 마케팅 문구, 학술 산문에는 `oma-translation`을 사용합니다. 자연어 또는 `/oma-translation` 스킬 진입점으로 호출하며 독립적인 `oma translation` 공개 명령은 없습니다.
 
-스킬에 원문, 대상 로케일, 콘텐츠 유형, 작업이 번역인지 검토인지 소스 diff 동기화인지 전달합니다. 사용 가능한 경우 일치하는 언어 프로필을 하나 읽고 플레이스홀더, 링크, Markdown 구조, 보호된 구문을 보존하며 프로젝트의 형제 번역과 용어집을 따릅니다. 긴 문서나 검토에는 번역 루브릭도 적용합니다. 대상 프로필이 없으면 공통 규칙을 사용하고 그 한계를 한 번 보고합니다.
+스킬에 원문, 대상 로케일, 콘텐츠 유형, 작업이 번역인지 검토인지 소스 diff 동기화인지 전달합니다. 사용 가능한 경우 스킬 리소스에서 일치하는 언어 프로필을 하나 읽고 플레이스홀더, 링크, Markdown 구조, 보호된 구문을 보존하며 프로젝트의 형제 번역과 용어집을 따릅니다. 긴 문서나 검토에는 번역 루브릭도 적용합니다. 대상 프로필이 없으면 공통 규칙을 사용하고 그 한계를 한 번 보고합니다.
 
-문서 작업에서는 앵커와 명령 예시가 정리된 안정적인 영어 페이지를 먼저 번역합니다. CLI 이름, 플래그, 경로, 환경 변수, 코드 블록은 그대로 두고 주변 설명을 번역하며, 대상 페이지 구조를 영어와 비교합니다. 원문 의미가 모호하면 임의로 추측하지 말고 표시합니다.
+문서 작업에서는 앵커와 명령 예시가 정리된 안정적인 영어 페이지를 번역합니다. CLI 이름, 플래그, 경로, 환경 변수, 코드 블록은 그대로 두고 주변 설명을 번역하며, 대상 페이지 구조를 영어와 비교합니다. 원문 의미가 모호하면 임의로 추측하지 말고 표시합니다.
 
 ## 학술 글쓰기 초안 또는 검토 {#draft-or-audit-academic-writing}
 
-영어 에세이, 보고서, 문헌 검토, 분석, 경영진 요약, 결론, 수정에는 `oma-academic-writing`을 사용합니다. 하나의 모드와 루브릭 또는 원문 제약을 선택해 제공합니다.
+영어 에세이, 보고서, 문헌 검토, 분석, 경영진 요약, 결론, 수정에는 `oma-academic-writing`을 사용합니다. 하나의 모드를 선택하고 루브릭 또는 원문 제약을 제공합니다.
 
 ```text
 Draft a literature review in draft mode from these sources. Include a Claim-Evidence Map.
@@ -179,7 +185,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft`는 산문, Writing Notes, Claim-Evidence Map을 반환합니다. `revise`는 원문·수정 블록과 구체적인 변경을 반환합니다. `review`는 문장 구조, 동사, 헤징, 구체성, anti-AI 패턴, 문단 명료성, 리듬, 주장과 증거의 정렬에 대해 PASS/FAIL을 반환합니다. 스킬은 revise/review에서 기존 초안을 처음부터 끝까지 읽고, 뒷받침되지 않는 주장을 약화하거나 제거하며, 영어 단계 뒤 비영어 출력은 `oma-translation`으로 넘깁니다.
 
-초안을 쓰기 전에 소스 발견과 사이드카 증거에는 `oma scholar`를 사용합니다. 인용이나 루브릭이 없으면 주장을 pending으로 표시하거나 필요한 제약을 요청합니다. 빠진 제약을 가짜 소스로 채우지 않습니다. 유용한 완료 산출물은 추적 가능한 증거 맵 또는 감사 보고서가 포함된 산문이며, 근거 없는 일반적인 “다듬은” 문장이 아닙니다.
+초안을 쓰기 전에 소스 발견과 사이드카 증거에는 `oma scholar`를 사용합니다. 인용이나 루브릭이 없으면 주장을 pending으로 표시하거나 필요한 제약을 요청합니다. 빈칸을 가짜 소스로 채우지 않습니다. 유용한 완료 산출물은 추적 가능한 증거 맵 또는 감사 보고서가 포함된 산문이며, 근거 없는 일반적인 “다듬은” 문장이 아닙니다.
 
 ## 복구 체크리스트 {#recovery-checklist}
 
@@ -193,4 +199,8 @@ Review this draft in review mode and return the compliance report with recommend
 | 번역으로 코드 구문이 바뀜 | 보호된 이름을 복원하고 구조 검사를 다시 실행한 뒤 산문 품질을 검토합니다. |
 | 학술 산문에 근거 없는 주장이 있음 | 주장을 제거하거나 완화하고 scholar 경로로 증거를 추가한 뒤 Claim-Evidence Map을 다시 실행합니다. |
 
-등록된 CLI 명령과 옵션 별칭은 [CLI 명령](../cli-interfaces/commands.md)과 [CLI 옵션](../cli-interfaces/options.md)을 참고합니다.
+## 다음 단계 {#next-steps}
+
+- [이미지 생성](./image-generation.md), [영상 생성](./video-generation.md), [코드 설명서](./code-explainer.md), [다이어그램 엔진](./diagram-engine.md), [시장 조사](./market-research.md): 위 표에 있는 기능별 가이드
+- [CLI 명령](../cli-interfaces/commands.md)과 [CLI 옵션](../cli-interfaces/options.md): 등록된 전체 CLI 경로와 옵션 별칭
+- [설정 레퍼런스](./configuration-reference.md): `pdf`, `hwp`, `voice`, `scholar` 설정 섹션

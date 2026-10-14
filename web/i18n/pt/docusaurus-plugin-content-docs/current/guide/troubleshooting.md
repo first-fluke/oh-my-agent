@@ -1,7 +1,7 @@
 ---
 title: "Guia: Solução de problemas"
 sidebar_label: Solução de problemas
-description: Diagnostique falhas de instalação, configuração, vendors, dashboard, agendamento, avaliação e resultados de agentes com verificações baseadas na origem.
+description: Diagnostique falhas de instalação, configuração, vendors, hooks, dashboard, agendamento, avaliação e resultados de agentes pelo sintoma ou pela mensagem de erro exata, com verificações e correções baseadas no código-fonte.
 ---
 
 # Solução de problemas
@@ -14,7 +14,44 @@ oma doctor --json
 
 O comando deve terminar com um JSON que identifique a instalação, o vendor, a configuração e as integrações encontradas. Adicione `--profile` quando o problema envolver a resolução de modelos ou agentes. Guarde o JSON ao relatar um problema; ele contém os caminhos e as verificações selecionados sem exigir uma suposição em prosa.
 
-## A CLI ou a instalação está usando os arquivos errados
+## Encontre seu sintoma {#find-your-symptom}
+
+| Sintoma | Vá para |
+|---------|-------|
+| O OMA lê a configuração errada, ou uma atualização substituiu suas configurações | [A CLI ou a instalação está usando os arquivos errados](#the-cli-or-install-is-using-the-wrong-files) |
+| `oma install` ou `oma update` não consegue baixar um release | [Uma instalação ou atualização não consegue baixar o release](#an-install-or-update-cannot-download-the-release) |
+| A CLI ou o modelo de um vendor não inicia | [Um vendor não inicia](#a-vendor-does-not-start) |
+| Os hooks estão instalados, mas nada acontece | [Os hooks estão instalados, mas não executam](#hooks-are-installed-but-do-not-run) |
+| O dashboard está vazio, desconectado ou não inicia | [O dashboard está vazio ou desconectado](#the-dashboard-is-empty-or-disconnected) |
+| Um job agendado está ausente ou falhou | [Um agendamento está ausente ou não foi executado](#a-schedule-is-missing-or-did-not-run) |
+| A avaliação ou a otimização de skills não informa cobertura | [A avaliação ou a otimização não informa cobertura](#evaluation-or-optimization-reports-no-coverage) |
+| Uma execução de agente não é verificada, não termina ou não é retomada | [Um resultado não pode ser finalizado ou retomado](#a-result-cannot-finish-or-resume) |
+| A CLI exibiu uma mensagem de erro | [Encontre seu erro](#find-your-error) |
+
+## Encontre seu erro {#find-your-error}
+
+Cada mensagem abaixo é exibida pela CLI. Compare com o início da mensagem.
+
+| Mensagem | Causa | Correção |
+|---------|-------|-----|
+| `Unknown plan task: <id>` | O ID da tarefa (de `--task-id` ou, por padrão, o ID do agente) não é um `id` de tarefa em `.agents/results/plan-<session>.json` | Passe `--task-id` com um ID de tarefa do plano |
+| `Plan is immutable after dispatch; ...` | O plano da sessão mudou depois do primeiro dispatch | Restaure o plano ou salve o plano alterado com um novo ID de sessão (e um novo `lineage_id`, se você definiu um) |
+| `Task acceptance contract changed before dispatch` ou `Plan changed before dispatch` | O plano foi editado enquanto uma execução estava iniciando | Tente novamente quando o plano estiver estável |
+| `Attempt limit reached for workflow lineage and logical goal` | O `max_attempts` do plano (padrão 3, incluindo a primeira tentativa) se esgotou | Inspecione as tentativas que falharam antes de planejar outra |
+| `Cannot verify a finished run; start a new run` | `oma agent verify` foi executado depois que a execução terminou | Inicie uma nova execução com `oma agent begin` |
+| `Choose a command, --required, or --affected` | `oma agent verify` não recebeu nenhum modo de verificação, ou recebeu mais de um | Use exatamente um entre `--required`, `--affected PATH...` ou `-- <argv>` |
+| `No complete test selection for affected paths: ...` | O grafo não tem uma seleção de testes completa para esses caminhos | Use `--required` |
+| `The spawning parent finalizes managed runs; write the claim file instead` | `oma agent finish` foi chamado em uma execução iniciada por `oma agent spawn` ou `parallel` | Grave o claim no caminho injetado; o pai finaliza a execução |
+| `Resume requires a session plan with task contracts` | A sessão não tem arquivo de plano | A retomada só funciona em sessões baseadas em plano; crie a tarefa novamente com spawn |
+| `A resume coordinator already owns this session` | Outro `oma agent resume` da sessão está em execução, ou seu lease veio de outro host | Aguarde a outra retomada terminar; um lease deixado por um processo morto no mesmo host é recuperado automaticamente |
+| `No graph-backed context found for <agent>` | Não existe contexto de grafo para esse agente | Corrija a definição da tarefa ou continue com o caminho de busca nativo documentado do projeto |
+| `Dashboard failed: port 9847 is already in use. ...` | Outro processo ocupa a porta do dashboard | `DASHBOARD_PORT=8080 oma dashboard web`, ou encerre o outro processo |
+| `Invalid DASHBOARD_PORT: ...` | `DASHBOARD_PORT` não é um inteiro de 1 a 65535 | Defina uma porta válida ou remova a variável para usar 9847 |
+| `Removed option <old>. Use <new>.` | O comando usou uma grafia de flag que foi removida | Use a flag indicada na mensagem |
+| `Unknown command: ... Use oma --help.` | O caminho do comando foi removido ou renomeado | Execute `oma --help` ou `oma describe` para ver os caminhos atuais |
+| `oma agent spawn` termina com código 3 | O vendor terminou com 0, mas a execução não terminou como `completed` | Leia `unresolved` no registro da execução; consulte [Resultados de agentes e retomada](./agent-results-and-resume.md) |
+
+## A CLI ou a instalação está usando os arquivos errados {#the-cli-or-install-is-using-the-wrong-files}
 
 Verifique o contexto explicitamente:
 
@@ -23,24 +60,31 @@ oma doctor --json
 oma doctor --profile
 ```
 
-Os comandos de projeto leem o `.agents/oma-config.cue` ou `.agents/oma-config.yaml` mais próximo e depois uma sobreposição local. Um comando global lê a raiz de instalação do HOME. Se existirem arquivos CUE e YAML locais, remova um deles. Se um arquivo local estiver malformado, o OMA para em vez de ignorar a substituição silenciosamente. Consulte [Referência de configuração](/docs/guide/configuration-reference).
+| Sintoma | Causa | Correção |
+|---------|-------|-----|
+| Uma configuração é ignorada, ou um padrão global vence | Os comandos leem os padrões globais de `$OMA_HOME/.agents/` (padrão `~/.oma/.agents/`), depois a configuração compartilhada do projeto mais próximo e uma sobreposição local. Raízes de projeto ancestrais diferentes não são mescladas | Verifique quais caminhos de configuração o `oma doctor --json` selecionou e edite o arquivo que é realmente lido |
+| O OMA para ao carregar a configuração | Existem um arquivo CUE local e um arquivo YAML local, ou um arquivo local está malformado. O OMA para em vez de ignorar a substituição silenciosamente | Remova um dos dois arquivos locais ou corrija o arquivo malformado |
+| A configuração do usuário foi substituída após uma atualização | A atualização foi executada com `--force`. Atualizações normais preservam a configuração pertencente ao usuário; o modo force pode substituí-la | Atualize sem `--force` e depois inspecione a configuração e os caminhos gerados |
 
-Depois de uma atualização, inspecione a configuração e os caminhos gerados:
+Consulte a [Referência de configuração](/docs/guide/configuration-reference) para ver a ordem dos arquivos. Depois de uma atualização, inspecione a configuração e os caminhos gerados:
 
 ```bash
 oma update --ci
 oma doctor --json
 ```
 
-`oma update --ci` mantém a execução não interativa. Se a configuração do usuário tiver sido substituída inesperadamente, verifique se `--force` foi usado; atualizações normais preservam a configuração pertencente ao usuário, enquanto o modo force pode substituí-la.
+`oma update --ci` mantém a execução não interativa.
 
-## Uma instalação ou atualização não consegue baixar o release
+## Uma instalação ou atualização não consegue baixar o release {#an-install-or-update-cannot-download-the-release}
 
 <!-- oma-docs:ignore-start -->
 `oma install`, `oma update` e o reparo do `oma doctor` baixam o release que o `prompt-manifest.json` na `main` indica. Eles tentam primeiro o asset `agent-skills.tar.gz` do release `cli-v<version>` do GitHub, verificado com o arquivo `.sha256` correspondente, depois o arquivo compactado do código-fonte dessa tag e, por fim, um clone raso da tag. Uma divergência de checksum, ou um payload cujo `.agents/skills/_version.json` indique outra versão, interrompe a execução em vez de tentar outra origem.
 <!-- oma-docs:ignore-end -->
 
-Logo depois que um release é criado, o manifesto pode indicar uma versão cujos assets ainda estão sendo publicados; aguarde alguns minutos e tente novamente. Para instalar de propósito conteúdo ainda não lançado da branch `main`, ative essa opção apenas para essa execução:
+| Sintoma | Causa | Correção |
+|---------|-------|-----|
+| O download falha logo depois de um release | O manifesto indica uma versão cujos assets ainda estão sendo publicados | Aguarde alguns minutos e tente novamente |
+| Você precisa de conteúdo ainda não lançado da `main` | Releases instalam somente conteúdo com tag | Ative a opção apenas para uma execução com `OMA_UPDATE_CHANNEL=main oma update` |
 
 ```bash
 OMA_UPDATE_CHANNEL=main oma update
@@ -48,22 +92,31 @@ OMA_UPDATE_CHANNEL=main oma update
 
 A execução exibe um aviso: o conteúdo da branch main não é um release com tag nem tem o checksum verificado.
 
-## Um vendor não inicia
+## Um vendor não inicia {#a-vendor-does-not-start}
 
-Execute primeiro a verificação de autenticação do próprio vendor e depois inspecione o perfil resolvido pelo OMA:
+Execute a verificação de autenticação do próprio vendor e depois inspecione o perfil resolvido pelo OMA:
 
 ```bash
 oma doctor --profile
 oma agent spawn AGENT "print the resolved runtime and stop" SESSION --read-only
 ```
 
-Use o comando exato do vendor listado por `oma doctor` para autenticar novamente. Uma substituição de modelo deve usar o formato `owner/model` aceito pelo schema, e o vendor precisa oferecer suporte ao transporte de CLI selecionado. Para `model_preset: free`, verifique a URL do gateway e o modelo resolvidos com `oma doctor --profile`, depois confirme que a variável de ambiente de chave de API configurada contém uma chave. Se você omitir o mapa `free`, os padrões são `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY` e o modelo `auto`; nunca coloque a chave de API no YAML.
+| Sintoma | Causa | Correção |
+|---------|-------|-----|
+| A CLI do vendor não está autenticada | A sessão do vendor expirou ou nunca foi configurada | Autentique novamente com o comando exato do vendor listado por `oma doctor` |
+| Uma substituição de modelo é rejeitada | A substituição não está no formato `owner/model` aceito pelo schema, ou seu vendor não oferece suporte ao transporte de CLI selecionado | Use o formato `owner/model` com um vendor que ofereça suporte ao transporte |
+| `model_preset: free` não alcança seu gateway | A URL do gateway ou o modelo resolvidos estão errados, ou a variável de ambiente de chave de API configurada está vazia | Verifique a URL do gateway e o modelo com `oma doctor --profile` e depois defina a chave na variável de ambiente |
+| Um filho termina sem artefato de resultado | O filho não gravou seu claim no caminho injetado | Inspecione o diretório da execução e o status do pai (veja abaixo) |
 
-Se um processo filho terminar sem artefato de resultado, inspecione o diretório da execução e o status do pai. Um filho criado recebe a identidade da execução e as instruções de resultado, grava o claim no caminho injetado e informa seus artefatos; o pai finaliza o recibo gerenciado depois de capturar o código de saída. Filhos somente leitura retornam `OMA_RESULT_JSON: ...`; essa linha é registrada como inspeção e não satisfaz uma verificação executável.
+Se você omitir o mapa `free`, os padrões são `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY` e o modelo `auto`; nunca coloque a própria chave de API no YAML.
 
-## Os hooks estão instalados, mas não executam
+Um filho criado recebe a identidade da execução e as instruções de resultado, grava o claim no caminho injetado e informa seus artefatos; o pai finaliza o recibo gerenciado depois de capturar o código de saída. Filhos somente leitura retornam `OMA_RESULT_JSON: ...`; essa linha é registrada como inspeção e não satisfaz uma verificação executável.
 
-No Codex, inspecione o arquivo gerado e siga o fluxo de confiança único:
+## Os hooks estão instalados, mas não executam {#hooks-are-installed-but-do-not-run}
+
+| Sintoma | Causa | Correção |
+|---------|-------|-----|
+| O Codex não executa os hooks do OMA | Os hooks ainda não são confiáveis: esta é a primeira instalação, ou uma atualização alterou a string de comando de um hook | Inspecione `.codex/hooks.json` e depois execute `/hooks` dentro do Codex |
 
 ```bash
 test -f .codex/hooks.json
@@ -71,9 +124,9 @@ codex
 # inside Codex: /hooks
 ```
 
-Execute `/hooks` depois da primeira instalação e depois de uma atualização que altere uma string de comando. Os subprocessos Codex criados pelo OMA passam a flag de bypass para sua própria invocação gerenciada; isso não estabelece confiança em um hook de uma sessão do Codex que você iniciou por conta própria. Consulte [Confiança nos hooks do Codex](/docs/guide/codex-hook-trust).
+Os subprocessos Codex criados pelo OMA passam a flag de bypass para sua própria invocação gerenciada; isso não estabelece confiança em um hook de uma sessão do Codex que você iniciou por conta própria. Consulte [Confiança nos hooks do Codex](/docs/guide/codex-hook-trust).
 
-## O dashboard está vazio ou desconectado
+## O dashboard está vazio ou desconectado {#the-dashboard-is-empty-or-disconnected}
 
 Inicie o dashboard de terminal no projeto que contém os arquivos de sessão:
 
@@ -81,33 +134,52 @@ Inicie o dashboard de terminal no projeto que contém os arquivos de sessão:
 oma dashboard terminal
 ```
 
-Por padrão, ele lê `.agents/state/memories/`. Defina `MEMORIES_DIR` quando o estado estiver em outro local. O dashboard web se vincula ao loopback e imprime uma URL com token:
+| Sintoma | Causa | Correção |
+|---------|-------|-----|
+| `No agents detected yet` | O workflow ainda não gravou arquivos de sessão, tarefa ou progresso no diretório de memória observado, ou o dashboard observa outro diretório | Aguarde o primeiro arquivo de progresso; execute a partir da raiz do projeto, passe `--project-root <path>` ou defina `MEMORIES_DIR` |
+| Arquivos no diretório legado `.serena/memories/` não aparecem | O dashboard lê `.agents/state/memories/` e não procura no diretório legado | Defina `MEMORIES_DIR` como o diretório que contém os arquivos |
+| `oma dashboard web` termina com `port 9847 is already in use` | Outro processo ocupa a porta | Use outro `DASHBOARD_PORT` |
+| A página web continua Disconnected depois que você reiniciou o dashboard | Cada inicialização cria um novo token de acesso, e a aba aberta ainda guarda o antigo | Recarregue a página |
+
+O dashboard web se vincula ao loopback e imprime sua URL. Abra-a; a página carrega o próprio token para a API web e o WebSocket.
 
 ```bash
 MEMORIES_DIR=/path/to/.agents/state/memories DASHBOARD_PORT=9847 oma dashboard web
 ```
 
-Abra a URL exata impressa pelo comando; a API web e o WebSocket exigem o token do dashboard. Se a porta estiver ocupada, use outro `DASHBOARD_PORT`. Se nenhum agente aparecer, verifique se o workflow gravou arquivos de sessão, tarefa e progresso no diretório de memória selecionado. O dashboard não procura automaticamente o diretório legado `.serena/memories/`.
+Mais sinais do dashboard estão em [Monitoramento do dashboard](./dashboard-monitoring.md#troubleshooting-runbook).
 
-## Um agendamento está ausente ou não foi executado
+## Um agendamento está ausente ou não foi executado {#a-schedule-is-missing-or-did-not-run}
 
-Inspecione o manifesto e o estado do agendador:
+Inspecione o manifesto e o estado do agendador. Os dois primeiros comandos são somente leitura; os dois últimos alteram o estado:
 
 ```bash
-oma schedule list
-oma schedule sync
-oma schedule run SCHEDULE_ID
+oma schedule list                 # read-only: synced, stale, missing-in-os, orphan-in-os
+oma schedule inspect SCHEDULE_ID  # read-only: one manifest entry
+oma schedule sync                 # writes: registers missing jobs and rewrites stale ones
+oma schedule run SCHEDULE_ID      # executes the job now (normally invoked by the OS scheduler)
 ```
 
-`schedule list` informa `synced`, `stale`, `missing-in-os` e `orphan-in-os`. `schedule sync` restaura jobs ausentes e reescreve registros desatualizados (uma linha `Unknown command: schedule:run` no log da execução significa que o registro é anterior à renomeação do comando; o `oma update` o ressincroniza automaticamente); adicione `--prune` somente quando os jobs órfãos do sistema operacional devem ser removidos. Uma prévia criada com `--dry-run` não registra um job. Para um intervalo recorrente, aceite o arredondamento do OMA com `--accept-rounded` depois de revisar a prévia. Verifique o log da execução em `~/.agents/schedule/runs/<id>/` para uma saída de vendor diferente de zero ou `re-auth required`.
+| Sintoma | Causa | Correção |
+|---------|-------|-----|
+| `schedule list` mostra `missing-in-os` ou `stale` | O registro no sistema operacional está ausente ou desatualizado | `oma schedule sync` |
+| O log da execução mostra `Unknown command: schedule:run` | O registro é anterior à renomeação do comando | O `oma update` o ressincroniza automaticamente; `oma schedule sync` também o reescreve |
+| `schedule list` mostra `orphan-in-os` | Um job do sistema operacional não tem entrada no manifesto | `oma schedule sync --prune`, somente quando os jobs órfãos devem ser removidos |
+| Um agendamento criado nunca foi registrado | Ele foi criado com `--dry-run`, que apenas gera uma prévia | Crie-o novamente sem `--dry-run` |
+| Um intervalo recorrente não foi registrado | O intervalo precisa de arredondamento | Revise a prévia e depois aceite o arredondamento com `--accept-rounded` |
+| O job foi executado, mas falhou | O vendor terminou com código diferente de zero, ou o log informa `re-auth required` | Verifique o log da execução em `~/.oma/schedule/runs/<id>/` e autentique o vendor novamente |
 
-## A avaliação ou a otimização não informa cobertura
+## A avaliação ou a otimização não informa cobertura {#evaluation-or-optimization-reports-no-coverage}
 
-A avaliação de skills e a otimização de skills exigem pelo menos cinco fixtures em `.agents/eval/<skill>/`. No modo mock, a proveniência dos rollouts registrados deve corresponder à skill atual e aos hashes das fixtures. Grave novamente no modo live quando a fixture ou a skill mudar; não copie um arquivo antigo `_rollouts` para um novo diretório de skill e o trate como evidência atual.
+| Sintoma | Causa | Correção |
+|---------|-------|-----|
+| A avaliação ou a otimização de skills não informa cobertura | Existem menos de cinco fixtures em `.agents/eval/<skill>/` | Adicione fixtures até haver pelo menos cinco |
+| O modo mock rejeita rollouts registrados | A proveniência dos rollouts registrados não corresponde à skill atual e aos hashes das fixtures | Grave novamente no modo live; não copie um arquivo antigo `_rollouts` para um novo diretório de skill e o trate como evidência atual |
+| `--apply` se recusa a gravar | `--apply` exige um resultado de validação estritamente positivo e uma divisão de testes do runner aprovada | Mantenha o padrão `--dry-run` enquanto revisa o diff proposto e corrija primeiro a validação que falha |
 
-Para a otimização, mantenha o padrão `--dry-run` enquanto revisa o diff proposto. `--apply` exige um resultado de validação estritamente positivo e uma divisão de testes aprovada pelo runner; uma skill pertencente ao OMA pode ser substituída por uma atualização posterior de `oma update`.
+Uma skill pertencente ao OMA alterada por `--apply` pode ser sobrescrita por um `oma update` posterior.
 
-## Um resultado não pode ser finalizado ou retomado
+## Um resultado não pode ser finalizado ou retomado {#a-result-cannot-finish-or-resume}
 
 Inspecione os arquivos de execução e do plano:
 
@@ -116,6 +188,21 @@ ls .agents/state/agent-runs/
 oma agent resume SESSION_ID --dry-run
 ```
 
-Execute `oma agent verify RUN_ID --required` antes de finalizar. Um claim concluído com um recibo falho, entradas alteradas, artefatos ausentes, itens não resolvidos ou um contrato de tarefa alterado é rejeitado ou rebaixado. A retomada é automática somente para tarefas com `retry_policy: "safe"`, um prompt reproduzível e tentativas restantes. Um processo ativo ou uma tentativa nativa interrompida sem resultado parcial ou falha clara permanece intacta para evitar trabalho duplicado. Consulte [Resultados de agentes e retomada](/docs/guide/agent-results-and-resume).
+| Sintoma | Causa | Correção |
+|---------|-------|-----|
+| Um claim concluído é rejeitado ou rebaixado | Um recibo falho, entradas alteradas, artefatos ausentes, itens não resolvidos ou um contrato de tarefa alterado | Execute `oma agent verify RUN_ID --required` antes de finalizar e corrija o que o recibo informar |
+| A retomada deixa uma tarefa como `blocked` | A retomada automática exige `retry_policy: "safe"`, um prompt reproduzível e tentativas restantes | Leia o motivo no relatório do dry-run. O plano fica congelado após o primeiro dispatch, portanto defina `retry_policy` no plano de uma nova sessão ou execute a tarefa novamente à mão |
+| A retomada não tenta a tarefa novamente | Um processo ativo, ou uma tentativa nativa interrompida sem resultado parcial ou falha clara, permanece intacto para evitar trabalho duplicado | Aguarde o processo ativo ou finalize primeiro a tentativa nativa |
 
-Ao pedir ajuda, inclua a saída relevante de `oma doctor --json`, o comando, o ID da sessão ou da execução e a mensagem não resolvida. Não inclua credenciais nem o conteúdo de arquivos que contenham segredos.
+Consulte [Resultados de agentes e retomada](./agent-results-and-resume.md) para ver o ciclo de vida completo.
+
+## Peça ajuda {#ask-for-help}
+
+Ao pedir ajuda, inclua a saída relevante de `oma doctor --json`, o comando, o ID da sessão ou da execução e a mensagem não resolvida. Não inclua credenciais nem o conteúdo de arquivos que contenham segredos. Abra uma issue em [github.com/first-fluke/oh-my-agent/issues](https://github.com/first-fluke/oh-my-agent/issues).
+
+## Veja também {#see-also}
+
+- [Usando o OMA](./usage.md#troubleshooting): problemas de configuração, como skills e CLIs ausentes e conflitos de workspace
+- [Monitoramento do dashboard](./dashboard-monitoring.md#troubleshooting-runbook): sinais de dashboard travado, com falha e desconectado
+- [Resultados de agentes e retomada](./agent-results-and-resume.md): registros de execução, claims e recuperação
+- [Glossário](../getting-started/glossary.md): termos como [registro de execução e claim](../getting-started/glossary.md#run-record-and-claim)

@@ -9,9 +9,9 @@ description: Параллельный запуск нескольких роле
 
 ---
 
-## agent spawn — Запуск одного агента
+## oma agent spawn: запуск одного агента {#agentspawn-single-agent-spawning}
 
-### Базовый синтаксис
+### Базовый синтаксис {#basic-syntax}
 
 ```bash
 oma agent spawn <agent-id> <prompt> <session-id> [options]
@@ -62,7 +62,7 @@ oma agent spawn backend "Try a Drizzle-based rewrite" session-01 --isolation wor
 
 ---
 
-## Параллельный запуск через фоновые процессы
+## Параллельный запуск через фоновые процессы {#parallel-spawning-with-background-processes}
 
 Чтобы запустить нескольких агентов одновременно, используйте фоновые процессы shell:
 
@@ -93,7 +93,7 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent parallel — Инлайн-режим
+## oma agent parallel: инлайн-режим {#agentparallel-inline-parallel-mode}
 
 Для более краткого синтаксиса, который автоматически управляет фоновыми процессами:
 
@@ -120,18 +120,18 @@ oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-Флаг `--inline` разбирает каждый аргумент `agent:task`. Если задаче нужен определённый workspace, добавьте третий путь через двоеточие: `agent:task:workspace`. Без `--inline` передайте YAML-файл задач с `{tasks: [{id?, agent, task, workspace?}]}`. Флаг `--session` связывает результаты параллельного запуска с существующей сессией.
+Флаг `--inline` разбирает каждый аргумент `agent:task`. Если задаче нужен определённый workspace, добавьте третий путь через двоеточие: `agent:task:workspace`. Без `--inline` передайте YAML-файл задач с `{tasks: [{id?, agent, task, workspace?}]}`. Флаг `--session-id` привязывает результаты к существующей сессии и к ID задач из YAML-файла.
 
 ---
 
-## Мульти-CLI конфигурация
+## Мульти-CLI конфигурация {#multi-cli-configuration}
 
 oh-my-agent направляет каждого агента в подходящий CLI через `model_preset` в `.agents/oma-config.yaml`. Выберите встроенный пресет для своего вендора и при необходимости переопределите отдельных агентов.
 
-### Пример конфигурации
+### Пример конфигурации {#configuration-example}
 
 ```yaml
 # .agents/oma-config.yaml
@@ -146,7 +146,7 @@ agents:
 
 Встроенные пресеты: `auto`, `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` и `mixed`. Подробности — [Модели по агентам](../guide/per-agent-models.md).
 
-### Определение вендора
+### Определение вендора {#vendor-resolution}
 
 Когда `oma agent spawn` определяет, какой CLI использовать:
 
@@ -160,7 +160,7 @@ agents:
 
 ---
 
-## Вендор-специфичные методы запуска
+## Вендор-специфичные методы запуска {#vendor-specific-spawn-methods}
 
 Механизм запуска зависит от IDE/CLI:
 
@@ -174,7 +174,8 @@ agents:
 | **CLI Fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Опрос результатов, подтверждённых evidence |
 
 В Claude Code workflow напрямую использует инструмент `Agent`:
-```
+
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
@@ -189,9 +190,9 @@ Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 
 ---
 
-## Мониторинг агентов
+## Мониторинг агентов {#monitoring-agents}
 
-### Терминальный дашборд
+### Терминальный дашборд {#terminal-dashboard}
 
 ```bash
 oma dashboard terminal
@@ -206,11 +207,11 @@ oma dashboard terminal
 
 Дашборд наблюдает за `.agents/state/memories/` и обновляется по мере записи progress-файлов агентами.
 
-### Веб-дашборд
+### Веб-дашборд {#web-dashboard}
 
 ```bash
 oma dashboard web
-# Opens http://localhost:9847
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 Возможности:
@@ -220,26 +221,17 @@ oma dashboard web
 - поток журнала активности из progress и result-файлов
 - история сессий
 
-### Рекомендуемая раскладка
+### Рекомендуемая раскладка терминалов {#recommended-terminal-layout}
 
 Для наглядности используйте 3 терминала:
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard terminal         │   Agent spawn        │
-│   (live monitoring)     │   commands           │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   Terminal 3:                                  │
-│   Test/build logs, git operations              │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| Терминал | Что запускать | Назначение |
+|----------|---------------|------------|
+| 1 | `oma dashboard terminal` | Мониторинг в реальном времени |
+| 2 | `oma agent spawn …` или `oma agent parallel …` | Команды запуска агентов |
+| 3 | Тесты, логи сборки, git | Проверка и операции git |
 
-### Проверка статуса агента
+### Проверка статуса отдельного агента {#checking-individual-agent-status}
 
 ```bash
 oma agent status <session-id> <agent-id>
@@ -249,52 +241,65 @@ oma agent status <session-id> <agent-id>
 
 ---
 
-## Стратегия ID сессий
+## Стратегия ID сессий {#session-id-strategy}
 
 ID сессий группируют агентов, работающих над одной фичей. Рекомендации:
 
-- **Одна сессия на фичу:** Все агенты для «аутентификации» делят `session-auth-01`
-- **Формат:** Описательные ID: `session-auth-01`, `session-payment-v2`, `session-20260324-143000`
-- **Автогенерация:** Оркестратор генерирует `session-YYYYMMDD-HHMMSS`
-- **Повторное использование:** Тот же ID при итерациях
+- **Одна сессия на фичу:** Все агенты, работающие над «аутентификацией пользователей», делят `session-auth-01`
+- **Формат:** Используйте описательные ID: `session-auth-01`, `session-payment-v2`, `session-20260324-143000`
+- **Автогенерация:** Оркестратор генерирует ID в формате `session-YYYYMMDD-HHMMSS`
+- **Повторное использование при итерациях:** Используйте тот же ID сессии при повторном запуске агентов с уточнениями
 
-ID определяют файлы памяти, мониторинг дашборда и группировку результатов. Run-scoped memory-файлы включают `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` и `result-{agentId}-{taskId}-{runId}-{sessionId}.md`.
+ID сессии определяет:
+- какие run-scoped файлы памяти агенты читают и записывают (`progress-{agentId}-{taskId}-{runId}-{sessionId}.md`, `result-{agentId}-{taskId}-{runId}-{sessionId}.md`)
+- что отслеживает дашборд
+- как группируются результаты в итоговом отчёте
 
 ---
 
-## Рекомендации
+## Советы по параллельному выполнению {#tips-for-parallel-execution}
 
-### Делайте
+### Делайте {#do}
 
-1. **Зафиксируйте API-контракты** через `/plan` до запуска агентов реализации.
-2. **Один ID сессии на фичу** для когерентного мониторинга.
-3. **Отдельные рабочие пространства** с `-w` для изоляции:
+1. **Сначала зафиксируйте API-контракты.** Запустите `/plan` до запуска агентов реализации, чтобы фронтенд- и бэкенд-агенты согласовали эндпоинты, схемы запросов и ответов и форматы ошибок.
+
+2. **Используйте один ID сессии на фичу.** Так результаты агентов остаются сгруппированными, а мониторинг через дашборд — согласованным.
+
+3. **Назначайте отдельные рабочие пространства.** Всегда используйте `-w` для изоляции агентов:
    ```bash
    oma agent spawn backend "task" session-01 -w ./apps/api &
    oma agent spawn frontend "task" session-01 -w ./apps/web &
    ```
-4. **Активно мониторьте** через дашборд для раннего обнаружения проблем.
-5. **QA после реализации:**
+
+4. **Активно отслеживайте работу.** Откройте терминал с дашбордом, чтобы рано замечать проблемы. Сбойный агент тратит ходы впустую, если его вовремя не заметить.
+
+5. **Запускайте QA после реализации.** Запускайте QA-агента последовательно, после завершения всех агентов реализации:
    ```bash
    oma agent spawn backend "task" session-01 -w ./apps/api &
    oma agent spawn frontend "task" session-01 -w ./apps/web &
    wait
    oma agent spawn qa "Review all changes" session-01
    ```
-6. **Итерируйте через перезапуски** с контекстом коррекции.
-7. **Начинайте с `/work`** при сомнениях.
 
-### Не делайте
+6. **Итерируйте через перезапуски.** Если результат агента нужно доработать, перезапустите его с исходной задачей и контекстом коррекции. Не начинайте новую сессию.
 
-1. **Не запускайте агентов в одном рабочем пространстве** — конфликты файлов.
-2. **Не превышайте MAX_PARALLEL (по умолчанию 3)** — ресурсы ограничены.
-3. **Не пропускайте планирование** — несогласованные реализации.
-4. **Не игнорируйте проваленных агентов** — проверяйте их структурированный claim или run-scoped файл результата, исправьте промпт и перезапустите.
-5. **Не смешивайте ID сессий** для связанной работы.
+7. **Начинайте с `/work`, если сомневаетесь.** Рабочий процесс work проводит вас через процесс шаг за шагом с подтверждением пользователя на каждом шлюзе.
+
+### Не делайте {#do-not}
+
+1. **Не запускайте агентов в одном рабочем пространстве.** Два агента, пишущие в один каталог, создадут конфликты слияния и перезапишут работу друг друга.
+
+2. **Не превышайте MAX_PARALLEL (по умолчанию 3).** Больше одновременных агентов не всегда означает более быстрый результат. Каждому агенту нужны память и ресурсы CPU. Значение по умолчанию 3 подобрано для большинства систем.
+
+3. **Не пропускайте этап планирования.** Запуск агентов без плана приводит к несогласованным реализациям, когда фронтенд строится под одну форму API, а бэкенд — под другую.
+
+4. **Не игнорируйте проваленных агентов.** Работа проваленного агента не завершена. Найдите причину сбоя в его структурированном claim или run-scoped файле результата, исправьте промпт и перезапустите агента.
+
+5. **Не смешивайте ID сессий для связанной работы.** Если бэкенд- и фронтенд-агенты работают над одной фичей, у них должен быть общий ID сессии, чтобы оркестратор мог их координировать.
 
 ---
 
-## Комплексный пример
+## Комплексный пример {#end-to-end-example}
 
 Полный workflow параллельного выполнения для создания фичи аутентификации пользователей:
 
@@ -308,19 +313,33 @@ oma agent spawn backend "Implement JWT auth API with registration, login, refres
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: Monitor in a separate terminal
-# Terminal 2:
-oma dashboard terminal
-
-# Step 4: Wait for all implementation agents
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: Run QA review
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: If QA finds issues, re-spawn specific agents with fixes
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: Re-run QA to verify fixes
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+Запустите дашборд во втором терминале, пока агенты работают. Дашборд не завершается, пока вы не нажмёте Ctrl+C, поэтому не вставляйте эту команду в ту же оболочку, что и команды запуска агентов:
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## См. также {#see-also}
+
+- [Результаты агентов и возобновление](../guide/agent-results-and-resume.md): квитанции запусков, claims и `oma agent resume`
+- [Мониторинг через дашборд](../guide/dashboard-monitoring.md)
+- [Руководство по мультиагентному проекту](../guide/multi-agent-project.md)
+- [Модели по агентам](../guide/per-agent-models.md)
+- [Рабочий процесс /orchestrate](./workflows.md#orchestrate)
+- [Справочник команд CLI](../cli-interfaces/commands.md)

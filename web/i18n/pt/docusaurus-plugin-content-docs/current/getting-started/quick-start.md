@@ -21,7 +21,7 @@ No Windows PowerShell, execute:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-A configuração interativa pergunta o idioma das respostas, vendors de CLI, providers de capacidade, preset de modelo, preset de skills do projeto e qualquer variante de stack. Na primeira execução, mantenha os padrões, selecione o vendor que você já usa e escolha o preset de projeto mais próximo do repositório.
+A configuração interativa pergunta o idioma das respostas, vendors de CLI, [providers de capacidade](./glossary.md#capability-provider), [preset de modelo](./glossary.md#model-preset), [preset de skills](./glossary.md#skill-preset) do projeto e qualquer variante de stack. Na primeira execução, mantenha os padrões, selecione o vendor que você já usa e escolha o preset de projeto mais próximo do repositório. Consulte [Presets](./installation.md#presets) para as skills de cada preset e para os [workflows que precisam de skills fora de um preset](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Se você já tem `bun`, use o instalador diretamente:
 
@@ -29,7 +29,7 @@ Se você já tem `bun`, use o instalador diretamente:
 bunx oh-my-agent@latest
 ```
 
-Os scripts de bootstrap instalam no projeto atual. Use `oma install --global` quando quiser uma instalação no HOME; leia [Instalação](./installation.md) antes de misturar instalações de projeto e globais.
+Os scripts de bootstrap instalam no projeto atual. Use `oma install --global` quando quiser uma instalação no HOME; leia [Instalação global](../guide/global-install.md) antes de misturar instalações de projeto e globais.
 
 ## 2. Verificar o resultado
 
@@ -49,7 +49,9 @@ $ echo $?
 0
 ```
 
-Integrações opcionais de MCP, navegador, memória ou inteligência de código podem aparecer como avisos; elas são necessárias somente para tarefas que as utilizam. Para um status legível por máquina, `oma doctor --json` retorna um status diferente de zero quando o relatório contém problemas. Use `oma doctor --profile` para inspecionar o modelo e a CLI resolvidos para cada papel canônico de agente.
+`oma doctor` pode informar problemas de integrações opcionais como avisos. A preparação padrão do AgentMemory é verificada durante `oma install` e `oma update`; falhas de instalação, inicialização ou saúde interrompem esses comandos. Selecionar `providers.semantic_memory: none` ou `honcho`, ou definir `OMA_NO_AGENTMEMORY=1`, pula essa preparação.
+
+Para um status legível por máquina, `oma doctor --json` retorna um status diferente de zero quando o relatório contém problemas. Use `oma doctor --profile` para inspecionar o modelo e a CLI resolvidos para cada papel canônico de agente.
 
 Se `oma` não estiver disponível, mas o Bun estiver instalado, execute a mesma verificação sem o comando global:
 
@@ -57,7 +59,7 @@ Se `oma` não estiver disponível, mas o Bun estiver instalado, execute a mesma 
 bunx oh-my-agent@latest doctor
 ```
 
-Se o comando simples ainda estiver ausente, abra um novo shell ou adicione o diretório bin do gerenciador de pacotes ao `PATH`. Se `oma doctor` informar uma configuração inválida, corrija o campo indicado e execute novamente. Não apague `.agents/oma-config.yaml` para recuperar: essa é a configuração pertencente ao usuário, que preserva as definições entre atualizações.
+Se o comando simples ainda estiver ausente, abra um novo shell ou adicione o diretório bin do gerenciador de pacotes ao `PATH`; [Instalação](./installation.md#method-3-global-install) mostra como instalar o comando `oma`. Se `oma doctor` informar uma configuração inválida, corrija o campo indicado e execute novamente. Não apague `.agents/oma-config.yaml` para recuperar: essa é a configuração pertencente ao usuário, que preserva as definições entre atualizações.
 
 ## 3. Executar uma tarefa pequena
 
@@ -77,7 +79,7 @@ Para uma tarefa que atravesse limites de API e UI, selecione `/work` ou `/orches
 
 O OMA começa com `model_preset: auto`, Serena para inteligência de código, Agent Memory para memória semântica, busca web nativa e telemetria desabilitada. Serena usa o transporte compartilhado `bridge` e se atualiza automaticamente, salvo configuração diferente. O MCP do Browser DevTools é opt-in; uma configuração interativa nova oferece Aside primeiro. Consulte [Padrões importantes](./important-defaults.md) para as consequências e as chaves de substituição.
 
-Se uma tarefa gerenciada parar, comece com `oma agent status <session-id> [agent-id]`, depois inspecione o receipt em `.agents/state/agent-runs/` e o caminho do claim estruturado injetado. Esses registros mostram a execução, a tarefa, o workspace, o código de saída e o status da verificação. Arquivos legíveis `result-*.md` e `progress-*.md` em `.agents/state/memories/` acrescentam contexto quando presentes. Execute novamente somente o menor comando que falhou depois de confirmar que a execução não está mais ativa. Um workflow persistente continua ativo até concluir ou você dizer `workflow done`; consulte [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) para a recuperação do arquivo de estado.
+Se uma tarefa gerenciada parar, comece com `oma agent status <session-id> [agent-id]`, depois inspecione o receipt em `.agents/state/agent-runs/` e o caminho do claim estruturado injetado. Esses registros mostram a execução, a tarefa, o workspace, o código de saída e o status da verificação. Arquivos legíveis `result-*.md` e `progress-*.md` em `.agents/state/memories/` acrescentam contexto quando presentes. Execute novamente somente o menor comando que falhou depois de confirmar que a execução não está mais ativa. Um [workflow persistente](./glossary.md#persistent-workflow) continua ativo até concluir ou você dizer `workflow done`; consulte [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) para a recuperação do arquivo de estado.
 
 ## Próximos passos
 
@@ -85,3 +87,4 @@ Se uma tarefa gerenciada parar, comece com `oma agent status <session-id> [agent
 - [Instalação](./installation.md) para presets, configuração de vendors, instalações globais e atualizações
 - [Agentes](../core-concepts/agents.md) para os 33 pacotes de skills e papéis de dispatch
 - [Workflows](../core-concepts/workflows.md) para planejamento, execução paralela, QA e modos persistentes
+- [Solução de problemas](../guide/troubleshooting.md) quando a instalação, um vendor ou um hook não se comporta como esperado

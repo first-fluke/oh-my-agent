@@ -13,9 +13,9 @@ oh-my-agentには、マルチエージェントワークフロー中のエージ
 | コマンド | インターフェース | URL | 技術 |
 |:--------|:---------|:----|:-----------|
 | `oma dashboard terminal` | ターミナル（TUI） | N/A（ターミナルに表示） | chokidarファイルウォッチャー、picocolorsレンダリング |
-| `oma dashboard web` | ブラウザー | `http://127.0.0.1:9847`（起動時にトークンを表示） | HTTPサーバー、WebSocket、chokidarファイルウォッチャー |
+| `oma dashboard web` | ブラウザー | `http://127.0.0.1:9847/`（起動時に表示） | HTTPサーバー、WebSocket、chokidarファイルウォッチャー |
 
-両方のダッシュボードはデフォルトで`.agents/state/memories/`を監視します。調整用ファイルが別の場所にある場合は、`MEMORIES_DIR`を設定します。ダッシュボードは`.serena/memories/`へ自動的にフォールバックしません。
+両方のダッシュボードはデフォルトでカレントディレクトリ配下の`.agents/state/memories/`を監視します。別のプロジェクトを監視するには`--project-root <path>`を渡し、調整用ファイルが別の場所にある場合は`MEMORIES_DIR`を設定します。ダッシュボードは`.serena/memories/`へ自動的にフォールバックしません。
 
 ### ターミナルダッシュボード
 
@@ -23,28 +23,14 @@ oh-my-agentには、マルチエージェントワークフロー中のエージ
 oma dashboard terminal
 ```
 
-ターミナルに罫線で構成されたUIを直接表示します。メモリファイルが変更されると自動的に更新されます。終了するには`Ctrl+C`を押します。
+ターミナルに罫線で構成されたUIを直接表示します。メモリファイルが変更されると自動的に更新されます。終了するには`Ctrl+C`を押します。画面は上から順に4つの領域で構成されます。
 
-```
-╔════════════════════════════════════════════════════════╗
-║  OMA Memory Dashboard                                 ║
-║  Session: session-20260324-143052  [RUNNING]          ║
-╠════════════════════════════════════════════════════════╣
-║  Agent        Status       Turn   Task                ║
-║  ──────────── ──────────── ────── ──────────────────  ║
-║  backend      ● running    3      Implement user API  ║
-║  frontend     ● running    2      Build login page    ║
-║  mobile       ✓ completed  5      Auth screens done   ║
-║  qa           ○ blocked    -                          ║
-╠════════════════════════════════════════════════════════╣
-║  Latest Activity:                                     ║
-║  [backend] Implementing JWT token validation          ║
-║  [frontend] Creating login form components            ║
-║  [mobile] Completed biometric auth integration        ║
-╠════════════════════════════════════════════════════════╣
-║  Updated: 03/24/2026, 02:31:15 PM  |  Ctrl+C to exit ║
-╚════════════════════════════════════════════════════════╝
-```
+| 領域 | 表示内容 | ソース |
+|:-------|:------|:-------|
+| ヘッダー | `OMA Memory Dashboard`と`Session: <id> [<status>]` | `orchestrator-session.md`、なければ最新の`session-*.md`。どちらもなければ`N/A [UNKNOWN]` |
+| エージェントテーブル | Agent、Status、Turn、Task（先頭20文字）。空の場合は`No agents detected yet` | `task-board.md`、なければメモリファイルから検出したエージェント |
+| Latest Activity | 最大5行の`[<name>] <message>`。空の場合は`No activity yet` | 更新日時が新しい5つの`.md`ファイルの最後の意味のある行 |
+| フッター | `Updated: <time>  \|  Ctrl+C to exit` | 最後に再描画した時刻 |
 
 **ステータス記号：**
 - `●`（緑）：running
@@ -59,7 +45,7 @@ oma dashboard terminal
 oma dashboard web
 ```
 
-ループバック専用のWebサーバーをポート9847で起動します（`DASHBOARD_PORT`で変更可能）。OMAは`127.0.0.1`を含むURLを表示するので、正確なURLを開いてトークンを保持してください。このページはトークンを`/api/state`、`/api/recap`、WebSocket更新に使います。トークンなしのリクエストは`401`を返します。
+ループバック専用のWebサーバーをポート9847で起動します（`DASHBOARD_PORT`で変更可能）。コマンドは`http://127.0.0.1:9847/`と`Watching: <memories dir>`を表示します。起動のたびに新しいアクセストークンが作成され、配信するページに埋め込まれるため、表示されたURLを開くだけで済み、コピーするものはありません。ページは`/api/state`、`/api/recap`、WebSocketのリクエストでトークンを送信します。トークンなしのリクエストは`401`を返します。
 
 ```bash
 # Custom port
@@ -68,7 +54,7 @@ DASHBOARD_PORT=8080 oma dashboard web
 # Custom memories directory
 MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 
-# The process also serves the recap view at /recap; use the tokenized URL it prints.
+# Recap view from the same process: http://127.0.0.1:9847/recap
 ```
 
 Webダッシュボードはターミナルダッシュボードと同じ情報を、次の要素を備えたスタイル付きのダークテーマUIで表示します。
@@ -85,34 +71,11 @@ Webダッシュボードはターミナルダッシュボードと同じ情報�
 
 マルチエージェントワークフローでは、3つのターミナルペインを使う構成を推奨します。
 
-```
-┌────────────────────────────────┬────────────────────────────────┐
-│                                │                                │
-│   Terminal 1: Main Agent       │   Terminal 2: Dashboard        │
-│                                │                                │
-│   $ gemini                     │   $ oma dashboard terminal              │
-│   > /orchestrate               │                                │
-│   ...                          │   ╔═══════════════════════╗    │
-│                                │   ║ Serena Dashboard      ║    │
-│                                │   ║ Session: ...          ║    │
-│                                │   ╚═══════════════════════╝    │
-│                                │                                │
-├────────────────────────────────┴────────────────────────────────┤
-│                                                                 │
-│   Terminal 3: Ad-hoc commands                                   │
-│                                                                 │
-│   $ oma agent status session-20260324-143052 backend frontend   │
-│   $ oma stats get                                                   │
-│   $ oma verify agent backend -w ./api                           │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**ターミナル1**では、主要なエージェントセッション（Gemini CLI、Claude Code、Codexなど）を実行し、`/orchestrate`や`/work`のようなワークフローを操作します。
-
-**ターミナル2**では、パッシブ監視用のダッシュボードを実行します。操作は不要で、自動的に更新されます。
-
-**ターミナル3**は、エージェントの状態確認、検証、統計の表示、問題のデバッグなど、臨時のコマンドに使います。
+| ペイン | 実行するもの | 目的 |
+|:-----|:----|:--------|
+| 1. メインエージェント | ホストのCLI（`claude`、`codex`、`agy`、`qwen`など）を起動し、`/orchestrate`または`/work`を実行 | ワークフローを進める |
+| 2. ダッシュボード | `oma dashboard terminal`（または`oma dashboard web`） | 進捗をパッシブに監視する。操作なしで更新される |
+| 3. 臨時のコマンド | `oma agent status session-20260324-143052 backend frontend`、`oma stats get`、`oma verify agent backend -w ./api` | エージェントの状態確認、検証の実行、統計の表示、問題のデバッグ |
 
 ---
 
@@ -184,7 +147,7 @@ Webダッシュボードはターミナルダッシュボードと同じ情報�
 
 ---
 
-## トラブルシューティング手順
+## トラブルシューティング手順 {#troubleshooting-runbook}
 
 ### シグナル1：エージェントが「running」だがターンが進まない
 
@@ -196,7 +159,7 @@ Webダッシュボードはターミナルダッシュボードと同じ情報�
 - エージェントがユーザー入力を待っている（自動承認モードでは発生しないはずです）
 
 **対応：**
-1. エージェントのログファイルを確認します：`cat /tmp/subagent-{session-id}-{agent-id}.log`
+1. エージェントのログファイルを確認します。`oma agent spawn`はそのパスを`Log: ...`として表示します。ファイルはOSの一時ディレクトリにあります：`cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"`
 2. プロセスが実際に動いているか確認します：`oma agent status {session-id} {agent-id}`
 3. プロセスが動いていないのに状態がrunningなら、エージェントはクラッシュしています。エラーのコンテキストを付けて再スポーンします。
 
@@ -210,7 +173,7 @@ Webダッシュボードはターミナルダッシュボードと同じ情報�
 - ベンダーCLIがインストールされていない、または認証されていない
 
 **対応：**
-1. ログファイルで詳細を確認します：`cat /tmp/subagent-{session-id}-{agent-id}.log`
+1. ログファイルで詳細を確認します：`cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"`（`oma agent spawn`が表示する`Log:`のパス）
 2. CLIのインストールを確認します：`oma doctor`
 3. 認証を確認します：`oma auth status`
 4. 同じタスクでエージェントを再スポーンします：`oma agent spawn {agent-id} "{task}" {session-id} -w {workspace}`
@@ -227,7 +190,7 @@ Webダッシュボードはターミナルダッシュボードと同じ情報�
 **対応：**
 1. メモリディレクトリを確認します：`ls -la .agents/state/memories/`
 2. ワークフローがまだ計画段階か確認します（エージェントがまだスポーンされていない可能性があります）。
-3. ダッシュボードが正しいプロジェクトディレクトリを監視していることを確認します。ダッシュボードは現在の作業ディレクトリからメモリパスを解決します。
+3. ダッシュボードが正しいプロジェクトディレクトリを監視していることを確認します。ダッシュボードは現在の作業ディレクトリからメモリパスを解決します。プロジェクトルートから実行するか、`--project-root /path/to/project`を渡します。`oma dashboard web`は監視中のパスを`Watching: <path>`として表示します。
 4. カスタムパスを使う場合：`MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal`
 
 ### シグナル4：Webダッシュボードが「disconnected」と表示される
@@ -236,14 +199,13 @@ Webダッシュボードはターミナルダッシュボードと同じ情報�
 
 **考えられる原因：**
 - `oma dashboard web`プロセスが終了した
-- ブラウザーが古いURLを使っている、または起動時のトークンがない
-- ポートが別のプロセスで使用されている
+- `oma dashboard web`プロセスが再起動され、開いているタブが以前のプロセスのトークンを保持したままになっている
 
 **対応：**
 1. ダッシュボードプロセスが動いているか確認します：`ps aux | grep dashboard`
-2. プロセスが表示した正確なトークン付きURLを開き直します。トークンを削除しないでください。
-3. 別のポートを試します：`DASHBOARD_PORT=8080 oma dashboard web`
-4. ポートの空きを確認します：`lsof -i :9847`
+2. ダッシュボードを再起動した場合は、ページを再読み込みして新しいトークンを取得させます。
+3. プロセスが停止している場合は、`oma dashboard web`を再度起動してからページを再読み込みします。
+4. 起動時に`Dashboard failed: port 9847 is already in use`で失敗する場合は、ポートを確認し（`lsof -i :9847`）、別のポートを試します：`DASHBOARD_PORT=8080 oma dashboard web`
 5. Webダッシュボードは指数バックオフ（1秒から始まり最大10秒）で自動再接続します。数秒待って再接続を確認します。
 
 ---
@@ -278,7 +240,7 @@ Webダッシュボードはターミナルダッシュボードと同じ情報�
 
 - **ファイル監視：** [chokidar](https://github.com/paulmillr/chokidar)を`awaitWriteFinish`（安定化しきい値200ms、ポーリング間隔50ms）付きで使い、書き込み途中のファイルを表示しないようにします。
 - **レンダリング：** ファイル変更イベントのたびにターミナル全体を消去して再描画します。ANSIカラー出力には`picocolors`、枠線にはUnicodeの罫線文字を使います。
-- **メモリディレクトリ：** `MEMORIES_DIR`、指定されている場合はダッシュボードCLI引数、その次に`{cwd}/.agents/state/memories`の順で解決します。
+- **メモリディレクトリ：** `MEMORIES_DIR`が設定されていればそれを使います。そうでなければ`<project>/.agents/state/memories`を使います。`<project>`は`--project-root <path>`またはカレントディレクトリです。ディレクトリがない場合は空のディレクトリを作成します。
 - **正常終了：** `SIGINT`と`SIGTERM`を捕捉してchokidarの監視を閉じ、正常に終了します。
 
 ### Webダッシュボード（oma dashboard web）
@@ -290,3 +252,11 @@ Webダッシュボードはターミナルダッシュボードと同じ情報�
 - **自動再接続：** WebSocket接続が切れると、ブラウザーのクライアントは指数バックオフ（初期1秒、倍率1.5、最大10秒）で再接続します。
 - **ポート：** デフォルトは9847で、`DASHBOARD_PORT`環境変数で変更できます。APIリクエストは`X-OMA-Dashboard-Token`または`?token=...`を受け付けます。トークンがない、または無効な場合は`401`を返します。
 - **状態の構築：** `buildFullState()`関数は、更新のたびにセッション情報、タスクボード、エージェントの状態、ターン数、アクティビティフィードを1つのJSONオブジェクトに集約します。
+
+---
+
+## 次のステップ
+
+- 実行後に結果を監査または再開する：[結果と再開](./agent-results-and-resume.md)
+- 症状別のダッシュボードと実行の失敗：[トラブルシューティング](./troubleshooting.md)
+- マルチエージェント作業を計画して実行する：[マルチエージェントプロジェクト](./multi-agent-project.md)

@@ -23,13 +23,23 @@ description: フロントエンド、バックエンド、データベース、�
 
 ## 全体の流れ：/planから/reviewまで
 
-推奨するマルチエージェントワークフローは、4段階のパイプラインに従います。
+推奨するマルチエージェントワークフローは、厳密な4段階のパイプラインに従います。
+
+```mermaid
+flowchart LR
+  plan["/plan"] --> planFile["plan-{sessionId}.json"]
+  planFile -->|"loaded by"| orch["/orchestrate (automated)"]
+  plan -.->|"or run"| work["/work (step-by-step; its PM step writes the plan)"]
+  work --> spawn["Agents per priority tier (native subagents or oma agent spawn)"]
+  orch --> spawn
+  spawn --> review["/review (QA)"]
+```
 
 ### Step 1：/planで要件とタスクを分解する
 
 `/plan`ワークフローはインラインで実行され、サブエージェントをスポーンせずに構造化された計画を作成します。
 
-```
+```text
 /plan
 ```
 
@@ -38,7 +48,7 @@ description: フロントエンド、バックエンド、データベース、�
 1. **要件収集**：PMエージェントが対象ユーザー、主要機能、制約、デプロイ先について質問します。
 2. **技術的な実現可能性の分析**：設定されたコードインテリジェンスプロバイダーを使い、再利用できるコードとアーキテクチャパターンを既存のコードベースから調べます。ネイティブ検索は、プロジェクト外のパスまたは無視対象のパスにだけ使います。
 3. **APIコントラクトの定義**：エンドポイントのコントラクト（メソッド、パス、リクエスト・レスポンスのスキーマ、認証、エラーレスポンス）を設計し、`.agents/results/api-contracts/`に保存します（実行アーティファクト）。コミットする仕様は`docs/plans/contracts/`に昇格させます。
-4. **タスク分解**：担当エージェント、タイトル、受入基準、優先度（P0〜P3）、依存関係を含む実行可能なタスクに分けます。
+4. **タスク分解**：担当エージェント、タイトル、受入基準、優先度ティア（ティア1が最初に実行）、依存関係を含む実行可能なタスクに分けます。
 5. **計画のユーザーレビュー**：計画全体を提示して確認を求めます。明示的な承認なしにはワークフローは進みません。
 6. **計画の保存**：承認済みの計画を`.agents/results/plan-{sessionId}.json`に書き込み、概要をメモリに記録します。
 
@@ -58,31 +68,31 @@ description: フロントエンド、バックエンド、データベース、�
 
 #### /work：インタラクティブなマルチエージェントパイプライン
 
-```
+```text
 /work
 ```
 
 1. ユーザーのリクエストを分析し、関係するドメインを特定します。
 2. PMエージェントを実行してタスクを分解し、`plan-{sessionId}.json`を作成します。
 3. 計画をユーザーに提示して確認を求めます。**確認されるまで停止します。**
-4. 優先度ティアごとにエージェントをスポーンします。P0を先に実行し、同じ優先度のタスクは並列で実行します。
+4. 優先度ティアごとにエージェントをスポーンします。ティア1を先に実行し、次にティア2という順に進め、同じティアのタスクは並列で実行します。
 5. メモリファイルを使ってエージェントの進捗を監視します。
 6. すべての成果物をQAエージェントがレビューします（OWASP Top 10、パフォーマンス、アクセシビリティ、コード品質）。
 7. QAがCRITICALまたはHIGHの問題を見つけた場合は、担当エージェントをQAの指摘付きで再スポーンします。各問題について最大2回繰り返します。同じ問題が残る場合は**探索ループ**を起動し、2〜3個の代替アプローチを生成して、別々のワークスペースで同じ種類のエージェントに異なる仮説を与えてスポーンし、QAが採点して最善の結果を採用します。
 
 #### /orchestrate：自動並列実行
 
-```
+```text
 /orchestrate
 ```
 
 1. `.agents/results/plan-{sessionId}.json`をロードします。使用できる計画がなければ、`/plan`をインラインで実行して計画を作成します。
 2. `session-YYYYMMDD-HHMMSS`形式のセッションIDでセッションを初期化します。
-3. メモリディレクトリに`orchestrator-session.md`と`task-board.md`を作成します。
+3. メモリディレクトリに`orchestrator-session-{sessionId}.md`と`task-board-{sessionId}.md`を作成します。
 4. 優先度ティアごとにエージェントをスポーンし、それぞれにタスクの説明、APIコントラクト、コンテキストを渡します。
-5. `progress-{agent}.md`ファイルをポーリングして進捗を監視します。
+5. `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`ファイルをポーリングして進捗を監視します。
 6. 各エージェントの完了を`verify.sh`で検証します。PASS（終了コード0）なら受け入れ、FAIL（終了コード1）ならエラーのコンテキスト付きで再スポーンします（最大2回）。失敗が続く場合は探索ループを起動します。
-7. すべての`result-{agent}.md`を集め、最終レポートを作成します。
+7. すべての`result-{agentId}-{taskId}-{runId}-{sessionId}.md`ファイルを集め、最終レポートを作成します。
 
 ### Step 3：CLIレベルのエージェント管理にagent spawnを使う
 
@@ -92,7 +102,7 @@ description: フロントエンド、バックエンド、データベース、�
 oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-**すべてのフラグ：**
+**すべてのフラグ**（`oma agent spawn --help`）：
 
 | フラグ | 説明 |
 |:-----|:-----------|
@@ -101,6 +111,8 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 | `--task-id <id>` | スポーンをセッション計画のタスクに紐付けます。デフォルトはエージェントIDです。 |
 | `--isolation worktree` | スポーン用のgit worktreeを作成します。デフォルトでは追加の分離を行いません。 |
 | `--read-only` | 子エージェントを調査ツールだけに制限し、自動承認フラグを抑制します。 |
+| `--resumed-from <run-id>` | 再試行を直前の実行に紐付けます。 |
+| `--fallback-vendors <vendors>` | このスポーンで使う、順序付きのカンマ区切りのフォールバックベンダーチェーンです。 |
 
 **ベンダー解決の順序**（最初に一致したものを使います）：
 
@@ -108,7 +120,7 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 2. このエージェントに対する`oma-config.yaml`の`agents:`オーバーライド
 3. アクティブな`model_preset`のエージェントデフォルト
 
-設定の詳細は[エージェントごとのモデル](./per-agent-models.md)を参照してください。
+設定の詳細は[エージェント別モデル](./per-agent-models.md)を参照してください。
 
 **ワークスペース自動検出**では、次の順序でモノレポ設定を調べます。pnpm-workspace.yaml、package.jsonのworkspaces、lerna.json、nx.json、turbo.json、mise.toml。各ワークスペースディレクトリをエージェント種別のキーワード（frontendなら「web」「frontend」「client」など）で採点します。モノレポ設定がない場合は、`apps/web`、`apps/frontend`、`frontend/`などのハードコードされた候補にフォールバックします。
 
@@ -116,7 +128,7 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 ### Step 4：/reviewでQA検証を行う
 
-```
+```text
 /review
 ```
 
@@ -126,7 +138,7 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 2. **自動セキュリティチェック**：`npm audit`、`bandit`など同等のチェックを実行します。
 3. **OWASP Top 10の手動レビュー**：インジェクション、認証の破綻、機密データ、アクセス制御、設定ミス、安全でないデシリアライゼーション、脆弱なコンポーネント、不十分なログを確認します。
 4. **パフォーマンス分析**：N+1クエリ、インデックス不足、上限のないページネーション、メモリリーク、不要な再レンダリング、バンドルサイズを調べます。
-5. **アクセシビリティ**：セマンティックHTML、ARIA、キーボード操作、色のコントラスト、フォーカス管理を含むWCAG 2.1 AAを確認します。
+5. **アクセシビリティ**：セマンティックHTML、ARIA、キーボード操作、色のコントラスト、フォーカス管理を含むWCAG 2.2 AAを確認します。
 6. **コード品質**：命名、エラー処理、テストカバレッジ、TypeScript strictモード、未使用インポート、async/awaitのパターンを確認します。
 7. **レポート**：CRITICAL / HIGH / MEDIUM / LOWに分類し、`file:line`、説明、修正コードを含めて報告します。
 
@@ -134,11 +146,11 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 ---
 
-## セッションID戦略
+## セッションID戦略 {#session-id-strategy}
 
 すべてのオーケストレーションセッションには、次の形式の一意な識別子が付与されます。
 
-```
+```text
 session-YYYYMMDD-HHMMSS
 ```
 
@@ -146,9 +158,9 @@ session-YYYYMMDD-HHMMSS
 
 セッションIDは次の用途に使われます。
 
-- メモリファイルの名前（`orchestrator-session.md`、`task-board.md`）
-- システムの一時ディレクトリにあるPIDファイルでのエージェントプロセス追跡（`/tmp/subagent-{session-id}-{agent-id}.pid`）
-- ログファイルの関連付け（`/tmp/subagent-{session-id}-{agent-id}.log`）
+- メモリファイルの名前（`orchestrator-session-{sessionId}.md`、`task-board-{sessionId}.md`）
+- OSの一時ディレクトリ（macOSでは`$TMPDIR`、Linuxでは通常`/tmp`、Windowsでは`%TEMP%`）にあるPIDファイルでのエージェントプロセス追跡：`subagent-{session-id}-{agent-id}.pid`
+- 同じディレクトリにあるログファイルの関連付け：`subagent-{session-id}-{agent-id}.log`
 - `.agents/results/parallel-{timestamp}/`への結果のグループ化
 
 セッションIDは`/orchestrate`のStep 2で生成され、すべてのスポーンされたエージェントに渡されます。これにより、1回の実行に属するエージェント、ログ、PIDを追跡できます。
@@ -242,7 +254,7 @@ QAエージェントのレビューでCRITICALまたはHIGHの指摘が残って
 ### 単一エージェントのスポーン
 
 ```bash
-# Spawn backend agent with Gemini (default)
+# Spawn backend agent; the vendor comes from the resolution order above
 oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Spawn frontend agent with Claude, explicit workspace
@@ -322,11 +334,11 @@ QAレビューを任意とみなすことです。CRITICALとHIGHの指摘は、
 
 ### 6. 過剰な並列化
 
-P0のタスクが完了する前にP1のタスクを実行することです。P1はP0の成果物に依存することが多いためです。ワークフローはティアの順序を自動で管理します。
+ティア1のタスクが完了する前にティア2のタスクを実行することです。後のティアのタスクは前のティアの成果物に依存することが多いため、優先度ティアがあります。ワークフローはティアの順序を自動で管理します。
 
 ### 7. 検証の省略
 
-結果コントラクトを記録せずに`agent spawn`を直接使うことです。タスクで指定したチェックを実行して構造化されたclaimを完了させます。[エージェントの結果と再開](/docs/guide/agent-results-and-resume)を参照してください。ワークフローの検証ステップで、チェック失敗やスコープ逸脱を再利用前に検出します。
+結果コントラクトを記録せずに`agent spawn`を直接使うことです。タスクで指定したチェックを実行して構造化された申告を完了させます。[エージェントの結果と再開](./agent-results-and-resume.md)を参照してください。ワークフローの検証ステップで、チェック失敗やスコープ逸脱を再利用前に検出します。
 
 ---
 
@@ -354,4 +366,14 @@ QAエージェントのAlignment Review（ultraworkのStep 6、workのStep 6）�
 - ドメイン間のAPIコントラクト整合性が確認されている
 - ビルドが成功し、すべてのテストがパスしている
 - 最終レポートがメモリに書き込まれ、ユーザーに提示されている
-- ユーザーが最終承認している
+- ユーザーが最終承認している（`/work`とultraworkのSHIP_GATE）
+
+---
+
+## 次のステップ
+
+- 実行を見守る：[ダッシュボード監視](./dashboard-monitoring.md)
+- 結果を監査または再開する：[結果と再開](./agent-results-and-resume.md)
+- 何かが失敗した：[トラブルシューティング](./troubleshooting.md)
+- エージェントごとにベンダーとモデルを固定する：[エージェント別モデル](./per-agent-models.md)
+- [プラン](../getting-started/glossary.md#plan)や[永続ワークフロー](../getting-started/glossary.md#persistent-workflow)などの用語：[用語集](../getting-started/glossary.md)

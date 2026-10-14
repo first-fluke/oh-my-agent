@@ -9,19 +9,29 @@ description: 読者が先にタスクを選ぶための手順、単一スキル�
 ## クイックスタート
 
 1. 対応する AI 搭載 IDE または CLI（Claude Code、Codex CLI、Cursor、Antigravity、OpenCode、Kimi、Kiro、Qwen など）でプロジェクトを開きます。
-2. 選択したホストは `.agents/skills/` からスキルをロードできます。有効なフックは自然言語のキーワードからワークフローを検出します。
+2. 選択したホストは `.agents/skills/` から[スキル](../getting-started/glossary.md#skill)をロードできます。有効なフックは自然言語のキーワードから[ワークフロー](../getting-started/glossary.md#workflow)を検出します。
 3. やりたいことを自然言語で説明します。ホストまたは選択したワークフローがタスクを適切なスキルへルーティングします。
 4. 複数のエージェントを使う場合は `/work` または `/orchestrate` を使います。
 
 単一ドメインのタスクに特別な構文は必要ありません。[スキルとワークフローの選択ガイド](/docs/core-concepts/workflows#choosing-a-skill-or-workflow)で、単一スキル、`/work`、`/orchestrate`、`/ultrawork`、`/ralph` のどれを選ぶか確認してください。セットアップは[クイックスタート](../getting-started/quick-start.md)を、プロバイダーを変更する前の確認事項は[重要なデフォルト](../getting-started/important-defaults.md)を参照してください。
+
+## ガイドを選ぶ
+
+| やりたいこと | 始め方 | ガイド |
+|-----------|------------|-------|
+| 1 つのドメインで 1 つの変更 | 通常のプロンプト（スキルルーティング） | [単一スキル](./single-skill.md) |
+| API、UI、モバイル、データベースにまたがる機能 | `/work`（段階的）または `/orchestrate`（自動） | [マルチエージェントプロジェクト](./multi-agent-project.md) |
+| エラーメッセージが出ているバグ | `/debug` とエラー内容、再現手順 | [バグ修正](./bug-fixing.md) |
+| 実行中のエージェントを見守る | `oma dashboard terminal` | [ダッシュボード監視](./dashboard-monitoring.md) |
+| エージェントの結果を監査または再開する | `oma agent resume SESSION_ID --dry-run` | [結果と再開](./agent-results-and-resume.md) |
+| 何かが失敗した | `oma doctor --json` | [トラブルシューティング](./troubleshooting.md) |
 
 ---
 
 ## 例 1：単純な単一タスク
 
 **入力例：**
-
-```
+```text
 Create a login form component with email and password fields, client-side validation, and accessible labels using Tailwind CSS
 ```
 
@@ -31,10 +41,9 @@ Create a login form component with email and password fields, client-side valida
 2. Layer 1（SKILL.md）にはエージェントの識別情報、コアルール、ライブラリ一覧がすでにロードされています。
 3. Layer 2 のリソースがオンデマンドでロードされます。
    - `execution-protocol.md`：4 ステップのワークフロー（Analyze、Plan、Implement、Verify）
-   - `snippets.md`：フォームと Zod のバリデーションパターン
-   - スキルが提供する既存コンポーネントパターンと `snippets.md`
+   - `snippets.md`：フォームと Zod のバリデーションパターン。スキルが提供する場合は既存コンポーネントのパターンも含む
 4. エージェントが **CHARTER_CHECK** を出力します。
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -58,8 +67,7 @@ Create a login form component with email and password fields, client-side valida
 ## 例 2：マルチドメインプロジェクト
 
 **入力例：**
-
-```
+```text
 Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ```
 
@@ -70,38 +78,40 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 **`/work` を使う場合（ユーザーが段階ごとに制御）：**
 
-```
+```text
 /work Build a TODO app with user authentication, task CRUD, and a mobile app
 ```
 
 3. **Step 1、PM エージェントが計画します。**
    - ドメインを特定：バックエンド（認証 API、タスク CRUD）、フロントエンド（ログイン、タスクリスト UI）、モバイル（Flutter アプリ）
    - API コントラクトを定義：`POST /auth/register`、`POST /auth/login`、`POST /auth/refresh`、`GET /tasks`、`POST /tasks`、`PUT /tasks/:id`、`DELETE /tasks/:id`
-   - 優先度付きタスク分解を作成：
-     - P0：バックエンド認証 API、バックエンドのタスク CRUD API
-     - P1：フロントエンドのログイン/登録、フロントエンドのタスクリスト、モバイルの認証画面、モバイルのタスクリスト
-     - P2：QA レビュー
+   - 優先度ティアごとのタスク分解を作成（小さいティアから先に実行）：
+     - Tier 1：バックエンド認証 API、バックエンドのタスク CRUD API
+     - Tier 2：フロントエンドのログイン/登録、フロントエンドのタスクリスト、モバイルの認証画面、モバイルのタスクリスト
+     - Tier 3：QA レビュー
    - `.agents/results/plan-{sessionId}.json` に保存
 
 4. **Step 2、プランをレビューします。** エージェントはプランを提示し、既存の承認範囲で続行します。確認するのは、未決定の重要な事項や、新しい承認が必要な操作だけです。
 
-5. **Step 3、優先度ごとにエージェントをスポーンします。**
+5. **Step 3、優先度ティアごとにエージェントをスポーンします。**
    ```bash
-   # P0 tier (parallel)
-   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent spawn db "User and task schema design" session-todo-01 &
+   # Tier 1 (parallel). Task IDs come from .agents/results/plan-session-todo-01.json
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 --task-id api-auth -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 --task-id db-schema &
    wait
 
-   # P1 tier (parallel, after P0 completes)
-   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   # Tier 2 (parallel, after tier 1 completes)
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 --task-id web-ui -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 --task-id mobile-ui -w ./apps/mobile &
    wait
    ```
+
+   `--task-id` はセッションプランのタスク `id` と一致させる必要があります。省略するとタスク ID はエージェント ID になり、プランのあるセッションはプランに含まれない ID を拒否します（`Unknown plan task`）。プランのないアドホックなセッションでは省略できます。
 
 6. **Step 4、QA エージェントがレビューします。**
    - セキュリティ：OWASP Top 10 への準拠（JWT 検証、CSRF、SQL インジェクションの確認）
    - パフォーマンス：N+1 クエリの確認、ページネーションの検証
-   - アクセシビリティ：すべてのフロントエンドコンポーネントで WCAG 2.1 AA
+   - アクセシビリティ：すべてのフロントエンドコンポーネントで WCAG 2.2 AA
    - ドメイン間：フロントエンド、モバイル、バックエンドの API コントラクトの整合性
 
 7. **Step 5、反復します。** QA が CRITICAL な問題を見つけたら、QA レポートを添えて担当エージェントを再スポーンします。
@@ -111,8 +121,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ## 例 3：バグ修正
 
 **入力例：**
-
-```
+```text
 There's a bug. Clicking the save button shows "Cannot read property 'map' of undefined" in the task list
 ```
 
@@ -143,8 +152,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 ## 例 4：デザインシステム
 
 **入力例：**
-
-```
+```text
 Design a dark premium landing page for my B2B SaaS analytics product
 ```
 
@@ -160,7 +168,7 @@ Design a dark premium landing page for my B2B SaaS analytics product
    - アクセシビリティ（WCAG AA）
 3. **Phase 3、ENHANCE：** プロンプトが曖昧なら、セクションごとの仕様へ変換します。
 4. **Phase 4、PROPOSE：** 3 つのデザイン方向を提示します。
-   - **方向 A「Midnight Observatory」**：深いネイビー（#0f1729）、シアンのアクセント（#22d3ee）、Inter + JetBrains Mono、ベン​​トグリッド、スクロール連動の表示
+   - **方向 A「Midnight Observatory」**：深いネイビー（#0f1729）、シアンのアクセント（#22d3ee）、Inter + JetBrains Mono、ベントグリッド、スクロール連動の表示
    - **方向 B「Carbon Interface」**：ニュートラルグレー（#18181b）、アンバーのアクセント（#f59e0b）、システムフォント、チェス盤レイアウト、ホバー連動のマイクロインタラクション
    - **方向 C「Deep Space」**：純粋なダーク（#0a0a0a）、エメラルドのアクセント（#10b981）、Geist + Geist Mono、全面幅セクション、入場アニメーション
 5. **Phase 5、GENERATE：** 選択した方向に基づいて次を生成します。
@@ -190,7 +198,7 @@ oma link claude codex antigravity
 
 # Monitor while agents work (separate terminal)
 oma dashboard terminal        # Terminal UI with live table
-oma dashboard web    # Web UI at http://localhost:9847
+oma dashboard web             # Web UI; prints http://127.0.0.1:9847/
 
 # After implementation, run QA
 oma agent spawn qa "Review notification feature across all platforms" session-notif-01
@@ -213,8 +221,7 @@ oma stats get
 ## 例 6：最高品質のための ultrawork
 
 **入力例：**
-
-```
+```text
 /ultrawork Build a payment processing module with Stripe integration
 ```
 
@@ -267,6 +274,7 @@ oma stats get
 | `/brainstorm` | 非永続 | 2〜3 のアプローチを提案するデザインファーストのアイデア出し | 実装方針を決める前 |
 | `/deepinit` | 非永続 | プロジェクト全体の初期化（AGENTS.md、ARCHITECTURE.md、docs/） | 既存のコードベースに oh-my-agent を設定するとき |
 | `/review` | 非永続 | QA パイプライン（OWASP セキュリティ、パフォーマンス、アクセシビリティ、コード品質） | マージ前、デプロイ前のレビュー |
+| `/security` | 非永続 | `oma-security` を通じて、アプリケーションのソース、エージェントスキル、MCP コンポーネントをスキャンし、テスト環境に対してスコープを限定した Web ペネトレーションテストを実行し、指摘を検証してセキュリティゲートを設定 | リリース前、またはセキュリティスキャンやゲートが必要な変更のとき |
 | `/debug` | 非永続 | 再現、診断、修正、回帰テスト、スキャンを行う構造化デバッグ | バグやエラーの調査 |
 | `/design` | 非永続 | トークン付きの DESIGN.md を作る 7 フェーズのデザインワークフロー | デザインシステム、ランディングページ、UI の再設計 |
 | `/scm` | 非永続 | Git（ブランチ、マージ、競合、ワークツリー、ベースライン）と Conventional Commit 生成を自動的に型・スコープ検出して扱う | コード変更後、リポジトリ構成の管理 |
@@ -279,7 +287,7 @@ oma stats get
 | `/recap` | 非永続 | 対応する AI ツールの履歴を要約 | 日次または期間の振り返り |
 | `/schedule` | 非永続 | エージェントの定期ジョブを登録 | 夜間のリキャップ、スキャン、定期メンテナンス |
 | `/video` | 非永続 | スクリプト、ナレーション、映像から再現可能な動画を作成 | ショート、解説、デモ |
-| `/ralph` | 永続 | 独立した判定とループのセーフガードを伴う ultrawork の反復実行 | 機械的な完了基準に達するまで繰り返すことを明示的に依頼するとき |
+| `/ralph` | 永続 | プロンプトで指示される judge とループのセーフガードを伴う ultrawork の反復実行 | 機械的な完了基準に達するまで繰り返すことを明示的に依頼するとき |
 
 ---
 
@@ -335,7 +343,7 @@ oh-my-agent は 11 言語のワークフローキーワードを検出します�
 | **oma-coordination** | 手動のマルチエージェント調整 | 段階的なタスクとハンドオフの指針 |
 | **oma-db** | スキーマ設計、ERD、クエリ調整、容量計画 | スキーマ文書、マイグレーション、復旧計画 |
 | **oma-debug** | バグの再現と根本原因分析 | 最小修正、回帰の根拠、類似パターンスキャン |
-| **oma-deepsec** | エージェント駆動の脆弱性スキャン | スキャン、トリアージ、再検証、ゲートのレポート |
+| **oma-security** | ソース、エージェントスキル、MCP のセキュリティスキャン、スコープを限定した Web ペネトレーションテスト | 検証済みの指摘とスキャンゲートの設定 |
 | **oma-design** | デザインシステム、ランディングページ、トークン | `DESIGN.md`、トークン、コンポーネント指針 |
 | **oma-dev-workflow** | CI/CD、モノレポ、マイグレーション、リリース自動化 | ワークフロー設定とリリースチェック |
 | **oma-docs** | 壊れた参照とドキュメントドリフト | 検証レポートまたは差分対象の同期候補 |
@@ -366,40 +374,21 @@ oh-my-agent は 11 言語のワークフローキーワードを検出します�
 
 ## ダッシュボードのセットアップ
 
-### ターミナルダッシュボード
-
 ```bash
-oma dashboard terminal
+oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
+oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-ターミナルに次の情報を含むライブ更新の表を表示します。
+どちらのコマンドも、カレントディレクトリ配下の `.agents/state/memories/` を監視します。別のプロジェクトを監視するには `--project-root <path>` を渡すか、`MEMORIES_DIR` を設定します。エージェントの表には 4 つの列があります。
 
-- セッション ID と全体の状態（RUNNING / COMPLETED / FAILED）
-- エージェントごとの行：状態、ターン数、最新アクティビティ、経過時間
-- `.agents/state/memories/` を監視したリアルタイムの進捗
+| 列 | ソース |
+|--------|--------|
+| Agent | `task-board.md`、またはメモリファイルから見つかったエージェント名 |
+| Status | ターミナルの記号：● 実行中（緑）、✓ 完了（シアン）、✗ 失敗（赤）、○ ブロック（黄）、◌ 保留（淡色） |
+| Turn | エージェントの `progress-<agent>*.md` ファイルにある `turn: N` |
+| Task | タスクボードまたはエージェントのファイルにあるタスクの内容 |
 
-### Web ダッシュボード
-
-```bash
-oma dashboard web
-# Opens http://localhost:9847
-```
-
-機能は次のとおりです。
-
-- WebSocket によるリアルタイム更新（手動更新不要）
-- 接続が切れたときの自動再接続
-- 色分けされたエージェント状態（緑=完了、黄=実行中、赤=失敗）
-- 進捗ファイルと結果ファイルからストリーミングするアクティビティログ
-- 過去のセッションデータ
-
-### 推奨レイアウト
-
-3 つのターミナルを使います。
-
-1. **ダッシュボード用ターミナル：** 継続的な監視のための `oma dashboard terminal`
-2. **コマンド用ターミナル：** エージェントのスポーン、ワークフロー、その他のコマンド
-3. **ビルド用ターミナル：** テスト、ビルドログ、Git 操作
+表の下には、どちらのダッシュボードも、最近更新された 5 つのメモリファイルから最新のアクティビティを一覧表示します。レイアウト、データソース、復旧手順は[ダッシュボード監視](./dashboard-monitoring.md)を参照してください。
 
 ---
 
@@ -431,7 +420,7 @@ oma dashboard web
 
 ### プロジェクトメモリストア
 
-エージェントは `.agents/state/memories/` の永続ファイル（古いプロジェクトでは `.serena/memories/` にフォールバック）で調整します。オーケストレータは実行単位のセッションファイルとタスクボードを作成します。Markdown の進捗または結果出力が有効な場合、各実行は `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` と `result-{agentId}-{taskId}-{runId}-{sessionId}.md` を作成します。`.agents/state/agent-runs/` の構造化された実行記録と申告が CLI スポーンの正本です。エージェントはネイティブのファイルツールでこれらのファイルを読み書きし、ツールの対応付けは `.agents/mcp.json → memoryConfig.tools` で設定できます。
+エージェントは `.agents/state/memories/` の永続ファイル（古いプロジェクトでは `.serena/memories/` にフォールバック）で調整します。オーケストレーターは実行単位のセッションファイルとタスクボードを作成します。Markdown の進捗または結果出力が有効な場合、各実行は `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` と `result-{agentId}-{taskId}-{runId}-{sessionId}.md` を作成します。`.agents/state/agent-runs/` の構造化された実行記録と申告が CLI スポーンの正本です。エージェントはネイティブのファイルツールでこれらのファイルを読み書きし、ツールの対応付けは `.agents/mcp.json → memoryConfig.tools` で設定できます。
 
 ### ワークスペース
 
@@ -456,23 +445,34 @@ oma dashboard web
 
 ---
 
-## トラブルシューティング
+## トラブルシューティング {#troubleshooting}
+
+よくある問題を以下にまとめます。エラーメッセージ、実行結果の失敗、スケジュール、フックについては[トラブルシューティング](./troubleshooting.md)を参照してください。
 
 | 問題 | 原因 | 対処 |
 |---------|------|-----|
 | IDE でスキルが検出されない | `.agents/skills/` がない、または `SKILL.md` ファイルがない | インストーラー（`bunx oh-my-agent@latest`）を実行し、`.claude/skills/` のシンボリックリンクを確認して IDE を再起動 |
-| スポーン時に CLI が見つからない | 選択した AI CLI が未インストール、または `PATH` の外にある | `which <selected-cli>`（例：`claude`、`codex`、`agy`、`qwen`、`kiro`）を実行し、新しいシェルを開くかインストールガイドに従ってインストール |
+| スポーン時に CLI が見つからない | 選択した AI CLI が未インストール、または `PATH` の外にある | `which <selected-cli>`（例：`claude`、`codex`、`agy`、`qwen`、`kiro-cli`）を実行し、新しいシェルを開くかインストールガイドに従ってインストール |
 | エージェントが競合するコードを生成する | ワークスペース分離がない | 別々のワークスペースを使う：`-w ./apps/api`、`-w ./apps/web` |
-| ダッシュボードに「No agents detected」と表示される | エージェントがまだメモリへ書き込んでいない | エージェントの開始を待つ（最初の書き込みはターン 1）か、セッション ID が一致することを確認 |
-| Web ダッシュボードが起動しない | 依存関係が未インストール | web/ ディレクトリで `bun install` を実行 |
+| ダッシュボードに「No agents detected yet」と表示される | エージェントがまだメモリへ書き込んでいない、またはダッシュボードが別のディレクトリを監視している | 最初の進捗ファイルが作られるまで待つ。プロジェクトルートから実行するか、`--project-root <path>` を渡す |
+| `oma dashboard web` が「port 9847 is already in use」で終了する | 別のプロセスがポートを使用している | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA レポートに 50 件以上の問題がある | 大きなコードベースの初回レビューでは通常の結果 | まず CRITICAL と HIGH に集中し、MEDIUM / LOW は次のスプリントに記録 |
 | 自動検出が誤ったワークフローを起動する | キーワードが曖昧 | 自然言語ではなく明示的な `/command` を使い、誤検出を改善用に報告 |
 | 永続ワークフローを停止できない | 状態ファイルが残っている | チャットで「workflow done」と言うか、`.agents/state/` から状態ファイルを手動で削除 |
 | エージェントが HIGH の明確化で停止する | 要件が曖昧すぎる | エージェントが求めた具体的な回答を示し、再実行 |
 | MCP ツールが動かない | Serena が設定されていない、または起動していない | `oma doctor` を実行して MCP 設定を確認 |
 | エージェントが実行予算を超える | 1 回の実行にはタスクが複雑すぎる | タスクを分解し、明確な境界を持つワークフローを使うか、より狭い受入契約で再試行 |
-| エージェントに誤った CLI が使われる | `model_preset` が未設定、またはエージェントのオーバーライドがない | `oma install` を実行して設定するか、`oma-config.yaml` で `model_preset` を設定。詳しくは[エージェント別モデル](../guide/per-agent-models.md)を参照 |
+| エージェントに誤った CLI が使われる | `model_preset` が未設定、またはエージェントのオーバーライドがない | `oma install` を実行して設定するか、`oma-config.yaml` で `model_preset` を設定。詳しくは[エージェント別モデル](./per-agent-models.md)を参照 |
 
 ---
 
-単一ドメインのタスクパターンは[単一スキルガイド](./single-skill.md)を、プロジェクト統合の詳細は[統合ガイド](./integration.md)を参照してください。
+## 次のステップ
+
+- 1 つのドメインで 1 つの変更：[単一スキル](./single-skill.md)
+- 複数のドメインにまたがる機能：[マルチエージェントプロジェクト](./multi-agent-project.md)
+- エラーメッセージが出ているバグ：[バグ修正](./bug-fixing.md)
+- 実行を見守る：[ダッシュボード監視](./dashboard-monitoring.md)
+- エージェントの結果を監査または再開する：[結果と再開](./agent-results-and-resume.md)
+- 何かが失敗した：[トラブルシューティング](./troubleshooting.md)
+- プロジェクト統合の詳細：[統合ガイド](./integration.md)
+- このガイドで使う用語：[用語集](../getting-started/glossary.md)

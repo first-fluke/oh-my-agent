@@ -8,9 +8,38 @@ description: Zapisuj pracę agentów za pomocą weryfikowalnych zgłoszeń, spra
 
 OMA traktuje wynik agenta jako mały rekord dowodowy, a nie tylko kod wyjścia procesu. Uruchomienie zapisuje ID zadania i sesji, odcisk workspace’u, pokwitowania weryfikacji, zmienione pliki, nierozwiązaną pracę i skróty artefaktów. Dzięki temu koordynator może ponownie wykorzystać zakończone zadanie tylko tak długo, jak jego kontrakt akceptacji i dane wejściowe nadal pasują.
 
-Używaj tego cyklu bezpośrednio, gdy uruchamiasz natywnego agenta. Workflowy i `oma agent spawn` tworzą te same rekordy za Ciebie i pozostawiają finalizację zarządzanego uruchomienia koordynatorowi nadrzędnemu.
+Używaj tego cyklu bezpośrednio, gdy uruchamiasz natywnego agenta. Workflowy i `oma agent spawn` tworzą te same rekordy za Ciebie i pozostawiają finalizację zarządzanego uruchomienia koordynatorowi nadrzędnemu. Terminy używane na tej stronie wyjaśniają hasła [Rekord uruchomienia i zgłoszenie](../getting-started/glossary.md#run-record-and-claim) oraz [Plan](../getting-started/glossary.md#plan) w słowniku.
 
-## Rozpocznij natywne uruchomienie
+## Cykl życia w skrócie
+
+| Krok | Polecenie | Zapisuje | Zachowaj |
+| --- | --- | --- | --- |
+| 1. Kontrakt | Edytuj `.agents/results/plan-SESSION_ID.json` | `acceptance_criteria` i `required_checks` zadania | ID sesji, ID zadania |
+| 2. Rozpoczęcie | `oma agent begin AGENT TASK SESSION_ID --workspace .` | Rekord uruchomienia ze statusem `running` | `runId`, `claimPath` |
+| 3. Kontekst (opcjonalnie) | `oma agent context AGENT --difficulty Medium` | Nic | Kontekst promptu |
+| 4. Weryfikacja | `oma agent verify RUN_ID --required` | Jedno pokwitowanie na kontrolę | Kod wyjścia |
+| 5. Zgłoszenie | Zapisz JSON pod `claimPath` | Plik zgłoszenia | Nic |
+| 6. Zakończenie | `oma agent finish RUN_ID CLAIM_PATH` | Status końcowy | `status` |
+| 7. Odzyskiwanie | `oma agent resume SESSION_ID --dry-run`, a potem bez `--dry-run` | Punkt kontrolny odzyskiwania i dzierżawa sesji | Status każdego zadania |
+
+`oma agent spawn` i `oma agent parallel` wykonują kroki 2 i 6 za Ciebie: proces nadrzędny rozpoczyna uruchomienie i finalizuje je, gdy proces potomny się zakończy.
+
+```mermaid
+flowchart TD
+  plan["Task contract in plan-SESSION_ID.json"] --> begin["oma agent begin, or spawn"]
+  begin --> running(["running"])
+  running -->|"oma agent verify"| running
+  running --> claim["Claim written at claimPath"]
+  claim --> finish["oma agent finish, or the spawning parent"]
+  finish -->|"claim completed, current receipts, nothing unresolved"| completed(["completed"])
+  finish -->|"unresolved items, missing checks or decisions, invalid claim"| partial(["partial"])
+  finish -->|"claim reports blocked"| blocked(["blocked"])
+  finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
+```
+
+Zgłoszenie może też bezpośrednio raportować `partial` albo `failed`. Zakończenie nigdy nie podnosi statusu zgłoszenia: obniża zgłoszenie `completed`, którego dowody się nie potwierdzają, a niezerowy kod wyjścia oznacza każde uruchomienie jako `failed`.
+
+## Rozpocznij natywne uruchomienie {#start-a-native-run}
 
 Najpierw zdefiniuj zadanie oraz jego `acceptance_criteria` i `required_checks` w planie `.agents/results/plan-SESSION_ID.json`. Przy małej, ogólnej kontroli projektu plan może zawierać jedno zadanie, na przykład:
 
@@ -86,6 +115,26 @@ Używaj `--affected PATH...` tylko wtedy, gdy graf ma pełny wybór testów dla 
 
 ## Zapisz i zakończ zgłoszenie
 
+W przypadku zadań, które wybierają kontrakt API, politykę uwierzytelniania, model danych,
+strategię migracji, właściciela stanu, zakres dostępu do infrastruktury albo inną
+decyzję, od której zależy dalsza praca, zadeklaruj w zadaniu `required_decisions`
+przed dispatchem:
+
+```json
+"required_decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "description": "Choose the compatibility window and rollback strategy for the account migration."
+  }
+]
+```
+
+Pomiń to pole w zadaniach, które realizują istniejącą decyzję. Wymagania są
+przypinane razem z kontraktem zadania i nie można ich usunąć ani zmienić po dispatchu.
+Sugerowane tematy dla agenta wyświetlisz poleceniem
+`oma state decisions list --agent db-engineer --json`. Te tematy są
+wyborami do użycia, gdy mają zastosowanie; katalog nie czyni każdego wyboru obowiązkowym.
+
 Zapisz plik zgłoszenia pod dokładną ścieżką wypisaną przez `begin`:
 
 ```json
@@ -98,6 +147,29 @@ Zapisz plik zgłoszenia pod dokładną ścieżką wypisaną przez `begin`:
 ```
 
 `status` przyjmuje jedną z wartości `completed`, `partial`, `blocked` albo `failed`. Ścieżki są względne względem katalogu głównego projektu, a każdy artefakt musi być zwykłym plikiem w workspace. Używaj `verificationSkipped` tylko dla konkretnego przeglądu, dla którego nie istnieje wykonywalna kontrola; nie zamienia ono nieudanej kontroli w zaliczoną.
+
+Istotne decyzje umieść w opcjonalnej tablicy `decisions` zgłoszenia:
+
+```json
+"decisions": [
+  {
+    "subject": "db.migration-strategy",
+    "decision": "Use an expand-and-contract migration; retain the old column for one release.",
+    "rationale": "Both deployed app versions must work during the rollout; rollback switches reads to the retained column.",
+    "alternatives": ["Replace the column during a maintenance window"],
+    "evidence": ["docs/account-migration.md"]
+  }
+]
+```
+
+Proces nadrzędny zapisuje każdą decyzję jako zdarzenie `decision.made` w sesji uruchomienia
+i dołącza do niej rzeczywiste ID agenta, zadania i uruchomienia. Brak wymaganej decyzji
+pozostawia wynik jako częściowy, także wtedy, gdy wykonywalne kontrole przechodzą. Decyzje z
+innego zadania albo innej próby nie spełniają wymagania. Pokwitowanie przypina ID zdarzeń
+decyzji i skróty ich zawartości; ponowne użycie sprawdza, czy te zdarzenia nadal
+istnieją, są prawidłowe i mają niezmienioną zawartość.
+Decyzje opcjonalne również są zapisywane. Agenci tylko do odczytu zwracają tę samą tablicę w
+swoim zgłoszeniu `OMA_RESULT_JSON`, aby proces nadrzędny mógł ją utrwalić.
 
 Po zapisaniu zgłoszenia sfinalizuj natywne uruchomienie:
 
@@ -123,7 +195,20 @@ Najpierw sprawdź, co zrobiłoby OMA:
 oma agent resume SESSION_ID --dry-run
 ```
 
-Raport klasyfikuje każde zadanie jako `reused`, `ready`, `running` albo `blocked` i podaje przyczynę. Prawidłowe zakończone pokwitowanie jest używane ponownie tylko wtedy, gdy jego kontrakt, dane wejściowe, skróty artefaktów i dowody zależności są nadal aktualne. Aktywny proces zarządzany albo natywne uruchomienie bez dowodu aktywności nie jest duplikowane.
+Raport klasyfikuje każde zadanie jako `reused`, `ready`, `running` albo `blocked` i podaje przyczynę:
+
+```mermaid
+flowchart TD
+  task["Plan task and its latest run"] --> live{"Latest run still running, with a live or unknown process?"}
+  live -->|yes| running(["running"])
+  live -->|no| valid{"Completed evidence still current?"}
+  valid -->|yes| reused(["reused"])
+  valid -->|no| safe{"retry_policy safe, replayable prompt and agent, attempts left?"}
+  safe -->|yes| ready(["ready"])
+  safe -->|no| blocked(["blocked"])
+```
+
+Zależność, która nie ma statusu `reused`, zmienia zależne zadanie `reused` z powrotem na `ready` (albo na `blocked`, gdy nie można go odtworzyć), a zadanie `ready`, którego zależność ma status `blocked` albo `running`, staje się `blocked`. Prawidłowe zakończone pokwitowanie jest używane ponownie tylko wtedy, gdy jego kontrakt, dane wejściowe, skróty artefaktów i dowody zależności są nadal aktualne. Aktywny proces zarządzany albo natywne uruchomienie bez dowodu aktywności nie jest duplikowane.
 
 Gdy raport pozwala bezpiecznie wykonać operację, wznów gotowe zadania w kolejności zależności:
 
@@ -151,4 +236,9 @@ Wznowienie rozpoczyna nową próbę; nie przywraca przerwanej rozmowy z modelem.
 | Zmieniono plan albo dane wejściowe | Rozpocznij nowe uruchomienie po ustabilizowaniu planu. | Nowe uruchomienie zapisuje migawkę nowego kontraktu; stary dowód nie jest używany ponownie. |
 | Zadanie wymaga decyzji | Zapisz je jako `blocked` wraz z wyjaśnieniem. | Wznowienie pozostawi je zablokowane do czasu udostępnienia decyzji i promptu. |
 
-W sprawie błędów parsowania, brakujących narzędzi dostawcy, stanu dashboardu, harmonogramów i nieaktualnych danych ewaluacji zobacz [Rozwiązywanie problemów](/docs/guide/troubleshooting).
+## Następne kroki
+
+- Komunikaty błędów z `begin`, `verify`, `finish` i `resume`: [Rozwiązywanie problemów](./troubleshooting.md#find-your-error)
+- Błędy parsowania, brakujące narzędzia dostawcy, stan dashboardu, harmonogramy i nieaktualne dane ewaluacji: [Rozwiązywanie problemów](./troubleshooting.md)
+- Obserwowanie zarządzanych uruchomień w trakcie pracy: [Monitorowanie w dashboardzie](./dashboard-monitoring.md)
+- Definiowanie planów z kontraktami zadań: [Projekty wieloagentowe](./multi-agent-project.md)

@@ -7,7 +7,9 @@ description: Referencia completa de cada comando CLI de oh-my-agent, con sintaxi
 
 Después de instalar globalmente (`bun install --global oh-my-agent`), usa `oma` o `oh-my-agent`. Para usarlo una sola vez sin instalarlo, ejecuta `npx oh-my-agent`.
 
-La variable de entorno `OH_MY_AG_OUTPUT_FORMAT` se puede establecer en `json` para forzar una salida legible por máquina en los comandos que la admiten. Equivale a pasar `--json` a cada comando.
+La variable de entorno `OH_MY_AG_OUTPUT_FORMAT` se puede establecer en `json` para que JSON sea la salida predeterminada en los comandos que usan las opciones compartidas `--json` / `--output`. Un `--output text` explícito sigue teniendo prioridad.
+
+Si un comando falla con `Unknown command`, `Unexpected argument` o `Removed option`, consulta [Formas eliminadas](#aliases) en esta página; para problemas de instalación, hooks y runtime, consulta [Solución de problemas](../guide/troubleshooting.md).
 
 ## Comenzar con una tarea {#start-with-a-task}
 
@@ -25,8 +27,10 @@ Elige el comando más pequeño que responda a tu pregunta. Cada comando de abajo
 | Convertir o inspeccionar un artículo | `oma scholar search "<query>"` | Resultados de búsqueda de Knows, OpenAlex o Semantic Scholar; obtén un sidecar con `oma scholar get`. |
 | Crear una presentación | `oma slide create --output-dir <dir>` | Un directorio de trabajo que se puede escribir, validar, empaquetar y exportar. |
 | Revisar el drift de la documentación | `oma docs verify --json` | Un informe estructurado de referencias rotas y un índice de referencias regenerado. |
+| Programar un agente recurrente | `oma schedule create backend "<task>" --every 2h --dry-run` | La expresión cron resuelta; no se registra nada hasta que lo vuelvas a ejecutar sin `--dry-run`. |
+| Comprobar la calidad de las skills o del harness | `oma skill lint` o `oma skill audit` | Informes offline; consulta [Elegir un comando de skill o de harness](#choosing-a-skill-or-harness-command) antes de usar cualquier comando que llame a modelos. |
 
-El registro incluido en el repositorio es la fuente de este mapa de comandos. Los nombres canónicos de descubrimiento de abajo proceden de `oma describe`; la ayuda interactiva puede mostrar alias de compatibilidad como `slide new`, `slide viewer`, `image list-vendors` o `video list-providers`.
+Los nombres canónicos de abajo proceden de `oma describe`. Solo se aceptan estas rutas separadas por espacios: las formas antiguas como `slide new`, `slide viewer`, `image list-vendors` y `video list-providers`, las formas con dos puntos como `agent:parallel` y los nombres cortos `viz`, `s` e `img` fallan con `Unknown command` o `Unexpected argument`. Consulta [Alias y formas eliminadas](#aliases).
 
 ## Superficie actual de comandos {#current-command-surface}
 
@@ -43,6 +47,7 @@ Este mapa facilita recorrer las referencias extensas de abajo y descubrir las fa
 | `market` | `market`, `market detect-trap`, `market resolve`, `market update`, `market run` |
 | `doctor` | `doctor` |
 | `profile` | `profile`, `profile list`, `profile show`, `profile create`, `profile use`, `profile run` |
+| `home` | `home`, `home migrate` |
 | `retro` | `retro` |
 | `recap` | `recap` |
 | `docs` | `docs`, `docs verify`, `docs sync`, `docs i18n`, `docs lint` |
@@ -54,19 +59,19 @@ Este mapa facilita recorrer las referencias extensas de abajo y descubrir las fa
 | `star` | `star` |
 | `visualize` | `visualize` |
 | `search` | `search`, `search providers`, `search web`, `search fetch`, `search meta`, `search media`, `search archive`, `search trust`, `search code`, `search doctor`, `search api`, `search api fetch`, `search api search`, `search rss`, `search rss fetch`, `search rss google` |
-| `harness` | `harness`, `harness eval`, `harness incident`, `harness feedback`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
+| `harness` | `harness`, `harness eval`, `harness incident`, `harness incident scan`, `harness incident capture`, `harness incident show`, `harness incident export`, `harness incident promote`, `harness incident reproduce`, `harness feedback`, `harness evolution`, `harness evolution enable`, `harness evolution status`, `harness evolution disable`, `harness evolution run` |
 | `slide` | `slide`, `slide validate`, `slide bundle`, `slide edit`, `slide doctor`, `slide create`, `slide preview`, `slide export`, `slide export pdf`, `slide export png`, `slide export pptx`, `slide import`, `slide import pptx`, `slide asset`, `slide asset fetch-video`, `slide style`, `slide style list`, `slide style preview`, `slide style get` |
 | `scholar` | `scholar`, `scholar search`, `scholar resolve`, `scholar get`, `scholar lint` |
 | `image` | `image`, `image generate`, `image doctor`, `image vendor`, `image vendor list` |
 | `video` | `video`, `video generate`, `video doctor`, `video compose`, `video render`, `video provider`, `video provider list` |
-| `serena` | `serena`, `serena reap`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
+| `serena` | `serena`, `serena check`, `serena setup`, `serena reap`, `serena daemon`, `serena daemon gc`, `serena reaper`, `serena reaper enable`, `serena reaper disable` |
 | `explain` | `explain`, `explain render`, `explain lint`, `explain patch`, `explain components`, `explain validate` |
 | `diagram` | `diagram`, `diagram resolve`, `diagram update`, `diagram archify` |
 | `help` | `help` |
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe` |
+| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -75,7 +80,10 @@ Este mapa facilita recorrer las referencias extensas de abajo y descubrir las fa
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
+| `skills` | `skills matrix` (el único comando que conserva el nombre de grupo en plural; `oma skill matrix` se rechaza) |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
+
+`oma describe` también enumera `agent parallel-supervisor`, `schedule inspect` y `schedule builtin-evolution-add`. Otros comandos los llaman internamente; no se ejecutan a mano.
 
 Cuando un comando delega los argumentos restantes a otra herramienta, el registro deja sus opciones abiertas de forma deliberada. Esto se aplica a `market run` y `diagram archify`; lee la ayuda upstream resuelta antes de ejecutar una operación que modifique datos o use la red.
 
@@ -87,13 +95,21 @@ Cuando un comando delega los argumentos restantes a otra herramienta, el registr
 
 `oma` sin argumentos inicia el instalador interactivo. `oma install` es la forma explícita y acepta opciones para seleccionar proveedores.
 
-```
+```bash
 oma
 oma install
-oma install --web-search native --code-intelligence gortex --semantic-memory agent-memory
+oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
-Si omites `--web-search`, `--code-intelligence` y `--semantic-memory`, se conserva la selección de proveedor guardada. `--honcho-url` y `--honcho-workspace` configuran una conexión nueva de Honcho cuando se selecciona ese proveedor. El flag raíz `-y, --yes` omite los prompts y usa los valores predeterminados; `--global` apunta a la instalación de HOME.
+| Opción | Valores aceptados |
+|:-------|:----------------|
+| `--web-search <provider>` | `native`, `brave` |
+| `--code-intelligence <provider>` | `serena`, `gortex` |
+| `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
+| `--honcho-url <url>` | Origen de la API de Honcho (predeterminado para conexiones nuevas: `http://127.0.0.1:8000`) |
+| `--honcho-workspace <id>` | ID del workspace de Honcho (predeterminado para conexiones nuevas: `oma`) |
+
+Si omites `--web-search`, `--code-intelligence` y `--semantic-memory`, se conserva la selección de proveedor guardada. `--honcho-url` y `--honcho-workspace` configuran una conexión nueva de Honcho cuando se selecciona ese proveedor. El flag raíz `-y, --yes` omite los prompts y usa los valores predeterminados; `--global` apunta a `$OMA_HOME/.agents/` (predeterminado: `~/.oma/.agents/`). La instalación de proyecto permanece en `<cwd>/.agents/` aunque `OMA_HOME` esté establecido.
 
 **Qué hace:**
 1. Comprueba si existe el directorio legacy `.agent/` y lo migra a `.agents/` si lo encuentra.
@@ -123,29 +139,30 @@ oma
 
 Comprobación de salud de las instalaciones del CLI, las configuraciones MCP y el estado de las skills.
 
-```
-oma doctor [--json] [--output <format>] [--profile]
+```text
+oma doctor [--json] [--output <format>] [--profile] [--heal-check <agent-type>]
 ```
 
 **Opciones:**
 
 | Flag | Descripción |
 |:-----|:-----------|
-| `--json` | Salida como JSON |
+| `--json` | Salida como JSON. El comando termina con `1` cuando el recuento `issues` del informe es mayor que cero. |
 | `--output <format>` | Formato de salida (`text` o `json`) |
 | `--profile` | Muestra la matriz de salud del perfil. Presenta el slug del modelo resuelto, el CLI y el estado de autenticación de cada agente a partir de `model_preset` y las sobrescrituras `agents:` activas. Consulta [Modelos por agente](../guide/per-agent-models.md). |
+| `--heal-check <agent-type>` | Incluye en el informe la comprobación de la puerta de autorreparación de ese agente. |
 
 **Qué verifica:**
-- Instalaciones del CLI: agy, claude, codex, qwen (versión y ruta).
+- Instalaciones del CLI: `claude`, `codex`, `qwen`, `agy`, `grok`, `kiro-cli`, `kimi` y `pi` (versión y ruta).
 - Estado de autenticación de cada CLI.
-- Configuración MCP: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
+- Configuración MCP de Claude Code (`~/.claude.json`) y Codex (`~/.codex/config.toml`).
 - Skills instaladas: cuáles están presentes y cuál es su estado.
 - Directorio del almacén de memoria: existencia y cantidad de archivos de `.agents/state/memories/` (los proyectos antiguos usan como fallback la ruta legacy `.serena/memories/`).
 - Marcadores de instalación duplicados (proyecto frente a global) y advertencias relacionadas.
 - Configuración **global** recomendada de git (`gitRecommended` en JSON):
   - `rerere.enabled=true`
   - `init.defaultBranch=main`
-  - Cada discrepancia cuenta para `totalIssues`.
+  - Cada discrepancia cuenta para el total de incidencias (`issues` en JSON)
 - Archivo de contexto del proveedor del proyecto (bloque OMA de `AGENTS.md` cuando está instalado Codex, Qwen o Claude Code ≥ 2.1.277).
 - Salud de AgentMemory y de state/hooks, diagnósticos del reaper de Serena y contadores de incidencias relacionados.
 
@@ -170,8 +187,8 @@ oma doctor --profile
 
 Actualiza las skills a la versión más reciente del registro.
 
-```
-oma update [-f | --force] [--with-new-skills] [--ci] [-y | --yes] [--all] [--vendor <vendors>]
+```text
+oma update [-f, --force] [--with-new-skills] [--ci] [-y, --yes] [--all] [--vendor <vendors>]
 ```
 
 **Opciones:**
@@ -229,7 +246,7 @@ oma update mcp --ci
 
 Previsualiza o elimina archivos propiedad de OMA del directorio raíz de instalación seleccionado:
 
-```
+```bash
 oma uninstall --dry-run
 oma uninstall --yes
 ```
@@ -240,24 +257,29 @@ oma uninstall --yes
 
 Regenera los archivos nativos de los proveedores a partir de la fuente de verdad `.agents/` sin reinstalar.
 
+```text
+oma link [vendors...] [--dry-run] [--global]
 ```
-oma link [vendors...] [--global]
-```
+
+`--dry-run` previsualiza lo que se escribiría sin cambiar archivos.
 
 **Ejemplos:**
 
 ```bash
+# Preview the files link would write
+oma link --dry-run
+
 # Regenerate all configured vendors
 oma link
 
 # Regenerate only Claude and Codex files
 oma link claude codex
 
-# Regenerate the HOME install (~/.agents/) from any directory
+# Regenerate the global install (~/.oma/.agents/) from any directory
 oma link opencode --global
 ```
 
-Sin `--global`, link apunta a `<cwd>/.agents/`; con él, apunta a `~/.agents/` (o `OMA_HOME`). Consulta [Instalación global](../guide/global-install.md).
+Sin `--global`, link apunta a `<cwd>/.agents/`; con él, apunta a `~/.oma/.agents/` (o `$OMA_HOME/.agents/`). `OMA_HOME` no cambia el destino del proyecto. Consulta [Instalación global](../guide/global-install.md).
 
 **Qué hace:**
 1. Reconstruye los archivos de agentes nativos de los proveedores a partir de `.agents/agents/`.
@@ -275,23 +297,23 @@ Sin `--global`, link apunta a `<cwd>/.agents/`; con él, apunta a `~/.agents/` (
 - Si el proveedor de destino coincide con el runtime actual y ese runtime admite agentes de rol nativos, OMA usa el dispatch nativo.
 - De lo contrario, OMA recurre a `oma agent spawn`.
 
-### setup (flujo de trabajo) {#setup-workflow}
+### Reconfigurar una instalación existente {#setup-workflow}
 
-El workflow `/setup` (invocado dentro de una sesión de agente) ofrece una configuración interactiva del lenguaje, las instalaciones del CLI, las conexiones MCP y la asignación agente-CLI. Es distinto de `oma` (el instalador): `/setup` configura una instancia ya instalada.
+No existe un workflow `/setup`. Para cambiar un proyecto instalado, vuelve a ejecutar `oma install`, usa `oma update mcp` solo para los servidores MCP de navegador o ejecuta `/tools` dentro de una sesión de agente para activar o desactivar herramientas MCP. Comprueba la resolución de modelos por agente con `oma doctor --profile`; los modelos fijados por agente se configuran en `agents:` de `.agents/oma-config.yaml` ([Modelos por agente](../guide/per-agent-models.md)).
 
 ---
 
 ## Supervisión y métricas {#monitoring-metrics}
 
-### dashboard {#dashboard}
+### dashboard terminal {#dashboard}
 
 Inicia el dashboard de terminal para supervisar agentes en tiempo real.
 
-```
-oma dashboard terminal
+```text
+oma dashboard terminal [--project-root <path>]
 ```
 
-No tiene opciones. Observa `.agents/state/memories/` en el directorio actual (los proyectos antiguos usan como fallback la ruta legacy `.serena/memories/`). Muestra una interfaz de caracteres de caja con el estado de la sesión, una tabla de agentes y un feed de actividad. Se actualiza con cada cambio de archivo. Pulsa `Ctrl+C` para salir.
+Observa `<project>/.agents/state/memories/`, donde el proyecto es `--project-root` (predeterminado: el directorio actual). No hay fallback automático a la ruta legacy `.serena/memories/`. Muestra una interfaz de caracteres de caja con el estado de la sesión, una tabla de agentes y un feed de actividad. Se actualiza con cada cambio de archivo. Pulsa `Ctrl+C` para salir.
 
 La variable de entorno `MEMORIES_DIR` permite cambiar el directorio de memorias.
 
@@ -308,18 +330,18 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal
 
 Inicia el dashboard web.
 
-```
-oma dashboard web
+```text
+oma dashboard web [--project-root <path>]
 ```
 
-Inicia un servidor HTTP en `http://localhost:9847` con una conexión WebSocket para actualizaciones en vivo. Abre la URL en un navegador para ver el dashboard.
+Inicia un servidor HTTP en `http://127.0.0.1:9847` con una conexión WebSocket para actualizaciones en vivo. Abre en un navegador la URL impresa para ver el dashboard.
 
 **Variables de entorno:**
 
 | Variable | Predeterminado | Descripción |
 |:---------|:--------|:-----------|
 | `DASHBOARD_PORT` | `9847` | Puerto del servidor HTTP/WebSocket |
-| `MEMORIES_DIR` | `{cwd}/.agents/state/memories` | Ruta del directorio de memorias (usa como fallback el legacy `{cwd}/.serena/memories` en proyectos antiguos) |
+| `MEMORIES_DIR` | `<project-root>/.agents/state/memories` | Ruta del directorio de memorias; tiene precedencia sobre `--project-root` |
 
 **Ejemplo:**
 ```bash
@@ -334,7 +356,7 @@ DASHBOARD_PORT=8080 oma dashboard web
 
 Muestra las métricas de productividad.
 
-```
+```text
 oma stats get [--json] [--output <format>]
 oma stats reset [--json] [--output <format>]
 ```
@@ -378,9 +400,9 @@ oma stats reset
 
 ### recap {#recap}
 
-Resume el historial de conversaciones de herramientas de IA entre sesiones de Claude, Codex, Qwen y Cursor.
+Resume el historial de conversaciones de herramientas de IA entre sesiones de Claude, Codex, Gemini, Antigravity, Qwen, Cursor y Grok.
 
-```
+```text
 oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
 ```
 
@@ -390,7 +412,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:--------|
 | `--window <period>` | Ventana temporal: `1d`, `3d`, `7d`, `2w`, `30d` | `1d` |
 | `--date <date>` | Fecha específica (`YYYY-MM-DD`); tiene precedencia sobre `--window` | |
-| `--tool <tools>` | Filtro separado por comas: `grok,claude,codex,qwen,cursor,antigravity` | todas |
+| `--tool <tools>` | Filtro separado por comas: `grok,claude,codex,gemini,qwen,cursor,antigravity` | todas |
 | `--top <n>` | Muestra los N proyectos o temas principales | |
 | `--sort <metric>` | Ordena por `count` o `duration` | `count` |
 | `--mermaid` | Genera un gráfico de Gantt de Mermaid | |
@@ -411,7 +433,7 @@ oma recap --window 30d --graph                # Interactive browser graph
 
 Retrospectiva de ingeniería con métricas y tendencias.
 
-```
+```text
 oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 ```
 
@@ -419,7 +441,7 @@ oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 
 | Argumento | Descripción | Predeterminado |
 |:---------|:-----------|:--------|
-| `window` | Ventana temporal para el análisis (por ejemplo, `7d`, `2w`, `1m`) | Últimos 7 días |
+| `window` | Ventana temporal `<n>h`, `<n>d` o `<n>w` (por ejemplo, `24h`, `7d`, `2w`). No se aceptan meses; usa `30d`. | Últimos 7 días |
 
 **Opciones:**
 
@@ -463,7 +485,31 @@ oma retro 7d --json
 
 ---
 
-## Sesiones y perfiles locales {#sessions-and-local-profiles}
+## Home global, sesiones y perfiles locales {#global-home-sessions-and-local-profiles}
+
+### home migrate {#home-migrate}
+
+Copia las definiciones globales propiedad de OMA y los metadatos de runtime en el home unificado:
+
+```bash
+oma home migrate --dry-run --json
+oma home migrate --json
+oma schedule sync
+```
+
+`OMA_HOME` selecciona la raíz de almacenamiento global; su valor predeterminado es `~/.oma`. Las definiciones
+usan su `.agents/`; las programaciones usan `schedule/`; Serena y el índice de nombres de claves del vault
+usan `state/`. El almacenamiento de perfiles usa `u/`, salvo que `OMA_STATE_HOME` seleccione explícitamente
+otra raíz de perfiles.
+
+La migración conserva el contenido original, omite las copias idénticas, combina los nombres de
+claves del vault e informa de los conflictos de destino o de los datos en uso. Los directorios de skills
+verificados como propiedad de OMA se pueden archivar en `$OMA_HOME/backup/legacy-global-skills/`
+antes de que sus antiguas rutas de descubrimiento se conviertan en enlaces gestionados hacia las copias migradas.
+Las skills del usuario y los enlaces ajenos permanecen en su sitio. No mueve la autenticación
+de los proveedores, los secretos del llavero del sistema operativo ni los datos de memoria externos. La instalación
+y la actualización globales ejecutan esta migración automáticamente. El registro de trabajos del sistema operativo es independiente:
+ejecuta `oma schedule sync` después de la migración cuando existan programaciones.
 
 ### state list {#state-list}
 
@@ -501,7 +547,7 @@ oma profile run 1 -- oma state list --all-projects --json
 shell actual. Ejecutarlo por sí solo no modifica el shell padre, no cambia las
 aplicaciones ya ejecutándose ni guarda un valor predeterminado separado solo para el CLI. Los comandos del CLI
 y los hooks del proveedor iniciados desde el shell activado heredan el mismo perfil.
-El perfil predeterminado es `0`; `OMA_STATE_HOME` cambia la raíz de almacenamiento.
+El perfil predeterminado es `0`; el almacenamiento sigue a `OMA_HOME` (predeterminado: `~/.oma`). Un `OMA_STATE_HOME` explícito solo sobrescribe el almacenamiento de perfiles.
 `profile run <slot> -- <command> [args...]` selecciona el perfil únicamente para ese
 comando y sus hijos. El separador mantiene opciones del hijo como `--help`
 y `--json` asociadas al comando hijo.
@@ -514,7 +560,7 @@ y `--json` asociadas al comando hijo.
 
 Inicia un proceso de subagente.
 
-```
+```text
 oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
@@ -546,9 +592,12 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | Código | Significado |
 |:-----|:--------|
-| `0` | El proceso del proveedor terminó con 0 y existe un artefacto de resultado de sesión en el workspace. |
-| `3` | El proceso del proveedor terminó con 0, pero no escribió **ningún artefacto de resultado de sesión** en el workspace (por ejemplo, agy escribió en su propia raíz de confianza en lugar de usar `-w`). Se añade un evento `blocker.raised` al historial de la sesión y `agent status` informa `no-artifact`. No consideres completado el spawn. |
+| `0` | El registro de ejecución terminó como `completed`. |
+| `3` | El proceso del proveedor terminó con 0, pero la ejecución no terminó como una ejecución `completed` verificada (por ejemplo, `partial`, `blocked` o `failed`), y se registra un evento `blocker.raised` con el código `spawn.incomplete-result`. También se devuelve cuando no puede iniciarse un sucesor de `--fallback-vendors`. No consideres completado el spawn. |
+| `130` | Interrumpido (Ctrl+C o SIGTERM). |
 | otro | El proceso del proveedor falló; se propaga su código de salida. |
+
+Consulta [Resultados y reanudación de agentes](../guide/agent-results-and-resume.md) para conocer el registro de ejecución y el claim que deciden `completed`.
 
 **Ejemplos:**
 ```bash
@@ -595,8 +644,8 @@ Si omites `--fallback-vendors`, se conserva la ejecución habitual con un solo p
 
 Comprueba el estado de uno o más subagentes.
 
-```
-oma agent status <session-id> [agent-ids...] [-r <root>]
+```text
+oma agent status <session-id> [agent-ids...] [--project-root <path>]
 ```
 
 **Argumentos:**
@@ -610,13 +659,14 @@ oma agent status <session-id> [agent-ids...] [-r <root>]
 
 | Flag | Descripción | Predeterminado |
 |:-----|:-----------|:--------|
-| `-r, --root <path>` | Ruta raíz para las comprobaciones de memoria | Directorio actual |
+| `--project-root <path>` | Proyecto cuyos registros de ejecución, memorias y archivos PID se comprueban | Directorio actual |
 
 **Valores de estado:**
-- `completed`: Existe el archivo de resultado (con un encabezado de estado opcional).
-- `running`: Existe el archivo PID y el proceso está activo.
-- `crashed`: Existe el archivo PID, pero el proceso ha terminado, o no se encontró ningún archivo PID/resultado.
-- `no-artifact`: El proceso del proveedor terminó con 0, pero no escribió ningún artefacto de resultado de sesión en el workspace (escritura silenciosamente redirigida; consulta `agent spawn` y su código de salida `3`). Trátalo como un spawn fallido.
+- `running`, `completed`, `partial`, `blocked`, `failed`: el estado del registro de ejecución más reciente de ese agente en la sesión. Un registro `running` cuyo proceso runner ya no existe se informa como `failed`.
+- `stale`: la ejecución está registrada como `completed`, pero su evidencia ya no se valida.
+- `legacy-<status>`, `unverified`, `legacy-completed`: se leen de un archivo `result-<agent>.md` antiguo o de un archivo de estado temporal cuando no existe un registro de ejecución.
+- `running` / `crashed` a partir de un archivo PID: el proceso está activo o ya no existe.
+- `crashed`: no se encontró ningún registro de ejecución, archivo de resultado, archivo de estado ni archivo PID.
 
 **Formato de salida:** Una línea por agente: `{agent-id}:{status}`
 
@@ -629,16 +679,16 @@ oma agent status session-20260324-143000 backend frontend
 # backend:running
 # frontend:completed
 
-# Check with custom root
-oma agent status session-20260324-143000 qa -r /path/to/project
+# Check another project
+oma agent status session-20260324-143000 qa --project-root /path/to/project
 ```
 
 ### agent parallel {#agent-parallel}
 
 Ejecuta varios subagentes en paralelo.
 
-```
-oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
+```text
+oma agent parallel [tasks...] [--session-id <id>] [--vendor <vendor>] [-i, --inline] [--no-wait]
 ```
 
 **Argumentos:**
@@ -651,6 +701,7 @@ oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 
 | Flag | Descripción |
 |:-----|:-----------|
+| `--session-id <id>` | Vincula los resultados a una sesión existente; los valores `id` del YAML se convierten en los IDs de tarea |
 | `--vendor <vendor>` | Sobrescritura del proveedor CLI para todos los agentes |
 | `-i, --inline` | Modo inline: especifica las tareas como argumentos `agent:task[:workspace]` |
 | `--no-wait` | Modo en segundo plano (inicia los agentes y vuelve inmediatamente) |
@@ -658,17 +709,20 @@ oma agent parallel [tasks...] [--vendor <vendor>] [-i | --inline] [--no-wait]
 **Formato del archivo YAML de tareas:**
 ```yaml
 tasks:
-- agent: backend
-task: "Implement user API"
-workspace: ./api # optional, auto-detected if omitted
-- agent: frontend
-task: "Build user dashboard"
-workspace: ./web
+  - id: user-api        # optional task ID
+    agent: backend
+    task: "Implement user API"
+    workspace: ./api    # optional, auto-detected if omitted
+  - agent: frontend
+    task: "Build user dashboard"
+    workspace: ./web
 ```
 
-**Formato de tarea inline:** `agent:task` o `agent:task:workspace` (el workspace debe comenzar por `./` o `/`).
+`id`, `agent`, `task` y `workspace` pertenecen al mismo elemento de la lista, así que indéntalos bajo el `-`.
 
-**Directorio de resultados:** `.agents/results/parallel-{timestamp}/` contiene los archivos de log de cada agente.
+**Formato de tarea inline:** `agent:task` o `agent:task:workspace` (el workspace debe ser `.` o comenzar por `./` o `/`).
+
+**Directorio de resultados:** `<project-root>/.agents/results/parallel-<timestamp>-<id>/` contiene los archivos de log de cada agente.
 
 **Ejemplos:**
 ```bash
@@ -689,7 +743,7 @@ oma agent parallel tasks.yaml --vendor claude
 
 Ejecuta una revisión de código mediante un CLI externo de IA (codex, claude, qwen o grok).
 
-```
+```text
 oma agent review [--vendor <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
@@ -734,9 +788,11 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 Asocia un contrato de objetivo a un workflow persistente activo (orchestrate, ultrawork, work, ralph). El hook Stop del modo persistente aplica el contrato de forma mecánica: la finalización deja de depender del criterio del modelo.
 
-```
+```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
 ```
+
+Pasa al menos uno de `--gate`, `--budget-minutes` o `--description`; de lo contrario, el comando falla con `Nothing to set`. Consulta [Workflow persistente](../getting-started/glossary.md#persistent-workflow) y [Puerta de parada](../getting-started/glossary.md#stop-gate) en el glosario.
 
 **Opciones:**
 
@@ -746,11 +802,11 @@ oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budge
 | `--budget-minutes <n>` | Presupuesto de tiempo de reloj medido desde la activación del workflow. Al superarlo, el hook Stop desactiva el workflow y permite una parada parcial honesta (veredicto de la máquina, registrado como `gate.failed` con `gate: "budget"` en el historial de eventos de sesión). |
 | `--description <text>` | Descripción humana del objetivo. Solo informativa. |
 | `--workflow <name>` | Workflow de destino cuando hay varios workflows persistentes activos. |
-| `--session <id>` | Sufijo del ID de sesión del archivo de estado de destino. |
+| `--session-id <id>` | Sufijo del ID de sesión del proveedor en el archivo de estado; solo es necesario cuando hay varios workflows persistentes activos. |
 
 **Notas de comportamiento:**
 - Si la puerta pasa, el workflow se desactiva, se emite `gate.passed` y se permite la parada.
-- El fallo de la puerta y el timeout (límite estricto de 60 s) cuentan para el límite de refuerzo (5), de modo que una puerta permanentemente roja no puede bloquear las paradas para siempre; la caducidad por antigüedad de 2 horas sigue siendo el último respaldo.
+- Cada ejecución de la puerta tiene un presupuesto de 25 segundos (`OMA_GATE_TIMEOUT_MS` solo puede reducirlo). El fallo de la puerta y el timeout cuentan para el límite de refuerzo (5), de modo que una puerta permanentemente roja no puede bloquear las paradas para siempre; la caducidad por antigüedad de 2 horas sigue siendo el último respaldo. Usa `--gate test` solo cuando el script `test` termine holgadamente dentro de ese presupuesto.
 - Sin un contrato de objetivo, el modo persistente se comporta exactamente igual que antes (solo prompts de refuerzo): el contrato es completamente opt-in.
 
 **Ejemplos:**
@@ -759,26 +815,61 @@ oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budge
 oma goal set --gate typecheck
 
 # Bound an autonomous run: stop honestly after 2 hours even if incomplete
-oma goal set --workflow ultrawork --gate test --budget-minutes 120
+oma goal set --workflow ultrawork --gate typecheck --budget-minutes 120
 ```
 
 ---
 
 ## Agentes programados {#scheduled-agents}
 
+### Ciclo de vida de una programación {#schedule-lifecycle}
+
+Un trabajo programado pasa por los comandos de abajo. Cada ejecución la dispara el planificador del sistema operativo, no un proceso `oma` en ejecución.
+
+```mermaid
+flowchart TD
+  create["oma schedule create"] --> dry{"--dry-run?"}
+  dry -->|yes| preview["Print the resolved cron; write nothing"]
+  dry -->|no| rounded{"--every rounded without --accept-rounded?"}
+  rounded -->|yes| refuse["Fail and ask for --accept-rounded"]
+  rounded -->|no| envfile["Write the optional --env file"]
+  envfile --> osjob["Register OS job dev.oma.sch_ID"]
+  osjob --> manifest["Write the manifest entry"]
+  manifest --> fire["OS scheduler runs: oma schedule run ID"]
+  fire --> expired{"Recurring job past --expires-after?"}
+  expired -->|yes| remove["Remove the job"]
+  expired -->|no| spawn["oma agent spawn, 1-hour timeout"]
+  spawn --> runlog["Write run log and update lastFiredAt"]
+  runlog --> once{"--once job that exited 0?"}
+  once -->|yes| remove
+  once -->|no| fire
+```
+
+| Etapa | Desencadenada por | Qué ocurre | Dónde se registra |
+|:------|:-------------|:-------------|:------------|
+| Previsualización | `schedule create ... --dry-run` | Resuelve la expresión cron e imprime cualquier nota de redondeo de `--every` | solo stdout |
+| Registro | `schedule create` | Escribe el archivo de `--env` cuando se solicita, registra el trabajo del sistema operativo y después escribe la entrada del manifiesto | planificador del sistema operativo; `~/.oma/schedule/schedules.json`; `~/.oma/schedule/env/<id>` |
+| Disparo | planificador del sistema operativo | Ejecuta `oma schedule run <id>`; un trabajo recurrente que superó su antigüedad de `--expires-after` se elimina en lugar de ejecutarse | — |
+| Ejecución | `schedule run` | Ejecuta `oma agent spawn` para el trabajo con un timeout de 1 hora | `~/.oma/schedule/runs/<id>/` |
+| Registro del resultado | `schedule run` | Actualiza `lastFiredAt`; elimina un trabajo `--once` solo después de una ejecución que termina con 0 | manifiesto |
+| Inspección y reparación | `schedule list`, `schedule sync` | Compara el manifiesto con el planificador del sistema operativo y repara el drift | — |
+| Eliminación | `schedule delete <id>` | Elimina el trabajo del manifiesto y del planificador del sistema operativo | — |
+
+`~/.oma` es el `OMA_HOME` predeterminado. Para síntomas como un trabajo que nunca se dispara, consulta [Solución de problemas](../guide/troubleshooting.md).
+
 ### schedule create {#schedule-create}
 
 Registra un trabajo de agente programado. Se requiere exactamente uno de `--cron` o `--every`.
 
-```
-oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [--vendor <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
+```text
+oma schedule create <agent-id> <prompt> (--cron <expr> | --every <phrase>) [--vendor <vendor>] [-w <path>] [--once] [--expires-after <duration>] [--env <KEY1,KEY2>] [--dry-run] [--accept-rounded]
 ```
 
 **Argumentos:**
 
 | Argumento | Obligatorio | Descripción |
 |:---------|:---------|:-----------|
-| `agent-id` | Sí | Tipo de agente: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `agent-id` | Sí | ID del agente que se pasa a `oma agent spawn` cuando se dispara el trabajo, por ejemplo `backend`, `frontend`, `qa` o un alias de archivo de agente como `qa-reviewer`. No se valida hasta que se dispara el trabajo. |
 | `prompt` | Sí | Descripción de la tarea que se pasa al agente cuando se ejecuta |
 
 **Opciones:**
@@ -786,17 +877,20 @@ oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" 
 | Flag | Descripción |
 |:-----|:-----------|
 | `--cron "<expr>"` | Expresión cron de 5 campos (por ejemplo, `"0 9 * * *"`). Es mutuamente excluyente con `--every`. |
-| `--every "<phrase>"` | Intervalo en lenguaje natural: `5m`, `2h`, `1d`, `every 20m`, `every 5 minutes`. Se redondea al paso más cercano expresable en cron y muestra una nota. Es mutuamente excluyente con `--cron`. |
+| `--every "<phrase>"` | Intervalo en lenguaje natural: `5m`, `2h`, `1d`, `every 20m`, `every 5 minutes`. Un valor que no es un paso cron exacto (por ejemplo, `7m`) se redondea, y el trabajo **no** se registra salvo que añadas `--accept-rounded`. Es mutuamente excluyente con `--cron`. |
 | `--vendor <vendor>` | Sobrescritura del proveedor CLI que se pasa a `oma agent spawn`: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Se autodetecta de forma predeterminada. |
 | `-w, --workspace <path>` | Directorio de trabajo del agente. De forma predeterminada es el directorio actual en el momento del registro. |
-| `--once` | Modo de una sola ejecución: se ejecuta una vez y luego se elimina. |
-| `--expires-after <duration>` | Caduca automáticamente el trabajo recurrente después de N días (`0` = indefinido). |
-| `--env <KEY1,KEY2>` | Captura variables de entorno con nombre en `~/.agents/schedule/env/<id>` (0600) para inyectarlas al ejecutarse. Solo se capturan las claves indicadas; nunca se vuelca todo el entorno. |
+| `--once` | Modo de una sola ejecución: se ejecuta una vez y luego se elimina tras una ejecución correcta. |
+| `--expires-after <duration>` | Elimina un trabajo recurrente en su primer disparo después de esta antigüedad. Indica días completos con la unidad `d`, por ejemplo `30d`; `0` significa nunca. Se rechazan un número sin unidad como `30` y valores como `12h` o `2w`. |
+| `--env <KEY1,KEY2>` | Captura variables de entorno con nombre en `~/.oma/schedule/env/<id>` (0600) para inyectarlas al ejecutarse. Solo se capturan las claves indicadas; nunca se vuelca todo el entorno. |
+| `--dry-run` | Imprime el cron resuelto y cualquier nota de redondeo sin crear un trabajo del sistema operativo, una entrada de manifiesto ni un archivo de entorno. |
+| `--accept-rounded` | Registra un intervalo que `--every` redondeó, después de revisar la previsualización. |
 
 **Qué hace:**
-1. Analiza y valida la expresión cron (o convierte la frase de `--every` a cron).
-2. Escribe el trabajo en `~/.agents/schedule/schedules.json` (manifiesto global, permisos 0600).
-3. Registra el trabajo en el planificador del sistema operativo (launchd / systemd --user / schtasks). El trabajo del sistema llama a `oma schedule run <id>` en el intervalo configurado.
+1. Analiza y valida la expresión cron (o convierte la frase de `--every` a cron). Con `--dry-run`, se detiene aquí.
+2. Con `--env`, escribe las variables indicadas en `~/.oma/schedule/env/<id>`.
+3. Registra el trabajo en el planificador del sistema operativo: launchd en macOS; en Linux, un temporizador `--user` de systemd o, si systemd no está disponible, el crontab del usuario; Task Scheduler (`schtasks`) en Windows; crontab en otros sistemas POSIX. El trabajo del sistema llama a `oma schedule run <id>` en el intervalo configurado.
+4. Escribe el trabajo en `~/.oma/schedule/schedules.json` (manifiesto global, permisos 0600).
 
 **Ejemplos:**
 ```bash
@@ -811,6 +905,21 @@ oma schedule create pm "Generate sprint plan" --cron "0 9 * * 1" --once --vendor
 
 # Capture specific env vars for the job
 oma schedule create backend "Sync external data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
+
+# Expire a recurring job after 30 days
+oma schedule create backend "Check for slow queries" --every "2h" --expires-after 30d
+
+# Preview a rounded interval, then register it
+oma schedule create backend "Check logs" --every 7m --dry-run
+oma schedule create backend "Check logs" --every 7m --accept-rounded
+```
+
+La previsualización de `--every 7m` imprime:
+
+```text
+Preview: requested interval resolves to */6 * * * *
+Note: Requested every 7m -- 7 is not a divisor of 60; rounded to every 6m (*/6 * * * *).
+Preview only: no OS job, manifest entry, or env file was written.
 ```
 
 Consulta la [guía de agentes programados](../guide/scheduled-agents.md) para ver el recorrido completo.
@@ -819,8 +928,8 @@ Consulta la [guía de agentes programados](../guide/scheduled-agents.md) para ve
 
 Enumera todos los trabajos programados de todos los proyectos, agrupados por proyecto y con el estado de drift del sistema operativo.
 
-```
-oma schedule list [--json]
+```text
+oma schedule list [--json] [--output <format>]
 ```
 
 **Opciones:**
@@ -828,8 +937,16 @@ oma schedule list [--json]
 | Flag | Descripción |
 |:-----|:-----------|
 | `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
 
-**Estados de drift:** `synced` (el manifiesto y el sistema operativo coinciden), `stale` (el registro del sistema operativo invoca un comando que el CLI actual ya no acepta; ejecuta `schedule sync` para reescribirlo, `oma update` lo hace automáticamente), `missing-in-os` (ejecuta `schedule sync` para repararlo), `orphan-in-os` (el sistema operativo tiene un trabajo que no está en el manifiesto; ejecuta `schedule sync --prune` para eliminarlo).
+**Estados de drift:**
+
+| Estado | Significado | Reparación |
+|:------|:--------|:-------|
+| `synced` | La entrada del manifiesto y el trabajo del sistema operativo coinciden | — |
+| `stale` | El registro del sistema operativo invoca un comando que el CLI actual ya no acepta | `oma schedule sync` (`oma update` también lo hace) |
+| `missing-in-os` | Una entrada del manifiesto no tiene trabajo en el sistema operativo | `oma schedule sync` |
+| `orphan-in-os` | El sistema operativo tiene un trabajo que no está en el manifiesto | `oma schedule sync --prune` |
 
 **Ejemplos:**
 ```bash
@@ -841,7 +958,7 @@ oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 
 Elimina un trabajo programado tanto del manifiesto como del planificador del sistema operativo.
 
-```
+```text
 oma schedule delete <id>
 ```
 
@@ -849,40 +966,41 @@ oma schedule delete <id>
 
 | Argumento | Obligatorio | Descripción |
 |:---------|:---------|:-----------|
-| `id` | Sí | ID del trabajo obtenido de `schedule list` (formato: `sch_<base32-12>`) |
+| `id` | Sí | ID del trabajo obtenido de `schedule list` (formato: `sch_` seguido de 12 caracteres de `a-z` y `2-7`) |
 
 **Ejemplo:**
 ```bash
-oma schedule delete sch_abc123def456
+oma schedule delete sch_k7d2mq4xa3pz
 ```
 
 ### schedule run {#schedule-run}
 
 Ejecuta un trabajo programado por ID. Este es el punto de entrada que llama el planificador del sistema operativo cuando llega la hora de ejecución. Normalmente no se invoca a mano, pero se puede usar para depurar un trabajo.
 
-```
+```text
 oma schedule run <id>
 ```
 
 **Qué hace:**
 1. Busca `<id>` en el manifiesto (termina con un valor distinto de cero si no lo encuentra).
-2. Carga las variables de entorno capturadas desde `~/.agents/schedule/env/<id>` y las inyecta.
-3. Llama a `oma agent spawn <agentId> <prompt> <sessionId> --vendor <vendor> -w <workspace>`.
-4. Escribe el resultado en `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`.
-5. Actualiza `lastFiredAt` en el manifiesto; se elimina si el trabajo es `--once`.
-6. Falla de forma explícita cuando caduca la autenticación: termina con un valor distinto de cero e imprime `re-auth required: <vendor>` en stderr. Nunca termina correctamente en silencio.
+2. Elimina un trabajo recurrente cuya antigüedad de `--expires-after` ya ha pasado, en lugar de ejecutarlo.
+3. Carga las variables de entorno capturadas desde `~/.oma/schedule/env/<id>` y las inyecta.
+4. Llama a `oma agent spawn <agentId> <prompt> schedule-<id>-<epoch-ms> [--vendor <vendor>] --workspace <workspace>` con un timeout de 1 hora. `--vendor` solo se pasa cuando el trabajo tiene uno.
+5. Escribe el resultado en `~/.oma/schedule/runs/<id>/<timestamp>.md`.
+6. Actualiza `lastFiredAt` en el manifiesto. Un trabajo `--once` solo se elimina después de una ejecución que termina con 0; un trabajo de una sola ejecución que falla se vuelve a disparar en su siguiente hora coincidente.
+7. Falla de forma explícita cuando caduca la autenticación: termina con un valor distinto de cero e imprime `re-auth required: <vendor>` en stderr. Los demás fallos también terminan con un valor distinto de cero. Nunca termina correctamente en silencio.
 
 **Ejemplo:**
 ```bash
 # Invoke manually to debug a job
-oma schedule run sch_abc123def456
+oma schedule run sch_k7d2mq4xa3pz
 ```
 
 ### schedule sync {#schedule-sync}
 
 Vuelve a sincronizar el manifiesto con el planificador del sistema operativo. Repara el drift después de migraciones del sistema o reinicios del planificador.
 
-```
+```text
 oma schedule sync [--prune]
 ```
 
@@ -909,7 +1027,7 @@ oma schedule sync --prune
 
 Inicializa el esquema del almacén de memoria de coordinación.
 
-```
+```text
 oma memory init [--json] [--output <format>] [--force]
 ```
 
@@ -940,7 +1058,7 @@ oma memory init --force
 
 Comprueba el estado de autenticación de todos los CLI compatibles.
 
-```
+```text
 oma auth status [--json] [--output <format>]
 ```
 
@@ -951,7 +1069,7 @@ oma auth status [--json] [--output <format>]
 | `--json` | Salida como JSON |
 | `--output <format>` | Formato de salida (`text` o `json`) |
 
-**Comprobaciones:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
+**Comprobaciones:** GitHub CLI (`gh`), Claude CLI, Codex CLI, Command Code, Cursor CLI, Qwen CLI, Antigravity CLI (`agy`), Grok, Kimi Code CLI, Kiro CLI, pi y OpenCode CLI. `--json` imprime un booleano por clave, por ejemplo `{ "github": true, "claude": true, "codex": false, ... }`.
 
 **Ejemplos:**
 ```bash
@@ -963,7 +1081,7 @@ oma auth status --json
 
 Envía MCP stdio a un servidor Serena compartido por proyecto.
 
-```
+```text
 oma bridge [url] [--context <name>]
 ```
 
@@ -971,8 +1089,13 @@ oma bridge [url] [--context <name>]
 
 | Argumento | Obligatorio | Descripción |
 |:---------|:---------|:-----------|
-| `url` | No | Conecta con un endpoint gestionado por quien llama en lugar de resolver un daemon compartido |
-| `--context` | No | Contexto de Serena para el daemon (predeterminado `ide`); los daemons se identifican por él |
+| `url` | No | Conecta con un endpoint gestionado por quien llama en lugar de resolver un daemon compartido. `OMA_BRIDGE_URL` tiene el mismo efecto. |
+
+**Opciones:**
+
+| Flag | Descripción |
+|:-----|:-----------|
+| `--context <name>` | Contexto de Serena para el daemon (predeterminado `ide`); los daemons se identifican por él |
 
 **Qué hace:** Esto es lo que ejecuta de forma predeterminada la entrada MCP de serena de cada proveedor;
 no se invoca a mano. El transporte stdio de Serena da a cada sesión de agente
@@ -987,17 +1110,22 @@ herramienta `activate_project`, lo que permite que cualquier sesión cambie el p
 las demás.
 
 **Arquitectura:**
-```
-session A --stdio--> oma bridge --.
-                                   >-- HTTP --> one Serena server (+ LSPs)
-session B --stdio--> oma bridge --'
+
+```mermaid
+flowchart LR
+  sessionA["Agent session A"] -->|stdio| bridgeA["oma bridge"]
+  sessionB["Agent session B"] -->|stdio| bridgeB["oma bridge"]
+  bridgeA -->|HTTP| server["One Serena server per project, with its language servers"]
+  bridgeB -->|HTTP| server
 ```
 
 **Ciclo de vida:** la primera sesión inicia el servidor, las siguientes lo reutilizan y
 cada proxy se registra como cliente. Cuando se desconecta la última sesión, el servidor
 se mantiene caliente durante 10 minutos —un reinicio vuelve a conectarlo— y, de lo contrario,
-el siguiente bridge que se inicia lo apaga. Si no se puede acceder al servidor compartido,
-el proxy usa como fallback una serena stdio local de la sesión.
+el siguiente bridge que se inicia lo apaga. No hay fallback automático a stdio: si
+el servidor compartido no puede iniciarse, la conexión MCP falla con
+`Shared Serena is unavailable for <root>`. Ejecuta `oma doctor` y después reintenta la
+conexión MCP.
 
 Puedes desactivarlo con `serena.mode: stdio` en `.agents/oma-config.yaml`.
 
@@ -1011,8 +1139,8 @@ oma bridge http://localhost:12341/mcp
 
 Verifica la salida del subagente frente a los criterios esperados.
 
-```
-oma verify agent <agent-type> [-w <workspace>] [--json] [--output <format>]
+```text
+oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
 oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fire <pct>] [--json] [--output <format>]
 ```
 
@@ -1027,16 +1155,22 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | Flag | Descripción | Predeterminado |
 |:-----|:-----------|:--------|
 | `-w, --workspace <path>` | Ruta del workspace que se verificará | Directorio actual |
+| `--session-id <id>` | Selecciona el plan de sesión y los informes | |
+| `--task-id <id>` | Selecciona el alcance y el informe de una tarea; requiere un ID de sesión o de ejecución | |
+| `--run-id <id>` | Selecciona el informe exacto de la ejecución; infiere la sesión y la tarea a partir de su recibo local | |
 | `--json` | Salida como JSON | |
 | `--output <format>` | Formato de salida (`text` o `json`) | |
 
-**Qué hace:** Ejecuta el script de verificación para el tipo de agente indicado y comprueba que el build termine correctamente, los resultados de las pruebas y el cumplimiento del alcance.
+**Qué hace:** Ejecuta las comprobaciones configuradas para el tipo de agente indicado, incluidas pruebas, inspecciones estáticas y cumplimiento del alcance. Las comprobaciones de código del workspace siguen inspeccionando el workspace cuando se selecciona una tarea o una ejecución.
 
-`verify triggers` mide la precisión del detector de palabras clave frente a un corpus de prompts etiquetado. Los umbrales porcentuales son puertas de control. La ruta registrada es `verify agent`; la forma antigua de nivel superior todavía puede aparecer en la ayuda de compatibilidad.
+Cuando coinciden varios planes de sesión o recibos de ejecución, la verificación falla y pide una identidad explícita en lugar de seleccionar un archivo por nombre. Una ejecución nueva sin informe no puede reutilizar el informe de una ejecución anterior. `--run-id` comprueba el agente y el workspace del recibo antes de usar su sesión/tarea. Sin un recibo local, proporciona los tres IDs. Los informes TDD legacy sin alcance solo se aceptan con el plan legacy `.agents/plan.json`.
+
+`verify triggers` mide la precisión del detector de palabras clave frente a un corpus de prompts etiquetado. Los umbrales porcentuales son puertas de control. La ruta registrada es `verify agent`; la forma antigua de nivel superior `oma verify <agent-type>` se rechaza con `Unexpected argument`.
 
 **Comprobaciones comunes (todos los tipos de agente):**
 - **Comprobación de alcance**: Lee los alcances de tarea de `.agents/results/plan-{sessionId}.json`. Compara los archivos modificados por `git diff` con los patrones de alcance definidos. Falla si se modifican archivos fuera del alcance asignado al agente.
-- **Preflight del charter**: Verifica que `result-{agent}.md` contenga un bloque `CHARTER_CHECK:` correctamente completado y sin placeholders sin rellenar.
+- **Preflight del charter**: Verifica que el informe de resultado seleccionado contenga un bloque `CHARTER_CHECK:` correctamente completado y sin placeholders sin rellenar.
+- **Evidencia TDD**: Requiere que el informe seleccionado de cada tarea aplicable contenga su ID de tarea exacto y sus propias entradas `red:` y `green:` no vacías. Los informes de otra sesión o de un reintento no pueden sustituir al informe seleccionado.
 - **Secretos hardcodeados**: Busca en archivos `.py`, `.ts`, `.tsx`, `.js`, `.dart` patrones como `password = "..."`, `api_key = "..."` (excluye archivos de prueba o ejemplo).
 - **Comentarios TODO/FIXME**: Cuenta los comentarios `TODO`, `FIXME`, `HACK`, `XXX` (muestra una advertencia si encuentra alguno).
 
@@ -1064,13 +1198,16 @@ oma verify agent frontend -w ./apps/web
 
 # JSON output for CI
 oma verify agent backend --json
+
+# Verify one run's scope and evidence
+oma verify agent backend --run-id run-123 --json
 ```
 
-### hook {#hook}
+### hook run {#hook}
 
-Envía un evento hook de proveedor mediante el router centralizado de hooks de oma (diseño 019). Es la ABI canónica que invoca el wrapper `oma-hook.sh` generado para cada proveedor. También se puede usar directamente para depurar o probar cadenas de handlers de forma aislada.
+Envía un evento hook de proveedor a través del único punto de entrada de hooks de oma. Es la ABI canónica que invoca el wrapper `oma-hook.sh` generado para cada proveedor. También se puede usar directamente para depurar o probar cadenas de handlers de forma aislada.
 
-```
+```text
 oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
 ```
 
@@ -1088,14 +1225,15 @@ oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
 - **exit code**: siempre `0` (fail-open: los errores se escriben en stderr y el agente nunca queda bloqueado).
 
 **Flujo de datos en runtime:**
-```
-vendor fires: oma-hook.sh --vendor claude --event UserPromptSubmit
-  stdin: {"prompt":"...","cwd":"/project","sessionId":"..."}
-  → oma hook resolves handler chain from .agents/hooks/variants/claude.json
-  → runs: keyword-detector → state-boundary → skill-injector (in-process)
-  → merges HandlerResult values (context: concat; pre_tool: last mutate wins; stop: any block)
-  → emits vendor dialect to stdout
-  → exit 0
+
+```mermaid
+flowchart TD
+  fire["Vendor fires oma-hook.sh --vendor claude --event UserPromptSubmit"] --> stdin["stdin: vendor JSON payload with prompt, cwd, sessionId"]
+  stdin --> resolve["Resolve the handler chain from the route table built into the CLI (source: .agents/hooks/variants/claude.json)"]
+  resolve --> run["Run in-process: keyword-detector, state-boundary, skill-injector, code-intelligence-primer"]
+  run --> merge["Merge results: context concatenates; pre_tool last mutate wins; stop any block wins"]
+  merge --> emit["Emit vendor dialect JSON on stdout"]
+  emit --> exit["Exit 0"]
 ```
 
 **Depuración aislada de cadenas de handlers:**
@@ -1105,27 +1243,27 @@ vendor fires: oma-hook.sh --vendor claude --event UserPromptSubmit
 echo '{"prompt":"orchestrate the auth feature","cwd":"/path/to/project"}' \
   | oma hook run --vendor claude --event UserPromptSubmit
 
-# Test a Bash pre_tool block (Claude)
-echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"},"cwd":"/path/to/project"}' \
+# Test a Bash pre_tool block (Claude): scm-guard denies staging a likely-secret file
+echo '{"tool_name":"Bash","tool_input":{"command":"git add .env"},"cwd":"/path/to/project"}' \
   | oma hook run --vendor claude --event PreToolUse --matcher Bash
 
 # Test persistent-mode Stop enforcement (Codex)
 echo '{"cwd":"/path/to/project"}' \
   | oma hook run --vendor codex --event Stop
 
-# Test an Antigravity BeforeTool event
-echo '{"tool_name":"run_shell_command","tool_input":{"command":"cat /etc/passwd"},"cwd":"/path/to/project"}' \
-  | oma hook run --vendor antigravity --event BeforeTool
+# Test Antigravity prompt-time injection (agy fires PreInvocation)
+echo '{"prompt":"brainstorm","cwd":"/path/to/project"}' \
+  | oma hook run --vendor antigravity --event PreInvocation
 ```
 
-Un stdout vacío significa que la cadena no produjo ninguna operación para ese evento. Un objeto JSON en stdout es el dialecto del proveedor que recibiría la sesión del agente.
+Un stdout vacío significa que la cadena no produjo ninguna operación para ese evento. Un nombre de evento que la tabla de rutas del proveedor no registra (por ejemplo, `BeforeTool` para `antigravity`) ejecuta una cadena vacía y no imprime nada. Un objeto JSON en stdout es el dialecto del proveedor que recibiría la sesión del agente.
 
 **Notas de alcance:**
 - Las entradas `statusLine`/hud no pasan por `oma hook run` (la visualización del hot path permanece en una ruta directa de `bun`).
 - El proveedor pi usa su bridge `installPiExtension` dentro del proceso, no `oma hook run`.
 - Las entregas duplicadas de una doble instalación (proyecto + global) se descartan dentro de `oma hook run` (payload idéntico lanzado por otro wrapper `oma-hook.sh`); los eventos distintos, incluidas las llamadas paralelas a herramientas, siempre se ejecutan.
 
-Consulta `cli/commands/hook/command.ts` para la implementación del router (internamente denominada "design 019") y `cli/commands/hook/probe/` para la matriz de compatibilidad por proveedor.
+Consulta `cli/commands/hook/command.ts` para la implementación del router y `cli/commands/hook/probe/` para la matriz de compatibilidad por proveedor.
 
 **Ejemplos:**
 ```bash
@@ -1138,8 +1276,10 @@ echo '{"cwd":"'$(pwd)'"}' | oma hook run --vendor qwen --event Stop
 
 # Check Antigravity hook output format
 echo '{"prompt":"brainstorm","cwd":"'$(pwd)'"}' \
-  | oma hook run --vendor antigravity --event BeforeAgent
+  | oma hook run --vendor antigravity --event PreInvocation
 ```
+
+`oma hook script --vendor <v> --script <name>` ejecuta un handler de hook instalado mediante el adaptador de memoria del CLI.
 
 ---
 
@@ -1147,7 +1287,7 @@ echo '{"prompt":"brainstorm","cwd":"'$(pwd)'"}' \
 
 Sondea la compatibilidad de hooks por proveedor e imprime una matriz de cobertura.
 
-```
+```text
 oma hook probe [--vendor <list>] [--output <fmt>] [--hooks-dir <dir>]
 ```
 
@@ -1155,7 +1295,7 @@ oma hook probe [--vendor <list>] [--output <fmt>] [--hooks-dir <dir>]
 
 | Flag | Descripción | Predeterminado |
 |:-----|:-----------|:--------|
-| `--vendor <list>` | Proveedores que se sondearán, separados por comas | Todos los proveedores compatibles |
+| `--vendor <list>` | Proveedores que se sondearán, separados por comas | `claude,codex,cursor,grok,kimi,kiro,qwen,antigravity` |
 | `--output <fmt>` | Formato de salida: `text`, `md` o `json` | `text` |
 | `--hooks-dir <dir>` | Sobrescribe el directorio `.agents/hooks/core` | Autodetectado |
 
@@ -1180,9 +1320,9 @@ oma hook probe --vendor claude,codex,antigravity
 
 ### vault {#vault}
 
-Gestiona claves de API y otros secretos en el llavero del sistema operativo (macOS Keychain, Linux Secret Service o Windows Credential Manager), respaldado por `@napi-rs/keyring`. Los valores nunca aparecen en el historial del shell ni en archivos de entorno; solo se registran los nombres de las claves en `~/.config/oma/vault-index.json`, de modo que `oma vault list` puede enumerarlas sin exponer sus valores.
+Gestiona claves de API y otros secretos en el llavero del sistema operativo (macOS Keychain, Linux Secret Service o Windows Credential Manager), respaldado por `@napi-rs/keyring`. Los valores nunca aparecen en el historial del shell ni en archivos de entorno; solo se registran los nombres de las claves en `~/.oma/state/vault-index.json`, de modo que `oma vault list` puede enumerarlas sin exponer sus valores.
 
-```
+```text
 oma vault store <name> [--value <value>]
 oma vault get <name>
 oma vault list [--json]
@@ -1196,7 +1336,7 @@ oma vault delete <name>
 | `store <name>` | Solicita un valor secreto (entrada oculta) y lo escribe bajo `name` en el llavero del sistema operativo. `--value <value>` acepta el valor inline para uso no interactivo (visible en el historial del shell; se recomienda el prompt). |
 | `get <name>` | Imprime el valor guardado en stdout sin decoración para poder usarlo en el shell: `export ANTHROPIC_API_KEY=$(oma vault get anthropic)`. Termina con el código `2` cuando la clave no existe. |
 | `list` | Enumera los nombres de las claves guardadas con sus marcas de tiempo `createdAt`. Los valores nunca se muestran. |
-| `rm <name>` | Elimina el secreto del llavero y del índice. |
+| `delete <name>` | Elimina el secreto del llavero y del índice. La forma antigua `vault rm` se rechaza. |
 
 **Reglas para nombres de claves:** de 1 a 64 caracteres de `[A-Za-z0-9._-]`. Ejemplos: `anthropic`, `openai-prod`, `github_pat`, `sentry.dsn`.
 
@@ -1225,8 +1365,8 @@ oma vault delete anthropic
 
 Limpia procesos de subagentes huérfanos y archivos temporales.
 
-```
-oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
+```text
+oma cleanup [--dry-run] [-y, --yes] [--json] [--output <format>]
 ```
 
 **Opciones:**
@@ -1239,8 +1379,8 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 | `--output <format>` | Formato de salida (`text` o `json`) |
 
 **Qué limpia:**
-- Archivos PID huérfanos del directorio temporal del sistema (`/tmp/subagent-*.pid`).
-- Archivos de log huérfanos (`/tmp/subagent-*.log`).
+- Archivos `subagent-*.pid` huérfanos en el directorio temporal del sistema operativo (`os.tmpdir()`: normalmente `/tmp` en Linux, `$TMPDIR` en macOS y `%TEMP%` en Windows).
+- Archivos `subagent-*.log` huérfanos en el mismo directorio.
 - **Servidores de lenguaje Serena huérfanos**: cuando sale un cliente MCP (por ejemplo, Claude), su `serena start-mcp-server` se reasigna a init y sus procesos LSP hijos (`tsserver`, `pyright`, …, cientos de MB) siguen ejecutándose sin cliente. Aquí se recuperan. El caso *inactivo pero todavía conectado* lo gestiona por separado [`serena reap`](#serena).
 - Directorios de Gemini Antigravity (brain, implicit, knowledge) bajo `.gemini/antigravity/`.
 
@@ -1267,10 +1407,13 @@ toda la sesión; con varios proyectos abiertos, el consumo se acumula. El reaper
 los procesos LSP hijos inactivos; Serena se repara sola y los vuelve a iniciar en la siguiente llamada de herramienta (sin
 necesidad de reiniciar).
 
-```
+```text
 oma serena reap [--dry-run] [--quiet]
 oma serena reaper enable [--dry-run]
 oma serena reaper disable [--dry-run]
+oma serena daemon gc [--quiet]
+oma serena check [--project <path>] [--dart-sdk <path>] [--timeout <duration>] [--staged]
+oma serena setup
 ```
 
 **Subcomandos:**
@@ -1281,6 +1424,9 @@ oma serena reaper disable [--dry-run]
 | `serena reap --dry-run` | Previsualiza los objetivos y la memoria que se liberaría; nunca termina procesos. |
 | `serena reaper enable` | Instala una tarea en segundo plano que ejecuta `serena reap --quiet` cada 5 minutos (launchd / temporizador de systemd / Windows Task Scheduler). |
 | `serena reaper disable` | Elimina la tarea en segundo plano. |
+| `serena daemon gc` | Detiene los daemons compartidos de Serena que no han tenido clientes durante el periodo de gracia por inactividad. `--quiet` suprime la salida para la tarea de limpieza periódica. |
+| `serena check` | Analiza un paquete Dart mediante el LSP compartido y gestionado de Serena. `--project` es `apps/mobile` de forma predeterminada; `--timeout` (predeterminado `60s`) se aplica al arranque y al análisis; `--staged` rechaza las entradas que difieren del índice de Git. |
+| `serena setup` | Repara el adaptador gestionado e instala el lanzador de compatibilidad `oma-dart-check`. |
 
 **Política:** `lru` (predeterminada) mantiene activos los proyectos más recientes hasta `keepWarm`
 y recupera el resto; `idle` recupera cualquier proyecto inactivo más allá de `idleMinutes`. Una
@@ -1321,17 +1467,16 @@ oma serena reaper disable
 
 Visualiza la estructura del proyecto como un grafo de dependencias.
 
+```text
+oma visualize [--focus <node-or-path>] [--affected <paths...>] [--json] [--output <format>]
 ```
-oma visualize [--json] [--output <format>]
-oma viz [--json] [--output <format>]
-```
-
-`viz` es un alias integrado de `visualize`.
 
 **Opciones:**
 
 | Flag | Descripción |
 |:-----|:-----------|
+| `--focus <node-or-path>` | Selecciona solo las referencias que requiere el nodo o la ruta (de forma transitiva) |
+| `--affected <paths...>` | Encuentra las definiciones, los workflows y las comprobaciones afectados por cambios en estas rutas |
 | `--json` | Salida como JSON |
 | `--output <format>` | Formato de salida (`text` o `json`) |
 
@@ -1340,16 +1485,15 @@ oma viz [--json] [--output <format>]
 **Ejemplos:**
 ```bash
 oma visualize
-oma viz --json
+oma visualize --json
 ```
 
 ### search {#search}
 
-Primitivas mecánicas de búsqueda para fetch, metadatos, RSS, medios, código y puntuación de confianza. Tiene el alias `oma s`. Todos los subcomandos escriben JSON en stdout (un objeto por línea o con formato legible mediante `--pretty`).
+Primitivas mecánicas de búsqueda para fetch, metadatos, RSS, medios, código y puntuación de confianza. La mayoría de los subcomandos escriben JSON en stdout (con formato legible mediante `--pretty`); `rss google` imprime una URL.
 
-```
+```text
 oma search <subcommand> ...
-oma s <subcommand> ...
 ```
 
 **Subcomandos:**
@@ -1357,11 +1501,13 @@ oma s <subcommand> ...
 | Subcomando | Propósito |
 |:-----------|:--------|
 | `fetch <url>` | Obtiene una URL mediante un pipeline de estrategias con escalado automático (api → probe → impersonate → browser → archive) |
-| `api <url>` | Obtiene contenido mediante el handler de API de plataforma correspondiente (fase 0) |
-| `api:search <query>` | Distribuye la búsqueda de palabras clave entre las plataformas que la admiten (`--platforms <list>`) |
+| `api fetch <url>` | Obtiene contenido mediante el handler de API de plataforma correspondiente (la primera estrategia que prueba `fetch`) |
+| `api search <query>` | Distribuye la búsqueda de palabras clave entre las plataformas que la admiten (`--platforms <list>`) |
 | `meta <url>` | Extrae metadatos OGP / JSON-LD / Schema.org |
-| `rss <url>` | Descubre y analiza un feed RSS / Atom |
-| `rss:google <query>` | Construye una URL RSS de Google News para una consulta |
+| `rss fetch <url>` | Descubre y analiza un feed RSS / Atom |
+| `rss google <query>` | Construye una URL RSS de Google News para una consulta (`--locale`, predeterminado `en-US`) |
+| `web <query>` | Busca con el proveedor web seleccionado (`--provider`, `--limit`, `--timeout`) |
+| `providers` | Enumera los proveedores registrados sin hacer ninguna solicitud de red |
 | `media <url>` | Extrae metadatos de medios mediante `yt-dlp` (1858 sitios) |
 | `archive <url>` | Obtiene contenido mediante el fallback AMP / archive.today / Wayback |
 | `trust <domain>` | Resuelve el nivel o la puntuación de confianza de un dominio |
@@ -1372,7 +1518,7 @@ oma s <subcommand> ...
 
 | Flag | Descripción | Predeterminado |
 |:-----|:-----------|:--------|
-| `--timeout <seconds>` | Timeout por estrategia | `15` (`30` para `media`) |
+| `--timeout <duration>` | Timeout por estrategia, por ejemplo `15s` (no lo aceptan `trust` ni `code`) | `15s` (`30s` para `media`) |
 | `--locale <value>` | Cabecera `Accept-Language` | `en-US,en;q=0.9` |
 | `--pretty` | Imprime el JSON con formato legible | `false` |
 
@@ -1446,15 +1592,14 @@ oma search rss fetch https://example.com/feed.xml --pretty
 oma search rss google "browser automation"
 ```
 
-`search` emite JSON incluso sin `--json`. `--pretty` solo cambia la presentación; no cambia el esquema del resultado. `search web` acepta `--provider`, `--limit`, `--timeout`, `--json` y `--pretty`. Si una estrategia está bloqueada o falta una dependencia, usa la tabla de códigos de salida de arriba y vuelve a ejecutar `oma search doctor` antes de cambiar de estrategia.
+`search` emite JSON incluso sin `--json` (excepto `rss google`, que imprime una URL). `--pretty` solo cambia la presentación; no cambia el esquema del resultado. `search web` acepta `--provider`, `--limit`, `--timeout`, `--json` y `--pretty`. Si una estrategia está bloqueada o falta una dependencia, usa la tabla de códigos de salida de arriba y vuelve a ejecutar `oma search doctor` antes de cambiar de estrategia.
 
 ### image {#image}
 
-Generación de imágenes con IA mediante varios proveedores y dispatch paralelo consciente de la autenticación. Tiene el alias `oma img`.
+Generación de imágenes con IA mediante varios proveedores y dispatch paralelo consciente de la autenticación.
 
-```
+```text
 oma image <subcommand> ...
-oma img <subcommand> ...
 ```
 
 **Subcomandos:**
@@ -1470,13 +1615,13 @@ oma img <subcommand> ...
 | Flag | Descripción | Predeterminado |
 |:-----|:-----------|:--------|
 | `--vendor <name>` | `auto` \| `pollinations` \| `codex` \| `antigravity` \| `all` | `auto` |
-| `--size <size>` | Cualquier `WxH` cuyos bordes sean divisibles por 16, estén entre 16 y 3840 y tengan una relación de aspecto de 1:3 a 3:1; también se acepta `auto`. | predeterminado del proveedor |
-| `--quality <level>` | `low` \| `medium` \| `high` \| `auto` | predeterminado del proveedor |
+| `--size <size>` | Cualquier `WxH` cuyos bordes sean divisibles por 16, estén entre 16 y 3840 y tengan una relación de aspecto de 1:3 a 3:1; también se acepta `auto`. | `1024x1024` |
+| `--quality <level>` | `low` \| `medium` \| `high` \| `auto` | `auto` |
 | `-n, --count <n>` | Número de imágenes (1..5) | `1` |
-| `--output-dir <path>` | Directorio de salida | `.agents/results/images/{timestamp}/` |
+| `--output-dir <path>` | Directorio de salida | `.agents/results/images/{timestamp}-{shortid}/` (sufijo `-compare` cuando se ejecutan varios proveedores) |
 | `--allow-external-output` | Permite rutas de salida fuera de `$PWD` | `false` |
 | `--model <name>` | Sobrescritura del modelo específica del proveedor; `antigravity` la ignora porque su modelo es opaco. | predeterminado del proveedor |
-| `--timeout <duration>` | Timeout por imagen | predeterminado del proveedor |
+| `--timeout <duration>` | Timeout por imagen | `180s` |
 | `-r, --reference <path>` | Imagen o imágenes de referencia; repetible o separada por comas. Compatible con `codex` y `antigravity`; se rechaza en `pollinations`. Cada archivo debe ser PNG/JPEG/GIF/WebP de ≤5 MB (validado por magic bytes); máximo 10. | |
 | `-y, --yes` | Omite la confirmación del coste | `false` |
 | `--no-prompt-in-manifest` | Guarda el SHA256 del prompt en lugar del texto sin procesar | `false` |
@@ -1488,7 +1633,8 @@ Cada ejecución escribe un `manifest.json` junto a las imágenes generadas, con 
 **Ejemplos:**
 
 ```bash
-# Free, no-config generation
+# Needs at least one authenticated vendor: POLLINATIONS_API_KEY (free key),
+# a Codex login, or a signed-in agy. Check first with: oma image doctor
 oma image generate "minimalist sunrise over mountains"
 
 # Specific vendor + size + count, skip cost prompt
@@ -1515,7 +1661,7 @@ oma image doctor --output json
 
 Planifica, escribe y renderiza videos cortos, explicativos y de demostración. `generate` crea el brief, el guion, la especificación de render y el manifiesto de ejecución; antes de renderizar un MP4 real se necesita una composición y un compositor operativo.
 
-```
+```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
 oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
 oma video doctor --output json
@@ -1534,7 +1680,7 @@ La salida JSON correcta contiene `runDir`, `manifestPath`, `scriptPath` y `rende
 
 Da una estrella a oh-my-agent en GitHub.
 
-```
+```text
 oma star
 ```
 
@@ -1549,7 +1695,7 @@ oma star
 
 Describe los comandos CLI como JSON para la introspección en runtime.
 
-```
+```text
 oma describe [command-path]
 ```
 
@@ -1559,7 +1705,7 @@ oma describe [command-path]
 |:---------|:---------|:-----------|
 | `command-path` | No | Comando que se describirá. Si se omite, describe el programa raíz. |
 
-**Qué hace:** Produce un objeto JSON con el nombre, la descripción, los argumentos, las opciones y los subcomandos del comando. Los agentes de IA lo usan para comprender las capacidades disponibles del CLI.
+**Qué hace:** Produce un objeto JSON con el nombre, la descripción, los argumentos, las opciones y los subcomandos del comando. Los agentes de IA lo usan para comprender las capacidades disponibles del CLI. Las rutas usan espacios, por ejemplo `skill eval`; las formas con dos puntos y las demás formas eliminadas devuelven `Unknown command`.
 
 **Ejemplos:**
 ```bash
@@ -1570,7 +1716,7 @@ oma describe
 oma describe "agent spawn"
 
 # Describe a subcommand
-oma describe "agent:parallel"
+oma describe "agent parallel"
 ```
 
 ---
@@ -1583,7 +1729,7 @@ Estas familias son útiles cuando la salida es un artefacto de investigación, u
 
 Sugiere trabajo de producto a partir de señales del mercado y del repositorio:
 
-```
+```bash
 oma intel suggest --topic "developer onboarding" --target ./my-product --dry-run
 oma intel suggest --config .agents/intel.yaml --json
 ```
@@ -1594,7 +1740,7 @@ oma intel suggest --config .agents/intel.yaml --json
 
 La familia market delega en el motor upstream `last30days` resuelto. Empieza por la puerta y el resolver:
 
-```
+```bash
 TOPIC="browser automation pain points"
 oma market detect-trap "$TOPIC"
 oma market resolve --output json
@@ -1607,7 +1753,7 @@ oma market run "$TOPIC" --days 30 --emit=compact
 
 Usa la familia docs para inspeccionar el drift de la documentación. Los comandos están orientados a informes; `sync` enumera candidatos para el agente anfitrión y no edita archivos por sí mismo.
 
-```
+```bash
 oma docs verify --json
 oma docs verify --no-urls --report-file .agents/results/docs-drift.md
 oma docs sync HEAD~3..HEAD --json
@@ -1621,7 +1767,7 @@ oma docs lint --json --locales ko,ja
 
 `oma slide` opera sobre un directorio de trabajo con fragmentos de diapositivas HTML de 1920×1080. El recorrido mínimo es:
 
-```
+```bash
 oma slide create --output-dir .agents/results/slides/demo
 # author slide-01.html and meta.json in that directory
 oma slide validate --workspace .agents/results/slides/demo --output json
@@ -1631,7 +1777,7 @@ oma slide bundle --workspace .agents/results/slides/demo
 
 La puerta de calidad informa de desbordamientos, solapamientos y problemas de tamaño de fuente. Usa `--slide <file>` para comprobar una sola diapositiva y `--report-file <path>` con salida JSON. Exporta solo después de validar:
 
-```
+```text
 oma slide export pdf --workspace <dir> --output-file <file> --mode capture
 oma slide export png --workspace <dir> --output-dir <dir> --resolution 1080p
 oma slide export pptx --workspace <dir> --output-file <file>
@@ -1643,7 +1789,7 @@ La exportación PPTX es experimental y se basa en raster. `slide import pptx <fi
 
 Busca artículos y metadatos de trabajos; después valida los sidecars antes de compartirlos:
 
-```
+```bash
 oma scholar search "vision language action" --limit 10
 oma scholar resolve "Attention Is All You Need"
 oma scholar get --section statements "knows:generated/reconvla/1.0.0"
@@ -1657,7 +1803,7 @@ oma scholar lint paper.knows.yaml
 
 `/explain` es el flujo de trabajo de autoría. La CLI renderiza el borrador que escribe el flujo y valida el resultado:
 
-```
+```bash
 oma explain render draft.md --archify
 oma explain render draft.md --template doc --theme card
 oma explain lint draft.md
@@ -1667,7 +1813,7 @@ oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` convierte un borrador en Markdown (un archivo, o stdin con `-`) en una página HTML autocontenida en `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; `--output-file` elige otra ruta. El borrador solo contiene contenido: un panel por cada encabezado `## ` y, dentro, bloques de componentes (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). El renderizador calcula la disposición de los diagramas, reparte los paneles en filas y aplica el tema (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` fija la revisión de la prosa; con `strict`, una sola advertencia hace fallar el renderizado. `--archify` genera un diagrama interactivo de archify a partir de un bloque `flow` o `sequence` y lo enlaza; si ese paso falla, la página se escribe igualmente. `components [name]` muestra la sintaxis de un componente. `patch` sustituye un solo panel usando el borrador incrustado en la página. `lint` revisa solo la prosa de un borrador, sin renderizar, y `--template sheet|doc` elige entre una cuadrícula de paneles y una columna con índice.
+`render` convierte un borrador en Markdown (un archivo, o stdin con `-`) en una página HTML autocontenida en `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; `--output-file` elige otra ruta. El borrador solo contiene contenido: un panel por cada encabezado `## ` y, dentro, bloques de componentes (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). El renderizador calcula la disposición de los diagramas, reparte los paneles en filas y aplica el tema (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` fija la revisión de la prosa; con `strict`, una sola advertencia hace fallar el renderizado. `--archify` genera un diagrama interactivo de archify a partir de un bloque `flow` o `sequence` y lo enlaza; si ese paso falla, la página se escribe igualmente. `components [name]` muestra la sintaxis de un componente. `patch` sustituye un solo panel usando el borrador incrustado en la página. `render --template sheet|doc` elige entre una cuadrícula de paneles y una columna con índice. `lint` revisa solo la prosa de un borrador, sin renderizar.
 
 Pasa un archivo o `--input-dir`, pero no ambos. La validación cubre el contrato HTML autocontenido e informa de fallos legibles por máquina; no juzga la precisión de la explicación. Consulta [Explicador de código](../guide/code-explainer.md).
 
@@ -1675,7 +1821,7 @@ Pasa un archivo o `--input-dir`, pero no ambos. La validación cubre el contrato
 
 Resuelve el motor antes de que un workflow emita un diagrama estructural:
 
-```
+```text
 oma diagram resolve --output json
 oma diagram resolve --engine mermaid --offline
 oma diagram update
@@ -1691,22 +1837,25 @@ Las siguientes familias exponen el estado persistente de los workflows y diagnó
 
 ### state {#state}
 
-```
+```text
 oma state list --json
 oma state list --all-projects --project /path/to/project --search migration
 oma state get <session-id> --json
 oma state trajectory <session-id>
 oma state trajectory <session-id> --open
-oma state verify --workflow work --checkpoint complete --json
+oma state decisions list work --json
+oma state verify --workflow work --checkpoint remediation-choice --instance <finding-id> --json
 oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state emit` registra un evento L1 con categoría y metadatos de sesión explícitos. `state migrate` mueve las sesiones legacy al perfil seleccionado. `state repair` repara los archivos de estado malformados. `state decisions list` y `state inject-log list|get` inspeccionan las decisiones requeridas y las entradas de auditoría de inyección. `state trajectory` combina los eventos L1 de una sesión con las transcripciones de las sesiones de proveedor en las que se ejecutó. El resultado es un único registro, turno a turno, de prompts, respuestas del modelo, llamadas a herramientas, duraciones y uso de tokens; `--open` lo muestra en el dashboard web, en `/trajectory`. Las transcripciones se leen del almacén de sesiones de cada proveedor: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness y Cursor. Se respetan `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` y `DSH_HOME`. Kiro solo registra la hora de los prompts, y Cursor no registra ni horas ni resultados de herramientas, por lo que una transcripción de Cursor se muestra completa en lugar de recortarse a la sesión. Un proveedor sin transcripción legible aparece solo con sus eventos L1. `state activate`, `state archive` y `state purge` son acciones explícitas; los antiguos flags booleanos de acción se rechazan. Archiva o purga solo después de revisar un dry-run, porque estos comandos cambian el estado local.
+`state verify` requiere `--workflow`, `--checkpoint` e `--instance`; enumera los checkpoints de un workflow con `state decisions list <workflow>`. `state summary [session-id]` exporta un resumen de la sesión al almacén de coordinación, y `state heal-check --agent <type>` informa de si la autorreparación está permitida para un agente.
+
+`state emit` registra un evento [L1](../getting-started/glossary.md#l1-and-l2-memory) con categoría y metadatos de sesión explícitos. `state migrate` mueve las sesiones legacy al perfil seleccionado. `state repair` repara los archivos de estado malformados. `state decisions list` y `state inject-log list|get` inspeccionan las decisiones requeridas y las entradas de auditoría de inyección. `state trajectory` combina los eventos L1 de una sesión con las transcripciones de las sesiones de proveedor en las que se ejecutó. El resultado es un único registro, turno a turno, de prompts, respuestas del modelo, llamadas a herramientas, duraciones y uso de tokens; `--open` lo muestra en el dashboard web, en `/trajectory`. Las transcripciones se leen del almacén de sesiones de cada proveedor: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness y Cursor. Se respetan `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` y `DSH_HOME`. Kiro solo registra la hora de los prompts, y Cursor no registra ni horas ni resultados de herramientas, por lo que una transcripción de Cursor se muestra completa en lugar de recortarse a la sesión. Un proveedor sin transcripción legible aparece solo con sus eventos L1. `state activate`, `state archive` y `state purge` son acciones explícitas; los antiguos flags booleanos de acción se rechazan. Archiva o purga solo después de revisar un dry-run, porque estos comandos cambian el estado local.
 
 ### model {#model}
 
-```
+```bash
 oma model check --json
 oma model check --owner openai --fail-on-drift
 oma model probe openai/gpt-5 --timeout 30s --json
@@ -1719,37 +1868,67 @@ oma model propose --owner anthropic --json
 
 Las ejecuciones nativas de agentes usan una secuencia respaldada por evidencias:
 
-```
+```bash
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
 oma agent context docs --difficulty Medium
 oma agent begin docs docs "$SESSION_ID" --workspace .
 # Use the runId and claimPath printed by begin.
 oma agent verify "<run-id>" --required
+# Or record one check and its real exit code
+oma agent verify "<run-id>" -- bun run test
 oma agent finish "<run-id>" "<claim-path>"
+# Inspect, then resume a session
+oma agent resume "$SESSION_ID" --dry-run
 ```
 
-`agent context` carga el contexto seleccionado por el grafo; `begin` inicia una ejecución e imprime un ID de ejecución generado y una ruta de claim; `verify` recibe ese ID y ejecuta las comprobaciones fijadas (`--required`) o las limita con `--affected`; `finish` recibe el ID y la ruta del archivo de claim. `agent resume --dry-run` informa de las tareas listas y reutilizables, y `agent resume --max-attempts <n>` reintenta solo las tareas permitidas por el plan. Consulta [Resultados y reanudación de agentes](../guide/agent-results-and-resume.md) para conocer la forma del plan y del claim. Estos comandos pertenecen al contrato de ejecución de OMA; para el trabajo normal del usuario se pueden usar `agent spawn`, `agent parallel` o `agent review`.
+`agent context` carga el contexto seleccionado por el grafo; `begin` inicia una ejecución e imprime un ID de ejecución generado y una ruta de claim; `verify` recibe ese ID y ejecuta las comprobaciones fijadas (`--required`), las limita con `--affected` o ejecuta el comando que sigue a `--` y registra su código de salida; `finish` recibe el ID y la ruta del archivo de claim. `agent resume <session-id> --dry-run` informa de las tareas listas y reutilizables, y `agent resume <session-id> --max-attempts <n>` (predeterminado: `3`) reintenta solo las tareas permitidas por el plan. `agent verify` y `agent resume` aceptan `--project-root <path>` para apuntar a otro proyecto. Consulta [Resultados y reanudación de agentes](../guide/agent-results-and-resume.md) para conocer la forma del plan y del claim. Estos comandos pertenecen al contrato de ejecución de OMA; para el trabajo normal del usuario se pueden usar `agent spawn`, `agent parallel` o `agent review`.
 
 ### memory {#memory}
 
-```
+```bash
 oma memory status --json
 oma memory keys --kind connection --dry-run --json
 oma memory init --json
-oma memory setup --endpoint http://127.0.0.1:8000 --dry-run --json
+oma memory setup --port 3111 --dry-run --json
 oma memory import --source claude --since 7d --dry-run --json
-oma memory gc --scope project --keep 20 --dry-run --json
+oma memory gc --scope sessions --keep 20 --dry-run --json
 ```
+
+`memory gc --scope` acepta `all` (predeterminado), `sessions` o `serena`. `--max-age <duration>` necesita una unidad, por ejemplo `50d`; `0` desactiva la poda por antigüedad.
 
 `memory keys` configura la conexión de Honcho o las credenciales de embeddings; `--dry-run` previsualiza los destinos sin leer ni escribir claves. `memory setup` prepara un endpoint de AgentMemory y opcionalmente puede `--install` o `--start`. `memory daemon` y `memory service` gestionan la integración con procesos locales o servicios del sistema operativo. `memory maintain backup|prune|vacuum`, `memory retry drain`, `memory upgrade` y `memory gc` son acciones de mantenimiento; inspecciona su JSON o la salida de dry-run antes de aplicarlas.
 
 ## Gestión de skills {#skill-management}
 
-### skills audit {#skills-audit}
+### Elegir un comando de skill o de harness {#choosing-a-skill-or-harness-command}
+
+Empieza por los comandos offline. Los comandos marcados como **en vivo** llaman a modelos mediante los CLI de proveedor que tengas configurados, lo que consume cuota o dinero; la mayoría imprime una estimación de coste y pide confirmación salvo que pases `--yes`.
+
+| Objetivo | Comando | Llamadas a modelos | Escribe | Requisito previo |
+|:-----|:--------|:------------|:-------|:-------------|
+| Comprobar el solapamiento de descripciones entre skills | `oma skill audit` | Ninguna | Nada | Skills instaladas |
+| Analizar la autoría de SKILL.md | `oma skill lint [--skill <id>]` | Ninguna | Nada | Skills instaladas |
+| Reproducir veredictos de utilidad registrados | `oma skill eval --skill <id>` (mock, el predeterminado) | Ninguna | Nada | Fixtures de tareas en `.agents/eval/<id>/` con `_rollouts/` registrados; al menos 5 tareas puntuables para una decisión |
+| Medir la utilidad de una skill | `oma skill eval --skill <id> --live [--record]` | **En vivo**: un brazo baseline y otro treatment por tarea (repetidos con `--trials`), más llamadas al juez | `_rollouts/` solo con `--record` | Fixtures de tareas |
+| Proponer cambios en SKILL.md | `oma skill optimize --skill <id> --live` | **En vivo**, en cada época | Evidencia de evolución; SKILL.md no cambia | Al menos 5 fixtures de tareas |
+| Aplicar un cambio que mejora | `oma skill optimize --skill <id> --live --apply` | **En vivo**, en cada época | SKILL.md (primero se respalda el original); las skills `oma-*` también necesitan `--yes` | Tanto validation lift como final-test lift mejoran estrictamente |
+| Deshacer el último cambio aplicado | `oma skill rollback --skill <id>` | Ninguna | SKILL.md | Una promoción registrada |
+| Revisar el historial de evolución | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | Ninguna | Nada | Ejecuciones de optimización registradas |
+| Ajustar el propio optimizador | `oma skill meta-optimize --skill <ids...> --live` | **En vivo**, muchas ejecuciones internas (`--live` es obligatorio) | Archivo de procedimiento solo con `--apply` | Skills reservadas con fixtures |
+| Comprobar el descubrimiento nativo de skills | `oma skills matrix [--live]` | **En vivo** solo con `--live` (ejecuta los CLI `claude` y `codex`); de lo contrario, imprime el plan | Un informe JSON solo con `--report <path>` | Los CLI de proveedor instalados |
+| Reproducir una comparación del harness | `oma harness eval --suite <yaml> --candidate <dir>` (mock, el predeterminado) | Ninguna | Nada | Una ejecución registrada que coincida con la suite, el baseline y el candidato |
+| Comparar un overlay del harness | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **En vivo**: un brazo baseline y otro candidate por tarea | Una grabación solo con `--record` | Suite y fixtures dentro del proyecto |
+| Convertir una ejecución fallida en un fixture | `oma harness incident scan`, después `capture --spec <file>` y después `promote <id>` | Solo `promote`: una llamada de enrutamiento cuando se omite `--skill`; con `--draft`, un borrador de rúbrica del opt-agent y una comprobación del juez | Registro del incidente; fixture de regresión | Una ejecución de agente fallida, bloqueada o parcial |
+| Optimizar las skills que hay detrás de los incidentes | `oma harness feedback [--live \| --apply]` | **En vivo** solo con `--live` o `--apply` | Fixtures; cambios aceptados en SKILL.md solo con `--apply` | Incidentes capturados, o `--scan-runs` |
+| Ejecutar feedback de forma programada | `oma harness evolution enable --max-dispatches <n>` | **En vivo**, hasta el presupuesto de cada ejecución programada | Un trabajo programado (consulta [Agentes programados](#scheduled-agents)); `--mode apply` de forma predeterminada, o `--mode propose` | Un planificador del sistema operativo |
+
+`skill optimize` sin `--live` termina con `1`: el CLI no tiene una fuente de propuestas registrada para la optimización mock. Para reproducir evaluaciones offline, usa `oma skill eval`. Para resultados "no coverage" o "insufficient", consulta [Solución de problemas](../guide/troubleshooting.md).
+
+### skill audit {#skills-audit}
 
 Comprueba si las skills instaladas tienen descripciones solapadas, generalismo de tipo agujero negro o degradación del enrutamiento por el tamaño de la biblioteca.
 
-```
+```text
 oma skill audit [--json] [--output <format>]
 ```
 
@@ -1774,11 +1953,11 @@ oma skill audit
 oma skill audit --json | jq '.findings'
 ```
 
-### skills lint {#skills-lint}
+### skill lint {#skills-lint}
 
-Detecta problemas de autoría por skill: defectos de calidad dentro de un solo `SKILL.md`, a diferencia de `skills audit`, que comprueba las relaciones *entre* skills. Se basa en la taxonomía de problemas de skills de arXiv:2607.01456 (más del 99 % de los archivos SKILL.md reales presentan al menos uno).
+Detecta problemas de autoría por skill: defectos de calidad dentro de un solo `SKILL.md`, a diferencia de `skill audit`, que comprueba las relaciones *entre* skills. Se basa en la taxonomía de problemas de skills de arXiv:2607.01456 (más del 99 % de los archivos SKILL.md reales presentan al menos uno).
 
-```
+```text
 oma skill lint [--skill <id>] [--json] [--output <format>]
 ```
 
@@ -1800,6 +1979,9 @@ oma skill lint [--skill <id>] [--json] [--output <format>]
 | `body-too-long` | warn | cuerpo de SKILL.md de más de 500 líneas; mueve los detalles a `resources/` mediante divulgación progresiva |
 | `template-placeholder` | warn | queda texto `{Placeholder}` fuera de spans de código |
 | `broken-reference` | fail | referencia un archivo de `resources/`, `config/`, `scripts/` o `assets/` que no existe |
+| `verbose-description` | warn | descripción de más de 350 caracteres; conserva en ella los desencadenantes de enrutamiento y las exclusiones, y mueve los detalles operativos a las referencias |
+| `malformed-frontmatter` | fail | SKILL.md no empieza con un mapeo de frontmatter YAML válido |
+| `invalid-directory`, `missing-skill-file`, `unreadable-skill-file` | fail | la skill seleccionada con `--skill` no es un directorio, no tiene SKILL.md o no se puede leer |
 
 **Problemas SSL-lite** (la validación SSL-lite es obligatoria cuando el nombre declarado de una skill o el nombre de su directorio o alias expuesto empieza por `oma-`, incluso sin `## Scheduling`; un alias sin prefijo no puede eludir un nombre declarado con `oma-`. Las skills normales sin prefijo adoptan el formato al incluir `## Scheduling`):
 
@@ -1819,14 +2001,15 @@ oma skill lint --skill oma-scholar
 oma skill lint --json | jq '.smells'
 ```
 
-### skills eval {#skills-eval}
+### skill eval {#skills-eval}
 
-Mide la utilidad de cada skill: ¿cargar una skill mejora realmente los resultados de tareas reservadas? Es la contraparte de *utility* de `skills audit` (que mide el solapamiento de límites de descripciones). Mientras `audit` pregunta «¿son redundantes dos skills?», `eval` pregunta «¿esta skill ayuda?».
+Mide la utilidad de cada skill: ¿cargar una skill mejora realmente los resultados de tareas reservadas? Es la contraparte de *utility* de `skill audit` (que mide el solapamiento de límites de descripciones). Mientras `audit` pregunta «¿son redundantes dos skills?», `eval` pregunta «¿esta skill ayuda?».
 
-```
+```text
 oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
-                [--task-dir <path>] [--max-tasks <n>] [--require-coverage]
-                [--json] [--output <format>]
+               [--task-dir <path>] [--max-tasks <n>] [--trials <n>]
+               [--neg-transfer] [--routing] [--require-coverage]
+               [--json] [--output <format>]
 ```
 
 **Opciones:**
@@ -1835,11 +2018,14 @@ oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
 |:-----|:-----------|
 | `--skill <id>` | ID de la skill que se evaluará (nombre simple, sin separadores de ruta). Predeterminado: `_all`. |
 | `--mock` | Reproduce rollouts registrados desde `_rollouts/` (predeterminado; determinista y sin dispatch de LLM). Seguro para CI. |
-| `--live` | Dispatch de agentes en vivo: inicia dos brazos (baseline y treatment) por tarea mediante `oma agent spawn --read-only`. Muestra una estimación de coste y solicita confirmación salvo que se indique `--yes`. |
+| `--live` | Dispatch de agentes en vivo: ejecuta dos brazos (baseline y treatment) por tarea mediante dispatch interno. Muestra una estimación de coste y solicita confirmación salvo que se indique `--yes`. |
 | `--record` | Escribe los rollouts en vivo capturados (incluidos los veredictos del juez) en `_rollouts/` para reproducirlos después con `--mock`. Solo tiene efecto con `--live`. |
 | `--yes` | Omite el prompt de confirmación de la estimación de coste. Solo tiene efecto con `--live`. |
 | `--task-dir <path>` | Sobrescribe el directorio de fixtures de tareas (debe estar dentro de la raíz del workspace). Predeterminado: `.agents/eval/<skill>/`. |
 | `--max-tasks <n>` | Limita la cantidad de tareas evaluadas (aplicado en orden de clasificación determinista). |
+| `--trials <n>` | Repite cada brazo n veces en orden alterno (de 1 a 10; solo con `--live`). |
+| `--neg-transfer` | También muestrea tareas vecinas del mismo dominio para detectar transferencia negativa (desactivado de forma predeterminada). |
+| `--routing` | Mide la activación: qué skill instalada cargaría el modelo para cada tarea (`--live` mide; mock reproduce la grabación). |
 | `--require-coverage` | Termina con un valor distinto de cero cuando encuentra menos de 5 tareas (evita un resultado verde silencioso en CI). |
 | `--json` | Salida como JSON para CI/CD |
 | `--output <format>` | Formato de salida (`text` o `json`) |
@@ -1863,13 +2049,13 @@ Para cada fixture de tarea en `.agents/eval/<skill>/`:
 
 **Modo recomendado:** Usa `--live` con checkers judge para medir la utilidad real de la skill. Usa `--mock` para reproducir offline veredictos judge registrados o ejecutar comprobaciones deterministas del contrato con `assert`/`regex`.
 
-**Variable de entorno:** `OMA_SKILLEVAL_MOCK=1` fuerza el modo mock independientemente de los flags.
+**Selección de modo:** solo los flags eligen el modo. Una ejecución es en vivo únicamente cuando se pasa `--live`; la reproducción mock es la opción predeterminada. Ninguna variable de entorno lo sobrescribe, así que no incluyas `--live` en los comandos de CI.
 
 **Códigos de salida:** `0` para pass o warn; `1` para fail o insufficient con `--require-coverage`.
 
 **Ejemplos:**
 ```bash
-# Dry-run on recorded rollouts (CI-safe)
+# Replay recorded rollouts (CI-safe)
 oma skill eval --skill oma-scholar
 
 # Live run with cost preview
@@ -1892,14 +2078,14 @@ Consulta la [guía de evaluación de utilidad de skills](../guide/skill-eval.md)
 
 ---
 
-### skills opt {#skills-opt}
+### skill optimize {#skills-opt}
 
 Optimiza el `SKILL.md` de una skill mediante una evolución persistente al estilo WikiSkill. Un Maintainer consolida la evidencia observable de los rollouts en conocimiento acotado, un Proposer emite cambios limitados de adición/eliminación/reemplazo y los resultados rechazados persisten entre ejecuciones. Los candidatos deben mejorar estrictamente la división de validación reservada; `--apply` también requiere una mejora estricta en una división final de pruebas propiedad del runner. Base de investigación: WikiSkill (arXiv:2608.27454).
 
-```
-oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
-               [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes] [--json] [--output <format>]
+```text
+oma skill optimize [--skill <id>] --live [--dry-run | --apply]
+                   [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
+                   [--memory <mode>] [--yes] [--json] [--output <format>]
 ```
 
 **Opciones:**
@@ -1909,11 +2095,12 @@ oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
 | `--skill <id>` | `_all` | ID de la skill que se optimizará (nombre simple, sin separadores de ruta). |
 | `--dry-run` | **sí (predeterminado)** | Propone cambios e imprime el diff sin cambiar `SKILL.md`; la evidencia de evolución generada se sigue registrando. |
 | `--apply` | — | Aplica los cambios aceptados; respalda el original antes de una escritura atómica y solo escribe una mejora validada. |
-| `--mock` | **sí (predeterminado)** | Reproduce offline los cambios registrados del optimizador y los veredictos de evaluación (determinista). Seguro para CI. |
-| `--live` | — | Dispatch de optimización LLM en vivo: realiza llamadas reales al modelo en cada época. Muestra una estimación de coste y solicita confirmación salvo que se indique `--yes`. |
+| `--mock` | — | No se puede ejecutar desde el CLI: la optimización no tiene una fuente de propuestas registrada y termina con `1`. Para reproducir evaluaciones, usa `oma skill eval --mock`. |
+| `--live` | obligatorio | Dispatch de optimización LLM en vivo: realiza llamadas reales al modelo en cada época. Muestra una estimación de coste y solicita confirmación salvo que se indique `--yes`. |
 | `--max-epochs <n>` | `8` | Número máximo de épocas de optimización. |
 | `--edits-per-epoch <k>` | `4` | Cambios candidatos propuestos por época. |
 | `--lr <chars>` | `600` | Presupuesto de tasa de aprendizaje textual: cambio neto máximo de caracteres por edición. |
+| `--memory <mode>` | `recall` | `recall` reutiliza el conocimiento de evolución persistente; `none` empieza con una memoria vacía para una comparación con el mismo presupuesto. |
 | `--yes` | — | Omite la confirmación de la estimación de coste (solo con `--live`). |
 | `--json` | — | Salida como JSON para CI/CD. |
 | `--output <format>` | `text` | Formato de salida (`text` o `json`). |
@@ -1922,29 +2109,27 @@ oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
 
 **División train/validation/test:** Los fixtures se dividen de forma determinista en 60/20/20. Maintainer y Proposer solo ven la evidencia TRAIN, la selección de candidatos usa tareas VALIDATION reservadas y la división TEST propiedad del runner permanece oculta hasta que termina la evolución. `--apply` solo escribe cuando mejoran estrictamente tanto validation lift como final-test lift.
 
-**Advertencia sobre SSOT:** Las skills cuyo ID empieza por `oma-` se sobrescriben con `oma update`. Para esas skills, se desaconseja `--apply`: usa el `--dry-run` predeterminado y sube el diff propuesto. Las skills escritas por el usuario se pueden aplicar libremente.
+**Advertencia sobre SSOT:** Las skills cuyo ID empieza por `oma-` se sobrescriben con `oma update`. Para esas skills, se desaconseja `--apply`: usa el `--dry-run` predeterminado y sube el diff propuesto. En las skills `oma-*`, `--apply` solo escribe cuando también se pasa `--yes`; de lo contrario, imprime una advertencia y no escribe nada. Las skills escritas por el usuario se pueden aplicar libremente.
 
-**Códigos de salida:** `0` si la optimización terminó; `1` si faltan fixtures o el argumento no es válido.
+**Códigos de salida:** `0` si la optimización terminó; `1` si faltan fixtures, si se ejecuta sin `--live` o si un argumento no es válido.
 
 **Ejemplos:**
 ```bash
-# Propose edits (dry-run, mock — does not change SKILL.md, fully offline)
-oma skill optimize --skill oma-scholar --mock --dry-run
-
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --mock --apply
-
-# Live optimizer with cost preview
+# Propose edits with a cost preview (SKILL.md unchanged)
 oma skill optimize --skill oma-scholar --live
 
-# Live optimizer, skip confirmation, apply if improved
+# Skip confirmation and apply only if validation and final-test lift improve
+# (--yes is also required to apply to an oma-* skill)
 oma skill optimize --skill oma-scholar --live --apply --yes
 
-# JSON output for CI
-oma skill optimize --skill oma-scholar --json
+# JSON output
+oma skill optimize --skill oma-scholar --live --json
 
 # Tune epochs and edits budget
-oma skill optimize --skill oma-scholar --max-epochs 4 --edits-per-epoch 2 --lr 300
+oma skill optimize --skill oma-scholar --live --max-epochs 4 --edits-per-epoch 2 --lr 300
+
+# Offline alternative: replay recorded evaluations
+oma skill eval --skill oma-scholar --json
 ```
 
 Consulta la [guía de optimización de skills](../guide/skill-opt.md) para ver el recorrido completo y los detalles de las protecciones de SSOT y sobreajuste.
@@ -1955,10 +2140,11 @@ Consulta la [guía de optimización de skills](../guide/skill-opt.md) para ver e
 
 Compara un overlay candidato de `.agents/` con el harness actual de OMA en tareas emparejadas y aisladas del repositorio. El agente de destino y la ruta del proveedor permanecen fijos; las comprobaciones deterministas puntúan los archivos y la salida producida por cada brazo.
 
-```
-oma harness eval --suite <path> --candidate <path> [--mock | --live]
+```text
+oma harness eval --suite <path> --candidate <path> [--partition <name>]
+                 [--mock | --live | --action <mode>] [--transcript <path>]
                  [--record] [--record-file <path>] [--yes]
-                 [--timeout-minutes <n>] [--require-coverage]
+                 [--timeout <duration>] [--require-coverage]
                  [--json] [--output <format>]
 ```
 
@@ -1966,17 +2152,20 @@ oma harness eval --suite <path> --candidate <path> [--mock | --live]
 |:-----|:------------|
 | `--suite <path>` | YAML de suite obligatorio. La suite y los workspaces de fixtures deben estar dentro de la raíz del proyecto. |
 | `--candidate <path>` | Raíz candidata obligatoria que contiene un overlay de `.agents/` acotado. |
-| `--mock` | Reproduce una ejecución registrada cuyo hash coincide (predeterminado; determinista y offline). |
+| `--partition <name>` | `validation` (predeterminado) o `final-test`. |
+| `--mock` | Inspecciona los veredictos registrados que coinciden con la suite, el baseline y el candidato (predeterminado; sin reproducir el agente). |
+| `--action <mode>` | `inspect`, `rescore`, `fixture-replay` o `rerun`. |
+| `--transcript <path>` | Transcripción de fixtures de herramientas para `fixture-replay`. |
 | `--live` | Ejecuta los brazos baseline y candidate mediante el agente de destino de la suite. |
 | `--record` | Persiste una ejecución en vivo para reproducirla después con mock. Requiere `--live`. |
 | `--record-file <path>` | Sobrescribe la ruta del registro; debe permanecer dentro de la raíz del proyecto. |
 | `--yes` | Omite la confirmación de coste de la ejecución en vivo. |
-| `--timeout-minutes <n>` | Timeout por brazo, idéntico para baseline y candidate. Predeterminado: `15`. |
+| `--timeout <duration>` | Timeout por brazo con unidad, idéntico para baseline y candidate. Predeterminado: `15m`. La forma antigua `--timeout-minutes` se rechaza. |
 | `--require-coverage` | Termina con un valor distinto de cero cuando se pueden puntuar menos de cinco tareas emparejadas. |
 | `--json` | Salida de la evaluación completa como JSON. |
 | `--output <format>` | Formato de salida (`text` o `json`). |
 
-**Puerta de decisión:** pass requiere al menos 5 tareas emparejadas, un lift de al menos 5 puntos porcentuales y cero regresiones. Una regresión siempre falla. La cobertura inferior al mínimo es `insufficient` y termina con un valor distinto de cero solo con `--require-coverage`.
+**Puerta de decisión:** pass requiere al menos 5 tareas emparejadas puntuadas, un lift de al menos 5 puntos porcentuales y cero regresiones. Con al menos 5 pares, cualquier regresión o lift negativo falla, y un lift inferior a 5 puntos sin regresiones es `warn`. Un error de dispatch siempre falla. La cobertura inferior al mínimo es `insufficient` y termina con un valor distinto de cero solo con `--require-coverage`.
 
 **Aislamiento:** los archivos candidatos solo pueden sustituir el contenido de `.agents/agents`, `.agents/rules`, `.agents/skills` y `.agents/workflows` en el brazo candidato temporal. Se rechazan hooks, configuración, estado, fixtures de evaluación, symlinks, variantes de proveedores, cambios protegidos del frontmatter de ejecución del agente y archivos del harness del proveedor propiedad de los fixtures. Un brazo falla si modifica definiciones protegidas durante la ejecución. La evaluación en vivo rechaza el descubrimiento de proveedores basado en HOME. La ruta del agente principal es fija; el anclaje del modelo de subagentes anidados todavía no se aplica.
 
@@ -1994,19 +2183,46 @@ Consulta la [guía de evaluación del harness](../guide/harness-eval.md) para co
 
 Convierte un incidente capturado en un fixture de regresión para la skill que usó el agente que falló.
 
-```
+```text
 oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
 ```
+
+Sin `--skill`, una llamada de enrutamiento en vivo elige la skill, y la skill de la definición del agente actúa como fallback. `--draft` pide al opt-agent que redacte una rúbrica de juez cuando las comprobaciones no son aserciones sobre la salida. `--force` admite un fixture que no se puede validar frente a la salida observada.
+
+Los demás comandos de incidentes:
+
+| Comando | Propósito | Opciones principales |
+|:--------|:--------|:------------|
+| `oma harness incident scan` | Enumera las ejecuciones de agentes fallidas, bloqueadas o parciales a las que todavía no hace referencia ningún incidente capturado | `--limit <n>`, `--skeleton <run-id>` (imprime un esqueleto de especificación) |
+| `oma harness incident capture --spec <path>` | Captura un incidente a partir de un JSON de especificación | `--run <id>` importa metadatos observables de una ejecución de agente |
+| `oma harness incident show <id>` | Muestra la procedencia del incidente | `--json` |
+| `oma harness incident export <id>` | Exporta el fixture del incidente | `--json` |
+| `oma harness incident reproduce <id> --candidate <path>` | Evalúa un overlay candidato de `.agents/` sobre el incidente; sin `--action`, inicia una ejecución en vivo nueva | `--action inspect\|rescore\|fixture-replay\|rerun`, `--record`, `--record-file`, `--transcript`, `--yes`, `--timeout <duration>` (`15m`) |
 
 ### harness feedback {#harness-feedback}
 
 Promueve todos los incidentes sin promover y, con `--live` o `--apply`, optimiza cada skill afectada frente a su suite ampliada.
 
-```
+```text
 oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
 ```
 
+`--apply` implica `--live` y solo escribe los cambios aceptados que superan todas las puertas. `--max-epochs` es `1` de forma predeterminada. `--scan-runs` primero captura como incidentes, a partir de sus contratos de tarea, las ejecuciones fallidas que aún no se han capturado.
+
 Consulta la [guía de casos de regresión de incidentes](../guide/harness-incidents.md).
+
+### harness evolution {#harness-evolution}
+
+Programa ciclos de feedback con presupuesto para el proyecto actual.
+
+```text
+oma harness evolution enable --max-dispatches <n> [--cron <expr>] [--mode apply|propose]
+oma harness evolution status
+oma harness evolution run
+oma harness evolution disable
+```
+
+`enable` registra un trabajo programado (cron predeterminado `0 3 * * *`, modo predeterminado `apply`) con un presupuesto finito de dispatch de modelos por ejecución; `disable` lo elimina. `run` inicia un ciclo ahora y `status` muestra la configuración y su trabajo programado. Consulta la [guía de evolución del harness](../guide/harness-evolution.md).
 
 ---
 
@@ -2014,7 +2230,7 @@ Consulta la [guía de casos de regresión de incidentes](../guide/harness-incide
 
 Muestra información de ayuda.
 
-```
+```text
 oma help
 ```
 
@@ -2024,7 +2240,7 @@ Muestra el texto completo de ayuda con todos los comandos disponibles.
 
 Muestra el número de versión.
 
-```
+```text
 oma version
 ```
 
@@ -2032,21 +2248,55 @@ Imprime la versión actual del CLI y termina.
 
 ---
 
+## Solución de problemas {#troubleshooting}
+
+| Síntoma | Causa | Solución |
+|:--------|:------|:----|
+| `Unknown command: ... Use oma --help.` | Un alias corto (`viz`, `s`, `img`), una forma con dos puntos (`agent:parallel`, `memory:init`) o un plural `skills audit` / `lint` / `eval` / `opt` | Usa la ruta canónica de [Alias y formas eliminadas](#aliases) |
+| `Unexpected argument for oma <path>. Use --help.` | Un subcomando renombrado, como `vault rm`, `search api <url>` o `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Removed option -r. Use --project-root.` (también `--root`, `--session`, `--timeout-minutes`, `--max-age-days`) | La opción se renombró | Usa la forma que imprime el mensaje: `--project-root`, `--session-id`, `--timeout`, `--expires-after` o `--max-age` |
+| `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | Una opción de duración como `--expires-after` o `--max-age` recibió un número sin unidad | Añade una unidad, por ejemplo `30d` |
+| `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | El valor de `--every` no es un paso cron exacto | Previsualiza con `--dry-run` y después añade `--accept-rounded` o usa `--cron` |
+| `Nothing to set: pass at least one of --gate, --budget-minutes, --description` | `oma goal set` se ejecutó sin contrato | Añade `--gate`, `--budget-minutes` o `--description` |
+
+Para problemas de instalación, proveedores, hooks, dashboard y programaciones, consulta la [guía de solución de problemas](../guide/troubleshooting.md).
+
+---
+
 ## Variables de entorno {#environment-variables}
 
 | Variable | Descripción | Usada por |
 |:---------|:-----------|:--------|
-| `OH_MY_AG_OUTPUT_FORMAT` | Establece `json` para forzar la salida JSON en todos los comandos que lo admiten | Todos los comandos con el flag `--json` |
+| `OH_MY_AG_OUTPUT_FORMAT` | Establece `json` para que JSON sea la salida predeterminada; un `--output text` explícito tiene prioridad | Comandos que usan las opciones compartidas `--json` / `--output` |
 | `DASHBOARD_PORT` | Puerto del dashboard web | `dashboard web` |
-| `MEMORIES_DIR` | Sobrescribe la ruta del directorio de memorias | `dashboard`, `dashboard web` |
-| `OMA_SKILLEVAL_MOCK` | Establece `1` para forzar el modo mock en `oma skill eval` independientemente de los flags | `skills eval` |
-| `OMA_HOOK_DEDUP` | Establece `0` para desactivar la supresión de entregas duplicadas en `oma hook run`. | `hook` |
-| `OMA_HOOK_DEDUP_DIR` | Sobrescribe el directorio privado de claims usado para suprimir las entregas duplicadas de hooks (predeterminado: `$XDG_RUNTIME_DIR/oma-hook-dedup`; en caso contrario, `<tmpdir>/oma-hook-dedup-<uid>`). | `hook` |
+| `MEMORIES_DIR` | Sobrescribe la ruta del directorio de memorias | `dashboard terminal`, `dashboard web` |
+| `OMA_BRIDGE_URL` | Conecta `oma bridge` a un endpoint de Serena gestionado por quien llama, igual que el argumento `url` | `bridge` |
+| `OMA_GATE_TIMEOUT_MS` | Reduce el presupuesto de 25 segundos de la puerta de parada establecido por `oma goal set --gate` | hook Stop del modo persistente |
+| `OMA_HOOK_DEDUP` | Establece `0` para desactivar la supresión de entregas duplicadas en `oma hook run`. | `hook run` |
+| `OMA_HOOK_DEDUP_DIR` | Sobrescribe el directorio privado de claims usado para suprimir las entregas duplicadas de hooks (predeterminado: `$XDG_RUNTIME_DIR/oma-hook-dedup`; en caso contrario, `<tmpdir>/oma-hook-dedup-<uid>`). | `hook run` |
+
+`oma skill eval` no tiene ninguna sobrescritura de entorno para su modo; solo `--live` hace que una ejecución sea en vivo.
 
 ---
 
-## Alias {#aliases}
+## Alias y formas eliminadas {#aliases}
 
-| Alias | Comando completo |
-|:------|:------------|
-| `viz` | `visualize` |
+`oma` es el único alias: es el nombre corto del binario de `oh-my-agent`, y ambos se instalan con el paquete.
+
+Las formas antiguas se rechazan con `Unknown command`, `Unexpected argument` o `Removed option`. Usa la forma canónica:
+
+| Forma antigua | Usa |
+|:-------------|:----|
+| `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
+| Formas con dos puntos como `agent:parallel`, `memory:init`, `schedule:add` | `agent parallel`, `memory init`, `schedule create` |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize` (solo `skills matrix` conserva el grupo en plural) |
+| `verify <agent-type>` | `verify agent <agent-type>` |
+| `vault rm` | `vault delete` |
+| `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |
+| `slide new`, `slide viewer`, `image list-vendors`, `video list-providers` | `slide create`, `slide preview`, `image vendor list`, `video provider list` |
+| `-r`, `--root` | `--project-root` |
+| `--session` | `--session-id` |
+| `--timeout-minutes <n>` | `--timeout <duration>` |
+| `--max-age-days <n>` | `--expires-after <duration>` (`schedule create`) o `--max-age <duration>` (`memory gc`) |
+
+Solo `schedule:run` y `serena daemon:gc` siguen resolviéndose, para que las entradas del planificador del sistema operativo registradas por versiones anteriores sigan funcionando.

@@ -12,9 +12,9 @@ oh-my-agent 安装到项目时，会写入供应商原生的钩子配置，其�
 
 ---
 
-## 一次性步骤：在 Codex 中审阅钩子
+## 一次性步骤：在 Codex 中审阅钩子 {#the-one-time-step-review-hooks-in-codex}
 
-在 Codex 尚未见过的项目中，`oma`（安装）、`oma link` 或 `oma update` 写入 `.codex/hooks.json` 后，钩子**还不会**运行。你必须打开 Codex 并审阅一次：
+在 Codex 尚未见过的项目中，`oma`（安装）、`oma link` 或 `oma update` 写入 `.codex/hooks.json`（全局安装时为 `~/.codex/hooks.json`）后，钩子**还不会**运行。你必须打开 Codex 并审阅一次：
 
 1. 在 Codex CLI 中打开项目。
 2. 运行 `/hooks`，打开钩子浏览器（TUI）。
@@ -22,8 +22,8 @@ oh-my-agent 安装到项目时，会写入供应商原生的钩子配置，其�
 
 在完成这一步前，钩子会保持不受信任并被静默跳过。这就是 oh-my-agent 每次创建或修改 `.codex/hooks.json` 时打印提示的原因：
 
-```
-Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run)
+```text
+⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
 打开 Codex 前先验证生成的文件：
@@ -41,7 +41,7 @@ oma link codex
 
 ---
 
-## 更新时会发生什么
+## 更新时会发生什么 {#what-happens-on-updates}
 
 信任钩子后，不需要在每次更新时重复这一步：
 
@@ -52,7 +52,7 @@ oma link codex
 
 ---
 
-## oh-my-agent 会自动为你处理的事项
+## oh-my-agent 会自动为你处理的事项 {#what-oh-my-agent-automates-for-you}
 
 当 oh-my-agent 自行生成 Codex 子进程时，例如通过 `oma agent spawn` 调度跨供应商智能体，它会自动传递 `--dangerously-bypass-hook-trust`。这样，自己的已审查钩子可以在更新之间运行，不会要求你手动重新信任。
 
@@ -60,13 +60,13 @@ oma link codex
 
 ---
 
-## 不需要 `[features] hooks` 标志
+## 不需要 `[features] hooks` 标志 {#no-features-hooks-flag-needed}
 
-旧版设置要求在 Codex 配置中启用 `[features] hooks = true`。自 Codex CLI 约 0.14x 起，钩子已经稳定并默认启用，因此现在不再需要此项。oh-my-agent 不再写入它，并会在发现已弃用的 `child_agents_md` 标志时主动从 Codex 配置中移除它。
+旧版 oh-my-agent 会在 Codex 配置中写入 `[features] codex_hooks = true`。Codex 0.124 将该标志重命名为 `hooks`，并让钩子成为稳定、默认启用的功能，因此不再需要任何标志。oh-my-agent 不会写入这两个键中的任何一个，并会在发现已弃用的 `codex_hooks` 和 `child_agents_md` 标志时将其从 `[features]` 表中移除。
 
 ---
 
-## 总结
+## 总结 {#summary}
 
 | 情况 | 你要做什么 |
 |:----------|:------------|
@@ -74,3 +74,8 @@ oma link codex
 | `oma update` 且钩子命令未改变 | 无需操作，信任会保留 |
 | `oma update` 改变了钩子命令 | 再次运行 `/hooks` 重新信任（安装器会打印提示） |
 | oh-my-agent 生成的 Codex 子进程 | 无需操作，会自动应用绕过标志 |
+
+## 另请参阅 {#see-also}
+
+- [现有项目集成](./integration.md)：安装器为每个供应商写入的内容
+- [全局安装](./global-install.md)：写入 `~/.codex/` 的用户级安装

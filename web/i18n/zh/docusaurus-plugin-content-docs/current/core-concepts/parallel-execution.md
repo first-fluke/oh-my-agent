@@ -9,15 +9,15 @@ oh-my-agent 的核心优势是同时运行多个专业智能体。后端智能�
 
 ---
 
-## agent:spawn：启动单个智能体
+## oma agent spawn：启动单个智能体 {#agentspawn-single-agent-spawning}
 
-### 基本语法
+### 基本语法 {#basic-syntax}
 
 ```bash
 oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
-### 参数
+### 参数 {#parameters}
 
 | 参数 | 必填 | 说明 |
 |-----------|----------|-------------|
@@ -26,7 +26,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | `session-id` | 是 | 将处理同一功能的智能体归入同一组。格式为 `session-YYYYMMDD-HHMMSS` 或任意唯一字符串。 |
 | `options` | 否 | 参见下面的选项表 |
 
-### 选项
+### 选项 {#options}
 
 | 标志 | 短标志 | 说明 |
 |------|-------|-------------|
@@ -38,7 +38,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | `--isolation <mode>` |  | `worktree` 会在临时 OMA 工作树目录下创建新的 Git 工作树。工作树会保留，以便审查和合并或丢弃。 |
 | `--read-only` |  | 将启动的智能体限制为非破坏性工具。 |
 
-### 示例
+### 示例 {#examples}
 
 ```bash
 # Spawn a backend agent with default vendor
@@ -62,7 +62,7 @@ oma agent spawn backend "Try a Drizzle-based rewrite" session-01 --isolation wor
 
 ---
 
-## 使用后台进程并行启动
+## 使用后台进程并行启动 {#parallel-spawning-with-background-processes}
 
 要同时运行多个智能体，可使用 shell 后台进程：
 
@@ -93,17 +93,17 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel：内联并行模式
+## oma agent parallel：内联并行模式 {#agentparallel-inline-parallel-mode}
 
 要使用更简洁的语法，并自动处理后台进程管理：
 
-### 语法
+### 语法 {#syntax}
 
 ```bash
 oma agent parallel --inline "<agent1>:<prompt1>" "<agent2>:<prompt2>" [options]
 ```
 
-### 示例
+### 示例 {#examples-1}
 
 ```bash
 # Basic parallel execution
@@ -120,18 +120,18 @@ oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-`--inline` 标志会解析每个 `agent:task` 参数。如果任务需要指定工作区，可添加第三个以冒号分隔的路径（`agent:task:workspace`）。不使用 `--inline` 时，传入包含 `{tasks: [{id?, agent, task, workspace?}]}` 的 YAML 任务文件。`--session` 将并行结果关联到已有会话。
+`--inline` 标志会解析每个 `agent:task` 参数。如果任务需要指定工作区，可添加第三个以冒号分隔的路径（`agent:task:workspace`）。不使用 `--inline` 时，传入包含 `{tasks: [{id?, agent, task, workspace?}]}` 的 YAML 任务文件。`--session-id` 会将结果绑定到已有会话，以及 YAML 文件中的任务 ID。
 
 ---
 
-## 多 CLI 配置
+## 多 CLI 配置 {#multi-cli-configuration}
 
 oh-my-agent 通过 `.agents/oma-config.yaml` 中的 `model_preset` 将每个智能体路由到适当的 CLI。选择正在使用的供应商对应的内置预设，也可以单独覆盖智能体。
 
-### 配置示例
+### 配置示例 {#configuration-example}
 
 ```yaml
 # .agents/oma-config.yaml
@@ -146,7 +146,7 @@ agents:
 
 内置预设：`auto`、`free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro` 和 `mixed`。详情参见[按智能体选择模型](../guide/per-agent-models.md)。
 
-### 供应商解析
+### 供应商解析 {#vendor-resolution}
 
 `oma agent spawn` 确定使用哪个 CLI 时，按以下优先级处理：
 
@@ -160,7 +160,7 @@ agents:
 
 ---
 
-## 供应商特定的启动方式
+## 供应商特定的启动方式 {#vendor-specific-spawn-methods}
 
 启动机制取决于 IDE 或 CLI：
 
@@ -175,7 +175,7 @@ agents:
 
 在 Claude Code 中运行时，工作流直接使用 `Agent` 工具：
 
-```
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
@@ -190,9 +190,9 @@ Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 
 ---
 
-## 监控智能体
+## 监控智能体 {#monitoring-agents}
 
-### 终端仪表板
+### 终端仪表板 {#terminal-dashboard}
 
 ```bash
 oma dashboard terminal
@@ -207,11 +207,11 @@ oma dashboard terminal
 
 仪表板监控 `.agents/state/memories/`，实时显示更新，并在智能体写入进度时刷新。
 
-### Web 仪表板
+### Web 仪表板 {#web-dashboard}
 
 ```bash
 oma dashboard web
-# Opens http://localhost:9847
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 功能：
@@ -221,26 +221,17 @@ oma dashboard web
 - 从进度和结果文件流式传输活动日志
 - 会话历史
 
-### 推荐终端布局
+### 推荐终端布局 {#recommended-terminal-layout}
 
 使用 3 个终端以获得最佳可见性：
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard terminal         │   Agent spawn        │
-│   (live monitoring)     │   commands           │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   Terminal 3:                                  │
-│   Test/build logs, git operations              │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| 终端 | 运行 | 用途 |
+|----------|-----|---------|
+| 1 | `oma dashboard terminal` | 实时监控 |
+| 2 | `oma agent spawn …` 或 `oma agent parallel …` | 智能体启动命令 |
+| 3 | 测试、构建日志、git | 验证和 git 操作 |
 
-### 检查单个智能体状态
+### 检查单个智能体状态 {#checking-individual-agent-status}
 
 ```bash
 oma agent status <session-id> <agent-id>
@@ -250,7 +241,7 @@ oma agent status <session-id> <agent-id>
 
 ---
 
-## 会话 ID 策略
+## 会话 ID 策略 {#session-id-strategy}
 
 会话 ID 将处理同一功能的智能体归入一组。建议：
 
@@ -267,9 +258,9 @@ oma agent status <session-id> <agent-id>
 
 ---
 
-## 并行执行技巧
+## 并行执行技巧 {#tips-for-parallel-execution}
 
-### 应该做
+### 应该做 {#do}
 
 1. **先锁定 API 契约**。启动实现智能体前运行 `/plan`，让前端和后端智能体对端点、请求与响应模式以及错误格式达成一致。
 
@@ -295,11 +286,11 @@ oma agent status <session-id> <agent-id>
 
 7. **不确定时从 `/work` 开始**。工作流会在每个关卡提供用户确认，引导你逐步完成。
 
-### 不应该做
+### 不应该做 {#do-not}
 
 1. **不要在同一工作区启动智能体**。两个智能体写入同一目录会造成合并冲突并互相覆盖文件。
 
-2. **不要超过 MAX_PARALLEL（默认 3**）。更多并发不一定更快。每个智能体都需要内存和 CPU，默认值适合大多数系统。
+2. **不要超过 MAX_PARALLEL（默认 3）。**更多并发不一定更快。每个智能体都需要内存和 CPU，默认值适合大多数系统。
 
 3. **不要跳过计划步骤**。没有计划就启动智能体，会导致实现错位，例如前端和后端使用不同的 API 形状。
 
@@ -309,7 +300,7 @@ oma agent status <session-id> <agent-id>
 
 ---
 
-## 端到端示例
+## 端到端示例 {#end-to-end-example}
 
 一个用户身份验证功能的完整并行执行工作流：
 
@@ -323,19 +314,33 @@ oma agent spawn backend "Implement JWT auth API with registration, login, refres
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: Monitor in a separate terminal
-# Terminal 2:
-oma dashboard terminal
-
-# Step 4: Wait for all implementation agents
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: Run QA review
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: If QA finds issues, re-spawn specific agents with fixes
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: Re-run QA to verify fixes
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+在智能体工作期间，请在第二个终端中运行仪表板。它会一直运行，直到你按下 Ctrl+C，因此不要把它粘贴到运行启动命令的同一个 shell 中：
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## 另请参阅 {#see-also}
+
+- [智能体结果与恢复](../guide/agent-results-and-resume.md)：运行回执、声明和 `oma agent resume`
+- [仪表板监控](../guide/dashboard-monitoring.md)
+- [多智能体项目指南](../guide/multi-agent-project.md)
+- [按智能体选择模型](../guide/per-agent-models.md)
+- [/orchestrate 工作流](./workflows.md#orchestrate)
+- [CLI 命令参考](../cli-interfaces/commands.md)

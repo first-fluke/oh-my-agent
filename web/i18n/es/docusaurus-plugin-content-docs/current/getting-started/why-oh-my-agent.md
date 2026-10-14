@@ -5,7 +5,7 @@ description: Elige oh-my-agent cuando necesites skills y workflows propiedad del
 
 # Por qué oh-my-agent
 
-oh-my-agent añade una capa propiedad del repositorio alrededor de las CLIs de agentes que ya usa tu equipo. El directorio `.agents/` guarda skills, workflows, definiciones de agentes, reglas y configuración de modelos. Los archivos propios de cada proveedor se generan desde esa fuente de verdad, así que el comportamiento puede revisarse y cambiarse junto con el proyecto.
+oh-my-agent añade una capa propiedad del repositorio alrededor de las CLIs de agentes que ya usa tu equipo. El directorio `.agents/` guarda [skills](./glossary.md#skill), [workflows](./glossary.md#workflow), [definiciones de agentes](./glossary.md#agent-definition), reglas y configuración de modelos. Los archivos propios de cada proveedor se generan desde esa [fuente de verdad](./glossary.md#ssot), así que el comportamiento puede revisarse y cambiarse junto con el proyecto.
 
 ## Elígelo cuando el repositorio necesite una capa de coordinación
 
@@ -22,7 +22,7 @@ Si un proyecto usa un solo host y no necesita skills compartidas, workflows ni e
 
 Ejecuta `oma verify agent <agent-type> --workspace <path>` cuando quieras las comprobaciones correspondientes a un rol de backend, frontend, móvil, QA, depuración o planificación. El verificador combina inspecciones estáticas con comandos configurados, como pruebas, comprobaciones de tipos, comprobaciones SQL o `flutter analyze`; consulta [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). El informe muestra el resultado de cada comprobación. Superar estas comprobaciones no demuestra que una funcionalidad cumpla sus requisitos de producto o dominio, por lo que los criterios de aceptación de la tarea también necesitan revisión.
 
-`/ralph` añade una fase de juez separada cuando eliges ese workflow. Vuelve a comprobar los criterios declarados entre iteraciones y registra los artefactos del workflow; no es una puerta que se ejecute en cada prompt normal. Cargar una skill tampoco inicia todos los workflows ni todos los comandos de verificación.
+`/ralph` añade una fase de [juez](./glossary.md#judge) separada cuando eliges ese workflow. Vuelve a comprobar los criterios declarados entre iteraciones y registra los artefactos del workflow; no es una puerta que se ejecute en cada prompt normal. Cargar una skill tampoco inicia todos los workflows ni todos los comandos de verificación.
 
 ## El despacho permanece visible
 
@@ -37,3 +37,11 @@ Los controles de coordinación opcionales se documentan en el [límite de cuota 
 OMA ofrece al equipo un lugar compartido para definir el enrutamiento, los pasos de ejecución, las comprobaciones y los archivos de salida. A cambio, el equipo debe mantener actualizada la configuración del repositorio y decidir qué workflows o comandos de verificación forman parte de su contrato de aceptación. Esa compensación resulta útil cuando la coherencia entre colaboradores importa más que tener la instalación más pequeña posible.
 
 Para la discusión de posicionamiento original, consulta el [issue #155](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589).
+
+## Próximos pasos
+
+- [Inicio rápido](./quick-start.md): instala, comprueba la configuración y ejecuta una tarea acotada
+- [Valores predeterminados importantes](./important-defaults.md): qué activa el instalador y cómo cambiarlo
+- [Instalación](./installation.md#presets): elige un preset de skills que cubra los workflows que piensas usar
+- [Workflows](../core-concepts/workflows.md): cuándo usar `/work`, `/orchestrate`, `/ultrawork` y `/ralph`
+- [Solución de problemas](../guide/troubleshooting.md): soluciones para problemas de instalación, proveedores y hooks

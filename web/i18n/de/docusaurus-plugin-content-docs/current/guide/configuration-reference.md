@@ -18,18 +18,27 @@ Das erwartete Ergebnis ist ein aufgelöstes Profil mit dem ausgewählten Preset 
 
 ## Welche Datei gewinnt
 
-Der Loader läuft vom aktuellen Verzeichnis aus nach oben und stoppt beim nächsten `.agents/`-Verzeichnis, das eine gemeinsame oder lokale Konfiguration enthält. In diesem Verzeichnis gilt:
+Der Loader liest globale Standardwerte aus `$OMA_HOME/.agents/` (Standard
+`~/.oma/.agents/`), läuft dann vom aktuellen Verzeichnis aus nach oben und stoppt beim
+nächsten `.agents/`-Verzeichnis eines Projekts. In jedem ausgewählten Verzeichnis gilt:
 
-1. `oma-config.cue` wird zuerst ausgewertet.
-2. `oma-config.yaml` wird verwendet, wenn die gemeinsame CUE-Datei fehlt oder nicht ausgewertet werden kann.
-3. Eine lokale Datei (`oma-config.local.cue` oder `.local.yaml`) wird über die gemeinsame Datei zusammengeführt.
-4. Wenn gesetzt, überschreibt `OMA_MODEL_PRESET` `model_preset` für diesen Prozess.
+1. `oma-config.yaml` liefert die gemeinsamen Werte.
+2. `oma-config.cue` überschreibt, sofern vorhanden und gültig, jeden Schlüssel, den es setzt; YAML-Schlüssel, die es nicht setzt, bleiben erhalten. Kann die CUE-Datei nicht ausgewertet werden, gibt OMA eine Warnung aus und verwendet allein die YAML-Datei.
+3. Eine lokale Datei (`oma-config.local.cue` oder `.local.yaml`) wird über das gemeinsame Ergebnis zusammengeführt.
+
+Das gemeinsame/lokale Ergebnis des Projekts überschreibt das globale gemeinsame/lokale Ergebnis.
+Wenn gesetzt, überschreibt `OMA_MODEL_PRESET` `model_preset` nach allen Dateiebenen.
+Die vollständige Reihenfolge, ein Ablaufdiagramm und Hinweise zur Fehlerbehebung finden Sie unter
+[Laden der Konfiguration](/docs/guide/oma-config-semantics#precedence-table).
 
 Maps werden rekursiv zusammengeführt. Arrays, Skalare und `null` ersetzen den gemeinsamen Wert. Beide lokalen Formate gleichzeitig zu behalten ist ein Fehler. Eine fehlerhafte lokale Datei ist fatal, damit eine private Überschreibung nicht still ignoriert wird.
 
-Dies ist eine Regel für die nächste Ebene und keine allgemeine Zusammenführung von Projekt und HOME. Eine globale Installation liest `~/.agents/oma-config.*`, weil HOME ihr Installations-Root ist. Ein Projektbefehl liest die nächste Projektebene. Die Update-Prüfung für `auto_update_cli` ist die Ausnahme: Sie prüft Projekt, dann HOME und verwendet danach den aktivierten Standardwert.
+Verschiedene übergeordnete Projektstämme werden nicht zusammengeführt. Auch ein leeres nächstgelegenes
+`.agents/` eines Projekts setzt diese Grenze. Die ausgemusterte Installation unter `~/.agents/`
+ist Eingabe für die Migration und wird nicht als Projekt-Fallback gelesen. Globale Standardwerte ändern
+weder die Identität noch den Speicherbereich des aktuellen Projekts.
 
-## Schlüssel der obersten Ebene
+## Schlüssel der obersten Ebene {#top-level-keys}
 
 Die folgenden Schlüssel werden vom aktuellen Laufzeitschema oder von ausgelieferten OMA-Konsumenten gelesen. Ein als „sparsam“ markierter Schlüssel ist absichtlich teilweise: Lassen Sie einen verschachtelten Wert weg, um den Code-Standard beizubehalten.
 
@@ -43,14 +52,14 @@ Die folgenden Schlüssel werden vom aktuellen Laufzeitschema oder von ausgeliefe
 | `telemetry` | boolean | `false` | Opt-in für Vendor-Telemetrie bei Installation, Update und Link-Abgleich. |
 | `model_preset` | nichtleerer String | `auto` in neuen Templates | Integriertes oder benutzerdefiniertes Modell-Preset. `OMA_MODEL_PRESET` überschreibt es für einen Prozess. |
 | `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | FreeLLMAPI-Einstellungen beim Preset `free`; `FREELLM_BASE_URL` und `FREELLM_MODEL` überschreiben Werte aus der Datei, und der Schlüsselname enthält nie das Secret. Siehe [Modellkonfiguration pro Agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Dokumentations-, Such-, Code-Intelligence- und semantische Speicher-Provider auswählen. Code Intelligence akzeptiert `serena` oder `gortex`; semantischer Speicher akzeptiert `agentmemory`, `honcho` oder `none`. `code_intelligence_guard` (`block` oder `off`) steuert den PreToolUse-Such-Guard. Native Suchen, die auf bestätigte Provider-Ausschlüsse oder Pfade außerhalb des Projekts beschränkt sind, sind ohne Bypass erlaubt. Der Guard liest Serena-Ausschlüsse und aktivierte gitignore-Regeln oder die Ausschlussliste von Gortex; er leitet Abhängigkeiten nicht aus Verzeichnisnamen ab. Der Hook nennt `OMA_CI_ALLOW_NATIVE` nicht. Eine Shell-Suche mit dem Präfix `OMA_CI_ALLOW_NATIVE=1` umgeht den Guard nur für Ressourcen außerhalb des Projekts oder für ignorierte Pfade, die der Guard nicht erkannt hat, nicht aber für Projektquellcode. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Dokumentations-, Such-, Code-Intelligence- und semantische Speicher-Provider auswählen. Siehe [Provider](#providers). |
 | `brave` | `api_key_env` oder `api_key_vault` | nicht gesetzt | Referenz auf das Brave-Such-Credential. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Siehe [Honcho-Details](#honcho-semantic-memory) | Verbindungseinstellungen für den semantischen Honcho-Speicher. |
 | `agents` | Agenten-ID → `model`, optional `effort`, `thinking`, `memory` | Preset-Auflösung | Pro-Agent-Überschreibungen über dem ausgewählten Preset. Effort ist `none`, `low`, `medium`, `high` oder `xhigh`; Memory ist `user`, `project` oder `local`. |
 | `models` | Modell-Slug → CLI-Zuordnung | nicht gesetzt | Inline-Modelldefinitionen für unterstützte Vendor-CLIs. |
 | `custom_presets` | Preset → Beschreibung, optional `extends`, `agent_defaults` | nicht gesetzt | Benutzerdefinierte Presets; `extends` kann von einem integrierten Preset erben. |
-| `vendors` | YAML: `string[]` ausgewählter Vendor-IDs; CUE-Template: optionale Fallback-Map `vendors.pi` | alle verknüpfbaren Vendors für die YAML-Liste | Wählt, welche Vendor-Integrationen `oma install` und `oma update` in YAML projizieren. Die Dispatch-Fähigkeitsmap liegt in der verwalteten Orchestrierungskonfiguration; siehe [Vendor-Auswahl und Dispatch-Metadaten](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | string | Consumer-Fallback | Legacy-Fallback nur für den Vendor, wenn kein Modellplan aufgelöst wird. |
+| `vendors` | YAML: `string[]` ausgewählter Vendor-IDs; CUE-Template: optionale Fallback-Map `vendors.pi` | fehlt: `oma link` verwendet jeden verknüpfbaren Vendor, `oma update` verwendet Vendors, deren Projektverzeichnisse existieren | Wählt, welche Vendor-Integrationen `oma install` und `oma update` in YAML projizieren. Die Dispatch-Fähigkeitsmap liegt in der verwalteten Orchestrierungskonfiguration; siehe [Vendor-Auswahl und Dispatch-Metadaten](#vendor-selection-and-dispatch-metadata). |
+| `default_cli` | Vendor-ID (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` für den Transport `free` | Vendor, der verwendet wird, wenn nichts anderes einen auswählt: eine nicht erkannte Laufzeit unter `auto` oder der Transport `free` nach `--vendor`, `OMA_RUNTIME_VENDOR` und der erkannten Laufzeit. Siehe [Wie OMA Modell und CLI eines Agenten auflöst](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
 | `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | Jede ausgelassene Dimension ist unbegrenzt | Harte Token- und Spawn-Limits vor dem nächsten Agenten-Spawn; siehe [Session-Quota-Limits](#session-quota-caps). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Verhalten und Scan-Ausschlüsse von `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena-MCP-Transport und Update-Verhalten. |
@@ -73,9 +82,25 @@ Das ausgelieferte Template enthält außerdem Blöcke im Besitz einzelner Konsum
 | `refactor_guard` | `enabled`, `max_lines` | `false`, `500` | Aktiviert optional den Zeilenbudget-Guard des Stop-Hooks und setzt das Codebudget pro Datei. |
 | `scm` | `conventional_commits`, `branching_strategy`, `require_pr_for_default_branch`, `co_author.*`, `forbidden_patterns`, `allowed_exceptions` | Das ausgelieferte Template aktiviert Conventional Commits und PR-Schutz sowie seine Co-Author- und Dateinamenlisten | Steuert SCM-Skill, Commit-Hook und Secret-Pattern-Guard. Ersetzen Sie die Identitätswerte des Templates durch Ihre eigenen, bevor Sie Co-Author-Trailer aktivieren. |
 
-Diese Blöcke werden über den Konfigurations-Passthrough akzeptiert und von ihrem Feature oder Workflow interpretiert. Der Parser von `serena_reaper` liest die oben gezeigten snake_case-Schlüssel, obwohl ältere Template-Kommentare camelCase-Namen verwendeten. Lesen Sie vor dem Hinzufügen verschachtelter Schlüssel den entsprechenden Feature-Leitfaden; diese Seite erfindet keine Schlüssel außerhalb der hier aufgeführten Konsumenten.
+Diese Blöcke werden über den Konfigurations-Passthrough akzeptiert und von ihrem Feature oder Workflow interpretiert. Der Parser von `serena_reaper` liest nur die oben gezeigten snake_case-Schlüssel und ignoriert camelCase. Die ausgelieferten Templates zeigen weiterhin camelCase (`keepWarm`, `idleMinutes`, `graceSeconds`), und das ausgelieferte CUE-Schema lehnt die snake_case-Schlüssel innerhalb seines Schemablocks ab (`field not allowed`). Setzen Sie sie daher in `oma-config.yaml` oder einem lokalen YAML-Overlay. Lesen Sie vor dem Hinzufügen verschachtelter Schlüssel den entsprechenden Feature-Leitfaden; diese Seite erfindet keine Schlüssel außerhalb der hier aufgeführten Konsumenten.
 
 ## Genaue verschachtelte Objekte
+
+### Provider {#providers}
+
+`providers` wählt einen Provider pro Fähigkeit aus:
+
+| Schlüssel | Akzeptierte Werte | Standardwert |
+| --- | --- | --- |
+| `docs` | `context7` | `context7` |
+| `web` | ID eines Such-Providers (Kleinbuchstaben, Ziffern, `_`, `-`), etwa `native` oder `brave` | `native` |
+| `code_intelligence` | `serena`, `gortex` | `serena` |
+| `code_intelligence_guard` | `block`, `off` | `block` |
+| `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
+
+`code_intelligence_guard` steuert den PreToolUse-Such-Guard. Native Suchen, die auf bestätigte Provider-Ausschlüsse oder Pfade außerhalb des Projekts beschränkt sind, sind ohne Bypass erlaubt. Der Guard liest Serena-Ausschlüsse und aktivierte gitignore-Regeln oder die Ausschlussliste von Gortex; er leitet Abhängigkeiten nicht aus Verzeichnisnamen ab.
+
+Der Hook nennt `OMA_CI_ALLOW_NATIVE` nicht. Eine Shell-Suche mit dem Präfix `OMA_CI_ALLOW_NATIVE=1` umgeht den Guard nur für Ressourcen außerhalb des Projekts oder für ignorierte Pfade, die der Guard nicht erkannt hat, nicht aber für Projektquellcode.
 
 ### Semantischer Honcho-Speicher {#honcho-semantic-memory}
 
@@ -113,7 +138,7 @@ Der Installer verwendet `http://127.0.0.1:8000` als anfängliche URL, wenn Honch
 
 ### Session-Quota-Limits {#session-quota-caps}
 
-`session.quota_cap` ist eine teilweise Map. Jedes Feld ist optional; ein fehlendes Feld lässt diese Dimension unbegrenzt. Werte müssen nichtnegative Ganzzahlen sein, und `per_vendor` ordnet Vendor-Namen Tokenbudgets zu:
+`session.quota_cap` ist eine teilweise Map. Jedes Feld ist optional; ein fehlendes Feld lässt diese Dimension unbegrenzt. Werte müssen nichtnegative Ganzzahlen ohne `_`-Trennzeichen sein (YAML liest `2_000_000` als String, wodurch diese Dimension unbegrenzt bleibt). `per_vendor` ordnet Dispatch-Vendor-IDs wie `claude`, `codex` oder `antigravity` Tokenbudgets zu:
 
 ```yaml
 session:
@@ -138,7 +163,7 @@ vendors:
   - pi
 ```
 
-Eine fehlende oder leere Liste wählt alle IDs aus OMAs Registry verknüpfbarer Vendors. Die Liste steuert Installations-/Update-Projektionen; sie ist nicht die Fähigkeitsmap für die Befehle der einzelnen Vendors.
+Eine Liste wählt genau diese Vendors aus, und `vendors: []` wählt keinen aus. Ohne den Schlüssel `vendors` zielt `oma link` auf jeden Vendor in OMAs Registry verknüpfbarer Vendors, während `oma update` nur Vendors anspricht, deren Projektverzeichnisse bereits existieren. Die Liste steuert Installations-/Update-Projektionen; sie ist nicht die Fähigkeitsmap für die Befehle der einzelnen Vendors.
 
 Das ausgelieferte `.agents/oma-config.cue`-Schema erlaubt außerdem ein Objekt `vendors.pi` mit den Feldern `command`, `prompt_flag`, `model_flag`, `default_model` und `thinking_flag`. Dieser Block ist eine typisierte Fallback-Form im CUE-Template. Der aktuelle Agenten-Dispatch löst seine Fähigkeitsfelder jedoch aus der verwalteten Orchestrierungs-Registry unten auf. Verwenden Sie `vendors.pi` daher nicht als Ersatz für die YAML-Auswahlliste.
 
@@ -162,13 +187,19 @@ Die verwaltete Fähigkeitsdatei wird durch OMA-Updates neu erzeugt. Bearbeiten S
 
 ## Häufige Änderungen
 
-Wählen Sie für ein Projekt ein festes Preset und halten Sie persönliche Überschreibungen lokal:
+Wählen Sie für ein Projekt ein festes Preset und halten Sie persönliche Überschreibungen lokal.
+
+**Gemeinsame Datei** (eingecheckt):
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
 model_preset: mixed
+```
 
+**Lokales Overlay** (von Git ignoriert):
+
+```yaml
 # .agents/oma-config.local.yaml
 agents:
   backend:
@@ -193,7 +224,7 @@ mcp:
   devtools_browsers: []
 ```
 
-## Regeln für Updates und Zuständigkeit
+## Regeln für Updates und Zuständigkeit {#update-and-ownership-rules}
 
 `.agents/oma-config.yaml` gehört dem Benutzer. `oma update` bewahrt vorhandene Inhalte und kann neue, ausgelieferte Schlüssel der obersten Ebene unter einer Markierung `# Added by oma update` ergänzen. `oma update --force` kann Benutzerkonfiguration, MCP-Konfiguration und Stack-Verzeichnisse ersetzen. Verwenden Sie es nur, wenn das Zurücksetzen dieser Anpassungen beabsichtigt ist. Lokale Overlay-Dateien bleiben der private Ort für maschinenspezifische Werte.
 

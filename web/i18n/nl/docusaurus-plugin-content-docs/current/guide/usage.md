@@ -9,18 +9,29 @@ description: Gebruiksgids voor OMA met taakselectie vanuit de lezer, voorbeelden
 ## Snelstart
 
 1. Open je project in een geselecteerde AI-IDE of CLI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen of een andere ondersteunde host).
-2. De geselecteerde host kan skills uit `.agents/skills/` laden; ingeschakelde hooks kunnen workflows detecteren aan de hand van natural-language-keywords.
+2. De geselecteerde host kan [skills](../getting-started/glossary.md#skill) uit `.agents/skills/` laden; ingeschakelde hooks kunnen [workflows](../getting-started/glossary.md#workflow) detecteren aan de hand van natural-language-keywords.
 3. Beschrijf in natuurlijke taal wat je wilt. De host of de geselecteerde workflow routeert de taak naar de relevante skill.
 4. Gebruik voor multi-agentwerk `/work` of `/orchestrate`.
 
-Voor single-domaintaken is geen speciale syntax nodig. Gebruik de [gids voor skill- en workflowselectie](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) om te kiezen tussen één skill, `/work`, `/orchestrate`, `/ultrawork` en `/ralph`. Zie [Quick Start](../getting-started/quick-start.md) voor de setup en [Important Defaults](../getting-started/important-defaults.md) vóór je providers wijzigt.
+Voor single-domaintaken is geen speciale syntax nodig. Gebruik de [gids voor skill- en workflowselectie](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) om te kiezen tussen één skill, `/work`, `/orchestrate`, `/ultrawork` en `/ralph`. Zie [Snel starten](../getting-started/quick-start.md) voor de setup en [Important Defaults](../getting-started/important-defaults.md) vóór je providers wijzigt.
+
+## Kies een gids
+
+| Je taak | Begin met | Gids |
+|-----------|------------|-------|
+| Eén wijziging in één domein | Een gewone prompt (skillroutering) | [Single Skill](./single-skill.md) |
+| Een feature over API, UI, mobile of database | `/work` (stap voor stap) of `/orchestrate` (geautomatiseerd) | [Multi-Agent Projects](./multi-agent-project.md) |
+| Een bug met een foutmelding | `/debug` plus de fout en reproductiestappen | [Bug Fixing](./bug-fixing.md) |
+| Agenten volgen terwijl ze draaien | `oma dashboard terminal` | [Dashboardmonitoring](./dashboard-monitoring.md) |
+| Agentresultaten auditen of hervatten | `oma agent resume SESSION_ID --dry-run` | [Results and Resume](./agent-results-and-resume.md) |
+| Er is iets misgegaan | `oma doctor --json` | [Probleemoplossing](./troubleshooting.md) |
 
 ---
 
 ## Voorbeeld 1: eenvoudige single task
 
 **Je typt:**
-```
+```text
 Create a login form component with email and password fields, client-side validation, and accessible labels using Tailwind CSS
 ```
 
@@ -30,10 +41,9 @@ Create a login form component with email and password fields, client-side valida
 2. Laag 1 (`SKILL.md`) is al geladen met agentidentiteit, kernregels en bibliothekenlijst.
 3. Laag 2-resources worden op aanvraag geladen:
    - `execution-protocol.md`: de workflow met 4 stappen (Analyze, Plan, Implement, Verify)
-   - `snippets.md`: patronen voor formulier + Zod-validatie
-   - bestaande componentpatronen en `snippets.md` wanneer de skill die aanlevert
+   - `snippets.md`: patronen voor formulieren en Zod-validatie, plus bestaande componentpatronen wanneer de skill die aanlevert
 4. De agent produceert een **CHARTER_CHECK**:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -57,7 +67,7 @@ Create a login form component with email and password fields, client-side valida
 ## Voorbeeld 2: multi-domeinproject
 
 **Je typt:**
-```
+```text
 Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ```
 
@@ -68,38 +78,40 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 **Met `/work` (stap voor stap met gebruikerscontrole):**
 
-```
+```text
 /work Build a TODO app with user authentication, task CRUD, and a mobile app
 ```
 
 3. **Stap 1, PM Agent plant:**
    - Identificeert domeinen: backend (auth API, task CRUD), frontend (login, task list UI), mobile (Flutter-app)
    - Definieert API-contracten: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /tasks`, `POST /tasks`, `PUT /tasks/:id`, `DELETE /tasks/:id`
-   - Maakt geprioriteerde taakverdeling:
-     - P0: Backend auth API, Backend task CRUD API
-     - P1: frontend-login/registratie, frontend-taaklijst, mobiele authschermen, mobiele taaklijst
-     - P2: QA-review
+   - Maakt een taakverdeling per prioriteitstier (lagere tiers draaien eerst):
+     - Tier 1: Backend auth API, Backend task CRUD API
+     - Tier 2: frontend-login/registratie, frontend-taaklijst, mobiele authschermen, mobiele taaklijst
+     - Tier 3: QA-review
    - Slaat op in `.agents/results/plan-{sessionId}.json`
 
 4. **Stap 2, Plan reviewen:** De agent presenteert het plan en gaat verder binnen de bestaande autorisatie. Hij vraagt alleen naar een materiële ontbrekende beslissing of nieuwe autorisatie.
 
-5. **Stap 3, Agenten spawnen per prioriteit:**
+5. **Stap 3, Agenten spawnen per prioriteitstier:**
    ```bash
-   # P0 tier (parallel)
-   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent spawn db "User and task schema design" session-todo-01 &
+   # Tier 1 (parallel). Task IDs come from .agents/results/plan-session-todo-01.json
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 --task-id api-auth -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 --task-id db-schema &
    wait
 
-   # P1 tier (parallel, after P0 completes)
-   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   # Tier 2 (parallel, after tier 1 completes)
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 --task-id web-ui -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 --task-id mobile-ui -w ./apps/mobile &
    wait
    ```
+
+   `--task-id` moet overeenkomen met een taak-`id` in het sessieplan; zonder deze optie valt de taak-ID terug op de agent-ID, en een geplande sessie weigert een ID die er niet in staat (`Unknown plan task`). Ad-hocsessies zonder plan kunnen de optie weglaten.
 
 6. **Stap 4, QA-agent reviewt:**
    - Beveiliging: OWASP Top 10-compliance (JWT-validatie, CSRF, SQL-injectiecontrole)
    - Prestaties: N+1-querycontrole, paginering verifiëren
-   - Toegankelijkheid: WCAG 2.1 AA voor alle frontendcomponenten
+   - Toegankelijkheid: WCAG 2.2 AA voor alle frontendcomponenten
    - Cross-domain: API-contractafstemming tussen frontend, mobile en backend
 
 7. **Stap 5, Itereren:** Als QA CRITICAL-issues vindt, spawn je de verantwoordelijke agent opnieuw met het QA-rapport.
@@ -109,7 +121,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ## Voorbeeld 3: bugfixing
 
 **Je typt:**
-```
+```text
 There's a bug. Clicking the save button shows "Cannot read property 'map' of undefined" in the task list
 ```
 
@@ -140,7 +152,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 ## Voorbeeld 4: designsysteem
 
 **Je typt:**
-```
+```text
 Design a dark premium landing page for my B2B SaaS analytics product
 ```
 
@@ -186,7 +198,7 @@ oma link claude codex antigravity
 
 # Monitor while agents work (separate terminal)
 oma dashboard terminal        # Terminal UI with live table
-oma dashboard web    # Web UI at http://localhost:9847
+oma dashboard web             # Web UI; prints http://127.0.0.1:9847/
 
 # After implementation, run QA
 oma agent spawn qa "Review notification feature across all platforms" session-notif-01
@@ -209,7 +221,7 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 ## Voorbeeld 6: ultrawork voor maximale kwaliteit
 
 **Je typt:**
-```
+```text
 /ultrawork Build a payment processing module with Stripe integration
 ```
 
@@ -262,6 +274,7 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 | `/brainstorm` | Niet-persistent | Design-first ideevorming met 2-3 benaderingen | Vóór je een implementatieaanpak vastlegt |
 | `/deepinit` | Niet-persistent | Volledige projectinitialisatie (AGENTS.md, ARCHITECTURE.md, docs/) | oh-my-agent in een bestaande codebase instellen |
 | `/review` | Niet-persistent | QA-pipeline: OWASP-security, prestaties, toegankelijkheid en codekwaliteit | Vóór code mergen of deployen |
+| `/security` | Niet-persistent | Applicatiebroncode, agent-skills of MCP-componenten scannen; afgebakende web-penetratietests tegen een testdeployment draaien; bevindingen valideren en security gates configureren via `oma-security` | Vóór een release, of wanneer een wijziging een securityscan of gate nodig heeft |
 | `/debug` | Niet-persistent | Gestructureerd debuggen: reproduceren, diagnosticeren, fixen, regressietest en scan | Bugs en fouten onderzoeken |
 | `/design` | Niet-persistent | Designworkflow met 7 fasen die DESIGN.md met tokens oplevert | Designsysteem, landingspagina of UI-redesign maken |
 | `/scm` | Niet-persistent | SCM-workflow voor Git (branch/merge/conflict/worktree/baseline) plus Conventional Commit-generatie met automatische type-/scopedetectie en featuresplitsing | Na codewijzigingen of bij repository configuration management |
@@ -274,7 +287,7 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 | `/recap` | Niet-persistent | Werk samenvatten uit ondersteunde AI-toolgeschiedenissen | Dagelijkse of periodieke retrospective |
 | `/schedule` | Niet-persistent | Terugkerende agentjobs registreren | Nachtelijke recaps, scans of housekeeping |
 | `/video` | Niet-persistent | Reproduceerbare video's samenstellen uit script, narratie en visuals | Shorts, explainers en demo's |
-| `/ralph` | Persistent | Ultrawork herhalen met een onafhankelijke judge en lusbeveiligingen | Expliciet herhalen tot mechanische voltooiingscriteria slagen |
+| `/ralph` | Persistent | Ultrawork herhaald uitvoeren met een geprompte judge en lusbeveiligingen | Expliciet herhalen tot mechanische voltooiingscriteria slagen |
 
 ---
 
@@ -330,7 +343,7 @@ De `all`-preset van de installer volgt de live registry. De tabel groepeert elke
 | **oma-coordination** | Handmatige multi-agentcoördinatie | Stapsgewijze taak- en handoffgids |
 | **oma-db** | Schemadesign, ERD, querytuning, capaciteitsplanning | Schemasdocumentatie, migraties en herstelplan |
 | **oma-debug** | Bugreproductie en grondoorzaakanalyse | Minimale fix, regressiebewijs en patroonscan |
-| **oma-deepsec** | Agentgestuurd kwetsbaarheidsscannen | Scan-, triage-, revalidatie- en gaterapporten |
+| **oma-security** | Securityscans van broncode, agent-skills en MCP; afgebakende web-penetratietests | Gevalideerde bevindingen en configuratie van scan-gates |
 | **oma-design** | Designsysteem, landingspagina, tokens | `DESIGN.md`, tokens en componentguidance |
 | **oma-dev-workflow** | CI/CD, monorepo's, migraties, releaseautomatisering | Workflowconfiguratie en releasechecks |
 | **oma-docs** | Kapotte verwijzingen en documentatiedrift | Verificatierapport of diffgerichte synckandidaten |
@@ -361,37 +374,21 @@ De `all`-preset van de installer volgt de live registry. De tabel groepeert elke
 
 ## Dashboard instellen
 
-### Terminaldashboard
-
 ```bash
-oma dashboard terminal
+oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
+oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Toont een live bijgewerkte tabel in je terminal:
-- Sessie-ID en algemene status (RUNNING / COMPLETED / FAILED)
-- Rijen per agent: status, aantal beurten, laatste activiteit, verstreken tijd
-- Bewaakt `.agents/state/memories/` op realtime voortgangsupdates
+Beide commando's bewaken `.agents/state/memories/` onder de huidige directory. Geef `--project-root <path>` mee om een ander project te bewaken, of stel `MEMORIES_DIR` in. De agenttabel heeft vier kolommen:
 
-### Webdashboard
+| Kolom | Bron |
+|--------|--------|
+| Agent | `task-board.md`, of agentnamen die in geheugenbestanden zijn gevonden |
+| Status | Terminalsymbolen: ● running (groen), ✓ completed (cyaan), ✗ failed (rood), ○ blocked (geel), ◌ pending (gedimd) |
+| Turn | `turn: N` in het `progress-<agent>*.md`-bestand van de agent |
+| Task | Taaktekst uit het task board of het bestand van de agent |
 
-```bash
-oma dashboard web
-# Opens http://localhost:9847
-```
-
-Mogelijkheden:
-- Realtime updates via WebSocket (geen handmatige refresh)
-- Automatisch opnieuw verbinden na verbindingsverlies
-- Sessiestatus met gekleurde agentindicatoren (groen=complete, geel=running, rood=failed)
-- Activity-log streaming uit progress- en resultaatbestanden
-- Historische sessiedata
-
-### Aanbevolen indeling
-
-Gebruik 3 terminals:
-1. **Dashboardterminal:** `oma dashboard terminal` voor continue monitoring
-2. **Commandoterminal:** agent spawn- en workflowcommando's
-3. **Buildterminal:** testruns, buildlogs en Git-bewerkingen
+Onder de tabel tonen beide dashboards de laatste activiteit uit de vijf meest recent gewijzigde geheugenbestanden. Indelingen, databronnen en herstelstappen staan in [Dashboardmonitoring](./dashboard-monitoring.md).
 
 ---
 
@@ -421,7 +418,7 @@ Wanneer je `oma agent spawn` draait, doet de CLI het volgende:
 
 ### Projectgeheugenopslag
 
-Agenten coördineren via duurzame bestanden in `.agents/state/memories/` (oudere projecten vallen terug op `.serena/memories/`). De orchestrator schrijft rungebonden sessie- en task-boardbestanden. Elke run schrijft `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` en `result-{agentId}-{taskId}-{runId}-{sessionId}.md` wanneer Markdown-output aanstaat; gestructureerde receipts en claims in `.agents/state/agent-runs/` zijn leidend voor CLI-spawns. Agenten lezen en schrijven deze bestanden met hun native tools; de toolmapping blijft configureerbaar in `.agents/mcp.json → memoryConfig.tools`.
+Agenten coördineren via duurzame bestanden in `.agents/state/memories/` (oudere projecten vallen terug op het legacy-pad `.serena/memories/`). De orchestrator schrijft rungebonden sessie- en task-boardbestanden. Elke run schrijft `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` en `result-{agentId}-{taskId}-{runId}-{sessionId}.md` wanneer Markdown-output voor voortgang of resultaten aanstaat; gestructureerde receipts en claims in `.agents/state/agent-runs/` zijn leidend voor CLI-spawns. Agenten lezen en schrijven deze bestanden met hun native tools; de toolmapping blijft configureerbaar in `.agents/mcp.json → memoryConfig.tools`.
 
 ### Werkruimtes
 
@@ -449,27 +446,40 @@ De vlag `-w` bij `agent spawn` isoleert een agent in een specifieke directory. D
 
 8. **Draai `/deepinit` op nieuwe codebases.** Die opdracht maakt AGENTS.md en ARCHITECTURE.md zodat alle agenten de projectstructuur begrijpen.
 
-9. **Configureer `model_preset`.** Begin met `auto`, kies een vaste preset zoals `claude`, `antigravity`, `codex`, `qwen`, `cursor`, `kiro` of `mixed`, of gebruik `free` met de lokale gateway. Voeg `agents:`-overrides toe voor fijnmazige controle. Zie [Per-Agent Models](./per-agent-models.md).
+9. **Configureer `model_preset`.** Begin met `auto`, kies een vaste preset zoals `claude`, `antigravity`, `codex`, `qwen`, `cursor`, `kiro` of `mixed`, of gebruik `free` met de lokale gateway. Voeg `agents:`-overrides toe voor fijnmazige controle. Zie [Modellen per agent](./per-agent-models.md).
 
 10. **Gebruik `/ultrawork` wanneer je expliciet het volledige reviewproces wilt.** De workflow met 5 fasen draait 12 geïsoleerde reviewstappen; alleen skills laden voert die checks niet uit.
 
 ---
 
-## Probleemoplossing
+## Probleemoplossing {#troubleshooting}
+
+Hieronder staan veelvoorkomende problemen. Zie [Probleemoplossing](./troubleshooting.md) voor foutmeldingen, mislukte runresultaten, schedules en hooks.
 
 | Probleem | Oorzaak | Oplossing |
 |---------|-------|-----|
 | Skills worden niet gedetecteerd in de IDE | `.agents/skills/` ontbreekt of bevat geen `SKILL.md`-bestanden | Draai de installer (`bunx oh-my-agent@latest`), controleer symlinks in `.claude/skills/` en start de IDE opnieuw |
-| CLI niet gevonden bij spawnen | Geselecteerde AI-CLI is niet geïnstalleerd of staat niet op `PATH` | Draai `which <selected-cli>` (bijvoorbeeld `claude`, `codex`, `agy`, `qwen` of `kiro`), open een nieuwe shell of installeer volgens de installatiegids |
+| CLI niet gevonden bij spawnen | Geselecteerde AI-CLI is niet geïnstalleerd of staat niet op `PATH` | Draai `which <selected-cli>` (bijvoorbeeld `claude`, `codex`, `agy`, `qwen` of `kiro-cli`), open een nieuwe shell of installeer volgens de installatiegids |
 | Agenten produceren conflicterende code | Geen werkruimte-isolatie | Gebruik aparte werkruimtes: `-w ./apps/api`, `-w ./apps/web` |
-| Dashboard toont "No agents detected" | Agenten hebben nog niet naar geheugen geschreven | Wacht tot ze starten (eerste write bij beurt 1), of controleer of de sessie-ID klopt |
-| Webdashboard start niet | Dependencies zijn niet geïnstalleerd | Voer eerst `bun install` uit in de map `web/` |
+| Dashboard toont "No agents detected yet" | Agenten hebben nog niet naar geheugen geschreven, of het dashboard bewaakt een andere directory | Wacht op het eerste progressbestand; draai vanuit de projectroot of geef `--project-root <path>` mee |
+| `oma dashboard web` stopt met "port 9847 is already in use" | Een ander proces bezet de poort | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA-rapport heeft 50+ issues | Normaal bij een eerste review van grote codebases | Richt je eerst op CRITICAL en HIGH. Documenteer MEDIUM/LOW voor latere sprints |
 | Autodetectie activeert de verkeerde workflow | Ambiguïteit in keywords | Gebruik een expliciet `/command` in plaats van natural language. Meld false triggers ter verbetering |
-| Persistente workflow stopt niet | Statebestand bestaat nog | Zeg "workflow done" in de chat, of verwijder het statebestand handmatig uit `.agents/state/` |
+| Persistente workflow stopt niet | Statusbestand bestaat nog | Zeg "workflow done" in de chat, of verwijder het statusbestand handmatig uit `.agents/state/` |
 | Agent is geblokkeerd op HIGH-clarification | Requirements zijn te ambigue | Geef de gevraagde antwoorden en voer daarna opnieuw uit |
 | MCP-tools werken niet | Serena is niet geconfigureerd of draait niet | Voer `oma doctor` uit om de MCP-configuratie te controleren |
 | Agent overschrijdt uitvoeringsbudget | Taak is te complex voor één run | Deel de taak op, gebruik een workflow met expliciete taakgrenzen of retry met een smallere acceptatie-omschrijving |
-| Verkeerde CLI voor agent gebruikt | `model_preset` niet geconfigureerd of agentoverride ontbreekt | Voer `oma install` uit om te configureren, of stel `model_preset` in `oma-config.yaml` in. Zie [Per-Agent Models](./per-agent-models.md). |
+| Verkeerde CLI voor agent gebruikt | `model_preset` niet geconfigureerd of agentoverride ontbreekt | Voer `oma install` uit om te configureren, of stel `model_preset` in `oma-config.yaml` in. Zie [Modellen per agent](./per-agent-models.md). |
 
-Zie voor single-domaintaken de [Single Skill Guide](./single-skill.md). Zie voor projectintegratie de [Integration Guide](./integration.md).
+---
+
+## Volgende stappen
+
+- Eén wijziging in één domein: [Single Skill](./single-skill.md)
+- Een feature over meerdere domeinen: [Multi-Agent Projects](./multi-agent-project.md)
+- Een bug met een foutmelding: [Bug Fixing](./bug-fixing.md)
+- Een run volgen: [Dashboardmonitoring](./dashboard-monitoring.md)
+- Agentresultaten auditen of hervatten: [Results and Resume](./agent-results-and-resume.md)
+- Er is iets misgegaan: [Probleemoplossing](./troubleshooting.md)
+- Details over projectintegratie: [Integratiegids](./integration.md)
+- Termen die in deze gidsen worden gebruikt: [Woordenlijst](../getting-started/glossary.md)

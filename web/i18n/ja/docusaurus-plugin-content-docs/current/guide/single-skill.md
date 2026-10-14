@@ -15,7 +15,7 @@ description: oh-my-agentで単一ドメインのタスクを実行するため�
 3. 選択したスキルがリポジトリを調査し、アクティブな実行コントラクトで`CHARTER_CHECK`が必要な場合はスコープを示し、実際に実行したチェックを報告します。
 4. タスクがAPI、UI、データベース、モバイルの境界をまたぐようになったら、単一スキルの実行を止めて`/work`または`/orchestrate`に切り替えます。
 
-管理対象の実行が停止した場合は、`oma agent status <session-id> [agent-id]`を使ってから、`.agents/state/agent-runs/`のレシートと注入されたclaimパスを確認して再試行します。プロバイダーと復旧の動作については、[重要なデフォルト設定](../getting-started/important-defaults.md)を参照してください。
+管理対象の実行が停止した場合は、`oma agent status <session-id> [agent-id]`を使ってから、`.agents/state/agent-runs/`の受領記録と注入された申告パスを確認して再試行します。プロバイダーと復旧の動作については、[重要なデフォルト](../getting-started/important-defaults.md)を参照してください。
 
 ---
 
@@ -49,7 +49,7 @@ description: oh-my-agentで単一ドメインのタスクを実行するため�
 
 ## プリフライトチェックリスト
 
-プロンプトを作成する前に、以下の4つの質問に答えます。これは[プロンプト構造](/docs/core-concepts/skills)の4要素に対応します。
+プロンプトを作成する前に、以下の4つの質問に答えます。
 
 | 要素 | 質問 | 重要な理由 |
 |---------|----------|----------------|
@@ -112,10 +112,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **難易度評価：** Medium（2〜3ファイル。バリデーションUXについていくつか設計判断があります）。
 3. **ロードされるリソース：**
    - `execution-protocol.md`（常にロード）
-   - `snippets.md`（フォーム + Zodパターン）
-   - スキルから提供される場合は既存コンポーネントのパターンと`snippets.md`
+   - `snippets.md`（フォームとZodのパターン。スキルが提供する場合は既存コンポーネントのパターンも含む）
 4. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -166,7 +165,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - 対応する`stack/tech-stack.md`またはvariantのtech-stack参照
 <!-- oma-docs:ignore-end -->
 5. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -175,7 +174,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
    ```
 6. **実装：**
-   - Repository：パラメータ化クエリを使う`TaskRepository.find_by_user(user_id, cursor, status, limit)`
+   - Repository：パラメーター化クエリを使う`TaskRepository.find_by_user(user_id, cursor, status, limit)`
    - Service：`TaskService.get_user_tasks(user_id, cursor, status, limit)`（ビジネスロジックのラッパー）
    - Router：JWT認証ミドルウェア、入力バリデーション、レスポンス整形を備えた`GET /api/tasks`
    - Tests：認証必須なら401、ページネーションなら正しいカーソル、フィルターが機能し、空の結果なら空配列を含む200
@@ -205,7 +204,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md`（画面テンプレート、Riverpodプロバイダーパターン）
    - `screen-template.dart`
 4. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -248,7 +247,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`
    - `anti-patterns.md`（最適化時のレビュー）
 4. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -271,14 +270,16 @@ Add deliverables: data standards table, glossary, migration script.
 
 ## 品質ゲートチェックリスト
 
+エージェントが成果物を提出したら、受け入れる前に次の項目を確認します。
+
 ### 全エージェント共通
 
 - [ ] **動作が受入基準に合致**: プロンプトのすべての基準を満たしている
-- [ ] **テストがハッピーパスと主要なエッジケースをカバー**
+- [ ] **テストがハッピーパスと主要なエッジケースをカバー**: ハッピーパスだけではない
 - [ ] **無関係なファイル変更なし**: タスクに関連するファイルのみ変更
 - [ ] **共有モジュールが壊れていない**: インポート、型、インターフェースが正常
 - [ ] **チャーターが遵守された**: 「Must NOT do」の制約が守られている
-- [ ] **lint、typecheck、ビルドがパス**
+- [ ] **lint、typecheck、ビルドがパス**: プロジェクトの標準チェックを実行する
 
 ### フロントエンド固有
 
@@ -292,36 +293,51 @@ Add deliverables: data standards table, glossary, migration script.
 ### バックエンド固有
 
 - [ ] クリーンアーキテクチャ維持：ルートハンドラにビジネスロジックなし
-- [ ] すべての入力がバリデーション済み
-- [ ] パラメータ化クエリのみ（SQLでの文字列補間なし）
+- [ ] すべての入力がバリデーション済み（ユーザー入力を信頼しない）
+- [ ] パラメーター化クエリのみ（SQLでの文字列補間なし）
+- [ ] 集約されたエラーモジュールによるカスタム例外（生のHTTP例外は使わない）
 - [ ] 認証エンドポイントにレート制限
 
 ### モバイル固有
 
 - [ ] すべてのコントローラーが`dispose()`で破棄
 - [ ] オフラインが適切に処理
-- [ ] 60fpsターゲット維持
+- [ ] 60fpsターゲット維持（カクつきなし）
+- [ ] iOSとAndroidの両方でテスト済み
 
 ### データベース固有
 
 - [ ] 3NF以上（非正規化の場合は根拠を文書化）
 - [ ] 3つのスキーマ層すべてを文書化（外部、概念、内部）
+- [ ] 整合性制約を明示（エンティティ、ドメイン、参照、ビジネスルール）
 - [ ] アンチパターンレビュー完了
 
 ---
 
 ## エスカレーションシグナル
 
+単一スキルからマルチエージェント実行に切り替えるべきことを示す、次のシグナルに注意してください。
+
 | シグナル | 意味 | 対応 |
 |--------|--------------|--------|
-| エージェントが「バックエンドの変更が必要」と言う | クロスドメイン依存関係 | `/work`に切り替え |
-| CHARTER_CHECKの「Must NOT do」に実際に必要な項目がある | スコープが1ドメインを超過 | `/plan`で機能全体を計画 |
+| エージェントが「バックエンドの変更が必要」と言う | クロスドメイン依存関係 | `/work`に切り替えてバックエンドエージェントを追加 |
+| CHARTER_CHECKの「Must NOT do」に実際に必要な項目がある | スコープが1ドメインを超過 | まず`/plan`で機能全体を計画 |
 | 修正が3つ以上の異なるレイヤーのファイルに波及 | 複数ドメインに影響 | `/debug`でスコープ拡大、または`/work` |
 | APIコントラクトの不一致を発見 | フロントエンド/バックエンドの不整合 | `/plan`でコントラクト定義後、両エージェントを再スポーン |
-| 品質ゲートが統合ポイントで失敗 | コンポーネントが正しく接続されない | QAレビュー追加：`oma agent spawn qa "Review integration"` |
+| 品質ゲートが統合ポイントで失敗 | コンポーネントが正しく接続されない | `/review`を実行するか、QAパスを追加：`oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | タスクが「1コンポーネント」から「3コンポーネント + 新ルート + API」に膨張 | 実行中のスコープクリープ | 停止、`/plan`で分解、`/orchestrate`で実行 |
 | エージェントがHIGH明確化でブロック | 要件が根本的に曖昧 | エージェントの質問に回答、または`/brainstorm`で方針を明確化 |
 
 ### 一般ルール
 
-同じエージェントを修正付きで2回以上再スポーンしている場合、タスクはおそらくマルチドメインであり、`/work`または少なくとも`/plan`での分解が必要です。
+同じエージェントを修正付きで2回を超えて再スポーンしている場合、タスクはおそらくマルチドメインです。`/work`、または少なくとも`/plan`を実行して分解してください。
+
+---
+
+## 次のステップ
+
+- タスクが複数のドメインにまたがる場合：[マルチエージェントプロジェクト](./multi-agent-project.md)
+- タスクがバグの場合：[バグ修正](./bug-fixing.md)
+- 実行を監査または再開する場合：[エージェントの結果と再開](./agent-results-and-resume.md)
+- 何かが失敗した場合：[トラブルシューティング](./troubleshooting.md)
+- スキルとワークフローのどちらを使うか選ぶ場合：[ワークフロー](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

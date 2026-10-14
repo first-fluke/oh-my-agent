@@ -25,11 +25,21 @@ Jeśli zadanie w całości mieści się w jednej domenie, użyj bezpośrednio wy
 
 Zalecany workflow wieloagentowy przebiega według ścisłego czteroetapowego potoku.
 
+```mermaid
+flowchart LR
+  plan["/plan"] --> planFile["plan-{sessionId}.json"]
+  planFile -->|"loaded by"| orch["/orchestrate (automated)"]
+  plan -.->|"or run"| work["/work (step-by-step; its PM step writes the plan)"]
+  work --> spawn["Agents per priority tier (native subagents or oma agent spawn)"]
+  orch --> spawn
+  spawn --> review["/review (QA)"]
+```
+
 ### Krok 1: /plan — wymagania i podział zadań
 
 Workflow `/plan` działa inline (bez uruchamiania subagentów) i tworzy ustrukturyzowany plan.
 
-```
+```text
 /plan
 ```
 
@@ -38,7 +48,7 @@ Co się dzieje:
 1. **Zebranie wymagań**: agent PM pyta o użytkowników docelowych, główne funkcje, ograniczenia i środowiska wdrożeniowe.
 2. **Analiza wykonalności technicznej**: korzysta ze skonfigurowanego dostawcy inteligencji kodu, aby przeanalizować istniejącą bazę kodu pod kątem kodu do ponownego użycia i wzorców architektonicznych. Natywne wyszukiwanie służy wyłącznie do ścieżek spoza projektu lub ścieżek ignorowanych.
 3. **Definicja kontraktów API**: projektuje kontrakty endpointów (metoda, ścieżka, schematy żądania/odpowiedzi, uwierzytelnianie, odpowiedzi błędów) i zapisuje je w `.agents/results/api-contracts/` (artefakty uruchomienia), a trwałe specyfikacje przenosi do `docs/plans/contracts/`, gdy są zatwierdzane.
-4. **Podział na zadania**: rozbija projekt na zadania możliwe do wykonania, z przypisanym agentem, tytułem, kryteriami akceptacji, priorytetem (P0–P3) i zależnościami.
+4. **Podział na zadania**: rozbija projekt na zadania możliwe do wykonania, z przypisanym agentem, tytułem, kryteriami akceptacji, poziomem priorytetu (poziom 1 wykonuje się jako pierwszy) i zależnościami.
 5. **Przegląd planu z użytkownikiem**: przedstawia pełny plan do zatwierdzenia. Workflow nie przejdzie dalej bez wyraźnej zgody użytkownika.
 6. **Zapisanie planu**: zapisuje zatwierdzony plan w `.agents/results/plan-{sessionId}.json` i rejestruje podsumowanie w pamięci.
 
@@ -58,31 +68,31 @@ Masz dwie ścieżki wykonania:
 
 #### /work: interaktywny potok wieloagentowy
 
-```
+```text
 /work
 ```
 
 1. Analizuje żądanie użytkownika i wykrywa zaangażowane domeny.
-2. Uruchamia agenta PM do podziału zadań (tworzy plan-\{sessionId\}.json).
+2. Uruchamia agenta PM do podziału zadań (tworzy `plan-{sessionId}.json`).
 3. Przedstawia plan do zatwierdzenia przez użytkownika. **Wstrzymuje się do czasu potwierdzenia.**
-4. Uruchamia agentów według poziomu priorytetu (najpierw P0, potem P1 itd.), przy czym zadania o tym samym priorytecie działają równolegle.
+4. Uruchamia agentów według poziomu priorytetu (najpierw poziom 1, potem poziom 2 itd.), przy czym zadania z tego samego poziomu działają równolegle.
 5. Monitoruje postęp agentów za pomocą plików pamięci.
 6. Uruchamia przegląd agenta QA dla wszystkich rezultatów (OWASP Top 10, wydajność, dostępność, jakość kodu).
 7. Jeśli QA znajdzie problemy CRITICAL lub HIGH, ponownie uruchamia odpowiedzialnego agenta z ustaleniami QA. Powtarza to maksymalnie 2 razy dla każdego problemu. Jeśli ten sam problem pozostaje, aktywuje **pętlę eksploracji**: generuje 2–3 alternatywne podejścia, uruchamia ten sam typ agenta z innymi hipotezami w oddzielnych workspace’ach, QA ocenia każde podejście, a najlepszy wynik zostaje przyjęty.
 
 #### /orchestrate: automatyczne wykonanie równoległe
 
-```
+```text
 /orchestrate
 ```
 
 1. Wczytuje `.agents/results/plan-{sessionId}.json`, a gdy nie ma użytecznego planu, tworzy plan inline przez `/plan`.
 2. Inicjalizuje sesję z identyfikatorem w formacie `session-YYYYMMDD-HHMMSS`.
-3. Tworzy `orchestrator-session.md` i `task-board.md` w katalogu pamięci.
+3. Tworzy `orchestrator-session-{sessionId}.md` i `task-board-{sessionId}.md` w katalogu pamięci.
 4. Uruchamia agentów według poziomu priorytetu, przekazując każdemu: opis zadania, kontrakty API i kontekst.
-5. Monitoruje postęp, odpytując pliki `progress-{agent}.md`.
+5. Monitoruje postęp, odpytując pliki `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`.
 6. Weryfikuje każdego ukończonego agenta za pomocą `verify.sh`. PASS (kod wyjścia 0) akceptuje wynik; FAIL (kod wyjścia 1) uruchamia agenta ponownie z kontekstem błędu (maksymalnie 2 ponowienia); trwała porażka uruchamia pętlę eksploracji.
-7. Zbiera wszystkie pliki `result-{agent}.md` i kompiluje raport końcowy.
+7. Zbiera wszystkie pliki `result-{agentId}-{taskId}-{runId}-{sessionId}.md` i kompiluje raport końcowy.
 
 ### Krok 3: agent spawn — zarządzanie agentami na poziomie CLI
 
@@ -92,7 +102,7 @@ Polecenie `agent spawn` jest niskopoziomowym mechanizmem, który workflowy wywo�
 oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-**Wszystkie flagi:**
+**Wszystkie flagi** (`oma agent spawn --help`):
 
 | Flaga | Opis |
 |:-----|:-----------|
@@ -101,6 +111,8 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 | `--task-id <id>` | Wiąże uruchomienie z zadaniem w planie sesji; domyślnie używa identyfikatora agenta. |
 | `--isolation worktree` | Tworzy git worktree dla uruchomienia; domyślnie nie ma dodatkowej izolacji. |
 | `--read-only` | Ogranicza dziecko do narzędzi inspekcji i wyłącza flagi automatycznej akceptacji. |
+| `--resumed-from <run-id>` | Łączy ponowienie z poprzedzającym je uruchomieniem. |
+| `--fallback-vendors <vendors>` | Uporządkowany, rozdzielony przecinkami łańcuch zapasowych dostawców dla tego uruchomienia. |
 
 **Kolejność rozstrzygania dostawcy** (wygrywa pierwsze dopasowanie):
 
@@ -116,7 +128,7 @@ Szczegóły konfiguracji znajdziesz w [Modelach per agent](./per-agent-models.md
 
 ### Krok 4: /review — weryfikacja QA
 
-```
+```text
 /review
 ```
 
@@ -126,7 +138,7 @@ Workflow przeglądu uruchamia pełny potok QA:
 2. **Zautomatyzowane kontrole bezpieczeństwa**: uruchamia `npm audit`, `bandit` lub odpowiednik.
 3. **Ręczny przegląd OWASP Top 10**: wstrzykiwanie, złamane uwierzytelnianie, dane wrażliwe, kontrola dostępu, błędna konfiguracja, niebezpieczna deserializacja, podatne komponenty, niewystarczające logowanie.
 4. **Analiza wydajności**: zapytania N+1, brakujące indeksy, nieograniczona paginacja, wycieki pamięci, zbędne ponowne renderowanie, rozmiary bundli.
-5. **Dostępność**: WCAG 2.1 AA, w tym semantyczny HTML, ARIA, nawigacja klawiaturą, kontrast kolorów i zarządzanie fokusem.
+5. **Dostępność**: WCAG 2.2 AA, w tym semantyczny HTML, ARIA, nawigacja klawiaturą, kontrast kolorów i zarządzanie fokusem.
 6. **Jakość kodu**: nazewnictwo, obsługa błędów, pokrycie testami, tryb ścisły TypeScript, nieużywane importy, wzorce async/await.
 7. **Raport**: ustalenia są kategoryzowane jako CRITICAL / HIGH / MEDIUM / LOW i zawierają `file:line`, opis oraz kod naprawczy.
 
@@ -134,11 +146,11 @@ Dla dużych zakresów workflow deleguje zadanie do subagenta QA. Z opcją `--fix
 
 ---
 
-## Strategia identyfikatora sesji
+## Strategia identyfikatora sesji {#session-id-strategy}
 
 Każda sesja orkiestracji otrzymuje unikatowy identyfikator w formacie:
 
-```
+```text
 session-YYYYMMDD-HHMMSS
 ```
 
@@ -146,9 +158,9 @@ Przykład: `session-20260324-143052`
 
 Identyfikator sesji służy do:
 
-- nazywania plików pamięci (`orchestrator-session.md`, `task-board.md`)
-- śledzenia procesów agentów za pomocą plików PID w katalogu tymczasowym systemu (`/tmp/subagent-{session-id}-{agent-id}.pid`)
-- korelowania plików logów (`/tmp/subagent-{session-id}-{agent-id}.log`)
+- nazywania plików pamięci (`orchestrator-session-{sessionId}.md`, `task-board-{sessionId}.md`)
+- śledzenia procesów agentów za pomocą plików PID w katalogu tymczasowym systemu operacyjnego (`$TMPDIR` w macOS, zwykle `/tmp` w Linuksie, `%TEMP%` w Windows): `subagent-{session-id}-{agent-id}.pid`
+- korelowania plików logów w tym samym katalogu: `subagent-{session-id}-{agent-id}.log`
 - grupowania wyników w `.agents/results/parallel-{timestamp}/`
 
 Identyfikator sesji jest generowany w Kroku 2 `/orchestrate` i przekazywany wszystkim uruchomionym agentom. Dzięki temu wszystkie agenty, logi i pliki PID z jednego uruchomienia można prześledzić w ramach jednej sesji.
@@ -248,7 +260,7 @@ W workflow ultrawork odpowiadają temu jawne **bramki faz** (PLAN_GATE, IMPL_GAT
 ### Pojedynczy agent
 
 ```bash
-# Spawn backend agent with Gemini (default)
+# Spawn backend agent; the vendor comes from the resolution order above
 oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Spawn frontend agent with Claude, explicit workspace
@@ -328,11 +340,11 @@ Ręczne scalanie wyników agentów zamiast przekazania integracji potokowi weryf
 
 ### 6. Nadmierna równoległość
 
-Uruchamianie zadań P1 przed zakończeniem zadań P0. Zadania P1 często zależą od rezultatów P0, dlatego istnieją poziomy priorytetu. Workflow automatycznie wymusza kolejność poziomów.
+Uruchamianie zadań poziomu 2 przed zakończeniem zadań poziomu 1. Poziomy priorytetu istnieją, ponieważ zadania z późniejszych poziomów często zależą od rezultatów wcześniejszych poziomów. Workflow automatycznie wymusza kolejność poziomów.
 
 ### 7. Pomijanie weryfikacji
 
-Bezpośrednie używanie `agent spawn` bez zapisania kontraktu wyniku. Uruchom przypięte kontrole zadania i zakończ pracę ustrukturyzowanym zgłoszeniem; zobacz [Wyniki agentów i wznawianie](/docs/guide/agent-results-and-resume). Krok weryfikacji workflowu wychwytuje następnie nieudane kontrole i rozbieżności zakresu, zanim wyniki zostaną ponownie użyte.
+Bezpośrednie używanie `agent spawn` bez zapisania kontraktu wyniku. Uruchom przypięte kontrole zadania i zakończ pracę ustrukturyzowanym zgłoszeniem; zobacz [Wyniki agentów i wznawianie](./agent-results-and-resume.md). Krok weryfikacji workflowu wychwytuje następnie nieudane kontrole i rozbieżności zakresu, zanim wyniki zostaną ponownie użyte.
 
 ---
 
@@ -365,3 +377,13 @@ Projekt wieloagentowy jest ukończony, gdy:
 - Build kończy się pomyślnie i wszystkie testy przechodzą.
 - Raport końcowy został zapisany w pamięci i przedstawiony użytkownikowi.
 - Użytkownik wyraził końcową zgodę (w `/work` i w bramce SHIP_GATE workflowu ultrawork).
+
+---
+
+## Następne kroki
+
+- Obserwowanie uruchomienia: [Monitorowanie w dashboardzie](./dashboard-monitoring.md)
+- Audyt lub wznowienie wyników: [Wyniki i wznawianie](./agent-results-and-resume.md)
+- Coś się nie powiodło: [Rozwiązywanie problemów](./troubleshooting.md)
+- Przypinanie dostawców i modeli dla agentów: [Modele per agent](./per-agent-models.md)
+- Terminy takie jak [plan](../getting-started/glossary.md#plan) i [workflow trwały](../getting-started/glossary.md#persistent-workflow): [Słownik](../getting-started/glossary.md)

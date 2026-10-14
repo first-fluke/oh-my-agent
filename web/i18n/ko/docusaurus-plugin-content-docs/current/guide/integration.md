@@ -22,10 +22,10 @@ description: 기존 프로젝트에 oh-my-agent을 추가하는 완전 가이드
 ### 1. CLI 설치
 
 ```bash
-# 전역 설치 (권장)
+# Global install (recommended)
 bun install --global oh-my-agent
 
-# 또는 일회성 실행을 위해 npx 사용
+# Or use npx for one-time runs
 npx oh-my-agent
 ```
 
@@ -37,7 +37,7 @@ npx oh-my-agent
 cd /path/to/your/project
 ```
 
-설정할 프로젝트 디렉토리에서 설치 프로그램을 실행하세요. OMA는 설치 root를 기준으로 SSOT를 기록합니다. 검토와 롤백에는 Git 저장소를 권장하지만, 설치 프로그램에 Git 저장소가 필수는 아닙니다.
+설정할 프로젝트 디렉토리에서 설치 프로그램을 실행하세요. OMA는 설치 루트를 기준으로 SSOT를 기록합니다. 검토와 롤백에는 Git 저장소를 권장하지만, 설치 프로그램에 Git 저장소가 필수는 아닙니다.
 
 ### 3. 설치 프로그램 실행
 
@@ -49,17 +49,7 @@ oma
 
 ### 4. 프로젝트 타입 선택
 
-설치 프로그램은 다음 프리셋을 제시합니다:
-
-| 프리셋 | 포함되는 스킬 |
-|:-------|:-------------|
-| **All** | 모든 사용 가능한 스킬 |
-| **Fullstack** | Frontend + Backend + PM + QA |
-| **Frontend** | React/Next.js 스킬 |
-| **Backend** | Python/Node.js/Rust 백엔드 스킬 |
-| **Mobile** | Flutter/Dart 모바일 스킬 |
-| **DevOps** | Terraform + CI/CD + Workflow 스킬 |
-| **Custom** | 전체 목록에서 개별 스킬 선택 |
+설치 프로그램은 **What type of project?**라고 묻고 [스킬 프리셋](../getting-started/glossary.md#skill-preset)을 제시합니다: All, Fullstack, Fullstack Web, Fullstack Mobile, Frontend, Backend, Mobile, DevOps, Research, Content, Custom(개별 스킬 선택). 비대화형 실행은 All을 사용합니다. 각 프리셋에 포함되는 스킬은 [설치 → 프리셋](../getting-started/installation.md#presets)에 나와 있습니다.
 
 ### 5. 백엔드 언어 선택 (해당되는 경우)
 
@@ -72,11 +62,9 @@ oma
 
 ### 6. IDE 심볼릭 링크 설정
 
-설치 프로그램은 항상 Claude Code 심볼릭 링크(`.claude/skills/`)를 생성합니다. 또한 선택한 벤더의 네이티브 에이전트 파일, 훅, 설정, 통합 파일을 생성합니다. 현재 벤더 계열에는 Antigravity, Claude, Codex, Cursor, Kiro, Kimi, Qwen과 pi 및 OpenCode 확장 경로가 포함됩니다. `.github/` 디렉토리가 존재하면 GitHub Copilot 심볼릭 링크를 자동으로 생성할 수 있습니다. ZCode를 선택하면 워크플로우만 `.zcode/commands/*.md` 심볼릭 링크를 통해 슬래시 명령으로 노출합니다(에이전트 파일이나 훅은 없음). 그 외에는 다음과 같이 질문합니다:
+설치 프로그램은 **CLI tools to configure (deselect all to skip):**라고 묻고 Claude Code, Codex, Command Code, GitHub Copilot, Cursor, Grok, Kiro CLI, OpenCode, pi (Earendil), Antigravity CLI (agy), Hermes Agent, Kimi Code CLI, Qwen Code, ZCode를 제시합니다. Antigravity CLI, Hermes Agent, Kimi Code CLI는 Windows에서나 `CI`가 설정된 경우에는 제시되지 않습니다.
 
-```
-Also create symlinks for GitHub Copilot? (.github/skills/)
-```
+선택한 도구마다 스킬 심볼릭 링크(예: Claude Code는 `.claude/skills/`)를 만들고 벤더의 네이티브 에이전트 파일, 훅, 설정, 통합 파일을 생성합니다. pi와 OpenCode는 확장 경로입니다. **ZCode**를 선택하면 워크플로우만 `.zcode/commands/*.md` 심볼릭 링크를 통해 슬래시 명령으로 노출합니다(에이전트 파일이나 훅은 없음).
 
 ### 7. 권장 전역 git 설정
 
@@ -89,7 +77,7 @@ Also create symlinks for GitHub Copilot? (.github/skills/)
 
 값이 없거나 다르면 대화형 confirm을 제안합니다(기본값 **yes**):
 
-```
+```text
 Enable git rerere? (Recommended for multi-agent merge conflict reuse) (unset)
 Set git init.defaultBranch to main? (Recommended global default) (currently "master")
 ```
@@ -101,43 +89,27 @@ git config --global rerere.enabled true
 git config --global init.defaultBranch main
 ```
 
-**비대화형 경로**(`--yes`, `--ci`, `CI=true`)에서는 전역 git 설정을 쓰지 않습니다. 수동 수정 명령 힌트만 출력합니다.
+**비대화형 경로**(`--yes`, `--ci`, `CI=true`)에서는 전역 git 설정을 쓰지 않습니다. 수동 수정 명령이 담긴 건너뜀 안내만 출력합니다.
 
-`oma doctor`는 같은 항목을 **Git Config**로 보고하고, 불일치를 이슈로 집계하며, `--json`의 `gitRecommended`로 노출하고, 대화형으로 수정을 제안할 수 있습니다.
+`oma doctor`는 같은 항목을 **Git Config**로 보고하고, 불일치를 이슈로 집계하며, `--json`의 `gitRecommended`로 노출하고, 대화형으로 수정을 적용할 수 있습니다.
 
 ### 8. MCP 설정
 
-Antigravity IDE MCP 설정이 존재하면(`~/.gemini/antigravity/mcp_config.json`), 설치 프로그램이 Serena MCP 브릿지 설정을 제안합니다:
-
-```
-Configure Serena MCP with bridge? (Required for full functionality)
-```
-
-수락하면 다음을 설정합니다:
+별도의 MCP 프롬프트는 없습니다. Serena가 코드 인텔리전스 프로바이더일 때(기본값) install과 update는 선택한 벤더에 Serena MCP 항목을 기록합니다. 프로젝트 설치에서는 항목이 다음과 같습니다:
 
 ```json
 {
   "mcpServers": {
     "serena": {
-      "command": "npx",
-      "args": ["-y", "oh-my-agent@latest", "bridge", "http://localhost:12341/mcp"],
-      "disabled": false
+      "command": "oma",
+      "args": ["bridge", "--context", "oma"],
+      "env": { "SERENA_LOG_LEVEL": "info" }
     }
   }
 }
 ```
 
-마찬가지로 Gemini CLI 설정이 존재하면(`~/.gemini/settings.json`), HTTP 모드로 Gemini CLI용 Serena를 설정할 것을 제안합니다:
-
-```json
-{
-  "mcpServers": {
-    "serena": {
-      "url": "http://localhost:12341/mcp"
-    }
-  }
-}
-```
+`oma bridge`는 Serena 서버를 직접 시작하거나 재사용합니다. 전역 설치에서는 `args`에 `--oma-home <OMA_HOME>`이 추가됩니다. `npx -y oh-my-agent@latest bridge http://localhost:12341/mcp`를 실행하는 예전 스니펫은 복사하지 마세요. 그 포트는 이미 종료되었을 수 있는 데몬의 것이어서 클라이언트가 무기한 대기할 수 있습니다. 마이그레이션 027이 Antigravity Desktop 설정에 남아 있는 이 폐기된 항목을 다시 씁니다.
 
 ### 9. 완료
 
@@ -151,30 +123,31 @@ Configure Serena MCP with bridge? (Required for full functionality)
 
 ## 수동 경로
 
-대화형 CLI를 사용할 수 없는 환경(CI 파이프라인, 제한된 셸, 기업 머신)을 위한 방법입니다.
+대화형 설치 프로그램을 실행할 수 없는 환경(CI 파이프라인, 제한된 셸, 기업 머신)을 위한 방법입니다. `oma link`와 `oma memory init`에는 여전히 `oma` CLI가 필요하며, 수동으로 하는 것은 릴리스 다운로드와 프롬프트 응답뿐입니다.
 
 ### 1단계: 다운로드 및 추출
 
 ```bash
-# 레지스트리에서 최신 tarball 다운로드
+# Download the latest tarball from the registry
 VERSION=$(curl -s https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/prompt-manifest.json | jq -r '.version')
 curl -L "https://github.com/first-fluke/oh-my-agent/releases/download/cli-v${VERSION}/agent-skills.tar.gz" -o agent-skills.tar.gz
 
-# 체크섬 검증
+# Verify checksum
 curl -L "https://github.com/first-fluke/oh-my-agent/releases/download/cli-v${VERSION}/agent-skills.tar.gz.sha256" -o agent-skills.tar.gz.sha256
 sha256sum -c agent-skills.tar.gz.sha256
 
-# 추출
+# Extract
 tar -xzf agent-skills.tar.gz
 ```
 
 ### 2단계: 프로젝트에 파일 복사
 
 ```bash
-# 핵심 .agents/ 디렉토리 복사
-cp -r .agents/ /path/to/your/project/.agents/
+# Copy the contents of the core .agents/ directory (works whether or not the target exists)
+mkdir -p /path/to/your/project/.agents
+cp -R .agents/. /path/to/your/project/.agents/
 
-# SSOT에서 벤더 네이티브 파일 재생성
+# Regenerate vendor-native files from the SSOT
 cd /path/to/your/project
 oma link
 ```
@@ -195,15 +168,17 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-model_preset: antigravity
+model_preset: auto
 EOF
 ```
+
+복사한 `.agents/`에 `oma-config.cue`도 들어 있으면, 그 파일에 설정된 키는 모두 이 YAML 파일의 같은 키를 덮어씁니다. 해당 키는 CUE 파일에서 수정하거나 [설정 로딩](./oma-config-semantics.md#precedence-table)을 참고하세요.
 
 ### 4단계: 메모리 디렉토리 초기화
 
 ```bash
 oma memory init
-# 또는 수동으로:
+# Or manually:
 mkdir -p /path/to/your/project/.agents/state/memories
 ```
 
@@ -214,14 +189,14 @@ mkdir -p /path/to/your/project/.agents/state/memories
 설치 후(어느 경로든) 모든 것이 올바르게 설정되었는지 확인합니다:
 
 ```bash
-# 전체 상태 검사를 위한 doctor 명령 실행
+# Run the doctor command for a full health check
 oma doctor
 
-# CI용 출력 형식 확인
+# Check output format for CI
 oma doctor --json
 ```
 
-doctor 명령이 확인하는 항목:
+doctor 명령이 확인하는 항목은 다음과 같습니다(일부):
 
 | 검사 | 확인 내용 |
 |:-----|:---------|
@@ -233,22 +208,22 @@ doctor 명령이 확인하는 항목:
 수동 검증 명령:
 
 ```bash
-# .agents/ 디렉토리 존재 확인
+# Verify .agents/ directory exists
 ls -la .agents/
 
-# 스킬 설치 확인
+# Verify skills are installed
 ls .agents/skills/
 
-# 심볼릭 링크가 올바른 대상을 가리키는지 확인
+# Verify symlinks point to correct targets
 ls -la .claude/skills/
 
-# 설정 존재 확인
-cat .agents/oma-config.yaml
+# Verify config exists (CUE, YAML, or both)
+ls .agents/oma-config.*
 
-# 메모리 디렉토리 확인
+# Verify memory directory
 ls .agents/state/memories/ 2>/dev/null || echo "Memory not initialized"
 
-# 버전 확인
+# Check version
 cat .agents/skills/_version.json 2>/dev/null
 ```
 
@@ -260,47 +235,47 @@ oh-my-agent은 단일 진실 원천(SSOT) 아키텍처를 사용합니다. `.age
 
 ### 디렉토리 레이아웃
 
-```
+```text
 your-project/
-  .agents/                          # SSOT — 실제 파일이 여기에 있음
-    agents/                         # 에이전트 정의 파일
+  .agents/                          # SSOT — the real files live here
+    agents/                         # Agent definition files
       backend-engineer.md
       frontend-engineer.md
       qa-reviewer.md
       ...
-    config/                         # 배포된 보조 설정 파일
+    config/                         # Shipped auxiliary config files
       ...
-    oma-config.yaml                 # 사용자가 소유한 프로젝트 설정
-    mcp.json                        # MCP 서버 설정
-    results/plan-{sessionId}.json    # 현재 계획 (/plan으로 생성)
-    skills/                         # 설치된 스킬
-      _shared/                      # 모든 스킬에 걸친 공유 리소스
-        core/                       # 핵심 프로토콜 및 참조
-        runtime/                    # 런타임 실행 프로토콜
-        conditional/                # 조건부 로드 리소스
-      oma-frontend/                 # 프론트엔드 스킬
-      oma-backend/                  # 백엔드 스킬
-      oma-qa/                       # QA 스킬
+    oma-config.yaml                 # User-owned project configuration
+    mcp.json                        # MCP server configuration
+    results/plan-{sessionId}.json    # Current plan (generated by /plan)
+    skills/                         # Installed skills
+      _shared/                      # Shared resources across all skills
+        core/                       # Core protocols and references
+        runtime/                    # Runtime execution protocols
+        conditional/                # Conditionally-loaded resources
+      oma-frontend/                 # Frontend skill
+      oma-backend/                  # Backend skill
+      oma-qa/                       # QA skill
       ...
-    workflows/                      # 워크플로우 정의
+    workflows/                      # Workflow definitions
       orchestrate.md
       work.md
       ultrawork.md
       plan.md
       ...
-    state/                          # 런타임 조정 상태
-      memories/                     # 조정 아티팩트(progress-*, result-*, task-board, session-cost-*)
-    results/                        # 에이전트 실행 결과
-  .claude/                          # Claude Code — 심볼릭 링크만
-    skills/                         # -> .agents/skills/* 및 .agents/workflows/*
+    state/                          # Runtime coordination state
+      memories/                     # Coordination artifacts (progress-*, result-*, task-board, session-cost-*)
+    results/                        # Agent execution results
+  .claude/                          # Claude Code — symlinks only
+    skills/                         # -> .agents/skills/* and .agents/workflows/*
     agents/                         # -> .agents/agents/*
-  .github/                          # GitHub Copilot — 심볼릭 링크만 (선택)
+  .github/                          # GitHub Copilot — symlinks only (optional)
     skills/                         # -> .agents/skills/*
-  .zcode/                           # ZCode — 워크플로우 명령만 (선택)
+  .zcode/                           # ZCode — workflow commands only (optional)
     commands/                       # -> .agents/workflows/*
-  .serena/                          # OMA 상태와 별개인 Serena MCP 저장소
-    memories/                       # Serena 자체 온보딩 메모리
-    metrics.json                    # 생산성 메트릭
+  .serena/                          # Serena MCP storage (separate from OMA state)
+    memories/                       # Serena's own onboarding memories
+    metrics.json                    # Productivity metrics
 ```
 
 ### 심볼릭 링크를 사용하는 이유
@@ -319,26 +294,33 @@ your-project/
 ### 설치 후
 
 1. **생성된 것을 검토하세요.** `git status`를 실행하여 모든 새 파일을 확인합니다. 설치 프로그램은 `.agents/`, `.claude/`, 그리고 선택적으로 `.github/`에만 파일을 생성합니다.
-2. **`.gitignore`를 확인하세요.** Git 저장소에서 install/update/link는 런타임 항목(`.antigravitycli/`, `.agents/results/`, `.agents/state/`, `.agents/backup/`, `docs/plans/`)을 root `.gitignore`에 자동으로 추가합니다. 추가된 내용을 확인하세요. 대부분의 팀은 설정 공유를 위해 `.agents/`와 `.claude/`를 커밋합니다. `.serena/`는 Serena가 내부 `.serena/.gitignore`로 자체 캐시를 관리하므로 판단에 따라 `.serena/project.yml`만 커밋하거나 디렉토리 전체를 무시할 수 있습니다:
+2. **`.gitignore`를 확인하세요.** Git 저장소에서 install/update/link는 런타임 항목(`.antigravitycli/`, `.agents/results/`, `.agents/state/`, `.agents/backup/`, `docs/plans/`)을 루트 `.gitignore`에 자동으로 추가합니다. 추가된 내용을 확인하세요. 대부분의 팀은 설정 공유를 위해 `.agents/`와 `.claude/`를 커밋합니다. 판단에 맡겨진 항목은 `.serena/` 하나입니다. Serena는 내부 `.serena/.gitignore`로 자체 캐시를 관리하므로 `.serena/project.yml`(공유 프로젝트 설정)만 커밋하거나 디렉토리 전체를 무시할 수 있습니다:
 
 ```gitignore
-# 선택 사항 — Serena 전체 무시(런타임 메모리)
+# optional — ignore Serena entirely (runtime memory)
 .serena/
 ```
 
 ### 롤백
 
-프로젝트에서 oh-my-agent을 완전히 제거하려면:
+먼저 제거 프로그램으로 OMA가 관리하는 파일을 미리 확인하고 제거하세요:
 
 ```bash
-# SSOT 디렉토리 제거
+oma uninstall --dry-run
+oma uninstall
+```
+
+제거 프로그램은 `oma-config.yaml`, `mcp.json`, 그리고 자신이 설치하지 않은 스킬을 남겨 둡니다. 나머지를 직접 제거하려면:
+
+```bash
+# Remove the SSOT directory
 rm -rf .agents/
 
-# IDE 심볼릭 링크 제거
+# Remove IDE symlinks
 rm -rf .claude/skills/ .claude/agents/
-rm -rf .github/skills/  # 생성된 경우
+rm -rf .github/skills/  # if created
 
-# 런타임 파일 제거
+# Remove runtime files
 rm -rf .serena/
 ```
 
@@ -358,10 +340,10 @@ git clean -fd .agents/ .claude/ .serena/
 빠른 설정:
 
 ```bash
-# 터미널 대시보드 (.agents/state/memories/ 변경 감시)
+# Terminal dashboard (watches .agents/state/memories/ for changes)
 oma dashboard terminal
 
-# 웹 대시보드 (브라우저 기반, OMA가 token 포함 loopback URL 출력)
+# Web dashboard (browser-based; OMA prints a tokenized loopback URL)
 oma dashboard web
 ```
 
@@ -393,7 +375,7 @@ oma dashboard web
 
 ### 5. 워크플로우 설치
 
-`installWorkflows()`가 모든 워크플로우 파일을 `.agents/workflows/`에 복사합니다. `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools`, `/stack-set`의 정의입니다.
+`installWorkflows()`가 모든 워크플로우 파일을 `.agents/workflows/`에 복사합니다. `/orchestrate`, `/work`, `/ultrawork`, `/plan` 등의 정의가 여기에 해당합니다. 전체 목록은 [워크플로우](../core-concepts/workflows.md)를 참고하세요. 이와 함께 `installHooks()`, `installAgents()`, `installRules()`가 훅, 에이전트 정의, 규칙 소스를 `.agents/`에 복사합니다.
 
 ### 6. 설정 설치
 
@@ -407,7 +389,7 @@ oma dashboard web
 
 `installVendorAdaptations()`가 선택한 지원 벤더에 대한 IDE별 파일을 설치합니다:
 
-- 에이전트 정의 (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
+- 에이전트 정의 (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.qwen/agents/*.md`)
 - 훅 설정 (`.claude/hooks/`, `.codex/hooks.json`)
 - 설정 파일과 공유 벤더 통합 문서 (`AGENTS.md`만 해당, Claude Code ≥ 2.1.277 포함). `CLAUDE.md`와 `GEMINI.md`에는 OMA 블록을 넣지 않으며, 사용자가 소유한 기존 `CLAUDE.md`에는 Claude Code가 `AGENTS.md`를 건너뛰지 않도록 `@AGENTS.md` import 줄만 추가합니다
 
@@ -415,11 +397,11 @@ Codex는 훅을 일회성 신뢰 단계 뒤에 두기 때문에, Codex의 `/hook
 
 ### 9. CLI 심볼릭 링크
 
-`createCliSymlinks()`가 IDE별 디렉토리에서 SSOT로 심볼릭 링크를 생성합니다:
+`createVendorSymlinks()`와 `createVendorWorkflowSymlinks()`가 IDE별 디렉토리에서 SSOT로 심볼릭 링크를 생성합니다:
 
 - `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
-- `.claude/skills/{workflow}.md` -> `../../.agents/workflows/{workflow}.md`
-- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (Copilot 활성화 시)
+- `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
+- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (Copilot 선택 시)
 
 벤더 네이티브 에이전트 파일은 심볼릭 링크가 아니라 `oma link`, `oma install`, `oma update`가 `.agents/agents/`에서 생성합니다.
 
@@ -430,3 +412,13 @@ Codex는 훅을 일회성 신뢰 단계 뒤에 두기 때문에, Codex의 `/hook
 ### 11. 권장 git 설정 + MCP
 
 위의 CLI 경로에서 설명한 대로, install/update는 대화형 동의 하에 권장 **전역** git 설정(`rerere.enabled`, `init.defaultBranch`)을 선택적으로 구성하며, 해당되는 경우 MCP 설정도 구성할 수 있습니다.
+
+---
+
+## 함께 보기
+
+- [전역 설치](./global-install.md): 모든 프로젝트에 한 번만 설치
+- [설정 로딩](./oma-config-semantics.md): CUE, YAML, 로컬 오버레이가 결합되는 방식
+- [에이전트별 모델 설정](./per-agent-models.md): 에이전트마다 모델과 CLI 선택
+- [Codex 훅 신뢰](./codex-hook-trust.md): Codex에서 한 번 거치는 `/hooks` 단계
+- [자동 업데이트](./automated-updates.md): CI에서 설치를 최신 상태로 유지

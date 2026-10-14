@@ -6,6 +6,10 @@ description: Evalueer een volledige OMA-harnessoverlay met gepaarde, geïsoleerd
 
 # Evaluatie van de harness {#harness-evaluation}
 
+:::tip Hoe deze onderdelen samenhangen
+[Skill-evaluatie](./skill-eval.md) meet of één `SKILL.md` helpt, en [skilloptimalisatie](./skill-opt.md) bewerkt die body onder held-out-gates. Harness-evaluatie (deze pagina) vergelijkt een volledige `.agents/`-overlay op repositorytaken. [Incidentregressiegevallen](./harness-incidents.md) zetten waargenomen fouten om in evaluatiegevallen en skill-fixtures. [Evolutie van de projectharness](./harness-evolution.md) voert het vastleggen van incidenten en skilloptimalisatie uit als een cyclus met budget, en [geplande agents](./scheduled-agents.md) is de OS-scheduler die die cyclus start.
+:::
+
 `oma harness eval` meet of een kandidaat-OMA-harness een vaste doelagent verbetert zonder het model van die agent te wijzigen. De opdracht past het evaluatiepatroon uit [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307) aan: houd het doelmodel vast, verander de harness en vergelijk de uitkomsten voor dezelfde taken.
 
 Deze opdracht evalueert een grotere eenheid dan `oma skill eval`:
@@ -16,6 +20,14 @@ Deze opdracht evalueert een grotere eenheid dan `oma skill eval`:
 | `oma harness eval` | Een afgebakende `.agents/`-overlay | Bestanden en uitvoer die in een repository-workspace worden geproduceerd |
 
 Gebruik skill eval om de vraag “helpt deze skill?” te beantwoorden. Gebruik harness eval om te bepalen of deze combinatie van skills, workflows, regels en agentinstructies de vaste agent repositorytaken betrouwbaarder laat voltooien.
+
+**Vóór de eerste run:**
+
+- Leg de eerste run vast met `--live --record`. `inspect` (de standaardactie), `rescore`, `fixture-replay` en `rerun` lezen allemaal dat record.
+- Een oordeel vereist minstens vijf gescoorde taken in de geselecteerde partitie. `pass` vereist minstens 5 punten lift en geen regressies.
+- `inspect`, `rescore` en `fixture-replay` doen geen modelaanroepen. `--live` en `--action rerun` doen er twee per geselecteerde taak.
+- `promotionReady` is altijd `false`. Een pass is bewijs voor een menselijke beslissing, geen automatische promotie.
+- Live runs hebben een vendor nodig met project-lokale skill-discovery (zie [Uitvoeren en vastleggen](#run-and-record)).
 
 ## Evaluatiemodel {#evaluation-model}
 
@@ -28,6 +40,28 @@ Een live run evalueert elke taak als een gepaard experiment:
 5. Deterministische controles inspecteren de resulterende workspace en optionele agentuitvoer. Vertrouwde commandocontroles draaien daarna in een verse kopie van de taakartifacts.
 
 Het echte project wordt nooit als werkmap van een arm gebruikt. OMA legt de ruwe uitvoer en de uiteindelijke taakartifacts vast vóór de controles en het opruimen van de tijdelijke workspace. De eigen processandbox van de geselecteerde vendor blijft de autoriteit voor toegang buiten de werkmap.
+
+Het diagram toont hoe gepaarde armen tot een beslissing komen. Offline acties stappen vanuit een opgeslagen record weer in bij de koppelstap.
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
 
 ## Indeling van de kandidaat {#candidate-layout}
 
@@ -91,7 +125,7 @@ tasks:
         path: docs/feature.md
 ```
 
-Versie 2 vereist zowel `validation`- als `final-test`-taken. Elke taak moet zijn partitie declareren. Validatie is de standaard; gebruik `--partition final-test` voor een afzonderlijke eindrun nadat de kandidaat is geselecteerd. De twee partities mogen geen fixturemappen delen of in elkaar nesten. Houd opnamebestanden buiten fixturemappen, kandidaat-overlays en evaluatorinvoer; deze locaties worden geweigerd om te voorkomen dat latere runs de finale controles zien. Suites van versie 1 draaien nog steeds als `exploratory`; ze kunnen niet als final-test worden geselecteerd.
+Versie 2 vereist zowel `validation`- als `final-test`-taken. Elke taak moet zijn partitie declareren. Validatie is de standaard; gebruik `--partition final-test` voor een afzonderlijke eindrun nadat de kandidaat is geselecteerd. Elke run scoort alleen de geselecteerde partitie, dus een beslissende validatierun vereist minstens vijf `validation`-taken en een final-test-run minstens vijf `final-test`-taken. Het voorbeeld hierboven is kort gehouden voor de leesbaarheid en rapporteert altijd `INSUFFICIENT`. De twee partities mogen geen fixturemappen delen of in elkaar nesten. Houd opnamebestanden buiten fixturemappen, kandidaat-overlays en evaluatorinvoer; deze locaties worden geweigerd om te voorkomen dat latere runs de finale controles zien. Suites van versie 1 draaien nog steeds als `exploratory`; ze kunnen niet als final-test worden geselecteerd.
 
 Taak-ID’s moeten uniek zijn. Fixturepaden en controlepaden moeten binnen het project en de workspace van de taak blijven. Suites en fixtures moeten bovendien buiten de baselinedefinities blijven die naar elke arm worden gekopieerd. Fixtures mogen geen symlinks of besturingsoppervlakken van de agent-harness bevatten, zoals `.agents`, `.codex`, `.claude`, vendorskilmappen of rootbestanden met agentinstructies. Zo kan taakdata de gecontroleerde harness van geen van beide armen overschaduwen.
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Gebruik `--yes` voor niet-interactieve uitvoering en `--timeout-minutes` om voor beide armen dezelfde wall-clocklimiet in te stellen. Live-uitvoering vereist een vendor die harnessbestanden relatief aan de projectworkspace ontdekt. OMA weigert HOME-gebaseerde discovery omdat de baseline dan kandidaatinhoud die globaal is geïnstalleerd zou kunnen zien.
+Gebruik `--yes` voor niet-interactieve uitvoering en `--timeout <duration>` om dezelfde wall-clocklimiet per arm in te stellen (standaard `15m`; een eenheid is verplicht, bijvoorbeeld `--timeout 45m`). `oma harness incident reproduce` accepteert dezelfde vlag. Live-uitvoering vereist een vendor die harnessbestanden relatief aan de projectworkspace ontdekt. OMA weigert HOME-gebaseerde discovery omdat de baseline dan kandidaatinhoud die globaal is geïnstalleerd zou kunnen zien.
+
+De vendor komt uit de `agent` van de suite, opgelost via de modelconfiguratie van het project:
+
+| Vendor | Live `harness eval`, `--action rerun`, `incident reproduce` |
+|---|---|
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Toegestaan: project-lokale skillmap |
+| `antigravity`, `hermes`, `kimi` | Geweigerd: HOME-gebaseerde skill-discovery |
+| Elke vendor zonder bekende project-skillmap | Geweigerd |
+
+Offline acties (`inspect`, `rescore`, `fixture-replay`) doen geen dispatch, dus deze controle is daarop niet van toepassing.
 
 Met `--record` wordt een onveranderlijk JSON-record van versie 2 geschreven. De standaardlocatie is `_runs/` naast de suite, met de baseline-/kandidaathashes in de bestandsnaam. Gebruik voor een andere live run een nieuw `--record-file`; een bestaande bestemming wordt vóór de dispatch geweigerd. Records bewaren:
 
@@ -314,7 +358,7 @@ Elke armrun slaat ook `diagnostics` en `trace` op in het record:
 
 Een mislukte arm behoudt daarom zijn gedeeltelijke uitvoer, de staart van stderr, de exitstatus en de bestandswijzigingen, zodat de laatste fout kan worden herleid tot wat de arm heeft gewijzigd. Ontbrekende waarneming wordt als toestand vastgelegd; ze wordt nooit gelezen als een schone run.
 
-## Metrics en beslissingspoort {#metrics-and-decision-gate}
+## Metrics en beslissingsgate {#metrics-and-decision-gate}
 
 Elke taak slaagt alleen wanneer elke controle slaagt. Scores zijn gewogen gemiddelden over gepaarde taken:
 
@@ -326,12 +370,31 @@ OMA rapporteert ook:
 
 - gecorrigeerde taken: baseline faalde en kandidaat slaagde;
 - teruggevallen taken: baseline slaagde en kandidaat faalde;
-- dekking: er zijn minstens vijf gepaarde, scorebare taken vereist.
+- dekking: er zijn minstens vijf gepaarde, scorebare taken in de geselecteerde partitie vereist.
 
-De scorebeslissing is `pass` wanneer de lift minstens 5 procentpunten is en er geen regressies zijn. Elke regressie laat de kandidaat falen. Een niet-negatieve lift onder 5 punten geeft een waarschuwing en minder dan vijf gepaarde taken leidt tot de beslissing `insufficient`. Voeg `--require-coverage` toe om onvoldoende dekking in CI met een niet-nul exitcode te laten eindigen. Een score is geen bewijs als een arm ontbreekt, een recordhash verouderd is of een deterministische controle niet compleet is. Fouten bij de live dispatch en integriteitsfouten van de evaluator forceren een falende beslissing; ze kunnen niet als succesvolle lift meetellen. Rescoring en fixture-replay laten armen met onvoldoende evidence buiten de scorebare paren en rapporteren een beslissing `insufficient`, in plaats van ontbrekende evidence als regressie van de kandidaat te behandelen.
+De scorebeslissing is `pass` wanneer de lift minstens 5 procentpunten is en er geen regressies zijn. Elke regressie of negatieve lift laat de kandidaat falen. Een niet-negatieve lift onder 5 punten geeft een waarschuwing en minder dan vijf gepaarde taken leidt tot de beslissing `insufficient`. Voeg `--require-coverage` toe om onvoldoende dekking in CI met een niet-nul exitcode te laten eindigen. Een score is geen bewijs als een arm ontbreekt, een recordhash verouderd is of een deterministische controle niet compleet is. Fouten bij de live dispatch en integriteitsfouten van de evaluator forceren een falende beslissing; ze kunnen niet als succesvolle lift meetellen. Rescoring en fixture-replay laten armen met onvoldoende evidence buiten de scorebare paren en rapporteren een beslissing `insufficient`, in plaats van ontbrekende evidence als regressie van de kandidaat te behandelen.
 
 Een geslaagde score bewijst nog niet dat de kandidaat voor promotie in aanmerking komt. Rapporten bevatten de partitie, de evaluatorhash, `promotionReady: false` en expliciete blokkades. Legacy- en validatieruns missen final-test-evidence. Huidige dispatchroutes bevestigen niet dat de toegang tot het bestandssysteem is afgeschermd, dus zelfs een final-test-run kan geen beschermde finale evaluatie claimen of promotie autoriseren. Dit veld blijft `false` totdat een uitvoeringsprovider die grens kan vaststellen.
 
+## Probleemoplossing {#troubleshooting}
+
+| Melding of symptoom | Oorzaak | Oplossing |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | De standaardactie is `inspect`, die een opgeslagen record leest. | Voer één keer `--live --record` uit, of geef een bestaand record mee met `--record-file`. |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect` vereist dat elke vastgelegde hash overeenkomt. | Leg een nieuwe run vast met een nieuw `--record-file`. Gebruik `--action rescore` als je de huidige controles op de opgeslagen bytes wilt toepassen. |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore` of `fixture-replay` wees naar een record van andere invoer. | Selecteer het overeenkomende `--record-file` en `--partition`, of leg opnieuw vast. |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record` zou een bestaand bestand overschrijven. | Geef een nieuw pad voor `--record-file` op. |
+| `--record requires --live or --action rerun` | `--record` werd gecombineerd met een offline actie. | Laat `--record` weg, of gebruik `--live`. |
+| `--action fixture-replay requires --transcript` | Er is geen transcript aangeleverd. | Voeg `--transcript <path>` toe. |
+| `Removed option --timeout-minutes. Use --timeout.` | Oude spelling van de vlag. | Gebruik `--timeout 30m` (een eenheid is verplicht). |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | De suite-agent wordt opgelost naar een vendor met HOME-discovery of een vendor zonder project-skillmap. | Routeer de suite-agent naar een vendor uit de tabel onder [Uitvoeren en vastleggen](#run-and-record). |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | `--candidate .` of een pad binnen `.agents/`. | Bewaar overlays elders, bijvoorbeeld `candidates/fix/.agents/`. |
+| `Candidate file is not allowed: <path>` | De overlay bevat bestanden buiten `agents/`, `rules/`, `skills/` of `workflows/`. | Verwijder die bestanden uit de overlay. |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | Beschermde frontmatter wijkt af van de baseline. | Herstel `model`, `tools`, `effort` en de andere beschermde velden. |
+| `Suite requires at least one final-test task` | Een suite met `schema_version: 2` heeft beide partities nodig. | Voeg een taak toe met `partition: final-test`. |
+| `decision: INSUFFICIENT` | Minder dan vijf gescoorde taken in de geselecteerde partitie, of ontbrekende armen. | Voeg taken toe tot de partitie er vijf heeft, en lees de regels `replay limitation:`. |
+| `decision: FAIL` | Een dispatchfout (gevolgd door regels `<task>/<arm>: ...`), een regressie (taak-ID's onder `regressed:`) of negatieve lift. | Lees bij een dispatchfout de regel `exit=... timedOut=... stderr=...` onder elke mislukte arm. Vergelijk bij een regressie de twee armen van de vermelde taken. |
+
 ## Huidige begrenzing {#current-boundary}
 
-Kandidaat-overlays worden extern geproduceerd; deze opdracht implementeert geen builder en ook geen geautomatiseerde lus `harness opt`. Artifactvastlegging, offline rescoring, replay van toolfixtures, reruns vanuit vastgezette bestanden, partitieselectie, momentopnames van evaluators, uitvoeringsmanifesten, een omgevingsallowlist en gekoppelde tracegebeurtenissen zijn beschikbaar, maar geheimhouding van held-out data op OS-niveau, afscherming van netwerk of credentials, herhaalde stochastische proeven, tokenadministratie en verplichte modelpinnen voor geneste subagentaanroepen zijn niet vastgesteld. De omgevingsallowlist beperkt welke variabelen een vendorproces erft; ze weerhoudt een vendor-CLI er niet van zijn eigen credentialopslag te lezen of het netwerk te bereiken. Tot er pinning voor geneste aanroepen bestaat, vermijd je in suites die één vast model willen meten kandidaatworkflows die andere geconfigureerde agentrollen spawnen.
+Kandidaat-overlays worden extern geproduceerd; deze opdracht implementeert geen builder en ook geen geautomatiseerde lus `harness opt`. Artifactvastlegging, offline rescoring, replay van toolfixtures, reruns vanuit vastgezette bestanden, partitieselectie, momentopnames van evaluators, uitvoeringsmanifesten, een omgevingsallowlist en gekoppelde tracegebeurtenissen zijn beschikbaar, maar geheimhouding van held-out data op OS-niveau, afscherming van netwerk of credentials, herhaalde stochastische proeven en verplichte modelpinnen voor geneste subagentaanroepen zijn niet vastgesteld. Token- en kostenverbruik wordt per arm vastgelegd en opgeteld wanneer de vendor het rapporteert (zie [Verbruik](#usage)). De omgevingsallowlist beperkt welke variabelen een vendorproces erft; ze weerhoudt een vendor-CLI er niet van zijn eigen credentialopslag te lezen of het netwerk te bereiken. Tot er pinning voor geneste aanroepen bestaat, vermijd je in suites die één vast model willen meten kandidaatworkflows die andere geconfigureerde agentrollen spawnen.

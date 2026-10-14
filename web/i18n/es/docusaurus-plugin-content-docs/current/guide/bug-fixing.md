@@ -1,7 +1,7 @@
 ---
 title: "Guía: Corrección de bugs"
 sidebar_label: Corrección de bugs
-description: Flujo estructurado de depuración en siete etapas, con triaje de severidad, señales de escalamiento, diagnóstico respaldado por el código fuente y validación posterior a la corrección.
+description: Flujo estructurado de depuración en siete pasos, con triaje de severidad, señales de escalamiento, diagnóstico respaldado por el código fuente y validación posterior a la corrección.
 ---
 
 # Guía: Corrección de bugs
@@ -10,7 +10,7 @@ description: Flujo estructurado de depuración en siete etapas, con triaje de se
 
 Usa `/debug` (o di «fix bug», «fix error» o «debug» en lenguaje natural) cuando tengas un bug concreto que diagnosticar y corregir. El flujo ofrece un enfoque estructurado y reproducible para depurar, y evita la trampa habitual de corregir los síntomas en lugar de las causas raíz.
 
-El flujo de depuración admite todos los proveedores configurados. Las etapas 1-5 se ejecutan inline. La etapa 6 (búsqueda de patrones similares) puede delegarse a un subagente `debug-investigator` cuando el alcance sea amplio (10+ archivos o errores que abarcan varios dominios); después se registra la memoria de la etapa 7.
+El flujo de depuración admite todos los proveedores configurados. Los pasos 1-5 se ejecutan inline. El paso 6 (búsqueda de patrones similares) puede delegarse a un subagente `debug-investigator` cuando el alcance sea amplio (10+ archivos o errores que abarcan varios dominios); después se registra la memoria del paso 7.
 
 ---
 
@@ -74,7 +74,7 @@ La severidad determina cómo se gestiona el bug y con qué rapidez debe corregir
 - La aplicación mobile se cierra al iniciar en dispositivos Android 14.
 - No se envían los correos de restablecimiento de contraseña (la integración del servicio de correo está rota).
 
-**Enfoque de depuración:** Ejecuta el bucle completo de siete etapas. Se recomienda una revisión de QA después de la corrección.
+**Enfoque de depuración:** Ejecuta el bucle completo de siete pasos. Se recomienda una revisión de QA después de la corrección.
 
 ### P2: medio (este sprint)
 
@@ -88,7 +88,7 @@ La severidad determina cómo se gestiona el bug y con qué rapidez debe corregir
 - El tiempo de respuesta de la API para el endpoint /users es de 8 segundos (debería ser inferior a 1s).
 - La paginación muestra «Page 1 of 0» cuando la lista está vacía.
 
-**Enfoque de depuración:** Ejecuta el bucle completo de siete etapas. Incluye el caso en la suite de regresión de QA.
+**Enfoque de depuración:** Ejecuta el bucle completo de siete pasos. Incluye el caso en la suite de regresión de QA.
 
 ### P3: bajo (backlog)
 
@@ -106,9 +106,15 @@ La severidad determina cómo se gestiona el bug y con qué rapidez debe corregir
 
 ---
 
-## El bucle de depuración de siete etapas en detalle
+## El bucle de depuración de siete pasos en detalle {#the-seven-stage-debug-loop-in-detail}
 
-El flujo `/debug` ejecuta estas etapas en orden. Usa el proveedor configurado de inteligencia de código. La búsqueda nativa solo se usa para rutas fuera del proyecto o rutas ignoradas cuando ese proveedor no está disponible o agota el tiempo de espera.
+El flujo `/debug` ejecuta estos pasos en orden. Usa el proveedor configurado de inteligencia de código. La búsqueda nativa solo se usa para rutas fuera del proyecto o rutas ignoradas cuando ese proveedor no está disponible o agota el tiempo de espera.
+
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
 
 ### Paso 1: recopilar información del error
 
@@ -187,7 +193,6 @@ Métodos de generación específicos del proveedor:
 |:-------|:------------|
 | Claude Code | Herramienta Agent con `.claude/agents/debug-investigator.md` |
 | Codex CLI | Solicitud de subagente mediada por el modelo, con resultados en JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / Fallback | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 Se informan todas las ubicaciones vulnerables similares. Las instancias confirmadas se corrigen dentro de la misma sesión.
@@ -206,7 +211,7 @@ El flujo escribe un archivo de memoria con:
 
 Al activar el flujo de depuración, puedes proporcionar un prompt estructurado:
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -233,7 +238,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 Para bugs más sencillos, basta con un prompt más corto:
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -299,3 +304,11 @@ El flujo de depuración termina cuando:
 4. Se buscó en el codebase patrones similares y se abordaron todas las instancias confirmadas.
 5. Hay un reporte del bug registrado en memoria con el síntoma, la causa raíz, la corrección aplicada, los archivos modificados, la ubicación de la prueba de regresión y los patrones similares encontrados.
 6. Todas las pruebas existentes siguen pasando después de la corrección.
+
+---
+
+## Próximos pasos
+
+- La causa raíz cruza dominios: [Proyectos multiagente](./multi-agent-project.md)
+- Registrar o reanudar la ejecución de la corrección: [Resultados y reanudación](./agent-results-and-resume.md)
+- Algo falló en el propio OMA: [Solución de problemas](./troubleshooting.md)

@@ -49,17 +49,7 @@ El comando predeterminado (sin subcomando) inicia el instalador interactivo.
 
 ### 4. Seleccionar el tipo de proyecto
 
-El instalador presenta estos presets:
-
-| Preset | Skills incluidas |
-|:-------|:---------------|
-| **All** | Todas las skills disponibles |
-| **Fullstack** | Frontend + Backend + PM + QA |
-| **Frontend** | Skills de React/Next.js |
-| **Backend** | Skills de backend para Python/Node.js/Rust |
-| **Mobile** | Skills móviles para Flutter/Dart |
-| **DevOps** | Skills de Terraform + CI/CD + Workflow |
-| **Custom** | Elegir skills individuales de la lista completa |
+El instalador pregunta **What type of project?** y ofrece un [preset de skills](../getting-started/glossary.md#skill-preset): All, Fullstack, Fullstack Web, Fullstack Mobile, Frontend, Backend, Mobile, DevOps, Research, Content o Custom (elegir skills individuales). Las ejecuciones no interactivas usan All. Las skills de cada preset se enumeran en [Instalación → Presets](../getting-started/installation.md#presets).
 
 ### 5. Elegir el lenguaje de backend (si corresponde)
 
@@ -72,11 +62,9 @@ Si seleccionaste un preset que incluye la skill de backend, se te pedirá elegir
 
 ### 6. Configurar los symlinks del IDE
 
-El instalador siempre crea symlinks de Claude Code (`.claude/skills/`). También genera los archivos de agente nativos, hooks, configuraciones y archivos de integración del proveedor seleccionado; las familias de proveedores actuales incluyen Antigravity, Claude, Codex, Cursor, Kiro, Kimi y Qwen, además de rutas de extensión para pi y OpenCode. Si existe un directorio `.github/`, puede crear automáticamente symlinks de GitHub Copilot. Al seleccionar **ZCode**, expone los workflows como slash-commands mediante symlinks `.zcode/commands/*.md` (solo workflows, sin archivos de agentes ni hooks). En otros casos, pregunta:
+El instalador pregunta **CLI tools to configure (deselect all to skip):** y ofrece Claude Code, Codex, Command Code, GitHub Copilot, Cursor, Grok, Kiro CLI, OpenCode, pi (Earendil), Antigravity CLI (agy), Hermes Agent, Kimi Code CLI, Qwen Code y ZCode. Antigravity CLI, Hermes Agent y Kimi Code CLI no se ofrecen en Windows ni cuando `CI` está definido.
 
-```
-Also create symlinks for GitHub Copilot? (.github/skills/)
-```
+Para cada herramienta seleccionada, crea symlinks de skills (por ejemplo `.claude/skills/` para Claude Code) y genera los archivos de agente nativos, hooks, configuraciones y archivos de integración del proveedor. pi y OpenCode son rutas de extensión. Al seleccionar **ZCode**, expone los workflows como slash-commands mediante symlinks `.zcode/commands/*.md` (solo workflows, sin archivos de agentes ni hooks).
 
 ### 7. Configuración global de git recomendada
 
@@ -89,7 +77,7 @@ Hacia el final de `oma install` y `oma update`, la CLI inspecciona dos configura
 
 Si falta un valor o es diferente, la CLI ofrece confirmarlo de forma interactiva (la opción predeterminada es **sí**):
 
-```
+```text
 Enable git rerere? (Recommended for multi-agent merge conflict reuse) (unset)
 Set git init.defaultBranch to main? (Recommended global default) (currently "master")
 ```
@@ -101,48 +89,31 @@ git config --global rerere.enabled true
 git config --global init.defaultBranch main
 ```
 
-Las rutas no interactivas (`--yes`, `--ci`, `CI=true`) nunca escriben la configuración global de git. Solo muestran una nota de omisión con los comandos para corregirlo manualmente.
+**Las rutas no interactivas** (`--yes`, `--ci`, `CI=true`) nunca escriben la configuración global de git. Solo muestran una nota de omisión con los comandos para corregirlo manualmente.
 
 `oma doctor` informa de las mismas comprobaciones en **Git Config**, cuenta las diferencias como incidencias, las expone como `gitRecommended` en la salida `--json` y puede aplicar las correcciones de forma interactiva.
 
 ### 8. Configuración de MCP
 
-Si existe una configuración de MCP de Antigravity IDE (`~/.gemini/antigravity/mcp_config.json`), el instalador ofrece configurar el puente de Serena MCP:
-
-```
-Configure Serena MCP with bridge? (Required for full functionality)
-```
-
-Si lo aceptas, configura:
+No hay un prompt de MCP independiente. Cuando Serena es el proveedor de inteligencia de código (el predeterminado), install y update escriben la entrada de Serena MCP para los proveedores seleccionados. En una instalación de proyecto, la entrada tiene este aspecto:
 
 ```json
 {
   "mcpServers": {
     "serena": {
-      "command": "npx",
-      "args": ["-y", "oh-my-agent@latest", "bridge", "http://localhost:12341/mcp"],
-      "disabled": false
+      "command": "oma",
+      "args": ["bridge", "--context", "oma"],
+      "env": { "SERENA_LOG_LEVEL": "info" }
     }
   }
 }
 ```
 
-De forma similar, si existe una configuración de Gemini CLI (`~/.gemini/settings.json`), ofrece configurar Serena para Gemini CLI en modo HTTP:
-
-```json
-{
-  "mcpServers": {
-    "serena": {
-      "url": "http://localhost:12341/mcp"
-    }
-  }
-}
-```
+`oma bridge` inicia o reutiliza el propio servidor de Serena. Una instalación global añade `--oma-home <OMA_HOME>` a `args`. No copies fragmentos antiguos que ejecutan `npx -y oh-my-agent@latest bridge http://localhost:12341/mcp`: ese puerto pertenecía a un daemon que puede haber terminado, por lo que los clientes podían quedarse esperándolo indefinidamente. La migración 027 reescribe esa entrada retirada en la configuración de Antigravity Desktop.
 
 ### 9. Finalización
 
 El instalador muestra un resumen de todo lo instalado:
-
 - Lista de skills instaladas
 - Ubicación del directorio de skills
 - Symlinks creados
@@ -152,7 +123,7 @@ El instalador muestra un resumen de todo lo instalado:
 
 ## Ruta manual
 
-Para entornos en los que la CLI interactiva no está disponible (pipelines de CI, shells restringidos o máquinas corporativas).
+Para entornos en los que el instalador interactivo no puede ejecutarse (pipelines de CI, shells restringidos o máquinas corporativas). Sigues necesitando la CLI `oma` para `oma link` y `oma memory init`; solo la descarga del release y los prompts son manuales.
 
 ### Paso 1: descargar y extraer
 
@@ -172,8 +143,9 @@ tar -xzf agent-skills.tar.gz
 ### Paso 2: copiar los archivos al proyecto
 
 ```bash
-# Copy the core .agents/ directory
-cp -r .agents/ /path/to/your/project/.agents/
+# Copy the contents of the core .agents/ directory (works whether or not the target exists)
+mkdir -p /path/to/your/project/.agents
+cp -R .agents/. /path/to/your/project/.agents/
 
 # Regenerate vendor-native files from the SSOT
 cd /path/to/your/project
@@ -196,9 +168,11 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-model_preset: antigravity
+model_preset: auto
 EOF
 ```
+
+Si el `.agents/` copiado también contiene `oma-config.cue`, cada clave definida allí sobrescribe la misma clave de este archivo YAML. Edita el archivo CUE para esas claves o consulta [Carga de la configuración](./oma-config-semantics.md#precedence-table).
 
 ### Paso 4: inicializar el directorio de memoria
 
@@ -222,7 +196,7 @@ oma doctor
 oma doctor --json
 ```
 
-El comando doctor comprueba:
+El comando doctor comprueba, entre otras cosas:
 
 | Comprobación | Qué verifica |
 |:------|:----------------|
@@ -243,8 +217,8 @@ ls .agents/skills/
 # Verify symlinks point to correct targets
 ls -la .claude/skills/
 
-# Verify config exists
-cat .agents/oma-config.yaml
+# Verify config exists (CUE, YAML, or both)
+ls .agents/oma-config.*
 
 # Verify memory directory
 ls .agents/state/memories/ 2>/dev/null || echo "Memory not initialized"
@@ -261,7 +235,7 @@ oh-my-agent usa una arquitectura de fuente única de verdad (SSOT). El directori
 
 ### Estructura de directorios
 
-```
+```text
 your-project/
   .agents/                          # SSOT — the real files live here
     agents/                         # Agent definition files
@@ -329,7 +303,14 @@ Cuando `oma update` actualiza `.agents/`, todos los IDE que apuntan a ese direct
 
 ### Reversión
 
-Para eliminar por completo oh-my-agent de un proyecto:
+Primero previsualiza y elimina los archivos gestionados por OMA con el desinstalador:
+
+```bash
+oma uninstall --dry-run
+oma uninstall
+```
+
+Conserva `oma-config.yaml`, `mcp.json` y las skills que no instaló. Para eliminar el resto a mano:
 
 ```bash
 # Remove the SSOT directory
@@ -354,7 +335,7 @@ git clean -fd .agents/ .claude/ .serena/
 
 ## Configuración del dashboard
 
-Después de instalar, puedes configurar la monitorización en tiempo real. Consulta la [guía de Dashboard Monitoring](/docs/guide/dashboard-monitoring) para conocer todos los detalles.
+Después de instalar, puedes configurar la monitorización en tiempo real. Consulta la [guía de monitoreo del dashboard](/docs/guide/dashboard-monitoring) para conocer todos los detalles.
 
 Configuración rápida:
 
@@ -394,7 +375,7 @@ El instalador descarga el tarball de la última versión desde los releases de G
 
 ### 5. Instalación de workflows
 
-`installWorkflows()` copia todos los archivos de workflow a `.agents/workflows/`. Son las definiciones de `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools` y `/stack-set`.
+`installWorkflows()` copia todos los archivos de workflow a `.agents/workflows/`, como las definiciones de `/orchestrate`, `/work`, `/ultrawork` y `/plan`. Consulta [Workflows](../core-concepts/workflows.md) para ver la lista completa. Junto a él, `installHooks()`, `installAgents()` e `installRules()` copian en `.agents/` las fuentes de hooks, definiciones de agentes y reglas.
 
 ### 6. Instalación de configuración
 
@@ -406,21 +387,21 @@ Para cada skill seleccionada, `installSkill()` copia el directorio de la skill a
 
 ### 8. Adaptaciones de proveedores
 
-`installVendorAdaptations()` instala archivos específicos del IDE para los proveedores seleccionados:
+`installVendorAdaptations()` instala archivos específicos del IDE para los proveedores compatibles seleccionados:
 
-- Definiciones de agentes (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
+- Definiciones de agentes (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.qwen/agents/*.md`)
 - Configuraciones de hooks (`.claude/hooks/`, `.codex/hooks.json`)
 - Archivos de configuración y el documento de integración de proveedor compartido (solo `AGENTS.md`, incluido Claude Code ≥ 2.1.277). `CLAUDE.md` y `GEMINI.md` nunca reciben un bloque OMA; un `CLAUDE.md` existente propiedad del usuario solo recibe una línea de importación `@AGENTS.md` para que Claude Code no omita `AGENTS.md`
 
-Codex protege sus hooks tras un paso único de confianza, por lo que `.codex/hooks.json` no se ejecuta hasta que lo revises una vez mediante el navegador de hooks `/hooks` de Codex. Consulta [Codex Hook Trust](/docs/guide/codex-hook-trust) para obtener más información.
+Codex protege sus hooks tras un paso único de confianza, por lo que `.codex/hooks.json` no se ejecuta hasta que lo revises una vez mediante el navegador de hooks `/hooks` de Codex. Consulta [Confianza de los hooks de Codex](/docs/guide/codex-hook-trust) para obtener más información.
 
 ### 9. Symlinks de la CLI
 
-`createCliSymlinks()` crea symlinks desde los directorios específicos del IDE al SSOT:
+`createVendorSymlinks()` y `createVendorWorkflowSymlinks()` crean symlinks desde los directorios específicos del IDE al SSOT:
 
 - `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
-- `.claude/skills/{workflow}.md` -> `../../.agents/workflows/{workflow}.md`
-- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (si Copilot está habilitado)
+- `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
+- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (si se selecciona Copilot)
 
 Los archivos de agentes nativos del proveedor se generan desde `.agents/agents/` mediante `oma link`, `oma install` u `oma update`, en lugar de enlazarse directamente.
 
@@ -431,3 +412,13 @@ Los archivos de agentes nativos del proveedor se generan desde `.agents/agents/`
 ### 11. Configuración de git recomendada + MCP
 
 Como se describe en la ruta de la CLI anterior, install/update puede configurar de forma opcional los ajustes **globales** de git recomendados (`rerere.enabled`, `init.defaultBranch`) mediante consentimiento interactivo y puede configurar ajustes de MCP cuando corresponde.
+
+---
+
+## Consulta también
+
+- [Instalación global](./global-install.md): instala una vez para todos los proyectos
+- [Carga de la configuración](./oma-config-semantics.md): cómo se combinan CUE, YAML y las capas locales
+- [Configuración del modelo por agente](./per-agent-models.md): elige el modelo y la CLI de cada agente
+- [Confianza de los hooks de Codex](./codex-hook-trust.md): el paso único `/hooks` para Codex
+- [Actualizaciones automáticas](./automated-updates.md): mantén la instalación al día desde CI

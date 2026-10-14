@@ -1,7 +1,7 @@
 ---
 title: "Avaliação da utilidade de skills"
 sidebar_label: Avaliação de skills
-description: Como escrever fixtures de tarefas de avaliação para oma skill eval, a convenção do diretório .agents/eval/, os tipos de verificador e os modos de execução mock/live.
+description: Como escrever fixtures de tarefas de avaliação para oma skill eval, a convenção do diretório .agents/eval/, os tipos de verificador, os modos de execução mock/live e correções para erros comuns.
 ---
 
 # Avaliação da utilidade de skills
@@ -21,7 +21,7 @@ Para cada fixture de tarefa, o comando executa dois braços:
 
 Cada braço recebe uma pontuação (0 = falha, 1 = aprovação) pelo verificador da tarefa. A métrica principal é:
 
-```
+```text
 utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 ```
 
@@ -29,11 +29,93 @@ Uma skill passa quando `utilityLift ≥ 5%`. Abaixo desse limiar, ela recebe avi
 
 ---
 
+## Início rápido {#a-minimal-working-fixture-set}
+
+São necessárias cinco fixtures para um veredicto (`MIN_TASKS = 5`). Este é um conjunto mínimo para uma skill imaginária `oma-scholar`. Quatro usam o juiz padrão; `structured-output` usa um verificador `assert` determinístico.
+
+```yaml
+# .agents/eval/oma-scholar/claims-only.yaml
+id: claims-only
+skill: oma-scholar
+domain: research
+prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
+rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/entity-lookup.yaml
+id: entity-lookup
+skill: oma-scholar
+domain: research
+prompt: "Look up the entity knows:concept/attention-mechanism"
+rubric: "Does the answer return the entity name, description, and at least one related concept?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/partial-fetch.yaml
+id: partial-fetch
+skill: oma-scholar
+domain: research
+prompt: "Fetch only the methods section of knows:generated/reconvla/1.0.0"
+rubric: "Does the answer request only the methods section instead of the full paper?"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/structured-output.yaml
+id: structured-output
+skill: oma-scholar
+domain: research
+prompt: "List the claims of knows:generated/reconvla/1.0.0 as JSON objects with id and statement fields"
+checker:
+  type: assert
+  expect_contains:
+    - "statement"
+weight: 1
+```
+
+```yaml
+# .agents/eval/oma-scholar/edge-empty-response.yaml
+id: edge-empty-response
+skill: oma-scholar
+domain: research
+prompt: "Fetch the claims of knows:generated/does-not-exist/0.0.0"
+rubric: "Does the answer report that no record exists instead of inventing claims?"
+weight: 1
+```
+
+Depois, execute:
+
+```bash
+# Seed rollouts (local only — re-run after any SKILL.md edit)
+oma skill eval --skill oma-scholar --live --record --yes
+
+# Offline replay
+oma skill eval --skill oma-scholar --json
+```
+
+A execução live imprime uma prévia antes do dispatch. Com essas cinco fixtures, ela mostra dois braços por tarefa, mais duas chamadas do juiz por tarefa judge (o vendor depende da sua configuração):
+
+```text
+Skill eval live run preview:
+  skill: oma-scholar
+  tasks: 5  trials: 1  spawns: 10 arm + 8 judge = 18 dispatches
+  vendor/model: claude
+  read-only: enforced (all spawns use readOnly: true)
+  record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
+```
+
+Em seguida, leia o resultado conforme descrito em [Ler o relatório](#reading-the-report). As seções depois desta são material de referência.
+
+---
+
 ## Convenção `.agents/eval/<skill>/`
 
 Coloque as fixtures de tarefas em `.agents/eval/<skill>/`. Esse caminho fica dentro de `.agents/`, mas fora do próprio diretório da skill, portanto sobrevive a `oma update` sem substituir avaliações escritas pelo usuário.
 
-```
+```text
 .agents/eval/
 └── oma-scholar/
     ├── claims-only.yaml        ← task fixture
@@ -76,9 +158,9 @@ weight: 1
 
 ### Tipos de verificador
 
-#### judge (padrão)
+#### judge (padrão) {#judge-default}
 
-Um LLM avalia a saída do braço contra uma rubrica e retorna PASS ou FAIL. Esse é o padrão quando `checker` é omitido ou quando `checker.type` não está presente.
+Um [juiz](../getting-started/glossary.md#judge) LLM avalia a saída do braço contra uma rubrica e retorna PASS ou FAIL. Esse é o padrão quando `checker` é omitido ou quando `checker.type` não está presente.
 
 ```yaml
 checker:
@@ -142,7 +224,7 @@ Reproduz rollouts registrados de `_rollouts/`. É totalmente determinístico e o
 
 Se uma tarefa judge não tiver uma pontuação registrada em `_rollouts/`, ela será excluída do relatório (com um aviso no console). Assim, o modo mock continua estritamente offline.
 
-As gravações também são verificadas quanto à obsolescência antes do uso. Alterações no corpo da skill, nos prompts, nos contratos de tarefa/verificador, nas rubricas efetivas de judge e nas revisões do protocolo do avaliador invalidam as entradas afetadas. Entradas sem proveniência também são descartadas, com um aviso que informa o arquivo e a quantidade. Quando isso deixa menos que `MIN_TASKS` tarefas pontuáveis, a execução informa `coverage: "insufficient"` em vez de um veredicto.
+As gravações também são verificadas quanto à obsolescência antes do uso. Alterações no corpo da skill, nos prompts, nos contratos de tarefa/verificador, nas rubricas efetivas do juiz e nas revisões do protocolo do avaliador invalidam as entradas afetadas. Entradas sem proveniência também são descartadas, com um aviso que informa o arquivo e a quantidade. Quando isso deixa menos que `MIN_TASKS` tarefas pontuáveis, a execução informa `coverage: "insufficient"` em vez de um veredicto.
 
 :::note `oma skill optimize --mock`
 O otimizador pontua corpos candidatos de SKILL.md. Como uma gravação só é válida para o corpo a partir do qual foi feita, corpos candidatos não têm rollouts correspondentes e aparecem sem cobertura. Use `--live` para pontuar candidatos.
@@ -156,9 +238,9 @@ oma skill eval --skill oma-scholar
 
 ### --live
 
-Cria braços de agentes reais por meio de `oma agent spawn --read-only`. Cada braço de tarefa é executado em seu próprio workspace temporário, de modo que os arquivos produzidos por um braço não afetam outro. Falhas de processo, envelopes de erro de API e falhas do judge excluem toda a comparação emparelhada da pontuação e da gravação; a saída parcial é um dado de diagnóstico.
+Envia cada braço, em modo somente leitura, para a CLI do papel de agente `eval` (consulte [Escolher os modelos de avaliação e do otimizador](#choose-the-evaluation-and-optimizer-models)). Cada braço de tarefa é executado em seu próprio workspace temporário, de modo que os arquivos produzidos por um braço não afetam outro. Falhas de processo, envelopes de erro de API e falhas do juiz excluem toda a comparação emparelhada da pontuação e da gravação; a saída parcial é um dado de diagnóstico.
 
-Antes do dispatch, o comando imprime uma prévia de custo com a quantidade de tarefas, dispatches de braços, dispatches de judge e vendor resolvido. Confirme com `y` ou ignore com `--yes`.
+Antes do dispatch, o comando imprime uma prévia de custo com a quantidade de tarefas, dispatches de braços, dispatches do juiz e vendor resolvido. Confirme com `y` ou ignore com `--yes`.
 
 Os outros controles são úteis no CI e em investigações de cobertura:
 
@@ -179,9 +261,21 @@ oma skill eval --skill oma-scholar --live
 oma skill eval --skill oma-scholar --live --yes
 ```
 
+#### Escolher os modelos de avaliação e do otimizador {#choose-the-evaluation-and-optimizer-models}
+
+Os braços de tarefa, os juízes e as sondagens de roteamento resolvem o papel de agente `eval`. Fixe-o em `.agents/oma-config.yaml`:
+
+```yaml
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+```
+
+O Maintainer e o Proposer de `oma skill optimize` resolvem o papel `opt-agent`. O mapa `agents:` não tem uma chave `opt` (o schema de configuração rejeita chaves desconhecidas), portanto esse papel sempre segue o `model_preset` ativo, ou `default_cli` com `model_preset: auto`. Sem `agents.eval`, o papel `eval` usa o mesmo fallback. A promoção exige `isolation: enforced`, que somente os perfis protegidos do Claude e o Codex nativo oferecem (consulte [Isolamento da skill](#skill-isolation-keeping-the-baseline-honest)).
+
 #### Medição de transferência negativa
 
-Com `--neg-transfer`, cada tarefa vizinha selecionada é executada duas vezes: um baseline novo, sem o candidato, e depois um tratamento com o corpo candidato exato injetado. As vizinhas são as tarefas de outras skills no mesmo `domain`. Quando nenhuma outra skill compartilha o domínio, usa-se em seu lugar uma amostra delimitada entre domínios (até seis tarefas, distribuídas entre as outras skills) e `negativeTransferCoverage.scope` informa `cross-domain`; a interferência de um corpo injetado não se limita ao próprio domínio, e um domínio único não deve inviabilizar a verificação. Os dois braços usam o mesmo avaliador e workspaces vazios separados. O delta é a pontuação do tratamento menos a do baseline; um valor negativo significa que o candidato prejudicou aquela tarefa vizinha. A prévia live inclui esses dispatches extras de braço e de judge. `--max-tasks` também limita a amostra de vizinhas, com um aviso quando tarefas são omitidas.
+Com `--neg-transfer`, cada tarefa vizinha selecionada é executada duas vezes: um baseline novo, sem o candidato, e depois um tratamento com o corpo candidato exato injetado. As vizinhas são as tarefas de outras skills no mesmo `domain`. Quando nenhuma outra skill compartilha o domínio, usa-se em seu lugar uma amostra delimitada entre domínios (até seis tarefas, distribuídas entre as outras skills) e `negativeTransferCoverage.scope` informa `cross-domain`; a interferência de um corpo injetado não se limita ao próprio domínio, e um domínio único não deve inviabilizar a verificação. Os dois braços usam o mesmo avaliador e workspaces vazios separados. O delta é a pontuação do tratamento menos a do baseline; um valor negativo significa que o candidato prejudicou aquela tarefa vizinha. A prévia live inclui esses dispatches extras de braço e do juiz. `--max-tasks` também limita a amostra de vizinhas, com um aviso quando tarefas são omitidas.
 
 Use `--live --neg-transfer --record` para salvar comparações específicas do candidato em `.agents/eval/<candidate>/_negative-transfer/<neighbor>/<body-hash>/_rollouts/`. A reprodução mock exige correspondência da identidade do candidato, do hash do corpo e do hash completo de tarefa/verificador, além de um ID de comparação compartilhado pelos dois braços. As gravações de avaliação comuns de uma tarefa vizinha não podem substituir esta medição.
 
@@ -202,13 +296,13 @@ Um diretório de trabalho limpo oculta a descoberta de skills locais do projeto,
 | `unavailable` | Vendor baseado em HOME (por exemplo, **antigravity**, que lê `~/.gemini/antigravity-cli/skills`); um cwd limpo não consegue ocultá-lo. Um aviso é impresso e o resultado é marcado com baixa confiança. |
 | n/a | Modo mock: não há dispatch live. |
 
-Outros perfis de runtime continuam disponíveis para avaliação exploratória, mas resultados `best-effort` e `unavailable` bloqueiam a promoção da otimização live. O vendor da avaliação segue a configuração de modelo do projeto. O Codex usa o login nativo da CLI e o modelo/provedor configurado por meio de `app-server`; ele não troca silenciosamente para o Claude nem para um cliente com chave de API. O contrato protegido do Codex tem como alvo a CLI 0.154.x em macOS/Linux, com armazenamento nativo de credenciais em arquivo e um `auth.json` existente. Um diretório home de configuração temporário e privado referencia os arquivos originais de configuração/autenticação e exclui o estado de bootstrap compartilhado; as credenciais não são copiadas, e a renovação nativa usa o arquivo de autenticação original. Os armazenamentos de credenciais keyring, auto e ephemeral não são suportados atualmente. Versões e modos de armazenamento não suportados e falhas de contrato se tornam erros de dispatch.
+Outros perfis de runtime continuam disponíveis para avaliação exploratória, mas resultados `best-effort` e `unavailable` bloqueiam a promoção da otimização live. O vendor da avaliação segue o papel de agente `eval`. O Codex usa o login nativo da CLI e o modelo/provider configurado por meio de `app-server`; ele não troca silenciosamente para o Claude nem para um cliente com chave de API. O contrato protegido do Codex tem como alvo a CLI 0.154.x em macOS/Linux, com armazenamento nativo de credenciais em arquivo e um `auth.json` existente. Um diretório home de configuração temporário e privado referencia os arquivos originais de configuração/autenticação e exclui o estado de bootstrap compartilhado; as credenciais não são copiadas, e a renovação nativa usa o arquivo de autenticação original. Os armazenamentos de credenciais keyring, auto e ephemeral não são suportados atualmente. Versões e modos de armazenamento não suportados e falhas de contrato se tornam erros de dispatch.
 
-Os judges são executados em diretórios temporários novos, com a memória de otimização desativada. Os judges do Claude e do Codex usam o mesmo transporte de texto protegido dos braços de avaliação. A configuração de vendor do judge é fixa durante a execução.
+Os juízes são executados em diretórios temporários novos, com a memória de otimização desativada. Os juízes do Claude e do Codex usam o mesmo transporte de texto protegido dos braços de avaliação. A configuração de vendor do juiz é fixa durante a execução.
 
 ### --live --record
 
-Executa braços live e grava as saídas capturadas (incluindo veredictos de judge para tarefas com verificador judge) em `_rollouts/<hash>.json`. O nome do arquivo é um hash SHA-256 determinístico do conjunto de IDs de tarefas, não baseado em data nem aleatoriedade.
+Executa braços live e grava as saídas capturadas (incluindo veredictos do juiz para tarefas com verificador judge) em `_rollouts/<hash>.json`. O nome do arquivo é um hash SHA-256 determinístico do conjunto de IDs de tarefas, não baseado em data nem aleatoriedade.
 
 Use isso para preparar execuções `--mock` na sua máquina, para que repetições permaneçam offline.
 
@@ -218,15 +312,15 @@ Cada entrada carrega proveniência para que uma reprodução posterior possa ver
 |---|---|---|
 | `skillBodyHash` | `treatment` somente | o corpo SKILL.md avaliado |
 | `promptHash` | os dois braços | o `prompt` atual da fixture |
-| `taskHash` | os dois braços | a tarefa completa, o verificador efetivo ou a rubrica padrão do judge e `SKILL_EVAL_PROTOCOL_REVISION` |
+| `taskHash` | os dois braços | a tarefa completa, o verificador efetivo ou a rubrica padrão do juiz e `SKILL_EVAL_PROTOCOL_REVISION` |
 | `trial` | os dois braços (`--trials` > 1) | emparelha o baseline e o tratamento de uma mesma tentativa; ausente quando há uma única tentativa |
-| `judgeResponse` | tarefas judge | o texto do veredicto do judge, desempacotado (com tamanho limitado), mantido para que um `score` armazenado possa ser auditado |
+| `judgeResponse` | tarefas judge | o texto do veredicto do juiz, desempacotado (com tamanho limitado), mantido para que um `score` armazenado possa ser auditado |
 
-As saídas dos braços são registradas como o texto da resposta. Quando uma CLI de vendor retorna um envelope de resultado em JSON, o campo `result` é armazenado e pontuado; os metadados do envelope nunca são avaliados pelos verificadores `assert`/`regex` nem lidos pelo parser do judge.
+As saídas dos braços são registradas como o texto da resposta. Quando uma CLI de vendor retorna um envelope de resultado em JSON, o campo `result` é armazenado e pontuado; os metadados do envelope nunca são avaliados pelos verificadores `assert`/`regex` nem lidos pelo parser do juiz.
 
 O braço de baseline não recebe a skill, portanto editar apenas SKILL.md não invalida a respectiva gravação. Alterações no contrato da tarefa ou do avaliador invalidam os dois braços. A gravação live executa os dois braços novamente.
 
-As gravações anteriores à proveniência completa de tarefa/avaliador precisam ser regeneradas com `--live --record` (e `--neg-transfer` para as comparações de tarefas vizinhas); acrescentar novos hashes a pontuações antigas não permite verificá-las. O mesmo contrato participa da identidade da suíte de otimização, portanto o conhecimento anterior com escopo de suíte não é reutilizado sob o contrato atualizado. Mantenha `SKILL_EVAL_PROTOCOL_REVISION` incrementando-o quando o comportamento do pontuador, os prompts e a análise de veredicto do judge ou outro comportamento implícito do avaliador mudar.
+As gravações anteriores à proveniência completa de tarefa/avaliador precisam ser regeneradas com `--live --record` (e `--neg-transfer` para as comparações de tarefas vizinhas); acrescentar novos hashes a pontuações antigas não permite verificá-las. O mesmo contrato participa da identidade da suíte de otimização, portanto o conhecimento anterior com escopo de suíte não é reutilizado sob o contrato atualizado. Mantenha `SKILL_EVAL_PROTOCOL_REVISION` incrementando-o quando o comportamento do pontuador, os prompts e a análise de veredicto do juiz ou outro comportamento implícito do avaliador mudar.
 
 :::caution `_rollouts/` é somente local — não faça commit
 Uma gravação só é reproduzida para o corpo exato de SKILL.md a partir do qual foi criada. Edite uma skill e suas gravações de tratamento serão descartadas na próxima execução `--mock`; um arquivo gravado em Git ficaria obsoleto na próxima alteração do SKILL.md e emitiria avisos para todas as pessoas que o baixassem. O diretório é ignorado pelo Git; grave localmente.
@@ -242,9 +336,9 @@ Depois de uma execução live bem-sucedida, o relatório inclui as contagens de 
 
 ### Concorrência e timeouts de dispatch
 
-Braços live, braços de tarefas vizinhas, chamadas de judge e sondas de roteamento são executados por meio de um pool limitado de `OMA_SKILL_EVAL_CONCURRENCY` subprocessos (padrão 4, no máximo 16). Os dois braços de uma tentativa sempre são executados juntos, em diretórios vazios separados, com o braço iniciado primeiro alternando entre as tentativas, e os resultados mantêm a ordem das tarefas, de modo que as gravações e as pontuações são as mesmas de uma execução serial. Defina a variável como 1 para serializar.
+Braços live, braços de tarefas vizinhas, chamadas do juiz e sondas de roteamento são executados por meio de um pool limitado de `OMA_SKILL_EVAL_CONCURRENCY` subprocessos (padrão 4, no máximo 16). Os dois braços de uma tentativa sempre são executados juntos, em diretórios vazios separados, com o braço iniciado primeiro alternando entre as tentativas, e os resultados mantêm a ordem das tarefas, de modo que as gravações e as pontuações são as mesmas de uma execução serial. Defina a variável como 1 para serializar.
 
-Os braços live e as chamadas de judge são encerrados após `OMA_SKILL_EVAL_TIMEOUT_MS` (padrão 180000). Um dispatch que excede o tempo limite é tentado novamente uma vez antes de a tarefa ser excluída do relatório, porque uma resposta lenta é uma falha de transporte, não uma resposta; um segundo timeout exclui a tarefa (e, na otimização, faz a cobertura da divisão falhar). Aumente o limite para fixtures que legitimamente precisam de respostas longas.
+Os braços live e as chamadas do juiz são encerrados após `OMA_SKILL_EVAL_TIMEOUT_MS` (padrão 180000). Um dispatch que excede o tempo limite é tentado novamente uma vez antes de a tarefa ser excluída do relatório, porque uma resposta lenta é uma falha de transporte, não uma resposta; um segundo timeout exclui a tarefa (e, na otimização, faz a cobertura da divisão falhar). Aumente o limite para fixtures que legitimamente precisam de respostas longas.
 
 ## Roteamento: a skill é selecionada?
 
@@ -258,62 +352,29 @@ O relatório JSON traz `routing` com `status`, contagens, `activationRate`, `mis
 
 Isso mede a descrição em relação ao catálogo por meio do transporte protegido. Não exercita o mecanismo próprio de descoberta do vendor, que o perfil protegido desativa deliberadamente, e não mede se o procedimento da skill carregada é seguido; isso continua sendo a medição de utilidade.
 
-## Um conjunto mínimo de fixtures funcional
-
-São necessárias cinco fixtures para um veredicto (`MIN_TASKS = 5`). Este é um conjunto mínimo para uma skill imaginária `oma-scholar`:
-
-```yaml
-# .agents/eval/oma-scholar/claims-only.yaml
-id: claims-only
-skill: oma-scholar
-domain: research
-prompt: "Fetch claims-only for knows:generated/reconvla/1.0.0"
-rubric: "Does the answer fetch ONLY the claims via the section=statements partial fetch?"
-weight: 1
-```
-
-```yaml
-# .agents/eval/oma-scholar/entity-lookup.yaml
-id: entity-lookup
-skill: oma-scholar
-domain: research
-prompt: "Look up the entity knows:concept/attention-mechanism"
-rubric: "Does the answer return the entity name, description, and at least one related concept?"
-weight: 1
-```
-
-Repita para pelo menos mais três tarefas. Depois, execute:
-
-```bash
-# Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skill eval --skill oma-scholar --live --record --yes
-
-# Offline replay
-oma skill eval --skill oma-scholar --json
-```
-
 ---
 
-## Ler o relatório
+## Ler o relatório {#reading-the-report}
 
 **Saída de texto:**
 
-```
+```text
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
   isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
+  repeatability: single-trial  trials: 1  lift 95% CI: [9.2%, 48.0%]  within-task stddev: n/a
   [PASS]
-  Skill shows positive utility lift >= 5%.
+  Skill shows positive utility lift ≥ 5%.
 
   Per-task findings:
     claims-only: baseline=0 treatment=1 lift=+1.000
     entity-lookup: baseline=1 treatment=1 lift=+0.000
     ...
 
-  Thresholds: fail <= 0%, warn < 5%
+  Thresholds: fail ≤ 0%, warn < 5%
 ```
 
 **Saída JSON** (com `--json`):
@@ -347,7 +408,7 @@ Skill utility eval  (skill: oma-scholar)
 }
 ```
 
-`usage` soma o que o vendor reportou para os braços pontuados e, separadamente, para as respectivas chamadas de judge: contagem de dispatches, tokens de entrada e de saída (incluindo leituras e gravações de cache) e custo em USD. `status` é `actual` quando todo dispatch reportou uso, `partial` quando alguns não reportaram e `unknown` quando nenhum reportou (um transporte somente de texto, como a bridge do Codex, não reporta nada). Os rollouts registrados carregam `usage` e `judgeUsage` por entrada, de modo que uma reprodução mock informa o custo da gravação que reutiliza, e não zero.
+`usage` soma o que o vendor reportou para os braços pontuados e, separadamente, para as respectivas chamadas do juiz: contagem de dispatches, tokens de entrada e de saída (incluindo leituras e gravações de cache) e custo em USD. `status` é `actual` quando todo dispatch reportou uso, `partial` quando alguns não reportaram e `unknown` quando nenhum reportou (um transporte somente de texto, como a bridge do Codex, não reporta nada). Os rollouts registrados carregam `usage` e `judgeUsage` por entrada, de modo que uma reprodução mock informa o custo da gravação que reutiliza, e não zero.
 
 `repeatability` separa a variação entre tarefas da variação entre repetições. `liftCi95` é um intervalo t emparelhado de 95% sobre os lifts por tarefa (null com menos de duas tarefas pontuadas). Com `--trials` igual a dois ou mais, `withinTaskStdDev` é o desvio-padrão médio por tarefa do lift por tentativa, e `status` é `stable` somente quando o intervalo exclui o zero no mesmo lado do lift; caso contrário, é `unstable` e um `pass` é rebaixado para `warn`. Uma execução de tentativa única reporta `single-trial`: ela pode mostrar lift, mas não pode mostrar que o lift se repete.
 
@@ -370,11 +431,11 @@ Códigos de saída:
 
 ## Escolher o modo live ou mock
 
-Use `--live` com verificadores judge para medir a utilidade real em tarefas abertas. Use `--mock` para reproduzir offline veredictos judge registrados anteriormente ou executar verificações determinísticas de contrato `assert`/`regex`.
+Use `--live` com verificadores judge para medir a utilidade real em tarefas abertas. Use `--mock` para reproduzir offline veredictos do juiz registrados anteriormente ou executar verificações determinísticas de contrato `assert`/`regex`.
 
-O determinismo do mock é preservado gravando o veredicto binário do judge (PASS/FAIL) na entrada do rollout durante `--live --record` e reproduzindo essa pontuação registrada em execuções `--mock` posteriores: não há uma nova chamada ao LLM.
+O determinismo do mock é preservado gravando o veredicto binário do juiz (PASS/FAIL) na entrada do rollout durante `--live --record` e reproduzindo essa pontuação registrada em execuções `--mock` posteriores: não há uma nova chamada ao LLM.
 
-**Saída de dados:** durante `--live`, o dispatch do judge envia a saída do braço candidato ao vendor configurado para avaliação. Um aviso único é impresso no início de cada execução live.
+**Saída de dados:** durante `--live`, o dispatch do juiz envia a saída do braço candidato ao vendor configurado para avaliação. Um aviso único é impresso no início de cada execução live.
 
 Se uma execução mock informar cobertura insuficiente, inspecione o aviso em busca de entradas `_rollouts` descartadas ou ausentes e execute uma gravação live depois de corrigir a fixture ou a skill. A promoção live exige um perfil protegido de Claude ou Codex em funcionamento, com `isolation: "enforced"`; os demais perfis continuam exploratórios.
 
@@ -383,3 +444,23 @@ Se uma execução mock informar cobertura insuficiente, inspecione o aviso em bu
 ## Publicar tarefas de avaliação com uma skill
 
 Skills podem incluir um conjunto de tarefas de avaliação colocando fixtures em `.agents/eval/<skill>/`. Esses são arquivos escritos pelo usuário fora do diretório da skill, portanto sobrevivem a `oma update`. Ao criar uma nova skill com `oma-skill-creation`, adicione um conjunto correspondente de fixtures em `eval/` para oferecer às futuras pessoas autoras uma forma de verificar o efeito da skill. Consulte `.agents/skills/oma-skill-creation/SKILL.md` para o fluxo de autoria de skills.
+
+---
+
+## Solução de problemas {#troubleshooting}
+
+Estas mensagens vêm de `oma skill eval` e `oma skill optimize`.
+
+| Mensagem ou sintoma | Causa | Correção |
+|---|---|---|
+| `[oma skill opt] no eval coverage for skill "<id>": found N task fixture(s), need at least 5.` | Há menos de cinco fixtures válidas em `.agents/eval/<id>/`, ou `--skill` foi omitido (nesse caso, ele lê `_all`). | Adicione fixtures (consulte o [Início rápido](#a-minimal-working-fixture-set)) e passe `--skill <id>`. |
+| `[oma skill eval] skipped <file>: does not match TaskFixture schema` | Falta em uma fixture `id`, `skill`, `domain`, `prompt` ou um `weight` numérico. | Adicione o campo ausente, por exemplo `weight: 1`. |
+| `[oma skill eval] discarded N stale rollout entries from _rollouts/<file>: <reason>. Re-run --live --record to refresh.` | O corpo da skill, o prompt, o verificador ou o protocolo do avaliador mudou desde a gravação. | Execute `--live --record` novamente. |
+| `INSUFFICIENT COVERAGE — fewer than 5 tasks found.` | Menos de cinco tarefas foram pontuadas depois das omissões e exclusões. | Corrija os avisos impressos acima dela e grave novamente. |
+| `[oma skill eval] isolation: <status> for vendor <vendor> — baseline may be contaminated; result is low-confidence.` | O papel `eval` resolve para um vendor sem perfil protegido. | Defina `agents.eval` como um modelo Claude ou Codex (consulte [Escolher os modelos de avaliação e do otimizador](#choose-the-evaluation-and-optimizer-models)). |
+| `[oma skill eval] dispatch timed out after <N>s.` | Uma chamada de braço ou do juiz excedeu `OMA_SKILL_EVAL_TIMEOUT_MS`. | Aumente `OMA_SKILL_EVAL_TIMEOUT_MS` para fixtures que precisam de respostas longas. |
+| `Choose either --live or --mock` | As duas flags foram passadas. | Passe apenas uma delas. |
+| `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` foi executado sem `--live`. | Adicione `--live` ou use `oma skill eval --mock` para verificações offline. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | O papel `opt-agent` resolve para um vendor sem transporte de texto protegido. | Escolha um `model_preset` (ou, com `model_preset: auto`, um `default_cli`) que resolva para Claude ou Codex. |
+| `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (nada é gravado) | `--apply` em uma skill `oma-*` sem `--yes`. | Mantenha o diff do dry-run e envie-o upstream, ou execute novamente com `--yes`. |
+| `[oma skill opt] an active project overlay owns this skill; ...` | A [evolução do harness do projeto](./harness-evolution.md) instalou um overlay para esta skill. | Execute `oma skill rollback --skill <id>` primeiro, ou deixe o ciclo de evolução aplicar a mudança. |

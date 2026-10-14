@@ -12,10 +12,10 @@ Wartości domyślne dobieramy tak, aby pierwszy projekt był użyteczny, a konfi
 | Obszar | Wartość domyślna | Skutek | Nadpisanie |
 |---|---|---|---|
 | Język odpowiedzi | `en` | Odpowiedzi agentów i workflowów są po angielsku, chyba że konfiguracja projektu wybiera inny obsługiwany język. Jawna instrukcja użytkownika albo sesji może nadal nadpisać domyślny język projektu, jeśli host lub workflow ją obsługuje. | `language` w `.agents/oma-config.yaml` albo `.cue` |
-| Routing modeli | `auto` | Używana jest natywna konfiguracja agentów bieżącego runtime’u. Nieznane runtime’y korzystają z `default_cli`, gdy jest ustawione. | `model_preset`, `default_cli` albo `agents.<id>` |
-| Inteligencja kodu | `serena` | Nowa instalacja próbuje zainstalować Serenę i podłącza jej konfigurację MCP. | `providers.code_intelligence: gortex` albo `serena` |
+| Routing modeli ([preset modelu](./glossary.md#model-preset)) | `auto` | Używana jest natywna konfiguracja agentów bieżącego runtime’u. Nieznane runtime’y korzystają z `default_cli`, gdy jest ustawione. | `model_preset`, `default_cli` albo `agents.<id>` |
+| Inteligencja kodu ([dostawca możliwości](./glossary.md#capability-provider)) | `serena` | Nowa instalacja próbuje zainstalować Serenę i podłącza jej konfigurację MCP. | `providers.code_intelligence: gortex` albo `serena` |
 | Strażnik wyszukiwania kodu | `block` | Dopóki skonfigurowany jest dostawca inteligencji kodu, hook PreToolUse odmawia użycia natywnych `Grep`/`Glob` oraz rekurencyjnego wyszukiwania w powłoce (`rg`, `grep -r`, `find -name`) i kieruje agenta do narzędzi dostawcy. Wyszukiwania ograniczone do potwierdzonych wykluczeń lub ścieżek spoza projektu są dozwolone. Hook nie reklamuje obejścia dla kodu źródłowego projektu. | `providers.code_intelligence_guard: off` |
-| Pamięć semantyczna | `agentmemory` | Gdy jest dostępna, do pamięci semantycznej wybierana jest Agent Memory. | `providers.semantic_memory: honcho` albo `none` |
+| Pamięć semantyczna | `agentmemory` | Instalacja i aktualizacja ponownie używają działającego endpointu AgentMemory albo instalują i uruchamiają zarządzaną usługę lokalną, a przed zakończeniem sukcesem sprawdzają jej gotowość. Jawne niestandardowe endpointy są sprawdzane bez zastępowania. | `providers.semantic_memory: honcho` albo `none`; `OMA_NO_AGENTMEMORY=1` pomija konfigurację AgentMemory. |
 | Wyszukiwanie w sieci | `native` | Wyszukiwanie korzysta z natywnego kanału sieciowego runtime’u, chyba że wybrano dostawcę. | `providers.web` |
 | Dostawca dokumentacji | `context7` | Gdy umiejętność tego zażąda, wyszukiwanie dokumentacji korzysta z dostawcy Context7. | `providers.docs` |
 | Telemetria | wyłączona | Podczas linkowania OMA zapisuje ustawienia rezygnacji z telemetrii dostawców. | `telemetry: true` |
@@ -31,7 +31,12 @@ Nazwy dostawców i wartości domyślne pochodzą z loaderów runtime’u oraz pr
 
 ## Priorytet konfiguracji
 
-OMA szuka w górę od bieżącego katalogu roboczego najbliższego katalogu `.agents/`. Gdy `oma-config.cue` istnieje, jest odczytywane, a jeśli wspólna ewaluacja CUE się nie powiedzie, używane jest `oma-config.yaml`. Nakładka projektu, czyli `oma-config.local.cue` albo `oma-config.local.yaml`, jest scalana na wierzchu; zachowaj tylko jedną lokalną nakładkę. `OMA_MODEL_PRESET` może nadpisać `model_preset` dla procesu. Nieprawidłowa lokalna konfiguracja zatrzymuje ładowanie zamiast po cichu wybrać inną wartość.
+OMA ładuje globalne wartości domyślne z `$OMA_HOME/.agents/` (domyślnie `~/.oma/.agents/`),
+a następnie nakłada na nie wspólną konfigurację najbliższego projektowego `.agents/` oraz jej plik lokalny.
+Różne nadrzędne katalogi główne projektów nie są scalane. W każdym z tych zakresów
+preferowane jest `oma-config.cue`, a YAML służy jako wartość zapasowa; zachowaj tylko jedną lokalną nakładkę
+(`oma-config.local.cue` albo `.yaml`). `OMA_MODEL_PRESET` nadpisuje `model_preset`
+po załadowaniu plików. Nieprawidłowa lokalna konfiguracja zatrzymuje ładowanie.
 
 Routing modeli ma dwa szczególne przypadki przed kolejnością stałego presetu:
 
@@ -62,8 +67,8 @@ Domyślne ustawienie telemetrii to rezygnacja. Ustawienie `telemetry: true` usuw
 | Pliki dostawcy są nieaktualne | `oma doctor` i `oma link --dry-run` | Uruchom `oma link <vendor>` po edycji `.agents/`; zachowaj SSOT jako źródło. |
 | Model nie jest akceptowany | `oma doctor --profile` | Przełącz na `auto`, użyj wbudowanego presetu albo zdefiniuj slug modelu pod `models:`. |
 | Narzędzia Sereny przekraczają limit czasu | `oma doctor` i sekcja dostawcy | Spróbuj `serena.mode: stdio`; jeśli problemem jest pamięć, wyświetl podgląd za pomocą `oma serena reap --dry-run`. |
-| Trwały workflow nie chce się zatrzymać | `.agents/state/*-state.json` | Powiedz `workflow done`; sprawdź plik stanu tylko wtedy, gdy workflow nie posprzątał po sobie. |
+| [Trwały workflow](./glossary.md#persistent-workflow) nie chce się zatrzymać | `.agents/state/*-state.json` | Powiedz `workflow done`; sprawdź plik stanu tylko wtedy, gdy workflow nie posprzątał po sobie. |
 | Zaplanowany reaper nic nie robi | Sekcja Serena Reaper w `oma doctor` | Ustaw `serena_reaper.enabled: true`, a następnie uruchom `oma serena reaper enable`. |
 | Lokalna konfiguracja uniemożliwia start | Ścieżka błędu w `oma doctor` | Popraw albo usuń lokalną nakładkę; nie twórz jednocześnie nakładki `.cue` i `.yaml`. |
 
-Kontynuuj przez [Instalację](./installation.md), [Konfigurację modeli per agent](../guide/per-agent-models.md) albo [semantykę konfiguracji OMA](../guide/oma-config-semantics.md).
+Kontynuuj przez [Instalację](./installation.md), [Konfigurację modeli per agent](../guide/per-agent-models.md) albo [semantykę konfiguracji OMA](../guide/oma-config-semantics.md). Problemy, których tu nie wymieniono, opisuje [Rozwiązywanie problemów](../guide/troubleshooting.md).

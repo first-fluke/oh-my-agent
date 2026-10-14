@@ -8,15 +8,15 @@ sidebar_label: 重要默认值
 
 默认值的目标是让首个项目可以使用，同时保持用户拥有的配置稳定。默认值在运行时解析，因此省略某个键和明确设置空值可能产生不同的行为。当脚手架可以运行却与预期不同时，从这里开始排查。
 
-## 影响首次运行的默认值
+## 影响首次运行的默认值 {#defaults-that-affect-the-first-run}
 
 | 区域 | 默认值 | 影响 | 覆盖方式 |
 |---|---|---|---|
 | 响应语言 | `en` | 除非项目配置选择了其他受支持语言，否则智能体和工作流使用英语。宿主或工作流支持时，明确的用户或会话语言指令仍可覆盖项目默认值。 | `.agents/oma-config.yaml` 或 `.cue` 中的 `language` |
-| 模型路由 | `auto` | 使用当前运行时的原生智能体配置。设置了 `default_cli` 时，未知运行时回退到它。 | `model_preset`、`default_cli` 或 `agents.<id>` |
-| 代码智能 | `serena` | 新安装会尝试安装 Serena，并接入其 MCP 配置。 | `providers.code_intelligence: gortex` 或 `serena` |
+| 模型路由（[模型预设](./glossary.md#model-preset)） | `auto` | 使用当前运行时的原生智能体配置。设置了 `default_cli` 时，未知运行时回退到它。 | `model_preset`、`default_cli` 或 `agents.<id>` |
+| 代码智能（[能力提供方](./glossary.md#capability-provider)） | `serena` | 新安装会尝试安装 Serena，并接入其 MCP 配置。 | `providers.code_intelligence: gortex` 或 `serena` |
 | 代码搜索保护 | `block` | 只要配置了代码智能提供方，PreToolUse 钩子就会拒绝原生 `Grep`/`Glob` 和递归 shell 搜索（`rg`、`grep -r`、`find -name`），并引导智能体改用提供方的工具。仅限已确认排除项或项目之外路径的搜索会被放行。该钩子不会提示针对项目源代码的绕过方式。 | `providers.code_intelligence_guard: off` |
-| 语义内存 | `agentmemory` | 可用时选择 Agent Memory 作为语义内存。 | `providers.semantic_memory: honcho` 或 `none` |
+| 语义内存 | `agentmemory` | 安装和更新会复用健康的 AgentMemory 端点，或安装并启动托管的本地服务，然后在成功前检查就绪状态。显式的自定义端点只会被检查，不会被替换。 | `providers.semantic_memory: honcho` 或 `none`；`OMA_NO_AGENTMEMORY=1` 会跳过 AgentMemory 设置。 |
 | 网页搜索 | `native` | 除非选择了提供方，否则搜索使用运行时的原生网页通道。 | `providers.web` |
 | 文档提供方 | `context7` | 技能请求文档查找时使用 Context7 提供方。 | `providers.docs` |
 | 遥测 | disabled | OMA 在链接时写入供应商退出设置。 | `telemetry: true` |
@@ -30,9 +30,9 @@ sidebar_label: 重要默认值
 
 提供方名称和默认值来自运行时加载器与安装器提示。安装器生成的配置文件包含可用区块的注释；使用这些注释作为与版本对应的模式指南。
 
-## 配置优先级
+## 配置优先级 {#configuration-precedence}
 
-OMA 从当前工作目录向上查找最近的 `.agents/` 目录。存在时读取 `oma-config.cue`；如果共享 CUE 评估失败，则回退到 `oma-config.yaml`。项目本地覆盖文件可以是 `oma-config.local.cue` 或 `oma-config.local.yaml`，它会合并到上层；两种本地覆盖文件只能保留一个。`OMA_MODEL_PRESET` 可以为单个进程覆盖 `model_preset`。本地配置无效时会停止加载，不会悄悄选择其他值。
+OMA 从 `$OMA_HOME/.agents/`（默认为 `~/.oma/.agents/`）加载全局默认值，然后叠加最近的项目 `.agents/` 共享配置及其本地文件。不同祖先目录中的项目根不会合并。在任一范围内，优先使用 `oma-config.cue`，以 YAML 作为回退；本地覆盖文件只能保留一个（`oma-config.local.cue` 或 `.yaml`）。`OMA_MODEL_PRESET` 会在文件加载之后覆盖 `model_preset`。本地配置无效时会停止加载。
 
 在固定预设顺序之前，模型路由有两个特殊情况：
 
@@ -48,7 +48,7 @@ OMA 从当前工作目录向上查找最近的 `.agents/` 目录。存在时读�
 
 `free` 预设为三个提供方设置提供默认值：`base_url` 为 `http://127.0.0.1:31415/v1`，`api_key_env` 为 `FREELLM_API_KEY`（兼容别名 `FREELLMAPI_API_KEY` 也接受），`model` 为 `auto`。所选环境变量中仍必须有可用 API 密钥；不存在供应商回退。需要保持机器本地时，将这些值写入 `oma-config.local.yaml`，或使用 `FREELLM_BASE_URL` 和 `FREELLM_MODEL` 进行进程级覆盖。
 
-## 后果容易被忽略的默认值
+## 后果容易被忽略的默认值 {#defaults-with-surprising-consequences}
 
 省略 `mcp.devtools_browsers` 键表示“保留当前浏览器条目”。明确的空列表会在协调时移除浏览器条目。浏览器 MCP 进程按智能体会话运行，因此仅在任务需要驱动浏览器时启用它们。
 
@@ -56,15 +56,15 @@ OMA 从当前工作目录向上查找最近的 `.agents/` 目录。存在时读�
 
 默认遥测设置为退出。设置 `telemetry: true` 后，下一次链接或更新会移除 OMA 的供应商退出条目，这可能重新启用依赖遥测的供应商功能。此设置控制供应商集成变更，不会改变 OMA 为自身记账而写入的会话成本文件。
 
-## 恢复路径
+## 恢复路径 {#recovery-paths}
 
 | 症状 | 先检查 | 恢复方式 |
 |---|---|---|
 | 供应商文件过期 | `oma doctor` 和 `oma link --dry-run` | 编辑 `.agents/` 后运行 `oma link <vendor>`；保留 SSOT 作为来源。 |
 | 模型不被接受 | `oma doctor --profile` | 切换到 `auto`，使用内置预设，或在 `models:` 下定义模型 slug。 |
 | Serena 工具超时 | `oma doctor` 和提供方区块 | 尝试 `serena.mode: stdio`；如果问题是内存压力，使用 `oma serena reap --dry-run` 预览。 |
-| 持久工作流无法停止 | `.agents/state/*-state.json` | 说出 `workflow done`；只有在工作流未清理时才检查状态文件。 |
+| [持久化工作流](./glossary.md#persistent-workflow)无法停止 | `.agents/state/*-state.json` | 说出 `workflow done`；只有在工作流未清理时才检查状态文件。 |
 | 计划回收器没有动作 | `oma doctor` 的 Serena Reaper 区块 | 设置 `serena_reaper.enabled: true`，然后运行 `oma serena reaper enable`。 |
 | 本地配置导致启动失败 | `oma doctor` 的错误路径 | 修复或移除本地覆盖；不要同时创建 `.cue` 和 `.yaml` 覆盖文件。 |
 
-继续阅读[安装](./installation.md)、[按智能体配置模型](../guide/per-agent-models.md)或[OMA 配置语义](../guide/oma-config-semantics.md)。
+继续阅读[安装](./installation.md)、[按智能体配置模型](../guide/per-agent-models.md)或[OMA 配置语义](../guide/oma-config-semantics.md)。对于此处未列出的问题，请参阅[故障排查](../guide/troubleshooting.md)。

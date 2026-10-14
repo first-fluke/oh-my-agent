@@ -8,7 +8,9 @@ description: Guide complet de la génération d'images oh-my-agent, avec dispatc
 
 `oma-image` est le routeur d'images multi-fournisseurs d'oh-my-agent. Il génère des images à partir de prompts en langage naturel, les envoie au CLI du fournisseur auprès duquel vous êtes authentifié et écrit un manifeste à côté de la sortie avec les entrées et les décisions du fournisseur nécessaires pour auditer ou reproduire l'exécution. La sortie réelle du fournisseur peut varier.
 
-La compétence s'active automatiquement avec des mots-clés comme *image*, *illustration*, *visual asset* ou *concept art*, ou lorsqu'une autre compétence a besoin d'une image comme effet secondaire (visuel principal, miniature, photo de produit).
+La compétence s'active sur des formulations comme « generate an image », « create an image », « make a picture », « draw me … » ou « image of … », sur un nom de fournisseur (`gpt-image`, `nano-banana`, `pollinations`), ou lorsqu'une autre compétence a besoin d'une image comme effet secondaire (visuel principal, miniature, photo de produit).
+
+> **TL;DR** Il vous faut l'un des éléments suivants : `POLLINATIONS_API_KEY` (`flux` / `zimage` gratuits), `codex login` (gpt-image-2 sur votre forfait ChatGPT) ou un `agy` connecté. Exécutez `oma image doctor`, puis `oma image generate "<prompt>" --vendor pollinations`. Les images et `manifest.json` sont écrits dans `.agents/results/images/{timestamp}-{shortid}/`.
 
 ---
 
@@ -16,7 +18,7 @@ La compétence s'active automatiquement avec des mots-clés comme *image*, *illu
 
 - Générer des images, illustrations, photos de produits, concept arts ou visuels principaux de landing page ;
 - comparer le même prompt entre plusieurs modèles côte à côte (`--vendor all`) ;
-- produire des ressources depuis un workflow d'éditeur (Claude Code, Codex, Gemini CLI) ;
+- produire des ressources depuis n'importe quel runtime qui charge les compétences oma (Claude Code, Codex CLI, Antigravity, Cursor, etc.) ;
 - permettre à une autre compétence (design, marketing, docs) d'appeler le pipeline d'images comme infrastructure partagée.
 
 ## Quand NE PAS l'utiliser
@@ -34,11 +36,19 @@ La compétence privilégie le CLI : lorsqu'un CLI natif peut renvoyer des octets
 
 | Fournisseur | Stratégie | Modèles | Déclencheur | Coût |
 |---|---|---|---|---|
-| `pollinations` | HTTP direct | Gratuit : `flux`, `zimage`. Avec crédits : `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` défini (inscription gratuite sur https://enter.pollinations.ai) | Gratuit pour `flux` / `zimage` |
+| `pollinations` | HTTP direct | Gratuit : `flux`, `zimage`. Avec crédits : `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` défini (inscription gratuite sur [enter.pollinations.ai](https://enter.pollinations.ai)) | Gratuit pour `flux` / `zimage` |
 | `codex` | Via le CLI en priorité avec `codex exec` (OAuth ChatGPT) | `gpt-image-2` | `codex login` (aucune clé API nécessaire) | Facturé sur votre forfait ChatGPT |
 | `antigravity` | CLI `agy` via l'abonnement Gemini Code Assist | Le modèle est choisi en interne par `agy` | `agy` installé et connecté | Aucun coût par image via Code Assist |
 
-Le mode fournisseur intégré est `auto` : il exécute les fournisseurs qui passent leurs vérifications de santé. Les modèles `flux` et `zimage` de Pollinations sont gratuits par image, mais nécessitent tout de même une `POLLINATIONS_API_KEY` ; Codex et Antigravity exigent leur propre connexion. Les estimations payantes utilisent toujours le garde-fou de confirmation du coût.
+Comment `--vendor` choisit les fournisseurs d'une exécution :
+
+| `--vendor` | Fournisseurs exécutés | Dossier de sortie | Code de sortie 5 lorsque |
+|---|---|---|---|
+| `auto` (par défaut) | chaque fournisseur dont la vérification de santé réussit | `{timestamp}-{shortid}-compare/` lorsque deux fournisseurs ou plus s'exécutent | aucun fournisseur n'est sain |
+| `all` | chaque fournisseur activé | `{timestamp}-{shortid}-compare/` lorsque deux fournisseurs ou plus s'exécutent | un fournisseur demandé n'est pas sain |
+| `codex`, `pollinations` ou `antigravity` | ce fournisseur | `{timestamp}-{shortid}/` | ce fournisseur n'est pas sain |
+
+Le mode fournisseur intégré est `auto` : il exécute **chaque** fournisseur qui passe sa vérification de santé, en parallèle. Passez `--vendor pollinations` pour rester sur le chemin gratuit. Les modèles `flux` et `zimage` de Pollinations sont gratuits par image, mais nécessitent tout de même une `POLLINATIONS_API_KEY` ; Codex et Antigravity exigent leur propre connexion. Les estimations payantes utilisent toujours le garde-fou de confirmation du coût.
 
 ---
 
@@ -58,8 +68,11 @@ codex login
 ```
 
 ```bash
-# Auto-selects the healthy provider; cost and auth depend on that provider.
+# Runs every vendor whose health check passes; cost and auth depend on those vendors.
 oma image generate "minimalist sunrise over mountains"
+
+# Stay on the free Pollinations path.
+oma image generate "minimalist sunrise over mountains" --vendor pollinations
 
 # Run all configured vendors; every selected vendor must be healthy or the command stops.
 oma image generate "cat astronaut" --vendor all
@@ -70,14 +83,18 @@ oma image generate "logo concept" --vendor codex --size 1024x1024 -n 3 -y
 # Cost estimate without spending
 oma image generate "test prompt" --dry-run
 
-# Inspect authentication and install status per vendor
-oma image doctor
-
-# List registered vendors and supported models
+# List registered vendors and their default model (supported models: oma image doctor)
 oma image vendor list
 ```
 
-`oma img` est un alias de `oma image`.
+Une exécution réussie en mode texte affiche une progression comme celle-ci (les chemins sont donnés à titre d'exemple) :
+
+```text
+[oma image] using: pollinations
+[oma image] pollinations generating... 5s
+[oma image] pollinations ok (7.4s) -> /path/to/project/.agents/results/images/20261014-101500-ab12cd/pollinations-flux-ab12cd.jpg
+[oma image] manifest: /path/to/project/.agents/results/images/20261014-101500-ab12cd/manifest.json
+```
 
 ---
 
@@ -87,7 +104,7 @@ oma image vendor list
 
 ### 1. Langage naturel (activation automatique)
 
-Dans Claude Code, Codex CLI ou Gemini CLI, décrivez simplement l'image. La compétence reconnaît des mots-clés comme *image*, *illustration*, *visual asset*, *concept art*, *hero shot*, *thumbnail* ou *product photo*.
+Dans n'importe quel runtime qui charge les compétences oma (Claude Code, Codex CLI, Antigravity, Cursor, etc.), décrivez simplement l'image. Des formulations comme « generate an image », « make a picture », « draw me … » ou « image of … » activent la compétence ; les runtimes qui associent les compétences par leur description peuvent aussi la sélectionner pour des demandes comme « concept art » ou « hero shot ».
 
 Vous n'avez pas besoin de retenir les flags du CLI. Décrivez votre besoin en langage courant et la compétence le traduit en options :
 
@@ -108,7 +125,7 @@ Exemples :
 > « Compare une photo de produit d'une tasse en céramique chez tous les fournisseurs, avec trois variantes pour chacun. »
 > « Utilise codex pour rendre cette photo de loutre dramatique et nocturne. » (avec une référence jointe)
 
-L'agent applique le [protocole de clarification](#clarification-protocol), enrichit le prompt si nécessaire et appelle `oma image generate` avec les flags déduits. Utilisez la commande slash lorsque vous voulez contrôler explicitement les valeurs exactes des flags.
+L'agent [interprète le brief](#clarification-protocol), comble les lacunes avec des valeurs par défaut et appelle `oma image generate` avec les flags déduits. Utilisez la commande slash lorsque vous voulez contrôler explicitement les valeurs exactes des flags.
 
 ### 2. Commande slash explicite
 
@@ -128,7 +145,7 @@ Les autres compétences (design, marketing, docs) appellent le pipeline comme in
 oma image generate "<prompt>" --output json
 ```
 
-Le manifeste écrit sur stdout comprend les chemins de sortie, le fournisseur, le modèle et le coût ; il est donc facile à analyser et à chaîner.
+Avec `--output json`, stdout contient un seul objet JSON `{exitCode, manifestPath, runs}` ; chaque entrée de `runs` indique son fournisseur, son statut et ses fichiers de sortie. Lisez `manifestPath` pour l'enregistrement complet. `--dry-run` affiche l'en-tête texte `[oma image] dry-run plan:` avant le plan ; ignorez cette ligne lors de l'analyse.
 
 ---
 
@@ -138,11 +155,11 @@ Le manifeste écrit sur stdout comprend les chemins de sortie, le fournisseur, l
 oma image generate "<prompt>"
   [--vendor auto|codex|pollinations|antigravity|all]
   [-n 1..5]
-  [--size 1024x1024|1024x1536|1536x1024|auto]
+  [--size WxH|auto]
   [--quality low|medium|high|auto]
   [--output-dir <dir>] [--allow-external-output]
   [-r <path>]...
-  [--timeout 180] [-y] [--no-prompt-in-manifest]
+  [--timeout <duration>] [-y] [--no-prompt-in-manifest]
   [--dry-run] [--output text|json]
 
 oma image doctor
@@ -154,18 +171,18 @@ oma image vendor list
 | Flag | Rôle |
 |---|---|
 | `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity` ou `all`. Avec `all`, chaque fournisseur demandé doit être sain (mode strict). |
-| `-n, --count <n>` | Nombre d'images par fournisseur, de 1 à 5 (limite de temps réel). |
-| `--size <size>` | Format : `1024x1024` (carré), `1024x1536` (portrait), `1536x1024` (paysage) ou `auto`. |
-| `--quality <level>` | `low`, `medium`, `high` ou `auto` (valeur par défaut du fournisseur). |
-| `--output-dir <dir>` | Répertoire de sortie. Par défaut : `.agents/results/images/{timestamp}/`. Les chemins hors de `$PWD` nécessitent `--allow-external-output`. |
+| `-n, --count <n>` | Nombre d'images par fournisseur, de 1 à 5 (limite de temps réel). Valeur par défaut : 1. |
+| `--size <size>` | `WxH`, chaque côté étant un multiple de 16 compris entre 16 et 3840, avec un rapport d'aspect entre 1:3 et 3:1 (par exemple `512x512`, `1024x1024`, `1024x1536`, `1536x1024`), ou `auto`. Valeur par défaut : `1024x1024`. |
+| `--quality <level>` | `low`, `medium`, `high` ou `auto` (par défaut). |
+| `--output-dir <dir>` | Répertoire de sortie ; les fichiers y sont écrits directement. Par défaut : `.agents/results/images/{timestamp}-{shortid}/`. Les chemins hors de `$PWD` nécessitent `--allow-external-output`. |
 | `--allow-external-output` | Autorise un répertoire de sortie situé hors de `$PWD`. |
-| `--model <name>` | Remplace le modèle sélectionné du fournisseur pour cette exécution. `antigravity` ignore ce flag car `agy` choisit son modèle. |
+| `--model <name>` | Remplace le modèle pour **chaque** fournisseur de l'exécution ; combinez-le donc avec un seul `--vendor` (par exemple `--vendor pollinations --model zimage`). `antigravity` l'ignore car `agy` choisit son modèle. |
 | `-r, --reference <path>` | Jusqu'à 10 images de référence (PNG/JPEG/GIF/WebP, ≤ 5 Mo chacune). Répétable ou séparé par des virgules. Pris en charge par `codex` et `antigravity` ; rejeté par `pollinations`. |
 | `-y, --yes` | Ignore la confirmation de coût pour les exécutions estimées à ≥ `$0.20`. Également disponible via `OMA_IMAGE_YES=1`. |
 | `--no-prompt-in-manifest` | Stocke le SHA-256 du prompt au lieu du texte brut dans `manifest.json`. |
 | `--dry-run` | Affiche le plan et l'estimation de coût sans dépenser. |
 | `--output text\|json` | Format de sortie du CLI. JSON est la surface d'intégration pour les autres compétences. |
-| `--timeout <duration>` | Délai d'attente par image. |
+| `--timeout <duration>` | Délai d'attente par image. Valeur par défaut : 180 secondes. |
 
 ---
 
@@ -197,16 +214,17 @@ Lorsqu'un utilisateur joint une image et demande d'en générer ou d'en modifier
 
 ## Structure de sortie
 
-Chaque exécution écrit dans `.agents/results/images/` un répertoire horodaté avec suffixe de hash :
+Par défaut, chaque exécution écrit dans un dossier horodaté avec suffixe de hash sous `.agents/results/images/` ; avec `--output-dir`, les fichiers sont écrits directement dans ce répertoire :
 
-```
+```text
 .agents/results/images/
-├── 20260424-143052-ab12cd/                 # single-vendor run
-│   ├── pollinations-flux.jpg
+├── 20260424-143052-ab12cd/                 # one vendor ran
+│   ├── pollinations-flux-ab12cd.jpg        # -1, -2, ... suffixes when -n > 1
 │   └── manifest.json
-└── 20260424-143122-7z9kqw-compare/         # --vendor all run
-    ├── codex-gpt-image-2.png
-    ├── pollinations-flux.jpg
+└── 20260424-143122-7z9kqw-compare/         # two or more vendors ran
+    ├── codex-gpt-image-2-7z9kqw.png
+    ├── pollinations-flux-7z9kqw.jpg
+    ├── antigravity-7z9kqw.jpg              # no model segment: agy picks the model
     └── manifest.json
 ```
 
@@ -216,7 +234,7 @@ Chaque exécution écrit dans `.agents/results/images/` un répertoire horodaté
 
 ## Coût, sécurité et annulation
 
-1. **Garde-fou de coût :** les exécutions estimées à ≥ `$0.20` demandent une confirmation. Contournez-la avec `-y` ou `OMA_IMAGE_YES=1`. Le fournisseur `pollinations` par défaut (flux/zimage) est gratuit, donc l'invite est automatiquement ignorée pour lui.
+1. **Garde-fou de coût :** les exécutions estimées à ≥ `$0.20` demandent une confirmation ; sans terminal interactif, l'exécution se termine avec le code 1 et un message mentionnant `--yes`. Contournez-la avec `-y` ou `OMA_IMAGE_YES=1`. Seul `--vendor pollinations` avec `flux` / `zimage` est garanti gratuit ; `auto` peut aussi inclure un Codex connecté.
 2. **Sécurité des chemins :** les chemins de sortie hors de `$PWD` nécessitent `--allow-external-output` pour éviter les écritures inattendues.
 3. **Annulable :** `Ctrl+C` (SIGINT/SIGTERM) annule tous les appels de fournisseurs en cours et l'orchestrateur.
 4. **Trace stable :** `manifest.json` est toujours écrit à côté des images.
@@ -225,30 +243,17 @@ Chaque exécution écrit dans `.agents/results/images/` un répertoire horodaté
 
 ---
 
-## Protocole de clarification {#clarification-protocol}
+## Comment l'agent interprète un brief {#clarification-protocol}
 
-Avant d'invoquer `oma image generate`, l'agent appelant exécute cette liste de contrôle. Si une information manque et ne peut pas être déduite, il la demande ou enrichit le prompt, puis montre l'expansion pour approbation.
+L'agent utilise ce que vous avez dit et comble les lacunes avec des valeurs créatives par défaut raisonnables pour le cadre, le style, l'éclairage et le format. Il ne pose une question que lorsqu'un choix manquant changerait sensiblement le résultat, et il n'attend pas d'approbation d'un prompt enrichi une fois que vous lui avez demandé de générer. Les formulations explicites, le texte à afficher sur l'image et l'intention des références sont conservés tels quels.
 
-**Requis :**
+| Vous dites | Ce qui se passe |
+|---|---|
+| « une pomme rouge » | Génération immédiate ; l'agent complète le cadre, le style, l'éclairage et la taille |
+| « une pomme rouge en icône vectorielle plate, 512x512 » | Votre style et votre taille sont utilisés tels quels |
+| « quelque chose pour la page d'accueil » | Une question sur le sujet, car il change le résultat |
 
-- **Sujet :** quelle est la chose principale de l'image ? (objet, personne, scène)
-- **Cadre / arrière-plan :** où se trouve-t-elle ?
-
-**Fortement recommandé (à demander si absent et non déductible) :**
-
-- **Style :** photoréaliste, illustration, rendu 3D, peinture à l'huile, concept art, vecteur plat ?
-- **Ambiance / éclairage :** clair ou sombre, chaud ou froid, dramatique ou minimal ?
-- **Contexte d'utilisation :** image principale, icône, miniature, photo de produit, affiche ?
-- **Format :** carré, portrait ou paysage ?
-
-Pour un prompt court comme *« une pomme rouge »*, l'agent **ne pose pas** de questions complémentaires. Il l'enrichit directement et montre à l'utilisateur :
-
-> Utilisateur : « une pomme rouge »
-> Agent : « Je vais la générer ainsi : *une seule pomme rouge brillante centrée sur un arrière-plan blanc épuré, éclairage studio doux, rendu photoréaliste, faible profondeur de champ, 1024×1024*. Voulez-vous que je continue, ou préférez-vous un autre style ou une autre composition ? »
-
-Lorsque l'utilisateur a rédigé un brief créatif complet (au moins 2 éléments parmi sujet + style + éclairage + composition), son prompt est respecté mot pour mot, sans clarification ni enrichissement.
-
-**Langue de sortie.** Les prompts de génération sont envoyés au fournisseur en anglais (les modèles d'image sont principalement entraînés sur des légendes anglaises). Si l'utilisateur écrit dans une autre langue, l'agent traduit et affiche la traduction pendant l'enrichissement afin que l'utilisateur puisse corriger toute mauvaise interprétation.
+Pour voir exactement ce qui a été envoyé au fournisseur, consultez le champ `prompt` de `manifest.json` (stocké sous forme de SHA-256 avec `--no-prompt-in-manifest`).
 
 ---
 
@@ -256,7 +261,7 @@ Lorsque l'utilisateur a rédigé un brief créatif complet (au moins 2 élément
 
 - **Configuration du projet :** section `image:` de `.agents/oma-config.yaml`. L'ancien `config/image-config.yaml` n'est plus lu.
 - **Variables d'environnement :**
-  - `OMA_IMAGE_DEFAULT_VENDOR` : remplace le fournisseur par défaut (sinon `pollinations`) ;
+  - `OMA_IMAGE_DEFAULT_VENDOR` : remplace le fournisseur par défaut configuré (`auto`). Le flag `--vendor` lui-même vaut `auto` par défaut ; passez donc `--vendor` à chaque commande lorsque vous avez besoin d'un fournisseur précis ;
   - `OMA_IMAGE_DEFAULT_OUT` : remplace le répertoire de sortie par défaut ;
   - `OMA_IMAGE_YES` : `1` pour ignorer la confirmation du coût ;
   - `POLLINATIONS_API_KEY` : obligatoire pour le fournisseur Pollinations (inscription gratuite).
@@ -272,13 +277,17 @@ Lorsque l'utilisateur a rédigé un brief créatif complet (au moins 2 élément
 | `--reference` non reconnu | CLI local obsolète | Exécutez `oma update` et réessayez. Ne remplacez pas la référence par une description en prose. |
 | La confirmation de coût bloque l'automatisation | L'exécution est estimée à ≥ `$0.20` | Passez `-y` ou définissez `OMA_IMAGE_YES=1`. Mieux : utilisez `pollinations`, qui est gratuit. |
 | `--vendor all` s'interrompt immédiatement | L'un des fournisseurs demandés n'est pas sain (mode strict) | Installez ou connectez le fournisseur manquant, ou choisissez un `--vendor` précis. |
-| La sortie est écrite dans un répertoire inattendu | La valeur par défaut est `.agents/results/images/{timestamp}/` | Passez `--output-dir <dir>`. Les chemins hors de `$PWD` nécessitent `--allow-external-output`. |
+| La sortie est écrite dans un répertoire inattendu | La valeur par défaut est `.agents/results/images/{timestamp}-{shortid}/` | Passez `--output-dir <dir>`. Les chemins hors de `$PWD` nécessitent `--allow-external-output`. |
+| `--out path "…" is outside $PWD. Use --allow-external-out to override.` (code de sortie 1) | `--output-dir` pointe hors du projet | Relancez avec `--allow-external-output` (le message affiche encore l'ancien nom du flag), ou choisissez un répertoire dans le projet. |
+| Plusieurs fournisseurs se sont exécutés et le dossier se termine par `-compare` | `--vendor auto` exécute chaque fournisseur sain | Passez un seul `--vendor` pour exécuter un seul fournisseur. |
 | Antigravity échoue après une vérification de santé réussie | `agy --version` prouve l'installation, pas la connexion | Connectez-vous à Gemini Code Assist, puis réessayez avec `oma image doctor` et `--vendor antigravity`. |
 
 ---
 
-## Voir aussi
+## Étapes suivantes
 
-- [Skills](/docs/core-concepts/skills) : l'architecture de compétence à deux couches qui alimente `oma-image` ;
-- [CLI Commands](/docs/cli-interfaces/commands) : référence complète de la commande `oma image` ;
-- [CLI Options](/docs/cli-interfaces/options) : matrice des options globales.
+- [Génération vidéo](./video-generation.md) : `oma-video` réutilise `oma-image` comme fournisseur visuel ;
+- [Workflows de contenu et de recherche](./content-and-research.md) : autres capacités de contenu et leurs prérequis ;
+- [Compétences](../core-concepts/skills.md) : l'architecture de compétence à deux couches qui alimente `oma-image` ;
+- [CLI Commands : image](../cli-interfaces/commands.md#image) : référence complète de la commande `oma image` ;
+- [CLI Options](../cli-interfaces/options.md) : matrice des options globales.

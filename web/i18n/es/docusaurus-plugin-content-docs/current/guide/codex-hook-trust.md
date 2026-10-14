@@ -14,7 +14,7 @@ Este es un mecanismo de seguridad de Codex, no una limitación de oh-my-agent. E
 
 ## El paso único: revisa los hooks en Codex
 
-Después de que `oma` (install), `oma link` o `oma update` escriban `.codex/hooks.json` en un proyecto que Codex aún no haya visto, los hooks todavía **no** se ejecutan. Debes abrir Codex y revisarlos una vez:
+Después de que `oma` (install), `oma link` o `oma update` escriban `.codex/hooks.json` en un proyecto que Codex aún no haya visto (en una instalación global, `~/.codex/hooks.json`), los hooks todavía **no** se ejecutan. Debes abrir Codex y revisarlos una vez:
 
 1. Abre el proyecto en el CLI de Codex.
 2. Ejecuta `/hooks` para abrir el navegador de hooks (TUI).
@@ -22,8 +22,8 @@ Después de que `oma` (install), `oma link` o `oma update` escriban `.codex/hook
 
 Hasta que lo hagas, los hooks no son de confianza y se omiten en silencio. Por eso oh-my-agent muestra un aviso cada vez que crea o cambia `.codex/hooks.json`:
 
-```
-Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run)
+```text
+⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
 Verifica el archivo generado antes de abrir Codex:
@@ -62,7 +62,7 @@ Este flag se aplica **solo** a los procesos de Codex que crea oh-my-agent. Nunca
 
 ## No hace falta el flag `[features] hooks`
 
-Las configuraciones antiguas requerían activar `[features] hooks = true` en la configuración de Codex. Los hooks son estables y están activados por defecto desde aproximadamente Codex CLI 0.14x, así que ya no hace falta. oh-my-agent dejó de escribirlo y elimina activamente el flag obsoleto `child_agents_md` de la configuración de Codex cuando lo encuentra.
+Las versiones antiguas de oh-my-agent escribían `[features] codex_hooks = true` en la configuración de Codex. Codex 0.124 renombró ese flag a `hooks` y convirtió los hooks en una funcionalidad estable y activada por defecto, así que no hace falta ningún flag. oh-my-agent no escribe ninguna de las dos claves y elimina los flags obsoletos `codex_hooks` y `child_agents_md` de la tabla `[features]` cuando los encuentra.
 
 ---
 
@@ -74,3 +74,8 @@ Las configuraciones antiguas requerían activar `[features] hooks = true` en la 
 | `oma update` con comandos de hooks sin cambios | Nada: la confianza se conserva |
 | `oma update` que cambia un comando de hook | Vuelve a ejecutar `/hooks` para confiar de nuevo (el instalador muestra un aviso) |
 | Subproceso de Codex creado por oh-my-agent | Nada: el bypass se aplica automáticamente |
+
+## Consulta también
+
+- [Integración en un proyecto existente](./integration.md): qué escribe el instalador para cada proveedor
+- [Instalación global](./global-install.md): instalaciones para todo el usuario que escriben `~/.codex/`

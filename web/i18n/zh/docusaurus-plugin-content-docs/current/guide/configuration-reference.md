@@ -16,20 +16,24 @@ oma doctor --profile
 
 预期结果是一个显示所选预设和每个智能体模型计划的已解析配置档。如果命令报告解析错误，请先修复最近的配置层，再更改模型设置。
 
-## 哪个文件优先
+## 哪个文件优先 {#which-file-wins}
 
-加载器从当前目录向上遍历，在包含共享或本地配置的最近 `.agents/` 目录处停止。在该目录中：
+加载器先从 `$OMA_HOME/.agents/`（默认为 `~/.oma/.agents/`）读取全局默认值，然后从当前目录向上遍历，在最近的项目 `.agents/` 目录处停止。在每个选定的目录中：
 
-1. 首先评估 `oma-config.cue`。
-2. 共享 CUE 文件不存在或无法评估时，使用 `oma-config.yaml`。
-3. 将一个本地文件（`oma-config.local.cue` 或 `.local.yaml`）合并到共享文件之上。
-4. 设置了 `OMA_MODEL_PRESET` 时，它会为该进程覆盖 `model_preset`。
+1. `oma-config.yaml` 提供共享值。
+2. `oma-config.cue` 存在且有效时，会覆盖它设置的每个键；它未设置的 YAML 键保持不变。如果无法评估 CUE 文件，OMA 会发出警告并只使用 YAML 文件。
+3. 将一个本地文件（`oma-config.local.cue` 或 `.local.yaml`）合并到共享结果之上。
+
+项目的共享/本地结果会覆盖全局的共享/本地结果。
+设置了 `OMA_MODEL_PRESET` 时，它会在所有文件层之后覆盖 `model_preset`。
+完整顺序、流程图和故障排查请参阅
+[配置加载](/docs/guide/oma-config-semantics#precedence-table)。
 
 映射会递归合并。数组、标量和 `null` 会替换共享值。两个本地格式同时存在是错误。格式错误的本地文件会导致失败，这样私有覆盖不会被悄悄忽略。
 
-这是最近配置层规则，不是通用的项目加 HOME 合并。全局安装读取 `~/.agents/oma-config.*`，因为 HOME 是它的安装根目录。项目命令读取最近的项目层。`auto_update_cli` 的更新检查是例外：它先检查项目，再检查 HOME，最后默认启用。
+不同祖先目录中的项目根不会合并。即使最近的项目 `.agents/` 为空，也仍会确立该边界。已退役的 `~/.agents/` 安装只作为迁移输入，不会被当作项目回退读取。全局默认值不会改变当前项目的身份或内存范围。
 
-## 顶层键
+## 顶层键 {#top-level-keys}
 
 以下键由当前运行时模式或随 OMA 发布的消费者读取。标记为 sparse 的键是有意的部分映射：省略嵌套值即可保留代码默认值。
 
@@ -43,14 +47,14 @@ oma doctor --profile
 | `telemetry` | boolean | `false` | 安装、更新和链接协调时使用的供应商遥测选择。 |
 | `model_preset` | 非空字符串 | 新模板中为 `auto` | 内置或自定义模型预设。`OMA_MODEL_PRESET` 可为单个进程覆盖它。 |
 | `free` | `base_url`、`api_key_env`、`model` | `http://127.0.0.1:31415/v1`、`FREELLM_API_KEY`、`auto` | 预设为 `free` 时的 FreeLLMAPI 设置；`FREELLM_BASE_URL` 和 `FREELLM_MODEL` 会覆盖文件值，键名永远不包含密钥。请参阅[按智能体配置模型](/docs/guide/per-agent-models#freellmapi-preset)。 |
-| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory` | `context7`、`native`、`serena`、`block`、`agentmemory` | 选择文档、搜索、代码智能和语义内存提供方。代码智能接受 `serena` 或 `gortex`；语义内存接受 `agentmemory`、`honcho` 或 `none`。`code_intelligence_guard`（`block` 或 `off`）控制 PreToolUse 搜索保护。限定在已确认的提供方排除项或项目之外路径的原生搜索，无需绕过即可放行。该保护会读取 Serena 的排除项和已启用的 gitignore 规则，或 Gortex 的排除列表；它不会根据目录名推断依赖项。该钩子不会提及 `OMA_CI_ALLOW_NATIVE`。以 `OMA_CI_ALLOW_NATIVE=1` 为前缀的 shell 搜索，仅对项目之外的资源或保护未能识别的被忽略路径绕过保护，对项目源代码无效。 |
+| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory` | `context7`、`native`、`serena`、`block`、`agentmemory` | 选择文档、搜索、代码智能和语义内存提供方。请参阅[提供方](#providers)。 |
 | `brave` | `api_key_env` 或 `api_key_vault` | unset | Brave 搜索凭据引用。 |
 | `honcho` | `base_url`、`workspace_id`、`project_id`、`api_key_env`、`api_key_vault`、`timeout_ms`、`max_results`、`max_tokens`、`recall_mode` | 请参阅[Honcho 详情](#honcho-semantic-memory) | Honcho 语义内存连接设置。 |
 | `agents` | 智能体 ID → `model`，可选的 `effort`、`thinking`、`memory` | 由预设解析 | 在所选预设之上应用的每个智能体覆盖。effort 可为 `none`、`low`、`medium`、`high` 或 `xhigh`；memory 可为 `user`、`project` 或 `local`。 |
 | `models` | 模型 slug → CLI 映射 | unset | 支持的供应商 CLI 的内联模型定义。 |
 | `custom_presets` | 预设 → description，可选的 `extends`、`agent_defaults` | unset | 用户定义的预设；`extends` 可以继承内置预设。 |
-| `vendors` | YAML：所选供应商 ID 的 `string[]`；CUE 模板：可选的 `vendors.pi` 回退映射 | YAML 列表中的所有可链接供应商 | 选择 `oma install` 和 `oma update` 在 YAML 中投影哪些供应商集成。调度能力映射位于托管编排配置中，请参阅[供应商选择和调度元数据](#vendor-selection-and-dispatch-metadata)。 |
-| `default_cli` | string | consumer fallback | 没有模型计划解析出来时的旧版仅供应商回退。 |
+| `vendors` | YAML：所选供应商 ID 的 `string[]`；CUE 模板：可选的 `vendors.pi` 回退映射 | 缺省时：`oma link` 使用所有可链接供应商，`oma update` 使用项目目录已存在的供应商 | 选择 `oma install` 和 `oma update` 在 YAML 中投影哪些供应商集成。调度能力映射位于托管编排配置中，请参阅[供应商选择和调度元数据](#vendor-selection-and-dispatch-metadata)。 |
+| `default_cli` | 供应商 ID（`claude`、`codex`、`cursor`、`antigravity`、`qwen`、`grok`、`kimi`、`kiro`、`opencode`、`pi`） | `claude`；`free` 传输为 `codex` | 没有其他方式选定供应商时使用的供应商：`auto` 下未检测到运行时，或 `free` 传输在依次检查 `--vendor`、`OMA_RUNTIME_VENDOR` 和检测到的运行时之后。请参阅[OMA 如何解析智能体的模型和 CLI](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli)。 |
 | `session.quota_cap` | `tokens`、`spawn_count`、`per_vendor: map<string, integer>` | 每个省略的维度都不设上限 | 在下一次智能体生成前检查硬性 token 和生成次数限制；请参阅[会话配额上限](#session-quota-caps)。 |
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` 的行为和扫描排除项。 |
 | `serena` | `mode: bridge\|stdio`、`auto_update` | `bridge`、`true` | Serena MCP 传输和更新行为。 |
@@ -73,9 +77,25 @@ oma doctor --profile
 | `refactor_guard` | `enabled`、`max_lines` | `false`、`500` | 选择启用停止钩子的行数预算，并设置每个文件的代码预算。 |
 | `scm` | `conventional_commits`、`branching_strategy`、`require_pr_for_default_branch`、`co_author.*`、`forbidden_patterns`、`allowed_exceptions` | 随附模板启用约定式提交和 PR 保护，并提供模板的共同作者及文件名列表 | 管理 SCM 技能、提交钩子和密钥模式保护。在启用共同作者尾注前，用你自己的值替换模板身份值。 |
 
-这些区块通过配置透传接受，并由相应功能或工作流解释。`serena_reaper` 解析上面所示的 snake_case 键，即使旧模板注释使用 camelCase 名称。添加嵌套键前请阅读对应功能指南；此页不会凭空添加所列消费者之外的键。
+这些区块通过配置透传接受，并由相应功能或工作流解释。`serena_reaper` 解析器只读取上面所示的 snake_case 键，并忽略 camelCase。随附模板仍显示 camelCase（`keepWarm`、`idleMinutes`、`graceSeconds`），而随附的 CUE 模式会在其模式区块内拒绝 snake_case 键（`field not allowed`），因此请在 `oma-config.yaml` 或本地 YAML 覆盖文件中设置它们。添加嵌套键前请阅读对应功能指南；此页不会凭空添加所列消费者之外的键。
 
-## 精确的嵌套对象
+## 精确的嵌套对象 {#exact-nested-objects}
+
+### 提供方 {#providers}
+
+`providers` 为每项能力选择一个提供方：
+
+| 键 | 接受的值 | 默认值 |
+| --- | --- | --- |
+| `docs` | `context7` | `context7` |
+| `web` | 搜索提供方 ID（小写字母、数字、`_`、`-`），例如 `native` 或 `brave` | `native` |
+| `code_intelligence` | `serena`、`gortex` | `serena` |
+| `code_intelligence_guard` | `block`、`off` | `block` |
+| `semantic_memory` | `agentmemory`、`honcho`、`none` | `agentmemory` |
+
+`code_intelligence_guard` 控制 PreToolUse 搜索保护。限定在已确认的提供方排除项或项目之外路径的原生搜索，无需绕过即可放行。该保护会读取 Serena 的排除项和已启用的 gitignore 规则，或 Gortex 的排除列表；它不会根据目录名推断依赖项。
+
+该钩子不会提及 `OMA_CI_ALLOW_NATIVE`。以 `OMA_CI_ALLOW_NATIVE=1` 为前缀的 shell 搜索，仅对项目之外的资源或保护未能识别的被忽略路径绕过保护，对项目源代码无效。
 
 ### Honcho 语义内存 {#honcho-semantic-memory}
 
@@ -113,7 +133,7 @@ honcho:
 
 ### 会话配额上限 {#session-quota-caps}
 
-`session.quota_cap` 是部分映射。每个字段都可省略；省略的字段不会限制对应维度。值必须是非负整数，`per_vendor` 将供应商名称映射到 token 预算：
+`session.quota_cap` 是部分映射。每个字段都可省略；省略的字段不会限制对应维度。值必须是不带 `_` 分隔符的非负整数（YAML 会把 `2_000_000` 读作字符串，导致该维度不设上限）。`per_vendor` 将调度供应商 ID（例如 `claude`、`codex` 或 `antigravity`）映射到 token 预算：
 
 ```yaml
 session:
@@ -138,7 +158,7 @@ vendors:
   - pi
 ```
 
-缺少列表或列表为空时，会选择 OMA 可链接供应商注册表中的全部 ID。该列表控制安装/更新投影，不是按供应商划分的命令能力映射。
+列表会精确选择其中的供应商，`vendors: []` 则不选择任何供应商。没有 `vendors` 键时，`oma link` 以 OMA 可链接供应商注册表中的每个供应商为目标，而 `oma update` 只以项目目录已存在的供应商为目标。该列表控制安装/更新投影，不是按供应商划分的命令能力映射。
 
 随附的 `.agents/oma-config.cue` 模式还允许包含 `command`、`prompt_flag`、`model_flag`、`default_model` 和 `thinking_flag` 字段的 `vendors.pi` 对象。该区块是 CUE 模板中的类型化回退形状；当前智能体调度路径从下方托管的编排注册表解析能力字段，因此不要用 `vendors.pi` 替代 YAML 选择列表。
 
@@ -160,15 +180,21 @@ vendors:
 
 托管能力文件由 OMA 更新重新生成。模型选择请编辑用户拥有的 `agents`、`models` 和 `custom_presets` 键；只有在维护托管编排数据或调试供应商适配器时才使用此能力映射。旧模板中注释的 `vendors.pi` 对象属于回退元数据，不能替代所选供应商列表或托管调度注册表。
 
-## 常见修改
+## 常见修改 {#common-changes}
 
-为项目选择固定预设，同时将个人覆盖保留在本地：
+为项目选择固定预设，同时将个人覆盖保留在本地。
+
+**共享文件**（提交到仓库）：
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
 model_preset: mixed
+```
 
+**本地覆盖文件**（被 Git 忽略）：
+
+```yaml
 # .agents/oma-config.local.yaml
 agents:
   backend:
@@ -193,7 +219,7 @@ mcp:
   devtools_browsers: []
 ```
 
-## 更新和所有权规则
+## 更新和所有权规则 {#update-and-ownership-rules}
 
 `.agents/oma-config.yaml` 由用户拥有。`oma update` 会保留现有内容，并可能在 `# Added by oma update` 标记下追加新发布的顶层模板键。`oma update --force` 可以替换用户配置、MCP 配置和 stack 目录；只有在确实要重置这些自定义内容时才使用它。本地覆盖文件仍是存放机器专属值的私有位置。
 

@@ -110,9 +110,15 @@ La sévérité détermine la manière dont le bug est traité et la rapidité de
 
 ---
 
-## La boucle de débogage en sept étapes en détail
+## La boucle de débogage en sept étapes en détail {#the-seven-stage-debug-loop-in-detail}
 
 Le workflow `/debug` exécute ces étapes dans l'ordre. Il utilise le fournisseur d'intelligence du code configuré. La recherche native est réservée aux chemins situés hors du projet ou aux chemins ignorés lorsque ce fournisseur est indisponible ou expire.
+
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
 
 ### Étape 1 : recueillir les informations sur l'erreur
 
@@ -194,7 +200,6 @@ Méthodes de lancement selon le fournisseur :
 |:-------|:------------|
 | Claude Code | Outil Agent avec `.claude/agents/debug-investigator.md` |
 | Codex CLI | Demande de sous-agent médiée par le modèle, résultats en JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / Fallback | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 Tous les emplacements vulnérables similaires sont signalés. Les occurrences confirmées sont corrigées pendant la même session.
@@ -214,7 +219,7 @@ Le workflow écrit un fichier mémoire avec :
 
 Pour déclencher le workflow de débogage, vous pouvez fournir un prompt structuré :
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -241,7 +246,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 Pour un bug plus simple, un prompt plus court suffit :
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -308,3 +313,11 @@ Le workflow de débogage est terminé lorsque :
 4. le dépôt a été recherché pour les motifs similaires et toutes les occurrences confirmées sont traitées ;
 5. un rapport de bug est enregistré en mémoire avec le symptôme, la cause racine, la correction appliquée, les fichiers modifiés, l'emplacement du test de régression et les motifs similaires trouvés ;
 6. tous les tests existants continuent de passer après la correction.
+
+---
+
+## Étapes suivantes
+
+- La cause racine traverse plusieurs domaines : [Projets multi-agents](./multi-agent-project.md)
+- Enregistrer ou reprendre l'exécution de la correction : [Résultats et reprise](./agent-results-and-resume.md)
+- Un composant d'OMA lui-même a échoué : [Dépannage](./troubleshooting.md)

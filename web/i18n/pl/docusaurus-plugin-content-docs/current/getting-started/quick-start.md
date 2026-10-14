@@ -21,7 +21,7 @@ W Windows PowerShell uruchom:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-Interaktywna konfiguracja pyta o język odpowiedzi, dostawców CLI, dostawców możliwości, preset modelu, preset umiejętności projektu oraz ewentualny wariant stosu. Przy pierwszym uruchomieniu zachowaj wartości domyślne, wybierz używanego dostawcę i preset projektu najbardziej zbliżony do repozytorium.
+Interaktywna konfiguracja pyta o język odpowiedzi, dostawców CLI, [dostawców możliwości](./glossary.md#capability-provider), [preset modelu](./glossary.md#model-preset), [preset umiejętności](./glossary.md#skill-preset) projektu oraz ewentualny wariant stosu. Przy pierwszym uruchomieniu zachowaj wartości domyślne, wybierz używanego dostawcę i preset projektu najbardziej zbliżony do repozytorium. Umiejętności każdego presetu oraz [workflowy wymagające umiejętności spoza presetu](./installation.md#workflows-that-need-skills-outside-a-preset) opisano w sekcji [Presety](./installation.md#presets).
 
 Jeśli masz już `bun`, uruchom instalator bezpośrednio:
 
@@ -29,7 +29,8 @@ Jeśli masz już `bun`, uruchom instalator bezpośrednio:
 bunx oh-my-agent@latest
 ```
 
-Skrypty początkowe instalują się w bieżącym projekcie. Użyj `oma install --global`, gdy potrzebujesz instalacji na poziomie HOME; przed łączeniem instalacji projektowej i globalnej przeczytaj [Instalację](./installation.md).
+Skrypty początkowe instalują się w bieżącym projekcie. Użyj `oma install --global`, gdy potrzebujesz instalacji na poziomie HOME; przed łączeniem instalacji projektowej i globalnej przeczytaj [Instalację globalną](../guide/global-install.md).
+
 
 ## 2. Sprawdź wynik
 
@@ -49,7 +50,9 @@ $ echo $?
 0
 ```
 
-Opcjonalne integracje MCP, przeglądarki, pamięci lub inteligencji kodu mogą pojawić się jako ostrzeżenia; są potrzebne tylko przy zadaniach, które z nich korzystają. Dla statusu czytelnego maszynowo `oma doctor --json` kończy się niezerowym kodem wyjścia, gdy raport zawiera problemy. Użyj `oma doctor --profile`, aby sprawdzić rozstrzygnięty model i CLI dla każdej kanonicznej roli agenta.
+`oma doctor` może zgłaszać problemy z opcjonalnymi integracjami jako ostrzeżenia. Domyślne przygotowanie AgentMemory jest sprawdzane podczas `oma install` i `oma update`; błędy instalacji, uruchomienia lub kontroli stanu zatrzymują te polecenia. Wybranie `providers.semantic_memory: none` albo `honcho` lub ustawienie `OMA_NO_AGENTMEMORY=1` pomija to przygotowanie.
+
+Dla statusu czytelnego maszynowo `oma doctor --json` kończy się niezerowym kodem wyjścia, gdy raport zawiera problemy. Użyj `oma doctor --profile`, aby sprawdzić rozstrzygnięty model i CLI dla każdej kanonicznej roli agenta.
 
 Jeśli `oma` jest niedostępne, ale Bun jest zainstalowany, uruchom tę samą kontrolę bez polecenia globalnego:
 
@@ -57,7 +60,7 @@ Jeśli `oma` jest niedostępne, ale Bun jest zainstalowany, uruchom tę samą ko
 bunx oh-my-agent@latest doctor
 ```
 
-Jeśli samo polecenie nadal nie jest dostępne, otwórz nową powłokę albo dodaj katalog binarny menedżera pakietów do `PATH`. Jeśli `oma doctor` zgłosi nieprawidłową konfigurację, popraw wskazane pole i uruchom polecenie ponownie. Nie usuwaj `.agents/oma-config.yaml` w ramach odzyskiwania: to konfiguracja należąca do użytkownika, która zachowuje ustawienia podczas aktualizacji.
+Jeśli samo polecenie nadal nie jest dostępne, otwórz nową powłokę albo dodaj katalog binarny menedżera pakietów do `PATH`; sposób instalacji polecenia `oma` pokazuje [Instalacja](./installation.md#method-3-global-install). Jeśli `oma doctor` zgłosi nieprawidłową konfigurację, popraw wskazane pole i uruchom polecenie ponownie. Nie usuwaj `.agents/oma-config.yaml` w ramach odzyskiwania: to konfiguracja należąca do użytkownika, która zachowuje ustawienia podczas aktualizacji.
 
 ## 3. Uruchom jedno małe zadanie
 
@@ -77,7 +80,7 @@ Dla zadania przekraczającego granice API i UI wybierz jawnie `/work` albo `/orc
 
 OMA rozpoczyna z `model_preset: auto`, Sereną do inteligencji kodu, Agent Memory do pamięci semantycznej, natywnym wyszukiwaniem w sieci i wyłączoną telemetrią. Serena używa współdzielonego transportu `bridge` i automatycznie się aktualizuje, chyba że skonfigurujesz inaczej. Browser DevTools MCP jest opcjonalny; nowa konfiguracja interaktywna najpierw oferuje Aside. Skutki tych ustawień i klucze nadpisywania opisano w [Ważnych wartościach domyślnych](./important-defaults.md).
 
-Jeśli zarządzane zadanie utknie, zacznij od `oma agent status <session-id> [agent-id]`, a następnie sprawdź jego pokwitowanie w `.agents/state/agent-runs/` oraz wstrzykniętą ścieżkę ustrukturyzowanego zgłoszenia. Rekordy te pokazują uruchomienie, zadanie, workspace, kod wyjścia i status weryfikacji. Czytelne dla człowieka pliki `result-*.md` i `progress-*.md` w `.agents/state/memories/` dodają kontekst, gdy są dostępne. Ponów tylko najmniejsze nieudane polecenie po potwierdzeniu, że uruchomienie nie jest już aktywne. Trwały workflow pozostaje aktywny do ukończenia albo do chwili wypowiedzenia `workflow done`; odzyskiwanie z pliku stanu opisano w [Workflowach](../core-concepts/workflows.md#persistent-mode-mechanics).
+Jeśli zarządzane zadanie utknie, zacznij od `oma agent status <session-id> [agent-id]`, a następnie sprawdź jego pokwitowanie w `.agents/state/agent-runs/` oraz wstrzykniętą ścieżkę ustrukturyzowanego zgłoszenia. Rekordy te pokazują uruchomienie, zadanie, workspace, kod wyjścia i status weryfikacji. Czytelne dla człowieka pliki `result-*.md` i `progress-*.md` w `.agents/state/memories/` dodają kontekst, gdy są dostępne. Ponów tylko najmniejsze nieudane polecenie po potwierdzeniu, że uruchomienie nie jest już aktywne. [Trwały workflow](./glossary.md#persistent-workflow) pozostaje aktywny do ukończenia albo do chwili wypowiedzenia `workflow done`; odzyskiwanie z pliku stanu opisano w [Workflowach](../core-concepts/workflows.md#persistent-mode-mechanics).
 
 ## Następne kroki
 
@@ -85,3 +88,4 @@ Jeśli zarządzane zadanie utknie, zacznij od `oma agent status <session-id> [ag
 - [Instalacja](./installation.md) — presety, konfiguracja dostawców, instalacje globalne i aktualizacje
 - [Agenci](../core-concepts/agents.md) — 33 pakiety umiejętności i role dispatchu
 - [Workflowy](../core-concepts/workflows.md) — planowanie, wykonanie równoległe, QA i tryby trwałe
+- [Rozwiązywanie problemów](../guide/troubleshooting.md) — gdy instalacja, dostawca albo hook nie działa zgodnie z oczekiwaniami

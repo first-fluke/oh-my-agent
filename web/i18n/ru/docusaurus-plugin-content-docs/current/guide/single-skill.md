@@ -49,7 +49,7 @@ description: "Подробное руководство по задачам в �
 
 ## Предполётный чек-лист
 
-Перед составлением промпта ответьте на четыре вопроса (они соответствуют четырём элементам [структуры промпта](/docs/core-concepts/skills)):
+Перед составлением промпта ответьте на четыре вопроса:
 
 | Элемент | Вопрос | Почему это важно |
 |---------|--------|----------------|
@@ -111,10 +111,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **Оценка сложности:** средняя (2–3 файла, включая решения по UX валидации)
 3. **Загружаемые ресурсы:**
    - `execution-protocol.md` (всегда)
-   - `snippets.md` (паттерны формы и Zod)
-   - существующие паттерны компонентов и `snippets.md`, если навык их предоставляет
+   - `snippets.md` (паттерны формы и Zod, а также существующие паттерны компонентов, если навык их предоставляет)
 4. **Execution contract (если включён) может вывести `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -165,7 +164,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - подходящий `stack/tech-stack.md` или ссылки на tech-stack варианта, если они есть
 <!-- oma-docs:ignore-end -->
 5. **Execution contract (если включён) может вывести `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -204,7 +203,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md` (шаблон экрана, паттерн провайдера Riverpod)
    - `screen-template.dart`
 4. **Execution contract (если включён) может вывести `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -247,7 +246,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`
    - `anti-patterns.md` (проверка во время оптимизации)
 4. **Execution contract (если включён) может вывести `CHARTER_CHECK`:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -324,10 +323,20 @@ Add deliverables: data standards table, glossary, migration script.
 | В `CHARTER_CHECK` агента указаны пункты `Must NOT do`, которые на самом деле нужны | Объём выходит за пределы одного домена | Сначала спланируйте всю функцию через `/plan` |
 | Исправление затрагивает 3+ файла в разных слоях | Одно исправление влияет на несколько доменов | Используйте `/debug` с более широким объёмом или `/work` |
 | Агент обнаруживает несоответствие API-контракта | Фронтенд и бэкенд расходятся | Запустите `/plan`, определите контракты и заново запустите обоих агентов |
-| Шлюз качества не проходит на точках интеграции | Компоненты не соединяются должным образом | Добавьте шаг проверки QA: `oma agent spawn qa "Review integration"` |
+| Шлюз качества не проходит на точках интеграции | Компоненты не соединяются должным образом | Запустите `/review` или добавьте проход QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | Задача вырастает из «одного компонента» до «трёх компонентов + новый route + API» | Объём расползается | Остановитесь, запустите `/plan` для декомпозиции, затем `/orchestrate` |
 | Агент блокируется на HIGH | Требования фундаментально неоднозначны | Ответьте на вопросы агента или запустите `/brainstorm` для уточнения подхода |
 
 ### Практическое правило
 
 Если вы перезапускаете одного и того же агента с уточнениями более двух раз, задача, вероятно, стала мультидоменной. Запустите `/work` или хотя бы `/plan`, чтобы разделить её на части.
+
+---
+
+## Дальнейшие шаги
+
+- Задача охватывает несколько доменов: [Мультиагентные проекты](./multi-agent-project.md)
+- Задача — это ошибка: [Исправление ошибок](./bug-fixing.md)
+- Проверить или возобновить запуск: [Результаты агентов и возобновление](./agent-results-and-resume.md)
+- Что-то пошло не так: [Устранение неполадок](./troubleshooting.md)
+- Выбрать между навыком и workflow: [Рабочие процессы](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

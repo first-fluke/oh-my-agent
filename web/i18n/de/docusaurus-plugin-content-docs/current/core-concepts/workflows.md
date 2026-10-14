@@ -7,7 +7,33 @@ description: Vollständige Referenz aller 21 oh-my-agent-Workflows mit Slash-Bef
 
 Workflows sind strukturierte mehrstufige Prozesse, die durch Slash-Befehle oder natürlichsprachliche Keywords ausgelöst werden. Sie definieren, wie Agenten bei Aufgaben zusammenarbeiten — von einphasigen Hilfsprogrammen bis hin zu komplexen 5-Phasen-Qualitäts-Gates.
 
-Es gibt 21 Workflows, davon sind 4 persistent (sie halten den Zustand und können nicht versehentlich unterbrochen werden).
+Es gibt 21 Workflows, davon sind 4 [persistent](../getting-started/glossary.md#persistent-workflow) (sie halten den Zustand und können nicht versehentlich unterbrochen werden).
+
+## Workflows im Überblick {#workflows-at-a-glance}
+
+| Workflow | Einsatzzweck | Persistent |
+|---|---|---|
+| [`/orchestrate`](#orchestrate) | Automatisierte parallele Agentenausführung nach einem Plan, mit Verifikationsschleifen | Ja |
+| [`/work`](#work) | Schrittweise domänenübergreifende Koordination: planen, implementieren, QA, beheben | Ja |
+| [`/ultrawork`](#ultrawork) | Der Qualitäts-Workflow mit 5 Phasen und 12 isolierten Review-Schritten | Ja |
+| [`/ralph`](#ralph) | ultrawork wiederholen, bis mechanisch prüfbare Kriterien bestehen | Ja |
+| [`/plan`](#plan) | PM-Aufgabenzerlegung mit Abhängigkeiten und API-Verträgen | Nein |
+| [`/brainstorm`](#brainstorm) | Design-first-Ideenfindung vor der Planung | Nein |
+| [`/architecture`](#architecture) | Architekturentscheidungen, Reviews und ADRs | Nein |
+| [`/deepinit`](#deepinit) | AGENTS.md, ARCHITECTURE.md und `docs/` für eine bestehende Codebasis erzeugen | Nein |
+| [`/review`](#review) | QA-Review: Sicherheit, Performance, Barrierefreiheit, Code-Qualität | Nein |
+| [`/security`](#security) | Sicherheitsscans, Pentests bereitgestellter Webanwendungen, Validierung von Befunden, CI-Gates | Nein |
+| [`/debug`](#debug) | Bug-Diagnose und -Behebung mit Regressionstest | Nein |
+| [`/design`](#design) | DESIGN.md mit Tokens, Komponentenmustern und Barrierefreiheitsregeln | Nein |
+| [`/scm`](#scm) | Git-Operationen und Conventional Commits | Nein |
+| [`/tools`](#tools) | Sichtbarkeit und Einschränkungen von MCP-Tools | Nein |
+| [`/convert`](#convert) | Dokumente und Medien zwischen Formaten konvertieren | Nein |
+| [`/docs`](#docs) | Erkennung und Synchronisierung von Dokumentations-Drift | Nein |
+| [`/recap`](#recap) | Tages- oder Zeitraum-Zusammenfassung der Arbeit über KI-Tools hinweg | Nein |
+| [`/stack-set`](#stack-set) | Stack-spezifische Referenzen für einen Domänen-Skill | Nein |
+| [`/video`](#video) | MP4-Erzeugung über den Skill `oma-video` | Nein |
+| [`/schedule`](#schedule) | Wiederkehrende, zeitbasierte Agentenjobs | Nein |
+| [`/explain`](#explain) | Ein interaktiver HTML-Erklärer für eine Codeänderung oder ein Thema | Nein |
 
 ---
 
@@ -21,11 +47,11 @@ Wählen Sie nach dem Koordinations- und Prüfbedarf der Aufgabe. Folgen Sie eine
 | Mehrere Domänen mit schrittweiser Planung, Implementierung und QA | `/work` | Eine API-Änderung mit den Web- und Mobile-Clients koordinieren |
 | Automatische Delegation unabhängiger Aufgaben zur parallelen Ausführung | `/orchestrate` | Backend- und Frontend-Aufgaben nach Klärung der Abhängigkeiten parallel implementieren |
 | Ausdrücklich angeforderter umfassender Qualitätsprozess | `/ultrawork` | Alle Reviews für Planung, Implementierung, Verifikation, Verbesserung und Auslieferungsbereitschaft durchführen |
-| Ausdrücklicher Auftrag, die Ausführung bis zum Bestehen mechanisch prüfbarer Kriterien zu wiederholen | `/ralph` | Implementierung und unabhängige Prüfung wiederholen, bis die festgelegten Regressionsprüfungen bestehen, innerhalb der Schutzvorrichtungen |
+| Ausdrücklicher Auftrag, die Ausführung bis zum Bestehen mechanisch prüfbarer Kriterien zu wiederholen | `/ralph` | Implementierung und Judge-Prüfung wiederholen, bis die festgelegten Regressionsprüfungen bestehen, innerhalb der Schutzvorrichtungen |
 
 `/orchestrate` lädt einen verwendbaren Plan oder erstellt ihn über `/plan`, bevor Agenten starten. Sie müssen `/plan` nicht vorher ausführen. Ein vorhandener Plan ist daher kein Unterscheidungsmerkmal zwischen `/work` und `/orchestrate`; entscheidend ist die gewünschte Koordination. Beide können unabhängige Aufgaben parallel ausführen.
 
-Akzeptanzkriterien und Tests gehören auch zu Aufgaben mit einem einzelnen Skill. Allein ihr Vorhandensein erfordert kein `/ralph`: Jede Ralph-Iteration führt den gesamten ultrawork-Prozess und einen unabhängigen Judge aus. Wählen Sie Ralph, wenn Sie diese Prüfschleife wiederholen möchten. Schutzvorrichtungen können die Ausführung beenden, obwohl Aufgaben noch unvollständig oder blockiert sind.
+Akzeptanzkriterien und Tests gehören auch zu Aufgaben mit einem einzelnen Skill. Allein ihr Vorhandensein erfordert kein `/ralph`: Jede Ralph-Iteration führt den gesamten ultrawork-Prozess und einen Judge-Durchlauf aus. Wählen Sie Ralph, wenn Sie diese wiederholte Prüfschleife wünschen. Schutzvorrichtungen können die Ausführung beenden, obwohl Aufgaben noch unvollständig oder blockiert sind.
 
 Diese Tabelle ist eine Auswahlhilfe, kein automatischer Workflow-Router. Der Host-Agent kann eine geeignete Vorgehensweise empfehlen; das Empfehlen oder Erklären eines Workflows startet ihn nicht. Ein Slash-Befehl wählt ihn ausdrücklich aus. Ist der Hook zur Keyword-Erkennung aktiviert, können passende konfigurierte Keywords oder Muster ebenfalls einen Workflow aktivieren, sofern die Filter für Informationsfragen dies zulassen. Der Detektor klassifiziert nicht die Anzahl der Domänen, prüft nicht die Ausführbarkeit eines Plans und wendet diese Tabelle nicht als Prioritätsalgorithmus an.
 
@@ -43,7 +69,7 @@ Der persistente Modus startet nur bei einem **expliziten Aufruf** — dem eigene
 
 **Beschreibung:** Automatisierte parallele Agentenausführung über die CLI. Startet Subagenten über die CLI, koordiniert mit dauerhaftem Laufzeitstatus und Ausführungsbelegen (Receipts), überwacht den Fortschritt und führt Verifikationsschleifen aus.
 
-**Persistent:** Ja. Zustandsdatei: `.agents/state/orchestrate-state.json`.
+**Persistent:** Ja. Zustandsdatei: `.agents/state/orchestrate-state-{sessionId}.json`.
 
 **Trigger-Keywords:**
 | Sprache | Keywords |
@@ -76,11 +102,32 @@ Substantiv-Whitelist (14): app, api, service, server, cli, tool, website, dashbo
 1. **Schritt 0 — Vorbereitung:** Koordinations-Skill, Context-Loading-Leitfaden und Memory-Protokoll lesen. Vendor erkennen.
 2. **Schritt 1 — Plan laden/erstellen:** `.agents/results/plan-{sessionId}.json`, danach den neuesten `plan-*.json` prüfen. Fehlt ein Plan oder ist er nicht ausführungsbereit (Aufgabe ohne Agent, Prioritätsstufe, Abhängigkeiten oder Akzeptanzkriterien), `/plan` inline mit derselben Sitzungs-ID aufrufen. Den Plan vorstellen und die bestehende Autorisierung nutzen; vor der Delegation nur wesentliche fehlende Entscheidungen oder eine neue Autorisierung erfragen.
 3. **Schritt 2 — Sitzung initialisieren:** `oma-config.yaml` laden, CLI-Zuordnung anzeigen, die Sitzungs-ID aus der Planerstellung wiederverwenden oder eine neue erzeugen (`session-YYYYMMDD-HHMMSS`) und `orchestrator-session-{sessionId}.md` sowie `task-board-{sessionId}.md` im konfigurierten Memory-Speicher anlegen.
-4. **Schritt 3 — Agenten starten:** Für jede Prioritätsstufe (zuerst P0, dann P1 ...) Agenten mit der passenden Vendor-Methode starten (native Subagenten bei passendem Runtime-/Vendor-Paar, `oma agent spawn` für externe oder Cross-Vendor-Arbeit). MAX_PARALLEL nie überschreiten.
+4. **Schritt 3 — Agenten starten:** Für jede Prioritätsstufe (die niedrigste zuerst: Stufe 1, dann Stufe 2 usw.) Agenten mit der passenden Vendor-Methode starten (native Subagenten bei passendem Runtime-/Vendor-Paar, `oma agent spawn` für externe oder Cross-Vendor-Arbeit). MAX_PARALLEL nie überschreiten.
 5. **Schritt 4 — Überwachen:** Run-bezogene `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-Dateien und strukturierte Ausführungsbelege (Receipts) abfragen, dann das Task Board aktualisieren. Abschlüsse, Fehler und Abstürze beobachten.
-6. **Schritt 5 — Verifizieren:** Pro abgeschlossenem Agenten `verify.sh {agent-type} {workspace}` ausführen. Bei Fehlschlag mit Fehlerkontext erneut starten (maximal 2 Wiederholungen). Wiederholte Fehlschläge können alternative Hypothesen rechtfertigen, doch alle Versuche verbrauchen dasselbe Gesamtbudget für die Wiederherstellung. Ungeklärte Belege sichern, wenn das Budget keine Vergleichsrunde abdeckt.
+6. **Schritt 5 — Verifizieren:** Für jeden abgeschlossenen Agenten eine mechanische Selbstprüfung ausführen (Lint, Typecheck, Tests, Diff-Umfang; bis zu 3 Zyklen), danach `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug und pm; andere Agententypen vermerken `SKIP`) und anschließend ein QA-Cross-Review. Schlägt die Verifikation fehl, mit Fehlerkontext erneut starten (maximal 2 Wiederholungen). Wiederholte Fehlschläge können alternative Hypothesen rechtfertigen, doch alle Versuche verbrauchen dasselbe Gesamtbudget für die Wiederherstellung (`max_attempts`, Standard 3 einschließlich des ursprünglichen Versuchs). Ungeklärte Belege sichern, wenn das Budget keine Vergleichsrunde abdeckt.
 7. **Schritt 6 — Zusammentragen:** Run-bezogene Ergebnisdateien und strukturierte Ergebnisdeklarationen (Claims) lesen und die Zusammenfassung erstellen.
 8. **Schritt 7 — Abschlussbericht:** Sitzungszusammenfassung präsentieren. Wenn Experimente durchgeführt wurden, Belege und Entscheidungen zusammenfassen; Lessons nur festhalten, wenn eine wiederverwendbare Ursache feststeht.
+
+```mermaid
+flowchart TD
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task board, domain gate"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
+```
 
 **Gelesene Dateien:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, run-bezogene Fortschritts-/Ergebnisdateien und strukturierte Ausführungsbelege (Run-Receipts).
 **Geschriebene Dateien:** Run-bezogener Sitzungs- und Task-Board-Status im konfigurierten Memory-Speicher, strukturierte Ausführungsbelege (Receipts) und Ergebnisdeklarationen (Claims) sowie der Abschlussbericht.
@@ -93,7 +140,7 @@ Substantiv-Whitelist (14): app, api, service, server, cli, tool, website, dashbo
 
 **Beschreibung:** Schrittweise domänenübergreifende Koordination. PM plant zuerst, dann führen Agenten die Aufgaben im autorisierten Umfang aus, gefolgt von QA-Review und Problembehebung.
 
-**Persistent:** Ja. Zustandsdatei: `.agents/state/work-state.json`.
+**Persistent:** Ja. Zustandsdatei: `.agents/state/work-state-{sessionId}.json`.
 
 **Trigger-Keywords:**
 | Sprache | Keywords |
@@ -129,7 +176,7 @@ Das bloße Wort "work" ist kein Trigger — es ist gewöhnliches Vokabular ("Doe
 
 **Beschreibung:** Der qualitätsfokussierte Workflow. Er umfasst 5 Phasen, insgesamt 17 Schritte und 12 isolierte Review-Schritte. Jede Phase hat ein Gate, das vor dem Fortfahren bestanden werden muss.
 
-**Persistent:** Ja. Zustandsdatei: `.agents/state/ultrawork-state.json`.
+**Persistent:** Ja. Zustandsdatei: `.agents/state/ultrawork-state-{sessionId}.json`.
 
 **Trigger-Keywords:**
 | Sprache | Keywords |
@@ -140,11 +187,13 @@ Das bloße Wort "work" ist kein Trigger — es ist gewöhnliches Vokabular ("Doe
 
 | Phase | Schritte | Agent | Review-Perspektive |
 |-------|-------|-------|-------------------|
-| **PLAN** | 1-4 | PM-Agent (inline) | Vollständigkeit, Meta-Review, Überarbeitung/Einfachheit |
+| **PLAN** | 1-4 | PM-Agent (Autor, Schritt 1) + CCR-Reviewer (Schritte 2-4) | Vollständigkeit, Meta-Review, Überarbeitung/Einfachheit |
 | **IMPL** | 5 | Dev-Agenten (gestartet) | Implementierung |
-| **VERIFY** | 6-8 | QA-Agent (gestartet) | Übereinstimmung, Sicherheit (OWASP), Regressionsprävention |
-| **REFINE** | 9-13 | Refactor-Agent (gestartet) | Dateiaufteilung, Wiederverwendbarkeit, Kaskadenauswirkung, Konsistenz, toter Code |
-| **SHIP** | 14-17 | QA-Agent (gestartet) | Code-Qualität (Lint/Abdeckung), UX-Flow, Verwandte Probleme, Deployment-Bereitschaft |
+| **VERIFY** | 6-8 | CCR-Reviewer | Übereinstimmung, Sicherheit (OWASP), Regressionsprävention |
+| **REFINE** | 9-13 | Refactor-Agent (Schritte 9, 11, 13) + CCR-Reviewer (Schritte 10, 12) | Dateiaufteilung, Wiederverwendbarkeit, Kaskadenauswirkung, Konsistenz, toter Code |
+| **SHIP** | 14-17 | CCR-Reviewer | Code-Qualität (Lint/Abdeckung), UX-Flow, Verwandte Probleme, Deployment-Bereitschaft |
+
+Jeder Review-Schritt läuft als eigener Reviewer-Subagent mit frischem Kontext ([Cross-Context Review](../getting-started/glossary.md#cross-context-review-ccr)). Der PM-Agent prüft seinen eigenen Plan nicht inline.
 
 **Gate-Definitionen:**
 - **PLAN_GATE:** Plan dokumentiert, Annahmen aufgelistet, Alternativen berücksichtigt, Überarbeitungs-Review durchgeführt, Umfang autorisiert.
@@ -156,6 +205,31 @@ Das bloße Wort "work" ist kein Trigger — es ist gewöhnliches Vokabular ("Doe
 **Verhalten bei Gate-Fehlschlag:**
 - Erster Fehlschlag: zum relevanten Schritt zurückkehren, beheben und erneut versuchen.
 - Zweiter Fehlschlag beim selben Problem: Ursache neu bewerten; wenn Alternativen im verbleibenden Budget einen Test verdienen, isolierte Experimente mit dem geforderten Verhalten und den definierten Metriken abgleichen.
+- Grenzen: Ein PLAN-Fehlschlag führt nur vor der ersten Aufgabenverteilung zu Schritt 1 zurück (danach ist der Plan unveränderlich). VERIFY- und REFINE-Wiederholungen enden, wenn die Zahl der Gate-Fehlschläge das konfigurierte Maximum erreicht (Standard: 5 VERIFY- + REFINE-Zyklen) oder die Kostenobergrenze der Sitzung überschritten wird.
+
+```mermaid
+flowchart TD
+  S1["Step 1: PM Agent writes the plan JSON"] --> PR["Steps 2-4: 3 CCR reviewers, completeness, meta-review, simplicity"]
+  PR --> PG{"PLAN_GATE"}
+  PG -->|"fail, before first dispatch"| S1
+  PG -->|pass| S5["Step 5: implementation agents in parallel"]
+  S5 --> IG{"IMPL_GATE"}
+  IG -->|"fail: re-spawn failed agents"| S5
+  IG -->|pass| VR["Steps 6-8: 3 CCR reviewers, alignment, safety, regression"]
+  VR --> VG{"VERIFY_GATE"}
+  VG -->|fail| VL{"cycle limit or cost cap reached?"}
+  VL -->|"no: root-cause fix"| S5
+  VG -->|pass| RF["Steps 9-13: 2 CCR reviews, then refactor actions"]
+  RF --> RG{"REFINE_GATE"}
+  RG -->|fail| RL{"cycle limit or cost cap reached?"}
+  RL -->|"no: re-spawn Refactor Agent"| RF
+  RG -->|"pass, or recorded skip"| SR["Steps 14-17: 4 CCR reviewers, quality, UX, related issues, deployment"]
+  SR --> SG{"SHIP_GATE"}
+  SG -->|"fail: re-run affected steps"| SR
+  SG -->|pass| DONE(["Final results; optional oma docs verify"])
+  VL -->|yes| STOP(["Stop: save step results, report unresolved items"])
+  RL -->|yes| STOP
+```
 
 **Bedingte Erweiterungen:** Vergleiche anhand definierter Metriken, Entscheidungen und Belege zu Experimenten, budgetierte Hypothesenexploration sowie Erkenntnisse, die auf wiederverwendbaren Ursachen beruhen.
 
@@ -167,9 +241,9 @@ Das bloße Wort "work" ist kein Trigger — es ist gewöhnliches Vokabular ("Doe
 
 ### /ralph
 
-**Beschreibung:** Persistente, selbstreferenzielle Ausführungsschleife. Umhüllt ultrawork mit einem unabhängigen Verifier, der die Abschlusskriterien nach jeder Iteration prüft. Meldet vollständigen Abschluss, wenn alle Kriterien bestehen, teilweisen Abschluss, wenn nur bestandene und blockierte Kriterien verbleiben, oder stoppt beim Auslösen einer Schutzvorrichtung.
+**Beschreibung:** Persistente, selbstreferenzielle Ausführungsschleife. Umhüllt ultrawork mit einem [Judge](../getting-started/glossary.md#judge), der die Abschlusskriterien nach jeder Iteration prüft. Meldet vollständigen Abschluss, wenn alle Kriterien bestehen, teilweisen Abschluss, wenn nur bestandene und blockierte Kriterien verbleiben, oder stoppt beim Auslösen einer Schutzvorrichtung.
 
-**Persistent:** Ja. Zustandsdatei: `.agents/state/ralph-state.json`.
+**Persistent:** Ja. Zustandsdatei: `.agents/state/ralph-state-{sessionId}.json`.
 
 **Trigger-Keywords:**
 | Sprache | Keywords |
@@ -187,17 +261,36 @@ Bloße Wiederaufnahme-Phrasen ("keep going", "carry on", "계속해", "続けて
 
 **Phasen:**
 1. **Phase 0 — INIT:** Voraussetzungen laden (Context-Loading, Memory-Protokoll, Judge-Protokoll). Mechanisch prüfbare Abschlusskriterien definieren und aufzeichnen, etwa Test-Assertions, Typprüfungen ohne Dateiausgabe, Exit-Codes oder die Existenz von Dateien. Build-Prüfungen nur auf ausdrücklichen Wunsch aufnehmen. Kriterien vorstellen und im autorisierten Umfang fortfahren. Sitzung mit `max_iterations: 5` initialisieren.
-2. **Phase 1 — WORK:** Ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) als eine einzelne Iteration ausführen.
-3. **Phase 2 — JUDGE:** Unabhängiger Verifier prüft jedes Abschlusskriterium gegen den tatsächlichen Projektzustand (autorisierte Prüfungen ausführen und die Existenz von Dateien verifizieren). Nachweise und den Status jedes Kriteriums aufzeichnen, darunter PASS, FAIL, REGRESSED oder BLOCKED.
-4. **Phase 3 — DECIDE:** Bei ausschließlich PASS vollständigen Abschluss melden. Verbleiben nur PASS und BLOCKED, teilweisen Abschluss melden. Bei FAIL oder REGRESSED den Fehlerkontext an die nächste Iteration weitergeben, sofern die Schutzvorrichtungen dies zulassen.
-5. **Schutzvorrichtungen:** Die Schleife stoppt, wenn `current_iteration >= max_iterations` (Standard 5), oder wenn dasselbe Kriterium dreimal hintereinander mit derselben Ursache fehlschlägt (Stuck-Erkennung).
+2. **Phase 1 — EXEC:** Ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) als eine einzelne Iteration unter Ralphs Sitzungs-ID ausführen. Danach das Artefakt-Gate `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>` ausführen. Schlägt es fehl, gilt die Iteration als nicht durchgeführt: Ralph zeichnet den Verstoß auf, repariert die Arbeit und führt das Gate erneut aus.
+3. **Phase 2 — JUDGE:** Ein Judge prüft jedes Abschlusskriterium gegen den tatsächlichen Projektzustand (autorisierte Prüfungen ausführen und die Existenz von Dateien verifizieren). Der Workflow-Prompt weist den Orchestrator an, den Judge als separaten Agenten mit frischem Kontext zu starten, der nur die Kriterien erhält; nichts bestätigt diesen Start mechanisch, und eine Laufzeit, die keine Subagenten starten kann, wird angewiesen, inline zu urteilen und `ralph.judge-inline-fallback` aufzuzeichnen. Nachweise und den Status jedes Kriteriums aufzeichnen, darunter PASS, FAIL, REGRESSED oder BLOCKED.
+4. **Entscheidungs-Gate:** Bei ausschließlich PASS vollständigen Abschluss melden. Verbleiben nur PASS und BLOCKED, teilweisen Abschluss melden. Bei FAIL oder REGRESSED den Fehlerkontext an die nächste Iteration weitergeben, sofern die Schutzvorrichtungen dies zulassen.
+5. **Phase 3 — REPLAN:** Die nächste Iteration auf FAIL- und REGRESSED-Einträge eingrenzen (diff-bewusste Diagnose), BLOCKED-Einträge überspringen und PASS-Kriterien im Prüfumfang des Judge belassen. Zurück zu Phase 1.
+6. **Schutzvorrichtungen:** Die Schleife stoppt, wenn `current_iteration >= max_iterations` (Standard 5). Ein Kriterium, das dreimal hintereinander mit derselben Ursache fehlschlägt, wird BLOCKED und nicht erneut versucht (Stuck-Erkennung).
 
-**Zentraler Unterschied zu /ultrawork:** Ultrawork führt einen Prozess mit 5 Phasen aus und wiederholt Arbeiten bei fehlgeschlagenen Phasen-Gates. Ralph umhüllt ultrawork mit einer Retry-Schleife und einem unabhängigen Judge, der den Abschluss objektiv verifiziert. Die Schleife endet mit einem Bericht über vollständigen Abschluss, teilweisen Abschluss bei blockierten Aufgaben oder einen Stopp durch Schutzvorrichtungen.
+```mermaid
+flowchart TD
+  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
+  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
+  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
+  REPAIR --> GATE
+  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
+  JUDGE --> VERDICT{"verdict"}
+  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
+  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
+  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
+  LIMIT -->|yes| SAFE(["Safeguard report"])
+  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
+  REPLAN --> EXEC
+```
+
+Der Judge-Knoten ist der in Phase 2 beschriebene, per Prompt angewiesene Judge: Der Workflow weist den Orchestrator an, ihn mit frischem Kontext zu starten, und eine Laufzeit, die keine Subagenten starten kann, urteilt inline und zeichnet den Fallback auf.
+
+**Zentraler Unterschied zu /ultrawork:** Ultrawork führt einen Prozess mit 5 Phasen aus und wiederholt Arbeiten bei fehlgeschlagenen Phasen-Gates. Ralph umhüllt ultrawork mit einer Retry-Schleife und einem per Prompt angewiesenen Judge, der jedes Kriterium erneut anhand der Projektbelege verifiziert. Die Schleife endet mit einem Bericht über vollständigen Abschluss, teilweisen Abschluss bei blockierten Aufgaben oder einen Stopp durch Schutzvorrichtungen.
 
 **Gelesene Dateien:** `.agents/workflows/ralph/resources/judge-protocol.md`, alle ultrawork-Dateien.
-**Geschriebene Dateien:** `session-ralph.md` (Memory), Iterationsprotokolle, Abschlussbericht.
+**Geschriebene Dateien:** `session-ralph-{sessionId}.md` (Memory), Iterationsprotokolle, Abschlussbericht.
 
-**Einsatzbereich:** Wenn Sie ausdrücklich wiederholte Ausführung und unabhängige Verifikation anhand mechanischer Abschlusskriterien wünschen. Tests allein erfordern kein Ralph; berücksichtigen Sie den vollständigen ultrawork-Prozess in jeder Iteration und seine Schutzvorrichtungen.
+**Einsatzbereich:** Wenn Sie ausdrücklich wiederholte Ausführung und erneute Verifikation durch einen Judge anhand mechanischer Abschlusskriterien wünschen. Tests allein erfordern kein Ralph; berücksichtigen Sie den vollständigen ultrawork-Prozess in jeder Iteration und seine Schutzvorrichtungen.
 
 ---
 
@@ -222,6 +315,8 @@ Bloße Wiederaufnahme-Phrasen ("keep going", "carry on", "계속해", "続けて
 
 **Ausführung:** Inline (kein Subagenten-Spawning). Wird von `/orchestrate` oder `/work` verwendet; beide aktualisieren Aufgaben- und Statusfelder während der Ausführung.
 
+---
+
 ### /brainstorm
 
 **Beschreibung:** Design-first-Ideenfindung. Erkundet die Absicht, klärt Einschränkungen, schlägt Ansätze vor und erstellt ein genehmigtes Designdokument vor der Planung.
@@ -235,7 +330,7 @@ Bloße Wiederaufnahme-Phrasen ("keep going", "carry on", "계속해", "続けて
 | Japanisch | "ブレインストーミング", "アイデア", "設計探索" |
 | Chinesisch | "头脑风暴", "创意", "设计探索" |
 
-**Schritte:** Projektkontext erkunden (MCP-Analyse) -> Klärende Fragen stellen (eine nach der anderen) -> 2-3 Ansätze mit Abwägungen vorschlagen -> Design abschnittweise präsentieren (mit Benutzergenehmigung bei jedem Schritt) -> Designdokument nach `docs/plans/` speichern -> Überleitung: `/plan` vorschlagen.
+**Schritte:** Projektkontext erkunden (MCP-Analyse) -> Klärende Fragen stellen (eine nach der anderen) -> 2-3 Ansätze mit Abwägungen vorschlagen -> Design abschnittweise präsentieren (mit Benutzergenehmigung bei jedem Schritt) -> Designdokument nach `docs/plans/designs/{NNN}-{name}.md` speichern -> Überleitung: `/plan` vorschlagen.
 
 **Regeln:** Keine Implementierung oder Planung vor der Design-Genehmigung. Keine Code-Ausgabe. YAGNI.
 
@@ -274,9 +369,9 @@ Bloße Wiederaufnahme-Phrasen ("keep going", "carry on", "계속해", "続けて
 | Japanisch | "プロジェクト初期化" |
 | Chinesisch | "项目初始化" |
 
-**Schritte:** Vorbereitung -> Codebasis analysieren (Projekttyp, Architektur, implizite Regeln, Domänen, Grenzen) -> ARCHITECTURE.md generieren (Domänenkarte, unter 200 Zeilen) -> `docs/`-Wissensbasis generieren (design-docs/, exec-plans/, generated/, product-specs/, references/, Domänendokumente) -> Root-AGENTS.md generieren (~100 Zeilen, Inhaltsverzeichnis) -> Boundary-AGENTS.md-Dateien generieren (Monorepo-Pakete, unter 50 Zeilen pro Datei) -> Vorhandene Infrastruktur aktualisieren (bei erneuter Ausführung) -> Validieren (keine toten Links, Zeilenlimits).
+**Schritte:** Vorbereitung -> Codebasis analysieren (Projekttyp, Architektur, implizite Regeln, Domänen, Grenzen) -> ARCHITECTURE.md generieren (Domänenkarte, unter 200 Zeilen) -> `docs/`-Wissensbasis generieren (design-docs/, plans/, generated/, product-specs/, references/, Domänendokumente) -> Root-AGENTS.md generieren (~100 Zeilen, Inhaltsverzeichnis) -> Boundary-AGENTS.md-Dateien generieren (Monorepo-Pakete, unter 50 Zeilen pro Datei) -> Vorhandenes Harness aktualisieren (bei erneuter Ausführung) -> Validieren (keine toten Links, Zeilenlimits).
 
-**Ausgabe:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/exec-plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md und domänenspezifische Dokumentation wie entdeckt.
+**Ausgabe:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md und domänenspezifische Dokumentation, je nach Befund.
 
 ---
 
@@ -320,17 +415,17 @@ Cloudflares Audit-Methodik dient als Grundlage für die unabhängige Prüfung un
 
 **Schritte:**
 
-1. Lies `.agents/skills/oma-security/SKILL.md` und nur die Ressourcen, die für das Ziel und den Auftrag nötig sind.
-2. Bestimme das Ziel (`source`, `skill`, `mcp` oder `web_runtime`) und den Auftrag (`setup`, `scan`, `diff`, `pentest`, `triage`, `validate`, `ci` oder `troubleshoot`). Prüfe Version, verfügbare Schnittstelle, Zugangsdaten und Ausführungsbudget der ausgewählten Engine.
-3. Führe die ausgewählte Engine im vereinbarten Umfang aus. Verwende vorhandenen Deepsec-State weiter, soweit anwendbar. Binde einen ARTEX-Lauf an eine geprüfte, festgeschriebene Version, eine isolierte Bereitstellung, ein Konto, eine Liste zulässiger Ziele und ein Budget. ARTEX nutzt die verifizierte UI/API des geprüften Snapshots oder eine manuell bzw. extern ausgeführte Aufgabe; die CI-Automatisierung erfordert einen verifizierten Adapter und Ausführungsbelege für die Aufgaben.
-4. Bewahre Rohdaten und Exit-Codes der Engines auf und normalisiere die Befunde, ohne ihre Herkunft oder widersprüchliche Ergebnisse zu verwerfen. Prüfe Kandidaten unabhängig; dokumentiere statische Validierung und beobachtete Reproduktion getrennt.
-5. Berichte über Abdeckung, Befunde, Belege, offene Arbeiten und das maßgebliche CI-Ergebnis. Leite Korrekturen an den für die betroffene Komponente zuständigen Spezialisten weiter.
+1. `.agents/skills/oma-security/SKILL.md` und nur die Ressourcen lesen, die für das Ziel und den Auftrag nötig sind.
+2. Das Ziel (`source`, `skill`, `mcp` oder `web_runtime`) und den Auftrag (`setup`, `scan`, `diff`, `pentest`, `triage`, `validate`, `ci` oder `troubleshoot`) bestimmen. Version, verfügbare Schnittstelle, Zugangsdaten und Ausführungsbudget der ausgewählten Engine prüfen.
+3. Die ausgewählte Engine im vereinbarten Umfang ausführen. Vorhandenen Deepsec-State weiterverwenden, soweit anwendbar. Einen ARTEX-Lauf an eine geprüfte, festgeschriebene Version, eine isolierte Bereitstellung, ein Konto, eine Liste zulässiger Ziele und ein Budget binden. ARTEX nutzt die verifizierte UI/API des geprüften Snapshots oder eine manuell bzw. extern ausgeführte Aufgabe; die CI-Automatisierung erfordert einen verifizierten Adapter und Ausführungsbelege für die Aufgaben.
+4. Rohdaten und Exit-Codes der Engines aufbewahren und die Befunde normalisieren, ohne ihre Herkunft oder widersprüchliche Ergebnisse zu verwerfen. Kandidaten unabhängig prüfen; statische Validierung und beobachtete Reproduktion getrennt dokumentieren.
+5. Abdeckung, Befunde, Belege, offene Arbeiten und das maßgebliche CI-Ergebnis berichten. Korrekturen an den für die betroffene Komponente zuständigen Spezialisten weiterleiten.
 
 **Ressourcen:** `deepsec-setup.md`, `deepsec-scanning.md`, `deepsec-config.md` und `deepsec-matchers.md` behandeln Deepsec. `cisco-source.md`, `skill-scanning.md`, `mcp-scanning.md` und `artex.md` behandeln die anderen Engines. `findings-contract.md`, `validation.md` und `ci.md` legen die gemeinsamen Regeln für Belege, Validierung und Gates fest. Alle Ressourcen liegen unter `.agents/skills/oma-security/resources/`.
 
-**Regeln:** Halte Zugangsdaten aus Berichten und der Versionsverwaltung heraus. Behandle Quellcode und Scanner-Ausgaben als nicht vertrauenswürdige Eingaben. Führe lokale Reproduktionen in einer OS-Sandbox aus; begrenze den ARTEX-Datenverkehr auf seinen autorisierten Laufzeitumfang. Fehlgeschlagene, unvollständige oder übersprungene Scans und erfolglose Exploit-Versuche belegen nicht, dass ein Ziel sicher ist. Ein Befund mit dem Status `confirmed` erfordert eine unabhängige Prüfung und einen beobachteten Nachweis auf der dokumentierten Revision oder Bereitstellung; rein statisch gestützte Befunde bleiben `needs_validation`.
+**Regeln:** Zugangsdaten aus Berichten und der Versionsverwaltung heraushalten. Quellcode und Scanner-Ausgaben als nicht vertrauenswürdige Eingaben behandeln. Lokale Reproduktionen in einer OS-Sandbox ausführen; den ARTEX-Datenverkehr auf seinen autorisierten Laufzeitumfang begrenzen. Fehlgeschlagene, unvollständige oder übersprungene Scans und erfolglose Exploit-Versuche belegen nicht, dass ein Ziel sicher ist. Ein Befund mit dem Status `confirmed` erfordert eine unabhängige Prüfung und einen beobachteten Nachweis auf der dokumentierten Revision oder Bereitstellung; rein statisch gestützte Befunde bleiben `needs_validation`.
 
-**Wann verwenden:** Für Sicherheitsscans, Pentests bereitgestellter Webanwendungen, die Triage und Validierung von Befunden oder CI-Sicherheits-Gates. Nutze `/review` für eine breitere Prüfung von Codequalität, Barrierefreiheit und Performance.
+**Wann verwenden:** Für Sicherheitsscans, Pentests bereitgestellter Webanwendungen, die Triage und Validierung von Befunden oder CI-Sicherheits-Gates. Nutzen Sie `/review` für eine breitere Prüfung von Codequalität, Barrierefreiheit und Performance.
 
 ---
 
@@ -488,7 +583,7 @@ Cloudflares Audit-Methodik dient als Grundlage für die unabhängige Prüfung un
 
 ### /schedule
 
-**Beschreibung:** Zeitbasierte Agentenjobs über die Befehle `oma schedule <action>` registrieren und verwalten. Jobs liegen in einer globalen Registry (`~/.agents/schedule/`) und werden über den nativen Scheduler des Betriebssystems ausgelöst (launchd unter macOS, systemd user timers unter Linux, schtasks unter Windows, crontab als POSIX-Fallback). Jeder Lauf tritt über `oma agent spawn` erneut in das Harness ein.
+**Beschreibung:** Zeitbasierte Agentenjobs über die Befehle `oma schedule <action>` registrieren und verwalten. Jobs liegen in einer globalen Registry (`~/.oma/schedule/`) und werden über den nativen Scheduler des Betriebssystems ausgelöst (launchd unter macOS, systemd user timers unter Linux, schtasks unter Windows, crontab als POSIX-Fallback). Jeder Lauf tritt über `oma agent spawn` erneut in das Harness ein.
 
 **Trigger-Keywords:** Keine (Slash-Workflow für zeitbasierte Jobs mit `oma schedule <action>`).
 
@@ -617,15 +712,15 @@ Die folgenden Workflows werden nicht per Keyword ausgelöst und müssen mit eine
 
 Persistente Workflows (orchestrate, ultrawork, work, ralph) erstellen bei explizitem Aufruf Zustandsdateien in `.agents/state/` (siehe [Persistente Workflows](#persistent-workflows)):
 
-```
+```text
 .agents/state/
-├── orchestrate-state.json
-├── ultrawork-state.json
-├── work-state.json
-└── ralph-state.json
+├── orchestrate-state-{sessionId}.json
+├── ultrawork-state-{sessionId}.json
+├── work-state-{sessionId}.json
+└── ralph-state-{sessionId}.json
 ```
 
-Diese Dateien enthalten: Workflow-Name, aktuelle Phase/aktueller Schritt, Sitzungs-ID, Zeitstempel und etwaigen ausstehenden Zustand.
+`{sessionId}` ist die Sitzungs-ID des Hosts, sodass sich gleichzeitige Sitzungen keine Datei teilen. Eine Datei hält den Workflow-Namen, die Sitzungs-ID, den Aktivierungszeitpunkt und den Verstärkungszähler fest, nach `oma goal set` zusätzlich den Goal Contract. Der Phasenfortschritt wird in Memory-Dateien wie `session-ultrawork.md` geführt, nicht hier.
 
 ### Verstärkung
 
@@ -653,42 +748,24 @@ Der Workflow kann auch natürlich enden, wenn alle Schritte abgeschlossen und da
 
 ## Typische Workflow-Abfolgen
 
-### Feature in einer einzelnen Domäne
-```
-Describe the task → relevant skill → implement → focused verification
-```
+| Ziel | Abfolge |
+|------|---------|
+| Feature in einer einzelnen Domäne | Aufgabe beschreiben → passender Skill → implementieren → gezielte Verifikation |
+| Komplexes domänenübergreifendes Projekt | `/work` → PM plant → Review im autorisierten Umfang → Agenten starten → QA prüft → Probleme beheben → Bericht |
+| Automatisierte parallele Implementierung | `/orchestrate` → Plan laden oder erstellen → Abhängigkeiten auflösen → unabhängige Aufgaben starten → verifizieren → Bericht |
+| Maximale Lieferqualität | `/ultrawork` → PLAN (Plan + 3 Reviews) → IMPL → VERIFY (3 Reviews) → REFINE (2 Reviews + 3 Refactor-Aktionen) → SHIP (4 Reviews) |
+| Bug-Untersuchung | `/debug` → reproduzieren → Grundursache → minimale Korrektur → Regressionstest → Scan nach ähnlichen Mustern |
+| Design-zu-Implementierung-Pipeline | `/brainstorm` → Designdokument → `/plan` → Aufgabenzerlegung → `/orchestrate` → parallele Implementierung → `/review` → `/scm` |
+| Einrichtung einer neuen Codebasis | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
+| Wiederholte Ausführung mit Judge-Verifikation | `/ralph` → Kriterien definieren → ultrawork → Artefakt-Gate → Judge → nach Bedarf wiederholen → Bericht über Abschluss, teilweisen Abschluss oder Schutzvorrichtung |
 
-### Komplexes domänenübergreifendes Projekt
-```
-/work → PM plans → review within authorized scope → agents spawn → QA reviews → fix issues → report
-```
+---
 
-### Automatisierte parallele Implementierung
-```
-/orchestrate → load or create plan → resolve dependencies → spawn independent tasks → verify → report
-```
+## Siehe auch
 
-### Maximale Lieferqualität
-```
-/ultrawork → PLAN (4 review steps) → IMPL → VERIFY (3 review steps) → REFINE (5 review steps) → SHIP (4 review steps)
-```
-
-### Bug-Untersuchung
-```
-/debug → reproduce → root cause → minimal fix → regression test → similar pattern scan
-```
-
-### Design-zu-Implementierung-Pipeline
-```
-/brainstorm → design document → /plan → task breakdown → /orchestrate → parallel implementation → /review → /scm
-```
-
-### Neue-Codebasis-Einrichtung
-```
-/deepinit → AGENTS.md + ARCHITECTURE.md + docs/
-```
-
-### Wiederholte Ausführung mit unabhängiger Verifikation
-```
-/ralph → define criteria → ultrawork → judge → repeat as needed → completion, partial completion, or safeguard report
-```
+- [Parallele Ausführung](./parallel-execution.md): `oma agent spawn`, `oma agent parallel` und Überwachung
+- [Projektstruktur](./project-structure.md): wo Workflow-Zustand und Memory-Dateien liegen
+- [`oma goal set`](../cli-interfaces/commands.md#goal-set): Stop-Gate und Budget für persistente Workflows
+- [Leitfaden für Multi-Agenten-Projekte](../guide/multi-agent-project.md)
+- [Fehlerbehebung](../guide/troubleshooting.md)
+- [Glossar](../getting-started/glossary.md)

@@ -9,18 +9,29 @@ description: "Руководство по OMA: выбор задачи с учё
 ## Быстрый старт
 
 1. Откройте проект в выбранной IDE или CLI с поддержкой AI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen или другом поддерживаемом host)
-2. Выбранный host загружает навыки из `.agents/skills/`; включённые hooks могут обнаруживать workflow по ключевым словам естественного языка
+2. Выбранный host загружает [навыки](../getting-started/glossary.md#skill) из `.agents/skills/`; включённые hooks могут обнаруживать [рабочие процессы](../getting-started/glossary.md#workflow) по ключевым словам естественного языка
 3. Опишите желаемый результат естественным языком. Host или выбранный workflow направит задачу в подходящий skill
 4. Для работы нескольких агентов используйте `/work` или `/orchestrate`
 
 Для задачи одного домена специальный синтаксис не нужен. Используйте [руководство выбора навыка и рабочего процесса](/docs/core-concepts/workflows#choosing-a-skill-or-workflow), чтобы выбрать один skill, `/work`, `/orchestrate`, `/ultrawork` или `/ralph`. Для установки см. [Быстрый старт](../getting-started/quick-start.md), а перед сменой провайдеров — [Важные defaults](../getting-started/important-defaults.md).
+
+## Выбор руководства
+
+| Ваша задача | С чего начать | Руководство |
+|-----------|------------|-------|
+| Одно изменение в одном домене | Обычный prompt (маршрутизация навыков) | [Один навык](./single-skill.md) |
+| Фича, затрагивающая API, UI, mobile или базу данных | `/work` (пошагово) или `/orchestrate` (автоматически) | [Мультиагентные проекты](./multi-agent-project.md) |
+| Баг с сообщением об ошибке | `/debug` вместе с ошибкой и шагами воспроизведения | [Исправление ошибок](./bug-fixing.md) |
+| Наблюдение за агентами во время работы | `oma dashboard terminal` | [Мониторинг через дашборд](./dashboard-monitoring.md) |
+| Аудит или возобновление результатов агентов | `oma agent resume SESSION_ID --dry-run` | [Результаты и возобновление](./agent-results-and-resume.md) |
+| Что-то сломалось | `oma doctor --json` | [Устранение неполадок](./troubleshooting.md) |
 
 ---
 
 ## Пример 1: простая задача одного домена
 
 **Вы вводите:**
-```
+```text
 Create a login form component with email and password fields, client-side validation, and accessible labels using Tailwind CSS
 ```
 
@@ -30,10 +41,9 @@ Create a login form component with email and password fields, client-side valida
 2. Слой 1 (`SKILL.md`) уже загружен: identity агента, core rules и список библиотек
 3. Ресурсы Слоя 2 загружаются по требованию:
    - `execution-protocol.md`: 4-шаговый workflow (Analyze, Plan, Implement, Verify)
-   - `snippets.md`: паттерны формы и валидации Zod
-   - существующие component patterns и `snippets.md`, если skill их предоставляет
+   - `snippets.md`: паттерны формы и валидации Zod, а также существующие component patterns, если skill их предоставляет
 4. Агент выводит **CHARTER_CHECK**:
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -57,7 +67,7 @@ Create a login form component with email and password fields, client-side valida
 ## Пример 2: проект из нескольких доменов
 
 **Вы вводите:**
-```
+```text
 Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ```
 
@@ -68,38 +78,40 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 **Использование `/work` (пошагово, под контролем пользователя):**
 
-```
+```text
 /work Build a TODO app with user authentication, task CRUD, and a mobile app
 ```
 
 3. **Шаг 1, PM Agent планирует:**
    - Определяет домены: backend (auth API, task CRUD), frontend (login, task list UI), mobile (Flutter app)
    - Определяет API contracts: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `GET /tasks`, `POST /tasks`, `PUT /tasks/:id`, `DELETE /tasks/:id`
-   - Создаёт приоритетный task breakdown:
-     - P0: Backend auth API, Backend task CRUD API
-     - P1: формы входа и регистрации во frontend, список задач во frontend, экраны авторизации в mobile, список задач в mobile
-     - P2: QA review
+   - Создаёт task breakdown по уровням приоритета (сначала выполняются младшие уровни):
+     - Tier 1: Backend auth API, Backend task CRUD API
+     - Tier 2: формы входа и регистрации во frontend, список задач во frontend, экраны авторизации в mobile, список задач в mobile
+     - Tier 3: QA review
    - Сохраняет результат в `.agents/results/plan-{sessionId}.json`
 
 4. **Шаг 2, ревью плана:** агент показывает план и продолжает в пределах уже полученного разрешения, запрашивая только существенное недостающее решение или новое разрешение.
 
-5. **Шаг 3, запуск агентов по приоритетам:**
+5. **Шаг 3, запуск агентов по уровням приоритета:**
    ```bash
-   # P0 tier (parallel)
-   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent spawn db "User and task schema design" session-todo-01 &
+   # Tier 1 (parallel). Task IDs come from .agents/results/plan-session-todo-01.json
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 --task-id api-auth -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 --task-id db-schema &
    wait
 
-   # P1 tier (parallel, after P0 completes)
-   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   # Tier 2 (parallel, after tier 1 completes)
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 --task-id web-ui -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 --task-id mobile-ui -w ./apps/mobile &
    wait
    ```
+
+   `--task-id` должен совпадать с `id` задачи в плане сессии; без него ID задачи по умолчанию равен ID агента, а сессия с планом отклоняет ID, которого в плане нет (`Unknown plan task`). В ad-hoc сессиях без плана его можно не указывать.
 
 6. **Шаг 4, QA Agent выполняет ревью:**
    - Security: соответствие OWASP Top 10 (JWT validation, CSRF, SQL injection check)
    - Performance: проверка N+1 query и pagination
-   - Accessibility: WCAG 2.1 AA для всех frontend components
+   - Accessibility: WCAG 2.2 AA для всех frontend components
    - Cross-domain: соответствие API contract между frontend, mobile и backend
 
 7. **Шаг 5, итерация:** если QA находит CRITICAL issues, повторно запустите ответственного агента с QA report.
@@ -109,7 +121,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ## Пример 3: исправление бага
 
 **Вы вводите:**
-```
+```text
 There's a bug. Clicking the save button shows "Cannot read property 'map' of undefined" in the task list
 ```
 
@@ -140,7 +152,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 ## Пример 4: дизайн-система
 
 **Вы вводите:**
-```
+```text
 Design a dark premium landing page for my B2B SaaS analytics product
 ```
 
@@ -186,7 +198,7 @@ oma link claude codex antigravity
 
 # Monitor while agents work (separate terminal)
 oma dashboard terminal        # Terminal UI with live table
-oma dashboard web    # Web UI at http://localhost:9847
+oma dashboard web             # Web UI; prints http://127.0.0.1:9847/
 
 # After implementation, run QA
 oma agent spawn qa "Review notification feature across all platforms" session-notif-01
@@ -196,6 +208,7 @@ oma stats get
 ```
 
 Если текущий runtime совпадает с target vendor в `.agents/oma-config.yaml`, workflow должен предпочесть native subagents:
+
 - Claude Code -> `.claude/agents/*.md`
 - Codex CLI -> `.codex/agents/*.toml`
 - Qwen Code -> `.qwen/agents/*.md`, выбирается через `subagent_type` Agent tool
@@ -208,7 +221,7 @@ oma stats get
 ## Пример 6: ultrawork для максимального качества
 
 **Вы вводите:**
-```
+```text
 /ultrawork Build a payment processing module with Stripe integration
 ```
 
@@ -261,6 +274,7 @@ oma stats get
 | `/brainstorm` | Non-persistent | Design-first ideation с 2–3 предложениями подходов | Перед выбором подхода реализации |
 | `/deepinit` | Non-persistent | Инициализация проекта (AGENTS.md, ARCHITECTURE.md, docs/) | Настройка oh-my-agent в существующей кодовой базе |
 | `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality | Перед merge кода и pre-deployment review |
+| `/security` | Non-persistent | Сканирует исходный код приложений, навыки агентов или MCP-компоненты; выполняет ограниченные веб-тесты на проникновение против тестового развёртывания; проверяет findings и настраивает security gates через `oma-security` | Перед релизом или когда изменению нужен security scan или gate |
 | `/debug` | Non-persistent | Structured debugging: reproduce, diagnose, fix, regression test, scan | Исследование bugs и errors |
 | `/design` | Non-persistent | 7-фазный design workflow с DESIGN.md и tokens | Создание design systems, landing pages и UI redesign |
 | `/scm` | Non-persistent | SCM workflow для Git (branch/merge/conflict/worktree/baseline) и Conventional Commit с автоопределением type/scope и splitting features | После code changes или при задачах repository configuration management |
@@ -273,7 +287,7 @@ oma stats get
 | `/recap` | Non-persistent | Суммирует работу по истории поддерживаемых AI tools | Daily или period retrospectives |
 | `/schedule` | Non-persistent | Регистрирует recurring agent jobs | Nightly recap, scans или housekeeping |
 | `/video` | Non-persistent | Создаёт воспроизводимое видео из script, narration и visuals | Shorts, explainers и demos |
-| `/ralph` | Persistent | Повторяет ultrawork с независимым judge и loop safeguards | Явный запрос повторять выполнение до механически проверяемых критериев |
+| `/ralph` | Persistent | Повторяет ultrawork с judge, работающим по prompt, и loop safeguards | Явный запрос повторять выполнение до механически проверяемых критериев |
 
 ---
 
@@ -329,7 +343,7 @@ Preset installer `all` следует актуальному registry. Табл�
 | **oma-coordination** | Ручная координация нескольких агентов | Пошаговые task и handoff guidance |
 | **oma-db** | Schema design, ERD, query tuning, capacity planning | Schema documentation, migrations и recovery plan |
 | **oma-debug** | Bug reproduction и root cause analysis | Minimal fix, regression evidence и pattern scan |
-| **oma-deepsec** | Agent-powered vulnerability scanning | Scan, triage, revalidation и gate reports |
+| **oma-security** | Security scanning исходного кода, agent skills и MCP; ограниченные web penetration tests | Проверенные findings и конфигурация scan gates |
 | **oma-design** | Design systems, landing pages, tokens | `DESIGN.md`, tokens и component guidance |
 | **oma-dev-workflow** | CI/CD, monorepos, migrations, release automation | Workflow configuration и release checks |
 | **oma-docs** | Broken references и documentation drift | Verify report или diff-targeted sync candidates |
@@ -360,37 +374,21 @@ Preset installer `all` следует актуальному registry. Табл�
 
 ## Настройка дашбордов
 
-### Терминальный дашборд
-
 ```bash
-oma dashboard terminal
+oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
+oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Показывает обновляемую в реальном времени таблицу в терминале:
-- ID сессии и общий статус (RUNNING / COMPLETED / FAILED)
-- строки агентов: status, turn count, latest activity, elapsed time
-- наблюдает за `.agents/state/memories/` для обновлений прогресса
+Обе команды наблюдают за `.agents/state/memories/` в текущем каталоге. Передайте `--project-root <path>`, чтобы наблюдать за другим проектом, или задайте `MEMORIES_DIR`. Таблица агентов содержит четыре столбца:
 
-### Веб-дашборд
+| Столбец | Источник |
+|--------|--------|
+| Agent | `task-board.md` или имена агентов, найденные в файлах памяти |
+| Status | Символы в терминале: ● running (зелёный), ✓ completed (голубой), ✗ failed (красный), ○ blocked (жёлтый), ◌ pending (приглушённый) |
+| Turn | `turn: N` в файле агента `progress-<agent>*.md` |
+| Task | Текст задачи из task board или файла агента |
 
-```bash
-oma dashboard web
-# Opens http://localhost:9847
-```
-
-Возможности:
-- обновления в реальном времени через WebSocket (без ручного refresh)
-- auto-reconnect при потере соединения
-- session status с цветными indicators (green=complete, yellow=running, red=failed)
-- поток activity log из progress и result files
-- исторические данные сессий
-
-### Рекомендуемая раскладка
-
-Используйте 3 терминала:
-1. **Dashboard terminal:** `oma dashboard terminal` для непрерывного мониторинга
-2. **Command terminal:** команды запуска агентов и workflow
-3. **Build terminal:** test runs, build logs, git operations
+Под таблицей оба дашборда показывают последнюю активность из пяти недавно изменённых файлов памяти. Раскладки, источники данных и шаги восстановления описаны в разделе [Мониторинг через дашборд](./dashboard-monitoring.md).
 
 ---
 
@@ -433,27 +431,38 @@ oma dashboard web
 ## Советы
 
 1. **Будьте конкретны в prompt.** "Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL" даст лучший результат, чем "make an app."
+
 2. **Используйте workspace для параллельных агентов.** Всегда передавайте `-w ./path`, чтобы предотвратить конфликты файлов.
+
 3. **Зафиксируйте API contracts до запуска реализации.** Сначала выполните `/plan`, чтобы frontend и backend согласовали формы endpoint.
+
 4. **Мониторьте активно.** Откройте dashboard terminal, чтобы быстро заметить сбои агентов.
+
 5. **Итерируйте с re-spawn.** Если результат агента неверен, повторно запустите его с исходной задачей и контекстом исправления. Не начинайте с нуля.
+
 6. **Согласуйте координацию с задачей.** Для одного домена начните с одного skill; используйте [руководство выбора](/docs/core-concepts/workflows#choosing-a-skill-or-workflow), когда нужна координация или явно запрошен quality process.
+
 7. **Для неоднозначных идей используйте `/brainstorm` перед `/plan`.** Brainstorm уточняет intent и подход до декомпозиции PM agent.
+
 8. **Запускайте `/deepinit` в новых codebases.** Он создаёт AGENTS.md и ARCHITECTURE.md, которые помогают агентам понять структуру проекта.
+
 9. **Настройте `model_preset`.** Начните с `auto`, выберите фиксированный preset вроде `claude`, `antigravity`, `codex`, `qwen`, `cursor`, `kiro` или `mixed`, либо используйте `free` с локальным gateway. Добавьте overrides `agents:`. См. [Модели по агентам](./per-agent-models.md).
+
 10. **Используйте `/ultrawork`, когда явно нужен полный процесс ревью.** 5-фазный workflow выполняет 12 изолированных review steps; одна загрузка skills не запускает эти проверки.
 
 ---
 
-## Устранение неполадок
+## Устранение неполадок {#troubleshooting}
+
+Ниже приведены распространённые проблемы. Сообщения об ошибках, сбои результатов запусков, расписания и hooks разобраны в разделе [Устранение неполадок](./troubleshooting.md).
 
 | Проблема | Причина | Исправление |
 |---------|------|-----|
 | Навыки не обнаруживаются в IDE | Отсутствует `.agents/skills/` или нет файлов `SKILL.md` | Запустите installer (`bunx oh-my-agent@latest`), проверьте symlinks в `.claude/skills/` и перезапустите IDE |
-| CLI не найден при spawn | Выбранный AI CLI не установлен или отсутствует в `PATH` | Выполните `which <selected-cli>` (например, `claude`, `codex`, `agy`, `qwen` или `kiro`), откройте новый shell или установите его по руководству |
+| CLI не найден при spawn | Выбранный AI CLI не установлен или отсутствует в `PATH` | Выполните `which <selected-cli>` (например, `claude`, `codex`, `agy`, `qwen` или `kiro-cli`), откройте новый shell или установите его по руководству |
 | Агенты создают конфликтующий код | Нет workspace isolation | Используйте отдельные workspaces: `-w ./apps/api`, `-w ./apps/web` |
-| Dashboard показывает "No agents detected" | Агенты ещё не записали память | Подождите запуска агентов (первая запись на turn 1) или проверьте соответствие session ID |
-| Web dashboard не запускается | Зависимости не установлены | Сначала выполните `bun install` в каталоге web/ |
+| Dashboard показывает "No agents detected yet" | Агенты ещё не записали память, или dashboard наблюдает за другим каталогом | Дождитесь первого progress-файла; запускайте из корня проекта или передайте `--project-root <path>` |
+| `oma dashboard web` завершается с "port 9847 is already in use" | Порт занят другим процессом | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA report содержит 50+ issues | Для первого review большой codebase это нормально | Сначала разберите CRITICAL и HIGH; MEDIUM/LOW задокументируйте для будущих sprint |
 | Автодетекция запускает неправильный workflow | Неоднозначность keywords | Используйте явный `/command`, а не естественный язык. Сообщите о false trigger для улучшения |
 | Persistent workflow не останавливается | Файл state всё ещё существует | Скажите в чате "workflow done" или вручную удалите state file из `.agents/state/` |
@@ -462,5 +471,15 @@ oma dashboard web
 | Агент превышает execution budget | Задача слишком сложна для одного запуска | Разбейте задачу, используйте workflow с явными границами или повторите с более узким acceptance contract |
 | Для агента выбран неправильный CLI | Не настроен `model_preset` или отсутствует agent override | Выполните `oma install` или задайте `model_preset` в `oma-config.yaml`. См. [Модели по агентам](./per-agent-models.md) |
 
-Для паттернов задач одного домена см. [руководство одного навыка](./single-skill.md).
-Для подробностей интеграции проекта см. [руководство интеграции](./integration.md).
+---
+
+## Дальнейшие шаги
+
+- Одно изменение в одном домене: [Один навык](./single-skill.md)
+- Фича, затрагивающая несколько доменов: [Мультиагентные проекты](./multi-agent-project.md)
+- Баг с сообщением об ошибке: [Исправление ошибок](./bug-fixing.md)
+- Наблюдение за запуском: [Мониторинг через дашборд](./dashboard-monitoring.md)
+- Аудит или возобновление результатов агентов: [Результаты и возобновление](./agent-results-and-resume.md)
+- Что-то сломалось: [Устранение неполадок](./troubleshooting.md)
+- Подробности интеграции проекта: [руководство интеграции](./integration.md)
+- Термины из этих руководств: [Глоссарий](../getting-started/glossary.md)

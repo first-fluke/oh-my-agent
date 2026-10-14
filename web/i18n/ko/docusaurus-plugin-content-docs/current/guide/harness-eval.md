@@ -6,6 +6,10 @@ description: 짝지어진 격리 저장소 태스크와 결정론적 아티팩�
 
 # 하네스 평가
 
+:::tip 서로 어떻게 연결되나요
+[스킬 평가](./skill-eval.md)는 `SKILL.md` 하나가 도움이 되는지 측정하고, [스킬 최적화](./skill-opt.md)는 held-out 게이트 아래에서 그 본문을 편집합니다. 하네스 평가(이 페이지)는 저장소 태스크에서 `.agents/` 오버레이 전체를 비교합니다. [인시던트 회귀 사례](./harness-incidents.md)는 관측된 실패를 평가 사례와 스킬 픽스처로 바꿉니다. [프로젝트 하네스 진화](./harness-evolution.md)는 인시던트 캡처와 스킬 최적화를 예산이 정해진 사이클로 실행하며, [예약 에이전트](./scheduled-agents.md)는 그 사이클을 실행하는 OS 스케줄러입니다.
+:::
+
 `oma harness eval`은 대상 에이전트의 모델을 바꾸지 않은 채, 후보 OMA 하네스가 그 에이전트를 개선하는지 측정합니다. [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307)의 테스트 타임 평가 패턴을 따릅니다. 대상 모델은 고정하고, 하네스만 바꾸고, 같은 태스크에서 결과를 비교하는 방식입니다.
 
 이 명령은 `oma skill eval`보다 큰 단위를 평가합니다.
@@ -16,6 +20,14 @@ description: 짝지어진 격리 저장소 태스크와 결정론적 아티팩�
 | `oma harness eval` | 범위가 지정된 `.agents/` 오버레이 | 저장소 워크스페이스에 만들어진 파일과 출력 |
 
 스킬 평가는 "이 스킬이 도움이 되는가?"에 답합니다. 하네스 평가는 "이 스킬·워크플로우·규칙·에이전트 지시의 조합이 고정된 에이전트를 더 안정적으로 저장소 태스크를 끝내게 만드는가?"에 답합니다.
+
+**첫 실행 전에:**
+
+- 첫 실행은 `--live --record`로 기록하세요. `inspect`(기본 동작), `rescore`, `fixture-replay`, `rerun`은 모두 그 기록을 읽습니다.
+- 판정을 내리려면 선택한 분할에 채점된 태스크가 5개 이상 있어야 합니다. `pass`에는 최소 5포인트의 향상과 회귀 없음이 필요합니다.
+- `inspect`, `rescore`, `fixture-replay`는 모델을 호출하지 않습니다. `--live`와 `--action rerun`은 선택한 태스크마다 두 번 호출합니다.
+- `promotionReady`는 항상 `false`입니다. 통과는 사람이 결정할 때 쓰는 근거일 뿐, 자동 승격이 아닙니다.
+- 라이브 실행에는 프로젝트 로컬 스킬 탐색을 지원하는 벤더가 필요합니다([실행과 기록](#run-and-record) 참고).
 
 ## 평가 모델
 
@@ -28,6 +40,28 @@ description: 짝지어진 격리 저장소 태스크와 결정론적 아티팩�
 5. 결정론적 검사가 결과 워크스페이스와 선택적으로 에이전트 출력을 확인합니다. 신뢰할 수 있는 명령 검사는 그 뒤에 태스크 아티팩트의 새 사본에서 실행됩니다.
 
 실제 프로젝트는 갈래의 작업 디렉토리로 절대 쓰지 않습니다. OMA는 검사와 임시 워크스페이스 정리에 앞서 원시 출력과 최종 태스크 아티팩트를 캡처합니다. 작업 디렉토리 밖의 접근에 대해서는 선택한 벤더 자체의 프로세스 샌드박스가 여전히 최종 권한을 갖습니다.
+
+다이어그램은 짝지은 갈래가 판정에 이르는 과정을 보여 줍니다. 오프라인 동작은 저장된 기록에서 출발해 짝짓기 단계로 다시 들어갑니다.
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
 
 ## 후보 레이아웃
 
@@ -91,7 +125,7 @@ tasks:
         path: docs/feature.md
 ```
 
-버전 2는 `validation`과 `final-test` 태스크를 모두 요구합니다. 각 태스크는 자신이 속한 분할을 선언해야 합니다. 기본값은 `validation`이며, 후보를 고른 뒤 별도로 최종 실행을 하려면 `--partition final-test`를 쓰세요. 두 분할은 픽스처 디렉토리를 공유하거나 중첩할 수 없습니다. 기록 파일은 픽스처 디렉토리, 후보 오버레이, 평가자 입력 밖에 두세요. 이후 실행이 최종 검사를 보지 못하도록 이런 위치는 거부합니다. 버전 1 스위트는 여전히 `exploratory`로 실행되지만 final-test로는 선택할 수 없습니다.
+버전 2는 `validation`과 `final-test` 태스크를 모두 요구합니다. 각 태스크는 자신이 속한 분할을 선언해야 합니다. 기본값은 `validation`이며, 후보를 고른 뒤 별도로 최종 실행을 하려면 `--partition final-test`를 쓰세요. 실행마다 선택한 분할만 채점하므로, 판정을 내릴 수 있는 validation 실행에는 `validation` 태스크가 5개 이상, final-test 실행에는 `final-test` 태스크가 5개 이상 필요합니다. 위 예시는 읽기 쉽도록 짧게 줄였으므로 항상 `INSUFFICIENT`를 보고합니다. 두 분할은 픽스처 디렉토리를 공유하거나 중첩할 수 없습니다. 기록 파일은 픽스처 디렉토리, 후보 오버레이, 평가자 입력 밖에 두세요. 이후 실행이 최종 검사를 보지 못하도록 이런 위치는 거부합니다. 버전 1 스위트는 여전히 `exploratory`로 실행되지만 final-test로는 선택할 수 없습니다.
 
 태스크 ID는 고유해야 합니다. 픽스처 경로와 검사 경로는 프로젝트와 태스크 워크스페이스 안에 있어야 합니다. 스위트와 픽스처도 모든 갈래에 복사되는 baseline 정의 밖에 있어야 합니다. 픽스처에는 심볼릭 링크나 에이전트 하네스 제어 표면(`.agents`, `.codex`, `.claude`, 벤더 스킬 디렉토리, 루트 에이전트 지시 파일 등)이 들어갈 수 없습니다. 태스크 데이터가 어느 한쪽 갈래의 통제된 하네스를 가리는 것을 막기 위해서입니다.
 
@@ -130,7 +164,7 @@ JSON 단언은 타입까지 포함해 파싱된 값을 비교합니다. 성공�
 
 검사와 검사 프로그램 경로는 에이전트 프롬프트나 픽스처에 추가하지 않습니다. 선택한 태스크의 입력은 그 실행 중에 반드시 보입니다. 이 방식은 평가자의 무결성을 지키고 분할을 분리하지만, 같은 사용자 권한의 프로세스가 호스트의 다른 파일을 읽는 것까지 막지는 않습니다.
 
-## 실행과 기록
+## 실행과 기록 {#run-and-record}
 
 라이브 모드는 선택한 태스크마다 두 번 디스패치하고, 디스패치 미리보기를 출력하며, 확인을 요구합니다.
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-비대화형으로 실행하려면 `--yes`를, 갈래별 wall-clock 한도를 동일하게 두려면 `--timeout-minutes`를 쓰세요. 라이브 실행은 선택한 벤더가 프로젝트 워크스페이스를 기준으로 하네스 파일을 찾을 때만 가능합니다. HOME 기반 탐색은 거부하는데, baseline이 전역 설치된 후보 콘텐츠를 볼 수 있기 때문입니다.
+비대화형으로 실행하려면 `--yes`를, 갈래별 wall-clock 한도를 동일하게 두려면 `--timeout <duration>`을 쓰세요(기본값 `15m`이며, `--timeout 45m`처럼 단위를 반드시 붙여야 합니다). `oma harness incident reproduce`도 같은 플래그를 받습니다. 라이브 실행은 선택한 벤더가 프로젝트 워크스페이스를 기준으로 하네스 파일을 찾을 때만 가능합니다. HOME 기반 탐색은 거부하는데, baseline이 전역 설치된 후보 콘텐츠를 볼 수 있기 때문입니다.
+
+벤더는 스위트의 `agent`에서 정해지며, 프로젝트 모델 설정을 거쳐 확정됩니다.
+
+| 벤더 | 라이브 `harness eval`, `--action rerun`, `incident reproduce` |
+|---|---|
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | 허용: 프로젝트 로컬 스킬 디렉토리 |
+| `antigravity`, `hermes`, `kimi` | 거부: HOME 기반 스킬 탐색 |
+| 알려진 프로젝트 스킬 디렉토리가 없는 모든 벤더 | 거부 |
+
+오프라인 동작(`inspect`, `rescore`, `fixture-replay`)은 디스패치하지 않으므로 이 검사가 적용되지 않습니다.
 
 `--record`는 변경할 수 없는 버전 2 JSON 기록을 씁니다. 기본 위치는 스위트 옆의 `_runs/`이며, 파일명에 baseline/candidate 해시가 들어갑니다. 라이브 실행을 다시 하려면 새 `--record-file`을 쓰세요. 이미 있는 대상 파일은 디스패치 전에 거부합니다. 기록에는 다음이 보존됩니다.
 
@@ -174,11 +218,11 @@ oma harness eval \
 
 ### 환경 정책
 
-두 갈래는 허용 목록(allowlist)으로 걸러 낸 같은 환경을 받습니다. 기본 변수(`PATH`, `HOME`, 로캘, 임시 디렉토리, 프록시, 인증서 설정), 모든 `OMA_*` 변수, 대상 벤더의 자격 증명 접두사와 런타임 감지 접두사가 붙은 변수는 그대로 전달하고, 디스패치 빌더가 해당 호출을 위해 추가한 항목은 유지합니다. 나머지는 모두 제외하므로 후보가 배포 토큰이나 다른 제공자의 키에 우연히 닿는 일이 없습니다. `OMA_NO_AGENTMEMORY=1`은 강제로 설정하므로 벤더 메모리가 baseline과 후보 갈래 사이에 맥락을 옮길 수 없습니다.
+두 갈래는 허용 목록(allowlist)으로 걸러 낸 같은 환경을 받습니다. 기본 변수(`PATH`, `HOME`, 로캘, 임시 디렉토리, 프록시, 인증서 설정), 모든 `OMA_*` 변수, 대상 벤더의 자격 증명 접두사와 런타임 감지 접두사가 붙은 변수는 그대로 전달하고, 디스패치 빌더가 해당 호출을 위해 추가한 항목은 유지합니다. 나머지는 모두 제외하므로 후보가 배포 토큰이나 다른 프로바이더의 키에 우연히 닿는 일이 없습니다. `OMA_NO_AGENTMEMORY=1`은 강제로 설정하므로 벤더 메모리가 baseline과 후보 갈래 사이에 맥락을 옮길 수 없습니다.
 
 태스크가 실제로 필요로 하는 변수를 추가로 전달하려면 `OMA_HARNESS_ENV_PASSTHROUGH=NAME1,NAME2`를 설정하세요. 그 이름은 매니페스트의 `environmentPolicy.extra`에 나타납니다. 알려진 접두사 집합이 없는 벤더에서는 매니페스트가 `vendorKnown: false`를 보고하며, 기본 변수, `OMA_*`, 추가 전달 항목만 프로세스에 도달합니다.
 
-## 기록 재사용
+## 기록 재사용 {#reuse-a-recording}
 
 이 명령은 네 가지 동작을 구분합니다.
 
@@ -287,7 +331,7 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 
 CLI 버전은 기록 자체에 확인된(`probed`) 버전이 있을 때만 재생 시 확인합니다. 확인하지 않은 쌍은 같다고 보지 않고 비교할 수 없다고 보고합니다. 기록된 판정은 원래 조건에서는 계속 볼 수 있습니다. 하지만 라이브 또는 재실행 평가가 매니페스트가 일치하는 기록을 새로 만들기 전까지는, 현재 조건에서 후보가 어떤지 보여 주는 증거가 되지 못합니다.
 
-### 사용량
+### 사용량 {#usage}
 
 벤더가 사용량을 보고하면 각 갈래는 `usage`를 저장합니다. 입력 토큰과 출력 토큰, USD 비용, 경과 시간, 출력 대부분을 만든 모델이 담깁니다. 평가는 이를 합산해 `usage`로 두며, `status`는 `actual`, `partial`(일부 갈래가 아무것도 보고하지 않음), `unknown` 중 하나입니다. 벤더 결과 엔벨로프(envelope)는 검사를 실행하기 전과 출력을 기록하기 전에 풀어 두므로, `output_contains`와 `output_json_equals`는 그것을 감싼 JSON 부가 정보가 아니라 에이전트의 답을 봅니다. 이 필드에는 엔벨로프 안의 사용량이 반영됩니다.
 
@@ -326,12 +370,31 @@ OMA는 다음도 함께 보고합니다.
 
 - 교정된 태스크: baseline이 실패하고 candidate가 통과한 경우
 - 회귀한 태스크: baseline이 통과하고 candidate가 실패한 경우
-- 커버리지: 짝지어 채점 가능한 태스크가 최소 5개 필요
+- 커버리지: 선택한 분할에서 짝지어 채점 가능한 태스크가 최소 5개 필요
 
-점수 판정은 향상 폭이 최소 5%p이고 회귀가 하나도 없을 때 `pass`입니다. 회귀가 있으면 무조건 실패합니다. 향상 폭이 0 이상이지만 5%p에 못 미치면 경고이고, 짝지은 태스크가 5개 미만이면 `insufficient` 판정이 납니다. CI에서 커버리지 부족을 0이 아닌 코드로 끝내려면 `--require-coverage`를 붙이세요. 한쪽 arm이 없거나, 기록 hash가 오래되었거나, 결정론적 검사가 완료되지 않았다면 점수는 근거로 사용할 수 없습니다. 라이브 디스패치 오류와 평가자 무결성 오류는 판정을 실패로 만들며, 성공적인 향상으로 셀 수 없습니다. 재채점과 픽스처 재생은 증거가 불충분한 갈래를 채점 가능한 쌍에서 제외하고, 부족한 증거를 후보의 회귀로 취급하는 대신 `insufficient` 판정을 보고합니다.
+점수 판정은 향상 폭이 최소 5%p이고 회귀가 하나도 없을 때 `pass`입니다. 회귀가 있거나 향상 폭이 음수이면 무조건 실패합니다. 향상 폭이 0 이상이지만 5%p에 못 미치면 경고이고, 짝지은 태스크가 5개 미만이면 `insufficient` 판정이 납니다. CI에서 커버리지 부족을 0이 아닌 코드로 끝내려면 `--require-coverage`를 붙이세요. 한쪽 arm이 없거나, 기록 hash가 오래되었거나, 결정론적 검사가 완료되지 않았다면 점수는 근거로 사용할 수 없습니다. 라이브 디스패치 오류와 평가자 무결성 오류는 판정을 실패로 만들며, 성공적인 향상으로 셀 수 없습니다. 재채점과 픽스처 재생은 증거가 불충분한 갈래를 채점 가능한 쌍에서 제외하고, 부족한 증거를 후보의 회귀로 취급하는 대신 `insufficient` 판정을 보고합니다.
 
-통과한 점수가 승격 자격을 입증하지는 않습니다. 보고서에는 분할, 평가자 해시, `promotionReady: false`, 명시적인 차단 요인이 담깁니다. 레거시 실행과 validation 실행에는 final-test 증거가 없습니다. 현재의 디스패치 경로는 파일시스템 접근 격리를 보증하지 않으므로, final-test 실행이라 해도 보호된 최종 평가를 주장하거나 승격을 승인할 수 없습니다. 이 필드는 실행 제공자가 그 경계를 입증할 수 있을 때까지 false로 유지됩니다.
+통과한 점수가 승격 자격을 입증하지는 않습니다. 보고서에는 분할, 평가자 해시, `promotionReady: false`, 명시적인 차단 요인이 담깁니다. 레거시 실행과 validation 실행에는 final-test 증거가 없습니다. 현재의 디스패치 경로는 파일시스템 접근 격리를 보증하지 않으므로, final-test 실행이라 해도 보호된 최종 평가를 주장하거나 승격을 승인할 수 없습니다. 이 필드는 실행 프로바이더가 그 경계를 입증할 수 있을 때까지 false로 유지됩니다.
+
+## 문제 해결
+
+| 메시지 또는 증상 | 원인 | 해결 |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | 기본 동작은 저장된 기록을 읽는 `inspect`입니다. | `--live --record`를 한 번 실행하거나, `--record-file`로 기존 기록을 지정하세요. |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect`는 기록된 해시가 모두 일치해야 합니다. | 새 `--record-file`로 새 실행을 기록하세요. 저장된 바이트에 현재 검사를 적용하려면 `--action rescore`를 쓰세요. |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore`나 `fixture-replay`가 다른 입력에서 나온 기록을 가리켰습니다. | 일치하는 `--record-file`과 `--partition`을 선택하거나 다시 기록하세요. |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record`가 기존 파일을 덮어쓰게 됩니다. | 새 `--record-file` 경로를 지정하세요. |
+| `--record requires --live or --action rerun` | `--record`를 오프라인 동작과 함께 썼습니다. | `--record`를 빼거나 `--live`를 쓰세요. |
+| `--action fixture-replay requires --transcript` | 트랜스크립트를 제공하지 않았습니다. | `--transcript <path>`를 추가하세요. |
+| `Removed option --timeout-minutes. Use --timeout.` | 예전 플래그 표기입니다. | `--timeout 30m`을 쓰세요(단위가 필요합니다). |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | 스위트 에이전트가 HOME 기반 탐색 벤더나 프로젝트 스킬 디렉토리가 없는 벤더로 확정되었습니다. | 스위트 에이전트를 [실행과 기록](#run-and-record) 아래 표에 있는 벤더로 연결하세요. |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | `--candidate .`이나 `.agents/` 안의 경로를 지정했습니다. | 오버레이는 `candidates/fix/.agents/`처럼 다른 곳에 두세요. |
+| `Candidate file is not allowed: <path>` | 오버레이에 `agents/`, `rules/`, `skills/`, `workflows/` 밖의 파일이 있습니다. | 해당 파일을 오버레이에서 제거하세요. |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | 보호된 프론트매터가 baseline과 다릅니다. | `model`, `tools`, `effort`와 그 밖의 보호된 필드를 원래대로 되돌리세요. |
+| `Suite requires at least one final-test task` | `schema_version: 2` 스위트에는 두 분할이 모두 필요합니다. | `partition: final-test`인 태스크를 추가하세요. |
+| `decision: INSUFFICIENT` | 선택한 분할에서 채점된 태스크가 5개 미만이거나 갈래가 빠졌습니다. | 분할에 태스크가 5개가 될 때까지 추가하고, `replay limitation:` 줄을 확인하세요. |
+| `decision: FAIL` | 디스패치 오류(뒤에 `<task>/<arm>: ...` 줄이 붙음), 회귀(`regressed:` 아래 태스크 ID), 또는 음수 향상입니다. | 디스패치 오류라면 실패한 갈래마다 아래에 있는 `exit=... timedOut=... stderr=...` 줄을 읽으세요. 회귀라면 나열된 태스크의 두 갈래를 비교하세요. |
 
 ## 현재 경계
 
-후보 오버레이는 외부에서 만들며, 이 명령은 빌더나 자동 `harness opt` 루프를 구현하지 않습니다. 아티팩트 캡처, 오프라인 재채점, 도구 픽스처 재생, 고정된 파일을 쓰는 재실행, 분할 선택, 스냅샷으로 저장한 평가자, 실행 매니페스트, 환경 허용 목록, 연결된 트레이스 이벤트는 사용할 수 있습니다. 그러나 held-out 데이터를 OS 수준에서 비밀로 유지하는 것, 네트워크나 자격 증명 격리, 확률적 시행 반복, 토큰 회계, 중첩 서브에이전트 호출의 모델 강제 고정은 확립되지 않았습니다. 환경 허용 목록은 벤더 프로세스가 상속하는 변수를 제한할 뿐, 벤더 CLI가 자체 자격 증명 저장소를 읽거나 네트워크에 접근하는 것까지 막지는 않습니다. 중첩 호출 고정이 생기기 전까지, 모델 하나를 고정해 측정하려는 스위트는 다른 설정 에이전트 역할을 스폰하는 후보 워크플로우를 피하는 편이 좋습니다.
+후보 오버레이는 외부에서 만들며, 이 명령은 빌더나 자동 `harness opt` 루프를 구현하지 않습니다. 아티팩트 캡처, 오프라인 재채점, 도구 픽스처 재생, 고정된 파일을 쓰는 재실행, 분할 선택, 스냅샷으로 저장한 평가자, 실행 매니페스트, 환경 허용 목록, 연결된 트레이스 이벤트는 사용할 수 있습니다. 그러나 held-out 데이터를 OS 수준에서 비밀로 유지하는 것, 네트워크나 자격 증명 격리, 확률적 시행 반복, 중첩 서브에이전트 호출의 모델 강제 고정은 확립되지 않았습니다. 토큰과 비용 사용량은 벤더가 보고하면 갈래별로 기록하고 합산합니다([사용량](#usage) 참고). 환경 허용 목록은 벤더 프로세스가 상속하는 변수를 제한할 뿐, 벤더 CLI가 자체 자격 증명 저장소를 읽거나 네트워크에 접근하는 것까지 막지는 않습니다. 중첩 호출 고정이 생기기 전까지, 모델 하나를 고정해 측정하려는 스위트는 다른 설정 에이전트 역할을 스폰하는 후보 워크플로우를 피하는 편이 좋습니다.

@@ -9,7 +9,7 @@ Główną zaletą oh-my-agent jest jednoczesne uruchamianie wielu wyspecjalizowa
 
 ---
 
-## agent:spawn: uruchamianie pojedynczego agenta {#agentspawn-single-agent-spawning}
+## oma agent spawn: uruchamianie pojedynczego agenta {#agentspawn-single-agent-spawning}
 
 ### Podstawowa składnia {#basic-syntax}
 
@@ -93,7 +93,7 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel: tryb równoległy inline {#agentparallel-inline-parallel-mode}
+## oma agent parallel: tryb równoległy inline {#agentparallel-inline-parallel-mode}
 
 Dla czytelniejszej składni, która automatycznie obsługuje zarządzanie procesami w tle:
 
@@ -120,10 +120,10 @@ oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-Flaga `--inline` analizuje każdy argument `agent:task`. Dodaj trzecią ścieżkę rozdzieloną dwukropkami (`agent:task:workspace`), gdy zadanie potrzebuje konkretnego workspace'u. Bez `--inline` przekaż plik zadań YAML w formacie `{tasks: [{id?, agent, task, workspace?}]}`. `--session` wiąże wyniki równoległe z istniejącą sesją.
+Flaga `--inline` analizuje każdy argument `agent:task`. Dodaj trzecią ścieżkę rozdzieloną dwukropkami (`agent:task:workspace`), gdy zadanie potrzebuje konkretnego workspace'u. Bez `--inline` przekaż plik zadań YAML w formacie `{tasks: [{id?, agent, task, workspace?}]}`. `--session-id` wiąże wyniki z istniejącą sesją oraz z identyfikatorami zadań z pliku YAML.
 
 ---
 
@@ -175,7 +175,7 @@ Mechanizm uruchamiania zależy od IDE/CLI:
 
 Podczas pracy w Claude Code workflow korzysta bezpośrednio z narzędzia `Agent`:
 
-```
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
@@ -211,7 +211,7 @@ Dashboard obserwuje `.agents/state/memories/` i aktualizuje się w czasie rzeczy
 
 ```bash
 oma dashboard web
-# Opens http://localhost:9847
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 Funkcje:
@@ -225,20 +225,11 @@ Funkcje:
 
 Użyj 3 terminali, aby uzyskać najlepszą widoczność:
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard terminal         │   Agent spawn        │
-│   (live monitoring)     │   commands           │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   Terminal 3:                                  │
-│   Test/build logs, git operations              │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| Terminal | Uruchom | Cel |
+|----------|-----|---------|
+| 1 | `oma dashboard terminal` | Monitorowanie na żywo |
+| 2 | `oma agent spawn …` lub `oma agent parallel …` | Polecenia uruchamiania agentów |
+| 3 | Testy, logi builda, git | Weryfikacja i operacje git |
 
 ### Sprawdzanie statusu pojedynczego agenta {#checking-individual-agent-status}
 
@@ -299,7 +290,7 @@ Identyfikatory sesji określają:
 
 1. **Nie uruchamiaj agentów w tym samym workspace.** Dwaj agenci zapisujący do tego samego katalogu utworzą konflikty scalania i nadpiszą sobie pracę.
 
-2. **Nie przekraczaj MAX_PARALLEL (domyślnie 3).** Większa liczba równoległych agentów nie zawsze oznacza szybszą pracę. Domyślna wartość 3 jest dostrojona do większości systemów. Każdy agent potrzebuje pamięci i CPU.
+2. **Nie przekraczaj MAX_PARALLEL (domyślnie 3).** Większa liczba równoległych agentów nie zawsze oznacza szybszą pracę. Każdy agent potrzebuje pamięci i CPU. Domyślna wartość 3 jest dostrojona do większości systemów.
 
 3. **Nie pomijaj etapu planu.** Uruchamianie agentów bez planu prowadzi do rozbieżnych implementacji: frontend buduje się wtedy przeciwko jednemu kształtowi API, a backend przeciwko innemu.
 
@@ -323,19 +314,33 @@ oma agent spawn backend "Implement JWT auth API with registration, login, refres
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: Monitor in a separate terminal
-# Terminal 2:
-oma dashboard terminal
-
-# Step 4: Wait for all implementation agents
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: Run QA review
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: If QA finds issues, re-spawn specific agents with fixes
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: Re-run QA to verify fixes
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+Podczas pracy agentów uruchom dashboard w drugim terminalu. Działa, dopóki nie naciśniesz Ctrl+C, więc nie wklejaj go do tej samej powłoki co polecenia uruchamiania agentów:
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## Zobacz także {#see-also}
+
+- [Wyniki agentów i wznawianie](../guide/agent-results-and-resume.md): potwierdzenia uruchomień, zgłoszenia i `oma agent resume`
+- [Monitorowanie w dashboardzie](../guide/dashboard-monitoring.md)
+- [Przewodnik po projekcie wieloagentowym](../guide/multi-agent-project.md)
+- [Modele per agent](../guide/per-agent-models.md)
+- [Workflow /orchestrate](./workflows.md#orchestrate)
+- [Referencja poleceń CLI](../cli-interfaces/commands.md)

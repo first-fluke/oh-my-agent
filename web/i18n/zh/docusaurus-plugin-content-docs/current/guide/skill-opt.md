@@ -14,15 +14,15 @@ description: "使用 oma skill optimize，通过确定性的训练、验证和�
 
 ---
 
-## 硬性依赖：评估任务 fixture
+## 硬性依赖：评估任务 fixture {#hard-dependency-eval-task-fixtures}
 
 没有评估任务 fixture 时，`oma skill optimize` 无法运行。它要求 `.agents/eval/<skill>/` 中至少有 **5 个任务 fixture**（`MIN_TASKS = 5`）。如果找到的数量不足，命令会立即报错：
 
-```
+```text
 [oma skill opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
 ```
 
-请参阅[技能效用评估指南](/docs/guide/skill-eval)，了解 `.agents/eval/<skill>/` 目录约定、fixture 模式、检查类型，以及如何为 mock 重放准备 rollout。
+请参阅[技能效用评估指南](./skill-eval.md)，了解 `.agents/eval/<skill>/` 目录约定、fixture 模式、检查类型，以及如何为 mock 重放准备 rollout。
 
 晋升还要求存在非空的邻居任务集合：这些任务与目标技能同领域，但属于其他技能。每个候选的验证分数和最终候选分数，都必须用确切的候选正文测量其所评估拆分的邻居任务。缺少邻居任务或成对记录不完整，都无法证明不存在负迁移。离线评估只能重放匹配的候选记录；要生成并评估新的候选，请使用实时优化。
 
@@ -30,7 +30,29 @@ description: "使用 oma skill optimize，通过确定性的训练、验证和�
 
 ---
 
-## 工作原理
+## 工作原理 {#how-it-works}
+
+下图展示一次优化运行。评估不完整或预算耗尽时，epoch 循环也会提前结束。
+
+```mermaid
+flowchart TD
+  FX["5+ fixtures in .agents/eval/SKILL_ID/"] --> SP["Deterministic split by task ID<br/>train 60% / validation 20% / final-test 20%"]
+  SP --> BL["Score the original body on VALIDATION"]
+  BL --> TR["Epoch: score the best body on TRAIN"]
+  TR --> MT["Wiki Maintainer turns failures<br/>and successes into patterns"]
+  MT --> PR["Proposer emits up to<br/>--edits-per-epoch edits"]
+  PR --> GT["Per edit: validate, check --lr budget,<br/>re-score VALIDATION (with neighbors) and TRAIN"]
+  GT --> AC{"Best edit loses nothing on either split,<br/>gains on one, fully measured?"}
+  AC -->|yes| AE["Accept the edit, reset patience"]
+  AC -->|no| RJ["Record rejected or inconclusive edits,<br/>patience + 1"]
+  AE --> MORE{"Epochs left and<br/>patience below 2?"}
+  RJ --> MORE
+  MORE -->|yes| TR
+  MORE -->|no| FT["Runner-owned FINAL TEST<br/>candidate lift >= original lift"]
+  FT --> AP{"--apply, final test passed,<br/>promotion eligible?"}
+  AP -->|no| DR["Print report and diff,<br/>SKILL.md unchanged"]
+  AP -->|yes| WR["Back up, atomic write,<br/>record promotion lineage"]
+```
 
 fixture 按任务 ID 排序，并确定性地拆分为 **train**、**held-out validation** 和 **runner-owned final-test** 集合。至少有五个 fixture 时，目标比例为 60/20/20，并且每个分区至少包含一个任务。例如，八个 fixture 取整后会得到四个 train、一个 validation 和三个 final-test 任务。声明了相同 `group` 的 fixture 会被分到一起，因此措辞改写过的同组任务不会出现在 train 中，而原任务却落在 final test 里；少于三个分组时，会退回到按任务 ID 拆分，并给出警告。final-test 任务来自这组本地 fixture，并对 Maintainer 和 Proposer 隐藏。重复的 final-test 任务 ID 以及与开发拆分的重叠都会被拒绝。
 
@@ -54,21 +76,21 @@ fixture 按任务 ID 排序，并确定性地拆分为 **train**、**held-out va
 
 ---
 
-## 用法
+## 用法 {#usage}
 
-```
+```bash
 oma skill optimize --skill <id> --live
                [--dry-run | --apply]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes]
+               [--memory recall|none] [--yes]
                [--json] [--output <format>]
 ```
 
-### 标志
+### 标志 {#flags}
 
 | 标志 | 默认值 | 说明 |
 |:-----|:--------|:-----------|
-| `--skill <id>` | `_all` | 要优化的技能 ID（简单名称，不能包含路径分隔符）。 |
+| `--skill <id>` | 必填 | 要优化的技能 ID（简单名称，不能包含路径分隔符）。省略时命令会读取 `.agents/eval/_all/`，并以 `no eval coverage for skill "_all"` 停止；不存在“所有技能”模式。 |
 | `--dry-run` | **yes (default)** | 提议编辑并打印 diff，不改变 `SKILL.md`；生成的证据和演进事件仍会持久化。 |
 | `--apply` | 无 | 在所有晋升关卡通过后写入已验证的候选，包括完整的最终测试和负迁移证据；原子写入前先备份原文件。OMA 拥有的技能还需要 `--yes`。 |
 | `--mock` | 非实时默认值 | CLI 尚未实现提议重放，因此该路径会在评估之前停止。离线评估重放请使用 `oma skill eval --mock`。 |
@@ -76,13 +98,14 @@ oma skill optimize --skill <id> --live
 | `--max-epochs <n>` | `8` | 最大优化 epoch 数。 |
 | `--edits-per-epoch <k>` | `4` | 每个 epoch 优化器 LLM 提议的候选编辑数。 |
 | `--lr <chars>` | `600` | 文本学习率预算：每个接受的编辑允许的最大净字符变化。 |
+| `--memory <mode>` | `recall` | `none` 从空的演进知识开始，用于同预算比较（请参阅[内存消融](#memory-ablation-and-long-run-statistics)）。 |
 | `--yes` | 无 | 跳过实时成本预览确认，并在应用于 OMA 拥有的技能时确认已知晓覆盖行为。 |
 | `--json` | 无 | 输出 JSON，供 CI/CD 使用。 |
 | `--output <format>` | `text` | 输出格式（`text` 或 `json`）。 |
 
 ---
 
-## 最小端到端示例
+## 最小端到端示例 {#minimal-end-to-end-example}
 
 ```bash
 # Evaluate one epoch and print a candidate diff without applying it
@@ -91,7 +114,7 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1
 
 八个 fixture 且候选通过全部晋升关卡时的示意输出：
 
-```
+```text
 [oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 1, test: 3), dry-run: true
 
 Skill opt  (skill: oma-scholar)
@@ -115,16 +138,16 @@ diff 会显示优化器准备写入的内容。`SKILL.md` 保持不变，而生�
 
 ---
 
-## 应用已验证的改进
+## 应用已验证的改进 {#applying-a-validated-improvement}
 
 确认提议的 diff 后，使用 `--apply` 重新运行：
 
 ```bash
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Apply accepted edits to a user-authored skill (backs up the original first)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
-### 作为产物的流程
+### 作为产物的流程 {#the-procedure-as-an-artifact}
 
 优化器和 Maintainer 的提示就是改进流程。它们以内置默认值的形式随附，并且可以被 `.agents/evolution/` 下的文件覆盖（由用户拥有：不会被安装清单复制，也不会被 `oma update` 删除，这一点与 `.agents/eval/` 不同）：
 
@@ -140,13 +163,27 @@ oma skill optimize --skill oma-scholar --live --apply --yes
 
 优化器的回复只在格式上被宽松解析：代码围栏和空行会被忽略，但任何不是有效 `EDIT:` 行（或单独一个 `NO_ACTION`）的内容行都属于 `parse-error`，并且诊断现在会包含第一条违规行，以便追查失败原因。
 
-### 内存消融与长期运行统计
+### 内存消融与长期运行统计 {#memory-ablation-and-long-run-statistics}
 
 `--memory none` 让运行从空知识开始（没有召回的模式或关卡历史），同时仍会记录该运行。在相同预算下比较 `--memory recall`（默认）和 `--memory none` 的运行，是检验持久化知识是否有帮助的方法；要声称循环能从经验中学习，需要这种比较，而不是只看是否存在内存。
 
 `oma skill evolution-stats --skill <id>` 会汇总某个技能在 `.agents/results/skill-evolution/<id>/*.jsonl` 中的每次已记录运行：按状态统计的运行、按关卡结果统计的提议及接受率、已验证的改进（最终测试通过且具备晋升资格）、应用与回滚次数、平均最终提升、已计量运行的模型调用次数和每次已验证改进的调用次数（流程的成本，而非单次运行的成本），以及按内存模式和流程哈希拆分的同样数据。元优化报告会显示当前流程和每个候选的每次内层运行平均调用次数，因此靠多花调用才在收益上获胜的流程可以被看出来。
 
-### 元优化：把流程作为候选
+### 元优化：把流程作为候选 {#meta-optimization-the-procedure-as-the-candidate}
+
+| 标志 | 默认值 | 说明 |
+|:-----|:--------|:-----------|
+| `--target <part>` | `optimizer` | 要优化的流程部分：`optimizer` 或 `maintainer`。 |
+| `--skill <ids...>` | — | 用于为候选流程评分的保留集技能（以空格分隔）。 |
+| `--anchor <ids...>` | constitution 中的 `anchors` | 从不用于选择的技能；在前后分别报告，用于观察漂移。 |
+| `--repeats <n>` | `3` | 每个技能和流程的内层运行次数。 |
+| `--candidates <n>` | `2` | 要提议的流程候选数。 |
+| `--max-epochs <n>` | `1` | 内层运行的 epoch 数，所有分支相同。 |
+| `--edits-per-epoch <k>` | `4` | 内层运行每个 epoch 的编辑数，所有分支相同。 |
+| `--live` | — | 必填：内层运行会调用真实模型。 |
+| `--apply` | — | 写入胜出的流程文件并记录谱系。 |
+| `--memory <mode>` | `none` | 内层运行的内存模式：`recall` 或 `none`。 |
+| `--yes` | — | 跳过成本确认。 |
 
 `oma skill meta-optimize --target optimizer --skill <a> <b> ... --live` 把优化器（或 Maintainer）的提示当作被测对象。它在当前流程下，对每个指定的保留集技能运行内层循环（`oma skill optimize --dry-run`）`--repeats` 次；请一个 proposer 对模板提出最多 `--candidates` 个小编辑；在每个候选下以相同的 `--max-epochs` 和 `--edits-per-epoch` 预算再次运行内层循环；并按（技能，重复）逐对比较每个候选与当前流程，比较的依据是内层循环取得的训练提升与验证提升增益之和。
 
@@ -156,7 +193,7 @@ oma skill optimize --skill oma-scholar --live --apply --yes
 
 这就是自我改进系统综述中描述的 L5 形态（Self-Harness 的 held-in/held-out 晋升、ADAS 带 bootstrap 区间的重复评估、AlphaEvolve 式的冻结评估器）：流程由系统自己修订，但外层判断留在循环触及不到的地方。成本按 skills × repeats × (1 + candidates) 次内层运行增长；命令会打印上限，并在未使用 `--yes` 时请求确认。
 
-### 晋升谱系
+### 晋升谱系 {#promotion-lineage}
 
 每次 `--apply` 写入都会向 `.agents/results/skill-evolution/<skill>/promotions.jsonl` 追加一条记录，并在其旁边的 `promotions/<candidate-hash>.patch` 中写入一份可审查的统一 diff。记录会写明父级和候选正文的哈希、安装路径、备份路径，以及写入所依据的证据：验证和最终测试的提升、晋升决策、fixture 套件哈希、评估器协议修订版本，以及来源/目标运行时。`oma skill promotions --skill <id>` 会列出该日志。
 
@@ -166,7 +203,7 @@ oma skill optimize --skill oma-scholar --live --apply --yes
 
 实时评估可以通过受保护的 Claude 或原生 Codex 配置档满足隔离关卡。Claude 保留 HOME/目标检查。Codex 在提交提示之前，会验证临时的 app-server 线程没有指令来源或工具环境。其他运行时配置档仍属探索性。
 
-### 查看演进了什么
+### 查看演进了什么 {#seeing-what-evolved}
 
 这个循环会在三个地方公布自己的变化，全部读取自只追加的谱系日志，而不是来自任何声明：
 
@@ -185,9 +222,9 @@ oma harness evolution status --json
 
 ---
 
-## 实时模式
+## 实时模式 {#live-mode}
 
-实时模式会调用真实的 Maintainer 和 Proposer，并在每个 epoch 重新运行实时评估分支。它成本较高：每项评分任务需要基线和处理组调用，judge fixture 会增加评分调用，最终测试还会为原始正文和候选正文评分。预览会根据实际拆分报告上限，其中包括初始验证基线、训练和编译器调用、候选验证调用、两次最终测试评分，以及每个候选加最终候选的成对邻居检查。每次调用超时为 120 秒。受保护的 Claude 和 Codex 分支会禁用工具、自动指令发现、MCP 和优化内存。
+实时模式会调用真实的 Maintainer 和 Proposer，并在每个 epoch 重新运行实时评估分支。它成本较高：每项评分任务需要基线和处理组调用，judge fixture 会增加评分调用，最终测试还会为原始正文和候选正文评分。预览会根据实际拆分报告上限，其中包括初始验证基线、训练和编译器调用、候选验证调用、两次最终测试评分，以及每个候选加最终候选的成对邻居检查。每次调用在 `OMA_SKILL_EVAL_TIMEOUT_MS` 毫秒后被终止（默认 180000，与 `oma skill eval` 的限制相同）。受保护的 Claude 和 Codex 分支会禁用工具、自动指令发现、MCP 和优化内存。
 
 ```bash
 # Cost preview + confirm
@@ -196,19 +233,19 @@ oma skill optimize --skill oma-scholar --live
 # Skip confirmation
 oma skill optimize --skill oma-scholar --live --yes
 
-# Live opt, then apply if improved
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Live opt, then apply if improved (user-authored skill)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 成本预览会在任何 LLM 调用前列出底层模型调用的上限。
 
-Maintainer、Proposer、评估分支和 judge 在全新的临时目录中共用一个受保护的文本传输。Claude 使用其受限的 CLI 配置档。Codex 使用原生的 `codex app-server`，沿用现有的 CLI 登录、所选模型/提供方和推理强度；它不会改用基于 API 密钥的客户端，也不会回退到 Claude。Codex 配置档面向 macOS/Linux 上的 CLI 0.154.x，要求使用原生文件凭据存储，并且已存在 `auth.json`。每次调用都会准备一个私有的临时 `CODEX_HOME`，它引用原始的配置/认证文件，而不复制凭据内容。原生 token 刷新仍使用原始认证文件。共享的引导状态被排除，临时状态会在之后清理。目前不支持 keyring、auto 和 ephemeral 凭据存储。线程契约会在发送模型输入之前检查；不受支持的版本、存储模式和协议失败都会终止调度。工具、启动时的指令发现、MCP 访问和会话持久化均被禁用，使编译器进程无法通过智能体工具读取被隐藏的 fixture。其他编译器供应商在拥有经过验证的传输之前会明确报错失败。
+Maintainer、Proposer、评估分支和 judge 共用[技能隔离](./skill-eval.md#skill-isolation-keeping-the-baseline-honest)中所述的受保护文本传输：Claude 的受限 CLI 配置档或原生 Codex `app-server` 配置档，每次都在全新的临时目录中运行，并禁用工具、启动时的指令发现、MCP 访问和会话持久化，使编译器进程无法通过智能体工具读取被隐藏的 fixture。其他编译器供应商在拥有经过验证的传输之前，会以 `[oma skill opt] protected compiler is unavailable for <vendor>` 停止。Maintainer 和 Proposer 使用 `opt-agent` 角色，该角色遵循 `model_preset` 或 `default_cli`；评估分支和 judge 使用 `eval` 角色（请参阅[选择评估与优化器模型](./skill-eval.md#choose-the-evaluation-and-optimizer-models)）。
 
 优化器对有效编辑报告 `proposed`；只有明确的 `NO_ACTION` 响应才报告 `no-action`。进程/API 失败变为 `dispatch-error`；没有有效编辑的格式错误响应变为 `parse-error`。这些错误不能变成空的编辑列表。如果 Maintainer 无法提供经过验证的模式，它会报告 `degraded` 并给出调度或解析方面的原因；回退模式会被排除在持久化知识之外，且该运行无法晋升候选。评估失败会出现在 `diagnostics` 和提议关卡记录中，而不是已学到的拒绝历史中。
 
 ---
 
-## JSON 输出
+## JSON 输出 {#json-output}
 
 ```bash
 oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
@@ -275,19 +312,21 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
 
 ---
 
-## `oma-*` 技能的 SSOT 注意事项
+## `oma-*` 技能的 SSOT 注意事项 {#ssot-caveat-for-oma--skills}
 
 ID 以 `oma-` 开头的技能由 oh-my-agent 拥有，并会被 `oma update` **覆盖**。对于这些技能，不建议使用 `--apply`，请使用默认的 `--dry-run`，审阅提议的 diff；如果改进有意义，请将变更上游到注册表。用户编写的技能可以安全使用 `--apply`。
 
-目标技能属于 OMA 时，命令会打印警告：
+当所有关卡都通过，但目标是 OMA 拥有的技能且没有 `--yes` 时，`--apply` 不会写入任何内容，并打印：
 
+```text
+[oma skill opt] WARNING: "oma-scholar" is an oma-owned skill. oma-owned skills are overwritten by `oma update` — applying edits here may be lost. Re-run with --yes to proceed, or use --dry-run to review the proposed diff.
 ```
-[oma skill opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
-```
+
+使用 `--yes` 时不会打印警告，写入会继续进行。
 
 ---
 
-## 过拟合保护
+## 过拟合保护 {#overfitting-guard}
 
 Maintainer 和 Proposer 接收 TRAIN rollout 证据。候选选择使用保留的 VALIDATION 拆分，运行器拥有单独的 TEST 拆分。不使用工具的编译器执行，可以防止通过工作区访问这些被隐藏的 fixture 和评估器。
 
@@ -295,7 +334,7 @@ Maintainer 和 Proposer 接收 TRAIN rollout 证据。候选选择使用保留�
 
 ---
 
-## CI 集成
+## CI 集成 {#ci-integration}
 
 使用评估重放，对已有的针对候选的记录做离线 CI 检查：
 
@@ -303,7 +342,7 @@ Maintainer 和 Proposer 接收 TRAIN rollout 证据。候选选择使用保留�
 oma skill eval --skill oma-scholar --mock --neg-transfer --require-coverage --json
 ```
 
-CLI 优化本身需要 `--live`；它还没有已记录提议的重放适配器。此前将 `oma skill optimize --mock` 描述为完整离线优化器的指引是错误的。请把离线重放任务迁移到 `oma skill eval --mock`，或明确启用实时优化并承担其模型成本。运行优化时，请检查 JSON 的 `ok` 和 `promotion.eligible`：退出码为零也涵盖了已完成但没有找到可晋升候选的运行。
+CLI 优化本身需要 `--live`；它还没有已记录提议的重放适配器。此前将 `oma skill optimize --mock` 描述为完整离线优化器的指引是错误的。请把离线重放任务迁移到 `oma skill eval --mock`，或明确启用实时优化并承担其模型成本。运行优化时，请检查 JSON 的 `ok` 和 `promotion.eligible`：退出码为零也涵盖了已完成但没有找到可晋升候选的运行。错误消息请参阅[故障排查](./skill-eval.md#troubleshooting)。
 
 优化退出码：
 - `0`：优化完成（无论是否有改进）
@@ -311,7 +350,9 @@ CLI 优化本身需要 `--live`；它还没有已记录提议的重放适配器�
 
 ---
 
-## 另请参阅
+## 另请参阅 {#see-also}
 
-- [技能效用评估](/docs/guide/skill-eval)：编写评估任务 fixture、检查类型、mock/live 模式和 `_rollouts/` 目录。
-- [CLI 命令](/docs/cli-interfaces/commands)：所有技能管理命令的标志参考。
+- [技能效用评估](./skill-eval.md)：编写评估任务 fixture、检查类型、mock/live 模式、`_rollouts/` 目录以及故障排查。
+- [项目 Harness 演进](./harness-evolution.md)：基于项目覆盖层、按计划且有预算的优化。
+- [事件回归用例](./harness-incidents.md)：把观察到的故障转化为技能 fixture。
+- [CLI 命令](../cli-interfaces/commands.md)：所有技能管理命令的标志参考。

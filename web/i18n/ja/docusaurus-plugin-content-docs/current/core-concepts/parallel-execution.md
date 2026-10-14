@@ -5,11 +5,11 @@ description: 現行の CLI 構文、タスクファイル、インラインモ�
 
 # 並列実行
 
-oh-my-agent の大きな利点は、複数の専門エージェントを同時に実行できることです。バックエンドエージェントが API を実装している間に、フロントエンドエージェントが UI を作り、モバイルエージェントがアプリ画面を構築します。オーケストレータは、永続化された実行状態と実行記録を使って各エージェントを調整します。
+oh-my-agent の大きな利点は、複数の専門エージェントを同時に実行できることです。バックエンドエージェントが API を実装している間に、フロントエンドエージェントが UI を作り、モバイルエージェントがアプリ画面を構築します。オーケストレーターは、永続化された実行状態と実行記録を使って各エージェントを調整します。
 
 ---
 
-## agent:spawn: 単一エージェントのスポーン
+## oma agent spawn: 単一エージェントのスポーン {#agentspawn-single-agent-spawning}
 
 ### 基本構文
 
@@ -17,9 +17,9 @@ oh-my-agent の大きな利点は、複数の専門エージェントを同時�
 oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
-### パラメータ
+### パラメーター
 
-| パラメータ | 必須 | 説明 |
+| パラメーター | 必須 | 説明 |
 |-----------|----------|-------------|
 | `agent-id` | Yes | 正規のディスパッチロール：`orchestrator`、`architecture`、`qa`、`pm`、`backend`、`frontend`、`mobile`、`db`、`debug`、`refactor`、`docs`、`tf-infra`、`explore` |
 | `prompt` | Yes | タスクの説明（引用符で囲んだ文字列またはプロンプトファイルのパス） |
@@ -93,7 +93,7 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel: インライン並列モード
+## oma agent parallel: インライン並列モード {#agentparallel-inline-parallel-mode}
 
 バックグラウンドプロセスの管理を自動化する、より簡潔な構文です。
 
@@ -120,10 +120,10 @@ oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-`--inline` フラグは各 `agent:task` 引数を解析します。タスクに専用ワークスペースが必要な場合は、3 番目のコロン区切り値として `agent:task:workspace` を追加します。`--inline` を付けない場合は、`{tasks: [{id?, agent, task, workspace?}]}` の YAML タスクファイルを渡します。`--session` は並列結果を既存のセッションに関連付けます。
+`--inline` フラグは各 `agent:task` 引数を解析します。タスクに専用ワークスペースが必要な場合は、3 番目のコロン区切り値として `agent:task:workspace` を追加します。`--inline` を付けない場合は、`{tasks: [{id?, agent, task, workspace?}]}` の YAML タスクファイルを渡します。`--session-id` は結果を既存のセッションと YAML ファイルのタスク ID に結び付けます。
 
 ---
 
@@ -175,7 +175,7 @@ agents:
 
 Claude Code 内で実行する場合、ワークフローは `Agent` ツールを直接使います。
 
-```
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
@@ -212,7 +212,7 @@ oma dashboard terminal
 
 ```bash
 oma dashboard web
-# Opens http://localhost:9847
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 機能は次のとおりです。
@@ -227,20 +227,11 @@ oma dashboard web
 
 最適な可視性を得るには、3 つのターミナルを使います。
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard terminal         │   Agent spawn        │
-│   (live monitoring)     │   commands           │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   Terminal 3:                                  │
-│   Test/build logs, git operations              │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| ターミナル | 実行するもの | 目的 |
+|----------|-----|---------|
+| 1 | `oma dashboard terminal` | ライブモニタリング |
+| 2 | `oma agent spawn …` または `oma agent parallel …` | エージェントのスポーンコマンド |
+| 3 | テスト、ビルドログ、git | 検証と git 操作 |
 
 ### 個別エージェントの状態確認
 
@@ -258,10 +249,13 @@ oma agent status <session-id> <agent-id>
 
 - **機能ごとに 1 つのセッション：** 1 つの機能に取り組むすべてのエージェントで ID を共有します。たとえば「ユーザー認証」に取り組むエージェントは、すべて `session-auth-01` を共有します。
 - **説明的な ID：** `session-auth-01`、`session-payment-v2`、`session-20260324-143000` のような ID を使います。
-- **自動生成：** オーケストレータは `session-YYYYMMDD-HHMMSS` 形式の ID を生成します。
+- **自動生成：** オーケストレーターは `session-YYYYMMDD-HHMMSS` 形式の ID を生成します。
 - **反復で再利用：** 修正を加えて再スポーンするときも同じセッション ID を使います。
 
-セッション ID は、エージェントが読み書きする実行単位のメモリファイル（`progress-{agentId}-{taskId}-{runId}-{sessionId}.md`、`result-{agentId}-{taskId}-{runId}-{sessionId}.md`）、ダッシュボードの監視対象、最終レポートでの結果のグループ化を決めます。
+セッション ID によって次が決まります。
+- エージェントが読み書きする実行単位のメモリファイル（`progress-{agentId}-{taskId}-{runId}-{sessionId}.md`、`result-{agentId}-{taskId}-{runId}-{sessionId}.md`）
+- ダッシュボードの監視対象
+- 最終レポートでの結果のグループ化
 
 ---
 
@@ -293,7 +287,7 @@ oma agent status <session-id> <agent-id>
 2. **MAX_PARALLEL（デフォルト 3）を超えない。** 同時実行数を増やしても、必ずしも速くなるとは限りません。各エージェントにはメモリと CPU リソースが必要です。デフォルトの 3 は、ほとんどのシステムに合わせて調整されています。
 3. **プランの手順を省略しない。** プランなしのスポーンは、実装の不整合につながります。フロントエンドがある API の形に合わせて構築する一方、バックエンドは別の形で構築してしまう、といった状況です。
 4. **失敗したエージェントを放置しない。** 失敗したエージェントの作業は未完了です。構造化された申告または実行単位の結果ファイルで失敗理由を確認し、指示を修正して再スポーンします。
-5. **関連する作業でセッション ID を混在させない。** 同じ機能のバックエンドとフロントエンドは、オーケストレータが調整できるよう同じ ID を使います。
+5. **関連する作業でセッション ID を混在させない。** 同じ機能のバックエンドとフロントエンドは、オーケストレーターが調整できるよう同じ ID を使います。
 
 ---
 
@@ -311,19 +305,33 @@ oma agent spawn backend "Implement JWT auth API with registration, login, refres
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: Monitor in a separate terminal
-# Terminal 2:
-oma dashboard terminal
-
-# Step 4: Wait for all implementation agents
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: Run QA review
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: If QA finds issues, re-spawn specific agents with fixes
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: Re-run QA to verify fixes
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+エージェントが作業している間は、2 つ目のターミナルでダッシュボードを実行します。ダッシュボードは Ctrl+C を押すまで動き続けるため、スポーンコマンドと同じシェルに貼り付けないでください。
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## 関連項目
+
+- [エージェントの結果と再開](../guide/agent-results-and-resume.md)：実行記録、申告、`oma agent resume`
+- [ダッシュボード監視](../guide/dashboard-monitoring.md)
+- [マルチエージェントプロジェクトガイド](../guide/multi-agent-project.md)
+- [エージェント別モデル](../guide/per-agent-models.md)
+- [/orchestrate ワークフロー](./workflows.md#orchestrate)
+- [CLI コマンドリファレンス](../cli-interfaces/commands.md)

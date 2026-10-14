@@ -8,7 +8,7 @@ description: Włącz zaplanowane, objęte budżetem ulepszenia umiejętności na
 
 OMA może zbierać dowody ze śledzonych uruchomień agentów i przetwarzać porażki w zaplanowanym cyklu sprzężenia zwrotnego. Automatyczne zmiany umiejętności są **wyłączone, dopóki nie włączysz ich dla projektu**. Każdy cykl ma skończony budżet wywołań modeli, a zastosowana zmiana musi przejść istniejące bramki ewaluacji umiejętności.
 
-Zautomatyzowana ścieżka ulepsza dokumenty umiejętności. Zmiany procedury optymalizatora lub maintainera pozostają osobną, wywoływaną ręcznie [metaoptymalizacją](/docs/guide/skill-opt).
+Zautomatyzowana ścieżka ulepsza dokumenty umiejętności. Zmiany procedury optymalizatora lub maintainera pozostają osobną, wywoływaną ręcznie [metaoptymalizacją](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate).
 
 ## Włączanie dla projektu
 
@@ -27,13 +27,26 @@ oma harness evolution enable --max-dispatches 300 --cron "0 3 * * *"
 oma harness evolution status --json
 ```
 
+`enable` wypisuje zapisane ustawienia i identyfikator zadania harmonogramu:
+
+```json
+{
+  "enabled": true,
+  "scheduleId": "sch_abcdefgh2345",
+  "mode": "apply",
+  "maxDispatches": 300
+}
+```
+
+`status --json` zwraca `config`, `schedule` (wpis harmonogramu albo `exists: false`), `pending` (liczbę nieukończonych ponowień), `conflicts` (konflikty nakładek dla poszczególnych umiejętności) oraz `state` (ponowienia i `lastTick`).
+
 Domyślny harmonogram to codziennie o 03:00 czasu lokalnego, a domyślny tryb to `apply`. `--max-dispatches` jest wymagane przy włączaniu i musi być dodatnią liczbą całkowitą. Przykładowa wartość to przydział wywołań, a nie szacunek ceny ani obietnica, że cykl się zakończy. Większe zestawy fixture’ów i powtarzana ocena zużywają więcej wywołań.
 
 <!-- oma-docs:ignore-start -->
 Ustawienia są zapisywane w `.agents/evolution/harness-evolution.json`. Wygenerowane dowody, stan ponowień i blokada cyklu znajdują się w `.agents/state/harness-evolution/`.
 <!-- oma-docs:ignore-end -->
 
-Włączenie rejestruje wbudowane zadanie w istniejącym harmonogramie systemowym OMA. Zadanie wywołuje cykl sprzężenia zwrotnego bezpośrednio. Ponowne włączenie aktualizuje zadanie projektu zamiast tworzyć kolejne.
+Włączenie rejestruje wbudowane zadanie w istniejącym [harmonogramie systemowym](./scheduled-agents.md) OMA; pojawia się ono w `oma schedule list` z agentem `__builtin__`. W chwili wyzwolenia `oma schedule run <id>` uruchamia w tym projekcie `oma harness evolution run --scheduled` i zatrzymuje je po 60 minutach, więc dobierz `--max-dispatches` tak, aby cykl zmieścił się w godzinie. Ponowne włączenie aktualizuje zadanie projektu zamiast tworzyć kolejne. Zatrzymuj harmonogram poleceniem `oma harness evolution disable`, a nie `oma schedule delete`, aby zapisane ustawienia pozostały spójne.
 
 ```bash
 # Run one cycle now under the saved mode and budget
@@ -43,9 +56,31 @@ oma harness evolution run --json
 oma harness evolution disable
 ```
 
+`run --json` zwraca `status` (`completed`, `partial` albo `disabled`), `dispatchesUsed` i `maxDispatches`. Gdy blokadę trzyma inny cykl, `run` zwraca `partial` z 0 dispatchami. Cykl, który zatrzymuje się z błędem, na przykład z powodu wyczerpanego przydziału, kończy się tym błędem i zapisuje `partial` albo `failed` w `state.lastTick`.
+
 Wyłączony projekt nie wykonuje pracy modeli przez polecenie evolution, także w przypadku spóźnionego wywołania z harmonogramu. Wyłączenie nie wycofuje zmian już zastosowanych.
 
 ## Co dzieje się automatycznie
+
+Diagram pokazuje jeden cykl, niezależnie od tego, czy wyzwala go harmonogram, czy uruchamiasz go ręcznie.
+
+```mermaid
+flowchart TD
+  OS["OS scheduler fires<br/>(daily at 03:00 by default)"] --> SR["oma schedule run ID starts<br/>oma harness evolution run --scheduled<br/>(stopped after 60 minutes)"]
+  SR --> EN{"Enabled for this project?"}
+  MAN["oma harness evolution run"] --> EN
+  EN -->|no| OFF["status: disabled, no model calls"]
+  EN -->|yes| LOCK{"Cycle lock free?"}
+  LOCK -->|no| BUSY["status: partial, 0 dispatches"]
+  LOCK -->|yes| DUE{"Due work after retry backoff?<br/>uncaptured failed runs, unpromoted incidents,<br/>skills with newly promoted fixtures"}
+  DUE -->|none| DONE["status: completed, 0 dispatches"]
+  DUE -->|some| FB["Capture, promote, optimize<br/>under one --max-dispatches budget"]
+  FB --> MODE{"Mode"}
+  MODE -->|apply| OV["Passing candidate becomes<br/>a project skill overlay"]
+  MODE -->|propose| PR["Result recorded, nothing installed"]
+  OV --> ST["Update retry state and lastTick,<br/>write the feedback report"]
+  PR --> ST
+```
 
 1. **Zapis dowodów ukończenia.** Uruchomienia śledzone przez OMA zostawiają lokalne odwołania do swojego wyniku i dowodów weryfikacji. Ten krok ukończenia nie wykonuje dodatkowych wywołań modeli. Wielokrotne ukończenie tego samego uruchomienia nie tworzy zduplikowanych dowodów.
 2. **Zbieranie porażek według harmonogramu.** Cykl skanuje kwalifikujące się nieudane uruchomienia, wyprowadza oczekiwania z ich zapisanych kontraktów zadań i sprawdza, czy proponowany fixture regresji rzeczywiście odrzuca zachowany nieudany wynik.
@@ -53,7 +88,7 @@ Wyłączony projekt nie wykonuje pracy modeli przez polecenie evolution, także 
 4. **Zastosowanie lub raport.** W trybie `apply` kandydat, który przejdzie bramki, staje się nakładką umiejętności projektu. W trybie `propose` cykl zapisuje wynik bez jego instalowania.
 5. **Raportowanie zmian.** Użyj polecenia status i istniejącej historii promocji, aby sprawdzić wyniki. Zastosowane zmiany zasilają też powiadomienie o ewolucji w następnej sesji.
 
-OMA nie obserwuje automatycznie każdej natywnej rozmowy ani każdej korekty użytkownika. Wejściem są dowody z uruchomień, które OMA faktycznie śledzi. Uruchomienie bez zachowanego wyniku albo kontraktu akceptacji może wymagać ręcznie napisanej [specyfikacji incydentu](/docs/guide/harness-incidents).
+OMA nie obserwuje automatycznie każdej natywnej rozmowy ani każdej korekty użytkownika. Wejściem są dowody z uruchomień, które OMA faktycznie śledzi. Uruchomienie bez zachowanego wyniku albo kontraktu akceptacji może wymagać ręcznie napisanej [specyfikacji incydentu](./harness-incidents.md#capture-an-incident).
 
 ## Budżet i ponowienia
 
@@ -61,13 +96,13 @@ Cykl dzieli jeden przydział wywołań między przechwytywanie, pisanie rubryk, 
 
 Gdy przydział się wyczerpie, ewaluacja pozostaje niekompletna, a objęty nią kandydat nie może zostać zastosowany. Raport zapisuje zużycie i oczekującą pracę. Jednocześnie działa tylko jeden cykl projektu.
 
-Utworzenie fixture’a nie oznacza, że optymalizacja incydentu została ukończona. Przerwana lub nieudana optymalizacja pozostaje oczekująca i może zostać wznowiona po upływie okresu backoff bez duplikowania fixture’a. W pełni oceniony wynik bez akceptowalnej zmiany jest zapisywany jako przetworzony, więc te same dowody nie wywołują nieograniczonej liczby powtórnych optymalizacji. Nowe dowody mogą wywołać kolejną próbę.
+Utworzenie fixture’a nie oznacza, że optymalizacja incydentu została ukończona. Przerwana lub nieudana optymalizacja pozostaje oczekująca i może zostać wznowiona po upływie okresu backoff bez duplikowania fixture’a. Backoff podwaja się po każdej nieudanej próbie: 2, 4, 8, … minut, do 1024 minut (około 17 godzin). W pełni oceniony wynik bez akceptowalnej zmiany jest zapisywany jako przetworzony, więc te same dowody nie wywołują nieograniczonej liczby powtórnych optymalizacji. Nowe dowody mogą wywołać kolejną próbę.
 
 Przełączenie z trybu propose na tryb apply sprawia, że niezastosowane propozycje kwalifikują się do przetworzenia. Zastosowanie nadal wymaga bieżącej ewaluacji i niezmienionej zawartości źródłowej; stara propozycja nie jest bezwarunkowym poleceniem zapisu.
 
 ## Trwałe nakładki umiejętności
 
-Automatyczne zmiany są przechowywane oddzielnie od zarządzanych definicji umiejętności, w należącym do użytkownika obszarze ewolucji projektu. Ewaluacja oraz projektowe dowiązania umiejętności dostawców używają efektywnego ciała wybranego z zarządzanej bazy i jej kwalifikującej się nakładki. Instalacje dostawców w zakresie HOME nie są przekierowywane na nakładkę projektu. Niezarządzaną kopię w projektowym katalogu dostawcy należy rozstrzygnąć przed automatycznym zastosowaniem. Zasoby umiejętności pozostają dostępne pod swoimi ścieżkami względnymi.
+Automatyczne zmiany są przechowywane oddzielnie od zarządzanych definicji umiejętności, w należącym do użytkownika obszarze ewolucji projektu, `.agents/evolution/skills/<skill>/` (z rekordem `overlay.json`). Ewaluacja oraz projektowe dowiązania umiejętności dostawców używają efektywnego ciała wybranego z zarządzanej bazy i jej kwalifikującej się nakładki. Instalacje dostawców w zakresie HOME nie są przekierowywane na nakładkę projektu. Niezarządzaną kopię w projektowym katalogu dostawcy należy rozstrzygnąć przed automatycznym zastosowaniem. Zasoby umiejętności pozostają dostępne pod swoimi ścieżkami względnymi.
 
 Nakładka zapisuje bazę, względem której została oceniona. Po `oma update`:
 
@@ -86,8 +121,14 @@ oma skill rollback --skill oma-docs
 
 Rekordy promocji zachowują skróty kandydata i rodzica, dowody ewaluacji oraz patch do przeglądu. Wycofanie pierwszej nakładki przywraca użycie zarządzanej bazy; wycofanie późniejszej nakładki przywraca poprzednią nakładkę. Nieznane edycje są zachowywane: polecenie rollback odmawia odrzucenia treści, która nie pasuje już do zapisanego kandydata.
 
-Istniejące ręczne polecenie `oma skill optimize --apply` nadal jest dostępne. Zaplanowana ewolucja jawnie wybiera ścieżkę zastosowania przez nakładkę.
+Ręczne `oma skill optimize --apply` nadal zapisuje zarządzany `SKILL.md`, ale odmawia działania, gdy dla tej umiejętności aktywna jest nakładka projektu (`[oma skill opt] an active project overlay owns this skill; ...`). Najpierw wycofaj nakładkę poleceniem `oma skill rollback --skill <id>` albo pozwól, aby zmianę zastosował cykl ewolucji. Zaplanowana ewolucja jawnie wybiera ścieżkę zastosowania przez nakładkę.
 
 ## Zakres dowodów
 
 Przechodzący test oprogramowania potwierdza poprawne połączenie komponentów oraz reguły ewaluacji. Nie dowodzi, że powtarzane automatyczne zmiany z czasem poprawiają rzeczywistą pracę projektu. Przed zwiększeniem przydziału lub rozszerzeniem automatyzacji sprawdź rzeczywiste promocje, koszty, regresje i historię wycofań. Promocja procedury L5 nie jest wywoływana przez tę zaplanowaną pętlę sprzężenia zwrotnego.
+
+## Zobacz także
+
+- [Przypadki regresji incydentów](./harness-incidents.md) — zapisywanie, promowanie i odtwarzanie incydentów przetwarzanych przez ten cykl.
+- [Optymalizacja umiejętności](./skill-opt.md) — bramki, które przechodzi każda zastosowana zmiana.
+- [Agenci zaplanowani](./scheduled-agents.md) — harmonogram systemowy, który wyzwala cykl.

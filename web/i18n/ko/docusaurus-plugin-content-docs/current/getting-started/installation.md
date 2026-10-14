@@ -30,13 +30,13 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 
 두 부트스트랩 스크립트는 동일하게 동작합니다:
 1. 플랫폼을 감지합니다 (macOS, Linux, 또는 Windows)
-2. bun, uv, serena를 확인하고, 없으면 설치합니다
-3. 프리셋 선택과 함께 대화형 설치 프로그램을 실행합니다
-4. 선택한 스킬로 `.agents/`를 생성합니다
-5. `.claude/` 통합 레이어를 설정합니다 (훅, 심볼릭 링크, 설정)
-6. 감지된 경우 Serena MCP를 설정합니다
+2. bun과 uv(선택한 경우 serena도)를 확인하고, 없으면 설치합니다
+3. 프리셋과 프로바이더 선택이 포함된 대화형 설치 프로그램을 실행합니다
+4. 선택한 스킬과 설정으로 `.agents/`를 생성합니다
+5. 런타임 통합 레이어를 설정합니다 (감지된 벤더용 훅, 심볼릭 링크, 설정)
+6. 코드 인텔리전스와 메모리 MCP 서버를 설정합니다
 
-선택적 의존성 설치가 실패해도 부트스트랩은 계속 진행하고 후속 명령을 보고합니다. 설치 프로그램이 끝나면 `oma doctor`를 실행하세요.
+선택적 의존성 설치가 실패해도 부트스트랩은 계속 진행하고 후속 명령을 보고합니다. AgentMemory는 기본 시맨틱 메모리 프로바이더이며, 설치, 시작 또는 헬스 체크가 실패하면 `oma install`과 `oma update`도 실패합니다. `providers.semantic_memory: none` 또는 `honcho`를 선택하거나 `OMA_NO_AGENTMEMORY=1`을 설정하면 AgentMemory 자동 준비를 건너뜁니다. 설치 프로그램이 끝나면 `oma doctor`를 실행하세요.
 
 ---
 
@@ -48,24 +48,46 @@ bunx oh-my-agent@latest
 
 의존성 자동 설치 과정 없이 대화형 설치 프로그램을 바로 실행합니다. bun이 미리 설치되어 있어야 합니다.
 
-설치 프로그램이 스킬 프리셋 선택을 안내합니다. 현재 프리셋은 `cli/constants/skill-data.ts`에 정의되어 있습니다.
+설치 프로그램이 [스킬 프리셋](./glossary.md#skill-preset) 선택을 안내합니다. 현재 프리셋은 `cli/constants/skill-data.ts`의 `PRESETS`에 정의되어 있습니다.
 
-### 프리셋
+### 프리셋 {#presets}
 
-| 프리셋 | 포함 스킬 |
-|--------|----------------|
-| **all** | 현재 33개 스킬 패키지 전체 |
-| **fullstack** | Architecture, brainstorming, design, frontend, backend, mobile, database, PM, QA, debugging, SCM, Terraform, developer workflow |
-| **fullstack-web** | Fullstack web 구현, architecture, design, PM, QA, debugging, SCM, developer workflow |
-| **fullstack-mobile** | 모바일 중심 fullstack 구현, architecture, design, PM, QA, debugging, SCM, developer workflow |
-| **frontend** | Architecture, brainstorming, design, frontend, PM, QA, debugging, SCM |
-| **backend** | Architecture, brainstorming, backend, database, PM, QA, debugging, SCM, developer workflow |
-| **mobile** | Architecture, brainstorming, mobile, PM, QA, debugging, SCM |
-| **devops** | Architecture, brainstorming, Terraform, developer workflow, observability, PM, QA, debugging, SCM |
-| **research** | Scholar, market, PDF, HWP, academic writing, search, translation, SCM |
-| **content** | Design, image, voice, academic writing, translation, SCM |
+저장소에 필요한 작업에 맞는 프리셋을 고르세요. 아래 스킬 이름에서는 `oma-` 접두사를 생략했습니다.
 
-프리셋은 스킬 묶음이며 스킬마다 서브에이전트 정의를 하나씩 만들지 않습니다. `all` 프리셋은 실제 스킬 레지스트리에서 확장되므로 저장소에 따라 목록이 늘어날 수 있습니다. 도메인 프리셋은 해당 분야에 필요한 스킬만 포함합니다.
+| 프리셋 | 이런 프로젝트일 때 선택 | 포함 스킬 | 개수 |
+|--------|-------------------------------|-----------------|-------|
+| **all** | 어떤 프로젝트든, 또는 모든 워크플로우가 바로 동작하길 원할 때 | 레지스트리의 모든 스킬 | 33 |
+| **fullstack** | 백엔드와 Terraform 인프라를 갖춘 웹·모바일 클라이언트 | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
+| **fullstack-web** | 백엔드와 데이터베이스를 갖춘 웹 프론트엔드 | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **fullstack-mobile** | 백엔드와 데이터베이스를 갖춘 모바일 앱 | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **frontend** | 웹 UI만 | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
+| **backend** | 데이터베이스를 갖춘 API 또는 서비스 | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
+| **mobile** | 모바일 앱만 | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
+| **devops** | 인프라, CI/CD, 관측성(observability) 작업 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **research** | 논문, 시장 조사, PDF/HWP 변환 | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
+| **content** | 디자인 에셋, 이미지, 음성, 글 콘텐츠 | design, image, voice, academic-writing, translation, scm | 6 |
+
+프리셋은 스킬 묶음이며 스킬마다 서브에이전트 정의를 하나씩 만들지 않습니다. `all` 프리셋은 실제 스킬 레지스트리에서 확장되므로 저장소에 따라 목록이 늘어날 수 있습니다. 도메인 프리셋은 해당 분야의 스킬만 포함합니다.
+
+### 프리셋 밖의 스킬이 필요한 워크플로우 {#workflows-that-need-skills-outside-a-preset}
+
+모든 프리셋은 워크플로우와 에이전트 정의를 전부 설치하지만, 일부 워크플로우는 도메인 프리셋이 설치하지 않는 스킬을 읽습니다. 도메인 프리셋을 고르기 전에 이 표를 확인하세요.
+
+| 워크플로우 | 읽는 스킬 | 포함하는 프리셋 |
+|----------|-------------|-------------------------|
+| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
+| `/ultrawork`, `/ralph` | oma-coordination. 이 워크플로우가 스폰하는 `refactor-engineer` 에이전트는 oma-refactor를 사용 | all |
+| `/docs` | oma-docs | all |
+| `/explain` | oma-explanation | all |
+| `/security` | oma-security | all |
+| `/recap` | oma-recap | all |
+| `/video` | oma-video | all |
+| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
+| `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
+| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/scm` | oma-scm | 모든 프리셋 |
+
+누락된 스킬을 나중에 추가하려면 프로젝트 루트에서 `oma doctor`를 실행하고, 누락 스킬 안내를 수락한 뒤 **Select individually**를 선택하세요.
 
 공유 리소스(`_shared/`)는 프리셋에 관계없이 항상 설치됩니다. 여기에는 핵심 라우팅, 컨텍스트 로딩, 프롬프트 구조, 벤더 감지, 실행 프로토콜, 메모리 프로토콜이 포함됩니다.
 
@@ -73,43 +95,49 @@ bunx oh-my-agent@latest
 
 설치 후 프로젝트에 다음 내용이 포함됩니다.
 
-```
+```text
 .agents/
-├── oma-config.yaml # Your preferences
-├── oma-config.cue # Optional schema-backed configuration
+├── oma-config.yaml          # Your preferences
+├── oma-config.cue           # Optional schema-backed configuration
+├── mcp.json                 # MCP server configuration
 ├── skills/
-│ ├── _shared/ # Shared resources (always installed)
-│ │ ├── core/ # skill-routing, context-loading, etc.
-│ │ ├── runtime/ # memory-protocol, execution-protocols/
-│ │ └── conditional/ # quality-score, experiment-ledger, etc.
-│ ├── oma-frontend/ # Per preset
-│ │ ├── SKILL.md
-│ │ └── resources/
-│ └── ... # Other selected skills
-├── workflows/ # Current workflow definitions (21 in this checkout)
-├── agents/ # Subagent definitions
-├── mcp.json # MCP server configuration
-├── results/ # Plans and agent results (populated by workflows)
-└── state/ # Persistent workflow and coordination state
+│   ├── _shared/             # Shared resources (always installed)
+│   │   ├── core/            # skill-routing, context-loading, etc.
+│   │   ├── runtime/         # memory-protocol, execution-protocols/
+│   │   └── conditional/     # quality-score, experiment-ledger, etc.
+│   ├── oma-frontend/        # Per preset
+│   │   ├── SKILL.md
+│   │   └── resources/
+│   └── ...                  # Other selected skills
+├── workflows/               # Workflow definitions (all 21, every preset)
+├── agents/                  # Subagent definitions (all 12, every preset)
+├── hooks/                   # Hook sources (core/, variants/)
+├── rules/                   # Project rules
+├── config/                  # Shipped defaults (defaults.yaml)
+├── results/                 # Plans and agent results (populated by workflows)
+└── state/                   # Persistent workflow and coordination state
+    └── memories/            # Runtime coordination state
 
 .claude/
-├── settings.json # Vendor settings, when Claude Code is selected
-├── hooks/oma-hook.sh # Generated wrapper for the in-process hook chain
-├── hooks/hud.ts # Optional [OMA] statusline indicator
-├── skills/ # Symlinks → .agents/skills/
-└── agents/ # Generated native subagent files, when supported
-
-.agents/state/memories/
-└── ... # Runtime coordination state
+├── settings.json            # Vendor settings, when Claude Code is selected
+├── hooks/
+│   ├── oma-hook.sh          # Generated wrapper for the in-process hook chain
+│   └── hud.ts               # Optional [OMA] statusline indicator
+├── skills/                  # Symlinks → .agents/skills/
+└── agents/                  # Generated native subagent files, when supported
 ```
 
 설치 프로그램은 선택한 호스트에 필요한 벤더 디렉토리만 만듭니다. 훅 원본은 `.agents/hooks/core/`에 남고 생성된 벤더 파일은 통합 출력입니다. 오래된 프로젝트에서는 Serena가 레거시 `.serena/memories/` 디렉토리를 사용할 수도 있습니다.
 
 ---
 
-## 방법 3: 전역 설치
+## 방법 3: 전역 설치 {#method-3-global-install}
 
 CLI에서 직접 사용하려면(대시보드, 에이전트 스폰, 진단 등) oh-my-agent을 전역으로 설치하세요:
+
+:::note
+이 섹션은 `oma` 명령을 설치합니다. 스킬, 워크플로우, 룰을 모든 프로젝트용 OMA 글로벌 홈(`~/.oma/.agents/`)에 설치하는 `oma install --global`과는 다릅니다. [글로벌 설치](../guide/global-install.md)를 참고하세요.
+:::
 
 ### Homebrew (macOS/Linux)
 
@@ -121,7 +149,7 @@ brew install oh-my-agent
 
 ```bash
 bun install --global oh-my-agent
-# 또는
+# or
 npm install --global oh-my-agent
 ```
 
@@ -131,7 +159,7 @@ npm install --global oh-my-agent
 oma doctor # Health check
 oma doctor --profile # Show resolved model/CLI per dispatch role
 oma dashboard terminal # Terminal monitoring
-oma dashboard web # Web dashboard at http://localhost:9847
+oma dashboard web # Web dashboard at http://127.0.0.1:9847
 oma agent spawn # Spawn agents from terminal
 oma agent parallel # Parallel agent execution
 oma agent status # Check agent status
@@ -141,17 +169,16 @@ oma skill audit # Audit skill routing descriptions
 oma stats get # Session statistics
 oma recap # Conversation history recap across AI tools
 oma link # Regenerate vendor-native files from `.agents/` SSOT
-oma update # Update oh-my-agent
+oma update # Update installed skills from the registry
 oma verify agent <agent-type> # Verify agent output (build/test/scope/secrets)
 oma describe # Introspect CLI commands as JSON
-oma bridge # MCP stdio ↔ Streamable HTTP bridge
+oma bridge # Proxy MCP stdio to a shared per-project Serena server
 oma memory init # Initialize coordination memory schema
 oma auth status # Check CLI auth status
-oma search # Mechanical search primitives (alias: `oma s`)
-oma image # Multi-vendor AI image generation (alias: `oma img`)
+oma search # Mechanical search primitives
+oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma export # Export skills for external IDEs (e.g. cursor)
 oma star # Star the repository
 ```
 
@@ -167,7 +194,7 @@ AI CLI 도구가 하나 이상 설치되어 있어야 합니다. oh-my-agent은 
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
-# 또는
+# or
 npm install --global @anthropic-ai/claude-code
 ```
 
@@ -177,7 +204,7 @@ npm install --global @anthropic-ai/claude-code
 
 ```bash
 bun install --global @openai/codex
-# 또는
+# or
 npm install --global @openai/codex
 ```
 
@@ -250,14 +277,12 @@ agents:
 #       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
-> **설정 형식:** 유효한 `.agents/oma-config.cue`를 공용 설정으로 평가합니다. 공용 CUE 평가에 실패하면 로더가 `.agents/oma-config.yaml`로 폴백할 수 있습니다. 로컬 오버레이(`oma-config.local.cue` 또는 `.yaml`)는 선택 사항이며 잘못된 로컬 의도는 치명적 오류입니다. `OMA_MODEL_PRESET`은 현재 프로세스의 파일 값을 덮어씁니다.
-
 ### 필드 레퍼런스
 
 | 필드 | 타입 | 필수 여부 | 설명 |
 |-------|------|----------|-------------|
-| `language` | string | 필수 | 응답 언어 코드. en, ko, ja, zh, es, fr, de, pt, ru, nl, pl 등 11개 언어를 지원합니다. |
-| `model_preset` | string | 필수 | 활성 프리셋 키. `auto`는 현재 런타임을 따르며, 고정 키로 `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro`, `mixed`를 사용할 수 있습니다. 사용자 정의 프리셋 키도 유효합니다. 자세한 내용은 [에이전트별 모델 설정](../guide/per-agent-models.md)을 참조하세요. |
+| `language` | string | 필수 | 응답 언어 코드. en, ko, ja, zh, es, fr, de, pt, ru, nl, pl을 지원합니다. |
+| `model_preset` | string | 필수 | 활성 [모델 프리셋](./glossary.md#model-preset) 키. `auto`는 현재 런타임을 따르며, 고정 키로 `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro`, `mixed`를 사용할 수 있습니다. 사용자 정의 프리셋 키도 유효합니다. 자세한 내용은 [에이전트별 모델 설정](../guide/per-agent-models.md)을 참조하세요. |
 | `default_cli` | string | 선택 | 명시적인 에이전트 설정과 선택한 프리셋으로 벤더가 해석되지 않을 때 `oma agent spawn`이 사용할 폴백 CLI입니다. |
 | `free` | map | 선택 | `model_preset: free`일 때 사용하는 FreeLLMAPI 게이트웨이 설정입니다. API 키는 환경 변수에 보관하세요. |
 | `providers` | map | 선택 | 기능 프로바이더: `code_intelligence`(`serena` 또는 `gortex`), `code_intelligence_guard`(`block` 또는 `off`), `docs`(`context7`), `web`(`native` 또는 `brave`), `semantic_memory`(`agentmemory`, `honcho`, 또는 `none`). |
@@ -271,6 +296,8 @@ agents:
 | `mcp.devtools_browsers` | list | 선택 | DevTools MCP용 브라우저: `aside`, `chrome`, `firefox`. 생략하면 기존 설정을 유지하고 `[]`는 브라우저 서버를 명시적으로 비활성화합니다. |
 | `serena.mode` | string | 선택 | `bridge`는 프로젝트 Serena 서버를 공유하는 기본값이며 `stdio`는 세션마다 하나의 프로세스를 사용합니다. |
 | `serena.auto_update` | boolean | 선택 | `oma update`가 Serena를 업그레이드할지 결정합니다. 기본값 `true`입니다. |
+
+> **설정 형식:** 유효한 `.agents/oma-config.cue`를 공용 설정으로 평가합니다. 공용 CUE 평가에 실패하면 로더가 `.agents/oma-config.yaml`로 폴백할 수 있습니다. 로컬 오버레이(`oma-config.local.cue` 또는 `.yaml`)는 선택 사항이며 잘못된 로컬 의도는 치명적 오류입니다. `OMA_MODEL_PRESET`은 현재 프로세스의 파일 값을 덮어씁니다.
 
 ### 벤더 해석
 
@@ -290,8 +317,8 @@ oma doctor
 - 선택한 호스트 CLI가 설치되어 있고 접근 가능한지. 선택 사항인 도구는 별도로 보고합니다.
 - 설정된 MCP 서버 항목이 유효한지 (예: Serena, Gortex, Context7, DevTools)
 - SKILL.md 프론트매터가 유효한 스킬 파일이 있는지
-- `.claude/skills/`의 심볼릭 링크가 유효한 대상을 가리키는지
-- `.claude/settings.json`에 훅이 올바르게 설정되어 있는지
+- 심볼릭 링크와 훅 스크립트가 유효한 대상을 가리키는지
+- 벤더 설정 파일에 훅이 올바르게 설정되어 있는지
 - 선택한 코드 인텔리전스와 메모리 프로바이더에 연결 가능한지 (Gortex는 현재 프로젝트가 데몬의 추적 대상에 들어 있는지도 확인)
 - `oma-config.cue` / `oma-config.yaml`이 필수 필드를 갖춘 유효한지
 
@@ -333,14 +360,14 @@ bunx oh-my-agent@latest
 
 선택한 AI IDE 또는 CLI에서 프로젝트를 열고 oh-my-agent을 사용해 보세요. 스킬 라우팅은 호스트에 따라 다르며 활성화된 훅이 워크플로우를 감지할 수 있습니다. 다음을 시도해 보세요:
 
-```
+```text
 "Build a login form with email validation using Tailwind CSS"
 ```
 
 또는 워크플로우 명령을 사용하세요:
 
-```
+```text
 /plan authentication feature with JWT and refresh tokens
 ```
 
-자세한 예제는 [사용 가이드](/docs/guide/usage)를, 각 전문가가 무엇을 하는지 알아보려면 [에이전트](/docs/core-concepts/agents)를 참조하세요.
+자세한 예제는 [사용 가이드](/docs/guide/usage)를, 각 전문가가 무엇을 하는지 알아보려면 [에이전트](/docs/core-concepts/agents)를 참조하세요. 설치나 훅이 예상대로 동작하지 않으면 [문제 해결](../guide/troubleshooting.md)을 참고하세요.

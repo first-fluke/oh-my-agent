@@ -7,11 +7,11 @@ description: Kompleksowy przegląd oh-my-agent — wieloagentowego frameworka or
 
 oh-my-agent to wieloagentowy framework orkiestracji dla IDE i narzędzi CLI opartych na AI. Zamiast polegać na jednym asystencie AI do wszystkiego, oh-my-agent kieruje pracę przez 33 pakiety umiejętności i 13 kanonicznych ról dispatchu. Dwanaście plików definicji subagentów znajdujących się w repozytorium dostarcza wielokrotnego użytku persony do implementacji, review, planowania, debugowania, dokumentacji, badań i infrastruktury. `research-explorer.md` mapuje się na kanoniczną rolę `explore`; `orchestrator` jest rolą koordynacji runtime'u bez osobnego pliku definicji.
 
-OMA wykonuje mechaniczne kontrole, gdy je wywołasz lub wybierzesz workflow, który je zawiera. `oma verify agent <agent-type>` uruchamia kontrole dla wybranego typu agenta; `/ralph` dodaje weryfikację opartą na artefaktach i pętlę sędziego; włączone hooki Stop dostawcy mogą utrzymywać workflow otwarty, dopóki wykonywane są jego skonfigurowane kontrole. Samo ładowanie umiejętności nie ustanawia akceptacji, a zwykły prompt nie uruchamia automatycznie każdej bramki workflowu. Użyj kryteriów akceptacji workflowu i powstałych plików, aby zdecydować, co jest ukończone.
+OMA wykonuje mechaniczne kontrole, gdy je wywołasz lub wybierzesz workflow, który je zawiera. `oma verify agent <agent-type>` uruchamia kontrole dla wybranego typu agenta; `/ralph` dodaje weryfikację opartą na artefaktach i pętlę [sędziego](./glossary.md#judge); włączone hooki Stop dostawcy ([bramka zatrzymania](./glossary.md#stop-gate)) mogą utrzymywać workflow otwarty, dopóki wykonywane są jego skonfigurowane kontrole. Samo ładowanie umiejętności nie ustanawia akceptacji, a zwykły prompt nie uruchamia automatycznie każdej bramki workflowu. Użyj kryteriów akceptacji workflowu i powstałych plików, aby zdecydować, co jest ukończone.
 
 Cały system znajduje się w przenośnym katalogu `.agents/` wewnątrz projektu. Możesz przełączać się między Claude Code, Codex CLI, Antigravity CLI lub IDE, Cursorem, OpenCode i innymi obsługiwanymi narzędziami, a konfiguracja agentów podróżuje razem z kodem.
 
-Jeśli dopiero poznajesz OMA, zacznij od [Szybkiego startu](./quick-start.md), a potem przeczytaj [Ważne ustawienia domyślne](./important-defaults.md). Instalacja tworzy SSOT i integracje dostawców; pierwszą użyteczną kontrolą jest `oma doctor`, a pierwszym użytecznym zadaniem — jedna mała zmiana w jednej domenie. Przejdź do `/work` lub `/orchestrate` dopiero wtedy, gdy zadanie wymaga koordynacji.
+Jeśli dopiero poznajesz OMA, zacznij od [Szybkiego startu](./quick-start.md), a potem przeczytaj [Ważne ustawienia domyślne](./important-defaults.md). Instalacja tworzy [SSOT](./glossary.md#ssot) i integracje dostawców; pierwszą użyteczną kontrolą jest `oma doctor`, a pierwszym użytecznym zadaniem — jedna mała zmiana w jednej domenie. Przejdź do `/work` lub `/orchestrate` dopiero wtedy, gdy zadanie wymaga koordynacji.
 
 ---
 
@@ -27,7 +27,7 @@ oh-my-agent rozwiązuje ten problem dzięki specjalizacji:
 
 1. **Każda umiejętność ma główną domenę.** Umiejętność frontendowa zna React/Next.js, shadcn/ui, TailwindCSS v4 i architekturę FSD-lite. Umiejętność backendowa zna wzorzec Repository-Service-Router, zapytania parametryzowane i uwierzytelnianie JWT. Domeny mogą nakładać się na granicach, dlatego użyj kryteriów akceptacji zadania, aby zdecydować, czy potrzebna jest druga umiejętność lub workflow koordynujący.
 2. **Agenci mogą działać równolegle.** Gdy agent backendowy buduje API, agent frontendowy może pracować we własnym workspace'ie. Orchestrator koordynuje działania za pomocą trwałych plików i potwierdzeń przypisanych do runu.
-3. **Wskazówki jakości są wbudowane.** Umiejętności zawierają listy kontroli domeny, podręczniki błędów i reguły charteru. Charter preflight zawęża zakres przed napisaniem kodu; review QA uruchamia się, gdy zawiera go wybrany workflow lub gdy o niego poprosisz.
+3. **Wskazówki jakości są wbudowane.** Umiejętności zawierają listy kontroli domeny, podręczniki błędów i reguły [charteru](./glossary.md#charter). Preflight charteru zawęża zakres przed napisaniem kodu; przegląd QA uruchamia się, gdy zawiera go wybrany workflow lub gdy o niego poprosisz.
 
 ---
 
@@ -35,9 +35,9 @@ oh-my-agent rozwiązuje ten problem dzięki specjalizacji:
 
 Katalog rozdziela trzy rzeczy, które łatwo pomylić:
 
-- **Umiejętności** to 33 pakiety wiedzy domenowej w `.agents/skills/*/SKILL.md`. Kierują na podstawie intencji wyrażonej naturalnym językiem i progresywnie ładują zasoby.
-- **Definicje agentów** to 12 plików w `.agents/agents/`. Dostarczają natywne dla dostawcy persony subagentów i odwołują się do co najmniej jednej umiejętności.
-- **Workflowy** to 21 definicji procesów w `.agents/workflows/`. Cztery są trwałe (`orchestrate`, `work`, `ultrawork` i `ralph`); pozostałe kończą się raportem i nie utrzymują aktywnego trybu persistent.
+- **[Umiejętności](./glossary.md#skill)** to 33 pakiety wiedzy domenowej w `.agents/skills/*/SKILL.md`. Kierują na podstawie intencji wyrażonej naturalnym językiem i progresywnie ładują zasoby.
+- **[Definicje agentów](./glossary.md#agent-definition)** to 12 plików w `.agents/agents/`. Dostarczają natywne dla dostawcy persony subagentów i odwołują się do co najmniej jednej umiejętności.
+- **[Workflowy](./glossary.md#workflow)** to 21 definicji procesów w `.agents/workflows/`. Cztery są [trwałe](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` i `ralph`); pozostałe kończą się raportem i nie utrzymują aktywnego trybu trwałego.
 
 Poniższe sekcje zachowują szczegółowy katalog umiejętności. Gdy nazwa lub opis się zmienia, źródłem prawdy jest frontmatter aktywnego `SKILL.md`.
 
@@ -78,7 +78,7 @@ Dwanaście plików definicji znajdujących się w repozytorium obejmuje 13 ról 
 
 | Agent | Rola | Kluczowe możliwości |
 |-------|------|-----------------|
-| **oma-qa** | Zapewnianie jakości | Audyt bezpieczeństwa (OWASP Top 10), analiza wydajności, dostępność (WCAG 2.2 AA) i przegląd jakości kodu. Poziomy: CRITICAL/HIGH/MEDIUM/LOW z file:line i kodem remediacji. Obsługuje charakterystyki jakości ISO/IEC 25010 i dopasowanie testów ISO/IEC 29119. Zasoby: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
+| **oma-qa** | Zapewnianie jakości | Audyt bezpieczeństwa (OWASP Top 10), analiza wydajności, dostępność (WCAG 2.2 AA) i przegląd jakości kodu. Poziomy: CRITICAL/HIGH/MEDIUM/LOW z file:line i kodem remediacji. Obsługuje charakterystyki jakości ISO/IEC 25010 i dopasowanie testów ISO/IEC 29119. Zasoby: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `verify-ship-protocol.md`, `error-playbook.md`. |
 | **oma-debug** | Diagnozowanie i naprawa błędów | Metodologia reproduce-first. Analiza przyczyn źródłowych, minimalne poprawki, obowiązkowe testy regresji i skanowanie podobnych wzorców. Używa narzędzi MCP do inteligencji kodu (Gortex lub Serena) do śledzenia symboli. Zasoby: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 | **oma-refactor** | Refaktoryzacja zachowująca działanie | Bezpieczna, przyrostowa restrukturyzacja zabezpieczona testami charakterystyki. Wyszukiwanie hotspotów (złożoność × churn), wybór code smell/SATD, odwrócenie metodą Mikado przy niepowodzeniu, expand-contract dla zmian stanowych, commity tylko refaktoryzujące (bez mieszania zmiany zachowania). Transformacje engine-first (zmiana nazwy w IDE, jscodeshift/ast-grep), metryki przez `uvx lizard` / `uvx radon`. Czytelność jest kryterium sukcesu; metryki są przybliżeniami. |
 
@@ -89,7 +89,7 @@ Dwanaście plików definicji znajdujących się w repozytorium obejmuje 13 ról 
 | **oma-translation** | Tłumaczenie uwzględniające kontekst | Sześcioetapowy przepływ: Prepare, Acquire, Reason, Act, Verify, Finalize. Metoda tłumaczenia ma cztery kroki: odczytanie znaczenia i chronionej składni, wybór rejestru, rekonstrukcja w języku docelowym i zachowanie stylu autora tam, gdzie ma to zastosowanie. Profile języków docelowych (`resources/lang/{code}.md`) zawierają zasady rejestru i typografii. Zasoby: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestration** | Automatyczny koordynator wieloagentowy | Uruchamia subagentów CLI równolegle, koordynuje ich przez trwałą sesję, tablicę zadań, pliki postępu i wyników oraz monitoruje pętle weryfikacji. Konfiguracja: MAX_PARALLEL (domyślnie 3), MAX_RETRIES (domyślnie 2), POLL_INTERVAL (domyślnie 30 s). Zawiera pętlę review między agentami i opcjonalne dowody sesji. Zasoby: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Zarządzanie konfiguracją oprogramowania (SCM) i Git | Obsługuje strategie branchowania, workflowy merge/rebase/conflict, workspace'y, baseline'y i śledzenie stanu wydań. Prowadzi też przez Conventional Commit z bezpiecznym stagingiem; traile co-author pochodzą z aktywnej konfiguracji `scm.co_author`, gdy jest włączona. |
-| **oma-coordination** | Ręczny przewodnik po workflowie wieloagentowym | Krok po kroku koordynuje PM, Frontend, Backend, Mobile i QA za pomocą CLI `oma agent spawn`. Zaczyna od dekompozycji PM, uruchamia zadania o tym samym priorytecie w osobnych workspace'ach, monitoruje pliki postępu i wyników przypisane do runu, uzgadnia kontrakty API/danych przed pracą frontendową i mobilną, a kończy review QA. Ręczny odpowiednik `oma-orchestration`. |
+| **oma-coordination** | Ręczny przewodnik po workflowie wieloagentowym | Krok po kroku koordynuje PM, Frontend, Backend, Mobile i QA za pomocą CLI `oma agent spawn`. Zaczyna od dekompozycji PM, uruchamia zadania o tym samym priorytecie w osobnych workspace'ach, monitoruje pliki postępu i wyników przypisane do runu, uzgadnia kontrakty API/danych przed pracą frontendową i mobilną, a kończy przeglądem QA. Ręczny odpowiednik `oma-orchestration`. |
 
 
 
@@ -113,7 +113,7 @@ Dwanaście plików definicji znajdujących się w repozytorium obejmuje 13 ról 
 
 | Agent | Rola | Kluczowe możliwości |
 |-------|------|-----------------|
-| **oma-deepsec** | Sterownik skanera podatności opartego na agentach | Obsługuje Vercel `deepsec` (`bunx deepsec`) od początku do końca: wykonuje `init` dla workspace `.deepsec/`, zapisuje projektowy `INFO.md`, uruchamia oszczędne kosztowo przejścia `scan`/`process`/`triage`/`revalidate`/`export`, bramkuje PR-y przez `process --diff` z dwu-zadaniowym wzorcem CI i tworzy własne matchery. Przed dużym przebiegiem kalibruje parametrami `--limit 50 --concurrency 5` i podaje prognozę kwotową przed płatną pracą; koszt zależy od rozmiaru repozytorium i backendu. Backend agentowy: `codex` (gpt-5.5) lub `claude` (claude-opus-4-8). |
+| **oma-security** | Skanowanie i walidacja bezpieczeństwa | Skanuje kod źródłowy aplikacji, umiejętności agentów i komponenty MCP; uruchamia testy penetracyjne na ograniczonych zakresem testowych wdrożeniach webowych, weryfikuje ustalenia i konfiguruje bramki skanowania. Domyślne silniki według celu: Deepsec dla kodu źródłowego aplikacji lub diffów, Cisco Skill Scanner dla pakietów umiejętności agentów, Cisco MCP Scanner dla komponentów MCP oraz ARTEX dla testowych wdrożeń webowych. Do szerokich przeglądów jakości używaj `oma-qa`, a do remediacji umiejętności domenowych. |
 
 ### Dokumentacja i metanarzędzia {#documentation-and-meta-tooling}
 
@@ -158,19 +158,21 @@ Ile kontekstu to oszczędza, zależy od umiejętności i zadania, więc zmierz t
 
 Wszystko, czego potrzebuje oh-my-agent, znajduje się w katalogu `.agents/`:
 
-```
+```text
 .agents/
-├── oma-config.yaml         # Shared preferences and provider/model settings
-├── oma-config.cue          # Optional schema-backed configuration
-├── skills/                 # 33 skill directories + _shared resources
-│   ├── _shared/            # Core resources used by all agents
-│   └── oma-{skill}/         # Per-skill SKILL.md + resources/variants
-├── workflows/              # 21 workflow definitions
-├── agents/                 # 12 subagent definitions
-├── results/plan-{sessionId}.json               # Generated plan output
-├── state/                  # Active workflow state files
-├── results/                # Agent result files
-└── mcp.json                # MCP server configuration
+├── oma-config.yaml   # Shared preferences and provider/model settings
+├── oma-config.cue    # Optional schema-backed configuration
+├── mcp.json          # MCP server configuration
+├── skills/           # 33 skill directories + _shared resources
+│   ├── _shared/      # Core resources used by all agents
+│   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
+├── workflows/        # 21 workflow definitions
+├── agents/           # 12 subagent definitions
+├── hooks/            # Hook sources, including core/triggers.json
+├── rules/            # Project rules projected into vendor files
+├── config/           # Shipped defaults (defaults.yaml)
+├── results/          # Plans (plan-{sessionId}.json) and agent results
+└── state/            # Active workflow state files
 ```
 
 Katalog `.claude/` istnieje wyłącznie jako warstwa integracji z IDE. Zawiera dowiązania symboliczne prowadzące z powrotem do `.agents/` oraz hooki do wykrywania słów kluczowych i paska HUD. Katalog `.agents/state/memories/` przechowuje stan koordynacji w czasie wykonywania sesji orkiestracji (starsze projekty korzystają awaryjnie ze starszej ścieżki `.serena/memories/`).
@@ -180,7 +182,7 @@ Ta architektura sprawia, że konfiguracja agenta jest:
 - **Wersjonowana:** commituj `.agents/` razem z kodem
 - **Współdzielona:** członkowie zespołu otrzymują tę samą konfigurację agentów
 
-
+---
 
 ## Obsługiwane IDE i narzędzia CLI {#supported-ides-and-cli-tools}
 
@@ -199,25 +201,53 @@ Uruchamianie agentów dostosowuje się do każdego wybranego dostawcy przez wykr
 
 ---
 
+## Jak przebiega żądanie {#how-a-request-flows}
+
+Diagram pokazuje, co dzieje się między promptem a gotowym wynikiem. Hook słów kluczowych, injector umiejętności i hook Stop działają tylko na hostach z włączoną integracją hooków. Hook słów kluczowych i injector umiejętności działają kolejno na tym samym prompcie, a wstrzyknięty przez nie kontekst jest łączony.
+
+```mermaid
+flowchart TD
+  P["User prompt"] --> SL{"Starts with a /command?"}
+  SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
+  SL -->|no| KD["Keyword hook checks triggers.json"]
+  KD -->|"workflow keyword (explicit keyword for persistent ones)"| CTX["Inject OMA WORKFLOW context"]
+  CTX --> WF
+  KD -->|"persistent workflow, natural language only"| SUG["Workflow suggested; agent decides"]
+  SUG -.->|"if the request calls for it"| WF
+  KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
+  SI --> HOST["Host picks skills by name and description"]
+  WF --> SK["Skills: .agents/skills/*/SKILL.md"]
+  HOST --> SK
+  WF --> AG["Agents: native subagent or oma agent spawn"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
+```
+
+Źródła: `.agents/hooks/core/keyword-detector.ts` (pomijanie komend slash, dopasowywanie wyzwalaczy, sugestie workflowów trwałych), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` oraz pliki workflowów w `.agents/workflows/`. Nie każdy workflow ma każdą bramkę: `/orchestrate` uruchamia skrypt weryfikacji, `/review` uruchamia przegląd QA, a `/ralph` dodaje [sędziego](./glossary.md#judge).
+
+---
+
 ## System routingu umiejętności {#skill-routing-system}
 
-Po wysłaniu promptu oh-my-agent ustala, który agent ma go obsłużyć, korzystając z mapy routingu umiejętności (`.agents/skills/_shared/core/skill-routing.md`):
+Host wybiera umiejętność na podstawie nazw i opisów zainstalowanych umiejętności. Mapa routingu OMA (`.agents/skills/_shared/core/skill-routing.md`) określa, która umiejętność odpowiada za który rezultat; kieruj według żądanego rezultatu i jego zależności, a nie samego słowa kluczowego. Wybór umiejętności nie uruchamia workflowu ani nie autoryzuje delegowania.
 
-| Słowa kluczowe domeny | Kierowane do |
-|----------------|-----------|
-| API, endpoint, REST, GraphQL, database, migration | oma-backend |
-| auth, JWT, login, register, password | oma-backend |
-| UI, component, page, form, screen (web) | oma-frontend |
-| style, Tailwind, responsive, CSS | oma-frontend |
-| mobile, iOS, Android, Flutter, React Native, Swift, SwiftUI, app | oma-mobile |
-| bug, error, crash, broken, slow | oma-debug |
-| review, security, performance, accessibility | oma-qa |
-| UI design, design system, landing page, DESIGN.md | oma-design |
-| brainstorm, ideate, explore, idea | oma-brainstorm |
-| plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestration |
+| Żądany rezultat | Odpowiedzialna umiejętność |
+|---|---|
+| API aplikacji, uwierzytelnianie po stronie serwera, logika serwisów i dostępu do danych | oma-backend |
+| Schemat, projekt migracji, indeksowanie, strojenie zapytań, operacje bazodanowe | oma-db |
+| Komponenty webowe, strony, formularze, stan klienta | oma-frontend |
+| Ekrany mobilne, widżety, integracja z platformą | oma-mobile |
+| Granice systemu, kompromisy architektoniczne, ADR | oma-architecture |
+| Diagnoza i naprawa nieprawidłowego działania | oma-debug |
+| Przegląd poprawności, bezpieczeństwa, dostępności, wydajności | oma-qa |
+| System wizualny, DESIGN.md, kierunek redesignu | oma-design |
+| Żądana ideacja albo eksploracja alternatyw | oma-brainstorm |
+| Wymagania, zależności, kryteria akceptacji | oma-pm |
+| Żądane równoległe wykonanie przez specjalistów | oma-orchestration |
+| Żądana ręczna koordynacja wieloagentowa | oma-coordination |
+| Branche Git, commity, merge, historia repozytorium | oma-scm |
 
-W przypadku złożonych żądań obejmujących wiele domen routing korzysta z ustalonych kolejności wykonywania. Na przykład „Create a fullstack app” jest kierowane do: oma-pm (plan), następnie oma-backend + oma-frontend (implementacja równoległa), a potem oma-qa (przegląd).
+W innych domenach host wybiera spośród opisów zainstalowanych umiejętności. Praca wielodomenowa nie ma stałego łańcucha: nierozstrzygnięta decyzja architektoniczna lub produktowa jest rozwiązywana najpierw, a prace backendowe i klienckie mogą przebiegać równolegle, gdy ich wspólny kontrakt API nadaje się do użycia.
 
 ---
 
@@ -239,7 +269,8 @@ Nie musisz wpisywać `/command`, aby uruchamiać workflowy. System hooków oh-my
 - **Dane operacyjne** (np. „plan the auth feature”) → workflow jest ładowany automatycznie
 - **Dane informacyjne** (np. „what is orchestrate?”) → odfiltrowane, nie uruchamiają workflowu
 - **Jawne `/command`** → hook pomija wykrywanie, aby uniknąć duplikacji
-- **Workflowy trwałe** ponownie wstrzykują kontekst przy każdej wiadomości, dopóki nie powiesz „workflow done”
+- **Workflowy trwałe** (`orchestrate`, `work`, `ultrawork`, `ralph`) dopasowane wyłącznie na podstawie języka naturalnego są sugerowane, a nie uruchamiane; tryb trwały włącza się, gdy prompt używa jawnego słowa kluczowego workflowu (na przykład `ultrawork` lub `ralph`)
+- **Aktywne workflowy trwałe** ponownie wstrzykują kontekst przy każdej wiadomości, dopóki nie powiesz „workflow done”
 
 Każde zdarzenie hooka jest dostarczane przez kanoniczne ABI `oma hook run`: dostawca uruchamia `oma-hook.sh --vendor <v> --event <nativeEvent>`, które kieruje zdarzenie do łańcucha handlerów działającego w procesie i emituje dialekt właściwy dla dostawcy na stdout (zawsze exit 0, fail-open).
 

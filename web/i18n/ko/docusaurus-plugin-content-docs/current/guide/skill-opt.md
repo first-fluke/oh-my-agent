@@ -18,11 +18,11 @@ description: 결정론적 train, validation, 실행기 전용 holdout 게이트�
 
 `oma skill optimize`는 평가 태스크 픽스처 없이는 돌지 않습니다. `.agents/eval/<skill>/`에 **태스크 픽스처가 최소 5개**(`MIN_TASKS = 5`) 있어야 합니다. 그보다 적으면 즉시 오류를 냅니다.
 
-```
+```text
 [oma skill opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
 ```
 
-`.agents/eval/<skill>/` 디렉토리 규칙, 픽스처 스키마, 체커 종류, mock 재생을 위한 롤아웃 준비 방법은 [스킬 유용성 평가 가이드](/docs/guide/skill-eval)를 참고하세요.
+`.agents/eval/<skill>/` 디렉토리 규칙, 픽스처 스키마, 체커 종류, mock 재생을 위한 롤아웃 준비 방법은 [스킬 유용성 평가 가이드](./skill-eval.md)를 참고하세요.
 
 승격에는 다른 스킬에 속한 동일 도메인 이웃 태스크가 하나 이상 필요합니다. 후보의 검증 점수와 최종 후보 점수는 모두, 해당 점수를 평가한 분할의 이웃 태스크를 정확히 그 후보 본문으로 측정해야 합니다. 이웃 태스크가 없거나 짝지은 기록이 불완전하면 음의 전이가 없다는 것을 입증할 수 없습니다. 오프라인 평가는 일치하는 후보 기록만 재생할 수 있으므로, 새 후보를 생성하고 평가하려면 라이브 최적화를 쓰세요.
 
@@ -32,7 +32,29 @@ description: 결정론적 train, validation, 실행기 전용 holdout 게이트�
 
 ## 동작 방식
 
-픽스처는 task ID로 정렬한 뒤 **train**, **held-out validation**, **실행기 전용 final-test** 세트로 결정론적으로 나뉩니다. 픽스처가 5개 이상이면 목표 비율은 60/20/20이며 모든 partition에 최소 하나의 task가 있습니다. 예를 들어 픽스처가 8개이면 반올림 후 train 4개, validation 1개, final-test 3개 태스크가 됩니다. 같은 `group`을 선언한 픽스처는 함께 배정되므로, 표현만 바꾼 형제 픽스처가 train에 있는데 원본이 final-test에 있는 일은 생기지 않습니다. group이 3개 미만이면 task ID 기준 분할로 되돌아가며 경고합니다. final-test task는 이 local fixture set에서 나오며 Maintainer와 Proposer에게는 제공되지 않습니다. final-test task ID가 중복되거나 개발 분할과 겹치면 거부합니다.
+다이어그램은 최적화 실행 한 번을 보여 줍니다. 평가가 불완전하거나 예산이 소진되어도 에폭 루프가 일찍 끝납니다.
+
+```mermaid
+flowchart TD
+  FX["5+ fixtures in .agents/eval/SKILL_ID/"] --> SP["Deterministic split by task ID<br/>train 60% / validation 20% / final-test 20%"]
+  SP --> BL["Score the original body on VALIDATION"]
+  BL --> TR["Epoch: score the best body on TRAIN"]
+  TR --> MT["Wiki Maintainer turns failures<br/>and successes into patterns"]
+  MT --> PR["Proposer emits up to<br/>--edits-per-epoch edits"]
+  PR --> GT["Per edit: validate, check --lr budget,<br/>re-score VALIDATION (with neighbors) and TRAIN"]
+  GT --> AC{"Best edit loses nothing on either split,<br/>gains on one, fully measured?"}
+  AC -->|yes| AE["Accept the edit, reset patience"]
+  AC -->|no| RJ["Record rejected or inconclusive edits,<br/>patience + 1"]
+  AE --> MORE{"Epochs left and<br/>patience below 2?"}
+  RJ --> MORE
+  MORE -->|yes| TR
+  MORE -->|no| FT["Runner-owned FINAL TEST<br/>candidate lift >= original lift"]
+  FT --> AP{"--apply, final test passed,<br/>promotion eligible?"}
+  AP -->|no| DR["Print report and diff,<br/>SKILL.md unchanged"]
+  AP -->|yes| WR["Back up, atomic write,<br/>record promotion lineage"]
+```
+
+픽스처는 태스크 ID로 정렬한 뒤 **train**, **held-out validation**, **실행기 전용 final-test** 세트로 결정론적으로 나뉩니다. 픽스처가 5개 이상이면 목표 비율은 60/20/20이며 모든 분할에 최소 하나의 태스크가 있습니다. 예를 들어 픽스처가 8개이면 반올림 후 train 4개, validation 1개, final-test 3개 태스크가 됩니다. 같은 `group`을 선언한 픽스처는 함께 배정되므로, 표현만 바꾼 형제 픽스처가 train에 있는데 원본이 final-test에 있는 일은 생기지 않습니다. group이 3개 미만이면 task ID 기준 분할로 되돌아가며 경고합니다. final-test task는 이 local fixture set에서 나오며 Maintainer와 Proposer에게는 제공되지 않습니다. final-test task ID가 중복되거나 개발 분할과 겹치면 거부합니다.
 
 에폭마다(`--max-epochs`까지, 기본 8회) 다음을 수행합니다.
 
@@ -56,11 +78,11 @@ description: 결정론적 train, validation, 실행기 전용 holdout 게이트�
 
 ## 사용법
 
-```
+```bash
 oma skill optimize --skill <id> --live
                [--dry-run | --apply]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes]
+               [--memory recall|none] [--yes]
                [--json] [--output <format>]
 ```
 
@@ -68,7 +90,7 @@ oma skill optimize --skill <id> --live
 
 | 플래그 | 기본값 | 설명 |
 |:-----|:--------|:-----------|
-| `--skill <id>` | `_all` | 최적화할 스킬 ID(단순 이름이며 경로 구분자를 쓰지 않습니다). |
+| `--skill <id>` | 필수 | 최적화할 스킬 ID(단순 이름이며 경로 구분자를 쓰지 않습니다). 지정하지 않으면 명령이 `.agents/eval/_all/`을 읽고 `no eval coverage for skill "_all"`과 함께 멈춥니다. 모든 스킬을 한 번에 최적화하는 모드는 없습니다. |
 | `--dry-run` | **기본값** | 편집과 diff를 제안하되 `SKILL.md`는 바꾸지 않습니다. 생성된 근거와 진화 이벤트는 영속화합니다. |
 | `--apply` | 없음 | 완전한 최종 테스트와 음의 전이 근거를 포함한 모든 승격 게이트를 통과하면 검증된 후보를 씁니다. 원본을 백업한 뒤 원자적으로 쓰며, OMA 소유 스킬이면 `--yes`도 필요합니다. |
 | `--mock` | 비라이브 기본값 | CLI 제안 재생은 구현되어 있지 않으므로 이 경로는 평가 전에 멈춥니다. 오프라인 평가 재생에는 `oma skill eval --mock`을 쓰세요. |
@@ -76,6 +98,7 @@ oma skill optimize --skill <id> --live
 | `--max-epochs <n>` | `8` | 최대 최적화 에폭 수. |
 | `--edits-per-epoch <k>` | `4` | 최적화 LLM이 에폭당 제안하는 후보 편집 수. |
 | `--lr <chars>` | `600` | 텍스트 학습률 예산으로, 수락된 편집당 순 문자 변화의 상한입니다. |
+| `--memory <mode>` | `recall` | `none`은 같은 예산 비교를 위해 빈 진화 지식에서 시작합니다([메모리 어블레이션](#memory-ablation-and-long-run-statistics) 참고). |
 | `--yes` | 없음 | 라이브 비용 미리보기 확인을 생략하며, OMA 소유 스킬을 적용할 때는 덮어쓰기를 확인한 것으로 간주합니다. |
 | `--json` | 없음 | CI/CD용 JSON으로 출력합니다. |
 | `--output <format>` | `text` | 출력 형식 (`text` 또는 `json`). |
@@ -91,7 +114,7 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1
 
 픽스처 8개와 모든 승격 게이트를 통과하는 후보를 가정한 출력 예시입니다.
 
-```
+```text
 [oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 1, test: 3), dry-run: true
 
 Skill opt  (skill: oma-scholar)
@@ -120,8 +143,8 @@ diff는 최적화기가 쓰려는 내용을 보여줍니다. `--dry-run`에서�
 제안된 diff가 마음에 들면 `--apply`로 다시 실행하세요.
 
 ```bash
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Apply accepted edits to a user-authored skill (backs up the original first)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 ### 아티팩트로서의 절차
@@ -140,13 +163,27 @@ oma skill optimize --skill oma-scholar --live --apply --yes
 
 최적화기의 응답은 서식에 한해서만 관대하게 읽습니다. 코드 펜스와 빈 줄은 무시하지만, 유효한 `EDIT:` 줄(또는 단독 `NO_ACTION`)이 아닌 내용 줄은 모두 `parse-error`이며, 진단에는 이제 처음 어긋난 줄이 포함되므로 실패를 추적할 수 있습니다.
 
-### 메모리 어블레이션과 장기 통계
+### 메모리 어블레이션과 장기 통계 {#memory-ablation-and-long-run-statistics}
 
 `--memory none`은 빈 지식에서 실행을 시작하되(회수한 패턴도 게이트 이력도 없음) 그 실행은 그대로 기록합니다. 같은 예산에서 `--memory recall`(기본값) 실행과 `--memory none` 실행을 비교하는 것이 영속 지식이 도움이 되는지 가리는 검증입니다. 루프가 경험에서 학습한다는 주장에는 메모리가 존재한다는 사실이 아니라 이 비교가 필요합니다.
 
 `oma skill evolution-stats --skill <id>`는 `.agents/results/skill-evolution/<id>/*.jsonl`에 기록된 스킬의 모든 실행을 집계합니다. 상태별 실행 수, 게이트 결과별 제안 수와 수락률, 검증된 개선(최종 테스트를 통과하고 승격 자격이 있는 경우), 적용과 롤백, 평균 최종 lift, 계측된 실행의 모델 호출 수와 검증된 개선당 호출 수(실행 하나가 아니라 과정 전체의 비용), 그리고 같은 수치를 메모리 모드별과 절차 해시별로 나눈 값이 나옵니다. 메타 최적화 보고서는 현재 절차와 각 후보의 내부 실행당 평균 호출 수를 보여 주므로, 더 많은 비용을 써서 향상에서 이긴 절차는 그렇게 드러납니다.
 
-### 메타 최적화: 후보가 되는 절차
+### 메타 최적화: 후보가 되는 절차 {#meta-optimization-the-procedure-as-the-candidate}
+
+| 플래그 | 기본값 | 설명 |
+|:-----|:--------|:-----------|
+| `--target <part>` | `optimizer` | 최적화할 절차 부분: `optimizer` 또는 `maintainer`. |
+| `--skill <ids...>` | 없음 | 후보 절차를 채점할 held-out 스킬(공백으로 구분). |
+| `--anchor <ids...>` | constitution `anchors` | 선택에는 절대 쓰지 않는 스킬로, 드리프트를 보여 주도록 전후 결과를 보고합니다. |
+| `--repeats <n>` | `3` | 스킬과 절차별 내부 실행 횟수. |
+| `--candidates <n>` | `2` | 제안할 절차 후보 수. |
+| `--max-epochs <n>` | `1` | 내부 실행 에폭 수로, 모든 갈래에 동일합니다. |
+| `--edits-per-epoch <k>` | `4` | 내부 실행의 에폭당 편집 수로, 모든 갈래에 동일합니다. |
+| `--live` | 없음 | 필수입니다. 내부 실행이 실제 모델을 호출합니다. |
+| `--apply` | 없음 | 승리한 절차 파일을 계보와 함께 씁니다. |
+| `--memory <mode>` | `none` | 내부 실행 메모리 모드: `recall` 또는 `none`. |
+| `--yes` | 없음 | 비용 확인을 생략합니다. |
 
 `oma skill meta-optimize --target optimizer --skill <a> <b> ... --live`는 최적화기(또는 maintainer) 프롬프트를 시험 대상으로 삼습니다. 먼저 지정한 held-out 스킬마다 현재 절차로 내부 루프(`oma skill optimize --dry-run`)를 `--repeats`회 실행합니다. 이어서 proposer에게 템플릿의 작은 편집을 최대 `--candidates`개 요청하고, 각 후보 아래에서 같은 `--max-epochs`와 `--edits-per-epoch` 예산으로 내부 루프를 다시 실행합니다. 그리고 내부 루프가 달성한 학습 lift와 검증 lift 향상의 합을 기준으로, 각 후보를 현재 절차와 (스킬, 반복) 단위로 짝지어 비교합니다.
 
@@ -187,7 +224,7 @@ oma harness evolution status --json
 
 ## 라이브 모드
 
-라이브 모드는 실제 Maintainer와 Proposer를 호출하고 에폭마다 라이브 평가 갈래를 다시 돌립니다. 채점 태스크마다 baseline과 treatment 호출이 있고, judge 픽스처에는 채점 호출이 추가되며, 최종 테스트는 원본과 후보를 각각 채점합니다. 비용 미리보기는 실제 분할을 바탕으로 한 상한을 보여줍니다. 여기에는 초기 검증 baseline, 학습 및 컴파일러 호출, 후보 검증 호출, 두 번의 최종 테스트 채점, 후보마다 수행하는 짝지은 이웃 태스크 검사와 최종 후보의 같은 검사가 포함됩니다. 각 호출의 제한 시간은 120초입니다. 보호된 Claude와 Codex 갈래는 도구, 자동 지시 탐색, MCP, 최적화 메모리를 차단합니다.
+라이브 모드는 실제 Maintainer와 Proposer를 호출하고 에폭마다 라이브 평가 갈래를 다시 돌립니다. 채점 태스크마다 baseline과 treatment 호출이 있고, judge 픽스처에는 채점 호출이 추가되며, 최종 테스트는 원본과 후보를 각각 채점합니다. 비용 미리보기는 실제 분할을 바탕으로 한 상한을 보여줍니다. 여기에는 초기 검증 baseline, 학습 및 컴파일러 호출, 후보 검증 호출, 두 번의 최종 테스트 채점, 후보마다 수행하는 짝지은 이웃 태스크 검사와 최종 후보의 같은 검사가 포함됩니다. 각 호출은 `OMA_SKILL_EVAL_TIMEOUT_MS`밀리초가 지나면 종료됩니다(기본값 180000으로, `oma skill eval`과 같은 한도입니다). 보호된 Claude와 Codex 갈래는 도구, 자동 지시 탐색, MCP, 최적화 메모리를 차단합니다.
 
 ```bash
 # Cost preview + confirm
@@ -196,13 +233,13 @@ oma skill optimize --skill oma-scholar --live
 # Skip confirmation
 oma skill optimize --skill oma-scholar --live --yes
 
-# Live opt, then apply if improved
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Live opt, then apply if improved (user-authored skill)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 비용 미리보기는 LLM을 호출하기 전에 하위 모델 호출 수의 상한을 표시합니다.
 
-Maintainer, Proposer, 평가 갈래, judge는 새 임시 디렉토리에서 보호된 텍스트 전송 경로를 공유합니다. Claude는 제한된 CLI 프로필을 씁니다. Codex는 기존 CLI 로그인, 선택한 모델/제공자, 추론 노력(reasoning effort) 설정으로 네이티브 `codex app-server`를 사용하며, API 키 클라이언트로 대체하지 않고 Claude로 폴백하지도 않습니다. Codex 프로필은 macOS/Linux에서 네이티브 파일 자격 증명 저장소와 기존 `auth.json`이 있는 CLI 0.154.x를 대상으로 합니다. 호출마다 원본 설정/인증 파일을 참조하되 자격 증명 내용은 복사하지 않는 비공개 임시 `CODEX_HOME`을 마련합니다. 네이티브 토큰 갱신은 여전히 원본 인증 파일을 사용합니다. 공유 부트스트랩 상태는 제외하며, 임시 상태는 이후 정리됩니다. 키링, 자동(auto), 임시(ephemeral) 자격 증명 저장소는 현재 지원하지 않습니다. 스레드 계약은 모델 입력을 보내기 전에 확인하며, 지원하지 않는 버전, 저장 방식, 프로토콜 실패는 디스패치를 종료합니다. 컴파일러 프로세스가 에이전트 도구로 숨겨 둔 픽스처를 읽지 못하도록 도구, 시작 시 지시 탐색, MCP 접근, 세션 저장은 꺼 둡니다. 다른 컴파일러 벤더는 검증된 전송 경로가 생기기 전까지 명시적으로 실패합니다.
+Maintainer, Proposer, 평가 갈래, judge는 [스킬 격리](./skill-eval.md#skill-isolation-keeping-the-baseline-honest)에서 설명하는 보호된 텍스트 전송 경로를 공유합니다. Claude의 제한된 CLI 프로필 또는 네이티브 Codex `app-server` 프로필을 쓰며, 둘 다 새 임시 디렉토리에서 도구, 시작 시 지시 탐색, MCP 접근, 세션 저장을 꺼 둔 채 실행하므로 컴파일러 프로세스가 에이전트 도구로 숨겨 둔 픽스처를 읽을 수 없습니다. 다른 컴파일러 벤더는 검증된 전송 경로가 생기기 전까지 `[oma skill opt] protected compiler is unavailable for <vendor>`와 함께 멈춥니다. Maintainer와 Proposer는 `model_preset` 또는 `default_cli`를 따르는 `opt-agent` 역할을 쓰고, 평가 갈래와 judge는 `eval` 역할을 씁니다([평가 모델과 최적화기 모델 선택](./skill-eval.md#choose-the-evaluation-and-optimizer-models) 참고).
 
 최적화기는 유효한 편집에는 `proposed`를, 명시적인 `NO_ACTION` 응답에만 `no-action`을 보고합니다. 프로세스/API 실패는 `dispatch-error`가 되고, 유효한 편집이 없는 잘못된 형식의 응답은 `parse-error`가 됩니다. 이런 오류가 빈 편집 목록으로 바뀌는 일은 없습니다. Maintainer가 검증된 패턴을 제공하지 못하면 디스패치 또는 파싱 사유와 함께 `degraded`를 보고하고, 폴백 패턴은 영속 지식에서 제외되며, 그 실행은 후보를 승격할 수 없습니다. 평가 실패는 학습된 거부 이력이 아니라 `diagnostics`와 제안 게이트 기록에 나타납니다.
 
@@ -279,11 +316,13 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
 
 ID가 `oma-`로 시작하는 스킬은 oh-my-agent가 소유하며 **`oma update`가 덮어씁니다**. 이런 스킬에는 `--apply`를 권장하지 않습니다. 기본값인 `--dry-run`으로 제안된 diff를 검토하고, 개선이 의미 있다면 레지스트리에 업스트림으로 반영하세요. 사용자가 직접 만든 스킬에는 `--apply`가 안전합니다.
 
-대상 스킬이 oma 소유일 때는 다음과 같이 경고를 출력합니다.
+모든 게이트를 통과했더라도 대상이 oma 소유 스킬이고 `--yes`가 없으면, `--apply`는 아무것도 쓰지 않고 다음을 출력합니다.
 
+```text
+[oma skill opt] WARNING: "oma-scholar" is an oma-owned skill. oma-owned skills are overwritten by `oma update` — applying edits here may be lost. Re-run with --yes to proceed, or use --dry-run to review the proposed diff.
 ```
-[oma skill opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
-```
+
+`--yes`를 주면 경고 없이 쓰기를 진행합니다.
 
 ---
 
@@ -303,7 +342,7 @@ Maintainer와 Proposer는 TRAIN 롤아웃 근거를 받습니다. 후보 선택�
 oma skill eval --skill oma-scholar --mock --neg-transfer --require-coverage --json
 ```
 
-CLI 최적화 자체는 `--live`가 필요하며, 아직 기록된 제안을 재생하는 어댑터가 없습니다. `oma skill optimize --mock`을 완전한 오프라인 최적화기로 설명한 이전 안내는 잘못되었습니다. 오프라인 재생 작업은 `oma skill eval --mock`으로 옮기거나, 라이브 최적화를 명시적으로 켜서 모델 비용을 감수하세요. 최적화 실행에서는 JSON의 `ok`와 `promotion.eligible`을 확인하세요. 종료 코드 0은 승격할 만한 후보를 찾지 못하고 끝난 실행도 포함합니다.
+CLI 최적화 자체는 `--live`가 필요하며, 아직 기록된 제안을 재생하는 어댑터가 없습니다. `oma skill optimize --mock`을 완전한 오프라인 최적화기로 설명한 이전 안내는 잘못되었습니다. 오프라인 재생 작업은 `oma skill eval --mock`으로 옮기거나, 라이브 최적화를 명시적으로 켜서 모델 비용을 감수하세요. 최적화 실행에서는 JSON의 `ok`와 `promotion.eligible`을 확인하세요. 종료 코드 0은 승격할 만한 후보를 찾지 못하고 끝난 실행도 포함합니다. 오류 메시지는 [문제 해결](./skill-eval.md#troubleshooting)을 참고하세요.
 
 최적화 종료 코드:
 - `0`: 최적화가 완료됨 (개선 여부와 무관)
@@ -313,5 +352,7 @@ CLI 최적화 자체는 `--live`가 필요하며, 아직 기록된 제안을 재
 
 ## 함께 보기
 
-- [스킬 유용성 평가](/docs/guide/skill-eval): 태스크 픽스처 작성, 체커 종류, mock과 live 모드, `_rollouts/` 디렉토리.
-- [CLI 명령](/docs/cli-interfaces/commands): 모든 스킬 관리 명령의 플래그 레퍼런스.
+- [스킬 유용성 평가](./skill-eval.md): 태스크 픽스처 작성, 체커 종류, mock과 live 모드, `_rollouts/` 디렉토리, 문제 해결.
+- [프로젝트 하네스 진화](./harness-evolution.md): 프로젝트 오버레이를 쓰는 예약 실행·예산 제한 최적화.
+- [인시던트 회귀 케이스](./harness-incidents.md): 관측된 실패를 스킬 픽스처로 바꾸기.
+- [CLI 명령](../cli-interfaces/commands.md): 모든 스킬 관리 명령의 플래그 레퍼런스.

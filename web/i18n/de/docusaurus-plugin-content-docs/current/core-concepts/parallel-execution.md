@@ -9,7 +9,7 @@ Der zentrale Vorteil von oh-my-agent ist das gleichzeitige Ausführen mehrerer s
 
 ---
 
-## agent spawn — Einzelnes Agenten-Spawning
+## oma agent spawn: Einzelnes Agenten-Spawning {#agentspawn-single-agent-spawning}
 
 ### Grundsyntax
 
@@ -93,7 +93,7 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent parallel — Inline-Parallelmodus
+## oma agent parallel: Inline-Parallelmodus {#agentparallel-inline-parallel-mode}
 
 Für eine sauberere Syntax, die die Hintergrundprozessverwaltung automatisch übernimmt:
 
@@ -120,16 +120,16 @@ oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-Das `--inline`-Flag zerlegt jedes Argument `agent:task`. Wenn die Aufgabe einen eigenen Workspace benötigt, fügen Sie einen dritten, durch Doppelpunkte getrennten Pfad (`agent:task:workspace`) hinzu. Ohne `--inline` übergeben Sie eine YAML-Taskdatei mit `{tasks: [{id?, agent, task, workspace?}]}`. `--session` ordnet parallele Ergebnisse einer bestehenden Sitzung zu.
+Das `--inline`-Flag zerlegt jedes Argument `agent:task`. Wenn die Aufgabe einen eigenen Workspace benötigt, fügen Sie einen dritten, durch Doppelpunkte getrennten Pfad (`agent:task:workspace`) hinzu. Ohne `--inline` übergeben Sie eine YAML-Taskdatei mit `{tasks: [{id?, agent, task, workspace?}]}`. `--session-id` bindet die Ergebnisse an eine bestehende Sitzung und an die Task-IDs aus der YAML-Datei.
 
 ---
 
 ## Multi-CLI-Konfiguration
 
-oh-my-agent leitet jeden Agenten über `model_preset` in `.agents/oma-config.yaml` an die passende CLI. Wähle ein eingebautes Preset für deinen Vendor und überschreibe bei Bedarf einzelne Agenten.
+oh-my-agent leitet jeden Agenten über `model_preset` in `.agents/oma-config.yaml` an die passende CLI. Wählen Sie ein eingebautes Preset für Ihren Vendor und überschreiben Sie bei Bedarf einzelne Agenten.
 
 ### Konfigurationsbeispiel
 
@@ -156,7 +156,7 @@ Wenn `oma agent spawn` ermittelt, welche CLI verwendet wird:
 | 2 | `agents:`-Überschreibung in `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | Agenten-Standardwerte des aktiven `model_preset` | Preset-Nachschlag für die Agentenrolle |
 
-Das `--vendor`-Flag gewinnt immer. Ohne Flag prüft das System zuerst `agents:`-Überschreibungen, dann die Preset-Standardwerte und schließlich den konfigurierten Fallback-Vendor. Bei `model_preset: auto` liefern die nativen Einstellungen der aktuellen Laufzeit das Modell.
+Das `--vendor`-Flag gewinnt immer. Ohne Flag prüft das System zuerst `agents:`-Überschreibungen, dann die Preset-Standardwerte und schließlich die konfigurierte Fallback-CLI. Bei `model_preset: auto` liefern die nativen Einstellungen der aktuellen Laufzeit das Modell.
 
 ---
 
@@ -174,7 +174,8 @@ Der Startmechanismus variiert je nach IDE/CLI:
 | **CLI-Fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Evidenzbasierte Ergebnisabfrage |
 
 Innerhalb von Claude Code verwendet der Workflow das `Agent`-Tool direkt:
-```
+
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
@@ -210,7 +211,7 @@ Das Dashboard überwacht `.agents/state/memories/` für Echtzeit-Updates. Es akt
 
 ```bash
 oma dashboard web
-# Opens http://localhost:9847
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 Funktionen:
@@ -224,20 +225,12 @@ Funktionen:
 
 Verwenden Sie 3 Terminals für optimale Sichtbarkeit:
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard terminal         │   Agent spawn        │
-│   (live monitoring)     │   commands           │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   Terminal 3:                                  │
-│   Test/build logs, git operations              │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| Terminal | Ausführen | Zweck |
+|----------|-----------|-------|
+| 1 | `oma dashboard terminal` | Live-Überwachung |
+| 2 | `oma agent spawn …` oder `oma agent parallel …` | Befehle zum Starten von Agenten |
+| 3 | Tests, Build-Logs, Git | Verifikation und Git-Operationen |
+
 
 ### Einzelnen Agentenstatus prüfen
 
@@ -321,19 +314,33 @@ oma agent spawn backend "Implement JWT auth API with registration, login, refres
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: Monitor in a separate terminal
-# Terminal 2:
-oma dashboard terminal
-
-# Step 4: Wait for all implementation agents
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: Run QA review
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: If QA finds issues, re-spawn specific agents with fixes
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: Re-run QA to verify fixes
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+Führen Sie das Dashboard in einem zweiten Terminal aus, während die Agenten arbeiten. Es läuft, bis Sie Strg+C drücken; fügen Sie es daher nicht in dieselbe Shell ein wie die Spawn-Befehle:
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## Siehe auch
+
+- [Agentenergebnisse und Fortsetzen](../guide/agent-results-and-resume.md): Ausführungsbelege (Receipts), Ergebnisdeklarationen (Claims) und `oma agent resume`
+- [Dashboard-Überwachung](../guide/dashboard-monitoring.md)
+- [Leitfaden für Multi-Agenten-Projekte](../guide/multi-agent-project.md)
+- [Modelle pro Agent](../guide/per-agent-models.md)
+- [Der Workflow /orchestrate](./workflows.md#orchestrate)
+- [CLI-Befehlsreferenz](../cli-interfaces/commands.md)

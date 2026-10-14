@@ -6,7 +6,11 @@ description: Ein vollständiges OMA-Harness-Overlay mit gepaarten, isolierten Re
 
 # Harness-Evaluierung
 
-`oma harness eval` misst, ob ein OMA-Harness einen festen Zielagenten verbessert, ohne dessen Modell zu ändern. Das Verfahren übernimmt das Evaluierungsmuster aus [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): Zielmodell festhalten, Harness ändern und Ergebnisse bei denselben Aufgaben vergleichen.
+:::tip Wie diese Bausteine zusammenspielen
+Die [Skill-Evaluierung](./skill-eval.md) misst, ob eine einzelne `SKILL.md` hilft, und die [Skill-Optimierung](./skill-opt.md) bearbeitet diesen Text unter Held-out-Gates. Die Harness-Evaluierung (diese Seite) vergleicht ein ganzes `.agents/`-Overlay an Repository-Aufgaben. [Incident-Regressionsfälle](./harness-incidents.md) verwandeln beobachtete Fehler in Evaluierungsfälle und Skill-Fixtures. Die [Projekt-Harness-Evolution](./harness-evolution.md) führt Incident-Erfassung und Skill-Optimierung als budgetierten Zyklus aus, und [geplante Agenten](./scheduled-agents.md) sind der OS-Scheduler, der diesen Zyklus auslöst.
+:::
+
+`oma harness eval` misst, ob ein Kandidaten-Harness von OMA einen festen Zielagenten verbessert, ohne dessen Modell zu ändern. Das Verfahren übernimmt das Evaluierungsmuster aus [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): Zielmodell festhalten, Harness ändern und Ergebnisse bei denselben Aufgaben vergleichen.
 
 Dieser Befehl evaluiert eine größere Einheit als `oma skill eval`:
 
@@ -16,6 +20,14 @@ Dieser Befehl evaluiert eine größere Einheit als `oma skill eval`:
 | `oma harness eval` | Ein abgegrenztes `.agents/`-Overlay | Dateien und Ausgabe in einem Repository-Workspace |
 
 Verwenden Sie Skill-Evaluation, um die Frage „Hilft dieser Skill?“ zu beantworten. Verwenden Sie Harness-Evaluation für die Frage „Macht diese Kombination aus Skills, Workflows, Regeln und Agentenanweisungen den festen Agenten zuverlässiger beim Erledigen von Repository-Aufgaben?“
+
+**Vor dem ersten Lauf:**
+
+- Zeichnen Sie den ersten Lauf mit `--live --record` auf. `inspect` (die Standardaktion), `rescore`, `fixture-replay` und `rerun` lesen alle diese Aufzeichnung.
+- Ein Urteil erfordert mindestens fünf bewertete Aufgaben in der gewählten Partition. `pass` erfordert mindestens 5 Punkte Lift und keine Regressionen.
+- `inspect`, `rescore` und `fixture-replay` machen keine Modellaufrufe. `--live` und `--action rerun` machen zwei pro ausgewählter Aufgabe.
+- `promotionReady` ist immer `false`. Ein Bestehen ist ein Beleg für eine menschliche Entscheidung, keine automatische Hochstufung.
+- Live-Läufe benötigen einen Vendor mit projektlokaler Skill-Erkennung (siehe [Ausführen und aufzeichnen](#run-and-record)).
 
 ## Evaluierungsmodell
 
@@ -28,6 +40,28 @@ Ein Live-Lauf evaluiert jede Aufgabe als gepaartes Experiment:
 5. Deterministische Prüfungen untersuchen den resultierenden Workspace und optional die Agentenausgabe. Vertrauenswürdige Befehlsprüfungen laufen anschließend in einer frischen Kopie der Aufgabenartefakte.
 
 Das echte Projekt wird nie als Arbeitsverzeichnis eines Arms verwendet. OMA erfasst die rohe Ausgabe und die finalen Aufgabenartefakte vor den Prüfungen und vor der Bereinigung der temporären Workspaces. Die Sandbox des Prozesses des ausgewählten Vendors bleibt für Zugriffe außerhalb des Arbeitsverzeichnisses maßgeblich.
+
+Das Diagramm zeigt, wie gepaarte Arme zu einer Entscheidung gelangen. Offline-Aktionen steigen aus einer gespeicherten Aufzeichnung beim Paarungsschritt wieder ein.
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
 
 ## Aufbau des Kandidaten
 
@@ -91,7 +125,7 @@ tasks:
         path: docs/feature.md
 ```
 
-Version 2 erfordert sowohl `validation`- als auch `final-test`-Aufgaben. Jede Aufgabe muss ihre Partition deklarieren. Validierung ist die Standardpartition; verwenden Sie `--partition final-test` für einen separaten finalen Lauf nach der Kandidatenauswahl. Die beiden Partitionen dürfen Fixture-Verzeichnisse weder gemeinsam nutzen noch ineinander verschachteln. Legen Sie Aufzeichnungsdateien außerhalb von Fixture-Verzeichnissen, Kandidaten-Overlays und Evaluator-Eingaben ab; diese Orte werden abgelehnt, damit spätere Läufe die finalen Prüfungen nicht sehen können. Suites der Version 1 laufen weiterhin als `exploratory`; sie können nicht als Final-Test ausgewählt werden.
+Version 2 erfordert sowohl `validation`- als auch `final-test`-Aufgaben. Jede Aufgabe muss ihre Partition deklarieren. Validierung ist die Standardpartition; verwenden Sie `--partition final-test` für einen separaten finalen Lauf nach der Kandidatenauswahl. Jeder Lauf bewertet nur die gewählte Partition; ein aussagekräftiger Validierungslauf benötigt daher mindestens fünf `validation`-Aufgaben und ein Final-Test-Lauf mindestens fünf `final-test`-Aufgaben. Das obige Beispiel ist zur besseren Lesbarkeit kurz gehalten und meldet stets `INSUFFICIENT`. Die beiden Partitionen dürfen Fixture-Verzeichnisse weder gemeinsam nutzen noch ineinander verschachteln. Legen Sie Aufzeichnungsdateien außerhalb von Fixture-Verzeichnissen, Kandidaten-Overlays und Evaluator-Eingaben ab; diese Orte werden abgelehnt, damit spätere Läufe die finalen Prüfungen nicht sehen können. Suites der Version 1 laufen weiterhin als `exploratory`; sie können nicht als Final-Test ausgewählt werden.
 
 Task-IDs müssen eindeutig sein. Fixture- und Prüfpfade müssen innerhalb des Projekts und des Aufgaben-Workspace bleiben. Suites und Fixtures müssen außerdem außerhalb der Baseline-Definitionen bleiben, die in jeden Arm kopiert werden. Fixtures dürfen keine Symlinks oder Steuerungsoberflächen des Agent-Harness wie `.agents`, `.codex`, `.claude`, Vendor-Skill-Verzeichnisse oder Root-Dateien mit Agentenanweisungen enthalten. Dadurch können Aufgabendaten den kontrollierten Harness keines der beiden Arme überschreiben.
 
@@ -130,7 +164,7 @@ Vor dem Dispatch erstellt OMA einen Snapshot der Prüfer-Quellbytes und berechne
 
 Prüfungen und Prüferpfade werden weder dem Agenten-Prompt noch der Fixture hinzugefügt. Die Eingabe der ausgewählten Aufgabe ist während ihres Laufs zwangsläufig sichtbar. Das schützt die Integrität des Evaluators und trennt die Partitionen; es hindert aber keinen Prozess desselben Benutzers daran, andere Dateien des Hosts zu lesen.
 
-## Ausführen und aufzeichnen
+## Ausführen und aufzeichnen {#run-and-record}
 
 Der Live-Modus führt zwei Dispatches pro ausgewählter Aufgabe aus, zeigt eine Dispatch-Vorschau und verlangt eine Bestätigung:
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Verwenden Sie `--yes` für eine nicht interaktive Ausführung und `--timeout-minutes`, um für beide Arme dasselbe Wandzeitlimit zu setzen. Die Live-Ausführung erfordert einen Vendor, der Harness-Dateien relativ zum Projekt-Workspace findet. OMA verweigert die Suche in HOME, weil die Baseline dort global installierte Kandidateninhalte sehen könnte.
+Verwenden Sie `--yes` für eine nicht interaktive Ausführung und `--timeout <duration>`, um für beide Arme dasselbe Wandzeitlimit zu setzen (Standard `15m`; eine Einheit ist erforderlich, zum Beispiel `--timeout 45m`). `oma harness incident reproduce` akzeptiert dasselbe Flag. Die Live-Ausführung erfordert einen Vendor, der Harness-Dateien relativ zum Projekt-Workspace findet. OMA verweigert die Suche in HOME, weil die Baseline dort global installierte Kandidateninhalte sehen könnte.
+
+Der Vendor ergibt sich aus dem `agent` der Suite, aufgelöst über die Modellkonfiguration des Projekts:
+
+| Vendor | Live-`harness eval`, `--action rerun`, `incident reproduce` |
+|---|---|
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Erlaubt: projektlokales Skill-Verzeichnis |
+| `antigravity`, `hermes`, `kimi` | Verweigert: Skill-Erkennung über HOME |
+| Jeder Vendor ohne bekanntes Projekt-Skill-Verzeichnis | Verweigert |
+
+Offline-Aktionen (`inspect`, `rescore`, `fixture-replay`) lösen keinen Dispatch aus, daher gilt diese Prüfung für sie nicht.
 
 `--record` schreibt eine unveränderliche JSON-Aufzeichnung der Version 2. Der Standardort ist das Verzeichnis `_runs/` neben der Suite, wobei die Hashes von Baseline und Kandidat im Dateinamen stehen. Geben Sie für einen weiteren Live-Lauf mit `--record-file` eine neue Datei an; ein bereits vorhandenes Ziel wird vor dem Dispatch abgelehnt. Aufzeichnungen bewahren:
 
@@ -178,7 +222,7 @@ Beide Arme erhalten dieselbe per Allowlist gefilterte Umgebung. Basisvariablen (
 
 Setzen Sie `OMA_HARNESS_ENV_PASSTHROUGH=NAME1,NAME2`, um zusätzliche Variablen durchzureichen, die eine Aufgabe tatsächlich benötigt. Die Namen erscheinen im Manifest unter `environmentPolicy.extra`. Bei einem Vendor ohne bekannten Präfixsatz meldet das Manifest `vendorKnown: false`, und nur Basis-, `OMA_*`- und Passthrough-Einträge erreichen den Prozess.
 
-## Eine Aufzeichnung wiederverwenden
+## Eine Aufzeichnung wiederverwenden {#reuse-a-recording}
 
 Der Befehl unterscheidet vier Aktionen:
 
@@ -287,7 +331,7 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 
 Die CLI-Version wird bei der Wiedergabe nur abgefragt, wenn die Aufzeichnung selbst eine abgefragte Version enthält; ein nicht abgefragtes Paar wird als nicht vergleichbar gemeldet und nicht als gleich. Aufgezeichnete Urteile bleiben unter ihren ursprünglichen Bedingungen einsehbar. Sie sind kein Beleg für den Kandidaten unter den aktuellen Bedingungen, bis eine Live- oder Neuausführungs-Evaluierung eine Aufzeichnung erzeugt, deren Manifest übereinstimmt.
 
-### Nutzung
+### Nutzung {#usage}
 
 Jeder Arm speichert `usage`, sofern der Vendor dies gemeldet hat: Eingabe- und Ausgabe-Tokens, Kosten in USD, Wandzeit und das Modell, das den Großteil der Ausgabe erzeugt hat. Die Evaluierung summiert diese Angaben als `usage` mit `status` `actual`, `partial` (einige Arme haben nichts gemeldet) oder `unknown`. Vendor-Ergebnis-Envelopes werden entpackt, bevor die Prüfungen laufen und bevor die Ausgabe aufgezeichnet wird, sodass `output_contains` und `output_json_equals` die Antwort des Agenten sehen und nicht die umgebenden JSON-Verwaltungsdaten; die Nutzung innerhalb des Envelopes speist dieses Feld.
 
@@ -326,12 +370,31 @@ OMA meldet außerdem:
 
 - korrigierte Aufgaben: Baseline fehlgeschlagen, Kandidat bestanden;
 - regressierte Aufgaben: Baseline bestanden, Kandidat fehlgeschlagen;
-- Coverage: mindestens fünf gepaarte, bewertbare Aufgaben sind erforderlich.
+- Coverage: mindestens fünf gepaarte, bewertbare Aufgaben in der gewählten Partition sind erforderlich.
 
-Die Score-Entscheidung lautet `pass`, wenn der Lift mindestens 5 Prozentpunkte beträgt und keine Regressionen vorliegen. Jede Regression lässt den Kandidaten scheitern. Ein nichtnegativer Lift unter 5 Punkten gibt eine Warnung aus; weniger als fünf gepaarte Aufgaben erzeugen die Entscheidung `insufficient`. Fügen Sie `--require-coverage` hinzu, damit unzureichende Coverage in CI mit Exit-Code ungleich null endet. Ein Score ist kein Beleg, wenn ein Arm fehlt, ein Record-Hash veraltet ist oder eine deterministische Prüfung unvollständig ist. Live-Dispatch-Fehler und Evaluator-Integritätsfehler erzwingen eine fehlschlagende Entscheidung; sie können nicht als erfolgreicher Lift zählen. Neubewertung und Fixture-Wiedergabe lassen Arme mit unzureichenden Belegen aus den bewertbaren Paaren heraus und melden die Entscheidung `insufficient`, statt fehlende Belege als Regression des Kandidaten zu behandeln.
+Die Score-Entscheidung lautet `pass`, wenn der Lift mindestens 5 Prozentpunkte beträgt und keine Regressionen vorliegen. Jede Regression und jeder negative Lift lässt den Kandidaten scheitern. Ein nichtnegativer Lift unter 5 Punkten gibt eine Warnung aus; weniger als fünf gepaarte Aufgaben erzeugen die Entscheidung `insufficient`. Fügen Sie `--require-coverage` hinzu, damit unzureichende Coverage in CI mit Exit-Code ungleich null endet. Ein Score ist kein Beleg, wenn ein Arm fehlt, ein Record-Hash veraltet ist oder eine deterministische Prüfung unvollständig ist. Live-Dispatch-Fehler und Evaluator-Integritätsfehler erzwingen eine fehlschlagende Entscheidung; sie können nicht als erfolgreicher Lift zählen. Neubewertung und Fixture-Wiedergabe lassen Arme mit unzureichenden Belegen aus den bewertbaren Paaren heraus und melden die Entscheidung `insufficient`, statt fehlende Belege als Regression des Kandidaten zu behandeln.
 
 Ein bestandener Score begründet keine Eignung zur Hochstufung. Berichte enthalten die Partition, den Evaluator-Hash, `promotionReady: false` und ausdrückliche Blocker. Legacy- und Validierungsläufe haben keine Final-Test-Belege. Aktuelle Dispatch-Pfade attestieren keine Eingrenzung des Dateisystemzugriffs, sodass selbst ein Final-Test-Lauf weder eine geschützte finale Evaluierung beanspruchen noch eine Hochstufung autorisieren kann. Dieses Feld bleibt false, bis ein Ausführungs-Provider diese Grenze belegen kann.
 
+## Fehlerbehebung
+
+| Meldung oder Symptom | Ursache | Lösung |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | Die Standardaktion ist `inspect`, die eine gespeicherte Aufzeichnung liest. | Führen Sie einmal `--live --record` aus oder übergeben Sie eine vorhandene Aufzeichnung mit `--record-file`. |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect` verlangt, dass jeder aufgezeichnete Hash übereinstimmt. | Zeichnen Sie einen neuen Lauf mit einem neuen `--record-file` auf. Verwenden Sie `--action rescore`, wenn die aktuellen Prüfungen auf die gespeicherten Bytes angewendet werden sollen. |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore` oder `fixture-replay` wurde auf eine Aufzeichnung aus anderen Eingaben angewendet. | Wählen Sie das passende `--record-file` und die passende `--partition` oder zeichnen Sie erneut auf. |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record` würde eine vorhandene Datei überschreiben. | Übergeben Sie einen neuen Pfad für `--record-file`. |
+| `--record requires --live or --action rerun` | `--record` wurde mit einer Offline-Aktion kombiniert. | Lassen Sie `--record` weg oder verwenden Sie `--live`. |
+| `--action fixture-replay requires --transcript` | Es wurde kein Transkript angegeben. | Fügen Sie `--transcript <path>` hinzu. |
+| `Removed option --timeout-minutes. Use --timeout.` | Alte Schreibweise des Flags. | Verwenden Sie `--timeout 30m` (eine Einheit ist erforderlich). |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | Der Agent der Suite wird zu einem Vendor mit HOME-Erkennung oder zu einem ohne Projekt-Skill-Verzeichnis aufgelöst. | Leiten Sie den Agenten der Suite an einen Vendor aus der Tabelle unter [Ausführen und aufzeichnen](#run-and-record). |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | `--candidate .` oder ein Pfad innerhalb von `.agents/`. | Legen Sie Overlays an anderer Stelle ab, zum Beispiel unter `candidates/fix/.agents/`. |
+| `Candidate file is not allowed: <path>` | Das Overlay enthält Dateien außerhalb von `agents/`, `rules/`, `skills/` oder `workflows/`. | Entfernen Sie diese Dateien aus dem Overlay. |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | Geschütztes Frontmatter weicht von der Baseline ab. | Stellen Sie `model`, `tools`, `effort` und die übrigen geschützten Felder wieder her. |
+| `Suite requires at least one final-test task` | Eine Suite mit `schema_version: 2` benötigt beide Partitionen. | Fügen Sie eine Aufgabe mit `partition: final-test` hinzu. |
+| `decision: INSUFFICIENT` | Weniger als fünf bewertete Aufgaben in der gewählten Partition oder fehlende Arme. | Fügen Sie Aufgaben hinzu, bis die Partition fünf enthält, und lesen Sie die Zeilen `replay limitation:`. |
+| `decision: FAIL` | Ein Dispatch-Fehler (gefolgt von Zeilen `<task>/<arm>: ...`), eine Regression (Task-IDs unter `regressed:`) oder negativer Lift. | Lesen Sie bei einem Dispatch-Fehler die Zeile `exit=... timedOut=... stderr=...` unter jedem fehlgeschlagenen Arm. Vergleichen Sie bei einer Regression die beiden Arme der aufgeführten Aufgaben. |
+
 ## Aktuelle Grenze
 
-Kandidaten-Overlays werden extern erzeugt; dieser Befehl implementiert weder einen Builder noch eine automatisierte `harness opt`-Schleife. Artefakterfassung, Offline-Neubewertung, Wiedergabe von Werkzeug-Fixtures, Neuausführungen aus gepinnten Dateien, Partitionsauswahl, per Snapshot gesicherte Evaluatoren, Ausführungsmanifeste, eine Umgebungs-Allowlist und verknüpfte Trace-Ereignisse sind verfügbar, aber Geheimhaltung zurückgehaltener Daten auf OS-Ebene, Netzwerk- oder Credential-Eingrenzung, wiederholte stochastische Durchläufe, Token-Abrechnung und erzwungenes Pinnen von Modellen für verschachtelte Subagent-Aufrufe sind nicht sichergestellt. Die Umgebungs-Allowlist begrenzt, welche Variablen ein Vendor-Prozess erbt; sie hindert eine Vendor-CLI nicht daran, ihren eigenen Credential-Speicher zu lesen oder das Netzwerk zu erreichen. Solange das Pinnen verschachtelter Aufrufe nicht existiert, sollten Suites, die ein einzelnes festes Modell messen, Kandidaten-Workflows vermeiden, die andere konfigurierte Agentenrollen starten.
+Kandidaten-Overlays werden extern erzeugt; dieser Befehl implementiert weder einen Builder noch eine automatisierte `harness opt`-Schleife. Artefakterfassung, Offline-Neubewertung, Wiedergabe von Werkzeug-Fixtures, Neuausführungen aus gepinnten Dateien, Partitionsauswahl, per Snapshot gesicherte Evaluatoren, Ausführungsmanifeste, eine Umgebungs-Allowlist und verknüpfte Trace-Ereignisse sind verfügbar, aber Geheimhaltung zurückgehaltener Daten auf OS-Ebene, Netzwerk- oder Credential-Eingrenzung, wiederholte stochastische Durchläufe und erzwungenes Pinnen von Modellen für verschachtelte Subagent-Aufrufe sind nicht sichergestellt. Token- und Kostennutzung werden pro Arm aufgezeichnet und summiert, sofern der Vendor sie meldet (siehe [Nutzung](#usage)). Die Umgebungs-Allowlist begrenzt, welche Variablen ein Vendor-Prozess erbt; sie hindert eine Vendor-CLI nicht daran, ihren eigenen Credential-Speicher zu lesen oder das Netzwerk zu erreichen. Solange das Pinnen verschachtelter Aufrufe nicht existiert, sollten Suites, die ein einzelnes festes Modell messen, Kandidaten-Workflows vermeiden, die andere konfigurierte Agentenrollen starten.

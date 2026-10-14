@@ -12,10 +12,10 @@ Los valores predeterminados están pensados para que el primer proyecto sea util
 | Área | Valor predeterminado | Consecuencia | Sobrescritura |
 |---|---|---|---|
 | Idioma de respuesta | `en` | Las respuestas de los agentes y los flujos de trabajo usan inglés, salvo que la configuración del proyecto seleccione otro idioma compatible. Una instrucción explícita del usuario o de la sesión aún puede sobrescribir el valor predeterminado del proyecto cuando el host o el flujo de trabajo lo admite. | `language` en `.agents/oma-config.yaml` o `.cue` |
-| Enrutamiento de modelos | `auto` | Se usa la configuración nativa de agentes del runtime actual. Los runtimes desconocidos recurren a `default_cli` cuando está definido. | `model_preset`, `default_cli` o `agents.<id>` |
-| Inteligencia de código | `serena` | Una instalación nueva intenta instalar Serena y configura su MCP. | `providers.code_intelligence: gortex` o `serena` |
+| Enrutamiento de modelos ([preset de modelos](./glossary.md#model-preset)) | `auto` | Se usa la configuración nativa de agentes del runtime actual. Los runtimes desconocidos recurren a `default_cli` cuando está definido. | `model_preset`, `default_cli` o `agents.<id>` |
+| Inteligencia de código ([proveedor de capacidades](./glossary.md#capability-provider)) | `serena` | Una instalación nueva intenta instalar Serena y configura su MCP. | `providers.code_intelligence: gortex` o `serena` |
 | Guard de búsqueda de código | `block` | Mientras haya un proveedor de inteligencia de código configurado, un hook PreToolUse deniega `Grep`/`Glob` nativos y la búsqueda recursiva en shell (`rg`, `grep -r`, `find -name`), y dirige al agente a las herramientas del proveedor. Se permiten las búsquedas limitadas a exclusiones confirmadas o a rutas fuera del proyecto. El hook no anuncia ninguna forma de omitirlo para el código fuente del proyecto. | `providers.code_intelligence_guard: off` |
-| Memoria semántica | `agentmemory` | Agent Memory se selecciona para la memoria semántica cuando está disponible. | `providers.semantic_memory: honcho` o `none` |
+| Memoria semántica | `agentmemory` | La instalación y la actualización reutilizan un endpoint de AgentMemory en buen estado o instalan e inician el servicio local gestionado, y después comprueban que esté listo antes de terminar con éxito. Los endpoints personalizados explícitos se comprueban sin reemplazarlos. | `providers.semantic_memory: honcho` o `none`; `OMA_NO_AGENTMEMORY=1` omite la configuración de AgentMemory. |
 | Búsqueda web | `native` | La búsqueda usa el canal web nativo del runtime, salvo que se seleccione un proveedor. | `providers.web` |
 | Proveedor de documentación | `context7` | Las consultas de documentación usan Context7 cuando una skill lo solicita. | `providers.docs` |
 | Telemetría | desactivada | OMA escribe la configuración de exclusión del proveedor durante el enlazado. | `telemetry: true` |
@@ -31,7 +31,12 @@ Los nombres y valores predeterminados de los proveedores proceden de los cargado
 
 ## Precedencia de configuración
 
-OMA busca hacia arriba desde el directorio de trabajo actual el directorio `.agents/` más cercano. Lee `oma-config.cue` cuando existe y recurre a `oma-config.yaml` si falla la evaluación de CUE compartida. Una sobrecarga local del proyecto, `oma-config.local.cue` o `oma-config.local.yaml`, se combina con la configuración compartida y prevalece sobre ella; conserva solo una sobrecarga local. `OMA_MODEL_PRESET` puede sobrescribir `model_preset` para un proceso. Una configuración local no válida detiene la carga en vez de seleccionar otro valor en silencio.
+OMA carga los valores predeterminados globales desde `$OMA_HOME/.agents/` (por defecto `~/.oma/.agents/`)
+y después superpone la configuración compartida del `.agents/` de proyecto más cercano y su archivo local.
+Las raíces de proyecto de distintos ancestros no se combinan. En cualquiera de los dos ámbitos,
+se prefiere `oma-config.cue`, con YAML como fallback; conserva solo una sobrecarga local
+(`oma-config.local.cue` o `.yaml`). `OMA_MODEL_PRESET` sobrescribe `model_preset`
+después de cargar los archivos. Una configuración local no válida detiene la carga.
 
 El enrutamiento de modelos tiene dos casos especiales antes del orden de presets fijos:
 
@@ -62,8 +67,8 @@ La telemetría está excluida por defecto. Definir `telemetry: true` elimina las
 | Los archivos del proveedor están desactualizados | `oma doctor` y `oma link --dry-run` | Ejecuta `oma link <vendor>` después de editar `.agents/`; conserva el SSOT como fuente. |
 | No se acepta un modelo | `oma doctor --profile` | Cambia a `auto`, usa un preset integrado o define un identificador de modelo bajo `models:`. |
 | Las herramientas de Serena agotan el tiempo | `oma doctor` y la sección del proveedor | Prueba `serena.mode: stdio`; si el problema es la memoria, previsualiza con `oma serena reap --dry-run`. |
-| Un flujo de trabajo persistente no se detiene | `.agents/state/*-state.json` | Di `workflow done`; inspecciona el archivo de estado solo si el flujo no se limpió. |
+| Un [flujo de trabajo persistente](./glossary.md#persistent-workflow) no se detiene | `.agents/state/*-state.json` | Di `workflow done`; inspecciona el archivo de estado solo si el flujo no se limpió. |
 | Un reaper programado no hace nada | La sección Serena Reaper de `oma doctor` | Define `serena_reaper.enabled: true` y ejecuta `oma serena reaper enable`. |
 | La configuración local impide iniciar | La ruta del error de `oma doctor` | Corrige o elimina la sobrecarga local; no crees sobrecargas `.cue` y `.yaml` a la vez. |
 
-Continúa con [Instalación](./installation.md), [Modelos por agente](../guide/per-agent-models.md) o [Semántica de la configuración de OMA](../guide/oma-config-semantics.md).
+Continúa con [Instalación](./installation.md), [Modelos por agente](../guide/per-agent-models.md) o [Semántica de la configuración de OMA](../guide/oma-config-semantics.md). Para problemas que no aparecen aquí, consulta [Solución de problemas](../guide/troubleshooting.md).

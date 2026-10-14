@@ -106,9 +106,15 @@ description: 심각도 분류, 에스컬레이션 시그널, 소스에 근거한
 
 ---
 
-## 7단계 디버그 루프 상세
+## 7단계 디버그 루프 상세 {#the-seven-stage-debug-loop-in-detail}
 
-`/debug` 워크플로우는 이 단계들을 순서대로 실행합니다. 설정된 코드 인텔리전스 provider를 사용합니다. native 검색은 해당 provider를 사용할 수 없거나 시간 초과될 때, 프로젝트 밖 경로나 무시 대상 경로에만 사용합니다.
+`/debug` 워크플로우는 이 단계들을 순서대로 실행합니다. 설정된 코드 인텔리전스 프로바이더를 사용합니다. 네이티브 검색은 해당 프로바이더를 사용할 수 없거나 시간 초과될 때, 프로젝트 밖 경로나 무시 대상 경로에만 사용합니다.
+
+```mermaid
+flowchart LR
+  s1["1 Collect"] --> s2["2 Reproduce"] --> s3["3 Diagnose"] --> s4["4 Propose fix"]
+  s4 --> s5["5 Fix and regression test"] --> s6["6 Scan similar patterns"] --> s7["7 Document"]
+```
 
 ### Step 1: 에러 정보 수집
 
@@ -172,7 +178,7 @@ description: 심각도 분류, 에스컬레이션 시그널, 소스에 근거한
 
 수정이 적용된 후, 워크플로우는 버그를 유발한 동일 패턴을 전체 코드베이스에서 스캔합니다.
 
-**사용 도구:** 설정된 패턴 검색을 사용하거나, 근본 원인으로 확인된 패턴을 native 검색으로 범위를 제한해 찾습니다.
+**사용 도구:** 설정된 패턴 검색을 사용하거나, 근본 원인으로 확인된 패턴을 네이티브 검색으로 범위를 제한해 찾습니다.
 
 예를 들어, `organization`이 null인지 확인하지 않고 `user.organization.id`에 접근하여 버그가 발생한 경우, null 검사 없이 `organization.id`에 접근하는 모든 다른 인스턴스를 스캔합니다.
 
@@ -185,7 +191,6 @@ description: 심각도 분류, 에스컬레이션 시그널, 소스에 근거한
 |:-------|:------------|
 | Claude Code | `.claude/agents/debug-investigator.md`를 쓰는 Agent 도구 |
 | Codex CLI | 모델이 중재하는 서브에이전트 요청, 결과는 JSON |
-| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / 폴백 | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 유사한 취약 위치는 모두 보고합니다. 확인된 인스턴스는 같은 세션 안에서 함께 수정합니다.
@@ -204,7 +209,7 @@ description: 심각도 분류, 에스컬레이션 시그널, 소스에 근거한
 
 디버그 워크플로우를 트리거할 때 구조화된 프롬프트를 제공할 수 있습니다:
 
-```
+```text
 /debug
 
 Error: TypeError: Cannot read properties of undefined (reading 'id')
@@ -231,7 +236,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 더 간단한 버그의 경우 짧은 프롬프트도 효과적입니다:
 
-```
+```text
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
@@ -295,3 +300,11 @@ Environment: Node 22.1, PostgreSQL 16
 4. 같은 패턴을 찾아 코드베이스를 스캔했고, 확인한 인스턴스를 모두 처리했습니다.
 5. 메모리에 버그 리포트를 기록했습니다.
 6. 수정 후에도 기존 테스트가 모두 통과합니다.
+
+---
+
+## 다음 단계
+
+- 근본 원인이 여러 도메인에 걸칠 때: [멀티 에이전트 프로젝트](./multi-agent-project.md)
+- 수정 실행을 기록하거나 재개할 때: [결과 확인과 재개](./agent-results-and-resume.md)
+- OMA 자체에서 문제가 발생했을 때: [문제 해결](./troubleshooting.md)

@@ -21,7 +21,7 @@ Trong Windows PowerShell, chạy:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-Thiết lập tương tác sẽ hỏi ngôn ngữ phản hồi, các CLI vendor, capability provider, model preset, project skill preset và stack variant. Ở lần chạy đầu tiên, hãy giữ giá trị mặc định, chọn vendor bạn đang dùng và chọn project preset gần với repository nhất.
+Thiết lập tương tác sẽ hỏi ngôn ngữ phản hồi, các CLI vendor, [capability provider](./glossary.md#capability-provider), [model preset](./glossary.md#model-preset), project [skill preset](./glossary.md#skill-preset) và stack variant. Ở lần chạy đầu tiên, hãy giữ giá trị mặc định, chọn vendor bạn đang dùng và chọn project preset gần với repository nhất. Xem [Preset](./installation.md#presets) để biết skill của từng preset và các [workflow cần skill nằm ngoài preset](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Nếu đã có `bun`, dùng trực tiếp installer:
 
@@ -29,7 +29,7 @@ Nếu đã có `bun`, dùng trực tiếp installer:
 bunx oh-my-agent@latest
 ```
 
-Bootstrap script cài đặt vào dự án hiện tại. Dùng `oma install --global` khi muốn cài ở cấp HOME; đọc [Cài đặt](./installation.md) trước khi kết hợp cài đặt theo dự án và cài đặt toàn cục.
+Bootstrap script cài đặt vào dự án hiện tại. Dùng `oma install --global` khi muốn cài ở cấp HOME; đọc [Cài đặt toàn cục](../guide/global-install.md) trước khi kết hợp cài đặt theo dự án và cài đặt toàn cục.
 
 ## 2. Kiểm tra kết quả
 
@@ -49,7 +49,9 @@ $ echo $?
 0
 ```
 
-Các tích hợp MCP, trình duyệt, bộ nhớ hoặc code intelligence tùy chọn có thể được báo dưới dạng cảnh báo; chúng chỉ cần cho các task sử dụng chúng. Để có trạng thái đọc được bằng máy, `oma doctor --json` trả về exit status khác 0 khi báo cáo có vấn đề. Dùng `oma doctor --profile` để xem model và CLI đã resolve cho từng vai trò agent chuẩn.
+`oma doctor` có thể báo các vấn đề của tích hợp tùy chọn dưới dạng cảnh báo. Việc chuẩn bị AgentMemory mặc định được kiểm tra trong `oma install` và `oma update`; lỗi cài đặt, khởi động hoặc health check sẽ dừng các lệnh đó. Chọn `providers.semantic_memory: none` hoặc `honcho`, hoặc đặt `OMA_NO_AGENTMEMORY=1`, sẽ bỏ qua bước chuẩn bị này.
+
+Để có trạng thái đọc được bằng máy, `oma doctor --json` trả về exit status khác 0 khi báo cáo có vấn đề. Dùng `oma doctor --profile` để xem model và CLI đã resolve cho từng vai trò agent chuẩn.
 
 Nếu `oma` không khả dụng nhưng đã cài Bun, chạy cùng bước kiểm tra này mà không cần lệnh toàn cục:
 
@@ -57,7 +59,7 @@ Nếu `oma` không khả dụng nhưng đã cài Bun, chạy cùng bước kiể
 bunx oh-my-agent@latest doctor
 ```
 
-Nếu lệnh trần vẫn không tìm thấy, mở shell mới hoặc thêm thư mục bin của package manager vào `PATH`. Nếu `oma doctor` báo cấu hình không hợp lệ, sửa trường được nêu rồi chạy lại. Không xóa `.agents/oma-config.yaml` để khôi phục: đây là cấu hình do người dùng sở hữu và giữ lại thiết lập qua các lần cập nhật.
+Nếu lệnh trần vẫn không tìm thấy, mở shell mới hoặc thêm thư mục bin của package manager vào `PATH`; [Cài đặt](./installation.md#method-3-global-install) hướng dẫn cách cài lệnh `oma`. Nếu `oma doctor` báo cấu hình không hợp lệ, sửa trường được nêu rồi chạy lại. Không xóa `.agents/oma-config.yaml` để khôi phục: đây là cấu hình do người dùng sở hữu và giữ lại thiết lập qua các lần cập nhật.
 
 ## 3. Chạy một task nhỏ
 
@@ -77,11 +79,12 @@ Với task đi qua ranh giới API và UI, hãy chọn rõ `/work` hoặc `/orch
 
 OMA khởi động với `model_preset: auto`, Serena cho code intelligence, Agent Memory cho semantic memory, native web search và telemetry bị tắt. Serena dùng transport dùng chung `bridge` và tự động cập nhật nếu không được cấu hình khác. Browser DevTools MCP là tùy chọn bật; thiết lập tương tác mới sẽ đề xuất Aside trước. Xem [Các mặc định quan trọng](./important-defaults.md) để biết hệ quả và các khóa ghi đè.
 
-Nếu managed task bị dừng, bắt đầu bằng `oma agent status <session-id> [agent-id]`, sau đó kiểm tra receipt trong `.agents/state/agent-runs/` và injected structured claim path. Các bản ghi đó cho biết run, task, workspace, exit code và trạng thái xác minh. File `result-*.md` và `progress-*.md` dễ đọc trong `.agents/state/memories/` bổ sung ngữ cảnh nếu có. Chỉ chạy lại command thất bại nhỏ nhất sau khi xác nhận run không còn hoạt động. Persistent workflow vẫn hoạt động cho đến khi hoàn tất hoặc bạn nói `workflow done`; xem [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) để biết cách khôi phục state file.
+Nếu managed task bị dừng, bắt đầu bằng `oma agent status <session-id> [agent-id]`, sau đó kiểm tra receipt trong `.agents/state/agent-runs/` và injected structured claim path. Các bản ghi đó cho biết run, task, workspace, exit code và trạng thái xác minh. File `result-*.md` và `progress-*.md` dễ đọc trong `.agents/state/memories/` bổ sung ngữ cảnh nếu có. Chỉ chạy lại command thất bại nhỏ nhất sau khi xác nhận run không còn hoạt động. [Workflow liên tục](./glossary.md#persistent-workflow) vẫn hoạt động cho đến khi hoàn tất hoặc bạn nói `workflow done`; xem [Các workflow](../core-concepts/workflows.md#persistent-mode-mechanics) để biết cách khôi phục state file.
 
 ## Bước tiếp theo
 
 - [Các mặc định quan trọng](./important-defaults.md) về precedence, provider và lựa chọn khôi phục
 - [Cài đặt](./installation.md) về preset, thiết lập vendor, cài đặt toàn cục và cập nhật
 - [Agents](../core-concepts/agents.md) về 33 skill package và vai trò dispatch
-- [Workflows](../core-concepts/workflows.md) về lập kế hoạch, thực thi song song, QA và chế độ persistent
+- [Các workflow](../core-concepts/workflows.md) về lập kế hoạch, thực thi song song, QA và chế độ liên tục
+- [Troubleshooting](../guide/troubleshooting.md) khi việc cài đặt, vendor hoặc hook không hoạt động như mong đợi

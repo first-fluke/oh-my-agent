@@ -6,7 +6,7 @@ description: Gedetailleerde gids voor taken binnen één domein in oh-my-agent, 
 
 # Uitvoering met één skill
 
-Uitvoering met één skill is de snelle route: één agent, één domein, één gerichte taak. Er is geen orchestratie-overhead en geen coördinatie tussen meerdere agents. Een host of geselecteerde workflow kan een prompt in natuurlijke taal naar de skill routeren; het hook-systeem detecteert workflows zelf en het routinggedrag hangt af van de geselecteerde runtime.
+Uitvoering met één skill is de snelle route: één agent, één domein, één gerichte taak. Er is geen orchestratie-overhead en geen coördinatie tussen meerdere agenten. Een host of geselecteerde workflow kan een prompt in natuurlijke taal naar de skill routeren; het hook-systeem detecteert workflows zelf en het routinggedrag hangt af van de geselecteerde runtime.
 
 ## Snelle route
 
@@ -26,7 +26,7 @@ Gebruik dit wanneer je taak aan AL deze criteria voldoet:
 - **Eigendom van één domein**: de volledige taak hoort bij frontend, backend, mobile, database, design, infrastructuur of een ander afzonderlijk domein.
 - **Zelfstandig**: er zijn geen API-contractwijzigingen over domeinen heen en een frontendtaak heeft bijvoorbeeld geen backendwijziging nodig.
 - **Duidelijke scope**: je weet wat de output moet zijn (een component, endpoint, schema of fix).
-- **Geen coördinatie**: andere agents hoeven niet voor of na deze taak te draaien.
+- **Geen coördinatie**: andere agenten hoeven niet voor of na deze taak te draaien.
 
 **Voorbeelden van taken met één skill:**
 
@@ -51,13 +51,13 @@ Tests en acceptatiecriteria horen ook bij werk met één skill; op zichzelf vere
 
 ## Preflight-checklist
 
-Beantwoord deze vier vragen voordat je de prompt schrijft. Ze komen overeen met de vier elementen van de [Promptstructuur](/docs/core-concepts/skills):
+Beantwoord deze vier vragen voordat je de prompt schrijft:
 
 | Element | Vraag | Waarom dit belangrijk is |
 |---------|-------|--------------------------|
 | **Goal** | Welk specifiek artefact moet worden gemaakt of gewijzigd? | Voorkomt dubbelzinnigheid (bijvoorbeeld ‘een knop toevoegen’ versus ‘een formulier met validatie toevoegen’). |
 | **Context** | Welke stack, welk framework en welke conventies zijn van toepassing? | De agent kan dit uit projectbestanden afleiden, maar expliciete context is beter. |
-| **Constraints** | Welke regels moeten worden gevolgd? (stijl, security, performance, compatibiliteit) | Zonder beperkingen gebruiken agents standaardinstellingen die niet bij je project passen. |
+| **Constraints** | Welke regels moeten worden gevolgd? (stijl, security, performance, compatibiliteit) | Zonder beperkingen gebruiken agenten standaardinstellingen die niet bij je project passen. |
 | **Done When** | Welke acceptatiecriteria ga je controleren? | Geeft de agent een doel en jou een verificatiechecklist. |
 
 Als een element in je prompt ontbreekt, zal de agent:
@@ -114,10 +114,9 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 2. **Moeilijkheidsinschatting:** Gemiddeld (2–3 bestanden, met enkele ontwerpkeuzes rond de validatie-UX).
 3. **Geladen resources:**
    - `execution-protocol.md` (altijd)
-   - `snippets.md` (formuliervoorbeelden + Zod-patronen)
-   - bestaande componentpatronen en `snippets.md` wanneer de skill die aanlevert
+   - `snippets.md` (formulier- en Zod-patronen, plus bestaande componentpatronen wanneer de skill die aanlevert)
 4. **Uitvoeringscontract (wanneer ingeschakeld) kan `CHARTER_CHECK` uitsturen:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: frontend
@@ -168,7 +167,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - overeenkomende `stack/tech-stack.md` of verwijzingen naar variant-tech-stacks
 <!-- oma-docs:ignore-end -->
 5. **Uitvoeringscontract (wanneer ingeschakeld) kan `CHARTER_CHECK` uitsturen:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: backend
@@ -207,7 +206,7 @@ Add tests for: profile save, logout flow, offline state.
    - `snippets.md` (schermtemplate, Riverpod-providerpatroon)
    - `screen-template.dart`
 4. **Uitvoeringscontract (wanneer ingeschakeld) kan `CHARTER_CHECK` uitsturen:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: mobile
@@ -250,7 +249,7 @@ Add deliverables: data standards table, glossary, migration script.
    - `examples.md`
    - `anti-patterns.md` (controle tijdens optimalisatie)
 4. **Uitvoeringscontract (wanneer ingeschakeld) kan `CHARTER_CHECK` uitsturen:**
-   ```
+   ```text
    CHARTER_CHECK:
    - Clarification level: LOW
    - Task domain: database
@@ -275,7 +274,7 @@ Add deliverables: data standards table, glossary, migration script.
 
 Controleer deze punten voordat je de output van de agent accepteert:
 
-### Universele controles (alle agents)
+### Universele controles (alle agenten)
 
 - [ ] **Gedrag voldoet aan de acceptatiecriteria:** elk criterium uit je prompt is vervuld
 - [ ] **Tests dekken het happy path en belangrijke edge cases:** niet alleen het happy path
@@ -326,11 +325,21 @@ Let op deze signalen dat je van uitvoering met één skill naar multi-agentuitvo
 | Agent zegt "dit vereist een backendwijziging" | De taak heeft afhankelijkheden over domeinen heen | Schakel over naar `/work` en voeg een backendagent toe |
 | De `CHARTER_CHECK` van de agent bevat onderdelen bij "Must NOT do" die wel nodig zijn | De scope overschrijdt één domein | Plan de volledige feature eerst met `/plan` |
 | Een fix werkt door naar 3+ bestanden in verschillende lagen | Eén fix raakt meerdere domeinen | Gebruik `/debug` met bredere scope of `/work` |
-| De agent ontdekt een API-contractmismatch | Frontend en backend zijn het niet eens | Voer `/plan` uit om contracten te definiëren en start daarna beide agents opnieuw |
-| Een kwaliteitsgate faalt op integratiepunten | Componenten sluiten niet op elkaar aan | Voeg een QA-reviewstap toe: `oma agent spawn qa "Review integration"` |
+| De agent ontdekt een API-contractmismatch | Frontend en backend zijn het niet eens | Voer `/plan` uit om contracten te definiëren en start daarna beide agenten opnieuw |
+| Een kwaliteitsgate faalt op integratiepunten | Componenten sluiten niet op elkaar aan | Voer `/review` uit, of voeg een QA-ronde toe: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |
 | De taak groeit van ‘één component’ naar ‘drie componenten + nieuwe route + API’ | De scope groeit tijdens de uitvoering | Stop, deel de taak op met `/plan` en ga daarna door met `/orchestrate` |
 | De agent blokkeert met HIGH-verduidelijking | De requirements zijn fundamenteel dubbelzinnig | Beantwoord de vragen van de agent of voer `/brainstorm` uit |
 
 ### Vuistregel
 
 Als je dezelfde agent meer dan twee keer opnieuw start met verfijningen, is de taak waarschijnlijk multi-domein. Gebruik `/work`, of op zijn minst `/plan`, om de taak op te splitsen.
+
+---
+
+## Volgende stappen {#next-steps}
+
+- De taak beslaat meerdere domeinen: [Multi-agentprojecten](./multi-agent-project.md)
+- De taak is een bug: [Bugs oplossen](./bug-fixing.md)
+- Een run controleren of hervatten: [Resultaten en hervatten](./agent-results-and-resume.md)
+- Er ging iets mis: [Probleemoplossing](./troubleshooting.md)
+- Kiezen tussen een skill en een workflow: [Workflows](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

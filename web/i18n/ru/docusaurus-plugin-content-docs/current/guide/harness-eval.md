@@ -6,6 +6,10 @@ description: Оценивайте полный overlay OMA harness с парны
 
 # Оценка harness
 
+:::tip Как это связано между собой
+[Оценка skill](./skill-eval.md) измеряет, помогает ли один `SKILL.md`, а [оптимизация skill](./skill-opt.md) редактирует его body под контролем held-out gate. Оценка harness (эта страница) сравнивает целый overlay `.agents/` на задачах репозитория. [Регрессионные кейсы инцидентов](./harness-incidents.md) превращают наблюдённые сбои в кейсы оценки и fixture skill. [Эволюция harness проекта](./harness-evolution.md) запускает захват инцидентов и оптимизацию skill как цикл с бюджетом, а [запланированные агенты](./scheduled-agents.md) — это планировщик ОС, который его запускает.
+:::
+
 `oma harness eval` измеряет, улучшает ли candidate OMA harness фиксированного target agent без изменения модели этого агента. Команда адаптирует тестовый паттерн из [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): зафиксируйте target model, измените harness и сравните результаты на одинаковых task.
 
 Эта команда оценивает единицу крупнее, чем `oma skill eval`:
@@ -16,6 +20,14 @@ description: Оценивайте полный overlay OMA harness с парны
 | `oma harness eval` | Ограниченный overlay `.agents/` | Файлы и output в workspace репозитория |
 
 Используйте skill eval, чтобы ответить на вопрос «помогает ли этот skill?». Используйте harness eval, чтобы выяснить, помогает ли сочетание skills, workflows, rules и инструкций агента надёжнее выполнять задачи репозитория на фиксированном агенте.
+
+**Перед первым запуском:**
+
+- Запишите первый запуск с `--live --record`. `inspect` (действие по умолчанию), `rescore`, `fixture-replay` и `rerun` читают этот record.
+- Для вердикта нужно не менее пяти оценённых задач в выбранном разделе. Для `pass` нужен lift не менее 5 пунктов и отсутствие regression.
+- `inspect`, `rescore` и `fixture-replay` не вызывают модель. `--live` и `--action rerun` выполняют по два вызова на выбранную задачу.
+- `promotionReady` всегда `false`. Pass — это evidence для решения человека, а не автоматическое продвижение.
+- Live-запуски требуют vendor с обнаружением skill в пределах проекта (см. [Запуск и запись](#run-and-record)).
 
 ## Модель оценки
 
@@ -28,6 +40,28 @@ Live-запуск оценивает каждую задачу как парны
 5. Детерминированные проверки изучают получившийся workspace и необязательный output агента. Доверенные проверки `command` затем выполняются в свежей копии артефактов задачи.
 
 Настоящий проект никогда не используется как рабочий каталог arm. OMA захватывает сырой output и итоговые артефакты задачи до проверок и очистки временного workspace. Собственная песочница процесса выбранного вендора остаётся источником полномочий для доступа вне рабочего каталога.
+
+Диаграмма показывает, как парные arm приходят к решению. Offline-действия входят в процесс на шаге формирования пар из сохранённого record.
+
+```mermaid
+flowchart TD
+  T["Task fixture snapshot"] --> B["Baseline arm<br/>fresh workspace + current .agents"]
+  T --> C["Candidate arm<br/>fresh workspace + current .agents + overlay"]
+  B --> K["Deterministic checks"]
+  C --> K
+  K -->|"--record"| RC[("Immutable record<br/>_runs/*.json")]
+  K --> P["Pair arms per task<br/>in the selected partition"]
+  RC -->|"inspect, rescore, fixture-replay"| P
+  P --> E{"Any dispatch error?"}
+  E -->|yes| F["FAIL, exit 1"]
+  E -->|no| N{"Five or more paired tasks?"}
+  N -->|no| I["INSUFFICIENT<br/>exit 1 only with --require-coverage"]
+  N -->|yes| R{"Any regression or negative lift?"}
+  R -->|yes| F
+  R -->|no| L{"Lift of 5 points or more?"}
+  L -->|yes| PASS["PASS"]
+  L -->|no| W["WARN"]
+```
 
 ## Структура candidate
 
@@ -91,7 +125,7 @@ tasks:
         path: docs/feature.md
 ```
 
-Версия 2 требует задач обоих разделов: `validation` и `final-test`. Каждая задача должна объявлять свой раздел (`partition`). По умолчанию выбирается `validation`; для отдельного финального запуска после выбора candidate используйте `--partition final-test`. Два раздела не могут использовать общие каталоги fixture или вкладывать их друг в друга. Храните файлы record вне каталогов fixture, candidate overlay и входных данных evaluator; такие расположения отклоняются, чтобы последующие запуски не видели финальные проверки. Suite версии 1 по-прежнему запускаются как `exploratory`; выбрать их как final-test нельзя.
+Версия 2 требует задач обоих разделов: `validation` и `final-test`. Каждая задача должна объявлять свой раздел (`partition`). По умолчанию выбирается `validation`; для отдельного финального запуска после выбора candidate используйте `--partition final-test`. Каждый запуск оценивает только выбранный раздел, поэтому для решающего validation-запуска нужно не менее пяти задач `validation`, а для запуска final-test — не менее пяти задач `final-test`. Пример выше сокращён для удобства чтения и всегда сообщает `INSUFFICIENT`. Два раздела не могут использовать общие каталоги fixture или вкладывать их друг в друга. Храните файлы record вне каталогов fixture, candidate overlay и входных данных evaluator; такие расположения отклоняются, чтобы последующие запуски не видели финальные проверки. Suite версии 1 по-прежнему запускаются как `exploratory`; выбрать их как final-test нельзя.
 
 ID task должны быть уникальными. Пути fixture и check должны оставаться внутри project и task workspace. Suite и fixture также должны находиться вне определений baseline, копируемых в каждую arm. Fixture не могут содержать symlink или control surface harness, например `.agents`, `.codex`, `.claude`, vendor skill directories или root agent-instruction files. Это не позволяет данным task затенить управляемый harness обеих сторон.
 
@@ -130,7 +164,7 @@ JSON-утверждения сравнивают разобранные знач
 
 Проверки и пути checker не добавляются в prompt агента или fixture. Входные данные выбранной задачи неизбежно видны во время её запуска. Это защищает целостность evaluator и разграничивает разделы; оно не мешает процессу того же пользователя читать другие файлы хоста.
 
-## Запуск и запись
+## Запуск и запись {#run-and-record}
 
 В live-режиме выполняются два dispatch на выбранную задачу, печатается предварительный просмотр dispatch и требуется подтверждение:
 
@@ -142,7 +176,17 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Используйте `--yes` для неинтерактивного запуска и `--timeout-minutes`, чтобы задать одинаковый wall-clock limit для обеих сторон. Live execution требует vendor, который обнаруживает файлы harness относительно workspace проекта. OMA отказывается от discovery через HOME, поскольку baseline мог бы увидеть глобально установленный candidate content.
+Используйте `--yes` для неинтерактивного запуска и `--timeout <duration>`, чтобы задать одинаковый wall-clock limit для каждой arm (по умолчанию `15m`; единица измерения обязательна, например `--timeout 45m`). `oma harness incident reproduce` принимает тот же флаг. Live execution требует vendor, который обнаруживает файлы harness относительно workspace проекта. OMA отказывается от discovery через HOME, поскольку baseline мог бы увидеть глобально установленный candidate content.
+
+Vendor берётся из `agent` в suite и определяется через конфигурацию моделей проекта:
+
+| Vendor | Live `harness eval`, `--action rerun`, `incident reproduce` |
+|---|---|
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Разрешено: каталог skill в пределах проекта |
+| `antigravity`, `hermes`, `kimi` | Отклоняется: обнаружение skill через HOME |
+| Любой vendor без известного каталога skill проекта | Отклоняется |
+
+Offline-действия (`inspect`, `rescore`, `fixture-replay`) не выполняют dispatch, поэтому эта проверка к ним не применяется.
 
 `--record` записывает неизменяемый JSON record версии 2. По умолчанию он создаётся в `_runs/` рядом с suite, а имя файла содержит hash baseline/candidate. Для другого live-запуска используйте новый `--record-file`; уже существующий файл назначения отклоняется до dispatch. Record сохраняет:
 
@@ -178,7 +222,7 @@ oma harness eval \
 
 Задайте `OMA_HARNESS_ENV_PASSTHROUGH=NAME1,NAME2`, чтобы передать дополнительные переменные, которые задаче действительно нужны. Имена появляются в манифесте в `environmentPolicy.extra`. Для vendor без известного набора префиксов манифест сообщает `vendorKnown: false`, и до процесса доходят только базовые переменные, `OMA_*` и записи passthrough.
 
-## Повторное использование записи
+## Повторное использование записи {#reuse-a-recording}
 
 Команда разделяет четыре действия:
 
@@ -287,7 +331,7 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 
 Версия CLI запрашивается при replay только тогда, когда сам record содержит запрошенную (probed) версию; пара без запроса сообщается как несопоставимая, а не как равная. Записанные вердикты остаются доступными для просмотра при исходных условиях. Они не являются evidence для candidate при текущих условиях, пока live- или rerun-оценка не создаст record с совпадающим манифестом.
 
-### Расход ресурсов
+### Расход ресурсов {#usage}
 
 Каждая arm сохраняет `usage`, если vendor его сообщил: входные и выходные token, стоимость в USD, wall time и модель, создавшую большую часть output. Оценка суммирует их в `usage`, где `status` равен `actual`, `partial` (некоторые arm ничего не сообщили) или `unknown`. Конверты результатов vendor распаковываются до выполнения проверок и до записи output, поэтому `output_contains` и `output_json_equals` видят ответ агента, а не окружающие его служебные JSON-данные; это поле заполняется данными usage из конверта.
 
@@ -326,12 +370,31 @@ OMA также сообщает:
 
 - corrected tasks: baseline не прошёл, candidate прошёл;
 - regressed tasks: baseline прошёл, candidate не прошёл;
-- coverage: требуется не менее пяти парных оцениваемых task.
+- coverage: требуется не менее пяти парных оцениваемых task в выбранном разделе.
 
-Решение по score — `pass`, когда lift не меньше 5 процентных пунктов и regression отсутствуют. Любая regression проваливает candidate. Нулевой или положительный lift ниже 5 пунктов выдаёт предупреждение, а менее пяти парных task даёт решение `insufficient`. Добавьте `--require-coverage`, чтобы в CI недостаточное coverage завершалось ненулевым кодом. Score не является evidence, если arm отсутствует, hash record устарел или детерминированная check не завершена. Ошибки live dispatch и целостности evaluator приводят к решению fail; они не могут засчитываться как успешный lift. Rescoring и fixture replay исключают arm с недостаточным evidence из оцениваемых пар и сообщают решение `insufficient`, а не считают отсутствующее evidence regression candidate.
+Решение по score — `pass`, когда lift не меньше 5 процентных пунктов и regression отсутствуют. Любая regression или отрицательный lift проваливает candidate. Нулевой или положительный lift ниже 5 пунктов выдаёт предупреждение, а менее пяти парных task даёт решение `insufficient`. Добавьте `--require-coverage`, чтобы в CI недостаточное coverage завершалось ненулевым кодом. Score не является evidence, если arm отсутствует, hash record устарел или детерминированная check не завершена. Ошибки live dispatch и целостности evaluator приводят к решению fail; они не могут засчитываться как успешный lift. Rescoring и fixture replay исключают arm с недостаточным evidence из оцениваемых пар и сообщают решение `insufficient`, а не считают отсутствующее evidence regression candidate.
 
 Успешный score не устанавливает право на продвижение. Report содержит раздел, hash evaluator, `promotionReady: false` и явные причины блокировки. В legacy- и validation-запусках нет evidence final-test. Текущие маршруты dispatch не удостоверяют ограничение доступа к файловой системе, поэтому даже запуск final-test не может претендовать на защищённую финальную оценку или разрешить продвижение. Это поле остаётся false, пока провайдер выполнения не сможет установить эту границу.
 
+## Устранение неполадок
+
+| Сообщение или симптом | Причина | Решение |
+|---|---|---|
+| `No matching harness recording found: <path>. Run --live --record first.` | Действие по умолчанию — `inspect`, которое читает сохранённый record. | Один раз выполните `--live --record` или передайте существующий record через `--record-file`. |
+| `Harness recording is stale; suite, partition, evaluator, baseline, or candidate inputs changed` | `inspect` требует совпадения всех записанных hash. | Запишите новый запуск с новым `--record-file`. Используйте `--action rescore`, если нужно применить текущие проверки к сохранённым байтам. |
+| `Recorded evidence belongs to a different baseline, candidate, or partition` | `rescore` или `fixture-replay` указывает на record с другими входными данными. | Выберите соответствующие `--record-file` и `--partition` или запишите запуск заново. |
+| `Harness recording is immutable; choose a new --record-file before dispatch` | `--record` перезаписал бы существующий файл. | Передайте новый путь `--record-file`. |
+| `--record requires --live or --action rerun` | `--record` сочетается с offline-действием. | Уберите `--record` или используйте `--live`. |
+| `--action fixture-replay requires --transcript` | Транскрипт не передан. | Добавьте `--transcript <path>`. |
+| `Removed option --timeout-minutes. Use --timeout.` | Старое написание флага. | Используйте `--timeout 30m` (единица измерения обязательна). |
+| `Vendor <vendor> cannot provide project-local isolated harness discovery` | Agent suite разрешается в vendor с обнаружением через HOME или без каталога skill проекта. | Направьте agent suite на vendor из таблицы в разделе [Запуск и запись](#run-and-record). |
+| `Candidate overlay must be stored separately from the baseline .agents tree` | `--candidate .` или путь внутри `.agents/`. | Храните overlay в другом месте, например `candidates/fix/.agents/`. |
+| `Candidate file is not allowed: <path>` | Overlay содержит файлы вне `agents/`, `rules/`, `skills/` или `workflows/`. | Удалите эти файлы из overlay. |
+| `Candidate agent field <field> cannot change model or execution controls: <path>` | Защищённый frontmatter отличается от baseline. | Восстановите `model`, `tools`, `effort` и другие защищённые поля. |
+| `Suite requires at least one final-test task` | Suite с `schema_version: 2` требует обоих разделов. | Добавьте задачу с `partition: final-test`. |
+| `decision: INSUFFICIENT` | Менее пяти оценённых задач в выбранном разделе или отсутствуют arm. | Добавляйте задачи, пока в разделе не будет пяти, и прочитайте строки `replay limitation:`. |
+| `decision: FAIL` | Ошибка dispatch (за ней следуют строки `<task>/<arm>: ...`), regression (ID задач под `regressed:`) или отрицательный lift. | Для ошибки dispatch прочитайте строку `exit=... timedOut=... stderr=...` под каждой неудавшейся arm. Для regression сравните две arm перечисленных задач. |
+
 ## Текущая граница
 
-Candidate overlay создаются внешними средствами; эта команда не реализует builder или автоматический цикл `harness opt`. Доступны захват артефактов, offline rescoring, воспроизведение fixture инструментов, rerun из закреплённых файлов, выбор раздела, снимки evaluator, манифесты выполнения, allowlist окружения и связанные события trace, но секретность отложенных (held-out) данных на уровне ОС, ограничение доступа к сети или credential, повторные стохастические испытания, учёт token и принудительная фиксация модели для вложенных вызовов subagent не обеспечены. Allowlist окружения ограничивает, какие переменные наследует процесс vendor; он не мешает CLI vendor читать собственное хранилище credential или обращаться к сети. Пока фиксация вложенных вызовов отсутствует, suite, предназначенные для измерения одной фиксированной модели, должны избегать candidate workflow, которые запускают другие настроенные роли agent.
+Candidate overlay создаются внешними средствами; эта команда не реализует builder или автоматический цикл `harness opt`. Доступны захват артефактов, offline rescoring, воспроизведение fixture инструментов, rerun из закреплённых файлов, выбор раздела, снимки evaluator, манифесты выполнения, allowlist окружения и связанные события trace, но секретность отложенных (held-out) данных на уровне ОС, ограничение доступа к сети или credential, повторные стохастические испытания и принудительная фиксация модели для вложенных вызовов subagent не обеспечены. Расход token и стоимость записываются для каждой arm и суммируются, если vendor их сообщает (см. [Расход ресурсов](#usage)). Allowlist окружения ограничивает, какие переменные наследует процесс vendor; он не мешает CLI vendor читать собственное хранилище credential или обращаться к сети. Пока фиксация вложенных вызовов отсутствует, suite, предназначенные для измерения одной фиксированной модели, должны избегать candidate workflow, которые запускают другие настроенные роли agent.

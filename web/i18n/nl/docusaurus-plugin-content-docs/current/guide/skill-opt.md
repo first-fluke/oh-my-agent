@@ -18,11 +18,11 @@ CLI-optimalisatie vereist momenteel `--live` en brengt modelaanroepen met zich m
 
 `oma skill optimize` kan niet zonder evaluatietaakfixtures draaien. Het vereist minstens **5 taakfixtures** (`MIN_TASKS = 5`) in `.agents/eval/<skill>/`. Als er minder worden gevonden, geeft het commando onmiddellijk een fout:
 
-```
+```text
 [oma skill opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
 ```
 
-Zie de [gids voor Skill Utility Eval](/docs/guide/skill-eval) voor de conventie voor de map `.agents/eval/<skill>/`, het fixtureschema, checkertypen en het vullen van rollouts voor mock-replay.
+Zie de [gids voor Skill Utility Eval](./skill-eval.md) voor de conventie voor de map `.agents/eval/<skill>/`, het fixtureschema, checkertypen en het vullen van rollouts voor mock-replay.
 
 Promotie vereist ook een niet-lege set buurtaken uit hetzelfde domein die bij andere skills horen. Elke validatiescore van een kandidaat en de uiteindelijke kandidaatscore moeten de buren van de geëvalueerde splitsing meten met precies de kandidaatbody. Ontbrekende buren of onvolledige gepaarde opnames kunnen niet vaststellen dat er geen negative transfer is. Offline evaluatie kan alleen overeenkomende kandidaatopnames opnieuw afspelen; gebruik live optimalisatie om nieuwe kandidaten te genereren en te evalueren.
 
@@ -31,6 +31,28 @@ Replay en suitegebonden kennis zijn gekoppeld aan het volledige taak-/evaluatorc
 ---
 
 ## Hoe het werkt {#how-it-works}
+
+Het diagram toont één optimalisatierun. Een onvolledige evaluatie of een uitgeput budget beëindigt de epoch-lus ook voortijdig.
+
+```mermaid
+flowchart TD
+  FX["5+ fixtures in .agents/eval/SKILL_ID/"] --> SP["Deterministic split by task ID<br/>train 60% / validation 20% / final-test 20%"]
+  SP --> BL["Score the original body on VALIDATION"]
+  BL --> TR["Epoch: score the best body on TRAIN"]
+  TR --> MT["Wiki Maintainer turns failures<br/>and successes into patterns"]
+  MT --> PR["Proposer emits up to<br/>--edits-per-epoch edits"]
+  PR --> GT["Per edit: validate, check --lr budget,<br/>re-score VALIDATION (with neighbors) and TRAIN"]
+  GT --> AC{"Best edit loses nothing on either split,<br/>gains on one, fully measured?"}
+  AC -->|yes| AE["Accept the edit, reset patience"]
+  AC -->|no| RJ["Record rejected or inconclusive edits,<br/>patience + 1"]
+  AE --> MORE{"Epochs left and<br/>patience below 2?"}
+  RJ --> MORE
+  MORE -->|yes| TR
+  MORE -->|no| FT["Runner-owned FINAL TEST<br/>candidate lift >= original lift"]
+  FT --> AP{"--apply, final test passed,<br/>promotion eligible?"}
+  AP -->|no| DR["Print report and diff,<br/>SKILL.md unchanged"]
+  AP -->|yes| WR["Back up, atomic write,<br/>record promotion lineage"]
+```
 
 Fixtures worden op taak-ID gesorteerd en deterministisch opgesplitst in sets voor **train**, **held-out validation** en de **runner-owned final-test**. Met minstens vijf fixtures zijn de doelverhoudingen 60/20/20 en bevat elke partitie minstens één taak. Acht fixtures leveren bijvoorbeeld na afronding vier train-, één validatie- en drie final-testtaken op. Fixtures die dezelfde `group` declareren, worden samen toegewezen, zodat een herformuleerde verwante fixture niet in train kan zitten terwijl het origineel in de final test zit; met minder dan drie groepen valt de splitsing terug op taak-ID’s en geeft ze een waarschuwing. De final-testtaken komen uit deze lokale fixtureset en worden achtergehouden voor de Maintainer en Proposer. Dubbele final-testtaak-ID’s en overlap met een ontwikkelsplitsing worden geweigerd.
 
@@ -56,11 +78,11 @@ Ongemeten kandidaten worden vastgelegd als `inconclusive`, met redenen zoals `in
 
 ## Gebruik {#usage}
 
-```
+```bash
 oma skill optimize --skill <id> --live
                [--dry-run | --apply]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
-               [--yes]
+               [--memory recall|none] [--yes]
                [--json] [--output <format>]
 ```
 
@@ -68,7 +90,7 @@ oma skill optimize --skill <id> --live
 
 | Vlag | Standaard | Beschrijving |
 |:-----|:--------|:-----------|
-| `--skill <id>` | `_all` | Skill-ID die moet worden geoptimaliseerd (eenvoudige naam, zonder padscheidingstekens). |
+| `--skill <id>` | verplicht | Skill-ID die moet worden geoptimaliseerd (eenvoudige naam, zonder padscheidingstekens). Zonder deze vlag leest het commando `.agents/eval/_all/` en stopt het met `no eval coverage for skill "_all"`; er is geen modus voor alle skills. |
 | `--dry-run` | **yes (default)** | Stel edits voor en print het diff zonder `SKILL.md` te wijzigen; gegenereerde evidence en evolutie-events blijven wel bewaard. |
 | `--apply` | — | Schrijf de gevalideerde kandidaat weg nadat alle promotiegates zijn geslaagd, inclusief volledige final-test- en negative-transfer-evidence, en maak vóór een atomische write een backup van het origineel. Een OMA-owned skill vereist ook `--yes`. |
 | `--mock` | Standaard (niet-live) | Proposal-replay via de CLI is niet geïmplementeerd, dus dit pad stopt vóór de evaluatie. Gebruik `oma skill eval --mock` voor offline replay van evaluaties. |
@@ -76,6 +98,7 @@ oma skill optimize --skill <id> --live
 | `--max-epochs <n>` | `8` | Maximumaantal optimalisatie-epochs. |
 | `--edits-per-epoch <k>` | `4` | Aantal kandidaat-edits dat de optimizer-LLM per epoch voorstelt. |
 | `--lr <chars>` | `600` | Tekstueel learning-ratebudget: maximale netto wijziging in tekens per geaccepteerde edit. |
+| `--memory <mode>` | `recall` | `none` start vanuit lege evolutiekennis voor een vergelijking met hetzelfde budget (zie [Geheugenablatie](#memory-ablation-and-long-run-statistics)). |
 | `--yes` | — | Sla de bevestiging van de live kostenpreview over en bevestig het overschrijfgedrag bij het toepassen van een OMA-owned skill. |
 | `--json` | — | Uitvoer als JSON voor CI/CD. |
 | `--output <format>` | `text` | Uitvoerformaat (`text` of `json`). |
@@ -91,7 +114,7 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1
 
 Illustratieve output voor acht fixtures en een kandidaat die alle promotiegates doorstaat:
 
-```
+```text
 [oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 1, test: 3), dry-run: true
 
 Skill opt  (skill: oma-scholar)
@@ -120,8 +143,8 @@ Het diff toont wat de optimizer zou schrijven. `SKILL.md` blijft ongewijzigd, te
 Als je tevreden bent met het voorgestelde diff, voer je de opdracht opnieuw uit met `--apply`:
 
 ```bash
-# Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Apply accepted edits to a user-authored skill (backs up the original first)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 ### De procedure als artifact {#the-procedure-as-an-artifact}
@@ -147,6 +170,20 @@ Het antwoord van de optimizer wordt alleen qua opmaak soepel gelezen: code fence
 `oma skill evolution-stats --skill <id>` aggregeert elke vastgelegde run van een skill uit `.agents/results/skill-evolution/<id>/*.jsonl`: runs per status, proposals per gate-uitkomst en het acceptatiepercentage, geverifieerde verbeteringen (final test geslaagd en in aanmerking komend voor promotie), toepassingen en rollbacks, gemiddelde finale lift, modelaanroepen over runs met gemeten verbruik en aanroepen per geverifieerde verbetering (de kosten van het proces in plaats van van één run), en dezelfde cijfers uitgesplitst naar geheugenmodus en procedurehash. Het meta-optimalisatierapport toont het gemiddelde aantal aanroepen per binnenste run voor de huidige procedure en elke kandidaat, zodat een procedure die op winst scoort door meer uit te geven, als zodanig zichtbaar is.
 
 ### Meta-optimalisatie: de procedure als kandidaat {#meta-optimization-the-procedure-as-the-candidate}
+
+| Vlag | Standaard | Beschrijving |
+|:-----|:--------|:-----------|
+| `--target <part>` | `optimizer` | Te optimaliseren procedureonderdeel: `optimizer` of `maintainer`. |
+| `--skill <ids...>` | — | Held-out skills waarop de kandidaatprocedure wordt gescoord (gescheiden door spaties). |
+| `--anchor <ids...>` | `anchors` uit de constitution | Skills die nooit voor selectie worden gebruikt; ervoor en erna gerapporteerd om drift te tonen. |
+| `--repeats <n>` | `3` | Binnenste runs per skill en procedure. |
+| `--candidates <n>` | `2` | Aantal voor te stellen procedurekandidaten. |
+| `--max-epochs <n>` | `1` | Epochs per binnenste run, gelijk voor elke arm. |
+| `--edits-per-epoch <k>` | `4` | Edits per epoch in de binnenste run, gelijk voor elke arm. |
+| `--live` | — | Vereist: binnenste runs roepen echte modellen aan. |
+| `--apply` | — | Schrijf het winnende procedurebestand weg met lineage. |
+| `--memory <mode>` | `none` | Geheugenmodus van de binnenste run: `recall` of `none`. |
+| `--yes` | — | Sla de kostenbevestiging over. |
 
 `oma skill meta-optimize --target optimizer --skill <a> <b> ... --live` behandelt de prompt van de optimizer (of maintainer) als het testobject. Het voert de binnenste lus (`oma skill optimize --dry-run`) uit op elke genoemde held-out skill, `--repeats` keer, onder de huidige procedure; vraagt een proposer om maximaal `--candidates` kleine edits aan het template; voert de binnenste lus opnieuw uit onder elke kandidaat met hetzelfde budget voor `--max-epochs` en `--edits-per-epoch`; en vergelijkt elke kandidaat paarsgewijs met de huidige procedure per (skill, herhaling) op de som van de training-lift- en validatie-liftwinsten die de binnenste lus heeft behaald.
 
@@ -187,7 +224,7 @@ Automatische cycli passen geslaagde wijzigingen toe als projectoverlays, bewaren
 
 ## Live-modus {#live-mode}
 
-Live-modus roept de echte Maintainer en Proposer aan en voert per epoch opnieuw live eval-armen uit. Dit is duur: elke gescoorde taak heeft baseline- en behandelingsaanroepen, judge-fixtures voegen beoordelingsaanroepen toe en de final test scoort de originele en kandidaatbody. De preview meldt een bovengrens uit de werkelijke splitsing, inclusief de initiële validatiebaseline, trainings- en compileraanroepen, validatieaanroepen van kandidaten, twee final-testscores en gepaarde buurcontroles voor elke kandidaat plus de uiteindelijke kandidaat. Elke aanroep heeft een time-out van 120 seconden. Beschermde Claude- en Codex-armen schakelen tools, automatische instructiediscovery, MCP en optimalisatiegeheugen uit.
+Live-modus roept de echte Maintainer en Proposer aan en voert per epoch opnieuw live eval-armen uit. Dit is duur: elke gescoorde taak heeft baseline- en behandelingsaanroepen, judge-fixtures voegen beoordelingsaanroepen toe en de final test scoort de originele en kandidaatbody. De preview meldt een bovengrens uit de werkelijke splitsing, inclusief de initiële validatiebaseline, trainings- en compileraanroepen, validatieaanroepen van kandidaten, twee final-testscores en gepaarde buurcontroles voor elke kandidaat plus de uiteindelijke kandidaat. Elke aanroep wordt na `OMA_SKILL_EVAL_TIMEOUT_MS` milliseconden afgebroken (standaard 180000, dezelfde limiet als bij `oma skill eval`). Beschermde Claude- en Codex-armen schakelen tools, automatische instructiediscovery, MCP en optimalisatiegeheugen uit.
 
 ```bash
 # Cost preview + confirm
@@ -196,13 +233,13 @@ oma skill optimize --skill oma-scholar --live
 # Skip confirmation
 oma skill optimize --skill oma-scholar --live --yes
 
-# Live opt, then apply if improved
-oma skill optimize --skill oma-scholar --live --apply --yes
+# Live opt, then apply if improved (user-authored skill)
+oma skill optimize --skill my-skill --live --apply --yes
 ```
 
 De kostenpreview toont de bovengrens van de onderliggende modelaanroepen voordat er een LLM-aanroep wordt gedaan.
 
-De Maintainer, Proposer, evaluatiearmen en judges delen een beschermd teksttransport in verse tijdelijke mappen. Claude gebruikt zijn beperkte CLI-profiel. Codex gebruikt de native `codex app-server` met de bestaande CLI-login, het geselecteerde model, de geselecteerde provider en de reasoning effort; het vervangt dit niet door een API-key-client en valt niet terug op Claude. Het Codex-profiel richt zich op CLI 0.154.x op macOS/Linux met native bestandsopslag voor credentials en een bestaande `auth.json`. Elke aanroep stelt een privé tijdelijke `CODEX_HOME` samen die naar de originele config- en auth-bestanden verwijst zonder de inhoud van credentials te kopiëren. Native tokenverversing gebruikt nog steeds het originele auth-bestand. Gedeelde bootstrapstatus wordt uitgesloten en tijdelijke status wordt daarna opgeruimd. Credentialopslag via keyring, auto en ephemeral wordt momenteel niet ondersteund. Het threadcontract wordt gecontroleerd voordat modelinvoer wordt verzonden; niet-ondersteunde versies, opslagmodi en protocolfouten beëindigen de dispatch. Tools, ontdekking van startinstructies, MCP-toegang en sessiepersistentie zijn uitgeschakeld, zodat compilerprocessen achtergehouden fixtures niet via agenttools kunnen lezen. Andere compilervendors falen expliciet totdat ze een geverifieerd transport hebben.
+De Maintainer, Proposer, evaluatiearmen en judges delen het beschermde teksttransport dat wordt beschreven in [Skill-isolatie](./skill-eval.md#skill-isolation-keeping-the-baseline-honest): het beperkte CLI-profiel van Claude of het native Codex-profiel `app-server`, elk in een verse tijdelijke map met tools, ontdekking van startinstructies, MCP-toegang en sessiepersistentie uitgeschakeld, zodat compilerprocessen achtergehouden fixtures niet via agenttools kunnen lezen. Andere compilervendors stoppen met `[oma skill opt] protected compiler is unavailable for <vendor>` totdat ze een geverifieerd transport hebben. De Maintainer en Proposer gebruiken de rol `opt-agent`, die `model_preset` of `default_cli` volgt; armen en judges gebruiken de rol `eval` (zie [De evaluatie- en optimizermodellen kiezen](./skill-eval.md#choose-the-evaluation-and-optimizer-models)).
 
 De optimizer rapporteert `proposed` voor geldige edits en `no-action` alleen bij een expliciet `NO_ACTION`-antwoord. Proces-/API-fouten worden `dispatch-error`; misvormde antwoorden zonder geldige edits worden `parse-error`. Deze fouten kunnen geen lege editlijsten worden. Als de Maintainer geen gevalideerde patronen kan leveren, rapporteert die `degraded` met een dispatch- of parsingreden; fallbackpatronen worden uitgesloten van persistente kennis en de run kan geen kandidaat promoveren. Evaluatiefouten verschijnen in `diagnostics` en in proposal-gaterecords en niet in de geleerde afwijzingsgeschiedenis.
 
@@ -279,11 +316,13 @@ Inspecteer `diagnostics`, `promotion.reasons` en eventuele `finalTest.blocker` v
 
 Skills waarvan de ID met `oma-` begint, zijn eigendom van oh-my-agent en worden **overschreven door `oma update`**. Voor deze skills wordt `--apply` afgeraden — gebruik `--dry-run` (de standaard), beoordeel het voorgestelde diff en upstream wijzigingen naar het register als de verbetering betekenisvol is. Voor door gebruikers geschreven skills is `--apply` veilig.
 
-Het commando print een waarschuwing wanneer de doel-skill eigendom is van oma:
+Wanneer elke gate slaagt maar het doel een oma-owned skill is en `--yes` ontbreekt, schrijft `--apply` niets weg en print het:
 
+```text
+[oma skill opt] WARNING: "oma-scholar" is an oma-owned skill. oma-owned skills are overwritten by `oma update` — applying edits here may be lost. Re-run with --yes to proceed, or use --dry-run to review the proposed diff.
 ```
-[oma skill opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
-```
+
+Met `--yes` wordt er geen waarschuwing geprint en gaat de write door.
 
 ---
 
@@ -303,7 +342,7 @@ Gebruik evaluatiereplay voor een offline CI-controle van bestaande kandidaatspec
 oma skill eval --skill oma-scholar --mock --neg-transfer --require-coverage --json
 ```
 
-CLI-optimalisatie zelf vereist `--live`; er is nog geen adapter voor replay van vastgelegde proposals. Eerdere richtlijnen die `oma skill optimize --mock` beschreven als een volledige offline optimizer, waren onjuist. Verplaats offline replay-jobs naar `oma skill eval --mock`, of schakel live optimalisatie en de bijbehorende modelkosten expliciet in. Inspecteer bij optimalisatieruns de JSON-waarden `ok` en `promotion.eligible`: exit nul dekt ook voltooide runs die geen promoveerbare kandidaat hebben gevonden.
+CLI-optimalisatie zelf vereist `--live`; er is nog geen adapter voor replay van vastgelegde proposals. Eerdere richtlijnen die `oma skill optimize --mock` beschreven als een volledige offline optimizer, waren onjuist. Verplaats offline replay-jobs naar `oma skill eval --mock`, of schakel live optimalisatie en de bijbehorende modelkosten expliciet in. Inspecteer bij optimalisatieruns de JSON-waarden `ok` en `promotion.eligible`: exit nul dekt ook voltooide runs die geen promoveerbare kandidaat hebben gevonden. Zie voor foutmeldingen [Probleemoplossing](./skill-eval.md#troubleshooting).
 
 Exitcodes van optimalisatie:
 - `0` — optimalisatie voltooid (met of zonder verbetering)
@@ -313,5 +352,7 @@ Exitcodes van optimalisatie:
 
 ## Zie ook {#see-also}
 
-- [Skill Utility Eval](/docs/guide/skill-eval) — taakfixtures schrijven, checkertypen en mock/live-modi, de map `_rollouts/`.
-- [CLI Commands](/docs/cli-interfaces/commands) — vlagreferentie voor alle commando’s voor skillbeheer.
+- [Skill Utility Eval](./skill-eval.md) — taakfixtures schrijven, checkertypen, mock/live-modi, de map `_rollouts/` en probleemoplossing.
+- [Evolutie van de projectharness](./harness-evolution.md) — geplande optimalisatie met budget en projectoverlays.
+- [Regressiecases voor incidenten](./harness-incidents.md) — waargenomen fouten omzetten in skill-fixtures.
+- [CLI-commando's](../cli-interfaces/commands.md) — vlagreferentie voor alle commando’s voor skillbeheer.

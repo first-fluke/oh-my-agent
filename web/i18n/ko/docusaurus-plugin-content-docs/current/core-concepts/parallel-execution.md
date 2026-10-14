@@ -9,7 +9,7 @@ OMA의 핵심 장점은 여러 전문 에이전트를 동시에 실행하는 것
 
 ---
 
-## agent:spawn: 단일 에이전트 스폰
+## oma agent spawn: 단일 에이전트 스폰 {#agentspawn-single-agent-spawning}
 
 ### 기본 구문
 
@@ -41,22 +41,22 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 ### 예제
 
 ```bash
-# 기본 벤더로 백엔드 에이전트 스폰
+# Spawn a backend agent with default vendor
 oma agent spawn backend "Implement JWT authentication API with refresh tokens" session-01
 
-# 워크스페이스 격리와 함께 스폰
+# Spawn with workspace isolation
 oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
-# 이 특정 스폰의 CLI 벤더 오버라이드
+# Override the CLI vendor for this specific spawn
 oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
-# 증거 체인을 유지하면서 실행 재시도
+# Retry a run while preserving its evidence chain
 oma agent spawn backend "Fix the payment gateway issue" session-01 --resumed-from run-123
 
-# 인라인 텍스트 대신 프롬프트 파일 사용
+# Use a prompt file instead of inline text
 oma agent spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
-# 격리된 git worktree에서 실행(가설 스폰 패턴)
+# Run inside an isolated git worktree (hypothesis spawn pattern)
 oma agent spawn backend "Try a Drizzle-based rewrite" session-01 --isolation worktree
 ```
 
@@ -67,11 +67,11 @@ oma agent spawn backend "Try a Drizzle-based rewrite" session-01 --isolation wor
 여러 에이전트를 동시에 실행하려면 셸 백그라운드 프로세스를 사용합니다:
 
 ```bash
-# 3개 에이전트를 병렬로 스폰
+# Spawn 3 agents in parallel
 oma agent spawn backend "Implement auth API" session-01 -w ./apps/api &
 oma agent spawn frontend "Build login form" session-01 -w ./apps/web &
 oma agent spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
-wait  # 모든 에이전트가 완료될 때까지 블록
+wait  # Block until all agents complete
 ```
 
 `&`는 각 에이전트를 백그라운드에서 실행합니다. `wait`는 모든 백그라운드 프로세스가 완료될 때까지 블록합니다.
@@ -81,19 +81,19 @@ wait  # 모든 에이전트가 완료될 때까지 블록
 에이전트를 병렬로 실행할 때 파일 충돌을 방지하기 위해 항상 별도의 워크스페이스를 할당하세요:
 
 ```bash
-# 풀스택 병렬 실행
+# Full-stack parallel execution
 oma agent spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
 oma agent spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
 oma agent spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
 wait
 
-# 구현 후 QA 실행 (구현에 의존)
+# After implementation, run QA (sequential; depends on implementation)
 oma agent spawn qa "Review all implementations for security and accessibility" session-02
 ```
 
 ---
 
-## agent:parallel: 인라인 병렬 모드
+## oma agent parallel: 인라인 병렬 모드 {#agentparallel-inline-parallel-mode}
 
 백그라운드 프로세스 관리를 자동으로 처리하는 더 깔끔한 구문:
 
@@ -106,24 +106,24 @@ oma agent parallel --inline "<agent1>:<prompt1>" "<agent2>:<prompt2>" [options]
 ### 예제
 
 ```bash
-# 기본 병렬 실행
+# Basic parallel execution
 oma agent parallel --inline \
   "backend:Implement auth API" \
   "frontend:Build login form" \
   "mobile:Auth screens"
 
-# no-wait 모드 (즉시 반환)
+# With no-wait (fire and forget)
 oma agent parallel --inline "backend:Auth API" "frontend:Login form" --no-wait
 
-# 기존 세션 연결
+# All agents share the same session automatically
 oma agent parallel --inline \
   "backend:JWT auth with refresh tokens" \
   "frontend:Login form with email validation" \
   "db:User schema with soft delete and audit trail" \
-  --session session-auth-01
+  --session-id session-auth-01
 ```
 
-`--inline` 플래그는 각 `agent:task` 인자를 파싱합니다. 특정 워크스페이스가 필요한 태스크에는 세 번째 콜론 구분 경로(`agent:task:workspace`)를 추가하세요. `--inline` 없이 `{tasks: [{id?, agent, task, workspace?}]}` 형태의 YAML 태스크 파일을 전달할 수 있습니다. `--session`은 병렬 결과를 기존 세션에 연결합니다.
+`--inline` 플래그는 각 `agent:task` 인자를 파싱합니다. 특정 워크스페이스가 필요한 태스크에는 세 번째 콜론 구분 경로(`agent:task:workspace`)를 추가하세요. `--inline` 없이 `{tasks: [{id?, agent, task, workspace?}]}` 형태의 YAML 태스크 파일을 전달할 수 있습니다. `--session-id`는 결과를 기존 세션과 YAML 파일의 태스크 ID에 연결합니다.
 
 ---
 
@@ -136,9 +136,9 @@ oh-my-agent은 `.agents/oma-config.yaml`의 `model_preset`을 보고 각 에이�
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: mixed   # mixed: 조율은 Claude, 구현과 탐색은 Codex
+model_preset: mixed   # mixed: Claude for coordination, Codex for implementation/explore
 
-# 프리셋 위에 특정 에이전트만 오버라이드
+# Override specific agents on top of the preset
 agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
   backend:  { model: openai/gpt-5.5, effort: high }
@@ -174,12 +174,15 @@ agents:
 | **CLI 폴백** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | 근거 기반 결과 폴링 |
 
 Claude Code 내에서 실행 시 워크플로우는 `Agent` 도구를 직접 사용합니다:
-```
+
+```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
 
 같은 메시지에서 여러 Agent 도구를 호출하면 진정한 병렬로 실행됩니다(순차적 대기 없음).
+
+벤더가 달라도 같은 디스패치 규칙이 적용됩니다:
 
 1. `.agents/oma-config.yaml`에서 `target_vendor_for_agent`를 해석합니다
 2. 현재 런타임 벤더와 일치하면 그 벤더의 네이티브 에이전트 파일을 씁니다
@@ -202,13 +205,13 @@ oma dashboard terminal
 - 진행 파일의 최근 활동
 - 경과 시간
 
-대시보드는 `.agents/state/memories/`를 감시하여 실시간 업데이트합니다(오래된 프로젝트는 `.serena/memories/`로 폴백).
+대시보드는 `.agents/state/memories/`를 감시하여 실시간으로 업데이트합니다. 에이전트가 진행 상황을 기록할 때마다 새로 고칩니다.
 
 ### 웹 대시보드
 
 ```bash
 oma dashboard web
-# http://localhost:9847 에서 열림
+# Serves the dashboard at http://127.0.0.1:9847
 ```
 
 기능:
@@ -222,20 +225,11 @@ oma dashboard web
 
 최적의 가시성을 위해 3개 터미널을 사용합니다:
 
-```
-┌─────────────────────────┬──────────────────────┐
-│                         │                      │
-│   터미널 1:             │   터미널 2:          │
-│   oma dashboard terminal         │   에이전트 스폰      │
-│   (실시간 모니터링)     │   명령어             │
-│                         │                      │
-├─────────────────────────┴──────────────────────┤
-│                                                │
-│   터미널 3:                                    │
-│   테스트/빌드 로그, git 작업                   │
-│                                                │
-└────────────────────────────────────────────────┘
-```
+| 터미널 | 실행 | 용도 |
+|----------|-----|---------|
+| 1 | `oma dashboard terminal` | 실시간 모니터링 |
+| 2 | `oma agent spawn …` 또는 `oma agent parallel …` | 에이전트 스폰 명령어 |
+| 3 | 테스트, 빌드 로그, git | 검증과 git 작업 |
 
 ### 개별 에이전트 상태 확인
 
@@ -310,28 +304,42 @@ oma agent status <session-id> <agent-id>
 사용자 인증 기능 구축을 위한 전체 병렬 실행 워크플로우:
 
 ```bash
-# Step 1: 기능 계획
-# (AI IDE에서 /plan을 실행하거나 기능을 설명)
-# .agents/results/plan-{sessionId}.json에 태스크 분해가 생성됨
+# Step 1: Plan the feature
+# (In your AI IDE, run /plan or describe the feature)
+# This creates .agents/results/plan-{sessionId}.json with task breakdown
 
-# Step 2: 구현 에이전트를 병렬로 스폰
+# Step 2: Spawn implementation agents in parallel
 oma agent spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/results/api-contracts/" session-auth-01 -w ./apps/api &
 oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
 oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
-# Step 3: 별도 터미널에서 모니터링
-# 터미널 2:
-oma dashboard terminal
-
-# Step 4: 모든 구현 에이전트 대기
+# Step 3: Wait for all implementation agents
+# (monitor them from a second terminal; see the block below)
 wait
 
-# Step 5: QA 리뷰 실행
+# Step 4: Run QA review
 oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
-# Step 6: QA에서 이슈 발견 시 특정 에이전트 재스폰하여 수정
+# Step 5: If QA finds issues, re-spawn specific agents with fixes
 oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
-# Step 7: 수정 확인을 위해 QA 재실행
+# Step 6: Re-run QA to verify fixes
 oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```
+
+에이전트가 작업하는 동안 대시보드는 두 번째 터미널에서 실행하세요. Ctrl+C를 누를 때까지 계속 실행되므로 스폰 명령어와 같은 셸에 붙여 넣지 마세요:
+
+```bash
+oma dashboard terminal
+```
+
+---
+
+## 관련 문서
+
+- [에이전트 결과 및 재개](../guide/agent-results-and-resume.md): 실행 기록, 클레임, `oma agent resume`
+- [대시보드 모니터링](../guide/dashboard-monitoring.md)
+- [멀티 에이전트 프로젝트 가이드](../guide/multi-agent-project.md)
+- [에이전트별 모델](../guide/per-agent-models.md)
+- [/orchestrate 워크플로우](./workflows.md#orchestrate)
+- [CLI 명령어 레퍼런스](../cli-interfaces/commands.md)

@@ -1,25 +1,31 @@
 ---
 title: "Руководство: workflow контента и исследований"
 sidebar_label: Обзор
-description: Выберите правильный путь oh-my-agent для извлечения PDF и HWP, работы с голосом, научных исследований, слайдов, recap, перевода и академического письма.
+description: Выберите правильный путь oh-my-agent и его предварительные требования для извлечения PDF и HWP, работы с голосом, научных и web-исследований, слайдов, изображений, видео, объяснения кода, диаграмм, исследования рынка, recap, перевода и академического письма.
 ---
 
 # Workflow контента и исследований
 
-Это руководство направляет работу с документами, аудио, исследованиями и презентациями к соответствующей возможности. Начните с нужного артефакта, затем используйте минимальную команду или точку входа skill, создающую результат для review.
+Это руководство направляет работу с документами, аудио, исследованиями, медиа и презентациями к соответствующей возможности. Начните с нужного артефакта, затем используйте минимальную команду или точку входа skill, создающую результат для review. Если у возможности есть собственное руководство, ссылка на него указана в последнем столбце; остальные описаны на этой странице.
 
-| Задача | Точка входа | Первый результат |
-|---|---|---|
-| Извлечь PDF | skill `oma-pdf` или команды `uvx opendataloader-pdf` ниже | Markdown, text, JSON или краткий отчёт об извлечении |
-| Извлечь HWP/HWPX/HWPML | skill `oma-hwp` и `bunx kordoc@latest` | Markdown или структурированный JSON/chunks |
-| Озвучить или транскрибировать аудио | `/oma-voice` | Аудио с manifest или `transcript.md` с manifest |
-| Найти и проверить статьи | `oma scholar` | Результаты поиска, полученный sidecar или lint report |
-| Создать презентацию | skill `oma-slide` и `oma slide` | Проверенные HTML-слайды и необязательный экспорт |
-| Суммировать разговоры агентов | `oma recap` | Датированный Markdown recap со статусом evidence |
-| Перевести или проверить локализованный текст | skill `oma-translation` | Текст на целевом языке или review с evidence |
-| Создать или проверить академическую прозу | skill `oma-academic-writing` | Draft, revision или compliance report с Claim-Evidence Map |
+| Задача | Точка входа | Предварительные требования | Первый результат | Руководство |
+|---|---|---|---|---|
+| Извлечь PDF | skill `oma-pdf` или команды `uvx opendataloader-pdf` ниже | `uv` (для `uvx`) | Markdown, text, JSON или краткий отчёт об извлечении | [ниже](#extract-pdf-content) |
+| Извлечь HWP/HWPX/HWPML | skill `oma-hwp` и `bunx kordoc@latest` | Bun | Markdown или структурированный JSON/chunks | [ниже](#extract-hwp-family-documents) |
+| Озвучить или транскрибировать аудио | `/oma-voice` | приложение Voicebox на `127.0.0.1:17493` | Аудио с manifest или `transcript.md` с manifest | [ниже](#generate-speech-or-transcribe-audio) |
+| Найти и проверить статьи | `oma scholar` | нет; необязательно `S2_API_KEY`, `OPENALEX_EMAIL` | Результаты поиска, полученный sidecar или lint report | [ниже](#search-and-validate-scholarly-material) |
+| Искать в web или получить страницу | skill `oma-search`, `oma search` | необязательно Chrome, Python `curl_cffi`, `yt-dlp`, `gh` (проверка — `oma search doctor`) | JSON в stdout | [CLI Commands: search](../cli-interfaces/commands.md#search) |
+| Создать презентацию | skill `oma-slide` и `oma slide` | Chrome или `OMA_CHROME_PATH` | Проверенные HTML-слайды и необязательный экспорт | [ниже](#slides-and-presentations) |
+| Сгенерировать изображения | skill `oma-image`, `oma image generate` | одно из: `POLLINATIONS_API_KEY`, `codex login` или выполненный вход в `agy` | Изображения и `manifest.json` в `.agents/results/images/` | [Генерация изображений](./image-generation.md) |
+| Сделать short, explainer или demo-видео | `/video`, `oma video` | Node.js 22+, FFmpeg, затем `oma video doctor --install` | Каталог запуска в `.agents/results/videos/`; MP4 после `oma video render` | [Генерация видео](./video-generation.md) |
+| Объяснить изменение или тему на одной странице | `/explain`, `oma explain` | git для режима изменений; `gh` для ссылок на PR | Автономный HTML в `.agents/results/explain/` | [Объяснение кода](./code-explainer.md) |
+| Интерактивная диаграмма архитектуры | `/architecture`, `oma diagram` | нет; archify загружается при первом использовании | Блок Mermaid, а также `.archify.html`, если archify разрешается | [Diagram Engine](./diagram-engine.md) |
+| Исследование рынка по сигналам сообществ | skill `oma-market`, `oma market` | Python 3.12+ | Отчёт в `.agents/results/market/` | [Исследование рынка](./market-research.md) |
+| Суммировать разговоры агентов | `/recap`, `oma recap` | нет | JSON recap от CLI; датированный Markdown recap от `/recap` | [ниже](#recap-agent-conversations) |
+| Перевести или проверить локализованный текст | skill `oma-translation` | нет | Текст на целевом языке или review с evidence | [ниже](#translate-or-review-localized-content) |
+| Создать или проверить академическую прозу | skill `oma-academic-writing` | нет | Draft, revision или compliance report с Claim-Evidence Map | [ниже](#draft-or-audit-academic-writing) |
 
-Имена команд `oma` на этой странице — зарегистрированные публичные команды. `uvx`, `bunx` и `bun` — внешние инструменты конвертации, описанные в соответствующих skills. Остальные skills вызываются естественным языком или slash-командами; отдельных команд `oma pdf`, `oma hwp`, `oma voice`, `oma translation` или `oma academic-writing` нет.
+Имена команд `oma` на этой странице — зарегистрированные публичные команды. `uvx`, `bunx` и `bun` — внешние инструменты конвертации, описанные в соответствующих skills. Остальные [навыки](../getting-started/glossary.md#skill) вызываются естественным языком или slash-командами; отдельных команд `oma pdf`, `oma hwp`, `oma voice`, `oma translation` или `oma academic-writing` нет.
 
 ## Извлечение PDF {#extract-pdf-content}
 
@@ -80,7 +86,7 @@ bun "$HWP_SKILL_DIR/resources/flatten-tables.ts" "$OUT"
 bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 ```
 
-По умолчанию результатом является Markdown. Запросите `json` для структурированного AST или `chunks` для фрагментов, ориентированных на retrieval, когда это необходимо. Параметры конвертации `--dedupe-headers`, `--keep-empty-cols` и `--inline-images` управляют распространёнными случаями таблиц и изображений. Перед передачей результата другому skill проверьте заголовки, вложенные или объединённые таблицы, списки, изображения, сноски и ссылки.
+По умолчанию результатом является Markdown. Для структурированного AST используйте `bunx kordoc@latest "<input.hwp>" --format json`; для фрагментов, ориентированных на retrieval, — `--format chunks`. Параметры конвертации `--dedupe-headers`, `--keep-empty-cols` и `--inline-images` управляют распространёнными случаями таблиц и изображений. Перед передачей результата другому skill проверьте заголовки, вложенные или объединённые таблицы, списки, изображения, сноски и ссылки.
 
 `bun` и `bunx` — обязательные зависимости. Пустой результат может означать отсканированное содержимое; направьте такой случай в workflow с поддержкой OCR. Зашифрованный или ограниченный DRM материал может остаться неполным. PDF, DOCX и XLSX относятся к соответствующим skills, хотя у `kordoc` есть и другие команды authoring и parsing.
 
@@ -115,7 +121,7 @@ oma scholar lint --fail-on-warning paper.knows.yaml
 
 Сначала используется Knows, затем fallback OpenAlex и Semantic Scholar. С помощью `--section` можно запросить `statements`, `evidence`, `relations`, `artifacts` или `citation`. Используйте `--lenient`, когда dangling cross-record references ожидаемы при локальной сборке; для строгой проверки CI используйте `--fail-on-warning`. Результат поиска или полученный sidecar — это evidence для поиска, а не утверждение, что статья подтверждает каждый вывод. Создайте или исправьте sidecar в агенте, затем выполните `oma scholar lint` перед публикацией.
 
-Если удалённый сервис завершается по timeout, повторите более широкий запрос или разрешите fallback CLI. Ответ 429 от Semantic Scholar может означать лимит anonymous pool; повторите позже или задайте его API key. При ошибке provenance enum в sidecar используйте `tool`, `person` или `org`; если остаются предупреждения relation-density, добавляйте supported evidence relations только там, где их подтверждает источник.
+Если удалённый сервис завершается по timeout, повторите более широкий запрос или разрешите fallback CLI; `--always-fallback` запрашивает OpenAlex и Semantic Scholar, даже если у Knows есть результаты. Ответ 429 от Semantic Scholar может означать лимит anonymous pool; повторите позже или задайте `S2_API_KEY`. Задайте `OPENALEX_EMAIL` (и при необходимости `OPENALEX_API_KEY`), чтобы идентифицировать свои запросы к OpenAlex. При ошибке provenance enum в sidecar используйте `tool`, `person` или `org`; если остаются предупреждения relation-density, добавляйте supported evidence relations только там, где их подтверждает источник.
 
 ## Слайды и презентации {#slides-and-presentations}
 
@@ -140,9 +146,9 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Используйте `--slide <file>` для проверки одного слайда и `--report-file <path>` с JSON output, когда найденные проблемы нужны другому процессу. `slide import pptx <file>` начинает import workflow; `slide asset fetch-video <url>` скачивает video asset; `slide style list|preview|get <slug>` изучает стили. PPTX output основан на растре и не предоставляет редактируемые текстовые или графические слои. Validation и export требуют Chrome/puppeteer; задайте `OMA_CHROME_PATH`, если executable не найден. Если validation не сходится после трёх auto-fix итераций, по geometry findings исправьте затронутый fragment.
 
-## Recap разговоров агентов
+## Recap разговоров агентов {#recap-agent-conversations}
 
-Используйте `oma recap` для сводки работы на основе evidence. Календарная дата и скользящее окно — разные виды входных данных:
+Используйте `/recap` (или попросите агента сделать recap) для сводки работы на основе evidence; он запускает `oma recap`, чтобы собрать историю. Календарная дата и скользящее окно — разные виды входных данных:
 
 ```bash
 # A calendar day
@@ -155,11 +161,11 @@ oma recap --json
 oma recap --window 7d --tool claude,codex --json
 ```
 
-Результат сохраняется в `.agents/results/recap/`, обычно как `{date}.md` для дневной сводки или `{start-date}~{end-date}.md` для диапазона. Recap группирует работу по содержанию, отдельно отмечает requested и in-progress work среди completed work и фиксирует отсутствующую историю tools. Используйте `--top`, `--sort`, `--mermaid` или `--graph`, когда отчёту нужен более узкий или визуальный вид. Если CLI недоступен, skill может использовать документированный fallback истории Claude, но необходимо указать меньший охват источника.
+Эти команды выводят собранную историю (по умолчанию текстом в терминал, JSON с `--json` или диаграммой Mermaid gantt с `--mermaid`), а `--graph` вместо этого открывает интерактивный граф в браузере; сам CLI файлов не записывает. `/recap` сохраняет Markdown recap в `.agents/results/recap/`, обычно как `{date}.md` для дневной сводки или `{start-date}~{end-date}.md` для диапазона. Recap группирует работу по содержанию, отдельно отмечает requested и in-progress work среди completed work и фиксирует отсутствующую историю tools. Используйте `--top` или `--sort`, когда отчёту нужен более узкий вид. Если CLI недоступен, skill может использовать документированный fallback истории Claude, но необходимо указать меньший охват источника.
 
 Используйте `oma retro` для инженерной retrospective на основе Git. Она отвечает на другой вопрос, чем conversation recap, и может сравнивать соседние окна через `--compare`.
 
-## Перевод и review локализованного контента
+## Перевод и review локализованного контента {#translate-or-review-localized-content}
 
 Для строк интерфейса, документации, отчётов, маркетингового текста или академической прозы используйте `oma-translation`. Вызывайте skill естественным языком или через `/oma-translation`; публичной команды `oma translation` нет.
 
@@ -167,7 +173,7 @@ oma recap --window 7d --tool claude,codex --json
 
 Для документации переводите стабильную английскую страницу после того, как anchors и примеры команд утверждены. Имена CLI, flags, paths, environment variables и code blocks должны оставаться точными; переводите окружающее объяснение и сравнивайте структуру target page с English. Неясный смысл источника нужно отметить, а не молча угадывать.
 
-## Черновик или аудит академического письма
+## Черновик или аудит академического письма {#draft-or-audit-academic-writing}
 
 Используйте `oma-academic-writing` для английских эссе, отчётов, обзоров литературы, аналитики, резюме для руководства, выводов и revisions. Выберите один mode и передайте rubric или ограничения source:
 
@@ -193,4 +199,8 @@ Review this draft in review mode and return the compliance report with recommend
 | Translation меняет синтаксис кода | Восстановите protected names и повторите structure checks перед review prose. |
 | В академической прозе есть неподтверждённые claims | Удалите или смягчите claim, добавьте evidence через scholar path и повторите Claim-Evidence Map. |
 
-Полные зарегистрированные пути CLI и aliases см. в [CLI Commands](../cli-interfaces/commands.md) и [CLI Options](../cli-interfaces/options.md).
+## Дальнейшие шаги
+
+- [Генерация изображений](./image-generation.md), [Генерация видео](./video-generation.md), [Объяснение кода](./code-explainer.md), [Diagram Engine](./diagram-engine.md) и [Исследование рынка](./market-research.md) — руководства по возможностям из таблицы выше
+- [CLI Commands](../cli-interfaces/commands.md) и [CLI Options](../cli-interfaces/options.md) — полные зарегистрированные пути CLI и aliases опций
+- [Справочник конфигурации](./configuration-reference.md) — разделы конфигурации `pdf`, `hwp`, `voice` и `scholar`

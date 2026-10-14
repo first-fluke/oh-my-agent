@@ -71,10 +71,10 @@ Os avaliadores de especificação e visual executam 3 vezes por harness via `jud
 
 ## Ressalvas
 
-1. **Sobrescrita de prompt do superpowers**: foi necessária para o harness funcionar em modo não interativo (a habilidade de brainstorming `<HARD-GATE>` bloqueia execuções de uma única rodada). O resultado representa “o que o superpowers consegue fazer depois que o gate é contornado”, e não uma comparação perfeitamente equivalente.
+1. **Sobrescrita de prompt do superpowers**: foi necessária para o harness funcionar em modo não interativo (a skill de brainstorming `<HARD-GATE>` bloqueia execuções de uma única rodada). O resultado representa “o que o superpowers consegue fazer depois que o gate é contornado”, e não uma comparação perfeitamente equivalente.
 2. **Média de vários avaliadores em spec + visual, jornada em uma única execução**: a avaliação da jornada exige um servidor de desenvolvimento ativo, por isso é executada uma única vez. Trate lacunas de jornada menores que aproximadamente 2 pontos como ruído. O tamanho da amostra é 1 build por harness.
 3. **Normalização de custo**: o eixo de eficiência usa o custo por arquivo; o custo absoluto ($1.28–$8.19 entre os 5) não aparece na pontuação.
-4. **A penalidade `lint-clean` do oma é intencional**: o oma deixa deliberadamente a aplicação de lint/typecheck a cargo dos hooks do git (husky + lint-staged) e da CI, em vez de incorporar regras específicas de ESLint às habilidades dos agentes. O benchmark de uma única execução penaliza isso em -5 em `lint-clean`, mas em um workflow real os mesmos problemas seriam bloqueados pelo pre-push antes de chegar ao remoto.
+4. **A penalidade `lint-clean` do oma é intencional**: o oma deixa deliberadamente a aplicação de lint/typecheck a cargo dos hooks do git (husky + lint-staged) e da CI, em vez de incorporar regras específicas de ESLint às skills dos agentes. O benchmark de uma única execução penaliza isso em -5 em `lint-clean`, mas em um workflow real os mesmos problemas seriam bloqueados pelo pre-push antes de chegar ao remoto.
 
 ---
 

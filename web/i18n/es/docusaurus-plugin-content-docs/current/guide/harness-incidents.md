@@ -8,7 +8,24 @@ description: Captura un fallo observado de un agente, preserva su evidencia y ev
 
 `oma harness incident` conecta un fallo observado con un caso de regresión y con la evaluación del candidato que lo sigue. Registra las observaciones por separado de las hipótesis causales. Un proceso fallido por sí solo no establece que el modelo causara el incidente.
 
-## Buscar candidatos
+El diagrama muestra el ciclo de vida de un incidente. La promoción alimenta la optimización de skills; la exportación alimenta la evaluación del harness.
+
+```mermaid
+flowchart TD
+  RUN["Failed, blocked, or partial agent run"] --> SCAN["incident scan<br/>--skeleton RUN_ID"]
+  SCAN --> SPEC["Edit the spec: expected_checks,<br/>initial_workspace"]
+  SPEC --> CAP["incident capture --spec --run"]
+  RUN -->|"feedback --scan-runs<br/>(run has a task contract)"| CAP
+  CAP --> MAN[".agents/results/incidents/ID/incident.json"]
+  MAN --> SHOW["incident show"]
+  MAN --> EXP["incident export<br/>(needs initial_workspace)"]
+  EXP --> REP["incident reproduce --candidate<br/>(live, inspect, rescore, fixture-replay, rerun)"]
+  MAN --> PRO["incident promote, or harness feedback"]
+  PRO --> FIX[".agents/eval/SKILL/incident-ID.yaml"]
+  FIX --> OPT["harness feedback --live or --apply<br/>runs skill optimize"]
+```
+
+## Buscar candidatos {#find-candidates}
 
 ```bash
 oma harness incident scan            # failed/blocked/partial runs with no captured incident
@@ -16,7 +33,10 @@ oma harness incident scan --json
 oma harness incident scan --skeleton <run-id> > incidents/run-failure.json
 ```
 
-El análisis lee `.agents/state/agent-runs/`, conserva las ejecuciones cuyo estado es `failed`, `blocked` o `partial` y descarta cualquier ejecución a la que un incidente ya capturado haga referencia mediante `source.runId`. `--skeleton` imprime la especificación de una ejecución con el id, el agente, la ejecución de origen, el fallo observado, el código de salida y, cuando el runner lo conservó, el final de la salida del agente; `expected_checks` se deja como `TODO` porque el comportamiento correcto es una decisión que el análisis no puede tomar. `oma agent spawn` y `oma agent parallel` conservan los últimos 64 KiB del registro de cada ejecución como `.agents/state/agent-runs/<run-id>.output.txt` y lo referencian desde el registro de ejecución, de modo que `capture --run` importa esa salida como observación cuando la especificación no incluye ninguna y `incident promote` puede validar contra ella la fixture derivada. Rellénala y después captura con `--run <run-id>` para que se conserven la identidad de la ejecución y la huella del workspace.
+1. `oma harness incident scan` lista las ejecuciones registradas cuyo estado es `failed`, `blocked` o `partial` y descarta cualquier ejecución a la que un incidente ya capturado haga referencia mediante `source.runId`. `--limit <n>` limita la lista. Las ejecuciones proceden de los registros de ejecución del proyecto en el directorio de estado del perfil de OMA (por defecto `~/.oma/u/0/projects/<project-id>/agent-runs/`, donde `<project-id>` es el SHA-256 de la ruta canónica del proyecto; `OMA_STATE_HOME` y `OMA_PROFILE` cambian la raíz y el perfil). `oma agent spawn` y `oma agent parallel` conservan los últimos 64 KiB del registro de cada ejecución junto a su registro como `<run-id>.output.txt`.
+2. `--skeleton <run-id>` imprime una especificación con el id, el agente, la ejecución de origen, el fallo observado, el código de salida y, cuando el runner lo conservó, el final de la salida del agente. `expected_checks` se deja como `TODO` porque el comportamiento correcto es una decisión que el análisis no puede tomar.
+3. Sustituye la comprobación de marcador de posición. Para que el incidente sea ejecutable, añade también `"initial_workspace": "<dir>"` apuntando a una copia de los archivos de la tarea tal como estaban antes de la ejecución. Sin él, el incidente puede capturarse y promoverse, pero `incident export` y `reproduce` se detienen con `Cannot export a runnable regression: initial workspace evidence is missing`.
+4. Captura con `--run <run-id>` para que se conserven el prompt, la identidad y la huella del workspace de la ejecución. `capture --run` importa la salida conservada como observación cuando la especificación no incluye ninguna, e `incident promote` puede validar contra ella la fixture derivada.
 
 ## Capturar una ejecución fallida automáticamente
 
@@ -29,7 +49,7 @@ Una ejecución fallida, bloqueada o parcial cuya tarea tenía un contrato no nec
 
 `output_judge` es un contrato graduado. El evaluador mecánico del harness lo informa como no evaluado; su propósito es la fixture de regresión de skill que `incident promote` deriva de ese contrato con la misma rúbrica.
 
-## Capturar un incidente
+## Capturar un incidente {#capture-an-incident}
 
 Guarda una especificación JSON dentro del proyecto:
 
@@ -69,7 +89,7 @@ oma harness incident show incomplete-result --json
 oma harness incident capture --spec incidents/run-failure.json --run <run-id> --json
 ```
 
-`--run` hace referencia a un `.agents/state/agent-runs/<run-id>.json` existente. Conserva la identidad de ejecución y de sesión, el proveedor, el estado y la huella original del workspace. Un prompt proporcionado tiene prioridad sobre el prompt registrado en la ejecución. `source.trace_id` puede enlazar un incidente reportado con una traza externa sin obtenerla ni subirla.
+`--run` recibe un ID de ejecución listado por `oma harness incident scan`; los registros de ejecución se guardan en el directorio de estado del perfil descrito en [Buscar candidatos](#find-candidates), no en `.agents/state/`. Conserva la identidad de ejecución y de sesión, el proveedor, el estado y la huella original del workspace. Un prompt proporcionado tiene prioridad sobre el prompt registrado en la ejecución. `source.trace_id` puede enlazar un incidente reportado con una traza externa sin obtenerla ni subirla.
 
 El manifiesto capturado se encuentra en `.agents/results/incidents/<id>/incident.json`. Incluye la instantánea inicial cuando se proporciona, los hashes de la evidencia fuente y de los archivos del comprobador, las comprobaciones de aceptación, las limitaciones y un hash del manifiesto. No se pueden sobrescribir los IDs existentes. El texto de observación sensible se suprime; la supresión se informa como un límite de la reproducción exacta. La recopilación de instantáneas rechaza los archivos no admitidos y tiene límites de archivos, cantidad y tamaño total. Las referencias de evidencia conservan hashes y rutas, no copias de cada archivo fuente referenciado.
 
@@ -88,12 +108,18 @@ El comprobador procede de las comprobaciones de aceptación. Cuando todas son `o
 ## Cerrar el bucle
 
 ```bash
-oma harness feedback                 # promote every unpromoted incident, report what changed
+oma harness feedback                 # promote every unpromoted incident, report what changed (routing, drafting, and judge model calls)
 oma harness feedback --live          # also run one optimization epoch per affected skill (dry-run)
-oma harness feedback --apply --json  # write edits that pass every gate
+oma harness feedback --apply --json  # also write edits that pass every gate (implies --live)
 ```
 
-`feedback` es el bucle de retroalimentación del despliegue en un solo comando: con `--scan-runs` se captura primero cada ejecución fallida con contrato que aún no esté capturada (ver arriba), después se promociona cada incidente capturado sin fixture (redactando rúbricas cuando haga falta), se agrupan las skills afectadas y, con `--live`, cada una se optimiza una vez contra su suite ampliada bajo los gates habituales (aceptación sobre datos retenidos y reservados, transferencia negativa confirmada, prueba final propiedad del runner). El informe de `.agents/results/feedback/feedback-<ts>.json` lista las promociones, los incidentes omitidos con su motivo y el resultado de cada skill con el diff, de modo que la cadena desde un fallo observado hasta una edición candidata queda como un único registro auditable. Para una operación programada con un cupo compartido de llamadas de modelo, reintentos persistentes y superposiciones de skills del proyecto, activa la [evolución del harness del proyecto](/docs/guide/harness-evolution). La instantánea de estado de la sesión siguiente anuncia los cambios aplicados.
+`--incident <ids...>` limita la ejecución a los incidentes indicados. `--max-epochs <n>` (por defecto 1) fija las épocas de optimización por skill para `--live` y `--apply`.
+
+:::caution Coste del modelo y destino de escritura
+`feedback` no muestra una vista previa del coste. Incluso sin `--live`, la promoción enruta cada incidente a una skill con una llamada al modelo y puede redactar y juzgar rúbricas. `--live` y `--apply` ejecutan `oma skill optimize --live --yes` para cada skill afectada, y `--apply` escribe directamente el `SKILL.md` gestionado, incluidas las skills `oma-*` que `oma update` sobrescribe. Para una ejecución confirmada y con vista previa, usa `oma skill optimize --skill <id> --live`; para un ciclo con presupuesto y superposiciones del proyecto, usa la [evolución del harness del proyecto](./harness-evolution.md).
+:::
+
+`feedback` es el bucle de retroalimentación del despliegue en un solo comando: con `--scan-runs` se captura primero cada ejecución fallida con contrato que aún no esté capturada (ver arriba), después se promociona cada incidente capturado sin fixture (redactando rúbricas cuando haga falta), se agrupan las skills afectadas y, con `--live`, cada una se optimiza una vez contra su suite ampliada bajo los gates habituales (aceptación sobre datos retenidos y reservados, transferencia negativa confirmada, prueba final propiedad del runner). El informe de `.agents/results/feedback/feedback-<ts>.json` lista las promociones, los incidentes omitidos con su motivo y el resultado de cada skill con el diff, de modo que la cadena desde un fallo observado hasta una edición candidata queda como un único registro auditable. Para una operación programada con un cupo compartido de llamadas de modelo, reintentos persistentes y superposiciones de skills del proyecto, activa la [evolución del harness del proyecto](./harness-evolution.md). La instantánea de estado de la sesión siguiente anuncia los cambios aplicados.
 
 Lo que sigue siendo una decisión humana: una ejecución sin contrato de tarea no tiene ningún comportamiento esperado registrado, así que `incident scan` la lista y solo se captura mediante una especificación; `--skeleton` redacta una.
 
@@ -108,6 +134,8 @@ oma harness incident reproduce incomplete-result --candidate candidates/fix \
 La exportación materializa la instantánea inicial guardada y una suite exploratoria de un solo caso. El hash del manifiesto y la identidad de la ejecución y la traza de origen viajan con la tarea hasta la evaluación y el registro. Los cambios en los archivos exportados, el prompt, el agente, las comprobaciones o las fuentes fijadas del comprobador invalidan la reutilización. Crea un ID de incidente nuevo para cambiar el contrato de aceptación.
 
 De forma predeterminada, `reproduce` inicia una comparación live nueva entre base y candidato y la registra. La confirmación habitual del coste live se aplica salvo que se proporcione `--yes`. Este comando usa el proveedor de agente configurado en la tarea del harness, incluido Codex; no impone el perfil de compilador protegido del optimizador de skills a la ejecución de la tarea.
+
+Una suite de incidente exportada tiene exactamente una tarea, así que `reproduce` siempre imprime `coverage: insufficient` (se necesitan cinco tareas puntuadas para un veredicto), y la decisión es `INSUFFICIENT` salvo que un brazo no se haya podido despachar (`FAIL`). Lee en su lugar las líneas de tareas: el ID del incidente bajo `corrected:` significa que la base falló y el candidato pasó; bajo `regressed:`, que el candidato rompió un caso que pasaba; `none` en ambas significa que los brazos se comportaron igual. En JSON estos campos son `score.correctedTaskIds` y `score.regressedTaskIds`.
 
 Si no se capturó ningún estado inicial, `capture` y `show` siguen funcionando, pero la exportación ejecutable y la reproducción de la ejecución se detienen con un error de evidencia faltante. El árbol de trabajo actual de una ejecución histórica no puede establecer su estado original. Ni siquiera una instantánea inicial proporcionada por separado prueba la equivalencia con esa ejecución histórica; el informe indica esta limitación.
 
@@ -135,7 +163,7 @@ oma harness incident reproduce incomplete-result --candidate candidates/fix \
 | `fixture-replay` | Reproduce los datos de respuestas de herramientas y los cambios de archivo suministrados contra el estado inicial registrado. No se ejecuta ningún modelo ni proceso de herramientas. |
 | `rerun` | Inicia llamadas reales de agente de base y candidato desde el estado inicial registrado. Esto conlleva el uso normal del modelo. |
 
-Para un contrato de aceptación revisado, crea una suite de harness aparte y usa `oma harness eval --action rescore` con la misma identidad de suite, tarea e incidente y el mismo prompt. La suite de incidentes exportada es inmutable en sí misma. Consulta [detalles de registro y reproducción](./harness-eval.md) para los requisitos de la evidencia sin procesar y el esquema de la transcripción de herramientas.
+Para un contrato de aceptación revisado, crea una suite de harness aparte y usa `oma harness eval --action rescore` con la misma identidad de suite, tarea e incidente y el mismo prompt. La suite de incidentes exportada es inmutable en sí misma. Consulta [detalles de registro y reproducción](./harness-eval.md#reuse-a-recording) para los requisitos de la evidencia sin procesar y el esquema de la transcripción de herramientas.
 
 Declara las dependencias externas como `{ "name": "service", "repeatability": "fixture|live|unavailable", "reason": "...", "fixture": "response.json" }`. Una dependencia de fixture apunta a un archivo que usa el esquema completo de transcripción del harness, con el ID del incidente como `taskId`. La reproducción de incidentes sin conexión rechaza las dependencias live o no disponibles, los archivos de fixture que faltan, los hashes de fixture modificados, las respuestas nombradas que faltan y los cambios de peticiones, respuestas y archivos que difieren de la transcripción fijada. Tampoco puede dar fe de que el autor declarara todas las dependencias externas. Una nueva ejecución live tampoco puede garantizar que un servicio externo se comporte como lo hacía históricamente.
 

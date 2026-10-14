@@ -48,24 +48,46 @@ bunx oh-my-agent@latest
 
 To uruchamia interaktywny instalator bez bootstrapu zależności. Bun musi być już zainstalowany.
 
-Instalator prosi o wybór presetu umiejętności. Bieżące presety są zdefiniowane w `cli/constants/skill-data.ts`:
+Instalator prosi o wybór [presetu umiejętności](./glossary.md#skill-preset). Bieżące presety są zdefiniowane w `PRESETS` w `cli/constants/skill-data.ts`:
 
 ### Presety {#presets}
 
-| Preset | Zawarte umiejętności |
-|--------|---------------------|
-| **all** | Wszystkie 33 bieżące pakiety umiejętności |
-| **fullstack** | Architektura, brainstorming, design, frontend, backend, mobile, bazy danych, PM, QA, debugowanie, SCM, Terraform i workflow deweloperski |
-| **fullstack-web** | Implementacja fullstack web, architektura, design, PM, QA, debugowanie, SCM i workflow deweloperski |
-| **fullstack-mobile** | Implementacja fullstack ukierunkowana na mobile, architektura, design, PM, QA, debugowanie, SCM i workflow deweloperski |
-| **frontend** | Architektura, brainstorming, design, frontend, PM, QA, debugowanie i SCM |
-| **backend** | Architektura, brainstorming, backend, bazy danych, PM, QA, debugowanie, SCM i workflow deweloperski |
-| **mobile** | Architektura, brainstorming, mobile, PM, QA, debugowanie i SCM |
-| **devops** | Architektura, brainstorming, Terraform, workflow deweloperski, obserwowalność, PM, QA, debugowanie i SCM |
-| **research** | Scholar, market, PDF, HWP, pisanie akademickie, search, translation i SCM |
-| **content** | Design, image, voice, pisanie akademickie, translation i SCM |
+Wybierz preset odpowiadający pracy, której potrzebuje repozytorium. Nazwy umiejętności poniżej pomijają przedrostek `oma-`.
 
-Presety są pakietami umiejętności; nie tworzą jednej definicji subagenta dla każdej umiejętności. Preset `all` rozwija się na podstawie aktywnego rejestru umiejętności, więc lista może rosnąć wraz z repozytorium. Presety domenowe zawierają tylko umiejętności potrzebne w danym obszarze.
+| Preset | Wybierz go, gdy projekt to | Zawarte umiejętności | Liczba |
+|--------|-------------------------------|-----------------|-------|
+| **all** | Dowolny projekt albo chcesz, aby każdy workflow działał od razu | Każda umiejętność z rejestru | 33 |
+| **fullstack** | Klienty web i mobile z backendem i infrastrukturą Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
+| **fullstack-web** | Frontend webowy z backendem i bazą danych | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **fullstack-mobile** | Aplikacja mobilna z backendem i bazą danych | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
+| **frontend** | Tylko interfejs webowy | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
+| **backend** | API albo usługa z bazą danych | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
+| **mobile** | Tylko aplikacja mobilna | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
+| **devops** | Praca nad infrastrukturą, CI/CD i obserwowalnością | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **research** | Artykuły naukowe, badania rynku i konwersja PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
+| **content** | Zasoby designu, obrazy, głos i treści pisane | design, image, voice, academic-writing, translation, scm | 6 |
+
+Presety są pakietami umiejętności; nie tworzą jednej definicji subagenta dla każdej umiejętności. Preset `all` rozwija się na podstawie aktywnego rejestru umiejętności, więc lista może rosnąć wraz z repozytorium. Presety domenowe zawierają tylko umiejętności dla danego obszaru.
+
+### Workflowy wymagające umiejętności spoza presetu {#workflows-that-need-skills-outside-a-preset}
+
+Każdy preset instaluje wszystkie definicje workflowów i agentów, ale kilka workflowów odczytuje umiejętność, której presety domenowe nie instalują. Sprawdź tę tabelę przed wyborem presetu domenowego:
+
+| Workflow | Odczytywana umiejętność | Presety, które ją zawierają |
+|----------|-------------|-------------------------|
+| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
+| `/ultrawork`, `/ralph` | oma-coordination; uruchamiany przez niego agent `refactor-engineer` używa oma-refactor | all |
+| `/docs` | oma-docs | all |
+| `/explain` | oma-explanation | all |
+| `/security` | oma-security | all |
+| `/recap` | oma-recap | all |
+| `/video` | oma-video | all |
+| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
+| `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
+| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/scm` | oma-scm | każdy preset |
+
+Aby później dodać brakującą umiejętność, uruchom `oma doctor` z katalogu głównego projektu, zaakceptuj monit o brakującej umiejętności i wybierz **Select individually**.
 
 Współdzielone zasoby (`_shared/`) są instalowane niezależnie od presetu. Obejmuje to routing podstawowy, ładowanie kontekstu, strukturę promptów, wykrywanie dostawcy, protokoły wykonywania i protokół pamięci.
 
@@ -73,34 +95,36 @@ Współdzielone zasoby (`_shared/`) są instalowane niezależnie od presetu. Obe
 
 Po instalacji projekt będzie zawierał:
 
-```
+```text
 .agents/
-├── oma-config.yaml # Your preferences
-├── oma-config.cue # Optional schema-backed configuration
+├── oma-config.yaml          # Your preferences
+├── oma-config.cue           # Optional schema-backed configuration
+├── mcp.json                 # MCP server configuration
 ├── skills/
-│ ├── _shared/ # Shared resources (always installed)
-│ │ ├── core/ # skill-routing, context-loading, etc.
-│ │ ├── runtime/ # memory-protocol, execution-protocols/
-│ │ └── conditional/ # quality-score, experiment-ledger, etc.
-│ ├── oma-frontend/ # Per preset
-│ │ ├── SKILL.md
-│ │ └── resources/
-│ └── ... # Other selected skills
-├── workflows/ # Current workflow definitions (21 in this checkout)
-├── agents/ # Subagent definitions
-├── mcp.json # MCP server configuration
-├── results/ # Plans and agent results (populated by workflows)
-└── state/ # Persistent workflow and coordination state
+│   ├── _shared/             # Shared resources (always installed)
+│   │   ├── core/            # skill-routing, context-loading, etc.
+│   │   ├── runtime/         # memory-protocol, execution-protocols/
+│   │   └── conditional/     # quality-score, experiment-ledger, etc.
+│   ├── oma-frontend/        # Per preset
+│   │   ├── SKILL.md
+│   │   └── resources/
+│   └── ...                  # Other selected skills
+├── workflows/               # Workflow definitions (all 21, every preset)
+├── agents/                  # Subagent definitions (all 12, every preset)
+├── hooks/                   # Hook sources (core/, variants/)
+├── rules/                   # Project rules
+├── config/                  # Shipped defaults (defaults.yaml)
+├── results/                 # Plans and agent results (populated by workflows)
+└── state/                   # Persistent workflow and coordination state
+    └── memories/            # Runtime coordination state
 
 .claude/
-├── settings.json # Vendor settings, when Claude Code is selected
-├── hooks/oma-hook.sh # Generated wrapper for the in-process hook chain
-├── hooks/hud.ts # Optional [OMA] statusline indicator
-├── skills/ # Symlinks → .agents/skills/
-└── agents/ # Generated native subagent files, when supported
-
-.agents/state/memories/
-└── ... # Runtime coordination state
+├── settings.json            # Vendor settings, when Claude Code is selected
+├── hooks/
+│   ├── oma-hook.sh          # Generated wrapper for the in-process hook chain
+│   └── hud.ts               # Optional [OMA] statusline indicator
+├── skills/                  # Symlinks → .agents/skills/
+└── agents/                  # Generated native subagent files, when supported
 ```
 
 Instalator tworzy katalogi dostawców tylko dla wybranych hostów. Źródło hooków pozostaje w `.agents/hooks/core/`; wygenerowane pliki dostawcy są wynikami integracji. W starszych projektach Serena może także używać starszego katalogu `.serena/memories/`.
@@ -111,6 +135,10 @@ Instalator tworzy katalogi dostawców tylko dla wybranych hostów. Źródło hoo
 ## Metoda 3: instalacja globalna {#method-3-global-install}
 
 Dla użycia na poziomie CLI (dashboardy, uruchamianie agentów, diagnostyka) zainstaluj oh-my-agent globalnie:
+
+:::note
+Ta sekcja instaluje polecenie `oma`. Nie jest to to samo co `oma install --global`, które instaluje umiejętności, workflowy i reguły w globalnym katalogu domowym OMA (`~/.oma/.agents/`) dla każdego projektu. Zobacz [Instalacja globalna](../guide/global-install.md).
+:::
 
 ### Homebrew (macOS/Linux) {#homebrew-macoslinux}
 
@@ -132,7 +160,7 @@ To instaluje globalnie polecenie `oma` i udostępnia wszystkie polecenia CLI z d
 oma doctor # Health check
 oma doctor --profile # Show resolved model/CLI per dispatch role
 oma dashboard terminal # Terminal monitoring
-oma dashboard web # Web dashboard at http://localhost:9847
+oma dashboard web # Web dashboard at http://127.0.0.1:9847
 oma agent spawn # Spawn agents from terminal
 oma agent parallel # Parallel agent execution
 oma agent status # Check agent status
@@ -142,17 +170,16 @@ oma skill audit # Audit skill routing descriptions
 oma stats get # Session statistics
 oma recap # Conversation history recap across AI tools
 oma link # Regenerate vendor-native files from `.agents/` SSOT
-oma update # Update oh-my-agent
+oma update # Update installed skills from the registry
 oma verify agent <agent-type> # Verify agent output (build/test/scope/secrets)
 oma describe # Introspect CLI commands as JSON
-oma bridge # MCP stdio ↔ Streamable HTTP bridge
+oma bridge # Proxy MCP stdio to a shared per-project Serena server
 oma memory init # Initialize coordination memory schema
 oma auth status # Check CLI auth status
-oma search # Mechanical search primitives (alias: `oma s`)
-oma image # Multi-vendor AI image generation (alias: `oma img`)
+oma search # Mechanical search primitives
+oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma export # Export skills for external IDEs (e.g. cursor)
 oma star # Star the repository
 ```
 
@@ -256,7 +283,7 @@ agents:
 | Pole | Typ | Wymagane | Opis |
 |-------|------|----------|-------------|
 | `language` | string | Tak | Kod języka odpowiedzi. Obsługuje en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Tak | Aktywny klucz presetu. `auto` podąża za bieżącym runtime'em; stałe klucze to `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` i `mixed`. Prawidłowe są także niestandardowe klucze presetów. Zobacz [Modele per agent](../guide/per-agent-models.md). |
+| `model_preset` | string | Tak | Aktywny klucz [presetu modeli](./glossary.md#model-preset). `auto` podąża za bieżącym runtime'em; stałe klucze to `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` i `mixed`. Prawidłowe są także niestandardowe klucze presetów. Zobacz [Modele per agent](../guide/per-agent-models.md). |
 | `default_cli` | string | Nie | Zapasowe CLI dla `oma agent spawn`, gdy jawne ustawienia agenta i wybrany preset nie rozstrzygną dostawcy. |
 | `free` | map | Nie | Ustawienia bramy FreeLLMAPI używane przy `model_preset: free`; klucze API przechowuj w zmiennych środowiskowych. |
 | `providers` | map | Nie | Dostawcy możliwości: `code_intelligence` (`serena` lub `gortex`), `code_intelligence_guard` (`block` lub `off`), `docs` (`context7`), `web` (`native` lub `brave`) oraz `semantic_memory` (`agentmemory`, `honcho` lub `none`). |
@@ -335,14 +362,14 @@ Instalator wykrywa istniejące instalacje i proponuje aktualizację, zachowując
 
 Otwórz projekt w wybranym IDE lub CLI AI i zacznij używać oh-my-agent. Routing umiejętności zależy od hosta; włączone hooki mogą wykrywać workflowy. Wypróbuj:
 
-```
+```text
 "Build a login form with email validation using Tailwind CSS"
 ```
 
 Możesz też użyć polecenia workflowu:
 
-```
+```text
 /plan authentication feature with JWT and refresh tokens
 ```
 
-Szczegółowe przykłady znajdziesz w [Przewodniku użycia](/docs/guide/usage), a informacje o działaniu poszczególnych specjalistów w [Agentach](/docs/core-concepts/agents).
+Szczegółowe przykłady znajdziesz w [Przewodniku użycia](/docs/guide/usage), a informacje o działaniu poszczególnych specjalistów w [Agentach](/docs/core-concepts/agents). Jeśli instalacja albo hook nie działa zgodnie z oczekiwaniami, zobacz [Rozwiązywanie problemów](../guide/troubleshooting.md).

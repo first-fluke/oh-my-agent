@@ -12,13 +12,13 @@ De standaardinstellingen maken een eerste project bruikbaar en houden configurat
 | Onderdeel | Standaard | Gevolg | Overschrijven |
 |---|---|---|---|
 | Antwoordtaal | `en` | Agent- en workflowantwoorden gebruiken Engels tenzij de projectconfiguratie een andere ondersteunde taal kiest. Een expliciete taalopdracht van de gebruiker of sessie kan de projectstandaard nog overschrijven wanneer de host of workflow dat ondersteunt. | `language` in `.agents/oma-config.yaml` of `.cue` |
-| Modelrouting | `auto` | De native agentconfiguratie van de huidige runtime wordt gebruikt. Onbekende runtimes vallen terug op `default_cli` als dat is ingesteld. | `model_preset`, `default_cli` of `agents.<id>` |
-| Code-intelligence | `serena` | Een nieuwe installatie probeert Serena te installeren en de MCP-configuratie ervan te koppelen. | `providers.code_intelligence: gortex` of `serena` |
+| Modelrouting ([modelpreset](./glossary.md#model-preset)) | `auto` | De native agentconfiguratie van de huidige runtime wordt gebruikt. Onbekende runtimes vallen terug op `default_cli` als dat is ingesteld. | `model_preset`, `default_cli` of `agents.<id>` |
+| Code-intelligence ([capabilityprovider](./glossary.md#capability-provider)) | `serena` | Een nieuwe installatie probeert Serena te installeren en de MCP-configuratie ervan te koppelen. | `providers.code_intelligence: gortex` of `serena` |
 | Code-search guard | `block` | Zolang een code-intelligenceprovider is geconfigureerd, weigert een PreToolUse-hook de native `Grep`/`Glob` en recursief zoeken via de shell (`rg`, `grep -r`, `find -name`) en verwijst die de agent naar de tools van de provider. Zoekopdrachten die beperkt blijven tot bevestigde uitsluitingen of paden buiten het project zijn toegestaan. De hook vermeldt geen bypass voor de broncode van het project. | `providers.code_intelligence_guard: off` |
-| Semantisch geheugen | `agentmemory` | Agent Memory wordt geselecteerd voor semantisch geheugen wanneer het beschikbaar is. | `providers.semantic_memory: honcho` of `none` |
+| Semantisch geheugen | `agentmemory` | Installatie en update hergebruiken een gezond AgentMemory-endpoint of installeren en starten de beheerde lokale service, en controleren daarna de gereedheid voordat ze slagen. Expliciete aangepaste endpoints worden gecontroleerd zonder ze te vervangen. | `providers.semantic_memory: honcho` of `none`; `OMA_NO_AGENTMEMORY=1` slaat de AgentMemory-setup over. |
 | Web search | `native` | Search gebruikt het native webkanaal van de runtime tenzij je een provider selecteert. | `providers.web` |
 | Documentatieprovider | `context7` | Documentatie wordt opgezocht via de Context7-provider wanneer een skill daar om vraagt. | `providers.docs` |
-| Telemetrie | uitgeschakeld | OMA schrijft opt-out-instellingen voor leveranciers tijdens het linken. | `telemetry: true` |
+| Telemetrie | uitgeschakeld | OMA schrijft opt-out-instellingen voor vendors tijdens het linken. | `telemetry: true` |
 | Automatische CLI-update | ingeschakeld | De CLI controleert op updates tenzij je dit uitschakelt. | `auto_update_cli: false` |
 | Datumnotatie | `ISO` | Datums gebruiken ISO-notatie als het project geen formaat instelt. | `date_format: US` of `EU` |
 | Tijdzone | systeemtijdzone | Geplande en gerapporteerde tijden volgen de host wanneer `timezone` ontbreekt. | `timezone: Australia/Sydney` (of een andere IANA-naam) |
@@ -31,7 +31,12 @@ De providernamen en standaardwaarden komen uit de runtime-loaders en installerpr
 
 ## Voorrang van configuratie
 
-OMA zoekt vanaf de huidige werkmap omhoog naar de dichtstbijzijnde `.agents/`-map. Het leest `oma-config.cue` wanneer die aanwezig is en valt terug op `oma-config.yaml` als de gedeelde CUE-evaluatie mislukt. Een projectlokale overlay, `oma-config.local.cue` of `oma-config.local.yaml`, wordt erbovenop samengevoegd; houd slechts één lokale overlay aan. `OMA_MODEL_PRESET` kan `model_preset` voor één proces overschrijven. Door een ongeldige lokale configuratie stopt het laden; OMA kiest dan niet stilzwijgend een andere waarde.
+OMA laadt globale standaardwaarden uit `$OMA_HOME/.agents/` (standaard `~/.oma/.agents/`),
+en legt daaroverheen de gedeelde configuratie en het lokale bestand van de dichtstbijzijnde `.agents/`-map van het project.
+Verschillende bovenliggende projectroots worden niet samengevoegd. Binnen beide scopes
+heeft `oma-config.cue` de voorkeur, met YAML als fallback; houd slechts één lokale overlay aan
+(`oma-config.local.cue` of `.yaml`). `OMA_MODEL_PRESET` overschrijft `model_preset`
+na het laden van de bestanden. Door een ongeldige lokale configuratie stopt het laden.
 
 Voor modelrouting gelden vóór de volgorde van vaste presets twee bijzondere gevallen:
 
@@ -43,17 +48,17 @@ Voor een vaste of aangepaste preset is de effectieve volgorde:
 1. Expliciete override via `agents.<id>`.
 2. De overeenkomende invoer van `model_preset`, ingebouwd of uit `custom_presets`.
 3. De `orchestrator`-invoer van de preset wanneer een rol geen eigen invoer heeft.
-4. `default_cli` als fallback voor de leverancier wanneer de eerdere niveaus geen plan opleveren.
+4. `default_cli` als fallback voor de vendor wanneer de eerdere niveaus geen plan opleveren.
 
-De `free`-preset levert standaardwaarden voor alle drie de providerinstellingen: `base_url` is `http://127.0.0.1:31415/v1`, `api_key_env` is `FREELLM_API_KEY` (`FREELLMAPI_API_KEY` wordt ook als compatibiliteitsalias geaccepteerd) en `model` is `auto`. Een bruikbare API-sleutel in de geselecteerde omgevingsvariabele blijft vereist; er is geen fallback naar een leverancier. Stel deze waarden in `oma-config.local.yaml` in als ze lokaal op de machine moeten blijven, of gebruik `FREELLM_BASE_URL` en `FREELLM_MODEL` als procesoverschrijvingen.
+De `free`-preset levert standaardwaarden voor alle drie de providerinstellingen: `base_url` is `http://127.0.0.1:31415/v1`, `api_key_env` is `FREELLM_API_KEY` (`FREELLMAPI_API_KEY` wordt ook als compatibiliteitsalias geaccepteerd) en `model` is `auto`. Een bruikbare API-sleutel in de geselecteerde omgevingsvariabele blijft vereist; er is geen fallback naar een vendor. Stel deze waarden in `oma-config.local.yaml` in als ze lokaal op de machine moeten blijven, of gebruik `FREELLM_BASE_URL` en `FREELLM_MODEL` als procesoverschrijvingen.
 
 ## Standaardinstellingen met onverwachte gevolgen
 
 Als `mcp.devtools_browsers` ontbreekt, betekent dat: “huidige browservermeldingen ongemoeid laten”. Een expliciete lege lijst verwijdert browservermeldingen tijdens de reconciliatie. Browser-MCP-processen draaien per agentsessie; schakel ze dus alleen in wanneer een taak een browser bestuurt.
 
-De standaardmodus `bridge` van Serena beperkt het aantal dubbele language-serverprocessen wanneer meerdere agents in één project werken. `stdio` is de herstelkeuze wanneer een lokale bridge niet kan starten of wanneer strikte procesisolatie nodig is. Serena herstelt zijn language-server-kindprocessen bij de volgende toolaanroep vanzelf; de memory-reaper staat daar los van en hoeft voor normaal gebruik niet te worden ingeschakeld.
+De standaardmodus `bridge` van Serena beperkt het aantal dubbele language-serverprocessen wanneer meerdere agenten in één project werken. `stdio` is de herstelkeuze wanneer een lokale bridge niet kan starten of wanneer strikte procesisolatie nodig is. Serena herstelt zijn language-server-kindprocessen bij de volgende toolaanroep vanzelf; de memory-reaper staat daar los van en hoeft voor normaal gebruik niet te worden ingeschakeld.
 
-Telemetrie staat standaard op opt-out. Met `telemetry: true` verwijdert OMA bij de volgende link of update de opt-outvermeldingen van leveranciers. Daardoor kunnen vendorfeatures die telemetrie nodig hebben opnieuw worden ingeschakeld. Deze instelling regelt wijzigingen in vendorintegraties; ze verandert niet de sessiekostenbestanden die OMA voor zijn eigen administratie schrijft.
+Telemetrie staat standaard op opt-out. Met `telemetry: true` verwijdert OMA bij de volgende link of update de opt-outvermeldingen van vendors. Daardoor kunnen vendorfeatures die telemetrie nodig hebben opnieuw worden ingeschakeld. Deze instelling regelt wijzigingen in vendorintegraties; ze verandert niet de sessiekostenbestanden die OMA voor zijn eigen administratie schrijft.
 
 ## Herstelpaden
 
@@ -62,8 +67,8 @@ Telemetrie staat standaard op opt-out. Met `telemetry: true` verwijdert OMA bij 
 | Vendorbestanden zijn verouderd | `oma doctor` en `oma link --dry-run` | Voer na het bewerken van `.agents/` `oma link <vendor>` uit; behoud de SSOT als bron. |
 | Een model wordt niet geaccepteerd | `oma doctor --profile` | Schakel over naar `auto`, gebruik een ingebouwde preset of definieer een modelslug onder `models:`. |
 | Serena-tools lopen een time-out | `oma doctor` en de providersectie | Probeer `serena.mode: stdio`; als geheugendruk het probleem is, bekijk je eerst `oma serena reap --dry-run`. |
-| Een persistente workflow stopt niet | `.agents/state/*-state.json` | Zeg `workflow done`; inspecteer het statebestand alleen als de workflow niet heeft opgeruimd. |
+| Een [persistente workflow](./glossary.md#persistent-workflow) stopt niet | `.agents/state/*-state.json` | Zeg `workflow done`; inspecteer het statusbestand alleen als de workflow niet heeft opgeruimd. |
 | Een geplande reaper doet niets | `oma doctor`-sectie Serena Reaper | Stel `serena_reaper.enabled: true` in en voer daarna `oma serena reaper enable` uit. |
 | Lokale configuratie verhindert het opstarten | foutpad van `oma doctor` | Herstel of verwijder de lokale overlay; maak niet zowel een `.cue`- als een `.yaml`-overlay aan. |
 
-Ga verder met [Installatie](./installation.md), [Modellen per agent](../guide/per-agent-models.md) of [Semantiek van oma-config](../guide/oma-config-semantics.md).
+Ga verder met [Installatie](./installation.md), [Modellen per agent](../guide/per-agent-models.md) of [Semantiek van oma-config](../guide/oma-config-semantics.md). Zie [Probleemoplossing](../guide/troubleshooting.md) voor problemen die hier niet staan.

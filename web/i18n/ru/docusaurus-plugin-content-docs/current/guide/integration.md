@@ -49,17 +49,7 @@ oma
 
 ### 4. Выберите тип проекта
 
-Установщик предлагает такие пресеты:
-
-| Пресет | Включённые навыки |
-|:-------|:-----------------|
-| **All** | Все доступные навыки |
-| **Fullstack** | Навыки Frontend + Backend + PM + QA |
-| **Frontend** | Навыки React/Next.js |
-| **Backend** | Навыки серверной разработки на Python/Node.js/Rust |
-| **Mobile** | Навыки мобильной разработки на Flutter/Dart |
-| **DevOps** | Навыки Terraform + CI/CD + Workflow |
-| **Custom** | Выбор отдельных навыков из полного списка |
+Установщик спрашивает **What type of project?** и предлагает [пресет навыков](../getting-started/glossary.md#skill-preset): All, Fullstack, Fullstack Web, Fullstack Mobile, Frontend, Backend, Mobile, DevOps, Research, Content или Custom (выбор отдельных навыков). В неинтерактивном режиме используется All. Состав каждого пресета приведён в разделе [Установка → Пресеты](../getting-started/installation.md#presets).
 
 ### 5. Выберите язык бэкенда (если применимо)
 
@@ -72,11 +62,9 @@ oma
 
 ### 6. Настройте символические ссылки IDE
 
-Установщик всегда создаёт символические ссылки Claude Code (`.claude/skills/`). Он также создаёт нативные файлы агентов, хуки, настройки и файлы интеграции выбранных поставщиков; текущие семейства поставщиков включают Antigravity, Claude, Codex, Cursor, Kiro, Kimi и Qwen, а также пути расширений для pi и OpenCode. Если существует каталог `.github/`, установщик может автоматически создать символические ссылки GitHub Copilot. При выборе **ZCode** рабочие процессы публикуются как slash-команды через символические ссылки `.zcode/commands/*.md` (только рабочие процессы, без файлов агентов и хуков). В противном случае он задаёт вопрос:
+Установщик спрашивает **CLI tools to configure (deselect all to skip):** и предлагает Claude Code, Codex, Command Code, GitHub Copilot, Cursor, Grok, Kiro CLI, OpenCode, pi (Earendil), Antigravity CLI (agy), Hermes Agent, Kimi Code CLI, Qwen Code и ZCode. Antigravity CLI, Hermes Agent и Kimi Code CLI не предлагаются в Windows и при заданной переменной `CI`.
 
-```
-Also create symlinks for GitHub Copilot? (.github/skills/)
-```
+Для каждого выбранного инструмента установщик создаёт символические ссылки на навыки (например, `.claude/skills/` для Claude Code) и генерирует нативные файлы агентов, хуки, настройки и файлы интеграции поставщика. pi и OpenCode подключаются как пути расширений. При выборе **ZCode** рабочие процессы публикуются как slash-команды через символические ссылки `.zcode/commands/*.md` (только рабочие процессы, без файлов агентов и хуков).
 
 ### 7. Рекомендуемые глобальные настройки Git
 
@@ -89,7 +77,7 @@ Also create symlinks for GitHub Copilot? (.github/skills/)
 
 Если значение отсутствует или отличается, CLI предлагает интерактивно подтвердить изменение (по умолчанию **да**):
 
-```
+```text
 Enable git rerere? (Recommended for multi-agent merge conflict reuse) (unset)
 Set git init.defaultBranch to main? (Recommended global default) (currently "master")
 ```
@@ -107,42 +95,25 @@ git config --global init.defaultBranch main
 
 ### 8. Настройте MCP
 
-Если существует конфигурация MCP Antigravity IDE (`~/.gemini/antigravity/mcp_config.json`), установщик предложит настроить мост Serena MCP:
-
-```
-Configure Serena MCP with bridge? (Required for full functionality)
-```
-
-После подтверждения будет создана настройка:
+Отдельного вопроса о MCP нет. Если провайдером code intelligence служит Serena (по умолчанию), install и update записывают запись Serena MCP для выбранных поставщиков. При установке в проект запись выглядит так:
 
 ```json
 {
   "mcpServers": {
     "serena": {
-      "command": "npx",
-      "args": ["-y", "oh-my-agent@latest", "bridge", "http://localhost:12341/mcp"],
-      "disabled": false
+      "command": "oma",
+      "args": ["bridge", "--context", "oma"],
+      "env": { "SERENA_LOG_LEVEL": "info" }
     }
   }
 }
 ```
 
-Если существуют настройки Gemini CLI (`~/.gemini/settings.json`), установщик аналогично предложит настроить Serena для Gemini CLI в режиме HTTP:
-
-```json
-{
-  "mcpServers": {
-    "serena": {
-      "url": "http://localhost:12341/mcp"
-    }
-  }
-}
-```
+`oma bridge` сам запускает сервер Serena или повторно использует уже запущенный. При глобальной установке в `args` добавляется `--oma-home <OMA_HOME>`. Не копируйте старые фрагменты, запускающие `npx -y oh-my-agent@latest bridge http://localhost:12341/mcp`: этот порт принадлежал демону, который мог уже завершиться, поэтому клиенты могли ждать его бесконечно. Миграция 027 переписывает эту устаревшую запись в конфигурации Antigravity Desktop.
 
 ### 9. Завершение
 
 Установщик показывает сводку всего установленного:
-
 - список установленных навыков;
 - расположение каталога навыков;
 - созданные символические ссылки;
@@ -152,7 +123,7 @@ Configure Serena MCP with bridge? (Required for full functionality)
 
 ## Ручной путь
 
-Для окружений, в которых интерактивный CLI недоступен (CI-пайплайны, ограниченные оболочки, корпоративные машины).
+Для окружений, в которых интерактивный установщик не может работать (CI-пайплайны, ограниченные оболочки, корпоративные машины). CLI `oma` всё равно нужен для `oma link` и `oma memory init`; вручную выполняются только скачивание релиза и ответы на вопросы.
 
 ### Шаг 1: скачайте и распакуйте
 
@@ -172,8 +143,9 @@ tar -xzf agent-skills.tar.gz
 ### Шаг 2: скопируйте файлы в проект
 
 ```bash
-# Copy the core .agents/ directory
-cp -r .agents/ /path/to/your/project/.agents/
+# Copy the contents of the core .agents/ directory (works whether or not the target exists)
+mkdir -p /path/to/your/project/.agents
+cp -R .agents/. /path/to/your/project/.agents/
 
 # Regenerate vendor-native files from the SSOT
 cd /path/to/your/project
@@ -196,9 +168,11 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-model_preset: antigravity
+model_preset: auto
 EOF
 ```
+
+Если скопированный `.agents/` также содержит `oma-config.cue`, каждый заданный там ключ переопределяет такой же ключ в этом YAML-файле. Редактируйте такие ключи в CUE-файле или см. [загрузку конфигурации](./oma-config-semantics.md#precedence-table).
 
 ### Шаг 4: создайте каталог памяти
 
@@ -222,7 +196,7 @@ oma doctor
 oma doctor --json
 ```
 
-Команда doctor проверяет:
+Команда doctor, помимо прочего, проверяет:
 
 | Проверка | Что проверяется |
 |:---------|:----------------|
@@ -243,8 +217,8 @@ ls .agents/skills/
 # Verify symlinks point to correct targets
 ls -la .claude/skills/
 
-# Verify config exists
-cat .agents/oma-config.yaml
+# Verify config exists (CUE, YAML, or both)
+ls .agents/oma-config.*
 
 # Verify memory directory
 ls .agents/state/memories/ 2>/dev/null || echo "Memory not initialized"
@@ -261,7 +235,7 @@ oh-my-agent использует архитектуру Single Source of Truth (
 
 ### Структура каталогов
 
-```
+```text
 your-project/
   .agents/                          # SSOT — the real files live here
     agents/                         # Agent definition files
@@ -329,7 +303,14 @@ your-project/
 
 ### Откат
 
-Чтобы полностью удалить oh-my-agent из проекта:
+Сначала просмотрите и удалите управляемые OMA файлы с помощью деинсталлятора:
+
+```bash
+oma uninstall --dry-run
+oma uninstall
+```
+
+Он сохраняет `oma-config.yaml`, `mcp.json` и навыки, которые не устанавливал. Чтобы удалить остальное вручную:
 
 ```bash
 # Remove the SSOT directory
@@ -394,7 +375,7 @@ oma dashboard web
 
 ### 5. Установка рабочих процессов
 
-`installWorkflows()` копирует все файлы рабочих процессов в `.agents/workflows/`. Это определения для `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools` и `/stack-set`.
+`installWorkflows()` копирует все файлы рабочих процессов в `.agents/workflows/`, например определения для `/orchestrate`, `/work`, `/ultrawork` и `/plan`. Полный список см. в разделе [Рабочие процессы](../core-concepts/workflows.md). Вместе с ним `installHooks()`, `installAgents()` и `installRules()` копируют в `.agents/` исходники хуков, определений агентов и правил.
 
 ### 6. Установка конфигурации
 
@@ -408,7 +389,7 @@ oma dashboard web
 
 `installVendorAdaptations()` устанавливает файлы IDE для выбранных поддерживаемых поставщиков:
 
-- определения агентов (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`);
+- определения агентов (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.qwen/agents/*.md`);
 - конфигурации хуков (`.claude/hooks/`, `.codex/hooks.json`);
 - файлы настроек и общий документ интеграции поставщиков (только `AGENTS.md`, включая Claude Code ≥ 2.1.277). `CLAUDE.md` и `GEMINI.md` никогда не получают блок OMA; существующий пользовательский `CLAUDE.md` получает только строку импорта `@AGENTS.md`, чтобы Claude Code не пропускал `AGENTS.md`.
 
@@ -416,11 +397,11 @@ Codex защищает свои хуки одноразовым шагом до�
 
 ### 9. Символические ссылки CLI
 
-`createCliSymlinks()` создаёт ссылки из каталогов IDE в SSOT:
+`createVendorSymlinks()` и `createVendorWorkflowSymlinks()` создают символические ссылки из каталогов IDE в SSOT:
 
 - `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
-- `.claude/skills/{workflow}.md` -> `../../.agents/workflows/{workflow}.md`
-- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (если включён Copilot)
+- `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
+- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (если выбран Copilot)
 
 Нативные файлы агентов создаются из `.agents/agents/` командами `oma link`, `oma install` или `oma update`, а не напрямую связываются символическими ссылками.
 
@@ -431,3 +412,13 @@ Codex защищает свои хуки одноразовым шагом до�
 ### 11. Рекомендуемая конфигурация Git и MCP
 
 Как описано выше в пути через CLI, install/update по интерактивному согласию могут настроить рекомендуемые **глобальные** параметры Git (`rerere.enabled`, `init.defaultBranch`) и при необходимости конфигурацию MCP.
+
+---
+
+## См. также
+
+- [Глобальная установка](./global-install.md): одна установка для всех проектов
+- [Загрузка конфигурации](./oma-config-semantics.md): как сочетаются CUE, YAML и локальные наложения
+- [Настройка моделей для каждого агента](./per-agent-models.md): выбор модели и CLI для каждого агента
+- [Доверие к Codex hooks](./codex-hook-trust.md): одноразовый шаг `/hooks` для Codex
+- [Автоматические обновления](./automated-updates.md): поддержание установки в актуальном состоянии из CI

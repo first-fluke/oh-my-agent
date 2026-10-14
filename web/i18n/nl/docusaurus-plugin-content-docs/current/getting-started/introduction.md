@@ -7,11 +7,11 @@ description: Een uitgebreid overzicht van oh-my-agent, het multi-agent-orchestra
 
 oh-my-agent is een multi-agent-orchestratieframework voor AI-aangedreven IDE's en CLI-tools. In plaats van voor alles op één AI-assistent te vertrouwen, routeert oh-my-agent werk langs 33 skillpakketten en 13 canonieke dispatchrollen. Twaalf ingecheckte subagentdefinitiebestanden leveren herbruikbare persona's voor implementatie, review, planning, debugging, documentatie, onderzoek en infrastructuur. `research-explorer.md` wordt gekoppeld aan de canonieke rol `explore`; `orchestrator` is een runtime-coördinatierol zonder afzonderlijk definitiebestand.
 
-OMA biedt mechanische controles wanneer je ze aanroept of een workflow selecteert die ze bevat. `oma verify agent <agent-type>` voert de controles uit voor het geselecteerde agenttype; `/ralph` voegt verificatie met artefacten en een judge-lus toe; ingeschakelde Stop-hooks van leveranciers kunnen een workflow openhouden terwijl de geconfigureerde controles draaien. Alleen skills laden stelt geen acceptatie vast en een gewone prompt voert niet automatisch elke workflowgate uit. Gebruik de acceptatiecriteria van de workflow en de resulterende bestanden om te bepalen wat voltooid is.
+OMA biedt mechanische controles wanneer je ze aanroept of een workflow selecteert die ze bevat. `oma verify agent <agent-type>` voert de controles uit voor het geselecteerde agenttype; `/ralph` voegt verificatie met artefacten en een [judge](./glossary.md#judge)-lus toe; ingeschakelde Stop-hooks van vendors (de [stop gate](./glossary.md#stop-gate)) kunnen een workflow openhouden terwijl de geconfigureerde controles draaien. Alleen skills laden stelt geen acceptatie vast en een gewone prompt voert niet automatisch elke workflowgate uit. Gebruik de acceptatiecriteria van de workflow en de resulterende bestanden om te bepalen wat voltooid is.
 
 Het volledige systeem staat in een draagbare `.agents/`-directory binnen je project. Schakel tussen Claude Code, Codex CLI, Antigravity CLI of IDE, Cursor, OpenCode en andere ondersteunde tools; je agentconfiguratie reist met je code mee.
 
-Ben je nieuw met OMA, begin dan met [Snel starten](./quick-start.md) en lees daarna [Belangrijke standaardinstellingen](./important-defaults.md). De installatie maakt de SSOT en leveranciersintegraties aan; de eerste nuttige controle is `oma doctor`, en de eerste nuttige taak is één kleine wijziging binnen één domein. Gebruik `/work` of `/orchestrate` pas wanneer de taak coördinatie nodig heeft.
+Ben je nieuw met OMA, begin dan met [Snel starten](./quick-start.md) en lees daarna [Belangrijke standaardinstellingen](./important-defaults.md). De installatie maakt de [SSOT](./glossary.md#ssot) en vendorintegraties aan; de eerste nuttige controle is `oma doctor`, en de eerste nuttige taak is één kleine wijziging binnen één domein. Gebruik `/work` of `/orchestrate` pas wanneer de taak coördinatie nodig heeft.
 
 ---
 
@@ -26,8 +26,10 @@ Traditionele AI-codeerassistenten behandelen frontend, backend, database, beveil
 oh-my-agent lost dit op met specialisatie:
 
 1. **Elke skill heeft een primair domein.** De frontend-skill kent React/Next.js, shadcn/ui, TailwindCSS v4 en FSD-lite-architectuur. De backend-skill kent het Repository-Service-Router-patroon, geparametriseerde queries en JWT-authenticatie. Domeinen kunnen elkaar aan grenzen overlappen; gebruik daarom de acceptatiecriteria van de taak om te bepalen wanneer een tweede skill of een coördinerende workflow nodig is.
+
 2. **Agenten kunnen parallel draaien.** Terwijl een backend-agent een API bouwt, kan een frontend-agent in zijn eigen workspace werken. De orchestrator coördineert via duurzame bestanden en receipts die aan een run zijn gekoppeld.
-3. **Kwaliteitsrichtlijnen zijn ingebouwd.** Skills bevatten domeinchecklists, foutoplossingshandleidingen en charterregels. Charter preflight beperkt de scope voordat code wordt geschreven; QA-review draait wanneer de geselecteerde workflow die bevat of wanneer je erom vraagt.
+
+3. **Kwaliteitsrichtlijnen zijn ingebouwd.** Skills bevatten domeinchecklists, foutoplossingshandleidingen en [charter](./glossary.md#charter)-regels. Charter preflight beperkt de scope voordat code wordt geschreven; QA-review draait wanneer de geselecteerde workflow die bevat of wanneer je erom vraagt.
 
 ---
 
@@ -35,9 +37,9 @@ oh-my-agent lost dit op met specialisatie:
 
 De catalogus scheidt drie zaken die gemakkelijk door elkaar raken:
 
-- **Skills** zijn de 33 domeinkennis-pakketten onder `.agents/skills/*/SKILL.md`. Ze routeren vanuit natuurlijke taal en laden hun resources progressief.
-- **Agentdefinities** zijn de 12 bestanden onder `.agents/agents/`. Ze leveren vendor-native subagentpersona's en verwijzen naar één of meer skills.
-- **Workflows** zijn de 21 procesdefinities onder `.agents/workflows/`. Vier zijn persistent (`orchestrate`, `work`, `ultrawork` en `ralph`); de overige draaien tot een rapport en houden geen persistente modus actief.
+- **[Skills](./glossary.md#skill)** zijn de 33 domeinkennis-pakketten onder `.agents/skills/*/SKILL.md`. Ze routeren vanuit natuurlijke taal en laden hun resources progressief.
+- **[Agentdefinities](./glossary.md#agent-definition)** zijn de 12 bestanden onder `.agents/agents/`. Ze leveren vendor-native subagentpersona's en verwijzen naar één of meer skills.
+- **[Workflows](./glossary.md#workflow)** zijn de 21 procesdefinities onder `.agents/workflows/`. Vier zijn [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` en `ralph`); de overige draaien tot een rapport en houden geen persistente modus actief.
 
 De onderstaande secties behouden de gedetailleerde skillcatalogus. Wanneer een naam of beschrijving verandert, is de live frontmatter van `SKILL.md` leidend.
 
@@ -78,7 +80,7 @@ De 12 ingecheckte definitiebestanden dekken de 13 runtime-rollen via aliassen: `
 
 | Agent | Rol | Belangrijkste mogelijkheden |
 |-------|------|-----------------|
-| **oma-qa** | Quality assurance | Security-audit (OWASP Top 10), prestatieanalyse, toegankelijkheid (WCAG 2.2 AA) en codekwaliteitsreview. Ernst: CRITICAL/HIGH/MEDIUM/LOW met bestand:regel en remediatiecode. Ondersteunt ISO/IEC 25010-kwaliteitskenmerken en ISO/IEC 29119-testuitlijning. Resources: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md` en `error-playbook.md`. |
+| **oma-qa** | Quality assurance | Security-audit (OWASP Top 10), prestatieanalyse, toegankelijkheid (WCAG 2.2 AA) en codekwaliteitsreview. Ernst: CRITICAL/HIGH/MEDIUM/LOW met bestand:regel en remediatiecode. Ondersteunt ISO/IEC 25010-kwaliteitskenmerken en ISO/IEC 29119-testuitlijning. Resources: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `verify-ship-protocol.md` en `error-playbook.md`. |
 | **oma-debug** | Bugdiagnose en -oplossing | Reproduce-first-methodologie. Oorzaakanalyse, minimale fixes, verplichte regressietests en zoeken naar vergelijkbare patronen. Gebruikt code-intelligence-MCP-tools (Gortex of Serena) voor het traceren van symbolen. Resources: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md` en `error-playbook.md`. |
 | **oma-refactor** | Gedragsbehoudende refactoring | Veilige, stapsgewijze herstructurering met karakteriseringstests als vangnet. Hotspots selecteren (complexiteit × churn), code smells/SATD selecteren, terugvallen via de Mikado-methode bij fouten, expand-contract voor stateful wijzigingen en refactor-only commits (geen gedragswijzigingen combineren). Engine-first-transformaties (IDE rename, jscodeshift/ast-grep), metrics via `uvx lizard` / `uvx radon`. Leesbaarheid is het succescriterium; metrics zijn proxy's. |
 
@@ -95,7 +97,7 @@ De 12 ingecheckte definitiebestanden dekken de 13 runtime-rollen via aliassen: `
 
 | Agent | Rol | Belangrijkste mogelijkheden |
 |-------|------|-----------------|
-| **oma-search** | Intentgebaseerde zoekrouter | Routeert queries naar Context7 (docs), native websearch, `gh`/`glab` (code) en lokale code-intelligence (Gortex of Serena). Geeft domeinvertrouwensscores aan alle niet-lokale resultaten. Fail-forward-routing (docs→web→fetch). Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
+| **oma-search** | Intentgebaseerde zoekrouter | Routeert queries naar Context7 (docs), native websearch, `gh`/`glab` (code) en lokale code-intelligence (Gortex of Serena). Geeft domeinvertrouwensscores aan alle niet-lokale resultaten. Fail-forward-routing (docs→web→fetch). Vlaggen: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
 | **oma-recap** | Tooloverkoepelend werkretrospectief | Analyseert conversatiegeschiedenissen van Grok, Claude, Codex, Gemini, Qwen, Cursor en Antigravity. Lost natuurlijke-taalinvoer voor datum/venster op, groepeert op tool+sessie, extraheert thema's, rendert dagelijkse/periode-samenvattingen en registreert wanneer de CLI een gevraagd venster tot 30 dagen beperkt. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | Conversie van Koreaanse tekstverwerkersdocumenten via `bunx kordoc@latest`. Behoudt koppen, tabellen (ook geneste), voetnoten, hyperlinks en afbeeldingen. Verwijdert Hancom Private Use Area-tekens via de nabewerker `flatten-tables.ts`. |
 | **oma-pdf** | PDF → Markdown | Conversie van PDF-documenten via `uvx opendataloader-pdf`. Behoudt koppen, tabellen, lijsten en afbeeldingen; hybride OCR-modus voor gescande PDF's; output genormaliseerd met `uvx mdformat`. |
@@ -111,27 +113,27 @@ De 12 ingecheckte definitiebestanden dekken de 13 runtime-rollen via aliassen: `
 
 | Agent | Rol | Belangrijkste mogelijkheden |
 |-------|------|-----------------|
-| **oma-deepsec** | Driver voor agentgebaseerde kwetsbaarheidsscanner | Stuurt Vercels `deepsec` (`bunx deepsec`) end-to-end aan: voert `init` uit voor de `.deepsec/`-workspace, schrijft een projectspecifiek `INFO.md`, voert kostenbewuste `scan`/`process`/`triage`/`revalidate`/`export`-passes uit, gate PR's via `process --diff` met een two-job-CI-patroon en schrijft eigen matchers. Kalibreert met `--limit 50 --concurrency 5` vóór een grote pass en noemt vóór betaald werk een dollarprognose; de kosten variëren met repositorygrootte en backend. Agent-backends: `codex` (gpt-5.5) of `claude` (claude-opus-4-8). |
+| **oma-security** | Securityscans en validatie | Scant applicatiebroncode, agent-skills en MCP-componenten; voert penetratietests uit tegen afgebakende web-testdeployments, valideert bevindingen en configureert scan-gates. Standaardengines per doel: Deepsec voor applicatiebroncode of diffs, Cisco Skill Scanner voor agent-skillpakketten, Cisco MCP Scanner voor MCP-componenten en ARTEX voor web-testdeployments. Gebruik `oma-qa` voor brede kwaliteitsreviews en domeinskills voor herstel. |
 
 ### Documentatie en metatooling
 
 | Agent | Rol | Belangrijkste mogelijkheden |
 |-------|------|-----------------|
 | **oma-docs** | Detector voor documentatiedrift | `verify`-modus controleert `docs/**/*.md` deterministisch op gebroken verwijzingen (bestandspaden, CLI-commando's, configuratiesleutels, omgevingsvariabelen en scripts) en eindigt met 0/1; `sync`-modus koppelt een git-diff aan kandidaatdocumenten en stelt host-LLM-patches voor die per document worden bevestigd (nooit automatisch toegepast). URL-controle wordt gedelegeerd aan `lychee`; de CLI geeft gestructureerde JSON uit en de host-LLM doet alle synthese (zonder vendor-SDK-aanroepen). Wijzigt `.agents/` nooit. |
-| **oma-skill-creation** | Specialist in SSL-lite-skillauthoring | Maakt, werkt bij en controleert OMA-skills in het SSL-lite-formaat met de vier verplichte secties (Scheduling / Structural Flow / Logical Operations / References). Classificeert het skilltype, voegt precies één inline canoniek pad toe, handhaaft `When NOT to use`-cross-routes en verplaatst lange variantdetails naar `resources/`. Voert `oma skill audit` uit om botsingen in routeringsbeschrijvingen te detecteren (waarschuwing ≥ 60%, fout ≥ 75% TF-IDF-cosinus). |
+| **oma-skill-creation** | Specialist in SSL-lite-skillauthoring | Maakt, werkt bij en controleert OMA-skills in het SSL-lite-formaat met de vier verplichte secties (Scheduling / Structural Flow / Logical Operations / References). Classificeert het skilltype, voegt precies één inline canoniek pad toe, handhaaft `When NOT to use`-cross-routes en voert `oma skill audit` uit om botsingen tussen beschrijvingen te detecteren (waarschuwing ≥ 60%, fout ≥ 75% TF-IDF-cosinus). Verplaatst lange variantdetails naar `resources/`. |
 | **oma-explanation** | Uitlegger van codewijzigingen | Zet een diff, PR, branch of commitbereik om in een zelfstandige offline HTML-uitleg met secties Background, Intuition, Code en Quiz. De `/explain`-workflow valideert het eindartefact en schrijft het onder `.agents/results/explain/`. |
 
 ### Marktonderzoek
 
 | Agent | Rol | Belangrijkste mogelijkheden |
 |-------|------|-----------------|
-| **oma-market** | Inlichtingen uit communitysignalen | Voert de upstream `last30days`-engine uit (Reddit met echte upvotes en comments, X, YouTube-transcripten, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web en meer) via `oma market run`; oma gebruikt altijd de nieuwste engine-release (`~/.cache/oma-market/`), gate elke run met `detect-trap`, classificeert intentie (pijn / trend / concurrent / discovery) en voegt SWOT-, Porter's 5F- en PESTEL-secties toe. Schrijft één LAW-conforme briefing naar `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
+| **oma-market** | Inlichtingen uit communitysignalen | Voert de upstream `last30days`-engine uit (Reddit met echte upvotes en comments, X, YouTube-transcripten, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web en meer) via `oma market run`; oma houdt de engine **altijd op de nieuwste release** (`~/.cache/oma-market/`), gate elke run met `detect-trap`, classificeert intentie (pijn / trend / concurrent / discovery) en voegt SWOT-, Porter's 5F- en PESTEL-secties toe. Schrijft één LAW-conforme briefing naar `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
 
 ### Media en contentgeneratie
 
 | Agent | Rol | Belangrijkste mogelijkheden |
 |-------|------|-----------------|
-| **oma-image** | Multi-vendor-router voor afbeeldingen | Authentication-aware parallel dispatch naar Codex (`gpt-image-2` via ChatGPT OAuth, CLI-first), Antigravity-Gemini-familie "nano-banana"-modellen via de `agy` CLI + Gemini Code Assist en Pollinations (gratis `flux`/`zimage`). Verduidelijkings-/amplificatieprotocol vóór generatie, maximaal 10 referentiebeelden, kostenbeveiliging (bevestiging vanaf ≥ $0.20), `manifest.json` voor reproduceerbaarheid. CLI: `oma image generate`, `oma image doctor` en `oma image vendor list`. |
+| **oma-image** | Multi-vendor-router voor afbeeldingen | Authentication-aware parallel dispatch naar Codex (`gpt-image-2` via ChatGPT OAuth, CLI-first), Antigravity-Gemini-familie "nano-banana"-modellen via de `agy` CLI + Gemini Code Assist (het exacte model wordt intern gekozen) en Pollinations (gratis `flux`/`zimage`). Verduidelijkings-/amplificatieprotocol vóór generatie, maximaal 10 referentiebeelden, kostenbeveiliging (bevestiging vanaf ≥ $0.20), `manifest.json` voor reproduceerbaarheid. CLI: `oma image generate`, `oma image doctor` en `oma image vendor list`. |
 | **oma-slide** | Generator voor animatierijke HTML-decks | Genereert onderscheidende, anti-"AI slop"-presentatiedecks op een vast 1920×1080-podium, valideert deterministisch geometrie, bundelt naar één HTML-bestand en exporteert via de `oma slide`-CLI naar PDF/PNG/PPTX. Stijlpresets + vette templates, CJK→Pretendard-regel, `prefers-reduced-motion` + zichtbare focus vereist, maximaal 3 automatische validatie-fixes. Delegeert afbeeldingen aan `oma-image`; optionele Canva-MCP-export/import. |
 | **oma-video** | Router voor shorts, explainers en demo's | Maakt shorts/reels (9:16), explainers (16:9) en door mensen opgenomen demo's (16:9) via de `oma video`-CLI. De deterministische asset-bus (`script.json` → `timing.json` → `render-spec.json`) voedt een beheerde HyperFrames-compositor; assetproviders mogen lokale fallbacks gebruiken, maar een ontbrekende compositie/toolchain of renderfout laat de run mislukken. Bij menselijke capture worden credentials nooit geautomatiseerd. |
 | **oma-voice** | Lokale TTS en STT | Stuurt de Voicebox-MCP-server aan voor on-device notificaties, asset-TTS en transcriptie zonder cloudcalls of kosten per call. TTS gebruikt standaard WAV en kan lokaal naar MP3 worden getranscodeerd; transcriptie accepteert audiopaden of base64. TTS-calls zijn beperkt tot 5000 tekens en STT-input tot 30 minuten; persistente asset-/transcriptieruns schrijven een manifest. |
@@ -156,22 +158,24 @@ Hoeveel context dit bespaart, hangt af van de skills en de taak, dus meet het in
 
 Alles wat oh-my-agent nodig heeft, staat in de directory `.agents/`:
 
-```
+```text
 .agents/
-├── oma-config.yaml         # Shared preferences and provider/model settings
-├── oma-config.cue          # Optional schema-backed configuration
-├── skills/                 # 33 skill directories + _shared resources
-│   ├── _shared/            # Core resources used by all agents
-│   └── oma-{skill}/         # Per-skill SKILL.md + resources/variants
-├── workflows/              # 21 workflow definitions
-├── agents/                 # 12 subagent definitions
-├── results/plan-{sessionId}.json               # Generated plan output
-├── state/                  # Active workflow state files
-├── results/                # Agent result files
-└── mcp.json                # MCP server configuration
+├── oma-config.yaml   # Shared preferences and provider/model settings
+├── oma-config.cue    # Optional schema-backed configuration
+├── mcp.json          # MCP server configuration
+├── skills/           # 33 skill directories + _shared resources
+│   ├── _shared/      # Core resources used by all agents
+│   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
+├── workflows/        # 21 workflow definitions
+├── agents/           # 12 subagent definitions
+├── hooks/            # Hook sources, including core/triggers.json
+├── rules/            # Project rules projected into vendor files
+├── config/           # Shipped defaults (defaults.yaml)
+├── results/          # Plans (plan-{sessionId}.json) and agent results
+└── state/            # Active workflow state files
 ```
 
-De directory `.claude/` bestaat alleen als IDE-integratielaag. Deze bevat symlinks terug naar `.agents/` en hooks voor trefwoorddetectie en de HUD-statusregel. De directory `.agents/state/memories/` bevat runtime-coördinatiestatus tijdens orchestratiesessies; oudere projecten kunnen terugvallen op de legacy-directory `.serena/memories/`.
+De directory `.claude/` bestaat alleen als IDE-integratielaag. Deze bevat symlinks terug naar `.agents/` en hooks voor trefwoorddetectie en de HUD-statusregel. De directory `.agents/state/memories/` bevat runtime-coördinatiestatus tijdens orchestratiesessies (oudere projecten vallen terug op het legacy-pad `.serena/memories/`).
 
 Dat betekent dat je agentconfiguratie:
 - **Draagbaar** is: wissel van IDE zonder opnieuw te configureren
@@ -193,29 +197,57 @@ oh-my-agent werkt met de geselecteerde AI-aangedreven IDE's en CLI's via hun nat
 | **OpenCode** | Skills + in-process plugin bridge + gegenereerde subagenten (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 | **Kimi Code CLI** | Hooks + skills in `~/.kimi-code/` (toestemming vereist voor schrijven naar HOME; leest SSOT `.agents/skills/` ook native); projectgebonden Serena MCP | `oma agent spawn --vendor kimi` |
 
-Agent-spawning past zich aan elke geselecteerde leverancier aan via leveranciersdetectie en de actieve configuratie. Runtimes van dezelfde leverancier kunnen native subagenten gebruiken; cross-vendor werk valt terug op `oma agent spawn`. Zie [Parallelle uitvoering](../core-concepts/parallel-execution.md) voor de dispatchregels.
+Agent-spawning past zich aan elke geselecteerde vendor aan via vendordetectie en de actieve configuratie. Runtimes van dezelfde vendor kunnen native subagenten gebruiken; cross-vendor werk valt terug op `oma agent spawn`. Zie [Parallelle uitvoering](../core-concepts/parallel-execution.md) voor de dispatchregels.
+
+---
+
+## Hoe een verzoek verloopt
+
+Het diagram laat zien wat er gebeurt tussen een prompt en een afgerond resultaat. De keyword-hook, de skill-injector en de Stop-hook draaien alleen op hosts waarvan de hookintegratie is ingeschakeld. De keyword-hook en de skill-injector draaien na elkaar op dezelfde prompt, en hun geïnjecteerde context wordt gecombineerd.
+
+```mermaid
+flowchart TD
+  P["User prompt"] --> SL{"Starts with a /command?"}
+  SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
+  SL -->|no| KD["Keyword hook checks triggers.json"]
+  KD -->|"workflow keyword (explicit keyword for persistent ones)"| CTX["Inject OMA WORKFLOW context"]
+  CTX --> WF
+  KD -->|"persistent workflow, natural language only"| SUG["Workflow suggested; agent decides"]
+  SUG -.->|"if the request calls for it"| WF
+  KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
+  SI --> HOST["Host picks skills by name and description"]
+  WF --> SK["Skills: .agents/skills/*/SKILL.md"]
+  HOST --> SK
+  WF --> AG["Agents: native subagent or oma agent spawn"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
+```
+
+Bronnen: `.agents/hooks/core/keyword-detector.ts` (overslaan van slashcommando's, triggermatching, persistente suggestie), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` en de workflowbestanden onder `.agents/workflows/`. Niet elke workflow heeft elke gate: `/orchestrate` draait het verify-script, `/review` draait QA-review en `/ralph` voegt de [judge](./glossary.md#judge) toe.
 
 ---
 
 ## Het skillrouteringssysteem
 
-Wanneer je een prompt verstuurt, bepaalt oh-my-agent welke agent de taak afhandelt via de skillrouteringskaart (`.agents/skills/_shared/core/skill-routing.md`):
+De host kiest een skill op basis van de namen en beschrijvingen van de geïnstalleerde skills. De routeringskaart van OMA (`.agents/skills/_shared/core/skill-routing.md`) legt vast welke skill eigenaar is van welk resultaat; routeer op het gevraagde resultaat en de afhankelijkheden ervan, niet op alleen een trefwoord. Een skill kiezen start geen workflow en geeft geen toestemming voor delegatie.
 
-| Domeintrefwoorden | Gerouteerd naar |
-|-------------------|----------------|
-| API, endpoint, REST, GraphQL, database, migration | oma-backend |
-| auth, JWT, login, register, password | oma-backend |
-| UI, component, page, form, screen (web) | oma-frontend |
-| style, Tailwind, responsive, CSS | oma-frontend |
-| mobile, iOS, Android, Flutter, React Native, Swift, SwiftUI, app | oma-mobile |
-| bug, error, crash, broken, slow | oma-debug |
-| review, security, performance, accessibility | oma-qa |
-| UI design, design system, landing page, DESIGN.md | oma-design |
-| brainstorm, ideate, explore, idea | oma-brainstorm |
-| plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestration |
+| Gevraagd resultaat | Eigenaar-skill |
+|---|---|
+| Applicatie-API, serverauth, service-/datatoegangslogica | oma-backend |
+| Schema, migratieontwerp, indexering, querytuning, databasebeheer | oma-db |
+| Webcomponenten, pagina's, formulieren, clientstate | oma-frontend |
+| Mobiele schermen, widgets, platformintegratie | oma-mobile |
+| Systeemgrenzen, architectuurafwegingen, ADR | oma-architecture |
+| Onjuist gedrag diagnosticeren en oplossen | oma-debug |
+| Correctheid, beveiliging, toegankelijkheid en prestaties reviewen | oma-qa |
+| Visueel systeem, DESIGN.md, redesignrichting | oma-design |
+| Gevraagde ideevorming of verkenning van alternatieven | oma-brainstorm |
+| Requirements, afhankelijkheden, acceptatiecriteria | oma-pm |
+| Gevraagde parallelle uitvoering door specialisten | oma-orchestration |
+| Gevraagde handmatige multi-agentcoördinatie | oma-coordination |
+| Git-branches, commits, merges, repositorygeschiedenis | oma-scm |
 
-Voor complexe verzoeken over meerdere domeinen volgt de routering vaste uitvoeringsvolgorden. Zo wordt "Create a fullstack app" gerouteerd naar: oma-pm (plan), daarna oma-backend + oma-frontend (parallelle implementatie) en daarna oma-qa (review).
+Voor andere domeinen kiest de host uit de beschrijvingen van de geïnstalleerde skills. Werk over meerdere domeinen heeft geen vaste keten: een onbesliste architectuur- of productbeslissing wordt eerst opgelost, en backend- en clientwerk kunnen parallel verlopen zodra hun gedeelde API-contract bruikbaar is.
 
 ---
 
@@ -232,22 +264,23 @@ De HUD wordt aangedreven door `.claude/hooks/hud.ts` met de `statusLine`-hookfun
 
 ## Automatische workflowdetectie
 
-Je hoeft `/command` niet te typen om workflows te activeren. Het hooksysteem van oh-my-agent scant je invoer in natuurlijke taal tegen triggerwoorden in `.agents/hooks/core/triggers.json` (ingebouwd in het `oma`-binary en gedeeld door elke leverancier), met ondersteuning voor 11 talen (Engels, Koreaans, Japans, Chinees, Spaans, Frans, Duits, Portugees, Russisch, Nederlands en Pools).
+Je hoeft `/command` niet te typen om workflows te activeren. Het hooksysteem van oh-my-agent scant je invoer in natuurlijke taal tegen triggerwoorden in `.agents/hooks/core/triggers.json` (ingebouwd in het `oma`-binary en gedeeld door elke vendor), met ondersteuning voor 11 talen (Engels, Koreaans, Japans, Chinees, Spaans, Frans, Duits, Portugees, Russisch, Nederlands en Pools).
 
 - **Actiegerichte invoer** (bijvoorbeeld "plan the auth feature") laadt automatisch de workflow
 - **Informatieve invoer** (bijvoorbeeld "what is orchestrate?") wordt eruit gefilterd; er wordt geen workflow geactiveerd
 - **Expliciete `/command`**: de hook slaat detectie over om dubbele activatie te voorkomen
-- **Persistente workflows** injecteren context opnieuw bij elk bericht totdat je "workflow done" zegt
+- **Persistente workflows** (`orchestrate`, `work`, `ultrawork`, `ralph`) die alleen via natuurlijke taal matchen, worden voorgesteld en niet gestart; de persistente modus gaat aan wanneer de prompt het expliciete trefwoord van de workflow gebruikt (bijvoorbeeld `ultrawork` of `ralph`)
+- **Actieve persistente workflows** injecteren context opnieuw bij elk bericht totdat je "workflow done" zegt
 
-Elk hookevent wordt afgeleverd via de canonieke `oma hook run`-ABI: de leverancier roept `oma-hook.sh --vendor <v> --event <nativeEvent>` aan, waarna de in-process-handlerketen wordt uitgevoerd en de leveranciersspecifieke dialectvorm naar stdout wordt geschreven (altijd exit 0, fail-open).
+Elk hookevent wordt afgeleverd via de canonieke `oma hook run`-ABI: de vendor roept `oma-hook.sh --vendor <v> --event <nativeEvent>` aan, waarna de in-process-handlerketen wordt uitgevoerd en de vendorspecifieke dialectvorm naar stdout wordt geschreven (altijd exit 0, fail-open).
 
 ---
 
 ## Cross-vendorondersteuning
 
-oh-my-agent is niet beperkt tot Claude Code. Leveranciers met hooks delen dezelfde `oma hook run`-ABI, terwijl extension-leveranciers hun in-process bridge gebruiken:
+oh-my-agent is niet beperkt tot Claude Code. Vendors met hooks delen dezelfde `oma hook run`-ABI, terwijl extension-vendors hun in-process bridge gebruiken:
 
-| Leverancier | Hookaflevering | StatusLine |
+| Vendor | Hookaflevering | StatusLine |
 |---------|--------------|------------|
 | **Claude Code** | `oma-hook.sh --vendor claude --event UserPromptSubmit` / `PreToolUse` / `Stop` | `bun .claude/hooks/hud.ts` (direct, ongewijzigd) |
 | **Codex CLI** | `oma-hook.sh --vendor codex --event UserPromptSubmit` / `PreToolUse` / `Stop` | — |
@@ -259,7 +292,7 @@ oh-my-agent is niet beperkt tot Claude Code. Leveranciers met hooks delen dezelf
 | **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | — |
 | **pi** | In-process bridge (`installPiExtension`) — niet via `oma hook run` | — |
 
-De directory `.agents/` blijft de bron van waarheid. De installatie linkt de skills, workflows, hooks en agentdefinities die je selecteert, of projecteert ze naar de leveranciers die je selecteert; mogelijkheden verschillen per leverancier. Zowel native subagenten van dezelfde leverancier als cross-vendoragenten die via de CLI worden gestart lezen uit die bron.
+De directory `.agents/` blijft de bron van waarheid. De installatie linkt of projecteert de skills, workflows, hooks en agentdefinities ervan naar de vendors die je hebt geselecteerd; mogelijkheden verschillen per vendor. Zowel native subagenten van dezelfde vendor als cross-vendoragenten die via de CLI worden gestart lezen uit die bron.
 
 ---
 

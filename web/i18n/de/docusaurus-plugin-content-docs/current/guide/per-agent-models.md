@@ -1,7 +1,7 @@
 ---
 title: "Anleitung: Modellkonfiguration pro Agent"
 sidebar_label: Agentenmodelle
-description: Konfigurieren Sie über model_preset in oma-config.yaml, welches KI-Modell jeder Agent verwendet. Behandelt eingebaute Presets, Überschreibungen pro Agent, Inline-Modelldefinitionen, benutzerdefinierte Presets mit extends, oma doctor --profile und die Migration von agent_cli_mapping.
+description: Konfigurieren Sie über model_preset in oma-config.yaml, welches KI-Modell jeder Agent verwendet. Behandelt eingebaute Presets und ihre Modelle pro Rolle, die Auflösungstabelle für Modell und CLI, Überschreibungen pro Agent, Inline-Modelldefinitionen, benutzerdefinierte Presets mit extends, oma doctor --profile, Kontingentgrenzen sowie die Transporte pi, OpenCode und Kimi.
 ---
 
 # Anleitung: Modellkonfiguration pro Agent
@@ -10,22 +10,25 @@ description: Konfigurieren Sie über model_preset in oma-config.yaml, welches KI
 
 `model_preset: auto` ist der Standard für neue Installationen. Nicht konfigurierte Agenten verwenden die nativen Agenten-Definitionen und Modelleinstellungen des aktuellen Vendors. Wählen Sie ein festes Preset, um Modelle zu pinnen, oder überschreiben Sie einzelne Agenten, wenn Sie ein anderes Modell oder einen anderen Vendor benötigen. Bereits vorhandene explizite Presets bleiben bei Neuinstallation und Update erhalten.
 
-Die gemeinsame Konfiguration liegt in `.agents/oma-config.cue` oder `.agents/oma-config.yaml`. Eine optionale, von Git ignorierte lokale Datei überschreibt die Einstellungen für Ihren Rechner.
+Die gemeinsame Konfiguration liegt in `.agents/oma-config.yaml` und, falls vorhanden, in `.agents/oma-config.cue`, deren Schlüssel dieselben YAML-Schlüssel überschreiben. Eine optionale, von Git ignorierte lokale Datei überschreibt die Einstellungen für Ihren Rechner.
 
 Eine vollständige Referenz der Top-Level-Schlüssel und Vorrangregeln finden Sie in der [Konfigurationsreferenz](/docs/guide/configuration-reference).
 
 Diese Seite behandelt:
 
-1. Die eingebauten Presets
-2. Das Überschreiben einzelner Agenten mit der `agents:`-Map
-3. Das Inlinen benutzerdefinierter Modell-Slugs mit `models:`
-4. Das Definieren benutzerdefinierter Presets mit `custom_presets:` und `extends:`
-5. Das Prüfen der aufgelösten Konfiguration mit `oma doctor --profile`
-6. Die Migration vom veralteten `agent_cli_mapping`
+1. Die eingebauten Presets und die Modelle, die jede Rolle erhält
+2. Wie OMA Modell und CLI für einen Agenten auflöst
+3. Lokale Konfiguration und das FreeLLMAPI-Preset (`free`)
+4. Das Überschreiben einzelner Agenten mit der `agents:`-Map
+5. Das Inlinen benutzerdefinierter Modell-Slugs mit `models:`
+6. Das Definieren benutzerdefinierter Presets mit `custom_presets:` und `extends:`
+7. Das Prüfen der aufgelösten Konfiguration mit `oma doctor --profile`
+8. Die Migration vom veralteten `agent_cli_mapping` und Sitzungs-Kontingentgrenzen
+9. Dispatch über pi, OpenCode und die Kimi Code CLI
 
 ---
 
-## Eingebaute Presets
+## Eingebaute Presets {#built-in-presets}
 
 Setzen Sie `model_preset` auf einen der eingebauten Schlüssel:
 
@@ -39,23 +42,54 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | Folgt den Agenten- und Modelleinstellungen der aktuellen Laufzeit, ohne ein Modell oder Effort-Flag einzuschleusen | Standard für neue Installationen |
 | `free` | Spezieller Gateway-Modus für von OMA gestartete Codex-, Claude- oder Qwen-Prozesse; er wird getrennt von der eingebauten Preset-Registry aufgelöst. | Lokales FreeLLMAPI-Gateway |
-| `antigravity` | Alle Agenten verwenden die Antigravity CLI (`agy`): Gemini 3.1 Pro für Implementierung und Architektur sowie Gemini 3.6 Flash für Orchestrierung, Dokumentation und Explore. Die Modellauswahl wird innerhalb von `agy` über die Konfiguration gesteuert; `--model`- und `--thinking-budget`-Flags werden nicht bereitgestellt. | Nutzer der Antigravity CLI |
-| `claude` | Alle Agenten verwenden Claude (Sonnet/Opus) | Inhaber eines Claude-Max-Abonnements |
+| `antigravity` | Alle Agenten verwenden die Antigravity CLI (`agy`): Gemini 3.1 Pro für Implementierung, Architektur und QA; Gemini 3.6 Flash für Orchestrierung, PM, Dokumentation und Explore. Ab agy 1.1 übergibt OMA die Anzeige-ID aus `agy models` (zum Beispiel `--model "Gemini 3.1 Pro (High)"`) und bildet `effort` auf eine Stufe ab, die das Modell anbietet. agy 1.0 hat kein `--model`, daher entscheidet dessen eigene Konfiguration. agy hat kein `--thinking-budget`. | Nutzer der Antigravity CLI |
+| `claude` | Alle Agenten verwenden Claude: Opus für Architektur, Haiku für Explore, Sonnet für alle übrigen Rollen | Inhaber eines Claude-Max-Abonnements |
 | `codex` | Alle Agenten verwenden OpenAI Codex (GPT-5.5 für die meisten Rollen, GPT-5.4-mini für Explore) mit Effort-Stufen | Nutzer von ChatGPT Plus/Pro |
 | `qwen` | Alle Agenten verwenden Qwen Code; passende Qwen-Sitzungen können erzeugte native Agenten nutzen, andere Laufzeiten verwenden CLI-Dispatch | Lokale oder selbst gehostete Inferenz |
 | `kiro` | Alle Agenten verwenden die Kiro CLI; Sonnet übernimmt Implementierung und Architektur, Haiku Orchestrierung und Explore | Kiro-Nutzer |
 | `cursor` | Alle Agenten verwenden Cursors `composer-2.5` (`composer-2.5-fast` für Orchestrator, QA, PM, Docs und Explore) | Cursor-Pro- oder Pro-Student-Nutzer |
-| `mixed` | Gemischt: Implementierungsrollen nutzen Codex, Architektur/QA/PM Claude und Explore Gemini | Anbieterübergreifende Stärken ohne Verwaltung einer Konfiguration pro Agent |
+| `mixed` | Claude für Orchestrator, Architektur (Opus), QA, PM und Docs; Codex GPT-5.5 für Implementierungsrollen und GPT-5.4-mini für Explore | Anbieterübergreifende Stärken ohne Verwaltung einer Konfiguration pro Agent |
 
 Eingebaute Presets werden mit dem CLI-Paket ausgeliefert und beim Upgrade von `oh-my-agent` automatisch aktualisiert. `gemini` ist ein Kompatibilitätsalias, der auf `antigravity` verweist; es ist kein eigenes aktuelles Preset. Eine lokale Preset-Datei ist nicht erforderlich.
 
+### Modelle pro Rolle {#models-per-role}
+
+Die festen Presets weisen diese Registry-Slugs zu. Owner-Präfixe sind weggelassen: `antigravity/`, `anthropic/`, `openai/`, `qwen/`, `kiro/` und `cursor/` für die ersten sechs Spalten sowie in `mixed` `anthropic/` für Claude-Modelle bzw. `openai/` für GPT-Modelle. Maßgebliche Quelle ist `cli/platform/built-in-presets.ts`.
+
+| Rolle | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
+|:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
+| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+
+Werte in Klammern sind das `effort` des Presets (Codex) bzw. `thinking: true` (Qwen). Eine Rolle, die ein Preset nicht aufführt, etwa `eval`, verwendet den `orchestrator`-Eintrag dieses Presets.
+
 ---
+
+## Wie OMA Modell und CLI eines Agenten auflöst {#how-oma-resolves-an-agents-model-and-cli}
+
+Ist `OMA_MODEL_PRESET` gesetzt, ersetzt es zuerst `model_preset` (siehe [Laden der Konfiguration](/docs/guide/oma-config-semantics#precedence-table)). Danach wählt der Resolver eine Zeile:
+
+| `model_preset` | `agents.<id>` gesetzt? | An die CLI übergebenes Modell | CLI, die den Agenten ausführt |
+|:---------------|:-------------------|:----------------------|:------------------------|
+| `free` | Ignoriert | `FREELLM_MODEL`, sonst `free.model`, sonst `auto` (jede Rolle) | `--vendor`, sonst `OMA_RUNTIME_VENDOR`, sonst die erkannte Laufzeit, sofern sie Codex, Claude oder Qwen ist, sonst `default_cli`, sonst `codex`. Akzeptiert werden nur `codex`, `claude` und `qwen`. |
+| `auto` | Nein | Keines. Es gelten die eigenen Agenten- und Sitzungseinstellungen des Vendors. | `--vendor`, sonst ein unterstütztes `OMA_RUNTIME_VENDOR`, sonst die erkannte Laufzeit, sonst `default_cli`, sonst `claude`. Ein nicht unterstützter Wert ist ein Fehler. |
+| `auto` | Ja | Das `model` der Überschreibung | Die `cli` dieses Modells, danach die Vendor-Überschreibungsregel unten |
+| Eingebaut, Alias oder benutzerdefiniert | Nein | Der Eintrag des Presets für die Rolle, sonst der `orchestrator`-Eintrag des Presets | Die `cli` dieses Modells, danach die Vendor-Überschreibungsregel unten |
+| Eingebaut, Alias oder benutzerdefiniert | Ja | Der Preset-Eintrag, flach mit der Überschreibung zusammengeführt (Felder der Überschreibung gewinnen) | Die `cli` dieses Modells, danach die Vendor-Überschreibungsregel unten |
+
+So fügen sich die übrigen Teile ein:
+
+- **Preset-Suche.** OMA prüft zuerst eingebaute Namen, dann Aliase (`gemini` verweist mit einer Warnung auf `antigravity`), dann `custom_presets`. Ein benutzerdefiniertes Preset mit einem eingebauten Namen wird ignoriert. Ein unbekannter Name bricht mit `Unknown model_preset "..."` ab; die Meldung listet die gültigen Namen auf.
+- **Modell-Suche.** Ein Slug wird zuerst in `models:` gesucht, dann in der eingebauten Registry. Ein unbekannter Slug oder eine Spezifikation mit `api_only: true` stoppt den Dispatch.
+- **Vendor-Überschreibungsregel.** Wenn `--vendor` oder `OMA_RUNTIME_VENDOR` für eine modellgestützte Zeile einen Vendor nennt, übernimmt `pi` immer (nur Modelle echter Provider; siehe [Dispatch über pi](#dispatching-through-pi-transport-runtime)). Jeder andere Vendor übernimmt nur, wenn er in `supports.native_dispatch_from` des Modells aufgeführt ist. Andernfalls warnt OMA und behält die eigene `cli` des Modells bei.
+- **Effort.** `effort` wird mit einer Warnung verworfen, wenn die CLI des Modells kein Effort-Flag hat (Claude Code). Für pi bleibt es erhalten und wird auf `--thinking` abgebildet.
 
 ## Automatischer Dispatch
 
-Bei `auto` haben explizite Modellüberschreibungen unter `agents.<id>` Vorrang. Andernfalls erkennt OMA die aktuelle Laufzeit und verwendet, wenn verfügbar, ihren nativen Subagentenpfad. Vendorübergreifende Agenten und Laufzeiten ohne nativen Dispatch verwenden `oma agent spawn`. `auto` wird nicht zu einem festen Vendor-Preset erweitert.
-
-Beim CLI-Dispatch wählt `--vendor` den Ziel-Vendor ausdrücklich aus. Ohne diese Option verwendet OMA die erkannte Laufzeit und bei fehlender Erkennung `default_cli` (`claude`, wenn der Wert nicht gesetzt ist). Geerbte Pläne schleusen keine OMA-Modell- oder Effort-Flags ein; die eigene Agenten- oder Sitzungskonfiguration des Vendors liefert sie. Ein externer CLI-Prozess verwendet die gespeicherten Standardwerte dieser CLI, die sich von einem Modell unterscheiden können, das nur in der übergeordneten Sitzung ausgewählt wurde.
+Bei `auto` verwendet OMA, wenn verfügbar, den nativen Subagentenpfad der aktuellen Laufzeit. Vendorübergreifende Agenten und Laufzeiten ohne nativen Dispatch verwenden `oma agent spawn`. `auto` wird nicht zu einem festen Vendor-Preset erweitert. Geerbte Pläne schleusen keine OMA-Modell- oder Effort-Flags ein. Ein externer CLI-Prozess verwendet die gespeicherten Standardwerte dieser CLI, die sich von einem Modell unterscheiden können, das nur in der übergeordneten Sitzung ausgewählt wurde.
 
 `oma doctor --profile` zeigt für geerbte Agenten `(vendor agent default)` und für explizite Überschreibungen das aufgelöste Modell. Native Agenten-Dateien behalten ihre Vendor-Definitionen; Überschreibungen desselben Vendors im Auto-Modus werden angewendet, wenn diese Dateien von install oder update generiert werden.
 
@@ -63,7 +97,7 @@ Beim CLI-Dispatch wählt `--vendor` den Ziel-Vendor ausdrücklich aus. Ohne dies
 
 Erstellen Sie neben der gemeinsamen Konfiguration **genau eine** der Dateien `.agents/oma-config.local.cue` oder `.agents/oma-config.local.yaml`. Install, link und update nehmen beide Pfade in die `.gitignore` auf; update erhält vorhandene lokale Dateien auch mit `--force`.
 
-OMA wählt das nächste Projekt-Konfigurationsverzeichnis. Innerhalb dieses Verzeichnisses hat gemeinsames CUE Vorrang vor gemeinsamem YAML, und die lokale Datei überschreibt die gemeinsamen Werte. CUE-Dateien werden vor dem Zusammenführen unabhängig ausgewertet, sodass ein gemeinsames `model_preset: "auto"` lokal durch `"free"` ersetzt werden kann. Objekte werden rekursiv zusammengeführt; Arrays, Skalare und `null` ersetzen den gemeinsamen Wert. Eine fehlerhafte lokale Datei, eine fehlende CUE-Executable für lokales CUE oder das gleichzeitige Vorhandensein beider lokalen Formate ist ein Fehler und keine Erlaubnis, auf gemeinsame Standardwerte auszuweichen.
+OMA wählt das nächste Projekt-Konfigurationsverzeichnis. Innerhalb dieses Verzeichnisses überschreiben im gemeinsamen CUE gesetzte Schlüssel dieselben Schlüssel im gemeinsamen YAML, und die lokale Datei überschreibt die gemeinsamen Werte. Die vollständige Reihenfolge steht in der [Vorrangtabelle](/docs/guide/oma-config-semantics#precedence-table). CUE-Dateien werden vor dem Zusammenführen unabhängig ausgewertet, sodass ein gemeinsames `model_preset: "auto"` lokal durch `"free"` ersetzt werden kann. Objekte werden rekursiv zusammengeführt; Arrays, Skalare und `null` ersetzen den gemeinsamen Wert. Eine fehlerhafte lokale Datei, eine fehlende CUE-Executable für lokales CUE oder das gleichzeitige Vorhandensein beider lokalen Formate ist ein Fehler und keine Erlaubnis, auf gemeinsame Standardwerte auszuweichen.
 
 Befehlsoptionen und unterstützte Umgebungsüberschreibungen haben Vorrang vor der wirksamen Dateikonfiguration. `oma doctor --profile` zeigt, welche Dateien verwendet wurden. Lokale Dateien werden nicht mit Git-Klonen oder neuen Worktrees übertragen. Free-Modus-Subprozesse erben `OMA_MODEL_PRESET=free` und die aufgelöste Gateway-Umgebung, damit verschachtelte OMA-Spawns dieselbe Route verwenden; unabhängig gestartete Sitzungen benötigen ihre eigene lokale Konfiguration oder Umgebung. Von Installations- und Setup-Befehlen gespeicherte Einstellungen zielen weiterhin auf die gemeinsame Konfiguration; eine lokale Überschreibung hat zur Laufzeit weiterhin Vorrang.
 
@@ -101,7 +135,7 @@ oma agent spawn backend "Review the API error handling" free-review --vendor cod
 
 Der Free-Modus verwendet `free.model` für jede von OMA dispatchte Rolle, auch für Rollen mit vorhandenen `agents.*.model`-Pins. Diese Pins werden nicht in kostenpflichtige Abonnements aufgelöst. Wählen Sie `auto`, eine Gateway-Modell-ID oder eine benannte Gateway-Kette wie `auto:coding` (legen Sie diese Kette zuvor in FreeLLMAPI an).
 
-Die Transportauswahl erfolgt über `--vendor`, dann `OMA_RUNTIME_VENDOR`, dann eine erkannte unterstützte Laufzeit, dann `default_cli` und schließlich `codex`. Unterstützt werden nur Codex-, Claude- und Qwen-Transporte. Ein ausdrücklich ausgewählter nicht unterstützter Transport führt zu einem Fehler.
+Der Transport folgt der Zeile `free` unter [Wie OMA Modell und CLI eines Agenten auflöst](#how-oma-resolves-an-agents-model-and-cli). Unterstützt werden nur Codex-, Claude- und Qwen-Transporte. Ein ausdrücklich ausgewählter nicht unterstützter Transport führt zu einem Fehler.
 
 | Transport | Gateway-Endpunkt | CLI-Basis-URL |
 |:--|:--|:--|
@@ -142,7 +176,7 @@ Jeder Eintrag ist ein `AgentSpec`-Objekt:
 | `thinking` | boolean | Nein | Erweitertes Thinking aktivieren (modellspezifisch) |
 | `memory` | `user` \| `project` \| `local` | Nein | Memory-Gültigkeitsbereich des Agenten |
 
-Gültige Agent-IDs: `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra`, `explore`.
+Gültige Agent-IDs: `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra`, `explore` und `eval`. Eingebaute Presets definieren `eval` nicht, daher verwendet es den `orchestrator`-Eintrag des Presets, sofern Sie es nicht überschreiben.
 
 Das Zusammenführen ist flach: Jedes Feld Ihrer Überschreibung ersetzt den Preset-Wert für dieses Feld. Ausgelassene Felder behalten ihren Preset-Wert.
 
@@ -155,24 +189,24 @@ Registrieren Sie Modell-Slugs, die noch nicht in der eingebauten Registry vorhan
 ```yaml
 # .agents/oma-config.yaml
 models:
-  google/gemini-3-flash-fast:
-    cli: gemini
-    cli_model: gemini-3-flash
-    auth_hint: "Google AI Pro"
+  antigravity/gemini-3.1-pro-low:
+    cli: antigravity
+    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
       apply_patch: false
       task_budget: false
-      prompt_cache: false
+      prompt_cache: true
       computer_use: false
-      native_dispatch_from: [gemini]
+      native_dispatch_from: [antigravity]
       api_only: false
 ```
 
 Für einen registrierten Slug, den Sie unter `agents:` referenzieren, gelten zwei Regeln:
 
-1. **Der Schlüssel muss die Form `owner/model` haben.** `agents.<id>.model` wird gegen ein Muster `owner/model` validiert. Ein bloßer Schlüssel wie `my-fast-model` wird daher abgelehnt; verwenden Sie einen Schlüssel mit Schrägstrich wie `google/gemini-3-flash-fast` (oder den Slug `provider/model` des Vendors).
-2. **Die Spezifikation muss vollständig sein.** `cli`, `cli_model`, `auth_hint` und jeder boolesche Wert unter `supports` sind bei der Auflösung erforderlich. Eine unvollständige Spezifikation wird vom Config-Parser akzeptiert, scheitert aber an der Modell-Registry-Validierung und fällt stillschweigend auf die Core-Registry zurück.
+1. **Der Schlüssel muss die Form `owner/model` haben.** `agents.<id>.model` wird gegen ein Muster `owner/model` validiert. Ein bloßer Schlüssel wie `my-fast-model` wird daher abgelehnt; verwenden Sie einen Schlüssel mit Schrägstrich wie `antigravity/gemini-3.1-pro-low` (oder den Slug `provider/model` des Vendors).
+2. **Die Spezifikation muss vollständig und gültig sein.** `cli`, `cli_model`, `auth_hint` und jedes Feld unter `supports` sind bei der Auflösung erforderlich. `cli` muss einer der Werte `antigravity`, `claude`, `codex`, `commandcode`, `cursor`, `grok`, `kimi`, `kiro`, `qwen` oder `opencode` sein; Einträge in `native_dispatch_from` müssen `antigravity`, `claude`, `codex`, `cursor`, `kimi`, `kiro`, `opencode` oder `qwen` sein. `gemini` ist für keines der beiden ein gültiger Wert. Eine ungültige Spezifikation protokolliert `[model-registry] User inline model "<slug>" failed validation — falling back to core registry`; enthält die Core-Registry keinen solchen Slug, stoppt der Dispatch mit einem Fehler für einen unbekannten Slug.
 
 > Wenn ein benutzerdefinierter Slug mit einem eingebauten Slug kollidiert, gewinnt die Benutzerdefinition und es wird eine Warnung ausgegeben.
 
@@ -197,7 +231,7 @@ custom_presets:
       # all other agents inherited from claude
 ```
 
-Ohne `extends:` stellen Sie Standardwerte für die kanonischen Agentenrollen des Presets bereit. Mit `extends:` werden nur die von Ihnen aufgeführten Einträge überschrieben; die übrigen werden vom Basis-Preset geerbt.
+Ohne `extends:` definieren Sie mindestens `orchestrator`: Jede Rolle, die das Preset auslässt, verwendet dessen `orchestrator`-Eintrag. Mit `extends:` werden nur die von Ihnen aufgeführten Einträge überschrieben; die übrigen werden vom Basis-Preset geerbt. `extends` kann ein eingebautes oder ein anderes benutzerdefiniertes Preset nennen; eine zirkuläre Kette ist ein Fehler. Ein benutzerdefiniertes Preset mit dem Namen eines eingebauten (zum Beispiel `claude`) wird ignoriert; das eingebaute gewinnt.
 
 ---
 
@@ -209,23 +243,29 @@ Führen Sie `oma doctor --profile` aus, um die vollständig aufgelöste Modellma
 oma doctor --profile
 ```
 
-**Beispielausgabe:**
+**Beispielausgabe** (gekürzt: `model_preset: mixed` mit einer `backend`-Überschreibung; ein echter Lauf listet alle 13 Rollen auf, und das Terminal zeichnet jeden Abschnitt in einem Rahmen):
 
+```text
+ Profile Health (mixed)
+
+ Configuration sources
+   shared: <project>/.agents/oma-config.yaml
+
+ Auth Status Matrix
+┌──────────────┬────────────────────────────────────┬──────────────┬────────────────┐
+│ Role         │ Model                              │ CLI          │ Auth Status    │
+├──────────────┼────────────────────────────────────┼──────────────┼────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
+│ architecture │ anthropic/claude-opus-4-7          │ claude       │ ✓ logged in    │
+│ qa (preset)  │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
+│ backend (over│ openai/gpt-5.5                     │ codex        │ ✓ logged in    │
+│ explore (pres│ openai/gpt-5.4-mini                │ codex        │ ✓ logged in    │
+└──────────────┴────────────────────────────────────┴──────────────┴────────────────┘
+
+ Profile health check complete (mixed)
 ```
-oh-my-agent — Profile Health (preset=mixed)
 
-┌──────────────┬──────────────────────────────┬──────────┬──────────────────┬──────────┐
-│ Role         │ Model                        │ CLI      │ Auth Status      │ Source   │
-├──────────────┼──────────────────────────────┼──────────┼──────────────────┼──────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │ (preset) │
-│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │ (preset) │
-│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │ (preset) │
-│ backend      │ openai/gpt-5.5         │ codex    │ ✗ not logged in  │ (override)│
-│ explore    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │ (preset) │
-└──────────────┴──────────────────────────────┴──────────┴──────────────────┴──────────┘
-```
-
-Jede Zeile zeigt den aufgelösten Modell-Slug und die Quelle, die ihn angewendet hat (`(preset)` oder `(override)`). Verwenden Sie diese Ausgabe, wenn ein Subagent einen unerwarteten Vendor auswählt.
+Jede Zeile zeigt die Rolle, den aufgelösten Modell-Slug, die ausführende CLI und ihren Auth-Status. Die Rollenzelle trägt ein Quell-Tag: `(preset)`, `(override)` oder `(vendor)` für Agenten, die unter `auto` die Vendor-Einstellungen erben. Die Spalte Role ist 14 Zeichen breit, daher werden lange Tags wie oben abgeschnitten. Verwenden Sie diese Ausgabe, wenn ein Subagent einen unerwarteten Vendor auswählt.
 
 ---
 
@@ -235,13 +275,13 @@ Migration 008 läuft bei `oma install` und `oma update` automatisch. Sie konvert
 
 | Alte Konfiguration | Ergebnis nach Migration 008 |
 |:-------------|:--------------------------|
-| Alle Einträge desselben Vendors (z. B. alle `gemini`) | `model_preset: gemini`, kein `agents:` |
+| Alle Einträge desselben Vendors (z. B. alle `claude`) | `model_preset` wird auf das Preset dieses Vendors gesetzt (veraltetes `gemini` wird zu `antigravity`), kein `agents:` |
 | Gemischte Vendoren | Häufigster Vendor → `model_preset`; übrige → `agents:`-Überschreibungen |
 | `AgentSpec`-Objektwerte | Unverändert nach `agents:` verschoben |
 | Inhalt von `models.yaml` | In `oma-config.yaml.models` inline eingefügt |
 | Angepasste `defaults.yaml` | Als `custom_presets.user-customized` mit einer Warnung erhalten |
 
-Die Originale werden vor Änderungen nach `.agents/.backup-pre-008-{timestamp}/` gesichert. Die Migration ist idempotent. Wenn `model_preset` bereits vorhanden ist, wird sie übersprungen.
+Die Originale werden vor Änderungen nach `.agents/backup/008-model-preset/<timestamp>-<pid>/` gesichert (`~/.oma/backup/008-model-preset/...` bei globaler Installation). Die Migration ist idempotent. Wenn `model_preset` bereits vorhanden ist, wird sie übersprungen.
 
 <!-- oma-docs:ignore-start -->
 Nach der Migration werden `.agents/config/defaults.yaml`, `.agents/config/models.yaml` und das Verzeichnis `.agents/config/` entfernt.
@@ -251,20 +291,20 @@ Nach der Migration werden `.agents/config/defaults.yaml`, `.agents/config/models
 
 ## Sitzungs-Kontingent
 
-`session.quota_cap` bleibt unverändert. Fügen Sie es zu `oma-config.yaml` hinzu, um unkontrolliertes Spawnen von Subagenten zu begrenzen:
+Fügen Sie `session.quota_cap` zu `oma-config.yaml` hinzu, um unkontrolliertes Spawnen von Subagenten zu begrenzen:
 
 ```yaml
 session:
   quota_cap:
-    tokens: 2_000_000
+    tokens: 2000000      # plain digits: YAML reads 2_000_000 as a string, which disables the cap
     spawn_count: 40
-    per_vendor:
-      claude: 1_200_000
-      openai: 600_000
-      google: 200_000
+    per_vendor:          # dispatch vendor IDs (claude, codex, antigravity, ...), not model owners
+      claude: 1200000
+      codex: 600000
+      antigravity: 200000
 ```
 
-Wenn ein Kontingent erreicht ist, verweigert der Orchestrator weitere Spawns und meldet den Status `QUOTA_EXCEEDED`.
+Wenn ein Kontingent erreicht ist, verweigert `oma agent spawn` den nächsten Spawn und schlägt mit `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)` fehl. Der Token-Verbrauch wird aus der Prompt-Länge geschätzt, daher ist `spawn_count` die am besten vorhersagbare Grenze. Feldregeln: [Sitzungs-Kontingentgrenzen](/docs/guide/configuration-reference#session-quota-caps).
 
 ---
 
@@ -279,17 +319,17 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  google/gemini-3-flash-fast:
-    cli: gemini
-    cli_model: gemini-3-flash
-    auth_hint: "Google AI Pro"
+  antigravity/gemini-3.1-pro-low:
+    cli: antigravity
+    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
       apply_patch: false
       task_budget: false
-      prompt_cache: false
+      prompt_cache: true
       computer_use: false
-      native_dispatch_from: [gemini]
+      native_dispatch_from: [antigravity]
       api_only: false
 
 custom_presets:
@@ -302,7 +342,7 @@ custom_presets:
 
 session:
   quota_cap:
-    tokens: 2_000_000
+    tokens: 2000000
     spawn_count: 40
 ```
 
@@ -310,7 +350,7 @@ Führen Sie `oma doctor --profile` aus, um die Auflösung zu bestätigen, und st
 
 ---
 
-## Dispatch über pi (Transportlaufzeit)
+## Dispatch über pi (Transportlaufzeit) {#dispatching-through-pi-transport-runtime}
 
 [pi](https://github.com/earendil-works/pi) (Earendil) ist eine Multi-Provider-Proxy-Laufzeit und kein Modellanbieter. Sie kann jedes Modell echter Anbieter (Anthropic, OpenAI, Google) unter einer CLI ausführen. oma behandelt pi als **Transport-Overlay**: Ihr `model_preset` und Ihre `agents:`-Überschreibungen bleiben unverändert, während pi für einen Agenten zur ausführenden CLI wird.
 
@@ -326,7 +366,7 @@ Dabei geschieht Folgendes:
 - Die Persona des Agenten (System-Prompt) wird aus `.agents/agents/<id>.md` inline eingefügt, da pi keine Vendor-seitige Agentendatei referenzieren kann.
 - Die Authentifizierung stammt aus der pi-Konfiguration (`~/.pi/agent/auth.json` oder ein Provider-API-Key in der Umgebung). `oma doctor` meldet pi-Installation und Auth-Status zusammen mit den anderen CLIs.
 
-**Einschränkung:** pi führt nur Modelle echter Provider aus. CLI-proprietäre Presets (`cursor`, `kiro`, `qwen`, `antigravity`) benennen Modelle, die nur in den jeweiligen CLIs existieren. Die Weiterleitung solcher Presets über pi wird daher mit einem verständlichen Fehler abgelehnt. Verwenden Sie ein Real-Provider-Preset (`claude`, `codex`, `gemini` oder `mixed`), wenn Sie Agenten über pi routen möchten.
+**Einschränkung:** pi führt nur Modelle echter Provider aus. CLI-proprietäre Presets (`cursor`, `kiro`, `qwen`, `antigravity`) benennen Modelle, die nur in den jeweiligen CLIs existieren. Die Weiterleitung solcher Presets über pi wird daher mit einem verständlichen Fehler abgelehnt. Verwenden Sie `claude`, `codex` oder `mixed` bzw. `agents.<id>`-Überschreibungen, deren Modelle `anthropic/`-, `openai/`- oder `google/`-Slugs sind, wenn Sie Agenten über pi routen möchten. `gemini` ist ein Alias von `antigravity`, daher lehnt pi es ab.
 
 > Pis Modellkatalog ist releasegebunden und erfordert Authentifizierung. Wenn ein aufgelöster Slug nicht zu dem passt, was Ihre pi-Installation bereitstellt, prüfen Sie `pi --list-models`. Pis `--model`-Abgleich ist unscharf, daher werden die meisten Provider-Slugs unverändert aufgelöst.
 
@@ -378,7 +418,7 @@ Dabei wird `opencode run --agent pm --dir <workspace> "<prompt>"` ausgeführt. D
 Um bestimmte Agenten auf ein OpenCode-Modell zu routen, registrieren Sie das Modell unter `models:` und referenzieren es aus `agents:`. Es gelten zwei Anforderungen (siehe [Modell-Slugs inline definieren](#inlining-model-slugs)):
 
 1. **Der Slug muss die Form `owner/model` haben.** Verwenden Sie den OpenCode-`provider/model`-Slug als Registry-Schlüssel; bloße Namen werden vom Schema `agents.<id>.model` abgelehnt.
-2. **Die Spezifikation muss vollständig sein:** `cli`, `cli_model`, `auth_hint` und jeder boolesche Wert unter `supports`. Eine unvollständige Spezifikation scheitert an der Validierung und fällt stillschweigend auf die Core-Registry zurück, sodass der Agent nicht an OpenCode geroutet würde.
+2. **Die Spezifikation muss vollständig sein:** `cli`, `cli_model`, `auth_hint` und jedes Feld unter `supports`. Eine unvollständige Spezifikation scheitert an der Validierung; OMA protokolliert eine Warnung und fällt auf die Core-Registry zurück, sodass der Agent nicht an OpenCode geroutet würde.
 
 ```yaml
 # .agents/oma-config.yaml
