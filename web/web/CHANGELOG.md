@@ -1,5 +1,16 @@
 # Changelog
 
+## [11.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v10.0.1...web-v11.0.0) (2026-10-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** `oma skills matrix` is rejected like the other plural spellings; use `oma skill matrix`.
+
+### Bug Fixes
+
+* **cli:** publish skills matrix as skill matrix ([52ae343](https://github.com/first-fluke/oh-my-agent/commit/52ae343dbd20dfd3551d8fd7a995d4827a021eb8))
+
 ## [10.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v10.0.0...web-v10.0.1) (2026-10-14)
 
 
