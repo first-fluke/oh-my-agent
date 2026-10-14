@@ -21,6 +21,7 @@ const config: Config = {
   },
   markdown: {
     format: "md",
+    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: "warn",
     },
@@ -59,6 +60,7 @@ const config: Config = {
   },
 
   themes: [
+    "@docusaurus/theme-mermaid",
     [
       "@easyops-cn/docusaurus-search-local",
       {
@@ -221,6 +223,9 @@ const config: Config = {
         },
       ],
       copyright: `Copyright ${new Date().getFullYear()} oh-my-agent contributors.`,
+    },
+    mermaid: {
+      theme: { light: "neutral", dark: "dark" },
     },
     prism: {
       theme: require("prism-react-renderer").themes.github,
