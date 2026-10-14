@@ -190,6 +190,14 @@ do konfiguracji projektu, przeglądu, debugowania, weryfikacji i lokalnych wynik
 Korzysta z Twojego istniejącego terminala agenta Orca oraz projektowej instalacji OMA.
 Wymaga Orca 1.4.197+ z włączonymi wtyczkami eksperymentalnymi.
 
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](../integrations/dsh/README.md) łączy projektowe kontrole OMA
+z wykonywaniem narzędzi i zakończeniem tury w DSH za pomocą wtyczki Cordis.
+DSH bezpośrednio wykrywa istniejący katalog `.agents/skills`. Wtyczka zawiera
+wykonywalny JavaScript i nie wymaga budowania. Instalację, przetestowane wersje
+i obsługiwane zdarzenia hooków opisuje przewodnik integracji.
+
 ## Jak to działa
 
 Po prostu pisz. Opisz, czego potrzebujesz, a oh-my-agent sam ustali, których agentów użyć.
@@ -326,6 +334,7 @@ flowchart TD
 - **[Szczegółowa dokumentacja](./AGENTS_SPEC.md)**: pełna specyfikacja techniczna i architektura
 - **[Wspierani agenci](./SUPPORTED_AGENTS.md)**: macierz wsparcia agentów w różnych IDE
 - **[Dostawcy możliwości](./capability-providers.md)**: eksperymentalna konfiguracja Gortex i Honcho, routing i ograniczenia
+- **[Macierz zgodności umiejętności](./skills-matrix.md)**: sprawdź natywną zawartość umiejętności, referencje i kontrakty odpowiedzi w Claude i Codex
 - **[Raport benchmarkowy](../benchmarks/README.md)**: metoda, wyniki, zrzuty ekranu i zastrzeżenia
 - **[Dokumentacja webowa](https://first-fluke.github.io/oh-my-agent/)**: poradniki, tutoriale i referencja CLI
 

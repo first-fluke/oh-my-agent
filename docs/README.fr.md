@@ -187,6 +187,10 @@ En marge de l'équipe d'ingénierie, oma embarque des pipelines de contenu et de
 
 [OMA for Orca](../integrations/orca/README.md) ajoute un panneau latéral et des actions dans la palette de commandes pour la configuration du projet, la revue, le débogage, la vérification et les résultats locaux. Il utilise ton terminal d'agent Orca existant et l'installation OMA du projet. Nécessite Orca 1.4.197+ avec les plugins expérimentaux activés.
 
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](../integrations/dsh/README.md) connecte les vérifications OMA du projet à l'exécution des outils et à la fin des tours de DSH via un plugin Cordis. DSH découvre directement le répertoire `.agents/skills` existant. Le plugin est livré en JavaScript exécutable et ne nécessite aucun build. Consulte le guide d'intégration pour l'installation, les versions testées et les événements de hook pris en charge.
+
 ## Comment Ça Marche
 
 Discute, tout simplement. Décris ce que tu veux et oh-my-agent choisit les bons agents.
@@ -323,6 +327,7 @@ flowchart TD
 - **[Documentation Détaillée](./AGENTS_SPEC.md)** : spec technique complète et architecture
 - **[Agents Supportés](./SUPPORTED_AGENTS.md)** : matrice de support des agents par IDE
 - **[Fournisseurs de Capacités](./capability-providers.md)** : configuration, routage et limites expérimentaux de Gortex et Honcho
+- **[Matrice de Compatibilité des Skills](./skills-matrix.md)** : vérifie le contenu natif des skills, les références et les contrats de réponse dans Claude et Codex
 - **[Rapport de Benchmark](../benchmarks/README.md)** : méthode, scores, captures et limites
 - **[Docs Web](https://first-fluke.github.io/oh-my-agent/)** : guides, tutoriels et référence CLI
 

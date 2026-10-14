@@ -187,6 +187,10 @@ Tách khỏi đội ngũ kỹ thuật, oma còn cung cấp các pipeline nội d
 
 [OMA for Orca](../integrations/orca/README.md) bổ sung một sidebar panel và các action trên command palette cho việc thiết lập dự án, review, debug, xác minh và xem kết quả cục bộ. Nó dùng terminal agent Orca hiện có và bản cài OMA của dự án. Yêu cầu Orca 1.4.197+ đã bật plugin thử nghiệm.
 
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](../integrations/dsh/README.md) kết nối các bước kiểm tra OMA của dự án với việc thực thi tool và hoàn tất lượt (turn) của DSH thông qua một plugin Cordis. DSH tự phát hiện trực tiếp thư mục `.agents/skills` hiện có. Plugin đi kèm JavaScript có thể thực thi ngay và không cần build. Xem hướng dẫn tích hợp để biết cách cài đặt, các phiên bản đã kiểm thử và các hook event được hỗ trợ.
+
 ## Cách hoạt động
 
 Chỉ cần trò chuyện. Mô tả điều bạn muốn và oh-my-agent sẽ tự tìm ra agent phù hợp.
@@ -323,6 +327,7 @@ flowchart TD
 - **[Tài liệu chi tiết](./AGENTS_SPEC.md)**: đặc tả kỹ thuật và kiến trúc đầy đủ
 - **[Agent được hỗ trợ](./SUPPORTED_AGENTS.md)**: ma trận hỗ trợ agent theo IDE
 - **[Capability Provider](./capability-providers.md)**: cấu hình, định tuyến và giới hạn của Gortex và Honcho (thử nghiệm)
+- **[Ma trận tương thích skill](./skills-matrix.md)**: kiểm tra nội dung skill gốc, tài liệu tham chiếu và response contract trong Claude và Codex
 - **[Báo cáo benchmark](../benchmarks/README.md)**: phương pháp, điểm số, ảnh chụp màn hình và các lưu ý
 - **[Tài liệu web](https://first-fluke.github.io/oh-my-agent/)**: hướng dẫn, tutorial và CLI reference
 

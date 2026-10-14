@@ -187,6 +187,10 @@ bunx oh-my-agent@latest
 
 [OMA for Orca](../integrations/orca/README.md) 会添加一个侧边栏面板和命令面板操作，用于项目设置、审查、调试、验证和本地结果。它使用你现有的 Orca agent 终端和项目中的 OMA 安装。需要 Orca 1.4.197+，并启用实验性插件。
 
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](../integrations/dsh/README.md) 通过 Cordis 插件，将项目中的 OMA 检查接入 DSH 的工具执行和回合完成流程。DSH 会直接发现现有的 `.agents/skills`。该插件附带可直接执行的 JavaScript，无需构建。安装方法、已测试版本和支持的 hook 事件请参阅集成指南。
+
 ## 工作原理
 
 直接聊就行。描述你想要什么，oh-my-agent 会自动选择合适的 agent。
@@ -323,6 +327,7 @@ flowchart TD
 - **[详细文档](./AGENTS_SPEC.md)**：完整技术规格和架构
 - **[支持的 Agent](./SUPPORTED_AGENTS.md)**：各 IDE 的 agent 支持情况
 - **[能力提供方](./capability-providers.md)**：实验性 Gortex 与 Honcho 的配置、路由和限制
+- **[Skill 兼容性矩阵](./skills-matrix.md)**：检查 Claude 和 Codex 中原生 skill 的内容、引用和响应契约
 - **[基准测试报告](../benchmarks/README.md)**：方法、分数、截图与注意事项
 - **[Web 文档](https://first-fluke.github.io/oh-my-agent/)**：指南、教程和 CLI 参考
 

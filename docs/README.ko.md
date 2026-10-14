@@ -187,6 +187,10 @@ AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 
 
 [OMA for Orca](../integrations/orca/README.md)는 프로젝트 설정, 리뷰, 디버깅, 검증, 로컬 결과를 위한 사이드바 패널과 명령 팔레트 액션을 추가합니다. 기존 Orca 에이전트 터미널과 프로젝트에 설치된 OMA를 그대로 사용합니다. 실험적 플러그인을 활성화한 Orca 1.4.197 이상이 필요합니다.
 
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](../integrations/dsh/README.md)는 Cordis 플러그인을 통해 프로젝트의 OMA 검사를 DSH의 도구 실행 및 턴 완료 단계에 연결합니다. DSH는 기존 `.agents/skills`를 직접 인식합니다. 플러그인은 실행 가능한 JavaScript로 제공되므로 별도의 빌드가 필요 없습니다. 설치 방법, 테스트된 버전, 지원되는 훅 이벤트는 통합 가이드를 참고하세요.
+
 ## 작동 방식
 
 그냥 채팅하듯 말하면 됩니다. 원하는 걸 설명하면 oh-my-agent가 알아서 적절한 에이전트를 골라줍니다.
@@ -323,6 +327,7 @@ flowchart TD
 - **[상세 문서](./AGENTS_SPEC.md)**: 전체 기술 스펙과 아키텍처
 - **[지원 에이전트](./SUPPORTED_AGENTS.md)**: IDE별 에이전트 지원 현황
 - **[기능 프로바이더](./capability-providers.md)**: 실험적 Gortex와 Honcho의 설정, 라우팅, 제약
+- **[스킬 호환성 매트릭스](./skills-matrix.md)**: Claude와 Codex에서 네이티브 스킬 콘텐츠, 레퍼런스, 응답 계약 확인
 - **[벤치마크 리포트](../benchmarks/README.md)**: 방법론, 점수, 스크린샷, 유의사항
 - **[웹 문서](https://first-fluke.github.io/oh-my-agent/)**: 가이드, 튜토리얼, CLI 레퍼런스
 

@@ -187,6 +187,10 @@ bunx oh-my-agent@latest
 
 [OMA for Orca](../integrations/orca/README.md) は、プロジェクトのセットアップ、レビュー、デバッグ、検証、ローカル結果のために、サイドバーパネルとコマンドパレットのアクションを追加します。既存の Orca エージェントターミナルとプロジェクトの OMA インストールを使います。Orca 1.4.197 以上で、実験的プラグインを有効にする必要があります。
 
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](../integrations/dsh/README.md) は、Cordis プラグインを通じて、プロジェクトの OMA チェックを DSH のツール実行とターン完了に接続します。DSH は既存の `.agents/skills` を直接検出します。プラグインは実行可能な JavaScript として提供され、ビルドは不要です。インストール方法、検証済みバージョン、サポートされるフックイベントについては、統合ガイドを参照してください。
+
 ## 仕組み
 
 チャットするだけ。やりたいことを説明すれば、oh-my-agentが適切なエージェントを選びます。
@@ -323,6 +327,7 @@ flowchart TD
 - **[詳細ドキュメント](./AGENTS_SPEC.md)**: 完全な技術仕様とアーキテクチャ
 - **[対応エージェント](./SUPPORTED_AGENTS.md)**: IDE別エージェント対応状況
 - **[機能プロバイダー](./capability-providers.md)**: 実験的な Gortex と Honcho の設定、ルーティング、制限
+- **[スキル互換性マトリクス](./skills-matrix.md)**: Claude と Codex におけるネイティブスキルの内容、リファレンス、レスポンス契約を確認
 - **[ベンチマークレポート](../benchmarks/README.md)**: 方法論、スコア、スクリーンショット、注意点
 - **[Webドキュメント](https://first-fluke.github.io/oh-my-agent/)**: ガイド、チュートリアル、CLIリファレンス
 

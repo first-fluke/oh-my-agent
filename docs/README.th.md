@@ -187,6 +187,10 @@ bunx oh-my-agent@latest
 
 [OMA for Orca](../integrations/orca/README.md) เพิ่มแผงด้านข้าง (sidebar) และแอ็กชันใน command palette สำหรับการตั้งค่าโปรเจกต์ การรีวิว การดีบัก การตรวจสอบยืนยัน และผลลัพธ์ในเครื่อง ใช้เทอร์มินัลเอเจนต์ของ Orca และการติดตั้ง OMA ของโปรเจกต์ที่คุณมีอยู่เดิม ต้องใช้ Orca 1.4.197 ขึ้นไป โดยเปิดใช้งานปลั๊กอินแบบทดลองไว้
 
+### DeepSeek Harness
+
+[OMA for DeepSeek Harness](../integrations/dsh/README.md) เชื่อมการตรวจสอบ OMA ของโปรเจกต์เข้ากับการรันเครื่องมือ (tool execution) และการจบเทิร์น (turn completion) ของ DSH ผ่านปลั๊กอิน Cordis โดย DSH จะค้นพบ `.agents/skills` ที่มีอยู่เดิมได้โดยตรง ปลั๊กอินนี้มาพร้อม JavaScript ที่รันได้ทันทีและไม่ต้องบิลด์ ดูคู่มือการผสานรวมสำหรับวิธีติดตั้ง เวอร์ชันที่ผ่านการทดสอบ และ hook event ที่รองรับ
+
 ## วิธีการทำงาน
 
 เพียงแค่แชท อธิบายสิ่งที่คุณต้องการ แล้ว oh-my-agent จะคิดเองว่าควรใช้เอเจนต์ตัวไหน
@@ -275,7 +279,7 @@ oh-my-agent มอบการวางแผนแบบปลายเปิ�
 
 ```mermaid
 flowchart TD
-    subgraph Workflows["เวิร์กโฟลว์ (Workflows)"]
+    subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
         W1["/work"]
@@ -289,13 +293,13 @@ flowchart TD
         W8["/design"]
     end
 
-    subgraph Orchestration["การประสานงาน (Orchestration)"]
+    subgraph Orchestration["Orchestration"]
         direction TB
         PM[oma-pm]
         ORC[oma-orchestration]
     end
 
-    subgraph Domain["เอเจนต์ตามโดเมน (Domain Agents)"]
+    subgraph Domain["Domain Agents"]
         direction TB
         ARC[oma-architecture]
         FE[oma-frontend]
@@ -306,7 +310,7 @@ flowchart TD
         TF[oma-tf-infra]
     end
 
-    subgraph Quality["คุณภาพ (Quality)"]
+    subgraph Quality["Quality"]
         direction TB
         QA[oma-qa]
         DBG[oma-debug]
@@ -323,6 +327,7 @@ flowchart TD
 - **[รายละเอียดสเปก (Docs)](./AGENTS_SPEC.md)**: รายละเอียดทางเทคนิคและสถาปัตยกรรมฉบับเต็ม
 - **[เอเจนต์ที่รองรับ](./SUPPORTED_AGENTS.md)**: ตารางเปรียบเทียบเอเจนต์ใน IDE ต่างๆ
 - **[ผู้ให้บริการความสามารถ (Capability Providers)](./capability-providers.md)**: การตั้งค่า การกำหนดเส้นทาง และข้อจำกัดของ Gortex และ Honcho ซึ่งยังอยู่ในขั้นทดลอง
+- **[ตารางความเข้ากันได้ของสกิล (Skill Compatibility Matrix)](./skills-matrix.md)**: ตรวจสอบเนื้อหาสกิลแบบเนทีฟ เอกสารอ้างอิง (references) และสัญญาการตอบกลับ (response contracts) ใน Claude และ Codex
 - **[รายงานเบนช์มาร์ก](../benchmarks/README.md)**: วิธีการวัดผล คะแนน ภาพหน้าจอ และข้อควรระวัง
 - **[เอกสารบนเว็บ](https://first-fluke.github.io/oh-my-agent/)**: คู่มือ บทเรียน และการอ้างอิง CLI
 
