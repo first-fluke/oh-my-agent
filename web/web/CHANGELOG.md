@@ -1,5 +1,13 @@
 # Changelog
 
+## [10.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v10.0.0...web-v10.0.1) (2026-10-14)
+
+
+### Documentation
+
+* **i18n:** sync 11 locales with the improved web docs ([1a08546](https://github.com/first-fluke/oh-my-agent/commit/1a0854625389c43787e5c8794ce5f2c296f96d15))
+* **web:** add diagrams, decision tables, and a glossary ([cc4a891](https://github.com/first-fluke/oh-my-agent/commit/cc4a891ba19af10b98b77686c514ea8b351cd839))
+
 ## [10.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v9.0.0...web-v10.0.0) (2026-10-11)
 
 
