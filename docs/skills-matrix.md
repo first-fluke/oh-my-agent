@@ -1,14 +1,14 @@
 # Native skill compatibility matrix
 
-`oma skills matrix` checks skill content retrieval, relative references, and final output contracts through the native Claude and Codex CLIs. Each case uses a fresh temporary workspace. The default diagnostics use native skill discovery; installed-skill audits also support the body injection format used by agent-valley.
+`oma skill matrix` checks skill content retrieval, relative references, and final output contracts through the native Claude and Codex CLIs. Each case uses a fresh temporary workspace. The default diagnostics use native skill discovery; installed-skill audits also support the body injection format used by agent-valley.
 
 ## Plan and run
 
 ```sh
-oma skills matrix
-oma skills matrix --vendors codex --cases discovery,reference
-oma skills matrix --live
-oma skills matrix --live --yes --json --report matrix-report.json
+oma skill matrix
+oma skill matrix --vendors codex --cases discovery,reference
+oma skill matrix --live
+oma skill matrix --live --yes --json --report matrix-report.json
 ```
 
 The default command validates the suite and prints a plan. It starts no vendor processes and produces no compatibility verdicts. The default plan has six native CLI invocations: three cases across two vendors. In JSON, `plannedCalls` uses `callUnit: "native-cli-invocation"`. Each invocation can make multiple model requests; this count is not a token or cost limit.
@@ -46,8 +46,8 @@ These are diagnostic skills supplied by the matrix. Passing them does not certif
 ## Audit installed skills
 
 ```sh
-oma skills matrix --project-root . --skills oma-backend,oma-debug --delivery injected --json
-oma skills matrix --project-root . --skills oma-backend,oma-debug --delivery injected --live --yes --json --report installed-matrix.json
+oma skill matrix --project-root . --skills oma-backend,oma-debug --delivery injected --json
+oma skill matrix --project-root . --skills oma-backend,oma-debug --delivery injected --live --yes --json --report installed-matrix.json
 ```
 
 An installed audit snapshots actual skill files and shared resources without changing their bytes or inserting canaries. Relative reference paths remain intact in each temporary copy. The report identifies each selected skill's content hash, required files, missing files, and excluded references. Plans compute these hashes without starting a vendor process.
@@ -120,8 +120,8 @@ Save this self-contained suite as `custom-matrix.json`:
 ```
 
 ```sh
-oma skills matrix --suite custom-matrix.json --json
-oma skills matrix --suite custom-matrix.json --live --yes --json
+oma skill matrix --suite custom-matrix.json --json
+oma skill matrix --suite custom-matrix.json --live --yes --json
 ```
 
 Every case requires a unique `id`, a unique `skill` name, a `prompt`, inline UTF-8 file contents in `files`, and an `expected` JSON object. `SKILL.md` must have frontmatter whose `name` matches `skill` and a nonempty description. The final response must equal `expected`, including its fields and values.

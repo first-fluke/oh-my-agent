@@ -80,8 +80,7 @@ sidebar_label: CLI 命令
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
-| `skills` | `skills matrix`（唯一保留复数命令组名的命令；`oma skill matrix` 会被拒绝） |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 `oma describe` 还会列出 `agent parallel-supervisor`、`schedule inspect` 和 `schedule builtin-evolution-add`。这些命令由其他命令在内部调用，无需手动运行。
@@ -1858,7 +1857,7 @@ oma memory gc --scope sessions --keep 20 --dry-run --json
 | 撤销最近一次应用的编辑 | `oma skill rollback --skill <id>` | 无 | SKILL.md | 一条已记录的晋升 |
 | 查看演进历史 | `oma skill promotions --skill <id>`、`oma skill evolution-stats --skill <id>` | 无 | 无 | 已记录的优化运行 |
 | 调优优化器本身 | `oma skill meta-optimize --skill <ids...> --live` | **Live**，包含多次内部运行（必须使用 `--live`） | 仅在使用 `--apply` 时写入流程文件 | 带 fixture 的保留技能 |
-| 检查原生技能发现 | `oma skills matrix [--live]` | 仅在使用 `--live` 时为 **Live**（运行 `claude` 和 `codex` CLI）；否则只打印计划 | 仅在使用 `--report <path>` 时写入 JSON 报告 | 已安装供应商 CLI |
+| 检查原生技能发现 | `oma skill matrix [--live]` | 仅在使用 `--live` 时为 **Live**（运行 `claude` 和 `codex` CLI）；否则只打印计划 | 仅在使用 `--report <path>` 时写入 JSON 报告 | 已安装供应商 CLI |
 | 重放 harness 比较 | `oma harness eval --suite <yaml> --candidate <dir>`（mock，默认） | 无 | 无 | 与套件、基线和候选都匹配的已记录运行 |
 | 比较 harness 覆盖层 | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **Live**：每个任务一个基线分支和一个候选分支 | 仅在使用 `--record` 时写入记录 | 位于项目内的套件和 fixture |
 | 把失败的运行转成 fixture | 先运行 `oma harness incident scan`，再运行 `capture --spec <file>`，然后运行 `promote <id>` | 仅 `promote`：省略 `--skill` 时发起一次路由调用；使用 `--draft` 时，由 opt-agent 起草评分标准并进行 judge 检查 | 事故记录；回归 fixture | 一次失败、受阻或部分完成的智能体运行 |
@@ -2232,7 +2231,7 @@ oma version
 |:-------------|:----|
 | `viz`、`s`、`img`、`vid`、`sl` | `visualize`、`search`、`image`、`video`、`slide` |
 | 冒号形式，例如 `agent:parallel`、`memory:init`、`schedule:add` | `agent parallel`、`memory init`、`schedule create` |
-| `skills audit`、`skills lint`、`skills eval`、`skills opt` | `skill audit`、`skill lint`、`skill eval`、`skill optimize`（只有 `skills matrix` 保留复数命令组名） |
+| `skills audit`、`skills lint`、`skills eval`、`skills opt`、`skills matrix` | `skill audit`、`skill lint`、`skill eval`、`skill optimize`、`skill matrix` |
 | `verify <agent-type>` | `verify agent <agent-type>` |
 | `vault rm` | `vault delete` |
 | `search api <url>`、`search api:search`、`search rss <url>`、`search rss:google` | `search api fetch <url>`、`search api search`、`search rss fetch <url>`、`search rss google` |

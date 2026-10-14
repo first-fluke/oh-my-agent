@@ -79,8 +79,7 @@ This map keeps the long references below scannable and makes the less frequently
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
-| `skills` | `skills matrix` (the only command that keeps the plural group name; `oma skill matrix` is rejected) |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 `oma describe` also lists `agent parallel-supervisor`, `schedule inspect`, and `schedule builtin-evolution-add`. Other commands call these internally; you do not run them by hand.
@@ -1915,7 +1914,7 @@ Start with the offline commands. Commands marked **live** call models through yo
 | Undo the latest applied edit | `oma skill rollback --skill <id>` | None | SKILL.md | A recorded promotion |
 | Review evolution history | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | None | Nothing | Recorded optimization runs |
 | Tune the optimizer itself | `oma skill meta-optimize --skill <ids...> --live` | **Live**, many inner runs (`--live` is required) | Procedure file only with `--apply` | Held-out skills with fixtures |
-| Check native skill discovery | `oma skills matrix [--live]` | **Live** only with `--live` (runs the `claude` and `codex` CLIs); otherwise prints the plan | A JSON report only with `--report <path>` | The vendor CLIs installed |
+| Check native skill discovery | `oma skill matrix [--live]` | **Live** only with `--live` (runs the `claude` and `codex` CLIs); otherwise prints the plan | A JSON report only with `--report <path>` | The vendor CLIs installed |
 | Replay a harness comparison | `oma harness eval --suite <yaml> --candidate <dir>` (mock, the default) | None | Nothing | A recorded run that matches the suite, baseline, and candidate |
 | Compare a harness overlay | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **Live**: a baseline and a candidate arm per task | A recording only with `--record` | Suite and fixtures inside the project |
 | Turn a failed run into a fixture | `oma harness incident scan`, then `capture --spec <file>`, then `promote <id>` | `promote` only: a routing call when `--skill` is omitted; with `--draft`, an opt-agent rubric draft and a judge check | Incident record; regression fixture | A failed, blocked, or partial agent run |
@@ -2289,7 +2288,7 @@ Older spellings are rejected with `Unknown command`, `Unexpected argument`, or `
 |:-------------|:----|
 | `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
 | Colon forms such as `agent:parallel`, `memory:init`, `schedule:add` | `agent parallel`, `memory init`, `schedule create` |
-| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize` (only `skills matrix` keeps the plural group) |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt`, `skills matrix` | `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill matrix` |
 | `verify <agent-type>` | `verify agent <agent-type>` |
 | `vault rm` | `vault delete` |
 | `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |

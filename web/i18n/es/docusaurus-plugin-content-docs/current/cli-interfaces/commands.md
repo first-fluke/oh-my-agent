@@ -79,8 +79,7 @@ Este mapa facilita recorrer las referencias extensas de abajo y descubrir las fa
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
-| `skills` | `skills matrix` (el único comando que conserva el nombre de grupo en plural; `oma skill matrix` se rechaza) |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 `oma describe` también enumera `agent parallel-supervisor`, `schedule inspect` y `schedule builtin-evolution-add`. Otros comandos los llaman internamente; no se ejecutan a mano.
@@ -1915,7 +1914,7 @@ Empieza por los comandos offline. Los comandos marcados como **en vivo** llaman 
 | Deshacer el último cambio aplicado | `oma skill rollback --skill <id>` | Ninguna | SKILL.md | Una promoción registrada |
 | Revisar el historial de evolución | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | Ninguna | Nada | Ejecuciones de optimización registradas |
 | Ajustar el propio optimizador | `oma skill meta-optimize --skill <ids...> --live` | **En vivo**, muchas ejecuciones internas (`--live` es obligatorio) | Archivo de procedimiento solo con `--apply` | Skills reservadas con fixtures |
-| Comprobar el descubrimiento nativo de skills | `oma skills matrix [--live]` | **En vivo** solo con `--live` (ejecuta los CLI `claude` y `codex`); de lo contrario, imprime el plan | Un informe JSON solo con `--report <path>` | Los CLI de proveedor instalados |
+| Comprobar el descubrimiento nativo de skills | `oma skill matrix [--live]` | **En vivo** solo con `--live` (ejecuta los CLI `claude` y `codex`); de lo contrario, imprime el plan | Un informe JSON solo con `--report <path>` | Los CLI de proveedor instalados |
 | Reproducir una comparación del harness | `oma harness eval --suite <yaml> --candidate <dir>` (mock, el predeterminado) | Ninguna | Nada | Una ejecución registrada que coincida con la suite, el baseline y el candidato |
 | Comparar un overlay del harness | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **En vivo**: un brazo baseline y otro candidate por tarea | Una grabación solo con `--record` | Suite y fixtures dentro del proyecto |
 | Convertir una ejecución fallida en un fixture | `oma harness incident scan`, después `capture --spec <file>` y después `promote <id>` | Solo `promote`: una llamada de enrutamiento cuando se omite `--skill`; con `--draft`, un borrador de rúbrica del opt-agent y una comprobación del juez | Registro del incidente; fixture de regresión | Una ejecución de agente fallida, bloqueada o parcial |
@@ -2289,7 +2288,7 @@ Las formas antiguas se rechazan con `Unknown command`, `Unexpected argument` o `
 |:-------------|:----|
 | `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
 | Formas con dos puntos como `agent:parallel`, `memory:init`, `schedule:add` | `agent parallel`, `memory init`, `schedule create` |
-| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize` (solo `skills matrix` conserva el grupo en plural) |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt`, `skills matrix` | `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill matrix` |
 | `verify <agent-type>` | `verify agent <agent-type>` |
 | `vault rm` | `vault delete` |
 | `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |

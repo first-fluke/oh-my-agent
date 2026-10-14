@@ -79,8 +79,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
-| `skills` | `skills matrix` (복수형 그룹 이름을 유지하는 유일한 명령이며, `oma skill matrix`는 거부됩니다) |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 `oma describe`에는 `agent parallel-supervisor`, `schedule inspect`, `schedule builtin-evolution-add`도 나옵니다. 다른 명령이 내부적으로 호출하는 명령이므로 직접 실행하지 않습니다.
@@ -1857,7 +1856,7 @@ oma memory gc --scope sessions --keep 20 --dry-run --json
 | 최근 적용한 편집 되돌리기 | `oma skill rollback --skill <id>` | 없음 | SKILL.md | 기록된 승격 |
 | 진화 이력 검토 | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | 없음 | 없음 | 기록된 최적화 실행 |
 | 최적화기 자체 튜닝 | `oma skill meta-optimize --skill <ids...> --live` | **라이브**, 내부 실행 다수(`--live` 필수) | `--apply`일 때만 절차 파일 | 픽스처가 있는 held-out 스킬 |
-| 네이티브 스킬 탐색 확인 | `oma skills matrix [--live]` | `--live`일 때만 **라이브**(`claude`와 `codex` CLI 실행). 그 외에는 계획만 출력 | `--report <path>`일 때만 JSON 보고서 | 벤더 CLI 설치 |
+| 네이티브 스킬 탐색 확인 | `oma skill matrix [--live]` | `--live`일 때만 **라이브**(`claude`와 `codex` CLI 실행). 그 외에는 계획만 출력 | `--report <path>`일 때만 JSON 보고서 | 벤더 CLI 설치 |
 | 하네스 비교 재생 | `oma harness eval --suite <yaml> --candidate <dir>` (mock, 기본값) | 없음 | 없음 | 스위트, baseline, candidate와 일치하는 기록된 실행 |
 | 하네스 오버레이 비교 | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **라이브**: 태스크마다 baseline과 candidate 갈래 | `--record`일 때만 기록 | 프로젝트 안의 스위트와 픽스처 |
 | 실패한 실행을 픽스처로 만들기 | `oma harness incident scan`, 이어서 `capture --spec <file>`, 이어서 `promote <id>` | `promote`만: `--skill`을 생략하면 라우팅 호출, `--draft`면 opt-agent 루브릭 초안과 judge 검사 | 인시던트 기록, 회귀 픽스처 | 실패, 차단 또는 부분 완료된 에이전트 실행 |
@@ -2231,7 +2230,7 @@ oma version
 |:-------------|:----|
 | `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
 | `agent:parallel`, `memory:init`, `schedule:add` 같은 콜론 형식 | `agent parallel`, `memory init`, `schedule create` |
-| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize` (복수형 그룹은 `skills matrix`만 유지) |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt`, `skills matrix` | `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill matrix` |
 | `verify <agent-type>` | `verify agent <agent-type>` |
 | `vault rm` | `vault delete` |
 | `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |

@@ -79,8 +79,7 @@ description: oh-my-agent CLIの全コマンドを対象に、構文、オプシ�
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
-| `skills` | `skills matrix`（複数形のグループ名を保つ唯一のコマンドです。`oma skill matrix` は拒否されます） |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 `oma describe` には `agent parallel-supervisor`、`schedule inspect`、`schedule builtin-evolution-add` も表示されます。これらは他のコマンドが内部で呼び出すもので、手動で実行するものではありません。
@@ -1905,7 +1904,7 @@ oma memory gc --scope sessions --keep 20 --dry-run --json
 | 最後に適用した編集を元に戻す | `oma skill rollback --skill <id>` | なし | SKILL.md | 記録済みの昇格 |
 | 進化の履歴を確認する | `oma skill promotions --skill <id>`、`oma skill evolution-stats --skill <id>` | なし | なし | 記録済みの最適化実行 |
 | 最適化手法そのものを調整する | `oma skill meta-optimize --skill <ids...> --live` | **Live**、多数の内部実行（`--live` が必須） | `--apply` 時だけ手順ファイル | フィクスチャを持つ保留スキル |
-| ネイティブのスキル検出を確認する | `oma skills matrix [--live]` | `--live` 時だけ **Live**（`claude` と `codex` の CLI を実行）。それ以外は計画を表示 | `--report <path>` 時だけ JSON レポート | ベンダー CLI のインストール |
+| ネイティブのスキル検出を確認する | `oma skill matrix [--live]` | `--live` 時だけ **Live**（`claude` と `codex` の CLI を実行）。それ以外は計画を表示 | `--report <path>` 時だけ JSON レポート | ベンダー CLI のインストール |
 | ハーネス比較を再生する | `oma harness eval --suite <yaml> --candidate <dir>`（mock、デフォルト） | なし | なし | suite、baseline、candidate に一致する記録済み実行 |
 | ハーネスのオーバーレイを比較する | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **Live**: タスクごとに baseline と candidate のアーム | `--record` 時だけ記録 | プロジェクト内の suite とフィクスチャ |
 | 失敗した実行をフィクスチャにする | `oma harness incident scan`、次に `capture --spec <file>`、次に `promote <id>` | `promote` のみ: `--skill` 省略時のルーティング呼び出し。`--draft` 時は opt-agent のルーブリック下書きと judge チェック | インシデント記録、回帰フィクスチャ | 失敗、ブロック、または部分完了のエージェント実行 |
@@ -2279,7 +2278,7 @@ oma version
 |:-------------|:----|
 | `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
 | `agent:parallel`、`memory:init`、`schedule:add` などのコロン形式 | `agent parallel`, `memory init`, `schedule create` |
-| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize`（複数形のグループを保つのは `skills matrix` だけです） |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt`, `skills matrix` | `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill matrix` |
 | `verify <agent-type>` | `verify agent <agent-type>` |
 | `vault rm` | `vault delete` |
 | `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |

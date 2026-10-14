@@ -79,8 +79,7 @@ Bản đồ này giúp các phần tham chiếu dài bên dưới dễ lướt h
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
-| `skills` | `skills matrix` (lệnh duy nhất giữ tên nhóm số nhiều; `oma skill matrix` bị từ chối) |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 `oma describe` cũng liệt kê `agent parallel-supervisor`, `schedule inspect` và `schedule builtin-evolution-add`. Các lệnh khác gọi chúng ở bên trong; bạn không chạy chúng bằng tay.
@@ -1915,7 +1914,7 @@ Hãy bắt đầu với các lệnh offline. Các lệnh được đánh dấu *
 | Hoàn tác chỉnh sửa được áp dụng gần nhất | `oma skill rollback --skill <id>` | Không | SKILL.md | Một promotion đã được ghi lại |
 | Xem lại lịch sử evolution | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | Không | Không ghi gì | Các lần chạy optimization đã ghi |
 | Tinh chỉnh chính optimizer | `oma skill meta-optimize --skill <ids...> --live` | **Live**, nhiều lần chạy bên trong (bắt buộc `--live`) | File procedure chỉ khi có `--apply` | Các skill held-out có fixture |
-| Kiểm tra native skill discovery | `oma skills matrix [--live]` | **Live** chỉ khi có `--live` (chạy CLI `claude` và `codex`); nếu không thì in kế hoạch | Một báo cáo JSON chỉ khi có `--report <path>` | Đã cài các vendor CLI |
+| Kiểm tra native skill discovery | `oma skill matrix [--live]` | **Live** chỉ khi có `--live` (chạy CLI `claude` và `codex`); nếu không thì in kế hoạch | Một báo cáo JSON chỉ khi có `--report <path>` | Đã cài các vendor CLI |
 | Phát lại một phép so sánh harness | `oma harness eval --suite <yaml> --candidate <dir>` (mock, mặc định) | Không | Không ghi gì | Một lần chạy đã ghi khớp với suite, baseline và candidate |
 | So sánh một harness overlay | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **Live**: một arm baseline và một arm candidate cho mỗi task | Một bản ghi chỉ khi có `--record` | Suite và fixture nằm trong project |
 | Biến một run thất bại thành fixture | `oma harness incident scan`, rồi `capture --spec <file>`, rồi `promote <id>` | Chỉ `promote`: một lần gọi routing khi bỏ qua `--skill`; với `--draft`, một bản nháp rubric của opt-agent và một lần kiểm tra của judge | Incident record; regression fixture | Một agent run bị failed, blocked hoặc partial |
@@ -2289,7 +2288,7 @@ Các cách viết cũ bị từ chối với `Unknown command`, `Unexpected argu
 |:-------------|:----|
 | `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
 | Các dạng dấu hai chấm như `agent:parallel`, `memory:init`, `schedule:add` | `agent parallel`, `memory init`, `schedule create` |
-| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize` (chỉ `skills matrix` giữ nhóm số nhiều) |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt`, `skills matrix` | `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill matrix` |
 | `verify <agent-type>` | `verify agent <agent-type>` |
 | `vault rm` | `vault delete` |
 | `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |

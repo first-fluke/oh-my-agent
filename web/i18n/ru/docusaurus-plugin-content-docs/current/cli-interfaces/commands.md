@@ -79,8 +79,7 @@ description: "Полный справочник всех команд CLI oh-my-
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
-| `skills` | `skills matrix` (единственная команда, сохранившая имя группы во множественном числе; `oma skill matrix` отклоняется) |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 `oma describe` также перечисляет `agent parallel-supervisor`, `schedule inspect` и `schedule builtin-evolution-add`. Их вызывают другие команды; вручную их запускать не нужно.
@@ -1915,7 +1914,7 @@ oma memory gc --scope sessions --keep 20 --dry-run --json
 | Отменить последнюю применённую правку | `oma skill rollback --skill <id>` | Нет | SKILL.md | Записанное продвижение |
 | Изучить историю эволюции | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | Нет | Ничего | Записанные запуски оптимизации |
 | Настроить сам оптимизатор | `oma skill meta-optimize --skill <ids...> --live` | **Live**, много внутренних запусков (`--live` обязателен) | Файл процедуры только с `--apply` | Отложенные навыки с fixtures |
-| Проверить нативное обнаружение навыков | `oma skills matrix [--live]` | **Live** только с `--live` (запускает CLI `claude` и `codex`); иначе выводит план | JSON-отчёт только с `--report <path>` | Установленные CLI вендоров |
+| Проверить нативное обнаружение навыков | `oma skill matrix [--live]` | **Live** только с `--live` (запускает CLI `claude` и `codex`); иначе выводит план | JSON-отчёт только с `--report <path>` | Установленные CLI вендоров |
 | Воспроизвести сравнение harness | `oma harness eval --suite <yaml> --candidate <dir>` (mock, по умолчанию) | Нет | Ничего | Записанный запуск, соответствующий suite, baseline и кандидату |
 | Сравнить overlay harness | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **Live**: ветви baseline и candidate для каждой задачи | Запись только с `--record` | Suite и fixtures внутри проекта |
 | Превратить неудачный запуск в fixture | `oma harness incident scan`, затем `capture --spec <file>`, затем `promote <id>` | Только `promote`: вызов маршрутизации, если `--skill` не указан; с `--draft` — черновик рубрики от opt-agent и проверка judge | Запись инцидента; регрессионная fixture | Неудачный, заблокированный или частичный запуск агента |
@@ -2289,7 +2288,7 @@ oma version
 |:-------------|:----|
 | `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
 | Формы с двоеточием, например `agent:parallel`, `memory:init`, `schedule:add` | `agent parallel`, `memory init`, `schedule create` |
-| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize` (только `skills matrix` сохраняет группу во множественном числе) |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt`, `skills matrix` | `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill matrix` |
 | `verify <agent-type>` | `verify agent <agent-type>` |
 | `vault rm` | `vault delete` |
 | `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |

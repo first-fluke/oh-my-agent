@@ -79,8 +79,7 @@ Ta mapa ułatwia przeglądanie długiej referencji poniżej i pozwala znaleźć 
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
 | `model` | `model`, `model check`, `model probe`, `model propose` |
 | `memory` | `memory`, `memory keys`, `memory init`, `memory setup`, `memory daemon`, `memory daemon status`, `memory daemon start`, `memory daemon stop`, `memory daemon restart`, `memory service`, `memory service install`, `memory service uninstall`, `memory status`, `memory retry`, `memory retry drain`, `memory import`, `memory maintain`, `memory maintain backup`, `memory maintain prune`, `memory maintain vacuum`, `memory gc`, `memory upgrade` |
-| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback` |
-| `skills` | `skills matrix` (jedyne polecenie, które zachowuje nazwę grupy w liczbie mnogiej; `oma skill matrix` jest odrzucane) |
+| `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
 `oma describe` wyświetla też `agent parallel-supervisor`, `schedule inspect` i `schedule builtin-evolution-add`. Wywołują je wewnętrznie inne polecenia; nie uruchamiasz ich ręcznie.
@@ -1915,7 +1914,7 @@ Zacznij od poleceń offline. Polecenia oznaczone jako **na żywo** wywołują mo
 | Cofnięcie ostatnio zastosowanej edycji | `oma skill rollback --skill <id>` | Brak | SKILL.md | Zapisana promocja |
 | Przegląd historii ewolucji | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | Brak | Nic | Zapisane uruchomienia optymalizacji |
 | Dostrojenie samego optymalizatora | `oma skill meta-optimize --skill <ids...> --live` | **Na żywo**, wiele wewnętrznych uruchomień (`--live` jest wymagane) | Plik procedury tylko z `--apply` | Odłożone umiejętności z fixture |
-| Sprawdzenie natywnego wykrywania umiejętności | `oma skills matrix [--live]` | **Na żywo** tylko z `--live` (uruchamia CLI `claude` i `codex`); w przeciwnym razie wypisuje plan | Raport JSON tylko z `--report <path>` | Zainstalowane CLI dostawców |
+| Sprawdzenie natywnego wykrywania umiejętności | `oma skill matrix [--live]` | **Na żywo** tylko z `--live` (uruchamia CLI `claude` i `codex`); w przeciwnym razie wypisuje plan | Raport JSON tylko z `--report <path>` | Zainstalowane CLI dostawców |
 | Odtworzenie porównania harness | `oma harness eval --suite <yaml> --candidate <dir>` (mock, domyślnie) | Brak | Nic | Zapisane uruchomienie zgodne z pakietem, baseline i kandydatem |
 | Porównanie nakładki harness | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **Na żywo**: wariant baseline i wariant kandydata dla każdego zadania | Nagranie tylko z `--record` | Pakiet i fixture wewnątrz projektu |
 | Zamiana nieudanego uruchomienia w fixture | `oma harness incident scan`, potem `capture --spec <file>`, potem `promote <id>` | Tylko `promote`: wywołanie routingu, gdy pominięto `--skill`; z `--draft` szkic rubryki od opt-agent i kontrola sędziego | Rekord incydentu; fixture regresji | Nieudane, zablokowane lub częściowe uruchomienie agenta |
@@ -2289,7 +2288,7 @@ Starsze formy zapisu są odrzucane z błędem `Unknown command`, `Unexpected arg
 |:-------------|:----|
 | `viz`, `s`, `img`, `vid`, `sl` | `visualize`, `search`, `image`, `video`, `slide` |
 | Formy z dwukropkiem, takie jak `agent:parallel`, `memory:init`, `schedule:add` | `agent parallel`, `memory init`, `schedule create` |
-| `skills audit`, `skills lint`, `skills eval`, `skills opt` | `skill audit`, `skill lint`, `skill eval`, `skill optimize` (tylko `skills matrix` zachowuje grupę w liczbie mnogiej) |
+| `skills audit`, `skills lint`, `skills eval`, `skills opt`, `skills matrix` | `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill matrix` |
 | `verify <agent-type>` | `verify agent <agent-type>` |
 | `vault rm` | `vault delete` |
 | `search api <url>`, `search api:search`, `search rss <url>`, `search rss:google` | `search api fetch <url>`, `search api search`, `search rss fetch <url>`, `search rss google` |
