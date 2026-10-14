@@ -71,7 +71,7 @@ Bản đồ này giúp các phần tham chiếu dài bên dưới dễ lướt h
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -82,7 +82,7 @@ Bản đồ này giúp các phần tham chiếu dài bên dưới dễ lướt h
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe` cũng liệt kê `agent parallel-supervisor`, `schedule inspect` và `schedule builtin-evolution-add`. Các lệnh khác gọi chúng ở bên trong; bạn không chạy chúng bằng tay.
+Các process khác của OMA gọi một vài entry point nội bộ (`agent parallel-supervisor`, `hook script`, `schedule inspect`, `schedule builtin-evolution-add`). Chúng vẫn chạy, nhưng help và `oma describe` ẩn chúng đi; bạn không cần chạy chúng bằng tay.
 
 Khi một lệnh chuyển các đối số còn lại cho một công cụ khác, registry cố ý để ngỏ các tùy chọn của lệnh đó. Điều này áp dụng cho `market run` và `diagram archify`; hãy đọc help của upstream đã resolve trước khi chạy một thao tác làm thay đổi dữ liệu hoặc có truy cập mạng.
 

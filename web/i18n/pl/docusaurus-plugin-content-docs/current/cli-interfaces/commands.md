@@ -71,7 +71,7 @@ Ta mapa ułatwia przeglądanie długiej referencji poniżej i pozwala znaleźć 
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -82,7 +82,7 @@ Ta mapa ułatwia przeglądanie długiej referencji poniżej i pozwala znaleźć 
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe` wyświetla też `agent parallel-supervisor`, `schedule inspect` i `schedule builtin-evolution-add`. Wywołują je wewnętrznie inne polecenia; nie uruchamiasz ich ręcznie.
+Inne procesy OMA wywołują kilka wewnętrznych punktów wejścia (`agent parallel-supervisor`, `hook script`, `schedule inspect`, `schedule builtin-evolution-add`). Nadal działają, ale pomoc i `oma describe` je ukrywają; nie musisz uruchamiać ich ręcznie.
 
 Gdy polecenie przekazuje pozostałe argumenty innemu narzędziu, rejestr celowo pozostawia jego opcje otwarte. Dotyczy to `market run` i `diagram archify`; przed operacją zmieniającą dane lub korzystającą z sieci przeczytaj pomoc rozpoznanego narzędzia nadrzędnego.
 

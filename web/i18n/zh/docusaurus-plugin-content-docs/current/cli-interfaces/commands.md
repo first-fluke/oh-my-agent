@@ -72,7 +72,7 @@ sidebar_label: CLI 命令
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -83,7 +83,7 @@ sidebar_label: CLI 命令
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe` 还会列出 `agent parallel-supervisor`、`schedule inspect` 和 `schedule builtin-evolution-add`。这些命令由其他命令在内部调用，无需手动运行。
+其他 OMA 进程会调用几个内部入口点（`agent parallel-supervisor`、`hook script`、`schedule inspect`、`schedule builtin-evolution-add`）。它们仍可运行，但帮助和 `oma describe` 会将其隐藏；无需手动使用。
 
 当命令把剩余参数交给其他工具时，注册表会有意不限定它的选项。`market run` 和 `diagram archify` 就属于这种情况；在执行会修改状态或访问网络的操作之前，请先阅读解析出的上游工具帮助。
 

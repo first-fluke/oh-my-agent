@@ -71,7 +71,7 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -82,7 +82,7 @@ Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder v
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe` toont ook `agent parallel-supervisor`, `schedule inspect` en `schedule builtin-evolution-add`. Andere commando's roepen deze intern aan; je voert ze niet handmatig uit.
+Andere OMA-processen roepen een paar interne entrypoints aan (`agent parallel-supervisor`, `hook script`, `schedule inspect`, `schedule builtin-evolution-add`). Ze werken nog steeds, maar help en `oma describe` verbergen ze; je hebt ze niet handmatig nodig.
 
 Wanneer een commando de resterende argumenten doorgeeft aan een andere tool, laat het register de opties bewust open. Dit geldt voor `market run` en `diagram archify`; lees de opgeloste upstream-help voordat je een wijzigende of netwerkgebonden bewerking uitvoert.
 

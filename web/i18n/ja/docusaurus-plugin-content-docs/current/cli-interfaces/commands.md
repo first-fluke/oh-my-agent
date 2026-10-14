@@ -71,7 +71,7 @@ description: oh-my-agent CLIの全コマンドを対象に、構文、オプシ�
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -82,7 +82,7 @@ description: oh-my-agent CLIの全コマンドを対象に、構文、オプシ�
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe` には `agent parallel-supervisor`、`schedule inspect`、`schedule builtin-evolution-add` も表示されます。これらは他のコマンドが内部で呼び出すもので、手動で実行するものではありません。
+OMA の他のプロセスは、いくつかの内部エントリーポイント（`agent parallel-supervisor`、`hook script`、`schedule inspect`、`schedule builtin-evolution-add`）を呼び出します。これらは引き続き動作しますが、ヘルプと `oma describe` には表示されません。手動で実行する必要はありません。
 
 コマンドが残りの引数を別のツールに渡す場合、レジストリでは意図的にオプションを限定していません。`market run` と `diagram archify` が該当します。状態を変更する操作やネットワーク操作の前に、解決された上流ツールのヘルプを確認してください。
 

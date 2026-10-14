@@ -71,7 +71,7 @@ This map keeps the long references below scannable and makes the less frequently
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -82,7 +82,7 @@ This map keeps the long references below scannable and makes the less frequently
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe` also lists `agent parallel-supervisor`, `schedule inspect`, and `schedule builtin-evolution-add`. Other commands call these internally; you do not run them by hand.
+Other OMA processes call a few internal entry points (`agent parallel-supervisor`, `hook script`, `schedule inspect`, `schedule builtin-evolution-add`). They still run, but help and `oma describe` hide them; you do not need them by hand.
 
 When a command delegates its remaining arguments to another tool, the registry intentionally leaves its options open. This applies to `market run` and `diagram archify`; read the resolved upstream help before running a mutating or networked operation.
 

@@ -71,7 +71,7 @@ Diese Übersicht hält die ausführlichen Referenzen unten überschaubar und mac
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -82,7 +82,7 @@ Diese Übersicht hält die ausführlichen Referenzen unten überschaubar und mac
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe` listet außerdem `agent parallel-supervisor`, `schedule inspect` und `schedule builtin-evolution-add` auf. Diese werden intern von anderen Befehlen aufgerufen; du führst sie nicht von Hand aus.
+Andere OMA-Prozesse rufen einige interne Einstiegspunkte auf (`agent parallel-supervisor`, `hook script`, `schedule inspect`, `schedule builtin-evolution-add`). Sie funktionieren weiterhin, werden aber in der Hilfe und in `oma describe` ausgeblendet; du brauchst sie nicht von Hand auszuführen.
 
 Wenn ein Befehl seine übrigen Argumente an ein anderes Tool delegiert, lässt die Registry seine Optionen absichtlich offen. Das gilt für `market run` und `diagram archify`; lies die aufgelöste Upstream-Hilfe, bevor du eine ändernde oder netzwerkgebundene Operation ausführst.
 

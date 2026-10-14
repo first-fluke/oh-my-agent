@@ -71,7 +71,7 @@ description: "Полный справочник всех команд CLI oh-my-
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -82,7 +82,7 @@ description: "Полный справочник всех команд CLI oh-my-
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe` также перечисляет `agent parallel-supervisor`, `schedule inspect` и `schedule builtin-evolution-add`. Их вызывают другие команды; вручную их запускать не нужно.
+Другие процессы OMA вызывают несколько внутренних точек входа (`agent parallel-supervisor`, `hook script`, `schedule inspect`, `schedule builtin-evolution-add`). Они по-прежнему работают, но скрыты из справки и `oma describe`; вручную они вам не понадобятся.
 
 Когда команда передаёт оставшиеся аргументы другому инструменту, реестр намеренно оставляет её параметры открытыми. Это относится к `market run` и `diagram archify`; перед изменяющей или сетевой операцией прочитайте справку разрешённого upstream-инструмента.
 

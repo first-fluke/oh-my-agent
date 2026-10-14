@@ -71,7 +71,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 | `version` | `version` |
 | `dashboard` | `dashboard`, `dashboard terminal`, `dashboard web` |
 | `auth` | `auth`, `auth status` |
-| `hook` | `hook`, `hook run`, `hook probe`, `hook script` |
+| `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
 | `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
@@ -82,7 +82,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 | `skill` | `skill`, `skill audit`, `skill lint`, `skill eval`, `skill optimize`, `skill meta-optimize`, `skill procedure`, `skill evolution-stats`, `skill promotions`, `skill rollback`, `skill matrix` |
 | `schedule` | `schedule`, `schedule create`, `schedule list`, `schedule delete`, `schedule run`, `schedule sync` |
 
-`oma describe`에는 `agent parallel-supervisor`, `schedule inspect`, `schedule builtin-evolution-add`도 나옵니다. 다른 명령이 내부적으로 호출하는 명령이므로 직접 실행하지 않습니다.
+다른 OMA 프로세스는 몇 가지 내부 진입점(`agent parallel-supervisor`, `hook script`, `schedule inspect`, `schedule builtin-evolution-add`)을 호출합니다. 이 진입점은 여전히 실행되지만 help와 `oma describe`에는 나오지 않으며, 직접 실행할 필요가 없습니다.
 
 명령이 남은 인자를 다른 도구에 위임하면 레지스트리는 해당 옵션을 의도적으로 열어 둡니다. 이는 `market run`과 `diagram archify`에 적용됩니다. 변경을 일으키거나 네트워크를 사용하는 작업 전에 해석된 upstream 도움말을 읽습니다.
 
