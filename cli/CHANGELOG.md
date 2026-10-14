@@ -1,5 +1,23 @@
 # Changelog
 
+## [20.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v19.1.0...cli-v20.0.0) (2026-10-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** `oma skills matrix` is rejected like the other plural spellings; use `oma skill matrix`.
+
+### Bug Fixes
+
+* **cli:** print a single JSON document from retro --json ([e995353](https://github.com/first-fluke/oh-my-agent/commit/e9953535d5330971d54f6c826f07d9c9d96cf06e))
+* **cli:** publish skills matrix as skill matrix ([52ae343](https://github.com/first-fluke/oh-my-agent/commit/52ae343dbd20dfd3551d8fd7a995d4827a021eb8))
+* **cli:** show duration defaults that already carry a unit as given ([1f3345a](https://github.com/first-fluke/oh-my-agent/commit/1f3345a13d4de5a57e580f61875ada95c974aae8))
+
+
+### Documentation
+
+* **readme:** add the DeepSeek Harness section to translations ([5854765](https://github.com/first-fluke/oh-my-agent/commit/58547659541bda42521792decc631e905e31441c))
+
 ## [19.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v19.0.2...cli-v19.1.0) (2026-10-14)
 
 
