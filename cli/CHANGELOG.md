@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.0.0...cli-v20.0.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* **cli:** hide internal commands and describe every public one ([5ba9f79](https://github.com/first-fluke/oh-my-agent/commit/5ba9f793ae31ca8b7f51f9ae1558ed2cf24e740f))
+
 ## [20.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v19.1.0...cli-v20.0.0) (2026-10-14)
 
 
