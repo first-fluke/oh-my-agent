@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.0...web-v11.0.1) (2026-10-14)
+
+
+### Documentation
+
+* **cli:** regenerate the registry and note hidden internal commands ([2869c83](https://github.com/first-fluke/oh-my-agent/commit/2869c83a42d3de4f0ca388046e6cfa8141bc6f81))
+
 ## [11.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v10.0.1...web-v11.0.0) (2026-10-14)
 
 
