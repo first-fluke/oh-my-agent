@@ -67,12 +67,28 @@ function runAgentChecks(
       checks.push(checkBackendTests(manifest, workspace));
       break;
     }
-    case "frontend":
-      checks.push(checkTypeScript(workspace));
-      checks.push(checkInlineStyles(workspace));
-      checks.push(checkAnyTypes(workspace));
-      checks.push(checkFrontendTests(workspace));
+    case "frontend": {
+      // stack.yaml (written by /stack-set) declares the project's own
+      // type-check and test runners (e.g. `ng test` for Angular); without it,
+      // fall back to the built-in tsc + Vitest checks. /stack-set writes the
+      // Angular manifest under the optional external angular-developer skill
+      // when it is installed, so that location is read as a fallback.
+      const manifest =
+        loadStackManifest(workspace, "oma-frontend") ??
+        loadStackManifest(workspace, "angular-developer");
+      if (manifest) {
+        checks.push(checkBackendSyntax(manifest, workspace));
+        checks.push(checkInlineStyles(workspace));
+        checks.push(checkAnyTypes(workspace));
+        checks.push(checkBackendTests(manifest, workspace));
+      } else {
+        checks.push(checkTypeScript(workspace));
+        checks.push(checkInlineStyles(workspace));
+        checks.push(checkAnyTypes(workspace));
+        checks.push(checkFrontendTests(workspace));
+      }
       break;
+    }
     case "mobile": {
       const manifest = loadStackManifest(workspace, "oma-mobile");
       if (manifest) {
