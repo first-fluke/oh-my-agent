@@ -62,11 +62,18 @@ Phần thiết lập sẽ hỏi ngôn ngữ phản hồi, những agent runtime 
 <details>
 <summary>Những việc installer cũng làm theo mặc định</summary>
 
-- Cài **bun** (bắt buộc). Thử cài **uv**, **Serena** và **CUE**, và vẫn tiếp tục kèm cảnh báo nếu có cái nào cài thất bại.
-- Chọn sẵn browser MCP **Aside** và cài nó bằng `curl -fsSL https://releases.aside.com/install.sh | bash`. Bỏ chọn ở bước browser MCP, hoặc đổi sau bằng `oma update mcp`.
-- Dùng **AgentMemory** cho semantic memory: chạy `bun install -g @agentmemory/agentmemory` và khởi động một daemon. Chọn provider `none` hoặc đặt `OMA_NO_AGENTMEMORY=1` để bỏ qua.
-- Hỏi trước khi ghi vào thư mục home của bạn (Antigravity, Hermes, Kimi). Khi ở `$HOME` mà không có `--global`, nó sẽ yêu cầu xác nhận.
-- Các lần chạy không tương tác (`-y`, `OMA_YES=1`, `CI=true`) dùng skill preset `All`, `model_preset: auto` và Python làm ngôn ngữ backend.
+- Cài **bun** (bắt buộc). Thử cài **uv**, **Serena** (`uv tool install`) và **CUE** (`brew install cue` hoặc `winget`), và vẫn tiếp tục kèm cảnh báo nếu có cái nào cài thất bại.
+- Chọn sẵn browser MCP **Aside** trong phần thiết lập tương tác, và chỉ cài nó bằng `curl -fsSL https://releases.aside.com/install.sh | bash` nếu bạn giữ lựa chọn đó. Bỏ chọn ở bước browser MCP, hoặc đổi sau bằng `oma update mcp`.
+- Dùng **AgentMemory** cho semantic memory: chạy `bun install -g @agentmemory/agentmemory` và đăng ký nó làm login service (launchd, systemd user unit hoặc Windows scheduled task). Chọn provider `none` hoặc đặt `OMA_NO_AGENTMEMORY=1` để bỏ qua.
+- Hỏi trước khi link skill vào các thư mục vendor trong thư mục home (Antigravity, Hermes, Kimi). Khi ở `$HOME` mà không có `--global`, nó sẽ yêu cầu xác nhận.
+- Ghi một số file bên ngoài project mà không hỏi: `~/.claude.json` (đánh dấu project là workspace Claude Code đáng tin cậy), `~/.serena/` (context OMA, ngưỡng kích thước câu trả lời tối thiểu, đăng ký project), `~/.cursor/cli-config.json` (tắt commit attribution của Cursor), `~/.grok/config.toml` (telemetry) và `~/.gemini/antigravity-cli/` (HUD), mỗi file chỉ được ghi cho vendor bạn đã chọn.
+- Ghi **opt-out telemetry** vào setting của vendor (Claude `DISABLE_TELEMETRY=1`, cũng tắt luôn Claude Code Remote Control; thống kê sử dụng của Gemini, Qwen, Codex và Grok). Đặt `telemetry: true` để giữ mặc định của vendor.
+- Thêm các setting Claude Code chưa được đặt vào `.claude/settings.json`, gồm `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` và các env flag tắt auto memory, adaptive thinking, báo cáo lỗi và chỉ dẫn git tích hợp sẵn. Giá trị bạn đã đặt sẽ được giữ nguyên.
+- Thêm **co-author trailer**: commit attribution của Claude Code trở thành `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>` và PR có thêm dòng "Generated with oh-my-agent". Đặt `scm.co_author.enabled: false` để tắt.
+- Cài một **commit-msg guard** trong `.githooks/` để từ chối các địa chỉ `Co-authored-by` không có trong danh sách, và đặt `git config --local core.hooksPath .githooks` khi không có hook nào khác đang hoạt động. Đặt `scm.co_author.enforce_hook: false` nếu không muốn dùng.
+- `oma update` cập nhật `oma` CLI ở chế độ nền (`auto_update_cli: false` hoặc `OMA_SKIP_VERSION_CHECK=1` để dừng) và chạy `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`).
+- Khi Serena ở chế độ `bridge` mặc định, phiên agent đầu tiên khởi động một Serena server dùng chung sẽ đăng ký một **cleanup timer** dừng các Serena server dùng chung đang rảnh mỗi 5 phút (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer` hoặc Windows scheduled task `OMA Serena Daemon GC`). Đặt `serena.mode: stdio` để bỏ qua server dùng chung và timer của nó. `oma uninstall` không gỡ timer này.
+- Các lần chạy không tương tác (`-y`, `OMA_YES=1`, `CI=true`) dùng skill preset `All`, `model_preset: auto` và Python làm ngôn ngữ backend. Chúng không chọn browser MCP nào (và bỏ qua script cài Aside) trừ khi `mcp.devtools_browsers` đã có sẵn một mục.
 
 </details>
 
@@ -382,39 +389,39 @@ Các agent phối hợp qua các file thường trong `.agents/state/`, không c
 
 | Skill | Chức năng |
 |---|---|
-| **oma-academic-writing** | Soạn, chỉnh sửa và kiểm tra văn xuôi học thuật đạt chuẩn xuất bản |
-| **oma-architecture** | Phân tích đánh đổi kiến trúc và vạch ranh giới module theo hướng ADR/ATAM/CBAM |
-| **oma-backend** | Xây dựng và bảo mật API bằng Python, Node.js hoặc Rust |
+| **oma-academic-writing** | Soạn, chỉnh sửa và kiểm tra văn bản học thuật |
+| **oma-architecture** | Cân nhắc đánh đổi kiến trúc và vạch ranh giới module, kèm phân tích ADR/ATAM/CBAM |
+| **oma-backend** | Xây dựng API, xác thực và truy cập dữ liệu bằng Python, Node.js hoặc Rust |
 | **oma-brainstorm** | Cùng bạn khám phá ý tưởng trước khi bắt tay vào xây dựng |
 | **oma-coordination** | Hướng dẫn phối hợp thủ công từng bước các agent PM, frontend, backend, mobile và QA |
-| **oma-db** | Thiết kế schema, migration, index và vector store cho dự án của bạn |
+| **oma-db** | Thiết kế schema, migration, index và vector store |
 | **oma-debug** | Tìm nguyên nhân gốc rễ, sửa lỗi và viết regression test |
 | **oma-design** | Xây dựng hệ thống thiết kế với token, accessibility và responsive layout |
 | **oma-dev-workflow** | Tự động hóa CI/CD, release và các tác vụ monorepo |
-| **oma-docs** | Kiểm tra tài liệu có tham chiếu bị hỏng và đánh dấu những tài liệu bị ảnh hưởng bởi thay đổi code |
-| **oma-explanation** | Chuyển diff, PR hoặc nhánh thành tài liệu giải thích HTML tương tác độc lập kèm quiz |
-| **oma-frontend** | Xây dựng giao diện với React/Next.js, TypeScript, Tailwind CSS v4 và shadcn/ui |
+| **oma-docs** | Kiểm tra tham chiếu hỏng trong tài liệu, đồng bộ tài liệu theo thay đổi code và cảnh báo bản dịch bị lệch |
+| **oma-explanation** | Biến diff, PR, nhánh hoặc một chủ đề thành tài liệu giải thích HTML độc lập, kèm quiz cho thay đổi code |
+| **oma-frontend** | Xây dựng giao diện với React/Next.js hoặc Angular |
 | **oma-hwp** | Chuyển đổi file HWP, HWPX và HWPML sang Markdown |
-| **oma-image** | Tạo ảnh qua nhiều nhà cung cấp AI cùng lúc |
-| **oma-market** | Nghiên cứu thị trường từ tín hiệu cộng đồng và trình bày theo khung SWOT, Porter's 5F và PESTEL |
-| **oma-mobile** | Xây dựng ứng dụng di động đa nền tảng với Flutter |
+| **oma-image** | Tạo ảnh và biến thể dựa trên ảnh tham chiếu, đồng thời có thể so sánh song song các nhà cung cấp AI |
+| **oma-market** | Nghiên cứu thị trường từ tín hiệu cộng đồng và trình bày theo khung SWOT, 5F và PESTEL |
+| **oma-mobile** | Xây dựng ứng dụng di động với Flutter, React Native hoặc Swift native |
 | **oma-observability** | Định tuyến công việc observability qua metrics, logs, traces, SLO và điều tra sự cố |
 | **oma-orchestration** | Chạy nhiều agent song song từ CLI |
 | **oma-pdf** | Chuyển đổi file PDF sang Markdown |
 | **oma-pm** | Lập kế hoạch tác vụ, phân tích yêu cầu và định nghĩa API contract |
-| **oma-qa** | Rà soát code theo tiêu chuẩn bảo mật OWASP, hiệu suất và accessibility |
+| **oma-qa** | Rà soát thay đổi về tính đúng đắn, bảo mật OWASP, hiệu suất và accessibility |
 | **oma-recap** | Tóm tắt lịch sử hội thoại thành báo cáo công việc theo chủ đề |
-| **oma-refactor** | Tái cấu trúc mã mà không đổi hành vi, dùng hotspot, characterization test làm lưới an toàn và commit chỉ chứa refactor |
-| **oma-scholar** | Tìm kiếm tài liệu học thuật và hỗ trợ bình duyệt khoa học |
+| **oma-refactor** | Tái cấu trúc mã mà không đổi hành vi, dùng hotspot, characterization test và commit chỉ chứa refactor |
+| **oma-scholar** | Tìm kiếm tài liệu học thuật và tạo sidecar bài báo Knows cho luận điểm, bằng chứng và bình duyệt |
 | **oma-scm** | Quản lý nhánh, merge, worktree và Conventional Commits |
-| **oma-search** | Định tuyến mỗi truy vấn đến nguồn tốt nhất và chấm điểm độ tin cậy của kết quả |
+| **oma-search** | Định tuyến mỗi truy vấn đến nguồn tốt nhất và chấm điểm mức độ đáng tin của kết quả |
 | **oma-security** | Quét mã nguồn, skill của agent và thành phần MCP; kiểm thử ứng dụng web đã triển khai và xác minh phát hiện |
-| **oma-skill-creation** | Soạn và kiểm tra skill OMA mới theo định dạng SSL-lite |
-| **oma-slide** | Tạo các deck trình bày HTML đặc trưng giàu hoạt hình và xuất sang PDF/PNG/PPTX |
+| **oma-skill-creation** | Soạn và kiểm tra skill OMA mới |
+| **oma-slide** | Tạo deck trình bày HTML và xuất sang PDF/PNG/PPTX |
 | **oma-tf-infra** | Triển khai hạ tầng đa đám mây bằng Terraform |
-| **oma-translation** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
+| **oma-translation** | Dịch sao cho kết quả đọc như do người bản ngữ viết |
 | **oma-video** | Tạo video ngắn, video giải thích và video demo qua pipeline HyperFrames dùng được cả khi không có khóa |
-| **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |
+| **oma-voice** | Tạo lồng tiếng và chuyển âm thanh thành văn bản ngay trên thiết bị |
 
 </details>
 
@@ -580,7 +587,7 @@ Mọi cơ chế dưới đây, trừ trọng tài theo prompt, đều mang tính
 **Kiểm tra theo từng agent.** Các loại: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. Lệnh thoát với mã 1 khi có bất kỳ kiểm tra nào thất bại; TODO/FIXME Comments và Inline Styles chỉ cảnh báo.
 
 - `backend`: `<Language> Syntax`, `SQL Injection` (pattern raw SQL) và `<Language> Tests`, lấy từ các lệnh trong `stack/stack.yaml`. Không có file này (tạo bằng `/stack-set`) thì chúng bị bỏ qua.
-- `frontend`: TypeScript (`tsc --noEmit`), Inline Styles, Any Types, Frontend Tests (Vitest).
+- `frontend`: các lệnh syntax và test trong `stack/stack.yaml` (trong `oma-frontend`, hoặc trong `angular-developer` khi skill đó đã được cài), hoặc TypeScript (`tsc --noEmit`) và Frontend Tests (Vitest). Inline Styles và Any Types luôn chạy.
 - `mobile`: các lệnh syntax và test trong `stack/stack.yaml`, hoặc Flutter/Dart Analysis và Flutter Tests.
 - `debug`: Python Tests (pytest qua uv) hoặc Frontend Tests (Vitest).
 - `pm`: PM Plan (file kế hoạch là JSON hợp lệ).

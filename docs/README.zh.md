@@ -62,11 +62,18 @@ oma
 <details>
 <summary>安装器默认还会做的事</summary>
 
-- 安装 **bun**（必需）。尝试安装 **uv**、**Serena** 和 **CUE**，其中任何一个失败都会给出警告并继续。
-- 预先选中 **Aside** 浏览器 MCP，并通过 `curl -fsSL https://releases.aside.com/install.sh | bash` 安装。可以在浏览器 MCP 步骤中取消勾选，或之后用 `oma update mcp` 更换。
-- 使用 **AgentMemory** 作为语义记忆，它会运行 `bun install -g @agentmemory/agentmemory` 并启动一个守护进程。选择提供方 `none` 或设置 `OMA_NO_AGENTMEMORY=1` 即可跳过。
-- 写入你的主目录（Antigravity、Hermes、Kimi）之前会先询问。在 `$HOME` 中不带 `--global` 运行时会请求确认。
-- 非交互式运行（`-y`、`OMA_YES=1`、`CI=true`）使用 `All` 技能预设、`model_preset: auto`，并以 Python 作为后端语言。
+- 安装 **bun**（必需）。尝试安装 **uv**、**Serena**（`uv tool install`）和 **CUE**（`brew install cue` 或 `winget`），其中任何一个失败都会给出警告并继续。
+- 在交互式设置中预先选中 **Aside** 浏览器 MCP，只有保持选中时才会通过 `curl -fsSL https://releases.aside.com/install.sh | bash` 安装。可以在浏览器 MCP 步骤中取消勾选，或之后用 `oma update mcp` 更换。
+- 使用 **AgentMemory** 作为语义记忆，它会运行 `bun install -g @agentmemory/agentmemory`，并将其注册为登录服务（launchd、systemd 用户单元或 Windows 计划任务）。选择提供方 `none` 或设置 `OMA_NO_AGENTMEMORY=1` 即可跳过。
+- 把技能链接到主目录下的厂商文件夹（Antigravity、Hermes、Kimi）之前会先询问。在 `$HOME` 中不带 `--global` 运行时会请求确认。
+- 不经询问写入项目之外的一些文件：`~/.claude.json`（将项目标记为受信任的 Claude Code 工作区）、`~/.serena/`（OMA 上下文、回答大小下限、项目注册）、`~/.cursor/cli-config.json`（关闭 Cursor 的提交署名）、`~/.grok/config.toml`（遥测）和 `~/.gemini/antigravity-cli/`（HUD），每个文件只在你选择了对应厂商时写入。
+- 在厂商设置中写入**遥测退出选项**（Claude 使用 `DISABLE_TELEMETRY=1`，这也会关闭 Claude Code Remote Control；Gemini、Qwen、Codex 和 Grok 关闭使用统计）。设置 `telemetry: true` 可保留厂商默认值。
+- 向 `.claude/settings.json` 添加尚未设置的 Claude Code 设置，包括 `skipDangerousModePermissionPrompt: true`、`effortLevel: high`、`cleanupPeriodDays: 180`，以及关闭 auto memory、adaptive thinking、错误报告和内置 git 指令的 env 标志。你已经设置的值会保留。
+- 添加**共同作者 trailer**：Claude Code 的提交署名变为 `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`，PR 会附上一行 "Generated with oh-my-agent"。设置 `scm.co_author.enabled: false` 可关闭。
+- 在 `.githooks/` 中安装 **commit-msg 守卫**，拒绝不在列表中的 `Co-authored-by` 地址，并在没有其他钩子生效时设置 `git config --local core.hooksPath .githooks`。设置 `scm.co_author.enforce_hook: false` 可退出。
+- `oma update` 会在后台更新 `oma` CLI（用 `auto_update_cli: false` 或 `OMA_SKIP_VERSION_CHECK=1` 停止），并运行 `uv tool upgrade serena-agent --prerelease=allow`（`serena.auto_update: false`）。
+- Serena 处于默认的 `bridge` 模式时，第一个启动共享 Serena 服务器的代理会话会注册一个**清理定时器**，每 5 分钟停止空闲的共享 Serena 服务器（launchd `dev.oma.serena-daemon-gc`、systemd 用户定时器 `oma-serena-daemon-gc.timer` 或 Windows 计划任务 `OMA Serena Daemon GC`）。设置 `serena.mode: stdio` 可跳过共享服务器及其定时器。`oma uninstall` 不会移除该定时器。
+- 非交互式运行（`-y`、`OMA_YES=1`、`CI=true`）使用 `All` 技能预设、`model_preset: auto`，并以 Python 作为后端语言。除非 `mcp.devtools_browsers` 已列出某个浏览器，否则不会选择任何浏览器 MCP（也会跳过 Aside 安装脚本）。
 
 </details>
 
@@ -382,39 +389,39 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 
 | 技能 | 作用 |
 |---|---|
-| **oma-academic-writing** | 将学术文章写到发表级别，涵盖起草、修订与审稿 |
-| **oma-architecture** | 权衡架构方案、划定模块边界，提供 ADR/ATAM/CBAM 分析 |
-| **oma-backend** | 用 Python、Node.js 或 Rust 构建并加固你的 API |
-| **oma-brainstorm** | 在动手之前，先和你一起把想法探索清楚 |
+| **oma-academic-writing** | 起草、修订并审核学术文章 |
+| **oma-architecture** | 权衡架构取舍、划定模块边界，并提供 ADR/ATAM/CBAM 分析 |
+| **oma-backend** | 用 Python、Node.js 或 Rust 构建 API、认证与数据访问 |
+| **oma-brainstorm** | 在动手构建之前，先和你一起探索想法 |
 | **oma-coordination** | 指导你逐步手动协调 PM、前端、后端、移动端与 QA 代理 |
 | **oma-db** | 设计 schema、迁移、索引与 vector store |
-| **oma-debug** | 找到根因、修复 bug，并补上回归测试 |
-| **oma-design** | 构建含 token、无障碍支持与响应式布局的设计系统 |
-| **oma-dev-workflow** | 自动化 CI/CD、发布流程与 monorepo 任务 |
-| **oma-docs** | 检查文档中的失效引用，并标出被代码变更波及的内容 |
-| **oma-explanation** | 将 diff/PR/分支转换为带测验的自包含交互式 HTML 讲解文档 |
-| **oma-frontend** | 用 React/Next.js、TypeScript、Tailwind CSS v4 与 shadcn/ui 构建 UI |
+| **oma-debug** | 找到根因、修复 bug，并编写回归测试 |
+| **oma-design** | 构建包含 token、无障碍与响应式布局的设计系统 |
+| **oma-dev-workflow** | 自动化 CI/CD、发布与 monorepo 任务 |
+| **oma-docs** | 检查文档中的失效引用，随代码变更同步文档，并标出翻译漂移 |
+| **oma-explanation** | 把 diff、PR、分支或某个主题做成自包含的 HTML 讲解文档，代码变更还会附带测验 |
+| **oma-frontend** | 用 React/Next.js 或 Angular 构建 UI |
 | **oma-hwp** | 将 HWP、HWPX 和 HWPML 文件转换为 Markdown |
-| **oma-image** | 同时调用多家 AI 供应商生成图像 |
-| **oma-market** | 从社区信号中挖掘市场洞察，并套用 SWOT、Porter's 5F 和 PESTEL 框架呈现结论 |
-| **oma-mobile** | 用 Flutter 构建跨平台移动应用 |
+| **oma-image** | 生成图像及基于参考图的变体，也能并排比较多家 AI 供应商 |
+| **oma-market** | 从社区信号研究你的市场，并用 SWOT、5F 和 PESTEL 框架梳理 |
+| **oma-mobile** | 用 Flutter、React Native 或原生 Swift 构建移动应用 |
 | **oma-observability** | 统一路由可观测性工作，覆盖指标、日志、追踪、SLO 与事故取证 |
-| **oma-orchestration** | 通过 CLI 并行调度多个 agent |
+| **oma-orchestration** | 通过 CLI 并行运行多个代理 |
 | **oma-pdf** | 将 PDF 文件转换为 Markdown |
-| **oma-pm** | 规划任务、拆解需求、定义 API 契约 |
-| **oma-qa** | 审查代码的 OWASP 安全性、性能与无障碍合规 |
-| **oma-recap** | 将会话历史整理成有主题分类的工作摘要 |
-| **oma-refactor** | 借助热点定位、特性化测试安全网和只含重构的提交，在不改变行为的前提下重构代码 |
-| **oma-scholar** | 检索学术文献，协助开展同行评审 |
+| **oma-pm** | 规划任务、拆解需求并定义 API 契约 |
+| **oma-qa** | 从正确性、OWASP 安全、性能和无障碍角度审查变更 |
+| **oma-recap** | 将你的会话历史整理成按主题划分的工作摘要 |
+| **oma-refactor** | 借助热点定位、特性化测试和纯重构提交，在不改变行为的前提下重构代码 |
+| **oma-scholar** | 检索学术文献，并生成涵盖论点、证据与同行评审的 Knows 论文 sidecar |
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
-| **oma-search** | 将每条查询路由至最优来源，并标注结果的可信度评分 |
-| **oma-security** | 扫描源代码、agent 技能和 MCP 组件，测试已部署的 Web 应用并验证发现 |
-| **oma-skill-creation** | 以 SSL-lite 格式编写和审计 OMA skill |
-| **oma-slide** | 生成特色鲜明、动画丰富的 HTML 演示文稿卡片，并导出至 PDF/PNG/PPTX |
-| **oma-tf-infra** | 使用 Terraform 完成多云基础设施的自动化编排 |
-| **oma-translation** | 将内容翻译成目标语言，读来如同母语写就 |
+| **oma-search** | 将每条查询路由到最合适的来源，并为结果的可信度打分 |
+| **oma-security** | 扫描源代码、代理技能和 MCP 组件；测试已部署的 Web 应用并验证发现 |
+| **oma-skill-creation** | 编写并审核新的 OMA 技能 |
+| **oma-slide** | 生成 HTML 演示文稿，并导出为 PDF/PNG/PPTX |
+| **oma-tf-infra** | 用 Terraform 配置多云基础设施 |
+| **oma-translation** | 让译文读起来像母语者亲手所写 |
 | **oma-video** | 通过可免密钥的 HyperFrames 流水线生成短视频、讲解视频和演示视频 |
-| **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |
+| **oma-voice** | 在本地设备上生成配音并转写音频 |
 
 </details>
 
@@ -580,7 +587,7 @@ agent 会自述成功，oh-my-agent 则核查产出物。[实际运行效果](#s
 **按 agent 检查。** 类型：`backend`、`frontend`、`mobile`、`qa`、`debug`、`pm`。任意检查失败时命令以 1 退出；TODO/FIXME Comments 和 Inline Styles 只会给出警告。
 
 - `backend`：`<Language> Syntax`、`SQL Injection`（原始 SQL 模式）和 `<Language> Tests`，来自 `stack/stack.yaml` 中的命令。没有这个文件（可用 `/stack-set` 生成）时会跳过这些检查。
-- `frontend`：TypeScript（`tsc --noEmit`）、Inline Styles、Any Types、Frontend Tests（Vitest）。
+- `frontend`：`stack/stack.yaml`（位于 `oma-frontend` 下；若已安装 `angular-developer` 技能，则位于其下）中的语法和测试命令，或 TypeScript（`tsc --noEmit`）与 Frontend Tests（Vitest）。Inline Styles 和 Any Types 始终运行。
 - `mobile`：`stack/stack.yaml` 中的语法和测试命令，或 Flutter/Dart Analysis 与 Flutter Tests。
 - `debug`：Python Tests（通过 uv 运行 pytest）或 Frontend Tests（Vitest）。
 - `pm`：PM Plan（计划文件是合法的 JSON）。

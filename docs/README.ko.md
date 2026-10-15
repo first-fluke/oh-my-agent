@@ -62,11 +62,18 @@ Windows에서는 설치 프로그램이 Antigravity, Hermes, Kimi를 숨기고, 
 <details>
 <summary>설치 프로그램이 기본으로 함께 하는 일</summary>
 
-- **bun**을 설치합니다(필수). **uv**, **Serena**, **CUE** 설치도 시도하며, 이 중 하나가 실패해도 경고만 남기고 계속 진행합니다.
-- **Aside** 브라우저 MCP를 미리 선택해 두고 `curl -fsSL https://releases.aside.com/install.sh | bash`로 설치합니다. 브라우저 MCP 단계에서 선택을 해제하거나, 나중에 `oma update mcp`로 바꿀 수 있습니다.
-- 시맨틱 메모리로 **AgentMemory**를 사용합니다. 이때 `bun install -g @agentmemory/agentmemory`를 실행하고 데몬을 띄웁니다. 건너뛰려면 프로바이더로 `none`을 고르거나 `OMA_NO_AGENTMEMORY=1`을 설정하세요.
-- 홈 디렉터리에 쓰기 전에는 먼저 묻습니다(Antigravity, Hermes, Kimi). `--global` 없이 `$HOME`에서 실행하면 확인을 요청합니다.
-- 비대화형 실행(`-y`, `OMA_YES=1`, `CI=true`)은 `All` 스킬 프리셋, `model_preset: auto`, 백엔드 언어 Python을 사용합니다.
+- **bun**을 설치합니다(필수). **uv**, **Serena**(`uv tool install`), **CUE**(`brew install cue` 또는 `winget`) 설치도 시도하며, 이 중 하나가 실패해도 경고만 남기고 계속 진행합니다.
+- 대화형 설정에서 **Aside** 브라우저 MCP를 미리 선택해 두며, 선택을 유지한 경우에만 `curl -fsSL https://releases.aside.com/install.sh | bash`로 설치합니다. 브라우저 MCP 단계에서 선택을 해제하거나, 나중에 `oma update mcp`로 바꿀 수 있습니다.
+- 시맨틱 메모리로 **AgentMemory**를 사용합니다. 이때 `bun install -g @agentmemory/agentmemory`를 실행하고 로그인 서비스(launchd, systemd 사용자 유닛 또는 Windows 예약 작업)로 등록합니다. 건너뛰려면 프로바이더로 `none`을 고르거나 `OMA_NO_AGENTMEMORY=1`을 설정하세요.
+- 홈 디렉터리의 벤더 폴더(Antigravity, Hermes, Kimi)에 스킬을 링크하기 전에는 먼저 묻습니다. `--global` 없이 `$HOME`에서 실행하면 확인을 요청합니다.
+- 프로젝트 밖의 일부 파일은 묻지 않고 씁니다. `~/.claude.json`(프로젝트를 신뢰할 수 있는 Claude Code 워크스페이스로 표시), `~/.serena/`(OMA 컨텍스트, 응답 크기 하한, 프로젝트 등록), `~/.cursor/cli-config.json`(Cursor의 커밋 attribution 끄기), `~/.grok/config.toml`(텔레메트리), `~/.gemini/antigravity-cli/`(HUD)이며, 각 파일은 선택한 벤더에 대해서만 씁니다.
+- 벤더 설정에 **텔레메트리 옵트아웃**을 씁니다. Claude에는 `DISABLE_TELEMETRY=1`을 넣고(이 값은 Claude Code Remote Control도 끕니다), Gemini, Qwen, Codex, Grok에서는 사용 통계를 끕니다. 벤더 기본값을 유지하려면 `telemetry: true`를 설정하세요.
+- `.claude/settings.json`에 아직 설정하지 않은 Claude Code 설정을 추가합니다. `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180`과 함께 auto memory, adaptive thinking, 오류 보고, 내장 git 지침을 끄는 env 플래그가 포함됩니다. 이미 설정한 값은 그대로 유지됩니다.
+- **공동 작성자 트레일러**를 추가합니다. Claude Code의 커밋 attribution이 `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`이 되고, PR에는 "Generated with oh-my-agent" 줄이 붙습니다. 끄려면 `scm.co_author.enabled: false`를 설정하세요.
+- 목록에 없는 `Co-authored-by` 주소를 거부하는 **commit-msg 가드**를 `.githooks/`에 설치하고, 다른 hook이 활성화되어 있지 않으면 `git config --local core.hooksPath .githooks`를 설정합니다. 사용하지 않으려면 `scm.co_author.enforce_hook: false`를 설정하세요.
+- `oma update`는 백그라운드에서 `oma` CLI를 업데이트하고(멈추려면 `auto_update_cli: false` 또는 `OMA_SKIP_VERSION_CHECK=1`), `uv tool upgrade serena-agent --prerelease=allow`를 실행합니다(`serena.auto_update: false`).
+- Serena가 기본 `bridge` 모드일 때, 공유 Serena 서버를 처음 시작한 에이전트 세션이 **정리 타이머**를 등록합니다. 이 타이머는 유휴 상태인 공유 Serena 서버를 5분마다 중지합니다(launchd `dev.oma.serena-daemon-gc`, systemd 사용자 타이머 `oma-serena-daemon-gc.timer` 또는 Windows 예약 작업 `OMA Serena Daemon GC`). 공유 서버와 타이머를 건너뛰려면 `serena.mode: stdio`를 설정하세요. `oma uninstall`은 이 타이머를 제거하지 않습니다.
+- 비대화형 실행(`-y`, `OMA_YES=1`, `CI=true`)은 `All` 스킬 프리셋, `model_preset: auto`, 백엔드 언어 Python을 사용합니다. `mcp.devtools_browsers`에 이미 브라우저가 들어 있지 않으면 브라우저 MCP를 선택하지 않습니다(Aside 설치 스크립트도 건너뜁니다).
 
 </details>
 
@@ -382,39 +389,39 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | 스킬 | 하는 일 |
 |---|---|
-| **oma-academic-writing** | 학술 문장을 출판 수준으로 작성·수정하고 감사 |
+| **oma-academic-writing** | 학술 문장을 작성하고 수정하며 점검 |
 | **oma-architecture** | 아키텍처 트레이드오프를 검토하고 모듈 경계를 정의하며 ADR/ATAM/CBAM 분석 수행 |
-| **oma-backend** | Python, Node.js, Rust로 API를 구축하고 보안 강화 |
-| **oma-brainstorm** | 구현을 결정하기 전에 함께 아이디어를 탐색 |
-| **oma-coordination** | PM, Frontend, Backend, Mobile, QA 에이전트의 단계별 수동 조율을 안내 |
+| **oma-backend** | Python, Node.js, Rust로 API, 인증, 데이터 접근을 구현 |
+| **oma-brainstorm** | 구현에 들어가기 전에 함께 아이디어를 탐색 |
+| **oma-coordination** | PM, 프론트엔드, 백엔드, 모바일, QA 에이전트를 단계별로 수동 조율하도록 안내 |
 | **oma-db** | 스키마, 마이그레이션, 인덱스, vector store 설계 |
 | **oma-debug** | 근본 원인을 찾아 버그를 수정하고 회귀 테스트 작성 |
 | **oma-design** | 토큰, 접근성, 반응형 레이아웃을 갖춘 디자인 시스템 구축 |
-| **oma-dev-workflow** | CI/CD, 릴리스, monorepo 작업을 자동화 |
-| **oma-docs** | 문서의 깨진 참조를 확인하고 코드 변경에 영향받은 문서를 식별 |
-| **oma-explanation** | diff/PR/브랜치를 퀴즈가 포함된 self-contained 인터랙티브 HTML 설명서로 생성 |
-| **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui로 UI 구축 |
+| **oma-dev-workflow** | CI/CD, 릴리스, monorepo 작업 자동화 |
+| **oma-docs** | 문서의 깨진 참조를 점검하고 코드 변경에 맞춰 동기화하며 번역 드리프트를 표시 |
+| **oma-explanation** | diff, PR, 브랜치 또는 주제를 self-contained HTML 설명서로 만들고, 코드 변경에는 퀴즈를 추가 |
+| **oma-frontend** | React/Next.js 또는 Angular로 UI 구축 |
 | **oma-hwp** | HWP, HWPX, HWPML 파일을 Markdown으로 변환 |
-| **oma-image** | 여러 AI 공급업체로 이미지를 동시에 생성 |
-| **oma-market** | 커뮤니티 시그널로 시장을 조사하고 SWOT, Porter's 5F, PESTEL로 프레임화 |
-| **oma-mobile** | Flutter로 크로스플랫폼 모바일 앱 구축 |
-| **oma-observability** | 메트릭, 로그, 트레이스, SLO, 인시던트 포렌식까지 아우르는 관측성 작업을 라우팅 |
+| **oma-image** | 이미지와 레퍼런스 기반 변형을 생성하고, AI 공급업체별 결과를 나란히 비교 |
+| **oma-market** | 커뮤니티 시그널로 시장을 조사하고 SWOT, 5F, PESTEL로 정리 |
+| **oma-mobile** | Flutter, React Native, 네이티브 Swift로 모바일 앱 구축 |
+| **oma-observability** | 메트릭, 로그, 트레이스, SLO, 인시던트 포렌식을 아우르는 관측성 작업을 라우팅 |
 | **oma-orchestration** | CLI에서 여러 에이전트를 병렬로 실행 |
 | **oma-pdf** | PDF 파일을 Markdown으로 변환 |
 | **oma-pm** | 태스크를 계획하고 요구사항을 분해하며 API 계약을 정의 |
-| **oma-qa** | OWASP 보안, 성능, 접근성 관점에서 코드를 리뷰 |
+| **oma-qa** | 변경 사항을 정확성, OWASP 보안, 성능, 접근성 관점에서 리뷰 |
 | **oma-recap** | 대화 이력을 주제별 작업 요약으로 정리 |
-| **oma-refactor** | 핫스팟 우선순위, 특성화 테스트 안전망, 리팩토링만 담은 커밋으로 동작을 보존하면서 코드를 리팩토링 |
-| **oma-scholar** | 학술 문헌을 검색하고 동료 평가를 지원 |
+| **oma-refactor** | 핫스팟 선정, 특성화 테스트, 리팩토링 전용 커밋으로 동작을 바꾸지 않고 리팩토링 |
+| **oma-scholar** | 학술 문헌을 검색하고, 주장·근거·동료 평가를 담은 Knows 논문 sidecar를 생성 |
 | **oma-scm** | 브랜치, 머지, 워크트리, Conventional Commits 관리 |
-| **oma-search** | 각 쿼리를 최적 소스로 라우팅하고 결과의 신뢰 점수를 제공 |
+| **oma-search** | 각 쿼리를 가장 적합한 소스로 라우팅하고 결과를 얼마나 신뢰할 수 있는지 점수화 |
 | **oma-security** | 소스, 에이전트 스킬, MCP 구성 요소를 스캔하고, 배포된 웹 앱을 테스트하며 발견 사항을 검증 |
-| **oma-skill-creation** | SSL-lite 포맷으로 새로운 OMA 스킬을 작성하고 검증 |
-| **oma-slide** | 애니메이션이 풍부한 HTML 프레젠테이션 덱을 생성하고 PDF/PNG/PPTX로 내보냄 |
+| **oma-skill-creation** | 새 OMA 스킬을 작성하고 점검 |
+| **oma-slide** | HTML 프레젠테이션 덱을 생성하고 PDF/PNG/PPTX로 내보냄 |
 | **oma-tf-infra** | Terraform으로 멀티 클라우드 인프라를 프로비저닝 |
-| **oma-translation** | 원어민이 쓴 것처럼 자연스럽게 언어 간 번역 |
-| **oma-video** | 키 없이도 동작하는 HyperFrames 파이프라인으로 숏폼, 설명 영상, 데모 영상을 생성 |
-| **oma-voice** | 클라우드 없이 온디바이스로 보이스오버를 생성하고 오디오를 텍스트로 변환 |
+| **oma-translation** | 원어민이 쓴 것처럼 읽히도록 번역 |
+| **oma-video** | 키 없이도 동작하는 HyperFrames 파이프라인으로 숏폼, 설명 영상, 데모 영상 생성 |
+| **oma-voice** | 온디바이스로 보이스오버를 생성하고 오디오를 텍스트로 변환 |
 
 </details>
 
@@ -580,7 +587,7 @@ agents:
 **에이전트별 체크.** 유형: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. 체크가 하나라도 실패하면 커맨드는 1로 종료됩니다. TODO/FIXME Comments와 Inline Styles는 경고만 합니다.
 
 - `backend`: `stack/stack.yaml`의 커맨드로 실행하는 `<Language> Syntax`, `SQL Injection`(raw SQL 패턴), `<Language> Tests`. 그 파일이 없으면(`/stack-set`으로 생성) 건너뜁니다.
-- `frontend`: TypeScript(`tsc --noEmit`), Inline Styles, Any Types, Frontend Tests(Vitest).
+- `frontend`: `stack/stack.yaml`(`oma-frontend` 아래, 또는 `angular-developer` 스킬이 설치되어 있으면 그 아래)의 문법·테스트 커맨드, 또는 TypeScript(`tsc --noEmit`)와 Frontend Tests(Vitest). Inline Styles와 Any Types는 항상 실행됩니다.
 - `mobile`: `stack/stack.yaml`의 문법·테스트 커맨드, 또는 Flutter/Dart Analysis와 Flutter Tests.
 - `debug`: Python Tests(uv를 통한 pytest) 또는 Frontend Tests(Vitest).
 - `pm`: PM Plan(plan 파일이 유효한 JSON인지).

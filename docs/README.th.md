@@ -62,11 +62,18 @@ oma
 <details>
 <summary>สิ่งที่ตัวติดตั้งทำเพิ่มเติมโดยค่าเริ่มต้น</summary>
 
-- ติดตั้ง **bun** (จำเป็น) พยายามติดตั้ง **uv**, **Serena** และ **CUE** และทำงานต่อพร้อมคำเตือนถ้าตัวใดติดตั้งไม่สำเร็จ
-- เลือก browser MCP **Aside** ไว้ล่วงหน้าและติดตั้งด้วย `curl -fsSL https://releases.aside.com/install.sh | bash` ยกเลิกการเลือกได้ในขั้นตอน browser MCP หรือเปลี่ยนภายหลังด้วย `oma update mcp`
-- ใช้ **AgentMemory** สำหรับ semantic memory ซึ่งจะรัน `bun install -g @agentmemory/agentmemory` และเริ่ม daemon หากต้องการข้าม ให้เลือก provider เป็น `none` หรือตั้ง `OMA_NO_AGENTMEMORY=1`
-- ถามก่อนเขียนลงโฮมไดเรกทอรีของคุณ (Antigravity, Hermes, Kimi) ถ้าอยู่ใน `$HOME` โดยไม่มี `--global` จะขอให้ยืนยัน
-- การรันแบบไม่โต้ตอบ (`-y`, `OMA_YES=1`, `CI=true`) จะใช้ preset ของ skill แบบ `All`, `model_preset: auto` และใช้ Python เป็นภาษาฝั่ง backend
+- ติดตั้ง **bun** (จำเป็น) พยายามติดตั้ง **uv**, **Serena** (`uv tool install`) และ **CUE** (`brew install cue` หรือ `winget`) และทำงานต่อพร้อมคำเตือนถ้าตัวใดติดตั้งไม่สำเร็จ
+- เลือก browser MCP **Aside** ไว้ล่วงหน้าในการตั้งค่าแบบโต้ตอบ และจะติดตั้งด้วย `curl -fsSL https://releases.aside.com/install.sh | bash` ก็ต่อเมื่อคุณยังเลือกไว้เท่านั้น ยกเลิกการเลือกได้ในขั้นตอน browser MCP หรือเปลี่ยนภายหลังด้วย `oma update mcp`
+- ใช้ **AgentMemory** สำหรับ semantic memory ซึ่งจะรัน `bun install -g @agentmemory/agentmemory` และลงทะเบียนเป็น login service (launchd, systemd user unit หรือ Windows scheduled task) หากต้องการข้าม ให้เลือก provider เป็น `none` หรือตั้ง `OMA_NO_AGENTMEMORY=1`
+- ถามก่อนลิงก์ skill เข้าโฟลเดอร์ของ vendor ในโฮมไดเรกทอรี (Antigravity, Hermes, Kimi) ถ้าอยู่ใน `$HOME` โดยไม่มี `--global` จะขอให้ยืนยัน
+- เขียนไฟล์บางไฟล์นอกโปรเจกต์โดยไม่ถาม ได้แก่ `~/.claude.json` (ทำเครื่องหมายว่าโปรเจกต์เป็น workspace ของ Claude Code ที่เชื่อถือได้), `~/.serena/` (context ของ OMA, ขนาดคำตอบขั้นต่ำ, การลงทะเบียนโปรเจกต์), `~/.cursor/cli-config.json` (ปิด commit attribution ของ Cursor), `~/.grok/config.toml` (telemetry) และ `~/.gemini/antigravity-cli/` (HUD) โดยแต่ละไฟล์จะเขียนเฉพาะเมื่อคุณเลือก vendor นั้น
+- เขียน **การ opt-out telemetry** ลงในการตั้งค่าของ vendor (Claude ใช้ `DISABLE_TELEMETRY=1` ซึ่งจะปิด Claude Code Remote Control ด้วย ส่วน Gemini, Qwen, Codex และ Grok จะปิดสถิติการใช้งาน) ตั้ง `telemetry: true` หากต้องการคงค่าเริ่มต้นของ vendor
+- เพิ่มการตั้งค่า Claude Code ที่ยังไม่ได้ตั้งลงใน `.claude/settings.json` รวมถึง `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` และ env flag ที่ปิด auto memory, adaptive thinking, การรายงานข้อผิดพลาด และคำสั่ง git ในตัว ค่าที่คุณตั้งไว้แล้วจะยังคงอยู่
+- เพิ่ม **co-author trailer**: commit attribution ของ Claude Code จะกลายเป็น `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>` และ PR จะมีบรรทัด "Generated with oh-my-agent" ตั้ง `scm.co_author.enabled: false` เพื่อปิด
+- ติดตั้ง **commit-msg guard** ใน `.githooks/` ซึ่งปฏิเสธที่อยู่ `Co-authored-by` ที่ไม่อยู่ในรายการ และตั้ง `git config --local core.hooksPath .githooks` เมื่อไม่มี hook อื่นทำงานอยู่ ตั้ง `scm.co_author.enforce_hook: false` หากไม่ต้องการใช้
+- `oma update` จะอัปเดต `oma` CLI ในเบื้องหลัง (ใช้ `auto_update_cli: false` หรือ `OMA_SKIP_VERSION_CHECK=1` เพื่อหยุด) และรัน `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`)
+- เมื่อ Serena อยู่ในโหมด `bridge` ซึ่งเป็นค่าเริ่มต้น เซสชัน agent แรกที่เริ่ม Serena server แบบใช้ร่วมกันจะลงทะเบียน **cleanup timer** ที่หยุด Serena server แบบใช้ร่วมกันซึ่งว่างอยู่ทุก 5 นาที (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer` หรือ Windows scheduled task `OMA Serena Daemon GC`) ตั้ง `serena.mode: stdio` เพื่อข้าม server แบบใช้ร่วมกันและ timer ของมัน `oma uninstall` จะไม่ลบ timer นี้
+- การรันแบบไม่โต้ตอบ (`-y`, `OMA_YES=1`, `CI=true`) จะใช้ preset ของ skill แบบ `All`, `model_preset: auto` และใช้ Python เป็นภาษาฝั่ง backend และจะไม่เลือก browser MCP ใดเลย (และข้ามสคริปต์ติดตั้ง Aside) เว้นแต่ `mcp.devtools_browsers` จะมีรายการอยู่แล้ว
 
 </details>
 
@@ -382,39 +389,39 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | สกิล | ทำอะไร |
 |---|---|
-| **oma-academic-writing** | ร่าง แก้ไข และตรวจสอบงานเขียนเชิงวิชาการให้ได้มาตรฐานระดับตีพิมพ์ |
-| **oma-architecture** | ชั่งน้ำหนัก tradeoffs ด้านสถาปัตยกรรม กำหนดขอบเขตโมดูล พร้อมวิเคราะห์ด้วย ADR/ATAM/CBAM |
-| **oma-backend** | สร้างและเสริมความปลอดภัยให้ API ด้วย Python, Node.js หรือ Rust |
-| **oma-brainstorm** | สำรวจแนวคิดร่วมกับคุณก่อนตัดสินใจลงมือสร้างจริง |
-| **oma-coordination** | แนะนำการประสานงานเอเจนต์ PM, frontend, backend, mobile และ QA ทีละขั้นตอนแบบแมนวล |
-| **oma-db** | ออกแบบ schema, migration, indexes และ vector stores ให้กับโปรเจกต์ของคุณ |
-| **oma-debug** | ค้นหาสาเหตุต้นตอ แก้ไขบัค และเขียน regression test ไว้กันซ้ำ |
-| **oma-design** | สร้างระบบการออกแบบพร้อม tokens, accessibility และ responsive layouts |
-| **oma-dev-workflow** | ทำให้ CI/CD, releases และงานใน monorepo เป็นระบบอัตโนมัติ |
-| **oma-docs** | ตรวจสอบเอกสารว่ามีการอ้างอิงที่ผิดหรือไม่ และระบุส่วนที่ได้รับผลกระทบจากการเปลี่ยนแปลงโค้ด |
-| **oma-explanation** | แปลง diff/PR/สาขาเป็นเอกสารอธิบาย HTML แบบอินเทอร์แอกทีฟพร้อมแบบทดสอบในไฟล์เดียว |
-| **oma-frontend** | สร้าง UI ด้วย React/Next.js, TypeScript, Tailwind CSS v4 และ shadcn/ui |
+| **oma-academic-writing** | ร่าง แก้ไข และตรวจสอบงานเขียนเชิงวิชาการ |
+| **oma-architecture** | ชั่งน้ำหนัก tradeoffs ด้านสถาปัตยกรรมและกำหนดขอบเขตโมดูล พร้อมวิเคราะห์ด้วย ADR/ATAM/CBAM |
+| **oma-backend** | สร้าง API ระบบยืนยันตัวตน และการเข้าถึงข้อมูลด้วย Python, Node.js หรือ Rust |
+| **oma-brainstorm** | สำรวจไอเดียร่วมกับคุณก่อนตัดสินใจลงมือสร้างจริง |
+| **oma-coordination** | แนะนำการประสานงานเอเจนต์ PM, frontend, backend, mobile และ QA แบบแมนวลทีละขั้นตอน |
+| **oma-db** | ออกแบบ schema, migration, index และ vector store |
+| **oma-debug** | ค้นหาสาเหตุต้นตอ แก้บัก และเขียน regression test |
+| **oma-design** | สร้าง design system พร้อม token, accessibility และ responsive layout |
+| **oma-dev-workflow** | ทำให้ CI/CD, release และงานใน monorepo เป็นอัตโนมัติ |
+| **oma-docs** | ตรวจหาการอ้างอิงที่เสียในเอกสาร ซิงก์เอกสารให้ตรงกับการเปลี่ยนแปลงโค้ด และแจ้ง translation drift |
+| **oma-explanation** | แปลง diff, PR, branch หรือหัวข้อเป็นเอกสารอธิบาย HTML ในไฟล์เดียว พร้อมแบบทดสอบสำหรับการเปลี่ยนแปลงโค้ด |
+| **oma-frontend** | สร้าง UI ด้วย React/Next.js หรือ Angular |
 | **oma-hwp** | แปลงไฟล์ HWP, HWPX และ HWPML ให้เป็น Markdown |
-| **oma-image** | สร้างภาพผ่าน AI หลายผู้ให้บริการพร้อมกันในคราวเดียว |
-| **oma-market** | วิจัยตลาดจากสัญญาณคอมมิวนิตี้ และวิเคราะห์ด้วยกรอบ SWOT, Porter's 5F และ PESTEL |
-| **oma-mobile** | สร้างแอปพลิเคชัน cross-platform ด้วย Flutter |
-| **oma-observability** | กระจายงานด้าน observability ครอบคลุม metrics, logs, traces, SLOs และการวิเคราะห์เหตุการณ์ |
-| **oma-orchestration** | รันเอเจนต์หลายตัวพร้อมกันแบบ parallel ผ่าน CLI |
+| **oma-image** | สร้างภาพและภาพแปรผันจากภาพอ้างอิง และเปรียบเทียบผู้ให้บริการ AI แบบเคียงข้างกันได้ |
+| **oma-market** | วิจัยตลาดจากสัญญาณในคอมมิวนิตี้ และวิเคราะห์ด้วยกรอบ SWOT, 5F และ PESTEL |
+| **oma-mobile** | สร้างแอปมือถือด้วย Flutter, React Native หรือ Swift แบบเนทีฟ |
+| **oma-observability** | จัดเส้นทางงานด้าน observability ครอบคลุม metrics, logs, traces, SLO และ incident forensics |
+| **oma-orchestration** | รันเอเจนต์หลายตัวแบบ parallel ผ่าน CLI |
 | **oma-pdf** | แปลงไฟล์ PDF ให้เป็น Markdown |
-| **oma-pm** | วางแผนงาน ย่อย requirements และกำหนด API contracts |
-| **oma-qa** | ตรวจสอบโค้ดตามมาตรฐาน OWASP ด้านความปลอดภัย ประสิทธิภาพ และ accessibility |
-| **oma-recap** | สรุปประวัติการสนทนาของคุณออกมาเป็น work summaries ตามธีม |
-| **oma-refactor** | รีแฟกเตอร์โค้ดโดยไม่เปลี่ยนพฤติกรรม ด้วยการเลือก hotspot ใช้ characterization test เป็นตาข่ายนิรภัย และคอมมิตเฉพาะ refactor |
-| **oma-scholar** | ค้นหาวรรณกรรมเชิงวิชาการ และช่วยดำเนินการทบทวนโดยผู้เชี่ยวชาญ |
-| **oma-scm** | จัดการ branches, merges, worktrees และ Conventional Commits |
-| **oma-search** | ส่งคำค้นหาแต่ละรายการไปยังแหล่งที่ดีที่สุด พร้อมให้คะแนนความน่าเชื่อถือของผลลัพธ์ |
+| **oma-pm** | วางแผนงาน แตกย่อย requirements และกำหนด API contracts |
+| **oma-qa** | รีวิวการเปลี่ยนแปลงด้านความถูกต้อง ความปลอดภัยตาม OWASP ประสิทธิภาพ และ accessibility |
+| **oma-recap** | สรุปประวัติการสนทนาของคุณเป็นสรุปงานแยกตามธีม |
+| **oma-refactor** | รีแฟกเตอร์โค้ดโดยไม่เปลี่ยนพฤติกรรม ด้วยการเลือก hotspot, characterization test และคอมมิตที่มีเฉพาะการ refactor |
+| **oma-scholar** | ค้นหาวรรณกรรมเชิงวิชาการ และสร้าง Knows paper sidecar สำหรับข้อกล่าวอ้าง หลักฐาน และ peer review |
+| **oma-scm** | จัดการ branch, merge, worktree และ Conventional Commits |
+| **oma-search** | ส่งแต่ละคำค้นไปยังแหล่งที่เหมาะที่สุด และให้คะแนนว่าผลลัพธ์น่าเชื่อถือแค่ไหน |
 | **oma-security** | สแกนซอร์สโค้ด สกิลของเอเจนต์ และส่วนประกอบ MCP ทดสอบเว็บแอปที่ปรับใช้แล้ว และตรวจสอบผลที่พบ |
-| **oma-skill-creation** | เขียนและตรวจสอบ OMA skills ใหม่ในรูปแบบ SSL-lite |
-| **oma-slide** | สร้าง HTML presentation deck ที่มีเอกลักษณ์และแอนิเมชันสมบูรณ์ รวมถึงส่งออกเป็น PDF/PNG/PPTX |
+| **oma-skill-creation** | เขียนและตรวจสอบ OMA skill ใหม่ |
+| **oma-slide** | สร้าง HTML presentation deck และส่งออกเป็น PDF/PNG/PPTX |
 | **oma-tf-infra** | จัดเตรียม multi-cloud infrastructure ด้วย Terraform |
-| **oma-translation** | แปลระหว่างภาษาต่างๆ ให้อ่านแล้วรู้สึกเหมือนเจ้าของภาษาเขียนเอง |
+| **oma-translation** | แปลให้อ่านแล้วเหมือนเจ้าของภาษาเขียนเอง |
 | **oma-video** | สร้างวิดีโอสั้น วิดีโออธิบาย และวิดีโอเดโมผ่านไปป์ไลน์ HyperFrames ที่ใช้ได้แม้ไม่มีคีย์ |
-| **oma-voice** | สร้างเสียงพากย์และถอดเสียงบนเครื่อง โดยไม่ต้องพึ่ง cloud |
+| **oma-voice** | สร้างเสียงพากย์และถอดเสียงบนอุปกรณ์ |
 
 </details>
 
@@ -580,7 +587,7 @@ agents:
 **การตรวจรายเอเจนต์** ประเภท: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` คำสั่งจะจบด้วย exit code 1 เมื่อมีการตรวจใดไม่ผ่าน ส่วน TODO/FIXME Comments และ Inline Styles จะแค่เตือน
 
 - `backend`: `<Language> Syntax`, `SQL Injection` (รูปแบบ raw SQL) และ `<Language> Tests` จากคำสั่งใน `stack/stack.yaml` ถ้าไม่มีไฟล์นี้ (สร้างได้ด้วย `/stack-set`) การตรวจเหล่านี้จะถูกข้าม
-- `frontend`: TypeScript (`tsc --noEmit`), Inline Styles, Any Types, Frontend Tests (Vitest)
+- `frontend`: คำสั่ง syntax และเทสต์ใน `stack/stack.yaml` (ใต้ `oma-frontend` หรือใต้ `angular-developer` เมื่อติดตั้ง skill นั้นไว้) หรือ TypeScript (`tsc --noEmit`) และ Frontend Tests (Vitest) ส่วน Inline Styles และ Any Types จะรันเสมอ
 - `mobile`: คำสั่ง syntax และเทสต์ใน `stack/stack.yaml` หรือ Flutter/Dart Analysis และ Flutter Tests
 - `debug`: Python Tests (pytest ผ่าน uv) หรือ Frontend Tests (Vitest)
 - `pm`: PM Plan (ไฟล์แผนเป็น JSON ที่ถูกต้อง)

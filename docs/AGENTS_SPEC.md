@@ -95,9 +95,9 @@ These definitions contain no vendor-specific fields (no Claude `allowed_tools`, 
 
 - `.claude/agents/*.md` (Claude Code, Markdown with frontmatter)
 - `.codex/agents/*.toml` (Codex CLI, TOML format)
-- `.gemini/agents/*.md` (Gemini CLI, Markdown format)
+- `.commandcode/agents/`, `.cursor/agents/`, `.grok/agents/`, `.kiro/agents/`, `.opencode/agents/`, `.qwen/agents/` (Markdown)
 
-Antigravity IDE reads `.agents/agents/` directly but does not support custom subagent spawning.
+Antigravity CLI gets no generated agent files; it dispatches natively with `agy -p "@<agent> …"`. See [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) for the full per-vendor table. The Gemini CLI vendor was removed: oma no longer generates `.gemini/agents/`.
 
 ## Workflows
 
@@ -148,13 +148,12 @@ Unspecified agents fall back to the active `runtime_profile` defined in `default
 
 Compatibility directories are projections, not separate sources of truth:
 
-- `.claude/skills/` (thin routers that delegate to `.agents/workflows/`)
+- `.claude/skills/` (domain skill symlinks plus workflow `SKILL.md` symlinks into `.agents/workflows/`)
 - `.codex/agents/` (generated from `.agents/agents/`)
-- `.gemini/agents/` (generated from `.agents/agents/`)
 - `.cursor/skills/`
 - `.github/skills/`
 
-Where supported, these should point back to `.agents/` via symlinks or equivalent generated views. Vendor skill files (e.g., `.claude/skills/*/SKILL.md`) are thin routers; they contain only the routing logic to load the corresponding `.agents/workflows/*.md` source of truth, not the full workflow content.
+Where supported, these should point back to `.agents/` via symlinks or equivalent generated views. Every vendor that gets skill symlinks also gets each workflow as a slash-command skill: `<vendor skills dir>/<workflow>/SKILL.md` is a symlink to `.agents/workflows/<workflow>.md`, so the workflow file is its own skill manifest and no wrapper or copy is generated (`cli/platform/skills-installer/workflow-links.ts`).
 
 ### Claude Code Native Adapter
 
@@ -164,7 +163,7 @@ Claude Code uses a hybrid model beyond simple symlinks:
 .claude/
 ├── skills/
 │   ├── oma-backend/  → ../../.agents/skills/oma-backend  (symlink, domain skill, language-agnostic)
-│   ├── orchestrate/SKILL.md                                   (thin router → .agents/workflows/orchestrate.md)
+│   ├── orchestrate/SKILL.md  → ../../../.agents/workflows/orchestrate.md  (symlink, workflow slash command)
 │   └── ...
 ├── agents/
 │   ├── backend-engineer.md         (generated from .agents/agents/backend-engineer.md)
@@ -174,7 +173,7 @@ Claude Code uses a hybrid model beyond simple symlinks:
 ```
 
 - **Domain skills**: symlinked from `.agents/skills/` (unchanged)
-- **Workflow skills**: thin router SKILL.md files that delegate to `.agents/workflows/*.md` as the source of truth (they contain routing logic only, not workflow content)
+- **Workflow skills**: each `.claude/skills/<workflow>/SKILL.md` is a symlink to `.agents/workflows/<workflow>.md`, invoked as a slash command (not keyword-auto-activated)
 - **Subagents**: `.claude/agents/*.md` definitions generated from `.agents/agents/*.md` abstractions, spawned via Agent tool
 - **CLAUDE.md**: project-level integration file auto-loaded by Claude Code
 
@@ -187,7 +186,9 @@ Workflows resolve a target vendor per agent from `.agents/oma-config.yaml`.
 - If `target_vendor === current_runtime_vendor`, OMA should use the runtime's native agent file first:
   - Claude Code -> `.claude/agents/*.md`
   - Codex CLI -> `.codex/agents/*.toml`
-  - Gemini CLI -> `.gemini/agents/*.md`
+  - Cursor -> `.cursor/agents/*.md`
+  - Kiro CLI -> `.kiro/agents/*.md`
+  - Antigravity CLI -> `agy -p "@<agent> …"` (no generated files)
 - If the task targets a different vendor, or the native path is unavailable, OMA falls back to `oma agent spawn`.
 
 ## Packaging Rules

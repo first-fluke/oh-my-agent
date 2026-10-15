@@ -190,10 +190,10 @@ oh-my-agent works with the selected AI-powered IDEs and CLIs through their nativ
 
 | Tool | Integration Method | Parallel Agents |
 |------|-------------------|----------------|
-| **Claude Code** | Native skills + Agent tool | Task tool for true parallelism |
+| **Claude Code** | Native skills + Agent tool | Agent tool for true parallelism |
 | **Antigravity CLI/IDE** | Skills and MCP settings projected for `agy` | `oma agent spawn` |
 | **Codex CLI** | Skills auto-loaded | Model-mediated parallel requests |
-| **Cursor** | Skills via `.cursor/` integration | Manual spawning |
+| **Cursor** | Skills via `.cursor/` integration | `@agent-name` + `oma agent spawn` |
 | **OpenCode** | Skills + in-process plugin bridge + generated subagents (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 | **Kimi Code CLI** | Hooks + skills in `~/.kimi-code/` (consent-gated HOME write; also reads SSOT `.agents/skills/` natively); project-scoped Serena MCP | `oma agent spawn --vendor kimi` |
 
@@ -285,11 +285,13 @@ oh-my-agent is not limited to Claude Code. Hook-capable vendors share the same `
 | **Claude Code** | `oma-hook.sh --vendor claude --event UserPromptSubmit` / `PreToolUse` / `Stop` | `bun .claude/hooks/hud.ts` (direct, unchanged) |
 | **Codex CLI** | `oma-hook.sh --vendor codex --event UserPromptSubmit` / `PreToolUse` / `Stop` | — |
 | **Qwen Code** | `oma-hook.sh --vendor qwen --event UserPromptSubmit` / `PreToolUse` / `Stop` | `bun` path via `ui.statusLine` |
-| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` | — |
-| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `Stop` | — |
+| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` / `stop` | — |
+| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `PreToolUse` / `Stop` | — |
 | **Kiro** | `oma-hook.sh --vendor kiro --event userPromptSubmit` / `preToolUse` / `stop` | — |
 | **Kimi Code** | `oma-hook.sh --vendor kimi --event UserPromptSubmit` / `PreToolUse` / `Stop` (global-only TOML `[[hooks]]` in `~/.kimi-code/config.toml`) | — |
-| **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | — |
+| **Antigravity** | `.agents/hooks.json` → `bun .agents/hooks/core/*.ts` (`PreInvocation` / `PostToolUse` / `Stop`) | `statusLine` → `~/.gemini/antigravity-cli/settings.json` |
+| **CommandCode** | `oma-hook.sh --vendor commandcode --event SessionStart` / `PostToolUse` / `Stop` | — |
+| **OpenCode** | In-process bridge (`installOpencodePlugin`) — not routed through `oma hook run` | — |
 | **pi** | In-process bridge (`installPiExtension`) — not routed through `oma hook run` | — |
 
 The `.agents/` directory remains the source of truth. Installation links or projects its skills, workflows, hooks, and agent definitions into the vendors you selected; capabilities differ by vendor. Native same-vendor subagents and CLI-spawned cross-vendor agents both read from that source.

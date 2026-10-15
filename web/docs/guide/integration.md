@@ -266,11 +266,12 @@ your-project/
     state/                          # Runtime coordination state
       memories/                     # Coordination artifacts (progress-*, result-*, task-board, session-cost-*)
     results/                        # Agent execution results
-  .claude/                          # Claude Code — symlinks only
+  .claude/                          # Claude Code — skill symlinks + generated files
     skills/                         # -> .agents/skills/* and .agents/workflows/*
-    agents/                         # -> .agents/agents/*
-  .github/                          # GitHub Copilot — symlinks only (optional)
+    agents/                         # generated from .agents/agents/*
+  .github/                          # GitHub Copilot — skill symlinks + prompt wrappers
     skills/                         # -> .agents/skills/*
+    prompts/                        # generated *.prompt.md -> .agents/workflows/*
   .zcode/                           # ZCode — workflow commands only (optional)
     commands/                       # -> .agents/workflows/*
   .serena/                          # Serena MCP storage (separate from OMA state)

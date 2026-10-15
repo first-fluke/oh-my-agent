@@ -191,10 +191,10 @@ oh-my-agent fonctionne avec les IDE et CLI sélectionnés grâce à leur chargem
 
 | Outil | Méthode d'intégration | Agents parallèles |
 |-------|-----------------------|-------------------|
-| **Claude Code** | Compétences natives + outil Agent | Outil Task pour un vrai parallélisme |
+| **Claude Code** | Compétences natives + outil Agent | Outil Agent pour un vrai parallélisme |
 | **Antigravity CLI/IDE** | Compétences et paramètres MCP projetés pour `agy` | `oma agent spawn` |
 | **Codex CLI** | Chargement automatique des compétences | Requêtes parallèles arbitrées par le modèle |
-| **Cursor** | Compétences via l'intégration `.cursor/` | Lancement manuel |
+| **Cursor** | Compétences via l'intégration `.cursor/` | `@agent-name` + `oma agent spawn` |
 | **OpenCode** | Compétences + pont de plugin in-process + sous-agents générés (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 | **Kimi Code CLI** | Hooks + compétences dans `~/.kimi-code/` (écriture dans HOME soumise au consentement ; lit aussi nativement les compétences SSOT `.agents/skills/`) ; serveur MCP Serena limité au projet | `oma agent spawn --vendor kimi` |
 
@@ -286,11 +286,13 @@ oh-my-agent ne se limite pas à Claude Code. Les fournisseurs compatibles avec l
 | **Claude Code** | `oma-hook.sh --vendor claude --event UserPromptSubmit` / `PreToolUse` / `Stop` | `bun .claude/hooks/hud.ts` (direct, inchangé) |
 | **Codex CLI** | `oma-hook.sh --vendor codex --event UserPromptSubmit` / `PreToolUse` / `Stop` | — |
 | **Qwen Code** | `oma-hook.sh --vendor qwen --event UserPromptSubmit` / `PreToolUse` / `Stop` | chemin `bun` via `ui.statusLine` |
-| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` | — |
-| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `Stop` | — |
+| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` / `stop` | — |
+| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `PreToolUse` / `Stop` | — |
 | **Kiro** | `oma-hook.sh --vendor kiro --event userPromptSubmit` / `preToolUse` / `stop` | — |
 | **Kimi Code** | `oma-hook.sh --vendor kimi --event UserPromptSubmit` / `PreToolUse` / `Stop` (TOML global uniquement `[[hooks]]` dans `~/.kimi-code/config.toml`) | — |
-| **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | — |
+| **Antigravity** | `.agents/hooks.json` → `bun .agents/hooks/core/*.ts` (`PreInvocation` / `PostToolUse` / `Stop`) | `statusLine` → `~/.gemini/antigravity-cli/settings.json` |
+| **CommandCode** | `oma-hook.sh --vendor commandcode --event SessionStart` / `PostToolUse` / `Stop` | — |
+| **OpenCode** | Pont in-process (`installOpencodePlugin`) — non routé par `oma hook run` | — |
 | **pi** | Pont in-process (`installPiExtension`) — non routé par `oma hook run` | — |
 
 Le répertoire `.agents/` reste la source de vérité. L'installation lie ou projette ses compétences, workflows, hooks et définitions d'agents vers les fournisseurs sélectionnés ; les capacités varient selon le fournisseur. Les sous-agents natifs du même fournisseur et les agents inter-fournisseurs lancés par la CLI lisent tous cette source.

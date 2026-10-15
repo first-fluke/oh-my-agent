@@ -190,10 +190,10 @@ oh-my-agent은 선택한 AI IDE와 CLI의 네이티브 스킬·프롬프트 로�
 
 | 도구 | 통합 방식 | 병렬 에이전트 |
 |------|-------------------|----------------|
-| **Claude Code** | 네이티브 스킬 + Agent 도구 | Task 도구를 통한 완전한 병렬 처리 |
+| **Claude Code** | 네이티브 스킬 + Agent 도구 | Agent 도구를 통한 완전한 병렬 처리 |
 | **Antigravity CLI/IDE** | `agy`용 스킬과 MCP 설정 투영 | `oma agent spawn` |
 | **Codex CLI** | 스킬 자동 로딩 | 모델 중재 병렬 요청 |
-| **Cursor** | `.cursor/` 통합을 통한 스킬 | 수동 스폰 |
+| **Cursor** | `.cursor/` 통합을 통한 스킬 | `@agent-name` + `oma agent spawn` |
 | **OpenCode** | 스킬 + 인프로세스 플러그인 브릿지 + 생성된 서브에이전트 (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 | **Kimi Code CLI** | `~/.kimi-code/`의 훅과 스킬(동의를 받아 HOME에 기록하며, SSOT `.agents/skills/`도 네이티브로 읽습니다), 프로젝트 범위 Serena MCP | `oma agent spawn --vendor kimi` |
 
@@ -285,11 +285,13 @@ oh-my-agent은 Claude Code에 한정되지 않습니다. 훅을 지원하는 벤
 | **Claude Code** | `oma-hook.sh --vendor claude --event UserPromptSubmit` / `PreToolUse` / `Stop` | `bun .claude/hooks/hud.ts` (직접 호출, 변경 없음) |
 | **Codex CLI** | `oma-hook.sh --vendor codex --event UserPromptSubmit` / `PreToolUse` / `Stop` | 없음 |
 | **Qwen Code** | `oma-hook.sh --vendor qwen --event UserPromptSubmit` / `PreToolUse` / `Stop` | `ui.statusLine`을 통한 `bun` 경로 |
-| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` | 없음 |
-| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `Stop` | 없음 |
+| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` / `stop` | 없음 |
+| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `PreToolUse` / `Stop` | 없음 |
 | **Kiro** | `oma-hook.sh --vendor kiro --event userPromptSubmit` / `preToolUse` / `stop` | 없음 |
 | **Kimi Code** | `oma-hook.sh --vendor kimi --event UserPromptSubmit` / `PreToolUse` / `Stop` (`~/.kimi-code/config.toml`의 글로벌 전용 TOML `[[hooks]]`) | 없음 |
-| **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | 없음 |
+| **Antigravity** | `.agents/hooks.json` → `bun .agents/hooks/core/*.ts` (`PreInvocation` / `PostToolUse` / `Stop`) | `statusLine` → `~/.gemini/antigravity-cli/settings.json` |
+| **CommandCode** | `oma-hook.sh --vendor commandcode --event SessionStart` / `PostToolUse` / `Stop` | 없음 |
+| **OpenCode** | 인프로세스 브릿지(`installOpencodePlugin`)를 쓰며 `oma hook run`을 거치지 않습니다 | 없음 |
 | **pi** | 인프로세스 브릿지(`installPiExtension`)를 쓰며 `oma hook run`을 거치지 않습니다 | 없음 |
 
 `.agents/` 디렉토리는 소스 오브 트루스입니다. 설치 과정은 선택한 벤더에 스킬, 워크플로우, 훅, 에이전트 정의를 연결하거나 투영하며, 벤더마다 지원 범위가 다릅니다. 같은 벤더의 네이티브 서브에이전트와 CLI로 스폰한 크로스 벤더 에이전트 모두 이 소스를 읽습니다.

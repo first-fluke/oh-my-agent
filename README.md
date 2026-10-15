@@ -61,11 +61,18 @@ The setup asks for your response language, which agent runtimes to wire up, capa
 <details>
 <summary>What the installer also does by default</summary>
 
-- Installs **bun** (required). Tries **uv**, **Serena**, and **CUE**, and continues with a warning if any of them fails.
-- Pre-selects the **Aside** browser MCP and installs it with `curl -fsSL https://releases.aside.com/install.sh | bash`. Deselect it in the browser MCP step, or change it later with `oma update mcp`.
-- Uses **AgentMemory** for semantic memory, which runs `bun install -g @agentmemory/agentmemory` and starts a daemon. Choose provider `none` or set `OMA_NO_AGENTMEMORY=1` to skip it.
-- Asks before writing to your home directory (Antigravity, Hermes, Kimi). In `$HOME` without `--global` it asks for confirmation.
-- Non-interactive runs (`-y`, `OMA_YES=1`, `CI=true`) use the `All` skill preset, `model_preset: auto`, and Python as the backend language.
+- Installs **bun** (required). Tries **uv**, **Serena** (`uv tool install`), and **CUE** (`brew install cue` or `winget`), and continues with a warning if any of them fails.
+- Pre-selects the **Aside** browser MCP in the interactive setup, and installs it with `curl -fsSL https://releases.aside.com/install.sh | bash` only if you keep it selected. Deselect it in the browser MCP step, or change it later with `oma update mcp`.
+- Uses **AgentMemory** for semantic memory, which runs `bun install -g @agentmemory/agentmemory` and registers it as a login service (launchd, systemd user unit, or Windows scheduled task). Choose provider `none` or set `OMA_NO_AGENTMEMORY=1` to skip it.
+- Asks before linking skills into home-directory vendor folders (Antigravity, Hermes, Kimi). In `$HOME` without `--global` it asks for confirmation.
+- Writes some files outside the project without asking: `~/.claude.json` (marks the project as a trusted Claude Code workspace), `~/.serena/` (OMA context, answer-size floor, project registration), `~/.cursor/cli-config.json` (turns off Cursor's commit attribution), `~/.grok/config.toml` (telemetry), and `~/.gemini/antigravity-cli/` (HUD), each only for a vendor you selected.
+- Writes **telemetry opt-outs** into vendor settings (Claude `DISABLE_TELEMETRY=1`, which also turns off Claude Code Remote Control; Gemini, Qwen, Codex, and Grok usage stats). Set `telemetry: true` to keep vendor defaults.
+- Adds unset Claude Code settings to `.claude/settings.json`, including `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180`, and env flags that turn off auto memory, adaptive thinking, error reporting, and built-in git instructions. Values you already set are kept.
+- Adds a **co-author trailer**: Claude Code's commit attribution becomes `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>` and PRs get a "Generated with oh-my-agent" line. Set `scm.co_author.enabled: false` to turn this off.
+- Installs a **commit-msg guard** in `.githooks/` that rejects unlisted `Co-authored-by` addresses, and sets `git config --local core.hooksPath .githooks` when no other hooks are active. Set `scm.co_author.enforce_hook: false` to opt out.
+- `oma update` updates the `oma` CLI in the background (`auto_update_cli: false` or `OMA_SKIP_VERSION_CHECK=1` to stop it) and runs `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`).
+- With Serena in the default `bridge` mode, the first agent session that starts a shared Serena server registers a **cleanup timer** that stops idle shared Serena servers every 5 minutes (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer`, or Windows scheduled task `OMA Serena Daemon GC`). Set `serena.mode: stdio` to skip the shared server and its timer. `oma uninstall` does not remove the timer.
+- Non-interactive runs (`-y`, `OMA_YES=1`, `CI=true`) use the `All` skill preset, `model_preset: auto`, and Python as the backend language. They select no browser MCP (and skip the Aside install script) unless `mcp.devtools_browsers` already lists one.
 
 </details>
 
@@ -378,28 +385,28 @@ Agents coordinate through plain files in `.agents/state/`, with no outside servi
 |---|---|
 | **oma-academic-writing** | Drafts, revises, and audits academic prose. |
 | **oma-architecture** | Weighs architecture tradeoffs and draws module boundaries, with ADR/ATAM/CBAM analysis. |
-| **oma-backend** | Builds and secures APIs in Python, Node.js, or Rust. |
+| **oma-backend** | Builds APIs, authentication, and data access in Python, Node.js, or Rust. |
 | **oma-brainstorm** | Explores ideas with you before you commit to building. |
 | **oma-coordination** | Guides manual, step-by-step coordination of PM, frontend, backend, mobile, and QA agents. |
 | **oma-db** | Designs schemas, migrations, indexes, and vector stores. |
 | **oma-debug** | Finds the root cause, fixes the bug, and writes a regression test. |
 | **oma-design** | Builds design systems with tokens, accessibility, and responsive layouts. |
 | **oma-dev-workflow** | Automates CI/CD, releases, and monorepo tasks. |
-| **oma-docs** | Checks docs for broken references and flags the ones a code change touched. |
-| **oma-explanation** | Turns a diff, PR, or branch into a self-contained interactive HTML explainer with a quiz. |
+| **oma-docs** | Checks docs for broken references, syncs them with code changes, and flags translation drift. |
+| **oma-explanation** | Turns a diff, PR, branch, or topic into a self-contained HTML explainer, with a quiz for code changes. |
 | **oma-frontend** | Builds UI in React/Next.js or Angular. |
 | **oma-hwp** | Converts HWP, HWPX, and HWPML files to Markdown. |
-| **oma-image** | Generates images through several AI providers at once. |
+| **oma-image** | Generates images and reference-guided variations, and can compare AI vendors side by side. |
 | **oma-market** | Researches your market from community signals and frames it with SWOT, 5F, and PESTEL. |
 | **oma-mobile** | Builds mobile apps with Flutter, React Native, or native Swift. |
 | **oma-observability** | Routes observability work across metrics, logs, traces, SLOs, and incident forensics. |
 | **oma-orchestration** | Runs multiple agents in parallel from the CLI. |
 | **oma-pdf** | Converts PDF files to Markdown. |
 | **oma-pm** | Plans tasks, breaks down requirements, and defines API contracts. |
-| **oma-qa** | Reviews code for OWASP security, performance, and accessibility issues. |
+| **oma-qa** | Reviews changes for correctness, OWASP security, performance, and accessibility. |
 | **oma-recap** | Recaps your conversation history into themed work summaries. |
 | **oma-refactor** | Refactors without changing behavior, using hotspot targeting, characterization tests, and refactor-only commits. |
-| **oma-scholar** | Searches academic literature and helps you run peer review. |
+| **oma-scholar** | Searches academic literature and builds Knows paper sidecars for claims, evidence, and peer review. |
 | **oma-scm** | Manages branches, merges, worktrees, and Conventional Commits. |
 | **oma-search** | Routes each query to the best source and scores how much you can trust the result. |
 | **oma-security** | Scans source, agent skills, and MCP components; tests deployed web apps and validates findings. |
@@ -572,7 +579,7 @@ Every mechanism below except the prompted judge is mechanical: a command exits 0
 **Per-agent checks.** Types: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. The command exits 1 when any check fails; TODO/FIXME Comments and Inline Styles only warn.
 
 - `backend`: `<Language> Syntax`, `SQL Injection` (raw SQL patterns), and `<Language> Tests`, from the commands in `stack/stack.yaml`. Without that file (generate it with `/stack-set`) they are skipped.
-- `frontend`: TypeScript (`tsc --noEmit`), Inline Styles, Any Types, Frontend Tests (Vitest).
+- `frontend`: the `stack/stack.yaml` syntax and test commands (under `oma-frontend`, or `angular-developer` when that skill is installed), or TypeScript (`tsc --noEmit`) and Frontend Tests (Vitest). Inline Styles and Any Types always run.
 - `mobile`: the `stack/stack.yaml` syntax and test commands, or Flutter/Dart Analysis and Flutter Tests.
 - `debug`: Python Tests (pytest through uv) or Frontend Tests (Vitest).
 - `pm`: PM Plan (the plan file is valid JSON).

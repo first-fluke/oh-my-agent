@@ -192,10 +192,10 @@ oh-my-agent 通过原生技能或提示加载，以及生成的集成文件，�
 
 | 工具 | 集成方式 | 并行智能体 |
 |------|----------|------------|
-| **Claude Code** | 原生技能 + Agent 工具 | Task 工具实现真正的并行 |
+| **Claude Code** | 原生技能 + Agent 工具 | Agent 工具实现真正的并行 |
 | **Antigravity CLI/IDE** | 为 `agy` 投影技能和 MCP 设置 | `oma agent spawn` |
 | **Codex CLI** | 自动加载技能 | 由模型介导的并行请求 |
-| **Cursor** | 通过 `.cursor/` 集成提供技能 | 手动启动 |
+| **Cursor** | 通过 `.cursor/` 集成提供技能 | `@agent-name` + `oma agent spawn` |
 | **OpenCode** | 技能 + 进程内插件桥接 + 生成的子智能体（`.opencode/agents/`） | `oma agent spawn --vendor opencode` |
 | **Kimi Code CLI** | `~/.kimi-code/` 中的钩子和技能（写入 HOME 需同意；也会原生读取 SSOT `.agents/skills/`）；项目范围的 Serena MCP | `oma agent spawn --vendor kimi` |
 
@@ -287,11 +287,13 @@ oh-my-agent 不局限于 Claude Code。支持钩子的供应商共享 `oma hook 
 | **Claude Code** | `oma-hook.sh --vendor claude --event UserPromptSubmit` / `PreToolUse` / `Stop` | `bun .claude/hooks/hud.ts`（直接调用，不变） |
 | **Codex CLI** | `oma-hook.sh --vendor codex --event UserPromptSubmit` / `PreToolUse` / `Stop` | 无 |
 | **Qwen Code** | `oma-hook.sh --vendor qwen --event UserPromptSubmit` / `PreToolUse` / `Stop` | 通过 `ui.statusLine` 的 `bun` 路径 |
-| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` | 无 |
-| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `Stop` | 无 |
+| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` / `stop` | 无 |
+| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `PreToolUse` / `Stop` | 无 |
 | **Kiro** | `oma-hook.sh --vendor kiro --event userPromptSubmit` / `preToolUse` / `stop` | 无 |
 | **Kimi Code** | `oma-hook.sh --vendor kimi --event UserPromptSubmit` / `PreToolUse` / `Stop`（`~/.kimi-code/config.toml` 中仅支持全局的 `[[hooks]]`） | 无 |
-| **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | 无 |
+| **Antigravity** | `.agents/hooks.json` → `bun .agents/hooks/core/*.ts` (`PreInvocation` / `PostToolUse` / `Stop`) | `statusLine` → `~/.gemini/antigravity-cli/settings.json` |
+| **CommandCode** | `oma-hook.sh --vendor commandcode --event SessionStart` / `PostToolUse` / `Stop` | 无 |
+| **OpenCode** | 进程内桥接（`installOpencodePlugin`），不通过 `oma hook run` 路由 | 无 |
 | **pi** | 进程内桥接（`installPiExtension`），不通过 `oma hook run` 路由 | 无 |
 
 `.agents/` 目录仍是事实来源。安装会把技能、工作流、钩子和智能体定义链接或投影到你选择的供应商中；不同供应商的能力有所区别。同供应商的原生子智能体和 CLI 启动的跨供应商智能体都会从这个来源读取。

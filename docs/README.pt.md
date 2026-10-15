@@ -62,11 +62,18 @@ A configuração pergunta o idioma das respostas, quais runtimes de agente conec
 <details>
 <summary>O que o instalador também faz por padrão</summary>
 
-- Instala o **bun** (obrigatório). Tenta instalar **uv**, **Serena** e **CUE**, e segue com um aviso se algum deles falhar.
-- Pré-seleciona o browser MCP **Aside** e o instala com `curl -fsSL https://releases.aside.com/install.sh | bash`. Desmarque-o na etapa de browser MCP ou troque depois com `oma update mcp`.
-- Usa o **AgentMemory** para memória semântica, o que executa `bun install -g @agentmemory/agentmemory` e inicia um daemon. Escolha o provedor `none` ou defina `OMA_NO_AGENTMEMORY=1` para pular essa etapa.
-- Pergunta antes de gravar no seu diretório home (Antigravity, Hermes, Kimi). Em `$HOME` sem `--global`, ele pede confirmação.
-- Execuções não interativas (`-y`, `OMA_YES=1`, `CI=true`) usam o preset de skills `All`, `model_preset: auto` e Python como linguagem de backend.
+- Instala o **bun** (obrigatório). Tenta instalar **uv**, **Serena** (`uv tool install`) e **CUE** (`brew install cue` ou `winget`), e segue com um aviso se algum deles falhar.
+- Pré-seleciona o browser MCP **Aside** na configuração interativa e só o instala com `curl -fsSL https://releases.aside.com/install.sh | bash` se você o mantiver selecionado. Desmarque-o na etapa de browser MCP ou troque depois com `oma update mcp`.
+- Usa o **AgentMemory** para memória semântica, o que executa `bun install -g @agentmemory/agentmemory` e o registra como serviço de login (launchd, unidade de usuário do systemd ou tarefa agendada do Windows). Escolha o provedor `none` ou defina `OMA_NO_AGENTMEMORY=1` para pular essa etapa.
+- Pergunta antes de vincular skills às pastas de vendors no seu diretório home (Antigravity, Hermes, Kimi). Em `$HOME` sem `--global`, ele pede confirmação.
+- Grava alguns arquivos fora do projeto sem perguntar: `~/.claude.json` (marca o projeto como workspace confiável do Claude Code), `~/.serena/` (contexto do OMA, tamanho mínimo de resposta, registro do projeto), `~/.cursor/cli-config.json` (desativa a atribuição de commits do Cursor), `~/.grok/config.toml` (telemetria) e `~/.gemini/antigravity-cli/` (HUD), cada um só para um vendor que você selecionou.
+- Grava **opt-outs de telemetria** nas configurações dos vendors (Claude `DISABLE_TELEMETRY=1`, que também desativa o Claude Code Remote Control; estatísticas de uso de Gemini, Qwen, Codex e Grok). Defina `telemetry: true` para manter os padrões dos vendors.
+- Adiciona ao `.claude/settings.json` as configurações do Claude Code ainda não definidas, incluindo `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` e flags de env que desativam auto memory, adaptive thinking, relatório de erros e as instruções de git embutidas. Os valores que você já definiu são mantidos.
+- Adiciona um **trailer de coautoria**: a atribuição de commits do Claude Code passa a ser `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>` e os PRs recebem uma linha "Generated with oh-my-agent". Defina `scm.co_author.enabled: false` para desativar.
+- Instala em `.githooks/` uma **guarda de commit-msg** que rejeita endereços `Co-authored-by` fora da lista e define `git config --local core.hooksPath .githooks` quando nenhum outro hook está ativo. Defina `scm.co_author.enforce_hook: false` para desativar.
+- `oma update` atualiza a CLI `oma` em segundo plano (`auto_update_cli: false` ou `OMA_SKIP_VERSION_CHECK=1` para interromper) e executa `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`).
+- Com o Serena no modo `bridge` padrão, a primeira sessão de agente que inicia um servidor Serena compartilhado registra um **timer de limpeza** que para os servidores Serena compartilhados ociosos a cada 5 minutos (launchd `dev.oma.serena-daemon-gc`, timer de usuário do systemd `oma-serena-daemon-gc.timer` ou tarefa agendada do Windows `OMA Serena Daemon GC`). Defina `serena.mode: stdio` para dispensar o servidor compartilhado e o timer. `oma uninstall` não remove o timer.
+- Execuções não interativas (`-y`, `OMA_YES=1`, `CI=true`) usam o preset de skills `All`, `model_preset: auto` e Python como linguagem de backend. Elas não selecionam nenhum browser MCP (e pulam o script de instalação do Aside), a menos que `mcp.devtools_browsers` já liste um.
 
 </details>
 
@@ -382,39 +389,39 @@ Os agentes se coordenam por arquivos simples em `.agents/state/`, sem nenhum ser
 
 | Skill | O que faz |
 |---|---|
-| **oma-academic-writing** | Redige, revisa e audita prosa acadêmica até o nível de publicação |
+| **oma-academic-writing** | Redige, revisa e audita prosa acadêmica |
 | **oma-architecture** | Avalia trade-offs de arquitetura e define limites de módulos com análise ADR/ATAM/CBAM |
-| **oma-backend** | Constrói e protege suas APIs em Python, Node.js ou Rust |
-| **oma-brainstorm** | Explora ideias com você antes de você se comprometer a construir |
+| **oma-backend** | Constrói APIs, autenticação e acesso a dados em Python, Node.js ou Rust |
+| **oma-brainstorm** | Explora ideias com você antes de partir para a construção |
 | **oma-coordination** | Orienta passo a passo a coordenação manual dos agentes de PM, frontend, backend, mobile e QA |
-| **oma-db** | Projeta seu schema, migrations, indexes e vector stores |
+| **oma-db** | Projeta schemas, migrations, índices e vector stores |
 | **oma-debug** | Encontra a causa raiz, corrige o bug e escreve um teste de regressão |
 | **oma-design** | Constrói design systems com tokens, acessibilidade e layouts responsivos |
-| **oma-dev-workflow** | Automatiza seu CI/CD, releases e tarefas de monorepo |
-| **oma-docs** | Verifica referências quebradas na documentação e sinaliza o que uma mudança de código afetou |
-| **oma-explanation** | Converte um diff, PR ou branch em um explicador HTML interativo autônomo com quiz |
-| **oma-frontend** | Constrói sua UI com React/Next.js, TypeScript, Tailwind CSS v4 e shadcn/ui |
+| **oma-dev-workflow** | Automatiza CI/CD, releases e tarefas de monorepo |
+| **oma-docs** | Verifica referências quebradas na documentação, sincroniza-a com mudanças de código e sinaliza divergências de tradução |
+| **oma-explanation** | Transforma um diff, PR, branch ou tópico em um explicador HTML autônomo, com quiz para mudanças de código |
+| **oma-frontend** | Constrói UI em React/Next.js ou Angular |
 | **oma-hwp** | Converte arquivos HWP, HWPX e HWPML para Markdown |
-| **oma-image** | Gera imagens por vários provedores de IA ao mesmo tempo |
-| **oma-market** | Pesquisa seu mercado a partir de sinais de comunidade e estrutura os resultados com SWOT, Porter's 5F e PESTEL |
-| **oma-mobile** | Constrói apps mobile cross-platform com Flutter |
+| **oma-image** | Gera imagens e variações guiadas por referência, e pode comparar provedores de IA lado a lado |
+| **oma-market** | Pesquisa seu mercado a partir de sinais de comunidade e estrutura os resultados com SWOT, 5F e PESTEL |
+| **oma-mobile** | Constrói apps mobile com Flutter, React Native ou Swift nativo |
 | **oma-observability** | Roteia trabalho de observabilidade entre métricas, logs, traces, SLOs e forense de incidentes |
 | **oma-orchestration** | Executa múltiplos agentes em paralelo via CLI |
 | **oma-pdf** | Converte arquivos PDF para Markdown |
 | **oma-pm** | Planeja tarefas, detalha requisitos e define contratos de API |
-| **oma-qa** | Revisa seu código em busca de problemas de segurança OWASP, performance e acessibilidade |
-| **oma-recap** | Resume seu histórico de conversas em resumos temáticos de trabalho |
-| **oma-refactor** | Refatora o código sem mudar o comportamento usando hotspots, testes de caracterização e commits apenas de refactor |
-| **oma-scholar** | Busca literatura acadêmica e ajuda você a conduzir revisões por pares |
-| **oma-scm** | Gerencia seus branches, merges, worktrees e Conventional Commits |
-| **oma-search** | Roteia cada consulta para a melhor fonte e pontua o nível de confiança do resultado |
+| **oma-qa** | Revisa mudanças quanto a correção, segurança OWASP, performance e acessibilidade |
+| **oma-recap** | Resume seu histórico de conversas em resumos de trabalho por tema |
+| **oma-refactor** | Refatora sem mudar o comportamento, com seleção de hotspots, testes de caracterização e commits só de refactor |
+| **oma-scholar** | Busca literatura acadêmica e gera sidecars de artigos Knows com afirmações, evidências e revisão por pares |
+| **oma-scm** | Gerencia branches, merges, worktrees e Conventional Commits |
+| **oma-search** | Roteia cada consulta para a melhor fonte e pontua o quanto você pode confiar no resultado |
 | **oma-security** | Varre código-fonte, skills de agentes e componentes MCP; testa aplicações web implantadas e valida achados |
-| **oma-skill-creation** | Escreve e audita novas skills do OMA no formato SSL-lite |
-| **oma-slide** | Gera decks de apresentação HTML distintos e ricos em animações e exporta para PDF/PNG/PPTX |
+| **oma-skill-creation** | Escreve e audita novas skills do OMA |
+| **oma-slide** | Gera decks de apresentação HTML e exporta para PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisiona infraestrutura multi-cloud com Terraform |
-| **oma-translation** | Traduz entre idiomas de forma que parece escrito por um falante nativo |
+| **oma-translation** | Traduz para que o resultado pareça escrito por um falante nativo |
 | **oma-video** | Gera vídeos curtos, explicativos e demos por um pipeline HyperFrames que funciona mesmo sem chaves |
-| **oma-voice** | Gera voiceovers e transcreve áudio localmente, sem precisar de nuvem |
+| **oma-voice** | Gera voiceovers e transcreve áudio no próprio dispositivo |
 
 </details>
 
@@ -580,7 +587,7 @@ Cada mecanismo abaixo, exceto o juiz baseado em prompt, é mecânico: um comando
 **Checagens por agente.** Tipos: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. O comando sai com código 1 quando qualquer checagem falha; TODO/FIXME Comments e Inline Styles apenas emitem aviso.
 
 - `backend`: `<Language> Syntax`, `SQL Injection` (padrões de SQL cru) e `<Language> Tests`, a partir dos comandos em `stack/stack.yaml`. Sem esse arquivo (gere-o com `/stack-set`), elas são puladas.
-- `frontend`: TypeScript (`tsc --noEmit`), Inline Styles, Any Types, Frontend Tests (Vitest).
+- `frontend`: os comandos de sintaxe e de teste de `stack/stack.yaml` (em `oma-frontend`, ou em `angular-developer` se essa skill estiver instalada), ou TypeScript (`tsc --noEmit`) e Frontend Tests (Vitest). Inline Styles e Any Types sempre rodam.
 - `mobile`: os comandos de sintaxe e de teste de `stack/stack.yaml`, ou Flutter/Dart Analysis e Flutter Tests.
 - `debug`: Python Tests (pytest via uv) ou Frontend Tests (Vitest).
 - `pm`: PM Plan (o arquivo do plano é um JSON válido).

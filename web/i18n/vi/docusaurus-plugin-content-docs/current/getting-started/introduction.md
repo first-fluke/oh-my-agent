@@ -191,10 +191,10 @@ oh-my-agent hoạt động với các IDE và CLI có AI đã chọn thông qua 
 
 | Công cụ | Phương thức tích hợp | Agent song song |
 |------|-------------------|----------------|
-| **Claude Code** | Skill native + Agent tool | Task tool để chạy song song thực sự |
+| **Claude Code** | Skill native + Agent tool | Agent tool để chạy song song thực sự |
 | **Antigravity CLI/IDE** | Skill và MCP setting chiếu cho `agy` | `oma agent spawn` |
 | **Codex CLI** | Skill tự tải | Yêu cầu song song do model điều phối |
-| **Cursor** | Skill qua tích hợp `.cursor/` | Spawn thủ công |
+| **Cursor** | Skill qua tích hợp `.cursor/` | `@agent-name` + `oma agent spawn` |
 | **OpenCode** | Skill + cầu nối plugin trong process + subagent được tạo (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 | **Kimi Code CLI** | Hook + skill trong `~/.kimi-code/` (ghi HOME cần consent; cũng đọc SSOT `.agents/skills/` native); Serena MCP theo project | `oma agent spawn --vendor kimi` |
 
@@ -287,11 +287,13 @@ oh-my-agent không chỉ giới hạn ở Claude Code. Vendor có hook dùng chu
 | **Claude Code** | `oma-hook.sh --vendor claude --event UserPromptSubmit` / `PreToolUse` / `Stop` | `bun .claude/hooks/hud.ts` (trực tiếp, không thay đổi) |
 | **Codex CLI** | `oma-hook.sh --vendor codex --event UserPromptSubmit` / `PreToolUse` / `Stop` | Không có |
 | **Qwen Code** | `oma-hook.sh --vendor qwen --event UserPromptSubmit` / `PreToolUse` / `Stop` | Đường dẫn `bun` qua `ui.statusLine` |
-| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` | Không có |
-| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `Stop` | Không có |
+| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` / `stop` | Không có |
+| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `PreToolUse` / `Stop` | Không có |
 | **Kiro** | `oma-hook.sh --vendor kiro --event userPromptSubmit` / `preToolUse` / `stop` | Không có |
 | **Kimi Code** | `oma-hook.sh --vendor kimi --event UserPromptSubmit` / `PreToolUse` / `Stop` (TOML `[[hooks]]` chỉ global trong `~/.kimi-code/config.toml`) | Không có |
-| **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | Không có |
+| **Antigravity** | `.agents/hooks.json` → `bun .agents/hooks/core/*.ts` (`PreInvocation` / `PostToolUse` / `Stop`) | `statusLine` → `~/.gemini/antigravity-cli/settings.json` |
+| **CommandCode** | `oma-hook.sh --vendor commandcode --event SessionStart` / `PostToolUse` / `Stop` | Không có |
+| **OpenCode** | Bridge trong process (`installOpencodePlugin`) không đi qua `oma hook run` | Không có |
 | **pi** | Bridge trong process (`installPiExtension`) không đi qua `oma hook run` | Không có |
 
 Thư mục `.agents/` vẫn là nguồn sự thật. Việc cài đặt link hoặc project skill, workflow, hook và định nghĩa agent vào vendor bạn chọn; khả năng khác nhau theo vendor. Subagent native cùng vendor và agent cross-vendor spawn bằng CLI đều đọc từ nguồn đó.

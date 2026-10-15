@@ -189,10 +189,10 @@ oh-my-agent は、ネイティブのスキル／プロンプト読み込みま�
 
 | ツール | 統合方法 | 並列エージェント |
 |---|---|---|
-| **Claude Code** | ネイティブスキル + Agent tool | 真の並列処理には Task tool |
+| **Claude Code** | ネイティブスキル + Agent tool | 真の並列処理には Agent tool |
 | **Antigravity CLI/IDE** | `agy` 用にスキルと MCP 設定を展開 | `oma agent spawn` |
 | **Codex CLI** | スキルを自動読み込み | モデルを介した並列リクエスト |
-| **Cursor** | `.cursor/` 統合経由のスキル | 手動スポーン |
+| **Cursor** | `.cursor/` 統合経由のスキル | `@agent-name` + `oma agent spawn` |
 | **OpenCode** | スキル + インプロセスプラグインブリッジ + 生成されたサブエージェント（`.opencode/agents/`） | `oma agent spawn --vendor opencode` |
 | **Kimi Code CLI** | `~/.kimi-code/` のフックとスキル（HOME への書き込みは同意が必要。SSOT の `.agents/skills/` もネイティブに読む）とプロジェクト単位の Serena MCP | `oma agent spawn --vendor kimi` |
 
@@ -285,11 +285,13 @@ oh-my-agent は Claude Code に限定されません。フック対応ベンダ�
 | **Claude Code** | `oma-hook.sh --vendor claude --event UserPromptSubmit` / `PreToolUse` / `Stop` | `bun .claude/hooks/hud.ts`（直接実行、変更なし） |
 | **Codex CLI** | `oma-hook.sh --vendor codex --event UserPromptSubmit` / `PreToolUse` / `Stop` | なし |
 | **Qwen Code** | `oma-hook.sh --vendor qwen --event UserPromptSubmit` / `PreToolUse` / `Stop` | `ui.statusLine` 経由の `bun` パス |
-| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` | なし |
-| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `Stop` | なし |
+| **Cursor** | `oma-hook.sh --vendor cursor --event beforeSubmitPrompt` / `preToolUse` / `stop` | なし |
+| **Grok** | `oma-hook.sh --vendor grok --event UserPromptSubmit` / `PreToolUse` / `Stop` | なし |
 | **Kiro** | `oma-hook.sh --vendor kiro --event userPromptSubmit` / `preToolUse` / `stop` | なし |
 | **Kimi Code** | `oma-hook.sh --vendor kimi --event UserPromptSubmit` / `PreToolUse` / `Stop`（`~/.kimi-code/config.toml` のグローバル専用 `[[hooks]]`） | なし |
-| **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | なし |
+| **Antigravity** | `.agents/hooks.json` → `bun .agents/hooks/core/*.ts` (`PreInvocation` / `PostToolUse` / `Stop`) | `statusLine` → `~/.gemini/antigravity-cli/settings.json` |
+| **CommandCode** | `oma-hook.sh --vendor commandcode --event SessionStart` / `PostToolUse` / `Stop` | なし |
+| **OpenCode** | インプロセスブリッジ（`installOpencodePlugin`）。`oma hook run` は経由しません。 | なし |
 | **pi** | インプロセスブリッジ（`installPiExtension`）。`oma hook run` は経由しません。 | なし |
 
 `.agents/` ディレクトリが引き続き SSOT です。インストールは、選択したベンダーにスキル、ワークフロー、フック、エージェント定義をリンクまたは投影します。利用できる機能はベンダーによって異なります。同じベンダーのネイティブサブエージェントも、CLI で起動した異なるベンダーのエージェントも、同じソースを読みます。

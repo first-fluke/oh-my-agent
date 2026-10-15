@@ -62,11 +62,18 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
 <details>
 <summary>インストーラーがデフォルトで行うこと</summary>
 
-- **bun** をインストールします（必須）。**uv**、**Serena**、**CUE** のインストールも試み、どれかが失敗しても警告を出して続行します。
-- **Aside** ブラウザ MCP があらかじめ選択されており、`curl -fsSL https://releases.aside.com/install.sh | bash` でインストールします。ブラウザ MCP のステップで選択を外すか、後から `oma update mcp` で変更できます。
-- セマンティックメモリには **AgentMemory** を使います。`bun install -g @agentmemory/agentmemory` を実行してデーモンを起動します。スキップするにはプロバイダーに `none` を選ぶか、`OMA_NO_AGENTMEMORY=1` を設定してください。
-- ホームディレクトリに書き込む前に確認します（Antigravity、Hermes、Kimi）。`--global` なしで `$HOME` にいる場合も確認を求めます。
-- 非対話の実行（`-y`、`OMA_YES=1`、`CI=true`）では、`All` スキルプリセット、`model_preset: auto`、バックエンド言語として Python を使います。
+- **bun** をインストールします（必須）。**uv**、**Serena**（`uv tool install`）、**CUE**（`brew install cue` または `winget`）のインストールも試み、どれかが失敗しても警告を出して続行します。
+- 対話式セットアップでは **Aside** ブラウザ MCP があらかじめ選択されており、選択したままにした場合にのみ `curl -fsSL https://releases.aside.com/install.sh | bash` でインストールします。ブラウザ MCP のステップで選択を外すか、後から `oma update mcp` で変更できます。
+- セマンティックメモリには **AgentMemory** を使います。`bun install -g @agentmemory/agentmemory` を実行し、ログインサービス（launchd、systemd ユーザーユニット、または Windows のスケジュールされたタスク）として登録します。スキップするにはプロバイダーに `none` を選ぶか、`OMA_NO_AGENTMEMORY=1` を設定してください。
+- ホームディレクトリにあるベンダーフォルダー（Antigravity、Hermes、Kimi）にスキルをリンクする前に確認します。`--global` なしで `$HOME` にいる場合も確認を求めます。
+- プロジェクト外のいくつかのファイルには確認なしで書き込みます。対象は `~/.claude.json`（プロジェクトを信頼済みの Claude Code ワークスペースとしてマーク）、`~/.serena/`（OMA コンテキスト、回答サイズの下限、プロジェクト登録）、`~/.cursor/cli-config.json`（Cursor のコミット attribution をオフ）、`~/.grok/config.toml`（テレメトリー）、`~/.gemini/antigravity-cli/`（HUD）で、いずれも選択したベンダーの分だけです。
+- ベンダー設定に**テレメトリーのオプトアウト**を書き込みます。Claude には `DISABLE_TELEMETRY=1` を設定し（これで Claude Code の Remote Control もオフになります）、Gemini、Qwen、Codex、Grok では使用統計をオフにします。ベンダーのデフォルトを維持するには `telemetry: true` を設定してください。
+- `.claude/settings.json` に未設定の Claude Code 設定を追加します。`skipDangerousModePermissionPrompt: true`、`effortLevel: high`、`cleanupPeriodDays: 180` に加え、auto memory、adaptive thinking、エラーレポート、組み込みの git 指示をオフにする env フラグが含まれます。すでに設定している値はそのまま保持されます。
+- **co-author トレーラー**を追加します。Claude Code のコミット attribution が `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>` になり、PR には "Generated with oh-my-agent" の一行が付きます。オフにするには `scm.co_author.enabled: false` を設定してください。
+- リストにない `Co-authored-by` アドレスを拒否する **commit-msg ガード**を `.githooks/` にインストールし、ほかのフックが有効でなければ `git config --local core.hooksPath .githooks` を設定します。オプトアウトするには `scm.co_author.enforce_hook: false` を設定してください。
+- `oma update` はバックグラウンドで `oma` CLI を更新し（止めるには `auto_update_cli: false` または `OMA_SKIP_VERSION_CHECK=1`）、`uv tool upgrade serena-agent --prerelease=allow` を実行します（`serena.auto_update: false`）。
+- Serena がデフォルトの `bridge` モードのとき、共有 Serena サーバーを最初に起動したエージェントセッションが**クリーンアップタイマー**を登録し、アイドル状態の共有 Serena サーバーを 5 分ごとに停止します（launchd `dev.oma.serena-daemon-gc`、systemd ユーザータイマー `oma-serena-daemon-gc.timer`、または Windows のスケジュールされたタスク `OMA Serena Daemon GC`）。共有サーバーとタイマーを使わない場合は `serena.mode: stdio` を設定してください。`oma uninstall` はこのタイマーを削除しません。
+- 非対話の実行（`-y`、`OMA_YES=1`、`CI=true`）では、`All` スキルプリセット、`model_preset: auto`、バックエンド言語として Python を使います。`mcp.devtools_browsers` にブラウザがすでに登録されていない限り、ブラウザ MCP は選択されません（Aside のインストールスクリプトも実行しません）。
 
 </details>
 
@@ -382,39 +389,39 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | スキル | 内容 |
 |---|---|
-| **oma-academic-writing** | アカデミック文章の起草・改稿・監査を通じ、出版品質に仕上げる |
-| **oma-architecture** | ADR/ATAM/CBAM分析でアーキテクチャのトレードオフを評価し、モジュール境界を定義する |
-| **oma-backend** | Python、Node.js、RustでAPIを構築し、セキュリティを確保する |
-| **oma-brainstorm** | 実装を決める前にアイデアをいっしょに探索する |
-| **oma-coordination** | PM・フロントエンド・バックエンド・モバイル・QA エージェントの手動連携を段階的にガイド |
+| **oma-academic-writing** | アカデミックな文章を起草・改稿・監査する |
+| **oma-architecture** | アーキテクチャのトレードオフを評価してモジュール境界を定め、ADR/ATAM/CBAMで分析する |
+| **oma-backend** | Python、Node.js、RustでAPI、認証、データアクセスを構築する |
+| **oma-brainstorm** | 作り始める前に、いっしょにアイデアを探る |
+| **oma-coordination** | PM・フロントエンド・バックエンド・モバイル・QAエージェントの手動連携を段階的にガイドする |
 | **oma-db** | スキーマ、マイグレーション、インデックス、ベクトルストアを設計する |
-| **oma-debug** | 根本原因を特定してバグを修正し、リグレッションテストを追加する |
+| **oma-debug** | 根本原因を特定してバグを修正し、リグレッションテストを書く |
 | **oma-design** | トークン、アクセシビリティ、レスポンシブレイアウトを備えたデザインシステムを構築する |
 | **oma-dev-workflow** | CI/CD、リリース、monorepoタスクを自動化する |
-| **oma-docs** | ドキュメントの参照切れを検出し、コード変更の影響を受けた箇所を特定する |
-| **oma-explanation** | diff/PR/ブランチをクイズ付きの自己完結型インタラクティブHTML解説書に変換する |
-| **oma-frontend** | React/Next.js、TypeScript、Tailwind CSS v4、shadcn/uiでUIを構築する |
+| **oma-docs** | ドキュメントの参照切れを検出してコード変更に同期させ、翻訳のずれを指摘する |
+| **oma-explanation** | diff、PR、ブランチ、トピックを自己完結型のHTML解説にまとめる（コード変更にはクイズ付き） |
+| **oma-frontend** | React/Next.jsまたはAngularでUIを構築する |
 | **oma-hwp** | HWP、HWPX、HWPMLファイルをMarkdownに変換する |
-| **oma-image** | 複数のAIプロバイダーに並列で画像生成をリクエストする |
-| **oma-market** | コミュニティシグナルから市場を調査し、SWOT/Porter's 5F/PESTELで整理する |
-| **oma-mobile** | Flutterでクロスプラットフォームモバイルアプリを構築する |
+| **oma-image** | 画像や参照画像ベースのバリエーションを生成し、AIベンダーを並べて比較することもできる |
+| **oma-market** | コミュニティのシグナルから市場を調査し、SWOT・5F・PESTELで整理する |
+| **oma-mobile** | Flutter、React Native、ネイティブSwiftでモバイルアプリを構築する |
 | **oma-observability** | メトリクス、ログ、トレース、SLO、インシデント調査にまたがるオブザーバビリティ作業をルーティングする |
-| **oma-orchestration** | CLIから複数のエージェントを並列で起動・管理する |
+| **oma-orchestration** | CLIから複数のエージェントを並列で実行する |
 | **oma-pdf** | PDFファイルをMarkdownに変換する |
 | **oma-pm** | タスクを計画し、要件を分解し、APIコントラクトを定義する |
-| **oma-qa** | OWASPセキュリティ、パフォーマンス、アクセシビリティの観点でコードをレビューする |
+| **oma-qa** | 変更内容を正確性、OWASPセキュリティ、パフォーマンス、アクセシビリティの観点でレビューする |
 | **oma-recap** | 会話履歴をテーマ別の作業サマリーにまとめる |
-| **oma-refactor** | ホットスポット選定と特性化テストの安全網で挙動を変えずにコードをリファクタリング |
-| **oma-scholar** | 学術文献を検索し、ピアレビューを支援する |
+| **oma-refactor** | ホットスポットの絞り込み、特性化テスト、リファクタリング専用コミットで、挙動を変えずにリファクタリングする |
+| **oma-scholar** | 学術文献を検索し、主張・根拠・ピアレビューをまとめたKnows論文サイドカーを作成する |
 | **oma-scm** | ブランチ、マージ、ワークツリー、Conventional Commitsを管理する |
-| **oma-search** | クエリを最適なソースにルーティングし、結果の信頼スコアを付与する |
+| **oma-search** | クエリごとに最適なソースへルーティングし、結果をどこまで信頼できるかをスコア化する |
 | **oma-security** | ソース、エージェントスキル、MCPコンポーネントをスキャンし、デプロイ済みWebアプリをテストして指摘を検証する |
-| **oma-skill-creation** | 新しいOMAスキルをSSL-liteフォーマットで作成・監査する |
-| **oma-slide** | 特徴的でアニメーション豊かなHTMLプレゼンテーションデッキを生成し、PDF/PNG/PPTXへエクスポートする |
+| **oma-skill-creation** | 新しいOMAスキルを作成・監査する |
+| **oma-slide** | HTMLプレゼンテーションデッキを生成し、PDF/PNG/PPTXへエクスポートする |
 | **oma-tf-infra** | Terraformでマルチクラウドインフラをプロビジョニングする |
-| **oma-translation** | ネイティブが書いたように自然な多言語翻訳を行う |
-| **oma-video** | キー不要でも動く HyperFrames パイプラインでショート動画・解説動画・デモ動画を生成 |
-| **oma-voice** | クラウド不要のオンデバイスでボイスオーバーを生成し、音声を文字起こしする |
+| **oma-translation** | ネイティブスピーカーが書いたように読める文章に翻訳する |
+| **oma-video** | キー不要でも動くHyperFramesパイプラインで、ショート動画・解説動画・デモ動画を生成する |
+| **oma-voice** | オンデバイスでボイスオーバーを生成し、音声を文字起こしする |
 
 </details>
 
@@ -580,7 +587,7 @@ agents:
 **エージェント別チェック。** タイプ: `backend`、`frontend`、`mobile`、`qa`、`debug`、`pm`。いずれかのチェックが失敗するとコマンドは 1 で終了します。TODO/FIXME Comments と Inline Styles は警告だけです。
 
 - `backend`: `stack/stack.yaml` のコマンドによる `<Language> Syntax`、`SQL Injection`（raw SQL のパターン）、`<Language> Tests`。このファイルがない場合（`/stack-set` で生成できます）はスキップされます。
-- `frontend`: TypeScript（`tsc --noEmit`）、Inline Styles、Any Types、Frontend Tests（Vitest）。
+- `frontend`: `stack/stack.yaml`（`oma-frontend` 配下、または `angular-developer` スキルがインストールされていればその配下）の構文・テストコマンド、または TypeScript（`tsc --noEmit`）と Frontend Tests（Vitest）。Inline Styles と Any Types は常に実行されます。
 - `mobile`: `stack/stack.yaml` の構文・テストコマンド、または Flutter/Dart Analysis と Flutter Tests。
 - `debug`: Python Tests（uv 経由の pytest）または Frontend Tests（Vitest）。
 - `pm`: PM Plan（計画ファイルが有効な JSON であること）。
