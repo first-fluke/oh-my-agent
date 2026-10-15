@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import * as pc from "picocolors";
 import { resolveDecisionVerifierSid } from "../../../state/decision-verifier.js";
 import {
   addOutputOptions,
@@ -81,8 +82,19 @@ export function registerTrajectory(program: Command): void {
             route: `/trajectory?sid=${encodeURIComponent(resolvedSid)}`,
             projectDir,
           });
-          // Give the server a moment to start listening.
-          setTimeout(() => openUrl(dashboard.url), 500);
+          // Open the viewer once the server is listening; `url` holds the
+          // bound port from then on. A failed bind opens nothing.
+          void dashboard.ready.then(
+            () => openUrl(dashboard.url),
+            (err: unknown) => {
+              console.error(
+                pc.red(
+                  `Dashboard failed to start: ${err instanceof Error ? err.message : String(err)}`,
+                ),
+              );
+              process.exitCode = 1;
+            },
+          );
           return;
         }
         const trajectory = buildTrajectory(resolvedSid, { projectDir });

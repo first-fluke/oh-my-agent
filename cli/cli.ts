@@ -110,7 +110,13 @@ async function registerFullCli(): Promise<void> {
     .action(
       runAction(async (options: { root?: string }) => {
         const { startDashboard } = await import("./dashboard.js");
-        startDashboard({ projectDir: options.root });
+        const dashboard = startDashboard({ projectDir: options.root });
+        dashboard.ready.catch((err: unknown) => {
+          console.error(
+            `Dashboard failed to start: ${err instanceof Error ? err.message : String(err)}`,
+          );
+          process.exitCode = 1;
+        });
       }),
     );
 

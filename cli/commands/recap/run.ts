@@ -1,3 +1,4 @@
+import * as pc from "picocolors";
 import { startDashboard } from "../../dashboard.js";
 import { openUrl } from "../../utils/open-url.js";
 import { formatJson } from "./internal/formatters/json.js";
@@ -11,8 +12,19 @@ export async function recap(
 ): Promise<void> {
   if (options.graph) {
     const dashboard = startDashboard({ route: "/recap" });
-    // Open browser after a short delay to let server start
-    setTimeout(() => openUrl(dashboard.url), 500);
+    // Open the browser once the server is listening; `url` holds the bound
+    // port from then on. A failed bind opens nothing.
+    void dashboard.ready.then(
+      () => openUrl(dashboard.url),
+      (err: unknown) => {
+        console.error(
+          pc.red(
+            `Dashboard failed to start: ${err instanceof Error ? err.message : String(err)}`,
+          ),
+        );
+        process.exitCode = 1;
+      },
+    );
     return;
   }
 

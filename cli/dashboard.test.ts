@@ -1,8 +1,11 @@
+import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
-import { request } from "node:http";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { Server as HttpServer, request } from "node:http";
+import { type AddressInfo, createServer as createNetServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DASHBOARD_HTML, RECAP_HTML } from "./dashboard/templates.js";
 import { TRAJECTORY_HTML } from "./dashboard/trajectory-template.js";
@@ -71,10 +74,6 @@ describe("dashboard /api/recap top parameter", () => {
   beforeEach(() => {
     memoriesDir = mkdtempSync(join(tmpdir(), "oma-dashboard-test-"));
     vi.stubEnv("MEMORIES_DIR", memoriesDir);
-    vi.stubEnv(
-      "DASHBOARD_PORT",
-      String(40_000 + Math.floor(Math.random() * 5_000)),
-    );
   });
 
   afterEach(async () => {
@@ -86,8 +85,8 @@ describe("dashboard /api/recap top parameter", () => {
   });
 
   it("rejects a non-finite top value with 400", async () => {
-    dashboard = startDashboard();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ port: 0 });
+    await dashboard.ready;
 
     const res = await httpGet(
       `http://${dashboard.host}:${dashboard.port}/api/recap?top=abc`,
@@ -105,10 +104,6 @@ describe("dashboard HTML security headers", () => {
   beforeEach(() => {
     memoriesDir = mkdtempSync(join(tmpdir(), "oma-dashboard-test-"));
     vi.stubEnv("MEMORIES_DIR", memoriesDir);
-    vi.stubEnv(
-      "DASHBOARD_PORT",
-      String(45_000 + Math.floor(Math.random() * 5_000)),
-    );
   });
 
   afterEach(async () => {
@@ -120,8 +115,8 @@ describe("dashboard HTML security headers", () => {
   });
 
   it("sets security headers on the root HTML page", async () => {
-    dashboard = startDashboard();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ port: 0 });
+    await dashboard.ready;
 
     const res = await httpGetFull(
       `http://${dashboard.host}:${dashboard.port}/`,
@@ -135,8 +130,8 @@ describe("dashboard HTML security headers", () => {
   });
 
   it("sets security headers on the /recap HTML page", async () => {
-    dashboard = startDashboard();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ port: 0 });
+    await dashboard.ready;
 
     const res = await httpGetFull(
       `http://${dashboard.host}:${dashboard.port}/recap`,
@@ -155,10 +150,6 @@ describe("startDashboard", () => {
   beforeEach(() => {
     memoriesDir = mkdtempSync(join(tmpdir(), "oma-dashboard-test-"));
     vi.stubEnv("MEMORIES_DIR", memoriesDir);
-    vi.stubEnv(
-      "DASHBOARD_PORT",
-      String(30_000 + Math.floor(Math.random() * 10_000)),
-    );
   });
 
   afterEach(async () => {
@@ -169,9 +160,40 @@ describe("startDashboard", () => {
     vi.unstubAllEnvs();
   });
 
+  // Regression: tests used to bind a random port from a fixed range (e.g.
+  // 50000-54999) that overlaps the OS ephemeral range, where other local
+  // tools listen. A collision sent the requests to the foreign server and
+  // tripped the EADDRINUSE process.exit path. Port 0 lets the OS pick a free
+  // port, and `ready` replaces the sleep that guessed when listen finished.
+  it("binds an OS-assigned port for port 0 and reports it once ready", async () => {
+    // A foreign listener already owns the port DASHBOARD_PORT names, as the
+    // codex/Cursor listeners in 50000-54999 did for the old random ports.
+    const foreign = createNetServer();
+    await new Promise<void>((resolve) =>
+      foreign.listen(0, "127.0.0.1", resolve),
+    );
+    const taken = (foreign.address() as AddressInfo).port;
+    vi.stubEnv("DASHBOARD_PORT", String(taken));
+    try {
+      dashboard = startDashboard({ port: 0 });
+      await dashboard.ready;
+    } finally {
+      await new Promise((resolve) => foreign.close(resolve));
+    }
+
+    expect(dashboard.port).toBeGreaterThan(0);
+    expect(dashboard.port).not.toBe(taken);
+    expect(dashboard.url).toBe(`http://127.0.0.1:${dashboard.port}/`);
+    const page = await rawGet(dashboard.port, "/", {
+      Host: `127.0.0.1:${dashboard.port}`,
+    });
+    expect(page.status).toBe(200);
+    expect(page.body).toContain(dashboard.token);
+  });
+
   it("serves HTML with an injected auth token", async () => {
-    dashboard = startDashboard();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ port: 0 });
+    await dashboard.ready;
 
     const page = await httpGet(`http://${dashboard.host}:${dashboard.port}/`);
     expect(page.status).toBe(200);
@@ -182,8 +204,8 @@ describe("startDashboard", () => {
   });
 
   it("requires auth for /api/state", async () => {
-    dashboard = startDashboard();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ port: 0 });
+    await dashboard.ready;
 
     const unauthorized = await httpGet(
       `http://${dashboard.host}:${dashboard.port}/api/state`,
@@ -208,14 +230,19 @@ function rawGet(
   headers: Record<string, string>,
 ): Promise<{ status: number; body: string }> {
   return new Promise((resolve, reject) => {
-    const req = request({ host: "127.0.0.1", port, path, headers }, (res) => {
-      let body = "";
-      res.setEncoding("utf8");
-      res.on("data", (chunk) => {
-        body += chunk;
-      });
-      res.on("end", () => resolve({ status: res.statusCode ?? 0, body }));
-    });
+    // agent: false: a fresh connection per request, so no keep-alive socket
+    // from an earlier test's (closed) server is ever reused.
+    const req = request(
+      { host: "127.0.0.1", port, path, headers, agent: false },
+      (res) => {
+        let body = "";
+        res.setEncoding("utf8");
+        res.on("data", (chunk) => {
+          body += chunk;
+        });
+        res.on("end", () => resolve({ status: res.statusCode ?? 0, body }));
+      },
+    );
     req.on("error", reject);
     req.end();
   });
@@ -232,6 +259,7 @@ function tryUpgrade(
       host: "127.0.0.1",
       port,
       path,
+      agent: false,
       headers: {
         Connection: "Upgrade",
         Upgrade: "websocket",
@@ -260,10 +288,6 @@ describe("dashboard loopback request gate", () => {
   beforeEach(() => {
     memoriesDir = mkdtempSync(join(tmpdir(), "oma-dashboard-test-"));
     vi.stubEnv("MEMORIES_DIR", memoriesDir);
-    vi.stubEnv(
-      "DASHBOARD_PORT",
-      String(50_000 + Math.floor(Math.random() * 5_000)),
-    );
   });
 
   afterEach(async () => {
@@ -275,8 +299,8 @@ describe("dashboard loopback request gate", () => {
   });
 
   it("never serves the token-bearing page to a DNS-rebound Host", async () => {
-    dashboard = startDashboard();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ port: 0 });
+    await dashboard.ready;
     const rebound = `rebind.evil.example:${dashboard.port}`;
 
     const page = await rawGet(dashboard.port, "/", { Host: rebound });
@@ -294,8 +318,8 @@ describe("dashboard loopback request gate", () => {
   });
 
   it("rejects API calls from a foreign Origin", async () => {
-    dashboard = startDashboard();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ port: 0 });
+    await dashboard.ready;
 
     const res = await rawGet(dashboard.port, "/api/state", {
       Host: `127.0.0.1:${dashboard.port}`,
@@ -306,8 +330,8 @@ describe("dashboard loopback request gate", () => {
   });
 
   it("gates the WebSocket upgrade on Host, Origin, and token", async () => {
-    dashboard = startDashboard();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ port: 0 });
+    await dashboard.ready;
     const port = dashboard.port;
     const path = `/?token=${encodeURIComponent(dashboard.token)}`;
     const host = `127.0.0.1:${port}`;
@@ -335,10 +359,6 @@ describe("dashboard project directory", () => {
   beforeEach(() => {
     projectDir = mkdtempSync(join(tmpdir(), "oma-dashboard-project-"));
     vi.stubEnv("MEMORIES_DIR", "");
-    vi.stubEnv(
-      "DASHBOARD_PORT",
-      String(55_000 + Math.floor(Math.random() * 5_000)),
-    );
   });
 
   afterEach(async () => {
@@ -350,12 +370,12 @@ describe("dashboard project directory", () => {
     rmSync(projectDir, { recursive: true, force: true });
   });
 
-  it("watches the given project, not a path taken from argv", () => {
+  it("watches the given project, not a path taken from argv", async () => {
     // `oma dashboard web` leaves the subcommand name at argv[3].
     const argv = process.argv;
     process.argv = [argv[0] ?? "node", "cli.js", "dashboard", "web"];
     try {
-      dashboard = startDashboard({ projectDir });
+      dashboard = startDashboard({ projectDir, port: 0 });
     } finally {
       process.argv = argv;
     }
@@ -364,6 +384,7 @@ describe("dashboard project directory", () => {
     );
     expect(existsSync(dashboard.memoriesDir)).toBe(true);
     expect(existsSync(join(process.cwd(), "web", ".agents"))).toBe(false);
+    await dashboard.ready;
   });
 });
 
@@ -374,10 +395,6 @@ describe("dashboard trajectory routes", () => {
   beforeEach(() => {
     projectDir = mkdtempSync(join(tmpdir(), "oma-dashboard-trajectory-"));
     vi.stubEnv("MEMORIES_DIR", join(projectDir, "memories"));
-    vi.stubEnv(
-      "DASHBOARD_PORT",
-      String(50_000 + Math.floor(Math.random() * 5_000)),
-    );
   });
 
   afterEach(async () => {
@@ -390,8 +407,8 @@ describe("dashboard trajectory routes", () => {
   });
 
   it("serves the viewer page under a CSP that needs no external host", async () => {
-    dashboard = startDashboard({ projectDir });
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ projectDir, port: 0 });
+    await dashboard.ready;
 
     const res = await httpGetFull(
       `http://${dashboard.host}:${dashboard.port}/trajectory?sid=oma-main`,
@@ -410,8 +427,8 @@ describe("dashboard trajectory routes", () => {
       ts: "2026-05-25T10:00:00.000Z",
       payload: { workflow: "debug", category: "main" },
     });
-    dashboard = startDashboard({ projectDir });
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    dashboard = startDashboard({ projectDir, port: 0 });
+    await dashboard.ready;
     const base = `http://${dashboard.host}:${dashboard.port}`;
     const auth = { "X-OMA-Dashboard-Token": dashboard.token };
 
@@ -436,3 +453,106 @@ describe("dashboard trajectory routes", () => {
     ]);
   });
 });
+
+// Regression: a bind failure other than EADDRINUSE (e.g. EACCES on a
+// privileged port) used to be rethrown from the server's "error" handler. That
+// surfaced as an uncaught exception with a stack trace before the callers'
+// `ready` rejection handler could print "Dashboard failed to start: ...", and
+// the dashboard kept its SIGINT/SIGTERM handlers and file watcher. The failure
+// must now reject `ready` and release those.
+describe("dashboard bind failure", () => {
+  let memoriesDir = "";
+
+  beforeEach(() => {
+    memoriesDir = mkdtempSync(join(tmpdir(), "oma-dashboard-bind-"));
+    vi.stubEnv("MEMORIES_DIR", memoriesDir);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllEnvs();
+    rmSync(memoriesDir, { recursive: true, force: true });
+  });
+
+  it("rejects ready on EACCES without throwing and drops its signal handlers", async () => {
+    const sigintBefore = process.listenerCount("SIGINT");
+    const sigtermBefore = process.listenerCount("SIGTERM");
+    vi.spyOn(HttpServer.prototype, "listen").mockImplementation(function (
+      this: HttpServer,
+    ) {
+      process.nextTick(() => this.emit("error", eaccesError()));
+      return this;
+    });
+
+    const dashboard = startDashboard({ port: 0 });
+
+    await expect(dashboard.ready).rejects.toMatchObject({ code: "EACCES" });
+    expect(process.listenerCount("SIGINT")).toBe(sigintBefore);
+    expect(process.listenerCount("SIGTERM")).toBe(sigtermBefore);
+  });
+
+  it("lets recap --graph print the friendly message and exit 1", () => {
+    // A real CLI process: the uncaught throw only shows up outside the runner.
+    const recapModule = fileURLToPath(
+      new URL("./commands/recap/run.ts", import.meta.url),
+    );
+    const result = runWithEaccesBind(memoriesDir, [
+      `const { recap } = await import(${JSON.stringify(recapModule)});`,
+      "await recap(false, { graph: true });",
+    ]);
+
+    expect(result.signal).toBeNull();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      "Dashboard failed to start: listen EACCES: permission denied",
+    );
+    expect(result.stderr).not.toContain("at startDashboard");
+  });
+
+  it("still fails loudly when the caller ignores ready", () => {
+    // `oma dashboard web` does not observe `ready`; the rejection must not be
+    // swallowed into a silent exit 0.
+    const dashboardModule = fileURLToPath(
+      new URL("./dashboard.ts", import.meta.url),
+    );
+    const result = runWithEaccesBind(memoriesDir, [
+      `const { startDashboard } = await import(${JSON.stringify(dashboardModule)});`,
+      "startDashboard();",
+    ]);
+
+    expect(result.signal).toBeNull();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("listen EACCES: permission denied");
+  });
+});
+
+/** Runs `body` under bun with every http bind failing with EACCES. */
+function runWithEaccesBind(dir: string, body: string[]) {
+  const fixture = join(dir, "bind-eacces.ts");
+  writeFileSync(
+    fixture,
+    [
+      'import { Server } from "node:http";',
+      "Server.prototype.listen = function () {",
+      '  const err = Object.assign(new Error("listen EACCES: permission denied 127.0.0.1:80"), { code: "EACCES", syscall: "listen" });',
+      '  process.nextTick(() => this.emit("error", err));',
+      "  return this;",
+      "};",
+      ...body,
+      "",
+    ].join("\n"),
+  );
+  return spawnSync("bun", [fixture], {
+    cwd: dir,
+    encoding: "utf8",
+    env: { ...process.env, MEMORIES_DIR: dir },
+    timeout: 15_000,
+  });
+}
+
+function eaccesError(): NodeJS.ErrnoException {
+  return Object.assign(
+    new Error("listen EACCES: permission denied 127.0.0.1:80"),
+    { code: "EACCES", syscall: "listen" },
+  );
+}

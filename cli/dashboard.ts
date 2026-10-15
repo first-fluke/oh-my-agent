@@ -30,6 +30,13 @@ export interface DashboardHandle {
   token: string;
   url: string;
   memoriesDir: string;
+  /**
+   * Settles once the server is accepting connections. Rejects if binding
+   * fails with anything but EADDRINUSE (which prints and exits); callers must
+   * handle that rejection. `port` and `url` hold the bound port from then on,
+   * which matters when `options.port` is 0.
+   */
+  ready: Promise<void>;
   close: () => Promise<void>;
 }
 
@@ -37,6 +44,12 @@ export interface DashboardOptions {
   route?: string;
   /** Project whose `.agents/state/memories` is watched (default: cwd). */
   projectDir?: string;
+  /**
+   * Port to bind instead of DASHBOARD_PORT. 0 asks the OS for a free port, so
+   * callers that cannot own a fixed port (tests) never collide with another
+   * listener; read the bound port from the handle after `ready`.
+   */
+  port?: number;
 }
 
 export function resolveDashboardPort(
@@ -88,10 +101,11 @@ function rejectForeignRequest(
 export function startDashboard(
   options: DashboardOptions = {},
 ): DashboardHandle {
-  const port = resolveDashboardPort();
+  // Reassigned to the bound port on "listening", before any request arrives.
+  let port = options.port ?? resolveDashboardPort();
   const route = options.route ?? "/";
   const token = randomBytes(32).toString("base64url");
-  const url = `http://${DASHBOARD_HOST}:${port}${route}`;
+  let url = `http://${DASHBOARD_HOST}:${port}${route}`;
   const memoriesDir = resolveMemoriesDir(options.projectDir);
   const projectDir = resolveProjectRoot(options.projectDir);
   if (!existsSync(memoriesDir)) mkdirSync(memoriesDir, { recursive: true });
@@ -268,12 +282,17 @@ export function startDashboard(
   };
   const onSigterm = () => process.emit("SIGINT");
 
+  // Drops everything besides the server that keeps the process alive.
+  const release = (): void => {
+    process.off("SIGINT", onSigint);
+    process.off("SIGTERM", onSigterm);
+    if (debounceTimer) clearTimeout(debounceTimer);
+    watcher.close().catch(() => undefined);
+  };
+
   const close = (): Promise<void> =>
     new Promise((resolve, reject) => {
-      process.off("SIGINT", onSigint);
-      process.off("SIGTERM", onSigterm);
-      if (debounceTimer) clearTimeout(debounceTimer);
-      watcher.close().catch(() => undefined);
+      release();
       wss.clients.forEach((c) => {
         c.terminate();
       });
@@ -292,7 +311,18 @@ export function startDashboard(
   process.once("SIGINT", onSigint);
   process.once("SIGTERM", onSigterm);
 
+  let markReady: () => void = () => undefined;
+  let failReady: (err: Error) => void = () => undefined;
+  const ready = new Promise<void>((resolve, reject) => {
+    markReady = resolve;
+    failReady = reject;
+  });
+  let listening = false;
+
   server.on("error", (err: NodeJS.ErrnoException) => {
+    // `ready` has already resolved; nothing can observe this error anymore.
+    if (listening) throw err;
+    failReady(err);
     if (err.code === "EADDRINUSE") {
       console.error(
         pc.red(
@@ -301,14 +331,35 @@ export function startDashboard(
       );
       process.exit(1);
     }
-    throw err;
+    // Any other bind failure (e.g. EACCES) is reported through `ready`, so the
+    // caller prints its own message and sets the exit code. Rethrowing here
+    // would crash with a stack trace before that handler runs. A caller that
+    // ignores `ready` still sees the failure as an unhandled rejection.
+    release();
   });
 
+  const handle: DashboardHandle = {
+    host: DASHBOARD_HOST,
+    port,
+    token,
+    url,
+    memoriesDir,
+    ready,
+    close,
+  };
+
   server.listen(port, DASHBOARD_HOST, () => {
+    const address = server.address();
+    if (address && typeof address === "object") port = address.port;
+    url = `http://${DASHBOARD_HOST}:${port}${route}`;
+    handle.port = port;
+    handle.url = url;
+    listening = true;
+    markReady();
     console.log(pc.magenta(`\n  🛸 OMA Memory Dashboard`));
     console.log(pc.white(`     ${url}`));
     console.log(pc.dim(`     Watching: ${memoriesDir}\n`));
   });
 
-  return { host: DASHBOARD_HOST, port, token, url, memoriesDir, close };
+  return handle;
 }
