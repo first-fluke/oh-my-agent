@@ -1,5 +1,14 @@
 # Changelog
 
+## [20.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.2.0...cli-v20.2.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* **config:** save preferences where they take effect in CUE projects ([6ca1310](https://github.com/first-fluke/oh-my-agent/commit/6ca131083b3b2d82ee04dfe83c7fbb640105dd1f))
+* **dashboard:** open the browser once the server listens ([77b465f](https://github.com/first-fluke/oh-my-agent/commit/77b465f568c9f44e8ad8933ff3a5c25021b7c737))
+* **update:** remove stray template configs and flag the old timezone ([99a6bf6](https://github.com/first-fluke/oh-my-agent/commit/99a6bf68aa51d485c69137bc4e0b088ba8253510))
+
 ## [20.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.1.0...cli-v20.2.0) (2026-10-15)
 
 
