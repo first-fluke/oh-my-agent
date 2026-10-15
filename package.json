@@ -26,6 +26,7 @@
     "test": "bun run --cwd cli test",
     "test:orca": "node --test integrations/orca/plugin.test.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p web/tsconfig.json",
+    "docs:check": "node cli/scripts/sync-readme.mjs --check && node cli/scripts/generate-cli-reference.mjs --check && node cli/scripts/generate-skill-catalog.mjs --check",
     "bench:oma-hook": "bun run cli/__bench__/oma-hook-latency.bench.ts",
     "web:dev": "bun run --cwd web dev",
     "web:build": "bun run --cwd web build",

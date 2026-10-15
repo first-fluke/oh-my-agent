@@ -52,7 +52,7 @@ export { type SyncSchedulesResult, syncSchedules };
 // ---------------------------------------------------------------------------
 
 /**
- * Capture ONLY the explicitly named env vars into ~/.agents/schedule/env/<id>
+ * Capture ONLY the explicitly named env vars into ~/.oma/schedule/env/<id>
  * (file 0600, dir 0700). Never dumps the whole environment. Returns the
  * relative capturedEnvRef ("env/<id>") or null when nothing was captured.
  */

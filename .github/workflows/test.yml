@@ -52,6 +52,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: bun run typecheck
 
+      # Generated docs (cli/README.md, CLI options registry, skill catalog)
+      # must match their sources. Runs before Build, whose sync:readme step
+      # would otherwise rewrite cli/README.md and hide the drift.
+      - name: Docs drift
+        if: matrix.os == 'ubuntu-latest'
+        run: bun run docs:check
+
       - name: Test Orca plugin (no build)
         run: bun run test:orca
 

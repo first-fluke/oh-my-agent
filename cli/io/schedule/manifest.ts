@@ -2,8 +2,8 @@
  * schedule/manifest.ts
  *
  * SSOT manifest for oma schedule jobs.
- * Storage: ~/.agents/schedule/schedules.json (global-only, 0600)
- * Directory: ~/.agents/schedule/ (0700)
+ * Storage: ~/.oma/schedule/schedules.json (global-only, 0600)
+ * Directory: ~/.oma/schedule/ (0700)
  *
  * Schema per docs/plans/contracts/schedule-scheduler-port.md §1
  */
@@ -40,7 +40,7 @@ export interface ScheduleJob {
   recurring: boolean;
   /** Auto-expire after N days (0 = indefinite). */
   maxAgeDays: number;
-  /** Relative path to env file under ~/.agents/schedule/ (e.g. "env/sch_x"). null if none. */
+  /** Relative path to env file under ~/.oma/schedule/ (e.g. "env/sch_x"). null if none. */
   capturedEnvRef: string | null;
   /** ISO-8601 creation timestamp */
   createdAt: string;

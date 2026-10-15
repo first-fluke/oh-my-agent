@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -75,14 +75,44 @@ export function rewriteRelativeLinks(markdown) {
     .join("\n");
 }
 
-export function syncReadme() {
-  const rootReadme = readFileSync(rootReadmePath, "utf-8");
+// Rewrites cli/README.md from the root README, or with check only compares
+// them. Returns whether the file on disk differs (or is missing).
+export function syncReadme({
+  rootPath = rootReadmePath,
+  cliPath = cliReadmePath,
+  check = false,
+} = {}) {
+  const rootReadme = readFileSync(rootPath, "utf-8");
   const cliReadme = rewriteRelativeLinks(rootReadme);
+  const current = existsSync(cliPath) ? readFileSync(cliPath, "utf-8") : null;
+  const changed = current !== cliReadme;
 
-  mkdirSync(dirname(cliReadmePath), { recursive: true });
-  writeFileSync(cliReadmePath, cliReadme);
+  if (changed && !check) {
+    mkdirSync(dirname(cliPath), { recursive: true });
+    writeFileSync(cliPath, cliReadme);
+  }
+  return changed;
+}
+
+export function main(argv, paths = {}) {
+  const check = argv.includes("--check");
+  const changed = syncReadme({ ...paths, check });
+  if (check) {
+    if (changed) {
+      console.error(
+        "cli/README.md is out of sync with README.md.\nRun: node cli/scripts/sync-readme.mjs",
+      );
+      return 1;
+    }
+    console.log("cli/README.md is up to date.");
+    return 0;
+  }
+  console.log(
+    changed ? "Updated cli/README.md." : "cli/README.md already up to date.",
+  );
+  return 0;
 }
 
 if (resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
-  syncReadme();
+  process.exitCode = main(process.argv.slice(2));
 }

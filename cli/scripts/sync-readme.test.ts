@@ -1,6 +1,8 @@
-import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
-import { rewriteRelativeLinks } from "./sync-readme.mjs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { main, rewriteRelativeLinks, syncReadme } from "./sync-readme.mjs";
 
 const REPO = "https://github.com/first-fluke/oh-my-agent";
 
@@ -73,5 +75,52 @@ describe("sync-readme rewriteRelativeLinks", () => {
     );
     expect(relativeTargets(rootReadme).length).toBeGreaterThan(0);
     expect(relativeTargets(rewriteRelativeLinks(rootReadme))).toEqual([]);
+  });
+});
+
+describe("sync-readme --check", () => {
+  let dir: string;
+  let rootPath: string;
+  let cliPath: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "sync-readme-"));
+    rootPath = join(dir, "README.md");
+    cliPath = join(dir, "cli", "README.md");
+    writeFileSync(rootPath, "[Spec](./docs/AGENTS_SPEC.md)\n");
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("exits 1 on drift and leaves the stale file untouched", () => {
+    syncReadme({ rootPath, cliPath });
+    writeFileSync(cliPath, "stale\n");
+
+    expect(main(["--check"], { rootPath, cliPath })).toBe(1);
+    expect(readFileSync(cliPath, "utf-8")).toBe("stale\n");
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining("out of sync"),
+    );
+  });
+
+  it("exits 1 when cli/README.md is missing and does not create it", () => {
+    expect(main(["--check"], { rootPath, cliPath })).toBe(1);
+    expect(() => readFileSync(cliPath, "utf-8")).toThrow();
+  });
+
+  it("exits 0 once synced, and sync rewrites a drifted file", () => {
+    syncReadme({ rootPath, cliPath });
+    writeFileSync(cliPath, "stale\n");
+
+    expect(main([], { rootPath, cliPath })).toBe(0);
+    expect(readFileSync(cliPath, "utf-8")).toBe(
+      `[Spec](${REPO}/blob/main/docs/AGENTS_SPEC.md)\n`,
+    );
+    expect(main(["--check"], { rootPath, cliPath })).toBe(0);
   });
 });
