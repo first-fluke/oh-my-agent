@@ -1,5 +1,18 @@
 # Changelog
 
+## [20.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.2.1...cli-v20.3.0) (2026-10-15)
+
+
+### Features
+
+* **qwen:** disable automatic memory saving by default ([65d43bd](https://github.com/first-fluke/oh-my-agent/commit/65d43bd65d5d5bc8456a4d7f67a52ddb582a1041))
+
+
+### Bug Fixes
+
+* **dispatch:** reject unsupported read-only execution ([7a8b4f6](https://github.com/first-fluke/oh-my-agent/commit/7a8b4f65789a187075e4e75f61cfbb6a634a4c85))
+* **kiro:** register the post-tool refactor guard hook ([98902f8](https://github.com/first-fluke/oh-my-agent/commit/98902f86306901547383ac9953d44bd6a180782a))
+
 ## [20.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.2.0...cli-v20.2.1) (2026-10-15)
 
 
