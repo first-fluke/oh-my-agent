@@ -1,5 +1,27 @@
 # Changelog
 
+## [20.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.1.0...cli-v20.2.0) (2026-10-15)
+
+
+### Features
+
+* **verify:** read stack manifests for frontend checks ([3bf76ad](https://github.com/first-fluke/oh-my-agent/commit/3bf76adcd12b1f9a743186709ea16c7039f044c1))
+
+
+### Bug Fixes
+
+* **agents:** correct stale agent and skill references ([bdec0a7](https://github.com/first-fluke/oh-my-agent/commit/bdec0a7550194d4eead56933d4260235aebf358b))
+* **cli:** name the replacement for removed command spellings ([d1b2eae](https://github.com/first-fluke/oh-my-agent/commit/d1b2eae662007ccd9b6b805b9a8e43f9e508a8b2))
+* **config:** keep CUE-only projects on a single config file ([85a9cd3](https://github.com/first-fluke/oh-my-agent/commit/85a9cd345acf92ee1d1ffc0cd04d07184ca91584))
+* **explain:** date artifacts in the configured timezone ([f2b2342](https://github.com/first-fluke/oh-my-agent/commit/f2b2342caac886232dbb68ea787696dc7d053d33))
+* **install:** stop shipping maintainer defaults to every install ([2a8826d](https://github.com/first-fluke/oh-my-agent/commit/2a8826d3f564cad65e550eb4750b398b361442d0))
+* **link:** record the real OpenCode config path in dry runs ([b0aae1b](https://github.com/first-fluke/oh-my-agent/commit/b0aae1b23530dcc0a19863c81c771792529a89b1))
+
+
+### Documentation
+
+* sync supported agents, the spec, and the READMEs with the code ([fd4ae27](https://github.com/first-fluke/oh-my-agent/commit/fd4ae27270163cc3486962ba8748f4148f9be455))
+
 ## [20.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.0.1...cli-v20.1.0) (2026-10-15)
 
 
