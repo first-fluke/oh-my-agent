@@ -9,7 +9,7 @@ describe("npm package readme", () => {
     );
 
     expect(readme).toContain(
-      "# oh-my-agent: The Multi-Agent Harness That Checks the Work",
+      "# oh-my-agent: A Specialist Team for the Coding Agent You Already Use",
     );
     expect(readme).not.toMatch(/\]\(\.\//);
     expect(readme).toContain(
