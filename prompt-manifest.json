@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.1.0",
-  "releaseDate": "2026-10-15T03:57:18.578Z",
+  "releaseDate": "2026-10-15T05:05:05.506Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -181,8 +181,8 @@
     },
     {
       "path": ".agents/hooks/core/memory-adapter.ts",
-      "sha256": "756a6d2faff5e40646963bb6b87248aec2297c5f93efafa8117f57a3d26d1beb",
-      "size": 1689
+      "sha256": "5ebdc74a12ba7b25910f32efb973bc0a561c871c3283f3e7da981d0b6a96e8c7",
+      "size": 1820
     },
     {
       "path": ".agents/hooks/core/oma-home.ts",
@@ -261,7 +261,7 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "1e6d01f46b2f5e04fee85fa554d143c4fd702135282931c4ff545034fc76467f",
+      "sha256": "a070381245c0aca5b3a159014404fa0635b92f0bf06a5f4dcb2e152afd32fcb4",
       "size": 85689
     },
     {
@@ -356,13 +356,13 @@
     },
     {
       "path": ".agents/oma-config.cue",
-      "sha256": "d31ca742a460220f202c2669db2c0ccaccbf53f52e203c71d0ddec247ca5cee1",
-      "size": 12761
+      "sha256": "48400e479ceba11c6f55fd414f0fe628b96d53fa38ad2dcab0f140dc0fdcf893",
+      "size": 12808
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "ee34e2a99a2ec30180b40aea897e2b94eb088cc4c08eb2b461695fbcde60e8a6",
-      "size": 30989
+      "sha256": "d01ef8eaa780ab8852d95e262c4b1208ba945d77fdd6e1d5652f368f21a45d5e",
+      "size": 31048
     },
     {
       "path": ".agents/rules/backend.md",
@@ -821,8 +821,8 @@
     },
     {
       "path": ".agents/skills/oma-db/resources/iso-controls.md",
-      "sha256": "34292ecbb130c6a69e9d81d41f7cb7ac316a21d9d1180e99f6bc82ce6635400d",
-      "size": 3313
+      "sha256": "5229882af69287f5dadee17f7198484609fa027abe922ae303e8e47473dd480a",
+      "size": 3333
     },
     {
       "path": ".agents/skills/oma-db/resources/migration-playbook.md",
@@ -1036,13 +1036,13 @@
     },
     {
       "path": ".agents/skills/oma-explanation/SKILL.md",
-      "sha256": "ee763e80a537006f23ba5f5de1c6eefd8b794ad3686b5908a84f650f7f64b320",
-      "size": 12715
+      "sha256": "8d24fabab8ca6f55c8026bc5b4170d9dcbd97303d568ef46846ba83b12e8ec34",
+      "size": 12752
     },
     {
       "path": ".agents/skills/oma-explanation/resources/document-structure.md",
-      "sha256": "06888adb6279b41511ea8c70ab73c1c138794571aeb82e47aa7dcf952941c5e2",
-      "size": 6098
+      "sha256": "5b852f638b822d142270f9bc08317c131083252541ac977bd3d7f8e3eeee25ca",
+      "size": 6131
     },
     {
       "path": ".agents/skills/oma-explanation/resources/draft-format.md",
@@ -1051,8 +1051,8 @@
     },
     {
       "path": ".agents/skills/oma-explanation/resources/html-contract.md",
-      "sha256": "9bd0ce108f633d789714806fce18b4994618a46ac3b0a66b31e8aef71d0bd0f5",
-      "size": 7483
+      "sha256": "4de04434f24f23e3f6b2c2f54fa1bf5a772b827cd8d62998b2f6a1fb4d6f03f5",
+      "size": 7516
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
@@ -1591,8 +1591,8 @@
     },
     {
       "path": ".agents/skills/oma-pm/resources/error-playbook.md",
-      "sha256": "d8633054b767b14ca3b473d5ecae4aeaf287b1ed9ab7747510b21877fa890ac7",
-      "size": 2913
+      "sha256": "53fdcb81a1baab5a661642036ed7f4ae11a1012fb3c93f19b72ea9cd213d47be",
+      "size": 2917
     },
     {
       "path": ".agents/skills/oma-pm/resources/examples.md",
@@ -2156,8 +2156,8 @@
     },
     {
       "path": ".agents/workflows/explain.md",
-      "sha256": "64bfa074f93aa6794a040ed8102ec7d7234bb9454adeaf2ad17a95937f98b48c",
-      "size": 6920
+      "sha256": "f7fffeeed7963e5d3419d764d95476d4151dfcbbae15e206ab0094f72da2671b",
+      "size": 6957
     },
     {
       "path": ".agents/workflows/orchestrate.md",
@@ -2206,8 +2206,8 @@
     },
     {
       "path": ".agents/workflows/stack-set.md",
-      "sha256": "47ca7792969efd88e17aaf1955347058b6cdc4e1ec88609c5083de396a0a2bfe",
-      "size": 21973
+      "sha256": "f5d929ce926d7e0064f385818108d726f40128310b2adb831984cc09b19efaa5",
+      "size": 22248
     },
     {
       "path": ".agents/workflows/tools.md",
