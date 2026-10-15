@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.3.0...cli-v20.4.0) (2026-10-15)
+
+
+### Features
+
+* **docs:** consolidate artifact storage and migrate legacy paths ([c9169af](https://github.com/first-fluke/oh-my-agent/commit/c9169afa163ddaa76da1a2daec5b7ac8cec2be6e))
+
 ## [20.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.2.1...cli-v20.3.0) (2026-10-15)
 
 
