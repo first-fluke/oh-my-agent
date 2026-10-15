@@ -83,8 +83,9 @@ import {
   needsGrokProjectMcpUpdate,
   needsGrokTelemetryUpdate,
 } from "../../vendors/grok/settings.js";
+import { kimiHome } from "../../vendors/kimi/auth.js";
 import { installKimiHooks } from "../../vendors/kimi/hooks.js";
-import { installKimiMcp } from "../../vendors/kimi/mcp.js";
+import { installKimiMcp, kimiMcpConfigPath } from "../../vendors/kimi/mcp.js";
 import {
   applyKiroOmaHooksAgent,
   applyKiroProjectMcp,
@@ -383,35 +384,29 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // opencode's auto-discovery only scans `.opencode/plugins/*` flatly.
   const opencodeConfigured = extensionVendors.includes("opencode");
   if (opencodeConfigured) {
+    const opencodeDir = join(
+      nativeRoot,
+      ...(safeGetInstallMode() === "global"
+        ? [".config", "opencode"]
+        : [".opencode"]),
+    );
     record(
-      join(
-        nativeRoot,
-        ...(safeGetInstallMode() === "global"
-          ? [".config", "opencode"]
-          : [".opencode"]),
-        "plugins",
-        "oma",
-      ),
+      join(opencodeDir, "plugins", "oma"),
       "write",
       "installOpencodePlugin",
     );
     record(
-      join(
-        nativeRoot,
-        ...(safeGetInstallMode() === "global"
-          ? [".config", "opencode"]
-          : [".opencode"]),
-        "agents",
-      ),
+      join(opencodeDir, "agents"),
       "write",
       "installVendorAgents (opencode)",
     );
+    // registerOpencodePlugin rewrites an existing opencode.json in place and
+    // only falls back to creating opencode.jsonc beside the plugins dir.
+    const opencodeJson = join(opencodeDir, "opencode.json");
     record(
-      join(
-        nativeRoot,
-        ...(safeGetInstallMode() === "global" ? [".config", "opencode"] : []),
-        "opencode.jsonc",
-      ),
+      existsSync(opencodeJson)
+        ? opencodeJson
+        : join(opencodeDir, "opencode.jsonc"),
       "write",
       "registerOpencodePlugin",
     );
@@ -778,8 +773,9 @@ export function link(opts: LinkOptions = {}): LinkResult {
   //     skipped (kimi.json is homeOnly) and we merge into HOME here. Gated on
   //     recorded consent (kimi in configuredVendors), like the agy block above.
   if (configuredVendors.includes("kimi")) {
+    // kimiHome() honors KIMI_CODE_HOME, exactly as installKimiHooks does.
     record(
-      join(homedir(), ".kimi-code", "config.toml"),
+      join(kimiHome(), "config.toml"),
       "write",
       "installKimiHooks (merge)",
     );
@@ -792,7 +788,11 @@ export function link(opts: LinkOptions = {}): LinkResult {
     // Kimi MCP: serena + chrome-devtools into mcp.json (Claude-style JSON).
     // Mode-aware — project installs write <root>/.kimi-code/mcp.json, global
     // installs write ~/.kimi-code/mcp.json (skipped silently when absent).
-    record(join(root, ".kimi-code", "mcp.json"), "write", "installKimiMcp");
+    record(
+      kimiMcpConfigPath(root, safeGetInstallMode()),
+      "write",
+      "installKimiMcp",
+    );
     if (!dryRun) {
       const kimiMcp = installKimiMcp(root);
       if (kimiMcp.installed && kimiMcp.path && !quiet) {

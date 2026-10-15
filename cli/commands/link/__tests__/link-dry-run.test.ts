@@ -58,9 +58,23 @@ vi.mock("../../../vendors/kimi/hooks.js", () => ({
     homeWriters.kimiHooks(...(args as [])),
 }));
 
-vi.mock("../../../vendors/kimi/mcp.js", () => ({
+// Spread the real module so the path resolver run.ts records with stays real:
+// the plan must name the file the writer would actually touch.
+vi.mock("../../../vendors/kimi/mcp.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../vendors/kimi/mcp.js")>()),
   installKimiMcp: (...args: unknown[]) => homeWriters.kimiMcp(...(args as [])),
 }));
+
+// Lets a test point `homedir()` at a temp dir, so global-mode plans resolve
+// against a fixture HOME instead of the developer's. `null` = real homedir.
+const osMock = vi.hoisted(() => ({ home: null as string | null }));
+vi.mock("node:os", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:os")>();
+  return {
+    ...actual,
+    homedir: () => osMock.home ?? actual.homedir(),
+  };
+});
 
 // needs* probes are forced true so a missing guard actually reaches the writer.
 // Left false, these tests would pass even with the guards deleted.
@@ -96,6 +110,8 @@ describe("link --dry-run (real project writers)", () => {
   afterEach(() => {
     process.chdir(originalCwd);
     _resetInstallContext();
+    osMock.home = null;
+    vi.unstubAllEnvs();
     for (const root of tempRoots) {
       rmSync(root, {
         recursive: true,
@@ -222,6 +238,100 @@ describe("link --dry-run (real project writers)", () => {
 
     expect(result.vendors).toEqual([]);
     expect(result.plan).toEqual([]);
+  });
+
+  /** A temp dir standing in for HOME, cleaned up with the fixtures. */
+  function makeHome(): string {
+    const home = mkdtempSync(join(tmpdir(), "oma-link-dryrun-home-"));
+    tempRoots.push(home);
+    osMock.home = home;
+    return home;
+  }
+
+  function planPath(plan: { path: string; reason: string }[], reason: string) {
+    return plan.find((e) => e.reason === reason)?.path;
+  }
+
+  describe("recorded paths match the writers' targets", () => {
+    it("records .opencode/opencode.jsonc for registerOpencodePlugin in project mode", () => {
+      const root = makeProject("vendors:\n  - opencode\n");
+      process.chdir(root);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+
+      expect(planPath(plan, "registerOpencodePlugin")).toBe(
+        join(root, ".opencode", "opencode.jsonc"),
+      );
+      expect(planPath(plan, "installOpencodePlugin")).toBe(
+        join(root, ".opencode", "plugins", "oma"),
+      );
+      expect(planPath(plan, "installVendorAgents (opencode)")).toBe(
+        join(root, ".opencode", "agents"),
+      );
+    });
+
+    it("records ~/.config/opencode/opencode.jsonc in global mode", () => {
+      const root = makeProject("vendors:\n  - opencode\n");
+      const home = makeHome();
+      _resetInstallContext();
+      setInstallContext({ installRoot: root, mode: "global" });
+      process.chdir(root);
+
+      const { plan } = link({ root, quiet: true, dryRun: true });
+
+      expect(planPath(plan, "registerOpencodePlugin")).toBe(
+        join(home, ".config", "opencode", "opencode.jsonc"),
+      );
+      expect(planPath(plan, "installOpencodePlugin")).toBe(
+        join(home, ".config", "opencode", "plugins", "oma"),
+      );
+      expect(planPath(plan, "installVendorAgents (opencode)")).toBe(
+        join(home, ".config", "opencode", "agents"),
+      );
+    });
+
+    // registerOpencodePlugin rewrites an existing opencode.json in place rather
+    // than creating opencode.jsonc beside it.
+    it("records an existing .opencode/opencode.json instead of opencode.jsonc", () => {
+      const root = makeProject("vendors:\n  - opencode\n");
+      mkdirSync(join(root, ".opencode"), { recursive: true });
+      writeFileSync(join(root, ".opencode", "opencode.json"), "{}\n", "utf-8");
+      process.chdir(root);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+
+      expect(planPath(plan, "registerOpencodePlugin")).toBe(
+        join(root, ".opencode", "opencode.json"),
+      );
+    });
+
+    it("records the kimi targets under KIMI_CODE_HOME, and mcp.json there in global mode", () => {
+      const root = makeProject("vendors:\n  - kimi\n");
+      const home = makeHome();
+      const kimiHome = join(home, "custom-kimi");
+      vi.stubEnv("KIMI_CODE_HOME", kimiHome);
+      _resetInstallContext();
+      setInstallContext({ installRoot: root, mode: "global" });
+      process.chdir(root);
+
+      const { plan } = link({ root, quiet: true, dryRun: true });
+
+      expect(planPath(plan, "installKimiHooks (merge)")).toBe(
+        join(kimiHome, "config.toml"),
+      );
+      expect(planPath(plan, "installKimiMcp")).toBe(join(kimiHome, "mcp.json"));
+    });
+
+    it("records the project-local kimi mcp.json in project mode", () => {
+      const root = makeProject("vendors:\n  - kimi\n");
+      process.chdir(root);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+
+      expect(planPath(plan, "installKimiMcp")).toBe(
+        join(root, ".kimi-code", "mcp.json"),
+      );
+    });
   });
 
   // Control: proves the assertions above are armed rather than vacuous. If the
