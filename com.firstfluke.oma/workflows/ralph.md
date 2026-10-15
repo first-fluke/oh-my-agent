@@ -109,8 +109,8 @@ oma ralph verify --json --session-id {sessionId} --newer-than {iteration_start_i
 |---|----------|------------------|
 | A1 | `{memBase}/session-ultrawork.md` with this iteration's phase-completion records | PLAN + gate progression |
 | A2 | `.agents/results/plan-{sessionId}.json` | PLAN produced a real task breakdown |
-| A3 | `{memBase}/result-qa*.md` or `.agents/results/result-qa*.md` (VERIFY) | **a distinct QA agent ran** — absent if IMPL was the only spawn. CLI fallback writes `result-qa-agent*` to `{memBase}`; Claude-native `qa-reviewer` writes `result-qa*` to `.agents/results/` |
-| A4 | `{memBase}/result-refactor*.md` or `.agents/results/result-refactor*.md` (REFINE) | **a distinct Refactor agent ran** — same naming split (`refactor-engineer` on the native path). Legacy `result-debug*` from older runs is also accepted |
+| A3 | `.agents/results/result-qa*.md` (VERIFY) | **a distinct QA agent ran** — absent if IMPL was the only spawn. All dispatch paths write reports to `.agents/results/`; existing `{memBase}/result-qa*.md` remains read fallback |
+| A4 | `.agents/results/result-refactor*.md` (REFINE) | **a distinct Refactor agent ran** — existing `{memBase}/result-refactor*.md` and legacy `result-debug*` reports remain accepted as read fallback |
 
 **Decision:**
 
@@ -144,10 +144,10 @@ oma ralph verify --json --session-id {sessionId} --newer-than {iteration_start_i
    - The required output format (Step 2.2) and a pointer to `.agents/workflows/ralph/resources/judge-protocol.md`
    - Do NOT include EXEC narration, implementation summaries, or any claim about what was fixed. The judge verifies what IS, not what was intended.
 2. **Spawn the judge via Per-Agent Dispatch** (see Vendor Detection):
-   - **If Claude Code and target vendor is Claude**: `Agent(subagent_type="qa-reviewer", prompt="<judge brief>. Follow .agents/workflows/ralph/resources/judge-protocol.md. Follow the protocol's verification and cache rules and write the JUDGE result to memory as result-judge-{sessionId}-iter{N}.md.")`
+   - **If Claude Code and target vendor is Claude**: `Agent(subagent_type="qa-reviewer", prompt="<judge brief>. Follow .agents/workflows/ralph/resources/judge-protocol.md. Follow the protocol's verification and cache rules and write the JUDGE report to .agents/results/result-judge-{sessionId}-iter{N}.md and record its path in session memory.")`
    - **Otherwise, or when native dispatch is unavailable**: `oma agent spawn qa-agent judge-prompt.md {sessionId} --task-id {judge_task.id} -w {workspace}`
    - Verification is mechanical (run command, check exit code/output) — a lower-cost model tier is acceptable where the runtime supports per-agent model selection.
-3. **Wait for the judge claim and `result-qa-{judge_task.id}-{runId}-{sessionId}.md`**, then read it as the JUDGE result.
+3. **Wait for the judge claim and `.agents/results/result-qa-{judge_task.id}-{runId}-{sessionId}.md`** (or the explicitly requested judge report name), then read it as the JUDGE result. Preserve the report filename and keep only its path and criterion transitions in coordination memory.
 4. **Inline fallback (exception)**: only if subagent spawning is unavailable in the current runtime, perform the verification inline. Record `judge-inline-fallback at iteration {N}` in `session-ralph-{sessionId}.md` and emit:
    ```bash
    oma state emit "decision.made" '{"subject":"ralph.judge-inline-fallback","instanceId":"<current iteration>","decision":"Run JUDGE inline for iteration <N> using <verification commands>.","rationale":"<observed dispatch limitation and why inline verification is the available recovery>","evidence":["<dispatch failure or session artifact path>"]}'
@@ -161,7 +161,7 @@ The judge writes [JUDGE Result Format](ralph/resources/judge-protocol.md#judge-r
 
 ### Step 2.3: Apply JUDGE Result
 
-Validate the returned evidence and state against [Criterion State Transitions](ralph/resources/judge-protocol.md#criterion-state-transitions), then persist the result in session memory. The judge applies the transition once; the coordinator must not increment counters or apply it again. If the result is inconsistent, return it to the judge for correction against the original snapshot.
+Validate the returned evidence and state against [Criterion State Transitions](ralph/resources/judge-protocol.md#criterion-state-transitions), then persist the criterion transitions and report path in session memory. Keep the report itself in `.agents/results/`. The judge applies the transition once; the coordinator must not increment counters or apply it again. If the result is inconsistent, return it to the judge for correction against the original snapshot.
 
 ---
 

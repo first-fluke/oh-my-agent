@@ -16,6 +16,7 @@ import {
 import { extractDocRefs, writeDocRefsIndex } from "./extract.js";
 import { detectI18nDrift, summarizeDrift } from "./i18n-drift.js";
 import { lintI18nStyle, summarizeStyleIssues } from "./lint-i18n.js";
+import { migrateArtifactLayout } from "./migrate-layout.js";
 import { renderJson, renderMarkdown } from "./reporter.js";
 import { resolveRefs } from "./resolve.js";
 import { proposeSyncPatches } from "./sync-propose.js";
@@ -27,13 +28,41 @@ import { proposeSyncPatches } from "./sync-propose.js";
  * - `oma docs sync [diff-range]` — find drift-affected docs after a git change and
  *   propose LLM-generated patches (never auto-applied)
  *
- * Design reference: docs/plans/designs/008-oma-docs.md § SKILL.md Interface § Mode contracts
+ * Decision reference: docs/decisions/008-oma-docs.md § SKILL.md Interface § Mode contracts
  */
 export function registerDocsCommands(program: Command): void {
   const docs = program
     .command("docs")
     .description(
       "Documentation drift detection: verify references and propose updates for diff-affected docs",
+    );
+
+  docs
+    .command("migrate")
+    .description(
+      "Consolidate engineering decisions and result reports into their canonical directories",
+    )
+    .option(
+      "--dry-run",
+      "Preview moves and reference updates without writing files",
+    )
+    .option("--json", "Output the migration report as JSON")
+    .action(
+      runAction((_options, command) => {
+        const opts = command.opts() as { dryRun?: boolean; json?: boolean };
+        const report = migrateArtifactLayout(process.cwd(), {
+          dryRun: opts.dryRun,
+        });
+        if (opts.json) {
+          console.log(JSON.stringify(report, null, 2));
+          return;
+        }
+        if (report.dryRun) console.log("Artifact layout migration preview:");
+        for (const action of report.actions) console.log(action);
+        if (report.actions.length === 0 && report.skipped.length === 0) {
+          console.log("Artifact layout is already current.");
+        }
+      }),
     );
 
   docs

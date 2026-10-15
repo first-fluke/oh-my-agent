@@ -29,11 +29,14 @@ Default base path: `.agents/state/memories`
   orchestrator-session-{sessionId}.md                 # Session metadata
   task-board-{sessionId}.md                            # Master task list
   progress-{agentId}-{taskId}-{runId}-{sessionId}.md   # Per-run progress log
+
+.agents/results/
   result-{agentId}-{taskId}-{runId}-{sessionId}.md     # Per-run final report
 ```
 
-> **Path rule**: Resolve paths from the project-root memory base, then isolate
-> every artifact by session, task, and run. In monorepos, never choose a
+> **Path rule**: Resolve coordination notes from the project-root memory base and
+> final reports from the project-root `.agents/results/`, then isolate every
+> artifact by session, task, and run. In monorepos, never choose a
 > subproject memory root. The injected claim path and agent-run receipt keep
 > their structured contract and are not replaced by this report layout.
 
@@ -163,7 +166,7 @@ Each agent creates this file at start and appends entries every 3-5 turns. Only 
 
 ## result-{agentId}-{taskId}-{runId}-{sessionId}.md
 
-Each agent creates this file upon completion (success or failure). Only the owning agent writes to this file.
+Each agent creates `.agents/results/result-{agentId}-{taskId}-{runId}-{sessionId}.md` upon completion (success or failure). Only the owning agent writes to this file. Preserve the injected filename and include the report path in the structured claim. Existing reports under the configured memory base, `.agents/state/memories/`, or `.serena/memories/` remain read fallback until migration; new reports always use `.agents/results/`.
 
 ```markdown
 # Result: backend

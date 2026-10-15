@@ -5,6 +5,8 @@ import {
   buildFullState,
   type DashboardState,
   resolveMemoriesDir,
+  resolveResultsDir,
+  shouldIgnoreDashboardPath,
 } from "./dashboard/state.js";
 
 const SYM_RUNNING = "●";
@@ -31,10 +33,10 @@ function truncate(text: string, width: number): string {
   return text.length > width ? `${text.substring(0, width - 3)}...` : text;
 }
 
-function renderDashboard(memoriesDir: string) {
+function renderDashboard(memoriesDir: string, resultsDir?: string) {
   console.clear();
 
-  const state: DashboardState = buildFullState(memoriesDir);
+  const state: DashboardState = buildFullState(memoriesDir, resultsDir);
   const { session, agents, activity } = state;
 
   const W = 56;
@@ -119,6 +121,7 @@ export async function startTerminalDashboard(
   options: { projectDir?: string } = {},
 ): Promise<void> {
   const memoriesDir = resolveMemoriesDir(options.projectDir);
+  const resultsDir = resolveResultsDir(options.projectDir);
 
   if (!existsSync(memoriesDir)) {
     mkdirSync(memoriesDir, { recursive: true });
@@ -127,18 +130,24 @@ export async function startTerminalDashboard(
     );
   }
 
+  if (resultsDir && !existsSync(resultsDir)) {
+    mkdirSync(resultsDir, { recursive: true });
+  }
+
   console.log(pc.magenta("\n  🛸 Serena Terminal Dashboard"));
-  console.log(pc.dim(`     Watching: ${memoriesDir}\n`));
+  const watchedDirs = resultsDir ? [memoriesDir, resultsDir] : [memoriesDir];
+  console.log(pc.dim(`     Watching: ${watchedDirs.join(", ")}\n`));
 
-  renderDashboard(memoriesDir);
+  renderDashboard(memoriesDir, resultsDir);
 
-  const watcher = watch(memoriesDir, {
+  const watcher = watch(watchedDirs, {
     persistent: true,
     ignoreInitial: true,
+    ignored: (filePath) => shouldIgnoreDashboardPath(filePath, resultsDir),
     awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 50 },
   });
 
-  watcher.on("all", () => renderDashboard(memoriesDir));
+  watcher.on("all", () => renderDashboard(memoriesDir, resultsDir));
 
   return new Promise((resolve) => {
     process.once("SIGINT", () => {

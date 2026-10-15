@@ -24,6 +24,7 @@ Single-domain tasks need no special syntax. Use the [skill and workflow selectio
 | A bug with an error message | `/debug` plus the error and reproduction steps | [Bug Fixing](./bug-fixing.md) |
 | Watching agents while they run | `oma dashboard terminal` | [Dashboard Monitoring](./dashboard-monitoring.md) |
 | Auditing or resuming agent results | `oma agent resume SESSION_ID --dry-run` | [Results and Resume](./agent-results-and-resume.md) |
+| Finding or migrating OMA documents | `oma docs migrate --dry-run` | [Artifact Layout](./artifact-layout.md) |
 | Something failed | `oma doctor --json` | [Troubleshooting](./troubleshooting.md) |
 
 ---
@@ -145,7 +146,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **Step 6, Similar pattern scan:** MCP `search_for_pattern` searches for other `.map()` calls on potentially undefined arrays
    - Finds 3 similar patterns in `user-list.tsx`, `comment-list.tsx`, `notification-list.tsx`
    - Proactively applies the same fix pattern
-8. **Step 7, Document:** Bug report written to memory with root cause, fix, and prevention
+8. **Step 7, Document:** Bug report written to `.agents/results/bugs/` with root cause, fix, and prevention
 
 ---
 
@@ -271,7 +272,7 @@ Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispat
 | `/work` | Persistent | Step-by-step multi-domain planning, implementation, and QA within the authorized scope | Features spanning multiple domains that need coordinated delivery |
 | `/ultrawork` | Persistent | 5-phase, 17-step quality workflow with 12 isolated review checkpoints | Maximum quality delivery, production-critical code |
 | `/plan` | Non-persistent | PM-driven task breakdown, API contracts, and tracked plan artifacts in `docs/plans/work/` (sequential `NNN-name.md`, Status field for lifecycle) | Before any complex multi-agent work; complex features needing tracked progress and decision logs |
-| `/brainstorm` | Non-persistent | Design-first ideation with 2-3 approach proposals | Before committing to an implementation approach |
+| `/brainstorm` | Non-persistent | Approach exploration with 2-3 proposals and a draft in `docs/decisions/` | Before committing to an implementation approach |
 | `/deepinit` | Non-persistent | Full project initialization (AGENTS.md, ARCHITECTURE.md, docs/) | Setting up oh-my-agent in an existing codebase |
 | `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality | Before merging code, pre-deployment review |
 | `/security` | Non-persistent | Scan application source, agent skills, or MCP components; run scoped web penetration tests against a test deployment; validate findings and configure security gates through `oma-security` | Before a release, or when a change needs a security scan or gate |
@@ -337,9 +338,9 @@ The installer’s `all` preset follows the live registry. The table groups every
 | Skill | Best For | Primary Output |
 |-------|---------|---------------|
 | **oma-academic-writing** | Academic drafting, revision, and anti-AI review | Publication-oriented prose and claim/evidence revisions |
-| **oma-architecture** | System boundaries, tradeoffs, ADRs | Architecture recommendation or decision record |
+| **oma-architecture** | System boundaries, tradeoffs, ADRs | Reports in `.agents/results/architecture/`; decision records in `docs/decisions/` |
 | **oma-backend** | APIs, auth, server logic, migrations | Router/service/repository changes and verification |
-| **oma-brainstorm** | Ambiguous ideas and approach comparison | Design document in `docs/plans/designs/` |
+| **oma-brainstorm** | Ambiguous ideas and approach comparison | Decision draft in `docs/decisions/` |
 | **oma-coordination** | Manual multi-agent coordination | Step-by-step task and handoff guidance |
 | **oma-db** | Schema design, ERD, query tuning, capacity planning | Schema documentation, migrations, and recovery plan |
 | **oma-debug** | Bug reproduction and root cause analysis | Minimal fix, regression evidence, and pattern scan |
@@ -379,7 +380,7 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Both commands watch `.agents/state/memories/` under the current directory. Pass `--project-root <path>` to watch another project, or set `MEMORIES_DIR`. The agent table has four columns:
+Both commands watch `.agents/state/memories/` for progress and `.agents/results/` for `result-*.md` reports under the current directory. Pass `--project-root <path>` to watch another project. Setting `MEMORIES_DIR` keeps the dashboard on that single custom directory. The agent table has four columns:
 
 | Column | Source |
 |--------|--------|
@@ -418,7 +419,13 @@ When you run `oma agent spawn`, the CLI:
 
 ### Project memory store
 
-Agents coordinate through durable files at `.agents/state/memories/` (older projects fall back to the legacy `.serena/memories/` path). The orchestrator writes run-scoped session and task-board files. Each run writes `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` and `result-{agentId}-{taskId}-{runId}-{sessionId}.md` when Markdown progress or result output is enabled; structured receipts and claims under `.agents/state/agent-runs/` are authoritative for CLI spawns. Agents read and write these files with their native file tools; the tool mapping stays configurable in `.agents/mcp.json → memoryConfig.tools`.
+Agents coordinate through durable files at `.agents/state/memories/` (older projects fall back to the legacy `.serena/memories/` path). This directory holds session summaries, task boards, progress, lessons, and experiment records. Human-readable `result-{agentId}-{taskId}-{runId}-{sessionId}.md` reports go in `.agents/results/`. Structured receipts and claims under `.agents/state/agent-runs/` remain authoritative for CLI spawns, and frozen execution plans stay in `.agents/state/agent-plans/`. Agents read and write these files with their native file tools; the tool mapping stays configurable in `.agents/mcp.json → memoryConfig.tools`.
+
+### Documents and reports
+
+Use `docs/decisions/` for approach proposals and ADRs, with a `Status` field such as `draft`, `accepted`, or `superseded`. UI design belongs in `DESIGN.md`. Work plans stay in `docs/plans/work/`, and adopted API contracts stay in `docs/plans/contracts/`.
+
+Execution reports and contract drafts belong in `.agents/results/`. When a document becomes a maintained project reference, move it to the relevant `docs/` directory and leave a link at its previous location. See [Artifact Layout](./artifact-layout.md) for the complete layout and migration commands.
 
 ### Workspaces
 
@@ -480,6 +487,7 @@ Common problems are below. For error messages, run-result failures, schedules, a
 - A bug with an error message: [Bug Fixing](./bug-fixing.md)
 - Watch a run: [Dashboard Monitoring](./dashboard-monitoring.md)
 - Audit or resume agent results: [Results and Resume](./agent-results-and-resume.md)
+- Find or migrate OMA documents: [Artifact Layout](./artifact-layout.md)
 - Something failed: [Troubleshooting](./troubleshooting.md)
 - Project integration details: [Integration Guide](./integration.md)
 - Terms used in these guides: [Glossary](../getting-started/glossary.md)

@@ -84,6 +84,7 @@ import { migrateProfileSessions } from "./028-profile-sessions.js";
 import { migrateProjectSerenaBridge } from "./029-project-serena-bridge.js";
 import { migrateLegacyGeminiMcp } from "./030-legacy-gemini-mcp.js";
 import { migrateClaudeMdAgents } from "./031-claude-md-agents.js";
+import { migrateArtifactLayoutPaths } from "./032-artifact-layout.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -116,6 +117,7 @@ const migrations: Migration[] = [
   migrateProjectSerenaBridge,
   migrateLegacyGeminiMcp,
   migrateClaudeMdAgents,
+  migrateArtifactLayoutPaths,
 ];
 
 export function runMigrations(

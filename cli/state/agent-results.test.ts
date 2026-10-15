@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
 import { PASS_COMMAND, writeTestPlan } from "./__fixtures__/task-contract.js";
 import {
+  agentResultInstructions,
   beginAgentRun,
   claimPath,
   finishAgentRun,
@@ -55,6 +56,19 @@ describe("agent execution evidence", () => {
     artifacts: [],
   };
   const pass = [process.execPath, "-e", "process.exit(0)"];
+
+  it("directs reports to results while preserving the structured claim and read-only contract", () => {
+    const run = start(false);
+    const instructions = agentResultInstructions(root, run);
+    expect(instructions).toContain(
+      `.agents/results/result-qa-reviewer-T1-${run.runId}-s1.md`,
+    );
+    expect(instructions).toContain(claimPath(root, run.runId));
+    expect(instructions).toContain(".agents/state/memories/");
+    const inspection = agentResultInstructions(root, run, true);
+    expect(inspection).toContain("Do not write coordination or result files");
+    expect(inspection).not.toContain("Write the human-readable report");
+  });
 
   it("distinguishes exit zero without a result from completion", () => {
     const run = start();

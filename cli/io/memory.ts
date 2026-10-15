@@ -6,6 +6,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { AGENTS_RESULTS_DIR } from "../constants/paths.js";
 
 export interface AgentActivity {
   agent: string;
@@ -36,7 +37,7 @@ export interface MemoryInitResult {
   skipped: string[];
 }
 
-/** Canonical OMA-owned coordination store (progress/result/session artifacts). */
+/** Canonical OMA-owned coordination store (progress and session artifacts). */
 export const COORDINATION_STORE_REL = join(".agents", "state", "memories");
 /** Pre-move location where Serena's knowledge store doubled as coordination. */
 export const LEGACY_SERENA_MEMORY_REL = join(".serena", "memories");
@@ -49,6 +50,11 @@ export const LEGACY_MEMORIES_REL = LEGACY_SERENA_MEMORY_REL;
 /** Resolve the only writable OMA coordination store. */
 export function getCoordinationStorePath(cwd: string): string {
   return join(cwd, COORDINATION_STORE_REL);
+}
+
+/** Canonical directory for human-readable result reports. */
+export function getResultsPath(cwd: string): string {
+  return join(cwd, AGENTS_RESULTS_DIR);
 }
 
 /** @deprecated Use getCoordinationStorePath. */
@@ -66,12 +72,14 @@ export function getCoordinationStoreDirs(cwd: string): string[] {
 /** @deprecated Use getCoordinationStoreDirs. */
 export const getMemoryDirs = getCoordinationStoreDirs;
 
-/** Locate an existing memory file across canonical + legacy dirs. */
+/** Prefer canonical reports while retaining reads of legacy result files. */
 export function resolveCoordinationFile(
   cwd: string,
   filename: string,
 ): string | null {
-  for (const dir of getCoordinationStoreDirs(cwd)) {
+  const dirs = getCoordinationStoreDirs(cwd);
+  if (/^result-.+\.md$/.test(filename)) dirs.unshift(getResultsPath(cwd));
+  for (const dir of dirs) {
     const candidate = join(dir, filename);
     if (existsSync(candidate)) return candidate;
   }
@@ -156,7 +164,8 @@ interface MemoryFileEntry {
 /** Union of memory files across dirs; canonical shadows legacy on name clash. */
 function listMemoryFileEntries(cwd: string): MemoryFileEntry[] {
   const seen = new Map<string, string>();
-  for (const dir of getCoordinationStoreDirs(cwd)) {
+  const reportsDir = getResultsPath(cwd);
+  for (const dir of [reportsDir, ...getCoordinationStoreDirs(cwd)]) {
     let names: string[] = [];
     try {
       names = readdirSync(dir);
@@ -165,6 +174,7 @@ function listMemoryFileEntries(cwd: string): MemoryFileEntry[] {
     }
     for (const name of names) {
       if (!name.endsWith(".md") || name === ".gitkeep") continue;
+      if (dir === reportsDir && !/^result-.+\.md$/.test(name)) continue;
       if (!seen.has(name)) seen.set(name, join(dir, name));
     }
   }

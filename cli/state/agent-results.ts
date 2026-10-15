@@ -12,6 +12,7 @@ import {
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
+import { AGENTS_RESULTS_DIR } from "../constants/paths.js";
 import { listAgentDecisionSubjects } from "./agent-decision-catalog.js";
 import {
   AgentDecisionSchema,
@@ -410,6 +411,7 @@ export function agentResultInstructions(
       : "") +
     `Execute the pinned required checks with: oma agent verify ${run.runId} --required (from ${JSON.stringify(root)}).\nRequired checks: ${JSON.stringify(run.contract?.required_checks ?? [])}. A missing contract cannot prove acceptance criteria; define it in the session plan before starting a new run.\n` +
     decisions +
+    `Write the human-readable report to ${AGENTS_RESULTS_DIR}/result-${run.agentId}-${run.taskId}-${run.runId}-${run.sessionId}.md under ${JSON.stringify(run.artifactRoot)}. Keep progress and coordination notes in .agents/state/memories/. Include this report path in artifacts; preserve the injected claim path below.\n` +
     `Write ${claimPath(root, run.runId)} as JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[],"decisions":[]}.
 Paths are relative to ${run.artifactRoot}. Include the report and relevant plan/phase artifacts. A completed result requires no unresolved items and successful current verification receipts, or an explicit verificationSkipped reason for work that needs no executable check. Do not invent checks. Never run a build unless the user explicitly requested it.\n`
   );

@@ -25,7 +25,7 @@ Emit required L1 decisions by calling `oma state emit` directly, as documented i
 
 **Plans are first-class artifacts**: structured, templated, and consumed by other workflows. They are local working artifacts (not committed to the repo; `docs/plans/` is gitignored), but they follow strict conventions so any agent can read and update them.
 
-> `docs/plans/` does not survive a fresh clone. When a specific artifact must be durable across machines (a design doc referenced from committed documentation, a promoted API contract), commit that file deliberately with `git add -f` — tracked files are unaffected by the ignore afterwards. Committed docs must never reference a plan file that has not been promoted this way.
+> `docs/plans/` does not survive a fresh clone. When a specific artifact must be durable across machines (a promoted API contract or execution plan referenced from committed documentation), commit that file deliberately with `git add -f` — tracked files are unaffected by the ignore afterwards. Committed docs must never reference a plan file that has not been promoted this way.
 
 For Medium/Complex plans, produce two artifacts (Simple routing is defined in Step 3):
 
@@ -35,19 +35,23 @@ For Medium/Complex plans, produce two artifacts (Simple routing is defined in St
 ### Layout
 
 ```
-docs/plans/
-├── designs/                       ← permanent design references (Status: Approved/Draft/Superseded)
-│   └── {NNN}-{name}.md            (referenced-from-committed-docs files are force-added)
-├── contracts/                     ← promoted API contracts (deliberately committed via `git add -f`)
-│   └── {contract-name}.md
-└── work/                          ← execution plans (Status: Active/Completed)
-    ├── {NNN}-{name}.md
-    └── tech-debt-tracker.md
+docs/
+├── decisions/                     ← retained approach proposals, architecture decisions, and ADRs
+│   ├── index.md
+│   └── {NNN}-{name}.md            (numbered approach proposals; ADRs may use adr-{topic}.md)
+└── plans/
+    ├── contracts/                 ← promoted API contracts (deliberately committed via `git add -f`)
+    │   └── {contract-name}.md
+    └── work/                      ← execution plans (Status: Active/Completed)
+        ├── {NNN}-{name}.md
+        └── tech-debt-tracker.md
 ```
 
-- Folder = type (designs vs work). Status field = lifecycle.
-- Filename always uses 3-digit zero-padded sequential prefix (`001-`, `002-`, …) per folder.
-- Numbering is **per folder**. Determine the next number for the target folder only: `ls docs/plans/work/ | grep -E '^[0-9]{3}-' | tail -1` (or `docs/plans/designs/` respectively). Never combine both folders in one listing — the trailing entry would come from whichever folder lists last.
+- Folder = purpose. Status field = lifecycle. `design` names UI work; retained technical choices belong in `docs/decisions/`.
+- Numbered approach proposals and execution trackers use a 3-digit zero-padded prefix (`001-`, `002-`, …). Topic-named ADRs do not consume sequence numbers.
+- Numbering is **per folder**. Determine the next number for the target folder only: `ls docs/plans/work/ | grep -E '^[0-9]{3}-' | tail -1` (or `docs/decisions/` for numbered proposals). Never combine folders in one listing.
+- `docs/decisions/` is intended for version control and is outside the local `docs/plans/` ignore. Record actual authority in the document status and link retained decisions from `docs/decisions/index.md`.
+- Existing `docs/plans/designs/` and `docs/design-docs/` remain readable until migration; write new decisions only to `docs/decisions/`. Run-specific reports and draft contracts remain in `.agents/results/`. When promoting an artifact into `docs/`, leave its destination in the source report.
 - Plan content language follows the top-of-file rule (`oma-config.yaml` `language` setting). Mixed-language guidance lives in `.agents/rules/i18n-guide.md`.
 
 ---
@@ -68,7 +72,7 @@ If an existing codebase exists, use MCP code analysis tools to scan:
 - Configured structure tools or scoped directory/file inspection for project structure and architecture patterns.
 - Configured symbol/pattern search or native search to identify reusable code and what needs to be built.
 
-Also search `docs/plans/work/` for related past or in-progress plans, and `docs/plans/designs/` for prior design references. Reuse patterns from similar work.
+Also search `docs/plans/work/` for related past or in-progress plans, and `docs/decisions/` for prior approach proposals and architecture decisions. Read `docs/plans/designs/` and `docs/design-docs/` only as legacy fallback until migration. Reuse relevant prior decisions.
 
 ---
 

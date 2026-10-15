@@ -233,6 +233,6 @@ Tell the user:
 ## References
 
 - Skill spec: `.agents/skills/oma-docs/SKILL.md`
-- Design doc: `docs/plans/designs/008-oma-docs.md`
+- Decision record: `docs/decisions/008-oma-docs.md` (legacy fallback: `docs/plans/designs/008-oma-docs.md` until migration)
 - CLI source: `cli/commands/docs/`
 - Workflow hook (auto verify on `/scm`, `/work`, `/ultrawork`): toggle via `docs.auto_verify` in `.agents/oma-config.yaml`.

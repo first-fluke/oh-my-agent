@@ -93,13 +93,13 @@ Explore user intent, constraints, and alternative approaches before planning or 
 | Record option selection | `CALL_TOOL` | Actual approach, comparison evidence, and design/option revision; matching `instanceId` and verifier `--instance` in an active OMA workflow |
 | Resolve design authority | `VALIDATE` | Existing instruction, delegated choice, or explicit answer for an unresolved material design choice |
 | Run blind review | `VALIDATE` | Independent lens critiques, tiered issue list, Tier 1 resolution |
-| Write design artifact | `WRITE` | `docs/plans/designs/` and memory |
+| Write design artifact | `WRITE` | `docs/decisions/` and a linked coordination summary |
 | Transition to plan | `NOTIFY` | Handoff summary |
 
 ### Tools and instruments
 - Context loading, reasoning templates, clarification protocol
 - Optional TRIZ-lite resource for contradiction seeding
-- Project memory and `docs/plans/designs/` for persisted designs
+- Project memory for coordination summaries and `docs/decisions/` for retained approach proposals
 
 ### Canonical workflow path
 ```text
@@ -107,7 +107,7 @@ Explore user intent, constraints, and alternative approaches before planning or 
 2. (Optional) If technical/UX contradiction or same-axis approaches only → resources/triz-lite.md.
 3. Present viable alternatives as prose briefs and compare them when useful; do not invent extra options to meet a count; reuse an existing selection or delegated choice and resolve only an open material choice. In an active OMA workflow, record the actual approach, rationale, evidence, and design/option revision with `brainstorm.option-selection`; verify the matching --instance (workflow Step 3 owns the commands).
 4. Design section by section within existing authorization, then blind review: independent lenses suited to the uncertainty and stakes critique the design; resolve Tier 1 issues (fresh-context reviewer subagents for high-stakes designs).
-5. Save the approved design to `docs/plans/designs/` before handing off to planning.
+5. Save the approved approach to `docs/decisions/{NNN}-{name}.md` and update `docs/decisions/index.md` before handing off to planning. Keep this directory versioned. Read `docs/plans/designs/` and `docs/design-docs/` only as legacy fallback until migration; `design` names UI work.
 ```
 
 ### Resource scope
@@ -134,7 +134,7 @@ Explore user intent, constraints, and alternative approaches before planning or 
 6. **Blind review before save** - mandatory unless the design is trivially small (1-2 files, low stakes); lenses critique independently; use fresh-context reviewer subagents for architecturally significant, hard-to-reverse, or security-/compliance-sensitive designs
 7. **YAGNI** - do not over-engineer; design only what is needed for the stated goal
 8. **TRIZ-lite is optional** - only for technical/UX contradictions or same-axis collapse; max 3–5 principles from the curated set; no fake scores, full TRIZ/ARIZ, or classical matrices; seeds feed Step 3 briefs and do not replace user approval
-9. **Save design, then transition** - persist the approved design document before handing off to `/plan`
+9. **Save the selected approach, then transition** - persist it in `docs/decisions/` before handing off to `/plan`. Run-specific critique and `result-*.md` reports belong in `.agents/results/`; leave the destination in the source report when promoting a document into `docs/`
 
 ### Execution Phases
 Follow the brainstorm workflow step by step:
@@ -143,7 +143,7 @@ Follow the brainstorm workflow step by step:
 3. **Phase 3 - Approaches**: Optionally seed with TRIZ-lite for a real contradiction; compare viable approaches in prose and recommend according to the stated constraints, effort, reversibility, and risk
 4. **Phase 4 - Design**: Present the detailed design section by section, preserving existing authorization and resolving only open material choices
 5. **Phase 5 - Blind Review**: Use independent reviewer lenses proportionate to the design uncertainty and stakes, consolidate into Tier 1/2/3 issues, resolve Tier 1 before save; escalate to fresh-context reviewer subagents for high-stakes designs. Skip only for trivially small designs (1-2 files, low stakes)
-6. **Phase 6 - Documentation**: Save the approved design to `docs/plans/designs/` and project memory
+6. **Phase 6 - Documentation**: Save the approved approach to `docs/decisions/{NNN}-{name}.md`, update its index, and record a linked coordination summary in project memory
 7. **Phase 7 - Transition**: Hand off to `/plan` for task decomposition
 
 ### Common Pitfalls

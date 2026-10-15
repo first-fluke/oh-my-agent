@@ -9,7 +9,12 @@ import { buildGraphData } from "./commands/recap/internal/graph.js";
 import { collectRecap } from "./commands/recap/internal/index.js";
 import { collectState, isValidSid } from "./commands/state/sessions.js";
 import { buildTrajectory } from "./commands/state/trajectory/build.js";
-import { buildFullState, resolveMemoriesDir } from "./dashboard/state.js";
+import {
+  buildFullState,
+  resolveMemoriesDir,
+  resolveResultsDir,
+  shouldIgnoreDashboardPath,
+} from "./dashboard/state.js";
 import { DASHBOARD_HTML, RECAP_HTML } from "./dashboard/templates.js";
 import { TRAJECTORY_HTML } from "./dashboard/trajectory-template.js";
 import { resolveProjectRoot } from "./utils/fs-utils.js";
@@ -30,6 +35,7 @@ export interface DashboardHandle {
   token: string;
   url: string;
   memoriesDir: string;
+  resultsDir?: string;
   /**
    * Settles once the server is accepting connections. Rejects if binding
    * fails with anything but EADDRINUSE (which prints and exits); callers must
@@ -42,7 +48,7 @@ export interface DashboardHandle {
 
 export interface DashboardOptions {
   route?: string;
-  /** Project whose `.agents/state/memories` is watched (default: cwd). */
+  /** Project whose coordination store and result reports are watched. */
   projectDir?: string;
   /**
    * Port to bind instead of DASHBOARD_PORT. 0 asks the OS for a free port, so
@@ -107,8 +113,12 @@ export function startDashboard(
   const token = randomBytes(32).toString("base64url");
   let url = `http://${DASHBOARD_HOST}:${port}${route}`;
   const memoriesDir = resolveMemoriesDir(options.projectDir);
+  const resultsDir = resolveResultsDir(options.projectDir);
   const projectDir = resolveProjectRoot(options.projectDir);
   if (!existsSync(memoriesDir)) mkdirSync(memoriesDir, { recursive: true });
+  if (resultsDir && !existsSync(resultsDir)) {
+    mkdirSync(resultsDir, { recursive: true });
+  }
 
   const server = createServer(async (req, res) => {
     const rejection = rejectForeignRequest(req, port);
@@ -134,7 +144,7 @@ export function startDashboard(
 
     if (requestUrl.pathname === "/api/state") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(buildFullState(memoriesDir)));
+      res.end(JSON.stringify(buildFullState(memoriesDir, resultsDir)));
     } else if (requestUrl.pathname === "/api/recap") {
       try {
         const window = requestUrl.searchParams.get("window") || "7d";
@@ -231,7 +241,7 @@ export function startDashboard(
         type: "update",
         event,
         file,
-        data: buildFullState(memoriesDir),
+        data: buildFullState(memoriesDir, resultsDir),
       });
       wss.clients.forEach((c) => {
         if (c.readyState === WebSocket.OPEN) c.send(msg);
@@ -239,9 +249,11 @@ export function startDashboard(
     }, 100);
   }
 
-  const watcher = watch(memoriesDir, {
+  const watchedDirs = resultsDir ? [memoriesDir, resultsDir] : [memoriesDir];
+  const watcher = watch(watchedDirs, {
     persistent: true,
     ignoreInitial: true,
+    ignored: (filePath) => shouldIgnoreDashboardPath(filePath, resultsDir),
     awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 50 },
   });
   watcher.on("all", (event, filePath) => broadcast(event, basename(filePath)));
@@ -270,7 +282,10 @@ export function startDashboard(
 
   wss.on("connection", (ws) => {
     ws.send(
-      JSON.stringify({ type: "full", data: buildFullState(memoriesDir) }),
+      JSON.stringify({
+        type: "full",
+        data: buildFullState(memoriesDir, resultsDir),
+      }),
     );
     ws.on("error", () => ws.terminate());
   });
@@ -344,6 +359,7 @@ export function startDashboard(
     token,
     url,
     memoriesDir,
+    ...(resultsDir ? { resultsDir } : {}),
     ready,
     close,
   };
@@ -358,7 +374,7 @@ export function startDashboard(
     markReady();
     console.log(pc.magenta(`\n  🛸 OMA Memory Dashboard`));
     console.log(pc.white(`     ${url}`));
-    console.log(pc.dim(`     Watching: ${memoriesDir}\n`));
+    console.log(pc.dim(`     Watching: ${watchedDirs.join(", ")}\n`));
   });
 
   return handle;

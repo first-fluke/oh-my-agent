@@ -4,7 +4,7 @@
  * The coordination memory store moved from `.serena/memories/` (Serena MCP's
  * memory dir, which doubled as the cross-agent bus) to the oma-owned
  * `.agents/state/memories/`. This migration relocates the ephemeral
- * coordination artifacts the CLI reads — progress/result/session files,
+ * coordination artifacts the CLI reads — progress/session files,
  * task-board, orchestrator session, session-cost and findings records — so
  * the canonical-first resolver in `io/memory.ts` finds them.
  *
@@ -38,7 +38,8 @@ import type { Migration } from "./index.js";
 // and the gc patterns in commands/memory/gc.ts.
 const COORDINATION_PATTERNS = [
   /^progress-.*\.md$/,
-  /^result-.*\.md$/,
+  // Result reports belong to 032-artifact-layout. Moving them here would
+  // invalidate legacy path bindings before that migration can protect them.
   /^session-.*\.md$/, // session-cost-*, session-{workflow}-{sid} mirrors
   /^findings-.*\.md$/,
   /^orchestrator-session.*\.md$/,

@@ -43,16 +43,25 @@ Analyze, compare, and document software architecture decisions with explicit tra
 - Assumptions, tradeoffs, risks, and validation steps
 - A Mermaid context/container diagram when the decision changes structure (boundaries, dependencies, data flow)
 - When `oma diagram resolve` reports `engine: archify` (the normal case — oma auto-fetches the latest archify release), an interactive sibling `<artifact-stem>.archify.json` + `.archify.html` derived from that Mermaid (see `_shared/conditional/diagram-engine.md`)
-- Saved architecture artifacts under `.agents/results/architecture/` when producing durable outputs
+- ADRs and retained recommendations for a selected approach in `docs/decisions/`, linked from `docs/decisions/index.md`
+- Run-specific reviews, diagnoses, CBAM analyses, and unselected comparison drafts in `.agents/results/architecture/`
 
 ```yaml
 outputs:
+  - name: architecture-decision
+    description: ADR or retained recommendation for a selected approach, with its actual authority status
+    artifact: "docs/decisions/*.md"
+    required: false
   - name: architecture-artifact
-    description: ADR, comparison, or recommendation written to durable storage when the run is meant to persist
+    description: Run-specific review, diagnosis, CBAM analysis, or unselected comparison draft
     artifact: ".agents/results/architecture/*.md"
     required: false
+  - name: architecture-decision-diagram-html
+    description: archify interactive HTML diagram (+ JSON spec) beside a retained structural decision; only when the archify engine resolves
+    artifact: "docs/decisions/*.archify.html"
+    required: false
   - name: architecture-diagram-html
-    description: archify interactive HTML diagram (+ JSON spec) next to the Markdown artifact; only when the archify engine resolves and the decision is structural
+    description: archify interactive HTML diagram (+ JSON spec) beside a run-specific structural report; only when the archify engine resolves
     artifact: ".agents/results/architecture/*.archify.html"
     required: false
 ```
@@ -76,7 +85,7 @@ outputs:
 ### Entry
 1. Identify the architecture problem, decision, or pain signal.
 2. Gather existing constraints, source evidence, and stakeholder context.
-3. Read prior decisions in `.agents/results/architecture/` — new decisions supersede old ones explicitly, never contradict them silently.
+3. Read prior decisions in `docs/decisions/`; use `.agents/results/architecture/`, `docs/design-docs/`, and `docs/plans/designs/` as legacy context until migration. New decisions supersede old ones explicitly, never contradict them silently.
 4. Select the lightest sufficient method.
 
 ### Scenes
@@ -124,7 +133,7 @@ outputs:
 Use the configured code-intelligence provider for structure, symbols, references, and integration points. If unavailable, use native search only for paths outside this project or ignored paths:
 
 ```text
-1. Read prior decisions in .agents/results/architecture/.
+1. Read prior decisions in docs/decisions/; read old result/design directories as legacy fallback until migration.
 2. Discover the configured provider's file, symbol, reference, and pattern tools.
 3. Inspect architecture-relevant modules, ownership, and integration points within the selected scope.
 ```
@@ -135,7 +144,7 @@ Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or
 | Scope | Resource target |
 |-------|-----------------|
 | `CODEBASE` | Architecture-relevant source files and docs |
-| `LOCAL_FS` | `.agents/results/architecture/` artifacts |
+| `LOCAL_FS` | `docs/decisions/` decisions and `.agents/results/architecture/` run reports |
 | `MEMORY` | Assumptions, option matrix, tradeoff notes |
 
 ### Preconditions
@@ -156,8 +165,8 @@ Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or
 6. Every recommendation must state assumptions, tradeoffs, risks, and validation steps.
 7. Be cost-aware by default: implementation cost, operational cost, team complexity, and future change cost.
 8. When a decision is material, compare at least two genuinely different options before recommending one.
-9. Save architecture artifacts to `.agents/results/architecture/`.
-10. Read prior artifacts in `.agents/results/architecture/` before deciding; when replacing an old decision, mark it superseded rather than contradicting it.
+9. Save ADRs and retained recommendations for a selected approach to `docs/decisions/` and update its index. Keep run reviews, diagnoses, CBAM analyses, and unselected drafts in `.agents/results/architecture/`. Promotion into `docs/` leaves a destination link in the source report.
+10. Read prior decisions in `docs/decisions/` before deciding; read legacy locations until migration. When replacing an old decision, mark it superseded rather than contradicting it. Dispatched `result-*.md` reports always go to `.agents/results/`, preserving their task/run/session filenames.
 11. When a durable artifact is finalized in an active OMA workflow, record its actual recommendation, authority status, rationale, revision, and evidence with `architecture.adr-complete` (execution protocol Step 7). A completed proposal does not supply user approval or authorize implementation.
 
 ### Method Selection Summary

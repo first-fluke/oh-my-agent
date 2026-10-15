@@ -29,7 +29,7 @@ Three categories of documentation:
 
 1. **Maps**: ARCHITECTURE.md, system topology, domain boundaries
 2. **Plans**: active and completed work plans (status field tracked per file), tech debt tracking
-3. **Design Specifications**: indexed architectural decisions, core beliefs, product specs
+3. **Decisions and Specifications**: indexed architectural decisions, core beliefs, product specs
 
 Agents can discover file listings and directory structures via tools.
 What agents CANNOT discover from code alone, and what the harness must provide:
@@ -48,13 +48,12 @@ What agents CANNOT discover from code alone, and what the harness must provide:
 AGENTS.md                           ← table of contents (~100 lines)
 ARCHITECTURE.md                     ← top-level domain map and package layering
 docs/
-├── design-docs/                    ← indexed, verified architectural decisions
+├── README.md                       ← documentation index linking decisions, plans, and domain guides
+├── decisions/                      ← approach proposals, ADRs, and retained technical choices
 │   ├── index.md
 │   ├── core-beliefs.md             ← agent-first operating principles
 │   └── {decision-name}.md
 ├── plans/                          ← plan artifacts (local working notes; add to the target repo's .gitignore)
-│   ├── designs/                    ← permanent design references (Status: Approved/Draft)
-│   │   └── {NNN}-{name}.md
 │   └── work/                       ← execution plans (Status: Active/Completed)
 │       ├── {NNN}-{name}.md
 │       └── tech-debt-tracker.md    ← known debt with priority and rationale
@@ -147,16 +146,19 @@ Report findings to the user before proceeding.
 
 Generate only the files that are **relevant and discoverable** from the codebase.
 
-### `docs/design-docs/`
+### `docs/decisions/`
 
-**Indexed, verified architectural decisions.**
+**Retained technical choices and architecture decisions.**
 
-- **`index.md`**: catalogue of all design docs with status (draft/verified/superseded)
+- **`index.md`**: catalogue of approach proposals and ADRs with their actual authority and lifecycle status
 - **`core-beliefs.md`**: agent-first operating principles for this project. What defines how work is done here. Examples:
   - "Agents write all code; humans review and set direction"
   - "Every change must be verifiable by CI alone"
   - "Prefer explicit over implicit; no magic"
-- **`{decision-name}.md`**: individual architectural decisions with context, options considered, rationale, and consequences
+- **`{NNN}-{name}.md`**: numbered approach proposals from `/brainstorm`
+- **`adr-{topic}.md`** or **`{decision-name}.md`**: architecture decisions with context, options considered, rationale, and consequences
+- Keep this directory versioned. `design` names UI work; do not create `docs/design-docs/` or `docs/plans/designs/`. Read those paths as legacy fallback until migration.
+- Run-specific reviews, diagnoses, and comparisons belong in `.agents/results/architecture/`. When a selected approach is promoted here, leave its destination in the source report and update `index.md`.
 
 ### `docs/plans/`
 
@@ -164,13 +166,16 @@ Generate only the files that are **relevant and discoverable** from the codebase
 
 Folder = type. Status field = lifecycle. Filenames use a 3-digit zero-padded sequential prefix per folder.
 
-- **`designs/{NNN}-{name}.md`**: permanent design references (architecture, API specs, tradeoffs)
 - **`work/{NNN}-{name}.md`**: execution plans with progress, decision log, and `Status` header (`Active` → `Completed`)
 <!-- oma-docs:ignore-start -->
 - **`work/tech-debt-tracker.md`**: known tech debt with priority, rationale, and proposed resolution
 
-Initially: create `designs/` and `work/` subdirectories + `work/tech-debt-tracker.md` with any debt discovered in Step 1.
+Initially: create `work/` + `work/tech-debt-tracker.md` with any debt discovered in Step 1. Keep adopted API contracts at `contracts/{contract-name}.md`; their promotion rules are defined in `/plan`.
 <!-- oma-docs:ignore-end -->
+
+### `docs/README.md`
+
+Create a documentation index linking the existing decision index, execution plans, adopted API contracts, product specifications, and domain guides. Include the storage rules: retained documents in `docs/`, run reports and drafts in `.agents/results/`, coordination and verification state in `.agents/state/`. Link only destinations that exist.
 
 ### `docs/generated/`
 
@@ -252,8 +257,9 @@ Reference this file from AGENTS.md so review agents load it automatically.
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the full domain map.
 
 ## Documentation
-- [Design Docs](docs/design-docs/index.md) — architectural decisions and core beliefs
-- [Plans](docs/plans/) — design references (`designs/`) and execution plans (`work/`)
+- [Documentation](docs/README.md) — documentation index and storage rules
+- [Decisions](docs/decisions/index.md) — approach proposals, architectural decisions, and core beliefs
+- [Plans](docs/plans/) — execution plans (`work/`) and adopted API contracts (`contracts/`)
 - [Product Specs](docs/product-specs/index.md) — feature specifications
 - [References](docs/references/) — external library docs for LLMs
 
@@ -350,7 +356,7 @@ deepinit no longer detects drift on update runs; it only generates 0→1 bootstr
 6. ARCHITECTURE.md is under 200 lines.
 7. Each boundary AGENTS.md is under 60 lines.
 <!-- oma-docs:ignore-start -->
-8. `docs/design-docs/index.md` lists all design docs that exist.
+8. `docs/decisions/index.md` lists all retained decisions and approach proposals that exist.
 9. `docs/product-specs/index.md` lists all product specs that exist.
 <!-- oma-docs:ignore-end -->
 

@@ -13,7 +13,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Record constraints, quality attributes, and non-goals
 
 ## Step 2: Gather Context
-- Read prior artifacts in `.agents/results/architecture/` first:
+- Read prior decisions in `docs/decisions/` first; consult `.agents/results/architecture/`, `docs/design-docs/`, and `docs/plans/designs/` as legacy context until migration:
   - note decisions that constrain this one
   - if this decision replaces one, plan to mark the old ADR superseded — never silently contradict it
 - Analyze only the code and docs relevant to the decision
@@ -90,16 +90,17 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Make validation executable where possible: propose an architecture fitness function or dependency rule (dependency-cruiser, import-linter, ArchUnit, or equivalent) that fails CI when the decision is violated — a validation step no one can run will not be run
 
 ## Step 7: Document
-- Save the durable artifact to `.agents/results/architecture/`
+- Save ADRs and retained recommendations for a selected approach to `docs/decisions/`; update `docs/decisions/index.md`.
+- Keep run-specific reviews, diagnoses, CBAM analyses, and unselected comparison drafts in `.agents/results/architecture/`. When promoting a document into `docs/decisions/`, leave the destination in the source report.
 - Filename patterns (kebab-case topic, no sequence numbers):
-  - `adr-<topic>.md`
-  - `architecture-recommendation-<topic>.md`
-  - `architecture-review-<topic>.md`
-  - `cbam-<topic>.md`
-  - `diagnosis-<topic>.md`
+  - `docs/decisions/adr-<topic>.md`
+  - `docs/decisions/architecture-recommendation-<topic>.md` for a retained selected approach
+  - `.agents/results/architecture/architecture-review-<topic>.md`
+  - `.agents/results/architecture/cbam-<topic>.md`
+  - `.agents/results/architecture/diagnosis-<topic>.md`
 - Rerunning the same topic updates the existing file; record the revision in the ADR `Status` line rather than creating a copy
 - ADR lifecycle: `Status` is `Proposed`, `Accepted`, or `Superseded by <adr-file>`. Keep a user-owned unresolved choice `Proposed`; a completed artifact or event is not acceptance. Use `Accepted` only when existing decision authority supports it. Update a prior ADR as superseded only when the replacement is authorized.
-- When dispatched, also write the injected claim and the task/run-scoped report per `../../_shared/runtime/result-contract.md` and `memory-protocol.md`. Use `result-{agentId}-{taskId}-{runId}-{sessionId}.md` under the configured memory base, preserving injected IDs. Link the architecture artifact from this report.
+- When dispatched, also write the injected claim and the task/run-scoped report per `../../_shared/runtime/result-contract.md` and `memory-protocol.md`. Use `.agents/results/result-{agentId}-{taskId}-{runId}-{sessionId}.md`, preserving injected IDs. Existing reports under configured coordination memory or `.serena/memories/` remain read fallback; write new reports only to `.agents/results/`. Link the architecture artifact from this report.
 - In an active OMA workflow, record and verify the actual recommendation with its authority status and current artifact revision. This records completion of the analysis without granting implementation approval:
 
 ```bash

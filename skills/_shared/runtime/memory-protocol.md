@@ -17,7 +17,7 @@ memory contract is independent of any code-intelligence provider.
 
 Memory base path is configurable via `memoryConfig.basePath` (default: `.agents/state/memories`). Create the directory if it does not yet exist.
 
-> **CRITICAL**: Do NOT use Serena's MCP `write_memory` / `read_memory` for workflow session/progress/result state. Verification gates (e.g. `oma ralph verify`, CCR reviewers) check durable files on disk under `.agents/state/memories/`. Use file tools (`Read`/`Write`/`Edit`) to persist them directly to `{memoryConfig.basePath}/`.
+> **CRITICAL**: Do NOT use Serena's MCP `write_memory` / `read_memory` for workflow state or result reports. Use file tools (`Read`/`Write`/`Edit`): session and progress notes go under `{memoryConfig.basePath}/`, and `result-*.md` reports always go under the project-root `.agents/results/`. Create `.agents/results/` if it does not yet exist. Verification gates check these durable files and their receipt bindings.
 
 ---
 
@@ -32,15 +32,19 @@ task and run identity to human-readable reports:
   orchestrator-session-{sessionId}.md
   task-board-{sessionId}.md
   progress-{agentId}-{taskId}-{runId}-{sessionId}.md
-  result-{agentId}-{taskId}-{runId}-{sessionId}.md
   lessons-{sessionId}.md
   experiment-ledger-{sessionId}.md
+
+.agents/results/
+  result-{agentId}-{taskId}-{runId}-{sessionId}.md
 ```
 
 `taskId` and `runId` are required for plan-based work. A manual run may use a
 generated local run ID. Never use workspace or agent ID alone as artifact
 identity. Receipts remain in `.agents/state/agent-runs/` and retain their
-existing structured schema.
+existing structured schema. Reports are independent of `memoryConfig.basePath`.
+
+Existing reports under `.agents/state/memories/`, the configured memory base, or `.serena/memories/` remain read fallback until migration. Write new reports only to `.agents/results/`, preserving task/run/session filenames. Do not move structured claims or manually rewrite verification receipts when relocating reports.
 
 ## On Start
 
@@ -54,7 +58,7 @@ existing structured schema.
 
 ## On Completion
 
-- `[WRITE]("result-{agentId}-{taskId}-{runId}-{sessionId}.md")` with final result including:
+- `[WRITE](".agents/results/result-{agentId}-{taskId}-{runId}-{sessionId}.md")` with final result including:
   - Status: `completed`, `partial`, `blocked`, or `failed`
   - Summary of work done
   - Files created/modified
@@ -86,7 +90,7 @@ Write(".agents/state/memories/progress-backend-task-api-run-01-session-20260405-
 Edit(".agents/state/memories/progress-backend-task-api-run-01-session-20260405-100835.md", turn_update)
 
 # On Completion
-Write(".agents/state/memories/result-backend-task-api-run-01-session-20260405-100835.md", final_result)
+Write(".agents/results/result-backend-task-api-run-01-session-20260405-100835.md", final_result)
 ```
 
 ## Example with Custom Tools
@@ -110,5 +114,5 @@ Then use:
 fs_read("task-board-session-20260405-100835.md")
 fs_write("progress-backend-task-api-run-01-session-20260405-100835.md", initial_content)
 fs_patch("progress-backend-task-api-run-01-session-20260405-100835.md", turn_update)
-fs_write("result-backend-task-api-run-01-session-20260405-100835.md", final_result)
+fs_write(".agents/results/result-backend-task-api-run-01-session-20260405-100835.md", final_result)
 ```

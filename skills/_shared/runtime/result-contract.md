@@ -15,15 +15,26 @@ Example claim:
 {"status":"completed","changedFiles":["src/parser.ts"],"unresolved":[],"artifacts":[".agents/results/result-qa-s1.md",".agents/results/plan-s1.json",".agents/state/memories/session-ultrawork.md"]}
 ```
 
-Receipts live in `.agents/state/agent-runs/`. They contain session/task/run IDs, vendor, workspace, timestamps, actual command argv and exit codes, working tree hashes, artifact hashes, unresolved work, and final status. These records prevent accidental reuse of stale evidence; they are local files, not a security boundary against an agent that intentionally edits receipts. Human-readable workflow reports are supplemental, flat compatibility files named `result-{agentId}-{taskId}-{runId}-{sessionId}.md`; the injected claim path and receipt schema remain unchanged.
+Receipts live in `.agents/state/agent-runs/`. They contain session/task/run IDs, vendor, workspace, timestamps, actual command argv and exit codes, working tree hashes, artifact hashes, unresolved work, and final status. These records prevent accidental reuse of stale evidence; they are local files, not a security boundary against an agent that intentionally edits receipts. Human-readable workflow reports are supplemental files at `.agents/results/result-{agentId}-{taskId}-{runId}-{sessionId}.md` for every dispatch path; the injected claim path and receipt schema remain unchanged. Preserve report filenames. Existing reports under configured coordination memory, `.agents/state/memories/`, or `.serena/memories/` remain read fallback until migration; write new reports only to `.agents/results/`.
 
 The Ralph gate requires QA and REFINE task IDs in a nonempty plan, current successful executable checks, and report/plan/phase artifacts bound to those runs. A waiver alone does not pass this gate. Record a justified REFINE exception as `REFINE skipped: <specific reason>` before QA finalizes its evidence. Old Markdown-only reports remain readable but must be reverified to pass the gate.
 
 Checks cover the Git working tree (HEAD, tracked contents/modes and nonignored untracked files). Generated `.agents/state`, `.agents/results`, and `.serena/memories`, and generated `.opencode/agents/oma-spawn-*.md` wrappers are excluded from the tree hash and artifacts are hashed separately. In an unversioned directory, all files except those generated directories, `.git`, and `node_modules` are covered. External services, ignored dependencies, and malicious receipt tampering require separate controls.
 
+## Artifact storage
+
+- `docs/decisions/`: retained approach proposals, architecture decisions, and ADRs intended for version control; update `docs/decisions/index.md`. `design` names UI work. Read `docs/plans/designs/` and `docs/design-docs/` only as legacy fallback until migration.
+- `docs/plans/work/`: execution plans and technical debt; `docs/plans/contracts/`: adopted API contracts. Keep their existing lifecycle and promotion rules.
+- `.agents/results/`: run-specific reports, research, explanations, and draft contracts. When promoting a selected document into `docs/`, leave its destination in the source report.
+- `.agents/state/`: coordination, resumption, and verification records. State notes link reports instead of holding duplicate report bodies.
+
+If a report is already bound to a verification receipt, preserve its original path and bytes. Create a maintained copy and link it from the documentation index instead of editing or moving the bound report. Migration reports these files as deferred and never rewrites receipts, claims, or frozen plans.
+
+Preview existing files with `oma docs migrate --dry-run --json`; apply the migration with `oma docs migrate`. The report lists moved and rewritten paths, skips, and conflicts.
+
 ## Coordination notes
 
-Use native file tools and `memoryConfig.basePath` (default `.agents/state/memories/`) at the project root for optional coordination notes. Read an assigned task board and report progress for long tasks. Use the unique progress/result names from [Memory Protocol](memory-protocol.md); keep the injected claim path unchanged. Human-facing deliverables may live in `.agents/results/`, but their presence alone does not prove completion. Include unresolved work in the claim even after failure.
+Use native file tools and `memoryConfig.basePath` (default `.agents/state/memories/`) at the project root for optional coordination notes. Read an assigned task board and report progress for long tasks. Use the unique progress names from [Memory Protocol](memory-protocol.md); keep the injected claim path unchanged. Write all `result-*.md` reports in the project-root `.agents/results/`, independently of `memoryConfig.basePath`. Their presence alone does not prove completion. Include unresolved work in the claim even after failure.
 
 Read-only dispatch returns `OMA_RESULT_JSON: {claim}` as one final stdout line. The parent persists that inspection. A `verificationSkipped` inspection remains distinguishable from executable checks and does not pass Ralph.
 

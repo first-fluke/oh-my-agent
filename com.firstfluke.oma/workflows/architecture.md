@@ -43,7 +43,7 @@ If the problem is vague, start in Diagnostic Mode.
 
 ## Step 2: Analyze the Existing System
 
-Read prior decisions in `.agents/results/architecture/` first — new decisions supersede old ones explicitly (update the old ADR's `Status`), never contradict them silently.
+Read prior decisions in `docs/decisions/` first. Read `.agents/results/architecture/`, `docs/design-docs/`, and `docs/plans/designs/` as legacy context until migration. New decisions supersede old ones explicitly (update the old ADR's `Status`), never contradict them silently.
 
 Use MCP code analysis tools to understand the current architecture:
 - Configured structure tools or scoped directory/file inspection for project structure and boundaries
@@ -123,14 +123,16 @@ If the decision remains user-owned, present the options with clear tradeoffs rat
 
 ## Step 7: Save the Artifact and Hand Off
 
-Save the architecture artifact to `.agents/results/architecture/`.
+Save ADRs and retained recommendations for a selected approach to `docs/decisions/` and update `docs/decisions/index.md`. Keep run-specific reviews, diagnoses, CBAM analyses, and unselected comparison drafts in `.agents/results/architecture/`. When promoting a report into `docs/decisions/`, record the destination in the source report.
 
 Suggested filenames (kebab-case topic, no sequence numbers):
-- `adr-<topic>.md`
-- `architecture-recommendation-<topic>.md`
-- `architecture-review-<topic>.md`
-- `cbam-<topic>.md`
-- `diagnosis-<topic>.md`
+- `docs/decisions/adr-<topic>.md`
+- `docs/decisions/architecture-recommendation-<topic>.md` for a retained selected approach
+- `.agents/results/architecture/architecture-review-<topic>.md`
+- `.agents/results/architecture/cbam-<topic>.md`
+- `.agents/results/architecture/diagnosis-<topic>.md`
+
+When dispatched, also write `.agents/results/result-{agentId}-{taskId}-{runId}-{sessionId}.md` and the injected structured claim. Preserve the injected IDs and link the architecture artifact from the report. Existing reports under coordination memory paths remain read fallback; new reports always use `.agents/results/`.
 
 ADR lifecycle: set `Status` (`Proposed` / `Accepted` / `Superseded by <adr-file>`) from the actual decision authority. A completed recommendation stays `Proposed` while a user-owned choice is unresolved; producing the artifact or emitting an event does not supply approval. When replacing an accepted ADR, update the prior artifact only when that supersession is authorized.
 

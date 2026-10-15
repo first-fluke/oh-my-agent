@@ -32,7 +32,7 @@ describe("migrateStateMemories (017)", () => {
     const legacy = join(root, ".serena", "memories");
     mkdirSync(join(legacy, "decisions"), { recursive: true });
 
-    // Coordination artifacts — must move.
+    // Coordination artifacts — must move. Results are handled by 032.
     writeFileSync(join(legacy, "result-backend.md"), "## Status: completed\n");
     writeFileSync(join(legacy, "progress-qa.md"), "turn 1\n");
     writeFileSync(join(legacy, "task-board.md"), "# Task Board\n");
@@ -45,11 +45,10 @@ describe("migrateStateMemories (017)", () => {
     writeFileSync(join(legacy, "decisions", "result-fake.md"), "# nested\n");
 
     const actions = migrateStateMemories.up(root);
-    expect(actions).toHaveLength(6);
+    expect(actions).toHaveLength(5);
 
     const canonical = join(root, ".agents", "state", "memories");
     for (const moved of [
-      "result-backend.md",
       "progress-qa.md",
       "task-board.md",
       "orchestrator-session.md",
@@ -61,6 +60,7 @@ describe("migrateStateMemories (017)", () => {
     }
     expect(existsSync(join(legacy, "code_style.md"))).toBe(true);
     expect(existsSync(join(legacy, "project_purpose.md"))).toBe(true);
+    expect(existsSync(join(legacy, "result-backend.md"))).toBe(true);
     // Curated subdirectories are never traversed.
     expect(existsSync(join(legacy, "decisions", "result-fake.md"))).toBe(true);
   });
@@ -71,16 +71,16 @@ describe("migrateStateMemories (017)", () => {
     const canonical = join(root, ".agents", "state", "memories");
     mkdirSync(legacy, { recursive: true });
     mkdirSync(canonical, { recursive: true });
-    writeFileSync(join(legacy, "result-backend.md"), "old\n");
-    writeFileSync(join(canonical, "result-backend.md"), "new\n");
+    writeFileSync(join(legacy, "progress-backend.md"), "old\n");
+    writeFileSync(join(canonical, "progress-backend.md"), "new\n");
 
     const actions = migrateStateMemories.up(root);
 
     expect(actions).toEqual([]);
-    expect(readFileSync(join(canonical, "result-backend.md"), "utf-8")).toBe(
+    expect(readFileSync(join(canonical, "progress-backend.md"), "utf-8")).toBe(
       "new\n",
     );
-    expect(existsSync(join(legacy, "result-backend.md"))).toBe(true);
+    expect(existsSync(join(legacy, "progress-backend.md"))).toBe(true);
   });
 
   it("retargets the default Serena memoryConfig in .agents/mcp.json", () => {

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, join } from "node:path";
-import { getCoordinationStorePath } from "../io/memory.js";
+import { basename, isAbsolute, join, relative, sep } from "node:path";
+import { getCoordinationStorePath, getResultsPath } from "../io/memory.js";
 
 export type DashboardSession = {
   id: string;
@@ -25,6 +25,7 @@ export type DashboardState = {
   agents: DashboardAgent[];
   activity: DashboardActivity[];
   memoriesDir: string;
+  resultsDir?: string;
   updatedAt: string;
 };
 
@@ -42,6 +43,31 @@ export function resolveMemoriesDir(projectDir: string = process.cwd()): string {
   return getCoordinationStorePath(projectDir);
 }
 
+/** A custom memory store stays isolated from the current project's reports. */
+export function resolveResultsDir(
+  projectDir: string = process.cwd(),
+): string | undefined {
+  return process.env.MEMORIES_DIR ? undefined : getResultsPath(projectDir);
+}
+
+/** Keep domain reports and generated assets out of the result-file watcher. */
+export function shouldIgnoreDashboardPath(
+  filePath: string,
+  resultsDir?: string,
+): boolean {
+  if (!resultsDir) return false;
+  const fromResults = relative(resultsDir, filePath);
+  if (
+    !fromResults ||
+    fromResults === ".." ||
+    fromResults.startsWith(`..${sep}`) ||
+    isAbsolute(fromResults)
+  ) {
+    return false;
+  }
+  return !/^result-[^/\\]+\.md$/.test(fromResults);
+}
+
 function readFileSafe(filePath: string): string {
   try {
     return readFileSync(filePath, "utf-8");
@@ -53,18 +79,43 @@ function readFileSafe(filePath: string): string {
 function listSortedFiles(
   memoriesDir: string,
   predicate: (filename: string) => boolean,
-): { name: string; mtime: number }[] {
+): { name: string; path: string; mtime: number }[] {
   try {
     return readdirSync(memoriesDir)
       .filter(predicate)
-      .map((name) => ({
-        name,
-        mtime: statSync(join(memoriesDir, name)).mtimeMs,
-      }))
+      .flatMap((name) => {
+        const path = join(memoriesDir, name);
+        try {
+          const stat = statSync(path);
+          return stat.isFile() ? [{ name, path, mtime: stat.mtimeMs }] : [];
+        } catch {
+          return [];
+        }
+      })
       .sort((a, b) => b.mtime - a.mtime);
   } catch {
     return [];
   }
+}
+
+function listDashboardFiles(memoriesDir: string, resultsDir?: string) {
+  const files = new Map<
+    string,
+    { name: string; path: string; mtime: number }
+  >();
+  const reports = resultsDir
+    ? listSortedFiles(resultsDir, (name) => /^result-.+\.md$/.test(name))
+    : [];
+  for (const file of [
+    ...reports,
+    ...listSortedFiles(
+      memoriesDir,
+      (name) => name.endsWith(".md") && name !== ".gitkeep",
+    ),
+  ]) {
+    if (!files.has(file.name)) files.set(file.name, file);
+  }
+  return [...files.values()].sort((a, b) => b.mtime - a.mtime);
 }
 
 function findSessionFile(memoriesDir: string): string | null {
@@ -200,16 +251,14 @@ function extractLatestMessage(content: string): string {
   return "";
 }
 
-function getLatestActivity(memoriesDir: string): DashboardActivity[] {
-  return listSortedFiles(
-    memoriesDir,
-    (file) => file.endsWith(".md") && file !== ".gitkeep",
-  )
+function getLatestActivity(
+  memoriesDir: string,
+  resultsDir?: string,
+): DashboardActivity[] {
+  return listDashboardFiles(memoriesDir, resultsDir)
     .slice(0, 5)
     .map((file) => {
-      const message = extractLatestMessage(
-        readFileSafe(join(memoriesDir, file.name)),
-      );
+      const message = extractLatestMessage(readFileSafe(file.path));
       return {
         agent: normalizeActivityName(file.name),
         message,
@@ -232,15 +281,15 @@ function detectAgentStatus(content: string): string {
   return "unknown";
 }
 
-function discoverAgentsFromFiles(memoriesDir: string): DashboardAgent[] {
+function discoverAgentsFromFiles(
+  memoriesDir: string,
+  resultsDir?: string,
+): DashboardAgent[] {
   const agents: DashboardAgent[] = [];
   const seen = new Set<string>();
 
-  for (const file of listSortedFiles(
-    memoriesDir,
-    (name) => name.endsWith(".md") && name !== ".gitkeep",
-  )) {
-    const content = readFileSafe(join(memoriesDir, file.name));
+  for (const file of listDashboardFiles(memoriesDir, resultsDir)) {
+    const content = readFileSafe(file.path);
     const agentMatch =
       content.match(/\*\*Agent\*\*:\s*(.+)/i) ||
       content.match(/Agent:\s*(.+)/i) ||
@@ -277,7 +326,10 @@ function discoverAgentsFromFiles(memoriesDir: string): DashboardAgent[] {
   return agents;
 }
 
-export function buildFullState(memoriesDir: string): DashboardState {
+export function buildFullState(
+  memoriesDir: string,
+  resultsDir?: string,
+): DashboardState {
   const session = parseSessionInfo(memoriesDir);
   let agents = parseTaskBoard(memoriesDir).map((agent) => ({
     ...agent,
@@ -285,7 +337,7 @@ export function buildFullState(memoriesDir: string): DashboardState {
   }));
 
   if (agents.length === 0) {
-    agents = discoverAgentsFromFiles(memoriesDir);
+    agents = discoverAgentsFromFiles(memoriesDir, resultsDir);
   }
 
   if (agents.length === 0) {
@@ -306,8 +358,9 @@ export function buildFullState(memoriesDir: string): DashboardState {
   return {
     session,
     agents,
-    activity: getLatestActivity(memoriesDir),
+    activity: getLatestActivity(memoriesDir, resultsDir),
     memoriesDir,
+    ...(resultsDir ? { resultsDir } : {}),
     updatedAt: new Date().toISOString(),
   };
 }

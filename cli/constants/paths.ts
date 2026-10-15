@@ -44,12 +44,16 @@ export const AGENTS_BACKUP_DIR = `${AGENTS_DIR}/backup`;
 export const MIGRATION_BACKUP_DIR = ".migration-backup";
 
 /**
- * Local plan artifacts written by the /plan, /brainstorm, and /deepinit
- * workflows (designs/, work/, contracts/). Working notes by convention —
+ * Local plan artifacts written by the /plan and /deepinit workflows
+ * (work/, contracts/). Decisions and architecture references live in
+ * docs/decisions/. Working notes by convention —
  * a file that committed docs must reference is promoted deliberately with
  * `git add -f` and stays tracked despite this ignore.
  */
 export const DOCS_PLANS_DIR = "docs/plans";
+
+/** Durable engineering decisions and ADRs; UI design stays in DESIGN.md. */
+export const DOCS_DECISIONS_DIR = "docs/decisions";
 
 /** Qwen Code runtime temporary session directory */
 export const QWEN_TMP_DIR = ".qwen/tmp";

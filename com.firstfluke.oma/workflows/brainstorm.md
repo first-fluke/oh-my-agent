@@ -178,8 +178,9 @@ Skip only if the design is trivially small (1-2 files, low stakes). Otherwise th
 ## Step 6: Save Design Document
 
 Save the approved design:
-1. Write to `docs/plans/designs/<NNN>-<feature-name>.md` where `<NNN>` is the next zero-padded 3-digit number (`ls docs/plans/designs/ | grep -E '^[0-9]{3}-' | tail -1`). Run the listing immediately before writing — not earlier in the session — and if `<NNN>` is already taken (concurrent sessions have produced duplicate numbers), take max+1. Do not append `-design` to the filename; the folder already encodes type.
-2. Use memory write tool to record design summary for future reference.
+1. Write the selected approach to `docs/decisions/<NNN>-<feature-name>.md` where `<NNN>` is the next zero-padded 3-digit number (`ls docs/decisions/ | grep -E '^[0-9]{3}-' | tail -1`). Run the listing immediately before writing and, if `<NNN>` is already taken, take max+1. Do not append `-design` to the filename; `design` names UI work. Preserve the actual approval status in the document.
+2. Keep `docs/decisions/` versioned and update `docs/decisions/index.md`. Read existing `docs/plans/designs/` or `docs/design-docs/` as legacy fallback until migration, but write only to the canonical directory.
+3. Record a short coordination summary with a link to the decision document. Run-specific critique reports belong in `.agents/results/`; promotion into `docs/` leaves the destination in the source report.
 
 ---
 
