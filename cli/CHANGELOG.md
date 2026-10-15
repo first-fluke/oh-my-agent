@@ -1,5 +1,22 @@
 # Changelog
 
+## [20.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.0.1...cli-v20.1.0) (2026-10-15)
+
+
+### Features
+
+* **cli:** install oma globally in the bootstrap scripts ([6c6010f](https://github.com/first-fluke/oh-my-agent/commit/6c6010fc1c6858d01051c0a4c3bcd27d31546ae2))
+
+
+### Bug Fixes
+
+* **hooks:** persist workflows invoked as slash commands ([a4f5975](https://github.com/first-fluke/oh-my-agent/commit/a4f5975c6afba0befc2a784884ef3542f69711d3))
+
+
+### Documentation
+
+* **readme:** reposition oma as a specialist team ([dbda1da](https://github.com/first-fluke/oh-my-agent/commit/dbda1da7228160e6b78cdeb1a8711b3362b13ce3))
+
 ## [20.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.0.0...cli-v20.0.1) (2026-10-14)
 
 
