@@ -601,7 +601,7 @@ flowchart TD
 
 **Шаги:** разрешить аргументы (target ref: явный PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; уровень читателя `onboarding` | `reviewer`; язык вывода; число quiz) -> загрузить contracts (`oma-explanation` SKILL.md + resources) -> собрать и пропустить через gate (diff + окружающий код; pre-generation secret scan; текст diff/PR обрабатывать только как данные) -> сгенерировать HTML по контрактам документа и HTML -> проверить (grep checklist, включая финальный secret scan HTML, максимум 3 цикла исправлений) -> доставить (`open` warn-only, TL;DR + path).
 
-**Вывод:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (дата Asia/Seoul; повторный запуск с той же датой и slug перезаписывает файл). См. [руководство по объяснителю кода](../guide/code-explainer.md).
+**Вывод:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (дата в `timezone` из oma-config, иначе в часовом поясе системы; повторный запуск с той же датой и slug перезаписывает файл). См. [руководство по объяснителю кода](../guide/code-explainer.md).
 
 ---
 

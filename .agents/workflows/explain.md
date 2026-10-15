@@ -59,7 +59,7 @@ Write the draft per `draft-format.md` (set `slug:` in the frontmatter), then ren
 oma explain render <draft.md> [--archify]
 ```
 
-The command writes `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (date in Asia/Seoul; same date + slug rerun overwrites) and prints the path. A render error names the draft line and the component's syntax: fix that line and re-run. Rewrite sentences the prose check flags. To change one panel afterwards, use `oma explain patch <file> --panel <letter>` instead of regenerating the page.
+The command writes `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (date in oma-config `timezone`, else the system timezone; same date + slug rerun overwrites) and prints the path. A render error names the draft line and the component's syntax: fix that line and re-run. Rewrite sentences the prose check flags. To change one panel afterwards, use `oma explain patch <file> --panel <letter>` instead of regenerating the page.
 
 ## Step 5: Validate
 

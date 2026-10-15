@@ -152,7 +152,7 @@ Bij een hit stopt de generatie onmiddellijk; alleen de gemaskeerde locaties word
 
 ## Validatiechecklist {#validation-checklist}
 
-Na generatie wordt met een grep-gebaseerde checklist het uitvoerbestand gecontroleerd: geen verwijzingen die externe resources laden, correcte `pre`/`pre-wrap` voor codecontainers, aanwezigheid van het quizscript, het bestandsnaamformaat `{YYYY-MM-DD}-{slug}.html` (datum in Asia/Seoul) en de secret-scan van de uiteindelijke HTML. Bij fouten herstelt en hervalideert de lus maximaal **3 iteraties** en stopt daarna met de resterende mislukte items in beeld in plaats van stilzwijgend op te leveren.
+Na generatie wordt met een grep-gebaseerde checklist het uitvoerbestand gecontroleerd: geen verwijzingen die externe resources laden, correcte `pre`/`pre-wrap` voor codecontainers, aanwezigheid van het quizscript, het bestandsnaamformaat `{YYYY-MM-DD}-{slug}.html` (datum in de `timezone` uit oma-config, anders in de systeemtijdzone) en de secret-scan van de uiteindelijke HTML. Bij fouten herstelt en hervalideert de lus maximaal **3 iteraties** en stopt daarna met de resterende mislukte items in beeld in plaats van stilzwijgend op te leveren.
 
 Dit is een v1-beperking: de validatie is gebaseerd op grep en bestanden en controleert alleen of het quizscript *aanwezig* is (niet of het gedrag volledig klopt). Gebruik een browser (of de chrome-devtools-MCP) om de quiz handmatig te doorlopen wanneer gedragsvertrouwen belangrijk is.
 
@@ -185,7 +185,7 @@ De eerste vorm controleert één HTML-bestand. De mapvorm controleert elk rappor
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-De datum wordt gelokaliseerd volgens Asia/Seoul. Opnieuw uitvoeren met dezelfde datum + slug overschrijft het eerdere bestand — het bewaren van een eerdere run is je eigen verantwoordelijkheid. Nadat validatie slaagt, probeert de workflow de pagina te openen (alleen waarschuwing; een headless omgeving valt gewoon terug op het rapporteren van het pad) en rapporteert hij een TL;DR plus het bestandspad. `oma explain render --open` opent de pagina direct in de browser.
+De datum volgt `timezone` in oma-config; zonder waarde geldt de systeemtijdzone. Opnieuw uitvoeren met dezelfde datum + slug overschrijft het eerdere bestand — het bewaren van een eerdere run is je eigen verantwoordelijkheid. Nadat validatie slaagt, probeert de workflow de pagina te openen (alleen waarschuwing; een headless omgeving valt gewoon terug op het rapporteren van het pad) en rapporteert hij een TL;DR plus het bestandspad. `oma explain render --open` opent de pagina direct in de browser.
 
 ---
 

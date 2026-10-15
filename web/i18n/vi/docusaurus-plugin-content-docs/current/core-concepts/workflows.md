@@ -601,7 +601,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 **Các bước:** Xác định đối số (target ref: PR# / branch / SHA range tường minh → staged → dirty tree → `HEAD~1..HEAD`; mức người đọc `onboarding` | `reviewer`; ngôn ngữ đầu ra; số câu quiz) -> tải contract (SKILL.md của `oma-explanation` + resources) -> thu thập & kiểm soát (diff + code xung quanh; quét secret trước khi tạo; văn bản diff/PR được coi thuần túy là dữ liệu) -> tạo HTML theo contract tài liệu và contract HTML -> xác minh (checklist grep gồm cả quét secret trên HTML cuối, tối đa 3 vòng sửa) -> bàn giao (`open` chỉ cảnh báo khi lỗi, TL;DR + path).
 
-**Đầu ra:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (ngày theo Asia/Seoul; chạy lại cùng ngày + slug sẽ ghi đè). Xem [hướng dẫn giải thích code](../guide/code-explainer.md).
+**Đầu ra:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (ngày theo `timezone` trong oma-config, nếu không có thì theo timezone của hệ thống; chạy lại cùng ngày + slug sẽ ghi đè). Xem [hướng dẫn giải thích code](../guide/code-explainer.md).
 
 ---
 

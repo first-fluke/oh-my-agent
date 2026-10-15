@@ -152,7 +152,7 @@ Les secrets sont contrôlés deux fois :
 
 ## Checklist de validation
 
-Après génération, une checklist fondée sur grep s’exécute sur le fichier de sortie : aucune référence chargeant une ressource externe, conformité des conteneurs de code `pre`/`pre-wrap`, présence du script de quiz, format de nom `{YYYY-MM-DD}-{slug}.html` (date en Asia/Seoul) et scan final des secrets HTML. En cas d’échec, la boucle corrige et revalide jusqu’à **3 itérations**, puis s’arrête et expose les éléments restants en échec au lieu de livrer silencieusement.
+Après génération, une checklist fondée sur grep s’exécute sur le fichier de sortie : aucune référence chargeant une ressource externe, conformité des conteneurs de code `pre`/`pre-wrap`, présence du script de quiz, format de nom `{YYYY-MM-DD}-{slug}.html` (date dans la `timezone` d’oma-config, sinon dans le fuseau horaire du système) et scan final des secrets HTML. En cas d’échec, la boucle corrige et revalide jusqu’à **3 itérations**, puis s’arrête et expose les éléments restants en échec au lieu de livrer silencieusement.
 
 C’est une contrainte v1 : la validation est fondée sur des fichiers et grep et vérifie uniquement la *présence* du script de quiz (pas sa correction comportementale complète). Utilisez un navigateur (ou le MCP chrome-devtools) pour exercer manuellement le quiz lorsque la confiance comportementale est importante.
 
@@ -185,7 +185,7 @@ La première forme vérifie un seul fichier HTML. La forme répertoire vérifie 
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-La date est localisée en Asia/Seoul. Relancer la même date et le même slug écrase le fichier précédent — vous êtes responsable de conserver une exécution antérieure. Après réussite de la validation, le workflow tente d’ouvrir la page (avertissement seulement ; un environnement sans interface revient simplement au signalement du chemin) et signale un TL;DR ainsi que le chemin du fichier. `oma explain render --open` ouvre directement la page dans le navigateur.
+La date suit la `timezone` d’oma-config, ou à défaut le fuseau horaire du système. Relancer la même date et le même slug écrase le fichier précédent — vous êtes responsable de conserver une exécution antérieure. Après réussite de la validation, le workflow tente d’ouvrir la page (avertissement seulement ; un environnement sans interface revient simplement au signalement du chemin) et signale un TL;DR ainsi que le chemin du fichier. `oma explain render --open` ouvre directement la page dans le navigateur.
 
 ---
 

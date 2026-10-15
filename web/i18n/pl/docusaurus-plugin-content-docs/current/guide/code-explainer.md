@@ -152,7 +152,7 @@ Po każdym trafieniu generowanie natychmiast się zatrzymuje, zgłaszane są wy�
 
 ## Lista kontrolna walidacji
 
-Po generowaniu wobec pliku wynikowego uruchamiana jest lista kontrolna oparta na grep: brak odwołań do ładowania zewnętrznych zasobów, zgodność kontenerów kodu z `pre`/`pre-wrap`, obecność skryptu quizu, format nazwy `{YYYY-MM-DD}-{slug}.html` (data w Asia/Seoul) i skan sekretów końcowego HTML. Po niepowodzeniu pętla naprawia i ponownie waliduje do **3 iteracji**, a następnie zatrzymuje się i pokazuje pozostałe nieudane elementy zamiast po cichu dostarczyć wynik.
+Po generowaniu wobec pliku wynikowego uruchamiana jest lista kontrolna oparta na grep: brak odwołań do ładowania zewnętrznych zasobów, zgodność kontenerów kodu z `pre`/`pre-wrap`, obecność skryptu quizu, format nazwy `{YYYY-MM-DD}-{slug}.html` (data w strefie `timezone` z oma-config, a gdy jej brak — w strefie czasowej systemu) i skan sekretów końcowego HTML. Po niepowodzeniu pętla naprawia i ponownie waliduje do **3 iteracji**, a następnie zatrzymuje się i pokazuje pozostałe nieudane elementy zamiast po cichu dostarczyć wynik.
 
 To ograniczenie v1: walidacja działa na plikach i grep, a sprawdza tylko *obecność* skryptu quizu, nie pełną poprawność zachowania. Gdy ważna jest pewność zachowania, użyj przeglądarki (albo MCP chrome-devtools), aby ręcznie przećwiczyć quiz.
 
@@ -185,7 +185,7 @@ Pierwsza forma sprawdza jeden plik HTML. Forma katalogowa sprawdza każdy raport
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-Data jest lokalizowana do Asia/Seoul. Ponowne uruchomienie z tą samą datą i slugiem nadpisuje wcześniejszy plik — zachowanie wcześniejszego uruchomienia jest Twoją odpowiedzialnością. Po przejściu walidacji workflow próbuje otworzyć stronę (tylko ostrzeżenie; środowisko bez interfejsu po prostu zgłasza ścieżkę) i raportuje TL;DR wraz ze ścieżką pliku. `oma explain render --open` otwiera stronę bezpośrednio w przeglądarce.
+Data jest liczona w strefie `timezone` z oma-config, a gdy jej brak — w strefie czasowej systemu. Ponowne uruchomienie z tą samą datą i slugiem nadpisuje wcześniejszy plik — zachowanie wcześniejszego uruchomienia jest Twoją odpowiedzialnością. Po przejściu walidacji workflow próbuje otworzyć stronę (tylko ostrzeżenie; środowisko bez interfejsu po prostu zgłasza ścieżkę) i raportuje TL;DR wraz ze ścieżką pliku. `oma explain render --open` otwiera stronę bezpośrednio w przeglądarce.
 
 ---
 

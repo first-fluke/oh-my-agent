@@ -111,5 +111,5 @@ The explainer must read with authoritative clarity, smooth transitions between s
 
 Every document must end with a provenance footer containing:
 - **Generated-from reference**: The commit range, PR number, or branch used as input.
-- **Generation Date**: The timestamp localized to the `Asia/Seoul` timezone.
+- **Generation Date**: The date in the oma-config `timezone`, falling back to the system timezone when unset.
 - **Excluded Files**: If the diff was oversized and files were dropped, list the excluded files in a footnote. Never silently truncate.

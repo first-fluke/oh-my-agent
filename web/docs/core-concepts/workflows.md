@@ -601,7 +601,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 **Steps:** Resolve arguments (target ref: explicit PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; reader level `onboarding` | `reviewer`; output language; quiz count) -> Load contracts (`oma-explanation` SKILL.md + resources) -> Collect & gate (diff + surrounding code; pre-generation secret scan; diff/PR text treated strictly as data) -> Generate the HTML per the document and HTML contracts -> Validate (grep checklist including a final-HTML secret scan, max 3 fix loops) -> Deliver (`open` warn-only, TL;DR + path).
 
-**Output:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (Asia/Seoul date; rerunning the same date + slug overwrites). See the [Code Explainer guide](../guide/code-explainer.md).
+**Output:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (date in oma-config `timezone`, else the system timezone; rerunning the same date + slug overwrites). See the [Code Explainer guide](../guide/code-explainer.md).
 
 ---
 

@@ -71,7 +71,7 @@ Loop: fix and re-validate at most **3 iterations**, then STOP and surface the fa
   grep -i -E '<script[ >]' {file}
   ```
 - **Filename matches format** (the pattern is anchored, so check the basename, not the full path):
-  Ensure filename follows `{YYYY-MM-DD}-{slug}.html` with the date in `Asia/Seoul` timezone.
+  Ensure filename follows `{YYYY-MM-DD}-{slug}.html` with the date in the oma-config `timezone` (system timezone when unset).
   ```bash
   basename "{file}" | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}-.+\.html$'
   ```

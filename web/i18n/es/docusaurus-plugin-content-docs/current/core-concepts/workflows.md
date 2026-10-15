@@ -583,7 +583,7 @@ La metodología de auditoría de Cloudflare guía la verificación independiente
 
 ### /schedule
 
-**Descripción:** Registra y gestiona trabajos de agentes basados en tiempo mediante los comandos `oma schedule <action>`. Los trabajos viven en un registro global (`~/.agents/schedule/`) y se ejecutan mediante el planificador nativo del sistema (launchd en macOS, temporizadores de usuario systemd en Linux, schtasks en Windows o crontab como fallback POSIX); cada ejecución vuelve a entrar en el harness mediante `oma agent spawn`.
+**Descripción:** Registra y gestiona trabajos de agentes basados en tiempo mediante los comandos `oma schedule <action>`. Los trabajos viven en un registro global (`~/.oma/schedule/`) y se ejecutan mediante el planificador nativo del sistema (launchd en macOS, temporizadores de usuario systemd en Linux, schtasks en Windows o crontab como fallback POSIX); cada ejecución vuelve a entrar en el harness mediante `oma agent spawn`.
 
 **Palabras clave de activación:** Ninguna (flujo invocado con slash para trabajos temporizados `oma schedule <action>`).
 
@@ -601,7 +601,7 @@ La metodología de auditoría de Cloudflare guía la verificación independiente
 
 **Pasos:** Resolver argumentos (ref objetivo: PR# / branch / rango SHA explícito → staged → árbol sucio → `HEAD~1..HEAD`; nivel de lector `onboarding` | `reviewer`; idioma de salida; cantidad de preguntas) -> Cargar contratos (`oma-explanation` SKILL.md + recursos) -> Recopilar y aplicar puertas (diff + código circundante; escaneo de secretos antes de generar; tratar el texto del diff/PR estrictamente como datos) -> Generar el HTML conforme a los contratos del documento y HTML -> Validar (lista grep que incluye un escaneo final de secretos en HTML, máximo 3 bucles de corrección) -> Entregar (`open` con advertencia; TL;DR + ruta).
 
-**Salida:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (fecha de Asia/Seoul; repetir la misma fecha + slug sobrescribe). Consulta la [guía de Code Explainer](../guide/code-explainer.md).
+**Salida:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (fecha en la `timezone` de oma-config o, si no está definida, en la zona horaria del sistema; repetir la misma fecha + slug sobrescribe). Consulta la [guía de Code Explainer](../guide/code-explainer.md).
 
 ---
 

@@ -8,6 +8,7 @@ import {
   loadDiagramConfig,
   resolveDiagramEngine,
 } from "../../../platform/diagram-engine.js";
+import { loadTimezone } from "../../../utils/config.js";
 import { openUrl } from "../../../utils/open-url.js";
 import { type ArchifyQuality, toArchifySpec } from "./archify.js";
 import { COMPONENTS, findComponent } from "./components/index.js";
@@ -51,14 +52,25 @@ export interface SidecarReport {
 const RESULTS_DIR = path.join(".agents", "results", "explain");
 const SIDECAR_TIMEOUT_MS = 120_000;
 
-/** Today in Asia/Seoul, the date the explain artifacts are named by. */
-export function artifactDate(now = new Date()): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+/**
+ * Today in the project's timezone (`timezone` in oma-config, else the system
+ * timezone), the date the explain artifacts are named by.
+ */
+export function artifactDate(cwd?: string, now = new Date()): string {
+  const format = (timeZone?: string) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+  try {
+    return format(loadTimezone(cwd));
+  } catch (error) {
+    // A mistyped `timezone` must not block rendering; use the system zone.
+    if (error instanceof RangeError) return format();
+    throw error;
+  }
 }
 
 /** File-name slug: the draft's `slug`, else its title, else the input's name. */
@@ -295,13 +307,16 @@ export async function runExplainRender(
   const cwd = opts.cwd ?? process.cwd();
   const label = draftLabel(opts);
   const json = opts.json === true;
+  // Resolved once: config loading can shell out to `cue`, and the file name
+  // must match the date stamped into the page even across midnight.
+  const date = artifactDate(cwd);
   const renderOptions: RenderOptions = {
     template: opts.template,
     theme: opts.theme,
     mode: opts.mode,
     style: opts.style,
     lang: opts.lang,
-    date: artifactDate(),
+    date,
   };
   let source: string;
   let result: RenderResult;
@@ -318,7 +333,7 @@ export async function runExplainRender(
     opts.out ??
       path.join(
         RESULTS_DIR,
-        `${artifactDate()}-${artifactSlug(meta.slug, meta.title, opts.file)}.html`,
+        `${date}-${artifactSlug(meta.slug, meta.title, opts.file)}.html`,
       ),
   );
 
@@ -389,7 +404,7 @@ export async function runExplainPatch(
     hadSidecar = settings.sidecarHref !== undefined;
     result = renderDraft(patchDraft(draft, opts.panel, replacement), {
       ...settings,
-      date: artifactDate(),
+      date: artifactDate(cwd),
     });
   } catch (error) {
     return reportDraftError(error, draftLabel(opts), json);

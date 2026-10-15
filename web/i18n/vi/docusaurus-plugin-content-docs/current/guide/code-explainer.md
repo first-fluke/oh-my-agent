@@ -152,7 +152,7 @@ Nếu phát hiện hit, generation dừng ngay, chỉ báo vị trí đã mask (
 
 ## Validation checklist {#validation-checklist}
 
-Sau generation, grep-based checklist chạy trên output file: không có external resource-loading reference, code-container `pre`/`pre-wrap` hợp lệ, quiz script hiện diện, filename dạng `{YYYY-MM-DD}-{slug}.html` (date theo Asia/Seoul) và final-HTML secret scan. Khi thất bại, loop sửa và validate lại tối đa **3 iteration**, sau đó dừng và nêu item còn fail thay vì âm thầm giao.
+Sau generation, grep-based checklist chạy trên output file: không có external resource-loading reference, code-container `pre`/`pre-wrap` hợp lệ, quiz script hiện diện, filename dạng `{YYYY-MM-DD}-{slug}.html` (date theo `timezone` trong oma-config, nếu không có thì theo timezone của hệ thống) và final-HTML secret scan. Khi thất bại, loop sửa và validate lại tối đa **3 iteration**, sau đó dừng và nêu item còn fail thay vì âm thầm giao.
 
 Đây là giới hạn v1: validation dựa trên grep/file và chỉ xác minh quiz-script *có mặt* (không xác minh đầy đủ behavior). Dùng browser (hoặc chrome-devtools MCP) để tự chạy quiz khi cần confidence về behavior.
 
@@ -185,7 +185,7 @@ Dạng đầu kiểm tra một HTML file. Dạng directory kiểm tra mọi repo
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-Date được localize theo Asia/Seoul. Chạy lại cùng date + slug sẽ ghi đè file trước — trách nhiệm giữ run cũ thuộc về bạn. Sau khi validation pass, workflow thử mở trang (warn-only; môi trường headless chỉ fallback sang báo path) và báo TL;DR cùng file path. `oma explain render --open` mở trang trực tiếp trong browser.
+Date theo `timezone` trong oma-config; nếu không đặt thì dùng timezone của hệ thống. Chạy lại cùng date + slug sẽ ghi đè file trước — trách nhiệm giữ run cũ thuộc về bạn. Sau khi validation pass, workflow thử mở trang (warn-only; môi trường headless chỉ fallback sang báo path) và báo TL;DR cùng file path. `oma explain render --open` mở trang trực tiếp trong browser.
 
 ---
 

@@ -620,7 +620,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 **ステップ：** 引数を解決（対象 ref：明示的な PR# / ブランチ / SHA 範囲 -> staged -> dirty tree -> `HEAD~1..HEAD`、読者レベル `onboarding` | `reviewer`、出力言語、問題数） -> コントラクトをロード（`oma-explanation` SKILL.md + resources） -> 収集とゲート（差分と周辺コード、生成前のシークレットスキャン、差分/PR テキストを厳密にデータとして扱う） -> ドキュメントと HTML コントラクトに従って HTML を生成 -> 検証（最終 HTML のシークレットスキャンを含む grep チェック、最大 3 回の修正ループ） -> 配布（`open` は警告のみ、TL;DR + パス）。
 
-**出力：** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`（Asia/Seoul の日付。同じ日付と slug で再実行すると上書き）。[コード解説ガイド](../guide/code-explainer.md)を参照してください。
+**出力：** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`（日付は oma-config の `timezone`、未設定ならシステムのタイムゾーン。同じ日付と slug で再実行すると上書き）。[コード解説ガイド](../guide/code-explainer.md)を参照してください。
 
 ---
 

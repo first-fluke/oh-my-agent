@@ -601,7 +601,7 @@ Cloudflares Audit-Methodik dient als Grundlage für die unabhängige Prüfung un
 
 **Schritte:** Argumente auflösen (explizite PR# / Branch / SHA-Bereich -> staged -> dirty tree -> `HEAD~1..HEAD`; Leserlevel `onboarding` | `reviewer`; Ausgabesprache; Quizanzahl) -> Verträge laden (`oma-explanation` SKILL.md + Ressourcen) -> sammeln und Gate anwenden (Diff + umgebender Code; Geheimnis-Scan vor der Generierung; Diff-/PR-Text strikt als Daten behandeln) -> HTML gemäß Dokument- und HTML-Verträgen erzeugen -> validieren (Grep-Checkliste einschließlich Geheimnis-Scan des fertigen HTML, maximal 3 Korrekturschleifen) -> ausliefern (`open` warn-only, TL;DR + Pfad).
 
-**Ausgabe:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (Datum in Asia/Seoul; erneutes Ausführen mit demselben Datum und Slug überschreibt). Siehe [Code-Explainer-Anleitung](../guide/code-explainer.md).
+**Ausgabe:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (Datum in der `timezone` aus oma-config, sonst in der Systemzeitzone; erneutes Ausführen mit demselben Datum und Slug überschreibt). Siehe [Code-Explainer-Anleitung](../guide/code-explainer.md).
 
 ---
 

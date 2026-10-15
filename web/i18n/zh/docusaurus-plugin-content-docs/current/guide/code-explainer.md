@@ -152,7 +152,7 @@ Diff 内容和 PR 描述严格作为**数据**处理，任何嵌入改动中的�
 
 ## 验证清单 {#validation-checklist}
 
-生成后会针对输出文件运行基于 grep 的清单：不得存在加载外部资源的引用，代码容器必须符合 `pre` / `pre-wrap` 规则，必须有测验脚本，文件名必须符合 `{YYYY-MM-DD}-{slug}.html` 格式（日期使用 Asia/Seoul），并通过最终 HTML 机密扫描。失败时会最多修复并重新验证 **3 次**，之后停止并显示仍失败的项目，不会静默交付。
+生成后会针对输出文件运行基于 grep 的清单：不得存在加载外部资源的引用，代码容器必须符合 `pre` / `pre-wrap` 规则，必须有测验脚本，文件名必须符合 `{YYYY-MM-DD}-{slug}.html` 格式（日期使用 oma-config 的 `timezone`，未设置时使用系统时区），并通过最终 HTML 机密扫描。失败时会最多修复并重新验证 **3 次**，之后停止并显示仍失败的项目，不会静默交付。
 
 这是 v1 的限制：验证基于 grep 和文件，且只验证测验脚本*存在*，不验证完整行为。需要更高的行为信心时，使用浏览器（或 chrome-devtools MCP）手动操作测验。
 
@@ -185,7 +185,7 @@ File: .agents/results/explain/payment refactor.html
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-日期按 Asia/Seoul 本地化。再次运行相同的日期和 slug 会覆盖原文件，需自行负责保留早期运行结果。验证通过后，工作流会尝试打开页面（仅发出警告；无头环境会退回到报告路径），并报告 TL;DR 和文件路径。`oma explain render --open` 会直接在浏览器中打开页面。
+日期遵循 oma-config 中的 `timezone`，未设置时使用系统时区。再次运行相同的日期和 slug 会覆盖原文件，需自行负责保留早期运行结果。验证通过后，工作流会尝试打开页面（仅发出警告；无头环境会退回到报告路径），并报告 TL;DR 和文件路径。`oma explain render --open` 会直接在浏览器中打开页面。
 
 ---
 

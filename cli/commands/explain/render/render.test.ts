@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { validateHtmlContent } from "../validate.js";
 import { inferComponentType, toArchifySpec } from "./archify.js";
 import {
+  artifactDate,
   artifactSlug,
   runExplainLint,
   runExplainPatch,
@@ -540,6 +541,78 @@ describe("archify sidecar spec", () => {
     ).toBeUndefined();
     expect(inferComponentType("사용자")).toBe("external");
     expect(inferComponentType("anything", "cylinder")).toBe("database");
+  });
+});
+
+describe("explain artifact date", () => {
+  // 03:00 UTC: already Jan 1 in Asia/Seoul, still Dec 31 in Los Angeles.
+  const now = new Date("2026-01-01T03:00:00Z");
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const dir of dirs.splice(0))
+      fs.rmSync(dir, { recursive: true, force: true });
+    vi.restoreAllMocks();
+    vi.unstubAllEnvs();
+    vi.useRealTimers();
+  });
+
+  function project(config?: string): string {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-explain-tz-"));
+    dirs.push(dir);
+    vi.stubEnv("OMA_HOME", path.join(dir, "global-home"));
+    fs.mkdirSync(path.join(dir, ".agents"), { recursive: true });
+    if (config)
+      fs.writeFileSync(path.join(dir, ".agents", "oma-config.yaml"), config);
+    return dir;
+  }
+
+  it("uses the configured timezone", () => {
+    const dir = project("timezone: America/Los_Angeles\n");
+    expect(artifactDate(dir, now)).toBe("2025-12-31");
+  });
+
+  it("falls back to the system timezone when none is configured", () => {
+    const dir = project("language: en\n");
+    const resolved = Intl.DateTimeFormat.prototype.resolvedOptions;
+    vi.spyOn(
+      Intl.DateTimeFormat.prototype,
+      "resolvedOptions",
+    ).mockImplementation(function (this: Intl.DateTimeFormat) {
+      return {
+        ...resolved.call(this),
+        timeZone: "America/Los_Angeles",
+      };
+    });
+    expect(artifactDate(dir, now)).toBe("2025-12-31");
+  });
+
+  it("falls back to the system timezone when the configured one is invalid", () => {
+    const dir = project("timezone: Not/AZone\n");
+    expect(artifactDate(dir, now)).toBe(
+      new Intl.DateTimeFormat("en-CA", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(now),
+    );
+  });
+
+  it("names rendered files by the project's timezone", async () => {
+    const dir = project("timezone: America/Los_Angeles\n");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(now);
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const code = await runExplainRender({
+      source: draft("## One\n\nfirst", "title: Sample page"),
+      archify: false,
+      json: true,
+      cwd: dir,
+    });
+    expect(code).toBe(0);
+    const report = JSON.parse(String(log.mock.calls[0]?.[0])) as {
+      file: string;
+    };
+    expect(path.basename(report.file)).toBe("2025-12-31-sample-page.html");
   });
 });
 

@@ -152,7 +152,7 @@ On any hit, generation stops immediately, only the masked locations are reported
 
 ## Validation checklist
 
-After generation, a grep-based checklist runs against the output file: no external resource-loading references, code-container `pre`/`pre-wrap` compliance, quiz script presence, the `{YYYY-MM-DD}-{slug}.html` filename format (date in Asia/Seoul), and the final-HTML secret scan. On failure, the loop fixes and re-validates up to **3 iterations**, then stops and surfaces the remaining failing items rather than delivering silently.
+After generation, a grep-based checklist runs against the output file: no external resource-loading references, code-container `pre`/`pre-wrap` compliance, quiz script presence, the `{YYYY-MM-DD}-{slug}.html` filename format (date in the oma-config `timezone`, else the system timezone), and the final-HTML secret scan. On failure, the loop fixes and re-validates up to **3 iterations**, then stops and surfaces the remaining failing items rather than delivering silently.
 
 This is a v1 constraint: validation is grep/file-based, and it verifies quiz-script *presence* only (not full behavioral correctness). Use a browser (or the chrome-devtools MCP) to manually exercise the quiz when behavioral confidence matters.
 
@@ -185,7 +185,7 @@ The first form checks one HTML file. The directory form checks every report in a
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-The date is localized to Asia/Seoul. Rerunning the same date + slug overwrites the prior file — preserving an earlier run is your responsibility. After validation passes, the workflow attempts to open the page (warn-only; a headless environment just falls back to reporting the path) and reports a TL;DR plus the file path. `oma explain render --open` opens the page in the browser directly.
+The date follows `timezone` in oma-config, falling back to the system timezone when unset. Rerunning the same date + slug overwrites the prior file — preserving an earlier run is your responsibility. After validation passes, the workflow attempts to open the page (warn-only; a headless environment just falls back to reporting the path) and reports a TL;DR plus the file path. `oma explain render --open` opens the page in the browser directly.
 
 ---
 

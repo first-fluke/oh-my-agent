@@ -152,7 +152,7 @@ Ao detectar qualquer ocorrência, a geração para imediatamente, somente os loc
 
 ## Checklist de validação
 
-Depois da geração, um checklist baseado em grep é executado contra o arquivo de saída: nenhuma referência a carregamento de recursos externos, conformidade de `pre`/`pre-wrap` em containers de código, presença do script do quiz, formato de nome `{YYYY-MM-DD}-{slug}.html` (data em Asia/Seoul) e verificação final de segredos no HTML. Em caso de falha, o loop corrige e valida novamente até **3 iterações**, depois para e mostra os itens restantes em vez de entregar silenciosamente.
+Depois da geração, um checklist baseado em grep é executado contra o arquivo de saída: nenhuma referência a carregamento de recursos externos, conformidade de `pre`/`pre-wrap` em containers de código, presença do script do quiz, formato de nome `{YYYY-MM-DD}-{slug}.html` (data no `timezone` do oma-config ou, se ausente, no fuso horário do sistema) e verificação final de segredos no HTML. Em caso de falha, o loop corrige e valida novamente até **3 iterações**, depois para e mostra os itens restantes em vez de entregar silenciosamente.
 
 Esta é uma restrição da v1: a validação é baseada em grep/arquivo e verifica somente a *presença* do script do quiz (não sua correção comportamental completa). Use um navegador (ou o MCP chrome-devtools) para exercitar manualmente o quiz quando o comportamento for importante.
 
@@ -185,7 +185,7 @@ A primeira forma verifica um arquivo HTML. A forma de diretório verifica todos 
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-A data é localizada em Asia/Seoul. Executar novamente a mesma combinação de data + slug sobrescreve o arquivo anterior; preservar uma execução anterior é sua responsabilidade. Depois que a validação passa, o workflow tenta abrir a página (somente aviso; um ambiente headless apenas recorre a informar o caminho) e relata um TL;DR junto do caminho do arquivo. `oma explain render --open` abre a página diretamente no navegador.
+A data segue o `timezone` do oma-config ou, se ausente, o fuso horário do sistema. Executar novamente a mesma combinação de data + slug sobrescreve o arquivo anterior; preservar uma execução anterior é sua responsabilidade. Depois que a validação passa, o workflow tenta abrir a página (somente aviso; um ambiente headless apenas recorre a informar o caminho) e relata um TL;DR junto do caminho do arquivo. `oma explain render --open` abre a página diretamente no navegador.
 
 ---
 

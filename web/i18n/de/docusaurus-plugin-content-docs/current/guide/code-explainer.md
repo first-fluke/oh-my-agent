@@ -152,7 +152,7 @@ Bei einem Treffer wird die Erzeugung sofort beendet. Nur die maskierten Fundstel
 
 ## Validierungs-Checkliste
 
-Nach der Erzeugung wird die Ausgabedatei mit einer grep-basierten Checkliste geprüft: keine externen Ressourcen-Ladeverweise, Einhaltung von `pre`/`pre-wrap` in Code-Containern, Vorhandensein des Quiz-Skripts, das Dateinamensformat `{YYYY-MM-DD}-{slug}.html` (Datum in Asia/Seoul) und der Secret-Scan des fertigen HTML. Bei einem Fehler korrigiert die Schleife bis zu **3 Iterationen** lang und validiert erneut; anschließend beendet sie sich und zeigt die verbleibenden Fehler an, statt stillschweigend auszuliefern.
+Nach der Erzeugung wird die Ausgabedatei mit einer grep-basierten Checkliste geprüft: keine externen Ressourcen-Ladeverweise, Einhaltung von `pre`/`pre-wrap` in Code-Containern, Vorhandensein des Quiz-Skripts, das Dateinamensformat `{YYYY-MM-DD}-{slug}.html` (Datum in der `timezone` aus oma-config, sonst in der Systemzeitzone) und der Secret-Scan des fertigen HTML. Bei einem Fehler korrigiert die Schleife bis zu **3 Iterationen** lang und validiert erneut; anschließend beendet sie sich und zeigt die verbleibenden Fehler an, statt stillschweigend auszuliefern.
 
 Dies ist eine Einschränkung der Version 1: Die Validierung ist datei- und grep-basiert und prüft nur das *Vorhandensein* des Quiz-Skripts, nicht dessen vollständige Verhaltenskorrektheit. Verwenden Sie für eine manuelle Prüfung einen Browser (oder den Chrome-DevTools-MCP), wenn Sie das Verhalten des Quiz sicher beurteilen müssen.
 
@@ -185,7 +185,7 @@ Die erste Form prüft eine einzelne HTML-Datei. Die Verzeichnisform prüft jeden
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-Das Datum wird auf Asia/Seoul lokalisiert. Ein erneuter Lauf mit demselben Datum und Slug überschreibt die vorherige Datei. Das Bewahren eines älteren Laufs liegt in Ihrer Verantwortung. Nach bestandener Validierung versucht der Workflow, die Seite zu öffnen (nur Warnung; in einer Headless-Umgebung wird stattdessen nur der Pfad gemeldet), und gibt eine TL;DR-Zusammenfassung samt Dateipfad aus. `oma explain render --open` öffnet die Seite direkt im Browser.
+Das Datum richtet sich nach `timezone` in oma-config; ohne Wert gilt die Systemzeitzone. Ein erneuter Lauf mit demselben Datum und Slug überschreibt die vorherige Datei. Das Bewahren eines älteren Laufs liegt in Ihrer Verantwortung. Nach bestandener Validierung versucht der Workflow, die Seite zu öffnen (nur Warnung; in einer Headless-Umgebung wird stattdessen nur der Pfad gemeldet), und gibt eine TL;DR-Zusammenfassung samt Dateipfad aus. `oma explain render --open` öffnet die Seite direkt im Browser.
 
 ---
 

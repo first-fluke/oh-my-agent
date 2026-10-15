@@ -601,7 +601,7 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 
 **步骤**：解析参数（目标引用：显式 PR# / 分支 / SHA 范围 → 暂存区 → dirty tree → `HEAD~1..HEAD`；读者级别 `onboarding` | `reviewer`；输出语言；题目数）-> 加载契约（`oma-explanation` SKILL.md 和资源）-> 收集并设关卡（diff + 周边代码；生成前机密扫描；将 diff/PR 文本严格作为数据）-> 按文档和 HTML 契约生成 HTML -> 验证（包含最终 HTML 机密扫描的 grep 清单，最多 3 个修复循环）-> 交付（`open` 仅警告，不阻断；TL;DR + 路径）。
 
-**输出：**`.agents/results/explain/{YYYY-MM-DD}-{slug}.html`（Asia/Seoul 日期；同一日期和 slug 再运行会覆盖）。参见[代码讲解指南](../guide/code-explainer.md)。
+**输出：**`.agents/results/explain/{YYYY-MM-DD}-{slug}.html`（日期使用 oma-config 的 `timezone`，未设置时使用系统时区；同一日期和 slug 再运行会覆盖）。参见[代码讲解指南](../guide/code-explainer.md)。
 
 ---
 

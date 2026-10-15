@@ -61,7 +61,7 @@ Layout, theme, diagram geometry, and the quiz script are the renderer's, not the
 
 ### Expected outputs
 - One self-contained HTML file at `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`
-  (date in Asia/Seoul; same date + slug rerun overwrites).
+  (date in oma-config `timezone`, else the system timezone; same date + slug rerun overwrites).
 - TL;DR summary and file path reported to the user; `open <path>` attempted (warn-only).
 - Opt-in archify sidecar `{YYYY-MM-DD}-{slug}.archify.html` (+ `.archify.json`) linked from the
   explainer by a plain anchor, when `diagram.explain_sidecar` is on or the user asks and
