@@ -166,6 +166,28 @@ install_cue() {
 }
 
 # ── Main ────────────────────────────────────────────────────────────
+# The `oma` command must be on PATH: installed hooks, several workflows, and
+# the self-updater call it. Keep an existing install (npm, brew, or bun) so a
+# second global copy cannot shadow it.
+install_oma_cli() {
+  if command_exists oma; then
+    ok "oma found ($(command -v oma))"
+    return 0
+  fi
+  info "Installing the oma CLI (bun install --global oh-my-agent)..."
+  if ! bun install --global oh-my-agent@latest; then
+    warn "Global install failed. Install it later: bun install --global oh-my-agent"
+    return 1
+  fi
+  export PATH="${BUN_INSTALL:-${HOME}/.bun}/bin:${PATH}"
+  if command_exists oma; then
+    ok "oma installed ($(command -v oma))"
+    return 0
+  fi
+  warn "oma installed but not on PATH. Add ~/.bun/bin to your PATH, then open a new terminal."
+  return 1
+}
+
 main() {
   printf "\n${BOLD}${MAGENTA} 🛸 oh-my-agent installer ${RESET}\n\n"
 
@@ -202,6 +224,12 @@ main() {
     install_cue || warn "Continuing without CUE; install it later for typed configuration."
   fi
 
+  # ── oma CLI (global; hooks and workflows call it) ──
+  local oma_cli_ready=true
+  if ! install_oma_cli; then
+    oma_cli_ready=false
+  fi
+
   echo ""
   ok "Core dependencies ready"
   echo ""
@@ -209,13 +237,16 @@ main() {
   # CI smoke tests set OMA_INSTALL_NO_RUN=1 to verify the bootstrap path
   # without launching the interactive setup.
   if [[ "${OMA_INSTALL_NO_RUN:-0}" == "1" ]]; then
-    info "OMA_INSTALL_NO_RUN=1 set — skipping bunx oh-my-agent@latest"
+    info "OMA_INSTALL_NO_RUN=1 set — skipping the interactive setup"
     return 0
   fi
 
   # ── Run oh-my-agent interactive installer ──
   info "Launching ${BOLD}oh-my-agent${RESET} setup..."
   echo ""
+  if [[ "${oma_cli_ready}" == "true" ]]; then
+    exec oma < /dev/tty
+  fi
   exec bunx oh-my-agent@latest < /dev/tty
 }
 

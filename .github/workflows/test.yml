@@ -110,7 +110,11 @@ jobs:
             echo "serena should be on PATH after install.sh" >&2
             exit 1
           fi
-          echo "install.sh smoke test passed (bun + uv + serena resolved)"
+          if ! command -v oma >/dev/null 2>&1; then
+            echo "oma should be on PATH after install.sh" >&2
+            exit 1
+          fi
+          echo "install.sh smoke test passed (bun + uv + serena + oma resolved)"
 
       - name: Validate install.ps1 syntax
         if: matrix.os == 'windows-latest'
@@ -145,4 +149,8 @@ jobs:
             Write-Error "serena should be on PATH after install.ps1"
             exit 1
           }
-          Write-Host "install.ps1 smoke test passed (bun + uv + serena resolved)"
+          if (-not (Get-Command oma -ErrorAction SilentlyContinue)) {
+            Write-Error "oma should be on PATH after install.ps1"
+            exit 1
+          }
+          Write-Host "install.ps1 smoke test passed (bun + uv + serena + oma resolved)"

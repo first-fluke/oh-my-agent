@@ -92,6 +92,7 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
       .replace(stubBody("install_bun"), "install_bun() { :; }")
       .replace(stubBody("install_uv"), "install_uv() { :; }")
       .replace(stubBody("install_serena"), "install_serena() { :; }")
+      .replace(stubBody("install_oma_cli"), "install_oma_cli() { return 1; }")
       .replace(/exec bunx.*$/m, 'printf "main-executed"; exit 0');
 
     const result = spawnSync("bash", [], {
@@ -113,6 +114,7 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
       .replace(stubBody("install_uv"), "install_uv() { return 1; }")
       .replace(stubBody("check_serena"), "check_serena() { return 1; }")
       .replace(stubBody("install_serena"), "install_serena() { return 1; }")
+      .replace(stubBody("install_oma_cli"), "install_oma_cli() { return 1; }")
       .replace(/exec bunx.*$/m, 'printf "main-executed"; exit 0');
 
     const result = spawnSync("bash", [], {
@@ -123,6 +125,56 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("main-executed");
     expect(result.stdout).toContain("Continuing without Serena");
+  });
+
+  it("keeps an existing oma instead of installing a second global copy", () => {
+    const result = runBash(`
+      source "${installScript}"
+      command_exists() { [ "$1" = "oma" ]; }
+      bun() { printf "bun-called"; }
+      install_oma_cli
+    `);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("oma found");
+    expect(result.stdout).not.toContain("bun-called");
+  });
+
+  it("installs oma globally with bun when it is missing", () => {
+    const result = runBash(`
+      source "${installScript}"
+      command_exists() { [ "$1" = "oma" ] && [ -n "\${OMA_PRESENT:-}" ]; }
+      bun() { printf "bun %s\\n" "$*"; OMA_PRESENT=1; }
+      install_oma_cli
+    `);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("bun install --global oh-my-agent@latest");
+    expect(result.stdout).toContain("oma installed");
+  });
+
+  it("launches the installed oma and falls back to bunx when the install fails", () => {
+    const script = readFileSync(installScript, "utf-8");
+    const stubBody = (name: string) =>
+      new RegExp(`^${name}\\(\\)\\s*\\{[\\s\\S]*?^\\}`, "m");
+    const run = (installResult: number) =>
+      spawnSync("bash", [], {
+        input: script
+          .replace(stubBody("check_bun"), "check_bun() { return 0; }")
+          .replace(stubBody("check_uv"), "check_uv() { return 0; }")
+          .replace(stubBody("check_serena"), "check_serena() { return 0; }")
+          .replace(stubBody("check_cue"), "check_cue() { return 0; }")
+          .replace(
+            stubBody("install_oma_cli"),
+            `install_oma_cli() { return ${installResult}; }`,
+          )
+          .replace(/exec oma .*$/m, 'printf "launch-oma"; exit 0')
+          .replace(/exec bunx.*$/m, 'printf "launch-bunx"; exit 0'),
+        encoding: "utf-8",
+      });
+
+    expect(run(0).stdout).toContain("launch-oma");
+    expect(run(1).stdout).toContain("launch-bunx");
   });
 
   it("redirects Windows users to the PowerShell installer", () => {

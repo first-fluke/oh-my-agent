@@ -138,6 +138,29 @@ if (Test-Command cue) {
   }
 }
 
+# ── oma CLI (global; hooks and workflows call it) ───────────────────
+# Keep an existing install (npm, brew, or bun) so a second global copy
+# cannot shadow it.
+$omaCliReady = $true
+if (Test-Command oma) {
+  Write-Ok "oma found"
+} else {
+  Write-Info "Installing the oma CLI (bun install --global oh-my-agent)..."
+  & bun install --global oh-my-agent@latest
+  if ($LASTEXITCODE -ne 0) {
+    Write-Warn "Global install failed. Install it later: bun install --global oh-my-agent"
+    $omaCliReady = $false
+  } else {
+    Add-ToPath "$env:USERPROFILE\.bun\bin"
+    if (Test-Command oma) {
+      Write-Ok "oma installed"
+    } else {
+      Write-Warn "oma installed but not on PATH. Add %USERPROFILE%\.bun\bin to PATH, then open a new terminal."
+      $omaCliReady = $false
+    }
+  }
+}
+
 Write-Host ""
 Write-Ok "Core dependencies ready"
 Write-Host ""
@@ -146,11 +169,15 @@ Write-Host ""
 # CI smoke tests set OMA_INSTALL_NO_RUN=1 to verify the bootstrap path
 # without launching the interactive setup.
 if ($env:OMA_INSTALL_NO_RUN -eq "1") {
-  Write-Info "OMA_INSTALL_NO_RUN=1 set — skipping bunx oh-my-agent@latest"
+  Write-Info "OMA_INSTALL_NO_RUN=1 set — skipping the interactive setup"
   exit 0
 }
 
 Write-Info "Launching oh-my-agent setup..."
 Write-Host ""
-& bunx oh-my-agent@latest
+if ($omaCliReady) {
+  & oma
+} else {
+  & bunx oh-my-agent@latest
+}
 exit $LASTEXITCODE
