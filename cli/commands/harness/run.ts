@@ -199,6 +199,7 @@ export async function runHarnessEval(
     ...["agents", "config", "rules", "skills", "workflows"].map((name) =>
       join(projectRoot, ".agents", name),
     ),
+    join(projectRoot, ".agents", "oma-config.cue"),
     join(projectRoot, ".agents", "oma-config.yaml"),
     suite.sourcePath,
     ...[...checkers.values()].map((checker) => checker.sourcePath),

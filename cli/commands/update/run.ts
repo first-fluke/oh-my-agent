@@ -111,17 +111,51 @@ const UPDATE_COPY_EXCLUSIONS = [
   "/.agents/skills/oma-image/config/image-config.yaml",
 ] as const;
 
+/**
+ * Shared config sources, in loader priority order. The release ships both as
+ * templates, but a project keeps exactly one; see {@link syncSharedConfig}.
+ */
+const SHARED_CONFIG_NAMES = ["oma-config.cue", "oma-config.yaml"] as const;
+
 export function shouldCopyProjectAsset(src: string): boolean {
   const normalized = src.replace(/\\/g, "/");
   return (
     !normalized.includes(".agents/eval") &&
     // User-owned procedure overrides and constitution; never shipped or reset.
     !normalized.includes(".agents/evolution") &&
-    !LOCAL_CONFIG_NAMES.some((name) =>
+    ![...LOCAL_CONFIG_NAMES, ...SHARED_CONFIG_NAMES].some((name) =>
       normalized.endsWith(`/.agents/${name}`),
     ) &&
     !UPDATE_COPY_EXCLUSIONS.some((suffix) => normalized.endsWith(suffix))
   );
+}
+
+/**
+ * Place the shared config without ever creating a second source. Same rule as
+ * a fresh install (`installConfigs`): when the user has neither file, copy the
+ * shipped template, preferring CUE. Otherwise keep the user's own file(s) —
+ * `force` resets only the file(s) the user already has to the template.
+ */
+export function syncSharedConfig(
+  repoDir: string,
+  cwd: string,
+  force: boolean,
+): void {
+  const existing = SHARED_CONFIG_NAMES.filter((name) =>
+    existsSync(join(cwd, ".agents", name)),
+  );
+  const targets =
+    existing.length > 0
+      ? force
+        ? existing
+        : []
+      : SHARED_CONFIG_NAMES.filter((name) =>
+          existsSync(join(repoDir, ".agents", name)),
+        ).slice(0, 1);
+  for (const name of targets) {
+    const src = join(repoDir, ".agents", name);
+    if (existsSync(src)) cpSync(src, join(cwd, ".agents", name));
+  }
 }
 
 async function prepareSharedMemory(root: string, ui: UpdateUI): Promise<void> {
@@ -351,18 +385,12 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         // Run migrations (e.g. legacy config path rename)
         runMigrations(cwd, { vendors: migrationVendors });
 
-        // Preserve user-customized config files before bulk copy
-        const userPrefsCuePath = join(cwd, ".agents", "oma-config.cue");
+        // Preserve user-customized config files before bulk copy. The shared
+        // oma-config sources are excluded from the copy and placed by
+        // syncSharedConfig below.
         const userPrefsPath = join(cwd, ".agents", "oma-config.yaml");
         const mcpPath = join(cwd, ".agents", "mcp.json");
-        const savedUserPrefsCue =
-          !force && existsSync(userPrefsCuePath)
-            ? readFileSync(userPrefsCuePath)
-            : null;
-        const savedUserPrefs =
-          !force && existsSync(userPrefsPath)
-            ? readFileSync(userPrefsPath)
-            : null;
+        const hadUserPrefs = !force && existsSync(userPrefsPath);
         const savedMcp =
           !force && existsSync(mcpPath) ? readFileSync(mcpPath) : null;
 
@@ -382,10 +410,8 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         }
 
         // Restore user-customized config files
-        if (savedUserPrefsCue)
-          writeFileSync(userPrefsCuePath, savedUserPrefsCue);
-        if (savedUserPrefs) writeFileSync(userPrefsPath, savedUserPrefs);
         if (savedMcp) writeFileSync(mcpPath, savedMcp);
+        syncSharedConfig(repoDir, cwd, force);
 
         restoreBackendStackAfterCopy(cwd, repoDir, backendStackState);
 
@@ -403,7 +429,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         // Append template config keys the user's file is missing. User-set
         // keys are preserved verbatim; only new keys from the shipped
         // template are added (with template defaults).
-        if (savedUserPrefs) {
+        if (hadUserPrefs) {
           const templateConfigPath = join(
             repoDir,
             ".agents",

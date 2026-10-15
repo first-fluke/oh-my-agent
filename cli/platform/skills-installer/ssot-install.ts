@@ -146,32 +146,27 @@ export function installConfigs(
     }
   }
 
-  // Bootstrap user config on fresh installs.
-  // Prefer oma-config.cue when shipped, falling back to oma-config.yaml.
-  // User edits are preserved unless `force` is true.
-  const omaConfigCueSrc = join(sourceDir, ".agents", "oma-config.cue");
-  const omaConfigYamlSrc = join(sourceDir, ".agents", "oma-config.yaml");
+  // Place the shared config without ever creating a second source — the same
+  // rule as `oma update` (syncSharedConfig). When the user has neither file,
+  // copy the shipped template, preferring CUE. Otherwise keep the user's own
+  // file(s); `force` resets only the file(s) the user already has.
   const agentDir = join(installRoot, ".agents");
   fs.mkdirSync(agentDir, { recursive: true });
-
-  const omaConfigCueDest = join(agentDir, "oma-config.cue");
-  const omaConfigYamlDest = join(agentDir, "oma-config.yaml");
-
-  const srcPath = fs.existsSync(omaConfigCueSrc)
-    ? omaConfigCueSrc
-    : fs.existsSync(omaConfigYamlSrc)
-      ? omaConfigYamlSrc
-      : null;
-
-  if (srcPath) {
-    const isCue = srcPath.endsWith(".cue");
-    const destPath = isCue ? omaConfigCueDest : omaConfigYamlDest;
-    if (
-      force ||
-      (!fs.existsSync(omaConfigCueDest) && !fs.existsSync(omaConfigYamlDest))
-    ) {
-      fs.cpSync(srcPath, destPath);
-    }
+  const sharedNames = ["oma-config.cue", "oma-config.yaml"] as const;
+  const existing = sharedNames.filter((name) =>
+    fs.existsSync(join(agentDir, name)),
+  );
+  const targets =
+    existing.length > 0
+      ? force
+        ? existing
+        : []
+      : sharedNames
+          .filter((name) => fs.existsSync(join(sourceDir, ".agents", name)))
+          .slice(0, 1);
+  for (const name of targets) {
+    const src = join(sourceDir, ".agents", name);
+    if (fs.existsSync(src)) fs.cpSync(src, join(agentDir, name));
   }
 }
 

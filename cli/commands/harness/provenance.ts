@@ -87,6 +87,15 @@ export function computeBaselineHash(projectRoot: string): string {
           ? sha256Hex(readFileSync(join(agentsRoot, "oma-config.yaml")))
           : sha256Hex(""),
       ],
+      // Only when present, so YAML-only baseline hashes stay unchanged.
+      ...(existsSync(join(agentsRoot, "oma-config.cue"))
+        ? [
+            [
+              "oma-config.cue",
+              sha256Hex(readFileSync(join(agentsRoot, "oma-config.cue"))),
+            ] as const,
+          ]
+        : []),
     ]);
   return sha256Hex(JSON.stringify(inputs));
 }

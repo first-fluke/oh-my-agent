@@ -80,7 +80,10 @@ export function loadHarnessSuite(
     "skills",
     "workflows",
   ].map((name) => resolve(absoluteRoot, ".agents", name));
-  copiedBaselineRoots.push(resolve(absoluteRoot, ".agents", "oma-config.yaml"));
+  copiedBaselineRoots.push(
+    resolve(absoluteRoot, ".agents", "oma-config.cue"),
+    resolve(absoluteRoot, ".agents", "oma-config.yaml"),
+  );
   const assertOutsideBaseline = (path: string): void => {
     if (
       copiedBaselineRoots.some((root) =>

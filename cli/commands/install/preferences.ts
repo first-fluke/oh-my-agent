@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { loadUserConfig } from "../../io/runtime-dispatch/config-loader.js";
 import { writeVendorsToConfig } from "../../platform/skills-installer.js";
 import type { CliVendor } from "../../types/index.js";
+import { loadConfigLayers } from "../../utils/config-layers.js";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English",
@@ -64,26 +65,28 @@ export function scanLanguages(
   }));
 }
 
-export function getExistingLanguage(targetDir: string): string | null {
-  const prefsPath = join(targetDir, ".agents", "oma-config.yaml");
-  if (!existsSync(prefsPath)) return null;
+function hasSharedConfig(targetDir: string): boolean {
+  return ["oma-config.cue", "oma-config.yaml"].some((name) =>
+    existsSync(join(targetDir, ".agents", name)),
+  );
+}
 
+/** Saved `language`, from oma-config.cue or oma-config.yaml (CUE-only too). */
+export function getExistingLanguage(targetDir: string): string | null {
+  if (!hasSharedConfig(targetDir)) return null;
   try {
-    const prefs = readFileSync(prefsPath, "utf-8");
-    const match = prefs.match(/^language:\s*([A-Za-z-]+)/m);
-    return match?.[1] ?? null;
+    // Not loadUserConfig: a legacy preset name must not hide the language.
+    const language = loadConfigLayers(targetDir).config.language;
+    return typeof language === "string" && /^[A-Za-z-]+$/.test(language)
+      ? language
+      : null;
   } catch {
     return null;
   }
 }
 
 export function getExistingPreset(targetDir: string): string | null {
-  if (
-    !["oma-config.cue", "oma-config.yaml"].some((name) =>
-      existsSync(join(targetDir, ".agents", name)),
-    )
-  )
-    return null;
+  if (!hasSharedConfig(targetDir)) return null;
   try {
     return loadUserConfig(targetDir).model_preset ?? null;
   } catch {

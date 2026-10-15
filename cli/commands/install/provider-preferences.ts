@@ -3,6 +3,7 @@ import { join } from "node:path";
 import * as p from "@clack/prompts";
 import { isMap, parseDocument } from "yaml";
 import { createSearchProviderRegistry } from "../../platform/search-providers.js";
+import { loadConfigLayers } from "../../utils/config-layers.js";
 import {
   type HonchoConfig,
   HonchoConfigSchema,
@@ -32,6 +33,30 @@ function readMapping(value: unknown): unknown {
   return value.toJSON();
 }
 
+/**
+ * A saved top-level section. YAML projects read it from the document being
+ * edited; a project with oma-config.cue reads the effective config instead,
+ * since CUE outranks YAML and a CUE-only project has no YAML file at all.
+ */
+function readSaved(
+  root: string,
+  doc: ReturnType<typeof parseDocument>,
+  key: "providers" | "honcho",
+): unknown {
+  if (!existsSync(join(root, ".agents", "oma-config.cue")))
+    return readMapping(doc.get(key, true));
+  try {
+    const { config } = loadConfigLayers(root, process.env, {
+      searchParents: false,
+    });
+    return config[key] ?? {};
+  } catch {
+    // CUE that cannot be evaluated yet (no `cue` binary until install ensures
+    // it) must not abort a reinstall; fall back to the YAML document, if any.
+    return readMapping(doc.get(key, true));
+  }
+}
+
 function readPreferences(root: string) {
   const path = join(root, ".agents", "oma-config.yaml");
   const doc = parseDocument(existsSync(path) ? readFileSync(path, "utf8") : "");
@@ -48,9 +73,7 @@ export async function promptProviders(
   options: ProviderInstallOptions = {},
 ): Promise<ProviderSelection> {
   const { doc } = readPreferences(root);
-  const existing = ProvidersSchema.parse(
-    readMapping(doc.get("providers", true)),
-  );
+  const existing = ProvidersSchema.parse(readSaved(root, doc, "providers"));
   const explicit = ProvidersSchema.parse({
     web: options.webSearch,
     code_intelligence: options.codeIntelligence,
@@ -144,9 +167,7 @@ export async function promptProviders(
     );
   }
   if (chosen.providers.semantic_memory === "honcho") {
-    const saved = HonchoConfigSchema.parse(
-      readMapping(doc.get("honcho", true)),
-    );
+    const saved = HonchoConfigSchema.parse(readSaved(root, doc, "honcho"));
     let base_url =
       options.honchoUrl ?? saved.base_url ?? "http://127.0.0.1:8000";
     let workspace_id = options.honchoWorkspace ?? saved.workspace_id ?? "oma";

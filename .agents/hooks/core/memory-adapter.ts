@@ -41,8 +41,13 @@ export function currentMemoryAdapter(
         return localOnly;
       }
     }
-    // A nested OMA project owns its configuration independently of its parent.
-    if (existsSync(join(directory, ".agents", "oma-config.yaml")))
+    // A nested OMA project owns its configuration independently of its parent,
+    // whichever shared config source (CUE or YAML) it keeps.
+    if (
+      ["oma-config.cue", "oma-config.yaml"].some((name) =>
+        existsSync(join(directory, ".agents", name)),
+      )
+    )
       return undefined;
     const parent = dirname(directory);
     if (parent === directory) return undefined;

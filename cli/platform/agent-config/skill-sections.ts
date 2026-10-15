@@ -1,5 +1,6 @@
 /**
- * Skill override sections in `.agents/oma-config.yaml`.
+ * Skill override sections in the shared oma-config (`.agents/oma-config.cue`
+ * or `.agents/oma-config.yaml`), read through the shared config loader.
  *
  * Seven skills used to ship a user-editable config inside their own skill
  * directory. `.agents/skills/` is replaced wholesale on every `oma update`, so
@@ -21,10 +22,8 @@
  * into oma-config, and the diff helpers below (`sparseDiff`, `omitPaths`) exist
  * for it rather than for any reader.
  */
-import fs from "node:fs";
 import path from "node:path";
-import { parse as parseYaml } from "yaml";
-import { findFileUpwards } from "../../utils/fs-utils.js";
+import { loadConfigLayers } from "../../utils/config-layers.js";
 
 /** Top-level oma-config keys that hold a skill's user overrides. */
 export type SkillSectionName =
@@ -44,19 +43,20 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Parse `.agents/oma-config.yaml`, walking up from `cwd` so a project nested
- * under a global install still resolves. Returns undefined when the file is
- * missing, unreadable, or malformed — a broken root config must degrade to the
- * shipped defaults, never throw.
+ * The effective oma-config for `cwd` through the shared loader — CUE or YAML
+ * shared config, global defaults, and the local overlay, walking up from `cwd`
+ * to the nearest `.agents/`. A CUE-only project has no `oma-config.yaml`, so
+ * reading that file directly would silently drop its overrides. Returns
+ * undefined when no config exists or it cannot be loaded — a broken root
+ * config must degrade to the shipped defaults, never throw.
  */
 export function readRootOmaConfig(
   cwd: string,
 ): Record<string, unknown> | undefined {
-  const filePath = findFileUpwards(cwd, OMA_CONFIG_RELATIVE_PATH);
-  if (!filePath) return undefined;
   try {
-    const parsed = parseYaml(fs.readFileSync(filePath, "utf-8"));
-    return isPlainObject(parsed) ? parsed : undefined;
+    const { config, sources } = loadConfigLayers(cwd);
+    if (!Object.keys(sources).length) return undefined;
+    return isPlainObject(config) ? config : undefined;
   } catch {
     return undefined;
   }
@@ -75,7 +75,7 @@ export function skillSectionFrom(
   return isPlainObject(value) ? value : undefined;
 }
 
-/** Read one skill's override section from `.agents/oma-config.yaml`. */
+/** Read one skill's override section from the effective oma-config. */
 export function loadSkillSection(
   cwd: string,
   section: SkillSectionName,

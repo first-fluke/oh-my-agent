@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -293,6 +294,84 @@ describe("update cursor vendor adaptations", () => {
     await update({ ci: true });
 
     expect(syncSchedulesSpy).toHaveBeenCalledTimes(1);
+  });
+
+  describe("shared oma-config source", () => {
+    // The release ships both `oma-config.cue` and `oma-config.yaml`. The bulk
+    // copy must not hand a user a second shared config source next to the one
+    // they already have: CUE outranks YAML, so a stray template `.cue` would
+    // silently shadow every setting in the user's `oma-config.yaml`.
+    const TEMPLATE_CUE = 'package config\n\nlanguage: "en"\n';
+    const TEMPLATE_YAML = "language: en\n";
+
+    function setupRelease(): { projectDir: string; agentsDir: string } {
+      const projectDir = makeTempRoot("oma-update-config-project-");
+      const repoDir = makeTempRoot("oma-update-config-repo-");
+      extractedRepoDir = repoDir;
+      mockInstallRoot = projectDir;
+      writeRepoConfig(repoDir, ["cursor"]);
+      writeFileSync(join(repoDir, ".agents", "oma-config.yaml"), TEMPLATE_YAML);
+      writeFileSync(join(repoDir, ".agents", "oma-config.cue"), TEMPLATE_CUE);
+      createExistingVendorRoots(projectDir, ["cursor"]);
+      const agentsDir = join(projectDir, ".agents");
+      mkdirSync(agentsDir, { recursive: true });
+      return { projectDir, agentsDir };
+    }
+
+    it("does not add oma-config.cue for a YAML-only user", async () => {
+      const { projectDir, agentsDir } = setupRelease();
+      const userYaml = "language: ko\nmodel_preset: auto\n";
+      writeFileSync(join(agentsDir, "oma-config.yaml"), userYaml);
+
+      process.chdir(projectDir);
+      await update({ ci: true });
+
+      expect(existsSync(join(agentsDir, "oma-config.cue"))).toBe(false);
+      expect(
+        readFileSync(join(agentsDir, "oma-config.yaml"), "utf-8"),
+      ).toContain("language: ko");
+    });
+
+    it("does not add oma-config.yaml for a CUE-only user", async () => {
+      const { projectDir, agentsDir } = setupRelease();
+      const userCue = 'package config\n\nlanguage: "ko"\n';
+      writeFileSync(join(agentsDir, "oma-config.cue"), userCue);
+
+      process.chdir(projectDir);
+      await update({ ci: true });
+
+      expect(existsSync(join(agentsDir, "oma-config.yaml"))).toBe(false);
+      expect(readFileSync(join(agentsDir, "oma-config.cue"), "utf-8")).toBe(
+        userCue,
+      );
+    });
+
+    it("keeps a single source when --force resets a YAML-only user", async () => {
+      const { projectDir, agentsDir } = setupRelease();
+      writeFileSync(join(agentsDir, "oma-config.yaml"), "language: ko\n");
+
+      process.chdir(projectDir);
+      await update({ ci: true, force: true });
+
+      expect(existsSync(join(agentsDir, "oma-config.cue"))).toBe(false);
+      // Reset to the template (post-copy migrations may still annotate it).
+      const reset = readFileSync(join(agentsDir, "oma-config.yaml"), "utf-8");
+      expect(reset).toContain("language: en");
+      expect(reset).not.toContain("language: ko");
+    });
+
+    it("bootstraps one shared config when the user has neither", async () => {
+      const { projectDir, agentsDir } = setupRelease();
+
+      process.chdir(projectDir);
+      await update({ ci: true });
+
+      // Same rule as a fresh install: prefer the shipped CUE template.
+      expect(readFileSync(join(agentsDir, "oma-config.cue"), "utf-8")).toBe(
+        TEMPLATE_CUE,
+      );
+      expect(existsSync(join(agentsDir, "oma-config.yaml"))).toBe(false);
+    });
   });
 
   it("prepares project shared memory before vendor linking and version stamping", async () => {

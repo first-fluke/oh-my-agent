@@ -58,12 +58,13 @@ export function loadExecutionProtocol(vendor: string, cwd: string): string {
  * degrade to a persona-less run rather than failing.
  */
 export function loadAgentPersona(agentId: string, cwd: string): string {
-  // Locate the .agents/ root via the always-present oma-config.yaml, then the
+  // Locate the nearest .agents/ root via its shared config — a project keeps
+  // either oma-config.cue or oma-config.yaml, not necessarily both — then the
   // agents source dir beside it.
-  const configPath = findConfigFileUp(
-    cwd,
-    path.join(".agents", "oma-config.yaml"),
-  );
+  const configPath = ["oma-config.cue", "oma-config.yaml"]
+    .map((name) => findConfigFileUp(cwd, path.join(".agents", name)))
+    .filter((found): found is string => found !== null)
+    .sort((a, b) => b.length - a.length)[0];
   if (!configPath) return "";
   const agentsDir = path.join(path.dirname(configPath), "agents");
   if (!fs.existsSync(agentsDir)) return "";

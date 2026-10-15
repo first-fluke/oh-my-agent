@@ -19,6 +19,7 @@ import {
   scoreHarnessRuns,
   validateCandidateOverlay,
 } from "./eval.js";
+import { seedEvaluationWorkspace } from "./workspace.js";
 
 const tempDirs: string[] = [];
 
@@ -243,6 +244,51 @@ describe("baseline provenance", () => {
     writeFileSync(join(resultsDir, "progress.md"), "after", "utf-8");
 
     expect(computeBaselineHash(project)).toBe(before);
+  });
+
+  it("tracks a CUE-only project's oma-config.cue", () => {
+    const project = makeTempDir();
+    mkdirSync(join(project, ".agents"), { recursive: true });
+    const cue = join(project, ".agents", "oma-config.cue");
+    writeFileSync(cue, 'language: "en"\n', "utf-8");
+    const before = computeBaselineHash(project);
+    writeFileSync(cue, 'language: "ko"\n', "utf-8");
+
+    expect(computeBaselineHash(project)).not.toBe(before);
+  });
+
+  it("keeps the YAML-only baseline hash unchanged by CUE support", () => {
+    const project = makeTempDir();
+    mkdirSync(join(project, ".agents"), { recursive: true });
+    writeFileSync(
+      join(project, ".agents", "oma-config.yaml"),
+      "language: en\n",
+      "utf-8",
+    );
+    // Recorded before oma-config.cue joined the baseline inputs.
+    expect(computeBaselineHash(project)).toBe(
+      "f1d8850692fd517f5a852542a51110cefe9c482cf1da1e69cfea0edc69e641f2",
+    );
+  });
+});
+
+describe("seedEvaluationWorkspace", () => {
+  it("copies a CUE-only project's oma-config.cue into the evaluation arm", () => {
+    const project = makeTempDir();
+    const fixture = makeTempDir();
+    const target = join(makeTempDir(), "arm");
+    mkdirSync(join(project, ".agents"), { recursive: true });
+    writeFileSync(
+      join(project, ".agents", "oma-config.cue"),
+      'language: "ko"\n',
+      "utf-8",
+    );
+
+    seedEvaluationWorkspace(project, fixture, target);
+
+    expect(
+      readFileSync(join(target, ".agents", "oma-config.cue"), "utf-8"),
+    ).toBe('language: "ko"\n');
   });
 });
 

@@ -29,7 +29,8 @@ const BASE_DEFINITION_DIRS = [
   "skills",
   "workflows",
 ];
-const BASE_DEFINITION_FILES = ["oma-config.yaml"];
+// A project keeps either shared config source (CUE outranks YAML); copy both.
+const BASE_DEFINITION_FILES = ["oma-config.cue", "oma-config.yaml"];
 const GENERATED_DEPENDENCY_DIRS = new Set(["node_modules", ".venv"]);
 
 export function assertNoSymlinks(root: string): void {
