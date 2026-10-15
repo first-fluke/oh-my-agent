@@ -300,7 +300,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
     const devToolsBrowsers = await promptDevToolsBrowsers(
       nonInteractive,
       cleanup,
-      loadDevToolsBrowsers(installRoot) ?? ["aside"],
+      loadDevToolsBrowsers(installRoot),
     );
 
     await ensureAsideInstalled(devToolsBrowsers);

@@ -40,6 +40,20 @@ Les deux scripts d'amorçage fonctionnent de la même manière :
 
 L'amorçage continue après l'échec d'une dépendance facultative et affiche les commandes à exécuter ensuite. AgentMemory est le fournisseur de mémoire sémantique par défaut : `oma install` et `oma update` échouent si son installation, son démarrage ou son contrôle de santé échoue. Sélectionner `providers.semantic_memory: none` ou `honcho`, ou définir `OMA_NO_AGENTMEMORY=1`, désactive la préparation automatique d'AgentMemory. Lancez `oma doctor` une fois l'installateur terminé.
 
+### Ce que fait aussi l'installateur par défaut {#what-the-installer-also-does-by-default}
+
+- **MCP navigateur Aside** : présélectionné dans la configuration interactive et, s'il est absent, installé avec `curl -fsSL https://releases.aside.com/install.sh | bash`, uniquement si vous le laissez sélectionné. Désélectionnez-le à l'étape du MCP navigateur ou plus tard avec `oma update mcp`.
+- **Service AgentMemory** : `bun install -g @agentmemory/agentmemory`, enregistré comme service de connexion (launchd, unité utilisateur systemd ou tâche planifiée Windows).
+- **CUE** : installé par le script d'amorçage avec `brew install cue` (macOS/Linux) ou `winget` (Windows), puis de nouveau par `oma install` lorsque Serena est le fournisseur d'intelligence de code.
+- **Écritures hors du projet** : `~/.claude.json` (marque le projet comme espace de travail Claude Code de confiance), `~/.serena/` (contexte OMA, taille minimale des réponses, enregistrement du projet), `~/.cursor/cli-config.json` (désactive l'attribution des commits de Cursor), `~/.grok/config.toml` (télémétrie) et `~/.gemini/antigravity-cli/` (HUD), chacun uniquement pour un fournisseur sélectionné. Lier des skills dans les dossiers des fournisseurs du répertoire personnel (Antigravity, Hermes, Kimi) demande d'abord une confirmation.
+- **Désactivations de télémétrie** : Claude `DISABLE_TELEMETRY=1` (ce qui désactive aussi Claude Code Remote Control) et les statistiques d'utilisation de Gemini, Qwen, Codex et Grok. Définissez `telemetry: true` pour conserver les valeurs par défaut des fournisseurs.
+- **Paramètres Claude Code** : les clés non définies de `.claude/settings.json` sont complétées, dont `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` et des flags env qui désactivent l'auto memory, l'adaptive thinking, le signalement d'erreurs et les instructions git intégrées. Les valeurs que vous avez déjà définies sont conservées.
+- **Trailer de co-auteur** : l'attribution des commits de Claude Code devient `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`, et les PR reçoivent une ligne "Generated with oh-my-agent". Définissez `scm.co_author.enabled: false` pour le désactiver.
+- **Garde commit-msg** : `.githooks/commit-msg` rejette les adresses `Co-authored-by` absentes de `.githooks/co-authors.allow` et de `scm.co_author.email`. `git config --local core.hooksPath .githooks` n'est défini que si aucun autre hook n'est actif ; sinon, oma indique comment chaîner le garde. Définissez `scm.co_author.enforce_hook: false` pour vous en dispenser.
+- **Mises à jour en arrière-plan** : `oma update` met à jour la CLI `oma` en arrière-plan (`auto_update_cli: false` ou `OMA_SKIP_VERSION_CHECK=1` pour l'arrêter) et exécute `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` pour l'arrêter).
+- **Minuteur de nettoyage Serena** : avec Serena dans le mode `bridge` par défaut, la première session d'agent qui démarre un serveur Serena partagé enregistre un minuteur qui arrête toutes les 5 minutes les serveurs Serena partagés inactifs (launchd `dev.oma.serena-daemon-gc`, minuteur utilisateur systemd `oma-serena-daemon-gc.timer` ou tâche planifiée Windows `OMA Serena Daemon GC`). Définissez `serena.mode: stdio` pour vous passer du serveur partagé et de son minuteur. `oma uninstall` ne supprime pas le minuteur.
+- **Les exécutions non interactives** (`-y`, `OMA_YES=1`, `CI=true`) utilisent le preset de skills `All`, `model_preset: auto` et Python comme langage backend. Elles ne sélectionnent aucun MCP navigateur (et sautent le script d'installation d'Aside), sauf si `mcp.devtools_browsers` en liste déjà un.
+
 ---
 
 ## Méthode 2 : installation manuelle avec bunx {#method-2-manual-install-via-bunx}
@@ -181,7 +195,6 @@ oma search # Mechanical search primitives
 oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma star # Star the repository
 ```
 
 `oma` est l'abréviation de `oh-my-agent`. Les deux noms peuvent être utilisés comme commandes CLI.

@@ -47,10 +47,11 @@ afterEach(() => {
 it("saves selection and updates recorded vendors without downloading a release", async () => {
   prompt.mockResolvedValue(["aside", "firefox"]);
   await updateMcp();
+  // No saved selection: the prompt owns the interactive Aside pre-selection.
   expect(prompt).toHaveBeenCalledWith(
     expect.any(Boolean),
     expect.any(Function),
-    ["aside"],
+    undefined,
   );
   expect(loadDevToolsBrowsers(root)).toEqual(["aside", "firefox"]);
   expect(existsSync(join(root, "test-home", ".hermes", "config.yaml"))).toBe(
@@ -110,6 +111,24 @@ vi.mock("../../vendors/aside.js", () => ({
   ensureAsideInstalled: vi.fn(),
   resolveAsideCommand: () => "aside",
 }));
+
+it.each([
+  ["--yes", { yes: true }, {}],
+  ["CI=true", {}, { CI: "true" }],
+])(
+  "non-interactive (%s) update without a saved selection does not opt into Aside",
+  async (_label, options, env) => {
+    for (const [key, value] of Object.entries(env)) vi.stubEnv(key, value);
+    const actual = await vi.importActual<
+      typeof import("../../platform/browser-prompts.js")
+    >("../../platform/browser-prompts.js");
+    prompt.mockImplementation(actual.promptDevToolsBrowsers);
+    await updateMcp(options);
+    expect(ensureAsideInstalled).not.toHaveBeenCalledWith(["aside"]);
+    expect(ensureAsideInstalled).toHaveBeenCalledExactlyOnceWith([]);
+    expect(loadDevToolsBrowsers(root)).toEqual([]);
+  },
+);
 
 it("leaves preferences and vendor configurations untouched when Aside installation fails", async () => {
   prompt.mockResolvedValue(["aside"]);

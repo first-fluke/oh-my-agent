@@ -40,3 +40,15 @@ it("keeps an explicit empty selection in non-interactive mode", async () => {
   expect(await promptDevToolsBrowsers(true, vi.fn(), [])).toEqual([]);
   expect(prompts.multiselect).not.toHaveBeenCalled();
 });
+
+it("defaults to no browser MCP in non-interactive mode", async () => {
+  expect(await promptDevToolsBrowsers(true, vi.fn())).toEqual([]);
+  expect(prompts.multiselect).not.toHaveBeenCalled();
+});
+
+it("keeps a saved selection in non-interactive mode", async () => {
+  expect(await promptDevToolsBrowsers(true, vi.fn(), ["aside"])).toEqual([
+    "aside",
+  ]);
+  expect(prompts.multiselect).not.toHaveBeenCalled();
+});

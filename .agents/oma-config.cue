@@ -356,7 +356,7 @@ package config
 	language:          "en"
 	translation_voice: "balanced"
 	date_format:       "ISO"
-	timezone:          "Asia/Seoul"
+	// timezone: omitted → host system timezone (e.g. timezone: "Europe/Berlin")
 	auto_update_cli:   true
 	telemetry:         false
 

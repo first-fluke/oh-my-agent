@@ -39,6 +39,20 @@ Both bootstrap scripts behave the same way:
 
 The bootstrap continues after optional dependency failures and reports follow-up commands. AgentMemory is the default semantic-memory provider: `oma install` and `oma update` fail if its installation, startup, or health check fails. Selecting `providers.semantic_memory: none` or `honcho`, or setting `OMA_NO_AGENTMEMORY=1`, skips automatic AgentMemory preparation. Run `oma doctor` after the installer finishes.
 
+### What the installer also does by default
+
+- **Aside browser MCP**: pre-selected in the interactive setup, and installed with `curl -fsSL https://releases.aside.com/install.sh | bash` when missing, only if you keep it selected. Deselect it in the browser MCP step or later with `oma update mcp`.
+- **AgentMemory service**: `bun install -g @agentmemory/agentmemory`, registered as a login service (launchd, systemd user unit, or Windows scheduled task).
+- **CUE**: installed with `brew install cue` (macOS/Linux) or `winget` (Windows) by the bootstrap script, and again by `oma install` when Serena is the code-intelligence provider.
+- **Writes outside the project**: `~/.claude.json` (marks the project as a trusted Claude Code workspace), `~/.serena/` (OMA context, answer-size floor, project registration), `~/.cursor/cli-config.json` (turns off Cursor's commit attribution), `~/.grok/config.toml` (telemetry), and `~/.gemini/antigravity-cli/` (HUD), each only for a selected vendor. Linking skills into home-directory vendor folders (Antigravity, Hermes, Kimi) asks first.
+- **Telemetry opt-outs**: Claude `DISABLE_TELEMETRY=1` (this also turns off Claude Code Remote Control) and Gemini, Qwen, Codex, and Grok usage stats. Set `telemetry: true` to keep vendor defaults.
+- **Claude Code settings**: unset keys in `.claude/settings.json` are filled in, including `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180`, and env flags that turn off auto memory, adaptive thinking, error reporting, and built-in git instructions. Values you already set are kept.
+- **Co-author trailer**: Claude Code's commit attribution becomes `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`, and PRs get a "Generated with oh-my-agent" line. Set `scm.co_author.enabled: false` to turn it off.
+- **commit-msg guard**: `.githooks/commit-msg` rejects `Co-authored-by` addresses missing from `.githooks/co-authors.allow` or `scm.co_author.email`. `git config --local core.hooksPath .githooks` is set only when no other hooks are active; otherwise oma prints how to chain the guard. Set `scm.co_author.enforce_hook: false` to opt out.
+- **Background updates**: `oma update` updates the `oma` CLI in the background (`auto_update_cli: false` or `OMA_SKIP_VERSION_CHECK=1` to stop it) and runs `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` to stop it).
+- **Serena cleanup timer**: with Serena in the default `bridge` mode, the first agent session that starts a shared Serena server registers a timer that stops idle shared Serena servers every 5 minutes (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer`, or Windows scheduled task `OMA Serena Daemon GC`). Set `serena.mode: stdio` to skip the shared server and its timer. `oma uninstall` does not remove the timer.
+- **Non-interactive runs** (`-y`, `OMA_YES=1`, `CI=true`) use the `All` skill preset, `model_preset: auto`, and Python as the backend language. They select no browser MCP (and skip the Aside install script) unless `mcp.devtools_browsers` already lists one.
+
 ---
 
 ## Method 2: manual install via bunx
@@ -180,7 +194,6 @@ oma search # Mechanical search primitives
 oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma star # Star the repository
 ```
 
 `oma` is short for `oh-my-agent`. Both work as CLI commands.

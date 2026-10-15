@@ -7,6 +7,7 @@ import {
   readFileSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -218,6 +219,57 @@ describe("ensureCoAuthorGuardHook", () => {
       encoding: "utf-8",
     });
     expect(configured.status).not.toBe(0);
+  });
+
+  // core.hooksPath replaces .git/hooks wholesale, so claiming it silently
+  // disables every hook installed there — pre-commit framework's pre-commit,
+  // git-lfs's pre-push/post-checkout — not just a commit-msg hook.
+  it("leaves core.hooksPath unset when .git/hooks has other active hooks", () => {
+    const repo = makeRepo();
+    writeConfig(repo, { enabled: true, email: "bot@example.com" });
+    const marker = join(repo, "PRE_COMMIT_RAN");
+    const preCommit = join(repo, ".git", "hooks", "pre-commit");
+    writeFileSync(preCommit, `#!/bin/sh\ntouch "${marker}"\n`);
+    chmodSync(preCommit, 0o755);
+
+    const result = ensureCoAuthorGuardHook(repo);
+
+    expect(result.status).toBe("written");
+    expect(result.warning).toContain("pre-commit");
+    expect(result.warning).toContain("|| exit 1");
+    const configured = spawnSync("git", ["config", "core.hooksPath"], {
+      cwd: repo,
+      encoding: "utf-8",
+    });
+    expect(configured.status).not.toBe(0);
+
+    expect(tryCommit(repo, "m.txt", "chore: still hooked").status).toBe(0);
+    expect(existsSync(marker)).toBe(true);
+  });
+
+  // A hand-installed hook is often a symlink into the repo (`ln -s
+  // ../../scripts/pre-push .git/hooks/pre-push`); git follows it, so it is
+  // just as active as a regular file and must not be shadowed either.
+  it("treats a symlinked .git/hooks entry as an active hook", () => {
+    const repo = makeRepo();
+    writeConfig(repo, { enabled: true, email: "bot@example.com" });
+    const marker = join(repo, "LINKED_PRE_COMMIT_RAN");
+    const script = join(repo, "pre-commit.sh");
+    writeFileSync(script, `#!/bin/sh\ntouch "${marker}"\n`);
+    chmodSync(script, 0o755);
+    symlinkSync(script, join(repo, ".git", "hooks", "pre-commit"));
+
+    const result = ensureCoAuthorGuardHook(repo);
+
+    expect(result.warning).toContain("pre-commit");
+    const configured = spawnSync("git", ["config", "core.hooksPath"], {
+      cwd: repo,
+      encoding: "utf-8",
+    });
+    expect(configured.status).not.toBe(0);
+
+    expect(tryCommit(repo, "m.txt", "chore: still hooked").status).toBe(0);
+    expect(existsSync(marker)).toBe(true);
   });
 });
 

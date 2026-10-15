@@ -39,6 +39,20 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 
 Bootstrap продолжает работу после сбоев необязательных зависимостей и выводит команды для дальнейших действий. AgentMemory является провайдером семантической памяти по умолчанию: `oma install` и `oma update` завершаются ошибкой, если не удаётся его установка, запуск или проверка работоспособности. Выбор `providers.semantic_memory: none` или `honcho` либо задание `OMA_NO_AGENTMEMORY=1` отключает автоматическую подготовку AgentMemory. После завершения установщика запустите `oma doctor`.
 
+### Что ещё установщик делает по умолчанию {#what-the-installer-also-does-by-default}
+
+- **Browser MCP Aside**: заранее выбран в интерактивной настройке и, если отсутствует, устанавливается через `curl -fsSL https://releases.aside.com/install.sh | bash`, но только если вы оставите его выбранным. Снимите выбор на шаге browser MCP или позже через `oma update mcp`.
+- **Служба AgentMemory**: `bun install -g @agentmemory/agentmemory`, регистрируется как служба, запускаемая при входе в систему (launchd, пользовательский unit systemd или запланированная задача Windows).
+- **CUE**: устанавливается bootstrap-скриптом через `brew install cue` (macOS/Linux) или `winget` (Windows) и повторно через `oma install`, если провайдером code intelligence выбран Serena.
+- **Запись вне проекта**: `~/.claude.json` (помечает проект как доверенное рабочее пространство Claude Code), `~/.serena/` (контекст OMA, минимальный размер ответа, регистрация проекта), `~/.cursor/cli-config.json` (отключает атрибуцию коммитов в Cursor), `~/.grok/config.toml` (телеметрия) и `~/.gemini/antigravity-cli/` (HUD), каждый только для выбранного поставщика. Перед созданием ссылок на навыки в папках поставщиков в домашней директории (Antigravity, Hermes, Kimi) установщик спрашивает разрешения.
+- **Отказ от телеметрии**: Claude `DISABLE_TELEMETRY=1` (это также отключает Claude Code Remote Control) и статистика использования Gemini, Qwen, Codex и Grok. Задайте `telemetry: true`, чтобы оставить настройки поставщиков по умолчанию.
+- **Настройки Claude Code**: незаданные ключи в `.claude/settings.json` заполняются, включая `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` и env-флаги, которые отключают auto memory, adaptive thinking, отправку отчётов об ошибках и встроенные инструкции git. Уже заданные вами значения сохраняются.
+- **Co-author trailer**: атрибуция коммитов Claude Code становится `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`, а в PR добавляется строка "Generated with oh-my-agent". Задайте `scm.co_author.enabled: false`, чтобы это отключить.
+- **Commit-msg guard**: `.githooks/commit-msg` отклоняет адреса `Co-authored-by`, которых нет ни в `.githooks/co-authors.allow`, ни в `scm.co_author.email`. `git config --local core.hooksPath .githooks` задаётся только тогда, когда другие хуки не активны; иначе oma выводит, как подключить guard в цепочку. Чтобы отказаться, задайте `scm.co_author.enforce_hook: false`.
+- **Фоновые обновления**: `oma update` обновляет CLI `oma` в фоне (`auto_update_cli: false` или `OMA_SKIP_VERSION_CHECK=1`, чтобы это остановить) и запускает `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`, чтобы это остановить).
+- **Таймер очистки Serena**: когда Serena работает в режиме `bridge` по умолчанию, первая сессия агента, запустившая общий сервер Serena, регистрирует таймер, который каждые 5 минут останавливает простаивающие общие серверы Serena (launchd `dev.oma.serena-daemon-gc`, пользовательский таймер systemd `oma-serena-daemon-gc.timer` или запланированная задача Windows `OMA Serena Daemon GC`). Задайте `serena.mode: stdio`, чтобы не запускать общий сервер и его таймер. `oma uninstall` не удаляет этот таймер.
+- **Неинтерактивные запуски** (`-y`, `OMA_YES=1`, `CI=true`) используют пресет навыков `All`, `model_preset: auto` и Python как язык бэкенда. Они не выбирают browser MCP (и пропускают скрипт установки Aside), если в `mcp.devtools_browsers` ещё нет ни одного.
+
 ---
 
 ## Способ 2: ручная установка через bunx
@@ -180,7 +194,6 @@ oma search # Mechanical search primitives
 oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma star # Star the repository
 ```
 
 `oma` — сокращение от `oh-my-agent`. Обе команды можно использовать как CLI-команды.

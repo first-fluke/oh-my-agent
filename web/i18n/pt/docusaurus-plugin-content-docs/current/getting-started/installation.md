@@ -39,6 +39,20 @@ Os dois scripts de bootstrap funcionam da mesma forma:
 
 O bootstrap continua depois de falhas em dependências opcionais e informa os comandos de acompanhamento. AgentMemory é o provider de memória semântica padrão: `oma install` e `oma update` falham se a instalação, a inicialização ou a verificação de integridade dele falhar. Selecionar `providers.semantic_memory: none` ou `honcho`, ou definir `OMA_NO_AGENTMEMORY=1`, ignora a preparação automática do AgentMemory. Execute `oma doctor` depois que o instalador terminar.
 
+### O que o instalador também faz por padrão {#what-the-installer-also-does-by-default}
+
+- **Browser MCP Aside**: pré-selecionado na configuração interativa e, se estiver ausente, instalado com `curl -fsSL https://releases.aside.com/install.sh | bash`, apenas se você o mantiver selecionado. Desmarque-o na etapa de browser MCP ou depois com `oma update mcp`.
+- **Serviço AgentMemory**: `bun install -g @agentmemory/agentmemory`, registrado como serviço de login (launchd, unidade de usuário do systemd ou tarefa agendada do Windows).
+- **CUE**: instalado pelo script de bootstrap com `brew install cue` (macOS/Linux) ou `winget` (Windows), e de novo pelo `oma install` quando o Serena é o provider de code intelligence.
+- **Gravações fora do projeto**: `~/.claude.json` (marca o projeto como workspace confiável do Claude Code), `~/.serena/` (contexto do OMA, tamanho mínimo de resposta, registro do projeto), `~/.cursor/cli-config.json` (desativa a atribuição de commits do Cursor), `~/.grok/config.toml` (telemetria) e `~/.gemini/antigravity-cli/` (HUD), cada um só para um vendor selecionado. Vincular skills às pastas de vendors no diretório home (Antigravity, Hermes, Kimi) pede confirmação antes.
+- **Opt-outs de telemetria**: Claude `DISABLE_TELEMETRY=1` (isso também desativa o Claude Code Remote Control) e as estatísticas de uso de Gemini, Qwen, Codex e Grok. Defina `telemetry: true` para manter os padrões dos vendors.
+- **Configurações do Claude Code**: as chaves não definidas em `.claude/settings.json` são preenchidas, incluindo `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` e flags de env que desativam auto memory, adaptive thinking, relatório de erros e as instruções de git embutidas. Os valores que você já definiu são mantidos.
+- **Trailer de coautoria**: a atribuição de commits do Claude Code passa a ser `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`, e os PRs recebem uma linha "Generated with oh-my-agent". Defina `scm.co_author.enabled: false` para desativar.
+- **Guarda de commit-msg**: `.githooks/commit-msg` rejeita endereços `Co-authored-by` que não estão em `.githooks/co-authors.allow` nem em `scm.co_author.email`. `git config --local core.hooksPath .githooks` só é definido quando nenhum outro hook está ativo; caso contrário, o oma mostra como encadear a guarda. Defina `scm.co_author.enforce_hook: false` para desativar.
+- **Atualizações em segundo plano**: `oma update` atualiza a CLI `oma` em segundo plano (`auto_update_cli: false` ou `OMA_SKIP_VERSION_CHECK=1` para interromper) e executa `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` para interromper).
+- **Timer de limpeza do Serena**: com o Serena no modo `bridge` padrão, a primeira sessão de agente que inicia um servidor Serena compartilhado registra um timer que para os servidores Serena compartilhados ociosos a cada 5 minutos (launchd `dev.oma.serena-daemon-gc`, timer de usuário do systemd `oma-serena-daemon-gc.timer` ou tarefa agendada do Windows `OMA Serena Daemon GC`). Defina `serena.mode: stdio` para dispensar o servidor compartilhado e o timer. `oma uninstall` não remove o timer.
+- **Execuções não interativas** (`-y`, `OMA_YES=1`, `CI=true`) usam o preset de skills `All`, `model_preset: auto` e Python como linguagem de backend. Elas não selecionam nenhum browser MCP (e pulam o script de instalação do Aside), a menos que `mcp.devtools_browsers` já liste um.
+
 ---
 
 ## Método 2: instalação manual via bunx
@@ -180,7 +194,6 @@ oma search # Mechanical search primitives
 oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma star # Star the repository
 ```
 
 `oma` é a abreviação de `oh-my-agent`. Os dois funcionam como comandos da CLI.

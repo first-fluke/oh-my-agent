@@ -42,7 +42,9 @@ translation_voice: balanced
 
 # Date / time
 date_format: ISO
-timezone: Asia/Seoul
+# IANA timezone for date boundaries (recap, stats). Omit to use the host
+# system timezone.
+# timezone: Europe/Berlin
 
 # Auto-update the oh-my-agent CLI in the background when outdated.
 # Disable per-shell with OMA_SKIP_VERSION_CHECK=1.
@@ -355,9 +357,6 @@ scm:
     - "*.example"
     - "*.sample"
     - "*.template"
-mcp:
-  devtools_browsers:
-    - aside
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 11. Skill overrides

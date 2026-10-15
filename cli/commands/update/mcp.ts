@@ -35,10 +35,12 @@ export async function updateMcp(options: UpdateOptions = {}): Promise<void> {
         ["1", "true"].includes(process.env.CI ?? ""),
     );
     const vendors = resolveUpdateVendors(root, options);
+    // No saved selection: the prompt pre-selects Aside for a person, while
+    // --yes / CI resolve to none (same contract as `oma install`).
     const browsers = await promptDevToolsBrowsers(
       nonInteractive,
       release,
-      loadDevToolsBrowsers(root) ?? ["aside"],
+      loadDevToolsBrowsers(root),
     );
     const syncOptions = { global: getInstallMode() === "global" };
     syncBrowserMcp(root, browsers, vendors, { ...syncOptions, dryRun: true });

@@ -39,6 +39,20 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 
 선택적 의존성 설치가 실패해도 부트스트랩은 계속 진행하고 후속 명령을 보고합니다. AgentMemory는 기본 시맨틱 메모리 프로바이더이며, 설치, 시작 또는 헬스 체크가 실패하면 `oma install`과 `oma update`도 실패합니다. `providers.semantic_memory: none` 또는 `honcho`를 선택하거나 `OMA_NO_AGENTMEMORY=1`을 설정하면 AgentMemory 자동 준비를 건너뜁니다. 설치 프로그램이 끝나면 `oma doctor`를 실행하세요.
 
+### 설치 프로그램이 기본으로 함께 하는 일 {#what-the-installer-also-does-by-default}
+
+- **Aside 브라우저 MCP**: 대화형 설정에서 미리 선택되며, 선택을 유지한 경우에 한해 설치되어 있지 않으면 `curl -fsSL https://releases.aside.com/install.sh | bash`로 설치됩니다. 브라우저 MCP 단계에서, 또는 나중에 `oma update mcp`로 선택을 해제할 수 있습니다.
+- **AgentMemory 서비스**: `bun install -g @agentmemory/agentmemory`로 설치되고 로그인 서비스(launchd, systemd 사용자 유닛 또는 Windows 예약 작업)로 등록됩니다.
+- **CUE**: 부트스트랩 스크립트가 `brew install cue`(macOS/Linux) 또는 `winget`(Windows)으로 설치하며, Serena가 코드 인텔리전스 프로바이더이면 `oma install`도 한 번 더 설치합니다.
+- **프로젝트 밖에 쓰는 파일**: `~/.claude.json`(프로젝트를 신뢰할 수 있는 Claude Code 워크스페이스로 표시), `~/.serena/`(OMA 컨텍스트, 응답 크기 하한, 프로젝트 등록), `~/.cursor/cli-config.json`(Cursor의 커밋 attribution 끄기), `~/.grok/config.toml`(텔레메트리), `~/.gemini/antigravity-cli/`(HUD)이며, 각각 선택한 벤더에 대해서만 씁니다. 홈 디렉터리의 벤더 폴더(Antigravity, Hermes, Kimi)에 스킬을 링크할 때는 먼저 묻습니다.
+- **텔레메트리 옵트아웃**: Claude `DISABLE_TELEMETRY=1`(이 값은 Claude Code Remote Control도 끕니다)과 Gemini, Qwen, Codex, Grok의 사용 통계를 끕니다. 벤더 기본값을 유지하려면 `telemetry: true`를 설정하세요.
+- **Claude Code 설정**: `.claude/settings.json`에서 설정되지 않은 키를 채웁니다. `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180`과 auto memory, adaptive thinking, 오류 보고, 내장 git 지침을 끄는 env 플래그가 포함됩니다. 이미 설정한 값은 유지됩니다.
+- **공동 작성자 트레일러**: Claude Code의 커밋 attribution이 `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`이 되고, PR에는 "Generated with oh-my-agent" 줄이 붙습니다. 끄려면 `scm.co_author.enabled: false`를 설정하세요.
+- **commit-msg 가드**: `.githooks/commit-msg`는 `.githooks/co-authors.allow`나 `scm.co_author.email`에 없는 `Co-authored-by` 주소를 거부합니다. `git config --local core.hooksPath .githooks`는 다른 훅이 활성화되어 있지 않을 때만 설정되며, 그렇지 않으면 oma가 가드를 체인으로 연결하는 방법을 출력합니다. 사용하지 않으려면 `scm.co_author.enforce_hook: false`를 설정하세요.
+- **백그라운드 업데이트**: `oma update`는 백그라운드에서 `oma` CLI를 업데이트하고(멈추려면 `auto_update_cli: false` 또는 `OMA_SKIP_VERSION_CHECK=1`), `uv tool upgrade serena-agent --prerelease=allow`를 실행합니다(멈추려면 `serena.auto_update: false`).
+- **Serena 정리 타이머**: Serena가 기본 `bridge` 모드일 때, 공유 Serena 서버를 처음 시작한 에이전트 세션이 유휴 상태인 공유 Serena 서버를 5분마다 중지하는 타이머를 등록합니다(launchd `dev.oma.serena-daemon-gc`, systemd 사용자 타이머 `oma-serena-daemon-gc.timer` 또는 Windows 예약 작업 `OMA Serena Daemon GC`). 공유 서버와 타이머를 건너뛰려면 `serena.mode: stdio`를 설정하세요. `oma uninstall`은 이 타이머를 제거하지 않습니다.
+- **비대화형 실행**(`-y`, `OMA_YES=1`, `CI=true`)은 `All` 스킬 프리셋, `model_preset: auto`, 백엔드 언어 Python을 사용합니다. `mcp.devtools_browsers`에 이미 브라우저가 들어 있지 않으면 브라우저 MCP를 선택하지 않습니다(Aside 설치 스크립트도 건너뜁니다).
+
 ---
 
 ## 방법 2: bunx를 통한 수동 설치
@@ -180,7 +194,6 @@ oma search # Mechanical search primitives
 oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma star # Star the repository
 ```
 
 `oma`는 `oh-my-agent`의 줄임말입니다. 두 명령어 모두 사용할 수 있습니다.

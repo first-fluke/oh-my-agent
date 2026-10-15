@@ -66,10 +66,10 @@ describe("PRESET_BACKED_VENDORS", () => {
 });
 
 describe("promptDevToolsBrowsers", () => {
-  it("defaults to ['aside'] in non-interactive mode", async () => {
+  it("defaults to no browser MCP in non-interactive mode", async () => {
     const { promptDevToolsBrowsers } = await import("./prompts.js");
     const cleanup = () => {};
     const result = await promptDevToolsBrowsers(true, cleanup);
-    expect(result).toEqual(["aside"]);
+    expect(result).toEqual([]);
   });
 });

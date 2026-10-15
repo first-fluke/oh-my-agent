@@ -39,6 +39,20 @@ Hai bootstrap script hoạt động giống nhau:
 
 Bootstrap vẫn tiếp tục sau lỗi dependency tùy chọn và báo các lệnh cần chạy tiếp. AgentMemory là semantic-memory provider mặc định: `oma install` và `oma update` sẽ thất bại nếu bước cài đặt, khởi động hoặc health check của nó thất bại. Chọn `providers.semantic_memory: none` hoặc `honcho`, hoặc đặt `OMA_NO_AGENTMEMORY=1`, sẽ bỏ qua bước chuẩn bị AgentMemory tự động. Sau khi installer hoàn tất, hãy chạy `oma doctor`.
 
+### Những việc installer cũng làm theo mặc định {#what-the-installer-also-does-by-default}
+
+- **Browser MCP Aside**: được chọn sẵn trong phần thiết lập tương tác, và nếu còn thiếu thì được cài bằng `curl -fsSL https://releases.aside.com/install.sh | bash`, nhưng chỉ khi bạn giữ lựa chọn đó. Bỏ chọn ở bước browser MCP hoặc sau này bằng `oma update mcp`.
+- **AgentMemory service**: `bun install -g @agentmemory/agentmemory`, được đăng ký làm login service (launchd, systemd user unit hoặc Windows scheduled task).
+- **CUE**: được bootstrap script cài bằng `brew install cue` (macOS/Linux) hoặc `winget` (Windows), và được `oma install` cài lại khi Serena là code-intelligence provider.
+- **Ghi ra ngoài project**: `~/.claude.json` (đánh dấu project là workspace Claude Code đáng tin cậy), `~/.serena/` (context OMA, ngưỡng kích thước câu trả lời tối thiểu, đăng ký project), `~/.cursor/cli-config.json` (tắt commit attribution của Cursor), `~/.grok/config.toml` (telemetry) và `~/.gemini/antigravity-cli/` (HUD), mỗi file chỉ dành cho vendor đã chọn. Việc link skill vào các thư mục vendor trong thư mục home (Antigravity, Hermes, Kimi) sẽ hỏi trước.
+- **Opt-out telemetry**: Claude `DISABLE_TELEMETRY=1` (cũng tắt luôn Claude Code Remote Control) và thống kê sử dụng của Gemini, Qwen, Codex và Grok. Đặt `telemetry: true` để giữ mặc định của vendor.
+- **Setting của Claude Code**: các key chưa được đặt trong `.claude/settings.json` sẽ được điền vào, gồm `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` và các env flag tắt auto memory, adaptive thinking, báo cáo lỗi và chỉ dẫn git tích hợp sẵn. Giá trị bạn đã đặt sẽ được giữ nguyên.
+- **Co-author trailer**: commit attribution của Claude Code trở thành `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`, và PR có thêm dòng "Generated with oh-my-agent". Đặt `scm.co_author.enabled: false` để tắt.
+- **Commit-msg guard**: `.githooks/commit-msg` từ chối các địa chỉ `Co-authored-by` không có trong `.githooks/co-authors.allow` hoặc `scm.co_author.email`. `git config --local core.hooksPath .githooks` chỉ được đặt khi không có hook nào khác đang hoạt động; nếu có, oma sẽ in ra cách nối guard vào chuỗi hook. Đặt `scm.co_author.enforce_hook: false` nếu không muốn dùng.
+- **Cập nhật ở chế độ nền**: `oma update` cập nhật `oma` CLI ở chế độ nền (`auto_update_cli: false` hoặc `OMA_SKIP_VERSION_CHECK=1` để dừng) và chạy `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` để dừng).
+- **Cleanup timer của Serena**: khi Serena ở chế độ `bridge` mặc định, phiên agent đầu tiên khởi động một Serena server dùng chung sẽ đăng ký một timer dừng các Serena server dùng chung đang rảnh mỗi 5 phút (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer` hoặc Windows scheduled task `OMA Serena Daemon GC`). Đặt `serena.mode: stdio` để bỏ qua server dùng chung và timer của nó. `oma uninstall` không gỡ timer này.
+- **Các lần chạy không tương tác** (`-y`, `OMA_YES=1`, `CI=true`) dùng skill preset `All`, `model_preset: auto` và Python làm ngôn ngữ backend. Chúng không chọn browser MCP nào (và bỏ qua script cài Aside) trừ khi `mcp.devtools_browsers` đã có sẵn một mục.
+
 ---
 
 ## Phương pháp 2: cài thủ công qua bunx {#method-2-manual-install-via-bunx}
@@ -180,7 +194,6 @@ oma search # Mechanical search primitives
 oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma star # Star the repository
 ```
 
 `oma` là viết tắt của `oh-my-agent`. Cả hai đều có thể dùng làm lệnh CLI.

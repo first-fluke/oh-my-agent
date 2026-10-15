@@ -7,7 +7,8 @@ export type InstallOptions = ProviderInstallOptions & {
    * defaults (language=existing|en, model_preset=existing|auto,
    * project_type=all, vendors=all non-HOME-base). HOME-base vendor consent
    * stays opt-in (skipped), competitor uninstall is skipped, GitHub star
-   * prompt is skipped.
+   * prompt is skipped (an explicit `--yes` / `OMA_YES` stars without asking;
+   * see {@link isExplicitYes}).
    *
    * Also activated by `OMA_YES=1` or `CI=true` env vars.
    */

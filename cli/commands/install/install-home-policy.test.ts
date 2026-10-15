@@ -313,6 +313,43 @@ describe("install home policy", () => {
     ).toBeLessThan(promptState.outro.mock.invocationCallOrder[0] ?? 0);
   });
 
+  // --- Browser MCP default: Aside only when a person chooses it ---
+
+  it("selects no browser MCP for a non-interactive install", async () => {
+    const { ensureAsideInstalled } = await import("../../vendors/aside.js");
+
+    await install({ yes: true });
+
+    expect(ensureAsideInstalled).toHaveBeenCalledExactlyOnceWith([]);
+    expect(promptState.multiselect).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining("browser MCP"),
+      }),
+    );
+    const savedConfig = fsState.writeFileSync.mock.calls
+      .filter(
+        (call: unknown[]) =>
+          call[0] === join(process.cwd(), ".agents", "oma-config.yaml"),
+      )
+      .map((call: unknown[]) => String(call[1]))
+      .at(-1);
+    expect(savedConfig).toMatch(/devtools_browsers: \[\]/);
+  });
+
+  it("preselects Aside for an interactive install", async () => {
+    const { ensureAsideInstalled } = await import("../../vendors/aside.js");
+
+    await install();
+
+    expect(promptState.multiselect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining("browser MCP"),
+        initialValues: ["aside"],
+      }),
+    );
+    expect(ensureAsideInstalled).toHaveBeenCalledExactlyOnceWith(["aside"]);
+  });
+
   it.each(["none", "honcho"] as const)(
     "preserves the project memory opt-out %s",
     async (semanticMemory) => {

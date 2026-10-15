@@ -19,7 +19,9 @@ import {
   chmodSync,
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
@@ -220,6 +222,44 @@ function gitConfig(repoRoot: string, key: string): string | undefined {
   return value.length > 0 ? value : undefined;
 }
 
+/**
+ * The hooks directory git uses while `core.hooksPath` is unset. Resolved via
+ * git so a linked worktree or submodule (where `.git` is a file) is handled.
+ */
+function defaultHooksDir(repoRoot: string): string {
+  const res = spawnSync("git", ["rev-parse", "--git-path", "hooks"], {
+    cwd: repoRoot,
+    encoding: "utf-8",
+  });
+  const out =
+    res.status === 0 && typeof res.stdout === "string" ? res.stdout.trim() : "";
+  return resolve(repoRoot, out || join(".git", "hooks"));
+}
+
+/**
+ * Hooks installed in the default hooks directory, minus git's `*.sample`
+ * templates. Setting `core.hooksPath` turns every one of them off. Symlinks
+ * count when they resolve to a file: git follows them when running a hook.
+ */
+function activeDefaultHooks(hooksDir: string): string[] {
+  let names: string[];
+  try {
+    names = readdirSync(hooksDir);
+  } catch {
+    return [];
+  }
+  return names
+    .filter((name) => {
+      if (name.endsWith(".sample")) return false;
+      try {
+        return statSync(join(hooksDir, name)).isFile();
+      } catch {
+        return false;
+      }
+    })
+    .sort();
+}
+
 function setGitConfig(repoRoot: string, key: string, value: string): boolean {
   const res = spawnSync("git", ["config", "--local", key, value], {
     cwd: repoRoot,
@@ -287,16 +327,23 @@ export function ensureCoAuthorGuardHook(repoRoot: string): CoAuthorGuardResult {
   }
 
   // core.hooksPath: claim it only when free. Another tool owning it (husky,
-  // lefthook) is a configuration oma must not silently take over, and a legacy
-  // .git/hooks/commit-msg would be disabled the moment hooksPath is set.
+  // lefthook) is a configuration oma must not silently take over, and setting
+  // it disables every hook in .git/hooks — a legacy commit-msg, but also
+  // pre-commit framework's pre-commit or git-lfs's pre-push.
   let warning: string | undefined;
   const configured = gitConfig(repoRoot, "core.hooksPath");
   if (configured === undefined) {
-    const legacy = join(repoRoot, ".git", "hooks", "commit-msg");
-    if (existsSync(legacy)) {
+    const legacyDir = defaultHooksDir(repoRoot);
+    const legacyHooks = activeDefaultHooks(legacyDir);
+    const legacy = join(legacyDir, "commit-msg");
+    if (legacyHooks.includes("commit-msg")) {
       warning =
         `${legacy} already exists; core.hooksPath left unset so it keeps running. ` +
         `Add \`sh ${OMA_HOOKS_DIR}/commit-msg "$1" || exit 1\` to it to enable the co-author guard.`;
+    } else if (legacyHooks.length > 0) {
+      warning =
+        `${legacyDir} has active hooks (${legacyHooks.join(", ")}); core.hooksPath left unset so they keep running. ` +
+        `Create ${legacy} containing \`sh ${OMA_HOOKS_DIR}/commit-msg "$1" || exit 1\` to enable the co-author guard.`;
     } else if (!setGitConfig(repoRoot, "core.hooksPath", OMA_HOOKS_DIR)) {
       warning = `Could not set core.hooksPath to ${OMA_HOOKS_DIR}.`;
     }

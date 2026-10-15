@@ -39,6 +39,20 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 
 引导脚本会在可选依赖失败后继续，并报告后续命令。AgentMemory 是默认的语义记忆提供商：如果它的安装、启动或健康检查失败，`oma install` 和 `oma update` 会失败。选择 `providers.semantic_memory: none` 或 `honcho`，或设置 `OMA_NO_AGENTMEMORY=1`，会跳过 AgentMemory 的自动准备。安装器结束后运行 `oma doctor`。
 
+### 安装器默认还会做的事 {#what-the-installer-also-does-by-default}
+
+- **Aside 浏览器 MCP**：在交互式设置中预先选中；只有保持选中时，才会在缺失时通过 `curl -fsSL https://releases.aside.com/install.sh | bash` 安装。可以在浏览器 MCP 步骤中取消勾选，或之后用 `oma update mcp` 取消。
+- **AgentMemory 服务**：通过 `bun install -g @agentmemory/agentmemory` 安装，并注册为登录服务（launchd、systemd 用户单元或 Windows 计划任务）。
+- **CUE**：由引导脚本通过 `brew install cue`（macOS/Linux）或 `winget`（Windows）安装；当 Serena 是代码智能提供商时，`oma install` 还会再安装一次。
+- **写入项目之外**：`~/.claude.json`（将项目标记为受信任的 Claude Code 工作区）、`~/.serena/`（OMA 上下文、回答大小下限、项目注册）、`~/.cursor/cli-config.json`（关闭 Cursor 的提交署名）、`~/.grok/config.toml`（遥测）和 `~/.gemini/antigravity-cli/`（HUD），每项都只针对选中的供应商。将技能链接到主目录下的供应商文件夹（Antigravity、Hermes、Kimi）之前会先询问。
+- **遥测退出**：Claude `DISABLE_TELEMETRY=1`（这也会关闭 Claude Code Remote Control），以及 Gemini、Qwen、Codex 和 Grok 的使用统计。设置 `telemetry: true` 可保留供应商默认值。
+- **Claude Code 设置**：补全 `.claude/settings.json` 中尚未设置的键，包括 `skipDangerousModePermissionPrompt: true`、`effortLevel: high`、`cleanupPeriodDays: 180`，以及关闭 auto memory、adaptive thinking、错误报告和内置 git 指令的 env 标志。你已经设置的值会保留。
+- **共同作者 trailer**：Claude Code 的提交署名变为 `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`，PR 会附上一行 "Generated with oh-my-agent"。设置 `scm.co_author.enabled: false` 可关闭。
+- **commit-msg 守卫**：`.githooks/commit-msg` 会拒绝不在 `.githooks/co-authors.allow` 或 `scm.co_author.email` 中的 `Co-authored-by` 地址。只有在没有其他钩子生效时才会设置 `git config --local core.hooksPath .githooks`；否则 oma 会打印如何串联该守卫。设置 `scm.co_author.enforce_hook: false` 可退出。
+- **后台更新**：`oma update` 会在后台更新 `oma` CLI（用 `auto_update_cli: false` 或 `OMA_SKIP_VERSION_CHECK=1` 停止），并运行 `uv tool upgrade serena-agent --prerelease=allow`（用 `serena.auto_update: false` 停止）。
+- **Serena 清理定时器**：Serena 处于默认的 `bridge` 模式时，第一个启动共享 Serena 服务器的智能体会话会注册一个定时器，每 5 分钟停止空闲的共享 Serena 服务器（launchd `dev.oma.serena-daemon-gc`、systemd 用户定时器 `oma-serena-daemon-gc.timer` 或 Windows 计划任务 `OMA Serena Daemon GC`）。设置 `serena.mode: stdio` 可跳过共享服务器及其定时器。`oma uninstall` 不会移除该定时器。
+- **非交互式运行**（`-y`、`OMA_YES=1`、`CI=true`）使用 `All` 技能预设、`model_preset: auto`，并以 Python 作为后端语言。除非 `mcp.devtools_browsers` 已列出某个浏览器，否则不会选择任何浏览器 MCP（也会跳过 Aside 安装脚本）。
+
 ---
 
 ## 方式二：通过 bunx 手动安装 {#method-2-manual-install-via-bunx}
@@ -180,7 +194,6 @@ oma search # Mechanical search primitives
 oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma star # Star the repository
 ```
 
 `oma` 是 `oh-my-agent` 的缩写。两者都可以作为 CLI 命令使用。

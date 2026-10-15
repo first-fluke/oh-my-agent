@@ -1,14 +1,21 @@
 import * as p from "@clack/prompts";
 import type { DevToolsBrowser } from "../vendors/serena.js";
 
+// Aside is only a suggestion for a person at the prompt. Unattended
+// (--yes / CI) runs never opt into a browser MCP — or the Aside download it
+// triggers — unless a saved selection already asks for one.
+const INTERACTIVE_DEFAULT_BROWSERS: DevToolsBrowser[] = ["aside"];
+
 export async function promptDevToolsBrowsers(
   nonInteractive: boolean,
   cleanup: () => void,
-  defaultBrowsers: DevToolsBrowser[] = ["aside"],
+  savedBrowsers?: DevToolsBrowser[],
 ): Promise<DevToolsBrowser[]> {
   if (nonInteractive) {
-    return defaultBrowsers;
+    return savedBrowsers ?? [];
   }
+
+  const defaultBrowsers = savedBrowsers ?? INTERACTIVE_DEFAULT_BROWSERS;
 
   const selected = await p.multiselect({
     message: "Select browser MCP servers (Space to select, Enter to continue):",

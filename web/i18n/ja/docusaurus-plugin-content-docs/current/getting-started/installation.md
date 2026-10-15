@@ -40,6 +40,20 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 
 任意の依存関係で失敗してもブートストラップは処理を続け、後で実行するコマンドを表示します。AgentMemory はデフォルトのセマンティックメモリプロバイダーです。そのインストール、起動、ヘルスチェックのいずれかに失敗すると、`oma install` と `oma update` は失敗します。`providers.semantic_memory: none` または `honcho` を選ぶか、`OMA_NO_AGENTMEMORY=1` を設定すると、AgentMemory の自動準備をスキップします。インストーラーが終わったら `oma doctor` を実行してください。
 
+### インストーラーがデフォルトで行うこと {#what-the-installer-also-does-by-default}
+
+- **Aside ブラウザ MCP**: 対話式セットアップであらかじめ選択されており、選択したままにした場合にのみ、未インストールなら `curl -fsSL https://releases.aside.com/install.sh | bash` でインストールされます。ブラウザ MCP のステップで、または後から `oma update mcp` で選択を外せます。
+- **AgentMemory サービス**: `bun install -g @agentmemory/agentmemory` でインストールされ、ログインサービス（launchd、systemd ユーザーユニット、または Windows のスケジュールされたタスク）として登録されます。
+- **CUE**: ブートストラップスクリプトが `brew install cue`（macOS/Linux）または `winget`（Windows）でインストールし、Serena がコードインテリジェンスプロバイダーの場合は `oma install` も再度インストールします。
+- **プロジェクト外への書き込み**: `~/.claude.json`（プロジェクトを信頼済みの Claude Code ワークスペースとしてマーク）、`~/.serena/`（OMA コンテキスト、回答サイズの下限、プロジェクト登録）、`~/.cursor/cli-config.json`（Cursor のコミット attribution をオフ）、`~/.grok/config.toml`（テレメトリー）、`~/.gemini/antigravity-cli/`（HUD）で、いずれも選択したベンダーの分だけです。ホームディレクトリのベンダーフォルダー（Antigravity、Hermes、Kimi）にスキルをリンクする前には確認します。
+- **テレメトリーのオプトアウト**: Claude の `DISABLE_TELEMETRY=1`（これで Claude Code の Remote Control もオフになります）と、Gemini、Qwen、Codex、Grok の使用統計が対象です。ベンダーのデフォルトを維持するには `telemetry: true` を設定してください。
+- **Claude Code 設定**: `.claude/settings.json` の未設定のキーが補完されます。`skipDangerousModePermissionPrompt: true`、`effortLevel: high`、`cleanupPeriodDays: 180` と、auto memory、adaptive thinking、エラーレポート、組み込みの git 指示をオフにする env フラグが含まれます。すでに設定している値は保持されます。
+- **co-author トレーラー**: Claude Code のコミット attribution が `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>` になり、PR には "Generated with oh-my-agent" の一行が付きます。オフにするには `scm.co_author.enabled: false` を設定してください。
+- **commit-msg ガード**: `.githooks/commit-msg` は、`.githooks/co-authors.allow` にも `scm.co_author.email` にもない `Co-authored-by` アドレスを拒否します。`git config --local core.hooksPath .githooks` はほかのフックが有効でない場合にのみ設定され、有効な場合は oma がガードをチェーンする方法を表示します。オプトアウトするには `scm.co_author.enforce_hook: false` を設定してください。
+- **バックグラウンド更新**: `oma update` はバックグラウンドで `oma` CLI を更新し（止めるには `auto_update_cli: false` または `OMA_SKIP_VERSION_CHECK=1`）、`uv tool upgrade serena-agent --prerelease=allow` を実行します（止めるには `serena.auto_update: false`）。
+- **Serena クリーンアップタイマー**: Serena がデフォルトの `bridge` モードのとき、共有 Serena サーバーを最初に起動したエージェントセッションが、アイドル状態の共有 Serena サーバーを 5 分ごとに停止するタイマーを登録します（launchd `dev.oma.serena-daemon-gc`、systemd ユーザータイマー `oma-serena-daemon-gc.timer`、または Windows のスケジュールされたタスク `OMA Serena Daemon GC`）。共有サーバーとタイマーを使わない場合は `serena.mode: stdio` を設定してください。`oma uninstall` はこのタイマーを削除しません。
+- **非対話の実行**（`-y`、`OMA_YES=1`、`CI=true`）では、`All` スキルプリセット、`model_preset: auto`、バックエンド言語として Python を使います。`mcp.devtools_browsers` にブラウザがすでに登録されていない限り、ブラウザ MCP は選択されません（Aside のインストールスクリプトも実行しません）。
+
 ---
 
 ## 方法2: bunx による手動インストール
@@ -181,7 +195,6 @@ oma search # Mechanical search primitives
 oma image # Multi-vendor AI image generation
 oma video # Video generation and capture
 oma slide # Presentation generation and export
-oma star # Star the repository
 ```
 
 `oma` は `oh-my-agent` の短縮名です。どちらも CLI コマンドとして使えます。
