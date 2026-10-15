@@ -9,16 +9,74 @@ import {
 } from "./settings.js";
 
 /**
- * oma pins a model request timeout, so any fixture that must read as
- * "already up to date" has to carry it — otherwise needsQwenSettingsUpdate
- * reports true for the timeout alone and the assertion under test says
- * nothing about the property it was written for.
+ * Fixtures that must read as "already up to date" include the recommended
+ * model timeout and memory default, so update detection isolates the setting
+ * under test.
  */
-const PINNED_TIMEOUT = {
+const RECOMMENDED_DEFAULTS = {
   model: { generationConfig: { timeout: QWEN_REQUEST_TIMEOUT_MS } },
+  memory: { enableManagedAutoMemory: false },
 } as const;
 
 describe("qwen settings", () => {
+  it("disables automatic memory saving on a fresh install", () => {
+    const result = applyQwenSettings({});
+    expect(result.memory).toEqual({ enableManagedAutoMemory: false });
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
+  it.each([undefined, "false", null])(
+    "repairs automatic memory saving in existing settings: %j",
+    (enableManagedAutoMemory) => {
+      const current = applyQwenSettings({});
+      const settings = {
+        ...current,
+        memory: {
+          enableManagedAutoMemory,
+          enableManagedAutoDream: true,
+          enableAutoSkill: false,
+          customSetting: "keep",
+        },
+      };
+      const before = structuredClone(settings);
+
+      expect(needsQwenSettingsUpdate(settings)).toBe(true);
+      const result = applyQwenSettings(settings);
+      expect(result.memory).toEqual({
+        ...before.memory,
+        enableManagedAutoMemory: false,
+      });
+      expect(settings).toEqual(before);
+      expect(needsQwenSettingsUpdate(result)).toBe(false);
+      expect(applyQwenSettings(result)).toEqual(result);
+    },
+  );
+
+  it.each([true, false])(
+    "preserves an explicit automatic memory preference: %s",
+    (enableManagedAutoMemory) => {
+      const settings = applyQwenSettings({
+        memory: { enableManagedAutoMemory, enableManagedAutoDream: false },
+      });
+      expect(settings.memory).toEqual({
+        enableManagedAutoMemory,
+        enableManagedAutoDream: false,
+      });
+      expect(needsQwenSettingsUpdate(settings)).toBe(false);
+      expect(applyQwenSettings(settings)).toEqual(settings);
+    },
+  );
+
+  it("detects the missing memory block in an otherwise current install", () => {
+    const settings = applyQwenSettings({});
+    delete settings.memory;
+
+    expect(needsQwenSettingsUpdate(settings)).toBe(true);
+    const result = applyQwenSettings(settings);
+    expect(result.memory).toEqual({ enableManagedAutoMemory: false });
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
   it("trusts recommended MCP servers on a fresh install", () => {
     const result = applyQwenSettings({});
     expect(result.mcpServers?.serena?.trust).toBe(true);
@@ -103,7 +161,7 @@ describe("qwen settings", () => {
   it("accepts existing serena HTTP transport", () => {
     const settings = {
       privacy: { usageStatisticsEnabled: false },
-      ...PINNED_TIMEOUT,
+      ...RECOMMENDED_DEFAULTS,
       mcpServers: {
         "chrome-devtools": {
           trust: true,
@@ -132,7 +190,7 @@ describe("qwen settings", () => {
 
   it("accepts missing privacy.usageStatisticsEnabled when telemetry is opted in", () => {
     const settings = {
-      ...PINNED_TIMEOUT,
+      ...RECOMMENDED_DEFAULTS,
       mcpServers: {
         "chrome-devtools": {
           trust: true,
@@ -252,7 +310,7 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
         // runner-specific and so cannot be pinned in a fixture.
         serena: result.mcpServers?.serena,
       },
-      ...PINNED_TIMEOUT,
+      ...RECOMMENDED_DEFAULTS,
       privacy: { usageStatisticsEnabled: false },
     } as const;
 
@@ -264,7 +322,7 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
     // Locks output for the targetDir → installRoot rename (plan T2.9).
     const upToDate = {
       privacy: { usageStatisticsEnabled: false },
-      ...PINNED_TIMEOUT,
+      ...RECOMMENDED_DEFAULTS,
       mcpServers: {
         "chrome-devtools": {
           trust: true,
@@ -290,6 +348,7 @@ describe("qwen model request timeout", () => {
   /** Recommended-state fixture minus the model/timeout slot under test. */
   const baseline = () => ({
     privacy: { usageStatisticsEnabled: false },
+    memory: { enableManagedAutoMemory: false },
     mcpServers: {
       "chrome-devtools": RECOMMENDED_QWEN_MCP["chrome-devtools"],
       serena: RECOMMENDED_QWEN_MCP.serena,
@@ -398,7 +457,7 @@ describe("qwen model request timeout", () => {
     // otherwise-current config kept contentGenerator forever.
     const stale = {
       ...baseline(),
-      ...PINNED_TIMEOUT,
+      ...RECOMMENDED_DEFAULTS,
       contentGenerator: { apiKey: "legacy" },
     };
     expect(needsQwenSettingsUpdate(stale)).toBe(true);

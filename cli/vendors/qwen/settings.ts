@@ -61,6 +61,10 @@ interface QwenMcpServer extends McpServerEntry {
 
 export interface QwenSettings {
   mcpServers?: Record<string, QwenMcpServer>;
+  memory?: {
+    enableManagedAutoMemory?: boolean;
+    [key: string]: unknown;
+  };
   model?: {
     generationConfig?: {
       timeout?: number;
@@ -213,6 +217,13 @@ export function needsQwenSettingsUpdate(
   // removal is unreachable for a config that is otherwise already current.
   if ("contentGenerator" in sanitized) return true;
 
+  if (
+    !isRecord(sanitized.memory) ||
+    typeof sanitized.memory.enableManagedAutoMemory !== "boolean"
+  ) {
+    return true;
+  }
+
   if (isRecord(sanitized.modelProviders)) {
     if (
       hasModelProvidersTimeoutMismatch(
@@ -258,6 +269,13 @@ export function applyQwenSettings(
   }
 
   delete qwenSettings.contentGenerator;
+
+  // Qwen enables background memory extraction by default. Install an explicit
+  // opt-out while preserving preferences set through Qwen's /memory controls.
+  const memory = isRecord(qwenSettings.memory) ? qwenSettings.memory : {};
+  if (typeof memory.enableManagedAutoMemory !== "boolean") {
+    qwenSettings.memory = { ...memory, enableManagedAutoMemory: false };
+  }
 
   if (isRecord(qwenSettings.modelProviders)) {
     updateModelProvidersTimeout(

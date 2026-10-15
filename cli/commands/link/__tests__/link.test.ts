@@ -3,6 +3,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -80,6 +81,7 @@ vi.mock("../../../utils/config.js", () => ({
   isTelemetryEnabled: vi.fn(() => false),
   loadDevToolsBrowsers: vi.fn(() => undefined),
   loadSerenaConfig: vi.fn(() => ({ mode: "stdio" })),
+  serenaTransportMode: vi.fn(() => "stdio"),
 }));
 
 vi.mock("../../../vendors/antigravity/hud.js", () => ({
@@ -507,24 +509,28 @@ describe("link kernel", () => {
       expect(forbidden).toBeUndefined();
     });
 
-    it("calls safeWriteJson for Qwen settings.json when update is needed", () => {
-      (
-        qwen.needsQwenSettingsUpdate as ReturnType<typeof vi.fn>
-      ).mockReturnValueOnce(true);
+    it("writes Qwen settings with automatic memory disabled when missing", async () => {
+      const actual = await vi.importActual<
+        typeof import("../../../vendors/qwen/settings.js")
+      >("../../../vendors/qwen/settings.js");
+      vi.mocked(qwen.needsQwenSettingsUpdate).mockImplementationOnce(
+        actual.needsQwenSettingsUpdate,
+      );
+      vi.mocked(qwen.applyQwenSettings).mockImplementationOnce(
+        actual.applyQwenSettings,
+      );
 
       const projectDir = makeProject(["qwen"]);
       process.chdir(projectDir);
 
       link({ quiet: true });
 
-      const calls = (
-        safeWrite.safeWriteJson as ReturnType<typeof vi.fn>
-      ).mock.calls.map((args: unknown[]) => args[0] as string);
-      expect(
-        calls.some(
-          (p: string) => p.includes(".qwen") && p.endsWith("settings.json"),
-        ),
-      ).toBe(true);
+      expect(safeWrite.safeWriteJson).toHaveBeenCalledWith(
+        join(realpathSync(projectDir), ".qwen", "settings.json"),
+        expect.objectContaining({
+          memory: { enableManagedAutoMemory: false },
+        }),
+      );
     });
 
     it("never calls safeWriteJson with .claude.json for any vendor", () => {
