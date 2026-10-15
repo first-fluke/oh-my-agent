@@ -32,10 +32,11 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 Les deux scripts d'amorçage fonctionnent de la même manière :
 1. Ils détectent votre plateforme (macOS, Linux ou Windows)
 2. Ils vérifient la présence de bun et uv (et de Serena si vous l'avez choisi), puis les installent s'ils manquent
-3. Ils lancent l'installateur interactif avec la sélection du preset et des fournisseurs
-4. Ils créent `.agents/` avec les compétences et la configuration choisies
-5. Ils configurent les couches d'intégration du runtime (hooks, symlinks et paramètres des fournisseurs détectés)
-6. Ils configurent les serveurs MCP d'intelligence du code et de mémoire
+3. Ils installent la commande `oma` globalement avec `bun install --global oh-my-agent`, sauf si `oma` est déjà dans votre PATH (les hooks et les workflows l'appellent)
+4. Ils lancent l'installateur interactif avec la sélection du preset et des fournisseurs
+5. Ils créent `.agents/` avec les compétences et la configuration choisies
+6. Ils configurent les couches d'intégration du runtime (hooks, symlinks et paramètres des fournisseurs détectés)
+7. Ils configurent les serveurs MCP d'intelligence du code et de mémoire
 
 L'amorçage continue après l'échec d'une dépendance facultative et affiche les commandes à exécuter ensuite. AgentMemory est le fournisseur de mémoire sémantique par défaut : `oma install` et `oma update` échouent si son installation, son démarrage ou son contrôle de santé échoue. Sélectionner `providers.semantic_memory: none` ou `honcho`, ou définir `OMA_NO_AGENTMEMORY=1`, désactive la préparation automatique d'AgentMemory. Lancez `oma doctor` une fois l'installateur terminé.
 

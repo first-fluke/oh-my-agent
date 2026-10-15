@@ -31,10 +31,11 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 两个引导脚本的行为相同：
 1. 检测平台（macOS、Linux 或 Windows）
 2. 检查 bun 和 uv（以及选择的 serena），缺少时安装
-3. 运行交互式安装器，选择预设和提供商
-4. 使用选定的技能和配置创建 `.agents/`
-5. 设置运行时集成层（针对检测到的供应商配置钩子、符号链接和设置）
-6. 配置代码智能和内存 MCP 服务器
+3. 通过 `bun install --global oh-my-agent` 全局安装 `oma` 命令，除非 `oma` 已在 PATH 中（钩子和工作流会调用它）
+4. 运行交互式安装器，选择预设和提供商
+5. 使用选定的技能和配置创建 `.agents/`
+6. 设置运行时集成层（针对检测到的供应商配置钩子、符号链接和设置）
+7. 配置代码智能和内存 MCP 服务器
 
 引导脚本会在可选依赖失败后继续，并报告后续命令。AgentMemory 是默认的语义记忆提供商：如果它的安装、启动或健康检查失败，`oma install` 和 `oma update` 会失败。选择 `providers.semantic_memory: none` 或 `honcho`，或设置 `OMA_NO_AGENTMEMORY=1`，会跳过 AgentMemory 的自动准备。安装器结束后运行 `oma doctor`。
 

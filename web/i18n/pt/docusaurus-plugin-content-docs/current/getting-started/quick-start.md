@@ -5,7 +5,7 @@ description: Execute uma tarefa de escopo definido, da instalação à verifica�
 
 # Início rápido
 
-Use esta página para executar uma pequena tarefa e registrar um resultado concreto. Você precisa de um diretório de projeto e de pelo menos uma CLI ou IDE de IA compatível. O instalador pode preparar `bun`, `uv`, Serena e CUE no macOS, Linux ou Windows; a integração do host selecionado é necessária para o primeiro prompt, enquanto providers e integrações de navegador são opcionais.
+Use esta página para executar uma pequena tarefa e registrar um resultado concreto. Você precisa de um diretório de projeto e de pelo menos uma CLI ou IDE de IA compatível. O instalador pode preparar `bun`, `uv`, Serena, CUE e o comando global `oma` no macOS, Linux ou Windows; a integração do host selecionado é necessária para o primeiro prompt, enquanto providers e integrações de navegador são opcionais.
 
 ## 1. Instalar
 

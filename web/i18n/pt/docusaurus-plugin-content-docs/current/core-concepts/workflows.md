@@ -63,7 +63,7 @@ A revisão do plano reutiliza a autorização já concedida para a tarefa. Os ag
 
 Workflows persistentes continuam executando até que todas as tarefas sejam concluídas. Mantêm estado em `.agents/state/` e reinjetam o contexto `[OMA PERSISTENT MODE: ...]` em cada mensagem do usuário até serem explicitamente desativados.
 
-O modo persistente começa somente com uma **invocação explícita**: o nome do próprio workflow (a lista `explicit` em `triggers.json`, por exemplo "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). As demais palavras-chave gatilho abaixo são dicas em linguagem natural: elas injetam o workflow como uma sugestão, sem ativar o modo persistente, e nunca disparam quando a primeira ou a última linha do prompt é uma pergunta terminada em `?`.
+O modo persistente começa somente com uma **invocação explícita**: o slash command do workflow (`/ultrawork`, ou uma forma com namespace como `/oma:ultrawork`), ou o nome do próprio workflow em texto simples (a lista `explicit` em `triggers.json`, por exemplo "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). As demais palavras-chave gatilho abaixo são dicas em linguagem natural: elas injetam o workflow como uma sugestão, sem ativar o modo persistente, e nunca disparam quando a primeira ou a última linha do prompt é uma pergunta terminada em `?`.
 
 ### /orchestrate
 

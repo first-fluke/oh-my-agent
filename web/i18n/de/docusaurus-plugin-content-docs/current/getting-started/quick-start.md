@@ -5,7 +5,7 @@ description: Eine abgegrenzte Aufgabe von der Installation bis zur Verifizierung
 
 # Schnellstart
 
-Verwenden Sie diese Seite, um eine kleine Aufgabe auszuführen und ein konkretes Ergebnis festzuhalten. Sie benötigen ein Projektverzeichnis und mindestens eine unterstützte KI-CLI oder IDE. Der Installer kann `bun`, `uv`, Serena und CUE unter macOS, Linux oder Windows einrichten. Für den ersten Prompt ist die ausgewählte Host-Integration erforderlich; Provider- und Browser-Integrationen sind optional.
+Verwenden Sie diese Seite, um eine kleine Aufgabe auszuführen und ein konkretes Ergebnis festzuhalten. Sie benötigen ein Projektverzeichnis und mindestens eine unterstützte KI-CLI oder IDE. Der Installer kann `bun`, `uv`, Serena, CUE und den globalen Befehl `oma` unter macOS, Linux oder Windows einrichten. Für den ersten Prompt ist die ausgewählte Host-Integration erforderlich; Provider- und Browser-Integrationen sind optional.
 
 ## 1. Installieren
 

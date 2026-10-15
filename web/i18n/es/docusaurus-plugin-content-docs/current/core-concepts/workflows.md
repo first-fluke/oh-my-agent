@@ -63,7 +63,7 @@ La revisión del plan reutiliza la autorización ya concedida para la tarea. Los
 
 Los flujos persistentes continúan ejecutándose hasta que todas las tareas terminan. Mantienen el estado en `.agents/state/` y vuelven a inyectar el contexto `[OMA PERSISTENT MODE: ...]` en cada mensaje del usuario hasta que se desactivan explícitamente.
 
-El modo persistente solo se inicia con una **invocación explícita**: el propio nombre del flujo (la lista `explicit` de `triggers.json`, por ejemplo "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). Las demás palabras clave de activación de abajo son indicios en lenguaje natural: inyectan el flujo como sugerencia sin activar el modo persistente, y nunca se activan cuando la primera o la última línea del prompt es una pregunta que termina en `?`.
+El modo persistente solo se inicia con una **invocación explícita**: el slash command del flujo (`/ultrawork`, o una forma con namespace como `/oma:ultrawork`), o el propio nombre del flujo en texto plano (la lista `explicit` de `triggers.json`, por ejemplo "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). Las demás palabras clave de activación de abajo son indicios en lenguaje natural: inyectan el flujo como sugerencia sin activar el modo persistente, y nunca se activan cuando la primera o la última línea del prompt es una pregunta que termina en `?`.
 
 ### /orchestrate
 

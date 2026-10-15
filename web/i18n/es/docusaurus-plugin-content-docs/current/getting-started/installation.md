@@ -32,10 +32,11 @@ Ambos scripts de bootstrap se comportan igual:
 
 1. Detectan la plataforma (macOS, Linux o Windows).
 2. Comprueban bun y uv (y serena si se elige) y los instalan si faltan.
-3. Ejecutan el instalador interactivo con selección de preset y proveedor.
-4. Crean `.agents/` con las skills y la configuración seleccionadas.
-5. Preparan las capas de integración del runtime (hooks, symlinks y ajustes de los proveedores detectados).
-6. Configuran los servidores MCP de inteligencia de código y memoria.
+3. Instalan el comando `oma` de forma global con `bun install --global oh-my-agent`, salvo que `oma` ya esté en tu PATH (los hooks y los workflows lo llaman).
+4. Ejecutan el instalador interactivo con selección de preset y proveedor.
+5. Crean `.agents/` con las skills y la configuración seleccionadas.
+6. Preparan las capas de integración del runtime (hooks, symlinks y ajustes de los proveedores detectados).
+7. Configuran los servidores MCP de inteligencia de código y memoria.
 
 El bootstrap continúa después de fallos de dependencias opcionales e informa de los comandos de seguimiento. AgentMemory es el proveedor de memoria semántica predeterminado: `oma install` y `oma update` fallan si falla su instalación, su arranque o su comprobación de estado. Seleccionar `providers.semantic_memory: none` u `honcho`, o definir `OMA_NO_AGENTMEMORY=1`, omite la preparación automática de AgentMemory. Ejecuta `oma doctor` cuando termine el instalador.
 

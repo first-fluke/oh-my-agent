@@ -5,7 +5,7 @@ description: Voer één afgebakende taak uit, van installatie tot verificatie, m
 
 # Snel starten
 
-Gebruik deze pagina om één kleine taak uit te voeren en een concreet resultaat vast te leggen. Je hebt een projectmap en minstens één ondersteunde AI-CLI of IDE nodig. De installer kan `bun`, `uv`, Serena en CUE op macOS, Linux of Windows instellen. De geselecteerde hostintegratie is nodig voor de eerste prompt; provider- en browserintegraties zijn optioneel.
+Gebruik deze pagina om één kleine taak uit te voeren en een concreet resultaat vast te leggen. Je hebt een projectmap en minstens één ondersteunde AI-CLI of IDE nodig. De installer kan `bun`, `uv`, Serena, CUE en het globale `oma`-commando op macOS, Linux of Windows instellen. De geselecteerde hostintegratie is nodig voor de eerste prompt; provider- en browserintegraties zijn optioneel.
 
 ## 1. Installeer
 

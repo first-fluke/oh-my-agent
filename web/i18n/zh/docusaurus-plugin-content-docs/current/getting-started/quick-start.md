@@ -6,7 +6,7 @@ sidebar_label: 快速开始
 
 # 快速开始
 
-使用此页运行一个小任务，并记录具体结果。你需要一个项目目录，以及至少一个受支持的 AI CLI 或 IDE。安装器可在 macOS、Linux 或 Windows 上安装 `bun`、`uv`、Serena 和 CUE。首次提示必须使用所选的宿主集成，供应商和浏览器集成为可选项。
+使用此页运行一个小任务，并记录具体结果。你需要一个项目目录，以及至少一个受支持的 AI CLI 或 IDE。安装器可在 macOS、Linux 或 Windows 上安装 `bun`、`uv`、Serena、CUE 和全局 `oma` 命令。首次提示必须使用所选的宿主集成，供应商和浏览器集成为可选项。
 
 ## 1. 安装 {#1-install}
 

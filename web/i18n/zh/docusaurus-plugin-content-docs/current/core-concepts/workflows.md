@@ -63,7 +63,7 @@ description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、�
 
 持久化工作流持续运行直到所有任务完成。它们在 `.agents/state/` 中维护状态，并在每条用户消息中重新注入 `[OMA PERSISTENT MODE: ...]` 上下文，直到显式停用。
 
-只有**显式调用**才会启动持久化模式，即工作流自己的名称（`triggers.json` 中的 `explicit` 列表，例如“orchestrate”、“ultrawork”/“ulw”、“ralph”/“랄프”、“work mode”）。下面的其他触发关键词是自然语言提示：它们只会把工作流作为建议注入，不会激活持久化模式；当提示的第一行或最后一行是以 `?` 结尾的问句时，它们也绝不会触发。
+只有**显式调用**才会启动持久化模式：工作流的斜杠命令（`/ultrawork`，或带命名空间的形式，例如 `/oma:ultrawork`），或以纯文本写出的工作流自己的名称（`triggers.json` 中的 `explicit` 列表，例如“orchestrate”、“ultrawork”/“ulw”、“ralph”/“랄프”、“work mode”）。下面的其他触发关键词是自然语言提示：它们只会把工作流作为建议注入，不会激活持久化模式；当提示的第一行或最后一行是以 `?` 结尾的问句时，它们也绝不会触发。
 
 ### /orchestrate
 

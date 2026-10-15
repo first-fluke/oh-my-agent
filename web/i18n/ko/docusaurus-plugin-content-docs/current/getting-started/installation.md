@@ -31,10 +31,11 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 두 부트스트랩 스크립트는 동일하게 동작합니다:
 1. 플랫폼을 감지합니다 (macOS, Linux, 또는 Windows)
 2. bun과 uv(선택한 경우 serena도)를 확인하고, 없으면 설치합니다
-3. 프리셋과 프로바이더 선택이 포함된 대화형 설치 프로그램을 실행합니다
-4. 선택한 스킬과 설정으로 `.agents/`를 생성합니다
-5. 런타임 통합 레이어를 설정합니다 (감지된 벤더용 훅, 심볼릭 링크, 설정)
-6. 코드 인텔리전스와 메모리 MCP 서버를 설정합니다
+3. PATH에 `oma`가 아직 없으면 `bun install --global oh-my-agent`로 `oma` 명령을 전역 설치합니다 (훅과 워크플로우가 이 명령을 호출합니다)
+4. 프리셋과 프로바이더 선택이 포함된 대화형 설치 프로그램을 실행합니다
+5. 선택한 스킬과 설정으로 `.agents/`를 생성합니다
+6. 런타임 통합 레이어를 설정합니다 (감지된 벤더용 훅, 심볼릭 링크, 설정)
+7. 코드 인텔리전스와 메모리 MCP 서버를 설정합니다
 
 선택적 의존성 설치가 실패해도 부트스트랩은 계속 진행하고 후속 명령을 보고합니다. AgentMemory는 기본 시맨틱 메모리 프로바이더이며, 설치, 시작 또는 헬스 체크가 실패하면 `oma install`과 `oma update`도 실패합니다. `providers.semantic_memory: none` 또는 `honcho`를 선택하거나 `OMA_NO_AGENTMEMORY=1`을 설정하면 AgentMemory 자동 준비를 건너뜁니다. 설치 프로그램이 끝나면 `oma doctor`를 실행하세요.
 

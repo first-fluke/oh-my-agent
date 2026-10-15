@@ -31,10 +31,11 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 Os dois scripts de bootstrap funcionam da mesma forma:
 1. Detectam sua plataforma (macOS, Linux ou Windows)
 2. Verificam bun e uv (e serena, se escolhida), instalando-os quando estiverem ausentes
-3. Executam o instalador interativo com seleção de preset e provider
-4. Criam `.agents/` com as skills e a configuração selecionadas
-5. Configuram as camadas de integração do runtime (hooks, symlinks e configurações dos vendors detectados)
-6. Configuram os servidores MCP de inteligência de código e memória
+3. Instalam o comando `oma` globalmente com `bun install --global oh-my-agent`, a menos que `oma` já esteja no seu PATH (hooks e workflows o chamam)
+4. Executam o instalador interativo com seleção de preset e provider
+5. Criam `.agents/` com as skills e a configuração selecionadas
+6. Configuram as camadas de integração do runtime (hooks, symlinks e configurações dos vendors detectados)
+7. Configuram os servidores MCP de inteligência de código e memória
 
 O bootstrap continua depois de falhas em dependências opcionais e informa os comandos de acompanhamento. AgentMemory é o provider de memória semântica padrão: `oma install` e `oma update` falham se a instalação, a inicialização ou a verificação de integridade dele falhar. Selecionar `providers.semantic_memory: none` ou `honcho`, ou definir `OMA_NO_AGENTMEMORY=1`, ignora a preparação automática do AgentMemory. Execute `oma doctor` depois que o instalador terminar.
 

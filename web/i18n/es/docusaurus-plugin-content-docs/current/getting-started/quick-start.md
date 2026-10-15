@@ -5,7 +5,7 @@ description: Ejecuta una tarea acotada desde la instalación hasta la verificaci
 
 # Inicio rápido
 
-Usa esta página para ejecutar una tarea pequeña y registrar un resultado concreto. Necesitas un directorio de proyecto y al menos un CLI o IDE de IA compatible. El instalador puede preparar `bun`, `uv`, Serena y CUE en macOS, Linux o Windows; la integración con el host seleccionado es necesaria para el primer prompt, mientras que las integraciones de proveedores y del navegador son opcionales.
+Usa esta página para ejecutar una tarea pequeña y registrar un resultado concreto. Necesitas un directorio de proyecto y al menos un CLI o IDE de IA compatible. El instalador puede preparar `bun`, `uv`, Serena, CUE y el comando global `oma` en macOS, Linux o Windows; la integración con el host seleccionado es necesaria para el primer prompt, mientras que las integraciones de proveedores y del navegador son opcionales.
 
 ## 1. Instala
 

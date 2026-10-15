@@ -5,7 +5,7 @@ description: Run one scoped task from install through verification, with expecte
 
 # Quick Start
 
-Use this page to run one small task and record a concrete result. You need a project directory and at least one supported AI CLI or IDE. The installer can bootstrap `bun`, `uv`, Serena, and CUE on macOS, Linux, or Windows; the selected host integration is required for the first prompt, while provider and browser integrations are optional.
+Use this page to run one small task and record a concrete result. You need a project directory and at least one supported AI CLI or IDE. The installer can bootstrap `bun`, `uv`, Serena, CUE, and the global `oma` command on macOS, Linux, or Windows; the selected host integration is required for the first prompt, while provider and browser integrations are optional.
 
 ## 1. Install
 

@@ -31,10 +31,11 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 Hai bootstrap script hoạt động giống nhau:
 1. Phát hiện platform của bạn (macOS, Linux hoặc Windows)
 2. Kiểm tra bun và uv (cũng như serena nếu được chọn), rồi cài khi thiếu
-3. Chạy installer tương tác để chọn preset và provider
-4. Tạo `.agents/` với các skill và cấu hình bạn đã chọn
-5. Thiết lập lớp tích hợp runtime (hook, symlink, setting cho vendor được phát hiện)
-6. Cấu hình code-intelligence và memory MCP server
+3. Cài lệnh `oma` ở phạm vi global bằng `bun install --global oh-my-agent`, trừ khi `oma` đã có trong PATH (hook và workflow sẽ gọi lệnh này)
+4. Chạy installer tương tác để chọn preset và provider
+5. Tạo `.agents/` với các skill và cấu hình bạn đã chọn
+6. Thiết lập lớp tích hợp runtime (hook, symlink, setting cho vendor được phát hiện)
+7. Cấu hình code-intelligence và memory MCP server
 
 Bootstrap vẫn tiếp tục sau lỗi dependency tùy chọn và báo các lệnh cần chạy tiếp. AgentMemory là semantic-memory provider mặc định: `oma install` và `oma update` sẽ thất bại nếu bước cài đặt, khởi động hoặc health check của nó thất bại. Chọn `providers.semantic_memory: none` hoặc `honcho`, hoặc đặt `OMA_NO_AGENTMEMORY=1`, sẽ bỏ qua bước chuẩn bị AgentMemory tự động. Sau khi installer hoàn tất, hãy chạy `oma doctor`.
 

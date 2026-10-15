@@ -63,7 +63,7 @@ Die Planprüfung nutzt die bereits erteilte Autorisierung für die Aufgabe. Agen
 
 Persistente Workflows laufen weiter, bis alle Aufgaben erledigt sind. Sie halten den Zustand in `.agents/state/` und injizieren bei jeder Benutzernachricht den Kontext `[OMA PERSISTENT MODE: ...]` erneut, bis sie explizit deaktiviert werden.
 
-Der persistente Modus startet nur bei einem **expliziten Aufruf** — dem eigenen Namen des Workflows (die Liste `explicit` in `triggers.json`, z. B. "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). Die übrigen Trigger-Keywords unten sind Hinweise in natürlicher Sprache: Sie injizieren den Workflow als Vorschlag, ohne den persistenten Modus zu aktivieren, und lösen nie aus, wenn die erste oder letzte Zeile des Prompts eine mit `?` endende Frage ist.
+Der persistente Modus startet nur bei einem **expliziten Aufruf**: dem Slash Command des Workflows (`/ultrawork` oder eine Form mit Namespace wie `/oma:ultrawork`) oder dem eigenen Namen des Workflows im Klartext (die Liste `explicit` in `triggers.json`, z. B. "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). Die übrigen Trigger-Keywords unten sind Hinweise in natürlicher Sprache: Sie injizieren den Workflow als Vorschlag, ohne den persistenten Modus zu aktivieren, und lösen nie aus, wenn die erste oder letzte Zeile des Prompts eine mit `?` endende Frage ist.
 
 ### /orchestrate
 

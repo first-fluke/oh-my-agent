@@ -5,7 +5,7 @@ description: Exécutez une tâche au périmètre défini, de l’installation à
 
 # Démarrage rapide
 
-Utilisez cette page pour exécuter une petite tâche et consigner un résultat concret. Vous avez besoin d’un répertoire de projet et d’au moins un CLI ou IDE d’IA pris en charge. L’installateur peut initialiser `bun`, `uv`, Serena et CUE sur macOS, Linux ou Windows ; l’intégration de l’hôte sélectionné est requise pour la première invite, tandis que les intégrations de fournisseurs et de navigateur sont facultatives.
+Utilisez cette page pour exécuter une petite tâche et consigner un résultat concret. Vous avez besoin d’un répertoire de projet et d’au moins un CLI ou IDE d’IA pris en charge. L’installateur peut initialiser `bun`, `uv`, Serena, CUE et la commande globale `oma` sur macOS, Linux ou Windows ; l’intégration de l’hôte sélectionné est requise pour la première invite, tandis que les intégrations de fournisseurs et de navigateur sont facultatives.
 
 ## 1. Installer
 

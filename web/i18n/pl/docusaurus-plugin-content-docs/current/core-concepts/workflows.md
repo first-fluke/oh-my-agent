@@ -63,7 +63,7 @@ Przegląd planu korzysta z autoryzacji już udzielonej dla zadania. Agenci pytaj
 
 Workflowy trwałe działają do czasu ukończenia wszystkich zadań. Utrzymują stan w `.agents/state/` i ponownie wstrzykują kontekst `[OMA PERSISTENT MODE: ...]` przy każdej wiadomości użytkownika, dopóki nie zostaną jawnie dezaktywowane.
 
-Tryb trwały uruchamia się wyłącznie przy **jawnym wywołaniu** — własnej nazwie workflowu (lista `explicit` w `triggers.json`, np. „orchestrate”, „ultrawork”/„ulw”, „ralph”/„랄프”, „work mode”). Pozostałe słowa kluczowe wyzwalające poniżej to wskazówki w języku naturalnym: wstrzykują workflow jako sugestię, nie aktywując trybu trwałego, i nigdy się nie uruchamiają, gdy pierwsza lub ostatnia linia promptu jest pytaniem kończącym się znakiem `?`.
+Tryb trwały uruchamia się wyłącznie przy **jawnym wywołaniu**: slash commandzie workflowu (`/ultrawork` albo formie z przestrzenią nazw, np. `/oma:ultrawork`) lub własnej nazwie workflowu w zwykłym tekście (lista `explicit` w `triggers.json`, np. „orchestrate”, „ultrawork”/„ulw”, „ralph”/„랄프”, „work mode”). Pozostałe słowa kluczowe wyzwalające poniżej to wskazówki w języku naturalnym: wstrzykują workflow jako sugestię, nie aktywując trybu trwałego, i nigdy się nie uruchamiają, gdy pierwsza lub ostatnia linia promptu jest pytaniem kończącym się znakiem `?`.
 
 ### /orchestrate {#orchestrate}
 

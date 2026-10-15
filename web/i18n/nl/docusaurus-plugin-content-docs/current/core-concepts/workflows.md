@@ -63,7 +63,7 @@ Planreview hergebruikt de autorisatie die al voor de taak is gegeven. Agenten vr
 
 Persistente workflows blijven lopen totdat alle taken klaar zijn. Ze bewaren state in `.agents/state/` en injecteren bij elk gebruikersbericht opnieuw context met `[OMA PERSISTENT MODE: ...]` totdat ze expliciet worden gedeactiveerd.
 
-De persistente modus start alleen bij een **expliciete aanroep** — de eigen naam van de workflow (de lijst `explicit` in `triggers.json`, bijvoorbeeld "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). De overige trigger-keywords hieronder zijn natural-language-hints: ze injecteren de workflow als suggestie zonder de persistente modus te activeren, en ze gaan nooit af wanneer de eerste of laatste regel van de prompt een vraag is die op `?` eindigt.
+De persistente modus start alleen bij een **expliciete aanroep**: het slashcommando van de workflow (`/ultrawork`, of een vorm met namespace zoals `/oma:ultrawork`), of de eigen naam van de workflow in gewone tekst (de lijst `explicit` in `triggers.json`, bijvoorbeeld "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). De overige trigger-keywords hieronder zijn natural-language-hints: ze injecteren de workflow als suggestie zonder de persistente modus te activeren, en ze gaan nooit af wanneer de eerste of laatste regel van de prompt een vraag is die op `?` eindigt.
 
 ### /orchestrate
 
