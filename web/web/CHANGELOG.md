@@ -1,5 +1,19 @@
 # Changelog
 
+## [11.0.3](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.2...web-v11.0.3) (2026-10-15)
+
+
+### Bug Fixes
+
+* **cli:** name the replacement for removed command spellings ([d1b2eae](https://github.com/first-fluke/oh-my-agent/commit/d1b2eae662007ccd9b6b805b9a8e43f9e508a8b2))
+* **explain:** date artifacts in the configured timezone ([f2b2342](https://github.com/first-fluke/oh-my-agent/commit/f2b2342caac886232dbb68ea787696dc7d053d33))
+* **install:** stop shipping maintainer defaults to every install ([2a8826d](https://github.com/first-fluke/oh-my-agent/commit/2a8826d3f564cad65e550eb4750b398b361442d0))
+
+
+### Documentation
+
+* sync supported agents, the spec, and the READMEs with the code ([fd4ae27](https://github.com/first-fluke/oh-my-agent/commit/fd4ae27270163cc3486962ba8748f4148f9be455))
+
 ## [11.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.1...web-v11.0.2) (2026-10-15)
 
 
