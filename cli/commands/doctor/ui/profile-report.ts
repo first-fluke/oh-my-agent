@@ -45,7 +45,9 @@ export async function renderProfileReport(
   if (report.missingPreset) {
     p.log.error(
       [
-        pc.red("model_preset not found or unknown in .agents/oma-config.yaml"),
+        pc.red(
+          "model_preset not found or unknown in .agents/oma-config.yaml (or .agents/oma-config.cue)",
+        ),
         pc.dim("Run `oma install` to set a model preset."),
         pc.dim("Example: model_preset: auto"),
       ].join("\n"),

@@ -19,6 +19,10 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
+import {
+  loadConfigLayers,
+  planPreferenceWrite,
+} from "../../utils/config-layers.js";
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
 import { HonchoConfigSchema } from "../../utils/providers.js";
 
@@ -83,27 +87,50 @@ export async function configureHonchoKey(options: KeyOptions = {}) {
   const kind = options.kind ?? "connection";
   if (kind === "connection") {
     const root = resolveProjectRoot(options.projectDir);
-    const path = join(root, ".agents", "oma-config.yaml");
-    rejectSymlink(path);
-    if (!existsSync(path))
-      throw new Error("Create .agents/oma-config.yaml first");
-    const document = parseDocument(readFileSync(path, "utf-8"));
-    if (document.errors.length)
-      throw new Error("Cannot update invalid OMA YAML");
-    const parsed = document.toJS();
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw new Error("OMA config must be a YAML mapping");
-    }
-    const config = HonchoConfigSchema.parse(parsed.honcho ?? {});
+    const cue = join(root, ".agents", "oma-config.cue");
+    // CUE outranks oma-config.yaml: read the effective Honcho settings and let
+    // planPreferenceWrite pick the layer where the reference takes effect.
+    const shared = existsSync(cue)
+      ? cue
+      : join(root, ".agents", "oma-config.yaml");
+    if (!existsSync(shared))
+      throw new Error(
+        "Create .agents/oma-config.yaml or .agents/oma-config.cue first",
+      );
+    const readYaml = (path: string) => {
+      rejectSymlink(path);
+      const document = parseDocument(
+        existsSync(path) ? readFileSync(path, "utf-8") : "",
+      );
+      if (document.errors.length)
+        throw new Error("Cannot update invalid OMA YAML");
+      const parsed = document.toJS() ?? {};
+      if (typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("OMA config must be a YAML mapping");
+      }
+      return { document, parsed };
+    };
+    const config = HonchoConfigSchema.parse(
+      (shared === cue
+        ? loadConfigLayers(root, process.env, { searchParents: false }).config
+            .honcho
+        : readYaml(shared).parsed.honcho) ?? {},
+    );
     const identity = [
-      path,
+      shared,
       config.base_url ?? "https://api.honcho.dev",
       config.workspace_id ?? "",
     ].join("\n");
     const name =
       config.api_key_vault ??
       `honcho-${createHash("sha256").update(identity).digest("hex").slice(0, 24)}`;
-    document.setIn(["honcho", "api_key_vault"], name);
+    const plan = planPreferenceWrite(root, [
+      [["honcho", "api_key_vault"], name],
+    ]);
+    // Nothing to write when the effective config already holds the reference.
+    const path = plan.entries.length ? plan.path : shared;
+    const document = plan.entries.length ? readYaml(path).document : null;
+    for (const [keys, value] of plan.entries) document?.setIn(keys, value);
     const result = {
       kind,
       storage: "os-keychain",
@@ -114,7 +141,7 @@ export async function configureHonchoKey(options: KeyOptions = {}) {
     if (options.dryRun) return result;
     const value = await readKey(options);
     await storeSecret(name, value);
-    writePrivate(path, document.toString());
+    if (document) writePrivate(path, document.toString());
     return result;
   }
   if (kind !== "embedding")

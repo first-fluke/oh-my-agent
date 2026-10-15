@@ -58,7 +58,7 @@ oma doctor --profile
 | `agents` | 에이전트 ID → `model`, 선택적 `effort`, `thinking`, `memory` | 프리셋에 따라 결정 | 선택한 프리셋 위에 적용할 에이전트별 설정입니다. `effort`는 `none`, `low`, `medium`, `high`, `xhigh`, `memory`는 `user`, `project`, `local`을 허용합니다. |
 | `models` | 모델 식별자 → CLI 매핑 | 지정 없음 | 지원하는 벤더 CLI에서 사용할 모델을 직접 정의합니다. |
 | `custom_presets` | 프리셋 → `description`, 선택적 `extends`, `agent_defaults` | 지정 없음 | 사용자 정의 프리셋입니다. `extends`로 기본 제공 프리셋을 상속할 수 있습니다. |
-| `vendors` | YAML: 선택한 벤더 ID의 `string[]`; CUE 템플릿: 선택적 `vendors.pi` 대체 설정 맵 | 생략 시: `oma link`는 연동 가능한 모든 벤더, `oma update`는 프로젝트 디렉토리가 있는 벤더를 사용 | YAML에서 `oma install`과 `oma update`가 어떤 벤더의 연동 파일을 생성할지 선택합니다. 벤더별 실행 방식은 관리되는 오케스트레이션 설정에 있습니다. [벤더 선택 및 디스패치 메타데이터](#vendor-selection-and-dispatch-metadata)를 참고하세요. |
+| `vendors` | 선택한 벤더 ID의 `string[]` (YAML과 CUE) | 생략 시: `oma link`는 연동 가능한 모든 벤더, `oma update`는 프로젝트 디렉토리가 있는 벤더를 사용 | `oma install`과 `oma update`가 어떤 벤더의 연동 파일을 생성할지 선택합니다. 벤더별 실행 방식은 관리되는 오케스트레이션 설정에 있습니다. [벤더 선택 및 디스패치 메타데이터](#vendor-selection-and-dispatch-metadata)를 참고하세요. |
 | `default_cli` | 벤더 ID(`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `free` 전송에서는 `codex` | 다른 방법으로 벤더가 정해지지 않을 때 사용하는 벤더입니다. `auto`에서 런타임을 감지하지 못한 경우, 또는 `--vendor`, `OMA_RUNTIME_VENDOR`, 감지된 런타임 다음 순서의 `free` 전송에 해당합니다. [OMA가 에이전트의 모델과 CLI를 해석하는 방법](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli)을 참고하세요. |
 | `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | 생략한 항목은 제한 없음 | 다음 에이전트를 실행하기 전에 확인하는 토큰 수와 실행 횟수의 엄격한 상한입니다. [세션 사용량 상한](#session-quota-caps)을 참고하세요. |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | `oma docs verify`의 동작과 검사 제외 항목입니다. |
@@ -165,7 +165,7 @@ vendors:
 
 목록을 지정하면 정확히 그 벤더만 선택하고, `vendors: []`는 아무 벤더도 선택하지 않습니다. `vendors` 키가 없으면 `oma link`는 OMA의 연동 가능 벤더 레지스트리에 있는 모든 벤더를 대상으로 하고, `oma update`는 프로젝트 디렉토리가 이미 있는 벤더만 대상으로 합니다. 이 목록은 설치와 업데이트 시 생성할 연동 파일을 정하며, 벤더별 명령 실행 방식을 정의하는 맵은 아닙니다.
 
-배포된 `.agents/oma-config.cue` 스키마는 `command`, `prompt_flag`, `model_flag`, `default_model`, `thinking_flag` 필드가 있는 `vendors.pi` 객체도 허용합니다. 이 블록은 CUE 템플릿에 타입이 정의된 대체 설정입니다. 현재 에이전트 실행 코드는 아래의 관리되는 오케스트레이션 레지스트리에서 벤더별 실행 방식을 읽으므로, `vendors.pi`를 YAML의 벤더 선택 목록 대신 사용하지 않습니다.
+배포된 `.agents/oma-config.cue` 스키마는 `vendors`를 같은 목록(`[...string]`)으로 정의합니다. 이전 CUE 템플릿은 이를 아무도 읽지 않는 `vendors.pi` 객체(`#VendorsConfig`)로 정의했습니다. 에이전트 실행 코드는 아래의 관리되는 오케스트레이션 레지스트리에서 벤더별 실행 방식을 읽습니다. `oma-config.cue`에 아직 `vendors?: #VendorsConfig`가 선언되어 있다면, 그곳에 선택 목록을 넣기 전에 `vendors?: [...string]`으로 바꾸세요.
 
 관리되는 `.agents/skills/oma-orchestration/config/cli-config.yaml`에 벤더별 실행 설정이 있습니다. 각 `vendors.<id>` 항목은 다음 필드를 지원합니다.
 

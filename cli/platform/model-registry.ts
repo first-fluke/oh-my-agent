@@ -212,7 +212,7 @@ export function buildUnknownSlugError(slug: string, agentId?: string): string {
     const builtIn = listBuiltInSlugsByOwner(owner);
     lines.push(
       `This looks like an OpenRouter slug for ${owner} (CLI: ${cli}).`,
-      `If your ${cli} CLI accepts this model, register it in .agents/oma-config.yaml:`,
+      `If your ${cli} CLI accepts this model, register it in .agents/oma-config.yaml (or .agents/oma-config.cue):`,
       "",
       "models:",
       `  ${slug}:`,

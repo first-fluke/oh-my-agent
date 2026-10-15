@@ -1,9 +1,17 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import * as p from "@clack/prompts";
+import { isMap, parseDocument } from "yaml";
 import { loadUserConfig } from "../../io/runtime-dispatch/config-loader.js";
 import { writeVendorsToConfig } from "../../platform/skills-installer.js";
 import type { CliVendor } from "../../types/index.js";
-import { loadConfigLayers } from "../../utils/config-layers.js";
+import {
+  ConfigLayerError,
+  LOCAL_CONFIG_NAMES,
+  loadConfigLayers,
+  type PreferenceEntry,
+  planPreferenceWrite,
+} from "../../utils/config-layers.js";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English",
@@ -97,6 +105,12 @@ export function getExistingPreset(targetDir: string): string | null {
 /**
  * Patch oma-config.yaml with selected language, model_preset, and vendors.
  * Uses regex-level replacement to preserve user-edited fields (timezone, etc.).
+ *
+ * oma-config.cue gets the same regex patch for quoted top-level
+ * `language: "..."` / `model_preset: "..."` lines. A key it cannot patch that
+ * way (a default, a disjunction, a nested struct, or no line at all) is saved
+ * where it takes effect through {@link planPreferenceWrite}, never skipped
+ * silently.
  */
 export function patchUserConfig(
   installRoot: string,
@@ -105,17 +119,35 @@ export function patchUserConfig(
   vendors: CliVendor[],
 ): void {
   const cuePath = join(installRoot, ".agents", "oma-config.cue");
+  // Keys written to a shared file, which a local overlay may still override.
+  const patched: PreferenceEntry[] = [];
   if (existsSync(cuePath)) {
-    let content = readFileSync(cuePath, "utf-8");
-    content = content.replace(
-      /^([\t ]*language:[\t ]*)"[^"]*"([\t ]*(?:\/\/[^\n]*)?)$/m,
-      `$1"${language}"$2`,
-    );
-    content = content.replace(
-      /^([\t ]*model_preset:[\t ]*)"[^"]*"([\t ]*(?:\/\/[^\n]*)?)$/m,
-      `$1"${modelPreset}"$2`,
-    );
-    writeFileSync(cuePath, content);
+    const original = readFileSync(cuePath, "utf-8");
+    let content = original;
+    const unpatched: PreferenceEntry[] = [];
+    for (const [key, value] of [
+      ["language", language],
+      ["model_preset", modelPreset],
+    ] as const) {
+      const line = new RegExp(
+        `^([\\t ]*${key}:[\\t ]*)"[^"]*"([\\t ]*(?:\\/\\/[^\\n]*)?)$`,
+        "m",
+      );
+      if (line.test(content))
+        content = content.replace(
+          line,
+          (_, head, tail) => `${head}"${value}"${tail}`,
+        );
+      else unpatched.push([[key], value]);
+    }
+    if (content !== original) writeFileSync(cuePath, content);
+    if (unpatched.length) savePreferences(installRoot, unpatched);
+    for (const [key, value] of [
+      ["language", language],
+      ["model_preset", modelPreset],
+    ] as const)
+      if (!unpatched.some(([keys]) => keys[0] === key))
+        patched.push([[key], value]);
   }
 
   const userPrefsPath = join(installRoot, ".agents", "oma-config.yaml");
@@ -140,6 +172,74 @@ export function patchUserConfig(
     }
 
     writeFileSync(userPrefsPath, prefs);
-    writeVendorsToConfig(installRoot, vendors);
+    // Beside oma-config.cue the CUE patch above decides where each key went.
+    if (!existsSync(cuePath))
+      patched.push([["language"], language], [["model_preset"], modelPreset]);
   }
+  reconcileLocalOverlay(installRoot, patched);
+  // Handles oma-config.yaml and CUE projects (local overlay) alike.
+  writeVendorsToConfig(installRoot, vendors);
+}
+
+/**
+ * The local overlay outranks oma-config.cue and oma-config.yaml, so a
+ * `language` / `model_preset` it still sets would hide the choice just written
+ * to the shared file. A YAML overlay is updated in place (comments and other
+ * keys kept); an oma-config.local.cue cannot be patched, so a warning names it.
+ */
+function reconcileLocalOverlay(root: string, entries: PreferenceEntry[]): void {
+  if (!entries.length) return;
+  const [localCueName, localYamlName] = LOCAL_CONFIG_NAMES;
+  const localCue = join(root, ".agents", localCueName);
+  const localYaml = join(root, ".agents", localYamlName);
+  if (existsSync(localCue)) {
+    const text = readFileSync(localCue, "utf-8");
+    const stale = entries.filter(([keys]) =>
+      new RegExp(`^[\\t ]*${keys[0]}[\\t ]*:`, "m").test(text),
+    );
+    if (stale.length)
+      p.log.warn(
+        `${localCue} sets ${stale.map(([keys]) => keys[0]).join(", ")}, which outranks the shared config: set ${stale.map(([keys, value]) => `${keys[0]}: "${String(value)}"`).join(", ")} there for the choice to take effect.`,
+      );
+    return;
+  }
+  if (!existsSync(localYaml)) return;
+  const doc = parseDocument(readFileSync(localYaml, "utf-8"));
+  // An invalid overlay is reported by every config read; leave it alone.
+  if (doc.errors.length || !isMap(doc.contents)) return;
+  const stale = entries.filter(
+    ([keys, value]) => doc.hasIn(keys) && doc.getIn(keys) !== value,
+  );
+  if (!stale.length) return;
+  for (const [keys, value] of stale) doc.setIn(keys, value);
+  writeFileSync(localYaml, doc.toString());
+  p.log.info(
+    `${localYaml} (local, gitignored) also set ${stale.map(([keys]) => keys.join(".")).join(", ")}, which outranks the shared config; updated it so the choice takes effect.`,
+  );
+}
+
+/** Write top-level scalar preferences where they take effect, and say where. */
+function savePreferences(root: string, entries: PreferenceEntry[]): void {
+  let plan: ReturnType<typeof planPreferenceWrite>;
+  try {
+    plan = planPreferenceWrite(root, entries);
+  } catch (error) {
+    // An oma-config.local.cue overlay cannot be patched: say so, keep installing.
+    if (!(error instanceof ConfigLayerError)) throw error;
+    p.log.warn(`Not saved: ${error.message}`);
+    return;
+  }
+  if (plan.warning) p.log.warn(plan.warning);
+  if (!plan.entries.length) return;
+  const doc = parseDocument(
+    existsSync(plan.path) ? readFileSync(plan.path, "utf-8") : "",
+  );
+  if (doc.errors.length || (doc.contents != null && !isMap(doc.contents)))
+    throw new Error(`Invalid configuration in ${plan.path}`);
+  for (const [keys, value] of plan.entries) doc.setIn(keys, value);
+  writeFileSync(plan.path, doc.toString());
+  p.log.info(
+    plan.notice ??
+      `Saved ${plan.entries.map(([keys]) => keys.join(".")).join(", ")} to ${plan.path}.`,
+  );
 }

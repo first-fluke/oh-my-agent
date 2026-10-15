@@ -19,13 +19,30 @@ package config
 
 #AgentSpec: {
 	model:     string & =~"^[a-z0-9-]+/[a-z0-9.-]+$"
-	effort?:   "none" | "low" | "medium" | "high" | "xhigh"
+	effort?:   #EffortLevel
 	thinking?: bool
 	memory?:   "user" | "project" | "local"
 }
 
+#EffortLevel: "none" | "low" | "medium" | "high" | "xhigh"
+
+// Mirrors EffortSpec in cli/platform/model-registry/types.ts; a model entry
+// whose effort is not one of these is dropped by the registry.
+#EffortSpec: {
+	type:   "granular"
+	levels: [...#EffortLevel]
+} | {
+	type:         "cli-session"
+	auto_default: #EffortLevel
+} | {
+	type: "thinking-budget"
+	modes: [...("none" | "dynamic" | "fixed")]
+} | {
+	type: "binary-thinking"
+}
+
 #ModelSupports: {
-	effort?:               null | "none" | "low" | "medium" | "high" | "xhigh" | string
+	effort?:               null | #EffortSpec
 	apply_patch?:          bool
 	task_budget?:          bool
 	prompt_cache?:         bool
@@ -53,21 +70,6 @@ package config
 	base_url?:    string
 	api_key_env?: string & =~"^[A-Za-z_][A-Za-z0-9_]*$"
 	model?:       string
-}
-
-// ── 3. pi transport runtime ─────────────────────────────────────────────────
-
-#PiVendorConfig: {
-	command?:       string
-	prompt_flag?:   string
-	model_flag?:    string
-	default_model?: string
-	thinking_flag?: string
-}
-
-#VendorsConfig: {
-	pi?: #PiVendorConfig
-	[string]: _
 }
 
 // ── 4. Agent spawn budget ───────────────────────────────────────────────────
@@ -301,8 +303,10 @@ package config
 	models?: [string]: #ModelSpec
 	custom_presets?: [string]: #CustomPresetSpec
 
-	// 3. pi transport runtime
-	vendors?: #VendorsConfig
+	// 3. Vendor selection: the CLI vendors `oma install` / `oma update` project
+	// into (e.g. ["claude", "codex", "pi"]). pi's command, flags and fallback
+	// model live in the managed oma-orchestration cli-config.yaml.
+	vendors?: [...string]
 
 	// 4. Agent spawn budget
 	session?: #SessionConfig

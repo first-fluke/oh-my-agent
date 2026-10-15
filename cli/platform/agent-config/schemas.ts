@@ -106,7 +106,11 @@ export const OmaConfigSchema = z
     agents: AgentsMapSchema.optional(),
     models: z.record(z.string(), z.unknown()).optional(),
     custom_presets: z.record(z.string(), z.unknown()).optional(),
-    vendors: z.record(z.string(), z.unknown()).optional(),
+    // Installer vendor selection (a list). Older templates documented an
+    // unread `vendors.pi` map; accept it so those files still parse.
+    vendors: z
+      .union([z.array(z.string()), z.record(z.string(), z.unknown())])
+      .optional(),
     session: z.unknown().optional(),
     docs: OmaDocsConfigSchema.optional(),
     // Sparse per-skill overrides (design 024). Deliberately unvalidated shapes:

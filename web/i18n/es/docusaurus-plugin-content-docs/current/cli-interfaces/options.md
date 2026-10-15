@@ -171,7 +171,7 @@ Usa `select(.supportsDryRun? == true)` de la misma forma para encontrar los coma
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-El instalador interactivo escribe en `.agents/oma-config.yaml` la configuración de proveedores seleccionada. Los flags de proveedor seleccionan las integraciones de web-search, code-intelligence y semantic-memory; `--honcho-url` y `--honcho-workspace` configuran el servicio de memoria Honcho cuando se selecciona ese proveedor. El flag raíz `-y, --yes` se aplica cuando un flujo de instalación solicita confirmación.
+El instalador interactivo escribe en `.agents/oma-config.yaml` la configuración de proveedores seleccionada. Si existe `.agents/oma-config.cue`, tiene prioridad sobre ese archivo, por lo que las opciones que la configuración CUE aún no contiene se escriben en la capa local ignorada por git `.agents/oma-config.local.yaml`; la selección de DevTools del navegador y la referencia de vault de `oma memory keys` siguen la misma regla, y la selección de vendors de CLI y `oma model propose --write` también cuando no existe `oma-config.yaml`. Los flags de proveedor seleccionan las integraciones de web-search, code-intelligence y semantic-memory; `--honcho-url` y `--honcho-workspace` configuran el servicio de memoria Honcho cuando se selecciona ese proveedor. El flag raíz `-y, --yes` se aplica cuando un flujo de instalación solicita confirmación.
 
 ### doctor
 

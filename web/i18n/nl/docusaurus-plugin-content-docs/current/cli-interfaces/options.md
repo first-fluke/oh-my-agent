@@ -171,7 +171,7 @@ Gebruik `select(.supportsDryRun? == true)` op dezelfde manier om commando's met 
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-De interactieve installer schrijft de geselecteerde providerinstellingen naar `.agents/oma-config.yaml`. De providervlaggen kiezen de integraties voor websearch, code-intelligentie en semantisch geheugen; `--honcho-url` en `--honcho-workspace` configureren de Honcho-geheugendienst wanneer die provider is gekozen. De rootvlag `-y, --yes` geldt wanneer een installatieproces om bevestiging vraagt.
+De interactieve installer schrijft de geselecteerde providerinstellingen naar `.agents/oma-config.yaml`. Als `.agents/oma-config.cue` bestaat, gaat dat bestand voor; keuzes die de CUE-configuratie nog niet bevat, worden dan in de door git genegeerde lokale overlay `.agents/oma-config.local.yaml` geschreven. De browser-DevTools-selectie en de vault-verwijzing van `oma memory keys` volgen dezelfde regel; de CLI-vendorselectie en `oma model propose --write` doen dat wanneer er geen `oma-config.yaml` is. De providervlaggen kiezen de integraties voor websearch, code-intelligentie en semantisch geheugen; `--honcho-url` en `--honcho-workspace` configureren de Honcho-geheugendienst wanneer die provider is gekozen. De rootvlag `-y, --yes` geldt wanneer een installatieproces om bevestiging vraagt.
 
 ### doctor
 

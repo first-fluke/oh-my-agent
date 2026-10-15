@@ -171,7 +171,7 @@ oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .pat
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-対話式インストーラーは選択したプロバイダー設定を `.agents/oma-config.yaml` に書き込みます。プロバイダーフラグで web-search、code-intelligence、semantic-memory の連携先を選び、そのプロバイダーを選択した場合は `--honcho-url` と `--honcho-workspace` で Honcho メモリサービスを設定します。インストール中に確認を求められた場合はルートの `-y, --yes` フラグが適用されます。
+対話式インストーラーは選択したプロバイダー設定を `.agents/oma-config.yaml` に書き込みます。`.agents/oma-config.cue` がある場合はそちらが優先されるため、CUE 設定にまだ含まれていない選択は gitignore 対象のローカルオーバーレイ `.agents/oma-config.local.yaml` に書き込まれます。ブラウザー DevTools の選択と `oma memory keys` の vault 参照も同じ規則に従い、CLI ベンダーの選択と `oma model propose --write` は `oma-config.yaml` がない場合に同じ規則に従います。プロバイダーフラグで web-search、code-intelligence、semantic-memory の連携先を選び、そのプロバイダーを選択した場合は `--honcho-url` と `--honcho-workspace` で Honcho メモリサービスを設定します。インストール中に確認を求められた場合はルートの `-y, --yes` フラグが適用されます。
 
 ### doctor {#doctor}
 

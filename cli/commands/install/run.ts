@@ -48,7 +48,6 @@ import {
   isTelemetryEnabled,
   loadDevToolsBrowsers,
 } from "../../utils/config.js";
-import { ensureCueBinary } from "../../utils/cue.js";
 import {
   acquireLock,
   bindInstallLockRelease,
@@ -59,7 +58,6 @@ import { loadProviders } from "../../utils/providers.js";
 import { ensureAsideInstalled } from "../../vendors/aside.js";
 import { link } from "../link/run.js";
 import { runMigrations } from "../migrations/index.js";
-import { saveDevToolsBrowsers } from "./browser-preferences.js";
 import {
   detectWsl,
   type InstallOptions,
@@ -67,7 +65,10 @@ import {
   isNonInteractive,
 } from "./environment.js";
 import { maybePromptGithubStar } from "./github-star.js";
-import { patchUserConfig } from "./preferences.js";
+import {
+  ensureCueBinaryWithLog,
+  persistInstallPreferences,
+} from "./persist-preferences.js";
 import {
   promptBackendVariant,
   promptDevToolsBrowsers,
@@ -80,7 +81,6 @@ import {
 import {
   promptProviders,
   reportProviderSetup,
-  saveProviders,
 } from "./provider-preferences.js";
 import { cleanDanglingSymlinks } from "./symlinks.js";
 
@@ -333,6 +333,8 @@ export async function install(options: InstallOptions = {}): Promise<void> {
     spinner.start("Installing skills...");
 
     let linkResult: ReturnType<typeof link> | null = null;
+    // Set once persistInstallPreferences has checked the cue binary.
+    let cueChecked = false;
 
     try {
       try {
@@ -373,13 +375,14 @@ export async function install(options: InstallOptions = {}): Promise<void> {
           rmSync(evalDir, { recursive: true, force: true });
         }
 
-        // Persist the selection before linking vendor MCP configurations.
-        saveDevToolsBrowsers(installRoot, devToolsBrowsers);
-
-        // Patch oma-config.yaml with selected language, model_preset, and vendors.
-        // Uses regex-level replacement to preserve user-edited fields (timezone, etc.).
-        patchUserConfig(installRoot, language, modelPreset, configuredVendors);
-        saveProviders(installRoot, providerSelection);
+        // A CUE project gets the cue binary first, or nothing can be saved.
+        ({ cueChecked } = persistInstallPreferences(installRoot, {
+          language,
+          modelPreset,
+          vendors: configuredVendors,
+          devToolsBrowsers,
+          providers: providerSelection,
+        }));
 
         if (loadProviders(installRoot).semantic_memory === "agentmemory") {
           spinner.start("Preparing shared memory...");
@@ -571,19 +574,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
           );
         }
 
-        const cueBinary = ensureCueBinary({
-          onInstallStart: () =>
-            p.log.info(
-              "Checking/installing CUE binary for typed configuration…",
-            ),
-        });
-        if (cueBinary.status === "installed") {
-          p.log.success(pc.green("Installed CUE binary"));
-        } else if (cueBinary.status === "install-failed") {
-          p.log.warn(
-            `CUE binary not found — install via 'brew install cue' (macOS) or see https://cuelang.org/docs/install/`,
-          );
-        }
+        if (!cueChecked) ensureCueBinaryWithLog();
         const contexts = ensureOmaSerenaContexts();
         if (contexts.changed.length > 0) {
           p.log.success(

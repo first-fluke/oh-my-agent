@@ -149,7 +149,8 @@ export interface OmaConfig {
   models?: Record<string, UserModelSpec>;
   /** User-defined presets; may extend a built-in */
   custom_presets?: Record<string, ModelPreset>;
-  vendors?: Record<string, VendorConfig>;
+  /** Installer vendor selection; legacy templates may still hold a map. */
+  vendors?: string[] | Record<string, unknown>;
   session?: { quota_cap?: Record<string, unknown> };
   /** oma-docs skill configuration */
   docs?: OmaDocsConfig;

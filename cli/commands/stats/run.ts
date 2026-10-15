@@ -282,7 +282,7 @@ export async function stats(
         "Estimate is input-only (prompt char approximation); output tokens not yet tracked.",
       ),
       pc.dim(
-        "Configure session.quota_cap in .agents/oma-config.yaml to enforce budgets.",
+        "Configure session.quota_cap in .agents/oma-config.yaml (or .agents/oma-config.cue) to enforce budgets.",
       ),
     ].join("\n");
 

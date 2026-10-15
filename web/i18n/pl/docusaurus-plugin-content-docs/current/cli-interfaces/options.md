@@ -171,7 +171,7 @@ W ten sam sposób użyj `select(.supportsDryRun? == true)`, aby znaleźć polece
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-Instalator interaktywny zapisuje ustawienia wybranego dostawcy w `.agents/oma-config.yaml`. Flagi dostawców wybierają integracje wyszukiwania w sieci, inteligencji kodu i pamięci semantycznej; `--honcho-url` i `--honcho-workspace` konfigurują usługę pamięci Honcho po wybraniu tego dostawcy. Główna flaga `-y, --yes` działa, gdy przebieg instalacji prosi o potwierdzenie.
+Instalator interaktywny zapisuje ustawienia wybranego dostawcy w `.agents/oma-config.yaml`. Gdy istnieje `.agents/oma-config.cue`, ma on pierwszeństwo przed tym plikiem, więc wybory, których konfiguracja CUE jeszcze nie zawiera, trafiają do ignorowanej przez git lokalnej nakładki `.agents/oma-config.local.yaml`. Wybór DevTools przeglądarki i odwołanie do sejfu z `oma memory keys` podlegają tej samej zasadzie, a wybór vendorów CLI i `oma model propose --write` – gdy nie ma `oma-config.yaml`. Flagi dostawców wybierają integracje wyszukiwania w sieci, inteligencji kodu i pamięci semantycznej; `--honcho-url` i `--honcho-workspace` konfigurują usługę pamięci Honcho po wybraniu tego dostawcy. Główna flaga `-y, --yes` działa, gdy przebieg instalacji prosi o potwierdzenie.
 
 ### doctor
 

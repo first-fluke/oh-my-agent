@@ -171,7 +171,7 @@ oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .pat
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-Интерактивный установщик записывает выбранные настройки провайдеров в `.agents/oma-config.yaml`. Флаги провайдеров выбирают интеграции веб-поиска, code intelligence и семантической памяти; `--honcho-url` и `--honcho-workspace` настраивают сервис памяти Honcho, если выбран этот провайдер. Корневой флаг `-y, --yes` действует, когда процесс установки запрашивает подтверждение.
+Интерактивный установщик записывает выбранные настройки провайдеров в `.agents/oma-config.yaml`. Если существует `.agents/oma-config.cue`, он имеет приоритет над этим файлом, поэтому значения, которых ещё нет в CUE-конфигурации, записываются в игнорируемый git локальный оверлей `.agents/oma-config.local.yaml`. Тому же правилу следуют выбор браузерных DevTools и ссылка на хранилище из `oma memory keys`, а выбор CLI-вендоров и `oma model propose --write` — когда `oma-config.yaml` отсутствует. Флаги провайдеров выбирают интеграции веб-поиска, code intelligence и семантической памяти; `--honcho-url` и `--honcho-workspace` настраивают сервис памяти Honcho, если выбран этот провайдер. Корневой флаг `-y, --yes` действует, когда процесс установки запрашивает подтверждение.
 
 ### doctor
 

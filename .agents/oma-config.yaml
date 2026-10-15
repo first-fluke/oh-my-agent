@@ -11,7 +11,7 @@
 # Contents
 #   1. Global preferences        language, date/time, telemetry
 #   2. Model selection           model_preset, free, default_cli, agents, models, custom_presets
-#   3. pi transport runtime      vendors.pi
+#   3. Vendor selection & pi     vendors
 #   4. Agent spawn budget        session.quota_cap
 #   5. Memory garbage collection memory.gc
 #   6. Serena MCP transport      serena
@@ -157,8 +157,19 @@ agents:
 #       backend: { model: openai/gpt-5.5, effort: high }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3. pi (Earendil) transport runtime
+# 3. Vendor selection & pi (Earendil) transport runtime
 # ─────────────────────────────────────────────────────────────────────────────
+#
+# `vendors` is the list of CLI vendors `oma install` / `oma update` project
+# into; `oma install` writes your selection here. A list selects exactly those
+# vendors and `vendors: []` selects none. Without the key, `oma link` targets
+# every linkable vendor and `oma update` the vendors whose project directories
+# exist.
+#
+# vendors:
+#   - claude
+#   - codex
+#   - pi
 #
 # pi is a multi-provider proxy runtime. Dispatch any agent through it with
 # `oma agent spawn <agent> "<prompt>" <session> --vendor pi`. The per-agent model
@@ -167,16 +178,9 @@ agents:
 # models work on pi too. pi only runs real-provider models (anthropic, openai,
 # google); CLI-proprietary presets (cursor/kiro/qwen/antigravity) are rejected.
 #
-# The `vendors.pi` block below is the FALLBACK model path, used only when no
-# resolved plan applies (e.g. no model_preset). Normal runs do not need it.
-#
-# vendors:
-#   pi:
-#     command: pi
-#     prompt_flag: "-p"
-#     model_flag: "--model"
-#     default_model: anthropic/claude-sonnet-4-6
-#     thinking_flag: "--thinking"
+# pi's command, flags, and FALLBACK model (used only when no resolved plan
+# applies, e.g. no model_preset) live in the managed
+# .agents/skills/oma-orchestration/config/cli-config.yaml, not in this file.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. Agent spawn budget

@@ -110,7 +110,7 @@ export function resolveAgentPlanFromConfig(
   }
   if (!modelPreset) {
     throw new ConfigError(
-      `'model_preset' is missing from .agents/oma-config.yaml. Run 'oma install --preset <name>' to set one.`,
+      `'model_preset' is missing from .agents/oma-config.yaml (or .agents/oma-config.cue). Run 'oma install --preset <name>' to set one.`,
     );
   }
 
@@ -245,7 +245,7 @@ export function resolveAgentPlanFromConfig(
     finalEffort !== undefined
   ) {
     console.warn(
-      `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from agents.${agentId} in .agents/oma-config.yaml.`,
+      `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from agents.${agentId} in .agents/oma-config.yaml (or .agents/oma-config.cue).`,
     );
     finalEffort = undefined;
   }

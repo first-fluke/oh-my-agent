@@ -58,7 +58,7 @@ oma doctor --profile
 | `agents` | エージェント ID → `model`、任意の `effort`、`thinking`、`memory` | プリセットの解決結果 | 選択したプリセットに適用するエージェントごとの上書き。effort は `none`、`low`、`medium`、`high`、`xhigh`、memory は `user`、`project`、`local` です。 |
 | `models` | モデルスラッグ → CLI マッピング | 未設定 | 対応するベンダー CLI 用のインラインモデル定義。 |
 | `custom_presets` | プリセット → description、任意の `extends`、`agent_defaults` | 未設定 | ユーザー定義プリセット。`extends` で組み込みプリセットを継承できます。 |
-| `vendors` | YAML: 選択したベンダー ID の `string[]`。CUE テンプレート: 任意の `vendors.pi` フォールバックマップ | 省略時: `oma link` はリンク可能なすべてのベンダー、`oma update` はプロジェクトディレクトリが存在するベンダーを使う | `oma install` と `oma update` が YAML に投影するベンダー統合を選択します。ディスパッチの機能マップは管理対象のオーケストレーション設定にあります。[ベンダー選択とディスパッチメタデータ](#vendor-selection-and-dispatch-metadata)を参照してください。 |
+| `vendors` | 選択したベンダー ID の `string[]`（YAML と CUE） | 省略時: `oma link` はリンク可能なすべてのベンダー、`oma update` はプロジェクトディレクトリが存在するベンダーを使う | `oma install` と `oma update` が投影するベンダー統合を選択します。ディスパッチの機能マップは管理対象のオーケストレーション設定にあります。[ベンダー選択とディスパッチメタデータ](#vendor-selection-and-dispatch-metadata)を参照してください。 |
 | `default_cli` | ベンダー ID（`claude`、`codex`、`cursor`、`antigravity`、`qwen`、`grok`、`kimi`、`kiro`、`opencode`、`pi`） | `claude`。`free` トランスポートでは `codex` | ほかに何もベンダーを選ばないときに使うベンダー。`auto` でランタイムを検出できない場合、または `free` トランスポートで `--vendor`、`OMA_RUNTIME_VENDOR`、検出したランタイムのいずれも該当しない場合です。[OMA がエージェントのモデルと CLI を解決する方法](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli)を参照してください。 |
 | `session.quota_cap` | `tokens`、`spawn_count`、`per_vendor: map<string, integer>` | 省略した各次元は上限なし | 次のエージェント起動前に確認するトークン数と起動数の上限。[セッションのクォータ上限](#session-quota-caps)を参照してください。 |
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` の動作とスキャン除外。 |
@@ -165,7 +165,7 @@ vendors:
 
 リストを指定するとそのベンダーだけを選び、`vendors: []` は何も選びません。`vendors` キーがない場合、`oma link` は OMA のリンク可能なベンダーレジストリにあるすべてのベンダーを対象にし、`oma update` はプロジェクトディレクトリがすでに存在するベンダーだけを対象にします。このリストが制御するのはインストールと更新の投影であり、ベンダーごとのコマンド機能マップではありません。
 
-同梱の `.agents/oma-config.cue` スキーマでは、`command`、`prompt_flag`、`model_flag`、`default_model`、`thinking_flag` フィールドを持つ `vendors.pi` オブジェクトも使えます。このブロックは CUE テンプレートの型付きフォールバック形状です。現在のエージェントディスパッチ経路は、下記の管理対象オーケストレーションレジストリから機能フィールドを解決します。そのため、`vendors.pi` を YAML の選択リストの代わりに使わないでください。
+同梱の `.agents/oma-config.cue` スキーマは `vendors` を同じリスト（`[...string]`）として型付けします。以前の CUE テンプレートは、どこからも読まれない `vendors.pi` オブジェクト（`#VendorsConfig`）として型付けしていました。エージェントディスパッチは、下記の管理対象オーケストレーションレジストリから機能フィールドを解決します。`oma-config.cue` がまだ `vendors?: #VendorsConfig` を宣言している場合は、選択リストを書く前に `vendors?: [...string]` に変更してください。
 
 管理対象の `.agents/skills/oma-orchestration/config/cli-config.yaml` に機能マップがあります。各 `vendors.<id>` エントリは次のフィールドをサポートします。
 

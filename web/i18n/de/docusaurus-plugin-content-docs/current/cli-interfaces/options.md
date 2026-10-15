@@ -171,7 +171,7 @@ Verwende `select(.supportsDryRun? == true)` auf dieselbe Weise, um Befehle mit `
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-Der interaktive Installer schreibt die ausgewählten Provider-Einstellungen nach `.agents/oma-config.yaml`. Die Provider-Flags wählen die Integrationen für Websuche, Codeintelligenz und semantischen Speicher; `--honcho-url` und `--honcho-workspace` konfigurieren den Honcho-Speicherdienst, wenn dieser Provider ausgewählt ist. Das Root-Flag `-y, --yes` gilt, wenn ein Installationsablauf eine Bestätigung anfordert.
+Der interaktive Installer schreibt die ausgewählten Provider-Einstellungen nach `.agents/oma-config.yaml`. Wenn `.agents/oma-config.cue` existiert, hat sie Vorrang vor dieser Datei; Auswahlen, die die CUE-Konfiguration noch nicht enthält, landen daher im per gitignore ausgeschlossenen lokalen Overlay `.agents/oma-config.local.yaml`. Für die Browser-DevTools-Auswahl und die Vault-Referenz von `oma memory keys` gilt dieselbe Regel, für die CLI-Vendor-Auswahl und `oma model propose --write`, wenn keine `oma-config.yaml` existiert. Die Provider-Flags wählen die Integrationen für Websuche, Codeintelligenz und semantischen Speicher; `--honcho-url` und `--honcho-workspace` konfigurieren den Honcho-Speicherdienst, wenn dieser Provider ausgewählt ist. Das Root-Flag `-y, --yes` gilt, wenn ein Installationsablauf eine Bestätigung anfordert.
 
 ### doctor
 

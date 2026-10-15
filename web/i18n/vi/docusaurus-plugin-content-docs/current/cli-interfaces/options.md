@@ -171,7 +171,7 @@ Dùng `select(.supportsDryRun? == true)` theo cách tương tự để tìm các
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-Trình cài đặt tương tác ghi các thiết lập provider đã chọn vào `.agents/oma-config.yaml`. Các flag provider chọn integration cho web-search, code-intelligence và semantic-memory; `--honcho-url` và `--honcho-workspace` cấu hình dịch vụ memory Honcho khi provider đó được chọn. Flag gốc `-y, --yes` được áp dụng khi luồng cài đặt yêu cầu xác nhận.
+Trình cài đặt tương tác ghi các thiết lập provider đã chọn vào `.agents/oma-config.yaml`. Khi có `.agents/oma-config.cue`, tệp đó được ưu tiên hơn, nên các lựa chọn mà cấu hình CUE chưa có sẽ được ghi vào lớp phủ cục bộ bị gitignore `.agents/oma-config.local.yaml`; lựa chọn DevTools của trình duyệt và tham chiếu vault của `oma memory keys` cũng theo cùng quy tắc, còn lựa chọn vendor CLI và `oma model propose --write` theo quy tắc này khi không có `oma-config.yaml`. Các flag provider chọn integration cho web-search, code-intelligence và semantic-memory; `--honcho-url` và `--honcho-workspace` cấu hình dịch vụ memory Honcho khi provider đó được chọn. Flag gốc `-y, --yes` được áp dụng khi luồng cài đặt yêu cầu xác nhận.
 
 ### doctor
 

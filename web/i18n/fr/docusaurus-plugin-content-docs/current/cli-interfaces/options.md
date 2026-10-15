@@ -171,7 +171,7 @@ Utilisez `select(.supportsDryRun? == true)` de la même manière pour trouver le
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-L’installateur interactif écrit les paramètres de fournisseur sélectionnés dans `.agents/oma-config.yaml`. Les indicateurs de fournisseur sélectionnent les intégrations de recherche web, d’intelligence de code et de mémoire sémantique ; `--honcho-url` et `--honcho-workspace` configurent le service de mémoire Honcho lorsque ce fournisseur est sélectionné. L’indicateur racine `-y, --yes` s’applique lorsqu’un flux d’installation demande une confirmation.
+L’installateur interactif écrit les paramètres de fournisseur sélectionnés dans `.agents/oma-config.yaml`. Lorsque `.agents/oma-config.cue` existe, il prime sur ce fichier : les choix que la configuration CUE ne contient pas déjà sont alors écrits dans la surcouche locale ignorée par git `.agents/oma-config.local.yaml`. La sélection DevTools du navigateur et la référence de coffre de `oma memory keys` suivent la même règle ; la sélection des vendors CLI et `oma model propose --write` la suivent lorsqu’il n’existe pas de `oma-config.yaml`. Les indicateurs de fournisseur sélectionnent les intégrations de recherche web, d’intelligence de code et de mémoire sémantique ; `--honcho-url` et `--honcho-workspace` configurent le service de mémoire Honcho lorsque ce fournisseur est sélectionné. L’indicateur racine `-y, --yes` s’applique lorsqu’un flux d’installation demande une confirmation.
 
 ### doctor
 

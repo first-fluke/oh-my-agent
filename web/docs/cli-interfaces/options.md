@@ -171,7 +171,7 @@ Use `select(.supportsDryRun? == true)` the same way to find commands with `--dry
 oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-The interactive installer writes the selected provider settings to `.agents/oma-config.yaml`. The provider flags select the web-search, code-intelligence, and semantic-memory integrations; `--honcho-url` and `--honcho-workspace` configure the Honcho memory service when that provider is selected. The root `-y, --yes` flag applies when an install flow asks for confirmation.
+The interactive installer writes the selected provider settings to `.agents/oma-config.yaml`. When `.agents/oma-config.cue` exists, it outranks that file, so choices the CUE config does not already hold are written to the gitignored local overlay `.agents/oma-config.local.yaml` instead; the browser DevTools selection and the `oma memory keys` vault reference follow the same rule, and the CLI vendor selection and `oma model propose --write` do so when there is no `oma-config.yaml`. The provider flags select the web-search, code-intelligence, and semantic-memory integrations; `--honcho-url` and `--honcho-workspace` configure the Honcho memory service when that provider is selected. The root `-y, --yes` flag applies when an install flow asks for confirmation.
 
 ### doctor
 

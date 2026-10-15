@@ -53,7 +53,7 @@ oma doctor --profile
 | `agents` | 智能体 ID → `model`，可选的 `effort`、`thinking`、`memory` | 由预设解析 | 在所选预设之上应用的每个智能体覆盖。effort 可为 `none`、`low`、`medium`、`high` 或 `xhigh`；memory 可为 `user`、`project` 或 `local`。 |
 | `models` | 模型 slug → CLI 映射 | unset | 支持的供应商 CLI 的内联模型定义。 |
 | `custom_presets` | 预设 → description，可选的 `extends`、`agent_defaults` | unset | 用户定义的预设；`extends` 可以继承内置预设。 |
-| `vendors` | YAML：所选供应商 ID 的 `string[]`；CUE 模板：可选的 `vendors.pi` 回退映射 | 缺省时：`oma link` 使用所有可链接供应商，`oma update` 使用项目目录已存在的供应商 | 选择 `oma install` 和 `oma update` 在 YAML 中投影哪些供应商集成。调度能力映射位于托管编排配置中，请参阅[供应商选择和调度元数据](#vendor-selection-and-dispatch-metadata)。 |
+| `vendors` | 所选供应商 ID 的 `string[]`（YAML 和 CUE） | 缺省时：`oma link` 使用所有可链接供应商，`oma update` 使用项目目录已存在的供应商 | 选择 `oma install` 和 `oma update` 投影哪些供应商集成。调度能力映射位于托管编排配置中，请参阅[供应商选择和调度元数据](#vendor-selection-and-dispatch-metadata)。 |
 | `default_cli` | 供应商 ID（`claude`、`codex`、`cursor`、`antigravity`、`qwen`、`grok`、`kimi`、`kiro`、`opencode`、`pi`） | `claude`；`free` 传输为 `codex` | 没有其他方式选定供应商时使用的供应商：`auto` 下未检测到运行时，或 `free` 传输在依次检查 `--vendor`、`OMA_RUNTIME_VENDOR` 和检测到的运行时之后。请参阅[OMA 如何解析智能体的模型和 CLI](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli)。 |
 | `session.quota_cap` | `tokens`、`spawn_count`、`per_vendor: map<string, integer>` | 每个省略的维度都不设上限 | 在下一次智能体生成前检查硬性 token 和生成次数限制；请参阅[会话配额上限](#session-quota-caps)。 |
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` 的行为和扫描排除项。 |
@@ -160,7 +160,7 @@ vendors:
 
 列表会精确选择其中的供应商，`vendors: []` 则不选择任何供应商。没有 `vendors` 键时，`oma link` 以 OMA 可链接供应商注册表中的每个供应商为目标，而 `oma update` 只以项目目录已存在的供应商为目标。该列表控制安装/更新投影，不是按供应商划分的命令能力映射。
 
-随附的 `.agents/oma-config.cue` 模式还允许包含 `command`、`prompt_flag`、`model_flag`、`default_model` 和 `thinking_flag` 字段的 `vendors.pi` 对象。该区块是 CUE 模板中的类型化回退形状；当前智能体调度路径从下方托管的编排注册表解析能力字段，因此不要用 `vendors.pi` 替代 YAML 选择列表。
+随附的 `.agents/oma-config.cue` 模式将 `vendors` 定义为同样的列表（`[...string]`）。旧版 CUE 模板将其定义为没有任何代码读取的 `vendors.pi` 对象（`#VendorsConfig`）：智能体调度从下方托管的编排注册表解析能力字段。如果你的 `oma-config.cue` 仍声明 `vendors?: #VendorsConfig`，请先改为 `vendors?: [...string]`，再在其中放入选择列表。
 
 托管的 `.agents/skills/oma-orchestration/config/cli-config.yaml` 包含该能力映射。每个 `vendors.<id>` 条目支持以下字段：
 

@@ -3,7 +3,11 @@ import { join } from "node:path";
 import * as p from "@clack/prompts";
 import { isMap, parseDocument } from "yaml";
 import { createSearchProviderRegistry } from "../../platform/search-providers.js";
-import { loadConfigLayers } from "../../utils/config-layers.js";
+import {
+  loadConfigLayers,
+  type PreferenceEntry,
+  planPreferenceWrite,
+} from "../../utils/config-layers.js";
 import {
   type HonchoConfig,
   HonchoConfigSchema,
@@ -24,6 +28,13 @@ export type ProviderSelection = {
     Pick<ProvidersConfig, "code_intelligence" | "semantic_memory" | "web">
   >;
   honcho?: HonchoConfig;
+};
+
+/** What the provider readers (loadProviders) resolve an unset choice to. */
+const PROVIDER_DEFAULTS: ProviderSelection["providers"] = {
+  web: "native",
+  code_intelligence: "serena",
+  semantic_memory: "agentmemory",
 };
 
 function readMapping(value: unknown): unknown {
@@ -57,8 +68,10 @@ function readSaved(
   }
 }
 
-function readPreferences(root: string) {
-  const path = join(root, ".agents", "oma-config.yaml");
+function readPreferences(
+  root: string,
+  path = join(root, ".agents", "oma-config.yaml"),
+) {
   const doc = parseDocument(existsSync(path) ? readFileSync(path, "utf8") : "");
   if (doc.errors.length || (doc.contents != null && !isMap(doc.contents)))
     throw new Error(`Invalid configuration in ${path}`);
@@ -81,11 +94,15 @@ export async function promptProviders(
   });
   const chosen: ProviderSelection = {
     providers: {
-      web: explicit.web ?? existing.web ?? "native",
+      web: explicit.web ?? existing.web ?? PROVIDER_DEFAULTS.web,
       code_intelligence:
-        explicit.code_intelligence ?? existing.code_intelligence ?? "serena",
+        explicit.code_intelligence ??
+        existing.code_intelligence ??
+        PROVIDER_DEFAULTS.code_intelligence,
       semantic_memory:
-        explicit.semantic_memory ?? existing.semantic_memory ?? "agentmemory",
+        explicit.semantic_memory ??
+        existing.semantic_memory ??
+        PROVIDER_DEFAULTS.semantic_memory,
     },
   };
   const searchRegistry = createSearchProviderRegistry();
@@ -213,20 +230,35 @@ export async function promptProviders(
   return chosen;
 }
 
-/** Persist before link() projects MCP, instructions and hook routing. */
+/**
+ * Persist before link() projects MCP, instructions and hook routing. A project
+ * with oma-config.cue gets the choices that CUE does not already hold in the
+ * local overlay, since CUE outranks oma-config.yaml (see planPreferenceWrite).
+ */
 export function saveProviders(
   root: string,
   selection: ProviderSelection,
 ): void {
-  const { path, doc } = readPreferences(root);
+  const entries: PreferenceEntry[] = [
+    ...Object.entries(selection.providers).map(
+      ([key, value]): PreferenceEntry => [
+        ["providers", key],
+        value,
+        PROVIDER_DEFAULTS[key as keyof typeof PROVIDER_DEFAULTS],
+      ],
+    ),
+    ...Object.entries(selection.honcho ?? {}).map(
+      ([key, value]): PreferenceEntry => [["honcho", key], value],
+    ),
+  ];
+  const plan = planPreferenceWrite(root, entries);
+  if (plan.warning) p.log.warn(plan.warning);
+  if (!plan.entries.length) return;
+  const { path, doc } = readPreferences(root, plan.path);
   ProvidersSchema.parse(readMapping(doc.get("providers", true)));
-  for (const [key, value] of Object.entries(selection.providers))
-    doc.setIn(["providers", key], value);
-  if (selection.honcho) {
-    for (const [key, value] of Object.entries(selection.honcho))
-      doc.setIn(["honcho", key], value);
-  }
+  for (const [keys, value] of plan.entries) doc.setIn(keys, value);
   writeFileSync(path, doc.toString());
+  if (plan.notice) p.log.info(plan.notice);
 }
 
 export function reportProviderSetup(selection: ProviderSelection): void {

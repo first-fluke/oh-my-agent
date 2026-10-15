@@ -106,6 +106,22 @@ describe("parseOmaConfig — custom_presets passthrough", () => {
   });
 });
 
+describe("parseOmaConfig — vendors", () => {
+  it("accepts the installer's vendor list", () => {
+    const result = parseOmaConfig(
+      "language: en\nmodel_preset: claude\nvendors:\n  - codex\n  - claude\n",
+    );
+    expect(result?.vendors).toEqual(["codex", "claude"]);
+  });
+
+  it("still parses a legacy vendors map", () => {
+    const result = parseOmaConfig(
+      "language: en\nmodel_preset: claude\nvendors:\n  pi:\n    command: pi\n",
+    );
+    expect(result).not.toBeNull();
+  });
+});
+
 describe("parseOmaConfig — models passthrough", () => {
   it("passes through inline models definition", () => {
     const yaml = [
