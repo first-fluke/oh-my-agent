@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.0.1",
-  "releaseDate": "2026-10-14T22:43:23.520Z",
+  "releaseDate": "2026-10-15T03:54:34.077Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -176,8 +176,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "92b3038e91eaeb4f3cb1d5adeb1c02916cd22a87029bc7e8a5823e02bf56b147",
-      "size": 48739
+      "sha256": "a341fc9c13a3270108dce2c58e4b6b57c235c92ab5b66f494f95cad4273b588b",
+      "size": 49735
     },
     {
       "path": ".agents/hooks/core/memory-adapter.ts",
