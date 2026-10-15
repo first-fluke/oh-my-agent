@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent",
-  "version": "20.0.1",
+  "version": "20.1.0",
   "description": "A specialist team for the coding agent you already use: 12 roles, 21 workflows and 33 skills that plan, build in parallel, review and debug, leaving plans, ADRs and results as files. Gates wait for your own tests. Also research, slides and video. One .agents/ folder for Claude Code, Codex, Cursor and 11 more.",
   "type": "module",
   "bin": {
