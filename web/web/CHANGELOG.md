@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.1...web-v11.0.2) (2026-10-15)
+
+
+### Bug Fixes
+
+* **hooks:** persist workflows invoked as slash commands ([a4f5975](https://github.com/first-fluke/oh-my-agent/commit/a4f5975c6afba0befc2a784884ef3542f69711d3))
+
+
+### Documentation
+
+* **web:** document the global oma install and slash persistence ([fec9970](https://github.com/first-fluke/oh-my-agent/commit/fec9970786bbfe98ef7b09c9b4d14e648268711e))
+
 ## [11.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.0...web-v11.0.1) (2026-10-14)
 
 
