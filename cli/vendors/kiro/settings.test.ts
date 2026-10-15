@@ -10,9 +10,16 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { expectOmaSerenaEntry } from "../../__tests__/helpers.js";
 import {
+  _resetInstallContext,
+  setInstallContext,
+} from "../../platform/install-context.js";
+import {
+  applyKiroOmaHooksAgent,
   applyKiroProjectMcp,
+  KIRO_PROJECT_OMA_HOOKS_AGENT_PATH,
   KIRO_PROJECT_SETTINGS_PATH,
   needsKiroMcpUpdate,
+  needsKiroOmaHooksAgentUpdate,
   RECOMMENDED_KIRO_MCP,
 } from "./settings.js";
 
@@ -20,6 +27,7 @@ describe("kiro settings", () => {
   const roots: string[] = [];
 
   afterEach(() => {
+    _resetInstallContext();
     for (const root of roots.splice(0)) {
       rmSync(root, { recursive: true, force: true });
     }
@@ -107,5 +115,71 @@ describe("kiro settings", () => {
     expect(needsKiroMcpUpdate(root)).toBe(false);
     applyKiroProjectMcp(root);
     expect(readFileSync(path, "utf-8")).toBe(repairedText);
+  });
+
+  it("installs the post-tool refactor guard hook and remains idempotent", () => {
+    const root = tempRoot();
+
+    applyKiroOmaHooksAgent(root);
+
+    const path = join(root, KIRO_PROJECT_OMA_HOOKS_AGENT_PATH);
+    const installedText = readFileSync(path, "utf-8");
+    const installed = JSON.parse(installedText);
+    expect(installed.hooks.postToolUse).toEqual([
+      {
+        matcher: "fs_write",
+        command:
+          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event postToolUse --matcher fs_write",
+      },
+    ]);
+    expect(needsKiroOmaHooksAgentUpdate(root)).toBe(false);
+
+    applyKiroOmaHooksAgent(root);
+    expect(readFileSync(path, "utf-8")).toBe(installedText);
+  });
+
+  it("repairs an existing agent that omits the post-tool hook", () => {
+    const root = tempRoot();
+    applyKiroOmaHooksAgent(root);
+
+    const path = join(root, KIRO_PROJECT_OMA_HOOKS_AGENT_PATH);
+    const outdated = JSON.parse(readFileSync(path, "utf-8"));
+    delete outdated.hooks.postToolUse;
+    writeFileSync(path, `${JSON.stringify(outdated)}\n`);
+
+    expect(needsKiroOmaHooksAgentUpdate(root)).toBe(true);
+    applyKiroOmaHooksAgent(root);
+
+    const repairedText = readFileSync(path, "utf-8");
+    const repaired = JSON.parse(repairedText);
+    expect(repaired.hooks.postToolUse).toEqual([
+      {
+        matcher: "fs_write",
+        command:
+          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event postToolUse --matcher fs_write",
+      },
+    ]);
+    expect(needsKiroOmaHooksAgentUpdate(root)).toBe(false);
+
+    applyKiroOmaHooksAgent(root);
+    expect(readFileSync(path, "utf-8")).toBe(repairedText);
+  });
+
+  it("uses the global wrapper path for the post-tool hook", () => {
+    const root = tempRoot();
+    setInstallContext({ installRoot: root, mode: "global" });
+
+    applyKiroOmaHooksAgent(root);
+
+    const agent = JSON.parse(
+      readFileSync(join(root, KIRO_PROJECT_OMA_HOOKS_AGENT_PATH), "utf-8"),
+    );
+    expect(agent.hooks.postToolUse).toEqual([
+      {
+        matcher: "fs_write",
+        command: `bash '${join(root, ".kiro", "hooks", "oma-hook.sh")}' --vendor kiro --event postToolUse --matcher fs_write`,
+      },
+    ]);
+    expect(needsKiroOmaHooksAgentUpdate(root)).toBe(false);
   });
 });
