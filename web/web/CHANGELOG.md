@@ -1,5 +1,18 @@
 # Changelog
 
+## [11.0.4](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.3...web-v11.0.4) (2026-10-15)
+
+
+### Bug Fixes
+
+* **config:** save preferences where they take effect in CUE projects ([6ca1310](https://github.com/first-fluke/oh-my-agent/commit/6ca131083b3b2d82ee04dfe83c7fbb640105dd1f))
+* **update:** remove stray template configs and flag the old timezone ([99a6bf6](https://github.com/first-fluke/oh-my-agent/commit/99a6bf68aa51d485c69137bc4e0b088ba8253510))
+
+
+### Documentation
+
+* **cli:** describe qa verification as having no mechanical checks ([c07b62d](https://github.com/first-fluke/oh-my-agent/commit/c07b62d06bd7d80489ef299d3ab36e8ffce0e3d3))
+
 ## [11.0.3](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.2...web-v11.0.3) (2026-10-15)
 
 
