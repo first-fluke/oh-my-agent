@@ -5,7 +5,7 @@
  * (a) --read-only for codex: appends `--sandbox` + `read-only`, omits auto-approve flag
  * (b) --read-only for claude: appends `--permission-mode` + `plan`, omits auto-approve flag
  * (c) absent --read-only: args byte-for-byte unchanged (back-compat)
- * (d) unsupported vendor (gemini, no read_only_flag in config): warns, no auto-approve
+ * (d) unsupported vendor (gemini, no read_only_flag in config): rejects before spawn
  */
 import * as child_process from "node:child_process";
 import type * as fs from "node:fs";
@@ -264,9 +264,9 @@ describe("agent/spawn-status.ts — read-only flag", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // (d) unsupported vendor (gemini, no read_only_flag in vendorConfig): warns
+  // (d) unsupported vendor (gemini, no read_only_flag in vendorConfig): rejects
   // ---------------------------------------------------------------------------
-  it("read-only for gemini (no read_only_flag): emits warning and omits auto-approve", async () => {
+  it("read-only for gemini (no read_only_flag): rejects before spawning", async () => {
     vi.stubEnv("OMA_RUNTIME_VENDOR", "gemini");
 
     // `model_preset: none` resolves no preset, so `default_cli` is the tier that
@@ -304,39 +304,20 @@ describe("agent/spawn-status.ts — read-only flag", () => {
     });
     mockFsFunctions.openSync.mockReturnValue(123);
 
-    const mockChild = { pid: 10004, on: vi.fn(), unref: vi.fn() };
-    vi.mocked(child_process.spawn).mockReturnValue(
-      mockChild as unknown as child_process.ChildProcess,
-    );
-
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    await spawnAgent(
-      "frontend-engineer",
-      "analyze the UI",
-      "session-ro-4",
-      "/workspace",
-      undefined,
-      undefined,
-      undefined,
-      true, // readOnly
-    );
-
-    const spawnArgs = vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1];
-    expect(spawnArgs).toBeDefined();
-
-    // auto-approve flag must be suppressed
-    expect(spawnArgs).not.toContain("--approval-mode=yolo");
-
-    // a warning must have been emitted about the unsupported vendor
-    const warnCalls = warnSpy.mock.calls.map((c) => String(c[0]));
-    expect(
-      warnCalls.some(
-        (msg) => msg.includes("read-only") && msg.includes("gemini"),
+    await expect(
+      spawnAgent(
+        "frontend-engineer",
+        "analyze the UI",
+        "session-ro-4",
+        "/workspace",
+        undefined,
+        undefined,
+        undefined,
+        true, // readOnly
       ),
-    ).toBe(true);
+    ).rejects.toThrow(/gemini.*read-only|read-only.*gemini/i);
 
-    warnSpy.mockRestore();
+    expect(child_process.spawn).not.toHaveBeenCalled();
   });
 
   // ---------------------------------------------------------------------------

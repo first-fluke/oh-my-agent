@@ -787,7 +787,7 @@ describe("buildExternalInvocation — vendor branches", () => {
     expect(inv.args).toEqual([
       "-p",
       "--exclude-tools",
-      "edit,write",
+      "edit,write,bash,powershell",
       "the-prompt",
     ]);
   });

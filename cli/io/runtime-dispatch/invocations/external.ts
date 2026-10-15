@@ -4,12 +4,12 @@ import {
 } from "../../../platform/agent-config.js";
 import { agyPrintTimeoutArgs, detectAgyCaps } from "../agy-caps.js";
 import { resolveCodexAutoApproveArgs } from "../codex-flags.js";
+import { resolveReadOnlyArgs } from "../read-only.js";
 import type { Invocation } from "../types.js";
 
 export interface ExternalInvocationOptions {
-  /** When true, constrains the spawned agent to non-destructive tools.
-   * Suppresses `auto_approve_flag` and appends the vendor's `read_only_flag`.
-   * Emits a console.warn when the vendor has no `read_only_flag` defined. */
+  /** Requires a built-in restriction or an explicit read_only_flag.
+   * Suppresses auto-approve and rejects missing or conflicting restrictions. */
   readOnly?: boolean;
   /** Absolute workspace path the agent must be able to write. Used by vendors
    * whose CLI confines writes to a trusted root unless granted explicitly
@@ -59,15 +59,7 @@ const buildExternalCursorInvocation: ExternalInvocationBuilder = ({
   }
 
   if (readOnly) {
-    // In read-only mode: suppress auto-approve/--yolo entirely.
-    // Append the vendor's read_only_flag if defined; otherwise warn explicitly.
-    if (vendorConfig.read_only_flag) {
-      args.push(...splitArgs(vendorConfig.read_only_flag));
-    } else {
-      console.warn(
-        "[agent-spawn] read-only mode requested but vendor 'cursor' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
-      );
-    }
+    args.push(...resolveReadOnlyArgs("cursor", vendorConfig));
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
@@ -102,12 +94,8 @@ const buildExternalKiroInvocation: ExternalInvocationBuilder = ({
     } else {
       args.push("--trust-all-tools");
     }
-  } else if (vendorConfig.read_only_flag) {
-    args.push(...splitArgs(vendorConfig.read_only_flag));
   } else {
-    console.warn(
-      `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
-    );
+    args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
   }
 
   if (agentId) {
@@ -140,12 +128,8 @@ const buildExternalGrokInvocation: ExternalInvocationBuilder = ({
     } else {
       args.push("--yolo");
     }
-  } else if (vendorConfig.read_only_flag) {
-    args.push(...splitArgs(vendorConfig.read_only_flag));
   } else {
-    console.warn(
-      `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
-    );
+    args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
   }
 
   if (vendorConfig.model_flag && vendorConfig.default_model) {
@@ -163,7 +147,8 @@ const buildExternalGrokInvocation: ExternalInvocationBuilder = ({
  * and streams stdout. In `-p` mode Kimi uses the `auto` permission policy by
  * default — tool calls are auto-approved — and `--yolo`/`--auto` are MUTUALLY
  * EXCLUSIVE with `--prompt`, so we must NOT append them. Kimi exposes no
- * headless read-only sandbox flag, so read-only mode can only warn.
+ * headless read-only sandbox flag, so read-only requires an explicit wrapper
+ * restriction in read_only_flag.
  */
 const buildExternalKimiInvocation: ExternalInvocationBuilder = ({
   vendor,
@@ -180,13 +165,7 @@ const buildExternalKimiInvocation: ExternalInvocationBuilder = ({
   }
 
   if (readOnly) {
-    if (vendorConfig.read_only_flag) {
-      args.push(...splitArgs(vendorConfig.read_only_flag));
-    } else {
-      console.warn(
-        `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
-      );
-    }
+    args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
   }
 
   // `-p`/`--prompt` is Kimi's non-interactive prompt flag.
@@ -198,7 +177,8 @@ const buildExternalKimiInvocation: ExternalInvocationBuilder = ({
 /**
  * pi (Earendil): `pi -p [--exclude-tools …] [--model …] "<prompt>"`. pi has no
  * permission sandbox or auto-approve flag — tools run without prompting — so
- * read-only is enforced by excluding the mutating tools. The model/thinking
+ * read-only excludes the standard edit, write, bash, and powershell tools. This is a tool
+ * restriction, not an operating-system sandbox. The model/thinking
  * flags are appended after the positional prompt by applyResolvedPlan when a
  * per-agent plan is active; pi tolerates options after positionals.
  */
@@ -212,11 +192,7 @@ const buildExternalPiInvocation: ExternalInvocationBuilder = ({
   const args: string[] = ["-p"];
 
   if (readOnly) {
-    if (vendorConfig.read_only_flag) {
-      args.push(...splitArgs(vendorConfig.read_only_flag));
-    } else {
-      args.push("--exclude-tools", "edit,write");
-    }
+    args.push(...resolveReadOnlyArgs("pi", vendorConfig));
   }
 
   // Fallback model path (no resolved plan): emit the vendor default model.
@@ -261,12 +237,8 @@ const buildExternalOpencodeInvocation: ExternalInvocationBuilder = ({
 
   if (!readOnly) {
     args.push("--dangerously-skip-permissions");
-  } else if (vendorConfig.read_only_flag) {
-    args.push(...splitArgs(vendorConfig.read_only_flag));
   } else {
-    console.warn(
-      `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
-    );
+    args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
   }
 
   // Prompt is the last positional arg — never preceded by a -p flag.
@@ -354,24 +326,7 @@ const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
   }
 
   if (readOnly) {
-    // In read-only mode: suppress all permissive auto-approve flags.
-    // Append the vendor's read_only_flag if defined; otherwise warn explicitly.
-    if (vendorConfig.read_only_flag) {
-      optionArgs.push(...splitArgs(vendorConfig.read_only_flag));
-    } else {
-      const defaultReadOnly: Record<string, string> = {
-        codex: "--sandbox read-only",
-        claude: "--permission-mode plan",
-      };
-      const builtInFlag = defaultReadOnly[vendor];
-      if (builtInFlag) {
-        optionArgs.push(...splitArgs(builtInFlag));
-      } else {
-        console.warn(
-          `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
-        );
-      }
-    }
+    optionArgs.push(...resolveReadOnlyArgs(vendor, vendorConfig));
   } else {
     if (vendor === "codex") {
       optionArgs.push(
@@ -445,6 +400,7 @@ export function buildExternalInvocation(
   agentId?: string,
   options: ExternalInvocationOptions = {},
 ): Invocation {
+  if (options.readOnly) resolveReadOnlyArgs(vendor, vendorConfig);
   const builder = EXTERNAL_DISPATCH[vendor] ?? buildGenericExternalInvocation;
   return builder({
     vendor,

@@ -99,6 +99,26 @@ describe("free preset dispatch", () => {
     ).toThrow(/requires FREELLM_API_KEY/);
   });
 
+  it.each(["codex", "claude"])(
+    "preserves the required %s restriction after free-provider routing",
+    (vendor) => {
+      const { invocation } = planDispatch(
+        "backend",
+        vendor,
+        { auto_approve_flag: "--yolo" },
+        null,
+        "Inspect the source",
+        { OMA_RUNTIME_VENDOR: vendor, FREELLM_API_KEY: "test-proxy-key" },
+        { readOnly: true },
+      );
+      expect(invocation.env.OMA_MODEL_PRESET).toBe("free");
+      expect(invocation.args).toContain(
+        vendor === "codex" ? "read-only" : "plan",
+      );
+      expect(invocation.args).not.toContain("--yolo");
+    },
+  );
+
   it("rejects an unsupported explicit vendor", () => {
     expect(() =>
       planDispatch("backend", "cursor", {}, null, "test", {

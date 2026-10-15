@@ -1,15 +1,12 @@
-import {
-  splitArgs,
-  type VendorConfig,
-} from "../../../platform/agent-config.js";
+import type { VendorConfig } from "../../../platform/agent-config.js";
 import { agyPrintTimeoutArgs, detectAgyCaps } from "../agy-caps.js";
 import { resolveCodexAutoApproveArgs } from "../codex-flags.js";
+import { resolveReadOnlyArgs } from "../read-only.js";
 import type { Invocation } from "../types.js";
 
 export interface NativeInvocationOptions {
-  /** When true, constrains the spawned agent to non-destructive tools.
-   * Suppresses `auto_approve_flag` and appends the vendor's `read_only_flag`.
-   * Emits a console.warn when the vendor has no `read_only_flag` defined. */
+  /** Requires a built-in restriction or an explicit read_only_flag.
+   * Suppresses auto-approve and rejects missing or conflicting restrictions. */
   readOnly?: boolean;
   /** Absolute workspace path the agent must be able to write. Used by vendors
    * whose CLI confines writes to a trusted root unless granted explicitly
@@ -46,9 +43,7 @@ export function buildClaudeNativeInvocation(
   }
 
   if (readOnly) {
-    const readOnlyFlag =
-      vendorConfig.read_only_flag ?? "--permission-mode plan";
-    args.push(...splitArgs(readOnlyFlag));
+    args.push(...resolveReadOnlyArgs("claude", vendorConfig));
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   }
@@ -79,8 +74,7 @@ export function buildCodexNativeInvocation(
   }
 
   if (readOnly) {
-    const readOnlyFlag = vendorConfig.read_only_flag ?? "--sandbox read-only";
-    args.push(...splitArgs(readOnlyFlag));
+    args.push(...resolveReadOnlyArgs("codex", vendorConfig));
   } else {
     args.push(
       ...resolveCodexAutoApproveArgs(vendorConfig.auto_approve_flag, {
@@ -135,13 +129,7 @@ export function buildAntigravityNativeInvocation(
   const args: string[] = [];
 
   if (readOnly) {
-    if (vendorConfig.read_only_flag) {
-      args.push(...splitArgs(vendorConfig.read_only_flag));
-    } else {
-      console.warn(
-        "[agent-spawn] read-only mode requested but vendor 'antigravity' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
-      );
-    }
+    args.push(...resolveReadOnlyArgs("antigravity", vendorConfig));
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
@@ -193,13 +181,7 @@ export function buildKiroNativeInvocation(
   const args: string[] = ["chat", "--no-interactive"];
 
   if (readOnly) {
-    if (vendorConfig.read_only_flag) {
-      args.push(...splitArgs(vendorConfig.read_only_flag));
-    } else {
-      console.warn(
-        "[agent-spawn] read-only mode requested but vendor 'kiro' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
-      );
-    }
+    args.push(...resolveReadOnlyArgs("kiro", vendorConfig));
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
@@ -242,13 +224,7 @@ export function buildCursorAgentPrintInvocation(
   }
 
   if (readOnly) {
-    if (vendorConfig.read_only_flag) {
-      args.push(...splitArgs(vendorConfig.read_only_flag));
-    } else {
-      console.warn(
-        "[agent-spawn] read-only mode requested but vendor 'cursor' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
-      );
-    }
+    args.push(...resolveReadOnlyArgs("cursor", vendorConfig));
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {

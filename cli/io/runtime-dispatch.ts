@@ -19,6 +19,7 @@ import {
   type NativeInvocationOptions,
 } from "./runtime-dispatch/invocations/native.js";
 import { buildAgentPlanArgs } from "./runtime-dispatch/plan-args.js";
+import { resolveReadOnlyArgs } from "./runtime-dispatch/read-only.js";
 import { resolveAgentPlan } from "./runtime-dispatch/resolve-plan.js";
 import type {
   AgentPlan,
@@ -158,9 +159,9 @@ const NATIVE_DISPATCH: Record<
 };
 
 export interface PlanDispatchOptions {
-  /** When true, constrains the spawned agent to non-destructive tools.
-   * Suppresses auto_approve_flag and appends the vendor's read_only_flag.
-   * Emits console.warn when the vendor has no read_only_flag defined. */
+  /** Requires a built-in restriction or an explicit read_only_flag.
+   * Suppresses auto_approve_flag; rejects missing or conflicting restrictions
+   * before launching the vendor CLI. */
   readOnly?: boolean;
   /** Absolute workspace path the spawned agent must be able to write.
    * Threaded to native and external builders for vendors that confine writes
@@ -178,6 +179,9 @@ export function planDispatch(
   options: PlanDispatchOptions = {},
 ): DispatchPlan {
   const { readOnly = false, workspace } = options;
+  // Keep required restrictions outside the legacy config-fallback catch and
+  // before model-plan persistence or vendor capability probes.
+  if (readOnly) resolveReadOnlyArgs(targetVendor, vendorConfig);
   const invOptions: NativeInvocationOptions & ExternalInvocationOptions = {
     readOnly,
     workspace,

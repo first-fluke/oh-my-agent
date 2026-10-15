@@ -339,6 +339,7 @@ These pipelines report a missing source or vendor key instead of silently return
 <summary><strong>Parallel agents, sessions and dashboards</strong></summary>
 
 - `oma agent spawn <role> "<task>" <sid>` runs a role on Antigravity, Claude, Codex, Cursor, OpenCode, Qwen, Grok or Pi, with `--isolation worktree` and `--fallback-vendors`. `oma agent parallel` runs several at once.
+- Add `--read-only` to require a vendor restriction before launch. Codex uses its read-only sandbox, Claude uses plan mode, and Pi excludes `edit`, `write`, `bash`, and `powershell`. Other CLIs require an explicit `read_only_flag`; missing, empty, or known conflicting flags stop dispatch. Custom flags declare support in your CLI or wrapper. Pi's tool exclusions do not restrict arbitrary extension or MCP tools; OMA does not add an operating-system sandbox.
 - `oma state list --all-projects` and `oma state get <sid>`: sessions and every recorded event.
 - `oma dashboard terminal` / `oma dashboard web`: live agent status (the web dashboard listens on `127.0.0.1` only). [Dashboard guide](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/guide/dashboard-monitoring.md).
 - `oma stats get` (productivity metrics), `oma retro` (a git retrospective), `oma recap --window 7d` (what you did across AI tools).

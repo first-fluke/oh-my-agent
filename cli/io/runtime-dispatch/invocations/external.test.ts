@@ -2,9 +2,9 @@
  * Regression tests for buildExternalInvocation — cursor read-only bypass fix.
  *
  * Coverage:
- * (a) cursor + readOnly:true → NO --yolo / auto_approve_flag in args
+ * (a) cursor + readOnly:true + no restriction flag → rejects
  * (b) cursor + readOnly:true + read_only_flag defined → appends it
- * (c) cursor + readOnly:true + NO read_only_flag → warns, no --yolo
+ * (c) cursor + readOnly:true + NO read_only_flag → rejects before dispatch
  * (d) cursor + readOnly:false (default) → --yolo present (back-compat)
  * (e) cursor + readOnly:false + custom auto_approve_flag → custom flag present
  * (f) table-driven: kiro/grok/codex/claude/gemini external with readOnly:true each suppress auto-approve
@@ -38,21 +38,15 @@ describe("buildExternalInvocation — cursor read-only bypass regression", () =>
   });
 
   // -------------------------------------------------------------------------
-  // (a) cursor + readOnly:true → NO --yolo and NO auto_approve_flag
+  // (a) cursor + readOnly:true + no restriction flag → reject
   // -------------------------------------------------------------------------
-  it("cursor readOnly:true: suppresses --yolo when no auto_approve_flag is defined", () => {
+  it("cursor readOnly:true: rejects when no read_only_flag is defined", () => {
     const cfg = cursorConfig();
-    const inv = buildExternalInvocation(
-      "cursor",
-      cfg,
-      null,
-      "do work",
-      undefined,
-      {
+    expect(() =>
+      buildExternalInvocation("cursor", cfg, null, "do work", undefined, {
         readOnly: true,
-      },
-    );
-    expect(inv.args).not.toContain("--yolo");
+      }),
+    ).toThrow(/cursor.*read-only|read-only.*cursor/i);
   });
 
   // -------------------------------------------------------------------------
@@ -78,26 +72,15 @@ describe("buildExternalInvocation — cursor read-only bypass regression", () =>
   });
 
   // -------------------------------------------------------------------------
-  // (c) cursor + readOnly:true + NO read_only_flag → console.warn, no --yolo
+  // (c) cursor + readOnly:true + NO read_only_flag → reject
   // -------------------------------------------------------------------------
-  it("cursor readOnly:true + no read_only_flag: warns and omits --yolo", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("cursor readOnly:true + no read_only_flag: rejects unsupported read-only dispatch", () => {
     const cfg = cursorConfig(); // no read_only_flag
-    const inv = buildExternalInvocation(
-      "cursor",
-      cfg,
-      null,
-      "analyze",
-      undefined,
-      {
+    expect(() =>
+      buildExternalInvocation("cursor", cfg, null, "analyze", undefined, {
         readOnly: true,
-      },
-    );
-    expect(inv.args).not.toContain("--yolo");
-    const warnMessages = warnSpy.mock.calls.map((c) => String(c[0]));
-    expect(
-      warnMessages.some((m) => m.includes("read-only") && m.includes("cursor")),
-    ).toBe(true);
+      }),
+    ).toThrow(/cursor.*read-only|read-only.*cursor/i);
   });
 
   // -------------------------------------------------------------------------
@@ -387,17 +370,13 @@ describe("buildExternalInvocation — opencode", () => {
     expect(inv.args).toContain("--dangerously-skip-permissions");
   });
 
-  it("opencode: readOnly:true omits --dangerously-skip-permissions", () => {
+  it("opencode: readOnly:true rejects when no read_only_flag is defined", () => {
     const cfg = opencodeConfig();
-    const inv = buildExternalInvocation(
-      "opencode",
-      cfg,
-      null,
-      "my prompt",
-      "pm",
-      { readOnly: true },
-    );
-    expect(inv.args).not.toContain("--dangerously-skip-permissions");
+    expect(() =>
+      buildExternalInvocation("opencode", cfg, null, "my prompt", "pm", {
+        readOnly: true,
+      }),
+    ).toThrow(/opencode.*read-only|read-only.*opencode/i);
   });
 
   it("opencode: readOnly:true + read_only_flag defined → appends it", () => {
@@ -417,18 +396,13 @@ describe("buildExternalInvocation — opencode", () => {
     expect(inv.args).toContain("--read-only-mode");
   });
 
-  it("opencode: readOnly:true + no read_only_flag → warns", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("opencode: readOnly:true + no read_only_flag → rejects unsupported read-only dispatch", () => {
     const cfg = opencodeConfig(); // no read_only_flag
-    buildExternalInvocation("opencode", cfg, null, "my prompt", "pm", {
-      readOnly: true,
-    });
-    const warnMessages = warnSpy.mock.calls.map((c) => String(c[0]));
-    expect(
-      warnMessages.some(
-        (m) => m.includes("read-only") && m.includes("opencode"),
-      ),
-    ).toBe(true);
+    expect(() =>
+      buildExternalInvocation("opencode", cfg, null, "my prompt", "pm", {
+        readOnly: true,
+      }),
+    ).toThrow(/opencode.*read-only|read-only.*opencode/i);
   });
 
   it("opencode: --agent is omitted when agentId is not provided", () => {
@@ -568,20 +542,17 @@ describe("buildExternalInvocation — kimi", () => {
     expect(inv.args).toEqual(["--model", "kimi-for-coding", "-p", "do work"]);
   });
 
-  it("readOnly:true with no read_only_flag warns and still omits auto-approve", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const inv = buildExternalInvocation(
-      "kimi",
-      kimiConfig(),
-      "-p",
-      "do work",
-      undefined,
-      { readOnly: true },
-    );
-    expect(inv.args).toEqual(["-p", "do work"]);
-    expect(inv.args).not.toContain("--yolo");
-    expect(warnSpy).toHaveBeenCalled();
-    warnSpy.mockRestore();
+  it("readOnly:true with no read_only_flag rejects unsupported read-only dispatch", () => {
+    expect(() =>
+      buildExternalInvocation(
+        "kimi",
+        kimiConfig(),
+        "-p",
+        "do work",
+        undefined,
+        { readOnly: true },
+      ),
+    ).toThrow(/kimi.*read-only|read-only.*kimi/i);
   });
 
   it("readOnly:true appends a configured read_only_flag", () => {
