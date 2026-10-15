@@ -1180,7 +1180,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `backend` | Проверка синтаксиса, обнаружение SQL-инъекций (паттерны raw SQL) и тесты — всё по командам `verify` из `.agents/skills/oma-backend/stack/stack.yaml` (его создаёт `/stack-set`). Пропускаются, если этого файла нет |
 | `frontend` | Проверка синтаксиса и тесты по командам `verify` из `.agents/skills/oma-frontend/stack/stack.yaml` (или `.agents/skills/angular-developer/stack/stack.yaml`, если этот навык установлен); без этого файла — компиляция TypeScript (`tsc --noEmit`) и тесты фронтенда (`vitest`). Всегда: обнаружение inline-стилей (`style={{`, только предупреждение), использование типа `any` (ошибка, если > 3) |
 | `mobile` | Проверка синтаксиса и тесты по командам `verify` из `.agents/skills/oma-mobile/stack/stack.yaml`; без этого файла — анализ Flutter/Dart (`flutter analyze` или `dart analyze`) и тесты Flutter (`flutter test`) |
-| `qa` | Проверка выполнения self-check |
+| `qa` | Механических проверок нет; записывает одну проверку `QA Report` со статусом `PASS` |
 | `debug` | Запускает тесты Python или тесты фронтенда в зависимости от определённого типа проекта |
 | `pm` | Проверяет, что `.agents/results/plan-{sessionId}.json` существует и содержит корректный JSON |
 

@@ -1180,7 +1180,7 @@ Wenn mehrere Sitzungspläne oder Laufbelege passen, schlägt die Verifikation fe
 | `backend` | Syntaxprüfung, Erkennung von SQL-Injection (rohe SQL-Muster) und Tests, jeweils aus den `verify`-Befehlen in `.agents/skills/oma-backend/stack/stack.yaml` (geschrieben von `/stack-set`). Werden übersprungen, wenn diese Datei fehlt |
 | `frontend` | Syntaxprüfung und Tests aus den `verify`-Befehlen in `.agents/skills/oma-frontend/stack/stack.yaml` (oder `.agents/skills/angular-developer/stack/stack.yaml`, wenn dieser Skill installiert ist); ohne diese Datei TypeScript-Kompilierung (`tsc --noEmit`) und Frontend-Tests (`vitest`). Immer: Erkennung von Inline-Stilen (`style={{`, nur Warnung), Verwendung des Typs `any` (Fehler bei > 3) |
 | `mobile` | Syntaxprüfung und Tests aus den `verify`-Befehlen in `.agents/skills/oma-mobile/stack/stack.yaml`; ohne diese Datei Flutter-/Dart-Analyse (`flutter analyze` oder `dart analyze`) und Flutter-Tests (`flutter test`) |
-| `qa` | Selbstprüfungsverifikation |
+| `qa` | Keine mechanischen Checks; erfasst einen einzigen `QA Report`-Check als `PASS` |
 | `debug` | Führt je nach erkanntem Projekttyp Python- oder Frontend-Tests aus |
 | `pm` | Validiert, dass `.agents/results/plan-{sessionId}.json` existiert und gültiges JSON enthält |
 

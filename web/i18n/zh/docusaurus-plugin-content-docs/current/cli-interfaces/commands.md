@@ -1131,7 +1131,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `backend` | 语法校验、SQL 注入检测（原始 SQL 模式）和测试执行，均来自 `.agents/skills/oma-backend/stack/stack.yaml`（由 `/stack-set` 生成）中的 `verify` 命令。该文件不存在时跳过 |
 | `frontend` | 语法校验和测试执行，来自 `.agents/skills/oma-frontend/stack/stack.yaml`（若已安装 `angular-developer` 技能，也可为 `.agents/skills/angular-developer/stack/stack.yaml`）中的 `verify` 命令；该文件不存在时改为 TypeScript 编译（`tsc --noEmit`）和前端测试（`vitest`）。始终运行：内联样式检测（`style={{`，仅警告）、`any` 类型使用情况（超过 3 处则失败） |
 | `mobile` | 语法校验和测试执行，来自 `.agents/skills/oma-mobile/stack/stack.yaml` 中的 `verify` 命令；该文件不存在时改为 Flutter/Dart 分析（`flutter analyze` 或 `dart analyze`）和 Flutter 测试（`flutter test`） |
-| `qa` | 自检验证 |
+| `qa` | 没有机械检查；仅记录一项 `QA Report` 检查为 `PASS` |
 | `debug` | 根据检测到的项目类型运行 Python 测试或前端测试 |
 | `pm` | 校验 `.agents/results/plan-{sessionId}.json` 是否存在且为有效 JSON |
 

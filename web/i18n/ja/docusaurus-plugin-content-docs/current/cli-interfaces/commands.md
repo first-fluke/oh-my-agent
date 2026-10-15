@@ -1172,7 +1172,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `backend` | `.agents/skills/oma-backend/stack/stack.yaml`（`/stack-set` が生成）の `verify` コマンドによる構文検証、SQL インジェクション検出（raw SQL パターン）、テスト実行。このファイルがない場合はスキップ |
 | `frontend` | `.agents/skills/oma-frontend/stack/stack.yaml`（`angular-developer` スキルがインストールされていれば `.agents/skills/angular-developer/stack/stack.yaml`）の `verify` コマンドによる構文検証とテスト実行。このファイルがない場合は TypeScript コンパイル（`tsc --noEmit`）とフロントエンドテスト（`vitest`）。常に実行: インラインスタイル検出（`style={{`、警告のみ）、`any` 型使用（3 件超で失敗） |
 | `mobile` | `.agents/skills/oma-mobile/stack/stack.yaml` の `verify` コマンドによる構文検証とテスト実行。このファイルがない場合は Flutter/Dart 解析（`flutter analyze` または `dart analyze`）と Flutter テスト（`flutter test`） |
-| `qa` | 自己チェック検証 |
+| `qa` | 機械的なチェックはありません。`QA Report` チェックを 1 件 `PASS` として記録します |
 | `debug` | プロジェクト種別に応じて Python またはフロントエンドのテストを実行します。 |
 | `pm` | `.agents/results/plan-{sessionId}.json` の存在と有効な JSON を確認します。 |
 

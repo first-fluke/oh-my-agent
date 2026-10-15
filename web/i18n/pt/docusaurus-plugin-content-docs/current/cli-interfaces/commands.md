@@ -1131,7 +1131,7 @@ Quando vários planos de sessão ou recibos de execução correspondem, a verifi
 | `backend` | Validação de sintaxe, detecção de injeção de SQL (padrões de SQL cru) e testes, tudo a partir dos comandos `verify` em `.agents/skills/oma-backend/stack/stack.yaml` (gerado por `/stack-set`). Ignorados quando esse arquivo não existe |
 | `frontend` | Validação de sintaxe e testes a partir dos comandos `verify` em `.agents/skills/oma-frontend/stack/stack.yaml` (ou em `.agents/skills/angular-developer/stack/stack.yaml` se essa skill estiver instalada); sem esse arquivo, compilação TypeScript (`tsc --noEmit`) e testes de frontend (`vitest`). Sempre: detecção de estilos inline (`style={{`, apenas aviso), uso do tipo `any` (falha acima de 3) |
 | `mobile` | Validação de sintaxe e testes a partir dos comandos `verify` em `.agents/skills/oma-mobile/stack/stack.yaml`; sem esse arquivo, análise Flutter/Dart (`flutter analyze` ou `dart analyze`) e testes Flutter (`flutter test`) |
-| `qa` | Autoverificação |
+| `qa` | Nenhuma checagem mecânica; registra uma única checagem `QA Report` como `PASS` |
 | `debug` | Executa os testes de Python ou de frontend conforme o tipo de projeto detectado |
 | `pm` | Verifica se `.agents/results/plan-{sessionId}.json` existe e contém um JSON válido |
 

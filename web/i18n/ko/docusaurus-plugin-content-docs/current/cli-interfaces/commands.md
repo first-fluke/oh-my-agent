@@ -1130,7 +1130,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `backend` | `.agents/skills/oma-backend/stack/stack.yaml` (`/stack-set`이 생성)의 `verify` 커맨드로 실행하는 구문 검증, SQL 인젝션 감지 (raw SQL 패턴), 테스트 실행. 이 파일이 없으면 건너뜀 |
 | `frontend` | `.agents/skills/oma-frontend/stack/stack.yaml` (`angular-developer` 스킬이 설치되어 있으면 `.agents/skills/angular-developer/stack/stack.yaml`)의 `verify` 커맨드로 실행하는 구문 검증과 테스트 실행. 이 파일이 없으면 TypeScript 컴파일 (`tsc --noEmit`)과 프론트엔드 테스트 (`vitest`). 항상 실행: 인라인 스타일 감지 (`style={{`, 경고만), `any` 타입 사용 (3개 초과 시 실패) |
 | `mobile` | `.agents/skills/oma-mobile/stack/stack.yaml`의 `verify` 커맨드로 실행하는 구문 검증과 테스트 실행. 이 파일이 없으면 Flutter/Dart 분석 (`flutter analyze` 또는 `dart analyze`)과 Flutter 테스트 (`flutter test`) |
-| `qa` | 자체 검사 검증 |
+| `qa` | 기계적 체크 없음. `QA Report` 체크 하나를 `PASS`로 기록 |
 | `debug` | 감지된 프로젝트 타입에 따라 Python 테스트 또는 프론트엔드 테스트 실행 |
 | `pm` | `.agents/results/plan-{sessionId}.json`이 존재하고 유효한 JSON인지 검증 |
 

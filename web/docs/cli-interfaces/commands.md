@@ -1180,7 +1180,7 @@ When several session plans or run receipts match, verification fails and asks fo
 | `backend` | Syntax check, SQL injection detection (raw SQL patterns), and tests, all from the `verify` commands in `.agents/skills/oma-backend/stack/stack.yaml` (written by `/stack-set`). Skipped when that file is missing |
 | `frontend` | Syntax check and tests from the `verify` commands in `.agents/skills/oma-frontend/stack/stack.yaml` (or `.agents/skills/angular-developer/stack/stack.yaml` when that skill is installed); without it, TypeScript compilation (`tsc --noEmit`) and frontend tests (`vitest`). Always: inline style detection (`style={{`, warns only), `any` type usage (fails if > 3) |
 | `mobile` | Syntax check and tests from the `verify` commands in `.agents/skills/oma-mobile/stack/stack.yaml`; without it, Flutter/Dart analysis (`flutter analyze` or `dart analyze`) and Flutter tests (`flutter test`) |
-| `qa` | Self-check verification |
+| `qa` | No mechanical checks; records a single `QA Report` check as `PASS` |
 | `debug` | Runs Python tests or frontend tests based on detected project type |
 | `pm` | Validates `.agents/results/plan-{sessionId}.json` exists and is valid JSON |
 

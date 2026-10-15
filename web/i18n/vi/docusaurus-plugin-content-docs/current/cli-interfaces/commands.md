@@ -1180,7 +1180,7 @@ Khi có nhiều session plan hoặc run receipt khớp, việc xác minh thất 
 | `backend` | Kiểm tra cú pháp, phát hiện SQL injection (pattern raw SQL) và test, tất cả lấy từ các lệnh `verify` trong `.agents/skills/oma-backend/stack/stack.yaml` (do `/stack-set` tạo). Bị bỏ qua khi không có file này |
 | `frontend` | Kiểm tra cú pháp và test theo các lệnh `verify` trong `.agents/skills/oma-frontend/stack/stack.yaml` (hoặc `.agents/skills/angular-developer/stack/stack.yaml` khi skill đó đã được cài); không có file này thì biên dịch TypeScript (`tsc --noEmit`) và test frontend (`vitest`). Luôn chạy: phát hiện inline style (`style={{`, chỉ cảnh báo), việc dùng kiểu `any` (thất bại nếu > 3) |
 | `mobile` | Kiểm tra cú pháp và test theo các lệnh `verify` trong `.agents/skills/oma-mobile/stack/stack.yaml`; không có file này thì phân tích Flutter/Dart (`flutter analyze` hoặc `dart analyze`) và test Flutter (`flutter test`) |
-| `qa` | Xác minh tự kiểm tra |
+| `qa` | Không có kiểm tra máy móc; ghi nhận một kiểm tra `QA Report` duy nhất là `PASS` |
 | `debug` | Chạy test Python hoặc test frontend tùy theo loại project phát hiện được |
 | `pm` | Xác thực rằng `.agents/results/plan-{sessionId}.json` tồn tại và là JSON hợp lệ |
 

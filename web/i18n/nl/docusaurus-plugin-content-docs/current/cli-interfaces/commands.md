@@ -1177,7 +1177,7 @@ Wanneer meerdere sessieplannen of run-receipts overeenkomen, faalt de verificati
 | `backend` | Syntaxisvalidatie, detectie van SQL-injectie (raw-SQL-patronen) en tests, allemaal via de `verify`-commando's in `.agents/skills/oma-backend/stack/stack.yaml` (geschreven door `/stack-set`). Overgeslagen als dat bestand ontbreekt |
 | `frontend` | Syntaxisvalidatie en tests via de `verify`-commando's in `.agents/skills/oma-frontend/stack/stack.yaml` (of `.agents/skills/angular-developer/stack/stack.yaml` als die skill geïnstalleerd is); zonder dat bestand TypeScript-compilatie (`tsc --noEmit`) en frontendtests (`vitest`). Altijd: detectie van inline styles (`style={{`, alleen waarschuwing), gebruik van type `any` (faalt bij > 3) |
 | `mobile` | Syntaxisvalidatie en tests via de `verify`-commando's in `.agents/skills/oma-mobile/stack/stack.yaml`; zonder dat bestand Flutter/Dart-analyse (`flutter analyze` of `dart analyze`) en Flutter-tests (`flutter test`) |
-| `qa` | Zelfcontrole |
+| `qa` | Geen mechanische checks; registreert één `QA Report`-check als `PASS` |
 | `debug` | Voert Python- of frontendtests uit op basis van het gedetecteerde projecttype |
 | `pm` | Valideert dat `.agents/results/plan-{sessionId}.json` bestaat en geldige JSON bevat |
 

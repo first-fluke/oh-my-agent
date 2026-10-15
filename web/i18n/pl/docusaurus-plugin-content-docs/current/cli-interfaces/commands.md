@@ -1180,7 +1180,7 @@ Gdy pasuje kilka planów sesji lub potwierdzeń uruchomień, weryfikacja kończy
 | `backend` | Walidacja składni, wykrywanie SQL injection (wzorce surowego SQL) i testy, wszystko z poleceń `verify` w `.agents/skills/oma-backend/stack/stack.yaml` (zapisywanym przez `/stack-set`). Pomijane, gdy tego pliku brak |
 | `frontend` | Walidacja składni i testy z poleceń `verify` w `.agents/skills/oma-frontend/stack/stack.yaml` (lub `.agents/skills/angular-developer/stack/stack.yaml`, jeśli ta umiejętność jest zainstalowana); bez tego pliku kompilacja TypeScript (`tsc --noEmit`) i testy frontendu (`vitest`). Zawsze: wykrywanie stylów inline (`style={{`, tylko ostrzeżenie), użycie typu `any` (błąd powyżej 3) |
 | `mobile` | Walidacja składni i testy z poleceń `verify` w `.agents/skills/oma-mobile/stack/stack.yaml`; bez tego pliku analiza Flutter/Dart (`flutter analyze` lub `dart analyze`) i testy Flutter (`flutter test`) |
-| `qa` | Weryfikacja samokontroli |
+| `qa` | Brak sprawdzeń mechanicznych; zapisuje jedno sprawdzenie `QA Report` jako `PASS` |
 | `debug` | Uruchamia testy Pythona lub frontendu na podstawie wykrytego typu projektu |
 | `pm` | Sprawdza, czy `.agents/results/plan-{sessionId}.json` istnieje i zawiera poprawny JSON |
 
