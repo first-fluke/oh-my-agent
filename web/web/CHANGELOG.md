@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.4...web-v11.1.0) (2026-10-15)
+
+
+### Features
+
+* **docs:** consolidate artifact storage and migrate legacy paths ([c9169af](https://github.com/first-fluke/oh-my-agent/commit/c9169afa163ddaa76da1a2daec5b7ac8cec2be6e))
+
 ## [11.0.4](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.3...web-v11.0.4) (2026-10-15)
 
 
