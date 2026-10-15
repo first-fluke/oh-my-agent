@@ -64,7 +64,7 @@ When you encounter a failure during planning, follow these recovery steps.
 
 ## Workflow State / Quota Issues
 
-Same as backend-agent playbook: see the "Rate Limit / Quota Error (LLM runtime)" and "Workflow State Unavailable" sections in `../../oma-backend/resources/error-playbook.md`.
+Same as the `oma-backend` playbook: see the "Rate Limit / Quota Error (LLM runtime)" and "Workflow State Unavailable" sections in `../../oma-backend/resources/error-playbook.md`.
 
 ---
 

@@ -91,6 +91,8 @@ After scanning all tables, record every domain that has at least one detected ma
 | mobile only | `oma-mobile` |
 | two or more (monorepo) | carry **all** into Step 2 — do NOT first-match |
 
+`angular-developer` is the Angular team's agent skill, installed separately by the user; OMA does not ship it. Use it only when its directory exists. Otherwise (the default) Angular targets `oma-frontend`, whose `resources/angular-rules.md` carries the Angular conventions.
+
 **Multi-domain rule (amendment B):** If manifests from two or more tables are found, collect all detected domains as the detected set and proceed to Step 2. Do not silently discard any.
 
 ---

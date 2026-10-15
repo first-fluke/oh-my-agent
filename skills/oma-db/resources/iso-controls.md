@@ -94,5 +94,5 @@ When relevant, add a short section like:
 - Keep standards comments practical and database-specific
 - Prefer implementable controls over abstract policy language
 - Distinguish between source-of-truth data and rebuildable derived data
-- If the issue is infrastructure-only, involve `tf-infra-agent`
+- If the issue is infrastructure-only, involve `tf-infra-engineer` (`oma-tf-infra`)
 - If the issue is org-wide audit/process ownership, involve QA or PM

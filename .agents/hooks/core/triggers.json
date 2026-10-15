@@ -3239,7 +3239,10 @@
       "less",
       "vue",
       "svelte",
-      "html"
+      "html",
+      "figma",
+      "sketch",
+      "svg"
     ],
     "backend-engineer": [
       "go",
@@ -3253,7 +3256,6 @@
       "resolver"
     ],
     "db-engineer": ["sql", "prisma", "graphql", "migration"],
-    "mobile-engineer": ["dart", "swift", "kt", "xib", "storyboard"],
-    "designer": ["figma", "sketch", "svg"]
+    "mobile-engineer": ["dart", "swift", "kt", "xib", "storyboard"]
   }
 }
