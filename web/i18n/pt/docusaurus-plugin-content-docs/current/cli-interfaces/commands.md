@@ -1128,9 +1128,9 @@ Quando vários planos de sessão ou recibos de execução correspondem, a verifi
 
 | Tipo de agente | Verificações adicionais |
 |:-----------|:-----------------|
-| `backend` | Validação de sintaxe Python (`py_compile`), detecção de injeção de SQL (f-string + palavras-chave SQL), execução dos testes Python (`pytest`) |
-| `frontend` | Compilação TypeScript (`tsc --noEmit`), detecção de estilos inline (`style={{`), uso do tipo `any` (falha acima de 3), testes de frontend (`vitest`) |
-| `mobile` | Análise Flutter/Dart (`flutter analyze` ou `dart analyze`), testes Flutter (`flutter test`) |
+| `backend` | Validação de sintaxe, detecção de injeção de SQL (padrões de SQL cru) e testes, tudo a partir dos comandos `verify` em `.agents/skills/oma-backend/stack/stack.yaml` (gerado por `/stack-set`). Ignorados quando esse arquivo não existe |
+| `frontend` | Validação de sintaxe e testes a partir dos comandos `verify` em `.agents/skills/oma-frontend/stack/stack.yaml` (ou em `.agents/skills/angular-developer/stack/stack.yaml` se essa skill estiver instalada); sem esse arquivo, compilação TypeScript (`tsc --noEmit`) e testes de frontend (`vitest`). Sempre: detecção de estilos inline (`style={{`, apenas aviso), uso do tipo `any` (falha acima de 3) |
+| `mobile` | Validação de sintaxe e testes a partir dos comandos `verify` em `.agents/skills/oma-mobile/stack/stack.yaml`; sem esse arquivo, análise Flutter/Dart (`flutter analyze` ou `dart analyze`) e testes Flutter (`flutter test`) |
 | `qa` | Autoverificação |
 | `debug` | Executa os testes de Python ou de frontend conforme o tipo de projeto detectado |
 | `pm` | Verifica se `.agents/results/plan-{sessionId}.json` existe e contém um JSON válido |
@@ -2195,7 +2195,7 @@ Exibe a versão atual da CLI e sai.
 | Sintoma | Causa | Correção |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | Um alias curto (`viz`, `s`, `img`), uma grafia com dois-pontos (`agent:parallel`, `memory:init`) ou um plural `skills audit` / `lint` / `eval` / `opt` | Use o caminho canônico indicado em [Aliases e grafias removidas](#aliases) |
-| `Unexpected argument for oma <path>. Use --help.` | Um subcomando renomeado, como `vault rm`, `search api <url>` ou `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | Um subcomando renomeado, como `vault rm`, `search api <url>` ou `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
 | `Removed option -r. Use --project-root.` (também `--root`, `--session`, `--timeout-minutes`, `--max-age-days`) | A opção foi renomeada | Use a grafia que a mensagem exibe: `--project-root`, `--session-id`, `--timeout`, `--expires-after` ou `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | Uma opção de duração, como `--expires-after` ou `--max-age`, recebeu um número sem unidade | Adicione uma unidade, por exemplo `30d` |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | O valor de `--every` não corresponde a um passo cron exato | Visualize com `--dry-run` e depois adicione `--accept-rounded` ou use `--cron` |

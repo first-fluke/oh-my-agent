@@ -47,7 +47,7 @@ description: "Справочник опций CLI oma: глобальные фл
 
 Пути команд разделяются пробелами, а не двоеточиями, и ряд команд и опций переименован. Старые формы записи отклоняются, а не работают как алиасы:
 
-- Старая команда завершается ошибкой `Unknown command: ... Use oma --help.` или `Unexpected argument for oma <group>. Use --help.`
+- Старая команда завершается ошибкой `Unknown command: ... Use oma --help.` или `Unexpected argument for oma <group>. Use oma <replacement>.`
 - Голые имена групп `dashboard`, `state` и `stats` теперь выводят справку группы, а не выполняют действие.
 - Старая опция завершается ошибкой `Removed option <old>. Use <new>.`; удалённые флаги действий `state` и `stats` завершаются ошибкой `Removed option <old>. Use an explicit action; see oma --help.`
 

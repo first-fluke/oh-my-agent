@@ -55,6 +55,46 @@ export const OS_INVOKED_LEGACY_PATHS: Readonly<Record<string, string>> = {
   "serena daemon:gc": "serena daemon gc",
 };
 
+/**
+ * Positional forms deliberately removed when command paths were standardized.
+ * They stay rejected (see the "Aliases and removed spellings" table in
+ * web/docs/cli-interfaces/commands.md), but the error names the replacement
+ * instead of only pointing at --help. A key is the parent path that now
+ * rejects the form plus its first positional (`vault rm`), or the parent path
+ * alone when any positional there is the removed form (`verify`).
+ */
+export const REMOVED_POSITIONAL_FORMS: Readonly<Record<string, string>> = {
+  verify: "verify agent <agent-type>",
+  "vault rm": "vault delete <name>",
+  "search api": "search api fetch <url>",
+  "search api:search": "search api search <query>",
+  "search rss": "search rss fetch <url>",
+  "search rss:google": "search rss google <query>",
+  "slide new": "slide create",
+  "slide viewer": "slide preview",
+  "slide pdf": "slide export pdf",
+  "slide png": "slide export png",
+  "slide pptx": "slide export pptx",
+  "slide import-pptx": "slide import pptx <file>",
+  "slide fetch-video": "slide asset fetch-video <url>",
+  "slide styles": "slide style <list|preview|get>",
+  "image list-vendors": "image vendor list",
+  "video list-providers": "video provider list",
+  "intel run": "intel suggest",
+};
+
+/** Replacement for a removed positional form, or undefined when none is recorded. */
+export function removedPositionalReplacement(
+  path: string,
+  firstPositional: string | undefined,
+): string | undefined {
+  return (
+    (firstPositional !== undefined
+      ? REMOVED_POSITIONAL_FORMS[`${path} ${firstPositional}`]
+      : undefined) ?? REMOVED_POSITIONAL_FORMS[path]
+  );
+}
+
 export function canonicalCommandPath(path: string): string {
   return COMMAND_PATHS[path] ?? path.replaceAll(":", " ");
 }

@@ -47,7 +47,7 @@ Toutes les sous-commandes prennent aussi en charge `-h, --help` pour afficher le
 
 Les chemins de commande utilisent des espaces, et non des deux-points, et plusieurs commandes et options ont été renommées. Les anciennes graphies sont rejetées, et non conservées comme alias :
 
-- Une ancienne commande échoue avec `Unknown command: ... Use oma --help.` ou `Unexpected argument for oma <group>. Use --help.`
+- Une ancienne commande échoue avec `Unknown command: ... Use oma --help.` ou `Unexpected argument for oma <group>. Use oma <replacement>.`
 - Les noms de groupe seuls `dashboard`, `state` et `stats` affichent désormais l’aide du groupe au lieu de s’exécuter.
 - Une ancienne option échoue avec `Removed option <old>. Use <new>.` ; les indicateurs d’action supprimés de `state` et `stats` échouent avec `Removed option <old>. Use an explicit action; see oma --help.`
 

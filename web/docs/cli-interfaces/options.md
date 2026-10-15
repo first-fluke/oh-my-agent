@@ -47,7 +47,7 @@ All subcommands also support `-h, --help` to show their specific help text.
 
 Command paths use spaces, not colons, and several commands and options were renamed. The old spellings are rejected, not aliased:
 
-- An old command fails with `Unknown command: ... Use oma --help.` or `Unexpected argument for oma <group>. Use --help.`
+- An old command fails with `Unknown command: ... Use oma --help.` or `Unexpected argument for oma <group>. Use oma <replacement>.`
 - The bare group names `dashboard`, `state`, and `stats` now print the group's help instead of running.
 - An old option fails with `Removed option <old>. Use <new>.`; the removed `state` and `stats` action flags fail with `Removed option <old>. Use an explicit action; see oma --help.`
 

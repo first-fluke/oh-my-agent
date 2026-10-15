@@ -47,7 +47,7 @@ description: oma CLI 옵션 레퍼런스입니다. 전역 플래그, 출력 제�
 
 명령 경로는 콜론이 아니라 공백으로 구분하며, 여러 명령과 옵션의 이름이 바뀌었습니다. 예전 표기는 별칭으로 처리되지 않고 거부됩니다:
 
-- 예전 명령은 `Unknown command: ... Use oma --help.` 또는 `Unexpected argument for oma <group>. Use --help.`로 실패합니다.
+- 예전 명령은 `Unknown command: ... Use oma --help.` 또는 `Unexpected argument for oma <group>. Use oma <replacement>.`로 실패합니다.
 - 그룹 이름만 쓴 `dashboard`, `state`, `stats`는 이제 실행되지 않고 해당 그룹의 도움말을 출력합니다.
 - 예전 옵션은 `Removed option <old>. Use <new>.`로 실패합니다. 제거된 `state`와 `stats`의 동작 플래그는 `Removed option <old>. Use an explicit action; see oma --help.`로 실패합니다.
 

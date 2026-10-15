@@ -47,7 +47,7 @@ Alle subcommando's ondersteunen ook `-h, --help` om hun eigen helptekst te tonen
 
 Commandopaden gebruiken spaties in plaats van dubbele punten, en verschillende commando's en opties zijn hernoemd. De oude schrijfwijzen worden afgewezen, niet als alias behandeld:
 
-- Een oud commando faalt met `Unknown command: ... Use oma --help.` of `Unexpected argument for oma <group>. Use --help.`
+- Een oud commando faalt met `Unknown command: ... Use oma --help.` of `Unexpected argument for oma <group>. Use oma <replacement>.`
 - De kale groepsnamen `dashboard`, `state` en `stats` tonen nu de help van de groep in plaats van iets uit te voeren.
 - Een oude optie faalt met `Removed option <old>. Use <new>.`; de verwijderde actievlaggen van `state` en `stats` falen met `Removed option <old>. Use an explicit action; see oma --help.`
 

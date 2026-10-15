@@ -1,6 +1,7 @@
 import { Command } from "commander";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { printDescribe } from "./cli-framework.js";
+import { REMOVED_POSITIONAL_FORMS } from "./command-paths.js";
 import { createCommandSurface } from "./command-surface.js";
 
 function fixture() {
@@ -91,6 +92,16 @@ describe("canonical command surface", () => {
       ["image", "generate", "p", "--out", "/tmp"],
     ])
       expect(() => surface.normalize(argv), argv.join(" ")).toThrow();
+    // Removed positional forms name their replacement; paths without a
+    // recorded replacement keep the generic --help pointer.
+    expect(() =>
+      surface.normalize(["search", "api", "https://example.test"]),
+    ).toThrow(
+      "Unexpected argument for oma search. Use oma search api fetch <url>.",
+    );
+    expect(() => surface.normalize(["search", "bogus", "x"])).toThrow(
+      "Unexpected argument for oma search. Use --help.",
+    );
   });
   it("dispatches the canonical spelling to the handler exactly once", async () => {
     for (const argv of [
@@ -447,6 +458,78 @@ describe("OS-invoked legacy paths", () => {
     const { surface } = fixture();
     expect(() => surface.normalize(["schedule:list"])).toThrow(
       /Unknown command/,
+    );
+  });
+});
+
+// Every documented removed positional spelling ("Aliases and removed spellings"
+// in web/docs/cli-interfaces/commands.md) must still be rejected by the real
+// CLI registration, and the error must name the replacement.
+describe("removed positional forms on the actual CLI", () => {
+  let program: Command;
+  beforeAll(async () => {
+    const argv = process.argv;
+    const parse = vi
+      .spyOn(Command.prototype, "parseAsync")
+      .mockImplementation(async function (this: Command) {
+        program = this;
+        return this;
+      });
+    process.argv = ["node", "oma", "--version"];
+    try {
+      await import("../cli.js");
+    } finally {
+      process.argv = argv;
+      parse.mockRestore();
+    }
+  }, 30_000);
+
+  it.each([
+    [["vault", "rm", "token"], "vault", "vault delete <name>"],
+    [
+      ["search", "api", "https://example.test"],
+      "search",
+      "search api fetch <url>",
+    ],
+    [
+      ["search", "rss", "https://example.test/feed"],
+      "search",
+      "search rss fetch <url>",
+    ],
+    [["search", "api:search", "q"], "search", "search api search <query>"],
+    [["search", "rss:google", "q"], "search", "search rss google <query>"],
+    [["slide", "new"], "slide", "slide create"],
+    [["slide", "pdf"], "slide", "slide export pdf"],
+    [["slide", "styles", "list"], "slide", "slide style <list|preview|get>"],
+    [["image", "list-vendors"], "image", "image vendor list"],
+    [["video", "list-providers"], "video", "video provider list"],
+    [["intel", "run"], "intel", "intel suggest"],
+    [["verify", "backend"], "verify", "verify agent <agent-type>"],
+  ])("rejects %j and names the replacement", (argv, parent, replacement) => {
+    expect(() => createCommandSurface(program).normalize(argv)).toThrow(
+      `Unexpected argument for oma ${parent}. Use oma ${replacement}.`,
+    );
+  });
+
+  it("covers every recorded form and keeps --help for unknown words", () => {
+    const surface = createCommandSurface(program);
+    for (const [key, replacement] of Object.entries(REMOVED_POSITIONAL_FORMS)) {
+      const words = key.split(" ");
+      const parent = words.length > 1 ? words.slice(0, -1).join(" ") : key;
+      const argv = words.length > 1 ? [...words, "x"] : [...words, "backend"];
+      expect(() => surface.normalize(argv), key).toThrow(
+        `Unexpected argument for oma ${parent}. Use oma ${replacement}.`,
+      );
+      // The replacement itself must be a real command path.
+      let node: Command | undefined = surface.help;
+      for (const name of replacement
+        .split(" ")
+        .filter((w) => !w.startsWith("<")))
+        node = node?.commands.find((c) => c.name() === name);
+      expect(node, replacement).toBeDefined();
+    }
+    expect(() => surface.normalize(["vault", "bogus"])).toThrow(
+      "Unexpected argument for oma vault. Use --help.",
     );
   });
 });

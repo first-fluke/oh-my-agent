@@ -1169,9 +1169,9 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 | エージェント種別 | 追加チェック |
 |:-----------|:-----------------|
-| `backend` | Python 構文検証（`py_compile`）、SQL インジェクション検出（f-string + SQL キーワード）、Python テスト実行（`pytest`） |
-| `frontend` | TypeScript コンパイル（`tsc --noEmit`）、インラインスタイル検出（`style={{`）、`any` 型使用（3 件超で失敗）、フロントエンドテスト（`vitest`） |
-| `mobile` | Flutter/Dart 解析（`flutter analyze` または `dart analyze`）、Flutter テスト（`flutter test`） |
+| `backend` | `.agents/skills/oma-backend/stack/stack.yaml`（`/stack-set` が生成）の `verify` コマンドによる構文検証、SQL インジェクション検出（raw SQL パターン）、テスト実行。このファイルがない場合はスキップ |
+| `frontend` | `.agents/skills/oma-frontend/stack/stack.yaml`（`angular-developer` スキルがインストールされていれば `.agents/skills/angular-developer/stack/stack.yaml`）の `verify` コマンドによる構文検証とテスト実行。このファイルがない場合は TypeScript コンパイル（`tsc --noEmit`）とフロントエンドテスト（`vitest`）。常に実行: インラインスタイル検出（`style={{`、警告のみ）、`any` 型使用（3 件超で失敗） |
+| `mobile` | `.agents/skills/oma-mobile/stack/stack.yaml` の `verify` コマンドによる構文検証とテスト実行。このファイルがない場合は Flutter/Dart 解析（`flutter analyze` または `dart analyze`）と Flutter テスト（`flutter test`） |
 | `qa` | 自己チェック検証 |
 | `debug` | プロジェクト種別に応じて Python またはフロントエンドのテストを実行します。 |
 | `pm` | `.agents/results/plan-{sessionId}.json` の存在と有効な JSON を確認します。 |
@@ -2242,7 +2242,7 @@ oma version
 | 症状 | 原因 | 対処 |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | 短縮エイリアス（`viz`、`s`、`img`）、コロン表記（`agent:parallel`、`memory:init`）、または複数形の `skills audit` / `lint` / `eval` / `opt` | [エイリアスと削除された表記](#aliases) の正規パスを使います |
-| `Unexpected argument for oma <path>. Use --help.` | `vault rm`、`search api <url>`、`verify backend` など、名前が変わったサブコマンド | `vault delete`、`search api fetch <url>`、`verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | `vault rm`、`search api <url>`、`verify backend` など、名前が変わったサブコマンド | `vault delete`、`search api fetch <url>`、`verify agent backend` |
 | `Removed option -r. Use --project-root.`（`--root`、`--session`、`--timeout-minutes`、`--max-age-days` も同様） | オプション名が変更されました | メッセージが示す表記を使います: `--project-root`、`--session-id`、`--timeout`、`--expires-after` または `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | `--expires-after` や `--max-age` などの期間オプションに単位なしの数値が渡されました | `30d` のように単位を付けます |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | `--every` の値が cron のきれいな間隔になりません | `--dry-run` でプレビューしてから `--accept-rounded` を付けるか、`--cron` を使います |

@@ -47,7 +47,7 @@ Todos los subcomandos también admiten `-h, --help` para mostrar su texto de ayu
 
 Las rutas de comando usan espacios, no dos puntos, y varios comandos y opciones se han renombrado. Las grafías antiguas se rechazan; no se mantienen como alias:
 
-- Un comando antiguo falla con `Unknown command: ... Use oma --help.` o `Unexpected argument for oma <group>. Use --help.`
+- Un comando antiguo falla con `Unknown command: ... Use oma --help.` o `Unexpected argument for oma <group>. Use oma <replacement>.`
 - Los nombres de grupo sin subcomando `dashboard`, `state` y `stats` ahora imprimen la ayuda del grupo en lugar de ejecutarse.
 - Una opción antigua falla con `Removed option <old>. Use <new>.`; los flags de acción eliminados de `state` y `stats` fallan con `Removed option <old>. Use an explicit action; see oma --help.`
 

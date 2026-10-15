@@ -48,7 +48,7 @@ sidebar_label: CLI 选项
 
 命令路径使用空格而不是冒号分隔，部分命令和选项也已更名。旧写法会被拒绝，不作为别名保留：
 
-- 旧命令会失败并报错 `Unknown command: ... Use oma --help.` 或 `Unexpected argument for oma <group>. Use --help.`
+- 旧命令会失败并报错 `Unknown command: ... Use oma --help.` 或 `Unexpected argument for oma <group>. Use oma <replacement>.`
 - 单独输入命令组名 `dashboard`、`state` 和 `stats` 时，现在会打印该组的帮助，而不是直接运行。
 - 旧选项会失败并报错 `Removed option <old>. Use <new>.`；已移除的 `state` 和 `stats` 操作标志会报错 `Removed option <old>. Use an explicit action; see oma --help.`
 

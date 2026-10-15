@@ -47,7 +47,7 @@ Mọi lệnh con cũng hỗ trợ `-h, --help` để hiển thị nội dung tr�
 
 Đường dẫn lệnh dùng dấu cách, không dùng dấu hai chấm, và một số lệnh cũng như tùy chọn đã được đổi tên. Các cách viết cũ bị từ chối, không được giữ lại làm bí danh:
 
-- Một lệnh cũ thất bại với `Unknown command: ... Use oma --help.` hoặc `Unexpected argument for oma <group>. Use --help.`
+- Một lệnh cũ thất bại với `Unknown command: ... Use oma --help.` hoặc `Unexpected argument for oma <group>. Use oma <replacement>.`
 - Các tên nhóm đứng riêng `dashboard`, `state` và `stats` giờ in trợ giúp của nhóm thay vì chạy.
 - Một tùy chọn cũ thất bại với `Removed option <old>. Use <new>.`; các flag hành động đã bị xóa của `state` và `stats` thất bại với `Removed option <old>. Use an explicit action; see oma --help.`
 

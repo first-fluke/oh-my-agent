@@ -1177,9 +1177,9 @@ Khi có nhiều session plan hoặc run receipt khớp, việc xác minh thất 
 
 | Loại agent | Kiểm tra bổ sung |
 |:-----------|:-----------------|
-| `backend` | Kiểm tra cú pháp Python (`py_compile`), phát hiện SQL injection (f-string + từ khóa SQL), chạy test Python (`pytest`) |
-| `frontend` | Biên dịch TypeScript (`tsc --noEmit`), phát hiện inline style (`style={{`), việc dùng kiểu `any` (thất bại nếu > 3), test frontend (`vitest`) |
-| `mobile` | Phân tích Flutter/Dart (`flutter analyze` hoặc `dart analyze`), test Flutter (`flutter test`) |
+| `backend` | Kiểm tra cú pháp, phát hiện SQL injection (pattern raw SQL) và test, tất cả lấy từ các lệnh `verify` trong `.agents/skills/oma-backend/stack/stack.yaml` (do `/stack-set` tạo). Bị bỏ qua khi không có file này |
+| `frontend` | Kiểm tra cú pháp và test theo các lệnh `verify` trong `.agents/skills/oma-frontend/stack/stack.yaml` (hoặc `.agents/skills/angular-developer/stack/stack.yaml` khi skill đó đã được cài); không có file này thì biên dịch TypeScript (`tsc --noEmit`) và test frontend (`vitest`). Luôn chạy: phát hiện inline style (`style={{`, chỉ cảnh báo), việc dùng kiểu `any` (thất bại nếu > 3) |
+| `mobile` | Kiểm tra cú pháp và test theo các lệnh `verify` trong `.agents/skills/oma-mobile/stack/stack.yaml`; không có file này thì phân tích Flutter/Dart (`flutter analyze` hoặc `dart analyze`) và test Flutter (`flutter test`) |
 | `qa` | Xác minh tự kiểm tra |
 | `debug` | Chạy test Python hoặc test frontend tùy theo loại project phát hiện được |
 | `pm` | Xác thực rằng `.agents/results/plan-{sessionId}.json` tồn tại và là JSON hợp lệ |
@@ -2252,7 +2252,7 @@ Xuất phiên bản CLI hiện tại rồi thoát.
 | Triệu chứng | Nguyên nhân | Cách sửa |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | Một alias ngắn (`viz`, `s`, `img`), một cách viết dấu hai chấm (`agent:parallel`, `memory:init`), hoặc dạng số nhiều `skills audit` / `lint` / `eval` / `opt` | Dùng đường dẫn chuẩn trong [Bí danh và cách viết đã bị loại bỏ](#aliases) |
-| `Unexpected argument for oma <path>. Use --help.` | Một lệnh con đã đổi tên, chẳng hạn `vault rm`, `search api <url>` hoặc `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | Một lệnh con đã đổi tên, chẳng hạn `vault rm`, `search api <url>` hoặc `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
 | `Removed option -r. Use --project-root.` (cũng như `--root`, `--session`, `--timeout-minutes`, `--max-age-days`) | Tùy chọn đã được đổi tên | Dùng cách viết mà thông báo in ra: `--project-root`, `--session-id`, `--timeout`, `--expires-after` hoặc `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | Một tùy chọn thời lượng như `--expires-after` hoặc `--max-age` nhận một số trần | Thêm đơn vị, ví dụ `30d` |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | Giá trị `--every` không phải là một bước cron gọn | Xem trước bằng `--dry-run`, rồi thêm `--accept-rounded` hoặc dùng `--cron` |

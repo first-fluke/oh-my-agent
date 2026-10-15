@@ -47,7 +47,7 @@ Alle Unterbefehle unterstützen ebenfalls `-h, --help`, um ihren spezifischen Hi
 
 Befehlspfade verwenden Leerzeichen statt Doppelpunkten, und mehrere Befehle und Optionen wurden umbenannt. Die alten Schreibweisen werden abgelehnt, nicht als Alias weitergeleitet:
 
-- Ein alter Befehl schlägt mit `Unknown command: ... Use oma --help.` oder `Unexpected argument for oma <group>. Use --help.` fehl.
+- Ein alter Befehl schlägt mit `Unknown command: ... Use oma --help.` oder `Unexpected argument for oma <group>. Use oma <replacement>.` fehl.
 - Die bloßen Gruppennamen `dashboard`, `state` und `stats` geben jetzt die Hilfe der Gruppe aus, statt etwas auszuführen.
 - Eine alte Option schlägt mit `Removed option <old>. Use <new>.` fehl; die entfernten Aktions-Flags von `state` und `stats` schlagen mit `Removed option <old>. Use an explicit action; see oma --help.` fehl.
 

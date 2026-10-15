@@ -1177,9 +1177,9 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 | Тип агента | Дополнительные проверки |
 |:-----------|:-----------------|
-| `backend` | Проверка синтаксиса Python (`py_compile`), обнаружение SQL-инъекций (f-string + ключевые слова SQL), запуск тестов Python (`pytest`) |
-| `frontend` | Компиляция TypeScript (`tsc --noEmit`), обнаружение inline-стилей (`style={{`), использование типа `any` (ошибка, если > 3), тесты фронтенда (`vitest`) |
-| `mobile` | Анализ Flutter/Dart (`flutter analyze` или `dart analyze`), тесты Flutter (`flutter test`) |
+| `backend` | Проверка синтаксиса, обнаружение SQL-инъекций (паттерны raw SQL) и тесты — всё по командам `verify` из `.agents/skills/oma-backend/stack/stack.yaml` (его создаёт `/stack-set`). Пропускаются, если этого файла нет |
+| `frontend` | Проверка синтаксиса и тесты по командам `verify` из `.agents/skills/oma-frontend/stack/stack.yaml` (или `.agents/skills/angular-developer/stack/stack.yaml`, если этот навык установлен); без этого файла — компиляция TypeScript (`tsc --noEmit`) и тесты фронтенда (`vitest`). Всегда: обнаружение inline-стилей (`style={{`, только предупреждение), использование типа `any` (ошибка, если > 3) |
+| `mobile` | Проверка синтаксиса и тесты по командам `verify` из `.agents/skills/oma-mobile/stack/stack.yaml`; без этого файла — анализ Flutter/Dart (`flutter analyze` или `dart analyze`) и тесты Flutter (`flutter test`) |
 | `qa` | Проверка выполнения self-check |
 | `debug` | Запускает тесты Python или тесты фронтенда в зависимости от определённого типа проекта |
 | `pm` | Проверяет, что `.agents/results/plan-{sessionId}.json` существует и содержит корректный JSON |
@@ -2252,7 +2252,7 @@ oma version
 | Симптом | Причина | Решение |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | Короткий алиас (`viz`, `s`, `img`), написание с двоеточием (`agent:parallel`, `memory:init`) или форма во множественном числе `skills audit` / `lint` / `eval` / `opt` | Используйте канонический путь из раздела [Алиасы и удалённые написания](#aliases) |
-| `Unexpected argument for oma <path>. Use --help.` | Переименованная подкоманда, например `vault rm`, `search api <url>` или `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | Переименованная подкоманда, например `vault rm`, `search api <url>` или `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
 | `Removed option -r. Use --project-root.` (а также `--root`, `--session`, `--timeout-minutes`, `--max-age-days`) | Параметр был переименован | Используйте написание, которое выводит сообщение: `--project-root`, `--session-id`, `--timeout`, `--expires-after` или `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | Параметр длительности, например `--expires-after` или `--max-age`, получил число без единицы измерения | Добавьте единицу, например `30d` |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | Значение `--every` не является ровным шагом cron | Проверьте предпросмотр с `--dry-run`, затем добавьте `--accept-rounded` или используйте `--cron` |

@@ -82,14 +82,15 @@ export async function verifyTriggers(
 }
 
 /**
- * `verify` is a parent command with two faces, kept backward compatible:
- *   - `oma verify <agent-type>` (default subcommand — original behavior,
- *     unchanged) verifies a subagent's output against acceptance checks.
- *   - `oma verify triggers` (sibling subcommand) measures the keyword
- *     detector's trigger accuracy against a labeled prompt corpus.
- * Commander resolves an argument that doesn't match a known subcommand name
- * (e.g. "backend") to the `isDefault` subcommand below, so `verify backend`
- * keeps working exactly as before.
+ * `verify` is a parent command with two faces:
+ *   - `oma verify agent <agent-type>` verifies a subagent's output against
+ *     acceptance checks.
+ *   - `oma verify triggers` measures the keyword detector's trigger accuracy
+ *     against a labeled prompt corpus.
+ * The old short form `oma verify <agent-type>` was removed when command paths
+ * were standardized: the canonical surface (utils/command-surface.ts) rejects
+ * it before Commander parses, and the error names `oma verify agent
+ * <agent-type>` (see REMOVED_POSITIONAL_FORMS). Do not re-add it as an alias.
  */
 export function registerVerify(program: Command): void {
   const verifyCmd = program

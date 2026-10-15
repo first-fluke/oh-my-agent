@@ -47,7 +47,7 @@ Wszystkie podpolecenia obsługują również `-h, --help`, aby wyświetlić wła
 
 Ścieżki poleceń używają spacji, a nie dwukropków, a kilka poleceń i opcji zmieniło nazwy. Stare formy są odrzucane, a nie traktowane jako aliasy:
 
-- Stare polecenie kończy się błędem `Unknown command: ... Use oma --help.` lub `Unexpected argument for oma <group>. Use --help.`
+- Stare polecenie kończy się błędem `Unknown command: ... Use oma --help.` lub `Unexpected argument for oma <group>. Use oma <replacement>.`
 - Same nazwy grup `dashboard`, `state` i `stats` wyświetlają teraz pomoc grupy zamiast uruchamiać polecenie.
 - Stara opcja kończy się błędem `Removed option <old>. Use <new>.`; usunięte flagi akcji `state` i `stats` kończą się błędem `Removed option <old>. Use an explicit action; see oma --help.`
 

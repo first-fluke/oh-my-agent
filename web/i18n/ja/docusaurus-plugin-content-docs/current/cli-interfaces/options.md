@@ -47,7 +47,7 @@ description: oma CLI オプションのリファレンスです。グローバ�
 
 コマンドパスはコロンではなくスペースで区切ります。また、いくつかのコマンドとオプションの名称が変更されました。旧表記はエイリアスとして扱われず、拒否されます。
 
-- 旧コマンドは `Unknown command: ... Use oma --help.` または `Unexpected argument for oma <group>. Use --help.` で失敗します。
+- 旧コマンドは `Unknown command: ... Use oma --help.` または `Unexpected argument for oma <group>. Use oma <replacement>.` で失敗します。
 - グループ名だけの `dashboard`、`state`、`stats` は、実行されずにそのグループのヘルプを表示するようになりました。
 - 旧オプションは `Removed option <old>. Use <new>.` で失敗します。削除された `state` と `stats` のアクションフラグは `Removed option <old>. Use an explicit action; see oma --help.` で失敗します。
 

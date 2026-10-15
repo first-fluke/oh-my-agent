@@ -1177,9 +1177,9 @@ When several session plans or run receipts match, verification fails and asks fo
 
 | Agent Type | Additional Checks |
 |:-----------|:-----------------|
-| `backend` | Python syntax validation (`py_compile`), SQL injection detection (f-string + SQL keywords), Python test execution (`pytest`) |
-| `frontend` | TypeScript compilation (`tsc --noEmit`), inline style detection (`style={{`), `any` type usage (fails if > 3), frontend tests (`vitest`) |
-| `mobile` | Flutter/Dart analysis (`flutter analyze` or `dart analyze`), Flutter tests (`flutter test`) |
+| `backend` | Syntax check, SQL injection detection (raw SQL patterns), and tests, all from the `verify` commands in `.agents/skills/oma-backend/stack/stack.yaml` (written by `/stack-set`). Skipped when that file is missing |
+| `frontend` | Syntax check and tests from the `verify` commands in `.agents/skills/oma-frontend/stack/stack.yaml` (or `.agents/skills/angular-developer/stack/stack.yaml` when that skill is installed); without it, TypeScript compilation (`tsc --noEmit`) and frontend tests (`vitest`). Always: inline style detection (`style={{`, warns only), `any` type usage (fails if > 3) |
+| `mobile` | Syntax check and tests from the `verify` commands in `.agents/skills/oma-mobile/stack/stack.yaml`; without it, Flutter/Dart analysis (`flutter analyze` or `dart analyze`) and Flutter tests (`flutter test`) |
 | `qa` | Self-check verification |
 | `debug` | Runs Python tests or frontend tests based on detected project type |
 | `pm` | Validates `.agents/results/plan-{sessionId}.json` exists and is valid JSON |
@@ -2252,7 +2252,7 @@ Outputs the current CLI version and exits.
 | Symptom | Cause | Fix |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | A short alias (`viz`, `s`, `img`), a colon spelling (`agent:parallel`, `memory:init`), or a plural `skills audit` / `lint` / `eval` / `opt` | Use the canonical path from [Aliases and removed spellings](#aliases) |
-| `Unexpected argument for oma <path>. Use --help.` | A renamed subcommand, such as `vault rm`, `search api <url>`, or `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | A renamed subcommand, such as `vault rm`, `search api <url>`, or `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
 | `Removed option -r. Use --project-root.` (also `--root`, `--session`, `--timeout-minutes`, `--max-age-days`) | The option was renamed | Use the spelling the message prints: `--project-root`, `--session-id`, `--timeout`, `--expires-after` or `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | A duration option such as `--expires-after` or `--max-age` got a bare number | Add a unit, for example `30d` |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | The `--every` value is not a clean cron step | Preview with `--dry-run`, then add `--accept-rounded` or use `--cron` |

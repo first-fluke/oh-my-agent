@@ -1128,9 +1128,9 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 | 智能体类型 | 附加检查 |
 |:-----------|:-----------------|
-| `backend` | Python 语法校验（`py_compile`）、SQL 注入检测（f-string + SQL 关键字）、Python 测试执行（`pytest`） |
-| `frontend` | TypeScript 编译（`tsc --noEmit`）、内联样式检测（`style={{`）、`any` 类型使用情况（超过 3 处则失败）、前端测试（`vitest`） |
-| `mobile` | Flutter/Dart 分析（`flutter analyze` 或 `dart analyze`）、Flutter 测试（`flutter test`） |
+| `backend` | 语法校验、SQL 注入检测（原始 SQL 模式）和测试执行，均来自 `.agents/skills/oma-backend/stack/stack.yaml`（由 `/stack-set` 生成）中的 `verify` 命令。该文件不存在时跳过 |
+| `frontend` | 语法校验和测试执行，来自 `.agents/skills/oma-frontend/stack/stack.yaml`（若已安装 `angular-developer` 技能，也可为 `.agents/skills/angular-developer/stack/stack.yaml`）中的 `verify` 命令；该文件不存在时改为 TypeScript 编译（`tsc --noEmit`）和前端测试（`vitest`）。始终运行：内联样式检测（`style={{`，仅警告）、`any` 类型使用情况（超过 3 处则失败） |
+| `mobile` | 语法校验和测试执行，来自 `.agents/skills/oma-mobile/stack/stack.yaml` 中的 `verify` 命令；该文件不存在时改为 Flutter/Dart 分析（`flutter analyze` 或 `dart analyze`）和 Flutter 测试（`flutter test`） |
 | `qa` | 自检验证 |
 | `debug` | 根据检测到的项目类型运行 Python 测试或前端测试 |
 | `pm` | 校验 `.agents/results/plan-{sessionId}.json` 是否存在且为有效 JSON |
@@ -2195,7 +2195,7 @@ oma version
 | 症状 | 原因 | 修复 |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | 使用了简称（`viz`、`s`、`img`）、冒号写法（`agent:parallel`、`memory:init`），或复数形式 `skills audit` / `lint` / `eval` / `opt` | 使用[别名与已移除的写法](#aliases)中的规范路径 |
-| `Unexpected argument for oma <path>. Use --help.` | 使用了已重命名的子命令，例如 `vault rm`、`search api <url>` 或 `verify backend` | `vault delete`、`search api fetch <url>`、`verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | 使用了已重命名的子命令，例如 `vault rm`、`search api <url>` 或 `verify backend` | `vault delete`、`search api fetch <url>`、`verify agent backend` |
 | `Removed option -r. Use --project-root.`（还有 `--root`、`--session`、`--timeout-minutes`、`--max-age-days`） | 选项已重命名 | 使用消息中打印的写法：`--project-root`、`--session-id`、`--timeout`、`--expires-after` 或 `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | `--expires-after` 或 `--max-age` 等时长选项收到了不带单位的数字 | 加上单位，例如 `30d` |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | `--every` 的值无法精确表示为 cron 步长 | 先用 `--dry-run` 预览，再加上 `--accept-rounded`，或改用 `--cron` |

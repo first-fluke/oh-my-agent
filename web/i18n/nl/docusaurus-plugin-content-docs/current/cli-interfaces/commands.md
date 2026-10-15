@@ -1174,9 +1174,9 @@ Wanneer meerdere sessieplannen of run-receipts overeenkomen, faalt de verificati
 
 | Agenttype | Aanvullende controles |
 |:-----------|:-----------------|
-| `backend` | Python-syntaxisvalidatie (`py_compile`), detectie van SQL-injectie (f-string + SQL-trefwoorden), Python-tests uitvoeren (`pytest`) |
-| `frontend` | TypeScript-compilatie (`tsc --noEmit`), detectie van inline styles (`style={{`), gebruik van type `any` (faalt bij > 3), frontendtests (`vitest`) |
-| `mobile` | Flutter/Dart-analyse (`flutter analyze` of `dart analyze`), Flutter-tests (`flutter test`) |
+| `backend` | Syntaxisvalidatie, detectie van SQL-injectie (raw-SQL-patronen) en tests, allemaal via de `verify`-commando's in `.agents/skills/oma-backend/stack/stack.yaml` (geschreven door `/stack-set`). Overgeslagen als dat bestand ontbreekt |
+| `frontend` | Syntaxisvalidatie en tests via de `verify`-commando's in `.agents/skills/oma-frontend/stack/stack.yaml` (of `.agents/skills/angular-developer/stack/stack.yaml` als die skill geïnstalleerd is); zonder dat bestand TypeScript-compilatie (`tsc --noEmit`) en frontendtests (`vitest`). Altijd: detectie van inline styles (`style={{`, alleen waarschuwing), gebruik van type `any` (faalt bij > 3) |
+| `mobile` | Syntaxisvalidatie en tests via de `verify`-commando's in `.agents/skills/oma-mobile/stack/stack.yaml`; zonder dat bestand Flutter/Dart-analyse (`flutter analyze` of `dart analyze`) en Flutter-tests (`flutter test`) |
 | `qa` | Zelfcontrole |
 | `debug` | Voert Python- of frontendtests uit op basis van het gedetecteerde projecttype |
 | `pm` | Valideert dat `.agents/results/plan-{sessionId}.json` bestaat en geldige JSON bevat |
@@ -2248,7 +2248,7 @@ Geeft de huidige CLI-versie terug en sluit af.
 | Symptoom | Oorzaak | Oplossing |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | Een korte alias (`viz`, `s`, `img`), een schrijfwijze met dubbele punt (`agent:parallel`, `memory:init`) of een meervoudsvorm `skills audit` / `lint` / `eval` / `opt` | Gebruik het canonieke pad uit [Aliassen en verwijderde schrijfwijzen](#aliases) |
-| `Unexpected argument for oma <path>. Use --help.` | Een hernoemd subcommando, zoals `vault rm`, `search api <url>` of `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | Een hernoemd subcommando, zoals `vault rm`, `search api <url>` of `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
 | `Removed option -r. Use --project-root.` (ook `--root`, `--session`, `--timeout-minutes`, `--max-age-days`) | De optie is hernoemd | Gebruik de schrijfwijze die de melding print: `--project-root`, `--session-id`, `--timeout`, `--expires-after` of `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | Een duuroptie zoals `--expires-after` of `--max-age` kreeg een kaal getal | Voeg een eenheid toe, bijvoorbeeld `30d` |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | De waarde van `--every` is geen zuivere cronstap | Bekijk de preview met `--dry-run` en voeg daarna `--accept-rounded` toe of gebruik `--cron` |

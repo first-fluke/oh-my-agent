@@ -1177,9 +1177,9 @@ Wenn mehrere Sitzungspläne oder Laufbelege passen, schlägt die Verifikation fe
 
 | Agententyp | Zusätzliche Prüfungen |
 |:-----------|:-----------------|
-| `backend` | Python-Syntaxvalidierung (`py_compile`), Erkennung von SQL-Injection (f-string + SQL-Schlüsselwörter), Ausführung von Python-Tests (`pytest`) |
-| `frontend` | TypeScript-Kompilierung (`tsc --noEmit`), Erkennung von Inline-Stilen (`style={{`), Verwendung des Typs `any` (Fehler bei > 3), Frontend-Tests (`vitest`) |
-| `mobile` | Flutter-/Dart-Analyse (`flutter analyze` oder `dart analyze`), Flutter-Tests (`flutter test`) |
+| `backend` | Syntaxprüfung, Erkennung von SQL-Injection (rohe SQL-Muster) und Tests, jeweils aus den `verify`-Befehlen in `.agents/skills/oma-backend/stack/stack.yaml` (geschrieben von `/stack-set`). Werden übersprungen, wenn diese Datei fehlt |
+| `frontend` | Syntaxprüfung und Tests aus den `verify`-Befehlen in `.agents/skills/oma-frontend/stack/stack.yaml` (oder `.agents/skills/angular-developer/stack/stack.yaml`, wenn dieser Skill installiert ist); ohne diese Datei TypeScript-Kompilierung (`tsc --noEmit`) und Frontend-Tests (`vitest`). Immer: Erkennung von Inline-Stilen (`style={{`, nur Warnung), Verwendung des Typs `any` (Fehler bei > 3) |
+| `mobile` | Syntaxprüfung und Tests aus den `verify`-Befehlen in `.agents/skills/oma-mobile/stack/stack.yaml`; ohne diese Datei Flutter-/Dart-Analyse (`flutter analyze` oder `dart analyze`) und Flutter-Tests (`flutter test`) |
 | `qa` | Selbstprüfungsverifikation |
 | `debug` | Führt je nach erkanntem Projekttyp Python- oder Frontend-Tests aus |
 | `pm` | Validiert, dass `.agents/results/plan-{sessionId}.json` existiert und gültiges JSON enthält |
@@ -2252,7 +2252,7 @@ Gibt die aktuelle CLI-Version aus und beendet sich.
 | Symptom | Ursache | Lösung |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | Ein Kurzalias (`viz`, `s`, `img`), eine Doppelpunkt-Schreibweise (`agent:parallel`, `memory:init`) oder ein Plural `skills audit` / `lint` / `eval` / `opt` | Verwende den kanonischen Pfad aus [Aliase und entfernte Schreibweisen](#aliases) |
-| `Unexpected argument for oma <path>. Use --help.` | Ein umbenannter Unterbefehl wie `vault rm`, `search api <url>` oder `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | Ein umbenannter Unterbefehl wie `vault rm`, `search api <url>` oder `verify backend` | `vault delete`, `search api fetch <url>`, `verify agent backend` |
 | `Removed option -r. Use --project-root.` (ebenso `--root`, `--session`, `--timeout-minutes`, `--max-age-days`) | Die Option wurde umbenannt | Verwende die Schreibweise, die die Meldung ausgibt: `--project-root`, `--session-id`, `--timeout`, `--expires-after` oder `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | Eine Dauer-Option wie `--expires-after` oder `--max-age` hat eine bloße Zahl erhalten | Eine Einheit ergänzen, zum Beispiel `30d` |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | Der `--every`-Wert ist kein sauberer Cron-Schritt | Mit `--dry-run` prüfen, dann `--accept-rounded` ergänzen oder `--cron` verwenden |

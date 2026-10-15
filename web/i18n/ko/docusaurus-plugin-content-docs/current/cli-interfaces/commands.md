@@ -1127,9 +1127,9 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 | 에이전트 타입 | 추가 검사 |
 |:------------|:---------|
-| `backend` | Python 구문 검증 (`py_compile`), SQL 인젝션 감지 (f-string + SQL 키워드), Python 테스트 실행 (`pytest`) |
-| `frontend` | TypeScript 컴파일 (`tsc --noEmit`), 인라인 스타일 감지 (`style={{`), `any` 타입 사용 (3개 초과 시 실패), 프론트엔드 테스트 (`vitest`) |
-| `mobile` | Flutter/Dart 분석 (`flutter analyze` 또는 `dart analyze`), Flutter 테스트 (`flutter test`) |
+| `backend` | `.agents/skills/oma-backend/stack/stack.yaml` (`/stack-set`이 생성)의 `verify` 커맨드로 실행하는 구문 검증, SQL 인젝션 감지 (raw SQL 패턴), 테스트 실행. 이 파일이 없으면 건너뜀 |
+| `frontend` | `.agents/skills/oma-frontend/stack/stack.yaml` (`angular-developer` 스킬이 설치되어 있으면 `.agents/skills/angular-developer/stack/stack.yaml`)의 `verify` 커맨드로 실행하는 구문 검증과 테스트 실행. 이 파일이 없으면 TypeScript 컴파일 (`tsc --noEmit`)과 프론트엔드 테스트 (`vitest`). 항상 실행: 인라인 스타일 감지 (`style={{`, 경고만), `any` 타입 사용 (3개 초과 시 실패) |
+| `mobile` | `.agents/skills/oma-mobile/stack/stack.yaml`의 `verify` 커맨드로 실행하는 구문 검증과 테스트 실행. 이 파일이 없으면 Flutter/Dart 분석 (`flutter analyze` 또는 `dart analyze`)과 Flutter 테스트 (`flutter test`) |
 | `qa` | 자체 검사 검증 |
 | `debug` | 감지된 프로젝트 타입에 따라 Python 테스트 또는 프론트엔드 테스트 실행 |
 | `pm` | `.agents/results/plan-{sessionId}.json`이 존재하고 유효한 JSON인지 검증 |
@@ -2194,7 +2194,7 @@ oma version
 | 증상 | 원인 | 해결 |
 |:--------|:------|:----|
 | `Unknown command: ... Use oma --help.` | 짧은 별칭(`viz`, `s`, `img`), 콜론 표기(`agent:parallel`, `memory:init`), 또는 복수형 `skills audit` / `lint` / `eval` / `opt` | [별칭과 제거된 표기](#aliases)의 표준 경로를 사용합니다 |
-| `Unexpected argument for oma <path>. Use --help.` | `vault rm`, `search api <url>`, `verify backend`처럼 이름이 바뀐 서브커맨드 | `vault delete`, `search api fetch <url>`, `verify agent backend` |
+| `Unexpected argument for oma <path>. Use oma <replacement>.` | `vault rm`, `search api <url>`, `verify backend`처럼 이름이 바뀐 서브커맨드 | `vault delete`, `search api fetch <url>`, `verify agent backend` |
 | `Removed option -r. Use --project-root.` (`--root`, `--session`, `--timeout-minutes`, `--max-age-days`도 해당) | 옵션 이름이 바뀌었습니다 | 메시지가 출력하는 표기를 사용합니다: `--project-root`, `--session-id`, `--timeout`, `--expires-after` 또는 `--max-age` |
 | `Invalid duration: 30. Include a unit, e.g. 30s or 2m.` | `--expires-after`나 `--max-age` 같은 기간 옵션에 맨 숫자를 넣었습니다 | `30d`처럼 단위를 붙입니다 |
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | `--every` 값이 깔끔한 cron 단계가 아닙니다 | `--dry-run`으로 미리 본 뒤 `--accept-rounded`를 추가하거나 `--cron`을 사용합니다 |

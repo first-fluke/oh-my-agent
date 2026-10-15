@@ -6,6 +6,7 @@ import {
   GROUP_DESCRIPTIONS,
   INTERNAL_COMMAND_PATHS,
   OS_INVOKED_LEGACY_PATHS,
+  removedPositionalReplacement,
 } from "./command-paths.js";
 
 type Route = {
@@ -346,11 +347,16 @@ export function createCommandSurface(program: Command): CommandSurface {
       );
       const node = nodes.get(route.path);
       if (node && !node.registeredArguments.length) {
-        const count = positionalIndices(tail, route.source).length;
-        if (count > node.registeredArguments.length)
-          throw new Error(
-            `Unexpected argument for oma ${route.path}. Use --help.`,
+        const indices = positionalIndices(tail, route.source);
+        if (indices.length > node.registeredArguments.length) {
+          const replacement = removedPositionalReplacement(
+            route.path,
+            tail[indices[0] ?? 0],
           );
+          throw new Error(
+            `Unexpected argument for oma ${route.path}. Use ${replacement ? `oma ${replacement}` : "--help"}.`,
+          );
+        }
       }
       if (route.path === "state activate") {
         const indices = positionalIndices(tail, route.source);
