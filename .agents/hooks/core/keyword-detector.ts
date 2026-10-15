@@ -730,6 +730,21 @@ export function startsWithSlashCommand(prompt: string): boolean {
   return /^\/[a-zA-Z][\w-]*/.test(prompt.trim());
 }
 
+/**
+ * The persistent workflow a prompt invokes as a slash command (`/ultrawork …`,
+ * or namespaced as `/oma:ultrawork …`), or null. A typed slash command is the
+ * most explicit invocation there is, so it must persist like a named one.
+ */
+export function persistentSlashWorkflow(
+  prompt: string,
+  config: TriggerConfig,
+): string | null {
+  const m = /^\/(?:[\w-]+:)?([a-zA-Z][\w-]*)(?=\s|$)/.exec(prompt.trim());
+  const name = m?.[1]?.toLowerCase();
+  if (!name) return null;
+  return config.workflows[name]?.persistent ? name : null;
+}
+
 // ── Extension Detection ──────────────────────────────────────
 
 const EXCLUDE_EXTS = new Set([
@@ -1113,7 +1128,21 @@ export async function run(
   const { vendor, cwd: projectDir, sid: sessionId = "unknown" } = ctx;
 
   if (!prompt.trim()) return null;
-  if (startsWithSlashCommand(prompt)) return null;
+  if (startsWithSlashCommand(prompt)) {
+    // The command itself loads the workflow; the hook only makes a
+    // persistent one enforceable by writing its state file.
+    const slashWorkflow = persistentSlashWorkflow(prompt, TRIGGERS);
+    if (slashWorkflow) {
+      const omaSid = await activateL1WorkflowSession(
+        projectDir,
+        slashWorkflow,
+        vendor,
+        sessionId,
+      );
+      activateMode(projectDir, slashWorkflow, sessionId, omaSid);
+    }
+    return null;
+  }
   // Relayed inter-agent messages carry another agent's text, not a user
   // request — their content must not drive workflow keyword detection.
   if (isRelayedAgentMessage(prompt)) return null;

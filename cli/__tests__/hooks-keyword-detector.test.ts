@@ -2316,6 +2316,33 @@ memory was written by Serena into its internal store.
       });
     }
 
+    // Regression: a typed slash command returned before activation, so
+    // `/ultrawork …` never wrote the state file the Stop hook enforces.
+    const slashInvocations: Array<[string, string]> = [
+      ["/ultrawork add rate limiting to POST /login", "ultrawork"],
+      ["/orchestrate", "orchestrate"],
+      ["/work build the settings page", "work"],
+      ["/ralph fix the flaky tests", "ralph"],
+      ["/oma:ultrawork add rate limiting", "ultrawork"],
+    ];
+    for (const [prompt, workflow] of slashInvocations) {
+      it(`slash invocation persists: ${prompt}`, async () => {
+        expect(await runPrompt(prompt)).toBeNull();
+        expect(
+          stateWrites().some((p) =>
+            p.endsWith(`${workflow}-state-precision-sess.json`),
+          ),
+        ).toBe(true);
+      });
+    }
+
+    it("other slash commands still write no state", async () => {
+      for (const prompt of ["/plan add login", "/review", "/workflows"]) {
+        expect(await runPrompt(prompt)).toBeNull();
+      }
+      expect(stateWrites()).toEqual([]);
+    });
+
     it("an explicit invocation outranks a longer natural-language match", async () => {
       const context = contextOf(
         await runPrompt("Orchestrate this refactor step by step."),
