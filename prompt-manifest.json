@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.3.0",
-  "releaseDate": "2026-10-15T10:44:51.992Z",
+  "releaseDate": "2026-10-15T13:25:16.695Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -601,13 +601,13 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/memory-protocol.md",
-      "sha256": "03b6021294b7165c50ee55a43c7bb4a2e727f41f32bf681f3c3e4a81080d4e0e",
-      "size": 4470
+      "sha256": "5ca10b3297071a649f19d46db6df9131881b0426184f18380c37eb08d7c4e092",
+      "size": 4973
     },
     {
       "path": ".agents/skills/_shared/runtime/result-contract.md",
-      "sha256": "7268aebf3a4b5344b377815158c1e0b5449a458101680cc96f2d010ae9769b06",
-      "size": 8456
+      "sha256": "77378104c457143cff234fdd3176744932a26650f59cdbed0e23c3279ee4e78b",
+      "size": 9980
     },
     {
       "path": ".agents/skills/_version.json",
@@ -641,8 +641,8 @@
     },
     {
       "path": ".agents/skills/oma-architecture/SKILL.md",
-      "sha256": "1f60c0d69cb91f33d455c2a6eeff70ab972fdfd565dd7b0f97cc74c6a01c6314",
-      "size": 10413
+      "sha256": "b88ff6f53019c5f4207d0c8f284e95e14cde0eb2a0a9eb7042f0ca54f23aac2a",
+      "size": 11503
     },
     {
       "path": ".agents/skills/oma-architecture/resources/api-evolution.md",
@@ -656,8 +656,8 @@
     },
     {
       "path": ".agents/skills/oma-architecture/resources/execution-protocol.md",
-      "sha256": "e8f32e90af8305a1a9c66e2164105cbd22107185654a558b5f94e695c2646055",
-      "size": 5957
+      "sha256": "33f234e33c741e371f2e21a7dd8eef9435edfcc7e8bdb1f370da813a74ae6614",
+      "size": 6620
     },
     {
       "path": ".agents/skills/oma-architecture/resources/methodology-selection.md",
@@ -771,8 +771,8 @@
     },
     {
       "path": ".agents/skills/oma-brainstorm/SKILL.md",
-      "sha256": "5c8df89acfea1678473ad3e680a4c8f014977bc81fa2a98a3d6f201d22adc50c",
-      "size": 11233
+      "sha256": "0a33dc513b42a0d5aad1bbf807b57517e09cccb36e4b44314a7c638ba042bd37",
+      "size": 11725
     },
     {
       "path": ".agents/skills/oma-brainstorm/resources/triz-lite.md",
@@ -1516,8 +1516,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/resources/memory-schema.md",
-      "sha256": "bd2bc5027bbbd63d6d6921bc6a10ba486b68cd1c1d7f8b17a80dc6e5eb927f01",
-      "size": 7062
+      "sha256": "97e1230213db15503aaeac76ba0f3b47cae01023e2a883f247338393bd323d36",
+      "size": 7477
     },
     {
       "path": ".agents/skills/oma-orchestration/resources/subagent-prompt-template.md",
@@ -2121,13 +2121,13 @@
     },
     {
       "path": ".agents/workflows/architecture.md",
-      "sha256": "1fc8866da611dd6f069b7f15e41b54d664271bd757955a9f3c817ee0983a6151",
-      "size": 7083
+      "sha256": "2acf6aafba61e061709fb54afaef7f5a8c75019058f2b9c043e8cdd93f3cf3aa",
+      "size": 7929
     },
     {
       "path": ".agents/workflows/brainstorm.md",
-      "sha256": "d7c01b05328d1ebf992da43f2d053bf06e39ebeb0cd5bfc3b61dcc074a533561",
-      "size": 10976
+      "sha256": "1bea0f68b555bd11742522dda5e5c6b345e3c41c006224b46a3a12613503a0f7",
+      "size": 11291
     },
     {
       "path": ".agents/workflows/convert.md",
@@ -2141,8 +2141,8 @@
     },
     {
       "path": ".agents/workflows/deepinit.md",
-      "sha256": "de38b58ed8fd22e93f3695404f6fa9f7da6e96c1247ef30cc70da6106249e0a9",
-      "size": 15033
+      "sha256": "4ff2ba138a9fc599161152eac2aad6621533c99fca7ac21a17c4b9342fba256e",
+      "size": 15989
     },
     {
       "path": ".agents/workflows/design.md",
@@ -2151,8 +2151,8 @@
     },
     {
       "path": ".agents/workflows/docs.md",
-      "sha256": "00eb5677fbc5a3624e7fd064d43d023c21fd130cd6512c2b1f1c5556034c09de",
-      "size": 9917
+      "sha256": "2f0e8a13a81b6069c8a78860807b3fbdc712845fe723c524663da5dc8cce7429",
+      "size": 9990
     },
     {
       "path": ".agents/workflows/explain.md",
@@ -2166,8 +2166,8 @@
     },
     {
       "path": ".agents/workflows/plan.md",
-      "sha256": "be1f60e290356a6374023760b16d2e05f88c4581550f6226376864d55a06fe58",
-      "size": 12495
+      "sha256": "1d9904baa485ec796c57b85bc073e99799391a46dcb79bea6320092d5367f2a0",
+      "size": 13225
     },
     {
       "path": ".agents/workflows/ralph/resources/judge-protocol.md",
@@ -2176,8 +2176,8 @@
     },
     {
       "path": ".agents/workflows/ralph.md",
-      "sha256": "7c95542958f18f9e4ef74175e256706bd44a63be149bd53c5ad9c5ca1b931ffc",
-      "size": 17568
+      "sha256": "a2b4c204656ca41c496afe8c930a94253f2e9e4149d6d835b78170c3c612c1ee",
+      "size": 17772
     },
     {
       "path": ".agents/workflows/recap.md",
