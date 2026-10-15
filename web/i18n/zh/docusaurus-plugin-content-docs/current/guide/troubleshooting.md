@@ -65,6 +65,8 @@ oma doctor --profile
 | 某项设置被忽略，或全局默认值生效 | 命令先从 `$OMA_HOME/.agents/`（默认 `~/.oma/.agents/`）读取全局默认值，然后读取最近的项目共享配置和一个本地覆盖文件。不同的上级项目根目录不会合并 | 检查 `oma doctor --json` 选择了哪些配置路径，并编辑实际被读取的文件 |
 | OMA 在加载配置时停止 | 本地 CUE 和本地 YAML 文件同时存在，或本地文件格式错误。OMA 会停止，而不是默默忽略覆盖 | 删除两个本地文件之一，或修正格式错误的文件 |
 | 更新后用户配置被替换 | 更新使用了 `--force`。普通更新会保留用户拥有的配置，强制模式可以替换它 | 不带 `--force` 更新，然后检查配置和生成路径 |
+| `oma-config.yaml` 中的设置被忽略，`language` 或 `timezone` 显示模板值 | 旧版 `oma update` 把随发行版提供的 `oma-config.cue` 复制到了你的 YAML 旁边。CUE 优先于 YAML，因此模板值生效 | `oma update` 会在该副本仍是未修改的模板时将其删除，并保存到 `.agents/backup/stray-shared-config/`。如果你编辑过它，请只保留一个共享配置文件并删除另一个 |
+| `oma doctor` 警告 `timezone: Asia/Seoul` | 旧模板把 `Asia/Seoul` 作为默认时区发布，而你的系统使用其他时区 | 删除 `timezone` 行即可跟随系统时区。要保留 `Asia/Seoul`，请在本地配置（`oma-config.local.yaml` 或 `.local.cue`）中设置 |
 
 文件顺序请参阅[配置参考](/docs/guide/configuration-reference)。更新后检查配置和生成路径：
 

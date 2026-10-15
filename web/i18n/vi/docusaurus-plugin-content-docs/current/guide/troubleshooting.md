@@ -65,6 +65,8 @@ oma doctor --profile
 | Một thiết lập bị bỏ qua, hoặc global default thắng | Các lệnh đọc global default từ `$OMA_HOME/.agents/` (mặc định `~/.oma/.agents/`), sau đó đến project shared config gần nhất và một local overlay. Các project root tổ tiên khác nhau không được merge | Kiểm tra những config path mà `oma doctor --json` đã chọn, và sửa đúng file thực sự được đọc |
 | OMA dừng trong lúc load config | Đồng thời có local CUE và local YAML, hoặc một local file bị malformed. OMA dừng thay vì âm thầm bỏ qua override | Xóa một trong hai local file, hoặc sửa file bị malformed |
 | User configuration bị thay thế sau một lần update | Update đã chạy với `--force`. Update thông thường giữ config do người dùng sở hữu; force mode có thể thay thế nó | Update không kèm `--force`, sau đó kiểm tra config và generated path |
+| Cài đặt trong `oma-config.yaml` bị bỏ qua, và `language` hoặc `timezone` hiển thị giá trị của template | Một lần `oma update` cũ đã sao chép `oma-config.cue` đi kèm bản phát hành vào cạnh file YAML. CUE được ưu tiên hơn YAML nên giá trị của template được áp dụng | `oma update` xoá bản sao đó khi nó vẫn là template chưa chỉnh sửa và lưu nó vào `.agents/backup/stray-shared-config/`. Nếu bạn đã chỉnh sửa, hãy giữ một file shared config và xoá file còn lại |
+| `oma doctor` cảnh báo về `timezone: Asia/Seoul` | Template cũ đặt `Asia/Seoul` làm timezone mặc định, còn hệ thống của bạn dùng timezone khác | Xoá dòng `timezone` để dùng timezone của hệ thống. Để giữ `Asia/Seoul`, hãy đặt nó trong local config (`oma-config.local.yaml` hoặc `.local.cue`) |
 
 Xem [Tham chiếu cấu hình](/docs/guide/configuration-reference) để biết thứ tự file. Sau update, kiểm tra config và generated path:
 

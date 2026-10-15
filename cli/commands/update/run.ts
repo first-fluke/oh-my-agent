@@ -92,6 +92,10 @@ import {
   selectSkillsToPrune,
 } from "./install-state.js";
 import { noteArtifactDiff, noteNewSkills } from "./notes.js";
+import {
+  formatStrayCueRemoval,
+  removeStrayCueTemplate,
+} from "./stray-shared-config.js";
 import type { UpdateOptions } from "./types.js";
 import { createUI, type UpdateUI } from "./ui.js";
 import { resolveUpdateVendors, toCliTools } from "./vendors.js";
@@ -299,6 +303,21 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
       ui.note(
         migrationActions.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
         "Migration",
+      );
+    }
+
+    // Older updates copied the shipped oma-config.cue into YAML projects, where
+    // it outranks the user's YAML. Remove it only while it is still a template.
+    // Runs before the version check so up-to-date installs are cleaned too.
+    try {
+      const strayCue = removeStrayCueTemplate(cwd);
+      if (strayCue) {
+        ui.note(formatStrayCueRemoval(cwd, strayCue), "Config cleanup");
+      }
+    } catch (err) {
+      ui.note(
+        `Kept .agents/oma-config.cue (${err instanceof Error ? err.message : String(err)}).`,
+        "Config cleanup",
       );
     }
 

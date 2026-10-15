@@ -65,6 +65,8 @@ oma doctor --profile
 | A setting is ignored, or a global default wins | Commands read global defaults from `$OMA_HOME/.agents/` (default `~/.oma/.agents/`), then the nearest project shared config and one local overlay. Different ancestor project roots are not merged | Check which config paths `oma doctor --json` selected, and edit the file that is actually read |
 | OMA stops while loading config | A local CUE and a local YAML file both exist, or a local file is malformed. OMA stops rather than silently ignoring the override | Remove one of the two local files, or fix the malformed one |
 | User configuration was replaced after an update | The update ran with `--force`. Regular updates preserve the user-owned config; force mode can replace it | Update without `--force`, then inspect the config and generated paths |
+| Settings in `oma-config.yaml` are ignored, and `language` or `timezone` show template values | An older `oma update` copied the shipped `oma-config.cue` next to your YAML. CUE outranks YAML, so the template's values won | `oma update` removes that copy while it is still an unmodified template and saves it under `.agents/backup/stray-shared-config/`. If you edited it, keep one shared config file and delete the other |
+| `oma doctor` warns about `timezone: Asia/Seoul` | Older templates shipped `Asia/Seoul` as the default timezone, and your system uses a different one | Delete the `timezone` line to follow the system timezone. To keep `Asia/Seoul`, set it in your local config (`oma-config.local.yaml` or `.local.cue`) |
 
 See [Configuration reference](/docs/guide/configuration-reference) for the file order. After an update, inspect the config and generated paths:
 

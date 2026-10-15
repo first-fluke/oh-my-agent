@@ -26,6 +26,9 @@ export async function renderDoctorReport(report: DoctorReport): Promise<void> {
 
   try {
     renderDualInstall(report);
+    if (report.timezoneAdvisory) {
+      p.note(`${pc.yellow("⚠️")}  ${report.timezoneAdvisory.message}`, "Config");
+    }
     renderCliTable(report);
     renderMcpTable(report);
     renderSkillsTable(report);

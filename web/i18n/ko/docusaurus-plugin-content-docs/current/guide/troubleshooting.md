@@ -65,6 +65,8 @@ oma doctor --profile
 | 설정이 무시되거나 글로벌 기본값이 우선함 | 명령은 `$OMA_HOME/.agents/`(기본값 `~/.oma/.agents/`)에서 글로벌 기본값을 읽은 뒤, 가장 가까운 프로젝트 공유 설정과 하나의 로컬 오버레이를 읽습니다. 서로 다른 상위 프로젝트 루트는 병합되지 않습니다 | `oma doctor --json`이 선택한 설정 경로를 확인하고, 실제로 읽히는 파일을 수정하세요 |
 | 설정을 불러오는 중 OMA가 중단됨 | 로컬 CUE와 로컬 YAML 파일이 모두 있거나, 로컬 파일이 잘못됨. OMA는 오버라이드를 조용히 무시하지 않고 중단합니다 | 두 로컬 파일 중 하나를 제거하거나, 잘못된 파일을 수정하세요 |
 | 업데이트 후 사용자 설정이 교체됨 | 업데이트가 `--force`로 실행됨. 일반 업데이트는 사용자가 소유한 설정을 보존하지만 강제 모드는 교체할 수 있습니다 | `--force` 없이 업데이트한 뒤 설정과 생성된 경로를 확인하세요 |
+| `oma-config.yaml`의 설정이 무시되고 `language`나 `timezone`이 템플릿 값으로 보임 | 이전 `oma update`가 배포된 `oma-config.cue`를 YAML 옆에 복사했습니다. CUE가 YAML보다 우선하므로 템플릿 값이 적용됩니다 | `oma update`는 그 사본이 수정되지 않은 템플릿일 때만 제거하고 `.agents/backup/stray-shared-config/`에 보관합니다. 직접 수정했다면 공유 설정 파일을 하나만 남기고 나머지를 삭제하세요 |
+| `oma doctor`가 `timezone: Asia/Seoul`을 경고함 | 이전 템플릿이 `Asia/Seoul`을 기본 타임존으로 배포했고, 시스템 타임존이 다릅니다 | 시스템 타임존을 따르려면 `timezone` 줄을 삭제하세요. `Asia/Seoul`을 유지하려면 로컬 설정(`oma-config.local.yaml` 또는 `.local.cue`)에 지정하세요 |
 
 파일 순서는 [설정 레퍼런스](/docs/guide/configuration-reference)를 참고하세요. 업데이트 후에는 설정과 생성된 경로를 확인합니다.
 

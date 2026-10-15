@@ -179,4 +179,9 @@ export interface DoctorReport {
   >;
   selfHealing?: SelfHealingGateResult;
   hookWrappers: HookWrapperCheck[];
+  /**
+   * Shared config still pins the old template timezone while the host runs
+   * elsewhere. Advisory only: not counted in `totalIssues`.
+   */
+  timezoneAdvisory?: import("./timezone-advisory.js").TimezoneAdvisory | null;
 }

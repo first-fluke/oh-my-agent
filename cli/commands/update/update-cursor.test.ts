@@ -2,6 +2,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -371,6 +372,50 @@ describe("update cursor vendor adaptations", () => {
         TEMPLATE_CUE,
       );
       expect(existsSync(join(agentsDir, "oma-config.yaml"))).toBe(false);
+    });
+
+    // Older updates did copy the shipped CUE into YAML projects. Clean up the
+    // copies that are still a shipped template; keep anything the user edited.
+    const SHIPPED_CUE = readFileSync(
+      new URL("./__fixtures__/oma-config.b5a5598a.cue", import.meta.url),
+      "utf-8",
+    );
+
+    it("removes a stray shipped oma-config.cue from a YAML project", async () => {
+      const { projectDir, agentsDir } = setupRelease();
+      writeFileSync(join(agentsDir, "oma-config.yaml"), "language: ko\n");
+      writeFileSync(join(agentsDir, "oma-config.cue"), SHIPPED_CUE);
+
+      process.chdir(projectDir);
+      await update({ ci: true });
+
+      expect(existsSync(join(agentsDir, "oma-config.cue"))).toBe(false);
+      expect(
+        readFileSync(join(agentsDir, "oma-config.yaml"), "utf-8"),
+      ).toContain("language: ko");
+      const backupDir = join(agentsDir, "backup", "stray-shared-config");
+      const stamps = readdirSync(backupDir);
+      expect(stamps).toHaveLength(1);
+      expect(
+        readFileSync(
+          join(backupDir, String(stamps[0]), "oma-config.cue"),
+          "utf-8",
+        ),
+      ).toBe(SHIPPED_CUE);
+    });
+
+    it("keeps an oma-config.cue the user edited next to YAML", async () => {
+      const { projectDir, agentsDir } = setupRelease();
+      const edited = SHIPPED_CUE.replace('"Asia/Seoul"', '"Europe/Berlin"');
+      writeFileSync(join(agentsDir, "oma-config.yaml"), "language: ko\n");
+      writeFileSync(join(agentsDir, "oma-config.cue"), edited);
+
+      process.chdir(projectDir);
+      await update({ ci: true });
+
+      expect(readFileSync(join(agentsDir, "oma-config.cue"), "utf-8")).toBe(
+        edited,
+      );
     });
   });
 

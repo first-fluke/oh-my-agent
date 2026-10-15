@@ -32,6 +32,7 @@ import { collectSerenaAdapterCheck } from "./serena-adapter.js";
 import { collectSerenaDaemonCheck } from "./serena-daemons.js";
 import { collectSerenaReapCheck } from "./serena-reap.js";
 import { collectStateDoctorCheck } from "./state-health.js";
+import { collectTimezoneAdvisory } from "./timezone-advisory.js";
 import type {
   DoctorOptions,
   DoctorReport,
@@ -176,6 +177,7 @@ export async function collectDoctorReport(
     ...evolution
   } = collectEvolutionSummary(root, collectFeedbackBacklog(root));
   const hookWrappers = collectHookWrapperChecks(root);
+  const timezoneAdvisory = collectTimezoneAdvisory(root);
   const selfHealing = options.healCheckAgent
     ? evaluateSelfHealingGate({
         workspace: root,
@@ -253,6 +255,7 @@ export async function collectDoctorReport(
     evolution,
     selfHealing,
     hookWrappers,
+    timezoneAdvisory,
   };
 }
 

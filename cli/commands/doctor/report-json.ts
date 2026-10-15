@@ -59,6 +59,7 @@ export function serializeReportAsJson(report: DoctorReport): string {
       hookOrder: report.state.hookOrder,
     },
     selfHealing: report.selfHealing ?? null,
+    timezoneAdvisory: report.timezoneAdvisory ?? null,
     vendorDocs: report.vendorDocs.map((d) => ({
       file: d.fileName,
       required: d.required,
