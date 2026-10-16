@@ -25,6 +25,14 @@ Run through every item before submitting your work.
 - [ ] Locking / optimistic concurrency strategy documented
 - [ ] Transparency assumptions called out when using distributed systems
 
+## Application Ownership (Affected Scope)
+- [ ] Affected triggers, stored procedures/functions, views, DB jobs, and ORM hooks reviewed for business policy, implicit workflows, and external side effects
+- [ ] New and existing findings receive a strong application ownership recommendation with a concrete alternative and transition priority; retained implementations have technical evidence beyond existing convention
+- [ ] Proposed design preserves DB integrity, concurrency, RLS/privileges, audit coverage, justified dependent cascades, and efficient set-based processing
+- [ ] Where relevant, policy versions/decision context, action-time expiry checks, and all API/batch/admin/import/direct SQL writers are addressed
+- [ ] Integration events are committed atomically with business data when needed; CDC intent/coverage, idempotency, ordering, bounded retry, replay, and compensation are explicit
+- [ ] Planned transitions verify policy behavior and writer coverage, use one owner per side effect, and define rollback without lost or duplicate effects
+
 ## Performance & Operations
 - [ ] Indexes match hot queries and join/filter patterns
 - [ ] Partitioning / sharding strategy justified if introduced

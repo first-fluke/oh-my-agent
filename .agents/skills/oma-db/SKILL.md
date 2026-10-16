@@ -41,6 +41,7 @@ Design, review, optimize, and document SQL, NoSQL, vector, and retrieval-oriente
 - External, conceptual, and internal schema documentation
 - Data standards, glossary, capacity estimate, indexing/partitioning plan, and backup/recovery strategy
 - Integrity, transaction, isolation, and concurrency recommendations
+- Application ownership recommendations, alternatives, transition priorities, and technical retention evidence when DB business logic is affected
 - Vector/RAG-specific embedding, chunking, filtering, reranking, and re-index plans when relevant
 
 ### Dependencies
@@ -109,6 +110,10 @@ provider exclusions and non-code paths permitted by the project's search policy.
 
 
 Then run the project's migration, query-plan, or retrieval-quality commands only after identifying the database engine and migration tool.
+For affected triggers, stored procedures, functions, views, DB jobs, or ORM hooks,
+apply `resources/anti-patterns.md` §5 application ownership review. Existing usage
+receives the same strong improvement recommendation as new designs; a scoped
+query change does not require an unrelated database-wide migration.
 
 ### Resource scope
 | Scope | Resource target |
@@ -146,6 +151,7 @@ Apply framework, library, architecture, and data-model defaults only when the ta
 15. Retrieval quality is won at chunking, filtering, reranking, and observability, not only at the vector index layer.
 16. Schema or data changes on live tables follow expand-contract (parallel change): additive expand, dual-write + batched backfill, verified read switch, delayed contract. DDL on hot tables is lock-aware with timeouts; destructive steps ship in a separate deploy after a soak window.
 17. Query tuning starts from measurement and execution plans, never guesswork: measure, explain, nominate the dominant cost node, then optimize and re-measure.
+18. Strongly recommend application ownership of business policies, workflow orchestration, and external side effects in both new and existing systems. Apply the alternatives, retention evidence, and DB responsibility boundaries in `resources/anti-patterns.md` §5. Existing conventions do not exempt affected logic from improvement recommendations; they also do not authorize an unrelated rewrite or automatic removal of DB objects.
 
 ### Default Workflow
 1. **Explore**
@@ -180,8 +186,8 @@ verification outcome; omit unaffected documents.
 - Self-check (run before handoff): `resources/checklist.md`
 - Examples: `resources/examples.md`
 - Deliverable templates: `resources/document-templates.md`
-- Anti-pattern review guide: `resources/anti-patterns.md`
-- Live migration playbook: `resources/migration-playbook.md`
+- Anti-pattern review guide: `resources/anti-patterns.md` (schema/query review or affected business logic in DB objects and ORM hooks)
+- Live migration playbook: `resources/migration-playbook.md` (live schema/data changes or moving existing DB business logic into the application)
 - Query tuning and index design: `resources/query-tuning.md`
 - Vector DB and RAG guide: `resources/vector-db.md`
 - ISO control guide: `resources/iso-controls.md`

@@ -32,6 +32,17 @@ Run live changes in four separately deployed phases:
 
 Rollback rule per phase: Expand -> drop the additions; Migrate -> stop dual-write, keep old as truth; Switch -> flip the flag back; Contract -> restore from backup only (this is why contract waits).
 
+## Moving Business Logic into the Application
+
+Use these steps when replacing existing trigger/procedure/function/job business behavior. The ownership recommendation and retention criteria live in `resources/anti-patterns.md` §5; this section owns the cutover mechanics.
+
+1. **Inventory the affected execution paths**: identify API, batch, admin, import, and direct SQL writers, chained DB routines, privileges, transaction boundaries, and externally visible effects. Resolve writers that would bypass the new policy before cutover.
+2. **Prepare the application path**: implement explicit commands, domain policies, or jobs with equivalent invariants, policy/decision versioning where required, idempotency, and bounded retry. Keep required DB constraints, RLS, auditing, atomic updates, and isolation. Write outbox events in the business transaction when external delivery is needed.
+3. **Verify without duplicating effects**: compare policy decisions on representative inputs and test concurrency, direct writers, rollback, and failure recovery. Shadow evaluation must not execute payments, notifications, or other external effects.
+4. **Switch execution ownership**: coordinate application rollout with DB behavior changes so each effect has one owner. Account for old app instances, in-flight transactions, queued jobs/events, and deduplication keys. Do not let the trigger and application both execute the same effect. Dual-writing old/new storage representations within one transaction may still be needed; it is distinct from executing effects twice.
+5. **Soak and recover**: monitor errors, decision parity, processing lag, and missing/duplicate effects. Define how to restore the old execution owner and reconcile already committed or published work; disabling a feature flag alone cannot undo external effects.
+6. **Contract later**: remove obsolete DB routines only after callers/writers and queued work have migrated and the soak window passes, in a separate deployment with versioned definitions and the required backup/recovery evidence.
+
 ## Lock-Aware DDL
 
 Know what each statement locks on your engine and version before running it against a hot table.

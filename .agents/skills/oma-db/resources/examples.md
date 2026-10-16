@@ -154,3 +154,17 @@
 - ANALYZE products; EXPLAIN (ANALYZE, BUFFERS) before/after recorded: Seq Scan -> Index Scan, p95 420ms -> 6ms
 - lock_timeout = '2s' + retry on every DDL; no COPY-algorithm DDL on the hot table
 ```
+
+## Example 6: New Order Approval Flow
+
+**Input**: "Add a trigger that approves orders, charges the card, and sends email when status becomes READY."
+
+**Recommendation**: Strongly recommend an explicit application command for approval and a versioned eligibility policy. Persist the validated transition and an outbox event in one transaction; use a worker for payment/email with idempotency, bounded retry, and a defined recovery path for partial success. Keep FK/UNIQUE/CHECK constraints and concurrency protection in the DB. A status update or ORM save hook must not silently become the workflow entry point.
+
+## Example 7: Existing Procedure and Expiry Job
+
+**Input**: "The existing settlement procedure calculates fees, and a DB job marks subscriptions expired. Keep using them because that is our convention."
+
+**Recommendation**: Strongly recommend application ownership of fee policy and business job execution; existing convention alone is not retention evidence. First inspect API, batch, admin, and direct SQL writers. Version fee policies and record which version produced a settlement; validate `expires_at` when an action occurs rather than relying on the expiry job having run.
+
+**Transition**: Compare old/new decisions without charging or notifying twice, coordinate one execution owner across old app instances and DB routines, and preserve a tested rollback path during the soak window. Keep DB constraints, atomic updates, RLS, change audit, and efficient SQL aggregation. An audit trigger that records every affected writer may remain with documented coverage and bypass limits. Retain a DB calculation routine only with a concrete reason, such as measured data-local processing cost, plus correctness/concurrency tests and deployment/recovery evidence.

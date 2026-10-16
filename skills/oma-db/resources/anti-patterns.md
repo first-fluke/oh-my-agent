@@ -1,6 +1,6 @@
 # DB Agent - Anti-Pattern Review Guide
 
-Use this file when the user asks for DB review, schema critique, query critique, or remediation.
+Use this file for DB review, schema/query critique, remediation, or changes involving business logic in DB objects or ORM hooks. Review the affected scope; a query/index task does not require a database-wide inventory or rewrite.
 
 ## 1. ISO 27001 / 27002 / 22301-Oriented Suggestions
 
@@ -90,6 +90,39 @@ When any of the following are weak or absent, recommend improvements explicitly:
   - Fix: list required columns explicitly
 
 ## 5. Application Integration
+
+### Application Ownership Policy
+
+Strongly recommend managing business decisions, workflow orchestration, and external side effects explicitly in application domain/services and jobs. Apply this recommendation to **new and existing** implementations, including triggers, stored procedures, stored functions, views, DB events/schedulers, and ORM hooks/entity listeners. This is a design default, not a blanket ban on those mechanisms.
+
+For each affected existing implementation, identify its callers and writers, explain the risk, recommend a concrete replacement, and state the transition priority. Existing usage or convention alone is not a reason to retain it. If retention is justified, record the application alternative, the technical reason (such as atomicity across writers, measured performance, or audit requirements), and the relevant tests, privileges, deployment, and recovery approach. Recommend a staged transition when replacement is appropriate; implementation remains within the authorized scope.
+
+### Patterns to Improve
+
+| Pattern and failure mechanism | Strongly recommended alternative |
+| --- | --- |
+| Business policy in triggers, procedures, functions, views, or large `CASE` expressions: pricing, fees, eligibility, visibility, and approval rules become duplicated or tied to DB deployments | Give the policy an application owner and tests; version changing policies with effective dates and record the version/inputs used for decisions that must be reproduced |
+| Implicit workflow: setting a status or saving an entity silently triggers payment, approval, shipment, or chained writes | Use explicit commands, validated state transitions, and service orchestration; moving the same hidden behavior into ORM hooks is not an improvement |
+| External I/O inside DB execution, or a DB commit followed by an independent broker/API write: failures leave partial effects that rollback cannot undo | Record the integration event in an outbox in the same transaction as business data; publish through a worker with idempotency and bounded retry, and define compensation for partial external success |
+| Business scheduling in DB events/jobs without execution ownership: settlement, expiry, and notifications lack retry limits, checkpoints, or failure visibility | Manage execution in an application job/workflow with observable runs and recovery; validate deadlines at action time rather than trusting a delayed expiry batch |
+| Trigger-driven cache/search synchronization or cross-system projections without replay/reconciliation | Use explicit events or CDC with consumer deduplication, ordering requirements, lag monitoring, replay, and reconciliation |
+| Policy bypass through multiple writers or procedures that modify another service's tables | Identify API, batch, admin, import, and direct SQL writers; align write permissions and policy enforcement, and use the owning service's API/events across service boundaries |
+| Cascading deletion of independently owned objects or trigger-driven soft delete without retention/restore rules | Manage deletion intent, authorization, retention, and restoration in the application; define explicit coordination across ownership boundaries |
+| Business authorization and audit context hidden in DB session state or routines | Give business authorization and action intent an application owner; propagate verified actor/tenant context and record decision reasons, while preserving DB enforcement and DB change/access audit |
+
+### Database Responsibilities to Preserve
+
+- Keep declarative integrity (`PK`, `FK`, `UNIQUE`, `CHECK`, `NOT NULL`, and exclusion constraints where supported), atomic conditional updates, transaction boundaries, isolation, and locking. Application prechecks alone cannot enforce invariants under concurrent or independent writes.
+- Preserve RLS and DB privileges where they enforce access restrictions; RLS can be the primary enforcement point. Verify the connection roles, bypass privileges, and actor/tenant context rather than replacing RLS with application filtering.
+- Keep DB access/change audit where required. Application business audit does not cover every direct SQL, administrator, or batch change. Audit triggers can be justified, but their coverage and privileged bypass limits must be explicit.
+- `ON DELETE CASCADE` can be appropriate for dependent components with the same lifecycle. Flag cascades across independent ownership or retention boundaries, rather than treating every cascade as an anti-pattern.
+- Keep efficient joins, aggregates, pure SQL functions/views, generated values, and set-based bulk operations in the DB where appropriate. Application ownership of a job does not require fetching all rows into an application loop. DB-local summaries or routines may be retained with correctness and performance evidence.
+- Backup, replication, vacuum/statistics, partition maintenance, and storage TTL remain database operations. Separate physical cleanup from business expiry and retention decisions.
+- CDC transports committed changes; it does not automatically supply the business intent of a domain event. An application can write an outbox and use CDC to publish it. Neither approach removes the need to handle duplicates, ordering, or consumer recovery.
+
+For an accepted transition, use `resources/migration-playbook.md` §Moving Business Logic into the Application. Preserve all writers and invariants, and prevent the old and new paths from executing the same external effect twice.
+
+### Other Integration Anti-Patterns
 
 - **Readable passwords**
   - Smell: plaintext or reversibly encrypted passwords
