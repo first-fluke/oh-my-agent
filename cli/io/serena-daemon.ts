@@ -17,6 +17,10 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { omaPaths } from "../utils/oma-home.js";
 import { serenaDaemonMcpArgs } from "../vendors/serena.js";
+import {
+  isSerenaLockActive,
+  SERENA_LOCK_STALE_MS as LOCK_STALE_MS,
+} from "./serena-lock.js";
 
 /** Poll interval while waiting for a starting daemon to answer. */
 export const STARTUP_CHECK_INTERVAL_MS = 1000;
@@ -107,10 +111,7 @@ function selectSerenaStateDir(heldLock?: string): string {
     };
     try {
       const lock = join(directory, "serena-daemons.lock");
-      let busy =
-        lock !== heldLock &&
-        existsSync(lock) &&
-        active(Number(readFileSync(lock, "utf8")));
+      let busy = lock !== heldLock && isSerenaLockActive(lock);
       const registry = join(directory, "serena-daemons.json");
       if (existsSync(registry)) {
         const records: unknown = JSON.parse(readFileSync(registry, "utf8"));
@@ -349,8 +350,6 @@ function isAlive(pid: number): boolean {
   }
 }
 
-const LOCK_STALE_MS = 60_000;
-
 /**
  * Serialize daemon startup across sessions. Two clients launching at once must
  * not both bind the same port — the loser would die and take its session's
@@ -366,8 +365,13 @@ function acquireLock(): (() => void) | null {
     // Held by someone else — unless it is stale, in which case take it over.
     try {
       const age = Date.now() - statSync(path).mtimeMs;
-      const owner = Number(readFileSync(path, "utf8"));
-      if (!Number.isSafeInteger(owner) || owner <= 0) return null;
+      const content = readFileSync(path, "utf8");
+      const owner = Number(content);
+      if (!Number.isSafeInteger(owner) || owner <= 0) {
+        if (content.trim() === "" && !isSerenaLockActive(path))
+          return acquireLock();
+        return null;
+      }
       try {
         process.kill(owner, 0);
         return null;

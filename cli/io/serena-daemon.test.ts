@@ -217,6 +217,50 @@ describe("omaStateDir", () => {
     expect(omaStateDir()).toBe(legacy);
   });
 
+  it("removes a stale empty legacy lock before selecting the registry", () => {
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    const legacy = join(home, ".config", "oma");
+    _setOmaStateDirForTests(null, legacy);
+    mkdirSync(legacy, { recursive: true });
+    const lock = join(legacy, "serena-daemons.lock");
+    writeFileSync(lock, "");
+    utimesSync(lock, new Date(0), new Date(0));
+
+    expect(omaStateDir()).toBe(join(home, "custom-oma", "state", "serena"));
+    expect(existsSync(lock)).toBe(false);
+  });
+
+  it("treats a fresh empty legacy lock as held while its PID is written", () => {
+    vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
+    const legacy = join(home, ".config", "oma");
+    _setOmaStateDirForTests(null, legacy);
+    mkdirSync(legacy, { recursive: true });
+    const lock = join(legacy, "serena-daemons.lock");
+    writeFileSync(lock, "");
+
+    expect(omaStateDir()).toBe(legacy);
+    expect(readFileSync(lock, "utf8")).toBe("");
+  });
+
+  it("reacquires a stale empty lock before starting a daemon", async () => {
+    const state = omaStateDir();
+    mkdirSync(state, { recursive: true });
+    const lock = join(state, "serena-daemons.lock");
+    writeFileSync(lock, "");
+    utimesSync(lock, new Date(0), new Date(0));
+
+    const handle = await ensureSerenaDaemon({
+      root: work,
+      context: "oma",
+      timeoutMs: 1000,
+      ...fakeFleet(),
+    });
+
+    expect(handle?.started).toBe(true);
+    expect(readRegistry()[daemonKey(work, "oma")]?.pid).toBe(process.pid);
+    expect(existsSync(lock)).toBe(false);
+  });
+
   it("leaves both registries untouched when each has live clients", async () => {
     vi.stubEnv("OMA_HOME", join(home, "custom-oma"));
     const legacy = join(home, ".config", "oma");

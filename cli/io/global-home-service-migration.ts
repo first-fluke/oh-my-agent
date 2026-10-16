@@ -20,6 +20,7 @@ import { hostname } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { acquireOwnedDirectoryLock } from "../utils/owned-directory-lock.js";
+import { isSerenaLockActive } from "./serena-lock.js";
 import { writeVaultIndex } from "./vault.js";
 
 export interface GlobalServiceMigrationResult {
@@ -298,8 +299,12 @@ export async function migrateGlobalServices(
             throw new Error(`Unsafe legacy Serena startup lock: ${path}`);
           const content = readFileSync(path, "utf8");
           const pid = Number(content);
-          if (!Number.isSafeInteger(pid) || pid <= 0)
-            throw new Error(`Invalid legacy Serena startup lock: ${path}`);
+          if (!Number.isSafeInteger(pid) || pid <= 0) {
+            if (content.trim() !== "")
+              throw new Error(`Invalid legacy Serena startup lock: ${path}`);
+            if (isSerenaLockActive(path)) return;
+            continue;
+          }
           if (isAlive(pid)) return;
           const current = lstatSync(path);
           if (

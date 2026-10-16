@@ -157,6 +157,37 @@ describe("global service migration", () => {
     expect(existsSync(lock)).toBe(false);
   });
 
+  it("reclaims a stale empty Serena startup lock before migration", async () => {
+    const lock = join(home, ".config/oma/serena-daemons.lock");
+    file(join(home, ".config/oma/serena-daemons.json"), "{}");
+    file(lock, "");
+    utimesSync(lock, new Date(0), new Date(0));
+
+    const result = await migrate();
+
+    expect(result.conflicts).toEqual([]);
+    expect(result.deferred).toEqual([]);
+    expect(result.copied).toContain(
+      join(destination, "state/serena/serena-daemons.json"),
+    );
+    expect(existsSync(lock)).toBe(false);
+  });
+
+  it("defers migration while a fresh empty Serena startup lock is held", async () => {
+    const lock = join(home, ".config/oma/serena-daemons.lock");
+    file(join(home, ".config/oma/serena-daemons.json"), "{}");
+    file(lock, "");
+
+    const result = await migrate();
+
+    expect(result.conflicts).toEqual([]);
+    expect(result.deferred.join(" ")).toContain("Legacy Serena");
+    expect(readFileSync(lock, "utf8")).toBe("");
+    expect(
+      existsSync(join(destination, "state/serena/serena-daemons.json")),
+    ).toBe(false);
+  });
+
   it("defers if a live daemon is discovered in the locked registry recheck", async () => {
     const registry = join(home, ".config/oma/serena-daemons.json");
     const lock = join(home, ".config/oma/serena-daemons.lock");
@@ -300,7 +331,7 @@ describe("global service migration", () => {
     ).toBe(false);
   });
 
-  it.each(["invalid", "0", ""])(
+  it.each(["invalid", "0"])(
     "reports a malformed legacy startup lock as a conflict: %j",
     async (content) => {
       const lock = join(home, ".config/oma/serena-daemons.lock");
