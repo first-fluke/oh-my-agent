@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.4.1",
-  "releaseDate": "2026-10-16T11:49:56.138Z",
+  "releaseDate": "2026-10-16T12:38:17.119Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -376,8 +376,8 @@
     },
     {
       "path": ".agents/rules/database.md",
-      "sha256": "cab9197a0db0e8687443a88d8899a98b41561f7113c46e968c70681fcb5b3d44",
-      "size": 2236
+      "sha256": "c3fb8955e9a98420672909bc4be48a2ab7813dc8bbbeeccf76ce775838abf62e",
+      "size": 3136
     },
     {
       "path": ".agents/rules/debug.md",
@@ -786,18 +786,18 @@
     },
     {
       "path": ".agents/skills/oma-db/SKILL.md",
-      "sha256": "8e0364ca5d26a6827573214d48a2fd68faf82b084f69e3e8882843324f0f8c54",
-      "size": 12439
+      "sha256": "f1664e8655bd8c119fe74b02184f50419f12dc2c155693254175a8eae23814d8",
+      "size": 13493
     },
     {
       "path": ".agents/skills/oma-db/resources/anti-patterns.md",
-      "sha256": "4246ad275c4b7faae71a91b4131ec7ac157799c1f3672e1e2ac59be66ca3ad91",
-      "size": 7064
+      "sha256": "9c77a4746a5fe07a2676019c52a8007625a9f6783c45d2a56987a7c776847b4f",
+      "size": 12738
     },
     {
       "path": ".agents/skills/oma-db/resources/checklist.md",
-      "sha256": "c2346733c5205fecdf9e1e14ab64c644939c3142ce1b4b327e6f71fb07b0ffeb",
-      "size": 3468
+      "sha256": "ca2b99ec03b503fb2ae0231aba8db7c1a0777811a48373c9d0d1359719887c62",
+      "size": 4523
     },
     {
       "path": ".agents/skills/oma-db/resources/document-templates.md",
@@ -811,13 +811,13 @@
     },
     {
       "path": ".agents/skills/oma-db/resources/examples.md",
-      "sha256": "0f8248d818e28b55e49efa495a614bbcf2d82795f9d73d93ae02f79f64013dbd",
-      "size": 5712
+      "sha256": "bc43f44e26990e37b814d17c363865f22d9a034fca0fdb67d1b44ee8fc2128d7",
+      "size": 7487
     },
     {
       "path": ".agents/skills/oma-db/resources/execution-protocol.md",
-      "sha256": "b5206ea9abaf714a02c33a71046824d2305f6621a7f352ee0c121dc2de636339",
-      "size": 5775
+      "sha256": "34dc801be5ce5b1c2429f0b54ef8efe501200732a50ab814c8ae3e5896d2ba17",
+      "size": 6816
     },
     {
       "path": ".agents/skills/oma-db/resources/iso-controls.md",
@@ -826,8 +826,8 @@
     },
     {
       "path": ".agents/skills/oma-db/resources/migration-playbook.md",
-      "sha256": "e25d0ced69cd7071bb7c1effc54e25e907d5528d0b5ab2348374ad2d9a5985a8",
-      "size": 5294
+      "sha256": "616ded31b32c6efd09e9f289d5c8b4a1a37a5593ba6ee833c28f7a91565775fb",
+      "size": 7348
     },
     {
       "path": ".agents/skills/oma-db/resources/query-tuning.md",
