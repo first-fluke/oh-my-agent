@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.4.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.4.1...cli-v20.4.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* **db:** strengthen application ownership guidance ([464232d](https://github.com/first-fluke/oh-my-agent/commit/464232dc24fc3756b466115a506d1ee553df080a))
+
 ## [20.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.4.0...cli-v20.4.1) (2026-10-16)
 
 
