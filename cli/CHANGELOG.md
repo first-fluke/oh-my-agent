@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.4.0...cli-v20.4.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **serena:** reclaim abandoned empty registry locks ([8c8e026](https://github.com/first-fluke/oh-my-agent/commit/8c8e026b9901d3d2abbae1761ffe319284822c7e))
+
 ## [20.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.3.0...cli-v20.4.0) (2026-10-15)
 
 
