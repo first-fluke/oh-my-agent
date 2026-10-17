@@ -10,8 +10,8 @@ alwaysApply: false
 
 1. Use `mise run` tasks instead of direct package manager commands
 2. Run `mise install` after pulling changes that update runtime versions
-3. Use parallel tasks for independent operations
-4. Run lint/test only on apps with changed files
+3. Use parallel tasks for independent operations. Cap concurrency when more workers slow the same suite
+4. Run lint and test on changed scope. Keep a selector that fails closed on shared or unknown paths
 5. Validate commit messages with commitlint before committing
 6. Configure CI to skip unchanged apps for faster builds
 7. Check `mise tasks --all` to discover available tasks before running
