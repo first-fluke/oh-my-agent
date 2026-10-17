@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.4.2...cli-v20.5.0) (2026-10-17)
+
+
+### Features
+
+* **dsh:** initialize OMA automatically on first use ([#897](https://github.com/first-fluke/oh-my-agent/issues/897)) ([b4e305a](https://github.com/first-fluke/oh-my-agent/commit/b4e305aff89da1cdd8fcac3b3e753ca3c714796b))
+
 ## [20.4.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.4.1...cli-v20.4.2) (2026-10-16)
 
 
