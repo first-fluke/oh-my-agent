@@ -1,11 +1,81 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import {
+  access,
+  copyFile,
+  mkdir,
+  readFile,
+  realpath,
+  writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
+import { pathToFileURL } from "node:url";
 import { createHookRunner } from "./runner.mjs";
 import { fixture } from "./test-support.mjs";
 
 const cleanupTimer = globalThis.setTimeout;
+
+test("default runner resolves the plugin dependency lazily without a host oma command", async (t) => {
+  const f = await fixture(t);
+  const plugin = join(f.cwd, "plugin");
+  await mkdir(plugin);
+  await Promise.all(
+    ["runner.mjs", "runtime.mjs"].map((file) =>
+      copyFile(new URL(file, import.meta.url), join(plugin, file)),
+    ),
+  );
+  const { createHookRunner: createLocalRunner } = await import(
+    pathToFileURL(join(plugin, "runner.mjs")).href
+  );
+  const runner = createLocalRunner({ commandArgs: ["--fixture-prefix"] });
+  t.after(() => runner.dispose());
+  await assert.rejects(
+    runner.run("PreToolUse", { cwd: f.cwd }),
+    /OMA CLI dependency is missing/,
+  );
+
+  const dependency = join(plugin, "node_modules", "oh-my-agent");
+  await mkdir(join(dependency, "bin"), { recursive: true });
+  await writeFile(
+    join(dependency, "package.json"),
+    JSON.stringify({
+      name: "oh-my-agent",
+      type: "module",
+      version: "20.4.1",
+    }),
+  );
+  const cli = join(dependency, "bin", "cli.js");
+  await writeFile(
+    cli,
+    `import ${JSON.stringify(pathToFileURL(f.config.commandArgs[0]).href)};\n`,
+  );
+  assert.deepEqual(runner.invocation(), [
+    process.execPath,
+    await realpath(cli),
+    "--fixture-prefix",
+  ]);
+  await runner.run("PreToolUse", { cwd: f.cwd, hook_event_name: "PreToolUse" });
+  const [call] = await f.calls();
+  assert.deepEqual(call.argv, [
+    "--fixture-prefix",
+    "hook",
+    "run",
+    "--vendor",
+    "claude",
+    "--event",
+    "PreToolUse",
+  ]);
+});
+
+test("runner invocation preserves explicit executable and arguments", async (t) => {
+  const f = await fixture(t);
+  const runner = createHookRunner(f.config);
+  t.after(() => runner.dispose());
+  assert.deepEqual(runner.invocation(), [
+    f.config.command,
+    ...f.config.commandArgs,
+  ]);
+});
 
 test("runner carries unsafe strings as arguments and JSON without shell interpretation", async (t) => {
   const f = await fixture(t);

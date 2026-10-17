@@ -11,12 +11,217 @@ import {
   fixture,
 } from "./test-support.mjs";
 
-function install(t, config) {
+function install(t, config, dependencies) {
   const ctx = fakeContext();
-  registerBridge(ctx, config, createUserMessage);
+  registerBridge(ctx, config, createUserMessage, dependencies);
   t.after(() => ctx.dispose());
   return ctx;
 }
+
+function deferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((yes, no) => {
+    resolve = yes;
+    reject = no;
+  });
+  return { promise, resolve, reject };
+}
+
+test("first-use setup finishes before runtime context, announcements, and tool checks", async (t) => {
+  const f = await fixture(t, {}, false);
+  const prepared = deferred();
+  const agents = [];
+  let invalidations = 0;
+  const ctx = install(t, f.config, {
+    createSkillInvalidator() {
+      return {
+        invalidate() {
+          invalidations += 1;
+        },
+        dispose() {},
+      };
+    },
+    createWorkspaceSetup(config) {
+      assert.equal(config, f.config);
+      return {
+        ensure(agent) {
+          agents.push(agent);
+          return prepared.promise;
+        },
+        async dispose() {},
+      };
+    },
+  });
+  const agent = fakeAgent(f.cwd);
+  const created = ctx.handlers.get("agent/created")({
+    agent,
+    source: "startup",
+  });
+  let dispatches = 0;
+  const before = ctx.handlers.get("tools/pre-execute")(
+    execution(agent),
+    async () => {
+      dispatches += 1;
+      return { kind: "allow" };
+    },
+  );
+  assert.deepEqual(agents, [agent, agent]);
+  assert.equal(agent.contexts.length, 0);
+  assert.deepEqual(await f.calls(), []);
+  assert.deepEqual(await f.announcements(), []);
+  assert.equal(dispatches, 0);
+  assert.equal(invalidations, 0);
+  prepared.resolve(true);
+  assert.deepEqual(await before, { kind: "allow" });
+  await created;
+  assert.equal(dispatches, 1);
+  assert.equal(invalidations, 1);
+  assert.equal((await f.calls()).length, 1);
+  assert.equal((await f.announcements()).length, 1);
+  assert.equal(agent.contexts.length, 1);
+  assert.match(
+    agent.contexts[0].content[0].text,
+    /OMA CLI command \(argument array\)/,
+  );
+  assert.ok(
+    agent.contexts[0].content[0].text.includes(
+      JSON.stringify([process.execPath, ...f.config.commandArgs]),
+    ),
+  );
+  await ctx.handlers.get("tools/post-execute")(
+    execution(agent),
+    { isError: false, value: "done", content: [] },
+    async () => ({ kind: "accept" }),
+  );
+  await ctx.handlers.get("agent/turn-stopping")({
+    agent,
+    turn: 1,
+    signal: new AbortController().signal,
+  });
+  assert.deepEqual(agents, [agent, agent, agent, agent]);
+  assert.equal(invalidations, 1);
+  assert.equal((await f.calls()).length, 3);
+});
+
+test("setup failure is visible once and denies tools before hooks can run", async (t) => {
+  const f = await fixture(t, {}, false);
+  let attempts = 0;
+  const ctx = install(t, f.config, {
+    createWorkspaceSetup() {
+      return {
+        async ensure() {
+          attempts += 1;
+          throw new Error("workspace is read-only");
+        },
+        async dispose() {},
+      };
+    },
+  });
+  const agent = fakeAgent(f.cwd);
+  await ctx.handlers.get("agent/created")({ agent, source: "startup" });
+  await ctx.handlers.get("agent/created")({ agent, source: "startup" });
+  const result = await ctx.handlers.get("tools/pre-execute")(
+    execution(agent),
+    async () => assert.fail("an unprepared workspace must not execute tools"),
+  );
+  assert.equal(attempts, 3);
+  assert.equal(result.kind, "deny");
+  assert.match(
+    result.reason,
+    /OMA workspace setup failed: workspace is read-only/,
+  );
+  assert.equal(agent.contexts.length, 1);
+  assert.match(
+    agent.contexts[0].content[0].text,
+    /write access.*autoSetup: false/,
+  );
+  assert.equal(ctx.warnings.length, 1);
+  assert.deepEqual(await f.calls(), []);
+  assert.deepEqual(await f.announcements(), []);
+});
+
+test("cancellation or agent disposal during setup prevents late hooks and context", async (t) => {
+  for (const action of ["cancel", "dispose-agent"]) {
+    await t.test(action, async (t) => {
+      const f = await fixture(t, {}, false);
+      const prepared = deferred();
+      const ctx = install(t, f.config, {
+        createWorkspaceSetup() {
+          return {
+            ensure() {
+              return prepared.promise;
+            },
+            async dispose() {},
+          };
+        },
+      });
+      const agent = fakeAgent(f.cwd);
+      const abort = new AbortController();
+      const created = ctx.handlers.get("agent/created")({
+        agent,
+        source: "startup",
+        signal: abort.signal,
+      });
+      const before = ctx.handlers.get("tools/pre-execute")(
+        execution(agent, "bash", {}, abort.signal),
+        async () => assert.fail("cancelled setup must not dispatch"),
+      );
+      if (action === "cancel") abort.abort();
+      else ctx.handlers.get("agent/disposed")({ agent });
+      prepared.resolve(true);
+      await created;
+      assert.deepEqual(await before, { kind: "cancel" });
+      assert.deepEqual(agent.contexts, []);
+      assert.deepEqual(await f.calls(), []);
+      assert.deepEqual(await f.announcements(), []);
+      assert.deepEqual(ctx.warnings, []);
+    });
+  }
+});
+
+test("plugin unloading drains setup and suppresses waiting hooks and runtime context", async (t) => {
+  const f = await fixture(t, {}, false);
+  const prepared = deferred();
+  const drained = deferred();
+  let disposing = false;
+  const ctx = install(t, f.config, {
+    createWorkspaceSetup() {
+      return {
+        ensure() {
+          return prepared.promise;
+        },
+        async dispose() {
+          disposing = true;
+          prepared.resolve(true);
+          await drained.promise;
+        },
+      };
+    },
+  });
+  const agent = fakeAgent(f.cwd);
+  const created = ctx.handlers.get("agent/created")({
+    agent,
+    source: "startup",
+  });
+  const before = ctx.handlers.get("tools/pre-execute")(
+    execution(agent),
+    async () => assert.fail("unloaded plugin must not dispatch waiting tools"),
+  );
+  let unloaded = false;
+  const unload = ctx.dispose().then(() => {
+    unloaded = true;
+  });
+  assert.equal(disposing, true);
+  await created;
+  assert.deepEqual(await before, { kind: "cancel" });
+  assert.equal(unloaded, false);
+  drained.resolve();
+  await unload;
+  assert.deepEqual(agent.contexts, []);
+  assert.deepEqual(await f.calls(), []);
+  assert.deepEqual(await f.announcements(), []);
+});
 
 test("tool denial stops dispatch and passes the public hook ABI and OMA tool alias", async (t) => {
   const f = await fixture(t, {
@@ -282,13 +487,20 @@ test("runtime initialization avoids identity-changing session and prompt CLI eve
   assert.equal(ctx.handlers.has("agent/pre-step"), false);
   const resumed = fakeAgent(f.cwd, agent.id);
   await ctx.handlers.get("agent/created")({ agent: resumed, source: "resume" });
-  assert.equal(resumed.contexts.length, 0);
+  await ctx.handlers.get("agent/created")({ agent: resumed, source: "resume" });
+  assert.equal(resumed.contexts.length, 1);
+  assert.ok(
+    resumed.contexts[0].content[0].text.includes(
+      JSON.stringify([process.execPath, ...f.config.commandArgs]),
+    ),
+  );
   assert.equal(resumed.id, agent.id);
+  assert.deepEqual(await f.calls(), []);
 });
 
 test("OMA absent or missing usable cwd avoids all commands and context", async (t) => {
   const f = await fixture(t, {}, false);
-  const ctx = install(t, f.config);
+  const ctx = install(t, { ...f.config, autoSetup: false });
   for (const agent of [
     fakeAgent(f.cwd),
     fakeAgent(undefined),
@@ -345,7 +557,7 @@ test("nested project cwd inherits OMA markers up to the nearest git boundary", a
   await mkdir(join(f.cwd, ".git"));
   const nested = join(f.cwd, "src", "nested");
   await mkdir(nested, { recursive: true });
-  const ctx = install(t, f.config);
+  const ctx = install(t, { ...f.config, autoSetup: false });
   const agent = fakeAgent(nested);
   await ctx.handlers.get("tools/pre-execute")(execution(agent), async () => ({
     kind: "allow",
@@ -469,7 +681,7 @@ test("a root agent ties the active OMA session to its DSH session once", async (
   const resumed = fakeAgent(f.cwd, agent.id);
   await ctx.handlers.get("agent/created")({ agent: resumed, source: "resume" });
   assert.equal((await f.announcements()).length, 2);
-  assert.equal(resumed.contexts.length, 0);
+  assert.equal(resumed.contexts.length, 1);
 });
 
 test("no active OMA session leaves the agent untouched and unwarned", async (t) => {

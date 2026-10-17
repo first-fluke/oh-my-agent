@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { resolveOmaRuntime } from "./runtime.mjs";
 
 function positiveInteger(value, fallback, label) {
   const resolved = value ?? fallback;
@@ -9,7 +10,8 @@ function positiveInteger(value, fallback, label) {
 }
 
 export function createHookRunner(config = {}) {
-  const command = config.command ?? "oma";
+  const configuredCommand = config.command;
+  const command = configuredCommand ?? process.execPath;
   const commandArgs = config.commandArgs ?? [];
   if (typeof command !== "string" || !command.trim()) {
     throw new TypeError("command must name an executable");
@@ -33,6 +35,14 @@ export function createHookRunner(config = {}) {
   );
   const active = new Set();
   let disposed = false;
+
+  function invocation() {
+    const resolved = resolveOmaRuntime({
+      command: configuredCommand,
+      commandArgs,
+    });
+    return [resolved.command, ...resolved.commandArgs];
+  }
 
   // `args` replaces the default `hook run` invocation for other OMA commands;
   // such a command still gets the same isolation, limits and cancellation.
@@ -102,10 +112,11 @@ export function createHookRunner(config = {}) {
       record.cancel = abort;
       active.add(record);
       try {
+        const [executable, ...prefixArgs] = invocation();
         child = spawn(
-          command,
+          executable,
           [
-            ...commandArgs,
+            ...prefixArgs,
             ...(args ?? [
               "hook",
               "run",
@@ -179,5 +190,5 @@ export function createHookRunner(config = {}) {
     await Promise.allSettled(records.map((record) => record.done));
   }
 
-  return { run, cancelOwner, dispose };
+  return { run, invocation, cancelOwner, dispose };
 }

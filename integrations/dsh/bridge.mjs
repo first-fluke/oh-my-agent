@@ -1,5 +1,4 @@
-import { realpath, stat } from "node:fs/promises";
-import { dirname, isAbsolute, join } from "node:path";
+import { realpath } from "node:fs/promises";
 import {
   decodeOutput,
   hookContext,
@@ -9,6 +8,8 @@ import {
   stopReason,
 } from "./protocol.mjs";
 import { createHookRunner } from "./runner.mjs";
+import { createWorkspaceSetup } from "./setup.mjs";
+import { createSkillInvalidator } from "./skills.mjs";
 
 const RUNTIME_NOTE = [
   "[OMA runtime]",
@@ -18,48 +19,21 @@ const RUNTIME_NOTE = [
   "Automatic OMA keyword workflows and native OMA role dispatch are not provided by this plugin.",
 ].join("\n");
 
-async function initializedWorkspace(agent) {
-  const sessionCwd = agent?.session?.header?.cwd;
-  const id = agent?.id ?? agent?.session?.header?.id;
-  if (
-    typeof sessionCwd !== "string" ||
-    !isAbsolute(sessionCwd) ||
-    typeof id !== "string" ||
-    !id
-  )
-    return false;
-  const cwd = await realpath(sessionCwd);
-  let current = cwd;
-  let ancestorMarker = false;
-  while (true) {
-    for (const marker of ["oma-config.yaml", "oma-config.cue"]) {
-      try {
-        if ((await stat(join(current, ".agents", marker))).isFile()) {
-          if (current === cwd) return true;
-          ancestorMarker = true;
-        }
-      } catch (error) {
-        if (error.code !== "ENOENT" && error.code !== "ENOTDIR") throw error;
-      }
-    }
-    try {
-      await stat(join(current, ".git"));
-      return ancestorMarker;
-    } catch (error) {
-      if (error.code !== "ENOENT" && error.code !== "ENOTDIR") throw error;
-    }
-    const parent = dirname(current);
-    if (parent === current) return false;
-    current = parent;
+class WorkspaceSetupError extends Error {
+  constructor(error) {
+    super(
+      `OMA workspace setup failed: ${error.message}. Check workspace write access and the plugin's OMA dependency, then reload the plugin. You can also initialize OMA manually and set autoSetup: false.`,
+      { cause: error },
+    );
   }
 }
 
-export function registerBridge(ctx, config, createUserMessage) {
-  const runner = createHookRunner(config);
-  const stopStates = new WeakMap();
-  const initializedAgents = new WeakSet();
-  const announcedAgents = new WeakSet();
-  const assistantResponses = new WeakMap();
+export function registerBridge(
+  ctx,
+  config,
+  createUserMessage,
+  dependencies = {},
+) {
   const maxStopBlocks = config?.maxStopBlocks ?? 2;
   if (
     !Number.isSafeInteger(maxStopBlocks) ||
@@ -68,6 +42,20 @@ export function registerBridge(ctx, config, createUserMessage) {
   ) {
     throw new TypeError("maxStopBlocks must be an integer between 1 and 10");
   }
+  const runner = createHookRunner(config);
+  const setup = (dependencies.createWorkspaceSetup ?? createWorkspaceSetup)(
+    config,
+  );
+  const skillInvalidator = (
+    dependencies.createSkillInvalidator ?? createSkillInvalidator
+  )(ctx);
+  const stopStates = new WeakMap();
+  const preparedAgents = new WeakSet();
+  const initializedAgents = new WeakSet();
+  const announcedAgents = new WeakSet();
+  const disposedAgents = new WeakSet();
+  const setupFailures = new WeakSet();
+  const assistantResponses = new WeakMap();
   let disposed = false;
   const message = (text) =>
     createUserMessage({
@@ -75,25 +63,45 @@ export function registerBridge(ctx, config, createUserMessage) {
       source: { kind: "oma-hook" },
     });
   const report = (error) => ctx.logger?.warn?.(`oma: ${error.message}`);
+  const inactive = (agent, signal) =>
+    disposed || disposedAgents.has(agent) || signal?.aborted;
   async function active(agent, signal) {
-    if (disposed || signal?.aborted || !(await initializedWorkspace(agent)))
-      return false;
-    return !disposed && !signal?.aborted;
+    if (inactive(agent, signal)) return false;
+    try {
+      const ready = await setup.ensure(agent, signal);
+      if (!ready || inactive(agent, signal)) return false;
+      if (!preparedAgents.has(agent)) {
+        skillInvalidator.invalidate();
+        preparedAgents.add(agent);
+      }
+      return true;
+    } catch (error) {
+      if (inactive(agent, signal)) throw error;
+      const failure = new WorkspaceSetupError(error);
+      if (!setupFailures.has(agent)) {
+        setupFailures.add(agent);
+        report(failure);
+        agent.inject(message(failure.message));
+      }
+      throw failure;
+    }
   }
   async function run(event, agent, signal, execution, result) {
-    const stdout = await runner.run(
-      event,
-      await hookPayload(event, agent, execution, result),
-      { signal, owner: agent },
-    );
+    const payload = await hookPayload(event, agent, execution, result);
+    if (inactive(agent, signal)) throw new Error("OMA hook was cancelled");
+    const stdout = await runner.run(event, payload, { signal, owner: agent });
     return decodeOutput(stdout, event);
   }
   ctx.effect(
     () => async () => {
       disposed = true;
-      await runner.dispose();
+      await Promise.all([
+        setup.dispose(),
+        runner.dispose(),
+        skillInvalidator.dispose(),
+      ]);
     },
-    "oma: terminate and drain hook processes",
+    "oma: terminate and drain setup and hook processes",
   );
 
   // Tie the active OMA session to this DSH session, so `oma state trajectory`
@@ -108,9 +116,11 @@ export function registerBridge(ctx, config, createUserMessage) {
     const vendorSid = header.id ?? agent.id;
     const dshHome = process.env.DSH_HOME?.trim();
     try {
+      const cwd = await realpath(header.cwd);
+      if (inactive(agent, signal)) return;
       await runner.run(
         "boundary",
-        { cwd: await realpath(header.cwd) },
+        { cwd },
         {
           signal,
           owner: agent,
@@ -132,14 +142,24 @@ export function registerBridge(ctx, config, createUserMessage) {
     }
   }
 
-  ctx.on("agent/created", async ({ agent, source, signal }) => {
-    if (!(await active(agent, signal))) return;
-    await announce(agent, signal);
-    if (source === "resume" || initializedAgents.has(agent)) return;
-    initializedAgents.add(agent);
-    agent.inject(message(RUNTIME_NOTE));
+  ctx.on("agent/created", async ({ agent, signal }) => {
+    try {
+      if (!(await active(agent, signal))) return;
+      await announce(agent, signal);
+      if (inactive(agent, signal) || initializedAgents.has(agent)) return;
+      initializedAgents.add(agent);
+      agent.inject(
+        message(
+          `${RUNTIME_NOTE}\nOMA CLI command (argument array): ${JSON.stringify(runner.invocation())}. Use this command for OMA instructions instead of assuming a global oma executable.`,
+        ),
+      );
+    } catch (error) {
+      if (!inactive(agent, signal) && !(error instanceof WorkspaceSetupError))
+        report(error);
+    }
   });
   ctx.on("agent/disposed", ({ agent }) => {
+    disposedAgents.add(agent);
     stopStates.delete(agent);
     assistantResponses.delete(agent.session);
     void runner.cancelOwner(agent);
@@ -156,20 +176,21 @@ export function registerBridge(ctx, config, createUserMessage) {
   ctx.on("tools/pre-execute", async (execution, next) => {
     const agent = execution.agent;
     try {
-      if (!(await active(agent, execution.signal))) return next();
+      if (!(await active(agent, execution.signal)))
+        return inactive(agent, execution.signal) ? { kind: "cancel" } : next();
       const output = await run(
         "PreToolUse",
         agent,
         execution.signal,
         execution,
       );
-      if (disposed || execution.signal.aborted) return { kind: "cancel" };
+      if (inactive(agent, execution.signal)) return { kind: "cancel" };
       const context = hookContext(output);
       if (context) agent.inject(message(context));
       return preDecision(output, execution.arguments) ?? next();
     } catch (error) {
-      if (disposed || execution.signal.aborted) return { kind: "cancel" };
-      report(error);
+      if (inactive(agent, execution.signal)) return { kind: "cancel" };
+      if (!(error instanceof WorkspaceSetupError)) report(error);
       return {
         kind: "deny",
         reason: `OMA hook could not validate this tool: ${error.message}`,
@@ -185,11 +206,15 @@ export function registerBridge(ctx, config, createUserMessage) {
         await run("PostToolUse", agent, execution.signal, execution, result),
       );
     } catch (error) {
-      report(error);
+      if (
+        !inactive(agent, execution.signal) &&
+        !(error instanceof WorkspaceSetupError)
+      )
+        report(error);
       context = `OMA post-tool validation failed: ${error.message}`;
     }
     const downstream = await next();
-    if (!context || disposed || execution.signal.aborted) return downstream;
+    if (!context || inactive(agent, execution.signal)) return downstream;
     return {
       ...downstream,
       additionalContexts: [
@@ -210,6 +235,7 @@ export function registerBridge(ctx, config, createUserMessage) {
     try {
       if (!(await active(agent, signal))) return;
       const payload = await hookPayload("Stop", agent);
+      if (inactive(agent, signal)) return;
       const latest = assistantResponses.get(agent.session);
       if (latest?.turn === turn) payload.response = latest.text;
       const stdout = await runner.run("Stop", payload, {
@@ -218,12 +244,13 @@ export function registerBridge(ctx, config, createUserMessage) {
       });
       reason = stopReason(decodeOutput(stdout, "Stop"));
     } catch (error) {
-      report(error);
+      if (!inactive(agent, signal) && !(error instanceof WorkspaceSetupError))
+        report(error);
       reason = `OMA stop validation failed: ${error.message}`;
     } finally {
       state.inFlight = false;
     }
-    if (!reason || disposed || signal.aborted) return;
+    if (!reason || inactive(agent, signal)) return;
     if (state.blocks >= maxStopBlocks) {
       if (!state.warned) {
         state.warned = true;
