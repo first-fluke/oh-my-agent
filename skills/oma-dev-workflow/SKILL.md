@@ -86,6 +86,7 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 - If task hangs, check for prompts or long-running dev-server behavior.
 - If destructive task is requested, require confirmation.
 - If a selected checker cannot run, report that check as incomplete and fix its setup within scope; do not replace it with a passing placeholder or a build.
+- If a hook skips because another check is still running and exits 0, that push was not validated. Stop the owned previous run, or exit nonzero. Do not hide a gate failure with `|| true`.
 
 ### Exit
 - Success: workflow runs or config changes are verified.
@@ -111,8 +112,8 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 1. Inspect affected app manifests, lockfiles, tool configs, `mise.toml`, CI, hooks, and any `stack/stack.yaml`. Read task definitions and use `mise tasks --all` to discover existing commands.
 2. For setup or tool changes, load the selected tooling profiles from References. Configure missing dependencies, settings, and tasks with the detected package manager; preserve existing tool choices. For checks alone, skip setup.
 3. Expose applicable checks as `lint`, `format:check`, and `typecheck`; keep mutating `format` separate. A `check` task can aggregate non-emitting checks. Connect existing stack `verify.syntax.cmd` to that task without adding unsupported schema keys; preserve `verify.tests` and domain-specific scans.
-4. For hook/CI setup, load the validation pipeline. Provision locked local tools first, preserve the existing hook manager, and connect commitlint to the local `commit-msg` hook. Configure CI for app checks and tests.
-5. Before relaunching local validation, follow the validation pipeline's repeated-run guidance. Run the configured `mise run check` aggregate, or the applicable individual `lint`, `format:check`, and `typecheck` tasks, plus relevant existing tests. Run each underlying checker once. Use `mise run //{path}:{task}` for configured monorepos; typecheck the complete affected app rather than individual changed files.
+4. For hook/CI setup, load the validation pipeline. Provision locked local tools first, preserve the existing hook manager, and connect commitlint to the local `commit-msg` hook. Staged lint stays on pre-commit. Typecheck the whole affected app on the push gate when commit time is the constraint. Configure CI for app checks and tests.
+5. Before relaunching local validation, follow the validation pipeline's repeated-run guidance. A skipped run is not a pass. Run the configured `mise run check` aggregate, or the applicable individual `lint`, `format:check`, and `typecheck` tasks, plus relevant existing tests. Run each underlying checker once. Use `mise run //{path}:{task}` for configured monorepos; typecheck the complete affected app rather than individual changed files.
 6. Report the selected tools, commands, checks passed, and any unavailable or inapplicable checks. Builds remain subject to the execution policy.
 
 ### Resource scope
@@ -135,8 +136,8 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 
 1. Always use `mise run` tasks instead of direct package manager commands
 2. Run `mise install` after pulling changes that might update runtime versions
-3. Use parallel tasks (`mise run lint`, `mise run test`) for independent operations
-4. Run lint/test only on apps with changed files (`lint:changed`, `test:changed`)
+3. Use parallel tasks (`mise run lint`, `mise run test`) for independent operations. Cap concurrency when a measurement shows more workers slow the same suite
+4. Run lint and test on changed scope. Keep a repository selector that already fails closed on shared or unknown paths; do not replace it with the generic affected-checks helper
 5. Validate commit messages with commitlint before committing
 6. Run pre-commit validation pipeline for staged files only
 7. Configure CI to skip unchanged apps for faster builds
@@ -147,11 +148,11 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 12. Enable mise in CI/CD pipelines for reproducible builds
 13. Pin runtime versions in mise.toml for consistency
 14. Test tasks locally before committing CI/CD changes
-15. Never use direct package manager commands when mise tasks exist
+15. Never fetch packages from a Git hook. When a mise task already runs a checker, call that task. A hook running under `mise exec` may call the pinned local binary directly
 16. Never modify mise.toml without understanding task dependencies
 17. Never skip `mise install` after toolchain version updates
 18. Never run dev servers without checking port availability first
-19. Never commit without running validation on affected apps
+19. Never commit past a failing staged lint. Typecheck the whole affected app on the push gate when doing it on every commit would dominate commit time
 20. Never ignore task failures - always investigate root cause
 21. Never hardcode secrets in mise.toml files
 22. Never assume task availability - always verify with `mise tasks`

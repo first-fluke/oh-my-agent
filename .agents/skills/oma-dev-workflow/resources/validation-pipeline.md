@@ -22,6 +22,15 @@ same pipeline/app scope. Within that scope, keep only the latest invocation:
 - Record superseded runs as canceled, never passed. A canceled Git-hook check
   must return a nonzero status. Discard partial or stale results and use only the
   latest completed run that checks the current working tree.
+- Skipping the new run and exiting 0 because some `pytest`, `vitest`, or hook
+  process is still alive is a false pass. Exit nonzero unless this invocation
+  checked the current tree.
+- A wall-clock budget may leave remaining work running only when the hook itself
+  exits nonzero. The next run of the same content may reuse a recorded pass. A
+  recorded failure blocks that content.
+- Do not append `|| true` to a gate so a scheduler continues. Continuing after a
+  failure is allowed only when the runner still returns the aggregate nonzero
+  status. A direct invocation of the same gates must fail the same way.
 
 ## Commitlint setup
 
@@ -30,7 +39,10 @@ Keep existing configuration and integrate with existing hooks. Install
 `@commitlint/cli` and `@commitlint/config-conventional` as local development
 dependencies through the detected package manager; pin resolved versions and commit
 its lockfile. Install those locked dependencies during local environment setup.
-Do not download commitlint during a hook or depend on Bun being installed.
+Do not fetch commitlint during the hook (`npx -y`, `bunx`, `pnpm dlx`). A
+repository that already pins its package manager and commitlint calls that
+local binary. An extra mise task is optional when the hook already runs under
+`mise exec`.
 
 For an npm repository, a one-time setup task can run:
 
@@ -102,14 +114,30 @@ EOF
 A linked worktree can share these hooks with other worktrees. If the project uses
 core.hooksPath, use its existing installation process instead.
 
-Copy [affected-checks.py](affected-checks.py) to the project's
-`.mise/scripts/affected-checks.py`. It uses NUL-delimited Git paths and argv
-subprocess calls. Adapt `APPS` and `CHECK_APPS` to the repository: include only apps
-with applicable checks, such as excluding a Dockerfile-only target from
-`typecheck`. Do not create passing placeholder tasks. App checks run against the
-working tree; staged paths select which apps to check. Typecheck the full affected
-app using its project configuration, rather than passing changed filenames to the
-checker. Do not run formatters that silently rewrite unstaged files.
+Place checks by cost. Pre-commit lints staged files and does not rewrite
+unstaged work. Typecheck runs the affected app's project configuration, on the
+push gate when that check would dominate commit time. Do not pass individual
+filenames to `tsc` or pyrefly.
+
+Keep a selector the repository already uses when it fails closed: shared or
+unknown paths run the full suite, and the base is the merge-base with the target
+branch. That includes carve-outs a path list cannot see, such as generated
+specs, an import graph, or config files a test runner ignores. Copy
+[affected-checks.py](affected-checks.py) only when the repository has no such
+selector. Do not replace app task flags with a raw `bunx` or `uv` command that
+can drift from them.
+
+Cap hook concurrency to a measured limit. More workers can make the same suite
+slower. The parallel `depends` examples below are not an instruction to use
+every core.
+
+When using the helper, copy it to `.mise/scripts/affected-checks.py`. It uses
+NUL-delimited Git paths and argv subprocess calls. Adapt `APPS` and `CHECK_APPS`
+to the repository: include only apps with applicable checks, such as excluding a
+Dockerfile-only target from `typecheck`. Do not create passing placeholder tasks.
+App checks run against the working tree; staged paths select which apps to check.
+The `typecheck` task still uses the app's project configuration, not a list of
+changed filenames. Do not run formatters that silently rewrite unstaged files.
 
 Define each app's required `check` task as an aggregate of its applicable lint,
 typecheck and `format:check` tasks, as shown in the tooling profiles. Include
@@ -131,8 +159,8 @@ usage = 'arg "<file>"'
 run = './node_modules/.bin/commitlint --edit "$usage_file"'
 
 [tasks."git:pre-commit"]
-description = "Check apps affected by staged changes"
-run = "python3 .mise/scripts/affected-checks.py --staged --kind check"
+description = "Lint apps affected by staged changes"
+run = "python3 .mise/scripts/affected-checks.py --staged --kind lint"
 
 [tasks."git:pre-push"]
 description = "Check and test the complete branch change"

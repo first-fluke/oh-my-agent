@@ -29,7 +29,7 @@ Expose applicable tasks through `mise`:
 - `format`: explicitly requested formatting writes.
 - `typecheck`: whole-app type analysis without compilation output.
 - `check`: aggregate the applicable non-mutating checks.
-- `git:commit-msg`: commitlint for the supplied message file.
+- `git:commit-msg`, or the commit-msg hook when it already runs under `mise exec`: commitlint for the supplied message file.
 
 Each underlying checker should run once per `check`: Biome `check` already checks
 formatting, and the Dart analyzer covers both lint and types. JavaScript-only and
