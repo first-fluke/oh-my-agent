@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-oma",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Use OMA project skills and tool validation hooks in DeepSeek Harness.",
   "type": "module",
   "main": "./index.mjs",
@@ -13,6 +13,9 @@
     "bridge.mjs",
     "protocol.mjs",
     "runner.mjs",
+    "runtime.mjs",
+    "setup.mjs",
+    "skills.mjs",
     "cordis.patch.yml",
     "README.md",
     "LICENSE"
@@ -22,6 +25,10 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "dependencies": {
+    "oh-my-agent": "20.4.1",
+    "tar": "7.5.22"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
