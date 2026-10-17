@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.5.0",
-  "releaseDate": "2026-10-17T05:26:09.716Z",
+  "releaseDate": "2026-10-17T23:01:45.503Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -391,8 +391,8 @@
     },
     {
       "path": ".agents/rules/dev-workflow.md",
-      "sha256": "a96b9cc3889de8454e92662456e7aca2f44afc5e2d0f9aac18291c581258d4be",
-      "size": 917
+      "sha256": "0eb40ef9b4d6c6a31069f664e056ead1ffc14131af2075469d6efe84b7429068",
+      "size": 1023
     },
     {
       "path": ".agents/rules/frontend.md",
@@ -981,8 +981,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/SKILL.md",
-      "sha256": "886109863559c8de41698807d0273db90cb343a9d5ada6551b59aa8c9822128d",
-      "size": 15950
+      "sha256": "52cd90d6891260d43890c9b6ee83fe9caec6579deff43eb2e6a8ade3f8201d10",
+      "size": 16654
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/affected-checks.py",
@@ -1011,8 +1011,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/tooling-profiles.md",
-      "sha256": "c06b51ddfbc4250e223ae94a0053677412c540b4b0a7a885af0ecc67497cff1f",
-      "size": 11026
+      "sha256": "d27e08ebb000ea645dc9d6a30cc83a6253fcf99070670c40cb284f0cdf9184fd",
+      "size": 11089
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/troubleshooting.md",
@@ -1021,8 +1021,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/validation-pipeline.md",
-      "sha256": "7a9b919fcdaca92cac87f2e1502d21f4b34a8bf4caa933a3c45b4ecb76569bc5",
-      "size": 8167
+      "sha256": "10d43f1f36e6d2b2ba7fd80c57bf3ebf5f7f69ac016831b7c80e805daa2e8c7d",
+      "size": 9803
     },
     {
       "path": ".agents/skills/oma-docs/SKILL.md",
