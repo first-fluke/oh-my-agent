@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.5.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.5.0...cli-v20.5.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* **rules:** match the workflow hook contract ([3b32be5](https://github.com/first-fluke/oh-my-agent/commit/3b32be579b1e45716014daf15af6789b1f462241))
+* **skills:** reject an unfinished validation hook ([3f45f1e](https://github.com/first-fluke/oh-my-agent/commit/3f45f1ecb214ddf4c64efb69e7dc116bfb2fb2fb))
+
 ## [20.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.4.2...cli-v20.5.0) (2026-10-17)
 
 
