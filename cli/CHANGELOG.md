@@ -1,5 +1,23 @@
 # Changelog
 
+## [20.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.5.1...cli-v20.6.0) (2026-10-19)
+
+
+### Features
+
+* **serena:** support 2.0 and compatible future versions ([7da81af](https://github.com/first-fluke/oh-my-agent/commit/7da81af1c3329249fe297850dea0e381afde465e))
+
+
+### Bug Fixes
+
+* **cli:** move artifact layout migration into platform ([07627cf](https://github.com/first-fluke/oh-my-agent/commit/07627cfd41baba2e7129ba2b611849bf380b79ff))
+* **uninstall:** require explicit confirmation in CI ([69e39a1](https://github.com/first-fluke/oh-my-agent/commit/69e39a1d72b9f19777ca5a72044bd6575b1f1d61))
+
+
+### Refactoring
+
+* **cli:** split oversized serena and link modules ([c748376](https://github.com/first-fluke/oh-my-agent/commit/c748376fa26f96eee35366c0aa36fd203f106e13))
+
 ## [20.5.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.5.0...cli-v20.5.1) (2026-10-17)
 
 
