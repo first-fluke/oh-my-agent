@@ -7,11 +7,32 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import tempfile
 
 IMPORT = "from .oma_dart import GetDartProjectDiagnosticsTool\n"
 CACHE_IMPORT = "from .oma_symbol_cache import install_symbol_cache as _install_symbol_cache\n_install_symbol_cache()\n"
-SUPPORTED = {"1.7.0"}
+# Patches target APIs that stayed stable across 1.7 and 2.0. Minors and patches
+# above the tested versions reuse them; a new major requires API re-validation.
+MIN_VERSION = (1, 7, 0)
+MAX_MAJOR = 2
+
+
+def version_tuple(version):
+    match = re.match(r"(\d+(?:\.\d+)*)", version)
+    if not match:
+        return None
+    parts = [int(part) for part in match.group(1).split(".")]
+    return tuple(parts + [0] * (3 - len(parts)))
+
+
+def is_supported(version):
+    parsed = version_tuple(version)
+    return (
+        parsed is not None
+        and parsed >= MIN_VERSION
+        and parsed[0] <= MAX_MAJOR
+    )
 
 
 def atomic_write(path, content):
@@ -28,11 +49,13 @@ def atomic_write(path, content):
 
 
 def reconcile(package, version, source, check_only=False):
-    if version not in SUPPORTED:
+    if not is_supported(version):
         return {
             "status": "unsupported",
             "version": version,
-            "error": f"Serena {version} is not supported by this OMA adapter (tested: 1.7.0)",
+            "error": f"Serena {version} is not supported by this OMA adapter "
+                     f"(supported: >={'.'.join(map(str, MIN_VERSION))}, "
+                     f"<{MAX_MAJOR + 1}.0.0)",
         }
     payload = (source / "oma_dart.py").read_text()
     cache_payload = (source / "oma_symbol_cache.py").read_text()

@@ -1,4 +1,4 @@
-"""Dart project diagnostics on Serena's existing language server (Serena 1.7).
+"""Dart project diagnostics on Serena's existing language server (Serena 1.7/2.0).
 
 Installed as serena.tools.oma_dart. No second analysis server is launched.
 """

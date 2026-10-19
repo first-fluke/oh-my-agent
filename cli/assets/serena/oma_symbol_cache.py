@@ -1,4 +1,4 @@
-"""File-granular symbol caching for Serena 1.7.0's long-lived Python process.
+"""File-granular symbol caching for Serena 1.7/2.0's long-lived Python process.
 
 Legacy pickles eagerly restore every file and retain mutable workspace trees.
 SQLite keeps cold files on disk; serialized entries isolate request mutations.

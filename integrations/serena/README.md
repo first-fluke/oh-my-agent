@@ -7,9 +7,9 @@ repaired automatically. Context regeneration retains the diagnostic tool when th
 adapter is compatible. No Flutter build or second analyzer is started.
 
 The adapter modifies the local Serena Python installation. It is tested against
-**serena-agent 1.7.0 and Dart 3.13.4**. Untested Serena versions are rejected for
-Dart checks. Update the compatibility check only after testing the upstream APIs;
-there is no fallback that silently skips analysis.
+**serena-agent 1.7.0 and 2.0.0 with Dart 3.13.4**. Untested Serena versions are
+rejected for Dart checks. Update the compatibility check only after testing the
+upstream APIs; there is no fallback that silently skips analysis.
 
 ## Commands
 
@@ -57,10 +57,10 @@ run through an installed release. Packaging includes the four Python assets.
 
 ## Python symbol cache memory
 
-The managed adapter also replaces Serena 1.7.0's eager, project-wide symbol
-pickle loading with file-granular SQLite caches for every language. On the
-observed project, the old caches occupied 339 MiB on disk; loading only the Dart
-document cache raised a probe process from 17 MiB to 486 MiB peak memory.
+The managed adapter also replaces Serena's eager, project-wide symbol pickle
+loading with file-granular SQLite caches for every language. On the observed
+project, the old caches occupied 339 MiB on disk; loading only the Dart document
+cache raised a probe process from 17 MiB to 486 MiB peak memory.
 Cached file roots also acquired parent references to whole workspace trees.
 
 Cold files now remain on disk. Each lookup decodes only the requested file;

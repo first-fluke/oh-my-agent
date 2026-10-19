@@ -35,11 +35,28 @@ class InstallerTests(unittest.TestCase):
             installer.reconcile(self.package, "1.7.0", SOURCE, True)["status"],
             "missing",
         )
-        self.assertEqual(
-            installer.reconcile(self.package, "9.0.0", SOURCE)["status"], "unsupported"
-        )
+        unsupported = installer.reconcile(self.package, "9.0.0", SOURCE)
+        self.assertEqual(unsupported["status"], "unsupported")
+        self.assertIn("1.7.0", unsupported["error"])
+        self.assertIn("<3.0.0", unsupported["error"])
         self.assertEqual(self.init.read_text(), "# upstream\n")
         self.assertFalse((self.package / "tools/oma_dart.py").exists())
+
+    def test_supported_serena_versions_install_the_same_adapter(self):
+        for version in ("1.7.0", "1.7.4", "2.0.0", "2.5.1"):
+            with self.subTest(version=version):
+                result = installer.reconcile(self.package, version, SOURCE)
+                self.assertEqual(result["status"], "ready")
+                self.assertIn(installer.IMPORT, self.init.read_text())
+                self.assertIn(installer.CACHE_IMPORT, self.init.read_text())
+
+    def test_versions_outside_the_compatibility_range_are_unsupported(self):
+        for version in ("1.6.9", "3.0.0"):
+            with self.subTest(version=version):
+                self.assertEqual(
+                    installer.reconcile(self.package, version, SOURCE)["status"],
+                    "unsupported",
+                )
 
     def test_symbol_cache_patch_is_repaired_and_changes_runtime_revision(self):
         first = installer.reconcile(self.package, "1.7.0", SOURCE)

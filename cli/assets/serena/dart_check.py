@@ -2,13 +2,32 @@
 
 import argparse
 import asyncio
+import inspect
 import json
 import subprocess
 import sys
 from pathlib import Path
 
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+
+try:  # mcp 1.x
+    from mcp.client.streamable_http import (
+        streamablehttp_client as _streamable_http_client,
+    )
+except ImportError:  # mcp 2.x renamed the transport
+    from mcp.client.streamable_http import (
+        streamable_http_client as _streamable_http_client,
+    )
+
+
+def streamable_http_client(url, timeout):
+    """Yield (read, write) streams for both mcp 1.x (3-tuple) and 2.x (2-tuple)."""
+    parameters = inspect.signature(_streamable_http_client).parameters
+    if "timeout" in parameters:
+        return _streamable_http_client(
+            url, timeout=timeout, sse_read_timeout=timeout
+        )
+    return _streamable_http_client(url)
 
 
 def git(root, *args):
@@ -57,9 +76,8 @@ async def run(args):
     sdk = Path(args.dart_sdk).expanduser().resolve(strict=True)
     index = check_index(root, package) if args.staged else None
     url = args.url
-    async with streamablehttp_client(
-        url, timeout=args.timeout, sse_read_timeout=args.timeout
-    ) as (read, write, _):
+    async with streamable_http_client(url, args.timeout) as streams:
+        read, write = streams[0], streams[1]
         async with ClientSession(read, write) as session:
             await session.initialize()
             response = await session.call_tool(
