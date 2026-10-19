@@ -21,17 +21,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          # Keep in step with mise.toml so CI and local runs use the same bun.
-          bun-version: "1.4.2"
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "26"
+      - uses: jdx/mise-action@v5
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Validate hk config
+        if: matrix.os == 'ubuntu-latest'
+        run: hk validate
 
       - name: Lint (cli)
         run: bun run --cwd cli lint

@@ -21,9 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: "1.4.2"
+      - uses: jdx/mise-action@v5
 
       - name: Sync prompt-manifest.json
         run: |
