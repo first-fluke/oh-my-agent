@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.6.0...cli-v20.7.0) (2026-10-19)
+
+
+### Features
+
+* **qwen:** default git co-author attribution off ([3a2724a](https://github.com/first-fluke/oh-my-agent/commit/3a2724a1e53e9fe1be15d3c0985895d5dbec2a72))
+
 ## [20.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.5.1...cli-v20.6.0) (2026-10-19)
 
 
