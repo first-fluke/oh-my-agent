@@ -474,10 +474,7 @@ describe("uninstall extended — idempotency", () => {
 });
 
 describe("uninstall extended — non-interactive behavior", () => {
-  it("CI=true bypasses interactive confirm and proceeds with removal", async () => {
-    // Spec note: `isNonInteractive` in uninstall.ts treats CI=true as
-    // implicit consent (same as --yes). This matches install/update semantics
-    // and avoids hangs in CI runners. Verify the removal actually happens.
+  it("CI=true with --yes proceeds with removal", async () => {
     const root = makeTmpDir();
     setInstallContext({ installRoot: root, mode: "project" });
     seedOmaLayout(root);
@@ -487,8 +484,7 @@ describe("uninstall extended — non-interactive behavior", () => {
     delete process.env.OMA_YES;
 
     try {
-      await uninstall({});
-      // CI mode skips confirm and runs the removal
+      await uninstall({ yes: true });
       expect(fs.existsSync(path.join(root, ".agents", "workflows"))).toBe(
         false,
       );
@@ -498,11 +494,46 @@ describe("uninstall extended — non-interactive behavior", () => {
     }
   });
 
-  it.skip("TODO(EC-abort): when CI=true and yes=false, verify explicit abort behavior once uninstall.ts enforces CI-abort guard", () => {
-    // This test requires the production uninstall.ts to add:
-    //   if (CI && !yes) { p.cancel("..."); process.exit(1); }
-    // Currently uninstall.ts treats CI=true as non-interactive (proceeds
-    // with the removal). Add an explicit CI-without-yes abort guard first.
+  it("CI=true without --yes aborts and preserves the install", async () => {
+    const root = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    seedOmaLayout(root);
+
+    const savedCi = process.env.CI;
+    const savedExitCode = process.exitCode;
+    process.env.CI = "true";
+    delete process.env.OMA_YES;
+
+    try {
+      await uninstall({});
+      expect(fs.existsSync(path.join(root, ".agents", "workflows"))).toBe(true);
+      expect(process.exitCode).toBe(1);
+    } finally {
+      if (savedCi === undefined) delete process.env.CI;
+      else process.env.CI = savedCi;
+      process.exitCode = savedExitCode;
+    }
+  });
+
+  it("CI=true dry-run stays allowed and removes nothing", async () => {
+    const root = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    seedOmaLayout(root);
+
+    const savedCi = process.env.CI;
+    const savedExitCode = process.exitCode;
+    process.env.CI = "true";
+    delete process.env.OMA_YES;
+
+    try {
+      await uninstall({ dryRun: true });
+      expect(fs.existsSync(path.join(root, ".agents", "workflows"))).toBe(true);
+      expect(process.exitCode).toBe(savedExitCode);
+    } finally {
+      if (savedCi === undefined) delete process.env.CI;
+      else process.env.CI = savedCi;
+      process.exitCode = savedExitCode;
+    }
   });
 });
 

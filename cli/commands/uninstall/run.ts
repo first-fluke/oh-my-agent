@@ -501,11 +501,20 @@ function applyRemoval(omaOwned: RemovalEntry[]): void {
  */
 export async function uninstall(options: UninstallOptions = {}): Promise<void> {
   const installRoot = getInstallRoot();
-  const isNonInteractive =
-    options.yes === true ||
-    process.env.OMA_YES === "1" ||
-    process.env.CI === "true" ||
-    process.env.CI === "1";
+  const explicitYes = options.yes === true || process.env.OMA_YES === "1";
+  const isCi = process.env.CI === "true" || process.env.CI === "1";
+
+  // Uninstall is destructive: CI is not consent. A dry-run stays allowed, but
+  // a real removal requires --yes (or OMA_YES=1) even in CI.
+  if (isCi && !explicitYes && !options.dryRun) {
+    p.cancel(
+      "Refusing to uninstall in CI without --yes. Re-run with `oma uninstall --yes` to confirm.",
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  const isNonInteractive = explicitYes || isCi;
 
   const { omaOwned, userOwned } = buildRemovalPlan(installRoot);
 
