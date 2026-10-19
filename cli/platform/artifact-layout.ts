@@ -25,9 +25,9 @@ import { unified } from "unified";
 import {
   profileDir,
   projectIdentity,
-} from "../../../.agents/hooks/core/session-storage.ts";
-import { runtimeStateDir } from "../../state/project-runtime.js";
-import { atomicWriteFileSync } from "../../utils/safe-write.js";
+} from "../../.agents/hooks/core/session-storage.ts";
+import { runtimeStateDir } from "../state/project-runtime.js";
+import { atomicWriteFileSync } from "../utils/safe-write.js";
 
 export interface ArtifactLayoutMove {
   from: string;

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Command } from "commander";
 import { ensureGitignored } from "../../io/gitignore.js";
+import { migrateArtifactLayout } from "../../platform/artifact-layout.js";
 import { runAction } from "../../utils/cli-framework.js";
 import {
   countUrlRefs,
@@ -16,7 +17,6 @@ import {
 import { extractDocRefs, writeDocRefsIndex } from "./extract.js";
 import { detectI18nDrift, summarizeDrift } from "./i18n-drift.js";
 import { lintI18nStyle, summarizeStyleIssues } from "./lint-i18n.js";
-import { migrateArtifactLayout } from "./migrate-layout.js";
 import { renderJson, renderMarkdown } from "./reporter.js";
 import { resolveRefs } from "./resolve.js";
 import { proposeSyncPatches } from "./sync-propose.js";

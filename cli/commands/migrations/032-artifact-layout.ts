@@ -1,4 +1,4 @@
-import { migrateArtifactLayout } from "../docs/migrate-layout.js";
+import { migrateArtifactLayout } from "../../platform/artifact-layout.js";
 import type { Migration } from "./index.js";
 
 export const migrateArtifactLayoutPaths: Migration = {

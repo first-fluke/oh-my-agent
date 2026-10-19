@@ -13,9 +13,9 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { projectIdentity } from "../../../.agents/hooks/core/session-storage.ts";
-import { runtimeStateDir } from "../../state/project-runtime.js";
-import { migrateArtifactLayout } from "./migrate-layout.js";
+import { projectIdentity } from "../../.agents/hooks/core/session-storage.ts";
+import { runtimeStateDir } from "../state/project-runtime.js";
+import { migrateArtifactLayout } from "./artifact-layout.js";
 
 const roots: string[] = [];
 function makeRoot(): string {

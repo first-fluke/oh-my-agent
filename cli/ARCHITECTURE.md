@@ -33,7 +33,7 @@ cli/
 2. `command.ts` contains only Commander wiring and argument normalization. No business logic, no Clack, no direct FS/network access.
 3. `<name>.ts` (the slice's pure flow) must not import `@clack/prompts` or `picocolors`. Interactive prompts live in `ui.ts`.
 4. `vendors/<vendor>/` owns everything vendor-specific. Other packages iterate via the `Vendor` registry in `vendors/index.ts`.
-5. `platform/` is the only package that writes vendor files from `.agents/` SSOT.
+5. `platform/` is the only package that writes vendor files from `.agents/` SSOT. `platform/artifact-layout.ts` owns artifact layout migration, shared by `oma docs migrate` and migration 032.
 6. Tests colocate with the unit under test (`<slice>/<name>.test.ts`).
 
 The canonical event envelope, durable writes, session index operations, and metadata reducer live in `.agents/hooks/core/state-core.ts`. CLI `state/events.ts` adds the asynchronous memory adapter; standalone hooks use the same core through compatibility exports. `state-index-lock.ts` serializes index updates across CLI and hook processes. Keep the core dependency-free so installed standalone hooks can load it.
