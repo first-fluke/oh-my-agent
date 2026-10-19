@@ -1,0 +1,3 @@
+# Marks this package as a mise config root so `monorepo_root = true` can address
+# `//web:<task>`. Tasks themselves are inferred from package.json by the root
+# `[settings] task.auto_infer = ["node"]`.

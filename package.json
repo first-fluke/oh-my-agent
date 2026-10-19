@@ -19,7 +19,7 @@
     "dev": "bun run --cwd cli dev",
     "lint": "bun run --cwd cli lint",
     "lint:fix": "bun run --cwd cli lint:fix",
-    "prepare": "husky",
+    "hooks:install": "hk install",
     "sns": "bun scripts/sns/index.ts",
     "sns:devto": "bun scripts/sns/devto/index.ts",
     "sns:qiita": "bun scripts/sns/qiita/index.ts",
@@ -50,7 +50,6 @@
     "@biomejs/biome": "^2.5.6",
     "@commitlint/cli": "21.2.1",
     "@commitlint/config-conventional": "21.2.0",
-    "husky": "9.1.7",
     "typescript": "^7.0.2"
   },
   "dependencies": {

@@ -1,1 +1,0 @@
-bunx biome check --write --staged --no-errors-on-unmatched

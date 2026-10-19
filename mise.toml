@@ -1,3 +1,24 @@
+monorepo_root = true
+
+[monorepo]
+config_roots = ["cli", "web"]
+
+[settings]
+task.auto_infer = ["node"]
+
 [tools]
 bun = "1.4.2"
 node = "26"
+hk = "2.7.0"
+
+[tasks.hooks]
+description = "Install hk git hooks into this repository"
+run = "hk install"
+
+[tasks.check]
+description = "Run every hk check against all tracked files"
+run = "hk check --all"
+
+[tasks.fix]
+description = "Apply every hk fix against all tracked files"
+run = "hk fix --all"

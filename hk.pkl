@@ -1,0 +1,47 @@
+amends "package://github.com/jdx/hk/releases/download/v2.7.0/hk@2.7.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.7.0/hk@2.7.0#/Builtins.pkl"
+
+// Pre-commit and the standalone `hk check` / `hk fix` hooks share these steps.
+// `glob = "**/*"` mirrors the previous husky hook: Biome itself decides which
+// staged files it supports, and --no-errors-on-unmatched keeps non-code files
+// (markdown, python, shell) from turning the hook into a failure.
+steps {
+  ["biome"] {
+    glob = "**/*"
+    check = "bunx biome check --no-errors-on-unmatched {{files}}"
+    fix = "bunx biome check --write --no-errors-on-unmatched {{files}}"
+  }
+}
+
+hooks {
+  ["commit-msg"] {
+    steps {
+      // Managed by oh-my-agent: rejects unrecognised Co-authored-by addresses.
+      ["co-author-guard"] {
+        check = "sh .githooks/commit-msg {{commit_msg_file}}"
+      }
+      ["commitlint"] {
+        check = "bunx commitlint --edit {{commit_msg_file}}"
+      }
+    }
+  }
+
+  ["pre-push"] {
+    steps {
+      ["typecheck"] {
+        check = "bun run typecheck"
+      }
+      // Git exports repository-local variables in hooks. Tests create their own
+      // repositories; inheriting these variables redirects their Git operations
+      // here. Mirror the previous husky pre-push hook.
+      ["test"] {
+        check = "for v in $(git rev-parse --local-env-vars); do unset $v; done; CI=true bun run test"
+        depends = "typecheck"
+      }
+      ["emit-drift"] {
+        check = "bun run --cwd cli check:emit-drift"
+        depends = "test"
+      }
+    }
+  }
+}
