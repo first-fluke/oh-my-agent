@@ -16,6 +16,7 @@ import {
 const RECOMMENDED_DEFAULTS = {
   model: { generationConfig: { timeout: QWEN_REQUEST_TIMEOUT_MS } },
   memory: { enableManagedAutoMemory: false },
+  general: { gitCoAuthor: { commit: false } },
 } as const;
 
 describe("qwen settings", () => {
@@ -74,6 +75,42 @@ describe("qwen settings", () => {
     expect(needsQwenSettingsUpdate(settings)).toBe(true);
     const result = applyQwenSettings(settings);
     expect(result.memory).toEqual({ enableManagedAutoMemory: false });
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
+  it("disables Qwen's fixed commit co-author on a fresh install", () => {
+    const result = applyQwenSettings({});
+    expect(result.general).toEqual({ gitCoAuthor: { commit: false } });
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
+  it.each([true, false])(
+    "preserves an explicit git co-author preference: %s",
+    (commit) => {
+      const settings = applyQwenSettings({
+        general: { gitCoAuthor: { commit, pr: false }, theme: "dark" },
+      });
+      expect(settings.general).toEqual({
+        gitCoAuthor: { commit, pr: false },
+        theme: "dark",
+      });
+      expect(needsQwenSettingsUpdate(settings)).toBe(false);
+      expect(applyQwenSettings(settings)).toEqual(settings);
+    },
+  );
+
+  it("repairs a missing commit boolean without dropping other keys", () => {
+    const settings = applyQwenSettings({});
+    settings.general = { theme: "dark", gitCoAuthor: { pr: false } };
+    const before = structuredClone(settings);
+
+    expect(needsQwenSettingsUpdate(settings)).toBe(true);
+    const result = applyQwenSettings(settings);
+    expect(result.general).toEqual({
+      theme: "dark",
+      gitCoAuthor: { pr: false, commit: false },
+    });
+    expect(settings).toEqual(before);
     expect(needsQwenSettingsUpdate(result)).toBe(false);
   });
 
@@ -349,6 +386,7 @@ describe("qwen model request timeout", () => {
   const baseline = () => ({
     privacy: { usageStatisticsEnabled: false },
     memory: { enableManagedAutoMemory: false },
+    general: { gitCoAuthor: { commit: false } },
     mcpServers: {
       "chrome-devtools": RECOMMENDED_QWEN_MCP["chrome-devtools"],
       serena: RECOMMENDED_QWEN_MCP.serena,

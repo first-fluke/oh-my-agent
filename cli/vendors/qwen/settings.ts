@@ -65,6 +65,13 @@ export interface QwenSettings {
     enableManagedAutoMemory?: boolean;
     [key: string]: unknown;
   };
+  general?: {
+    gitCoAuthor?: {
+      commit?: boolean;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
   model?: {
     generationConfig?: {
       timeout?: number;
@@ -196,6 +203,30 @@ function removeTopLevelTimeout(settings: QwenSettings): void {
   }
 }
 
+/**
+ * Qwen appends `Co-authored-by: Qwen-Coder <qwen-coder@alibabacloud.com>` to
+ * every commit. OMA's commit-msg hook only permits the configured co-author,
+ * so the default is off; an explicit user boolean is preserved.
+ */
+function applyGitCoAuthorDefault(settings: QwenSettings): void {
+  const general = isRecord(settings.general) ? settings.general : {};
+  const gitCoAuthor = isRecord(general.gitCoAuthor) ? general.gitCoAuthor : {};
+  if (typeof gitCoAuthor.commit === "boolean") return;
+  settings.general = {
+    ...general,
+    gitCoAuthor: { ...gitCoAuthor, commit: false },
+  };
+}
+
+function needsGitCoAuthorDefault(settings: QwenSettings): boolean {
+  const general = settings.general;
+  const gitCoAuthor =
+    isRecord(general) && isRecord(general.gitCoAuthor)
+      ? general.gitCoAuthor
+      : undefined;
+  return typeof gitCoAuthor?.commit !== "boolean";
+}
+
 export function needsQwenSettingsUpdate(
   rawSettings: unknown,
   options: QwenSettingsOptions = {},
@@ -223,6 +254,8 @@ export function needsQwenSettingsUpdate(
   ) {
     return true;
   }
+
+  if (needsGitCoAuthorDefault(sanitized)) return true;
 
   if (isRecord(sanitized.modelProviders)) {
     if (
@@ -269,6 +302,8 @@ export function applyQwenSettings(
   }
 
   delete qwenSettings.contentGenerator;
+
+  applyGitCoAuthorDefault(qwenSettings);
 
   // Qwen enables background memory extraction by default. Install an explicit
   // opt-out while preserving preferences set through Qwen's /memory controls.
