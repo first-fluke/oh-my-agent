@@ -154,6 +154,12 @@ export interface OmaConfig {
   /** Installer vendor selection; legacy templates may still hold a map. */
   vendors?: string[] | Record<string, unknown>;
   session?: { quota_cap?: Record<string, unknown> };
+  /** Native edit diagnostic deltas from an already running Serena daemon. */
+  diagnostic_feedback?: {
+    enabled?: boolean;
+    host_diagnostics?: boolean;
+    timeout_ms?: number;
+  };
   /** oma-docs skill configuration */
   docs?: OmaDocsConfig;
   /** Sparse skill overrides — see {@link SkillOverrideSection} */

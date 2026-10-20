@@ -16,9 +16,9 @@ import type { HookConfig } from "./types.js";
 export interface ResolvedHookConfig {
   /**
    * Full effective config only when `<projectRoot>/.agents/` owns a layer.
-   * Otherwise only effective provider preferences are projected, so global
-   * code intelligence applies without granting project hook ownership.
-   * Undefined when no provider preferences exist or loading failed.
+   * Otherwise only provider and diagnostic feedback preferences are projected,
+   * without granting global workflow settings project hook ownership.
+   * Undefined when no such preferences exist or loading failed.
    */
   config?: HookConfig;
   /** Semantic memory provider selected by the same load. */
@@ -46,7 +46,9 @@ export function resolveHookConfig(projectRoot: string): ResolvedHookConfig {
     return { memory: local ? "none" : "agentmemory" };
   }
 
-  const providers = ProvidersSchema.safeParse(layers.config.providers ?? {});
+  const providers = ProvidersSchema.safeParse(
+    layers.config.providers === undefined ? {} : layers.config.providers,
+  );
   if (!providers.success) {
     process.stderr.write(
       "[oma hook] warn: invalid providers config — semantic memory disabled for this hook run\n",
@@ -61,7 +63,15 @@ export function resolveHookConfig(projectRoot: string): ResolvedHookConfig {
     source !== undefined &&
     resolve(dirname(source)) === resolve(join(projectRoot, ".agents"));
   if (ownsConfig) return { config: layers.config as HookConfig, memory };
-  return providers.success && layers.config.providers !== undefined
-    ? { config: { providers: providers.data }, memory }
-    : { memory };
+  const config: HookConfig = {};
+  if (layers.config.providers !== undefined) {
+    // Retain invalid explicit choices so consumers can disable their feature,
+    // rather than mistake a rejected selection for an omitted default.
+    config.providers = providers.success
+      ? providers.data
+      : layers.config.providers;
+  }
+  if (layers.config.diagnostic_feedback !== undefined)
+    config.diagnostic_feedback = layers.config.diagnostic_feedback;
+  return Object.keys(config).length ? { config, memory } : { memory };
 }

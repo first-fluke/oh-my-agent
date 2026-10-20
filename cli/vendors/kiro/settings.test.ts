@@ -125,6 +125,11 @@ describe("kiro settings", () => {
     const path = join(root, KIRO_PROJECT_OMA_HOOKS_AGENT_PATH);
     const installedText = readFileSync(path, "utf-8");
     const installed = JSON.parse(installedText);
+    expect(installed.hooks.preToolUse).toContainEqual({
+      matcher: "fs_write",
+      command:
+        "bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher fs_write",
+    });
     expect(installed.hooks.postToolUse).toEqual([
       {
         matcher: "fs_write",

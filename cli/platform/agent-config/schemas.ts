@@ -99,6 +99,14 @@ export const OmaConfigSchema = z
     date_format: z.enum(["ISO", "US", "EU"]).optional(),
     timezone: z.string().optional(),
     auto_update_cli: z.boolean().optional(),
+    diagnostic_feedback: z
+      .object({
+        enabled: z.boolean().optional(),
+        host_diagnostics: z.boolean().optional(),
+        timeout_ms: z.number().int().min(100).max(10_000).optional(),
+      })
+      .strict()
+      .optional(),
     telemetry: z.boolean().optional(),
     providers: ProvidersSchema.optional(),
     brave: BraveConfigSchema.optional(),

@@ -49,10 +49,12 @@ import kiroVariant from "../../../.agents/hooks/variants/kiro.json" with {
 import qwenVariant from "../../../.agents/hooks/variants/qwen.json" with {
   type: "json",
 };
+import { withDiagnosticFeedbackHookEvents } from "../../platform/hooks-composer/diagnostic-feedback.js";
 import { withSelectedHookMemory } from "../../state/hook-memory.js";
 import type { VendorType } from "../../types/vendors.js";
 import { withQwenHookEvents } from "../../vendors/qwen/hooks.js";
 import { nativeEventToKind, normalizeInput } from "./adapters.js";
+import * as diagnosticFeedback from "./diagnostic-feedback.js";
 import { resolveHookConfig } from "./hook-config.js";
 import type {
   HandlerCtx,
@@ -83,6 +85,7 @@ export const HANDLER_REGISTRY: Readonly<Record<string, RunFn>> = {
   "refactor-guard": refactorGuard.run,
   "test-filter": testFilter.run,
   "persistent-mode": persistentMode.run,
+  "diagnostic-feedback": diagnosticFeedback.run,
 };
 
 // ---------------------------------------------------------------------------
@@ -148,7 +151,12 @@ function promptHookEventName(nativeEvent: string): string {
 /** Look up the embedded variant config for a vendor (null if unknown). */
 function loadVariant(vendor: Vendor): VariantJson | null {
   // Vendor includes pi (extension-based, no settings variant) → undefined → null.
-  return VARIANT_ROUTES[vendor as VendorType] ?? null;
+  const variant = VARIANT_ROUTES[vendor as VendorType];
+  return variant
+    ? (withDiagnosticFeedbackHookEvents(
+        variant as import("../../platform/hooks-composer/variant-types.js").HookVariant,
+      ) as VariantJson)
+    : null;
 }
 
 // ---------------------------------------------------------------------------

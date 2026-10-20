@@ -4,8 +4,10 @@ import { stringify as stringifyToml } from "smol-toml";
 import kimiVariant from "../../../.agents/hooks/variants/kimi.json" with {
   type: "json",
 };
+import { withDiagnosticFeedbackHookEvents } from "../../platform/hooks-composer/diagnostic-feedback.js";
 import {
   buildOmaHookArgs,
+  mergeMatchers,
   shellQuote,
 } from "../../platform/hooks-composer/hook-command.js";
 import { generateOmaHookWrapper } from "../../platform/hooks-composer/oma-hook-wrapper.js";
@@ -21,7 +23,7 @@ import { atomicWriteFileSync, safeWriteFile } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import { KIMI_HOME_MISSING_REASON, kimiHome } from "./auth.js";
 
-const VARIANT = kimiVariant as HookVariant;
+const VARIANT = withDiagnosticFeedbackHookEvents(kimiVariant as HookVariant);
 
 /** Filename of the generated oma-hook wrapper inside ~/.kimi-code/hooks. */
 const OMA_HOOK_WRAPPER = "oma-hook.sh";
@@ -55,7 +57,7 @@ function buildKimiHooks(wrapperPath: string): KimiTomlHook[] {
     const configs = Array.isArray(rawConfig) ? rawConfig : [rawConfig];
     if (configs.length === 0) continue;
     // Kimi has no statusLine surface; every event is a handler chain.
-    const matcher = configs.find((c) => c.matcher)?.matcher;
+    const matcher = mergeMatchers(configs.map((c) => c.matcher));
     const timeout = chainTimeoutSeconds(configs);
 
     const hook: KimiTomlHook = {

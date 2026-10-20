@@ -99,13 +99,13 @@ describe("Codex hook variant contract", () => {
       // Timeout = sum of handler timeouts (5+5+3+3=16) + 5 margin = 21.
       expect(promptEntry.hooks[0].timeout).toBe(21);
 
-      // PreToolUse — one entry with matcher, command includes --matcher Bash.
+      // PreToolUse includes edits so diagnostics can capture their baseline.
       expect(hooksJson.hooks.PreToolUse[0]).toMatchObject({
-        matcher: "Bash",
+        matcher: "Bash|apply_patch|Edit|Write",
         hooks: [{ name: "oma-hook-PreToolUse" }],
       });
       expect(hooksJson.hooks.PreToolUse[0].hooks[0].command).toContain(
-        "--vendor 'codex' --event 'PreToolUse' --matcher 'Bash'",
+        "--vendor 'codex' --event 'PreToolUse' --matcher 'Bash|apply_patch|Edit|Write'",
       );
 
       // Stop — one entry.
@@ -157,15 +157,14 @@ describe("Claude hook variant contract — PreToolUse matcher union", () => {
       );
       const entry = settings.hooks.PreToolUse[0];
       // scm-guard / test-filter filter on Bash; code-intelligence-guard also
-      // needs the native Grep/Glob tool calls, so the single chain entry must
-      // admit all three (each handler still filters on toolName).
-      expect(entry.matcher).toBe("Bash|Grep|Glob");
+      // needs native search tools; diagnostic feedback needs native edits.
+      expect(entry.matcher).toBe("Bash|Grep|Glob|Edit|Write|MultiEdit");
       expect(entry.hooks).toHaveLength(1);
       expect(entry.hooks[0].command).toContain(
-        "--vendor 'claude' --event 'PreToolUse' --matcher 'Bash|Grep|Glob'",
+        "--vendor 'claude' --event 'PreToolUse' --matcher 'Bash|Grep|Glob|Edit|Write|MultiEdit'",
       );
-      // Timeout = scm-guard 3 + code-intelligence-guard 2 + test-filter 5 + 5 margin.
-      expect(entry.hooks[0].timeout).toBe(15);
+      // Existing handlers (10) + diagnostic feedback (11) + startup margin (5).
+      expect(entry.hooks[0].timeout).toBe(26);
     } finally {
       rmSync(targetDir, { recursive: true, force: true });
     }

@@ -68,9 +68,11 @@ export type ProvidersConfig = z.infer<typeof ProvidersSchema>;
 export type HonchoConfig = z.infer<typeof HonchoConfigSchema>;
 export type SemanticMemoryProviderName = "agentmemory" | "honcho" | "none";
 
-/** Reject an invalid explicit choice instead of silently enabling another provider. */
-export function loadProviders(cwd?: string): Required<ProvidersConfig> {
-  const raw = ProvidersSchema.parse(loadOmaConfig(cwd)?.providers ?? {});
+/** Apply shared defaults, rejecting an invalid explicit provider selection. */
+export function resolveProviders(
+  value: unknown = {},
+): Required<ProvidersConfig> {
+  const raw = ProvidersSchema.parse(value);
   return {
     docs: raw.docs ?? "context7",
     web: raw.web ?? "native",
@@ -78,6 +80,11 @@ export function loadProviders(cwd?: string): Required<ProvidersConfig> {
     code_intelligence_guard: raw.code_intelligence_guard ?? "block",
     semantic_memory: raw.semantic_memory ?? "agentmemory",
   };
+}
+
+/** Reject an invalid explicit choice instead of silently enabling another provider. */
+export function loadProviders(cwd?: string): Required<ProvidersConfig> {
+  return resolveProviders(loadOmaConfig(cwd)?.providers ?? {});
 }
 
 export function loadHonchoConfig(cwd?: string): HonchoConfig {

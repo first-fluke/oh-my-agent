@@ -6,6 +6,7 @@ import {
   detectCodeIntelligenceGuardMode,
   detectCodeIntelligenceProvider,
 } from "../../../.agents/hooks/core/code-intelligence-primer.js";
+import { diagnosticFeedbackOptions } from "./diagnostic-feedback.js";
 import { resolveHookConfig } from "./hook-config.js";
 
 describe("hook config inheritance", () => {
@@ -98,5 +99,55 @@ describe("hook config inheritance", () => {
       "refactor_guard:\n  enabled: true\n",
     );
     expect(resolveHookConfig(project)).toEqual({ memory: "agentmemory" });
+  });
+
+  it("retains global diagnostic opt-outs alongside the global provider", () => {
+    writeFileSync(
+      join(globalDefinitions, "oma-config.yaml"),
+      "providers:\n  code_intelligence: serena\ndiagnostic_feedback:\n  enabled: false\n",
+    );
+    expect(resolveHookConfig(project).config?.diagnostic_feedback).toEqual({
+      enabled: false,
+    });
+  });
+
+  it("retains a global diagnostic opt-out when providers are omitted", () => {
+    writeFileSync(
+      join(globalDefinitions, "oma-config.yaml"),
+      "diagnostic_feedback:\n  enabled: false\nrefactor_guard:\n  enabled: true\n",
+    );
+    const resolved = resolveHookConfig(project);
+    expect(resolved.config).toEqual({
+      diagnostic_feedback: { enabled: false },
+    });
+    expect(
+      diagnosticFeedbackOptions({
+        vendor: "codex",
+        cwd: project,
+        config: resolved.config,
+      }).enabled,
+    ).toBe(false);
+  });
+
+  it.each([
+    "providers:\n  code_intelligence: typo",
+    "providers:\n  code_intelligence: none",
+    "providers: null",
+  ])("keeps invalid global provider selection disabled: %s", (selection) => {
+    writeFileSync(
+      join(globalDefinitions, "oma-config.yaml"),
+      `${selection}\ndiagnostic_feedback:\n  enabled: true\nrefactor_guard:\n  enabled: true\n`,
+    );
+    const resolved = resolveHookConfig(project);
+    expect(resolved.config).toHaveProperty("providers");
+    expect(resolved.config?.refactor_guard).toBeUndefined();
+    expect(resolved.memory).toBe("none");
+    expect(
+      diagnosticFeedbackOptions({
+        vendor: "codex",
+        cwd: project,
+        config: resolved.config,
+      }).enabled,
+    ).toBe(false);
   });
 });

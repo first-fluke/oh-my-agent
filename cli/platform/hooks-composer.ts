@@ -2,6 +2,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { atomicWriteFileSync } from "../utils/safe-write.js";
 import { withQwenHookEvents } from "../vendors/qwen/hooks.js";
+import { withDiagnosticFeedbackHookEvents } from "./hooks-composer/diagnostic-feedback.js";
 import { ensureFeatureFlags } from "./hooks-composer/feature-flags.js";
 import {
   buildHookCmd,
@@ -95,7 +96,7 @@ export function installHooksFromVariant(
   targetDir: string,
   variant: HookVariant,
 ): void {
-  variant = withQwenHookEvents(variant);
+  variant = withDiagnosticFeedbackHookEvents(withQwenHookEvents(variant));
   const globalHome = safeGetInstallMode() === "global" ? sourceDir : undefined;
   const commandVariant = globalHome
     ? {

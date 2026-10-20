@@ -58,6 +58,11 @@ const OMA_KIRO_HOOKS_AGENT = {
         command:
           "bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher shell",
       },
+      {
+        matcher: "fs_write",
+        command:
+          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher fs_write",
+      },
     ],
     postToolUse: [
       {

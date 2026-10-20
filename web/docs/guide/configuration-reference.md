@@ -61,6 +61,7 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `vendors` | `string[]` of selected vendor IDs (YAML and CUE) | absent: `oma link` uses every linkable vendor, `oma update` uses vendors whose project directories exist | Selects which vendor integrations `oma install` and `oma update` project. The dispatch capability map lives in the managed orchestration config; see [Vendor selection and dispatch metadata](#vendor-selection-and-dispatch-metadata). |
 | `default_cli` | vendor ID (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` for the `free` transport | Vendor used when nothing else selects one: an undetected runtime under `auto`, or the `free` transport after `--vendor`, `OMA_RUNTIME_VENDOR`, and the detected runtime. See [How OMA resolves an agent's model and CLI](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
 | `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | each omitted dimension is uncapped | Recorded token usage and spawn limits checked before the next agent spawn; see [Session quota caps](#session-quota-caps). |
+| `diagnostic_feedback` | `enabled`, `host_diagnostics`, `timeout_ms` | automatic for supported terminal hosts, `false`, `1400` | Compare Serena diagnostics before and after native file edits; see [Diagnostic feedback](#diagnostic-feedback). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | `oma docs verify` behavior and scan exclusions. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena MCP transport and update behavior. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox`, or `[]` | unset = leave existing setup alone | Browser DevTools MCP selection during reconciliation. An explicit empty list removes selected browser entries. |
@@ -153,6 +154,21 @@ session:
 The cap loader checks the user CUE layer, then the user YAML layer, then the shipped defaults fallback. Before a spawn, OMA checks `spawn_count`, total `tokens`, and `per_vendor` in that order. A limit is reached when usage is greater than or equal to it; OMA blocks the next spawn and reports the dimension that won.
 
 OMA reserves an input-token estimate when a run starts. When a supported native transcript is available after the run, recorded input, cache, and output usage replaces that estimate without counting another spawn. Otherwise the record remains explicitly estimated from prompt length. Observed root-session usage is marked partial when native subagents are outside the capture scope. Token caps therefore depend on the available observations; they do not interrupt an already running child or guarantee a billing limit. `spawn_count` is the most predictable limit.
+
+### Diagnostic feedback
+
+For supported terminal hosts, OMA compares errors and warnings before and after native file edits and injects newly reported diagnostics into the next tool feedback. It uses an already running, project-matched Serena HTTP daemon when Serena is the effective code-intelligence provider (the default when no provider is specified). It never starts a daemon or runs a build. Serena's own symbolic edits are excluded because they already provide diagnostics.
+
+```yaml
+diagnostic_feedback:
+  enabled: true
+  host_diagnostics: false
+  timeout_ms: 1400
+```
+
+Set `enabled: false` to disable this feedback. Set `host_diagnostics: true` when the host already supplies edit diagnostics; Cursor and Antigravity are skipped automatically. Project-local overrides follow the normal configuration layers. Environment overrides are `OMA_DIAGNOSTIC_FEEDBACK`, `OMA_HOST_DIAGNOSTICS`, and `OMA_DIAGNOSTIC_FEEDBACK_TIMEOUT_MS`.
+
+The timeout covers each complete pre-edit or post-edit hook and is limited to 100–10,000 milliseconds. Slow providers can use a larger timeout. A failed or timed-out lookup skips feedback and starts a short cooldown; it does not count as a clean diagnostic result. Missing or stale pre-edit baselines also skip feedback. Each hook checks at most three files and reports at most eight new errors or warnings.
 
 ### Vendor selection and dispatch metadata
 

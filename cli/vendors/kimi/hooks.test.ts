@@ -74,12 +74,12 @@ describe("installKimiHooks", () => {
       expect(h.command).toContain("--vendor 'kimi'");
       expect(h.command).toContain(`--event '${h.event}'`);
     }
-    // PreToolUse carries the Bash matcher (test-filter scope).
+    // Include native edits before execution for diagnostic baselines.
     const preTool = hooks.find((h) => h.event === "PreToolUse");
-    expect(preTool?.matcher).toBe("Bash");
+    expect(preTool?.matcher).toBe("Bash|WriteFile|StrReplaceFile|Edit|Write");
     // PostToolUse carries the kimi file-edit tool matcher (refactor-guard).
     const postTool = hooks.find((h) => h.event === "PostToolUse");
-    expect(postTool?.matcher).toBe("WriteFile|StrReplaceFile");
+    expect(postTool?.matcher).toBe("WriteFile|StrReplaceFile|Edit|Write");
   });
 
   it("is idempotent — re-running does not duplicate oma-managed hooks", () => {

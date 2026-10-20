@@ -3,7 +3,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { createMemoryProvider } from "../state/semantic-memory.js";
-import { HonchoConfigSchema, loadProviders } from "./providers.js";
+import {
+  HonchoConfigSchema,
+  loadProviders,
+  resolveProviders,
+} from "./providers.js";
 
 const roots: string[] = [];
 function project(config: string) {
@@ -19,6 +23,22 @@ afterEach(() => {
 });
 
 describe("capability provider selection", () => {
+  it("shares defaults with consumers that already loaded the config layers", () => {
+    expect(resolveProviders().code_intelligence).toBe("serena");
+    expect(resolveProviders({ web: "native" }).code_intelligence).toBe(
+      "serena",
+    );
+    expect(
+      resolveProviders({ code_intelligence: "gortex" }).code_intelligence,
+    ).toBe("gortex");
+    for (const value of [
+      null,
+      { code_intelligence: "none" },
+      { code_intelligence: "typo" },
+    ]) {
+      expect(() => resolveProviders(value)).toThrow();
+    }
+  });
   it("keeps legacy defaults, including from a nested cwd", () => {
     const root = project("language: en\nmodel_preset: codex\n");
     const sub = join(root, "src");
