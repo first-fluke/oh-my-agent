@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.7.0",
-  "releaseDate": "2026-10-19T05:50:20.384Z",
+  "releaseDate": "2026-10-20T04:53:11.210Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -341,8 +341,8 @@
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "028076d3a9e4e1985d10d310e82501c13e78bf4d1007eb81832f081afa131a7b",
-      "size": 1452
+      "sha256": "5ef8043e6b618e96565ab686de748ea560cb1f379be9e1fb2e50d4decfd4f5eb",
+      "size": 1402
     },
     {
       "path": ".agents/mcp.json",
