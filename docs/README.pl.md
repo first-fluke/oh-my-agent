@@ -4,7 +4,9 @@
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
-**oh-my-agent (`oma`) dodaje zespół specjalistów do agenta kodującego, którego już używasz: Claude Code, Codex CLI, Cursor i 11 innych.** Planista rozbija pracę na części, inżynierowie budują równolegle, recenzent sprawdza wynik, a debuger usuwa przyczyny błędów. oma zajmuje się też researchem ze wskazaniem źródeł, prezentacjami, filmami i obrazami. Większość kroków zostawia plik, który możesz otworzyć, a w długotrwałych workflowach bramka może odsyłać agenta z powrotem do pracy, dopóki Twój własny skrypt `test`, `lint` lub `typecheck` nie przejdzie.
+**oh-my-agent (`oma`) to niezależny od vendora harness, który dodaje zespół specjalistów do agenta kodującego, którego już używasz: Claude Code, Codex CLI, Cursor i 11 innych.** Planista rozbija pracę na części, inżynierowie budują równolegle, recenzent sprawdza wynik, a debuger usuwa przyczyny błędów. oma zajmuje się też researchem ze wskazaniem źródeł, prezentacjami, filmami i obrazami. Większość kroków zostawia plik, który możesz otworzyć, a w długotrwałych workflowach bramka może odsyłać agenta z powrotem do pracy, dopóki Twój własny skrypt `test`, `lint` lub `typecheck` nie przejdzie.
+
+[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
 
 Uruchom to w katalogu głównym projektu:
 
@@ -28,7 +30,7 @@ Następnie uruchom `oma doctor` i wpisz w agencie `/plan add user accounts with 
 | **21 workflowów** | Slash commands od `/brainstorm` i `/plan` po `/review`, `/debug` i `/scm`. Większość uruchamia się też ze zwykłej prośby (banki słów kluczowych w maksymalnie 11 językach) | „review this PR” |
 | **33 umiejętności** | Wiedza domenowa ładowana tylko wtedy, gdy zadanie jej potrzebuje: UI, API, schematy, Terraform, CI, bezpieczeństwo, git, obserwowalność | ładuje się sama, np. „add a Terraform S3 bucket” |
 | **Pliki, które możesz otworzyć** | Plany, dokumenty projektowe, kontrakty API, ADR-y, notatki o błędach, wyniki per agent, dowody z audytu bezpieczeństwa, objaśniacze HTML, podsumowania | `ls .agents/results` |
-| **Sprawdzenia, które nie wierzą agentowi na słowo** | W długotrwałym workflowie Twój własny skrypt `test`, `lint` lub `typecheck` musi przejść, zanim agent będzie mógł się zatrzymać; `oma ralph verify` sprawdza, czy przebieg `/ralph` zostawił pliki planu, QA i refaktoryzacji | `/ultrawork …`, potem `oma goal set --gate test` |
+| **Kontrole testów i artefaktów** | W długotrwałym workflowie Twój własny skrypt `test`, `lint` lub `typecheck` musi przejść, zanim agent będzie mógł się zatrzymać; `oma ralph verify` sprawdza, czy przebieg `/ralph` zostawił pliki planu, QA i refaktoryzacji | `/ultrawork …`, potem `oma goal set --gate test` |
 | **Research i treści** | Wyszukiwanie ze wskazaniem źródeł, badania rynku, publikacje naukowe, prezentacje, filmy MP4, obrazy, lokalny głos, PDF/HWP do Markdown | `/video`, `/convert` |
 | **Jeden katalog, 14 środowisk** | Jeden przenośny katalog `.agents/`, zapisywany do własnych plików konfiguracyjnych każdego środowiska | `oma link cursor` |
 
@@ -118,7 +120,7 @@ Spośród nazwanych presetów tylko `All` zawiera coordination, orchestration, d
    Możesz też po prostu napisać „plan user accounts with a settings page”: w środowiskach z prompt hookiem słowo kluczowe uruchamia ten sam workflow.
 4. **Sprawdź, co dostałeś.** `/plan` działa w bieżącej sesji. Przy pracy obejmującej kilka obszarów, takiej jak ta, zapisuje `.agents/results/plan-<session-id>.json` i tracker w `docs/plans/work/<NNN>-<name>.md`. Mała prośba dotycząca jednego obszaru dostaje zamiast pliku planu bezpośrednią rekomendację.
 
-Na tym poprzestań. Będziesz już wiedzieć, czy to coś dla Ciebie. Gdy zechcesz więcej, uruchom `/work` lub `/orchestrate` na tym planie.
+Po tych krokach możesz ocenić, czy to rozwiązanie Ci odpowiada. Aby wypróbować kolejne workflowy, uruchom `/work` lub `/orchestrate` na tym planie.
 
 <a id="meet-the-team"></a>
 ## Poznaj zespół
@@ -175,7 +177,7 @@ Slash commands nie są konieczne. W środowiskach z prompt hookiem zwykłe proś
 
 `/orchestrate`, `/work`, `/ultrawork` i `/ralph` są **persystentne**, gdy wywołujesz je po nazwie, jako slash command albo zwykłym tekstem („ultrawork: add rate limiting”). Agent jest wtedy odsyłany do pracy, gdy próbuje zatrzymać się zbyt wcześnie (najwyżej 5 razy lub przez najwyżej 2 godziny), dopóki nie powiesz **„workflow done”**. Prośba, która pasuje do nich tylko luźno, jedynie je podsuwa.
 
-**Zmierzone, z zastrzeżeniami.** W [benchmarku](../benchmarks/README.md) (jeden prompt, Claude Code w pięciu różnych konfiguracjach dodatków, w tym bez dodatków, `claude-opus-4-6`, po jednym buildzie) oma uzyskało 80.6 wobec 70.7 dla czystego Claude Code, przy 1.7x wyższym koszcie ($4.04 vs $2.37) i 1.8x dłuższym czasie.
+W [benchmarku](../benchmarks/README.md) (jeden prompt, Claude Code w pięciu różnych konfiguracjach dodatków, w tym bez dodatków, `claude-opus-4-6`, po jednym buildzie) oma uzyskało 80.6 wobec 70.7 dla czystego Claude Code. Kosztowało 1.7x więcej ($4.04 vs $2.37) i działało 1.8x dłużej.
 
 <details>
 <summary>Wszystkie 21 workflowów</summary>
@@ -344,7 +346,7 @@ Te pipeline'y zgłaszają brak źródła lub klucza dostawcy, zamiast po cichu z
 <details>
 <summary><strong>Równolegli agenci, sesje i dashboardy</strong></summary>
 
-- `oma agent spawn <role> "<task>" <sid>` uruchamia rolę na Antigravity, Claude, Codex, Cursor, OpenCode, Qwen, Grok lub Pi, z `--isolation worktree` i `--fallback-vendors`. `oma agent parallel` uruchamia kilka naraz.
+- `oma agent spawn <role> "<task>" <sid>` uruchamia rolę w Antigravity, Claude Code, Codex, Cursor, Grok, Kimi Code, Kiro, OpenCode, pi lub Qwen Code, z `--isolation worktree` i `--fallback-vendors`. `oma agent parallel` uruchamia kilka ról naraz. Te 10 celów dispatchu to część z 14 integracji instalatora.
 - `oma state list --all-projects` i `oma state get <sid>`: sesje i każde zarejestrowane zdarzenie.
 - `oma dashboard terminal` / `oma dashboard web`: status agentów na żywo (dashboard webowy nasłuchuje tylko na `127.0.0.1`). [Przewodnik po dashboardzie](../web/docs/guide/dashboard-monitoring.md).
 - `oma stats get` (metryki produktywności), `oma retro` (retrospektywa gita), `oma recap --window 7d` (co zrobiłeś w różnych narzędziach AI).
@@ -358,9 +360,12 @@ Te pipeline'y zgłaszają brak źródła lub klucza dostawcy, zamiast po cichu z
 | Slot | Domyślnie | Alternatywy |
 |---|---|---|
 | Dokumentacja | Context7 | — |
+| Wyszukiwanie w sieci | Natywne wyszukiwanie runtime’u | Brave Search |
 | Code intelligence | Serena, jeden współdzielony serwer na projekt | Gortex (eksperymentalny) |
 | Pamięć semantyczna | AgentMemory | Honcho (eksperymentalny), none |
 | Browser MCP | Aside | Chrome DevTools, Firefox DevTools |
+
+Serena zapewnia nawigację po kodzie i diagnostykę opartą na LSP, w tym informację zwrotną po natywnej edycji tam, gdzie jest obsługiwana. Wybór dostawcy jest niezależny od środowiska uruchomieniowego agenta; możliwości zależą od dostawcy i hosta.
 
 Agenci koordynują się przez zwykłe pliki w `.agents/state/`, bez zewnętrznej usługi. `/tools` włącza i wyłącza narzędzia MCP za pomocą zwykłego języka. Szczegóły: [Dostawcy możliwości](./capability-providers.md).
 
@@ -552,9 +557,11 @@ agents:
 </details>
 
 <a id="verification-not-narration"></a>
-## Weryfikacja zamiast narracji
+## Weryfikacja
 
-Agenci opowiadają o sukcesie. oh-my-agent sprawdza artefakty. Sekcja [Zobacz w działaniu](#see-it-work) pokazuje bramkę Stop w akcji; tutaj jest każde sprawdzenie, które wykonuje oma, i to, czego każde z nich dowodzi.
+oh-my-agent sprawdza artefakty. Sekcja [Zobacz w działaniu](#see-it-work) pokazuje działanie bramki Stop.
+
+OMA zapisuje także metadane wywołań narzędzi i skróty payloadów dla śledzonych uruchomień harnessu Claude Code i Codex, odróżnia raportowane użycie tokenów od szacunków oraz ocenia regresje umiejętności. Te funkcje +1 obejmują wszystkie warstwy; zakres śledzenia zależy od runtime’u i uruchomienia.
 
 Każdy z poniższych mechanizmów, z wyjątkiem sędziego sterowanego promptem, jest mechaniczny: komenda kończy się kodem 0 albo nie, plik jest na dysku albo go nie ma. Żaden z nich nie pyta LLM, czy praca „wygląda poprawnie”.
 
@@ -566,7 +573,7 @@ Każdy z poniższych mechanizmów, z wyjątkiem sędziego sterowanego promptem, 
 | **Dziennik zdarzeń** | W sesji OMA każde zaliczenie bramki, każde jej niepowodzenie i każda decyzja dopisuje jedną linię JSON do pliku `events.jsonl` tej sesji. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **Sprawdzenia per agent** | `oma verify agent <type>` uruchamia Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs i TDD Evidence oraz sprawdzenia zależne od typu, takie jak TypeScript, Any Types, SQL Injection i testy. | `oma verify agent --help` |
 
-> **Bez sesji nie ma śladu.** Hook Stop zapisuje zdarzenia bramek w sesji OMA otwartej w chwili startu persystentnego workflowu. Zapis zdarzeń działa na zasadzie best-effort. Jeśli tej sesji nie udało się utworzyć (na stderr pojawia się `[oma] L1 session activation failed`), niezaliczona bramka nadal blokuje zatrzymanie, ale żadna linia `gate.failed` nie zostaje zapisana. Zanim zaczniesz polegać na tym śladzie albo go zademonstrujesz, sprawdź, czy `oma state list` wyświetla aktywną sesję; `oma state get <sid>` pokaże wtedy jej zdarzenia.
+> Hook Stop zapisuje zdarzenia bramek w sesji OMA otwieranej przy starcie persystentnego workflowu. Zapis działa na zasadzie best-effort. Jeśli sesji nie uda się utworzyć (stderr zawiera `[oma] L1 session activation failed`), niezaliczona bramka nadal blokuje zatrzymanie, ale linia `gate.failed` nie zostaje zapisana. Przed poleganiem na tych zdarzeniach lub ich demonstracją sprawdź przez `oma state list`, czy istnieje aktywna sesja. Następnie `oma state get <sid>` pokaże jej zdarzenia.
 
 <details>
 <summary>Ograniczenia, szczegóły i to, jak decyduje hook Stop</summary>
@@ -578,7 +585,7 @@ Każdy z poniższych mechanizmów, z wyjątkiem sędziego sterowanego promptem, 
 - Blokada zostaje zwolniona i zapisana jako niepowodzenie po 5 wzmocnieniach, po 2 godzinach albo gdy wyczerpie się `--budget-minutes`, więc trwale czerwona bramka Cię nie uwięzi.
 - Budżety: `session.quota_cap` ogranicza tokeny, liczbę spawnów i tokeny per vendor; orkiestrator odmawia kolejnego spawnu, gdy któryś z wymiarów zostanie przekroczony.
 
-**Bramka artefaktów.** Brak artefaktu oznacza, że faza się nie wykonała, cokolwiek twierdzi narracja. Sprawdzenie refactor przechodzi też jako `skip-recorded`, gdy dziennik sesji zawiera powód pominięcia REFINE.
+**Bramka artefaktów.** Brak artefaktu oznacza, że faza się nie wykonała. Sprawdzenie refactor przechodzi też jako `skip-recorded`, gdy dziennik sesji zawiera powód pominięcia REFINE.
 
 **Sędzia sterowany promptem.** Prompt workflowu `/ralph` poleca orkiestratorowi uruchomić sędziego jako osobnego agenta ze świeżym kontekstem, poinstruowanego wyłącznie o kryteriach (nigdy o tym, co implementujący rzekomo naprawił), oraz w każdej iteracji weryfikować od nowa **każde** kryterium, także wcześniejsze PASS-y, bo naprawa C2 to typowa droga do cichej regresji C1. Nic nie sprawdza, czy do tego uruchomienia doszło: `oma ralph verify` bramkuje artefakty EXEC, nie sędziego, a runtime, który nie może uruchamiać subagentów, dostaje polecenie, by pełnić rolę sędziego inline i zapisać `ralph.judge-inline-fallback`. `/ralph` zatrzymuje się po 5 iteracjach z raportem częściowym.
 
@@ -586,12 +593,15 @@ Każdy z poniższych mechanizmów, z wyjątkiem sędziego sterowanego promptem, 
 
 **Sprawdzenia per agent.** Typy: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. Polecenie kończy się kodem 1, gdy którekolwiek sprawdzenie się nie powiedzie; TODO/FIXME Comments i Inline Styles tylko ostrzegają.
 
+<!-- Stack manifests in this list are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 - `backend`: `<Language> Syntax`, `SQL Injection` (wzorce surowego SQL) i `<Language> Tests`, na podstawie poleceń w `stack/stack.yaml`. Bez tego pliku (wygeneruj go przez `/stack-set`) są pomijane.
 - `frontend`: polecenia składni i testów z `stack/stack.yaml` (w `oma-frontend` albo w `angular-developer`, jeśli ta umiejętność jest zainstalowana) albo TypeScript (`tsc --noEmit`) i Frontend Tests (Vitest). Inline Styles i Any Types działają zawsze.
 - `mobile`: polecenia składni i testów z `stack/stack.yaml` albo Flutter/Dart Analysis i Flutter Tests.
 - `debug`: Python Tests (pytest przez uv) lub Frontend Tests (Vitest).
 - `pm`: PM Plan (plik planu jest poprawnym JSON-em).
 - `qa`: brak sprawdzeń mechanicznych.
+<!-- oma-docs:ignore-end -->
 
 ```mermaid
 flowchart TD
@@ -664,13 +674,13 @@ Planowanie i wybór kolejnego kroku należą do modelu Twojego agenta; oma nie m
 - **[Dostawcy możliwości](./capability-providers.md)**: eksperymentalna konfiguracja, routing i ograniczenia Gortex i Honcho
 - **[Macierz zgodności umiejętności](./skills-matrix.md)**: natywna treść umiejętności, referencje i kontrakty odpowiedzi w Claude i Codex
 
-> **Podoba Ci się ten projekt?** Daj gwiazdkę!
+> Dodaj projekt do ulubionych na GitHubie.
 >
 > ```bash
 > gh api --method PUT /user/starred/first-fluke/oh-my-agent
 > ```
 >
-> Wypróbuj nasz zoptymalizowany szablon startowy: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+> Szablon startowy: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
 
 ## Star History
 

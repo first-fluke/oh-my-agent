@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1500" viewBox="0 0 1800 1500" role="img" aria-labelledby="title desc">
+<title id="title">Oh-My-Agent: A 6+1-Layer Harness Architecture</title>
+<desc id="desc">Monochrome publication-style responsibility mapping. Six stacked layers run from L1 Model Connection at the bottom to L6 Policy and Safety at the top. Each row pairs the generic harness layer with concrete OMA implementation responsibilities. A separate plus-one Observability and Evaluation band spans all rows. OMA relies on a native agent runtime for model I/O, the inner tool loop, conversation management, tool dispatch, and permission and sandbox enforcement. A separate lower panel groups implemented code-intelligence, semantic-memory, web-search, documentation, and browser providers. Provider selection and native-runtime selection are separate. Gortex and Honcho are experimental integrations. Scheduling is in L2. Evaluation feeds gated skill updates into L3, with skill lineage in L5. The model is outside OMA. L3 includes specialist engineering knowledge and skill loading. Its stated objective is observable, maintainable software with ISO/IEC 25010 as a reference, not a claim of measured compliance or quality maximization. This diagram classifies responsibilities and is not a call sequence.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M1 1 L7 4 L1 7" fill="none" stroke="#333333" stroke-width="1.4"/></marker>
+</defs>
+<style>
+text {font-family: Arial, "Helvetica Neue", sans-serif; fill:#111111;}
+.layer {font-size:30px;font-weight:700;}
+.counterpart {font-size:30px;font-weight:700;}
+.detail {font-size:26px;fill:#333333;}
+.caption {font-size:23px;fill:#333333;}
+</style>
+<rect width="1800" height="1500" fill="#FFFFFF"/>
+<text x="50" y="61" font-size="40" font-weight="700">Oh-My-Agent: A 6+1-Layer Harness Architecture</text>
+<text x="50" y="104" font-size="25" fill="#444444">Harness responsibilities and their implementation in Oh-My-Agent</text>
+<rect x="50" y="144" width="1360" height="58" fill="#F2F2F2"/>
+<rect x="50" y="144" width="1360" height="814" fill="none" stroke="#222222" stroke-width="2"/>
+<path d="M142 144 V958 M530 144 V958 M50 202 H1410" fill="none" stroke="#999999" stroke-width="1.2"/>
+<text x="96" y="181" text-anchor="middle" font-size="24" font-weight="700">Layer</text>
+<text x="166" y="181" font-size="25" font-weight="700">Harness responsibility</text>
+<text x="558" y="181" font-size="25" font-weight="700">OMA implementation</text>
+<g id="l6">
+<text x="96" y="275" text-anchor="middle" font-size="31" font-weight="700">L6</text>
+<text x="166" y="275" class="layer">Policy &amp; Safety</text>
+<text x="558" y="237" class="counterpart">Execution policy &amp; hook guards</text>
+<text x="558" y="275" class="detail">Authorization rules · Code search guards · Secret staging guards</text>
+<text x="558" y="311" class="detail">Native permission settings · Configurable hook checks</text>
+</g>
+<path d="M1410 265 H1440" stroke="#999999" stroke-width="1"/>
+<path d="M50 328 H1410" stroke="#A6A6A6" stroke-width="1"/><g id="l5">
+<text x="96" y="401" text-anchor="middle" font-size="31" font-weight="700">L5</text>
+<text x="166" y="401" class="layer">State &amp; Recovery</text>
+<text x="558" y="363" class="counterpart">Durable state &amp; task recovery</text>
+<text x="558" y="401" class="detail">Append-only events · Semantic memory</text>
+<text x="558" y="437" class="detail">Task resumption with evidence checks · Skill lineage</text>
+</g>
+<path d="M1410 391 H1440" stroke="#999999" stroke-width="1"/>
+<path d="M50 454 H1410" stroke="#A6A6A6" stroke-width="1"/><g id="l4">
+<text x="96" y="527" text-anchor="middle" font-size="31" font-weight="700">L4</text>
+<text x="166" y="527" class="layer">Tool Execution</text>
+<text x="558" y="489" class="counterpart">Capability providers &amp; hook dispatch</text>
+<text x="558" y="527" class="detail">MCP integration · Code intelligence via LSP</text>
+<text x="558" y="563" class="detail">Symbol tools · Tool lifecycle hooks · Edit feedback</text>
+</g>
+<path d="M1410 517 H1440" stroke="#999999" stroke-width="1"/>
+<path d="M50 580 H1410" stroke="#A6A6A6" stroke-width="1"/><g id="l3">
+<text x="96" y="653" text-anchor="middle" font-size="31" font-weight="700">L3</text>
+<text x="166" y="653" class="layer">Context Management</text>
+<text x="558" y="615" class="counterpart">Specialist skills &amp; engineering knowledge</text>
+<text x="558" y="653" class="detail">Practical SWE guidance · Context loading via dependency graph</text>
+<text x="558" y="689" class="detail">Memory recall · Soft context budgets · Context restoration</text>
+</g>
+<path d="M1440 643 H1414" stroke="#333333" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<path d="M50 706 H1410" stroke="#A6A6A6" stroke-width="1"/><g id="l2">
+<text x="96" y="779" text-anchor="middle" font-size="31" font-weight="700">L2</text>
+<text x="166" y="779" class="layer">Execution Control</text>
+<text x="558" y="741" class="counterpart">Workflow &amp; agent orchestration</text>
+<text x="558" y="779" class="detail">Parallel agents · Task dependencies · Scheduled runs</text>
+<text x="558" y="815" class="detail">Completion gates · Process supervision</text>
+</g>
+<path d="M1410 769 H1440" stroke="#999999" stroke-width="1"/>
+<path d="M50 832 H1410" stroke="#A6A6A6" stroke-width="1"/><g id="l1">
+<text x="96" y="905" text-anchor="middle" font-size="31" font-weight="700">L1</text>
+<text x="166" y="905" class="layer">Model Connection</text>
+<text x="558" y="867" class="counterpart">Vendor &amp; model routing</text>
+<text x="558" y="905" class="detail">Per-agent models and presets · Native CLI adapters</text>
+<text x="558" y="941" class="detail">Invocation planning · Cross-vendor process handoff</text>
+</g>
+<path d="M1410 895 H1440" stroke="#999999" stroke-width="1"/>
+<g id="plus-one">
+<rect x="1440" y="144" width="310" height="814" fill="#F7F7F7" stroke="#222222" stroke-width="2"/>
+<text x="1466" y="193" font-size="35" font-weight="700">+1</text>
+<text x="1466" y="241" font-size="30" font-weight="700">Observability</text>
+<text x="1466" y="280" font-size="30" font-weight="700">&amp; Evaluation</text>
+<path d="M1466 311 H1724" stroke="#888888" stroke-width="1"/>
+<text x="1466" y="355" font-size="26" font-weight="700">Native tool traces</text>
+<text x="1466" y="390" font-size="24" fill="#444444">Metadata &amp; digests</text>
+<text x="1466" y="449" font-size="26" font-weight="700">Token accounting</text>
+<text x="1466" y="484" font-size="24" fill="#444444">Reported / estimated</text>
+<text x="1466" y="543" font-size="26" font-weight="700">Harness evaluation</text>
+<text x="1466" y="578" font-size="24" fill="#444444">Skill regression tests</text>
+<text x="1466" y="637" font-size="26" font-weight="700">Skill optimization</text>
+<text x="1466" y="672" font-size="24" fill="#444444">Gated skill updates</text>
+<text x="1466" y="731" font-size="26" font-weight="700">Evolution &amp; rollback</text>
+<text x="1466" y="766" font-size="24" fill="#444444">Fixtures · Lineage</text>
+<path d="M1466 840 H1724" stroke="#888888" stroke-width="1"/>
+<text x="1466" y="885" font-size="25" font-weight="700">Across tracked runs</text>
+<text x="1466" y="923" font-size="23" fill="#444444">Coverage varies</text>
+</g>
+<path d="M970 959 V998" stroke="#333333" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<g id="native-runtime">
+<rect x="50" y="1006" width="1360" height="126" fill="#FFFFFF" stroke="#555555" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="76" y="1042" font-size="25" font-weight="700">NATIVE AGENT RUNTIMES</text>
+<text x="76" y="1078" font-size="26" fill="#333333">Claude Code · Codex · Cursor · Antigravity · Qwen Code · Grok · Kiro</text>
+<text x="76" y="1110" font-size="26" fill="#333333">Kimi Code · OpenCode · pi · GitHub Copilot · Hermes Agent · CommandCode · ZCode</text>
+</g>
+<path d="M1411 1069 H1433" stroke="#333333" stroke-width="1.6" marker-end="url(#arrow)"/>
+<rect x="1440" y="1006" width="310" height="126" fill="#FFFFFF" stroke="#555555" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="1595" y="1060" text-anchor="middle" font-size="30" font-weight="700">MODEL</text>
+<text x="1595" y="1100" text-anchor="middle" font-size="26" fill="#333333">Inference</text>
+<g id="provider-integrations">
+<text x="50" y="1180" font-size="25" font-weight="700">PLUGGABLE PROVIDERS</text>
+<rect x="50" y="1205" width="1700" height="125" fill="#F7F7F7" stroke="#555555" stroke-width="1.5"/>
+<path d="M475 1205 V1330 M900 1205 V1330 M1325 1205 V1330" stroke="#999999" stroke-width="1"/>
+<text x="75" y="1241" font-size="25" font-weight="700">Code intelligence</text>
+<text x="75" y="1279" font-size="25">Serena / Gortex*</text>
+<text x="75" y="1312" font-size="22" fill="#444444">LSP analysis</text>
+<text x="500" y="1241" font-size="25" font-weight="700">Semantic memory</text>
+<text x="500" y="1279" font-size="25">AgentMemory / Honcho*</text>
+<text x="500" y="1312" font-size="22" fill="#444444">Recall and durable facts</text>
+<text x="925" y="1241" font-size="25" font-weight="700">Web search</text>
+<text x="925" y="1279" font-size="25">Native / Brave Search</text>
+<text x="925" y="1312" font-size="22" fill="#444444">Host tools or API adapter</text>
+<text x="1350" y="1241" font-size="25" font-weight="700">Docs &amp; browser</text>
+<text x="1350" y="1279" font-size="25">Context7 · Aside</text>
+<text x="1350" y="1312" font-size="22" fill="#444444">Chrome / Firefox DevTools</text>
+</g>
+<text x="50" y="1376" class="caption">Skill library objective: observable, maintainable software · Reference: ISO/IEC 25010</text>
+<text x="50" y="1412" class="caption">Vendor-agnostic execution through native CLI adapters · Providers selected by capability</text>
+<text x="50" y="1448" font-size="22" fill="#555555">* Experimental integrations · Dashed arrows: skill updates / native delegation · Capabilities vary by runtime and provider</text>
+</svg>

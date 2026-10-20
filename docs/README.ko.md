@@ -4,7 +4,9 @@
 
 [English](../README.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
-**oh-my-agent(`oma`)는 이미 쓰고 있는 코딩 에이전트(Claude Code, Codex CLI, Cursor 외 11개)에 전문가 팀을 더해 줍니다.** 플래너가 작업을 나누고, 엔지니어들이 병렬로 구축하고, 리뷰어가 결과를 확인하고, 디버거가 근본 원인을 고칩니다. 출처가 달린 리서치, 슬라이드 덱, 영상, 이미지도 만듭니다. 대부분의 단계는 직접 열어 볼 수 있는 파일을 남기며, 오래 실행되는 워크플로우에서는 프로젝트의 `test`, `lint`, `typecheck` 스크립트가 통과할 때까지 게이트가 에이전트를 다시 작업으로 돌려보낼 수 있습니다.
+**oh-my-agent(`oma`)는 특정 벤더에 종속되지 않는 하네스로, 이미 쓰고 있는 코딩 에이전트(Claude Code, Codex CLI, Cursor 외 11개)에 전문가 팀을 더해 줍니다.** 플래너가 작업을 나누고, 엔지니어들이 병렬로 구축하고, 리뷰어가 결과를 확인하고, 디버거가 근본 원인을 고칩니다. 출처가 달린 리서치, 슬라이드 덱, 영상, 이미지도 만듭니다. 대부분의 단계는 직접 열어 볼 수 있는 파일을 남기며, 오래 실행되는 워크플로우에서는 프로젝트의 `test`, `lint`, `typecheck` 스크립트가 통과할 때까지 게이트가 에이전트를 다시 작업으로 돌려보낼 수 있습니다.
+
+[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
 
 프로젝트 루트에서 다음을 실행하세요.
 
@@ -28,7 +30,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 | **워크플로우 21개** | `/brainstorm`, `/plan`부터 `/review`, `/debug`, `/scm`까지의 슬래시 커맨드. 대부분은 평범한 요청으로도 시작됩니다(최대 11개 언어의 키워드 뱅크) | "review this PR" |
 | **스킬 33개** | 태스크에 필요할 때만 불러오는 도메인 노하우: UI, API, 스키마, Terraform, CI, 보안, git, 관측성 | 저절로 불러옴. 예: "add a Terraform S3 bucket" |
 | **직접 열어 볼 수 있는 파일** | 계획, 설계 문서, API 계약, ADR, 버그 노트, 에이전트별 결과, 보안 증거, HTML 설명서, 요약 | `ls .agents/results` |
-| **에이전트의 말만 믿지 않는 검사** | 오래 실행되는 워크플로우에서는 프로젝트의 `test`, `lint`, `typecheck` 스크립트가 통과해야 에이전트가 멈출 수 있습니다. `oma ralph verify`는 `/ralph` 실행이 plan, QA, refactor 파일을 남겼는지 확인합니다 | `/ultrawork …` 후 `oma goal set --gate test` |
+| **워크플로우 검사** | 오래 실행되는 워크플로우에서는 프로젝트의 `test`, `lint`, `typecheck` 스크립트가 통과해야 에이전트가 멈출 수 있습니다. `oma ralph verify`는 `/ralph` 실행이 plan, QA, refactor 파일을 남겼는지 확인합니다 | `/ultrawork …` 후 `oma goal set --gate test` |
 | **리서치와 콘텐츠** | 출처가 달린 검색, 시장 조사, 논문, 슬라이드 덱, MP4 영상, 이미지, 로컬 음성, PDF/HWP를 Markdown으로 변환 | `/video`, `/convert` |
 | **폴더 하나, 런타임 14개** | 이식 가능한 `.agents/` 디렉터리 하나를 각 런타임의 자체 설정 파일에 기록 | `oma link cursor` |
 
@@ -37,7 +39,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 <a id="install"></a>
 ## 설치
 
-스크립트는 [bun](https://bun.sh)이 없으면 설치하고, `oma` 커맨드를 전역으로 설치한 뒤(`bun install --global oh-my-agent`, PATH에 이미 `oma`가 있으면 건너뜀) 대화형 설정을 시작합니다. 전역 커맨드는 중요합니다. hook(키워드 감지, Stop 게이트)과 여러 워크플로우가 `oma`를 호출하는데, hook은 `oma`를 찾지 못하면 아무 경고 없이 아무것도 하지 않습니다. 스크립트를 쓰지 않는다면 `bun install --global oh-my-agent`로 직접 설치하세요(`npm install --global oh-my-agent`나 `brew install oh-my-agent`도 됩니다).
+스크립트는 [bun](https://bun.sh)이 없으면 설치하고, `oma` 커맨드를 전역으로 설치한 뒤(`bun install --global oh-my-agent`, PATH에 이미 `oma`가 있으면 건너뜀) 대화형 설정을 시작합니다. hook(키워드 감지와 Stop 게이트) 및 여러 워크플로우는 전역 설치된 `oma` 커맨드를 호출합니다. hook은 `oma`를 찾지 못하면 경고 없이 아무 작업도 하지 않습니다. 스크립트를 쓰지 않는다면 `bun install --global oh-my-agent`로 직접 설치하세요(`npm install --global oh-my-agent`나 `brew install oh-my-agent`도 됩니다).
 
 <details>
 <summary>Windows, 또는 설치 스크립트 없이 설치하기</summary>
@@ -118,7 +120,7 @@ Windows에서는 설치 프로그램이 Antigravity, Hermes, Kimi를 숨기고, 
    그냥 "plan user accounts with a settings page"라고 써도 됩니다. 프롬프트 hook이 있는 런타임에서는 키워드만으로 같은 워크플로우가 시작됩니다.
 4. **결과를 확인합니다.** `/plan`은 현재 세션에서 실행됩니다. 이 예시처럼 여러 영역에 걸친 작업이라면 `.agents/results/plan-<session-id>.json`과 `docs/plans/work/<NNN>-<name>.md` 트래커를 씁니다. 한 영역에 국한된 작은 요청에는 계획 파일 대신 바로 권고안을 줍니다.
 
-여기까지 해 보세요. 나에게 맞는 도구인지 판단이 설 겁니다. 더 하고 싶다면 그 계획으로 `/work`나 `/orchestrate`를 실행하세요.
+더 큰 작업에는 이 계획으로 `/work`나 `/orchestrate`를 실행하세요.
 
 <a id="meet-the-team"></a>
 ## 팀 소개
@@ -167,7 +169,7 @@ Windows에서는 설치 프로그램이 Antigravity, Hermes, Kimi를 숨기고, 
 | 계획만 | `/plan` | 여러 영역에 걸친 작업이면 계획 파일, 작은 작업이면 바로 권고안 |
 | 단계별로 따라가는 PM 주도 구축 | `/work` | PM, 이어서 티어별 엔지니어, 그다음 QA. CRITICAL과 HIGH 발견 사항은 수정 루프로 들어감(최대 5사이클) |
 | 손을 떼고 맡기는 병렬 구축 | `/orchestrate` | 체크를 통과한 태스크만 완료로 인정. 각 태스크는 최대 3번 시도한 뒤 partial 또는 failed로 표시 |
-| 최대한 신중하게 | `/ultrawork` | 게이트가 있는 다섯 phase(PLAN, IMPL, VERIFY, REFINE, SHIP). 모든 리뷰는 새 리뷰어 세션에서 실행 |
+| 5단계 워크플로우 | `/ultrawork` | 게이트가 있는 다섯 phase(PLAN, IMPL, VERIFY, REFINE, SHIP). 모든 리뷰는 새 리뷰어 세션에서 실행 |
 | "정말 끝날 때까지 멈추지 마" | `/ralph` | 별도로 띄운 새 컨텍스트의 judge가 모든 기준을 통과로 판정할 때까지 `/ultrawork`를 반복. 기준이 막히거나 5회 iteration이 지나면 부분 보고서를 내고 멈춤 |
 | 정해진 주기로 일하는 팀 | `oma schedule create qa-reviewer "review open PRs" --every 2h` | 실행마다 `~/.oma/schedule/runs/<id>/`에 Markdown 로그 하나 |
 
@@ -204,7 +206,7 @@ Windows에서는 설치 프로그램이 Antigravity, Hermes, Kimi를 숨기고, 
 | `/video` | 키 없이도 동작하는 파이프라인으로 브리프를 완성된 MP4로 제작 |
 | `/work` | PM 계획과 QA 리뷰를 곁들여 여러 도메인에 걸친 프로젝트에서 여러 에이전트를 조율 (persistent) |
 
-트리거 정확도는 가정하지 않고 측정합니다. `oma verify triggers`는 라벨링된 영어·한국어 프롬프트 212개 코퍼스로 감지기를 채점하며, 오발화가 10%를 넘거나 미발화가 20%를 넘으면 CI가 실패합니다. 최근 측정값: **미발화 0%, 오발화 5.3%**. 전체 레퍼런스: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
+`oma verify triggers`는 라벨링된 영어·한국어 프롬프트 212개 코퍼스로 감지기를 평가합니다. 오발화가 10%를 넘거나 미발화가 20%를 넘으면 CI가 실패합니다. 최근 측정값: **미발화 0%, 오발화 5.3%**. 전체 레퍼런스: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
 
@@ -344,7 +346,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 <details>
 <summary><strong>병렬 에이전트, 세션, 대시보드</strong></summary>
 
-- `oma agent spawn <role> "<task>" <sid>`는 역할 하나를 Antigravity, Claude, Codex, Cursor, OpenCode, Qwen, Grok, Pi에서 실행하며, `--isolation worktree`와 `--fallback-vendors`를 지원합니다. `oma agent parallel`은 여러 개를 한꺼번에 실행합니다.
+- `oma agent spawn <role> "<task>" <sid>`는 Antigravity, Claude Code, Codex, Cursor, Grok, Kimi Code, Kiro, OpenCode, pi, Qwen Code에서 역할을 실행하며 `--isolation worktree`와 `--fallback-vendors`를 지원합니다. `oma agent parallel`은 여러 역할을 한꺼번에 실행합니다. 이 10개 디스패치 대상은 설치 프로그램이 연동하는 14개 중 일부입니다.
 - `oma state list --all-projects`와 `oma state get <sid>`: 세션과 기록된 모든 이벤트.
 - `oma dashboard terminal` / `oma dashboard web`: 실시간 에이전트 상태(웹 대시보드는 `127.0.0.1`에서만 수신). [대시보드 가이드](../web/docs/guide/dashboard-monitoring.md).
 - `oma stats get`(생산성 지표), `oma retro`(git 회고), `oma recap --window 7d`(여러 AI 도구에서 한 일).
@@ -358,9 +360,12 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 | 슬롯 | 기본값 | 대안 |
 |---|---|---|
 | 문서 | Context7 | — |
+| 웹 검색 | 런타임 네이티브 검색 | Brave Search |
 | 코드 인텔리전스 | Serena, 프로젝트당 공유 서버 하나 | Gortex(실험적) |
 | 시맨틱 메모리 | AgentMemory | Honcho(실험적), none |
 | 브라우저 MCP | Aside | Chrome DevTools, Firefox DevTools |
+
+Serena는 LSP 기반 코드 탐색과 진단을 제공하며, 지원되는 경우 네이티브 편집 피드백도 제공합니다. 프로바이더 선택은 에이전트 런타임과 별개이며, 기능은 프로바이더와 호스트에 따라 다릅니다.
 
 에이전트는 외부 서비스 없이 `.agents/state/`의 평범한 파일로 서로 조율합니다. `/tools`는 평이한 말로 MCP 도구를 켜고 끕니다. 자세한 내용: [기능 프로바이더](./capability-providers.md).
 
@@ -552,11 +557,13 @@ agents:
 </details>
 
 <a id="verification-not-narration"></a>
-## 서술이 아니라 검증
+## 검증
 
-에이전트는 성공했다고 말합니다. oh-my-agent는 산출물을 확인합니다. [동작 예시](#see-it-work)는 Stop 게이트가 실제로 동작하는 모습을 보여 줍니다. 여기서는 oma가 실행하는 모든 검사와 각 검사가 무엇을 증명하는지 정리합니다.
+OMA는 워크플로우가 만든 산출물을 확인합니다. [동작 예시](#see-it-work)는 Stop 게이트의 동작을 보여 줍니다.
 
-아래 메커니즘은 프롬프트 기반 judge를 빼면 모두 기계적입니다. 커맨드는 0으로 종료되거나 그렇지 않고, 파일은 디스크에 있거나 없습니다. 어느 것도 작업이 "맞아 보이는지"를 LLM에게 묻지 않습니다.
+OMA는 추적 대상인 Claude Code 및 Codex 하네스 실행에서 도구 호출 메타데이터와 페이로드 다이제스트도 기록하고, 보고된 토큰 사용량과 추정치를 구분하며, 스킬 회귀를 평가합니다. 이 +1 기능은 여러 계층에 걸쳐 있으며, 트레이스 범위는 런타임과 실행에 따라 다릅니다.
+
+대부분의 검사는 기계적으로 동작합니다. 커맨드는 종료 코드 0 또는 다른 코드로 끝나고, 파일은 디스크에 있거나 없습니다. 프롬프트 기반 judge만 지시에 따라 판단합니다. 기계적 검사는 작업이 "맞아 보이는지" LLM에게 묻지 않습니다.
 
 | 메커니즘 | 확인하는 것 | 소스 |
 |-----------|----------------|--------|
@@ -566,32 +573,35 @@ agents:
 | **이벤트 로그** | OMA 세션 안에서는 게이트 통과, 게이트 실패, 판정이 각각 JSON 한 줄로 세션의 `events.jsonl`에 추가됩니다. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **에이전트별 체크** | `oma verify agent <type>`은 Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs, TDD Evidence에 TypeScript, Any Types, SQL Injection, 테스트 같은 유형별 체크를 더해 실행합니다. | `oma verify agent --help` |
 
-> **세션이 없으면 기록도 없습니다.** Stop hook은 persistent workflow가 시작될 때 열린 OMA 세션에 게이트 이벤트를 기록합니다. 이벤트 기록은 최선 노력 방식입니다. 그 세션을 만들지 못하면(stderr에 `[oma] L1 session activation failed`가 출력됨) 실패한 게이트는 여전히 종료를 막지만 `gate.failed` 줄은 기록되지 않습니다. 기록에 의존하거나 데모로 보여 주기 전에 `oma state list`에 활성 세션이 표시되는지 확인하세요. 그러면 `oma state get <sid>`로 이벤트를 볼 수 있습니다.
+> **세션 이벤트 기록.** Stop hook은 persistent workflow가 시작될 때 열린 OMA 세션에 게이트 이벤트를 기록합니다. 이벤트 기록은 최선 노력 방식입니다. 그 세션을 만들지 못하면(stderr에 `[oma] L1 session activation failed`가 출력됨) 실패한 게이트는 여전히 종료를 막지만 `gate.failed` 줄은 기록되지 않습니다. 기록에 의존하거나 데모로 보여 주기 전에 `oma state list`에 활성 세션이 표시되는지 확인하세요. 그러면 `oma state get <sid>`로 이벤트를 볼 수 있습니다.
 
 <details>
 <summary>제한 사항, 세부 내용, Stop hook의 판정 방식</summary>
 
-**알아 둘 제한 사항:**
+**제한 사항:**
 
 - Stop 게이트는 persistent workflow(`/orchestrate`, `/work`, `/ultrawork`, `/ralph`)에만 적용됩니다. `oma goal set --gate`가 없으면 에이전트에게 계속하라고 다시 프롬프트할 뿐입니다. `/ultrawork`는 프로젝트에 가벼운 체크가 있으면 게이트를 설정하라고 에이전트에게 지시하지만, 이를 강제하는 장치는 없습니다. 확실히 하고 싶다면 `oma goal set --gate test`를 직접 실행하세요. 나머지 persistent workflow는 게이트를 설정하지 않습니다.
 - 받아들이는 키워드는 `typecheck`, `test`, `lint`뿐이며, 같은 이름의 package.json 스크립트를 실행합니다. package.json이 없거나 그 이름의 스크립트가 없으면 게이트는 실행되지 않습니다. JS가 아닌 프로젝트는 package.json 래퍼 스크립트가 필요합니다.
-- 재강제가 5회에 이르거나, 2시간이 지나거나, `--budget-minutes`가 바닥나면 차단이 풀리고 실패로 기록됩니다. 그래서 계속 빨간 게이트에 갇히는 일은 없습니다.
+- 재강제가 5회에 이르거나 2시간이 지나거나 `--budget-minutes`가 소진되면 차단이 풀리고 실패로 기록됩니다.
 - 예산: `session.quota_cap`은 토큰, spawn 횟수, 벤더별 토큰에 상한을 겁니다. 어느 한 항목이라도 넘으면 오케스트레이터가 다음 spawn을 거부합니다.
 
-**산출물 게이트.** 산출물이 없다면 서술이 무엇이라 말하든 그 phase는 실행되지 않은 것입니다. 세션 로그에 REFINE을 건너뛴 이유가 기록되어 있으면 refactor 체크도 `skip-recorded`로 통과합니다.
+**산출물 게이트.** 산출물이 없으면 해당 phase는 실행되지 않은 것입니다. 세션 로그에 REFINE을 건너뛴 이유가 기록되어 있으면 refactor 체크도 `skip-recorded`로 통과합니다.
 
-**프롬프트 기반 judge.** `/ralph` 워크플로우 프롬프트는 오케스트레이터에게 judge를 새 컨텍스트를 가진 별도 에이전트로 띄워 기준만 브리핑하고(구현자가 무엇을 고쳤다고 주장하는지는 절대 알려 주지 않음), 매 iteration마다 이미 PASS한 것까지 포함해 **모든** 기준을 다시 검증하라고 지시합니다. C2를 고치는 과정에서 C1이 소리 없이 회귀하기 때문입니다. judge를 실제로 띄웠는지 확인하는 장치는 없습니다. `oma ralph verify`는 judge가 아니라 EXEC 산출물을 검사하는 게이트이고, 서브에이전트를 띄울 수 없는 런타임은 인라인으로 판정하고 `ralph.judge-inline-fallback`을 기록하라는 지시를 받습니다. `/ralph`는 5회 iteration 후 부분 보고서를 내고 멈춥니다.
+**프롬프트 기반 judge.** `/ralph` 워크플로우 프롬프트는 오케스트레이터에게 judge를 새 컨텍스트를 가진 별도 에이전트로 띄워 기준만 브리핑하고(구현자가 무엇을 고쳤다고 주장하는지는 절대 알려 주지 않음), 매 iteration마다 이미 PASS한 것까지 포함해 **모든** 기준을 다시 검증하라고 지시합니다. 한 기준을 수정하면 다른 기준이 회귀할 수 있기 때문입니다. judge를 실제로 띄웠는지 확인하는 장치는 없습니다. `oma ralph verify`는 judge가 아니라 EXEC 산출물을 검사하는 게이트이고, 서브에이전트를 띄울 수 없는 런타임은 인라인으로 판정하고 `ralph.judge-inline-fallback`을 기록하라는 지시를 받습니다. `/ralph`는 5회 iteration 후 부분 보고서를 내고 멈춥니다.
 
 **이벤트 로그.** 세션은 `oma state list`로 찾고 `oma state get <sid>`로 읽으세요. 각 이벤트에는 벤더와 런타임 세션 id가 찍힙니다. 파일 위치는 `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE`과 예전 프로젝트 로컬 세션 폴더에 따라 달라지므로 하드코딩하지 마세요.
 
 **에이전트별 체크.** 유형: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. 체크가 하나라도 실패하면 커맨드는 1로 종료됩니다. TODO/FIXME Comments와 Inline Styles는 경고만 합니다.
 
+<!-- Stack manifests in this list are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 - `backend`: `stack/stack.yaml`의 커맨드로 실행하는 `<Language> Syntax`, `SQL Injection`(raw SQL 패턴), `<Language> Tests`. 그 파일이 없으면(`/stack-set`으로 생성) 건너뜁니다.
 - `frontend`: `stack/stack.yaml`(`oma-frontend` 아래, 또는 `angular-developer` 스킬이 설치되어 있으면 그 아래)의 문법·테스트 커맨드, 또는 TypeScript(`tsc --noEmit`)와 Frontend Tests(Vitest). Inline Styles와 Any Types는 항상 실행됩니다.
 - `mobile`: `stack/stack.yaml`의 문법·테스트 커맨드, 또는 Flutter/Dart Analysis와 Flutter Tests.
 - `debug`: Python Tests(uv를 통한 pytest) 또는 Frontend Tests(Vitest).
 - `pm`: PM Plan(plan 파일이 유효한 JSON인지).
 - `qa`: 기계적 체크 없음.
+<!-- oma-docs:ignore-end -->
 
 ```mermaid
 flowchart TD
@@ -664,13 +674,13 @@ flowchart TD
 - **[기능 프로바이더](./capability-providers.md)**: 실험적 Gortex와 Honcho의 설정, 라우팅, 제약
 - **[스킬 호환성 매트릭스](./skills-matrix.md)**: Claude와 Codex에서의 네이티브 스킬 콘텐츠, 레퍼런스, 응답 계약
 
-> **마음에 드셨나요?** 스타를 눌러주세요!
+> GitHub에서 프로젝트에 별표를 표시하려면:
 >
 > ```bash
 > gh api --method PUT /user/starred/first-fluke/oh-my-agent
 > ```
 >
-> 최적화된 스타터 템플릿도 함께 확인해보세요: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+> 스타터 템플릿: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
 
 ## Star History
 

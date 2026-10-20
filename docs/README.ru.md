@@ -4,7 +4,9 @@
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
-**oh-my-agent (`oma`) добавляет команду специалистов к агенту для программирования, которым вы уже пользуетесь: Claude Code, Codex CLI, Cursor и ещё 11.** Планировщик разбивает работу на части, инженеры параллельно ведут разработку, ревьюер проверяет результат, а отладчик устраняет корневые причины. Кроме того, он проводит исследования со ссылками на источники, делает презентации, видео и изображения. Большинство шагов оставляет файл, который можно открыть, а в долгих workflows гейт может возвращать агента к работе, пока ваш собственный скрипт `test`, `lint` или `typecheck` не пройдёт.
+**oh-my-agent (`oma`) представляет собой независимый от вендора harness, который добавляет команду специалистов к агенту для программирования, которым вы уже пользуетесь: Claude Code, Codex CLI, Cursor и ещё 11 инструментов.** Планировщик разбивает работу на части, инженеры параллельно ведут разработку, ревьюер проверяет результат, а отладчик устраняет корневые причины. Кроме того, он проводит исследования со ссылками на источники, делает презентации, видео и изображения. Большинство шагов оставляет файл, который можно открыть, а в долгих workflows гейт может возвращать агента к работе, пока ваш собственный скрипт `test`, `lint` или `typecheck` не пройдёт.
+
+[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
 
 Запустите это из корня проекта:
 
@@ -20,7 +22,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 ## Что вы получаете
 
-**Workflows** — это то, что вы набираете (или просто говорите). Они вызывают **роли**, то есть специалистов. **Навыки (skills)** — это знания и приёмы: у каждой роли есть свои, а остальные ваш агент загружает, когда они нужны задаче.
+**Workflows** описывают то, что вы набираете (или просто говорите). Они вызывают **роли**, то есть специалистов. **Навыки (skills)** дают знания и приёмы: у каждой роли есть свои, а остальные ваш агент загружает, когда они нужны задаче.
 
 | | Что это даёт | Попробуйте |
 |---|---|---|
@@ -28,7 +30,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 | **21 workflow** | Slash-команды от `/brainstorm` и `/plan` до `/review`, `/debug` и `/scm`. Большинство из них запускается и обычной просьбой (наборы ключевых слов охватывают до 11 языков) | «review this PR» |
 | **33 навыка** | Знания по областям, которые загружаются, только когда они нужны задаче: UI, API, схемы, Terraform, CI, безопасность, git, observability | загружаются сами, например «add a Terraform S3 bucket» |
 | **Файлы, которые можно открыть** | Планы, дизайн-документы, API-контракты, ADR, заметки о багах, результаты по агентам, доказательства проверок безопасности, HTML-разборы, сводки | `ls .agents/results` |
-| **Проверки, которые не верят агенту на слово** | В долгом workflow ваш собственный скрипт `test`, `lint` или `typecheck` должен пройти, прежде чем агенту позволят остановиться; `oma ralph verify` проверяет, что запуск `/ralph` оставил файлы плана, QA и рефакторинга | `/ultrawork …`, затем `oma goal set --gate test` |
+| **Проверки тестов и артефактов** | В долгом workflow ваш собственный скрипт `test`, `lint` или `typecheck` должен пройти, прежде чем агенту позволят остановиться; `oma ralph verify` проверяет, что запуск `/ralph` оставил файлы плана, QA и рефакторинга | `/ultrawork …`, затем `oma goal set --gate test` |
 | **Исследования и контент** | Поиск со ссылками на источники, исследование рынка, научные статьи, презентации, MP4-видео, изображения, локальный голос, PDF/HWP в Markdown | `/video`, `/convert` |
 | **Одна папка, 14 runtime** | Одна портативная директория `.agents/`, которая записывается в собственные конфигурационные файлы каждого runtime | `oma link cursor` |
 
@@ -53,7 +55,7 @@ bun install --global oh-my-agent
 oma
 ```
 
-В Windows установщик скрывает Antigravity, Hermes и Kimi, а обёртка hooks — это bash-скрипт. Browser MCP по умолчанию, Aside, устанавливается через `bash`, поэтому снимите с него выбор, если bash у вас нет.
+В Windows установщик скрывает Antigravity, Hermes и Kimi, а обёртка hooks написана на bash. Browser MCP по умолчанию, Aside, устанавливается через `bash`, поэтому снимите с него выбор, если bash у вас нет.
 
 </details>
 
@@ -118,7 +120,7 @@ oma
    Или просто напишите «plan user accounts with a settings page»: в runtime с prompt-хуком ключевое слово запускает тот же workflow.
 4. **Посмотрите, что получилось.** `/plan` работает в текущей сессии. Для работы, которая затрагивает несколько областей, как эта, он записывает `.agents/results/plan-<session-id>.json` и трекер в `docs/plans/work/<NNN>-<name>.md`. Небольшой запрос в одной области получает прямую рекомендацию вместо файла плана.
 
-На этом остановитесь. Вы уже поймёте, подходит ли вам это. Когда захотите большего, запустите `/work` или `/orchestrate` по этому плану.
+Этих шагов достаточно, чтобы понять, подходит ли вам OMA. Чтобы продолжить, запустите `/work` или `/orchestrate` по этому плану.
 
 <a id="meet-the-team"></a>
 ## Знакомьтесь с командой
@@ -130,7 +132,7 @@ oma
 | **Продакт-менеджер** (`pm-planner`) | oma-pm | `/plan` или «plan the payment feature» | JSON плана и трекер в `docs/plans/work/` для работы уровня Medium и Complex (запросы уровня Simple получают прямую рекомендацию) |
 | **Архитектор** (`architecture-reviewer`) | oma-architecture | `/architecture` | ADR или рекомендация в `.agents/results/architecture/` |
 | **Инженеры бэкенда, фронтенда, мобильной разработки, баз данных и инфраструктуры** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`, `/orchestrate` | Код, тесты и файл `result-<agent>` для каждой задачи |
-| **QA-ревьюер** (`qa-reviewer`) | oma-qa | `/review` или «review this PR» | Находки, ранжированные от CRITICAL до LOW, у каждой — file:line и код исправления |
+| **QA-ревьюер** (`qa-reviewer`) | oma-qa | `/review` или «review this PR» | Находки ранжируются от CRITICAL до LOW. У каждой есть file:line и код исправления |
 | **Отладчик** (`debug-investigator`) | oma-debug | `/debug` или «fix this bug» | Минимальное исправление, регрессионный тест и заметка о баге в `.agents/results/bugs/`, когда она оправдана |
 
 <details>
@@ -173,9 +175,9 @@ oma
 
 Slash-команды не обязательны. В runtime с prompt-хуком обычные просьбы (наборы ключевых слов охватывают до 11 языков) могут запустить большинство workflows: «review this PR» запускает `/review`. Описание целого приложения («Build a TODO app with user authentication») предлагает `/orchestrate`, а запускать ли его, решает ваш агент. Ключевые слова внутри блоков кода игнорируются.
 
-`/orchestrate`, `/work`, `/ultrawork` и `/ralph` становятся **persistent**, когда вы вызываете их по имени — slash-командой или обычным текстом («ultrawork: add rate limiting»). Тогда при попытке остановиться раньше времени агент возвращается к работе (до 5 раз или в течение 2 часов), пока вы не скажете **«workflow done»**. Запрос, который совпадает лишь приблизительно, только предлагает их.
+`/orchestrate`, `/work`, `/ultrawork` и `/ralph` становятся **persistent**, когда вы вызываете их по имени в виде slash-команды или обычным текстом («ultrawork: add rate limiting»). Тогда при попытке остановиться раньше времени агент возвращается к работе (до 5 раз или в течение 2 часов), пока вы не скажете **«workflow done»**. Запрос, который совпадает лишь приблизительно, только предлагает их.
 
-**Измерено, с оговорками.** В [бенчмарке](../benchmarks/README.md) (один промпт, Claude Code с пятью разными наборами дополнений, включая вариант без них, `claude-opus-4-6`, по одному прогону на каждый) oma набрал 80.6 против 70.7 у обычного Claude Code; при этом он обошёлся в 1.7 раза дороже ($4.04 против $2.37) и работал в 1.8 раза дольше.
+В [бенчмарке](../benchmarks/README.md) (один промпт, Claude Code с пятью разными наборами дополнений, включая вариант без них, `claude-opus-4-6`, по одному прогону на каждый) oma набрал 80.6 против 70.7 у обычного Claude Code. Стоимость была в 1.7 раза выше ($4.04 против $2.37), а выполнение заняло в 1.8 раза больше времени.
 
 <details>
 <summary>Все 21 workflow</summary>
@@ -200,18 +202,18 @@ Slash-команды не обязательны. В runtime с prompt-хуко�
 | `/security` | Сканирует исходный код, skills агентов и компоненты MCP, проверяет находки и настраивает гейты CI |
 | `/stack-set` | Определяет ваш стек и генерирует под него справочные материалы для доменных навыков |
 | `/tools` | Показывает, включает и отключает инструменты MCP по запросу на обычном языке |
-| `/ultrawork` | Пять фаз (PLAN, IMPL, VERIFY, REFINE, SHIP), каждое ревью — в свежей сессии ревьюера (persistent) |
+| `/ultrawork` | Пять фаз (PLAN, IMPL, VERIFY, REFINE, SHIP), каждое ревью проходит в свежей сессии ревьюера (persistent) |
 | `/video` | Превращает бриф в готовый MP4 через пайплайн, которому ключи не обязательны |
 | `/work` | Координирует нескольких агентов в многодоменном проекте с планированием PM и ревью QA (persistent) |
 
-Точность срабатывания измеряется, а не предполагается: `oma verify triggers` оценивает детектор на размеченном корпусе из 212 промптов на английском и корейском, и CI падает, если доля ложных срабатываний превышает 10% или доля пропущенных — 20%. Последний замер: **0% missed-fire, 5.3% false-fire**. Полный справочник: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
+Точность срабатывания измеряется: `oma verify triggers` оценивает детектор на размеченном корпусе из 212 промптов на английском и корейском. CI падает, если доля ложных срабатываний превышает 10% или пропусков превышает 20%. Последний замер: **0% missed-fire, 5.3% false-fire**. Полный справочник: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
 
 <a id="see-it-work"></a>
 ## В деле
 
-Иллюстративная сессия `/ultrawork`. Блок `[OMA PERSISTENT MODE: ULTRAWORK]` — это точный формат, который печатает Stop-хук; остальные строки пересказаны своими словами:
+Пример сессии `/ultrawork`. Блок `[OMA PERSISTENT MODE: ULTRAWORK]` точно соответствует формату Stop-хука. Остальные строки пересказаны:
 
 ```text
 you    /ultrawork add rate limiting to POST /login
@@ -290,7 +292,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 |---|---|---|
 | `/deepinit` | Превращает существующий репозиторий в базу знаний, готовую для агентов | `AGENTS.md`, `ARCHITECTURE.md`, `docs/` |
 | `/docs` | Находит битые ссылки, вносит патчи в документацию, затронутую diff (только одобренные вами), и находит устаревшие переводы | `docs/generated/doc-refs.json`, исправленные документы |
-| `/explain` | Превращает PR, ветку или staged-изменения в HTML-разбор с квизом из 5 вопросов, а тему — в одностраничный визуальный разбор | `.agents/results/explain/<date>-<slug>.html` |
+| `/explain` | Превращает PR, ветку или staged-изменения в HTML-разбор с квизом из 5 вопросов, а для темы создаёт одностраничный визуальный разбор | `.agents/results/explain/<date>-<slug>.html` |
 | `/recap` | Подводит итог ваших диалогов с ИИ во всех инструментах за день или период | `.agents/results/recap/<date>.md` |
 | oma-translation | Перевод, который читается как текст носителя языка; плейсхолдеры, код и ключи локалей остаются без изменений | Переведённый текст |
 
@@ -344,7 +346,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 <details>
 <summary><strong>Параллельные агенты, сессии и дашборды</strong></summary>
 
-- `oma agent spawn <role> "<task>" <sid>` запускает роль в Antigravity, Claude, Codex, Cursor, OpenCode, Qwen, Grok или Pi с `--isolation worktree` и `--fallback-vendors`. `oma agent parallel` запускает несколько ролей сразу.
+- `oma agent spawn <role> "<task>" <sid>` запускает роль в Antigravity, Claude Code, Codex, Cursor, Grok, Kimi Code, Kiro, OpenCode, pi или Qwen Code с `--isolation worktree` и `--fallback-vendors`. `oma agent parallel` запускает несколько ролей сразу. Эти 10 целей dispatch входят в число 14 интеграций установщика.
 - `oma state list --all-projects` и `oma state get <sid>`: сессии и все записанные события.
 - `oma dashboard terminal` / `oma dashboard web`: статус агентов в реальном времени (веб-дашборд слушает только `127.0.0.1`). [Руководство по дашборду](../web/docs/guide/dashboard-monitoring.md).
 - `oma stats get` (метрики продуктивности), `oma retro` (ретроспектива по git), `oma recap --window 7d` (что вы делали в разных ИИ-инструментах).
@@ -358,9 +360,12 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 | Слот | По умолчанию | Альтернативы |
 |---|---|---|
 | Документация | Context7 | — |
+| Веб-поиск | Нативный поиск runtime | Brave Search |
 | Code intelligence | Serena, один общий сервер на проект | Gortex (экспериментально) |
 | Семантическая память | AgentMemory | Honcho (экспериментально), none |
 | Browser MCP | Aside | Chrome DevTools, Firefox DevTools |
+
+Serena предоставляет навигацию по коду и диагностику на основе LSP, включая обратную связь после нативного редактирования, если она поддерживается. Выбор поставщика не зависит от среды выполнения агента; возможности различаются в зависимости от поставщика и хоста.
 
 Агенты координируются через обычные файлы в `.agents/state/`, без внешнего сервиса. `/tools` включает и отключает инструменты MCP по запросу на обычном языке. Подробнее: [Провайдеры возможностей](./capability-providers.md).
 
@@ -428,7 +433,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 <a id="works-with"></a>
 ## Совместимость
 
-14 целей установщика: Claude Code, Codex CLI, Cursor, Antigravity, Qwen Code, Grok, Kiro, Kimi, OpenCode, Pi, GitHub Copilot, Hermes, CommandCode и ZCode. Runtime, который вы пропустили, можно подключить через `oma link <vendor>`. Runtime различаются набором доступных hooks; полная матрица — в [Поддерживаемых агентах](./SUPPORTED_AGENTS.md).
+14 целей установщика: Claude Code, Codex CLI, Cursor, Antigravity, Qwen Code, Grok, Kiro, Kimi, OpenCode, Pi, GitHub Copilot, Hermes, CommandCode и ZCode. Пропущенный runtime можно подключить через `oma link <vendor>`. Набор доступных hooks различается; полная матрица приведена в [Поддерживаемых агентах](./SUPPORTED_AGENTS.md).
 
 - **Orca IDE:** [OMA для Orca](../integrations/orca/README.md) добавляет боковую панель и действия палитры команд (Orca 1.4.197+ с экспериментальными плагинами).
 - **DeepSeek Harness:** [OMA для DeepSeek Harness](../integrations/dsh/README.md) подключает проверки OMA через плагин Cordis. Требуется `oma` в `PATH`.
@@ -552,11 +557,13 @@ agents:
 </details>
 
 <a id="verification-not-narration"></a>
-## Проверка, а не рассказ
+## Проверки
 
-Агенты рассказывают об успехе. oh-my-agent проверяет артефакты. Раздел [В деле](#see-it-work) показывает Stop-гейт в действии; здесь перечислены все проверки, которые выполняет oma, и то, что доказывает каждая из них.
+oh-my-agent проверяет артефакты. Раздел [В деле](#see-it-work) показывает Stop-гейт в работе.
 
-Каждый механизм ниже, кроме судьи, запускаемого по промпту, — механический: команда либо завершается с кодом 0, либо нет; файл либо есть на диске, либо нет. Ни один из них не спрашивает LLM, «выглядит ли работа правильной».
+OMA также записывает метаданные вызовов инструментов и дайджесты payload для отслеживаемых запусков harness в Claude Code и Codex, отличает сообщённое использование токенов от оценочного и оценивает регрессии навыков. Эти функции +1 охватывают все слои; полнота трассировки зависит от runtime и запуска.
+
+Все механизмы ниже, кроме судьи, запускаемого по промпту, подчиняются формальным условиям: команда завершается с кодом 0 или нет, файл существует на диске или нет. Ни один из них не спрашивает LLM, «выглядит ли работа правильной».
 
 | Механизм | Что проверяет | Источник |
 |-----------|----------------|--------|
@@ -566,7 +573,7 @@ agents:
 | **Журнал событий** | В сессии OMA каждое прохождение гейта, каждый провал и каждое решение добавляют по одной JSON-строке в `events.jsonl` этой сессии. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **Проверки по агентам** | `oma verify agent <type>` запускает Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs и TDD Evidence, плюс проверки по типу, например TypeScript, Any Types, SQL Injection и тесты. | `oma verify agent --help` |
 
-> **Нет сессии — нет следа.** Stop-хук записывает события гейта в сессию OMA, открытую при запуске persistent workflow. Запись событий выполняется по принципу best-effort. Если эту сессию не удалось создать (в stderr выводится `[oma] L1 session activation failed`), непройденный гейт всё равно блокирует остановку, но строка `gate.failed` не записывается. Прежде чем полагаться на этот след или демонстрировать его, проверьте, что `oma state list` показывает активную сессию; затем `oma state get <sid>` покажет её события.
+> Stop-хук записывает события гейта в сессию OMA, открытую при запуске persistent workflow. Запись выполняется по принципу best-effort. Если сессию не удалось создать (stderr выводит `[oma] L1 session activation failed`), непройденный гейт всё равно блокирует остановку, но строка `gate.failed` не записывается. Прежде чем полагаться на эти события или демонстрировать их, проверьте через `oma state list`, что активная сессия есть. Затем `oma state get <sid>` покажет её события.
 
 <details>
 <summary>Ограничения, подробности и то, как решает Stop-хук</summary>
@@ -574,11 +581,11 @@ agents:
 **Что важно знать об ограничениях:**
 
 - Stop-гейт действует только в persistent workflows (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`). Без `oma goal set --gate` он лишь снова просит агента продолжить. `/ultrawork` велит агенту задать гейт, если в проекте есть дешёвая проверка, но ничто этого не обеспечивает. Если хотите быть уверены, выполните `oma goal set --gate test` сами; остальные persistent workflows гейт никогда не задают.
-- Принимаются только ключевые слова `typecheck`, `test` и `lint`, и они запускают одноимённый скрипт из package.json. Нет package.json или скрипта с таким именем — гейт не запускается. Проектам не на JS нужен скрипт-обёртка в package.json.
+- Принимаются только ключевые слова `typecheck`, `test` и `lint`, и они запускают одноимённый скрипт из package.json. Если package.json или нужного скрипта нет, гейт не запускается. Проектам не на JS нужен скрипт-обёртка в package.json.
 - Блокировка снимается и записывается как проваленная после 5 напоминаний, через 2 часа или когда истекает `--budget-minutes`, так что навсегда красный гейт не запрёт вас.
 - Бюджеты: `session.quota_cap` ограничивает токены, число spawn и токены по вендорам; оркестратор отказывает в следующем spawn, как только одно из измерений превышено.
 
-**Гейт артефактов.** Отсутствие артефакта означает, что фаза не выполнялась, что бы ни рассказывал агент. Проверка refactor также проходит как `skip-recorded`, если в журнале сессии записана причина пропуска REFINE.
+**Гейт артефактов.** Отсутствие артефакта означает, что фаза не выполнялась. Проверка refactor также проходит как `skip-recorded`, если в журнале сессии записана причина пропуска REFINE.
 
 **Судья, запускаемый по промпту.** Промпт workflow `/ralph` велит оркестратору запустить судью как отдельного агента со свежим контекстом, передав ему только критерии (и никогда не то, что исполнитель считает исправленным), и перепроверять **каждый** критерий на каждой итерации, включая уже пройденные (PASS), потому что именно при починке C2 тихо ломается C1. Ничто не проверяет, что этот запуск состоялся: `oma ralph verify` служит гейтом для артефактов EXEC, а не для судьи, а runtime, который не может запускать субагентов, получает указание выполнить роль судьи inline и записать `ralph.judge-inline-fallback`. `/ralph` останавливается после 5 итераций с частичным отчётом.
 
@@ -586,12 +593,15 @@ agents:
 
 **Проверки по агентам.** Типы: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. Команда завершается с кодом 1, если не проходит любая проверка; TODO/FIXME Comments и Inline Styles только выдают предупреждение.
 
+<!-- Stack manifests in this list are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 - `backend`: `<Language> Syntax`, `SQL Injection` (паттерны raw SQL) и `<Language> Tests` по командам из `stack/stack.yaml`. Без этого файла (сгенерируйте его через `/stack-set`) они пропускаются.
 - `frontend`: команды синтаксиса и тестов из `stack/stack.yaml` (в `oma-frontend` или в `angular-developer`, если этот навык установлен) либо TypeScript (`tsc --noEmit`) и Frontend Tests (Vitest). Inline Styles и Any Types выполняются всегда.
 - `mobile`: команды синтаксиса и тестов из `stack/stack.yaml` либо Flutter/Dart Analysis и Flutter Tests.
 - `debug`: Python Tests (pytest через uv) или Frontend Tests (Vitest).
-- `pm`: PM Plan (файл плана — валидный JSON).
+- `pm`: PM Plan (файл плана содержит допустимый JSON).
 - `qa`: механических проверок нет.
+<!-- oma-docs:ignore-end -->
 
 ```mermaid
 flowchart TD
@@ -616,14 +626,14 @@ flowchart TD
 <details>
 <summary><strong>Нужны ли мне все навыки?</strong></summary>
 
-Нет. См. [Пресеты навыков](#install); `All` — безопасный выбор по умолчанию.
+Нет. См. [Пресеты навыков](#install); `All` является безопасным выбором по умолчанию.
 
 </details>
 
 <details>
 <summary><strong>Как понять, что всё работает?</strong></summary>
 
-`oma doctor` показывает установленные навыки и предупреждает, если hooks не могут найти `oma`. Во время persistent workflow `oma state list` показывает активную сессию, а `oma state get <sid>` — её события гейтов.
+`oma doctor` показывает установленные навыки и предупреждает, если hooks не могут найти `oma`. Во время persistent workflow `oma state list` показывает активную сессию, а `oma state get <sid>` выводит её события гейтов.
 
 </details>
 
@@ -651,7 +661,7 @@ flowchart TD
 <details>
 <summary><strong>Что oh-my-agent оставляет модели?</strong></summary>
 
-Планирование и выбор следующего шага остаются за моделью вашего агента; фиксированного графа workflow у oma нет. Вне модели oma обеспечивает: ограничители инструментов (secret guard и search guard), бюджеты, лимиты повторных попыток и остановки, журнал событий, а если вы задали гейт, — остановку, которая ждёт, пока пройдут ваши собственные проверки.
+Планирование и выбор следующего шага остаются за моделью вашего агента, а у oma нет фиксированного графа workflow. Вне модели oma задаёт ограничения для инструментов (secret guard и search guard) и бюджеты. Оно также ограничивает повторные попытки и остановки, ведёт журнал событий, а при заданном гейте ждёт, пока пройдут ваши проверки.
 
 </details>
 
@@ -659,19 +669,19 @@ flowchart TD
 
 - **[Сайт документации](https://first-fluke.github.io/oh-my-agent/)**: гайды, туториалы и справочник CLI. Начните с [Быстрого старта](https://first-fluke.github.io/oh-my-agent/docs/getting-started/quick-start/) и [Установки](https://first-fluke.github.io/oh-my-agent/docs/getting-started/installation/).
 - **[Почему oh-my-agent](https://first-fluke.github.io/oh-my-agent/docs/getting-started/why-oh-my-agent/)**: когда его выбирать и чем приходится платить
-- **[Отчёт о бенчмарках](../benchmarks/README.md)**: сравнение с superpowers, ECC и oh-my-claudecode на одном промпте — методика, оценки, скриншоты и оговорки
+- **[Отчёт о бенчмарках](../benchmarks/README.md)**: сравнение с superpowers, ECC и oh-my-claudecode на одном промпте, включая методику, оценки, скриншоты и оговорки
 - **[Поддерживаемые агенты](./SUPPORTED_AGENTS.md)**: матрица поддержки по runtime
 - **[Подробная документация](./AGENTS_SPEC.md)**: техническая спецификация и архитектура
 - **[Провайдеры возможностей](./capability-providers.md)**: экспериментальная настройка Gortex и Honcho, маршрутизация и ограничения
 - **[Матрица совместимости навыков](./skills-matrix.md)**: нативное содержимое навыков, справочные материалы и контракты ответов в Claude и Codex
 
-> **Нравится проект?** Поставьте звезду!
+> Добавьте проект в избранное на GitHub.
 >
 > ```bash
 > gh api --method PUT /user/starred/first-fluke/oh-my-agent
 > ```
 >
-> Попробуйте наш оптимизированный стартовый шаблон: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+> Стартовый шаблон: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
 
 ## Star History
 

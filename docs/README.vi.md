@@ -4,7 +4,9 @@
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [ภาษาไทย](./README.th.md)
 
-**oh-my-agent (`oma`) bổ sung một đội ngũ chuyên gia vào coding agent bạn đang dùng: Claude Code, Codex CLI, Cursor và 11 công cụ khác.** Một planner chia nhỏ công việc, các kỹ sư xây dựng song song, một reviewer kiểm tra kết quả, và một debugger sửa tận nguyên nhân gốc. Nó còn làm nghiên cứu có trích dẫn nguồn, slide deck, video và hình ảnh. Hầu hết các bước đều để lại một file bạn có thể mở ra xem, và trong các workflow chạy dài, một gate có thể đưa agent quay lại làm việc cho đến khi script `test`, `lint` hoặc `typecheck` của chính bạn pass.
+**oh-my-agent (`oma`) là một harness không phụ thuộc vendor, bổ sung đội ngũ chuyên gia vào coding agent bạn đang dùng: Claude Code, Codex CLI, Cursor và 11 công cụ khác.** Một planner chia nhỏ công việc, các kỹ sư xây dựng song song, một reviewer kiểm tra kết quả, và một debugger sửa tận nguyên nhân gốc. Nó còn làm nghiên cứu có trích dẫn nguồn, slide deck, video và hình ảnh. Hầu hết các bước đều để lại một file bạn có thể mở ra xem, và trong các workflow chạy dài, một gate có thể đưa agent quay lại làm việc cho đến khi script `test`, `lint` hoặc `typecheck` của chính bạn pass.
+
+[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
 
 Chạy lệnh này từ thư mục gốc của dự án:
 
@@ -28,7 +30,7 @@ Sau đó chạy `oma doctor` và gõ `/plan add user accounts with a settings pa
 | **21 workflow** | Slash command từ `/brainstorm` và `/plan` đến `/review`, `/debug` và `/scm`. Hầu hết cũng có thể khởi động từ một yêu cầu thông thường (bộ từ khóa cho tối đa 11 ngôn ngữ) | "review this PR" |
 | **33 skill** | Kiến thức chuyên môn chỉ được tải khi task cần: UI, API, schema, Terraform, CI, bảo mật, git, observability | tự tải, ví dụ "add a Terraform S3 bucket" |
 | **File bạn có thể mở** | Kế hoạch, design doc, API contract, ADR, ghi chú bug, kết quả theo từng agent, bằng chứng bảo mật, tài liệu giải thích HTML, bản tóm tắt | `ls .agents/results` |
-| **Kiểm tra không tin lời agent** | Trong một workflow chạy dài, script `test`, `lint` hoặc `typecheck` của chính bạn phải pass thì agent mới được dừng; `oma ralph verify` kiểm tra xem một lần chạy `/ralph` đã để lại file kế hoạch, QA và refactor hay chưa | `/ultrawork …`, rồi `oma goal set --gate test` |
+| **Kiểm tra test và artifact** | Trong một workflow chạy dài, script `test`, `lint` hoặc `typecheck` của chính bạn phải pass thì agent mới được dừng; `oma ralph verify` kiểm tra xem một lần chạy `/ralph` đã để lại file kế hoạch, QA và refactor hay chưa | `/ultrawork …`, rồi `oma goal set --gate test` |
 | **Nghiên cứu và nội dung** | Tìm kiếm có trích dẫn, nghiên cứu thị trường, bài báo khoa học, slide deck, video MP4, hình ảnh, giọng nói cục bộ, PDF/HWP sang Markdown | `/video`, `/convert` |
 | **Một thư mục, 14 runtime** | Một thư mục `.agents/` di động duy nhất, được ghi vào file cấu hình riêng của từng runtime | `oma link cursor` |
 
@@ -118,7 +120,7 @@ Trong các preset có tên, chỉ `All` mới bao gồm coordination, orchestrat
    Hoặc chỉ cần viết "plan user accounts with a settings page": trên các runtime có prompt hook, từ khóa sẽ khởi động cùng workflow đó.
 4. **Xem kết quả.** `/plan` chạy trong phiên hiện tại. Với công việc trải trên nhiều mảng như ví dụ này, nó ghi ra `.agents/results/plan-<session-id>.json` và một tracker tại `docs/plans/work/<NNN>-<name>.md`. Một yêu cầu nhỏ, chỉ thuộc một mảng sẽ nhận một khuyến nghị trực tiếp thay vì file kế hoạch.
 
-Đến đây là đủ. Bạn sẽ biết công cụ này có hợp với mình hay không. Khi muốn đi xa hơn, hãy chạy `/work` hoặc `/orchestrate` trên kế hoạch đó.
+Sau các bước này, bạn có thể đánh giá công cụ có phù hợp hay không. Để tiếp tục, hãy chạy `/work` hoặc `/orchestrate` trên kế hoạch đó.
 
 <a id="meet-the-team"></a>
 ## Gặp gỡ đội ngũ
@@ -175,7 +177,7 @@ Bạn không cần slash command. Trên các runtime có prompt hook, yêu cầu
 
 `/orchestrate`, `/work`, `/ultrawork` và `/ralph` là **persistent** khi bạn gọi chúng bằng tên, dưới dạng slash command hoặc văn bản thường ("ultrawork: add rate limiting"). Khi đó agent sẽ bị đưa quay lại làm việc mỗi khi nó cố dừng sớm (tối đa 5 lần hoặc 2 giờ) cho đến khi bạn nói **"workflow done"**. Một yêu cầu chỉ khớp lỏng lẻo thì chỉ gợi ý chúng.
 
-**Có đo lường, kèm lưu ý.** Trong [benchmark](../benchmarks/README.md) (một prompt, Claude Code với năm cấu hình add-on khác nhau, kể cả bản thuần, `claude-opus-4-6`, mỗi cấu hình build một lần), oma đạt 80.6 so với 70.7 của Claude Code thuần, với chi phí gấp 1.7 lần ($4.04 so với $2.37) và thời gian gấp 1.8 lần.
+Trong [benchmark](../benchmarks/README.md) (một prompt, Claude Code với năm cấu hình add-on khác nhau, kể cả bản thuần, `claude-opus-4-6`, mỗi cấu hình build một lần), oma đạt 80.6 so với 70.7 của Claude Code thuần. Chi phí cao gấp 1.7 lần ($4.04 so với $2.37), còn thời gian chạy lâu gấp 1.8 lần.
 
 <details>
 <summary>Toàn bộ 21 workflow</summary>
@@ -344,7 +346,7 @@ Các pipeline này báo rõ khi thiếu nguồn hoặc key của vendor thay vì
 <details>
 <summary><strong>Agent song song, phiên và dashboard</strong></summary>
 
-- `oma agent spawn <role> "<task>" <sid>` chạy một vai trò trên Antigravity, Claude, Codex, Cursor, OpenCode, Qwen, Grok hoặc Pi, với `--isolation worktree` và `--fallback-vendors`. `oma agent parallel` chạy nhiều vai trò cùng lúc.
+- `oma agent spawn <role> "<task>" <sid>` chạy một vai trò trên Antigravity, Claude Code, Codex, Cursor, Grok, Kimi Code, Kiro, OpenCode, pi hoặc Qwen Code, với `--isolation worktree` và `--fallback-vendors`. `oma agent parallel` chạy nhiều vai trò cùng lúc. 10 đích dispatch này là một phần trong 14 tích hợp của installer.
 - `oma state list --all-projects` và `oma state get <sid>`: các phiên và mọi event đã ghi.
 - `oma dashboard terminal` / `oma dashboard web`: trạng thái agent theo thời gian thực (web dashboard chỉ lắng nghe trên `127.0.0.1`). [Hướng dẫn dashboard](../web/docs/guide/dashboard-monitoring.md).
 - `oma stats get` (chỉ số năng suất), `oma retro` (retrospective git), `oma recap --window 7d` (những gì bạn đã làm trên các công cụ AI).
@@ -358,9 +360,12 @@ Các pipeline này báo rõ khi thiếu nguồn hoặc key của vendor thay vì
 | Slot | Mặc định | Lựa chọn thay thế |
 |---|---|---|
 | Tài liệu | Context7 | — |
+| Tìm kiếm web | Tìm kiếm native của runtime | Brave Search |
 | Code intelligence | Serena, một server dùng chung cho mỗi dự án | Gortex (thử nghiệm) |
 | Semantic memory | AgentMemory | Honcho (thử nghiệm), none |
 | Browser MCP | Aside | Chrome DevTools, Firefox DevTools |
+
+Serena cung cấp khả năng điều hướng mã và chẩn đoán dựa trên LSP, bao gồm phản hồi sau khi chỉnh sửa native nếu được hỗ trợ. Việc chọn provider độc lập với runtime của agent; khả năng thay đổi tùy theo provider và host.
 
 Các agent phối hợp qua các file thường trong `.agents/state/`, không cần dịch vụ bên ngoài. `/tools` bật hoặc tắt MCP tool bằng ngôn ngữ tự nhiên. Chi tiết: [Capability Provider](./capability-providers.md).
 
@@ -552,9 +557,11 @@ agents:
 </details>
 
 <a id="verification-not-narration"></a>
-## Kiểm chứng, không phải kể chuyện
+## Kiểm chứng
 
-Agent kể chuyện thành công. oh-my-agent kiểm chứng artifact. Phần [Xem thực tế](#see-it-work) cho thấy Stop gate hoạt động ra sao; dưới đây là mọi bước kiểm tra mà oma chạy, và mỗi bước chứng minh điều gì.
+oh-my-agent kiểm chứng artifact. Phần [Xem thực tế](#see-it-work) cho thấy Stop gate hoạt động ra sao.
+
+OMA cũng ghi lại metadata của lệnh gọi công cụ và digest của payload cho các lần chạy harness Claude Code và Codex được theo dõi, phân biệt lượng token runtime báo cáo với ước tính, và đánh giá hồi quy của skill. Các chức năng +1 này trải rộng trên mọi lớp; phạm vi trace thay đổi theo runtime và lần chạy.
 
 Mọi cơ chế dưới đây, trừ trọng tài theo prompt, đều mang tính máy móc: một lệnh hoặc thoát với mã 0 hoặc không, một file hoặc có trên đĩa hoặc không. Không cơ chế nào trong số đó hỏi một LLM rằng công việc "trông có vẻ đúng" hay chưa.
 
@@ -566,7 +573,7 @@ Mọi cơ chế dưới đây, trừ trọng tài theo prompt, đều mang tính
 | **Nhật ký sự kiện** | Trong một phiên OMA, mỗi lần gate pass, gate fail và mỗi quyết định đều thêm một dòng JSON vào `events.jsonl` của phiên đó. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **Kiểm tra theo từng agent** | `oma verify agent <type>` chạy Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs và TDD Evidence, cộng thêm các kiểm tra theo loại như TypeScript, Any Types, SQL Injection và test. | `oma verify agent --help` |
 
-> **Không có phiên, không có dấu vết.** Stop hook ghi các event của gate vào phiên OMA được mở khi persistent workflow bắt đầu. Việc ghi event là best-effort. Nếu không tạo được phiên đó (stderr in ra `[oma] L1 session activation failed`), một gate thất bại vẫn chặn việc dừng, nhưng sẽ không có dòng `gate.failed` nào được ghi. Trước khi dựa vào dấu vết này, hoặc đem nó ra demo, hãy kiểm tra xem `oma state list` có hiển thị một phiên đang hoạt động hay không; khi đó `oma state get <sid>` sẽ hiển thị các event của phiên.
+> Stop hook ghi event của gate vào phiên OMA được mở khi persistent workflow bắt đầu. Việc ghi event là best-effort. Nếu không tạo được phiên (stderr in ra `[oma] L1 session activation failed`), gate thất bại vẫn chặn việc dừng nhưng không ghi dòng `gate.failed`. Trước khi dựa vào các event này hoặc đem ra demo, hãy dùng `oma state list` để kiểm tra có phiên đang hoạt động. Sau đó, `oma state get <sid>` sẽ hiển thị event của phiên.
 
 <details>
 <summary>Giới hạn, chi tiết và cách Stop hook ra quyết định</summary>
@@ -578,7 +585,7 @@ Mọi cơ chế dưới đây, trừ trọng tài theo prompt, đều mang tính
 - Việc chặn được gỡ bỏ và ghi nhận là thất bại sau 5 lần nhắc lại, sau 2 giờ, hoặc khi `--budget-minutes` hết hạn, nên một gate đỏ vĩnh viễn không thể giam bạn lại.
 - Ngân sách: `session.quota_cap` giới hạn token, số lần spawn và token theo từng vendor; orchestrator từ chối lần spawn kế tiếp khi một chiều vượt hạn mức.
 
-**Artifact gate.** Thiếu artifact nghĩa là phase đó không hề chạy, bất kể lời kể ra sao. Kiểm tra refactor cũng pass dưới dạng `skip-recorded` khi nhật ký phiên ghi lại lý do bỏ qua REFINE.
+**Artifact gate.** Thiếu artifact nghĩa là phase đó không chạy. Kiểm tra refactor cũng pass dưới dạng `skip-recorded` khi nhật ký phiên ghi lại lý do bỏ qua REFINE.
 
 **Trọng tài theo prompt.** Prompt của workflow `/ralph` yêu cầu orchestrator spawn trọng tài như một agent riêng với ngữ cảnh mới, chỉ được cho biết các tiêu chí (không bao giờ biết bên thực thi tuyên bố đã sửa những gì), và kiểm chứng lại **mọi** tiêu chí ở từng iteration, kể cả những tiêu chí đã PASS, vì chính lúc sửa C2 là lúc C1 âm thầm bị hỏng lại. Không có gì kiểm tra xem việc spawn đó có thực sự diễn ra hay không: `oma ralph verify` gác cổng các artifact EXEC chứ không phải trọng tài, và runtime nào không spawn được subagent thì được yêu cầu tự chấm inline rồi ghi lại `ralph.judge-inline-fallback`. `/ralph` dừng sau 5 iteration kèm một báo cáo dở dang.
 
@@ -586,12 +593,15 @@ Mọi cơ chế dưới đây, trừ trọng tài theo prompt, đều mang tính
 
 **Kiểm tra theo từng agent.** Các loại: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. Lệnh thoát với mã 1 khi có bất kỳ kiểm tra nào thất bại; TODO/FIXME Comments và Inline Styles chỉ cảnh báo.
 
+<!-- Stack manifests in this list are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 - `backend`: `<Language> Syntax`, `SQL Injection` (pattern raw SQL) và `<Language> Tests`, lấy từ các lệnh trong `stack/stack.yaml`. Không có file này (tạo bằng `/stack-set`) thì chúng bị bỏ qua.
 - `frontend`: các lệnh syntax và test trong `stack/stack.yaml` (trong `oma-frontend`, hoặc trong `angular-developer` khi skill đó đã được cài), hoặc TypeScript (`tsc --noEmit`) và Frontend Tests (Vitest). Inline Styles và Any Types luôn chạy.
 - `mobile`: các lệnh syntax và test trong `stack/stack.yaml`, hoặc Flutter/Dart Analysis và Flutter Tests.
 - `debug`: Python Tests (pytest qua uv) hoặc Frontend Tests (Vitest).
 - `pm`: PM Plan (file kế hoạch là JSON hợp lệ).
 - `qa`: không có kiểm tra máy móc.
+<!-- oma-docs:ignore-end -->
 
 ```mermaid
 flowchart TD
@@ -665,13 +675,13 @@ Việc lập kế hoạch và chọn bước tiếp theo vẫn thuộc về mode
 - **[Capability Provider](./capability-providers.md)**: cấu hình, định tuyến và giới hạn của Gortex và Honcho (thử nghiệm)
 - **[Ma trận tương thích skill](./skills-matrix.md)**: nội dung skill gốc, tài liệu tham chiếu và response contract trong Claude và Codex
 
-> **Thích dự án này?** Hãy tặng một ngôi sao!
+> Gắn sao cho dự án trên GitHub.
 >
 > ```bash
 > gh api --method PUT /user/starred/first-fluke/oh-my-agent
 > ```
 >
-> Thử template starter tối ưu của chúng tôi: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+> Template starter: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
 
 ## Star History
 

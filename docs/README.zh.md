@@ -4,7 +4,9 @@
 
 [English](../README.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
-**oh-my-agent（`oma`）为你已在用的编码 agent 加上一支专家团队，支持 Claude Code、Codex CLI、Cursor 以及另外 11 个运行时。** 规划者拆解工作，工程师并行构建，审查者检查结果，调试者修复根因。它还能做带引用的研究、幻灯片、视频和图像。大多数步骤都会留下一个你能打开的文件；在长时间运行的工作流中，门禁可以把 agent 送回去继续工作，直到你自己的 `test`、`lint` 或 `typecheck` 脚本通过。
+**oh-my-agent（`oma`）是一个不依赖特定厂商的 harness，为你已在用的编码 agent 加上一支专家团队，支持 Claude Code、Codex CLI、Cursor 以及另外 11 个运行时。** 规划者拆解工作，工程师并行构建，审查者检查结果，调试者修复根因。它还能做带引用的研究、幻灯片、视频和图像。大多数步骤都会留下一个你能打开的文件；在长时间运行的工作流中，门禁可以把 agent 送回去继续工作，直到你自己的 `test`、`lint` 或 `typecheck` 脚本通过。
+
+[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
 
 在项目根目录运行：
 
@@ -28,7 +30,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 | **21 个工作流** | 斜杠命令，从 `/brainstorm`、`/plan` 到 `/review`、`/debug` 和 `/scm`。大多数也能从一句普通请求启动（关键词库最多覆盖 11 种语言） | “review this PR” |
 | **33 个技能** | 只在任务需要时加载的领域知识：UI、API、schema、Terraform、CI、安全、git、可观测性 | 自动加载，例如“add a Terraform S3 bucket” |
 | **能打开的文件** | 计划、设计文档、API 契约、ADR、bug 笔记、各 agent 的结果、安全证据、HTML 讲解文档、回顾总结 | `ls .agents/results` |
-| **不听 agent 一面之词的检查** | 在长时间运行的工作流中，你自己的 `test`、`lint` 或 `typecheck` 脚本必须通过，agent 才能停下；`oma ralph verify` 会检查一次 `/ralph` 运行是否留下了计划、QA 和重构文件 | `/ultrawork …`，然后 `oma goal set --gate test` |
+| **工作流检查** | 在长时间运行的工作流中，你自己的 `test`、`lint` 或 `typecheck` 脚本必须通过，agent 才能停下；`oma ralph verify` 会检查一次 `/ralph` 运行是否留下了计划、QA 和重构文件 | `/ultrawork …`，然后 `oma goal set --gate test` |
 | **研究与内容** | 带引用的搜索、市场研究、论文、幻灯片、MP4 视频、图像、本地语音、PDF/HWP 转 Markdown | `/video`、`/convert` |
 | **一个目录，14 个运行时** | 一个可移植的 `.agents/` 目录，写入每个运行时自己的配置文件 | `oma link cursor` |
 
@@ -118,7 +120,7 @@ oma
    也可以直接写“plan user accounts with a settings page”：在支持 prompt hook 的运行时上，关键词会启动同一个工作流。
 4. **看看得到了什么。** `/plan` 在当前会话中运行。对于像这样横跨多个领域的工作，它会写入 `.agents/results/plan-<session-id>.json`，并在 `docs/plans/work/<NNN>-<name>.md` 生成一份跟踪文件。小型、单一领域的请求则会直接得到一条建议，而不是计划文件。
 
-到这里就可以停下了。你会知道它适不适合你。想要更多时，再对这份计划运行 `/work` 或 `/orchestrate`。
+对于较大的任务，可以基于这份计划运行 `/work` 或 `/orchestrate`。
 
 <a id="meet-the-team"></a>
 ## 认识团队
@@ -167,7 +169,7 @@ oma
 | 只要一份计划 | `/plan` | 跨领域工作得到一份计划文件，小型工作得到一条直接建议 |
 | 由 PM 主导、你一步步跟进的构建 | `/work` | 先 PM，再按层级依次交给工程师，最后 QA。CRITICAL 和 HIGH 级发现会进入修复循环（最多 5 轮） |
 | 放手不管的并行构建 | `/orchestrate` | 只有检查通过的任务才算完成；每个任务最多尝试 3 次，之后标记为 partial 或 failed |
-| 最大程度的谨慎 | `/ultrawork` | 五个带门禁的阶段（PLAN、IMPL、VERIFY、REFINE、SHIP）；每次审查都在全新的审查者会话中进行 |
+| 五阶段工作流 | `/ultrawork` | 五个带门禁的阶段（PLAN、IMPL、VERIFY、REFINE、SHIP）；每次审查都在全新的审查者会话中进行 |
 | “真正做完之前别停” | `/ralph` | 搭配单独 spawn、拥有全新上下文的 judge 反复运行 `/ultrawork`，直到每条标准都通过；当标准受阻或满 5 轮后停止，并给出部分完成报告 |
 | 定时运行的团队 | `oma schedule create qa-reviewer "review open PRs" --every 2h` | 每次运行在 `~/.oma/schedule/runs/<id>/` 中留下一份 Markdown 日志 |
 
@@ -204,7 +206,7 @@ oma
 | `/video` | 通过密钥可选的流水线，把一份 brief 做成完整的 MP4 |
 | `/work` | 借助 PM 规划和 QA 审查，协调多个 agent 完成跨领域项目（持久型） |
 
-触发准确率是实测的，不是假设的：`oma verify triggers` 会用一份带标注、包含 212 条提示的英文和韩文语料给检测器打分，误检超过 10% 或漏检超过 20% 时 CI 就会失败。最近一次实测：**漏检 0%，误检 5.3%**。完整参考：[工作流](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)。
+`oma verify triggers` 使用一份带标注、包含 212 条英文和韩文提示的语料评估检测器，误检超过 10% 或漏检超过 20% 时 CI 就会失败。最近一次实测：**漏检 0%，误检 5.3%**。完整参考：[工作流](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)。
 
 </details>
 
@@ -344,7 +346,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 <details>
 <summary><strong>并行 agent、会话与仪表盘</strong></summary>
 
-- `oma agent spawn <role> "<task>" <sid>` 在 Antigravity、Claude、Codex、Cursor、OpenCode、Qwen、Grok 或 Pi 上运行某个角色，支持 `--isolation worktree` 和 `--fallback-vendors`。`oma agent parallel` 可同时运行多个。
+- `oma agent spawn <role> "<task>" <sid>` 可在 Antigravity、Claude Code、Codex、Cursor、Grok、Kimi Code、Kiro、OpenCode、pi 或 Qwen Code 上运行角色，并支持 `--isolation worktree` 和 `--fallback-vendors`。`oma agent parallel` 可同时运行多个。这 10 个调度目标属于安装器支持的 14 个集成。
 - `oma state list --all-projects` 和 `oma state get <sid>`：会话以及记录下的每一条事件。
 - `oma dashboard terminal` / `oma dashboard web`：实时 agent 状态（Web 仪表盘只监听 `127.0.0.1`）。[仪表盘指南](../web/docs/guide/dashboard-monitoring.md)。
 - `oma stats get`（生产力指标）、`oma retro`（git 回顾）、`oma recap --window 7d`（你在各个 AI 工具中做了什么）。
@@ -358,9 +360,12 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 | 槽位 | 默认 | 备选 |
 |---|---|---|
 | 文档 | Context7 | — |
+| 网络搜索 | 运行时原生搜索 | Brave Search |
 | 代码智能 | Serena，每个项目共用一个服务器 | Gortex（实验性） |
 | 语义记忆 | AgentMemory | Honcho（实验性）、none |
 | 浏览器 MCP | Aside | Chrome DevTools、Firefox DevTools |
+
+Serena 提供基于 LSP 的代码导航和诊断，并在支持时反馈原生编辑结果。能力提供方的选择独立于 agent 运行时；可用能力因提供方和宿主而异。
 
 agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何外部服务。`/tools` 用自然语言开启或关闭 MCP 工具。详情：[能力提供方](./capability-providers.md)。
 
@@ -552,11 +557,13 @@ agents:
 </details>
 
 <a id="verification-not-narration"></a>
-## 只看验证，不听自述
+## 验证
 
-agent 会自述成功，oh-my-agent 则核查产出物。[实际运行效果](#see-it-work)展示了 Stop 门禁的实际运作；下面列出 oma 运行的每一项检查，以及每一项能证明什么。
+OMA 会检查工作流生成的产出物。[实际运行效果](#see-it-work)展示了 Stop 门禁的运行过程。
 
-下面这些机制里，除了 prompt 驱动的 judge，其余都是机械的：命令要么以 0 退出，要么没有；文件要么在磁盘上，要么不在。它们没有一个会去问 LLM 这活儿“看起来对不对”。
+对于受跟踪的 Claude Code 和 Codex harness 运行，OMA 还会记录工具调用元数据和载荷摘要，区分运行时报告的 token 用量与估算值，并评估 skill 回归。这些 +1 功能贯穿各层；trace 覆盖范围因运行时和单次运行而异。
+
+大多数检查由程序直接判定：命令返回退出码 0 或其他代码，文件则存在或缺失。prompt 驱动的 judge 是例外。程序执行的检查不会询问 LLM 工作“看起来是否正确”。
 
 | 机制 | 检查内容 | 来源 |
 |-----------|----------------|--------|
@@ -566,32 +573,35 @@ agent 会自述成功，oh-my-agent 则核查产出物。[实际运行效果](#s
 | **事件日志** | 在 OMA 会话中，门禁通过、门禁失败和决策各会向该会话的 `events.jsonl` 追加一行 JSON。 | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **按 agent 检查** | `oma verify agent <type>` 会运行 Scope Check、Charter Preflight、Hardcoded Secrets、TODO/FIXME Comments、Declared outputs 和 TDD Evidence，外加按类型的检查，例如 TypeScript、Any Types、SQL Injection 和测试。 | `oma verify agent --help` |
 
-> **没有会话，就没有留痕。** Stop hook 会把门禁事件记在持久型工作流启动时开启的那个 OMA 会话下。事件写入是尽力而为的。如果这个会话没能创建（stderr 中会出现 `[oma] L1 session activation failed`），失败的门禁仍然会阻止停止，但不会写下任何 `gate.failed` 行。在依赖这份留痕或拿它做演示之前，先确认 `oma state list` 显示有一个活跃会话；之后 `oma state get <sid>` 会显示它的事件。
+> **会话事件记录：** Stop hook 会把门禁事件记在持久型工作流启动时开启的那个 OMA 会话下。事件写入是尽力而为的。如果这个会话没能创建（stderr 中会出现 `[oma] L1 session activation failed`），失败的门禁仍然会阻止停止，但不会写下任何 `gate.failed` 行。在依赖这份留痕或拿它做演示之前，先确认 `oma state list` 显示有一个活跃会话；之后 `oma state get <sid>` 会显示它的事件。
 
 <details>
 <summary>限制、细节，以及 Stop hook 如何做决定</summary>
 
-**需要了解的限制：**
+**限制：**
 
 - Stop 门禁只作用于持久型工作流（`/orchestrate`、`/work`、`/ultrawork`、`/ralph`）。没有 `oma goal set --gate` 时，它只会再次提示 agent 继续。当项目有低成本的检查时，`/ultrawork` 会让 agent 设置门禁，但没有任何机制强制执行。想要确保的话，请自己运行 `oma goal set --gate test`；其他持久型工作流从不设置门禁。
 - 只接受 `typecheck`、`test` 和 `lint` 这三个关键词，它们会运行 package.json 中同名的脚本。没有 package.json，或没有同名脚本，门禁就不会运行。非 JS 项目需要一个 package.json 包装脚本。
-- 阻止 5 次（reinforcement）后、超过 2 小时后，或 `--budget-minutes` 用完时，阻止会被解除并记录为失败，因此一个始终飘红的门禁不会把你困住。
+- 阻止 5 次后、经过 2 小时或 `--budget-minutes` 用完后，门禁会解除阻止并记录失败。
 - 预算：`session.quota_cap` 限制 token 数、spawn 次数和单厂商 token；任何一个维度超标时，编排器都会拒绝下一次 spawn。
 
-**产出物门禁。** 产出物缺失就说明这个阶段没跑过，自述里怎么写都不算数。当会话日志记录了 REFINE 跳过原因时，refactor 检查也会以 `skip-recorded` 通过。
+**产出物门禁。** 缺少产出物表示该阶段没有运行。当会话日志记录了 REFINE 跳过原因时，refactor 检查也会以 `skip-recorded` 通过。
 
-**prompt 驱动的 judge。** `/ralph` 工作流 prompt 要求编排器把 judge 作为一个拥有全新上下文的独立 agent 来 spawn，只告知它标准本身（绝不告知实现方声称自己修好了什么），并在每一轮重新校验**每一条**标准，已经 PASS 的也不例外，因为 C1 悄悄回退往往正是修 C2 时发生的。没有任何东西会检查这次 spawn 是否真的发生：`oma ralph verify` 把关的是 EXEC 产出物，而不是 judge；无法 spawn subagent 的运行时会被要求以内联方式判定，并记录 `ralph.judge-inline-fallback`。`/ralph` 在 5 轮后停止，并给出部分完成报告。
+**prompt 驱动的 judge。** `/ralph` 工作流 prompt 要求编排器把 judge 作为一个拥有全新上下文的独立 agent 来 spawn，只告知它标准本身（绝不告知实现方声称自己修好了什么），并在每一轮重新校验**每一条**标准，已经 PASS 的也不例外，因为修复一项标准可能导致另一项回退。没有任何东西会检查这次 spawn 是否真的发生：`oma ralph verify` 把关的是 EXEC 产出物，而不是 judge；无法 spawn subagent 的运行时会被要求以内联方式判定，并记录 `ralph.judge-inline-fallback`。`/ralph` 在 5 轮后停止，并给出部分完成报告。
 
 **事件日志。** 用 `oma state list` 找到会话，再用 `oma state get <sid>` 读取。每个事件都带有厂商和运行时会话 id。这个文件的位置取决于 `OMA_HOME`、`OMA_STATE_HOME`、`OMA_PROFILE` 以及旧版的项目本地会话目录，所以不要把路径写死。
 
 **按 agent 检查。** 类型：`backend`、`frontend`、`mobile`、`qa`、`debug`、`pm`。任意检查失败时命令以 1 退出；TODO/FIXME Comments 和 Inline Styles 只会给出警告。
 
+<!-- Stack manifests in this list are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 - `backend`：`<Language> Syntax`、`SQL Injection`（原始 SQL 模式）和 `<Language> Tests`，来自 `stack/stack.yaml` 中的命令。没有这个文件（可用 `/stack-set` 生成）时会跳过这些检查。
 - `frontend`：`stack/stack.yaml`（位于 `oma-frontend` 下；若已安装 `angular-developer` 技能，则位于其下）中的语法和测试命令，或 TypeScript（`tsc --noEmit`）与 Frontend Tests（Vitest）。Inline Styles 和 Any Types 始终运行。
 - `mobile`：`stack/stack.yaml` 中的语法和测试命令，或 Flutter/Dart Analysis 与 Flutter Tests。
 - `debug`：Python Tests（通过 uv 运行 pytest）或 Frontend Tests（Vitest）。
 - `pm`：PM Plan（计划文件是合法的 JSON）。
 - `qa`：没有机械检查。
+<!-- oma-docs:ignore-end -->
 
 ```mermaid
 flowchart TD
@@ -665,13 +675,13 @@ flowchart TD
 - **[能力提供方](./capability-providers.md)**：实验性 Gortex 与 Honcho 的配置、路由和限制
 - **[Skill 兼容性矩阵](./skills-matrix.md)**：Claude 和 Codex 中原生 skill 的内容、引用和响应契约
 
-> **喜欢这个项目？** 给个 star 吧！
+> 在 GitHub 上为项目加星：
 >
 > ```bash
 > gh api --method PUT /user/starred/first-fluke/oh-my-agent
 > ```
 >
-> 试试我们优化过的入门模板：[fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+> 入门模板：[fullstack-starter](https://github.com/first-fluke/fullstack-starter)
 
 ## Star History
 
