@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.10.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.0...cli-v20.10.1) (2026-10-20)
+
+
+### Documentation
+
+* add harness architecture and refine multilingual readmes ([b9dd122](https://github.com/first-fluke/oh-my-agent/commit/b9dd1226443239708869b9ca8b5bea8a6b0950f4))
+
 ## [20.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.9.0...cli-v20.10.0) (2026-10-20)
 
 
