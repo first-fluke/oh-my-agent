@@ -63,6 +63,7 @@ export interface QwenSettings {
   mcpServers?: Record<string, QwenMcpServer>;
   memory?: {
     enableManagedAutoMemory?: boolean;
+    enableManagedAutoDream?: boolean;
     [key: string]: unknown;
   };
   general?: {
@@ -205,16 +206,20 @@ function removeTopLevelTimeout(settings: QwenSettings): void {
 
 /**
  * Qwen appends `Co-authored-by: Qwen-Coder <qwen-coder@alibabacloud.com>` to
- * every commit. OMA's commit-msg hook only permits the configured co-author,
- * so the default is off; an explicit user boolean is preserved.
+ * every commit and a Qwen Code attribution line to pull request descriptions.
+ * OMA's commit-msg hook only permits the configured co-author, so both default
+ * off; an explicit user boolean is preserved.
  */
 function applyGitCoAuthorDefault(settings: QwenSettings): void {
   const general = isRecord(settings.general) ? settings.general : {};
   const gitCoAuthor = isRecord(general.gitCoAuthor) ? general.gitCoAuthor : {};
-  if (typeof gitCoAuthor.commit === "boolean") return;
+  const commit =
+    typeof gitCoAuthor.commit === "boolean" ? gitCoAuthor.commit : false;
+  const pr = typeof gitCoAuthor.pr === "boolean" ? gitCoAuthor.pr : false;
+  if (commit === gitCoAuthor.commit && pr === gitCoAuthor.pr) return;
   settings.general = {
     ...general,
-    gitCoAuthor: { ...gitCoAuthor, commit: false },
+    gitCoAuthor: { ...gitCoAuthor, commit, pr },
   };
 }
 
@@ -224,7 +229,10 @@ function needsGitCoAuthorDefault(settings: QwenSettings): boolean {
     isRecord(general) && isRecord(general.gitCoAuthor)
       ? general.gitCoAuthor
       : undefined;
-  return typeof gitCoAuthor?.commit !== "boolean";
+  return (
+    typeof gitCoAuthor?.commit !== "boolean" ||
+    typeof gitCoAuthor?.pr !== "boolean"
+  );
 }
 
 export function needsQwenSettingsUpdate(
@@ -243,14 +251,17 @@ export function needsQwenSettingsUpdate(
   )
     return true;
 
-  // applyQwenSettings drops `contentGenerator`, and every call site gates that
-  // apply behind this function — without reporting the leftover key here the
-  // removal is unreachable for a config that is otherwise already current.
+  // applyQwenSettings drops `contentGenerator` and the retired `hooksConfig`
+  // block, and every call site gates that apply behind this function — without
+  // reporting the leftover keys here the removal is unreachable for a config
+  // that is otherwise already current.
   if ("contentGenerator" in sanitized) return true;
+  if ("hooksConfig" in sanitized) return true;
 
   if (
     !isRecord(sanitized.memory) ||
-    typeof sanitized.memory.enableManagedAutoMemory !== "boolean"
+    typeof sanitized.memory.enableManagedAutoMemory !== "boolean" ||
+    typeof sanitized.memory.enableManagedAutoDream !== "boolean"
   ) {
     return true;
   }
@@ -302,15 +313,27 @@ export function applyQwenSettings(
   }
 
   delete qwenSettings.contentGenerator;
+  // Qwen Code 0.25.x reads the top-level `disableAllHooks` instead of the
+  // Gemini-era `hooksConfig`; hooks are enabled unless that flag is set.
+  delete qwenSettings.hooksConfig;
 
   applyGitCoAuthorDefault(qwenSettings);
 
-  // Qwen enables background memory extraction by default. Install an explicit
-  // opt-out while preserving preferences set through Qwen's /memory controls.
+  // Qwen enables background memory extraction and dream consolidation by
+  // default. Install explicit opt-outs while preserving preferences set
+  // through Qwen's /memory controls.
   const memory = isRecord(qwenSettings.memory) ? qwenSettings.memory : {};
-  if (typeof memory.enableManagedAutoMemory !== "boolean") {
-    qwenSettings.memory = { ...memory, enableManagedAutoMemory: false };
-  }
+  qwenSettings.memory = {
+    ...memory,
+    enableManagedAutoMemory:
+      typeof memory.enableManagedAutoMemory === "boolean"
+        ? memory.enableManagedAutoMemory
+        : false,
+    enableManagedAutoDream:
+      typeof memory.enableManagedAutoDream === "boolean"
+        ? memory.enableManagedAutoDream
+        : false,
+  };
 
   if (isRecord(qwenSettings.modelProviders)) {
     updateModelProvidersTimeout(

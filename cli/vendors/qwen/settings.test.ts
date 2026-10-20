@@ -15,14 +15,20 @@ import {
  */
 const RECOMMENDED_DEFAULTS = {
   model: { generationConfig: { timeout: QWEN_REQUEST_TIMEOUT_MS } },
-  memory: { enableManagedAutoMemory: false },
-  general: { gitCoAuthor: { commit: false } },
+  memory: {
+    enableManagedAutoMemory: false,
+    enableManagedAutoDream: false,
+  },
+  general: { gitCoAuthor: { commit: false, pr: false } },
 } as const;
 
 describe("qwen settings", () => {
-  it("disables automatic memory saving on a fresh install", () => {
+  it("disables automatic memory saving and dream consolidation on a fresh install", () => {
     const result = applyQwenSettings({});
-    expect(result.memory).toEqual({ enableManagedAutoMemory: false });
+    expect(result.memory).toEqual({
+      enableManagedAutoMemory: false,
+      enableManagedAutoDream: false,
+    });
     expect(needsQwenSettingsUpdate(result)).toBe(false);
   });
 
@@ -74,13 +80,37 @@ describe("qwen settings", () => {
 
     expect(needsQwenSettingsUpdate(settings)).toBe(true);
     const result = applyQwenSettings(settings);
-    expect(result.memory).toEqual({ enableManagedAutoMemory: false });
+    expect(result.memory).toEqual({
+      enableManagedAutoMemory: false,
+      enableManagedAutoDream: false,
+    });
     expect(needsQwenSettingsUpdate(result)).toBe(false);
   });
 
-  it("disables Qwen's fixed commit co-author on a fresh install", () => {
+  it("repairs a missing dream flag without dropping other memory keys", () => {
+    const settings = applyQwenSettings({});
+    settings.memory = {
+      enableManagedAutoMemory: false,
+      enableAutoSkill: false,
+      customSetting: "keep",
+    };
+
+    expect(needsQwenSettingsUpdate(settings)).toBe(true);
+    const result = applyQwenSettings(settings);
+    expect(result.memory).toEqual({
+      enableManagedAutoMemory: false,
+      enableManagedAutoDream: false,
+      enableAutoSkill: false,
+      customSetting: "keep",
+    });
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
+  it("disables Qwen's fixed commit and PR co-author on a fresh install", () => {
     const result = applyQwenSettings({});
-    expect(result.general).toEqual({ gitCoAuthor: { commit: false } });
+    expect(result.general).toEqual({
+      gitCoAuthor: { commit: false, pr: false },
+    });
     expect(needsQwenSettingsUpdate(result)).toBe(false);
   });
 
@@ -111,6 +141,18 @@ describe("qwen settings", () => {
       gitCoAuthor: { pr: false, commit: false },
     });
     expect(settings).toEqual(before);
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
+  it("repairs a missing PR boolean without changing an explicit commit flag", () => {
+    const settings = applyQwenSettings({});
+    settings.general = { gitCoAuthor: { commit: true } };
+
+    expect(needsQwenSettingsUpdate(settings)).toBe(true);
+    const result = applyQwenSettings(settings);
+    expect(result.general).toEqual({
+      gitCoAuthor: { commit: true, pr: false },
+    });
     expect(needsQwenSettingsUpdate(result)).toBe(false);
   });
 
@@ -385,8 +427,11 @@ describe("qwen model request timeout", () => {
   /** Recommended-state fixture minus the model/timeout slot under test. */
   const baseline = () => ({
     privacy: { usageStatisticsEnabled: false },
-    memory: { enableManagedAutoMemory: false },
-    general: { gitCoAuthor: { commit: false } },
+    memory: {
+      enableManagedAutoMemory: false,
+      enableManagedAutoDream: false,
+    },
+    general: { gitCoAuthor: { commit: false, pr: false } },
     mcpServers: {
       "chrome-devtools": RECOMMENDED_QWEN_MCP["chrome-devtools"],
       serena: RECOMMENDED_QWEN_MCP.serena,
@@ -500,6 +545,14 @@ describe("qwen model request timeout", () => {
     };
     expect(needsQwenSettingsUpdate(stale)).toBe(true);
     expect(applyQwenSettings(stale).contentGenerator).toBeUndefined();
+  });
+
+  it("drops the retired hooksConfig block and reports it as needing update", () => {
+    // Qwen Code 0.25.x replaced hooksConfig with the top-level
+    // disableAllHooks switch, so OMA no longer writes the old block.
+    const stale = { ...baseline(), hooksConfig: { enabled: true } };
+    expect(needsQwenSettingsUpdate(stale)).toBe(true);
+    expect(applyQwenSettings(stale).hooksConfig).toBeUndefined();
   });
 
   it("leaves the top-level timeout unpinned when user-level modelProviders own it", () => {

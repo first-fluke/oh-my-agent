@@ -528,7 +528,10 @@ describe("link kernel", () => {
       expect(safeWrite.safeWriteJson).toHaveBeenCalledWith(
         join(realpathSync(projectDir), ".qwen", "settings.json"),
         expect.objectContaining({
-          memory: { enableManagedAutoMemory: false },
+          memory: {
+            enableManagedAutoMemory: false,
+            enableManagedAutoDream: false,
+          },
         }),
       );
     });

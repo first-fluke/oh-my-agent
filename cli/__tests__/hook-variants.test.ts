@@ -1,11 +1,4 @@
-import {
-  mkdirSync,
-  mkdtempSync,
-  readdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -148,11 +141,11 @@ describe("hook variant files", () => {
   });
 });
 
-// Regression: Qwen Code only runs registered hooks when
-// `settings.hooksConfig.enabled === true`. The qwen variant carries that flag
-// in `extra` so the installer writes it into .qwen/settings.json.
+// Regression: Qwen Code 0.25.x controls hooks with the top-level
+// `disableAllHooks` setting and no longer reads `hooksConfig`. The qwen
+// variant must not emit that dead key.
 describe("qwen hook variant install output", () => {
-  it("writes hooksConfig.enabled=true into .qwen/settings.json", () => {
+  it("does not write a dead hooksConfig key into .qwen/settings.json", () => {
     const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-hooks-"));
     try {
       const variant = loadVariant("qwen") as HookVariant;
@@ -161,31 +154,7 @@ describe("qwen hook variant install output", () => {
       const settings = JSON.parse(
         readFileSync(join(targetDir, ".qwen", "settings.json"), "utf-8"),
       );
-      expect(settings.hooksConfig).toEqual({ enabled: true });
-    } finally {
-      rmSync(targetDir, { recursive: true, force: true });
-    }
-  });
-
-  it("preserves a user's existing hooksConfig keys while enabling hooks", () => {
-    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-hooks-"));
-    try {
-      const qwenDir = join(targetDir, ".qwen");
-      // Seed a pre-existing settings.json with an unrelated hooksConfig key.
-      mkdirSync(qwenDir, { recursive: true });
-      writeFileSync(
-        join(qwenDir, "settings.json"),
-        JSON.stringify({ hooksConfig: { timeout: 30 } }),
-      );
-
-      const variant = loadVariant("qwen") as HookVariant;
-      installHooksFromVariant(REPO_ROOT, targetDir, variant);
-
-      const settings = JSON.parse(
-        readFileSync(join(qwenDir, "settings.json"), "utf-8"),
-      );
-      // enabled is added; the user's `timeout` key survives the shallow merge.
-      expect(settings.hooksConfig).toEqual({ timeout: 30, enabled: true });
+      expect(settings.hooksConfig).toBeUndefined();
     } finally {
       rmSync(targetDir, { recursive: true, force: true });
     }

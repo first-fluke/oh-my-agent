@@ -64,9 +64,6 @@
   },
   "statusLineKey": "ui",
   "extra": {
-    "hooksConfig": {
-      "enabled": true
-    },
     "permissions": {
       "allow": ["Bash(ls *)", "Bash(oma *)"]
     }
