@@ -36,6 +36,22 @@ export interface UsageRecord {
   vendor: string; // claude | codex | gemini | qwen | antigravity | grok
   agentId: string;
   tokens: number;
+  /** Stable identity for one launch; append-only revisions replace this run. */
+  runId?: string;
+  usageSource?: "prompt-estimate" | "native-transcript";
+  usageCoverage?: "complete" | "partial";
+  state?: "reserved" | "final";
+  estimatedInputTokens?: number;
+  /** Disjoint token counts: output already includes reasoning tokens. */
+  tokenBreakdown?: {
+    input: number;
+    cacheRead: number;
+    cacheWrite: number;
+    output: number;
+  };
+  vendorSid?: string;
+  sourcePath?: string;
+  usageUnavailableReason?: string;
   estimatedCostNote?: string; // e.g. "codex_plus_quota_30pct"
   recordedAt: string; // ISO8601
 }
@@ -73,6 +89,8 @@ const usageStoreOptions = {
       typeof record.vendor === "string" &&
       typeof record.agentId === "string" &&
       typeof record.tokens === "number" &&
+      Number.isFinite(record.tokens) &&
+      record.tokens >= 0 &&
       typeof record.recordedAt === "string"
     );
   },
@@ -184,7 +202,35 @@ export function loadSessionUsage(
   sessionId: string,
   root?: string,
 ): UsageRecord[] {
-  return usageStoreAt(root).load(sessionId);
+  return reconcileUsage(usageStoreAt(root).load(sessionId));
+}
+
+/** Fold revisions without collapsing legacy events or separate launch attempts. */
+function reconcileUsage<
+  T extends Pick<UsageRecord, "vendor" | "tokens"> & Partial<UsageRecord>,
+>(records: readonly T[]): T[] {
+  const result: T[] = [];
+  const positions = new Map<string, number>();
+  for (const record of records) {
+    const key = record.runId
+      ? `${record.sessionId ?? ""}\0${record.runId}`
+      : undefined;
+    const position = key === undefined ? undefined : positions.get(key);
+    if (position === undefined) {
+      if (key !== undefined) positions.set(key, result.length);
+      result.push(record);
+      continue;
+    }
+    const previous = result[position];
+    if (
+      previous?.usageSource === "native-transcript" &&
+      record.usageSource !== "native-transcript"
+    )
+      continue;
+    if (previous?.state === "final" && record.state === "reserved") continue;
+    result[position] = record;
+  }
+  return result;
 }
 
 /**
@@ -197,8 +243,8 @@ export function loadSessionUsage(
  * - xAI: https://docs.x.ai/developers/pricing (grok-4.3 = $1.25/M input)
  * - Others: internal midpoints for coding models.
  *
- * recordUsage only captures prompt-input character estimates, so the
- * resulting USD figure is a floor, not a billing-accurate amount.
+ * Used only for a rough input-token price estimate. Actual token counts do
+ * not make these vendor-wide rates billing-accurate.
  */
 export const DEFAULT_VENDOR_PRICING: Record<string, number> = {
   claude: 3,
@@ -252,14 +298,14 @@ export function listAllSessionUsage(
       all.push(...usageStore.parse(content));
     }
   }
-  return all;
+  return reconcileUsage(all);
 }
 
 /**
  * Check whether any cap in the provided QuotaCap has been exceeded for the session.
  *
  * Evaluation order (first exceeded cap wins):
- *  1. spawnCount — total number of records
+ *  1. spawnCount — total launches, including in-flight reservations
  *  2. tokens — sum of all tokens across all vendors
  *  3. perVendor — per-vendor token sum
  *
@@ -268,10 +314,14 @@ export function listAllSessionUsage(
 export function checkCap(
   sessionId: string,
   cap: QuotaCap,
-  pending: readonly Pick<UsageRecord, "vendor" | "tokens">[] = [],
+  pending: readonly (Pick<UsageRecord, "vendor" | "tokens"> &
+    Partial<UsageRecord>)[] = [],
   root?: string,
 ): CheckCapResult {
-  const records = [...loadSessionUsage(sessionId, root), ...pending];
+  const records = reconcileUsage([
+    ...loadSessionUsage(sessionId, root),
+    ...pending.map((record) => ({ ...record, sessionId })),
+  ]);
 
   // 1. spawn count
   if (cap.spawnCount !== undefined) {
@@ -346,14 +396,14 @@ export function formatPromptMessage(result: CheckCapResult): string {
     case "tokens":
       return (
         `[Session quota] Token limit reached: ${result.current.toLocaleString()} of ` +
-        `${result.limit.toLocaleString()} tokens consumed. ` +
+        `${result.limit.toLocaleString()} tokens accounted (native usage or prompt estimates). ` +
         `The orchestrator will not start the next agent until you confirm or increase the limit ` +
         `(session.quota_cap.tokens in oma-config.yaml).`
       );
     case "perVendor":
       return (
         `[Session quota] Per-vendor token limit reached: ${result.current.toLocaleString()} of ` +
-        `${result.limit.toLocaleString()} tokens consumed for this vendor. ` +
+        `${result.limit.toLocaleString()} tokens accounted for this vendor (native usage or prompt estimates). ` +
         `The orchestrator will not start the next agent until you confirm or increase the limit ` +
         `(session.quota_cap.per_vendor in oma-config.yaml).`
       );

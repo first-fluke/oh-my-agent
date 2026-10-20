@@ -36,6 +36,7 @@ import type {
   HarnessCheckResult,
   HarnessDispatchFn,
   HarnessEvaluation,
+  HarnessNativeToolTrace,
   HarnessPartition,
   HarnessSuite,
   HarnessTask,
@@ -205,15 +206,17 @@ function runArm(
     };
     let outputStatus: HarnessArmTrace["output"] = "complete";
     let usage = UNKNOWN_USAGE;
+    let toolTrace: HarnessNativeToolTrace | undefined;
     try {
-      const result = resolveDispatchResult(
-        options.dispatch({
-          agent: options.suite.agent,
-          arm,
-          prompt: task.prompt,
-          workspace,
-        }),
-      );
+      const dispatched = options.dispatch({
+        agent: options.suite.agent,
+        arm,
+        prompt: task.prompt,
+        workspace,
+      });
+      if (typeof dispatched !== "string" && "toolTrace" in dispatched)
+        toolTrace = dispatched.toolTrace;
+      const result = resolveDispatchResult(dispatched);
       output = result.output;
       usage = result.usage;
     } catch (error) {
@@ -221,6 +224,8 @@ function runArm(
       output = diagnosticOutput(error);
       diagnostics = diagnosticsFromError(error);
       outputStatus = output ? "partial" : "unavailable";
+      if (error && typeof error === "object" && "toolTrace" in error)
+        toolTrace = (error as { toolTrace?: HarnessNativeToolTrace }).toolTrace;
     }
     const durationMs = Math.round(performance.now() - started);
     try {
@@ -288,7 +293,12 @@ function runArm(
         output: outputStatus,
         stderr: diagnostics.stderrStatus,
         artifacts: artifacts.complete ? "complete" : "insufficient",
-        toolCalls: "unsupported",
+        toolCalls:
+          toolTrace?.status ??
+          (options.vendor === "claude" || options.vendor === "codex"
+            ? "missing"
+            : "unsupported"),
+        ...(toolTrace ? { toolEvidence: toolTrace } : {}),
         changedPaths: changes.paths,
         changedPathsTruncated: changes.truncated,
       },

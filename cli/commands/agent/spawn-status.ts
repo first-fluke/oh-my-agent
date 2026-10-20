@@ -8,6 +8,7 @@ import {
   getCoordinationStorePath,
   resolveCoordinationFile,
 } from "../../io/memory.js";
+import { prepareNativeSession } from "../../io/native-transcript/identity.js";
 import { createOrcaSubagent } from "../../io/orca-subagent.js";
 import { loadUserConfig } from "../../io/runtime-dispatch/config-loader.js";
 import { detectRuntimeVendor } from "../../io/runtime-dispatch/detect.js";
@@ -21,7 +22,9 @@ import {
   formatPromptMessage,
   loadQuotaCap,
   recordUsage,
+  type UsageRecord,
 } from "../../io/session-cost.js";
+import { finalizeNativeUsage } from "../../io/session-cost-native.js";
 import {
   forgetSubagentProcess,
   recordSubagentProcess,
@@ -242,16 +245,6 @@ export async function spawnAgent(
     );
   }
 
-  const attemptSuffix =
-    failoverAttempt === 0 ? "" : `-failover-${failoverAttempt}`;
-  const logFile = path.join(
-    tmpdir(),
-    `subagent-${sessionId}-${agentId}${attemptSuffix}.log`,
-  );
-  const stderrFile = path.join(
-    tmpdir(),
-    `subagent-${sessionId}-${agentId}${attemptSuffix}.stderr.log`,
-  );
   const pidFile = path.join(tmpdir(), `subagent-${sessionId}-${agentId}.pid`);
   // Session-specific terminal status. Persisted on child exit (#583) so
   // `agent:status` can distinguish a successful short-lived run that wrote no
@@ -278,10 +271,11 @@ export async function spawnAgent(
   // T15: Check quota cap BEFORE spawning the subprocess.
   // If loadQuotaCap() returns null (no cap configured), skip gating entirely.
   // If exceeded, print the message and throw so orchestrators can catch/halt.
+  const accountingRoot = resolveProjectRoot(process.cwd());
   try {
-    const cap = loadQuotaCap(process.cwd());
+    const cap = loadQuotaCap(accountingRoot);
     if (cap !== null) {
-      const capResult = checkCap(sessionId, cap);
+      const capResult = checkCap(sessionId, cap, [], accountingRoot);
       if (capResult.exceeded) {
         const msg = formatPromptMessage(capResult);
         console.error(color.red(`[${agentId}] ${msg}`));
@@ -330,6 +324,11 @@ export async function spawnAgent(
     dispatch: { prompt: rawPromptContent, readOnly },
     resumedFrom,
   });
+  // Separate launch evidence even when the same role runs concurrently in one
+  // session. Shared logs could otherwise bind both runs to one native child.
+  const logName = `subagent-${sessionId}-${agentId}-${run.runId}`;
+  const logFile = path.join(tmpdir(), `${logName}.log`);
+  const stderrFile = path.join(tmpdir(), `${logName}.stderr.log`);
   const executionProtocol = loadExecutionProtocol(vendor, process.cwd());
   let promptContent = executionProtocol
     ? `${rawPromptContent}\n\n${executionProtocol}`
@@ -426,7 +425,13 @@ export async function spawnAgent(
   // Workaround for agy's non-TTY stdout drop (antigravity-cli#76): run the
   // subagent under a pseudo-terminal so its headless output is captured.
   let invocation = dispatch.invocation;
+  let nativeSession: ReturnType<typeof prepareNativeSession>;
   try {
+    nativeSession = prepareNativeSession(
+      dispatch.targetVendor,
+      invocation.args,
+    );
+    invocation = { ...invocation, args: nativeSession.args };
     if (targetVendorNeedsPty(dispatch.targetVendor)) {
       const pty = wrapInvocationWithPty(dispatch.invocation);
       invocation = pty.invocation;
@@ -503,6 +508,50 @@ export async function spawnAgent(
   console.log(color.green(`[${agentId}] Started with PID ${child.pid}`));
   orcaSubagent?.start();
 
+  const reservation: Omit<UsageRecord, "sessionId" | "recordedAt"> = {
+    vendor,
+    agentId,
+    runId: run.runId,
+    tokens: Math.ceil(promptContent.length / 4),
+    estimatedInputTokens: Math.ceil(promptContent.length / 4),
+    usageSource: "prompt-estimate",
+    state: "reserved",
+    estimatedCostNote: `difficulty:${difficulty}`,
+  };
+  try {
+    recordUsage(sessionId, reservation, accountingRoot);
+  } catch (error) {
+    console.warn(
+      `[${agentId}] session-cost reservation error (non-fatal): ${String(error)}`,
+    );
+  }
+  let usageFinalized = false;
+  const recordFinalUsage = (interrupted = false, exitCode?: number | null) => {
+    if (usageFinalized) return;
+    usageFinalized = true;
+    try {
+      recordUsage(
+        sessionId,
+        finalizeNativeUsage(reservation, {
+          stdout: fs.existsSync(logFile)
+            ? fs.readFileSync(logFile, "utf8")
+            : "",
+          workspace: resolvedWorkspace,
+          startedAt: attemptStartedAtMs,
+          expectedSessionId: nativeSession.expectedSessionId,
+          env,
+          interrupted,
+          exitCode,
+        }),
+        accountingRoot,
+      );
+    } catch (error) {
+      console.warn(
+        `[${agentId}] session-cost recordUsage error (non-fatal): ${String(error)}`,
+      );
+    }
+  };
+
   const exitAfterOrca = (code: number) => {
     if (pendingMemoryDeliveries.length > 0) {
       void Promise.allSettled(pendingMemoryDeliveries).then(async () => {
@@ -556,6 +605,7 @@ export async function spawnAgent(
       process.kill(child.pid, "SIGTERM");
     }
     unregisterSignalCleanup();
+    recordFinalUsage(true);
     finishAgentRun(runRoot, run.runId, null);
     cleanup();
     exitAfterOrca(130);
@@ -631,22 +681,7 @@ export async function spawnAgent(
         });
       }
 
-      // T15: Record usage after subprocess exits.
-      // Token estimate: conservative approximation using prompt character count.
-      // (Math.ceil(charCount / 4) ≈ input token count; no subprocess instrumentation.)
-      // Errors here are non-fatal — we downgrade to WARN and continue cleanup.
-      try {
-        recordUsage(sessionId, {
-          vendor,
-          agentId,
-          tokens: Math.ceil(promptContent.length / 4),
-          estimatedCostNote: `difficulty:${difficulty}`,
-        });
-      } catch (err) {
-        console.warn(
-          `[${agentId}] session-cost recordUsage error (non-fatal): ${String(err)}`,
-        );
-      }
+      recordFinalUsage(false, code);
 
       if (worktreeHandle) {
         console.log(color.blue(`[${agentId}] Worktree retained for review:`));

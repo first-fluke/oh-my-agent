@@ -60,7 +60,7 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `custom_presets` | preset → description, optional `extends`, `agent_defaults` | unset | User-defined presets; `extends` may inherit a built-in. |
 | `vendors` | `string[]` of selected vendor IDs (YAML and CUE) | absent: `oma link` uses every linkable vendor, `oma update` uses vendors whose project directories exist | Selects which vendor integrations `oma install` and `oma update` project. The dispatch capability map lives in the managed orchestration config; see [Vendor selection and dispatch metadata](#vendor-selection-and-dispatch-metadata). |
 | `default_cli` | vendor ID (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` for the `free` transport | Vendor used when nothing else selects one: an undetected runtime under `auto`, or the `free` transport after `--vendor`, `OMA_RUNTIME_VENDOR`, and the detected runtime. See [How OMA resolves an agent's model and CLI](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
-| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | each omitted dimension is uncapped | Hard token and spawn limits checked before the next agent spawn; see [Session quota caps](#session-quota-caps). |
+| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | each omitted dimension is uncapped | Recorded token usage and spawn limits checked before the next agent spawn; see [Session quota caps](#session-quota-caps). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | `oma docs verify` behavior and scan exclusions. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena MCP transport and update behavior. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox`, or `[]` | unset = leave existing setup alone | Browser DevTools MCP selection during reconciliation. An explicit empty list removes selected browser entries. |
@@ -150,7 +150,9 @@ session:
       codex: 500000
 ```
 
-The cap loader checks the user CUE layer, then the user YAML layer, then the shipped defaults fallback. Before a spawn, OMA checks `spawn_count`, total `tokens`, and `per_vendor` in that order. A limit is reached when usage is greater than or equal to it; OMA blocks the next spawn and reports the dimension that won. Usage is token accounting, not a billing estimate.
+The cap loader checks the user CUE layer, then the user YAML layer, then the shipped defaults fallback. Before a spawn, OMA checks `spawn_count`, total `tokens`, and `per_vendor` in that order. A limit is reached when usage is greater than or equal to it; OMA blocks the next spawn and reports the dimension that won.
+
+OMA reserves an input-token estimate when a run starts. When a supported native transcript is available after the run, recorded input, cache, and output usage replaces that estimate without counting another spawn. Otherwise the record remains explicitly estimated from prompt length. Observed root-session usage is marked partial when native subagents are outside the capture scope. Token caps therefore depend on the available observations; they do not interrupt an already running child or guarantee a billing limit. `spawn_count` is the most predictable limit.
 
 ### Vendor selection and dispatch metadata
 

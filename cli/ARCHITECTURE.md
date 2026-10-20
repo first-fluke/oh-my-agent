@@ -52,6 +52,8 @@ Single and parallel process launches share `io/runtime-dispatch/prepared-agent-d
 
 `io/conversation-log.ts` owns conversation-log primitives shared by recap and state trajectory readers. `platform/diagram-engine.ts` and `platform/archify-managed.ts` own diagram engine discovery and managed Archify installation shared by diagram and explain. These shared modules do not depend on commands.
 
+`io/native-transcript/` owns Claude and Codex transcript parsing, fresh-session identity checks, and native output decoding shared by state trajectories, Harness evaluation, and spawn usage accounting. State trajectory modules retain compatibility exports. Evaluation records store bounded tool metadata and payload hashes; usage records distinguish native observations from prompt estimates.
+
 `io/agentmemory/` owns endpoint configuration, setup, daemon control, and the shared readiness lifecycle. Install and update call `ensureAgentMemory()` for the selected default memory provider; `commands/memory/` retains the manual command entrypoints. Healthy endpoints are reused, managed local services are prepared and checked, and explicitly configured endpoints are only checked. Readiness failures propagate before install/update reports success.
 
 AgentMemory uses one shared service with OMA project scopes keyed by canonical absolute project path and `OMA_PROFILE`: `oma:<profile>:<hash>`. Writes carry that identity and scope markers or scoped session IDs; retrieval sends project/cwd filters and validates the returned scope. Vendor and session changes preserve access within the same scope. Other scopes and unscoped legacy results are excluded without deleting or adopting their data. These client-side rules do not replace server access controls.

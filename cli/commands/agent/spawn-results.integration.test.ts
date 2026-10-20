@@ -9,6 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { loadSessionUsage } from "../../io/session-cost.js";
 import { writeTestPlan } from "../../state/__fixtures__/task-contract.js";
 import {
   claimPath,
@@ -71,6 +72,17 @@ describe("spawn structured result integration", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
+    for (const run of listAgentRuns(root)) {
+      for (const suffix of ["log", "stderr.log"]) {
+        rmSync(
+          join(
+            tmpdir(),
+            `subagent-${run.sessionId}-${run.agentId}-${run.runId}.${suffix}`,
+          ),
+          { force: true },
+        );
+      }
+    }
     rmSync(root, { recursive: true, force: true });
     for (const suffix of ["log", "pid", "status"])
       rmSync(join(tmpdir(), `subagent-s1-qa-reviewer.${suffix}`), {
@@ -88,6 +100,104 @@ describe("spawn structured result integration", () => {
     });
     expect(listAgentRuns(root)[0]?.status).toBe("partial");
     expect(process.exit).toHaveBeenCalledWith(3);
+  });
+
+  it("keeps concurrent same-agent stdout and native usage bound to each launch", async () => {
+    const vendorHome = mkdtempSync(join(tmpdir(), "oma-spawn-native-"));
+    const first = Object.assign(new EventEmitter(), { pid: 111111 });
+    const second = Object.assign(new EventEmitter(), { pid: 222222 });
+    fakeSpawn.mockReturnValueOnce(first).mockReturnValueOnce(second);
+    fakePlanDispatch.mockReturnValue({
+      mode: "native",
+      runtimeVendor: "codex",
+      targetVendor: "codex",
+      reason: "test",
+      invocation: {
+        command: "unused",
+        args: [],
+        env: { CODEX_HOME: vendorHome },
+      },
+    });
+    vi.mocked(process.exit).mockImplementation(() => undefined as never);
+    const sessionIds = [
+      "aaaaaaaa-1111-2222-3333-000000000001",
+      "aaaaaaaa-1111-2222-3333-000000000002",
+    ];
+    try {
+      await spawnAgent(
+        "qa-reviewer",
+        "Review first",
+        "s1",
+        root,
+        undefined,
+        undefined,
+        undefined,
+        true,
+        "T1",
+      );
+      await spawnAgent(
+        "qa-reviewer",
+        "Review second",
+        "s1",
+        root,
+        undefined,
+        undefined,
+        undefined,
+        true,
+        "qa-reviewer",
+      );
+      const options = fakeSpawn.mock.calls
+        .slice(-2)
+        .map((call) => call[2] as { stdio: [string, number, number] });
+      mkdirSync(join(vendorHome, "sessions"), { recursive: true });
+      for (const [index, id] of sessionIds.entries()) {
+        const timestamp = new Date().toISOString();
+        const rows = [
+          { type: "session_meta", payload: { id, timestamp, cwd: root } },
+          {
+            type: "response_item",
+            timestamp,
+            payload: {
+              type: "message",
+              role: "assistant",
+              content: [{ type: "output_text", text: "done" }],
+            },
+          },
+          {
+            type: "event_msg",
+            timestamp,
+            payload: {
+              type: "token_count",
+              info: {
+                last_token_usage: {
+                  input_tokens: 100 * (index + 1),
+                  output_tokens: 10 * (index + 1),
+                },
+              },
+            },
+          },
+        ];
+        writeFileSync(
+          join(vendorHome, "sessions", `rollout-${id}.jsonl`),
+          `${rows.map((row) => JSON.stringify(row)).join("\n")}\n`,
+        );
+        const output = options[index];
+        if (!output) throw new Error("Missing child output descriptor");
+        writeFileSync(
+          output.stdio[1],
+          `${JSON.stringify({ type: "thread.started", thread_id: id })}\n`,
+        );
+      }
+      first.emit("exit", 0);
+      second.emit("exit", 0);
+      const usage = loadSessionUsage("s1", root);
+      expect(usage).toHaveLength(2);
+      expect(usage.map((record) => record.vendorSid)).toEqual(sessionIds);
+      expect(usage.map((record) => record.tokens)).toEqual([110, 220]);
+      expect(new Set(usage.map((record) => record.runId)).size).toBe(2);
+    } finally {
+      rmSync(vendorHome, { recursive: true, force: true });
+    }
   });
 
   it("parallel execution also treats exit zero without a claim as incomplete", async () => {

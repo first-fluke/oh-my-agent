@@ -354,7 +354,11 @@ All events of one evaluation share a `causalityKey`. When an event cannot be wri
 Each arm run also stores `diagnostics` and `trace` in the record:
 
 - `diagnostics`: exit code, signal, timeout flag, and the last 8 KiB of stderr with `stderrStatus` (`captured`, `truncated`, or `unavailable`).
-- `trace`: what the harness could observe. `output` is `complete`, `partial` (a failed process still produced stdout), or `unavailable`; `artifacts` says whether the final snapshot is complete; `changedPaths` lists files the arm added, modified, or removed relative to the pinned initial workspace (capped at 200 with `changedPathsTruncated`); `toolCalls` is always `unsupported` because vendor CLIs do not expose per-tool observations to the harness.
+- `trace`: what the harness could observe. `output` is `complete`, `partial` (a failed process still produced stdout), or `unavailable`; `artifacts` says whether the final snapshot is complete; `changedPaths` lists files the arm added, modified, or removed relative to the pinned initial workspace (capped at 200 with `changedPathsTruncated`).
+- `trace.toolCalls`: `captured`, `partial`, `missing`, or `unsupported`. Claude and Codex runs can load a fresh native transcript bound to the arm's session and temporary workspace. Missing logs remain `missing`; other vendors remain `unsupported`.
+- `trace.toolEvidence`: when available, root-session tool call IDs, names, timing, error flags, and SHA-256 hashes and byte counts of normalized request/response text. Raw tool arguments and results are not copied into the evaluation record. Capture is limited to 200 calls and a 16 MiB native transcript; normalized details are limited to 20,000 characters. Interrupted, unmatched, or truncated observations are marked partial, and truncated details are identified beside their hashes.
+
+Tool hashes help correlate failures with local native logs. They cannot replay tool responses or external state, and do not capture the final provider API request. Native subagent transcripts are outside this capture scope. Existing records without tool observations remain readable, and fixture replay keeps its separate evidence requirements.
 
 A failed arm therefore keeps its partial output, stderr tail, exit status, and file changes, so the last error can be traced back to what the arm changed. Missing observation is recorded as a state; it never reads as a clean run.
 

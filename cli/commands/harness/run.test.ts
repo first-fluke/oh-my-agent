@@ -12,6 +12,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readEvents } from "../../state/events.js";
 import { runHarnessEval } from "./run.js";
+import { captureHarnessToolTrace } from "./tool-trace.js";
 
 const roots: string[] = [];
 
@@ -333,6 +334,91 @@ describe("runHarnessEval", () => {
 });
 
 describe("harness execution provenance and trace", () => {
+  it("persists fresh native call observations with each arm and preserves them on rescore", async () => {
+    const project = makeProject();
+    const nativeHome = join(project.root, "native-logs");
+    mkdirSync(join(nativeHome, "sessions"), { recursive: true });
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    let serial = 0;
+    const result = await runHarnessEval(true, {
+      suite: project.suitePath,
+      candidate: project.candidateRoot,
+      live: true,
+      record: true,
+      yes: true,
+      _projectRoot: project.root,
+      _vendor: "codex",
+      _materializeVendor: () => undefined,
+      _dispatch: ({ workspace }) => {
+        const startedAt = Date.now();
+        const timestamp = new Date(startedAt).toISOString();
+        const id = `native-arm-${serial++}`;
+        const source = [
+          { type: "session_meta", payload: { id, cwd: workspace, timestamp } },
+          {
+            type: "response_item",
+            timestamp,
+            payload: {
+              type: "function_call",
+              call_id: "call-1",
+              name: "exec_command",
+              arguments: { command: "confidential request" },
+            },
+          },
+          {
+            type: "response_item",
+            timestamp,
+            payload: {
+              type: "function_call_output",
+              call_id: "call-1",
+              output: "confidential response",
+            },
+          },
+        ];
+        writeFileSync(
+          join(nativeHome, "sessions", `rollout-${id}.jsonl`),
+          source.map((row) => JSON.stringify(row)).join("\n"),
+        );
+        const toolTrace = captureHarnessToolTrace({
+          vendor: "codex",
+          stdout: JSON.stringify({ type: "thread.started", thread_id: id }),
+          workspace,
+          startedAt,
+          env: { CODEX_HOME: nativeHome },
+        });
+        writeFileSync(join(workspace, "docs", "api.md"), "fixed");
+        return { output: "done", toolTrace };
+      },
+    });
+    expect(
+      result?.runs.every((run) => run.trace?.toolCalls === "captured"),
+    ).toBe(true);
+    expect(
+      new Set(
+        result?.runs.map((run) => run.trace?.toolEvidence?.vendorSessionId),
+      ).size,
+    ).toBe(10);
+    const events = readEvents(project.root, "oma-harness-recorded-eval").filter(
+      (event) => event.kind === "harness.arm.completed",
+    );
+    expect(events[0]?.payload?.trace).toMatchObject({
+      toolCalls: "captured",
+      causalityKey: result?.runs[0]?.trace?.causalityKey,
+    });
+    expect(JSON.stringify(events)).not.toContain("confidential");
+    const replay = await runHarnessEval(true, {
+      suite: project.suitePath,
+      candidate: project.candidateRoot,
+      action: "rescore",
+      _projectRoot: project.root,
+      _vendor: "codex",
+    });
+    expect(replay?.runs.map((run) => run.trace)).toEqual(
+      result?.runs.map((run) => run.trace),
+    );
+  });
+
   it("records conditions, per-arm trace, and linked session events for a live run", async () => {
     const project = makeProject();
     vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -371,7 +457,7 @@ describe("harness execution provenance and trace", () => {
       output: "complete",
       stderr: "unavailable",
       artifacts: "complete",
-      toolCalls: "unsupported",
+      toolCalls: "missing",
       changedPaths: ["docs/api.md"],
     });
     const baselineRun = result?.runs.find(

@@ -28,6 +28,53 @@ function nodeInvocation(script: string) {
 }
 
 describe("runHarnessInvocation", () => {
+  it.each(["claude", "codex"])(
+    "unwraps %s exactly once when the final answer itself resembles an envelope",
+    (vendor) => {
+      const finalAnswer = JSON.stringify({
+        type: "result",
+        result: "requested data",
+        is_error: false,
+      });
+      const stdout =
+        vendor === "claude"
+          ? JSON.stringify({
+              type: "result",
+              is_error: false,
+              result: finalAnswer,
+              session_id: "fresh-session",
+            })
+          : [
+              { type: "thread.started", thread_id: "fresh-session" },
+              {
+                type: "item.completed",
+                item: { type: "agent_message", text: finalAnswer },
+              },
+            ]
+              .map((event) => JSON.stringify(event))
+              .join("\n");
+      const invoke = (exit: number) =>
+        runHarnessInvocation(
+          nodeInvocation(
+            `process.stdout.write(${JSON.stringify(stdout)});process.exit(${exit})`,
+          ),
+          workspace(),
+          "prompt",
+          null,
+          10_000,
+          { vendor },
+        );
+      expect(invoke(0).output).toBe(finalAnswer);
+      try {
+        invoke(3);
+        expect.fail("Expected subprocess failure");
+      } catch (error) {
+        expect(error).toBeInstanceOf(HarnessDispatchError);
+        expect((error as HarnessDispatchError).output).toBe(finalAnswer);
+      }
+    },
+  );
+
   it("preserves partial stdout, bounded stderr, and the exit code of a failed process", () => {
     const noise = "x".repeat(HARNESS_STDERR_LIMIT + 50);
     const script = `process.stdout.write("partial answer");process.stderr.write(${JSON.stringify(noise)} + "TAIL");process.exit(3)`;

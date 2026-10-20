@@ -211,6 +211,81 @@ describe("checkCap — no cap configured", () => {
   });
 });
 
+describe("native usage reconciliation", () => {
+  it("replaces a reservation with actual usage and counts the run once", () => {
+    const reservation = makeRecord({
+      runId: "run-1",
+      tokens: 20,
+      estimatedInputTokens: 20,
+      usageSource: "prompt-estimate",
+      state: "reserved",
+    });
+    recordUsage(SESSION, reservation);
+    recordUsage(SESSION, {
+      ...reservation,
+      tokens: 1200,
+      usageSource: "native-transcript",
+      state: "final",
+      tokenBreakdown: {
+        input: 400,
+        cacheRead: 500,
+        cacheWrite: 100,
+        output: 200,
+      },
+    });
+    // Repeated exit processing and late estimates must not double count a run
+    // or overwrite its measured usage.
+    recordUsage(SESSION, reservation);
+
+    expect(loadSessionUsage(SESSION)).toEqual([
+      expect.objectContaining({
+        tokens: 1200,
+        usageSource: "native-transcript",
+      }),
+    ]);
+    expect(checkCap(SESSION, { spawnCount: 2 }).exceeded).toBe(false);
+    expect(checkCap(SESSION, { tokens: 1000 })).toMatchObject({
+      exceeded: true,
+      reason: "tokens",
+      current: 1200,
+    });
+  });
+
+  it("counts a durable and pending reservation once while retaining separate retries", () => {
+    const reservation = makeRecord({ runId: "run-1", tokens: 40 });
+    recordUsage(SESSION, reservation);
+    expect(checkCap(SESSION, { tokens: 60 }, [reservation]).exceeded).toBe(
+      false,
+    );
+    recordUsage(SESSION, makeRecord({ runId: "run-2", tokens: 40 }));
+    expect(loadSessionUsage(SESSION)).toHaveLength(2);
+    expect(checkCap(SESSION, { tokens: 60 }).current).toBe(80);
+  });
+
+  it("keeps final estimates when native usage is unavailable", () => {
+    recordUsage(
+      SESSION,
+      makeRecord({ runId: "run-1", tokens: 25, state: "reserved" }),
+    );
+    recordUsage(
+      SESSION,
+      makeRecord({
+        runId: "run-1",
+        tokens: 25,
+        state: "final",
+        usageSource: "prompt-estimate",
+        usageUnavailableReason: "transcript missing",
+      }),
+    );
+    expect(loadSessionUsage(SESSION)).toEqual([
+      expect.objectContaining({
+        state: "final",
+        usageUnavailableReason: "transcript missing",
+      }),
+    ]);
+  });
+});
+
 describe("checkCap — token limit", () => {
   it("returns exceeded: false when total tokens are under limit", () => {
     recordUsage(SESSION, makeRecord({ tokens: 100 }));

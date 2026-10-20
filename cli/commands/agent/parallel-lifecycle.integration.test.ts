@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { loadSessionUsage } from "../../io/session-cost.js";
 import { listAgentRuns } from "../../state/agent-results.js";
 
 const cliRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -122,9 +123,85 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     ]);
     expect(fs.existsSync(usageFile())).toBe(true);
     const usage = fs.readFileSync(usageFile(), "utf8");
-    expect(usage.match(/```json/g)).toHaveLength(1);
+    expect(loadSessionUsage("budget-test", root)).toHaveLength(1);
+    expect(loadSessionUsage("budget-test", root)[0]).toMatchObject({
+      state: "final",
+      usageSource: "prompt-estimate",
+    });
     expect(usage).toContain('"vendor":"qwen"');
     expect(usage).toMatch(/"tokens":[1-9]\d*/);
+  });
+
+  it("uses actual Codex usage to block the next spawn without double-counting cached input", () => {
+    const vendorHome = fs.mkdtempSync(
+      path.join(os.tmpdir(), "oma-quota-native-"),
+    );
+    try {
+      const vendor = path.join(root, "fake-codex.cjs");
+      fs.writeFileSync(
+        vendor,
+        `
+const fs = require('node:fs');
+const path = require('node:path');
+const sid = require('node:crypto').randomUUID();
+const timestamp = new Date().toISOString();
+const dir = path.join(process.env.CODEX_HOME, 'sessions');
+fs.mkdirSync(dir, { recursive: true });
+const rows = [
+  { type: 'session_meta', payload: { id: sid, timestamp, cwd: process.cwd() } },
+  { type: 'response_item', timestamp, payload: { type: 'message', role: 'assistant', content: [{ type: 'output_text', text: 'done' }] } },
+  { type: 'event_msg', timestamp, payload: { type: 'token_count', info: { last_token_usage: { input_tokens: 700, cached_input_tokens: 600, output_tokens: 300, reasoning_output_tokens: 100 } } } }
+];
+fs.writeFileSync(path.join(dir, 'rollout-' + sid + '.jsonl'), rows.map(row => JSON.stringify(row)).join('\\n') + '\\n');
+fs.appendFileSync('native-started.txt', 'started\\n');
+console.log(JSON.stringify({ type: 'thread.started', thread_id: sid }));
+`,
+      );
+      fs.appendFileSync(
+        path.join(
+          root,
+          ".agents/skills/oma-orchestration/config/cli-config.yaml",
+        ),
+        `  codex:\n    command: ${JSON.stringify(process.execPath)}\n    subcommand: ${JSON.stringify(vendor)}\n    prompt_flag: -p\n`,
+      );
+      const args = [
+        "--inline",
+        "--vendor",
+        "codex",
+        "--session-id",
+        "budget-test",
+        "backend:Run native usage fixture",
+      ];
+      invoke(args, 20, root, { CODEX_HOME: vendorHome });
+      expect(loadSessionUsage("budget-test", root)).toEqual([
+        expect.objectContaining({
+          tokens: 1000,
+          usageSource: "native-transcript",
+          state: "final",
+          tokenBreakdown: {
+            input: 100,
+            cacheRead: 600,
+            cacheWrite: 0,
+            output: 300,
+          },
+        }),
+      ]);
+      expect(
+        loadSessionUsage("budget-test", root)[0]?.estimatedInputTokens,
+      ).toBeLessThan(900);
+      fs.appendFileSync(
+        path.join(root, ".agents/oma-config.yaml"),
+        "session:\n  quota_cap:\n    tokens: 900\n",
+      );
+      const blocked = invoke(args, 20, root, { CODEX_HOME: vendorHome });
+      expect(blocked.stderr).toContain("Quota cap exceeded");
+      expect(
+        fs.readFileSync(path.join(root, "native-started.txt"), "utf8"),
+      ).toBe("started\n");
+      expect(loadSessionUsage("budget-test", root)).toHaveLength(1);
+    } finally {
+      fs.rmSync(vendorHome, { recursive: true, force: true });
+    }
   });
 
   it("reads and writes the project quota ledger when invoked from a subdirectory", () => {
@@ -147,9 +224,7 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     );
     const result = invoke(args, 20, subdir);
     expect(result.stderr).toContain("Quota cap exceeded");
-    expect(fs.readFileSync(usageFile(), "utf8").match(/```json/g)).toHaveLength(
-      1,
-    );
+    expect(loadSessionUsage("budget-test", root)).toHaveLength(1);
     expect(fs.existsSync(path.join(subdir, ".agents"))).toBe(false);
   });
 
@@ -174,9 +249,7 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     expect(fs.readFileSync(path.join(root, "started.txt"), "utf8")).toBe(
       "started\n",
     );
-    expect(fs.readFileSync(usageFile(), "utf8").match(/```json/g)).toHaveLength(
-      1,
-    );
+    expect(loadSessionUsage("budget-test", root)).toHaveLength(1);
     expect(listAgentRuns(root).every((run) => run.status !== "running")).toBe(
       true,
     );
@@ -225,9 +298,7 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
       )
       .toBe(true);
     supervisorPids.delete(supervisorPid);
-    expect(fs.readFileSync(usageFile(), "utf8").match(/```json/g)).toHaveLength(
-      1,
-    );
+    expect(loadSessionUsage("budget-test", root)).toHaveLength(1);
     expect(fs.readFileSync(path.join(root, "finished.txt"), "utf8")).toBe(
       "finished\n",
     );
@@ -332,9 +403,7 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
       supervisorPids.delete(pid);
       expect(fs.existsSync(path.join(root, "term-received.txt"))).toBe(true);
       expect(fs.existsSync(path.join(root, "finished.txt"))).toBe(false);
-      expect(
-        fs.readFileSync(usageFile(), "utf8").match(/```json/g),
-      ).toHaveLength(1);
+      expect(loadSessionUsage("budget-test", root)).toHaveLength(1);
     },
   );
 });

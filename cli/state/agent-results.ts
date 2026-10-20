@@ -13,6 +13,10 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
 import { withStateIndexLock } from "../../.agents/hooks/core/state-index-lock.ts";
 import { AGENTS_RESULTS_DIR } from "../constants/paths.js";
+import {
+  nativeResultOutput,
+  nativeSessionId,
+} from "../io/native-transcript/identity.js";
 import { listAgentDecisionSubjects } from "./agent-decision-catalog.js";
 import {
   AgentDecisionSchema,
@@ -474,7 +478,22 @@ function artifactPath(workspace: string, name: string): string {
 }
 
 export function readOnlyClaim(log: string): unknown {
-  const line = log
+  const vendor = nativeSessionId("codex", log) ? "codex" : "claude";
+  if (vendor === "claude") {
+    try {
+      const envelope: unknown = JSON.parse(log);
+      if (
+        envelope !== null &&
+        typeof envelope === "object" &&
+        "is_error" in envelope &&
+        envelope.is_error === true
+      )
+        return undefined;
+    } catch {
+      // Plain-text output remains a supported result format.
+    }
+  }
+  const line = nativeResultOutput(vendor, log)
     .split(/\r?\n/)
     .filter((line) => line.startsWith("OMA_RESULT_JSON: "))
     .at(-1);

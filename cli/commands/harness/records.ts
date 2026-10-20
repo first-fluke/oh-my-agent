@@ -49,6 +49,33 @@ const evidenceSchema = z.object({
     }),
   ),
 });
+const toolPayloadSchema = z.object({
+  status: z.enum(["captured", "truncated", "missing"]),
+  sha256: z.string().length(64).optional(),
+  bytes: z.number().nonnegative().optional(),
+});
+const nativeToolTraceSchema = z.object({
+  status: z.enum(["captured", "partial", "missing", "unsupported"]),
+  vendor: z.string(),
+  vendorSessionId: z.string().optional(),
+  transcriptHash: z.string().length(64).optional(),
+  scope: z.literal("root-session"),
+  calls: z
+    .array(
+      z.object({
+        callId: z.string().max(256),
+        toolName: z.string().max(256),
+        startedAt: z.number().nullable(),
+        durationMs: z.number().nonnegative().nullable(),
+        isError: z.boolean().optional(),
+        request: toolPayloadSchema,
+        response: toolPayloadSchema,
+      }),
+    )
+    .max(200),
+  truncated: z.boolean(),
+  limitations: z.array(z.string()),
+});
 const armRunSchema = z.object({
   taskId: z.string(),
   arm: z.enum(["baseline", "candidate"]),
@@ -94,7 +121,8 @@ const armRunSchema = z.object({
       output: z.enum(["complete", "partial", "unavailable"]),
       stderr: z.enum(["captured", "truncated", "unavailable"]),
       artifacts: z.enum(["complete", "insufficient"]),
-      toolCalls: z.literal("unsupported"),
+      toolCalls: z.enum(["captured", "partial", "missing", "unsupported"]),
+      toolEvidence: nativeToolTraceSchema.optional(),
       changedPaths: z.array(z.string()),
       changedPathsTruncated: z.boolean(),
     })

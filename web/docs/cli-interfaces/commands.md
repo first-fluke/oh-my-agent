@@ -376,12 +376,13 @@ oma stats reset [--json] [--output <format>]
 - Last updated timestamp
 
 **Cost telemetry** (aggregated across every `session-cost-*.md` file under `.agents/state/memories/`):
-- Total input tokens (prompt character approximation, no output tokens yet)
+- Recorded tokens, with actual native usage distinguished from prompt-length estimates
 - Total spawns
-- Estimated USD using a conservative per-vendor input-token rate table (Claude $3/M, Codex $5/M, Gemini $0.3/M, Qwen $0/M, Cursor $5/M, Antigravity $0.3/M)
+- Reserved spawns and runs with partial native usage coverage
+- Estimated USD using a per-vendor rate table; this estimate is separate from actual token counts
 - Per-vendor breakdown (tokens · spawns · USD)
 
-The estimate is a floor, not a billing-accurate amount. Configure `session.quota_cap` in `.agents/oma-config.yaml` to enforce hard budgets at spawn time; see the Why oh-my-agent page in Getting Started for the quality-first arsenal these caps belong to.
+The USD estimate is not a billing-accurate amount. Configure `session.quota_cap` in `.agents/oma-config.yaml` to block the next spawn when recorded token usage or spawn counts reach a limit. Missing native usage retains an explicit estimate, and running children are not interrupted. See [Session quota caps](../guide/configuration-reference.md#session-quota-caps).
 
 Metrics are stored in `.agents/state/metrics.json`; a legacy `.serena/metrics.json` is read when present. Data is collected from git stats and memory files.
 

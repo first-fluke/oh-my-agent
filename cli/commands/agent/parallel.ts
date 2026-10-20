@@ -7,6 +7,7 @@ import {
   AGENTS_RESULTS_DIR,
   agentsPathFromRoot,
 } from "../../constants/paths.js";
+import { prepareNativeSession } from "../../io/native-transcript/identity.js";
 import { prepareAgentDispatch } from "../../io/runtime-dispatch/prepared-agent-dispatch.js";
 import {
   targetVendorNeedsPty,
@@ -19,6 +20,7 @@ import {
   recordUsage,
   type UsageRecord,
 } from "../../io/session-cost.js";
+import { finalizeNativeUsage } from "../../io/session-cost-native.js";
 import { detectWorkspace } from "../../io/workspaces.js";
 import {
   loadExecutionProtocol,
@@ -313,18 +315,30 @@ export async function parallelRun(
     // Workaround for agy's non-TTY stdout drop (antigravity-cli#76): run the
     // subagent under a pseudo-terminal so its headless output is captured.
     let invocation = dispatch.invocation;
-    if (targetVendorNeedsPty(dispatch.targetVendor)) {
-      const pty = wrapInvocationWithPty(dispatch.invocation);
-      invocation = pty.invocation;
-      if (pty.wrapped) {
-        console.log(`    PTY: ${dispatch.targetVendor} run under script(1)`);
-      } else {
-        console.warn(
-          color.yellow(
-            `[${idx}] ${dispatch.targetVendor} headless output may be empty: ${pty.unsupportedReason}`,
-          ),
-        );
+    let nativeSession: ReturnType<typeof prepareNativeSession>;
+    try {
+      nativeSession = prepareNativeSession(
+        dispatch.targetVendor,
+        invocation.args,
+      );
+      invocation = { ...invocation, args: nativeSession.args };
+      if (targetVendorNeedsPty(dispatch.targetVendor)) {
+        const pty = wrapInvocationWithPty(invocation);
+        invocation = pty.invocation;
+        if (pty.wrapped) {
+          console.log(`    PTY: ${dispatch.targetVendor} run under script(1)`);
+        } else {
+          console.warn(
+            color.yellow(
+              `[${idx}] ${dispatch.targetVendor} headless output may be empty: ${pty.unsupportedReason}`,
+            ),
+          );
+        }
       }
+    } catch (error) {
+      prepared.cleanup();
+      finishAgentRun(runRoot, run.runId, null);
+      throw error;
     }
     const { command, args, env } = invocation;
 
@@ -337,6 +351,7 @@ export async function parallelRun(
       throw error;
     }
     let child: ReturnType<typeof spawnProcess>;
+    const attemptStartedAtMs = Date.now();
     try {
       child = spawnProcess(command, args, {
         cwd: resolvedWorkspace,
@@ -354,10 +369,21 @@ export async function parallelRun(
     const usage: PendingUsage = {
       vendor,
       agentId: agent,
+      runId: run.runId,
       tokens: Math.ceil(promptContent.length / 4),
+      estimatedInputTokens: Math.ceil(promptContent.length / 4),
+      usageSource: "prompt-estimate",
+      state: "reserved",
       estimatedCostNote: `difficulty:${classifyDifficulty(rawPromptContent, 3, 2)}`,
     };
     pendingUsage.push(usage);
+    try {
+      recordUsage(sessionId, usage, projectRoot);
+    } catch (error) {
+      console.warn(
+        `[${agent}] session-cost reservation error (non-fatal): ${error}`,
+      );
+    }
     if (child.pid) activePids.add(child.pid);
 
     const exitPromise = new Promise<number | null>((resolve) => {
@@ -371,7 +397,21 @@ export async function parallelRun(
         const pendingIndex = pendingUsage.indexOf(usage);
         if (pendingIndex >= 0) pendingUsage.splice(pendingIndex, 1);
         try {
-          recordUsage(sessionId, usage, projectRoot);
+          recordUsage(
+            sessionId,
+            finalizeNativeUsage(usage, {
+              stdout: fs.existsSync(logFile)
+                ? fs.readFileSync(logFile, "utf8")
+                : "",
+              workspace: resolvedWorkspace,
+              startedAt: attemptStartedAtMs,
+              expectedSessionId: nativeSession.expectedSessionId,
+              env,
+              interrupted: code === null,
+              exitCode: code,
+            }),
+            projectRoot,
+          );
         } catch (error) {
           console.warn(
             `[${agent}] session-cost recordUsage error (non-fatal): ${error}`,

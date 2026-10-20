@@ -120,7 +120,12 @@ function rawRun(
   record: HarnessRecord,
   task: HarnessTask,
   arm: HarnessArmRun["arm"],
-): { output: string; dispatchError?: string; evidence: HarnessArmEvidence } {
+): {
+  output: string;
+  dispatchError?: string;
+  evidence: HarnessArmEvidence;
+  trace?: HarnessArmRun["trace"];
+} {
   if (record.schemaVersion !== 2)
     throw new Error(
       "Legacy recordings support inspection only; fresh raw evidence is required",
@@ -147,6 +152,7 @@ function rawRun(
     output: run.output,
     dispatchError: run.dispatchError,
     evidence: run.evidence,
+    trace: run.trace,
   };
 }
 function replayResult(
@@ -223,6 +229,7 @@ export function rescoreHarnessRecord(
           checks,
           passed: checks.every((check) => check.passed),
           evidence: original.evidence,
+          trace: original.trace,
         };
       } catch (error) {
         return insufficient(

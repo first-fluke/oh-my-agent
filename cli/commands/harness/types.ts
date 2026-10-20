@@ -105,8 +105,8 @@ export interface HarnessArmDiagnostics {
 
 /**
  * What the harness could observe for one arm. Missing observation is a
- * recorded state, never an implied normal run. Tool-call observation is not
- * available through vendor CLIs and is reported as unsupported.
+ * recorded state, never an implied normal run. Native tool payloads stay in
+ * vendor logs; this record stores bounded observations and content digests.
  */
 export interface HarnessArmTrace {
   schemaVersion: 1;
@@ -114,9 +114,36 @@ export interface HarnessArmTrace {
   output: "complete" | "partial" | "unavailable";
   stderr: "captured" | "truncated" | "unavailable";
   artifacts: "complete" | "insufficient";
-  toolCalls: "unsupported";
+  toolCalls: HarnessNativeToolTrace["status"];
+  toolEvidence?: HarnessNativeToolTrace;
   changedPaths: string[];
   changedPathsTruncated: boolean;
+}
+
+export interface HarnessToolPayloadDigest {
+  status: "captured" | "truncated" | "missing";
+  /** Hash and bytes of the parser's normalized, bounded detail field. */
+  sha256?: string;
+  bytes?: number;
+}
+
+export interface HarnessNativeToolTrace {
+  status: "captured" | "partial" | "missing" | "unsupported";
+  vendor: string;
+  vendorSessionId?: string;
+  transcriptHash?: string;
+  scope: "root-session";
+  calls: Array<{
+    callId: string;
+    toolName: string;
+    startedAt: number | null;
+    durationMs: number | null;
+    isError?: boolean;
+    request: HarnessToolPayloadDigest;
+    response: HarnessToolPayloadDigest;
+  }>;
+  truncated: boolean;
+  limitations: string[];
 }
 
 export interface HarnessArmRun {
@@ -184,7 +211,17 @@ export interface HarnessDispatchInput {
   workspace: string;
 }
 
-export type HarnessDispatchFn = (input: HarnessDispatchInput) => DispatchResult;
+export type HarnessDispatchResult =
+  | DispatchResult
+  | {
+      output: string;
+      usage?: DispatchUsage;
+      toolTrace?: HarnessNativeToolTrace;
+    };
+
+export type HarnessDispatchFn = (
+  input: HarnessDispatchInput,
+) => HarnessDispatchResult;
 
 export type HarnessTraceObserver = (event: {
   kind: "arm.completed";

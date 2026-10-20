@@ -484,6 +484,8 @@ export async function runHarnessEval(
                 stderr: run.trace.stderr,
                 artifacts: run.trace.artifacts,
                 toolCalls: run.trace.toolCalls,
+                toolEvidence: run.trace.toolEvidence,
+                causalityKey: run.trace.causalityKey,
                 changedPaths: run.trace.changedPaths,
                 changedPathsTruncated: run.trace.changedPathsTruncated,
               }

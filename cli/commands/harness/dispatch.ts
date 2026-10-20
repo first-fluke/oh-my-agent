@@ -1,4 +1,8 @@
 import { execFileSync } from "node:child_process";
+import {
+  nativeResultOutput,
+  prepareNativeSession,
+} from "../../io/native-transcript/identity.js";
 import { planDispatch } from "../../io/runtime-dispatch.js";
 import type { VendorConfig } from "../../platform/agent-config.js";
 import { resolvePromptFlag } from "../../platform/agent-config.js";
@@ -8,7 +12,8 @@ import {
   unwrapVendorEnvelope,
 } from "../skills/eval/envelope.js";
 import { buildHarnessEnvironment } from "./execution.js";
-import type { HarnessDispatchFn } from "./types.js";
+import { captureHarnessToolTrace } from "./tool-trace.js";
+import type { HarnessDispatchFn, HarnessNativeToolTrace } from "./types.js";
 
 /** stderr kept per arm; enough to trace a failure without storing transcripts. */
 export const HARNESS_STDERR_LIMIT = 8 * 1024;
@@ -20,6 +25,7 @@ export interface HarnessDispatchFailure {
   exitCode: number | null;
   signal: string | null;
   timedOut: boolean;
+  toolTrace?: HarnessNativeToolTrace;
 }
 
 /** A failed vendor process with its observable remains attached. */
@@ -33,6 +39,7 @@ export class HarnessDispatchError
   readonly exitCode: number | null;
   readonly signal: string | null;
   readonly timedOut: boolean;
+  readonly toolTrace?: HarnessNativeToolTrace;
   constructor(
     message: string,
     failure: HarnessDispatchFailure,
@@ -46,6 +53,7 @@ export class HarnessDispatchError
     this.exitCode = failure.exitCode;
     this.signal = failure.signal;
     this.timedOut = failure.timedOut;
+    this.toolTrace = failure.toolTrace;
   }
 }
 
@@ -67,7 +75,28 @@ export function runHarnessInvocation(
   prompt: string,
   promptFlag: string | null,
   timeoutMs: number,
-): { output: string; usage: DispatchUsage } {
+  nativeCapture?: { vendor: string; expectedSessionId?: string },
+): {
+  output: string;
+  usage: DispatchUsage;
+  toolTrace?: HarnessNativeToolTrace;
+} {
+  const startedAt = Date.now();
+  const answer = (stdout: string): string =>
+    nativeCapture && ["claude", "codex"].includes(nativeCapture.vendor)
+      ? nativeResultOutput(nativeCapture.vendor, stdout)
+      : unwrapVendorEnvelope(stdout);
+  const capture = (stdout: string, interrupted = false) =>
+    nativeCapture
+      ? captureHarnessToolTrace({
+          ...nativeCapture,
+          stdout,
+          workspace,
+          startedAt,
+          env: invocation.env,
+          interrupted,
+        })
+      : undefined;
   let promptIndex = -1;
   if (promptFlag !== null) {
     for (let index = 0; index < invocation.args.length - 1; index += 1) {
@@ -110,20 +139,22 @@ export function runHarnessInvocation(
       throw new HarnessDispatchError(
         envelope.result ?? "Agent vendor returned an error envelope",
         {
-          output: text,
+          output: nativeCapture ? answer(text) : text,
           stderr: "",
           stderrTruncated: false,
           exitCode: 0,
           signal: null,
           timedOut: false,
+          toolTrace: capture(text, true),
         },
       );
     }
     // Record the agent's answer, not the vendor's JSON bookkeeping; keep the
     // usage the envelope reports beside it.
     return {
-      output: unwrapVendorEnvelope(text),
+      output: answer(text),
       usage: parseVendorUsage(text),
+      ...(nativeCapture ? { toolTrace: capture(text) } : {}),
     };
   } catch (error) {
     if (error instanceof HarnessDispatchError) throw error;
@@ -142,13 +173,22 @@ export function runHarnessInvocation(
     throw new HarnessDispatchError(
       `Harness dispatch failed (${timedOut ? "timed out" : `exit ${failure.status ?? "?"}`})${summary ? `: ${summary}` : ""}`,
       {
-        output:
-          typeof failure.stdout === "string" ? failure.stdout : stdout.text,
+        output: nativeCapture
+          ? answer(
+              typeof failure.stdout === "string" ? failure.stdout : stdout.text,
+            )
+          : typeof failure.stdout === "string"
+            ? failure.stdout
+            : stdout.text,
         stderr: stderr.text,
         stderrTruncated: stderr.truncated,
         exitCode: typeof failure.status === "number" ? failure.status : null,
         signal: typeof failure.signal === "string" ? failure.signal : null,
         timedOut,
+        toolTrace: capture(
+          typeof failure.stdout === "string" ? failure.stdout : stdout.text,
+          true,
+        ),
       },
       error,
     );
@@ -179,12 +219,17 @@ export function buildHarnessDispatch(
       sourceEnv,
       dispatch.invocation.env,
     );
+    const nativeSession = prepareNativeSession(
+      vendor,
+      dispatch.invocation.args,
+    );
     return runHarnessInvocation(
-      { ...dispatch.invocation, env },
+      { ...dispatch.invocation, args: nativeSession.args, env },
       workspace,
       prompt,
       promptFlag,
       timeoutMs,
+      { vendor, expectedSessionId: nativeSession.expectedSessionId },
     );
   };
 }

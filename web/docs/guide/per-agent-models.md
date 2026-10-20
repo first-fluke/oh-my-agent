@@ -314,7 +314,7 @@ session:
       antigravity: 200000
 ```
 
-When a cap is reached, `oma agent spawn` refuses the next spawn and fails with `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Token usage is estimated from prompt length, so `spawn_count` is the most predictable limit. Field rules: [Session quota caps](/docs/guide/configuration-reference#session-quota-caps).
+When a cap is reached, `oma agent spawn` refuses the next spawn and fails with `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Runs initially reserve a prompt-length estimate. Available native transcript usage replaces it after completion; unsupported or missing observations remain estimates. These caps do not interrupt running children or guarantee a billing limit. `spawn_count` is the most predictable limit. Field rules: [Session quota caps](/docs/guide/configuration-reference#session-quota-caps).
 
 ---
 

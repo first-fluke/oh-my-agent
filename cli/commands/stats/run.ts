@@ -21,20 +21,36 @@ import { resolveProjectRoot } from "../../utils/fs-utils.js";
 
 interface CostSummary {
   totalTokens: number;
+  actualTokens: number;
+  estimatedTokens: number;
+  reservedSpawns: number;
+  partialSpawns: number;
   totalSpawns: number;
   estimatedUsd: number;
   byVendor: Record<string, { tokens: number; spawns: number; usd: number }>;
 }
 
-function aggregateCost(cwd: string): CostSummary {
+export function aggregateCost(cwd: string): CostSummary {
   const records = listAllSessionUsage(cwd);
   const byVendor: CostSummary["byVendor"] = {};
   let totalTokens = 0;
+  let actualTokens = 0;
+  let estimatedTokens = 0;
+  let reservedSpawns = 0;
+  let partialSpawns = 0;
   let estimatedUsd = 0;
 
   for (const r of records) {
     totalTokens += r.tokens;
-    const usd = estimateUsd(r.tokens, r.vendor);
+    if (r.usageSource === "native-transcript") actualTokens += r.tokens;
+    else estimatedTokens += r.tokens;
+    if (r.state === "reserved") reservedSpawns++;
+    if (r.usageCoverage === "partial") partialSpawns++;
+    // Vendor-wide input rates cannot price output, cache tiers or model choice.
+    const usd = estimateUsd(
+      r.tokenBreakdown?.input ?? r.estimatedInputTokens ?? r.tokens,
+      r.vendor,
+    );
     estimatedUsd += usd;
     const entry = byVendor[r.vendor] ?? { tokens: 0, spawns: 0, usd: 0 };
     entry.tokens += r.tokens;
@@ -45,6 +61,10 @@ function aggregateCost(cwd: string): CostSummary {
 
   return {
     totalTokens,
+    actualTokens,
+    estimatedTokens,
+    reservedSpawns,
+    partialSpawns,
     totalSpawns: records.length,
     estimatedUsd,
     byVendor,
@@ -272,17 +292,27 @@ export async function stats(
       "┌─────────────────────┬──────────────┐",
       `│ ${pc.bold("Metric")}              │ ${pc.bold("Value")}        │`,
       "├─────────────────────┼──────────────┤",
-      `│ Total tokens (est.) │ ${formatNumber(cost.totalTokens).padEnd(12)} │`,
+      `│ Accounted tokens    │ ${formatNumber(cost.totalTokens).padEnd(12)} │`,
+      `│ Native tokens       │ ${formatNumber(cost.actualTokens).padEnd(12)} │`,
+      `│ Estimated tokens    │ ${formatNumber(cost.estimatedTokens).padEnd(12)} │`,
       `│ Total spawns        │ ${String(cost.totalSpawns).padEnd(12)} │`,
-      `│ Estimated USD       │ ${formatUsd(cost.estimatedUsd).padEnd(12)} │`,
+      `│ Reserved spawns     │ ${String(cost.reservedSpawns).padEnd(12)} │`,
+      `│ Partial native runs │ ${String(cost.partialSpawns).padEnd(12)} │`,
+      `│ Input USD estimate  │ ${formatUsd(cost.estimatedUsd).padEnd(12)} │`,
       "└─────────────────────┴──────────────┘",
       pc.dim("By vendor (sorted by tokens):"),
       ...vendorLines,
       pc.dim(
-        "Estimate is input-only (prompt char approximation); output tokens not yet tracked.",
+        "Native counts include input, cached input and output. Missing usage retains prompt estimates.",
       ),
       pc.dim(
-        "Configure session.quota_cap in .agents/oma-config.yaml (or .agents/oma-config.cue) to enforce budgets.",
+        "Partial native runs can omit subagent or interrupted request usage.",
+      ),
+      pc.dim(
+        "USD uses rough vendor input rates; output and cache pricing are excluded. It is not a bill.",
+      ),
+      pc.dim(
+        "session.quota_cap gates the next spawn; running agents can exceed the token threshold.",
       ),
     ].join("\n");
 
