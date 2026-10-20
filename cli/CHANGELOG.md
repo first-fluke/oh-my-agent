@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.8.1...cli-v20.9.0) (2026-10-20)
+
+
+### Features
+
+* **benchmarks:** add Harness² external benchmark track ([6ff011a](https://github.com/first-fluke/oh-my-agent/commit/6ff011ac0d3200af4ce1f51b9b7f70308970544b))
+
 ## [20.8.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.8.0...cli-v20.8.1) (2026-10-20)
 
 
