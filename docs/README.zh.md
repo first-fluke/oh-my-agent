@@ -16,10 +16,6 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 然后运行 `oma doctor`，再在 agent 中输入 `/plan add user accounts with a settings page`。[最初 5 分钟](#your-first-5-minutes)会带你走一遍。
 
-![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
-
-[观看完整视频（35 秒）](./assets/video/oh-my-agent-explainer.mp4)
-
 ## 你会得到什么
 
 **工作流**是你输入（或直接说出）的东西。工作流会召集**角色**，也就是各位专家。**技能**是专业知识：每个角色都带着自己的技能，其余技能则在任务需要时由你的 agent 加载。

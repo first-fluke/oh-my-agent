@@ -16,10 +16,6 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 จากนั้นรัน `oma doctor` แล้วพิมพ์ `/plan add user accounts with a settings page` ในเอเจนต์ของคุณ ส่วน [5 นาทีแรกของคุณ](#your-first-5-minutes) จะพาทำทีละขั้นตอน
 
-![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
-
-[ดูวิดีโอฉบับเต็ม (35 วินาที)](./assets/video/oh-my-agent-explainer.mp4)
-
 ## สิ่งที่คุณจะได้รับ
 
 **เวิร์กโฟลว์** คือสิ่งที่คุณพิมพ์ (หรือแค่พูด) เวิร์กโฟลว์จะเรียก **บทบาท** ซึ่งก็คือผู้เชี่ยวชาญเข้ามาทำงาน ส่วน **skill** คือความรู้เฉพาะทาง แต่ละบทบาทมี skill ของตัวเอง และเอเจนต์ของคุณจะโหลด skill ที่เหลือเมื่องานต้องใช้

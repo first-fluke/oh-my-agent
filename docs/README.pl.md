@@ -16,10 +16,6 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 Następnie uruchom `oma doctor` i wpisz w agencie `/plan add user accounts with a settings page`. Sekcja [Pierwsze 5 minut](#your-first-5-minutes) przeprowadzi Cię przez to krok po kroku.
 
-![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
-
-[Obejrzyj pełne wideo (35 s)](./assets/video/oh-my-agent-explainer.mp4)
-
 ## Co dostajesz
 
 **Workflowy** to to, co wpisujesz (albo po prostu mówisz). Przywołują one **role**, czyli specjalistów. **Umiejętności** (skills) to wiedza praktyczna: każda rola ma własne, a resztę agent ładuje wtedy, gdy zadanie ich wymaga.

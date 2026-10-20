@@ -16,10 +16,6 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 Sau đó chạy `oma doctor` và gõ `/plan add user accounts with a settings page` trong agent của bạn. Phần [5 phút đầu tiên](#your-first-5-minutes) sẽ hướng dẫn từng bước.
 
-![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
-
-[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
-
 ## Bạn nhận được gì
 
 **Workflow** là thứ bạn gõ (hoặc chỉ cần nói). Chúng gọi các **vai trò**, tức là các chuyên gia. **Skill** là bí quyết chuyên môn: mỗi vai trò mang theo skill riêng, và agent của bạn tải phần còn lại bất cứ khi nào task cần đến.

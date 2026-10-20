@@ -16,10 +16,6 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 그다음 `oma doctor`를 실행하고, 에이전트에 `/plan add user accounts with a settings page`를 입력하세요. 자세한 과정은 [처음 5분](#your-first-5-minutes)에서 안내합니다.
 
-![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
-
-[전체 영상 보기(35초)](./assets/video/oh-my-agent-explainer.mp4)
-
 ## 얻을 수 있는 것
 
 **워크플로우**는 직접 입력하는(또는 그냥 말로 요청하는) 것입니다. 워크플로우는 전문가인 **역할**을 불러옵니다. **스킬**은 노하우입니다. 역할마다 자기 스킬을 갖고 있고, 나머지 스킬은 태스크에 필요할 때마다 에이전트가 불러옵니다.

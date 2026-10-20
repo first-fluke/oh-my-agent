@@ -16,10 +16,6 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 Then run `oma doctor` and type `/plan add user accounts with a settings page` in your agent. [Your first 5 minutes](#your-first-5-minutes) walks through it.
 
-![oh-my-agent explainer](./docs/assets/video/oh-my-agent-explainer.gif)
-
-[Watch the full video (35s)](./docs/assets/video/oh-my-agent-explainer.mp4)
-
 ## What you get
 
 **Workflows** are what you type (or just say). They call in **roles**, the specialists. **Skills** are the know-how: each role carries its own, and your agent loads the rest whenever a task needs them.

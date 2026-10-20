@@ -16,10 +16,6 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 続いて `oma doctor` を実行し、エージェントに `/plan add user accounts with a settings page` と入力します。手順は [最初の 5 分](#your-first-5-minutes) で説明しています。
 
-![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
-
-[フル動画を見る（35 秒）](./assets/video/oh-my-agent-explainer.mp4)
-
 ## 手に入るもの
 
 **ワークフロー** は、入力する（あるいは話しかけるだけの）ものです。ワークフローは専門家である **ロール** を呼び出します。**スキル** はノウハウです。各ロールは自分のスキルを持ち、それ以外のスキルはタスクが必要とするたびにエージェントが読み込みます。

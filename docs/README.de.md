@@ -16,10 +16,6 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 Führe danach `oma doctor` aus und tippe `/plan add user accounts with a settings page` in deinen Agenten. [Deine ersten 5 Minuten](#your-first-5-minutes) zeigt den Ablauf Schritt für Schritt.
 
-![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
-
-[Das ganze Video ansehen (35 s)](./assets/video/oh-my-agent-explainer.mp4)
-
 ## Was du bekommst
 
 **Workflows** sind das, was du tippst (oder einfach sagst). Sie holen **Rollen** hinzu, die Spezialisten. **Skills** sind das Know-how: Jede Rolle bringt ihre eigenen mit, und dein Agent lädt die übrigen, sobald eine Aufgabe sie braucht.
