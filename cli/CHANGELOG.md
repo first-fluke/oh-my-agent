@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.8.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.8.0...cli-v20.8.1) (2026-10-20)
+
+
+### Bug Fixes
+
+* **qwen:** align HUD and hook matchers with Qwen Code 0.25 ([55c3657](https://github.com/first-fluke/oh-my-agent/commit/55c36573b2838f8bfa0e428abc1cf0f792c90591))
+
 ## [20.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.7.0...cli-v20.8.0) (2026-10-20)
 
 
