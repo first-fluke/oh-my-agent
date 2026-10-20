@@ -6,7 +6,7 @@ description: Den passenden oh-my-agent-Weg samt Voraussetzungen für PDF- und HW
 
 # Content- und Research-Workflows
 
-Diese Anleitung ordnet Dokument-, Audio-, Recherche-, Medien- und Präsentationsaufgaben der zuständigen Fähigkeit zu. Wählen Sie zunächst das benötigte Artefakt und verwenden Sie anschließend den kleinsten Befehls- oder Skill-Einstiegspunkt, der ein prüfbares Ergebnis liefert. Fähigkeiten mit einer eigenen Anleitung verlinken diese in der letzten Spalte; die übrigen werden auf dieser Seite behandelt.
+Wählen Sie den benötigten Artefakttyp und verwenden Sie den kleinsten Befehls- oder Skill-Einstiegspunkt, der ein prüfbares Ergebnis liefert.
 
 | Bedarf | Einstiegspunkt | Voraussetzungen | Erstes Ergebnis | Anleitung |
 |---|---|---|---|---|

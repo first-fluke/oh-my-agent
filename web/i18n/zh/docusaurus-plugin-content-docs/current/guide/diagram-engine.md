@@ -12,7 +12,7 @@ Mermaid 始终保留：它是存放在 Markdown 和 git diff 中的文本 SSOT�
 
 ---
 
-## 始终使用最新 archify，无需安装 {#always-the-latest-archify--nothing-to-install}
+## 受管的 archify 副本 {#always-the-latest-archify--nothing-to-install}
 
 archify 是采用 MIT 许可证的智能体技能（Node ≥ 18，运行时零依赖）。oh-my-agent 不依赖你曾经安装的一份副本，而是维护**自己的受管副本**并跟踪最新版本：
 

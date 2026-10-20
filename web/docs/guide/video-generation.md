@@ -87,7 +87,8 @@ Other tools that shell out to `oma video generate --output json` parse a JSON en
 
 ---
 
-## Always-latest HyperFrames — you author the composition
+<a id="always-latest-hyperframes--you-author-the-composition"></a>
+## Managed HyperFrames toolchain and composition authoring
 
 oh-my-agent ships **no HyperFrames composition code**. Each run gets its own project at `<runDir>/hyperframes/`, scaffolded by `oma video compose` on the latest npm HyperFrames (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, shared via a `node_modules` symlink) with [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) at HEAD (`~/.cache/oma-video/hyperframes-skills/`). The agent authors the generated composition source following the scaffold's `AUTHORING.md`, the skills, and the mode spec in `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
@@ -174,7 +175,7 @@ Captions render as **static windowed cues** — the single caption line active a
 
 ## Toolchain and `doctor`
 
-The heavy toolchain (the managed HyperFrames project's `node_modules`, the embedded Pretendard font, the MoneyPrinterTurbo checkout, the Strudel music project, Chrome Headless Shell) is **provisioned on demand**, never shipped in the package. Plain `doctor` is report-only — it never installs anything:
+The heavy toolchain (the managed HyperFrames project's `node_modules`, the embedded Pretendard font, the MoneyPrinterTurbo checkout, the Strudel music project, Chrome Headless Shell) is **provisioned on demand**, never shipped in the package. Plain `doctor` only reports status; it does not install anything:
 
 ```bash
 oma video doctor

@@ -8,7 +8,7 @@ description: Hoe de oma-market-skill van oh-my-agent communitysignalen onderzoek
 
 `oma-market` beantwoordt de vraag "wat zeggen mensen echt over X in de afgelopen N dagen" — pijnpunten, trends, concurrentensentiment en discovery — op basis van communitybronnen met echte engagementcijfers: Reddit (upvotes en topcomments), X, YouTube-transcripten, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, het web en meer.
 
-Het onderzoek zelf draait op de upstream-engine [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent forkt die engine niet: het houdt een **altijd actuele beheerde kopie** bij, voert voor elke run gates uit en voegt een laag met strategische frameworks toe. Releasecadans, aantal stars en providerdekking horen bij het upstreamproject en kunnen veranderen.
+Het onderzoek draait op de upstream-engine [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent forkt die engine niet: het houdt een **beheerde kopie** bij, controleert periodiek op releases, voert gates uit voor elke run en voegt strategische frameworks toe. Releasecadans, aantal stars en providerdekking horen bij het upstreamproject en kunnen veranderen.
 
 ---
 
@@ -36,7 +36,7 @@ Het resultaat is één brief in `.agents/results/market/{topic-slug}-{YYYYMMDD}.
 
 ---
 
-## Altijd de nieuwste engine (Python 3.12+ vereist) {#always-the-latest-engine--nothing-to-install}
+## Beheerde engineversie (Python 3.12+ vereist) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
 # Illustrative output; the release tag, cache path, and Python version vary.

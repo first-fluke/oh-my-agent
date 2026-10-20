@@ -5,7 +5,7 @@ description: Ejecuta varios roles de despacho de OMA en paralelo con la sintaxis
 
 # Ejecución en paralelo
 
-La principal ventaja de oh-my-agent es ejecutar varios agentes especializados al mismo tiempo. Mientras el agente de backend implementa una API, el agente de frontend crea la interfaz y el agente mobile construye las pantallas de la app, el orquestador los coordina mediante un estado de ejecución persistente y recibos que registran cada ejecución.
+oh-my-agent permite ejecutar varios agentes especializados al mismo tiempo. Mientras el agente de backend implementa una API, el agente de frontend crea la interfaz y el agente mobile construye las pantallas de la app, el orquestador los coordina mediante un estado de ejecución persistente y recibos que registran cada ejecución.
 
 ---
 

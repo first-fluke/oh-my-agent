@@ -87,7 +87,9 @@ oma video generate "product walkthrough" --mode demo --capture ./capture.mp4
 
 ---
 
-## 常に最新の HyperFrames。コンポジションは自分で作成する
+<a id="always-latest-hyperframes--you-author-the-composition"></a>
+<a id="常に最新の-hyperframesコンポジションは自分で作成する"></a>
+## HyperFrames の管理ツールチェーンとコンポジション作成
 
 oh-my-agent に HyperFrames のコンポジションコードは**含まれていません**。各実行は `<runDir>/hyperframes/` に専用プロジェクトを持ち、最新 npm HyperFrames を使って `oma video compose` が雛形を生成します。ツールチェーンのキャッシュは `~/.cache/oma-video/hyperframes/<version>/` にあり、`node_modules` のシンボリックリンクで共有されます。[heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) は HEAD（`~/.cache/oma-video/hyperframes-skills/`）にあります。エージェントは、生成された雛形の `AUTHORING.md`、スキル、`.agents/skills/oma-video/resources/hyperframes-authoring/` のモード仕様に従って生成コンポジションのソースを作成します。
 
@@ -174,7 +176,7 @@ oma video provider list         # provider availability + key/fallback status
 
 ## ツールチェーンと `doctor`
 
-重いツールチェーン（管理対象の HyperFrames プロジェクトの `node_modules`、埋め込み Pretendard フォント、MoneyPrinterTurbo のチェックアウト、Strudel の音楽プロジェクト、Chrome Headless Shell）は**必要なときに準備され**、パッケージには含まれません。通常の `doctor` はレポートだけを行い、インストールはしません。
+重いツールチェーン（管理対象の HyperFrames プロジェクトの `node_modules`、埋め込み Pretendard フォント、MoneyPrinterTurbo のチェックアウト、Strudel の音楽プロジェクト、Chrome Headless Shell）は**必要なときに準備され**、パッケージには含まれません。通常の `doctor` は状態を報告するだけで、インストールは行いません。
 
 ```bash
 oma video doctor

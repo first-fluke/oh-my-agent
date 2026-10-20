@@ -5,13 +5,13 @@ description: Een lezersgerichte kaart van een oh-my-agent-installatie met de SSO
 
 # Projectstructuur
 
-Na de installatie van oh-my-agent krijgt je project twee kernbomen: `.agents/` (de single source of truth, inclusief de coördinatiestore `.agents/state/memories/`) en runtime-integratielagen (zoals `.claude/`, `.cursor/` en `.codex/`). Als Serena als code-intelligenceprovider is gekozen, kan er ook een optionele directory `.serena/` met Serena-onboardingmemories bestaan. Deze pagina legt de gedeelde bestanden uit en de optionele of gegenereerde paden die relevant zijn bij troubleshooting.
+Na de installatie van oh-my-agent krijgt je project twee kernbomen: `.agents/` (de single source of truth, inclusief de coördinatiestore `.agents/state/memories/`) en runtime-integratielagen (zoals `.claude/`, `.cursor/` en `.codex/`). Als Serena als code-intelligenceprovider is gekozen, kan er ook een optionele directory `.serena/` met Serena-onboardingmemories bestaan.
 
 ---
 
 ## Representatieve directorystructuur
 
-De onderstaande boom toont de gedeelde resources en representatieve domeinskills in detail. De huidige catalogus bevat 33 skilldirectories; weggelaten skills volgen hetzelfde patroon met `SKILL.md` plus optionele `resources/`, `stack/` of een skillspecifieke directory. Beschouw de live `.agents/`-boom als leidend wanneer een gegenereerd of optioneel bestand ontbreekt.
+De huidige catalogus bevat 33 skilldirectories; weggelaten skills volgen hetzelfde patroon met `SKILL.md` plus optionele `resources/`, `stack/` of een skillspecifieke directory. Beschouw de live `.agents/`-boom als leidend wanneer een gegenereerd of optioneel bestand ontbreekt.
 
 ```text
 your-project/
@@ -272,7 +272,7 @@ your-project/
 
 ## .agents/: de Source of Truth {#agents-the-source-of-truth}
 
-Dit is de kern van de directory. Alles wat agenten nodig hebben, staat hier. Voor het gedrag van agenten is dit de enige relevante directory. Alle andere directories worden hiervan afgeleid.
+De projectconfiguratie en agentresources staan hier. OMA gebruikt de bestanden als bron voor vendorintegraties.
 
 ### oma-config.cue en oma-config.yaml
 

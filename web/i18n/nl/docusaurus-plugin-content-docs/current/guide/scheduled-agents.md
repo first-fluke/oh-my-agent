@@ -40,8 +40,6 @@ oma selecteert automatisch de beschikbare backend. Je hoeft dit niet handmatig t
 
 ## Vergelijking: schedule, ralph en Claude /loop {#comparison-schedule-vs-ralph-vs-claude-loop}
 
-Deze drie functies worden soms door elkaar gehaald omdat ze allemaal betekenen dat iets later opnieuw wordt uitgevoerd. Het zijn verschillende concepten.
-
 | Functie | Trigger | Scope | Blijft actief na herstart van de vendor? |
 |---|---|---|---|
 | `oma schedule` | Tijd (cron) | Cross-vendor, OS-niveau | Ja — de OS-scheduler activeert de job ook wanneer geen vendor-runtime open is |

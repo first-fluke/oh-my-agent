@@ -5,8 +5,6 @@ description: Short definitions of oh-my-agent terms, including skills, workflows
 
 # Glossary
 
-Each entry gives a short definition and links to the page that covers the term in depth. Where a word means different things in different parts of OMA, the entry says so.
-
 ## Building blocks
 
 ### Skill

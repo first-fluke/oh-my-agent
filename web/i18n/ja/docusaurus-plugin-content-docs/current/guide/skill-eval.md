@@ -6,7 +6,7 @@ description: oma skill eval の評価タスク用フィクスチャ、.agents/ev
 
 # スキルユーティリティ評価
 
-`oma skill eval` は、スキルを読み込むことでエージェントのタスク結果が実際に改善するか測定します。`oma skill audit`（「2 つのスキルは冗長か」を問う）とは別の問いで、「このスキルは役に立つか」を問います。
+`oma skill eval` は、1 つのスキルを使った場合と使わない場合のタスク結果を比較します。`oma skill audit` は、2 つのスキルの説明が重複しているかを調べます。
 
 設計の根拠は 2 件の研究結果です。WikiSkill（arXiv:2608.27454）は、生の経験、永続知識、実行可能なスキルを分けながら、進化のための保留ゲートを維持します。SkillLens（arXiv:2605.23899）は、スキルの効用が説明の独自性とは別であることを示します。説明が独自なスキルでも役に立たない場合があり、内容が重なるスキルでも役立つ場合があります。
 
@@ -31,7 +31,7 @@ utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 
 ## クイックスタート {#a-minimal-working-fixture-set}
 
-判定には 5 個のフィクスチャ（`MIN_TASKS = 5`）が必要です。架空の `oma-scholar` スキル用の最小セットを示します。4 つはデフォルトの judge を使い、`structured-output` は決定的な `assert` チェッカーを使います。
+判定には 5 個のフィクスチャ（`MIN_TASKS = 5`）が必要です。以下は架空の `oma-scholar` スキル用の最小セットです。4 つはデフォルトの judge を使い、`structured-output` は決定的な `assert` チェッカーを使います。
 
 ```yaml
 # .agents/eval/oma-scholar/claims-only.yaml
@@ -107,7 +107,7 @@ Skill eval live run preview:
   record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
 ```
 
-次に、[レポートを読む](#reading-the-report)の説明に従って結果を読みます。この後の節はリファレンスです。
+次に、[レポートを読む](#reading-the-report)の説明に従って結果を読みます。
 
 ---
 

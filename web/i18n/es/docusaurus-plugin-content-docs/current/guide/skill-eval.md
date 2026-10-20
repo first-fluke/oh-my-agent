@@ -6,7 +6,7 @@ description: Cómo escribir fixtures de tareas de evaluación para oma skill eva
 
 # Evaluación de utilidad de skills
 
-`oma skill eval` mide si cargar una skill mejora realmente los resultados de las tareas del agente. Responde a una pregunta distinta de `oma skill audit` (que pregunta «¿son redundantes dos skills?»): pregunta «¿esta skill ayuda?».
+`oma skill eval` mide el efecto de cargar una skill en los resultados de tareas del agente. `oma skill audit` responde otra pregunta: si dos skills son redundantes.
 
 El diseño sigue dos hallazgos de investigación: WikiSkill (arXiv:2608.27454) separa experiencia en bruto, conocimiento persistente y skills ejecutables, conservando gates reservados para la evolución; SkillLens (arXiv:2605.23899) muestra que la utilidad de una skill es independiente de que su descripción sea distintiva: una skill distinta puede seguir siendo inútil y una que se solapa puede seguir ayudando.
 
@@ -107,7 +107,7 @@ Skill eval live run preview:
   record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
 ```
 
-A continuación, lee el resultado como se describe en [Leer el informe](#reading-the-report). Las secciones siguientes son material de referencia.
+Lee el resultado según las indicaciones de [Leer el informe](#reading-the-report).
 
 ---
 

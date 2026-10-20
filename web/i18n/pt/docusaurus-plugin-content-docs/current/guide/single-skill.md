@@ -6,7 +6,7 @@ description: Guia detalhado para tarefas de domínio único no oh-my-agent, cobr
 
 # Execução com Skill Única
 
-A execução com uma única skill é o caminho rápido: um agente, um domínio e uma tarefa focada. Não há sobrecarga de orquestração nem coordenação entre vários agentes. Um host ou workflow selecionado pode encaminhar um prompt em linguagem natural para a skill; o próprio sistema de hooks detecta workflows, e o comportamento de roteamento depende do runtime selecionado.
+Uma única skill atende a uma tarefa focada em um domínio, executada por um agente. Esse fluxo evita a sobrecarga de orquestração e coordenação entre agentes. Um host ou workflow selecionado pode encaminhar um prompt em linguagem natural para a skill; o próprio sistema de hooks detecta workflows, e o comportamento de roteamento depende do runtime selecionado.
 
 ## Caminho rápido
 

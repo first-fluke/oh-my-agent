@@ -336,7 +336,7 @@ Traktowanie przeglądu QA jako opcjonalnego. Ustalenia CRITICAL i HIGH oznaczaj�
 
 ### 5. Ręczna koordynacja plików
 
-Ręczne scalanie wyników agentów zamiast przekazania integracji potokowi weryfikacji i QA. Zautomatyzowany potok wychwytuje problemy pomijane podczas ręcznego przeglądu.
+Ręczne scalanie wyników agentów zamiast przekazania integracji potokowi weryfikacji i QA. Potok sprawdza kontrakty, zakres zmian i ustalenia QA.
 
 ### 6. Nadmierna równoległość
 

@@ -32,7 +32,7 @@ Replay and suite-scoped knowledge are tied to the full task/evaluator contract, 
 
 ## How it works
 
-The diagram shows one optimization run. An incomplete evaluation or an exhausted budget also ends the epoch loop early.
+An incomplete evaluation or an exhausted budget also ends the epoch loop early.
 
 ```mermaid
 flowchart TD

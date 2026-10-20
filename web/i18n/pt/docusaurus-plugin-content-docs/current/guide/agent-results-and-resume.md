@@ -6,7 +6,7 @@ description: Registre o trabalho dos agentes com claims verificáveis, inspecion
 
 # Resultados de agentes e retomada
 
-O OMA trata o resultado de um agente como um pequeno registro de evidências, não apenas como o código de saída do processo. Uma execução registra os IDs da tarefa e da sessão, a impressão digital do workspace, os recibos de verificação, os arquivos alterados, o trabalho não resolvido e os hashes dos artefatos. Assim, um coordenador pode reutilizar uma tarefa concluída somente enquanto o contrato de aceitação e as entradas ainda coincidirem.
+O OMA registra os resultados dos agentes com evidências além do código de saída do processo. Uma execução registra os IDs da tarefa e da sessão, a impressão digital do workspace, os recibos de verificação, os arquivos alterados, o trabalho não resolvido e os hashes dos artefatos. Assim, um coordenador pode reutilizar uma tarefa concluída somente enquanto o contrato de aceitação e as entradas ainda coincidirem.
 
 Use o ciclo de vida diretamente quando estiver executando um agente nativo. Workflows e `oma agent spawn` criam os mesmos registros por você e deixam a finalização da execução gerenciada a cargo do coordenador pai. Para os termos usados aqui, consulte [Registro de execução e claim](../getting-started/glossary.md#run-record-and-claim) e [Plano](../getting-started/glossary.md#plan) no glossário.
 

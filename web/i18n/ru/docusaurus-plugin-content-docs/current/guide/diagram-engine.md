@@ -8,11 +8,11 @@ description: Как oh-my-agent выбирает между Mermaid и необ�
 
 `/architecture` (ADR, рекомендации, review) и `/explain` (explainers изменений кода) создают структурные диаграммы. Для `/architecture` это всегда **Mermaid** blocks внутри Markdown-артефакта (`/explain` рисует собственные inline SVG diagram) и — когда можно разрешить [archify](https://github.com/tt-a1i/archify), что является обычным случаем — дополнительно **interactive validated HTML diagram** рядом с артефактом: dark/light theme, pan-zoom, search, tracing отношений, PNG/SVG/WebM export, render из typed JSON spec.
 
-Mermaid никуда не исчезает: это текстовый SSOT, живущий в Markdown и Git diff. archify — производный артефакт.
+Mermaid остаётся текстовым SSOT в Markdown и Git diff; archify — производный артефакт.
 
 ---
 
-## Всегда последняя версия archify — ничего устанавливать не нужно {#always-the-latest-archify--nothing-to-install}
+## Управляемая копия archify {#always-the-latest-archify--nothing-to-install}
 
 archify — agent skill под лицензией MIT (Node ≥ 18, без runtime dependencies). oh-my-agent не полагается на однажды установленную вами копию; он поддерживает **собственную управляемую копию** и отслеживает последний release:
 

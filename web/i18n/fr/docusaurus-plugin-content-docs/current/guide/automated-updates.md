@@ -277,7 +277,7 @@ Les entrées parviennent au script via `env:` plutôt que par interpolation `${{
 
 L'option `--ci` exécute la mise à jour en mode non interactif (toutes les invites sont ignorées et le texte est produit sans animation de spinner). L'option `--force`, lorsqu'elle est activée, écrase les fichiers de configuration personnalisés.
 
-Voici ce que `oma update --ci` fait en interne :
+Étapes de `oma update --ci` :
 
 1. Récupère `prompt-manifest.json` depuis la branche principale pour obtenir le dernier numéro de version.
 2. Compare cette version à la version locale dans `.agents/skills/_version.json`.

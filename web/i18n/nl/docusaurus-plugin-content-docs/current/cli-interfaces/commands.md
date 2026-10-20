@@ -34,7 +34,7 @@ De canonieke namen hieronder komen uit `oma describe`. Alleen deze door spaties 
 
 ## Huidig commandolandschap
 
-Deze kaart houdt de uitgebreide referenties hieronder scanbaar en maakt minder vaak gebruikte families vindbaar. Gebruik `--help` van een familie of `oma describe <path>` voor de exacte argumentgrammatica; [CLI-opties](./options.md) bevat de volledige vlaggenmatrix van het register.
+Gebruik `--help` van een familie of `oma describe <path>` voor de exacte argumentgrammatica; [CLI-opties](./options.md) bevat de volledige vlaggenmatrix van het register.
 
 | Familie | Geregistreerde paden |
 |:-------|:-----------------|

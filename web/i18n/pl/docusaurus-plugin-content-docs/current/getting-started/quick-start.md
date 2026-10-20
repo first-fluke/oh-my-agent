@@ -5,7 +5,7 @@ description: Uruchom jedno zadanie o ograniczonym zakresie od instalacji po wery
 
 # Szybki start
 
-Użyj tej strony, aby uruchomić jedno małe zadanie i zapisać konkretny wynik. Potrzebujesz katalogu projektu oraz co najmniej jednego obsługiwanego CLI AI lub IDE. Instalator może skonfigurować `bun`, `uv`, Serenę, CUE oraz globalne polecenie `oma` na macOS, Linuxie lub Windowsie; wybrana integracja hosta jest wymagana przy pierwszym prompcie, natomiast integracje dostawców i przeglądarki są opcjonalne.
+Aby uruchomić jedno małe zadanie i zapisać konkretny wynik, przygotuj katalog projektu oraz co najmniej jedno obsługiwane CLI AI lub IDE. Instalator może skonfigurować `bun`, `uv`, Serenę, CUE oraz globalne polecenie `oma` na macOS, Linuxie lub Windowsie; wybrana integracja hosta jest wymagana przy pierwszym prompcie, natomiast integracje dostawców i przeglądarki są opcjonalne.
 
 ## 1. Zainstaluj
 

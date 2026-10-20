@@ -34,7 +34,7 @@ Los nombres canónicos de abajo proceden de `oma describe`. Solo se aceptan esta
 
 ## Superficie actual de comandos {#current-command-surface}
 
-Este mapa facilita recorrer las referencias extensas de abajo y descubrir las familias menos usadas. Usa `--help` de cada familia o `oma describe <path>` para consultar la gramática exacta de los argumentos; [Opciones del CLI](./options.md) contiene la matriz completa de flags del registro.
+La tabla agrupa las rutas registradas por familia. Usa `--help` para consultar la gramática exacta de los argumentos o ejecuta `oma describe <path>`; [Opciones del CLI](./options.md) contiene la matriz completa de flags del registro.
 
 | Familia | Rutas registradas |
 |:-------|:-----------------|
@@ -381,7 +381,7 @@ oma stats reset [--json] [--output <format>]
 - USD estimados mediante una tabla conservadora de tarifas por token de entrada y proveedor (Claude $3/M, Codex $5/M, Gemini $0.3/M, Qwen $0/M, Cursor $5/M, Antigravity $0.3/M)
 - Desglose por proveedor (tokens · spawns · USD)
 
-La estimación es un mínimo, no un importe exacto de facturación. Configura `session.quota_cap` en `.agents/oma-config.yaml` para imponer límites estrictos en el momento del spawn; consulta la página Why oh-my-agent de Primeros pasos para conocer el marco de calidad en el que se usan estos límites.
+La estimación es un mínimo, no un importe exacto de facturación. Configura `session.quota_cap` en `.agents/oma-config.yaml` para imponer límites estrictos en el momento del spawn.
 
 Las métricas se almacenan en `.agents/state/metrics.json`; cuando existe, también se lee el archivo legacy `.serena/metrics.json`. Los datos se recopilan de las estadísticas de git y de los archivos de memoria.
 

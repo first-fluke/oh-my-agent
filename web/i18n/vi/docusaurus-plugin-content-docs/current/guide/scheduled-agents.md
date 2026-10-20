@@ -18,7 +18,7 @@ Khi chạy `oma schedule create`, oma:
 2. Đăng ký job với OS scheduler (macOS launchd, Linux systemd --user hoặc Windows Task Scheduler). OS job gọi `oma schedule run <id>` theo cron interval đã cấu hình.
 3. Khi đến giờ, `oma schedule run` tra job, inject environment variable đã capture, gọi `oma agent spawn` và ghi run log vào `~/.oma/schedule/runs/<id>/<timestamp>.md`.
 
-Manifest là source of truth duy nhất (SSOT). OS scheduler chỉ là executor. Toàn bộ state — job definition, run log và timestamp chạy lần cuối — nằm dưới `~/.oma/schedule/`.
+Manifest là source of truth duy nhất (SSOT). OS scheduler chỉ là executor. Toàn bộ state nằm dưới `~/.oma/schedule/`: job definition, run log và timestamp chạy lần cuối.
 
 ### Thiết kế chỉ dùng global {#global-only-by-design}
 

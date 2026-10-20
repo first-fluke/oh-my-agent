@@ -5,7 +5,7 @@ description: Wartości domyślne oh-my-agent wpływające na routing, wybór mod
 
 # Ważne wartości domyślne
 
-Wartości domyślne dobieramy tak, aby pierwszy projekt był użyteczny, a konfiguracja należąca do użytkownika pozostała stabilna. Są rozstrzygane w czasie działania, więc pominięty klucz może zachowywać się inaczej niż jawnie pusta wartość. Zacznij tutaj, gdy harness działa, ale zachowuje się inaczej, niż oczekujesz.
+Wartości domyślne utrzymują stabilność konfiguracji użytkownika i są rozstrzygane w czasie działania, więc pominięty klucz może zachowywać się inaczej niż jawnie pusta wartość. Użyj tych informacji, gdy harness działa inaczej, niż oczekujesz.
 
 ## Wartości domyślne wpływające na pierwsze uruchomienie
 

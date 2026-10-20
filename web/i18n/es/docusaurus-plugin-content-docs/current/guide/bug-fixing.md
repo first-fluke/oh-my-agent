@@ -8,7 +8,7 @@ description: Flujo estructurado de depuración en siete pasos, con triaje de sev
 
 ## Cuándo usar el flujo de depuración
 
-Usa `/debug` (o di «fix bug», «fix error» o «debug» en lenguaje natural) cuando tengas un bug concreto que diagnosticar y corregir. El flujo ofrece un enfoque estructurado y reproducible para depurar, y evita la trampa habitual de corregir los síntomas en lugar de las causas raíz.
+Usa `/debug` (o di «fix bug», «fix error» o «debug» en lenguaje natural) cuando tengas un bug concreto que diagnosticar y corregir. El flujo ofrece pasos reproducibles para identificar la causa raíz y corregir el bug.
 
 El flujo de depuración admite todos los proveedores configurados. Los pasos 1-5 se ejecutan inline. El paso 6 (búsqueda de patrones similares) puede delegarse a un subagente `debug-investigator` cuando el alcance sea amplio (10+ archivos o errores que abarcan varios dominios); después se registra la memoria del paso 7.
 
@@ -172,7 +172,7 @@ En este paso ocurren dos acciones:
    - Comprueba que la corrección funciona (debe pasar con la corrección).
    - Evita que el mismo bug reaparezca en cambios futuros.
 
-La prueba de regresión es el resultado más importante del flujo de depuración. Sin ella, cualquier cambio futuro puede volver a introducir el mismo bug.
+La prueba de regresión detecta si un cambio futuro vuelve a introducir el mismo bug.
 
 ### Paso 6: buscar patrones similares
 

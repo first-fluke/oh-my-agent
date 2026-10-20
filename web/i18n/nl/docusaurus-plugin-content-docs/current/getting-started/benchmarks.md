@@ -5,7 +5,7 @@ description: Vijf Claude Code-harnessen bouwden hetzelfde MVP voor een creatief 
 
 # Benchmarks
 
-Vijf Claude Code-harnessen bouwden vanuit dezelfde ruwe prompt hetzelfde MVP voor een creatief 3D-leerplatform voor kinderen. **oh-my-agent eindigde als eerste met 80.6/100** volgens een rubric met vijf assen (functionaliteit, specificatie, visualisatie, engineering en efficiëntie).
+Vijf Claude Code-harnessen bouwden op basis van één ruwe prompt een MVP voor een creatief 3D-leerplatform voor kinderen. **oh-my-agent scoorde 80.6/100 en eindigde als eerste**, met scores voor functionaliteit, specificatie, visualisatie, engineering en efficiëntie.
 
 > Uitvoeringscondities: `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. OAuth via de ingelogde `claude` CLI van de gebruiker (zonder `ANTHROPIC_API_KEY`).
 

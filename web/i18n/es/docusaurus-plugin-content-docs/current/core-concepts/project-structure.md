@@ -5,13 +5,13 @@ description: Mapa orientado al lector de una instalación de oh-my-agent, con la
 
 # Estructura del proyecto
 
-Después de instalar oh-my-agent, tu proyecto obtiene dos árboles de directorios principales: `.agents/` (la única fuente de verdad, incluido el almacén de coordinación `.agents/state/memories/`) y las capas de integración del runtime (por ejemplo, `.claude/`, `.cursor/` y `.codex/`). Si eliges Serena como proveedor de inteligencia de código, también puede existir un directorio `.serena/` opcional para sus memorias de incorporación. Esta página explica los archivos compartidos y las rutas opcionales o generadas que importan al solucionar problemas.
+Después de instalar oh-my-agent, tu proyecto obtiene dos árboles de directorios principales: `.agents/` (la única fuente de verdad, incluido el almacén de coordinación `.agents/state/memories/`) y las capas de integración del runtime (por ejemplo, `.claude/`, `.cursor/` y `.codex/`). Si eliges Serena como proveedor de inteligencia de código, también puede existir un directorio `.serena/` opcional para sus memorias de incorporación. Los archivos compartidos y las rutas opcionales o generadas pueden ser relevantes al solucionar problemas.
 
 ---
 
 ## Árbol de directorios representativo
 
-El árbol siguiente muestra en detalle los recursos compartidos y las skills de dominio representativas. El catálogo actual tiene 33 directorios de skills; las skills omitidas siguen el mismo patrón de `SKILL.md` con `resources/`, `stack/` o directorios específicos opcionales. Trata el árbol activo de `.agents/` como la autoridad cuando un archivo generado u opcional no esté presente.
+El catálogo actual tiene 33 directorios de skills; las skills omitidas siguen el mismo patrón de `SKILL.md` con `resources/`, `stack/` o directorios específicos opcionales. Trata el árbol activo de `.agents/` como la autoridad cuando un archivo generado u opcional no esté presente.
 
 ```text
 your-project/
@@ -272,7 +272,7 @@ your-project/
 
 ## .agents/: la fuente de verdad {#agents-the-source-of-truth}
 
-Este es el directorio central. Todo lo que necesitan los agentes vive aquí. Es el único directorio que importa para el comportamiento de los agentes; todos los demás directorios se derivan de él.
+Este es el único directorio que determina el comportamiento de los agentes; todos los demás directorios se derivan de él.
 
 ### oma-config.cue y oma-config.yaml
 

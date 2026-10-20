@@ -6,9 +6,9 @@ description: Cách skill oma-market của oh-my-agent chạy nghiên cứu commu
 
 # Nghiên cứu thị trường {#market-research}
 
-`oma-market` trả lời “mọi người thực sự đang nói gì về X trong N ngày qua” — pain point, trend, sentiment đối thủ và discovery — từ community source kèm engagement number thực: Reddit (upvote và top comment), X, YouTube transcript, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web và hơn nữa.
+`oma-market` tìm pain point, xu hướng, sentiment về đối thủ và chủ đề được quan tâm trong khoảng N ngày, dựa trên các nguồn cộng đồng và số liệu engagement thực tế. Các nguồn gồm Reddit (upvote và top comment), X, YouTube transcript, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky và web.
 
-Nghiên cứu chạy trên upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) engine (MIT, Python 3.12+). oh-my-agent không fork nó: giữ **managed copy luôn mới nhất**, gate mọi run và thêm strategic-framework layer lên trên. Release cadence, star count và provider coverage thuộc upstream project và có thể thay đổi.
+Nghiên cứu chạy trên upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) engine (MIT, Python 3.12+). oh-my-agent không fork dự án này: duy trì một bản sao được quản lý, áp dụng gate chủ đề trong mỗi lượt chạy và thêm lớp framework chiến lược. Tần suất release, số sao và độ phủ provider phụ thuộc dự án upstream và có thể thay đổi.
 
 ---
 
@@ -36,7 +36,7 @@ Kết quả là một brief tại `.agents/results/market/{topic-slug}-{YYYYMMDD
 
 ---
 
-## Engine luôn mới nhất (cần Python 3.12+) {#always-the-latest-engine--nothing-to-install}
+## Cache engine và cập nhật phiên bản (yêu cầu Python 3.12+) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
 # Illustrative output; the release tag, cache path, and Python version vary.

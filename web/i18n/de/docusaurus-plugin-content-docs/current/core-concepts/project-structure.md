@@ -5,13 +5,13 @@ description: Leserorientierte Übersicht einer oh-my-agent-Installation mit der 
 
 # Projektstruktur
 
-Nach der Installation von oh-my-agent erhält Ihr Projekt zwei zentrale Verzeichnisbäume: `.agents/` (die einzige Wahrheitsquelle einschließlich des Koordinationsspeichers `.agents/state/memories/`) und Laufzeit-Integrationsschichten wie `.claude/`, `.cursor/` und `.codex/`. Wenn Serena als Anbieter für Code-Intelligence ausgewählt ist, kann zusätzlich das optionale Verzeichnis `.serena/` für Serenas Onboarding-Memories vorhanden sein. Diese Seite erklärt die gemeinsamen Dateien sowie die optionalen und generierten Pfade, die bei der Fehlersuche relevant sind.
+Nach der Installation von oh-my-agent erhält Ihr Projekt zwei zentrale Verzeichnisbäume: `.agents/` (die einzige Wahrheitsquelle einschließlich des Koordinationsspeichers `.agents/state/memories/`) und Laufzeit-Integrationsschichten wie `.claude/`, `.cursor/` und `.codex/`. Wenn Serena als Anbieter für Code-Intelligence ausgewählt ist, kann zusätzlich das optionale Verzeichnis `.serena/` für Serenas Onboarding-Memories vorhanden sein. Bei der Fehlersuche sind die gemeinsamen Dateien sowie optionale und generierte Pfade relevant.
 
 ---
 
 ## Repräsentativer Verzeichnisbaum {#representative-directory-tree}
 
-Der folgende Baum zeigt die gemeinsamen Ressourcen und repräsentative Skills für verschiedene Domänen im Detail. Der aktuelle Katalog enthält 33 Skill-Verzeichnisse; ausgelassene Skills folgen demselben Muster aus `SKILL.md` und optionalen `resources/`, `stack/` oder skill-spezifischen Verzeichnissen. Maßgeblich ist immer der aktuelle `.agents/`-Baum, wenn eine generierte oder optionale Datei fehlt.
+Der Verzeichnisbaum enthält gemeinsame Ressourcen und repräsentative Skills für verschiedene Domänen. Der aktuelle Katalog enthält 33 Skill-Verzeichnisse; ausgelassene Skills folgen demselben Muster aus `SKILL.md` und optionalen `resources/`, `stack/` oder skill-spezifischen Verzeichnissen. Maßgeblich ist immer der aktuelle `.agents/`-Baum, wenn eine generierte oder optionale Datei fehlt.
 
 ```text
 your-project/
@@ -273,7 +273,7 @@ your-project/
 
 ## `.agents/`: die zentrale Wahrheitsquelle {#agents-the-source-of-truth}
 
-Dies ist das Kernverzeichnis. Alles, was Agenten benötigen, liegt hier. Für das Verhalten der Agenten ist nur dieses Verzeichnis maßgeblich; alle anderen Verzeichnisse werden daraus abgeleitet.
+Für das Verhalten der Agenten ist nur dieses Verzeichnis maßgeblich; alle anderen Verzeichnisse werden daraus abgeleitet.
 
 ### oma-config.cue und oma-config.yaml
 

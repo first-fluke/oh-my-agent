@@ -5,7 +5,7 @@ description: Meerdere OMA-dispatchrollen parallel uitvoeren met de actuele CLI-s
 
 # Parallelle uitvoering
 
-Het belangrijkste voordeel van oh-my-agent is dat je meerdere gespecialiseerde agenten tegelijk kunt uitvoeren. Terwijl de backend-agent een API implementeert, maakt de frontend-agent de UI en bouwt de mobile-agent appschermen; de orchestrator coördineert ze via duurzame runstate en receipts.
+Met oh-my-agent kun je meerdere gespecialiseerde agenten tegelijk uitvoeren. Terwijl de backend-agent een API implementeert, maakt de frontend-agent de UI en bouwt de mobile-agent appschermen; de orchestrator coördineert ze via duurzame runstate en receipts.
 
 ---
 

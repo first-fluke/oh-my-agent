@@ -6,9 +6,9 @@ description: Как skill oma-market проводит исследование �
 
 # Исследование рынка
 
-`oma-market` отвечает на вопрос «что люди на самом деле говорят о X за последние N дней» — о проблемах, трендах, отношении к конкурентам и поиске новых возможностей — используя источники сообществ с реальными показателями вовлечённости: Reddit (upvotes и лучшие comments), X, YouTube transcripts, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web и другие.
+`oma-market` собирает данные о проблемах, трендах, отношении к конкурентам и новых возможностях за последние N дней по реальным показателям вовлечённости в сообществах: Reddit (upvotes и лучшие comments), X, YouTube transcripts, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web и другие.
 
-Само исследование выполняется через upstream engine [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent не создаёт его fork: он поддерживает **управляемую копию, всегда обновлённую до последнего release**, защищает каждый запуск gate и добавляет сверху слой стратегических framework. Частота release, число stars и покрытие provider принадлежат upstream project и могут меняться.
+Исследование выполняется через upstream engine [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent не форкает этот проект, а поддерживает управляемую копию, проверяет каждый запуск gate и добавляет слой стратегических frameworks. Частота release, число stars и покрытие provider принадлежат upstream project и могут меняться.
 
 ---
 

@@ -12,7 +12,7 @@ Start vanuit de project- of installatieroot met een machineleesbare diagnose:
 oma doctor --json
 ```
 
-Het commando hoort JSON op te leveren met bevindingen over de installatie, vendor, configuratie en integraties. Voeg `--profile` toe wanneer het probleem met model- of agentresolutie te maken heeft. Bewaar de JSON wanneer je een probleem meldt; die bevat de geselecteerde paden en controles, zonder dat je in proza hoeft te gissen.
+Het commando hoort JSON op te leveren met bevindingen over de installatie, vendor, configuratie en integraties. Voeg `--profile` toe wanneer het probleem met model- of agentresolutie te maken heeft. Voeg de JSON toe aan een bugmelding; die bevat de geselecteerde paden en controles.
 
 ## Vind je symptoom {#find-your-symptom}
 

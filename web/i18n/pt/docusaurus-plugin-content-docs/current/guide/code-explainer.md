@@ -97,7 +97,7 @@ Solicite `reviewer` adicionando “for reviewer” ao comando, como em `/explain
 
 ## Conteúdo do documento
 
-Esta seção descreve o modo change. Um explainer do modo change é uma única página longa com rolagem (sem abas e sem navegação multipágina), com um índice seguido de quatro seções fixas, nesta ordem:
+Um explainer do modo change é uma única página longa com rolagem (sem abas e sem navegação multipágina), com um índice seguido de quatro seções fixas, nesta ordem:
 
 1. **Background** — Tier A (contexto profundo de sistema/arquitetura, marcado como “ignorável se você já conhece o sistema”) e Tier B (contexto restrito a esta alteração)
 2. **Intuition** — a essência da alteração com exemplos obrigatórios de dados de brinquedo, reforçada por 2–3 famílias de diagramas reutilizadas (mock simplificado de UI, diagrama de sistema/fluxo de dados com dados de exemplo, estado antes/depois) renderizadas apenas como HTML/SVG inline — sem arte ASCII

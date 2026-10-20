@@ -36,7 +36,7 @@ Umiejętność aktywuje się przy słowach „shorts”, „reels”, „screenc
 | `explainer` | 16:9 | Poziome objaśnienie na podstawie README, kodu albo opisu danych. |
 | `demo` | wyliczane | Walkthrough zbudowany z Twojego własnego nagrania ekranu przekazanego przez `--capture <file>`. `--source web --url <url>` zapisuje jedynie zamaskowany URL jako kontekst; oma nigdy nie otwiera przeglądarki, nie nagrywa ekranu ani nie automatyzuje logowania. |
 
-Tryb wybiera rozsądne wartości domyślne; gdy potrzebujesz innych, przekaż odpowiednie flagi.
+Tryb ustawia wartości domyślne; aby je zmienić, przekaż odpowiednie flagi.
 
 ---
 

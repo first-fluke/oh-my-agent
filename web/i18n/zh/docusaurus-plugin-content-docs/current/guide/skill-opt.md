@@ -32,7 +32,7 @@ description: "使用 oma skill optimize，通过确定性的训练、验证和�
 
 ## 工作原理 {#how-it-works}
 
-下图展示一次优化运行。评估不完整或预算耗尽时，epoch 循环也会提前结束。
+评估不完整或预算耗尽时，epoch 循环也会提前结束。
 
 ```mermaid
 flowchart TD

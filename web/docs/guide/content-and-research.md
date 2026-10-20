@@ -6,7 +6,7 @@ description: Choose the right oh-my-agent pathway, with its prerequisites, for P
 
 # Content and Research Workflows
 
-This guide routes document, audio, research, media, and presentation work to the capability that owns it. Start with the artifact you need, then use the smallest command or skill entry point that produces a reviewable result. Capabilities with their own guide link to it in the last column; the rest are covered on this page.
+Choose by the artifact you need, then use the smallest command or skill entry point that produces a reviewable result. Use the linked guide when a capability has a dedicated page.
 
 | Need | Entry point | Prerequisites | First result | Guide |
 |---|---|---|---|---|
@@ -25,7 +25,7 @@ This guide routes document, audio, research, media, and presentation work to the
 | Translate or review localized prose | `oma-translation` skill | none | Target-language text or an evidence-backed review | [below](#translate-or-review-localized-content) |
 | Draft or audit academic prose | `oma-academic-writing` skill | none | Draft, revision, or compliance report with a Claim-Evidence Map | [below](#draft-or-audit-academic-writing) |
 
-The `oma` command names in this page are registered public commands. `uvx`, `bunx`, and `bun` are external conversion tools documented by their owning skills. The remaining [skills](../getting-started/glossary.md#skill) are natural-language or slash-command entry points; there is no standalone `oma pdf`, `oma hwp`, `oma voice`, `oma translation`, or `oma academic-writing` command.
+Every `oma` command named below is a registered public command. `uvx`, `bunx`, and `bun` are external conversion tools documented by their owning skills. The remaining [skills](../getting-started/glossary.md#skill) are natural-language or slash-command entry points; there is no standalone `oma pdf`, `oma hwp`, `oma voice`, `oma translation`, or `oma academic-writing` command.
 
 ## Extract PDF content
 
@@ -185,7 +185,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` returns prose, Writing Notes, and a Claim-Evidence Map. `revise` returns the original and revised blocks plus concrete changes. `review` returns PASS/FAIL findings for sentence structure, verbs, hedging, specificity, anti-AI patterns, paragraph clarity, rhythm, and claim-evidence alignment. The skill reads an existing draft in full for revise/review, weakens or removes unsupported claims, and hands non-English output to `oma-translation` after the English pass.
 
-Use `oma scholar` for source discovery and sidecar evidence before drafting. If a citation or rubric is missing, mark the claim as pending or ask for the missing constraint; do not fill the gap with an invented source. The useful completion artifact is the prose plus the evidence map or audit report, rather than a generic “polished” paragraph with no traceable support.
+Use `oma scholar` for source discovery and sidecar evidence before drafting. If a citation or rubric is missing, mark the claim as pending or ask for the missing constraint; do not fill the gap with an invented source. Return the prose with its evidence map or audit report so readers can trace its claims.
 
 ## Recovery checklist
 

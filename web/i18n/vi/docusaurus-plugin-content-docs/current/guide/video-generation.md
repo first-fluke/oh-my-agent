@@ -83,11 +83,11 @@ Không có `--script`, CLI dựng skeleton ba scene deterministic từ nội dun
 
 Mỗi run in run directory của nó. `--seed` cố định input planning deterministic; live provider output và capture footage vẫn có thể thay đổi. Render lại run directory hiện có khi cần dùng lại render spec và asset đã lưu.
 
-Tool khác gọi shell tới `oma video generate --output json` sẽ parse JSON envelope từ stdout: `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`. Không có key `outputs` — đọc output/asset path từ manifest tại `manifestPath`.
+Tool khác gọi shell tới `oma video generate --output json` sẽ parse JSON envelope từ stdout: `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`. JSON không có key `outputs`. Đọc output hoặc asset path từ manifest tại `manifestPath`.
 
 ---
 
-## HyperFrames luôn mới nhất — bạn author composition {#always-latest-hyperframes-you-author-the-composition}
+## Cache HyperFrames và cách author composition {#always-latest-hyperframes-you-author-the-composition}
 
 oh-my-agent **không ship HyperFrames composition code**. Mỗi run có project riêng tại `<runDir>/hyperframes/`, được scaffold bởi `oma video compose` trên npm HyperFrames mới nhất (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, dùng chung qua symlink `node_modules`) cùng [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) tại HEAD (`~/.cache/oma-video/hyperframes-skills/`). Agent author generated composition source theo `AUTHORING.md` của scaffold, skill và mode spec trong `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
@@ -168,7 +168,7 @@ Provider stage resolve tới **real branch** và, khi stage hỗ trợ, **determ
 
 Không tự động hóa credential: bạn tự thực hiện mọi login trên màn hình trong lúc ghi hình; URL và query token được mask trong log và manifest.
 
-Caption render dưới dạng **static windowed cue** — một caption line hoạt động ở frame hiện tại, được CSS wrap, không có per-word animation.
+Caption render dưới dạng **static windowed cue**: một caption line hoạt động ở frame hiện tại, được CSS wrap và không có per-word animation.
 
 ---
 
@@ -191,7 +191,7 @@ oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + ven
 oma video doctor --install-strudel     # Strudel music renderer for --music (installs AGPL-3.0-or-later packages locally)
 ```
 
-`--install` cũng fetch Pretendard font nhúng (pinned release) vào shared toolchain cache — đây là một phần của determinism boundary. Khi network failure, command cảnh báo và render fallback sang system font; khác biệt về browser và OS vẫn có thể ảnh hưởng đến output đã encode.
+`--install` cũng fetch Pretendard font nhúng (pinned release) vào shared toolchain cache. Font này là một phần của determinism boundary. Khi network failure, command cảnh báo và render fallback sang system font; khác biệt về browser và OS vẫn có thể ảnh hưởng đến output đã encode.
 
 ---
 

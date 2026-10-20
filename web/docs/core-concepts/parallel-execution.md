@@ -5,7 +5,7 @@ description: Run multiple OMA dispatch roles in parallel with the current CLI sy
 
 # Parallel Execution
 
-The core advantage of oh-my-agent is running multiple specialized agents simultaneously. While the backend agent implements an API, the frontend agent creates the UI, and the mobile agent builds app screens, the orchestrator coordinates them through durable run state and receipts.
+oh-my-agent runs multiple specialized agents in parallel. For example, backend, frontend, and mobile agents can work on separate parts of an application while the orchestrator coordinates them through durable run state and receipts.
 
 ---
 

@@ -8,7 +8,7 @@ description: Gestructureerde debugworkflow in zeven stappen met ernsttriage, esc
 
 ## Wanneer gebruik je de debugworkflow?
 
-Gebruik `/debug` (of zeg in natuurlijke taal "fix bug", "fix error" of "debug") wanneer je een specifieke bug wilt diagnosticeren en oplossen. De workflow biedt een gestructureerde, reproduceerbare aanpak die de veelgemaakte fout voorkomt waarbij alleen symptomen worden opgelost in plaats van de hoofdoorzaak.
+Gebruik `/debug` (of zeg in natuurlijke taal "fix bug", "fix error" of "debug") wanneer je een specifieke bug wilt diagnosticeren en oplossen. De workflow begeleidt je van reproductie en diagnose naar een fix en regressietest.
 
 De debugworkflow ondersteunt alle geconfigureerde vendors. Stappen 1–5 draaien inline. Stap 6 (scannen op vergelijkbare patronen) kan een `debug-investigator`-subagent delegeren wanneer de scope breed is (10+ bestanden of fouten over meerdere domeinen), gevolgd door de geheugenregistratie in stap 7.
 

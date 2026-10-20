@@ -6,7 +6,7 @@ description: Hướng dẫn chi tiết cho tác vụ một lĩnh vực trong oh-
 
 # Thực thi một skill
 
-Thực thi một skill là đường đi nhanh cho một tác vụ tập trung: một agent, một lĩnh vực, một mục tiêu rõ ràng. Không có chi phí điều phối hay phối hợp nhiều agent. Host hoặc workflow được chọn có thể định tuyến prompt ngôn ngữ tự nhiên đến skill; hệ thống hook tự phát hiện workflow và hành vi định tuyến phụ thuộc runtime được chọn.
+Thực thi một skill phù hợp với tác vụ có mục tiêu rõ ràng trong một lĩnh vực, do một agent xử lý. Cách này giảm phần điều phối và phối hợp giữa nhiều agent. Host hoặc workflow được chọn có thể định tuyến prompt ngôn ngữ tự nhiên đến skill; hệ thống hook tự phát hiện workflow và hành vi định tuyến phụ thuộc runtime được chọn.
 
 ## Lối đi nhanh
 

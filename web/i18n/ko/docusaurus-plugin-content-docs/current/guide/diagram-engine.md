@@ -6,13 +6,14 @@ description: oh-my-agent가 아키텍처, 시퀀스, 데이터 흐름 다이어�
 
 # 다이어그램 엔진 {#diagram-engine}
 
-`/architecture`(ADR, 권장안, 리뷰)와 `/explain`(코드 변경 설명서)은 모두 구조 다이어그램을 만듭니다. `/architecture`는 항상 Markdown 산출물 안에 **Mermaid** 블록을 넣으며(`/explain`은 자체 인라인 SVG 다이어그램을 그립니다), [archify](https://github.com/tt-a1i/archify)를 해석할 수 있는 경우(일반적인 경우) 산출물 옆에 **대화형 검증 HTML 다이어그램**도 추가합니다. 이 HTML에는 다크/라이트 테마, 이동·확대/축소, 검색, 관계 추적, PNG/SVG/WebM 내보내기가 있으며 타입이 있는 JSON 사양에서 렌더링됩니다.
+`/architecture`(ADR, 권장 사항, 검토)와 `/explain`(코드 변경 설명)은 구조 다이어그램을 만듭니다. `/architecture` 산출물에는 **Mermaid** 블록이 항상 포함되며, `/explain` 워크플로우는 인라인 SVG 다이어그램을 그립니다. [archify](https://github.com/tt-a1i/archify)를 해석할 수 있으면 아키텍처 워크플로우는 산출물 옆에 **대화형 검증 HTML 다이어그램**도 생성합니다. 다이어그램은 타입이 있는 JSON 사양에서 렌더링되며 다크/라이트 테마, 이동·확대/축소, 검색, 관계 추적, PNG/SVG/WebM 내보내기를 지원합니다.
 
 Mermaid는 사라지지 않습니다. Markdown과 git diff에 남는 텍스트 SSOT입니다. archify는 파생 산출물입니다.
 
 ---
 
-## 항상 최신 archify 사용, 설치할 필요 없음 {#always-the-latest-archify--nothing-to-install}
+<a id="always-the-latest-archify--nothing-to-install"></a>
+## 최신 archify 관리 사본
 
 archify는 MIT 라이선스의 에이전트 스킬입니다(Node ≥ 18, 런타임 의존성 0개). oh-my-agent는 사용자가 한 번 설치한 사본에 의존하지 않습니다. **자체 관리 사본**을 유지하고 최신 릴리스를 추적합니다.
 

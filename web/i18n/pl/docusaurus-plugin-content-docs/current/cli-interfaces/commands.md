@@ -34,7 +34,7 @@ Poniższe kanoniczne nazwy pochodzą z `oma describe`. Akceptowane są wyłączn
 
 ## Bieżąca lista poleceń {#current-command-surface}
 
-Ta mapa ułatwia przeglądanie długiej referencji poniżej i pozwala znaleźć rzadziej używane rodziny. Użyj `--help` danej rodziny albo `oma describe <path>`, aby poznać dokładną składnię argumentów; [Opcje CLI](./options.md) zawierają kompletną macierz flag rejestru.
+Użyj `--help` danej rodziny albo `oma describe <path>`, aby poznać dokładną składnię argumentów; [Opcje CLI](./options.md) zawierają kompletną macierz flag rejestru.
 
 | Rodzina | Zarejestrowane ścieżki |
 |:-------|:-----------------|
@@ -2002,7 +2002,7 @@ oma skill lint --json | jq '.smells'
 
 ### skill eval {#skills-eval}
 
-Mierzy użyteczność umiejętności: czy jej załadowanie rzeczywiście poprawia wyniki zadań odłożonych do testu? To odpowiednik `skill audit` po stronie *użyteczności* (audit mierzy nakładanie się granic opisów). `audit` pyta „czy dwie umiejętności są redundantne?”, a `eval` pyta „czy ta umiejętność pomaga?”.
+`audit` sprawdza nakładanie się opisów; `eval` mierzy, czy załadowanie umiejętności poprawia wyniki zadań odłożonych do testu. Polecenie `skill audit` służy do pomiaru tej pierwszej właściwości.
 
 ```text
 oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]

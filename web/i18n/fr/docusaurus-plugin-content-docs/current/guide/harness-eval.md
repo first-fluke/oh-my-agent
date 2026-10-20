@@ -41,7 +41,7 @@ Une exécution live évalue chaque tâche comme une expérience appariée :
 
 Le vrai projet n’est jamais utilisé comme répertoire de travail d’un bras. OMA capture la sortie brute et les artefacts finaux de la tâche avant les vérifications et le nettoyage de l’espace de travail temporaire. Le bac à sable du processus propre au fournisseur sélectionné reste l’autorité pour les accès en dehors du répertoire de travail.
 
-Le diagramme montre comment les bras appariés aboutissent à une décision. Les actions hors ligne reprennent à l’étape d’appariement à partir d’un enregistrement stocké.
+Les actions hors ligne reprennent à l’étape d’appariement à partir d’un enregistrement stocké.
 
 ```mermaid
 flowchart TD

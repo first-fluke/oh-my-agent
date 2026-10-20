@@ -14,7 +14,7 @@ description: oma-config.yaml の model_preset で、各エージェントが使�
 
 トップレベルキーと優先順位の完全なリファレンスは、[設定リファレンス](/docs/guide/configuration-reference)を参照してください。
 
-このページでは次の内容を扱います。
+設定項目:
 
 1. 組み込みプリセットと各ロールに割り当てられるモデル
 2. OMA がエージェントのモデルと CLI を解決する方法

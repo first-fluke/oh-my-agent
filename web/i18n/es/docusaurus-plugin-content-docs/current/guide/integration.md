@@ -10,7 +10,7 @@ description: Guía completa para añadir oh-my-agent a un proyecto existente, co
 
 Hay dos formas de añadir oh-my-agent a un proyecto existente:
 
-1. **Ruta de la CLI**: ejecuta `oma` (o `npx oh-my-agent`) y sigue los prompts interactivos. Es la opción recomendada para la mayoría de usuarios.
+1. **Ruta de la CLI**: ejecuta `oma` (o `npx oh-my-agent`) y sigue los prompts interactivos.
 2. **Ruta manual**: copia los archivos y configura los symlinks por tu cuenta. Resulta útil en entornos restringidos o con configuraciones personalizadas.
 
 Ambas vías producen el mismo resultado: un directorio `.agents/` (el SSOT), además de archivos generados nativos de los proveedores como `.claude/agents/`, `.codex/agents/` y `.qwen/agents/`.

@@ -8,7 +8,7 @@ description: Vollständige Anleitung zur Koordination mehrerer Domänenagenten �
 
 ## Wann Multi-Agenten-Koordination einsetzen
 
-Ihr Feature umfasst mehrere Domänen — Backend-API + Frontend-UI + Datenbankschema + Mobile-Client + QA-Review. Ein einzelner Agent kann den gesamten Umfang nicht bewältigen, und die Domänen müssen parallel vorankommen, ohne gegenseitig in die Dateien des anderen einzugreifen.
+Das Feature umfasst mehrere Domänen: Backend-API, Frontend-UI, Datenbankschema, Mobile-Client und QA-Review. Agenten können die Arbeit parallel bearbeiten, wenn sie dabei keine Dateien des jeweils anderen ändern.
 
 Multi-Agenten-Koordination ist die richtige Wahl, wenn:
 
@@ -23,7 +23,7 @@ Passt Ihre Aufgabe vollständig in eine Domäne, verwenden Sie stattdessen den s
 
 ## Die vollständige Abfolge: /plan bis /review
 
-Der empfohlene Multi-Agenten-Workflow folgt einer strikten vierstufigen Pipeline.
+Der empfohlene Multi-Agenten-Workflow hat vier Schritte.
 
 ```mermaid
 flowchart LR
@@ -332,11 +332,11 @@ Backend- und Frontend-Agenten starten, ohne vorher Verträge zu definieren. Sie 
 
 ### 4. QA-Befunde ignorieren
 
-QA-Review als optional behandeln. CRITICAL- und HIGH-Befunde repräsentieren echte Bugs, die in der Produktion auftreten werden. Der Workflow erzwingt dies durch Schleifen, bis keine Blocker mehr vorhanden sind.
+QA-Review als optional behandeln. CRITICAL- und HIGH-Befunde blockieren den Abschluss, bis sie behoben sind. Der Workflow wiederholt das Review, bis keine Blocker mehr vorliegen.
 
 ### 5. Manuelle Datei-Koordination
 
-Versuchen, Agentenausgaben manuell zusammenzuführen, statt die Verifikations- und QA-Pipeline die Integration handhaben zu lassen. Die automatisierte Pipeline erkennt Probleme, die manuelle Prüfung übersieht.
+Agentenausgaben manuell zusammenzuführen, statt die Verifikations- und QA-Pipeline für die Integration zu verwenden. Die Pipeline führt die deklarierten Prüfungen und das QA-Review zusammen.
 
 ### 6. Über-Parallelisierung
 

@@ -6,7 +6,7 @@ description: Schrijf evaluatietaakfixtures voor oma skill eval, gebruik de conve
 
 # Evaluatie van skillnut {#skill-utility-eval}
 
-`oma skill eval` meet of het laden van een skill de uitkomsten van agenttaken werkelijk verbetert. Het beantwoordt een andere vraag dan `oma skill audit` (dat vraagt of twee skills redundant zijn): het vraagt “helpt deze skill?”.
+`oma skill eval` meet of het laden van een skill de uitkomsten van agenttaken werkelijk verbetert. In tegenstelling tot `oma skill audit`, dat nagaat of twee skills redundant zijn, meet deze opdracht het effect van één skill op taakresultaten.
 
 Het ontwerp volgt twee onderzoeksbevindingen: WikiSkill (arXiv:2608.27454) scheidt ruwe ervaring, persistente kennis en uitvoerbare skills en behoudt daarbij gates op niet-gebruikte data voor evolutie; SkillLens (arXiv:2605.23899) laat zien dat skillnut onafhankelijk is van de onderscheidendheid van de beschrijving — een onderscheidende skill kan nog steeds nutteloos zijn en een overlappende skill kan toch helpen.
 
@@ -107,7 +107,7 @@ Skill eval live run preview:
   record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
 ```
 
-Lees daarna het resultaat zoals beschreven in [Het rapport lezen](#reading-the-report). De secties hierna zijn referentiemateriaal.
+Lees het resultaat bij [Het rapport lezen](#reading-the-report).
 
 ---
 

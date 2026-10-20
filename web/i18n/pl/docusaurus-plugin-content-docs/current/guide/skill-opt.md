@@ -32,7 +32,7 @@ Odtwarzanie i wiedza o zakresie zestawu są powiązane z pełnym kontraktem zada
 
 ## Jak to działa
 
-Diagram pokazuje jedno uruchomienie optymalizacji. Niekompletna ewaluacja albo wyczerpany budżet również wcześniej kończą pętlę epok.
+Niekompletna ewaluacja albo wyczerpany budżet również wcześniej kończą pętlę epok.
 
 ```mermaid
 flowchart TD

@@ -8,7 +8,7 @@ description: Zapisz zaobserwowaną porażkę agenta, zachowaj dowody i oceń kan
 
 `oma harness incident` łączy zaobserwowaną porażkę z przypadkiem regresji oraz z oceną kandydata, która po nim następuje. Obserwacje zapisuje oddzielnie od hipotez przyczynowych. Samo niepowodzenie procesu nie stanowi dowodu, że to model spowodował incydent.
 
-Diagram pokazuje cykl życia incydentu. Promocja zasila optymalizację umiejętności; eksport zasila ewaluację harnessu.
+Promocja zasila optymalizację umiejętności; eksport zasila ewaluację harnessu.
 
 ```mermaid
 flowchart TD

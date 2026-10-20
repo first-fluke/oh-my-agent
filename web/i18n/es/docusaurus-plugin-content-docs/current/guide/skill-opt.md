@@ -32,7 +32,7 @@ La reproducción y el conocimiento acotado a la suite están ligados al contrato
 
 ## Cómo funciona
 
-El diagrama muestra una ejecución de optimización. Una evaluación incompleta o un presupuesto agotado también terminan antes el bucle de épocas.
+Una evaluación incompleta o un presupuesto agotado también terminan antes el bucle de épocas.
 
 ```mermaid
 flowchart TD

@@ -8,7 +8,7 @@ description: Complete guide for coordinating multiple domain agents across front
 
 ## When to use multi-agent coordination
 
-Your feature spans multiple domains: backend API + frontend UI + database schema + mobile client + QA review. A single agent cannot handle the full scope, and you need the domains to progress in parallel without stepping on each other's files.
+Use multi-agent coordination when a feature spans multiple domains, such as a backend API, frontend UI, database schema, mobile client, or QA review, and those domains can progress in parallel without changing the same files.
 
 Multi-agent coordination is the right choice when:
 
@@ -23,7 +23,7 @@ If your task fits entirely within one domain, use the specific agent directly in
 
 ## The full sequence: /plan to /review
 
-The recommended multi-agent workflow follows a strict four-step pipeline.
+The recommended multi-agent workflow has four steps.
 
 ```mermaid
 flowchart LR

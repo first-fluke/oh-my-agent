@@ -5,7 +5,7 @@ description: Chạy một task có phạm vi từ cài đặt đến xác minh, 
 
 # Bắt đầu nhanh
 
-Dùng trang này để chạy một task nhỏ và ghi lại một kết quả cụ thể. Bạn cần một thư mục dự án và ít nhất một AI CLI hoặc IDE được hỗ trợ. Trình cài đặt có thể thiết lập `bun`, `uv`, Serena, CUE và lệnh `oma` global trên macOS, Linux hoặc Windows; tích hợp host đã chọn là bắt buộc cho prompt đầu tiên, còn tích hợp provider và trình duyệt là tùy chọn.
+Để chạy một task nhỏ và ghi lại kết quả cụ thể, bạn cần một thư mục dự án và ít nhất một AI CLI hoặc IDE được hỗ trợ. Trình cài đặt có thể thiết lập `bun`, `uv`, Serena, CUE và lệnh `oma` global trên macOS, Linux hoặc Windows; tích hợp host đã chọn là bắt buộc cho prompt đầu tiên, còn tích hợp provider và trình duyệt là tùy chọn.
 
 ## 1. Cài đặt
 

@@ -754,7 +754,7 @@ Workflow może także zakończyć się naturalnie, gdy wszystkie kroki zostaną 
 | Funkcja w jednej domenie | Opisz zadanie → odpowiednia umiejętność → implementacja → ukierunkowana weryfikacja |
 | Złożony projekt wielodomenowy | `/work` → PM planuje → przegląd w autoryzowanym zakresie → uruchomienie agentów → przegląd QA → poprawki → raport |
 | Automatyczna implementacja równoległa | `/orchestrate` → załadowanie lub utworzenie planu → rozstrzygnięcie zależności → uruchomienie niezależnych zadań → weryfikacja → raport |
-| Dostarczenie najwyższej jakości | `/ultrawork` → PLAN (plan + 3 przeglądy) → IMPL → VERIFY (3 przeglądy) → REFINE (2 przeglądy + 3 działania refaktoryzacyjne) → SHIP (4 przeglądy) |
+| Pełny proces weryfikacji przed wydaniem | `/ultrawork` → PLAN (plan + 3 przeglądy) → IMPL → VERIFY (3 przeglądy) → REFINE (2 przeglądy + 3 działania refaktoryzacyjne) → SHIP (4 przeglądy) |
 | Badanie błędu | `/debug` → reprodukcja → przyczyna źródłowa → minimalna poprawka → test regresji → skan podobnych wzorców |
 | Pipeline od designu do implementacji | `/brainstorm` → dokument designu → `/plan` → podział zadań → `/orchestrate` → implementacja równoległa → `/review` → `/scm` |
 | Konfiguracja nowej bazy kodu | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |

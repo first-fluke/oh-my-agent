@@ -8,7 +8,7 @@ description: Ghi nhận một lỗi agent đã quan sát, giữ lại bằng ch�
 
 `oma harness incident` nối một lỗi đã quan sát với một ca hồi quy và lần đánh giá candidate tiếp theo. Công cụ ghi nhận các quan sát tách riêng khỏi các giả thuyết nhân quả. Bản thân một quy trình thất bại không chứng minh rằng model gây ra sự cố.
 
-Sơ đồ cho thấy vòng đời của một sự cố. Thăng cấp đưa vào tối ưu skill; xuất đưa vào đánh giá harness.
+Thăng cấp đưa sự cố vào quá trình tối ưu skill; xuất sự cố đưa vào đánh giá harness.
 
 ```mermaid
 flowchart TD

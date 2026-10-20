@@ -23,7 +23,7 @@ Traditional AI coding assistants often handle frontend, backend, database, secur
 - **Unclear ownership**: a cross-domain task has no explicit boundary for each part
 - **Manual coordination**: complex features spanning multiple domains need handoffs chosen by the host or user
 
-oh-my-agent solves this with specialization:
+OMA assigns domains to skills and routes task work to agents:
 
 1. **Each skill has a primary domain.** The frontend skill knows React/Next.js, shadcn/ui, TailwindCSS v4, FSD-lite architecture. The backend skill knows the Repository-Service-Router pattern, parameterized queries, and JWT authentication. Domains can overlap at boundaries, so use the task's acceptance criteria to decide when a second skill or a coordinating workflow is needed.
 
@@ -203,7 +203,7 @@ Agent spawning adapts to each selected vendor through vendor detection and the a
 
 ## How a request flows
 
-The diagram shows what happens between a prompt and a finished result. The keyword hook, skill injector, and Stop hook run only on hosts whose hook integration is enabled. The keyword hook and the skill injector run in sequence on the same prompt, and their injected context is combined.
+The keyword hook, skill injector, and Stop hook run only on hosts whose hook integration is enabled. The keyword hook and the skill injector run in sequence on the same prompt, and their injected context is combined.
 
 ```mermaid
 flowchart TD

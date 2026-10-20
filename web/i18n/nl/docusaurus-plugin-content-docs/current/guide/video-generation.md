@@ -10,7 +10,7 @@ description: Complete gids voor oh-my-agent-videogeneratie — een router met dr
 
 De skill wordt actief bij "shorts", "reels", "screencast" of zinnen als "make a video", "explainer video", "demo video", "walkthrough video" of "video from README", of wanneer een andere skill een video als neveneffect nodig heeft.
 
-> **TL;DR** `oma video generate` plant een run en zet assets klaar. Met de standaard HyperFrames-compositor encodeert het geen MP4: schrijf `<runDir>/hyperframes/index.html` (de `/video`-workflow doet dit voor je) en voer daarna `oma video render <runDir>` uit. Begin bij de eerste run met `oma video doctor --install`.
+> **Let op:** `oma video generate` plant een run en zet assets klaar. Met de standaard HyperFrames-compositor encodeert het geen MP4: schrijf `<runDir>/hyperframes/index.html` (de `/video`-workflow doet dit voor je) en voer daarna `oma video render <runDir>` uit. Begin bij de eerste run met `oma video doctor --install`.
 
 ---
 
@@ -87,7 +87,7 @@ Andere tools die `oma video generate --output json` als shell-opdracht aanroepen
 
 ---
 
-## Altijd de nieuwste HyperFrames — jij schrijft de compositie {#always-latest-hyperframes-you-author-the-composition}
+## Beheerde HyperFrames-toolchain; jij schrijft de compositie {#always-latest-hyperframes-you-author-the-composition}
 
 oh-my-agent levert **geen HyperFrames-compositiecode** mee. Elke run krijgt een eigen project op `<runDir>/hyperframes/`, dat door `oma video compose` wordt gescaffold op de nieuwste npm-HyperFrames (toolchain-cache `~/.cache/oma-video/hyperframes/<version>/`, gedeeld via een `node_modules`-symlink), met [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) op HEAD (`~/.cache/oma-video/hyperframes-skills/`). De agent schrijft de bron van de gegenereerde compositie volgens de `AUTHORING.md` van de scaffold, de skills en de modespecificatie in `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 

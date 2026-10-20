@@ -7,7 +7,7 @@ description: Evaluate a complete OMA harness overlay with paired, isolated repos
 # Harness Evaluation
 
 :::tip How these fit together
-[Skill evaluation](./skill-eval.md) measures whether one `SKILL.md` helps, and [skill optimization](./skill-opt.md) edits that body under held-out gates. Harness evaluation (this page) compares a whole `.agents/` overlay on repository tasks. [Incident regression cases](./harness-incidents.md) turn observed failures into evaluation cases and skill fixtures. [Project harness evolution](./harness-evolution.md) runs incident capture and skill optimization as a budgeted cycle, and [scheduled agents](./scheduled-agents.md) is the OS scheduler that fires it.
+[Skill evaluation](./skill-eval.md) measures whether one `SKILL.md` helps, and [skill optimization](./skill-opt.md) edits that body under held-out gates. Harness evaluation compares a whole `.agents/` overlay on repository tasks. [Incident regression cases](./harness-incidents.md) turn observed failures into evaluation cases and skill fixtures. [Project harness evolution](./harness-evolution.md) runs incident capture and skill optimization as a budgeted cycle, and [scheduled agents](./scheduled-agents.md) is the OS scheduler that fires it.
 :::
 
 `oma harness eval` measures whether a candidate OMA harness improves a fixed target agent without changing that agent's model. It adapts the test-time evaluation pattern from [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): keep the target model fixed, change the harness, and compare outcomes on the same tasks.
@@ -41,7 +41,7 @@ A live run evaluates each task as a paired experiment:
 
 The real project is never used as the arm's working directory. OMA captures raw output and final task artifacts before checks and temporary workspace cleanup. The selected vendor's own process sandbox remains the authority for access outside the working directory.
 
-The diagram shows how paired arms reach a decision. Offline actions re-enter at the pairing step from a stored record.
+Offline actions reuse a stored record and re-enter the evaluation at the pairing step.
 
 ```mermaid
 flowchart TD

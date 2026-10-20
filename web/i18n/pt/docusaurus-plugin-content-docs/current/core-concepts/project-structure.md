@@ -5,7 +5,7 @@ description: "Mapa voltado ao leitor de uma instalação do oh-my-agent, com a S
 
 # Estrutura do projeto
 
-Depois de instalar o oh-my-agent, o projeto ganha duas árvores de diretórios principais: `.agents/` (a única fonte de verdade, incluindo o armazenamento de coordenação `.agents/state/memories/`) e as camadas de integração do runtime (por exemplo, `.claude/`, `.cursor/` e `.codex/`). Se Serena for escolhido como provider de inteligência de código, um diretório opcional `.serena/` também poderá existir para as memórias de onboarding do Serena. Esta página explica os arquivos compartilhados e os caminhos opcionais ou gerados relevantes na solução de problemas.
+Depois de instalar o oh-my-agent, o projeto ganha duas árvores de diretórios principais: `.agents/` (a única fonte de verdade, incluindo o armazenamento de coordenação `.agents/state/memories/`) e as camadas de integração do runtime (por exemplo, `.claude/`, `.cursor/` e `.codex/`). Se Serena for escolhido como provider de inteligência de código, um diretório opcional `.serena/` também poderá existir para as memórias de onboarding do Serena.
 
 ---
 

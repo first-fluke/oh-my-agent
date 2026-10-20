@@ -6,7 +6,7 @@ description: Guide détaillé des tâches limitées à un seul domaine dans oh-m
 
 # Exécution d'une compétence unique
 
-L'exécution d'une compétence unique est le chemin rapide : un agent, un domaine et une tâche ciblée. Elle évite la surcharge d'orchestration et de coordination entre agents. L'hôte ou le workflow sélectionné peut router un prompt en langage naturel vers la compétence ; le système de hooks détecte lui-même les workflows et le comportement de routage dépend du runtime sélectionné.
+Une compétence unique convient à un agent qui traite une tâche ciblée dans un seul domaine. Elle évite la charge d'orchestration et de coordination entre agents. L'hôte ou le workflow sélectionné peut router un prompt en langage naturel vers la compétence ; le système de hooks détecte lui-même les workflows et le comportement de routage dépend du runtime sélectionné.
 
 ## Parcours rapide
 

@@ -14,8 +14,6 @@ La configuration partagée se trouve dans `.agents/oma-config.yaml` et, s'il exi
 
 Pour connaître toutes les clés de premier niveau et la précédence, consultez la [référence de configuration](/docs/guide/configuration-reference).
 
-Cette page couvre :
-
 1. Les presets intégrés et les modèles attribués à chaque rôle
 2. La manière dont OMA résout le modèle et la CLI d'un agent
 3. La configuration locale et le preset FreeLLMAPI (`free`)

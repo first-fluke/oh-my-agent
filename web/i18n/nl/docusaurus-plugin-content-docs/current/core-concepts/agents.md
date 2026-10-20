@@ -615,7 +615,7 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Domein:** Publicatieklare academische Engelse tekst: essays, rapporten, analysesecties, executive summaries, conclusies en literatuuroverzichten opstellen, reviseren en auditen.
 
-**Wanneer gebruiken:** Academische rapporten, essays of analysesecties opstellen of reviseren, executive summaries, conclusies of literatuuroverzichten schrijven, AI-achtig klinkende tekst herschrijven tot natuurlijk academisch Engels, een concept polijsten tot topkwaliteit volgens de rubric (HD, A, top-band), of tekst beoordelen op zinsvariatie, werkwoordkwaliteit, hedging en anti-AI-naleving.
+**Wanneer gebruiken:** Academische rapporten, essays of analysesecties opstellen of reviseren, executive summaries, conclusies of literatuuroverzichten schrijven, AI-achtig klinkende tekst herschrijven tot natuurlijk academisch Engels, een concept volgens de rubric reviseren, of tekst beoordelen op zinsvariatie, werkwoordkwaliteit, hedging en anti-AI-naleving.
 
 **Wanneer NIET gebruiken:** Vertalen (gebruik oma-translation), bronnen zoeken, citaties verzamelen of literatuur doorzoeken (gebruik oma-scholar), rubric parsen en taken opsplitsen (gebruik oma-pm), codedocumentatie/README/API-referentietekst (gebruik de relevante domeinskill), informele of marketingtekst, of niet-Engelse academische tekst (schrijf eerst in het Engels en draag daarna over aan oma-translation).
 

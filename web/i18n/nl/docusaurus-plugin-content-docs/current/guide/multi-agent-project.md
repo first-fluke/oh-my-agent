@@ -320,7 +320,7 @@ oma agent parallel tasks.yaml --vendor claude
 
 ### 1. Het plan klakkeloos goedkeuren
 
-`/orchestrate` kan inline een plan maken via `/plan` wanneer er geen bruikbaar planbestand is. Ook dat inline plan doorloopt de reviewgate van `/plan`, waarna de fan-out de goedgekeurde decompositie volgt. Voor grote multi-domeinprojecten is het beter `/plan` vooraf te draaien, zodat je een duurzame tracker in `docs/plans/work/` hebt en ruimte om de decompositie te verfijnen voordat agenten starten.
+`/orchestrate` kan inline een plan maken via `/plan` wanneer er geen bruikbaar planbestand is. Ook dat inline plan doorloopt de reviewgate van `/plan`, waarna de fan-out de goedgekeurde decompositie volgt. Voor grote multi-domeinprojecten kun je `/plan` vooraf draaien om een duurzame tracker in `docs/plans/work/` te maken en de decompositie te verfijnen voordat agenten starten.
 
 ### 2. Overlappende workspaces
 
@@ -332,11 +332,11 @@ Backend- en frontendagents starten zonder eerst contracten te definiëren. Ze ma
 
 ### 4. QA-bevindingen negeren
 
-QA-review als optioneel behandelen. CRITICAL- en HIGH-bevindingen zijn echte bugs die in productie zichtbaar worden. De workflow dwingt dit af door te blijven loopen totdat er geen blockers meer zijn.
+QA-review als optioneel behandelen. CRITICAL- en HIGH-bevindingen wijzen op problemen die productie kunnen raken. De workflow blijft loopen totdat er geen blockers meer zijn.
 
 ### 5. Handmatige bestandscoördinatie
 
-Agentresultaten handmatig proberen samen te voegen in plaats van de verificatie- en QA-pipeline de integratie te laten afhandelen. De geautomatiseerde pipeline vangt problemen op die een handmatige review mist.
+Agentresultaten handmatig proberen samen te voegen in plaats van de integratie door de verificatie- en QA-pipeline te laten controleren. Die pipeline voert integratiecontroles uit naast een handmatige review.
 
 ### 6. Te veel parallelliseren
 

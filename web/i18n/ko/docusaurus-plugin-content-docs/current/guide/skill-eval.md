@@ -6,7 +6,7 @@ description: oma skill eval용 평가 태스크 픽스처를 작성하는 방법
 
 # 스킬 유용성 평가
 
-`oma skill eval`은 스킬을 로딩했을 때 에이전트의 태스크 결과가 실제로 좋아지는지 측정합니다. "두 스킬이 중복인가?"를 묻는 `oma skill audit`과는 다른 질문, 곧 "이 스킬이 도움이 되는가?"에 답합니다.
+`oma skill eval`은 스킬을 사용했을 때와 사용하지 않았을 때의 태스크 결과를 비교합니다. `oma skill audit`은 두 스킬 설명이 중복되는지 확인합니다.
 
 설계는 두 연구 결과를 따릅니다. WikiSkill(arXiv:2608.27454)은 원시 경험, 영속 지식, 실행 가능한 스킬을 분리하면서 진화에 held-out 게이트를 둡니다. SkillLens(arXiv:2605.23899)는 스킬 유용성이 설명의 구별성과 무관함을 보여줍니다. 구별되는 스킬도 쓸모없을 수 있고, 겹치는 스킬도 도움이 될 수 있습니다.
 
@@ -31,7 +31,7 @@ utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)
 
 ## 빠른 시작 {#a-minimal-working-fixture-set}
 
-판정을 내리려면 픽스처가 5개 필요합니다(`MIN_TASKS = 5`). 가상의 `oma-scholar` 스킬을 위한 최소 세트는 다음과 같습니다. 네 개는 기본 judge를 쓰고, `structured-output`은 결정론적인 `assert` 체커를 씁니다.
+판정에는 픽스처가 5개 필요합니다(`MIN_TASKS = 5`). 아래는 가상의 `oma-scholar` 스킬을 위한 최소 세트입니다. 네 개는 기본 judge를 쓰고, `structured-output`은 결정론적인 `assert` 체커를 씁니다.
 
 ```yaml
 # .agents/eval/oma-scholar/claims-only.yaml
@@ -107,7 +107,7 @@ Skill eval live run preview:
   record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
 ```
 
-이어서 [보고서 읽기](#reading-the-report)에 설명된 대로 결과를 읽으세요. 이 섹션 다음부터는 레퍼런스 자료입니다.
+이어서 [보고서 읽기](#reading-the-report)에 설명된 대로 결과를 읽으세요.
 
 ---
 

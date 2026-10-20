@@ -5,7 +5,7 @@ description: oh-my-agent 설치의 독자를 위한 구조 지도입니다. .age
 
 # 프로젝트 구조
 
-oh-my-agent을 설치하면 프로젝트에 두 가지 핵심 디렉토리 트리가 추가됩니다: `.agents/`(`.agents/state/memories/` 조율 저장소를 포함하는 단일 진실 원천)와 런타임 통합 계층(예: `.claude/`, `.cursor/`, `.codex/`)입니다. Serena를 코드 인텔리전스 프로바이더로 선택하면 Serena 온보딩 메모리를 위한 선택적 `.serena/` 디렉토리가 생길 수도 있습니다. 이 페이지는 문제를 해결할 때 중요한 공용 파일과 선택적·생성 경로를 설명합니다.
+oh-my-agent을 설치하면 프로젝트에 두 가지 핵심 디렉토리 트리가 추가됩니다: `.agents/`(`.agents/state/memories/` 조율 저장소를 포함하는 단일 진실 원천)와 런타임 통합 계층(예: `.claude/`, `.cursor/`, `.codex/`)입니다. Serena를 코드 인텔리전스 프로바이더로 선택하면 Serena 온보딩 메모리를 위한 선택적 `.serena/` 디렉토리가 생길 수도 있습니다.
 
 ---
 

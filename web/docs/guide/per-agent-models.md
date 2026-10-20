@@ -14,7 +14,7 @@ Shared configuration lives in `.agents/oma-config.yaml` and, when present, `.age
 
 For the full top-level key and precedence reference, see [Configuration reference](/docs/guide/configuration-reference).
 
-This page covers:
+Configuration topics:
 
 1. The built-in presets and the models each role gets
 2. How OMA resolves the model and CLI for an agent

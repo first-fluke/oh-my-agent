@@ -5,7 +5,7 @@ description: "Jak OMA wybiera i progresywnie ładuje umiejętności: anatomia SK
 
 # Umiejętności {#skills}
 
-[Umiejętności](../getting-started/glossary.md#skill) to uporządkowane pakiety wiedzy, które dostarczają roli dispatchu wskazówek z jej domeny. Zawierają protokoły wykonywania, referencje stosu technologicznego, szablony kodu, podręczniki błędów, checklisty jakości i przykłady, jeśli dana umiejętność je udostępnia. Są zorganizowane w dwuwarstwowej architekturze zaprojektowanej pod kątem oszczędzania tokenów. Listę zainstalowanych umiejętności znajdziesz w [katalogu umiejętności](./agents.md#skill-catalog).
+[Umiejętności](../getting-started/glossary.md#skill) to uporządkowane pakiety wiedzy, które dostarczają roli dispatchu wskazówek z jej domeny. Zawierają protokoły wykonywania, referencje stosu technologicznego, szablony kodu, podręczniki błędów, checklisty jakości i przykłady, jeśli dana umiejętność je udostępnia. Architektura dzieli ładowanie na dwie warstwy, aby ograniczyć kontekst do wybranej umiejętności i wymaganych plików. Listę zainstalowanych umiejętności znajdziesz w [katalogu umiejętności](./agents.md#skill-catalog).
 
 ---
 
@@ -364,7 +364,7 @@ Gdy orkiestrator pisze prompt subagenta (`oma-orchestration/resources/subagent-p
 - Przy natywnym dispatchu przekaż ścieżki tych plików i właścicielskiej umiejętności, jeśli runtime ich nie dostarczył.
 - Sekcję error-playbook dodawaj dopiero po zaobserwowanym niepowodzeniu, a `runtime/memory-protocol.md` tylko wtedy, gdy agent koordynuje lub wznawia trwały stan zadania.
 
-Taka ukierunkowana kompozycja unika ładowania niepotrzebnych zasobów i maksymalizuje miejsce subagenta na właściwą pracę.
+Dzięki temu prompt zawiera tylko potrzebne zasoby, a reszta jego kontekstu pozostaje dostępna na zadanie.
 
 ---
 

@@ -6,7 +6,7 @@ description: Pełny przewodnik po workflow /explain i umiejętności oma-explana
 
 # Objaśnianie kodu
 
-`/explain` zamienia zmianę kodu w bogaty, samodzielny dokument HTML, który uczy czytelnika, co się zmieniło i dlaczego — z pomijalnym, pogłębionym tłem dla początkujących, sekcją intuicji z danymi przykładowymi, uporządkowanym pod kątem zrozumienia omówieniem kodu i quizem z pięcioma pytaniami. Wynikiem jest pojedynczy plik `.html` działający offline, z diagramami, objaśnieniami i dostępnym quizem; zapisuje się go w `.agents/results/explain/` i sprawdza deterministyczną listą kontrolną przed dostarczeniem.
+`/explain` zamienia zmianę kodu w samodzielny dokument HTML, który wyjaśnia, co się zmieniło i dlaczego — z pomijalnym, pogłębionym tłem dla początkujących, sekcją intuicji z danymi przykładowymi, uporządkowanym pod kątem zrozumienia omówieniem kodu i quizem z pięcioma pytaniami. Wynikiem jest pojedynczy plik `.html` działający offline, z diagramami, objaśnieniami i dostępnym quizem; zapisuje się go w `.agents/results/explain/` i sprawdza deterministyczną listą kontrolną przed dostarczeniem.
 
 `/explain` działa wyłącznie jako slash command — nie aktywuje się automatycznie z języka naturalnego. „explain” jest codziennym słowem, dlatego celowo wykluczono je z wykrywania słów kluczowych (tak samo jak `/convert`). Wpisz jawnie `/explain` albo poproś inną umiejętność o utworzenie „dokumentu objaśniającego” jako wyniku delegowanego.
 
@@ -97,7 +97,7 @@ Poproś o `reviewer`, dodając „for reviewer” do polecenia, na przykład `/e
 
 ## Co zawiera dokument
 
-Ta sekcja opisuje tryb zmiany. Objaśnienie w trybie zmiany jest jedną długą, przewijaną stroną (bez kart i wielostronicowej nawigacji) ze spisem treści, po którym następują cztery stałe sekcje w tej kolejności:
+W trybie zmiany powstaje jedna długa, przewijana strona (bez kart i wielostronicowej nawigacji) ze spisem treści, po którym następują cztery stałe sekcje w tej kolejności:
 
 1. **Background** — Tier A (pogłębione tło systemu/architektury, oznaczone „można pominąć, jeśli znasz już system”) oraz Tier B (wąski kontekst tej konkretnej zmiany)
 2. **Intuition** — istota zmiany z obowiązkowymi przykładami na danych przykładowych, wzmocniona przez 2–3 ponownie użyte rodziny diagramów (uproszczony mock UI, diagram systemu/przepływu danych z danymi przykładowymi, stan przed/po), renderowane wyłącznie jako HTML/inline SVG — bez ASCII art

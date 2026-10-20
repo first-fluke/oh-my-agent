@@ -8,7 +8,6 @@ description: Por que os hooks do Codex só executam depois de uma primeira revis
 
 Quando o oh-my-agent é instalado em um projeto, ele grava configurações de hooks nativas do vendor, incluindo `.codex/hooks.json` para a CLI do Codex. Diferentemente do Claude Code, o Codex não executa esses hooks automaticamente. Ele coloca cada hook de comando não gerenciado atrás do Trust-On-First-Use (TOFU): um hook só executa depois que você o revisa e habilita uma vez.
 
-Esse é um mecanismo de segurança do Codex, não uma limitação do oh-my-agent. Este guia explica a etapa única necessária, o que acontece quando o oh-my-agent é atualizado e o que ele faz automaticamente por você.
 
 ---
 

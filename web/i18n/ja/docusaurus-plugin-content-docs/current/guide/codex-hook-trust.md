@@ -8,7 +8,7 @@ description: Codex フックが一度確認するまで実行されない理由�
 
 oh-my-agent をプロジェクトにインストールすると、Codex CLI 用の `.codex/hooks.json` など、ベンダー固有のフック設定を書き込みます。Claude Code と違い、Codex はこれらのフックを自動実行しません。管理対象ではないコマンドフックは Trust-On-First-Use（TOFU）によって制御され、1 度確認して有効にした後でのみ実行されます。
 
-これは Codex 側の安全機構であり、oh-my-agent の制限ではありません。このガイドでは、最初に必要な操作、oh-my-agent の更新時に起きること、oh-my-agent が自動で処理する内容を説明します。
+これは Codex 側の安全機構であり、oh-my-agent の制限ではありません。
 
 ---
 

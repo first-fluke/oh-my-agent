@@ -5,7 +5,7 @@ description: Krótkie definicje pojęć oh-my-agent, w tym umiejętności, workf
 
 # Słownik {#glossary}
 
-Każdy wpis zawiera krótką definicję i odnośnik do strony, która szczegółowo omawia dane pojęcie. Jeśli słowo znaczy co innego w różnych częściach OMA, wpis to zaznacza.
+Jeśli słowo znaczy co innego w różnych częściach OMA, wpis to zaznacza.
 
 ## Elementy składowe {#building-blocks}
 

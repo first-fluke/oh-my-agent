@@ -32,7 +32,7 @@ Replay và suite-scoped knowledge gắn với toàn bộ task/evaluator contract
 
 ## Cách hoạt động {#how-it-works}
 
-Diagram cho thấy một lần chạy optimization. Một evaluation chưa đầy đủ hoặc budget đã cạn cũng kết thúc vòng lặp epoch sớm.
+Một evaluation chưa đầy đủ hoặc budget đã cạn cũng kết thúc vòng lặp epoch sớm.
 
 ```mermaid
 flowchart TD

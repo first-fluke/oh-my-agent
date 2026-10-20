@@ -8,7 +8,7 @@ description: Structured seven-step debugging workflow with severity triage, esca
 
 ## When to use the debug workflow
 
-Use `/debug` (or say "fix bug", "fix error", "debug" in natural language) when you have a specific bug to diagnose and fix. The workflow provides a structured, reproducible approach to debugging that avoids the common trap of fixing symptoms instead of root causes.
+Use `/debug` (or say "fix bug", "fix error", "debug" in natural language) to diagnose a specific bug. The seven-step workflow includes severity triage, source-backed diagnosis, and post-fix validation.
 
 The debug workflow supports all configured vendors. Steps 1-5 run inline. Step 6 (similar pattern scanning) may delegate to a `debug-investigator` subagent when the scan scope is broad (10+ files or multi-domain errors), followed by step 7’s memory record.
 

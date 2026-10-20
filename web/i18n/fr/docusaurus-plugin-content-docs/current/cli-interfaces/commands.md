@@ -34,7 +34,7 @@ Les noms canoniques ci-dessous proviennent de `oma describe`. Seuls ces chemins 
 
 ## Surface actuelle des commandes {#current-command-surface}
 
-Cette carte permet de parcourir plus facilement les références détaillées ci-dessous et de découvrir les familles moins courantes. Utilisez `--help` de chaque famille ou `oma describe <path>` pour connaître la grammaire exacte des arguments ; [Options CLI](./options.md) contient la matrice complète des options du registre.
+Utilisez `--help` de chaque famille ou `oma describe <path>` pour connaître la grammaire exacte des arguments ; [Options CLI](./options.md) contient la matrice complète des options du registre.
 
 | Famille | Chemins enregistrés |
 |:-------|:-----------------|

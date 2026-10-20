@@ -8,7 +8,7 @@ description: Capture an observed agent failure, preserve its evidence, and evalu
 
 `oma harness incident` connects an observed failure to a regression case and the candidate evaluation that follows. It records observations separately from causal hypotheses. A failed process alone does not establish that the model caused the incident.
 
-The diagram shows the incident lifecycle. Promotion feeds skill optimization; export feeds harness evaluation.
+Promotion feeds skill optimization, and export feeds harness evaluation.
 
 ```mermaid
 flowchart TD

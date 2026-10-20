@@ -34,7 +34,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 
 ## 현재 지원하는 명령 {#current-command-surface}
 
-아래 표는 긴 레퍼런스를 빠르게 훑어보고 덜 자주 사용하는 계열도 찾을 수 있게 합니다. 정확한 인자 구문은 각 계열의 `--help` 또는 `oma describe <path>`로 확인하고, 전체 플래그 매트릭스는 [CLI 옵션](./options.md)에서 확인합니다.
+정확한 인자 구문은 각 계열의 `--help` 또는 `oma describe <path>`로 확인하고, 전체 명령 경로의 플래그는 [CLI 옵션](./options.md)에서 확인합니다.
 
 | 계열 | 등록된 경로 |
 |:-------|:-----------------|

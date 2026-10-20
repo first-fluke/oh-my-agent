@@ -8,7 +8,7 @@ description: "Ustrukturyzowany, siedmiokrokowy workflow debugowania z triage wa�
 
 ## Kiedy używać workflowu debugowania
 
-Użyj `/debug` (albo powiedz w języku naturalnym „fix bug”, „fix error” lub „debug”), gdy masz konkretny błąd do zdiagnozowania i naprawienia. Workflow daje uporządkowane, odtwarzalne podejście do debugowania, które pomaga uniknąć typowej pułapki naprawiania objawów zamiast przyczyn źródłowych.
+Użyj `/debug` (albo powiedz w języku naturalnym „fix bug”, „fix error” lub „debug”), aby odtworzyć błąd, ustalić jego przyczynę, zastosować poprawkę, dodać test regresji i wyszukać podobne wzorce.
 
 Workflow debugowania obsługuje wszystkich skonfigurowanych dostawców. Kroki 1–5 działają inline. Krok 6 (wyszukiwanie podobnych wzorców) może delegować zadanie do subagenta `debug-investigator`, gdy zakres skanu jest szeroki (co najmniej 10 plików albo błędy obejmują wiele domen), a następnie krok 7 zapisuje wynik w pamięci.
 
@@ -172,7 +172,7 @@ W tym kroku dzieją się dwie rzeczy:
    - sprawdza działanie poprawki (z poprawką test musi przejść)
    - zapobiega powrotowi tego samego błędu w przyszłych zmianach
 
-Test regresji jest najważniejszym wynikiem workflowu debugowania. Bez niego każda przyszła zmiana może ponownie wprowadzić ten sam błąd.
+Test regresji pozwala wykryć, czy przyszła zmiana ponownie wprowadzi ten sam błąd.
 
 ### Krok 6: wyszukaj podobne wzorce
 

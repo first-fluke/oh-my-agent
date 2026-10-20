@@ -8,7 +8,7 @@ description: Guide complet pour coordonner plusieurs agents de domaine frontend,
 
 ## Quand utiliser la coordination multi-agents
 
-Votre fonctionnalité couvre plusieurs domaines : API backend + interface frontend + schéma de base de données + client mobile + revue QA. Un seul agent ne peut pas gérer tout le périmètre, et vous devez faire progresser les domaines en parallèle sans qu'ils se marchent sur les fichiers.
+Votre fonctionnalité couvre plusieurs domaines : API backend, interface frontend, schéma de base de données, client mobile et revue QA. Les agents peuvent travailler en parallèle lorsque leurs modifications portent sur des fichiers distincts.
 
 La coordination multi-agents est le bon choix lorsque :
 
@@ -23,7 +23,7 @@ Si votre tâche reste entièrement dans un seul domaine, utilisez directement l'
 
 ## La séquence complète : de /plan à /review
 
-Le workflow multi-agents recommandé suit un pipeline strict en quatre étapes.
+Le workflow multi-agents recommandé comporte quatre étapes.
 
 ```mermaid
 flowchart LR

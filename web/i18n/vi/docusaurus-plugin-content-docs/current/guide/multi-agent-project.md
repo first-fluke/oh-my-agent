@@ -8,7 +8,7 @@ description: Hướng dẫn đầy đủ để điều phối nhiều agent thu�
 
 ## Khi nào dùng điều phối nhiều agent
 
-Tính năng có thể trải qua nhiều lĩnh vực: API backend, UI frontend, schema database, client mobile và review QA. Một agent không thể bao quát toàn bộ phạm vi, nên các lĩnh vực cần tiến hành song song mà không sửa chồng file.
+Tính năng có thể trải qua nhiều lĩnh vực: API backend, UI frontend, schema database, client mobile và review QA. Các agent có thể làm song song khi không chỉnh sửa trùng file.
 
 Điều phối nhiều agent phù hợp khi:
 
@@ -23,7 +23,7 @@ Nếu tác vụ hoàn toàn nằm trong một lĩnh vực, hãy gọi trực ti�
 
 ## Chuỗi đầy đủ: /plan đến /review
 
-Workflow nhiều agent được khuyến nghị đi theo pipeline bốn bước nghiêm ngặt.
+Workflow nhiều agent được khuyến nghị có bốn bước.
 
 ```mermaid
 flowchart LR

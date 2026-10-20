@@ -364,7 +364,7 @@ When the orchestrator writes a subagent prompt (`oma-orchestration/resources/sub
 - For native dispatch, pass the paths of those files and of the owning skill if the runtime has not supplied them.
 - Add an error-playbook section only after an observed failure, and `runtime/memory-protocol.md` only when the agent coordinates or resumes durable task state.
 
-This targeted composition avoids loading unnecessary resources, maximizing the subagent's available context for actual work.
+The targeted prompt keeps unrelated resources out and leaves more context available for the task.
 
 ---
 

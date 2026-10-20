@@ -34,7 +34,7 @@ Các tên chuẩn bên dưới lấy từ `oma describe`. Chỉ các đường d
 
 ## Bề mặt lệnh hiện tại
 
-Bản đồ này giúp các phần tham chiếu dài bên dưới dễ lướt hơn và giúp tìm thấy các nhóm lệnh ít dùng hơn. Dùng `--help` của từng nhóm hoặc `oma describe <path>` để xem cú pháp đối số chính xác; [Tùy chọn CLI](./options.md) chứa toàn bộ ma trận flag của registry.
+Dùng `--help` của từng nhóm hoặc `oma describe <path>` để xem cú pháp đối số chính xác; [Tùy chọn CLI](./options.md) chứa toàn bộ ma trận flag của registry.
 
 | Nhóm | Đường dẫn đã đăng ký |
 |:-------|:-----------------|

@@ -5,9 +5,9 @@ description: Volledige referentie voor alle 21 oh-my-agent-workflows, met slashc
 
 # Workflows
 
-Workflows zijn gestructureerde processen met meerdere stappen die door slashcommando's of natural-language-keywords worden gestart. Ze bepalen hoe agenten taken aanpakken, van hulpprogramma's met één fase tot complexe kwaliteitsgates met vijf fasen.
+Workflows zijn processen met meerdere stappen die door slashcommando's of natural-language-keywords worden gestart. Ze beschrijven hoe agenten taken uitvoeren, van eenstapstaken tot kwaliteitsworkflows met vijf fasen.
 
-Er zijn 21 workflows, waarvan er 4 [persistent](../getting-started/glossary.md#persistent-workflow) zijn (ze bewaren state en kunnen niet per ongeluk worden onderbroken).
+OMA heeft 21 workflows; 4 zijn [persistent](../getting-started/glossary.md#persistent-workflow) en bewaren status tussen beurten.
 
 ## Workflows in één oogopslag
 
@@ -751,7 +751,7 @@ De workflow kan ook natuurlijk eindigen wanneer alle stappen klaar zijn en de la
 | Feature binnen één domein | Taak beschrijven → relevante skill → implementeren → gerichte verificatie |
 | Complex multi-domeinproject | `/work` → PM plant → review binnen geautoriseerde scope → agenten spawnen → QA reviewt → issues herstellen → rapport |
 | Geautomatiseerde parallelle implementatie | `/orchestrate` → plan laden of maken → afhankelijkheden oplossen → onafhankelijke taken spawnen → verifiëren → rapport |
-| Maximale kwaliteitslevering | `/ultrawork` → PLAN (plan + 3 reviews) → IMPL → VERIFY (3 reviews) → REFINE (2 reviews + 3 refactoracties) → SHIP (4 reviews) |
+| Reviews in meerdere fasen | `/ultrawork` → PLAN (plan + 3 reviews) → IMPL → VERIFY (3 reviews) → REFINE (2 reviews + 3 refactoracties) → SHIP (4 reviews) |
 | Bugonderzoek | `/debug` → reproduceren → grondoorzaak → minimale fix → regressietest → scan op vergelijkbare patronen |
 | Van design naar implementatie | `/brainstorm` → ontwerpdocument → `/plan` → taakopdeling → `/orchestrate` → parallelle implementatie → `/review` → `/scm` |
 | Nieuwe codebase instellen | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |

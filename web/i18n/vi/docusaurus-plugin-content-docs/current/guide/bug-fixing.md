@@ -8,7 +8,7 @@ description: Quy trình debug bảy bước có cấu trúc, gồm phân loại 
 
 ## Khi nào dùng workflow debug
 
-Dùng `/debug`, hoặc nói “fix bug”, “fix error”, “debug” bằng ngôn ngữ tự nhiên, khi có lỗi cụ thể cần chẩn đoán và sửa. Workflow cung cấp cách tiếp cận có cấu trúc và có thể tái hiện, giúp tránh sửa triệu chứng thay vì nguyên nhân gốc.
+Dùng `/debug`, hoặc nói “fix bug”, “fix error”, “debug” bằng ngôn ngữ tự nhiên, khi có lỗi cụ thể cần chẩn đoán và sửa. Workflow đưa ra các bước có cấu trúc và có thể tái hiện để tìm và sửa nguyên nhân gốc của lỗi.
 
 Workflow hỗ trợ mọi vendor đã cấu hình. Bước 1 đến 5 chạy inline. Bước 6, quét mẫu tương tự, có thể giao cho subagent `debug-investigator` khi phạm vi quét rộng, từ 10 file trở lên hoặc lỗi xuyên nhiều lĩnh vực; tiếp theo là bản ghi memory của bước 7.
 

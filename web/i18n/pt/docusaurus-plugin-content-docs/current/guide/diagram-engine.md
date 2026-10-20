@@ -8,7 +8,7 @@ description: Como o oh-my-agent escolhe entre Mermaid e a skill opcional de agen
 
 `/architecture` (ADRs, recomendações e revisões) e `/explain` (explainers de alterações de código) emitem diagramas estruturais. Para `/architecture`, eles sempre são blocos **Mermaid** dentro do artefato Markdown (`/explain` desenha seus próprios diagramas SVG inline) e, quando [archify](https://github.com/tt-a1i/archify) pode ser resolvido, o que é o caso normal, também um **diagrama HTML interativo e validado** ao lado do artefato: tema claro/escuro, pan-zoom, busca, rastreamento de relações e exportação PNG/SVG/WebM, renderizado a partir de uma especificação JSON tipada.
 
-Mermaid nunca desaparece: é a SSOT textual que vive no Markdown e nos diffs do Git. archify é um artefato derivado.
+Mermaid continua sendo a SSOT textual no Markdown e nos diffs do Git. archify produz um artefato derivado.
 
 ---
 

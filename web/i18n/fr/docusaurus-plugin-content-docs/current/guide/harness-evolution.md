@@ -62,7 +62,7 @@ Un projet désactivé n’exécute aucun travail de modèle via la commande d’
 
 ## Ce qui se passe automatiquement
 
-Le diagramme montre un cycle, qu’il soit déclenché par le planificateur ou lancé à la main.
+Le cycle s’exécute depuis le planificateur ou manuellement.
 
 ```mermaid
 flowchart TD

@@ -6,7 +6,7 @@ description: Complete gids voor de oh-my-agent-workflow /explain en de skill oma
 
 # Code-uitlegger {#code-explainer}
 
-`/explain` maakt van een codewijziging een rijk, zelfstandig HTML-document dat uitlegt wat er veranderde en waarom — diepgaande achtergrond die nieuwkomers kunnen overslaan, een sectie met de kernintuïtie en toy-data, een codewalkthrough in volgorde van begrip en een quiz met vijf vragen. De uitvoer is één offline bruikbaar `.html`-bestand met diagrammen, callouts en een toegankelijke quiz, opgeslagen onder `.agents/results/explain/` en vóór oplevering gevalideerd tegen een deterministische checklist.
+`/explain` zet een codewijziging om in een zelfstandig HTML-document dat uitlegt wat er veranderde en waarom. Nieuwe lezers vinden er achtergrondinformatie die ze kunnen overslaan. Het bevat ook een sectie met de kernintuïtie en toy-data, een codewalkthrough in leesvolgorde en een interactieve, toegankelijke quiz met vijf vragen. Het offline bruikbare bestand heeft de extensie `.html`, bevat diagrammen en callouts en wordt vóór oplevering gevalideerd tegen een deterministische checklist en opgeslagen onder `.agents/results/explain/`.
 
 `/explain` is alleen een slash-commando — het wordt niet automatisch geactiveerd vanuit natuurlijke taal. "explain" is alledaagse woordenschat en wordt daarom bewust uitgesloten van keyworddetectie (hetzelfde precedent als `/convert`). Gebruik expliciet `/explain`, of vraag een andere skill om als gedelegeerde uitvoer een "explainer document" te maken.
 

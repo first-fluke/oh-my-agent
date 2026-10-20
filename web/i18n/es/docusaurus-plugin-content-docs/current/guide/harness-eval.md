@@ -41,7 +41,7 @@ Una ejecución live evalúa cada tarea como un experimento emparejado:
 
 El proyecto real nunca se usa como directorio de trabajo de un brazo. OMA captura la salida sin procesar y los artefactos finales de la tarea antes de las comprobaciones y de la limpieza del workspace temporal. El sandbox del proceso propio del proveedor seleccionado sigue siendo la autoridad para el acceso fuera del directorio de trabajo.
 
-El diagrama muestra cómo los brazos emparejados llegan a una decisión. Las acciones sin conexión vuelven a entrar en el paso de emparejamiento desde un registro guardado.
+Las acciones sin conexión vuelven a entrar en el paso de emparejamiento desde un registro guardado.
 
 ```mermaid
 flowchart TD

@@ -8,7 +8,7 @@ description: Vì sao Codex hook không chạy cho đến khi bạn xem xét mộ
 
 Khi oh-my-agent cài đặt vào project, nó ghi hook config native của vendor, bao gồm `.codex/hooks.json` cho Codex CLI. Khác với Claude Code, Codex không tự chạy các hook này. Nó đặt mọi non-managed command hook sau Trust-On-First-Use (TOFU): hook chỉ chạy sau khi bạn đã xem xét và bật nó một lần.
 
-Đây là cơ chế an toàn phía Codex, không phải giới hạn của oh-my-agent. Hướng dẫn này giải thích bước một lần cần thực hiện, điều xảy ra khi oh-my-agent cập nhật và phần được tự động xử lý.
+Đây là cơ chế an toàn phía Codex. Lần đầu cần xem xét và bật hook; hành vi khi oh-my-agent cập nhật được mô tả bên dưới.
 
 ---
 

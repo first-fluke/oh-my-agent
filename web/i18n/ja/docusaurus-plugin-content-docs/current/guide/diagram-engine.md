@@ -6,13 +6,13 @@ description: oh-my-agent がアーキテクチャ、シーケンス、データ�
 
 # ダイアグラムエンジン
 
-`/architecture`（ADR、推奨事項、レビュー）と `/explain`（コード変更の解説）は、どちらも構造図を出力します。`/architecture` では、図は常に Markdown アーティファクト内の **Mermaid** ブロックです（`/explain` は独自のインライン SVG 図を描きます）。さらに [archify](https://github.com/tt-a1i/archify) を解決できる場合（通常はこちら）は、アーティファクトの隣に**インタラクティブで検証済みの HTML 図**も出力します。HTML 図にはダーク／ライトテーマ、パンとズーム、検索、関係の追跡、PNG／SVG／WebM エクスポートがあり、型付き JSON 仕様から描画されます。
+`/architecture` と `/explain` は構造図を出力します。`/architecture` アーティファクトには **Mermaid** ブロックが必ず含まれ、`/explain` ワークフローはインライン SVG 図を描きます。[archify](https://github.com/tt-a1i/archify) を解決できる場合、アーキテクチャワークフローはアーティファクトの隣に**インタラクティブで検証済みの HTML 図**も出力します。型付き JSON 仕様から描画され、ダーク／ライトテーマ、パンとズーム、検索、関係の追跡、PNG／SVG／WebM エクスポートに対応します。
 
 Mermaid がなくなることはありません。Markdown と git diff に残るテキストの SSOT です。archify は派生アーティファクトです。
 
 ---
 
-## 常に最新の archify を使う。インストールは不要 {#always-the-latest-archify--nothing-to-install}
+## archify の最新管理コピー {#always-the-latest-archify--nothing-to-install}
 
 archify は MIT ライセンスのエージェントスキルです（Node ≥ 18、ランタイム依存なし）。oh-my-agent は一度インストールしたコピーに依存せず、**独自の管理コピー**を保持して最新リリースを追跡します。
 

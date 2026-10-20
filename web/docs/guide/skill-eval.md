@@ -6,7 +6,7 @@ description: How to write eval task fixtures for oma skill eval, the .agents/eva
 
 # Skill Utility Eval
 
-`oma skill eval` measures whether loading a skill actually improves agent task outcomes. It answers a different question than `oma skill audit` (which asks "are two skills redundant?"): it asks "does this skill help?".
+`oma skill eval` compares task outcomes with and without one skill. `oma skill audit` checks whether two skill descriptions are redundant.
 
 The design follows two research findings: WikiSkill (arXiv:2608.27454) separates raw experience, persistent knowledge, and executable skills while retaining held-out gates for evolution; SkillLens (arXiv:2605.23899) shows that skill utility is independent of description distinctiveness — a distinct skill can still be useless, and an overlapping skill can still be helpful.
 
@@ -31,7 +31,7 @@ A skill passes when `utilityLift ≥ 5%`. Below that threshold it is warned (mar
 
 ## Quick start {#a-minimal-working-fixture-set}
 
-Five fixtures are required for a verdict (`MIN_TASKS = 5`). Here is a minimal set for an imaginary `oma-scholar` skill. Four use the default judge; `structured-output` uses a deterministic `assert` checker.
+Five fixtures are required for a verdict (`MIN_TASKS = 5`). The example below is a minimal fixture set for an imaginary `oma-scholar` skill. Four use the default judge; `structured-output` uses a deterministic `assert` checker.
 
 ```yaml
 # .agents/eval/oma-scholar/claims-only.yaml
@@ -107,7 +107,7 @@ Skill eval live run preview:
   record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
 ```
 
-Next, read the result as described in [Reading the report](#reading-the-report). The sections after this one are reference material.
+Next, read the result as described in [Reading the report](#reading-the-report).
 
 ---
 

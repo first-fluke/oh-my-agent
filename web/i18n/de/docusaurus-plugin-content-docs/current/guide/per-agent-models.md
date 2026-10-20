@@ -14,7 +14,7 @@ Die gemeinsame Konfiguration liegt in `.agents/oma-config.yaml` und, falls vorha
 
 Eine vollständige Referenz der Top-Level-Schlüssel und Vorrangregeln finden Sie in der [Konfigurationsreferenz](/docs/guide/configuration-reference).
 
-Diese Seite behandelt:
+Behandelt werden:
 
 1. Die eingebauten Presets und die Modelle, die jede Rolle erhält
 2. Wie OMA Modell und CLI für einen Agenten auflöst

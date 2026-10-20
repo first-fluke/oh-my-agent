@@ -62,7 +62,8 @@ Un proyecto desactivado no ejecuta trabajo de modelo mediante el comando de evol
 
 ## Qué ocurre automáticamente
 
-El diagrama muestra un ciclo, tanto si lo dispara el programador como si lo ejecutas a mano.
+El ciclo se ejecuta por el programador o de forma manual.
+
 
 ```mermaid
 flowchart TD

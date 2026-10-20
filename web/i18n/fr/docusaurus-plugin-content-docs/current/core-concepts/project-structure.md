@@ -6,13 +6,13 @@ description: Carte destinée aux lecteurs d'une installation oh-my-agent, couvra
 
 # Structure du projet
 
-Après l'installation d'oh-my-agent, votre projet comprend deux arborescences principales : `.agents/` (la source unique de vérité, y compris le magasin de coordination `.agents/state/memories/`) et les couches d'intégration du runtime (par exemple `.claude/`, `.cursor/`, `.codex/`). Si Serena est choisi comme fournisseur d'intelligence du code, un répertoire `.serena/` facultatif peut aussi exister pour les mémoires d'intégration de Serena. Cette page explique les fichiers partagés et les chemins facultatifs ou générés utiles au dépannage.
+Après l'installation d'oh-my-agent, votre projet comprend deux arborescences principales : `.agents/` (la source unique de vérité, y compris le magasin de coordination `.agents/state/memories/`) et les couches d'intégration du runtime (par exemple `.claude/`, `.cursor/`, `.codex/`). Si Serena est choisi comme fournisseur d'intelligence du code, un répertoire `.serena/` facultatif peut aussi exister pour les mémoires d'intégration de Serena.
 
 ---
 
 ## Arborescence représentative {#representative-directory-tree}
 
-L'arborescence ci-dessous détaille les ressources partagées et des compétences de domaine représentatives. Le catalogue actuel comprend 33 répertoires de compétences ; les compétences omises suivent le même modèle `SKILL.md` avec des répertoires facultatifs `resources/`, `stack/` ou propres à la compétence. Considérez l'arborescence `.agents/` active comme l'autorité lorsqu'un fichier généré ou facultatif est absent.
+Le catalogue actuel comprend 33 répertoires de compétences ; les compétences omises suivent le même modèle `SKILL.md` avec des répertoires facultatifs `resources/`, `stack/` ou propres à la compétence. Considérez l'arborescence `.agents/` active comme l'autorité lorsqu'un fichier généré ou facultatif est absent.
 
 ```text
 your-project/

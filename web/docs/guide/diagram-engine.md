@@ -6,13 +6,14 @@ description: How oh-my-agent chooses between Mermaid and the optional tt-a1i/arc
 
 # Diagram Engine
 
-`/architecture` (ADRs, recommendations, reviews) and `/explain` (code-change explainers) both emit structural diagrams. For `/architecture` those are always **Mermaid** blocks inside the Markdown artifact (`/explain` draws its own inline SVG diagrams), and — whenever [archify](https://github.com/tt-a1i/archify) can be resolved, which is the normal case — additionally an **interactive, validated HTML diagram** next to the artifact: dark/light theme, pan-zoom, search, relationship tracing, PNG/SVG/WebM export, rendered from a typed JSON spec.
+`/architecture` (ADRs, recommendations, reviews) and `/explain` (code-change explainers) produce structural diagrams. The `/architecture` artifact always includes a **Mermaid** block in Markdown, and the `/explain` workflow draws inline SVG diagrams. When [archify](https://github.com/tt-a1i/archify) resolves, the architecture workflow also emits an **interactive, validated HTML diagram** next to the artifact. It uses a typed JSON spec and supports dark/light themes, pan-zoom, search, relationship tracing, and PNG/SVG/WebM export.
 
 Mermaid never goes away: it is the text SSOT that lives in the Markdown and in git diffs. archify is a derived artifact.
 
 ---
 
-## Always the latest archify — nothing to install
+<a id="always-the-latest-archify--nothing-to-install"></a>
+## Managed archify copy
 
 archify is an MIT-licensed agent skill (Node ≥ 18, zero runtime dependencies). oh-my-agent does not rely on a copy you installed once; it keeps its **own managed copy** and tracks the latest release:
 

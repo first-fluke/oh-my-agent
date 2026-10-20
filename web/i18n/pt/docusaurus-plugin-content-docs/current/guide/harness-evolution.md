@@ -62,7 +62,7 @@ Um projeto desabilitado não executa trabalho de modelo por meio do comando evol
 
 ## O que acontece automaticamente
 
-O diagrama mostra um ciclo, seja ele disparado pelo agendador ou executado manualmente por você.
+O ciclo é executado pelo agendador ou manualmente.
 
 ```mermaid
 flowchart TD

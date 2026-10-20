@@ -14,7 +14,7 @@ A configuração compartilhada fica em `.agents/oma-config.yaml` e, quando prese
 
 Para consultar a referência completa de chaves de nível superior e precedência, veja a [Referência de configuração](/docs/guide/configuration-reference).
 
-Esta página cobre:
+Tópicos:
 
 1. Os presets integrados e os modelos que cada papel recebe
 2. Como o OMA resolve o modelo e a CLI de um agente

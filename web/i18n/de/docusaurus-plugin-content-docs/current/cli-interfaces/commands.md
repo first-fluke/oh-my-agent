@@ -34,7 +34,7 @@ Die kanonischen Namen unten stammen aus `oma describe`. Nur diese durch Leerzeic
 
 ## Aktuelle Befehlsoberfläche {#current-command-surface}
 
-Diese Übersicht hält die ausführlichen Referenzen unten überschaubar und macht seltener verwendete Familien auffindbar. Verwende für die genaue Argumentgrammatik das jeweilige `--help` oder `oma describe <path>`; [CLI-Optionen](./options.md) enthält die vollständige Flag-Matrix der Registry.
+Die Tabelle listet registrierte Befehlsfamilien. Für die genaue Argumentgrammatik nutze das jeweilige `--help` oder `oma describe <path>`; [CLI-Optionen](./options.md) enthält die vollständige Flag-Matrix der Registry.
 
 | Familie | Registrierte Pfade |
 |:-------|:-----------------|

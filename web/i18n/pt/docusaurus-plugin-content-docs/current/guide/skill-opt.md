@@ -32,7 +32,7 @@ A reprodução e o conhecimento com escopo de suíte estão vinculados ao contra
 
 ## Como funciona
 
-O diagrama mostra uma execução de otimização. Uma avaliação incompleta ou um orçamento esgotado também encerra o loop de épocas antecipadamente.
+Uma avaliação incompleta ou um orçamento esgotado também encerra o loop de épocas antecipadamente.
 
 ```mermaid
 flowchart TD

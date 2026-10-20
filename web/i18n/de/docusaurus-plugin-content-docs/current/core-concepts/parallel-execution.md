@@ -5,7 +5,7 @@ description: Anleitung zum parallelen Ausführen mehrerer OMA-Dispatch-Rollen mi
 
 # Parallele Ausführung
 
-Der zentrale Vorteil von oh-my-agent ist das gleichzeitige Ausführen mehrerer spezialisierter Agenten. Während der Backend-Agent eine API implementiert, erstellt der Frontend-Agent die Benutzeroberfläche und der Mobile-Agent die App-Screens; der Orchestrator koordiniert sie über dauerhaften Laufzeitstatus und Ausführungsbelege (Receipts).
+oh-my-agent kann mehrere spezialisierte Agenten gleichzeitig ausführen. Während der Backend-Agent eine API implementiert, erstellt der Frontend-Agent die Benutzeroberfläche und der Mobile-Agent die App-Screens; der Orchestrator koordiniert sie über dauerhaften Laufzeitstatus und Ausführungsbelege (Receipts).
 
 ---
 

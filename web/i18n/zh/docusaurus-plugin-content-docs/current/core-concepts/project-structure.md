@@ -5,7 +5,7 @@ description: 面向读者介绍 oh-my-agent 的安装目录，涵盖 `.agents/` 
 
 # 项目结构
 
-安装 oh-my-agent 后，项目会获得两棵核心目录树：`.agents/`（唯一事实来源，其中包括 `.agents/state/memories/` 协调存储）和运行时集成层（例如 `.claude/`、`.cursor/`、`.codex/`）。如果选择 Serena 作为代码智能提供商，还可能出现可选的 `.serena/` 目录，用于保存 Serena 的引导记忆。本页说明排查问题时需要关注的共享文件及可选或生成路径。
+安装 oh-my-agent 后，项目会获得两棵核心目录树：`.agents/`（唯一事实来源，其中包括 `.agents/state/memories/` 协调存储）和运行时集成层（例如 `.claude/`、`.cursor/`、`.codex/`）。如果选择 Serena 作为代码智能提供商，还可能出现可选的 `.serena/` 目录，用于保存 Serena 的引导记忆。
 
 ---
 

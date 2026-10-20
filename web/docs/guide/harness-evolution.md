@@ -8,7 +8,7 @@ description: Enable scheduled, budgeted skill improvements from OMA run evidence
 
 OMA can collect evidence from tracked agent runs and process failures in a scheduled feedback cycle. Automatic skill changes are **off until you enable them for a project**. Every cycle has a finite model-call budget, and an applied change must pass the existing skill evaluation gates.
 
-The automated path improves skill documents. Changes to the optimizer or maintainer procedure remain a separate, manually invoked [meta-optimization](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate).
+The automated path applies evaluated changes to skill documents. Changes to the optimizer or maintainer procedure require the separate, manually invoked [meta-optimization](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate).
 
 ## Enable a project
 
@@ -62,7 +62,7 @@ A disabled project does not run model work through the evolution command, includ
 
 ## What happens automatically
 
-The diagram shows one cycle, whether the scheduler fires it or you run it by hand.
+A cycle runs on schedule or manually.
 
 ```mermaid
 flowchart TD

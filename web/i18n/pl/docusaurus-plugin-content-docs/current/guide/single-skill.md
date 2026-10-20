@@ -6,7 +6,7 @@ description: "Szczegółowy przewodnik po zadaniach w jednej domenie w oh-my-age
 
 # Wykonanie jednej umiejętności
 
-Wykonanie jednej umiejętności to szybka ścieżka: jeden agent, jedna domena, jedno skupione zadanie. Bez narzutu orkiestracji i bez koordynacji wielu agentów. Host albo wybrany workflow może skierować prompt w języku naturalnym do umiejętności; sam system hooków wykrywa workflowy, a zachowanie routingu zależy od wybranego runtime'u.
+Wykonanie jednej umiejętności kieruje jedno skupione zadanie w jednej domenie do jednego agenta. Host albo wybrany workflow może skierować prompt w języku naturalnym do umiejętności; sam system hooków wykrywa workflowy, a zachowanie routingu zależy od wybranego runtime'u.
 
 ## Szybka ścieżka
 

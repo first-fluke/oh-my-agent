@@ -5,7 +5,7 @@ description: Reader-oriented map of an oh-my-agent installation, covering the SS
 
 # Project Structure
 
-After installing oh-my-agent, your project gains two core directory trees: `.agents/` (the single source of truth, including the `.agents/state/memories/` coordination store) and runtime integration layers (e.g. `.claude/`, `.cursor/`, `.codex/`). If Serena is chosen as the code-intelligence provider, an optional `.serena/` directory may also exist for Serena's onboarding memories. This page explains the shared files and the optional/generated paths that matter when troubleshooting.
+After installing oh-my-agent, your project gains two core directory trees: `.agents/` (the single source of truth, including the `.agents/state/memories/` coordination store) and runtime integration layers (e.g. `.claude/`, `.cursor/`, `.codex/`). If Serena is the code-intelligence provider, an optional `.serena/` directory may contain Serena onboarding memories.
 
 ---
 

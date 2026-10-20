@@ -8,9 +8,9 @@ description: Guía completa para coordinar agentes de varios dominios en fronten
 
 ## Cuándo usar la coordinación multiagente
 
-Tu funcionalidad abarca varios dominios: API de backend + UI de frontend + esquema de base de datos + cliente mobile + revisión de QA. Un solo agente no puede cubrir todo el alcance y necesitas que los dominios avancen en paralelo sin pisar los archivos de los demás.
+La funcionalidad abarca varios dominios: API de backend, UI de frontend, esquema de base de datos, cliente mobile y revisión de QA. Los dominios pueden avanzar en paralelo sin modificar los archivos de los demás.
 
-La coordinación multiagente es la opción adecuada cuando:
+Usa coordinación multiagente cuando:
 
 - La tarea involucra 2 o más dominios (frontend, backend, mobile, db, QA, debug, pm).
 - Hay contratos API entre dominios (por ejemplo, un endpoint REST que consumen la web y mobile).
@@ -23,7 +23,7 @@ Si tu tarea cabe por completo en un solo dominio, usa directamente el agente esp
 
 ## La secuencia completa: de /plan a /review
 
-El flujo multiagente recomendado sigue un pipeline estricto de cuatro pasos.
+El flujo recomendado tiene cuatro pasos.
 
 ```mermaid
 flowchart LR
@@ -132,7 +132,7 @@ La **resolución del prompt** permite que el argumento `<prompt>` sea texto inli
 /review
 ```
 
-El flujo de revisión ejecuta un pipeline completo de QA:
+El flujo de revisión sigue estos pasos:
 
 1. **Identificar el alcance**: pregunta qué debe revisarse (archivos concretos, una rama de funcionalidad o todo el proyecto).
 2. **Comprobaciones de seguridad automatizadas**: ejecuta `npm audit`, `bandit` o el equivalente.
@@ -332,11 +332,11 @@ Generar agentes de backend y frontend sin definir primero los contratos hace que
 
 ### 4. Ignorar los hallazgos de QA
 
-Tratar la revisión QA como opcional. Los hallazgos CRITICAL y HIGH representan bugs reales que llegarán a producción. El flujo lo impone repitiendo el ciclo hasta que no queden bloqueadores.
+Tratar la revisión QA como opcional. Los hallazgos CRITICAL y HIGH son bloqueadores, y el flujo repite la revisión hasta resolverlos.
 
 ### 5. Coordinación manual de archivos
 
-Intentar fusionar manualmente los resultados de los agentes en lugar de dejar que el pipeline de verificación y QA gestione la integración. La verificación automatizada detecta problemas que la revisión manual puede pasar por alto.
+Intentar fusionar manualmente los resultados en lugar de usar el pipeline de verificación y QA para integrar el trabajo. Este pipeline ejecuta las comprobaciones declaradas y la revisión de QA.
 
 ### 6. Paralelización excesiva
 

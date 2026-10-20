@@ -8,7 +8,7 @@ description: Codex 훅을 한 번 검토하기 전까지 실행하지 않는 이
 
 oh-my-agent를 프로젝트에 설치하면 벤더 네이티브 훅 설정을 작성하는데, Codex CLI용 `.codex/hooks.json`도 여기에 포함됩니다. Claude Code와 달리 Codex는 이 훅을 자동으로 실행하지 않습니다. 관리 대상이 아닌 모든 명령 훅을 TOFU(Trust-On-First-Use) 뒤에 두기 때문에, 한 번 검토하고 활성화해야만 훅이 동작합니다.
 
-이는 oh-my-agent의 한계가 아니라 Codex 쪽 안전장치입니다. 이 문서는 한 번만 거치면 되는 단계, oh-my-agent가 업데이트될 때 벌어지는 일, 그리고 자동으로 처리되는 부분을 설명합니다.
+이는 oh-my-agent의 한계가 아니라 Codex 쪽 안전장치입니다.
 
 ---
 

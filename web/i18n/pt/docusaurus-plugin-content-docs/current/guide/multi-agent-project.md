@@ -8,7 +8,7 @@ description: Guia completo para coordenar agentes de vários domínios entre fro
 
 ## Quando usar coordenação multi-agente
 
-Sua funcionalidade abrange vários domínios: API backend + UI frontend + schema de banco de dados + cliente mobile + revisão QA. Um único agente não consegue tratar todo o escopo, e você precisa que os domínios avancem em paralelo sem modificar os arquivos uns dos outros.
+Sua funcionalidade abrange vários domínios: API backend, UI frontend, schema de banco de dados, cliente mobile e revisão QA. Os agentes podem trabalhar em paralelo quando não modificarem os arquivos uns dos outros.
 
 A coordenação multi-agente é a escolha certa quando:
 
@@ -23,7 +23,7 @@ Se sua tarefa couber inteiramente em um domínio, use diretamente o agente espec
 
 ## A sequência completa: /plan a /review
 
-O workflow multi-agente recomendado segue um pipeline rígido de quatro etapas.
+O workflow multi-agente recomendado tem quatro etapas.
 
 ```mermaid
 flowchart LR

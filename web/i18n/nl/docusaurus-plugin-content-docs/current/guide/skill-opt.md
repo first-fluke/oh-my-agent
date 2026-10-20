@@ -32,7 +32,7 @@ Replay en suitegebonden kennis zijn gekoppeld aan het volledige taak-/evaluatorc
 
 ## Hoe het werkt {#how-it-works}
 
-Het diagram toont één optimalisatierun. Een onvolledige evaluatie of een uitgeput budget beëindigt de epoch-lus ook voortijdig.
+Een onvolledige evaluatie of een uitgeput budget beëindigt de epoch-lus voortijdig.
 
 ```mermaid
 flowchart TD
@@ -189,9 +189,9 @@ Het antwoord van de optimizer wordt alleen qua opmaak soepel gelezen: code fence
 
 Een kandidaat wordt alleen gepromoveerd wanneer het gepaarde bootstrap-95%-interval van zijn winstverschil boven nul ligt (met vaste seed, 1000 resamples), er minstens drie paren bestaan en geen enkele skill die onder de huidige procedure verbeterde, meer dan de helft van die winst verliest onder de kandidaat. Een binnenste run waarvan de evaluatie was geblokkeerd (onvoldoende dekking, niet-geverifieerde isolatie, uitgeput budget) wordt als mislukt gerapporteerd en uitgesloten van de paren, zodat een storing niet als nulwinst voor één arm kan meetellen. Held-out skills moeten ruimte voor verbetering hebben: een skill waarop de huidige body al perfect scoort, kan onder geen enkele procedure winst tonen. `--anchor` noemt skills die nooit voor selectie worden gebruikt, maar eenmaal onder de huidige en de winnende procedure worden uitgevoerd om drift te tonen; zonder de vlag geldt de `anchors`-lijst van de constitution, zodat een ground-truth-set die één keer is gedeclareerd bij elke meta-run wordt gecontroleerd. Met `--apply` wordt het winnende template weggeschreven naar `.agents/evolution/<target>.md`, met een backup met tijdstempel, een unified-diff-patch en een record in `.agents/results/skill-evolution/_procedure/promotions.jsonl` met de hashes van ouder en kandidaat, de hash van de constitution en de evidence (skills, herhalingen, budget, paren, interval). Zonder `--apply` wordt niets geschreven.
 
-Wat bevroren blijft: de final-testpartitie van elke skill wordt nooit voor selectie gelezen (de maatstaf is training- plus validatiewinst), de evaluator en de optimalisatiecode staan als immutable in de constitution, de constitution zelf kan geen doel zijn en een doel moet voorkomen in `meta_targets`. Binnenste runs gebruiken standaard `--memory none`, zodat een procedure wordt beoordeeld op de edits die ze oplevert en niet op kennis die uit eerdere runs is opgehaald. Binnenste runs van één arm overlappen over skills heen (`OMA_META_CONCURRENCY`, standaard maximaal 4), terwijl de herhalingen van één skill serieel blijven, omdat de evidence van elke skill in een eigen artifactbestand terechtkomt. Elke binnenste run legt de gecombineerde procedurehash vast waaronder die draaide, zodat `oma skill evolution-stats` latere resultaten kan toeschrijven aan de procedure die ze heeft geproduceerd.
+De final-testpartitie van elke skill wordt nooit voor selectie gelezen; de maatstaf is training- plus validatiewinst. De evaluator en optimalisatiecode staan als immutable in de constitution, de constitution zelf kan geen doel zijn en elk doel moet voorkomen in `meta_targets`. Binnenste runs gebruiken standaard `--memory none`, zodat een procedure wordt beoordeeld op de edits die ze oplevert en niet op kennis uit eerdere runs. Binnenste runs van één arm overlappen over skills heen (`OMA_META_CONCURRENCY`, standaard maximaal 4), terwijl herhalingen van één skill serieel blijven omdat de evidence per skill in een eigen artifactbestand terechtkomt. Elke binnenste run legt de gecombineerde procedurehash vast, zodat `oma skill evolution-stats` latere resultaten aan de gebruikte procedure kan koppelen.
 
-Dit is de level-5-vorm die wordt beschreven in het overzicht van zelfverbeterende systemen (Self-Harness held-in/held-out-promotie, ADAS herhaalde evaluatie met bootstrap-intervallen, bevroren evaluators zoals in AlphaEvolve): de procedure wordt door het systeem herzien, maar het buitenste oordeel blijft buiten het bereik van de lus. De kosten schalen als skills × herhalingen × (1 + kandidaten) binnenste runs; het commando print de bovengrens en vraagt om bevestiging tenzij `--yes`.
+De level-5-vorm deelt kenmerken met drie beschreven benaderingen van zelfverbeterende systemen: Self-Harness gebruikt held-in/held-out-promotie, ADAS herhaalde evaluatie met bootstrapintervallen en AlphaEvolve bevroren evaluators. Hier blijft het buitenste oordeel buiten de lus terwijl het systeem de procedure herziet. De kosten schalen als skills × herhalingen × (1 + kandidaten) binnenste runs; het commando print de bovengrens en vraagt om bevestiging tenzij `--yes`.
 
 ### Promotielineage {#promotion-lineage}
 
@@ -205,7 +205,7 @@ Live evaluatie kan de isolatiegate doorstaan via het beschermde Claude- of het n
 
 ### Zien wat er is geëvolueerd {#seeing-what-evolved}
 
-De lus meldt zich op drie plaatsen, allemaal gelezen uit de append-only lineage-logboeken en niet uit enige bewering:
+Promoties verschijnen op drie plaatsen, op basis van de append-only lineage-logboeken:
 
 - `oma skill promotions --all` print één zin per wijziging voor elke skill en de procedure: wat is bewerkt (het anchor en de vervanging van de geaccepteerde edit), de held-in- en held-out-lifts ervoor en erna, of de final test standhield en, bij een procedurepromotie, het gepaarde winstverschil, het interval en de skills waarop het is gemeten. `--skill <id>` beperkt tot één skill. Apply-records die door deze versie zijn geschreven, bevatten de geaccepteerde edits en training-lifts; oudere records vallen terug op hashes.
 - `oma doctor` toont een notitie **Evolution**: toegepaste en teruggedraaide skill-edits, de laatste wijziging per skill, procedurepromoties en wat wacht om te worden teruggekoppeld (vastgelegde incidenten zonder fixture, mislukte runs die nog niet zijn vastgelegd), met het commando dat ze zou verwerken.

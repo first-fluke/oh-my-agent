@@ -87,7 +87,9 @@ oma video generate "product walkthrough" --mode demo --capture ./capture.mp4
 
 ---
 
-## 항상 최신 HyperFrames 사용: 컴포지션은 직접 작성
+<a id="always-latest-hyperframes--you-author-the-composition"></a>
+<a id="항상-최신-hyperframes-사용-컴포지션은-직접-작성"></a>
+## 관리되는 HyperFrames 도구 체인과 컴포지션 작성
 
 oh-my-agent는 **HyperFrames 컴포지션 코드를 함께 제공하지 않습니다**. 각 실행은 `<runDir>/hyperframes/`에 자체 프로젝트를 가지며, 이 프로젝트는 `oma video compose`가 최신 npm HyperFrames(툴체인 캐시 `~/.cache/oma-video/hyperframes/<version>/`, `node_modules` 심볼릭 링크로 공유)와 HEAD 기준 [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes)(`~/.cache/oma-video/hyperframes-skills/`)를 바탕으로 스캐폴딩합니다. 에이전트는 스캐폴드의 `AUTHORING.md`, 스킬, `.agents/skills/oma-video/resources/hyperframes-authoring/`의 모드 사양을 따라 생성된 컴포지션 소스를 작성합니다.
 
@@ -174,7 +176,7 @@ oma video provider list         # provider availability + key/fallback status
 
 ## 툴체인과 `doctor`
 
-무거운 툴체인(관리되는 HyperFrames 프로젝트의 `node_modules`, 임베드된 Pretendard 폰트, MoneyPrinterTurbo 체크아웃, Strudel 음악 프로젝트, Chrome Headless Shell)은 **필요할 때 프로비저닝**하며 패키지에 담아 배포하지 않습니다. 옵션 없는 `doctor`는 보고만 하고 아무것도 설치하지 않습니다.
+무거운 툴체인(관리되는 HyperFrames 프로젝트의 `node_modules`, 임베드된 Pretendard 폰트, MoneyPrinterTurbo 체크아웃, Strudel 음악 프로젝트, Chrome Headless Shell)은 **필요할 때 프로비저닝**하며 패키지에 담아 배포하지 않습니다. 옵션 없는 `doctor`는 상태를 보고할 뿐, 아무것도 설치하지 않습니다.
 
 ```bash
 oma video doctor

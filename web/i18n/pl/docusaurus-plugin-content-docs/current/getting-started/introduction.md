@@ -17,13 +17,13 @@ Jeśli dopiero poznajesz OMA, zacznij od [Szybkiego startu](./quick-start.md), a
 
 ## Paradygmat wieloagentowy {#the-multi-agent-paradigm}
 
-Tradycyjni asystenci AI do kodowania często obsługują frontend, backend, bazy danych, bezpieczeństwo i infrastrukturę z jednego kontekstu promptu. Może to prowadzić do:
+Obsługa frontendu, backendu, baz danych, bezpieczeństwa i infrastruktury w jednym kontekście promptu może prowadzić do:
 
 - **Rozmycia kontekstu:** ładowanie wiedzy dla każdej domeny marnuje okno kontekstowe
 - **Niejasnego właścicielstwa:** zadanie obejmujące wiele domen nie ma wyraźnej granicy odpowiedzialności dla każdej części
 - **Ręcznej koordynacji:** złożone funkcje obejmujące wiele domen wymagają przekazań wybieranych przez hosta lub użytkownika
 
-oh-my-agent rozwiązuje ten problem dzięki specjalizacji:
+oh-my-agent rozdziela te obszary między wyspecjalizowane umiejętności i agentów:
 
 1. **Każda umiejętność ma główną domenę.** Umiejętność frontendowa zna React/Next.js, shadcn/ui, TailwindCSS v4 i architekturę FSD-lite. Umiejętność backendowa zna wzorzec Repository-Service-Router, zapytania parametryzowane i uwierzytelnianie JWT. Domeny mogą nakładać się na granicach, dlatego użyj kryteriów akceptacji zadania, aby zdecydować, czy potrzebna jest druga umiejętność lub workflow koordynujący.
 2. **Agenci mogą działać równolegle.** Gdy agent backendowy buduje API, agent frontendowy może pracować we własnym workspace'ie. Orchestrator koordynuje działania za pomocą trwałych plików i potwierdzeń przypisanych do runu.
@@ -33,13 +33,13 @@ oh-my-agent rozwiązuje ten problem dzięki specjalizacji:
 
 ## Obecny katalog: 33 umiejętności, 12 definicji, 21 workflowów {#the-current-catalog-33-skills-12-definitions-21-workflows}
 
-Katalog rozdziela trzy rzeczy, które łatwo pomylić:
+Katalog składa się z trzech elementów:
 
 - **[Umiejętności](./glossary.md#skill)** to 33 pakiety wiedzy domenowej w `.agents/skills/*/SKILL.md`. Kierują na podstawie intencji wyrażonej naturalnym językiem i progresywnie ładują zasoby.
 - **[Definicje agentów](./glossary.md#agent-definition)** to 12 plików w `.agents/agents/`. Dostarczają natywne dla dostawcy persony subagentów i odwołują się do co najmniej jednej umiejętności.
 - **[Workflowy](./glossary.md#workflow)** to 21 definicji procesów w `.agents/workflows/`. Cztery są [trwałe](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` i `ralph`); pozostałe kończą się raportem i nie utrzymują aktywnego trybu trwałego.
 
-Poniższe sekcje zachowują szczegółowy katalog umiejętności. Gdy nazwa lub opis się zmienia, źródłem prawdy jest frontmatter aktywnego `SKILL.md`.
+Gdy nazwa lub opis umiejętności się zmienia, rozstrzygający jest frontmatter aktywnego `SKILL.md`.
 
 Dwanaście plików definicji znajdujących się w repozytorium obejmuje 13 ról runtime'u dzięki aliasom: `research-explorer.md` mapuje się na `explore`, a `orchestrator` istnieje tylko w runtime'ie. Pozostałe pliki definicji mapują się na nazwane role wymienione w [Agentach](../core-concepts/agents.md).
 

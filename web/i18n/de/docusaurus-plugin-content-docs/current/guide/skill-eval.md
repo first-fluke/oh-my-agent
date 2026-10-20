@@ -107,7 +107,7 @@ Skill eval live run preview:
   record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
 ```
 
-Lesen Sie anschließend das Ergebnis wie unter [Bericht lesen](#reading-the-report) beschrieben. Die Abschnitte nach diesem sind Referenzmaterial.
+Lesen Sie das Ergebnis unter [Bericht lesen](#reading-the-report).
 
 ---
 

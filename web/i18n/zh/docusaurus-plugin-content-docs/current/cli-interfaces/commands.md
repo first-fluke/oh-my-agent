@@ -35,7 +35,7 @@ sidebar_label: CLI 命令
 
 ## 当前命令范围 {#current-command-surface}
 
-此映射让下面的长参考内容更易扫描，也便于发现不常用的命令族。要查看确切的参数语法，请使用各命令族的 `--help` 或 `oma describe <path>`；完整的注册表标志矩阵见 [CLI 选项](./options.md)。
+要查看确切的参数语法，请使用各命令族的 `--help` 或 `oma describe <path>`；完整的注册表标志矩阵见 [CLI 选项](./options.md)。
 
 | 命令族 | 注册路径 |
 |:-------|:-----------------|

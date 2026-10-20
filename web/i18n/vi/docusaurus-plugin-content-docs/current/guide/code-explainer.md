@@ -6,7 +6,7 @@ description: Hướng dẫn đầy đủ về workflow /explain và skill oma-ex
 
 # Code Explainer {#code-explainer}
 
-`/explain` biến một code change thành HTML document phong phú, tự chứa, dạy người đọc điều gì đã đổi và vì sao — background sâu có thể bỏ qua cho người mới, phần core intuition với toy data, code walkthrough theo thứ tự dễ hiểu và quiz năm câu. Output là một file `.html` duy nhất có thể chạy offline, với diagram, callout và quiz accessible, được lưu dưới `.agents/results/explain/` và validate bằng deterministic checklist trước khi giao.
+`/explain` biến một code change thành HTML document tự chứa, giải thích điều gì đã đổi và vì sao. Tài liệu gồm phần background có thể bỏ qua cho người mới, core intuition với toy data, code walkthrough theo thứ tự dễ hiểu và quiz năm câu. Output là một file `.html` duy nhất có thể chạy offline, với diagram, callout và quiz accessible, được lưu dưới `.agents/results/explain/` và validate bằng deterministic checklist trước khi giao.
 
 `/explain` chỉ là slash command — không tự kích hoạt từ natural language. “explain” là từ thông dụng nên cố ý bị loại khỏi keyword detection (cùng precedent với `/convert`). Hãy nói rõ `/explain`, hoặc yêu cầu skill khác tạo “explainer document” như delegated output.
 

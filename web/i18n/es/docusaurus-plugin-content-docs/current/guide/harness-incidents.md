@@ -8,7 +8,7 @@ description: Captura un fallo observado de un agente, preserva su evidencia y ev
 
 `oma harness incident` conecta un fallo observado con un caso de regresión y con la evaluación del candidato que lo sigue. Registra las observaciones por separado de las hipótesis causales. Un proceso fallido por sí solo no establece que el modelo causara el incidente.
 
-El diagrama muestra el ciclo de vida de un incidente. La promoción alimenta la optimización de skills; la exportación alimenta la evaluación del harness.
+La promoción alimenta la optimización de skills y la exportación alimenta la evaluación del harness.
 
 ```mermaid
 flowchart TD

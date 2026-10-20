@@ -172,7 +172,7 @@ In diesem Schritt geschehen zwei Dinge:
    - Bestätigt, dass die Korrektur wirkt (der Test muss mit der Korrektur bestehen)
    - Verhindert, dass derselbe Bug bei zukünftigen Änderungen erneut auftritt
 
-Der Regressionstest ist das wichtigste Ergebnis des Debug-Workflows. Ohne ihn kann derselbe Bug durch jede zukünftige Änderung erneut eingeführt werden.
+Der Regressionstest zeigt, wenn derselbe Bug durch eine spätere Änderung erneut auftritt.
 
 ### Schritt 6: Nach ähnlichen Mustern scannen
 

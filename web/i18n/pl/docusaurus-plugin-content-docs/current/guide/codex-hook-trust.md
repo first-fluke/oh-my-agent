@@ -8,7 +8,7 @@ description: Dlaczego hooki Codex nie działają, dopóki raz ich nie przejrzysz
 
 Gdy oh-my-agent instaluje się w projekcie, zapisuje natywne dla dostawców konfiguracje hooków, w tym `.codex/hooks.json` dla CLI Codex. W przeciwieństwie do Claude Code Codex nie uruchamia tych hooków automatycznie. Każdy niezarządzany hook polecenia jest chroniony przez Trust-On-First-Use (TOFU): hook działa dopiero po jednorazowym przejrzeniu i włączeniu.
 
-To mechanizm bezpieczeństwa po stronie Codex, a nie ograniczenie oh-my-agent. Ten przewodnik wyjaśnia jednorazowy krok, który trzeba wykonać, zachowanie podczas aktualizacji oh-my-agent i czynności wykonywane automatycznie.
+To mechanizm bezpieczeństwa po stronie Codex. Hooki wymagają jednorazowego przejrzenia, a ponownie po aktualizacji tylko wtedy, gdy zmieni się polecenie.
 
 ---
 

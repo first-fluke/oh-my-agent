@@ -7,7 +7,7 @@ description: "使用成对、隔离的仓库任务和确定性产物检查，评
 # Harness 评估
 
 :::tip 这些功能如何配合
-[技能评估](./skill-eval.md)衡量单个 `SKILL.md` 是否有帮助，[技能优化](./skill-opt.md)则在保留集关卡下编辑该正文。Harness 评估（本页）在仓库任务上比较整个 `.agents/` 覆盖层。[事件回归用例](./harness-incidents.md)把观察到的故障转化为评估用例和技能 fixture。[项目 harness 演进](./harness-evolution.md)把事件捕获和技能优化作为有预算的周期来运行，[计划智能体](./scheduled-agents.md)则是触发它的操作系统调度器。
+[技能评估](./skill-eval.md)衡量单个 `SKILL.md` 是否有帮助，[技能优化](./skill-opt.md)则在保留集关卡下编辑该正文。Harness 评估比较整个 `.agents/` 覆盖层在仓库任务中的表现。[事件回归用例](./harness-incidents.md)把观察到的故障转化为评估用例和技能 fixture。[项目 harness 演进](./harness-evolution.md)把事件捕获和技能优化作为有预算的周期来运行，[计划智能体](./scheduled-agents.md)则是触发它的操作系统调度器。
 :::
 
 `oma harness eval` 用于衡量候选 OMA harness 是否能在不改变目标智能体模型的情况下提升它的表现。它采用 [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307) 中的测试时评估模式：固定目标模型，改变 harness，并在同一组任务上比较结果。
@@ -19,7 +19,7 @@ description: "使用成对、隔离的仓库任务和确定性产物检查，评
 | `oma skill eval` | 一个 `SKILL.md` 正文 | 智能体输出 |
 | `oma harness eval` | 范围限定的 `.agents/` 覆盖层 | 仓库工作区中产生的文件和输出 |
 
-用技能评估回答“这个技能有帮助吗？”，用 harness 评估回答“这组技能、工作流、规则和智能体指令，能否让固定智能体更可靠地完成仓库任务？”
+技能评估衡量单个技能是否有帮助；harness 评估衡量一组技能、工作流、规则和智能体指令能否帮助固定的智能体更可靠地完成仓库任务。
 
 **首次运行前：**
 
@@ -41,7 +41,7 @@ description: "使用成对、隔离的仓库任务和确定性产物检查，评
 
 真实项目永远不会作为任一分支的工作目录。OMA 会在检查和清理临时工作区之前，捕获原始输出和最终任务产物。所选供应商自己的进程沙箱仍是访问该工作目录以外内容的权威边界。
 
-下图展示成对分支如何得出决策。离线操作会从已存储的记录出发，在配对步骤重新进入流程。
+离线操作从已存储的记录出发，并在配对步骤重新进入流程。
 
 ```mermaid
 flowchart TD

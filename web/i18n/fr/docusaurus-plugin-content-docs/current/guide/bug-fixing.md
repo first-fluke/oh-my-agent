@@ -8,7 +8,7 @@ description: Workflow de débogage structuré en sept étapes avec triage par s�
 
 ## Quand utiliser le workflow de débogage
 
-Utilisez `/debug` (ou dites « fix bug », « fix error » ou « debug » en langage naturel) lorsque vous avez un bug précis à diagnostiquer et à corriger. Le workflow fournit une approche structurée et reproductible qui évite le piège courant consistant à corriger les symptômes au lieu de la cause racine.
+Utilisez `/debug` (ou dites « fix bug », « fix error » ou « debug » en langage naturel) lorsque vous avez un bug précis à diagnostiquer et à corriger. Le workflow fournit des étapes reproductibles pour identifier la cause racine et corriger le bug.
 
 Le workflow de débogage prend en charge tous les fournisseurs configurés. Les étapes 1 à 5 s'exécutent en ligne. L'étape 6 (recherche de motifs similaires) peut déléguer à un sous-agent `debug-investigator` lorsque le périmètre est large (au moins 10 fichiers ou une erreur multi-domaines), puis l'étape 7 enregistre le résultat en mémoire.
 
@@ -178,7 +178,7 @@ Deux actions ont lieu pendant cette étape :
    - vérifie que la correction fonctionne (le test doit réussir avec la correction) ;
    - empêche la réapparition du même bug lors de futures modifications.
 
-Le test de régression est le résultat le plus important du workflow de débogage. Sans lui, une modification ultérieure peut réintroduire le même bug.
+Le test de régression montre si une modification ultérieure réintroduit le même bug.
 
 ### Étape 6 : rechercher des motifs similaires
 

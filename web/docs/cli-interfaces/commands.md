@@ -34,7 +34,7 @@ The canonical names below come from `oma describe`. Only these space-separated p
 
 ## Current command surface
 
-This map keeps the long references below scannable and makes the less frequently used families discoverable. Use each family’s `--help` or `oma describe <path>` for the exact argument grammar; [CLI Options](./options.md) contains the complete registry flag matrix.
+Use each family’s `--help` or `oma describe <path>` for the exact argument grammar; [CLI Options](./options.md) lists the registry flags for every command path.
 
 | Family | Registered paths |
 |:-------|:-----------------|

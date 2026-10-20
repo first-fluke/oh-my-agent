@@ -5,7 +5,7 @@ description: Chạy nhiều vai trò dispatch OMA song song với cú pháp CLI 
 
 # Thực thi song song
 
-Ưu điểm cốt lõi của oh-my-agent là chạy đồng thời nhiều agent chuyên biệt. Trong khi agent backend triển khai API, agent frontend tạo UI và agent mobile xây dựng màn hình ứng dụng, orchestrator điều phối chúng qua run state và receipt bền vững.
+oh-my-agent có thể chạy đồng thời nhiều agent chuyên biệt. Ví dụ, agent backend triển khai API, agent frontend tạo UI và agent mobile xây dựng màn hình ứng dụng; orchestrator điều phối công việc qua run state và receipt được lưu bền vững.
 
 ---
 

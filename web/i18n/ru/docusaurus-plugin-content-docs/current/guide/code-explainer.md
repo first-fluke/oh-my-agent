@@ -6,7 +6,7 @@ description: Полное руководство по workflow /explain и skill
 
 # Объяснение кода
 
-`/explain` превращает изменение кода в насыщенный самостоятельный HTML-документ, который объясняет читателю, что изменилось и почему: подробный пропускаемый background для новичков, раздел core-intuition с toy data, walkthrough code в порядке понимания и quiz из пяти вопросов. Результат — один `.html`-файл, пригодный для работы offline, с diagram, callout и доступным quiz; он сохраняется в `.agents/results/explain/` и проходит deterministic checklist до доставки.
+`/explain` превращает изменение кода в самостоятельный HTML-документ, который объясняет читателю, что изменилось и почему: подробный пропускаемый background для новичков, раздел core-intuition с toy data, walkthrough code в порядке понимания и quiz из пяти вопросов. Результат — один `.html`-файл, пригодный для работы offline, с diagram, callout и доступным quiz; он сохраняется в `.agents/results/explain/` и проходит deterministic checklist до доставки.
 
 `/explain` работает только как slash-команда — он не активируется обычным текстом. «explain» — обычное слово, поэтому оно намеренно исключено из keyword detection (по тому же правилу, что и `/convert`). Явно напишите `/explain` или попросите другой skill создать «explainer document» как delegated output.
 

@@ -62,7 +62,7 @@ Wyłączony projekt nie wykonuje pracy modeli przez polecenie evolution, także 
 
 ## Co dzieje się automatycznie
 
-Diagram pokazuje jeden cykl, niezależnie od tego, czy wyzwala go harmonogram, czy uruchamiasz go ręcznie.
+Cykl można uruchomić z harmonogramu lub ręcznie.
 
 ```mermaid
 flowchart TD

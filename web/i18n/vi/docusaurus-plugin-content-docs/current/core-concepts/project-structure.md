@@ -5,7 +5,7 @@ description: Bản đồ hướng người đọc về một cài đặt oh-my-a
 
 # Cấu trúc dự án
 
-Sau khi cài oh-my-agent, project của bạn có hai cây thư mục cốt lõi: `.agents/` (nguồn sự thật duy nhất, gồm cả kho điều phối `.agents/state/memories/`) và các lớp tích hợp runtime (ví dụ `.claude/`, `.cursor/`, `.codex/`). Nếu chọn Serena làm provider code-intelligence, project cũng có thể có thư mục `.serena/` tùy chọn chứa memory onboarding của Serena. Trang này giải thích các file dùng chung và những đường dẫn tùy chọn hoặc được tạo cần biết khi gỡ lỗi.
+Sau khi cài oh-my-agent, project của bạn có hai cây thư mục cốt lõi: `.agents/` (nguồn sự thật duy nhất, gồm cả kho điều phối `.agents/state/memories/`) và các lớp tích hợp runtime (ví dụ `.claude/`, `.cursor/`, `.codex/`). Nếu chọn Serena làm provider code-intelligence, project cũng có thể có thư mục `.serena/` tùy chọn chứa memory onboarding của Serena.
 
 ---
 

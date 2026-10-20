@@ -6,7 +6,7 @@ description: Como escrever fixtures de tarefas de avaliação para oma skill eva
 
 # Avaliação da utilidade de skills
 
-`oma skill eval` mede se carregar uma skill realmente melhora os resultados das tarefas do agente. Ele responde a uma pergunta diferente de `oma skill audit` (que pergunta “duas skills são redundantes?”): pergunta “esta skill ajuda?”.
+`oma skill eval` mede como carregar uma skill altera os resultados das tarefas do agente; `oma skill audit` verifica se as descrições de duas skills são redundantes.
 
 O design segue duas descobertas de pesquisa: o WikiSkill (arXiv:2608.27454) separa experiência bruta, conhecimento persistente e skills executáveis, mantendo gates reservados para a evolução; o SkillLens (arXiv:2605.23899) mostra que a utilidade de uma skill é independente da distinção da descrição: uma skill distinta ainda pode ser inútil, e uma skill sobreposta ainda pode ajudar.
 

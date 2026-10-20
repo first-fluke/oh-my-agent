@@ -39,7 +39,7 @@ jobs:
       - uses: first-fluke/oma-update-action@v1
 ```
 
-To minimalna konfiguracja. Gdy zainstalowany komponent się zmieni, akcja powinna zakończyć się z `updated=true`, wyjściem wersji i pull requestem. Gdy nie ma zmian plików, kończy się z `updated=false` i bez PR.
+Ta konfiguracja tworzy pull request z nową wersją, gdy zainstalowany komponent się zmieni i akcja zakończy się z `updated=true`. Gdy nie ma zmian plików, kończy się z `updated=false` i bez PR.
 
 ---
 
@@ -72,7 +72,7 @@ To minimalna konfiguracja. Gdy zainstalowany komponent się zmieni, akcja powinn
 
 ### Przykład 1: domyślny tryb PR
 
-Najczęstsza konfiguracja. Tworzy PR w każdy poniedziałek, jeśli są dostępne aktualizacje.
+Ten przykład tworzy PR w każdy poniedziałek, gdy są dostępne aktualizacje.
 
 ```yaml
 name: Update oh-my-agent
@@ -191,7 +191,7 @@ jobs:
         run: echo "Already up to date, no notification needed."
 ```
 
-**Kluczowy wzorzec:** użyj `steps.update.outputs.updated == 'true'`, aby uruchamiać dalsze kroki warunkowo tylko wtedy, gdy faktycznie wykryto aktualizację. Zapobiega to szumowi powodowanemu przez uruchomienia „brak zmian”.
+Warunkuj dalsze kroki wyrażeniem `steps.update.outputs.updated == 'true'`, aby uruchamiały się tylko po wykryciu aktualizacji. Dzięki temu uruchomienia bez zmian nie generują zbędnych powiadomień.
 
 ### Przykład 4: tryb force z własnymi etykietami
 
@@ -225,7 +225,9 @@ jobs:
 
 ---
 
-## Jak to działa pod spodem
+<a id="jak-to-działa-pod-spodem"></a>
+
+## Implementacja akcji
 
 Akcja jest [akcją złożoną](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) zdefiniowaną w `action/action.yml`. Najpierw sprawdza, czy `mode` ma wartość `pr` albo `commit`, następnie wykonuje poniższe kroki i kończy pull requestem albo bezpośrednim commitem:
 
@@ -275,7 +277,7 @@ Dane wejściowe trafiają do skryptu przez `env:`, a nie przez interpolację `${
 
 Flaga `--ci` uruchamia aktualizację w trybie nieinteraktywnym (pomija wszystkie pytania i wypisuje zwykły tekst zamiast animacji spinnera). Flaga `--force`, gdy jest włączona, nadpisuje dostosowane przez użytkownika pliki konfiguracji.
 
-Co wewnętrznie robi `oma update --ci`:
+Polecenie `oma update --ci` wykonuje następujące kroki:
 
 1. Pobiera `prompt-manifest.json` z głównej gałęzi, aby uzyskać najnowszy numer wersji.
 2. Porównuje go z lokalną wersją w `.agents/skills/_version.json`.

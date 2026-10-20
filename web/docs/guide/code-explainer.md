@@ -6,9 +6,9 @@ description: Complete guide to oh-my-agent's /explain workflow and oma-explanati
 
 # Code Explainer
 
-`/explain` turns a code change into a rich, self-contained HTML document that teaches a reader what changed and why — deep skippable background for newcomers, a core-intuition section with toy data, a comprehension-ordered code walkthrough, and a five-question quiz. The output is a single offline-capable `.html` file with diagrams, callouts, and an accessible quiz, saved under `.agents/results/explain/` and validated against a deterministic checklist before it is delivered.
+`/explain` turns a code change into a self-contained HTML document that explains what changed and why. The page includes skippable background for newcomers, a core-intuition section with toy data, a comprehension-ordered code walkthrough, and an accessible quiz with five questions by default. The offline-capable `.html` file includes diagrams and callouts, is saved under `.agents/results/explain/`, and is validated against a deterministic checklist before delivery.
 
-`/explain` is slash-only — it does not auto-activate from natural language. "explain" is everyday vocabulary, so it is intentionally excluded from keyword detection (the same precedent as `/convert`). Say `/explain` explicitly, or ask another skill to produce an "explainer document" as a delegated output.
+The `/explain` workflow does not auto-activate from natural language because "explain" is everyday vocabulary. Keyword detection excludes the term, as it does `/convert`. Say `/explain` explicitly, or ask another skill to produce an "explainer document" as a delegated output.
 
 ## Two modes
 
@@ -97,7 +97,7 @@ Request `reviewer` by adding "for reviewer" to the command, as in `/explain feat
 
 ## What the document contains
 
-This section describes change mode. A change-mode explainer is a single long scrolling page (no tabs, no multi-page navigation) with a table of contents followed by four fixed sections, in order:
+In change mode, the explainer is a single long scrolling page (no tabs or multi-page navigation) with a table of contents followed by four fixed sections, in order:
 
 1. **Background** — Tier A (deep system/architecture background, marked "skippable if you already know the system") and Tier B (narrow context for this specific change)
 2. **Intuition** — the core essence of the change with mandatory toy-data examples, reinforced by 2–3 reused diagram families (simplified UI mock, system/data-flow diagram carrying example data, before/after state) rendered as HTML/inline SVG only — no ASCII art

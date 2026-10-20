@@ -14,8 +14,6 @@ Cấu hình shared nằm trong `.agents/oma-config.yaml` và, khi có, `.agents/
 
 Xem [Configuration reference](/docs/guide/configuration-reference) để biết key top-level và precedence đầy đủ.
 
-Trang này gồm:
-
 1. Preset có sẵn và model mà mỗi role nhận được.
 2. Cách OMA resolve model và CLI cho một agent.
 3. Cấu hình local và preset FreeLLMAPI (`free`).
@@ -374,7 +372,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 
 Điều gì xảy ra:
 
-- Model theo agent được resolve từ preset/override, ví dụ `openai/gpt-5.5`, chuyển thành dạng `--model <provider/id>` của pi; `effort` chuyển thành level `--thinking`. **Model theo subagent hoạt động trên pi y hệt như native** — mỗi agent có thể dùng model khác.
+- Model theo agent được resolve từ preset/override, ví dụ `openai/gpt-5.5`, chuyển thành dạng `--model <provider/id>` của pi; `effort` chuyển thành level `--thinking`. **Model theo subagent hoạt động trên pi y hệt như native**, nên mỗi agent có thể dùng model khác.
 - Persona agent, tức system prompt, được inline từ `.agents/agents/<id>.md` vì pi không có agent file phía vendor.
 - Auth do pi cấu hình, từ `~/.pi/agent/auth.json` hoặc provider API key trong environment. `oma doctor` báo install và auth của pi cùng CLI khác.
 

@@ -72,7 +72,7 @@ Esta es la configuración mínima. Cuando cambia un componente instalado, la act
 
 ### Ejemplo 1: modo PR predeterminado
 
-Es la configuración más habitual. Crea un PR cada lunes si hay actualizaciones disponibles.
+Esta configuración crea un PR cada lunes si hay actualizaciones disponibles.
 
 ```yaml
 name: Update oh-my-agent
@@ -191,7 +191,7 @@ jobs:
         run: echo "Already up to date, no notification needed."
 ```
 
-**Patrón clave:** Usa `steps.update.outputs.updated == 'true'` para ejecutar condicionalmente los pasos posteriores solo cuando se haya producido una actualización real. Así se evita el ruido de las ejecuciones en las que no hay cambios.
+Usa `steps.update.outputs.updated == 'true'` para ejecutar los pasos posteriores solo cuando se haya producido una actualización. Así se evitan ejecuciones sin cambios.
 
 ### Ejemplo 4: modo force con etiquetas personalizadas
 

@@ -6,9 +6,9 @@ description: Comment la compétence oma-market d’oh-my-agent mène une recherc
 
 # Étude de marché
 
-`oma-market` répond à « que disent réellement les gens à propos de X ces N derniers jours ? » — points de douleur, tendances, sentiment envers les concurrents et découverte — à partir de sources communautaires avec de vrais nombres d’engagement : Reddit (upvotes et commentaires principaux), X, transcriptions YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, le web et bien plus.
+`oma-market` recherche les points de douleur, les tendances, le sentiment envers les concurrents et les sujets émergents signalés sur la période de N jours choisie. Il s’appuie sur des sources communautaires avec des mesures d’engagement, notamment Reddit (upvotes et commentaires principaux), X, les transcriptions YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits et Bluesky, ainsi que sur le web.
 
-La recherche s’exécute elle-même sur le moteur amont [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent ne le fork pas : il conserve une **copie gérée toujours à jour**, contrôle chaque exécution et ajoute une couche de cadres stratégiques. La cadence des versions, le nombre d’étoiles et la couverture des fournisseurs appartiennent au projet amont et peuvent changer.
+La recherche s’exécute sur le moteur amont [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent ne le fork pas : il conserve une copie gérée du moteur. La compétence applique à chaque exécution son contrôle de sujet et ajoute une couche de cadres stratégiques. La cadence des versions, le nombre d’étoiles et la couverture des fournisseurs dépendent du projet amont et peuvent changer.
 
 ---
 

@@ -6,13 +6,13 @@ description: Cách oh-my-agent chọn giữa Mermaid và agent skill tt-a1i/arch
 
 # Diagram Engine {#diagram-engine}
 
-`/architecture` (ADR, recommendation, review) và `/explain` (code-change explainer) đều tạo diagram cấu trúc. Với `/architecture`, đó luôn là **Mermaid** block trong Markdown artifact (`/explain` tự vẽ diagram inline SVG của riêng nó), và — bất cứ khi nào [archify](https://github.com/tt-a1i/archify) resolve được, vốn là trường hợp bình thường — thêm **interactive, validated HTML diagram** cạnh artifact: theme sáng/tối, pan-zoom, search, relationship tracing, PNG/SVG/WebM export, render từ typed JSON spec.
+`/architecture` (ADR, recommendation, review) và `/explain` (code-change explainer) đều tạo diagram cấu trúc. Output của `/architecture` luôn có block **Mermaid** trong Markdown artifact. `/explain` tự vẽ diagram inline SVG. Khi [archify](https://github.com/tt-a1i/archify) resolve được, thường là trường hợp bình thường, OMA cũng tạo **interactive, validated HTML diagram** cạnh artifact. Diagram này hỗ trợ theme sáng/tối, pan-zoom, search, relationship tracing và export PNG/SVG/WebM từ typed JSON spec.
 
-Mermaid không biến mất: đó là text SSOT sống trong Markdown và git diff. archify là derived artifact.
+Mermaid là SSOT dạng văn bản trong Markdown và git diff. archify tạo artifact dẫn xuất.
 
 ---
 
-## archify luôn mới nhất — không cần cài đặt {#always-the-latest-archify--nothing-to-install}
+## Cache archify và cập nhật phiên bản {#always-the-latest-archify--nothing-to-install}
 
 archify là agent skill MIT-licensed (Node ≥ 18, không có runtime dependency). oh-my-agent không dựa vào bản bạn cài một lần; nó giữ **managed copy riêng** và theo dõi release mới nhất:
 

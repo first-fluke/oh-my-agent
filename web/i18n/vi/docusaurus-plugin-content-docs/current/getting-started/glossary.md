@@ -5,8 +5,6 @@ description: Định nghĩa ngắn gọn các thuật ngữ của oh-my-agent, g
 
 # Bảng thuật ngữ
 
-Mỗi mục đưa ra định nghĩa ngắn và liên kết tới trang trình bày thuật ngữ đó chi tiết. Khi một từ mang nghĩa khác nhau ở các phần khác nhau của OMA, mục đó sẽ nói rõ.
-
 ## Các khối xây dựng
 
 ### Skill {#skill}

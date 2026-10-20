@@ -5,7 +5,7 @@ description: Tổng quan toàn diện về oh-my-agent, framework điều phối
 
 # Giới thiệu
 
-oh-my-agent là framework điều phối đa agent dành cho IDE và công cụ CLI có AI. Thay vì dựa vào một trợ lý AI duy nhất cho mọi việc, oh-my-agent phân phối công việc qua 33 gói skill và 13 vai trò dispatch chuẩn. Mười hai tệp định nghĩa subagent được kiểm soát trong repository cung cấp các persona có thể tái sử dụng cho triển khai, review, lập kế hoạch, gỡ lỗi, tài liệu, nghiên cứu và hạ tầng. `research-explorer.md` ánh xạ tới vai trò chuẩn `explore`; `orchestrator` là vai trò điều phối ở runtime và không có tệp định nghĩa riêng.
+oh-my-agent là framework điều phối đa agent dành cho IDE và công cụ CLI có AI, phân phối công việc qua 33 gói skill và 13 vai trò dispatch chuẩn. Mười hai tệp định nghĩa subagent được kiểm soát trong repository cung cấp các persona có thể tái sử dụng cho triển khai, review, lập kế hoạch, gỡ lỗi, tài liệu, nghiên cứu và hạ tầng. `research-explorer.md` ánh xạ tới vai trò chuẩn `explore`; `orchestrator` là vai trò điều phối ở runtime và không có tệp định nghĩa riêng.
 
 OMA cung cấp các kiểm tra cơ học khi bạn gọi chúng hoặc chọn workflow có chứa chúng. `oma verify agent <agent-type>` chạy các kiểm tra cho loại agent đã chọn; `/ralph` thêm xác minh dựa trên artifact và vòng [judge](./glossary.md#judge); Stop hook của vendor đang bật ([stop gate](./glossary.md#stop-gate)) có thể giữ workflow mở trong khi các kiểm tra đã cấu hình chạy. Chỉ tải skill không tạo thành điều kiện chấp nhận, và prompt thông thường không tự động chạy mọi cổng kiểm tra của workflow. Hãy dùng tiêu chí chấp nhận của workflow và các tệp kết quả để quyết định việc gì đã hoàn tất.
 
@@ -204,7 +204,7 @@ Cách spawn agent thích ứng với từng vendor được chọn thông qua ph
 
 ## Luồng xử lý một yêu cầu
 
-Sơ đồ cho thấy những gì diễn ra giữa một prompt và một kết quả hoàn chỉnh. Keyword hook, skill injector và Stop hook chỉ chạy trên các host có bật tích hợp hook. Keyword hook và skill injector chạy lần lượt trên cùng một prompt, và context mà chúng chèn vào được gộp lại.
+Keyword hook, skill injector và Stop hook chỉ chạy trên các host có bật tích hợp hook. Keyword hook và skill injector chạy lần lượt trên cùng một prompt, và context mà chúng chèn vào được gộp lại.
 
 ```mermaid
 flowchart TD

@@ -6,9 +6,9 @@ description: Cách viết eval task fixture cho oma skill eval, quy ước thư 
 
 # Đánh giá Utility của Skill {#skill-utility-eval}
 
-`oma skill eval` đo xem việc load một skill có thực sự cải thiện kết quả task của agent hay không. Nó trả lời câu hỏi khác với `oma skill audit` (hỏi “hai skill có trùng nhau không?”): nó hỏi “skill này có giúp không?”.
+`oma skill eval` đo mức thay đổi kết quả task khi agent nạp skill; `oma skill audit` kiểm tra mức độ chồng lấn giữa mô tả của hai skill.
 
-Thiết kế dựa trên hai phát hiện nghiên cứu: WikiSkill (arXiv:2608.27454) tách raw experience, persistent knowledge và executable skill nhưng vẫn giữ held-out gate cho evolution; SkillLens (arXiv:2605.23899) cho thấy utility của skill độc lập với sự khác biệt của description — skill khác biệt vẫn có thể vô dụng, và skill chồng lấn vẫn có thể hữu ích.
+Thiết kế dựa trên hai phát hiện nghiên cứu. WikiSkill (arXiv:2608.27454) tách raw experience, persistent knowledge và executable skill nhưng vẫn giữ held-out gate cho evolution. SkillLens (arXiv:2605.23899) cho thấy utility của skill không phụ thuộc vào việc description có khác biệt hay không: skill có description riêng vẫn có thể vô dụng, còn skill có description chồng lấn vẫn có thể hữu ích.
 
 ---
 
@@ -181,7 +181,7 @@ weight: 1
 
 **Quan trọng:** Trong `--mock` mode, judge task cần verdict đã ghi trước trong `_rollouts/`. Nếu task không có verdict đã ghi, task bị loại khỏi report kèm cảnh báo. Chạy `--live --record` để tạo rollout trước.
 
-Điều tương tự áp dụng cho mọi checker type khi thiếu hoàn toàn một arm: task bị loại thay vì chấm 0. Dữ liệu thiếu không phải câu trả lời thất bại — chấm như 0 sẽ làm cả hai arm thành 0 và zero lift đọc như `decision: "fail"`. Nếu loại task làm số task đã chấm thấp hơn `MIN_TASKS`, report hiển thị `coverage: "insufficient"`.
+Quy tắc này cũng áp dụng cho mọi checker type khi thiếu hoàn toàn một arm: task bị loại thay vì chấm 0. Dữ liệu thiếu không đồng nghĩa với câu trả lời thất bại. Nếu chấm nó là 0, cả hai arm đều thành 0 và zero lift sẽ hiện là `decision: "fail"`. Nếu loại task làm số task đã chấm thấp hơn `MIN_TASKS`, report hiển thị `coverage: "insufficient"`.
 
 #### assert (opt-in) {#assert-opt-in}
 
@@ -215,7 +215,7 @@ Pattern dài hơn 200 ký tự được chấm 0 (biện pháp ngăn ReDoS). Out
 
 ### `--mock` (mặc định) {#mock-default}
 
-Replay rollout đã ghi từ `_rollouts/`. Hoàn toàn xác định và offline — không gọi LLM.
+Replay rollout đã ghi từ `_rollouts/`. Chế độ này hoàn toàn xác định, chạy offline và không gọi LLM.
 
 - Với checker `assert`/`regex`: score được tính từ output string đã ghi.
 - Với checker `judge`: replay trường `score` được ghi bởi `--live --record`.
@@ -300,7 +300,7 @@ Judge chạy trong các thư mục tạm mới với optimization memory bị t�
 
 ### `--live --record` {#live-record}
 
-Chạy live arm và ghi output đã capture (kể cả judge verdict cho judge-checker task) vào `_rollouts/<hash>.json`. Tên file là SHA-256 hash xác định của tập task ID — không dựa trên ngày hoặc random.
+Chạy live arm và ghi output đã capture (kể cả judge verdict cho judge-checker task) vào `_rollouts/<hash>.json`. Tên file là SHA-256 hash xác định của tập task ID, không dựa trên ngày hoặc giá trị ngẫu nhiên.
 
 Dùng cách này để seed `--mock` run trên máy của bạn để các lần chạy lặp lại vẫn offline.
 

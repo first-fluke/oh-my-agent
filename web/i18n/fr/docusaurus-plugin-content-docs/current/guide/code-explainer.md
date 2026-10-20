@@ -97,7 +97,7 @@ Demandez `reviewer` en ajoutant « for reviewer » à la commande, comme dans `/
 
 ## Contenu du document
 
-Cette section décrit le mode change. Un explicateur en mode change est une seule longue page déroulante (sans onglets ni navigation multipage) avec une table des matières suivie de quatre sections fixes, dans cet ordre :
+Un explicateur en mode change est une seule longue page déroulante (sans onglets ni navigation multipage) avec une table des matières suivie de quatre sections fixes, dans cet ordre :
 
 1. **Background** — niveau A (contexte système/architecture approfondi, marqué « skippable if you already know the system ») et niveau B (contexte étroit pour cette modification précise)
 2. **Intuition** — essence centrale de la modification avec exemples obligatoires sur données jouets, renforcée par 2 ou 3 familles de diagrammes réutilisées (maquette UI simplifiée, diagramme système/de flux portant les données d’exemple, état avant/après) rendues uniquement en HTML/SVG inline — pas d’art ASCII

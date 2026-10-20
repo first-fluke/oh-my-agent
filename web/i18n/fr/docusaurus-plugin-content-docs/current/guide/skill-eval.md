@@ -283,7 +283,7 @@ Chaque entrée `negativeTransfer` porte `trials` (les comparaisons appariées de
 
 #### Isolation de la compétence (garder la référence honnête) {#skill-isolation-keeping-the-baseline-honest}
 
-`utilityLift` n’est pertinent que si le **bras de référence s’exécute sans la compétence cible**. Le piège est le suivant : un agent distribué charge automatiquement toutes les compétences installées dans son environnement d’exécution ; il récupérerait donc encore la compétence censée être mesurée *sans* elle, ce qui contaminerait la comparaison (référence ≈ traitement, lift ≈ 0).
+`utilityLift` n’est pertinent que si le **bras de référence s’exécute sans la compétence cible**. Un agent distribué charge automatiquement toutes les compétences installées dans son environnement d’exécution. Le bras de référence chargerait donc encore la compétence mesurée, ce qui contaminerait la comparaison (référence ≈ traitement, lift ≈ 0).
 
 Pour l’éviter, `--live` exécute **les deux bras dans des espaces de travail temporaires distincts**. Les profils protégés Claude et Codex désactivent la découverte automatique des compétences et des instructions ainsi que les outils d’agent. Le traitement reçoit la cible **uniquement** via le `SKILL.md` injecté. Les profils exploratoires utilisent un répertoire de compétences filtré sans la cible, mais cela seul ne prouve pas l’isolation.
 

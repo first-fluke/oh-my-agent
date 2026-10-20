@@ -57,7 +57,7 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 # Recap view from the same process: http://127.0.0.1:9847/recap
 ```
 
-El dashboard web muestra la misma información que el dashboard de terminal, pero con una interfaz oscura con estilo que incluye:
+El dashboard web muestra la misma información que el dashboard de terminal, pero con una interfaz oscura que incluye:
 - Insignia de estado de conexión (Connected / Disconnected / Connecting with auto-reconnect).
 - ID de sesión y barra de estado.
 - Tabla de estados de agentes con puntos de estado animados.

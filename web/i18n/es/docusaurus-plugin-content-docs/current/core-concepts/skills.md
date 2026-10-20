@@ -305,7 +305,7 @@ La verificación se ajusta al riesgo de la tarea y a los requisitos del proyecto
 
 ## Mapas de carga de contexto por tarea (por agente) {#context-loading-task-maps-per-agent}
 
-Estos son ejemplos de referencias para consultar cuando la tarea las necesita. Usa el índice actual de la habilidad responsable y selecciona solo las secciones aplicables:
+Usa el índice actual de la habilidad responsable y selecciona solo las secciones aplicables según las necesidades de la tarea:
 
 ### Agente backend
 

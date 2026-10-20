@@ -8,8 +8,6 @@ description: Why Codex hooks do not run until you review them once, what happens
 
 When oh-my-agent installs into a project, it writes vendor-native hook configs, including `.codex/hooks.json` for the Codex CLI. Unlike Claude Code, Codex does not run these hooks automatically. It gates every non-managed command hook behind Trust-On-First-Use (TOFU): a hook only runs after you have reviewed and enabled it once.
 
-This is a Codex-side safety mechanism, not an oh-my-agent limitation. This guide explains the one-time step you need to take, what happens when oh-my-agent updates, and what it handles for you automatically.
-
 ---
 
 ## The one-time step: review hooks in Codex

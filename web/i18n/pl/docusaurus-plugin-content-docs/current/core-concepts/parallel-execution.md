@@ -5,7 +5,7 @@ description: Uruchamiaj równolegle wiele ról dispatchu OMA z bieżącą skład
 
 # Wykonywanie równoległe {#parallel-execution}
 
-Główną zaletą oh-my-agent jest jednoczesne uruchamianie wielu wyspecjalizowanych agentów. Gdy agent backendu implementuje API, agent frontendu tworzy UI, a agent mobile buduje ekrany aplikacji, orkiestrator koordynuje je przez trwały stan uruchomienia i potwierdzenia.
+oh-my-agent może równolegle uruchamiać wyspecjalizowanych agentów. Na przykład agent backendu implementuje API, agent frontendu tworzy UI, a agent mobile buduje ekrany aplikacji; orkiestrator koordynuje ich pracę przez trwały stan uruchomienia i potwierdzenia.
 
 ---
 
@@ -223,7 +223,7 @@ Funkcje:
 
 ### Zalecany układ terminali {#recommended-terminal-layout}
 
-Użyj 3 terminali, aby uzyskać najlepszą widoczność:
+Konfiguracja dla 3 terminali:
 
 | Terminal | Uruchom | Cel |
 |----------|-----|---------|

@@ -218,7 +218,8 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 
 ---
 
-## Voorbeeld 6: ultrawork voor maximale kwaliteit
+<a id="voorbeeld-6-ultrawork-voor-maximale-kwaliteit"></a>
+## Voorbeeld 6: uitgebreide review met ultrawork {#example-6-ultrawork-for-maximum-quality}
 
 **Je typt:**
 ```text
@@ -430,7 +431,7 @@ De vlag `-w` bij `agent spawn` isoleert een agent in een specifieke directory. D
 
 ## Tips
 
-1. **Wees specifiek in prompts.** "Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL" levert betere resultaten dan "make an app."
+1. **Wees specifiek in prompts.** "Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL" benoemt de vereiste stack en functionaliteit; "make an app" laat die open.
 
 2. **Gebruik werkruimtes voor parallelle agenten.** Geef altijd `-w ./path` mee om conflicten te voorkomen tussen gelijktijdig draaiende agenten.
 
@@ -454,7 +455,7 @@ De vlag `-w` bij `agent spawn` isoleert een agent in een specifieke directory. D
 
 ## Probleemoplossing {#troubleshooting}
 
-Hieronder staan veelvoorkomende problemen. Zie [Probleemoplossing](./troubleshooting.md) voor foutmeldingen, mislukte runresultaten, schedules en hooks.
+Zie [Probleemoplossing](./troubleshooting.md) voor foutmeldingen, mislukte runresultaten, schedules en hooks.
 
 | Probleem | Oorzaak | Oplossing |
 |---------|-------|-----|

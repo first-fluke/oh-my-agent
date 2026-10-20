@@ -6,7 +6,7 @@ description: Detailed guide for single-domain tasks in oh-my-agent, covering whe
 
 # Single Skill Execution
 
-Single skill execution is the fast path: one agent, one domain, one focused task. No orchestration overhead, no multi-agent coordination. A host or selected workflow may route a natural-language prompt to the skill; the hook system itself detects workflows, and routing behavior depends on the selected runtime.
+Single-skill execution assigns one focused task in one domain to one agent. It avoids multi-agent coordination. A host or selected workflow may route a natural-language prompt to the skill; the hook system detects workflows, and routing depends on the selected runtime.
 
 ## Quick path
 

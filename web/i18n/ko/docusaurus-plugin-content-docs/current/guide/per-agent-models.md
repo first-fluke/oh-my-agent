@@ -14,7 +14,7 @@ description: oma-config.yaml의 model_preset으로 각 에이전트가 사용할
 
 전체 최상위 키와 우선순위는 [설정 레퍼런스](/docs/guide/configuration-reference)를 참고하세요.
 
-이 페이지에서 다루는 내용:
+설정 항목:
 
 1. 빌트인 프리셋과 각 역할이 받는 모델
 2. OMA가 에이전트의 모델과 CLI를 해석하는 방식

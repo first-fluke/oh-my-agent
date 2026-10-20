@@ -5,7 +5,7 @@ description: "Execute vários papéis de dispatch do OMA em paralelo com a sinta
 
 # Execução Paralela
 
-A principal vantagem do oh-my-agent é executar vários agentes especializados simultaneamente. Enquanto o agente backend implementa uma API, o agente frontend cria a interface e o agente mobile constrói telas do app, o orquestrador os coordena por meio de estado de execução durável e recibos.
+O oh-my-agent permite executar vários agentes especializados simultaneamente. Enquanto o agente backend implementa uma API, o agente frontend cria a interface e o agente mobile constrói telas do app, o orquestrador os coordena por meio de estado de execução durável e recibos.
 
 ---
 

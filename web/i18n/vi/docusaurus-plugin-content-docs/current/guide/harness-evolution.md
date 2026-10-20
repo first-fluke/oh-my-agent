@@ -62,7 +62,7 @@ Một dự án đã bị tắt sẽ không chạy bất kỳ công việc nào d
 
 ## Điều gì xảy ra tự động {#what-happens-automatically}
 
-Sơ đồ cho thấy một chu kỳ, dù do scheduler kích hoạt hay bạn chạy thủ công.
+Chu kỳ có thể chạy theo lịch của scheduler hoặc chạy thủ công.
 
 ```mermaid
 flowchart TD

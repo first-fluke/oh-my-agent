@@ -6,7 +6,7 @@ description: Kies het juiste oh-my-agent-pad, met de bijbehorende vereisten, voo
 
 # Inhouds- en onderzoeksworkflows {#content-and-research-workflows}
 
-Deze gids koppelt werk met documenten, audio, onderzoek, media en presentaties aan de capability die ervoor verantwoordelijk is. Begin met het gewenste artifact en gebruik vervolgens het kleinste commando of skill-entrypoint dat een controleerbaar resultaat oplevert. Capabilities met een eigen gids linken daarnaar in de laatste kolom; de rest wordt op deze pagina behandeld.
+Koppel documenten, audio, onderzoek, media en presentaties aan de verantwoordelijke capability. Begin met het gewenste artifact en kies het kleinste commando of skill-entrypoint waarmee je een controleerbaar resultaat krijgt.
 
 | Behoefte | Entry point | Vereisten | Eerste resultaat | Gids |
 |---|---|---|---|---|

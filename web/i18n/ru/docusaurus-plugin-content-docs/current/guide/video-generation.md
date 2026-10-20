@@ -87,7 +87,7 @@ oma video generate "product walkthrough" --mode demo --capture ./capture.mp4
 
 ---
 
-## Всегда последняя HyperFrames — composition создаёте вы {#always-latest-hyperframes--you-author-the-composition}
+## Управляемый инструментарий HyperFrames {#always-latest-hyperframes--you-author-the-composition}
 
 oh-my-agent **не поставляет код HyperFrames composition**. Каждый run получает собственный project в `<runDir>/hyperframes/`, созданный `oma video compose` на последней npm HyperFrames (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, общий через symlink `node_modules`) с [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) на HEAD (`~/.cache/oma-video/hyperframes-skills/`). Agent создаёт исходник сгенерированной composition по `AUTHORING.md` scaffold, skills и mode spec из `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 

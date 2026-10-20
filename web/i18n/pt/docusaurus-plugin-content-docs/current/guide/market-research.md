@@ -6,9 +6,9 @@ description: Como a skill oma-market do oh-my-agent executa pesquisa de sinais d
 
 # Pesquisa de mercado
 
-`oma-market` responde “o que as pessoas estão realmente dizendo sobre X nos últimos N dias” — pontos de dor, tendências, sentimento sobre concorrentes e descoberta — usando fontes comunitárias com números reais de engajamento: Reddit (upvotes e comentários principais), X, transcrições do YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, a web e outras.
+`oma-market` pesquisa pontos de dor, tendências, sentimento sobre concorrentes e tópicos emergentes relatados sobre um tema nos últimos N dias. A pesquisa usa fontes comunitárias com métricas reais de engajamento, como Reddit (upvotes e comentários principais), X, transcrições do YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits e Bluesky, além da web.
 
-A pesquisa em si roda no engine upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). O oh-my-agent não faz fork dele: mantém uma **cópia gerenciada sempre atualizada**, aplica um gate a cada execução e acrescenta uma camada de frameworks estratégicos. Cadência de releases, quantidade de stars e cobertura de providers pertencem ao projeto upstream e podem mudar.
+A pesquisa roda no engine upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). O oh-my-agent não faz fork do projeto: mantém uma cópia gerenciada, aplica o gate de tópico a cada execução e acrescenta uma camada de frameworks estratégicos. A cadência de releases, a quantidade de stars e a cobertura de providers dependem do projeto upstream e podem mudar.
 
 ---
 

@@ -8,7 +8,7 @@ description: Capturer un échec d’agent observé, préserver ses preuves et é
 
 `oma harness incident` relie un échec observé à un cas de régression et à l’évaluation du candidat qui suit. La commande enregistre les observations séparément des hypothèses causales. Un simple processus échoué n’établit pas que le modèle ait causé l’incident.
 
-Le diagramme montre le cycle de vie d’un incident. La promotion alimente l’optimisation des compétences ; l’exportation alimente l’évaluation du harnais.
+La promotion alimente l’optimisation des compétences et l’exportation alimente l’évaluation du harnais.
 
 ```mermaid
 flowchart TD

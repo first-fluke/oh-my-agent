@@ -279,7 +279,7 @@ Chaque événement de hook passe par l'ABI canonique `oma hook run` : le fournis
 
 ## Prise en charge multi-fournisseurs {#cross-vendor-support}
 
-oh-my-agent ne se limite pas à Claude Code. Les fournisseurs compatibles avec les hooks partagent la même ABI `oma hook run`, tandis que les fournisseurs d'extension utilisent leur pont in-process :
+Les fournisseurs compatibles avec les hooks partagent la même ABI `oma hook run`, tandis que les fournisseurs d'extension utilisent leur pont in-process :
 
 | Fournisseur | Livraison des hooks | Barre d'état |
 |----------|----------|----------|
