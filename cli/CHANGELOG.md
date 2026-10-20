@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.9.0...cli-v20.10.0) (2026-10-20)
+
+
+### Features
+
+* **hooks:** report diagnostic changes after native edits ([263efba](https://github.com/first-fluke/oh-my-agent/commit/263efba689424e9359e321996f4414c0dfb259a7))
+* **runtime:** capture native tool traces and spawn usage ([f234619](https://github.com/first-fluke/oh-my-agent/commit/f2346196635ff45d92a197c4330d0d39d3737fd9))
+
 ## [20.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.8.1...cli-v20.9.0) (2026-10-20)
 
 
