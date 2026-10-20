@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.7.0...cli-v20.8.0) (2026-10-20)
+
+
+### Features
+
+* **qwen:** align settings with Qwen Code 0.25 ([b7d17ee](https://github.com/first-fluke/oh-my-agent/commit/b7d17eef3b91ac4a6b97e77eb0f9650e1615d98d))
+
 ## [20.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.6.0...cli-v20.7.0) (2026-10-19)
 
 
