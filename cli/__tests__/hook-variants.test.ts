@@ -155,6 +155,12 @@ describe("qwen hook variant install output", () => {
         readFileSync(join(targetDir, ".qwen", "settings.json"), "utf-8"),
       );
       expect(settings.hooksConfig).toBeUndefined();
+      expect(settings.ui?.statusLine).toMatchObject({
+        type: "command",
+        respectUserColors: true,
+        hideContextIndicator: true,
+      });
+      expect(settings.statusLine).toBeUndefined();
     } finally {
       rmSync(targetDir, { recursive: true, force: true });
     }

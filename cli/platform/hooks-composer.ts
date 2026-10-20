@@ -198,6 +198,7 @@ export function installHooksFromVariant(
   const extra: Record<string, any> = {};
   if (variant.statusLine) {
     const statusLineEntry = {
+      ...(variant.statusLine.options ?? {}),
       type: "command",
       command: bindHome(buildHookCmd(commandVariant, variant.statusLine.hook)),
     };

@@ -68,8 +68,21 @@
       "minProperties": 1
     },
     "statusLine": {
-      "$ref": "#/$defs/hookRef",
-      "description": "Hook script for the status line display (Claude / agy use root statusLine; Qwen nests under ui via statusLineKey)."
+      "type": "object",
+      "description": "Hook script for the status line display (Claude / agy use root statusLine; Qwen nests under ui via statusLineKey).",
+      "required": ["hook"],
+      "additionalProperties": false,
+      "properties": {
+        "hook": {
+          "type": "string",
+          "description": "Filename of the hook script in .agents/hooks/core/."
+        },
+        "options": {
+          "type": "object",
+          "description": "Extra vendor statusLine fields written alongside type/command (e.g. Qwen respectUserColors, hideContextIndicator).",
+          "additionalProperties": true
+        }
+      }
     },
     "statusLineKey": {
       "type": "string",

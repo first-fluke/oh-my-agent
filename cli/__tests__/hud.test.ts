@@ -80,6 +80,17 @@ describe("hud.ts", () => {
     });
   });
 
+  describe("vim mode", () => {
+    it("shows the Qwen vim mode when present", () => {
+      const result = stripAnsi(hud({ vim: { mode: "NORMAL" } }));
+      expect(result).toContain("vim:NORMAL");
+    });
+
+    it("omits the vim segment when the vendor does not send it", () => {
+      expect(stripAnsi(hud({}))).not.toContain("vim:");
+    });
+  });
+
   describe("context usage", () => {
     it("should show context percentage", () => {
       const result = stripAnsi(
@@ -490,6 +501,24 @@ describe("hud.ts", () => {
 
       expect(result).toContain("work:1");
       expect(result).not.toContain("ralph");
+    });
+
+    it("falls back to QWEN_PROJECT_DIR for the project root", () => {
+      writeModeState("work-state-qwen-session.json", "work", 3);
+
+      const result = stripAnsi(
+        execSync(`bun "${HUD_PATH}"`, {
+          input: JSON.stringify({ session_id: "qwen-session" }),
+          encoding: "utf-8",
+          env: {
+            ...process.env,
+            CLAUDE_PROJECT_DIR: "",
+            QWEN_PROJECT_DIR: projectDir,
+          },
+        }),
+      );
+
+      expect(result).toContain("work:3");
     });
   });
 

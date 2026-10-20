@@ -43,7 +43,7 @@ it("registers the shared primer lifecycle while preserving user hooks", () => {
   expect(pre.test("run_shell_command")).toBe(true);
   for (const name of ["grep_search", "glob"])
     expect(pre.test(name)).toBe(false);
-  for (const name of ["edit", "write_file", "replace"])
+  for (const name of ["edit", "write_file", "replace", "notebook_edit"])
     expect(post.test(name)).toBe(true);
   expect(post.test("mcp__serena__initial_instructions")).toBe(false);
 });

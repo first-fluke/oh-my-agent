@@ -24,13 +24,18 @@ export function withQwenHookEvents<T extends HookVariant>(variant: T): T {
   }
   events.SessionStart = sessionStart;
 
-  // Qwen renamed replace to edit; retain the old name for older versions.
+  // Qwen renamed replace to edit and also edits notebooks; retain the old
+  // name for older versions.
   const postTool = events.PostToolUse;
   if (postTool) {
     events.PostToolUse = (Array.isArray(postTool) ? postTool : [postTool]).map(
       (entry) =>
-        entry.matcher === "write_file|replace"
-          ? { ...entry, matcher: "write_file|edit|replace" }
+        entry.matcher === "write_file|replace" ||
+        entry.matcher === "write_file|edit|replace"
+          ? {
+              ...entry,
+              matcher: "write_file|edit|replace|notebook_edit",
+            }
           : entry,
     );
   }

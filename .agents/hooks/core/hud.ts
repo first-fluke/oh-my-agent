@@ -2,10 +2,10 @@
 /**
  * oh-my-agent — HUD
  *
- * Lightweight status display for Claude Code / agy (statusLine): stdin =
- * vendor payload, stdout = ANSI text consumed by the native status-line
- * renderer. Field names line up across both vendors; vendor-specific extras
- * are best-effort.
+ * Lightweight status display for Claude Code / Qwen Code / agy (statusLine):
+ * stdin = vendor payload, stdout = ANSI text consumed by the native
+ * status-line renderer. Field names line up across vendors; vendor-specific
+ * extras are best-effort.
  *
  * Set `OMA_HUD_DEBUG=1` to dump the raw stdin payload to
  * `<hookDir>/../last-hud-input.json` for schema reverse-engineering.
@@ -78,6 +78,8 @@ interface StatuslineStdin {
   background_tasks?: Array<{ name?: string; status?: string; index?: number }>;
   pending_input_count?: number;
   tool_confirmation_pending?: boolean;
+  /** Qwen Code: present only while vim keybindings are enabled. */
+  vim?: { mode?: string };
   terminal_width?: number;
 }
 
@@ -242,6 +244,7 @@ function formatTokens(n: number): string {
 export function buildClaudeStatusline(input: StatuslineStdin): string {
   const projectDir =
     process.env.CLAUDE_PROJECT_DIR ||
+    process.env.QWEN_PROJECT_DIR ||
     input.cwd ||
     input.workspace?.current_dir ||
     process.cwd();
@@ -253,6 +256,9 @@ export function buildClaudeStatusline(input: StatuslineStdin): string {
   // 2. Model
   const model = shortModel(input.model);
   if (model) parts.push(dim(model));
+
+  // 2b. Qwen Code vim mode (absent unless vim keybindings are enabled).
+  if (input.vim?.mode) parts.push(dim(`vim:${input.vim.mode}`));
 
   // 3. Context %
   const ctxPct = input.context_window?.used_percentage;

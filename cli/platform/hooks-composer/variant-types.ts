@@ -50,7 +50,14 @@ export interface HookVariant {
    */
   skipSettingsMerge?: boolean;
   events: Record<string, HookEvent | HookEvent[]>;
-  statusLine?: { hook: string };
+  statusLine?: {
+    hook: string;
+    /**
+     * Extra vendor statusLine fields written alongside `type` and `command`
+     * (e.g. Qwen's `respectUserColors` and `hideContextIndicator`).
+     */
+    options?: Record<string, unknown>;
+  };
   /**
    * Parent settings key to nest the statusLine under. Omit for top-level
    * (Claude / agy use root `statusLine`). Qwen requires `ui.statusLine` — a
