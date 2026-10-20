@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.10.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.2...cli-v20.10.3) (2026-10-20)
+
+
+### Documentation
+
+* sync package readme with project overview ([e4f7285](https://github.com/first-fluke/oh-my-agent/commit/e4f7285b9f1a05ee2e9579d48a95e1e8623022ec))
+
 ## [20.10.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.1...cli-v20.10.2) (2026-10-20)
 
 
