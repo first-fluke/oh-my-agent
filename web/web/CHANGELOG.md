@@ -1,5 +1,18 @@
 # Changelog
 
+## [11.2.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.1.0...web-v11.2.0) (2026-10-20)
+
+
+### Features
+
+* **hooks:** report diagnostic changes after native edits ([263efba](https://github.com/first-fluke/oh-my-agent/commit/263efba689424e9359e321996f4414c0dfb259a7))
+* **runtime:** capture native tool traces and spawn usage ([f234619](https://github.com/first-fluke/oh-my-agent/commit/f2346196635ff45d92a197c4330d0d39d3737fd9))
+
+
+### Documentation
+
+* mark optional stack manifest references ([c5f4b1c](https://github.com/first-fluke/oh-my-agent/commit/c5f4b1c466ff404e5d5e3fa1f0bb28a98755773f))
+
 ## [11.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.0.4...web-v11.1.0) (2026-10-15)
 
 
