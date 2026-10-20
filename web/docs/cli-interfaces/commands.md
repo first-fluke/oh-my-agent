@@ -1176,6 +1176,8 @@ When several session plans or run receipts match, verification fails and asks fo
 
 **Agent-specific checks:**
 
+<!-- Stack manifests in this table are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 | Agent Type | Additional Checks |
 |:-----------|:-----------------|
 | `backend` | Syntax check, SQL injection detection (raw SQL patterns), and tests, all from the `verify` commands in `.agents/skills/oma-backend/stack/stack.yaml` (written by `/stack-set`). Skipped when that file is missing |
@@ -1184,6 +1186,7 @@ When several session plans or run receipts match, verification fails and asks fo
 | `qa` | No mechanical checks; records a single `QA Report` check as `PASS` |
 | `debug` | Runs Python tests or frontend tests based on detected project type |
 | `pm` | Validates `.agents/results/plan-{sessionId}.json` exists and is valid JSON |
+<!-- oma-docs:ignore-end -->
 
 **Output format:**
 Each check reports `PASS`, `FAIL`, `WARN`, or `SKIP` with a detail message. Overall result is `ok: true` only if zero checks fail.
