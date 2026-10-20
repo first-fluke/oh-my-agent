@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.10.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.1...cli-v20.10.2) (2026-10-20)
+
+
+### Documentation
+
+* remove explainer videos from product readmes ([922095f](https://github.com/first-fluke/oh-my-agent/commit/922095fd9b262049fed0a06e2a0a4e6f4465bf16))
+
 ## [20.10.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.0...cli-v20.10.1) (2026-10-20)
 
 
