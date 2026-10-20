@@ -7,6 +7,9 @@
 # running the same benchmark prompt against each in a fully isolated environment
 # and collecting per-harness output JSON, stderr, and a structured manifest.
 #
+# For external Harness² benchmark runs, see
+# benchmarks/external/harness2/README.md.
+#
 # Usage:
 #   ./benchmarks/run.sh [options]
 #

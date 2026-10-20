@@ -1,0 +1,10 @@
+# Local Harness² work tree (git clone, dependency installs, raw runs)
+.work/
+.venv/
+dependencies/
+.env
+
+# Raw execution output; only results/*/manifest.json and report.txt are tracked
+runs/
+results/*/runs/
+results/*/demo/
