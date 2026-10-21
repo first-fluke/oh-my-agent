@@ -2,6 +2,17 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Command } from "commander";
 import {
+  type CodeFingerprint,
+  captureCodeFingerprint,
+  sameCodeFingerprint,
+} from "../../../.agents/hooks/core/code-fingerprint.js";
+import {
+  getActiveSid,
+  listSessionIds,
+  readEvents,
+  readIndex,
+} from "../../state/events.js";
+import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
@@ -41,7 +52,161 @@ function findStateFiles(projectDir: string, workflow?: string): string[] {
     .map((f) => path.join(stateDir, f));
 }
 
+interface GoalStatusOptions {
+  workflow?: string;
+  sessionId?: string;
+  checkFresh?: boolean;
+}
+
+function resolveStatusSid(
+  projectDir: string,
+  options: GoalStatusOptions,
+): string {
+  if (!options.workflow && !options.sessionId) {
+    const activeSid = getActiveSid(readIndex(projectDir));
+    if (activeSid) return activeSid;
+  }
+
+  let candidates = findStateFiles(projectDir, options.workflow);
+  if (options.sessionId) {
+    candidates = candidates.filter((file) =>
+      file.endsWith(`-state-${options.sessionId}.json`),
+    );
+  }
+  if (!candidates.length && options.sessionId && !options.workflow) {
+    return options.sessionId;
+  }
+  if (!candidates.length && !options.sessionId && !options.workflow) {
+    const sessions = listSessionIds(projectDir)
+      .map((sid) => {
+        const events = readEvents(projectDir, sid);
+        return {
+          sid,
+          createdAt:
+            events.find((event) => event.kind === "session.created")?.ts ??
+            events.at(-1)?.ts ??
+            "",
+        };
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    if (sessions[0]) return sessions[0].sid;
+  }
+  if (candidates.length !== 1) {
+    throw new Error(
+      candidates.length
+        ? "unverified (multiple workflows match; select --workflow/--session-id)"
+        : "unverified (no session found; select an OMA session with --session-id)",
+    );
+  }
+  const state = JSON.parse(
+    fs.readFileSync(candidates[0] as string, "utf-8"),
+  ) as PersistentModeState;
+  if (!state.omaSid) {
+    throw new Error("unverified (selected workflow has no OMA session id)");
+  }
+  return state.omaSid;
+}
+
+function verifiedFingerprint(
+  payload: Record<string, unknown> | undefined,
+): CodeFingerprint | undefined {
+  if (
+    typeof payload?.head !== "string" ||
+    !payload.head ||
+    typeof payload.dirty !== "boolean" ||
+    typeof payload.treeHash !== "string" ||
+    !payload.treeHash
+  ) {
+    return undefined;
+  }
+  return {
+    head: payload.head,
+    dirty: payload.dirty,
+    treeHash: payload.treeHash,
+  };
+}
+
+function registerGoalStatus(program: Command): void {
+  addOutputOptions(
+    program
+      .command("goal:status")
+      .description("Show the latest gate pass for an OMA session")
+      .option("--workflow <name>", "Persistent workflow to inspect")
+      .option(
+        "--session-id <id>",
+        "OMA session id or vendor session id suffix of a persistent state file",
+      )
+      .option(
+        "--check-fresh",
+        "Verify that the latest gate pass checked the current commit and tree",
+      ),
+  ).action(
+    runAction(
+      async (options) => {
+        const projectDir = resolveProjectRoot();
+        const sid = resolveStatusSid(projectDir, options);
+        const latestPass = readEvents(projectDir, sid)
+          .filter((event) => event.kind === "gate.passed")
+          .at(-1);
+        let status = "passed";
+        let message = `Gate ${String(latestPass?.payload?.gate ?? "unknown")} passed in session ${sid}`;
+        let current: CodeFingerprint | undefined;
+        const recorded = verifiedFingerprint(latestPass?.payload);
+
+        if (!latestPass) {
+          status = "unverified";
+          message = "unverified (no gate.passed event in session)";
+        } else if (options.checkFresh) {
+          if (!recorded) {
+            status = "unverified";
+            message =
+              "unverified (latest gate pass has no complete git fingerprint)";
+          } else {
+            current = await captureCodeFingerprint(projectDir);
+            if (!current.head || !current.treeHash) {
+              status = "unverified";
+              message = "unverified (current git fingerprint is unavailable)";
+            } else if (recorded.head !== current.head) {
+              status = "stale";
+              message = "stale (head moved)";
+            } else if (!sameCodeFingerprint(recorded, current)) {
+              status = "stale";
+              message = "stale (tree changed)";
+            } else {
+              status = "fresh";
+              message = "fresh";
+            }
+          }
+        }
+
+        if (resolveJsonMode(options)) {
+          console.log(
+            JSON.stringify(
+              {
+                sid,
+                status,
+                message,
+                eventId: latestPass?.eventId,
+                gate: latestPass?.payload?.gate,
+                fingerprint: recorded,
+                current,
+              },
+              null,
+              2,
+            ),
+          );
+        } else {
+          console.log(message);
+        }
+        if (status === "stale" || status === "unverified") process.exitCode = 1;
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+}
+
 export function registerGoal(program: Command): void {
+  registerGoalStatus(program);
   addOutputOptions(
     program
       .command("goal:set")

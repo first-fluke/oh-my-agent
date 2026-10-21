@@ -6,6 +6,7 @@
  * leaves no orphaned worker behind.
  */
 
+import { execFileSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -17,6 +18,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { readEvents } from "../../.agents/hooks/core/state-core.ts";
 
 const { run } = await import("../../.agents/hooks/core/persistent-mode.ts");
 
@@ -28,6 +30,8 @@ const { spawn } = require("node:child_process");
 const { writeFileSync } = require("node:fs");
 const mode = process.argv[2];
 if (mode === "pass") { console.log("typecheck ok"); process.exit(0); }
+if (mode === "mutate") { writeFileSync("tracked.txt", "changed"); process.exit(0); }
+if (mode === "fail") { console.log("check failed"); process.exit(1); }
 const worker = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "inherit" });
 writeFileSync("worker.pid", String(worker.pid));
 console.log("gate started (" + mode + ")");
@@ -49,16 +53,43 @@ function isAlive(pid: number): boolean {
   }
 }
 
-function writeState(gate: string): void {
+function writeState(gate: string, omaSid?: string): void {
   writeFileSync(
     statePath,
     JSON.stringify({
       workflow: "ralph",
       sessionId: SID,
+      ...(omaSid ? { omaSid } : {}),
       activatedAt: new Date().toISOString(),
       reinforcementCount: 0,
       goal: { completion: { gate } },
     }),
+  );
+}
+
+function git(...args: string[]): string {
+  return execFileSync("git", args, {
+    cwd: projectDir,
+    encoding: "utf-8",
+  }).trim();
+}
+
+function initGit(): void {
+  writeFileSync(
+    join(projectDir, ".gitignore"),
+    ".agents/\n.oma-state/\nworker.pid\n",
+  );
+  writeFileSync(join(projectDir, "tracked.txt"), "original");
+  git("init", "-q");
+  git("add", ".");
+  git(
+    "-c",
+    "user.name=Gate Test",
+    "-c",
+    "user.email=gate@example.com",
+    "commit",
+    "-qm",
+    "initial",
   );
 }
 
@@ -152,6 +183,103 @@ describe.skipIf(process.platform === "win32")(
 
       expect(result).toBeNull();
       expect(existsSync(statePath)).toBe(false);
+    }, 15_000);
+
+    it("rejects a successful command that changes tracked code during the gate", async () => {
+      writeFileSync(
+        join(projectDir, "package.json"),
+        JSON.stringify({ scripts: { typecheck: "node gate.cjs mutate" } }),
+      );
+      initGit();
+      writeState("typecheck", "oma-gate-sid");
+
+      const result = await stop();
+
+      expect(result?.type).toBe("block");
+      expect((result as { reason: string }).reason).toContain(
+        "code changed during gate",
+      );
+      expect(JSON.parse(readFileSync(statePath, "utf-8"))).toMatchObject({
+        reinforcementCount: 1,
+      });
+      expect(readEvents(projectDir, "oma-gate-sid")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: "gate.failed",
+            payload: expect.objectContaining({
+              summary: "code changed during gate",
+              head: git("rev-parse", "HEAD"),
+              dirty: false,
+              treeHash: expect.any(String),
+            }),
+          }),
+        ]),
+      );
+      expect(
+        readEvents(projectDir, "oma-gate-sid").some(
+          (event) => event.kind === "gate.passed",
+        ),
+      ).toBe(false);
+    }, 15_000);
+
+    it("records the commit and tree checked by a successful gate", async () => {
+      initGit();
+      writeState("typecheck", "oma-gate-sid");
+
+      expect(await stop()).toBeNull();
+      expect(readEvents(projectDir, "oma-gate-sid")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: "gate.passed",
+            payload: expect.objectContaining({
+              head: git("rev-parse", "HEAD"),
+              dirty: false,
+              treeHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+            }),
+          }),
+        ]),
+      );
+    }, 15_000);
+
+    it("still runs and records null identifiers outside Git", async () => {
+      writeState("typecheck", "oma-gate-sid");
+
+      expect(await stop()).toBeNull();
+      expect(readEvents(projectDir, "oma-gate-sid")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: "gate.passed",
+            payload: expect.objectContaining({
+              head: null,
+              dirty: false,
+              treeHash: null,
+            }),
+          }),
+        ]),
+      );
+    }, 15_000);
+
+    it("records the code fingerprint when the command fails", async () => {
+      writeFileSync(
+        join(projectDir, "package.json"),
+        JSON.stringify({ scripts: { typecheck: "node gate.cjs fail" } }),
+      );
+      initGit();
+      writeState("typecheck", "oma-gate-sid");
+
+      expect((await stop())?.type).toBe("block");
+      expect(readEvents(projectDir, "oma-gate-sid")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: "gate.failed",
+            payload: expect.objectContaining({
+              head: git("rev-parse", "HEAD"),
+              dirty: false,
+              treeHash: expect.any(String),
+            }),
+          }),
+        ]),
+      );
     }, 15_000);
   },
 );

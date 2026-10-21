@@ -558,13 +558,15 @@ Most checks are mechanical. Commands exit with status 0 or another status, and a
 
 | Mechanism | What it checks | Source |
 |-----------|----------------|--------|
-| **Stop-hook gate** | During a persistent workflow, `oma goal set --gate test` (or `lint`, `typecheck`) allows the stop only when that package.json script exits 0 within 25 s. | [`persistent-mode.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/hooks/core/persistent-mode.ts) |
+| **Stop-hook gate** | During a persistent workflow, `oma goal set --gate test` (or `lint`, `typecheck`) allows the stop when that package.json script exits 0 within 25 s and the code fingerprint stays the same during the check. | [`persistent-mode.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/hooks/core/persistent-mode.ts) |
 | **Artifact gate** | `oma ralph verify --json` checks for the phase records, the plan JSON, and result files from a **distinct QA agent** and a **distinct refactor agent**, each bound to recorded agent runs. | [`ralph.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/workflows/ralph.md) |
 | **Prompted judge** | Not mechanical: the `/ralph` prompt tells the orchestrator to spawn a fresh-context judge that re-checks **every** criterion each iteration. Nothing checks that the spawn happened. | [`judge-protocol.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/workflows/ralph/resources/judge-protocol.md) |
 | **Event log** | In an OMA session, gate passes, gate failures, and decisions append one JSON line each to the session's `events.jsonl`. | [`state-core.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/hooks/core/state-core.ts) · [`event-spec.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/_shared/runtime/event-spec.md) |
 | **Per-agent checks** | `oma verify agent <type>` runs Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs, and TDD Evidence, plus per-type checks such as TypeScript, Any Types, SQL Injection, and tests. | `oma verify agent --help` |
 
 > **Session event logging.** The Stop hook records gate events under the OMA session opened when the persistent workflow started. Event writes are best-effort. If that session could not be created (stderr shows `[oma] L1 session activation failed`), a failing gate still blocks the stop, but no `gate.failed` line is written. Before you rely on the trail, or demo it, check that `oma state list` shows an active session; `oma state get <sid>` then shows its events.
+
+Gate events include the checked commit (`head`), whether the tree had changes (`dirty`), and a fingerprint (`treeHash`) of the tracked diff and untracked file names. A change during the check records `gate.failed` with `code changed during gate` and uses one reinforcement. Run `oma goal status --check-fresh` to compare the session's last pass with the current code: it prints `fresh`, `stale (head moved)`, or `stale (tree changed)`, and exits nonzero unless fresh. Use `--session-id <sid>` to select a session explicitly.
 
 <details>
 <summary>Limits, details, and how the Stop hook decides</summary>
@@ -573,6 +575,7 @@ Most checks are mechanical. Commands exit with status 0 or another status, and a
 
 - The Stop gate applies only to the persistent workflows (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`). Without `oma goal set --gate`, it only re-prompts the agent to continue. `/ultrawork` tells the agent to set a gate when the project has a cheap check, but nothing enforces it. Run `oma goal set --gate test` yourself if you want to be sure; the other persistent workflows never set one.
 - Only the `typecheck`, `test`, and `lint` keywords are accepted, and they run the package.json script of that name. No package.json, or no script with that name, means the gate is not run. Non-JS projects need a package.json wrapper script.
+- The fingerprint includes untracked file names, but does not read their contents. Outside Git, or when a snapshot is unavailable, gates still run with null identifiers; freshness checks report unverified. Older events without fingerprints also report unverified.
 - The gate releases and logs a failure after 5 reinforcements, 2 hours, or when `--budget-minutes` runs out.
 - Budgets: `session.quota_cap` caps tokens, spawn count, and per-vendor tokens; the orchestrator refuses the next spawn when a dimension is exceeded.
 
