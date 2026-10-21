@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.10.3",
-  "releaseDate": "2026-10-20T13:25:26.807Z",
+  "releaseDate": "2026-10-21T09:59:42.152Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -120,6 +120,11 @@
       "size": 2592
     },
     {
+      "path": ".agents/hooks/core/code-fingerprint.ts",
+      "sha256": "4b09a7874571669b1136a30da4ff8581ebbea5db0cb6578ee55caab911813441",
+      "size": 2239
+    },
+    {
       "path": ".agents/hooks/core/code-intelligence-guard.ts",
       "sha256": "243e9b0ad19b8c84e0e4d85a8e8751e39e4756fbbb6ae8aefc79edfeeb749e0c",
       "size": 16979
@@ -141,8 +146,8 @@
     },
     {
       "path": ".agents/hooks/core/event-contract.ts",
-      "sha256": "f1675baf831c649423a5096cac2d7af9d5e7d4cc816ab88609c93ddc283684ab",
-      "size": 2026
+      "sha256": "a1ed07ca4f5913048f5a24d5bf70baee6a427a835f548f3bc1ec3d1ed95149af",
+      "size": 2581
     },
     {
       "path": ".agents/hooks/core/evolution-notice.ts",
@@ -191,8 +196,8 @@
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "aa3fa0ab4ecbdf47cc0d5eb350f6cac44f077b6737a6ff27b74819b0ef4e2170",
-      "size": 29097
+      "sha256": "6f3aab200334d1db95080d151529878297dbc7cf44203f91d2a8e62671381ed6",
+      "size": 29908
     },
     {
       "path": ".agents/hooks/core/prompt-input.ts",
@@ -2246,6 +2251,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 447
+    "totalFiles": 448
   }
 }
