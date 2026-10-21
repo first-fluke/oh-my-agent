@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.2.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.2.1...web-v11.2.2) (2026-10-21)
+
+
+### Bug Fixes
+
+* **hooks:** bind stop gates to checked code ([22b860d](https://github.com/first-fluke/oh-my-agent/commit/22b860d93d713f3df6b4b32d41a40d10ff078b71)), closes [#911](https://github.com/first-fluke/oh-my-agent/issues/911)
+
 ## [11.2.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.2.0...web-v11.2.1) (2026-10-20)
 
 
