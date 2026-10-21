@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.10.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.3...cli-v20.10.4) (2026-10-21)
+
+
+### Bug Fixes
+
+* **hooks:** bind stop gates to checked code ([22b860d](https://github.com/first-fluke/oh-my-agent/commit/22b860d93d713f3df6b4b32d41a40d10ff078b71)), closes [#911](https://github.com/first-fluke/oh-my-agent/issues/911)
+
 ## [20.10.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.2...cli-v20.10.3) (2026-10-20)
 
 
