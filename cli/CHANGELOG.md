@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.12.0...cli-v20.12.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **skills:** clarify refactor task boundaries ([c9edb95](https://github.com/first-fluke/oh-my-agent/commit/c9edb9554e20ec4366c15f8dec2a04e9427ae99f))
+
 ## [20.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.11.1...cli-v20.12.0) (2026-10-22)
 
 
