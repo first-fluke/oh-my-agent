@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.5...cli-v20.11.0) (2026-10-22)
+
+
+### Features
+
+* **media:** support existing video and audio processing ([dbbce44](https://github.com/first-fluke/oh-my-agent/commit/dbbce440a82d40aa720afa4844e09aad948f28c0))
+
 ## [20.10.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.4...cli-v20.10.5) (2026-10-22)
 
 
