@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.11.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.11.0...cli-v20.11.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docs:** keep generated catalog comments valid in MDX ([799a81f](https://github.com/first-fluke/oh-my-agent/commit/799a81f3241d54356cee680c366db2ef6ab4f677))
+
 ## [20.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.5...cli-v20.11.0) (2026-10-22)
 
 
