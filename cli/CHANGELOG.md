@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.11.1...cli-v20.12.0) (2026-10-22)
+
+
+### Features
+
+* **agents:** define shared worker collaboration rules ([e869361](https://github.com/first-fluke/oh-my-agent/commit/e869361d623cdfbc0521a0b44c4930f77293e487))
+
 ## [20.11.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.11.0...cli-v20.11.1) (2026-10-22)
 
 
