@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.3.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.2.2...web-v11.3.0) (2026-10-22)
+
+
+### Features
+
+* **media:** support existing video and audio processing ([dbbce44](https://github.com/first-fluke/oh-my-agent/commit/dbbce440a82d40aa720afa4844e09aad948f28c0))
+
+
+### Documentation
+
+* sync generated media skill catalogs ([4ea4376](https://github.com/first-fluke/oh-my-agent/commit/4ea4376346c60b64f159c3a8d9b0d4a6741e39a7))
+
 ## [11.2.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.2.1...web-v11.2.2) (2026-10-21)
 
 
