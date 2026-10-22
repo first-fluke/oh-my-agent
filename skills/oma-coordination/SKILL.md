@@ -52,6 +52,7 @@ Guide manual multi-agent coordination for complex work that spans PM, frontend, 
 1. Confirm the task is complex enough for multi-agent coordination.
 2. Reuse a current plan and handoff state; use PM when task decomposition or contract changes are needed.
 3. Identify priority tiers and shared contracts.
+4. Apply the shared collaboration policy before assigning parallel work or coordinating ownership handoffs and result collection.
 
 ### Scenes
 1. **PREPARE**: Define session, domains, and task decomposition needs.
@@ -166,3 +167,4 @@ Review the coordinated deliverables with QA. Resolve blocking defects and requir
 For fully automated execution without manual spawning, use the **orchestrator** skill instead.
 
 ## References
+- Parallel worker collaboration: `../_shared/core/collaboration-policy.md` (before assigning parallel work or coordinating peer issues, ownership handoffs, and result collection)

@@ -53,6 +53,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 3. For each task, classify into one or more `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`. Tasks that match no domain confidently inherit the union of their parent feature's tags.
 4. Select the references needed by each task. One confidently matched skill is sufficient; expand the set when classification is uncertain or a dependency requires another domain.
 5. Record selected domains, references, and any fallback reason in the task board. These are coordinator notes, not launcher-enforced exposure fields; use only reference/context controls supported by the active dispatch path.
+6. Apply the shared collaboration policy before dispatch: assign edit ownership, peer contact paths, and a collection owner.
 
 ### Scenes
 1. **PREPARE**: Plan, setup session ID, and initialize memory files.
@@ -284,6 +285,7 @@ Classify failures before retrying: `PRODUCT_FAILURE` follows the remaining produ
 For material corrections or review findings, retain the cause, impact, and evidence in existing task artifacts. Use `../_shared/core/session-metrics.md` when a retrospective or separate session summary is useful. Do not score clarification questions or require an RCA based on counters. Resolve the affected work and ask only for a material missing decision.
 
 ## References
+- Parallel worker collaboration: `../_shared/core/collaboration-policy.md` (before assigning parallel work or coordinating peer issues, ownership handoffs, and result collection)
 - Prompt template: `resources/subagent-prompt-template.md`
 - Memory schema: `resources/memory-schema.md`
 - Scripts: `scripts/spawn-agent.sh`, `scripts/parallel-run.sh`, `scripts/verify.sh`
