@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.11.1",
-  "releaseDate": "2026-10-22T04:16:40.448Z",
+  "releaseDate": "2026-10-22T09:49:53.575Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -485,6 +485,11 @@
       "size": 2160
     },
     {
+      "path": ".agents/skills/_shared/core/collaboration-policy.md",
+      "sha256": "4b7e50fdf01b4e34e44c96d15cf034ef2734dfb1e078240796c7801e049f42c8",
+      "size": 2996
+    },
+    {
       "path": ".agents/skills/_shared/core/common-checklist.md",
       "sha256": "155c65fffb7c56e6a7c58ecc2476ce800c84fd4bb42bc86d7a5701a5667d0e1a",
       "size": 1746
@@ -786,8 +791,8 @@
     },
     {
       "path": ".agents/skills/oma-coordination/SKILL.md",
-      "sha256": "b87e8ce67d904a7ccdcac6ba16de46ec921bd606feb85d70110bd5e8e2f7ac97",
-      "size": 7544
+      "sha256": "caf638ae44509a7ed21f4b64061d8b8e9050776d20c0d0c4c3784fb4fda5cec3",
+      "size": 7853
     },
     {
       "path": ".agents/skills/oma-db/SKILL.md",
@@ -1511,8 +1516,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/SKILL.md",
-      "sha256": "ca7b0f399c973426cca1cf279adbceb1b77d0a27c39dd7b7b352ead20aa1ba97",
-      "size": 16357
+      "sha256": "dba1ae609fd2e02350c461e22ba4515f17c1d667d613b7f3e4bb402227d25e9b",
+      "size": 16661
     },
     {
       "path": ".agents/skills/oma-orchestration/config/cli-config.yaml",
@@ -2261,6 +2266,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 450
+    "totalFiles": 451
   }
 }
