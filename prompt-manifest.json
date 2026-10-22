@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.10.5",
-  "releaseDate": "2026-10-22T01:47:26.981Z",
+  "releaseDate": "2026-10-22T03:46:51.228Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -2021,8 +2021,8 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "58fcdcabeb578091c3f3643e6b9666b3fbbe1e8c62223175ac6617d5fbc34252",
-      "size": 6839
+      "sha256": "58e5841b2f4cc137bc927cf3f802d5db750eb7f610061101f1ebe061f35e7211",
+      "size": 8701
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
@@ -2038,6 +2038,11 @@
       "path": ".agents/skills/oma-video/resources/execution-protocol.md",
       "sha256": "5be1c06aeaee908e8a121db5a4394a4fc36505cb23797b82e26437f0bcb9a353",
       "size": 9002
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/existing-media.md",
+      "sha256": "00b49dfeb8dd66574c847a0f6c63bba3b593273b23a4323df2843d81e844131d",
+      "size": 11006
     },
     {
       "path": ".agents/skills/oma-video/resources/hyperframes-authoring/README.md",
@@ -2096,8 +2101,8 @@
     },
     {
       "path": ".agents/skills/oma-voice/SKILL.md",
-      "sha256": "b292829b9ab280f9992f2d96d9eb2a1f83c48f5118fec4171a2bb0e61cb9f04e",
-      "size": 13328
+      "sha256": "3ec729b25533d5726fff2c508fa0e7e05c65c968dc43db808fa337928b1f43e0",
+      "size": 16262
     },
     {
       "path": ".agents/skills/oma-voice/config/voice-config.yaml",
@@ -2105,14 +2110,19 @@
       "size": 1191
     },
     {
+      "path": ".agents/skills/oma-voice/resources/audio-processing.md",
+      "sha256": "3ab8fea8adb9fbef1ac959094f95abf19675d5439286602a522a97e2ee0d3e4e",
+      "size": 5965
+    },
+    {
       "path": ".agents/skills/oma-voice/resources/checklist.md",
-      "sha256": "b7396c30bb816cd779ab3cf1527add88e37685c0c5810512a4aead72c2c410f8",
-      "size": 2165
+      "sha256": "fd03167b4faceaf1b9612bf563139112d33bca91e45cce7b1e09a575b6729cb9",
+      "size": 2162
     },
     {
       "path": ".agents/skills/oma-voice/resources/execution-protocol.md",
-      "sha256": "c8622ed3f6a39474b049eb8dd4a9f38b08cb62118a43322ec5b15b742a21ecb3",
-      "size": 7139
+      "sha256": "ed9a10de8710823a72c76a26e9c82c872a177a391195c04af26585a2043b5329",
+      "size": 7309
     },
     {
       "path": ".agents/skills/oma-voice/resources/prompt-tips.md",
@@ -2251,6 +2261,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 448
+    "totalFiles": 450
   }
 }
