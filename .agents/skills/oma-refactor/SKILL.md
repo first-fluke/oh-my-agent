@@ -23,6 +23,7 @@ Improve internal code structure - readability first - without changing observabl
 - Auditing whether code is safe to refactor now (coverage breadth x mutation strength x flakiness)
 
 ### When NOT to use
+- Adding or completing behavior already requested by the user -> use the appropriate existing implementation skill; classify the scope under Entry first.
 - Fixing a reported bug or failing behavior -> use `oma-debug` (refactoring must not change behavior)
 - Security/performance/accessibility review or quality audit -> use `oma-qa`
 - System design, module boundary decisions, ADRs, convention changes -> use `oma-architecture` (a convention/pattern change is an architecture decision, not a local refactoring)
@@ -66,12 +67,20 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 ## Structural Flow
 
 ### Entry
-1. Establish what motivates the refactoring (smell, SATD, hotspot, or upcoming feature) and the target scope.
-2. Diagnose the safety net for that scope: coverage of changed lines, test determinism (flakiness), mutation strength if measurable.
+1. Classify the requested outcome against the actual target code, not the word "refactor" alone. Behavior-preserving restructuring stays here. Implementation or bug fixing already included in the request continues under the appropriate existing implementation skill or `oma-debug`, within existing authorization and without renewed approval. For mixed requests, separate behavior changes from restructuring and apply this skill only to the latter.
+2. For the refactoring scope, establish its motivation and diagnose the safety net: coverage of changed lines, test determinism (flakiness), mutation strength if measurable.
 3. Identify the destination form: the language idiom and codebase convention the result must match.
 
+Missing or stub code does not itself authorize new behavior. A pure refactor with
+no implementation to restructure reports the missing target rather than inventing
+one. If a contract fact needed for correctness remains unknown after checking
+available task and project evidence, ask for that specific fact under the shared
+execution policy and clarification protocol. Distinguish missing
+information from missing authorization: retain existing permission, pause only
+dependent work, and continue independent authorized work.
+
 ### Scenes
-1. **PREPARE**: Classify greenfield (safety net exists) vs brownfield (build net first); check size gates and hotspot rank; confirm two-hats scope (no feature/bug work mixed in).
+1. **PREPARE**: Within the refactoring scope, classify greenfield (safety net exists) vs brownfield (build net first); check size gates and hotspot rank; confirm two-hats scope (no feature/bug work mixed in).
 2. **ACQUIRE**: Read target code via symbol tools; collect metrics (complexity, size, coupling) and git signals (churn, ownership); read the coding guide for conventions.
 3. **REASON**: Decompose the goal into a sequence of named atomic transformations; for stateful targets plan expand-contract; verify each step is independently verifiable and revertible.
 4. **ACT**: Apply ONE transformation; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits. When one feature spans several files after a split, consider G-5's optional header map if it helps navigation.
@@ -99,7 +108,8 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 ### Exit
 - Success: behavior verified unchanged, structure measurably improved, readability confirmed, refactor-only commits, follow-ups reported.
 - Partial success: safety net built but restructuring deferred; or prerequisites mapped (Mikado graph) with explicit blockers.
-- Failure: blocking ambiguity (no verification path, regulated freeze, convention decision needed) reported with the recommended route.
+- Handoff: already-requested implementation or bug fixing continues under its owning skill's completion criteria; changing skills is not a task failure.
+- Blocked or failed: report the exact missing contract, verification path, or required decision and the dependent work it prevents, plus independent work completed. A pure refactor with no target reports that limit without inventing behavior.
 
 ## Logical Operations
 
@@ -124,7 +134,7 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 - Git forensics one-liners (see `resources/measurement.md`)
 
 ### Canonical workflow path
-1. Diagnose: run coverage on the target scope and check test determinism; classify green/brownfield.
+1. Apply Entry's scope routing first. For the remaining refactoring scope, run coverage and check test determinism; classify green/brownfield.
 2. If brownfield: find a seam, write characterization (golden-master) tests for CURRENT behavior, commit.
 3. Select targets by hotspot rank (complexity x churn), not by smell aesthetics alone.
 4. Plan a sequence of named atomic transformations toward the language-idiomatic, convention-conforming form.
@@ -163,6 +173,7 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 
 ## References
 - Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
+- Authorization and contract ambiguity: `../_shared/core/execution-policy.md` and `../_shared/core/clarification-protocol.md` (when clarification or authorization is needed)
 
 - Invariant definition (5 properties, boundaries, destination, naming roles, contexts, D&C, inline evidence): `resources/definition.md`
 - Measurement: 4 layers + git forensics commands: `resources/measurement.md`
