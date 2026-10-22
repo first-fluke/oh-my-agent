@@ -39,7 +39,7 @@ Use a project document index, such as `docs/README.md`, to link to the maintaine
 | Runtime `agent-runs/` | Structured receipts, claims, and verification evidence |
 | Runtime `agent-plans/` | Frozen execution plans |
 
-Report subdirectories remain separate by domain. Human-readable reports supplement the structured evidence; they do not establish verified completion on their own. See [Results and Resume](./agent-results-and-resume.md).
+Report subdirectories remain separate by domain. Human-readable reports supplement the structured evidence; they do not establish verified completion on their own. See [Results and Resume](../agent-results-and-resume/).
 
 Current receipts and frozen plans live in the active profile's project state directory. Older projects may retain them under `.agents/state/`. Their storage and verification bindings are unchanged by this migration.
 
