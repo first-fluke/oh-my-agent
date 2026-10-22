@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.10.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.4...cli-v20.10.5) (2026-10-22)
+
+
+### Documentation
+
+* add verified workflow reproduction artifacts ([3282ad0](https://github.com/first-fluke/oh-my-agent/commit/3282ad075c4c227a472d72af7235170a1a816c01))
+
 ## [20.10.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.10.3...cli-v20.10.4) (2026-10-21)
 
 
