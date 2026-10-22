@@ -1,6 +1,6 @@
 # Pre-flight Checklist
 
-Run this check before every TTS or STT call. The agent should be able to answer "yes" to every applicable item, or surface a clarification before invoking voicebox.
+This checklist applies to Voicebox TTS/STT calls. Existing-file processing uses `audio-processing.md` and does not run Voicebox health, profile, or model checks.
 
 ## Environment
 

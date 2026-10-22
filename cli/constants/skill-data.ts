@@ -124,11 +124,11 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-video",
-      desc: `Create short, explainer, or recorded-demo videos through the OMA video CLI. Use for scripts, narration, assets, composition, and video delivery.`,
+      desc: `Create videos through the OMA video CLI, or analyze and edit existing clips with media tools. Use for frame extraction, visual analysis, silence cuts, dubbing assembly, scripts, and composition; audio-only work uses oma-voice.`,
     },
     {
       name: "oma-voice",
-      desc: `Generate speech or transcribe audio locally with Voicebox. Use for narration, voice assets, dictation, and meeting transcription.`,
+      desc: `Generate or transcribe speech with Voicebox, or process existing audio locally. Use for narration, transcripts, timed speech, and loudness conversion; video editing uses oma-video.`,
     },
   ],
   infrastructure: [

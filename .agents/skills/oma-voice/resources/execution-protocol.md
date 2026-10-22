@@ -1,6 +1,6 @@
 # Execution Protocol
 
-This file lays out the runtime sequence for every oma-voice call. SKILL.md gives the high-level scenes; this file is the operational checklist the agent executes.
+This file lays out the Voicebox generation/transcription sequence. Existing-audio processing dispatches to `audio-processing.md` before the health check; it does not require Voicebox or a profile.
 
 ## Step 0: Mode detection
 
@@ -11,6 +11,7 @@ Detect one of three modes from the user request:
 | Short message after a long task, "tell me when done", "음성으로 알려줘" | `notify` |
 | "Generate a voiceover", "make an mp3", "narrate this text", explicit length over a sentence | `asset` |
 | Audio file path provided plus a "transcribe", "회의록", "받아 적어" intent | `transcribe` |
+| Existing audio plus conversion, loudness, or duration fitting | `process`: use `audio-processing.md`; skip the Voicebox steps below |
 
 If the signal is ambiguous, ask one question before proceeding.
 

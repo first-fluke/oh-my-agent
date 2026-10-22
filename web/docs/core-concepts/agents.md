@@ -818,41 +818,47 @@ Project-specific `stack/stack.yaml`, `stack/tech-stack.md`, snippets, and API te
 
 ### oma-video
 
-**Domain:** Short-form, explainer, and human-recorded demo video generation through the `oma video` CLI, composing script → narration → visuals → captions → HyperFrames render.
+**Domain:** Video creation through the `oma video` CLI, plus analysis and editing of existing clips with local media tools.
 
-**When to use:** Generating short-form video (shorts/reels, 9:16) from a topic, explainers (16:9/9:16) from a README/code/data, demos/walkthroughs from a screen capture (`--source file`) or supervised headed web-app capture of any URL (`--source web`), re-rendering an existing run deterministically.
+**When to use:** Generating short-form videos and explainers, making demos from a human-recorded `--capture` file, re-rendering an existing run, extracting frames, analyzing visible objects, removing pauses, and assembling dubbed clips.
 
-**When NOT to use:** Generating a single still image (use oma-image), generating a slide deck (use oma-slide; video calls it internally for explainer frames), generating speech audio only (use oma-voice), non-linear editing of an existing finished mp4, live streaming (supervised web capture is in scope).
+**When NOT to use:** A single still image (oma-image), a slide deck (oma-slide), audio-only processing or speech generation/transcription (oma-voice), spoken translation (oma-translation), or live streaming.
 
 **Core rules:**
-- Clarify or infer the mode before invoking; show the user the inferred plan rather than silently rendering from a vague brief
+- Route existing-clip work to the media-processing reference before creation-mode/provider selection; these operations use installed tools, not a new CLI generation mode
 - Provider configuration is key-optional for supported asset fallbacks; paid providers (Pexels, Pixelle) auto-enable only when their env key is present, while a compositor failure is never replaced with a fallback video
-- Cost guardrail at ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` bypass); limits of 180s duration / 40 scenes
+- Creation uses the cost guardrail at ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` for already authorized paid work) and limits of 180s duration / 40 scenes
 - Render inputs are recorded in `render-spec.json`, assets, seed, and embedded Pretendard; `OMA_VIDEO_MOCK=1` is a test harness for golden fixtures, not a user deliverable
-- Demo is human-in-the-loop: web capture only opens a headed browser and records while a human drives the flow — NO credential automation; `--url` and tokens masked in logs/manifest
+- Demo capture is performed by a human; `--source web --url` supplies context and does not start recording or automate login. Mask URL tokens in logs/manifest
 - Path safety (`--allow-external-output` for output outside `$PWD`)
 
 **Workflow:** PREPARE (mode/aspect/locale, clarify/amplify brief) → ACQUIRE (probe provider availability, validate capture path, check cost) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, manifest hashes, exit code, mp4) → FINALIZE (run-dir + mp4 path + coverage warnings).
+
+Existing clips use source stream/PTS inspection, explicit frame-selection or cut criteria, and a common audio/video edit timeline. Speech and amplitude detectors can disagree; resolve the disputed intervals from the requested content rather than increasing cuts. Dubbing can copy the original encoded picture while replacing its audio.
 
 ---
 
 ### oma-voice
 
-**Domain:** Local-first text-to-speech and speech-to-text via the Voicebox MCP server — fully on-device, no cloud, no API keys, no per-call cost.
+**Domain:** Local speech generation/transcription through Voicebox, plus existing-audio conversion, duration fitting, and loudness processing with FFmpeg.
 
 **When to use:** Generating short notification audio for agent task completion or blockers, producing voiceover/narration/audio assets (mp3 or wav), transcribing local audio files (mp3, wav, m4a, webm, flac) to Markdown, comparing voice profiles by re-running the same text against different profile ids.
+
+Also use for fitting existing speech to a requested window, resampling, channel conversion, and requested loudness profiles. Video placement remains with oma-video.
 
 **When NOT to use:** Cloud TTS or high-fidelity multilingual cloud voices, real-time terminal microphone dictation (use Voicebox's hotkey dictation), voice cloning sample upload / profile creation (done in the Voicebox desktop app UI), video/music/sound design.
 
 **Core rules:**
-- Voicebox required: on handshake / `GET /health` failure, exit with a one-shot install/launch hint; do not retry or auto-relaunch
-- Profile required: if `voicebox_list_profiles` is empty, point the user at the app UI, then exit
+- Voicebox is required for generation/transcription; existing-audio processing bypasses its health, profile, and model checks
+- A profile is required only for TTS; transcription and local file processing do not require one
 - Length limits: TTS caps at 5000 chars per call (warn at 2000), STT at 30 minutes; v1 does not auto-chunk
 - Auto-invocation transparency: notifications fire only when the task exceeds `auto_notify_after_sec` (default 60s); always announce intent in one line
-- Path safety (warn + confirm for output outside `$PWD`); SIGINT writes no partial output
-- Manifest required on every generation; no cost guard (Voicebox is free)
+- An explicitly requested output path authorizes that destination; clarify ambiguous replacement of unrelated files. SIGINT writes no partial output
+- Persisted audio/transcripts include a manifest; processing records real source/operation data without invented generation ids
 
 **Workflow:** PREPARE (validate text/audio/language/path/profile) → ACQUIRE (clarify once if a signal is missing) → ACT (MCP `voicebox_speak` or `voicebox_transcribe`) → VERIFY (audio/transcript presence + manifest fields) → FINALIZE (write `manifest.json`, report path).
+
+Existing-file requests dispatch to local processing before this Voicebox sequence. Preserve the raw audio, derive tempo and loudness targets from the requested delivery, and keep technical measurements separate from unassessed speech naturalness.
 
 ---
 
