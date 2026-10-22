@@ -14,7 +14,7 @@ OMA는 [스킬](../getting-started/glossary.md#skill), 디스패치 역할, [에
 이 표는 설치된 스킬의 공식 목록입니다. `cli/scripts/generate-skill-catalog.mjs`가 각 `.agents/skills/<name>/SKILL.md`의 프론트매터에서 생성하며, 스크립트를 `--check`와 함께 실행하면 드리프트를 감지할 수 있습니다. 각 스킬의 리소스 파일과 그 파일을 읽어야 하는 시점은 해당 SKILL.md의 `## References` 섹션에 나와 있습니다.
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

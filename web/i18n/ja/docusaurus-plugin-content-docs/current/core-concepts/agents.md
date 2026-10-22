@@ -14,7 +14,7 @@ OMA は、[スキル](../getting-started/glossary.md#skill)、ディスパッチ
 この表は、インストール済みスキルの正式な一覧です。`cli/scripts/generate-skill-catalog.mjs` が各 `.agents/skills/<name>/SKILL.md` のフロントマターから生成します。ドリフトを検出するには、このスクリプトを `--check` 付きで実行してください。各スキルのリソースファイルと、それぞれを読むタイミングは、SKILL.md の `## References` セクションに記載されています。
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

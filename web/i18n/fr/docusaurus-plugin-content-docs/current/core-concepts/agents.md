@@ -14,7 +14,7 @@ OMA sépare les [compétences](../getting-started/glossary.md#skill), les rôles
 Ce tableau est la liste de référence des compétences installées. Il est généré à partir du frontmatter de chaque `.agents/skills/<name>/SKILL.md` par `cli/scripts/generate-skill-catalog.mjs` ; exécutez le script avec `--check` pour détecter une dérive. La section `## References` du SKILL.md de chaque compétence liste ses fichiers de ressources et indique quand les lire.
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

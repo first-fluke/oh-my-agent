@@ -7,6 +7,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { Script } from "node:vm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   collectSkills,
@@ -73,6 +74,12 @@ describe("collectSkills", () => {
 });
 
 describe("renderCatalog", () => {
+  it("keeps provenance parseable when MDX converts HTML comments to JavaScript", () => {
+    const provenance = renderCatalog([]).match(/^<!--([\s\S]*?)-->/)?.[1];
+    expect(provenance).toBeDefined();
+    expect(() => new Script(`/*${provenance}*/`)).not.toThrow();
+  });
+
   it("renders one linked row per skill with escaped, single-line cells", () => {
     const table = renderCatalog(collectSkills(join(root, ".agents/skills")));
     expect(table).toContain("| Skill | Use it for |");

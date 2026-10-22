@@ -14,7 +14,7 @@ OMA separa las [habilidades](../getting-started/glossary.md#skill), los roles de
 Esta tabla es la lista autorizada de habilidades instaladas. `cli/scripts/generate-skill-catalog.mjs` la genera a partir del frontmatter de cada `.agents/skills/<name>/SKILL.md`; ejecuta el script con `--check` para detectar desviaciones. La sección `## References` del SKILL.md de cada habilidad enumera sus archivos de recursos y cuándo leerlos.
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

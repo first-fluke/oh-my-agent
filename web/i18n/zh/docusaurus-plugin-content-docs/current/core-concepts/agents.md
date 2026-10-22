@@ -14,7 +14,7 @@ OMA 将[技能](../getting-started/glossary.md#skill)、调度角色和[智能�
 此表是已安装技能的权威列表。它由 `cli/scripts/generate-skill-catalog.mjs` 根据每个 `.agents/skills/<name>/SKILL.md` 的 frontmatter 生成；使用 `--check` 运行该脚本可检测漂移。每个技能 SKILL.md 中的 `## References` 章节列出其资源文件以及何时读取它们。
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

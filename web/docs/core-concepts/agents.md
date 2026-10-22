@@ -14,7 +14,7 @@ OMA separates [skills](../getting-started/glossary.md#skill), dispatch roles, an
 This table is the authoritative list of installed skills. It is generated from each `.agents/skills/<name>/SKILL.md` frontmatter by `cli/scripts/generate-skill-catalog.mjs`; run the script with `--check` to detect drift. Each skill's `## References` section in its SKILL.md lists its resource files and when to read them.
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

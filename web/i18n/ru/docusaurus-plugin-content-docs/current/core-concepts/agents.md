@@ -14,7 +14,7 @@ OMA разделяет [навыки](../getting-started/glossary.md#skill), р�
 Эта таблица — авторитетный список установленных навыков. Она генерируется из frontmatter каждого `.agents/skills/<name>/SKILL.md` скриптом `cli/scripts/generate-skill-catalog.mjs`; чтобы обнаружить расхождения, запустите скрипт с `--check`. Раздел `## References` в SKILL.md каждого навыка перечисляет его файлы ресурсов и указывает, когда их читать.
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

@@ -14,7 +14,7 @@ OMA rozdziela [umiejętności](../getting-started/glossary.md#skill), role dispa
 Ta tabela jest autorytatywną listą zainstalowanych umiejętności. Generuje ją `cli/scripts/generate-skill-catalog.mjs` z frontmattera każdego pliku `.agents/skills/<name>/SKILL.md`; uruchom skrypt z `--check`, aby wykryć dryf. Sekcja `## References` w SKILL.md każdej umiejętności wymienia jej pliki zasobów i to, kiedy należy je czytać.
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

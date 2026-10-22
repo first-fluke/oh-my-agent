@@ -14,7 +14,7 @@ OMA houdt [skills](../getting-started/glossary.md#skill), dispatchrollen en [age
 Deze tabel is de gezaghebbende lijst van geïnstalleerde skills. `cli/scripts/generate-skill-catalog.mjs` genereert hem uit de frontmatter van elke `.agents/skills/<name>/SKILL.md`; voer het script uit met `--check` om drift te detecteren. De sectie `## References` in de SKILL.md van elke skill somt de resourcebestanden op en vermeldt wanneer je ze leest.
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|

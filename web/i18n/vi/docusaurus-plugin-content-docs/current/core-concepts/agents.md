@@ -14,7 +14,7 @@ OMA tách [skill](../getting-started/glossary.md#skill), vai trò dispatch và [
 Bảng này là danh sách chính thức các skill đã cài đặt. Bảng được `cli/scripts/generate-skill-catalog.mjs` tạo từ frontmatter của mỗi `.agents/skills/<name>/SKILL.md`; chạy script với `--check` để phát hiện drift. Phần `## References` trong SKILL.md của mỗi skill liệt kê các file tài nguyên và thời điểm cần đọc chúng.
 
 <!-- oma:generated skill-catalog:start -->
-<!-- Generated from .agents/skills/*/SKILL.md frontmatter by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
+<!-- Generated from SKILL.md frontmatter under .agents/skills by cli/scripts/generate-skill-catalog.mjs. Do not edit this block by hand. -->
 
 | Skill | Use it for |
 |---|---|
