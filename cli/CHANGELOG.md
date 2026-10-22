@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.12.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.12.1...cli-v20.12.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **install:** require consent before removing other tools ([cd9cb2f](https://github.com/first-fluke/oh-my-agent/commit/cd9cb2ffe7c3793c5df36b5834e6cb76fbd1be4f))
+
 ## [20.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.12.0...cli-v20.12.1) (2026-10-22)
 
 
