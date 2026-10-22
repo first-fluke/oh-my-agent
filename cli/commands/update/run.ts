@@ -58,7 +58,6 @@ import {
   gcProjectSessions,
   loadMemoryGcConfig,
 } from "../../state/session-gc.js";
-import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import {
   isTelemetryEnabled,
   loadDevToolsBrowsers,
@@ -344,11 +343,6 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
     // Persist reconcile flag so a failed download doesn't lose the intent
     if (migrationStatus.requiresReconcile && !getNeedsReconcile(cwd)) {
       setNeedsReconcile(cwd, true);
-    }
-
-    // Detect and offer to remove competing tools (skip in CI — no stdin)
-    if (!nonInteractive) {
-      await promptUninstallCompetitors(cwd);
     }
 
     if (targetState === "legacy") {

@@ -435,6 +435,28 @@ describe("update --global: _install.json lifecycle", () => {
     expect(new Date(meta.installedAt).toISOString()).toBe(meta.installedAt);
   });
 
+  it.each([false, true])(
+    "does not offer to uninstall other tools during update (ci=%s)",
+    async (ci) => {
+      const previousOmaYes = process.env.OMA_YES;
+      delete process.env.CI;
+      delete process.env.OMA_YES;
+      vi.spyOn(console, "clear").mockImplementation(() => {});
+
+      try {
+        await update({ global: true, force: true, ci });
+
+        expect(
+          competitorsState.promptUninstallCompetitors,
+        ).not.toHaveBeenCalled();
+        expect(linkState.link).toHaveBeenCalled();
+      } finally {
+        if (previousOmaYes === undefined) delete process.env.OMA_YES;
+        else process.env.OMA_YES = previousOmaYes;
+      }
+    },
+  );
+
   it("migrates before acquiring the update lock and projects common skills before copying", async () => {
     await update({ global: true, force: true, ci: true });
     expect(migrationState.migrateGlobalHome).toHaveBeenCalledExactlyOnceWith({

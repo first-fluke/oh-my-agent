@@ -313,6 +313,28 @@ describe("install home policy", () => {
     ).toBeLessThan(promptState.outro.mock.invocationCallOrder[0] ?? 0);
   });
 
+  it("offers optional tool uninstall only during interactive installation", async () => {
+    await install();
+
+    expect(
+      miscState.promptUninstallCompetitors,
+    ).toHaveBeenCalledExactlyOnceWith(process.cwd());
+    expect(promptState.outro).toHaveBeenCalledWith("Done!");
+  });
+
+  it.each(["--yes", "OMA_YES", "CI"])(
+    "does not offer or run other tool uninstall with %s",
+    async (mode) => {
+      if (mode === "OMA_YES") process.env.OMA_YES = "1";
+      if (mode === "CI") process.env.CI = "true";
+
+      await install({ yes: mode === "--yes" });
+
+      expect(miscState.promptUninstallCompetitors).not.toHaveBeenCalled();
+      expect(promptState.outro).toHaveBeenCalledWith("Done!");
+    },
+  );
+
   // --- Browser MCP default: Aside only when a person chooses it ---
 
   it("selects no browser MCP for a non-interactive install", async () => {

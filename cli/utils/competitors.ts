@@ -10,21 +10,13 @@ interface Competitor {
   uninstall: () => void;
 }
 
-export function cleanLeftoverDirs(cwd: string): void {
-  for (const dir of [".omc", ".omx"]) {
-    const target = join(cwd, dir);
-    if (existsSync(target)) rmSync(target, { recursive: true, force: true });
-  }
-}
-
 function detectCompetitors(cwd: string): Competitor[] {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "";
   const competitors: Competitor[] = [];
 
   // --- omc (oh-my-claudecode) ---
-  // Only detect if global config is active (OMC:START in CLAUDE.md).
-  // Project-level .omc dirs are leftover artifacts — cleaned silently by cleanLeftoverDirs.
   const claudeMdPath = join(homeDir, ".claude", "CLAUDE.md");
+  const omcProjectDir = join(cwd, ".omc");
   let omcDetected = false;
   if (existsSync(claudeMdPath)) {
     try {
@@ -115,7 +107,6 @@ function detectCompetitors(cwd: string): Competitor[] {
         }
 
         // Remove project-level .omc directory
-        const omcProjectDir = join(cwd, ".omc");
         if (existsSync(omcProjectDir))
           rmSync(omcProjectDir, { recursive: true, force: true });
 
@@ -179,6 +170,14 @@ function detectCompetitors(cwd: string): Competitor[] {
         }
       },
     });
+  } else if (existsSync(omcProjectDir)) {
+    competitors.push({
+      name: "omc",
+      displayName: "oh-my-claudecode (project files)",
+      uninstall: () => {
+        rmSync(omcProjectDir, { recursive: true, force: true });
+      },
+    });
   }
 
   // --- omo (oh-my-opencode) ---
@@ -237,25 +236,35 @@ function detectCompetitors(cwd: string): Competitor[] {
   }
 
   // --- omx (oh-my-codex) ---
-  // Only detect if the global CLI package is installed.
-  // Project-level .omx dirs are leftover artifacts — cleaned silently by cleanLeftoverDirs.
+  const omxProjectDir = join(cwd, ".omx");
+  let omxGlobalInstalled = false;
   try {
     execFileSync("npm", ["ls", "-g", "oh-my-codex"], {
       stdio: "pipe",
       timeout: 10_000,
     });
-    competitors.push({
-      name: "omx",
-      displayName: "oh-my-codex",
-      uninstall: () => {
-        execFileSync("npx", ["oh-my-codex@latest", "uninstall", "--yes"], {
-          stdio: "pipe",
-          timeout: 60_000,
-        });
-      },
-    });
+    omxGlobalInstalled = true;
   } catch {
     // not installed globally
+  }
+  if (omxGlobalInstalled || existsSync(omxProjectDir)) {
+    competitors.push({
+      name: "omx",
+      displayName: omxGlobalInstalled
+        ? "oh-my-codex"
+        : "oh-my-codex (project files)",
+      uninstall: () => {
+        if (omxGlobalInstalled) {
+          execFileSync("npx", ["oh-my-codex@latest", "uninstall", "--yes"], {
+            cwd,
+            stdio: "pipe",
+            timeout: 60_000,
+          });
+        }
+        if (existsSync(omxProjectDir))
+          rmSync(omxProjectDir, { recursive: true, force: true });
+      },
+    });
   }
 
   return competitors;
@@ -268,23 +277,20 @@ function detectCompetitors(cwd: string): Competitor[] {
 export async function promptUninstallCompetitors(
   cwd: string,
 ): Promise<string[]> {
-  // Silently remove leftover project-level dirs (.omc, .omx) — these are artifacts, not active installs.
-  cleanLeftoverDirs(cwd);
-
   const competitors = detectCompetitors(cwd);
   if (competitors.length === 0) return [];
 
-  const names = competitors.map((c) => c.name);
+  const names = competitors.map((c) => c.displayName);
   const shouldRemove = await p.confirm({
-    message: `${pc.yellow(names.join(", "))} detected. Remove all?`,
-    initialValue: true,
+    message: `${pc.yellow(names.join(", "))} detected. Uninstall them?`,
+    initialValue: false,
   });
 
-  if (p.isCancel(shouldRemove) || !shouldRemove) return [];
+  if (p.isCancel(shouldRemove) || shouldRemove !== true) return [];
 
   const actions: string[] = [];
   const spinner = p.spinner();
-  spinner.start("Removing competing tools...");
+  spinner.start("Uninstalling selected tools...");
 
   for (const c of competitors) {
     try {

@@ -112,7 +112,7 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 **What it does:**
 1. Checks for legacy `.agent/` directory and migrates to `.agents/` if found.
-2. Detects and offers to remove competing tools.
+2. In interactive mode, detects other agent tools and asks whether to uninstall them (default: keep). `--yes`, `OMA_YES`, and CI installations keep them; `oma update` does not offer removal.
 3. Prompts for project type (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
 4. If backend is selected, prompts for language variant (Python, Node.js, Rust, Other).
 5. Asks about GitHub Copilot symlinks.

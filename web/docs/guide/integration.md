@@ -376,7 +376,7 @@ The installer checks for the old `.agent/` directory (singular) and migrates it 
 
 ### 2. Competitor detection
 
-The installer scans for competing tools and offers to remove them to avoid conflicts.
+Interactive installation detects other agent tools and asks whether to uninstall them. The default is to keep them, including project-local `.omc` and `.omx` directories. Removal requires an explicit confirmation; `--yes`, `OMA_YES`, and CI installations keep other tools. `oma update` does not offer to uninstall them.
 
 ### 3. Tarball download
 
