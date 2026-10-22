@@ -89,7 +89,8 @@ describe("agentmemory-service", () => {
       "keeps the Node manager runtime directory in the %s service environment",
       (platform) => {
         const runtime = "/custom Node & tools/$manager/versions/26%1/bin";
-        const executable = join(homeDir, ".bun", "bin", "agentmemory");
+        // Exercise backslash escaping even when the host uses POSIX paths.
+        const executable = join(homeDir, ".bun\\bin", "agentmemory");
         const result = installAgentMemoryService({
           homeDir,
           platform,
@@ -106,7 +107,9 @@ describe("agentmemory-service", () => {
           expect(result.content).toContain(
             `Environment="PATH=${runtime.replaceAll("%", "%%")}:`,
           );
-          expect(result.content).toContain(`ExecStart="${executable}"`);
+          expect(result.content).toContain(
+            `ExecStart="${executable.replaceAll("\\", "\\\\")}"`,
+          );
         }
         expect(result.content?.match(/versions\/26/g)).toHaveLength(1);
       },
