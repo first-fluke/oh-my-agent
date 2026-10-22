@@ -1,0 +1,328 @@
+{
+  "timestamp_utc": "20261022T001639.813702Z",
+  "oma_version": "20.10.3",
+  "node_version": "v26.11.1",
+  "python_version": "3.15.0",
+  "fixture": "Shared three-task limiter fixture from demo.py",
+  "scope": "Four deterministic recovery probes, no model calls or executed OMA repair",
+  "baseline_scope": "Authored policies; not a benchmark of named workflow products",
+  "driver_sha256": "8e5ffcf1a2ca4d89a64b2f4681822a4ea51f86ee7f38528d97bd93c9c5cdc817",
+  "fixture_driver_sha256": "6dffc4d1aaed9d42aec2f8686fcf8abc5b502d9b9c7837f41ff8f19ffe4ed35e",
+  "transcript_sha256": "f92ce5b83a5ea559401e24aab0427a9a7c779108a7bd7c39bf325d7ac464af6c",
+  "initial_files": {
+    ".agents/results/docs-report.md": "61b66ce8f91afcb85f652a8802d84d60722dcf662647d90d0ca801e6c9199d94",
+    ".agents/results/limit-report.md": "73235f54f69279562072f35424736b641bdf1950781a7a8faa88178f19d81c88",
+    ".agents/results/plan-icse-demo.json": "0c92e043a69f54475d84209aaf96f3561769b3e1426774143aeb6a0544ffca93",
+    ".agents/results/usage-report.md": "346924ddd0887f7ec77d3dfdb44c08093514e696149c652d89bf49bedd91c0ed",
+    "checks/docs.mjs": "d5682f688435070f0970e4d4a3dd743f88047b2366b4a349f5fe8ffe92d39cac",
+    "src/limit.mjs": "bc90282cfbe8df4d3d02b4188257729ab1f4885204612f899da20c6ce5dd3728",
+    "tests/limit.test.mjs": "30057856f99e06499bac8b391c3a31fce4975b4cb3a8c24ab9e5018629633e66",
+    "tests/usage.test.mjs": "f41985ede97ec8af1417239c8acab68eadca81cd6e1bf6ad5fbaf748297d511b",
+    "usage.md": "a8552bb5658db001efaff1063932851214fc1f209b805697976f6f587a88e052"
+  },
+  "cases": [
+    {
+      "case": "unchanged",
+      "files": {
+        ".agents/results/docs-report.md": "61b66ce8f91afcb85f652a8802d84d60722dcf662647d90d0ca801e6c9199d94",
+        ".agents/results/limit-report.md": "73235f54f69279562072f35424736b641bdf1950781a7a8faa88178f19d81c88",
+        ".agents/results/plan-icse-demo.json": "0c92e043a69f54475d84209aaf96f3561769b3e1426774143aeb6a0544ffca93",
+        ".agents/results/usage-report.md": "346924ddd0887f7ec77d3dfdb44c08093514e696149c652d89bf49bedd91c0ed",
+        "checks/docs.mjs": "d5682f688435070f0970e4d4a3dd743f88047b2366b4a349f5fe8ffe92d39cac",
+        "src/limit.mjs": "bc90282cfbe8df4d3d02b4188257729ab1f4885204612f899da20c6ce5dd3728",
+        "tests/limit.test.mjs": "30057856f99e06499bac8b391c3a31fce4975b4cb3a8c24ab9e5018629633e66",
+        "tests/usage.test.mjs": "f41985ede97ec8af1417239c8acab68eadca81cd6e1bf6ad5fbaf748297d511b",
+        "usage.md": "a8552bb5658db001efaff1063932851214fc1f209b805697976f6f587a88e052"
+      },
+      "changed_since_initial": [],
+      "last_success": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "rerun_all": {
+        "limit": "completed",
+        "usage": "completed",
+        "docs": "completed"
+      },
+      "oma": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "oma_response": {
+        "sessionId": "icse-demo",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "0129dedd-5be3-42fe-8c77-0b916fd838a3",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "9ac1ccef-0b66-4655-a65e-1f9223bf0c19",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "c1885750-d64a-4d86-9ca0-bfd738054854",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": true
+      },
+      "recovery_check_commands": {
+        "last_success": 0,
+        "rerun_all": 3,
+        "oma_dry_run": 0
+      }
+    },
+    {
+      "case": "unrelated-file",
+      "files": {
+        ".agents/results/docs-report.md": "61b66ce8f91afcb85f652a8802d84d60722dcf662647d90d0ca801e6c9199d94",
+        ".agents/results/limit-report.md": "73235f54f69279562072f35424736b641bdf1950781a7a8faa88178f19d81c88",
+        ".agents/results/plan-icse-demo.json": "0c92e043a69f54475d84209aaf96f3561769b3e1426774143aeb6a0544ffca93",
+        ".agents/results/usage-report.md": "346924ddd0887f7ec77d3dfdb44c08093514e696149c652d89bf49bedd91c0ed",
+        "checks/docs.mjs": "d5682f688435070f0970e4d4a3dd743f88047b2366b4a349f5fe8ffe92d39cac",
+        "src/limit.mjs": "bc90282cfbe8df4d3d02b4188257729ab1f4885204612f899da20c6ce5dd3728",
+        "tests/limit.test.mjs": "30057856f99e06499bac8b391c3a31fce4975b4cb3a8c24ab9e5018629633e66",
+        "tests/usage.test.mjs": "f41985ede97ec8af1417239c8acab68eadca81cd6e1bf6ad5fbaf748297d511b",
+        "usage.md": "a8552bb5658db001efaff1063932851214fc1f209b805697976f6f587a88e052",
+        "unrelated.txt": "2cccc00f2956e5e3b3bd848e02624cda328abb3dcba6030ce7f19542f76229ca"
+      },
+      "changed_since_initial": [
+        "unrelated.txt"
+      ],
+      "last_success": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "rerun_all": {
+        "limit": "completed",
+        "usage": "completed",
+        "docs": "completed"
+      },
+      "oma": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "oma_response": {
+        "sessionId": "icse-demo",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "0129dedd-5be3-42fe-8c77-0b916fd838a3",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "9ac1ccef-0b66-4655-a65e-1f9223bf0c19",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "c1885750-d64a-4d86-9ca0-bfd738054854",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": true
+      },
+      "recovery_check_commands": {
+        "last_success": 0,
+        "rerun_all": 3,
+        "oma_dry_run": 0
+      }
+    },
+    {
+      "case": "broken-source",
+      "files": {
+        ".agents/results/docs-report.md": "61b66ce8f91afcb85f652a8802d84d60722dcf662647d90d0ca801e6c9199d94",
+        ".agents/results/limit-report.md": "73235f54f69279562072f35424736b641bdf1950781a7a8faa88178f19d81c88",
+        ".agents/results/plan-icse-demo.json": "0c92e043a69f54475d84209aaf96f3561769b3e1426774143aeb6a0544ffca93",
+        ".agents/results/usage-report.md": "346924ddd0887f7ec77d3dfdb44c08093514e696149c652d89bf49bedd91c0ed",
+        "checks/docs.mjs": "d5682f688435070f0970e4d4a3dd743f88047b2366b4a349f5fe8ffe92d39cac",
+        "src/limit.mjs": "3507a88ba6645c203f1a3b5ee88825b6075207f6c40827dff957b76a0d17eeaa",
+        "tests/limit.test.mjs": "30057856f99e06499bac8b391c3a31fce4975b4cb3a8c24ab9e5018629633e66",
+        "tests/usage.test.mjs": "f41985ede97ec8af1417239c8acab68eadca81cd6e1bf6ad5fbaf748297d511b",
+        "usage.md": "a8552bb5658db001efaff1063932851214fc1f209b805697976f6f587a88e052",
+        "unrelated.txt": "2cccc00f2956e5e3b3bd848e02624cda328abb3dcba6030ce7f19542f76229ca"
+      },
+      "changed_since_initial": [
+        "src/limit.mjs",
+        "unrelated.txt"
+      ],
+      "last_success": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "rerun_all": {
+        "limit": "failed",
+        "usage": "failed",
+        "docs": "completed"
+      },
+      "oma": {
+        "limit": "ready",
+        "usage": "ready",
+        "docs": "reused"
+      },
+      "oma_response": {
+        "sessionId": "icse-demo",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "0129dedd-5be3-42fe-8c77-0b916fd838a3",
+            "dependsOn": [],
+            "status": "ready",
+            "reason": "Previous evidence is missing, stale, or incomplete"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "9ac1ccef-0b66-4655-a65e-1f9223bf0c19",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "ready",
+            "reason": "Dependency evidence changed; dependent work must be verified again"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "c1885750-d64a-4d86-9ca0-bfd738054854",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": false
+      },
+      "recovery_check_commands": {
+        "last_success": 0,
+        "rerun_all": 3,
+        "oma_dry_run": 0
+      }
+    },
+    {
+      "case": "changed-report",
+      "files": {
+        ".agents/results/docs-report.md": "61b66ce8f91afcb85f652a8802d84d60722dcf662647d90d0ca801e6c9199d94",
+        ".agents/results/limit-report.md": "fad935075b67be12a5536ce61252e3908054da406809aef6d70a1a75fa61d191",
+        ".agents/results/plan-icse-demo.json": "0c92e043a69f54475d84209aaf96f3561769b3e1426774143aeb6a0544ffca93",
+        ".agents/results/usage-report.md": "346924ddd0887f7ec77d3dfdb44c08093514e696149c652d89bf49bedd91c0ed",
+        "checks/docs.mjs": "d5682f688435070f0970e4d4a3dd743f88047b2366b4a349f5fe8ffe92d39cac",
+        "src/limit.mjs": "bc90282cfbe8df4d3d02b4188257729ab1f4885204612f899da20c6ce5dd3728",
+        "tests/limit.test.mjs": "30057856f99e06499bac8b391c3a31fce4975b4cb3a8c24ab9e5018629633e66",
+        "tests/usage.test.mjs": "f41985ede97ec8af1417239c8acab68eadca81cd6e1bf6ad5fbaf748297d511b",
+        "usage.md": "a8552bb5658db001efaff1063932851214fc1f209b805697976f6f587a88e052",
+        "unrelated.txt": "2cccc00f2956e5e3b3bd848e02624cda328abb3dcba6030ce7f19542f76229ca"
+      },
+      "changed_since_initial": [
+        ".agents/results/limit-report.md",
+        "unrelated.txt"
+      ],
+      "last_success": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "rerun_all": {
+        "limit": "completed",
+        "usage": "completed",
+        "docs": "completed"
+      },
+      "oma": {
+        "limit": "blocked",
+        "usage": "blocked",
+        "docs": "reused"
+      },
+      "oma_response": {
+        "sessionId": "icse-demo",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "0129dedd-5be3-42fe-8c77-0b916fd838a3",
+            "dependsOn": [],
+            "status": "blocked",
+            "reason": "WORKFLOW_EVIDENCE_FAILURE: product checks passed for run 0129dedd-5be3-42fe-8c77-0b916fd838a3; stop product replay and recursive planning. Inspect /Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/state-home/u/0/projects/d3afc50ec22804dd33de6af0c87bc5740daf1f530feb078ae57582f0e1924fa9/agent-runs/0129dedd-5be3-42fe-8c77-0b916fd838a3.claim.json and its receipt/artifact bindings; preserve the plan and report partial with the failing evidence."
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "9ac1ccef-0b66-4655-a65e-1f9223bf0c19",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "blocked",
+            "reason": "A dependency is blocked or still running"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "c1885750-d64a-4d86-9ca0-bfd738054854",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": false
+      },
+      "recovery_check_commands": {
+        "last_success": 0,
+        "rerun_all": 3,
+        "oma_dry_run": 0
+      }
+    }
+  ]
+}

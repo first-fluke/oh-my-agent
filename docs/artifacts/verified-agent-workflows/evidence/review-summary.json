@@ -1,0 +1,2366 @@
+{
+  "comparison": [
+    {
+      "case": "unchanged",
+      "policies": {
+        "rerun-all": {
+          "statuses": {
+            "limit": "completed",
+            "usage": "completed",
+            "docs": "completed"
+          },
+          "check_commands": 3,
+          "current_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          },
+          "cached_keys": {}
+        },
+        "input-cache": {
+          "statuses": {
+            "limit": "reused",
+            "usage": "reused",
+            "docs": "reused"
+          },
+          "check_commands": 0,
+          "current_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          },
+          "cached_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          }
+        },
+        "output-cache": {
+          "statuses": {
+            "limit": "reused",
+            "usage": "reused",
+            "docs": "reused"
+          },
+          "check_commands": 0,
+          "current_keys": {
+            "limit": "7fc3f0dfa57e5e0ea5471666ba52681a483155d36836d9dd05ece9a6bed4ae66",
+            "usage": "a9702e63ab59ce7f8f74a1a6899fd6c0cbc889bb5d35b7e3bc682d3ed348b6af",
+            "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+          },
+          "cached_keys": {
+            "limit": "7fc3f0dfa57e5e0ea5471666ba52681a483155d36836d9dd05ece9a6bed4ae66",
+            "usage": "a9702e63ab59ce7f8f74a1a6899fd6c0cbc889bb5d35b7e3bc682d3ed348b6af",
+            "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+          }
+        }
+      },
+      "oma_plan": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "oma_active": {
+        "statuses": {
+          "limit": "reused",
+          "usage": "reused",
+          "docs": "reused"
+        },
+        "check_commands": 0
+      },
+      "planned": {
+        "sessionId": "review-unchanged",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "79d2fdee-eea9-4305-b7b0-c6e91c83f533",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "03b86e6d-8195-4074-9ccc-fb614a2e5b3d",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "f8a7e27e-21d4-48b2-a140-fa059a2725b6",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": true
+      },
+      "active": {
+        "sessionId": "review-unchanged",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "79d2fdee-eea9-4305-b7b0-c6e91c83f533",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "03b86e6d-8195-4074-9ccc-fb614a2e5b3d",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "f8a7e27e-21d4-48b2-a140-fa059a2725b6",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": true
+      },
+      "attempts": [],
+      "seeds": [
+        {
+          "schemaVersion": 1,
+          "runId": "79d2fdee-eea9-4305-b7b0-c6e91c83f533",
+          "sequence": 1,
+          "taskId": "limit",
+          "sessionId": "review-unchanged",
+          "lineageId": "review-unchanged",
+          "goalId": "limit",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+          "startedAt": "2026-10-22T00:58:15.960Z",
+          "status": "completed",
+          "before": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/limit.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:15.971Z",
+              "finishedAt": "2026-10-22T00:58:16.544Z",
+              "exitCode": 0,
+              "before": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef",
+              "after": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/limit-report.md": "28a90dbe8dd41ffa61e2ed273ff267de1f75e4d96410599776f0a0a0849c7dcf"
+          },
+          "contract": {
+            "id": "limit",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The limit check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/limit.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "src/limit.mjs",
+              "tests/limit.test.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:16.548Z",
+          "after": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef"
+        },
+        {
+          "schemaVersion": 1,
+          "runId": "03b86e6d-8195-4074-9ccc-fb614a2e5b3d",
+          "sequence": 2,
+          "taskId": "usage",
+          "sessionId": "review-unchanged",
+          "lineageId": "review-unchanged",
+          "goalId": "usage",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+          "startedAt": "2026-10-22T00:58:16.899Z",
+          "status": "completed",
+          "before": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/usage.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:16.903Z",
+              "finishedAt": "2026-10-22T00:58:17.230Z",
+              "exitCode": 0,
+              "before": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed",
+              "after": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/usage-report.md": "48e8d81558117f1e647c87be6bfe349db50535a1eb1251286f4af6070217f13b"
+          },
+          "contract": {
+            "id": "usage",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The usage check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/usage.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "tests/usage.test.mjs"
+            ],
+            "dependencies": [
+              "limit"
+            ],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:17.233Z",
+          "after": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed"
+        },
+        {
+          "schemaVersion": 1,
+          "runId": "f8a7e27e-21d4-48b2-a140-fa059a2725b6",
+          "sequence": 3,
+          "taskId": "docs",
+          "sessionId": "review-unchanged",
+          "lineageId": "review-unchanged",
+          "goalId": "docs",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+          "startedAt": "2026-10-22T00:58:17.571Z",
+          "status": "completed",
+          "before": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "checks/docs.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:17.576Z",
+              "finishedAt": "2026-10-22T00:58:17.735Z",
+              "exitCode": 0,
+              "before": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2",
+              "after": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/docs-report.md": "0609a495b2c7987d14f1108bc0870d0f219f0fe34b7820ae592608d1fbcd0fea"
+          },
+          "contract": {
+            "id": "docs",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The docs check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "checks/docs.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "usage.md",
+              "checks/docs.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:17.738Z",
+          "after": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2"
+        }
+      ],
+      "fixture_keys": {
+        "limit": "7fc3f0dfa57e5e0ea5471666ba52681a483155d36836d9dd05ece9a6bed4ae66",
+        "usage": "a9702e63ab59ce7f8f74a1a6899fd6c0cbc889bb5d35b7e3bc682d3ed348b6af",
+        "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+      }
+    },
+    {
+      "case": "unrelated-file",
+      "policies": {
+        "rerun-all": {
+          "statuses": {
+            "limit": "completed",
+            "usage": "completed",
+            "docs": "completed"
+          },
+          "check_commands": 3,
+          "current_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          },
+          "cached_keys": {}
+        },
+        "input-cache": {
+          "statuses": {
+            "limit": "reused",
+            "usage": "reused",
+            "docs": "reused"
+          },
+          "check_commands": 0,
+          "current_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          },
+          "cached_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          }
+        },
+        "output-cache": {
+          "statuses": {
+            "limit": "reused",
+            "usage": "reused",
+            "docs": "reused"
+          },
+          "check_commands": 0,
+          "current_keys": {
+            "limit": "7fc3f0dfa57e5e0ea5471666ba52681a483155d36836d9dd05ece9a6bed4ae66",
+            "usage": "a9702e63ab59ce7f8f74a1a6899fd6c0cbc889bb5d35b7e3bc682d3ed348b6af",
+            "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+          },
+          "cached_keys": {
+            "limit": "7fc3f0dfa57e5e0ea5471666ba52681a483155d36836d9dd05ece9a6bed4ae66",
+            "usage": "a9702e63ab59ce7f8f74a1a6899fd6c0cbc889bb5d35b7e3bc682d3ed348b6af",
+            "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+          }
+        }
+      },
+      "oma_plan": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "oma_active": {
+        "statuses": {
+          "limit": "reused",
+          "usage": "reused",
+          "docs": "reused"
+        },
+        "check_commands": 0
+      },
+      "planned": {
+        "sessionId": "review-unrelated-file",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "a57d1289-e94c-4cec-acb1-1b538604f648",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "7e53438a-6771-415e-862e-1f88d4e539a4",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "1f19989a-bb79-490d-9073-ca2ed10a016d",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": true
+      },
+      "active": {
+        "sessionId": "review-unrelated-file",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "a57d1289-e94c-4cec-acb1-1b538604f648",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "7e53438a-6771-415e-862e-1f88d4e539a4",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "1f19989a-bb79-490d-9073-ca2ed10a016d",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": true
+      },
+      "attempts": [],
+      "seeds": [
+        {
+          "schemaVersion": 1,
+          "runId": "a57d1289-e94c-4cec-acb1-1b538604f648",
+          "sequence": 1,
+          "taskId": "limit",
+          "sessionId": "review-unrelated-file",
+          "lineageId": "review-unrelated-file",
+          "goalId": "limit",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+          "startedAt": "2026-10-22T00:58:18.707Z",
+          "status": "completed",
+          "before": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/limit.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:18.712Z",
+              "finishedAt": "2026-10-22T00:58:19.055Z",
+              "exitCode": 0,
+              "before": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef",
+              "after": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/limit-report.md": "28a90dbe8dd41ffa61e2ed273ff267de1f75e4d96410599776f0a0a0849c7dcf"
+          },
+          "contract": {
+            "id": "limit",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The limit check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/limit.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "src/limit.mjs",
+              "tests/limit.test.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:19.057Z",
+          "after": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef"
+        },
+        {
+          "schemaVersion": 1,
+          "runId": "7e53438a-6771-415e-862e-1f88d4e539a4",
+          "sequence": 2,
+          "taskId": "usage",
+          "sessionId": "review-unrelated-file",
+          "lineageId": "review-unrelated-file",
+          "goalId": "usage",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+          "startedAt": "2026-10-22T00:58:19.384Z",
+          "status": "completed",
+          "before": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/usage.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:19.388Z",
+              "finishedAt": "2026-10-22T00:58:19.708Z",
+              "exitCode": 0,
+              "before": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed",
+              "after": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/usage-report.md": "48e8d81558117f1e647c87be6bfe349db50535a1eb1251286f4af6070217f13b"
+          },
+          "contract": {
+            "id": "usage",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The usage check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/usage.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "tests/usage.test.mjs"
+            ],
+            "dependencies": [
+              "limit"
+            ],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:19.711Z",
+          "after": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed"
+        },
+        {
+          "schemaVersion": 1,
+          "runId": "1f19989a-bb79-490d-9073-ca2ed10a016d",
+          "sequence": 3,
+          "taskId": "docs",
+          "sessionId": "review-unrelated-file",
+          "lineageId": "review-unrelated-file",
+          "goalId": "docs",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+          "startedAt": "2026-10-22T00:58:20.056Z",
+          "status": "completed",
+          "before": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "checks/docs.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:20.060Z",
+              "finishedAt": "2026-10-22T00:58:20.210Z",
+              "exitCode": 0,
+              "before": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2",
+              "after": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/docs-report.md": "0609a495b2c7987d14f1108bc0870d0f219f0fe34b7820ae592608d1fbcd0fea"
+          },
+          "contract": {
+            "id": "docs",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The docs check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "checks/docs.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "usage.md",
+              "checks/docs.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:20.213Z",
+          "after": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2"
+        }
+      ],
+      "fixture_keys": {
+        "limit": "7fc3f0dfa57e5e0ea5471666ba52681a483155d36836d9dd05ece9a6bed4ae66",
+        "usage": "a9702e63ab59ce7f8f74a1a6899fd6c0cbc889bb5d35b7e3bc682d3ed348b6af",
+        "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+      }
+    },
+    {
+      "case": "broken-source",
+      "policies": {
+        "rerun-all": {
+          "statuses": {
+            "limit": "failed",
+            "usage": "blocked",
+            "docs": "completed"
+          },
+          "check_commands": 2,
+          "current_keys": {
+            "limit": "2dccfaea9b6d23869f9126544f89957b1bea15dfc394f0d30028e3cf2872f836",
+            "usage": "fefe191546c82f748a6e3198713c8a5de78ffea7d50aab9e6f065cede4aa33a0",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          },
+          "cached_keys": {}
+        },
+        "input-cache": {
+          "statuses": {
+            "limit": "failed",
+            "usage": "blocked",
+            "docs": "reused"
+          },
+          "check_commands": 1,
+          "current_keys": {
+            "limit": "2dccfaea9b6d23869f9126544f89957b1bea15dfc394f0d30028e3cf2872f836",
+            "usage": "fefe191546c82f748a6e3198713c8a5de78ffea7d50aab9e6f065cede4aa33a0",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          },
+          "cached_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          }
+        },
+        "output-cache": {
+          "statuses": {
+            "limit": "failed",
+            "usage": "blocked",
+            "docs": "reused"
+          },
+          "check_commands": 1,
+          "current_keys": {
+            "limit": "7e18f2d9c4bd2a2174214484319b9e633cfc01cfd9986bb41b5a0182c362bce5",
+            "usage": "ab383bd2ccad46c0068002ea8bca477f3f0559fd827b212d8b89f14da0863662",
+            "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+          },
+          "cached_keys": {
+            "limit": "7fc3f0dfa57e5e0ea5471666ba52681a483155d36836d9dd05ece9a6bed4ae66",
+            "usage": "a9702e63ab59ce7f8f74a1a6899fd6c0cbc889bb5d35b7e3bc682d3ed348b6af",
+            "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+          }
+        }
+      },
+      "oma_plan": {
+        "limit": "ready",
+        "usage": "ready",
+        "docs": "reused"
+      },
+      "oma_active": {
+        "statuses": {
+          "limit": "failed",
+          "usage": "blocked",
+          "docs": "reused"
+        },
+        "check_commands": 1
+      },
+      "planned": {
+        "sessionId": "review-broken-source",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "4fd1e140-23dd-414d-8ee0-49d8570313c7",
+            "dependsOn": [],
+            "status": "ready",
+            "reason": "Previous evidence is missing, stale, or incomplete"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "82177c78-e525-46a3-a9be-b5b10a8fe38f",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "ready",
+            "reason": "Dependency evidence changed; dependent work must be verified again"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "61906105-8c88-44ee-8106-88e6b33ebcae",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": false
+      },
+      "active": {
+        "sessionId": "review-broken-source",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "4fd1e140-23dd-414d-8ee0-49d8570313c7",
+            "dependsOn": [],
+            "status": "failed",
+            "reason": "Retry did not produce new valid acceptance evidence"
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "82177c78-e525-46a3-a9be-b5b10a8fe38f",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "blocked",
+            "reason": "A dependency is incomplete"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "61906105-8c88-44ee-8106-88e6b33ebcae",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": false
+      },
+      "attempts": [
+        {
+          "schemaVersion": 1,
+          "runId": "4995c28d-26eb-4cd0-94bd-f4ac462cf114",
+          "sequence": 4,
+          "taskId": "limit",
+          "sessionId": "review-broken-source",
+          "lineageId": "review-broken-source",
+          "goalId": "limit",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+          "startedAt": "2026-10-22T00:58:24.187Z",
+          "status": "failed",
+          "before": "0b566b23a4918dbebb291fb523443e617c5a7a639d12b087af2fc47d9643f2fa",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/limit.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:24.192Z",
+              "finishedAt": "2026-10-22T00:58:24.606Z",
+              "exitCode": 1,
+              "before": "0b566b23a4918dbebb291fb523443e617c5a7a639d12b087af2fc47d9643f2fa",
+              "after": "0b566b23a4918dbebb291fb523443e617c5a7a639d12b087af2fc47d9643f2fa"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [
+            "Verification failed or evidence became stale"
+          ],
+          "artifacts": {
+            ".agents/results/limit-report.md": "28a90dbe8dd41ffa61e2ed273ff267de1f75e4d96410599776f0a0a0849c7dcf"
+          },
+          "contract": {
+            "id": "limit",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The limit check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/limit.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "src/limit.mjs",
+              "tests/limit.test.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:24.609Z",
+          "after": "0b566b23a4918dbebb291fb523443e617c5a7a639d12b087af2fc47d9643f2fa"
+        }
+      ],
+      "seeds": [
+        {
+          "schemaVersion": 1,
+          "runId": "4fd1e140-23dd-414d-8ee0-49d8570313c7",
+          "sequence": 1,
+          "taskId": "limit",
+          "sessionId": "review-broken-source",
+          "lineageId": "review-broken-source",
+          "goalId": "limit",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+          "startedAt": "2026-10-22T00:58:21.334Z",
+          "status": "completed",
+          "before": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/limit.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:21.339Z",
+              "finishedAt": "2026-10-22T00:58:21.669Z",
+              "exitCode": 0,
+              "before": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef",
+              "after": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/limit-report.md": "28a90dbe8dd41ffa61e2ed273ff267de1f75e4d96410599776f0a0a0849c7dcf"
+          },
+          "contract": {
+            "id": "limit",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The limit check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/limit.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "src/limit.mjs",
+              "tests/limit.test.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:21.672Z",
+          "after": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef"
+        },
+        {
+          "schemaVersion": 1,
+          "runId": "82177c78-e525-46a3-a9be-b5b10a8fe38f",
+          "sequence": 2,
+          "taskId": "usage",
+          "sessionId": "review-broken-source",
+          "lineageId": "review-broken-source",
+          "goalId": "usage",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+          "startedAt": "2026-10-22T00:58:22.017Z",
+          "status": "completed",
+          "before": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/usage.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:22.022Z",
+              "finishedAt": "2026-10-22T00:58:22.363Z",
+              "exitCode": 0,
+              "before": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed",
+              "after": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/usage-report.md": "48e8d81558117f1e647c87be6bfe349db50535a1eb1251286f4af6070217f13b"
+          },
+          "contract": {
+            "id": "usage",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The usage check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/usage.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "tests/usage.test.mjs"
+            ],
+            "dependencies": [
+              "limit"
+            ],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:22.365Z",
+          "after": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed"
+        },
+        {
+          "schemaVersion": 1,
+          "runId": "61906105-8c88-44ee-8106-88e6b33ebcae",
+          "sequence": 3,
+          "taskId": "docs",
+          "sessionId": "review-broken-source",
+          "lineageId": "review-broken-source",
+          "goalId": "docs",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+          "startedAt": "2026-10-22T00:58:22.728Z",
+          "status": "completed",
+          "before": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "checks/docs.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:22.733Z",
+              "finishedAt": "2026-10-22T00:58:22.883Z",
+              "exitCode": 0,
+              "before": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2",
+              "after": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/docs-report.md": "0609a495b2c7987d14f1108bc0870d0f219f0fe34b7820ae592608d1fbcd0fea"
+          },
+          "contract": {
+            "id": "docs",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The docs check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "checks/docs.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "usage.md",
+              "checks/docs.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:22.885Z",
+          "after": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2"
+        }
+      ],
+      "fixture_keys": {
+        "limit": "7e18f2d9c4bd2a2174214484319b9e633cfc01cfd9986bb41b5a0182c362bce5",
+        "usage": "ab383bd2ccad46c0068002ea8bca477f3f0559fd827b212d8b89f14da0863662",
+        "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+      }
+    },
+    {
+      "case": "changed-report",
+      "policies": {
+        "rerun-all": {
+          "statuses": {
+            "limit": "completed",
+            "usage": "completed",
+            "docs": "completed"
+          },
+          "check_commands": 3,
+          "current_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          },
+          "cached_keys": {}
+        },
+        "input-cache": {
+          "statuses": {
+            "limit": "reused",
+            "usage": "reused",
+            "docs": "reused"
+          },
+          "check_commands": 0,
+          "current_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          },
+          "cached_keys": {
+            "limit": "c75a23b50b10c174c345c7fc79292186f36e6706f9bf0b34dce714ba7054a202",
+            "usage": "8260303fbb31df8e2a774e8d709db35ab314103b2e4c173c62e7ade842cc9aa3",
+            "docs": "e0a93cce6302f0506b09a39d8ce8c887d2ba7bd866fbbe25afeb6cec3f8f852d"
+          }
+        },
+        "output-cache": {
+          "statuses": {
+            "limit": "completed",
+            "usage": "completed",
+            "docs": "reused"
+          },
+          "check_commands": 2,
+          "current_keys": {
+            "limit": "bee23925b4023c626a31940a4bee5469dab1804dd296b0d13e16a0bc212f5375",
+            "usage": "9abbba6eb95e39ca09df0d0382c517a3e1c0ff62ac519b372fa3ac61c79b18fe",
+            "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+          },
+          "cached_keys": {
+            "limit": "7fc3f0dfa57e5e0ea5471666ba52681a483155d36836d9dd05ece9a6bed4ae66",
+            "usage": "a9702e63ab59ce7f8f74a1a6899fd6c0cbc889bb5d35b7e3bc682d3ed348b6af",
+            "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+          }
+        }
+      },
+      "oma_plan": {
+        "limit": "blocked",
+        "usage": "blocked",
+        "docs": "reused"
+      },
+      "oma_active": {
+        "statuses": {
+          "limit": "blocked",
+          "usage": "blocked",
+          "docs": "reused"
+        },
+        "check_commands": 0
+      },
+      "planned": {
+        "sessionId": "review-changed-report",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "5d5ac1a2-f0ab-4f87-b25c-4fe230c02ed3",
+            "dependsOn": [],
+            "status": "blocked",
+            "reason": "WORKFLOW_EVIDENCE_FAILURE: product checks passed for run 5d5ac1a2-f0ab-4f87-b25c-4fe230c02ed3; stop product replay and recursive planning. Inspect /Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/state-home/u/0/projects/377bbf3017e5f42eebbe1de99d0629a9386dcab129bcb522e057c07c9c5d2a81/agent-runs/5d5ac1a2-f0ab-4f87-b25c-4fe230c02ed3.claim.json and its receipt/artifact bindings; preserve the plan and report partial with the failing evidence."
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "f73e8c63-0893-4898-a949-332bbd94d1ba",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "blocked",
+            "reason": "A dependency is blocked or still running"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "f7e17878-45a0-48de-89f8-f4c88e872c08",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": false
+      },
+      "active": {
+        "sessionId": "review-changed-report",
+        "tasks": [
+          {
+            "taskId": "limit",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+            "prompt": "Verify the limit acceptance condition",
+            "previousRunId": "5d5ac1a2-f0ab-4f87-b25c-4fe230c02ed3",
+            "dependsOn": [],
+            "status": "blocked",
+            "reason": "WORKFLOW_EVIDENCE_FAILURE: product checks passed for run 5d5ac1a2-f0ab-4f87-b25c-4fe230c02ed3; stop product replay and recursive planning. Inspect /Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/state-home/u/0/projects/377bbf3017e5f42eebbe1de99d0629a9386dcab129bcb522e057c07c9c5d2a81/agent-runs/5d5ac1a2-f0ab-4f87-b25c-4fe230c02ed3.claim.json and its receipt/artifact bindings; preserve the plan and report partial with the failing evidence."
+          },
+          {
+            "taskId": "usage",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+            "prompt": "Verify the usage acceptance condition",
+            "previousRunId": "f73e8c63-0893-4898-a949-332bbd94d1ba",
+            "dependsOn": [
+              "limit"
+            ],
+            "status": "blocked",
+            "reason": "A dependency is blocked or still running"
+          },
+          {
+            "taskId": "docs",
+            "agentId": "qa-reviewer",
+            "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+            "prompt": "Verify the docs acceptance condition",
+            "previousRunId": "f7e17878-45a0-48de-89f8-f4c88e872c08",
+            "dependsOn": [],
+            "status": "reused",
+            "reason": "Acceptance evidence and declared inputs remain current"
+          }
+        ],
+        "ok": false
+      },
+      "attempts": [],
+      "seeds": [
+        {
+          "schemaVersion": 1,
+          "runId": "5d5ac1a2-f0ab-4f87-b25c-4fe230c02ed3",
+          "sequence": 1,
+          "taskId": "limit",
+          "sessionId": "review-changed-report",
+          "lineageId": "review-changed-report",
+          "goalId": "limit",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+          "startedAt": "2026-10-22T00:58:24.618Z",
+          "status": "completed",
+          "before": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/limit.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:24.622Z",
+              "finishedAt": "2026-10-22T00:58:24.979Z",
+              "exitCode": 0,
+              "before": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef",
+              "after": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/limit-report.md": "28a90dbe8dd41ffa61e2ed273ff267de1f75e4d96410599776f0a0a0849c7dcf"
+          },
+          "contract": {
+            "id": "limit",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The limit check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/limit.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "src/limit.mjs",
+              "tests/limit.test.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:24.982Z",
+          "after": "b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef"
+        },
+        {
+          "schemaVersion": 1,
+          "runId": "f73e8c63-0893-4898-a949-332bbd94d1ba",
+          "sequence": 2,
+          "taskId": "usage",
+          "sessionId": "review-changed-report",
+          "lineageId": "review-changed-report",
+          "goalId": "usage",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+          "startedAt": "2026-10-22T00:58:25.406Z",
+          "status": "completed",
+          "before": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "--test",
+                "tests/usage.test.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:25.412Z",
+              "finishedAt": "2026-10-22T00:58:25.763Z",
+              "exitCode": 0,
+              "before": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed",
+              "after": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/usage-report.md": "48e8d81558117f1e647c87be6bfe349db50535a1eb1251286f4af6070217f13b"
+          },
+          "contract": {
+            "id": "usage",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The usage check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "--test",
+                  "tests/usage.test.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "tests/usage.test.mjs"
+            ],
+            "dependencies": [
+              "limit"
+            ],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:25.766Z",
+          "after": "5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed"
+        },
+        {
+          "schemaVersion": 1,
+          "runId": "f7e17878-45a0-48de-89f8-f4c88e872c08",
+          "sequence": 3,
+          "taskId": "docs",
+          "sessionId": "review-changed-report",
+          "lineageId": "review-changed-report",
+          "goalId": "docs",
+          "agentId": "qa-reviewer",
+          "vendor": "native",
+          "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+          "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+          "startedAt": "2026-10-22T00:58:26.112Z",
+          "status": "completed",
+          "before": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2",
+          "checks": [
+            {
+              "command": [
+                "node",
+                "checks/docs.mjs"
+              ],
+              "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+              "checkId": "acceptance",
+              "startedAt": "2026-10-22T00:58:26.117Z",
+              "finishedAt": "2026-10-22T00:58:26.271Z",
+              "exitCode": 0,
+              "before": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2",
+              "after": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2"
+            }
+          ],
+          "changedFiles": [],
+          "unresolved": [],
+          "artifacts": {
+            ".agents/results/docs-report.md": "0609a495b2c7987d14f1108bc0870d0f219f0fe34b7820ae592608d1fbcd0fea"
+          },
+          "contract": {
+            "id": "docs",
+            "acceptance_criteria": [
+              {
+                "id": "AC1",
+                "description": "The docs check passes"
+              }
+            ],
+            "required_checks": [
+              {
+                "id": "acceptance",
+                "criteria": [
+                  "AC1"
+                ],
+                "command": [
+                  "node",
+                  "checks/docs.mjs"
+                ],
+                "cwd": "."
+              }
+            ],
+            "inputs": [
+              "usage.md",
+              "checks/docs.mjs"
+            ],
+            "dependencies": [],
+            "retry_policy": "safe"
+          },
+          "exitCode": 0,
+          "finishedAt": "2026-10-22T00:58:26.275Z",
+          "after": "19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2"
+        }
+      ],
+      "fixture_keys": {
+        "limit": "bee23925b4023c626a31940a4bee5469dab1804dd296b0d13e16a0bc212f5375",
+        "usage": "9abbba6eb95e39ca09df0d0382c517a3e1c0ff62ac519b372fa3ac61c79b18fe",
+        "docs": "5718d54341ad2a562dc498dda82fabac6aa829889b1e91e9fc3d339384fc3b5c"
+      }
+    }
+  ],
+  "protocol": [
+    {
+      "name": "missing-all",
+      "expected": "partial",
+      "actual": "partial",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "72b23ea3-c826-4289-af2c-100efca1d9af",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-missing-all",
+        "lineageId": "probe-missing-all",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/missing-all",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/missing-all",
+        "startedAt": "2026-10-22T00:58:28.156Z",
+        "status": "partial",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [],
+        "changedFiles": [],
+        "unresolved": [
+          "Missing declared checks: create acceptance_criteria and required_checks in the session plan, then verify a new run"
+        ],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:28.160Z",
+        "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+      }
+    },
+    {
+      "name": "stale",
+      "expected": "failed",
+      "actual": "failed",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "5d4076d3-d986-4f41-85f4-0362cbb8cb4f",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-stale",
+        "lineageId": "probe-stale",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/stale",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/stale",
+        "startedAt": "2026-10-22T00:58:28.163Z",
+        "status": "failed",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(0)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/stale",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:28.166Z",
+            "finishedAt": "2026-10-22T00:58:28.322Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [
+          "Verification failed or evidence became stale"
+        ],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:28.325Z",
+        "after": "119e05065b4095c9b7929aa52faf6952f975875b273c465cbdb3a7615f24092d"
+      }
+    },
+    {
+      "name": "unresolved",
+      "expected": "partial",
+      "actual": "partial",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "c4cc971a-f8e6-4a91-8503-778a20626c61",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-unresolved",
+        "lineageId": "probe-unresolved",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/unresolved",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/unresolved",
+        "startedAt": "2026-10-22T00:58:28.328Z",
+        "status": "partial",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(0)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/unresolved",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:28.333Z",
+            "finishedAt": "2026-10-22T00:58:28.476Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [
+          "Remaining work"
+        ],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:28.479Z",
+        "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+      }
+    },
+    {
+      "name": "ad-hoc-failure",
+      "expected": "failed",
+      "actual": "failed",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "50d774a8-6a63-43d1-9d83-635960ff25cf",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-ad-hoc-failure",
+        "lineageId": "probe-ad-hoc-failure",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-failure",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-failure",
+        "startedAt": "2026-10-22T00:58:28.483Z",
+        "status": "failed",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(0)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-failure",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:28.488Z",
+            "finishedAt": "2026-10-22T00:58:28.633Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          },
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(require('fs').existsSync('allow-adhoc') ? 0 : 1)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-failure",
+            "startedAt": "2026-10-22T00:58:28.636Z",
+            "finishedAt": "2026-10-22T00:58:28.778Z",
+            "exitCode": 1,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [
+          "Verification failed or evidence became stale"
+        ],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:28.781Z",
+        "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+      }
+    },
+    {
+      "name": "ad-hoc-recovered",
+      "expected": "completed",
+      "actual": "completed",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "5afdeb24-17a9-4a0b-9772-0e42235d8d5e",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-ad-hoc-recovered",
+        "lineageId": "probe-ad-hoc-recovered",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-recovered",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-recovered",
+        "startedAt": "2026-10-22T00:58:28.785Z",
+        "status": "completed",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(0)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-recovered",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:28.788Z",
+            "finishedAt": "2026-10-22T00:58:28.935Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          },
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(require('fs').existsSync('allow-adhoc') ? 0 : 1)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-recovered",
+            "startedAt": "2026-10-22T00:58:28.937Z",
+            "finishedAt": "2026-10-22T00:58:29.140Z",
+            "exitCode": 1,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          },
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(require('fs').existsSync('allow-adhoc') ? 0 : 1)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/ad-hoc-recovered",
+            "startedAt": "2026-10-22T00:58:29.142Z",
+            "finishedAt": "2026-10-22T00:58:29.291Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:29.294Z",
+        "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+      }
+    },
+    {
+      "name": "contract-change",
+      "expected": "failed",
+      "actual": "failed",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "74557bad-8173-4968-b12d-934ce519a168",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-contract-change",
+        "lineageId": "probe-contract-change",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/contract-change",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/contract-change",
+        "startedAt": "2026-10-22T00:58:29.297Z",
+        "status": "failed",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(0)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/contract-change",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:29.301Z",
+            "finishedAt": "2026-10-22T00:58:29.446Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [
+          "Task acceptance contract changed during execution"
+        ],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:29.448Z",
+        "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+      }
+    },
+    {
+      "name": "contract-change-resume",
+      "error": "Error: Plan is immutable after dispatch; contract changes require an explicit new session and lineage",
+      "passed": true
+    },
+    {
+      "name": "missing-one-after-one-receipt",
+      "expected": "failed",
+      "actual": "failed",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "18bd31bd-7a98-4ae0-9e33-56b4cf183325",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-missing-one",
+        "lineageId": "probe-missing-one",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/missing-one",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/missing-one",
+        "startedAt": "2026-10-22T00:58:29.452Z",
+        "status": "failed",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(0)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/missing-one",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:29.456Z",
+            "finishedAt": "2026-10-22T00:58:29.605Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [
+          "Verification failed or evidence became stale"
+        ],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            },
+            {
+              "id": "c2",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0);"
+              ],
+              "cwd": "."
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:29.608Z",
+        "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+      }
+    },
+    {
+      "name": "mutating-check",
+      "expected": "failed",
+      "actual": "failed",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "4d94ab1e-eab2-40cc-9019-7e6300b46b0e",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-mutating-check",
+        "lineageId": "probe-mutating-check",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/mutating-check",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/mutating-check",
+        "startedAt": "2026-10-22T00:58:29.611Z",
+        "status": "failed",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "require('fs').writeFileSync('input.txt','mutated')"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/mutating-check",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:29.613Z",
+            "finishedAt": "2026-10-22T00:58:29.767Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "0c37564c51aa808e022709f02244c9e2a9e95a240b5a0247c93b4fbab0917175"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [
+          "Verification failed or evidence became stale"
+        ],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "require('fs').writeFileSync('input.txt','mutated')"
+              ],
+              "cwd": "."
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:29.770Z",
+        "after": "0c37564c51aa808e022709f02244c9e2a9e95a240b5a0247c93b4fbab0917175"
+      }
+    },
+    {
+      "name": "decision-false",
+      "expected": "partial",
+      "actual": "partial",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "7df68639-2c75-41a1-91d5-881174d74eb4",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-decision-false",
+        "lineageId": "probe-decision-false",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/decision-false",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/decision-false",
+        "startedAt": "2026-10-22T00:58:29.774Z",
+        "status": "partial",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(0)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/decision-false",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:29.779Z",
+            "finishedAt": "2026-10-22T00:58:29.942Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [
+          "Missing required decisions: choice"
+        ],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "requiredDecisions": [
+          {
+            "subject": "choice",
+            "description": "Explain choice"
+          }
+        ],
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            }
+          ],
+          "required_decisions": [
+            {
+              "subject": "choice",
+              "description": "Explain choice"
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:29.945Z",
+        "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "decisionEventIds": [],
+        "decisionEventHashes": {}
+      }
+    },
+    {
+      "name": "decision-true",
+      "expected": "completed",
+      "actual": "completed",
+      "passed": true,
+      "result": {
+        "schemaVersion": 1,
+        "runId": "27c96e93-fe60-409f-8273-8c17b9fcc92e",
+        "sequence": 1,
+        "taskId": "t",
+        "sessionId": "probe-decision-true",
+        "lineageId": "probe-decision-true",
+        "goalId": "t",
+        "agentId": "qa-reviewer",
+        "vendor": "native",
+        "workspace": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/decision-true",
+        "artifactRoot": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/decision-true",
+        "startedAt": "2026-10-22T00:58:29.956Z",
+        "status": "completed",
+        "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "checks": [
+          {
+            "command": [
+              "node",
+              "-e",
+              "process.exit(0)"
+            ],
+            "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/protocol/decision-true",
+            "checkId": "c1",
+            "startedAt": "2026-10-22T00:58:29.959Z",
+            "finishedAt": "2026-10-22T00:58:30.112Z",
+            "exitCode": 0,
+            "before": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+            "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889"
+          }
+        ],
+        "changedFiles": [],
+        "unresolved": [],
+        "artifacts": {
+          ".agents/results/t-report.md": "331d26d6d8f862e46ba900811be8a7a1e4dbaa229b14c99becfd5e5151490d95"
+        },
+        "requiredDecisions": [
+          {
+            "subject": "choice",
+            "description": "Explain choice"
+          }
+        ],
+        "contract": {
+          "id": "t",
+          "acceptance_criteria": [
+            {
+              "id": "AC1",
+              "description": "The check passes"
+            }
+          ],
+          "required_checks": [
+            {
+              "id": "c1",
+              "criteria": [
+                "AC1"
+              ],
+              "command": [
+                "node",
+                "-e",
+                "process.exit(0)"
+              ],
+              "cwd": "."
+            }
+          ],
+          "required_decisions": [
+            {
+              "subject": "choice",
+              "description": "Explain choice"
+            }
+          ],
+          "inputs": [
+            "input.txt"
+          ],
+          "dependencies": [],
+          "retry_policy": "safe"
+        },
+        "exitCode": 0,
+        "finishedAt": "2026-10-22T00:58:30.114Z",
+        "after": "179e2e711b06d49aea947b5c02606b0220e1e4f00a137015d272c1fbcd8b2889",
+        "decisionEventIds": [
+          "agent-decision-27c96e93-fe60-409f-8273-8c17b9fcc92e-cf83f0f9828551b6247bfc9288d0740dd5b3ccb8501f8caed37c19b912ae4438"
+        ],
+        "decisionEventHashes": {
+          "agent-decision-27c96e93-fe60-409f-8273-8c17b9fcc92e-cf83f0f9828551b6247bfc9288d0740dd5b3ccb8501f8caed37c19b912ae4438": "a879779ecc03c3ffd4caf1d8a8837e6817eb550abce88f594d744bef30699cc6"
+        }
+      }
+    },
+    {
+      "name": "directory-add-remove-and-glob",
+      "empty": "719482708a15e468afed2783a5473d61fcac125e0e6d7fd54ded413246a53226",
+      "added": "8bd534990a81bbbd49e4beb9b52b2d4ee0a11f74ee6a64ad9ee61802fd102e9f",
+      "removed": "719482708a15e468afed2783a5473d61fcac125e0e6d7fd54ded413246a53226",
+      "globRejected": true,
+      "passed": true
+    }
+  ],
+  "runtime": {
+    "bun": "1.4.3",
+    "node": "26.3.0"
+  },
+  "kind": "Source-level scheduler with fixed verification callback; no model calls or autonomous repair",
+  "baseline_commands_sha256": "012c24e8aaa435c20357d5818b75cefa3dd1a3c629c3f3c27d44bb32676b1762",
+  "source_commit": "6df65bc42db756f2e7dd73c8f3d48fc474cb3ae7",
+  "source_sha256": {
+    "cli/state/agent-results.ts": "d1b5bfeb626773135462982b6f6b27cbfae19809fd0adcba2c8480d88b271594",
+    "cli/state/agent-resume.ts": "390c47010d54b69d0cb90edd1458439c9269922691c9aac82bbe530cd9161a49",
+    "cli/state/task-contract.ts": "20bcc464bcb68151a9cd3fc7971510b9eb074012081ce7cd13030b355976cd14",
+    "cli/state/agent-decisions.ts": "3cb6021f41dad2ff0a121d4959586e95a4b94c517ce198529fbf26aab594bf42"
+  },
+  "driver_sha256": {
+    "review_experiments.py": "25f2797bca8c3a6fdf47c14ee166d45e676d6ed4b0939ec2a1fbe9f698a7a096",
+    "review_experiments.ts": "5b58ed789111b84d7e0848be5191aa6bcff0292b98bb78067b9396aca01deb6f",
+    "demo.py": "6dffc4d1aaed9d42aec2f8686fcf8abc5b502d9b9c7837f41ff8f19ffe4ed35e"
+  },
+  "execution_sha256": "f31e7c8ed4225e69167825f1c1fe1cd6b6f5db3b658e413c0ae46bfa017e6041"
+}

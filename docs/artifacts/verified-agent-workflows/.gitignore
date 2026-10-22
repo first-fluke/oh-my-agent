@@ -1,0 +1,25 @@
+# Publish only the reproducibility artifact. Drafts and production files stay local.
+*
+!.gitignore
+!.gitattributes
+!README.md
+!demo.py
+!compare.py
+!review_experiments.py
+!review_experiments.ts
+!protocol.md
+!comparison.md
+!review-comparison.md
+!evidence/
+evidence/*
+!evidence/summary.json
+!evidence/transcript.json
+!evidence/standalone-check.json
+!evidence/standalone-summary.json
+!evidence/standalone-transcript.json
+!evidence/comparison-summary.json
+!evidence/comparison-transcript.json
+!evidence/review-summary.json
+!evidence/review-baseline-commands.json
+!evidence/review-execution.txt
+!evidence/regression-tests.txt

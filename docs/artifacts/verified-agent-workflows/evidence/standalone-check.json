@@ -1,0 +1,10 @@
+{
+  "package_path": "docs/papers/verified-agent-workflows",
+  "setup": "Only demo.py copied outside the repository; executed from a temporary directory",
+  "cli_version": "20.10.3",
+  "node_version": "v26.11.1",
+  "observations_passed": 9,
+  "transcript_sha256": "c946f93330c1931ef21a8a7f5049f1e601047106f8a1e054bebfb1636f4988a0",
+  "public_download_verified": false,
+  "original_video_evidence_preserved": true
+}

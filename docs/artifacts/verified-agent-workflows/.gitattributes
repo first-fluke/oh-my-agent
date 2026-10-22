@@ -1,0 +1,5 @@
+# Keep captured evidence bytes stable for the recorded SHA-256 values.
+evidence/*.json -text
+evidence/*.txt -text
+# The raw terminal transcript contains two intentional blank lines with spaces.
+evidence/review-execution.txt whitespace=-blank-at-eol

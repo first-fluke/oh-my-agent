@@ -1,0 +1,97 @@
+{
+  "oma_version": "20.10.3",
+  "timestamp_utc": "20261021T130240.122783Z",
+  "node_version": "v26.11.1",
+  "kind": "scripted CLI demonstration; no LLM generation",
+  "observations": [
+    {
+      "case": "completion-without-checks",
+      "actual": "partial",
+      "expected": "partial",
+      "passed": true
+    },
+    {
+      "case": "failed-check-overrides-completed-claim",
+      "actual": "failed",
+      "expected": "failed",
+      "passed": true
+    },
+    {
+      "case": "verified-limit",
+      "actual": "completed",
+      "expected": "completed",
+      "passed": true
+    },
+    {
+      "case": "verified-usage",
+      "actual": "completed",
+      "expected": "completed",
+      "passed": true
+    },
+    {
+      "case": "verified-docs",
+      "actual": "completed",
+      "expected": "completed",
+      "passed": true
+    },
+    {
+      "case": "reuse-current-evidence",
+      "actual": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "expected": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "passed": true
+    },
+    {
+      "case": "unrelated-edit-preserves-reuse",
+      "actual": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "expected": {
+        "limit": "reused",
+        "usage": "reused",
+        "docs": "reused"
+      },
+      "passed": true
+    },
+    {
+      "case": "changed-input-invalidates-dependent",
+      "actual": {
+        "limit": "ready",
+        "usage": "ready",
+        "docs": "reused"
+      },
+      "expected": {
+        "limit": "ready",
+        "usage": "ready",
+        "docs": "reused"
+      },
+      "passed": true
+    },
+    {
+      "case": "changed-artifact-requires-evidence-repair",
+      "actual": {
+        "limit": "blocked",
+        "usage": "blocked",
+        "docs": "reused"
+      },
+      "expected": {
+        "limit": "blocked",
+        "usage": "blocked",
+        "docs": "reused"
+      },
+      "passed": true
+    }
+  ],
+  "all_passed": true,
+  "transcript_sha256": "9796fff97fb2e75b4150e4899374291044f31b8518e702bd3c1e8b28fa8bd280",
+  "output_directory": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/icse-2027-tool-demo/work/20261021T130240.122783Z"
+}

@@ -1,0 +1,455 @@
+[
+  {
+    "label": "version",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "--version"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "20.10.3\n",
+    "stderr": ""
+  },
+  {
+    "label": "baseline-initial-checks/limit/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "\u2714 allow requests below the limit (0.490834ms)\n\u2714 reject requests at the limit (0.089375ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 179.893\n",
+    "stderr": ""
+  },
+  {
+    "label": "baseline-initial-checks/usage/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "\u2714 three requests are admitted (1.291791ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 171.211666\n",
+    "stderr": ""
+  },
+  {
+    "label": "baseline-initial-checks/docs/acceptance",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "begin-limit",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "begin",
+      "qa-reviewer",
+      "limit",
+      "icse-demo",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+      "--workspace",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"schemaVersion\": 1,\n  \"runId\": \"0129dedd-5be3-42fe-8c77-0b916fd838a3\",\n  \"sequence\": 1,\n  \"taskId\": \"limit\",\n  \"sessionId\": \"icse-demo\",\n  \"lineageId\": \"icse-demo\",\n  \"goalId\": \"limit\",\n  \"agentId\": \"qa-reviewer\",\n  \"vendor\": \"native\",\n  \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"artifactRoot\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"startedAt\": \"2026-10-22T00:16:44.443Z\",\n  \"status\": \"running\",\n  \"before\": \"b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef\",\n  \"contract\": {\n    \"id\": \"limit\",\n    \"acceptance_criteria\": [\n      {\n        \"id\": \"AC1\",\n        \"description\": \"The limit check passes\"\n      }\n    ],\n    \"required_checks\": [\n      {\n        \"id\": \"acceptance\",\n        \"criteria\": [\n          \"AC1\"\n        ],\n        \"command\": [\n          \"node\",\n          \"--test\",\n          \"tests/limit.test.mjs\"\n        ],\n        \"cwd\": \".\"\n      }\n    ],\n    \"inputs\": [\n      \"src/limit.mjs\",\n      \"tests/limit.test.mjs\"\n    ],\n    \"dependencies\": [],\n    \"retry_policy\": \"safe\"\n  },\n  \"checks\": [],\n  \"changedFiles\": [],\n  \"unresolved\": [],\n  \"artifacts\": {},\n  \"claimPath\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/state-home/u/0/projects/d3afc50ec22804dd33de6af0c87bc5740daf1f530feb078ae57582f0e1924fa9/agent-runs/0129dedd-5be3-42fe-8c77-0b916fd838a3.claim.json\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "verify-limit",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "verify",
+      "0129dedd-5be3-42fe-8c77-0b916fd838a3",
+      "--required",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "\u2714 allow requests below the limit (0.496458ms)\n\u2714 reject requests at the limit (0.082417ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 212.443459\n[\n  {\n    \"command\": [\n      \"node\",\n      \"--test\",\n      \"tests/limit.test.mjs\"\n    ],\n    \"cwd\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n    \"checkId\": \"acceptance\",\n    \"startedAt\": \"2026-10-22T00:16:46.042Z\",\n    \"finishedAt\": \"2026-10-22T00:16:46.433Z\",\n    \"exitCode\": 0,\n    \"before\": \"b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef\",\n    \"after\": \"b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef\"\n  }\n]\n",
+    "stderr": ""
+  },
+  {
+    "label": "finish-limit",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "finish",
+      "0129dedd-5be3-42fe-8c77-0b916fd838a3",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/limit-claim.json",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"schemaVersion\": 1,\n  \"runId\": \"0129dedd-5be3-42fe-8c77-0b916fd838a3\",\n  \"sequence\": 1,\n  \"taskId\": \"limit\",\n  \"sessionId\": \"icse-demo\",\n  \"lineageId\": \"icse-demo\",\n  \"goalId\": \"limit\",\n  \"agentId\": \"qa-reviewer\",\n  \"vendor\": \"native\",\n  \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"artifactRoot\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"startedAt\": \"2026-10-22T00:16:44.443Z\",\n  \"status\": \"completed\",\n  \"before\": \"b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef\",\n  \"checks\": [\n    {\n      \"command\": [\n        \"node\",\n        \"--test\",\n        \"tests/limit.test.mjs\"\n      ],\n      \"cwd\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"checkId\": \"acceptance\",\n      \"startedAt\": \"2026-10-22T00:16:46.042Z\",\n      \"finishedAt\": \"2026-10-22T00:16:46.433Z\",\n      \"exitCode\": 0,\n      \"before\": \"b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef\",\n      \"after\": \"b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef\"\n    }\n  ],\n  \"changedFiles\": [],\n  \"unresolved\": [],\n  \"artifacts\": {\n    \".agents/results/limit-report.md\": \"73235f54f69279562072f35424736b641bdf1950781a7a8faa88178f19d81c88\"\n  },\n  \"contract\": {\n    \"id\": \"limit\",\n    \"acceptance_criteria\": [\n      {\n        \"id\": \"AC1\",\n        \"description\": \"The limit check passes\"\n      }\n    ],\n    \"required_checks\": [\n      {\n        \"id\": \"acceptance\",\n        \"criteria\": [\n          \"AC1\"\n        ],\n        \"command\": [\n          \"node\",\n          \"--test\",\n          \"tests/limit.test.mjs\"\n        ],\n        \"cwd\": \".\"\n      }\n    ],\n    \"inputs\": [\n      \"src/limit.mjs\",\n      \"tests/limit.test.mjs\"\n    ],\n    \"dependencies\": [],\n    \"retry_policy\": \"safe\"\n  },\n  \"exitCode\": 0,\n  \"finishedAt\": \"2026-10-22T00:16:47.492Z\",\n  \"after\": \"b3fa5e0c1a1cfd71f9af3ec9e05ca54794f5637aca3fdce1349a2aa96f7f84ef\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "begin-usage",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "begin",
+      "qa-reviewer",
+      "usage",
+      "icse-demo",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+      "--workspace",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"schemaVersion\": 1,\n  \"runId\": \"9ac1ccef-0b66-4655-a65e-1f9223bf0c19\",\n  \"sequence\": 2,\n  \"taskId\": \"usage\",\n  \"sessionId\": \"icse-demo\",\n  \"lineageId\": \"icse-demo\",\n  \"goalId\": \"usage\",\n  \"agentId\": \"qa-reviewer\",\n  \"vendor\": \"native\",\n  \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"artifactRoot\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"startedAt\": \"2026-10-22T00:16:48.755Z\",\n  \"status\": \"running\",\n  \"before\": \"5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed\",\n  \"contract\": {\n    \"id\": \"usage\",\n    \"acceptance_criteria\": [\n      {\n        \"id\": \"AC1\",\n        \"description\": \"The usage check passes\"\n      }\n    ],\n    \"required_checks\": [\n      {\n        \"id\": \"acceptance\",\n        \"criteria\": [\n          \"AC1\"\n        ],\n        \"command\": [\n          \"node\",\n          \"--test\",\n          \"tests/usage.test.mjs\"\n        ],\n        \"cwd\": \".\"\n      }\n    ],\n    \"inputs\": [\n      \"tests/usage.test.mjs\"\n    ],\n    \"dependencies\": [\n      \"limit\"\n    ],\n    \"retry_policy\": \"safe\"\n  },\n  \"checks\": [],\n  \"changedFiles\": [],\n  \"unresolved\": [],\n  \"artifacts\": {},\n  \"claimPath\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/state-home/u/0/projects/d3afc50ec22804dd33de6af0c87bc5740daf1f530feb078ae57582f0e1924fa9/agent-runs/9ac1ccef-0b66-4655-a65e-1f9223bf0c19.claim.json\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "verify-usage",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "verify",
+      "9ac1ccef-0b66-4655-a65e-1f9223bf0c19",
+      "--required",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "\u2714 three requests are admitted (0.888208ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 169.816042\n[\n  {\n    \"command\": [\n      \"node\",\n      \"--test\",\n      \"tests/usage.test.mjs\"\n    ],\n    \"cwd\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n    \"checkId\": \"acceptance\",\n    \"startedAt\": \"2026-10-22T00:16:50.090Z\",\n    \"finishedAt\": \"2026-10-22T00:16:50.453Z\",\n    \"exitCode\": 0,\n    \"before\": \"5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed\",\n    \"after\": \"5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed\"\n  }\n]\n",
+    "stderr": ""
+  },
+  {
+    "label": "finish-usage",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "finish",
+      "9ac1ccef-0b66-4655-a65e-1f9223bf0c19",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/usage-claim.json",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"schemaVersion\": 1,\n  \"runId\": \"9ac1ccef-0b66-4655-a65e-1f9223bf0c19\",\n  \"sequence\": 2,\n  \"taskId\": \"usage\",\n  \"sessionId\": \"icse-demo\",\n  \"lineageId\": \"icse-demo\",\n  \"goalId\": \"usage\",\n  \"agentId\": \"qa-reviewer\",\n  \"vendor\": \"native\",\n  \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"artifactRoot\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"startedAt\": \"2026-10-22T00:16:48.755Z\",\n  \"status\": \"completed\",\n  \"before\": \"5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed\",\n  \"checks\": [\n    {\n      \"command\": [\n        \"node\",\n        \"--test\",\n        \"tests/usage.test.mjs\"\n      ],\n      \"cwd\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"checkId\": \"acceptance\",\n      \"startedAt\": \"2026-10-22T00:16:50.090Z\",\n      \"finishedAt\": \"2026-10-22T00:16:50.453Z\",\n      \"exitCode\": 0,\n      \"before\": \"5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed\",\n      \"after\": \"5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed\"\n    }\n  ],\n  \"changedFiles\": [],\n  \"unresolved\": [],\n  \"artifacts\": {\n    \".agents/results/usage-report.md\": \"346924ddd0887f7ec77d3dfdb44c08093514e696149c652d89bf49bedd91c0ed\"\n  },\n  \"contract\": {\n    \"id\": \"usage\",\n    \"acceptance_criteria\": [\n      {\n        \"id\": \"AC1\",\n        \"description\": \"The usage check passes\"\n      }\n    ],\n    \"required_checks\": [\n      {\n        \"id\": \"acceptance\",\n        \"criteria\": [\n          \"AC1\"\n        ],\n        \"command\": [\n          \"node\",\n          \"--test\",\n          \"tests/usage.test.mjs\"\n        ],\n        \"cwd\": \".\"\n      }\n    ],\n    \"inputs\": [\n      \"tests/usage.test.mjs\"\n    ],\n    \"dependencies\": [\n      \"limit\"\n    ],\n    \"retry_policy\": \"safe\"\n  },\n  \"exitCode\": 0,\n  \"finishedAt\": \"2026-10-22T00:16:51.517Z\",\n  \"after\": \"5c96d34456c5d8a4f432809c5ada55e3b070a27310b1c8560d0b7434eeea40ed\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "begin-docs",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "begin",
+      "qa-reviewer",
+      "docs",
+      "icse-demo",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+      "--workspace",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"schemaVersion\": 1,\n  \"runId\": \"c1885750-d64a-4d86-9ca0-bfd738054854\",\n  \"sequence\": 3,\n  \"taskId\": \"docs\",\n  \"sessionId\": \"icse-demo\",\n  \"lineageId\": \"icse-demo\",\n  \"goalId\": \"docs\",\n  \"agentId\": \"qa-reviewer\",\n  \"vendor\": \"native\",\n  \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"artifactRoot\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"startedAt\": \"2026-10-22T00:16:52.644Z\",\n  \"status\": \"running\",\n  \"before\": \"19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2\",\n  \"contract\": {\n    \"id\": \"docs\",\n    \"acceptance_criteria\": [\n      {\n        \"id\": \"AC1\",\n        \"description\": \"The docs check passes\"\n      }\n    ],\n    \"required_checks\": [\n      {\n        \"id\": \"acceptance\",\n        \"criteria\": [\n          \"AC1\"\n        ],\n        \"command\": [\n          \"node\",\n          \"checks/docs.mjs\"\n        ],\n        \"cwd\": \".\"\n      }\n    ],\n    \"inputs\": [\n      \"usage.md\",\n      \"checks/docs.mjs\"\n    ],\n    \"dependencies\": [],\n    \"retry_policy\": \"safe\"\n  },\n  \"checks\": [],\n  \"changedFiles\": [],\n  \"unresolved\": [],\n  \"artifacts\": {},\n  \"claimPath\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/state-home/u/0/projects/d3afc50ec22804dd33de6af0c87bc5740daf1f530feb078ae57582f0e1924fa9/agent-runs/c1885750-d64a-4d86-9ca0-bfd738054854.claim.json\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "verify-docs",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "verify",
+      "c1885750-d64a-4d86-9ca0-bfd738054854",
+      "--required",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "Documentation check passed\n[\n  {\n    \"command\": [\n      \"node\",\n      \"checks/docs.mjs\"\n    ],\n    \"cwd\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n    \"checkId\": \"acceptance\",\n    \"startedAt\": \"2026-10-22T00:16:53.880Z\",\n    \"finishedAt\": \"2026-10-22T00:16:54.046Z\",\n    \"exitCode\": 0,\n    \"before\": \"19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2\",\n    \"after\": \"19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2\"\n  }\n]\n",
+    "stderr": ""
+  },
+  {
+    "label": "finish-docs",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "finish",
+      "c1885750-d64a-4d86-9ca0-bfd738054854",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/docs-claim.json",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"schemaVersion\": 1,\n  \"runId\": \"c1885750-d64a-4d86-9ca0-bfd738054854\",\n  \"sequence\": 3,\n  \"taskId\": \"docs\",\n  \"sessionId\": \"icse-demo\",\n  \"lineageId\": \"icse-demo\",\n  \"goalId\": \"docs\",\n  \"agentId\": \"qa-reviewer\",\n  \"vendor\": \"native\",\n  \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"artifactRoot\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n  \"startedAt\": \"2026-10-22T00:16:52.644Z\",\n  \"status\": \"completed\",\n  \"before\": \"19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2\",\n  \"checks\": [\n    {\n      \"command\": [\n        \"node\",\n        \"checks/docs.mjs\"\n      ],\n      \"cwd\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"checkId\": \"acceptance\",\n      \"startedAt\": \"2026-10-22T00:16:53.880Z\",\n      \"finishedAt\": \"2026-10-22T00:16:54.046Z\",\n      \"exitCode\": 0,\n      \"before\": \"19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2\",\n      \"after\": \"19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2\"\n    }\n  ],\n  \"changedFiles\": [],\n  \"unresolved\": [],\n  \"artifacts\": {\n    \".agents/results/docs-report.md\": \"61b66ce8f91afcb85f652a8802d84d60722dcf662647d90d0ca801e6c9199d94\"\n  },\n  \"contract\": {\n    \"id\": \"docs\",\n    \"acceptance_criteria\": [\n      {\n        \"id\": \"AC1\",\n        \"description\": \"The docs check passes\"\n      }\n    ],\n    \"required_checks\": [\n      {\n        \"id\": \"acceptance\",\n        \"criteria\": [\n          \"AC1\"\n        ],\n        \"command\": [\n          \"node\",\n          \"checks/docs.mjs\"\n        ],\n        \"cwd\": \".\"\n      }\n    ],\n    \"inputs\": [\n      \"usage.md\",\n      \"checks/docs.mjs\"\n    ],\n    \"dependencies\": [],\n    \"retry_policy\": \"safe\"\n  },\n  \"exitCode\": 0,\n  \"finishedAt\": \"2026-10-22T00:16:55.182Z\",\n  \"after\": \"19f865faa5ba7cea661be54827e088d9f654dfbaf12b08a323e3eda7ddf22ff2\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/rerun-all/limit/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "\u2714 allow requests below the limit (0.488708ms)\n\u2714 reject requests at the limit (0.086167ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 167.101833\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/rerun-all/usage/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "\u2714 three requests are admitted (0.884083ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 167.092291\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/rerun-all/docs/acceptance",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/oma-resume",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "resume",
+      "icse-demo",
+      "--dry-run",
+      "--max-attempts",
+      "6",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"sessionId\": \"icse-demo\",\n  \"tasks\": [\n    {\n      \"taskId\": \"limit\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the limit acceptance condition\",\n      \"previousRunId\": \"0129dedd-5be3-42fe-8c77-0b916fd838a3\",\n      \"dependsOn\": [],\n      \"status\": \"reused\",\n      \"reason\": \"Acceptance evidence and declared inputs remain current\"\n    },\n    {\n      \"taskId\": \"usage\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the usage acceptance condition\",\n      \"previousRunId\": \"9ac1ccef-0b66-4655-a65e-1f9223bf0c19\",\n      \"dependsOn\": [\n        \"limit\"\n      ],\n      \"status\": \"reused\",\n      \"reason\": \"Acceptance evidence and declared inputs remain current\"\n    },\n    {\n      \"taskId\": \"docs\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the docs acceptance condition\",\n      \"previousRunId\": \"c1885750-d64a-4d86-9ca0-bfd738054854\",\n      \"dependsOn\": [],\n      \"status\": \"reused\",\n      \"reason\": \"Acceptance evidence and declared inputs remain current\"\n    }\n  ],\n  \"ok\": true\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/rerun-all/limit/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "\u2714 allow requests below the limit (0.520958ms)\n\u2714 reject requests at the limit (0.084417ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 166.753958\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/rerun-all/usage/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "\u2714 three requests are admitted (0.879042ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 164.618166\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/rerun-all/docs/acceptance",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/oma-resume",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "resume",
+      "icse-demo",
+      "--dry-run",
+      "--max-attempts",
+      "6",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"sessionId\": \"icse-demo\",\n  \"tasks\": [\n    {\n      \"taskId\": \"limit\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the limit acceptance condition\",\n      \"previousRunId\": \"0129dedd-5be3-42fe-8c77-0b916fd838a3\",\n      \"dependsOn\": [],\n      \"status\": \"reused\",\n      \"reason\": \"Acceptance evidence and declared inputs remain current\"\n    },\n    {\n      \"taskId\": \"usage\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the usage acceptance condition\",\n      \"previousRunId\": \"9ac1ccef-0b66-4655-a65e-1f9223bf0c19\",\n      \"dependsOn\": [\n        \"limit\"\n      ],\n      \"status\": \"reused\",\n      \"reason\": \"Acceptance evidence and declared inputs remain current\"\n    },\n    {\n      \"taskId\": \"docs\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the docs acceptance condition\",\n      \"previousRunId\": \"c1885750-d64a-4d86-9ca0-bfd738054854\",\n      \"dependsOn\": [],\n      \"status\": \"reused\",\n      \"reason\": \"Acceptance evidence and declared inputs remain current\"\n    }\n  ],\n  \"ok\": true\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/rerun-all/limit/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 1,
+    "stdout": "\u2714 allow requests below the limit (0.5035ms)\n\u2716 reject requests at the limit (1.122458ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 168.86925\n\n\u2716 failing tests:\n\ntest at tests/limit.test.mjs:5:1\n\u2716 reject requests at the limit (1.122458ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  true !== false\n  \n      at TestContext.<anonymous> (file:///Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project/tests/limit.test.mjs:5:51)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: true,\n    expected: false,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/rerun-all/usage/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 1,
+    "stdout": "\u2716 three requests are admitted (1.450416ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 166.723584\n\n\u2716 failing tests:\n\ntest at tests/usage.test.mjs:4:1\n\u2716 three requests are admitted (1.450416ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    [\n      0,\n      1,\n      2,\n  +   3\n    ]\n  \n      at TestContext.<anonymous> (file:///Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project/tests/usage.test.mjs:5:10)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.start (node:internal/test_runner/test:1262:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: [ 0, 1, 2, 3 ],\n    expected: [ 0, 1, 2 ],\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/rerun-all/docs/acceptance",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/oma-resume",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "resume",
+      "icse-demo",
+      "--dry-run",
+      "--max-attempts",
+      "6",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"sessionId\": \"icse-demo\",\n  \"tasks\": [\n    {\n      \"taskId\": \"limit\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the limit acceptance condition\",\n      \"previousRunId\": \"0129dedd-5be3-42fe-8c77-0b916fd838a3\",\n      \"dependsOn\": [],\n      \"status\": \"ready\",\n      \"reason\": \"Previous evidence is missing, stale, or incomplete\"\n    },\n    {\n      \"taskId\": \"usage\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the usage acceptance condition\",\n      \"previousRunId\": \"9ac1ccef-0b66-4655-a65e-1f9223bf0c19\",\n      \"dependsOn\": [\n        \"limit\"\n      ],\n      \"status\": \"ready\",\n      \"reason\": \"Dependency evidence changed; dependent work must be verified again\"\n    },\n    {\n      \"taskId\": \"docs\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the docs acceptance condition\",\n      \"previousRunId\": \"c1885750-d64a-4d86-9ca0-bfd738054854\",\n      \"dependsOn\": [],\n      \"status\": \"reused\",\n      \"reason\": \"Acceptance evidence and declared inputs remain current\"\n    }\n  ],\n  \"ok\": false\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/rerun-all/limit/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "\u2714 allow requests below the limit (0.485917ms)\n\u2714 reject requests at the limit (0.085917ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 165.0665\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/rerun-all/usage/acceptance",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "\u2714 three requests are admitted (0.874708ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 163.819042\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/rerun-all/docs/acceptance",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project",
+    "exit_code": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/oma-resume",
+    "argv": [
+      "npx",
+      "--yes",
+      "--package=oh-my-agent@20.10.3",
+      "oma",
+      "agent",
+      "resume",
+      "icse-demo",
+      "--dry-run",
+      "--max-attempts",
+      "6",
+      "--project-root",
+      "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project"
+    ],
+    "cwd": "/var/folders/r9/0qvpcx794n385zwgzwfvt55h0000gn/T/oma-comparison-cli-cqj32kul",
+    "exit_code": 0,
+    "stdout": "{\n  \"sessionId\": \"icse-demo\",\n  \"tasks\": [\n    {\n      \"taskId\": \"limit\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the limit acceptance condition\",\n      \"previousRunId\": \"0129dedd-5be3-42fe-8c77-0b916fd838a3\",\n      \"dependsOn\": [],\n      \"status\": \"blocked\",\n      \"reason\": \"WORKFLOW_EVIDENCE_FAILURE: product checks passed for run 0129dedd-5be3-42fe-8c77-0b916fd838a3; stop product replay and recursive planning. Inspect /Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/state-home/u/0/projects/d3afc50ec22804dd33de6af0c87bc5740daf1f530feb078ae57582f0e1924fa9/agent-runs/0129dedd-5be3-42fe-8c77-0b916fd838a3.claim.json and its receipt/artifact bindings; preserve the plan and report partial with the failing evidence.\"\n    },\n    {\n      \"taskId\": \"usage\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the usage acceptance condition\",\n      \"previousRunId\": \"9ac1ccef-0b66-4655-a65e-1f9223bf0c19\",\n      \"dependsOn\": [\n        \"limit\"\n      ],\n      \"status\": \"blocked\",\n      \"reason\": \"A dependency is blocked or still running\"\n    },\n    {\n      \"taskId\": \"docs\",\n      \"agentId\": \"qa-reviewer\",\n      \"workspace\": \"/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/comparison-20261022T001639.813702Z/project\",\n      \"prompt\": \"Verify the docs acceptance condition\",\n      \"previousRunId\": \"c1885750-d64a-4d86-9ca0-bfd738054854\",\n      \"dependsOn\": [],\n      \"status\": \"reused\",\n      \"reason\": \"Acceptance evidence and declared inputs remain current\"\n    }\n  ],\n  \"ok\": false\n}\n",
+    "stderr": ""
+  }
+]

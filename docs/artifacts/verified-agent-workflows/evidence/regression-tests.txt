@@ -1,0 +1,11 @@
+Observed regression-test summary (not a verbatim terminal log)
+
+Repository: /Users/gracefullight/workspace/oh-my-agent
+Source baseline: 6df65bc42db756f2e7dd73c8f3d48fc474cb3ae7
+Command: bun run --cwd cli test state/agent-results.test.ts state/agent-resume.test.ts
+Result: 2 test files passed; 37 tests passed
+Reported duration: 15.37 seconds
+
+Executed during preparation on 21 October 2026 UTC.
+No software build was performed. The submission adds documents and a
+standalone reproduction driver; it does not modify the tested OMA modules.

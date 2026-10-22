@@ -1,0 +1,345 @@
+[
+  {
+    "label": "unchanged/baseline-seed",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+    "exit": 0,
+    "stdout": "✔ allow requests below the limit (0.526042ms)\n✔ reject requests at the limit (0.087875ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 175.123958\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/baseline-seed",
+    "task": "usage",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+    "exit": 0,
+    "stdout": "✔ three requests are admitted (0.972084ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 179.555708\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/baseline-seed",
+    "task": "docs",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+    "exit": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/rerun-all",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+    "exit": 0,
+    "stdout": "✔ allow requests below the limit (0.528ms)\n✔ reject requests at the limit (0.093833ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 173.911166\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/rerun-all",
+    "task": "usage",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+    "exit": 0,
+    "stdout": "✔ three requests are admitted (0.869583ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 171.251583\n",
+    "stderr": ""
+  },
+  {
+    "label": "unchanged/rerun-all",
+    "task": "docs",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unchanged",
+    "exit": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/baseline-seed",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+    "exit": 0,
+    "stdout": "✔ allow requests below the limit (0.532583ms)\n✔ reject requests at the limit (0.182417ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 173.745333\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/baseline-seed",
+    "task": "usage",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+    "exit": 0,
+    "stdout": "✔ three requests are admitted (0.948584ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 184.979084\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/baseline-seed",
+    "task": "docs",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+    "exit": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/rerun-all",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+    "exit": 0,
+    "stdout": "✔ allow requests below the limit (0.503084ms)\n✔ reject requests at the limit (0.148709ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 244.776125\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/rerun-all",
+    "task": "usage",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+    "exit": 0,
+    "stdout": "✔ three requests are admitted (1.205125ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 173.230541\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrelated-file/rerun-all",
+    "task": "docs",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/unrelated-file",
+    "exit": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/baseline-seed",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+    "exit": 0,
+    "stdout": "✔ allow requests below the limit (0.913166ms)\n✔ reject requests at the limit (0.147333ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 189.163875\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/baseline-seed",
+    "task": "usage",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+    "exit": 0,
+    "stdout": "✔ three requests are admitted (1.232791ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 206.74675\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/baseline-seed",
+    "task": "docs",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+    "exit": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/rerun-all",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+    "exit": 1,
+    "stdout": "✔ allow requests below the limit (0.691917ms)\n✖ reject requests at the limit (2.340291ms)\nℹ tests 2\nℹ suites 0\nℹ pass 1\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 180.673667\n\n✖ failing tests:\n\ntest at tests/limit.test.mjs:5:1\n✖ reject requests at the limit (2.340291ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  true !== false\n  \n      at TestContext.<anonymous> (file:///Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source/tests/limit.test.mjs:5:51)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: true,\n    expected: false,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/rerun-all",
+    "task": "docs",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+    "exit": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/input-cache",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+    "exit": 1,
+    "stdout": "✔ allow requests below the limit (0.589125ms)\n✖ reject requests at the limit (0.70725ms)\nℹ tests 2\nℹ suites 0\nℹ pass 1\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 169.349833\n\n✖ failing tests:\n\ntest at tests/limit.test.mjs:5:1\n✖ reject requests at the limit (0.70725ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  true !== false\n  \n      at TestContext.<anonymous> (file:///Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source/tests/limit.test.mjs:5:51)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: true,\n    expected: false,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  },
+  {
+    "label": "broken-source/output-cache",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source",
+    "exit": 1,
+    "stdout": "✔ allow requests below the limit (0.518542ms)\n✖ reject requests at the limit (0.6605ms)\nℹ tests 2\nℹ suites 0\nℹ pass 1\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 173.745375\n\n✖ failing tests:\n\ntest at tests/limit.test.mjs:5:1\n✖ reject requests at the limit (0.6605ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  true !== false\n  \n      at TestContext.<anonymous> (file:///Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/broken-source/tests/limit.test.mjs:5:51)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: true,\n    expected: false,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/baseline-seed",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+    "exit": 0,
+    "stdout": "✔ allow requests below the limit (0.552042ms)\n✔ reject requests at the limit (0.0865ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 179.080833\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/baseline-seed",
+    "task": "usage",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+    "exit": 0,
+    "stdout": "✔ three requests are admitted (0.868792ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 177.832542\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/baseline-seed",
+    "task": "docs",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+    "exit": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/rerun-all",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+    "exit": 0,
+    "stdout": "✔ allow requests below the limit (0.823959ms)\n✔ reject requests at the limit (0.116584ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 226.234625\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/rerun-all",
+    "task": "usage",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+    "exit": 0,
+    "stdout": "✔ three requests are admitted (0.857208ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 264.617708\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/rerun-all",
+    "task": "docs",
+    "argv": [
+      "node",
+      "checks/docs.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+    "exit": 0,
+    "stdout": "Documentation check passed\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/output-cache",
+    "task": "limit",
+    "argv": [
+      "node",
+      "--test",
+      "tests/limit.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+    "exit": 0,
+    "stdout": "✔ allow requests below the limit (0.604166ms)\n✔ reject requests at the limit (0.176708ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 177.591666\n",
+    "stderr": ""
+  },
+  {
+    "label": "changed-report/output-cache",
+    "task": "usage",
+    "argv": [
+      "node",
+      "--test",
+      "tests/usage.test.mjs"
+    ],
+    "cwd": "/Users/gracefullight/workspace/oh-my-agent/docs/papers/verified-agent-workflows/work/review-20261022T005815.702366Z/changed-report",
+    "exit": 0,
+    "stdout": "✔ three requests are admitted (0.930916ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 195.884542\n",
+    "stderr": ""
+  }
+]
