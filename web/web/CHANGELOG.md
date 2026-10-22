@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.3.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.3.0...web-v11.3.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **docs:** keep generated catalog comments valid in MDX ([799a81f](https://github.com/first-fluke/oh-my-agent/commit/799a81f3241d54356cee680c366db2ef6ab4f677))
+
 ## [11.3.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.2.2...web-v11.3.0) (2026-10-22)
 
 
