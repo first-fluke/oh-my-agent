@@ -5,6 +5,7 @@ import {
   mkdir,
   readFile,
   realpath,
+  symlink,
   writeFile,
 } from "node:fs/promises";
 import { join } from "node:path";
@@ -35,7 +36,14 @@ test("default runner resolves the plugin dependency lazily without a host oma co
   );
 
   const dependency = join(plugin, "node_modules", "oh-my-agent");
-  await mkdir(join(dependency, "bin"), { recursive: true });
+  const installedDependency = join(f.cwd, "installed-oma");
+  await mkdir(join(installedDependency, "bin"), { recursive: true });
+  await mkdir(join(plugin, "node_modules"));
+  await symlink(
+    installedDependency,
+    dependency,
+    process.platform === "win32" ? "junction" : "dir",
+  );
   await writeFile(
     join(dependency, "package.json"),
     JSON.stringify({
@@ -49,11 +57,12 @@ test("default runner resolves the plugin dependency lazily without a host oma co
     cli,
     `import ${JSON.stringify(pathToFileURL(f.config.commandArgs[0]).href)};\n`,
   );
-  assert.deepEqual(runner.invocation(), [
-    process.execPath,
-    await realpath(cli),
-    "--fixture-prefix",
-  ]);
+  const [command, resolvedCli, ...commandArgs] = runner.invocation();
+  // Node's resolver can retain aliases such as Windows 8.3 paths or symlinks.
+  assert.deepEqual(
+    [command, await realpath(resolvedCli), ...commandArgs],
+    [process.execPath, await realpath(cli), "--fixture-prefix"],
+  );
   await runner.run("PreToolUse", { cwd: f.cwd, hook_event_name: "PreToolUse" });
   const [call] = await f.calls();
   assert.deepEqual(call.argv, [
