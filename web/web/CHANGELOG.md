@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.3.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.3.1...web-v11.3.2) (2026-10-22)
+
+
+### Documentation
+
+* resolve the agent results link in fallback locales ([62a370e](https://github.com/first-fluke/oh-my-agent/commit/62a370e5d2b24a5348e37017b6946891bd2efd94))
+
 ## [11.3.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.3.0...web-v11.3.1) (2026-10-22)
 
 
