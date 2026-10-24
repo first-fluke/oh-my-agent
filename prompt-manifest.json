@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.12.2",
-  "releaseDate": "2026-10-22T12:44:46.694Z",
+  "releaseDate": "2026-10-24T01:07:18.770Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -361,13 +361,13 @@
     },
     {
       "path": ".agents/oma-config.cue",
-      "sha256": "ced13ba17f8199b884e921820eb2a9af4db7f6d17919bcffe415cc231a9f7b86",
-      "size": 12976
+      "sha256": "450c622e381438765959a2ffa4fa4803861dbf6fdf5db67446e416b7fa2ef0ac",
+      "size": 13281
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "6b372b6acf72c447716b47083007f9195a59dc3dd267bb24ed6b08edd6bd1570",
-      "size": 31312
+      "sha256": "6602587bbda952513a429a045a73ff6524be8c6b26e56069c69678a96c199806",
+      "size": 31916
     },
     {
       "path": ".agents/rules/backend.md",
@@ -511,8 +511,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/execution-policy.md",
-      "sha256": "b91b525d4d261b92e4a86cd44649ecb45b7d21eaa6193d86da092c70ea68d9d5",
-      "size": 2475
+      "sha256": "6abf3437c3eebeb11959eeeac08f62ebe992599e7f40f1e12a2aabf8304ba08b",
+      "size": 4831
     },
     {
       "path": ".agents/skills/_shared/core/lessons-learned.md",
@@ -791,8 +791,8 @@
     },
     {
       "path": ".agents/skills/oma-coordination/SKILL.md",
-      "sha256": "caf638ae44509a7ed21f4b64061d8b8e9050776d20c0d0c4c3784fb4fda5cec3",
-      "size": 7853
+      "sha256": "f105ee45013be832f08e4cb190f09140346e4d4629b41d336f8573378ad4912b",
+      "size": 8237
     },
     {
       "path": ".agents/skills/oma-db/SKILL.md",
@@ -1516,8 +1516,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/SKILL.md",
-      "sha256": "dba1ae609fd2e02350c461e22ba4515f17c1d667d613b7f3e4bb402227d25e9b",
-      "size": 16661
+      "sha256": "b9b78efd7a4846d2c29d22c829d5de94dd9d13f8fe092b856e0ff02e88285dba",
+      "size": 16948
     },
     {
       "path": ".agents/skills/oma-orchestration/config/cli-config.yaml",
@@ -2181,8 +2181,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "55eb42c3c9a796e1c0fbbd2effa6a79777d50c2cc62e3bea5ecf2129722493ed",
-      "size": 15395
+      "sha256": "aed45fbe289b8d21f9dbf2e21af3384d4a1dd0b44b5155fcb202b4331de5edc5",
+      "size": 15690
     },
     {
       "path": ".agents/workflows/plan.md",
@@ -2246,8 +2246,8 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "514c1ad4cf8d3721d57d3816a557b7b0875590e17da08ab93ca9f3cfbf92a5d4",
-      "size": 31534
+      "sha256": "05641c68a0e8a07619afb40a33867bb0ba9528f5661470a507d94d2ff3a180b9",
+      "size": 32367
     },
     {
       "path": ".agents/workflows/video.md",
@@ -2256,8 +2256,8 @@
     },
     {
       "path": ".agents/workflows/work.md",
-      "sha256": "efee79fb3c9cde38a506dd646eebaad1450e1f3b61fd9446f29ec928be873916",
-      "size": 11041
+      "sha256": "60e8395f7b8836f6e152fdd9c1c7d3606562bc98d30948a7c9849b5b67b1aae2",
+      "size": 11453
     }
   ],
   "checksums": {
