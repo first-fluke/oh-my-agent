@@ -79,6 +79,33 @@ describe("FreeLLMAPI readiness", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("aborts the readiness request when the whole execution is cancelled", async () => {
+    const controller = new AbortController();
+    let requestedSignal: AbortSignal | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_url, options: RequestInit) =>
+          new Promise((_, reject) => {
+            requestedSignal = options.signal ?? undefined;
+            requestedSignal?.addEventListener(
+              "abort",
+              () => reject(requestedSignal?.reason),
+              { once: true },
+            );
+          }),
+      ),
+    );
+    const pending = probeFreeProvider(
+      resolveFreeProvider({}, {}),
+      { FREELLM_API_KEY: "test-key" },
+      controller.signal,
+    );
+    controller.abort(new Error("cancelled"));
+    await expect(pending).rejects.toThrow("Cannot reach FreeLLMAPI");
+    expect(requestedSignal?.aborted).toBe(true);
+  });
+
   it("rejects literal api keys and invalid environment names", () => {
     expect(() =>
       resolveFreeProvider({ free: { api_key: "secret" } } as never, {}),

@@ -7,6 +7,10 @@ import {
   AGENTS_RESULTS_DIR,
   agentsPathFromRoot,
 } from "../../constants/paths.js";
+import {
+  ownedProcessHasLiveMembers,
+  stopOwnedProcess,
+} from "../../io/owned-process.js";
 import { readRegistry, reclaimIdleDaemons } from "../../io/serena-daemon.js";
 import {
   type ActivitySignal,
@@ -18,6 +22,7 @@ import {
   forgetSubagentProcess,
   isOwnedOrphan,
   processIsAlive,
+  readSubagentProcessRecord,
 } from "../../io/subagent-process.js";
 import type { CleanupResult } from "../../types/index.js";
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
@@ -174,11 +179,27 @@ export async function cleanup(
           continue;
         }
         logAction(`Killing orphaned process PID=${pid} (from ${pidPath})`);
-        await killProcess(pid, () => isOwnedOrphan(pidPath, pid, projectRoot));
-        if (!dryRun && isProcessRunning(pid)) continue;
+        if (!dryRun) {
+          const record = readSubagentProcessRecord(pidPath, projectRoot);
+          if (!record) continue;
+          const stopped = await stopOwnedProcess(record);
+          if (!stopped.stopped || isProcessRunning(pid)) {
+            logSkip(
+              `Unverified termination; preserving ownership: ${stopped.survivingResources.join(", ")} ${stopped.limitations.join(" ")}`,
+            );
+            continue;
+          }
+        }
         safeRemove(pidPath);
         if (!dryRun) forgetSubagentProcess(pidPath);
       } else {
+        const record = readSubagentProcessRecord(pidPath, projectRoot);
+        if (record && ownedProcessHasLiveMembers(record) !== false) {
+          logSkip(
+            `Preserving process group ownership after leader exit: ${pidPath}`,
+          );
+          continue;
+        }
         logAction(`Removing stale PID file (process gone): ${pidPath}`);
         safeRemove(pidPath);
         if (!dryRun) forgetSubagentProcess(pidPath);

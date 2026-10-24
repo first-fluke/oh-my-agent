@@ -112,4 +112,39 @@ describe("cleanup safety", () => {
       expect(fs.existsSync(`${file}.json`)).toBe(reused);
     },
   );
+
+  it("retains ownership and artifacts while a recorded group outlives its leader", async () => {
+    const pid = 12345;
+    const file = join(os.tmpdir(), "subagent-group.pid");
+    const artifact = join(state.root, "result.txt");
+    fs.writeFileSync(artifact, "preserve evidence");
+    fs.writeFileSync(file, String(pid));
+    fs.writeFileSync(
+      `${file}.json`,
+      JSON.stringify({
+        schemaVersion: 1,
+        root: fs.realpathSync(state.root),
+        runnerPid: 23456,
+        process: {
+          pid,
+          ppid: 23456,
+          started: "Mon Oct 5 10:11:12 2026",
+          command: "worker",
+        },
+        processGroupId: pid,
+        generatedPaths: [artifact],
+      }),
+    );
+    vi.mocked(childProcess.execFileSync).mockReturnValue(
+      `34567 1 ${pid} S Mon Oct 5 10:11:12 2026 owned descendant\n`,
+    );
+    const kill = vi.spyOn(process, "kill").mockImplementation(() => {
+      throw Object.assign(new Error("leader gone"), { code: "ESRCH" });
+    });
+    await cleanup(false, true, true);
+    expect(fs.existsSync(file)).toBe(true);
+    expect(fs.existsSync(`${file}.json`)).toBe(true);
+    expect(fs.readFileSync(artifact, "utf8")).toBe("preserve evidence");
+    expect(kill.mock.calls.every(([, signal]) => signal === 0)).toBe(true);
+  });
 });

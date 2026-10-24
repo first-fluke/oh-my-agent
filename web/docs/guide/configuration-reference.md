@@ -155,6 +155,24 @@ The cap loader checks the user CUE layer, then the user YAML layer, then the shi
 
 OMA reserves an input-token estimate when a run starts. When a supported native transcript is available after the run, recorded input, cache, and output usage replaces that estimate without counting another spawn. Otherwise the record remains explicitly estimated from prompt length. Observed root-session usage is marked partial when native subagents are outside the capture scope. Token caps therefore depend on the available observations; they do not interrupt an already running child or guarantee a billing limit. `spawn_count` is the most predictable limit.
 
+### Session execution budget
+
+Set `session.execution` to bound elapsed time for OMA-managed CLI dispatch and verification. Use either a positive `timeout_seconds` or an ISO 8601 `deadline` with a timezone:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+The `oma agent spawn`, `parallel`, `review`, `resume`, `begin`, and `verify` commands accept `--timeout-seconds` or `--deadline`. Preparation, execution, retries, and checks share one absolute deadline. The earliest configured, inherited, or persisted deadline wins; retries and resume do not reset the clock. Omit `session.execution` and both flags to leave this dimension uncapped, unless the parent supplied a deadline.
+
+Execution history is retained under `.agents/state/executions/`. Cancellation or timeout blocks further execution in that session and records the stop reason. These controls cover processes launched through the managed CLI path. Native vendor agents and arbitrary shell jobs need their host's cancellation mechanism; CPU, RAM, and storage caps require provider support.
+
+Managed child CLIs inherit `OMA_EXECUTION_DEADLINE`, `OMA_EXECUTION_STATE`, and `OMA_EXECUTION_ID`. The state path and execution ID form a bound inheritance reference; a foreign, malformed, or mismatched ledger is rejected before writing. Forward the complete inherited environment when wrapping an OMA child. Setting these variables does not add deadline enforcement to an unrelated program.
+
+On cancellation, OMA stops admission and attempts bounded termination of owned computation. It retains logs, results, worktrees, and registered resource metadata. Deleting artifacts or external resources requires a request or an explicit retention policy. An unsuccessful termination remains visible instead of being reported as fully cleaned up.
+
 ### Diagnostic feedback
 
 For supported terminal hosts, OMA compares errors and warnings before and after native file edits and injects newly reported diagnostics into the next tool feedback. It uses an already running, project-matched Serena HTTP daemon when Serena is the effective code-intelligence provider (the default when no provider is specified). It never starts a daemon or runs a build. Serena's own symbolic edits are excluded because they already provide diagnostics.

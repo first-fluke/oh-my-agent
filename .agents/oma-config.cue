@@ -80,8 +80,15 @@ package config
 	per_vendor?: [string]: int & >=0
 }
 
+#SessionExecutionConfig: {
+	timeout_seconds: number & >0
+} | {
+	deadline: string
+}
+
 #SessionConfig: {
 	quota_cap?: #QuotaCapConfig
+	execution?: #SessionExecutionConfig
 }
 
 // ── 5. Memory garbage collection ────────────────────────────────────────────
@@ -444,6 +451,10 @@ package config
 	// 		codex:  500000
 	// 	}
 	// }
+	//
+	// session: execution: timeout_seconds: 1800
+	// Use deadline: "2027-01-01T12:00:00Z" instead for an absolute deadline.
+	// Execution deadlines persist across retries and resume.
 	//
 	// memory: gc: {
 	// 	keep_sessions: 100

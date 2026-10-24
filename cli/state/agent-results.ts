@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import {
   existsSync,
@@ -7,6 +7,7 @@ import {
   readdirSync,
   readFileSync,
   readlinkSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -17,6 +18,17 @@ import {
   nativeResultOutput,
   nativeSessionId,
 } from "../io/native-transcript/identity.js";
+import {
+  ownedProcessSpawnOptions,
+  stopOwnedProcess,
+  stopUnidentifiedOwnedChild,
+} from "../io/owned-process.js";
+import type { SessionExecution } from "../io/session-execution.js";
+import {
+  forgetSubagentProcess,
+  recordSubagentProcess,
+  type SubagentProcessRecord,
+} from "../io/subagent-process.js";
 import { listAgentDecisionSubjects } from "./agent-decision-catalog.js";
 import {
   AgentDecisionSchema,
@@ -427,6 +439,21 @@ export function verifyAgentRun(
   command: string[],
   cwd?: string,
 ): VerificationReceipt {
+  const context = prepareVerification(root, runId, command, cwd);
+  const result = spawnSync(context.executable, command.slice(1), {
+    cwd: context.directory,
+    stdio: "inherit",
+    shell: false,
+  });
+  return recordVerification(root, runId, command, context, result.status);
+}
+
+function prepareVerification(
+  root: string,
+  runId: string,
+  command: string[],
+  cwd?: string,
+) {
   if (!command[0]) throw new Error("A verification executable is required");
   const run = readAgentRun(root, runId);
   if (run.status !== "running")
@@ -441,18 +468,31 @@ export function verifyAgentRun(
   );
   const startedAt = new Date().toISOString();
   const before = runFingerprint(run);
-  const result = spawnSync(command[0], command.slice(1), {
-    cwd: directory,
-    stdio: "inherit",
-    shell: false,
-  });
+  return {
+    run,
+    directory,
+    declared,
+    startedAt,
+    before,
+    executable: command[0],
+  };
+}
+
+function recordVerification(
+  root: string,
+  runId: string,
+  command: string[],
+  context: ReturnType<typeof prepareVerification>,
+  exitCode: number | null,
+): VerificationReceipt {
+  const { run, directory, declared, startedAt, before } = context;
   const receipt: VerificationReceipt = {
     command,
     cwd: directory,
     checkId: declared?.id,
     startedAt,
     finishedAt: new Date().toISOString(),
-    exitCode: result.status,
+    exitCode,
     before,
     after: runFingerprint(run),
   };
@@ -465,6 +505,122 @@ export function verifyAgentRun(
     atomicWriteJson(runPath(root, runId), latest);
   });
   return receipt;
+}
+
+/** CLI verification owns its process group and uses the session's original deadline. */
+export async function verifyAgentRunAsync(
+  root: string,
+  runId: string,
+  command: string[],
+  cwd: string | undefined,
+  execution: SessionExecution,
+): Promise<VerificationReceipt> {
+  execution.assertActive();
+  const context = prepareVerification(root, runId, command, cwd);
+  execution.assertActive();
+  const child = spawn(context.executable, command.slice(1), {
+    cwd: context.directory,
+    stdio: "inherit",
+    shell: false,
+    ...ownedProcessSpawnOptions(),
+    env: execution.childEnv(),
+  });
+  const childExit = new Promise<number | null>((resolve) => {
+    child.once("error", () => resolve(null));
+    child.once("exit", resolve);
+  });
+  const pidFile = join(
+    root,
+    ".agents",
+    "state",
+    "executions",
+    `verify-${runId}-${randomUUID()}.pid`,
+  );
+  let owned: SubagentProcessRecord | undefined;
+  try {
+    if (child.pid) {
+      mkdirSync(dirname(pidFile), { recursive: true });
+      writeFileSync(pidFile, String(child.pid));
+    }
+    owned = child.pid
+      ? recordSubagentProcess(pidFile, child.pid, root, {
+          runId,
+          sessionId: context.run.sessionId,
+          isolatedProcessGroup: process.platform !== "win32",
+        })
+      : undefined;
+    if (child.pid)
+      execution.recordResources([{ kind: "process", id: String(child.pid) }]);
+  } catch (error) {
+    if (owned) await stopOwnedProcess(owned);
+    else await stopUnidentifiedOwnedChild(child);
+    throw error;
+  }
+  let stopping: Promise<boolean> | undefined;
+  const stop = () =>
+    (stopping ??= owned
+      ? stopOwnedProcess(owned).then((result) => {
+          if (!result.stopped)
+            console.error(
+              `[verify] Process termination unconfirmed; retained ${pidFile}`,
+            );
+          return result.stopped;
+        })
+      : stopUnidentifiedOwnedChild(child).then(() => {
+          console.warn(
+            `[verify] Process tree cleanup unverified; retained ${pidFile}`,
+          );
+          return false;
+        }));
+  const unregister = execution.onStop(() => {
+    void stop();
+  });
+  try {
+    const code = await childExit;
+    if (await stop()) {
+      rmSync(pidFile, { force: true });
+      forgetSubagentProcess(pidFile);
+    }
+    let receipt: VerificationReceipt;
+    try {
+      receipt = recordVerification(root, runId, command, context, code);
+    } catch (error) {
+      // A parent can finalize the run while this owned check is shutting down.
+      // Preserve the shared cancellation outcome instead of masking it with a
+      // concurrent receipt-write error.
+      execution.assertActive();
+      throw error;
+    }
+    execution.assertActive();
+    return receipt;
+  } finally {
+    unregister();
+  }
+}
+
+export async function verifyRequiredChecksAsync(
+  root: string,
+  runId: string,
+  execution: SessionExecution,
+): Promise<VerificationReceipt[]> {
+  execution.assertActive();
+  const run = readAgentRun(root, runId);
+  if (!run.contract)
+    throw new Error(
+      "No task verification contract; declare acceptance_criteria and required_checks in the session plan",
+    );
+  const receipts: VerificationReceipt[] = [];
+  for (const check of run.contract.required_checks)
+    receipts.push(
+      await verifyAgentRunAsync(
+        root,
+        runId,
+        check.command,
+        resolve(run.artifactRoot, check.cwd),
+        execution,
+      ),
+    );
+  return receipts;
 }
 
 function artifactPath(workspace: string, name: string): string {
@@ -541,7 +697,7 @@ export function finishAgentRun(
   runId: string,
   exitCode: number | null,
   claim?: unknown,
-  options: { logPath?: string } = {},
+  options: { logPath?: string; stopReason?: "cancelled" | "timed_out" } = {},
 ): AgentRun {
   const after = runFingerprint(readAgentRun(root, runId));
   let newlyFinished = false;
@@ -641,6 +797,10 @@ export function finishAgentRun(
       );
     }
     if (exitCode !== 0) run.status = "failed";
+    if (options.stopReason) {
+      run.status = "failed";
+      run.unresolved.push(`Execution ${options.stopReason}`);
+    }
     if (run.evidenceRepair && run.before !== run.after) {
       run.status = "failed";
       run.unresolved.push(

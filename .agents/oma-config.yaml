@@ -12,7 +12,7 @@
 #   1. Global preferences        language, date/time, telemetry
 #   2. Model selection           model_preset, free, default_cli, agents, models, custom_presets
 #   3. Vendor selection & pi     vendors
-#   4. Agent spawn budget        session.quota_cap
+#   4. Agent execution budgets  session.quota_cap, session.execution
 #   5. Memory garbage collection memory.gc
 #   6. Serena MCP transport      serena
 #   7. Serena memory reaper      serena_reaper
@@ -183,7 +183,7 @@ agents:
 # .agents/skills/oma-orchestration/config/cli-config.yaml, not in this file.
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 4. Agent spawn budget
+# 4. Agent execution budgets
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # When set, `oma agent spawn` records token usage per agent and blocks the
@@ -200,6 +200,15 @@ agents:
 #     per_vendor:              # per-vendor token budgets
 #       claude: 1500000
 #       codex: 500000
+#   execution:
+#     timeout_seconds: 1800    # whole-session elapsed time, including setup and checks
+#     # deadline: "2027-01-01T12:00:00Z"  # alternative to timeout_seconds
+#
+# Execution budgets apply to OMA-managed CLI dispatch and verification, not
+# arbitrary shell jobs or native vendor agents. Use exactly one execution field.
+# The earliest configured, inherited, or persisted deadline wins; retry/resume
+# cannot reset it. Cancellation and timeout stop further dispatch for that session.
+# CPU, RAM, and storage caps require support from the host or resource provider.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 5. Memory garbage collection (`oma memory gc` defaults)

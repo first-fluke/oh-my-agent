@@ -1,6 +1,29 @@
 import { Command } from "commander";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { runAction } from "./cli-framework.js";
+
+describe("runAction execution stop exit codes", () => {
+  it.each([124, 130, 143, 0, -1, 256, "143", 1.5])(
+    "preserves only valid failure code %s",
+    async (exitCode) => {
+      const previous = process.exitCode;
+      const log = vi.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        await runAction(() => {
+          throw Object.assign(new Error("stopped"), { exitCode });
+        })();
+        expect(process.exitCode).toBe(
+          typeof exitCode === "number" && [124, 130, 143].includes(exitCode)
+            ? exitCode
+            : 1,
+        );
+      } finally {
+        process.exitCode = previous;
+        log.mockRestore();
+      }
+    },
+  );
+});
 
 /**
  * Regression test for the bug where `--yes` (and other flags registered on the

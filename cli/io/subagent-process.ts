@@ -9,11 +9,27 @@ export interface ProcessIdentity {
   started: string;
   command: string;
 }
-interface SubagentProcessRecord {
+export interface ExternalResourceIdentity {
+  provider: string;
+  id: string;
+}
+export interface SubagentProcessMetadata {
+  runId?: string;
+  sessionId?: string;
+  generatedPaths?: string[];
+  isolatedProcessGroup?: boolean;
+  externalResources?: ExternalResourceIdentity[];
+}
+export interface SubagentProcessRecord {
   schemaVersion: 1;
   root: string;
   runnerPid: number;
   process: ProcessIdentity;
+  processGroupId?: number;
+  runId?: string;
+  sessionId?: string;
+  generatedPaths?: string[];
+  externalResources?: ExternalResourceIdentity[];
 }
 const validPid = (pid: number) => Number.isSafeInteger(pid) && pid > 1;
 const canonicalRoot = (root: string) => {
@@ -28,6 +44,29 @@ const canonicalRoot = (root: string) => {
 export function readProcessIdentity(pid: number): ProcessIdentity | undefined {
   if (!validPid(pid)) return undefined;
   try {
+    if (process.platform === "win32") {
+      const output = execFileSync(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-NonInteractive",
+          "-Command",
+          `$p = Get-CimInstance Win32_Process -Filter 'ProcessId = ${pid}'; if ($p) { @{pid=$p.ProcessId;ppid=$p.ParentProcessId;started=$p.CreationDate.ToUniversalTime().ToString('o');command=$p.CommandLine} | ConvertTo-Json -Compress }`,
+        ],
+        {
+          encoding: "utf8",
+          timeout: 1000,
+          stdio: ["ignore", "pipe", "ignore"],
+        },
+      );
+      const identity = JSON.parse(output) as ProcessIdentity;
+      return identity.pid === pid &&
+        validPid(identity.ppid) &&
+        typeof identity.started === "string" &&
+        typeof identity.command === "string"
+        ? identity
+        : undefined;
+    }
     const output = execFileSync(
       "ps",
       ["-p", String(pid), "-o", "pid=,ppid=,lstart=,command="],
@@ -64,7 +103,8 @@ export function recordSubagentProcess(
   pidFile: string,
   pid: number,
   root: string,
-): void {
+  metadata: SubagentProcessMetadata = {},
+): SubagentProcessRecord | undefined {
   // Remove an older identity first, including when the new child exits too fast
   // to inspect or the platform cannot supply a trustworthy process snapshot.
   forgetSubagentProcess(pidFile);
@@ -75,11 +115,70 @@ export function recordSubagentProcess(
     root: canonicalRoot(root),
     runnerPid: process.pid,
     process: identity,
+    runId: metadata.runId,
+    sessionId: metadata.sessionId,
+    generatedPaths: metadata.generatedPaths?.map((file) => resolve(file)),
+    externalResources: metadata.externalResources?.map(({ provider, id }) => ({
+      provider,
+      id,
+    })),
   };
+  if (metadata.isolatedProcessGroup && process.platform !== "win32") {
+    try {
+      const group = Number(
+        execFileSync("ps", ["-p", String(pid), "-o", "pgid="], {
+          encoding: "utf8",
+          timeout: 1000,
+          stdio: ["ignore", "pipe", "ignore"],
+        }).trim(),
+      );
+      if (group === pid) record.processGroupId = group;
+    } catch {
+      /* A missing group identity permits only verified PID cancellation. */
+    }
+  }
   try {
-    atomicWriteFileSync(`${pidFile}.json`, `${JSON.stringify(record)}\n`);
+    atomicWriteFileSync(`${pidFile}.json`, `${JSON.stringify(record)}\n`, {
+      mode: 0o600,
+    });
+    if (
+      metadata.runId ||
+      metadata.generatedPaths ||
+      metadata.externalResources
+    ) {
+      // This evidence survives removal of active-process ownership metadata.
+      // Raw argv may contain prompts or credentials; never retain it here.
+      const { command: _command, ...processEvidence } = record.process;
+      atomicWriteFileSync(
+        `${pidFile}.resources.json`,
+        `${JSON.stringify({ ...record, process: processEvidence })}\n`,
+        { mode: 0o600 },
+      );
+    }
   } catch {
     /* A metadata failure must not strand an already-started child. */
+  }
+  return record;
+}
+
+export function readSubagentProcessRecord(
+  pidFile: string,
+  root: string,
+): SubagentProcessRecord | undefined {
+  try {
+    const record = JSON.parse(
+      readFileSync(`${pidFile}.json`, "utf8"),
+    ) as SubagentProcessRecord;
+    return record.schemaVersion === 1 &&
+      record.root === canonicalRoot(root) &&
+      validPid(record.runnerPid) &&
+      validPid(record.process?.pid) &&
+      typeof record.process.started === "string" &&
+      typeof record.process.command === "string"
+      ? record
+      : undefined;
+  } catch {
+    return undefined;
   }
 }
 

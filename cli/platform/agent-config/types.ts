@@ -153,7 +153,10 @@ export interface OmaConfig {
   custom_presets?: Record<string, ModelPreset>;
   /** Installer vendor selection; legacy templates may still hold a map. */
   vendors?: string[] | Record<string, unknown>;
-  session?: { quota_cap?: Record<string, unknown> };
+  session?: {
+    quota_cap?: Record<string, unknown>;
+    execution?: { timeout_seconds?: number; deadline?: string };
+  };
   /** Native edit diagnostic deltas from an already running Serena daemon. */
   diagnostic_feedback?: {
     enabled?: boolean;

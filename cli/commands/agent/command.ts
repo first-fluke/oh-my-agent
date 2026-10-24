@@ -19,6 +19,14 @@ export function registerAgentCommands(program: Command): void {
     .action(runAction(showAgentContext));
   program
     .command("agent:resume <session-id>")
+    .option(
+      "--timeout-seconds <seconds>",
+      "Whole-session time limit, including setup and retries",
+    )
+    .option(
+      "--deadline <timestamp>",
+      "Absolute session deadline (ISO timestamp with timezone)",
+    )
     .description(
       "Resume safe incomplete tasks, reusing current acceptance evidence",
     )
@@ -35,12 +43,28 @@ export function registerAgentCommands(program: Command): void {
     .action(runAction(resumeAgents));
   program
     .command("agent:begin <agent-id> <task-id> <session-id>")
+    .option(
+      "--timeout-seconds <seconds>",
+      "Whole-session time limit, including setup and retries",
+    )
+    .option(
+      "--deadline <timestamp>",
+      "Absolute session deadline (ISO timestamp with timezone)",
+    )
     .description("Start an evidence-backed native agent run")
     .option("--root <path>", "Project storing the run")
     .option("-w, --workspace <path>", "Workspace being verified")
     .action(runAction(beginResult));
   program
     .command("agent:verify <run-id> [command...]")
+    .option(
+      "--timeout-seconds <seconds>",
+      "Whole-session time limit, including setup and retries",
+    )
+    .option(
+      "--deadline <timestamp>",
+      "Absolute session deadline (ISO timestamp with timezone)",
+    )
     .description(
       "Execute verification argv after -- and record its real exit code",
     )
@@ -65,6 +89,14 @@ export function registerAgentCommands(program: Command): void {
     .command("agent:spawn <agent-id> <prompt> <session-id>")
     .description("Spawn a subagent (prompt can be inline text or a file path)")
     .option("--resumed-from <run-id>", "Link a retry to its preceding run")
+    .option(
+      "--timeout-seconds <seconds>",
+      "Whole-session time limit, including setup and retries",
+    )
+    .option(
+      "--deadline <timestamp>",
+      "Absolute session deadline (ISO timestamp with timezone)",
+    )
     .option(
       "--fallback-vendors <vendors>",
       "Ordered, comma-separated explicit fallback vendor chain",
@@ -103,6 +135,13 @@ export function registerAgentCommands(program: Command): void {
           options.taskId,
           options.resumedFrom,
           options.fallbackVendors,
+          0,
+          undefined,
+          [],
+          {
+            timeoutSeconds: options.timeoutSeconds,
+            deadline: options.deadline,
+          },
         );
       }),
     );
@@ -120,6 +159,14 @@ export function registerAgentCommands(program: Command): void {
   program
     .command("agent:parallel [tasks...]")
     .description("Run multiple sub-agents in parallel")
+    .option(
+      "--timeout-seconds <seconds>",
+      "Whole-session time limit, including setup and retries",
+    )
+    .option(
+      "--deadline <timestamp>",
+      "Absolute session deadline (ISO timestamp with timezone)",
+    )
     .option(
       "--session <id>",
       "Bind results to an existing session and task IDs from YAML",
@@ -140,6 +187,8 @@ export function registerAgentCommands(program: Command): void {
           inline: options.inline,
           noWait: !options.wait,
           session: options.session,
+          timeoutSeconds: options.timeoutSeconds,
+          deadline: options.deadline,
         });
       }),
     );
@@ -147,6 +196,15 @@ export function registerAgentCommands(program: Command): void {
   program
     .command("agent:review")
     .description("Run code review using external CLI (codex/claude/qwen/grok)")
+    .option("--session <id>", "Use the existing session execution budget")
+    .option(
+      "--timeout-seconds <seconds>",
+      "Whole-session time limit, including setup and retries",
+    )
+    .option(
+      "--deadline <timestamp>",
+      "Absolute session deadline (ISO timestamp with timezone)",
+    )
     .option("-m, --model <vendor>", "CLI vendor (codex/claude/qwen/grok)")
     .option("-p, --prompt <prompt>", "Custom review prompt")
     .option("-w, --workspace <path>", "Working directory (default: current)")
@@ -158,6 +216,9 @@ export function registerAgentCommands(program: Command): void {
           model: options.model,
           workspace: options.workspace,
           uncommitted: options.uncommitted,
+          session: options.session,
+          timeoutSeconds: options.timeoutSeconds,
+          deadline: options.deadline,
         });
       }),
     );

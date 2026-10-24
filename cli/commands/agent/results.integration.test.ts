@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   rmSync,
@@ -149,6 +150,10 @@ fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"
     const bin = join(root, "fixture-bin");
     mkdirSync(bin);
     symlinkSync(bun, join(bin, "bun"));
+    // Process ownership inspection stays available while model CLIs remain
+    // unreachable in this isolated fixture PATH.
+    const ps = ["/bin/ps", "/usr/bin/ps"].find((file) => existsSync(file));
+    if (ps) symlinkSync(ps, join(bin, "ps"));
     const result = spawnSync(
       bun,
       [cli, "agent", "resume", "s1", "--project-root", root],

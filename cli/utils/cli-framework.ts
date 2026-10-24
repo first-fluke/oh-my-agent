@@ -385,7 +385,17 @@ export function runAction<T extends unknown[]>(
       } else {
         console.error(message);
       }
-      process.exitCode = 1;
+      const exitCode =
+        error && typeof error === "object" && "exitCode" in error
+          ? error.exitCode
+          : undefined;
+      process.exitCode =
+        typeof exitCode === "number" &&
+        Number.isInteger(exitCode) &&
+        exitCode > 0 &&
+        exitCode <= 255
+          ? exitCode
+          : 1;
     }
   };
 }

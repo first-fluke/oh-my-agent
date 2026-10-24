@@ -158,7 +158,7 @@ Spawn agents using `oma agent spawn {agent_id} {prompt_file} {session_id} --task
 ## Step 4: Monitor Progress
 
 Use `oma agent status {session_id} {agent_id}` to check process health.
-Also poll `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` for logic updates.
+Prefer host completion notifications. If polling is needed, one coordinator reads changed `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files with bounded backoff. Apply `.agents/skills/_shared/core/execution-policy.md` for the execution deadline, cancellation, resource ownership, and shutdown; cancellation or deadline exhaustion prevents re-dispatch and gate repair.
 
 - Update `task-board-{sessionId}.md` with turn counts and status changes.
 - Watch for: completion, failures, crashes.

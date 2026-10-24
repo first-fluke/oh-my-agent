@@ -60,7 +60,7 @@ Reviewers are read-only evaluators. Implementation and refactor **actions** (Pha
    - Include: session start time, session ID, user request summary, workflow version (ultrawork)
 11. (Recommended) Attach a mechanical stop gate when the project has a cheap deterministic check:
    - `oma goal set --gate typecheck` (allowlist: `typecheck` | `test` | `lint`; maps to the package.json script)
-   - While set, the Stop hook allows the session to end only when the gate passes; failures return the output tail. Add `--budget-minutes <n>` to bound unattended runs with an honest partial stop.
+   - While set, the Stop hook allows the session to end only when the gate passes; failures return the output tail. Add `--budget-minutes <n>` to bound the gate with an honest partial stop. This does not terminate external work. Apply `.agents/skills/_shared/core/execution-policy.md` for the whole-execution deadline and owned-resource shutdown; user cancellation overrides gate repair and recovery.
 
 ---
 
@@ -147,12 +147,12 @@ wait
 
 **Wait for all implementation agents to complete before proceeding.**
 
-1. Poll `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files
+1. Prefer host completion notifications; otherwise one coordinator reads changed `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files with bounded backoff under the shared execution policy.
 2. Use configured code intelligence or its native fallback to verify implementation alignment
 3. Check the injected claim and `result-{agentId}-{taskId}-{runId}-{sessionId}.md` to confirm completion
 4. Use memory edit tool to record monitoring results in `session-ultrawork.md`
 
-**Continue polling until all agents report completion or failure.**
+**Wait for completion or failure within the shared execution deadline. Cancellation or deadline exhaustion stops new work and starts bounded owned-resource shutdown; do not proceed to verification or recovery.**
 
 ### Step 5.2: Measure Baseline (Conditional)
 
@@ -202,12 +202,12 @@ oma agent spawn qa-agent step-8-prompt.md {sessionId} --task-id {qa_regression_t
 
 **Wait for all three VERIFY reviewers to complete before proceeding.**
 
-1. Use memory read tool to poll each reviewer's `progress-*` / verdict entry.
+1. Prefer completion notifications; otherwise use bounded polling of changed reviewer `progress-*` / verdict entries.
 2. Confirm each reviewer wrote its structured verdict to memory.
    - **Claude-native path**: each `qa-reviewer` Agent call returns synchronously with its verdict.
 3. **Aggregate** the three verdicts into `result-qa-{sessionId}.md` under `.agents/results/` (this satisfies the VERIFY artifact contract) and record the combined VERIFY result in `session-ultrawork.md`.
 
-**Continue polling until all three reviewers report completion.**
+**Wait within the shared execution deadline. Cancellation or deadline exhaustion stops review and recovery and requires bounded owned-resource shutdown.**
 
 ### Step 6: Alignment Review
 - **Executed by a fresh isolated reviewer subagent (CCR)**: Compare implementation vs plan.
@@ -286,13 +286,13 @@ oma agent spawn refactor-engineer refine-prompt.md {sessionId} --task-id {refine
 **Wait for the two reviewers and the Refactor Agent to complete refinement before proceeding.**
 
 1. Confirm both isolated reviewers wrote their structured verdicts to memory.
-2. Use memory read tool to poll `progress-refactor*[-{sessionId}].md`
+2. Prefer completion notifications; otherwise use bounded polling of changed `progress-refactor*[-{sessionId}].md` files.
 3. Check the `refine_task` claim and its run-scoped result report. The injected
    claim path, not an agent-derived filename, is the completion identity.
    - **Claude-native path**: use the native result and persist it against the same plan task ID/run ID.
 4. Use memory edit tool to record refinement results (reviews + actions) in `session-ultrawork.md`
 
-**Continue polling until the reviewers and Refactor Agent report completion.**
+**Wait within the shared execution deadline. Cancellation or deadline exhaustion stops refinement and recovery and requires bounded owned-resource shutdown.**
 
 ### Step 9: Split Large Files/Functions
 - **Executed by Refactor Agent (action)**: Files > 500 lines, Functions > 50 lines.
@@ -375,7 +375,7 @@ oma agent spawn qa-agent step-17-prompt.md {sessionId} --task-id {qa_ship_task.i
    - **Claude-native path**: each `qa-reviewer` Agent call returns synchronously with its verdict.
 2. **Aggregate** the verdicts into `result-qa-{sessionId}.md` under `.agents/results/` (this satisfies the SHIP artifact contract) and record the combined final result in `session-ultrawork.md`.
 
-**Continue polling until all SHIP reviewers report completion.**
+**Wait within the shared execution deadline. Cancellation or deadline exhaustion stops SHIP review and recovery and requires bounded owned-resource shutdown.**
 
 ### Step 14: Code Quality Review
 - **Executed by a fresh isolated reviewer subagent (CCR)**: Lint, Types, Coverage.

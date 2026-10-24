@@ -12,6 +12,20 @@ import type * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { spawnAgent } from "./spawn-status.js";
 
+vi.mock("../../io/session-execution.js", async (original) => ({
+  ...(await original<typeof import("../../io/session-execution.js")>()),
+  SessionExecution: (await import("../../test/agent-execution-fixture.js"))
+    .FixtureSessionExecution,
+}));
+vi.mock("../../io/owned-process.js", async () =>
+  (await import("../../test/agent-execution-fixture.js")).ownedProcessFixture(),
+);
+vi.mock("../../io/subagent-process.js", async () =>
+  (
+    await import("../../test/agent-execution-fixture.js")
+  ).subagentProcessFixture(),
+);
+
 // Dispatch tests isolate the evidence store; real filesystem behavior is covered
 // in state/agent-results.test.ts and agent/results.integration.test.ts.
 vi.mock("../../state/agent-results.js", () => ({

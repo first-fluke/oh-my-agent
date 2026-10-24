@@ -153,6 +153,7 @@ wait
 
 #### Step 3: Monitor & Coordinate
 
+- Apply `../_shared/core/execution-policy.md` for the execution deadline, resource ownership, and cancellation. Prefer host completion notifications; otherwise use one coordinator with bounded polling backoff. Cancellation or deadline exhaustion stops new dispatch, review, and recovery; use bounded termination checks and report survivors or unsupported cancellation in the handoff.
 - Read injected run artifacts and receipts. Human-readable progress/results use `{memoryConfig.basePath}/progress-{agentId}-{taskId}-{runId}-{sessionId}.md` and the corresponding `result-` name; see `../_shared/runtime/memory-protocol.md`. Keep the structured claim path unchanged.
 - Verify API contracts align between agents
 - Ensure shared data models are consistent

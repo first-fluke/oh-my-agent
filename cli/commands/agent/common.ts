@@ -1,6 +1,30 @@
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { formatSessionId, getSessionMeta } from "../../io/memory.js";
+import {
+  type ExecutionOptions,
+  SessionExecution,
+} from "../../io/session-execution.js";
+import { registerSignalCleanup } from "../../utils/process-signals.js";
+
+/** Register cancellation before setup or dispatch can start. */
+export function beginSessionExecution(
+  sessionId: string,
+  root: string,
+  options: ExecutionOptions = {},
+) {
+  const execution = new SessionExecution(sessionId, root, options);
+  const unregister = registerSignalCleanup(
+    () => execution.stop("cancelled", 130),
+    () => execution.stop("cancelled", 143),
+  );
+  const dispose = execution.dispose.bind(execution);
+  execution.dispose = () => {
+    unregister();
+    dispose();
+  };
+  return execution;
+}
 
 export function isProcessRunning(pid: number): boolean {
   try {

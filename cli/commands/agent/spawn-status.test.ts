@@ -2,9 +2,25 @@ import * as child_process from "node:child_process";
 import type * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as orca from "../../io/orca-subagent.js";
+import { stopOwnedProcess } from "../../io/owned-process.js";
+import { forgetSubagentProcess } from "../../io/subagent-process.js";
 import * as agentConfig from "../../platform/agent-config.js";
 import * as events from "../../state/events.js";
 import { spawnAgent } from "./spawn-status.js";
+
+vi.mock("../../io/session-execution.js", async (original) => ({
+  ...(await original<typeof import("../../io/session-execution.js")>()),
+  SessionExecution: (await import("../../test/agent-execution-fixture.js"))
+    .FixtureSessionExecution,
+}));
+vi.mock("../../io/owned-process.js", async () =>
+  (await import("../../test/agent-execution-fixture.js")).ownedProcessFixture(),
+);
+vi.mock("../../io/subagent-process.js", async () =>
+  (
+    await import("../../test/agent-execution-fixture.js")
+  ).subagentProcessFixture(),
+);
 
 // Dispatch tests isolate the evidence store; real filesystem behavior is covered
 // in state/agent-results.test.ts and agent/results.integration.test.ts.
@@ -81,6 +97,37 @@ describe("agent/spawn-status.ts", () => {
     vi.restoreAllMocks();
   });
 
+  it("preserves verified product success while reporting unverified process cleanup", async () => {
+    mockFsFunctions.existsSync.mockReturnValue(false);
+    mockFsFunctions.readFileSync.mockReturnValue("");
+    mockFsFunctions.openSync.mockReturnValue(123);
+    let exitHandler: ((code: number | null) => void) | undefined;
+    vi.mocked(child_process.spawn).mockReturnValue({
+      pid: 12345,
+      on: vi.fn((event, handler) => {
+        if (event === "exit") exitHandler = handler;
+      }),
+    } as unknown as child_process.ChildProcess);
+    vi.mocked(stopOwnedProcess).mockResolvedValueOnce({
+      stopped: false,
+      survivingPids: [],
+      survivingResources: ["process-tree:12345"],
+      limitations: ["Tree inspection unavailable"],
+    });
+    const warning = vi.spyOn(console, "error").mockImplementation(() => {});
+    const exit = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    await spawnAgent("agent1", "work", "session1", "/tmp");
+    exitHandler?.(0);
+    await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(0));
+    expect(warning).toHaveBeenCalledWith(
+      expect.stringContaining("Process termination unconfirmed"),
+    );
+    expect(forgetSubagentProcess).not.toHaveBeenCalled();
+    expect(mockFsFunctions.unlinkSync).not.toHaveBeenCalled();
+  });
+
   it("persists an incomplete-result summary and waits for memory before exit", async () => {
     mockFsFunctions.existsSync.mockReturnValue(false);
     mockFsFunctions.readFileSync.mockReturnValue("");
@@ -102,6 +149,9 @@ describe("agent/spawn-status.ts", () => {
       .mockImplementation(() => undefined as never);
     await spawnAgent("agent1", "work", "session1", "/tmp");
     exitHandler?.(1);
+    await vi.waitFor(() =>
+      expect(events.emitEventWithMemory).toHaveBeenCalled(),
+    );
     expect(events.emitEventWithMemory).toHaveBeenCalledWith(
       expect.any(String),
       "session1",
@@ -160,11 +210,11 @@ describe("agent/spawn-status.ts", () => {
       expect.objectContaining({ env: { PATH: "/isolated/bin" } }),
     );
     exitHandler?.(0);
-    expect(stop).toHaveBeenCalled();
+    await vi.waitFor(() => expect(stop).toHaveBeenCalled());
     expect(exitSpy).not.toHaveBeenCalled();
     completeStop();
     await pendingStop;
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    await vi.waitFor(() => expect(exitSpy).toHaveBeenCalledWith(0));
   });
 
   it("exits if spawn returns no pid", async () => {
@@ -618,14 +668,15 @@ describe("agent/spawn-status.ts", () => {
       mockChild as unknown as child_process.ChildProcess,
     );
 
-    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
-      throw new Error("exit");
-    });
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
 
     await spawnAgent("agent1", "do stuff", "session1", "/tmp");
 
     expect(exitHandler).toBeDefined();
-    expect(() => exitHandler?.(0)).toThrow("exit");
+    exitHandler?.(0);
+    await vi.waitFor(() => expect(exitSpy).toHaveBeenCalledWith(0));
 
     // A terminal "completed" status is persisted to the session-specific file.
     const statusWrite = mockFsFunctions.writeFileSync.mock.calls.find((call) =>
@@ -728,7 +779,9 @@ describe("agent/spawn-status.ts", () => {
     );
     expect(exitHandlers).toHaveLength(1);
     exitHandlers[0]?.(1);
-    expect(child_process.spawn).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() =>
+      expect(child_process.spawn).toHaveBeenCalledTimes(2),
+    );
     expect(child_process.spawn).toHaveBeenLastCalledWith(
       "codex",
       expect.any(Array),

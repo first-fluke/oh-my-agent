@@ -318,6 +318,20 @@ When a cap is reached, `oma agent spawn` refuses the next spawn and fails with `
 
 ---
 
+## Session execution budget
+
+Add `session.execution` for a shared elapsed-time limit on OMA-managed CLI dispatch and verification:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+Alternatively, set `deadline` to an ISO timestamp with a timezone. The `oma agent spawn`, `parallel`, `review`, `resume`, `begin`, and `verify` commands also accept `--timeout-seconds` or `--deadline`. The earliest deadline persists across retries and resume; setup and checks consume the same budget. Cancellation or timeout blocks further execution for that session. Native vendor agents and shell jobs outside the managed CLI need their host's own controls. See [Session execution budget](/docs/guide/configuration-reference#session-execution-budget) for scope and artifact retention.
+
+---
+
 ## Full example
 
 ```yaml

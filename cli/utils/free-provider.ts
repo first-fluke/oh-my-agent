@@ -122,13 +122,16 @@ export function freeApiKey(
 export async function probeFreeProvider(
   provider: FreeProvider,
   env: NodeJS.ProcessEnv = process.env,
+  signal?: AbortSignal,
 ): Promise<void> {
   const key = freeApiKey(provider, env);
   let response: Response;
   try {
     response = await fetch(`${provider.baseUrl}/models`, {
       headers: { Authorization: `Bearer ${key}` },
-      signal: AbortSignal.timeout(5000),
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(5000)])
+        : AbortSignal.timeout(5000),
       redirect: "error",
     });
   } catch {

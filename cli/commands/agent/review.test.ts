@@ -4,12 +4,27 @@ import { loadUserConfig } from "../../io/runtime-dispatch/config-loader.js";
 import { probeFreeProvider } from "../../utils/free-provider.js";
 import { reviewAgent } from "./review.js";
 
+vi.mock("../../io/session-execution.js", async (original) => ({
+  ...(await original<typeof import("../../io/session-execution.js")>()),
+  SessionExecution: (await import("../../test/agent-execution-fixture.js"))
+    .FixtureSessionExecution,
+}));
+vi.mock("../../io/owned-process.js", async () =>
+  (await import("../../test/agent-execution-fixture.js")).ownedProcessFixture(),
+);
+vi.mock("../../io/subagent-process.js", async () =>
+  (
+    await import("../../test/agent-execution-fixture.js")
+  ).subagentProcessFixture(),
+);
+
 const mockFsFunctions = vi.hoisted(() => ({
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
   unlinkSync: vi.fn(),
   openSync: vi.fn(),
+  closeSync: vi.fn(),
 }));
 
 const mockMemoryFunctions = vi.hoisted(() => ({
@@ -170,7 +185,7 @@ describe("agent/review.ts", () => {
     });
 
     expect(child_process.execSync).toHaveBeenCalledWith(
-      "git diff HEAD~1",
+      "git --no-pager diff --no-ext-diff HEAD~1",
       expect.objectContaining({ encoding: "utf-8" }),
     );
 
@@ -203,19 +218,25 @@ describe("agent/review.ts", () => {
       mockChild as unknown as child_process.ChildProcess,
     );
 
-    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
-      throw new Error("exit");
-    });
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
     const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     await reviewAgent({ model: "codex", workspace: "/tmp" });
 
     expect(exitHandler).toBeDefined();
-    expect(() => exitHandler?.(0)).toThrow("exit");
+    exitHandler?.(0);
+    await vi.waitFor(() => expect(exitSpy).toHaveBeenCalledWith(0));
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("SQL injection"),
     );
     expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(
+      mockFsFunctions.unlinkSync.mock.calls.some(([file]) =>
+        String(file).endsWith(".log"),
+      ),
+    ).toBe(false);
   });
   it("routes free reviews through the gateway with the free model", async () => {
     mockFsFunctions.existsSync.mockReturnValue(false);

@@ -44,6 +44,10 @@ describe("agent/parallel.ts", () => {
 
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "oma-parallel-root-"));
     fs.mkdirSync(path.join(root, ".agents"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, ".agents", "oma-config.yaml"),
+      "language: en\nmodel_preset: codex\n",
+    );
     const workspaceSubdir = path.join(root, "cli");
     fs.mkdirSync(workspaceSubdir, { recursive: true });
 

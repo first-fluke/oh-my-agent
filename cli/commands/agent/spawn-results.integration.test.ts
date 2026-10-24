@@ -19,6 +19,15 @@ import {
 import { parallelRun } from "./parallel.js";
 import { spawnAgent } from "./spawn-status.js";
 
+vi.mock("../../io/owned-process.js", async () =>
+  (await import("../../test/agent-execution-fixture.js")).ownedProcessFixture(),
+);
+vi.mock("../../io/subagent-process.js", async () =>
+  (
+    await import("../../test/agent-execution-fixture.js")
+  ).subagentProcessFixture(),
+);
+
 const fakeSpawn = vi.hoisted(() => vi.fn());
 const fakePlanDispatch = vi.hoisted(() =>
   vi.fn(() => ({
@@ -53,7 +62,7 @@ describe("spawn structured result integration", () => {
     root = mkdtempSync(join(tmpdir(), "oma-spawn-result-"));
     writeTestPlan(root, ["T1", "qa-reviewer"]);
     child = Object.assign(new EventEmitter(), { pid: 424242 });
-    fakeSpawn.mockReturnValue(child);
+    fakeSpawn.mockReset().mockReturnValue(child);
     fakePlanDispatch.mockReset();
     fakePlanDispatch.mockReturnValue({
       mode: "native",
@@ -63,9 +72,7 @@ describe("spawn structured result integration", () => {
       invocation: { command: "unused", args: [] as string[], env: {} },
     });
     vi.spyOn(process, "cwd").mockReturnValue(root);
-    vi.spyOn(process, "exit").mockImplementation((): never => {
-      throw new Error("process-exit");
-    });
+    vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
   });
@@ -190,6 +197,11 @@ describe("spawn structured result integration", () => {
       }
       first.emit("exit", 0);
       second.emit("exit", 0);
+      await vi.waitFor(() =>
+        expect(
+          loadSessionUsage("s1", root).map((record) => record.tokens),
+        ).toEqual([110, 220]),
+      );
       const usage = loadSessionUsage("s1", root);
       expect(usage).toHaveLength(2);
       expect(usage.map((record) => record.vendorSid)).toEqual(sessionIds);
@@ -204,8 +216,9 @@ describe("spawn structured result integration", () => {
     const pending = parallelRun([`qa-reviewer:Review:${root}`], {
       inline: true,
     });
+    await vi.waitFor(() => expect(fakeSpawn).toHaveBeenCalledOnce());
     child.emit("exit", 0);
-    await expect(pending).rejects.toThrow("process-exit");
+    await expect(pending).resolves.toBeUndefined();
     expect(listAgentRuns(root)[0]?.status).toBe("partial");
     expect(process.exit).toHaveBeenCalledWith(1);
   });
@@ -215,6 +228,7 @@ describe("spawn structured result integration", () => {
       inline: true,
       noWait: true,
     });
+    await vi.waitFor(() => expect(fakeSpawn).toHaveBeenCalledOnce());
     child.emit("error", new Error("supervisor could not start"));
     await expect(pending).rejects.toThrow("supervisor could not start");
     expect(listAgentRuns(root)).toHaveLength(0);
@@ -224,6 +238,7 @@ describe("spawn structured result integration", () => {
     const pending = parallelRun([`qa-reviewer:Review:${root}`], {
       inline: true,
     });
+    await vi.waitFor(() => expect(fakeSpawn).toHaveBeenCalledOnce());
 
     expect(fakePlanDispatch).toHaveBeenCalledWith(
       "qa-reviewer",
@@ -236,7 +251,7 @@ describe("spawn structured result integration", () => {
     );
 
     child.emit("error", new Error("ENOENT"));
-    await expect(pending).rejects.toThrow("process-exit");
+    await expect(pending).resolves.toBeUndefined();
   });
 
   it("wraps and removes an external OpenCode parallel subagent in its workspace", async () => {
@@ -266,6 +281,7 @@ describe("spawn structured result integration", () => {
     const pending = parallelRun([`qa-reviewer:Review:${workspace}`], {
       inline: true,
     });
+    await vi.waitFor(() => expect(fakeSpawn).toHaveBeenCalledOnce());
     const args = fakeSpawn.mock.calls.at(-1)?.[1] as string[];
     expect(args).toEqual(expect.arrayContaining(["--agent"]));
     const agentIndex = args.indexOf("--agent");
@@ -281,7 +297,7 @@ describe("spawn structured result integration", () => {
     expect(existsSync(join(root, ".opencode"))).toBe(false);
 
     child.emit("error", new Error("ENOENT"));
-    await expect(pending).rejects.toThrow("process-exit");
+    await expect(pending).resolves.toBeUndefined();
     expect(existsSync(wrapperPath)).toBe(false);
   });
 
@@ -332,6 +348,7 @@ describe("spawn structured result integration", () => {
       [`qa-reviewer:Review:${root}`, `qa-reviewer:Review:${root}`],
       { inline: true },
     );
+    await vi.waitFor(() => expect(fakeSpawn).toHaveBeenCalledTimes(2));
     const wrapperNames = fakeSpawn.mock.calls.slice(-2).map(([, args]) => {
       const invocationArgs = args as string[];
       return invocationArgs[invocationArgs.indexOf("--agent") + 1];
@@ -347,11 +364,13 @@ describe("spawn structured result integration", () => {
     expect(existsSync(wrapperPaths[1] as string)).toBe(true);
 
     firstChild.emit("error", new Error("ENOENT"));
-    expect(existsSync(wrapperPaths[0] as string)).toBe(false);
+    await vi.waitFor(() =>
+      expect(existsSync(wrapperPaths[0] as string)).toBe(false),
+    );
     expect(existsSync(wrapperPaths[1] as string)).toBe(true);
 
     secondChild.emit("error", new Error("ENOENT"));
-    await expect(pending).rejects.toThrow("process-exit");
+    await expect(pending).resolves.toBeUndefined();
     expect(existsSync(wrapperPaths[1] as string)).toBe(false);
   });
 
@@ -361,8 +380,9 @@ describe("spawn structured result integration", () => {
     const pending = parallelRun([`qa-reviewer:Review:${root}`], {
       inline: true,
     });
+    await vi.waitFor(() => expect(fakeSpawn).toHaveBeenCalledOnce());
     expect(() => failedChild.emit("error", new Error("ENOENT"))).not.toThrow();
-    await expect(pending).rejects.toThrow("process-exit");
+    await expect(pending).resolves.toBeUndefined();
     expect(listAgentRuns(root)[0]?.status).toBe("failed");
     expect(process.exit).toHaveBeenCalledWith(1);
   });
@@ -394,7 +414,8 @@ describe("spawn structured result integration", () => {
         artifacts: [],
       }),
     );
-    expect(() => child.emit("exit", 0)).toThrow("process-exit");
+    child.emit("exit", 0);
+    await vi.waitFor(() => expect(process.exit).toHaveBeenCalledWith(0));
     expect(listAgentRuns(root)[0]).toMatchObject({
       status: "completed",
       taskId: "T1",
