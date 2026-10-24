@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.4.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.3.3...web-v11.4.0) (2026-10-24)
+
+
+### Features
+
+* **agent:** enforce session deadlines and owned process cancellation ([6dc64fa](https://github.com/first-fluke/oh-my-agent/commit/6dc64fa7dd8f887a4a1c88595d89aebb9f307025))
+
 ## [11.3.3](https://github.com/first-fluke/oh-my-agent/compare/web-v11.3.2...web-v11.3.3) (2026-10-22)
 
 
