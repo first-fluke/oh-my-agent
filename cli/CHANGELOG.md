@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.12.2...cli-v20.13.0) (2026-10-24)
+
+
+### Features
+
+* **agent:** enforce session deadlines and owned process cancellation ([6dc64fa](https://github.com/first-fluke/oh-my-agent/commit/6dc64fa7dd8f887a4a1c88595d89aebb9f307025))
+
 ## [20.12.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.12.1...cli-v20.12.2) (2026-10-22)
 
 
