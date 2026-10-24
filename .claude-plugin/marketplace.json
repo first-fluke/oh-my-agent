@@ -7,7 +7,7 @@
   },
   "metadata": {
     "description": "Portable multi-agent harness for .agents-based skills and workflows",
-    "version": "20.12.2"
+    "version": "20.13.0"
   },
   "plugins": [
     {
