@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.14.0",
-  "releaseDate": "2026-10-26T10:51:10.553Z",
+  "releaseDate": "2026-10-26T13:15:56.664Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1771,38 +1771,38 @@
     },
     {
       "path": ".agents/skills/oma-search/SKILL.md",
-      "sha256": "23ad03d8023f9036a2115bc2244a579c416fcdce4422a68d7ad12be6022d9dc4",
-      "size": 4936
+      "sha256": "319514d6c39589efd51ca5d4d8f33bfa110510f9d11dc8181013cb398d324c2b",
+      "size": 6520
     },
     {
       "path": ".agents/skills/oma-search/resources/checklist.md",
-      "sha256": "318a7d4a81818b85d1dc353a520d061202162658962ebee6c1015d94cef6e120",
-      "size": 1812
+      "sha256": "ea749b00948f854275ac9aec28c89d63608e8e1579864e3080dbc0ba544621c9",
+      "size": 1845
     },
     {
       "path": ".agents/skills/oma-search/resources/error-playbook.md",
-      "sha256": "d9af7653442af7a9374b2c30f5775b19420099659a0416bd21e24044b825b390",
-      "size": 5625
+      "sha256": "354b26d2b2644046577c689b5dc91eeee4dae2ccf9b445d77a7c422c03783001",
+      "size": 3465
     },
     {
       "path": ".agents/skills/oma-search/resources/examples.md",
-      "sha256": "a59f4d743a6f2f6eb58784905f4c20f07024049ffd703c1cb330bcb3457572d6",
-      "size": 4198
+      "sha256": "171fc1515620d5e879f9c01dc4ff409a97d71726548637d0dfdf9a2c5ebf025b",
+      "size": 2476
     },
     {
       "path": ".agents/skills/oma-search/resources/execution-protocol.md",
-      "sha256": "bebea338c07b40cf68763a447c1313da8575afe2ff44bbf07d49bbb078f61d1a",
-      "size": 3221
+      "sha256": "7b07ae59bd091f5e250d161f3cc8f5f9f0098590efb43f08432eaf44ca52faa2",
+      "size": 4125
     },
     {
       "path": ".agents/skills/oma-search/resources/intent-rules.md",
-      "sha256": "0805e67e065d65b94e43217bd5a3c401247494e62152dbb39f6b988818070ed4",
-      "size": 2773
+      "sha256": "6b299cdf074611815fb00fc16879af9a8afbbdfe1d159436be7d300b9ca85824",
+      "size": 2452
     },
     {
       "path": ".agents/skills/oma-search/resources/trust-registry.md",
-      "sha256": "cfc65dc128cfbe4ae69dd6efbc093fae7413aac3a5f8091a31a4eab048711eb8",
-      "size": 5113
+      "sha256": "078b7c59e86348a021220dbbbdc968ba04b735fae94b040ab8bc67d4c3a19f22",
+      "size": 2656
     },
     {
       "path": ".agents/skills/oma-security/SKILL.md",
