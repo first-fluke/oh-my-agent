@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.15.0",
-  "releaseDate": "2026-10-26T13:20:29.329Z",
+  "releaseDate": "2026-10-26T13:32:41.611Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -2031,8 +2031,8 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "58e5841b2f4cc137bc927cf3f802d5db750eb7f610061101f1ebe061f35e7211",
-      "size": 8701
+      "sha256": "a3181bf361a43bcc8affc8d07e8b905b89e9e25ede82055e6d7c705faa966d4f",
+      "size": 9502
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
@@ -2051,8 +2051,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/existing-media.md",
-      "sha256": "00b49dfeb8dd66574c847a0f6c63bba3b593273b23a4323df2843d81e844131d",
-      "size": 11006
+      "sha256": "77e87536dda2464aee2e8ee5de8ed0324951f54ffc97e95ccc026c1785542a67",
+      "size": 10654
     },
     {
       "path": ".agents/skills/oma-video/resources/hyperframes-authoring/README.md",
