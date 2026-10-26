@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.5.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.4.0...web-v11.5.0) (2026-10-26)
+
+
+### Features
+
+* **search:** add exa provider and simplify search routing ([aafee62](https://github.com/first-fluke/oh-my-agent/commit/aafee62fe5f9846bd8213b59610a35a9b1360318))
+
 ## [11.4.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.3.3...web-v11.4.0) (2026-10-24)
 
 
