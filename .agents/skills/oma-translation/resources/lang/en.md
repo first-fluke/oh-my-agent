@@ -1,17 +1,11 @@
 # English Target-Language Profile (`en`)
 
-Load this file whenever the **target** language is English. It is read together
-with `../translation-rubric.md` for substantive content or review. For prose style
-review, also load `../../../_shared/core/anti-ai-prose.md` (common taxonomy) and
-`../anti-ai-patterns.md` (translation exceptions and grammar diagnostics).
+Load this profile when the **target** primary language subtag is `en`, including
+`en-US` and `en-GB`. Read it with `../translation-rubric.md` for substantive
+content or review. For substantive prose style, follow
+`../style-skills.md`.
 
-Most oma translation runs go English → other. This profile covers the reverse
-direction, where the source is CJK: commit-adjacent docs written in Korean,
-Japanese issue threads, Chinese design notes, and Korean-authored READMEs being
-published in English.
-
-- **Localizations** of shared anti-AI patterns.
-- **English-only rules** (`EN-1`–`EN-8`).
+This profile owns source-to-English grammar and project conventions.
 
 ---
 
@@ -33,8 +27,8 @@ plural ("we recommend") unless the source has an authorial voice.
 
 ### EN-1. Articles
 
-CJK has no articles, so machine output either omits them or scatters them
-randomly. This is the single most reliable tell of a CJK → EN translation.
+CJK sources do not supply English articles. Choose the article from the noun's
+meaning and context.
 
 ```
 Bad:  Run migration before starting server.
@@ -104,101 +98,17 @@ Do not add "kindly", "please be informed", "as per", or "do the needful".
 最適化を実施する       → optimize       (not "implement optimization")
 ```
 
-### EN-7. Em dash is allowed here, but not as a crutch
-
-The shared em-dash restructuring requirement is a CJK-target rule. English
-typography accepts `—`, so do not mechanically strip it. It still falls under
-the decorative dashes guidance: one per paragraph at most, and never as a substitute for
-deciding the logical relationship between two clauses.
-
-Use spaced or unspaced em dashes consistently with sibling files. Prefer a
-colon for definitions and a comma pair for asides.
-
 ### EN-8. Typography
 
 - **Quotes**: straight `"` and `'` in code-adjacent docs and Markdown source.
   Curly quotes only when the publishing pipeline requires them.
-- **Headings**: sentence case unless sibling headings use title case. Do not
-  introduce title case (the heading case guidance).
+- **Headings**: match the case used by sibling headings.
 - **Serial comma**: follow sibling files; be consistent within a document.
 - **Dates**: `2026-08-20` in tables and logs, `August 20, 2026` in US-audience
   prose, `20 August 2026` for international audiences. Follow siblings.
 - **Units**: space between number and unit (`10 MB`, `200 ms`); no space before
   `%` (`40%`).
 - **Spelling**: match the project's existing variety (US vs UK); do not mix.
-
----
-
-## Localizations of shared rules
-
-### AI vocabulary overuse
-
-See [Vocabulary clustering](../../../_shared/core/anti-ai-prose.md#vocabulary-clustering).
-
-The shared English watch list applies directly here: *additionally, crucial,
-delve, enhance, foster, garner, highlight, interplay, intricate, key, landscape,
-leverage, pivotal, robust, seamless, showcase, streamline, tapestry, testament,
-underscore, utilize, vibrant*.
-
-Frequent CJK-source triggers:
-
-| Source | Bad | Good |
-|---|---|---|
-| `활용하다` / `活用する` / `利用` | leverage, utilize | use |
-| `수행하다` / `実施する` / `进行` | perform, conduct, carry out | do the verb directly |
-| `다양한` / `さまざまな` / `各种` | a variety of, diverse | often delete |
-| `~를 통해` / `〜を通じて` / `通过` | through the use of | via, with, or restructure |
-| `최적화` / `最適化` / `优化` | optimize (when source means "improve") | improve, tune |
-
-### synonym cycling
-
-See [Synonym cycling](../../../_shared/core/anti-ai-prose.md#synonym-cycling).
-
-Keep one term per concept. If the source uses `사용자` throughout, use "user"
-throughout; do not rotate through "client", "consumer", "end user".
-
-### boldface and inline-header lists
-
-See [Decorative bold](../../../_shared/core/anti-ai-prose.md#decorative-bold) and [Mini-heading lists](../../../_shared/core/anti-ai-prose.md#mini-heading-lists).
-
-CJK technical writing bolds far more freely than English documentation. Do not
-carry every bold span through, and do not convert plain bullets into
-`**Header:** description` form.
-
-### unnecessary connectives
-
-See [Unnecessary Connectives](../anti-ai-patterns.md#unnecessary-connectives).
-
-Korean and Japanese place explicit connectives more often than English needs.
-
-```
-Bad:  Performance improved. Therefore, the user experience got better.
-Good: Performance improved, and so did the user experience.
-```
-
-Watch therefore, moreover, furthermore, in addition, consequently, that being
-said.
-
-### passive voice
-
-See [Passive Voice Abuse](../anti-ai-patterns.md#passive-voice-abuse).
-
-CJK sources often front the object with `은/는` or `は`, which tempts a passive
-rendering. Prefer active with an explicit agent when the agent is known.
-
-```
-Bad:  This feature was developed by the team.
-Good: The team developed this feature.
-```
-
-### pronouns
-
-See [Awkward Pronoun Insertion](../anti-ai-patterns.md#awkward-pronoun-insertion).
-
-The inverse of the CJK rule. English requires the subject that the source
-omitted; supply it from context rather than leaving a dangling clause. Do not
-invent a first-person "we" where the source had no agent — use the passive or
-name the actual component.
 
 ---
 
@@ -210,7 +120,4 @@ name the actual component.
 - [ ] No run-on carried over from a multi-clause CJK sentence (`EN-4`)
 - [ ] No politeness padding, "kindly", or "do the needful" (`EN-5`)
 - [ ] Nominalizations unpacked into verbs (`EN-6`)
-- [ ] At most one em dash per paragraph, and it earns its place (`EN-7`)
 - [ ] Heading case, serial comma, date format, and spelling variety match siblings (`EN-8`)
-- [ ] No bold or inline-header lists carried over mechanically (shared `13`, `16a`)
-- [ ] One term per concept (shared `8`)

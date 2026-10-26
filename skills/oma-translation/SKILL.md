@@ -38,7 +38,9 @@ structure.
 ### Dependencies
 - Target profile: `resources/lang/{code}.md`, if one exists.
 - `resources/translation-rubric.md` for substantive content or review.
-- `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-patterns.md` together when prose needs style review.
+- Selected external prose-style skills for English and Korean; loading and execution
+  are defined in `resources/style-skills.md`.
+- Shared prose diagnostics and translation exceptions for other target languages.
 - Existing siblings and glossary when translating into a project.
 
 ### Control-flow features
@@ -55,7 +57,7 @@ structure.
 
 ### Scenes
 1. **PREPARE**: Resolve locale, output mode, target audience, and protected syntax.
-2. **ACQUIRE**: Read the target profile, relevant siblings, glossary, and source context. For prose or review, load the rubric; for style review, load the shared prose diagnostics and translation exceptions together.
+2. **ACQUIRE**: Read the target profile, relevant siblings, glossary, and source context. Select the substantive prose-style route in the canonical workflow; keep short independent UI strings on the lightweight path.
 3. **REASON**: Determine meaning, register, terminology, cultural references, and any ambiguity. Decide whether an idiom should be interpreted, substituted, or retained.
 4. **ACT**: Write natural target-language text. Match established project patterns without adding meaning, opinion, or personality.
 5. **VERIFY**: Check protected syntax and structure. For substantive text, check meaning, terminology, register, and target-language naturalness against the rubric.
@@ -78,10 +80,12 @@ structure.
 | Placeholder or structure mismatch | Revise before emitting or applying a patch |
 | Missing profile | Use shared guidance and identify the coverage limit once |
 | Unclear cultural reference | Add a concise note only when the target audience needs it |
+| Selected external style skill unavailable | Complete supported translation checks and report the unavailable style pass; do not substitute another language's style skill or claim it ran |
 
 ### Exit
 - Success: the text is faithful, natural, structurally safe, and checked in proportion to content risk.
-- Partial: unresolved ambiguity or missing context is stated without inventing an answer.
+- Partial: unresolved ambiguity, missing context, or an unavailable selected style pass
+  is stated without inventing an answer or claiming that pass ran.
 
 ### Language profile loading
 
@@ -123,8 +127,8 @@ Always check:
 - Existing siblings are matched when they establish terminology or UI style.
 
 For substantive content and review mode, also check the rubric: meaning, naturalness,
-terminology, register, cultural fit, and emotional force. Use anti-AI patterns as a diagnostic,
-not a demand to make prose decorative or to remove intentional source style.
+terminology, register, cultural fit, and emotional force. Apply the selected target-language
+style route while preserving intentional source style and content.
 
 ### Review mode
 
@@ -169,16 +173,24 @@ the suggested revision only when warranted, and the evidence for each finding.
 - Native search/read for local source and sibling translations.
 - Configured `code_intelligence` capability when available for code-context navigation; native
   search/read when it is unavailable or times out.
-- Target profile, rubric, anti-AI patterns, and language-template resources as selected above.
+- Target profile, rubric, selected prose-style implementation, and language-template
+  resources as selected by the canonical workflow.
 
 ### Canonical workflow path
 1. Resolve target locale and protect exact syntax.
 2. Load the one applicable language profile and relevant siblings; load the rubric for substantive
-   content or review. For prose style review, load `../_shared/core/anti-ai-prose.md` with
-   `resources/anti-ai-patterns.md`; apply its fidelity exceptions before any shared style fix.
+   content or review. For substantive prose, select by the **target** BCP 47 primary subtag:
+   - `en` (including regional variants): load `resources/style-skills.md` and resolve `humanizer`.
+   - `ko` (including regional variants): load that resource and resolve `humanize-korean`.
+   - Other languages: load `../_shared/core/anti-ai-prose.md` with
+     `resources/anti-ai-patterns.md` and the target profile.
+   Short independent UI strings with established siblings need protected-syntax and
+   sibling checks; they do not require an external prose-style pass.
 3. Infer meaning, register, terminology, and figurative-language handling.
 4. Draft in natural target order and project style.
-5. Verify exact syntax and structure, then review substantive content against the rubric.
+5. Apply the selected style implementation to the draft, preserving review-only mode
+   and translation fidelity. Then verify exact syntax, terminology, source claims,
+   structure and diff-sync scope, and check substantive content against the rubric.
 6. Emit the requested translation, patch, or evidence-backed review. State a missing-profile or
    context limitation when material.
 
@@ -187,13 +199,16 @@ the suggested revision only when warranted, and the evidence for each finding.
 |---|---|
 | `LOCAL_FS` | Source/target files, glossaries, language profiles |
 | `CODEBASE` | Sibling translations and code context |
-| `PROCESS` | Native search and syntax checks |
+| `PROCESS` | Syntax checks and selected external-skill acquisition or local gates |
+| `NETWORK` | Upstream style-skill retrieval when not already available |
 | `MEMORY` | Locale, terminology, register, protected syntax, unresolved ambiguity |
 
 ### Effects and side effects
 - Produces translated text or review findings.
 - Changes locale/docs files only when explicitly requested.
 - Retains source structure, identifiers, and placeholders.
+- May retrieve a missing selected style-skill bundle; reuses installed or cached
+  instructions. Upstream intermediate files stay in a writable scratch workspace.
 
 ### Guardrails
 1. Preserve meaning, protected syntax, and file structure before stylistic preference.
@@ -205,8 +220,9 @@ the suggested revision only when warranted, and the evidence for each finding.
 ## References
 
 - Translation rubric: `resources/translation-rubric.md` (load for substantive content or review)
-- Common prose diagnostics: `../_shared/core/anti-ai-prose.md` (load with translation exceptions when prose style needs review)
-- Translation exceptions and grammar diagnostics: `resources/anti-ai-patterns.md` (load with common diagnostics when prose style needs review)
+- Selected style skills: `resources/style-skills.md` (English or Korean substantive prose)
+- Common prose diagnostics: `../_shared/core/anti-ai-prose.md` (other target languages, with translation exceptions when prose style needs review)
+- Translation exceptions and grammar diagnostics: `resources/anti-ai-patterns.md` (other target languages, with common diagnostics when prose style needs review)
 - Target profiles: `resources/lang/{ko,ja,zh,en}.md` (load one matching profile)
 - Profile template: `resources/lang/_template.md` (only when adding a profile)
 - Shared context loading: `../_shared/core/context-loading.md`

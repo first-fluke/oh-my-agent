@@ -11,3 +11,4 @@ Retained proposals, tradeoffs, and architecture decision records. Each document 
 | 021 — Serena Memory Reaper + Language Reconcile | [021-serena-memory-reaper.md](021-serena-memory-reaper.md) |
 | 023 · Ownership Manifest | [023-ownership-manifest.md](023-ownership-manifest.md) |
 | 024 · Unify Skill Configs into `oma-config.yaml` | [024-unify-skill-configs.md](024-unify-skill-configs.md) |
+| 14개 상위 스킬 구성 트리 | [029-skill-composition.md](029-skill-composition.md) |

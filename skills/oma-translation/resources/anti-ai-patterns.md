@@ -1,8 +1,10 @@
 # Translation prose diagnostics
 
-Load `../../_shared/core/anti-ai-prose.md` and the target `lang/{code}.md` alongside
-this file when reviewing prose style. Common pattern definitions live in the shared
-resource; this file owns fidelity exceptions and translation-specific rules.
+Load this file with `../../_shared/core/anti-ai-prose.md` and the target
+`lang/{code}.md` when reviewing prose in a language without a selected external
+style skill. English and Korean use `style-skills.md` instead. Common pattern
+definitions live in the shared resource; this file owns fidelity exceptions and
+translation-specific rules for the remaining language routes.
 
 A target profile takes precedence for target-language usage; do not borrow a
 different language's rules.
