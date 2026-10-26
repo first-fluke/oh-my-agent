@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.13.0",
-  "releaseDate": "2026-10-24T01:10:12.866Z",
+  "releaseDate": "2026-10-26T10:47:44.517Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1986,13 +1986,13 @@
     },
     {
       "path": ".agents/skills/oma-translation/SKILL.md",
-      "sha256": "6a7d77d7e6d6672cd1d129e711628b508277899b3e1cf0498c7b394771ebf29a",
-      "size": 11471
+      "sha256": "19f2b8b84b21ec174813ddf0431d33183d77183f0e1d6e5fb5a33a19be608487",
+      "size": 12797
     },
     {
       "path": ".agents/skills/oma-translation/resources/anti-ai-patterns.md",
-      "sha256": "718f37929b1413ece367f29708a1d91984f78f2760d42caf009f93e50da4de84",
-      "size": 4743
+      "sha256": "af60a5e046567e5361dbf1e72938aec7891d1e373bcaf37d65faddd995659668",
+      "size": 4870
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/_template.md",
@@ -2001,8 +2001,8 @@
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/en.md",
-      "sha256": "313d8ba73e1e68722d1220f954bb3b92fd56032c9afd480b572e1a27935276ca",
-      "size": 8434
+      "sha256": "3c85d213cb16d7b219d8652d48d9badbb38f2243e305cf25dc5db6ccf873076d",
+      "size": 4565
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/ja.md",
@@ -2011,13 +2011,18 @@
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/ko.md",
-      "sha256": "ea88ec43abb57f483046d255ada24741ded03cbae46842cb4e76437e7f26d7e9",
-      "size": 15593
+      "sha256": "3ccf018957bd05b76c10fb8f5f17d47f920dda4d225ffdf4d4f471c25778970d",
+      "size": 10423
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/zh.md",
       "sha256": "0877a77aeb4ef920833ec620df4ed939d772ab0f769d5264d706386733cd73dd",
       "size": 9445
+    },
+    {
+      "path": ".agents/skills/oma-translation/resources/style-skills.md",
+      "sha256": "b7af692cb93d0fb503435d1039beb2ab7d5e073aa76b42498abab8a6e066819b",
+      "size": 6014
     },
     {
       "path": ".agents/skills/oma-translation/resources/translation-rubric.md",
@@ -2266,6 +2271,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 451
+    "totalFiles": 452
   }
 }
