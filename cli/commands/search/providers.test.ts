@@ -30,10 +30,11 @@ it("reports only shipped providers and does not claim a native search tool is co
     "native",
     "context7",
     "brave",
+    "exa",
   ]);
   expect(
     report.providers
-      .filter((p) => p.id !== "brave")
+      .filter((p) => !["brave", "exa"].includes(p.id))
       .every((p) => !p.cliAdapter),
   ).toBe(true);
 });

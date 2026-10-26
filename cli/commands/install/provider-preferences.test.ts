@@ -9,13 +9,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { parse } from "yaml";
-import { promptProviders, saveProviders } from "./provider-preferences.js";
+import {
+  promptProviders,
+  reportProviderSetup,
+  saveProviders,
+} from "./provider-preferences.js";
 
 const prompts = vi.hoisted(() => ({
   select: vi.fn(),
   text: vi.fn(),
   isCancel: vi.fn((value) => typeof value === "symbol"),
   cancel: vi.fn(),
+  log: { info: vi.fn(), warn: vi.fn() },
 }));
 vi.mock("@clack/prompts", () => prompts);
 let root: string;
@@ -179,20 +184,97 @@ it("selects Brave explicitly and preserves its credential references on reinstal
   );
 });
 
-it("offers Native first and Brave as the only additional web provider", async () => {
-  prompts.select.mockReset().mockResolvedValue("brave");
+it("selects Exa explicitly and preserves its credential references on reinstall", async () => {
+  writeFileSync(
+    config,
+    "# existing references\nexa: {api_key_env: CUSTOM_EXA, api_key_vault: team-exa}\nbrave: {api_key_env: CUSTOM_BRAVE, api_key_vault: team-brave}\n",
+  );
+  const fetcher = vi.spyOn(globalThis, "fetch");
+  const selected = await promptProviders(root, true, vi.fn(), {
+    webSearch: "exa",
+  });
+  saveProviders(root, selected);
+  const saved = readFileSync(config, "utf8");
+  expect(saved).toContain("# existing references");
+  expect(parse(saved)).toMatchObject({
+    providers: { web: "exa" },
+    exa: { api_key_env: "CUSTOM_EXA", api_key_vault: "team-exa" },
+    brave: { api_key_env: "CUSTOM_BRAVE", api_key_vault: "team-brave" },
+  });
+  expect((await promptProviders(root, true, vi.fn())).providers.web).toBe(
+    "exa",
+  );
+  expect(prompts.select).not.toHaveBeenCalled();
+  expect(prompts.text).not.toHaveBeenCalled();
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it("preserves inactive Exa credential references when switching to native search", async () => {
+  writeFileSync(
+    config,
+    "providers: {web: exa}\nexa: {api_key_env: CUSTOM_EXA, api_key_vault: team-exa}\n",
+  );
+  const selection = await promptProviders(root, true, vi.fn(), {
+    webSearch: "native",
+  });
+  saveProviders(root, selection);
+  expect(parse(readFileSync(config, "utf8"))).toMatchObject({
+    providers: { web: "native" },
+    exa: { api_key_env: "CUSTOM_EXA", api_key_vault: "team-exa" },
+  });
+});
+
+it.each(["brave", "exa"])(
+  "offers Native first with Brave and Exa and selects %s interactively",
+  async (provider) => {
+    prompts.select.mockReset().mockResolvedValue(provider);
+    const selected = await promptProviders(root, false, vi.fn(), {
+      codeIntelligence: "serena",
+      semanticMemory: "agentmemory",
+    });
+    expect(prompts.select).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialValue: "native",
+        options: [
+          expect.objectContaining({ value: "native" }),
+          expect.objectContaining({ value: "brave" }),
+          expect.objectContaining({ value: "exa" }),
+        ],
+      }),
+    );
+    expect(selected.providers.web).toBe(provider);
+    expect(prompts.text).not.toHaveBeenCalled();
+  },
+);
+
+it("preselects saved Exa for interactive reinstall", async () => {
+  writeFileSync(config, "providers: {web: exa}\n");
+  prompts.select.mockReset().mockResolvedValue("exa");
   const selected = await promptProviders(root, false, vi.fn(), {
     codeIntelligence: "serena",
     semanticMemory: "agentmemory",
   });
   expect(prompts.select).toHaveBeenCalledWith(
-    expect.objectContaining({
-      initialValue: "native",
-      options: [
-        expect.objectContaining({ value: "native" }),
-        expect.objectContaining({ value: "brave" }),
-      ],
-    }),
+    expect.objectContaining({ initialValue: "exa" }),
   );
-  expect(selected.providers.web).toBe("brave");
+  expect(selected.providers.web).toBe("exa");
+});
+
+it("reports Exa key setup without requesting or testing a secret", () => {
+  const fetcher = vi.spyOn(globalThis, "fetch");
+  reportProviderSetup({
+    providers: {
+      web: "exa",
+      code_intelligence: "serena",
+      semantic_memory: "agentmemory",
+    },
+  });
+  expect(prompts.log.info).toHaveBeenCalledWith(
+    expect.stringContaining("EXA_API_KEY"),
+  );
+  expect(prompts.log.info).toHaveBeenCalledWith(
+    expect.stringContaining("oma vault store exa-search"),
+  );
+  expect(prompts.text).not.toHaveBeenCalled();
+  expect(fetcher).not.toHaveBeenCalled();
 });

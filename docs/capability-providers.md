@@ -8,7 +8,7 @@ for documentation and code intelligence.
 | Capability | Default | Alternatives | Fallback |
 | --- | --- | --- | --- |
 | Documentation | Context7 | — | Official documentation through web search |
-| General web search | Runtime native search | Brave Search | Explicit failure; no automatic provider switch |
+| General web search | Runtime native search | Brave Search, Exa Search | Explicit failure; no automatic provider switch |
 | Code intelligence | Serena | Gortex (experimental) | Native search/read |
 | Semantic memory | AgentMemory | Honcho (experimental), `none` | Local evidence only |
 | Coordination and verification | `.agents/state/` | — | No external memory dependency |
@@ -18,7 +18,7 @@ for documentation and code intelligence.
 `oma install` offers a code-intelligence choice (Serena or Gortex) and a semantic
 memory choice (Agent Memory, Honcho, or none). Fresh installs default to **Serena
 and Agent Memory**, including AgentMemory installation, startup, and a health
-check. Web search offers Native (default) or Brave Search; reinstalling retains
+check. Web search offers Native (default), Brave Search or Exa Search; reinstalling retains
 saved choices. For unattended installs:
 
 ```sh
@@ -109,7 +109,7 @@ Currently, `native` declares runtime-managed web search and `context7` declares
 runtime-managed MCP documentation search. Neither has a CLI execution adapter;
 `runtime-managed` does not certify that the active agent has a connected search
 tool. Registration likewise does not certify credential validity or reachability.
-Brave has a CLI execution adapter for `web`. The existing URL-fetch and platform
+Brave and Exa have CLI execution adapters for `web`. The existing URL-fetch and platform
 API search commands retain their existing behavior.
 
 `providers.web` defaults to `native` and accepts a provider ID. The registry checks
@@ -175,13 +175,70 @@ explicitly without switching providers or printing upstream error bodies.
 no Brave API request; it does not certify a valid key, quota or reachability. Other
 doctor checks may contact their respective services. `oma search providers` only
 reports registration. Native search remains owned by the agent runtime and has
-no standalone CLI adapter, so `oma search web` requires Brave selection or an
-explicit `--provider brave` override.
+no standalone CLI adapter, so `oma search web` requires a registered API provider
+selection or an explicit `--provider brave` / `--provider exa` override.
+
+## Exa Search
+
+Exa uses the official [Search API](https://exa.ai/docs/reference/search) through
+the existing provider interface. Only general web discovery is registered;
+known-URL reads remain a separate operation.
+
+Select Exa during `oma install`, pass `--web-search exa`, or set the following
+through your configuration source and run `oma link` to project the selection:
+
+```yaml
+providers:
+  web: exa
+
+# Optional credential references; these are defaults, not key values.
+exa:
+  api_key_env: EXA_API_KEY
+  api_key_vault: exa-search
+```
+
+Provide the key through `EXA_API_KEY` or the existing hidden-input vault command:
+
+```sh
+oma vault store exa-search
+oma search web "TypeScript release notes" --provider exa --limit 5 --pretty
+```
+
+The adapter sends a POST request to `https://api.exa.ai/search` with the key only
+in `x-api-key`, `type: auto`, the requested `numResults`, and
+`contents: {highlights: true}`. Redirects are rejected. No additional SDK is
+required, and keys are not written to project YAML.
+
+OMA accepts 1–100 results (default 10), queries of 1–4000 characters, and JSON
+responses up to 2 MiB. Results retain URL, title, highlights/text excerpts and
+publication date when supplied. Vendor fields remain under `extensions.exa`;
+vendor relevance scores are not converted into trust or verification scores.
+Invalid result URLs are excluded.
+
+Missing credentials, HTTP failures, malformed or oversized responses, cancellation
+and network failures fail explicitly. They do not silently select another
+provider or print upstream error bodies. `oma doctor` checks credential presence
+with a bounded deadline and no Exa search request; this does not establish valid
+credentials, quota or API reachability.
+
+## Search routing and evidence
+
+`oma-search` selects documentation, web discovery, remote code search or known-URL
+retrieval from the requested outcome. Pure local-code navigation goes directly to
+the configured code-intelligence provider. Search without a candidate URL cannot
+fall back to URL retrieval; an additional route must address a specific evidence
+gap rather than run automatically alongside every query.
+
+Ordinary answers retain actual provider/source URLs, source type, inspected
+content or excerpt status, supporting evidence and observed version/date limits.
+Context7 resolution or a GitHub domain label alone does not verify a claim.
+`oma search trust` remains available for optional domain diagnostics, while the
+skill no longer requires a numeric domain score for each result.
 
 Generated agent instructions route general web questions through
-`oma search web` when Brave is selected, overriding native-web routing in installed
+`oma search web` when Brave or Exa is selected, overriding native-web routing in installed
 skills. Run `oma link` after changing the selection; returning to Native removes
-the Brave instruction. Search results remain untrusted evidence and source links
+the API-provider instruction. Search results remain untrusted evidence and source links
 should be cited.
 
 ## Gortex

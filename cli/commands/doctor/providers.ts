@@ -48,10 +48,11 @@ export async function collectProviderCheck(
     providers.web,
     "web",
   );
-  if (providers.web === "brave") {
+  if (web.status === "adapter-registered") {
+    const label = registry.resolve(providers.web, "web").label;
     try {
       const status = await registry.status(
-        "brave",
+        providers.web,
         "web",
         createSearchContext(root, AbortSignal.timeout(1000)),
       );
@@ -59,10 +60,10 @@ export async function collectProviderCheck(
       web.reason = status.reason;
     } catch {
       web.credentialConfigured = false;
-      web.reason = "Brave credential check timed out or failed.";
+      web.reason = `${label} credential check timed out or failed.`;
     }
     if (!web.credentialConfigured)
-      issues.push(web.reason ?? "Brave credential unavailable");
+      issues.push(web.reason ?? `${label} credential unavailable`);
   }
   if (["unregistered", "unsupported", "adapter-missing"].includes(web.status))
     issues.push(

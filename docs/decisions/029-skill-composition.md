@@ -42,27 +42,30 @@ oma-market
 
 ## oma-search
 
-근거: [SKILL.md](../../skills/oma-search/SKILL.md), [실행 경로](../../skills/oma-search/resources/execution-protocol.md), [출처 신뢰 규약](../../skills/oma-search/resources/trust-registry.md).
+근거: [SKILL.md](../../skills/oma-search/SKILL.md), [실행 경로](../../skills/oma-search/resources/execution-protocol.md), [출처·근거 규약](../../skills/oma-search/resources/trust-registry.md), [provider 설정](../capability-providers.md).
 
 ```text
 oma-search
 ├── skills
 │   └── none delegated in the current scope
 ├── CLI
-│   └── oma search / gh / glab: remote code routes
+│   ├── oma search providers / web: registered provider selection
+│   ├── oma search code / gh / glab: remote code
+│   └── oma search fetch: known-URL retrieval
 ├── MCP
 │   └── Context7: library resolution and documentation queries
 ├── API / host
-│   └── host web search and page retrieval
+│   ├── native runtime web search and page retrieval
+│   └── Brave Search / Exa Search: selected API provider
 ├── capabilities
-│   └── configured code intelligence: conditional, transport-dependent
+│   └── configured code intelligence: direct local-code handoff
 └── OMA-owned specs
     ├── intent-rules.md: route selection
     ├── execution-protocol.md: selected-channel invocation
-    └── trust-registry.md / checklist.md: provenance and result checks
+    └── trust-registry.md / checklist.md: provenance and inspected evidence
 ```
 
-프로젝트의 코드 탐색 provider가 MCP로 제공되면 그 연결을 사용한다. 모든 코드 탐색 provider를 MCP로 가정하지 않는다.
+`docs`·`web`·`code`·`fetch`를 요청 목적과 입력에 따라 선택한다. 웹 검색은 설정된 native·Brave·Exa 중 하나를 사용하고, 알려진 URL 읽기는 별도로 실행한다. 로컬 코드는 설정된 코드 탐색 도구로 직접 넘긴다. 일반 결과는 출처·원문 확인 상태·근거를 기록하며 숫자 도메인 점수는 선택적 진단으로 남긴다. Provider 등록이나 키 존재가 실제 API 호출 성공을 뜻하지 않는다.
 
 ## oma-scholar
 

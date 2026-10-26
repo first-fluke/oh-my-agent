@@ -1,63 +1,86 @@
-# Search Route Details
+# Search and retrieval execution
 
-The parent SKILL.md owns classification and execution order. Load only the selected route below.
+The parent SKILL.md owns route selection and execution order. Load the selected
+route here; supporting routes address a specific evidence gap.
 
-### docs route
-1. Call Context7 `resolve-library-id` with the library/framework name
-2. If resolved: call `query-docs` with the library ID and query topic
-3. If NOT resolved or empty: search the verified official documentation domain with notice, preserving the requested version and source constraints. A web retrieval tool does not broaden `--docs` to community sources.
+## docs
 
-### web route
-1. Use runtime native search tool (WebSearch, Google Search, Bing, etc.)
-2. If native search fails or returns blocked/empty:
-   - Enter the bypass fallback (see below)
-3. Collect top results with URLs
+1. Resolve the library with Context7 `resolve-library-id`, then query the relevant
+   documentation with `query-docs`. Carry the requested version and topic through.
+2. If Context7 misses or returns irrelevant material, discover the library's
+   official documentation with an available search provider. Preserve version and
+   official-source constraints; this fallback does not admit community tutorials.
+3. Inspect the returned passages or page. Identify excerpt-only access and any
+   version mismatch instead of treating library resolution as claim verification.
 
-#### Bypass Fallback (on native search failure)
-Delegate to the native CLI: `oma search fetch <url>`. The pipeline
-auto-escalates through four strategies and stops on the first success:
+## web
 
-- **api**: platform-specific handlers (Twitter syndication, Reddit JSON,
-  HN Firebase, arXiv Atom, SE v2.3, Bluesky AT Protocol, Mastodon, Wikipedia,
-  CrossRef, OpenLibrary, Lobste.rs, dev.to, V2EX, npm, PyPI, Naver blog/finance).
-- **probe**: parallel Jina Reader + WebFetch + curl UA variants (first-wins).
-- **impersonate**: Python `curl_cffi` subprocess (safari→chrome→firefox;
-  Korean hosts prefer safari). Auto-skips remaining TLS targets on
-  JS-essential markers.
-- **browser**: `puppeteer-core` + system Chrome via CDP. No MCP runtime
-  dependency. Install Chrome or set `OMA_CHROME_PATH`.
+1. Resolve `providers.web` or the explicit `--provider` override. Use
+   `oma search providers` for registration, selection and credential metadata.
+   `oma doctor` checks credential presence, not key validity, quota or API
+   reachability. Preserve an adapter's reported credential error.
+2. For `native`, use the web-search tools exposed by the current runtime. The CLI
+   cannot substitute for an unavailable runtime-native tool.
+3. For `brave` or `exa`, use the selected CLI adapter:
 
-Sidecar: add `--include-archive` to try AMP → archive.today → Wayback
-Machine when all primary strategies fail. Archive hits tag `provenance`
-so consumers can deprioritize cached content.
-
-Flags: `--only <list>`, `--skip <list>`, `--timeout <sec>`, `--locale <v>`,
-`--pretty`. Exit codes: 0=ok, 2=blocked, 3=not-found, 4=invalid-input,
-5=auth-required, 6=timeout, 1=error.
-
-### code route
-1. Use the CLI wrapper: `oma search code "<query>"` (wraps `gh search code` / `glab api`)
-   - URL contains `gitlab.com` or `--gitlab` flag -> add `--host gitlab`
-   - Optional filters: `--language <lang>`, `--repo <owner/repo>`, `--limit <n>`
-   - No URL (keyword only) -> default host is github (largest OSS coverage)
-2. Parse the JSON output into structured results
-3. Include repo name, file path, and match context
-
-### local route
-Follow `../../_shared/core/code-intelligence.md`. Discover configured tools for named symbols, patterns, and structure. If unavailable or timed out, use native search only for paths outside this project or ignored paths; record limitations. Do not install a provider, track a repository, or silently switch providers.
-
-## Result normalization
-
-1. Gather results from all dispatched routes
-2. Normalize into uniform format:
+   ```bash
+   oma search web "<query>" --provider brave
+   oma search web "<query>" --provider exa
    ```
-   { source: "docs|web|code|local", title, url, domain, snippet }
-   ```
-3. Deduplicate by URL
 
-## Trust and result presentation
+   Execute only the selected command. Default credential sources are
+   `BRAVE_SEARCH_API_KEY` / vault `brave-search` and `EXA_API_KEY` / vault
+   `exa-search`; configured references take precedence. Never print key values.
+4. Preserve query, source, date and version constraints. Collect actual result
+   URLs. Search excerpts do not establish that the complete source was read.
+5. An unavailable or unauthenticated explicit provider is a failed route, not an
+   empty result and not permission to switch providers. A permitted provider
+   switch must be named. If discovery yields no URL, refine or report no result;
+   do not call a URL reader with an invented target.
 
-Use `trust-registry.md` for score resolution, exceptions, and caching. Return the query's selected sources with route, source reference, trust label/score, relevance, and material limitations. Adapt the presentation to the request; no fixed report layout is required.
+## code
 
-## On Error
-See `error-playbook.md` for recovery steps.
+Use `oma search code "<query>"`, which wraps `gh search code` or `glab api`.
+Preserve explicit host/repository constraints. Use `--host gitlab` for an explicit
+GitLab host, and `--language`, `--repo` and `--limit` when requested. Default to
+GitHub only when no host constraint exists.
+
+Retain repository, file path, match context and revision when available. A match
+on a hosting domain does not establish ownership or implementation correctness.
+
+## fetch
+
+Use this route only with a URL supplied by the user or discovered by a search.
+Read it through an available runtime URL reader/browser or the CLI:
+
+```bash
+oma search fetch <url>
+```
+
+The CLI owns retrieval strategies and archive recovery. Use
+`oma search fetch --help` for available controls instead of duplicating the
+strategy implementation in this skill. Retain access/authentication errors,
+returned retrieval provenance and archive snapshot dates. An archived page does
+not establish current state.
+
+Useful flags include `--only`, `--skip`, `--timeout`, `--locale` and `--pretty`.
+Exit codes: 0=ok, 2=blocked, 3=not-found, 4=invalid-input, 5=auth-required,
+6=timeout, 1=error. Follow `error-playbook.md` for a failed retrieval.
+
+## Local-code handoff
+
+Local project symbols, files and references are outside this router. Use the
+configured code-intelligence capability directly under
+`../../_shared/core/code-intelligence.md`. Do not install or track a repository,
+silently switch providers, or broaden native search beyond that contract.
+
+## Results
+
+Keep route, actual provider, title, URL or file reference, source type, relevance,
+content-read status and the passage supporting the answer. Distinguish full
+content, inspected excerpts and unread search results. Include publication date,
+retrieval time, source version/revision and archive/fallback limits when observed;
+leave unknown fields unknown. Deduplicate URLs and preserve source constraints.
+
+The parent skill does not require a fixed report layout or a numeric trust lookup.
+Use `trust-registry.md` for provenance interpretation and optional diagnostics.

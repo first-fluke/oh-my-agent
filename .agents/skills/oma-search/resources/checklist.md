@@ -1,39 +1,36 @@
-# Search Agent - Verification Checklist
+# Search result checks
 
-Run this checklist before presenting results to the user.
+## Route and scope
 
-## Intent Classification
-- [ ] Query was classified into a valid mode (docs/web/code/local)
-- [ ] Override flags were respected if provided
-- [ ] Classification reasoning is logged in output header ("Mode: X (auto|flag)")
+- The route matches the requested outcome: `docs`, `web`, `code` or `fetch`.
+- Pure local-code work went directly to configured code intelligence.
+- Explicit route, provider, host, repository, version, date and source constraints
+  remain intact through recovery.
+- One primary route ran; any additional route addresses an identified evidence gap.
+- Web discovery used the configured/requested provider. An explicit provider's
+  credential or availability failure was not silently replaced by native search.
+- URL retrieval used an actual supplied/discovered URL, not a fabricated search
+  fallback target.
 
-## Route Execution
-- [ ] Correct route(s) dispatched based on classified intent
-- [ ] docs route: Context7 resolved, or fallback searched verified official documentation only, preserving version constraints
-- [ ] web route: native search attempted first, `oma search fetch` only on failure
-- [ ] code route: explicit platform/repository preserved through recovery; default to GitHub only without a source constraint
-- [ ] local route: configured provider used, or native fallback recorded without automatic provider setup
+## Evidence
 
-## Result Quality
-- [ ] Results are relevant to the original query
-- [ ] No duplicate URLs in final output
-- [ ] Results are sorted by relevance, trust score as tiebreaker
-- [ ] Each result has: source label, title, domain, trust info
+- Source references are real, relevant and deduplicated.
+- The actual route/provider and source type are identified when known.
+- Full-content, excerpt-only and unread-result status are distinguishable.
+- Each substantive answer claim has inspected supporting material; search snippets,
+  provider identity and hosting domains are not treated as verification.
+- Observed dates, versions, revisions and archive provenance are retained. Unknown
+  metadata remains unknown.
 
-## Trust Scoring
-- [ ] Every non-local result has a trust label attached
-- [ ] Scores resolved via `oma search trust` (agent overrides are upgrade-only: Context7 docs, official-site)
-- [ ] Unknown domains labeled as `—`, not excluded
-- [ ] `--strict` mode correctly filters below 0.85
-- [ ] `--strict` with 0 results shows rerun suggestion
+## Modifiers and limits
 
-## Error Handling
-- [ ] Failures reported transparently (no silent drops)
-- [ ] Fallback chain followed (docs->web, web->`oma search fetch`)
-- [ ] Rate limits reported without retry loops
+- `--strict` is supported by suitable primary/official content, or its evidence gap
+  is reported. No domain-score upgrade is used to make a result pass.
+- `--wide` preserves broader results with limits while retaining explicit scope.
+- Optional numeric domain diagnostics are labeled separately and copied from the
+  CLI unchanged; ordinary results do not require a score lookup.
+- Provider, access, freshness and version failures are reported. No fake results,
+  successful empty response for an auth error, or automatic retry loop is present.
 
-## Output Format
-- [ ] Header shows query and mode
-- [ ] Results numbered with route prefix (DOCS/WEB/CODE)
-- [ ] Trust tags and scores shown in brackets
-- [ ] Filtered count shown in --strict mode
+Return the requested answer or source list. A fixed header, numbered layout,
+score badge or decorative report template is not required.

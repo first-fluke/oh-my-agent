@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   BraveConfigSchema,
+  ExaConfigSchema,
   HonchoConfigSchema,
   ProvidersSchema,
 } from "../../utils/providers.js";
@@ -110,6 +111,7 @@ export const OmaConfigSchema = z
     telemetry: z.boolean().optional(),
     providers: ProvidersSchema.optional(),
     brave: BraveConfigSchema.optional(),
+    exa: ExaConfigSchema.optional(),
     honcho: HonchoConfigSchema.optional(),
     agents: AgentsMapSchema.optional(),
     models: z.record(z.string(), z.unknown()).optional(),

@@ -40,7 +40,11 @@ function context(signal = new AbortController().signal): SearchProviderContext {
 describe("search provider registry", () => {
   it("keeps runtime-native web search and Context7 docs separate without claiming reachability", () => {
     const registry = createSearchProviderRegistry();
-    expect(registry.list("web").map((p) => p.id)).toEqual(["native", "brave"]);
+    expect(registry.list("web").map((p) => p.id)).toEqual([
+      "native",
+      "brave",
+      "exa",
+    ]);
     expect(registry.list("docs").map((p) => p.id)).toEqual(["context7"]);
     expect(registry.inspect("native", "web")).toEqual({
       provider: "native",
@@ -49,6 +53,10 @@ describe("search provider registry", () => {
       reachability: "not-probed",
     });
     expect(registry.inspect("context7", "web").status).toBe("unsupported");
+    expect(registry.inspect("exa", "web")).toMatchObject({
+      status: "adapter-registered",
+      reachability: "not-probed",
+    });
     expect(registry.inspect("you", "web").status).toBe("unregistered");
   });
 

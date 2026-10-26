@@ -13,6 +13,7 @@ beforeEach(() => {
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 it("reports native search as runtime-managed without a network probe", async () => {
@@ -30,6 +31,35 @@ it("reports native search as runtime-managed without a network probe", async () 
   expect(report.issues).toEqual([]);
   expect(fetch).not.toHaveBeenCalled();
 });
+
+it.each([
+  ["brave", "BRAVE_SEARCH_API_KEY"],
+  ["exa", "EXA_API_KEY"],
+])(
+  "checks %s credential presence without a search request",
+  async (provider, env) => {
+    writeFileSync(
+      join(root, ".agents", "oma-config.yaml"),
+      `providers: {web: ${provider}}\n`,
+    );
+    vi.stubEnv(env, "synthetic-doctor-key");
+    const fetch = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValue(new Error("Unexpected network request"));
+    const report = await collectProviderCheck(root, {
+      provider: "agentmemory",
+      reachable: false,
+    });
+    expect(report.web).toMatchObject({
+      provider,
+      status: "adapter-registered",
+      credentialConfigured: true,
+      reachability: "not-probed",
+    });
+    expect(report.issues).toEqual([]);
+    expect(fetch).not.toHaveBeenCalled();
+  },
+);
 
 it.each([
   ["you", "unregistered"],

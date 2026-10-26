@@ -41,6 +41,14 @@ export function loadBraveConfig(
 
 export type BraveConfig = z.infer<typeof BraveConfigSchema>;
 
+export const ExaConfigSchema = BraveConfigSchema;
+
+export type ExaConfig = z.infer<typeof ExaConfigSchema>;
+
+export function loadExaConfig(cwd?: string): ExaConfig {
+  return ExaConfigSchema.parse(loadOmaConfig(cwd)?.exa ?? {});
+}
+
 export const HonchoConfigSchema = z
   .object({
     base_url: z.url().optional(),

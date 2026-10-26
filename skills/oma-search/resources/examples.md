@@ -1,162 +1,80 @@
-# Search Agent - Input/Output Examples
+# Search routing examples
 
-## Example 1: docs route (auto-detected)
+These examples describe routing and evidence boundaries. They are not records of
+live searches and do not supply fabricated result lists.
 
-**Input:**
-```
-/oma-search "React useEffect official docs"
-```
+## Version-specific documentation
 
-**Intent Classification:**
-- Keyword "official docs" detected -> `docs` mode
-
-**Output:**
-```
-Query: "React useEffect official docs"
-Mode: docs (auto)
-
-DOCS #1  useEffect — react.dev                  [verified,lang-docs 0.95]
-DOCS #2  Synchronizing with Effects — react.dev  [verified,lang-docs 0.95]
-DOCS #3  useEffect API Reference — react.dev     [verified,lang-docs 0.95]
+```text
+Request: React 19 useEffect official docs
+Route: docs
 ```
 
-## Example 2: web route (auto-detected)
+Resolve the library with Context7 and inspect relevant documentation. Preserve
+React 19. If resolution fails, search official React documentation; report if the
+requested version cannot be established. Do not label an excerpt verified solely
+because Context7 returned it.
 
-**Input:**
-```
-/oma-search "Redis pub/sub use cases"
-```
+## Selected web provider
 
-**Intent Classification:**
-- Keyword "use cases" detected -> `web` mode
-
-**Output:**
-```
-Query: "Redis pub/sub use cases"
-Mode: web (auto)
-
-WEB  #1  Redis Pub/Sub Guide — redis.io/docs     [verified,official-site 0.90]
-WEB  #2  Real-time Chat with Redis — dev.to      [external,blog 0.40]
-WEB  #3  Redis Pub/Sub Patterns — stackoverflow   [community,qna 0.70]
-WEB  #4  Redis Event-Driven Architecture — medium [external,blog 0.35]
+```bash
+oma search web "Redis pub/sub use cases" --provider exa
 ```
 
-## Example 3: code route (flag override)
+Use Exa for this request. If its required credential is absent, report that
+failure; do not silently return native-search results. A configured Brave request
+uses the same provider-selection boundary with `--provider brave`.
 
-**Input:**
-```
-/oma-search --code "OAuth PKCE implementation TypeScript"
-```
+## No candidate URL
 
-**Intent Classification:**
-- `--code` flag -> skip classification, forced `code` mode
-
-**Output:**
-```
-Query: "OAuth PKCE implementation TypeScript"
-Mode: code (flag)
-
-CODE #1  src/auth/pkce.ts — panva/oauth4webapi         [github]
-CODE #2  lib/pkce.ts — auth0/nextjs-auth0               [github]
-CODE #3  packages/oauth/src/pkce.ts — lucia-auth/lucia   [github]
+```text
+Request: Compare current approaches to a topic
+Route: web
+Result: No search provider or candidate result URL is available
 ```
 
-## Example 4: Ambiguous query (fallback parallel)
+Report the search limitation or refine within the original scope. Do not call
+`oma search fetch` with a guessed URL as a replacement for discovery.
 
-**Input:**
-```
-/oma-search "Next.js middleware"
-```
+## Known URL
 
-**Intent Classification:**
-- No clear keyword signal -> fallback `web` + `docs` parallel
-
-**Output:**
-```
-Query: "Next.js middleware"
-Mode: docs + web (auto)
-
-DOCS #1  Middleware — nextjs.org/docs             [verified,lang-docs 0.95]
-DOCS #2  next.config.js — nextjs.org/docs         [verified,lang-docs 0.95]
-WEB  #3  Middleware Deep Dive — vercel.com/blog    [verified,vendor 0.90]
-WEB  #4  Next.js Middleware Guide — freecodecamp   [external,tutorial 0.45]
+```text
+Request: Read https://example.org/article
+Route: fetch
 ```
 
-## Example 5: --strict mode
+Read that URL with an available reader or the retrieval CLI. Record access and
+content-read status. If only an archive is available, retain its snapshot date
+and avoid using it to establish current state.
 
-**Input:**
-```
-/oma-search --strict "JWT refresh token rotation"
-```
+## Remote implementation
 
-**Intent Classification:**
-- `--strict` modifier -> filter to verified+ (>= 0.85)
-- No route flag -> fallback `web` + `docs`
-
-**Output:**
-```
-Query: "JWT refresh token rotation"
-Mode: docs + web (auto, strict)
-
-DOCS #1  JWT Best Practices — datatracker.ietf.org  [verified,standards 0.95]
-WEB  #2  Token Rotation — auth0.com/docs             [verified,official-site 0.90]
-WEB  #3  Refresh Token Rotation — auth0.com/docs       [verified,official-site 0.90]
-
-Filtered: 4 results below trust threshold (0.85). Use --wide to see all.
+```bash
+oma search code "OAuth PKCE" --language TypeScript --repo owner/repository
+oma search code "CI pipeline caching" --host gitlab --repo group/project
 ```
 
-## Example 6: GitLab code search
+Each command illustrates a separate request. Retain the chosen host, repository,
+file path and inspected match context. Hosting on GitHub/GitLab alone does not
+establish that a repository is the authoritative source.
 
-**Input:**
-```
-/oma-search --code --gitlab "CI pipeline caching strategy"
-```
+## Local code
 
-**Output:**
-```
-Query: "CI pipeline caching strategy"
-Mode: code (flag, gitlab)
-
-CODE #1  .gitlab-ci.yml — gitlab-org/gitlab          [gitlab]
-CODE #2  ci/cache.yml — gitlab-org/omnibus-gitlab     [gitlab]
-CODE #3  .gitlab-ci.yml — getsentry/sentry            [gitlab]
+```text
+Request: Find handleAuth in this project
+Action: Hand off to configured code intelligence
 ```
 
-## Example 7: Shared infrastructure call (from oma-debug)
+Do not invoke an external search provider or route local work through this skill.
 
-**Context:** oma-debug encounters an unfamiliar error message
+## Source constraints
 
-**Internal call:**
-```
-Intent: web
-Query: "TypeError: Cannot read properties of undefined (reading 'map') React"
-```
-
-**Output returned to oma-debug:**
-```
-Query: "TypeError: Cannot read properties of undefined (reading 'map') React"
-Mode: web (explicit)
-
-WEB  #1  Common React Error Fix — stackoverflow      [community,qna 0.70]
-WEB  #2  Handling Undefined in React — react.dev      [verified,lang-docs 0.95]
-WEB  #3  TypeError Debugging — dev.to                 [external,blog 0.40]
+```text
+Request: --strict JWT refresh token rotation
+Route: web
 ```
 
-## Example 8: docs fallback to web
-
-**Input:**
-```
-/oma-search --docs "htmx form validation"
-```
-
-**Context7 fails to resolve "htmx" library.**
-
-**Output:**
-```
-Query: "htmx form validation"
-Mode: docs -> web (fallback)
-
-Could not find official docs via Context7. Searching official htmx documentation only.
-
-WEB  #1  Form Validation — htmx.org                  [verified,official-site 0.90]
-```
+Keep suitable primary or official sources whose inspected content supports the
+answer. If no such evidence is available, report the gap. `--wide` can include
+broader labeled results, but never relaxes an explicit official-site, repository,
+version or date constraint. No score table or automatic web/docs fanout is needed.

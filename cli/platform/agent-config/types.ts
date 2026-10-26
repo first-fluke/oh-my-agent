@@ -131,6 +131,7 @@ export interface OmaConfig {
   providers?: import("../../utils/providers.js").ProvidersConfig;
   honcho?: import("../../utils/providers.js").HonchoConfig;
   brave?: import("../../utils/providers.js").BraveConfig;
+  exa?: import("../../utils/providers.js").ExaConfig;
   language: string;
   /** "auto" inherits vendor agent settings; otherwise a built-in or custom preset key. */
   model_preset: string;

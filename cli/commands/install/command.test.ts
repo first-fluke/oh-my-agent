@@ -92,15 +92,34 @@ describe("install command --yes flag", () => {
     expect(installMock).not.toHaveBeenCalled();
   });
 
-  it("passes Brave web selection to the installer", async () => {
-    await makeProgram().parseAsync([
-      "node",
-      "oma",
-      "install",
-      "--yes",
-      "--web-search",
-      "brave",
-    ]);
-    expect(installMock).toHaveBeenCalledWith({ yes: true, webSearch: "brave" });
+  it.each(["brave", "exa"])(
+    "passes %s web selection to the installer",
+    async (webSearch) => {
+      await makeProgram().parseAsync([
+        "node",
+        "oma",
+        "install",
+        "--yes",
+        "--web-search",
+        webSearch,
+      ]);
+      expect(installMock).toHaveBeenCalledWith({ yes: true, webSearch });
+    },
+  );
+
+  it("rejects unregistered web providers before installation", async () => {
+    const program = makeProgram();
+    program.exitOverride().configureOutput({ writeErr: () => {} });
+    await expect(
+      program.parseAsync([
+        "node",
+        "oma",
+        "install",
+        "--yes",
+        "--web-search",
+        "unregistered-provider",
+      ]),
+    ).rejects.toThrow();
+    expect(installMock).not.toHaveBeenCalled();
   });
 });

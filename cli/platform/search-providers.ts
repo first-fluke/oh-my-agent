@@ -1,4 +1,5 @@
 import { createBraveSearchProvider } from "../io/brave-search.js";
+import { createExaSearchProvider } from "../io/exa-search.js";
 import type {
   SearchCapability,
   SearchProviderContext,
@@ -140,7 +141,7 @@ export class SearchProviderRegistry {
   }
 }
 
-/** Only shipped integrations are registered; Brave/You adapters can be added here. */
+/** Only shipped integrations are registered. */
 export function createSearchProviderRegistry(): SearchProviderRegistry {
   return new SearchProviderRegistry([
     {
@@ -159,5 +160,6 @@ export function createSearchProviderRegistry(): SearchProviderRegistry {
       mcp: { server: "context7", tools: ["resolve-library-id", "query-docs"] },
     },
     createBraveSearchProvider(),
+    createExaSearchProvider(),
   ]);
 }

@@ -1,119 +1,66 @@
-# Search Agent - Error Playbook
+# Search and retrieval recovery
 
-## docs Route Errors
+Preserve the failed route, provider and original constraints. Report the concrete
+failure and use an available recovery within the existing scope.
 
-### Context7 library not found
-**Symptom**: `resolve-library-id` returns no match
-**Recovery**:
-1. Try alternative library name spellings (e.g., "nextjs" vs "next.js")
-2. If still not found: search the verified official documentation domain, preserving the requested library version and source constraints.
-3. Inform the user that Context7 missed and the fallback remains official documentation only; if unavailable, report the gap.
+## Documentation
 
-### Context7 returns empty/irrelevant docs
-**Symptom**: `query-docs` returns content that doesn't match the query topic
-**Recovery**:
-1. Try broader or narrower topic parameter
-2. Search the verified official documentation domain with the original query and version constraints.
-3. Present official results with the Context7 limitation; do not substitute community material for `--docs`.
+- **No library match:** try an alternate library spelling, then discover the
+  official documentation with the requested version. State the Context7 gap.
+- **Empty or irrelevant excerpt:** refine the documentation topic or inspect an
+  official page. Do not substitute community material for an official-only task.
+- **Version unavailable:** report the missing version; identify any different
+  version explicitly rather than presenting it as equivalent.
 
-## web Route Errors
+## Web discovery
 
-### Native search returns empty
-**Symptom**: Runtime search tool returns 0 results
-**Recovery**:
-1. Simplify query (remove qualifiers, keep core terms)
-2. Retry with simplified query
-3. If still empty: run `oma search fetch <url>` on candidate URLs
+- **Selected provider unavailable:** use `oma search providers` for registration
+  and required credential metadata. Use `oma doctor` for credential-presence
+  checks; it does not establish key validity, quota or API reachability.
+  Missing Brave/Exa credentials are route failures.
+  Report the required credential name without its value. Do not silently switch
+  an explicit provider selection to runtime-native search.
+- **Native tool absent:** report unavailable native search. Use another configured
+  provider only when provider/source constraints permit it, naming the switch.
+  A URL reader cannot discover results from a keyword query.
+- **No results:** simplify or narrow the query within its constraints. If no
+  candidate URL exists, report no result; do not invent one for `fetch`.
+- **Rate limit or provider error:** preserve the reported status and retry/deadline
+  limits. Do not loop or represent an authentication/quota error as an empty
+  successful search.
 
-### Native search blocked (402/403)
-**Symptom**: Target site returns access denied
-**Recovery**:
-1. Run `oma search fetch <url>`; this auto-escalates api → probe → impersonate → browser
-2. Each strategy tries progressively more aggressive access methods
-3. If all primary strategies fail, the pipeline automatically tries its archive sidecar (AMP / archive.today / Wayback). If that also fails, report "Unable to access this source"; `--include-archive` only promotes archive into the ordered strategy list and is not a second recovery attempt.
+## Known-URL retrieval
 
-### `oma search fetch` all strategies fail
-**Symptom**: Non-zero exit code after api/probe/impersonate/browser exhausted.
-**Recovery**:
-1. Read the `attempts` array in JSON output: strategies, `elapsedMs`,
-   HTTP status, detected `signals`.
-2. Inspect the archive sidecar attempt, which runs automatically after the primary strategies. Do not rerun solely with `--include-archive`; that flag only changes strategy ordering.
-3. `paywall` signal → content gated; report auth requirement.
-4. `js-essential` + browser failed → site blocks headless Chrome;
-   suggest manual fetch or alternative source.
-5. Exit code 6 (timeout) → rerun with `--timeout 30` or larger.
+- **All strategies failed:** inspect the CLI's `attempts`, status, signals and
+  archive provenance. The archive sidecar already runs after primary failures;
+  do not repeat the same run solely with `--include-archive`.
+- **Authentication/paywall:** report the access requirement. Keep restricted or
+  unavailable content out of supporting evidence.
+- **Browser or optional dependency missing:** use `oma search doctor`, an already
+  available reader, or a documented `--skip` path. Do not automatically install a
+  browser or dependency.
+- **Timeout:** adjust the explicit request deadline when justified by the same
+  operation; do not retry indefinitely.
+- **Archive only:** retain snapshot provenance and date. State when it cannot
+  establish current state.
 
-### Browser strategy cannot find Chrome
-**Symptom**: `"Chrome/Chromium not found ... or set OMA_CHROME_PATH."`
-**Recovery**:
-1. `oma search doctor` to see detection state.
-2. Install Chrome / Edge / Brave / Chromium, or set `OMA_CHROME_PATH`.
-3. Or `--skip browser` to rely on api/probe/impersonate only.
+## Remote code
 
-### curl_cffi not installed (impersonate strategy)
-**Symptom**: `"curl_cffi is not installed. Run: pip install curl_cffi"`.
-**Recovery**: `pip install curl_cffi`, or `--skip impersonate`.
+- **Host or authentication unavailable:** report the selected `gh`/`glab` gap.
+  Preserve an explicit host/repository. A host switch requires scope that permits
+  the different source; do not silently replace GitLab with GitHub.
+- **No matches or rate limit:** refine requested repository/language terms or
+  report the gap. Do not run a retry loop or invent implementation matches.
 
-## code Route Errors
+## Source and evidence limits
 
-### gh search code rate limit
-**Symptom**: HTTP 403 or "rate limit exceeded" from GitHub API
-**Recovery**:
-1. Inform user: "GitHub API rate limit reached (30 req/min). Wait briefly or narrow your query."
-2. Suggest adding language/repo qualifiers to reduce result set
-3. Do NOT retry automatically in a loop
+- **Unknown source ownership or unread page:** mark that limit. A domain registry
+  label does not verify content.
+- **No result meets `--strict`:** report the missing primary source, version or
+  inspected support. Broader `--wide` output remains a separate, labeled result
+  set within the user's source constraints.
+- **Optional trust lookup unavailable:** leave its diagnostic unknown. Continue
+  with source/content evidence; do not fabricate a score.
 
-### glab api authentication missing
-**Symptom**: `glab` not installed or not authenticated
-**Recovery**:
-1. Check if `glab` is available: `which glab`
-2. If not installed, report that the requested GitLab source is unavailable because `glab` is missing.
-3. If not authenticated, report the GitLab authentication requirement.
-4. Preserve an explicit host or repository constraint. Use GitHub only when existing authorization permits that source change or no source constraint was supplied.
-
-### gh/glab returns 0 results
-**Symptom**: No code matches found
-**Recovery**:
-1. Suggest broader query terms
-2. Suggest removing language filter if one was applied
-3. Offer to try `web` route instead: "No code results found. Search web for examples?"
-
-## Trust Scoring Errors
-
-### Domain not in registry
-**Symptom**: `oma search trust <domain>` returns `level: "unknown"` (no registry, heuristic, or Tranco hit)
-**Recovery**: Label as `unknown` with score `—`. Do NOT exclude from results.
-
-### --strict mode returns 0 results
-**Symptom**: All results filtered out by trust score threshold
-**Recovery**:
-1. Inform user: "No results meet the strict trust threshold (verified+)."
-2. Suggest: "Rerun with `--wide` to see all results with trust labels."
-
-## Intent Classification Errors
-
-### Misclassified intent
-**Symptom**: User reports results are from wrong source type
-**Recovery**:
-1. Suggest explicit flag: "Try `--docs` or `--web` to specify the search type."
-2. Results footer always shows: "Mode: {mode} ({auto|flag})" for transparency
-
-### docs mode returns 0, user wanted docs
-**Symptom**: `docs` classified correctly but Context7 has no match
-**Recovery**:
-1. Search only verified official documentation domains.
-2. Preserve the requested version and label the retrieval route.
-3. Report a missing official source if this fallback also fails; broader sources require a scope change.
-
-## Multi-Vendor Errors
-
-### Runtime has no web search tool
-**Symptom**: Current vendor doesn't expose a search tool
-**Recovery**:
-1. Skip native search, go directly to `oma search fetch <url>`
-2. The probe strategy (Jina Reader + curl variants) works without vendor-specific tools
-
-### Tool name mismatch across vendors
-**Symptom**: Expected tool name doesn't exist in current runtime
-**Recovery**: Follow vendor-detection protocol to identify correct tool names.
-Execution protocol references generic capabilities, not specific tool names.
+For local-code requests, hand off directly under the shared code-intelligence
+contract instead of running another external search route.

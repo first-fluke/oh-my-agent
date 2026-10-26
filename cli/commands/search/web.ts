@@ -38,10 +38,10 @@ export function registerWebSearch(search: Command): void {
   search
     .command("web <query>")
     .description(
-      "Search with the selected web provider (Brave has a CLI adapter)",
+      "Search with the selected web provider (Brave and Exa have CLI adapters)",
     )
     .option("--provider <id>", "Override providers.web for this request")
-    .option("--limit <n>", "Maximum results (Brave: 1–20)", "10")
+    .option("--limit <n>", "Maximum results (Brave: 1–20; Exa: 1–100)", "10")
     .option("--timeout <seconds>", "Request deadline", "15")
     .option("--json", "Output JSON (default)")
     .option("--pretty", "Pretty-print JSON")

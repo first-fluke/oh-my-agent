@@ -2,9 +2,12 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { OmaConfigSchema } from "../platform/agent-config/schemas.js";
 import { createMemoryProvider } from "../state/semantic-memory.js";
 import {
+  ExaConfigSchema,
   HonchoConfigSchema,
+  loadExaConfig,
   loadProviders,
   resolveProviders,
 } from "./providers.js";
@@ -23,6 +26,36 @@ afterEach(() => {
 });
 
 describe("capability provider selection", () => {
+  it("loads Exa selection and credential references without changing defaults", () => {
+    const root = project(
+      "providers: {web: exa}\nexa: {api_key_env: TEAM_EXA_KEY, api_key_vault: team-exa}\n",
+    );
+    expect(loadProviders(root).web).toBe("exa");
+    expect(loadExaConfig(root)).toEqual({
+      api_key_env: "TEAM_EXA_KEY",
+      api_key_vault: "team-exa",
+    });
+    expect(resolveProviders().web).toBe("native");
+    expect(
+      OmaConfigSchema.safeParse({
+        model_preset: "auto",
+        providers: { web: "exa" },
+        exa: { api_key_env: "TEAM_EXA_KEY", api_key_vault: "team-exa" },
+      }).success,
+    ).toBe(true);
+    expect(
+      OmaConfigSchema.safeParse({
+        model_preset: "auto",
+        exa: { api_key: "plaintext-key" },
+      }).success,
+    ).toBe(false);
+    expect(ExaConfigSchema.safeParse({ api_key_env: "bad-name" }).success).toBe(
+      false,
+    );
+    expect(
+      ExaConfigSchema.safeParse({ api_key_vault: "../other" }).success,
+    ).toBe(false);
+  });
   it("shares defaults with consumers that already loaded the config layers", () => {
     expect(resolveProviders().code_intelligence).toBe("serena");
     expect(resolveProviders({ web: "native" }).code_intelligence).toBe(
