@@ -179,33 +179,46 @@ oma-voice
 
 ## oma-video
 
-근거: [SKILL.md](../../skills/oma-video/SKILL.md), [기존 영상 처리](../../skills/oma-video/resources/existing-media.md), [script 규약](../../skills/oma-video/resources/script-schema.md).
+근거: [SKILL.md](../../skills/oma-video/SKILL.md), [기존 영상 처리](../../skills/oma-video/resources/existing-media.md), [script 규약](../../skills/oma-video/resources/script-schema.md), [upstream ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill).
 
 ```text
 oma-video
 ├── skills
+│   ├── kajisho5/ffmpeg-skill: conditional supplied / rendered-video processing
 │   ├── oma-image: conditional stills / diagrams
 │   ├── oma-slide: conditional explainer frames
 │   ├── oma-voice: conditional transcription / TTS / duration fitting
 │   └── oma-translation: conditional spoken-text translation
 ├── CLI
+│   ├── bunx skills use kajisho5/ffmpeg-skill@ffmpeg-skill: catalog fallback
+│   ├── python3 <support_dir>/scripts/<selected>.py: upstream operations
 │   ├── oma video generate / compose / render / doctor / provider list
 │   ├── selected HyperFrames / MPT compositor toolchain
-│   └── ffmpeg / ffprobe: existing clips and media validation
+│   └── ffmpeg / ffprobe: upstream runtime and OMA render validation
 ├── MCP
-│   └── no direct server; Voicebox may be used through oma-voice
+│   ├── ffmpeg-skill: optional already-connected, discovered tool surface
+│   └── Voicebox: indirect through oma-voice
 ├── API / host
-│   └── selected asset providers; available vision tool for analysis
-└── OMA-owned specs
-    ├── script-schema.md: script input
-    ├── script.json / timing.json / render-spec.json / manifest.json contracts
-    ├── existing-media.md / vendor-matrix.md
-    └── hyperframes-authoring/: composition authoring rules
+│   └── selected asset providers; host vision for actual extracted images
+├── OMA-owned specs
+│   ├── script-schema.md: creation script input
+│   ├── script.json / timing.json / render-spec.json / manifest.json contracts
+│   ├── existing-media.md: routing, source timeline, vision and speech intent
+│   ├── vendor-matrix.md: creation providers
+│   └── hyperframes-authoring/: creation composition rules
+└── Upstream-owned specs
+    ├── SKILL.md: mechanical editing and probe / check / look workflow
+    ├── scripts/ and complete _common/ package: flags and execution contract
+    └── templates/ and project.json: upstream edit format
 ```
 
-영상의 구성·타임라인·인코딩 결과를 상위 스킬이 책임진다. 하위 스킬은 해당 작업에만 연결한다. 생성과 기존 영상 분석·편집은 별도 실행 경로다. 이 연결은 [생성 절차](../../skills/oma-video/resources/execution-protocol.md)에 선언되어 있으며, [provider 매트릭스](../../skills/oma-video/resources/vendor-matrix.md)의 deferred 표시와 실제 설치·동작 여부를 함께 확인해야 한다.
+입력되거나 이미 렌더링된 영상의 편집 실행은 runtime skill catalog의 `ffmpeg-skill`을 우선 사용한다. 없거나 지원 파일이 불완전하면 `bunx skills use`를 `--agent` 없이 실행하고, 반환된 전체 지침과 지원 디렉터리를 사용한다. Python 스크립트와 `_common/` 전체, `templates/`, `references/`, `package.json`을 함께 유지하며 OMA에 vendoring하지 않는다. 연결된 MCP는 실제 discovery 결과로만 사용한다.
 
-Pexels·Pixelle·Cap·Strudel과 `oma-captions`는 provider 문서의 선언·설정·deferred 상태를 유지한다. 이를 현재 설치되거나 완성된 하위 스킬로 표시하지 않는다. HyperFrames·MPT는 구성 가능한 compositor 경로이며 설치 완료를 뜻하지 않는다.
+OMA는 원본 PTS·VFR·A/V offset의 근거, 샘플링 정의, 비전 해석, speech와 amplitude에 따른 편집 의도, 자막·더빙의 공통 타임라인을 관리한다. upstream이 정확한 프레임·PTS 근거를 제공하지 않으면 한계를 기록한다. contact sheet 시각이나 명목 FPS로 정확한 PTS를 만들어내지 않는다. 음성만의 작업은 `oma-voice`로 유지한다.
+
+새 영상 생성은 기존 OMA CLI와 asset bus를 사용한다. OMA `render-spec.json`과 upstream `project.json`은 별도 규약이다. 외부 스킬의 script·flag·template·검증 cookbook을 OMA 리소스에 복제하지 않는다. 사용자가 출력 형식을 지정하면 그 형식 안에서 실제 probe/check/look 근거와 미검증 범위를 전달한다.
+
+생성용 하위 연결은 [생성 절차](../../skills/oma-video/resources/execution-protocol.md)에 선언되어 있으며, [provider 매트릭스](../../skills/oma-video/resources/vendor-matrix.md)의 deferred 표시와 실제 설치·동작 여부를 함께 확인해야 한다. Pexels·Pixelle·Cap·Strudel과 `oma-captions`를 현재 설치되거나 완성된 하위 스킬로 표시하지 않는다. HyperFrames·MPT는 구성 가능한 compositor 경로이며 설치 완료를 뜻하지 않는다.
 
 ## oma-slide
 

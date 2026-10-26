@@ -31,8 +31,9 @@ analysis and editing of an existing video.
 | README, code, data explanation | `explainer` | `16:9` | Topic or source path |
 | Demo or walkthrough | `demo` | `16:9` | Human recording via `--capture` |
 
-Existing-clip work uses installed media tools through the conditional resource;
-it is not a new `oma video generate` mode.
+Processing a supplied or already-rendered video conditionally loads the upstream
+`kajisho5/ffmpeg-skill` through `resources/existing-media.md`. This is separate
+from the OMA creation modes.
 
 ### When NOT to use
 
@@ -54,13 +55,20 @@ with source timestamps and the parameters used to derive them.
 
 ### Dependencies
 
-Creation requires the selected OMA providers/compositor. Existing-clip work uses
-installed `ffprobe`/`ffmpeg` and an available vision tool when visual analysis is
-requested. Report unavailable capabilities; do not substitute fabricated results.
+Creation requires the selected OMA providers/compositor. For processing supplied
+or rendered video, use the runtime skill catalog first; otherwise load
+`kajisho5/ffmpeg-skill` with `bunx skills use` as described in the conditional
+resource. Its complete support bundle, Python, FFmpeg/FFprobe and any
+operation-specific capabilities are required. Visual interpretation uses the
+host vision tool. Report unavailable capabilities rather than invent results.
 
 ## Structural Flow
 
-For an existing clip, use the existing-media branch in the canonical path.
+For supplied or already-rendered video, use the existing-media branch in the
+canonical path. The upstream skill owns its scripts, flags, templates,
+`project.json` and mechanical editing workflow. OMA retains source-timeline
+evidence and the visual, speech and editorial decisions described there. Its
+project format is separate from the OMA creation asset bus below.
 For creation, inputs are a brief plus optional mode, aspect, locale, captions,
 visual, voice, music, duration, compositor, capture path, and seed. Outputs live in
 `.agents/results/videos/<timestamp>-<shortid>-<mode>/`:
@@ -115,14 +123,16 @@ provides context only; it never automates login or starts a recorder. Without
 4. For creation, respect `limits.max_duration_sec` (180) and
    `limits.max_scenes` (40). Cancel subprocess work on SIGINT/SIGTERM.
 5. Keep run directories. Never auto-prune a user’s video artifacts.
-6. `--dry-run` writes only planning artifacts and does no provider render.
-   It does not prove an MP4 exists.
+6. Creation via `oma video generate --dry-run` writes only planning artifacts
+   and does no provider render. It does not prove an MP4 exists. For delegated
+   media work, follow the loaded upstream operation's dry-run contract.
 
 ### Canonical command path
 
-1. Existing clip: load `resources/existing-media.md` and follow the requested
-   extraction, analysis, or editing operation there. Its tool commands do not
-   pass through `oma video generate` or the creation-only limits above.
+1. Supplied or already-rendered video: load `resources/existing-media.md`.
+   Resolve the upstream skill, follow its supported operation, and retain OMA
+   timeline and interpretation evidence. These operations do not pass through
+   `oma video generate` or the creation-only limits above.
 2. New video: use the commands below and the creation pipeline. Keep existing
    `shorts`, `explainer`, and `demo` behavior.
 
@@ -178,8 +188,8 @@ Load only what the task needs:
 
 - `resources/execution-protocol.md` for the creation pipeline, failure
   mapping, and JSON reporting rules.
-- `resources/existing-media.md` when analyzing, extracting from, cutting, or
-  dubbing an existing clip.
+- `resources/existing-media.md` when processing supplied or rendered video:
+  upstream skill loading, source-timeline evidence and visual/speech decisions.
 - `resources/vendor-matrix.md` before changing providers, keys, cost, or
   fallback order.
 - `resources/script-schema.md` when authoring or validating `--script` input.
