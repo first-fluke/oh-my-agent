@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.14.0...cli-v20.15.0) (2026-10-26)
+
+
+### Features
+
+* **search:** add exa provider and simplify search routing ([aafee62](https://github.com/first-fluke/oh-my-agent/commit/aafee62fe5f9846bd8213b59610a35a9b1360318))
+
 ## [20.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.13.0...cli-v20.14.0) (2026-10-26)
 
 
