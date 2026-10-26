@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.15.0...cli-v20.16.0) (2026-10-26)
+
+
+### Features
+
+* **video:** delegate media editing to ffmpeg skill ([a5993ae](https://github.com/first-fluke/oh-my-agent/commit/a5993ae07317774f3498d3181a2153d75cc75a4d))
+
 ## [20.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.14.0...cli-v20.15.0) (2026-10-26)
 
 
