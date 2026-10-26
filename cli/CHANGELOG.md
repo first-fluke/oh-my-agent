@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.13.0...cli-v20.14.0) (2026-10-26)
+
+
+### Features
+
+* **translation:** delegate prose styling to language skills ([90f9ae5](https://github.com/first-fluke/oh-my-agent/commit/90f9ae5049fae119ade1be3e4a11cf16fa12779a))
+
 ## [20.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.12.2...cli-v20.13.0) (2026-10-24)
 
 
