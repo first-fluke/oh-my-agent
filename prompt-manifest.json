@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.17.0",
-  "releaseDate": "2026-10-27T11:38:50.146Z",
+  "releaseDate": "2026-10-27T14:14:43.142Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -891,8 +891,8 @@
     },
     {
       "path": ".agents/skills/oma-design/SKILL.md",
-      "sha256": "ab9775bafdd94ee78d0e3e21a25e799e13aea61739842101a06cb013a6f3e823",
-      "size": 7464
+      "sha256": "7294d5e5622350e73e292f6bdf9a3421a6952e2fa8c4d13953d73db3bf460995",
+      "size": 7596
     },
     {
       "path": ".agents/skills/oma-design/resources/asset-strategy.md",
@@ -926,8 +926,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/external-design-skills.md",
-      "sha256": "97f4c928123cd9fbca17ed162e1cae919852a502dadabaa7e91e9dffcc75208d",
-      "size": 6619
+      "sha256": "4d64927d7566738c2f192c42842afae9257433d16776140a878a1a942df62327",
+      "size": 7998
     },
     {
       "path": ".agents/skills/oma-design/resources/getdesign-fetcher.md",
