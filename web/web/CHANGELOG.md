@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.6.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.5.0...web-v11.6.0) (2026-10-27)
+
+
+### Features
+
+* **install:** add selective setup and reliable plugin wiring ([2a29d3a](https://github.com/first-fluke/oh-my-agent/commit/2a29d3a8eb4d760e4e4000b484c9f04761c59f5c))
+
 ## [11.5.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.4.0...web-v11.5.0) (2026-10-26)
 
 
