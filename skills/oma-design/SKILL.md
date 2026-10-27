@@ -49,7 +49,7 @@ outputs:
 ```
 
 ### Dependencies
-- Taste or Impeccable, selected and loaded through `resources/external-design-skills.md`.
+- Interface Design, Taste, or Impeccable, selected through `resources/external-design-skills.md`.
 - Project design artifacts and relevant local resources; Stitch and getdesign are optional inputs.
 - The implementation specialist's existing stack and validation tools.
 
@@ -58,8 +58,9 @@ outputs:
 ### Transitions
 - A scoped correction reuses the affected UI and tokens; a discovery document is unnecessary.
 - For existing products, establish Preserve or Overhaul from the brief and current system.
-- For new web art direction or an authorized visual overhaul, select Taste.
 - For existing-UI critique, audit, polish, or system extraction, select the matching Impeccable operation.
+- For dashboards, admin panels, SaaS product UI, or internal tools needing visual direction, select Interface Design.
+- For other new web art direction or an authorized visual overhaul, select Taste.
 - A documentation-only or token-contract task can remain local when no new visual judgment is needed.
 - Load one supplier for the current operation. A later operation may select another using the same project context.
 - A chosen GPU effect, cinematic video-scroll scene, or GSAP behavior adds the matching frontend implementation extension; it does not select another visual-direction supplier.

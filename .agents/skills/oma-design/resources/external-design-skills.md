@@ -10,18 +10,24 @@ they do not add another competing visual-direction supplier.
 
 ## Choose the operation
 
+Select the operation before the product surface. Existing-UI critique, audit,
+and polish use Impeccable, including dashboards, admin panels, SaaS, and internal tools.
+
 | Requested work | Supplier | Operation boundary |
 |---|---|---|
-| New web art direction, whole-page visual composition, authorized overhaul | Taste: `design-taste-frontend` | Web visual direction within the supplied brand, content, stack, and scope. |
+| Direction for dashboards, admin panels, SaaS product UI, or internal tools | Interface Design: `interface-design` | Establish or materially revise the product interface's hierarchy and system within the project contract. |
+| Other new web art direction, whole-page visual composition, authorized overhaul | Taste: `design-taste-frontend` | Web visual direction within the supplied brand, content, stack, and scope. |
 | Existing-UI UX or aesthetic assessment | Impeccable: `critique` | Findings and recommendations; a review does not authorize implementation. |
 | Accessibility, responsive, or technical UI audit | Impeccable: `audit` | Read-only findings with observed checks and untested areas. |
 | Finish an existing direction | Impeccable: `polish`, or the specific operation requested | Target the affected surface; preserve the existing visual system. |
 | Extract an existing system or document a changed one | Impeccable: `extract` or `document` | Reuse project facts and retain OMA's DESIGN.md and token contracts. |
 | Known design decision, document correction, or semantic token handoff | Local OMA contract | No supplier is needed merely to rewrite an existing decision. |
 
-Taste's route is web-specific. For a native surface, use an applicable Impeccable
-reference and hand implementation to `oma-mobile`; do not import web requirements
-into a native app. An unsupported operation remains an explicit capability gap.
+Use Taste for marketing pages, landing pages, campaigns, or brand-only web
+direction. The Interface Design and Taste routes are for web surfaces. For a
+native surface, use an applicable Impeccable reference and hand implementation
+to `oma-mobile`; do not import web requirements into a native app. An unsupported
+operation remains an explicit capability gap.
 
 ## Resolve the complete bundle
 
@@ -32,6 +38,7 @@ into a native app. An unsupported operation remains an explicit capability gap.
    supporting directory without a persistent installation:
 
    ```bash
+   bunx skills use dammyjay93/interface-design@interface-design
    bunx skills use Leonxlnx/taste-skill@design-taste-frontend
    bunx skills use pbakaus/impeccable@impeccable
    ```
@@ -46,10 +53,13 @@ into a native app. An unsupported operation remains an explicit capability gap.
 4. Confirm the selected operation's references, scripts, launchers, and data
    resolve before using them. For Impeccable, load its entry instructions and
    the reference for the selected command, rather than every command reference.
-   For Taste, follow its current entrypoint and only the required support files.
+   For Interface Design, follow its direction entrypoint; loading its instructions
+   does not register its optional plugin slash commands. For Taste, follow its
+   current entrypoint and only the required support files.
 5. Pass the brief, existing DESIGN.md/context, target platform, incumbent stack,
-   brand and language constraints, authorized writes, budget, and verification
-   limits to the chosen operation. Reuse supplied answers and project context.
+   brand, language, accessibility and reduced-motion constraints, authorized writes,
+   budget, and verification limits to the chosen operation. Reuse supplied answers
+   and project context.
 
 Loading a bundle does not prove that its browser, engine, image services, or
 implementation dependencies work. Supplier-native installers, provider hooks,
@@ -60,7 +70,13 @@ because their setup command appears in the upstream documentation.
 
 - Keep one authority for project facts: existing DESIGN.md and context remain
   inputs. Do not require a second discovery document or repeated approval for
-  an already authorized scoped task.
+  an already authorized scoped task. For Interface Design's
+  `.interface-design/system.md` context step, supply the canonical `DESIGN.md`
+  decisions. If DESIGN.md is absent, use the brief and observed UI; create it
+  only when the requested work materially changes the design system. Read an
+  existing `.interface-design/system.md` as project input and report conflicts
+  with the current brief or DESIGN.md. Save accepted changes to DESIGN.md within
+  the task's authorization; a second persistent design contract is not required.
 - Preserve the product's approved palette, type, content, and behavior unless
   the requested scope changes them. Use supported supplier preservation options
   when relevant; its visual preferences do not authorize a brand replacement.
@@ -99,6 +115,7 @@ assessment. Do not substitute a vendored copy of the upstream cookbook.
 
 ## Sources
 
+- [Interface Design](https://github.com/Dammyjay93/interface-design): product-interface instructions and project system context.
 - [Taste](https://github.com/Leonxlnx/taste-skill): current skill name, instructions, and support layout.
 - [Impeccable](https://github.com/pbakaus/impeccable): current command references and launchers.
 - [Skills use](https://github.com/vercel-labs/skills/blob/main/docs/commands.md#skills-use): loading instructions and their support directory.

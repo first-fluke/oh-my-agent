@@ -139,7 +139,8 @@ oma-hwp
 ```text
 oma-design
 ├── skills
-│   ├── Leonxlnx/taste-skill@design-taste-frontend: conditional web art direction
+│   ├── dammyjay93/interface-design@interface-design: conditional admin / SaaS / internal tool direction
+│   ├── Leonxlnx/taste-skill@design-taste-frontend: conditional other web art direction
 │   ├── pbakaus/impeccable@impeccable: conditional selected critique / audit / polish / extract / document
 │   ├── oma-frontend / oma-mobile: platform-specific implementation handoff
 │   └── oma-image: conditional original visual assets
@@ -160,7 +161,9 @@ oma-design
     └── visual methods, scripts, launchers and their runtime requirements
 ```
 
-현재 작업에 맞는 공급자 하나를 선택해 지침과 지원 파일을 읽고 따른다. 새로운 웹 시각 방향과 승인된 전면 개편은 Taste, 기존 UI의 평가·감사·마감·추출은 해당 Impeccable 작업으로 연결한다. 기존 결정을 문서나 토큰 계약에 옮기는 작업은 외부 공급자 없이 처리할 수 있다.
+현재 작업에 맞는 공급자 하나를 선택해 지침과 지원 파일을 읽고 따른다. 관리자·대시보드·SaaS 제품 화면·내부 도구의 방향은 Interface Design을 먼저 선택한다. 그 밖의 새로운 웹 시각 방향과 승인된 전면 개편은 Taste, 기존 UI의 평가·감사·마감·추출은 화면 종류와 관계없이 해당 Impeccable 작업으로 연결한다. 기존 결정을 문서나 토큰 계약에 옮기는 작업은 외부 공급자 없이 처리할 수 있다.
+
+Interface Design이 읽는 `.interface-design/system.md` 문맥에는 canonical `DESIGN.md`의 결정을 제공한다. 해당 upstream 문서가 이미 있으면 프로젝트 입력으로 읽고 충돌을 기록하며, 승인된 변경은 `DESIGN.md`에 반영한다. 별도 영구 문서나 plugin command 설치를 요구하지 않는다.
 
 일반적인 타이포그래피·색상·간격·모션·시각 금지 목록을 OMA에 복제하지 않는다. OMA는 프로젝트의 브랜드·사실·언어·변경 범위·출력 규약·검증 근거를 유지한다. 구현은 기존 스택을 유지하는 플랫폼 스킬로 넘긴다. 외부 설치기·hook·엔진 다운로드·별도 에이전트 실행은 지침 로딩에 포함되지 않는다. 공급자의 빌드 요구나 반복 확인 절차보다 현재 사용자 지시와 실행 정책이 우선한다.
 
