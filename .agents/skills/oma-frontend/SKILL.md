@@ -42,6 +42,7 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 - React, Next.js, TypeScript, TailwindCSS v4, and `shadcn/ui` — or Angular + signals + RxJS in Angular projects (`resources/angular-rules.md`)
 - Project sources of truth such as `packages/design-tokens`, `packages/i18n`, and shared utilities
 - `resources/execution-protocol.md`, `resources/checklist.md`, snippets, and Tailwind rules
+- Conditional visual implementation routes and shared interaction-quality guidance; load only for the affected capability.
 
 ### Control-flow features
 - Branches by server/client component boundary, responsive state, component library availability, and i18n/token requirements
@@ -67,6 +68,7 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 - If UI text is user-facing and i18n exists, add strings through the i18n source of truth.
 - If interaction or hooks are needed, mark the boundary as Client Component.
 - If backend contracts are missing, coordinate with backend/API planning.
+- For a requested GPU effect, video-scroll scene, or selected GSAP implementation, use the matching conditional extension.
 
 ### Failure and recovery
 - If design tokens or i18n sources are missing, state assumptions and follow existing local patterns.
@@ -102,6 +104,10 @@ or content. For Serena, use `find_file`, `search_for_pattern`,
 `get_symbols_overview`, and `find_symbol`. Native search is limited to the
 provider exclusions and non-code paths permitted by the project's search policy.
 
+
+For a specialized visual capability, use `resources/specialized-visual-implementation.md`.
+For affected motion, touch, component feedback, or interaction performance, use
+`../_shared/ui-interaction-quality.md`. Ordinary UI work does not preload these paths.
 
 Then run the project's frontend verification commands, typically lint, typecheck, tests, and browser/responsive checks when the UI changes.
 
@@ -203,6 +209,8 @@ Project stack conventions live in dedicated files. **Read these before coding**;
 To extend: add `resources/<name>.md` and append a row above.
 
 ## References
+- Specialized visual implementation: `resources/specialized-visual-implementation.md` (requested CanvasUI GPU effect, Scroll World scene, or selected GSAP implementation)
+- Interaction quality: `../_shared/ui-interaction-quality.md` (motion, feedback, touch, interruption, or performance changes)
 - Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
 
 - Project frontend rules (MUST load before review/implementation): `../../rules/frontend.md`

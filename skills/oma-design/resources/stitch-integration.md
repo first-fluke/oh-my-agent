@@ -5,8 +5,8 @@
 Google Stitch is an AI-powered UI design platform. Its MCP server enables
 coding agents to interact with design projects programmatically.
 
-Stitch MCP is **optional**; all 7 phases of the design workflow work
-without it. It adds visual preview and design extraction capabilities.
+Stitch MCP is **optional**. Design operations work without it; it adds
+visual preview and design extraction capabilities.
 
 ## Connection and Setup
 
@@ -178,11 +178,11 @@ Call `get_screen` and download its `htmlCode.downloadUrl` or
 routes, retrieve each screen's HTML and perform that mapping locally.
 Use only tools exposed by the connected official server.
 
-## Tool Mapping by Workflow Phase
+## Tool Mapping by Operation
 
 Follow the discovered input schemas for all calls.
 
-### Phase 2: EXTRACT
+### Extract existing design context
 | Step | Tool | Input |
 |------|------|-------|
 | Find projects | `list_projects` | filter: "view=owned" |
@@ -191,14 +191,14 @@ Follow the discovered input schemas for all calls.
 | Download HTML | `get_screen` + HTTP download | screen identifier → `htmlCode.downloadUrl` |
 | Download screenshot | `get_screen` + HTTP download | screen identifier → `screenshot.downloadUrl` |
 
-### Phase 4: PROPOSE
+### Explore a requested direction
 | Step | Tool | Input |
 |------|------|-------|
 | Generate concept | `generate_screen_from_text` | text prompt + design context |
 | Generate variants | `generate_variants` | existing screen ID |
 | Preview | `get_screen` + HTTP download | `screenshot.downloadUrl` for visual comparison |
 
-### Phase 5: GENERATE
+### Retrieve implementation references
 | Step | Tool | Input |
 |------|------|-------|
 | Map site routes | local operation | requested screen-to-route mapping |

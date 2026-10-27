@@ -1,82 +1,52 @@
-# Redesign Protocol
+# Existing Product Design Scope
 
-Applies whenever the target is an EXISTING site or app, not a greenfield build.
-Misclassifying the mode is the biggest source of bad redesign output.
+Load this resource when reviewing or changing an existing site or app.
 
-## 1. Detect the Mode (first action)
+## Establish the authorized change
 
-| Mode | Meaning | Treatment |
-|------|---------|-----------|
-| Greenfield | No existing site, or full overhaul approved | Normal 7-phase flow |
-| Redesign - Preserve | Modernize without breaking the brand | Audit first, extract brand tokens, evolve gradually |
-| Redesign - Overhaul | New visual language on existing content | Greenfield for visuals; preserve content and IA |
+| Operation | Treatment |
+|---|---|
+| Audit | Inspect the current product and report findings; keep product source, design docs, tokens, and settings unchanged |
+| Redesign with brand preservation | Improve the requested area using the existing brand and behavior as constraints |
+| Authorized visual overhaul | Establish a new visual direction while retaining content and behavior outside the authorized change |
 
-If ambiguous, ask ONCE: "Should this redesign preserve the existing brand,
-or are we starting visually from scratch?" Never a multi-question dump.
+Use the user's stated scope and prior decisions. If the brief leaves a material
+brand-preservation choice unresolved, clarify that choice before changing it.
 
-## 2. Audit Before Touching
+## Capture the baseline
 
-Document the current state before proposing any change:
+Read the existing design document and relevant implementation. Identify the
+brand colors, type/fallback stack, marks, affected routes and navigation,
+conversion paths, form/analytics contracts, accessibility behavior, and relevant
+SEO metadata. Record inspected facts separately from proposed improvements.
 
-- **Brand tokens**: primary/accent colors, type stack, logo treatment, radii
-- **Information architecture**: page tree, primary nav, key conversion paths
-- **Content blocks**: what exists, what's doing work, what's filler
-- **Patterns to preserve**: signature interactions, recognizable hero, copy voice
-- **Patterns to retire**: AI-slop tells, broken layouts, dead links, generic stock imagery, perf traps
-- **SEO baseline**: ranking pages, meta titles, structured data, OG cards.
-  SEO migration is the #1 redesign risk.
+Reuse an existing `.design-context.md`. Update it only when context documentation
+is within the authorized deliverable; an audit can report its baseline directly.
 
-Record the audit in `.design-context.md` (a `## Redesign Audit` section)
-so later phases and subagents can see it.
+## Preserve project contracts
 
-## 3. Preservation Rules (Preserve mode)
+- Keep approved brand tokens, marks, and copy voice unless their change is part
+  of the request. A vendor reference or upstream visual preference does not
+  authorize replacing them.
+- Preserve supported languages and CJK-capable typography/fallback. Check actual
+  language coverage when a font changes.
+- Retain URLs, anchors, primary navigation labels, form field identifiers,
+  analytics events, and tracking-dependent control names unless their change is
+  authorized. Include relevant SEO and analytics checks for an authorized change.
+- Preserve legal/consent text and existing accessibility behavior outside the
+  requested changes.
+- Keep the existing framework, styling, component, state, and i18n conventions.
+  Use [oma-frontend](../../oma-frontend/SKILL.md) or
+  [oma-mobile](../../oma-mobile/SKILL.md) for implementation.
 
-1. Do not change information architecture unless asked. Keep page slugs,
-   anchor IDs, and primary nav labels stable (SEO + muscle memory).
-2. Extract brand colors BEFORE applying anti-pattern rules. A brand that is
-   already purple stays purple — execute it with intent instead of banning it.
-3. Preserve copy voice unless asked for a rewrite. Visual modernization
-   is not a content rewrite.
-4. Honor existing accessibility wins. Never regress focus states, alt text,
-   keyboard nav, or contrast.
-5. Respect existing analytics events. Do not rename buttons, form fields,
-   or section IDs that downstream tracking depends on.
+## Route and verify the requested work
 
-## 4. Modernization Levers (priority order)
+Select one supplier through
+[external-design-skills.md](external-design-skills.md). Give it the baseline and
+preservation constraints, then use its guidance for the selected operation.
+Keep the change proportional to the brief; generic modernization rankings or
+assumed visual-lift percentages do not decide scope.
 
-Apply in order; stop when the brief is satisfied. Earlier levers give the
-biggest visual lift per unit of risk:
-
-1. **Typography refresh** — biggest instant improvement, lowest risk
-   (CJK rules from SKILL.md still win: Pretendard Variable / Noto Sans CJK)
-2. **Spacing & rhythm** — section padding, vertical rhythm, 8px grid
-3. **Color recalibration** — desaturate, unify neutrals, keep brand accent
-4. **Motion layer** — add restrained micro-interactions to existing components
-5. **Hero & key-section recomposition** — restructure top-of-funnel
-6. **Full block replacement** — only when the existing block is unsalvageable
-
-## 5. Decision Tree
-
-- IA, content, and SEO sound → **targeted evolution** (levers 1-4).
-  ~70% of the value at ~40% of the risk.
-- Visual debt is structural (broken IA, no design system, broken mobile)
-  → **full redesign** with strict content preservation.
-- Brand itself is changing → treat as **greenfield**.
-
-## 6. What Never Changes Silently
-
-Never modify without explicit user approval:
-
-- URL structure / route slugs
-- Primary nav labels
-- Form field names or order (breaks analytics + autofill)
-- Brand logo or wordmark
-- Existing legal / consent / cookie copy
-
-## 7. Implementation Rules
-
-- Work with the existing tech stack. Do not migrate frameworks or styling
-  libraries as part of a redesign.
-- Before recommending any new library, check the project's dependency file.
-- Keep changes reviewable and focused: small targeted improvements over
-  big rewrites. Frontend implementation itself is delegated to `oma-frontend`.
+Return findings for an audit. For authorized changes, capture accepted decisions
+in the applicable project artifacts and use [checklist.md](checklist.md) to
+record responsive, accessibility, and behavior checks actually performed.

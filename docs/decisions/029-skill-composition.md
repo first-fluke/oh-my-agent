@@ -1,8 +1,8 @@
-# 14개 상위 스킬 구성 트리
+# 16개 상위 스킬 구성 트리
 
 Status: 원본 스킬 정의 기준 구성 문서. 선택된 연결과 실제 설치·실행 검증 상태를 구분한다.
 
-기준일: 2026-10-26
+기준일: 2026-10-27
 
 ## 읽는 방법
 
@@ -131,6 +131,63 @@ oma-hwp
 ```
 
 외부 엔진 kordoc과 OMA 소유 후처리를 구분한다. kordoc의 다른 문서 형식·생성·편집 기능은 현재 이 상위 스킬의 지원 범위에 포함하지 않는다.
+
+## oma-design
+
+근거: [SKILL.md](../../skills/oma-design/SKILL.md), [외부 스킬 선택](../../skills/oma-design/resources/external-design-skills.md), [실행 계약](../../skills/oma-design/resources/execution-protocol.md), [DESIGN.md 규약](../../skills/oma-design/resources/design-md-spec.md), [후보 검토](../design-skill-candidates.md).
+
+```text
+oma-design
+├── skills
+│   ├── Leonxlnx/taste-skill@design-taste-frontend: conditional web art direction
+│   ├── pbakaus/impeccable@impeccable: conditional selected critique / audit / polish / extract / document
+│   ├── oma-frontend / oma-mobile: platform-specific implementation handoff
+│   └── oma-image: conditional original visual assets
+├── CLI
+│   ├── bunx skills use <selected repository>@<skill>: catalog fallback, without --agent
+│   ├── selected upstream launcher: only when the operation requires its runtime
+│   └── getdesign: optional, requested reference data
+├── MCP
+│   └── Stitch: optional, requested design-source operation
+├── OMA-owned specs
+│   ├── external-design-skills.md: task selection and complete support-directory loading
+│   ├── DESIGN.md / .design-context.md / semantic token contracts
+│   ├── brand, content, URLs, analytics, CJK and accessibility constraints
+│   ├── shared ui-interaction-quality.md: adopted motion / interaction acceptance rules
+│   └── affected-result verification and platform handoff
+└── Upstream-owned specs
+    ├── selected SKILL.md and operation references
+    └── visual methods, scripts, launchers and their runtime requirements
+```
+
+현재 작업에 맞는 공급자 하나를 선택해 지침과 지원 파일을 읽고 따른다. 새로운 웹 시각 방향과 승인된 전면 개편은 Taste, 기존 UI의 평가·감사·마감·추출은 해당 Impeccable 작업으로 연결한다. 기존 결정을 문서나 토큰 계약에 옮기는 작업은 외부 공급자 없이 처리할 수 있다.
+
+일반적인 타이포그래피·색상·간격·모션·시각 금지 목록을 OMA에 복제하지 않는다. OMA는 프로젝트의 브랜드·사실·언어·변경 범위·출력 규약·검증 근거를 유지한다. 구현은 기존 스택을 유지하는 플랫폼 스킬로 넘긴다. 외부 설치기·hook·엔진 다운로드·별도 에이전트 실행은 지침 로딩에 포함되지 않는다. 공급자의 빌드 요구나 반복 확인 절차보다 현재 사용자 지시와 실행 정책이 우선한다.
+
+CanvasUI·Scroll World·GSAP는 다음 frontend 구현 경로로 연결한다. Emil의 작업별 지침에서 선별한 원칙은 공유 상호작용 품질 규약으로 흡수한다. Hallmark·Magic UI·OpenDesign은 [검토 목록](../design-skill-candidates.md)에 남긴다. 스킬의 전체 지원 묶음 확인과 실제 UI 생성·브라우저·접근성 실행 검증을 구분한다.
+
+## oma-frontend
+
+근거: [SKILL.md](../../skills/oma-frontend/SKILL.md), [조건부 구현 확장](../../skills/oma-frontend/resources/specialized-visual-implementation.md), [공유 상호작용 품질](../../skills/_shared/ui-interaction-quality.md).
+
+```text
+oma-frontend
+├── fixed project stack
+│   └── existing React / Next.js / Angular, tokens, primitives, state and i18n
+├── conditional implementation extensions
+│   ├── CanvasUI: selected component / framework / renderer from its registry
+│   ├── oso95/scroll-world@scroll-world: requested video-scroll scene and complete support bundle
+│   └── greensock/gsap-skills: selected GSAP API / framework skill subset
+├── skills
+│   ├── oma-image / oma-video: conditional scroll-scene assets
+│   └── oma-design: project visual contract when relevant
+└── OMA-owned specs
+    ├── specialized-visual-implementation.md: eligibility, acquisition and runtime checks
+    ├── shared ui-interaction-quality.md: adopted Emil-derived functional principles
+    └── existing frontend stack, lifecycle, accessibility and verification rules
+```
+
+이 세 경로는 이미 정한 디자인을 구현하는 기능 확장이다. 필요한 기능이 선택됐을 때만 해당 registry나 스킬 묶음을 읽는다. 시각 방향 공급자 하나를 고르는 규칙과 구분하며, 기존 스택과 기본 애니메이션 선택을 교체하지 않는다. 공유 상호작용 규약도 관련 작업에서만 읽고, Emil의 전체 스킬 묶음이나 라이브러리 추천 목록을 기본 지침으로 적재하지 않는다.
 
 ## oma-image
 

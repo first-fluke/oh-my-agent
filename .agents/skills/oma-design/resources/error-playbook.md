@@ -1,108 +1,18 @@
-# Design Error Playbook
+# Design Failure Recovery
 
-## Contrast Failure
+Use the recovery matching an observed failure. Keep actions within the task's
+authorized scope; an audit reports findings instead of modifying the product.
 
-**Symptom**: Text hard to read, WCAG contrast check fails.
+| Failure | Recovery | Evidence to retain |
+|---|---|---|
+| Selected upstream skill or support file is unavailable | Follow the resolution/failure path in [external-design-skills.md](external-design-skills.md). Continue with available project context only when that path allows it; do not claim the missing guidance was loaded | Supplier/source, missing capability or path, and the resulting limit |
+| Upstream advice conflicts with project brand, CJK coverage, or implementation conventions | Keep the project contract and translate the relevant advice within it. Resolve a material unanswered direction through existing user instructions or clarification | Conflicting recommendation, retained constraint, and chosen project decision |
+| Vendor seed cannot be retrieved or its hash fails | Follow [getdesign-fetcher.md](getdesign-fetcher.md); discard an invalid temporary seed and use permitted project context | Resolved source/version, error or digest mismatch, and whether any seed was used |
+| Requested Stitch source is unavailable | Use the troubleshooting in [stitch-integration.md](stitch-integration.md) for the actual configured surface. Setup/reconnection follows the task's authorization. Report reference extraction as unavailable when it cannot be verified | Tool status/error and the source actually inspected |
+| `DESIGN.md` and tokens disagree | Compare the accepted role/value with the existing token source using [design-tokens.md](design-tokens.md). Report the mismatch in an audit; make the scoped correction through `oma-frontend` when authorized | Role, token, affected consumer/theme/state, and readback |
+| Rendered contrast, focus, labels, or responsive behavior fails | Reproduce the affected state and record the measured or observed result. Use `oma-frontend` for an authorized implementation fix, then repeat the affected check | Route/component, viewport/input mode, steps/tool, result, and unresolved limits |
+| Motion or interaction performance fails | Inspect the actual affected behavior and use the current frontend stack's diagnostics. Keep generic timing/property recipes in the selected specialist guidance | Reproduction, device/browser or profiling evidence, and result of any scoped fix |
 
-**Fix**:
-1. Check contrast ratio with browser DevTools or axe
-2. Adjust foreground/background until the measured ratio meets the target; on a fixed dark background, replacing white with off-white lowers contrast
-3. Increase text opacity (text-white/60 → text-white/80)
-4. Darken or lighten background to increase contrast
-5. For colored backgrounds: use dark text or add a dark overlay
-
-**Prevention**: Always define text colors relative to backgrounds in DESIGN.md.
-
----
-
-## AI Slop Detected
-
-**Symptom**: Design looks generic, fails the "AI made this" test.
-
-**Fix**:
-1. Check anti-patterns.md to identify which patterns triggered
-2. Replace purple gradients with brand-derived colors
-3. Add texture (noise/grain) instead of plain gradients
-4. Vary layout patterns across sections (not all card grids)
-5. Inject project-specific design context from .design-context.md
-6. Replace Inter/Geist with system fonts or project-specific fonts
-7. Remove gratuitous glassmorphism; reserve for 1-2 accent elements
-
-**Prevention**: Use relevant existing context; perform discovery when a new design decision requires it.
-
----
-
-## Responsive Breakage
-
-**Symptom**: Horizontal scroll, overlapping elements, tiny touch targets on mobile.
-
-**Fix**:
-1. Check at 375px viewport width (iPhone SE)
-2. Stack columns: grid-cols-1 on mobile, grid-cols-2+ on md/lg
-3. Increase touch targets to min 44x44pt (min-h-[44px] min-w-[44px])
-4. Use clamp() for fluid typography instead of fixed sizes
-5. Hide decorative elements on mobile if they cause overflow
-6. Switch from side-by-side to stacked layout on mobile
-7. Check for fixed-width elements: replace px values with percentages or max-w
-
-**Prevention**: Always start with mobile layout, enhance upward.
-
----
-
-## Animation Jank
-
-**Symptom**: Janky scrolling, low FPS, dropped frames, laggy interactions.
-
-**Fix**:
-1. Only animate `transform` and `opacity`; never width, height, top, left
-2. Reduce concurrent animations to max 2-3 visible simultaneously
-3. Pause off-screen Canvas/WebGL with Intersection Observer
-4. Add `will-change: transform` sparingly and remove after animation completes
-5. Reduce particle count on mobile (50-75% fewer)
-6. Reduce canvas resolution: `renderer.setPixelRatio(Math.min(devicePixelRatio, 2))`
-
-**Prevention**: Test on actual mobile devices, not just browser responsive mode.
-
----
-
-## Stitch MCP Connection Failure
-
-**Symptom**: MCP tools not responding, authentication errors.
-
-**Fix**:
-1. Follow the Troubleshooting section in `resources/stitch-integration.md`
-   for the official remote endpoint and the selected authentication method.
-2. Check the client's MCP status/logs, reconnect, and call `list_projects`
-   to verify the connection.
-
-**Fallback**: Proceed without Stitch; all workflow phases work standalone.
-
----
-
-## Design System Inconsistency
-
-**Symptom**: Colors, spacing, or typography don't match DESIGN.md.
-
-**Fix**:
-1. Re-read DESIGN.md and compare against generated code
-2. Search for hardcoded hex values: `grep -r "#[0-9a-fA-F]\{6\}" src/`
-3. Replace hardcoded values with CSS custom properties or Tailwind theme tokens
-4. Check for arbitrary Tailwind values (e.g., `text-[13px]`); replace with scale values
-5. Verify spacing uses 8px grid multiples only
-
-**Prevention**: Generate CSS custom properties from DESIGN.md before writing component code.
-
----
-
-## Theme Switching Issues
-
-**Symptom**: Elements look wrong in dark/light mode, missing tokens.
-
-**Fix**:
-1. Verify all color tokens have both :root and .dark variants
-2. Check for hardcoded colors that bypass the theme system
-3. Ensure borders use alpha transparency (border-white/10) not gray hex values
-4. Test both themes end-to-end; toggle and check every section
-5. Add system preference detection: prefers-color-scheme media query
-
-**Prevention**: Define complete light and dark token sets in DESIGN.md before implementing.
+For document-only work, mark rendered checks as pending. For an implementation
+change, a proposed fix or static token mapping does not replace the responsive,
+accessibility, and behavior evidence required by [checklist.md](checklist.md).

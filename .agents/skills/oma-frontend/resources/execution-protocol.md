@@ -17,6 +17,10 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Plan state management approach (Jotai or Zustand for client, nuqs for URL, TanStack Query for server)
 - Identify API integration points (orval-generated TanStack Query hooks when an OpenAPI spec exists; regenerate via the project's `gen:api` task after contract changes)
 - Plan responsive breakpoints and accessibility requirements
+- For requested GPU/canvas effects, cinematic video-scroll, or selected GSAP APIs,
+  choose the matching route in [specialized-visual-implementation.md](specialized-visual-implementation.md).
+- For affected motion, touch, feedback, or interaction performance, apply
+  [shared interaction quality](../../_shared/ui-interaction-quality.md).
 
 ## Step 3: Implement
 - **Honor the task's `test_approach`** (see `../../_shared/core/test-approach.md`): for `tdd` tasks, write and run the focused test first (record the RED failure), make the minimal change (GREEN), then continue
