@@ -281,7 +281,8 @@ export function emitAgentPlugin(
   }
   mkdirSync(outDir, { recursive: true });
 
-  // Full packages share one resource tree across all skills.
+  // Keep the package-level tree for consumers that reference it directly.
+  // Each skill bundles shared resources for single-directory installs.
   const sharedDir = join(repoRoot, SKILLS_DIR, "_shared");
   if (existsSync(sharedDir)) {
     copyEntry(sharedDir, join(outDir, "skills", "_shared"));
@@ -290,7 +291,6 @@ export function emitAgentPlugin(
   const skills: SkillEmitResult[] = emitAgentSkills(
     repoRoot,
     join(outDir, "skills"),
-    { sharedResources: "package" },
   );
 
   const mcp = buildPortableMcpConfig(repoRoot);

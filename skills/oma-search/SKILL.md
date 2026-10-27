@@ -22,7 +22,7 @@ requests whose external source channel needs selection.
 
 ### When NOT to use
 - Pure local code exploration -> use configured code intelligence directly under
-  `../_shared/core/code-intelligence.md`; do not dispatch this skill.
+  `references/_shared/core/code-intelligence.md`; do not dispatch this skill.
 - Git history/blame -> `oma-scm`; architecture analysis -> `oma-architecture`.
 
 ### Expected inputs
@@ -122,4 +122,4 @@ skill definitions. Local source navigation belongs to the configured code tools.
 - Recovery: `resources/error-playbook.md` (route failure)
 - Result checks: `resources/checklist.md` (applicable source and evidence checks)
 - Examples: `resources/examples.md` (unfamiliar input or boundary)
-- Local-code handoff: `../_shared/core/code-intelligence.md` (local requests)
+- Local-code handoff: `references/_shared/core/code-intelligence.md` (local requests)

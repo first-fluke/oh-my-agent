@@ -134,8 +134,8 @@ Run only the tools that match the detected stack and available target. Add proje
 - QA checklist: `resources/checklist.md`
 - Error recovery: `resources/error-playbook.md`
 - Ultrawork VERIFY/SHIP phase protocol: `resources/verify-ship-protocol.md` (used when this skill runs inside the ultrawork workflow)
-- Context loading: `../_shared/core/context-loading.md`
-- Context budget: `../_shared/core/context-budget.md`
-- Runtime lessons: `../_shared/core/session-metrics.md`
-- Code intelligence: `../_shared/core/code-intelligence.md`
+- Context loading: `references/_shared/core/context-loading.md`
+- Context budget: `references/_shared/core/context-budget.md`
+- Runtime lessons: `references/_shared/core/session-metrics.md`
+- Code intelligence: `references/_shared/core/code-intelligence.md`
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — canary RUM (Core Web Vitals), backend perf spans

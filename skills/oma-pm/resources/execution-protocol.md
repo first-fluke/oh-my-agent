@@ -1,14 +1,14 @@
 # PM Agent - Execution Protocol
 
 ## Preparation
-Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../references/_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Analyze Requirements
 - Parse user request into concrete requirements
 - Identify explicit and implicit features
 - List edge cases and assumptions
 - Ask clarifying questions if ambiguous
-- Inspect existing structure and relevant symbols via `../../_shared/core/code-intelligence.md`; if the configured provider is unavailable, use native search only for paths outside this project or ignored paths
+- Inspect existing structure and relevant symbols via `../references/_shared/core/code-intelligence.md`; if the configured provider is unavailable, use native search only for paths outside this project or ignored paths
 - If risk or governance matters, identify:
   - stakeholders
   - constraints
@@ -29,7 +29,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 ## Step 3: Decompose Tasks
 - Break into tasks completable by a single agent
 - Each task has: agent, title, description, acceptance criteria, priority, dependencies, **scope**
-- For executable acceptance gates, `acceptance_criteria` contains `{id, description}` objects; `required_checks` contains unique `{id, criteria, command, cwd}` objects. Cover every criterion with relevant exact argv and a project-relative cwd. See `task-template.json` and `../../_shared/runtime/result-contract.md`.
+- For executable acceptance gates, `acceptance_criteria` contains `{id, description}` objects; `required_checks` contains unique `{id, criteria, command, cwd}` objects. Cover every criterion with relevant exact argv and a project-relative cwd. See `task-template.json` and `../references/_shared/runtime/result-contract.md`.
 - Preserve canonical `dependencies` task IDs and a self-contained `task` prompt for replay. `retry_policy` defaults to `manual`; use `safe` only when repetition cannot duplicate external effects.
 - Optional `inputs` declares a complete set of concrete source, test, configuration and dependency inputs for reusable evidence. Omit it for whole-tree verification. `scope` remains the allowed edit boundary and is not an evidence-input list.
 - `agent`: one of the orchestrator-dispatchable domains — `backend`, `frontend`, `mobile`, `db`, `qa`, `debug`, `pm`, `architecture`, `refactor`, `tf-infra`, `docs` (see the agent mapping table in `.agents/workflows/orchestrate.md`)
@@ -47,7 +47,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - Human-readable trackers (`docs/plans/work/{NNN}-{name}.md`) use the same numeric tier in their Priority column. Do not use a separate P0/P1-style scale.
 - Complexity: Low / Medium / High / Very High
 - Save to `.agents/results/plan-{sessionId}.json` using the injected session ID; record that same ID in the plan JSON `session_id` field. Do not replace an active workflow's ID with a timestamp.
-- Keep injected task/run IDs and the claim path. Write the human-readable `result-{agentId}-{taskId}-{runId}-{sessionId}.md` under the configured memory base per `../../_shared/runtime/memory-protocol.md`. An independent manual run may create local session/task/run IDs once and reuse them throughout its artifacts.
+- Keep injected task/run IDs and the claim path. Write the human-readable `result-{agentId}-{taskId}-{runId}-{sessionId}.md` under the configured memory base per `../references/_shared/runtime/memory-protocol.md`. An independent manual run may create local session/task/run IDs once and reuse them throughout its artifacts.
 
 ## Step 4: Validate Plan
 - Check: Can each task be done independently given its dependencies?

@@ -189,14 +189,14 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 <!-- oma-docs:ignore-end -->
 
 ## References
-- Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
+- Local code tools: `references/_shared/core/code-intelligence.md` (code search/navigation)
 
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
 - Checklist (run before handoff): `resources/checklist.md`
 - ORM reference: `resources/orm-reference.md`
 - Error recovery: `resources/error-playbook.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Clarification: `../_shared/core/clarification-protocol.md`
-- Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
+- Context loading: `references/_shared/core/context-loading.md`
+- Clarification: `references/_shared/core/clarification-protocol.md`
+- Context budget: `references/_shared/core/context-budget.md`
+- Lessons learned: `references/_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — propagators/baggage, span conventions, log correlation, PII redaction

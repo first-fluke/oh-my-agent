@@ -20,7 +20,7 @@ When you encounter a failure during planning, follow these recovery steps.
 
 **Symptoms**: Planning for an existing project but don't know the architecture
 
-1. Use the configured provider to inspect source structure, following `../../_shared/core/code-intelligence.md`
+1. Use the configured provider to inspect source structure, following `../references/_shared/core/code-intelligence.md`
 2. Look for framework indicators: `package.json`, `pyproject.toml`, `pubspec.yaml`
 3. Check for existing patterns: search for `@app.get|@app.post` (FastAPI) with the configured provider or native tools
 4. If unavailable, inspect paths outside this project or ignored paths with native search; record any remaining architecture assumptions in the plan

@@ -17,18 +17,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/keyword-detector.ts\"",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/state-boundary.ts\"",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/skill-injector.ts\"",
-            "timeout": 3
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" UserPromptSubmit",
+            "timeout": 15
           }
         ]
       }
@@ -39,8 +29,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/test-filter.ts\"",
-            "timeout": 5
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" PreToolUse Bash",
+            "timeout": 15
           }
         ]
       }
@@ -50,8 +40,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/persistent-mode.ts\"",
-            "timeout": 5
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" Stop",
+            "timeout": 40
           }
         ]
       }

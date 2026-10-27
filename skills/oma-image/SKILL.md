@@ -139,4 +139,4 @@ Env vars: `OMA_IMAGE_DEFAULT_VENDOR`, `OMA_IMAGE_DEFAULT_OUT`, `OMA_IMAGE_YES`, 
 - Vendor matrix: `resources/vendor-matrix.md`
 - Prompt tips: `resources/prompt-tips.md`
 - Checklist (run before handoff): `resources/checklist.md`
-- Context loading: `../_shared/core/context-loading.md`
+- Context loading: `references/_shared/core/context-loading.md`

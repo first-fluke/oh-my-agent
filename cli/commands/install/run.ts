@@ -66,6 +66,10 @@ import {
 } from "./environment.js";
 import { maybePromptGithubStar } from "./github-star.js";
 import {
+  inspectInstallManifests,
+  renderInstallManifestSummary,
+} from "./install-summary.js";
+import {
   ensureCueBinaryWithLog,
   persistInstallPreferences,
 } from "./persist-preferences.js";
@@ -82,6 +86,7 @@ import {
   promptProviders,
   reportProviderSetup,
 } from "./provider-preferences.js";
+import { resolvePresetSkills } from "./skill-selection.js";
 import { cleanDanglingSymlinks } from "./symlinks.js";
 
 export {
@@ -98,6 +103,7 @@ export {
 export { cleanDanglingSymlinks } from "./symlinks.js";
 
 export async function install(options: InstallOptions = {}): Promise<void> {
+  const presetSkills = resolvePresetSkills(options.preset);
   const nonInteractive = isNonInteractive(options);
   const explicitYes = isExplicitYes(options);
 
@@ -312,7 +318,8 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       cleanup,
     );
 
-    const selectedSkills = await promptProjectSkills(nonInteractive);
+    const selectedSkills =
+      presetSkills ?? (await promptProjectSkills(nonInteractive));
 
     const variantSelections = await promptBackendVariant(
       selectedSkills,
@@ -444,15 +451,23 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
       // Expose workflows as slash-command skills by symlinking the workflow
       // files directly (no generated wrapper under .agents/skills).
+      const installedWorkflows = getInstalledWorkflowNames(installRoot);
       createVendorWorkflowSymlinks(
         installRoot,
         selectedClis,
-        getInstalledWorkflowNames(installRoot),
+        installedWorkflows,
       );
 
       p.note(
         [
-          ...selectedSkills.map((s) => `${pc.green("✓")} ${s}`),
+          ...renderInstallManifestSummary(
+            inspectInstallManifests(
+              installRoot,
+              selectedSkills,
+              installedWorkflows,
+            ),
+            { global: getInstallMode() === "global" },
+          ),
           "",
           pc.dim(`Location: ${join(installRoot, INSTALLED_SKILLS_DIR)}`),
           ...(cliSymlinks.created.length > 0

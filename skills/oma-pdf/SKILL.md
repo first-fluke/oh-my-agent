@@ -158,5 +158,5 @@ On-request flags — `--sanitize` (PII masking), `--pages` (range extraction), `
 ## References
 - Execution protocol: `resources/execution-protocol.md`
 - Configuration: read the `pdf:` section of `.agents/oma-config.yaml` first, then fall back to `config/pdf-config.yaml` for any key it does not set. User overrides belong in `.agents/oma-config.yaml`, since `oma update` overwrites the skill config.
-- Context loading: `../_shared/core/context-loading.md`
-- Quality principles: `../_shared/core/quality-principles.md`
+- Context loading: `references/_shared/core/context-loading.md`
+- Quality principles: `references/_shared/core/quality-principles.md`

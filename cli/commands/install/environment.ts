@@ -2,10 +2,12 @@ import { readFileSync } from "node:fs";
 import type { ProviderInstallOptions } from "./provider-preferences.js";
 
 export type InstallOptions = ProviderInstallOptions & {
+  /** Select a registered skill preset instead of prompting for project type. */
+  preset?: string;
   /**
    * Non-interactive mode. Skips every prompt and falls back to safe
    * defaults (language=existing|en, model_preset=existing|auto,
-   * project_type=all, vendors=all non-HOME-base). HOME-base vendor consent
+   * project_type=preset|all, vendors=all non-HOME-base). HOME-base vendor consent
    * stays opt-in (skipped), competitor uninstall is skipped, GitHub star
    * prompt is skipped (an explicit `--yes` / `OMA_YES` stars without asking;
    * see {@link isExplicitYes}).

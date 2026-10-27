@@ -6,15 +6,28 @@
 
 **oh-my-agent(`oma`)는 특정 벤더에 종속되지 않는 하네스로, 이미 쓰고 있는 코딩 에이전트(Claude Code, Codex CLI, Cursor 외 11개)에 전문가 팀을 더해 줍니다.** 플래너가 작업을 나누고, 엔지니어들이 병렬로 구축하고, 리뷰어가 결과를 확인하고, 디버거가 근본 원인을 고칩니다. 출처가 달린 리서치, 슬라이드 덱, 영상, 이미지도 만듭니다. 대부분의 단계는 직접 열어 볼 수 있는 파일을 남기며, 오래 실행되는 워크플로우에서는 프로젝트의 `test`, `lint`, `typecheck` 스크립트가 통과할 때까지 게이트가 에이전트를 다시 작업으로 돌려보낼 수 있습니다.
 
+## 작업에 맞게 시작하기
+
+지금 쓰는 코딩 에이전트에서 스킬 하나를 불러오거나, 프로젝트 훅과 팀 워크플로우를 위한 런타임을 설치할 수 있습니다.
+
+| 할 일 | 시작 방법 | 첫 요청 예시 |
+|---|---|---|
+| 어드민 화면 설계·기존 UI 검토 | `bunx skills use first-fluke/oh-my-agent@oma-design` | "어드민 화면의 정보 위계와 테이블 밀도를 검토해 줘." |
+| 재현 가능한 버그 진단 | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "이 오류를 재현하고 원인을 고쳐 줘." |
+| 시스템 경계 검토 | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "API와 워커의 책임 경계를 검토해 줘." |
+| 프로젝트 훅·전문 에이전트·워크플로우 사용 | [런타임 설치](#install) | "oma-scm으로 브랜치와 작업 트리를 확인해 줘. 파일 수정이나 원격 접근은 하지 마." |
+
+에이전트의 터미널에서 `skills use`를 실행하면 선택한 지침과 참고 파일 경로를 받습니다. 이 명령은 지침을 불러옵니다. 스킬이 사용하는 CLI 기능, 다른 스킬, 프로젝트 규칙, 외부 서비스는 각각 별도 의존성입니다. [설치 방식 선택](../web/docs/getting-started/choose-setup.md)에서 범위를 확인할 수 있습니다.
+
 [![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
 
-프로젝트 루트에서 다음을 실행하세요.
+런타임을 설치하려면 프로젝트 루트에서 다음을 실행하세요.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
-그다음 `oma doctor`를 실행하고, 에이전트에 `/plan add user accounts with a settings page`를 입력하세요. 자세한 과정은 [처음 5분](#your-first-5-minutes)에서 안내합니다.
+런타임 설치 후에는 `oma doctor`를 실행하세요. [처음 5분](#your-first-5-minutes)에서는 팀 워크플로우에 앞서 읽기 전용 작업으로 결과를 확인합니다.
 
 ## 얻을 수 있는 것
 
@@ -55,7 +68,15 @@ Windows에서는 설치 프로그램이 Antigravity, Hermes, Kimi를 숨기고, 
 
 </details>
 
-설정 과정에서는 응답 언어, 연결할 에이전트 런타임, 기능 프로바이더, 브라우저 MCP, 모델 프리셋, 스킬 프리셋을 묻습니다. **확신이 없으면 스킬 프리셋은 `All`을 고르세요.** 워크플로우는 항상 설치되는데, 그중 몇몇(`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`)은 `All`에만 들어 있는 스킬이 필요합니다.
+설정 과정에서는 응답 언어, 연결할 에이전트 런타임, 기능 프로바이더, 브라우저 MCP, 모델 프리셋, 스킬 프리셋을 묻습니다. **모든 워크플로우가 참조하는 스킬을 포함하려면 `All`을 고르세요.** 분야별 프리셋에는 일부 스킬이 빠져 있습니다. 프로바이더의 사용 가능 여부와 실제 작업 검증은 별도로 확인합니다.
+
+특정 분야의 스킬을 선택하려면 프리셋을 지정하세요.
+
+```bash
+oma install --preset frontend --yes
+```
+
+이 명령은 프런트엔드 프리셋의 스킬 8개를 선택합니다. 런타임·프로바이더·공통 워크플로우 파일 설정은 그대로 진행하며, 기존 스킬도 남겨 둡니다. 개별 스킬 선택은 대화형 설치의 Custom에서 할 수 있습니다. [프리셋 값](../web/docs/getting-started/installation.md#presets)과 [워크플로우 의존성](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)을 확인하세요.
 
 <details>
 <summary>설치 프로그램이 기본으로 함께 하는 일</summary>
@@ -71,7 +92,7 @@ Windows에서는 설치 프로그램이 Antigravity, Hermes, Kimi를 숨기고, 
 - 목록에 없는 `Co-authored-by` 주소를 거부하는 **commit-msg 가드**를 `.githooks/`에 설치하고, 다른 hook이 활성화되어 있지 않으면 `git config --local core.hooksPath .githooks`를 설정합니다. 사용하지 않으려면 `scm.co_author.enforce_hook: false`를 설정하세요.
 - `oma update`는 백그라운드에서 `oma` CLI를 업데이트하고(멈추려면 `auto_update_cli: false` 또는 `OMA_SKIP_VERSION_CHECK=1`), `uv tool upgrade serena-agent --prerelease=allow`를 실행합니다(`serena.auto_update: false`).
 - Serena가 기본 `bridge` 모드일 때, 공유 Serena 서버를 처음 시작한 에이전트 세션이 **정리 타이머**를 등록합니다. 이 타이머는 유휴 상태인 공유 Serena 서버를 5분마다 중지합니다(launchd `dev.oma.serena-daemon-gc`, systemd 사용자 타이머 `oma-serena-daemon-gc.timer` 또는 Windows 예약 작업 `OMA Serena Daemon GC`). 공유 서버와 타이머를 건너뛰려면 `serena.mode: stdio`를 설정하세요. `oma uninstall`은 이 타이머를 제거하지 않습니다.
-- 비대화형 실행(`-y`, `OMA_YES=1`, `CI=true`)은 `All` 스킬 프리셋, `model_preset: auto`, 백엔드 언어 Python을 사용합니다. `mcp.devtools_browsers`에 이미 브라우저가 들어 있지 않으면 브라우저 MCP를 선택하지 않습니다(Aside 설치 스크립트도 건너뜁니다).
+- 비대화형 실행(`-y`, `OMA_YES=1`, `CI=true`)은 `--preset`으로 지정한 스킬 프리셋을 사용하며, 생략하면 `All`을 사용합니다. `model_preset: auto`, 백엔드 언어 Python을 사용하고, `mcp.devtools_browsers`에 이미 브라우저가 들어 있지 않으면 브라우저 MCP를 선택하지 않습니다(Aside 설치 스크립트도 건너뜁니다).
 
 </details>
 
@@ -99,24 +120,23 @@ Windows에서는 설치 프로그램이 Antigravity, Hermes, Kimi를 숨기고, 
 <a id="your-first-5-minutes"></a>
 ## 처음 5분
 
-1. 위 커맨드로 **설치**합니다.
-2. **설치를 확인합니다.**
+1. **설치 범위를 고릅니다.** 아래 작업만 하려면 `bunx skills use first-fluke/oh-my-agent@oma-scm`으로 `oma-scm`을 불러오세요. 프로젝트 훅과 워크플로우가 필요하면 위의 런타임 설치 커맨드를 사용하세요. [설치 방식 선택](../web/docs/getting-started/choose-setup.md)에서 두 경로를 확인할 수 있습니다.
+2. **런타임을 설치했다면 상태를 확인합니다.**
 
    ```bash
    oma doctor
    ```
 
-   `CLI Status`(어떤 에이전트 CLI가 설치되어 있고 로그인되어 있는지)와 `Skills Status`(예: `Skills (33/33 installed, 33 complete)`)가 보여야 합니다. `oma`를 찾을 수 없다고 나오면 새 터미널을 여세요(설치 프로그램이 방금 `~/.bun/bin`을 PATH에 추가했을 수 있습니다). 아니면 `bun install --global oh-my-agent`를 실행하세요.
-3. **프로젝트에서 에이전트를 열고 계획을 요청합니다.**
+   CLI와 스킬 파일 상태가 표시됩니다. 스킬 수에는 기존에 남아 있는 스킬도 포함되므로, 이번 프리셋에서 선택한 수와 다를 수 있습니다. `oma`를 찾지 못하면 새 터미널을 열거나 `bun install --global oh-my-agent`를 실행하세요.
+3. **기존 Git 저장소에서 읽기 전용 작업 하나를 요청합니다.** `oma-scm`은 이름이 있는 모든 프리셋에 포함됩니다. Custom으로 개별 선택할 때는 이 스킬을 포함하세요.
 
    ```text
-   /plan add user accounts with a settings page
+   Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
    ```
 
-   그냥 "plan user accounts with a settings page"라고 써도 됩니다. 프롬프트 hook이 있는 런타임에서는 키워드만으로 같은 워크플로우가 시작됩니다.
-4. **결과를 확인합니다.** `/plan`은 현재 세션에서 실행됩니다. 이 예시처럼 여러 영역에 걸친 작업이라면 `.agents/results/plan-<session-id>.json`과 `docs/plans/work/<NNN>-<name>.md` 트래커를 씁니다. 한 영역에 국한된 작은 요청에는 계획 파일 대신 바로 권고안을 줍니다.
+4. **결과를 확인합니다.** 보고한 브랜치와 변경 내역이 실제 Git 출력과 일치해야 합니다. 지침을 불러왔거나 설치가 끝났다는 사실만으로 작업 실행이 확인되지는 않습니다.
 
-더 큰 작업에는 이 계획으로 `/work`나 `/orchestrate`를 실행하세요.
+더 큰 작업에는 필요한 스킬이 설치된 워크플로우를 선택하세요. 계획 스킬이 있으면 `/plan`으로 시작하고, 의존성을 갖춘 뒤 `/work`나 `/orchestrate`로 이어 갈 수 있습니다.
 
 <a id="meet-the-team"></a>
 ## 팀 소개

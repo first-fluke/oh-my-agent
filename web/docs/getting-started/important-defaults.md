@@ -5,6 +5,11 @@ description: The oh-my-agent defaults that affect routing, model selection, prov
 
 # Important Defaults
 
+These defaults apply to the installed OMA runtime. Loading one skill with
+`skills use` supplies instructions without configuring project hooks, providers,
+or services. Start with [Choose a setup](./choose-setup.md) to select that task
+path or a runtime installation.
+
 Defaults are selected to make a first project usable while keeping user-owned configuration stable. They are resolved at runtime, so an omitted key can behave differently from an explicit empty value. Start here when the harness works but behaves differently from your expectation.
 
 ## Defaults that affect the first run
@@ -13,6 +18,7 @@ Defaults are selected to make a first project usable while keeping user-owned co
 |---|---|---|---|
 | Response language | `en` | Agent and workflow responses use English unless the project config selects another supported language. An explicit user or session language instruction can still override the project default where the host/workflow supports it. | `language` in `.agents/oma-config.yaml` or `.cue` |
 | Model routing ([model preset](./glossary.md#model-preset)) | `auto` | The current runtime's native agent configuration is used. Unknown runtimes fall back to `default_cli` when set. | `model_preset`, `default_cli`, or `agents.<id>` |
+| Skill content ([skill preset](./glossary.md#skill-preset)) | Interactive selection; `all` for unattended setup unless `--preset` is given | A preset selects skills. Shared files, all workflow and agent definitions, hooks, and provider setup remain part of the runtime install; other existing skills are retained. | `oma install --preset <name>`; see [preset limits](./installation.md#presets) |
 | Code intelligence ([capability provider](./glossary.md#capability-provider)) | `serena` | A fresh install tries to install Serena and wires its MCP configuration. | `providers.code_intelligence: gortex` or `serena` |
 | Code-search guard | `block` | While a code-intelligence provider is configured, a PreToolUse hook denies native `Grep`/`Glob` and recursive shell search (`rg`, `grep -r`, `find -name`) and points the agent at the provider's tools. Searches confined to confirmed exclusions or paths outside the project are allowed. The hook does not advertise a bypass for project source. | `providers.code_intelligence_guard: off` |
 | Semantic memory | `agentmemory` | Install and update reuse a healthy AgentMemory endpoint or install and start the managed local service, then check readiness before succeeding. Explicit custom endpoints are checked without replacement. | `providers.semantic_memory: honcho` or `none`; `OMA_NO_AGENTMEMORY=1` skips AgentMemory setup. |

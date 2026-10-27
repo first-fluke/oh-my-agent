@@ -1,7 +1,7 @@
 # DB Agent - Execution Protocol
 
 ## Preparation
-Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../references/_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Explore
 - Identify actors and external views that need data

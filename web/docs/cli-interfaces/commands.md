@@ -92,16 +92,20 @@ When a command delegates its remaining arguments to another tool, the registry i
 
 ### install
 
-`oma` with no arguments launches the interactive installer. `oma install` is the explicit form and accepts provider-selection options.
+`oma` with no arguments launches the interactive runtime installer. `oma install`
+is the explicit form and accepts a skill preset plus provider-selection options.
+For temporary instruction loading for one task, use [Choose a setup](../getting-started/choose-setup.md).
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | Option | Accepted values |
 |:-------|:----------------|
+| `--preset <name>` | One of the ten [named skill presets](../getting-started/installation.md#presets), such as `frontend`, `research`, or `all`. Individual Custom selection uses the interactive menu. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,15 +114,22 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 `--web-search`, `--code-intelligence`, and `--semantic-memory` retain the saved provider choice when omitted. `--honcho-url` and `--honcho-workspace` configure a new Honcho connection when that provider is selected. The root `-y, --yes` flag skips prompts and uses defaults; `--global` targets `$OMA_HOME/.agents/` (default `~/.oma/.agents/`). Project installation stays at `<cwd>/.agents/` even when `OMA_HOME` is set.
 
+`--preset` takes priority over the interactive skill prompt and unattended
+`all` default. Unknown names, empty values, and `custom` are rejected before
+installation. It selects skill content; it does not filter shared files,
+workflow/agent definitions, hooks, or provider setup, and retains other installed
+skills. [Workflow dependencies](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)
+can therefore differ from the selected bundle.
+
 **What it does:**
 1. Checks for legacy `.agent/` directory and migrates to `.agents/` if found.
 2. In interactive mode, detects other agent tools and asks whether to uninstall them (default: keep). `--yes`, `OMA_YES`, and CI installations keep them; `oma update` does not offer removal.
-3. Prompts for project type (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+3. Uses `--preset` when supplied; otherwise prompts for a skill preset or individual Custom selection in interactive mode. Unattended setup defaults to `all`.
 4. If backend is selected, prompts for language variant (Python, Node.js, Rust, Other).
 5. Asks about GitHub Copilot symlinks.
 6. Downloads the latest tarball from the registry.
 7. Installs shared resources, workflows, configs, and selected skills.
-8. Installs vendor adaptations for selected vendors (project-local settings; no silent HOME-level vendor writes).
+8. Installs vendor adaptations for selected vendors. See [installation effects](../getting-started/installation.md#what-the-installer-also-does-by-default) for project and HOME-level changes.
 9. Creates CLI symlinks.
 10. Offers recommended **global** git config (opt-in confirm):
     - `rerere.enabled=true` — multi-agent merge conflict reuse
@@ -127,11 +138,17 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 11. Offers to configure MCP where applicable.
 12. Prompts for GitHub star if `gh` is authenticated.
 
+The final summary lists selected skills and checks referenced skill manifests
+using the files actually present, including retained skills and conditional
+branches. It reports missing or unreadable workflow/agent skill references and
+points to the doctor command for that install root. This is static manifest
+coverage; resource contents, tools, providers, and execution are not verified.
+
 **Example:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor

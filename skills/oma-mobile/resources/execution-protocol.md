@@ -1,7 +1,7 @@
 # Mobile Agent - Execution Protocol
 
 ## Preparation
-Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../references/_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Analyze
 - Read the task requirements carefully
@@ -23,7 +23,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Note platform differences (iOS HIG vs Material Design 3)
 
 ## Step 3: Implement
-- **Honor the task's `test_approach`** (see `../../_shared/core/test-approach.md`): for `tdd` tasks, write and run the focused test first (record the RED failure), make the minimal change (GREEN), then continue
+- **Honor the task's `test_approach`** (see `../references/_shared/core/test-approach.md`): for `tdd` tasks, write and run the focused test first (record the RED failure), make the minimal change (GREEN), then continue
 - Create/modify files in this order (Flutter shown; Swift maps to Core → Features → Tests, RN to api → queries/mutations → store → ui → navigation → tests):
   1. Domain: entities and repository interfaces
   2. Data: models, API clients (Dio / axios / generated Client), repository implementations
@@ -35,8 +35,8 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 
 ## Step 4: Verify
 - Check applicable items in `resources/checklist.md`
-- Use `../../_shared/core/common-checklist.md` only for cross-domain verification
-- For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../../_shared/core/test-approach.md`
+- Use `../references/_shared/core/common-checklist.md` only for cross-domain verification
+- For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../references/_shared/core/test-approach.md`
 - Verify supported target platforms; native Swift iOS does not require Android checks. Respect the build policy when selecting tests.
 - Verify 60fps performance (no jank)
 - Check dark mode support

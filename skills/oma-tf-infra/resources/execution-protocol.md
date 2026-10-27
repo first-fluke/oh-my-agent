@@ -1,7 +1,7 @@
 # TF Infra Agent: Execution Protocol
 
 ## Preparation
-Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../references/_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Analyze
 
@@ -98,7 +98,7 @@ See `policy-testing-examples.md` for native `terraform test`, Terratest, and CI/
 ## Step 4: Verify
 
 1. Run `checklist.md` self-verification
-2. Use applicable `../../_shared/core/common-checklist.md` sections for cross-domain checks
+2. Use applicable `../references/_shared/core/common-checklist.md` sections for cross-domain checks
 3. Confirm:
    - `terraform validate` passes
    - `terraform plan` shows expected changes only

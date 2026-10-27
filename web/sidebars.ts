@@ -9,6 +9,7 @@ const sidebars: SidebarsConfig = {
       items: [
         "getting-started/introduction",
         "getting-started/why-oh-my-agent",
+        "getting-started/choose-setup",
         "getting-started/installation",
         "getting-started/quick-start",
         "getting-started/important-defaults",

@@ -168,8 +168,16 @@ Use `select(.supportsDryRun? == true)` the same way to find commands with `--dry
 ### install
 
 ```text
-oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
+oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
+
+`--preset` selects one of the ten [named skill presets](../getting-started/installation.md#presets)
+and overrides the interactive skill prompt and unattended `all` default. Unknown
+names, empty values, and `custom` fail before installation; individual selection
+uses the interactive Custom menu. Presets select skills while preserving the
+runtime's shared files, workflow/agent definitions, hooks, providers, and retained
+skills. See [Choose a setup](../getting-started/choose-setup.md) for temporary
+one-skill instruction loading.
 
 The interactive installer writes the selected provider settings to `.agents/oma-config.yaml`. When `.agents/oma-config.cue` exists, it outranks that file, so choices the CUE config does not already hold are written to the gitignored local overlay `.agents/oma-config.local.yaml` instead; the browser DevTools selection and the `oma memory keys` vault reference follow the same rule, and the CLI vendor selection and `oma model propose --write` do so when there is no `oma-config.yaml`. The provider flags select the web-search, code-intelligence, and semantic-memory integrations; `--honcho-url` and `--honcho-workspace` configure the Honcho memory service when that provider is selected. The root `-y, --yes` flag applies when an install flow asks for confirmation.
 
@@ -662,7 +670,7 @@ This table is generated from `oma describe`. Do not edit it by hand: run `node c
 | `image doctor` | — | `--output <format>` (default: `text`) | Check authentication and install status per vendor |
 | `image generate` | `<prompt...>` | `--vendor <name>` (default: `auto`), `--size <size>`, `--quality <level>`, `-n, --count <n>`, `--output-dir <path>`, `--allow-external-output`, `--model <name>`, `--timeout <duration>`, `-r, --reference <path>`, `-y, --yes`, `--no-prompt-in-manifest`, `--dry-run`, `--output <format>` (default: `text`) | Generate images via pollinations (flux/zimage, free), codex (gpt-image-2, ChatGPT OAuth), or antigravity (gemini nano-banana via `agy` CLI, free with Gemini Code Assist sign-in) |
 | `image vendor list` | — | `--output <format>` (default: `text`) | List registered vendors and supported models |
-| `install` | — | `--web-search <provider>`, `--code-intelligence <provider>`, `--semantic-memory <provider>`, `--honcho-url <url>`, `--honcho-workspace <id>` | Install oh-my-agent skills and configurations |
+| `install` | — | `--preset <name>`, `--web-search <provider>`, `--code-intelligence <provider>`, `--semantic-memory <provider>`, `--honcho-url <url>`, `--honcho-workspace <id>` | Install oh-my-agent skills and configurations |
 | `intel suggest` | — | `--config <path>`, `--topic <topic>`, `--target <target>`, `--repos <repos>`, `--since <window>`, `--last-commits <n>`, `--output-dir <path>`, `--dry-run`, `--fixture <path>`, `--create-issue`, `--base-repo <owner/name>`, `--yes`, `--json`, `--output <format>` | Suggest high-value product work from market/code intelligence |
 | `link` | `[vendors...]` | `--dry-run` | Regenerate vendor files (.claude/, .cursor/, etc.) from .agents/ SSOT |
 | `market detect-trap` | `<topic>` | `--force` | Preflight check that refuses keyword-trap queries |

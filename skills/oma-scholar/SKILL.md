@@ -271,6 +271,6 @@ Project-specific settings: `config/scholar-config.yaml`. One key is user-tunable
 - Upstream spec snapshot: `resources/upstream-spec-cache.md`
 - Post-generation checklist: `resources/checklist.md`
 - CLI subcommands: `oma scholar search|resolve|get|lint` (implementation under `cli/commands/scholar/`)
-- Context loading: `../_shared/core/context-loading.md`
-- Quality principles: `../_shared/core/quality-principles.md`
+- Context loading: `references/_shared/core/context-loading.md`
+- Quality principles: `references/_shared/core/quality-principles.md`
 - i18n rules: `../../rules/i18n-guide.md`

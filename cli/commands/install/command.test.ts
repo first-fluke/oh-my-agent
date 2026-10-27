@@ -20,7 +20,7 @@ function makeProgram(): Command {
   return program;
 }
 
-describe("install command --yes flag", () => {
+describe("install command options", () => {
   beforeEach(() => {
     installMock.mockClear();
   });
@@ -47,6 +47,51 @@ describe("install command --yes flag", () => {
     await makeProgram().parseAsync(["node", "oma", "install"]);
     expect(installMock).toHaveBeenCalledWith({ yes: false });
   });
+
+  it.each([false, true])(
+    "passes an explicit frontend preset with yes=%s",
+    async (yes) => {
+      await makeProgram().parseAsync([
+        "node",
+        "oma",
+        "install",
+        "--preset",
+        "frontend",
+        ...(yes ? ["--yes"] : []),
+      ]);
+      expect(installMock).toHaveBeenCalledWith({ yes, preset: "frontend" });
+    },
+  );
+
+  it("documents preset choices and non-interactive defaults in install help", () => {
+    const installCommand = makeProgram().commands.find(
+      (command) => command.name() === "install",
+    );
+    const help = installCommand?.helpInformation();
+    expect(help).toContain("--preset <name>");
+    expect(help).toContain('"frontend"');
+    expect(help).toContain('"all"');
+    expect(help).toContain("default: all with --yes/CI");
+  });
+
+  it.each(["unknown-preset", "custom", "__proto__"])(
+    "rejects preset %s before installation",
+    async (preset) => {
+      const program = makeProgram();
+      program.exitOverride().configureOutput({ writeErr: () => {} });
+      await expect(
+        program.parseAsync([
+          "node",
+          "oma",
+          "install",
+          "--yes",
+          "--preset",
+          preset,
+        ]),
+      ).rejects.toThrow();
+      expect(installMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("oma --yes passes yes: true to install()", async () => {
     await makeProgram().parseAsync(["node", "oma", "--yes"]);

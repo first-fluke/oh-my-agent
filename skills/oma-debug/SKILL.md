@@ -132,7 +132,7 @@ Then run the smallest reproduction command first, establish the causal mechanism
 Use the configured provider to locate the failing function, find callers, and search similar error patterns. Native search and scoped reads are supported fallbacks; see the shared capability contract.
 
 ## References
-- Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
+- Local code tools: `references/_shared/core/code-intelligence.md` (code search/navigation)
 
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
 - Checklist (pre-submit self-verification): `resources/checklist.md`
@@ -140,7 +140,7 @@ Use the configured provider to locate the failing function, find callers, and se
 - Bug report template: `resources/bug-report-template.md`
 - Common patterns: `resources/common-patterns.md`
 - Debugging checklist (investigation guide, used during Steps 1-2): `resources/debugging-checklist.md`
-- Context loading: `../_shared/core/context-loading.md`
-- Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
+- Context loading: `references/_shared/core/context-loading.md`
+- Context budget: `references/_shared/core/context-budget.md`
+- Lessons learned: `references/_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — traces/logs by `trace_id`, 6-dim forensics

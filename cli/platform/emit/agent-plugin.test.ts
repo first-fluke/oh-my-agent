@@ -4,7 +4,6 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  renameSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -145,7 +144,7 @@ describe("emitAgentPlugin", () => {
     ).toBe(true);
   });
 
-  it("keeps moved packages usable with one shared tree for entry, nested, and overflow references", () => {
+  it("keeps shared entry, nested, and overflow references usable when only one skill is installed", () => {
     repoDir = mkdtempSync(path.join(tmpdir(), "oma-agent-plugin-source-"));
     cpSync(FIXTURES_REPO, repoDir, { recursive: true });
     const sourceSkills = path.join(repoDir, ".agents", "skills");
@@ -153,20 +152,16 @@ describe("emitAgentPlugin", () => {
     writeFileSync(
       path.join(validSource, "SKILL.md"),
       "---\nname: valid-skill\ndescription: Shared references fixture.\n---\n\n" +
-        "[Shared note](../_shared/core/shared-note.md#details)\n",
+        "[Shared note](../_shared/core/shared-note.md#details)\n" +
+        `${Array.from({ length: 510 }, () => "Filler line.").join("\n")}\n` +
+        "[Shared note](.agents/skills/_shared/core/shared-note.md#details)\n" +
+        "[Relative note](../_shared/core/shared-note.md)\n",
     );
     const nestedSource = path.join(validSource, "resources", "nested");
     mkdirSync(nestedSource, { recursive: true });
     writeFileSync(
       path.join(nestedSource, "guide.md"),
       "[Shared note](.agents/skills/_shared/core/shared-note.md#details)\n",
-    );
-    writeFileSync(
-      path.join(sourceSkills, "oversized-skill", "SKILL.md"),
-      "---\nname: oversized-skill\ndescription: Overflow shared references fixture.\n---\n\n" +
-        `${Array.from({ length: 510 }, () => "Filler line.").join("\n")}\n` +
-        "[Shared note](.agents/skills/_shared/core/shared-note.md#details)\n" +
-        "[Relative note](../_shared/core/shared-note.md)\n",
     );
     const sharedSource = path.join(sourceSkills, "_shared", "core");
     writeFileSync(
@@ -178,51 +173,52 @@ describe("emitAgentPlugin", () => {
     outDir = mkdtempSync(path.join(tmpdir(), "oma-emit-agent-plugin-"));
     const originalPackage = path.join(outDir, "original");
     emitAgentPlugin(repoDir, originalPackage);
-    const movedPackage = path.join(outDir, "moved");
-    renameSync(originalPackage, movedPackage);
+    const installedSkill = path.join(outDir, "installed", "valid-skill");
+    mkdirSync(path.dirname(installedSkill), { recursive: true });
+    cpSync(
+      path.join(originalPackage, "skills", "valid-skill"),
+      installedSkill,
+      {
+        recursive: true,
+      },
+    );
+    rmSync(originalPackage, { recursive: true, force: true });
     rmSync(repoDir, { recursive: true, force: true });
 
     const sharedNote = path.join(
-      movedPackage,
-      "skills",
+      installedSkill,
+      "references",
       "_shared",
       "core",
       "shared-note.md",
     );
     const references = [
-      ["valid-skill/SKILL.md", "../_shared/core/shared-note.md#details"],
+      ["SKILL.md", "references/_shared/core/shared-note.md#details"],
       [
-        "valid-skill/resources/nested/guide.md",
-        "../../../_shared/core/shared-note.md#details",
+        "resources/nested/guide.md",
+        "../../references/_shared/core/shared-note.md#details",
       ],
-      [
-        "oversized-skill/references/overflow.md",
-        "../../_shared/core/shared-note.md#details",
-      ],
+      ["references/overflow.md", "_shared/core/shared-note.md#details"],
     ] as const;
     for (const [relativeFile, expectedTarget] of references) {
-      const emittedFile = path.join(movedPackage, "skills", relativeFile);
+      const emittedFile = path.join(installedSkill, relativeFile);
       const content = readFileSync(emittedFile, "utf-8");
-      expect(content).toContain(`[Shared note](${expectedTarget})`);
-      const linkTarget = content.match(/\[Shared note\]\(([^)#]+)/)?.[1];
-      expect(linkTarget).toBeDefined();
-      expect(path.resolve(path.dirname(emittedFile), linkTarget ?? "")).toBe(
-        sharedNote,
-      );
+      const linkTarget = content.match(/\[Shared note\]\(([^)]+)\)/)?.[1];
+      expect(linkTarget).toBe(expectedTarget);
+      expect(
+        path.resolve(
+          path.dirname(emittedFile),
+          linkTarget?.split("#")[0] ?? "",
+        ),
+      ).toBe(sharedNote);
       expect(existsSync(sharedNote)).toBe(true);
     }
     expect(
       readFileSync(
-        path.join(
-          movedPackage,
-          "skills",
-          "oversized-skill",
-          "references",
-          "overflow.md",
-        ),
+        path.join(installedSkill, "references", "overflow.md"),
         "utf-8",
       ),
-    ).toContain("[Relative note](../../_shared/core/shared-note.md)");
+    ).toContain("[Relative note](_shared/core/shared-note.md)");
     const nestedNote = path.resolve(
       path.dirname(sharedNote),
       readFileSync(sharedNote, "utf-8").match(
@@ -230,30 +226,24 @@ describe("emitAgentPlugin", () => {
       )?.[1] ?? "",
     );
     expect(readFileSync(nestedNote, "utf-8")).toBe("Nested note.\n");
-    for (const skill of ["valid-skill", "oversized-skill"]) {
-      expect(
-        existsSync(
-          path.join(movedPackage, "skills", skill, "references", "_shared"),
-        ),
-      ).toBe(false);
-    }
+    expect(existsSync(path.join(outDir, "installed", "_shared"))).toBe(false);
   });
 
-  it("removes legacy per-skill shared bundles when emitting the package again", () => {
+  it("removes stale bundled shared resources when emitting the package again", () => {
     const report = emit();
-    const legacyBundle = path.join(
+    const sharedBundle = path.join(
       report.outDir,
       "skills",
       "valid-skill",
       "references",
       "_shared",
     );
-    mkdirSync(legacyBundle, { recursive: true });
-    writeFileSync(path.join(legacyBundle, "stale-note.md"), "stale\n");
+    mkdirSync(sharedBundle, { recursive: true });
+    writeFileSync(path.join(sharedBundle, "stale-note.md"), "stale\n");
 
     emitAgentPlugin(FIXTURES_REPO, report.outDir);
 
-    expect(existsSync(legacyBundle)).toBe(false);
+    expect(existsSync(sharedBundle)).toBe(false);
     expect(
       existsSync(
         path.join(report.outDir, "skills", "_shared", "core", "shared-note.md"),

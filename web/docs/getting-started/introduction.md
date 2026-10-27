@@ -11,7 +11,9 @@ OMA provides mechanical checks when you invoke them or select a workflow that in
 
 The entire system lives in a portable `.agents/` directory inside your project. Switch between Claude Code, Codex CLI, Antigravity CLI or IDE, Cursor, OpenCode, and other supported tools, and your agent configuration travels with your code.
 
-If you are new to OMA, start with [Quick Start](./quick-start.md), then read [Important Defaults](./important-defaults.md). Installation creates the [SSOT](./glossary.md#ssot) and vendor integrations; the first useful check is `oma doctor`; the first useful task is one small single-domain change. Move to `/work` or `/orchestrate` only when the task needs coordination.
+Start with [Choose a setup](./choose-setup.md): load one skill for a task in your current agent, select a runtime skill preset for hooks and workflows, or install the Claude Code plugin. Temporary skill loading provides instructions and support files; CLI, project-rule, and external-service dependencies remain explicit. Runtime installation creates the [SSOT](./glossary.md#ssot) and vendor integrations.
+
+Use [Quick Start](./quick-start.md) for a first task and its observed checks. `oma doctor` checks a runtime installation; [Important Defaults](./important-defaults.md) explains its providers and configuration. Move to `/work` or `/orchestrate` when coordination is needed and their referenced skills are installed.
 
 ---
 

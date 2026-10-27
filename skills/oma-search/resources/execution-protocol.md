@@ -71,7 +71,7 @@ Exit codes: 0=ok, 2=blocked, 3=not-found, 4=invalid-input, 5=auth-required,
 
 Local project symbols, files and references are outside this router. Use the
 configured code-intelligence capability directly under
-`../../_shared/core/code-intelligence.md`. Do not install or track a repository,
+`../references/_shared/core/code-intelligence.md`. Do not install or track a repository,
 silently switch providers, or broaden native search beyond that contract.
 
 ## Results

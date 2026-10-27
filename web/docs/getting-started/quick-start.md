@@ -1,13 +1,25 @@
 ---
 title: Quick Start
-description: Run one scoped task from install through verification, with expected output and recovery.
+description: Choose one skill or a runtime preset, then run a scoped first task with observed verification.
 ---
 
 # Quick Start
 
-Use this page to run one small task and record a concrete result. You need a project directory and at least one supported AI CLI or IDE. The installer can bootstrap `bun`, `uv`, Serena, CUE, and the global `oma` command on macOS, Linux, or Windows; the selected host integration is required for the first prompt, while provider and browser integrations are optional.
+Use one focused task to check the result. Load a skill in the coding agent you already use, or install the runtime when you need project hooks, specialist agents, and workflows. [Choose a setup](./choose-setup.md) explains the available paths and their dependencies.
 
-## 1. Install
+## 1. Choose the setup {#1-install}
+
+For the read-only Git task below, ask your agent to load the skill and read its instructions and support directory:
+
+```bash
+bunx skills use first-fluke/oh-my-agent@oma-scm
+```
+
+Continue with the task in Step 3. The skill's CLI operations, other skills, project rules, and external services remain separate dependencies. Loading this skill does not run the OMA installer.
+
+### Install the runtime when needed
+
+The runtime bootstrap can prepare `bun`, `uv`, Serena, CUE, and the global `oma` command. Select the AI CLI or IDE you already use; provider and browser integrations depend on the tasks you plan to run.
 
 From the project directory, run the bootstrap installer:
 
@@ -31,10 +43,11 @@ bunx oh-my-agent@latest
 
 The bootstrap scripts install into the current project. Use `oma install --global` when you want a HOME-level install; read [Global Install](../guide/global-install.md) before mixing project and global installs.
 
-
 ## 2. Check the result
 
-Run the health check from the same project directory:
+For temporary skill loading, confirm that the agent read the selected instructions
+and verify the task itself. For a runtime installation, run the health check from
+the same project directory:
 
 ```bash
 oma doctor
@@ -64,19 +77,27 @@ If the bare command is still missing, open a new shell or add the package manage
 
 ## 3. Run one small task
 
-Open the repository in the configured AI tool and ask for one named skill and one self-contained result:
+Open an existing Git repository in your AI tool. Use the loaded `oma-scm` skill,
+or the copy installed by a named runtime preset. If you used Custom selection,
+include `oma-scm` for this example:
 
 ```text
-Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
+Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
 ```
 
-The host should identify the selected skill, inspect one target, and report either a focused link edit or that the link is already valid. Include the command output and exit status for any check that actually ran.
+Compare the reported branch and changes with the actual Git output. The agent
+should report which commands ran and their exit statuses. This read-only task
+needs no code test or build.
 
-When the keyword hook is enabled for the selected host, it can activate a matching workflow. Skill routing is performed by the host or the selected workflow, so an arbitrary host prompt does not guarantee a hook, a particular skill, or a `CHARTER_CHECK`. The execution contract should still inspect repository conventions, make only the scoped change, and report its verification. The exact files and command depend on the project.
+When the keyword hook is enabled for the selected host, it can activate a matching workflow. Skill routing is performed by the host or the selected workflow, so an arbitrary host prompt does not guarantee a hook, a particular skill, or a `CHARTER_CHECK`. The execution contract should still inspect repository conventions, respect the requested read-only scope, and report the observed checks. The exact files and command depend on the project.
 
 For a task that crosses API and UI boundaries, select `/work` or `/orchestrate` explicitly. For a single domain, continue with [Single Skill Execution](../guide/single-skill.md). The [Usage Guide](../guide/usage.md) contains longer examples.
 
-## 4. Know the defaults before scaling up
+## 4. Know the runtime defaults before scaling up
+
+Temporary skill loading does not configure these runtime defaults. For project
+hooks, provider setup, or team workflows, use the runtime path in
+[Choose a setup](./choose-setup.md).
 
 OMA starts with `model_preset: auto`, Serena for code intelligence, Agent Memory for semantic memory, native web search, and telemetry disabled. Serena uses the shared `bridge` transport and automatically updates unless configured otherwise. Browser DevTools MCP is opt-in; a fresh interactive setup offers Aside first. See [Important Defaults](./important-defaults.md) for the consequences and the override keys.
 
@@ -84,6 +105,7 @@ If a managed task stalls, start with `oma agent status <session-id> [agent-id]`,
 
 ## Next steps
 
+- [Choose a setup](./choose-setup.md) for one skill, a runtime preset, or the Claude Code plugin
 - [Important Defaults](./important-defaults.md) for precedence, providers, and recovery choices
 - [Installation](./installation.md) for presets, vendor setup, global installs, and updates
 - [Agents](../core-concepts/agents.md) for the 33 skill packages and dispatch roles

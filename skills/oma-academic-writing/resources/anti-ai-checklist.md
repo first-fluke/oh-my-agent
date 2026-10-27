@@ -1,6 +1,6 @@
 # Academic prose audit
 
-Read `../../_shared/core/anti-ai-prose.md` with this resource. It owns common
+Read `../references/_shared/core/anti-ai-prose.md` with this resource. It owns common
 patterns and the evidence-based editing/review contract. This file adds academic
 constraints; the rubric and required publication format take precedence.
 

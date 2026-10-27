@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const memoryState = vi.hoisted(() => ({
@@ -79,7 +80,7 @@ const githubState = vi.hoisted(() => ({
 }));
 
 const skillsState = vi.hoisted(() => ({
-  PRESETS: { custom: [], all: [] },
+  PRESETS: { custom: [], all: [] } as Record<string, string[]>,
   INSTALLED_SKILLS_DIR: ".agents/skills",
   REPO: "first-fluke/oh-my-agent",
   CLI_SKILLS_DIR: {
@@ -223,6 +224,7 @@ vi.mock("../../io/gortex.js", () => gortexState);
 vi.mock("../../utils/install-lock.js", () => ({
   acquireLock: miscState.acquireLock,
   bindInstallLockRelease: miscState.bindInstallLockRelease,
+  lockPath: (root: string) => path.join(root, ".agents", "_install.lock"),
 }));
 vi.mock("../link/run.js", () => ({
   link: vi.fn(() => ({
@@ -233,6 +235,7 @@ vi.mock("../link/run.js", () => ({
   })),
 }));
 
+import { PRESETS } from "../../constants/index.js";
 import {
   _resetInstallContext,
   setInstallContext,
@@ -240,6 +243,7 @@ import {
 import { syncProviderMcp } from "../../platform/provider-mcp.js";
 import { install } from "../install/run.js";
 import { link } from "../link/run.js";
+import { registerDefaultInstallAction, registerInstall } from "./command.js";
 
 vi.mock("../../platform/provider-mcp.js", () => ({
   syncProviderMcp: vi.fn(() => []),
@@ -260,6 +264,7 @@ describe("install --global: _install.json schema and meta", () => {
     delete process.env.CI;
 
     vi.clearAllMocks();
+    skillsState.PRESETS.all = [];
     migrationState.migrateGlobalHome
       .mockReset()
       .mockResolvedValue({ copied: [], conflicts: [], deferred: [] });
@@ -338,6 +343,105 @@ describe("install --global: _install.json schema and meta", () => {
     expect(lastCall[0]).toBe(tmpDir);
     expect(typeof lastCall[1]).toBe("string");
     expect(lastCall[2]).toBe("global");
+  });
+
+  it.each([
+    { preset: undefined, count: 33 },
+    { preset: "frontend", count: 8 },
+  ])(
+    "installs $count skills through the CLI with preset=$preset",
+    async ({ preset, count }) => {
+      skillsState.PRESETS.all = PRESETS.all ?? [];
+      const program = new Command();
+      registerDefaultInstallAction(program);
+      registerInstall(program);
+
+      await program.parseAsync([
+        "node",
+        "oma",
+        "install",
+        "--yes",
+        ...(preset ? ["--preset", preset] : []),
+      ]);
+
+      const installed = skillsState.installSkill.mock.calls.map(
+        (args) => args[1],
+      );
+      expect(installed).toEqual(PRESETS[preset ?? "all"]);
+      expect(installed).toHaveLength(count);
+      expect(skillsState.installWorkflows).toHaveBeenCalledOnce();
+      expect(skillsState.installAgents).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("keeps an explicit frontend preset when CI supplies non-interactive mode", async () => {
+    delete process.env.OMA_YES;
+    process.env.CI = "true";
+
+    await install({ preset: "frontend" });
+
+    expect(skillsState.installSkill.mock.calls.map((args) => args[1])).toEqual(
+      PRESETS.frontend,
+    );
+    expect(promptState.select).not.toHaveBeenCalled();
+  });
+
+  it("reports the selected skill count separately from installed manifest coverage", async () => {
+    await install({ yes: true, preset: "frontend" });
+
+    const installedNote = promptState.note.mock.calls.find(
+      (args) => args[1] === "Installed",
+    )?.[0];
+    expect(installedNote).toContain("Selected skills: 8");
+    expect(installedNote).toContain("Installed skill manifests:");
+    expect(installedNote).toContain("Workflow referenced skill manifests:");
+  });
+
+  it("uses an explicit preset while keeping the other interactive prompts", async () => {
+    delete process.env.OMA_YES;
+    delete process.env.CI;
+    promptState.select.mockImplementation(
+      async (options) => options.initialValue,
+    );
+    promptState.multiselect.mockImplementation(
+      async (options) => options.initialValues ?? [],
+    );
+    promptState.confirm.mockResolvedValue(true);
+
+    try {
+      await install({
+        preset: "frontend",
+        codeIntelligence: "serena",
+        semanticMemory: "none",
+        webSearch: "native",
+      });
+
+      expect(
+        skillsState.installSkill.mock.calls.map((args) => args[1]),
+      ).toEqual(PRESETS.frontend);
+      expect(promptState.select).toHaveBeenCalledWith(
+        expect.objectContaining({ message: "Response language?" }),
+      );
+      expect(promptState.select).not.toHaveBeenCalledWith(
+        expect.objectContaining({ message: "What type of project?" }),
+      );
+    } finally {
+      promptState.select.mockReset();
+      promptState.multiselect.mockReset();
+      promptState.confirm.mockReset();
+    }
+  });
+
+  it("rejects an invalid API preset before migration, locks, downloads, or writes", async () => {
+    await expect(
+      install({ yes: true, preset: "unknown-preset" }),
+    ).rejects.toThrow("Unknown skill preset");
+
+    expect(migrationState.migrateGlobalHome).not.toHaveBeenCalled();
+    expect(miscState.acquireLock).not.toHaveBeenCalled();
+    expect(miscState.downloadAndExtract).not.toHaveBeenCalled();
+    expect(skillsState.installSkill).not.toHaveBeenCalled();
+    expect(fsState.writeFileSync).not.toHaveBeenCalled();
   });
 
   it("migrates before acquiring the installation lock and projects common skills before copying", async () => {

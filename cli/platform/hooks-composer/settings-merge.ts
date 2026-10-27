@@ -154,11 +154,26 @@ export function mergeIntoSettings(
   }
   settings.hooks = mergedHooks;
   if (extra) {
-    // Shallow-merge one level deep so nested keys like `ui` (Qwen statusLine)
-    // or `permissions` augment — rather than clobber — existing vendor settings.
+    // Permission rule lists accumulate; other settings retain a one-level merge.
     for (const [key, value] of Object.entries(extra)) {
       const existing = settings[key];
-      if (isPlainObject(value) && isPlainObject(existing)) {
+      if (key === "permissions" && isPlainObject(value)) {
+        const previous = isPlainObject(existing) ? existing : {};
+        const merged = { ...previous, ...value };
+        for (const rule of ["allow", "ask", "deny"]) {
+          const currentRules = previous[rule];
+          const defaultRules = value[rule];
+          if (Array.isArray(defaultRules)) {
+            merged[rule] = [
+              ...new Set([
+                ...(Array.isArray(currentRules) ? currentRules : []),
+                ...defaultRules,
+              ]),
+            ];
+          }
+        }
+        settings[key] = merged;
+      } else if (isPlainObject(value) && isPlainObject(existing)) {
         settings[key] = { ...existing, ...value };
       } else {
         settings[key] = value;

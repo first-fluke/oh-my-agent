@@ -173,7 +173,7 @@ Memory provider and tool names are configurable via `.agents/mcp.json` (not the 
 **PHASE 1.5 - References**: Select task references as described in Entry; record uncertainty and expansion reasons without assuming runtime enforcement.
 **PHASE 2 - Setup**: Create session/task-board artifacts with the current IDs and selected references.
 **PHASE 3 - Execute**: Dispatch ready tasks within MAX_PARALLEL using supported native or fallback context controls.
-**PHASE 4 - Monitor**: Prefer completion notifications; otherwise use one coordinator with bounded polling backoff. Follow `../_shared/core/execution-policy.md` for the shared deadline, cancellation, resource ownership, and shutdown rules. Cancellation or deadline exhaustion stops dispatch and recovery before verification.
+**PHASE 4 - Monitor**: Prefer completion notifications; otherwise use one coordinator with bounded polling backoff. Follow `references/_shared/core/execution-policy.md` for the shared deadline, cancellation, resource ownership, and shutdown rules. Cancellation or deadline exhaustion stops dispatch and recovery before verification.
 **PHASE 4.5 - Verify**: Run mechanical checks for every completed agent; run `oma verify agent {agent-type}` only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`; then run QA cross-review for every completed implementation
 **PHASE 5 - Collect**: Read claims and run-scoped reports for plan tasks whose checks passed; compile summary without deleting evidence.
 
@@ -270,7 +270,7 @@ exploration hypothesis consume one attempt. Before starting recovery, reserve
 the complete next action; do not exceed the budget or start an incomplete
 exploration round.
 
-Use the plan's stable `lineage_id` and task `goal_id` from `../_shared/runtime/result-contract.md`. New task/run/session IDs do not reset that budget. Freeze the full JSON plan at first dispatch; reject recursive planning/review tasks and post-dispatch plan revisions. A contract change requires an explicitly separated new session and lineage.
+Use the plan's stable `lineage_id` and task `goal_id` from `references/_shared/runtime/result-contract.md`. New task/run/session IDs do not reset that budget. Freeze the full JSON plan at first dispatch; reject recursive planning/review tasks and post-dispatch plan revisions. A contract change requires an explicitly separated new session and lineage.
 
 Classify failures before retrying: `PRODUCT_FAILURE` follows the remaining product recovery budget; `WORKFLOW_EVIDENCE_FAILURE` means current product checks passed but completion claims or bindings failed. Automatic resume stops evidence-only replay. Allow at most one metadata-only repair under the existing task and frozen plan, consuming the same budget, then stop with a partial handoff if unresolved. Do not create PM tasks, rerun product planning, or import another workflow's plan-review loop for evidence failures.
 
@@ -282,21 +282,21 @@ Classify failures before retrying: `PRODUCT_FAILURE` follows the remaining produ
 
 ### Session evidence
 
-For material corrections or review findings, retain the cause, impact, and evidence in existing task artifacts. Use `../_shared/core/session-metrics.md` when a retrospective or separate session summary is useful. Do not score clarification questions or require an RCA based on counters. Resolve the affected work and ask only for a material missing decision.
+For material corrections or review findings, retain the cause, impact, and evidence in existing task artifacts. Use `references/_shared/core/session-metrics.md` when a retrospective or separate session summary is useful. Do not score clarification questions or require an RCA based on counters. Resolve the affected work and ask only for a material missing decision.
 
 ## References
-- Parallel worker collaboration: `../_shared/core/collaboration-policy.md` (before assigning parallel work or coordinating peer issues, ownership handoffs, and result collection)
+- Parallel worker collaboration: `references/_shared/core/collaboration-policy.md` (before assigning parallel work or coordinating peer issues, ownership handoffs, and result collection)
 - Prompt template: `resources/subagent-prompt-template.md`
 - Memory schema: `resources/memory-schema.md`
 - Scripts: `scripts/spawn-agent.sh`, `scripts/parallel-run.sh`, `scripts/verify.sh`
 - Task templates: `templates/`
-- Skill-to-agent mapping: `../_shared/core/skill-routing.md`
+- Skill-to-agent mapping: `references/_shared/core/skill-routing.md`
 - Verification: `scripts/verify.sh <agent-type>`
-- Session metrics: `../_shared/core/session-metrics.md`
-- API contract template (SSOT): `../_shared/core/api-contracts/template.md`; read generated contracts from `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
-- Context loading: `../_shared/core/context-loading.md`
-- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
-- Clarification protocol: `../_shared/core/clarification-protocol.md`
-- Context budget: `../_shared/core/context-budget.md`
-- Code intelligence: `../_shared/core/code-intelligence.md`
-- Runtime lessons: `../_shared/core/lessons-learned.md` (recurring failure or requested retrospective)
+- Session metrics: `references/_shared/core/session-metrics.md`
+- API contract template (SSOT): `references/_shared/core/api-contracts/template.md`; read generated contracts from `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
+- Context loading: `references/_shared/core/context-loading.md`
+- Task decomposition: `references/_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
+- Clarification protocol: `references/_shared/core/clarification-protocol.md`
+- Context budget: `references/_shared/core/context-budget.md`
+- Code intelligence: `references/_shared/core/code-intelligence.md`
+- Runtime lessons: `references/_shared/core/lessons-learned.md` (recurring failure or requested retrospective)

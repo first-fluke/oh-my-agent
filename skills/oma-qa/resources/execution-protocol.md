@@ -1,13 +1,13 @@
 # QA Agent - Execution Protocol
 
 ## Preparation
-Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../references/_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Scope
 - Identify what to review: new feature, full audit, or specific concern
 - List all files/modules to inspect
 - Determine review depth: quick check vs. comprehensive audit
-- Follow `../../_shared/core/code-intelligence.md` to discover configured code
+- Follow `../references/_shared/core/code-intelligence.md` to discover configured code
   navigation/search tools. If unavailable or timed out, use native search only
   for paths outside this project or ignored paths, record that limit, and continue the review.
 
@@ -163,7 +163,7 @@ Generate structured report with:
   - missing test design / traceability / exit criteria
 
 ## Step 4: Verify
-- Use applicable sections of `../../_shared/core/common-checklist.md` when the review crosses domains
+- Use applicable sections of `../references/_shared/core/common-checklist.md` when the review crosses domains
 
 ## On Error
 See `resources/error-playbook.md` for recovery steps.

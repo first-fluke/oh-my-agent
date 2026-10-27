@@ -64,7 +64,7 @@ Report verified findings, edits made, and remaining gaps. A clean reference scan
 Verification regenerates `docs/generated/doc-refs.json`; optional URL results go to `docs/generated/url-drift.json`. Sync's CLI emits candidate data; the host drafts and applies patches. i18n/lint commands report only. A workflow hook runs only when `docs.auto_verify` is enabled and is warn-only.
 
 ### Guardrails
-- Follow `../_shared/core/execution-policy.md` for authorization and completion.
+- Follow `references/_shared/core/execution-policy.md` for authorization and completion.
 - Keep review-only requests read-only and changes within the assigned diff or acceptance criteria.
 - Do not expose secret-bearing files (`.env*`, private keys, credentials) in diff reports.
 - The CLI produces structured data; the host performs natural-language synthesis. Do not invent CLI findings or call a vendor LLM API from the docs CLI.
@@ -74,4 +74,4 @@ Verification regenerates `docs/generated/doc-refs.json`; optional URL results go
 ## References
 - Mode commands, flags, and outputs: `resources/commands.md` (selected operation only).
 - Translation: `../oma-translation/SKILL.md` (localized correction).
-- Authorization: `../_shared/core/execution-policy.md` (when not already provided).
+- Authorization: `references/_shared/core/execution-policy.md` (when not already provided).

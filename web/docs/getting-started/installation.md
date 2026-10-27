@@ -5,6 +5,11 @@ description: Install oh-my-agent, choose skills and providers, understand the ge
 
 # Installation
 
+For one task, start with [a single skill](./choose-setup.md#load-one-skill). For
+project hooks and team workflows, use the runtime installation below. The
+[setup guide](./choose-setup.md) separates instruction loading, skill presets,
+and Claude Code marketplace installation.
+
 ## Prerequisites
 
 - **An AI-powered IDE or CLI**: at least one supported host such as Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot, or Hermes
@@ -51,7 +56,7 @@ The bootstrap continues after optional dependency failures and reports follow-up
 - **commit-msg guard**: `.githooks/commit-msg` rejects `Co-authored-by` addresses missing from `.githooks/co-authors.allow` or `scm.co_author.email`. `git config --local core.hooksPath .githooks` is set only when no other hooks are active; otherwise oma prints how to chain the guard. Set `scm.co_author.enforce_hook: false` to opt out.
 - **Background updates**: `oma update` updates the `oma` CLI in the background (`auto_update_cli: false` or `OMA_SKIP_VERSION_CHECK=1` to stop it) and runs `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` to stop it).
 - **Serena cleanup timer**: with Serena in the default `bridge` mode, the first agent session that starts a shared Serena server registers a timer that stops idle shared Serena servers every 5 minutes (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer`, or Windows scheduled task `OMA Serena Daemon GC`). Set `serena.mode: stdio` to skip the shared server and its timer. `oma uninstall` does not remove the timer.
-- **Non-interactive runs** (`-y`, `OMA_YES=1`, `CI=true`) use the `All` skill preset, `model_preset: auto`, and Python as the backend language. They select no browser MCP (and skip the Aside install script) unless `mcp.devtools_browsers` already lists one.
+- **Non-interactive runs** (`-y`, `OMA_YES=1`, `CI=true`) use the `All` skill preset unless `--preset` selects another, plus `model_preset: auto` and Python as the backend language. They select no browser MCP (and skip the Aside install script) unless `mcp.devtools_browsers` already lists one.
 
 ---
 
@@ -84,6 +89,28 @@ Pick the preset that matches the work the repository needs. Skill names below dr
 
 Presets are skill bundles; they do not create one subagent definition per skill. The `all` preset expands from the live skill registry, so the list can grow with the repository. Domain presets include only the skills for that focus.
 
+Choose a preset from the command line:
+
+```bash
+oma install --preset frontend --yes
+```
+
+`--preset` uses the names in the table and takes priority over the interactive
+skill prompt and the non-interactive `all` default. An unknown name is rejected
+before installation begins. Omitting the option keeps the existing selection
+flow. The option selects skills; shared files, agents, workflows, hooks and
+provider setup still follow the runtime installer. Reinstalling with a smaller
+preset retains previously installed skills. Custom selection is available only
+through the interactive menu; `custom` and empty values are not accepted by
+`--preset`.
+
+After installation, read the selected-skill list and static referenced-skill
+manifest report. Existing retained skills can satisfy a reference outside the
+current selection. The report includes conditional branches; use the task's
+actual workflow branch to decide which missing or unreadable manifests need
+repair. It does not verify resource contents, tools, providers, credentials, or
+execution.
+
 ### Workflows that need skills outside a preset
 
 Every preset installs all workflow and agent definitions, but several workflows read a skill that domain presets do not install. Check this table before you pick a domain preset:
@@ -102,7 +129,7 @@ Every preset installs all workflow and agent definitions, but several workflows 
 | `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/scm` | oma-scm | every preset |
 
-To add a missing skill later, run `oma doctor` from the project root, accept the missing-skill prompt, and choose **Select individually**.
+To add a missing skill later, run `oma doctor` from the project root, accept the missing-skill prompt, and choose **Select individually**. Use `oma doctor --global` for an OMA global installation.
 
 The shared resources (`_shared/`) are always installed regardless of preset. This includes core routing, context loading, prompt structure, vendor detection, execution protocols, and memory protocol.
 

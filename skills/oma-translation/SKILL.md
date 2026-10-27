@@ -182,7 +182,7 @@ the suggested revision only when warranted, and the evidence for each finding.
    content or review. For substantive prose, select by the **target** BCP 47 primary subtag:
    - `en` (including regional variants): load `resources/style-skills.md` and resolve `humanizer`.
    - `ko` (including regional variants): load that resource and resolve `humanize-korean`.
-   - Other languages: load `../_shared/core/anti-ai-prose.md` with
+   - Other languages: load `references/_shared/core/anti-ai-prose.md` with
      `resources/anti-ai-patterns.md` and the target profile.
    Short independent UI strings with established siblings need protected-syntax and
    sibling checks; they do not require an external prose-style pass.
@@ -221,9 +221,9 @@ the suggested revision only when warranted, and the evidence for each finding.
 
 - Translation rubric: `resources/translation-rubric.md` (load for substantive content or review)
 - Selected style skills: `resources/style-skills.md` (English or Korean substantive prose)
-- Common prose diagnostics: `../_shared/core/anti-ai-prose.md` (other target languages, with translation exceptions when prose style needs review)
+- Common prose diagnostics: `references/_shared/core/anti-ai-prose.md` (other target languages, with translation exceptions when prose style needs review)
 - Translation exceptions and grammar diagnostics: `resources/anti-ai-patterns.md` (other target languages, with common diagnostics when prose style needs review)
 - Target profiles: `resources/lang/{ko,ja,zh,en}.md` (load one matching profile)
 - Profile template: `resources/lang/_template.md` (only when adding a profile)
-- Shared context loading: `../_shared/core/context-loading.md`
-- Shared quality principles: `../_shared/core/quality-principles.md`
+- Shared context loading: `references/_shared/core/context-loading.md`
+- Shared quality principles: `references/_shared/core/quality-principles.md`

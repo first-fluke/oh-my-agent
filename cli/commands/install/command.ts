@@ -1,7 +1,8 @@
 import { type Command, Option } from "commander";
+import { PRESETS } from "../../constants/index.js";
 import { createSearchProviderRegistry } from "../../platform/search-providers.js";
 import { runAction } from "../../utils/cli-framework.js";
-import type { ProviderInstallOptions } from "./provider-preferences.js";
+import type { InstallOptions } from "./environment.js";
 import { install } from "./run.js";
 
 export { install } from "./run.js";
@@ -21,6 +22,12 @@ export function registerInstall(program: Command): void {
   program
     .command("install")
     .description("Install oh-my-agent skills and configurations")
+    .addOption(
+      new Option(
+        "--preset <name>",
+        "Skill preset (overrides project prompt; default: all with --yes/CI)",
+      ).choices(Object.keys(PRESETS)),
+    )
     .addOption(
       new Option(
         "--web-search <provider>",
@@ -52,7 +59,7 @@ export function registerInstall(program: Command): void {
       "Honcho workspace ID (new connection: oma)",
     )
     .action(
-      runAction(async (opts: ProviderInstallOptions & { yes?: boolean }) => {
+      runAction(async (opts: InstallOptions) => {
         await install({ ...opts, yes: resolveInstallYesFlag(program, opts) });
       }),
     );
