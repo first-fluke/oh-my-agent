@@ -33,5 +33,3 @@ Inspect actual candidates, including samples across each intended family and fal
 If validation rejects a proposal or it floods the candidate set, retain the rejection/breadth evidence, narrow the rule and repeat the bounded check. Do not bypass safeguards, erase state or label the remaining surface checked.
 
 Store the accepted configuration/matcher digests in `run.json`, including intentionally excluded surfaces. Feed discovered candidates through the same independent validation contract as built-in matcher results.
-
-Sources: [writing matchers](https://github.com/vercel-labs/deepsec/blob/main/docs/writing-matchers.md), [architecture](https://github.com/vercel-labs/deepsec/blob/main/docs/architecture.md).

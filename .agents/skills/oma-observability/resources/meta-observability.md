@@ -603,4 +603,3 @@ The full Jsonnet/YAML implementation of this dashboard belongs in `resources/obs
 - On cloud provider NTP endpoint changes: update Section B2 table.
 - On TSDB migration (e.g., Prometheus → VictoriaMetrics): verify cardinality query syntax
   in Section C3; VictoriaMetrics uses `/api/v1/status/tsdb` instead of PromQL cardinality queries.
-- Owner: SysE primary (see design document Ownership & Quality Gates table).

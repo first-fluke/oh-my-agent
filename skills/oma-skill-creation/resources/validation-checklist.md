@@ -36,11 +36,7 @@ Use this checklist after creating or updating a skill. `oma skill lint --skill {
 - Resolve any `FAIL` (≥ 75% similarity) pair by rewriting one description to highlight distinct triggers, domains, or boundaries.
 - `WARN` (≥ 60%) pairs are acceptable when descriptions cover genuinely related domains; document the distinction in `When NOT to use` cross-routes.
 
-## Utility Content Checks (SkillLens rubric)
-
-Three content dimensions predict whether a skill measurably improves task outcomes
-(SkillLens, arXiv:2605.23899). Section structure, formatting, and prose fluency alone do
-not — a well-written skill can still fail `oma skill eval`.
+## Utility Content Checks
 
 - **Failure mechanism encoding**: `Failure and recovery` (and guardrails) explain *why* the
   agent fails in this domain and give an executable remedy. Reject generic advice

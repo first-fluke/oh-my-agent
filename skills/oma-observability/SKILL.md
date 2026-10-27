@@ -138,6 +138,7 @@ When CNCF/vendor status is load-bearing, verify live state at `https://landscape
 5. Use W3C Trace Context by default, with cloud translations from `resources/boundaries/cross-application.md` where required.
 6. Apply PII redaction and sampling-aware baggage controls at collection. Check retention, erasure, and audit requirements for the target system.
 7. Deliver working configuration or explicitly labeled proposals. Scaffolds and unverified checks cannot count as completed setup.
+8. Use existing OMA skill names for cross-skill handoffs; do not present future skills as available.
 
 The coverage matrix has four layers (L3, L4, mesh, L7), four boundaries (multi-tenant, cross-application, SLO, release), and seven signals (metrics, logs, traces, profiles, cost, audit, privacy). Read matching rows in `resources/matrix.md`; N/A cells do not require implementation.
 
@@ -180,13 +181,9 @@ Read `resources/execution-protocol.md` first. Use the selected route above, then
   - Attribute deprecation → replace across all citing files; migration note in `resources/standards.md`.
   - CNCF status change for a vendor/project named in `vendor-categories.md` (Graduated / Archived / acquired) → update the vendor table.
 - **Authoritative live state**: `https://landscape.cncf.io` for CNCF project status. This skill does not promise to track it on any schedule; verify at use time if the information is load-bearing.
-- **No per-file review stamps**: earlier drafts carried `last_reviewed` / `next_review` frontmatter. Those were removed because no automated enforcement exists; relying on voluntary manual review produces stale stamps that misrepresent currency. Git history (`git log path/to/file`) is the source of truth for when a file was last changed.
+- Use `git log path/to/file` to inspect file changes; verify upstream status separately when it affects the task.
 
-### Contribution Protocol
-
-- Do NOT pre-declare future OMA skill names in user-facing documentation. If OMA-native coverage becomes warranted for an out-of-scope domain, evaluate and name it at that point.
-- File edits follow the ownership matrix in `docs/plans/designs/005-oma-observability.md §Ownership`. CTO co-signs changes to `standards.md`, `matrix.md`, `anti-patterns.md`.
-- Run `resources/checklist.md §1 Setup validation` before merging.
+Run `resources/checklist.md §1 Setup validation` before merging observability changes.
 
 ## References
 - Execution steps: `resources/execution-protocol.md`

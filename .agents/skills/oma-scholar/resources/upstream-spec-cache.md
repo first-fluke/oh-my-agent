@@ -27,12 +27,6 @@ Recommend refreshing every 1-2 weeks until the upstream stabilizes.
 
 ## Snapshot (captured 2026-07-17)
 
-Notable drift vs the 2026-04-25 snapshot: skill grew 69 → 941 lines; predicate
-set closed at 12 (`same_as`/`supersedes`/`retracts` added; `extends`/`contradicts`
-etc. moved to `citation_intent` on `cites`); `status` enum is 4 values; review
-mode formalized as `profile: review@1` with `record_id#local_id` cross-record
-reference grammar; new `venue_type` enum and bundled sanitize/verify scripts.
-
 ````markdown
 ---
 name: knows

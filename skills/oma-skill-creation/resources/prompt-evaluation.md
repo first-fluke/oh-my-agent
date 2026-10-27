@@ -34,5 +34,3 @@ Use repeated runs when model variation affects a decision. Preserve the current 
 ## Regression checks
 
 Check description boundaries before loading SKILL.md. Test the default context path as well as explicit graph calls. Exercise a soft budget smaller than the entry skill and verify the entry survives with a reported overrun. Check generated agent and directory instructions against the same policy as the source. Scope and approval behavior must hold through nested references, not only in the root skill.
-
-The design follows [OpenAI's guidance on skills and prompts for GPT-6 Astra](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra): concise routing, conditional references, task-specific reading, and explicit completion and authorization boundaries.

@@ -16,6 +16,9 @@ and suggest a local fix. Do not rewrite the full draft or infer AI authorship fr
 style. Zero findings is valid. The owning skill controls its domain report format;
 an evidence or translation-quality score is not an AI-authorship probability.
 
+Apply domain-specific exceptions; do not enforce word bans or stylistic
+preferences as universal rules.
+
 ## Common patterns
 
 Target-language grammar and typography remain in the translation resource.
@@ -186,10 +189,3 @@ structural colons when the domain allows them.
 Remove an unsupported aphorism, decorative metaphor, or sequence of punchy fragments
 at the end. Finish on a concrete sentence already supported by the passage. Preserve
 intentional source cadence in translation and required academic conclusions.
-
-## Origin
-
-Consolidated from OMA's academic and translation diagnostics. Additional editorial
-checks were informed by Peter Yang's [no-ai-slop skill](https://github.com/petergyang/no-ai-slop/blob/main/skills/no-ai-slop/SKILL.md).
-This resource uses domain-specific exceptions rather than adopting its word bans
-or stylistic preferences as universal rules.

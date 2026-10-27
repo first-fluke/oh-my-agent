@@ -240,7 +240,7 @@ Completion gates and explicit workflow completion end the session as `completed`
 
 Call `oma state emit` **directly** at each required checkpoint — do not wrap it in a shell helper.
 
-Every Bash tool call runs in a fresh shell, so a shell function defined in one call (such as the historical `oma_emit`) does not exist in the next call. The wrapper saved nothing over the underlying command and only produced "command not found" fallbacks, so it has been removed.
+Do not depend on shell functions or helper state carrying across independent tool calls.
 
 Required decision example:
 

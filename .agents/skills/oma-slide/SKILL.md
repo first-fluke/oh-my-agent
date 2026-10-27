@@ -198,7 +198,7 @@ Env-var overrides: `OMA_CHROME_PATH` (Chrome binary for validate/export), `OMA_Y
 7. **Max 3 auto-fix iterations.** Surface findings to the user instead of looping indefinitely.
 8. **Video warning on bundle.** Warn when `./assets/` contains video: bundle is not fully self-contained. Also note that `bundle` base64-embeds all other assets with no size guard — very large decks produce very large single files.
 9. **PPTX is experimental.** Label PPTX exports as experimental in all user-facing output.
-10. **oma-search is NOT a runtime dependency.** It was used to study reference repos only.
+10. **oma-search is NOT a runtime dependency.**
 11. **Editor binds 127.0.0.1 only.** Never expose the bbox editor server on a non-loopback interface.
 12. **Canva MCP = optional.** Never error if Canva MCP is unavailable; offer auto-provisioning, then degrade to local exports if declined.
 13. **Canva auth probe first.** Before any Canva operation, call `search-designs` using the discovered tool schema to verify auth. On failure, notify user and skip.

@@ -39,5 +39,3 @@ When setup stops, save its printed state/inventory/proposal paths and exact resu
 Save version/help, redacted configuration, generated-file digests, setup summary, selected route and any native exit. An init budget/input stop has its own exit semantics; do not interpret it using the diff findings contract.
 
 Keep `.env.local`, authentication material and native data out of commits. Review configuration/matchers before any separately authorized commit. Setup success records preparation/coverage, not confirmed vulnerabilities or runtime proof.
-
-Sources: [getting started](https://github.com/vercel-labs/deepsec/blob/main/docs/getting-started.md), [configuration](https://github.com/vercel-labs/deepsec/blob/main/docs/configuration.md), [architecture](https://github.com/vercel-labs/deepsec/blob/main/docs/architecture.md).

@@ -43,5 +43,3 @@ Native `triage`, `revalidate`, `export` and `metrics` have version-specific opti
 Deepsec's discovery worker performs static analysis. Do not instruct it to launch the application, contact endpoints or execute exploits. Runtime proof belongs to a separate verifier/context.
 
 On interruption, retain the exact command, state, processed/pending units and stop reason. Resume the same identity/configuration using native checkpoints; investigate changes before reusing cached results. Never remove `data/<id>/` to obtain a clean run.
-
-Sources: [change review](https://github.com/vercel-labs/deepsec/blob/main/docs/reviewing-changes.md), [upstream usage](https://github.com/vercel-labs/deepsec), [static worker contract](https://github.com/vercel-labs/deepsec/blob/main/packages/processor/src/prompt/core.ts).

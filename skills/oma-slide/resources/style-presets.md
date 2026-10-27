@@ -4,10 +4,6 @@
 > These are the always-safe fallback core. Use them directly or as the basis for the
 > "safe preset" preview in Phase 2 style discovery.
 
-**Attribution:** These presets are adapted from `zarazhangrui/frontend-slides`
-(MIT License — Copyright zarazhangrui). Adapted for the oma-slide fixed-stage model
-(1920×1080 px canvas). See attribution note at end of this file.
-
 ---
 
 ## How to Choose
@@ -521,22 +517,4 @@ them per slide content and may extend with slide-specific overrides.
 
 ---
 
-## Attribution
-
-These presets are adapted from the `zarazhangrui/frontend-slides` project,
-available at https://github.com/zarazhangrui/frontend-slides, released under the
-**MIT License**.
-
-> MIT License — Copyright (c) zarazhangrui
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy of this
-> software and associated documentation files (the "Software"), to deal in the Software
-> without restriction, including without limitation the rights to use, copy, modify, merge,
-> publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
-> to whom the Software is furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all copies or
-> substantial portions of the Software.
-
-Palettes and font pairings have been adapted for the oma-slide 1920×1080 fixed-stage model
-and extended with additional original presets.
+License: [MIT notice](style-presets.LICENSE).

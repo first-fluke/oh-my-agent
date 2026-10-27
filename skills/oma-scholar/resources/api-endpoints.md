@@ -137,7 +137,7 @@ The canonical generation guide (natural language, slightly different from the JS
 
 Schema id used by sidecars: `https://knows.dev/schema/record-0.9.json`
 
-The host `knows.dev` is currently unreachable (HTTPS times out as of 2026-04-25), so schema cannot be fetched directly. The `oma scholar lint` subcommand implements rules empirically derived from production records.
+Fetch the schema at this ID when canonical validation is required. If that fetch fails during the run, record the error and use `upstream-spec-cache.md` and `sidecar-spec.md` for local compatibility checks. A successful `oma scholar lint` result does not validate the complete canonical JSON Schema. For failed sidecar/API requests, follow the Error Handling table below and the existing cascade in `fallback-providers.md`.
 
 ## Rate Limiting
 

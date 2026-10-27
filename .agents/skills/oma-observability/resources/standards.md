@@ -140,7 +140,7 @@ This skill operates on OSI layers L3, L4, mesh (L4-L7 hybrid), and L7. The follo
 | L5 | Session (full) | gRPC session semantics moved to L7 instrumentation; WebSocket deferred | WebSocket-specific vendor tooling |
 | L6 | Presentation (full) | TLS kept as security context attributes only (`tls.*` Development tier); full TLS inspection is not OTel's domain | Wireshark for packet-level TLS; Cloudflare Radar for TLS ecosystem data; vendor-specific TLS inspection tooling |
 
-Rationale: approximately 90% of production debugging occurs at L3, L4, mesh, and L7. L1/L2 are opaque to SaaS workloads. L5/L6 full coverage requires OTel semconv maturity that does not yet exist (Development tier). This decision is design decision D2 in the design document.
+Rationale: approximately 90% of production debugging occurs at L3, L4, mesh, and L7. L1/L2 are opaque to SaaS workloads. L5/L6 full coverage requires OTel semconv maturity that does not yet exist (Development tier).
 
 ---
 

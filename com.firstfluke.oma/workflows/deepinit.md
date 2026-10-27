@@ -337,12 +337,10 @@ Only at **package/app boundaries** in monorepos.
 
 ## Step 6: Verify After Updates (Delegated)
 
-This step is now handled by `oma-docs`. After deepinit completes, the user can run:
+`deepinit` generates initial bootstrap content only. After it completes, the user can run `oma-docs` for drift and broken-reference checks:
 
 - `/oma-docs verify`: check generated harness docs against the current codebase.
 - Set `docs.auto_verify: true` in `oma-config.yaml` to run verify automatically at the end of `/scm`, `/work`, and `/ultrawork` workflows.
-
-deepinit no longer detects drift on update runs; it only generates 0→1 bootstrap content. The legacy `<!-- REVIEW: this rule may be outdated -->` marker behavior is replaced by the broken-ref report from `oma-docs verify`.
 
 ---
 

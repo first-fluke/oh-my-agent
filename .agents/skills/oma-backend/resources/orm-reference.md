@@ -2,8 +2,6 @@
 
 Use this guide when the task involves ORM query design, relation loading, transaction scoping, or session/client lifecycle decisions.
 
-This document is intentionally synthesized from official ORM docs. The purpose is not to mirror each vendor page, but to extract the common operating rules that keep backend work correct and performant.
-
 ## ORM Rules
 
 ### 1. Relation loading must be chosen per use case
@@ -11,27 +9,17 @@ This document is intentionally synthesized from official ORM docs. The purpose i
 Backend Agent should therefore:
 - choose loading strategy per endpoint or service method
 - compare join-based eager loading, batched/select-in loading, and separate follow-up queries
+- choose SQLAlchemy's `joinedload`, `selectinload`, `lazyload`, or `raiseload` explicitly for the access pattern
+- use Sequelize `include` for join-based eager loading or `separate: true` for `hasMany` when separate loading fits the query
 - treat accidental lazy loads in loops as a performance bug
-
-What this rule is derived from:
-- Prisma documents N+1 mitigation through batched access patterns and join-based relation loading
-- SQLAlchemy documents `joinedload`, `selectinload`, `lazyload`, and `raiseload` as explicit strategies
-- TypeORM documents join-based loading and the lazy/eager trade-off
-- Sequelize documents `include` as join-based eager loading and `separate: true` for `hasMany`
-- Hibernate documents that select-based fetching is vulnerable to N+1
 
 ### 2. Transaction boundaries must follow business operations
 
 Backend Agent should therefore:
-- open one explicit transaction for one business operation
+- open one explicit transaction for one business operation; in Sequelize, use a managed transaction callback for that unit of work
 - keep read-modify-write flows inside the same transaction boundary
 - avoid per-statement auto-commit designs
 - never hold a database transaction open across user think time
-
-What this rule is derived from:
-- Hibernate explicitly calls session-per-operation and auto-commit-per-statement anti-patterns
-- Sequelize promotes managed transactions around a callback-shaped unit of work
-- SQLAlchemy models the session as transaction-oriented state
 
 ### 3. ORM lifecycle objects are not generic shared singletons
 
@@ -48,14 +36,9 @@ Operational reading:
 ### 4. Field projection is mandatory unless full entity hydration is required
 
 Backend Agent should therefore:
-- fetch only required columns, attributes, or nested fields
-- prefer projections, DTO shaping, or raw results when domain objects are not needed
+- fetch only required columns, attributes, or nested fields using Prisma nested `select`, TypeORM `select`, or Sequelize `attributes`
+- prefer projections, DTO shaping, or raw results when domain objects are not needed; use TypeORM `getRawMany()` or Sequelize `{ raw: true }` when entity hydration is unnecessary
 - treat over-fetching as a query design flaw, not a minor optimization item
-
-What this rule is derived from:
-- Prisma calls out over-fetching directly and supports nested `select`
-- TypeORM recommends `select` and `getRawMany()`
-- Sequelize documents `attributes` and `{ raw: true }`
 
 ### 5. Mapping defaults must never be trusted blindly
 

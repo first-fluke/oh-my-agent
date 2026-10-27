@@ -1,6 +1,6 @@
 # Refactoring - Invariant Definition
 
-> Part I of the refactoring doctrine. This file is timeless; org-specific parameters live in `governance.md`. Empirical evidence is noted inline where a claim depends on it.
+Use `governance.md` for organization-specific parameters.
 
 ## Core definition
 
@@ -35,7 +35,7 @@ Guarantee mechanisms: (a) test suite - tests are FROZEN during refactoring; a fa
 Composition of named transformations (Extract Function, Move Method, Rename, ...). Small enough to verify instantly, revert instantly, and review confidently. The standard catalog names only a fraction of real-world behavior-preserving changes (detector studies explain ~20% of real changesets with the standard catalog alone) - the test is the five properties, not catalog membership. Compound refactorings are where automated agents fail most; decompose to atomic steps.
 
 ### 4. Economics - readability is the dominant term
-`change cost = comprehension cost + ripple cost + verification cost`. Most developer time goes to comprehension, so readability (analysability) is the primary objective; coupling-driven ripple radius (modifiability) is the second, independent lever. Kent Beck: "Make the change easy (warning: this may be hard), then make the easy change."
+`change cost = comprehension cost + ripple cost + verification cost`. Most developer time goes to comprehension, so readability (analysability) is the primary objective; coupling-driven ripple radius (modifiability) is the second, independent lever.
 - Cognitive grounding: refactoring removes extraneous cognitive load; working-memory limits (chunking) justify small units; naming is the largest readability lever no metric measures.
 - Debt vocabulary: Cunningham's debt metaphor is a communication device for non-engineers (interest = ongoing cost, principal = structural flaw). Fowler's quadrants (deliberate x prudent) split the prescription: prudent-deliberate debt is a repayment-planning problem; reckless-inadvertent debt is an education problem.
 
@@ -58,7 +58,7 @@ Bug fixing (intentional behavior change) / performance optimization (different g
 - SATD (self-admitted technical debt): TODO/HACK/FIXME in comments/issues - a third signal independent of structure and history. Do not let the *tone* of the admission drive priority (negativity measurably skews developer prioritization even though most consider it wrong).
 
 ## Destination - one principle, three axes
-**Reusability = context independence.** Every pattern is a named technique for severing one kind of context dependency (Strategy: host vs algorithm; Facade: consumer vs subsystem internals; Adapter: new context vs existing interface; DI: unit vs dependency construction). Roots: Parnas information hiding, GoF's two meta-principles, OCP, SDP/SAP. Composition is the mother of patterns; FP (pure functions) is the limit case - the smallest reusable unit. Catalogs are fractal: GoF / PoEAA / EIP / DDD / cloud (Strangler Fig) / POSA.
+**Reusability = context independence.** Every pattern is a named technique for severing one kind of context dependency (Strategy: host vs algorithm; Facade: consumer vs subsystem internals; Adapter: new context vs existing interface; DI: unit vs dependency construction). Pure functions reduce implicit context dependencies.
 
 **Pattern choice = f(language expressiveness, code layer, codebase convention):**
 - Language axis: patterns compensate for what the language cannot express (Norvig: most GoF patterns evaporate into idioms). The destination is the language's idiom, not a GoF diagram.

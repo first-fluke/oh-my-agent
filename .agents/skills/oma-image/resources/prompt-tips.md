@@ -65,7 +65,7 @@ For `pollinations` (flux / zimage), patterns from either library transfer; use t
      --jq .content | base64 -d | less
    ```
    Scan headings like `### No. N: <Category> - <Title>` to locate 1–2 analogous entries.
-3. **Internalize the pattern, do not reproduce the text.** Extract lighting / framing / camera / style-keyword choices. The structural approach is not copyrightable; the expression is.
+3. **Internalize the pattern, do not reproduce the text.** Extract lighting / framing / camera / style-keyword choices.
 4. Compose your amplified prompt by applying that pattern to the user's subject in your own wording. Preserve the requested subject and constraints; proceed under existing generation authorization unless a material decision remains.
 
 **Fallback:** If no category matches, use the structural template at the top of this file.

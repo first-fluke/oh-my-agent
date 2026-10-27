@@ -43,5 +43,3 @@ Supply the actual secret through the approved environment/secret store. Existing
 `only`/`exclude`, per-project legacy configuration and CLI overrides can alter coverage. Record the effective selection rather than only the top-level file. Review generated matcher imports and additive plugins together.
 
 Debug logs can contain prompts or credentials. Keep originals access-controlled and redact report copies; avoid verbose auth output in the conversation.
-
-Sources: [configuration](https://github.com/vercel-labs/deepsec/blob/main/docs/configuration.md), [models](https://github.com/vercel-labs/deepsec/blob/main/docs/models.md), [Vercel setup](https://github.com/vercel-labs/deepsec/blob/main/docs/vercel-setup.md).

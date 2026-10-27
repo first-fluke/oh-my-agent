@@ -2,7 +2,6 @@
 
 > Consolidated catalog of patterns that break observability/traceability.
 > Each entry: pattern name, why-it-fails, remediation, severity.
-> Sources: all resource files in this skill tree. See individual "See also" references.
 
 ## Severity legend
 
@@ -554,16 +553,3 @@
 **Why it fails**: Per-tenant cost data reveals revenue tier, contract value, and resource consumption patterns. Exposing this to all engineers violates least-privilege access principles and may constitute a data breach under GDPR if cost data is linked to identifiable customers.
 **Remediation**: Separate cost dashboards by role: Finance sees full cost by tenant; Platform Engineering sees cost by namespace/workload; Application Engineering sees only their own service. Apply Grafana folder permissions or OPA policies.
 **See also**: `signals/cost.md §9 Privacy & Access Control`
-
----
-
-## Contribution Protocol
-
-When adding an entry from another doc:
-
-1. Place it in the correct section (A–Z) by primary concern.
-2. If the same anti-pattern appears in multiple source files, one canonical entry only; list all sources in "See also".
-3. Use the format: `### {Section}.{n} {Pattern name}` / `**Severity**` / `**Why it fails**` / `**Remediation**` / `**See also**`.
-4. Order within each section: CRITICAL → HIGH → MEDIUM → LOW.
-5. All cross-references use relative paths from the `resources/` root.
-6. No forward references to planned but unwritten files.

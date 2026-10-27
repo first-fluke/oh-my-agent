@@ -97,11 +97,6 @@ installation. `--locked` alone still permits environment synchronization;
 Lockfile freshness is checked during provisioning; a missing checker must fail
 instead of downloading it in a hook.
 
-Sources: [Ruff](https://docs.astral.sh/ruff/tutorial/),
-[Ruff formatter](https://docs.astral.sh/ruff/formatter/),
-[pyrefly installation](https://pyrefly.org/en/docs/installation/),
-[pyrefly configuration](https://pyrefly.org/en/docs/configuration/).
-
 ## JavaScript / TypeScript: Biome and native TypeScript
 
 Install local development dependencies with the detected package manager. This is
@@ -156,13 +151,6 @@ packages or replace framework checks merely to obtain the `tsgo` name. If native
 checking is incompatible with a project's configuration, retain its working
 checker and report the limitation rather than silently skipping checks.
 
-Sources: [Biome setup](https://biomejs.dev/installation/quick-start/),
-[Biome CI](https://biomejs.dev/recipes/continuous-integration/),
-[Biome noReExportAll](https://biomejs.dev/linter/rules/no-re-export-all/),
-[TypeScript downloads](https://www.typescriptlang.org/download/),
-[native compiler command naming](https://github.com/microsoft/typescript-go#preview),
-[noEmit](https://www.typescriptlang.org/tsconfig/noEmit.html).
-
 ## Dart / Flutter: SDK analyzer and formatter
 
 Read `pubspec.yaml`, `pubspec.lock`, `analysis_options.yaml`, SDK constraints, and
@@ -189,10 +177,6 @@ not replace SDK type checking. Verify the installed version and rule coverage
 before adding a Falcon task. Do not infer analyzer compatibility from speed
 claims or compile a tool from source without an explicit build request.
 
-Sources: [Dart analyze](https://dart.dev/tools/dart-analyze),
-[Dart format](https://dart.dev/tools/dart-format),
-[Flutter CLI](https://docs.flutter.dev/reference/flutter-cli).
-
 ## Dockerfile: Hadolint
 
 Use the installed Hadolint or provision a pinned release through mise's `hadolint`
@@ -214,9 +198,6 @@ pipeline; affected-app checks alone do not run root tasks. Hadolint performs
 static checking: no Docker image build is required. Missing tool/configuration is
 an incomplete check, not a successful skip.
 
-Sources: [Hadolint](https://github.com/hadolint/hadolint),
-[mise registry](https://mise.jdx.dev/registry.html).
-
 ## Commit messages: commitlint
 
 Install both `@commitlint/cli` and `@commitlint/config-conventional` as locked local
@@ -234,7 +215,3 @@ for the quoted message-file path. Do not use transient `npx -y`, `bunx`, or
 Use [validation-pipeline.md](validation-pipeline.md) for the local dependency
 example and `commit-msg` integration.
 Initialize and install during setup; checks must only validate messages.
-
-Sources: [commitlint setup](https://commitlint.js.org/guides/getting-started.html),
-[configuration](https://commitlint.js.org/reference/configuration.html),
-[local hooks](https://commitlint.js.org/guides/local-setup.html).

@@ -27,7 +27,7 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 
 ## Cross-Context Review (CCR) Dispatch
 
-Every review step in this workflow (the 12 reviews in `multi-review-protocol.md`) runs as a **fresh, context-isolated reviewer subagent** — never inline in the main session, and never batched with implementation or with another review. This is mandatory; see the **Cross-Context Review (CCR) Mandate** in `multi-review-protocol.md` for the rationale and the two papers behind it.
+Every review step in this workflow (the 12 reviews in `multi-review-protocol.md`) runs as a **fresh, context-isolated reviewer subagent** — never inline in the main session, and never batched with implementation or with another review. This is mandatory; see the **Cross-Context Review (CCR) Mandate** in `multi-review-protocol.md`.
 
 **One review = one fresh reviewer subagent.** The main session is the coordinator: it dispatches each review, waits for its verdict, and aggregates verdicts into the phase's `result-*.md` and `session-ultrawork.md`. For each review:
 
@@ -439,9 +439,7 @@ Every review runs in its own fresh context (never inline, never batched) per the
 
 ---
 
-## Autoresearch-Inspired Enhancements
-
-This workflow conditionally incorporates patterns from autoresearch:
+## Conditional Measurement and Recovery
 
 | Pattern | When Active | Reference |
 |---------|-------------|-----------|

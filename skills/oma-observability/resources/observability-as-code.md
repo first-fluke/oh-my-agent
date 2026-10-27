@@ -15,7 +15,7 @@ UI-edited dashboards and alerts accumulate silent debt:
 - **Scale problem.** 100+ dashboards across N environments managed by hand drift within weeks. Each environment develops its own undocumented fork.
 - **Compliance.** SOC 2 change-management controls require an audit trail for every change to detection and response configuration. Git history provides that trail; Grafana's internal change log does not. Cross-ref `signals/audit.md` for evidence-specific integrity and retention controls.
 
-The non-negotiable principle: version every observability artifact; dashboards, alert rules, SLO definitions, collector config; in git, applied via CI/CD. This is design decision D9 in the design document.
+The non-negotiable principle: version every observability artifact; dashboards, alert rules, SLO definitions, collector config; in git, applied via CI/CD.
 
 ---
 
@@ -664,18 +664,3 @@ Append to `anti-patterns.md §Section I: As-Code and GitOps`:
 | Evidence-specific audit integrity and retention | `signals/audit.md` |
 | Progressive delivery (Flagger) | `boundaries/release.md` |
 | Anti-patterns full list | `anti-patterns.md` |
-
----
-
-## Primary Sources
-
-- Grafonnet 11.x: <https://grafana.github.io/grafonnet/>
-- Perses: <https://perses.dev>
-- PrometheusRule CRD: <https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/>
-- Terraform Grafana provider: <https://github.com/grafana/terraform-provider-grafana>
-- OTel Operator: <https://github.com/open-telemetry/opentelemetry-operator>
-- Argo CD: <https://argoproj.github.io/cd/>
-- Flux: <https://fluxcd.io>
-- OpenSLO: <https://openslo.com>
-- Sloth: <https://sloth.dev>
-- Pyrra: <https://github.com/pyrra-dev/pyrra>

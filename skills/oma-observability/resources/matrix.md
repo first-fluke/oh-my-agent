@@ -69,7 +69,7 @@ The matrix has three goals:
 | `PARTIAL` | Partially covered or requires caveat; see referenced file and "Caveats" section below |
 | `N/A` | Not meaningful at this layer/boundary or produces no actionable artifact |
 
-Every `PASS` and `PARTIAL` cell includes at least one file reference. File references point to files within this skill tree. Files not yet written (Phase 1b/1c) are forward references and are explicitly allowed.
+Every `PASS` and `PARTIAL` cell includes at least one file reference. File references point to files within this skill tree.
 
 ---
 
@@ -158,7 +158,7 @@ All 112 cells are populated. No cell is blank.
 
 ## 7. Cross-references
 
-All files referenced in this matrix belong to the `oma-observability` skill tree. Files not yet written (Phase 1b/1c per the design document rollout plan) are forward references.
+All files referenced in this matrix belong to the `oma-observability` skill tree.
 
 | Category | Files |
 |----------|-------|
@@ -170,10 +170,8 @@ All files referenced in this matrix belong to the `oma-observability` skill tree
 
 ---
 
-## 8. Review and Maintenance
+## 8. Coverage updates
 
-- **Review triggers**: same as `resources/standards.md` (no scheduled cadence; see `SKILL.md` §Versioning & Deprecation).
 - **On semconv promotion** (Development → RC → Stable): re-evaluate PARTIAL cells that cite stability as a caveat; promote to PASS if the semconv group is now stable.
-- **On new layer or boundary addition**: this file requires a new table section and all cross-references updated. Signal columns do not change without a taxonomy revision in the design document.
+- **On new layer or boundary addition**: add the corresponding table section and update all cross-references. Signal columns change only with a taxonomy revision.
 - **On N/A re-evaluation**: add a Caveat entry (Section 5) explaining why a previously N/A combination is now meaningful before changing the cell marker.
-- **Owner**: CTO direct review required for any change to this file (see design document Ownership & Quality Gates table).

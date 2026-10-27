@@ -445,12 +445,4 @@ From `incident-forensics.md §4`; trace lookup by `trace_id` across backends:
 
 ---
 
-## Contribution Protocol
-
-- Add new scenarios only if they demonstrate cross-file value spanning 3+ skill files.
-- Each scenario must cite at least 3 other skill files by relative path from `resources/`.
-- Scenarios are for human learning: keep them narrative, not exhaustive.
-- Code and YAML snippets are illustrative excerpts; for authoritative full config see the
-  referenced files.
-- Do not add future skill references: if a domain is out of scope, cite the external tool
-  from `SKILL.md §When NOT to use`.
+Code and YAML snippets are illustrative excerpts. Use the referenced resources for full configuration.

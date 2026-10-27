@@ -14,7 +14,7 @@ The 6-dimension narrowing flow ties every signal file together through one execu
 **In scope**: any incident surfaced by an alert, a user report, or an anomaly detected in metrics, traces, or logs.  
 **Out of scope**: incident response workflow (on-call rotation, escalation, postmortem tooling); use PagerDuty, OpsGenie, or Grafana OnCall for those.
 
-Cross-skill entry point: `oma-debug` invokes this playbook on failure, pulling traces and logs by `request_id`. See the design document Integration table.
+Cross-skill entry point: `oma-debug` invokes this playbook on failure, pulling traces and logs by `request_id`.
 
 ---
 

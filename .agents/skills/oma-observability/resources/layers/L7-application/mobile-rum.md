@@ -276,8 +276,3 @@ These cells supplement the L7 rows in `../../matrix.md` with mobile-specific cav
 - Android App Standby / Doze: <https://developer.android.com/topic/performance/appstandby>
 - W3C Trace Context L1: <https://www.w3.org/TR/trace-context/>
 - Battery Historian: <https://developer.android.com/topic/performance/power/battery-historian>
-
-### Primary sources
-
-- <https://opentelemetry.io/docs/languages/swift/>
-- <https://github.com/open-telemetry/opentelemetry-android>
