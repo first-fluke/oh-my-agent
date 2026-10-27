@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.17.0...cli-v20.18.0) (2026-10-27)
+
+
+### Features
+
+* **design:** route admin interfaces through interface design ([82649cb](https://github.com/first-fluke/oh-my-agent/commit/82649cbd70fe1a1997bf149241fbcfb629510c5e))
+* **install:** add selective setup and reliable plugin wiring ([2a29d3a](https://github.com/first-fluke/oh-my-agent/commit/2a29d3a8eb4d760e4e4000b484c9f04761c59f5c))
+
 ## [20.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.16.0...cli-v20.17.0) (2026-10-27)
 
 
