@@ -1,5 +1,17 @@
 # Changelog
 
+## [20.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.16.0...cli-v20.17.0) (2026-10-27)
+
+
+### Features
+
+* **design:** route design skills and visual implementations ([a1cae9e](https://github.com/first-fluke/oh-my-agent/commit/a1cae9e6e1df247479dd696088cfa93db7d0e2e6))
+
+
+### Refactoring
+
+* **skills:** remove runtime provenance and history prose ([a5b8582](https://github.com/first-fluke/oh-my-agent/commit/a5b858227ab43410fcf1ef5f13196664ed4dc943))
+
 ## [20.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.15.0...cli-v20.16.0) (2026-10-26)
 
 
