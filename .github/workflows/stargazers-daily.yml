@@ -18,10 +18,29 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Verify stargazer read access
+        timeout-minutes: 1
+        env:
+          GH_TOKEN: ${{ secrets.STARGAZERS_READ_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::STARGAZERS_READ_TOKEN is missing. Set a token with access to this repository's stargazer listing."
+            exit 1
+          fi
+
+          if ! gh api -H "Accept: application/vnd.github.star+json" \
+            "/repos/$REPO/stargazers?per_page=1" --silent >/dev/null; then
+            echo "::error::STARGAZERS_READ_TOKEN cannot read the stargazer listing. For HTTP 401, check whether the token expired or was revoked. For HTTP 403/404, check repository selection, token permissions, organization SSO approval, and that the token owner is a repository owner or collaborator. No data-branch changes were made."
+            exit 1
+          fi
+
       - name: Track stargazers on orphan branch
         env:
           # Stargazer listings require an admin/collaborator identity since 2026-07-14.
-          GH_TOKEN: ${{ secrets.ACTION_SYNC_TOKEN }}
+          GH_TOKEN: ${{ secrets.STARGAZERS_READ_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail

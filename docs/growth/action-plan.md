@@ -13,11 +13,13 @@ These changes address task discovery and the path from an introduction to a usef
 | G7 | Prepare the next distribution experiment | [Distribution copy](./distribution.md) | The article and short post are reviewable. Publishing requires an explicit request for the target account and channel. |
 | G8 | Add native plugin entries for selected domains | Generated marketplace entries and scoped bootstrap | Each domain entry declares its skills, agents, and hooks; bootstrap installs that scope and preserves the existing full plugin. |
 | G9 | Handle workflow dependencies after selective installation | Explicit required/conditional metadata and workflow exposure | Only workflows with valid required skill manifests are exposed; conditional references remain advisory, and selected skills are preserved. |
-| G10 | Check native manifests with a pinned real host | Claude Code 2.1.311 CI validation | The marketplace and each isolated domain root pass the real host's strict manifest validation without model calls. |
+| G10 | Check native installation with pinned real hosts | Claude Code 2.1.311 and Codex 0.164.0 CI smoke checks | A fresh runner registers the local marketplace, installs selected domain entries, and checks their inventory without model calls. |
+| G11 | Propagate plugin versions through releases | Release Please targets and version guard | All six domain manifests match the CLI release; missing version updater registrations fail the existing emit-drift gate. |
+| G12 | Check stargazer access before writing snapshots | Bounded authentication/access preflight | A missing or rejected tracking token stops the workflow before data-branch work; successful access remains separate from campaign impact. |
 
 ## Current delivery
 
-G1–G6 are implemented and verified, including the baseline collection. The documentation [deployment succeeded](https://github.com/first-fluke/oh-my-agent/actions/runs/40623057207), and the homepage, three task guides, worked repair, and Korean setup links were checked live. G7 contains prepared copy and a DEV article record. G8 and G9 are implemented with focused regression checks. G10 has passed locally with Claude Code 2.1.311 and is configured in CI; its first CI run remains to be observed.
+G1–G6 are implemented and verified, including the baseline collection. The documentation [deployment succeeded](https://github.com/first-fluke/oh-my-agent/actions/runs/40623057207), and the homepage, three task guides, worked repair, and Korean setup links were checked live. G7 contains prepared copy and a DEV article record. G8 and G9 are implemented with focused regression checks. Claude's strict manifest checks [passed in CI](https://github.com/first-fluke/oh-my-agent/actions/runs/40629043661/job/122620824911). G10 now adds fresh-runner installation and inventory checks for both hosts. G11 checks release versions before generated-output normalization. G12 stops snapshot work when its selected token cannot read the stargazer endpoint; credential recovery and live workflow results are recorded separately.
 
 ## Distribution experiment
 
@@ -27,4 +29,4 @@ For the next check on 2026-11-04, run the collector again and inspect the same p
 
 ## Further work
 
-Codex native marketplace metadata is generated. The local available-list returned no entries; a fresh-host registration and discovery check has not run. Claude manifest validation and model task success are separate checks.
+The host smoke jobs cover package installation, discovery, and the selected bootstrap checks. They do not run a model task or establish provider availability, task success, retention, or campaign impact. Review their receipts and the fixed-period adoption measurements separately.
