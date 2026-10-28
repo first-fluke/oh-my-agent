@@ -23,6 +23,7 @@
     "sns": "bun scripts/sns/index.ts",
     "sns:devto": "bun scripts/sns/devto/index.ts",
     "sns:qiita": "bun scripts/sns/qiita/index.ts",
+    "report:adoption": "bun scripts/adoption-report.ts",
     "test": "bun run --cwd cli test",
     "test:orca": "node --test integrations/orca/plugin.test.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p web/tsconfig.json",

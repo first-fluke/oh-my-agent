@@ -57,7 +57,7 @@ function readSoul(): string {
 export function buildWeeklyPrompt(soul: string, gitContext: string): string {
   return [
     "You are drafting a dev.to post for the oh-my-agent project.",
-    "Follow the author voice guide below EXACTLY. Then summarize the git context as a weekly update.",
+    "Follow the author voice guide below EXACTLY. Choose one concrete developer problem supported by the git context and explain its reproduction, repair, and checks.",
     "",
     "## Author voice guide (SOUL.md)",
     soul,
@@ -69,11 +69,15 @@ export function buildWeeklyPrompt(soul: string, gitContext: string): string {
     "- Output JSON ONLY (no markdown fence, no commentary).",
     '- Schema: { "title": string, "tags": string[3 or 4], "body_markdown": string }.',
     "- Tags must be lowercase alphanumeric, no '#' prefix, no spaces.",
-    "- body_markdown must include the required sections from SOUL.md.",
-    "- Installation block must follow SOUL.md exactly (canonical curl one-liner, no substitutes).",
+    "- Lead with the reader's task or failure. Do not turn the post into a release digest or require a product-name prefix in its title.",
+    "- body_markdown must follow the problem, evidence, repair, checks, and next-task structure from SOUL.md.",
+    "- Cite concrete source files or commits for the case. Only report executed checks, outcomes, counts, or timings when the supplied context contains that evidence; otherwise state what remains unverified.",
+    "- Inspect the relevant changed files when the git summary lacks the code needed to explain the example. Commit messages and diff statistics alone do not establish a working repair.",
+    "- Choose the smallest supported entry path from SOUL.md. A skill-only example must not imply that loading instructions installs CLI dependencies or hooks.",
+    "- Include one matching task guide from SOUL.md so the reader can try the method on their own change.",
     `- End with the GitHub link: ${GITHUB_URL}.`,
     "- Do not use em-dashes anywhere.",
-    '- If the git context shows no meaningful changes, return { "skip": true, "reason": "<one line>" }.',
+    '- If the git context has no supported, useful developer example, return { "skip": true, "reason": "<one line>" } instead of filling a weekly quota.',
   ].join("\n");
 }
 
