@@ -4,10 +4,10 @@ import type { Config } from "@docusaurus/types";
 const config: Config = {
   title: "oh-my-agent",
   tagline:
-    "Multi-agent orchestration with skill routing, parallel execution, and verified task results.",
+    "Review AI-written code, fix failing tests, and design admin interfaces with agent skills.",
   favicon: "icons/android/android-launchericon-48-48.png",
 
-  url: "https://first-fluke.github.io",
+  url: "https://firstfluke.com",
   baseUrl: "/oh-my-agent/",
   trailingSlash: true,
 

@@ -6,15 +6,31 @@
 
 **oh-my-agent (`oma`) is a vendor-agnostic harness that adds a team of specialists to the coding agent you already use: Claude Code, Codex CLI, Cursor, and 11 more.** A planner breaks the work down, engineers build in parallel, a reviewer checks the result, and a debugger fixes root causes. It also does cited research, slide decks, videos and images. Most steps leave a file you can open, and in the long-running workflows a gate can send the agent back to work until your own `test`, `lint` or `typecheck` script passes.
 
+## Start with your task
+
+Load one skill in your existing coding agent, or install the runtime for project hooks and team workflows.
+
+| Your task | Start here | First request |
+|---|---|---|
+| [Review AI-written code](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/tasks/review-ai-code.md) | `bunx skills use first-fluke/oh-my-agent@oma-qa` | "Review this diff for bugs and missing checks. Cite the affected lines." |
+| [Design an admin screen](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
+| [Fix a failing test](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
+| Review system boundaries | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
+| Use project hooks, specialist agents, and workflows | [Install the runtime](#install) | "Use oma-scm to inspect this repository's branch and working tree without edits or remote access." |
+
+Run a `skills use` command through your agent's terminal; it returns the selected instructions and their support directory. These commands load instructions. CLI operations, other skills, project rules, and external services declared by a skill remain separate dependencies. See [Choose a setup](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/getting-started/choose-setup.md) for the available install paths.
+
+[See a real repair: plugin hooks calling missing files](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/examples/plugin-hook-repair.md). The example links the changed code, the failure cases, and the regression checks.
+
 [![Oh-My-Agent: A 6+1-Layer Harness Architecture](https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/architecture/oh-my-agent-architecture.png)](https://github.com/first-fluke/oh-my-agent/blob/main/docs/assets/architecture/oh-my-agent-architecture.svg)
 
-Run this from your project root:
+For runtime installation, run this from your project root:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
-Then run `oma doctor` and type `/plan add user accounts with a settings page` in your agent. [Your first 5 minutes](#your-first-5-minutes) walks through it.
+For that runtime installation, run `oma doctor`. [Your first 5 minutes](#your-first-5-minutes) starts with a read-only task before team workflows.
 
 ## What you get
 
@@ -30,7 +46,7 @@ Then run `oma doctor` and type `/plan add user accounts with a settings page` in
 | **Research and content** | Cited search, market research, papers, slide decks, MP4 videos, images, local voice, PDF/HWP to Markdown | `/video`, `/convert` |
 | **One folder, 14 runtimes** | One portable `.agents/` directory, written into each runtime's own config files | `oma link cursor` |
 
-**[Install](#install)** · **[First 5 minutes](#your-first-5-minutes)** · **[The team](#meet-the-team)** · **[Which workflow?](#how-the-team-works-together)** · **[Everything in the box](#everything-in-the-box)** · **[Works with](#works-with)** · **[Verification](#verification-not-narration)** · **[FAQ](#faq)** · **[Docs](https://first-fluke.github.io/oh-my-agent/)**
+**[Install](#install)** · **[First 5 minutes](#your-first-5-minutes)** · **[The team](#meet-the-team)** · **[Which workflow?](#how-the-team-works-together)** · **[Everything in the box](#everything-in-the-box)** · **[Works with](#works-with)** · **[Verification](#verification-not-narration)** · **[FAQ](#faq)** · **[Docs](https://firstfluke.com/oh-my-agent/)**
 
 ## Install
 
@@ -54,7 +70,15 @@ On Windows the installer hides Antigravity, Hermes, and Kimi, and the hook wrapp
 
 </details>
 
-The setup asks for your response language, which agent runtimes to wire up, capability providers, a browser MCP, a model preset, and a skill preset. **Pick `All` for the skill preset if you are unsure**: workflows are always installed, and several of them (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) need skills that only `All` includes.
+The setup asks for your response language, which agent runtimes to wire up, capability providers, a browser MCP, a model preset, and a skill preset. **Choose `All` for the skill references used across every workflow**: domain presets omit some of those skills. Provider availability and task verification remain separate checks.
+
+Choose a preset explicitly when you want a domain's skills:
+
+```bash
+oma install --preset frontend --yes
+```
+
+This selects the eight frontend-preset skills. The installer still configures the runtime, providers, and shared workflow files, and retains previously installed skills. Custom selection is available in the interactive installer. See [preset values](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/getting-started/installation.md#presets) and [workflow dependencies](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 <details>
 <summary>What the installer also does by default</summary>
@@ -71,7 +95,7 @@ The setup asks for your response language, which agent runtimes to wire up, capa
 - Installs a **commit-msg guard** in `.githooks/` that rejects unlisted `Co-authored-by` addresses, and sets `git config --local core.hooksPath .githooks` when no other hooks are active. Set `scm.co_author.enforce_hook: false` to opt out.
 - `oma update` updates the `oma` CLI in the background (`auto_update_cli: false` or `OMA_SKIP_VERSION_CHECK=1` to stop it) and runs `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`).
 - With Serena in the default `bridge` mode, the first agent session that starts a shared Serena server registers a **cleanup timer** that stops idle shared Serena servers every 5 minutes (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer`, or Windows scheduled task `OMA Serena Daemon GC`). Set `serena.mode: stdio` to skip the shared server and its timer. `oma uninstall` does not remove the timer.
-- Non-interactive runs (`-y`, `OMA_YES=1`, `CI=true`) use the `All` skill preset, `model_preset: auto`, and Python as the backend language. They select no browser MCP (and skip the Aside install script) unless `mcp.devtools_browsers` already lists one.
+- Non-interactive runs (`-y`, `OMA_YES=1`, `CI=true`) use the `All` skill preset unless `--preset` selects another, plus `model_preset: auto` and Python as the backend language. They select no browser MCP (and skip the Aside install script) unless `mcp.devtools_browsers` already lists one.
 
 </details>
 
@@ -98,24 +122,23 @@ Of the named presets, only `All` includes coordination, orchestration, docs, sec
 
 ## Your first 5 minutes
 
-1. **Install** with the command above.
-2. **Check the install:**
+1. **Choose your setup.** For the task below, load `oma-scm` with `bunx skills use first-fluke/oh-my-agent@oma-scm`, or use the runtime install command above. [Choose a setup](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/getting-started/choose-setup.md) explains both paths.
+2. **For a runtime installation, check the install:**
 
    ```bash
    oma doctor
    ```
 
-   You should see `CLI Status` (which agent CLIs are installed and signed in) and `Skills Status` (for example `Skills (33/33 installed, 33 complete)`). If `oma` is not found, open a new terminal (the installer may have just added `~/.bun/bin` to your PATH) or run `bun install --global oh-my-agent`.
-3. **Open your agent in the project and ask for a plan:**
+   The report shows CLI and skill-file status. Its skill counts reflect the files present, including retained skills; they can differ from the current preset's selection. If `oma` is not found, open a new terminal or run `bun install --global oh-my-agent`.
+3. **Open an existing Git repository and run one read-only task.** `oma-scm` is included in every named preset; include it when using Custom selection.
 
    ```text
-   /plan add user accounts with a settings page
+   Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
    ```
 
-   Or just write "plan user accounts with a settings page": on runtimes with a prompt hook, the keyword starts the same workflow.
-4. **Check what you got.** `/plan` runs in the current session. For work that spans several areas, like this one, it writes `.agents/results/plan-<session-id>.json` and a tracker at `docs/plans/work/<NNN>-<name>.md`. A small, single-area request gets a direct recommendation instead of a plan file.
+4. **Check the result.** The reported branch and changes should match the Git output. Loading instructions or completing installation does not establish that this task ran.
 
-For larger tasks, continue with `/work` or `/orchestrate` using the plan.
+For larger work, choose a workflow whose referenced skills are installed. Start with `/plan` when its planning skill is present, then continue with `/work` or `/orchestrate` when their dependencies are available.
 
 ## Meet the team
 

@@ -2,10 +2,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 60px);
   text-align: center;
   position: relative;
   overflow: hidden;
+  padding: 1rem 0;
 }
 
 .heroInner {
@@ -14,7 +14,7 @@
   align-items: center;
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem 1rem;
 }
 
 .logoWrapper {
@@ -75,6 +75,106 @@
   margin-top: 1rem;
 }
 
+.taskSection {
+  padding: 1.5rem 0 3rem;
+  text-align: center;
+}
+
+.sectionDescription {
+  color: var(--ifm-color-emphasis-700);
+}
+
+.taskGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+}
+
+.taskCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+  text-align: left;
+  text-decoration: none;
+}
+
+.taskCard:hover {
+  border-color: var(--ifm-color-primary);
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.taskCard:focus-visible,
+.caseLink:focus-visible {
+  outline: 3px solid var(--ifm-color-primary);
+  outline-offset: 4px;
+}
+
+.taskTitle {
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.taskDescription {
+  color: var(--ifm-color-emphasis-700);
+}
+
+.taskAction {
+  margin-top: auto;
+  padding-top: 1.25rem;
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+.caseStudy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  background: var(--ifm-color-emphasis-100);
+  text-align: left;
+}
+
+.caseStudy h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.125rem;
+}
+
+.caseStudy p {
+  max-width: 650px;
+  margin-bottom: 0;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.caseLink {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.walkthrough {
+  padding: 2rem 0 3rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+  text-align: center;
+}
+
+.walkthroughInner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
 @media (max-width: 768px) {
   .title {
     font-size: 2rem;
@@ -82,5 +182,19 @@
 
   .tagline {
     font-size: 1rem;
+  }
+
+  .taskGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .caseStudy {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .caseLink {
+    flex-shrink: 1;
   }
 }

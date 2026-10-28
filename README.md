@@ -12,12 +12,15 @@ Load one skill in your existing coding agent, or install the runtime for project
 
 | Your task | Start here | First request |
 |---|---|---|
-| Design an admin screen or review an existing UI | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
-| Diagnose a reproducible bug | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this failure and fix its cause." |
+| [Review AI-written code](./web/docs/tasks/review-ai-code.md) | `bunx skills use first-fluke/oh-my-agent@oma-qa` | "Review this diff for bugs and missing checks. Cite the affected lines." |
+| [Design an admin screen](./web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
+| [Fix a failing test](./web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
 | Review system boundaries | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
 | Use project hooks, specialist agents, and workflows | [Install the runtime](#install) | "Use oma-scm to inspect this repository's branch and working tree without edits or remote access." |
 
 Run a `skills use` command through your agent's terminal; it returns the selected instructions and their support directory. These commands load instructions. CLI operations, other skills, project rules, and external services declared by a skill remain separate dependencies. See [Choose a setup](./web/docs/getting-started/choose-setup.md) for the available install paths.
+
+[See a real repair: plugin hooks calling missing files](./web/docs/examples/plugin-hook-repair.md). The example links the changed code, the failure cases, and the regression checks.
 
 [![Oh-My-Agent: A 6+1-Layer Harness Architecture](./docs/assets/architecture/oh-my-agent-architecture.png)](./docs/assets/architecture/oh-my-agent-architecture.svg)
 
@@ -43,7 +46,7 @@ For that runtime installation, run `oma doctor`. [Your first 5 minutes](#your-fi
 | **Research and content** | Cited search, market research, papers, slide decks, MP4 videos, images, local voice, PDF/HWP to Markdown | `/video`, `/convert` |
 | **One folder, 14 runtimes** | One portable `.agents/` directory, written into each runtime's own config files | `oma link cursor` |
 
-**[Install](#install)** · **[First 5 minutes](#your-first-5-minutes)** · **[The team](#meet-the-team)** · **[Which workflow?](#how-the-team-works-together)** · **[Everything in the box](#everything-in-the-box)** · **[Works with](#works-with)** · **[Verification](#verification-not-narration)** · **[FAQ](#faq)** · **[Docs](https://first-fluke.github.io/oh-my-agent/)**
+**[Install](#install)** · **[First 5 minutes](#your-first-5-minutes)** · **[The team](#meet-the-team)** · **[Which workflow?](#how-the-team-works-together)** · **[Everything in the box](#everything-in-the-box)** · **[Works with](#works-with)** · **[Verification](#verification-not-narration)** · **[FAQ](#faq)** · **[Docs](https://firstfluke.com/oh-my-agent/)**
 
 ## Install
 

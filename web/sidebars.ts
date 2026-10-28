@@ -18,6 +18,22 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Tasks",
+      collapsed: false,
+      items: [
+        "tasks/review-ai-code",
+        "tasks/debug-failing-tests",
+        "tasks/design-admin-ui",
+      ],
+    },
+    {
+      type: "category",
+      label: "Examples",
+      collapsed: true,
+      items: ["examples/plugin-hook-repair"],
+    },
+    {
+      type: "category",
       label: "Core Concepts",
       collapsed: true,
       items: [
