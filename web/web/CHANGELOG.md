@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.8.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.7.1...web-v11.8.0) (2026-10-28)
+
+
+### Features
+
+* **install:** scope native plugins and workflow availability ([57fde58](https://github.com/first-fluke/oh-my-agent/commit/57fde5804aecccfb5fe0e958d5d6d5a1e0fdc010))
+
 ## [11.7.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.7.0...web-v11.7.1) (2026-10-28)
 
 
