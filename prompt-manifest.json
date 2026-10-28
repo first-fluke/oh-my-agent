@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.19.0",
-  "releaseDate": "2026-10-28T02:51:08.453Z",
+  "releaseDate": "2026-10-28T03:51:40.469Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -368,6 +368,11 @@
       "path": ".agents/oma-config.yaml",
       "sha256": "6602587bbda952513a429a045a73ff6524be8c6b26e56069c69678a96c199806",
       "size": 31916
+    },
+    {
+      "path": ".agents/plugins/marketplace.json",
+      "sha256": "61c826f26847f7c54f9c726b7f2333d41d58c15344769ad3988eb2d07fefb4b3",
+      "size": 1251
     },
     {
       "path": ".agents/rules/backend.md",
@@ -2236,6 +2241,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 445
+    "totalFiles": 446
   }
 }
