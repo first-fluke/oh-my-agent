@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.20.0...cli-v20.20.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **release:** keep domain plugin versions in sync ([0abe07e](https://github.com/first-fluke/oh-my-agent/commit/0abe07ee30ab623a77fe0daed1a1f96a61ec14df))
+
 ## [20.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.19.0...cli-v20.20.0) (2026-10-28)
 
 
