@@ -58,7 +58,7 @@ the runtime dependencies before interactive setup.
 | `research` | Find papers and compare their evidence | Ask for a cited literature search |
 | `all` | Coordinate a feature across UI, API, and data | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
 
-The [ten named presets](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) are accepted by `--preset`.
+The [named presets](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) are accepted by `--preset`.
 An unknown name, an empty value, or `custom` is rejected before installation.
 To select individual skills, run `oma install` interactively and choose Custom.
 Without `--preset`, unattended `--yes`/CI setup selects `all`.
@@ -90,6 +90,10 @@ Run these commands inside Claude Code:
 /plugin install oma@oh-my-agent
 ```
 
+Choose `oma-frontend@oh-my-agent`, `oma-security@oh-my-agent`, or
+`oma-research@oh-my-agent` for a domain plugin. The full `oma` entry keeps the
+complete skill selection. Domain entries bootstrap their matching preset.
+
 The plugin's session-start hook provisions the CLI when needed and runs
 `oma install --yes` for the current project. This path performs runtime setup.
 Its success receipt belongs to that project, and the plugin's event hooks use
@@ -100,8 +104,9 @@ reused only after CLI-version, project-configuration, and hook checks pass.
 Restart the session after bootstrap reports completion.
 
 For the configuration and dependency choices during setup, use
-`oma install` directly. The plugin's unattended bootstrap uses the `all` skill
-preset. Use `oma install --preset <name>` directly for a domain preset.
+`oma install` directly. The full plugin's unattended bootstrap uses the `all`
+skill preset; each domain plugin passes its selected preset. A smaller preset
+retains other skills already installed in the project.
 
 ## Check the result
 

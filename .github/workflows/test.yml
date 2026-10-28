@@ -160,23 +160,46 @@ jobs:
           Write-Host "install.ps1 smoke test passed (bun + uv + serena + oma resolved)"
 
   plugin-discovery:
-    name: Claude plugin manifests (2.1.311)
+    name: ${{ matrix.host }} plugin installation and discovery
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - host: claude
+            package: '@anthropic-ai/claude-code@2.1.311'
+          - host: codex
+            package: '@openai/codex@0.164.0'
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: jdx/mise-action@v5
-      - name: Validate distributed plugins with the real host
+      - name: Install repository dependencies without building
+        run: bun install --frozen-lockfile
+      - name: Install the pinned host in runner temporary storage
+        env:
+          OMA_SMOKE_HOST_PACKAGE: ${{ matrix.package }}
+        run: |
+          npm install --global --prefix "$RUNNER_TEMP/oma-plugin-host-tools" --no-audit --no-fund "$OMA_SMOKE_HOST_PACKAGE"
+          echo "$RUNNER_TEMP/oma-plugin-host-tools/bin" >> "$GITHUB_PATH"
+      - name: Register, install, and inspect the local marketplace
         env:
           DISABLE_AUTOUPDATER: "1"
           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+          NO_COLOR: "1"
         run: |
-          set -eu
-          OMA_SMOKE_CLAUDE_PACKAGE='@anthropic-ai/claude-code@2.1.311'
-          npm exec --yes --package="$OMA_SMOKE_CLAUDE_PACKAGE" -- claude --version
-          npm exec --yes --package="$OMA_SMOKE_CLAUDE_PACKAGE" -- claude plugin validate --strict --json .claude-plugin/marketplace.json
-          for domain in frontend security research; do
-            npm exec --yes --package="$OMA_SMOKE_CLAUDE_PACKAGE" -- claude plugin validate --strict --json ".claude-plugin/domains/$domain"
-          done
+          bun scripts/plugin-host-smoke.ts '${{ matrix.host }}'
+      - name: Preserve real-host smoke receipts
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: plugin-host-${{ matrix.host }}
+          path: |
+            ${{ runner.temp }}/oma-plugin-host-smoke-${{ matrix.host }}/report.json
+            ${{ runner.temp }}/oma-plugin-host-smoke-${{ matrix.host }}/command-*.log
+          if-no-files-found: warn
+          retention-days: 7

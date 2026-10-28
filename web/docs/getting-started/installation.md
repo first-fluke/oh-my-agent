@@ -163,6 +163,13 @@ the runtime installer. Shared runtime setup and existing installed skills follow
 the installer behavior described above. The `oma` entry retains the full plugin.
 The same domain roots are declared in the generated Codex marketplace catalog.
 
+The pinned host CI jobs register the local marketplace on fresh runners, install
+domain entries, and inspect the resulting inventory. These checks run without
+model calls. Runtime credentials, external providers, and a successful first
+task still need their own verification. Release checks also require both
+manifests in every domain root to match the CLI version and have a Release Please
+version updater.
+
 The shared resources (`_shared/`) are always installed regardless of preset. This includes core routing, context loading, prompt structure, vendor detection, execution protocols, and memory protocol.
 
 ### What gets created
