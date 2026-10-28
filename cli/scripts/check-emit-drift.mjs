@@ -25,6 +25,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { checkPluginVersions } from "./check-plugin-versions.mjs";
 
 const CLI_DIR = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const REPO_ROOT = join(CLI_DIR, "..");
@@ -40,6 +41,8 @@ const AGENT_PLUGIN_TREE_RELS = ["skills", "com.firstfluke.oma"];
 // The marketplace manifest's `version` tracks package.json, which
 // release-please bumps on every release — that bump alone must not count as
 // drift (the gate would fail on the first push after every release).
+// Checked-in release versions are validated separately before emission, so
+// normalization only avoids false differences from generated release metadata.
 // Substantive changes still fail the check.
 function stripVersion(content) {
   try {
@@ -198,6 +201,13 @@ function diffCliDocs(scratchDir) {
     }
   }
   return problems;
+}
+
+const versionIssues = checkPluginVersions(REPO_ROOT);
+if (versionIssues.length > 0) {
+  console.error("Plugin release version check failed:");
+  for (const issue of versionIssues) console.error(`  ${issue}`);
+  process.exit(1);
 }
 
 const scratchDir = mkdtempSync(join(tmpdir(), "oma-emit-drift-"));
