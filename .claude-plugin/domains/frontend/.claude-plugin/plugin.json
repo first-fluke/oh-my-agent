@@ -1,0 +1,73 @@
+{
+  "name": "oma-frontend",
+  "version": "20.19.0",
+  "description": "Frontend implementation, interface design, review, and debugging",
+  "author": {
+    "name": "First Fluke"
+  },
+  "skills": [
+    "./skills/oma-architecture",
+    "./skills/oma-brainstorm",
+    "./skills/oma-debug",
+    "./skills/oma-design",
+    "./skills/oma-frontend",
+    "./skills/oma-pm",
+    "./skills/oma-qa",
+    "./skills/oma-scm"
+  ],
+  "agents": [
+    "./agents/architecture-reviewer.md",
+    "./agents/frontend-engineer.md",
+    "./agents/pm-planner.md",
+    "./agents/qa-reviewer.md",
+    "./agents/debug-investigator.md"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-bootstrap.sh\" frontend",
+            "async": true,
+            "timeout": 600
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" UserPromptSubmit",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" PreToolUse Bash",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" Stop",
+            "timeout": 40
+          }
+        ]
+      }
+    ]
+  }
+}

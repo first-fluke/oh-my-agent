@@ -42,7 +42,10 @@ function fixture(copyDefinitions = false) {
     }
   }
   const skill = (name: string) =>
-    write(`.agents/skills/${name}/SKILL.md`, `# ${name}\n`);
+    write(
+      `.agents/skills/${name}/SKILL.md`,
+      `---\nname: ${name}\ndescription: Fixture skill\n---\n`,
+    );
   const workflows = () =>
     readdirSync(join(root, ".agents", "workflows"))
       .filter((name) => name.endsWith(".md"))
@@ -80,6 +83,18 @@ describe("install manifest summary", () => {
       lines.filter((line) => line.startsWith("Run oma doctor")),
     ).toHaveLength(1);
     expect(lines.join("\n")).toContain("conditional branches");
+    expect(
+      summary.workflows.find((item) => item.name === "work")?.availability,
+    ).toMatchObject({
+      available: false,
+      missingRequired: expect.arrayContaining(["oma-coordination"]),
+    });
+    expect(lines.join("\n")).toContain(
+      "/work disabled: install or repair required skills oma-coordination",
+    );
+    expect(lines.join("\n")).toContain(
+      "conditional skills (add when using that branch)",
+    );
   });
 
   it("counts retained skill manifests and clears their gaps without expanding the selection", () => {
@@ -121,6 +136,9 @@ describe("install manifest summary", () => {
     ).toEqual([]);
     expect(
       summary.workflows.filter((item) => item.unreadableFiles.length),
+    ).toEqual([]);
+    expect(
+      summary.workflows.filter((item) => !item.availability.available),
     ).toEqual([]);
   });
 

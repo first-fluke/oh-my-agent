@@ -84,6 +84,7 @@ Pick the preset that matches the work the repository needs. Skill names below dr
 | **backend** | An API or service with a database | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
 | **mobile** | A mobile app only | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
 | **devops** | Infrastructure, CI/CD, and observability work | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **security** | Security scanning, code review, and remediation | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Papers, market research, and PDF/HWP conversion | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Design assets, images, voice, and written content | design, image, voice, academic-writing, translation, scm | 6 |
 
@@ -104,32 +105,63 @@ preset retains previously installed skills. Custom selection is available only
 through the interactive menu; `custom` and empty values are not accepted by
 `--preset`.
 
-After installation, read the selected-skill list and static referenced-skill
-manifest report. Existing retained skills can satisfy a reference outside the
-current selection. The report includes conditional branches; use the task's
-actual workflow branch to decide which missing or unreadable manifests need
-repair. It does not verify resource contents, tools, providers, credentials, or
-execution.
+After installation, read the selected-skill list and workflow availability
+report. A workflow is exposed only when its required skill manifests have valid
+names and descriptions. Existing retained skills can satisfy those requirements.
+Conditional references are reported separately and do not expand the selected
+preset. This check covers manifests; tools, providers, credentials, and execution
+still need their own checks.
 
 ### Workflows that need skills outside a preset
 
-Every preset installs all workflow and agent definitions, but several workflows read a skill that domain presets do not install. Check this table before you pick a domain preset:
+Every preset copies the workflow and agent definitions. Commands and prompts are
+exposed only for workflows whose required skills are available. For example, a
+fresh frontend installation leaves `/work` unavailable because it lacks
+`oma-coordination`; its existing PM and QA skills already satisfy the other entry
+requirements. The installer reports that missing skill without switching to
+`all`.
 
-| Workflow | Reads skill | Presets that include it |
+| Workflow | Required entry skills | Presets that include them |
 |----------|-------------|-------------------------|
-| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
-| `/ultrawork`, `/ralph` | oma-coordination; the `refactor-engineer` agent it spawns uses oma-refactor | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
+| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
-| `/security` | oma-security | all |
+| `/security` | oma-security | all, security |
 | `/recap` | oma-recap | all |
 | `/video` | oma-video | all |
-| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
 | `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
-| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/architecture` | oma-architecture | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
+| `/plan` | oma-pm | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/review` | oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
 | `/scm` | oma-scm | every preset |
 
-To add a missing skill later, run `oma doctor` from the project root, accept the missing-skill prompt, and choose **Select individually**. Use `oma doctor --global` for an OMA global installation.
+Branch-specific references remain advisory. For example, `/convert` chooses PDF,
+HWP, or video tools after inspecting its input; `/ralph` and `/ultrawork` can need
+`oma-refactor` for a refactoring branch. These references are not unconditional
+entry requirements.
+
+Run `oma doctor` to diagnose missing or invalid manifests. To add a missing skill,
+run `oma install` and choose **Select individually**. After repairing a manifest,
+run `oma link` to refresh workflow exposure; reinstalling also refreshes it. Use
+the matching `--global` scope for an OMA global installation. Existing user
+commands are retained when unavailable OMA commands are removed.
+
+### Domain plugins
+
+Claude Code marketplace users can choose a domain entry after adding the
+`oh-my-agent` marketplace:
+
+```bash
+claude plugin install oma-frontend@oh-my-agent
+# Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
+```
+
+The domain entries contain 8 frontend, 6 security, or 8 research skills and a
+matching native agent selection. Their session bootstrap passes that preset to
+the runtime installer. Shared runtime setup and existing installed skills follow
+the installer behavior described above. The `oma` entry retains the full plugin.
+The same domain roots are declared in the generated Codex marketplace catalog.
 
 The shared resources (`_shared/`) are always installed regardless of preset. This includes core routing, context loading, prompt structure, vendor detection, execution protocols, and memory protocol.
 

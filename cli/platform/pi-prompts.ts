@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { clearNonDirectory } from "../utils/fs-utils.js";
 import { safeGetInstallMode } from "./install-context.js";
+import { inspectWorkflowAvailability } from "./skills-installer/workflow-dependencies.js";
 
 const PI_PROMPT_MARKER = "<!-- oma:generated -->";
 
@@ -44,7 +45,9 @@ export function installPiPromptTemplates(
   const promptsRoot = global
     ? path.join(targetDir, ".pi", "agent", "prompts")
     : path.join(targetDir, ".pi", "prompts");
-  const names = listWorkflowNames(workflowsDir);
+  const names = listWorkflowNames(workflowsDir).filter(
+    (name) => inspectWorkflowAvailability(sourceDir, name).available,
+  );
 
   if (fs.existsSync(promptsRoot)) {
     for (const entry of fs.readdirSync(promptsRoot, { withFileTypes: true })) {

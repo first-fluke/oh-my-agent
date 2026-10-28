@@ -1,0 +1,11 @@
+{
+  "preset": "security",
+  "skills": [
+    "oma-security",
+    "oma-architecture",
+    "oma-qa",
+    "oma-debug",
+    "oma-refactor",
+    "oma-scm"
+  ]
+}

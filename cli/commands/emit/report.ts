@@ -54,7 +54,12 @@ function renderAgentPluginSection(report: AgentPluginEmitReport): string[] {
 }
 
 function renderClaudePluginSection(report: ClaudePluginEmitReport): string[] {
-  return [`claude-plugin -> ${report.outPath}`];
+  return [
+    `claude-plugin -> ${report.outPath}`,
+    ...(report.codexMarketplacePath
+      ? [`codex-marketplace -> ${report.codexMarketplacePath}`]
+      : []),
+  ];
 }
 
 function renderAgentsMdSection(report: AgentsMdEmitReport): string[] {

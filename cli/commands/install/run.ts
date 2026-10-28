@@ -452,6 +452,11 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       // Expose workflows as slash-command skills by symlinking the workflow
       // files directly (no generated wrapper under .agents/skills).
       const installedWorkflows = getInstalledWorkflowNames(installRoot);
+      const manifestSummary = inspectInstallManifests(
+        installRoot,
+        selectedSkills,
+        installedWorkflows,
+      );
       createVendorWorkflowSymlinks(
         installRoot,
         selectedClis,
@@ -460,14 +465,9 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
       p.note(
         [
-          ...renderInstallManifestSummary(
-            inspectInstallManifests(
-              installRoot,
-              selectedSkills,
-              installedWorkflows,
-            ),
-            { global: getInstallMode() === "global" },
-          ),
+          ...renderInstallManifestSummary(manifestSummary, {
+            global: getInstallMode() === "global",
+          }),
           "",
           pc.dim(`Location: ${join(installRoot, INSTALLED_SKILLS_DIR)}`),
           ...(cliSymlinks.created.length > 0

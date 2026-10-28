@@ -12,6 +12,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { WORKFLOW_DEPENDENCIES } from "./skills-installer/workflow-dependencies.js";
 import { installCopilotWorkflowPrompts } from "./skills-installer.js";
 
 function setupSource(root: string, workflows: Record<string, string>): void {
@@ -19,6 +20,14 @@ function setupSource(root: string, workflows: Record<string, string>): void {
   mkdirSync(dir, { recursive: true });
   for (const [name, content] of Object.entries(workflows)) {
     writeFileSync(join(dir, `${name}.md`), content);
+    for (const skill of WORKFLOW_DEPENDENCIES[name]?.required ?? []) {
+      const skillDir = join(root, ".agents", "skills", skill);
+      mkdirSync(skillDir, { recursive: true });
+      writeFileSync(
+        join(skillDir, "SKILL.md"),
+        `---\nname: ${skill}\ndescription: Fixture skill\n---\n`,
+      );
+    }
   }
 }
 

@@ -1,0 +1,27 @@
+# oma-pdf configuration
+# PDF to Markdown conversion settings
+#
+# NOT the place to put your settings: `oma update` overwrites this file. Put
+# overrides under `pdf:` in .agents/oma-config.yaml, which is preserved —
+# that section wins, and this file supplies only the shipped defaults the skill
+# falls back to. Migration 022 moves anything you changed here for you.
+#
+
+format: markdown
+image_output: "off"       # "off", "embedded" (base64), "external"
+image_format: png         # "png" or "jpeg"
+use_struct_tree: false    # Use Tagged PDF structure when available
+
+# OCR settings (hybrid mode only)
+ocr:
+  enabled: false
+  languages: "en"         # Comma-separated: "ko,en", "ja,en", etc.
+  hybrid_port: 5002
+
+# Output behavior
+output:
+  # When no output directory is specified:
+  # "same_dir" = output next to the input PDF
+  # "cwd" = output in current working directory
+  default_location: same_dir
+  overwrite: false        # Prompt before overwriting existing files

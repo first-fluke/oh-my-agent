@@ -1,0 +1,18 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "oma-security",
+  "version": "20.19.0",
+  "description": "Security scans, source review, and verified remediation",
+  "author": {
+    "name": "First Fluke"
+  },
+  "homepage": "https://firstfluke.com/oh-my-agent",
+  "repository": "https://github.com/first-fluke/oh-my-agent",
+  "license": "MIT",
+  "keywords": [
+    "multi-agent",
+    "orchestrator",
+    "skills",
+    "workflows"
+  ]
+}

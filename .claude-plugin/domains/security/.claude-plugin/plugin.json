@@ -1,0 +1,70 @@
+{
+  "name": "oma-security",
+  "version": "20.19.0",
+  "description": "Security scans, source review, and verified remediation",
+  "author": {
+    "name": "First Fluke"
+  },
+  "skills": [
+    "./skills/oma-architecture",
+    "./skills/oma-debug",
+    "./skills/oma-qa",
+    "./skills/oma-refactor",
+    "./skills/oma-scm",
+    "./skills/oma-security"
+  ],
+  "agents": [
+    "./agents/architecture-reviewer.md",
+    "./agents/qa-reviewer.md",
+    "./agents/debug-investigator.md",
+    "./agents/refactor-engineer.md"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-bootstrap.sh\" security",
+            "async": true,
+            "timeout": 600
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" UserPromptSubmit",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" PreToolUse Bash",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" Stop",
+            "timeout": 40
+          }
+        ]
+      }
+    ]
+  }
+}

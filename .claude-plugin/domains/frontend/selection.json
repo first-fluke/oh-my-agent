@@ -1,0 +1,13 @@
+{
+  "preset": "frontend",
+  "skills": [
+    "oma-architecture",
+    "oma-brainstorm",
+    "oma-design",
+    "oma-frontend",
+    "oma-pm",
+    "oma-qa",
+    "oma-debug",
+    "oma-scm"
+  ]
+}

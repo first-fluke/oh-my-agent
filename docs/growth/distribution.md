@@ -1,8 +1,12 @@
 # Worked-example distribution copy
 
-The copy below is prepared for review. Publish only after its destination pages are live and the target account/channel is authorized. Record the resulting post URL and the platform's reporting window in the local measurement record.
+The copy below is prepared for review. Publishing requires an explicit request for the target account and channel. Publication status is recorded separately from reach and adoption measurements.
 
 Use full task or case URLs. A reused short link cannot distinguish which post produced a visit by itself. URL parameters alone do not create analytics collection.
+
+## DEV article record
+
+[Testing a plugin hook that points to a missing file](https://dev.to/gracefullight/testing-a-plugin-hook-that-points-to-a-missing-file-1a74) is published under `gracefullight`. DEV reports publication at `2026-10-28T03:00:30Z`; the public article and its exact API body were checked. Owner analytics remain in the ignored local measurement record.
 
 ## DEV article
 
@@ -54,13 +58,10 @@ We fixed that failure in oh-my-agent, along with a bootstrap receipt that could 
 
 The same review method applies to AI-generated changes: check the distributed file layout, event ownership, and where project state is stored.
 
-Worked example:
+The worked example includes a review prompt to try on your own diff:
 https://firstfluke.com/oh-my-agent/docs/examples/plugin-hook-repair/
 
-Try it on your own diff:
-https://firstfluke.com/oh-my-agent/docs/tasks/review-ai-code/
-
-## Short Korean post
+## Short Korean copy
 
 플러그인 manifest가 유효해도 배포 파일에 없는 경로를 호출하면 훅은 실행되지 않습니다.
 
@@ -71,11 +72,8 @@ AI가 작성한 변경을 리뷰할 때도 배포 파일 구성, 이벤트 중�
 수정 사례:
 https://firstfluke.com/oh-my-agent/docs/examples/plugin-hook-repair/
 
-내 diff에 적용하기:
-https://firstfluke.com/oh-my-agent/docs/tasks/review-ai-code/
-
 ## After publishing
 
 Record impressions/reach and reported link visits at a fixed check date. Keep platform counts separate from GitHub traffic and npm downloads. A reply describing successful use is useful evidence; it is not an all-user retention rate.
 
-The existing `bun run sns --dry-run --targets devto` path prepares local prompts only. Normal SNS execution can call models and upload drafts; `--force` / `--publish` can publish publicly. The prepared copy above does not execute those paths.
+The existing `bun run sns --dry-run --targets devto` path prepares local prompts only. Normal SNS execution can call models and upload drafts; `--force` / `--publish` can publish publicly. Record an authorized publication's URL, account, timestamp source, and available analytics in the ignored local measurement record.

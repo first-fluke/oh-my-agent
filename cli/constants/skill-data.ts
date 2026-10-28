@@ -148,6 +148,14 @@ export const SKILLS: SkillsRegistry = {
 };
 
 export const PRESETS: Record<string, string[]> = {
+  security: [
+    "oma-security",
+    "oma-architecture",
+    "oma-qa",
+    "oma-debug",
+    "oma-refactor",
+    "oma-scm",
+  ],
   fullstack: [
     "oma-architecture",
     "oma-brainstorm",

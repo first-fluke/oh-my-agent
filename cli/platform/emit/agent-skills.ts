@@ -223,9 +223,14 @@ function copySkillAssets(sourceDir: string, destDir: string): void {
 export function emitAgentSkills(
   repoRoot: string,
   outDir: string,
-  options: { sharedResources?: "bundled" | "package" } = {},
+  options: {
+    sharedResources?: "bundled" | "package";
+    skills?: readonly string[];
+  } = {},
 ): SkillEmitResult[] {
-  const dirNames = discoverSkillDirs(repoRoot);
+  const dirNames = discoverSkillDirs(repoRoot).filter(
+    (name) => !options.skills || options.skills.includes(name),
+  );
   const results: SkillEmitResult[] = [];
 
   for (const dirName of dirNames) {

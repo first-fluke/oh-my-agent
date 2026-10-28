@@ -18,6 +18,10 @@ set -eu
 
 INSTALL_SH="https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
+PRESET="${1:-all}"
+case "${PRESET}" in all|frontend|security|research) ;; *) exit 0 ;; esac
+PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-${0%/*}/..}"
+SELECTION="${PLUGIN_DIR}/selection.json"
 
 # Preserve configured CLI precedence and add installer locations as fallbacks.
 export PATH="${PATH}:${HOME}/.bun/bin:${HOME}/.local/bin"
@@ -32,7 +36,11 @@ fi
 # wiring receipt with the project whose installation it describes.
 MARKER_DIR="${PROJECT_DIR}/.agents/state"
 MARKER="${MARKER_DIR}/plugin-bootstrap.version"
+if [ "${PRESET}" != all ]; then
+  MARKER="${MARKER_DIR}/plugin-bootstrap.${PRESET}.version"
+fi
 INSTALL_LOG="${MARKER_DIR}/plugin-bootstrap.last-error.log"
+SCOPE_MARKER="${MARKER_DIR}/plugin-bootstrap.selection"
 
 record_install_failure() {
   log "$1"
@@ -62,14 +70,21 @@ project_is_wired() {
     && { [ -f "${PROJECT_DIR}/.agents/oma-config.yaml" ] \
       || [ -f "${PROJECT_DIR}/.agents/oma-config.cue" ]; } \
     && command -v bun >/dev/null 2>&1 \
-    && OMA_BOOTSTRAP_PROJECT="${PROJECT_DIR}" bun -e '
-      const { readFileSync } = require("node:fs");
+    && OMA_BOOTSTRAP_PROJECT="${PROJECT_DIR}" OMA_BOOTSTRAP_PRESET="${PRESET}" OMA_BOOTSTRAP_SELECTION="${SELECTION}" bun -e '
+      const { readFileSync, existsSync } = require("node:fs");
       const { join } = require("node:path");
       try {
         const version = JSON.parse(readFileSync(
           join(process.env.OMA_BOOTSTRAP_PROJECT, ".agents/skills/_version.json"), "utf8"));
         if (typeof version.version !== "string" || !version.version.trim() ||
             (version.mode !== undefined && version.mode !== "project")) process.exit(1);
+        if (process.env.OMA_BOOTSTRAP_PRESET !== "all") {
+          const selection = JSON.parse(readFileSync(process.env.OMA_BOOTSTRAP_SELECTION, "utf8"));
+          if (selection.preset !== process.env.OMA_BOOTSTRAP_PRESET ||
+              !Array.isArray(selection.skills) || !selection.skills.length ||
+              !selection.skills.every((name) => /^oma-[a-z0-9-]+$/.test(name) &&
+                existsSync(join(process.env.OMA_BOOTSTRAP_PROJECT, ".agents/skills", name, "SKILL.md")))) process.exit(1);
+        }
         const settings = JSON.parse(readFileSync(
           join(process.env.OMA_BOOTSTRAP_PROJECT, ".claude/settings.json"), "utf8"));
         const events = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"];
@@ -96,6 +111,7 @@ read_cli_version() {
 if resolve_oma && read_cli_version; then
   if [ -f "${MARKER}" ] \
     && [ "$(cat "${MARKER}" 2>/dev/null || true)" = "${CLI_VERSION}" ] \
+    && [ "$(cat "${SCOPE_MARKER}" 2>/dev/null || true)" = "${PRESET}" ] \
     && project_is_wired; then
     exit 0
   fi
@@ -145,8 +161,10 @@ if ! resolve_oma; then
 fi
 
 # ── 3. Non-interactive project wiring ──────────────────────────────────────
-log "wiring project via oma install --yes (non-interactive)…"
-if ! INSTALL_OUTPUT="$(cd "${PROJECT_DIR}" && OMA_YES=1 OMA_INSTALL_GLOBAL=0 "${OMA_BIN}" install --yes 2>&1)"; then
+log "wiring project via oma install --yes --preset ${PRESET} (non-interactive)…"
+set -- install --yes
+if [ "${PRESET}" != all ]; then set -- "$@" --preset "${PRESET}"; fi
+if ! INSTALL_OUTPUT="$(cd "${PROJECT_DIR}" && OMA_YES=1 OMA_INSTALL_GLOBAL=0 "${OMA_BIN}" "$@" 2>&1)"; then
   record_install_failure "oma install did not complete. Run manually in the project: oma install"
   exit 0
 fi
@@ -162,7 +180,8 @@ if ! read_cli_version; then
 fi
 
 if ! mkdir -p "${MARKER_DIR}" \
-  || ! printf '%s' "${CLI_VERSION}" >"${MARKER}"; then
+  || ! printf '%s' "${CLI_VERSION}" >"${MARKER}" \
+  || ! printf '%s' "${PRESET}" >"${SCOPE_MARKER}"; then
   log "could not record project wiring; bootstrap will retry next session"
   exit 0
 fi

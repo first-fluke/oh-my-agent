@@ -1,0 +1,57 @@
+{
+  "name": "oh-my-agent",
+  "interface": {
+    "displayName": "oh-my-agent",
+    "shortDescription": "oh-my-agent-workspace"
+  },
+  "plugins": [
+    {
+      "name": "oma",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "oma-frontend",
+      "source": {
+        "source": "local",
+        "path": "./.claude-plugin/domains/frontend"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "oma-security",
+      "source": {
+        "source": "local",
+        "path": "./.claude-plugin/domains/security"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "oma-research",
+      "source": {
+        "source": "local",
+        "path": "./.claude-plugin/domains/research"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

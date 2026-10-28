@@ -1,13 +1,16 @@
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { parseFrontmatter } from "../../utils/frontmatter.js";
-import { discoverSkillDirs, SKILLS_DIR } from "./agent-skills.js";
+import { DOMAIN_PRESETS } from "../domain-presets.js";
+import { buildPluginManifest } from "./agent-plugin.js";
+import { discoverSkillDirs, emitAgentSkills } from "./agent-skills.js";
 import type { ClaudePluginEmitReport } from "./types.js";
 
 /**
@@ -37,47 +40,11 @@ function readPackageJson(repoRoot: string): PackageJsonShape {
   return JSON.parse(readFileSync(pkgPath, "utf-8")) as PackageJsonShape;
 }
 
-/** List `.agents/agents/*.md` basenames (sans extension), or `[]` if absent. */
-function discoverClaudeAgents(repoRoot: string): string[] {
-  const dir = join(repoRoot, AGENTS_DIR);
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((f) => f.endsWith(".md"))
-    .map((f) => f.replace(/\.md$/, ""))
-    .sort();
-}
-
-/**
- * Build a Claude Code plugin marketplace manifest for oma, modeled on the
- * public schema used by github.com/anthropics/skills
- * (.claude-plugin/marketplace.json): a single owner block plus a `plugins`
- * array, each entry listing its `skills` (relative source paths). Agents are
- * attached as a best-effort `agents` extension field — the public schema
- * does not yet document per-plugin agent listing, so this is oma's own
- * addition pending upstream clarification.
- */
+/** Build the catalog; each entry delegates components to its own manifest. */
 export function buildMarketplaceManifest(
   repoRoot: string,
 ): Record<string, unknown> {
   const pkg = readPackageJson(repoRoot);
-  const skillDirs = discoverSkillDirs(repoRoot);
-  const agents = discoverClaudeAgents(repoRoot);
-
-  const skills = skillDirs.map((dirName) => {
-    const skillMdPath = join(repoRoot, SKILLS_DIR, dirName, "SKILL.md");
-    const content = existsSync(skillMdPath)
-      ? readFileSync(skillMdPath, "utf-8")
-      : "";
-    const { frontmatter } = parseFrontmatter(content);
-    return {
-      dirName,
-      description:
-        typeof frontmatter.description === "string"
-          ? frontmatter.description
-          : "",
-    };
-  });
-
   const ownerName =
     typeof pkg.author === "string" ? pkg.author : pkg.author?.name;
 
@@ -97,14 +64,15 @@ export function buildMarketplaceManifest(
     plugins: [
       {
         name: "oma",
-        description:
-          pkg.description ??
-          "Portable multi-agent harness for .agents-based skills and workflows",
+        description: pkg.description ?? "All OMA skills and specialist teams",
         source: "./",
-        strict: false,
-        skills: skills.map((s) => `./${SKILLS_DIR}/${s.dirName}`),
-        agents: agents.map((name) => `./${AGENTS_DIR}/${name}.md`),
       },
+      ...Object.entries(DOMAIN_PRESETS).map(([domain, preset]) => ({
+        name: `oma-${domain}`,
+        description: preset.description,
+        category: domain,
+        source: `./.claude-plugin/domains/${domain}`,
+      })),
     ],
   };
 }
@@ -127,6 +95,155 @@ export function emitClaudePlugin(
   mkdirSync(outDir, { recursive: true });
   const outPath = join(outDir, "marketplace.json");
   writeFileSync(outPath, serialized);
+  const pkg = readPackageJson(repoRoot);
+  const fullAgentsDir = join(repoRoot, AGENTS_DIR);
+  writeFileSync(
+    join(outDir, "plugin.json"),
+    `${JSON.stringify(
+      {
+        name: "oma",
+        version: pkg.version ?? "0.0.0",
+        description: pkg.description ?? "All OMA skills and specialist teams",
+        author:
+          typeof pkg.author === "object" ? pkg.author : { name: "First Fluke" },
+        homepage: pkg.homepage ?? "https://firstfluke.com/oh-my-agent",
+        repository: "https://github.com/first-fluke/oh-my-agent",
+        license: "MIT",
+        skills: discoverSkillDirs(repoRoot).map(
+          (name) => `./.agents/skills/${name}`,
+        ),
+        agents: existsSync(fullAgentsDir)
+          ? readdirSync(fullAgentsDir)
+              .filter((name) => name.endsWith(".md"))
+              .sort()
+              .map((name) => `./${AGENTS_DIR}/${name}`)
+          : [],
+        hooks: "./hooks/hooks.json",
+      },
+      null,
+      2,
+    )}\n`,
+  );
+
+  // Isolated roots prevent Claude from merging the full plugin manifest or
+  // discovering every root skill while loading a domain entry.
+  for (const [domain, preset] of Object.entries(DOMAIN_PRESETS)) {
+    const root = join(outDir, "domains", domain);
+    rmSync(root, { recursive: true, force: true });
+    mkdirSync(join(root, ".claude-plugin"), { recursive: true });
+    if (existsSync(join(repoRoot, "LICENSE")))
+      cpSync(join(repoRoot, "LICENSE"), join(root, "LICENSE"));
+    const skills = emitAgentSkills(repoRoot, join(root, "skills"), {
+      skills: preset.skills,
+    });
+    const agents: string[] = [];
+    for (const name of preset.agents) {
+      const source = join(repoRoot, AGENTS_DIR, `${name}.md`);
+      if (!existsSync(source)) continue;
+      mkdirSync(join(root, "agents"), { recursive: true });
+      cpSync(source, join(root, "agents", `${name}.md`));
+      agents.push(`./agents/${name}.md`);
+    }
+    writeFileSync(
+      join(root, "plugin.json"),
+      `${JSON.stringify(
+        {
+          ...buildPluginManifest(repoRoot, []),
+          name: `oma-${domain}`,
+          description: preset.description,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    mkdirSync(join(root, "scripts"), { recursive: true });
+    for (const script of ["plugin-bootstrap.sh", "plugin-hook.sh"]) {
+      const source = join(repoRoot, "scripts", script);
+      if (existsSync(source)) cpSync(source, join(root, "scripts", script));
+    }
+    writeFileSync(
+      join(root, "selection.json"),
+      `${JSON.stringify(
+        {
+          preset: domain,
+          skills: [...preset.skills],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    const hook = (event: string, matcher?: string) => ({
+      ...(matcher ? { matcher } : {}),
+      hooks: [
+        {
+          type: "command",
+          command:
+            event === "SessionStart"
+              ? `sh "\${CLAUDE_PLUGIN_ROOT}/scripts/plugin-bootstrap.sh" ${domain}`
+              : `sh "\${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh" ${event}${matcher ? ` ${matcher}` : ""}`,
+          ...(event === "SessionStart" ? { async: true } : {}),
+          timeout: event === "SessionStart" ? 600 : event === "Stop" ? 40 : 15,
+        },
+      ],
+    });
+    writeFileSync(
+      join(root, ".claude-plugin", "plugin.json"),
+      `${JSON.stringify(
+        {
+          name: `oma-${domain}`,
+          version: readPackageJson(repoRoot).version ?? "0.0.0",
+          description: preset.description,
+          author: { name: "First Fluke" },
+          skills: skills.map((skill) => `./skills/${skill.skill}`),
+          agents,
+          hooks: {
+            SessionStart: [hook("SessionStart")],
+            UserPromptSubmit: [hook("UserPromptSubmit")],
+            PreToolUse: [hook("PreToolUse", "Bash")],
+            Stop: [hook("Stop")],
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  }
 
   return { target: "claude-plugin", outPath };
+}
+
+/** Codex marketplace metadata; source paths resolve from the repository root. */
+export function emitCodexMarketplace(repoRoot: string, outDir: string): string {
+  const plugins = [
+    { name: "oma", path: "./" },
+    ...Object.keys(DOMAIN_PRESETS).map((domain) => ({
+      name: `oma-${domain}`,
+      path: `./.claude-plugin/domains/${domain}`,
+    })),
+  ];
+  mkdirSync(outDir, { recursive: true });
+  const outPath = join(outDir, "marketplace.json");
+  writeFileSync(
+    outPath,
+    `${JSON.stringify(
+      {
+        name: MARKETPLACE_NAME,
+        interface: {
+          displayName: "oh-my-agent",
+          shortDescription:
+            readPackageJson(repoRoot).name ??
+            "Scoped agent skills and specialist teams",
+        },
+        plugins: plugins.map(({ name, path }) => ({
+          name,
+          source: { source: "local", path },
+          policy: { installation: "AVAILABLE", authentication: "ON_INSTALL" },
+          category: "Productivity",
+        })),
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  return outPath;
 }

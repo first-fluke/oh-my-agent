@@ -41,6 +41,7 @@ export interface AgentSkillsEmitReport {
 export interface ClaudePluginEmitReport {
   target: "claude-plugin";
   outPath: string;
+  codexMarketplacePath?: string;
 }
 
 export interface AgentPluginMcpSkip {

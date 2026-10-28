@@ -15,6 +15,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
+import { DOMAIN_PRESETS } from "../cli/platform/domain-presets.js";
 
 const bootstrap = fileURLToPath(
   new URL("./plugin-bootstrap.sh", import.meta.url),
@@ -91,6 +92,7 @@ fi
 if [ "\${1:-}" != install ] || [ "\${2:-}" != --yes ]; then exit 80; fi
 if [ "\${OMA_INSTALL_GLOBAL:-0}" = 1 ]; then cd "$HOME"; fi
 printf '%s\\n' "$PWD" >> "$FIXTURE_LOG"
+printf '%s\\n' "$*" >> "$FIXTURE_ARGS_LOG"
 if [ "\${FIXTURE_WIRING_FAIL:-0}" = 1 ]; then
   if [ "\${FIXTURE_LARGE_ERROR:-0}" = 1 ]; then
     "$FIXTURE_NODE" -e 'process.stderr.write("x".repeat(70000))'
@@ -104,6 +106,12 @@ printf '#!/bin/sh\\nexit 0\\n' > .claude/hooks/oma-hook.sh
 chmod +x .claude/hooks/oma-hook.sh
 if [ "\${FIXTURE_INCOMPLETE:-0}" != 1 ]; then
   mkdir -p .agents/skills
+  if [ "\${FIXTURE_SKIP_SKILLS:-0}" != 1 ]; then
+    for skill in \${FIXTURE_SKILLS:-}; do
+      mkdir -p ".agents/skills/$skill"
+      printf 'fixture skill\\n' > ".agents/skills/$skill/SKILL.md"
+    done
+  fi
   printf '{"version":"fixture-version"}\\n' > .agents/skills/_version.json
   if [ "\${FIXTURE_CONFIG:-yaml}" = cue ]; then
     printf 'package config\\nlanguage: "en"\\n' > .agents/oma-config.cue
@@ -137,8 +145,17 @@ chmod +x "$HOME/.local/bin/bun"
     mkdirSync(path, { recursive: true });
     return path;
   };
-  const run = (cwd: string, extra: Record<string, string> = {}) =>
-    spawnSync("/bin/sh", [bootstrap], {
+  const run = (cwd: string, extra: Record<string, string> = {}) => {
+    const preset = extra.FIXTURE_PRESET as
+      | keyof typeof DOMAIN_PRESETS
+      | undefined;
+    const skills = preset ? (DOMAIN_PRESETS[preset]?.skills ?? []) : [];
+    if (preset)
+      writeFileSync(
+        join(root, "selection.json"),
+        JSON.stringify({ preset, skills }),
+      );
+    return spawnSync("/bin/sh", [bootstrap, ...(preset ? [preset] : [])], {
       cwd,
       encoding: "utf-8",
       env: {
@@ -148,6 +165,9 @@ chmod +x "$HOME/.local/bin/bun"
         CLAUDE_PROJECT_DIR: cwd,
         CLAUDE_PLUGIN_DATA: data,
         FIXTURE_LOG: log,
+        FIXTURE_ARGS_LOG: join(root, "args.log"),
+        CLAUDE_PLUGIN_ROOT: root,
+        FIXTURE_SKILLS: skills.join(" "),
         FIXTURE_INSTALLER: installer,
         FIXTURE_BUN_TEMPLATE: bunTemplate,
         FIXTURE_SETTINGS: settings,
@@ -156,9 +176,20 @@ chmod +x "$HOME/.local/bin/bun"
         ...extra,
       },
     });
+  };
   const installedProjects = () =>
     existsSync(log) ? readFileSync(log, "utf-8").trim().split("\n") : [];
-  return { root, home, bin, data, project, run, installedProjects };
+  return {
+    root,
+    home,
+    bin,
+    data,
+    project,
+    run,
+    installedProjects,
+    installedArgs: () =>
+      readFileSync(join(root, "args.log"), "utf8").trim().split("\n"),
+  };
 }
 
 afterEach(() => {
@@ -167,6 +198,52 @@ afterEach(() => {
 });
 
 describe.skipIf(process.platform === "win32")("plugin bootstrap", () => {
+  it.each(["frontend", "security", "research"] as const)(
+    "installs the exact %s preset and verifies selected manifests",
+    (preset) => {
+      const f = fixture();
+      const project = f.project("project");
+      expect(f.run(project, { FIXTURE_PRESET: preset }).stderr).toContain(
+        "oma is ready",
+      );
+      f.run(project, { FIXTURE_PRESET: preset });
+      expect(f.installedArgs()).toEqual([`install --yes --preset ${preset}`]);
+      const skill = DOMAIN_PRESETS[preset].skills[0];
+      unlinkSync(join(project, ".agents/skills", skill, "SKILL.md"));
+      expect(f.run(project, { FIXTURE_PRESET: preset }).stderr).toContain(
+        "oma is ready",
+      );
+      expect(f.installedArgs()).toHaveLength(2);
+    },
+  );
+
+  it("reinstalls when changing full to domain and back with the same CLI version", () => {
+    const f = fixture();
+    const project = f.project("project");
+    f.run(project);
+    f.run(project, { FIXTURE_PRESET: "frontend" });
+    f.run(project);
+    expect(f.installedArgs()).toEqual([
+      "install --yes",
+      "install --yes --preset frontend",
+      "install --yes",
+    ]);
+  });
+
+  it("does not record a domain receipt when a selected skill is missing", () => {
+    const f = fixture();
+    const project = f.project("project");
+    expect(
+      f.run(project, { FIXTURE_PRESET: "security", FIXTURE_SKIP_SKILLS: "1" })
+        .stderr,
+    ).toContain("project wiring is incomplete");
+    expect(
+      existsSync(
+        join(project, ".agents/state/plugin-bootstrap.security.version"),
+      ),
+    ).toBe(false);
+  });
+
   it.each(["curl", "wget"] as const)(
     "runs the %s-downloaded Bash installer through Bash",
     (downloader) => {

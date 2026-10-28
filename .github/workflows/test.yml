@@ -158,3 +158,25 @@ jobs:
             exit 1
           }
           Write-Host "install.ps1 smoke test passed (bun + uv + serena + oma resolved)"
+
+  plugin-discovery:
+    name: Claude plugin manifests (2.1.311)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v5
+      - name: Validate distributed plugins with the real host
+        env:
+          DISABLE_AUTOUPDATER: "1"
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+        run: |
+          set -eu
+          OMA_SMOKE_CLAUDE_PACKAGE='@anthropic-ai/claude-code@2.1.311'
+          npm exec --yes --package="$OMA_SMOKE_CLAUDE_PACKAGE" -- claude --version
+          npm exec --yes --package="$OMA_SMOKE_CLAUDE_PACKAGE" -- claude plugin validate --strict --json .claude-plugin/marketplace.json
+          for domain in frontend security research; do
+            npm exec --yes --package="$OMA_SMOKE_CLAUDE_PACKAGE" -- claude plugin validate --strict --json ".claude-plugin/domains/$domain"
+          done

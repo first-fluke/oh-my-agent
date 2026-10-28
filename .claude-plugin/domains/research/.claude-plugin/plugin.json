@@ -1,0 +1,69 @@
+{
+  "name": "oma-research",
+  "version": "20.19.0",
+  "description": "Literature search, market research, document extraction, and academic writing",
+  "author": {
+    "name": "First Fluke"
+  },
+  "skills": [
+    "./skills/oma-academic-writing",
+    "./skills/oma-hwp",
+    "./skills/oma-market",
+    "./skills/oma-pdf",
+    "./skills/oma-scholar",
+    "./skills/oma-scm",
+    "./skills/oma-search",
+    "./skills/oma-translation"
+  ],
+  "agents": [
+    "./agents/research-explorer.md"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-bootstrap.sh\" research",
+            "async": true,
+            "timeout": 600
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" UserPromptSubmit",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" PreToolUse Bash",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/plugin-hook.sh\" Stop",
+            "timeout": 40
+          }
+        ]
+      }
+    ]
+  }
+}

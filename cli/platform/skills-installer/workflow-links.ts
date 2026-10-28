@@ -4,6 +4,10 @@ import type { CliTool } from "../../types/index.js";
 import { atomicWriteFileSync } from "../../utils/safe-write.js";
 import { createLink } from "../fs-link.js";
 import { getVendorDisplayPath, resolveCliSkillsDir } from "./vendor-dirs.js";
+import {
+  inspectWorkflowAvailability,
+  WORKFLOW_DEPENDENCIES,
+} from "./workflow-dependencies.js";
 
 export const WORKFLOW_GENERATED_MARKER = "<!-- oma:generated -->";
 
@@ -37,6 +41,63 @@ export function getInstalledWorkflowNames(installRoot: string): string[] {
   return listWorkflowNames(join(installRoot, ".agents", "workflows"));
 }
 
+function availableWorkflowNames(root: string, names: string[]): string[] {
+  return names.filter(
+    (name) => inspectWorkflowAvailability(root, name).available,
+  );
+}
+
+function pruneUnavailableWorkflowSkills(
+  linkRoot: string,
+  workflowsDir: string,
+  available: Set<string>,
+): void {
+  if (!fs.existsSync(linkRoot)) return;
+  for (const entry of fs.readdirSync(linkRoot, { withFileTypes: true })) {
+    if (available.has(entry.name)) continue;
+    const skillDir = join(linkRoot, entry.name);
+    const skillFile = join(skillDir, "SKILL.md");
+    let ownedEntry = false;
+    try {
+      if (entry.isSymbolicLink()) {
+        const target = resolve(linkRoot, fs.readlinkSync(skillDir));
+        const legacy = resolve(workflowsDir, "..", "skills", entry.name);
+        if (
+          target === legacy &&
+          fs.readFileSync(skillFile, "utf8").includes(WORKFLOW_GENERATED_MARKER)
+        ) {
+          ownedEntry = true;
+          fs.rmSync(skillDir, { force: true });
+        }
+        continue;
+      }
+      if (!entry.isDirectory()) continue;
+      const stat = fs.lstatSync(skillFile);
+      const knownWorkflow =
+        Object.hasOwn(WORKFLOW_DEPENDENCIES, entry.name) ||
+        fs.existsSync(join(workflowsDir, `${entry.name}.md`));
+      const owned = stat.isSymbolicLink()
+        ? resolve(skillDir, fs.readlinkSync(skillFile)) ===
+          join(workflowsDir, `${entry.name}.md`)
+        : knownWorkflow &&
+          stat.isFile() &&
+          fs
+            .readFileSync(skillFile, "utf8")
+            .includes(WORKFLOW_GENERATED_MARKER);
+      if (!owned) continue;
+      ownedEntry = true;
+      fs.rmSync(skillFile, { force: true });
+      // Other files in the directory remain user-owned.
+      try {
+        fs.rmdirSync(skillDir);
+      } catch {}
+    } catch (error) {
+      if (ownedEntry) throw error;
+      // Missing/unreadable or user-owned entries are left intact.
+    }
+  }
+}
+
 /**
  * Expose each `.agents/workflows/<name>.md` to vendors as a slash-command skill
  * by symlinking `<vendor-skills-dir>/<name>/SKILL.md` directly at the workflow
@@ -56,15 +117,24 @@ export function createVendorWorkflowSymlinks(
   const created: string[] = [];
   const skipped: string[] = [];
   const workflowsDir = resolve(installRoot, ".agents", "workflows");
+  const available = new Set(availableWorkflowNames(installRoot, workflowNames));
 
   for (const cli of cliTools) {
     const label = getVendorDisplayPath(cli);
     const linkRootDir = resolveCliSkillsDir(installRoot, cli);
+    pruneUnavailableWorkflowSkills(linkRootDir, workflowsDir, available);
 
     for (const name of workflowNames) {
       const source = join(workflowsDir, `${name}.md`);
       if (!fs.existsSync(source)) {
         skipped.push(`${label}/${name} (workflow missing)`);
+        continue;
+      }
+      if (!available.has(name)) {
+        const state = inspectWorkflowAvailability(installRoot, name);
+        skipped.push(
+          `${label}/${name} (disabled: ${state.issue ?? `missing required skills ${state.missingRequired.join(", ")}`})`,
+        );
         continue;
       }
 
@@ -156,7 +226,10 @@ export function installZcodeWorkflowCommands(
   const skipped: string[] = [];
   const workflowsDir = resolve(installRoot, ".agents", "workflows");
   const commandsDir = resolve(targetRoot, ".zcode", "commands");
-  const names = listWorkflowNames(workflowsDir);
+  const names = availableWorkflowNames(
+    installRoot,
+    listWorkflowNames(workflowsDir),
+  );
 
   // Prune oma-owned command symlinks whose workflow no longer exists in SSOT.
   // Ownership = a `.md` symlink resolving directly into the workflows dir; user
@@ -242,7 +315,10 @@ export function installCopilotWorkflowPrompts(
 ): void {
   const workflowsDir = join(sourceDir, ".agents", "workflows");
   const promptsRoot = join(installRoot, ".github", "prompts");
-  const names = listWorkflowNames(workflowsDir);
+  const names = availableWorkflowNames(
+    sourceDir,
+    listWorkflowNames(workflowsDir),
+  );
 
   if (fs.existsSync(promptsRoot)) {
     for (const entry of fs.readdirSync(promptsRoot, { withFileTypes: true })) {

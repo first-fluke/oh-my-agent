@@ -42,6 +42,9 @@ describe("runEmit", () => {
     expect(report.agentSkills).toBeDefined();
     expect(report.agentPlugin).toBeDefined();
     expect(report.claudePlugin).toBeDefined();
+    expect(
+      existsSync(path.join(outDir, ".agents/plugins/marketplace.json")),
+    ).toBe(true);
     expect(report.agentsMd).toBeDefined();
     expect(
       report.cliDocs?.files.map((file) => path.basename(file.outPath)),

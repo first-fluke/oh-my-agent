@@ -3,12 +3,17 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { PRESETS } from "../../constants/index.js";
 import { AGENT_CONFIG_ALIASES } from "../../platform/agent-config/agent-ids.js";
+import {
+  inspectWorkflowAvailability,
+  type WorkflowAvailability,
+} from "../../platform/skills-installer/workflow-dependencies.js";
 
 export interface WorkflowManifestCoverage {
   name: string;
   referencedSkills: string[];
   missingSkills: string[];
   unreadableFiles: string[];
+  availability: WorkflowAvailability;
 }
 
 export interface InstallManifestSummary {
@@ -191,6 +196,7 @@ export function inspectInstallManifests(
       referencedSkills: [...skills].sort(),
       missingSkills: missingSkills.sort(),
       unreadableFiles: [...unreadable].sort(),
+      availability: inspectWorkflowAvailability(root, name),
     });
   }
   return summary;
@@ -221,6 +227,24 @@ export function renderInstallManifestSummary(
       ? `Workflow referenced skill manifests: ${summary.workflows.length - incomplete.length}/${summary.workflows.length} complete`
       : "Workflow referenced skill manifests: no workflow files found",
   );
+  const disabled = summary.workflows.filter(
+    (workflow) => !workflow.availability.available,
+  );
+  lines.push(
+    `Exposed workflows: ${summary.workflows.length - disabled.length}/${summary.workflows.length} have valid required skill manifests`,
+  );
+  for (const workflow of disabled) {
+    const state = workflow.availability;
+    lines.push(
+      `/${workflow.name} disabled: ${state.issue ?? `install or repair required skills ${state.missingRequired.join(", ")}`}`,
+    );
+  }
+  for (const workflow of summary.workflows) {
+    if (workflow.availability.missingConditional.length)
+      lines.push(
+        `/${workflow.name} conditional skills (add when using that branch): ${workflow.availability.missingConditional.join(", ")}`,
+      );
+  }
   for (const workflow of incomplete) {
     const details = [
       ...(workflow.missingSkills.length
@@ -235,10 +259,20 @@ export function renderInstallManifestSummary(
   lines.push(
     "Static manifest references only, including conditional branches; resource contents, tools and execution are not verified.",
   );
-  if (unavailable.size || incomplete.length || summary.inventoryIssue) {
+  if (
+    unavailable.size ||
+    incomplete.length ||
+    disabled.length ||
+    summary.inventoryIssue
+  ) {
     const doctorCommand = options.global ? "oma doctor --global" : "oma doctor";
+    const installCommand = options.global
+      ? "oma --global install"
+      : "oma install";
+    const linkCommand = options.global ? "oma --global link" : "oma link";
     lines.push(
-      `Run ${doctorCommand} from this install root; choose Select individually to add missing skills. Inspect unreadable files manually.`,
+      `Run ${doctorCommand} from this install root to inspect missing or unreadable manifests.`,
+      `Use ${installCommand} and Select individually to add required skills without expanding to All. After repairing manifests manually, run ${linkCommand} to refresh workflow commands.`,
     );
   }
   return lines;

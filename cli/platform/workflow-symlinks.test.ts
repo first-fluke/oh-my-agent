@@ -49,6 +49,12 @@ describe("createVendorWorkflowSymlinks", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "oma-wf-symlink-"));
     writeWorkflow(root, WF, WF_BODY);
+    const skillDir = join(root, ".agents", "skills", "oma-docs");
+    mkdirSync(skillDir, { recursive: true });
+    writeFileSync(
+      join(skillDir, "SKILL.md"),
+      "---\nname: oma-docs\ndescription: Docs fixture\n---\n",
+    );
   });
   afterEach(() => rmSync(root, { recursive: true, force: true }));
 

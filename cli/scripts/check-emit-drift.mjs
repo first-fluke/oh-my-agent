@@ -62,9 +62,24 @@ function diffMarketplace(scratchDir) {
     ];
   const freshContent = stripVersion(readFileSync(fresh, "utf-8"));
   const committedContent = stripVersion(readFileSync(committed, "utf-8"));
-  return freshContent === committedContent
-    ? []
-    : [`changed: ${MARKETPLACE_REL}`];
+  const issues =
+    freshContent === committedContent ? [] : [`changed: ${MARKETPLACE_REL}`];
+  issues.push(...diffTree(scratchDir, join(".claude-plugin", "domains"), true));
+  for (const rel of [
+    join(".claude-plugin", "plugin.json"),
+    join(".agents", "plugins", "marketplace.json"),
+  ]) {
+    const fresh = join(scratchDir, rel);
+    const committed = join(REPO_ROOT, rel);
+    if (
+      !existsSync(fresh) ||
+      !existsSync(committed) ||
+      stripVersion(readFileSync(fresh, "utf8")) !==
+        stripVersion(readFileSync(committed, "utf8"))
+    )
+      issues.push(`changed or missing: ${rel}`);
+  }
+  return issues;
 }
 
 /** Relative paths of every regular file under `dir`, sorted. */
@@ -81,7 +96,7 @@ function listFilesRecursive(dir, prefix = "") {
   return files.sort();
 }
 
-function diffTree(scratchDir, rel) {
+function diffTree(scratchDir, rel, normalizeVersions = false) {
   const fresh = join(scratchDir, rel);
   const committed = join(REPO_ROOT, rel);
   if (!existsSync(fresh)) return [`fresh emit did not produce ${rel}/`];
@@ -104,7 +119,12 @@ function diffTree(scratchDir, rel) {
     if (!committedSet.has(file)) continue;
     const freshContent = readFileSync(join(fresh, file));
     const committedContent = readFileSync(join(committed, file));
-    if (!freshContent.equals(committedContent)) {
+    if (
+      normalizeVersions && file.endsWith("plugin.json")
+        ? stripVersion(freshContent.toString()) !==
+          stripVersion(committedContent.toString())
+        : !freshContent.equals(committedContent)
+    ) {
       problems.push(`changed: ${join(rel, file)}`);
     }
   }

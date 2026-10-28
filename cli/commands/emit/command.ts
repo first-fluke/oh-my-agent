@@ -3,7 +3,10 @@ import type { Command } from "commander";
 import { emitAgentPlugin } from "../../platform/emit/agent-plugin.js";
 import { emitAgentSkills } from "../../platform/emit/agent-skills.js";
 import { emitAgentsMd } from "../../platform/emit/agents-md.js";
-import { emitClaudePlugin } from "../../platform/emit/claude-plugin.js";
+import {
+  emitClaudePlugin,
+  emitCodexMarketplace,
+} from "../../platform/emit/claude-plugin.js";
 import { emitCliDocs } from "../../platform/emit/cli-docs.js";
 import type { AgentSkillsEmitReport } from "../../platform/emit/types.js";
 import {
@@ -74,6 +77,10 @@ export function runEmit(options: RunEmitOptions): EmitRunReport {
     report.claudePlugin = emitClaudePlugin(
       repoRoot,
       join(outDir, ".claude-plugin"),
+    );
+    report.claudePlugin.codexMarketplacePath = emitCodexMarketplace(
+      repoRoot,
+      join(outDir, ".agents", "plugins"),
     );
   }
   if (target === "agents-md" || target === "all") {

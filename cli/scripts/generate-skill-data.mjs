@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DOMAIN_PRESETS } from "../platform/domain-presets.ts";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const cliDir = resolve(scriptDir, "..");
@@ -34,6 +35,7 @@ const CATEGORY_ORDER = [
 ];
 
 const PRESETS = {
+  security: DOMAIN_PRESETS.security.skills,
   fullstack: [
     "oma-architecture",
     "oma-brainstorm",
@@ -75,16 +77,7 @@ const PRESETS = {
     "oma-scm",
     "oma-dev-workflow",
   ],
-  frontend: [
-    "oma-architecture",
-    "oma-brainstorm",
-    "oma-design",
-    "oma-frontend",
-    "oma-pm",
-    "oma-qa",
-    "oma-debug",
-    "oma-scm",
-  ],
+  frontend: DOMAIN_PRESETS.frontend.skills,
   backend: [
     "oma-architecture",
     "oma-brainstorm",
@@ -116,16 +109,7 @@ const PRESETS = {
     "oma-debug",
     "oma-scm",
   ],
-  research: [
-    "oma-scholar",
-    "oma-market",
-    "oma-pdf",
-    "oma-hwp",
-    "oma-academic-writing",
-    "oma-search",
-    "oma-translation",
-    "oma-scm",
-  ],
+  research: DOMAIN_PRESETS.research.skills,
   content: [
     "oma-design",
     "oma-image",
