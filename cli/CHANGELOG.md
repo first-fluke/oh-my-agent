@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.19.0...cli-v20.20.0) (2026-10-28)
+
+
+### Features
+
+* **install:** scope native plugins and workflow availability ([57fde58](https://github.com/first-fluke/oh-my-agent/commit/57fde5804aecccfb5fe0e958d5d6d5a1e0fdc010))
+
 ## [20.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.18.0...cli-v20.19.0) (2026-10-28)
 
 
