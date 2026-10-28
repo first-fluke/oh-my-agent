@@ -7,7 +7,7 @@ import { parse as parseYaml } from "yaml";
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 describe("Stargazers Daily workflow", () => {
-  it("uses a collaborator token for the restricted stargazer listing API", () => {
+  it("uses the dedicated collaborator read token for stargazer listings", () => {
     const workflow = parseYaml(
       readFileSync(
         resolve(PROJECT_ROOT, ".github/workflows/stargazers-daily.yml"),
@@ -28,7 +28,7 @@ describe("Stargazers Daily workflow", () => {
     );
 
     expect(tracker?.env?.GH_TOKEN).toBe(
-      "$" + "{{ secrets.ACTION_SYNC_TOKEN }}",
+      "$" + "{{ secrets.STARGAZERS_READ_TOKEN }}",
     );
     expect(track.permissions).toEqual({ contents: "write" });
   });
