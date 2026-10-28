@@ -48,7 +48,7 @@ oma doctor
 
 An existing CLI installation can start from the second command. Use
 `oma install --help` for preset names and provider options. The
-[bootstrap installer](./installation.md#method-1-one-liner-install) also prepares
+[bootstrap installer](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#method-1-one-liner-install) also prepares
 the runtime dependencies before interactive setup.
 
 | Preset | First task | Applicable workflow examples |
@@ -58,7 +58,7 @@ the runtime dependencies before interactive setup.
 | `research` | Find papers and compare their evidence | Ask for a cited literature search |
 | `all` | Coordinate a feature across UI, API, and data | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
 
-The [ten named presets](./installation.md#presets) are accepted by `--preset`.
+The [ten named presets](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) are accepted by `--preset`.
 An unknown name, an empty value, or `custom` is rejected before installation.
 To select individual skills, run `oma install` interactively and choose Custom.
 Without `--preset`, unattended `--yes`/CI setup selects `all`.
@@ -66,13 +66,13 @@ Without `--preset`, unattended `--yes`/CI setup selects `all`.
 The frontend preset selects eight skills. Presets select skill content; the
 installer still sets up shared files, all workflow and agent definitions, hooks,
 and providers. Some workflows need skills outside a domain preset. Check
-[workflow dependencies](./installation.md#workflows-that-need-skills-outside-a-preset)
+[workflow dependencies](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)
 before using them, or select `all` for every workflow. A smaller preset on an
 existing installation does not remove other skills.
 
 Provider choices are independent of presets. For example, add
 `--semantic-memory none` when the project does not need a semantic-memory
-service. See [installation effects](./installation.md#what-the-installer-also-does-by-default)
+service. See [installation effects](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default)
 for the other files and integrations the runtime configures.
 
 The install summary lists selected skills and checks the skill manifests present,

@@ -48,4 +48,4 @@ These fixtures create temporary directories and fake CLI commands; the integrati
 
 A passing fixture run does not establish a working Claude Code session. In the actual target project, inspect the receipt/configuration, run `oma doctor`, restart the session, and exercise the relevant prompt and Stop behavior while checking their observed effects. CLI availability, credentials, provider behavior, and host hook policy need their own evidence.
 
-For the same reproduce–fix–verify approach on another failure, start with [debugging a failing test](../tasks/debug-failing-tests.md). [Choose a setup](../getting-started/choose-setup.md) explains when the project runtime is needed.
+For the same reproduce–fix–verify approach on another failure, start with [debugging a failing test](https://firstfluke.com/oh-my-agent/docs/tasks/debug-failing-tests/). [Choose a setup](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/) explains when the project runtime is needed.

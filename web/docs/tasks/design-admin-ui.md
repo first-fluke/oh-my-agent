@@ -45,4 +45,4 @@ For new admin/product-interface direction, the [routing contract](https://github
 
 Those external instructions may need their own downloads or runtime tools. The existing stack, brand, CJK coverage, WCAG target, and reduced-motion requirements remain constraints. Loading instructions does not render or verify the UI.
 
-Use the project's frontend specialist for implementation. For project hooks and workflows, [choose a runtime setup](../getting-started/choose-setup.md#install-a-skill-preset) that includes `oma-design`.
+Use the project's frontend specialist for implementation. For project hooks and workflows, [choose a runtime setup](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/#install-a-skill-preset) that includes `oma-design`.

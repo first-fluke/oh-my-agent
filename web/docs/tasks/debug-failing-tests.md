@@ -45,4 +45,4 @@ Check that the regression fails for the original behavior and passes with the fi
 
 The agent uses your project's test runner and configured source-navigation tools. The example requires existing Bun and repository development dependencies. These plugin fixtures are skipped on Windows; use a failing test supported by your platform. Skill loading does not install dependencies or repair a missing service.
 
-See the [plugin-hook repair example](../examples/plugin-hook-repair.md) for the actual source change and fixture boundaries. For managed execution or project hooks, [choose a runtime setup](../getting-started/choose-setup.md#install-a-skill-preset) that includes `oma-debug`.
+See the [plugin-hook repair example](https://firstfluke.com/oh-my-agent/docs/examples/plugin-hook-repair/) for the actual source change and fixture boundaries. For managed execution or project hooks, [choose a runtime setup](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/#install-a-skill-preset) that includes `oma-debug`.

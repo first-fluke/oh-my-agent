@@ -42,4 +42,4 @@ Open each cited location and verify that the trigger reaches it. Re-run the narr
 
 The agent needs access to the diff, local source, and the project's existing check tools. Browser, security, and performance checks need their corresponding target and tooling. Loading the skill does not provision those dependencies.
 
-For a confirmed failure, continue with [debugging a failing test](./debug-failing-tests.md). If you want project hooks or team workflows, [choose a runtime setup](../getting-started/choose-setup.md#install-a-skill-preset) that includes `oma-qa`.
+For a confirmed failure, continue with [debugging a failing test](https://firstfluke.com/oh-my-agent/docs/tasks/debug-failing-tests/). If you want project hooks or team workflows, [choose a runtime setup](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/#install-a-skill-preset) that includes `oma-qa`.
