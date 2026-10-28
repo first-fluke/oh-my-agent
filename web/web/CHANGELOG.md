@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.7.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.6.0...web-v11.7.0) (2026-10-28)
+
+
+### Features
+
+* **web:** add task guides and a worked repair ([95a1e51](https://github.com/first-fluke/oh-my-agent/commit/95a1e51e578ec3ba6099a66f111e7c4893c98081))
+
 ## [11.6.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.5.0...web-v11.6.0) (2026-10-27)
 
 
