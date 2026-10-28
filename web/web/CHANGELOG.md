@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.7.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.7.0...web-v11.7.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **docs:** resolve setup links from fallback locales ([d870a5e](https://github.com/first-fluke/oh-my-agent/commit/d870a5ec96a3bd3bffd1efd4e93f9d2052d89d26))
+
 ## [11.7.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.6.0...web-v11.7.0) (2026-10-28)
 
 
