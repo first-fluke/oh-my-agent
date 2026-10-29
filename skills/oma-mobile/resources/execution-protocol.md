@@ -5,10 +5,11 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 
 ## Step 1: Analyze
 - Read the task requirements carefully
-- Identify target platform: check for `Package.swift` (Swift iOS), `pubspec.yaml` (Flutter), or `package.json` + `react-native` dep (React Native)
+- Identify target platform: check for `Package.swift` (Swift iOS), `settings.gradle.kts` + `com.android.application` plugin (Kotlin Android), `pubspec.yaml` (Flutter), or `package.json` + `react-native` dep (React Native)
 <!-- oma-docs:ignore-start -->
 - **If Swift (Package.swift detected)**: identify which `Features/` modules are affected; check for `Core/Networking/openapi.yaml`
 <!-- oma-docs:ignore-end -->
+- **If Kotlin Android**: identify which `ui/<feature>` slices are affected; read the `openApiGenerate {}` block in `app/build.gradle.kts` for the spec path and generated packages; find the Hilt module that constructs the generated `*Api` (Ktor engine lives there, not in repositories)
 - **If Flutter**: identify screens, widgets, and Riverpod/Bloc providers
 - **If React Native**: identify screens, query/mutation hooks (`src/features/*/queries.ts`), Zustand stores, and navigation types
 - Explore existing code through the configured `code_intelligence` capability. If it is unavailable or times out, do not native-search feature roots. Native search is only for paths outside this project or ignored paths; record that limit.
@@ -17,6 +18,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 
 ## Step 2: Plan
 - **Swift**: plan using `App/Core/Features/Shared` layers; define the `@Observable` view model state enum; identify which `Operations` + `Components` types the feature needs from the generated `Client`
+- **Kotlin Android**: plan using `app/{ui,data,di}`; define the sealed `UiState` the `@HiltViewModel` exposes through `StateFlow`; identify which generated `*Api` operations and `…generated.model` types the feature needs; decide whether a Room-backed repository cache is required
 - **Flutter**: decide on feature structure using Clean Architecture; define entities (domain) and repository interfaces; plan state management (Riverpod providers); identify navigation routes (GoRouter)
 - **React Native**: define the query key factory and query/mutation hooks (TanStack Query = repository layer); decide Zustand store shape for client state; plan typed React Navigation routes; decide persistence needs (MMKV persister, keychain for secrets)
 - Plan offline-first strategy if required
@@ -24,20 +26,20 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 
 ## Step 3: Implement
 - **Honor the task's `test_approach`** (see `../references/_shared/core/test-approach.md`): for `tdd` tasks, write and run the focused test first (record the RED failure), make the minimal change (GREEN), then continue
-- Create/modify files in this order (Flutter shown; Swift maps to Core → Features → Tests, RN to api → queries/mutations → store → ui → navigation → tests):
+- Create/modify files in this order (Flutter shown; Swift maps to Core → Features → Tests, Kotlin to data → di → ui/<feature> → ui/navigation → tests, RN to api → queries/mutations → store → ui → navigation → tests):
   1. Domain: entities and repository interfaces
-  2. Data: models, API clients (Dio / axios / generated Client), repository implementations
-  3. Presentation: providers/hooks/view models, screens, widgets
-  4. Navigation: GoRouter routes / typed React Navigation routes / router-owned NavigationStack
+  2. Data: models, API clients (Dio / axios / generated Client / generated `*Api`), repository implementations
+  3. Presentation: providers/hooks/view models, screens, widgets, composables
+  4. Navigation: GoRouter routes / typed React Navigation routes / router-owned NavigationStack / `@Serializable` Navigation Compose routes
   5. Tests: unit + widget/component tests
-- Use the platform's template as reference: `resources/screen-template.dart` (Flutter), `resources/screen-template.swift` (Swift), `resources/screen-template.tsx` (React Native)
+- Use the platform's template as reference: `resources/screen-template.dart` (Flutter), `resources/screen-template.swift` (Swift), `resources/screen-template.tsx` (React Native); Kotlin uses `variants/kotlin-android/snippets.md` §5–§6 (view model + screen)
 - Follow Clean Architecture layers strictly
 
 ## Step 4: Verify
 - Check applicable items in `resources/checklist.md`
 - Use `../references/_shared/core/common-checklist.md` only for cross-domain verification
 - For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../references/_shared/core/test-approach.md`
-- Verify supported target platforms; native Swift iOS does not require Android checks. Respect the build policy when selecting tests.
+- Verify supported target platforms; native Swift iOS does not require Android checks and native Kotlin Android does not require iOS checks. Respect the build policy when selecting tests (Gradle test tasks compile Kotlin).
 - Verify 60fps performance (no jank)
 - Check dark mode support
 

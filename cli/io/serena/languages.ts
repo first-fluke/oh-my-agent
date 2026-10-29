@@ -26,6 +26,23 @@ const BACKEND_VARIANT_MAP: Record<string, string> = {
   rust: "rust",
 };
 
+// oma-mobile stack.yaml `language` → Serena language server. `flutter` and
+// `react-native` are already covered by SKILL_LANGUAGE_MAP / oma-frontend;
+// the native variants need their own LSP (kotlin ~ Android, swift ~ iOS).
+const MOBILE_VARIANT_MAP: Record<string, string> = {
+  kotlin: "kotlin",
+  swift: "swift",
+};
+
+function readStackLanguage(stackYaml: string): string | undefined {
+  try {
+    const content = readFileSync(stackYaml, "utf-8");
+    return content.match(/^language:\s*(.+)$/m)?.[1]?.trim();
+  } catch {
+    return undefined; // best-effort
+  }
+}
+
 /**
  * Resolve Serena language server keys from selected skills and backend variant.
  */
@@ -75,20 +92,22 @@ export function inferSerenaLanguages(cwd: string): string[] {
   // Check backend stack.yaml for language
   const stackYaml = join(skillsDir, "oma-backend", "stack", "stack.yaml");
   if (existsSync(stackYaml)) {
-    try {
-      const content = readFileSync(stackYaml, "utf-8");
-      const match = content.match(/^language:\s*(.+)$/m);
-      if (match?.[1]) {
-        const variant = match[1].trim();
-        const mapped = BACKEND_VARIANT_MAP[variant];
-        if (mapped) languages.add(mapped);
-      }
-    } catch {
-      // best-effort
-    }
+    const variant = readStackLanguage(stackYaml);
+    const mapped = variant ? BACKEND_VARIANT_MAP[variant] : undefined;
+    if (mapped) languages.add(mapped);
   } else if (existsSync(join(skillsDir, "oma-backend"))) {
     // backend exists but no stack — default to typescript
     languages.add("typescript");
+  }
+
+  // Check mobile stack.yaml for a native variant (kotlin-android / swift-ios).
+  // Flutter's `dart` is already added via SKILL_LANGUAGE_MAP; the project-file
+  // intersection in deriveSerenaLanguages prunes it from a Kotlin-only repo.
+  const mobileStackYaml = join(skillsDir, "oma-mobile", "stack", "stack.yaml");
+  if (existsSync(mobileStackYaml)) {
+    const variant = readStackLanguage(mobileStackYaml);
+    const mapped = variant ? MOBILE_VARIANT_MAP[variant] : undefined;
+    if (mapped) languages.add(mapped);
   }
 
   if (languages.size === 0) {

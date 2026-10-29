@@ -33,7 +33,7 @@ This table is the authoritative list of installed skills. It is generated from e
 | [`oma-hwp`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-hwp/SKILL.md) | Convert Hangul HWP, HWPX, or HWPML documents to Markdown with kordoc. Use for text, table, and image extraction from these formats. |
 | [`oma-image`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-image/SKILL.md) | Generate raster images or reference-guided variations through the OMA image CLI. Use for image assets or explicit vendor comparisons; pixel editing uses an editor. |
 | [`oma-market`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-market/SKILL.md) | Research customer pain points, trends, and competitors through the OMA market engine. Use for market discovery or voice-of-customer analysis. |
-| [`oma-mobile`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-mobile/SKILL.md) | Implement Flutter, React Native, or native Swift apps. Use for mobile screens, widgets, platform integrations, and application data flows. |
+| [`oma-mobile`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-mobile/SKILL.md) | Implement Flutter, React Native, native Swift, or native Kotlin Android apps. Use for mobile screens, widgets, platform integrations, and application data flows. |
 | [`oma-observability`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-observability/SKILL.md) | Design or troubleshoot telemetry, SLOs, and incident diagnostics. Route to the relevant signal, system boundary, or vendor guide. |
 | [`oma-orchestration`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-orchestration/SKILL.md) | Dispatch and supervise parallel specialist agents with durable task state. Use when automated multi-agent execution is requested. |
 | [`oma-pdf`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-pdf/SKILL.md) | Extract PDF text, headings, tables, and images into Markdown using opendataloader-pdf. Use for PDF parsing, not PDF layout creation. |
@@ -287,6 +287,7 @@ Project-specific `stack/stack.yaml`, `stack/tech-stack.md`, snippets, and API te
 **Tech stacks:**
 - Flutter/Dart: Riverpod/Bloc (state management), Dio with interceptors (API), GoRouter (navigation), Material Design 3 (Android) + iOS HIG.
 - Swift native iOS (iOS 17+): SwiftUI + `@Observable` (Observation framework), Apple `swift-openapi-generator` for API clients, `App/Core/Features/Shared` layout.
+- Kotlin native Android (API 26+): Jetpack Compose + Material 3, `@HiltViewModel` + `StateFlow`, OpenAPI Generator (`kotlin` / `jvm-ktor`) clients over Ktor with an injected OkHttp engine, `app/{ui,data,di}` + `api-client` layout.
 
 **Core rules:**
 - Riverpod/Bloc for state management (no raw setState for complex logic)
@@ -294,8 +295,9 @@ Project-specific `stack/stack.yaml`, `stack/tech-stack.md`, snippets, and API te
 - Dio with interceptors for API calls; handle offline gracefully
 - 60fps target; test on both platforms
 - Swift: use `@Observable` over `ObservableObject` on iOS 17+; generate API clients from OpenAPI specs via `swift-openapi-generator`
+- Kotlin: call the generated `*Api` for spec-covered endpoints; Ktor is an engine-agnostic layer, so the OkHttp engine is injected where the client is built and `MockEngine` replaces it in tests
 
-**Platform seeds:** `variants/` ships `flutter/`, `react-native/`, and `swift-ios/`, each with `stack.yaml`, `tech-stack.md`, `snippets.md`, and an API template, plus the shared `stack.schema.json`. They are starter material for `/stack-set`, not required reading for edits to existing code.
+**Platform seeds:** `variants/` ships `flutter/`, `react-native/`, `swift-ios/`, and `kotlin-android/`, each with `stack.yaml`, `tech-stack.md`, `snippets.md`, and an API template, plus the shared `stack.schema.json`. They are starter material for `/stack-set`, not required reading for edits to existing code.
 
 ---
 

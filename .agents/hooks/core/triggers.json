@@ -2084,7 +2084,14 @@
     },
     "oma-mobile": {
       "keywords": {
-        "*": ["riverpod", "cupertino", "swiftui", "swift-openapi-generator"],
+        "*": [
+          "riverpod",
+          "cupertino",
+          "swiftui",
+          "swift-openapi-generator",
+          "jetpack compose",
+          "ktor client"
+        ],
         "en": [
           "flutter screen",
           "react native view",

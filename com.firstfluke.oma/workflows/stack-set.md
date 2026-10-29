@@ -72,12 +72,21 @@ For Angular, read manifest contents to detect the rest of the stack:
 | File | Detection |
 |:---|:---|
 | `Package.swift`, `*.xcodeproj`, `*.xcworkspace`, `Podfile` | Swift / iOS native |
+| `settings.gradle.kts` (or `settings.gradle`) with a module applying `com.android.application`, and **no** `pubspec.yaml` / `react-native` dependency | Kotlin / Android native |
 | `pubspec.yaml` | Flutter |
 | `package.json` with a `react-native` dependency | React Native |
 
 For Swift / iOS native, additionally inspect the project to detect the UI framework:
 - Look for `import SwiftUI` in source files or a `SwiftUI` framework dependency in `Package.swift`.
 - Default to **SwiftUI** when ambiguous.
+
+For Kotlin / Android native, additionally inspect the Gradle files:
+- Flutter and React Native repos also contain an `android/` Gradle project; those are **host shells**, not Kotlin native. Classify as Kotlin native only when the Gradle project is the app itself.
+- UI: `org.jetbrains.kotlin.plugin.compose` or `androidx.compose.*` dependencies → Jetpack Compose; otherwise XML Views. Default to **Compose** when ambiguous.
+- DI: `com.google.dagger.hilt.android` → Hilt; `io.insert-koin` → Koin.
+- API generator: an `openApiGenerate {}` block from `org.openapi.generator` → record `generatorName`, `library` (e.g. `jvm-ktor`), `inputSpec` (= `api_spec`), and the `apiPackage`/`modelPackage`.
+- HTTP: `io.ktor:ktor-client-*` → Ktor Client; record the engine artifact (`ktor-client-okhttp`, `ktor-client-android`, `ktor-client-cio`) separately. `com.squareup.retrofit2` → Retrofit; bare `com.squareup.okhttp3` → OkHttp.
+- Local storage: `androidx.room` → Room; `androidx.datastore` → DataStore.
 
 ### Resolve `target_skill`
 
@@ -147,6 +156,8 @@ Detected mobile stack:
 
 Correct? (Y/n) or modify:
 ```
+
+For Kotlin / Android native, present the equivalent block with `Language: Kotlin`, `UI: Compose`, `DI: Hilt`, `HTTP: ktor-client (engine: okhttp)`, `API generator: openapi-generator (kotlin / jvm-ktor)`, `API spec: {inputSpec}`, `Structure: {modules}`, `Test: JUnit`.
 
 For Flutter or React Native mobile detection, present an equivalent confirmation block using the relevant fields (framework, sdk version, test framework, etc.).
 
@@ -372,6 +383,74 @@ Generate a CRUD service built on the generated `Client` (using `Operations.*` ca
 
 ---
 
+### Mobile path — Kotlin / Android native
+
+**Adapt, not copy (amendment E):** Seed from `.agents/skills/oma-mobile/variants/kotlin-android/` as the baseline, then adapt every value to match the detected project. Specifically:
+
+- Replace the `com.example.*` placeholder packages with the project's `namespace` / `applicationId` and the generated `apiPackage` / `modelPackage` / `invokerPackage` read from `openApiGenerate {}`.
+- Set `api_spec` to the actual `inputSpec` path; set `http_client` to the detected client and note the detected Ktor engine artifact in a comment (`ktor-client-okhttp` / `ktor-client-android` / `ktor-client-cio`). If the project uses Retrofit or bare OkHttp instead of Ktor, record that and skip the Ktor snippets rather than inventing a migration.
+- Set `structure` to the real Gradle module list from `settings.gradle.kts` (e.g. `app,api-client` or `app,core:data,feature:*`).
+- Set `minSdk` / `compileSdk` / Kotlin / AGP / Compose BOM versions to the values detected in the Gradle files; default `minSdk 26` only when not specified.
+- Populate the Hilt module snippet with the real generated `*Api` class names (per OpenAPI tag; `DefaultApi` when untagged).
+- Product flavors: when `productFlavors {}` exists, `verify.tests.cmd` must name a real flavored task (e.g. `:app:testDemoDebugUnitTest`), not `testDebugUnitTest`.
+
+Do **not** blind-copy the variant files; the generated `stack/` must be project-specific.
+
+#### stack.yaml — mandatory fields
+```yaml
+language: kotlin
+framework: android
+ui: compose                  # or views — adapt to detected value
+di: hilt                     # or koin — adapt to detected value
+http_client: ktor-client     # engine artifact noted in a comment; or retrofit / okhttp
+serialization: kotlinx-serialization
+api_generator: openapi-generator   # org.openapi.generator, kotlin / jvm-ktor; omit when the project has none
+api_spec: {actual_inputSpec_path}
+structure: {gradle_modules}
+test: junit
+source: detected
+detected_from:
+  - {manifest_file}          # e.g. settings.gradle.kts, app/build.gradle.kts
+verify:                      # consumed by `oma verify mobile` (see _shared/core/stack-verify.schema.json)
+  detect: settings.gradle.kts
+  syntax:
+    cmd: "{non_compiling_check_cmd}"   # e.g. ktlint / detekt; Gradle compile tasks are builds — do not default to them
+    skip_if_missing: "{binary}"
+  tests:
+    cmd: "./gradlew --console=plain {detected_unit_test_task} :api-client:test"
+    pass_signal: "BUILD SUCCESSFUL"
+    skip_if_missing: "java"
+```
+
+#### tech-stack.md
+Generate a Kotlin-specific tech stack reference with these MANDATORY sections:
+- Jetpack Compose + Material 3 + `ViewModel`/`StateFlow` + Hilt (detected versions)
+- OpenAPI Generator Gradle plugin (`kotlin` / `jvm-ktor` / `kotlinx_serialization`) — `openApiGenerate {}` options, `preBuild` dependency, generated-package names, `schemaMappings` / `BigDecimal` gotchas
+- Ktor Client as an engine-agnostic layer: which engine the app injects (OkHttp by default) and that tests inject `MockEngine`
+- Module layout from `settings.gradle.kts` (app = Android + Hilt graph, api-client = generated srcDir + shared `Json` + contract tests, any detected feature/core modules)
+- API spec provenance: where `{api_spec}` comes from and how it is kept in sync with the backend producer
+- Test framework (JUnit + coroutines-test + `ktor-client-mock`; Compose UI tests; Maestro) and linter/formatter (ktlint / detekt if present)
+
+#### snippets.md — mandatory Kotlin snippet set (all required)
+- [ ] Gradle wiring: `openApiGenerate {}` block, `preBuild` dependency, `:api-client` srcDir module
+- [ ] Shared `Json` codec with the `BigDecimal` contextual serializer
+- [ ] Hilt network module constructing the generated `*Api` with the detected Ktor engine and transport plugins (auth, timeout, headers, logging)
+- [ ] Repository wrapping the generated `*Api` (`HttpResponse<T>` → domain, typed failures)
+- [ ] `@HiltViewModel` with a sealed `UiState` on `StateFlow`
+- [ ] Compose screen consuming the view model (loading / error-with-retry / empty / content)
+- [ ] Type-safe Navigation Compose routes
+- [ ] Generated-client contract test with `MockEngine` in `:api-client`
+- [ ] ViewModel unit test (`runTest` + fake repository)
+
+#### api-template.kt
+Generate a CRUD repository built on the generated `*Api`. This is the Kotlin analogue of the backend `api-template.*`. The template must:
+- Inject and call the generated `*Api` (not a hand-rolled Ktor `HttpClient` request builder or raw OkHttp calls).
+- Implement list, get-by-id, create, update, and delete operations through generated methods and `HttpResponse<T>`.
+- Map non-2xx statuses and `IOException` to typed domain failures; rethrow `CancellationException`.
+- Use `suspend` / `Flow` throughout.
+
+---
+
 ### Mobile path — Flutter / React Native
 
 Seed from `.agents/skills/oma-mobile/variants/flutter/` or `.agents/skills/oma-mobile/variants/react-native/` respectively (same **adapt, not copy** rule as amendment E): generate `stack.yaml` (with a runnable `verify:` block, e.g. `flutter analyze` / `flutter test`, or `bunx tsc --noEmit` / `jest`), `tech-stack.md`, `snippets.md`, and an api-template in the detected idiom, replacing variant placeholders with the project's actual module names, SDK versions, and state-management library.
@@ -411,6 +490,15 @@ Confirm generated files meet requirements. Verification commands must follow the
 - [ ] `api-template.swift` uses the generated client — not hand-rolled `URLSession` request construction
 - [ ] `tech-stack.md` documents where `api_spec` originates and how it syncs from the backend producer
 - [ ] Module names in snippets reflect real `Features/` modules detected in the project, not generic placeholders
+
+### Mobile (Kotlin) checks
+- [ ] `stack.yaml` has `language`, `ui`, `di`, `http_client`, `api_generator` (when present), `api_spec`, and `structure` fields populated with project-specific values (not variant defaults)
+- [ ] `stack.yaml` has a `verify:` block with runnable `syntax.cmd` and `tests.cmd`; `tests.cmd` names a real Gradle task for the detected flavors
+- [ ] `snippets.md` includes the `openApiGenerate {}` snippet and at least one snippet that calls a generated `*Api` method and unwraps `HttpResponse<T>`
+- [ ] The Ktor engine appears only where the client is constructed (Hilt module) and as `MockEngine` in the contract test — never inside repositories or composables
+- [ ] `api-template.kt` uses the generated client — not hand-assembled URL paths or JSON bodies
+- [ ] `tech-stack.md` documents where `api_spec` originates and how it syncs from the backend producer
+- [ ] Package and module names in snippets reflect the real `namespace`, generated packages, and `settings.gradle.kts` modules, not `com.example.*` placeholders
 
 ---
 

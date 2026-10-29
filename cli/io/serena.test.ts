@@ -283,6 +283,42 @@ describe("inferSerenaLanguages", () => {
     expect(result).toContain("typescript");
   });
 
+  it("should add kotlin when the mobile stack.yaml is the kotlin-android variant", () => {
+    mockFs.existsSync.mockImplementation(
+      (p: string) =>
+        p.endsWith("oma-mobile") ||
+        p.endsWith(join("oma-mobile", "stack", "stack.yaml")),
+    );
+    mockFs.readFileSync.mockReturnValue(
+      "language: kotlin\nframework: android\nsource: detected\n",
+    );
+    const result = inferSerenaLanguages("/project");
+    expect(result).toContain("kotlin");
+    expect(result).toContain("dart"); // skill default stays; pruned later by project detection
+  });
+
+  it("should add swift when the mobile stack.yaml is the swift-ios variant", () => {
+    mockFs.existsSync.mockImplementation(
+      (p: string) =>
+        p.endsWith("oma-mobile") ||
+        p.endsWith(join("oma-mobile", "stack", "stack.yaml")),
+    );
+    mockFs.readFileSync.mockReturnValue("language: swift\nsource: variant\n");
+    const result = inferSerenaLanguages("/project");
+    expect(result).toContain("swift");
+  });
+
+  it("should not add a native mobile language for flutter or react-native stacks", () => {
+    mockFs.existsSync.mockImplementation(
+      (p: string) =>
+        p.endsWith("oma-mobile") ||
+        p.endsWith(join("oma-mobile", "stack", "stack.yaml")),
+    );
+    mockFs.readFileSync.mockReturnValue("language: flutter\n");
+    const result = inferSerenaLanguages("/project");
+    expect(result).toEqual(["dart"]);
+  });
+
   it("should fallback to typescript when no skills found", () => {
     mockFs.existsSync.mockReturnValue(false);
     const result = inferSerenaLanguages("/project");

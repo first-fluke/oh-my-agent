@@ -10,28 +10,29 @@ Per-platform tech stacks live under `variants/{platform}/`, mirroring
 | Platform | Stack manifest | Tech stack | Snippets | API template |
 |----------|----------------|-----------|----------|--------------|
 | Swift (iOS native) | `../variants/swift-ios/stack.yaml` | `../variants/swift-ios/tech-stack.md` | `../variants/swift-ios/snippets.md` | `../variants/swift-ios/api-template.swift` |
+| Kotlin (Android native) | `../variants/kotlin-android/stack.yaml` | `../variants/kotlin-android/tech-stack.md` | `../variants/kotlin-android/snippets.md` | `../variants/kotlin-android/api-template.kt` |
 | Flutter | `../variants/flutter/stack.yaml` | `../variants/flutter/tech-stack.md` | `../variants/flutter/snippets.md` | `../variants/flutter/api-template.dart` |
 | React Native | `../variants/react-native/stack.yaml` | `../variants/react-native/tech-stack.md` | `../variants/react-native/snippets.md` | `../variants/react-native/api-template.ts` |
 
-Stack selection: detect from project files (`Package.swift` / `pubspec.yaml` /
-`package.json` + `react-native`), or run `/stack-set` to generate a
+Stack selection: detect from project files (`Package.swift` / `settings.gradle.kts` +
+`com.android.application` / `pubspec.yaml` / `package.json` + `react-native`), or run `/stack-set` to generate a
 project-specific `stack/` from the matching variant baseline. The variant
 `stack.yaml` is the default; `/stack-set` may override any field per project.
 
 ## Stack at a glance
 
-| | Swift iOS | Flutter | React Native |
-|---|---|---|---|
-| Language | Swift 6+ | Dart 3.10+ | TypeScript (strict) |
-| UI | SwiftUI | Flutter / Material 3 | React Native |
-| State | Observation (`@MainActor @Observable`) | Riverpod 3 | Zustand 5 (client) + TanStack Query 5 (server) |
-| Navigation | NavigationStack | GoRouter 17 | React Navigation v7 |
-| HTTP transport | URLSession | Dio | Axios |
-| API/data layer | swift-openapi-generator | Repository (Dio) | TanStack Query + `api/` |
-| Response cache (when required) | hyperoslo/Cache | Drift offline-first repo | TanStack Query |
-| Durable storage | SwiftData / Keychain | Drift / flutter_secure_storage | MMKV / secure-store |
-| Unit test | XCTest / Swift Testing | flutter_test + mocktail | jest + RNTL (matchers built in ≥12.4) |
-| E2E | XCUITest | Maestro | Maestro |
+| | Swift iOS | Kotlin Android | Flutter | React Native |
+|---|---|---|---|---|
+| Language | Swift 6+ | Kotlin 2.1+ | Dart 3.10+ | TypeScript (strict) |
+| UI | SwiftUI | Jetpack Compose / Material 3 | Flutter / Material 3 | React Native |
+| State | Observation (`@MainActor @Observable`) | `ViewModel` + `StateFlow` (Hilt) | Riverpod 3 | Zustand 5 (client) + TanStack Query 5 (server) |
+| Navigation | NavigationStack | Navigation Compose (type-safe routes) | GoRouter 17 | React Navigation v7 |
+| HTTP transport | URLSession | Ktor Client (OkHttp engine; MockEngine in tests) | Dio | Axios |
+| API/data layer | swift-openapi-generator | openapi-generator `kotlin`/`jvm-ktor` | Repository (Dio) | TanStack Query + `api/` |
+| Response cache (when required) | hyperoslo/Cache | Room repository | Drift offline-first repo | TanStack Query |
+| Durable storage | SwiftData / Keychain | Room / DataStore / EncryptedSharedPreferences | Drift / flutter_secure_storage | MMKV / secure-store |
+| Unit test | XCTest / Swift Testing | JUnit + coroutines-test + ktor-client-mock | flutter_test + mocktail | jest + RNTL (matchers built in ≥12.4) |
+| E2E | XCUITest | Maestro | Maestro | Maestro |
 
 ## Repository-layer response cache when required
 
@@ -53,8 +54,9 @@ for the platform-specific implementation.
 
 ## Cross-platform guidelines (shared)
 
-- **Clean Architecture**: domain → data → presentation (or App/Core/Features/Shared
-  on Swift). Business logic never lives in UI widgets/views.
+- **Clean Architecture**: domain → data → presentation (App/Core/Features/Shared
+  on Swift; `app/{ui,data,di}` + `api-client` on Kotlin). Business logic never
+  lives in UI widgets/views/composables.
 - **Platform design**: Material Design 3 on Android, iOS Human Interface
   Guidelines on iOS. Use platform checks for platform-specific behavior.
 - **State management**: no raw `setState`/ad-hoc state for complex logic — use

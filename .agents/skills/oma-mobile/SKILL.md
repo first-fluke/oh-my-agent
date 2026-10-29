@@ -1,6 +1,6 @@
 ---
 name: oma-mobile
-description: "Implement Flutter, React Native, or native Swift apps. Use for mobile screens, widgets, platform integrations, and application data flows."
+description: "Implement Flutter, React Native, native Swift, or native Kotlin Android apps. Use for mobile screens, widgets, platform integrations, and application data flows."
 ---
 
 # Mobile Agent - Cross-Platform Mobile Specialist
@@ -11,7 +11,7 @@ description: "Implement Flutter, React Native, or native Swift apps. Use for mob
 Build, modify, and verify cross-platform mobile application features with clean architecture, platform-appropriate UI, state management, performance, and E2E coverage.
 
 ### Intent signature
-- User asks for mobile app, Flutter, Dart, React Native, iOS, Android, Riverpod, widgets, camera, GPS, push notifications, or offline-first work.
+- User asks for mobile app, Flutter, Dart, React Native, iOS, Android, Jetpack Compose, Kotlin, Riverpod, widgets, camera, GPS, push notifications, or offline-first work.
 - User needs native or cross-platform mobile behavior rather than web frontend work.
 
 ### When to use
@@ -35,8 +35,8 @@ Build, modify, and verify cross-platform mobile application features with clean 
 - Verification results from mobile checks and critical-flow tests
 
 ### Dependencies
-- Flutter/Dart or React Native toolchain as detected from the project
-- Riverpod/Bloc, Dio, platform SDKs, and Maestro where applicable
+- Flutter/Dart, React Native, Swift, or Kotlin/Gradle toolchain as detected from the project
+- Riverpod/Bloc, Dio, Hilt, Ktor, platform SDKs, and Maestro where applicable
 - `resources/execution-protocol.md`, examples, snippets, checklist, and screen template
 
 ### Control-flow features
@@ -60,7 +60,7 @@ Build, modify, and verify cross-platform mobile application features with clean 
 
 ### Transitions
 - If business logic is complex, keep it in domain/data layers before presentation.
-- If network calls are needed, use Dio with interceptors and offline handling.
+- If network calls are needed, use the variant transport (Dio / axios / generated Swift `Client` / generated Kotlin `*Api` over Ktor) with interceptors and offline handling.
 - If a critical user flow changes, add or update Maestro E2E coverage.
 - If backend contracts are missing, coordinate with backend/API work.
 
@@ -86,8 +86,8 @@ Build, modify, and verify cross-platform mobile application features with clean 
 | Report result | `NOTIFY` | Final summary |
 
 ### Tools and instruments
-- Flutter/Dart or React Native stack
-- Riverpod/Bloc, Dio, platform SDKs, Maestro
+- Flutter/Dart, React Native, Swift, or Kotlin Android stack
+- Riverpod/Bloc, Dio, Hilt, Ktor, platform SDKs, Maestro
 - Unit, widget, integration, and E2E test commands
 
 ### Canonical workflow path
@@ -121,8 +121,8 @@ Apply framework, library, architecture, and data-model defaults only when the ta
 2. Riverpod/Bloc for state management (no raw setState for complex logic)
 3. Material Design 3 (Android) + iOS HIG (iOS)
 4. All controllers disposed in `dispose()` method
-5. Use the platform transport with auth/retry/logging interception and offline handling: Flutter uses Dio, React Native uses axios behind TanStack Query, and Swift uses generated `Client` middleware.
-6. 60fps target; verify supported target platforms (Swift iOS needs iOS only)
+5. Use the platform transport with auth/retry/logging interception and offline handling: Flutter uses Dio, React Native uses axios behind TanStack Query, Swift uses generated `Client` middleware, and Kotlin uses Ktor plugins on the generated `*Api` client.
+6. 60fps target; verify supported target platforms (Swift iOS needs iOS only; Kotlin Android needs Android only)
 7. Use Maestro for E2E testing of critical user flows
 8. Swift native: SwiftUI + `@MainActor @Observable` view models (Observation framework, iOS 17+) — non-isolated VMs mutating observed state from a `Task` are a Swift 6 strict-concurrency error
 9. Swift native: use the existing API layer. When the project adopts OpenAPI generation, use its generated Client for covered endpoints; a UI-only edit does not introduce a generator.
@@ -133,22 +133,29 @@ Apply framework, library, architecture, and data-model defaults only when the ta
 14. Swift native: restore edge swipe-back at the route layer — nav-bar-hidden screens (`.toolbar(.hidden, for: .navigationBar)`) lose it, so register push routes via a `swipeBackDestination` wrapper, not per-screen (see `variants/swift-ios/snippets.md` §9)
 15. Flutter: when offline response caching is required, use the existing repository cache; if adding Drift, read cached entities then revalidate (stale-while-revalidate), and invalidate/refresh affected rows on every write; cache decoded entities at the data layer, never at the Dio transport (see `variants/flutter/snippets.md` §3, §10)
 16. React Native: preserve the existing server-state layer; for TanStack Query with explicit `staleTime`/`gcTime` — invalidate affected query keys on every mutation, persist account-scoped cache to MMKV only when offline persistence is required; screens consume query/mutation hooks, never call axios directly (see `variants/react-native/snippets.md`)
+17. Kotlin native: Jetpack Compose + `@HiltViewModel` exposing one `StateFlow<UiState>` collected with `collectAsStateWithLifecycle`; network work in `viewModelScope`, `CancellationException` always rethrown
+18. Kotlin native: use the existing API layer. When the project adopts OpenAPI generation (`org.openapi.generator`, `kotlin` / `jvm-ktor`), call the generated `*Api` for covered endpoints and keep the Ktor engine (OkHttp on device, `MockEngine` in tests) injected where the client is constructed — Ktor is an engine-agnostic layer, not an OkHttp replacement; a UI-only edit does not introduce a generator (see `variants/kotlin-android/snippets.md` §1, §3)
+19. Kotlin native: when response caching is required, use the existing repository cache; for a new Room implementation cache DECODED models with explicit TTL, stale-while-revalidate on reads, upsert/delete on writes — never OkHttp `Cache` or Ktor `HttpCache`; view models depend on an interface seam, not the concrete repository (see `variants/kotlin-android/snippets.md` §8)
+20. Kotlin native: follow the `app/{ui,data,di}` + `api-client` layout; type-safe Navigation Compose routes; Material Design 3; JUnit + `ktor-client-mock` contract tests, Compose UI tests or Maestro for critical flows
 
 ## References
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
 - Code snippets (Swift): `variants/swift-ios/snippets.md`
+- Code snippets (Kotlin Android): `variants/kotlin-android/snippets.md`
 - Code snippets (Flutter): `variants/flutter/snippets.md`
 - Code snippets (React Native): `variants/react-native/snippets.md`
 - Checklist (run before handoff): `resources/checklist.md`
 - Error recovery: `resources/error-playbook.md`
 - Tech stack index (all platforms): `resources/tech-stack.md`
 - Tech stack (Swift): `variants/swift-ios/tech-stack.md`
+- Tech stack (Kotlin Android): `variants/kotlin-android/tech-stack.md`
 - Tech stack (Flutter): `variants/flutter/tech-stack.md`
 - Tech stack (React Native): `variants/react-native/tech-stack.md`
 - Screen template (Flutter): `resources/screen-template.dart`
 - Screen template (Swift): `resources/screen-template.swift`
 - Screen template (React Native): `resources/screen-template.tsx`
 - API service template (Swift): `variants/swift-ios/api-template.swift`
+- API service template (Kotlin Android): `variants/kotlin-android/api-template.kt`
 - API service template (Flutter): `variants/flutter/api-template.dart`
 - API service template (React Native): `variants/react-native/api-template.ts`
 - Variant registry: `variants/README.md`

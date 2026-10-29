@@ -8,7 +8,7 @@
     "$schema": { "type": "string" },
     "language": {
       "type": "string",
-      "enum": ["swift", "flutter", "react-native"],
+      "enum": ["swift", "kotlin", "flutter", "react-native"],
       "description": "Primary implementation language of the variant."
     },
     "framework": {

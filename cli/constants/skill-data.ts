@@ -22,7 +22,7 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-mobile",
-      desc: `Implement Flutter, React Native, or native Swift apps. Use for mobile screens, widgets, platform integrations, and application data flows.`,
+      desc: `Implement Flutter, React Native, native Swift, or native Kotlin Android apps. Use for mobile screens, widgets, platform integrations, and application data flows.`,
     },
   ],
   design: [

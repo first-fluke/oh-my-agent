@@ -117,6 +117,7 @@ Source: `cli/commands/agent/spawn-status.ts`, `cli/platform/agent-config/loaders
     ├── README.md
     ├── stack.schema.json
     ├── flutter/                       ← stack.yaml, tech-stack.md, snippets.md, api-template.dart
+    ├── kotlin-android/                ← stack.yaml, tech-stack.md, snippets.md, api-template.kt
     ├── react-native/                  ← stack.yaml, tech-stack.md, snippets.md, api-template.ts
     └── swift-ios/                     ← stack.yaml, tech-stack.md, snippets.md, api-template.swift
 
@@ -158,7 +159,7 @@ Source: `cli/commands/agent/spawn-status.ts`, `cli/platform/agent-config/loaders
 | **Checklist** | `checklist.md` | Domain-specific quality verification | Relevant sections, for unresolved verification |
 | **Snippets** | `snippets.md` | Copy-paste ready code patterns | Unfamiliar implementation or output shape |
 | **Examples** | `examples.md` | Worked input/output examples (oma-pm, oma-db, oma-tf-infra, oma-observability, oma-search) | Unfamiliar implementation or output shape |
-| **Variants** | `variants/` directory | Language/framework starter seeds. Backend ships `node`, `python`, and `rust`; mobile ships `flutter`, `react-native`, and `swift-ios`. `/stack-set` uses them to generate the project's `stack/`. | When a matching stack is being set up |
+| **Variants** | `variants/` directory | Language/framework starter seeds. Backend ships `node`, `python`, and `rust`; mobile ships `flutter`, `react-native`, `swift-ios`, and `kotlin-android`. `/stack-set` uses them to generate the project's `stack/`. | When a matching stack is being set up |
 | **Templates** | `screen-template.{dart,swift,tsx}` (oma-mobile), `variants/*/api-template.*` | Boilerplate for a new screen or API module | Creating that file |
 | **Domain Reference** | `orm-reference.md`, `anti-patterns.md`, etc. | Deep domain knowledge for specific subtasks | Task-type specific |
 

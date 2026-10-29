@@ -7,6 +7,7 @@ is represented here, each as a self-contained variant.
 | Variant | `stack.yaml` `language` | Files |
 |---------|------------------------|-------|
 | `swift-ios/` | `swift` | `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.swift` |
+| `kotlin-android/` | `kotlin` | `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.kt` |
 | `flutter/` | `flutter` | `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.dart` |
 | `react-native/` | `react-native` | `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.ts` |
 
@@ -21,7 +22,7 @@ Each `variants/{platform}/` directory contains:
 - **`tech-stack.md`** — human-readable narrative reference (`stack.yaml` wins on
   conflict).
 - **`snippets.md`** — copy-paste-ready, numbered code patterns.
-- **`api-template.{swift,dart,ts}`** — the canonical data/repository template,
+- **`api-template.{swift,kt,dart,ts}`** — the canonical data/repository template,
   including the repository-layer response cache when required.
 
 `stack.schema.json` is the shared schema for all variants.
@@ -36,8 +37,9 @@ narrative and snippets belong in the variant, not in `resources/`.
 
 ## Stack selection
 
-A project's stack is detected from its manifest (`Package.swift`, `pubspec.yaml`,
-`package.json` + `react-native`) or chosen via `/stack-set`, which seeds a
+A project's stack is detected from its manifest (`Package.swift`, `settings.gradle.kts`
++ `com.android.application`, `pubspec.yaml`, `package.json` + `react-native`) or
+chosen via `/stack-set`, which seeds a
 project-specific `stack/` from the matching variant baseline (adapt, never
 blind-copy). The variant `stack.yaml` is the default; any field may be overridden
 per project.
