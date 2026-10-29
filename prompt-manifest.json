@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.20.1",
-  "releaseDate": "2026-10-28T04:58:48.357Z",
+  "releaseDate": "2026-10-29T01:19:50.645Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -116,8 +116,8 @@
     },
     {
       "path": ".agents/hooks/core/agy-input.ts",
-      "sha256": "26921d90dbefc30a723e0ae1e14efefa9c20b0d23222b758f882e96d9effd80f",
-      "size": 2592
+      "sha256": "d383f8123fd4dd9e1816e0f04894cd710c7cae5549df1721a2e3de472b4ce64f",
+      "size": 7648
     },
     {
       "path": ".agents/hooks/core/code-fingerprint.ts",
@@ -126,13 +126,13 @@
     },
     {
       "path": ".agents/hooks/core/code-intelligence-guard.ts",
-      "sha256": "243e9b0ad19b8c84e0e4d85a8e8751e39e4756fbbb6ae8aefc79edfeeb749e0c",
-      "size": 16979
+      "sha256": "5a15766f706c40688a6ddabedf4995b76c461e9b24450c259a652d651d255c87",
+      "size": 17363
     },
     {
       "path": ".agents/hooks/core/code-intelligence-primer.ts",
-      "sha256": "21e38d9b7bc7df8e680bc919f9754632e7880920a66ebb8babc46f9c762b4ad7",
-      "size": 11802
+      "sha256": "9e8af86640e162f109aa24439969a53247f3547967b09ed7367a4c7bc0f1b4aa",
+      "size": 11823
     },
     {
       "path": ".agents/hooks/core/code-intelligence-scope.ts",
@@ -166,13 +166,13 @@
     },
     {
       "path": ".agents/hooks/core/hook-output.ts",
-      "sha256": "f31e14e85c03cf33692b6b15e29020b60ebf8eb7ed3aa1fe0243af78fc3333db",
-      "size": 12098
+      "sha256": "37a80fbb55bb6de508f82d1319bec8f232c71126f4798f28cdd590e3de1a4968",
+      "size": 12106
     },
     {
       "path": ".agents/hooks/core/hud.ts",
-      "sha256": "6a070f257ea8278c5df26a4eb58a6caddf61ad5b543e4f758e83b07b45444b3a",
-      "size": 12942
+      "sha256": "73fae4f29869b41a4186e58267a0790327d99a939466c528dcc7e41e08475a7e",
+      "size": 13121
     },
     {
       "path": ".agents/hooks/core/inject-log.ts",
@@ -181,8 +181,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "a341fc9c13a3270108dce2c58e4b6b57c235c92ab5b66f494f95cad4273b588b",
-      "size": 49735
+      "sha256": "213bab552464b77b9fb32ed20950cefa0b5bbb4c87cb89636e557a09c96d5fcd",
+      "size": 49756
     },
     {
       "path": ".agents/hooks/core/memory-adapter.ts",
@@ -196,8 +196,8 @@
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "6f3aab200334d1db95080d151529878297dbc7cf44203f91d2a8e62671381ed6",
-      "size": 29908
+      "sha256": "b8162f7137bf901b44272c4920b583f651fabd219319dec593619071ea12aa41",
+      "size": 30150
     },
     {
       "path": ".agents/hooks/core/prompt-input.ts",
@@ -206,13 +206,13 @@
     },
     {
       "path": ".agents/hooks/core/refactor-guard.ts",
-      "sha256": "16434a6f06dca7efce007d5e26074b2d73f7acc1263d17e09e27682ee0bf0e80",
-      "size": 21702
+      "sha256": "480814f7780b840e7a0f1ac48160006da13672257ebce8c12e8ab19a920596b8",
+      "size": 21872
     },
     {
       "path": ".agents/hooks/core/scm-guard.ts",
-      "sha256": "20eaff009c2dce9b8d5e48188e2726344d6d915615343077679fff01586d72e9",
-      "size": 9344
+      "sha256": "249d076b6224767826989ebb9a8e9b4aa9bda77788bbdee3ae53e0f7627da9fc",
+      "size": 9732
     },
     {
       "path": ".agents/hooks/core/serena-primer.ts",
@@ -231,13 +231,13 @@
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "edeb677485c7aa4e62fc352567d3cf7a4e65e064617e9f46d69e8ee2573733ac",
-      "size": 17351
+      "sha256": "1d8982c48da2c419dbec0a0a1b02c29d069ba2d58b01f8e20a34d1780070fdda",
+      "size": 17372
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "5ca0705e06ef1561b424a835e5b28cec8b5d16f643d7b40434dd93821471e6db",
-      "size": 7565
+      "sha256": "b6d64b59ee27cdb1a3ecdfd474cfb180cd41ffad3a21851efd6230f20acbe3d4",
+      "size": 7844
     },
     {
       "path": ".agents/hooks/core/state-core.ts",
@@ -261,8 +261,8 @@
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "f23b731c0798f63f8a2d503099397f15f2d7117a4fd269f7ee528c551daa55de",
-      "size": 6273
+      "sha256": "c7391ca239d3326bb04f984c2d7ca6fb6297ce6aa7fa892dca29d638af1e4f82",
+      "size": 6815
     },
     {
       "path": ".agents/hooks/core/triggers.json",
@@ -276,8 +276,8 @@
     },
     {
       "path": ".agents/hooks/core/vendor-detect.ts",
-      "sha256": "60856c80578c7d65a2be15ef2bf8d7476a913c3a30e246c43feb958f646c2d27",
-      "size": 6983
+      "sha256": "b105b9cfd2456712ceff911adae6c1310781816e1976f3a98700362293e3a83e",
+      "size": 7375
     },
     {
       "path": ".agents/hooks/core/vendor-renderer.ts",
@@ -286,8 +286,8 @@
     },
     {
       "path": ".agents/hooks/variants/antigravity.json",
-      "sha256": "56019725fdca85bef1d87b095a2c005113195f7b8d695365761e2fcde9f044dc",
-      "size": 961
+      "sha256": "bc6a4646eb731648f373918552bdf1365cc77d8be595b32101dae5c1575e0565",
+      "size": 1336
     },
     {
       "path": ".agents/hooks/variants/claude.json",
