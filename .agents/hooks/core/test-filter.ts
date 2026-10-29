@@ -94,11 +94,14 @@ export async function run(
     toolName !== "Bash" &&
     toolName !== "run_shell_command" &&
     toolName !== "Shell" &&
-    toolName !== "execute_bash"
+    toolName !== "execute_bash" &&
+    toolName !== "run_command"
   )
     return null;
 
-  const command = toolInput.command as string | undefined;
+  const command = (toolInput.command ?? toolInput.CommandLine) as
+    | string
+    | undefined;
   if (!command) return null;
 
   // The rewrite below is Bash-only (`set -o pipefail`, subshell, pipe to
@@ -135,10 +138,12 @@ export async function run(
   // trailing `# comment` would otherwise swallow the closing paren, and a
   // heredoc's terminator must stay alone on its line (`EOF)` never matches).
   const filteredCmd = `set -o pipefail; (\n${command}\n) 2>&1 | bash "${filterScript}"`;
-  const updatedInput: Record<string, unknown> = {
-    ...toolInput,
-    command: filteredCmd,
-  };
+  const usesCommandLine =
+    typeof toolInput.CommandLine === "string" &&
+    typeof toolInput.command !== "string";
+  const updatedInput: Record<string, unknown> = usesCommandLine
+    ? { ...toolInput, CommandLine: filteredCmd }
+    : { ...toolInput, command: filteredCmd };
 
   return { type: "mutate", updatedInput };
 }
@@ -162,13 +167,22 @@ function main() {
   const vendor = detectVendorFromInput(parsed, "tool", import.meta.filename);
   const projectDir = getProjectDir(vendor, parsed);
 
+  const toolCall = parsed.toolCall as
+    | { name?: string; args?: Record<string, unknown> }
+    | undefined;
+  const toolName =
+    parsed.tool_name ||
+    (typeof toolCall?.name === "string" ? toolCall.name : "");
   // Build canonical HookInput and delegate to run() — single logic source.
   const toolInput: Record<string, unknown> = {
-    ...(parsed.tool_input ?? {}),
+    ...(parsed.tool_input ??
+      (toolCall?.args && typeof toolCall.args === "object"
+        ? toolCall.args
+        : {})),
   };
   const hookInput: HookInput = {
     kind: "pre_tool",
-    toolName: parsed.tool_name,
+    toolName,
     toolInput,
     cwd: projectDir,
   };

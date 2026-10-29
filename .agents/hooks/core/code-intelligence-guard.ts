@@ -40,7 +40,7 @@ import {
 } from "./code-intelligence-scope.ts";
 import { makePreToolDenyOutput } from "./hook-output.ts";
 import type { HandlerCtx, HandlerResult, HookInput, Vendor } from "./types.ts";
-import { getProjectDir } from "./vendor-detect.ts";
+import { detectVendorFromInput, getProjectDir } from "./vendor-detect.ts";
 
 export const BYPASS_TOKEN = "OMA_CI_ALLOW_NATIVE=1";
 
@@ -61,6 +61,7 @@ const SHELL_TOOLS = new Set([
   "run_shell_command",
   "Shell",
   "execute_bash",
+  "run_command",
 ]);
 
 // --- Shell command parsing ---
@@ -425,14 +426,15 @@ export async function run(
   if (!isGrep && !isGlob && !isShell) return null;
 
   let searchBin: string | null = null;
+  const shellCommand = isShell
+    ? ((toolInput.command ?? toolInput.CommandLine) as string | undefined)
+    : undefined;
   if (isShell) {
-    const command = toolInput.command as string | undefined;
-    if (!command) return null;
-    searchBin = detectNativeSearchCommand(command);
+    if (!shellCommand) return null;
+    searchBin = detectNativeSearchCommand(shellCommand);
     if (!searchBin) return null;
   }
-  const bypass =
-    isShell && (toolInput.command as string).includes(BYPASS_TOKEN);
+  const bypass = isShell && (shellCommand ?? "").includes(BYPASS_TOKEN);
 
   // Config reads happen after the cheap tool/command checks so the common
   // (non-search) path never touches the filesystem.
@@ -444,7 +446,7 @@ export async function run(
 
   let roots: string[] | null = null;
   if (isShell) {
-    roots = shellSearchRoots(toolInput.command as string, sessionCwd);
+    roots = shellSearchRoots(shellCommand ?? "", sessionCwd);
   } else if (isGlob && typeof toolInput.pattern === "string") {
     const base =
       typeof toolInput.path === "string" ? toolInput.path : sessionCwd;
@@ -505,14 +507,26 @@ function main() {
   if (!raw.trim()) process.exit(0);
 
   const parsed: PreToolUseInput = JSON.parse(raw);
-  // Standalone path is vendor-agnostic here; claude covers the common dialect.
-  const vendor: Vendor = "claude";
+  const vendor: Vendor = detectVendorFromInput(
+    parsed,
+    "tool",
+    import.meta.filename,
+  );
   const projectDir = getProjectDir(vendor, parsed);
+  const toolCall = parsed.toolCall as
+    | { name?: string; args?: Record<string, unknown> }
+    | undefined;
+  const toolName =
+    parsed.tool_name ||
+    (typeof toolCall?.name === "string" ? toolCall.name : "");
+  const rawInput =
+    parsed.tool_input ??
+    (toolCall?.args && typeof toolCall.args === "object" ? toolCall.args : {});
 
   const hookInput: HookInput = {
     kind: "pre_tool",
-    toolName: parsed.tool_name,
-    toolInput: { ...(parsed.tool_input ?? {}) },
+    toolName,
+    toolInput: { ...rawInput },
     cwd: projectDir,
   };
 

@@ -295,14 +295,12 @@ describe("hook-output golden — makePreToolOutput (pre_tool/mutate)", () => {
     expect(hso.updatedInput).toStrictEqual(updatedInput);
   });
 
-  it("antigravity -> {decision:'allow'} (gate-only; updatedInput must not appear)", () => {
+  it("antigravity -> {decision:'allow',overwrite:updatedInput}", () => {
     const out = JSON.parse(
       makePreToolOutput("antigravity", updatedInput),
     ) as Record<string, unknown>;
     expect(out.decision).toBe("allow");
-    // antigravity cannot rewrite tool input
-    expect(out.tool_input).toBeUndefined();
-    expect(out.updatedInput).toBeUndefined();
+    expect(out.overwrite).toStrictEqual(updatedInput);
   });
 });
 

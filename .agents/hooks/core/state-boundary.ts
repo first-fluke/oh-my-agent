@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { recallFacts } from "./agentmemory-client.ts";
-import { agyConversationId } from "./agy-input.ts";
+import { agyConversationId, readAgyPrompt } from "./agy-input.ts";
 import { evolutionNoticeLines } from "./evolution-notice.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { writeInjectLog } from "./inject-log.ts";
@@ -197,11 +197,18 @@ async function main() {
   const vendor = detectVendorFromInput(input, "prompt", import.meta.filename);
   const projectDir = getProjectDir(vendor, input);
   const vendorSid = getVendorSid(input);
+  let prompt = normalizePromptInput(input.prompt);
+
+  if (vendor === "antigravity" && !prompt) {
+    const invocationNum = input.invocationNum;
+    if (typeof invocationNum === "number" && invocationNum > 1) process.exit(0);
+    prompt = readAgyPrompt(input.transcriptPath, input.lastUserInput);
+  }
 
   // Delegate to run() — single logic source.
   const hookInput: HookInput = {
     kind: "prompt",
-    prompt: normalizePromptInput(input.prompt),
+    prompt,
     cwd: projectDir,
   };
   const ctxVal: HandlerCtx = { vendor, cwd: projectDir, sid: vendorSid };

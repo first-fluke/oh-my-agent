@@ -57,6 +57,20 @@ describe("scm-guard run() — blocks secret staging", () => {
       expect(result?.type).toBe("block");
     }
   });
+
+  it("blocks antigravity run_command with CommandLine", async () => {
+    const result = await guard.run(
+      {
+        kind: "pre_tool",
+        toolName: "run_command",
+        toolInput: { CommandLine: "git add .env" },
+        cwd: "/tmp/project",
+      },
+      { vendor: "antigravity", cwd: "/tmp/project" },
+    );
+    expect(result?.type).toBe("block");
+    expect((result as { reason: string }).reason).toContain(".env");
+  });
 });
 
 describe("scm-guard run() — allows safe operations (fail-open)", () => {

@@ -284,10 +284,12 @@ export function makePreToolOutput(
       // `tool_call` event input in place (pi exposes event.input as mutable).
       return JSON.stringify({ updatedInput });
     case "antigravity":
-      // agy PreToolUse output is a gate decision; it cannot rewrite tool input.
-      // Allow execution (test-filter is advisory on agy). updatedInput unused.
-      void updatedInput;
-      return JSON.stringify({ decision: "allow" });
+      // agy PreToolUse supports {"decision": "allow", "overwrite": {...}} to
+      // replace or merge modified tool arguments before execution.
+      return JSON.stringify({
+        decision: "allow",
+        overwrite: updatedInput,
+      });
     case "grok":
       // Grok PreToolUse uses decision + possibly updated tool input
       return JSON.stringify({

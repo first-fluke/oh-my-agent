@@ -141,9 +141,15 @@ function readAntigravityVariant(sourceDir: string): AntigravityVariant {
           { hook: "state-boundary.ts", timeout: 5 },
           { hook: "skill-injector.ts", timeout: 3 },
         ],
-        // No PreToolUse: agy's hook output contract is allow/deny/ask only —
-        // it cannot rewrite tool args, so test-filter (a command rewriter)
-        // has no effect there. Registering it would be dead config.
+        PreToolUse: [
+          { hook: "scm-guard.ts", matcher: "run_command", timeout: 5 },
+          {
+            hook: "code-intelligence-guard.ts",
+            matcher: "run_command",
+            timeout: 5,
+          },
+          { hook: "test-filter.ts", matcher: "run_command", timeout: 5 },
+        ],
         Stop: { hook: "persistent-mode.ts", timeout: 5 },
       },
       statusLine: { hook: "hud.ts" },

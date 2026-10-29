@@ -153,4 +153,66 @@ describe("antigravity parser", () => {
     const entries = await parser?.parse(0, Date.now() + 1_000_000);
     expect(entries).toEqual([]);
   });
+
+  it("recovers truncated content from transcript_full.jsonl when truncated_fields includes content", async () => {
+    const inRange = new Date("2026-05-25T12:00:00Z").getTime();
+    const cid = "conv-truncated";
+    const dir = join(AGY, "brain", cid, ".system_generated", "logs");
+    mkdirSync(dir, { recursive: true });
+
+    writeFileSync(
+      join(dir, "transcript.jsonl"),
+      [
+        JSON.stringify({
+          step_index: 0,
+          source: "USER_EXPLICIT",
+          type: "USER_INPUT",
+          created_at: new Date(inRange).toISOString(),
+          content: "<USER_REQUEST>short...",
+          truncated_fields: ["content"],
+        }),
+        JSON.stringify({
+          step_index: 1,
+          source: "MODEL",
+          type: "PLANNER_RESPONSE",
+          created_at: new Date(inRange + 1000).toISOString(),
+          content: "truncated response...",
+          truncated_fields: ["content"],
+        }),
+      ].join("\n"),
+    );
+
+    writeFileSync(
+      join(dir, "transcript_full.jsonl"),
+      [
+        JSON.stringify({
+          step_index: 0,
+          source: "USER_EXPLICIT",
+          type: "USER_INPUT",
+          created_at: new Date(inRange).toISOString(),
+          content:
+            "<USER_REQUEST>full prompt from transcript_full</USER_REQUEST>",
+        }),
+        JSON.stringify({
+          step_index: 1,
+          source: "MODEL",
+          type: "PLANNER_RESPONSE",
+          created_at: new Date(inRange + 1000).toISOString(),
+          content: "full response from transcript_full",
+        }),
+      ].join("\n"),
+    );
+
+    const start = new Date("2026-05-01T00:00:00Z").getTime();
+    const end = new Date("2026-06-01T00:00:00Z").getTime();
+    const entries = (await parser?.parse(start, end)) ?? [];
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({
+      tool: "antigravity",
+      prompt: "full prompt from transcript_full",
+      response: "full response from transcript_full",
+      sessionId: cid,
+    });
+  });
 });

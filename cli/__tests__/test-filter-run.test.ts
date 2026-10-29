@@ -131,5 +131,26 @@ describe("test-filter run() — platform and idempotency guards (#618)", () => {
         );
       }
     });
+
+    it("rewrites CommandLine in place for antigravity run_command", async () => {
+      setPlatform("linux");
+      const result = await tf.run(
+        {
+          kind: "pre_tool",
+          toolName: "run_command",
+          toolInput: { CommandLine: "bun test", WaitMsBeforeAsync: 5000 },
+          cwd: "/tmp/project",
+        },
+        { vendor: "antigravity", cwd: "/tmp/project" },
+      );
+      expect(result?.type).toBe("mutate");
+      if (result?.type === "mutate") {
+        expect(result.updatedInput.command).toBeUndefined();
+        expect(result.updatedInput.CommandLine as string).toContain(
+          "filter-test-output.sh",
+        );
+        expect(result.updatedInput.WaitMsBeforeAsync).toBe(5000);
+      }
+    });
   });
 });

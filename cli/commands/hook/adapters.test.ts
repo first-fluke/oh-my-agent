@@ -206,4 +206,47 @@ describe("nativeEventToKind — SessionStart is vendor-scoped", () => {
       source: "compact",
     });
   });
+
+  it("handles antigravity PreToolUse, PostToolUse, PreInvocation (invocationNum > 1), and Stop payloads", () => {
+    const preTool = normalizeInput(
+      "antigravity",
+      "PreToolUse",
+      JSON.stringify({
+        conversationId: "conv-1",
+        workspacePaths: ["/tmp/agy-proj"],
+        toolCall: {
+          name: "run_command",
+          args: { CommandLine: "bun test" },
+        },
+      }),
+    );
+    expect(preTool).toEqual({
+      kind: "pre_tool",
+      toolName: "run_command",
+      toolInput: { CommandLine: "bun test" },
+      cwd: "/tmp/agy-proj",
+    });
+
+    const midTurnPrompt = normalizeInput(
+      "antigravity",
+      "PreInvocation",
+      JSON.stringify({
+        conversationId: "conv-1",
+        workspacePaths: ["/tmp/agy-proj"],
+        invocationNum: 2,
+      }),
+    );
+    expect(midTurnPrompt).toBeNull();
+
+    const canceledStop = normalizeInput(
+      "antigravity",
+      "Stop",
+      JSON.stringify({
+        conversationId: "conv-1",
+        workspacePaths: ["/tmp/agy-proj"],
+        terminationReason: "USER_CANCELED",
+      }),
+    );
+    expect(canceledStop).toBeNull();
+  });
 });

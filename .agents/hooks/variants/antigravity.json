@@ -25,10 +25,27 @@
         "timeout": 3
       }
     ],
+    "PreToolUse": [
+      {
+        "hook": "scm-guard.ts",
+        "matcher": "run_command",
+        "timeout": 5
+      },
+      {
+        "hook": "code-intelligence-guard.ts",
+        "matcher": "run_command",
+        "timeout": 5
+      },
+      {
+        "hook": "test-filter.ts",
+        "matcher": "run_command",
+        "timeout": 5
+      }
+    ],
     "PostToolUse": [
       {
         "hook": "refactor-guard.ts",
-        "matcher": "write_to_file|replace_file_content|notebook_edit",
+        "matcher": "write_file|edit_file|write_to_file|replace_file_content|notebook_edit",
         "timeout": 5
       }
     ],

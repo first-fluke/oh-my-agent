@@ -48,32 +48,45 @@ export const migrateAntigravityDesktopSerenaBridge: Migration = {
   up(cwd: string, ctx?: MigrationContext): string[] {
     if (!allowsVendor(ctx, "antigravity")) return [];
 
-    const configPath = join(
-      homedir(),
-      ".gemini",
-      "antigravity",
-      "mcp_config.json",
-    );
-    if (!existsSync(configPath)) return [];
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(readFileSync(configPath, "utf-8"));
-    } catch {
-      return [];
-    }
-    if (!isRecord(parsed) || !isRecord(parsed.mcpServers)) return [];
-
-    const current = parsed.mcpServers.serena;
-    if (!isRetiredOmaBridge(current)) return [];
-
-    parsed.mcpServers.serena = {
-      ...current,
-      ...serenaMcpEntry("antigravity", serenaTransportMode(cwd)),
-    };
-    writeFileSync(configPath, `${JSON.stringify(parsed, null, 2)}\n`, "utf-8");
-    return [
-      "~/.gemini/antigravity/mcp_config.json (fixed retired Serena bridge)",
+    const candidates: Array<{ path: string; label: string }> = [
+      {
+        path: join(homedir(), ".gemini", "antigravity", "mcp_config.json"),
+        label:
+          "~/.gemini/antigravity/mcp_config.json (fixed retired Serena bridge)",
+      },
+      {
+        path: join(homedir(), ".gemini", "config", "mcp_config.json"),
+        label: "~/.gemini/config/mcp_config.json (fixed retired Serena bridge)",
+      },
     ];
+    const updated: string[] = [];
+
+    for (const { path: configPath, label } of candidates) {
+      if (!existsSync(configPath)) continue;
+
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(readFileSync(configPath, "utf-8"));
+      } catch {
+        continue;
+      }
+      if (!isRecord(parsed) || !isRecord(parsed.mcpServers)) continue;
+
+      const current = parsed.mcpServers.serena;
+      if (!isRetiredOmaBridge(current)) continue;
+
+      parsed.mcpServers.serena = {
+        ...current,
+        ...serenaMcpEntry("antigravity", serenaTransportMode(cwd)),
+      };
+      writeFileSync(
+        configPath,
+        `${JSON.stringify(parsed, null, 2)}\n`,
+        "utf-8",
+      );
+      updated.push(label);
+    }
+
+    return updated;
   },
 };

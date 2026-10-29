@@ -218,4 +218,34 @@ describe("applyAntigravityMcpConfig", () => {
     expect(content2).toBe(content1);
     expect(backups).toEqual([]);
   });
+
+  it("syncs shared ~/.gemini/config/mcp_config.json in global mode when directory exists", () => {
+    const root = makeTmp();
+    const fakeHome = makeTmp();
+    writeSsotMcp(root, {
+      serena: { command: "serena", args: ["x"] },
+      remote: { url: "https://mcp.example/sse" },
+    });
+
+    const sharedDir = join(fakeHome, ".gemini", "config");
+    mkdirSync(sharedDir, { recursive: true });
+    writeFileSync(
+      join(sharedDir, "mcp_config.json"),
+      `${JSON.stringify({ mcpServers: { custom: { command: "custom-mcp" } } }, null, 2)}\n`,
+    );
+
+    const out = applyAntigravityMcpConfig(root, "global", fakeHome);
+    expect(out).toBe(
+      join(fakeHome, ".gemini", "antigravity-cli", "mcp_config.json"),
+    );
+
+    const sharedWritten = JSON.parse(
+      readFileSync(join(sharedDir, "mcp_config.json"), "utf-8"),
+    );
+    expect(sharedWritten.mcpServers.custom).toEqual({ command: "custom-mcp" });
+    expect(sharedWritten.mcpServers.remote).toEqual({
+      serverUrl: "https://mcp.example/sse",
+    });
+    expect(sharedWritten.mcpServers.serena).toBeDefined();
+  });
 });

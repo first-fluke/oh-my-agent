@@ -73,6 +73,9 @@ export function detectVendorFromInput(
     if (event === "beforeSubmitPrompt") return "cursor";
     if (event === "UserPromptSubmit" && codexSessionShape) return "codex";
   } else if (kind === "stop") {
+    if (scriptPath.includes(join(".gemini", "antigravity-cli", "hooks"))) {
+      return "antigravity";
+    }
     if (env.GROK_WORKSPACE_ROOT) return "grok";
     if (env.KIRO_PROJECT_DIR || event === "stop" || hookEventName === "stop") {
       return "kiro";
@@ -83,6 +86,13 @@ export function detectVendorFromInput(
   } else {
     // pi spawns tool hooks from `.pi/extensions/oma/`; trust that path.
     if (scriptPath.includes(join(".pi", "extensions"))) return "pi";
+    if (scriptPath.includes(join(".gemini", "antigravity-cli", "hooks"))) {
+      return "antigravity";
+    }
+    const toolCall = input.toolCall as { name?: unknown } | undefined;
+    if (isAgyInput(input) || typeof toolCall?.name === "string") {
+      return "antigravity";
+    }
     if (env.GROK_WORKSPACE_ROOT) return "grok";
     if (env.KIRO_PROJECT_DIR) return "kiro";
     if (event === "preToolUse" || hookEventName === "preToolUse") return "kiro";

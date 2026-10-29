@@ -196,18 +196,21 @@ export function shortModel(model?: {
   // Claude: "Claude Opus 4.6 (1M context)" → "Opus 4.6"
   const claude = name.match(/(Opus|Sonnet|Haiku)[\s.]*([\d.]*)/i);
   if (claude) return `${claude[1]}${claude[2] ? ` ${claude[2]}` : ""}`;
-  // Gemini / agy: "Gemini 3.6 Flash (High)" → "Gemini 3.6 Flash"
+  // Gemini / agy: "Gemini 3.6 Flash (High)" or "Gemini 2.5 Flash Lite" → "Gemini 3.6 Flash"
   const gemini = name.match(
-    /(Gemini)\s+([\d.]+)\s+(Pro|Flash|Ultra|Nano|Thinking)/i,
+    /(Gemini)\s+([\d.]+)\s+(Flash\s+Lite|Pro|Flash|Ultra|Nano|Thinking|Argon)/i,
   );
   if (gemini) return `${gemini[1]} ${gemini[2]} ${gemini[3]}`;
-  // Gemini / agy slug: "antigravity/gemini-3.6-flash" → "Gemini 3.6 Flash"
+  // Gemini / agy slug: "antigravity/gemini-3.6-flash" or "gemini-2.5-flash-lite"
   const geminiSlug = name.match(
-    /gemini-([\d.]+)-(pro|flash|ultra|nano|thinking)/i,
+    /gemini-([\d.]+)-(flash-lite|pro|flash|ultra|nano|thinking|argon)/i,
   );
   if (geminiSlug) {
     const type = geminiSlug[2] ?? "";
-    const capType = type.charAt(0).toUpperCase() + type.slice(1);
+    const capType = type
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(" ");
     return `Gemini ${geminiSlug[1]} ${capType}`;
   }
   return name.split("/").pop()?.slice(0, 20) || "";
@@ -245,6 +248,7 @@ export function buildClaudeStatusline(input: StatuslineStdin): string {
   const projectDir =
     process.env.CLAUDE_PROJECT_DIR ||
     process.env.QWEN_PROJECT_DIR ||
+    input.workspace?.project_dir ||
     input.cwd ||
     input.workspace?.current_dir ||
     process.cwd();

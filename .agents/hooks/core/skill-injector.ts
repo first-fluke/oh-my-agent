@@ -511,7 +511,7 @@ async function main() {
   if (vendor === "antigravity" && !prompt) {
     const invocationNum = input.invocationNum;
     if (typeof invocationNum === "number" && invocationNum > 1) process.exit(0);
-    prompt = readAgyPrompt(input.transcriptPath);
+    prompt = readAgyPrompt(input.transcriptPath, input.lastUserInput);
   }
 
   // Build canonical inputs and delegate to run() — single logic source.

@@ -73,11 +73,22 @@ function stableJson(value: unknown): string {
 export function antigravityMcpConfigPath(
   installRoot: string,
   mode: "project" | "global",
+  home: string = homedir(),
 ): string {
   if (mode === "global") {
-    return join(homedir(), ".gemini", "antigravity-cli", "mcp_config.json");
+    return join(home, ".gemini", "antigravity-cli", "mcp_config.json");
   }
   return join(installRoot, ".agents", "mcp_config.json");
+}
+
+/**
+ * Shared global MCP config path (`~/.gemini/config/mcp_config.json`) loaded by
+ * Antigravity CLI alongside `~/.gemini/antigravity-cli/mcp_config.json`.
+ */
+export function antigravitySharedGlobalMcpConfigPath(
+  home: string = homedir(),
+): string {
+  return join(home, ".gemini", "config", "mcp_config.json");
 }
 
 /**
@@ -114,29 +125,10 @@ function transformForAgy(entry: Record<string, unknown>): McpServerEntry {
  *
  * @returns the path written (or null when skipped).
  */
-export function applyAntigravityMcpConfig(
-  installRoot: string,
-  mode: "project" | "global",
+function mergeAndWriteMcpConfig(
+  targetPath: string,
+  transformed: Record<string, McpServerEntry>,
 ): string | null {
-  const ssotPath = join(installRoot, ".agents", "mcp.json");
-  const ssot = safeReadJson<McpConfig>(ssotPath);
-  if (!ssot?.mcpServers) return null;
-
-  const transformed: Record<string, McpServerEntry> = {};
-  for (const [name, entry] of Object.entries(ssot.mcpServers)) {
-    transformed[name] = transformForAgy(entry as Record<string, unknown>);
-  }
-
-  // serena is rebuilt rather than copied. The SSOT is a committed file, so it
-  // can only carry the stdio form — the bridge entry embeds the absolute path
-  // of the running oma, which is machine-specific. Copying would quietly leave
-  // Antigravity as the one vendor still spawning a serena per session.
-  transformed.serena = serenaMcpEntry(
-    ANTIGRAVITY_SERENA_CONTEXT,
-    serenaTransportMode(installRoot),
-  );
-
-  const targetPath = antigravityMcpConfigPath(installRoot, mode);
   // Merge with any existing user-added servers under the same file. A file
   // that does not parse is skipped, never rewritten without those servers.
   const existingRecord = readJsonMergeBaseOrWarn(targetPath);
@@ -159,4 +151,40 @@ export function applyAntigravityMcpConfig(
 
   safeWriteJson(targetPath, next);
   return targetPath;
+}
+
+export function applyAntigravityMcpConfig(
+  installRoot: string,
+  mode: "project" | "global",
+  home: string = homedir(),
+): string | null {
+  const ssotPath = join(installRoot, ".agents", "mcp.json");
+  const ssot = safeReadJson<McpConfig>(ssotPath);
+  if (!ssot?.mcpServers) return null;
+
+  const transformed: Record<string, McpServerEntry> = {};
+  for (const [name, entry] of Object.entries(ssot.mcpServers)) {
+    transformed[name] = transformForAgy(entry as Record<string, unknown>);
+  }
+
+  // serena is rebuilt rather than copied. The SSOT is a committed file, so it
+  // can only carry the stdio form — the bridge entry embeds the absolute path
+  // of the running oma, which is machine-specific. Copying would quietly leave
+  // Antigravity as the one vendor still spawning a serena per session.
+  transformed.serena = serenaMcpEntry(
+    ANTIGRAVITY_SERENA_CONTEXT,
+    serenaTransportMode(installRoot),
+  );
+
+  const targetPath = antigravityMcpConfigPath(installRoot, mode, home);
+  const written = mergeAndWriteMcpConfig(targetPath, transformed);
+
+  if (mode === "global") {
+    const sharedPath = antigravitySharedGlobalMcpConfigPath(home);
+    if (existsSync(sharedPath) || existsSync(dirname(sharedPath))) {
+      mergeAndWriteMcpConfig(sharedPath, transformed);
+    }
+  }
+
+  return written;
 }

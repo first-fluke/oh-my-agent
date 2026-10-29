@@ -131,6 +131,16 @@ describe("code-intelligence-guard run() — serena configured", () => {
     expect((result as { reason: string }).reason).toContain("find_file");
   });
 
+  it("denies antigravity run_command recursive search via CommandLine", async () => {
+    const result = await runTool("run_command", {
+      CommandLine: "rg foo cli",
+    });
+    expect(result?.type).toBe("block");
+    expect((result as { reason: string }).reason).toContain(
+      "shell search `rg`",
+    );
+  });
+
   it("denies recursive shell search across shell tool names", async () => {
     for (const tool of ["Bash", "run_shell_command", "Shell", "execute_bash"]) {
       const result = await runShell("rg foo cli", tool);

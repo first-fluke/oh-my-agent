@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { readJsonlSync } from "../../../../io/conversation-log.js";
 import { registerParser } from "../registry.js";
 import type { NormalizedEntry } from "../schema.js";
@@ -72,22 +72,61 @@ function buildWorkspaceMap(): Map<string, string> {
   return map;
 }
 
-async function readTranscript(file: string): Promise<TranscriptRow[]> {
+export async function readTranscript(file: string): Promise<TranscriptRow[]> {
   const rows: TranscriptRow[] = [];
+  let fullByStep: Map<number, string> | undefined;
+
+  const resolveFullContent = (
+    stepIndex: number | undefined,
+    lineIndex: number,
+  ): string | undefined => {
+    if (!fullByStep) {
+      fullByStep = new Map<number, string>();
+      const fullPath = join(dirname(file), "transcript_full.jsonl");
+      if (existsSync(fullPath)) {
+        const fullRows = readJsonlSync<{
+          step_index?: number;
+          content?: string;
+        }>(fullPath);
+        for (let idx = 0; idx < fullRows.length; idx++) {
+          const item = fullRows[idx];
+          if (!item || typeof item.content !== "string") continue;
+          const key =
+            typeof item.step_index === "number" ? item.step_index : idx;
+          fullByStep.set(key, item.content);
+        }
+      }
+    }
+    const key = typeof stepIndex === "number" ? stepIndex : lineIndex;
+    return fullByStep.get(key);
+  };
+
+  let lineIndex = 0;
   for await (const row of streamJsonl<{
     step_index?: number;
     source?: string;
     type?: string;
     content?: string;
+    truncated_fields?: unknown;
     created_at?: string;
   }>(file)) {
+    const step =
+      typeof row.step_index === "number" ? row.step_index : rows.length;
+    const isContentTruncated =
+      Array.isArray(row.truncated_fields) &&
+      row.truncated_fields.includes("content");
+    const fullContent = isContentTruncated
+      ? resolveFullContent(row.step_index, lineIndex)
+      : undefined;
     rows.push({
-      step: typeof row.step_index === "number" ? row.step_index : rows.length,
+      step,
       source: row.source ?? "",
       type: row.type ?? "",
-      content: typeof row.content === "string" ? row.content : "",
+      content:
+        fullContent ?? (typeof row.content === "string" ? row.content : ""),
       ts: row.created_at ? new Date(row.created_at).getTime() : 0,
     });
+    lineIndex++;
   }
   rows.sort((a, b) => a.step - b.step);
   return rows;

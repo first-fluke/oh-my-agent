@@ -320,7 +320,7 @@ export async function runStandAlone() {
   if (vendor === "antigravity" && !prompt) {
     const invocationNum = input.invocationNum;
     if (typeof invocationNum === "number" && invocationNum > 1) process.exit(0);
-    prompt = readAgyPrompt(input.transcriptPath);
+    prompt = readAgyPrompt(input.transcriptPath, input.lastUserInput);
   }
 
   const hookInput: HookInput = { kind: "prompt", prompt, cwd: projectDir };

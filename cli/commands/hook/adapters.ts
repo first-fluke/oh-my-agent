@@ -6,7 +6,9 @@ import {
   agyConversationId,
   agyProjectDir,
   isAgyInput,
+  isAgyNonBlockingStopReason,
   readAgyPrompt,
+  readAgyResponse,
 } from "../../../.agents/hooks/core/agy-input.js";
 import { normalizePromptInput } from "../../../.agents/hooks/core/prompt-input.js";
 import type { HookInput, Vendor } from "./types.js";
@@ -153,6 +155,13 @@ export function normalizeInput(
 
   switch (kind) {
     case "prompt": {
+      if (
+        vendor === "antigravity" &&
+        typeof payload.invocationNum === "number" &&
+        payload.invocationNum > 1
+      ) {
+        return null;
+      }
       const prompt = resolvePrompt(vendor, payload);
       // SessionStart carries `source` (startup|resume|clear|compact); thread
       // it through so session-once handlers can force re-injection on compact
@@ -206,6 +215,9 @@ export function normalizeInput(
         : { kind: "post_tool", toolName, toolInput, cwd };
     }
     case "stop": {
+      if (vendor === "antigravity" && isAgyNonBlockingStopReason(payload)) {
+        return null;
+      }
       // Gather assistant/response/transcript text so persistent-mode can honor
       // "workflow done" deactivation through the central dispatch path.
       const responseText = [
@@ -214,6 +226,9 @@ export function normalizeInput(
         payload.content,
         payload.message,
         payload.transcript,
+        vendor === "antigravity" && isAgyInput(payload)
+          ? readAgyResponse(payload.transcriptPath)
+          : undefined,
       ]
         .filter((v): v is string => typeof v === "string")
         .join(" ");
@@ -341,9 +356,9 @@ function resolvePrompt(
     if (typeof invocationNum === "number" && invocationNum > 1) {
       return "";
     }
-    // agy carries no `prompt` field — recover from transcript
+    // agy carries no `prompt` field — recover from transcript (or lastUserInput)
     if (isAgyInput(payload)) {
-      return readAgyPrompt(payload.transcriptPath) || "";
+      return readAgyPrompt(payload.transcriptPath, payload.lastUserInput) || "";
     }
     // Fallback: some agy PreInvocation payloads may include prompt directly
     return normalizePromptInput(payload.prompt);
@@ -364,9 +379,11 @@ function resolveToolName(
   _vendor: Vendor,
   payload: Record<string, unknown>,
 ): string {
+  const toolCall = payload.toolCall as { name?: unknown } | undefined;
   return (
     (payload.tool_name as string | undefined) ??
     (payload.toolName as string | undefined) ??
+    (typeof toolCall?.name === "string" ? toolCall.name : undefined) ??
     ""
   );
 }
@@ -376,17 +393,29 @@ function resolveToolName(
  *
  * Most vendors: .tool_input (snake_case object)
  * kiro/cursor: may use .toolInput (camelCase)
+ * antigravity: nests .toolCall.args
  */
 function resolveToolInput(
   _vendor: Vendor,
   payload: Record<string, unknown>,
 ): Record<string, unknown> {
+  const toolCall = payload.toolCall as { args?: unknown } | undefined;
   return (
     (payload.tool_input as Record<string, unknown> | undefined) ??
     (payload.toolInput as Record<string, unknown> | undefined) ??
+    (toolCall?.args && typeof toolCall.args === "object"
+      ? (toolCall.args as Record<string, unknown>)
+      : undefined) ??
     {}
   );
 }
 
 // Re-export agy helpers so callers that need them can import from one place.
-export { agyConversationId, agyProjectDir, isAgyInput, readAgyPrompt };
+export {
+  agyConversationId,
+  agyProjectDir,
+  isAgyInput,
+  isAgyNonBlockingStopReason,
+  readAgyPrompt,
+  readAgyResponse,
+};

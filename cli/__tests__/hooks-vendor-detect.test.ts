@@ -106,7 +106,10 @@ describe("detectVendorFromInput — tool payloads", () => {
   });
 
   it("maps env and PreToolUse event names", () => {
-    expect(detect("tool", AGY)).toBe("claude");
+    expect(detect("tool", AGY)).toBe("antigravity");
+    expect(detect("tool", { toolCall: { name: "run_command" } })).toBe(
+      "antigravity",
+    );
     expect(detect("tool", {}, { KIRO_PROJECT_DIR: "/k" })).toBe("kiro");
     expect(detect("tool", { hook_event_name: "preToolUse" })).toBe("kiro");
     expect(

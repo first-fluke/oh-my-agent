@@ -459,4 +459,15 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).not.toContain("old block");
     expect(content).toContain("# oh-my-agent");
   });
+
+  it("writes AGENTS.md for antigravity vendor with invoke_subagent instructions", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      false,
+    );
+
+    const result = mergeRulesIndexForVendor(mockTargetDir, "antigravity");
+    expect(result).toBe(true);
+    const content = findAtomicWrite("AGENTS.md")?.content as string;
+    expect(content).toContain("invoke_subagent");
+  });
 });

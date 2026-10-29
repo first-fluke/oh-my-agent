@@ -127,13 +127,15 @@ export function browserMcpTargets(
             )
           : project(".kimi-code/mcp.json"),
       ),
-    antigravity: () =>
-      json(
-        scoped(
-          ".agents/mcp_config.json",
-          ".gemini/antigravity-cli/mcp_config.json",
-        ),
-      ),
+    antigravity: () => {
+      if (!options.global) return json(project(".agents/mcp_config.json"));
+      const primary = json(
+        join(home, ".gemini/antigravity-cli/mcp_config.json"),
+      );
+      const shared = join(home, ".gemini/config/mcp_config.json");
+      if (existsSync(shared)) primary.push(...json(shared));
+      return primary;
+    },
     commandcode: () => json(scoped(".mcp.json", ".commandcode/mcp.json")),
     copilot: () =>
       json(scoped(".github/mcp.json", ".copilot/mcp-config.json")).map(

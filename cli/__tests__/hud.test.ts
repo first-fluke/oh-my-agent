@@ -74,6 +74,20 @@ describe("hud.ts", () => {
       expect(result).toContain("Gemini 3.1 Pro");
     });
 
+    it("should shorten Gemini Flash Lite and Argon models (agy)", () => {
+      expect(
+        stripAnsi(
+          hud({ model: { display_name: "Gemini 2.5 Flash Lite (Fast)" } }),
+        ),
+      ).toContain("Gemini 2.5 Flash Lite");
+      expect(
+        stripAnsi(hud({ model: { id: "antigravity/gemini-2.5-flash-lite" } })),
+      ).toContain("Gemini 2.5 Flash Lite");
+      expect(stripAnsi(hud({ model: { id: "gemini-3.0-argon" } }))).toContain(
+        "Gemini 3.0 Argon",
+      );
+    });
+
     it("should fall back to model id", () => {
       const result = stripAnsi(hud({ model: { id: "custom/my-model" } }));
       expect(result).toContain("my-model");

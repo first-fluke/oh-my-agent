@@ -24,7 +24,7 @@ import type {
   HookInput,
   Vendor,
 } from "./types.ts";
-import { getProjectDir } from "./vendor-detect.ts";
+import { detectVendorFromInput, getProjectDir } from "./vendor-detect.ts";
 
 // --- Defaults (mirror .agents/skills/oma-scm/config/commit-config.yaml) ---
 // Used when the config file is absent (global installs without project config,
@@ -218,11 +218,14 @@ export async function run(
     toolName !== "Bash" &&
     toolName !== "run_shell_command" &&
     toolName !== "Shell" &&
-    toolName !== "execute_bash"
+    toolName !== "execute_bash" &&
+    toolName !== "run_command"
   )
     return null;
 
-  const command = toolInput.command as string | undefined;
+  const command = (toolInput.command ?? toolInput.CommandLine) as
+    | string
+    | undefined;
   if (!command) return null;
   if (!/\bgit\b/.test(command)) return null;
   if (command.includes(BYPASS_TOKEN)) return null;
@@ -263,14 +266,26 @@ function main() {
   if (!raw.trim()) process.exit(0);
 
   const parsed: PreToolUseInput = JSON.parse(raw);
-  // Standalone path is vendor-agnostic here; claude covers the common dialect.
-  const vendor: Vendor = "claude";
+  const vendor: Vendor = detectVendorFromInput(
+    parsed,
+    "tool",
+    import.meta.filename,
+  );
   const projectDir = getProjectDir(vendor, parsed);
+  const toolCall = parsed.toolCall as
+    | { name?: string; args?: Record<string, unknown> }
+    | undefined;
+  const toolName =
+    parsed.tool_name ||
+    (typeof toolCall?.name === "string" ? toolCall.name : "");
+  const rawInput =
+    parsed.tool_input ??
+    (toolCall?.args && typeof toolCall.args === "object" ? toolCall.args : {});
 
   const hookInput: HookInput = {
     kind: "pre_tool",
-    toolName: parsed.tool_name,
-    toolInput: { ...(parsed.tool_input ?? {}) },
+    toolName,
+    toolInput: { ...rawInput },
     cwd: projectDir,
   };
 

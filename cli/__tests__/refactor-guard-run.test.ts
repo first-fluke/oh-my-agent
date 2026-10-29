@@ -97,6 +97,15 @@ describe("refactor-guard — recorder (post_tool) never blocks", () => {
     expect(result?.type).toBe("block");
     expect((result as { reason: string }).reason).toContain("src/big.ts");
   });
+
+  it("records antigravity write_file / edit_file paths from PascalCase Path", async () => {
+    enableGuard();
+    const abs = writeSource("src/agy-big.ts", 800);
+    await record("", "edit_file", "sid-agy", { Path: abs });
+    const result = await stop("sid-agy");
+    expect(result?.type).toBe("block");
+    expect((result as { reason: string }).reason).toContain("src/agy-big.ts");
+  });
 });
 
 describe("refactor-guard — enforcer (stop) blocks over-budget turns", () => {

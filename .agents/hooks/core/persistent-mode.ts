@@ -23,7 +23,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { agyConversationId } from "./agy-input.ts";
+import {
+  agyConversationId,
+  isAgyNonBlockingStopReason,
+  readAgyResponse,
+} from "./agy-input.ts";
 import {
   captureCodeFingerprint,
   sameCodeFingerprint,
@@ -815,6 +819,9 @@ async function main() {
   }
 
   const vendor = detectVendorFromInput(input, "stop", import.meta.filename);
+  if (vendor === "antigravity" && isAgyNonBlockingStopReason(input)) {
+    process.exit(0);
+  }
   const projectDir = getProjectDir(vendor, input);
   const sessionId = getSessionId(input);
 
@@ -829,6 +836,9 @@ async function main() {
     input.content,
     input.message,
     input.transcript,
+    vendor === "antigravity"
+      ? readAgyResponse(input.transcriptPath)
+      : undefined,
   ]
     .filter((v): v is string => typeof v === "string")
     .join(" ");
