@@ -11,7 +11,7 @@ description: "Draft and revise academic prose against a rubric, evidence, and ci
 Produce, revise, and audit publication-grade academic English prose so that every output simultaneously satisfies the Sentence Structure Protocol, Verb Protocol, Hedging Protocol, and Anti-AI Compliance Checklist, with every claim mapped to verifiable evidence.
 
 ### Intent signature
-- "draft this essay / report / executive summary / conclusion / literature review"
+- "draft this abstract / essay / report / executive summary / conclusion / literature review"
 - "rewrite this paragraph in academic English"
 - "polish this draft to top-band quality" / "revise to match the rubric"
 - "run an anti-AI audit on this prose"
@@ -21,7 +21,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### When to use
 - Drafting or revising academic reports, essays, or analysis sections
-- Writing executive summaries, conclusions, or literature reviews
+- Writing research abstracts, executive summaries, conclusions, or literature reviews
 - Rewriting AI-sounding prose into natural academic English
 - Polishing draft text to achieve top-band rubric quality (HD, A, top-band, etc.)
 - Reviewing prose for sentence variety, verb quality, hedging, and anti-AI compliance
@@ -131,7 +131,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### Canonical workflow path
 1. **READ** the draft and any supplied rubric; quote actual assignment constraints and pin their requirements. If no rubric is supplied, use the requested revision/review scope without inventing constraints.
-2. **PLAN** each paragraph as Topic-Support-Conclude; identify where evidence strength or a vague claim calls for a more precise verb.
+2. **PLAN** each paragraph as Topic-Support-Conclude; identify where evidence strength or a vague claim calls for a more precise verb. For research abstracts, use `resources/abstract-guide.md` to select motivation, approach, measured results, and a supported contribution within the venue's format.
 3. **DRAFT** prose with sentence variety, clear verb choice, hedging, and Topic-Support-Conclude structure.
 4. **AUDIT** with `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`. Fix supported defects in draft/revise mode; in review mode, quote the passage, identify the defect, and recommend a local fix without a full rewrite or AI-authorship estimate.
 5. **REVERSE-OUTLINE** the section and build the Claim-Evidence Map; weaken or remove any unsupported claim.
@@ -141,7 +141,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 | Scope | Resource target |
 |-------|-----------------|
 | `LOCAL_FS` | Rubric, existing draft, generated prose output |
-| `CODEBASE` | `resources/` 4 reference files, `_shared/core/{context-loading,quality-principles}.md` |
+| `CODEBASE` | Task-relevant `resources/` files, `_shared/core/{context-loading,quality-principles}.md` |
 | `MEMORY` | Mode, quoted constraints, wording decisions, anti-AI flags resolved, Claim-Evidence Map |
 
 ### Preconditions
@@ -169,6 +169,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 11. Apply the shared mannered-prose guidance with the academic checklist's literal-statement requirement.
 
 ## References
+- Research abstract guidance: `resources/abstract-guide.md` (load when drafting, revising, or reviewing an abstract)
 - Common prose diagnostics: `../_shared/core/anti-ai-prose.md` (load with the academic checklist for prose audits)
 - Academic audit constraints: `resources/anti-ai-checklist.md`
 - Sentence-structure reference: `resources/sentence-structure-reference.md`
