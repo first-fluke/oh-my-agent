@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.9.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.8.0...web-v11.9.0) (2026-10-29)
+
+
+### Features
+
+* **mobile:** add kotlin-android variant ([f7f1dfa](https://github.com/first-fluke/oh-my-agent/commit/f7f1dfa69f3c65f02ccc1ac4e2203dfbb3c8272f))
+
 ## [11.8.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.7.1...web-v11.8.0) (2026-10-28)
 
 
