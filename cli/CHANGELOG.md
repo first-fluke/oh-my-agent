@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.20.1...cli-v20.21.0) (2026-10-29)
+
+
+### Features
+
+* **antigravity:** align hooks, mcp sync, recap, and rules with agy ([0267876](https://github.com/first-fluke/oh-my-agent/commit/0267876630852b68769ec891ee8819b64a07ef78))
+
 ## [20.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.20.0...cli-v20.20.1) (2026-10-28)
 
 
