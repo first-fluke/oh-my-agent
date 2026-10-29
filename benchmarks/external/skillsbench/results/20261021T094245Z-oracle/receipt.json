@@ -1,0 +1,40 @@
+{
+  "status": "completed",
+  "task_outcome": "passed",
+  "task": "dialogue-parser",
+  "canonical_benchmark": false,
+  "execution_condition": "official-oracle-with-official-skills",
+  "setup_status": "completed",
+  "oracle_status": "completed",
+  "agent_status": "not-applicable",
+  "verifier_status": "completed",
+  "upstream_commit": "b63b7b2850226b6aa4fb5929a8c1ac7bc4d9a6af",
+  "benchflow_version": "0.6.3",
+  "reward": 1.0,
+  "pytest_cases": {
+    "passed": 35,
+    "failed": 0,
+    "total": 35
+  },
+  "official_ctrf_groups": {
+    "tests": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792575834.4293053,
+    "stop": 1792575834.5731862
+  },
+  "image_digests": [
+    "python@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0"
+  ],
+  "container_cleanup_status": "completed",
+  "deviations": [
+    "Used prebuilt official Dockerfile base and repeated runtime installs/copy; no image build",
+    "Not the canonical BenchFlow rollout"
+  ],
+  "manifest_sha256": "ee9678c13a3c5cb6bce88d55eecadf365241ea49495e8ce7f6c27b905e043a6b",
+  "official_ctrf_sha256": "41c79c30c36b852832480111f1b4c47c602099cb2882cb4c308fa5af6d930de8",
+  "raw_logs_retained_locally_gitignored": true
+}

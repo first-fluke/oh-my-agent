@@ -1,0 +1,252 @@
+{
+  "task": "seismic-phase-picking",
+  "status": "scored",
+  "started_at": 1792610932.122924,
+  "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/seismic-phase-picking/attempt-20261021T192851Z",
+  "container": "oma-skillsbench-batch-c9ede025550b",
+  "workspace": "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/seismic-phase-picking/attempt-20261021T192851Z",
+  "task_sha256": "720d3b8533a73cb0636f26b1ba86e35e9a4bec5039cca72a426b0f489c2fab5a",
+  "dockerfile_sha256": "f0c9b9e2e30e43c8eee2d95f0d12cea86ab38bd96f6ab44748e17859d41373a6",
+  "verifier_tree_sha256": "70cc0c6e1967d926b206636636ab904453f066def30e5f5407c9e53f772ba89a",
+  "setup_status": "completed",
+  "agent_status": "completed",
+  "verifier_status": "completed",
+  "oracle_status": "not-run",
+  "canonical_benchmark": false,
+  "hook_activation": "unverified",
+  "requested_resources": {
+    "network_mode": "public",
+    "build_timeout_sec": 900.0,
+    "os": "linux",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "storage_mb": 10240,
+    "gpus": 0
+  },
+  "hidden_data_isolation": "Host workspace is not OS isolation; upstream cache remains host-readable",
+  "steps": {
+    "published-image-pull": {
+      "exit_code": 0
+    },
+    "container-start": {
+      "exit_code": 0
+    },
+    "published-cache-validation": {
+      "exit_code": 0
+    },
+    "log-dirs": {
+      "exit_code": 0
+    },
+    "agent": {
+      "exit_code": 0
+    },
+    "verifier-clear": {
+      "exit_code": 0
+    },
+    "verifier-copy": {
+      "exit_code": 0
+    },
+    "verifier-compat-copy": {
+      "exit_code": 0
+    },
+    "verifier": {
+      "exit_code": 0
+    },
+    "verifier-download": {
+      "exit_code": 0
+    }
+  },
+  "commands": [
+    [
+      "docker",
+      "pull",
+      "--platform",
+      "linux/amd64",
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:1935fb5499cca24f4410203a0317d2ff0b6ca0b3625b1d3f5a577ba770937537"
+    ],
+    [
+      "docker",
+      "run",
+      "-d",
+      "--name",
+      "oma-skillsbench-batch-c9ede025550b",
+      "--platform",
+      "linux/amd64",
+      "--cpus",
+      "4",
+      "--memory",
+      "8192m",
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:1935fb5499cca24f4410203a0317d2ff0b6ca0b3625b1d3f5a577ba770937537",
+      "sleep",
+      "infinity"
+    ],
+    [
+      "docker",
+      "exec",
+      "oma-skillsbench-batch-c9ede025550b",
+      "python3",
+      "-c",
+      "import hashlib,json,pathlib,sys\nverified=[]\nfor expected in json.loads(sys.argv[1]):\n    data=pathlib.Path(expected['path']).read_bytes()\n    actual={'path':expected['path'],'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}\n    if actual != expected:\n        raise SystemExit('Published cache asset mismatch: '+expected['path'])\n    verified.append(actual)\nprint(json.dumps({'validated_cache_assets':verified}))\n",
+      "[{\"path\": \"/root/.seisbench/models/v3/phasenet/original.json.v2\", \"bytes\": 645, \"sha256\": \"33a2540c49b87ebc78fe7a913c4d369f394d21b03f2a791713a23eb512b4e282\"}, {\"path\": \"/root/.seisbench/models/v3/phasenet/original.pt.v2\", \"bytes\": 1112276, \"sha256\": \"184dd85b896eebf8d5967ee15a722a477fa2e4ce479a3b113ecbcb8a6419113f\"}, {\"path\": \"/root/.seisbench/models/v3/deepdenoiser/original.json.v1\", \"bytes\": 347, \"sha256\": \"dd53cc1454af65748f7b828234533b6991e84f5a7abb7141dd7c7c01c034c074\"}, {\"path\": \"/root/.seisbench/models/v3/deepdenoiser/original.pt.v1\", \"bytes\": 5567909, \"sha256\": \"44ad1fdfac4031e09dc6c599f2e2906665f10881b1befe069a8264b4e078eacc\"}]"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "oma-skillsbench-batch-c9ede025550b",
+      "/bin/sh",
+      "-c",
+      "mkdir -p /logs/agent /logs/verifier /logs/artifacts /app /tests"
+    ],
+    [
+      "codex",
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--ephemeral",
+      "-c",
+      "approval_policy=\"never\"",
+      "-s",
+      "danger-full-access",
+      "-C",
+      "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/seismic-phase-picking/attempt-20261021T192851Z",
+      "--model",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"high\"",
+      "-"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "oma-skillsbench-batch-c9ede025550b",
+      "/bin/sh",
+      "-c",
+      "rm -rf /logs/verifier /verifier /tests && mkdir -p /logs/verifier /verifier /tests"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/seismic-phase-picking/verifier/.",
+      "oma-skillsbench-batch-c9ede025550b:/verifier"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/seismic-phase-picking/verifier/.",
+      "oma-skillsbench-batch-c9ede025550b:/tests"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "oma-skillsbench-batch-c9ede025550b",
+      "/bin/sh",
+      "-c",
+      "bash /verifier/test.sh"
+    ],
+    [
+      "docker",
+      "cp",
+      "oma-skillsbench-batch-c9ede025550b:/logs/verifier",
+      "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/seismic-phase-picking/attempt-20261021T192851Z/verifier"
+    ]
+  ],
+  "published_image": {
+    "schema_version": 1,
+    "image_map_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/prebuilt_images/skillsbench-v1.1.json",
+    "image_map_sha256": "3bf81646e9121a4e566ad6976b90bb2a113eb238a98201e4c8dc7a47841b9c3a",
+    "deploy_bundle_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/deploy_bundles/skillsbench-v1.1.json",
+    "deploy_bundle_sha256": "cd622be2aaea7d6d327706ea31dc429f1641c9edd26658b102440584f25d198c",
+    "source_repository": "https://github.com/benchflow-ai/skillsbench",
+    "source_revision": "2493d9fa3114d09d103c1cd43f9bfe78aacd813b",
+    "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:1935fb5499cca24f4410203a0317d2ff0b6ca0b3625b1d3f5a577ba770937537",
+    "platform": "linux/amd64",
+    "source_git_objects": {
+      "environment": "4693145dbb636fe83ae1413955d50a9523221ef3",
+      "verifier": "992c0993a53b14ec4950001ca05f466d304818d8",
+      "task.md": "7b9884857e49ac31b722397916f962589ec2900f"
+    },
+    "local_git_objects": {
+      "environment": "77958e822aa2b242827c7222212ffa417f8e7ac1",
+      "verifier": "992c0993a53b14ec4950001ca05f466d304818d8",
+      "task.md": "7b9884857e49ac31b722397916f962589ec2900f"
+    },
+    "original_dockerfile_sha256": "f0c9b9e2e30e43c8eee2d95f0d12cea86ab38bd96f6ab44748e17859d41373a6",
+    "published_dockerfile_sha256": "3867ba6443c15f6a5a58e21bd1671b4be4c7a4249ef39ffbd7d250bb584cf321",
+    "recipe_differences": [
+      "Same PhaseNet original and DeepDenoiser original preloads replaced by six retries/backoff and official backup-repository switch; observed files match original primary-repository bytes"
+    ],
+    "cache_payload_proof": "results/published-seismic-cache-proof-20261021/receipt.json",
+    "cache_payload_proof_sha256": "2f0022ea2b9db624a1e3e2e68e578d5d0d965216947aeede541e37cbae373d87",
+    "cache_assets": [
+      {
+        "path": "/root/.seisbench/models/v3/phasenet/original.json.v2",
+        "bytes": 645,
+        "sha256": "33a2540c49b87ebc78fe7a913c4d369f394d21b03f2a791713a23eb512b4e282"
+      },
+      {
+        "path": "/root/.seisbench/models/v3/phasenet/original.pt.v2",
+        "bytes": 1112276,
+        "sha256": "184dd85b896eebf8d5967ee15a722a477fa2e4ce479a3b113ecbcb8a6419113f"
+      },
+      {
+        "path": "/root/.seisbench/models/v3/deepdenoiser/original.json.v1",
+        "bytes": 347,
+        "sha256": "dd53cc1454af65748f7b828234533b6991e84f5a7abb7141dd7c7c01c034c074"
+      },
+      {
+        "path": "/root/.seisbench/models/v3/deepdenoiser/original.pt.v1",
+        "bytes": 5567909,
+        "sha256": "44ad1fdfac4031e09dc6c599f2e2906665f10881b1befe069a8264b4e078eacc"
+      }
+    ],
+    "cache_version_caveat": "Original preload calls did not pin model versions; recorded versions are verified observed official cache identities, not an original immutable-version promise.",
+    "cache_layer_diff_id": "sha256:67e43ea4011b70a5221f868b76cbbb525bbab36ffbe1240fd0cdffca7763e884",
+    "source_validation": "task.md, verifier and every non-Dockerfile environment blob match; only reviewed cache-preload retry/transport recipe differs; original environment Git objects and clean worktree verified; observed upstream cache bytes must pass SHA256 validation before solver starts"
+  },
+  "image_inspect": {
+    "Id": "sha256:cf81954e3954637b609143748b03d4750455a0e13df8c2d6a82a327d2411014e",
+    "RepoDigests": [
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:1935fb5499cca24f4410203a0317d2ff0b6ca0b3625b1d3f5a577ba770937537"
+    ],
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "environment_execution": "published-official-task-image",
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning_effort": "high",
+  "usage": {
+    "input_tokens": 1558953,
+    "cached_input_tokens": 1483392,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 12612,
+    "reasoning_output_tokens": 5253
+  },
+  "official_ctrf_groups": {
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792611702.570061,
+    "stop": 1792611705.189383
+  },
+  "pytest_cases": {
+    "passed": 4
+  },
+  "reward": 1.0,
+  "task_outcome": "passed",
+  "finished_at": 1792611707.9311428
+}

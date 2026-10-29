@@ -1,0 +1,140 @@
+{
+  "benchmark": "WorkBuddy Bench v1.0",
+  "date": "2026-10-21",
+  "operation": "Regrade saved successful Code solves after restoring declared runtime dependencies and scaffolds",
+  "canonical_harbor_run": false,
+  "hooks_verified": false,
+  "upstream_revision": "625b2233093ae4f23e76be28c1f341d41cc70373",
+  "dataset_sha256": "f60394e44341f45f66af17ba69efc51ceadc61f17c08aa89e4af35b51f6f34e1",
+  "changes": [
+    "Retain every chained pip install",
+    "Preserve original requirements files and pinned versions",
+    "Restore declared source console entry points",
+    "Run official noncompiler ZIP test-fixture setup"
+  ],
+  "verification": [
+    "Exact Dockerfile dependency extraction regression checks passed for both original workspaces",
+    "Native unchanged CompositeVerifier collected all four tests per task",
+    "Saved and regraded agent patches byte-identical",
+    "Original agent logs and old grading evidence preserved",
+    "Regrade containers removed"
+  ],
+  "tasks": [
+    {
+      "task": "code/bug_fix-medium-permission_error_skip_continue",
+      "status": "scored",
+      "score": 0.25,
+      "tests_passed": 1,
+      "tests_total": 4,
+      "test_status": "partial_pass",
+      "model_calls_during_regrade": 0,
+      "saved_agent_patch_sha256": "d589fadbb79b4d100c53fda1917722e5e85a04258a1e5c275a4ad6640b9dd6a1",
+      "original_agent_runtime": {
+        "usage": {
+          "input_tokens": 695118,
+          "cached_input_tokens": 608640,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 7023,
+          "reasoning_output_tokens": 2016
+        },
+        "actual_model": "gpt-6.1-sol",
+        "actual_effort": "high",
+        "skills": {
+          "schemaVersion": 2,
+          "version": "20.10.3",
+          "mode": "project",
+          "installedAt": "2026-10-21T09:42:53.848Z"
+        },
+        "agents_md_sha256": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956",
+        "debug_skill_sha256": "f6456470ab128f205628b655710f70e6667218aee4f1c5ca8778fc4d9d223b8f"
+      },
+      "environment_scaffolds": [],
+      "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+      "platform": "linux/arm64",
+      "official_sources_sha256": {
+        "tests/gold.patch": "e243736bb4cc1dac4a21a9c9faf33d9cbd7193cffa4984fdfee807867781466e",
+        "tests/verifier.toml": "d457ac7700e5e6a2008d07162b4c2b1676339039b901602404c7a617ea22d34c",
+        "tests/test.sh": "9a9f5c6cc9aac4bb59dff52e8e8d205c8d05de83a0d269986a507862d4b22a02",
+        "environment/Dockerfile": "57a7dbf8aa59d264f3da56822594c184053580a711de045ccc27bc8482ab75f4",
+        "environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+        "tests/injected/tests/test_copy.py": "eb1263dce47b9d4ddcaf3a6db38f9a53e2d9abb30346850d4f52ca6091aa1d91"
+      },
+      "evidence": {
+        "source_output": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-regrade-dependencies-20261021/code/bug_fix-medium-permission_error_skip_continue",
+        "archive": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-full/code/bug_fix-medium-permission_error_skip_continue/regrades/1792583513652029000",
+        "source_agent_patch_sha256": "d589fadbb79b4d100c53fda1917722e5e85a04258a1e5c275a4ad6640b9dd6a1",
+        "model_invoked": false,
+        "started_at": 1792583339.971526,
+        "finished_at": 1792583388.748328,
+        "container_removed": true,
+        "preparation_fixes": [
+          "All chained official pip dependencies retained",
+          "Original requirements files and pins retained",
+          "Declared source console entry points restored",
+          "Declared ZIP test fixtures restored when required"
+        ]
+      }
+    },
+    {
+      "task": "code/bug_fix-medium-properly_render_double_braces",
+      "status": "scored",
+      "score": 1.0,
+      "tests_passed": 4,
+      "tests_total": 4,
+      "test_status": "full_pass",
+      "model_calls_during_regrade": 0,
+      "saved_agent_patch_sha256": "1c8c533248764e6e6fe234af071205ff3237d2aeff6ef5ac8811c85d3d3ed9d0",
+      "original_agent_runtime": {
+        "usage": {
+          "input_tokens": 852151,
+          "cached_input_tokens": 783872,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 9368,
+          "reasoning_output_tokens": 4338
+        },
+        "actual_model": "gpt-6.1-sol",
+        "actual_effort": "high",
+        "skills": {
+          "schemaVersion": 2,
+          "version": "20.10.3",
+          "mode": "project",
+          "installedAt": "2026-10-21T09:42:53.848Z"
+        },
+        "agents_md_sha256": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956",
+        "debug_skill_sha256": "f6456470ab128f205628b655710f70e6667218aee4f1c5ca8778fc4d9d223b8f"
+      },
+      "environment_scaffolds": [
+        {
+          "source": "official-Dockerfile-postinstall-fixtures",
+          "command": "python igor.py zip_mods"
+        }
+      ],
+      "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+      "platform": "linux/arm64",
+      "official_sources_sha256": {
+        "tests/gold.patch": "ea3541fa6516445a99456ce524c8c8a73074909839a4dfefee514ff0fc32c283",
+        "tests/verifier.toml": "c4e3b32596fbb161c58f88fe3e5a77fbe9cf0c0d458df1cd2ed9abd9b272bd19",
+        "tests/test.sh": "9a9f5c6cc9aac4bb59dff52e8e8d205c8d05de83a0d269986a507862d4b22a02",
+        "environment/Dockerfile": "1c1bd805088b42cb93cbf93be72948f4aca1e2e49de7a666bb8aabd6929d2053",
+        "environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+        "tests/injected/tests/test_html.py": "59fd9bc425c1863e1a90c83059718672cac4e2ffe4948bc17ba80176925570b8",
+        "tests/injected/tests/test_phystokens.py": "a1a10c5cfa006c66e7b1c2ae266278ab231da3211ec531aef67b9e09c8395427"
+      },
+      "evidence": {
+        "source_output": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-regrade-braces-20261021/code/bug_fix-medium-properly_render_double_braces",
+        "archive": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-full/code/bug_fix-medium-properly_render_double_braces/regrades/1792583513709669000",
+        "source_agent_patch_sha256": "1c8c533248764e6e6fe234af071205ff3237d2aeff6ef5ac8811c85d3d3ed9d0",
+        "model_invoked": false,
+        "started_at": 1792583394.60898,
+        "finished_at": 1792583450.2707462,
+        "container_removed": true,
+        "preparation_fixes": [
+          "All chained official pip dependencies retained",
+          "Original requirements files and pins retained",
+          "Declared source console entry points restored",
+          "Declared ZIP test fixtures restored when required"
+        ]
+      }
+    }
+  ]
+}

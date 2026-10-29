@@ -1,0 +1,549 @@
+{
+  "benchmark": "skillsbench",
+  "task_set": "v1.1-all-87",
+  "canonical_benchmark": false,
+  "upstream_commit": "b63b7b2850226b6aa4fb5929a8c1ac7bc4d9a6af",
+  "model_concurrency": 1,
+  "created_at": 1792576787.122835,
+  "condition": "fixed-oma-snapshot-host-agent-driving-task-container",
+  "tasks": {
+    "3d-scan-calc": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792577193.6715982
+    },
+    "ada-bathroom-plan-repair": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792577969.907167
+    },
+    "adaptive-cruise-control": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792578519.6129742
+    },
+    "azure-bgp-oscillation-route-leak": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792578670.37871
+    },
+    "bike-rebalance": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792579632.259496
+    },
+    "citation-check": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792580630.400599
+    },
+    "civ6-adjacency-optimizer": {
+      "status": "scored",
+      "reward": 0.95,
+      "task_outcome": "partial",
+      "finished_at": 1792580412.2726889
+    },
+    "court-form-filling": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792580900.75693
+    },
+    "crystallographic-wyckoff-position-analysis": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792581086.1408489
+    },
+    "dapt-intrusion-detection": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792588550.206943
+    },
+    "data-to-d3": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792581877.430918
+    },
+    "debug-trl-grpo": {
+      "status": "scored",
+      "reward": 0.25,
+      "task_outcome": "partial",
+      "finished_at": 1792599557.7534258
+    },
+    "dialogue-parser": {
+      "status": "scored",
+      "reward": 0.833,
+      "task_outcome": "partial",
+      "finished_at": 1792582014.462389
+    },
+    "drone-planning-control": {
+      "status": "scored",
+      "reward": 0.366667,
+      "task_outcome": "partial",
+      "finished_at": 1792582508.846208
+    },
+    "dynamic-object-aware-egomotion": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792583197.162088
+    },
+    "earthquake-phase-association": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792600234.848793
+    },
+    "earthquake-plate-calculation": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792583379.517993
+    },
+    "econ-detrending-correlation": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792583515.959771
+    },
+    "edit-pdf": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792583701.075636
+    },
+    "energy-ac-optimal-power-flow": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792584069.766541
+    },
+    "energy-market-pricing": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792584440.62765
+    },
+    "energy-unit-commitment": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792585226.168339
+    },
+    "enterprise-information-search": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792585394.6413262
+    },
+    "exam-block-sequencing": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792586072.6045282
+    },
+    "exceltable-in-ppt": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792586458.6279721
+    },
+    "exoplanet-detection-period": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792591621.3885472
+    },
+    "financial-modeling-qa": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792586729.229901
+    },
+    "fix-build-agentops": {
+      "status": "scored",
+      "finished_at": 1792591621.385709,
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "recovered_from_receipt": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/fix-build-agentops/receipt.json"
+    },
+    "fix-build-google-auto": {
+      "status": "scored",
+      "finished_at": 1792592869.7671309,
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "recovered_from_receipt": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/fix-build-google-auto/receipt.json"
+    },
+    "fix-druid-loophole-cve": {
+      "status": "agent_error",
+      "error": "agent exceeded 1800.0 seconds",
+      "finished_at": 1792593544.3233202
+    },
+    "fix-erlang-ssh-cve": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792589983.2601511
+    },
+    "fix-visual-stability": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792591108.75406
+    },
+    "flink-query": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792594111.758204
+    },
+    "flood-risk-analysis": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792594484.131815
+    },
+    "glm-lake-mendota": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792594859.995934
+    },
+    "gravitational-wave-detection": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792595432.9285262
+    },
+    "grid-dispatch-operator": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792595189.706631
+    },
+    "hvac-control": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792595663.86568
+    },
+    "invoice-fraud-detection": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792595843.387344
+    },
+    "jax-computing-basics": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792596065.029323
+    },
+    "jpg-ocr-stat": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792596275.393544
+    },
+    "lab-unit-harmonization": {
+      "status": "scored",
+      "reward": 0.812,
+      "task_outcome": "partial",
+      "finished_at": 1792596735.8166678
+    },
+    "lake-warming-attribution": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792597763.92792
+    },
+    "latex-formula-extraction": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792597563.288827
+    },
+    "lean4-proof": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792598056.3880699
+    },
+    "llm-prefix-cache-replay": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792598201.835362
+    },
+    "manufacturing-codebook-normalization": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792598550.2112331
+    },
+    "manufacturing-equipment-maintenance": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792598946.398935
+    },
+    "manufacturing-fjsp-optimization": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792599175.744698
+    },
+    "mario-coin-counting": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792600631.4191191
+    },
+    "mars-clouds-clustering": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792600877.7082298
+    },
+    "multilingual-video-dubbing": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792601334.2325382
+    },
+    "offer-letter-generator": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792601546.8918579
+    },
+    "organize-messy-files": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792602188.2215
+    },
+    "paper-anonymizer": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792602572.688095
+    },
+    "parallel-tfidf-search": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792602912.4914749
+    },
+    "paratransit-routing": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792604058.425538
+    },
+    "pddl-airport-planning": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792604212.8658078
+    },
+    "pddl-tpp-planning": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792604367.73158
+    },
+    "pdf-excel-diff": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792604668.4457788
+    },
+    "powerlifting-coef-calc": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792605112.512801
+    },
+    "pptx-reference-formatting": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792605417.026736
+    },
+    "protein-expression-analysis": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792605870.933821
+    },
+    "python-scala-translation": {
+      "status": "agent_error",
+      "error": "agent exceeded 600.0 seconds",
+      "finished_at": 1792607027.169385
+    },
+    "quantum-numerical-simulation": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792607271.240444
+    },
+    "r2r-mpc-control": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792606352.7157729
+    },
+    "radar-vital-signs": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792607683.9165351
+    },
+    "react-performance-debugging": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792608304.6519868
+    },
+    "reserves-at-risk-calc": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792608950.272993
+    },
+    "sales-pivot-analysis": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792609414.844959
+    },
+    "sec-financial-report": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792609656.482173
+    },
+    "seismic-phase-picking": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792611707.9311428
+    },
+    "setup-fuzzing-py": {
+      "status": "waiting_provider_access",
+      "provider_access_reason": "cybersecurity_review",
+      "error": "Provider rejected task content for possible cybersecurity risk; not retried",
+      "finished_at": 1792609772.305932
+    },
+    "shock-analysis-demand": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792610930.71567
+    },
+    "shock-analysis-supply": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792612504.398175
+    },
+    "simpo-code-reproduction": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792613713.4887612
+    },
+    "software-dependency-audit": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792612856.9401312
+    },
+    "spring-boot-jakarta-migration": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792613429.290215
+    },
+    "suricata-custom-exfil": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792613936.707581
+    },
+    "syzkaller-ppdev-syzlang": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792614539.56203
+    },
+    "threejs-structure-parser": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792614754.684722
+    },
+    "threejs-to-obj": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792614966.734221
+    },
+    "tictoc-unnecessary-abort-detection": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792615155.3729558
+    },
+    "travel-planning": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792615343.587519
+    },
+    "video-silence-remover": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792615694.3254132
+    },
+    "weighted-gdp-calc": {
+      "status": "scored",
+      "reward": 1.0,
+      "task_outcome": "passed",
+      "finished_at": 1792616103.30966
+    },
+    "xlsx-recover-data": {
+      "status": "scored",
+      "reward": 0.0,
+      "task_outcome": "failed",
+      "finished_at": 1792616282.631638
+    }
+  },
+  "updated_at": 1792616313.298804,
+  "counts": {
+    "scored": 84,
+    "agent_error": 2,
+    "waiting_provider_access": 1
+  },
+  "oma_snapshot_sha256": "56ede28c1cbb6df2a34fc29106439c96dcec1d2dfa5be9acfd5201e4724ed3c9",
+  "oma_cli_version": "20.10.3",
+  "codex_cli_version": "codex-cli 0.163.0",
+  "build_authorization": "User explicitly approved benchmark image/task/grader builds",
+  "native_image_build_status": "waiting_build_gate",
+  "native_image_build_blocker": "Local build-gate killed Docker build; owner GUI request timed out; no bypass attempted",
+  "active_execution_mode": "Runtime replay of task Dockerfile with binary-only environment preparation; original official verifier; all87 retained",
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning_effort": "high",
+  "receipt_hydrated_at": "2026-10-21T14:39:04Z"
+}

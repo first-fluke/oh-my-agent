@@ -1,0 +1,130 @@
+{
+  "benchmark": "WorkBuddy Bench v1.0",
+  "date": "2026-10-22",
+  "task": "code/tool_behavior-easy-diagnostics_and_observability",
+  "status": "scored",
+  "score": 1.0,
+  "tests_passed": 4,
+  "tests_total": 4,
+  "test_status": "full_pass",
+  "canonical_harbor_run": false,
+  "hooks_verified": false,
+  "model_calls_during_regrade": 0,
+  "source_builds_during_regrade": 0,
+  "original_agent_runtime": {
+    "usage": {
+      "input_tokens": 887992,
+      "cached_input_tokens": 831232,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8745,
+      "reasoning_output_tokens": 3330
+    },
+    "actual_model": "gpt-6.1-sol",
+    "actual_effort": "high",
+    "skills": {
+      "schemaVersion": 2,
+      "version": "20.10.3",
+      "mode": "project",
+      "installedAt": "2026-10-21T09:42:53.848Z"
+    },
+    "agents_md_sha256": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956",
+    "debug_skill_sha256": "f6456470ab128f205628b655710f70e6667218aee4f1c5ca8778fc4d9d223b8f"
+  },
+  "saved_agent_patch_sha256": "0167f5e95d698fe9f09190bbb09e0e9af1c554bff4747060f567af55a6bda1b4",
+  "upstream_revision": "625b2233093ae4f23e76be28c1f341d41cc70373",
+  "dataset_sha256": "f60394e44341f45f66af17ba69efc51ceadc61f17c08aa89e4af35b51f6f34e1",
+  "official_sources_sha256": {
+    "tests/gold.patch": "9a19a7c09c32e14f5a7936d60d3e2b6daa727da7dca0c8d986a860d40a54ab85",
+    "tests/verifier.toml": "fa8e3a44062eb690a69f26d179e2c7b8d974568366bc4ebcef589981f19e469a",
+    "tests/test.sh": "9a9f5c6cc9aac4bb59dff52e8e8d205c8d05de83a0d269986a507862d4b22a02",
+    "environment/Dockerfile": "256621162c7a0c03ad98a3eddf7bcf6197e68b5cd60ff1d9a27df21fdf680993",
+    "environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+    "tests/injected/tests/conftest.py": "281e1decc51def4376ad5f06c51752debfbc4c5affa3726baee144f95e1d9b4f",
+    "tests/injected/tests/test_factory.py": "b1a3e150151671abd23f5e1795e1f40660a185567c4429622761445205df0ce2",
+    "tests/injected/tests/helpers.py": "414a3c8f3ec28dffcee05fd3bb7aed1f4124336609be7ecc5bd4845306f44169",
+    "tests/injected/tests/json/test_schema.py": "d52fe9208a16268607f41536302e4d3774cb23c5965bfae17782bc9749f22065",
+    "tests/injected/tests/json/fixtures/self_invalid_version.toml": "b2103474c65401422e8e6665855e4b2bed3be56cf24b19eae0f2a54dc736b375",
+    "tests/injected/tests/json/fixtures/self_invalid_plugin.toml": "e433578198cac90d1aa7beada28efb572d2e5be875a13ac88082f7d6ed539318",
+    "tests/injected/tests/json/fixtures/self_valid.toml": "b519d8de3218fc179b22883ef0b4de96c61f73c1f6ce473a3213e5acdc7324c7",
+    "tests/injected/tests/json/fixtures/source/complete_valid.toml": "26b497ce8ced68ce1d0f78892b4996bd5797bf30002a7e9ebd9dc5ee1662e863",
+    "tests/injected/tests/json/fixtures/source/complete_invalid_priority.toml": "646d3df9767ab6a9f74bff0a2ad37fe5d7e2ce8c2749a2b2f435adf38e489f54"
+  },
+  "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+  "platform": "linux/arm64",
+  "runtime_compatibility": [
+    {
+      "source": "official Dockerfile and poetry.lock",
+      "requirement": "poetry-core==2.1.3"
+    },
+    {
+      "source": "official Dockerfile and poetry.lock",
+      "requirement": "dulwich==0.22.8"
+    },
+    {
+      "source": "official Dockerfile dependency via prebuilt Debian package",
+      "requirement": "httpretty",
+      "package": "python3-httpretty",
+      "installed_version": "1.1.4-4"
+    }
+  ],
+  "source_distribution_metadata": [
+    {
+      "source": "static project metadata in pyproject.toml",
+      "name": "poetry",
+      "version": "2.2.0.dev0",
+      "path": "/usr/local/lib/python3.12/site-packages/poetry-2.2.0.dev0.dist-info"
+    }
+  ],
+  "prebuilt_os_dependency": {
+    "package": "python3-httpretty",
+    "version": "1.1.4-4",
+    "architecture": "all",
+    "sha256": "a1028cb706a79eb7a758150275d67cb6bb26f0a24b483d1e5766913ea479a495"
+  },
+  "evidence": {
+    "source_output": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-regrade-poetry-20261022/code/tool_behavior-easy-diagnostics_and_observability",
+    "archive": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-full/code/tool_behavior-easy-diagnostics_and_observability/regrades/1792598604886203000",
+    "source_agent_patch_sha256": "0167f5e95d698fe9f09190bbb09e0e9af1c554bff4747060f567af55a6bda1b4",
+    "model_invoked": false,
+    "started_at": 1792598159.1969228,
+    "finished_at": 1792598543.52639,
+    "container_removed": true,
+    "preparation_fixes": [
+      "Unwrapped official nested bash-lc pip commands",
+      "Honored editable --no-deps and resolved explicit package pins from poetry.lock",
+      "Restored declared static PEP621 distribution metadata without backend execution",
+      "Used matching prebuilt Debian HTTPPretty1.1.4-4 for source-only PyPI dependency"
+    ],
+    "runtime_compatibility": [
+      {
+        "source": "official Dockerfile and poetry.lock",
+        "requirement": "poetry-core==2.1.3"
+      },
+      {
+        "source": "official Dockerfile and poetry.lock",
+        "requirement": "dulwich==0.22.8"
+      },
+      {
+        "source": "official Dockerfile dependency via prebuilt Debian package",
+        "requirement": "httpretty",
+        "package": "python3-httpretty",
+        "installed_version": "1.1.4-4"
+      }
+    ],
+    "source_distribution_metadata": [
+      {
+        "source": "static project metadata in pyproject.toml",
+        "name": "poetry",
+        "version": "2.2.0.dev0",
+        "path": "/usr/local/lib/python3.12/site-packages/poetry-2.2.0.dev0.dist-info"
+      }
+    ]
+  },
+  "verification": [
+    "Native official verifier collected and passed all4 tests",
+    "Regraded candidate patch bytes match original saved candidate",
+    "Original solver trajectory/usage and failed grader preserved",
+    "Official task/scorer/test source hashes match original archive",
+    "Owned runtime removed; live manifest unchanged"
+  ]
+}

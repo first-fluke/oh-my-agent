@@ -1,0 +1,206 @@
+{
+  "task": "multilingual-video-dubbing",
+  "status": "scored",
+  "started_at": 1792600879.049978,
+  "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/multilingual-video-dubbing/attempt-20261021T164118Z",
+  "container": "oma-skillsbench-batch-2d84972177ac",
+  "workspace": "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/multilingual-video-dubbing/attempt-20261021T164118Z",
+  "task_sha256": "0bbb7e12979b6e33d1b7a195f6bad0293e0c1986b1d4245b87d69c2c5bf9781b",
+  "dockerfile_sha256": "d302ea0af2375979f9b9accc553a05e50f95d2b6bb165163f004b30ad49e1b16",
+  "verifier_tree_sha256": "a35a9c0aca77079a5e213bb0b73c31fed53510d03ab0610565455c0c27c2c1cf",
+  "setup_status": "completed",
+  "agent_status": "completed",
+  "verifier_status": "completed",
+  "oracle_status": "not-run",
+  "canonical_benchmark": false,
+  "hook_activation": "unverified",
+  "requested_resources": {
+    "network_mode": "public",
+    "build_timeout_sec": 1200.0,
+    "os": "linux",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "storage_mb": 10240,
+    "gpus": 0
+  },
+  "hidden_data_isolation": "Host workspace is not OS isolation; upstream cache remains host-readable",
+  "steps": {
+    "published-image-pull": {
+      "exit_code": 0
+    },
+    "container-start": {
+      "exit_code": 0
+    },
+    "log-dirs": {
+      "exit_code": 0
+    },
+    "agent": {
+      "exit_code": 0
+    },
+    "verifier-clear": {
+      "exit_code": 0
+    },
+    "verifier-copy": {
+      "exit_code": 0
+    },
+    "verifier-compat-copy": {
+      "exit_code": 0
+    },
+    "verifier": {
+      "exit_code": 0
+    },
+    "verifier-download": {
+      "exit_code": 0
+    }
+  },
+  "commands": [
+    [
+      "docker",
+      "pull",
+      "--platform",
+      "linux/amd64",
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:d0e4a3fbbcee9cee283c4bedcaf0236a411952e6a354c9bf4c08c050c6ae9285"
+    ],
+    [
+      "docker",
+      "run",
+      "-d",
+      "--name",
+      "oma-skillsbench-batch-2d84972177ac",
+      "--platform",
+      "linux/amd64",
+      "--cpus",
+      "2",
+      "--memory",
+      "4096m",
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:d0e4a3fbbcee9cee283c4bedcaf0236a411952e6a354c9bf4c08c050c6ae9285",
+      "sleep",
+      "infinity"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "oma-skillsbench-batch-2d84972177ac",
+      "/bin/sh",
+      "-c",
+      "mkdir -p /logs/agent /logs/verifier /logs/artifacts /app /tests"
+    ],
+    [
+      "codex",
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--ephemeral",
+      "-c",
+      "approval_policy=\"never\"",
+      "-s",
+      "danger-full-access",
+      "-C",
+      "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/multilingual-video-dubbing/attempt-20261021T164118Z",
+      "--model",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"high\"",
+      "-"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "oma-skillsbench-batch-2d84972177ac",
+      "/bin/sh",
+      "-c",
+      "rm -rf /logs/verifier /verifier /tests && mkdir -p /logs/verifier /verifier /tests"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/multilingual-video-dubbing/verifier/.",
+      "oma-skillsbench-batch-2d84972177ac:/verifier"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/multilingual-video-dubbing/verifier/.",
+      "oma-skillsbench-batch-2d84972177ac:/tests"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "oma-skillsbench-batch-2d84972177ac",
+      "/bin/sh",
+      "-c",
+      "bash /verifier/test.sh"
+    ],
+    [
+      "docker",
+      "cp",
+      "oma-skillsbench-batch-2d84972177ac:/logs/verifier",
+      "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/multilingual-video-dubbing/attempt-20261021T164118Z/verifier"
+    ]
+  ],
+  "published_image": {
+    "schema_version": 1,
+    "image_map_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/prebuilt_images/skillsbench-v1.1.json",
+    "image_map_sha256": "3bf81646e9121a4e566ad6976b90bb2a113eb238a98201e4c8dc7a47841b9c3a",
+    "deploy_bundle_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/deploy_bundles/skillsbench-v1.1.json",
+    "deploy_bundle_sha256": "cd622be2aaea7d6d327706ea31dc429f1641c9edd26658b102440584f25d198c",
+    "source_repository": "https://github.com/benchflow-ai/skillsbench",
+    "source_revision": "2493d9fa3114d09d103c1cd43f9bfe78aacd813b",
+    "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:d0e4a3fbbcee9cee283c4bedcaf0236a411952e6a354c9bf4c08c050c6ae9285",
+    "platform": "linux/amd64",
+    "source_git_objects": {
+      "environment": "cd8912196e2f89a78e70a59b413b27b8f4892d8c",
+      "verifier": "c6d3a63a3f143f378b092c17e4a92d4168e61811",
+      "task.md": "6c54d921d0687bed2bda4458152ab4903e9a281c"
+    },
+    "recipe_differences": [],
+    "source_validation": "environment, verifier and task.md Git objects match exactly; worktree clean"
+  },
+  "image_inspect": {
+    "Id": "sha256:5ece7574df33a9c1d858662e1c315b15e52f424b1a867481dc26369448125c8a",
+    "RepoDigests": [
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:d0e4a3fbbcee9cee283c4bedcaf0236a411952e6a354c9bf4c08c050c6ae9285"
+    ],
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "environment_execution": "published-official-task-image",
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning_effort": "high",
+  "usage": {
+    "input_tokens": 675116,
+    "cached_input_tokens": 633728,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 6001,
+    "reasoning_output_tokens": 2048
+  },
+  "official_ctrf_groups": {
+    "tests": 8,
+    "passed": 7,
+    "failed": 1,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792601290.6100085,
+    "stop": 1792601320.2802343
+  },
+  "pytest_cases": {
+    "failed": 1,
+    "passed": 7
+  },
+  "reward": 0.0,
+  "task_outcome": "failed",
+  "finished_at": 1792601334.2325382
+}

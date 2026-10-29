@@ -1,0 +1,89 @@
+{
+  "recorded_at": "2026-10-21T15:09:48Z",
+  "status": "verified-public-cache-payloads",
+  "method": "Read-only registry selected-layer SHA256+uncompressed diffID and upstream asset comparison by QA; no model/pickle execution, image pull, build, or container",
+  "source_revision": "2493d9fa3114d09d103c1cd43f9bfe78aacd813b",
+  "original_revision": "b63b7b2850226b6aa4fb5929a8c1ac7bc4d9a6af",
+  "caveat": "Original Dockerfile preload calls did not pin these asset revisions; these are verified observed official cache identities, not an original immutable-version promise",
+  "tasks": {
+    "debug-trl-grpo": {
+      "original_dockerfile_sha256": "81ca095192f908045f924952abdd9f5fc88d34dc6b2ac9e721daee1c23aab3ba",
+      "published_dockerfile_sha256": "956be3c703e809c2fc2913a27490aa5b05ef740c341d4ae4d8b3fd107fe537ae",
+      "recipe_difference": "Same DeepSeek tokenizer preload replaced by six retries/backoff; no model ID, dependency, ENV or other environment file changes",
+      "layer_index": 11,
+      "layer_sha256": "35bedbbebaa85b9955657a062265dc18b086ecca0538b9872457e74f6b8c5157",
+      "layer_compressed_bytes": 2405451,
+      "layer_diff_id": "sha256:7ea537fd10cd113bdd2c3fb7ebd80651ac58dfb9ef18058de0ee3a45efca6546",
+      "upstream_repository": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+      "upstream_revision": "ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562",
+      "upstream_metadata_url": "https://huggingface.co/api/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/revision/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562?blobs=true",
+      "assets": [
+        {
+          "path": "root/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer.json",
+          "bytes": 7031660,
+          "sha256": "88145e3c3249adc2546ede277e9819d6e405e19072456e4b521cbc724bd60773",
+          "git_blob_sha1": "a34650995da6939a945c330eadb0687147ac3ef8",
+          "upstream_url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/resolve/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer.json"
+        },
+        {
+          "path": "root/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer_config.json",
+          "bytes": 3071,
+          "sha256": "8ac8c85fb242563c2260baec0909debd69d718af6a0b3d90e6cab62b4d341cd5",
+          "git_blob_sha1": "9967ff32d94b21c94dc7e2b3bcbea295a46cde50",
+          "upstream_url": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B/resolve/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer_config.json"
+        }
+      ],
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:593e1a7d4969d6664592095006a8348e22cc56759a99e843f9e49a6ccdf37736",
+      "platform": "linux/amd64",
+      "original_git_objects": {
+        "environment": "6d7ef58b9c36650f90fc590164640633aa1483a6",
+        "verifier": "d845ac3e30ade254bb4f024a690856abf76fb062",
+        "task.md": "e16730f013923daff6dcc1c130126ecc8c86beab"
+      },
+      "source_git_objects": {
+        "environment": "4d0288e2d446b217931a71c3b57da34e4354c7d7",
+        "verifier": "d845ac3e30ade254bb4f024a690856abf76fb062",
+        "task.md": "e16730f013923daff6dcc1c130126ecc8c86beab"
+      },
+      "non_dockerfile_blobs_matched": 12
+    },
+    "earthquake-phase-association": {
+      "original_dockerfile_sha256": "220bc6346414a75c269237d5f2a6e1e24da5e0f11e610f1d1221bc143dcec8cf",
+      "published_dockerfile_sha256": "382ebe36cb4154733b194a31a4d640e469009f0e86b026316f8fa6d84c95b5a8",
+      "recipe_difference": "Same PhaseNet instance preload replaced by six retries/backoff and official backup-repository switch; observed cache matches original primary-repository version2 bytes",
+      "layer_index": 8,
+      "layer_sha256": "9a1dc30836455a10612603c3e0c1faa87646077c75555fab776ad8591e313391",
+      "layer_compressed_bytes": 1691521,
+      "layer_diff_id": "sha256:809726f5bf9b00f42d569350f1e49a72e978d224bd02464a0b663127ee58c4cb",
+      "upstream_repository": "https://hifis-storage.desy.de:2880/Helmholtz/HelmholtzAI/SeisBench/models/v3/phasenet",
+      "upstream_version": "2",
+      "assets": [
+        {
+          "path": "root/.seisbench/models/v3/phasenet/instance.json.v2",
+          "bytes": 787,
+          "sha256": "d0f33eb054818b6eef1dcf090947f7239b68f290c2e9180d9a807df325300182",
+          "upstream_url": "https://hifis-storage.desy.de:2880/Helmholtz/HelmholtzAI/SeisBench/models/v3/phasenet/instance.json.v2"
+        },
+        {
+          "path": "root/.seisbench/models/v3/phasenet/instance.pt.v2",
+          "bytes": 1112615,
+          "sha256": "dddcc3d872106a8cd2013ce7a035c972a7f435749b5c02a015efd5ce3767da6d",
+          "upstream_url": "https://hifis-storage.desy.de:2880/Helmholtz/HelmholtzAI/SeisBench/models/v3/phasenet/instance.pt.v2"
+        }
+      ],
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:b4324ceac8508323250e6ef40a821df1c479473d08c3c56420b2d38e0d391dd4",
+      "platform": "linux/amd64",
+      "original_git_objects": {
+        "environment": "be123c2c5dff1253f6625ff74c4cf3c4a4f0734e",
+        "verifier": "6661f4f80fe2ad9b0065f5a33de266fcded6fef9",
+        "task.md": "9ba196a3e4ca95fd9e418e0998878badaaf85e76"
+      },
+      "source_git_objects": {
+        "environment": "176ddd590fcc51c109f8f3914ffc2f7580505839",
+        "verifier": "6661f4f80fe2ad9b0065f5a33de266fcded6fef9",
+        "task.md": "9ba196a3e4ca95fd9e418e0998878badaaf85e76"
+      },
+      "non_dockerfile_blobs_matched": 8
+    }
+  }
+}

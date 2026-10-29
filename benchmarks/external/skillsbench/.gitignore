@@ -1,0 +1,12 @@
+results/**
+!results/*/
+!results/*/manifest.json
+!results/*/receipt.json
+!results/*/verifier/
+!results/*/verifier/ctrf.json
+!results/*/verifier/reward.txt
+!results/*/inventory.json
+!results/*/checkpoint.json
+!results/*/tasks/
+!results/*/tasks/*/
+!results/*/tasks/*/receipt.json

@@ -1,0 +1,98 @@
+{
+  "status": "completed",
+  "mode": "oma-config-and-skills-smoke",
+  "task": "bug_fix-easy-a_crash_in_local",
+  "upstream_revision": "625b2233093ae4f23e76be28c1f341d41cc70373",
+  "dataset_sha256": "f60394e44341f45f66af17ba69efc51ceadc61f17c08aa89e4af35b51f6f34e1",
+  "oma_cli_version": "20.10.2",
+  "codex_version": "0.163.0",
+  "hooks_verified": false,
+  "agent_exit_code": 0,
+  "score": {
+    "test_pass_rate": 1.0,
+    "test_status": "full_pass",
+    "overall": 1.0,
+    "file_hit_rate": 1.0,
+    "diff_coverage": 0.8571,
+    "diff_coverage_exact": 0.7,
+    "agent_files_changed": 2,
+    "agent_lines_added": 58,
+    "gold_files_changed": 1,
+    "gold_lines_added": 10,
+    "tests_passed": 3,
+    "tests_total": 3,
+    "wall_time_sec": 0.0
+  },
+  "usage": {
+    "input_tokens": 340374,
+    "cached_input_tokens": 300800,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 2559,
+    "reasoning_output_tokens": 125
+  },
+  "runtime": {
+    "model": "gpt-6.1-sol",
+    "skills": {
+      "schemaVersion": 2,
+      "version": "20.10.3",
+      "mode": "project",
+      "installedAt": "2026-10-21T09:42:53.848Z"
+    },
+    "python": "3.12.15",
+    "packages": {
+      "pytest": "9.1.1",
+      "pytest-asyncio": "1.4.0",
+      "serena-agent": "1.0.0"
+    },
+    "oma_debug_skill_sha256": "f6456470ab128f205628b655710f70e6667218aee4f1c5ca8778fc4d9d223b8f",
+    "agents_md_sha256": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956"
+  },
+  "canonical_harbor_run": false,
+  "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+  "source_hashes": {
+    "datasets/wb-bench-code-v1.0/tasks/bug_fix-easy-a_crash_in_local/instruction.md": "5ac35cb9c2f9d9d3d117d3668701397909981fe7b87302cd6a98fd2e7b00bf27",
+    "datasets/wb-bench-code-v1.0/tasks/bug_fix-easy-a_crash_in_local/environment/Dockerfile": "95bf60ee8408ddccef85f5476d9f413ab9fac2454e2b145f53a86fa625d1e08c",
+    "datasets/wb-bench-code-v1.0/tasks/bug_fix-easy-a_crash_in_local/environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+    "datasets/wb-bench-code-v1.0/tasks/bug_fix-easy-a_crash_in_local/tests/verifier.toml": "b081c1ffa6eedebaa9033e8006b5e5555d9cd6abb82964b6ca5e489e217d3063",
+    "datasets/wb-bench-code-v1.0/tasks/bug_fix-easy-a_crash_in_local/tests/gold.patch": "c2dbe4a62b3604103dabadb3db77ab21a22c3a8c16583ddf301a9d195879d72e",
+    "datasets/wb-bench-code-v1.0/shared/verifier/rule.py": "c70a2777e8c2a02caf77be5472cb1276239be46cc6ea0c528bd1e8237680b442",
+    "datasets/wb-bench-code-v1.0/shared/verifier/plugin.py": "7e38800c25e1240541734378019b9a8e1b709c39c1e489a4d6ccfedb63cc0e88",
+    "datasets/wb-bench-code-v1.0/tasks/bug_fix-easy-a_crash_in_local/tests/injected/tests/test_local.py": "ba78277c522c6f9e792b0b6ec3cbc427296f9a199766ae1f5d9db8af63c8a06b",
+    "datasets/wb-bench-code-v1.0/tasks/bug_fix-easy-a_crash_in_local/tests/injected/tests/test_local_shutdown.py": "3d34ddc5f32faad6c1d2a01821770cb857692b72784c75c8b6e2b682e700c1dc"
+  },
+  "environment_overrides": [
+    "arm64 prebuilt base; runtime package installation",
+    "Node 24.11.1 arm64 instead of 20.18.1 x64",
+    "PYTHONPATH source imports instead of editable package build",
+    "Codex ChatGPT OAuth instead of an API-proxy harness image"
+  ],
+  "verifier_sha256": "12ddc6aab476bfa0aefcf32c5dd0b5812d0ea8080af314f770695886940bb0be",
+  "original_source_score": {
+    "test_pass_rate": 0.0,
+    "test_status": "no_pass",
+    "overall": 0.0,
+    "file_hit_rate": 0.0,
+    "diff_coverage": 0.0,
+    "diff_coverage_exact": 0.0,
+    "agent_files_changed": 0,
+    "agent_lines_added": 0,
+    "gold_files_changed": 1,
+    "gold_lines_added": 10,
+    "tests_passed": 0,
+    "tests_total": 3,
+    "wall_time_sec": 0.0
+  },
+  "verifier_sources_match_verified_archive": true,
+  "code_intelligence": {
+    "provider": "serena",
+    "mode": "unavailable",
+    "limitation": "No Serena tools were exposed to this task CLI session; the agent read already located files."
+  },
+  "raw_artifacts": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-results/20261021-final",
+  "agent_evidence": [
+    "Read .codex/skills/oma-debug/SKILL.md and shared execution policy before editing",
+    "Added regression tests; Local-specific tests passed 15/15",
+    "Full repository tests: 40 passed, 2 existing Python 3.12 asyncio.wait failures reproduced against original implementation"
+  ],
+  "container_cleanup": "Stopped after collecting artifacts; retained for inspection: oma-workbuddy-smoke-20261021"
+}

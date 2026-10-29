@@ -1,0 +1,206 @@
+{
+  "task": "quantum-numerical-simulation",
+  "status": "scored",
+  "started_at": 1792607028.504836,
+  "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/quantum-numerical-simulation/attempt-20261021T182348Z",
+  "container": "oma-skillsbench-batch-d6c4136e63e0",
+  "workspace": "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/quantum-numerical-simulation/attempt-20261021T182348Z",
+  "task_sha256": "358aa76c666bbe716b19ed6ca715e1b8fa0148b4f2f8802ea966d76be880eabc",
+  "dockerfile_sha256": "43949fbc847512d3db8eaaaf565fd82cab00f81a4d7067cea64248bccf3e096d",
+  "verifier_tree_sha256": "a9d7945b3eb3111e94d94f1c023799bd4715605b6fe938c41d60f4f62b9da1c0",
+  "setup_status": "completed",
+  "agent_status": "completed",
+  "verifier_status": "completed",
+  "oracle_status": "not-run",
+  "canonical_benchmark": false,
+  "hook_activation": "unverified",
+  "requested_resources": {
+    "network_mode": "public",
+    "build_timeout_sec": 1800.0,
+    "os": "linux",
+    "cpus": 4,
+    "memory_mb": 10240,
+    "storage_mb": 10240,
+    "gpus": 0
+  },
+  "hidden_data_isolation": "Host workspace is not OS isolation; upstream cache remains host-readable",
+  "steps": {
+    "published-image-pull": {
+      "exit_code": 0
+    },
+    "container-start": {
+      "exit_code": 0
+    },
+    "log-dirs": {
+      "exit_code": 0
+    },
+    "agent": {
+      "exit_code": 0
+    },
+    "verifier-clear": {
+      "exit_code": 0
+    },
+    "verifier-copy": {
+      "exit_code": 0
+    },
+    "verifier-compat-copy": {
+      "exit_code": 0
+    },
+    "verifier": {
+      "exit_code": 0
+    },
+    "verifier-download": {
+      "exit_code": 0
+    }
+  },
+  "commands": [
+    [
+      "docker",
+      "pull",
+      "--platform",
+      "linux/amd64",
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:80192badfdcc880995d55c4b4b8daed7199dc9f207a008a98d5e0b662976f053"
+    ],
+    [
+      "docker",
+      "run",
+      "-d",
+      "--name",
+      "oma-skillsbench-batch-d6c4136e63e0",
+      "--platform",
+      "linux/amd64",
+      "--cpus",
+      "4",
+      "--memory",
+      "10240m",
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:80192badfdcc880995d55c4b4b8daed7199dc9f207a008a98d5e0b662976f053",
+      "sleep",
+      "infinity"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "oma-skillsbench-batch-d6c4136e63e0",
+      "/bin/sh",
+      "-c",
+      "mkdir -p /logs/agent /logs/verifier /logs/artifacts /app /tests"
+    ],
+    [
+      "codex",
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--ephemeral",
+      "-c",
+      "approval_policy=\"never\"",
+      "-s",
+      "danger-full-access",
+      "-C",
+      "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/quantum-numerical-simulation/attempt-20261021T182348Z",
+      "--model",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"high\"",
+      "-"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "oma-skillsbench-batch-d6c4136e63e0",
+      "/bin/sh",
+      "-c",
+      "rm -rf /logs/verifier /verifier /tests && mkdir -p /logs/verifier /verifier /tests"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/quantum-numerical-simulation/verifier/.",
+      "oma-skillsbench-batch-d6c4136e63e0:/verifier"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/quantum-numerical-simulation/verifier/.",
+      "oma-skillsbench-batch-d6c4136e63e0:/tests"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "oma-skillsbench-batch-d6c4136e63e0",
+      "/bin/sh",
+      "-c",
+      "bash /verifier/test.sh"
+    ],
+    [
+      "docker",
+      "cp",
+      "oma-skillsbench-batch-d6c4136e63e0:/logs/verifier",
+      "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/quantum-numerical-simulation/attempt-20261021T182348Z/verifier"
+    ]
+  ],
+  "published_image": {
+    "schema_version": 1,
+    "image_map_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/prebuilt_images/skillsbench-v1.1.json",
+    "image_map_sha256": "3bf81646e9121a4e566ad6976b90bb2a113eb238a98201e4c8dc7a47841b9c3a",
+    "deploy_bundle_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/deploy_bundles/skillsbench-v1.1.json",
+    "deploy_bundle_sha256": "cd622be2aaea7d6d327706ea31dc429f1641c9edd26658b102440584f25d198c",
+    "source_repository": "https://github.com/benchflow-ai/skillsbench",
+    "source_revision": "2493d9fa3114d09d103c1cd43f9bfe78aacd813b",
+    "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:80192badfdcc880995d55c4b4b8daed7199dc9f207a008a98d5e0b662976f053",
+    "platform": "linux/amd64",
+    "source_git_objects": {
+      "environment": "72cf13664b7b99c51c29df705bbfe74110de50b9",
+      "verifier": "ac74606561d6f29864e1eec14188a6ae0d3d187a",
+      "task.md": "058eca665613c0f2162f5fa495773c470d9ebb9b"
+    },
+    "recipe_differences": [],
+    "source_validation": "environment, verifier and task.md Git objects match exactly; worktree clean"
+  },
+  "image_inspect": {
+    "Id": "sha256:6d32ee9def98a54b8a4489a7514e8ecb426961bd6df53586ae9d1840471d2efb",
+    "RepoDigests": [
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:80192badfdcc880995d55c4b4b8daed7199dc9f207a008a98d5e0b662976f053"
+    ],
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "environment_execution": "published-official-task-image",
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning_effort": "high",
+  "usage": {
+    "input_tokens": 561612,
+    "cached_input_tokens": 498176,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 8058,
+    "reasoning_output_tokens": 2387
+  },
+  "official_ctrf_groups": {
+    "tests": 7,
+    "passed": 5,
+    "failed": 2,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792607265.7228513,
+    "stop": 1792607269.4804213
+  },
+  "pytest_cases": {
+    "failed": 2,
+    "passed": 5
+  },
+  "reward": 0.0,
+  "task_outcome": "failed",
+  "finished_at": 1792607271.240444
+}

@@ -1,0 +1,89 @@
+{
+  "status": "completed",
+  "task_outcome": "partial",
+  "task": "dialogue-parser",
+  "canonical_benchmark": false,
+  "execution_condition": "oma-config-and-skills-host-agent",
+  "setup_status": "completed",
+  "oracle_status": "validated-in-separate-fresh-container",
+  "agent_status": "completed",
+  "verifier_status": "completed",
+  "upstream_commit": "b63b7b2850226b6aa4fb5929a8c1ac7bc4d9a6af",
+  "benchflow_version": "0.6.3",
+  "reward": 0.833,
+  "pytest_cases": {
+    "passed": 34,
+    "failed": 1,
+    "total": 35
+  },
+  "official_ctrf_groups": {
+    "tests": 6,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792576007.1624055,
+    "stop": 1792576007.2325156
+  },
+  "image_digests": [
+    "python@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0"
+  ],
+  "container_cleanup_status": "completed",
+  "deviations": [
+    "Used prebuilt official Dockerfile base and repeated runtime installs/copy; no image build",
+    "Not the canonical BenchFlow rollout",
+    "Agent ran on host with /app paths translated to isolated workspace",
+    "Only OMA skills provided to agent; official task skills used for oracle only",
+    "Hook activation unverified; Serena unavailable"
+  ],
+  "manifest_sha256": "3c33ae56c6283f6eaa4ac232df57cf2036d5c197f736371586d075b7ae58c599",
+  "official_ctrf_sha256": "1a9a84927339ab7ee27152b874a53b6ece080460cd0c24c3451d10d20d82c8a4",
+  "raw_logs_retained_locally_gitignored": true,
+  "oma_version": "20.10.2",
+  "codex_version": "codex-cli 0.163.0",
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning_effort": "high",
+  "model_evidence": "Host CODEX_HOME/config.toml; project config has no model override; no CLI model override",
+  "hook_activation": "unverified",
+  "serena_usage": "unavailable per agent trace",
+  "usage": {
+    "input_tokens": 308534,
+    "cached_input_tokens": 232960,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 5533,
+    "reasoning_output_tokens": 789
+  },
+  "cost_usd": null,
+  "cost_note": "Existing ChatGPT subscription; API cost not inferred from token counts",
+  "workspace_initial_task_outputs": [],
+  "fresh_workspace_evidence": "New empty seed directory created immediately before OMA installation",
+  "agent_reads": [
+    {
+      "command": "/bin/zsh -lc 'pwd && cat AGENTS.md && cat .agents/skills/_shared/core/execution-policy.md && cat .agents/oma-config.yaml && cat .agents/rules/i18n-guide.md && cat .agents/skills/oma-backend/SKILL.md'",
+      "exit_code": 1
+    },
+    {
+      "command": "/bin/zsh -lc 'cat .agents/skills/oma-backend/SKILL.md .agents/skills/oma-qa/SKILL.md .agents/rules/i18n-guide.md .agents/oma-config.cue'",
+      "exit_code": 0
+    },
+    {
+      "command": "/bin/zsh -lc 'cat .agents/skills/oma-qa/resources/execution-protocol.md .agents/skills/oma-qa/resources/checklist.md'",
+      "exit_code": 0
+    }
+  ],
+  "failure": "test_graph_logic[reachability]: candidate End node considered unreachable by official grader",
+  "oma_asset_sha256": {
+    "AGENTS.md": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956",
+    ".agents/oma-config.cue": "ced13ba17f8199b884e921820eb2a9af4db7f6d17919bcffe415cc231a9f7b86",
+    ".codex/config.toml": "81b6f7b98fb88e42e223da1fbbe475b928df0acf13d99b8c822cc8cafffa7712",
+    ".codex/hooks.json": "eebc63a708297a567d62a9b5dcfef958bbb4dbf6ec1a92e8b38ef84bc3835324",
+    ".agents/skills/_shared/core/execution-policy.md": "b91b525d4d261b92e4a86cd44649ecb45b7d21eaa6193d86da092c70ea68d9d5",
+    ".agents/skills/oma-backend/SKILL.md": "654a442b41e2eb10013e9624f942479b13e3aef6e2b901feeadf8c2302e4eb8f",
+    ".agents/skills/oma-qa/SKILL.md": "2adef418ac5db30bc3e375d60ca3d0504a56413a17df2071c5b2547ea65002ee",
+    ".agents/skills/oma-qa/resources/execution-protocol.md": "769c2f3ef8591429f6c425f20472923a85fa2734cd6c77e5ea3f9f7ef20a968e",
+    ".agents/skills/oma-qa/resources/checklist.md": "6f98d0b1351ef81df1f26cfcf43087854b815e164f7856929e391bb2a2938eeb"
+  },
+  "agent_log_sha256": "ddebb124636d2f20b3c5468d2869bfe9a681c7f61da0c9c4ab397f1fced7cc3e",
+  "hidden_data_isolation": "Not OS isolated: oracle/verifier excluded from workspace but host agent could read upstream cache outside workspace"
+}

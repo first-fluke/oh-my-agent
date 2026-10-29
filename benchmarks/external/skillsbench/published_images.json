@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "image_map_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/prebuilt_images/skillsbench-v1.1.json",
+  "image_map_sha256": "3bf81646e9121a4e566ad6976b90bb2a113eb238a98201e4c8dc7a47841b9c3a",
+  "deploy_bundle_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/deploy_bundles/skillsbench-v1.1.json",
+  "deploy_bundle_sha256": "cd622be2aaea7d6d327706ea31dc429f1641c9edd26658b102440584f25d198c",
+  "source_repository": "https://github.com/benchflow-ai/skillsbench",
+  "source_revision": "2493d9fa3114d09d103c1cd43f9bfe78aacd813b",
+  "tasks": {
+    "lean4-proof": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:1e5f6670d5ae13caa59510583721073ffc61c821900872648ad7aede3a9c9ab9",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "03118c6858b8bc3d0e233213425894f9b9700a87",
+        "verifier": "afeee6ff5f15adb44933c3544ddda6981d2fe697",
+        "task.md": "7dc8b40511c45153a82fce60b336693cec08b998"
+      },
+      "recipe_differences": []
+    },
+    "multilingual-video-dubbing": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:d0e4a3fbbcee9cee283c4bedcaf0236a411952e6a354c9bf4c08c050c6ae9285",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "cd8912196e2f89a78e70a59b413b27b8f4892d8c",
+        "verifier": "c6d3a63a3f143f378b092c17e4a92d4168e61811",
+        "task.md": "6c54d921d0687bed2bda4458152ab4903e9a281c"
+      },
+      "recipe_differences": []
+    },
+    "exoplanet-detection-period": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:be880dabc30e176860761f3b06941550b7946f81b1dbcae27de6835120942b96",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "1cac5293ca40471317492d31883d472d616216ad",
+        "verifier": "49dadeac95e3743314fc9085d27562971b286064",
+        "task.md": "11679c6c52ec535584ae7f6a3c43923ff50e81cb"
+      },
+      "recipe_differences": []
+    },
+    "fix-druid-loophole-cve": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:9b652d41a3c018c566f858245fd80a3660df154abf31184830d24b30d2f5b3b4",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "e0d9d38fef4b9f08bff672926f00509bf48cda52",
+        "verifier": "542b0ed91c933fb67daf82376637aa1992a1537d",
+        "task.md": "f3e8354be8f1060d8456eeaf70276445aa636e8f"
+      },
+      "recipe_differences": []
+    },
+    "gravitational-wave-detection": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:be280586da378abf8bc298b32641021c3de13bcfc6b2f799e4900ccfff3064e2",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "03d01f6ef5194806808740594826f3ff6255c0d5",
+        "verifier": "fae9525d58aa6ea894f625ca90456ab0f20469d1",
+        "task.md": "6d7f0af356dc1e76ea284a73160ece210f0b3231"
+      },
+      "recipe_differences": []
+    },
+    "lake-warming-attribution": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:a3826f1c36bdc9b33908e4f937f487edaf702b6bd8e32ff5c067b5d8a215583c",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "3e09a0e4889bbf420aa5e0151899436579b30827",
+        "verifier": "2d2756beed5c2105f271e749cc19f9b25f09cb39",
+        "task.md": "3353de3817591bc820234a9cbe233f52539678a3"
+      },
+      "recipe_differences": []
+    },
+    "python-scala-translation": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:003145e864aa523f5716e3dd1af1fc5843fb0280948d409b8a55d3285e4db16a",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "355713c4e4ad8e156dfb45fba6d410c8b2315e1d",
+        "verifier": "b8938612243b1821205da4375e7782dd866db3d0",
+        "task.md": "0d34b00ef80b44f4b823435fcae026792fa1557f"
+      },
+      "recipe_differences": []
+    },
+    "quantum-numerical-simulation": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:80192badfdcc880995d55c4b4b8daed7199dc9f207a008a98d5e0b662976f053",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "72cf13664b7b99c51c29df705bbfe74110de50b9",
+        "verifier": "ac74606561d6f29864e1eec14188a6ae0d3d187a",
+        "task.md": "058eca665613c0f2162f5fa495773c470d9ebb9b"
+      },
+      "recipe_differences": []
+    },
+    "debug-trl-grpo": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:593e1a7d4969d6664592095006a8348e22cc56759a99e843f9e49a6ccdf37736",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "4d0288e2d446b217931a71c3b57da34e4354c7d7",
+        "verifier": "d845ac3e30ade254bb4f024a690856abf76fb062",
+        "task.md": "e16730f013923daff6dcc1c130126ecc8c86beab"
+      },
+      "local_git_objects": {
+        "environment": "6d7ef58b9c36650f90fc590164640633aa1483a6",
+        "verifier": "d845ac3e30ade254bb4f024a690856abf76fb062",
+        "task.md": "e16730f013923daff6dcc1c130126ecc8c86beab"
+      },
+      "original_dockerfile_sha256": "81ca095192f908045f924952abdd9f5fc88d34dc6b2ac9e721daee1c23aab3ba",
+      "published_dockerfile_sha256": "956be3c703e809c2fc2913a27490aa5b05ef740c341d4ae4d8b3fd107fe537ae",
+      "recipe_differences": [
+        "Same DeepSeek tokenizer preload replaced by six retries/backoff; no model ID, dependency, ENV or other environment file changes"
+      ],
+      "cache_payload_proof": "results/published-cache-proof-20261021/receipt.json",
+      "cache_payload_proof_sha256": "d1d7e696f199b3920f1958f14ebb8fa29f74bb17772123b899cc694cd044de9f",
+      "cache_assets": [
+        {
+          "path": "/root/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer.json",
+          "bytes": 7031660,
+          "sha256": "88145e3c3249adc2546ede277e9819d6e405e19072456e4b521cbc724bd60773"
+        },
+        {
+          "path": "/root/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer_config.json",
+          "bytes": 3071,
+          "sha256": "8ac8c85fb242563c2260baec0909debd69d718af6a0b3d90e6cab62b4d341cd5"
+        }
+      ],
+      "cache_version_caveat": "Original Dockerfile preload calls did not pin these asset revisions; these are verified observed official cache identities, not an original immutable-version promise"
+    },
+    "earthquake-phase-association": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:b4324ceac8508323250e6ef40a821df1c479473d08c3c56420b2d38e0d391dd4",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "176ddd590fcc51c109f8f3914ffc2f7580505839",
+        "verifier": "6661f4f80fe2ad9b0065f5a33de266fcded6fef9",
+        "task.md": "9ba196a3e4ca95fd9e418e0998878badaaf85e76"
+      },
+      "local_git_objects": {
+        "environment": "be123c2c5dff1253f6625ff74c4cf3c4a4f0734e",
+        "verifier": "6661f4f80fe2ad9b0065f5a33de266fcded6fef9",
+        "task.md": "9ba196a3e4ca95fd9e418e0998878badaaf85e76"
+      },
+      "original_dockerfile_sha256": "220bc6346414a75c269237d5f2a6e1e24da5e0f11e610f1d1221bc143dcec8cf",
+      "published_dockerfile_sha256": "382ebe36cb4154733b194a31a4d640e469009f0e86b026316f8fa6d84c95b5a8",
+      "recipe_differences": [
+        "Same PhaseNet instance preload replaced by six retries/backoff and official backup-repository switch; observed cache matches original primary-repository version2 bytes"
+      ],
+      "cache_payload_proof": "results/published-cache-proof-20261021/receipt.json",
+      "cache_payload_proof_sha256": "d1d7e696f199b3920f1958f14ebb8fa29f74bb17772123b899cc694cd044de9f",
+      "cache_assets": [
+        {
+          "path": "/root/.seisbench/models/v3/phasenet/instance.json.v2",
+          "bytes": 787,
+          "sha256": "d0f33eb054818b6eef1dcf090947f7239b68f290c2e9180d9a807df325300182"
+        },
+        {
+          "path": "/root/.seisbench/models/v3/phasenet/instance.pt.v2",
+          "bytes": 1112615,
+          "sha256": "dddcc3d872106a8cd2013ce7a035c972a7f435749b5c02a015efd5ce3767da6d"
+        }
+      ],
+      "cache_version_caveat": "Original Dockerfile preload calls did not pin these asset revisions; these are verified observed official cache identities, not an original immutable-version promise"
+    },
+    "seismic-phase-picking": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:1935fb5499cca24f4410203a0317d2ff0b6ca0b3625b1d3f5a577ba770937537",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "4693145dbb636fe83ae1413955d50a9523221ef3",
+        "verifier": "992c0993a53b14ec4950001ca05f466d304818d8",
+        "task.md": "7b9884857e49ac31b722397916f962589ec2900f"
+      },
+      "local_git_objects": {
+        "environment": "77958e822aa2b242827c7222212ffa417f8e7ac1",
+        "verifier": "992c0993a53b14ec4950001ca05f466d304818d8",
+        "task.md": "7b9884857e49ac31b722397916f962589ec2900f"
+      },
+      "original_dockerfile_sha256": "f0c9b9e2e30e43c8eee2d95f0d12cea86ab38bd96f6ab44748e17859d41373a6",
+      "published_dockerfile_sha256": "3867ba6443c15f6a5a58e21bd1671b4be4c7a4249ef39ffbd7d250bb584cf321",
+      "recipe_differences": [
+        "Same PhaseNet original and DeepDenoiser original preloads replaced by six retries/backoff and official backup-repository switch; observed files match original primary-repository bytes"
+      ],
+      "cache_payload_proof": "results/published-seismic-cache-proof-20261021/receipt.json",
+      "cache_payload_proof_sha256": "2f0022ea2b9db624a1e3e2e68e578d5d0d965216947aeede541e37cbae373d87",
+      "cache_assets": [
+        {
+          "path": "/root/.seisbench/models/v3/phasenet/original.json.v2",
+          "bytes": 645,
+          "sha256": "33a2540c49b87ebc78fe7a913c4d369f394d21b03f2a791713a23eb512b4e282"
+        },
+        {
+          "path": "/root/.seisbench/models/v3/phasenet/original.pt.v2",
+          "bytes": 1112276,
+          "sha256": "184dd85b896eebf8d5967ee15a722a477fa2e4ce479a3b113ecbcb8a6419113f"
+        },
+        {
+          "path": "/root/.seisbench/models/v3/deepdenoiser/original.json.v1",
+          "bytes": 347,
+          "sha256": "dd53cc1454af65748f7b828234533b6991e84f5a7abb7141dd7c7c01c034c074"
+        },
+        {
+          "path": "/root/.seisbench/models/v3/deepdenoiser/original.pt.v1",
+          "bytes": 5567909,
+          "sha256": "44ad1fdfac4031e09dc6c599f2e2906665f10881b1befe069a8264b4e078eacc"
+        }
+      ],
+      "cache_version_caveat": "Original preload calls did not pin model versions; recorded versions are verified observed official cache identities, not an original immutable-version promise."
+    },
+    "simpo-code-reproduction": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:99527e351bb4b2c8bfafffc30653ad6331ebed4b700a55679b130630c1fd03ea",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "0beedfec713fa4de4412b518faf609ab1f240233",
+        "verifier": "89a0f6e66dc0ed6a9e6999f166f9f07b7c47363a",
+        "task.md": "0540d178b550dab9f57758a68e42321358efb050"
+      },
+      "recipe_differences": []
+    }
+  }
+}

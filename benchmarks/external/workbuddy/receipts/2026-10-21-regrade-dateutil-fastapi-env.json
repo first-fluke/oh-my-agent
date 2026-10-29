@@ -1,0 +1,92 @@
+{
+  "benchmark": "WorkBuddy Bench v1.0",
+  "date": "2026-10-21",
+  "canonical_harbor_run": false,
+  "hooks_verified": false,
+  "upstream_revision": "625b2233093ae4f23e76be28c1f341d41cc70373",
+  "dataset_sha256": "f60394e44341f45f66af17ba69efc51ceadc61f17c08aa89e4af35b51f6f34e1",
+  "preparation_fixes": [
+    "Retain every chained official Python-c compatibility write",
+    "Honor only explicitly requested editable extras",
+    "Distinguish HTTPX package requirement from HTTP source URLs"
+  ],
+  "tasks": [
+    {
+      "task": "code/feature-easy-lru_caching_to_tzoffset",
+      "status": "scored",
+      "score": 0.25,
+      "model_calls_for_this_operation": 0,
+      "official_sources_sha256": {
+        "tests/gold.patch": "66755c9d4425eaec05b9577aee5b71273d7b48dc3dae002af5a36e0d77dd092f",
+        "tests/verifier.toml": "5a09df347128e08370e505468422cf1438ed78ad6c18ac191ed460593affc9ca",
+        "tests/test.sh": "9a9f5c6cc9aac4bb59dff52e8e8d205c8d05de83a0d269986a507862d4b22a02",
+        "environment/Dockerfile": "0653745d7cd9e75044e8f894fd62cb378c4de32075dddcd242a633d6ee582ce2",
+        "environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+        "tests/injected/dateutil/test/test_tz.py": "900ac52fdb3dad6c4f7b571d5e45ac0e96cba4421e2616f6c24169e61cb2f8d1"
+      },
+      "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+      "platform": "linux/arm64",
+      "tests_passed": 1,
+      "tests_total": 4,
+      "test_status": "partial_pass",
+      "saved_agent_patch_sha256": "7b974ffa9177727ecb96d778256af8c07d57d030448a04d3355e4db09bdc34b6",
+      "original_agent_runtime": {
+        "usage": {
+          "input_tokens": 797210,
+          "cached_input_tokens": 734848,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 8000,
+          "reasoning_output_tokens": 2644
+        },
+        "actual_model": "gpt-6.1-sol",
+        "actual_effort": "high",
+        "skills": {
+          "schemaVersion": 2,
+          "version": "20.10.3",
+          "mode": "project",
+          "installedAt": "2026-10-21T09:42:53.848Z"
+        },
+        "agents_md_sha256": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956",
+        "debug_skill_sha256": "f6456470ab128f205628b655710f70e6667218aee4f1c5ca8778fc4d9d223b8f"
+      },
+      "evidence": {
+        "source_output": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-regrade-dateutil-20261021/code/feature-easy-lru_caching_to_tzoffset",
+        "archive": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-full/code/feature-easy-lru_caching_to_tzoffset/regrades/1792585891348580000",
+        "source_agent_patch_sha256": "7b974ffa9177727ecb96d778256af8c07d57d030448a04d3355e4db09bdc34b6",
+        "model_invoked": false,
+        "started_at": 1792585783.606095,
+        "finished_at": 1792585855.137454,
+        "container_removed": true,
+        "preparation_fixes": [
+          "Restored both chained official Python compatibility writes: pytest.ini and sitecustomize.py",
+          "Honored only explicitly requested editable extras"
+        ]
+      }
+    },
+    {
+      "task": "code/feature-medium-add_support_for_dependencies",
+      "status": "environment_ready",
+      "score": null,
+      "model_calls_for_this_operation": 0,
+      "official_sources_sha256": {
+        "tests/gold.patch": "d4044fc3f2010343d622de406e2ff5599fbadbeca5e74f6a18fe1e13c6ab0f9e",
+        "tests/verifier.toml": "32bf7833dc96aa79c04eddee32e16637bc3fb8261d8321abe9afe16e5aa7f499",
+        "tests/test_requires_test_changes.py": "299747d48070a08e8318fe4a09720491d343c3c05ee140fed64a81f59d62c559",
+        "tests/test.sh": "9a9f5c6cc9aac4bb59dff52e8e8d205c8d05de83a0d269986a507862d4b22a02",
+        "environment/Dockerfile": "b8687a1576549fb16293826954bd7ae4e38525bdc76d8b6243ec89eeb664cfe8",
+        "environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+        "tests/injected/tests/test_ws_dependencies.py": "7674ef592bb6cc02d480ec217aca56561577f31ab650b0d53ff70e25d69cf524"
+      },
+      "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+      "platform": "linux/arm64",
+      "evidence_output": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-check-fastapi-exact-20261021/code/feature-medium-add_support_for_dependencies",
+      "dependency_websocket_check": {
+        "exit_code": 0,
+        "output": "fastapi 0.96.1 httpx 0.23.3 trio 0.34.0 pydantic 1.10.26\nIn-process ASGI websocket fixture passed"
+      },
+      "container_removed": true,
+      "next_step": "Queue original setup-only failed task for a centrally coordinated solver retry; this environment check is not a benchmark score",
+      "observed_limit": "Official old task dependencies conflict with globally installed Serena/MCP dependencies; tool execution remains unverified"
+    }
+  ]
+}

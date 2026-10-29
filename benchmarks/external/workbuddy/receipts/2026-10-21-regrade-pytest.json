@@ -1,0 +1,79 @@
+{
+  "benchmark": "WorkBuddy Bench v1.0",
+  "task": "code/bug_fix-easy-invalid_filterwarnings_regex_error",
+  "date": "2026-10-21",
+  "status": "scored",
+  "score": 0.5,
+  "tests_passed": 2,
+  "tests_total": 4,
+  "test_status": "partial_pass",
+  "canonical_harbor_run": false,
+  "hooks_verified": false,
+  "operation": "Regrade latest saved successful solve after restoring missing generated pytest version metadata",
+  "model_calls_during_regrade": 0,
+  "original_agent_runtime": {
+    "usage": {
+      "input_tokens": 948711,
+      "cached_input_tokens": 888448,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6760,
+      "reasoning_output_tokens": 2344
+    },
+    "actual_model": "gpt-6.1-sol",
+    "actual_effort": "high",
+    "skills": {
+      "schemaVersion": 2,
+      "version": "20.10.3",
+      "mode": "project",
+      "installedAt": "2026-10-21T09:42:53.848Z"
+    },
+    "agents_md_sha256": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956",
+    "debug_skill_sha256": "f6456470ab128f205628b655710f70e6667218aee4f1c5ca8778fc4d9d223b8f"
+  },
+  "agent_patch_sha256": "f03f092d26a4e23bfac42ba402e7a03977efffd76e76fbce055384a6fe44d17f",
+  "environment": {
+    "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+    "platform": "linux/arm64",
+    "environment_scaffolds": [
+      {
+        "source": "official-pytest-8.4.2-wheel",
+        "path": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-pytest-8.4.2-version.py",
+        "destination": "src/_pytest/_version.py",
+        "sha256": "d4f4c97b5ed3883c26d6b3b3b195533a347441bb00261b34df1af95545889203"
+      }
+    ],
+    "runtime_override": "Fresh prebuilt arm64 container, source imports, binary-wheel dependency installation; no editable project build"
+  },
+  "official_sources": {
+    "upstream_revision": "625b2233093ae4f23e76be28c1f341d41cc70373",
+    "dataset_sha256": "f60394e44341f45f66af17ba69efc51ceadc61f17c08aa89e4af35b51f6f34e1",
+    "files_verified_against_original_archive": {
+      "tests/gold.patch": "e2ed433747fc22978582b7598439bb27bea670bee2d8370b25d13fb675e47293",
+      "tests/verifier.toml": "e38a48e68f7324e5262918115992a837dddeeadffff9c62687c5c3b8c86be266",
+      "tests/test.sh": "9a9f5c6cc9aac4bb59dff52e8e8d205c8d05de83a0d269986a507862d4b22a02",
+      "environment/Dockerfile": "ad5a060826d0e87c2bd9d6472bc29c48c87868abec604d0b33095e6a0eb97d00",
+      "environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+      "tests/injected/testing/test_warnings.py": "9dad5bdf65e564c9b99a06b668ba1e20fb2168fcb0144ef942124abf9d38f2d8"
+    }
+  },
+  "evidence": {
+    "source_output": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-regrade-pytest-20261021/code/bug_fix-easy-invalid_filterwarnings_regex_error",
+    "archive": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-full/code/bug_fix-easy-invalid_filterwarnings_regex_error/regrades/1792579925560603000",
+    "source_agent_patch_sha256": "f03f092d26a4e23bfac42ba402e7a03977efffd76e76fbce055384a6fe44d17f",
+    "model_invoked": false,
+    "started_at": 1792579803.8455381,
+    "finished_at": 1792579868.7068212,
+    "container_removed": true,
+    "preparation_fix": "Official pytest8.4.2 published-wheel generated version metadata"
+  },
+  "failures": [
+    "test_invalid_regex_in_filterwarning: expected Invalid regex prefix absent",
+    "test_invalid_message_regex_in_filterwarning: expected Invalid regex prefix absent"
+  ],
+  "verification": [
+    "Saved and regraded agent.patch byte-identical",
+    "All four official tests collected; no errors",
+    "Original solver trajectory and previous failed grading evidence preserved",
+    "Owned regrade container removed"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "recorded_at": "2026-10-21T19:13:10.799308+00:00",
+  "status": "verified-public-cache-payloads",
+  "method": "Read-only registry HTTP206 first8MiB tar prefix contains all4cache assets; independently fetched original-primary files match exact sizes/SHA256. No model/pickle execution or image/container/source build.",
+  "integrity_limit": "Bounded prefix does NOT validate full2.95GB compressed layer or uncompressed diffID. Before solver, normal Docker pull validates immutable image content, inspect must match RepoDigest/platform/expected RootFS diffID, then all4actual cache files must match recorded SHA256/size.",
+  "source_revision": "2493d9fa3114d09d103c1cd43f9bfe78aacd813b",
+  "original_revision": "b63b7b2850226b6aa4fb5929a8c1ac7bc4d9a6af",
+  "caveat": "Original preload calls did not pin model versions; recorded versions are verified observed official cache identities, not an original immutable-version promise.",
+  "tasks": {
+    "seismic-phase-picking": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:1935fb5499cca24f4410203a0317d2ff0b6ca0b3625b1d3f5a577ba770937537",
+      "platform": "linux/amd64",
+      "architecture_manifest_digest": "sha256:df543bd08e2df0f4e001fd0db8d7f058fa3968aa22739401e8ce3d2623afa591",
+      "config_digest": "sha256:cf81954e3954637b609143748b03d4750455a0e13df8c2d6a82a327d2411014e",
+      "original_git_objects": {
+        "environment": "77958e822aa2b242827c7222212ffa417f8e7ac1",
+        "verifier": "992c0993a53b14ec4950001ca05f466d304818d8",
+        "task.md": "7b9884857e49ac31b722397916f962589ec2900f"
+      },
+      "source_git_objects": {
+        "environment": "4693145dbb636fe83ae1413955d50a9523221ef3",
+        "verifier": "992c0993a53b14ec4950001ca05f466d304818d8",
+        "task.md": "7b9884857e49ac31b722397916f962589ec2900f"
+      },
+      "original_dockerfile_sha256": "f0c9b9e2e30e43c8eee2d95f0d12cea86ab38bd96f6ab44748e17859d41373a6",
+      "published_dockerfile_sha256": "3867ba6443c15f6a5a58e21bd1671b4be4c7a4249ef39ffbd7d250bb584cf321",
+      "recipe_difference": "Same PhaseNet original and DeepDenoiser original preloads replaced by six retries/backoff and official backup-repository switch; observed files match original primary-repository bytes",
+      "non_dockerfile_blobs_matched": 107,
+      "layer_index": 6,
+      "layer_sha256": "f632fb0e3376a05fe89e73c71b9e2808ece2efe28b26b2af748e42df885dc890",
+      "layer_compressed_bytes": 2953138593,
+      "layer_diff_id": "sha256:67e43ea4011b70a5221f868b76cbbb525bbab36ffbe1240fd0cdffca7763e884",
+      "registry_range_bytes": 8388608,
+      "layer_sha256_independently_verified": false,
+      "layer_diff_id_independently_verified": false,
+      "asset_hashes_vs_original_primary_verified": true,
+      "upstream_versions": {
+        "phasenet": "2",
+        "deepdenoiser": "1 (native default for metadata without version)"
+      },
+      "deepdenoiser_primary_naming": "SeisBench0.10.2 fallback: primary v1 files have no version suffix; native cache filenames use .v1",
+      "assets": [
+        {
+          "path": "root/.seisbench/models/v3/phasenet/original.json.v2",
+          "bytes": 645,
+          "sha256": "33a2540c49b87ebc78fe7a913c4d369f394d21b03f2a791713a23eb512b4e282",
+          "upstream_url": "https://hifis-storage.desy.de:2880/Helmholtz/HelmholtzAI/SeisBench/models/v3/phasenet/original.json.v2"
+        },
+        {
+          "path": "root/.seisbench/models/v3/phasenet/original.pt.v2",
+          "bytes": 1112276,
+          "sha256": "184dd85b896eebf8d5967ee15a722a477fa2e4ce479a3b113ecbcb8a6419113f",
+          "upstream_url": "https://hifis-storage.desy.de:2880/Helmholtz/HelmholtzAI/SeisBench/models/v3/phasenet/original.pt.v2"
+        },
+        {
+          "path": "root/.seisbench/models/v3/deepdenoiser/original.json.v1",
+          "bytes": 347,
+          "sha256": "dd53cc1454af65748f7b828234533b6991e84f5a7abb7141dd7c7c01c034c074",
+          "upstream_url": "https://hifis-storage.desy.de:2880/Helmholtz/HelmholtzAI/SeisBench/models/v3/deepdenoiser/original.json"
+        },
+        {
+          "path": "root/.seisbench/models/v3/deepdenoiser/original.pt.v1",
+          "bytes": 5567909,
+          "sha256": "44ad1fdfac4031e09dc6c599f2e2906665f10881b1befe069a8264b4e078eacc",
+          "upstream_url": "https://hifis-storage.desy.de:2880/Helmholtz/HelmholtzAI/SeisBench/models/v3/deepdenoiser/original.pt"
+        }
+      ]
+    }
+  }
+}

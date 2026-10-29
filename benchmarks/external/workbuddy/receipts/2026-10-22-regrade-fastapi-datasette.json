@@ -1,0 +1,153 @@
+{
+  "benchmark": "WorkBuddy Bench v1.0",
+  "date": "2026-10-22",
+  "canonical_harbor_run": false,
+  "hooks_verified": false,
+  "upstream_revision": "625b2233093ae4f23e76be28c1f341d41cc70373",
+  "dataset_sha256": "f60394e44341f45f66af17ba69efc51ceadc61f17c08aa89e4af35b51f6f34e1",
+  "runtime_fixes": [
+    "Isolated pinned Serena binary-wheel tool dependencies from native task Python",
+    "Read literal setup.py install_requires, requested extras, and console declarations without executing setup.py",
+    "Used public legacy FastAPI AnyIO test-backend compatibility range without suppressing warnings",
+    "Future task containers use NPM_CONFIG_PREFIX=/usr/local for native CBC global installation"
+  ],
+  "verification": [
+    "Native graders collected all tests without collection errors",
+    "Saved agent patches byte-identical to original successful solves",
+    "Original solver traces/usage and previous failed graders preserved",
+    "All official task sources verified against original checksum-backed archive",
+    "Isolated Serena/MCP imports and Serena CLI passed; generated MCP command uses oma bridge",
+    "Actual npm prefix probe confirmed default readonly mount and writable /usr/local override",
+    "Owned regrade containers removed; live suite manifest unchanged"
+  ],
+  "tasks": [
+    {
+      "task": "code/feature-medium-add_support_for_dependencies",
+      "status": "scored",
+      "score": 0.75,
+      "tests_passed": 3,
+      "tests_total": 4,
+      "tests_skipped": 0,
+      "test_status": "partial_pass",
+      "model_calls_during_regrade": 0,
+      "saved_agent_patch_sha256": "739b9010370bf882a4afb4b9adc17bf1f6a6c611a691e58eb2e180c14f75f2c1",
+      "original_agent_runtime": {
+        "usage": {
+          "input_tokens": 757012,
+          "cached_input_tokens": 695936,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6873,
+          "reasoning_output_tokens": 1679
+        },
+        "actual_model": "gpt-6.1-sol",
+        "actual_effort": "high",
+        "skills": {
+          "schemaVersion": 2,
+          "version": "20.10.3",
+          "mode": "project",
+          "installedAt": "2026-10-21T09:42:53.848Z"
+        },
+        "agents_md_sha256": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956",
+        "debug_skill_sha256": "f6456470ab128f205628b655710f70e6667218aee4f1c5ca8778fc4d9d223b8f"
+      },
+      "tooling_python_isolated": true,
+      "runtime_compatibility": [
+        {
+          "source": "project.optional-dependencies.test",
+          "requirement": "anyio[trio] >=3.2.1,<4.0.0",
+          "reason": "Use the declared test backend with the legacy Starlette API"
+        }
+      ],
+      "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+      "platform": "linux/arm64",
+      "official_sources_sha256": {
+        "tests/gold.patch": "d4044fc3f2010343d622de406e2ff5599fbadbeca5e74f6a18fe1e13c6ab0f9e",
+        "tests/verifier.toml": "32bf7833dc96aa79c04eddee32e16637bc3fb8261d8321abe9afe16e5aa7f499",
+        "tests/test_requires_test_changes.py": "299747d48070a08e8318fe4a09720491d343c3c05ee140fed64a81f59d62c559",
+        "tests/test.sh": "9a9f5c6cc9aac4bb59dff52e8e8d205c8d05de83a0d269986a507862d4b22a02",
+        "environment/Dockerfile": "b8687a1576549fb16293826954bd7ae4e38525bdc76d8b6243ec89eeb664cfe8",
+        "environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+        "tests/injected/tests/test_ws_dependencies.py": "7674ef592bb6cc02d480ec217aca56561577f31ab650b0d53ff70e25d69cf524"
+      },
+      "evidence": {
+        "source_output": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-regrade-fastapi-isolated-20261022/code/feature-medium-add_support_for_dependencies",
+        "archive": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-full/code/feature-medium-add_support_for_dependencies/regrades/1792591592863382000",
+        "source_agent_patch_sha256": "739b9010370bf882a4afb4b9adc17bf1f6a6c611a691e58eb2e180c14f75f2c1",
+        "model_invoked": false,
+        "started_at": 1792591023.707974,
+        "finished_at": 1792591488.458466,
+        "container_removed": true,
+        "preparation_fixes": [
+          "Isolated Serena tool Python dependencies from native task Python",
+          "Read literal setup.py declared dependencies/extras/console scripts without executing setup.py"
+        ],
+        "runtime_compatibility": [
+          {
+            "source": "project.optional-dependencies.test",
+            "requirement": "anyio[trio] >=3.2.1,<4.0.0",
+            "reason": "Use the declared test backend with the legacy Starlette API"
+          }
+        ]
+      }
+    },
+    {
+      "task": "code/feature-medium-etag_header_for_static",
+      "status": "scored",
+      "score": 0.2727,
+      "tests_passed": 3,
+      "tests_total": 11,
+      "tests_skipped": 8,
+      "test_status": "partial_pass",
+      "model_calls_during_regrade": 0,
+      "saved_agent_patch_sha256": "38f45c7935e1aed67c95a029c98b2dfdb5e220a100e5a9b096315d90039fb4e0",
+      "original_agent_runtime": {
+        "usage": {
+          "input_tokens": 668555,
+          "cached_input_tokens": 615296,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6740,
+          "reasoning_output_tokens": 2992
+        },
+        "actual_model": "gpt-6.1-sol",
+        "actual_effort": "high",
+        "skills": {
+          "schemaVersion": 2,
+          "version": "20.10.3",
+          "mode": "project",
+          "installedAt": "2026-10-21T09:42:53.848Z"
+        },
+        "agents_md_sha256": "e75bfc433a0c6220107e9924ce42fc421f9594c7d981362e24b9faedfe5ab956",
+        "debug_skill_sha256": "f6456470ab128f205628b655710f70e6667218aee4f1c5ca8778fc4d9d223b8f"
+      },
+      "tooling_python_isolated": true,
+      "runtime_compatibility": [],
+      "base_image_id": "sha256:ce9a404c2c0138e747a43e6ea022d2f7e670ed868df35d627a663ba7fb940ea9",
+      "platform": "linux/arm64",
+      "official_sources_sha256": {
+        "tests/gold.patch": "92466a7661e463b72de82ff99f4bbc1bca2180ca7165b45fcca9bedea9d5fe68",
+        "tests/verifier.toml": "bf68e2e2e3a49df7f0c6325f1c6b51af00bb0101f4bdcd3dfcf315d4901745ca",
+        "tests/test.sh": "9a9f5c6cc9aac4bb59dff52e8e8d205c8d05de83a0d269986a507862d4b22a02",
+        "environment/Dockerfile": "f5191fa35cb976a1b9d24eecdf063e779ecda77e83a274c23249d750cd06cd02",
+        "environment/scorer.py": "22cc03002768d66e3b127d385097dd61223e27b4fc99ee0624d4ac077a5e929c",
+        "tests/injected/tests/test_utils.py": "590163014dfb4bf89bc05304b053e2521f96d0f62f7d60be7b60d6f4bdb3e175",
+        "tests/injected/tests/test_static_utils.py": "1e41ca98f664e363b84bf83b933189c91948f4cbd530303d80c2c0736ed21b1d",
+        "tests/injected/tests/test_html.py": "911e0516057bf0ef73fde71f543ccbe3e52eb5138b1b949e25b53ec432af080d",
+        "tests/injected/tests/test_static_utils_standalone.py": "a458886992aebebfc80a7260ffc57a9e518681278bc0bcf905bd7a081449bcf2"
+      },
+      "evidence": {
+        "source_output": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-regrade-datasette-20261022/code/feature-medium-etag_header_for_static",
+        "archive": "/Users/gracefullight/.cache/oma-benchmarks/workbuddy-full/code/feature-medium-etag_header_for_static/regrades/1792591595624137000",
+        "source_agent_patch_sha256": "38f45c7935e1aed67c95a029c98b2dfdb5e220a100e5a9b096315d90039fb4e0",
+        "model_invoked": false,
+        "started_at": 1792591023.708704,
+        "finished_at": 1792591163.265436,
+        "container_removed": true,
+        "preparation_fixes": [
+          "Isolated Serena tool Python dependencies from native task Python",
+          "Read literal setup.py declared dependencies/extras/console scripts without executing setup.py"
+        ],
+        "runtime_compatibility": []
+      }
+    }
+  ]
+}

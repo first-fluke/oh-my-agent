@@ -1,0 +1,50 @@
+{
+  "task": "simpo-code-reproduction",
+  "status": "prepared",
+  "source_attempt": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/simpo-code-reproduction/attempt-20261021T195505Z",
+  "created_at": 1792613138.189507,
+  "source_receipt_sha256": "d08ba907490562c4450feb45ea28840abfae5bde8272a210befcac77eb2f6557",
+  "source_verifier_log_sha256": "3479d12422f7c1abc28c712c171f7ceb5e49f974188deef4860eabb1a7959ffd",
+  "source_agent_log_sha256": "22627bb9732fdf79f88a31f7a9b556530aceb647ac3222d2d6c6f18267c8d38b",
+  "original_executed_tests": 0,
+  "original_reward_is_valid": false,
+  "cause": "Original uv first-index dependency resolution cannot find torch==2.1.2+cpu; original runtime is arm64 and official task image is amd64.",
+  "repair": {
+    "image": {
+      "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:99527e351bb4b2c8bfafffc30653ad6331ebed4b700a55679b130630c1fd03ea",
+      "platform": "linux/amd64",
+      "source_git_objects": {
+        "environment": "0beedfec713fa4de4412b518faf609ab1f240233",
+        "verifier": "89a0f6e66dc0ed6a9e6999f166f9f07b7c47363a",
+        "task.md": "0540d178b550dab9f57758a68e42321358efb050"
+      },
+      "recipe_differences": []
+    },
+    "grader_environment": {
+      "UV_INDEX_STRATEGY": "unsafe-best-match"
+    },
+    "native_grader_modified": false,
+    "environment_preparation_builds": 0
+  },
+  "candidate_recovery": {
+    "source_edit_and_python_info_retained": true,
+    "loss_npz_original_binary_retained": false,
+    "printed_values_not_used_as_artifact": true,
+    "exact_output_regrade_possible": false
+  },
+  "replacement_attempt": {
+    "central_coordinator_only": true,
+    "scope": "One exact previous no-case dependency-failure attempt, guarded by original finish time and immutable receipt/log hashes; no scored or model failure is eligible",
+    "prompt_model_skills_budget_unchanged": true,
+    "same_attempt_never_retried_after_new_finished_at": true
+  },
+  "validation": {
+    "model_free_unit_tests_passed": 18,
+    "model_free_controller_dispatches": 1,
+    "previous_attempt_history_preserved": true,
+    "native_commands_or_model_calls_in_validation": 0,
+    "AST_and_CLI_help": "passed"
+  },
+  "no_checkpoint_mutation": true,
+  "model_calls_this_preparation": 0
+}

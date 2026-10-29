@@ -1,0 +1,257 @@
+{
+  "task": "court-form-filling",
+  "status": "scored",
+  "started_at": 1792580631.790151,
+  "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/court-form-filling/attempt-20261021T110351Z",
+  "container": "oma-skillsbench-batch-69053df1489c",
+  "workspace": "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/court-form-filling/attempt-20261021T110351Z",
+  "task_sha256": "02be976a28afff3365cdfe20506ede1b23e9904a706a5fbfccb9dfb316ac1b75",
+  "dockerfile_sha256": "1625668c06b2138a3af5348c4dfda82355dde6c90cb440ed0e7d8fdbb8bb71cc",
+  "verifier_tree_sha256": "23d2bd5047723e57ae058b976b1b7cc2623b03d6e3b915bb9a40c39bc8adba57",
+  "setup_status": "completed",
+  "agent_status": "completed",
+  "verifier_status": "completed",
+  "oracle_status": "not-run",
+  "canonical_benchmark": false,
+  "hook_activation": "unverified",
+  "requested_resources": {
+    "network_mode": "public",
+    "build_timeout_sec": 600.0,
+    "os": "linux",
+    "cpus": 1,
+    "memory_mb": 4096,
+    "storage_mb": 10240,
+    "gpus": 0
+  },
+  "hidden_data_isolation": "Host workspace is not OS isolation; upstream cache remains host-readable",
+  "steps": {
+    "image-pull": {
+      "exit_code": 0
+    },
+    "container-start": {
+      "exit_code": 0
+    },
+    "setup-002-run": {
+      "exit_code": 0
+    },
+    "setup-003-workdir": {
+      "exit_code": 0
+    },
+    "setup-004-copy-mkdir": {
+      "exit_code": 0
+    },
+    "setup-004-copy-copy": {
+      "exit_code": 0
+    },
+    "setup-005-run": {
+      "exit_code": 0
+    },
+    "log-dirs": {
+      "exit_code": 0
+    },
+    "agent": {
+      "exit_code": 0
+    },
+    "verifier-clear": {
+      "exit_code": 0
+    },
+    "verifier-copy": {
+      "exit_code": 0
+    },
+    "verifier": {
+      "exit_code": 0
+    },
+    "verifier-download": {
+      "exit_code": 0
+    }
+  },
+  "commands": [
+    [
+      "docker",
+      "pull",
+      "ubuntu:24.04"
+    ],
+    [
+      "docker",
+      "run",
+      "-d",
+      "--name",
+      "oma-skillsbench-batch-69053df1489c",
+      "--user",
+      "root",
+      "--entrypoint",
+      "/bin/sh",
+      "--cpus",
+      "1",
+      "--memory",
+      "4096m",
+      "ubuntu:24.04",
+      "-c",
+      "while :; do sleep 3600; done"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-69053df1489c",
+      "/bin/sh",
+      "-c",
+      "apt-get update && apt-get install -y  python3  python3-pip  python3-venv  poppler-utils  && rm -rf /var/lib/apt/lists/*"
+    ],
+    [
+      "docker",
+      "exec",
+      "oma-skillsbench-batch-69053df1489c",
+      "mkdir",
+      "-p",
+      "/root"
+    ],
+    [
+      "docker",
+      "exec",
+      "oma-skillsbench-batch-69053df1489c",
+      "mkdir",
+      "-p",
+      "/root"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/court-form-filling/environment/sc100-blank.pdf",
+      "oma-skillsbench-batch-69053df1489c:/root/sc100-blank.pdf"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-69053df1489c",
+      "/bin/sh",
+      "-c",
+      "pip3 install --break-system-packages  pypdf==5.1.0  fillpdf==0.7.3  pdfrw==0.4  PyPDF2==3.0.1  reportlab==4.2.5  cryptography==43.0.3"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-69053df1489c",
+      "/bin/sh",
+      "-c",
+      "mkdir -p /logs/agent /logs/verifier /logs/artifacts /app"
+    ],
+    [
+      "codex",
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--ephemeral",
+      "-c",
+      "approval_policy=\"never\"",
+      "-s",
+      "danger-full-access",
+      "-C",
+      "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/court-form-filling/attempt-20261021T110351Z",
+      "--model",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"high\"",
+      "-"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-69053df1489c",
+      "/bin/sh",
+      "-c",
+      "rm -rf /logs/verifier && mkdir -p /logs/verifier"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/court-form-filling/verifier",
+      "oma-skillsbench-batch-69053df1489c:/verifier"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/root",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-69053df1489c",
+      "/bin/sh",
+      "-c",
+      "bash /verifier/test.sh"
+    ],
+    [
+      "docker",
+      "cp",
+      "oma-skillsbench-batch-69053df1489c:/logs/verifier",
+      "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/court-form-filling/attempt-20261021T110351Z/verifier"
+    ]
+  ],
+  "image_inspect": {
+    "Id": "sha256:f3ff6f5009cb3b8de09d949f24109461606f626fae231a81f66ba3226c8302a6",
+    "RepoDigests": [
+      "ubuntu@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac"
+    ],
+    "Architecture": "arm64",
+    "Os": "linux"
+  },
+  "environment_execution": "runtime-instruction-replay",
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning_effort": "high",
+  "usage": {
+    "input_tokens": 458859,
+    "cached_input_tokens": 401408,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 6272,
+    "reasoning_output_tokens": 1323
+  },
+  "official_ctrf_groups": {
+    "tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792580895.797668,
+    "stop": 1792580896.071831
+  },
+  "pytest_cases": {
+    "passed": 47
+  },
+  "reward": 1.0,
+  "task_outcome": "passed",
+  "finished_at": 1792580900.75693
+}

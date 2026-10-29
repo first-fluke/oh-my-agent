@@ -1,0 +1,248 @@
+{
+  "task": "debug-trl-grpo",
+  "status": "scored",
+  "started_at": 1792599177.160156,
+  "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/debug-trl-grpo/attempt-20261021T161256Z",
+  "container": "oma-skillsbench-batch-07a43f0d5bb9",
+  "workspace": "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/debug-trl-grpo/attempt-20261021T161256Z",
+  "task_sha256": "7c925e4e84380dcdd4cd8237822b530debd546090fdd0a42099662c71d52d8ca",
+  "dockerfile_sha256": "81ca095192f908045f924952abdd9f5fc88d34dc6b2ac9e721daee1c23aab3ba",
+  "verifier_tree_sha256": "4aeb3e8b3f93b04dcd232749ef99b163e457b83b8445046f7cfa1ec4f69b42f4",
+  "setup_status": "completed",
+  "agent_status": "completed",
+  "verifier_status": "completed",
+  "oracle_status": "not-run",
+  "canonical_benchmark": false,
+  "hook_activation": "unverified",
+  "requested_resources": {
+    "network_mode": "public",
+    "build_timeout_sec": 2400.0,
+    "os": "linux",
+    "cpus": 4,
+    "memory_mb": 2048,
+    "storage_mb": 10240,
+    "gpus": 0
+  },
+  "hidden_data_isolation": "Host workspace is not OS isolation; upstream cache remains host-readable",
+  "steps": {
+    "published-image-pull": {
+      "exit_code": 0
+    },
+    "container-start": {
+      "exit_code": 0
+    },
+    "published-cache-validation": {
+      "exit_code": 0
+    },
+    "log-dirs": {
+      "exit_code": 0
+    },
+    "agent": {
+      "exit_code": 0
+    },
+    "verifier-clear": {
+      "exit_code": 0
+    },
+    "verifier-copy": {
+      "exit_code": 0
+    },
+    "verifier-compat-copy": {
+      "exit_code": 0
+    },
+    "verifier": {
+      "exit_code": 0
+    },
+    "verifier-download": {
+      "exit_code": 0
+    }
+  },
+  "commands": [
+    [
+      "docker",
+      "pull",
+      "--platform",
+      "linux/amd64",
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:593e1a7d4969d6664592095006a8348e22cc56759a99e843f9e49a6ccdf37736"
+    ],
+    [
+      "docker",
+      "run",
+      "-d",
+      "--name",
+      "oma-skillsbench-batch-07a43f0d5bb9",
+      "--platform",
+      "linux/amd64",
+      "--cpus",
+      "4",
+      "--memory",
+      "2048m",
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:593e1a7d4969d6664592095006a8348e22cc56759a99e843f9e49a6ccdf37736",
+      "sleep",
+      "infinity"
+    ],
+    [
+      "docker",
+      "exec",
+      "oma-skillsbench-batch-07a43f0d5bb9",
+      "python3",
+      "-c",
+      "import hashlib,json,pathlib,sys\nverified=[]\nfor expected in json.loads(sys.argv[1]):\n    data=pathlib.Path(expected['path']).read_bytes()\n    actual={'path':expected['path'],'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}\n    if actual != expected:\n        raise SystemExit('Published cache asset mismatch: '+expected['path'])\n    verified.append(actual)\nprint(json.dumps({'validated_cache_assets':verified}))\n",
+      "[{\"path\": \"/root/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer.json\", \"bytes\": 7031660, \"sha256\": \"88145e3c3249adc2546ede277e9819d6e405e19072456e4b521cbc724bd60773\"}, {\"path\": \"/root/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer_config.json\", \"bytes\": 3071, \"sha256\": \"8ac8c85fb242563c2260baec0909debd69d718af6a0b3d90e6cab62b4d341cd5\"}]"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/app",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "oma-skillsbench-batch-07a43f0d5bb9",
+      "/bin/sh",
+      "-c",
+      "mkdir -p /logs/agent /logs/verifier /logs/artifacts /app /tests"
+    ],
+    [
+      "codex",
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--ephemeral",
+      "-c",
+      "approval_policy=\"never\"",
+      "-s",
+      "danger-full-access",
+      "-C",
+      "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/debug-trl-grpo/attempt-20261021T161256Z",
+      "--model",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"high\"",
+      "-"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/app",
+      "oma-skillsbench-batch-07a43f0d5bb9",
+      "/bin/sh",
+      "-c",
+      "rm -rf /logs/verifier /verifier /tests && mkdir -p /logs/verifier /verifier /tests"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/debug-trl-grpo/verifier/.",
+      "oma-skillsbench-batch-07a43f0d5bb9:/verifier"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/debug-trl-grpo/verifier/.",
+      "oma-skillsbench-batch-07a43f0d5bb9:/tests"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/app",
+      "oma-skillsbench-batch-07a43f0d5bb9",
+      "/bin/sh",
+      "-c",
+      "bash /verifier/test.sh"
+    ],
+    [
+      "docker",
+      "cp",
+      "oma-skillsbench-batch-07a43f0d5bb9:/logs/verifier",
+      "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/debug-trl-grpo/attempt-20261021T161256Z/verifier"
+    ]
+  ],
+  "published_image": {
+    "schema_version": 1,
+    "image_map_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/prebuilt_images/skillsbench-v1.1.json",
+    "image_map_sha256": "3bf81646e9121a4e566ad6976b90bb2a113eb238a98201e4c8dc7a47841b9c3a",
+    "deploy_bundle_url": "https://raw.githubusercontent.com/benchflow-ai/skillsbench-leaderboard/820ee3df9e7227b04f0c60ffe1415aad8a14eebc/deploy_bundles/skillsbench-v1.1.json",
+    "deploy_bundle_sha256": "cd622be2aaea7d6d327706ea31dc429f1641c9edd26658b102440584f25d198c",
+    "source_repository": "https://github.com/benchflow-ai/skillsbench",
+    "source_revision": "2493d9fa3114d09d103c1cd43f9bfe78aacd813b",
+    "image": "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:593e1a7d4969d6664592095006a8348e22cc56759a99e843f9e49a6ccdf37736",
+    "platform": "linux/amd64",
+    "source_git_objects": {
+      "environment": "4d0288e2d446b217931a71c3b57da34e4354c7d7",
+      "verifier": "d845ac3e30ade254bb4f024a690856abf76fb062",
+      "task.md": "e16730f013923daff6dcc1c130126ecc8c86beab"
+    },
+    "local_git_objects": {
+      "environment": "6d7ef58b9c36650f90fc590164640633aa1483a6",
+      "verifier": "d845ac3e30ade254bb4f024a690856abf76fb062",
+      "task.md": "e16730f013923daff6dcc1c130126ecc8c86beab"
+    },
+    "original_dockerfile_sha256": "81ca095192f908045f924952abdd9f5fc88d34dc6b2ac9e721daee1c23aab3ba",
+    "published_dockerfile_sha256": "956be3c703e809c2fc2913a27490aa5b05ef740c341d4ae4d8b3fd107fe537ae",
+    "recipe_differences": [
+      "Same DeepSeek tokenizer preload replaced by six retries/backoff; no model ID, dependency, ENV or other environment file changes"
+    ],
+    "cache_payload_proof": "results/published-cache-proof-20261021/receipt.json",
+    "cache_payload_proof_sha256": "d1d7e696f199b3920f1958f14ebb8fa29f74bb17772123b899cc694cd044de9f",
+    "cache_assets": [
+      {
+        "path": "/root/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer.json",
+        "bytes": 7031660,
+        "sha256": "88145e3c3249adc2546ede277e9819d6e405e19072456e4b521cbc724bd60773"
+      },
+      {
+        "path": "/root/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/tokenizer_config.json",
+        "bytes": 3071,
+        "sha256": "8ac8c85fb242563c2260baec0909debd69d718af6a0b3d90e6cab62b4d341cd5"
+      }
+    ],
+    "cache_version_caveat": "Original Dockerfile preload calls did not pin these asset revisions; these are verified observed official cache identities, not an original immutable-version promise",
+    "source_validation": "task.md, verifier and every non-Dockerfile environment blob match; only reviewed cache-preload retry/transport recipe differs; original environment Git objects and clean worktree verified; observed upstream cache bytes must pass SHA256 validation before solver starts"
+  },
+  "image_inspect": {
+    "Id": "sha256:1e4953769a5a3321962113f25bc1f6296972e514a527aabe529ceaa3c4de7c28",
+    "RepoDigests": [
+      "ghcr.io/benchflow-ai/skillsbench-task-env@sha256:593e1a7d4969d6664592095006a8348e22cc56759a99e843f9e49a6ccdf37736"
+    ],
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "environment_execution": "published-official-task-image",
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning_effort": "high",
+  "usage": {
+    "input_tokens": 903214,
+    "cached_input_tokens": 838272,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 9771,
+    "reasoning_output_tokens": 2821
+  },
+  "custom_evaluator": "official-trl-weighted-bug-groups",
+  "custom_groups": {
+    "Running verification": [],
+    "Anti-cheat checks": [
+      "PASS",
+      "PASS",
+      "PASS"
+    ],
+    "Bug 1: selective_log_softmax (weight=0.35)": [
+      "FAIL"
+    ],
+    "Bug 2: advantage scaling epsilon (weight=0.25)": [
+      "PASS",
+      "PASS"
+    ],
+    "Bug 3: decode_and_strip_padding (weight=0.4)": [
+      "PASS",
+      "FAIL"
+    ]
+  },
+  "reward": 0.25,
+  "task_outcome": "partial",
+  "finished_at": 1792599557.7534258
+}

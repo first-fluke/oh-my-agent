@@ -1,0 +1,709 @@
+{
+  "benchmark": "skillsbench",
+  "task_set": "v1.1-all-87",
+  "status": "queue_pass_finished",
+  "execution_pass_complete": true,
+  "all_tasks_scored": false,
+  "all_87_attempted": true,
+  "created_at_utc": "2026-10-21T21:00:14.158458+00:00",
+  "upstream_commit": "b63b7b2850226b6aa4fb5929a8c1ac7bc4d9a6af",
+  "condition": "fixed-oma-snapshot-host-agent-driving-task-container",
+  "canonical_benchmark": false,
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "oma_snapshot_version": "20.10.3",
+  "oma_snapshot_sha256": "56ede28c1cbb6df2a34fc29106439c96dcec1d2dfa5be9acfd5201e4724ed3c9",
+  "codex_cli_version": "codex-cli 0.163.0",
+  "counts": {
+    "scored": 84,
+    "agent_error": 2,
+    "waiting_provider_access": 1
+  },
+  "score_distribution": {
+    "reward_1": 41,
+    "partial_reward": 5,
+    "reward_0": 38
+  },
+  "mean_reward_of_84_scored_tasks": 0.5263293690476191,
+  "scored_reward_sum": 44.211667,
+  "ungraded_cases_are_not_synthetic_zero": true,
+  "remaining_setup_or_verifier_errors": 0,
+  "environment_execution_counts_for_scored_tasks": {
+    "runtime-instruction-replay": 72,
+    "published-official-task-image": 10,
+    "recreated-original-runtime-replay-with-original-base-digest": 2
+  },
+  "original_curated_skills": "Not systematically deployed; original Dockerfile copies such as radar-vital-signs remain present",
+  "global_plugins": "Host global plugins remained available",
+  "hooks": "Unverified",
+  "hidden_data_isolation": "Host workspace was not OS isolation; upstream cache remained host-readable",
+  "ungraded": {
+    "fix-druid-loophole-cve": {
+      "status": "agent_error",
+      "reason": "agent exceeded 1800.0 seconds",
+      "official_reward": null,
+      "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/fix-druid-loophole-cve/attempt-20261021T140702Z"
+    },
+    "python-scala-translation": {
+      "status": "agent_error",
+      "reason": "agent exceeded 600.0 seconds",
+      "official_reward": null,
+      "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/python-scala-translation/attempt-20261021T181233Z"
+    },
+    "setup-fuzzing-py": {
+      "status": "waiting_provider_access",
+      "reason": "Provider rejected possible cybersecurity-risk content; original request was not retried or bypassed",
+      "official_reward": null,
+      "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/setup-fuzzing-py/attempt-20261021T190758Z"
+    }
+  },
+  "native_image_build_gate": "Native Docker build path remains locally gated; no task remains blocked on environment preparation after published-image/runtime repairs",
+  "provider_denial_reclassification": {
+    "only_after_supervisor_exit": true,
+    "original_log_used": true,
+    "model_calls": 0,
+    "request_retry_or_provider_bypass": false
+  },
+  "validation": {
+    "model_free_unit_tests_passed": 18,
+    "controller_once_only_retry_fixture": "passed",
+    "all_84_checkpoint_rewards_match_completed_native_receipts": true,
+    "native_verifier_files_modified": false,
+    "owned_skills_containers_remaining": 0,
+    "independent_read_only_review": {
+      "all_87_receipt_hashes_and_statuses_match": true,
+      "all_84_native_reward_files_match": true,
+      "executed_case_evidence": {
+        "positive_count_CTRF": 78,
+        "official_custom_evaluators": 2,
+        "actual_pytest_terminal_reports": 4
+      },
+      "ungraded_rewards_not_injected": true
+    }
+  },
+  "simpo_infrastructure_replacement": {
+    "original_attempt": "attempt-20261021T195505Z",
+    "original_attempt_retained": true,
+    "source_output_binary_missing": "New original-prompt attempt used; no fabricated artifact or exact-output-regrade claim",
+    "native_result": {
+      "reward": 0.0,
+      "executed_cases": 1,
+      "failed_cases": 1,
+      "failure": "Native verifier requires Python3.10 metadata; actual solver recorded Python3.12.3"
+    },
+    "resolver_override_only_during_grade": {
+      "UV_INDEX_STRATEGY": "unsafe-best-match"
+    }
+  },
+  "tasks": {
+    "3d-scan-calc": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792577193.6715982,
+      "receipt": "results/full-v1.1-20261021/tasks/3d-scan-calc/receipt.json",
+      "receipt_sha256": "c94266d9a472c5e883fca133f6a57e6ecb0d4f544424622664b451cfc541e581"
+    },
+    "ada-bathroom-plan-repair": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792577969.907167,
+      "receipt": "results/full-v1.1-20261021/tasks/ada-bathroom-plan-repair/receipt.json",
+      "receipt_sha256": "f66a2922e311c579b134f66efb5a5543c75cd168bb79a7e6af8e26dce89d3f59"
+    },
+    "adaptive-cruise-control": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792578519.6129742,
+      "receipt": "results/full-v1.1-20261021/tasks/adaptive-cruise-control/receipt.json",
+      "receipt_sha256": "4008d20d2c7f57b9e9703abe84bfa712bc00808420147ab44497377620fb89c7"
+    },
+    "azure-bgp-oscillation-route-leak": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792578670.37871,
+      "receipt": "results/full-v1.1-20261021/tasks/azure-bgp-oscillation-route-leak/receipt.json",
+      "receipt_sha256": "628910a4633c122e12fbf308a7a6b55a6e8f9eceaf7722497723ed86f4772f53"
+    },
+    "bike-rebalance": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792579632.259496,
+      "receipt": "results/full-v1.1-20261021/tasks/bike-rebalance/receipt.json",
+      "receipt_sha256": "8ee813d96ec5f40726f26f46af299b1fd515d68b23441c29729412c2d7301982"
+    },
+    "citation-check": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792580630.400599,
+      "receipt": "results/full-v1.1-20261021/tasks/citation-check/receipt.json",
+      "receipt_sha256": "2b385e08bce8fb0c35ba8f5ac18f672f7f274b082f118f00e167233350b413b7"
+    },
+    "civ6-adjacency-optimizer": {
+      "status": "scored",
+      "reward": 0.95,
+      "finished_at": 1792580412.2726889,
+      "receipt": "results/full-v1.1-20261021/tasks/civ6-adjacency-optimizer/receipt.json",
+      "receipt_sha256": "2eae59598f08642ca1f3b2c9d78977993f368d9a65890a2c0181199bd1f900c1"
+    },
+    "court-form-filling": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792580900.75693,
+      "receipt": "results/full-v1.1-20261021/tasks/court-form-filling/receipt.json",
+      "receipt_sha256": "fb696d44063d2a0c5c4cdbd97e45eb5c557db176d1f5d9c30c2803bd2dc9d7e5"
+    },
+    "crystallographic-wyckoff-position-analysis": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792581086.1408489,
+      "receipt": "results/full-v1.1-20261021/tasks/crystallographic-wyckoff-position-analysis/receipt.json",
+      "receipt_sha256": "3b64090d9b2ee156715b922045c7b6d710d04d1423c60d0350e352c74343b74f"
+    },
+    "dapt-intrusion-detection": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792588550.206943,
+      "receipt": "results/full-v1.1-20261021/tasks/dapt-intrusion-detection/receipt.json",
+      "receipt_sha256": "f4b709b916d6564e67973f7bca25d0efa166a5c64a80d6bc4b0af0a55331c2a0"
+    },
+    "data-to-d3": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792581877.430918,
+      "receipt": "results/full-v1.1-20261021/tasks/data-to-d3/receipt.json",
+      "receipt_sha256": "6d7948bb390cbb18f40682904416fa68b5944b40ebc002f1970ecd17cb2d37f3"
+    },
+    "debug-trl-grpo": {
+      "status": "scored",
+      "reward": 0.25,
+      "finished_at": 1792599557.7534258,
+      "receipt": "results/full-v1.1-20261021/tasks/debug-trl-grpo/receipt.json",
+      "receipt_sha256": "ea64c02f5428cf1eadc8795ba5c4636d0457a645c2fe78b27900483b9b4632a3"
+    },
+    "dialogue-parser": {
+      "status": "scored",
+      "reward": 0.833,
+      "finished_at": 1792582014.462389,
+      "receipt": "results/full-v1.1-20261021/tasks/dialogue-parser/receipt.json",
+      "receipt_sha256": "d9badfa0a7ba58d471adc3a9693bc03d4b8c1042a554dcd5bd2234ef4c72c60c"
+    },
+    "drone-planning-control": {
+      "status": "scored",
+      "reward": 0.366667,
+      "finished_at": 1792582508.846208,
+      "receipt": "results/full-v1.1-20261021/tasks/drone-planning-control/receipt.json",
+      "receipt_sha256": "dbe1f8a2666b9c963e37ae797772eb7b5966e2f60658eb650c44a5060c4bbbe8"
+    },
+    "dynamic-object-aware-egomotion": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792583197.162088,
+      "receipt": "results/full-v1.1-20261021/tasks/dynamic-object-aware-egomotion/receipt.json",
+      "receipt_sha256": "b9c5bae3777b4f21cfd5a605dcba53a93c28ceef274d2cbcafc831b2a7c93d04"
+    },
+    "earthquake-phase-association": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792600234.848793,
+      "receipt": "results/full-v1.1-20261021/tasks/earthquake-phase-association/receipt.json",
+      "receipt_sha256": "1d95af81b2428c971abac89980fe755c58ebe6a5147770e75f8cb75362a887ff"
+    },
+    "earthquake-plate-calculation": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792583379.517993,
+      "receipt": "results/full-v1.1-20261021/tasks/earthquake-plate-calculation/receipt.json",
+      "receipt_sha256": "1747da84050e29a60bc6093d1b083841f8419fa40d7d5c44db1d80d2ad257130"
+    },
+    "econ-detrending-correlation": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792583515.959771,
+      "receipt": "results/full-v1.1-20261021/tasks/econ-detrending-correlation/receipt.json",
+      "receipt_sha256": "6e7cbb08b101d7bd7387fbdeac44dd88e37883518deb313ed7d2fc71a6d3afda"
+    },
+    "edit-pdf": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792583701.075636,
+      "receipt": "results/full-v1.1-20261021/tasks/edit-pdf/receipt.json",
+      "receipt_sha256": "1ef3d505fad8240c65f6ac9db2a63caaa71c09b3798ca6ab7736e46e501e0832"
+    },
+    "energy-ac-optimal-power-flow": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792584069.766541,
+      "receipt": "results/full-v1.1-20261021/tasks/energy-ac-optimal-power-flow/receipt.json",
+      "receipt_sha256": "b6d70601ef05848bc3ddc47308f728a8f0ca00921adb3b352fb70f992a3dd16f"
+    },
+    "energy-market-pricing": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792584440.62765,
+      "receipt": "results/full-v1.1-20261021/tasks/energy-market-pricing/receipt.json",
+      "receipt_sha256": "8f8678a5f8238b424379f2e0677f48673a2b5a04e46c100b0f5ac1991d6615ed"
+    },
+    "energy-unit-commitment": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792585226.168339,
+      "receipt": "results/full-v1.1-20261021/tasks/energy-unit-commitment/receipt.json",
+      "receipt_sha256": "8def935337aaff8c998ba788f66eef3d7f22fe3b8c492acc41b82f2add28c7aa"
+    },
+    "enterprise-information-search": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792585394.6413262,
+      "receipt": "results/full-v1.1-20261021/tasks/enterprise-information-search/receipt.json",
+      "receipt_sha256": "045817da09439e0e721d9c7fa829584791e03986ef416f5df64bc5d21541651b"
+    },
+    "exam-block-sequencing": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792586072.6045282,
+      "receipt": "results/full-v1.1-20261021/tasks/exam-block-sequencing/receipt.json",
+      "receipt_sha256": "2fae0dcaae8d395fdced7fce0110061f001c525773360d2c0f25ca742ea80aad"
+    },
+    "exceltable-in-ppt": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792586458.6279721,
+      "receipt": "results/full-v1.1-20261021/tasks/exceltable-in-ppt/receipt.json",
+      "receipt_sha256": "af53fefaa5250cd4314a7bcfa4d462fe64875173bb070d40e893101079cebda8"
+    },
+    "exoplanet-detection-period": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792591621.3885472,
+      "receipt": "results/full-v1.1-20261021/tasks/exoplanet-detection-period/receipt.json",
+      "receipt_sha256": "7d54bd524ad110d7bc31e81ba2a2784c78c38b7fea18d713c8c5bcb22d83a9af"
+    },
+    "financial-modeling-qa": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792586729.229901,
+      "receipt": "results/full-v1.1-20261021/tasks/financial-modeling-qa/receipt.json",
+      "receipt_sha256": "4149ec26d4797abd69e38c138a4a634ce478064c20fbfaca90aa85a325bbbe7b"
+    },
+    "fix-build-agentops": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792591621.385709,
+      "receipt": "results/full-v1.1-20261021/tasks/fix-build-agentops/receipt.json",
+      "receipt_sha256": "d430aa1000ee58c1a6e217d5603dbb62889cea0eee82013f4624680e133331c1"
+    },
+    "fix-build-google-auto": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792592869.7671309,
+      "receipt": "results/full-v1.1-20261021/tasks/fix-build-google-auto/receipt.json",
+      "receipt_sha256": "2ab1b2e2e9e5810f6a1efc80b5457a31b6e651e097f0c7b38726f306551592f2"
+    },
+    "fix-druid-loophole-cve": {
+      "status": "agent_error",
+      "error": "agent exceeded 1800.0 seconds",
+      "finished_at": 1792593544.3233202,
+      "receipt": "results/full-v1.1-20261021/tasks/fix-druid-loophole-cve/receipt.json",
+      "receipt_sha256": "911215497ea2a8a4c06d63026016406706076a5be6cb9306593532dd4547a27c"
+    },
+    "fix-erlang-ssh-cve": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792589983.2601511,
+      "receipt": "results/full-v1.1-20261021/tasks/fix-erlang-ssh-cve/receipt.json",
+      "receipt_sha256": "b7e26a6cbc0bbd04b7228e212853366457e493c2f690b6d66a551829488c2e55"
+    },
+    "fix-visual-stability": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792591108.75406,
+      "receipt": "results/full-v1.1-20261021/tasks/fix-visual-stability/receipt.json",
+      "receipt_sha256": "e3fd2e8cfb6b0a41b6e832967e3faa2d08be49ea33718e434a758187001d6ba4"
+    },
+    "flink-query": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792594111.758204,
+      "receipt": "results/full-v1.1-20261021/tasks/flink-query/receipt.json",
+      "receipt_sha256": "b285e163b4c34eb52e3de227ce563b5215c19aba1064fb8dfa9900a5c658e29e"
+    },
+    "flood-risk-analysis": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792594484.131815,
+      "receipt": "results/full-v1.1-20261021/tasks/flood-risk-analysis/receipt.json",
+      "receipt_sha256": "5652820abdec81203c9f82269208be0c1ed5e2351f46fa7d18bccaadbfcf5936"
+    },
+    "glm-lake-mendota": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792594859.995934,
+      "receipt": "results/full-v1.1-20261021/tasks/glm-lake-mendota/receipt.json",
+      "receipt_sha256": "a88b5d461c76ddfaf8efa906c084cb84a28f71bd18cb68ad8051ce714b95d8c6"
+    },
+    "gravitational-wave-detection": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792595432.9285262,
+      "receipt": "results/full-v1.1-20261021/tasks/gravitational-wave-detection/receipt.json",
+      "receipt_sha256": "f274837711eba0f0b70fff23c588b4d484712309e50d39520911595a7198c719"
+    },
+    "grid-dispatch-operator": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792595189.706631,
+      "receipt": "results/full-v1.1-20261021/tasks/grid-dispatch-operator/receipt.json",
+      "receipt_sha256": "402f425cbfd7bf475881c8aa8167389ca0b379d5b42cfc6da044e1d310c3519c"
+    },
+    "hvac-control": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792595663.86568,
+      "receipt": "results/full-v1.1-20261021/tasks/hvac-control/receipt.json",
+      "receipt_sha256": "55d52ae5bc9e57738d36958bc971b4437b20df6c14e55c8c04b637b7afe65a39"
+    },
+    "invoice-fraud-detection": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792595843.387344,
+      "receipt": "results/full-v1.1-20261021/tasks/invoice-fraud-detection/receipt.json",
+      "receipt_sha256": "56790659b42dc03fe53c4ec260dfddd5b8341ae909487ec25101872cc51c4b20"
+    },
+    "jax-computing-basics": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792596065.029323,
+      "receipt": "results/full-v1.1-20261021/tasks/jax-computing-basics/receipt.json",
+      "receipt_sha256": "f53938b4ce4ad3320527589ea22502f289f49f5773940a94ac0b4dfdcbadf06e"
+    },
+    "jpg-ocr-stat": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792596275.393544,
+      "receipt": "results/full-v1.1-20261021/tasks/jpg-ocr-stat/receipt.json",
+      "receipt_sha256": "179d1a27a55d0e03a9da7bb7630085b036c8315bce7d203c90f17dbce1a4f446"
+    },
+    "lab-unit-harmonization": {
+      "status": "scored",
+      "reward": 0.812,
+      "finished_at": 1792596735.8166678,
+      "receipt": "results/full-v1.1-20261021/tasks/lab-unit-harmonization/receipt.json",
+      "receipt_sha256": "4b4dba7fbd62c11a256036d912997165e72c3fd47c429965372ccf7b5bc49767"
+    },
+    "lake-warming-attribution": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792597763.92792,
+      "receipt": "results/full-v1.1-20261021/tasks/lake-warming-attribution/receipt.json",
+      "receipt_sha256": "67773ef15e08cc51d61fc43a15f2c3927c34abcc7ef90c6f40f520dbdeb24466"
+    },
+    "latex-formula-extraction": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792597563.288827,
+      "receipt": "results/full-v1.1-20261021/tasks/latex-formula-extraction/receipt.json",
+      "receipt_sha256": "dc46fc8c4521c190cd6347bec3446876fb61ec64b46f75611dbc3c8909265ebe"
+    },
+    "lean4-proof": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792598056.3880699,
+      "receipt": "results/full-v1.1-20261021/tasks/lean4-proof/receipt.json",
+      "receipt_sha256": "25396074cc747f6ce30ff0d49f0ceb9a2114da93d03bcad6b247f758df0f2bf7"
+    },
+    "llm-prefix-cache-replay": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792598201.835362,
+      "receipt": "results/full-v1.1-20261021/tasks/llm-prefix-cache-replay/receipt.json",
+      "receipt_sha256": "ec9b8b771aa3bbb8db80e1778b8659a42f4e358f8b9ceed2623fa9c1324446ff"
+    },
+    "manufacturing-codebook-normalization": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792598550.2112331,
+      "receipt": "results/full-v1.1-20261021/tasks/manufacturing-codebook-normalization/receipt.json",
+      "receipt_sha256": "a61503c48ba08e13bd380850cdcac46bfcb8722b95ea28cbe78b0801ae14bafe"
+    },
+    "manufacturing-equipment-maintenance": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792598946.398935,
+      "receipt": "results/full-v1.1-20261021/tasks/manufacturing-equipment-maintenance/receipt.json",
+      "receipt_sha256": "c8233025751e913af5054b6a69708f0f92d1a78e3dda9ba57447e821fc698161"
+    },
+    "manufacturing-fjsp-optimization": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792599175.744698,
+      "receipt": "results/full-v1.1-20261021/tasks/manufacturing-fjsp-optimization/receipt.json",
+      "receipt_sha256": "28a5125b9f7560e12832a7566582bef66d5a355af7baaf823fbd04f9f0aa94e5"
+    },
+    "mario-coin-counting": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792600631.4191191,
+      "receipt": "results/full-v1.1-20261021/tasks/mario-coin-counting/receipt.json",
+      "receipt_sha256": "d53a080c32d7564229585fc4d9c30842c44474d511ee467f0346b461468c6d3e"
+    },
+    "mars-clouds-clustering": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792600877.7082298,
+      "receipt": "results/full-v1.1-20261021/tasks/mars-clouds-clustering/receipt.json",
+      "receipt_sha256": "d9501a8c1cccf3a82c5c45dcd257ad276420cf2f0f74fba0580b55d6aff57524"
+    },
+    "multilingual-video-dubbing": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792601334.2325382,
+      "receipt": "results/full-v1.1-20261021/tasks/multilingual-video-dubbing/receipt.json",
+      "receipt_sha256": "681013cedda02c53fb4cd5aa1494e848922461b18548412a4fe5e7121831d6f4"
+    },
+    "offer-letter-generator": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792601546.8918579,
+      "receipt": "results/full-v1.1-20261021/tasks/offer-letter-generator/receipt.json",
+      "receipt_sha256": "6b3540e3b7f8db18802e172d98aaebc950931bf92fd1f0a30767a9b4139e3e23"
+    },
+    "organize-messy-files": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792602188.2215,
+      "receipt": "results/full-v1.1-20261021/tasks/organize-messy-files/receipt.json",
+      "receipt_sha256": "965ba10511d2bb5f97c4260bb5f8580a63d9b5ae41e10a3823ee09354fde8b3e"
+    },
+    "paper-anonymizer": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792602572.688095,
+      "receipt": "results/full-v1.1-20261021/tasks/paper-anonymizer/receipt.json",
+      "receipt_sha256": "4e5e3818f30c4b42a6bc5a8674e70803363f8ac07c8a68156dc7d89fab4b8975"
+    },
+    "parallel-tfidf-search": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792602912.4914749,
+      "receipt": "results/full-v1.1-20261021/tasks/parallel-tfidf-search/receipt.json",
+      "receipt_sha256": "6fa983f92b24053dc72aef73608bb9fcbb64a1b24d4ffa0debab375b1c8b10a5"
+    },
+    "paratransit-routing": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792604058.425538,
+      "receipt": "results/full-v1.1-20261021/tasks/paratransit-routing/receipt.json",
+      "receipt_sha256": "3b4d656c5008d060025cef4d1590a5563055da0ed18230ba9ba146302e387c6a"
+    },
+    "pddl-airport-planning": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792604212.8658078,
+      "receipt": "results/full-v1.1-20261021/tasks/pddl-airport-planning/receipt.json",
+      "receipt_sha256": "e0c4ae68551816d3c6f033445f9202c171fc4e76bebb8424e76a098567b6bf38"
+    },
+    "pddl-tpp-planning": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792604367.73158,
+      "receipt": "results/full-v1.1-20261021/tasks/pddl-tpp-planning/receipt.json",
+      "receipt_sha256": "8e35eb8d4f70aee7c8ce8344c837796ebe71704ad95e5af7bfac2c9e93502b03"
+    },
+    "pdf-excel-diff": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792604668.4457788,
+      "receipt": "results/full-v1.1-20261021/tasks/pdf-excel-diff/receipt.json",
+      "receipt_sha256": "0b64cf3f6c260310fe9ce37c840c9daba6ae88d62fa298ae3aa62eae62505eab"
+    },
+    "powerlifting-coef-calc": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792605112.512801,
+      "receipt": "results/full-v1.1-20261021/tasks/powerlifting-coef-calc/receipt.json",
+      "receipt_sha256": "1e95cdcc1634128148b333e7e5e04c84af8b1ffc72cc89c6400249a5f42c3618"
+    },
+    "pptx-reference-formatting": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792605417.026736,
+      "receipt": "results/full-v1.1-20261021/tasks/pptx-reference-formatting/receipt.json",
+      "receipt_sha256": "9a2718eec99274ce6f94bdb8b7f1778ae6ab598ba5ad2eea1e535b6175314d9d"
+    },
+    "protein-expression-analysis": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792605870.933821,
+      "receipt": "results/full-v1.1-20261021/tasks/protein-expression-analysis/receipt.json",
+      "receipt_sha256": "502307c5e6ce252511e3c49c0de1c680fedecb57f8d0e37d881fcf81de536d72"
+    },
+    "python-scala-translation": {
+      "status": "agent_error",
+      "error": "agent exceeded 600.0 seconds",
+      "finished_at": 1792607027.169385,
+      "receipt": "results/full-v1.1-20261021/tasks/python-scala-translation/receipt.json",
+      "receipt_sha256": "1fede2c2a13bb98dcfeb855b8adda8cdb5e2a8d7bf8f265cb06b7e55aa6c5066"
+    },
+    "quantum-numerical-simulation": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792607271.240444,
+      "receipt": "results/full-v1.1-20261021/tasks/quantum-numerical-simulation/receipt.json",
+      "receipt_sha256": "fb5e98480fe83d866385d2ca39ac6a4a73750aff957638d598246fa1dceb82bc"
+    },
+    "r2r-mpc-control": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792606352.7157729,
+      "receipt": "results/full-v1.1-20261021/tasks/r2r-mpc-control/receipt.json",
+      "receipt_sha256": "5e8f77b09fbc46ff74a3d846f94a753fc650f8ecb7ec836e5e333822d6934488"
+    },
+    "radar-vital-signs": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792607683.9165351,
+      "receipt": "results/full-v1.1-20261021/tasks/radar-vital-signs/receipt.json",
+      "receipt_sha256": "3ee31bc2bbac01c12c80cd7c339b9e8fd2f59d3cff7fefd85bca8a1b06c235b7"
+    },
+    "react-performance-debugging": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792608304.6519868,
+      "receipt": "results/full-v1.1-20261021/tasks/react-performance-debugging/receipt.json",
+      "receipt_sha256": "9190cc669ed2f9a19bf4771c325333b85d6a0a5aa7f3bbff303543b3ec87ab7b"
+    },
+    "reserves-at-risk-calc": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792608950.272993,
+      "receipt": "results/full-v1.1-20261021/tasks/reserves-at-risk-calc/receipt.json",
+      "receipt_sha256": "bb125950f5b4c870e6dbb8098c15c559b6b10385baed65b7f583f78a48da4746"
+    },
+    "sales-pivot-analysis": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792609414.844959,
+      "receipt": "results/full-v1.1-20261021/tasks/sales-pivot-analysis/receipt.json",
+      "receipt_sha256": "de27c3100762f9741c66467d82bdfce51e241801371d9c85f8a5e80cf114fb5c"
+    },
+    "sec-financial-report": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792609656.482173,
+      "receipt": "results/full-v1.1-20261021/tasks/sec-financial-report/receipt.json",
+      "receipt_sha256": "926b228e977dccba0d881f0a7ec9f7ee1f9d9a5707f14fdf01797dc8bfb5c267"
+    },
+    "seismic-phase-picking": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792611707.9311428,
+      "receipt": "results/full-v1.1-20261021/tasks/seismic-phase-picking/receipt.json",
+      "receipt_sha256": "2d37a534835264c57fb440e3fc248206fee197f9d1246f0dcf3a1ef5b4a540d6"
+    },
+    "setup-fuzzing-py": {
+      "status": "waiting_provider_access",
+      "error": "Provider rejected task content for possible cybersecurity risk; not retried",
+      "finished_at": 1792609772.305932,
+      "receipt": "results/full-v1.1-20261021/tasks/setup-fuzzing-py/receipt.json",
+      "receipt_sha256": "e3d3d6b1d0faff1214d1b8865e17ff0c58755122ebd9e49c2f34d498b11a6fe1"
+    },
+    "shock-analysis-demand": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792610930.71567,
+      "receipt": "results/full-v1.1-20261021/tasks/shock-analysis-demand/receipt.json",
+      "receipt_sha256": "84f73e0c79230bf189367cd3e9c1c5f3ca8893eea3bb7bd8f211a8e6c8ae3c03"
+    },
+    "shock-analysis-supply": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792612504.398175,
+      "receipt": "results/full-v1.1-20261021/tasks/shock-analysis-supply/receipt.json",
+      "receipt_sha256": "56eda577e089a02733470d7788097321816d042bc7d8f7c8f33629e3fd00e98f"
+    },
+    "simpo-code-reproduction": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792613713.4887612,
+      "receipt": "results/full-v1.1-20261021/tasks/simpo-code-reproduction/receipt.json",
+      "receipt_sha256": "cd7d1b9c5871b0d1df52ee95d2733899e947a3ced0f852b3edbef4987cbc5441"
+    },
+    "software-dependency-audit": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792612856.9401312,
+      "receipt": "results/full-v1.1-20261021/tasks/software-dependency-audit/receipt.json",
+      "receipt_sha256": "616daf88e66c999458c31dbf9dea70e24ab844034215390eee1a55c6e3387e76"
+    },
+    "spring-boot-jakarta-migration": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792613429.290215,
+      "receipt": "results/full-v1.1-20261021/tasks/spring-boot-jakarta-migration/receipt.json",
+      "receipt_sha256": "bab21f54b2d2900b81e6f27b9e8abcadecc3070ad29cfaf62a2f56dc0cc6c006"
+    },
+    "suricata-custom-exfil": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792613936.707581,
+      "receipt": "results/full-v1.1-20261021/tasks/suricata-custom-exfil/receipt.json",
+      "receipt_sha256": "67be59dc6e17415de7ee557f4e0371f25151f6259c90c862c2a599f95ee6f2a8"
+    },
+    "syzkaller-ppdev-syzlang": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792614539.56203,
+      "receipt": "results/full-v1.1-20261021/tasks/syzkaller-ppdev-syzlang/receipt.json",
+      "receipt_sha256": "68753422376b94539c5e0cf7e306a3bad7c94decb0b176abf38942d9e1942498"
+    },
+    "threejs-structure-parser": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792614754.684722,
+      "receipt": "results/full-v1.1-20261021/tasks/threejs-structure-parser/receipt.json",
+      "receipt_sha256": "0b8b21b2f01ec1a2587ce5d8c65a06b3ece549b0b1294ddcb312ca753faa8ed9"
+    },
+    "threejs-to-obj": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792614966.734221,
+      "receipt": "results/full-v1.1-20261021/tasks/threejs-to-obj/receipt.json",
+      "receipt_sha256": "d9dcce602e91c350ce6368b0a98383df279aa6bb004ce79db989cea48f0c3636"
+    },
+    "tictoc-unnecessary-abort-detection": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792615155.3729558,
+      "receipt": "results/full-v1.1-20261021/tasks/tictoc-unnecessary-abort-detection/receipt.json",
+      "receipt_sha256": "3d93f32e4ceb47326c0ca64861e16048657efd5d4a6c64218512fb1668f8f99e"
+    },
+    "travel-planning": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792615343.587519,
+      "receipt": "results/full-v1.1-20261021/tasks/travel-planning/receipt.json",
+      "receipt_sha256": "2373a9cda96f2ad8b813a8155bd746aee5efc28fce4816185c6f5ebb07002db4"
+    },
+    "video-silence-remover": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792615694.3254132,
+      "receipt": "results/full-v1.1-20261021/tasks/video-silence-remover/receipt.json",
+      "receipt_sha256": "88c86d25d53d73df2a90d3e8b34afbfa7c1307148a5795acf31ce4734ef949d7"
+    },
+    "weighted-gdp-calc": {
+      "status": "scored",
+      "reward": 1.0,
+      "finished_at": 1792616103.30966,
+      "receipt": "results/full-v1.1-20261021/tasks/weighted-gdp-calc/receipt.json",
+      "receipt_sha256": "f8f46157dfb638b3fd2aa5ec4b6421e26f2be6d3efd5cc782166972e181457e7"
+    },
+    "xlsx-recover-data": {
+      "status": "scored",
+      "reward": 0.0,
+      "finished_at": 1792616282.631638,
+      "receipt": "results/full-v1.1-20261021/tasks/xlsx-recover-data/receipt.json",
+      "receipt_sha256": "0651f9fd929b7a8fd658e6ce427b6d01be2f71985724d897bb738cbda5c3ee9e"
+    }
+  }
+}

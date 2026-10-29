@@ -1,0 +1,187 @@
+{
+  "task": "dapt-intrusion-detection",
+  "purpose": "binary-only environment preparation validation",
+  "model_invoked": false,
+  "image_build_performed": false,
+  "wheel_find_link": "https://www.piwheels.org/simple/scapy/scapy-2.5.0-py2.py3-none-any.whl#sha256=e6c9266d0e52ac63a9cdb218799acad6b2de1c5160e27a7c4dff815d940f8f8f",
+  "wheel_sha256": "e6c9266d0e52ac63a9cdb218799acad6b2de1c5160e27a7c4dff815d940f8f8f",
+  "official_pypi_sdist_sha256": "5b260c2b754fd8d409ba83ee7aee294ecdbb2c235f9f78fe90bc11cb6e5debc2",
+  "package_python_files_verified_identical": 332,
+  "started_at": 1792583129.886213,
+  "status": "completed",
+  "package_validation": {
+    "scapy": "2.5.0",
+    "pandas": "2.2.2",
+    "numpy": "1.26.4",
+    "first_packet_loaded": true
+  },
+  "finished_at": 1792583211.869087,
+  "commands": [
+    {
+      "label": "image-pull",
+      "command": [
+        "docker",
+        "pull",
+        "ubuntu:24.04"
+      ]
+    },
+    {
+      "label": "container-start",
+      "command": [
+        "docker",
+        "run",
+        "-d",
+        "--name",
+        "oma-skillsbench-dependencycheck-302b90e489",
+        "--user",
+        "root",
+        "--entrypoint",
+        "/bin/sh",
+        "--cpus",
+        "1",
+        "--memory",
+        "2048m",
+        "ubuntu:24.04",
+        "-c",
+        "while :; do sleep 3600; done"
+      ]
+    },
+    {
+      "label": "setup-002-run",
+      "command": [
+        "docker",
+        "exec",
+        "--workdir",
+        "/",
+        "--env",
+        "PIP_ONLY_BINARY=:all:",
+        "--env",
+        "UV_NO_BUILD=1",
+        "--env",
+        "npm_config_ignore_scripts=true",
+        "--env",
+        "DEBIAN_FRONTEND=noninteractive",
+        "oma-skillsbench-dependencycheck-302b90e489",
+        "/bin/sh",
+        "-c",
+        "apt-get update && apt-get install -y  python3  python3-pip  python3-venv  curl  wget  unzip  git  && rm -rf /var/lib/apt/lists/*"
+      ]
+    },
+    {
+      "label": "setup-003-run",
+      "command": [
+        "docker",
+        "exec",
+        "--workdir",
+        "/",
+        "--env",
+        "PIP_ONLY_BINARY=:all:",
+        "--env",
+        "UV_NO_BUILD=1",
+        "--env",
+        "npm_config_ignore_scripts=true",
+        "--env",
+        "DEBIAN_FRONTEND=noninteractive",
+        "--env",
+        "PIP_FIND_LINKS=https://www.piwheels.org/simple/scapy/scapy-2.5.0-py2.py3-none-any.whl#sha256=e6c9266d0e52ac63a9cdb218799acad6b2de1c5160e27a7c4dff815d940f8f8f",
+        "oma-skillsbench-dependencycheck-302b90e489",
+        "/bin/sh",
+        "-c",
+        "pip3 install --break-system-packages  scapy==2.5.0  pandas==2.2.2  numpy==1.26.4"
+      ]
+    },
+    {
+      "label": "setup-004-workdir",
+      "command": [
+        "docker",
+        "exec",
+        "oma-skillsbench-dependencycheck-302b90e489",
+        "mkdir",
+        "-p",
+        "/root"
+      ]
+    },
+    {
+      "label": "setup-005-copy-mkdir",
+      "command": [
+        "docker",
+        "exec",
+        "oma-skillsbench-dependencycheck-302b90e489",
+        "mkdir",
+        "-p",
+        "/root"
+      ]
+    },
+    {
+      "label": "setup-005-copy-copy",
+      "command": [
+        "docker",
+        "cp",
+        "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/dapt-intrusion-detection/environment/packets.pcap",
+        "oma-skillsbench-dependencycheck-302b90e489:/root/packets.pcap"
+      ]
+    },
+    {
+      "label": "setup-006-copy-mkdir",
+      "command": [
+        "docker",
+        "exec",
+        "oma-skillsbench-dependencycheck-302b90e489",
+        "mkdir",
+        "-p",
+        "/root"
+      ]
+    },
+    {
+      "label": "setup-006-copy-copy",
+      "command": [
+        "docker",
+        "cp",
+        "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/dapt-intrusion-detection/environment/network_stats_template.csv",
+        "oma-skillsbench-dependencycheck-302b90e489:/root/network_stats.csv"
+      ]
+    },
+    {
+      "label": "log-dirs",
+      "command": [
+        "docker",
+        "exec",
+        "--workdir",
+        "/root",
+        "--env",
+        "PIP_ONLY_BINARY=:all:",
+        "--env",
+        "UV_NO_BUILD=1",
+        "--env",
+        "npm_config_ignore_scripts=true",
+        "--env",
+        "DEBIAN_FRONTEND=noninteractive",
+        "oma-skillsbench-dependencycheck-302b90e489",
+        "/bin/sh",
+        "-c",
+        "mkdir -p /logs/agent /logs/verifier /logs/artifacts /app"
+      ]
+    },
+    {
+      "label": "import-and-input-check",
+      "command": [
+        "docker",
+        "exec",
+        "--workdir",
+        "/root",
+        "--env",
+        "PIP_ONLY_BINARY=:all:",
+        "--env",
+        "UV_NO_BUILD=1",
+        "--env",
+        "npm_config_ignore_scripts=true",
+        "--env",
+        "DEBIAN_FRONTEND=noninteractive",
+        "oma-skillsbench-dependencycheck-302b90e489",
+        "/bin/sh",
+        "-c",
+        "python3 -B -c 'import scapy,pandas,numpy,json; from scapy.utils import PcapReader; assert scapy.__version__ == \"2.5.0\"; assert pandas.__version__ == \"2.2.2\"; assert numpy.__version__ == \"1.26.4\"; reader=PcapReader(\"/root/packets.pcap\"); packet=reader.read_packet(); reader.close(); assert packet is not None; print(json.dumps({\"scapy\":scapy.__version__,\"pandas\":pandas.__version__,\"numpy\":numpy.__version__,\"first_packet_loaded\":True}))'"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,288 @@
+{
+  "task": "pddl-airport-planning",
+  "status": "scored",
+  "started_at": 1792604059.655412,
+  "attempt_dir": "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/pddl-airport-planning/attempt-20261021T173419Z",
+  "container": "oma-skillsbench-batch-0e486a7753f2",
+  "workspace": "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/pddl-airport-planning/attempt-20261021T173419Z",
+  "task_sha256": "24908bed217b7e9869573a70e20d16421103ce2f8802af41163fb798e4b704c9",
+  "dockerfile_sha256": "579712e8dd388cd9933acb011a181fe6b9244edfc6b81b474af179682ea54b68",
+  "verifier_tree_sha256": "8f3e19727336a07bc01ef3fdbedc8e5940880189b1de62508253620207276a85",
+  "setup_status": "completed",
+  "agent_status": "completed",
+  "verifier_status": "completed",
+  "oracle_status": "not-run",
+  "canonical_benchmark": false,
+  "hook_activation": "unverified",
+  "requested_resources": {
+    "network_mode": "public",
+    "build_timeout_sec": 600.0,
+    "os": "linux",
+    "cpus": 1,
+    "memory_mb": 2048,
+    "storage_mb": 10240,
+    "gpus": 0
+  },
+  "hidden_data_isolation": "Host workspace is not OS isolation; upstream cache remains host-readable",
+  "steps": {
+    "image-pull": {
+      "exit_code": 0
+    },
+    "container-start": {
+      "exit_code": 0
+    },
+    "setup-002-run": {
+      "exit_code": 0
+    },
+    "setup-003-workdir": {
+      "exit_code": 0
+    },
+    "setup-004-run": {
+      "exit_code": 0
+    },
+    "setup-005-copy-mkdir": {
+      "exit_code": 0
+    },
+    "setup-005-copy-copy": {
+      "exit_code": 0
+    },
+    "setup-006-copy-mkdir": {
+      "exit_code": 0
+    },
+    "setup-006-copy-copy": {
+      "exit_code": 0
+    },
+    "log-dirs": {
+      "exit_code": 0
+    },
+    "agent": {
+      "exit_code": 0
+    },
+    "verifier-clear": {
+      "exit_code": 0
+    },
+    "verifier-copy": {
+      "exit_code": 0
+    },
+    "verifier-compat-copy": {
+      "exit_code": 0
+    },
+    "verifier": {
+      "exit_code": 0
+    },
+    "verifier-download": {
+      "exit_code": 0
+    }
+  },
+  "commands": [
+    [
+      "docker",
+      "pull",
+      "ubuntu:24.04"
+    ],
+    [
+      "docker",
+      "run",
+      "-d",
+      "--name",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "--user",
+      "root",
+      "--entrypoint",
+      "/bin/sh",
+      "--cpus",
+      "1",
+      "--memory",
+      "2048m",
+      "ubuntu:24.04",
+      "-c",
+      "while :; do sleep 3600; done"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "/bin/sh",
+      "-c",
+      "apt-get update && apt-get install -y  python3  python3-pip  python3-venv  python3-dev  build-essential  wget  curl  ca-certificates  && rm -rf /var/lib/apt/lists/*"
+    ],
+    [
+      "docker",
+      "exec",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "mkdir",
+      "-p",
+      "/app"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/app",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "--env",
+      "PIP_FIND_LINKS=https://archive1.piwheels.org/simple/bibtexparser/bibtexparser-1.4.2-py3-none-any.whl#sha256=1063c91db53f6b5d2b6ad9126cbddaf4db56a119001bee31f4277babdbb4e37a",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "/bin/sh",
+      "-c",
+      "pip3 install --break-system-packages  requests==2.32.3  bibtexparser==1.4.2  pyyaml==6.0.3  numpy==2.4.1  pyperplan==2.1  unified_planning==1.3.0  up-pyperplan==1.1.0"
+    ],
+    [
+      "docker",
+      "exec",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "mkdir",
+      "-p",
+      "/app"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/pddl-airport-planning/environment/problem.json",
+      "oma-skillsbench-batch-0e486a7753f2:/app/problem.json"
+    ],
+    [
+      "docker",
+      "exec",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "mkdir",
+      "-p",
+      "/app/airport"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/pddl-airport-planning/environment/airport/.",
+      "oma-skillsbench-batch-0e486a7753f2:/app/airport"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/app",
+      "--env",
+      "PIP_ONLY_BINARY=:all:",
+      "--env",
+      "UV_NO_BUILD=1",
+      "--env",
+      "npm_config_ignore_scripts=true",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "/bin/sh",
+      "-c",
+      "mkdir -p /logs/agent /logs/verifier /logs/artifacts /app /tests"
+    ],
+    [
+      "codex",
+      "exec",
+      "--json",
+      "--skip-git-repo-check",
+      "--ephemeral",
+      "-c",
+      "approval_policy=\"never\"",
+      "-s",
+      "danger-full-access",
+      "-C",
+      "/Users/gracefullight/.cache/oma-benchmarks/full-workspaces/full-v1.1-20261021/pddl-airport-planning/attempt-20261021T173419Z",
+      "--model",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"high\"",
+      "-"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/app",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "/bin/sh",
+      "-c",
+      "rm -rf /logs/verifier /verifier /tests && mkdir -p /logs/verifier /verifier /tests"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/pddl-airport-planning/verifier/.",
+      "oma-skillsbench-batch-0e486a7753f2:/verifier"
+    ],
+    [
+      "docker",
+      "cp",
+      "/Users/gracefullight/.cache/oma-benchmarks/skillsbench-v1.1/tasks/pddl-airport-planning/verifier/.",
+      "oma-skillsbench-batch-0e486a7753f2:/tests"
+    ],
+    [
+      "docker",
+      "exec",
+      "--workdir",
+      "/app",
+      "--env",
+      "DEBIAN_FRONTEND=noninteractive",
+      "oma-skillsbench-batch-0e486a7753f2",
+      "/bin/sh",
+      "-c",
+      "bash /verifier/test.sh"
+    ],
+    [
+      "docker",
+      "cp",
+      "oma-skillsbench-batch-0e486a7753f2:/logs/verifier",
+      "/Users/gracefullight/workspace/oh-my-agent/benchmarks/external/skillsbench/results/full-v1.1-20261021/tasks/pddl-airport-planning/attempt-20261021T173419Z/verifier"
+    ]
+  ],
+  "image_inspect": {
+    "Id": "sha256:f3ff6f5009cb3b8de09d949f24109461606f626fae231a81f66ba3226c8302a6",
+    "RepoDigests": [
+      "ubuntu@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac"
+    ],
+    "Architecture": "arm64",
+    "Os": "linux"
+  },
+  "environment_execution": "runtime-instruction-replay",
+  "configured_model": "gpt-6.1-sol",
+  "configured_reasoning_effort": "high",
+  "usage": {
+    "input_tokens": 246046,
+    "cached_input_tokens": 214400,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 1712,
+    "reasoning_output_tokens": 126
+  },
+  "official_ctrf_groups": {
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792604205.779621,
+    "stop": 1792604210.1753976
+  },
+  "pytest_cases": {
+    "passed": 2
+  },
+  "reward": 1.0,
+  "task_outcome": "passed",
+  "finished_at": 1792604212.8658078
+}
