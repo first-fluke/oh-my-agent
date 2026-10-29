@@ -1,5 +1,14 @@
 # Changelog
 
+## [20.22.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.21.0...cli-v20.22.0) (2026-10-29)
+
+
+### Features
+
+* **academic-writing:** add research abstract guide ([825b953](https://github.com/first-fluke/oh-my-agent/commit/825b95396f06ba899d5d033e2540439023670d45))
+* **benchmarks:** add skillsbench and workbuddy external runners ([b9b5876](https://github.com/first-fluke/oh-my-agent/commit/b9b58765f0cb0b9a31ef45b9cef18d1258cf82e6))
+* **mobile:** add kotlin-android variant ([f7f1dfa](https://github.com/first-fluke/oh-my-agent/commit/f7f1dfa69f3c65f02ccc1ac4e2203dfbb3c8272f))
+
 ## [20.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.20.1...cli-v20.21.0) (2026-10-29)
 
 
