@@ -282,28 +282,43 @@ OMA는 원본 PTS·VFR·A/V offset의 근거, 샘플링 정의, 비전 해석, s
 
 ## oma-slide
 
-근거: [SKILL.md](../../skills/oma-slide/SKILL.md), [stage 규약](../../skills/oma-slide/resources/fixed-stage.md), [Canva 연결](../../skills/oma-slide/resources/canva-integration.md).
+근거: [SKILL.md](../../skills/oma-slide/SKILL.md), [stage 규약](../../skills/oma-slide/resources/fixed-stage.md), [Canva 연결](../../skills/oma-slide/resources/canva-integration.md), [native PPTX route](../../skills/oma-slide/resources/native-pptx.md), [upstream ppt-master](https://github.com/hugohe3/ppt-master).
 
 ```text
 oma-slide
 ├── skills
-│   └── oma-image: conditional generated-image assets
+│   ├── hugohe3/ppt-master: conditional native-pptx route (load-and-follow)
+│   ├── oma-image: conditional generated-image assets; upstream Path B on the native-pptx route
+│   └── oma-hwp / oma-pdf: optional native-pptx source pre-conversion
 ├── CLI
-│   └── oma slide: create / validate / preview / bundle / export / style
+│   ├── oma slide: create / validate / preview / bundle / export / style
+│   ├── bunx skills use hugohe3/ppt-master@ppt-master: catalog fallback
+│   ├── python3 <support_dir>/scripts/<selected>.py: upstream operations
+│   └── uv venv / uv pip install -r <support_dir>/requirements.txt: consented only
 ├── MCP
 │   ├── Canva: optional import / export
 │   └── chrome-devtools: optional aesthetic screenshot review
 ├── API / host
 │   ├── remote style templates: conditional design.md retrieval
 │   └── font CDN resources: conditional validation / export access
-└── OMA-owned specs
-    ├── fixed-stage.md: 1920 x 1080 and validator contract
-    ├── generation-protocol.md / design-doctrine.md
-    ├── style-presets.md / selection-index.json / animation-patterns.md
-    └── canva-integration.md / checklist.md
+├── OMA-owned specs
+│   ├── fixed-stage.md: 1920 x 1080 and validator contract
+│   ├── generation-protocol.md: route selection / design-doctrine.md
+│   ├── style-presets.md / selection-index.json / animation-patterns.md
+│   ├── native-pptx.md: upstream loading, substitutions, delivery
+│   └── canva-integration.md / checklist.md
+└── Upstream-owned specs (native-pptx)
+    ├── SKILL.md / workflows/routing.md: routes, BLOCKING gates, Confirm UI
+    ├── workflows/ and references/: route procedures and authoring rules
+    ├── scripts/: SVG → DrawingML export, quality checks, attribution guard
+    └── templates/: brand / style / layout / deck / chart / icon catalogs
 ```
 
 외부 출처의 preset은 현재 vendored 리소스다. 원본 스킬을 런타임에 설치·호출하는 연결과 구분한다. Canva와 시각 검토 도구는 선택적 연결이다.
+
+편집 가능한 PPTX, 기존 PPTX 수정, 문서→덱, 템플릿 생성, 나레이션 덱 요청은 `native-pptx` route로 보낸다. runtime skill catalog의 `ppt-master`를 우선 사용하고, 없거나 지원 파일이 불완전하면 `bunx skills use`를 `--agent` 없이 실행해 반환된 전체 지침과 지원 디렉터리를 사용한다. `scripts/`, `workflows/`, `references/`, `templates/`, `LICENSE`, `SPONSORS*`를 함께 유지하며 OMA에 vendoring하거나 수정하지 않는다. upstream attribution guard가 통과해야 실행한다.
+
+OMA는 route 선택, 인터프리터·`init --dir`·이미지 경로·원본 전처리 치환, 전달 요약만 관리한다. AI 이미지는 upstream Path B(host-native)로 기록하고 `oma-image`로 생성한다. Python 패키지는 사용자 동의 후에만 설치한다. 그 밖의 절차와 게이트는 upstream이 소유한다.
 
 ## oma-explanation
 

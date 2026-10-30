@@ -13,7 +13,22 @@ Call direction is one-way: **skill calls CLI. CLI never calls skill.**
 
 ## Phase 0 — Detect Mode
 
-**Goal:** identify which generation mode applies before doing anything else.
+**Goal:** identify which route and generation mode apply before doing anything else.
+
+0. Select the route from the requested deliverable:
+
+   | Request | Route |
+   |---|---|
+   | Editable PowerPoint / PPTX deliverable (편집 가능한 PPT) | `native-pptx` |
+   | Fill or edit an existing PPTX while keeping its design | `native-pptx` |
+   | PDF / DOCX / XLSX / URL to a deck delivered as PPTX | `native-pptx` |
+   | Reusable brand / style / layout / deck template | `native-pptx` |
+   | Narrated PPTX or MP4 authored from a deck | `native-pptx` |
+   | Web, animated, or HTML deck; Canva; no format preference | HTML (steps 1–6) |
+
+   `native-pptx` follows `resources/native-pptx.md` and leaves this protocol.
+   When the format is unknown and changes the route, add it to the single Phase 1
+   question instead of asking separately.
 
 1. Inspect user input for one of four signals:
    - `new` — a topic, title, or free-text brief (no existing deck supplied).
@@ -63,6 +78,7 @@ Required dimensions:
   - speaker-led deck → `sparse`: large statements, minimal text — speaker fills in detail verbally.
   - reading-first deck → `dense`: deck is read standalone; more text and detail per slide.
   - in between → `balanced` (the default).
+- **Format** — only when Phase 0 left it open: web/HTML deck, or editable PowerPoint (switches to `native-pptx`).
 
 Example combined question:
 > "To get started: what is this deck for (pitch, internal report, talk)? Roughly how many slides? What key topics or story should it cover? And will someone be presenting it live (sparse slides) or will it be read standalone (dense slides)?"

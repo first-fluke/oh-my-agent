@@ -146,6 +146,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Use `--slide <file>` for a single-slide check and `--report-file <path>` with JSON output when another process needs the findings. `slide import pptx <file>` starts an import workflow; `slide asset fetch-video <url>` downloads a video asset; `slide style list|preview|get <slug>` inspects styles. PPTX output is raster-backed, so it does not provide editable text or shape layers. Validation and export require Chrome/puppeteer; set `OMA_CHROME_PATH` when the executable is not discoverable. If validation cannot converge after three auto-fix iterations, use the reported geometry findings to edit the affected fragment.
 
+### Editable PowerPoint (native-pptx route)
+
+When the deliverable must be an editable PowerPoint file, `oma-slide` switches to its `native-pptx` route. The same route handles filling or editing an existing PPTX while keeping its design, turning a PDF, DOCX, XLSX, or URL into a deck, building a reusable brand, style, layout, or deck template, and narrated PPTX or MP4 output. Web, animated, and Canva decks stay on the HTML route above.
+
+The route runs the upstream [ppt-master](https://github.com/hugohe3/ppt-master) skill (MIT, by Hugo He) without modifying it. `oma-slide` uses an installed copy from your runtime skill catalog when there is one; otherwise it loads the skill for the session with:
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master authors SVG pages and exports native DrawingML shapes, text boxes, charts, and tables, so the PPTX lands in the project's `exports/` folder under `.agents/results/slides/<session-id>/`. Its Python scripts need the packages in the skill's `requirements.txt`; `oma-slide` asks before installing them into a `uv` virtual environment. If you decline, it offers the HTML route instead. AI images on this route are generated with `oma-image`, and ppt-master's own gates and confirmation screen decide the rest of the flow.
+
 ## Recap agent conversations
 
 Use `/recap` (or ask the agent for a recap) for evidence-based work summaries; it runs `oma recap` to collect the history. A calendar date and a rolling window are different inputs:

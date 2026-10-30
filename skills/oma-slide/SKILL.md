@@ -1,7 +1,8 @@
 ---
 name: oma-slide
 description: Create, import, revise, or export presentation decks through the
-  OMA slide CLI. Use for HTML slides and PDF, PNG, or PPTX deck delivery.
+  OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and
+  PDF, PNG, or PPTX deck delivery.
 ---
 
 # Slide Agent — Animation-Rich HTML Deck Generator
@@ -18,6 +19,9 @@ exportable to PDF, PNG, and PPTX.
 - User provides a topic, outline, `.pptx` to import, or existing deck to enhance.
 - User mentions slide, deck, pptx, keynote, 슬라이드, 발표자료, プレゼン, 幻灯片, 演示文稿.
 - User mentions Canva, canva export, canva import, 캔바, キャンバ.
+- User needs an editable PowerPoint (편집 가능한 PPT), wants an existing PPTX filled or edited
+  with its design kept, a document (PDF/DOCX/XLSX/URL) turned into a PPTX deck, a reusable
+  brand/style/layout/deck template, or a narrated PPTX/MP4 → `native-pptx` route.
 - Another skill needs a visual output artifact (e.g., a research result delivered as a deck).
 
 ### When to use
@@ -28,6 +32,7 @@ exportable to PDF, PNG, and PPTX.
 - Applying a named style preset or bold template to a deck
 - Exporting a generated deck to Canva as a presentation
 - Importing a Canva design as input for enhancement
+- Producing a natively editable PPTX through the upstream ppt-master skill (`resources/native-pptx.md`)
 
 ### When NOT to use
 - Plain document creation (no slides needed) → use oma-backend or direct output
@@ -54,7 +59,9 @@ exportable to PDF, PNG, and PPTX.
 - Optional: `viewer.html`, `out/deck.html` bundle, exports
 <!-- oma-docs:ignore-end -->
 - Optional: Canva design URL (when Canva export is requested)
-- PPTX export contains one raster image per slide; it has no editable text or shape layers.
+- HTML route: PPTX export contains one raster image per slide; it has no editable text or shape layers.
+- `native-pptx` route: an upstream ppt-master project under `.agents/results/slides/<session-id>/<project>/`
+  with a natively editable PPTX in `exports/`
 
 ```yaml
 outputs:
@@ -70,6 +77,10 @@ outputs:
     description: Bundle and optional exports (deck.html, deck.pdf, png/, deck.pptx)
     artifact: ".agents/results/slides/*/out/*"
     required: false
+  - name: native-pptx
+    description: Natively editable PPTX from the native-pptx route (upstream ppt-master project)
+    artifact: ".agents/results/slides/*/*/exports/*.pptx"
+    required: false
 ```
 
 ### Dependencies
@@ -83,8 +94,12 @@ outputs:
 - `resources/animation-patterns.md` (effect-to-feeling guide)
 - Canva Remote MCP (`https://mcp.canva.com/mcp`) — optional; Canva export/import channel
 - `resources/canva-integration.md` (Canva MCP tool mapping and pipeline)
+- `native-pptx` route: upstream [hugohe3/ppt-master](https://github.com/hugohe3/ppt-master) (MIT)
+  from the runtime skill catalog or `bunx skills use hugohe3/ppt-master@ppt-master`; Python
+  packages from its `requirements.txt`, installed only with user consent (`resources/native-pptx.md`)
 
 ### Control-flow features
+- Branches by route: HTML (default) / `native-pptx` (Phase 0 step 0)
 - Branches by mode: new / import / import-canva / enhance (Phase 0 detection)
 - Branches by CJK content presence (→ Pretendard font required)
 - Branches by Canva availability: probes `search-designs` using the discovered tool schema on startup; offers auto-provisioning if not configured; skips if unavailable or declined
@@ -95,6 +110,8 @@ outputs:
 ## Structural Flow
 
 ### Entry
+0. Select the route (`generation-protocol.md` Phase 0 step 0). `native-pptx` → follow
+   `resources/native-pptx.md` instead of the steps below.
 1. Detect mode: new topic / import .pptx / enhance existing deck.
 2. Run one `AskUserQuestion` clarifying: purpose, audience, slide count, content density, existing assets.
 3. Load `resources/generation-protocol.md` and the relevant style reference before writing any HTML.
@@ -112,6 +129,8 @@ outputs:
 - `oma slide doctor` failure (missing Chrome): warn and skip validate/export; complete generation only.
 - Remote style fetch failure: fall back to nearest vendored preset from `style-presets.md`.
 - Image generation failure: placeholder image + TODO comment; continue deck generation.
+- `native-pptx` bundle incomplete or attribution guard non-zero: report and stop that route.
+- `native-pptx` Python install declined or failed: say so; offer the HTML route (raster PPTX, experimental).
 
 ### Exit
 <!-- oma-docs:ignore-start -->
@@ -172,6 +191,7 @@ Env-var overrides: `OMA_CHROME_PATH` (Chrome binary for validate/export), `OMA_Y
 | `PROCESS` | `oma slide` CLI subcommands |
 | `NETWORK` | oma-image API (via skill); `styles get` remote design.md (untrusted data) |
 | `NETWORK` | Canva Remote MCP (`https://mcp.canva.com/mcp`) — optional, OAuth-gated |
+| `PROCESS` | `native-pptx`: `bunx skills use hugohe3/ppt-master@ppt-master`, upstream `scripts/*.py`, consented `uv pip install` |
 | `LOCAL_FS` | MCP config files — project: `.agents/mcp.json`, `.agents/mcp_config.json` (agy), `.mcp.json` (Claude), `.gemini/settings.json` (Gemini Extension); global: `~/.gemini/antigravity-cli/mcp_config.json` (agy global) |
 
 ### Preconditions
@@ -205,6 +225,9 @@ Env-var overrides: `OMA_CHROME_PATH` (Chrome binary for validate/export), `OMA_Y
 13. **Canva auth probe first.** Before any Canva operation, call `search-designs` using the discovered tool schema to verify auth. On failure, notify user and skip.
 14. **Canva design URL in delivery.** When Canva export succeeds, include the Canva design URL in the delivery summary.
 15. **Canva auto-provision = user-approved only.** Never write MCP config without explicit user consent. See `resources/canva-integration.md` §Auto-Provisioning.
+16. **ppt-master runs unmodified.** Never copy, vendor, or edit upstream files, guess its cache path, or bypass its attribution guard.
+17. **No unconsented installs.** Install ppt-master's Python requirements only after the user agrees.
+18. **Native route images via oma-image.** Record the upstream AI image path as `host-native`; never set `IMAGE_BACKEND` or upstream provider keys. Do not surface upstream sponsor content unless asked.
 
 ### CLI ⇄ Skill Boundary
 
@@ -226,6 +249,8 @@ Env-var overrides: `OMA_CHROME_PATH` (Chrome binary for validate/export), `OMA_Y
 | Fixing validation failures | YES (rewrite HTML) | — |
 | Bundle / viewer / pdf / png / pptx | — | YES |
 | Dependency probe | — | YES `doctor` |
+| `native-pptx` route selection, upstream loading, substitutions | YES (`native-pptx.md`) | — |
+| Editable PPTX authoring and export | — (upstream ppt-master scripts) | — |
 
 ## References
 
@@ -246,6 +271,7 @@ For error recovery, see §Failure and recovery above.
 - Export pipeline details: `resources/generation-protocol.md` §Phase 6 — Bundle and Export
 - Visual editor usage: `resources/generation-protocol.md` §Phase 5c — Visual Edit
 - Pre-delivery gate: `resources/checklist.md`
+- Editable PPTX via upstream ppt-master: `resources/native-pptx.md`
 - Context loading: `references/_shared/core/context-loading.md`
 - Context budget: `references/_shared/core/context-budget.md`
 - Imagery delegation: `../oma-image/SKILL.md` — oma-slide delegates all image generation here

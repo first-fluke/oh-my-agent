@@ -31,3 +31,16 @@ Every item maps to a SKILL.md guardrail or the validator contract in `fixed-stag
 - [ ] Reported: workdir path, slide file list, `out/deck.html` path, export paths, validate status
 <!-- oma-docs:ignore-end -->
 - [ ] Reported: any `TODO(oma-deferred)` items (e.g., unresolved image generation placeholders)
+
+## Native PPTX route (`resources/native-pptx.md`)
+
+Replaces the HTML gate above when Phase 0 selected `native-pptx`.
+
+- [ ] ppt-master resolved from the runtime catalog or `bunx skills use`; source, version, and `SKILL_DIR` recorded
+- [ ] Bundle complete and `$SKILL_DIR/scripts/attribution_guard.py` exited 0
+- [ ] Python packages installed only after explicit user consent (or already present)
+- [ ] Upstream final quality gate passed for the selected route
+- [ ] PPTX present under `<project>/exports/`; project under `.agents/results/slides/<session-id>/`
+- [ ] AI images came from oma-image via Path B, or the user explicitly chose another path
+- [ ] No upstream file was copied, vendored, or edited
+- [ ] Delivery summary lists the PPTX path, upstream version, route and gates, and image sources
