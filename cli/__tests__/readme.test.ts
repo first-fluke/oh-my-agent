@@ -8,9 +8,7 @@ describe("npm package readme", () => {
       "utf-8",
     );
 
-    expect(readme).toContain(
-      "# oh-my-agent: A Specialist Team for the Coding Agent You Already Use",
-    );
+    expect(readme).toMatch(/^# oh-my-agent\n/);
     expect(readme).not.toMatch(/\]\(\.\//);
     expect(readme).toContain(
       "https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.ko.md",

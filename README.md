@@ -1,14 +1,24 @@
-# oh-my-agent: A Specialist Team for the Coding Agent You Already Use
+# oh-my-agent
+
+**Ship 400+ commits a day.**
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
 [한국어](./docs/README.ko.md) | [中文](./docs/README.zh.md) | [Português](./docs/README.pt.md) | [日本語](./docs/README.ja.md) | [Français](./docs/README.fr.md) | [Español](./docs/README.es.md) | [Nederlands](./docs/README.nl.md) | [Polski](./docs/README.pl.md) | [Русский](./docs/README.ru.md) | [Deutsch](./docs/README.de.md) | [Tiếng Việt](./docs/README.vi.md) | [ภาษาไทย](./docs/README.th.md)
 
-**oh-my-agent (`oma`) is a vendor-agnostic harness that adds a team of specialists to the coding agent you already use: Claude Code, Codex CLI, Cursor, and 11 more.** A planner breaks the work down, engineers build in parallel, a reviewer checks the result, and a debugger fixes root causes. It also does cited research, slide decks, videos and images. Most steps leave a file you can open, and in the long-running workflows a gate can send the agent back to work until your own `test`, `lint` or `typecheck` script passes.
+oh-my-agent (`oma`) turns Claude Code, Codex CLI, Cursor and 11 other coding agents into a team. A planner splits the work, engineers build in parallel, a reviewer checks the result, and a debugger fixes the root cause.
+
+Run this from your project root.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
+```
+
+Then open your agent and type `/orchestrate build a TODO app with login`.
 
 ## Start with your task
 
-Load one skill in your existing coding agent, or install the runtime for project hooks and team workflows.
+Pick a task. Load one skill into the agent you already use, or install the whole team.
 
 | Your task | Start here | First request |
 |---|---|---|
@@ -16,21 +26,13 @@ Load one skill in your existing coding agent, or install the runtime for project
 | [Design an admin screen](./web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
 | [Fix a failing test](./web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
 | Review system boundaries | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
-| Use project hooks, specialist agents, and workflows | [Install the runtime](#install) | "Use oma-scm to inspect this repository's branch and working tree without edits or remote access." |
+| Run the whole team | [Install oma](#install) | `/orchestrate add login to this app` |
 
-Run a `skills use` command through your agent's terminal; it returns the selected instructions and their support directory. These commands load instructions. CLI operations, other skills, project rules, and external services declared by a skill remain separate dependencies. See [Choose a setup](./web/docs/getting-started/choose-setup.md) for the available install paths.
-
-[See a real repair: plugin hooks calling missing files](./web/docs/examples/plugin-hook-repair.md). The example links the changed code, the failure cases, and the regression checks.
+Run the `skills use` command in your agent's terminal. It loads that one skill. For the full team with workflows, [install oma](#install). Other options are in [Choose a setup](./web/docs/getting-started/choose-setup.md).
 
 [![Oh-My-Agent: A 6+1-Layer Harness Architecture](./docs/assets/architecture/oh-my-agent-architecture.png)](./docs/assets/architecture/oh-my-agent-architecture.svg)
 
-For runtime installation, run this from your project root:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
-```
-
-For that runtime installation, run `oma doctor`. [Your first 5 minutes](#your-first-5-minutes) starts with a read-only task before team workflows.
+After installing, run `oma doctor`. [Your first 5 minutes](#your-first-5-minutes) starts with a read-only task before team workflows.
 
 ## What you get
 
@@ -42,11 +44,10 @@ For that runtime installation, run `oma doctor`. [Your first 5 minutes](#your-fi
 | **21 workflows** | Slash commands from `/brainstorm` and `/plan` to `/review`, `/debug` and `/scm`. Most also start from a plain request (keyword banks in up to 11 languages) | "review this PR" |
 | **33 skills** | Domain know-how that loads only when a task needs it: UI, APIs, schemas, Terraform, CI, security, git, observability | loads by itself, e.g. "add a Terraform S3 bucket" |
 | **Files you can open** | Plans, design docs, API contracts, ADRs, bug notes, per-agent results, security evidence, HTML explainers, recaps | `ls .agents/results` |
-| **Workflow checks** | In a long-running workflow, your own `test`, `lint` or `typecheck` script must pass before the agent may stop; `oma ralph verify` checks that a `/ralph` run left its plan, QA and refactor files | `/ultrawork …`, then `oma goal set --gate test` |
 | **Research and content** | Cited search, market research, papers, slide decks, MP4 videos, images, local voice, PDF/HWP to Markdown | `/video`, `/convert` |
 | **One folder, 14 runtimes** | One portable `.agents/` directory, written into each runtime's own config files | `oma link cursor` |
 
-**[Install](#install)** · **[First 5 minutes](#your-first-5-minutes)** · **[The team](#meet-the-team)** · **[Which workflow?](#how-the-team-works-together)** · **[Everything in the box](#everything-in-the-box)** · **[Works with](#works-with)** · **[Verification](#verification-not-narration)** · **[FAQ](#faq)** · **[Docs](https://firstfluke.com/oh-my-agent/)**
+**[Install](#install)** · **[First 5 minutes](#your-first-5-minutes)** · **[The team](#meet-the-team)** · **[Which workflow?](#how-the-team-works-together)** · **[Everything in the box](#everything-in-the-box)** · **[Works with](#works-with)** · **[FAQ](#faq)** · **[Docs](https://firstfluke.com/oh-my-agent/)**
 
 ## Install
 
@@ -225,35 +226,6 @@ You don't need slash commands. On runtimes with a prompt hook, plain requests (k
 `oma verify triggers` evaluates the detector against a labeled English and Korean corpus of 212 prompts. CI fails above 10% false fires or 20% missed fires. Last measured: **0% missed-fire, 5.3% false-fire**. Full reference: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
-
-## See it work
-
-An illustrative `/ultrawork` session. The `[OMA PERSISTENT MODE: ULTRAWORK]` block is the exact format the Stop hook prints; the other lines are paraphrased:
-
-```text
-you    /ultrawork add rate limiting to POST /login
-agent  runs `oma goal set --gate test`
-agent  PLAN writes .agents/results/plan-<run-id>.json
-agent  IMPL -> VERIFY -> REFINE -> SHIP  (each review runs in a fresh reviewer session)
-agent  "Rate limiting added. All tests pass."
-oma    [OMA PERSISTENT MODE: ULTRAWORK]
-       Stop gate 'test' FAILED (reinforcement 1/5).
-       Fix the failures below, then finish the workflow — the stop is allowed only when the gate passes.
-       --- gate output (tail) ---
-       FAIL  src/auth/login.test.ts > returns 429 after 5 attempts
-       To abandon instead: delete .agents/state/ultrawork-state-<host-session>.json or say "workflow done".
-agent  fixes the limiter and stops again
-oma    `test` exits 0: stop allowed, gate.passed appended to the session log
-```
-
-Afterwards, `oma state list` finds the session and `oma state get <oma-sid>` (the ID `state list` prints) shows every gate event. Under `/ralph`, `oma ralph verify --json` also checks that the phases left their files behind (output trimmed):
-
-```json
-{ "ok": false,
-  "missing": [{ "id": "A3", "description": "a distinct QA agent ran (VERIFY phase)",
-                "pattern": ".agents/state/memories/result-qa*.md or .agents/results/result-qa*.md",
-                "status": "missing" }] }
-```
 
 ## Everything in the box
 
@@ -567,73 +539,6 @@ agents:
 - `kiro` is not in the installer menu; set it in the config file.
 - `oma doctor --profile` prints the resolved model for each role.
 - Full guide: [Per-agent models](https://first-fluke.github.io/oh-my-agent/docs/guide/per-agent-models/)
-
-</details>
-
-<a id="verification-not-narration"></a>
-## Verification
-
-OMA checks the artifacts produced by its workflows. [See it work](#see-it-work) shows the Stop gate in action.
-
-OMA also records tool-call metadata and payload digests for tracked Claude Code and Codex harness runs, distinguishes reported token usage from estimates, and evaluates skill regressions. These +1 functions span the layers; trace coverage varies by runtime and run.
-
-Most checks are mechanical. Commands exit with status 0 or another status, and artifacts are either on disk or absent. The prompted judge is the exception. The mechanical checks do not ask an LLM whether the work "looks correct."
-
-| Mechanism | What it checks | Source |
-|-----------|----------------|--------|
-| **Stop-hook gate** | During a persistent workflow, `oma goal set --gate test` (or `lint`, `typecheck`) allows the stop when that package.json script exits 0 within 25 s and the code fingerprint stays the same during the check. | [`persistent-mode.ts`](./.agents/hooks/core/persistent-mode.ts) |
-| **Artifact gate** | `oma ralph verify --json` checks for the phase records, the plan JSON, and result files from a **distinct QA agent** and a **distinct refactor agent**, each bound to recorded agent runs. | [`ralph.md`](./.agents/workflows/ralph.md) |
-| **Prompted judge** | Not mechanical: the `/ralph` prompt tells the orchestrator to spawn a fresh-context judge that re-checks **every** criterion each iteration. Nothing checks that the spawn happened. | [`judge-protocol.md`](./.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Event log** | In an OMA session, gate passes, gate failures, and decisions append one JSON line each to the session's `events.jsonl`. | [`state-core.ts`](./.agents/hooks/core/state-core.ts) · [`event-spec.md`](./.agents/skills/_shared/runtime/event-spec.md) |
-| **Per-agent checks** | `oma verify agent <type>` runs Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs, and TDD Evidence, plus per-type checks such as TypeScript, Any Types, SQL Injection, and tests. | `oma verify agent --help` |
-
-> **Session event logging.** The Stop hook records gate events under the OMA session opened when the persistent workflow started. Event writes are best-effort. If that session could not be created (stderr shows `[oma] L1 session activation failed`), a failing gate still blocks the stop, but no `gate.failed` line is written. Before you rely on the trail, or demo it, check that `oma state list` shows an active session; `oma state get <sid>` then shows its events.
-
-Gate events include the checked commit (`head`), whether the tree had changes (`dirty`), and a fingerprint (`treeHash`) of the tracked diff and untracked file names. A change during the check records `gate.failed` with `code changed during gate` and uses one reinforcement. Run `oma goal status --check-fresh` to compare the session's last pass with the current code: it prints `fresh`, `stale (head moved)`, or `stale (tree changed)`, and exits nonzero unless fresh. Use `--session-id <sid>` to select a session explicitly.
-
-<details>
-<summary>Limits, details, and how the Stop hook decides</summary>
-
-**Limits:**
-
-- The Stop gate applies only to the persistent workflows (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`). Without `oma goal set --gate`, it only re-prompts the agent to continue. `/ultrawork` tells the agent to set a gate when the project has a cheap check, but nothing enforces it. Run `oma goal set --gate test` yourself if you want to be sure; the other persistent workflows never set one.
-- Only the `typecheck`, `test`, and `lint` keywords are accepted, and they run the package.json script of that name. No package.json, or no script with that name, means the gate is not run. Non-JS projects need a package.json wrapper script.
-- The fingerprint includes untracked file names, but does not read their contents. Outside Git, or when a snapshot is unavailable, gates still run with null identifiers; freshness checks report unverified. Older events without fingerprints also report unverified.
-- The gate releases and logs a failure after 5 reinforcements, 2 hours, or when `--budget-minutes` runs out.
-- Budgets: `session.quota_cap` caps tokens, spawn count, and per-vendor tokens; the orchestrator refuses the next spawn when a dimension is exceeded.
-
-**Artifact gate.** A missing artifact means the phase did not run. The refactor check also passes as `skip-recorded` when the session log records a REFINE skip reason.
-
-**Prompted judge.** The `/ralph` workflow prompt tells the orchestrator to spawn the judge as a separate agent with fresh context, briefed on the criteria only (never on what the implementer claims it fixed), and to re-verify **every** criterion each iteration, including earlier PASSes, because fixing one criterion can cause another to regress. Nothing checks that the spawn happened: `oma ralph verify` gates the EXEC artifacts, not the judge, and a runtime that cannot spawn subagents is told to judge inline and record `ralph.judge-inline-fallback`. `/ralph` stops after 5 iterations with a partial report.
-
-**Event log.** Find the session with `oma state list` and read it with `oma state get <sid>`. Each event is stamped with vendor and runtime session id. The file's location depends on `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE`, and older project-local session folders, so don't hard-code it.
-
-**Per-agent checks.** Types: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. The command exits 1 when any check fails; TODO/FIXME Comments and Inline Styles only warn.
-
-<!-- Stack manifests in this list are optional outputs of /stack-set, not shipped files. -->
-<!-- oma-docs:ignore-start -->
-- `backend`: `<Language> Syntax`, `SQL Injection` (raw SQL patterns), and `<Language> Tests`, from the commands in `stack/stack.yaml`. Without that file (generate it with `/stack-set`) they are skipped.
-- `frontend`: the `stack/stack.yaml` syntax and test commands (under `oma-frontend`, or `angular-developer` when that skill is installed), or TypeScript (`tsc --noEmit`) and Frontend Tests (Vitest). Inline Styles and Any Types always run.
-- `mobile`: the `stack/stack.yaml` syntax and test commands, or Flutter/Dart Analysis and Flutter Tests.
-- `debug`: Python Tests (pytest through uv) or Frontend Tests (Vitest).
-- `pm`: PM Plan (the plan file is valid JSON).
-- `qa`: no mechanical checks.
-<!-- oma-docs:ignore-end -->
-
-```mermaid
-flowchart TD
-    S[Agent tries to stop] --> P{Persistent workflow active?}
-    P -- no --> A[Stop allowed]
-    P -- yes --> D{User or agent said workflow done?}
-    D -- yes --> A
-    D -- no --> R{Budget spent, state older than 2 h, or 5 blocks reached?}
-    R -- yes --> F[Stop allowed, logged as gate.failed]
-    R -- no --> G{Gate set and package.json script exists?}
-    G -- no --> B1[Blocked: workflow still active]
-    G -- yes --> X{Script exits 0 within 25 s?}
-    X -- yes --> OK[Stop allowed, logged as gate.passed]
-    X -- no --> B2[Blocked with output tail, logged as gate.failed]
-```
 
 </details>
 
