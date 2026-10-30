@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.13.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.12.0...web-v11.13.0) (2026-10-30)
+
+
+### Features
+
+* **video:** route sound effects to earshot ([2a370ce](https://github.com/first-fluke/oh-my-agent/commit/2a370ceeda59d4a05d629c3dfdbda620078a9a96))
+* **voice:** support VoiceStudio as a speech backend ([ac46ba2](https://github.com/first-fluke/oh-my-agent/commit/ac46ba2891b3d173e5c2dabdd731880d9c4de627))
+
 ## [11.12.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.11.0...web-v11.12.0) (2026-10-30)
 
 
