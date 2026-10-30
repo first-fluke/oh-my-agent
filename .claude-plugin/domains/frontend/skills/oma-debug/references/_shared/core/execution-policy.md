@@ -4,7 +4,7 @@ This is the shared OMA policy for authorization, clarification, verification, an
 
 ## Authorization and clarification
 
-- Carry the user's requested work through implementation and relevant verification. Existing authorization persists; a plan review or proposed fix does not require another approval when that work is already authorized.
+- Carry the user's requested work through implementation. Existing authorization persists; a plan review or proposed fix does not require another approval when that work is already authorized.
 - Resolve routine, reversible implementation choices from repository conventions. State material assumptions and continue independent work while a question is pending.
 - Ask only for information that changes the outcome or for an action outside the authorized scope. Pause only the dependent action. Before requesting new approval, prepare the concrete result for review.
 - Use the [Clarification Protocol](clarification-protocol.md) for question transport: prefer an available asynchronous question tool and keep independent work moving. Never treat silence, elapsed time, or a default selection as approval.
@@ -22,8 +22,8 @@ This is the shared OMA policy for authorization, clarification, verification, an
 
 ## Verification and completion
 
-- Select checks that demonstrate the requested behavior. Reproduce bugs with a regression test. For low-impact prose or configuration edits, use a relevant static check or inspection; do not invent implementation-mirroring tests.
-- After relevant checks pass, repeat them only after new changes, a failure, or a concrete unresolved concern. A stale receipt cannot prove the current tree.
+- Verification belongs to the project's local CI and push hooks. Do not run test suites, type checks, linters, or builds on your own initiative; run a check only when the user or the active workflow explicitly requires it.
+- Add a regression test with a bug fix. Do not invent implementation-mirroring tests for prose or configuration edits.
 - Use the shared [result contract](../runtime/result-contract.md) for agent handoffs. Process exit zero and a Markdown file alone are not verified completion.
 - Report completed, partial, blocked, or failed accurately, with remaining work and verification limits. A gate failure means repair evidence/work within the existing scope and retry; it is not automatically a new permission requirement.
 

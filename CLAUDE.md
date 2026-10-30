@@ -57,7 +57,8 @@ When touching install/update/uninstall code, read `web/docs/guide/global-install
 - `bun run test` runs CLI tests (vitest).
 - `bun run lint` runs the linter.
 - `bun run build` builds the CLI.
-- `bun run typecheck` type-checks CLI and web. **Run it before every commit**: vitest (esbuild), biome, and `bun build` all skip tsc, so type errors otherwise surface only at the pre-push hook and reject the push late.
+- `bun run typecheck` type-checks CLI and web.
+- Verification is owned by the git hooks (`hk`: pre-commit biome, commit-msg commitlint, pre-push checks) and CI. Do not run tests, typecheck, or lint on your own; run them only when the user asks.
 - **When manually exercising the CLI, always run the LOCAL code**: `bun cli/cli.ts <args>` (source) or `node cli/bin/cli.js <args>` (fresh build after `bun run build`). Never use `bun run oma` or bare `oma` — the repo root has no workspace bin link, so both silently fall back to the globally installed (likely stale) oma on PATH, and you end up debugging against the wrong version.
 - commitlint: conventional commits required (build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test)
 - Commit Co-Author: `First Fluke <our.first.fluke@gmail.com>`
