@@ -34,8 +34,10 @@ hooks {
       // Git exports repository-local variables in hooks. Tests create their own
       // repositories; inheriting these variables redirects their Git operations
       // here. Mirror the previous husky pre-push hook.
+      // Only tests affected by files changed since the upstream branch run here
+      // (`vitest --changed`); the full suite belongs to CI.
       ["test"] {
-        check = "for v in $(git rev-parse --local-env-vars); do unset $v; done; CI=true bun run test"
+        check = "base=$(git rev-parse --verify -q '@{upstream}' || echo origin/main); for v in $(git rev-parse --local-env-vars); do unset $v; done; CI=true bun run test --changed \"$base\""
         depends = "typecheck"
       }
       ["emit-drift"] {
