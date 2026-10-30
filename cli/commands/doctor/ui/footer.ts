@@ -73,7 +73,7 @@ export async function renderFooter(report: DoctorReport): Promise<void> {
     p.note(`${pc.green("⭐")} Thank you for starring oh-my-agent!`, "Support");
   } else {
     p.note(
-      `${pc.yellow("❤️")} Enjoying oh-my-agent? Give it a star or sponsor!\n${pc.dim("gh api --method PUT /user/starred/first-fluke/oh-my-agent")}\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
+      `${pc.yellow("❤️")} Enjoying oh-my-agent? Give it a star or sponsor!\n${pc.cyan("https://github.com/first-fluke/oh-my-agent")}\n${pc.dim("gh api --method PUT /user/starred/first-fluke/oh-my-agent")}\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
       "Support",
     );
   }

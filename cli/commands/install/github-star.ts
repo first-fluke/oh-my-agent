@@ -18,7 +18,15 @@ export async function maybePromptGithubStar(
 ): Promise<void> {
   if (getInstallMode() === "global" && explicitYes) {
     p.log.info(pc.dim("Skipped GitHub star prompt (--global + --yes)."));
-  } else if (isGhInstalled() && isGhAuthenticated() && !isAlreadyStarred()) {
+  } else if (!isGhInstalled() || !isGhAuthenticated()) {
+    // No authenticated gh means no one-step star, so leave the link instead
+    // of staying silent. Auto-detected CI stays silent, as below.
+    if (explicitYes || !nonInteractive) {
+      p.log.info(
+        `${pc.yellow("⭐")} Enjoying oh-my-agent? Star it on GitHub: ${pc.cyan(`https://github.com/${REPO}`)}`,
+      );
+    }
+  } else if (!isAlreadyStarred()) {
     // Auto-star on explicit `--yes` / OMA_YES (user opted in to "yes
     // everything"). Stay silent on auto-detected CI to avoid drive-by
     // stars from build runners that happen to have gh auth.
