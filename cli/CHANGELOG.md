@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.26.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.25.0...cli-v20.26.0) (2026-10-30)
+
+
+### Features
+
+* **models:** move built-in presets to the latest models ([079caf8](https://github.com/first-fluke/oh-my-agent/commit/079caf8fd8e6a2eae0e2db99a6efae7128cf98f1))
+
 ## [20.25.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.24.0...cli-v20.25.0) (2026-10-30)
 
 
