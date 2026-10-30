@@ -54,7 +54,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1354)
+## Current (1355)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -882,6 +882,7 @@ summaries to spot which persona is churning.
 - @metajpg — 2026-02-12
 - @Metro5000SDx — 2026-03-08
 - @MGoon2 — 2026-02-02
+- @mgordon-aa — 2026-10-29
 - @michael-bey — 2026-02-02
 - @michael-lev-claroty — 2026-08-23
 - @MichaelFrazzy — 2026-05-11
