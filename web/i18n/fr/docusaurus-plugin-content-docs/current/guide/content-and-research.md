@@ -12,7 +12,7 @@ Ce guide achemine les travaux documentaires, audio, de recherche, multimédias e
 |---|---|---|---|---|
 | Extraire un PDF | compétence `oma-pdf`, ou les commandes `uvx opendataloader-pdf` ci-dessous | `uv` (pour `uvx`) | Markdown, texte, JSON ou court rapport d’extraction | [ci-dessous](#extract-pdf-content) |
 | Extraire du HWP/HWPX/HWPML | compétence `oma-hwp` et `bunx kordoc@latest` | Bun | Markdown ou JSON/chunks structuré | [ci-dessous](#extract-hwp-family-documents) |
-| Lire ou transcrire de l’audio | `/oma-voice` | Application Voicebox sur `127.0.0.1:17493` | Audio avec manifeste, ou `transcript.md` avec manifeste | [ci-dessous](#generate-speech-or-transcribe-audio) |
+| Lire ou transcrire de l’audio | `/oma-voice` | Application Voicebox sur `127.0.0.1:17493`, ou VoiceStudio sur `127.0.0.1:3900` | Audio avec manifeste, ou `transcript.md` avec manifeste | [ci-dessous](#generate-speech-or-transcribe-audio) |
 | Trouver et valider des articles | `oma scholar` | aucun ; `S2_API_KEY`, `OPENALEX_EMAIL` facultatifs | Résultats de recherche, sidecar récupéré ou rapport de lint | [ci-dessous](#search-and-validate-scholarly-material) |
 | Rechercher sur le web ou récupérer une page | compétence `oma-search`, `oma search` | Chrome, Python `curl_cffi`, `yt-dlp`, `gh` facultatifs (à vérifier avec `oma search doctor`) | JSON sur stdout | [Commandes CLI : search](../cli-interfaces/commands.md#search) |
 | Construire une présentation | compétence `oma-slide` et `oma slide` | Chrome, ou `OMA_CHROME_PATH` | Diapositives HTML validées et exports facultatifs | [ci-dessous](#slides-and-presentations) |
@@ -103,6 +103,8 @@ La sortie par défaut est Markdown. Pour un AST structuré, utilisez `bunx kordo
 La synthèse vocale accepte jusqu’à 5 000 caractères par appel et nécessite un profil vocal Voicebox. La transcription ne nécessite pas de profil TTS et accepte un audio allant jusqu’à 30 minutes. Les travaux TTS et STT persistés écrivent sous `.agents/results/voice/` ; la transcription produit `transcript.md` et `manifest.json`. Le mode notification reste normalement dans Voicebox Captures et n’écrit pas de fichier audio local.
 
 L’endpoint MCP local est `http://127.0.0.1:17493/mcp`. Une configuration de première utilisation enregistre Voicebox auprès de l’agent et l’application de bureau Voicebox fournit les profils vocaux. La compétence découvre les vrais noms d’outils MCP avec `tools/list`, puis appelle `voicebox_speak`, `voicebox_transcribe` ou `voicebox_list_profiles`. Si la synthèse vocale n’a pas de profil, créez-en ou sélectionnez-en un dans Voicebox ; découper une demande trop longue est une décision utilisateur, car la compétence ne la découpe pas automatiquement. Si le serveur est indisponible, vérifiez l’endpoint de santé local et redémarrez Voicebox avant de réessayer.
+
+Pour utiliser [VoiceStudio](https://github.com/debpalash/VoiceStudio) à la place, définissez `voice.backend` sur `voicestudio` dans `.agents/oma-config.yaml`, ou laissez `auto` pour utiliser VoiceStudio chaque fois que Voicebox n’est pas lancé. La compétence charge la compétence amont `voicestudio`, utilise les identifiants de profil VoiceStudio et demande confirmation avant de cloner ou de concevoir une voix, ou de télécharger un modèle. La narration de `oma video` suit le même réglage.
 
 ## Rechercher et valider des ressources scientifiques {#search-and-validate-scholarly-material}
 

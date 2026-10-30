@@ -61,7 +61,7 @@ oma doctor --profile
 | `mcp.devtools_browsers` | `aside`、`chrome`、`firefox` 或 `[]` | unset = 保留现有设置 | 协调时选择浏览器 DevTools MCP。明确的空列表会移除所选浏览器条目。 |
 | `video` | 技能拥有的 sparse 映射 | 技能默认值；请参阅[视频生成](/docs/guide/video-generation) | 视频路由、供应商顺序、输出、成本、限制和 HyperFrames 刷新设置。 |
 | `image` | 技能拥有的 sparse 映射 | 技能默认值；请参阅[图像生成](/docs/guide/image-generation) | 图像供应商、尺寸、质量、输出、比较和成本设置。 |
-| `voice` | `notification_profile`、`asset_profile`、`output_dir`、`auto_notify_after_sec`、`max_tts_chars`、`max_stt_minutes` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Voicebox 配置档、输出和长度设置。 |
+| `voice` | `backend`、`notification_profile`、`asset_profile`、`output_dir`、`auto_notify_after_sec`、`max_tts_chars`、`max_stt_minutes` | `backend: auto`；其余键为技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | 语音后端（`auto`、`voicebox`、`voicestudio`；`oma video` 旁白也使用此设置）、配置档、输出和长度设置。 |
 | `hwp` | `format`、`version.*`、`output.*` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc 格式、版本通道和输出位置。 |
 | `pdf` | `format`、`image_output`、`image_format`、`use_struct_tree`、`ocr.*`、`output.*` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#extract-pdf-content) | PDF 提取、OCR、图像和覆盖设置。 |
 | `scholar` | `base_url` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Knows 端点主机；协议形状仍由技能拥有。 |

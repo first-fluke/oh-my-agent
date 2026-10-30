@@ -160,7 +160,7 @@ oma video provider list         # provider availability + key/fallback status
 | 기능 | 실제 경로(활성화 조건) | 폴백 |
 |------------|-------------|----------|
 | 스크립트 | `--script <path>`로 전달한 에이전트 작성 `script.json`(`/video` 워크플로우가 작성) | 브리프 텍스트로 만드는 결정론적 3장면 스켈레톤 |
-| 음성 | `--voice <profile>`과 함께 `oma-voice`(Voicebox, 로컬) | 추정 타이밍의 무음 영상(`--voice none`, 기본값) |
+| 음성 | `--voice <profile>`과 함께 `oma-voice`(Voicebox 또는 VoiceStudio, 로컬; `voice.backend`로 선택) | 추정 타이밍의 무음 영상(`--voice none`, 기본값) |
 | 비주얼 | `oma-image`, `oma-slide`, `PEXELS_API_KEY`가 설정되면 Pexels 스톡 클립 | 플레이스홀더 에셋 |
 | 비주얼: `aigc` | 아직 연결되지 않음. `RUNNINGHUB_API_KEY`가 프로바이더를 활성화하지만 여전히 플레이스홀더를 씀 | 플레이스홀더 에셋 |
 | 자막 | 스크립트 언어로 `timing.json`에 맞춰 정렬한 `.srt`와 `.vtt` | 동일. `--locale`로의 번역은 아직 연결되지 않음 |
@@ -182,7 +182,7 @@ oma video provider list         # provider availability + key/fallback status
 oma video doctor
 ```
 
-`node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `oma-image`, `pixelle`, `cap` 상태를 보고하고, 빠진 항목의 설치 힌트를 출력합니다. 정확한 목록은 `oma video doctor --output json`으로 확인하세요. 기본 요건은 Node.js 22+, HyperFrames 툴체인과 그 Chrome 브라우저, FFmpeg/FFprobe, `oma-image`입니다. 실제 MP4에는 작성된 HTML도 필요합니다.
+`node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `voicestudio`, `oma-image`, `pixelle`, `cap` 상태를 보고하고, 빠진 항목의 설치 힌트를 출력합니다. 정확한 목록은 `oma video doctor --output json`으로 확인하세요. 기본 요건은 Node.js 22+, HyperFrames 툴체인과 그 Chrome 브라우저, FFmpeg/FFprobe, `oma-image`입니다. 실제 MP4에는 작성된 HTML도 필요합니다.
 
 툴체인을 준비하려면 설치 플래그를 쓰세요.
 
@@ -203,7 +203,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -224,7 +224,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 | 증상 | 원인과 해결 |
 |---------|-------------|
 | MP4가 생성되지 않음 | 컴포지터, 컴포지션, 또는 툴체인 확인이 실패했습니다. `oma video doctor`를 실행한 뒤 `oma video compose <runDir>`를 실행하고, 보고된 컴포지션 문제를 수정한 다음 `oma video render <runDir>`를 다시 실행합니다. |
-| 내레이션이 무음(`source: estimated`) | `--voice`의 기본값이 `none`이거나 Voicebox에 접근할 수 없습니다. Voicebox 앱의 프로필로 `--voice <profile>`을 전달하고 `oma-voice` 서버를 켜거나, 추정 타이밍을 그대로 받아들이세요. |
+| 내레이션이 무음(`source: estimated`) | `--voice`의 기본값이 `none`이거나 접근 가능한 음성 백엔드가 없습니다. 선택한 백엔드의 프로필(Voicebox 앱의 프로필, 또는 `voice.backend`가 `voicestudio`나 `auto`일 때 VoiceStudio 프로필 ID)로 `--voice <profile>`을 전달하고 해당 앱을 켜거나, 추정 타이밍을 그대로 받아들이세요. |
 | 데모 실행이 녹화 안내와 함께 종료 코드 3으로 끝남 | `--capture` 파일을 전달하지 않았습니다(`--source web`에서도 마찬가지). oma는 화면을 녹화하지 않습니다. Cap, QuickTime, OBS로 흐름을 녹화해 프로젝트 안에 저장한 뒤 `--capture ./walkthrough.mp4`로 다시 실행하세요. |
 | `--capture`가 거부됨(종료 코드 4) | 파일이 없거나, 프로젝트 디렉토리 밖에 있거나, `.mp4` / `.mov` / `.webm` / `.mkv`가 아닙니다. 녹화를 프로젝트 안(예: `./captures/demo.mp4`)으로 복사하세요. |
 | 비용 상한에서 실행이 멈춤(종료 코드 1) | 누적 추정치가 `--max-usd`에 도달했습니다. `-y` 또는 더 높은 `--max-usd`로 다시 실행하세요. |

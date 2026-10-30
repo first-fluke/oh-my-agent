@@ -7,6 +7,9 @@
 # falls back to. Migration 022 moves anything you changed here for you.
 #
 
+# Speech backend: set `voice.backend` in oma-config (auto | voicebox |
+# voicestudio). It is not a key in this file; the shipped default is auto.
+
 # Profile names returned by `voicebox_list_profiles`. Set after creating a
 # profile in the Voicebox app (Profiles tab → + New Profile). When null, the
 # skill asks the user which profile to use, or disables auto-notification.

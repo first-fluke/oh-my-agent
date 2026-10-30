@@ -1,5 +1,7 @@
 # Voice Engine Matrix
 
+This matrix covers the Voicebox backend. On VoiceStudio, discover installed engines and their languages from the running backend instead (`voicestudio.md`).
+
 Voicebox bundles seven engines. All run locally; the user picks one when creating a voice profile in the Voicebox app, and the skill respects that choice. This matrix exists so the agent can recommend a profile-engine pair when the user has not yet decided.
 
 ## Engine comparison

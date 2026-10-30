@@ -17,9 +17,15 @@ If the signal is ambiguous, ask one question before proceeding.
 
 ## Step 1: Health check
 
+Resolve `voice.backend` first (`resources/voicestudio.md`). When it selects
+VoiceStudio, follow that resource instead of Steps 1-3 and 6-7; the remaining
+steps still apply.
+
 1. Probe `GET http://127.0.0.1:17493/health` with a 5-second timeout.
 2. On success, continue to Step 2.
-3. On failure, surface this hint and exit with code 5:
+3. On failure with `voice.backend: auto`, probe VoiceStudio as described in
+   `resources/voicestudio.md`. With `voice.backend: voicebox`, or when no
+   backend is healthy, surface this hint and exit with code 5:
    ```
    Voicebox is not reachable. Install or launch the Voicebox desktop app
    from GitHub Releases (https://github.com/jamiepine/voicebox/releases).

@@ -12,7 +12,7 @@ Este guia encaminha tarefas de documentos, áudio, pesquisa, mídia e apresenta�
 |---|---|---|---|---|
 | Extrair um PDF | Skill `oma-pdf` ou os comandos `uvx opendataloader-pdf` abaixo | `uv` (para `uvx`) | Markdown, texto, JSON ou um breve relatório de extração | [abaixo](#extract-pdf-content) |
 | Extrair HWP/HWPX/HWPML | Skill `oma-hwp` e `bunx kordoc@latest` | Bun | Markdown ou JSON/chunks estruturado | [abaixo](#extract-hwp-family-documents) |
-| Falar ou transcrever áudio | `/oma-voice` | Aplicativo Voicebox em `127.0.0.1:17493` | Áudio com manifesto ou `transcript.md` com manifesto | [abaixo](#generate-speech-or-transcribe-audio) |
+| Falar ou transcrever áudio | `/oma-voice` | Aplicativo Voicebox em `127.0.0.1:17493` ou VoiceStudio em `127.0.0.1:3900` | Áudio com manifesto ou `transcript.md` com manifesto | [abaixo](#generate-speech-or-transcribe-audio) |
 | Encontrar e validar artigos | `oma scholar` | nenhum; opcionalmente `S2_API_KEY`, `OPENALEX_EMAIL` | Resultados de busca, um sidecar obtido ou um relatório de lint | [abaixo](#search-and-validate-scholarly-material) |
 | Pesquisar na web ou obter uma página | Skill `oma-search`, `oma search` | opcionalmente Chrome, `curl_cffi` do Python, `yt-dlp`, `gh` (verifique com `oma search doctor`) | JSON no stdout | [Comandos da CLI: search](../cli-interfaces/commands.md#search) |
 | Criar uma apresentação | Skill `oma-slide` e `oma slide` | Chrome ou `OMA_CHROME_PATH` | Slides HTML validados e exportações opcionais | [abaixo](#slides-and-presentations) |
@@ -103,6 +103,8 @@ A saída padrão é Markdown. Para uma AST estruturada, use `bunx kordoc@latest 
 TTS aceita até 5.000 caracteres por chamada e precisa de um perfil de voz Voicebox. A transcrição não precisa de um perfil TTS e aceita áudio de até 30 minutos. Trabalho TTS e STT persistido grava em `.agents/results/voice/`; a transcrição produz `transcript.md` e `manifest.json`. O modo de notificação normalmente permanece em Voicebox Captures e não grava um arquivo de áudio local.
 
 O endpoint MCP local é `http://127.0.0.1:17493/mcp`. Uma configuração de primeiro uso registra o Voicebox no agente, e o aplicativo desktop do Voicebox fornece perfis de voz. A skill descobre os nomes reais das ferramentas MCP com `tools/list` e então chama `voicebox_speak`, `voicebox_transcribe` ou `voicebox_list_profiles`. Se o TTS não tiver perfil, crie ou selecione um no Voicebox; dividir uma solicitação longa é uma decisão do usuário, pois a skill não a divide automaticamente. Se o servidor estiver indisponível, verifique o endpoint de saúde local e reinicie o Voicebox antes de tentar novamente.
+
+Para usar o [VoiceStudio](https://github.com/debpalash/VoiceStudio), defina `voice.backend` como `voicestudio` em `.agents/oma-config.yaml`, ou mantenha `auto` para usar o VoiceStudio sempre que o Voicebox não estiver em execução. A skill carrega a skill upstream `voicestudio`, usa IDs de perfil do VoiceStudio e pede confirmação antes de clonar ou criar uma voz ou de baixar um modelo. A narração do `oma video` segue a mesma configuração.
 
 ## Pesquisar e validar material acadêmico {#search-and-validate-scholarly-material}
 

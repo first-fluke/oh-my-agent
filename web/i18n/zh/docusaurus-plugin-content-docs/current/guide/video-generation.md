@@ -158,7 +158,7 @@ oma video provider list         # provider availability + key/fallback status
 | 能力 | 真实分支（启用条件） | 回退 |
 |------------|-------------|----------|
 | script | 通过 `--script <path>` 传入的智能体编写 `script.json`（由 `/video` 工作流写入） | 根据简述文本生成的确定性三场景骨架 |
-| voice | 配合 `--voice <profile>` 使用的 `oma-voice`（本地 Voicebox） | 使用估算时间的静音视频（`--voice none`，默认值） |
+| voice | 配合 `--voice <profile>` 使用的 `oma-voice`（本地 Voicebox 或 VoiceStudio，由 `voice.backend` 选择） | 使用估算时间的静音视频（`--voice none`，默认值） |
 | visual | `oma-image`、`oma-slide`，设置 `PEXELS_API_KEY` 时使用 Pexels 素材片段 | 占位素材 |
 | visual: `aigc` | 尚未接入；`RUNNINGHUB_API_KEY` 会启用该供应商，但它仍写入占位内容 | 占位素材 |
 | caption | 与 `timing.json` 对齐的 `.srt` 和 `.vtt`，使用脚本的语言 | 相同；尚未接入翻译到 `--locale` |
@@ -180,7 +180,7 @@ oma video provider list         # provider availability + key/fallback status
 oma video doctor
 ```
 
-它会报告 `node`、`chromium`、`ffmpeg`、`ffprobe`、`hyperframes-toolchain`、`hyperframes-skills`、`pretendard-font`、`mpt-project`、`strudel`、`voicebox`、`oma-image`、`pixelle` 和 `cap` 的状态，并为缺失项打印安装提示。运行 `oma video doctor --output json` 可获取权威列表。基线要求 Node.js 22+、HyperFrames 工具链及其 Chrome 浏览器、FFmpeg/FFprobe 和 `oma-image`。要得到真实 MP4，还需要编写好的 HTML。
+它会报告 `node`、`chromium`、`ffmpeg`、`ffprobe`、`hyperframes-toolchain`、`hyperframes-skills`、`pretendard-font`、`mpt-project`、`strudel`、`voicebox`、`voicestudio`、`oma-image`、`pixelle` 和 `cap` 的状态，并为缺失项打印安装提示。运行 `oma video doctor --output json` 可获取权威列表。基线要求 Node.js 22+、HyperFrames 工具链及其 Chrome 浏览器、FFmpeg/FFprobe 和 `oma-image`。要得到真实 MP4，还需要编写好的 HTML。
 
 使用安装标志配置工具链：
 
@@ -201,7 +201,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -222,7 +222,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 | 症状 | 原因或修复 |
 |---------|-------------|
 | 没有生成 MP4 | 合成器、组合或工具链检查失败。运行 `oma video doctor`，然后运行 `oma video compose <runDir>`，修复报告的组合问题，再重新运行 `oma video render <runDir>`。 |
-| 旁白无声（`source: estimated`） | `--voice` 默认为 `none`，或无法连接 Voicebox。传入 Voicebox 应用中的配置档 `--voice <profile>` 并启动 `oma-voice` 服务器，或接受估算时间。 |
+| 旁白无声（`source: estimated`） | `--voice` 默认为 `none`，或无法连接任何语音后端。传入所选后端的配置档 `--voice <profile>`（Voicebox 应用中的配置档，或 `voice.backend` 为 `voicestudio` 或 `auto` 时的 VoiceStudio 配置档 ID）并启动该应用，或接受估算时间。 |
 | demo 运行以退出码 3 退出并打印录制说明 | 没有提供 `--capture` 文件（使用 `--source web` 时也是如此）；oma 不录制屏幕。用 Cap、QuickTime 或 OBS 录制流程，保存到项目内，然后使用 `--capture ./walkthrough.mp4` 重新运行。 |
 | `--capture` 被拒绝（退出码 4） | 文件不存在、位于项目目录之外，或不是 `.mp4` / `.mov` / `.webm` / `.mkv`。将录制文件复制到项目内，例如 `./captures/demo.mp4`。 |
 | 运行在成本上限处停止（退出码 1） | 累计预估达到了 `--max-usd`。使用 `-y` 或更高的 `--max-usd` 重新运行。 |

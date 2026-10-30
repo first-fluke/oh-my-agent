@@ -217,23 +217,29 @@ oma-image
 
 ## oma-voice
 
-근거: [SKILL.md](../../skills/oma-voice/SKILL.md), [음성 처리](../../skills/oma-voice/resources/audio-processing.md), [생성·전사 절차](../../skills/oma-voice/resources/execution-protocol.md).
+근거: [SKILL.md](../../skills/oma-voice/SKILL.md), [음성 처리](../../skills/oma-voice/resources/audio-processing.md), [생성·전사 절차](../../skills/oma-voice/resources/execution-protocol.md), [VoiceStudio 백엔드](../../skills/oma-voice/resources/voicestudio.md), [upstream VoiceStudio](https://github.com/debpalash/VoiceStudio).
 
 ```text
 oma-voice
 ├── skills
-│   └── none delegated in the current scope
+│   └── debpalash/VoiceStudio@voicestudio: conditional VoiceStudio backend
 ├── CLI
+│   ├── bunx skills use debpalash/VoiceStudio@voicestudio: catalog fallback
 │   └── ffmpeg / ffprobe: existing-audio processing
 ├── MCP
-│   └── Voicebox: TTS / STT / profile discovery
+│   ├── Voicebox: TTS / STT / profile discovery
+│   └── VoiceStudio: optional already-connected, discovered tool surface
 ├── API / host
-│   └── Voicebox REST: health and generated-audio retrieval
+│   ├── Voicebox REST: health and generated-audio retrieval
+│   └── VoiceStudio REST: health, OpenAI-compatible speech / transcription
 └── OMA-owned specs
     ├── execution-protocol.md / audio-processing.md
+    ├── voicestudio.md: voice.backend resolution, routing, consent
     ├── config/voice-config.yaml / checklist.md
     └── audio and transcript manifest contracts
 ```
+
+음성 백엔드는 `voice.backend`(`auto`·`voicebox`·`voicestudio`)로 고른다. `auto`는 Voicebox를 먼저, 꺼져 있으면 VoiceStudio를 사용하며, 명시한 백엔드는 다른 백엔드로 넘어가지 않는다. VoiceStudio의 엔드포인트·인증·클로닝·더빙 절차는 upstream `voicestudio` skill이 소유하고, OMA는 모드·길이 제한·출력 경로·manifest와 클로닝·모델 다운로드 동의를 관리한다. oma-video 나레이션 provider도 같은 설정을 읽는다.
 
 기존 음성 가공은 Voicebox 없이 수행할 수 있다. TTS·STT와 기존 파일 가공을 분리한다. MCP tool 이름은 실제 discovery 결과로 해결한다.
 
@@ -262,7 +268,7 @@ oma-video
 ├── MCP
 │   ├── ffmpeg-skill: optional already-connected, discovered tool surface
 │   ├── earshot: optional already-connected, discovered tool surface
-│   └── Voicebox: indirect through oma-voice
+│   └── Voicebox / VoiceStudio: indirect through oma-voice (voice.backend)
 ├── API / host
 │   └── selected asset providers; host vision for actual extracted images
 ├── OMA-owned specs

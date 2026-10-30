@@ -66,7 +66,7 @@ oma doctor --profile
 | `mcp.devtools_browsers` | `aside`、`chrome`、`firefox`、または `[]` | 未設定 = 既存の設定をそのままにする | 調整時に使うブラウザー DevTools MCP の選択。空のリストを明示すると、選択したブラウザーのエントリを削除します。 |
 | `video` | スキルが所有する部分的なマップ | スキルのデフォルト。[動画生成](/docs/guide/video-generation)を参照 | 動画のルーティング、プロバイダー順、出力、コスト、上限、HyperFrames の更新設定。 |
 | `image` | スキルが所有する部分的なマップ | スキルのデフォルト。[画像生成](/docs/guide/image-generation)を参照 | 画像ベンダー、サイズ、品質、出力、比較、コストの設定。 |
-| `voice` | `notification_profile`、`asset_profile`、`output_dir`、`auto_notify_after_sec`、`max_tts_chars`、`max_stt_minutes` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#generate-speech-or-transcribe-audio)を参照 | Voicebox のプロファイル、出力、長さの設定。 |
+| `voice` | `backend`、`notification_profile`、`asset_profile`、`output_dir`、`auto_notify_after_sec`、`max_tts_chars`、`max_stt_minutes` | `backend: auto`。その他のキーはスキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#generate-speech-or-transcribe-audio)を参照 | 音声バックエンド（`auto`、`voicebox`、`voicestudio`。`oma video` のナレーションも同じ設定を使用）、プロファイル、出力、長さの設定。 |
 | `hwp` | `format`、`version.*`、`output.*` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#extract-hwp-family-documents)を参照 | Kordoc の形式、バージョンチャンネル、出力先。 |
 | `pdf` | `format`、`image_output`、`image_format`、`use_struct_tree`、`ocr.*`、`output.*` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#extract-pdf-content)を参照 | PDF 抽出、OCR、画像、上書きの設定。 |
 | `scholar` | `base_url` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#search-and-validate-scholarly-material)を参照 | Knows エンドポイントのホスト。プロトコルの形はスキルが所有します。 |

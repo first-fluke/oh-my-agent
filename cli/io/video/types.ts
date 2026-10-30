@@ -14,6 +14,13 @@ export const VisualModeSchema = z.enum([
   "aigc",
   "slide",
 ]);
+/**
+ * Local speech backend behind the oma-voice provider (`voice.backend` in
+ * oma-config). `auto` tries Voicebox first, then VoiceStudio.
+ */
+export const VoiceBackendSchema = z.enum(["auto", "voicebox", "voicestudio"]);
+export type VoiceBackend = z.infer<typeof VoiceBackendSchema>;
+
 export const MusicModeSchema = z.enum([
   "upbeat",
   "calm",
@@ -60,7 +67,8 @@ export type Scene = z.infer<typeof ScriptSceneSchema>;
 export const TimingSchema = z.object({
   schemaVersion: SchemaVersion,
   // Empty when the estimated/silent fallback path runs (no wav written); set to
-  // the run-dir-relative wav path on the real voicebox-stt / tts-native path.
+  // the run-dir-relative wav path on a real (voicebox-stt, voicestudio-stt,
+  // tts-native) path.
   audio: z.string(),
   totalSec: z.number().nonnegative(),
   segments: z.array(
@@ -77,7 +85,13 @@ export const TimingSchema = z.object({
       ),
     }),
   ),
-  source: z.enum(["tts-native", "voicebox-stt", "whisper-cpp", "estimated"]),
+  source: z.enum([
+    "tts-native",
+    "voicebox-stt",
+    "voicestudio-stt",
+    "whisper-cpp",
+    "estimated",
+  ]),
 });
 export type Timing = z.infer<typeof TimingSchema>;
 

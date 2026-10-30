@@ -67,6 +67,22 @@ describe("loadVideoConfig", () => {
     expect(cfg.providers.pixelle.enabled).toBe(true);
   });
 
+  describe("voice backend", () => {
+    it("defaults to auto", async () => {
+      expect((await loadVideoConfig(tmp)).voiceBackend).toBe("auto");
+    });
+
+    it("reads voice.backend from the shared voice: section", async () => {
+      writeOmaConfig("voice:\n  backend: voicestudio\n");
+      expect((await loadVideoConfig(tmp)).voiceBackend).toBe("voicestudio");
+    });
+
+    it("ignores an unknown voice.backend value", async () => {
+      writeOmaConfig("voice:\n  backend: elevenlabs\n");
+      expect((await loadVideoConfig(tmp)).voiceBackend).toBe("auto");
+    });
+  });
+
   describe("oma-config video: section", () => {
     it("reads snake_case section keys into camelCase", async () => {
       writeOmaConfig(

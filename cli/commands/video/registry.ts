@@ -80,10 +80,14 @@ export function defaultVideoRegistry(
   options: DefaultRegistryOptions = {},
 ): VideoProviderRegistry {
   const registry = new VideoProviderRegistry();
-  void config; // env-gated availability lives in each provider, not config flags.
+  // Env-gated availability lives in each provider; config only picks the
+  // oma-voice speech backend.
   registry
     .register("script", new AgentScriptProvider(options.scriptInjector))
-    .register("voice", new VoiceboxVoiceProvider())
+    .register(
+      "voice",
+      new VoiceboxVoiceProvider(undefined, config.voiceBackend),
+    )
     .register("visual", new OmaImageVisualProvider())
     .register("visual", new OmaSlideVisualProvider())
     .register("visual", new PexelsVisualProvider())

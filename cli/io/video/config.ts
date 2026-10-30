@@ -12,6 +12,8 @@ import {
   type VideoAspectInputSchema,
   VideoModeSchema,
   type VisualModeSchema,
+  type VoiceBackend,
+  VoiceBackendSchema,
 } from "./types.js";
 
 type VideoMode = z.infer<typeof VideoModeSchema>;
@@ -41,6 +43,8 @@ export interface VideoConfig {
   defaultMusic: MusicMode;
   defaultCompositor: CompositorName;
   defaultTimeoutSec: number;
+  /** Shared with oma-voice: read from the `voice:` section, not `video:`. */
+  voiceBackend: VoiceBackend;
   yes: boolean;
   providers: {
     script: ProviderOrderConfig;
@@ -82,6 +86,7 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
   defaultMusic: "none",
   defaultCompositor: "hyperframes",
   defaultTimeoutSec: 600,
+  voiceBackend: "auto",
   yes: false,
   providers: {
     script: { order: ["agent-script"] },
@@ -124,6 +129,11 @@ export async function loadVideoConfig(
   if (section) raw = deepMerge(raw, normalizeKeys(section));
 
   const merged = raw as unknown as VideoConfig;
+  // One speech backend setting serves oma-voice and video narration alike.
+  const backend = VoiceBackendSchema.safeParse(
+    skillSectionFrom(root, "voice")?.backend,
+  );
+  if (backend.success) merged.voiceBackend = backend.data;
   applyEnvOverrides(merged);
   // `language` is a root key, never a per-skill one — one read serves both.
   const language = root?.language;

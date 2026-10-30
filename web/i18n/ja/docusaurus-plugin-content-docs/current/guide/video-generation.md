@@ -160,7 +160,7 @@ oma video provider list         # provider availability + key/fallback status
 | 機能 | 実際の分岐（有効にする条件） | フォールバック |
 |------------|-------------|----------|
 | script | `--script <path>` で渡したエージェント作成の `script.json`（`/video` ワークフローが書き込む） | brief のテキストから作る決定的な 3 シーンの骨格 |
-| voice | `--voice <profile>` を指定した `oma-voice`（Voicebox、ローカル） | 推定タイミングの無音動画（デフォルトの `--voice none`） |
+| voice | `--voice <profile>` を指定した `oma-voice`（Voicebox または VoiceStudio、ローカル。`voice.backend` で選択） | 推定タイミングの無音動画（デフォルトの `--voice none`） |
 | visual | `oma-image`、`oma-slide`、`PEXELS_API_KEY` を設定した場合は Pexels のストッククリップ | プレースホルダーアセット |
 | visual: `aigc` | まだ接続されていない。`RUNNINGHUB_API_KEY` でプロバイダーは有効になるが、書き込むのはプレースホルダーのまま | プレースホルダーアセット |
 | caption | `timing.json` に合わせた `.srt` と `.vtt`（スクリプトの言語） | 同じ。`--locale` への翻訳はまだ接続されていない |
@@ -182,7 +182,7 @@ oma video provider list         # provider availability + key/fallback status
 oma video doctor
 ```
 
-`node`、`chromium`、`ffmpeg`、`ffprobe`、`hyperframes-toolchain`、`hyperframes-skills`、`pretendard-font`、`mpt-project`、`strudel`、`voicebox`、`oma-image`、`pixelle`、`cap` を報告し、不足しているもののインストール方法を表示します。正確な一覧は `oma video doctor --output json` で確認してください。基準として、Node.js 22 以上、HyperFrames ツールチェーンとその Chrome ブラウザー、FFmpeg/FFprobe、`oma-image` が必要です。実際の MP4 には、作成した HTML も必要です。
+`node`、`chromium`、`ffmpeg`、`ffprobe`、`hyperframes-toolchain`、`hyperframes-skills`、`pretendard-font`、`mpt-project`、`strudel`、`voicebox`、`voicestudio`、`oma-image`、`pixelle`、`cap` を報告し、不足しているもののインストール方法を表示します。正確な一覧は `oma video doctor --output json` で確認してください。基準として、Node.js 22 以上、HyperFrames ツールチェーンとその Chrome ブラウザー、FFmpeg/FFprobe、`oma-image` が必要です。実際の MP4 には、作成した HTML も必要です。
 
 ツールチェーンを準備するにはインストールフラグを使います。
 
@@ -203,7 +203,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -224,7 +224,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 | 症状 | 原因／修正 |
 |---------|-------------|
 | MP4 が生成されない | コンポジター、コンポジション、ツールチェーンのチェックが失敗しました。`oma video doctor`、次に `oma video compose <runDir>` を実行し、報告されたコンポジションを直してから `oma video render <runDir>` を再実行します。 |
-| ナレーションが無音（`source: estimated`） | `--voice` のデフォルトが `none` であるか、Voicebox に接続できません。Voicebox アプリのプロファイルを `--voice <profile>` で渡して `oma-voice` サーバーを起動するか、推定タイミングを受け入れます。 |
+| ナレーションが無音（`source: estimated`） | `--voice` のデフォルトが `none` であるか、どの音声バックエンドにも接続できません。選択したバックエンドのプロファイル（Voicebox アプリのプロファイル、または `voice.backend: voicestudio` か `auto` での VoiceStudio プロファイル ID）を `--voice <profile>` で渡してそのアプリを起動するか、推定タイミングを受け入れます。 |
 | demo の実行が録画の手順を表示して終了コード 3 で終了する | `--capture` ファイルが指定されていません（`--source web` の場合も同様）。oma は画面を録画しません。Cap、QuickTime、OBS で操作を録画してプロジェクト内に保存し、`--capture ./walkthrough.mp4` を付けて再実行します。 |
 | `--capture` が拒否される（終了コード 4） | ファイルが存在しない、プロジェクトディレクトリの外にある、または `.mp4` / `.mov` / `.webm` / `.mkv` ではありません。録画をプロジェクト内（例: `./captures/demo.mp4`）にコピーします。 |
 | コストの上限で実行が停止する（終了コード 1） | 実行中の推定額が `--max-usd` に達しました。`-y` を付けるか、より大きい `--max-usd` で再実行します。 |

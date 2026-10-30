@@ -1,6 +1,6 @@
 # Pre-flight Checklist
 
-This checklist applies to Voicebox TTS/STT calls. Existing-file processing uses `audio-processing.md` and does not run Voicebox health, profile, or model checks.
+This checklist applies to Voicebox TTS/STT calls. On the VoiceStudio backend, replace the Environment and profile checks with `voicestudio.md` and record `backend: voicestudio` instead of `voicebox_generation_id`. Existing-file processing uses `audio-processing.md` and does not run Voicebox health, profile, or model checks.
 
 ## Environment
 

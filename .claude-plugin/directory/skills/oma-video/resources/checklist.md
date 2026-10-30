@@ -5,7 +5,7 @@
 - [ ] Duration ≤ 180s and the script stays ≤ 40 scenes.
 - [ ] `--output-dir` is inside the project, or `--allow-external-output` is set.
 - [ ] For `demo`: `--capture <path>` exists, is absolute + inside `$PWD`, and is a valid video format — or you accept the guided protocol.
-- [ ] Provider readiness checked with `oma video doctor` (Node/Chromium/FFmpeg · Voicebox MCP · oma-image vendors · Pixelle-MCP · Cap).
+- [ ] Provider readiness checked with `oma video doctor` (Node/Chromium/FFmpeg · Voicebox MCP or VoiceStudio · oma-image vendors · Pixelle-MCP · Cap).
 - [ ] Paid visuals (Pexels / Pixelle) have their env key set, OR you accept the key-free oma-image fallback.
 - [ ] Pixelle-MCP, if used: one-time explicit consent + source review done; `--max-usd` set for RunningHub credits.
 - [ ] Estimated cost is acceptable. Run `--dry-run` first for unfamiliar combinations.

@@ -158,7 +158,7 @@ Etapy dostawców rozstrzygają się do **rzeczywistej gałęzi** oraz, gdy etap 
 | Możliwość | Rzeczywista gałąź (co ją włącza) | Fallback |
 |------------|-------------|----------|
 | script | napisany przez agenta `script.json` przekazany przez `--script <path>` (zapisuje go workflow `/video`) | deterministyczny szkielet z trzema scenami na podstawie tekstu krótkiego opisu |
-| voice | `oma-voice` (Voicebox, lokalnie) z `--voice <profile>` | wideo bez dźwięku z szacowanym czasem (`--voice none`, domyślnie) |
+| voice | `oma-voice` (Voicebox lub VoiceStudio, lokalnie; wybierany przez `voice.backend`) z `--voice <profile>` | wideo bez dźwięku z szacowanym czasem (`--voice none`, domyślnie) |
 | visual | `oma-image`, `oma-slide`, klipy stockowe Pexels, gdy ustawiono `PEXELS_API_KEY` | zasób placeholdera |
 | visual: `aigc` | jeszcze niepodłączone; `RUNNINGHUB_API_KEY` włącza dostawcę, który nadal zapisuje placeholdery | zasób placeholdera |
 | caption | `.srt` i `.vtt` wyrównane do `timing.json`, w języku skryptu | to samo; tłumaczenie na `--locale` nie jest jeszcze podłączone |
@@ -180,7 +180,7 @@ Ciężki toolchain (`node_modules` zarządzanego projektu HyperFrames, osadzony 
 oma video doctor
 ```
 
-Raportuje `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `oma-image`, `pixelle` i `cap`, a także podaje wskazówkę instalacji dla brakujących elementów. Miarodajną listę zwraca `oma video doctor --output json`. Podstawowe wymagania to Node.js 22+, toolchain HyperFrames wraz z jego przeglądarką Chrome, FFmpeg/FFprobe oraz `oma-image`. Prawdziwy MP4 wymaga też napisanego HTML.
+Raportuje `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `voicestudio`, `oma-image`, `pixelle` i `cap`, a także podaje wskazówkę instalacji dla brakujących elementów. Miarodajną listę zwraca `oma video doctor --output json`. Podstawowe wymagania to Node.js 22+, toolchain HyperFrames wraz z jego przeglądarką Chrome, FFmpeg/FFprobe oraz `oma-image`. Prawdziwy MP4 wymaga też napisanego HTML.
 
 Użyj flag instalacji, aby dostarczyć toolchain:
 
@@ -201,7 +201,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -222,7 +222,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 | Objaw | Przyczyna / poprawka |
 |---------|-------------|
 | Nie powstaje MP4 | Kontrola kompozytora, kompozycji albo toolchainu nie powiodła się. Uruchom `oma video doctor`, następnie `oma video compose <runDir>` i popraw zgłoszoną kompozycję przed ponownym `oma video render <runDir>`. |
-| Narracja jest cicha (`source: estimated`) | `--voice` ma domyślnie wartość `none` albo Voicebox jest niedostępny. Przekaż `--voice <profile>` z profilem z aplikacji Voicebox i uruchom serwer `oma-voice` albo zaakceptuj szacowany czas. |
+| Narracja jest cicha (`source: estimated`) | `--voice` ma domyślnie wartość `none` albo żaden backend mowy nie jest dostępny. Przekaż `--voice <profile>` z profilem z wybranego backendu (z aplikacji Voicebox albo identyfikatorem profilu VoiceStudio przy `voice.backend: voicestudio` lub `auto`) i uruchom tę aplikację albo zaakceptuj szacowany czas. |
 | Uruchomienie demo kończy się kodem 3 z instrukcjami nagrywania | Nie podano pliku `--capture` (także przy `--source web`); oma nie nagrywa ekranu. Nagraj przebieg w Cap, QuickTime albo OBS, zapisz go wewnątrz projektu i uruchom ponownie z `--capture ./walkthrough.mp4`. |
 | `--capture` zostaje odrzucone (kod 4) | Plik nie istnieje, znajduje się poza katalogiem projektu albo nie jest plikiem `.mp4` / `.mov` / `.webm` / `.mkv`. Skopiuj nagranie do projektu, na przykład do `./captures/demo.mp4`. |
 | Uruchomienie zatrzymuje się na pułapie kosztu (kod 1) | Bieżące oszacowanie osiągnęło `--max-usd`. Uruchom ponownie z `-y` albo wyższym `--max-usd`. |

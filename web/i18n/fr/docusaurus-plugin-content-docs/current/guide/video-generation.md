@@ -158,7 +158,7 @@ Les étapes de fournisseur se résolvent vers une **branche réelle** et, lorsqu
 | Capacité | Branche réelle (ce qui l’active) | Repli |
 |------------|-------------|----------|
 | script | `script.json` écrit par l’agent et transmis avec `--script <path>` (le workflow `/video` l’écrit) | squelette déterministe de trois scènes à partir du texte du brief |
-| voix | `oma-voice` (Voicebox, local) avec `--voice <profile>` | vidéo silencieuse avec minutage estimé (`--voice none`, la valeur par défaut) |
+| voix | `oma-voice` (Voicebox ou VoiceStudio, local ; choisi par `voice.backend`) avec `--voice <profile>` | vidéo silencieuse avec minutage estimé (`--voice none`, la valeur par défaut) |
 | visuel | `oma-image`, `oma-slide`, clips stock Pexels lorsque `PEXELS_API_KEY` est défini | élément placeholder |
 | visuel : `aigc` | pas encore branché ; `RUNNINGHUB_API_KEY` active le fournisseur, qui écrit tout de même des placeholders | élément placeholder |
 | sous-titre | `.srt` et `.vtt` alignés sur `timing.json`, dans la langue du script | identique ; la traduction vers `--locale` n’est pas encore branchée |
@@ -180,7 +180,7 @@ La chaîne lourde (le `node_modules` du projet HyperFrames géré, la police Pre
 oma video doctor
 ```
 
-Il indique `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `oma-image`, `pixelle` et `cap`, puis affiche l’indication d’installation de tout élément manquant. Lancez `oma video doctor --output json` pour obtenir la liste de référence. La base requise comprend Node.js 22+, la chaîne d’outils HyperFrames et son navigateur Chrome, FFmpeg/FFprobe et `oma-image`. Un vrai MP4 exige aussi du HTML écrit.
+Il indique `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `voicestudio`, `oma-image`, `pixelle` et `cap`, puis affiche l’indication d’installation de tout élément manquant. Lancez `oma video doctor --output json` pour obtenir la liste de référence. La base requise comprend Node.js 22+, la chaîne d’outils HyperFrames et son navigateur Chrome, FFmpeg/FFprobe et `oma-image`. Un vrai MP4 exige aussi du HTML écrit.
 
 Utilisez les flags d’installation pour provisionner la chaîne d’outils :
 
@@ -201,7 +201,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -222,7 +222,7 @@ Le `render-spec.json` et les éléments constituent la limite de déterminisme.
 | Symptôme | Cause / correctif |
 |---------|-------------|
 | Aucun MP4 n’est produit | Un contrôle du compositeur, de la composition ou de la chaîne d’outils a échoué. Lancez `oma video doctor`, puis `oma video compose <runDir>` et corrigez la composition signalée avant de relancer `oma video render <runDir>`. |
-| La narration est silencieuse (`source: estimated`) | `--voice` vaut `none` par défaut, ou Voicebox est inaccessible. Passez `--voice <profile>` avec un profil de l’application Voicebox et démarrez le serveur `oma-voice`, ou acceptez le minutage estimé. |
+| La narration est silencieuse (`source: estimated`) | `--voice` vaut `none` par défaut, ou aucun backend vocal n’est accessible. Passez `--voice <profile>` avec un profil du backend choisi (application Voicebox, ou identifiant de profil VoiceStudio avec `voice.backend: voicestudio` ou `auto`) et démarrez cette application, ou acceptez le minutage estimé. |
 | L’exécution demo se termine avec le code 3 et des instructions d’enregistrement | Aucun fichier `--capture` n’a été fourni (y compris avec `--source web`) ; oma n’enregistre pas l’écran. Enregistrez le parcours avec Cap, QuickTime ou OBS, sauvegardez-le dans le projet et relancez avec `--capture ./walkthrough.mp4`. |
 | `--capture` refusé (code 4) | Le fichier n’existe pas, se trouve hors du répertoire du projet ou n’est pas un `.mp4` / `.mov` / `.webm` / `.mkv`. Copiez l’enregistrement dans le projet, par exemple `./captures/demo.mp4`. |
 | L’exécution s’arrête au plafond de coût (code 1) | L’estimation courante a atteint `--max-usd`. Relancez avec `-y` ou un `--max-usd` plus élevé. |

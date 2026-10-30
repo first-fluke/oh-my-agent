@@ -456,10 +456,13 @@ scm:
 #     single_folder_pattern: "{timestamp}-{shortid}"
 
 # ── voice (oma-voice) ────────────────────────────────────────────────────────
-# Local TTS / STT via the Voicebox MCP server. Profile names come from
-# `voicebox_list_profiles`; both ship as null and must be set per machine, so
+# Local TTS / STT via Voicebox or VoiceStudio. `backend: auto` uses the first
+# healthy one (Voicebox, then VoiceStudio); oma-video narration follows the
+# same setting. Profile names come from
+# the selected backend; both ship as null and must be set per machine, so
 # this is the section most worth filling in.
 # voice:
+#   backend: auto                   # auto | voicebox | voicestudio
 #   notification_profile: null
 #   asset_profile: null
 #   output_dir: .agents/results/voice

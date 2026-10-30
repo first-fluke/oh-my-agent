@@ -52,7 +52,7 @@ For `demo`, resolve the recording path first. Use `--source file --capture <path
   |------|------|------|------|
   | stock video | Pexels (`PEXELS_API_KEY`) | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` |
   | AIGC video | Pixelle-MCP + RunningHub (`RUNNINGHUB_API_KEY`) | oma-image stills | `TODO(oma-deferred): pixelle` |
-  | caption timing | voicebox-stt (MCP `voicebox_transcribe` → REST) | estimate | `TODO(oma-deferred): whisper-cpp` |
+  | caption timing | voicebox-stt (MCP `voicebox_transcribe` → REST) or voicestudio-stt (`/v1/audio/transcriptions`) | estimate | `TODO(oma-deferred): whisper-cpp` |
   | music mixing | Strudel offline render (`oma video doctor --install-strudel`) | render without music | — |
   | premium TTS | (not needed — oma-voice is local) | — | — |
 
@@ -134,7 +134,7 @@ oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script
 
 The three tracks (per `.agents/skills/oma-video/SKILL.md` and its execution protocol):
 
-- **Voice** (oma-voice / Voicebox MCP) → a **single** `audio/narration-01.wav` (all scene lines joined into one track — not per-scene files) + `timing.json`. Timing source: `voicebox-stt` (MCP `voicebox_transcribe`, REST `/transcribe` fallback, on the generated wav) → `estimated` (the `tts-native` / `whisper-cpp` source values are reserved but deferred). **The default voice is `none` → a silent video with estimated timing; pass `--voice <profile>` for narration.** If oma-voice is down, the run falls back to silent + estimated timing and warns — it does not hard-fail.
+- **Voice** (oma-voice / Voicebox MCP, or VoiceStudio per `voice.backend`) → a **single** `audio/narration-01.wav` (all scene lines joined into one track — not per-scene files) + `timing.json`. Timing source: `voicebox-stt` (MCP `voicebox_transcribe`, REST `/transcribe` fallback, on the generated wav) or `voicestudio-stt` (VoiceStudio `/v1/audio/transcriptions`) → `estimated` (the `tts-native` / `whisper-cpp` source values are reserved but deferred). **The default voice is `none` → a silent video with estimated timing; pass `--voice <profile>` for narration.** If oma-voice is down, the run falls back to silent + estimated timing and warns — it does not hard-fail.
 - **Visual** (per-scene, fallback chain `oma-image → pexels → pixelle`) → `visuals/scene-NN.*`. Default is key-free oma-image stills (aspect snapped to the nearest 16-multiple; HyperFrames crops to exact frame). `--visual stock` engages Pexels only when `PEXELS_API_KEY` is set; `--visual aigc` engages Pixelle only after consent + cost gate. Each scene that falls back is recorded with `pathTaken: fallback`.
 - **Caption** (key-free) → `captions.srt` / `.vtt`, aligned to `timing.json`, styled `tiktok` or `lower-third`, with platform safe-area presets. Non-source locales translate via oma-translation; if absent, captions keep the source locale and warn.
 

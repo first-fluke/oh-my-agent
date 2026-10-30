@@ -1,6 +1,6 @@
 ---
 name: oma-voice
-description: "Generate or transcribe speech with Voicebox, or process existing audio locally. Use for narration, transcripts, timed speech, and loudness conversion; video editing uses oma-video."
+description: "Generate or transcribe speech with Voicebox or VoiceStudio, or process existing audio locally. Use for narration, transcripts, timed speech, and loudness conversion; video editing uses oma-video."
 ---
 
 # Voice Skill - Speech and Local Audio Processing
@@ -8,7 +8,7 @@ description: "Generate or transcribe speech with Voicebox, or process existing a
 ## Scheduling
 
 ### Goal
-Generate and transcribe speech through the local Voicebox app, and process existing audio with local media tools. Voicebox owns synthesis engines and profiles; FFmpeg owns file conversion, duration adjustment, and loudness processing.
+Generate and transcribe speech through a local speech backend (the Voicebox app, or VoiceStudio per `voice.backend`), and process existing audio with local media tools. The backend owns synthesis engines and profiles; FFmpeg owns file conversion, duration adjustment, and loudness processing.
 
 ### Intent signature
 - User asks to generate speech, narrate text, produce a voiceover, create an mp3 or wav from text.
@@ -45,7 +45,7 @@ Generate and transcribe speech through the local Voicebox app, and process exist
 
 ### Dependencies
 - Processing only: installed `ffmpeg` and `ffprobe`; no Voicebox app or voice profile is required.
-- Generation/transcription: Voicebox desktop app installed and running locally.
+- Generation/transcription: Voicebox desktop app installed and running locally, or a running VoiceStudio backend selected through `voice.backend` (`resources/voicestudio.md`).
 - Generation/transcription only: Voicebox MCP registered (`claude mcp add --transport http voicebox http://127.0.0.1:17493/mcp`).
 - TTS only: at least one voice profile created in the Voicebox app UI.
 - TTS only: optionally pre-downloaded engine models for the selected profile.
@@ -60,7 +60,7 @@ Generate and transcribe speech through the local Voicebox app, and process exist
 
 ### Entry
 1. Detect the requested mode: notification, asset TTS, transcription, or existing-audio processing. For processing, follow `resources/audio-processing.md` directly, before any Voicebox health, profile, or model lookup.
-2. Verify Voicebox is reachable via MCP handshake or `GET /health`.
+2. Resolve `voice.backend` (`auto` tries Voicebox, then VoiceStudio). For VoiceStudio, follow `resources/voicestudio.md` from here; the steps below describe Voicebox. Verify Voicebox is reachable via MCP handshake or `GET /health`.
 3. On the first run only, call MCP `tools/list` and cache the resolved tool names.
 4. For notification or asset TTS, resolve the target voice profile id. For transcription,
    validate the audio input and continue without a profile.
@@ -84,7 +84,7 @@ Generate and transcribe speech through the local Voicebox app, and process exist
 ### Failure and recovery
 | Failure | Recovery |
 |---------|----------|
-| Voicebox app not running | Print install/launch hint, exit code 5 |
+| No selected backend reachable | Print the Voicebox install/launch hint (and VoiceStudio for `auto`), exit code 5 |
 | No voice profile for TTS | Print "create a profile in Voicebox" hint, exit code 3 |
 | Engine model missing | Ask before triggering download |
 | Output path outside `$PWD` | Use an explicitly requested path; ask only if the destination is ambiguous or overwrites unrelated data |
@@ -171,9 +171,9 @@ Tools not exposed via MCP (REST only): model status (`GET /models/status`), audi
 |-------|-----------------|
 | `LOCAL_FS` | Input audio, generated audio, transcripts, manifests |
 | `PROCESS` | Local Voicebox app (managed by the user), FFmpeg/ffprobe processing |
-| `NETWORK` | Loopback HTTP to `127.0.0.1:17493` only |
+| `NETWORK` | Loopback HTTP to Voicebox `127.0.0.1:17493`, or the user's configured VoiceStudio backend (default `127.0.0.1:3900`) |
 | `MEMORY` | Cached MCP tool names, resolved profile metadata |
-| `CREDENTIALS` | None. Voicebox is local and key-free. |
+| `CREDENTIALS` | None for Voicebox. A protected VoiceStudio backend uses the user's `OMNIVOICE_API_KEY`; never print it. |
 
 ### Preconditions
 - Processing: local `ffmpeg` and `ffprobe` can read the source asset.
@@ -187,7 +187,7 @@ Tools not exposed via MCP (REST only): model status (`GET /models/status`), audi
 - Existing-audio processing runs local media subprocesses and preserves the input file.
 - Triggers local Voicebox generation, which consumes CPU or GPU.
 - May trigger an engine model download when the user approves.
-- Does not call any cloud service. No external network traffic.
+- Does not call any cloud service. VoiceStudio cloud features and remote backends run only when the user chooses them.
 
 ### Guardrails
 
@@ -199,7 +199,7 @@ Tools not exposed via MCP (REST only): model status (`GET /models/status`), audi
 6. **Path safety**: an explicitly requested output path authorizes writing there. Resolve ambiguity or unrelated-data replacement before the dependent write; preserve required CLI path flags.
 7. **Cancellation**: SIGINT aborts the MCP call and writes no partial output.
 8. **Manifest required for persisted output**: asset TTS and transcription modes write `manifest.json` with at minimum: `skill`, `mode`, `voicebox_generation_id`, `text` (or `transcript_preview`), `profile`, `engine`, `language`, `format` (TTS only), `created_at`. Processing records the source, operations, and measured output properties as specified in `resources/audio-processing.md`; it never invents Voicebox provenance. Notification mode is exempt because Voicebox Captures is its system of record and no disk output is written by default.
-9. **Out of scope**: voice cloning UI, captures archive, stories editor, microphone dictation loop, and cloud vendors are intentionally not exposed.
+9. **Out of scope**: the Voicebox cloning UI, captures archive, stories editor, microphone dictation loop, and cloud vendors are intentionally not exposed. VoiceStudio cloning and voice design run only on an explicit request with the voice owner's permission (`resources/voicestudio.md`).
 10. **No cost guard**: Voicebox is free. The cost guardrail from `oma-image` does not apply.
 
 ### Clarification protocol
@@ -238,9 +238,10 @@ Other skills can request audio output by calling the same MCP tools directly, or
 - Voice engine matrix: `resources/voice-matrix.md` (TTS profile/engine selection)
 - Prompt writing rules: `resources/prompt-tips.md` (TTS text)
 - Execution protocol: `resources/execution-protocol.md` (Voicebox generation/transcription)
+- VoiceStudio backend: `resources/voicestudio.md` (backend resolution, upstream skill routing, consent)
 - Existing audio and timed narration: `resources/audio-processing.md` (processing, duration fitting, or requested loudness conversion)
 - Pre-flight checklist: `resources/checklist.md` (Voicebox calls)
-- Configuration: read the `voice:` section of `.agents/oma-config.yaml` first, then fall back to `config/voice-config.yaml` for any key it does not set. Both profiles ship as `null` and must be set per machine — write them to `.agents/oma-config.yaml`, since `oma update` overwrites the skill config.
+- Configuration: read the `voice:` section of `.agents/oma-config.yaml` first, then fall back to `config/voice-config.yaml` for any key it does not set. `voice.backend` (`auto` | `voicebox` | `voicestudio`, default `auto`) lives only in oma-config. Both profiles ship as `null` and must be set per machine — write them to `.agents/oma-config.yaml`, since `oma update` overwrites the skill config.
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`
 - Design reference: `../../../docs/plans/designs/012-oma-voice.md` (source repo only; absent in global-mode installs)

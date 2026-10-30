@@ -60,7 +60,7 @@ all assets ─► render-spec.json ─► [Compositor: HyperFrames] ─► <mode
 ```
 
 1. **Script**: AgentScriptProvider writes `script.json` (start of the determinism boundary).
-2. **Voice**: oma-voice synthesizes narration -> a **single** `audio/narration-01.wav` (all scene lines joined into one track; per-line offsets live in `timing.json`). Fallback: estimated timing (no wav).
+2. **Voice**: oma-voice synthesizes narration on the `voice.backend` speech backend (Voicebox, or VoiceStudio; `auto` tries Voicebox first) -> a **single** `audio/narration-01.wav` (all scene lines joined into one track; per-line offsets live in `timing.json`). Fallback: estimated timing (no wav).
 3. **Visuals**: walk the visual chain. oma-image stills (key-free default) / oma-slide frames (explainer) / Pexels (key) / Pixelle (key). Aspect -> 16-multiple size; HyperFrames crops to the exact frame.
 4. **Captions**: oma-captions builds `captions.srt` + `captions.vtt` from `timing.json`. For a non-source locale, translate via oma-translation (key-free); absent -> warn + keep source.
 5. **render-spec**: compose `render-spec.json` (the deterministic compute boundary) from the assets + seed.
@@ -113,7 +113,7 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
 |-----------|--------|
 | No provider for a required capability | Exit 5, print `Run: oma video doctor` |
 | HyperFrames or MPT toolchain not bootstrapped | Exit 1 + `oma video doctor` remediation; retain render-spec and authored composition for recovery |
-| Voicebox MCP down | Fall back to estimated timing; still emit captions (whisper.cpp hop deferred: `TODO(oma-deferred): whisper-cpp`) |
+| No speech backend reachable (Voicebox / VoiceStudio) | Fall back to estimated timing; still emit captions (whisper.cpp hop deferred: `TODO(oma-deferred): whisper-cpp`) |
 | Pexels / Pixelle key absent | Skip provider; fall through to oma-image stills; annotate coverage in `warnings` |
 | `demo` with no capture + no Cap | Guided protocol (Step 4b); stop without rendering |
 | `--capture` outside `$PWD` or wrong format | Exit 4 with the path/format problem |

@@ -23,6 +23,12 @@ export interface ReadinessCheck {
 export const VOICEBOX_BASE_URL =
   process.env.OMA_VOICEBOX_URL ?? "http://127.0.0.1:17493";
 
+/** VoiceStudio backend (debpalash/VoiceStudio); upstream's own env var second. */
+export const VOICESTUDIO_BASE_URL =
+  process.env.OMA_VOICESTUDIO_URL ??
+  process.env.VOICESTUDIO_URL ??
+  "http://127.0.0.1:3900";
+
 /** FFmpeg presence — required by Hyperframes/MPT to mux audio + frames. */
 export async function checkFfmpeg(): Promise<ReadinessCheck> {
   const probe = await binaryAvailable("ffmpeg", ["-version"]);
@@ -99,6 +105,36 @@ export async function checkVoicebox(): Promise<ReadinessCheck> {
       detail: (err as Error).message,
       remediation:
         "Start the Voicebox MCP server (oma-voice); narration falls back to estimated timing.",
+    };
+  }
+}
+
+/**
+ * VoiceStudio /health — the alternative oma-voice backend (`voice.backend`).
+ * Optional: `auto` uses it only when Voicebox is down.
+ */
+export async function checkVoiceStudio(): Promise<ReadinessCheck> {
+  try {
+    const res = await http.get(`${VOICESTUDIO_BASE_URL}/health`, {
+      timeout: 1500,
+      validateStatus: () => true,
+    });
+    const ok = res.status >= 200 && res.status < 300;
+    return {
+      name: "voicestudio",
+      ok,
+      detail: ok ? `healthy (${VOICESTUDIO_BASE_URL})` : `status ${res.status}`,
+      remediation: ok
+        ? undefined
+        : "Optional: open the VoiceStudio app, or set OMA_VOICESTUDIO_URL to its backend.",
+    };
+  } catch (err) {
+    return {
+      name: "voicestudio",
+      ok: false,
+      detail: (err as Error).message,
+      remediation:
+        "Optional: open the VoiceStudio app (https://github.com/debpalash/VoiceStudio) as an oma-voice backend.",
     };
   }
 }
@@ -309,13 +345,15 @@ export async function checkCap(): Promise<ReadinessCheck> {
 }
 
 export async function runReadinessChecks(): Promise<ReadinessCheck[]> {
-  const [ffmpeg, ffprobe, voicebox, omaImage, cap] = await Promise.all([
-    checkFfmpeg(),
-    checkFfprobe(),
-    checkVoicebox(),
-    checkOmaImage(),
-    checkCap(),
-  ]);
+  const [ffmpeg, ffprobe, voicebox, voicestudio, omaImage, cap] =
+    await Promise.all([
+      checkFfmpeg(),
+      checkFfprobe(),
+      checkVoicebox(),
+      checkVoiceStudio(),
+      checkOmaImage(),
+      checkCap(),
+    ]);
   return [
     checkNode(),
     checkChromium(),
@@ -327,6 +365,7 @@ export async function runReadinessChecks(): Promise<ReadinessCheck[]> {
     checkMptProject(),
     checkStrudel(),
     voicebox,
+    voicestudio,
     omaImage,
     checkPixelle(),
     cap,

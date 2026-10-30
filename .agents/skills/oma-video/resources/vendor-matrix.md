@@ -11,7 +11,7 @@ otherwise the chain falls through to a key-free default.
 | Capability | order (config) | real (key/resource) | key-free fallback | marker |
 |------------|----------------|---------------------|-------------------|--------|
 | script | `[agent-script]` | agent-authored script (agent-as-key) | — | — |
-| voice | `[oma-voice]` | Voicebox MCP TTS + STT timing | estimated timing (no wav) | — |
+| voice | `[oma-voice]` | Voicebox MCP or VoiceStudio REST TTS + STT timing (`voice.backend`) | estimated timing (no wav) | — |
 | visual | `[oma-image, pexels, pixelle]` | Pexels stock · Pixelle AIGC | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` / `pixelle` |
 | caption | `[oma-captions]` | oma-translation for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translation` |
 | capture | Cap / guided capture | Human-recorded video ingestion | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
@@ -36,6 +36,22 @@ otherwise the chain falls through to a key-free default.
 | Timing (fallback) | `estimated` (no wav written, `audio` field empty); a whisper.cpp hop is reserved but not wired (`TODO(oma-deferred): whisper-cpp`) |
 | Side effect | Narration plays on the speakers during synthesis |
 | Health | exit 5 if MCP down; exit 3 if the named profile is missing |
+
+### VoiceStudio backend
+
+`voice.backend` in oma-config selects the speech
+backend behind the same `oma-voice` provider: `auto` (default) uses Voicebox
+when healthy, otherwise VoiceStudio; `voicebox` and `voicestudio` never fall
+through. Any live failure degrades to estimated timing with a warning.
+
+| Field | Value |
+|-------|-------|
+| Surface | VoiceStudio REST at `OMA_VOICESTUDIO_URL` / `VOICESTUDIO_URL` (default `127.0.0.1:3900`) |
+| Synthesize | `POST /v1/audio/speech{model: tts-1, voice: <profile id>, input, response_format: wav}`; a non-WAV body is rejected |
+| Timing (real) | `POST /v1/audio/transcriptions` (`verbose_json`, word + segment timestamps) -> `source: voicestudio-stt`; a failed transcription keeps the wav with estimated segments |
+| Auth | none on loopback; `OMNIVOICE_API_KEY` bearer only to a loopback or HTTPS backend |
+| Side effect | none on the speakers; first use of an engine may download its model inside the backend |
+| Doctor | `oma video doctor` reports `voicestudio` as an optional check |
 
 ## oma-image (VisualProvider: generate) — default key-free visual
 

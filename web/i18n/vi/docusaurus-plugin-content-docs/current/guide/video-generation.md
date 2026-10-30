@@ -158,7 +158,7 @@ Provider stage resolve tới **real branch** và, khi stage hỗ trợ, **determ
 | Capability | Real branch (điều gì kích hoạt nó) | Fallback |
 |------------|-------------|----------|
 | script | `script.json` do agent author, truyền bằng `--script <path>` (workflow `/video` ghi file này) | skeleton ba scene deterministic từ nội dung brief |
-| voice | `oma-voice` (Voicebox, local) với `--voice <profile>` | video silent với timing ước tính (`--voice none`, mặc định) |
+| voice | `oma-voice` (Voicebox hoặc VoiceStudio, local; chọn bằng `voice.backend`) với `--voice <profile>` | video silent với timing ước tính (`--voice none`, mặc định) |
 | visual | `oma-image`, `oma-slide`, stock clip từ Pexels khi đặt `PEXELS_API_KEY` | placeholder asset |
 | visual: `aigc` | chưa được nối; `RUNNINGHUB_API_KEY` bật provider, nhưng provider vẫn ghi placeholder | placeholder asset |
 | caption | `.srt` và `.vtt` căn theo `timing.json`, bằng ngôn ngữ của script | như cũ; việc dịch sang `--locale` chưa được nối |
@@ -180,7 +180,7 @@ Heavy toolchain (`node_modules` của project HyperFrames được quản lý, P
 oma video doctor
 ```
 
-Nó báo cáo `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `oma-image`, `pixelle` và `cap`, đồng thời in install hint cho thứ còn thiếu. Chạy `oma video doctor --output json` để xem danh sách chính thức. Baseline yêu cầu Node.js 22+, HyperFrames toolchain cùng Chrome browser của nó, FFmpeg/FFprobe và `oma-image`. MP4 thật còn cần HTML đã được author.
+Nó báo cáo `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `voicestudio`, `oma-image`, `pixelle` và `cap`, đồng thời in install hint cho thứ còn thiếu. Chạy `oma video doctor --output json` để xem danh sách chính thức. Baseline yêu cầu Node.js 22+, HyperFrames toolchain cùng Chrome browser của nó, FFmpeg/FFprobe và `oma-image`. MP4 thật còn cần HTML đã được author.
 
 Dùng install flag để provision toolchain:
 
@@ -201,7 +201,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -222,7 +222,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 | Triệu chứng | Nguyên nhân / cách sửa |
 |---------|-------------|
 | Không tạo MP4 | Compositor, composition hoặc toolchain check thất bại. Chạy `oma video doctor`, sau đó `oma video compose <runDir>` và sửa composition được báo trước khi chạy lại `oma video render <runDir>`. |
-| Narration im lặng (`source: estimated`) | `--voice` mặc định là `none`, hoặc không truy cập được Voicebox. Truyền `--voice <profile>` với một profile từ ứng dụng Voicebox và khởi động `oma-voice` server, hoặc chấp nhận timing ước tính. |
+| Narration im lặng (`source: estimated`) | `--voice` mặc định là `none`, hoặc không truy cập được speech backend nào. Truyền `--voice <profile>` với một profile từ backend đã chọn (ứng dụng Voicebox, hoặc profile ID của VoiceStudio khi `voice.backend: voicestudio` hoặc `auto`) và khởi động ứng dụng đó, hoặc chấp nhận timing ước tính. |
 | Demo run thoát với code 3 kèm hướng dẫn ghi hình | Không có file `--capture` nào được truyền (kể cả với `--source web`); oma không ghi màn hình. Ghi lại flow bằng Cap, QuickTime hoặc OBS, lưu bên trong project và chạy lại với `--capture ./walkthrough.mp4`. |
 | `--capture` bị từ chối (exit 4) | File không tồn tại, nằm ngoài project directory, hoặc không phải `.mp4` / `.mov` / `.webm` / `.mkv`. Copy recording vào project, ví dụ `./captures/demo.mp4`. |
 | Run dừng ở trần chi phí (exit 1) | Chi phí ước tính lũy kế đã chạm `--max-usd`. Chạy lại với `-y` hoặc `--max-usd` cao hơn. |

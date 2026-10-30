@@ -1,11 +1,17 @@
-// VoiceProvider — oma-voice / Voicebox MCP (design 013 §5).
+// VoiceProvider — oma-voice over a local speech backend (design 013 §5).
+//
+// `voice.backend` picks the backend: `voicebox`, `voicestudio`, or `auto`
+// (the first healthy one, Voicebox before VoiceStudio).
 //
 // Key-optional, two-branch contract (backend rule 11):
-//   real     : probe /health → MCP voicebox_speak (REST /speak fallback) →
-//              generation_id → REST GET /audio/{id} (save wav into
-//              runDir/audio) → MCP voicebox_transcribe (REST /transcribe
-//              fallback) → timing.json (source: voicebox-stt)
-//   fallback : silent / estimated timing, no audio file (source: estimated)
+//   voicebox    : probe /health → MCP voicebox_speak (REST /speak fallback) →
+//                 generation_id → REST GET /audio/{id} (save wav into
+//                 runDir/audio) → MCP voicebox_transcribe (REST /transcribe
+//                 fallback) → timing.json (source: voicebox-stt)
+//   voicestudio : probe /health → REST /v1/audio/speech (save wav) →
+//                 REST /v1/audio/transcriptions → timing.json
+//                 (source: voicestudio-stt)
+//   fallback    : silent / estimated timing, no audio file (source: estimated)
 //
 // The MCP tools live on Voicebox's Streamable HTTP surface at `<base>/mcp`;
 // audio retrieval stays REST-only (MCP has no save-to-disk). Voicebox plays
@@ -20,6 +26,10 @@ import {
   VoiceboxMcpClient,
   type VoiceboxToolResult,
 } from "../internal/voicebox-mcp.js";
+import {
+  type TranscriptSegment,
+  VoiceStudioClient,
+} from "../internal/voicestudio-api.js";
 import type {
   Availability,
   CostEstimate,
@@ -31,19 +41,13 @@ import {
   type NarrationLine,
   type Timing,
   VIDEO_SCHEMA_VERSION,
+  type VoiceBackend,
 } from "../types.js";
 
-/** Result of a real Voicebox synthesis (one wav + per-segment timing). */
+/** Result of a real synthesis (one wav + per-segment timing). */
 interface SynthesisResult {
   audio: AudioRef;
   timing: Timing;
-}
-
-/** Raw transcription segments as returned by Voicebox (same shape MCP/REST). */
-interface RawTranscriptionSegment {
-  start: number;
-  end: number;
-  words?: Array<{ word: string; start: number; end: number }>;
 }
 
 export class VoiceboxVoiceProvider implements VoiceProvider {
@@ -51,7 +55,11 @@ export class VoiceboxVoiceProvider implements VoiceProvider {
 
   private mcpClient: VoiceboxMcpClient | undefined;
 
-  constructor(private readonly baseUrl: string = VOICEBOX_BASE_URL) {}
+  constructor(
+    private readonly baseUrl: string = VOICEBOX_BASE_URL,
+    private readonly backend: VoiceBackend = "auto",
+    private readonly studio: VoiceStudioClient = new VoiceStudioClient(),
+  ) {}
 
   /** Lazy MCP client for Voicebox's Streamable HTTP surface at `<base>/mcp`. */
   private mcp(): VoiceboxMcpClient {
@@ -75,22 +83,60 @@ export class VoiceboxVoiceProvider implements VoiceProvider {
     lines: NarrationLine[],
     opts: VoiceOpts,
   ): Promise<SynthesisResult> {
-    // Fallback whenever Voicebox is absent, the user opted out (voice: none),
-    // or we are in the deterministic golden harness.
+    // Fallback whenever no backend is reachable, the user opted out
+    // (voice: none), or we are in the deterministic golden harness.
     if (isMockMode() || opts.dryRun || opts.voice === "none") {
       return this.estimatedTiming(lines);
     }
-    const healthy = await this.probeHealth();
-    if (!healthy) {
+    const backend = await this.selectBackend();
+    if (!backend) {
       return this.estimatedTiming(lines);
     }
     try {
-      return await this.realSynthesis(lines, opts);
+      return backend === "voicestudio"
+        ? await this.studioSynthesis(lines, opts)
+        : await this.realSynthesis(lines, opts);
     } catch {
       // Any failure on the live path degrades gracefully to estimated timing
       // rather than aborting the whole run (fallback-chain isolation).
       return this.estimatedTiming(lines);
     }
+  }
+
+  /** First healthy backend `voice.backend` allows; `auto` prefers Voicebox. */
+  private async selectBackend(): Promise<
+    "voicebox" | "voicestudio" | undefined
+  > {
+    if (this.backend !== "voicestudio" && (await this.probeHealth())) {
+      return "voicebox";
+    }
+    if (this.backend !== "voicebox" && (await this.studio.healthy())) {
+      return "voicestudio";
+    }
+    return undefined;
+  }
+
+  /**
+   * VoiceStudio path: one wav for the joined lines, then word timing from its
+   * transcription. A failed transcription keeps the real audio with estimated
+   * segments, as the Voicebox path does.
+   */
+  private async studioSynthesis(
+    lines: NarrationLine[],
+    opts: VoiceOpts,
+  ): Promise<SynthesisResult> {
+    await mkdir(path.join(opts.runDir, "audio"), { recursive: true });
+    const rel = path.join("audio", "narration-01.wav");
+    const wav = await this.studio.speech(
+      lines.map((line) => line.text).join("\n"),
+      opts.voice,
+    );
+    await writeFile(path.join(opts.runDir, rel), wav);
+    const segments = await this.studio.transcribe(wav).catch(() => []);
+    return {
+      audio: { path: rel },
+      timing: timingFromSegments(rel, lines, segments, "voicestudio-stt"),
+    };
   }
 
   private async probeHealth(): Promise<boolean> {
@@ -180,57 +226,19 @@ export class VoiceboxVoiceProvider implements VoiceProvider {
     const segments =
       (await this.transcribeViaMcp(audioPath)) ??
       (await this.transcribeViaRest(audioPath));
-    if (segments.length === 0) {
-      // TODO(oma-deferred): whisper-cpp — a local whisper.cpp transcription
-      // hop could sit here before the estimate (enum value already reserved
-      // in Timing.source). Until wired, degrade straight to estimated timing
-      // while still keeping the real audio file.
-      const est = estimateSegments(lines);
-      return {
-        schemaVersion: VIDEO_SCHEMA_VERSION,
-        audio: audioRel,
-        totalSec: est.totalSec,
-        segments: est.segments.map((seg, idx) => ({
-          ...seg,
-          sceneId: lines[idx]?.sceneId ?? seg.sceneId,
-        })),
-        source: "voicebox-stt",
-      };
-    }
-    let totalSec = 0;
-    const mapped = segments.map((seg, idx) => {
-      totalSec = Math.max(totalSec, seg.end);
-      return {
-        sceneId:
-          lines[idx]?.sceneId ?? `scene-${String(idx + 1).padStart(2, "0")}`,
-        startSec: seg.start,
-        endSec: seg.end,
-        words: (seg.words ?? []).map((w) => ({
-          t: w.word,
-          startSec: w.start,
-          endSec: w.end,
-        })),
-      };
-    });
-    return {
-      schemaVersion: VIDEO_SCHEMA_VERSION,
-      audio: audioRel,
-      totalSec,
-      segments: mapped,
-      source: "voicebox-stt",
-    };
+    return timingFromSegments(audioRel, lines, segments, "voicebox-stt");
   }
 
   /** MCP transcription; null (not throw) so the REST branch is still tried. */
   private async transcribeViaMcp(
     audioPath: string,
-  ): Promise<RawTranscriptionSegment[] | null> {
+  ): Promise<TranscriptSegment[] | null> {
     try {
       const result = await this.mcp().callTool("voicebox_transcribe", {
         audio_path: audioPath,
       });
       const payload = structuredOrJsonText(result) as
-        | { segments?: RawTranscriptionSegment[] }
+        | { segments?: TranscriptSegment[] }
         | undefined;
       return Array.isArray(payload?.segments) ? payload.segments : null;
     } catch {
@@ -241,15 +249,13 @@ export class VoiceboxVoiceProvider implements VoiceProvider {
   /** REST transcription of the saved wav. */
   private async transcribeViaRest(
     audioPath: string,
-  ): Promise<RawTranscriptionSegment[]> {
+  ): Promise<TranscriptSegment[]> {
     const res = await http.post(
       `${this.baseUrl}/transcribe`,
       { audio_path: audioPath },
       { timeout: 60000 },
     );
-    const data = res.data as
-      | { segments?: RawTranscriptionSegment[] }
-      | undefined;
+    const data = res.data as { segments?: TranscriptSegment[] } | undefined;
     return data?.segments ?? [];
   }
 
@@ -271,6 +277,57 @@ export class VoiceboxVoiceProvider implements VoiceProvider {
       },
     };
   }
+}
+
+/**
+ * timing.json for a real wav from its transcription segments, mapped onto the
+ * narration lines by index.
+ */
+function timingFromSegments(
+  audioRel: string,
+  lines: NarrationLine[],
+  segments: TranscriptSegment[],
+  source: "voicebox-stt" | "voicestudio-stt",
+): Timing {
+  if (segments.length === 0) {
+    // TODO(oma-deferred): whisper-cpp — a local whisper.cpp transcription
+    // hop could sit here before the estimate (enum value already reserved
+    // in Timing.source). Until wired, degrade straight to estimated timing
+    // while still keeping the real audio file.
+    const est = estimateSegments(lines);
+    return {
+      schemaVersion: VIDEO_SCHEMA_VERSION,
+      audio: audioRel,
+      totalSec: est.totalSec,
+      segments: est.segments.map((seg, idx) => ({
+        ...seg,
+        sceneId: lines[idx]?.sceneId ?? seg.sceneId,
+      })),
+      source,
+    };
+  }
+  let totalSec = 0;
+  const mapped = segments.map((seg, idx) => {
+    totalSec = Math.max(totalSec, seg.end);
+    return {
+      sceneId:
+        lines[idx]?.sceneId ?? `scene-${String(idx + 1).padStart(2, "0")}`,
+      startSec: seg.start,
+      endSec: seg.end,
+      words: (seg.words ?? []).map((w) => ({
+        t: w.word,
+        startSec: w.start,
+        endSec: w.end,
+      })),
+    };
+  });
+  return {
+    schemaVersion: VIDEO_SCHEMA_VERSION,
+    audio: audioRel,
+    totalSec,
+    segments: mapped,
+    source,
+  };
 }
 
 /** MCP tool payload: structuredContent preferred, JSON-parsed text second. */

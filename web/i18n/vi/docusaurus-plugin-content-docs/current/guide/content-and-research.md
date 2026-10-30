@@ -12,7 +12,7 @@ Hướng dẫn này định tuyến công việc về tài liệu, âm thanh, ng
 |---|---|---|---|---|
 | Trích xuất PDF | Skill `oma-pdf` hoặc command `uvx opendataloader-pdf` bên dưới | `uv` (cho `uvx`) | Markdown, text, JSON hoặc extraction report ngắn | [bên dưới](#extract-pdf-content) |
 | Trích xuất HWP/HWPX/HWPML | Skill `oma-hwp` và `bunx kordoc@latest` | Bun | Markdown hoặc JSON/chunk có cấu trúc | [bên dưới](#extract-hwp-family-documents) |
-| Phát hoặc transcript audio | `/oma-voice` | Ứng dụng Voicebox tại `127.0.0.1:17493` | Audio kèm manifest, hoặc `transcript.md` kèm manifest | [bên dưới](#generate-speech-or-transcribe-audio) |
+| Phát hoặc transcript audio | `/oma-voice` | Ứng dụng Voicebox tại `127.0.0.1:17493`, hoặc VoiceStudio tại `127.0.0.1:3900` | Audio kèm manifest, hoặc `transcript.md` kèm manifest | [bên dưới](#generate-speech-or-transcribe-audio) |
 | Tìm và xác minh paper | `oma scholar` | không có; tùy chọn `S2_API_KEY`, `OPENALEX_EMAIL` | Search result, sidecar đã fetch hoặc lint report | [bên dưới](#search-and-validate-scholarly-material) |
 | Tìm kiếm web hoặc fetch một trang | Skill `oma-search`, `oma search` | tùy chọn Chrome, Python `curl_cffi`, `yt-dlp`, `gh` (kiểm tra bằng `oma search doctor`) | JSON trên stdout | [CLI Commands: search](../cli-interfaces/commands.md#search) |
 | Tạo presentation | Skill `oma-slide` và `oma slide` | Chrome, hoặc `OMA_CHROME_PATH` | HTML slide đã validate và export tùy chọn | [bên dưới](#slides-and-presentations) |
@@ -103,6 +103,8 @@ Output mặc định là Markdown. Để có AST có cấu trúc, dùng `bunx ko
 TTS nhận tối đa 5.000 ký tự mỗi call và cần Voicebox voice profile. Transcription không cần TTS profile và nhận audio tối đa 30 phút. Công việc TTS và STT được lưu dưới `.agents/results/voice/`; transcription tạo `transcript.md` và `manifest.json`. Notification mode thường nằm trong Voicebox Captures và không ghi audio file cục bộ.
 
 Local MCP endpoint là `http://127.0.0.1:17493/mcp`. Setup lần đầu đăng ký Voicebox với agent, còn Voicebox desktop app cung cấp voice profile. Skill discover tên MCP tool thực tế bằng `tools/list`, rồi gọi `voicebox_speak`, `voicebox_transcribe` hoặc `voicebox_list_profiles`. Nếu TTS không có profile, tạo hoặc chọn một profile trong Voicebox; việc chia request quá dài là quyết định của người dùng vì skill không tự chunk. Nếu server không khả dụng, kiểm tra local health endpoint và restart Voicebox trước khi thử lại.
+
+Để dùng [VoiceStudio](https://github.com/debpalash/VoiceStudio) thay thế, đặt `voice.backend` trong `.agents/oma-config.yaml` thành `voicestudio`, hoặc giữ `auto` để dùng VoiceStudio mỗi khi Voicebox không chạy. Skill tải upstream skill `voicestudio`, dùng profile ID của VoiceStudio và hỏi trước khi clone hoặc thiết kế giọng nói hay tải model. Narration của `oma video` cũng theo cùng thiết lập.
 
 ## Tìm và xác minh tài liệu học thuật {#search-and-validate-scholarly-material}
 

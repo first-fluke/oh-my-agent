@@ -158,7 +158,7 @@ oma video provider list         # provider availability + key/fallback status
 | Возможность | Реальная ветка (что её включает) | Запасной вариант |
 |------------|-------------|----------|
 | script | созданный agent `script.json`, переданный через `--script <path>` (его пишет workflow `/video`) | детерминированный skeleton из трёх сцен по тексту brief |
-| voice | `oma-voice` (Voicebox, local) с `--voice <profile>` | видео без звука с estimated timing (`--voice none`, default) |
+| voice | `oma-voice` (Voicebox или VoiceStudio, local; выбирается через `voice.backend`) с `--voice <profile>` | видео без звука с estimated timing (`--voice none`, default) |
 | visual | `oma-image`, `oma-slide`, stock clips Pexels при заданном `PEXELS_API_KEY` | placeholder asset |
 | visual: `aigc` | ещё не подключён; `RUNNINGHUB_API_KEY` включает провайдера, который всё равно пишет placeholder | placeholder asset |
 | caption | `.srt` и `.vtt`, выровненные по `timing.json`, на языке script | то же; перевод на `--locale` ещё не подключён |
@@ -180,7 +180,7 @@ Captions рендерятся как **static windowed cues** — единств
 oma video doctor
 ```
 
-Он сообщает о `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `oma-image`, `pixelle` и `cap`, а для отсутствующих печатает подсказку установки. Авторитетный список выводит `oma video doctor --output json`. Базовый вариант требует Node.js 22+, toolchain HyperFrames и её браузер Chrome, FFmpeg/FFprobe и `oma-image`. Для настоящего MP4 также нужен authored HTML.
+Он сообщает о `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `voicestudio`, `oma-image`, `pixelle` и `cap`, а для отсутствующих печатает подсказку установки. Авторитетный список выводит `oma video doctor --output json`. Базовый вариант требует Node.js 22+, toolchain HyperFrames и её браузер Chrome, FFmpeg/FFprobe и `oma-image`. Для настоящего MP4 также нужен authored HTML.
 
 Для provision toolchain используйте install flags:
 
@@ -201,7 +201,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -222,7 +222,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 | Симптом | Причина / исправление |
 |---------|-------------|
 | MP4 не создан | Compositor, composition или toolchain check завершился ошибкой. Запустите `oma video doctor`, затем `oma video compose <runDir>` и исправьте указанную composition перед повтором `oma video render <runDir>`. |
-| Narration без звука (`source: estimated`) | `--voice` по умолчанию равен `none`, или Voicebox недоступен. Передайте `--voice <profile>` с профилем из приложения Voicebox и запустите сервер `oma-voice` или примите estimated timing. |
+| Narration без звука (`source: estimated`) | `--voice` по умолчанию равен `none`, или ни один речевой backend недоступен. Передайте `--voice <profile>` с профилем выбранного backend (из приложения Voicebox или ID профиля VoiceStudio при `voice.backend: voicestudio` или `auto`) и запустите это приложение или примите estimated timing. |
 | Demo run завершается с exit 3 и инструкциями по записи | Файл `--capture` не передан (в том числе с `--source web`); oma не записывает экран. Запишите сценарий в Cap, QuickTime или OBS, сохраните запись внутри проекта и перезапустите с `--capture ./walkthrough.mp4`. |
 | `--capture` отклонён (exit 4) | Файл не существует, находится вне каталога проекта или не является `.mp4` / `.mov` / `.webm` / `.mkv`. Скопируйте запись в проект, например в `./captures/demo.mp4`. |
 | Run останавливается на потолке стоимости (exit 1) | Текущая оценка достигла `--max-usd`. Перезапустите с `-y` или большим `--max-usd`. |

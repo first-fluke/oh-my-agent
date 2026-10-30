@@ -12,7 +12,7 @@ description: PDF와 HWP 추출, 음성, 학술 및 웹 리서치, 슬라이드, 
 |---|---|---|---|---|
 | PDF 추출 | `oma-pdf` 스킬 또는 아래의 `uvx opendataloader-pdf` 명령 | `uv`(`uvx`용) | Markdown, 텍스트, JSON 또는 짧은 추출 보고서 | [아래](#extract-pdf-content) |
 | HWP/HWPX/HWPML 추출 | `oma-hwp` 스킬과 `bunx kordoc@latest` | Bun | Markdown 또는 구조화된 JSON/청크 | [아래](#extract-hwp-family-documents) |
-| 음성 생성 또는 전사 | `/oma-voice` | `127.0.0.1:17493`에서 실행 중인 Voicebox 앱 | 오디오와 매니페스트 또는 `transcript.md`와 매니페스트 | [아래](#generate-speech-or-transcribe-audio) |
+| 음성 생성 또는 전사 | `/oma-voice` | `127.0.0.1:17493`에서 실행 중인 Voicebox 앱 또는 `127.0.0.1:3900`의 VoiceStudio | 오디오와 매니페스트 또는 `transcript.md`와 매니페스트 | [아래](#generate-speech-or-transcribe-audio) |
 | 논문 검색 및 검증 | `oma scholar` | 없음. 선택적으로 `S2_API_KEY`, `OPENALEX_EMAIL` | 검색 결과, 가져온 사이드카 또는 린트 보고서 | [아래](#search-and-validate-scholarly-material) |
 | 웹 검색 또는 페이지 가져오기 | `oma-search` 스킬, `oma search` | 선택적으로 Chrome, Python `curl_cffi`, `yt-dlp`, `gh`(`oma search doctor`로 확인) | stdout의 JSON | [CLI 명령: search](../cli-interfaces/commands.md#search) |
 | 프레젠테이션 제작 | `oma-slide` 스킬과 `oma slide` | Chrome 또는 `OMA_CHROME_PATH` | 검증된 HTML 슬라이드와 선택적 내보내기 파일 | [아래](#slides-and-presentations) |
@@ -103,6 +103,8 @@ bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 TTS는 호출당 최대 5,000자를 받고 Voicebox 음성 프로필이 필요합니다. 전사는 TTS 프로필이 필요하지 않으며 최대 30분 오디오를 받습니다. 저장하는 TTS와 STT 작업은 `.agents/results/voice/` 아래에 기록되며, 전사는 `transcript.md`와 `manifest.json`을 만듭니다. 알림 모드는 보통 Voicebox Captures에 남고 로컬 오디오 파일을 만들지 않습니다.
 
 로컬 MCP 엔드포인트는 `http://127.0.0.1:17493/mcp`입니다. 첫 사용 설정은 에이전트에 Voicebox를 등록하며, Voicebox 데스크톱 앱이 음성 프로필을 제공합니다. 스킬은 `tools/list`로 실제 MCP 도구 이름을 찾은 다음 `voicebox_speak`, `voicebox_transcribe`, `voicebox_list_profiles`를 호출합니다. TTS에 프로필이 없으면 Voicebox에서 프로필을 만들거나 선택합니다. 긴 요청을 나눌지는 사용자가 결정하며 스킬은 자동으로 청크를 나누지 않습니다. 서버를 사용할 수 없으면 로컬 health 엔드포인트를 확인하고 Voicebox를 다시 시작한 뒤 재시도합니다.
+
+Voicebox 대신 [VoiceStudio](https://github.com/debpalash/VoiceStudio)를 쓰려면 `.agents/oma-config.yaml`의 `voice.backend`를 `voicestudio`로 설정하세요. `auto`로 두면 Voicebox가 실행 중이 아닐 때 VoiceStudio를 사용합니다. 스킬은 upstream `voicestudio` 스킬을 불러오고 VoiceStudio 프로필 ID를 사용하며, 목소리를 클로닝하거나 디자인하거나 모델을 내려받기 전에 확인을 받습니다. `oma video` 내레이션도 같은 설정을 따릅니다.
 
 ## 학술 자료 검색 및 검증 {#search-and-validate-scholarly-material}
 

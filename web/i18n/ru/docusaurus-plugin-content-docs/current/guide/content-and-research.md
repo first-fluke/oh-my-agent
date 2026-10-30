@@ -12,7 +12,7 @@ description: Выберите правильный путь oh-my-agent и ег�
 |---|---|---|---|---|
 | Извлечь PDF | skill `oma-pdf` или команды `uvx opendataloader-pdf` ниже | `uv` (для `uvx`) | Markdown, text, JSON или краткий отчёт об извлечении | [ниже](#extract-pdf-content) |
 | Извлечь HWP/HWPX/HWPML | skill `oma-hwp` и `bunx kordoc@latest` | Bun | Markdown или структурированный JSON/chunks | [ниже](#extract-hwp-family-documents) |
-| Озвучить или транскрибировать аудио | `/oma-voice` | приложение Voicebox на `127.0.0.1:17493` | Аудио с manifest или `transcript.md` с manifest | [ниже](#generate-speech-or-transcribe-audio) |
+| Озвучить или транскрибировать аудио | `/oma-voice` | приложение Voicebox на `127.0.0.1:17493` или VoiceStudio на `127.0.0.1:3900` | Аудио с manifest или `transcript.md` с manifest | [ниже](#generate-speech-or-transcribe-audio) |
 | Найти и проверить статьи | `oma scholar` | нет; необязательно `S2_API_KEY`, `OPENALEX_EMAIL` | Результаты поиска, полученный sidecar или lint report | [ниже](#search-and-validate-scholarly-material) |
 | Искать в web или получить страницу | skill `oma-search`, `oma search` | необязательно Chrome, Python `curl_cffi`, `yt-dlp`, `gh` (проверка — `oma search doctor`) | JSON в stdout | [CLI Commands: search](../cli-interfaces/commands.md#search) |
 | Создать презентацию | skill `oma-slide` и `oma slide` | Chrome или `OMA_CHROME_PATH` | Проверенные HTML-слайды и необязательный экспорт | [ниже](#slides-and-presentations) |
@@ -103,6 +103,8 @@ bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 TTS принимает до 5 000 символов за вызов и требует голосового профиля Voicebox. Для transcription профиль TTS не нужен; принимается аудио длительностью до 30 минут. Сохранённые операции TTS и STT записываются в `.agents/results/voice/`; transcription создаёт `transcript.md` и `manifest.json`. В режиме уведомлений результат обычно остаётся в Voicebox Captures и локальный аудиофайл не записывается.
 
 Локальная конечная точка MCP — `http://127.0.0.1:17493/mcp`. Первый setup регистрирует Voicebox в агенте, а desktop app Voicebox предоставляет голосовые профили. Skill узнаёт настоящие имена MCP-инструментов через `tools/list`, затем вызывает `voicebox_speak`, `voicebox_transcribe` или `voicebox_list_profiles`. Если у TTS нет профиля, создайте или выберите его в Voicebox; разбиение слишком длинного запроса — решение пользователя, потому что skill не делит его автоматически. Если сервер недоступен, проверьте локальную health endpoint и перезапустите Voicebox перед повтором.
+
+Чтобы использовать [VoiceStudio](https://github.com/debpalash/VoiceStudio), задайте `voice.backend: voicestudio` в `.agents/oma-config.yaml` или оставьте `auto`, чтобы VoiceStudio использовался всякий раз, когда Voicebox не запущен. Skill загружает upstream-skill `voicestudio`, использует ID профилей VoiceStudio и спрашивает подтверждение перед клонированием или созданием голоса и перед загрузкой модели. Narration в `oma video` следует той же настройке.
 
 ## Поиск и проверка научных материалов {#search-and-validate-scholarly-material}
 

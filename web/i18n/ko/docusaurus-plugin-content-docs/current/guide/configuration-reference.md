@@ -66,7 +66,7 @@ oma doctor --profile
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` 또는 `[]` | 지정하지 않으면 기존 설정 유지 | 연동 설정을 갱신할 때 사용할 브라우저 DevTools MCP를 선택합니다. 명시적인 빈 목록은 선택된 브라우저 항목을 제거합니다. |
 | `video` | 필요한 값만 지정하는 스킬 설정 맵 | 스킬 기본값; [영상 생성](/docs/guide/video-generation) 참고 | 영상 생성 경로, 프로바이더 순서, 출력, 비용, 제한, HyperFrames 갱신 설정입니다. |
 | `image` | 필요한 값만 지정하는 스킬 설정 맵 | 스킬 기본값; [이미지 생성](/docs/guide/image-generation) 참고 | 이미지 벤더, 크기, 품질, 출력, 비교, 비용 설정입니다. |
-| `voice` | `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) 참고 | Voicebox 프로필, 출력, 길이 설정입니다. |
+| `voice` | `backend`, `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | `backend: auto`; 나머지 키는 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) 참고 | 음성 백엔드(`auto`, `voicebox`, `voicestudio`; `oma video` 내레이션도 같은 설정 사용), 프로필, 출력, 길이 설정입니다. |
 | `hwp` | `format`, `version.*`, `output.*` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#extract-hwp-family-documents) 참고 | Kordoc 형식, 버전 채널, 출력 위치입니다. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#extract-pdf-content) 참고 | PDF 추출, OCR, 이미지, 덮어쓰기 설정입니다. |
 | `scholar` | `base_url` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#search-and-validate-scholarly-material) 참고 | Knows 연결 주소의 호스트입니다. 프로토콜 구조는 스킬에서 정합니다. |

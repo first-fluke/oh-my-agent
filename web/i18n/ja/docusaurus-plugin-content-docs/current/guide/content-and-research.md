@@ -12,7 +12,7 @@ description: PDF と HWP の抽出、音声、学術リサーチと Web リサ�
 |---|---|---|---|---|
 | PDF を抽出する | `oma-pdf` スキル、または下記の `uvx opendataloader-pdf` コマンド | `uv`（`uvx` 用） | Markdown、テキスト、JSON、または短い抽出レポート | [下記](#extract-pdf-content) |
 | HWP/HWPX/HWPML を抽出する | `oma-hwp` スキルと `bunx kordoc@latest` | Bun | Markdown または構造化 JSON／チャンク | [下記](#extract-hwp-family-documents) |
-| 音声を合成または文字起こしする | `/oma-voice` | `127.0.0.1:17493` で動作する Voicebox アプリ | マニフェスト付きの音声、またはマニフェスト付きの `transcript.md` | [下記](#generate-speech-or-transcribe-audio) |
+| 音声を合成または文字起こしする | `/oma-voice` | `127.0.0.1:17493` で動作する Voicebox アプリ、または `127.0.0.1:3900` の VoiceStudio | マニフェスト付きの音声、またはマニフェスト付きの `transcript.md` | [下記](#generate-speech-or-transcribe-audio) |
 | 論文を探して検証する | `oma scholar` | なし。任意で `S2_API_KEY`、`OPENALEX_EMAIL` | 検索結果、取得したサイドカー、または lint レポート | [下記](#search-and-validate-scholarly-material) |
 | Web を検索する、またはページを取得する | `oma-search` スキル、`oma search` | 任意で Chrome、Python の `curl_cffi`、`yt-dlp`、`gh`（`oma search doctor` で確認） | 標準出力の JSON | [CLI コマンド：search](../cli-interfaces/commands.md#search) |
 | プレゼンテーションを作る | `oma-slide` スキルと `oma slide` | Chrome、または `OMA_CHROME_PATH` | 検証済み HTML スライドと任意のエクスポート | [下記](#slides-and-presentations) |
@@ -103,6 +103,8 @@ bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 TTS は 1 回あたり最大 5,000 文字で、Voicebox の音声プロファイルが必要です。文字起こしには TTS プロファイルは不要で、最大 30 分の音声に対応します。保存する TTS と STT は `.agents/results/voice/` に書き込みます。文字起こしは `transcript.md` と `manifest.json` を生成します。通知モードでは通常 Voicebox Captures に保存し、ローカルの音声ファイルは書きません。
 
 ローカルの MCP エンドポイントは `http://127.0.0.1:17493/mcp` です。初回セットアップでは Voicebox をエージェントに登録し、Voicebox デスクトップアプリが音声プロファイルを提供します。スキルは `tools/list` で実際の MCP ツール名を見つけ、`voicebox_speak`、`voicebox_transcribe`、`voicebox_list_profiles` を呼び出します。TTS にプロファイルがない場合は、Voicebox で作成または選択します。長すぎるリクエストを分割するかはユーザーが決めることで、スキルは自動分割しません。サーバーが利用できない場合は、ローカルのヘルスエンドポイントを確認して Voicebox を再起動してから再試行します。
+
+代わりに [VoiceStudio](https://github.com/debpalash/VoiceStudio) を使う場合は、`.agents/oma-config.yaml` の `voice.backend` を `voicestudio` に設定します。`auto` のままにすると、Voicebox が起動していないときに VoiceStudio を使います。スキルは upstream の `voicestudio` スキルを読み込み、VoiceStudio のプロファイル ID を使い、声のクローンや設計、モデルのダウンロードの前に確認します。`oma video` のナレーションも同じ設定に従います。
 
 ## 学術資料を検索して検証する {#search-and-validate-scholarly-material}
 

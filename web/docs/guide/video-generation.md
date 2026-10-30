@@ -160,7 +160,7 @@ Provider stages resolve to a **real branch** and, where the stage supports it, a
 | Capability | Real branch (what enables it) | Fallback |
 |------------|-------------|----------|
 | script | agent-authored `script.json` passed with `--script <path>` (the `/video` workflow writes it) | deterministic three-scene skeleton from the brief text |
-| voice | `oma-voice` (Voicebox, local) with `--voice <profile>` | silent video with estimated timing (`--voice none`, the default) |
+| voice | `oma-voice` (Voicebox or VoiceStudio, local; chosen by `voice.backend`) with `--voice <profile>` | silent video with estimated timing (`--voice none`, the default) |
 | visual | `oma-image`, `oma-slide`, Pexels stock clips when `PEXELS_API_KEY` is set | placeholder asset |
 | visual: `aigc` | not wired yet; `RUNNINGHUB_API_KEY` enables the provider, which still writes placeholders | placeholder asset |
 | caption | `.srt` and `.vtt` aligned to `timing.json`, in the script's language | same; translation to `--locale` is not wired yet |
@@ -182,7 +182,7 @@ The heavy toolchain (the managed HyperFrames project's `node_modules`, the embed
 oma video doctor
 ```
 
-It reports `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `oma-image`, `pixelle`, and `cap`, and prints the install hint for anything missing. Run `oma video doctor --output json` for the authoritative list. The baseline requires Node.js 22+, the HyperFrames toolchain and its Chrome browser, FFmpeg/FFprobe, and `oma-image`. A real MP4 also requires authored HTML.
+It reports `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `voicestudio`, `oma-image`, `pixelle`, and `cap`, and prints the install hint for anything missing. Run `oma video doctor --output json` for the authoritative list. The baseline requires Node.js 22+, the HyperFrames toolchain and its Chrome browser, FFmpeg/FFprobe, and `oma-image`. A real MP4 also requires authored HTML.
 
 Use the install flags to provision the toolchain:
 
@@ -203,7 +203,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -224,7 +224,7 @@ The `render-spec.json` + assets are the determinism boundary.
 | Symptom | Cause / fix |
 |---------|-------------|
 | No MP4 is produced | A compositor, composition, or toolchain check failed. Run `oma video doctor`, then `oma video compose <runDir>` and fix the reported composition before rerunning `oma video render <runDir>`. |
-| Narration is silent (`source: estimated`) | `--voice` defaults to `none`, or Voicebox is not reachable. Pass `--voice <profile>` with a profile from the Voicebox app and start the `oma-voice` server, or accept estimated timing. |
+| Narration is silent (`source: estimated`) | `--voice` defaults to `none`, or no speech backend is reachable. Pass `--voice <profile>` with a profile from the selected backend (Voicebox app, or a VoiceStudio profile ID with `voice.backend: voicestudio` or `auto`) and start that app, or accept estimated timing. |
 | Demo run exits 3 with recording instructions | No `--capture` file was given (also with `--source web`); oma does not record the screen. Record the flow with Cap, QuickTime, or OBS, save it inside the project, and rerun with `--capture ./walkthrough.mp4`. |
 | `--capture` rejected (exit 4) | The file does not exist, is outside the project directory, or is not `.mp4` / `.mov` / `.webm` / `.mkv`. Copy the recording into the project, for example `./captures/demo.mp4`. |
 | Run stops at the cost ceiling (exit 1) | The running estimate reached `--max-usd`. Rerun with `-y` or a higher `--max-usd`. |

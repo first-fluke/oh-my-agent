@@ -12,7 +12,7 @@ description: 为 PDF 和 HWP 提取、语音、学术与 Web 研究、幻灯片�
 |---|---|---|---|---|
 | 提取 PDF | `oma-pdf` 技能，或下方的 `uvx opendataloader-pdf` 命令 | `uv`（用于 `uvx`） | Markdown、文本、JSON 或简短提取报告 | [见下文](#extract-pdf-content) |
 | 提取 HWP/HWPX/HWPML | `oma-hwp` 技能和 `bunx kordoc@latest` | Bun | Markdown 或结构化 JSON/分块 | [见下文](#extract-hwp-family-documents) |
-| 播放语音或转录音频 | `/oma-voice` | 运行在 `127.0.0.1:17493` 上的 Voicebox 应用 | 音频和清单，或 `transcript.md` 与清单 | [见下文](#generate-speech-or-transcribe-audio) |
+| 播放语音或转录音频 | `/oma-voice` | 运行在 `127.0.0.1:17493` 上的 Voicebox 应用，或 `127.0.0.1:3900` 上的 VoiceStudio | 音频和清单，或 `transcript.md` 与清单 | [见下文](#generate-speech-or-transcribe-audio) |
 | 查找并验证论文 | `oma scholar` | 无；可选 `S2_API_KEY`、`OPENALEX_EMAIL` | 搜索结果、获取的 sidecar 或 lint 报告 | [见下文](#search-and-validate-scholarly-material) |
 | 搜索 Web 或获取页面 | `oma-search` 技能、`oma search` | 可选 Chrome、Python `curl_cffi`、`yt-dlp`、`gh`（用 `oma search doctor` 检查） | stdout 上的 JSON | [CLI 命令：search](../cli-interfaces/commands.md#search) |
 | 制作演示文稿 | `oma-slide` 技能和 `oma slide` | Chrome，或 `OMA_CHROME_PATH` | 已验证的 HTML 幻灯片和可选导出文件 | [见下文](#slides-and-presentations) |
@@ -103,6 +103,8 @@ bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 TTS 每次最多接受 5,000 个字符，并需要 Voicebox 语音配置。转录不需要 TTS 配置，但音频时长最多 30 分钟。持久化的 TTS 和 STT 工作写入 `.agents/results/voice/`；转录会生成 `transcript.md` 和 `manifest.json`。通知模式通常保留在 Voicebox Captures 中，不会写入本地音频文件。
 
 本地 MCP 端点是 `http://127.0.0.1:17493/mcp`。首次使用时会向智能体注册 Voicebox，Voicebox 桌面应用提供语音配置。技能通过 `tools/list` 发现实际的 MCP 工具名称，然后调用 `voicebox_speak`、`voicebox_transcribe` 或 `voicebox_list_profiles`。如果 TTS 没有配置，请在 Voicebox 中创建或选择一个；是否拆分过长请求由用户决定，因为技能不会自动分块。如果服务器不可用，先检查本地健康端点并重启 Voicebox，再重试。
+
+如需改用 [VoiceStudio](https://github.com/debpalash/VoiceStudio)，请在 `.agents/oma-config.yaml` 中将 `voice.backend` 设为 `voicestudio`；保留 `auto` 时，Voicebox 未运行就会使用 VoiceStudio。技能会加载上游 `voicestudio` 技能，使用 VoiceStudio 配置档 ID，并在克隆或设计声音、下载模型之前先征得确认。`oma video` 旁白也遵循同一设置。
 
 ## 搜索并验证学术材料 {#search-and-validate-scholarly-material}
 

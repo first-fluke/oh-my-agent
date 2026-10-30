@@ -158,7 +158,7 @@ Providerfasen lossen op naar een **echte branch** en, waar de fase dat ondersteu
 | Capability | Echte branch (wat deze inschakelt) | Fallback |
 |------------|-------------|----------|
 | script | door de agent geschreven `script.json`, doorgegeven met `--script <path>` (de `/video`-workflow schrijft die) | deterministisch skelet van drie scènes uit de tekst van de briefing |
-| voice | `oma-voice` (Voicebox, lokaal) met `--voice <profile>` | stille video met geschatte timing (`--voice none`, de standaard) |
+| voice | `oma-voice` (Voicebox of VoiceStudio, lokaal; gekozen via `voice.backend`) met `--voice <profile>` | stille video met geschatte timing (`--voice none`, de standaard) |
 | visual | `oma-image`, `oma-slide`, Pexels-stockclips wanneer `PEXELS_API_KEY` is ingesteld | placeholder-asset |
 | visual: `aigc` | nog niet aangesloten; `RUNNINGHUB_API_KEY` schakelt de provider in, die nog steeds placeholders schrijft | placeholder-asset |
 | caption | `.srt` en `.vtt`, uitgelijnd op `timing.json`, in de taal van het script | hetzelfde; vertaling naar `--locale` is nog niet aangesloten |
@@ -180,7 +180,7 @@ De zware toolchain (de `node_modules` van het beheerde HyperFrames-project, het 
 oma video doctor
 ```
 
-Hij rapporteert `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `oma-image`, `pixelle` en `cap`, en geeft voor ontbrekende onderdelen de installatietip. Voer `oma video doctor --output json` uit voor de gezaghebbende lijst. De basis vereist Node.js 22+, de HyperFrames-toolchain met bijbehorende Chrome-browser, FFmpeg/FFprobe en `oma-image`. Voor een echte MP4 is ook geschreven HTML nodig.
+Hij rapporteert `node`, `chromium`, `ffmpeg`, `ffprobe`, `hyperframes-toolchain`, `hyperframes-skills`, `pretendard-font`, `mpt-project`, `strudel`, `voicebox`, `voicestudio`, `oma-image`, `pixelle` en `cap`, en geeft voor ontbrekende onderdelen de installatietip. Voer `oma video doctor --output json` uit voor de gezaghebbende lijst. De basis vereist Node.js 22+, de HyperFrames-toolchain met bijbehorende Chrome-browser, FFmpeg/FFprobe en `oma-image`. Voor een echte MP4 is ook geschreven HTML nodig.
 
 Gebruik de installvlaggen om de toolchain in te richten:
 
@@ -201,7 +201,7 @@ oma video doctor --install-strudel     # Strudel music renderer for --music (ins
 .agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
-├── timing.json          # per-segment timing (voicebox-stt or estimated)
+├── timing.json          # per-segment timing (voicebox-stt, voicestudio-stt, or estimated)
 ├── captions.srt / .vtt
 ├── audio/narration-01.wav     # one track; absent when the video is silent
 ├── music/                     # pattern.strudel, bgm.wav, bgm.mp3 (with --music and Strudel installed)
@@ -222,7 +222,7 @@ De `render-spec.json` plus assets vormen de determinismegrens.
 | Symptoom | Oorzaak / oplossing |
 |---------|-------------|
 | Er wordt geen MP4 geproduceerd | Een controle van compositor, compositie of toolchain is mislukt. Voer `oma video doctor` uit, daarna `oma video compose <runDir>`, herstel de gemelde compositie en voer opnieuw `oma video render <runDir>` uit. |
-| De vertelling is stil (`source: estimated`) | `--voice` staat standaard op `none`, of Voicebox is onbereikbaar. Geef `--voice <profile>` mee met een profiel uit de Voicebox-app en start de `oma-voice`-server, of accepteer geschatte timing. |
+| De vertelling is stil (`source: estimated`) | `--voice` staat standaard op `none`, of geen spraakbackend is bereikbaar. Geef `--voice <profile>` mee met een profiel van de gekozen backend (de Voicebox-app, of een VoiceStudio-profiel-ID bij `voice.backend: voicestudio` of `auto`) en start die app, of accepteer geschatte timing. |
 | Een demorun sluit af met exitcode 3 en opname-instructies | Er is geen `--capture`-bestand opgegeven (ook bij `--source web`); oma neemt het scherm niet op. Neem de flow op met Cap, QuickTime of OBS, sla de opname op binnen het project en voer opnieuw uit met `--capture ./walkthrough.mp4`. |
 | `--capture` geweigerd (exitcode 4) | Het bestand bestaat niet, staat buiten de projectmap of is geen `.mp4` / `.mov` / `.webm` / `.mkv`. Kopieer de opname naar het project, bijvoorbeeld `./captures/demo.mp4`. |
 | De run stopt bij het kostenplafond (exitcode 1) | De lopende schatting heeft `--max-usd` bereikt. Voer opnieuw uit met `-y` of een hogere `--max-usd`. |

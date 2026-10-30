@@ -217,6 +217,7 @@ package config
 }
 
 #VoiceConfig: {
+	backend?:               "auto" | "voicebox" | "voicestudio"
 	notification_profile?:  null | string
 	asset_profile?:         null | string
 	output_dir?:            string
