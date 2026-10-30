@@ -68,7 +68,7 @@ Für eine lokale Projektüberschreibung tragen Sie nur die geänderten Blätter 
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Führen Sie den Befehl aus dem Projekt aus, damit das nächste `.agents/`-Verzeichnis ausgewählt wird. Eine fehlerhafte lokale Datei führt zu einem deutlichen Fehler; korrigieren oder entfernen Sie sie vor dem nächsten Versuch.

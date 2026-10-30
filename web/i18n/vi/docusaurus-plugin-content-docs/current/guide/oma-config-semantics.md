@@ -68,7 +68,7 @@ Với override local của project, chỉ đặt leaf đã thay đổi trong fil
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Chạy command từ project để chọn thư mục `.agents/` gần nhất. File local malformed sẽ fail rõ ràng; sửa hoặc xóa trước khi retry.

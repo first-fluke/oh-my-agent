@@ -924,7 +924,7 @@ describe("agent/spawn-status.ts", () => {
         "--output-format",
         "json",
         "--model",
-        "claude-sonnet-4-6",
+        "claude-sonnet-5-5",
         "--dangerously-skip-permissions",
         "-p",
         "plan the work",
@@ -949,7 +949,7 @@ describe("agent/spawn-status.ts", () => {
       "    output_format_flag: --json",
       "    auto_approve_flag: --full-auto",
       "    model_flag: -m",
-      "    default_model: gpt-5.5",
+      "    default_model: gpt-6.1-terra",
     ].join("\n");
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
@@ -985,7 +985,7 @@ describe("agent/spawn-status.ts", () => {
         "exec",
         "--json",
         "-m",
-        "gpt-5.5",
+        "gpt-6.1-terra",
         "--sandbox",
         "workspace-write",
         "@backend-engineer\n\nimplement auth",

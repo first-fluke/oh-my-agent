@@ -68,7 +68,7 @@ Pour une surcharge propre au projet, placez uniquement les feuilles modifiées d
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Exécutez la commande depuis le projet afin que le répertoire `.agents/` le plus proche soit sélectionné. Un fichier local mal formé provoque une erreur explicite ; corrigez-le ou supprimez-le avant de réessayer.

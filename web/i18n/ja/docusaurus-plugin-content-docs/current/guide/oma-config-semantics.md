@@ -68,7 +68,7 @@ flowchart TD
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 最も近い `.agents/` ディレクトリを選べるように、コマンドはプロジェクトから実行してください。ローカルファイルが壊れている場合は明確に失敗するため、再試行する前に修正するか削除します。

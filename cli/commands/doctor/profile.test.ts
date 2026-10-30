@@ -343,14 +343,14 @@ describe("collectProfileReport — model and CLI mapping", () => {
     const report = await profileModule.collectProfileReport("/fake/cwd");
     const orchestrator = report.rows.find((r) => r.role === "orchestrator");
     expect(orchestrator?.cli).toBe("claude");
-    expect(orchestrator?.model).toBe("anthropic/claude-sonnet-4-6");
+    expect(orchestrator?.model).toBe("anthropic/claude-sonnet-5-5");
   });
 
   it("correctly maps openai/ models to codex CLI", async () => {
     const report = await profileModule.collectProfileReport("/fake/cwd");
     const backend = report.rows.find((r) => r.role === "backend");
     expect(backend?.cli).toBe("codex");
-    expect(backend?.model).toBe("openai/gpt-5.5");
+    expect(backend?.model).toBe("openai/gpt-6.1-terra");
   });
 });
 

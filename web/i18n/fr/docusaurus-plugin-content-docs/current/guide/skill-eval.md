@@ -268,7 +268,7 @@ Les bras de tâches, les juges et les sondes d’acheminement résolvent le rôl
 ```yaml
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+    model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
 Le Maintainer et le Proposer de `oma skill optimize` résolvent le rôle `opt-agent`. La map `agents:` n’a pas de clé `opt` (le schéma de configuration refuse les clés inconnues) ; ce rôle suit donc toujours le `model_preset` actif, ou `default_cli` sous `model_preset: auto`. Sans `agents.eval`, le rôle `eval` utilise le même repli. La promotion exige `isolation: enforced`, que seuls les profils protégés Claude et Codex natif fournissent (voir [Isolation de la compétence](#skill-isolation-keeping-the-baseline-honest)).

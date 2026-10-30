@@ -266,7 +266,7 @@ Taakarmen, judges en routingprobes lossen de agentrol `eval` op. Pin die in `.ag
 ```yaml
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+    model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
 De Maintainer en Proposer van `oma skill optimize` lossen de rol `opt-agent` op. De map `agents:` heeft geen sleutel `opt` (het configuratieschema weigert onbekende sleutels), dus deze rol volgt altijd de actieve `model_preset`, of `default_cli` bij `model_preset: auto`. Zonder `agents.eval` gebruikt de rol `eval` dezelfde fallback. Promotie vereist `isolation: enforced`, wat alleen de beschermde Claude- en native Codex-profielen bieden (zie [Skillisolatie](#skill-isolation-keeping-the-baseline-honest)).

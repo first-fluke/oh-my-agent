@@ -44,11 +44,11 @@ model_preset: auto
 | `free` | Special gateway mode for OMA-spawned Codex, Claude, or Qwen processes; it is resolved separately from the built-in preset registry. | Local FreeLLMAPI gateway |
 | `antigravity` | All agents use Antigravity CLI (`agy`): Gemini 4 Argon for implementation, architecture, and QA; Gemini 3.8 Flash for orchestration, PM, documentation, and explore. On agy 1.1+, OMA passes the display ID from `agy models` (for example `--model "Gemini 4 Argon (High)"`) and maps `effort` to a tier the model publishes. agy 1.0 has no `--model`, so its own config decides. agy has no `--thinking-budget`. | Antigravity CLI users |
 | `claude` | All agents use Claude: Opus for architecture, Haiku for explore, Sonnet for every other role | Claude Max subscription holders |
-| `codex` | All agents use OpenAI Codex (GPT-5.5 for most roles, GPT-5.4-mini for explore) with effort levels | ChatGPT Plus/Pro users |
+| `codex` | All agents use OpenAI Codex (GPT-6.1 Terra for most roles, GPT-6 Luna for explore) with effort levels | ChatGPT Plus/Pro users |
 | `qwen` | All agents use Qwen Code; matching Qwen sessions can use generated native agents, and other runtimes use CLI dispatch | Local / self-hosted inference |
 | `kiro` | All agents use Kiro CLI; Sonnet handles implementation/architecture and Haiku handles orchestration/explore | Kiro users |
 | `cursor` | All agents use Cursor `composer-2.5` (`composer-2.5-fast` for orchestrator/qa/pm/docs/explore) | Cursor Pro / Pro Student users |
-| `mixed` | Claude for orchestrator, architecture (Opus), qa, pm, and docs; Codex GPT-5.5 for implementation roles and GPT-5.4-mini for explore | Cross-vendor strengths without managing per-agent config |
+| `mixed` | Claude for orchestrator, architecture (Opus), qa, pm, and docs; Codex GPT-6.1 Terra for implementation roles and GPT-6 Luna for explore | Cross-vendor strengths without managing per-agent config |
 
 Built-in presets ship inside the CLI package and update automatically when you upgrade `oh-my-agent`. `gemini` is a compatibility alias that redirects to `antigravity`; it is not a separate current preset. No local preset file is required.
 
@@ -58,11 +58,11 @@ The fixed presets assign these registry slugs. Owner prefixes are omitted: `anti
 
 | Role | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-5-5 | gpt-6.1-terra (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| architecture | gemini-4-argon | claude-opus-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-5-5 |
+| qa | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-6.1-terra (high) |
+| explore | gemini-3.8-flash | claude-haiku-5-5 | gpt-6-luna (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-6-luna (low) |
 
 Values in parentheses are the preset's `effort` (Codex) or `thinking: true` (Qwen). A role a preset does not list, such as `eval`, uses that preset's `orchestrator` entry.
 
@@ -163,8 +163,8 @@ language: en
 model_preset: auto
 
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
-  qa:      { model: anthropic/claude-sonnet-4-6 }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
+  qa:      { model: anthropic/claude-sonnet-5-5 }
 ```
 
 Each entry is an `AgentSpec` object:
@@ -236,8 +236,8 @@ custom_presets:
     extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
       # all other agents inherited from claude
 ```
 
@@ -265,11 +265,11 @@ oma doctor --profile
 ┌──────────────┬────────────────────────────────────┬──────────────┬────────────────┐
 │ Role         │ Model                              │ CLI          │ Auth Status    │
 ├──────────────┼────────────────────────────────────┼──────────────┼────────────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ architecture │ anthropic/claude-opus-4-7          │ claude       │ ✓ logged in    │
-│ qa (preset)  │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ backend (over│ openai/gpt-5.5                     │ codex        │ ✓ logged in    │
-│ explore (pres│ openai/gpt-5.4-mini                │ codex        │ ✓ logged in    │
+│ orchestrator │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ architecture │ anthropic/claude-opus-5-5          │ claude       │ ✓ logged in    │
+│ qa (preset)  │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ backend (over│ openai/gpt-6.1-terra               │ codex        │ ✓ logged in    │
+│ explore (pres│ openai/gpt-6-luna                  │ codex        │ ✓ logged in    │
 └──────────────┴────────────────────────────────────┴──────────────┴────────────────┘
 
  Profile health check complete (mixed)
@@ -340,7 +340,7 @@ language: en
 model_preset: my-team
 
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
 
 models:
   antigravity/gemini-4-argon-low:
@@ -361,8 +361,8 @@ custom_presets:
     extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
 
 session:
   quota_cap:
@@ -391,7 +391,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 What happens:
 
 - The per-agent model resolved from your preset/overrides (e.g.
-  `openai/gpt-5.5`) is translated to pi's `--model <provider/id>` form, and
+  `openai/gpt-6.1-terra`) is translated to pi's `--model <provider/id>` form, and
   `effort` is translated to pi's `--thinking` level. **Per-subagent models work
   on pi exactly as they do natively** — different agents can run different models.
 - The agent's persona (system prompt) is inlined from `.agents/agents/<id>.md`,

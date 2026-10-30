@@ -268,7 +268,7 @@ Task arms, judges, and routing probes resolve the `eval` agent role. Pin it in `
 ```yaml
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+    model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
 The Maintainer and Proposer of `oma skill optimize` resolve the `opt-agent` role. The `agents:` map has no `opt` key (the config schema rejects unknown keys), so this role always follows the active `model_preset`, or `default_cli` under `model_preset: auto`. Without `agents.eval`, the `eval` role uses the same fallback. Promotion needs `isolation: enforced`, which only the protected Claude and native Codex profiles provide (see [Skill isolation](#skill-isolation-keeping-the-baseline-honest)).

@@ -273,8 +273,8 @@ telemetry: false
 
 # Optional — partial override per agent (object-only, shallow merge)
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
-  qa:      { model: anthropic/claude-sonnet-4-6 }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
+  qa:      { model: anthropic/claude-sonnet-5-5 }
 
 # Optional — user-defined model slugs
 # models:
@@ -288,7 +288,7 @@ agents:
 #   my-team:
 #     extends: claude
 #     agent_defaults:
-#       backend: { model: openai/gpt-5.5, effort: high }
+#       backend: { model: openai/gpt-6.1-terra, effort: high }
 ```
 
 ### Feldreferenz

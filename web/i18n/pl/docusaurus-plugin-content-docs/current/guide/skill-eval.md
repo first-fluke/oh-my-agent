@@ -268,7 +268,7 @@ Warianty zadań, sędziowie i sondy kierowania rozstrzygają rolę agenta `eval`
 ```yaml
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+    model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
 Maintainer i Proposer w `oma skill optimize` rozstrzygają rolę `opt-agent`. Mapa `agents:` nie ma klucza `opt` (schemat konfiguracji odrzuca nieznane klucze), więc ta rola zawsze podąża za aktywnym `model_preset` albo za `default_cli` przy `model_preset: auto`. Bez `agents.eval` rola `eval` używa tej samej ścieżki zastępczej. Promocja wymaga `isolation: enforced`, które zapewniają tylko chronione profile Claude i natywny Codex (zobacz [Izolacja umiejętności](#skill-isolation-keeping-the-baseline-honest)).

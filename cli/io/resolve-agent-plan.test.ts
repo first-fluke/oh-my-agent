@@ -111,9 +111,9 @@ describe("resolveAgentPlanFromConfig — Case 3: unknown agentId falls back to o
       "nonexistent-role",
       CLAUDE_ONLY_CONFIG,
     );
-    // claude orchestrator is claude-sonnet-4-6
+    // claude orchestrator is claude-sonnet-5-5
     expect(plan.cli).toBe("claude");
-    expect(plan.cliModel).toBe("claude-sonnet-4-6");
+    expect(plan.cliModel).toBe("claude-sonnet-5-5");
   });
 });
 
@@ -184,15 +184,15 @@ describe("resolveAgentPlanFromConfig — Case 5: unknown slug throws ConfigError
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 8c: pi vendorOverride", () => {
-  it("codex backend → cli=pi, cliModel=openai/gpt-5.5, effort preserved", () => {
+  it("codex backend → cli=pi, cliModel=openai/gpt-6.1-terra, effort preserved", () => {
     const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG, "pi");
     expect(plan.cli).toBe("pi");
-    expect(plan.cliModel).toBe("openai/gpt-5.5");
+    expect(plan.cliModel).toBe("openai/gpt-6.1-terra");
     expect(plan.effort).toBe("high");
     // plan-args translates effort → pi --thinking and keeps the provider slug.
     expect(buildAgentPlanArgs(plan)).toEqual([
       "--model",
-      "openai/gpt-5.5",
+      "openai/gpt-6.1-terra",
       "--thinking",
       "high",
     ]);
@@ -398,17 +398,17 @@ describe("qwenThinkingFlag — Cases 10 & 11: Qwen effort translation", () => {
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 13: preset defaults (no override)", () => {
-  it("codex backend uses gpt-5.5 + effort:high from preset", () => {
+  it("codex backend uses gpt-6.1-terra + effort:high from preset", () => {
     const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
-    expect(plan.cliModel).toBe("gpt-5.5");
+    expect(plan.cliModel).toBe("gpt-6.1-terra");
     expect(plan.effort).toBe("high");
     expect(plan.cli).toBe("codex");
   });
 
-  it("claude qa uses claude-sonnet-4-6 from preset", () => {
+  it("claude qa uses claude-sonnet-5-5 from preset", () => {
     const plan = resolveAgentPlanFromConfig("qa", CLAUDE_ONLY_CONFIG);
     expect(plan.cli).toBe("claude");
-    expect(plan.cliModel).toBe("claude-sonnet-4-6");
+    expect(plan.cliModel).toBe("claude-sonnet-5-5");
   });
 });
 
@@ -547,7 +547,7 @@ describe("buildAgentPlanArgs — Claude", () => {
   it("produces --model {cliModel} args for Claude", () => {
     const plan = resolveAgentPlanFromConfig("qa", CLAUDE_ONLY_CONFIG);
     expect(plan.cli).toBe("claude");
-    expect(buildAgentPlanArgs(plan)).toEqual(["--model", "claude-sonnet-4-6"]);
+    expect(buildAgentPlanArgs(plan)).toEqual(["--model", "claude-sonnet-5-5"]);
   });
 });
 
@@ -556,11 +556,11 @@ describe("buildAgentPlanArgs — Claude", () => {
 // ---------------------------------------------------------------------------
 
 describe("buildAgentPlanArgs — Codex", () => {
-  it("produces -m gpt-5.5 args for codex backend", () => {
+  it("produces -m gpt-6.1-terra args for codex backend", () => {
     const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.cli).toBe("codex");
-    expect(plan.cliModel).toBe("gpt-5.5");
-    expect(buildAgentPlanArgs(plan)).toEqual(["-m", "gpt-5.5"]);
+    expect(plan.cliModel).toBe("gpt-6.1-terra");
+    expect(buildAgentPlanArgs(plan)).toEqual(["-m", "gpt-6.1-terra"]);
   });
 });
 
@@ -642,7 +642,7 @@ describe("AgentPlan.spec — downstream reference", () => {
     const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.spec).toBeDefined();
     expect(plan.spec?.cli).toBe("codex");
-    expect(plan.spec?.cli_model).toBe("gpt-5.5");
+    expect(plan.spec?.cli_model).toBe("gpt-6.1-terra");
     expect(plan.spec?.supports.effort?.type).toBe("granular");
     expect(plan.spec?.supports.apply_patch).toBe(true);
   });

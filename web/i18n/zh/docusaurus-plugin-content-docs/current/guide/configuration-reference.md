@@ -198,7 +198,7 @@ model_preset: mixed
 # .agents/oma-config.local.yaml
 agents:
   backend:
-    model: openai/gpt-5.4
+    model: openai/gpt-6.1-terra
     effort: high
 ```
 

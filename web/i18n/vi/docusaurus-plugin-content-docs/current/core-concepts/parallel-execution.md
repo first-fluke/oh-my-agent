@@ -140,8 +140,8 @@ model_preset: mixed   # mixed: Claude for coordination, Codex for implementation
 
 # Override specific agents on top of the preset
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
-  backend:  { model: openai/gpt-5.5, effort: high }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
+  backend:  { model: openai/gpt-6.1-terra, effort: high }
 ```
 
 Các preset có sẵn: `auto`, `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` và `mixed`. Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md) để biết chi tiết.
@@ -153,7 +153,7 @@ Khi `oma agent spawn` quyết định CLI sẽ dùng:
 | Ưu tiên | Nguồn | Ví dụ |
 |----------|--------|---------|
 | 1 (cao nhất) | Flag `--vendor` | `oma agent spawn backend "task" session-01 --vendor claude` |
-| 2 | Override `agents:` trong `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 2 | Override `agents:` trong `oma-config.yaml` | `agents: { backend: { model: openai/gpt-6.1-terra } }` |
 | 3 | Mặc định agent của `model_preset` đang hoạt động | Tra cứu preset theo vai trò agent |
 
 Flag `--vendor` luôn được ưu tiên. Nếu không có flag, hệ thống kiểm tra override `agents:`, rồi mặc định preset, sau đó CLI fallback đã cấu hình. Với `model_preset: auto`, setting native của runtime hiện tại cung cấp model.

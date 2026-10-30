@@ -140,8 +140,8 @@ model_preset: mixed   # mixed: Claude for coordination, Codex for implementation
 
 # Override specific agents on top of the preset
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
-  backend:  { model: openai/gpt-5.5, effort: high }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
+  backend:  { model: openai/gpt-6.1-terra, effort: high }
 ```
 
 빌트인 프리셋은 `auto`, `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro`, `mixed`입니다. 자세한 내용은 [에이전트별 모델](../guide/per-agent-models.md)을 참고하세요.
@@ -153,7 +153,7 @@ agents:
 | 우선순위 | 소스 | 예시 |
 |----------|--------|---------|
 | 1 (최고) | `--vendor` 플래그 | `oma agent spawn backend "task" session-01 --vendor claude` |
-| 2 | `oma-config.yaml`의 `agents:` 오버라이드 | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 2 | `oma-config.yaml`의 `agents:` 오버라이드 | `agents: { backend: { model: openai/gpt-6.1-terra } }` |
 | 3 | 활성 `model_preset`의 에이전트 기본값 | 에이전트 역할로 프리셋 조회 |
 
 `--vendor` 플래그가 항상 우선합니다. 플래그가 없으면 `agents:` 오버라이드, 프리셋 기본값, 설정된 폴백 CLI 순서로 확인합니다. `model_preset: auto`이면 현재 런타임의 네이티브 설정이 모델을 제공합니다.

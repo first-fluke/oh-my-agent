@@ -68,7 +68,7 @@ Zet voor een projectlokale override alleen de gewijzigde leaves in het lokale be
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Voer de opdracht vanuit het project uit, zodat de dichtstbijzijnde `.agents/`-map wordt geselecteerd. Een ongeldig lokaal bestand geeft een duidelijke fout; herstel of verwijder het voordat je opnieuw probeert.

@@ -541,10 +541,10 @@ model_preset: auto   # auto | free | antigravity | claude | codex | cursor | kir
 
 # Optional per-agent overrides; they win over the preset
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
 ```
 
-- `mixed` 让编排器、architecture、QA、PM 和 docs 使用 Claude，实现类角色使用 Codex `gpt-5.5`，因此需要同时具备 Claude Code 和 Codex CLI。
+- `mixed` 让编排器、architecture、QA、PM 和 docs 使用 Claude，实现类角色使用 Codex `gpt-6.1-terra`，因此需要同时具备 Claude Code 和 Codex CLI。
 - `free` 通过 FreeLLMAPI 网关路由，需要 `FREELLM_API_KEY` 以及一个正在运行的服务器。
 - `kiro` 不在安装器菜单中，需要在配置文件里设置。
 - `oma doctor --profile` 会输出每个角色解析后的模型。

@@ -68,7 +68,7 @@ Aby ustawić lokalne nadpisanie projektu, umieść w lokalnym pliku tylko zmieni
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Uruchom polecenie z projektu, aby wybrany został najbliższy katalog `.agents/`. Niepoprawny plik lokalny kończy się wyraźnym błędem; napraw go albo usuń przed ponowieniem próby.

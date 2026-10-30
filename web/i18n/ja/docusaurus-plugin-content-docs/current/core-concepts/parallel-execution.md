@@ -140,8 +140,8 @@ model_preset: mixed   # mixed: Claude for coordination, Codex for implementation
 
 # Override specific agents on top of the preset
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
-  backend:  { model: openai/gpt-5.5, effort: high }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
+  backend:  { model: openai/gpt-6.1-terra, effort: high }
 ```
 
 組み込みプリセットは `auto`、`free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro`、`mixed` です。詳しくは [エージェント別モデル](../guide/per-agent-models.md) を参照してください。
@@ -153,7 +153,7 @@ agents:
 | 優先度 | ソース | 例 |
 |----------|--------|---------|
 | 1（最高） | `--vendor` フラグ | `oma agent spawn backend "task" session-01 --vendor claude` |
-| 2 | `oma-config.yaml` の `agents:` オーバーライド | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 2 | `oma-config.yaml` の `agents:` オーバーライド | `agents: { backend: { model: openai/gpt-6.1-terra } }` |
 | 3 | 有効な `model_preset` のエージェントデフォルト | エージェントロールのプリセット検索 |
 
 `--vendor` フラグが常に優先されます。フラグがない場合は、`agents:` のオーバーライド、プリセットのデフォルト、設定済みのフォールバック CLI の順に確認します。`model_preset: auto` では、現在のランタイムのネイティブ設定がモデルを決めます。

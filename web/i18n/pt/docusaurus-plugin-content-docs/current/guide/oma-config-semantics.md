@@ -68,7 +68,7 @@ Para uma substituição local do projeto, coloque apenas as folhas alteradas no 
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Execute o comando no projeto para que o diretório `.agents/` mais próximo seja selecionado. Um arquivo local malformado falha de modo explícito; corrija-o ou remova-o antes de tentar novamente.

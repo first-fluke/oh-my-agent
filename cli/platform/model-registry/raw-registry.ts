@@ -5,8 +5,60 @@ import type { ModelSpec } from "./types.js";
 
 export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
   // -------------------------------------------------------------------------
-  // Anthropic (3)
+  // Anthropic (6)
   // -------------------------------------------------------------------------
+  [
+    "anthropic/claude-opus-5-5",
+    {
+      cli: "claude",
+      cli_model: "claude-opus-5-5",
+      supports: {
+        effort: { type: "cli-session", auto_default: "high" },
+        apply_patch: false,
+        task_budget: true,
+        prompt_cache: true,
+        computer_use: false,
+        native_dispatch_from: ["claude"],
+        api_only: false,
+      },
+      auth_hint: "Requires Claude Max subscription ($200/mo)",
+      subscription_tier: "claude_max",
+    } satisfies ModelSpec,
+  ],
+  [
+    "anthropic/claude-sonnet-5-5",
+    {
+      cli: "claude",
+      cli_model: "claude-sonnet-5-5",
+      supports: {
+        effort: { type: "cli-session", auto_default: "high" },
+        apply_patch: false,
+        task_budget: true,
+        prompt_cache: true,
+        computer_use: false,
+        native_dispatch_from: ["claude"],
+        api_only: false,
+      },
+      auth_hint: "Requires Claude Pro or Max subscription",
+    } satisfies ModelSpec,
+  ],
+  [
+    "anthropic/claude-haiku-5-5",
+    {
+      cli: "claude",
+      cli_model: "claude-haiku-5-5",
+      supports: {
+        effort: { type: "cli-session", auto_default: "high" },
+        apply_patch: false,
+        task_budget: false,
+        prompt_cache: true,
+        computer_use: false,
+        native_dispatch_from: ["claude"],
+        api_only: false,
+      },
+      auth_hint: "Requires Claude Pro or Max subscription",
+    } satisfies ModelSpec,
+  ],
   [
     "anthropic/claude-opus-4-7",
     {
@@ -62,8 +114,89 @@ export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
   ],
 
   // -------------------------------------------------------------------------
-  // OpenAI Codex (5)
+  // OpenAI Codex (9)
   // -------------------------------------------------------------------------
+  [
+    "openai/gpt-6.1-terra",
+    {
+      cli: "codex",
+      cli_model: "gpt-6.1-terra",
+      supports: {
+        effort: {
+          type: "granular",
+          levels: ["low", "medium", "high", "xhigh"],
+        },
+        apply_patch: true,
+        task_budget: false,
+        prompt_cache: false,
+        computer_use: true,
+        native_dispatch_from: ["codex"],
+        api_only: false,
+      },
+      auth_hint: "Requires ChatGPT Plus or Pro subscription",
+    } satisfies ModelSpec,
+  ],
+  [
+    "openai/gpt-6.1-sol",
+    {
+      cli: "codex",
+      cli_model: "gpt-6.1-sol",
+      supports: {
+        effort: {
+          type: "granular",
+          levels: ["low", "medium", "high", "xhigh"],
+        },
+        apply_patch: true,
+        task_budget: false,
+        prompt_cache: false,
+        computer_use: true,
+        native_dispatch_from: ["codex"],
+        api_only: false,
+      },
+      auth_hint:
+        "Requires ChatGPT Plus or Pro subscription (default Codex CLI model)",
+    } satisfies ModelSpec,
+  ],
+  [
+    "openai/gpt-6-astra",
+    {
+      cli: "codex",
+      cli_model: "gpt-6-astra",
+      supports: {
+        effort: {
+          type: "granular",
+          levels: ["low", "medium", "high", "xhigh"],
+        },
+        apply_patch: true,
+        task_budget: false,
+        prompt_cache: false,
+        computer_use: true,
+        native_dispatch_from: ["codex"],
+        api_only: false,
+      },
+      auth_hint: "Requires ChatGPT Plus or Pro subscription",
+    } satisfies ModelSpec,
+  ],
+  [
+    "openai/gpt-6-luna",
+    {
+      cli: "codex",
+      cli_model: "gpt-6-luna",
+      supports: {
+        effort: {
+          type: "granular",
+          levels: ["low", "medium", "high", "xhigh"],
+        },
+        apply_patch: true,
+        task_budget: false,
+        prompt_cache: false,
+        computer_use: false,
+        native_dispatch_from: ["codex"],
+        api_only: false,
+      },
+      auth_hint: "Requires ChatGPT Plus subscription",
+    } satisfies ModelSpec,
+  ],
   [
     "openai/gpt-5.5",
     {
@@ -83,8 +216,7 @@ export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
       },
       pricing_note:
         "$5/$30 per Mtok (reference only; improved token efficiency vs 5.4)",
-      auth_hint:
-        "Requires ChatGPT Plus or Pro subscription (default Codex CLI model)",
+      auth_hint: "Requires ChatGPT Plus or Pro subscription",
     } satisfies ModelSpec,
   ],
   [
@@ -370,8 +502,26 @@ export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
   ],
 
   // -------------------------------------------------------------------------
-  // Alibaba Qwen (3)
+  // Alibaba Qwen (4)
   // -------------------------------------------------------------------------
+  [
+    "qwen/qwen3.7-plus",
+    {
+      cli: "qwen",
+      cli_model: "qwen3.7-plus",
+      supports: {
+        effort: { type: "binary-thinking" },
+        apply_patch: false,
+        task_budget: false,
+        prompt_cache: false,
+        computer_use: false,
+        native_dispatch_from: [],
+        api_only: false,
+      },
+      auth_hint:
+        "Requires Qwen Code subscription or Bailian Coding Plan API key",
+    } satisfies ModelSpec,
+  ],
   [
     "qwen/qwen3.6-plus",
     {

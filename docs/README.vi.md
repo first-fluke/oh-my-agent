@@ -541,10 +541,10 @@ model_preset: auto   # auto | free | antigravity | claude | codex | cursor | kir
 
 # Optional per-agent overrides; they win over the preset
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
 ```
 
-- `mixed` dùng Claude cho orchestrator, architecture, QA, PM và docs, và Codex `gpt-5.5` cho các vai trò triển khai, nên cần cả Claude Code lẫn Codex CLI.
+- `mixed` dùng Claude cho orchestrator, architecture, QA, PM và docs, và Codex `gpt-6.1-terra` cho các vai trò triển khai, nên cần cả Claude Code lẫn Codex CLI.
 - `free` định tuyến qua một gateway FreeLLMAPI và cần `FREELLM_API_KEY` cùng một server đang chạy.
 - `kiro` không có trong menu của installer; hãy đặt nó trong file cấu hình.
 - `oma doctor --profile` in ra model đã resolve cho từng vai trò.

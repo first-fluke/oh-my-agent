@@ -68,7 +68,7 @@ flowchart TD
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Запускайте команду из проекта, чтобы выбрать ближайший каталог `.agents/`. Некорректный локальный файл вызывает явную ошибку; перед повторной попыткой исправьте или удалите его.

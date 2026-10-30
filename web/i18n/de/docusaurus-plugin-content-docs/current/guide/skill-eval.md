@@ -268,7 +268,7 @@ Aufgabenarme, Judges und Routing-Sonden lösen die Agentenrolle `eval` auf. Pinn
 ```yaml
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+    model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
 Maintainer und Proposer von `oma skill optimize` lösen die Rolle `opt-agent` auf. Die `agents:`-Map hat keinen Schlüssel `opt` (das Konfigurationsschema lehnt unbekannte Schlüssel ab), daher folgt diese Rolle immer dem aktiven `model_preset` bzw. unter `model_preset: auto` dem `default_cli`. Ohne `agents.eval` verwendet die Rolle `eval` denselben Fallback. Die Hochstufung erfordert `isolation: enforced`, was nur die geschützten Claude- und nativen Codex-Profile bieten (siehe [Skill-Isolierung](#skill-isolation-keeping-the-baseline-honest)).

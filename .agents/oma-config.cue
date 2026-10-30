@@ -385,7 +385,7 @@ package config
 	model_preset: "auto"
 	agents: {
 		eval: {
-			model: "anthropic/claude-sonnet-4-6"
+			model: "anthropic/claude-sonnet-5-5"
 		}
 	}
 

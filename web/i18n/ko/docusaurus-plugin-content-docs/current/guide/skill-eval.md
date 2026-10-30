@@ -268,7 +268,7 @@ oma skill eval --skill oma-scholar --live --yes
 ```yaml
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+    model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
 `oma skill optimize`의 Maintainer와 Proposer는 `opt-agent` 역할을 해석합니다. `agents:` 맵에는 `opt` 키가 없으므로(설정 스키마가 알 수 없는 키를 거부합니다) 이 역할은 항상 활성 `model_preset`을 따르며, `model_preset: auto`에서는 `default_cli`를 따릅니다. `agents.eval`이 없으면 `eval` 역할도 같은 폴백을 사용합니다. 승격에는 `isolation: enforced`가 필요하며, 이는 보호된 Claude 프로필과 네이티브 Codex 프로필만 제공합니다([스킬 격리](#skill-isolation-keeping-the-baseline-honest) 참고).

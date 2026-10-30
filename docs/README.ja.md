@@ -541,10 +541,10 @@ model_preset: auto   # auto | free | antigravity | claude | codex | cursor | kir
 
 # Optional per-agent overrides; they win over the preset
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
 ```
 
-- `mixed` は、オーケストレーター、アーキテクチャ、QA、PM、docs に Claude を、実装ロールに Codex の `gpt-5.5` を使うため、Claude Code と Codex CLI の両方が必要です。
+- `mixed` は、オーケストレーター、アーキテクチャ、QA、PM、docs に Claude を、実装ロールに Codex の `gpt-6.1-terra` を使うため、Claude Code と Codex CLI の両方が必要です。
 - `free` は FreeLLMAPI ゲートウェイを経由するため、`FREELLM_API_KEY` と稼働中のサーバーが必要です。
 - `kiro` はインストーラーのメニューにありません。設定ファイルで指定してください。
 - `oma doctor --profile` は、ロールごとに解決されたモデルを出力します。

@@ -68,7 +68,7 @@ Para una sobrescritura local del proyecto, incluye solo las hojas que cambian en
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Ejecuta el comando desde el proyecto para que se seleccione el directorio `.agents/` más cercano. Si el archivo local está mal formado, la operación falla de forma explícita; corrígelo o elimínalo antes de volver a intentarlo.

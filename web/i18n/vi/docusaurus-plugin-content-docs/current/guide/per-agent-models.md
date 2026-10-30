@@ -43,11 +43,11 @@ model_preset: auto
 | `free` | Gateway mode đặc biệt cho process Codex, Claude hoặc Qwen do OMA spawn; được resolve tách khỏi built-in preset registry. | Gateway FreeLLMAPI local |
 | `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 4 Argon cho implementation, architecture và QA; Gemini 3.8 Flash cho orchestration, PM, docs và explore. Trên agy 1.1+, OMA truyền display ID lấy từ `agy models` (ví dụ `--model "Gemini 4 Argon (High)"`) và map `effort` sang một tier mà model công bố. agy 1.0 không có `--model`, nên config riêng của nó quyết định. agy không có `--thinking-budget`. | Người dùng Antigravity CLI |
 | `claude` | Mọi agent dùng Claude: Opus cho architecture, Haiku cho explore, Sonnet cho mọi role còn lại. | Người dùng thuê bao Claude Max |
-| `codex` | Mọi agent dùng OpenAI Codex (GPT-5.5 cho phần lớn role, GPT-5.4-mini cho explore) với effort level. | Người dùng ChatGPT Plus/Pro |
+| `codex` | Mọi agent dùng OpenAI Codex (GPT-6.1 Terra cho phần lớn role, GPT-6 Luna cho explore) với effort level. | Người dùng ChatGPT Plus/Pro |
 | `qwen` | Mọi agent dùng Qwen Code; session Qwen khớp vendor có thể dùng native agent được sinh ra, còn runtime khác dùng CLI dispatch. | Inference local / self-hosted |
 | `kiro` | Mọi agent dùng Kiro CLI; Sonnet xử lý implementation/architecture, Haiku xử lý orchestration/explore. | Người dùng Kiro |
 | `cursor` | Mọi agent dùng Cursor `composer-2.5`, `composer-2.5-fast` cho orchestrator/qa/pm/docs/explore. | Người dùng Cursor Pro / Pro Student |
-| `mixed` | Claude cho orchestrator, architecture (Opus), qa, pm và docs; Codex GPT-5.5 cho các role implementation và GPT-5.4-mini cho explore. | Tận dụng thế mạnh nhiều vendor mà không tự quản lý config từng agent |
+| `mixed` | Claude cho orchestrator, architecture (Opus), qa, pm và docs; Codex GPT-6.1 Terra cho các role implementation và GPT-6 Luna cho explore. | Tận dụng thế mạnh nhiều vendor mà không tự quản lý config từng agent |
 
 Preset built-in ship trong package CLI và tự update khi nâng cấp `oh-my-agent`. `gemini` là compatibility alias chuyển tới `antigravity`, không phải preset riêng hiện tại. Không cần file preset local.
 
@@ -57,11 +57,11 @@ Các fixed preset gán những registry slug sau. Tiền tố owner được lư
 
 | Role | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-5-5 | gpt-6.1-terra (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| architecture | gemini-4-argon | claude-opus-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-5-5 |
+| qa | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-6.1-terra (high) |
+| explore | gemini-3.8-flash | claude-haiku-5-5 | gpt-6-luna (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-6-luna (low) |
 
 Giá trị trong ngoặc là `effort` của preset (Codex) hoặc `thinking: true` (Qwen). Role mà preset không liệt kê, như `eval`, dùng entry `orchestrator` của preset đó.
 
@@ -165,8 +165,8 @@ language: en
 model_preset: auto
 
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
-  qa:      { model: anthropic/claude-sonnet-4-6 }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
+  qa:      { model: anthropic/claude-sonnet-5-5 }
 ```
 
 
@@ -230,8 +230,8 @@ custom_presets:
     extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
       # all other agents inherited from claude
 ```
 
@@ -261,11 +261,11 @@ oma doctor --profile
 ┌──────────────┬────────────────────────────────────┬──────────────┬────────────────┐
 │ Role         │ Model                              │ CLI          │ Auth Status    │
 ├──────────────┼────────────────────────────────────┼──────────────┼────────────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ architecture │ anthropic/claude-opus-4-7          │ claude       │ ✓ logged in    │
-│ qa (preset)  │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ backend (over│ openai/gpt-5.5                     │ codex        │ ✓ logged in    │
-│ explore (pres│ openai/gpt-5.4-mini                │ codex        │ ✓ logged in    │
+│ orchestrator │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ architecture │ anthropic/claude-opus-5-5          │ claude       │ ✓ logged in    │
+│ qa (preset)  │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ backend (over│ openai/gpt-6.1-terra               │ codex        │ ✓ logged in    │
+│ explore (pres│ openai/gpt-6-luna                  │ codex        │ ✓ logged in    │
 └──────────────┴────────────────────────────────────┴──────────────┴────────────────┘
 
  Profile health check complete (mixed)
@@ -324,7 +324,7 @@ language: en
 model_preset: my-team
 
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
 
 models:
   antigravity/gemini-4-argon-low:
@@ -345,8 +345,8 @@ custom_presets:
     extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
 
 session:
   quota_cap:
@@ -372,7 +372,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 
 Điều gì xảy ra:
 
-- Model theo agent được resolve từ preset/override, ví dụ `openai/gpt-5.5`, chuyển thành dạng `--model <provider/id>` của pi; `effort` chuyển thành level `--thinking`. **Model theo subagent hoạt động trên pi y hệt như native**, nên mỗi agent có thể dùng model khác.
+- Model theo agent được resolve từ preset/override, ví dụ `openai/gpt-6.1-terra`, chuyển thành dạng `--model <provider/id>` của pi; `effort` chuyển thành level `--thinking`. **Model theo subagent hoạt động trên pi y hệt như native**, nên mỗi agent có thể dùng model khác.
 - Persona agent, tức system prompt, được inline từ `.agents/agents/<id>.md` vì pi không có agent file phía vendor.
 - Auth do pi cấu hình, từ `~/.pi/agent/auth.json` hoặc provider API key trong environment. `oma doctor` báo install và auth của pi cùng CLI khác.
 

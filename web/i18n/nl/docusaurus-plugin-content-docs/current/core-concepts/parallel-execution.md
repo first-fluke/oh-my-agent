@@ -140,8 +140,8 @@ model_preset: mixed   # mixed: Claude for coordination, Codex for implementation
 
 # Override specific agents on top of the preset
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
-  backend:  { model: openai/gpt-5.5, effort: high }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
+  backend:  { model: openai/gpt-6.1-terra, effort: high }
 ```
 
 Ingebouwde presets: `auto`, `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` en `mixed`. Zie [Modellen per agent](../guide/per-agent-models.md) voor details.
@@ -153,7 +153,7 @@ Wanneer `oma agent spawn` bepaalt welke CLI wordt gebruikt:
 | Prioriteit | Bron | Voorbeeld |
 |---------|------|---------|
 | 1 (hoogst) | `--vendor`-vlag | `oma agent spawn backend "task" session-01 --vendor claude` |
-| 2 | `agents:`-override in `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 2 | `agents:`-override in `oma-config.yaml` | `agents: { backend: { model: openai/gpt-6.1-terra } }` |
 | 3 | Standaardagenten van actieve `model_preset` | preset-lookup voor de agentrol |
 
 De vlag `--vendor` wint altijd. Zonder vlag controleert het systeem eerst overrides onder `agents:`, daarna de presetdefaults en daarna de geconfigureerde fallback-CLI. Met `model_preset: auto` leveren de native settings van de huidige runtime het model.

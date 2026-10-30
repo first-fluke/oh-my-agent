@@ -44,11 +44,11 @@ model_preset: auto
 | `free` | OMA が起動する Codex、Claude、Qwen プロセス向けの特殊なゲートウェイモードです。組み込みプリセットレジストリとは別に解決されます。 | ローカルの FreeLLMAPI ゲートウェイ |
 | `antigravity` | すべてのエージェントが Antigravity CLI（`agy`）を使います。実装、アーキテクチャ、QA には Gemini 4 Argon、オーケストレーション、PM、ドキュメント、探索には Gemini 3.8 Flash を使います。agy 1.1 以降では、OMA は `agy models` の表示 ID を渡し（例: `--model "Gemini 4 Argon (High)"`）、`effort` をモデルが公開している段階に対応付けます。agy 1.0 には `--model` がないため、agy 自身の設定で決まります。agy には `--thinking-budget` はありません。 | Antigravity CLI の利用者 |
 | `claude` | すべてのエージェントが Claude を使います。architecture は Opus、explore は Haiku、それ以外のロールはすべて Sonnet です。 | Claude Max の契約者 |
-| `codex` | ほとんどのロールでは GPT-5.5、explore では GPT-5.4-mini を使う OpenAI Codex を、effort レベル付きで利用します。 | ChatGPT Plus/Pro の利用者 |
+| `codex` | ほとんどのロールでは GPT-6.1 Terra、explore では GPT-6 Luna を使う OpenAI Codex を、effort レベル付きで利用します。 | ChatGPT Plus/Pro の利用者 |
 | `qwen` | すべてのエージェントが Qwen Code を使います。ランタイムが一致する Qwen セッションでは生成されたネイティブエージェントを使え、ほかのランタイムでは CLI ディスパッチを使います。 | ローカルまたはセルフホスト推論 |
 | `kiro` | すべてのエージェントが Kiro CLI を使います。実装とアーキテクチャは Sonnet、オーケストレーションと探索は Haiku が担当します。 | Kiro の利用者 |
 | `cursor` | すべてのエージェントが Cursor の `composer-2.5` を使います。orchestrator、qa、pm、docs、explore では `composer-2.5-fast` を使います。 | Cursor Pro / Pro Student の利用者 |
-| `mixed` | orchestrator、architecture（Opus）、qa、pm、docs は Claude、実装ロールは Codex の GPT-5.5、explore は GPT-5.4-mini を使います。 | エージェントごとの設定を管理せず、ベンダーごとの強みを使う場合 |
+| `mixed` | orchestrator、architecture（Opus）、qa、pm、docs は Claude、実装ロールは Codex の GPT-6.1 Terra、explore は GPT-6 Luna を使います。 | エージェントごとの設定を管理せず、ベンダーごとの強みを使う場合 |
 
 組み込みプリセットは CLI パッケージに含まれており、`oh-my-agent` をアップグレードすると自動的に更新されます。`gemini` は `antigravity` へリダイレクトする互換エイリアスで、現在の独立したプリセットではありません。ローカルのプリセットファイルは必要ありません。
 
@@ -58,11 +58,11 @@ model_preset: auto
 
 | ロール | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-5-5 | gpt-6.1-terra (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| architecture | gemini-4-argon | claude-opus-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-5-5 |
+| qa | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-6.1-terra (high) |
+| explore | gemini-3.8-flash | claude-haiku-5-5 | gpt-6-luna (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-6-luna (low) |
 
 括弧内の値は、プリセットの `effort`（Codex）または `thinking: true`（Qwen）です。プリセットに記載されていないロール（`eval` など）は、そのプリセットの `orchestrator` エントリを使います。
 
@@ -163,8 +163,8 @@ language: en
 model_preset: auto
 
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
-  qa:      { model: anthropic/claude-sonnet-4-6 }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
+  qa:      { model: anthropic/claude-sonnet-5-5 }
 ```
 
 各エントリは `AgentSpec` オブジェクトです。
@@ -226,8 +226,8 @@ custom_presets:
     extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
       # all other agents inherited from claude
 ```
 
@@ -255,11 +255,11 @@ oma doctor --profile
 ┌──────────────┬────────────────────────────────────┬──────────────┬────────────────┐
 │ Role         │ Model                              │ CLI          │ Auth Status    │
 ├──────────────┼────────────────────────────────────┼──────────────┼────────────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ architecture │ anthropic/claude-opus-4-7          │ claude       │ ✓ logged in    │
-│ qa (preset)  │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ backend (over│ openai/gpt-5.5                     │ codex        │ ✓ logged in    │
-│ explore (pres│ openai/gpt-5.4-mini                │ codex        │ ✓ logged in    │
+│ orchestrator │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ architecture │ anthropic/claude-opus-5-5          │ claude       │ ✓ logged in    │
+│ qa (preset)  │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ backend (over│ openai/gpt-6.1-terra               │ codex        │ ✓ logged in    │
+│ explore (pres│ openai/gpt-6-luna                  │ codex        │ ✓ logged in    │
 └──────────────┴────────────────────────────────────┴──────────────┴────────────────┘
 
  Profile health check complete (mixed)
@@ -316,7 +316,7 @@ language: en
 model_preset: my-team
 
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
 
 models:
   antigravity/gemini-4-argon-low:
@@ -337,8 +337,8 @@ custom_presets:
     extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
 
 session:
   quota_cap:
@@ -362,7 +362,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 
 実行時の動作は次のとおりです。
 
-- プリセットまたは上書きから解決したエージェントごとのモデル（例：`openai/gpt-5.5`）を pi の `--model <provider/id>` 形式に変換し、`effort` を pi の `--thinking` レベルに変換します。**pi では、エージェントごとのモデルがネイティブの場合と同じように機能します。** エージェントごとに異なるモデルを実行できます。
+- プリセットまたは上書きから解決したエージェントごとのモデル（例：`openai/gpt-6.1-terra`）を pi の `--model <provider/id>` 形式に変換し、`effort` を pi の `--thinking` レベルに変換します。**pi では、エージェントごとのモデルがネイティブの場合と同じように機能します。** エージェントごとに異なるモデルを実行できます。
 - pi にはベンダー側のエージェントファイルを参照する仕組みがないため、エージェントのペルソナ（システムプロンプト）は `.agents/agents/<id>.md` からインライン化されます。
 - 認証は pi 自体の設定に従います（`~/.pi/agent/auth.json` または環境変数のプロバイダー API キー）。`oma doctor` は他の CLI と並べて pi のインストールと認証状態を報告します。
 

@@ -610,7 +610,7 @@ describe("installVendorAgents — built-in Qwen native fallback", () => {
       join(targetDir, ".qwen", "agents", "backend-engineer.md"),
       "utf-8",
     );
-    expect(backend).toMatch(/^model: qwen3\.6-plus$/m);
+    expect(backend).toMatch(/^model: qwen3\.7-plus$/m);
   });
 
   it("keeps the parent model when the free preset requires subprocess dispatch", () => {

@@ -268,7 +268,7 @@ Arm задач, judge и зондирующие запросы маршрути�
 ```yaml
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+    model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
 Maintainer и Proposer команды `oma skill optimize` разрешают роль `opt-agent`. В карте `agents:` нет ключа `opt` (схема config отклоняет неизвестные ключи), поэтому эта роль всегда следует активному `model_preset` или `default_cli` при `model_preset: auto`. Без `agents.eval` роль `eval` использует тот же fallback. Для продвижения нужен `isolation: enforced`, который обеспечивают только защищённые профили Claude и нативного Codex (см. [Изоляцию skill](#skill-isolation-keeping-the-baseline-honest)).

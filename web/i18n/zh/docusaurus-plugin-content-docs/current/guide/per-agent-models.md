@@ -44,11 +44,11 @@ model_preset: auto
 | `free` | OMA 生成的 Codex、Claude 或 Qwen 进程使用的特殊网关模式；它独立于内置预设注册表解析。 | 本地 FreeLLMAPI 网关 |
 | `antigravity` | 所有智能体使用 Antigravity CLI（`agy`）：实现、架构和 QA 使用 Gemini 4 Argon；编排、PM、文档和探索使用 Gemini 3.8 Flash。在 agy 1.1+ 上，OMA 传入 `agy models` 中的显示 ID（例如 `--model "Gemini 4 Argon (High)"`），并将 `effort` 映射到模型公开的档位。agy 1.0 没有 `--model`，因此由其自身配置决定。agy 没有 `--thinking-budget`。 | Antigravity CLI 用户 |
 | `claude` | 所有智能体使用 Claude：架构使用 Opus，探索使用 Haiku，其他所有角色使用 Sonnet | Claude Max 订阅用户 |
-| `codex` | 所有智能体使用 OpenAI Codex（大多数角色使用 GPT-5.5，探索使用 GPT-5.4-mini），并带有推理强度级别 | ChatGPT Plus/Pro 用户 |
+| `codex` | 所有智能体使用 OpenAI Codex（大多数角色使用 GPT-6.1 Terra，探索使用 GPT-6 Luna），并带有推理强度级别 | ChatGPT Plus/Pro 用户 |
 | `qwen` | 所有智能体使用 Qwen Code；与之匹配的 Qwen 会话可以使用生成的原生智能体，其他运行时使用 CLI 调度 | 本地或自托管推理 |
 | `kiro` | 所有智能体使用 Kiro CLI；实现和架构使用 Sonnet，编排和探索使用 Haiku | Kiro 用户 |
 | `cursor` | 所有智能体使用 Cursor 的 `composer-2.5`（orchestrator、qa、pm、docs、explore 使用 `composer-2.5-fast`） | Cursor Pro 或 Pro Student 用户 |
-| `mixed` | orchestrator、architecture（Opus）、qa、pm 和 docs 使用 Claude；实现角色使用 Codex GPT-5.5，探索使用 GPT-5.4-mini | 无需管理逐智能体配置即可使用多供应商优势 |
+| `mixed` | orchestrator、architecture（Opus）、qa、pm 和 docs 使用 Claude；实现角色使用 Codex GPT-6.1 Terra，探索使用 GPT-6 Luna | 无需管理逐智能体配置即可使用多供应商优势 |
 
 内置预设随 CLI 包一起提供，并在升级 `oh-my-agent` 时自动更新。`gemini` 是重定向到 `antigravity` 的兼容别名，不是当前的独立预设。不需要本地预设文件。
 
@@ -58,11 +58,11 @@ model_preset: auto
 
 | 角色 | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-5-5 | gpt-6.1-terra (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| architecture | gemini-4-argon | claude-opus-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-5-5 |
+| qa | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-6.1-terra (high) |
+| explore | gemini-3.8-flash | claude-haiku-5-5 | gpt-6-luna (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-6-luna (low) |
 
 括号中的值是预设的 `effort`（Codex）或 `thinking: true`（Qwen）。预设未列出的角色（例如 `eval`）使用该预设的 `orchestrator` 条目。
 
@@ -163,8 +163,8 @@ language: en
 model_preset: auto
 
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
-  qa:      { model: anthropic/claude-sonnet-4-6 }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
+  qa:      { model: anthropic/claude-sonnet-5-5 }
 ```
 
 每个条目都是一个 `AgentSpec` 对象：
@@ -226,8 +226,8 @@ custom_presets:
     extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
       # all other agents inherited from claude
 ```
 
@@ -255,11 +255,11 @@ oma doctor --profile
 ┌──────────────┬────────────────────────────────────┬──────────────┬────────────────┐
 │ Role         │ Model                              │ CLI          │ Auth Status    │
 ├──────────────┼────────────────────────────────────┼──────────────┼────────────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ architecture │ anthropic/claude-opus-4-7          │ claude       │ ✓ logged in    │
-│ qa (preset)  │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ backend (over│ openai/gpt-5.5                     │ codex        │ ✓ logged in    │
-│ explore (pres│ openai/gpt-5.4-mini                │ codex        │ ✓ logged in    │
+│ orchestrator │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ architecture │ anthropic/claude-opus-5-5          │ claude       │ ✓ logged in    │
+│ qa (preset)  │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ backend (over│ openai/gpt-6.1-terra               │ codex        │ ✓ logged in    │
+│ explore (pres│ openai/gpt-6-luna                  │ codex        │ ✓ logged in    │
 └──────────────┴────────────────────────────────────┴──────────────┴────────────────┘
 
  Profile health check complete (mixed)
@@ -316,7 +316,7 @@ language: en
 model_preset: my-team
 
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
 
 models:
   antigravity/gemini-4-argon-low:
@@ -337,8 +337,8 @@ custom_presets:
     extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
 
 session:
   quota_cap:
@@ -362,7 +362,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 
 具体行为如下：
 
-- 从预设或覆盖中解析的逐智能体模型（例如 `openai/gpt-5.5`）会转换为 pi 的 `--model <provider/id>` 形式，`effort` 会转换为 pi 的 `--thinking` 级别。**pi 上的逐子智能体模型与原生调度完全一致**，不同智能体可以运行不同模型。
+- 从预设或覆盖中解析的逐智能体模型（例如 `openai/gpt-6.1-terra`）会转换为 pi 的 `--model <provider/id>` 形式，`effort` 会转换为 pi 的 `--thinking` 级别。**pi 上的逐子智能体模型与原生调度完全一致**，不同智能体可以运行不同模型。
 - 智能体 persona（系统提示）会从 `.agents/agents/<id>.md` 内联，因为 pi 没有可引用的供应商侧智能体文件。
 - 身份验证使用 pi 自身的配置（`~/.pi/agent/auth.json` 或环境中的供应商 API 密钥）。`oma doctor` 会在其他 CLI 旁报告 pi 的安装和身份验证状态。
 

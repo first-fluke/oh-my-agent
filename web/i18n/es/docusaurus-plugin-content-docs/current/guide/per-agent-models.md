@@ -44,11 +44,11 @@ model_preset: auto
 | `free` | Modo de gateway especial para procesos de Codex, Claude o Qwen iniciados por OMA; se resuelve por separado del registro de presets integrados. | Gateway local de FreeLLMAPI |
 | `antigravity` | Todos los agentes usan la CLI de Antigravity (`agy`): Gemini 4 Argon para implementación, arquitectura y QA; Gemini 3.8 Flash para orquestación, PM, documentación y explore. En agy 1.1+, OMA pasa el ID visible de `agy models` (por ejemplo, `--model "Gemini 4 Argon (High)"`) y asigna `effort` a un nivel que publique el modelo. agy 1.0 no tiene `--model`, así que decide su propia configuración. agy no tiene `--thinking-budget`. | Usuarios de Antigravity CLI |
 | `claude` | Todos los agentes usan Claude: Opus para arquitectura, Haiku para explore y Sonnet para el resto de roles | Suscriptores de Claude Max |
-| `codex` | Todos los agentes usan OpenAI Codex (GPT-5.5 para la mayoría de roles, GPT-5.4-mini para explore) con niveles de esfuerzo | Usuarios de ChatGPT Plus/Pro |
+| `codex` | Todos los agentes usan OpenAI Codex (GPT-6.1 Terra para la mayoría de roles, GPT-6 Luna para explore) con niveles de esfuerzo | Usuarios de ChatGPT Plus/Pro |
 | `qwen` | Todos los agentes usan Qwen Code; las sesiones de Qwen que coinciden pueden usar los agentes nativos generados, y los demás runtimes usan el despacho por CLI | Inferencia local o autoalojada |
 | `kiro` | Todos los agentes usan la CLI de Kiro; Sonnet gestiona implementación/arquitectura y Haiku gestiona orquestación/explore | Usuarios de Kiro |
 | `cursor` | Todos los agentes usan Cursor `composer-2.5` (`composer-2.5-fast` para orchestrator/qa/pm/docs/explore) | Usuarios de Cursor Pro / Pro Student |
-| `mixed` | Claude para orchestrator, arquitectura (Opus), qa, pm y docs; Codex GPT-5.5 para los roles de implementación y GPT-5.4-mini para explore | Combinar las fortalezas de varios proveedores sin gestionar la configuración de cada agente |
+| `mixed` | Claude para orchestrator, arquitectura (Opus), qa, pm y docs; Codex GPT-6.1 Terra para los roles de implementación y GPT-6 Luna para explore | Combinar las fortalezas de varios proveedores sin gestionar la configuración de cada agente |
 
 Los presets integrados se distribuyen dentro del paquete de la CLI y se actualizan automáticamente al actualizar `oh-my-agent`. `gemini` es un alias de compatibilidad que redirige a `antigravity`; no es un preset actual independiente. No hace falta mantener un archivo de presets local.
 
@@ -58,11 +58,11 @@ Los presets fijos asignan estos slugs del registro. Se omiten los prefijos de pr
 
 | Rol | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-5-5 | gpt-6.1-terra (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| architecture | gemini-4-argon | claude-opus-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-5-5 |
+| qa | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-5-5 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-5-5 | gpt-6.1-terra (high) | qwen3.7-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-6.1-terra (high) |
+| explore | gemini-3.8-flash | claude-haiku-5-5 | gpt-6-luna (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-6-luna (low) |
 
 Los valores entre paréntesis son el `effort` del preset (Codex) o `thinking: true` (Qwen). Un rol que el preset no enumera, como `eval`, usa la entrada `orchestrator` de ese preset.
 
@@ -163,8 +163,8 @@ language: en
 model_preset: auto
 
 agents:
-  backend: { model: openai/gpt-5.5, effort: high }
-  qa:      { model: anthropic/claude-sonnet-4-6 }
+  backend: { model: openai/gpt-6.1-terra, effort: high }
+  qa:      { model: anthropic/claude-sonnet-5-5 }
 ```
 
 Cada entrada es un objeto `AgentSpec`:
@@ -226,8 +226,8 @@ custom_presets:
     extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
       # all other agents inherited from claude
 ```
 
@@ -255,11 +255,11 @@ oma doctor --profile
 ┌──────────────┬────────────────────────────────────┬──────────────┬────────────────┐
 │ Role         │ Model                              │ CLI          │ Auth Status    │
 ├──────────────┼────────────────────────────────────┼──────────────┼────────────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ architecture │ anthropic/claude-opus-4-7          │ claude       │ ✓ logged in    │
-│ qa (preset)  │ anthropic/claude-sonnet-4-6        │ claude       │ ✓ logged in    │
-│ backend (over│ openai/gpt-5.5                     │ codex        │ ✓ logged in    │
-│ explore (pres│ openai/gpt-5.4-mini                │ codex        │ ✓ logged in    │
+│ orchestrator │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ architecture │ anthropic/claude-opus-5-5          │ claude       │ ✓ logged in    │
+│ qa (preset)  │ anthropic/claude-sonnet-5-5        │ claude       │ ✓ logged in    │
+│ backend (over│ openai/gpt-6.1-terra               │ codex        │ ✓ logged in    │
+│ explore (pres│ openai/gpt-6-luna                  │ codex        │ ✓ logged in    │
 └──────────────┴────────────────────────────────────┴──────────────┴────────────────┘
 
  Profile health check complete (mixed)
@@ -316,7 +316,7 @@ language: en
 model_preset: my-team
 
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
 
 models:
   antigravity/gemini-4-argon-low:
@@ -337,8 +337,8 @@ custom_presets:
     extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
-      backend: { model: openai/gpt-5.5, effort: high }
-      db:      { model: openai/gpt-5.5, effort: high }
+      backend: { model: openai/gpt-6.1-terra, effort: high }
+      db:      { model: openai/gpt-6.1-terra, effort: high }
 
 session:
   quota_cap:
@@ -362,7 +362,7 @@ oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 
 Qué ocurre:
 
-- El modelo resuelto por agente desde el preset o las sobrescrituras (por ejemplo, `openai/gpt-5.5`) se traduce al formato `--model <provider/id>` de pi, y `effort` se traduce al nivel `--thinking` de pi. **Los modelos por subagente funcionan en pi igual que de forma nativa**: distintos agentes pueden ejecutar modelos distintos.
+- El modelo resuelto por agente desde el preset o las sobrescrituras (por ejemplo, `openai/gpt-6.1-terra`) se traduce al formato `--model <provider/id>` de pi, y `effort` se traduce al nivel `--thinking` de pi. **Los modelos por subagente funcionan en pi igual que de forma nativa**: distintos agentes pueden ejecutar modelos distintos.
 - La persona del agente (el system prompt) se inserta desde `.agents/agents/<id>.md`, porque pi no tiene un archivo de agente del proveedor al que referenciar.
 - La autenticación es la que esté configurada en pi (`~/.pi/agent/auth.json` o una API key del proveedor en el entorno). `oma doctor` informa del estado de instalación y autenticación de pi junto con las demás CLIs.
 

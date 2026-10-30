@@ -67,7 +67,7 @@ flowchart TD
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 请从项目目录运行命令，这样才能选择最近的 `.agents/` 目录。本地文件格式错误会明确失败；修复或移除它后再重试。

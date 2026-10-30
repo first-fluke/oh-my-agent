@@ -266,7 +266,7 @@ Task arm, judge và routing probe resolve agent role `eval`. Pin nó trong `.age
 ```yaml
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6   # task arms, judges, routing probes
+    model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
 Maintainer và Proposer của `oma skill optimize` resolve role `opt-agent`. Map `agents:` không có key `opt` (config schema từ chối key không xác định), nên role này luôn theo `model_preset` đang hoạt động, hoặc `default_cli` khi dùng `model_preset: auto`. Khi không có `agents.eval`, role `eval` dùng cùng fallback đó. Việc thăng cấp cần `isolation: enforced`, điều mà chỉ protected profile của Claude và Codex native cung cấp (xem [Skill isolation](#skill-isolation-keeping-the-baseline-honest)).

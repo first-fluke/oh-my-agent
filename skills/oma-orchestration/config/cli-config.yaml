@@ -28,7 +28,7 @@ vendors:
     output_format_flag: "--json"
     auto_approve_flag: "--sandbox workspace-write"
     model_flag: "-m"
-    default_model: "gpt-5.5"
+    default_model: "gpt-6.1-terra"
     response_jq: ".response"
     isolation_method: "directory"
 
@@ -39,7 +39,7 @@ vendors:
     output_format: "json"
     auto_approve_flag: "--yolo"
     model_flag: "-m"
-    default_model: "qwen3.6-plus"
+    default_model: "qwen3.7-plus"
     response_jq: ".output"
     isolation_method: "directory"
 

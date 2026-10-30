@@ -140,8 +140,8 @@ model_preset: mixed   # mixed: Claude for coordination, Codex for implementation
 
 # Override specific agents on top of the preset
 agents:
-  frontend: { model: anthropic/claude-sonnet-4-6 }
-  backend:  { model: openai/gpt-5.5, effort: high }
+  frontend: { model: anthropic/claude-sonnet-5-5 }
+  backend:  { model: openai/gpt-6.1-terra, effort: high }
 ```
 
 内置预设：`auto`、`free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro` 和 `mixed`。详情参见[按智能体选择模型](../guide/per-agent-models.md)。
@@ -153,7 +153,7 @@ agents:
 | 优先级 | 来源 | 示例 |
 |---------|------|---------|
 | 1（最高） | `--vendor` 标志 | `oma agent spawn backend "task" session-01 --vendor claude` |
-| 2 | `oma-config.yaml` 中的 `agents:` 覆盖项 | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 2 | `oma-config.yaml` 中的 `agents:` 覆盖项 | `agents: { backend: { model: openai/gpt-6.1-terra } }` |
 | 3 | 当前 `model_preset` 的智能体默认值 | 针对智能体角色查询预设 |
 
 `--vendor` 标志始终优先。如果没有提供该标志，系统会依次检查 `agents:` 覆盖项、预设默认值，再检查配置的回退 CLI。使用 `model_preset: auto` 时，由当前运行时的原生设置提供模型。

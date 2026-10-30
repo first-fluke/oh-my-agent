@@ -126,10 +126,10 @@ model_preset: auto
 # antigravity external dispatch is unreliable in this environment (prompts do
 # not reach the model; see spawn artifact guard notes). Add your own entries
 # alongside it, e.g.
-#   backend: { model: openai/gpt-5.5, effort: high }
+#   backend: { model: openai/gpt-6.1-terra, effort: high }
 agents:
   eval:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 
 # Inline custom model slugs (optional) — the home for any slug not in the
 # built-in registry. `cli_model` must be the exact id the CLI itself accepts:
@@ -154,7 +154,7 @@ agents:
 #     extends: claude
 #     description: "Team A — sonnet base, codex backend"
 #     agent_defaults:
-#       backend: { model: openai/gpt-5.5, effort: high }
+#       backend: { model: openai/gpt-6.1-terra, effort: high }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3. Vendor selection & pi (Earendil) transport runtime

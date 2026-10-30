@@ -91,11 +91,11 @@ describe("collectProfileReport — subdirectory invocation", () => {
   });
 
   it("finds oma-config.yaml from a nested subdirectory", async () => {
-    // mixed preset: backend = openai/gpt-5.5
+    // mixed preset: backend = openai/gpt-6.1-terra
     const report = await collectProfileReport(subDir);
     expect(report.missingPreset).toBe(false);
     const backend = report.rows.find((r) => r.role === "backend");
-    expect(backend?.model).toBe("openai/gpt-5.5");
+    expect(backend?.model).toBe("openai/gpt-6.1-terra");
   });
 
   it("honors agents override in oma-config.yaml from a nested subdirectory", async () => {

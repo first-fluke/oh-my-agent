@@ -68,7 +68,7 @@ For a project-local override, put only the changed leaves in the local file. For
 model_preset: claude
 agents:
   backend:
-    model: anthropic/claude-sonnet-4-6
+    model: anthropic/claude-sonnet-5-5
 ```
 
 Run the command from the project so the nearest `.agents/` directory is selected. A malformed local file fails loudly; fix or remove it before retrying.
