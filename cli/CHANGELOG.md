@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.25.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.24.0...cli-v20.25.0) (2026-10-30)
+
+
+### Features
+
+* **antigravity:** switch presets to Gemini 4 Argon and 3.8 Flash ([90bea8b](https://github.com/first-fluke/oh-my-agent/commit/90bea8ba587621391072f08fd9c9ee1ff04e9fbc))
+* **codex:** move custom agents to gpt-6.1-terra and gpt-6-luna ([f01f7d7](https://github.com/first-fluke/oh-my-agent/commit/f01f7d76465c34a8508e12b54ad07f1230e9f424))
+
 ## [20.24.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.23.0...cli-v20.24.0) (2026-10-30)
 
 
