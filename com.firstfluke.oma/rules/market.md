@@ -1,5 +1,5 @@
 ---
-description: Market research standards - trap detection, always-latest last30days engine, framework layer, LAW enforcement
+description: Market research standards - trap detection, installed last30days engine, framework layer, LAW enforcement
 globs:
 alwaysApply: false
 ---
@@ -9,7 +9,7 @@ alwaysApply: false
 ## Core Rules
 
 1. **Preflight first**: every market research task starts with `oma market detect-trap`. If it refuses, surface the reframe to the user — never bypass without `--force` and explicit user reconfirmation.
-2. **One engine, always latest**: research runs on the upstream `last30days` engine through `oma market run`. `oma market resolve` refreshes oma's managed copy to the latest GitHub Release before use (throttled by `market.check_interval_min`; cached copy on network failure). Do not hand-roll harvesting, scoring, or clustering, and do not run a stale user-installed copy when the managed one resolves.
+2. **One engine, installed as a skill**: research runs on the upstream `last30days` engine through `oma market run`. `oma market resolve` finds the copy installed through the skills CLI (or a `market.path` / `LAST30DAYS_HOME` pin); `oma market update` installs it when missing (`bunx skills add mvanhorn/last30days-skill --skill last30days -g -y`) and otherwise updates it. Install only after the user agrees. Do not hand-roll harvesting, scoring, or clustering.
 3. **Follow the upstream contract**: read the resolved engine's `SKILL.md` (`engine.skillMd`) top to bottom every run and follow it — setup wizard, pre-research resolution, query plan, PRECONDITION GATE, OUTPUT CONTRACT. The only substitutions are skipping its Python-hunt block and replacing the raw `python3 scripts/last30days.py` call with `oma market run` (same arguments).
 4. **Never WebSearch-only**: if the engine cannot run (no engine, no Python 3.12+, non-zero exit), stop and report; a WebSearch-only synthesis presented as market research is a contract violation.
 5. **Keyless-first**: Reddit, HN, GitHub, Polymarket, arXiv, Techmeme, Digg, and web run without keys. Keyed sources (X, TikTok, Instagram, YouTube transcripts, …) are enabled only through the upstream setup wizard with user consent; skipped sources stay visible in the footer.

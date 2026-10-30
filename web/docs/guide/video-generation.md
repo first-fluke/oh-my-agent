@@ -90,7 +90,7 @@ Other tools that shell out to `oma video generate --output json` parse a JSON en
 <a id="always-latest-hyperframes--you-author-the-composition"></a>
 ## Managed HyperFrames toolchain and composition authoring
 
-oh-my-agent ships **no HyperFrames composition code**. Each run gets its own project at `<runDir>/hyperframes/`, scaffolded by `oma video compose` on the latest npm HyperFrames (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, shared via a `node_modules` symlink) with [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) at HEAD (`~/.cache/oma-video/hyperframes-skills/`). The agent authors the generated composition source following the scaffold's `AUTHORING.md`, the skills, and the mode spec in `.agents/skills/oma-video/resources/hyperframes-authoring/`.
+oh-my-agent ships **no HyperFrames composition code**. Each run gets its own project at `<runDir>/hyperframes/`, scaffolded by `oma video compose` on the latest npm HyperFrames (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, shared via a `node_modules` symlink) and the [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) `hyperframes` and `hyperframes-cli` skills installed through the [skills CLI](https://github.com/vercel-labs/skills). The agent authors the generated composition source following the scaffold's `AUTHORING.md`, the skills, and the mode spec in `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -99,14 +99,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- Latest-version checks (npm + GitHub) are throttled by `video.hyperframes.check_interval_min` (default 60; `0` = every compose). `oma update` respects the interval; `oma video doctor --upgrade` forces a check; offline runs use the cached toolchain and report `stale`.
+- Toolchain latest-version checks (npm) are throttled by `video.hyperframes.check_interval_min` (default 60; `0` = every compose). `oma update` respects the interval; `oma video doctor --upgrade` forces a check; offline runs use the cached toolchain and report `stale`.
+- Skills: `oma video doctor --install` installs missing ones (`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`); `--upgrade` also updates installed ones; `oma update` only updates skills that are already installed. Without them, `AUTHORING.md` links the upstream docs instead. The old `~/.cache/oma-video/hyperframes-skills/` copy is no longer read and can be deleted.
 - Reproducibility lives in the run dir: `render-spec.json`, the authored composition source, and the toolchain version recorded in the generated HyperFrames package metadata. Re-rendering the same run reuses that render contract; a new run checks the latest HyperFrames.
 - A lint or render failure is **not** hidden behind a placeholder (that exists only for `OMA_VIDEO_MOCK=1`): `oma video render` exits 1 with the diagnostics and the agent fixes the composition using the latest skills. Breakage on a new HyperFrames release is a composition bug, never a reason to pin.
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---

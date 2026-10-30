@@ -6,8 +6,8 @@
 import color from "picocolors";
 import { loadVideoConfig } from "./config.js";
 import {
-  ensureHyperframesSkills,
   ensureLatestToolchain,
+  syncHyperframesSkills,
 } from "./internal/hyperframes-workspace.js";
 import { installMptProject } from "./internal/mpt-project.js";
 import { runReadinessChecks } from "./internal/readiness.js";
@@ -28,18 +28,19 @@ export async function runVideoDoctor({
 }): Promise<number> {
   const formatMode = (opts.format as string | undefined) ?? "text";
 
-  // Always-latest Hyperframes toolchain + heygen-com/hyperframes. `--install` warms
-  // the cache (fresh machines); `--upgrade` forces a latest check now. Both
-  // are idempotent — `oma video compose` does the same per run.
+  // Always-latest Hyperframes toolchain + heygen-com/hyperframes skills.
+  // `--install` warms the toolchain cache and installs missing skills with the
+  // skills CLI; `--upgrade` also forces a toolchain check and updates installed
+  // skills. `oma video compose` refreshes the toolchain only.
   if (opts.install === true || opts.upgrade === true) {
     const policy = (await loadVideoConfig()).hyperframes;
     const tc = await ensureLatestToolchain({
       checkIntervalMin: policy.checkIntervalMin,
       force: opts.upgrade === true,
     });
-    const skills = await ensureHyperframesSkills({
-      checkIntervalMin: policy.checkIntervalMin,
-      force: opts.upgrade === true,
+    const skills = syncHyperframesSkills({
+      install: true,
+      update: opts.upgrade === true,
     });
     if (formatMode !== "json") {
       if (tc) {
@@ -53,15 +54,20 @@ export async function runVideoDoctor({
           `${color.yellow("!")} hyperframes-toolchain: could not fetch the latest hyperframes (offline?) and nothing is cached`,
         );
       }
-      if (skills) {
-        console.log(
-          `${color.green("✓")} hyperframes-skills: ${skills.ref} (${skills.status}${skills.note ? `, ${skills.note}` : ""}), ${Object.keys(skills.skills).length} skills`,
-        );
-      } else {
-        console.log(
-          `${color.yellow("!")} hyperframes-skills: could not fetch heygen-com/hyperframes and nothing is cached`,
-        );
-      }
+      const names = Object.keys(skills.skills);
+      const changes = [
+        skills.installed.length
+          ? `installed ${skills.installed.join(", ")}`
+          : "",
+        skills.updated.length ? `updated ${skills.updated.join(", ")}` : "",
+      ].filter(Boolean);
+      const mark =
+        skills.ok && skills.skills.missing.length === 0
+          ? color.green("✓")
+          : color.yellow("!");
+      console.log(
+        `${mark} hyperframes-skills: ${names.length ? names.join(", ") : "none installed"}${changes.length ? ` (${changes.join("; ")})` : ""}${skills.skills.missing.length ? ` — missing ${skills.skills.missing.join(", ")}` : ""}${skills.detail ? ` — ${skills.detail}` : ""}`,
+      );
     }
   }
 

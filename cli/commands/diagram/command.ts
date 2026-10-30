@@ -6,6 +6,7 @@ import {
   type DiagramEngineRequest,
   type DiagramResolution,
   resolveDiagramEngine,
+  updateArchify,
 } from "../../platform/diagram-engine.js";
 import {
   addOutputOptions,
@@ -25,6 +26,7 @@ function printResolution(res: DiagramResolution & { ok: boolean }): void {
     console.log(`quality:  ${res.quality}`);
   }
   console.log(`sidecar:  ${res.explainSidecar ? "on" : "off"} (explain)`);
+  for (const w of res.warnings) console.log(color.yellow(`warning:  ${w}`));
 }
 
 /**
@@ -72,29 +74,22 @@ export function registerDiagramCommand(program: Command): void {
       "--engine <engine>",
       "Override diagram.engine for this call: auto | archify | mermaid",
     )
-    .option("--refresh", "Re-check the latest archify release now")
-    .option("--offline", "Do not touch the network; use cached copies only");
+    .option("--refresh", "Deprecated no-op; use `oma diagram update`")
+    .option(
+      "--offline",
+      "Deprecated no-op; resolution never touches the network",
+    );
   addOutputOptions(resolveCmd);
   resolveCmd.action(
     runAction(
-      async (opts: {
-        engine?: string;
-        json?: boolean;
-        refresh?: boolean;
-        offline?: boolean;
-      }) => {
+      async (opts: { engine?: string; json?: boolean }) => {
         const engine = opts.engine as DiagramEngineRequest | undefined;
         if (engine && !["auto", "archify", "mermaid"].includes(engine)) {
           console.error(color.red(`unknown engine: ${engine}`));
           process.exitCode = 1;
           return;
         }
-        const res = await resolveDiagramEngine({
-          cwd: process.cwd(),
-          engine,
-          refresh: opts.refresh,
-          offline: opts.offline,
-        });
+        const res = await resolveDiagramEngine({ cwd: process.cwd(), engine });
         if (resolveJsonMode(opts)) {
           const { ok, ...rest } = res;
           console.log(JSON.stringify({ ok, ...rest }, null, 2));
@@ -110,27 +105,30 @@ export function registerDiagramCommand(program: Command): void {
   const updateCmd = diagram
     .command("update")
     .description(
-      "Download the latest archify release into oma's managed cache (~/.cache/oma-diagram/archify)",
+      "Install archify with the skills CLI when missing, otherwise update it (bunx skills add|update -g -y)",
     );
   addOutputOptions(updateCmd);
   updateCmd.action(
     runAction(
       async (opts: { json?: boolean }) => {
-        const res = await resolveDiagramEngine({
-          cwd: process.cwd(),
-          engine: "archify",
-          refresh: true,
-        });
+        const res = await updateArchify({ cwd: process.cwd() });
+        const ok = res.action !== "failed" && res.resolution.ok;
         if (resolveJsonMode(opts)) {
-          console.log(JSON.stringify(res, null, 2));
-        } else if (res.archify) {
+          console.log(JSON.stringify({ ok, ...res }, null, 2));
+        } else if (ok) {
           console.log(
-            `${color.green("archify")} ${res.archify.version ?? res.archify.source} ready — ${res.reason}`,
+            `${color.green("archify")} ${res.action}${res.detail ? ` — ${res.detail}` : ""} — ${res.resolution.reason}`,
           );
         } else {
-          console.error(color.red(res.reason));
+          console.error(
+            color.red(
+              res.action === "failed"
+                ? `archify ${res.action}: ${res.detail}`
+                : res.resolution.reason,
+            ),
+          );
         }
-        if (!res.ok) process.exitCode = 1;
+        if (!ok) process.exitCode = 1;
       },
       { supportsJsonOutput: true },
     ),

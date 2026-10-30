@@ -160,7 +160,7 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 
 1. **HyperFrames** (default, all modes):
    1. `generate` prepares `<runDir>/hyperframes/` with a `composition pending` warning. Use `oma video compose <runDir> --output json` to refresh it.
-   2. Read `<runDir>/hyperframes/AUTHORING.md`, the listed `hyperframes-core`, `hyperframes-animation`, and `hyperframes-cli` API references, and `.agents/skills/oma-video/resources/hyperframes-authoring/<mode>.md`.
+   2. Read `<runDir>/hyperframes/AUTHORING.md`, the listed `hyperframes` and `hyperframes-cli` skill references (installed with `oma video doctor --install`), and `.agents/skills/oma-video/resources/hyperframes-authoring/<mode>.md`.
    3. Author `index.html`. Use the staged render spec and local assets, timed HTML clips, uniquely identified audio elements, and a paused GSAP timeline. Honor the spec's dimensions, duration, captions, and audio levels.
    4. Run `oma video render <runDir> --output json`. It lints, renders, verifies the encoded video, and updates the manifest. Diagnose and fix any failure before delivery.
 

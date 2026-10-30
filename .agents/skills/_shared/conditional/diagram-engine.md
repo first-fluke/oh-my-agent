@@ -9,15 +9,11 @@ lives inside the Markdown artifact. [archify](https://github.com/tt-a1i/archify)
 JSON IR into a validated, self-contained interactive HTML diagram (dark/light,
 pan-zoom, search, trace, PNG/SVG/WebM export).
 
-**oma always uses the latest archify release.** No manual install is needed:
-`oma diagram resolve` keeps an oma-owned copy under
-`~/.cache/oma-diagram/archify/<tag>/`, re-checks GitHub Releases before use
-(throttled by `diagram.archify.check_interval_min`, default 60 min), downloads a
-newer tag when one exists, and reuses the cached copy when the network is down.
-`oma diagram update` forces a check now. A copy installed by the user with
-`npx skills add tt-a1i/archify` is only a fallback for when nothing is cached
-and the network is unavailable; `diagram.archify.path` / `ARCHIFY_HOME` are
-explicit pins that opt out of auto-latest.
+**archify is installed as an agent skill through the skills CLI.**
+`oma diagram resolve` reads installed skill directories; `oma diagram update`
+installs it when missing (`bunx skills add tt-a1i/archify --skill archify -g -y`)
+and updates it otherwise. Install only after the user agrees.
+`diagram.archify.path` / `ARCHIFY_HOME` are explicit pins that win over installs.
 
 ## Step 0 — Resolve the engine (deterministic, all vendors)
 
@@ -28,15 +24,15 @@ oma diagram resolve --json
 | Field | Meaning |
 |---|---|
 | `engine` | `archify` or `mermaid` — the engine to use for THIS run |
-| `ok` | `false` only when `diagram.engine: archify` is pinned and nothing could be resolved (first run offline) → stop and tell the user to run `oma diagram update` once online; never silently downgrade a pin |
+| `ok` | `false` only when `diagram.engine: archify` is pinned and archify is not installed → stop and offer `oma diagram update`; never silently downgrade a pin |
 | `archify.root` / `archify.bin` | install dir; the schema/example files live under `root` |
-| `archify.status` / `archify.note` | managed copies only: `fresh` (just downloaded), `current`, or `stale` (update check failed — the note says why; mention it in the report) |
+| `warnings` | deprecated config keys (`diagram.archify.managed|channel|check_interval_min` are ignored); relay them |
 | `quality` | `showcase` (default) or `standard` — pass as `--quality` |
 | `explainSidecar` | whether `/explain` should also emit an archify sidecar |
 
-Resolution order: `diagram.archify.path` → `ARCHIFY_HOME` → managed latest →
-project `.agents/.claude/.codex/.cursor/.qwen/.kiro/skills/archify` → the same
-under `~`. Configure in `.agents/oma-config.yaml` (`diagram:` section).
+Resolution order: `diagram.archify.path` → `ARCHIFY_HOME` → project
+`.agents/.claude/.codex/.cursor/.qwen/.kiro/.gemini/.copilot/skills/archify` →
+the same under `~` → `~/.config/agents/skills/archify`. Configure in `.agents/oma-config.yaml` (`diagram:` section).
 
 When `engine` is `mermaid`, author the Mermaid block per the calling skill's
 template and skip the rest of this file.
@@ -119,8 +115,7 @@ skipped): `oma diagram archify visual-check <stem>.archify.html --json`.
 
 ## Reporting
 
-State which engine ran (including the archify version and `stale` note when
-the update check failed), the artifact paths, the final validation summary
+State which engine ran (including the archify version), the artifact paths, the final validation summary
 (artifact checks / errors / warnings from the `--json` receipt), and, when
 archify was skipped or failed, the one-line reason from `oma diagram resolve`
 or the last diagnostics. Do not claim a visual review you did not perform.

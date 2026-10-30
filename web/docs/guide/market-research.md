@@ -8,7 +8,7 @@ description: How oh-my-agent's oma-market skill runs community-signal research o
 
 `oma-market` answers "what are people actually saying about X in the last N days" — pain points, trends, competitor sentiment, discovery — from community sources with real engagement numbers: Reddit (upvotes and top comments), X, YouTube transcripts, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, the web, and more.
 
-The research itself runs on the upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) engine (MIT, Python 3.12+). oh-my-agent does not fork it: it keeps an **always-latest managed copy**, gates every run, and adds a strategic-framework layer on top. Release cadence, star count, and provider coverage belong to the upstream project and can change.
+The research itself runs on the upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) engine (MIT, Python 3.12+). oh-my-agent does not fork it: the engine is installed as an agent skill through the [skills CLI](https://github.com/vercel-labs/skills), and oh-my-agent gates every run and adds a strategic-framework layer on top. Release cadence, star count, and provider coverage belong to the upstream project and can change.
 
 ---
 
@@ -36,32 +36,38 @@ The result is one brief at `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`. 
 
 ---
 
-## Always the latest engine (Python 3.12+ required) {#always-the-latest-engine--nothing-to-install}
+## Install the engine (Python 3.12+ required) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
-# Illustrative output; the release tag, cache path, and Python version vary.
+oma market update   # installs last30days when missing, otherwise updates it
+# runs: bunx skills add mvanhorn/last30days-skill --skill last30days -g -y
+#   or: bunx skills update last30days -g -y
+```
+
+```bash
+# Illustrative output; the version, install path, and Python version vary.
 oma market resolve
 # engine:   last30days
-# reason:   last30days 3.21.1 via managed:v3.21.1 (current)
-# root:     ~/.cache/oma-market/last30days/v3.21.1
-# skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# reason:   last30days 3.21.1 via home:~/.agents/skills
+# root:     ~/.agents/skills/last30days
+# skill:    ~/.agents/skills/last30days/SKILL.md
 # version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- Cache: `~/.cache/oma-market/last30days/<tag>/` + `state.json`.
-- Before each use, `resolve` asks GitHub for the latest release (throttled to once per `check_interval_min`, default 60 min), downloads a newer tag into its own directory (older tags pruned), and otherwise reuses the cache. Network failures reuse the cached copy and report `stale`.
+- `resolve` only reads installed skill directories and never touches the network. When nothing is installed it is not ok and names the install command; the skill asks before running `oma market update`.
+- `oma update` does not install the engine. Update it with `oma market update` (or `bunx skills update last30days -g -y`).
 - Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` on PATH (must be ≥ 3.12) → `uv python find '>=3.12'`. If none is found, `resolve` is not ok and prints the install hint; the skill stops rather than degrade to web-search-only research.
-- Engine configuration and API keys live in `~/.config/last30days/` (written by the upstream setup wizard with your consent), so they survive engine upgrades.
+- Engine configuration and API keys live in `~/.config/last30days/` (written by the upstream setup wizard with your consent), so they survive engine updates.
 
-Resolution order (first hit wins): `market.path` → `LAST30DAYS_HOME` → **managed latest** → user-installed copies (`.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days` in the project and under `~`, then the Claude Code plugin cache).
+Resolution order (first hit wins): `market.path` → `LAST30DAYS_HOME` → installed skill dirs (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` in the project, then under `~`, then `~/.config/agents/skills/last30days` and the Claude Code plugin cache). A Claude Code plugin install is updated through `/plugin`, not `oma market update`.
 
 ```bash
-oma market update            # force a check / download now
-oma market resolve --offline # never touch the network
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
+
+Earlier releases kept their own copy under `~/.cache/oma-market/`. It is no longer read; you can delete it.
 
 ---
 
@@ -69,13 +75,12 @@ oma market run -- --help     # the engine's own flags (without `--`, oma prints 
 
 ```yaml
 market:
-  managed: true                   # false = never download; pins / skill dirs only
-  channel: stable                 # stable (latest Release) | main (HEAD)
-  check_interval_min: 60          # 0 = check on every call
   path: null                      # explicit engine dir (pin)
   python: null                    # interpreter override
   save_dir: .agents/results/market/raw
 ```
+
+`managed`, `channel`, and `check_interval_min` are deprecated: they still validate but are ignored, and `resolve` prints a warning while they are set.
 
 ---
 
@@ -114,9 +119,9 @@ flowchart TD
 | Situation | Result |
 |---|---|
 | Topic refused by detect-trap | Reframe shown; engine not run. `--force` only after explicit user reconfirmation |
-| No engine cached and offline | `ok: false` → run `oma market update` once online |
+| Engine not installed | `ok: false` → `oma market update` (installs it with the skills CLI) |
 | No Python 3.12+ | `ok: false` with install hint (brew / apt / `uv python install 3.12`), or set `LAST30DAYS_PYTHON` / `market.python`; no web-search-only substitute |
-| Release check fails | Cached engine used, reported as `stale` |
+| `oma market update` fails | The skills CLI error is shown; an existing install keeps working |
 | Sources without keys | Skipped inside the engine and listed in the footer; enable via the upstream setup wizard |
 
 ---
@@ -124,7 +129,7 @@ flowchart TD
 ## Next steps
 
 - [Content and Research Workflows](./content-and-research.md) — pick the right capability for other research and document tasks
-- [Diagram Engine](./diagram-engine.md) — the same managed-latest pattern for archify
+- [Diagram Engine](./diagram-engine.md) — the same skills-CLI install pattern for archify
 - [oma-config.yaml semantics](./oma-config-semantics.md) — how the `market:` section is merged
 - [CLI Commands: market](../cli-interfaces/commands.md#market) — full option list
 - Upstream: [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

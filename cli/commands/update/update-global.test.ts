@@ -37,7 +37,12 @@ const syncSchedulesSpy = vi.hoisted(() =>
 vi.mock("../../io/video/internal/hyperframes-workspace.js", () => ({
   describeToolchain: vi.fn(() => ({ version: null })),
   ensureLatestToolchain: vi.fn(),
-  ensureHyperframesSkills: vi.fn(),
+  syncHyperframesSkills: vi.fn(() => ({
+    ok: true,
+    installed: [],
+    updated: [],
+    detail: "",
+  })),
 }));
 
 // ---------------------------------------------------------------------------

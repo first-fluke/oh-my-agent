@@ -37,7 +37,14 @@ vi.mock("node:os", async (original) => ({
 const hyperframesState = vi.hoisted(() => ({
   describeToolchain: vi.fn(() => ({ version: null as string | null })),
   ensureLatestToolchain: vi.fn(),
-  ensureHyperframesSkills: vi.fn(),
+  syncHyperframesSkills: vi.fn(
+    (): {
+      ok: boolean;
+      installed: string[];
+      updated: string[];
+      detail: string;
+    } => ({ ok: true, installed: [], updated: [], detail: "" }),
+  ),
 }));
 
 // Vendor reconciliation must not inspect or update the developer's toolchain.
@@ -690,9 +697,11 @@ describe("update cursor vendor adaptations", () => {
       version: "4.0.522",
       status: "current",
     });
-    hyperframesState.ensureHyperframesSkills.mockResolvedValue({
-      ref: "11986e44eeb6",
-      status: "current",
+    hyperframesState.syncHyperframesSkills.mockReturnValue({
+      ok: true,
+      installed: [],
+      updated: ["hyperframes"],
+      detail: "",
     });
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -703,9 +712,10 @@ describe("update cursor vendor adaptations", () => {
       checkIntervalMin: 60,
       force: false,
     });
-    expect(hyperframesState.ensureHyperframesSkills).toHaveBeenCalledWith({
-      checkIntervalMin: 60,
-      force: false,
+    expect(hyperframesState.syncHyperframesSkills).toHaveBeenCalledWith({
+      install: false,
+      update: true,
+      cwd: projectDir,
     });
     expect(logSpy.mock.calls.flat().join("\n")).not.toContain(
       "hyperframes 4.0.522",
@@ -713,12 +723,15 @@ describe("update cursor vendor adaptations", () => {
   });
 
   it.each([
-    { status: "fresh", expected: "skills updated to abc123" },
-    { status: "stale", expected: "skills: network unavailable" },
-    { status: undefined, expected: "skills: check failed" },
+    {
+      ok: false,
+      detail: "update: skills CLI exit 1: offline",
+      expected: "skills: update: skills CLI exit 1: offline",
+    },
+    { ok: true, detail: "", expected: undefined },
   ])(
-    "reports only changed or failed Hyperframes components ($status)",
-    async ({ status, expected }) => {
+    "reports only failed Hyperframes skill updates (ok=$ok)",
+    async ({ ok, detail, expected }) => {
       const projectDir = makeTempRoot("oma-update-output-project-");
       extractedRepoDir = makeTempRoot("oma-update-output-repo-");
       mockInstallRoot = projectDir;
@@ -730,22 +743,20 @@ describe("update cursor vendor adaptations", () => {
         version: "0.8.74",
         status: "current",
       });
-      hyperframesState.ensureHyperframesSkills.mockResolvedValue(
-        status
-          ? {
-              ref: "abc123",
-              status,
-              note: status === "stale" ? "network unavailable" : undefined,
-            }
-          : undefined,
-      );
+      hyperframesState.syncHyperframesSkills.mockReturnValue({
+        ok,
+        installed: [],
+        updated: ok ? ["hyperframes"] : [],
+        detail,
+      });
       const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
       process.chdir(projectDir);
       await update({ ci: true });
 
       const output = logSpy.mock.calls.flat().join("\n");
-      expect(output).toContain(expected);
+      if (expected) expect(output).toContain(expected);
+      else expect(output).not.toContain("skills:");
       expect(output).not.toContain("hyperframes 0.8.74");
       logSpy.mockRestore();
     },

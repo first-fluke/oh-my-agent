@@ -50,7 +50,7 @@ Single and parallel process launches share `io/runtime-dispatch/prepared-agent-d
 
 `io/schedule/` owns scheduler manifests, OS adapters, and reconciliation shared by the schedule and update commands. `commands/schedule/` retains command behavior and compatibility exports; update imports reconciliation from the shared I/O layer.
 
-`io/conversation-log.ts` owns conversation-log primitives shared by recap and state trajectory readers. `platform/diagram-engine.ts` and `platform/archify-managed.ts` own diagram engine discovery and managed Archify installation shared by diagram and explain. These shared modules do not depend on commands.
+`io/conversation-log.ts` owns conversation-log primitives shared by recap and state trajectory readers. `platform/diagram-engine.ts` owns diagram engine discovery shared by diagram and explain, and `platform/skill-install.ts` resolves, installs, and updates the upstream agent skills (last30days, archify, HyperFrames) through the skills CLI. These shared modules do not depend on commands.
 
 `io/native-transcript/` owns Claude and Codex transcript parsing, fresh-session identity checks, and native output decoding shared by state trajectories, Harness evaluation, and spawn usage accounting. State trajectory modules retain compatibility exports. Evaluation records store bounded tool metadata and payload hashes; usage records distinguish native observations from prompt estimates.
 

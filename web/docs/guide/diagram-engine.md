@@ -13,38 +13,38 @@ Mermaid never goes away: it is the text SSOT that lives in the Markdown and in g
 ---
 
 <a id="always-the-latest-archify--nothing-to-install"></a>
-## Managed archify copy
+## Install archify
 
-archify is an MIT-licensed agent skill (Node ≥ 18, zero runtime dependencies). oh-my-agent does not rely on a copy you installed once; it keeps its **own managed copy** and tracks the latest release:
+archify is an MIT-licensed agent skill (Node ≥ 18, zero runtime dependencies). oh-my-agent uses the copy installed through the [skills CLI](https://github.com/vercel-labs/skills) and keeps no copy of its own:
 
-- Cache: `~/.cache/oma-diagram/archify/<tag>/` plus a `state.json` pointer.
-- Before each use, `oma diagram resolve` asks GitHub for the latest release tag (throttled to once per `check_interval_min`, default 60 min), downloads the source tarball when a newer tag exists (atomic per-tag directory; older tags pruned), and otherwise reuses the cached copy.
-- Network failures are never fatal: the cached copy is used and reported as `stale` with the reason. Only a first run with no network and no cache falls back to a user-installed skill copy, and after that to Mermaid.
+- `oma diagram update` installs archify when it is missing (`bunx skills add tt-a1i/archify --skill archify -g -y`) and otherwise updates it (`bunx skills update archify -g -y`).
+- `oma diagram resolve` only reads installed skill directories and never touches the network. Without an install, `auto` falls back to Mermaid and names the install command.
+- `oma update` does not install archify.
 
 ```bash
-# Illustrative output; the release tag, cache path, and quality can vary.
-oma diagram update          # force a check / download now
+# Illustrative output; the version, install path, and quality can vary.
+oma diagram update
 oma diagram resolve
 # engine:   archify  (requested: auto)
-# reason:   archify 2.15.0 via managed:v2.15.0 (current)
-# root:     /Users/you/.cache/oma-diagram/archify/v2.15.0
-# bin:      /Users/you/.cache/oma-diagram/archify/v2.15.0/bin/archify.mjs
+# reason:   archify 2.15.0 via home:~/.agents/skills
+# root:     /Users/you/.agents/skills/archify
+# bin:      /Users/you/.agents/skills/archify/bin/archify.mjs
 # version:  2.15.0
 # quality:  showcase
 # sidecar:  off (explain)
-oma diagram resolve --offline   # never touch the network
 ```
 
 Resolution order (first hit wins, identical on every vendor runtime):
 
-1. `diagram.archify.path` in `oma-config.yaml` — explicit pin, opts out of auto-latest
+1. `diagram.archify.path` in `oma-config.yaml` — explicit pin
 2. `ARCHIFY_HOME` environment variable — explicit pin
-3. **Managed latest** (`~/.cache/oma-diagram/archify`)
-4. User-installed skill dirs: project `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` `/skills/archify`, then the same under `~`, plus `~/.raven/workspace/skills/archify`
+3. Installed skill dirs: project `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` / `.gemini` / `.copilot` `/skills/archify`, then the same under `~`, then `~/.config/agents/skills/archify` and `~/.raven/workspace/skills/archify`
 
 <!-- oma-docs:ignore-start -->
-A hit requires the managed or pinned archify installation to contain `bin/archify.mjs`.
+A hit requires the installed or pinned archify directory to contain `bin/archify.mjs`.
 <!-- oma-docs:ignore-end -->
+
+Earlier releases kept their own copy under `~/.cache/oma-diagram/`. It is no longer read; you can delete it.
 
 ---
 
@@ -57,22 +57,21 @@ diagram:
   engine: auto                # auto | archify | mermaid
   explain_sidecar: false      # /explain also writes an archify sidecar
   archify:
-    managed: true             # false = never download; use pins / skill dirs only
-    channel: stable           # stable (latest GitHub Release) | main (HEAD of main)
-    check_interval_min: 60    # minutes between remote checks; 0 = every call
     path: null                # explicit install dir (pin)
     quality: showcase         # showcase | standard  → --quality
     open: false               # pass --open to deliver
 ```
 
+`archify.managed`, `archify.channel`, and `archify.check_interval_min` are deprecated: they still validate but are ignored, and `resolve` prints a warning while they are set.
+
 ### Which engine runs
 
-One decision covers the config value, whether archify resolves, and what the workflow delivers. "Resolves" means any step of the [resolution order](#always-the-latest-archify--nothing-to-install) finds an install: a pin, the managed latest copy, or a user-installed skill dir.
+One decision covers the config value, whether archify resolves, and what the workflow delivers. "Resolves" means any step of the [resolution order](#always-the-latest-archify--nothing-to-install) finds an install: a pin or an installed skill dir.
 
 | `diagram.engine` | archify resolves? | `oma diagram resolve --json` | `/architecture` result |
 |---|---|---|---|
 | `auto` (default) | yes | `engine: archify`, `ok: true` | Mermaid block + linked `.archify.html` |
-| `auto` | no (for example first run offline, or `managed: false` with no skill dir) | `engine: mermaid`, `ok: true` | Mermaid only; the report says to run `oma diagram update` once online |
+| `auto` | no (archify not installed) | `engine: mermaid`, `ok: true` | Mermaid only; the report names `oma diagram update` |
 | `archify` | yes | `engine: archify`, `ok: true` | Mermaid block + linked `.archify.html` |
 | `archify` | no | `engine: mermaid`, `ok: false`, exit 1 | Workflow stops with the `oma diagram update` hint instead of silently downgrading |
 | `mermaid` | not checked | `engine: mermaid`, `ok: true` | Mermaid only; archify is never called |
@@ -84,7 +83,7 @@ One decision covers the config value, whether archify resolves, and what the wor
 ## CLI
 
 ```bash
-oma diagram resolve [--engine auto|archify|mermaid] [--refresh] [--offline] [--json]
+oma diagram resolve [--engine auto|archify|mermaid] [--json]
 oma diagram update  [--json]
 oma diagram archify <archify args…>
 ```
@@ -100,7 +99,7 @@ oma diagram archify deliver  architecture adr-auth.archify.json adr-auth.archify
 oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Chrome (skipped), or archify itself could not be resolved
 ```
 
-`--json` on `resolve` returns `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source, status?, note? }, reason, probed }` — `source` is `managed:<tag>`, `config:…`, `env:…`, or a skill-dir label; `status` (`fresh` / `current` / `stale`) and `note` are set for managed copies.
+`--json` on `resolve` returns `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source }, reason, probed, warnings }` — `source` is `config:…`, `env:…`, or a skill-dir label such as `home:~/.agents/skills`; `warnings` lists ignored deprecated keys. `--refresh` and `--offline` are accepted as deprecated no-ops.
 
 ---
 
@@ -149,7 +148,7 @@ Unresolvable archify is covered by the [engine decision table](#which-engine-run
 
 | Situation | Result |
 |---|---|
-| Update check fails (offline, rate-limited) | Cached copy is used and reported as `stale` with the reason |
+| `oma diagram update` fails (offline, `bunx` missing) | The skills CLI error is shown; an existing install keeps working |
 | `validate` never converges | Mermaid remains the delivered diagram; the last `.archify.json` is left for a human; diagnostics are reported verbatim |
 | Chrome missing for `visual-check` | Reported as `skipped`, never as a pass |
 | `oma diagram archify …` exits 2 | Either Chrome is missing (`visual-check`) or archify could not be resolved; check `oma diagram resolve --json` first |
@@ -162,5 +161,5 @@ Unresolvable archify is covered by the [engine decision table](#which-engine-run
 - [`/architecture` workflow](../core-concepts/workflows.md#architecture) — ADRs and reviews that carry the Mermaid block
 - [oma-config.yaml semantics](./oma-config-semantics.md) — how the `diagram:` section is merged
 - [CLI Commands: diagram](../cli-interfaces/commands.md#diagram) — full option list
-- [Market Research](./market-research.md) — the same managed-latest pattern for the last30days engine
+- [Market Research](./market-research.md) — the same skills-CLI install pattern for the last30days engine
 - archify upstream: [tt-a1i/archify](https://github.com/tt-a1i/archify)

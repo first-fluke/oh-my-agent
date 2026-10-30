@@ -52,7 +52,7 @@ outputs:
 
 ### Control-flow features
 - `oma market detect-trap` gate before anything else (exit 2 = REFUSE, exit 4 = invalid)
-- Engine is always the latest release: `oma market resolve` refreshes the managed copy (throttled) and falls back to the cached copy offline; a pinned `market.path` / `LAST30DAYS_HOME` opts out
+- Engine is the skills-CLI install of `last30days`: `oma market resolve` reads installed skill dirs (a `market.path` / `LAST30DAYS_HOME` pin wins); `oma market update` installs it when missing and updates it otherwise
 - Sources needing keys/cookies auto-skip inside the engine; keyless sources (Reddit, HN, GitHub, Polymarket, arXiv, Techmeme, Digg, web) always run
 - Framework auto-toggle by intent (pain/trend → SWOT; competitor → SWOT + Porter's 5F; discovery → SWOT + PESTEL)
 
@@ -60,7 +60,7 @@ outputs:
 
 ### Entry
 1. Run `oma market detect-trap "<topic>"`. Exit 2 → surface the REFUSE reason and reframe suggestion, stop.
-2. Run `oma market resolve --json`. `ok: false` → report `reason` (missing engine → `oma market update`; missing Python → the install hint) and stop. Never fall back to WebSearch-only synthesis and present it as market research.
+2. Run `oma market resolve --json`. `ok: false` → report `reason` (missing engine → ask the user, then `oma market update`; missing Python → the install hint) and stop. Never fall back to WebSearch-only synthesis and present it as market research.
 3. Read the upstream contract at `engine.skillMd` **top to bottom**. It is long by design; do not skim. Treat `engine.root` as its `SKILL_DIR`.
 4. Classify intent per `resources/intent-rules.md`; map to engine flags and framework set.
 
@@ -102,8 +102,8 @@ outputs:
 
 ### Tools and instruments
 - `oma market detect-trap <topic>` (preflight gate)
-- `oma market resolve [--refresh|--offline] [--json]` (engine + Python resolution; managed latest)
-- `oma market update` (force-refresh the managed engine)
+- `oma market resolve [--json]` (engine + Python resolution from installed skill dirs)
+- `oma market update` (install the skill when missing, otherwise `bunx skills update last30days -g -y`)
 - `oma market run <engine args…>` (passthrough to the resolved upstream engine’s Python entry point)
 
 ### Canonical command path
@@ -119,7 +119,7 @@ oma market run "$TOPIC" --plan "$QUERY_PLAN_FILE" --subreddits=vscode --emit=com
 | Scope | Resource target |
 |-------|-----------------|
 | `NETWORK` | Inside the engine only (its per-source fetchers); GitHub for the managed engine refresh |
-| `LOCAL_FS` | `~/.cache/oma-market/last30days/<tag>/` (engine), `~/.config/last30days/` (engine config, keys), `.agents/results/market/` (brief + raw) |
+| `LOCAL_FS` | installed skill dir such as `~/.agents/skills/last30days/` (engine), `~/.config/last30days/` (engine config, keys), `.agents/results/market/` (brief + raw) |
 | `PROCESS` | `oma market` subcommands → the resolved upstream Python entry point |
 
 ### Preconditions

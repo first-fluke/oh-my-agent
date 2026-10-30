@@ -652,16 +652,13 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
           if (lines.length > 0) ui.note(lines.join("\n"), "Gortex");
         }
 
-        // --- Always-latest Hyperframes toolchain + heygen-com/hyperframes (oma-video) ---
-        // Only refreshes a cache that already exists; a first `oma video compose`
-        // fetches it on demand. Warn-only.
+        // --- Always-latest Hyperframes toolchain + heygen-com/hyperframes skills (oma-video) ---
+        // Only refreshes what already exists: a cached toolchain (a first
+        // `oma video compose` fetches it on demand) and skills already installed
+        // through the skills CLI (never installs). Warn-only.
         try {
           const [
-            {
-              describeToolchain,
-              ensureLatestToolchain,
-              ensureHyperframesSkills,
-            },
+            { describeToolchain, ensureLatestToolchain, syncHyperframesSkills },
             { loadVideoConfig },
           ] = await Promise.all([
             import("../../io/video/internal/hyperframes-workspace.js"),
@@ -676,23 +673,20 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
               checkIntervalMin: policy.checkIntervalMin,
               force: false,
             });
-            const skills = await ensureHyperframesSkills({
-              checkIntervalMin: policy.checkIntervalMin,
-              force: false,
+            const skills = syncHyperframesSkills({
+              install: false,
+              update: true,
+              cwd,
             });
-            const parts = [
-              { name: "hyperframes", version: tc?.version, result: tc },
-              { name: "skills", version: skills?.ref, result: skills },
-            ].flatMap(({ name, version, result }) => {
-              if (!result) return [`${name}: check failed`];
-              if (result.status === "current") return [];
-              if (result.status === "fresh") {
-                return [`${name} updated to ${version}`];
-              }
-              return [
-                `${name}: ${result.note ?? `update check failed; using cached ${version}`}`,
-              ];
-            });
+            const parts: string[] = [];
+            if (!tc) parts.push("hyperframes: check failed");
+            else if (tc.status === "fresh")
+              parts.push(`hyperframes updated to ${tc.version}`);
+            else if (tc.status !== "current")
+              parts.push(
+                `hyperframes: ${tc.note ?? `update check failed; using cached ${tc.version}`}`,
+              );
+            if (!skills.ok) parts.push(`skills: ${skills.detail}`);
             if (parts.length > 0) {
               ui.note(parts.join("\n"), "Hyperframes");
             }

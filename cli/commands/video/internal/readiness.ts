@@ -4,9 +4,12 @@
 // can gate real-vs-fallback branches off the same source of truth.
 import { findChromeExecutable } from "@cli/io/chrome";
 import { http } from "@cli/io/http";
-import { readManagedState } from "../../../platform/managed-skill.js";
 import { binaryAvailable, resolveOmaInvocation, runCapture } from "./exec.js";
-import { describeToolchain, skillsCacheRoot } from "./hyperframes-workspace.js";
+import {
+  describeToolchain,
+  findHyperframesSkills,
+  HYPERFRAMES_INSTALL_COMMAND,
+} from "./hyperframes-workspace.js";
 import { getMptProjectStatus } from "./mpt-project.js";
 import { getStrudelProjectStatus } from "./strudel-project.js";
 
@@ -189,23 +192,23 @@ export function checkHyperframesToolchain(): ReadinessCheck {
 }
 
 /**
- * heygen-com/hyperframes at HEAD — what the agent reads to author compositions.
+ * heygen-com/hyperframes skills — what the agent reads to author compositions.
  * Optional (offline authoring still works) but strongly recommended.
  */
 export function checkHyperframesSkills(): ReadinessCheck {
-  const state = readManagedState(skillsCacheRoot());
-  return state
+  const found = findHyperframesSkills();
+  const names = Object.keys(found.skills);
+  return found.missing.length === 0
     ? {
         name: "hyperframes-skills",
         ok: true,
-        detail: `heygen-com/hyperframes @ ${state.ref} (checked ${state.lastCheck.slice(0, 10)})`,
+        detail: names.map((n) => `${n} (${found.sources[n]})`).join(", "),
       }
     : {
         name: "hyperframes-skills",
         ok: false,
-        detail: "not cached",
-        remediation:
-          "Run `oma video doctor --install` once online to fetch heygen-com/hyperframes.",
+        detail: `missing ${found.missing.join(", ")}`,
+        remediation: `Run \`oma video doctor --install\` (runs \`${HYPERFRAMES_INSTALL_COMMAND}\`).`,
       };
 }
 

@@ -71,8 +71,8 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `hwp` | `format`, `version.*`, `output.*` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc format, version channel, and output location. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#extract-pdf-content) | PDF extraction, OCR, image, and overwrite settings. |
 | `scholar` | `base_url` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Knows endpoint host; protocol shape remains skill-owned. |
-| `diagram` | `engine`, `explain_sidecar`, `archify.*` | skill default; see [Diagram Engine](/docs/guide/diagram-engine) | Mermaid/archify selection and managed-engine settings. |
-| `market` | `managed`, `channel`, `check_interval_min`, `path`, `python`, `save_dir` | skill default; see [Market Research](/docs/guide/market-research) | Managed last30days engine resolution and result location. |
+| `diagram` | `engine`, `explain_sidecar`, `archify.*` | skill default; see [Diagram Engine](/docs/guide/diagram-engine) | Mermaid/archify selection and archify pin/quality settings (`archify.managed|channel|check_interval_min` are deprecated and ignored). |
+| `market` | `path`, `python`, `save_dir` (`managed`, `channel`, `check_interval_min` deprecated and ignored) | skill default; see [Market Research](/docs/guide/market-research) | last30days engine pin, interpreter, and result location. |
 
 The shipped template also contains consumer-owned blocks. Their current keys and defaults are:
 

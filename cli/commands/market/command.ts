@@ -11,6 +11,7 @@ import {
   LAST30DAYS_ENV_PYTHON,
   type MarketResolution,
   resolveMarketEngine,
+  updateMarketEngine,
 } from "./resolve.js";
 
 function printResolution(res: MarketResolution): void {
@@ -27,6 +28,7 @@ function printResolution(res: MarketResolution): void {
     `python:   ${res.python.path ? `${res.python.path} (${res.python.version}, ${res.python.source})` : color.yellow("not found")}`,
   );
   console.log(`save_dir: ${res.saveDir}`);
+  for (const w of res.warnings) console.log(color.yellow(`warning:  ${w}`));
 }
 
 /**
@@ -69,7 +71,7 @@ export function registerMarketCommand(program: Command): void {
   const market = program
     .command("market")
     .description(
-      "Community-signal market research via the always-latest last30days engine",
+      "Community-signal market research via the installed last30days skill",
     );
 
   market
@@ -87,23 +89,18 @@ export function registerMarketCommand(program: Command): void {
   const resolveCmd = market
     .command("resolve")
     .description(
-      "Report the last30days engine oma will run (managed latest, pin, or local copy) and the Python it uses",
+      "Report the installed last30days engine oma will run (pin or skills-CLI install) and the Python it uses",
     )
-    .option("--refresh", "Re-check the latest last30days release now")
-    .option("--offline", "Do not touch the network; use cached copies only");
+    .option("--refresh", "Deprecated no-op; use `oma market update`")
+    .option(
+      "--offline",
+      "Deprecated no-op; resolution never touches the network",
+    );
   addOutputOptions(resolveCmd);
   resolveCmd.action(
     runAction(
-      async (opts: {
-        json?: boolean;
-        refresh?: boolean;
-        offline?: boolean;
-      }) => {
-        const res = await resolveMarketEngine({
-          cwd: process.cwd(),
-          refresh: opts.refresh,
-          offline: opts.offline,
-        });
+      async (opts: { json?: boolean }) => {
+        const res = await resolveMarketEngine({ cwd: process.cwd() });
         if (resolveJsonMode(opts)) console.log(JSON.stringify(res, null, 2));
         else printResolution(res);
         if (!res.ok) process.exitCode = 1;
@@ -115,24 +112,31 @@ export function registerMarketCommand(program: Command): void {
   const updateCmd = market
     .command("update")
     .description(
-      "Download the latest last30days release into oma's managed cache (~/.cache/oma-market/last30days)",
+      "Install last30days with the skills CLI when missing, otherwise update it (bunx skills add|update -g -y)",
     );
   addOutputOptions(updateCmd);
   updateCmd.action(
     runAction(
       async (opts: { json?: boolean }) => {
-        const res = await resolveMarketEngine({
-          cwd: process.cwd(),
-          refresh: true,
-          skipPython: true,
-        });
-        if (resolveJsonMode(opts)) console.log(JSON.stringify(res, null, 2));
-        else if (res.engine)
+        const res = await updateMarketEngine({ cwd: process.cwd() });
+        if (resolveJsonMode(opts)) {
           console.log(
-            `${color.green("last30days")} ${res.engine.version ?? res.engine.source} ready — ${res.reason}`,
+            JSON.stringify(
+              { ok: res.resolution.engine !== undefined, ...res },
+              null,
+              2,
+            ),
           );
-        else console.error(color.red(res.reason));
-        if (!res.ok) process.exitCode = 1;
+        } else if (res.action === "failed") {
+          console.error(color.red(`last30days ${res.action}: ${res.detail}`));
+        } else {
+          const engine = res.resolution.engine;
+          console.log(
+            `${color.green("last30days")} ${res.action}${res.detail ? ` — ${res.detail}` : ""}${engine ? ` (${engine.version ?? "unknown version"} via ${engine.source})` : ""}`,
+          );
+        }
+        if (res.action === "failed" || !res.resolution.engine)
+          process.exitCode = 1;
       },
       { supportsJsonOutput: true },
     ),

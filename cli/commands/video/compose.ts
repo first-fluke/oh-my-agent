@@ -59,11 +59,9 @@ export async function runVideoCompose({
     },
     skills: prepared.skills
       ? {
-          ref: prepared.skills.ref,
-          status: prepared.skills.status,
-          note: prepared.skills.note,
-          root: prepared.skills.root,
           files: prepared.skills.skills,
+          sources: prepared.skills.sources,
+          missing: prepared.skills.missing,
         }
       : null,
     next: prepared.project.stub
@@ -79,7 +77,7 @@ export async function runVideoCompose({
       `  hyperframes:  ${out.hyperframes.version} (${out.hyperframes.status}${out.hyperframes.note ? `, ${out.hyperframes.note}` : ""})`,
     );
     console.log(
-      `  skills:    ${out.skills ? `${out.skills.ref} (${Object.keys(out.skills.files).length} skills)` : color.yellow("unavailable")}`,
+      `  skills:    ${out.skills && Object.keys(out.skills.files).length > 0 ? Object.keys(out.skills.files).join(", ") : color.yellow("not installed — run `oma video doctor --install`")}${out.skills?.missing.length ? color.yellow(` (missing ${out.skills.missing.join(", ")})`) : ""}`,
     );
     console.log(`  guide:     ${out.authoringGuide}`);
     console.log(`  next:      ${out.next}`);

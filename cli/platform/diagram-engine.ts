@@ -9,27 +9,29 @@
  *                  (typed JSON IR → validated standalone HTML)
  *   - `mermaid`  — the built-in fallback: Mermaid fenced blocks in Markdown
  *
- * archify is not an npm dependency. It is installed as an agent skill
- * (`npx skills add tt-a1i/archify -g`), so it can live in any of several
- * vendor skill directories. Resolution is filesystem-only and deterministic so
- * every vendor runtime (claude / codex / cursor / …) gets the same answer.
+ * archify is not an npm dependency. It is installed as an agent skill through
+ * the skills CLI (`bunx skills add tt-a1i/archify --skill archify -g -y`, run by
+ * `oma diagram update`), so it can live in any of several vendor skill
+ * directories. Resolution is filesystem-only and deterministic so every vendor
+ * runtime (claude / codex / cursor / …) gets the same answer.
  *
  * Precedence (first hit wins):
  *   1. `diagram.archify.path`      — explicit pin
  *   2. `ARCHIFY_HOME` env          — explicit pin
- *   3. managed install             — oma-owned copy, auto-refreshed to the
- *                                    latest release (see managed.ts)
- *   4. well-known skill dirs       — a copy the user installed with `npx skills add`
+ *   3. installed skill dirs        — see `platform/skill-install.ts`
  */
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { loadSkillSection } from "./agent-config/skill-sections.js";
 import {
-  type ArchifyChannel,
-  ensureLatestArchify,
-  type ManagedInstall,
-} from "./archify-managed.js";
+  installSkills,
+  type SkillsCliSpawn,
+  skillCandidateDirs,
+  skillsAddCommand,
+  type UpstreamSkill,
+  updateSkills,
+} from "./skill-install.js";
 
 export type DiagramEngine = "archify" | "mermaid";
 export type DiagramEngineRequest = DiagramEngine | "auto";
@@ -41,13 +43,10 @@ export interface DiagramConfig {
     path?: string;
     quality: ArchifyQuality;
     open: boolean;
-    /** Keep an oma-owned copy that tracks the latest release (default true). */
-    managed: boolean;
-    channel: ArchifyChannel;
-    /** Minutes between remote version checks; 0 = every call. */
-    check_interval_min: number;
   };
   explain_sidecar: boolean;
+  /** Retired managed-copy keys present under `diagram.archify` (ignored). */
+  deprecated: string[];
 }
 
 export const DEFAULT_DIAGRAM_CONFIG: DiagramConfig = {
@@ -55,14 +54,26 @@ export const DEFAULT_DIAGRAM_CONFIG: DiagramConfig = {
   archify: {
     quality: "showcase",
     open: false,
-    managed: true,
-    channel: "stable",
-    check_interval_min: 60,
   },
   explain_sidecar: false,
+  deprecated: [],
 };
 
 export const ARCHIFY_BIN_RELATIVE = path.join("bin", "archify.mjs");
+export const ARCHIFY_REPO = "tt-a1i/archify";
+export const ARCHIFY_SKILL: UpstreamSkill = {
+  repo: ARCHIFY_REPO,
+  name: "archify",
+  entryRelative: ARCHIFY_BIN_RELATIVE,
+};
+export const ARCHIFY_INSTALL_COMMAND = skillsAddCommand(ARCHIFY_REPO, [
+  ARCHIFY_SKILL.name,
+]);
+const DEPRECATED_ARCHIFY_KEYS = [
+  "managed",
+  "channel",
+  "check_interval_min",
+] as const;
 export const ARCHIFY_ENV_HOME = "ARCHIFY_HOME";
 /** Set on every archify invocation: keeps the skill's update ping offline. */
 export const ARCHIFY_ENV_NO_UPDATE = "ARCHIFY_UPDATE_CHECK_DISABLED";
@@ -72,11 +83,8 @@ export interface ArchifyInstall {
   root: string;
   bin: string;
   version?: string;
-  /** Where the hit came from: `config` / `env` / `managed` / the well-known dir label. */
+  /** Where the hit came from: `config` / `env` / the well-known dir label. */
   source: string;
-  /** Managed installs only: `fresh` (just downloaded), `current`, or `stale` (network failed). */
-  status?: ManagedInstall["status"];
-  note?: string;
 }
 
 export interface DiagramResolution {
@@ -90,6 +98,8 @@ export interface DiagramResolution {
   reason: string;
   /** Every location that was probed, in order. */
   probed: string[];
+  /** Deprecation notes for ignored config keys. */
+  warnings: string[];
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -104,16 +114,6 @@ function asEngineRequest(value: unknown): DiagramEngineRequest {
 
 function asQuality(value: unknown): ArchifyQuality {
   return value === "standard" ? "standard" : "showcase";
-}
-
-function asChannel(value: unknown): ArchifyChannel {
-  return value === "main" ? "main" : "stable";
-}
-
-function asMinutes(value: unknown, fallback: number): number {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0
-    ? value
-    : fallback;
 }
 
 /** Merge the sparse `diagram:` section onto the shipped defaults. */
@@ -133,15 +133,16 @@ export function diagramConfigFrom(
       path: typeof rawPath === "string" && rawPath.trim() ? rawPath : undefined,
       quality: asQuality(archify.quality),
       open: archify.open === true,
-      managed: archify.managed !== false,
-      channel: asChannel(archify.channel),
-      check_interval_min: asMinutes(
-        archify.check_interval_min,
-        DEFAULT_DIAGRAM_CONFIG.archify.check_interval_min,
-      ),
     },
     explain_sidecar: section?.explain_sidecar === true,
+    deprecated: DEPRECATED_ARCHIFY_KEYS.filter((k) => k in archify),
   };
+}
+
+function deprecationNote(config: DiagramConfig): string | undefined {
+  if (config.deprecated.length === 0) return undefined;
+  const keys = config.deprecated.map((k) => `diagram.archify.${k}`);
+  return `${keys.join(", ")} ${keys.length > 1 ? "are" : "is"} ignored: archify is now a skills-CLI install (update with \`oma diagram update\`)`;
 }
 
 function expandHome(p: string, home: string): string {
@@ -149,28 +150,14 @@ function expandHome(p: string, home: string): string {
 }
 
 /**
- * Well-known skill directories, project-local first (the `skills` CLI writes
- * `.agents/skills/<name>` as its canonical location and symlinks vendor dirs
- * onto it), then the per-user equivalents.
+ * Well-known skill directories, project-local first, then the per-user
+ * equivalents (shared with every skills-CLI install), plus Raven's workspace.
  */
 export function archifyCandidateDirs(
   cwd: string,
   home = os.homedir(),
 ): Array<{ dir: string; source: string }> {
-  const rel = ["agents", "claude", "codex", "cursor", "qwen", "kiro"];
-  const out: Array<{ dir: string; source: string }> = [];
-  for (const vendor of rel) {
-    out.push({
-      dir: path.join(cwd, `.${vendor}`, "skills", "archify"),
-      source: `project:.${vendor}/skills`,
-    });
-  }
-  for (const vendor of rel) {
-    out.push({
-      dir: path.join(home, `.${vendor}`, "skills", "archify"),
-      source: `home:~/.${vendor}/skills`,
-    });
-  }
+  const out = skillCandidateDirs(ARCHIFY_SKILL, cwd, home);
   out.push({
     dir: path.join(home, ".raven", "workspace", "skills", "archify"),
     source: "home:~/.raven/workspace/skills",
@@ -204,8 +191,6 @@ export interface FindArchifyOptions {
   configPath?: string;
   env?: NodeJS.ProcessEnv;
   home?: string;
-  /** Managed-install step; `null` disables it (tests / `managed: false`). */
-  managed?: (() => Promise<ManagedInstall | undefined>) | null;
 }
 
 /** Explicit pins only: config path, then ARCHIFY_HOME. */
@@ -244,51 +229,25 @@ export function findSkillDirArchify(opts: FindArchifyOptions): {
   return { probed };
 }
 
-/**
- * Full search: pins → managed latest → skill dirs.
- */
-export async function findArchify(opts: FindArchifyOptions): Promise<{
+/** Full search: pins → installed skill dirs. */
+export function findArchify(opts: FindArchifyOptions): {
   install?: ArchifyInstall;
   probed: string[];
-}> {
+} {
   const pinned = findPinnedArchify(opts);
   if (pinned.install) return pinned;
-  const probed = [...pinned.probed];
-
-  if (opts.managed) {
-    probed.push("managed:~/.cache/oma-diagram/archify");
-    const m = await opts.managed();
-    if (m) {
-      return {
-        install: {
-          root: m.root,
-          bin: m.bin,
-          version: m.version,
-          source: `managed:${m.ref}`,
-          status: m.status,
-          note: m.note,
-        },
-        probed,
-      };
-    }
-  }
-
   const skill = findSkillDirArchify(opts);
-  return { install: skill.install, probed: [...probed, ...skill.probed] };
+  return {
+    install: skill.install,
+    probed: [...pinned.probed, ...skill.probed],
+  };
 }
 
 export interface ResolveDiagramOptions
-  extends Omit<FindArchifyOptions, "configPath" | "managed"> {
+  extends Omit<FindArchifyOptions, "configPath"> {
   /** Override the config-file engine (CLI flag / prompt phrasing). */
   engine?: DiagramEngineRequest;
   config?: DiagramConfig;
-  /** Ignore the check throttle and re-check the remote version now. */
-  refresh?: boolean;
-  /** Never touch the network; use cached / local copies only. */
-  offline?: boolean;
-  /** Test seam for the managed step (overrides config `managed`). */
-  managed?: FindArchifyOptions["managed"];
-  cacheRoot?: string;
 }
 
 /**
@@ -302,11 +261,13 @@ export async function resolveDiagramEngine(
 ): Promise<DiagramResolution & { ok: boolean }> {
   const config = opts.config ?? loadDiagramConfig(opts.cwd);
   const requested = opts.engine ?? config.engine;
+  const note = deprecationNote(config);
   const base = {
     requested,
     quality: config.archify.quality,
     open: config.archify.open,
     explainSidecar: config.explain_sidecar,
+    warnings: note ? [note] : [],
   };
 
   if (requested === "mermaid") {
@@ -319,35 +280,19 @@ export async function resolveDiagramEngine(
     };
   }
 
-  const managed =
-    opts.managed !== undefined
-      ? opts.managed
-      : config.archify.managed
-        ? () =>
-            ensureLatestArchify({
-              channel: config.archify.channel,
-              checkIntervalMin: config.archify.check_interval_min,
-              force: opts.refresh,
-              offline: opts.offline,
-              cacheRoot: opts.cacheRoot,
-            })
-        : null;
-
-  const { install, probed } = await findArchify({
+  const { install, probed } = findArchify({
     cwd: opts.cwd,
     configPath: config.archify.path,
     env: opts.env,
     home: opts.home,
-    managed,
   });
 
   if (install) {
-    const suffix = install.note ? ` — ${install.note}` : "";
     return {
       ...base,
       engine: "archify",
       archify: install,
-      reason: `archify${install.version ? ` ${install.version}` : ""} via ${install.source}${install.status ? ` (${install.status})` : ""}${suffix}`,
+      reason: `archify${install.version ? ` ${install.version}` : ""} via ${install.source}`,
       probed,
       ok: true,
     };
@@ -357,8 +302,7 @@ export async function resolveDiagramEngine(
     return {
       ...base,
       engine: "mermaid",
-      reason:
-        "diagram.engine is pinned to archify but no install could be resolved — run `oma diagram update` (network) or set diagram.archify.path / ARCHIFY_HOME",
+      reason: `diagram.engine is pinned to archify but it is not installed — run \`oma diagram update\` (runs \`${ARCHIFY_INSTALL_COMMAND}\`) or set diagram.archify.path / ARCHIFY_HOME`,
       probed,
       ok: false,
     };
@@ -367,9 +311,43 @@ export async function resolveDiagramEngine(
   return {
     ...base,
     engine: "mermaid",
-    reason:
-      "archify unavailable: managed download failed or is disabled and no local skill install was found — run `oma diagram update` once online",
+    reason: `archify is not installed — run \`oma diagram update\` (runs \`${ARCHIFY_INSTALL_COMMAND}\`)`,
     probed,
     ok: true,
   };
+}
+
+export type ArchifyUpdateAction =
+  | "installed"
+  | "updated"
+  | "skipped-pinned"
+  | "failed";
+
+/**
+ * Install archify with the skills CLI when it is missing, otherwise update it.
+ * Pinned copies (diagram.archify.path / ARCHIFY_HOME) are left to their owners.
+ */
+export async function updateArchify(
+  opts: Omit<ResolveDiagramOptions, "engine"> & { spawn?: SkillsCliSpawn },
+): Promise<{
+  action: ArchifyUpdateAction;
+  detail: string;
+  resolution: DiagramResolution & { ok: boolean };
+}> {
+  const before = await resolveDiagramEngine({ ...opts, engine: "archify" });
+  const source = before.archify?.source ?? "";
+  let action: ArchifyUpdateAction;
+  let detail = "";
+  if (source.startsWith("config:") || source.startsWith("env:")) {
+    action = "skipped-pinned";
+    detail = `pinned via ${source}; update it yourself`;
+  } else {
+    const r = before.archify
+      ? updateSkills([ARCHIFY_SKILL.name], opts.spawn)
+      : installSkills(ARCHIFY_REPO, [ARCHIFY_SKILL.name], opts.spawn);
+    action = r.ok ? (before.archify ? "updated" : "installed") : "failed";
+    detail = r.detail;
+  }
+  const resolution = await resolveDiagramEngine({ ...opts, engine: "archify" });
+  return { action, detail, resolution };
 }

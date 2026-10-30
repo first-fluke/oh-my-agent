@@ -87,11 +87,6 @@ function authoringGuide(
   skills?: HyperframesSkills,
 ): string {
   const skillLines = Object.entries(skills?.skills ?? {})
-    .filter(([name]) =>
-      ["hyperframes-core", "hyperframes-animation", "hyperframes-cli"].includes(
-        name,
-      ),
-    )
     .map(([name, file]) => `- ${name}: ${file}`)
     .join("\n");
   return `# HyperFrames authoring contract
@@ -100,7 +95,7 @@ Replace index.html, including its stub marker, with the finished composition.
 HyperFrames ${toolchain.version}; ${spec.dimensions.width} × ${spec.dimensions.height}; ${spec.fps} fps; ${spec.durationInFrames / spec.fps} seconds.
 
 ## References
-${skillLines || "Read https://hyperframes.heygen.com/introduction and the composition contract at https://github.com/heygen-com/hyperframes/tree/main/skills/hyperframes-core."}
+${skillLines || "Read https://hyperframes.heygen.com/introduction and the composition contract at https://github.com/heygen-com/hyperframes/tree/main/skills/hyperframes."}
 Use upstream references for HTML, animation, and CLI APIs. OMA owns provider selection,
 authorization, and delivery. Do not invoke upstream publishing, telemetry feedback,
 skill installation, or additional media providers as part of this local render.
@@ -165,7 +160,7 @@ export function scaffoldRunProject(args: {
         omaVideo: {
           hyperframes: toolchain.version,
           toolchainDir: toolchain.dir,
-          skillsRef: skills?.ref,
+          skills: skills?.sources,
         },
       },
       null,

@@ -13,11 +13,12 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { http } from "../../../io/http.js";
 import {
-  ensureLatestManagedSkill,
-  type ManagedInstall,
-  type ManagedSkillSpec,
-  readPackageJsonVersion,
-} from "../../../platform/managed-skill.js";
+  findInstalledSkill,
+  installSkills,
+  type SkillsCliSpawn,
+  skillsAddCommand,
+  updateSkills,
+} from "../../../platform/skill-install.js";
 import type { RenderSpec } from "../types.js";
 import { runCapture } from "./exec.js";
 import { type RunProject, scaffoldRunProject } from "./hyperframes-project.js";
@@ -28,6 +29,17 @@ export {
   STUB_MARKER,
   scaffoldRunProject,
 } from "./hyperframes-project.js";
+
+function packageVersion(dir: string): string | undefined {
+  try {
+    const { version } = JSON.parse(
+      readFileSync(join(dir, "package.json"), "utf8"),
+    ) as { version?: unknown };
+    return typeof version === "string" ? version : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -315,7 +327,7 @@ export async function ensureLatestToolchain(
     const pkgPath = join(staging, "package.json");
     const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
     pkg.dependencies.gsap =
-      readPackageJsonVersion(join(staging, "node_modules", "gsap")) ??
+      packageVersion(join(staging, "node_modules", "gsap")) ??
       pkg.dependencies.gsap;
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
     rmSync(dir, { recursive: true, force: true });
@@ -363,58 +375,87 @@ export async function ensureLatestToolchain(
 }
 
 // ---------------------------------------------------------------------------
-// heygen-com/hyperframes (managed, HEAD)
+// heygen-com/hyperframes skills (skills-CLI install)
 // ---------------------------------------------------------------------------
 
-export const HYPERFRAMES_SKILLS_SPEC: ManagedSkillSpec = {
-  id: "video-hyperframes-skills",
-  repo: "heygen-com/hyperframes",
-  packageSubdir: "",
-  entryRelative: join("skills", "hyperframes-core", "SKILL.md"),
-  readVersion: readPackageJsonVersion,
-};
-
-export function skillsCacheRoot(home?: string): string {
-  return join(videoCacheRoot(home), "hyperframes-skills");
-}
+export const HYPERFRAMES_REPO = "heygen-com/hyperframes";
+/** Upstream skills the authoring guide points the agent at. */
+export const HYPERFRAMES_SKILL_NAMES = ["hyperframes", "hyperframes-cli"];
+export const HYPERFRAMES_INSTALL_COMMAND = skillsAddCommand(
+  HYPERFRAMES_REPO,
+  HYPERFRAMES_SKILL_NAMES,
+);
 
 export interface HyperframesSkills {
-  root: string;
-  ref: string;
-  status: ManagedInstall["status"];
-  note?: string;
   /** Absolute SKILL.md paths by upstream skill name. */
   skills: Record<string, string>;
+  /** Where each installed skill was found (e.g. `home:~/.agents/skills`). */
+  sources: Record<string, string>;
+  missing: string[];
 }
 
-export async function ensureHyperframesSkills(opts: {
-  checkIntervalMin: number;
-  force?: boolean;
-  offline?: boolean;
-  home?: string;
-  managed?: () => Promise<ManagedInstall | undefined>;
-}): Promise<HyperframesSkills | undefined> {
-  const m = await (opts.managed
-    ? opts.managed()
-    : ensureLatestManagedSkill(HYPERFRAMES_SKILLS_SPEC, {
-        channel: "main",
-        checkIntervalMin: opts.checkIntervalMin,
-        force: opts.force,
-        offline: opts.offline,
-        cacheRoot: skillsCacheRoot(opts.home),
-      }));
-  if (!m) return undefined;
-  const skillsDir = join(m.root, "skills");
-  const skills: Record<string, string> = {};
-  try {
-    for (const e of readdirSync(skillsDir, { withFileTypes: true })) {
-      const md = join(skillsDir, e.name, "SKILL.md");
-      if (e.isDirectory() && existsSync(md)) skills[e.name] = md;
+/** Installed HyperFrames skills; read-only, never installs. */
+export function findHyperframesSkills(
+  opts: { cwd?: string; home?: string } = {},
+): HyperframesSkills {
+  const out: HyperframesSkills = { skills: {}, sources: {}, missing: [] };
+  for (const name of HYPERFRAMES_SKILL_NAMES) {
+    const { install } = findInstalledSkill(
+      { repo: HYPERFRAMES_REPO, name, entryRelative: "SKILL.md" },
+      { cwd: opts.cwd ?? process.cwd(), home: opts.home },
+    );
+    if (install) {
+      out.skills[name] = install.entry;
+      out.sources[name] = install.source;
+    } else {
+      out.missing.push(name);
     }
-  } catch {
-    /* none */
   }
-  return { root: m.root, ref: m.ref, status: m.status, note: m.note, skills };
+  return out;
+}
+
+export interface HyperframesSkillsSync {
+  ok: boolean;
+  installed: string[];
+  updated: string[];
+  detail: string;
+  skills: HyperframesSkills;
+}
+
+/**
+ * Explicit install/update through the skills CLI. `install` adds missing
+ * skills; `update` refreshes installed ones. `oma update` passes only
+ * `update`, so it never installs on its own.
+ */
+export function syncHyperframesSkills(opts: {
+  install: boolean;
+  update: boolean;
+  cwd?: string;
+  home?: string;
+  spawn?: SkillsCliSpawn;
+}): HyperframesSkillsSync {
+  const before = findHyperframesSkills(opts);
+  const present = Object.keys(before.skills);
+  const installed: string[] = [];
+  const updated: string[] = [];
+  const failures: string[] = [];
+  if (opts.install && before.missing.length > 0) {
+    const r = installSkills(HYPERFRAMES_REPO, before.missing, opts.spawn);
+    if (r.ok) installed.push(...before.missing);
+    else failures.push(`install: ${r.detail}`);
+  }
+  if (opts.update && present.length > 0) {
+    const r = updateSkills(present, opts.spawn);
+    if (r.ok) updated.push(...present);
+    else failures.push(`update: ${r.detail}`);
+  }
+  return {
+    ok: failures.length === 0,
+    installed,
+    updated,
+    detail: failures.join("; "),
+    skills: findHyperframesSkills(opts),
+  };
 }
 
 /** Toolchain + skills + scaffold in one call (what `oma video compose` and the orchestrator use). */
@@ -441,12 +482,7 @@ export async function prepareHyperframesRun(args: {
       "hyperframes toolchain unavailable: could not download the latest hyperframes and nothing is cached — run `oma video doctor --install` once online",
     );
   }
-  const skills = await ensureHyperframesSkills({
-    checkIntervalMin: args.checkIntervalMin,
-    force: args.force,
-    offline: args.offline,
-    home: args.home,
-  });
+  const skills = findHyperframesSkills({ home: args.home });
   const project = scaffoldRunProject({
     runDir: args.runDir,
     spec: args.spec,

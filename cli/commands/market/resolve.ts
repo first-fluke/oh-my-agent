@@ -2,65 +2,64 @@
  * last30days engine resolution for `oma market`.
  *
  * oma-market delegates community-signal research to the upstream
- * mvanhorn/last30days-skill engine (Python 3.12+, zero runtime deps). oma keeps
- * an always-latest managed copy (see `platform/managed-skill.ts`) so users never
- * run a stale engine, and resolves a compatible Python interpreter once.
+ * mvanhorn/last30days-skill engine (Python 3.12+, zero runtime deps), installed
+ * as an agent skill through the skills CLI (`platform/skill-install.ts`). oma
+ * never keeps its own copy; `oma market update` installs or updates the skill.
  *
  * Precedence (first hit wins):
  *   1. `market.path`               — explicit pin
  *   2. `LAST30DAYS_HOME` env       — explicit pin
- *   3. managed install             — oma-owned copy, auto-refreshed to the latest release
- *   4. well-known skill dirs       — `npx skills add` / Claude plugin cache copies
+ *   3. installed skill dirs        — `bunx skills add` / Claude plugin cache copies
  */
 import { spawnSync } from "node:child_process";
-import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { loadSkillSection } from "../../platform/agent-config/skill-sections.js";
 import {
-  defaultManagedCacheRoot,
-  ensureLatestManagedSkill,
-  type ManagedChannel,
-  type ManagedInstall,
-  type ManagedSkillSpec,
-  readSkillMdVersion,
-} from "../../platform/managed-skill.js";
+  findInstalledSkill,
+  installSkills,
+  probeSkillDir,
+  type SkillsCliSpawn,
+  skillsAddCommand,
+  type UpstreamSkill,
+  updateSkills,
+} from "../../platform/skill-install.js";
 
 export const LAST30DAYS_REPO = "mvanhorn/last30days-skill";
 export const LAST30DAYS_ENV_HOME = "LAST30DAYS_HOME";
 export const LAST30DAYS_ENV_PYTHON = "LAST30DAYS_PYTHON";
 export const LAST30DAYS_ENTRY = path.join("scripts", "last30days.py");
 
-export const LAST30DAYS_SPEC: ManagedSkillSpec = {
-  id: "market",
+export const LAST30DAYS_SKILL: UpstreamSkill = {
   repo: LAST30DAYS_REPO,
-  packageSubdir: path.join("skills", "last30days"),
+  name: "last30days",
   entryRelative: LAST30DAYS_ENTRY,
-  readVersion: readSkillMdVersion,
+  pluginCache: path.join("last30days-skill", "last30days"),
 };
 
-export function defaultCacheRoot(home?: string): string {
-  return path.join(
-    defaultManagedCacheRoot(LAST30DAYS_SPEC, home),
-    "last30days",
-  );
-}
+export const LAST30DAYS_INSTALL_COMMAND = skillsAddCommand(LAST30DAYS_REPO, [
+  LAST30DAYS_SKILL.name,
+]);
+
+/** Keys from the retired managed-copy policy: accepted, ignored, reported. */
+export const DEPRECATED_MARKET_KEYS = [
+  "managed",
+  "channel",
+  "check_interval_min",
+] as const;
 
 export interface MarketConfig {
-  managed: boolean;
-  channel: ManagedChannel;
-  check_interval_min: number;
   path?: string;
   python?: string;
   /** Where raw engine output is saved (`--save-dir`). Relative to the workspace. */
   save_dir: string;
+  /** Deprecated keys present in the section (ignored). */
+  deprecated: string[];
 }
 
 export const DEFAULT_MARKET_CONFIG: MarketConfig = {
-  managed: true,
-  channel: "stable",
-  check_interval_min: 60,
   save_dir: path.join(".agents", "results", "market", "raw"),
+  deprecated: [],
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -75,22 +74,21 @@ export function marketConfigFrom(
   section: Record<string, unknown> | undefined,
 ): MarketConfig {
   const s = isPlainObject(section) ? section : {};
-  const minutes = s.check_interval_min;
   return {
-    managed: s.managed !== false,
-    channel: s.channel === "main" ? "main" : "stable",
-    check_interval_min:
-      typeof minutes === "number" && Number.isFinite(minutes) && minutes >= 0
-        ? minutes
-        : DEFAULT_MARKET_CONFIG.check_interval_min,
     path: optString(s.path),
     python: optString(s.python),
     save_dir: optString(s.save_dir) ?? DEFAULT_MARKET_CONFIG.save_dir,
+    deprecated: DEPRECATED_MARKET_KEYS.filter((k) => k in s),
   };
 }
 
 export function loadMarketConfig(cwd: string): MarketConfig {
   return marketConfigFrom(loadSkillSection(cwd, "market"));
+}
+
+export function deprecationNote(config: MarketConfig): string | undefined {
+  if (config.deprecated.length === 0) return undefined;
+  return `market.${config.deprecated.join(", market.")} ${config.deprecated.length > 1 ? "are" : "is"} ignored: last30days is now a skills-CLI install (update with \`oma market update\`)`;
 }
 
 // ---------------------------------------------------------------------------
@@ -106,8 +104,6 @@ export interface EngineInstall {
   skillMd: string;
   version?: string;
   source: string;
-  status?: ManagedInstall["status"];
-  note?: string;
 }
 
 function expandHome(p: string, home: string): string {
@@ -115,80 +111,16 @@ function expandHome(p: string, home: string): string {
 }
 
 function probe(dir: string, source: string): EngineInstall | undefined {
-  const script = path.join(dir, LAST30DAYS_ENTRY);
-  try {
-    if (!fs.statSync(script).isFile()) return undefined;
-  } catch {
-    return undefined;
-  }
-  return {
-    root: dir,
-    script,
-    skillMd: path.join(dir, "SKILL.md"),
-    version: readSkillMdVersion(dir),
-    source,
-  };
-}
-
-function versionSortDesc(a: string, b: string): number {
-  const pa = a.split(".").map((n) => Number.parseInt(n, 10) || 0);
-  const pb = b.split(".").map((n) => Number.parseInt(n, 10) || 0);
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const d = (pb[i] ?? 0) - (pa[i] ?? 0);
-    if (d !== 0) return d;
-  }
-  return 0;
-}
-
-/** Well-known user-installed copies, project-local first. */
-export function engineCandidateDirs(
-  cwd: string,
-  home = os.homedir(),
-): Array<{ dir: string; source: string }> {
-  const vendors = ["agents", "claude", "codex", "cursor", "qwen", "kiro"];
-  const out: Array<{ dir: string; source: string }> = [];
-  for (const v of vendors) {
-    out.push({
-      dir: path.join(cwd, `.${v}`, "skills", "last30days"),
-      source: `project:.${v}/skills`,
-    });
-  }
-  for (const v of vendors) {
-    out.push({
-      dir: path.join(home, `.${v}`, "skills", "last30days"),
-      source: `home:~/.${v}/skills`,
-    });
-  }
-  // Claude Code marketplace plugin cache: <ver>/skills/last30days (nested) or <ver> (flat)
-  const cache = path.join(
-    home,
-    ".claude",
-    "plugins",
-    "cache",
-    "last30days-skill",
-    "last30days",
-  );
-  let versions: string[] = [];
-  try {
-    versions = fs
-      .readdirSync(cache, { withFileTypes: true })
-      .filter((e) => e.isDirectory())
-      .map((e) => e.name)
-      .sort(versionSortDesc);
-  } catch {
-    /* no plugin cache */
-  }
-  for (const v of versions) {
-    out.push({
-      dir: path.join(cache, v, "skills", "last30days"),
-      source: `home:claude-plugin-cache:${v}`,
-    });
-    out.push({
-      dir: path.join(cache, v),
-      source: `home:claude-plugin-cache:${v}`,
-    });
-  }
-  return out;
+  const hit = probeSkillDir(LAST30DAYS_SKILL, dir, source);
+  return hit
+    ? {
+        root: hit.root,
+        script: hit.entry,
+        skillMd: path.join(hit.root, "SKILL.md"),
+        version: hit.version,
+        source: hit.source,
+      }
+    : undefined;
 }
 
 export interface FindEngineOptions {
@@ -196,14 +128,12 @@ export interface FindEngineOptions {
   configPath?: string;
   env?: NodeJS.ProcessEnv;
   home?: string;
-  /** Managed-install step; `null` disables it. */
-  managed?: (() => Promise<ManagedInstall | undefined>) | null;
 }
 
-export async function findEngine(opts: FindEngineOptions): Promise<{
+export function findEngine(opts: FindEngineOptions): {
   install?: EngineInstall;
   probed: string[];
-}> {
+} {
   const env = opts.env ?? process.env;
   const home = opts.home ?? os.homedir();
   const probed: string[] = [];
@@ -222,31 +152,15 @@ export async function findEngine(opts: FindEngineOptions): Promise<{
   );
   if (fromEnv) return { install: fromEnv, probed };
 
-  if (opts.managed) {
-    probed.push("managed:~/.cache/oma-market/last30days");
-    const m = await opts.managed();
-    if (m) {
-      return {
-        install: {
-          root: m.root,
-          script: m.entry,
-          skillMd: path.join(m.root, "SKILL.md"),
-          version: m.version,
-          source: `managed:${m.ref}`,
-          status: m.status,
-          note: m.note,
-        },
-        probed,
-      };
-    }
-  }
-
-  for (const { dir, source } of engineCandidateDirs(opts.cwd, home)) {
-    probed.push(dir);
-    const hit = probe(dir, source);
-    if (hit) return { install: hit, probed };
-  }
-  return { probed };
+  const installed = findInstalledSkill(LAST30DAYS_SKILL, {
+    cwd: opts.cwd,
+    home,
+  });
+  probed.push(...installed.probed);
+  const hit =
+    installed.install &&
+    probe(installed.install.root, installed.install.source);
+  return hit ? { install: hit, probed } : { probed };
 }
 
 // ---------------------------------------------------------------------------
@@ -343,6 +257,8 @@ export interface MarketResolution {
   saveDir: string;
   reason: string;
   probed: string[];
+  /** Deprecation notes for ignored config keys. */
+  warnings: string[];
 }
 
 export interface ResolveMarketOptions {
@@ -350,10 +266,6 @@ export interface ResolveMarketOptions {
   config?: MarketConfig;
   env?: NodeJS.ProcessEnv;
   home?: string;
-  refresh?: boolean;
-  offline?: boolean;
-  managed?: FindEngineOptions["managed"];
-  cacheRoot?: string;
   /** Skip the interpreter probe (resolve engine only). */
   skipPython?: boolean;
   pythonProbe?: (candidate: string) => string | undefined;
@@ -364,26 +276,13 @@ export async function resolveMarketEngine(
   opts: ResolveMarketOptions,
 ): Promise<MarketResolution> {
   const config = opts.config ?? loadMarketConfig(opts.cwd);
-  const managed =
-    opts.managed !== undefined
-      ? opts.managed
-      : config.managed
-        ? () =>
-            ensureLatestManagedSkill(LAST30DAYS_SPEC, {
-              channel: config.channel,
-              checkIntervalMin: config.check_interval_min,
-              force: opts.refresh,
-              offline: opts.offline,
-              cacheRoot: opts.cacheRoot ?? defaultCacheRoot(opts.home),
-            })
-        : null;
-
-  const { install, probed } = await findEngine({
+  const note = deprecationNote(config);
+  const warnings = note ? [note] : [];
+  const { install, probed } = findEngine({
     cwd: opts.cwd,
     configPath: config.path,
     env: opts.env,
     home: opts.home,
-    managed,
   });
   const saveDir = path.resolve(opts.cwd, config.save_dir);
 
@@ -401,13 +300,12 @@ export async function resolveMarketEngine(
       ok: false,
       python,
       saveDir,
-      reason:
-        "last30days engine unavailable: managed download failed or is disabled and no local install was found — run `oma market update` once online, or set market.path / LAST30DAYS_HOME",
+      reason: `last30days is not installed — run \`oma market update\` (runs \`${LAST30DAYS_INSTALL_COMMAND}\`), or set market.path / ${LAST30DAYS_ENV_HOME}`,
       probed,
+      warnings,
     };
   }
-  const suffix = install.note ? ` — ${install.note}` : "";
-  const engineLine = `last30days${install.version ? ` ${install.version}` : ""} via ${install.source}${install.status ? ` (${install.status})` : ""}${suffix}`;
+  const engineLine = `last30days${install.version ? ` ${install.version}` : ""} via ${install.source}`;
   if (!opts.skipPython && !python.path) {
     return {
       ok: false,
@@ -416,6 +314,7 @@ export async function resolveMarketEngine(
       saveDir,
       reason: `${engineLine}; ${python.hint}`,
       probed,
+      warnings,
     };
   }
   return {
@@ -425,5 +324,52 @@ export async function resolveMarketEngine(
     saveDir,
     reason: engineLine,
     probed,
+    warnings,
   };
+}
+
+// ---------------------------------------------------------------------------
+// updateMarketEngine
+// ---------------------------------------------------------------------------
+
+export type MarketUpdateAction =
+  | "installed"
+  | "updated"
+  | "skipped-pinned"
+  | "skipped-plugin"
+  | "failed";
+
+export interface MarketUpdateResult {
+  action: MarketUpdateAction;
+  detail: string;
+  resolution: MarketResolution;
+}
+
+/**
+ * Install last30days when it is missing, otherwise `skills update` it. Pinned
+ * copies (market.path / LAST30DAYS_HOME) and Claude plugin installs are left to
+ * their owners.
+ */
+export async function updateMarketEngine(
+  opts: Omit<ResolveMarketOptions, "skipPython"> & { spawn?: SkillsCliSpawn },
+): Promise<MarketUpdateResult> {
+  const before = await resolveMarketEngine({ ...opts, skipPython: true });
+  const source = before.engine?.source ?? "";
+  let action: MarketUpdateAction;
+  let detail = "";
+  if (source.startsWith("config:") || source.startsWith("env:")) {
+    action = "skipped-pinned";
+    detail = `pinned via ${source}; update it yourself`;
+  } else if (source.startsWith("home:claude-plugin-cache")) {
+    action = "skipped-plugin";
+    detail = "installed as a Claude Code plugin; update it with /plugin";
+  } else {
+    const r = before.engine
+      ? updateSkills([LAST30DAYS_SKILL.name], opts.spawn)
+      : installSkills(LAST30DAYS_REPO, [LAST30DAYS_SKILL.name], opts.spawn);
+    action = r.ok ? (before.engine ? "updated" : "installed") : "failed";
+    detail = r.detail;
+  }
+  const resolution = await resolveMarketEngine({ ...opts, skipPython: true });
+  return { action, detail, resolution };
 }

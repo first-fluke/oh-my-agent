@@ -2,12 +2,15 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { SkillsCliSpawn } from "../../platform/skill-install.js";
 import {
   findEngine,
+  LAST30DAYS_INSTALL_COMMAND,
   loadMarketConfig,
   marketConfigFrom,
   resolveMarketEngine,
   resolvePython,
+  updateMarketEngine,
 } from "./resolve.js";
 
 function fakeEngine(root: string, version = "3.21.1"): void {
@@ -33,54 +36,43 @@ describe("oma market engine resolution (last30days)", () => {
     fs.rmSync(home, { recursive: true, force: true });
   });
 
-  it("defaults are managed/stable/60min and tolerate a malformed section", () => {
+  it("defaults keep only save_dir and flag the retired managed keys", () => {
     const cfg = marketConfigFrom(undefined);
-    expect(cfg.managed).toBe(true);
-    expect(cfg.channel).toBe("stable");
-    expect(cfg.check_interval_min).toBe(60);
     expect(cfg.save_dir).toBe(path.join(".agents", "results", "market", "raw"));
+    expect(cfg.deprecated).toEqual([]);
     expect(
-      marketConfigFrom({ channel: "bogus", check_interval_min: -1 }),
-    ).toMatchObject({
-      channel: "stable",
-      check_interval_min: 60,
-    });
+      marketConfigFrom({ managed: false, channel: "main", path: "/x" }),
+    ).toMatchObject({ path: "/x", deprecated: ["managed", "channel"] });
   });
 
   it("reads the market section from .agents/oma-config.yaml", () => {
     fs.mkdirSync(path.join(cwd, ".agents"), { recursive: true });
     fs.writeFileSync(
       path.join(cwd, ".agents", "oma-config.yaml"),
-      "language: en\nmarket:\n  channel: main\n  python: /opt/py/bin/python3\n",
+      "language: en\nmarket:\n  check_interval_min: 5\n  python: /opt/py/bin/python3\n",
     );
     const cfg = loadMarketConfig(cwd);
-    expect(cfg.channel).toBe("main");
     expect(cfg.python).toBe("/opt/py/bin/python3");
+    expect(cfg.deprecated).toEqual(["check_interval_min"]);
   });
 
-  it("prefers the managed latest copy over skill dirs, but not over pins", async () => {
-    fakeEngine(path.join(home, ".claude", "skills", "last30days"), "3.0.0");
-    const managedRoot = path.join(home, "managed", "v3.21.1");
-    fakeEngine(managedRoot, "3.21.1");
-    const managed = async () => ({
-      root: managedRoot,
-      entry: path.join(managedRoot, "scripts", "last30days.py"),
-      ref: "v3.21.1",
-      version: "3.21.1",
-      status: "current" as const,
-    });
+  it("resolves an installed skill, but pins win", async () => {
+    fakeEngine(path.join(home, ".agents", "skills", "last30days"), "3.21.1");
     const res = await resolveMarketEngine({
       cwd,
       home,
       env: {},
-      managed,
+      config: marketConfigFrom({ check_interval_min: 0 }),
       pythonProbe: pyOk,
       uvFind: () => undefined,
     });
     expect(res.ok).toBe(true);
-    expect(res.engine?.source).toBe("managed:v3.21.1");
-    expect(res.engine?.skillMd).toBe(path.join(managedRoot, "SKILL.md"));
+    expect(res.engine?.source).toBe("home:~/.agents/skills");
+    expect(res.engine?.skillMd).toBe(
+      path.join(home, ".agents", "skills", "last30days", "SKILL.md"),
+    );
     expect(res.python.path).toBe("python3.12");
+    expect(res.warnings[0]).toContain("market.check_interval_min is ignored");
 
     const pin = path.join(home, "pin");
     fakeEngine(pin, "0.1.0");
@@ -88,7 +80,6 @@ describe("oma market engine resolution (last30days)", () => {
       cwd,
       home,
       env: { LAST30DAYS_HOME: pin },
-      managed,
       pythonProbe: pyOk,
       uvFind: () => undefined,
     });
@@ -96,7 +87,7 @@ describe("oma market engine resolution (last30days)", () => {
     expect(pinned.engine?.version).toBe("0.1.0");
   });
 
-  it("falls back to a skill dir or the Claude plugin cache when managed yields nothing", async () => {
+  it("finds a project install first, then the Claude plugin cache", () => {
     const cache = path.join(
       home,
       ".claude",
@@ -107,36 +98,91 @@ describe("oma market engine resolution (last30days)", () => {
     );
     fakeEngine(path.join(cache, "3.9.0", "skills", "last30days"), "3.9.0");
     fakeEngine(path.join(cache, "3.10.0", "skills", "last30days"), "3.10.0");
-    const res = await findEngine({
-      cwd,
-      home,
-      env: {},
-      managed: async () => undefined,
-    });
+    const res = findEngine({ cwd, home, env: {} });
     expect(res.install?.version).toBe("3.10.0");
     expect(res.install?.source).toBe("home:claude-plugin-cache:3.10.0");
 
     fakeEngine(path.join(cwd, ".agents", "skills", "last30days"), "3.5.0");
-    const local = await findEngine({
-      cwd,
-      home,
-      env: {},
-      managed: async () => undefined,
-    });
-    expect(local.install?.source).toBe("project:.agents/skills");
+    expect(findEngine({ cwd, home, env: {} }).install?.source).toBe(
+      "project:.agents/skills",
+    );
   });
 
-  it("is not ok when no engine resolves, with an update hint", async () => {
+  it("is not ok when nothing is installed, naming the install command", async () => {
     const res = await resolveMarketEngine({
       cwd,
       home,
       env: {},
-      managed: null,
       pythonProbe: pyOk,
       uvFind: () => undefined,
     });
     expect(res.ok).toBe(false);
     expect(res.reason).toContain("oma market update");
+    expect(res.reason).toContain(LAST30DAYS_INSTALL_COMMAND);
+    expect(LAST30DAYS_INSTALL_COMMAND).toBe(
+      "bunx skills add mvanhorn/last30days-skill --skill last30days -g -y",
+    );
+  });
+
+  describe("updateMarketEngine", () => {
+    function spawnThatInstalls(into?: string) {
+      const calls: string[][] = [];
+      const spawn: SkillsCliSpawn = (args) => {
+        calls.push(args);
+        if (into) fakeEngine(into, "3.22.0");
+        return { status: 0, stdout: "", stderr: "", error: undefined };
+      };
+      return { calls, spawn };
+    }
+
+    it("installs when missing", async () => {
+      const dest = path.join(home, ".agents", "skills", "last30days");
+      const { calls, spawn } = spawnThatInstalls(dest);
+      const res = await updateMarketEngine({ cwd, home, env: {}, spawn });
+      expect(calls[0]?.slice(0, 3)).toEqual([
+        "skills",
+        "add",
+        "mvanhorn/last30days-skill",
+      ]);
+      expect(res.action).toBe("installed");
+      expect(res.resolution.engine?.version).toBe("3.22.0");
+    });
+
+    it("updates an existing skill-dir install", async () => {
+      fakeEngine(path.join(home, ".agents", "skills", "last30days"));
+      const { calls, spawn } = spawnThatInstalls();
+      const res = await updateMarketEngine({ cwd, home, env: {}, spawn });
+      expect(calls[0]).toEqual(["skills", "update", "last30days", "-g", "-y"]);
+      expect(res.action).toBe("updated");
+    });
+
+    it("leaves pins alone and reports skills CLI failures", async () => {
+      const pin = path.join(home, "pin");
+      fakeEngine(pin);
+      const { calls, spawn } = spawnThatInstalls();
+      const pinned = await updateMarketEngine({
+        cwd,
+        home,
+        env: { LAST30DAYS_HOME: pin },
+        spawn,
+      });
+      expect(pinned.action).toBe("skipped-pinned");
+      expect(calls).toHaveLength(0);
+
+      const failed = await updateMarketEngine({
+        cwd,
+        home,
+        env: {},
+        spawn: () => ({
+          status: 1,
+          stdout: "",
+          stderr: "boom",
+          error: undefined,
+        }),
+      });
+      expect(failed.action).toBe("failed");
+      expect(failed.detail).toContain("boom");
+    });
   });
 
   it("is not ok when the engine exists but Python 3.12+ is missing", async () => {
@@ -145,7 +191,6 @@ describe("oma market engine resolution (last30days)", () => {
       cwd,
       home,
       env: {},
-      managed: null,
       pythonProbe: () => undefined,
       uvFind: () => undefined,
     });

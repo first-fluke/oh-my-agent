@@ -4,11 +4,14 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   ARCHIFY_ENV_HOME,
+  ARCHIFY_INSTALL_COMMAND,
   diagramConfigFrom,
   findArchify,
   loadDiagramConfig,
   resolveDiagramEngine,
+  updateArchify,
 } from "./diagram-engine.js";
+import type { SkillsCliSpawn } from "./skill-install.js";
 
 function fakeArchify(root: string, version = "2.16.0"): void {
   fs.mkdirSync(path.join(root, "bin"), { recursive: true });
@@ -33,18 +36,12 @@ describe("diagram engine resolution", () => {
     fs.rmSync(home, { recursive: true, force: true });
   });
 
-  it("defaults to auto/showcase/managed and tolerates a malformed section", () => {
+  it("defaults to auto/showcase and flags the retired managed keys", () => {
     expect(diagramConfigFrom(undefined)).toEqual({
       engine: "auto",
-      archify: {
-        path: undefined,
-        quality: "showcase",
-        open: false,
-        managed: true,
-        channel: "stable",
-        check_interval_min: 60,
-      },
+      archify: { path: undefined, quality: "showcase", open: false },
       explain_sidecar: false,
+      deprecated: [],
     });
     expect(diagramConfigFrom({ engine: "bogus", archify: "nope" }).engine).toBe(
       "auto",
@@ -55,23 +52,17 @@ describe("diagram engine resolution", () => {
           quality: "standard",
           open: true,
           managed: false,
-          channel: "main",
           check_interval_min: 0,
         },
-      }).archify,
-    ).toEqual({
-      path: undefined,
-      quality: "standard",
-      open: true,
-      managed: false,
-      channel: "main",
-      check_interval_min: 0,
+      }),
+    ).toMatchObject({
+      archify: { path: undefined, quality: "standard", open: true },
+      deprecated: ["managed", "check_interval_min"],
     });
   });
 
   it("falls back to mermaid when archify is absent (auto)", async () => {
     const res = await resolveDiagramEngine({
-      managed: null,
       cwd,
       home,
       env: {},
@@ -79,11 +70,14 @@ describe("diagram engine resolution", () => {
     expect(res.engine).toBe("mermaid");
     expect(res.ok).toBe(true);
     expect(res.probed.length).toBeGreaterThan(0);
+    expect(res.reason).toContain(ARCHIFY_INSTALL_COMMAND);
+    expect(ARCHIFY_INSTALL_COMMAND).toBe(
+      "bunx skills add tt-a1i/archify --skill archify -g -y",
+    );
   });
 
   it("is an error when archify is pinned but missing", async () => {
     const res = await resolveDiagramEngine({
-      managed: null,
       cwd,
       home,
       env: {},
@@ -97,7 +91,6 @@ describe("diagram engine resolution", () => {
   it("finds a project-local .agents/skills/archify install", async () => {
     fakeArchify(path.join(cwd, ".agents", "skills", "archify"));
     const res = await resolveDiagramEngine({
-      managed: null,
       cwd,
       home,
       env: {},
@@ -110,7 +103,6 @@ describe("diagram engine resolution", () => {
   it("finds a home ~/.claude/skills/archify install after project dirs", async () => {
     fakeArchify(path.join(home, ".claude", "skills", "archify"));
     const res = await resolveDiagramEngine({
-      managed: null,
       cwd,
       home,
       env: {},
@@ -127,24 +119,21 @@ describe("diagram engine resolution", () => {
     fakeArchify(path.join(home, ".claude", "skills", "archify"), "1.2.0");
 
     const env = { [ARCHIFY_ENV_HOME]: viaEnv };
-    expect((await findArchify({ cwd, home, env })).install?.version).toBe(
-      "1.1.0",
-    );
+    expect(findArchify({ cwd, home, env }).install?.version).toBe("1.1.0");
     expect(
-      (await findArchify({ cwd, home, env, configPath: "vendor/archify" }))
-        .install?.version,
+      findArchify({ cwd, home, env, configPath: "vendor/archify" }).install
+        ?.version,
     ).toBe("1.0.0");
     // `~` expands against the injected home
     expect(
-      (await findArchify({ cwd, home, env: {}, configPath: "~/env-archify" }))
-        .install?.version,
+      findArchify({ cwd, home, env: {}, configPath: "~/env-archify" }).install
+        ?.version,
     ).toBe("1.1.0");
   });
 
   it("honours an explicit mermaid pin without probing", async () => {
     fakeArchify(path.join(cwd, ".agents", "skills", "archify"));
     const res = await resolveDiagramEngine({
-      managed: null,
       cwd,
       home,
       env: {},
@@ -163,5 +152,32 @@ describe("diagram engine resolution", () => {
     const cfg = loadDiagramConfig(cwd);
     expect(cfg.engine).toBe("mermaid");
     expect(cfg.explain_sidecar).toBe(true);
+  });
+
+  it("update installs when missing, updates when installed, skips pins", async () => {
+    const calls: string[][] = [];
+    const dest = path.join(home, ".agents", "skills", "archify");
+    const spawn: SkillsCliSpawn = (args) => {
+      calls.push(args);
+      if (args[1] === "add") fakeArchify(dest, "2.17.0");
+      return { status: 0, stdout: "", stderr: "", error: undefined };
+    };
+    const installed = await updateArchify({ cwd, home, env: {}, spawn });
+    expect(installed.action).toBe("installed");
+    expect(installed.resolution.archify?.version).toBe("2.17.0");
+    expect(calls[0]?.slice(0, 3)).toEqual(["skills", "add", "tt-a1i/archify"]);
+
+    const updated = await updateArchify({ cwd, home, env: {}, spawn });
+    expect(updated.action).toBe("updated");
+    expect(calls[1]).toEqual(["skills", "update", "archify", "-g", "-y"]);
+
+    const pinned = await updateArchify({
+      cwd,
+      home,
+      env: { [ARCHIFY_ENV_HOME]: dest },
+      spawn,
+    });
+    expect(pinned.action).toBe("skipped-pinned");
+    expect(calls).toHaveLength(2);
   });
 });

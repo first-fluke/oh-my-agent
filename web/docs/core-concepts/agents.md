@@ -726,7 +726,7 @@ Project-specific `stack/stack.yaml`, `stack/tech-stack.md`, snippets, and API te
 
 **Core rules:**
 - detect-trap first: never run the engine without preflight (`--force` only on explicit user reconfirmation)
-- One engine, always latest: `oma market resolve` refreshes the managed copy (`~/.cache/oma-market/last30days/<tag>/`) before use; a stale user-installed copy is only a fallback when nothing is cached offline
+- One engine, installed as a skill: `oma market resolve` reads the skills-CLI install (or a pin); `oma market update` installs it when missing and updates it otherwise, after the user agrees
 - Follow the resolved engine's `SKILL.md` verbatim; the only substitution is `oma market run <args>` in place of the raw `python3 scripts/last30days.py` call
 - Never WebSearch-only: no engine, no Python 3.12+, or a non-zero exit → stop and report
 - Keyed sources are enabled only through the upstream setup wizard with user consent; skipped sources stay visible in the footer

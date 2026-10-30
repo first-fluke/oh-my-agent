@@ -129,7 +129,7 @@ The 12 checked-in definition files cover the 13 runtime roles through aliases: `
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-market** | Community signal intelligence | Runs the upstream `last30days` engine (Reddit with real upvotes and comments, X, YouTube transcripts, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web and more) through `oma market run`; oma keeps the engine **always at the latest release** (`~/.cache/oma-market/`), gates every run with `detect-trap`, classifies intent (pain / trend / competitor / discovery), and appends SWOT / Porter's 5F / PESTEL sections. Emits one LAW-compliant brief at `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
+| **oma-market** | Community signal intelligence | Runs the upstream `last30days` engine (Reddit with real upvotes and comments, X, YouTube transcripts, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web and more) through `oma market run`; the engine is a skills-CLI install (`oma market update`), and oma gates every run with `detect-trap`, classifies intent (pain / trend / competitor / discovery), and appends SWOT / Porter's 5F / PESTEL sections. Emits one LAW-compliant brief at `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
 
 ### Media and content generation
 

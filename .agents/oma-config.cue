@@ -260,6 +260,8 @@ package config
 	engine?:          "auto" | "archify" | "mermaid"
 	explain_sidecar?: bool
 	archify?: {
+		// Deprecated: ignored since archify became a skills-CLI install
+		// (`oma diagram update`). Kept so existing configs still validate.
 		managed?:            bool
 		channel?:            "stable" | "main"
 		check_interval_min?: int & >=0
@@ -270,6 +272,8 @@ package config
 }
 
 #MarketConfig: {
+	// Deprecated: ignored since last30days became a skills-CLI install
+	// (`oma market update`). Kept so existing configs still validate.
 	managed?:            bool
 	channel?:            "stable" | "main"
 	check_interval_min?: int & >=0

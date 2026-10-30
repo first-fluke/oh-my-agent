@@ -11,11 +11,12 @@ reframe suggestion, STOP. Exit 4 → invalid topic, STOP.
 
 ## Step 1 — Resolve the engine (CLI)
 
-`oma market resolve --json` → `{ ok, engine: { root, script, skillMd, version, source, status, note }, python, saveDir, reason }`.
+`oma market resolve --json` → `{ ok, engine: { root, script, skillMd, version, source }, python, saveDir, reason, warnings }`.
 
-- `ok: false` → report `reason` and STOP. Missing engine: `oma market update`.
+- `ok: false` → report `reason` and STOP. Missing engine: ask the user, then
+  `oma market update` (installs it with the skills CLI).
   Missing Python: relay the hint (brew / apt / `uv python install 3.12`).
-- `status: stale` → note it; research still runs on the cached engine.
+- `warnings` → relay deprecated config keys (`market.managed|channel|check_interval_min` are ignored).
 
 ## Step 2 — Read the upstream contract (LLM)
 
