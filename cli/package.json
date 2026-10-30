@@ -64,6 +64,7 @@
     "check:boundaries": "node ./scripts/check-boundaries.mjs",
     "check:bundle": "node ./scripts/check-bundle.mjs",
     "check:emit-drift": "node ./scripts/check-emit-drift.mjs",
+    "check:repo-archive": "node ./scripts/check-repo-archive.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "prepublishOnly": "bun run build"

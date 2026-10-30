@@ -41,6 +41,12 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: bun run --cwd cli check:emit-drift
 
+      # The plugin directory refuses to validate a repository whose GitHub
+      # archive exceeds 50 MiB, and it re-validates on every commit.
+      - name: Repository archive size
+        if: matrix.os == 'ubuntu-latest'
+        run: bun run --cwd cli check:repo-archive
+
       - name: Trigger accuracy (cli)
         if: matrix.os == 'ubuntu-latest'
         run: bun run --cwd cli cli.ts verify triggers
