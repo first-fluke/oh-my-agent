@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.12.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.11.0...web-v11.12.0) (2026-10-30)
+
+
+### Features
+
+* **models:** move built-in presets to the latest models ([079caf8](https://github.com/first-fluke/oh-my-agent/commit/079caf8fd8e6a2eae0e2db99a6efae7128cf98f1))
+
 ## [11.11.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.10.0...web-v11.11.0) (2026-10-30)
 
 
