@@ -17,6 +17,10 @@ const domainPaths = Object.keys(DOMAIN_PRESETS).flatMap((domain) => [
   `.claude-plugin/domains/${domain}/plugin.json`,
   `.claude-plugin/domains/${domain}/.claude-plugin/plugin.json`,
 ]);
+const manifestPaths = [
+  ".claude-plugin/directory/.claude-plugin/plugin.json",
+  ...domainPaths,
+];
 
 function write(root: string, file: string, value: unknown) {
   mkdirSync(dirname(join(root, file)), { recursive: true });
@@ -36,7 +40,7 @@ function fixture(version = "20.20.0") {
     ".claude-plugin/plugin.json",
     "plugin.json",
     ".cursor-plugin/plugin.json",
-    ...domainPaths,
+    ...manifestPaths,
   ];
   for (const file of files) write(root, file, { version });
   write(root, ".claude-plugin/marketplace.json", { metadata: { version } });
@@ -54,7 +58,7 @@ describe("plugin release version propagation", () => {
     expect(checkPluginVersions(fixture().root)).toEqual([]);
   });
 
-  it.each(domainPaths)(
+  it.each(manifestPaths)(
     "rejects a stale %s despite normalized emit comparison",
     (file) => {
       const { root } = fixture();

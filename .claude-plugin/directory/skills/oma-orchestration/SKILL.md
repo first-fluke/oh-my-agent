@@ -1,0 +1,302 @@
+---
+name: oma-orchestration
+description: Dispatch and supervise parallel specialist agents with durable task
+  state. Use when automated multi-agent execution is requested.
+---
+
+# Orchestration - Automated Multi-Agent Coordination
+
+## Scheduling
+
+### Goal
+Automatically orchestrate multi-agent execution with task decomposition, native/fallback dispatch, memory coordination, progress monitoring, verification, QA cross-review, retry, and result collection.
+
+### Intent signature
+- User asks to orchestrate, run in parallel, automate multi-agent execution, or coordinate full-stack work end to end.
+- Task requires multiple specialist agents and a persistent review/remediation loop.
+
+### When to use
+- Complex feature requires multiple specialized agents working in parallel
+- User wants automated execution without manually spawning agents
+- Full-stack implementation spanning backend, frontend, mobile, and QA
+- User says "run it automatically", "run in parallel", or similar automation requests
+
+### When NOT to use
+- Simple single-domain task -> use the specific agent directly
+- User wants step-by-step manual control -> use oma-coordination
+- Quick bug fixes or minor changes
+
+### Expected inputs
+- Complex feature or workflow request
+- Project config, model/vendor routing, agent types, task constraints, and workspace/session needs
+- Acceptance criteria and verification expectations
+
+### Expected outputs
+- Orchestrator session state, task board, progress files, result files, and final summary
+- Specialist agent outputs after mechanical checks, automated verify, and QA cross-review
+- Review history and retry/remediation status when loops fail
+
+### Dependencies
+- `.agents/oma-config.yaml`, `.codex/agents/*.toml`, `.gemini/agents/*.md`, or fallback `oma agent spawn`
+- Memory provider config, subagent prompt template, scripts, task templates, verify script, and session metrics
+
+### Control-flow features
+- Branches by vendor/native dispatch availability, priority tiers, agent completion/failure, verification status, QA verdict, retry limits, and unresolved decisions
+- Spawns processes/agents and reads/writes memory/result files
+- Preserves unresolved evidence when bounded recovery stops
+
+## Structural Flow
+
+### Entry
+1. Resolve agent vendor routing and runtime dispatch path.
+2. Decompose request into priority-tiered tasks.
+3. For each task, classify into one or more `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`. Tasks that match no domain confidently inherit the union of their parent feature's tags.
+4. Select the references needed by each task. One confidently matched skill is sufficient; expand the set when classification is uncertain or a dependency requires another domain.
+5. Record selected domains, references, and any fallback reason in the task board. These are coordinator notes, not launcher-enforced exposure fields; use only reference/context controls supported by the active dispatch path.
+6. Apply the shared collaboration policy before dispatch: assign edit ownership, peer contact paths, and a collection owner.
+
+### Scenes
+1. **PREPARE**: Plan, setup session ID, and initialize memory files.
+2. **ACT**: Spawn agents by priority tier within parallelism limits.
+3. **VERIFY**: Run self-check, `oma verify`, and QA cross-review loop.
+4. **RECOVER**: Retry failed agents with review history when limits allow.
+5. **FINALIZE**: Collect verified claims, compile summary, and preserve progress artifacts.
+
+### Transitions
+- If native dispatch is available for current runtime/vendor, use it.
+- If vendors differ or native path is unavailable, use fallback spawn.
+- If verify or QA fails, feed feedback back to the implementation agent.
+- If recovery limits are exceeded, preserve review history and return `partial` or `failed`; never force completion.
+- If recovery shows that a required domain reference was missing, update the task's reference selection without changing its frozen acceptance contract, and supply it through the supported context mechanism.
+
+### Failure and recovery
+- Retry failed agents up to configured limits.
+- Re-spawn with review history when review loop is exhausted.
+- Continue independent work after recording material corrections; ask only for a material missing decision.
+
+### Exit
+- Success: all tasks complete, verify/review pass, and results are summarized.
+- Partial success: failed agents, exhausted review loops, or missing verification are explicit.
+
+## Logical Operations
+
+### Actions
+| Action | SSL primitive | Evidence |
+|--------|---------------|----------|
+| Read config and task context | `READ` | oma config, routing, request |
+| Classify task into domain tags | `INFER` | task text vs each skill's `Intent signature` |
+| Select task references | `SELECT` | confident domain matches, dependencies, and supported context controls |
+| Select dispatch path | `SELECT` | Native vs fallback |
+| Write session state | `WRITE` | task board and memory files |
+| Spawn agents | `CALL_TOOL` | exposed native role-subagent tool or `oma agent spawn` |
+| Poll progress | `READ` | progress/result files |
+| Run verification | `CALL_TOOL` | `oma verify`, tests, QA |
+| Update retry state | `UPDATE_STATE` | loop counters and CD metrics |
+| Report final result | `NOTIFY` | compiled summary |
+
+### Tools and instruments
+- Exposed native role-subagent tools, fallback spawn scripts, memory tools, verify script, QA agent
+- Session metrics, prompt templates, task templates
+
+### Canonical command path
+```bash
+oma agent spawn <agent-type> <prompt-file> <session-id> --task-id <task.id> -w <workspace>
+oma verify agent <agent-type> --workspace <workspace> --json
+```
+
+When native runtime dispatch is available, prefer the runtime-specific native path listed in this skill before falling back to `oma agent spawn`.
+
+### Resource scope
+| Scope | Resource target |
+|-------|-----------------|
+| `LOCAL_FS` | Session, task-board, progress, result, config files |
+| `PROCESS` | Agent CLI processes and verify scripts |
+| `MEMORY` | Session state and unresolved decisions |
+| `CODEBASE` | Workspaces owned by spawned agents |
+
+### Preconditions
+- Task is decomposable into specialist agent work.
+- Runtime/vendor dispatch path or fallback exists.
+
+### Effects and side effects
+- Spawns agents and writes session/progress/result artifacts.
+- May cause code changes through specialist agents.
+- May trigger iterative review and retries.
+
+### Guardrails
+1. Orchestrate per-agent dispatch from the project configuration before spawning any agent.
+2. If `target_vendor === current_runtime_vendor` and the runtime has a verified native path, use native dispatch.
+3. Otherwise fall back to `oma agent spawn`.
+4. Never exceed configured parallelism or the aggregate recovery budget. Ordinary retries and exploration hypotheses both consume it.
+5. Keep session state, task-board state, progress files, claims, and receipts aligned. Use the plan task ID on every spawn and native begin/finish path.
+6. Select references by task needs and confidence. Do not expand to all skills solely because one skill matches, or assume task-board metadata enforces runtime exposure.
+
+Current native executor paths:
+- Claude Code: Agent tool with `.claude/agents/{agent}.md` definitions (multiple Agent tool calls in one message run in parallel; results return synchronously — no polling)
+- OpenCode: native `task` tool with `subagent_type: {agent-id}`; do not use `oma agent spawn` for same-session OpenCode work because it will not appear as a native child task
+- Codex: use the current session's exposed native subagent tool with the resolved custom role from `.codex/agents/*.toml` when supported; otherwise use `oma agent spawn`.
+- Gemini: use the current session's exposed native role-subagent tool with the resolved role when supported; otherwise use `oma agent spawn`.
+
+`codex exec` and `gemini -p` start external CLI sessions. An `@agent` string in a prompt does not establish native dispatch or apply a custom-role contract.
+
+### Configuration
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| MAX_PARALLEL | 3 | Max concurrent subagents |
+| MAX_RECOVERY_ATTEMPTS | 3 | Total retries and exploration hypotheses per task, including the original attempt |
+| POLL_INTERVAL | bounded backoff | Fallback only when completion notifications are unavailable |
+| Turn guidance | role-specific | Checkpoint/resume signal, not a hard stop or approval boundary |
+
+These are workflow defaults. Resolve model/vendor, parallelism, and budget settings from project configuration. `config/cli-config.yaml` supplies the vendor transport registry; it does not select the active vendor or override runtime execution settings.
+
+### Memory Configuration
+
+Memory provider and tool names are configurable via `.agents/mcp.json` (not the repo-root `.mcp.json`, which is the Claude Code MCP server config):
+```json
+{
+  "memoryConfig": {
+    "provider": "file",
+    "basePath": ".agents/state/memories",
+    "tools": {
+      "read": "Read",
+      "write": "Write",
+      "edit": "Edit"
+    }
+  }
+}
+```
+
+### Workflow Phases
+
+**PHASE 1 - Plan**: Reuse the current valid plan or decompose the request; preserve injected session/task/run IDs.
+**PHASE 1.5 - References**: Select task references as described in Entry; record uncertainty and expansion reasons without assuming runtime enforcement.
+**PHASE 2 - Setup**: Create session/task-board artifacts with the current IDs and selected references.
+**PHASE 3 - Execute**: Dispatch ready tasks within MAX_PARALLEL using supported native or fallback context controls.
+**PHASE 4 - Monitor**: Prefer completion notifications; otherwise use one coordinator with bounded polling backoff. Follow `../_shared/core/execution-policy.md` for the shared deadline, cancellation, resource ownership, and shutdown rules. Cancellation or deadline exhaustion stops dispatch and recovery before verification.
+**PHASE 4.5 - Verify**: Run mechanical checks for every completed agent; run `oma verify agent {agent-type}` only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`; then run QA cross-review for every completed implementation
+**PHASE 5 - Collect**: Read claims and run-scoped reports for plan tasks whose checks passed; compile summary without deleting evidence.
+
+### Memory File Ownership
+
+| File | Owner | Others |
+|------|-------|--------|
+| `orchestrator-session-{sessionId}.md` | orchestrator | read-only |
+| `task-board-{sessionId}.md` | orchestrator | read-only |
+| `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | that run | orchestrator reads |
+| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | that run | orchestrator reads |
+
+### Agent-to-Agent Review Loop (PHASE 4.5)
+
+After each agent completes, enter an iterative review loop, not a single-pass verification.
+
+### Loop Flow
+
+```
+Agent completes work
+    ↓
+[1] Mechanical Self-Check: lint, type-check, tests, diff scope
+    ↓
+[2] Verify: For supported types, run `oma verify agent {agent-type} --workspace {workspace}`
+    Unsupported (`db`, `refactor`, `architecture`, `tf-infra`, `docs`) → record SKIP and continue
+    ↓ FAIL → Agent receives feedback, fixes, back to [1]
+    ↓ PASS
+[3] Cross-Review: QA agent reviews the changes
+    ↓ FAIL → Agent receives review feedback, fixes, back to [1]
+    ↓ PASS
+Accept result
+```
+
+### Step Details
+
+**[1] Mechanical Self-Check** (formerly "Self-Review"):
+Before requesting external review, the implementation agent must:
+- Run lint, type-check, and tests in the workspace
+- Verify only planned files were modified (diff scope check)
+- Fix any mechanical failures (compile errors, test failures)
+
+**Quality judgment is NOT performed in this step.**
+Design quality, architecture alignment, and acceptance criteria satisfaction
+are evaluated exclusively in [3] Cross-Review by the QA agent.
+Reason: Self-evaluation bias causes agents to consistently overrate their own output
+(ref: Anthropic harness design research).
+
+**[2] Automated Verify**:
+```bash
+oma verify agent {agent-type} --workspace {workspace} --json
+```
+- Run only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`.
+- For `db`, `refactor`, `architecture`, `tf-infra`, and `docs`, record that automated verify is unsupported and continue to QA cross-review after the mechanical checks.
+- **PASS (exit 0)**: Proceed to cross-review
+- **FAIL (exit 1)**: Feed verify output back to the agent as correction context
+
+**[3] Cross-Review**: Spawn QA agent to review the changes:
+- QA agent reads the diff, runs checks, evaluates against acceptance criteria
+<!-- oma-docs:ignore-start -->
+- If `docs/CODE-REVIEW.md` exists, QA agent uses it as the review checklist
+<!-- oma-docs:ignore-end -->
+- QA agent outputs: PASS (with optional nits) or FAIL (with specific issues)
+- On FAIL: issues are fed back to the implementation agent for fixing
+
+### Loop Limits
+
+| Counter | Max | On Exceeded |
+|---------|-----|-------------|
+| Self-check + fix cycles | 3 | Escalate to cross-review regardless |
+| Cross-review rejections | 2 | Report to user with review history |
+| Total loop iterations | 5 | Stop recovery; preserve failed checks and return `partial` or `failed` |
+
+### Review Feedback Format
+
+When feeding review results back to the implementation agent:
+```
+## Review Feedback (iteration {n}/{max})
+**Reviewer**: {self / verify / qa-agent}
+**Verdict**: FAIL
+**Issues**:
+1. {specific issue with file and line reference}
+2. {specific issue}
+**Fix instruction**: {what to change}
+```
+
+This replaces single-pass verification. Most "nitpicking" should happen agent-to-agent.
+Resolve relevant automated checks before handoff. Ask for approval only when the next action is outside existing authorization.
+
+### Recovery Budget (after review loop exhaustion)
+
+Maintain one budget per workflow lineage and logical goal: `attempts_used`, `attempts_remaining`, and any
+configured cost cap. The original attempt, each ordinary retry, and each
+exploration hypothesis consume one attempt. Before starting recovery, reserve
+the complete next action; do not exceed the budget or start an incomplete
+exploration round.
+
+Use the plan's stable `lineage_id` and task `goal_id` from `../_shared/runtime/result-contract.md`. New task/run/session IDs do not reset that budget. Freeze the full JSON plan at first dispatch; reject recursive planning/review tasks and post-dispatch plan revisions. A contract change requires an explicitly separated new session and lineage.
+
+Classify failures before retrying: `PRODUCT_FAILURE` follows the remaining product recovery budget; `WORKFLOW_EVIDENCE_FAILURE` means current product checks passed but completion claims or bindings failed. Automatic resume stops evidence-only replay. Allow at most one metadata-only repair under the existing task and frozen plan, consuming the same budget, then stop with a partial handoff if unresolved. Do not create PM tasks, rerun product planning, or import another workflow's plan-review loop for evidence failures.
+
+- First remaining attempt: re-spawn with review history.
+- Later attempts: choose either one different retry or a 2–3 hypothesis round
+  only if enough attempts and cost remain.
+- On cap exhaustion, preserve all checks, review findings, and unresolved work.
+  The task is `partial` or `failed`, never `completed`.
+
+### Session evidence
+
+For material corrections or review findings, retain the cause, impact, and evidence in existing task artifacts. Use `../_shared/core/session-metrics.md` when a retrospective or separate session summary is useful. Do not score clarification questions or require an RCA based on counters. Resolve the affected work and ask only for a material missing decision.
+
+## References
+- Parallel worker collaboration: `../_shared/core/collaboration-policy.md` (before assigning parallel work or coordinating peer issues, ownership handoffs, and result collection)
+- Prompt template: `resources/subagent-prompt-template.md`
+- Memory schema: `resources/memory-schema.md`
+- Scripts: `scripts/spawn-agent.sh`, `scripts/parallel-run.sh`, `scripts/verify.sh`
+- Task templates: `templates/`
+- Skill-to-agent mapping: `../_shared/core/skill-routing.md`
+- Verification: `scripts/verify.sh <agent-type>`
+- Session metrics: `../_shared/core/session-metrics.md`
+- API contract template (SSOT): `../_shared/core/api-contracts/template.md`; read generated contracts from `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
+- Context loading: `../_shared/core/context-loading.md`
+- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
+- Clarification protocol: `../_shared/core/clarification-protocol.md`
+- Context budget: `../_shared/core/context-budget.md`
+- Code intelligence: `../_shared/core/code-intelligence.md`
+- Runtime lessons: `../_shared/core/lessons-learned.md` (recurring failure or requested retrospective)

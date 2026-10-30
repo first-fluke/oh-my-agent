@@ -1,0 +1,214 @@
+---
+name: oma-video
+description: Create videos through the OMA video CLI, or analyze and edit
+  existing clips with media tools. Use for frame extraction, visual analysis,
+  silence cuts, dubbing assembly, scripts, and composition; audio-only work uses
+  oma-voice.
+---
+
+# Video Router
+
+## Scheduling
+
+### Goal
+
+Create a playable video, or derive requested frames, analysis, or edits from an
+existing clip while retaining its source timeline.
+
+### Intent signature
+
+- Create a short, explainer, or recorded demo.
+- Extract frames, count visible objects, remove pauses, or assemble a dubbed clip.
+
+### When to use
+
+Use this skill for a short/reel, README or code explainer, demo walkthrough, or
+analysis and editing of an existing video.
+
+| Request | Mode | Default aspect | Required source |
+|---|---|---|---|
+| Short, reel, social clip | `shorts` | `9:16` | Topic or brief |
+| README, code, data explanation | `explainer` | `16:9` | Topic or source path |
+| Demo or walkthrough | `demo` | `16:9` | Human recording via `--capture` |
+
+Processing a supplied or already-rendered video conditionally loads the upstream
+`kajisho5/ffmpeg-skill` through `resources/existing-media.md`. This is separate
+from the OMA creation modes.
+
+### When NOT to use
+
+Use `oma-image` for a still image, `oma-slide` for a deck, `oma-voice` for
+audio only, and `oma-explanation` for an interactive HTML explainer. Route
+transcription, synthesis, and TTS duration fitting to `oma-voice`, and spoken
+translation to `oma-translation`; this skill owns their placement in video.
+Live streaming is out of scope.
+
+### Expected inputs
+
+A creation brief, or an existing clip plus the requested analysis/edit, selected
+streams, timing or sampling requirements, and output path.
+
+### Expected outputs
+
+A generated video and its asset bus, or requested frames/analysis/edited media
+with source timestamps and the parameters used to derive them.
+
+### Dependencies
+
+Creation requires the selected OMA providers/compositor. For processing supplied
+or rendered video, use the runtime skill catalog first; otherwise load
+`kajisho5/ffmpeg-skill` with `bunx skills use` as described in the conditional
+resource. Its complete support bundle, Python, FFmpeg/FFprobe and any
+operation-specific capabilities are required. Visual interpretation uses the
+host vision tool. Report unavailable capabilities rather than invent results.
+
+## Structural Flow
+
+For supplied or already-rendered video, use the existing-media branch in the
+canonical path. The upstream skill owns its scripts, flags, templates,
+`project.json` and mechanical editing workflow. OMA retains source-timeline
+evidence and the visual, speech and editorial decisions described there. Its
+project format is separate from the OMA creation asset bus below.
+For creation, inputs are a brief plus optional mode, aspect, locale, captions,
+visual, voice, music, duration, compositor, capture path, and seed. Outputs live in
+`.agents/results/videos/<timestamp>-<shortid>-<mode>/`:
+
+- `script.json`, `timing.json`, and `render-spec.json` form the deterministic
+  asset bus.
+- Captions and acquired audio/visual assets are recorded in `manifest.json`
+  with hashes, providers, cost, warnings, and exit code.
+- A successful real render contains `<mode>-<slug>.mp4`, an encoded video
+  stream, and a positive ffprobe duration.
+
+`OMA_VIDEO_MOCK=1` is a test harness only. It can create deterministic text
+placeholders with an `.mp4` name; those files are never a user deliverable. A
+missing HyperFrames/MPT toolchain, an un-authored composition, a render error, or
+an invalid video fails with diagnostics and leaves the script/render spec for
+recovery.
+
+### Decide and confirm
+
+For creation, infer mode when clear: short/reel -> `shorts`;
+README/code/data/explain -> `explainer`; demo/walkthrough/capture -> `demo`.
+For a one-line creation request, state
+the inferred mode, aspect, duration, visual strategy, captions, locale, and
+voice/music before invoking. Do not make the user complete a questionnaire
+when those defaults are clear.
+
+Ask only when it changes the result: an ambiguous mode/source, a required demo
+recording, or a cost confirmation. Respect an explicit mode, aspect, duration,
+captions, or voice verbatim.
+
+For a demo, a human records the screen and controls login. `--source web --url`
+provides context only; it never automates login or starts a recorder. Without
+`--capture`, return guided capture instructions and stop.
+
+## Logical Operations
+
+### Guardrails
+
+1. Keep output and capture paths inside `$PWD` unless external output is
+   explicitly allowed. Validate capture formats and copy external assets into
+   the run directory. Mask URL query/hash tokens in logs and manifests.
+2. Provider configuration is key-optional: use the configured chain. Paid
+   providers require their environment key and the cost guardrail. Local
+   fallbacks may replace voice, visuals, captions, or music; record coverage in
+   warnings. A compositor failure is never a fallback video.
+3. Before a paid provider action or rerun, compare the planning estimate with
+   `cost.guardrail_usd` or `--max-usd` and reuse existing spend authorization.
+   In an active OMA video workflow, record the actual paid, limited, fallback, or
+   declined choice before executing it (execution protocol Step 2). Pass `--yes`
+   or `OMA_VIDEO_YES=1` only for an already authorized paid action; the event does
+   not grant permission.
+4. For creation, respect `limits.max_duration_sec` (180) and
+   `limits.max_scenes` (40). Cancel subprocess work on SIGINT/SIGTERM.
+5. Keep run directories. Never auto-prune a user’s video artifacts.
+6. Creation via `oma video generate --dry-run` writes only planning artifacts
+   and does no provider render. It does not prove an MP4 exists. For delegated
+   media work, follow the loaded upstream operation's dry-run contract.
+
+### Canonical command path
+
+1. Supplied or already-rendered video: load `resources/existing-media.md`.
+   Resolve the upstream skill, follow its supported operation, and retain OMA
+   timeline and interpretation evidence. These operations do not pass through
+   `oma video generate` or the creation-only limits above.
+2. New video: use the commands below and the creation pipeline. Keep existing
+   `shorts`, `explainer`, and `demo` behavior.
+
+```bash
+# Plan or create the asset bus. Supply --script whenever an agent authored it.
+oma video generate "Jeju coffee" --mode shorts --aspect 9:16 \
+  --captions tiktok --script ./script.json --output json
+
+# Deterministic planning only; no real render or provider work.
+oma video generate "explain this project" --mode explainer --seed 42 --dry-run
+
+# Human-recorded demo input.
+oma video generate "feature walkthrough" --mode demo --capture <absolute-path>.mp4
+
+# Scaffold the per-run HyperFrames project, author index.html as instructed,
+# then render and validate the encoded output.
+oma video compose <runDir> --output json
+oma video render <runDir> --output json
+
+# Diagnose required toolchains without changing a run.
+oma video doctor
+oma video provider list
+```
+
+`oma video generate --output json` returns
+`{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`.
+Read video and asset paths from the manifest; the JSON envelope has no
+`outputs` field.
+
+### Failure and recovery
+
+- Missing HyperFrames composition: `oma video compose <runDir>` prepares the
+project and authoring contract. Author `<runDir>/hyperframes/index.html` using
+the generated `AUTHORING.md`, then invoke `oma video render <runDir>`. The
+command lints, renders, and ffprobes the output. Fix a reported composition
+or toolchain failure and re-run; return a failure report when it cannot render.
+
+- Missing MPT toolchain: `--compositor mpt` requires the installed checkout, its virtual environment,
+and ffmpeg. Use `oma video doctor --install-mpt` when setup is authorized and
+available. MPT setup failures, driver failures, and non-video output fail with
+the diagnostic; they do not write a placeholder MP4.
+
+For creation, success means all asset schemas and manifest hashes validate and a
+real MP4 passes video-stream and duration validation. A partial success may use a
+key-free visual, timing, caption, or music fallback, but it still requires that
+real video validation.
+
+## References
+
+### Conditional resources
+
+Load only what the task needs:
+
+- `resources/execution-protocol.md` for the creation pipeline, failure
+  mapping, and JSON reporting rules.
+- `resources/existing-media.md` when processing supplied or rendered video:
+  upstream skill loading, source-timeline evidence and visual/speech decisions.
+- `resources/vendor-matrix.md` before changing providers, keys, cost, or
+  fallback order.
+- `resources/script-schema.md` when authoring or validating `--script` input.
+- `resources/prompt-tips.md` when turning a brief into scene prompts.
+- `resources/hyperframes-authoring/README.md` and the selected mode guide before
+  writing `index.html`.
+- `resources/checklist.md` before handing a newly generated video to a user.
+
+### Verification
+
+For CLI/runtime changes, add a regression test for the affected success and
+failure paths. At minimum run the focused Vitest files, for example:
+
+```bash
+cd cli
+bunx vitest run commands/video/providers/compositor.test.ts \
+  commands/video/orchestrator.test.ts
+bunx biome check commands/video/providers/compositor.ts \
+  commands/video/providers/compositor.test.ts
+```
+
+Do not run a live render merely to test documentation or a mock-only branch.

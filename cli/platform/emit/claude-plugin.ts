@@ -8,9 +8,14 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { parseFrontmatter } from "../../utils/frontmatter.js";
 import { DOMAIN_PRESETS } from "../domain-presets.js";
 import { buildPluginManifest } from "./agent-plugin.js";
-import { discoverSkillDirs, emitAgentSkills } from "./agent-skills.js";
+import {
+  discoverSkillDirs,
+  emitAgentSkills,
+  SKILLS_DIR,
+} from "./agent-skills.js";
 import type { ClaudePluginEmitReport } from "./types.js";
 
 /**
@@ -209,7 +214,110 @@ export function emitClaudePlugin(
     );
   }
 
+  emitDirectoryPlugin(repoRoot, join(outDir, "directory"));
+
   return { target: "claude-plugin", outPath };
+}
+
+/** Name of the self-contained entry submitted to Anthropic's plugin directory. */
+export const DIRECTORY_PLUGIN_NAME = "oh-my-agent";
+const DIRECTORY_ICON = "web/static/icons/ios/512.png";
+
+function frontmatterDescription(file: string): string {
+  const { frontmatter } = parseFrontmatter(readFileSync(file, "utf-8"));
+  return String(frontmatter.description ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * The directory reads one plugin folder and scans everything it runs, so this
+ * entry carries skills and agents only. It has no hooks, scripts, or MCP
+ * servers, which means installing it never downloads or executes anything.
+ */
+function emitDirectoryPlugin(repoRoot: string, root: string): void {
+  rmSync(root, { recursive: true, force: true });
+  mkdirSync(join(root, ".claude-plugin"), { recursive: true });
+  if (existsSync(join(repoRoot, "LICENSE")))
+    cpSync(join(repoRoot, "LICENSE"), join(root, "LICENSE"));
+  // The directory keeps the icon from the first submission, so it must be
+  // present before the plugin is ever saved in the developer portal.
+  if (existsSync(join(repoRoot, DIRECTORY_ICON)))
+    cpSync(
+      join(repoRoot, DIRECTORY_ICON),
+      join(root, ".claude-plugin", "icon.png"),
+    );
+
+  const skills = emitAgentSkills(repoRoot, join(root, "skills"), {
+    sharedResources: "package",
+  }).map((result) => result.skill);
+  const agentsDir = join(repoRoot, AGENTS_DIR);
+  const agents = existsSync(agentsDir)
+    ? readdirSync(agentsDir)
+        .filter((name) => name.endsWith(".md"))
+        .sort()
+    : [];
+  if (agents.length) mkdirSync(join(root, "agents"), { recursive: true });
+  for (const name of agents)
+    cpSync(join(agentsDir, name), join(root, "agents", name));
+
+  const pkg = readPackageJson(repoRoot);
+  writeFileSync(
+    join(root, ".claude-plugin", "plugin.json"),
+    `${JSON.stringify(
+      {
+        name: DIRECTORY_PLUGIN_NAME,
+        version: pkg.version ?? "0.0.0",
+        description: `${skills.length} skills and ${agents.length} specialist agents that plan, build in parallel, review, and debug.`,
+        author: { name: "First Fluke" },
+        homepage: "https://firstfluke.com/oh-my-agent",
+        documentationUrl: "https://firstfluke.com/oh-my-agent/",
+        supportUrl: "https://github.com/first-fluke/oh-my-agent/issues",
+        repository: "https://github.com/first-fluke/oh-my-agent",
+        license: "MIT",
+        skills: skills.map((skill) => `./skills/${skill}`),
+        agents: agents.map((name) => `./agents/${name}`),
+      },
+      null,
+      2,
+    )}\n`,
+  );
+
+  const list = (entries: Array<[name: string, file: string]>) =>
+    entries
+      .map(([name, file]) => `- **${name}** ${frontmatterDescription(file)}`)
+      .join("\n");
+  writeFileSync(
+    join(root, "README.md"),
+    `# oh-my-agent
+
+**Ship 400+ commits a day.**
+
+oh-my-agent turns Claude into a team. A planner splits the work, engineers build in parallel, a reviewer checks the result, and a debugger fixes the root cause.
+
+This plugin adds ${skills.length} skills and ${agents.length} specialist agents. Claude loads a skill only when a task needs it, so the rest stay out of your context.
+
+## Agents
+
+${list(agents.map((name) => [name.replace(/\.md$/, ""), join(agentsDir, name)]))}
+
+## Skills
+
+${list(skills.map((name) => [name, join(repoRoot, SKILLS_DIR, name, "SKILL.md")]))}
+
+## What this plugin runs
+
+This plugin has no hooks, no MCP servers, and no install step. It only adds instructions.
+
+Some skills ask Claude to run local tools such as \`git\`, \`gh\`, or the \`oma\` command line tool when they are installed. A few skills can call services you set up yourself, such as a search, image, or video provider. Claude runs those commands under your normal permission settings, and nothing runs on its own.
+
+For workflows, project hooks, and the \`oma\` command line tool, install the full runtime from [first-fluke/oh-my-agent](https://github.com/first-fluke/oh-my-agent).
+
+## License
+
+MIT
+`,
+  );
 }
 
 /** Codex marketplace metadata; source paths resolve from the repository root. */

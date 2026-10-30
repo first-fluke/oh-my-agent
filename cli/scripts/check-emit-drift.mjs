@@ -68,6 +68,9 @@ function diffMarketplace(scratchDir) {
   const issues =
     freshContent === committedContent ? [] : [`changed: ${MARKETPLACE_REL}`];
   issues.push(...diffTree(scratchDir, join(".claude-plugin", "domains"), true));
+  issues.push(
+    ...diffTree(scratchDir, join(".claude-plugin", "directory"), true),
+  );
   for (const rel of [
     join(".claude-plugin", "plugin.json"),
     join(".agents", "plugins", "marketplace.json"),

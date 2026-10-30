@@ -13,6 +13,10 @@ export function pluginVersionTargets() {
     { path: "plugin.json", jsonpath: "$.version" },
     { path: ".cursor-plugin/plugin.json", jsonpath: "$.version" },
     { path: ".claude-plugin/marketplace.json", jsonpath: "$.metadata.version" },
+    {
+      path: ".claude-plugin/directory/.claude-plugin/plugin.json",
+      jsonpath: "$.version",
+    },
     ...Object.keys(DOMAIN_PRESETS).flatMap((domain) => [
       {
         path: `.claude-plugin/domains/${domain}/plugin.json`,

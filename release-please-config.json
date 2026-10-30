@@ -75,6 +75,11 @@
           "jsonpath": "$.metadata.version"
         },
         {
+          "type": "json",
+          "path": ".claude-plugin/directory/.claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
           "type": "generic",
           "path": "CITATION.cff"
         }

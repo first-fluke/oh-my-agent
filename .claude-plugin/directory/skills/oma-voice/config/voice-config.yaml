@@ -1,0 +1,27 @@
+# oma-voice configuration
+# Design reference: docs/plans/designs/012-oma-voice.md
+#
+# NOT the place to put your settings: `oma update` overwrites this file. Put
+# overrides under `voice:` in .agents/oma-config.yaml, which is preserved —
+# that section wins, and this file supplies only the shipped defaults the skill
+# falls back to. Migration 022 moves anything you changed here for you.
+#
+
+# Profile names returned by `voicebox_list_profiles`. Set after creating a
+# profile in the Voicebox app (Profiles tab → + New Profile). When null, the
+# skill asks the user which profile to use, or disables auto-notification.
+notification_profile: null
+asset_profile: null
+
+# Where TTS asset audio and STT transcripts are written.
+output_dir: .agents/results/voice
+
+# Trigger automatic voice notifications when the active task exceeds this many
+# seconds. Set to null to disable auto-notification.
+# NOTE: agent-enforced guidance — no hook measures task duration, so the agent
+# applies this threshold by judgment when a long task completes or blocks.
+auto_notify_after_sec: 60
+
+# Hard limits. Above these the skill asks the user to split or truncate.
+max_tts_chars: 5000
+max_stt_minutes: 30

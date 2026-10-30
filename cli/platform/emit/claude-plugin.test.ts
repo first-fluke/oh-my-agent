@@ -105,6 +105,31 @@ describe("emitClaudePlugin", () => {
     }
   });
 
+  it("emits a self-contained directory entry with no executable components", () => {
+    outDir = mkdtempSync(path.join(tmpdir(), "oma-emit-directory-"));
+    emitClaudePlugin(FIXTURES_REPO, outDir);
+    const root = path.join(outDir, "directory");
+    const manifest = JSON.parse(
+      readFileSync(path.join(root, ".claude-plugin/plugin.json"), "utf8"),
+    );
+
+    expect(manifest.name).toBe("oh-my-agent");
+    expect(manifest.version).toBe("0.0.1");
+    expect(manifest.license).toBe("MIT");
+    expect(manifest).not.toHaveProperty("hooks");
+    expect(manifest).not.toHaveProperty("mcpServers");
+    expect(manifest.agents).toEqual(["./agents/fixture-agent.md"]);
+    expect(manifest.skills).toHaveLength(4);
+    for (const entry of [...manifest.skills, ...manifest.agents]) {
+      expect(existsSync(path.join(root, entry))).toBe(true);
+    }
+    expect(existsSync(path.join(root, "scripts"))).toBe(false);
+    expect(existsSync(path.join(root, "hooks"))).toBe(false);
+    const readme = readFileSync(path.join(root, "README.md"), "utf8");
+    expect(readme).toContain("no hooks, no MCP servers, and no install step");
+    expect(readme.split(/\s+/).filter(Boolean).length).toBeGreaterThan(40);
+  });
+
   it("emits native Codex local sources with explicit installation policy", () => {
     outDir = mkdtempSync(path.join(tmpdir(), "oma-emit-codex-catalog-"));
     const file = emitCodexMarketplace(FIXTURES_REPO, outDir);

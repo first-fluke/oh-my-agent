@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../stack.schema.json
+language: node
+framework: hono
+orm: prisma
+source: variant
+
+verify:
+  detect: package.json
+  syntax:
+    cmd: "bunx tsc --noEmit"
+    skip_if_missing: bunx
+  tests:
+    cmd: "bun test"
+    skip_if_missing: bun
+  raw_sql:
+    patterns:
+      - "\\$queryRawUnsafe\\("
+      - "\\$executeRawUnsafe\\("
+      - "sql\\.raw\\("
+    include_glob: "*.ts"
+    exclude_dirs: [node_modules, dist, build, coverage]

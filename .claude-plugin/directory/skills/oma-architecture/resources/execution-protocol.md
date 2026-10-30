@@ -1,0 +1,115 @@
+# Architecture Agent - Execution Protocol
+
+## Preparation
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
+
+## Step 1: Frame the Problem
+- Separate symptoms from decisions
+- Name the architecture concern explicitly:
+  - boundary / ownership
+  - API shape / caller burden
+  - reliability / consistency / scaling
+  - migration / investment prioritization
+- Record constraints, quality attributes, and non-goals
+
+## Step 2: Gather Context
+- Read prior decisions in `docs/decisions/` first; consult `.agents/results/architecture/`, `docs/design-docs/`, and `docs/plans/designs/` as legacy context until migration:
+  - note decisions that constrain this one
+  - if this decision replaces one, plan to mark the old ADR superseded — never silently contradict it
+- Analyze only the code and docs relevant to the decision
+  - follow `../../_shared/core/code-intelligence.md` for configured symbol, reference, and pattern tools or native fallback
+- Map existing architecture:
+  - key modules or services
+  - ownership boundaries
+  - integration points
+  - current pain points
+- If context is vague, start in Diagnostic Mode before deeper analysis
+
+## Step 3: Decide Consultation Depth
+- **Simple**: no stakeholder consultation, analyze inline
+- **Medium**: consult 1-3 stakeholder agents via `stakeholder-synthesis.md`
+- **Complex**: perform a structured stakeholder sweep, then synthesize
+
+## Step 4: Run the Selected Method
+
+### Diagnostic Mode
+- Convert vague pain into a concrete architecture problem
+- Route into Recommendation, Design-Twice, ATAM-style, or CBAM-style mode
+
+### Recommendation Mode
+- Define 2-3 options when the decision is material
+- Compare on:
+  - boundary clarity
+  - quality attributes
+  - implementation cost
+  - operational cost
+  - future change cost
+
+### Design-Twice Mode
+- Force at least two materially different options
+- Avoid superficial variations on the same decomposition
+- Compare and synthesize if needed
+
+### ATAM-style Mode
+- Identify quality attribute scenarios
+- Write each scenario as stimulus → environment → response measure
+  (e.g., "traffic spikes to 5x baseline [stimulus] during a regional failover [environment] → p99 stays under 800ms [response measure]")
+- Surface sensitivity points, tradeoff points, risks, and non-risks
+- Prioritize architectural concerns by impact
+
+### CBAM-style Mode
+- Compare candidate investments
+- Estimate benefit, cost, and sequencing value
+- Score benefit and cost on a shared 1-5 scale (1 = minimal, 5 = very high) so rankings are comparable across runs
+- Tag each estimate with its confidence (low / medium / high) instead of implying false precision
+- Recommend a prioritized investment path
+
+### ADR Mode
+- Produce a concise decision artifact after analysis
+
+### Transition planning (any mode)
+- If the recommended option requires restructuring a live system (service extraction, sync → event-driven, datastore split), append a Transition Plan section using `migration-patterns.md`
+- If the change breaks a published API contract, apply `api-evolution.md`
+
+## Step 5: Synthesize
+- Summarize stakeholder perspectives
+- Separate:
+  - agreements
+  - tensions
+  - assumptions
+- Make an explicit recommendation
+- If a decision is still user-owned, frame the options and tradeoffs clearly
+
+## Step 6: Verify
+- Run `checklist.md`
+- Confirm the recommendation is:
+  - method-appropriate
+  - cost-aware
+  - scoped correctly
+  - explicit about risks and assumptions
+- Make validation executable where possible: propose an architecture fitness function or dependency rule (dependency-cruiser, import-linter, ArchUnit, or equivalent) that fails CI when the decision is violated — a validation step no one can run will not be run
+
+## Step 7: Document
+- Save ADRs and retained recommendations for a selected approach to `docs/decisions/`; update `docs/decisions/index.md`.
+- Keep run-specific reviews, diagnoses, CBAM analyses, and unselected comparison drafts in `.agents/results/architecture/`. When promoting a document into `docs/decisions/`, leave the destination in the source report.
+- Filename patterns (kebab-case topic, no sequence numbers):
+  - `docs/decisions/adr-<topic>.md`
+  - `docs/decisions/architecture-recommendation-<topic>.md` for a retained selected approach
+  - `.agents/results/architecture/architecture-review-<topic>.md`
+  - `.agents/results/architecture/cbam-<topic>.md`
+  - `.agents/results/architecture/diagnosis-<topic>.md`
+- Rerunning the same topic updates the existing file; record the revision in the ADR `Status` line rather than creating a copy
+- ADR lifecycle: `Status` is `Proposed`, `Accepted`, or `Superseded by <adr-file>`. Keep a user-owned unresolved choice `Proposed`; a completed artifact or event is not acceptance. Use `Accepted` only when existing decision authority supports it. Update a prior ADR as superseded only when the replacement is authorized.
+- When dispatched, also write the injected claim and the task/run-scoped report per `../../_shared/runtime/result-contract.md` and `memory-protocol.md`. Use `.agents/results/result-{agentId}-{taskId}-{runId}-{sessionId}.md`, preserving injected IDs. Existing reports under configured coordination memory or `.serena/memories/` remain read fallback; write new reports only to `.agents/results/`. Link the architecture artifact from this report.
+- In an active OMA workflow, record and verify the actual recommendation with its authority status and current artifact revision. This records completion of the analysis without granting implementation approval:
+
+```bash
+oma state emit "decision.made" '{"subject":"architecture.adr-complete","instanceId":"<artifact path and revision>","decision":"<Proposed|Accepted>: <recommended or authorized option and boundary>","rationale":"<option comparison and actual acceptance authority when Accepted>","evidence":["<architecture artifact and supporting evidence paths>"]}'
+oma state verify --workflow architecture --checkpoint adr-complete --instance "<artifact path and revision>"
+```
+
+## Escalation
+- If the question is really about task sequencing -> hand off to oma-pm
+- If the decision is really infra implementation -> hand off to oma-tf-infra
+- If the issue is primarily code correctness -> hand off to oma-debug
+- If the issue is primarily security/performance/accessibility verification -> hand off to oma-qa
