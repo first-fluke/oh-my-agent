@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.22.0",
-  "releaseDate": "2026-10-29T03:57:49.465Z",
+  "releaseDate": "2026-10-30T05:42:58.557Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -361,8 +361,8 @@
     },
     {
       "path": ".agents/oma-config.cue",
-      "sha256": "450c622e381438765959a2ffa4fa4803861dbf6fdf5db67446e416b7fa2ef0ac",
-      "size": 13281
+      "sha256": "cc04cfb07e88aa2f0a8dba0fbf84f73e6c9a68430d447aee1991a17524a8907f",
+      "size": 13555
     },
     {
       "path": ".agents/oma-config.yaml",
@@ -426,8 +426,8 @@
     },
     {
       "path": ".agents/rules/market.md",
-      "sha256": "458972f73ed785310572eb2cf07604374f4fe4ea917f31518f344324fb3511e0",
-      "size": 2714
+      "sha256": "16138e6919831fc9a0c6772d3f3206e3782d0d2add20e7f02a094861bb427a11",
+      "size": 2770
     },
     {
       "path": ".agents/rules/mobile.md",
@@ -446,8 +446,8 @@
     },
     {
       "path": ".agents/skills/_shared/conditional/diagram-engine.md",
-      "sha256": "7bf1c5c0aff55573c9604640c8fa2965d0438539c2a239a859698cf3f4d07f5c",
-      "size": 6808
+      "sha256": "4aabd2c7d8325e3c58560f8aaf8ca608af83bf099e1996888dc8a97cf1026c4b",
+      "size": 6422
     },
     {
       "path": ".agents/skills/_shared/conditional/experiment-ledger.md",
@@ -516,8 +516,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/execution-policy.md",
-      "sha256": "6abf3437c3eebeb11959eeeac08f62ebe992599e7f40f1e12a2aabf8304ba08b",
-      "size": 4831
+      "sha256": "d868a915033911e7b35eb54a057126f500e3172ebd4edc10cf1a12c55b974ea4",
+      "size": 4759
     },
     {
       "path": ".agents/skills/_shared/core/lessons-learned.md",
@@ -1161,8 +1161,8 @@
     },
     {
       "path": ".agents/skills/oma-market/SKILL.md",
-      "sha256": "7c33e06c5e5040e820b713017047d226a7feb408ae4afc54cc48c36d53cfaab6",
-      "size": 9408
+      "sha256": "fa08037e938dc374339bcfd72ff4817574285c3f6a94d76df98773bd83fb5f05",
+      "size": 9505
     },
     {
       "path": ".agents/skills/oma-market/resources/checklist.md",
@@ -1171,13 +1171,13 @@
     },
     {
       "path": ".agents/skills/oma-market/resources/error-playbook.md",
-      "sha256": "d42bd2683804bbc8885772e336ddb3ecb4c4b1d1fe8f0676365a0e40cec34954",
-      "size": 1399
+      "sha256": "e484b0cf76d241fc42ebf3847d3e2c50f04e76fb3c726a59c7f75dfa75a6a5f0",
+      "size": 1451
     },
     {
       "path": ".agents/skills/oma-market/resources/execution-protocol.md",
-      "sha256": "8b8c7d4ce89e803326320fa2e716c73b10b0e146ef1b21a76327bdabae3c9a8f",
-      "size": 2691
+      "sha256": "c754998780982c2027f43ee962b15d5363d56a29235abce9993e556fab2e5ab9",
+      "size": 2774
     },
     {
       "path": ".agents/skills/oma-market/resources/frameworks/pestel.md",
@@ -1876,8 +1876,8 @@
     },
     {
       "path": ".agents/skills/oma-slide/SKILL.md",
-      "sha256": "7c7342f6523d1abdc7cc1501925155f06966fb5b869bec00f7dd70811b397e5b",
-      "size": 13915
+      "sha256": "090dc4335aa995f6c4bc23b7f9e647c0a4ce3558d6ec5d4997defd310ffd1afb",
+      "size": 16225
     },
     {
       "path": ".agents/skills/oma-slide/resources/animation-patterns.md",
@@ -1901,8 +1901,8 @@
     },
     {
       "path": ".agents/skills/oma-slide/resources/checklist.md",
-      "sha256": "78620a4f926d21c23988989d9178a824d78ba3a809a1ee5bbf2c037d80cdc13d",
-      "size": 1653
+      "sha256": "c2f5ad04fd89f6480505141e859db6418441cc7a678bd18ffc5827df7fa11f3e",
+      "size": 2456
     },
     {
       "path": ".agents/skills/oma-slide/resources/design-doctrine.md",
@@ -1916,8 +1916,13 @@
     },
     {
       "path": ".agents/skills/oma-slide/resources/generation-protocol.md",
-      "sha256": "06e7b5edb3df2d8a0cb0ddc7452ba5cb9c05e5f5dd272210988da1f75e6d2c1d",
-      "size": 18650
+      "sha256": "ff75b7b4df2f83196a865d163bbff53467bc6824fdb2e0fc60968772145a7c9e",
+      "size": 19526
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/native-pptx.md",
+      "sha256": "9fba4749e16c98c914ef9723e9b01c0cc212cc110c88ef2848c1c466a6d54d5c",
+      "size": 4067
     },
     {
       "path": ".agents/skills/oma-slide/resources/selection-index.json",
@@ -2251,8 +2256,8 @@
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "3803173d9090883ad0eb7a0c5ca5d99818bc80ddb16b45acf45d432c3dc8f8ce",
-      "size": 21584
+      "sha256": "7afd5a064922528251f5581a7bda93102166abacadba044810510321e283402c",
+      "size": 21601
     },
     {
       "path": ".agents/workflows/work.md",
@@ -2266,6 +2271,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 451
+    "totalFiles": 452
   }
 }
