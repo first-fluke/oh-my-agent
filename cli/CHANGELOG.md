@@ -1,5 +1,17 @@
 # Changelog
 
+## [20.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.22.0...cli-v20.23.0) (2026-10-30)
+
+
+### Features
+
+* **slide:** add native-pptx route via upstream ppt-master ([dce69cc](https://github.com/first-fluke/oh-my-agent/commit/dce69cc37d6cc367bf3ed3442aa0241c8928e718))
+
+
+### Refactoring
+
+* **cli:** install upstream skills via skills cli, drop tarballs ([6965f73](https://github.com/first-fluke/oh-my-agent/commit/6965f739ff36381c0a06fa94f915f87ab69c93ed))
+
 ## [20.22.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.21.0...cli-v20.22.0) (2026-10-29)
 
 
