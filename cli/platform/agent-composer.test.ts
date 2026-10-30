@@ -496,7 +496,7 @@ describe("installVendorAgents — real Codex variant SSOT", () => {
         join(targetDir, ".codex", "agents", "backend-engineer.toml"),
         "utf-8",
       );
-      expect(backend).toContain('model = "gpt-5.6-terra"');
+      expect(backend).toContain('model = "gpt-6.1-terra"');
       expect(backend).toContain('model_reasoning_effort = "high"');
 
       for (const agent of ["docs-curator", "research-explorer"]) {
@@ -504,7 +504,7 @@ describe("installVendorAgents — real Codex variant SSOT", () => {
           join(targetDir, ".codex", "agents", `${agent}.toml`),
           "utf-8",
         );
-        expect(content).toContain('model = "gpt-5.6-luna"');
+        expect(content).toContain('model = "gpt-6-luna"');
         expect(content).toContain('model_reasoning_effort = "max"');
       }
     } finally {
