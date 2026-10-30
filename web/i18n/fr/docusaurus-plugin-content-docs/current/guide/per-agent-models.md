@@ -40,7 +40,7 @@ model_preset: auto
 |:----|:-----------|:----------------|
 | `auto` | Suit les réglages d'agent et de modèle du runtime courant sans injecter de modèle ni d'indicateur d'effort | Nouvelles installations |
 | `free` | Mode passerelle spécial pour les processus Codex, Claude ou Qwen lancés par OMA ; il est résolu séparément du registre des presets intégrés. | Passerelle FreeLLMAPI locale |
-| `antigravity` | Tous les agents utilisent la CLI Antigravity (`agy`) : Gemini 3.1 Pro pour l'implémentation, l'architecture et la QA ; Gemini 3.6 Flash pour l'orchestration, le PM, la documentation et l'exploration. Avec agy 1.1+, OMA transmet l'identifiant d'affichage issu de `agy models` (par exemple `--model "Gemini 3.1 Pro (High)"`) et convertit `effort` en un niveau publié par le modèle. agy 1.0 n'a pas de `--model` : sa propre configuration décide. agy n'a pas de `--thinking-budget`. | Utilisateurs de la CLI Antigravity |
+| `antigravity` | Tous les agents utilisent la CLI Antigravity (`agy`) : Gemini 4 Argon pour l'implémentation, l'architecture et la QA ; Gemini 3.8 Flash pour l'orchestration, le PM, la documentation et l'exploration. Avec agy 1.1+, OMA transmet l'identifiant d'affichage issu de `agy models` (par exemple `--model "Gemini 4 Argon (High)"`) et convertit `effort` en un niveau publié par le modèle. agy 1.0 n'a pas de `--model` : sa propre configuration décide. agy n'a pas de `--thinking-budget`. | Utilisateurs de la CLI Antigravity |
 | `claude` | Tous les agents utilisent Claude : Opus pour l'architecture, Haiku pour l'exploration, Sonnet pour tous les autres rôles | Détenteurs d'un abonnement Claude Max |
 | `codex` | Tous les agents utilisent OpenAI Codex (GPT-5.5 pour la plupart des rôles, GPT-5.4-mini pour l'exploration), avec des niveaux d'effort | Utilisateurs ChatGPT Plus/Pro |
 | `qwen` | Tous les agents utilisent Qwen Code ; les sessions Qwen correspondantes peuvent utiliser les agents natifs générés, et les autres runtimes utilisent le dispatch CLI | Inférence locale ou auto-hébergée |
@@ -56,11 +56,11 @@ Les presets fixes attribuent ces slugs du registre. Les préfixes de propriétai
 
 | Rôle | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
 
 Les valeurs entre parenthèses sont l'`effort` du preset (Codex) ou `thinking: true` (Qwen). Un rôle que le preset ne liste pas, comme `eval`, utilise l'entrée `orchestrator` de ce preset.
 
@@ -187,9 +187,9 @@ Enregistrez sous `models:` les slugs de modèles qui ne figurent pas encore dans
 ```yaml
 # .agents/oma-config.yaml
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
@@ -203,7 +203,7 @@ models:
 
 Deux règles s'appliquent à un slug enregistré que vous référencez depuis `agents:` :
 
-1. **La clé doit avoir la forme `owner/model`.** `agents.<id>.model` est validé selon un motif `owner/model` ; une clé simple comme `my-fast-model` est donc refusée. Utilisez une clé avec barre oblique comme `antigravity/gemini-3.1-pro-low` (ou le slug `provider/model` propre au fournisseur).
+1. **La clé doit avoir la forme `owner/model`.** `agents.<id>.model` est validé selon un motif `owner/model` ; une clé simple comme `my-fast-model` est donc refusée. Utilisez une clé avec barre oblique comme `antigravity/gemini-4-argon-low` (ou le slug `provider/model` propre au fournisseur).
 2. **La spécification doit être complète et valide.** `cli`, `cli_model`, `auth_hint` et tous les champs `supports` sont requis lors de la résolution. `cli` doit valoir `antigravity`, `claude`, `codex`, `commandcode`, `cursor`, `grok`, `kimi`, `kiro`, `qwen` ou `opencode` ; les entrées de `native_dispatch_from` doivent valoir `antigravity`, `claude`, `codex`, `cursor`, `kimi`, `kiro`, `opencode` ou `qwen`. `gemini` n'est une valeur valide pour aucun des deux. Une spécification invalide journalise `[model-registry] User inline model "<slug>" failed validation — falling back to core registry` ; si le registre principal ne contient pas ce slug, le dispatch s'arrête avec une erreur de slug inconnu.
 
 > Si un slug défini par l'utilisateur entre en collision avec un slug intégré, la définition utilisateur gagne et un avertissement est émis.
@@ -317,9 +317,9 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null

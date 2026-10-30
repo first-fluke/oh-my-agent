@@ -42,7 +42,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | Sigue los ajustes de agente y modelo del runtime actual sin inyectar un flag de modelo ni de esfuerzo | Valor predeterminado en instalaciones nuevas |
 | `free` | Modo de gateway especial para procesos de Codex, Claude o Qwen iniciados por OMA; se resuelve por separado del registro de presets integrados. | Gateway local de FreeLLMAPI |
-| `antigravity` | Todos los agentes usan la CLI de Antigravity (`agy`): Gemini 3.1 Pro para implementación, arquitectura y QA; Gemini 3.6 Flash para orquestación, PM, documentación y explore. En agy 1.1+, OMA pasa el ID visible de `agy models` (por ejemplo, `--model "Gemini 3.1 Pro (High)"`) y asigna `effort` a un nivel que publique el modelo. agy 1.0 no tiene `--model`, así que decide su propia configuración. agy no tiene `--thinking-budget`. | Usuarios de Antigravity CLI |
+| `antigravity` | Todos los agentes usan la CLI de Antigravity (`agy`): Gemini 4 Argon para implementación, arquitectura y QA; Gemini 3.8 Flash para orquestación, PM, documentación y explore. En agy 1.1+, OMA pasa el ID visible de `agy models` (por ejemplo, `--model "Gemini 4 Argon (High)"`) y asigna `effort` a un nivel que publique el modelo. agy 1.0 no tiene `--model`, así que decide su propia configuración. agy no tiene `--thinking-budget`. | Usuarios de Antigravity CLI |
 | `claude` | Todos los agentes usan Claude: Opus para arquitectura, Haiku para explore y Sonnet para el resto de roles | Suscriptores de Claude Max |
 | `codex` | Todos los agentes usan OpenAI Codex (GPT-5.5 para la mayoría de roles, GPT-5.4-mini para explore) con niveles de esfuerzo | Usuarios de ChatGPT Plus/Pro |
 | `qwen` | Todos los agentes usan Qwen Code; las sesiones de Qwen que coinciden pueden usar los agentes nativos generados, y los demás runtimes usan el despacho por CLI | Inferencia local o autoalojada |
@@ -58,11 +58,11 @@ Los presets fijos asignan estos slugs del registro. Se omiten los prefijos de pr
 
 | Rol | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
 
 Los valores entre paréntesis son el `effort` del preset (Codex) o `thinking: true` (Qwen). Un rol que el preset no enumera, como `eval`, usa la entrada `orchestrator` de ese preset.
 
@@ -189,9 +189,9 @@ Registra bajo `models:` los slugs de modelos que aún no estén en el registro i
 ```yaml
 # .agents/oma-config.yaml
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
@@ -205,7 +205,7 @@ models:
 
 Se aplican dos reglas al slug registrado que referencias desde `agents:`:
 
-1. **La clave debe tener la forma `owner/model`.** `agents.<id>.model` se valida contra un patrón `owner/model`, por lo que se rechaza una clave simple como `my-fast-model`; usa una clave con barra como `antigravity/gemini-3.1-pro-low` (o el slug `provider/model` propio del proveedor).
+1. **La clave debe tener la forma `owner/model`.** `agents.<id>.model` se valida contra un patrón `owner/model`, por lo que se rechaza una clave simple como `my-fast-model`; usa una clave con barra como `antigravity/gemini-4-argon-low` (o el slug `provider/model` propio del proveedor).
 2. **La especificación debe estar completa y ser válida.** En el momento de resolverla son obligatorios `cli`, `cli_model`, `auth_hint` y cada campo de `supports`. `cli` debe ser uno de `antigravity`, `claude`, `codex`, `commandcode`, `cursor`, `grok`, `kimi`, `kiro`, `qwen` u `opencode`; las entradas de `native_dispatch_from` deben ser `antigravity`, `claude`, `codex`, `cursor`, `kimi`, `kiro`, `opencode` o `qwen`. `gemini` no es un valor válido en ninguno de los dos. Una especificación no válida registra `[model-registry] User inline model "<slug>" failed validation — falling back to core registry`; si el registro principal no tiene ese slug, el despacho se detiene con un error de slug desconocido.
 
 > Si un slug definido por el usuario colisiona con un slug integrado, gana la definición del usuario y se emite una advertencia.
@@ -319,9 +319,9 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null

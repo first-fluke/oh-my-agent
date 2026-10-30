@@ -41,7 +41,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | Theo setting agent/model của runtime hiện tại mà không inject model hoặc effort flag. | Mặc định cho install mới |
 | `free` | Gateway mode đặc biệt cho process Codex, Claude hoặc Qwen do OMA spawn; được resolve tách khỏi built-in preset registry. | Gateway FreeLLMAPI local |
-| `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 3.1 Pro cho implementation, architecture và QA; Gemini 3.6 Flash cho orchestration, PM, docs và explore. Trên agy 1.1+, OMA truyền display ID lấy từ `agy models` (ví dụ `--model "Gemini 3.1 Pro (High)"`) và map `effort` sang một tier mà model công bố. agy 1.0 không có `--model`, nên config riêng của nó quyết định. agy không có `--thinking-budget`. | Người dùng Antigravity CLI |
+| `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 4 Argon cho implementation, architecture và QA; Gemini 3.8 Flash cho orchestration, PM, docs và explore. Trên agy 1.1+, OMA truyền display ID lấy từ `agy models` (ví dụ `--model "Gemini 4 Argon (High)"`) và map `effort` sang một tier mà model công bố. agy 1.0 không có `--model`, nên config riêng của nó quyết định. agy không có `--thinking-budget`. | Người dùng Antigravity CLI |
 | `claude` | Mọi agent dùng Claude: Opus cho architecture, Haiku cho explore, Sonnet cho mọi role còn lại. | Người dùng thuê bao Claude Max |
 | `codex` | Mọi agent dùng OpenAI Codex (GPT-5.5 cho phần lớn role, GPT-5.4-mini cho explore) với effort level. | Người dùng ChatGPT Plus/Pro |
 | `qwen` | Mọi agent dùng Qwen Code; session Qwen khớp vendor có thể dùng native agent được sinh ra, còn runtime khác dùng CLI dispatch. | Inference local / self-hosted |
@@ -57,11 +57,11 @@ Các fixed preset gán những registry slug sau. Tiền tố owner được lư
 
 | Role | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
 
 Giá trị trong ngoặc là `effort` của preset (Codex) hoặc `thinking: true` (Qwen). Role mà preset không liệt kê, như `eval`, dùng entry `orchestrator` của preset đó.
 
@@ -192,9 +192,9 @@ Merge là shallow: mỗi field trong override thay field tương ứng của pre
 ```yaml
 # .agents/oma-config.yaml
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
@@ -209,7 +209,7 @@ models:
 
 Hai quy tắc áp dụng cho slug đã đăng ký khi tham chiếu từ `agents:`:
 
-1. **Key phải ở dạng `owner/model`:** `agents.<id>.model` validate theo pattern `owner/model`, nên key trần như `my-fast-model` bị từ chối; dùng key có slash như `antigravity/gemini-3.1-pro-low` hoặc slug `provider/model` của vendor.
+1. **Key phải ở dạng `owner/model`:** `agents.<id>.model` validate theo pattern `owner/model`, nên key trần như `my-fast-model` bị từ chối; dùng key có slash như `antigravity/gemini-4-argon-low` hoặc slug `provider/model` của vendor.
 2. **Spec phải đầy đủ và hợp lệ:** `cli`, `cli_model`, `auth_hint` và mọi field trong `supports` bắt buộc ở thời điểm resolve. `cli` phải là một trong `antigravity`, `claude`, `codex`, `commandcode`, `cursor`, `grok`, `kimi`, `kiro`, `qwen` hoặc `opencode`; các entry của `native_dispatch_from` phải là `antigravity`, `claude`, `codex`, `cursor`, `kimi`, `kiro`, `opencode` hoặc `qwen`. `gemini` không phải giá trị hợp lệ cho cả hai. Spec không hợp lệ sẽ log `[model-registry] User inline model "<slug>" failed validation — falling back to core registry`; nếu core registry không có slug đó, dispatch dừng với lỗi unknown-slug.
 
 > Nếu user-defined slug trùng built-in slug, định nghĩa user thắng và phát warning.
@@ -327,9 +327,9 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null

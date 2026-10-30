@@ -17,8 +17,8 @@ describe("CORE_REGISTRY", () => {
     "openai/gpt-5.4-pro",
     "openai/gpt-5.4-mini",
     "openai/gpt-5.3-codex",
-    "antigravity/gemini-3.1-pro",
-    "antigravity/gemini-3.6-flash",
+    "antigravity/gemini-4-argon",
+    "antigravity/gemini-3.8-flash",
     "cursor/composer-2.5",
     "cursor/composer-2.5-fast",
     "cursor/composer-2",
@@ -61,7 +61,7 @@ describe("CORE_REGISTRY", () => {
   });
 
   // Regression: agy's `--model` only accepts the display IDs from `agy models`
-  // ("Gemini 3.1 Pro (High)"). A slug-shaped cli_model makes agy exit with
+  // ("Gemini 4 Argon (High)"). A slug-shaped cli_model makes agy exit with
   // `Error: invalid --model` before running the prompt, killing every spawned
   // antigravity subagent. Verify the current list with `agy models`.
   it("antigravity cli_model values use agy display-ID form, not slugs", async () => {

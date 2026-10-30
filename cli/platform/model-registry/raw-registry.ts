@@ -180,19 +180,19 @@ export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
   // hint in `oma doctor`, but dispatch falls back to the config-driven default.
   //
   // agy 1.1+ DOES accept `--model`, but only the display-name IDs printed by
-  // `agy models` ("Gemini 3.1 Pro (High)") — a slug like `gemini-3.1-pro` is
+  // `agy models` ("Gemini 4 Argon (High)") — a slug like `gemini-4-argon` is
   // rejected with `Error: invalid --model`. `cli_model` therefore stores the
   // exact display ID, tier included; the registry key stays slug-shaped because
   // that is the user-facing form in oma-config.yaml. The parenthesised tier is
   // agy's effort dial, so `supports.effort` lists the tiers agy actually
   // publishes for that model and `agyModelForEffort` swaps the suffix.
   [
-    "antigravity/gemini-3.1-pro",
+    "antigravity/gemini-4-argon",
     {
       cli: "antigravity",
-      cli_model: "Gemini 3.1 Pro (High)",
+      cli_model: "Gemini 4 Argon (High)",
       supports: {
-        effort: { type: "granular", levels: ["low", "high"] },
+        effort: { type: "granular", levels: ["low", "medium", "high"] },
         apply_patch: false,
         task_budget: false,
         prompt_cache: true,
@@ -205,10 +205,10 @@ export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
     } satisfies ModelSpec,
   ],
   [
-    "antigravity/gemini-3.6-flash",
+    "antigravity/gemini-3.8-flash",
     {
       cli: "antigravity",
-      cli_model: "Gemini 3.6 Flash (Medium)",
+      cli_model: "Gemini 3.8 Flash (Medium)",
       supports: {
         effort: { type: "granular", levels: ["low", "medium", "high"] },
         apply_patch: false,

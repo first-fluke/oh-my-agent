@@ -42,7 +42,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | 遵循当前运行时的智能体和模型设置，不注入模型或推理强度标志 | 新安装的默认选项 |
 | `free` | OMA 生成的 Codex、Claude 或 Qwen 进程使用的特殊网关模式；它独立于内置预设注册表解析。 | 本地 FreeLLMAPI 网关 |
-| `antigravity` | 所有智能体使用 Antigravity CLI（`agy`）：实现、架构和 QA 使用 Gemini 3.1 Pro；编排、PM、文档和探索使用 Gemini 3.6 Flash。在 agy 1.1+ 上，OMA 传入 `agy models` 中的显示 ID（例如 `--model "Gemini 3.1 Pro (High)"`），并将 `effort` 映射到模型公开的档位。agy 1.0 没有 `--model`，因此由其自身配置决定。agy 没有 `--thinking-budget`。 | Antigravity CLI 用户 |
+| `antigravity` | 所有智能体使用 Antigravity CLI（`agy`）：实现、架构和 QA 使用 Gemini 4 Argon；编排、PM、文档和探索使用 Gemini 3.8 Flash。在 agy 1.1+ 上，OMA 传入 `agy models` 中的显示 ID（例如 `--model "Gemini 4 Argon (High)"`），并将 `effort` 映射到模型公开的档位。agy 1.0 没有 `--model`，因此由其自身配置决定。agy 没有 `--thinking-budget`。 | Antigravity CLI 用户 |
 | `claude` | 所有智能体使用 Claude：架构使用 Opus，探索使用 Haiku，其他所有角色使用 Sonnet | Claude Max 订阅用户 |
 | `codex` | 所有智能体使用 OpenAI Codex（大多数角色使用 GPT-5.5，探索使用 GPT-5.4-mini），并带有推理强度级别 | ChatGPT Plus/Pro 用户 |
 | `qwen` | 所有智能体使用 Qwen Code；与之匹配的 Qwen 会话可以使用生成的原生智能体，其他运行时使用 CLI 调度 | 本地或自托管推理 |
@@ -58,11 +58,11 @@ model_preset: auto
 
 | 角色 | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
 
 括号中的值是预设的 `effort`（Codex）或 `thinking: true`（Qwen）。预设未列出的角色（例如 `eval`）使用该预设的 `orchestrator` 条目。
 
@@ -189,9 +189,9 @@ agents:
 ```yaml
 # .agents/oma-config.yaml
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
@@ -205,7 +205,7 @@ models:
 
 在 `agents:` 中引用已注册 slug 时需要遵守两条规则：
 
-1. **键必须使用 `owner/model` 形式。** `agents.<id>.model` 会针对 `owner/model` 模式进行校验，因此 `my-fast-model` 这样的裸键会被拒绝。请使用带斜杠的键，例如 `antigravity/gemini-3.1-pro-low`（或供应商自己的 `provider/model` slug）。
+1. **键必须使用 `owner/model` 形式。** `agents.<id>.model` 会针对 `owner/model` 模式进行校验，因此 `my-fast-model` 这样的裸键会被拒绝。请使用带斜杠的键，例如 `antigravity/gemini-4-argon-low`（或供应商自己的 `provider/model` slug）。
 2. **规范必须完整且有效。** 解析时必须提供 `cli`、`cli_model`、`auth_hint` 以及 `supports` 中的每个字段。`cli` 必须是 `antigravity`、`claude`、`codex`、`commandcode`、`cursor`、`grok`、`kimi`、`kiro`、`qwen` 或 `opencode` 之一；`native_dispatch_from` 的条目必须是 `antigravity`、`claude`、`codex`、`cursor`、`kimi`、`kiro`、`opencode` 或 `qwen`。`gemini` 对两者都不是有效值。无效的规范会记录 `[model-registry] User inline model "<slug>" failed validation — falling back to core registry`；如果核心注册表中也没有该 slug，调度会以未知 slug 错误停止。
 
 > 如果用户定义的 slug 与内置 slug 冲突，用户定义会优先，并发出警告。
@@ -319,9 +319,9 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null

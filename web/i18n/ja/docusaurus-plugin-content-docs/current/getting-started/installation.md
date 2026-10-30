@@ -281,7 +281,7 @@ agents:
 # models:
 #   my-fast:
 #     cli: antigravity
-#     cli_model: "Gemini 3.6 Flash (Medium)"
+#     cli_model: "Gemini 3.8 Flash (Medium)"
 #     supports: { thinking: true }
 
 # Optional — user-defined presets

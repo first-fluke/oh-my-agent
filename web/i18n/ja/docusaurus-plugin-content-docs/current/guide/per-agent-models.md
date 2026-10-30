@@ -42,7 +42,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | 現在のランタイムのエージェントとモデル設定に従います。モデルや effort フラグは注入しません。 | 新規インストールのデフォルト |
 | `free` | OMA が起動する Codex、Claude、Qwen プロセス向けの特殊なゲートウェイモードです。組み込みプリセットレジストリとは別に解決されます。 | ローカルの FreeLLMAPI ゲートウェイ |
-| `antigravity` | すべてのエージェントが Antigravity CLI（`agy`）を使います。実装、アーキテクチャ、QA には Gemini 3.1 Pro、オーケストレーション、PM、ドキュメント、探索には Gemini 3.6 Flash を使います。agy 1.1 以降では、OMA は `agy models` の表示 ID を渡し（例: `--model "Gemini 3.1 Pro (High)"`）、`effort` をモデルが公開している段階に対応付けます。agy 1.0 には `--model` がないため、agy 自身の設定で決まります。agy には `--thinking-budget` はありません。 | Antigravity CLI の利用者 |
+| `antigravity` | すべてのエージェントが Antigravity CLI（`agy`）を使います。実装、アーキテクチャ、QA には Gemini 4 Argon、オーケストレーション、PM、ドキュメント、探索には Gemini 3.8 Flash を使います。agy 1.1 以降では、OMA は `agy models` の表示 ID を渡し（例: `--model "Gemini 4 Argon (High)"`）、`effort` をモデルが公開している段階に対応付けます。agy 1.0 には `--model` がないため、agy 自身の設定で決まります。agy には `--thinking-budget` はありません。 | Antigravity CLI の利用者 |
 | `claude` | すべてのエージェントが Claude を使います。architecture は Opus、explore は Haiku、それ以外のロールはすべて Sonnet です。 | Claude Max の契約者 |
 | `codex` | ほとんどのロールでは GPT-5.5、explore では GPT-5.4-mini を使う OpenAI Codex を、effort レベル付きで利用します。 | ChatGPT Plus/Pro の利用者 |
 | `qwen` | すべてのエージェントが Qwen Code を使います。ランタイムが一致する Qwen セッションでは生成されたネイティブエージェントを使え、ほかのランタイムでは CLI ディスパッチを使います。 | ローカルまたはセルフホスト推論 |
@@ -58,11 +58,11 @@ model_preset: auto
 
 | ロール | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
 
 括弧内の値は、プリセットの `effort`（Codex）または `thinking: true`（Qwen）です。プリセットに記載されていないロール（`eval` など）は、そのプリセットの `orchestrator` エントリを使います。
 
@@ -189,9 +189,9 @@ agents:
 ```yaml
 # .agents/oma-config.yaml
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
@@ -205,7 +205,7 @@ models:
 
 `agents:` から登録済みスラッグを参照するときは、次の 2 つの規則があります。
 
-1. **キーは `owner/model` 形式でなければなりません。** `agents.<id>.model` は `owner/model` パターンで検証されるため、`my-fast-model` のような裸のキーは拒否されます。`antigravity/gemini-3.1-pro-low` のようにスラッシュを含むキー、またはベンダー固有の `provider/model` スラッグを使ってください。
+1. **キーは `owner/model` 形式でなければなりません。** `agents.<id>.model` は `owner/model` パターンで検証されるため、`my-fast-model` のような裸のキーは拒否されます。`antigravity/gemini-4-argon-low` のようにスラッシュを含むキー、またはベンダー固有の `provider/model` スラッグを使ってください。
 2. **仕様は完全かつ有効でなければなりません。** 解決時には `cli`、`cli_model`、`auth_hint`、すべての `supports` フィールドが必要です。`cli` は `antigravity`、`claude`、`codex`、`commandcode`、`cursor`、`grok`、`kimi`、`kiro`、`qwen`、`opencode` のいずれか、`native_dispatch_from` のエントリは `antigravity`、`claude`、`codex`、`cursor`、`kimi`、`kiro`、`opencode`、`qwen` のいずれかでなければなりません。`gemini` はどちらにも有効な値ではありません。無効な仕様では `[model-registry] User inline model "<slug>" failed validation — falling back to core registry` がログに出力されます。コアレジストリにそのスラッグがない場合、ディスパッチは未知のスラッグのエラーで停止します。
 
 > ユーザー定義のスラッグが組み込みスラッグと衝突すると、ユーザー定義が優先され、警告が出ます。
@@ -319,9 +319,9 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null

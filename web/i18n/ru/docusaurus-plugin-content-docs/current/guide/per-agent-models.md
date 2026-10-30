@@ -42,7 +42,7 @@ model_preset: auto
 |:----|:-----------|:------------------|
 | `auto` | Использует параметры агента и модели текущего runtime без добавления флага модели или уровня effort | Значение по умолчанию для новых установок |
 | `free` | Специальный режим шлюза для процессов Codex, Claude или Qwen, запущенных OMA; разрешается отдельно от реестра встроенных пресетов | Локальный шлюз FreeLLMAPI |
-| `antigravity` | Все агенты используют Antigravity CLI (`agy`): Gemini 3.1 Pro для реализации, архитектуры и QA; Gemini 3.6 Flash для оркестрации, PM, документации и explore. В agy 1.1+ OMA передаёт отображаемый ID из `agy models` (например, `--model "Gemini 3.1 Pro (High)"`) и сопоставляет `effort` с уровнем, который публикует модель. В agy 1.0 нет `--model`, поэтому решает его собственная конфигурация. В agy нет `--thinking-budget`. | Пользователи Antigravity CLI |
+| `antigravity` | Все агенты используют Antigravity CLI (`agy`): Gemini 4 Argon для реализации, архитектуры и QA; Gemini 3.8 Flash для оркестрации, PM, документации и explore. В agy 1.1+ OMA передаёт отображаемый ID из `agy models` (например, `--model "Gemini 4 Argon (High)"`) и сопоставляет `effort` с уровнем, который публикует модель. В agy 1.0 нет `--model`, поэтому решает его собственная конфигурация. В agy нет `--thinking-budget`. | Пользователи Antigravity CLI |
 | `claude` | Все агенты используют Claude: Opus для architecture, Haiku для explore, Sonnet для всех остальных ролей | Владельцы подписки Claude Max |
 | `codex` | Все агенты используют OpenAI Codex (GPT-5.5 для большинства ролей, GPT-5.4-mini для explore) с уровнями effort | Пользователи ChatGPT Plus/Pro |
 | `qwen` | Все агенты используют Qwen Code; соответствующие сессии Qwen могут использовать сгенерированные нативные агенты, а другие runtime используют CLI-диспетчеризацию | Локальный или самостоятельно размещённый inference |
@@ -58,11 +58,11 @@ model_preset: auto
 
 | Роль | `antigravity` | `claude` | `codex` | `qwen` | `kiro` | `cursor` | `mixed` |
 |:-----|:--------------|:---------|:--------|:-------|:-------|:---------|:--------|
-| orchestrator, pm, docs | gemini-3.6-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| architecture | gemini-3.1-pro | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
-| qa | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
-| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-3.1-pro | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
-| explore | gemini-3.6-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
+| orchestrator, pm, docs | gemini-3.8-flash | claude-sonnet-4-6 | gpt-5.5 (medium) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| architecture | gemini-4-argon | claude-opus-4-7 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | claude-opus-4-7 |
+| qa | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5-fast | claude-sonnet-4-6 |
+| backend, frontend, mobile, db, debug, refactor, tf-infra | gemini-4-argon | claude-sonnet-4-6 | gpt-5.5 (high) | qwen3.6-plus (thinking) | claude-sonnet-4-5 | composer-2.5 | gpt-5.5 (high) |
+| explore | gemini-3.8-flash | claude-haiku-4-5 | gpt-5.4-mini (low) | qwen3-coder-next | claude-haiku-3-5 | composer-2.5-fast | gpt-5.4-mini (low) |
 
 Значения в скобках — это `effort` пресета (Codex) или `thinking: true` (Qwen). Роль, которую пресет не перечисляет, например `eval`, использует запись `orchestrator` этого пресета.
 
@@ -189,9 +189,9 @@ agents:
 ```yaml
 # .agents/oma-config.yaml
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null
@@ -205,7 +205,7 @@ models:
 
 Для зарегистрированного слага, на который есть ссылка из `agents:`, действуют два правила:
 
-1. **Ключ должен иметь форму `owner/model`.** `agents.<id>.model` проверяется по шаблону `owner/model`, поэтому голый ключ вроде `my-fast-model` отклоняется — используйте ключ со слэшем, например `antigravity/gemini-3.1-pro-low` (или слаг `provider/model` самого поставщика).
+1. **Ключ должен иметь форму `owner/model`.** `agents.<id>.model` проверяется по шаблону `owner/model`, поэтому голый ключ вроде `my-fast-model` отклоняется — используйте ключ со слэшем, например `antigravity/gemini-4-argon-low` (или слаг `provider/model` самого поставщика).
 2. **Спецификация должна быть полной и корректной.** На этапе разрешения обязательны `cli`, `cli_model`, `auth_hint` и каждое поле `supports`. `cli` должен быть одним из `antigravity`, `claude`, `codex`, `commandcode`, `cursor`, `grok`, `kimi`, `kiro`, `qwen` или `opencode`; записи `native_dispatch_from` должны быть `antigravity`, `claude`, `codex`, `cursor`, `kimi`, `kiro`, `opencode` или `qwen`. `gemini` не является допустимым значением ни для одного из них. Для некорректной спецификации в журнал пишется `[model-registry] User inline model "<slug>" failed validation — falling back to core registry`; если в реестре ядра такого слага нет, диспетчеризация останавливается с ошибкой неизвестного слага.
 
 > Если пользовательский слаг совпадает со встроенным, побеждает пользовательское определение и выводится предупреждение.
@@ -319,9 +319,9 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  antigravity/gemini-3.1-pro-low:
+  antigravity/gemini-4-argon-low:
     cli: antigravity
-    cli_model: "Gemini 3.1 Pro (Low)"   # exact display ID from `agy models`
+    cli_model: "Gemini 4 Argon (Low)"   # exact display ID from `agy models`
     auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)"
     supports:
       effort: null

@@ -129,7 +129,7 @@ export async function promptModelPreset(
     {
       value: "antigravity",
       label: "Antigravity CLI (agy)",
-      hint: "Gemini 3.1 Pro impl + Gemini 3.5 Flash orchestration",
+      hint: "Gemini 4 Argon impl + Gemini 3.8 Flash orchestration",
     },
     {
       value: "mixed",

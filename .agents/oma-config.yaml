@@ -134,7 +134,7 @@ agents:
 # Inline custom model slugs (optional) — the home for any slug not in the
 # built-in registry. `cli_model` must be the exact id the CLI itself accepts:
 # for antigravity that is an `agy models` display name, not a slug
-# (`gemini-3.6-flash` is rejected).
+# (`gemini-3.8-flash` is rejected).
 #
 # Replaces `.agents/config/models.yaml`, which `oma uninstall` deletes along
 # with the rest of `.agents/config/`. That file is no longer read; `oma update`
@@ -143,7 +143,7 @@ agents:
 # models:
 #   my-fast:
 #     cli: antigravity
-#     cli_model: "Gemini 3.6 Flash (Medium)"
+#     cli_model: "Gemini 3.8 Flash (Medium)"
 #     supports:
 #       native_dispatch_from: [antigravity]
 
