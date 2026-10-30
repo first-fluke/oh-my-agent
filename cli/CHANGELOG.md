@@ -1,5 +1,22 @@
 # Changelog
 
+## [20.24.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.23.0...cli-v20.24.0) (2026-10-30)
+
+
+### Features
+
+* **plugin:** emit a hook-free entry for the plugin directory ([bd2e575](https://github.com/first-fluke/oh-my-agent/commit/bd2e575b718c52f5b74eb83b321a741158aabfdc))
+
+
+### Bug Fixes
+
+* **cli:** show the repository link when gh cannot star ([efbcf2a](https://github.com/first-fluke/oh-my-agent/commit/efbcf2a24e193c2ce31fe19577effba91605cca5))
+
+
+### Documentation
+
+* **readme:** lead with throughput and drop gate promotion ([e462fa3](https://github.com/first-fluke/oh-my-agent/commit/e462fa3d867558bfeca802bafadd78b6b01b02db))
+
 ## [20.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.22.0...cli-v20.23.0) (2026-10-30)
 
 
