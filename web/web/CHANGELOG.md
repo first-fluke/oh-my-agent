@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.11.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.10.0...web-v11.11.0) (2026-10-30)
+
+
+### Features
+
+* **antigravity:** switch presets to Gemini 4 Argon and 3.8 Flash ([90bea8b](https://github.com/first-fluke/oh-my-agent/commit/90bea8ba587621391072f08fd9c9ee1ff04e9fbc))
+
 ## [11.10.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.9.0...web-v11.10.0) (2026-10-30)
 
 
