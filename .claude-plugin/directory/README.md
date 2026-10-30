@@ -54,7 +54,7 @@ This plugin adds 33 skills and 12 specialist agents. Claude loads a skill only w
 - **oma-slide** Create, import, revise, or export presentation decks through the OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and PDF, PNG, or PPTX deck delivery.
 - **oma-tf-infra** Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes.
 - **oma-translation** Translate or revise localized UI strings and prose while preserving meaning, terminology, placeholders, and structure.
-- **oma-video** Create videos through the OMA video CLI, or analyze and edit existing clips with media tools. Use for frame extraction, visual analysis, silence cuts, dubbing assembly, scripts, and composition; audio-only work uses oma-voice.
+- **oma-video** Create videos through the OMA video CLI, or analyze and edit existing clips with media tools. Use for frame extraction, visual analysis, silence cuts, dubbing assembly, sound effects, scripts, and composition; audio-only work uses oma-voice.
 - **oma-voice** Generate or transcribe speech with Voicebox, or process existing audio locally. Use for narration, transcripts, timed speech, and loudness conversion; video editing uses oma-video.
 
 ## What this plugin runs

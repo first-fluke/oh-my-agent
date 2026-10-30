@@ -2,8 +2,8 @@
 name: oma-video
 description: Create videos through the OMA video CLI, or analyze and edit
   existing clips with media tools. Use for frame extraction, visual analysis,
-  silence cuts, dubbing assembly, scripts, and composition; audio-only work uses
-  oma-voice.
+  silence cuts, dubbing assembly, sound effects, scripts, and composition;
+  audio-only work uses oma-voice.
 ---
 
 # Video Router
@@ -19,6 +19,7 @@ existing clip while retaining its source timeline.
 
 - Create a short, explainer, or recorded demo.
 - Extract frames, count visible objects, remove pauses, or assemble a dubbed clip.
+- Add sound effects to a video or check its soundtrack against the picture.
 
 ### When to use
 
@@ -33,7 +34,9 @@ analysis and editing of an existing video.
 
 Processing a supplied or already-rendered video conditionally loads the upstream
 `kajisho5/ffmpeg-skill` through `resources/existing-media.md`. This is separate
-from the OMA creation modes.
+from the OMA creation modes. Sound effects, a sound-designed soundtrack, or
+listening checks on a video's audio conditionally load `Leonxlnx/earshot`
+through `resources/sound-design.md`.
 
 ### When NOT to use
 
@@ -59,7 +62,9 @@ Creation requires the selected OMA providers/compositor. For processing supplied
 or rendered video, use the runtime skill catalog first; otherwise load
 `kajisho5/ffmpeg-skill` with `bunx skills use` as described in the conditional
 resource. Its complete support bundle, Python, FFmpeg/FFprobe and any
-operation-specific capabilities are required. Visual interpretation uses the
+operation-specific capabilities are required. Sound effects and audio listening
+use the upstream earshot skills plus a resolved earshot runtime with
+FFmpeg/FFprobe; never install it without consent. Visual interpretation uses the
 host vision tool. Report unavailable capabilities rather than invent results.
 
 ## Structural Flow
@@ -135,6 +140,9 @@ provides context only; it never automates login or starts a recorder. Without
    `oma video generate` or the creation-only limits above.
 2. New video: use the commands below and the creation pipeline. Keep existing
    `shorts`, `explainer`, and `demo` behavior.
+3. Sound effects or soundtrack listening on either path: load
+   `resources/sound-design.md`. earshot supplies the sounds and the listening
+   evidence; OMA keeps cue times, placement in the composition, and delivery.
 
 ```bash
 # Plan or create the asset bus. Supply --script whenever an agent authored it.
@@ -190,6 +198,8 @@ Load only what the task needs:
   mapping, and JSON reporting rules.
 - `resources/existing-media.md` when processing supplied or rendered video:
   upstream skill loading, source-timeline evidence and visual/speech decisions.
+- `resources/sound-design.md` when a video needs sound effects, foley, ambience
+  or soundtrack review: earshot routing, cue placement and listening evidence.
 - `resources/vendor-matrix.md` before changing providers, keys, cost, or
   fallback order.
 - `resources/script-schema.md` when authoring or validating `--script` input.

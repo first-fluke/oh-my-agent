@@ -239,24 +239,29 @@ oma-voice
 
 ## oma-video
 
-근거: [SKILL.md](../../skills/oma-video/SKILL.md), [기존 영상 처리](../../skills/oma-video/resources/existing-media.md), [script 규약](../../skills/oma-video/resources/script-schema.md), [upstream ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill).
+근거: [SKILL.md](../../skills/oma-video/SKILL.md), [기존 영상 처리](../../skills/oma-video/resources/existing-media.md), [효과음·사운드 청취](../../skills/oma-video/resources/sound-design.md), [script 규약](../../skills/oma-video/resources/script-schema.md), [upstream ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill), [upstream earshot](https://github.com/Leonxlnx/earshot).
 
 ```text
 oma-video
 ├── skills
 │   ├── kajisho5/ffmpeg-skill: conditional supplied / rendered-video processing
+│   ├── Leonxlnx/earshot@earshot: conditional bank SFX / kit and audio listening
+│   ├── Leonxlnx/earshot@real-sound: conditional licensed-recording soundtrack
 │   ├── oma-image: conditional stills / diagrams
 │   ├── oma-slide: conditional explainer frames
 │   ├── oma-voice: conditional transcription / TTS / duration fitting
 │   └── oma-translation: conditional spoken-text translation
 ├── CLI
 │   ├── bunx skills use kajisho5/ffmpeg-skill@ffmpeg-skill: catalog fallback
+│   ├── bunx skills use Leonxlnx/earshot@earshot / @real-sound: catalog fallback
+│   ├── earshot runtime (resolved checkout / PATH / EARSHOT_PYTHON): sfx, kit, timeline, sheet, critique
 │   ├── python3 <support_dir>/scripts/<selected>.py: upstream operations
 │   ├── oma video generate / compose / render / doctor / provider list
 │   ├── selected HyperFrames / MPT compositor toolchain
 │   └── ffmpeg / ffprobe: upstream runtime and OMA render validation
 ├── MCP
 │   ├── ffmpeg-skill: optional already-connected, discovered tool surface
+│   ├── earshot: optional already-connected, discovered tool surface
 │   └── Voicebox: indirect through oma-voice
 ├── API / host
 │   └── selected asset providers; host vision for actual extracted images
@@ -264,10 +269,12 @@ oma-video
 │   ├── script-schema.md: creation script input
 │   ├── script.json / timing.json / render-spec.json / manifest.json contracts
 │   ├── existing-media.md: routing, source timeline, vision and speech intent
+│   ├── sound-design.md: earshot routing, cue times, composition placement, listening evidence
 │   ├── vendor-matrix.md: creation providers
 │   └── hyperframes-authoring/: creation composition rules
 └── Upstream-owned specs
     ├── SKILL.md: mechanical editing and probe / check / look workflow
+    ├── earshot SKILL.md / real-sound SKILL.md: sound bank, kit schema, levels, listening loops
     ├── scripts/ and complete _common/ package: flags and execution contract
     └── templates/ and project.json: upstream edit format
 ```
@@ -275,6 +282,8 @@ oma-video
 입력되거나 이미 렌더링된 영상의 편집 실행은 runtime skill catalog의 `ffmpeg-skill`을 우선 사용한다. 없거나 지원 파일이 불완전하면 `bunx skills use`를 `--agent` 없이 실행하고, 반환된 전체 지침과 지원 디렉터리를 사용한다. Python 스크립트와 `_common/` 전체, `templates/`, `references/`, `package.json`을 함께 유지하며 OMA에 vendoring하지 않는다. 연결된 MCP는 실제 discovery 결과로만 사용한다.
 
 OMA는 원본 PTS·VFR·A/V offset의 근거, 샘플링 정의, 비전 해석, speech와 amplitude에 따른 편집 의도, 자막·더빙의 공통 타임라인을 관리한다. upstream이 정확한 프레임·PTS 근거를 제공하지 않으면 한계를 기록한다. contact sheet 시각이나 명목 FPS로 정확한 PTS를 만들어내지 않는다. 음성만의 작업은 `oma-voice`로 유지한다.
+
+효과음·사운드 디자인·영상 오디오 청취는 earshot이 지원하는 기능이면 upstream으로 라우팅한다. 생성된 영상의 효과음은 `earshot` skill의 내장 뱅크 `sfx`/`kit`을, 실제 녹음이 필요하면 `real-sound`를, 싱크·라우드니스 검토는 `timeline`/`sheet`/`critique`를 사용한다. skill은 runtime skill catalog를 우선하고 없으면 `bunx skills use`로 불러오되, earshot Python runtime은 사용자 동의 없이 설치하지 않는다. OMA는 render-spec과 composition에서 cue 시각을 정하고, `kit.lock.json`의 측정 싱크 지점으로 HyperFrames `<audio>`를 배치하며, 측정값 기반 보고를 담당한다. 효과음 take는 CLI manifest에 들어가지 않으므로 `cues.json`·`kit.json`·`kit.lock.json`을 출처 기록으로 둔다.
 
 새 영상 생성은 기존 OMA CLI와 asset bus를 사용한다. OMA `render-spec.json`과 upstream `project.json`은 별도 규약이다. 외부 스킬의 script·flag·template·검증 cookbook을 OMA 리소스에 복제하지 않는다. 사용자가 출력 형식을 지정하면 그 형식 안에서 실제 probe/check/look 근거와 미검증 범위를 전달한다.
 

@@ -19,6 +19,8 @@ oma video render <runDir> --output json
   and `data-duration`. Convert frame offsets and durations to seconds with fps.
 - Use HTML `img`, `video`, and `audio` elements. Each audio element needs a unique
   id. HyperFrames controls media playback; do not seek or play it yourself.
+  Sound-effect takes live under `assets/audio/sfx/` and are placed per
+  `../sound-design.md`.
 - Use local `vendor/gsap.min.js` and register a paused timeline at
   `window.__timelines[composition]`. No remote dependencies, wall-clock timers,
   or unseeded randomness. Animate children of timed clips.
