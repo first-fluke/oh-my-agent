@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { describeToolchain } from "./internal/hyperframes-workspace.js";
+import {
+  describeToolchain,
+  findHyperframesSkills,
+} from "./internal/hyperframes-workspace.js";
 import { getMptProjectStatus } from "./internal/mpt-project.js";
 import {
   checkHyperframesSkills,
@@ -57,10 +60,18 @@ describe("video readiness checks (pure)", () => {
   });
 
   it("reports heygen-com/hyperframes cache state without network", () => {
+    // Installed skills are listed by name and install location
+    // (`home:~/.agents/skills`, ...), never by the upstream repo name.
+    const found = findHyperframesSkills();
     const check = checkHyperframesSkills();
     expect(check.name).toBe("hyperframes-skills");
-    if (!check.ok) expect(check.remediation).toContain("--install");
-    else expect(check.detail).toContain("heygen-com/hyperframes");
+    if (!check.ok) {
+      expect(check.remediation).toContain("--install");
+      return;
+    }
+    for (const name of Object.keys(found.skills)) {
+      expect(check.detail).toContain(`${name} (${found.sources[name]})`);
+    }
   });
 
   it("reports the pretendard font status consistently", () => {
