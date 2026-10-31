@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.28.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.27.0...cli-v20.28.0) (2026-10-31)
+
+
+### Features
+
+* **video:** adopt motion principles for authored videos ([9cec5a3](https://github.com/first-fluke/oh-my-agent/commit/9cec5a3d4f1a7e89088c8b1fa85ed4eb2c4036b7))
+* **video:** mask personal information in demo captures ([cbfa782](https://github.com/first-fluke/oh-my-agent/commit/cbfa7828e428cc8c6e553f0b9fe2d186b032eb5b))
+
 ## [20.27.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.26.0...cli-v20.27.0) (2026-10-30)
 
 

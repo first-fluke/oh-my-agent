@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent",
-  "version": "20.27.0",
+  "version": "20.28.0",
   "description": "Agent skills and specialist teams for Claude Code, Codex, Cursor and other coding agents. Load one skill or install domain presets, project hooks and parallel workflows with test gates.",
   "type": "module",
   "bin": {
