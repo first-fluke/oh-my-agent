@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.27.0",
-  "releaseDate": "2026-10-30T21:34:05.091Z",
+  "releaseDate": "2026-10-31T08:10:23.748Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -2031,8 +2031,8 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "842a100ba95a1c6f4c0905e693a0ca461e2a30b0d1761acb2e7e4944745d941d",
-      "size": 10281
+      "sha256": "0738c3eface870074a899ac1653ecfee41654dc33d5f589b6bba27074c4ed1ed",
+      "size": 10597
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
@@ -2041,13 +2041,13 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/checklist.md",
-      "sha256": "5c190520aaab77008625efc8f7cfc39a7a8ee8dc5e458fd825a68ec23e7663ae",
-      "size": 2568
+      "sha256": "b6723e9ceee1b438ab16e2d4826a9791401875accb99599c9c50560b66ee3e11",
+      "size": 2782
     },
     {
       "path": ".agents/skills/oma-video/resources/execution-protocol.md",
-      "sha256": "b98cbd3401fc6f238421dcbb42a47e0e5be860c2d9f2cf51fc4ffedc9f49f2f3",
-      "size": 9131
+      "sha256": "243e5cb89fe31169dfcc1a99a52c74694c3027d3fe04d8008b014c44f58e759c",
+      "size": 9126
     },
     {
       "path": ".agents/skills/oma-video/resources/existing-media.md",
@@ -2056,23 +2056,28 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/hyperframes-authoring/README.md",
-      "sha256": "5ae2cd5bd8173342748950469f22367c0c2451629fb01a409a3be5c4e955f989",
-      "size": 2201
+      "sha256": "410dcd989c572ba229bf02816f4dfc8e8ed47ec6706aa6759f18679e0fbc9206",
+      "size": 2271
     },
     {
       "path": ".agents/skills/oma-video/resources/hyperframes-authoring/demo.md",
-      "sha256": "c50ca4d19d594d65adde1ff3c38cd9f4dd346a77bfd184ac2b81e0375a5ffeae",
-      "size": 966
+      "sha256": "c522acd8e9ecace354baf39443e8900167b70e700b8d424edba48ec2ed34dd1b",
+      "size": 2250
     },
     {
       "path": ".agents/skills/oma-video/resources/hyperframes-authoring/explainer.md",
-      "sha256": "4be2d3110690db6fb8013cd98a697de94dfb7d5619fec21dd443267b72c17501",
-      "size": 901
+      "sha256": "e2054332593758062bf903813bb8050e0057392f23980e74d4f9e32c4216ab6c",
+      "size": 970
     },
     {
       "path": ".agents/skills/oma-video/resources/hyperframes-authoring/shorts.md",
-      "sha256": "f6c3cc7f330c03df721f5940da2f95b981849042a4dc5fff233fbb87e124928d",
-      "size": 1238
+      "sha256": "62a99ffce0aa4be593fc13e88c7042b160f481e5b1e6450295be668ceb98c1f9",
+      "size": 1306
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/motion-principles.md",
+      "sha256": "7556f316b81a1411a59fc9cf0ce4fb11a8166550d2144e7d7afa953646ad8608",
+      "size": 3510
     },
     {
       "path": ".agents/skills/oma-video/resources/mpt/driver.py",
@@ -2081,8 +2086,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/prompt-tips.md",
-      "sha256": "6cfa98ac673cea08601754ca87d2c164dfd12570b53e41f8806233a28fbc1b97",
-      "size": 4582
+      "sha256": "370b9a9141ae7f2faf420c535f60550bb721dcb41d50dc96a68fabd71dee2809",
+      "size": 4660
     },
     {
       "path": ".agents/skills/oma-video/resources/script-schema.md",
@@ -2091,8 +2096,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/sound-design.md",
-      "sha256": "1d1d04793b314ae027dec13df9161ba1e5fca71081ba119a3f6a95cdbbbae893",
-      "size": 7035
+      "sha256": "e2cb2da6aa1ef2dc93db9aafd198561495c0a35dcf7bce7de3bb26618898db88",
+      "size": 7087
     },
     {
       "path": ".agents/skills/oma-video/resources/strudel/package.json",
@@ -2111,8 +2116,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/vendor-matrix.md",
-      "sha256": "fb6a91aa022e6ab25fe48ec11d9666e6719251327f06a098fa6e1b7386de4cbe",
-      "size": 7467
+      "sha256": "ba100811b2b2ae811fda49325c6d33fe5c57a417050c3262c6e0eefca7744ebb",
+      "size": 7458
     },
     {
       "path": ".agents/skills/oma-voice/SKILL.md",
@@ -2266,8 +2271,8 @@
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "313a1a3d67f497f60a143155e1ae8d8f6526734497be2a1643c6637f2eb24716",
-      "size": 21747
+      "sha256": "0d3f480a07f88a2aa6387964ddaa57abc568d52984da07e9b4c9796a40ac73ba",
+      "size": 21742
     },
     {
       "path": ".agents/workflows/work.md",
@@ -2281,6 +2286,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 454
+    "totalFiles": 455
   }
 }
