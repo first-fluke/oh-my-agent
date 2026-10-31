@@ -40,4 +40,5 @@ oma video render <runDir> --output json
 MP4 video stream, dimensions, and duration with ffprobe. On success it updates
 `manifest.json` with the output hash. Failed renders remain failures.
 
-Read the relevant mode guide: `shorts.md`, `explainer.md`, or `demo.md`.
+Read the relevant mode guide: `shorts.md`, `explainer.md`, or `demo.md`, and
+`../motion-principles.md` for what appears, what moves, and when.

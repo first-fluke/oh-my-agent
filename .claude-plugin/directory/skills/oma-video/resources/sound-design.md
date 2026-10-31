@@ -80,7 +80,7 @@ OMA owns the cue times and the composition; earshot owns the voices.
    seconds and `data-volume` = `10 ** (gainDb / 20)`. With a music bed, set the
    gain against the bed as upstream describes; without one, use the role's
    `level_db`. Check placements against `timing.json` so effects never mask
-   narration.
+   narration, and stay within the caps in `motion-principles.md`.
 5. The composition carries one static music volume. Apply upstream
    `mix.stop_down` dips only if the loaded HyperFrames references document audio
    volume automation; otherwise record that the dips were not applied.

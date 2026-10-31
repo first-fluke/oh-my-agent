@@ -50,7 +50,7 @@ For `demo`, resolve the recording path first. Use `--source file --capture <path
 
   | capability | real (key/resource) | key-free fallback | deferred marker |
   |------|------|------|------|
-  | stock video | Pexels (`PEXELS_API_KEY`) | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` |
+  | stock video | Pexels (`PEXELS_API_KEY`) | static oma-image stills | `TODO(oma-deferred): pexels` |
   | AIGC video | Pixelle-MCP + RunningHub (`RUNNINGHUB_API_KEY`) | oma-image stills | `TODO(oma-deferred): pixelle` |
   | caption timing | voicebox-stt (MCP `voicebox_transcribe` → REST) or voicestudio-stt (`/v1/audio/transcriptions`) | estimate | `TODO(oma-deferred): whisper-cpp` |
   | music mixing | Strudel offline render (`oma video doctor --install-strudel`) | render without music | — |

@@ -23,7 +23,7 @@ plan when the brief is a one-liner.
 
 ## Step 0.5: Mode Routing
 
-- **shorts** (9:16): synthetic from the topic. Default visual = oma-image stills + Ken Burns.
+- **shorts** (9:16): synthetic from the topic. Default visual = static oma-image stills.
 - **explainer** (16:9 / 9:16): from README / code / data. Default visual = oma-slide frames + oma-image diagrams.
 - **demo** (16:9): from a screen capture. If no `--capture` and Cap is unavailable -> emit the **guided capture protocol** (Step 4b) and stop.
 

@@ -12,7 +12,7 @@ otherwise the chain falls through to a key-free default.
 |------------|----------------|---------------------|-------------------|--------|
 | script | `[agent-script]` | agent-authored script (agent-as-key) | — | — |
 | voice | `[oma-voice]` | Voicebox MCP or VoiceStudio REST TTS + STT timing (`voice.backend`) | estimated timing (no wav) | — |
-| visual | `[oma-image, pexels, pixelle]` | Pexels stock · Pixelle AIGC | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` / `pixelle` |
+| visual | `[oma-image, pexels, pixelle]` | Pexels stock · Pixelle AIGC | static oma-image stills | `TODO(oma-deferred): pexels` / `pixelle` |
 | caption | `[oma-captions]` | oma-translation for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translation` |
 | capture | Cap / guided capture | Human-recorded video ingestion | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
 | compositor | `[hyperframes, mpt]` | HyperFrames live render (wired, default) · MPT custom-script | none: missing toolchain, failed render, or invalid output fails with diagnostics | — |
@@ -59,7 +59,7 @@ through. Any live failure degrades to estimated timing with a warning.
 |-------|-------|
 | Transport | `oma image generate "<prompt>" --vendor auto --size <16-multiple> --output json --output-dir <runDir>/visuals` |
 | Aspect -> size | snapped to nearest 16-multiple: 9:16 -> 1088×1920, 16:9 -> 1920×1088, 1:1 -> 1088×1088 |
-| Crop | HyperFrames crops the still to the exact frame; Ken Burns adds motion |
+| Crop | HyperFrames crops the still to the exact frame; the still stays static |
 | Cost | free defaults (pollinations / antigravity); codex per-image per oma-image config |
 
 ## oma-slide (VisualProvider: slide, explainer) — key-free
@@ -76,7 +76,7 @@ through. Any live failure degrades to estimated timing with a warning.
 |-------|-------|
 | Auth | `PEXELS_API_KEY` env var |
 | Enabled | only when the key is present (`providers.pexels.enabled` gate) |
-| Fallback | absent key -> skip; chain falls to oma-image stills + Ken Burns |
+| Fallback | absent key -> skip; chain falls to static oma-image stills |
 | Marker | `TODO(oma-deferred): pexels` on the real-call branch until the key is provisioned |
 
 ## Pixelle-MCP + RunningHub (VisualProvider: aigc) — paid, off by default

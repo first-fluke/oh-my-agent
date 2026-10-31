@@ -276,6 +276,7 @@ oma-video
 │   ├── script.json / timing.json / render-spec.json / manifest.json contracts
 │   ├── existing-media.md: routing, source timeline, vision and speech intent
 │   ├── sound-design.md: earshot routing, cue times, composition placement, listening evidence
+│   ├── motion-principles.md: scene cast, motion, text, narration sync, diagram rules
 │   ├── vendor-matrix.md: creation providers
 │   └── hyperframes-authoring/: creation composition rules
 └── Upstream-owned specs

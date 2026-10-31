@@ -104,7 +104,7 @@ skill installation, or additional media providers as part of this local render.
 - render-spec.json is the project-local copy of the run's authoritative spec. Its asset paths already point inside assets/. render-spec.js exposes it as window.OMA_VIDEO_SPEC without a network fetch.
 - Use a standalone root with data-composition-id="${spec.composition}", data-width="${spec.dimensions.width}", data-height="${spec.dimensions.height}", and data-duration="${spec.durationInFrames / spec.fps}". Root CSS width and height are 100%.
 - Convert scene fromFrame and durationInFrames to seconds by dividing by fps. Put data-start and data-duration on timed clips; use z-index for visual stacking.
-- Image/slide visuals use img, video/capture visuals use video, placeholders use a color. Honor onScreenText and transitionOut; only use Ken Burns when kenBurns is true.
+- Image/slide visuals use img, video/capture visuals use video, placeholders use a color. Honor onScreenText; cut hard between scenes unless the user asked for a dissolve; only use Ken Burns when kenBurns is true.
 - For Demo, place background video beneath overlays. Do not give a video a data-start when its plain ancestor already has one. Preserve source audio only once if the recording needs it.
 - Give every audio element a unique id. Place narration and music from frame zero. Music data-volume is 10 ** ((musicGainDb ?? -18) / 20). The framework owns playback; do not call play(), seek media, or use timers.
 - When captions.style is not none, read the staged SRT while authoring and emit one timed cue per interval. Show only the active cue. tiktok: centered, bold, 64px, no box; lower-third: left aligned, 40px, dark translucent band. Respect safeArea and maxWidthPct; no per-word animation.

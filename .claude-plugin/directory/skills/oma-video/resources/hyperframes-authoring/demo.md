@@ -4,8 +4,9 @@ Composition id `Demo`. The human-recorded capture arrives as
 `background.type: "video"` (full-frame, `<video>`, `objectFit: cover`);
 scenes are overlays on top of it.
 
-- **Intro card** (first scene, usually `placeholder` visual + `onScreenText`): solid brand color, centered title 72px weight 800, 10-frame fade in/out.
-- **Callout scenes**: `onScreenText` as a lower-third pill (bottom `safeArea.bottomPct%`, 40px, weight 700, band `rgba(0,0,0,.6)`); `kenBurns: true` on a callout scene means a gentle zoom of the **background capture** (1 → 1.06) for that scene's duration — implement by scaling the background layer while the scene is active, deterministically from the frame.
+- **Opening**: start on the capture. Add an intro card only when the user asks for one: solid brand color, centered title 72px weight 800, hard cut in and out.
+- **Callout scenes**: box the exact text or button the narration points to with a thin accent outline. `onScreenText` appears as a lower-third pill (bottom `safeArea.bottomPct%`, 40px, weight 700, band `rgba(0,0,0,.6)`) only when it adds something the narration does not say.
+- **Zoom**: when the narration points at a region, scale and translate the background layer so that region fills the view. Ease out once on the frame where the narration reaches it, then hold still; drive it from the frame, not the clock. Choose the region from the inspected frames; the render spec's `kenBurns` flag is not the zoom signal.
 - **Captions**: as `lower-third` in explainer.md.
 - Never obscure the center 60% of the frame during callouts; the capture is the content.
 - Audio as in shorts.md; the capture's own audio track is muted unless `audio.narration` is absent.

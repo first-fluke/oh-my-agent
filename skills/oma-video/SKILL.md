@@ -207,6 +207,8 @@ Load only what the task needs:
   fallback order.
 - `resources/script-schema.md` when authoring or validating `--script` input.
 - `resources/prompt-tips.md` when turning a brief into scene prompts.
+- `resources/motion-principles.md` when authoring `script.json` or the
+  composition: scene cast, motion, text, narration sync and diagram rules.
 - `resources/hyperframes-authoring/README.md` and the selected mode guide before
   writing `index.html`.
 - `resources/checklist.md` before handing a newly generated video to a user.
