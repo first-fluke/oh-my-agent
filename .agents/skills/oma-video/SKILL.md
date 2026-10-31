@@ -125,6 +125,9 @@ provides context only; it never automates login or starts a recorder. Without
 4. For creation, respect `limits.max_duration_sec` (180) and
    `limits.max_scenes` (40). Cancel subprocess work on SIGINT/SIGTERM.
 5. Keep run directories. Never auto-prune a user’s video artifacts.
+   A demo capture is inspected for personal information and masked before
+   render (`resources/hyperframes-authoring/demo.md`); an unchecked capture is
+   not rendered.
 6. Creation via `oma video generate --dry-run` writes only planning artifacts
    and does no provider render. It does not prove an MP4 exists. For delegated
    media work, follow the loaded upstream operation's dry-run contract.

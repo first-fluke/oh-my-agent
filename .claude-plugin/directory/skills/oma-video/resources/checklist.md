@@ -19,6 +19,7 @@
 - [ ] `warnings[]` annotates any fallback taken (e.g. Pexels key absent -> oma-image stills, translator absent -> source locale).
 - [ ] External assets were copied into the run dir and hashed (no URL refs).
 - [ ] The mp4 has a video stream and positive duration (the CLI ffprobe check passed). A deterministic placeholder is valid only under `OMA_VIDEO_MOCK=1` tests and is never a deliverable.
+- [ ] For a demo capture: sampled frames were inspected, every personal detail is cropped out or covered with an opaque layer, and the masked regions are listed in the report (see `hyperframes-authoring/demo.md`).
 - [ ] If sound effects were placed: the upstream kit check is clean, each `<audio>` start comes from `kit.lock.json`, and the report quotes earshot `timeline` sync and loudness readings (see `sound-design.md`).
 - [ ] Re-rendering with `oma video render <runDir>` reproduces the same output from `render-spec.json`.
 - [ ] If results are consumed downstream, the consumer parses the `--output json` stdout envelope `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}` (there is no `outputs` key) and reads output/asset paths from the manifest at `manifestPath`.

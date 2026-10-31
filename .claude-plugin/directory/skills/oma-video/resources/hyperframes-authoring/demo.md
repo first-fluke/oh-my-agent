@@ -9,3 +9,22 @@ scenes are overlays on top of it.
 - **Captions**: as `lower-third` in explainer.md.
 - Never obscure the center 60% of the frame during callouts; the capture is the content.
 - Audio as in shorts.md; the capture's own audio track is muted unless `audio.narration` is absent.
+
+## Personal information (required)
+
+A human recording shows whatever was on screen. Before authoring, sample frames
+across the whole capture through the existing-media branch
+(`../existing-media.md`) and inspect them with the host vision tool. Look for
+user names in paths and prompts, account names and avatars, email addresses,
+sidebars and file lists (editor, Finder, Orca), notifications, session and
+request IDs, tokens or keys, memo and chat windows, and browser tabs or
+bookmarks.
+
+- Keep each finding out of the delivered frame: frame the zoom so it falls
+  outside the view, or cover it with an opaque layer timed to the interval it
+  is visible (`data-start` / `data-duration`). Do not rely on blur or
+  pixelation for text.
+- Record each masked region and interval for the delivery report. The source
+  capture stays unmasked in the run directory; never deliver it.
+- If frames cannot be inspected (no vision tool, no frame extraction), stop
+  and report that the capture is unchecked instead of rendering it.
