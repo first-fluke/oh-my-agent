@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.29.1",
-  "releaseDate": "2026-11-01T20:28:35.000Z",
+  "releaseDate": "2026-11-01T21:05:08.184Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -76,8 +76,8 @@
     },
     {
       "path": ".agents/agents/variants/codex.json",
-      "sha256": "376f79db146e008cb2628305f9ff920bea94784c25540da29114fefab3cb6b7b",
-      "size": 1522
+      "sha256": "43844a82e6466311334962ed34761ebae9893b2cd4ac11008a09316c19b1ccd1",
+      "size": 1461
     },
     {
       "path": ".agents/agents/variants/commandcode.json",
@@ -556,8 +556,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
-      "sha256": "3d9f4ecfc26905cdefbaf3c04a3fbc07bd8381e8154adc5a3b4991d7bc74fef8",
-      "size": 4034
+      "sha256": "ba9f5047a6b2ad606e59c858a30e7138bcd6eec4cd15efffa0eb6e2b116251f0",
+      "size": 4289
     },
     {
       "path": ".agents/skills/_shared/runtime/event-spec.md",
@@ -1511,8 +1511,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/SKILL.md",
-      "sha256": "b9b78efd7a4846d2c29d22c829d5de94dd9d13f8fe092b856e0ff02e88285dba",
-      "size": 16948
+      "sha256": "fb82efa2e6eca09304178387a2adcc4ebaedeec05f642c99c01b68213fef8fe7",
+      "size": 17009
     },
     {
       "path": ".agents/skills/oma-orchestration/config/cli-config.yaml",
