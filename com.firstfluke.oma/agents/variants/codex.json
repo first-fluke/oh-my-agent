@@ -2,7 +2,7 @@
   "$schema": "./agent-variant.schema.json",
   "vendor": "codex",
   "destDir": ".codex/agents",
-  "modelDefault": "gpt-6.1-terra",
+  "modelDefault": "inherit",
   "effortDefault": "high",
   "toolsDefault": [],
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/codex.md",
@@ -56,15 +56,13 @@
       }
     },
     "docs-curator": {
-      "model": "gpt-6-luna",
-      "effort": "max",
+      "effort": "medium",
       "extra": {
         "sandbox_mode": "workspace-write"
       }
     },
     "research-explorer": {
-      "model": "gpt-6-luna",
-      "effort": "max",
+      "effort": "low",
       "extra": {
         "sandbox_mode": "read-only"
       }

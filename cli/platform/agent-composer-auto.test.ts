@@ -106,7 +106,7 @@ describe("native agent configuration with a pinned preset", () => {
       JSON.stringify({
         vendor: "codex",
         destDir: ".codex/agents",
-        modelDefault: "vendor-model",
+        modelDefault: "inherit",
         effortDefault: "medium",
         toolsDefault: [],
         agents: {},
@@ -158,13 +158,13 @@ describe("native agent configuration with a pinned preset", () => {
     expect(output).toContain('model_reasoning_effort = "low"');
   });
 
-  it("keeps the variant default for a role the preset routes to another vendor", () => {
+  it("inherits the parent model for a role the preset routes to another vendor", () => {
     const output = generate(
       "model_preset: mixed\n",
       "codex",
       "architecture-reviewer.toml",
     );
-    expect(output).toContain('model = "vendor-model"');
+    expect(output).not.toMatch(/^model = /m);
   });
 
   it("pins the preset's Claude model per role", () => {
@@ -176,12 +176,12 @@ describe("native agent configuration with a pinned preset", () => {
     expect(output).toMatch(/^model: claude-opus-5-5$/m);
   });
 
-  it("keeps the variant default when the preset cannot be resolved", () => {
+  it("inherits the parent model when the preset cannot be resolved", () => {
     const output = generate(
       "model_preset: missing-preset\n",
       "codex",
       "backend-engineer.toml",
     );
-    expect(output).toContain('model = "vendor-model"');
+    expect(output).not.toMatch(/^model = /m);
   });
 });

@@ -483,7 +483,7 @@ describe("installVendorAgents — protocolPath validation", () => {
 });
 
 describe("installVendorAgents — real Codex variant SSOT", () => {
-  it("generates Terra/high defaults and Luna/max fast-role overrides", () => {
+  it("inherits the parent model and keeps per-role effort", () => {
     const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
     const targetDir = mkdtempSync(join(tmpdir(), "oma-codex-agent-dst-"));
 
@@ -496,16 +496,19 @@ describe("installVendorAgents — real Codex variant SSOT", () => {
         join(targetDir, ".codex", "agents", "backend-engineer.toml"),
         "utf-8",
       );
-      expect(backend).toContain('model = "gpt-6.1-terra"');
+      expect(backend).not.toMatch(/^model = /m);
       expect(backend).toContain('model_reasoning_effort = "high"');
 
-      for (const agent of ["docs-curator", "research-explorer"]) {
+      for (const [agent, effort] of [
+        ["docs-curator", "medium"],
+        ["research-explorer", "low"],
+      ]) {
         const content = readFileSync(
           join(targetDir, ".codex", "agents", `${agent}.toml`),
           "utf-8",
         );
-        expect(content).toContain('model = "gpt-6-luna"');
-        expect(content).toContain('model_reasoning_effort = "max"');
+        expect(content).not.toMatch(/^model = /m);
+        expect(content).toContain(`model_reasoning_effort = "${effort}"`);
       }
     } finally {
       rmSync(targetDir, { recursive: true, force: true });
