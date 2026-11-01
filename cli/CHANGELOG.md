@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.29.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.29.0...cli-v20.29.1) (2026-11-01)
+
+
+### Bug Fixes
+
+* **agents:** pin preset models in native agent files ([98959ec](https://github.com/first-fluke/oh-my-agent/commit/98959ecabc822a82d8d5fe677032028f8825ecb4))
+
 ## [20.29.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.28.0...cli-v20.29.0) (2026-11-01)
 
 
