@@ -134,7 +134,7 @@ When native runtime dispatch is available, prefer the runtime-specific native pa
 Current native executor paths:
 - Claude Code: Agent tool with `.claude/agents/{agent}.md` definitions (multiple Agent tool calls in one message run in parallel; results return synchronously — no polling)
 - OpenCode: native `task` tool with `subagent_type: {agent-id}`; do not use `oma agent spawn` for same-session OpenCode work because it will not appear as a native child task
-- Codex: use the current session's exposed native subagent tool with the resolved custom role from `.codex/agents/*.toml` when supported; otherwise use `oma agent spawn`.
+- Codex: use the current session's exposed native subagent tool with the resolved custom role from `.codex/agents/*.toml` when supported; otherwise use `oma agent spawn`. Model tiering follows `../_shared/core/vendor-detection.md`.
 - Gemini: use the current session's exposed native role-subagent tool with the resolved role when supported; otherwise use `oma agent spawn`.
 
 `codex exec` and `gemini -p` start external CLI sessions. An `@agent` string in a prompt does not establish native dispatch or apply a custom-role contract.

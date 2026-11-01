@@ -186,7 +186,7 @@ const VENDOR_SPAWN: Record<string, string> = {
     "Same-vendor native dispatch via Claude Code Agent tool with `.claude/agents/{name}.md`; cross-vendor fallback via `oma agent spawn`",
   cursor: "`@agent-name` (defined in `.cursor/agents/`)",
   codex:
-    "Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent spawn`",
+    "Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent spawn`. A role file without `model` runs on your model: spawn `docs-curator` and `research-explorer` with the fastest model the spawn tool lists as available, and leave `model` unset otherwise. Never invent a model name",
   qwen: "Same-vendor native dispatch via Qwen Code subagents in `.qwen/agents/{name}.md`; cross-vendor fallback via `oma agent spawn`",
   pi: "pi has no native subagent API; use `oma agent spawn {agent} {prompt} {sessionId} --vendor pi` for CLI subprocess dispatch",
   antigravity:

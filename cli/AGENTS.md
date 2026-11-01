@@ -5,7 +5,7 @@
 Follow the repository-root instructions for authorization, completion, provider selection, and project rules. Paths below are relative to the repository root.
 Use `.agents/skills/_shared/core/code-intelligence.md` for the configured provider and native fallback; this directory does not select a separate provider.
 
-- **Subagents**: Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent spawn`; use the root dispatch configuration.
+- **Subagents**: Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent spawn`. A role file without `model` runs on your model: spawn `docs-curator` and `research-explorer` with the fastest model the spawn tool lists as available, and leave `model` unset otherwise. Never invent a model name; use the root dispatch configuration.
 - Select tests from the affected CLI behavior. Run builds only when explicitly requested.
 
 ## Workflows
