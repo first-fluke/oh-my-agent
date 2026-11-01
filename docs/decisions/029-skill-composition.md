@@ -152,6 +152,7 @@ oma-design
 │   └── Stitch: optional, requested design-source operation
 ├── OMA-owned specs
 │   ├── external-design-skills.md: task selection and complete support-directory loading
+│   ├── data-grid.md: alignment, filter toolbar, and row rules passed with grid briefs
 │   ├── DESIGN.md / .design-context.md / semantic token contracts
 │   ├── brand, content, URLs, analytics, CJK and accessibility constraints
 │   ├── shared ui-interaction-quality.md: adopted motion / interaction acceptance rules

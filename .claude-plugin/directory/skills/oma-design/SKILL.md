@@ -60,6 +60,7 @@ outputs:
 - For existing products, establish Preserve or Overhaul from the brief and current system.
 - For existing-UI critique, audit, polish, or system extraction, select the matching Impeccable operation.
 - For dashboards, admin panels, SaaS product UI, or internal tools needing visual direction, select Interface Design.
+- When the surface is built around a data table or grid, pass `resources/data-grid.md` to the selected supplier with the brief.
 - For other new web art direction or an authorized visual overhaul, select Taste.
 - A documentation-only or token-contract task can remain local when no new visual judgment is needed.
 - Load one supplier for the current operation. A later operation may select another using the same project context.
@@ -124,6 +125,7 @@ background processes, and paid services are separate effects, not skill loading.
 - `resources/design-md-spec.md`: creating or materially revising DESIGN.md.
 - `resources/design-tokens.md`: semantic token handoff to implementation.
 - `resources/checklist.md`: affected-result verification and evidence.
+- `resources/data-grid.md`: alignment, filter toolbar, and row rules for data tables and grids.
 - `resources/asset-strategy.md`: actual assets, claims, provenance, and placeholders.
 - `resources/getdesign-fetcher.md`: explicitly relevant vendor inspiration.
 - `resources/stitch-integration.md`: requested Stitch operation.

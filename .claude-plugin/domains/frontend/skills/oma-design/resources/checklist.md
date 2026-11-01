@@ -26,6 +26,8 @@ a checked item without supporting evidence is not a passed verification.
 - [ ] Token changes map semantic roles to the existing project format and theme
   source under [design-tokens.md](design-tokens.md).
 - [ ] Product implementation follows `oma-frontend` or `oma-mobile` and the existing stack.
+- [ ] A data table or grid follows [data-grid.md](data-grid.md): column alignment,
+  a one-line filter toolbar, one line per row, and a check with real data.
 
 ## Rendered responsive evidence
 

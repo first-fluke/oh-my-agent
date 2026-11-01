@@ -59,7 +59,8 @@ operation remains an explicit capability gap.
 5. Pass the brief, existing DESIGN.md/context, target platform, incumbent stack,
    brand, language, accessibility and reduced-motion constraints, authorized writes,
    budget, and verification limits to the chosen operation. Reuse supplied answers
-   and project context.
+   and project context. For a surface built around a data table or grid, include
+   [data-grid.md](data-grid.md).
 
 Loading a bundle does not prove that its browser, engine, image services, or
 implementation dependencies work. Supplier-native installers, provider hooks,
