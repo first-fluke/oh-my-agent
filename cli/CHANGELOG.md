@@ -1,5 +1,17 @@
 # Changelog
 
+## [20.30.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.29.1...cli-v20.30.0) (2026-11-01)
+
+
+### Features
+
+* **agents:** tier codex native spawns without model slugs ([976b4d0](https://github.com/first-fluke/oh-my-agent/commit/976b4d0f92f5ac7e3b25b9b42432a0b31b8b81ca))
+
+
+### Bug Fixes
+
+* **agents:** let codex native agents inherit the session model ([5c23049](https://github.com/first-fluke/oh-my-agent/commit/5c230493a22d9ee1dee0976a9233483a7a726f55))
+
 ## [20.29.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.29.0...cli-v20.29.1) (2026-11-01)
 
 
