@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.29.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.28.0...cli-v20.29.0) (2026-11-01)
+
+
+### Features
+
+* **design:** add data grid rules for admin surfaces ([3c97597](https://github.com/first-fluke/oh-my-agent/commit/3c97597009fa7bc91a289c482e8c6ec137b8c2ed))
+
 ## [20.28.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.27.0...cli-v20.28.0) (2026-10-31)
 
 
