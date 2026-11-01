@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.28.0",
-  "releaseDate": "2026-10-31T08:13:20.444Z",
+  "releaseDate": "2026-11-01T02:25:08.775Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -901,8 +901,8 @@
     },
     {
       "path": ".agents/skills/oma-design/SKILL.md",
-      "sha256": "7294d5e5622350e73e292f6bdf9a3421a6952e2fa8c4d13953d73db3bf460995",
-      "size": 7596
+      "sha256": "9e1b77d87e3d1489302bc41181972dd91ce58a6346d8f1fad13d5638c9dbbc4b",
+      "size": 7820
     },
     {
       "path": ".agents/skills/oma-design/resources/asset-strategy.md",
@@ -911,8 +911,13 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/checklist.md",
-      "sha256": "a90d0ac551c87f313a0b483318b34d712467445450809f587842a7871a0ed0f5",
-      "size": 3411
+      "sha256": "ee20e94e2a64b2447632b9f19983dbb0a54119474aa56e4a916faffc998059fa",
+      "size": 3569
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/data-grid.md",
+      "sha256": "08f4bb1c03ce6d635056be97b2b9d9ad81ffc52af1ade84bd9936abf87eb2a54",
+      "size": 2260
     },
     {
       "path": ".agents/skills/oma-design/resources/design-md-spec.md",
@@ -936,8 +941,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/external-design-skills.md",
-      "sha256": "4d64927d7566738c2f192c42842afae9257433d16776140a878a1a942df62327",
-      "size": 7998
+      "sha256": "72e8edc26498195d56bbd5dd10124618de49da78b395909ff49d806304c889f1",
+      "size": 8088
     },
     {
       "path": ".agents/skills/oma-design/resources/getdesign-fetcher.md",
@@ -2286,6 +2291,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 455
+    "totalFiles": 456
   }
 }
