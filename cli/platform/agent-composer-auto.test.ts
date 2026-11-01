@@ -78,3 +78,110 @@ describe("native agent configuration with auto", () => {
     expect(output).not.toContain("claude-sonnet");
   });
 });
+
+describe("native agent configuration with a pinned preset", () => {
+  let source: string;
+  let target: string;
+  beforeEach(() => {
+    source = mkdtempSync(join(tmpdir(), "oma-preset-source-"));
+    target = mkdtempSync(join(tmpdir(), "oma-preset-target-"));
+    const agents = join(source, ".agents", "agents");
+    mkdirSync(join(agents, "variants"), { recursive: true });
+    mkdirSync(join(target, ".agents"));
+    writeFileSync(
+      join(source, ".agents", "oma-config.yaml"),
+      "model_preset: auto\n",
+    );
+    for (const [name, role] of [
+      ["backend-engineer", "Backend work"],
+      ["architecture-reviewer", "Architecture review"],
+    ]) {
+      writeFileSync(
+        join(agents, `${name}.md`),
+        `---\nname: ${name}\ndescription: ${role}\n---\nDo the assigned task.\n`,
+      );
+    }
+    writeFileSync(
+      join(agents, "variants", "codex.json"),
+      JSON.stringify({
+        vendor: "codex",
+        destDir: ".codex/agents",
+        modelDefault: "vendor-model",
+        effortDefault: "medium",
+        toolsDefault: [],
+        agents: {},
+      }),
+    );
+    writeFileSync(
+      join(agents, "variants", "claude.json"),
+      JSON.stringify({
+        vendor: "claude",
+        destDir: ".claude/agents",
+        modelDefault: "sonnet",
+        toolsDefault: [],
+        agents: {},
+      }),
+    );
+  });
+  afterEach(() => {
+    rmSync(source, { recursive: true, force: true });
+    rmSync(target, { recursive: true, force: true });
+  });
+
+  function generate(
+    config: string,
+    vendor: "codex" | "claude",
+    file: string,
+  ): string {
+    writeFileSync(join(target, ".agents", "oma-config.yaml"), config);
+    expect(installVendorAgents(source, target, vendor)).toBe(2);
+    return readFileSync(join(target, `.${vendor}`, "agents", file), "utf8");
+  }
+
+  it("pins the preset's routed Codex model and effort instead of the variant default", () => {
+    const output = generate(
+      "model_preset: codex\n",
+      "codex",
+      "backend-engineer.toml",
+    );
+    expect(output).toContain('model = "gpt-6.1-terra"');
+    expect(output).toContain('model_reasoning_effort = "high"');
+  });
+
+  it("applies an agents override on top of the preset", () => {
+    const output = generate(
+      "model_preset: codex\nagents:\n  backend:\n    model: openai/gpt-6-luna\n    effort: low\n",
+      "codex",
+      "backend-engineer.toml",
+    );
+    expect(output).toContain('model = "gpt-6-luna"');
+    expect(output).toContain('model_reasoning_effort = "low"');
+  });
+
+  it("keeps the variant default for a role the preset routes to another vendor", () => {
+    const output = generate(
+      "model_preset: mixed\n",
+      "codex",
+      "architecture-reviewer.toml",
+    );
+    expect(output).toContain('model = "vendor-model"');
+  });
+
+  it("pins the preset's Claude model per role", () => {
+    const output = generate(
+      "model_preset: claude\n",
+      "claude",
+      "architecture-reviewer.md",
+    );
+    expect(output).toMatch(/^model: claude-opus-5-5$/m);
+  });
+
+  it("keeps the variant default when the preset cannot be resolved", () => {
+    const output = generate(
+      "model_preset: missing-preset\n",
+      "codex",
+      "backend-engineer.toml",
+    );
+    expect(output).toContain('model = "vendor-model"');
+  });
+});

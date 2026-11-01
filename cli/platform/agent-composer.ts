@@ -529,19 +529,24 @@ export function installVendorAgents(
     if (agentId) {
       const hasAutoAgentOverride =
         userConfig.model_preset === "auto" && !!userConfig.agents?.[agentId];
-      const hasPinnedQwenPreset =
-        vendor === "qwen" &&
+      // A pinned preset routes each role to a model. A variant that pins a
+      // model anyway (codex `gpt-…`, claude `sonnet`) must pin the routed one,
+      // or native subagents run the variant default and ignore the preset and
+      // `agents:` overrides. Inherit-only variants keep inheriting, except
+      // Qwen's native fallback.
+      const hasPinnedPreset =
         !!userConfig.model_preset &&
         userConfig.model_preset !== "free" &&
-        userConfig.model_preset !== "auto";
-      if (hasAutoAgentOverride || hasPinnedQwenPreset) {
-        const plan = resolveAgentPlanFromConfig(
-          agentId,
-          userConfig,
-          undefined,
-          {},
-        );
-        if (plan.cli === vendor && plan.cliModel) {
+        userConfig.model_preset !== "auto" &&
+        (vendor === "qwen" || variant.modelDefault !== "inherit");
+      if (hasAutoAgentOverride || hasPinnedPreset) {
+        let plan: ReturnType<typeof resolveAgentPlanFromConfig> | undefined;
+        try {
+          plan = resolveAgentPlanFromConfig(agentId, userConfig, undefined, {});
+        } catch {
+          // Invalid config is reported by dispatch/doctor; keep the variant.
+        }
+        if (plan?.cli === vendor && plan.cliModel) {
           config.model = plan.cliModel;
           if (plan.effort) config.effort = plan.effort;
         }
