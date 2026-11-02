@@ -1,7 +1,7 @@
 ---
 title: "Przewodnik: silnik diagramów (archify)"
 sidebar_label: Diagramy
-description: Jak oh-my-agent wybiera między Mermaid a opcjonalną umiejętnością agenta tt-a1i/archify dla diagramów architektury, sekwencji i przepływu danych — sekcja konfiguracji diagramów, oma diagram resolve / oma diagram archify, użycie przez /architecture i /explain oraz ograniczona pętla validate-repair-deliver.
+description: Jak oh-my-agent wybiera między Mermaid a opcjonalną umiejętnością agenta tt-a1i/archify dla diagramów architektury, sekwencji i przepływu danych — sekcja konfiguracji diagramów, oma diagram resolve / oma diagram archify, użycie przez /architecture i /explain oraz ograniczona pętla validate-repair-deliver. Obejmuje też ścieżkę stack przez nadrzędną umiejętność Caru-ini/stack-diagram dla plakatów stosu technologicznego z logo dostawców.
 ---
 
 # Silnik diagramów
@@ -142,6 +142,21 @@ Opcjonalne, ponieważ własny kontrakt objaśnienia (pojedynczy samodzielny plik
 
 ---
 
+## Plakaty stosu (stack-diagram) {#stack-posters-stack-diagram}
+
+Gdy diagram przedstawia stos technologiczny albo topologię infrastruktury, której węzłami są produkty dostawców (AWS, Vercel, Postgres, …), a Ty prosisz o logo, `/architecture` wybiera **ścieżkę stack** zamiast archify. Uruchamia nadrzędną umiejętność agenta [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT; Python 3.9+, dostęp do sieci dla logo) w ten sam sposób, w jaki `oma-slide` uruchamia ppt-master: nie ma polecenia oma ani klucza konfiguracji. Tabela ścieżek znajduje się w `.agents/skills/_shared/conditional/diagram-engine.md`.
+
+- Rozstrzyganie: najpierw katalog umiejętności runtime’u, w przeciwnym razie `bunx skills use caru-ini/stack-diagram@stack-diagram`. Jeśli nie można rozstrzygnąć, workflow wraca do opisanej wyżej decyzji archify ↔ Mermaid i to zgłasza.
+- Wynik: `<artifact-stem>.stack.html` obok artefaktu Markdown, połączony w sekcji Diagram jako `Stack: …`. Blok Mermaid pozostaje SSOT.
+- Tylko HTML. Eksport PNG i kontrola zrzutu ekranu z nadrzędnej umiejętności wymagają Playwright + Chromium; oma nigdy ich nie instaluje ani nie uruchamia.
+- Przesyłanie do galerii nadrzędnej umiejętności (`share.py`) jest pomijane, chyba że jawnie poprosisz o publikację.
+- Ograniczenia: 2 próby budowania, łącznie 5 minut; akceptacją jest czyste uruchomienie `build.py`.
+- `/explain` nigdy nie wybiera tej ścieżki; jego sidecar jest wyprowadzany w kodzie ze szkicu.
+
+Napisz „archify” w prompcie, aby wymusić ścieżkę strukturalną, albo „stack-diagram” / „with logos”, aby wymusić ścieżkę stack.
+
+---
+
 ## Tryby awarii
 
 Nierozstrzygalny archify opisuje [tabela decyzji o silniku](#which-engine-runs). Pozostałe przypadki:
@@ -163,3 +178,4 @@ Nierozstrzygalny archify opisuje [tabela decyzji o silniku](#which-engine-runs).
 - [Polecenia CLI: diagram](../cli-interfaces/commands.md#diagram) — pełna lista opcji
 - [Badanie rynku](./market-research.md) — ten sam wzorzec zarządzanego najnowszego wydania dla silnika last30days
 - Upstream archify: [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- Upstream stack-diagram: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

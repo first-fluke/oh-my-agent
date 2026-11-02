@@ -1,7 +1,7 @@
 ---
 title: "ガイド：ダイアグラムエンジン（archify）"
 sidebar_label: ダイアグラム
-description: oh-my-agent がアーキテクチャ、シーケンス、データフローの図に Mermaid と、任意で使える tt-a1i/archify のエージェントスキルをどう選ぶかを説明します。diagram 設定、oma diagram resolve / oma diagram archify、/architecture と /explain からの利用、上限付きの検証・修復・配信ループを扱います。
+description: oh-my-agent がアーキテクチャ、シーケンス、データフローの図に Mermaid と、任意で使える tt-a1i/archify のエージェントスキルをどう選ぶかを説明します。diagram 設定、oma diagram resolve / oma diagram archify、/architecture と /explain からの利用、上限付きの検証・修復・配信ループを扱います。また、上流の Caru-ini/stack-diagram スキルを使ってベンダーロゴ付きの技術スタックポスターを作るスタック経路も扱います。
 ---
 
 # ダイアグラムエンジン
@@ -142,6 +142,21 @@ adr-notification-service.archify.html  # delivered viewer
 
 ---
 
+## スタックポスター（stack-diagram） {#stack-posters-stack-diagram}
+
+図がベンダー製品（AWS、Vercel、Postgres など）をノードとする技術スタックやインフラのトポロジーで、ロゴを依頼した場合、`/architecture` は archify ではなく**スタック経路**を取ります。`oma-slide` が ppt-master を実行するのと同じ方法で、上流の [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) エージェントスキル（MIT。Python 3.9 以降、ロゴ取得のためのネットワークアクセスが必要）を実行します。oma コマンドも設定キーもありません。経路表は `.agents/skills/_shared/conditional/diagram-engine.md` にあります。
+
+- 解決: まずランタイムのスキルカタログ、なければ `bunx skills use caru-ini/stack-diagram@stack-diagram`。解決できない場合、ワークフローは上記の archify ↔ Mermaid の判断にフォールバックし、その旨を報告します。
+- 出力: Markdown アーティファクトの隣の `<artifact-stem>.stack.html`。Diagram セクションの下に `Stack: …` としてリンクされます。Mermaid ブロックが SSOT のままです。
+- HTML のみです。上流の PNG エクスポートとスクリーンショット確認には Playwright と Chromium が必要ですが、oma はそれらをインストールも実行もしません。
+- 上流のギャラリーへのアップロード（`share.py`）は、明示的に公開を依頼しない限りスキップします。
+- 上限: ビルド試行 2 回、合計 5 分。`build.py` が正常に完了することが受け入れ条件です。
+- `/explain` はこの経路を取りません。そのサイドカーはドラフトからコードで派生されます。
+
+プロンプトで「archify」と言えば構造図の経路を、「stack-diagram」または「with logos」と言えばスタック経路を強制できます。
+
+---
+
 ## 失敗時の動作
 
 archify を解決できない場合は[エンジンの判断表](#which-engine-runs)で扱います。残りのケースは次のとおりです。
@@ -163,3 +178,4 @@ archify を解決できない場合は[エンジンの判断表](#which-engine-r
 - [CLI コマンド：diagram](../cli-interfaces/commands.md#diagram)。全オプションの一覧です
 - [市場調査](./market-research.md)。last30days エンジンにも同じ管理最新版のパターンを使います
 - archify 上流：[tt-a1i/archify](https://github.com/tt-a1i/archify)
+- stack-diagram 上流：[Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

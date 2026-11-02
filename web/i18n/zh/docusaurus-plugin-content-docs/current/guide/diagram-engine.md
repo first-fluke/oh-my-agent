@@ -1,7 +1,7 @@
 ---
 title: "指南：图表引擎（archify）"
 sidebar_label: 图表
-description: oh-my-agent 如何在 Mermaid 与可选的 tt-a1i/archify 智能体技能之间选择，用于架构图、时序图和数据流图；包括 diagram 配置区段、oma diagram resolve / oma diagram archify、/architecture 和 /explain 的使用方式，以及有界的验证、修复、交付循环。
+description: oh-my-agent 如何在 Mermaid 与可选的 tt-a1i/archify 智能体技能之间选择，用于架构图、时序图和数据流图；包括 diagram 配置区段、oma diagram resolve / oma diagram archify、/architecture 和 /explain 的使用方式，以及有界的验证、修复、交付循环。此外还介绍技术栈路线：通过上游 Caru-ini/stack-diagram 技能生成带供应商 logo 的技术栈海报。
 ---
 
 # 图表引擎
@@ -142,6 +142,21 @@ adr-notification-service.archify.html  # delivered viewer
 
 ---
 
+## 技术栈海报（stack-diagram） {#stack-posters-stack-diagram}
+
+当图表是技术栈或基础设施拓扑、节点是供应商产品（AWS、Vercel、Postgres 等），并且你要求带 logo 时，`/architecture` 会走**技术栈路线**而不是 archify。它以 `oma-slide` 运行 ppt-master 的同样方式运行上游 [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) 智能体技能（MIT 许可证；Python 3.9+，获取 logo 需要网络访问）：没有 oma 命令，也没有配置键。路线表位于 `.agents/skills/_shared/conditional/diagram-engine.md`。
+
+- 解析：先查运行时技能清单，否则使用 `bunx skills use caru-ini/stack-diagram@stack-diagram`。无法解析时，工作流回退到上文的 archify ↔ Mermaid 决策，并明确说明。
+- 输出：Markdown 产物旁的 `<artifact-stem>.stack.html`，在 Diagram 区段下以 `Stack: …` 链接。Mermaid 块仍是 SSOT。
+- 仅生成 HTML。上游的 PNG 导出和截图检查需要 Playwright + Chromium；oma 绝不会安装或运行它们。
+- 除非你明确要求发布，否则跳过上游的图库上传（`share.py`）。
+- 上限：2 次构建尝试，总计 5 分钟；`build.py` 干净运行通过即为验收标准。
+- `/explain` 从不走这条路线；它的 sidecar 由代码从草稿派生。
+
+在提示中说“archify”可强制走结构图路线，说“stack-diagram”或“with logos”可强制走技术栈路线。
+
+---
+
 ## 失败模式 {#failure-modes}
 
 无法解析 archify 的情况已在[引擎决策表](#which-engine-runs)中说明。其余情况如下：
@@ -163,3 +178,4 @@ adr-notification-service.archify.html  # delivered viewer
 - [CLI 命令：diagram](../cli-interfaces/commands.md#diagram)：完整选项列表
 - [市场研究](./market-research.md)：last30days 引擎采用的同一受管最新版本模式
 - archify 上游：[tt-a1i/archify](https://github.com/tt-a1i/archify)
+- stack-diagram 上游：[Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

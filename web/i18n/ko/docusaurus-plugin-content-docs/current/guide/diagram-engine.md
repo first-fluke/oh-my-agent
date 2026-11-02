@@ -1,7 +1,7 @@
 ---
 title: "가이드: 다이어그램 엔진(archify)"
 sidebar_label: 다이어그램
-description: oh-my-agent가 아키텍처, 시퀀스, 데이터 흐름 다이어그램에 Mermaid와 선택적 tt-a1i/archify 에이전트 스킬 중 무엇을 쓸지 고르는 방법을 설명합니다. diagram 설정 섹션, oma diagram resolve / oma diagram archify, /architecture와 /explain의 사용 방식, 횟수가 제한된 검증-수정-전달 루프를 다룹니다.
+description: oh-my-agent가 아키텍처, 시퀀스, 데이터 흐름 다이어그램에 Mermaid와 선택적 tt-a1i/archify 에이전트 스킬 중 무엇을 쓸지 고르는 방법을 설명합니다. diagram 설정 섹션, oma diagram resolve / oma diagram archify, /architecture와 /explain의 사용 방식, 횟수가 제한된 검증-수정-전달 루프를 다룹니다. 벤더 로고가 들어간 기술 스택 포스터를 위해 upstream Caru-ini/stack-diagram 스킬을 쓰는 stack route도 다룹니다.
 ---
 
 # 다이어그램 엔진 {#diagram-engine}
@@ -143,6 +143,21 @@ adr-notification-service.archify.html  # 전달된 뷰어
 
 ---
 
+## 스택 포스터(stack-diagram) {#stack-posters-stack-diagram}
+
+다이어그램이 기술 스택이나 인프라 토폴로지이고 노드가 벤더 제품(AWS, Vercel, Postgres 등)이며 로고를 요청하면 `/architecture`는 archify 대신 **stack route**를 탑니다. upstream [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) 에이전트 스킬(MIT, Python 3.9 이상, 로고용 네트워크 접근)을 `oma-slide`가 ppt-master를 실행하는 방식 그대로 실행합니다. oma 명령도, 설정 키도 없습니다. route 표는 `.agents/skills/_shared/conditional/diagram-engine.md`에 있습니다.
+
+- 해석: runtime skill catalog를 먼저 보고, 없으면 `bunx skills use caru-ini/stack-diagram@stack-diagram`을 실행합니다. 해석할 수 없으면 워크플로우는 위의 archify ↔ Mermaid 결정으로 폴백하고 그 사실을 보고합니다.
+- 출력: Markdown 산출물 옆의 `<artifact-stem>.stack.html`이며 Diagram 섹션 아래에 `Stack: …`으로 링크합니다. Mermaid 블록이 SSOT로 남습니다.
+- HTML 전용입니다. upstream의 PNG 내보내기와 스크린샷 확인은 Playwright + Chromium이 필요하며, oma는 이를 설치하지도 실행하지도 않습니다.
+- upstream 갤러리 업로드(`share.py`)는 사용자가 명시적으로 게시를 요청하지 않는 한 건너뜁니다.
+- 상한: build 2회, 총 5분. `build.py`가 깨끗하게 끝나면 합격입니다.
+- `/explain`은 이 route를 타지 않습니다. 사이드카는 초안에서 코드로 파생됩니다.
+
+프롬프트에 "archify"라고 쓰면 구조 route를, "stack-diagram" 또는 "로고 포함"이라고 쓰면 stack route를 강제합니다.
+
+---
+
 ## 실패 상황 {#failure-modes}
 
 archify를 해석할 수 없는 경우는 [엔진 결정 표](#which-engine-runs)에서 다룹니다. 나머지 경우는 다음과 같습니다.
@@ -164,3 +179,4 @@ archify를 해석할 수 없는 경우는 [엔진 결정 표](#which-engine-runs
 - [CLI 명령: diagram](../cli-interfaces/commands.md#diagram): 전체 옵션 목록
 - [시장 조사](./market-research.md): last30days 엔진에 쓰는 같은 관리형 최신 사본 패턴
 - archify upstream: [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- stack-diagram upstream: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

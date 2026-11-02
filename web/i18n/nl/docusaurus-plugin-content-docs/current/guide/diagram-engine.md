@@ -1,7 +1,7 @@
 ---
 title: "Gids: Diagramengine (archify)"
 sidebar_label: Diagrammen
-description: Hoe oh-my-agent kiest tussen Mermaid en de optionele agent-skill tt-a1i/archify voor architectuur-, sequence- en datastroomdiagrammen — de diagramconfiguratie, oma diagram resolve / oma diagram archify, het gebruik door /architecture en /explain en de begrensde lus voor valideren, herstellen en opleveren.
+description: Hoe oh-my-agent kiest tussen Mermaid en de optionele agent-skill tt-a1i/archify voor architectuur-, sequence- en datastroomdiagrammen — de diagramconfiguratie, oma diagram resolve / oma diagram archify, het gebruik door /architecture en /explain en de begrensde lus voor valideren, herstellen en opleveren. Behandelt ook de stack-route via de upstream-skill Caru-ini/stack-diagram voor tech-stack-posters met vendorlogo's.
 ---
 
 # Diagramengine {#diagram-engine}
@@ -142,6 +142,21 @@ Opt-in, omdat het eigen contract van de explainer (één zelfstandig bestand, th
 
 ---
 
+## Stack-posters (stack-diagram) {#stack-posters-stack-diagram}
+
+Wanneer het diagram een tech-stack- of infrastructuurtopologie is waarvan de knooppunten vendorproducten zijn (AWS, Vercel, Postgres, …) en je om logo's vraagt, neemt `/architecture` de **stack-route** in plaats van archify. Het voert de upstream agent-skill [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) uit (MIT; Python 3.9+, netwerktoegang voor logo's) op dezelfde manier als `oma-slide` ppt-master uitvoert: er is geen oma-commando en geen configuratiekey. De routetabel staat in `.agents/skills/_shared/conditional/diagram-engine.md`.
+
+- Resolutie: eerst de skillcatalogus van de runtime, anders `bunx skills use caru-ini/stack-diagram@stack-diagram`. Als die niet kan worden opgelost, valt de workflow terug op de archify ↔ Mermaid-beslissing hierboven en meldt dat.
+- Output: `<artifact-stem>.stack.html` naast het Markdown-artifact, gekoppeld onder de sectie Diagram als `Stack: …`. Het Mermaid-blok blijft de SSOT.
+- Alleen HTML. De PNG-export en de screenshotcontrole van upstream hebben Playwright + Chromium nodig; oma installeert of draait ze nooit.
+- De upload naar de upstream-galerij (`share.py`) wordt overgeslagen, tenzij je expliciet vraagt om te publiceren.
+- Grenzen: 2 build-pogingen, 5 minuten in totaal; een schone run van `build.py` geldt als acceptatie.
+- `/explain` neemt deze route nooit; zijn sidecar wordt in code afgeleid uit de draft.
+
+Zeg "archify" in de prompt om de structurele route af te dwingen, of "stack-diagram" / "with logos" om de stack-route af te dwingen.
+
+---
+
 ## Foutmodi {#failure-modes}
 
 Een archify die niet kan worden opgelost, wordt behandeld in de [beslistabel voor de engine](#which-engine-runs). De overige gevallen:
@@ -163,3 +178,4 @@ Een archify die niet kan worden opgelost, wordt behandeld in de [beslistabel voo
 - [CLI-commando's: diagram](../cli-interfaces/commands.md#diagram) — volledige optielijst
 - [Marktonderzoek](./market-research.md) — hetzelfde managed-latest-patroon voor de last30days-engine
 - upstream van archify: [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- upstream van stack-diagram: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

@@ -20,6 +20,7 @@ Hướng dẫn này định tuyến công việc về tài liệu, âm thanh, ng
 | Làm video ngắn, explainer hoặc demo | `/video`, `oma video` | Node.js 22+, FFmpeg, sau đó `oma video doctor --install` | Run directory dưới `.agents/results/videos/`; MP4 sau `oma video render` | [Tạo video](./video-generation.md) |
 | Giải thích một thay đổi hoặc một chủ đề trong một trang | `/explain`, `oma explain` | git cho change mode; `gh` cho PR ref | HTML độc lập dưới `.agents/results/explain/` | [Code Explainer](./code-explainer.md) |
 | Diagram kiến trúc tương tác | `/architecture`, `oma diagram` | không có; archify được tải ở lần dùng đầu tiên | Mermaid block, kèm `.archify.html` khi archify resolve được | [Diagram Engine](./diagram-engine.md) |
+| Poster tech-stack kèm logo vendor | `/architecture` (stack route) | Python 3.9+, network để lấy logo | Mermaid block, kèm `.stack.html` từ upstream skill stack-diagram | [Diagram Engine](./diagram-engine.md#stack-posters-stack-diagram) |
 | Nghiên cứu thị trường từ cộng đồng | Skill `oma-market`, `oma market` | Python 3.12+ | Một brief dưới `.agents/results/market/` | [Nghiên cứu thị trường](./market-research.md) |
 | Tóm tắt hội thoại agent | `/recap`, `oma recap` | không có | Recap JSON từ CLI; recap Markdown theo ngày từ `/recap` | [bên dưới](#recap-agent-conversations) |
 | Dịch hoặc review prose đã localize | Skill `oma-translation` | không có | Text ngôn ngữ đích hoặc review có evidence | [bên dưới](#translate-or-review-localized-content) |

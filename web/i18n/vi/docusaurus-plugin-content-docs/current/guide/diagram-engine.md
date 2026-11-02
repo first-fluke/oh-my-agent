@@ -1,7 +1,7 @@
 ---
 title: "Hướng dẫn: Diagram Engine (archify)"
 sidebar_label: Diagrams
-description: Cách oh-my-agent chọn giữa Mermaid và agent skill tt-a1i/archify tùy chọn cho diagram architecture, sequence và data-flow — phần diagram config, oma diagram resolve / oma diagram archify, cách /architecture và /explain dùng nó, cùng loop validate-repair-deliver có giới hạn.
+description: Cách oh-my-agent chọn giữa Mermaid và agent skill tt-a1i/archify tùy chọn cho diagram architecture, sequence và data-flow — phần diagram config, oma diagram resolve / oma diagram archify, cách /architecture và /explain dùng nó, cùng loop validate-repair-deliver có giới hạn. Tài liệu cũng đề cập stack route qua upstream skill Caru-ini/stack-diagram cho poster tech-stack kèm logo vendor.
 ---
 
 # Diagram Engine {#diagram-engine}
@@ -142,6 +142,21 @@ Opt-in vì contract riêng của explainer (single self-contained file, CSS-vari
 
 ---
 
+## Stack poster (stack-diagram) {#stack-posters-stack-diagram}
+
+Khi diagram là tech-stack hoặc topology hạ tầng mà các node là sản phẩm của vendor (AWS, Vercel, Postgres, …) và bạn yêu cầu logo, `/architecture` đi theo **stack route** thay vì archify. Nó chạy upstream agent skill [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT; Python 3.9+, cần network để lấy logo) theo cùng cách `oma-slide` chạy ppt-master: không có command oma và không có config key. Bảng route nằm trong `.agents/skills/_shared/conditional/diagram-engine.md`.
+
+- Resolve: runtime skill catalog trước, nếu không thì `bunx skills use caru-ini/stack-diagram@stack-diagram`. Nếu không resolve được, workflow fallback về quyết định archify ↔ Mermaid ở trên và nói rõ điều đó.
+- Output: `<artifact-stem>.stack.html` cạnh Markdown artifact, được link dưới section Diagram dưới dạng `Stack: …`. Mermaid block vẫn là SSOT.
+- Chỉ HTML. PNG export và screenshot check của upstream cần Playwright + Chromium; oma không bao giờ cài hoặc chạy chúng.
+- Gallery upload của upstream (`share.py`) bị bỏ qua trừ khi bạn yêu cầu publish một cách rõ ràng.
+- Giới hạn: 2 lần build, tổng cộng 5 phút; một lần chạy `build.py` sạch là tiêu chí chấp nhận.
+- `/explain` không bao giờ đi theo route này; sidecar của nó được derive trong code từ draft.
+
+Viết "archify" trong prompt để buộc dùng structural route, hoặc "stack-diagram" / "with logos" để buộc dùng stack route.
+
+---
+
 ## Failure mode {#failure-modes}
 
 Trường hợp archify không resolve được đã được bao quát trong [bảng quyết định engine](#which-engine-runs). Các trường hợp còn lại:
@@ -163,3 +178,4 @@ Trường hợp archify không resolve được đã được bao quát trong [b
 - [CLI Commands: diagram](../cli-interfaces/commands.md#diagram) — danh sách option đầy đủ
 - [Market Research](./market-research.md) — cùng pattern managed-latest cho engine last30days
 - archify upstream: [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- stack-diagram upstream: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

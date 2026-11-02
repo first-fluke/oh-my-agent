@@ -20,6 +20,7 @@ description: 为 PDF 和 HWP 提取、语音、学术与 Web 研究、幻灯片�
 | 制作短视频、讲解视频或演示视频 | `/video`、`oma video` | Node.js 22+、FFmpeg，然后运行 `oma video doctor --install` | `.agents/results/videos/` 下的运行目录；`oma video render` 后得到 MP4 | [视频生成](./video-generation.md) |
 | 用一个页面讲解变更或主题 | `/explain`、`oma explain` | 变更模式需要 git；PR 引用需要 `gh` | `.agents/results/explain/` 下的自包含 HTML | [代码讲解器](./code-explainer.md) |
 | 交互式架构图 | `/architecture`、`oma diagram` | 无；archify 在首次使用时获取 | Mermaid 代码块，archify 解析成功时另有 `.archify.html` | [图表引擎](./diagram-engine.md) |
+| 带供应商 logo 的技术栈海报 | `/architecture`（技术栈路线） | Python 3.9+，获取 logo 需要网络 | Mermaid 代码块，另有上游 stack-diagram 技能生成的 `.stack.html` | [图表引擎](./diagram-engine.md#stack-posters-stack-diagram) |
 | 社区市场研究 | `oma-market` 技能、`oma market` | Python 3.12+ | `.agents/results/market/` 下的简报 | [市场研究](./market-research.md) |
 | 汇总智能体对话 | `/recap`、`oma recap` | 无 | CLI 输出回顾 JSON；`/recap` 生成带日期的 Markdown 回顾 | [见下文](#recap-agent-conversations) |
 | 翻译或审阅本地化文本 | `oma-translation` 技能 | 无 | 目标语言文本或有证据支持的审阅结果 | [见下文](#translate-or-review-localized-content) |

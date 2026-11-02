@@ -1,7 +1,7 @@
 ---
 title: "Руководство: Diagram Engine (archify)"
 sidebar_label: Диаграммы
-description: Как oh-my-agent выбирает между Mermaid и необязательным agent skill tt-a1i/archify для архитектурных, sequence и data-flow diagram — раздел diagram config, oma diagram resolve / oma diagram archify, использование в /architecture и /explain и ограниченный цикл validate-repair-deliver.
+description: Как oh-my-agent выбирает между Mermaid и необязательным agent skill tt-a1i/archify для архитектурных, sequence и data-flow diagram — раздел diagram config, oma diagram resolve / oma diagram archify, использование в /architecture и /explain и ограниченный цикл validate-repair-deliver. Также описывается stack route через upstream skill Caru-ini/stack-diagram для постеров tech-stack с логотипами вендоров.
 ---
 
 # Diagram Engine
@@ -142,6 +142,21 @@ Opt-in, поскольку собственный contract explainer (один s
 
 ---
 
+## Stack-постеры (stack-diagram) {#stack-posters-stack-diagram}
+
+Когда диаграмма — это tech-stack или топология инфраструктуры, узлы которой являются продуктами вендоров (AWS, Vercel, Postgres, …), и вы просите логотипы, `/architecture` выбирает **stack route** вместо archify. Он запускает upstream agent skill [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT; Python 3.9+, доступ к сети для логотипов) так же, как `oma-slide` запускает ppt-master: нет ни команды oma, ни config key. Таблица route находится в `.agents/skills/_shared/conditional/diagram-engine.md`.
+
+- Разрешение: сначала runtime skill catalog, иначе `bunx skills use caru-ini/stack-diagram@stack-diagram`. Если разрешить не удаётся, workflow откатывается к описанному выше решению archify ↔ Mermaid и сообщает об этом.
+- Output: `<artifact-stem>.stack.html` рядом с Markdown-артефактом, связанный в разделе Diagram как `Stack: …`. Mermaid block остаётся SSOT.
+- Только HTML. PNG export и screenshot check из upstream требуют Playwright + Chromium; oma никогда их не устанавливает и не запускает.
+- Загрузка в upstream gallery (`share.py`) пропускается, если вы явно не попросите опубликовать.
+- Ограничения: 2 попытки build, 5 минут в сумме; критерий приёмки — чистый запуск `build.py`.
+- `/explain` никогда не использует этот route; его sidecar выводится в коде из черновика.
+
+Напишите «archify» в prompt, чтобы принудительно выбрать структурный route, или «stack-diagram» / «with logos», чтобы принудительно выбрать stack route.
+
+---
+
 ## Режимы ошибок
 
 Неразрешимый archify описан в [таблице выбора engine](#which-engine-runs). Остальные случаи:
@@ -163,3 +178,4 @@ Opt-in, поскольку собственный contract explainer (один s
 - [CLI-команды: diagram](../cli-interfaces/commands.md#diagram) — полный список опций
 - [Исследование рынка](./market-research.md) — тот же шаблон managed-latest для engine last30days
 - archify upstream: [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- stack-diagram upstream: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

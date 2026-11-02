@@ -1,7 +1,7 @@
 ---
 title: "Anleitung: Diagramm-Engine (archify)"
 sidebar_label: Diagramme
-description: So wählt oh-my-agent zwischen Mermaid und dem optionalen Agenten-Skill tt-a1i/archify für Architektur-, Sequenz- und Datenflussdiagramme — mit dem Diagramm-Konfigurationsabschnitt, oma diagram resolve / oma diagram archify, der Nutzung durch /architecture und /explain sowie der begrenzten Schleife aus Validieren, Reparieren und Ausliefern.
+description: So wählt oh-my-agent zwischen Mermaid und dem optionalen Agenten-Skill tt-a1i/archify für Architektur-, Sequenz- und Datenflussdiagramme — mit dem Diagramm-Konfigurationsabschnitt, oma diagram resolve / oma diagram archify, der Nutzung durch /architecture und /explain sowie der begrenzten Schleife aus Validieren, Reparieren und Ausliefern. Außerdem wird die Stack-Route über den Upstream-Skill Caru-ini/stack-diagram für Tech-Stack-Poster mit Vendor-Logos behandelt.
 ---
 
 # Diagramm-Engine
@@ -142,6 +142,21 @@ Opt-in, weil der eigene Vertrag des Explainers (eine eigenständige Datei mit CS
 
 ---
 
+## Stack-Poster (stack-diagram) {#stack-posters-stack-diagram}
+
+Wenn das Diagramm eine Tech-Stack- oder Infrastrukturtopologie ist, deren Knoten Vendor-Produkte sind (AWS, Vercel, Postgres, …), und Sie nach Logos fragen, nimmt `/architecture` statt archify die **Stack-Route**. Sie führt den Upstream-Agenten-Skill [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT; Python 3.9+, Netzwerkzugriff für Logos) genauso aus, wie `oma-slide` ppt-master ausführt: Es gibt keinen oma-Befehl und keinen Konfigurationsschlüssel. Die Routentabelle liegt in `.agents/skills/_shared/conditional/diagram-engine.md`.
+
+- Auflösung: zuerst der Skill-Katalog der Laufzeit, andernfalls `bunx skills use caru-ini/stack-diagram@stack-diagram`. Lässt er sich nicht auflösen, fällt der Workflow auf die obige Entscheidung archify ↔ Mermaid zurück und meldet das.
+- Ausgabe: `<artifact-stem>.stack.html` neben dem Markdown-Artefakt, im Diagramm-Abschnitt als `Stack: …` verlinkt. Der Mermaid-Block bleibt die SSOT.
+- Nur HTML. Der PNG-Export und die Screenshot-Prüfung des Upstreams benötigen Playwright + Chromium; oma installiert oder startet sie nie.
+- Der Galerie-Upload des Upstreams (`share.py`) wird übersprungen, sofern Sie nicht ausdrücklich um eine Veröffentlichung bitten.
+- Grenzen: 2 Build-Versuche, insgesamt 5 Minuten; ein sauberer `build.py`-Lauf gilt als Abnahme.
+- `/explain` nimmt diese Route nie; sein Sidecar wird im Code aus dem Entwurf abgeleitet.
+
+Schreiben Sie „archify“ in den Prompt, um die strukturelle Route zu erzwingen, oder „stack-diagram“ / „with logos“, um die Stack-Route zu erzwingen.
+
+---
+
 ## Fehlerfälle
 
 Ein nicht auflösbares archify behandelt die [Entscheidungstabelle der Engine](#which-engine-runs). Die übrigen Fälle:
@@ -163,3 +178,4 @@ Ein nicht auflösbares archify behandelt die [Entscheidungstabelle der Engine](#
 - [CLI-Befehle: diagram](../cli-interfaces/commands.md#diagram) — vollständige Optionsliste
 - [Marktforschung](./market-research.md) — dasselbe Muster der verwalteten neuesten Version für die last30days-Engine
 - archify upstream: [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- stack-diagram upstream: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

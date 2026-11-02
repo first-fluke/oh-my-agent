@@ -20,6 +20,7 @@ description: PDF와 HWP 추출, 음성, 학술 및 웹 리서치, 슬라이드, 
 | 숏폼, 설명, 데모 영상 제작 | `/video`, `oma video` | Node.js 22 이상, FFmpeg, 이후 `oma video doctor --install` | `.agents/results/videos/` 아래의 실행 디렉토리, `oma video render` 후에는 MP4 | [영상 생성](./video-generation.md) |
 | 변경 사항이나 주제를 한 페이지로 설명 | `/explain`, `oma explain` | 변경 모드에는 git, PR 참조에는 `gh` | `.agents/results/explain/` 아래의 독립 실행형 HTML | [코드 설명서](./code-explainer.md) |
 | 인터랙티브 아키텍처 다이어그램 | `/architecture`, `oma diagram` | 없음. archify는 처음 사용할 때 가져옵니다 | Mermaid 블록, archify가 해석되면 `.archify.html`도 생성 | [다이어그램 엔진](./diagram-engine.md) |
+| 벤더 로고가 들어간 기술 스택 포스터 | `/architecture`(stack route) | Python 3.9 이상, 로고용 네트워크 | Mermaid 블록, upstream stack-diagram 스킬이 만든 `.stack.html`도 생성 | [다이어그램 엔진](./diagram-engine.md#stack-posters-stack-diagram) |
 | 커뮤니티 시장 조사 | `oma-market` 스킬, `oma market` | Python 3.12 이상 | `.agents/results/market/` 아래의 브리프 | [시장 조사](./market-research.md) |
 | 에이전트 대화 요약 | `/recap`, `oma recap` | 없음 | CLI에서는 리캡 JSON, `/recap`에서는 날짜가 붙은 Markdown 리캡 | [아래](#recap-agent-conversations) |
 | 현지화된 문장 번역 또는 검토 | `oma-translation` 스킬 | 없음 | 대상 언어 텍스트 또는 증거 기반 검토 | [아래](#translate-or-review-localized-content) |

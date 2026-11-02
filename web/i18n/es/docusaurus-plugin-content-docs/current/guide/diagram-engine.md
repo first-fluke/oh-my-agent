@@ -1,7 +1,7 @@
 ---
 title: "Guía: Motor de diagramas (archify)"
 sidebar_label: Diagramas
-description: "Cómo elige oh-my-agent entre Mermaid y la skill opcional de agente tt-a1i/archify para diagramas de arquitectura, secuencia y flujo de datos: la sección de configuración de diagramas, oma diagram resolve / oma diagram archify, su uso por /architecture y /explain y el ciclo acotado de validar, reparar y entregar."
+description: "Cómo elige oh-my-agent entre Mermaid y la skill opcional de agente tt-a1i/archify para diagramas de arquitectura, secuencia y flujo de datos: la sección de configuración de diagramas, oma diagram resolve / oma diagram archify, su uso por /architecture y /explain y el ciclo acotado de validar, reparar y entregar. También cubre la ruta stack mediante la skill upstream Caru-ini/stack-diagram para pósteres de stack tecnológico con logotipos de proveedores."
 ---
 
 # Motor de diagramas
@@ -142,6 +142,21 @@ Es opcional, porque el contrato del explicador (un único archivo autocontenido 
 
 ---
 
+## Pósteres de stack (stack-diagram) {#stack-posters-stack-diagram}
+
+Cuando el diagrama es una topología de stack tecnológico o de infraestructura cuyos nodos son productos de proveedores (AWS, Vercel, Postgres, …) y pides logotipos, `/architecture` toma la **ruta stack** en lugar de archify. Ejecuta la skill de agente upstream [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT; Python 3.9+, acceso a red para los logotipos) del mismo modo en que `oma-slide` ejecuta ppt-master: no hay comando de oma ni clave de configuración. La tabla de rutas vive en `.agents/skills/_shared/conditional/diagram-engine.md`.
+
+- Resolución: primero el catálogo de skills del runtime; si no, `bunx skills use caru-ini/stack-diagram@stack-diagram`. Si no se puede resolver, el flujo de trabajo recurre a la decisión archify ↔ Mermaid anterior y lo indica.
+- Salida: `<artifact-stem>.stack.html` junto al artefacto Markdown, enlazado en la sección Diagrama como `Stack: …`. El bloque Mermaid sigue siendo la SSOT.
+- Solo HTML. La exportación PNG y la comprobación de capturas de pantalla del upstream necesitan Playwright + Chromium; oma nunca los instala ni los ejecuta.
+- La subida a la galería del upstream (`share.py`) se omite salvo que pidas publicar explícitamente.
+- Límites: 2 intentos de build, 5 minutos en total; una ejecución limpia de `build.py` es el criterio de aceptación.
+- `/explain` nunca toma esta ruta; su sidecar se deriva del borrador en el código.
+
+Escribe «archify» en el prompt para forzar la ruta estructural, o «stack-diagram» / «with logos» para forzar la ruta stack.
+
+---
+
 ## Modos de fallo
 
 El caso de archify no resoluble se cubre en la [tabla de decisión del motor](#which-engine-runs). Los casos restantes:
@@ -163,3 +178,4 @@ El caso de archify no resoluble se cubre en la [tabla de decisión del motor](#w
 - [Comandos CLI: diagram](../cli-interfaces/commands.md#diagram): lista completa de opciones
 - [Investigación de mercado](./market-research.md): el mismo patrón de última versión gestionada para el motor last30days
 - upstream de archify: [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- upstream de stack-diagram: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

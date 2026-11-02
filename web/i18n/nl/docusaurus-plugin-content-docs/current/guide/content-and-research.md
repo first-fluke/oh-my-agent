@@ -20,6 +20,7 @@ Koppel documenten, audio, onderzoek, media en presentaties aan de verantwoordeli
 | Een korte video, uitlegvideo of demovideo maken | `/video`, `oma video` | Node.js 22+, FFmpeg, daarna `oma video doctor --install` | Een runmap onder `.agents/results/videos/`; een MP4 na `oma video render` | [Video genereren](./video-generation.md) |
 | Een wijziging of onderwerp op één pagina uitleggen | `/explain`, `oma explain` | git voor de wijzigingsmodus; `gh` voor PR-refs | Zelfstandige HTML onder `.agents/results/explain/` | [Code-uitlegger](./code-explainer.md) |
 | Interactief architectuurdiagram | `/architecture`, `oma diagram` | geen; archify wordt bij het eerste gebruik opgehaald | Mermaid-blok, plus `.archify.html` wanneer archify wordt gevonden | [Diagramengine](./diagram-engine.md) |
+| Tech-stack-poster met vendorlogo's | `/architecture` (stack-route) | Python 3.9+, netwerk voor logo's | Mermaid-blok, plus `.stack.html` uit de upstream-skill stack-diagram | [Diagramengine](./diagram-engine.md#stack-posters-stack-diagram) |
 | Marktonderzoek in communities | Skill `oma-market`, `oma market` | Python 3.12+ | Een brief onder `.agents/results/market/` | [Marktonderzoek](./market-research.md) |
 | Agentgesprekken samenvatten | `/recap`, `oma recap` | geen | Recap-JSON van de CLI; een gedateerde Markdown-recap van `/recap` | [hieronder](#recap-agent-conversations) |
 | Gelokaliseerde tekst vertalen of reviewen | Skill `oma-translation` | geen | Tekst in de doeltaal of een review met onderbouwd bewijs | [hieronder](#translate-or-review-localized-content) |

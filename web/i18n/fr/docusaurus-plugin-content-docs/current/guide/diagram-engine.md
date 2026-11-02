@@ -1,7 +1,7 @@
 ---
 title: "Guide : Moteur de diagrammes (archify)"
 sidebar_label: Diagrammes
-description: Comment oh-my-agent choisit entre Mermaid et la compétence agent facultative tt-a1i/archify pour les diagrammes d’architecture, de séquence et de flux de données — section de configuration des diagrammes, oma diagram resolve / oma diagram archify, utilisation par /architecture et /explain et boucle bornée validate-repair-deliver.
+description: Comment oh-my-agent choisit entre Mermaid et la compétence agent facultative tt-a1i/archify pour les diagrammes d’architecture, de séquence et de flux de données — section de configuration des diagrammes, oma diagram resolve / oma diagram archify, utilisation par /architecture et /explain et boucle bornée validate-repair-deliver. Ce guide couvre aussi la route stack via la compétence amont Caru-ini/stack-diagram pour les posters de stack technique avec les logos des fournisseurs.
 ---
 
 # Moteur de diagrammes
@@ -142,6 +142,21 @@ Facultatif, car le contrat propre à l’explicateur (fichier unique autonome, t
 
 ---
 
+## Posters de stack (stack-diagram) {#stack-posters-stack-diagram}
+
+Lorsque le diagramme est une topologie de stack technique ou d’infrastructure dont les nœuds sont des produits de fournisseurs (AWS, Vercel, Postgres, …) et que vous demandez des logos, `/architecture` emprunte la **route stack** au lieu d’archify. Il exécute la compétence d’agent amont [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT ; Python 3.9+, accès réseau pour les logos) de la même manière que `oma-slide` exécute ppt-master : il n’y a ni commande oma ni clé de configuration. La table de routage se trouve dans `.agents/skills/_shared/conditional/diagram-engine.md`.
+
+- Résolution : d’abord le catalogue de compétences du runtime, sinon `bunx skills use caru-ini/stack-diagram@stack-diagram`. Si la résolution échoue, le workflow revient à la décision archify ↔ Mermaid ci-dessus et le signale.
+- Sortie : `<artifact-stem>.stack.html` à côté de l’artefact Markdown, lié sous la section Diagramme sous la forme `Stack: …`. Le bloc Mermaid reste le SSOT.
+- HTML uniquement. L’export PNG et la vérification par capture d’écran de la source amont nécessitent Playwright + Chromium ; oma ne les installe ni ne les exécute jamais.
+- Le téléversement vers la galerie amont (`share.py`) est ignoré sauf si vous demandez explicitement une publication.
+- Bornes : 2 tentatives de build, 5 minutes au total ; une exécution propre de `build.py` constitue le critère d’acceptation.
+- `/explain` n’emprunte jamais cette route ; son sidecar est dérivé du brouillon dans le code.
+
+Écrivez « archify » dans l’invite pour forcer la route structurelle, ou « stack-diagram » / « with logos » pour forcer la route stack.
+
+---
+
 ## Modes d’échec
 
 Un archify impossible à résoudre est couvert par la [table de décision du moteur](#which-engine-runs). Les cas restants :
@@ -163,3 +178,4 @@ Un archify impossible à résoudre est couvert par la [table de décision du mot
 - [Commandes CLI : diagram](../cli-interfaces/commands.md#diagram) — liste complète des options
 - [Recherche de marché](./market-research.md) — le même modèle de dernière version gérée pour le moteur last30days
 - Source archify : [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- Source stack-diagram : [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

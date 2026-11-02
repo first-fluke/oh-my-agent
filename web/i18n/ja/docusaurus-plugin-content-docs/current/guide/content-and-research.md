@@ -20,6 +20,7 @@ description: PDF と HWP の抽出、音声、学術リサーチと Web リサ�
 | ショート、解説、デモの動画を作る | `/video`、`oma video` | Node.js 22 以降、FFmpeg、その後 `oma video doctor --install` | `.agents/results/videos/` 配下の実行ディレクトリ。`oma video render` の後は MP4 | [動画生成](./video-generation.md) |
 | 変更やトピックを 1 ページで解説する | `/explain`、`oma explain` | 変更モードには git、PR 参照には `gh` | `.agents/results/explain/` 配下の自己完結型 HTML | [コード解説](./code-explainer.md) |
 | インタラクティブなアーキテクチャ図 | `/architecture`、`oma diagram` | なし。archify は初回使用時に取得 | Mermaid ブロック。archify を解決できた場合は `.archify.html` も | [ダイアグラムエンジン](./diagram-engine.md) |
+| ベンダーロゴ付きの技術スタックポスター | `/architecture`（スタック経路） | Python 3.9 以降、ロゴ取得のためのネットワーク | Mermaid ブロック。上流の stack-diagram スキルによる `.stack.html` も | [ダイアグラムエンジン](./diagram-engine.md#stack-posters-stack-diagram) |
 | コミュニティの市場調査 | `oma-market` スキル、`oma market` | Python 3.12 以降 | `.agents/results/market/` 配下のブリーフ | [市場調査](./market-research.md) |
 | エージェントの会話を要約する | `/recap`、`oma recap` | なし | CLI からは回顧の JSON、`/recap` からは日付付き Markdown 回顧 | [下記](#recap-agent-conversations) |
 | ローカライズ文を翻訳またはレビューする | `oma-translation` スキル | なし | 対象言語の文章、または証拠に基づくレビュー | [下記](#translate-or-review-localized-content) |

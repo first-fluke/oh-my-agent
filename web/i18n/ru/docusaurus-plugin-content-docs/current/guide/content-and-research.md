@@ -20,6 +20,7 @@ description: Выберите правильный путь oh-my-agent и ег�
 | Сделать short, explainer или demo-видео | `/video`, `oma video` | Node.js 22+, FFmpeg, затем `oma video doctor --install` | Каталог запуска в `.agents/results/videos/`; MP4 после `oma video render` | [Генерация видео](./video-generation.md) |
 | Объяснить изменение или тему на одной странице | `/explain`, `oma explain` | git для режима изменений; `gh` для ссылок на PR | Автономный HTML в `.agents/results/explain/` | [Объяснение кода](./code-explainer.md) |
 | Интерактивная диаграмма архитектуры | `/architecture`, `oma diagram` | нет; archify загружается при первом использовании | Блок Mermaid, а также `.archify.html`, если archify разрешается | [Diagram Engine](./diagram-engine.md) |
+| Tech-stack-постер с логотипами вендоров | `/architecture` (stack route) | Python 3.9+, сеть для логотипов | Блок Mermaid, а также `.stack.html` из upstream skill stack-diagram | [Diagram Engine](./diagram-engine.md#stack-posters-stack-diagram) |
 | Исследование рынка по сигналам сообществ | skill `oma-market`, `oma market` | Python 3.12+ | Отчёт в `.agents/results/market/` | [Исследование рынка](./market-research.md) |
 | Суммировать разговоры агентов | `/recap`, `oma recap` | нет | JSON recap от CLI; датированный Markdown recap от `/recap` | [ниже](#recap-agent-conversations) |
 | Перевести или проверить локализованный текст | skill `oma-translation` | нет | Текст на целевом языке или review с evidence | [ниже](#translate-or-review-localized-content) |
