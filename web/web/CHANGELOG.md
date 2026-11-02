@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.16.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.15.1...web-v11.16.0) (2026-11-02)
+
+
+### Features
+
+* **grok-bot:** add install target and marketplace entry ([fa2bdc2](https://github.com/first-fluke/oh-my-agent/commit/fa2bdc23fa908e1f3be71fd3a09f0ad9abaff0be))
+
+
+### Documentation
+
+* **i18n:** sync diagram engine installation guidance ([0acd31f](https://github.com/first-fluke/oh-my-agent/commit/0acd31febf349d53b4a8a5d8ec94f2a3970615fa))
+
 ## [11.15.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.15.0...web-v11.15.1) (2026-11-02)
 
 
