@@ -104,6 +104,17 @@ export { cleanDanglingSymlinks } from "./symlinks.js";
 
 export async function install(options: InstallOptions = {}): Promise<void> {
   const presetSkills = resolvePresetSkills(options.preset);
+  if (options.target === "grok-bot") {
+    const { installGrokBot } = await import("./grok-bot.js");
+    await installGrokBot({
+      workflowsDir: options.workflowsDir,
+      skills: presetSkills,
+    });
+    return;
+  }
+  if (options.workflowsDir !== undefined) {
+    throw new Error("--workflows-dir requires --target grok-bot");
+  }
   const nonInteractive = isNonInteractive(options);
   const explicitYes = isExplicitYes(options);
 

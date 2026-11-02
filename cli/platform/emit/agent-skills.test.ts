@@ -275,6 +275,8 @@ describe("emitAgentSkills", () => {
           "## Verify",
           "Verify the result.",
         ].join("\n"),
+        ".agents/skills/_shared/conditional/diagram.md":
+          "Read `_shared/runtime/checklist.md` before drawing.",
       };
       for (const [relativePath, content] of Object.entries(files)) {
         const filePath = path.join(repoRoot, relativePath);
@@ -282,7 +284,7 @@ describe("emitAgentSkills", () => {
         writeFileSync(filePath, content);
       }
 
-      emitAgentSkills(repoRoot, emittedRoot);
+      emitAgentSkills(repoRoot, emittedRoot, { resolveSharedShorthand: true });
       mkdirSync(path.dirname(installedSkill), { recursive: true });
       cpSync(path.join(emittedRoot, "portable-skill"), installedSkill, {
         recursive: true,
@@ -321,6 +323,42 @@ describe("emitAgentSkills", () => {
           "utf-8",
         ),
       ).toContain("Verify the result.");
+    });
+
+    it("resolves shorthand shared paths and their transitive dependencies without the source tree", () => {
+      const installedSkill = emitIsolatedSkill(
+        "Read `_shared/conditional/diagram.md`.",
+      );
+      expect(
+        readFileSync(path.join(installedSkill, "SKILL.md"), "utf8"),
+      ).toContain("`references/_shared/conditional/diagram.md`");
+      const diagram = readFileSync(
+        path.join(installedSkill, "references/_shared/conditional/diagram.md"),
+        "utf8",
+      );
+      expect(diagram).toContain("`../runtime/checklist.md`");
+      expect(
+        existsSync(
+          path.join(installedSkill, "references/_shared/runtime/checklist.md"),
+        ),
+      ).toBe(true);
+    });
+
+    it("expands grouped shorthand into resolvable bundled file paths", () => {
+      const installedSkill = emitIsolatedSkill(
+        "Read `_shared/runtime/{contract,checklist}.md`.",
+      );
+      const entry = readFileSync(path.join(installedSkill, "SKILL.md"), "utf8");
+      expect(entry).toContain(
+        "references/_shared/runtime/contract.md, references/_shared/runtime/checklist.md",
+      );
+      for (const name of ["contract", "checklist"]) {
+        expect(
+          existsSync(
+            path.join(installedSkill, `references/_shared/runtime/${name}.md`),
+          ),
+        ).toBe(true);
+      }
     });
 
     it("rewrites nested resources while preserving URLs and unrelated source paths", () => {

@@ -24,6 +24,16 @@ export function registerInstall(program: Command): void {
     .description("Install oh-my-agent skills and configurations")
     .addOption(
       new Option(
+        "--target <name>",
+        "Installation target (default: project; grok-bot installs shared Bot skills only)",
+      ).choices(["project", "grok-bot"]),
+    )
+    .option(
+      "--workflows-dir <path>",
+      "Grok Bot skill library (default: ~/agent-data/workflows; requires --target grok-bot)",
+    )
+    .addOption(
+      new Option(
         "--preset <name>",
         "Skill preset (overrides project prompt; default: all with --yes/CI)",
       ).choices(Object.keys(PRESETS)),

@@ -16,6 +16,8 @@ import { vendorSkillsDir } from "../../platform/skills-installer/vendor-dirs.js"
 import type { CliTool } from "../../types/index.js";
 
 export type UninstallOptions = {
+  target?: "project" | "grok-bot";
+  workflowsDir?: string;
   yes?: boolean;
   dryRun?: boolean;
   global?: boolean;
@@ -500,6 +502,14 @@ function applyRemoval(omaOwned: RemovalEntry[]): void {
  * Main entry point for `oma uninstall`.
  */
 export async function uninstall(options: UninstallOptions = {}): Promise<void> {
+  if (options.target === "grok-bot") {
+    const { uninstallGrokBot } = await import("./grok-bot.js");
+    await uninstallGrokBot(options);
+    return;
+  }
+  if (options.workflowsDir !== undefined) {
+    throw new Error("--workflows-dir requires --target grok-bot");
+  }
   const installRoot = getInstallRoot();
   const explicitYes = options.yes === true || process.env.OMA_YES === "1";
   const isCi = process.env.CI === "true" || process.env.CI === "1";

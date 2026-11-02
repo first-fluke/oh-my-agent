@@ -11,6 +11,7 @@
       "cli/**",
       "integrations/orca/**",
       "integrations/dsh/**",
+      "integrations/grok-bot/**",
       "bin/**",
       "scripts/**",
       "web/src/**",

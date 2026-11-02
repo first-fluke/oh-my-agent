@@ -48,6 +48,35 @@ describe("install command options", () => {
     expect(installMock).toHaveBeenCalledWith({ yes: false });
   });
 
+  it("passes the explicit Bot target, preset and library without project defaults", async () => {
+    await makeProgram().parseAsync([
+      "node",
+      "oma",
+      "install",
+      "--target",
+      "grok-bot",
+      "--preset",
+      "research",
+      "--workflows-dir",
+      "/tmp/bot workflows",
+    ]);
+    expect(installMock).toHaveBeenCalledWith({
+      yes: false,
+      target: "grok-bot",
+      preset: "research",
+      workflowsDir: "/tmp/bot workflows",
+    });
+  });
+
+  it("rejects a mistyped Bot target before installation", async () => {
+    const program = makeProgram();
+    program.exitOverride().configureOutput({ writeErr: () => {} });
+    await expect(
+      program.parseAsync(["node", "oma", "install", "--target", "grokbot"]),
+    ).rejects.toThrow();
+    expect(installMock).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])(
     "passes an explicit frontend preset with yes=%s",
     async (yes) => {

@@ -226,6 +226,8 @@ export function emitAgentSkills(
   options: {
     sharedResources?: "bundled" | "package";
     skills?: readonly string[];
+    /** Resolve repository shorthand for hosts that load each folder in isolation. */
+    resolveSharedShorthand?: boolean;
   } = {},
 ): SkillEmitResult[] {
   const dirNames = discoverSkillDirs(repoRoot).filter(
@@ -273,6 +275,7 @@ export function emitAgentSkills(
       options.sharedResources === "package"
         ? join(outDir, "_shared")
         : undefined,
+      options.resolveSharedShorthand,
     );
 
     results.push({

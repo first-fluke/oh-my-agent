@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import type { ProviderInstallOptions } from "./provider-preferences.js";
 
 export type InstallOptions = ProviderInstallOptions & {
+  target?: "project" | "grok-bot";
+  workflowsDir?: string;
   /** Select a registered skill preset instead of prompting for project type. */
   preset?: string;
   /**

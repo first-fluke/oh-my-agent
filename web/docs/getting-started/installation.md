@@ -10,6 +10,13 @@ project hooks and team workflows, use the runtime installation below. The
 [setup guide](./choose-setup.md) separates instruction loading, skill presets,
 and Claude Code marketplace installation.
 
+For Grok Bot, use the [Grok Bot installation page](/grok-bot/). The native
+**Add to Grok Bot** link requires an approved Cursor Marketplace listing; it is
+not available while registration is pending. The separate
+[manual installation guide](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/grok-bot/README.md)
+explains `oma install --target grok-bot` for the Bot computer. Grok Build's
+runtime integration below is a different installation target.
+
 ## Prerequisites
 
 - **An AI-powered IDE or CLI**: at least one supported host such as Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot, or Hermes

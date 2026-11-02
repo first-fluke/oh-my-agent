@@ -15,6 +15,8 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 // outside the match.
 const FILE_PATH =
   /(?<![\w./:\\-])(?:\.{1,2}\/)*(?:[\w.-]+\/)*[\w.-]+\.[a-zA-Z0-9]+(?![\w./-])/g;
+const SHARED_BRACE_PATH =
+  /(?<![\w./:\\-])((?:\.agents\/skills\/)?_shared\/(?:[\w.-]+\/)*)\{([\w.-]+(?:,[\w.-]+)+)\}(\.[a-zA-Z0-9]+)(?![\w./-])/g;
 
 /** Place shared references inside a skill bundle or a package-level tree. */
 export function bundleSharedResources(
@@ -23,6 +25,7 @@ export function bundleSharedResources(
   outDir: string,
   excludedNames: ReadonlySet<string>,
   sharedOutDir?: string,
+  resolveShorthand = false,
 ): void {
   const sharedDir = resolve(repoRoot, ".agents/skills/_shared");
   const bundledDir = join(outDir, "references", "_shared");
@@ -35,10 +38,12 @@ export function bundleSharedResources(
     sourceFile: string,
     destFile: string,
   ): string {
-    return content.replace(FILE_PATH, (literal) => {
+    const rewritePath = (literal: string): string => {
       const target = literal.startsWith(".agents/skills/_shared/")
         ? resolve(repoRoot, literal)
-        : resolve(dirname(sourceFile), literal);
+        : resolveShorthand && literal.startsWith("_shared/")
+          ? resolve(sharedDir, literal.slice("_shared/".length))
+          : resolve(dirname(sourceFile), literal);
       const sharedPath = relative(sharedDir, target);
       if (
         sharedPath === "" ||
@@ -65,7 +70,24 @@ export function bundleSharedResources(
         }
       }
       return relative(dirname(destFile), bundledFile).split(sep).join("/");
-    });
+    };
+    // Prose sometimes groups dependencies as `_shared/core/{a,b}.md`.
+    // Expand them so every member is copied and receives a resolvable path.
+    const expanded = resolveShorthand
+      ? content.replace(
+          SHARED_BRACE_PATH,
+          (literal, prefix: string, names: string, extension: string) => {
+            const paths = names
+              .split(",")
+              .map((name) => `${prefix}${name}${extension}`);
+            const rewritten = paths.map(rewritePath);
+            return rewritten.every((path, index) => path !== paths[index])
+              ? rewritten.join(", ")
+              : literal;
+          },
+        )
+      : content;
+    return expanded.replace(FILE_PATH, rewritePath);
   }
 
   function visit(dir: string): void {
