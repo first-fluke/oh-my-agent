@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.31.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.30.0...cli-v20.31.0) (2026-11-02)
+
+
+### Features
+
+* **hooks:** route persistent workflows by explicit name only ([77d28af](https://github.com/first-fluke/oh-my-agent/commit/77d28af1d6c5bc2e90b47a47af4152bd8b14636e))
+
 ## [20.30.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.29.1...cli-v20.30.0) (2026-11-01)
 
 
