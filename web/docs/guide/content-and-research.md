@@ -20,6 +20,7 @@ Choose by the artifact you need, then use the smallest command or skill entry po
 | Make a short, explainer, or demo video | `/video`, `oma video` | Node.js 22+, FFmpeg, then `oma video doctor --install` | A run directory under `.agents/results/videos/`; an MP4 after `oma video render` | [Video Generation](./video-generation.md) |
 | Explain a change or a topic as one page | `/explain`, `oma explain` | git for change mode; `gh` for PR refs | Self-contained HTML under `.agents/results/explain/` | [Code Explainer](./code-explainer.md) |
 | Interactive architecture diagram | `/architecture`, `oma diagram` | none; archify is fetched on first use | Mermaid block, plus `.archify.html` when archify resolves | [Diagram Engine](./diagram-engine.md) |
+| Tech-stack poster with vendor logos | `/architecture` (stack route) | Python 3.9+, network for logos | Mermaid block, plus `.stack.html` from the upstream stack-diagram skill | [Diagram Engine](./diagram-engine.md#stack-posters-stack-diagram) |
 | Community market research | `oma-market` skill, `oma market` | Python 3.12+ | A brief under `.agents/results/market/` | [Market Research](./market-research.md) |
 | Summarize agent conversations | `/recap`, `oma recap` | none | Recap JSON from the CLI; a dated Markdown recap from `/recap` | [below](#recap-agent-conversations) |
 | Translate or review localized prose | `oma-translation` skill | none | Target-language text or an evidence-backed review | [below](#translate-or-review-localized-content) |

@@ -136,14 +136,15 @@ When dispatched, also write `.agents/results/result-{agentId}-{taskId}-{runId}-{
 
 ADR lifecycle: set `Status` (`Proposed` / `Accepted` / `Superseded by <adr-file>`) from the actual decision authority. A completed recommendation stays `Proposed` while a user-owned choice is unresolved; producing the artifact or emitting an event does not supply approval. When replacing an accepted ADR, update the prior artifact only when that supersession is authorized.
 
-### Step 7a: Render the structural diagram (archify when available)
+### Step 7a: Render the structural diagram (archify when available, stack-diagram for stack posters)
 
 Only when the decision changes structure (boundaries, dependencies, data flow) and the artifact therefore carries a Mermaid diagram:
 
-1. Run `oma diagram resolve --json` and read `.agents/skills/_shared/conditional/diagram-engine.md`.
-2. `engine: mermaid` → the Mermaid block in the Markdown artifact is the delivered diagram; done.
-3. `engine: archify` → author `<artifact-stem>.archify.json` from the Mermaid topology, then `oma diagram archify validate …` / `oma diagram archify deliver … <artifact-stem>.archify.html` per the protocol. Allow at most 3 repair attempts or 10 minutes total, and stop earlier when the same diagnostic repeats. On success, link the HTML under the artifact's Diagram section; on a bound or convergence failure, keep the Mermaid block, preserve the JSON, and report the last diagnostics.
-4. `ok: false` (archify pinned but unresolvable — e.g. first run offline) → stop and tell the user to run `oma diagram update` once online; do not deliver a Mermaid-only artifact silently.
+1. Read `.agents/skills/_shared/conditional/diagram-engine.md` and pick the route from its table. Stack route (vendor-product topology; logos or a poster requested) → resolve the upstream `stack-diagram` skill per that file, deliver `<artifact-stem>.stack.html`, link it under the artifact's Diagram section, and skip the rest of this step. When it cannot resolve, say so and continue below.
+2. Run `oma diagram resolve --json`.
+3. `engine: mermaid` → the Mermaid block in the Markdown artifact is the delivered diagram; done.
+4. `engine: archify` → author `<artifact-stem>.archify.json` from the Mermaid topology, then `oma diagram archify validate …` / `oma diagram archify deliver … <artifact-stem>.archify.html` per the protocol. Allow at most 3 repair attempts or 10 minutes total, and stop earlier when the same diagnostic repeats. On success, link the HTML under the artifact's Diagram section; on a bound or convergence failure, keep the Mermaid block, preserve the JSON, and report the last diagnostics.
+5. `ok: false` (archify pinned but unresolvable — e.g. first run offline) → stop and tell the user to run `oma diagram update` once online; do not deliver a Mermaid-only artifact silently.
 
 Record the recommendation, its authority status, and supporting comparison. Keep recommendation completion separate from permission to implement:
 

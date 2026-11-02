@@ -44,6 +44,7 @@ Analyze, compare, and document software architecture decisions with explicit tra
 - Assumptions, tradeoffs, risks, and validation steps
 - A Mermaid context/container diagram when the decision changes structure (boundaries, dependencies, data flow)
 - When `oma diagram resolve` reports `engine: archify` (the normal case — oma auto-fetches the latest archify release), an interactive sibling `<artifact-stem>.archify.json` + `.archify.html` derived from that Mermaid (see `_shared/conditional/diagram-engine.md`)
+- When the diagram is a vendor-stack topology and the user wants logos or a poster, a `<artifact-stem>.stack.html` sibling from the upstream stack-diagram skill (stack route in `_shared/conditional/diagram-engine.md`; no CLI, no config key)
 - ADRs and retained recommendations for a selected approach in `docs/decisions/`, linked from `docs/decisions/index.md`
 - Run-specific reviews, diagnoses, CBAM analyses, and unselected comparison drafts in `.agents/results/architecture/`
 
@@ -65,6 +66,14 @@ outputs:
     description: archify interactive HTML diagram (+ JSON spec) beside a run-specific structural report; only when the archify engine resolves
     artifact: ".agents/results/architecture/*.archify.html"
     required: false
+  - name: architecture-decision-stack-html
+    description: stack-diagram HTML poster with vendor logos beside a retained structural decision; only on the stack route when the upstream skill resolves
+    artifact: "docs/decisions/*.stack.html"
+    required: false
+  - name: architecture-stack-html
+    description: stack-diagram HTML poster with vendor logos beside a run-specific structural report; only on the stack route when the upstream skill resolves
+    artifact: ".agents/results/architecture/*.stack.html"
+    required: false
 ```
 
 ### Dependencies
@@ -74,7 +83,7 @@ outputs:
 - `resources/output-templates.md` for final artifact shapes
 - `resources/api-evolution.md` for published-contract versioning/deprecation decisions (MAP evolution patterns)
 - `resources/migration-patterns.md` for transition plans when the chosen architecture requires restructuring a live system
-- `_shared/conditional/diagram-engine.md` (+ `oma diagram resolve`) when a structural diagram is emitted — chooses archify vs Mermaid and owns the validate/deliver loop
+- `_shared/conditional/diagram-engine.md` (+ `oma diagram resolve`) when a structural diagram is emitted — picks the route (archify vs Mermaid, or the upstream stack-diagram poster) and owns the validate/deliver loop
 
 ### Control-flow features
 - Branches by request clarity, decision materiality, risk level, and need for stakeholder consultation

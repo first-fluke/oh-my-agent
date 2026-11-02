@@ -1,7 +1,7 @@
 ---
 title: "Guide: Diagram Engine (archify)"
 sidebar_label: Diagrams
-description: How oh-my-agent chooses between Mermaid and the optional tt-a1i/archify agent skill for architecture, sequence, and data-flow diagrams — the diagram config section, oma diagram resolve / oma diagram archify, how /architecture and /explain use it, and the bounded validate-repair-deliver loop.
+description: How oh-my-agent chooses between Mermaid and the optional tt-a1i/archify agent skill for architecture, sequence, and data-flow diagrams — the diagram config section, oma diagram resolve / oma diagram archify, how /architecture and /explain use it, the bounded validate-repair-deliver loop, and the stack route through the upstream Caru-ini/stack-diagram skill for tech-stack posters with vendor logos.
 ---
 
 # Diagram Engine
@@ -142,6 +142,21 @@ Opt-in, because the explainer's own contract (single self-contained file, CSS-va
 
 ---
 
+## Stack posters (stack-diagram)
+
+When the diagram is a tech-stack or infrastructure topology whose nodes are vendor products (AWS, Vercel, Postgres, …) and you ask for logos, `/architecture` takes the **stack route** instead of archify. It runs the upstream [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) agent skill (MIT; Python 3.9+, network access for logos) the same way `oma-slide` runs ppt-master: there is no oma command and no config key. The route table lives in `.agents/skills/_shared/conditional/diagram-engine.md`.
+
+- Resolution: the runtime skill catalog first, else `bunx skills use caru-ini/stack-diagram@stack-diagram`. If it cannot resolve, the workflow falls back to the archify ↔ Mermaid decision above and says so.
+- Output: `<artifact-stem>.stack.html` next to the Markdown artifact, linked under the Diagram section as `Stack: …`. The Mermaid block stays the SSOT.
+- HTML only. Upstream's PNG export and screenshot check need Playwright + Chromium; oma never installs or runs them.
+- The upstream gallery upload (`share.py`) is skipped unless you explicitly ask to publish.
+- Bounds: 2 build attempts, 5 minutes in total; a clean `build.py` run is the acceptance.
+- `/explain` never takes this route; its sidecar is derived in code from the draft.
+
+Say "archify" in the prompt to force the structural route, or "stack-diagram" / "with logos" to force the stack route.
+
+---
+
 ## Failure modes
 
 Unresolvable archify is covered by the [engine decision table](#which-engine-runs). The remaining cases:
@@ -163,3 +178,4 @@ Unresolvable archify is covered by the [engine decision table](#which-engine-run
 - [CLI Commands: diagram](../cli-interfaces/commands.md#diagram) — full option list
 - [Market Research](./market-research.md) — the same skills-CLI install pattern for the last30days engine
 - archify upstream: [tt-a1i/archify](https://github.com/tt-a1i/archify)
+- stack-diagram upstream: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

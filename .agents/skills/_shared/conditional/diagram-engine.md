@@ -1,9 +1,26 @@
-# Diagram Engine Protocol (archify ↔ Mermaid)
+# Diagram Engine Protocol (archify ↔ Mermaid, stack-diagram)
 
 Load class: `conditional` — read only when a workflow is about to emit a
-structural diagram (architecture, sequence, data-flow, lifecycle).
+structural diagram (architecture, sequence, data-flow, lifecycle) or a
+tech-stack poster.
 
-Two engines exist. Mermaid is always available and is the **text SSOT** that
+Two routes exist. The **structural route** (Steps 0–4) draws boundaries, call
+chains, data flow, and lifecycles with archify or Mermaid. The **stack route**
+(last section) draws a tech-stack / infrastructure poster with official vendor
+logos through the upstream stack-diagram skill. Pick the route first:
+
+| Signal (first match wins) | Route |
+|---|---|
+| Prompt names `archify` | structural |
+| Prompt names `stack-diagram` or asks for vendor logos | stack |
+| Most nodes are vendor products or services (AWS, Vercel, Postgres, Hono, …) and the user wants a stack / infra / deployment topology | stack |
+| Boundaries, call order, data flow, lifecycle, or any ADR structure | structural |
+
+`/explain` sidecars never take the stack route: `oma explain render --archify`
+derives the archify spec from the draft in code, and stack-diagram has no code
+path. Both routes author Mermaid first (Step 1).
+
+Two engines serve the structural route. Mermaid is always available and is the **text SSOT** that
 lives inside the Markdown artifact. [archify](https://github.com/tt-a1i/archify)
 (MIT, Node ≥ 18, zero runtime deps) is an optional upgrade that turns a typed
 JSON IR into a validated, self-contained interactive HTML diagram (dark/light,
@@ -42,7 +59,7 @@ template and skip the rest of this file.
 Mermaid in the Markdown artifact is the durable, diffable, git-reviewable form.
 Write it first, scoped to the elements the decision or change touches (C4
 context/container for architecture; sequence for call chains). The archify
-artifact is derived from it — never the other way round.
+artifact and the stack poster are derived from it — never the other way round.
 
 ## Step 2 — Author the archify JSON IR
 
@@ -113,9 +130,73 @@ skipped): `oma diagram archify visual-check <stem>.archify.html --json`.
   with a plain `<a href="./<stem>.archify.html">` anchor (hyperlinks are allowed
   by `html-contract.md` §1). Never `<iframe>`, `<object>`, or `<script src>` it.
 
+## Stack route — stack-diagram
+
+[stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT; Python 3.9+
+standard library, network access for logos) turns a described stack into a
+poster with official vendor logos from hand-placed HTML. It is an upstream
+agent skill used the way `oma-slide` uses ppt-master
+(`oma-slide/resources/native-pptx.md`): no oma CLI, no config key. OMA owns
+route selection, the output path, the substitutions below, and delivery.
+Upstream owns everything else. This route is HTML only: upstream's PNG export
+and screenshot check depend on Playwright + Chromium, and neither is installed
+or run here.
+
+### Resolve the upstream skill
+
+1. Check the runtime skill catalog for `stack-diagram` from
+   `https://github.com/Caru-ini/stack-diagram`. Reuse its advertised installed
+   location and read its complete `SKILL.md` when available.
+2. If it is absent, load it without a persistent installation or another agent:
+
+   ```bash
+   bunx skills use caru-ini/stack-diagram@stack-diagram
+   ```
+
+   Omit `--agent`. Use the supporting-files directory from the result as
+   `SKILL_DIR` for every path. Do not guess a cache path.
+3. Confirm `python3 --version` reports 3.9 or newer. Record the source,
+   version, and `SKILL_DIR` with the run.
+4. When the skill cannot be resolved, Python is missing, or the logo sources are
+   unreachable: take the structural route from Step 0, deliver that, and report
+   the reason. The stack route never blocks delivery.
+
+### Follow upstream
+
+Read `$SKILL_DIR/SKILL.md` top to bottom and follow its content, icon, layout,
+and build steps (`scripts/fetch_icons.py`, `references/geometry.md`,
+`assets/template.html`, `scripts/build.py`). Skip its verify step
+(`scripts/render_png.py`), its PNG delivery, and its gallery step. Apply the
+rest within the user's scope and OMA execution policy; vendor guidance does not
+expand authorization. Translate the Mermaid topology from Step 1 semantically:
+same nodes, same groups, same edges, same labels.
+
+### OMA substitutions and guardrails
+
+- Output: `<artifact-stem>.stack.html` beside the Markdown artifact, and
+  nothing else. Never run `scripts/render_png.py` and never install Playwright
+  or Chromium, even when PNG is requested; say that PNG is not on this route.
+- Link, don't embed: under the artifact's Diagram section add
+  `Stack: [<stem>.stack.html](./<stem>.stack.html)` and keep the Mermaid block
+  above it.
+- Skip the upstream gallery step entirely. Never offer or run `scripts/share.py`
+  unless the user explicitly asks to publish the diagram.
+- Bounded: at most 2 build attempts and 5 minutes in total. A `build.py` run
+  that exits 0 with no unresolved tokens is the acceptance; there is no visual
+  check. On a bound, keep the Mermaid block as the delivered diagram, leave the
+  HTML source next to it, and report the last error.
+- Authored language follows the i18n-guide order (prompt → config `language`
+  → en); set the template's `lang` attribute to match. Identifiers, paths, and
+  product names stay verbatim.
+- Logos come from upstream's sources and keep their own licenses and
+  trademarks; never recolor, redraw, or substitute a mark.
+
 ## Reporting
 
-State which engine ran (including the archify version), the artifact paths, the final validation summary
-(artifact checks / errors / warnings from the `--json` receipt), and, when
-archify was skipped or failed, the one-line reason from `oma diagram resolve`
-or the last diagnostics. Do not claim a visual review you did not perform.
+State which route and engine ran (the archify version, or the stack-diagram
+version and `SKILL_DIR`), the artifact paths, the final validation summary
+(artifact checks / errors / warnings from the `--json` receipt on the
+structural route; the `build.py` result on the stack route), and, when an
+engine was skipped or failed, the one-line reason from
+`oma diagram resolve` or the last diagnostics. Do not claim a visual review you
+did not perform.
