@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.15.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.14.0...web-v11.15.0) (2026-11-02)
+
+
+### Features
+
+* **skills:** route stack posters to upstream stack-diagram skill ([dc0de06](https://github.com/first-fluke/oh-my-agent/commit/dc0de067e2f62e2f895a1fe67bd50afed436f2c2))
+
 ## [11.14.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.13.0...web-v11.14.0) (2026-11-02)
 
 
