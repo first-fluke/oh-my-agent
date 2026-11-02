@@ -6,48 +6,49 @@ description: oh-my-agent がアーキテクチャ、シーケンス、データ�
 
 # ダイアグラムエンジン
 
-`/architecture` と `/explain` は構造図を出力します。`/architecture` アーティファクトには **Mermaid** ブロックが必ず含まれ、`/explain` ワークフローはインライン SVG 図を描きます。[archify](https://github.com/tt-a1i/archify) を解決できる場合、アーキテクチャワークフローはアーティファクトの隣に**インタラクティブで検証済みの HTML 図**も出力します。型付き JSON 仕様から描画され、ダーク／ライトテーマ、パンとズーム、検索、関係の追跡、PNG／SVG／WebM エクスポートに対応します。
+`/architecture`（ADR、推奨、レビュー）と `/explain`（コード変更の解説）は構造図を出力します。`/architecture` アーティファクトには **Mermaid** ブロックが必ず含まれ、`/explain` ワークフローはインライン SVG 図を描きます。[archify](https://github.com/tt-a1i/archify) を解決できる場合、アーキテクチャワークフローはアーティファクトの隣に**インタラクティブで検証済みの HTML 図**も出力します。型付き JSON 仕様から描画され、ダーク／ライトテーマ、パンとズーム、検索、関係の追跡、PNG／SVG／WebM エクスポートに対応します。
 
 Mermaid がなくなることはありません。Markdown と git diff に残るテキストの SSOT です。archify は派生アーティファクトです。
 
 ---
 
-## archify の最新管理コピー {#always-the-latest-archify--nothing-to-install}
+<a id="always-the-latest-archify--nothing-to-install"></a>
+## archify のインストール {#install-archify}
 
-archify は MIT ライセンスのエージェントスキルです（Node ≥ 18、ランタイム依存なし）。oh-my-agent は一度インストールしたコピーに依存せず、**独自の管理コピー**を保持して最新リリースを追跡します。
+archify は MIT ライセンスのエージェントスキルです（Node ≥ 18、ランタイム依存なし）。oh-my-agent は [skills CLI](https://github.com/vercel-labs/skills) でインストールしたコピーを使い、独自のコピーは保持しません。
 
-- キャッシュ: `~/.cache/oma-diagram/archify/<tag>/` と `state.json` ポインター。
-- 各回の利用前に `oma diagram resolve` が GitHub に最新リリースタグを問い合わせます。確認は `check_interval_min`（デフォルト 60 分）に従って間引かれます。新しいタグがあればソースの tarball をダウンロードし（タグごとのディレクトリをアトミックに作成し、古いタグを削除）、なければキャッシュを再利用します。
-- ネットワーク障害は致命的になりません。キャッシュがあれば、理由とともに `stale` と報告して使います。初回にネットワークもキャッシュもない場合だけ、ユーザーがインストールしたスキルのコピーへフォールバックし、その後 Mermaid にフォールバックします。
+- `oma diagram update` は、archify がない場合はインストールし（`bunx skills add tt-a1i/archify --skill archify -g -y`）、ある場合は更新します（`bunx skills update archify -g -y`）。
+- `oma diagram resolve` はインストール済みのスキルディレクトリを読むだけで、ネットワークには一切アクセスしません。インストールがない場合、`auto` は Mermaid にフォールバックし、インストールコマンドを案内します。
+- `oma update` は archify をインストールしません。
 
 ```bash
-# Illustrative output; the release tag, cache path, and quality can vary.
-oma diagram update          # force a check / download now
+# Illustrative output; the version, install path, and quality can vary.
+oma diagram update
 oma diagram resolve
 # engine:   archify  (requested: auto)
-# reason:   archify 2.15.0 via managed:v2.15.0 (current)
-# root:     /Users/you/.cache/oma-diagram/archify/v2.15.0
-# bin:      /Users/you/.cache/oma-diagram/archify/v2.15.0/bin/archify.mjs
+# reason:   archify 2.15.0 via home:~/.agents/skills
+# root:     /Users/you/.agents/skills/archify
+# bin:      /Users/you/.agents/skills/archify/bin/archify.mjs
 # version:  2.15.0
 # quality:  showcase
 # sidecar:  off (explain)
-oma diagram resolve --offline   # never touch the network
 ```
 
 解決順序はすべてのベンダーランタイムで同じです（最初に見つかったものを使います）。
 
-1. `oma-config.yaml` の `diagram.archify.path`。明示的な固定値で、自動最新版を使いません
+1. `oma-config.yaml` の `diagram.archify.path`。明示的な固定値です
 2. `ARCHIFY_HOME` 環境変数。明示的な固定値です
-3. **管理される最新版**（`~/.cache/oma-diagram/archify`）
-4. ユーザーがインストールしたスキルディレクトリ。プロジェクトの `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` の `/skills/archify`、次に `~` の同じ場所、最後に `~/.raven/workspace/skills/archify`
+3. インストール済みのスキルディレクトリ。プロジェクトの `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` / `.gemini` / `.copilot` の `/skills/archify`、次に `~` の同じ場所、最後に `~/.config/agents/skills/archify` と `~/.raven/workspace/skills/archify`
 
 <!-- oma-docs:ignore-start -->
-管理または固定された archify のインストールに `bin/archify.mjs` が含まれている場合だけ解決できます。
+インストール済みまたは固定された archify のディレクトリに `bin/archify.mjs` が含まれている場合だけ解決できます。
 <!-- oma-docs:ignore-end -->
+
+以前のリリースは `~/.cache/oma-diagram/` に独自のコピーを保持していました。現在は読み込まれないので、削除してかまいません。
 
 ---
 
-## 設定
+## 設定 {#configuration}
 
 `.agents/oma-config.yaml` の最小限の設定項目です（キーを省略すると表示されたデフォルトを使います）。
 
@@ -56,22 +57,21 @@ diagram:
   engine: auto                # auto | archify | mermaid
   explain_sidecar: false      # /explain also writes an archify sidecar
   archify:
-    managed: true             # false = never download; use pins / skill dirs only
-    channel: stable           # stable (latest GitHub Release) | main (HEAD of main)
-    check_interval_min: 60    # minutes between remote checks; 0 = every call
     path: null                # explicit install dir (pin)
     quality: showcase         # showcase | standard  → --quality
     open: false               # pass --open to deliver
 ```
 
+`archify.managed`、`archify.channel`、`archify.check_interval_min` は非推奨です。検証は引き続き通りますが無視され、設定されている間は `resolve` が警告を表示します。
+
 ### どのエンジンが動くか {#which-engine-runs}
 
-設定値、archify を解決できるかどうか、ワークフローが何を配信するかを 1 つの判断でまとめます。「解決できる」とは、[解決順序](#always-the-latest-archify--nothing-to-install)のいずれかの段階でインストールが見つかることです。固定値、管理される最新コピー、ユーザーがインストールしたスキルディレクトリのいずれでもかまいません。
+設定値、archify を解決できるかどうか、ワークフローが何を配信するかを 1 つの判断でまとめます。「解決できる」とは、[解決順序](#always-the-latest-archify--nothing-to-install)のいずれかの段階でインストールが見つかることです。固定値か、インストール済みのスキルディレクトリのどちらかです。
 
 | `diagram.engine` | archify を解決できるか | `oma diagram resolve --json` | `/architecture` の結果 |
 |---|---|---|---|
 | `auto`（デフォルト） | はい | `engine: archify`、`ok: true` | Mermaid ブロックとリンクされた `.archify.html` |
-| `auto` | いいえ（たとえば初回のオフライン実行や、スキルディレクトリがない状態での `managed: false`） | `engine: mermaid`、`ok: true` | Mermaid だけです。レポートは、オンライン時に一度 `oma diagram update` を実行するよう案内します |
+| `auto` | いいえ（archify が未インストール） | `engine: mermaid`、`ok: true` | Mermaid だけです。レポートは `oma diagram update` を案内します |
 | `archify` | はい | `engine: archify`、`ok: true` | Mermaid ブロックとリンクされた `.archify.html` |
 | `archify` | いいえ | `engine: mermaid`、`ok: false`、終了コード 1 | 黙って格下げせず、`oma diagram update` のヒントを示してワークフローを停止します |
 | `mermaid` | 確認しない | `engine: mermaid`、`ok: true` | Mermaid だけです。archify は呼び出しません |
@@ -80,10 +80,10 @@ diagram:
 
 ---
 
-## CLI
+## CLI {#cli}
 
 ```bash
-oma diagram resolve [--engine auto|archify|mermaid] [--refresh] [--offline] [--json]
+oma diagram resolve [--engine auto|archify|mermaid] [--json]
 oma diagram update  [--json]
 oma diagram archify <archify args…>
 ```
@@ -99,11 +99,11 @@ oma diagram archify deliver  architecture adr-auth.archify.json adr-auth.archify
 oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Chrome (skipped), or archify itself could not be resolved
 ```
 
-`resolve` の `--json` は `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source, status?, note? }, reason, probed }` を返します。`source` は `managed:<tag>`、`config:…`、`env:…`、またはスキルディレクトリのラベルです。管理コピーでは `status`（`fresh` / `current` / `stale`）と `note` も設定されます。
+`resolve` の `--json` は `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source }, reason, probed, warnings }` を返します。`source` は `config:…`、`env:…`、または `home:~/.agents/skills` のようなスキルディレクトリのラベルです。`warnings` には無視された非推奨キーが並びます。`--refresh` と `--offline` は非推奨の no-op として受け付けます。
 
 ---
 
-## ワークフローからの利用
+## ワークフローからの利用 {#how-the-workflows-use-it}
 
 共有プロトコルは `.agents/skills/_shared/conditional/diagram-engine.md` にあります。`/architecture` は次の順序に従います。
 
@@ -126,7 +126,7 @@ flowchart TD
   deliver --> link["Link the HTML from the Markdown"]
 ```
 
-### `/architecture`
+### `/architecture` {#architecture}
 
 境界、依存関係、データフローなど、構造上の意思決定だけに使います。Markdown アーティファクトの隣の `.agents/results/architecture/` に出力します。
 
@@ -157,25 +157,25 @@ adr-notification-service.archify.html  # delivered viewer
 
 ---
 
-## 失敗時の動作
+## 失敗時の動作 {#failure-modes}
 
 archify を解決できない場合は[エンジンの判断表](#which-engine-runs)で扱います。残りのケースは次のとおりです。
 
 | 状況 | 結果 |
 |---|---|
-| 更新確認に失敗（オフライン、レート制限） | キャッシュを使い、理由とともに `stale` と報告します |
+| `oma diagram update` が失敗（オフライン、`bunx` がない） | skills CLI のエラーを表示します。既存のインストールは引き続き動作します |
 | `validate` が収束しない | Mermaid を配信する図として残します。最後の `.archify.json` は人間向けに残し、診断をそのまま報告します |
 | `visual-check` に Chrome がない | `skipped` と報告します。pass にはしません |
 | `oma diagram archify …` が終了コード 2 で終了 | Chrome がない（`visual-check`）か、archify を解決できなかったかのどちらかです。まず `oma diagram resolve --json` を確認してください |
 
 ---
 
-## 次のステップ
+## 次のステップ {#next-steps}
 
 - [コード解説](./code-explainer.md)。`/explain` ワークフローと任意の archify サイドカーです
 - [`/architecture` ワークフロー](../core-concepts/workflows.md#architecture)。Mermaid ブロックを含む ADR とレビューです
 - [oma-config.yaml のセマンティクス](./oma-config-semantics.md)。`diagram:` セクションのマージ方法です
 - [CLI コマンド：diagram](../cli-interfaces/commands.md#diagram)。全オプションの一覧です
-- [市場調査](./market-research.md)。last30days エンジンにも同じ管理最新版のパターンを使います
+- [市場調査](./market-research.md)。last30days エンジンにも同じ skills CLI のインストールパターンを使います
 - archify 上流：[tt-a1i/archify](https://github.com/tt-a1i/archify)
 - stack-diagram 上流：[Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

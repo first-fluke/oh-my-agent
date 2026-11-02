@@ -1,53 +1,54 @@
 ---
 title: "Guía: Motor de diagramas (archify)"
 sidebar_label: Diagramas
-description: "Cómo elige oh-my-agent entre Mermaid y la skill opcional de agente tt-a1i/archify para diagramas de arquitectura, secuencia y flujo de datos: la sección de configuración de diagramas, oma diagram resolve / oma diagram archify, su uso por /architecture y /explain y el ciclo acotado de validar, reparar y entregar. También cubre la ruta stack mediante la skill upstream Caru-ini/stack-diagram para pósteres de stack tecnológico con logotipos de proveedores."
+description: "Cómo elige oh-my-agent entre Mermaid y la skill opcional de agente tt-a1i/archify para diagramas de arquitectura, secuencia y flujo de datos: la sección de configuración de diagramas, oma diagram resolve / oma diagram archify, su uso por /architecture y /explain, el ciclo acotado de validar, reparar y entregar, y la ruta stack mediante la skill upstream Caru-ini/stack-diagram para pósteres de stack tecnológico con logotipos de proveedores."
 ---
 
 # Motor de diagramas
 
-`/architecture` (ADR, recomendaciones y revisiones) y `/explain` (explicadores de cambios de código) generan diagramas estructurales. En `/architecture` siempre son bloques **Mermaid** dentro del artefacto Markdown (`/explain` dibuja sus propios diagramas SVG en línea) y, siempre que se puede resolver [archify](https://github.com/tt-a1i/archify), que es lo normal, también se genera un **diagrama HTML interactivo y validado** junto al artefacto: tema claro u oscuro, paneo y zoom, búsqueda, trazado de relaciones, exportación PNG/SVG/WebM y renderizado desde una especificación JSON tipada.
+`/architecture` (ADR, recomendaciones y revisiones) y `/explain` (explicadores de cambios de código) generan diagramas estructurales. En `/architecture` siempre son bloques **Mermaid** dentro del artefacto Markdown (`/explain` dibuja sus propios diagramas SVG en línea) y, siempre que se puede resolver [archify](https://github.com/tt-a1i/archify), también se genera un **diagrama HTML interactivo y validado** junto al artefacto: tema claro u oscuro, paneo y zoom, búsqueda, trazado de relaciones, exportación PNG/SVG/WebM y renderizado desde una especificación JSON tipada.
 
 Mermaid sigue siendo la SSOT textual en Markdown y en los diffs de Git. archify produce un artefacto derivado.
 
 ---
 
-## Siempre la última versión de archify, sin instalar nada {#always-the-latest-archify--nothing-to-install}
+<a id="always-the-latest-archify--nothing-to-install"></a>
+## Instalar archify {#install-archify}
 
-archify es una skill de agente con licencia MIT (Node ≥ 18 y cero dependencias de runtime). oh-my-agent no depende de una copia que instalaras una vez; mantiene su **propia copia gestionada** y sigue la última versión:
+archify es una skill de agente con licencia MIT (Node ≥ 18 y cero dependencias de runtime). oh-my-agent usa la copia instalada mediante la [skills CLI](https://github.com/vercel-labs/skills) y no mantiene ninguna copia propia:
 
-- Caché: `~/.cache/oma-diagram/archify/<tag>/` más un puntero `state.json`.
-- Antes de cada uso, `oma diagram resolve` pregunta a GitHub por la última etiqueta de release (limitado a una vez por `check_interval_min`, 60 minutos por defecto), descarga el tarball de fuentes si existe una etiqueta más nueva (directorio atómico por etiqueta; las etiquetas antiguas se eliminan) y, si no, reutiliza la copia en caché.
-- Los fallos de red nunca son fatales: se usa la copia en caché y se informa como `stale` con el motivo. Solo una primera ejecución sin red y sin caché recurre a una copia de la skill instalada por el usuario y, después, a Mermaid.
+- `oma diagram update` instala archify cuando falta (`bunx skills add tt-a1i/archify --skill archify -g -y`) y, en caso contrario, lo actualiza (`bunx skills update archify -g -y`).
+- `oma diagram resolve` solo lee los directorios de skills instalados y nunca accede a la red. Sin una instalación, `auto` recurre a Mermaid e indica el comando de instalación.
+- `oma update` no instala archify.
 
 ```bash
-# Illustrative output; the release tag, cache path, and quality can vary.
-oma diagram update          # force a check / download now
+# Illustrative output; the version, install path, and quality can vary.
+oma diagram update
 oma diagram resolve
 # engine:   archify  (requested: auto)
-# reason:   archify 2.15.0 via managed:v2.15.0 (current)
-# root:     /Users/you/.cache/oma-diagram/archify/v2.15.0
-# bin:      /Users/you/.cache/oma-diagram/archify/v2.15.0/bin/archify.mjs
+# reason:   archify 2.15.0 via home:~/.agents/skills
+# root:     /Users/you/.agents/skills/archify
+# bin:      /Users/you/.agents/skills/archify/bin/archify.mjs
 # version:  2.15.0
 # quality:  showcase
 # sidecar:  off (explain)
-oma diagram resolve --offline   # never touch the network
 ```
 
 Orden de resolución (gana el primer resultado, idéntico en todos los runtimes de proveedor):
 
-1. `diagram.archify.path` en `oma-config.yaml`: anclaje explícito que desactiva auto-latest
+1. `diagram.archify.path` en `oma-config.yaml`: anclaje explícito
 2. Variable de entorno `ARCHIFY_HOME`: anclaje explícito
-3. **Última versión gestionada** (`~/.cache/oma-diagram/archify`)
-4. Directorios de skills instalados por el usuario: proyecto `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` `/skills/archify`, después los mismos bajo `~`, además de `~/.raven/workspace/skills/archify`
+3. Directorios de skills instalados: proyecto `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` / `.gemini` / `.copilot` `/skills/archify`, después los mismos bajo `~`, y después `~/.config/agents/skills/archify` y `~/.raven/workspace/skills/archify`
 
 <!-- oma-docs:ignore-start -->
-Para que haya un resultado, la instalación gestionada o anclada de archify debe contener `bin/archify.mjs`.
+Para que haya un resultado, el directorio de archify instalado o anclado debe contener `bin/archify.mjs`.
 <!-- oma-docs:ignore-end -->
+
+Las versiones anteriores mantenían su propia copia en `~/.cache/oma-diagram/`. Ya no se lee; puedes eliminarla.
 
 ---
 
-## Configuración
+## Configuración {#configuration}
 
 Sección dispersa en `.agents/oma-config.yaml` (las claves ausentes usan los valores mostrados):
 
@@ -56,22 +57,21 @@ diagram:
   engine: auto                # auto | archify | mermaid
   explain_sidecar: false      # /explain also writes an archify sidecar
   archify:
-    managed: true             # false = never download; use pins / skill dirs only
-    channel: stable           # stable (latest GitHub Release) | main (HEAD of main)
-    check_interval_min: 60    # minutes between remote checks; 0 = every call
     path: null                # explicit install dir (pin)
     quality: showcase         # showcase | standard  → --quality
     open: false               # pass --open to deliver
 ```
 
+`archify.managed`, `archify.channel` y `archify.check_interval_min` están obsoletos: se siguen validando, pero se ignoran, y `resolve` muestra una advertencia mientras estén definidos.
+
 ### Qué motor se ejecuta {#which-engine-runs}
 
-Una sola decisión abarca el valor de configuración, si archify se resuelve y lo que entrega el flujo de trabajo. «Se resuelve» significa que algún paso del [orden de resolución](#always-the-latest-archify--nothing-to-install) encuentra una instalación: un anclaje, la última copia gestionada o un directorio de skill instalado por el usuario.
+Una sola decisión abarca el valor de configuración, si archify se resuelve y lo que entrega el flujo de trabajo. «Se resuelve» significa que algún paso del [orden de resolución](#always-the-latest-archify--nothing-to-install) encuentra una instalación: un anclaje o un directorio de skill instalado.
 
 | `diagram.engine` | ¿Se resuelve archify? | `oma diagram resolve --json` | Resultado de `/architecture` |
 |---|---|---|---|
 | `auto` (predeterminado) | sí | `engine: archify`, `ok: true` | Bloque Mermaid + `.archify.html` enlazado |
-| `auto` | no (por ejemplo, primera ejecución sin conexión, o `managed: false` sin directorio de skill) | `engine: mermaid`, `ok: true` | Solo Mermaid; el informe indica ejecutar `oma diagram update` una vez con conexión |
+| `auto` | no (archify no está instalado) | `engine: mermaid`, `ok: true` | Solo Mermaid; el informe menciona `oma diagram update` |
 | `archify` | sí | `engine: archify`, `ok: true` | Bloque Mermaid + `.archify.html` enlazado |
 | `archify` | no | `engine: mermaid`, `ok: false`, código de salida 1 | El flujo se detiene con la sugerencia `oma diagram update` en vez de degradar silenciosamente |
 | `mermaid` | no se comprueba | `engine: mermaid`, `ok: true` | Solo Mermaid; archify nunca se llama |
@@ -80,10 +80,10 @@ Una sola decisión abarca el valor de configuración, si archify se resuelve y l
 
 ---
 
-## CLI
+## CLI {#cli}
 
 ```bash
-oma diagram resolve [--engine auto|archify|mermaid] [--refresh] [--offline] [--json]
+oma diagram resolve [--engine auto|archify|mermaid] [--json]
 oma diagram update  [--json]
 oma diagram archify <archify args…>
 ```
@@ -99,11 +99,11 @@ oma diagram archify deliver  architecture adr-auth.archify.json adr-auth.archify
 oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Chrome (skipped), or archify itself could not be resolved
 ```
 
-`--json` en `resolve` devuelve `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source, status?, note? }, reason, probed }`; `source` es `managed:<tag>`, `config:…`, `env:…` o una etiqueta de directorio de skill; `status` (`fresh` / `current` / `stale`) y `note` se establecen para las copias gestionadas.
+`--json` en `resolve` devuelve `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source }, reason, probed, warnings }`; `source` es `config:…`, `env:…` o una etiqueta de directorio de skill como `home:~/.agents/skills`; `warnings` enumera las claves obsoletas ignoradas. `--refresh` y `--offline` se aceptan como no-ops obsoletos.
 
 ---
 
-## Cómo lo usan los flujos de trabajo
+## Cómo lo usan los flujos de trabajo {#how-the-workflows-use-it}
 
 El protocolo compartido vive en `.agents/skills/_shared/conditional/diagram-engine.md`. `/architecture` sigue esta secuencia:
 
@@ -126,7 +126,7 @@ flowchart TD
   deliver --> link["Link the HTML from the Markdown"]
 ```
 
-### `/architecture`
+### `/architecture` {#architecture}
 
 Solo para decisiones estructurales (límites, dependencias y flujo de datos). La salida se guarda junto al artefacto Markdown bajo `.agents/results/architecture/`:
 
@@ -157,25 +157,25 @@ Escribe «archify» en el prompt para forzar la ruta estructural, o «stack-diag
 
 ---
 
-## Modos de fallo
+## Modos de fallo {#failure-modes}
 
 El caso de archify no resoluble se cubre en la [tabla de decisión del motor](#which-engine-runs). Los casos restantes:
 
 | Situación | Resultado |
 |---|---|
-| Falla la comprobación de actualización (sin conexión o con límite de frecuencia) | Se usa la copia en caché y se informa como `stale` con el motivo |
+| `oma diagram update` falla (sin conexión o falta `bunx`) | Se muestra el error de la skills CLI; una instalación existente sigue funcionando |
 | `validate` nunca converge | Mermaid sigue siendo el diagrama entregado; el último `.archify.json` queda para una persona y los diagnósticos se informan literalmente |
 | Falta Chrome para `visual-check` | Se informa como `skipped`, nunca como aprobado |
 | `oma diagram archify …` termina con código 2 | Falta Chrome (`visual-check`) o no se pudo resolver archify; comprueba primero `oma diagram resolve --json` |
 
 ---
 
-## Próximos pasos
+## Próximos pasos {#next-steps}
 
 - [Explicador de código](./code-explainer.md): el flujo de trabajo `/explain` y su sidecar opcional de archify
 - [Flujo de trabajo `/architecture`](../core-concepts/workflows.md#architecture): ADR y revisiones que incluyen el bloque Mermaid
 - [Semántica de oma-config.yaml](./oma-config-semantics.md): cómo se combina la sección `diagram:`
 - [Comandos CLI: diagram](../cli-interfaces/commands.md#diagram): lista completa de opciones
-- [Investigación de mercado](./market-research.md): el mismo patrón de última versión gestionada para el motor last30days
+- [Investigación de mercado](./market-research.md): el mismo patrón de instalación mediante la skills CLI para el motor last30days
 - upstream de archify: [tt-a1i/archify](https://github.com/tt-a1i/archify)
 - upstream de stack-diagram: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

@@ -1,49 +1,50 @@
 ---
 title: "Gids: Diagramengine (archify)"
 sidebar_label: Diagrammen
-description: Hoe oh-my-agent kiest tussen Mermaid en de optionele agent-skill tt-a1i/archify voor architectuur-, sequence- en datastroomdiagrammen — de diagramconfiguratie, oma diagram resolve / oma diagram archify, het gebruik door /architecture en /explain en de begrensde lus voor valideren, herstellen en opleveren. Behandelt ook de stack-route via de upstream-skill Caru-ini/stack-diagram voor tech-stack-posters met vendorlogo's.
+description: Hoe oh-my-agent kiest tussen Mermaid en de optionele agent-skill tt-a1i/archify voor architectuur-, sequence- en datastroomdiagrammen — de diagramconfiguratie, oma diagram resolve / oma diagram archify, het gebruik door /architecture en /explain, de begrensde lus voor valideren, herstellen en opleveren en de stack-route via de upstream-skill Caru-ini/stack-diagram voor tech-stack-posters met vendorlogo's.
 ---
 
 # Diagramengine {#diagram-engine}
 
-`/architecture` (ADR's, aanbevelingen, reviews) en `/explain` (uitleggers van codewijzigingen) produceren allebei structurele diagrammen. Bij `/architecture` zijn dat altijd **Mermaid**-blokken in het Markdown-artifact (`/explain` tekent zijn eigen inline SVG-diagrammen) en — wanneer [archify](https://github.com/tt-a1i/archify) kan worden opgelost, wat normaal het geval is — daarnaast een **interactief, gevalideerd HTML-diagram** naast het artifact: thema voor donker/licht, pan-zoom, zoeken, relaties volgen, PNG/SVG/WebM-export en rendering vanuit een getypeerde JSON-specificatie.
+`/architecture` (ADR's, aanbevelingen, reviews) en `/explain` (uitleggers van codewijzigingen) produceren structurele diagrammen. Het `/architecture`-artifact bevat altijd een **Mermaid**-blok in Markdown, en de `/explain`-workflow tekent inline SVG-diagrammen. Wanneer [archify](https://github.com/tt-a1i/archify) wordt opgelost, levert de architectuurworkflow daarnaast een **interactief, gevalideerd HTML-diagram** naast het artifact op. Het gebruikt een getypeerde JSON-specificatie en ondersteunt thema's voor donker/licht, pan-zoom, zoeken, relaties volgen en PNG/SVG/WebM-export.
 
 Mermaid verdwijnt nooit: het is de tekstuele SSOT in Markdown en in git-diffs. archify is een afgeleid artifact.
 
 ---
 
-## Altijd de nieuwste archify — niets installeren {#always-the-latest-archify--nothing-to-install}
+<a id="always-the-latest-archify--nothing-to-install"></a>
+## archify installeren {#install-archify}
 
-archify is een MIT-gelicentieerde agent-skill (Node ≥ 18, nul runtime-afhankelijkheden). oh-my-agent vertrouwt niet op een kopie die je ooit hebt geïnstalleerd; het houdt een **eigen beheerde kopie** bij en volgt de nieuwste release:
+archify is een MIT-gelicentieerde agent-skill (Node ≥ 18, nul runtime-afhankelijkheden). oh-my-agent gebruikt de kopie die via de [skills CLI](https://github.com/vercel-labs/skills) is geïnstalleerd en houdt geen eigen kopie bij:
 
-- Cache: `~/.cache/oma-diagram/archify/<tag>/` plus een pointer in `state.json`.
-- Voor elk gebruik vraagt `oma diagram resolve` GitHub om de nieuwste releasetag (beperkt tot één keer per `check_interval_min`, standaard 60 min), downloadt het de brontarball wanneer er een nieuwere tag is (atomische map per tag; oude tags worden verwijderd) en gebruikt het anders de gecachte kopie opnieuw.
-- Netwerkfouten zijn nooit fataal: de gecachte kopie wordt gebruikt en als `stale` met de reden gerapporteerd. Alleen een eerste run zonder netwerk en zonder cache valt terug op een door de gebruiker geïnstalleerde skill-kopie en daarna op Mermaid.
+- `oma diagram update` installeert archify wanneer het ontbreekt (`bunx skills add tt-a1i/archify --skill archify -g -y`) en werkt het anders bij (`bunx skills update archify -g -y`).
+- `oma diagram resolve` leest alleen geïnstalleerde skillmappen en raakt het netwerk nooit aan. Zonder installatie valt `auto` terug op Mermaid en noemt het installatiecommando.
+- `oma update` installeert archify niet.
 
 ```bash
-# Illustrative output; the release tag, cache path, and quality can vary.
-oma diagram update          # force a check / download now
+# Illustrative output; the version, install path, and quality can vary.
+oma diagram update
 oma diagram resolve
 # engine:   archify  (requested: auto)
-# reason:   archify 2.15.0 via managed:v2.15.0 (current)
-# root:     /Users/you/.cache/oma-diagram/archify/v2.15.0
-# bin:      /Users/you/.cache/oma-diagram/archify/v2.15.0/bin/archify.mjs
+# reason:   archify 2.15.0 via home:~/.agents/skills
+# root:     /Users/you/.agents/skills/archify
+# bin:      /Users/you/.agents/skills/archify/bin/archify.mjs
 # version:  2.15.0
 # quality:  showcase
 # sidecar:  off (explain)
-oma diagram resolve --offline   # never touch the network
 ```
 
 Volgorde van resolutie (eerste hit wint, identiek bij elke vendorruntime):
 
-1. `diagram.archify.path` in `oma-config.yaml` — expliciete pin, schakelt auto-latest uit
+1. `diagram.archify.path` in `oma-config.yaml` — expliciete pin
 2. Omgevingsvariabele `ARCHIFY_HOME` — expliciete pin
-3. **Managed latest** (`~/.cache/oma-diagram/archify`)
-4. Door de gebruiker geïnstalleerde skillmappen: project `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` `/skills/archify`, daarna dezelfde onder `~`, plus `~/.raven/workspace/skills/archify`
+3. Geïnstalleerde skillmappen: project `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` / `.gemini` / `.copilot` `/skills/archify`, daarna dezelfde onder `~`, daarna `~/.config/agents/skills/archify` en `~/.raven/workspace/skills/archify`
 
 <!-- oma-docs:ignore-start -->
-Voor een hit moet de beheerde of gepinde archify-installatie `bin/archify.mjs` bevatten.
+Voor een hit moet de geïnstalleerde of gepinde archify-map `bin/archify.mjs` bevatten.
 <!-- oma-docs:ignore-end -->
+
+Eerdere releases hielden een eigen kopie bij onder `~/.cache/oma-diagram/`. Die wordt niet meer gelezen; je kunt hem verwijderen.
 
 ---
 
@@ -56,22 +57,21 @@ diagram:
   engine: auto                # auto | archify | mermaid
   explain_sidecar: false      # /explain also writes an archify sidecar
   archify:
-    managed: true             # false = never download; use pins / skill dirs only
-    channel: stable           # stable (latest GitHub Release) | main (HEAD of main)
-    check_interval_min: 60    # minutes between remote checks; 0 = every call
     path: null                # explicit install dir (pin)
     quality: showcase         # showcase | standard  → --quality
     open: false               # pass --open to deliver
 ```
 
+`archify.managed`, `archify.channel` en `archify.check_interval_min` zijn verouderd: ze valideren nog, maar worden genegeerd, en `resolve` toont een waarschuwing zolang ze zijn ingesteld.
+
 ### Welke engine draait {#which-engine-runs}
 
-Eén beslissing dekt de configuratiewaarde, of archify wordt opgelost en wat de workflow oplevert. "Opgelost" betekent dat een stap van de [resolutievolgorde](#always-the-latest-archify--nothing-to-install) een installatie vindt: een pin, de beheerde nieuwste kopie of een door de gebruiker geïnstalleerde skillmap.
+Eén beslissing dekt de configuratiewaarde, of archify wordt opgelost en wat de workflow oplevert. "Opgelost" betekent dat een stap van de [resolutievolgorde](#always-the-latest-archify--nothing-to-install) een installatie vindt: een pin of een geïnstalleerde skillmap.
 
 | `diagram.engine` | Wordt archify opgelost? | `oma diagram resolve --json` | Resultaat van `/architecture` |
 |---|---|---|---|
 | `auto` (standaard) | ja | `engine: archify`, `ok: true` | Mermaid-blok + gekoppelde `.archify.html` |
-| `auto` | nee (bijvoorbeeld eerste run offline, of `managed: false` zonder skillmap) | `engine: mermaid`, `ok: true` | Alleen Mermaid; het rapport zegt dat je één keer online `oma diagram update` moet uitvoeren |
+| `auto` | nee (archify niet geïnstalleerd) | `engine: mermaid`, `ok: true` | Alleen Mermaid; het rapport noemt `oma diagram update` |
 | `archify` | ja | `engine: archify`, `ok: true` | Mermaid-blok + gekoppelde `.archify.html` |
 | `archify` | nee | `engine: mermaid`, `ok: false`, exit 1 | De workflow stopt met de hint `oma diagram update` in plaats van stilzwijgend te downgraden |
 | `mermaid` | niet gecontroleerd | `engine: mermaid`, `ok: true` | Alleen Mermaid; archify wordt nooit aangeroepen |
@@ -83,7 +83,7 @@ Eén beslissing dekt de configuratiewaarde, of archify wordt opgelost en wat de 
 ## CLI {#cli}
 
 ```bash
-oma diagram resolve [--engine auto|archify|mermaid] [--refresh] [--offline] [--json]
+oma diagram resolve [--engine auto|archify|mermaid] [--json]
 oma diagram update  [--json]
 oma diagram archify <archify args…>
 ```
@@ -99,7 +99,7 @@ oma diagram archify deliver  architecture adr-auth.archify.json adr-auth.archify
 oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Chrome (skipped), or archify itself could not be resolved
 ```
 
-`--json` op `resolve` retourneert `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source, status?, note? }, reason, probed }` — `source` is `managed:<tag>`, `config:…`, `env:…` of een label van een skillmap; `status` (`fresh` / `current` / `stale`) en `note` worden voor beheerde kopieën ingesteld.
+`--json` op `resolve` retourneert `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source }, reason, probed, warnings }` — `source` is `config:…`, `env:…` of een label van een skillmap zoals `home:~/.agents/skills`; `warnings` somt genegeerde verouderde keys op. `--refresh` en `--offline` worden als verouderde no-ops geaccepteerd.
 
 ---
 
@@ -163,7 +163,7 @@ Een archify die niet kan worden opgelost, wordt behandeld in de [beslistabel voo
 
 | Situatie | Resultaat |
 |---|---|
-| Updatecontrole faalt (offline, rate-limited) | Gecachte kopie wordt gebruikt en met de reden als `stale` gerapporteerd |
+| `oma diagram update` faalt (offline, `bunx` ontbreekt) | De fout van de skills CLI wordt getoond; een bestaande installatie blijft werken |
 | `validate` convergeert nooit | Mermaid blijft het opgeleverde diagram; de laatste `.archify.json` blijft voor een mens liggen; diagnostics worden letterlijk gerapporteerd |
 | Chrome ontbreekt voor `visual-check` | Gerapporteerd als `skipped`, nooit als geslaagd |
 | `oma diagram archify …` eindigt met 2 | Chrome ontbreekt (`visual-check`) of archify kon niet worden opgelost; controleer eerst `oma diagram resolve --json` |
@@ -176,6 +176,6 @@ Een archify die niet kan worden opgelost, wordt behandeld in de [beslistabel voo
 - [`/architecture`-workflow](../core-concepts/workflows.md#architecture) — ADR's en reviews met het Mermaid-blok
 - [Semantiek van oma-config.yaml](./oma-config-semantics.md) — hoe de sectie `diagram:` wordt samengevoegd
 - [CLI-commando's: diagram](../cli-interfaces/commands.md#diagram) — volledige optielijst
-- [Marktonderzoek](./market-research.md) — hetzelfde managed-latest-patroon voor de last30days-engine
+- [Marktonderzoek](./market-research.md) — hetzelfde installatiepatroon via de skills CLI voor de last30days-engine
 - upstream van archify: [tt-a1i/archify](https://github.com/tt-a1i/archify)
 - upstream van stack-diagram: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

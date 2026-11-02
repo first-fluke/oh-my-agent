@@ -1,49 +1,50 @@
 ---
 title: "Hướng dẫn: Diagram Engine (archify)"
 sidebar_label: Diagrams
-description: Cách oh-my-agent chọn giữa Mermaid và agent skill tt-a1i/archify tùy chọn cho diagram architecture, sequence và data-flow — phần diagram config, oma diagram resolve / oma diagram archify, cách /architecture và /explain dùng nó, cùng loop validate-repair-deliver có giới hạn. Tài liệu cũng đề cập stack route qua upstream skill Caru-ini/stack-diagram cho poster tech-stack kèm logo vendor.
+description: Cách oh-my-agent chọn giữa Mermaid và agent skill tt-a1i/archify tùy chọn cho diagram architecture, sequence và data-flow — phần diagram config, oma diagram resolve / oma diagram archify, cách /architecture và /explain dùng nó, loop validate-repair-deliver có giới hạn, và stack route qua upstream skill Caru-ini/stack-diagram cho poster tech-stack kèm logo vendor.
 ---
 
 # Diagram Engine {#diagram-engine}
 
-`/architecture` (ADR, recommendation, review) và `/explain` (code-change explainer) đều tạo diagram cấu trúc. Output của `/architecture` luôn có block **Mermaid** trong Markdown artifact. `/explain` tự vẽ diagram inline SVG. Khi [archify](https://github.com/tt-a1i/archify) resolve được, thường là trường hợp bình thường, OMA cũng tạo **interactive, validated HTML diagram** cạnh artifact. Diagram này hỗ trợ theme sáng/tối, pan-zoom, search, relationship tracing và export PNG/SVG/WebM từ typed JSON spec.
+`/architecture` (ADR, recommendation, review) và `/explain` (code-change explainer) đều tạo diagram cấu trúc. Output của `/architecture` luôn có block **Mermaid** trong Markdown artifact. `/explain` tự vẽ diagram inline SVG. Khi [archify](https://github.com/tt-a1i/archify) resolve được, OMA cũng tạo **interactive, validated HTML diagram** cạnh artifact. Diagram này hỗ trợ theme sáng/tối, pan-zoom, search, relationship tracing và export PNG/SVG/WebM từ typed JSON spec.
 
 Mermaid là SSOT dạng văn bản trong Markdown và git diff. archify tạo artifact dẫn xuất.
 
 ---
 
-## Cache archify và cập nhật phiên bản {#always-the-latest-archify--nothing-to-install}
+<a id="always-the-latest-archify--nothing-to-install"></a>
+## Cài đặt archify {#install-archify}
 
-archify là agent skill MIT-licensed (Node ≥ 18, không có runtime dependency). oh-my-agent không dựa vào bản bạn cài một lần; nó giữ **managed copy riêng** và theo dõi release mới nhất:
+archify là agent skill MIT-licensed (Node ≥ 18, không có runtime dependency). oh-my-agent dùng bản được cài qua [skills CLI](https://github.com/vercel-labs/skills) và không giữ bản riêng nào:
 
-- Cache: `~/.cache/oma-diagram/archify/<tag>/` cùng pointer `state.json`.
-- Trước mỗi lần dùng, `oma diagram resolve` hỏi GitHub release tag mới nhất (throttled một lần mỗi `check_interval_min`, mặc định 60 phút), tải source tarball khi có tag mới (atomic theo tag directory; tag cũ bị prune), nếu không thì dùng lại cache.
-- Network failure không bao giờ fatal: dùng cached copy và báo `stale` kèm lý do. Chỉ lần chạy đầu tiên không network và không cache mới fallback sang skill copy do user cài, sau đó fallback sang Mermaid.
+- `oma diagram update` cài archify khi chưa có (`bunx skills add tt-a1i/archify --skill archify -g -y`), còn nếu đã có thì cập nhật nó (`bunx skills update archify -g -y`).
+- `oma diagram resolve` chỉ đọc các skill directory đã cài và không bao giờ chạm vào network. Khi chưa cài, `auto` fallback sang Mermaid và nêu tên lệnh cài.
+- `oma update` không cài archify.
 
 ```bash
-# Illustrative output; the release tag, cache path, and quality can vary.
-oma diagram update          # force a check / download now
+# Illustrative output; the version, install path, and quality can vary.
+oma diagram update
 oma diagram resolve
 # engine:   archify  (requested: auto)
-# reason:   archify 2.15.0 via managed:v2.15.0 (current)
-# root:     /Users/you/.cache/oma-diagram/archify/v2.15.0
-# bin:      /Users/you/.cache/oma-diagram/archify/v2.15.0/bin/archify.mjs
+# reason:   archify 2.15.0 via home:~/.agents/skills
+# root:     /Users/you/.agents/skills/archify
+# bin:      /Users/you/.agents/skills/archify/bin/archify.mjs
 # version:  2.15.0
 # quality:  showcase
 # sidecar:  off (explain)
-oma diagram resolve --offline   # never touch the network
 ```
 
 Thứ tự resolve (hit đầu tiên thắng, giống nhau ở mọi vendor runtime):
 
-1. `diagram.archify.path` trong `oma-config.yaml` — pin rõ ràng, opt out auto-latest
+1. `diagram.archify.path` trong `oma-config.yaml` — pin rõ ràng
 2. Biến môi trường `ARCHIFY_HOME` — pin rõ ràng
-3. **Managed latest** (`~/.cache/oma-diagram/archify`)
-4. User-installed skill dir: project `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` `/skills/archify`, sau đó cùng vị trí dưới `~`, rồi `~/.raven/workspace/skills/archify`
+3. Skill dir đã cài: project `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` / `.gemini` / `.copilot` `/skills/archify`, sau đó cùng vị trí dưới `~`, rồi `~/.config/agents/skills/archify` và `~/.raven/workspace/skills/archify`
 
 <!-- oma-docs:ignore-start -->
-Một hit yêu cầu archify installation được managed hoặc pinned chứa `bin/archify.mjs`.
+Một hit yêu cầu archify directory đã cài hoặc được pin chứa `bin/archify.mjs`.
 <!-- oma-docs:ignore-end -->
+
+Các release trước giữ bản riêng dưới `~/.cache/oma-diagram/`. Bản này không còn được đọc nữa; bạn có thể xóa nó.
 
 ---
 
@@ -56,22 +57,21 @@ diagram:
   engine: auto                # auto | archify | mermaid
   explain_sidecar: false      # /explain also writes an archify sidecar
   archify:
-    managed: true             # false = never download; use pins / skill dirs only
-    channel: stable           # stable (latest GitHub Release) | main (HEAD of main)
-    check_interval_min: 60    # minutes between remote checks; 0 = every call
     path: null                # explicit install dir (pin)
     quality: showcase         # showcase | standard  → --quality
     open: false               # pass --open to deliver
 ```
 
+`archify.managed`, `archify.channel` và `archify.check_interval_min` đã deprecated: chúng vẫn qua validate nhưng bị bỏ qua, và `resolve` in cảnh báo chừng nào chúng còn được đặt.
+
 ### Engine nào chạy {#which-engine-runs}
 
-Một quyết định duy nhất bao quát giá trị config, việc archify có resolve được hay không, và workflow giao ra gì. "Resolve được" nghĩa là một bước bất kỳ trong [thứ tự resolve](#always-the-latest-archify--nothing-to-install) tìm thấy installation: một pin, managed latest copy, hoặc user-installed skill dir.
+Một quyết định duy nhất bao quát giá trị config, việc archify có resolve được hay không, và workflow giao ra gì. "Resolve được" nghĩa là một bước bất kỳ trong [thứ tự resolve](#always-the-latest-archify--nothing-to-install) tìm thấy installation: một pin hoặc một skill dir đã cài.
 
 | `diagram.engine` | archify resolve được? | `oma diagram resolve --json` | Kết quả `/architecture` |
 |---|---|---|---|
 | `auto` (mặc định) | có | `engine: archify`, `ok: true` | Mermaid block + `.archify.html` được link |
-| `auto` | không (ví dụ lần chạy đầu offline, hoặc `managed: false` mà không có skill dir) | `engine: mermaid`, `ok: true` | Chỉ Mermaid; report nhắc chạy `oma diagram update` một lần khi online |
+| `auto` | không (archify chưa được cài) | `engine: mermaid`, `ok: true` | Chỉ Mermaid; report nêu tên `oma diagram update` |
 | `archify` | có | `engine: archify`, `ok: true` | Mermaid block + `.archify.html` được link |
 | `archify` | không | `engine: mermaid`, `ok: false`, exit 1 | Workflow dừng với hint `oma diagram update` thay vì âm thầm downgrade |
 | `mermaid` | không kiểm tra | `engine: mermaid`, `ok: true` | Chỉ Mermaid; archify không bao giờ được gọi |
@@ -83,7 +83,7 @@ Một quyết định duy nhất bao quát giá trị config, việc archify có
 ## CLI {#cli}
 
 ```bash
-oma diagram resolve [--engine auto|archify|mermaid] [--refresh] [--offline] [--json]
+oma diagram resolve [--engine auto|archify|mermaid] [--json]
 oma diagram update  [--json]
 oma diagram archify <archify args…>
 ```
@@ -99,7 +99,7 @@ oma diagram archify deliver  architecture adr-auth.archify.json adr-auth.archify
 oma diagram archify visual-check adr-auth.archify.html --json   # exit 2 = no Chrome (skipped), or archify itself could not be resolved
 ```
 
-`--json` trên `resolve` trả `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source, status?, note? }, reason, probed }` — `source` là `managed:<tag>`, `config:…`, `env:…` hoặc skill-dir label; `status` (`fresh` / `current` / `stale`) và `note` được đặt cho managed copy.
+`--json` trên `resolve` trả `{ ok, requested, engine, quality, open, explainSidecar, archify?: { root, bin, version, source }, reason, probed, warnings }` — `source` là `config:…`, `env:…` hoặc skill-dir label như `home:~/.agents/skills`; `warnings` liệt kê các key deprecated bị bỏ qua. `--refresh` và `--offline` được chấp nhận như no-op deprecated.
 
 ---
 
@@ -163,7 +163,7 @@ Trường hợp archify không resolve được đã được bao quát trong [b
 
 | Tình huống | Kết quả |
 |---|---|
-| Update check thất bại (offline, rate-limited) | Dùng cached copy và báo `stale` kèm lý do |
+| `oma diagram update` thất bại (offline, thiếu `bunx`) | Hiển thị lỗi của skills CLI; installation hiện có vẫn tiếp tục hoạt động |
 | `validate` không hội tụ | Mermaid vẫn là diagram được giao; `.archify.json` cuối để lại cho người; diagnostics được báo nguyên văn |
 | Thiếu Chrome cho `visual-check` | Báo `skipped`, không bao giờ coi là pass |
 | `oma diagram archify …` thoát với mã 2 | Hoặc thiếu Chrome (`visual-check`), hoặc không resolve được archify; hãy kiểm tra `oma diagram resolve --json` trước |
@@ -176,6 +176,6 @@ Trường hợp archify không resolve được đã được bao quát trong [b
 - [`/architecture` workflow](../core-concepts/workflows.md#architecture) — ADR và review chứa Mermaid block
 - [Ngữ nghĩa oma-config.yaml](./oma-config-semantics.md) — cách section `diagram:` được merge
 - [CLI Commands: diagram](../cli-interfaces/commands.md#diagram) — danh sách option đầy đủ
-- [Market Research](./market-research.md) — cùng pattern managed-latest cho engine last30days
+- [Market Research](./market-research.md) — cùng pattern cài qua skills CLI cho engine last30days
 - archify upstream: [tt-a1i/archify](https://github.com/tt-a1i/archify)
 - stack-diagram upstream: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)
