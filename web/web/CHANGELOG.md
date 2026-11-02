@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.14.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.13.0...web-v11.14.0) (2026-11-02)
+
+
+### Features
+
+* **hooks:** route persistent workflows by explicit name only ([77d28af](https://github.com/first-fluke/oh-my-agent/commit/77d28af1d6c5bc2e90b47a47af4152bd8b14636e))
+
 ## [11.13.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.12.0...web-v11.13.0) (2026-10-30)
 
 
