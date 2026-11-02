@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.32.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.31.0...cli-v20.32.0) (2026-11-02)
+
+
+### Features
+
+* **skills:** route stack posters to upstream stack-diagram skill ([dc0de06](https://github.com/first-fluke/oh-my-agent/commit/dc0de067e2f62e2f895a1fe67bd50afed436f2c2))
+
 ## [20.31.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.30.0...cli-v20.31.0) (2026-11-02)
 
 
