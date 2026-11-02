@@ -5,56 +5,13 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-10-28 · 35 unstarred
+## 2026-11-02 · 1 unstarred
 
-- **@achyuth072** · Achyuth S · 29 repos · 0 followers
-  - Your average wannabe coder trying things out.
-- **@alien99131** · 0 repos · 0 followers
-- **@aphelion31** · Aphelion Cordova · East Java, Indonesia · CircleIT · 59 repos · 42 followers
-  - IT Enthusiast @circleitdev 
-- **@asomegs** · Gyeongsik Kim · 4 repos · 0 followers
-- **@basicsharp** · 0 repos · 0 followers
-- **@bytonylee** · 0 repos · 0 followers
-- **@covagashi** · Covaga · Barcelona · 9 repos · 14 followers
-  - Res Non Verba
-- **@deepfeel68** · 0 repos · 0 followers
-- **@devyahia** · Yahia M. Zakaria · 3 repos · 9 followers
-  - Software Engineer | Builder
-- **@duvu** · Vu · HANOI · X51Labs · 111 repos · 31 followers
-  - AI & Backend Architect | Java/Spring, Python/FastAPI | Production AI integrations and scalable APIs.
-- **@enchan087** · ELdix00 · 2 repos · 0 followers
-- **@fnietzshce000** · Azizcan taşçı · 7 repos · 4 followers
-- **@grollcake** · 18 repos · 5 followers
-- **@hadamyeedady12-dev** · 0 repos · 0 followers
-- **@harmonyself** · 0 repos · 0 followers
-- **@hyomin-chung** · 0 repos · 0 followers
-- **@ingemar** · ingemar · Stockholm, Sweden · @QasaSE · 18 repos · 61 followers
-- **@lapel0314** · Lapel · 3 repos · 1 followers
-- **@linkvn** · linkvn · 0 repos · 8 followers
-- **@lllminsuk** · 0 repos · 0 followers
-- **@locnguyen0904** · 0 repos · 0 followers
-- **@marcuscabrera** · Marcus Cabrera · 158 repos · 8 followers
-- **@nextuplab** · 0 repos · 0 followers
-- **@project-kk1** · 0 repos · 0 followers
-- **@samuelyuma** · Samuel Yuma K · 25 repos · 71 followers
-  - Fullstack Engineer ⚡
-- **@shaazomar** · Shaaz Omar · 15 repos · 18 followers
-  - AI/ML engineer | Building data-driven apps & interactive ML projects | Always learning & experimenting with new tech.
-- **@suho-han** · Suho Han · Seoul, Korea · @4ILab-SSU · 32 repos · 22 followers
-  - 머신러닝 연구원(석사과정) / ML Researcher(Graduate)
-- **@sumhwang** · 0 repos · 0 followers
-- **@topman48** · 0 repos · 0 followers
-- **@unquo** · 0 repos · 1 followers
-- **@wf4006hufman** · 0 repos · 0 followers
-- **@woodru89** · 0 repos · 0 followers
-- **@xiushaomin** · 0 repos · 0 followers
-- **@yashdoescode** · Yash Srivastava · India · @Stealth-AG  · 8 repos · 36 followers
-  - Machine Learning from Stanford | Full-Stack Development by Meta | National Finalist - Top 0.03% India Innovates’26 | 2nd IIT Roorkee
-- **@yuremin** · 0 repos · 0 followers
+- **@blastrobot** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1356)
+## Current (1358)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -193,7 +150,7 @@ summaries to spot which persona is churning.
 - @bini2007 — 2026-02-20
 - @bj9421 — 2026-04-05
 - @bjorn-supernomic — 2026-09-03
-- @Blastrobot — 2026-03-29
+- @blastronautdev — 2026-03-29
 - @blazepsyki — 2026-04-28
 - @blueme1982 — 2026-10-14
 - @blueNmad — 2026-03-16
@@ -284,6 +241,7 @@ summaries to spot which persona is churning.
 - @CWK2025-coder — 2026-10-07
 - @Cyame — 2026-08-19
 - @Cybecho — 2026-02-02
+- @CyberPsynapse — 2026-11-01
 - @Cybersoulja — 2026-09-17
 - @cyon13 — 2026-02-04
 - @cys020628 — 2026-05-20
@@ -782,6 +740,7 @@ summaries to spot which persona is churning.
 - @kyungpyokim — 2026-09-11
 - @Kyuwyn — 2026-06-16
 - @l2zeo — 2026-02-05
+- @LadyBluenotes — 2026-11-02
 - @laicsu — 2026-06-30
 - @larryjiggler-glitch — 2026-04-25
 - @lawaimeta — 2026-08-03
