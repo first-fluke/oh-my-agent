@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.15.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.15.0...web-v11.15.1) (2026-11-02)
+
+
+### Documentation
+
+* **i18n:** add stack-diagram route to diagram guide translations ([6544d83](https://github.com/first-fluke/oh-my-agent/commit/6544d83fcfe0cbbba5670be0def4fb8dd79fa254))
+
 ## [11.15.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.14.0...web-v11.15.0) (2026-11-02)
 
 
