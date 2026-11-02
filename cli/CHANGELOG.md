@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.33.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.32.0...cli-v20.33.0) (2026-11-02)
+
+
+### Features
+
+* **grok-bot:** add install target and marketplace entry ([fa2bdc2](https://github.com/first-fluke/oh-my-agent/commit/fa2bdc23fa908e1f3be71fd3a09f0ad9abaff0be))
+
 ## [20.32.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.31.0...cli-v20.32.0) (2026-11-02)
 
 
