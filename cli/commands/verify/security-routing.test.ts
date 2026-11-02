@@ -3,15 +3,11 @@ import { loadTriggerCorpus } from "./triggers-corpus.js";
 import { detectAll } from "./triggers-detect.js";
 
 describe("security workflow routing", () => {
-  it("routes source, skill, MCP, runtime and validation requests to /security", async () => {
+  it("keeps /security out of the keyword corpus", () => {
     const entries = loadTriggerCorpus().filter(
       (entry) => entry.expected === "security",
     );
-    const outcomes = await detectAll(entries);
-    expect(entries.length).toBeGreaterThanOrEqual(17);
-    for (const outcome of outcomes) {
-      expect(outcome.detected, outcome.entry.prompt).toBe("security");
-    }
+    expect(entries).toEqual([]);
   });
 
   it.each([
@@ -22,20 +18,10 @@ describe("security workflow routing", () => {
     "네 그럼 어떻게 스킬을 디자인할거임",
     "Please run /deepsec",
     "/deepsec",
-  ])(
-    "does not start a workflow for research or the removed alias: %s",
-    async (prompt) => {
-      const [outcome] = await detectAll([
-        { prompt, lang: "en", expected: null },
-      ]);
-      expect(outcome?.detected).toBeNull();
-    },
-  );
-
-  it("uses the renamed workflow when explicitly requested within a prompt", async () => {
-    const [outcome] = await detectAll([
-      { prompt: "Please run /security", lang: "en", expected: "security" },
-    ]);
-    expect(outcome?.detected).toBe("security");
+    "Please run /security",
+    "/security",
+  ])("does not keyword-start /security: %s", async (prompt) => {
+    const [outcome] = await detectAll([{ prompt, lang: "en", expected: null }]);
+    expect(outcome?.detected).toBeNull();
   });
 });

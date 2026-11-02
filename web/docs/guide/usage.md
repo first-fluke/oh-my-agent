@@ -294,31 +294,20 @@ Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispat
 
 ## Auto-detection examples
 
-oh-my-agent detects workflow keywords in 11 languages. Here are examples showing how natural language triggers workflows:
+The keyword hook starts only four persistent modes, and only when the prompt names the mode. Other workflows start from their slash command.
 
 | You Type | Detected Workflow | Language |
 |----------|------------------|----------|
-| "plan the authentication feature" | `/plan` | English |
-| "do everything in parallel" | `/orchestrate` | English |
-| "review the code for security" | `/review` | English |
-| "brainstorm some ideas for the dashboard" | `/brainstorm` | English |
-| "design a landing page for our product" | `/design` | English |
-| "fix the login bug" | `/debug` | English |
-| "계획 세워줘" | `/plan` | Korean |
-| "버그 수정해줘" | `/debug` | Korean |
-| "디자인 시스템 만들어줘" | `/design` | Korean |
-| "자동으로 실행해" | `/orchestrate` | Korean |
-| "コードレビューして" | `/review` | Japanese |
-| "計画を立てて" | `/plan` | Japanese |
-| "修复这个 bug" | `/debug` | Chinese |
-| "设计一个着陆页" | `/design` | Chinese |
-| "revisar código" | `/review` | Spanish |
-| "diseña la página" | `/design` | Spanish |
-| "debuggen" | `/debug` | German |
-| "coordonner étape par étape" | `/work` | French |
-| "don't stop until it's done" | `/ralph` | English |
-| "끝까지 해" | `/ralph` | Korean |
-| "最後までやって" | `/ralph` | Japanese |
+| "Orchestrate this deployment." | `/orchestrate` | English |
+| "orquestar este trabajo" | `/orchestrate` | Spanish |
+| "ultrawork this refactor" | `/ultrawork` | English |
+| "ulw로 고쳐줘" | `/ultrawork` | Korean |
+| "Switch to work mode for this refactor." | `/work` | English |
+| "work workflow로 진행해줘" | `/work` | Korean |
+| "ralph this task" | `/ralph` | English |
+| "랄프로 끝까지 해줘" | `/ralph` | Korean |
+
+Sentences such as "plan the authentication feature", "fix the login bug", "do everything in parallel", and "don't stop until it's done" do not start a workflow.
 
 **Informational queries are filtered out:**
 

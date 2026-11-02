@@ -80,24 +80,23 @@ describe("oma-architecture skill", () => {
     expect(methodologyGuide).toContain("## 6. ADR Mode");
   });
 
-  it("wires architecture workflow auto-detection and workflow guidance", () => {
+  it("keeps the architecture procedure off the keyword hook", () => {
     const triggers = JSON.parse(
       readFileSync(
         join(PROJECT_ROOT, ".agents/hooks/core/triggers.json"),
         "utf-8",
       ),
     ) as {
-      workflows: Record<
-        string,
-        { persistent: boolean; keywords: Record<string, string[]> }
-      >;
+      workflows: Record<string, unknown>;
     };
 
-    const architectureTrigger = triggers.workflows.architecture;
-    expect(architectureTrigger).toBeDefined();
-    expect(architectureTrigger?.persistent).toBe(false);
-    expect(architectureTrigger?.keywords["*"]).toContain("architecture");
-    expect(architectureTrigger?.keywords.en).toContain("system design");
+    expect(triggers.workflows.architecture).toBeUndefined();
+    expect(Object.keys(triggers.workflows).sort()).toEqual([
+      "orchestrate",
+      "ralph",
+      "ultrawork",
+      "work",
+    ]);
 
     const workflow = readFileSync(
       join(PROJECT_ROOT, ".agents/workflows/architecture.md"),
@@ -108,7 +107,7 @@ describe("oma-architecture skill", () => {
     expect(workflow).toContain("suggest `/plan`");
   });
 
-  it("routes architecture prompts to the architecture workflow hook", () => {
+  it("does not inject the architecture workflow for a boundary-review sentence", () => {
     const targetDir = mkdtempSync(join(tmpdir(), "oma-architecture-hook-"));
     tempRoots.push(targetDir);
 
@@ -144,9 +143,6 @@ describe("oma-architecture skill", () => {
     });
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain("[OMA WORKFLOW: ARCHITECTURE]");
-    expect(result.stdout).toContain(
-      "Read and follow `.agents/workflows/architecture.md` step by step.",
-    );
+    expect(result.stdout).not.toContain("[OMA WORKFLOW:");
   });
 });

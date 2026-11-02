@@ -298,27 +298,14 @@ oh-my-agent detecteert workflowkeywords in 11 talen. Deze voorbeelden laten zien
 
 | Je typt | Gedetecteerde workflow | Taal |
 |----------|------------------|----------|
-| "plan the authentication feature" | `/plan` | Engels |
-| "do everything in parallel" | `/orchestrate` | Engels |
-| "review the code for security" | `/review` | Engels |
-| "brainstorm some ideas for the dashboard" | `/brainstorm` | Engels |
-| "design a landing page for our product" | `/design` | Engels |
-| "fix the login bug" | `/debug` | Engels |
-| "계획 세워줘" | `/plan` | Koreaans |
-| "버그 수정해줘" | `/debug` | Koreaans |
-| "디자인 시스템 만들어줘" | `/design` | Koreaans |
-| "자동으로 실행해" | `/orchestrate` | Koreaans |
-| "コードレビューして" | `/review` | Japans |
-| "計画を立てて" | `/plan` | Japans |
-| "修复这个 bug" | `/debug` | Chinees |
-| "设计一个着陆页" | `/design` | Chinees |
-| "revisar código" | `/review` | Spaans |
-| "diseña la página" | `/design` | Spaans |
-| "debuggen" | `/debug` | Duits |
-| "coordonner étape par étape" | `/work` | Frans |
-| "don't stop until it's done" | `/ralph` | Engels |
-| "끝까지 해" | `/ralph` | Koreaans |
-| "最後までやって" | `/ralph` | Japans |
+| "Orchestrate this deployment." | `/orchestrate` | Engels |
+| "orquestar este trabajo" | `/orchestrate` | Spaans |
+| "ultrawork this refactor" | `/ultrawork` | Engels |
+| "ulw로 고쳐줘" | `/ultrawork` | Koreaans |
+| "Switch to work mode for this refactor." | `/work` | Engels |
+| "work workflow로 진행해줘" | `/work` | Koreaans |
+| "ralph this task" | `/ralph` | Engels |
+| "랄프로 끝까지 해줘" | `/ralph` | Koreaans |
 
 **Informatieve vragen worden gefilterd:**
 

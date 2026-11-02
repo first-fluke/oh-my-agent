@@ -63,7 +63,7 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 
 지속 워크플로우는 모든 태스크가 완료될 때까지 계속 실행됩니다. `.agents/state/`에 상태를 유지하고, 명시적으로 비활성화될 때까지 매 사용자 메시지에 `[OMA PERSISTENT MODE: ...]` 컨텍스트를 재주입합니다.
 
-지속 모드는 **명시적 호출**, 즉 워크플로우의 슬래시 커맨드(`/ultrawork`, 또는 `/oma:ultrawork` 같은 네임스페이스 형식)나 평문으로 쓴 워크플로우 자체의 이름으로 호출할 때만 시작됩니다(`triggers.json`의 `explicit` 목록, 예: "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). 아래의 나머지 트리거 키워드는 자연어 힌트입니다. 이 키워드는 지속 모드를 활성화하지 않고 워크플로우를 제안으로만 주입하며, 프롬프트의 첫 줄이나 마지막 줄이 `?`로 끝나는 질문이면 절대 발동하지 않습니다.
+지속 모드는 **명시적 호출**, 즉 워크플로우의 슬래시 커맨드(`/ultrawork`, 또는 `/oma:ultrawork` 같은 네임스페이스 형식)나 평문으로 쓴 워크플로우 자체의 이름으로 호출할 때만 시작됩니다(`triggers.json`의 `explicit` 목록: "orchestrate"와 그 번역어, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). 키워드 훅은 그 밖의 문장으로는 워크플로우를 열지 않습니다.
 
 ### /orchestrate
 
@@ -75,28 +75,8 @@ description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명�
 | 언어 | 키워드 |
 |----------|----------|
 | 명시적 호출 (지속) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-| 영어 | "do everything", "run everything", "everything in parallel", "automate everything" |
-| 한국어 | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
-| 일본어 | "全部実行", "全部並列で", "自動でやって" |
-| 중국어 | "编排", "全部执行", "全部并行", "自动处理" |
-| 스페인어 | "ejecutar todo", "todo en paralelo" |
-| 프랑스어 | "tout exécuter", "tout en parallèle" |
-| 독일어 | "alles ausführen", "alles parallel" |
-| 포르투갈어 | "executar tudo", "tudo em paralelo" |
-| 러시아어 | "выполнить всё", "всё параллельно" |
-| 네덜란드어 | "alles uitvoeren", "alles parallel" |
-| 폴란드어 | "wykonaj wszystko", "wszystko równolegle" |
 
-단독으로 쓴 "parallel"/"automate"(와 각 언어의 번역어)는 트리거가 아닙니다. "run the tests in parallel"이나 "automate the release notes"는 멀티 에이전트 오케스트레이션이 아닌 일반 요청입니다.
-
-**트리거 정규식 패턴** (의도 + 명사 화이트리스트, [자동 감지: Pattern 필드](#pattern-field-raw-regex) 참조):
-| 섹션 | 패턴 | 트리거 예시 |
-|---------|---------|----------------------|
-| `*` (공통) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
-| `*` (공통) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
-| `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
-
-명사 화이트리스트 (14개): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. 단일 기능("implement the login feature", "로그인 기능 구현해줘")이나 이미 있는 대상("make the API faster")은 일치하지 않습니다.
+"do everything", "전부 해줘", "앱 만들어줘" 같은 문장은 이 워크플로우를 시작하지 않습니다.
 
 **단계:**
 1. **Step 0 (준비):** 코디네이션 스킬, 컨텍스트 로딩 가이드, 메모리 프로토콜 읽기. 벤더 감지.
@@ -146,16 +126,8 @@ flowchart TD
 | 언어 | 키워드 |
 |----------|----------|
 | 명시적 호출 (지속) | "work mode", "work workflow" |
-| 공통 | "step by step" |
-| 영어 | "one by one", "one step at a time" |
-| 한국어 | "단계별", "하나씩 해줘", "차근차근" |
-| 일본어 | "ステップバイステップ", "一歩ずつ" |
-| 중국어 | "逐步", "一步一步" |
-| 스페인어 | "paso a paso", "uno por uno" |
-| 프랑스어 | "étape par étape", "un par un" |
-| 독일어 | "schritt für schritt", "der reihe nach" |
 
-단독으로 쓴 "work"는 일상적인 어휘("Does this work on Windows?")이므로 트리거가 아닙니다.
+단독으로 쓴 "work"는 일상적인 어휘("Does this work on Windows?")이므로 트리거가 아닙니다. "step by step"과 그 번역어도 이 워크플로우를 시작하지 않습니다.
 
 **단계:**
 1. **Step 0 (준비):** 스킬, 컨텍스트 로딩, 메모리 프로토콜 읽기. 세션 시작 기록.
@@ -249,15 +221,8 @@ flowchart TD
 | 언어 | 키워드 |
 |------|--------|
 | 명시적 호출 (지속) | "ralph", "랄프" |
-| 영어 | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
-| 한국어 | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
-| 일본어 | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
-| 중국어 | "不要停", "直到完成", "全部完成", "做完为止" |
-| 스페인어 | "no pares", "hasta completar", "termina todo" |
-| 프랑스어 | "n'arrête pas", "jusqu'à complétion", "termine tout" |
-| 독일어 | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
 
-단독으로 쓴 재개 표현("keep going", "carry on", "계속해", "続けて", "продолжай", …)은 트리거가 아닙니다. 사용자가 중단 후 작업을 재개하려고 입력하는 표현이기 때문입니다.
+단독으로 쓴 재개 표현("keep going", "carry on", "계속해", "続けて", "продолжай", …)과 완료 표현("don't stop", "끝까지 해")은 이 워크플로우를 시작하지 않습니다.
 
 **단계:**
 1. **Phase 0 (INIT):** 사전 조건 로드(context-loading, 메모리 프로토콜, judge 프로토콜). 테스트 단언, 산출물을 생성하지 않는 타입 검사, 종료 코드, 파일 존재 여부처럼 기계적으로 검증 가능한 완료 기준을 정의하고 기록합니다. 빌드 검사는 명시적으로 요청한 경우에만 포함합니다. 기준을 제시하고 승인된 범위 안에서 계속 진행합니다. `max_iterations: 5` 초기화.
@@ -300,14 +265,7 @@ judge 노드는 Phase 2에서 설명한 프롬프트 기반 judge입니다. 워�
 
 **설명:** PM 주도 태스크 분해. 요구사항 분석, 기술 스택 선택, 의존성이 있는 우선순위 태스크 분해, API 컨트랙트 정의.
 
-**트리거 키워드:**
-| 언어 | 키워드 |
-|----------|----------|
-| 공통 | "task breakdown" |
-| 영어 | "plan" |
-| 한국어 | "계획", "요구사항 분석", "스펙 분석" |
-| 일본어 | "計画", "要件分析", "タスク分解" |
-| 중국어 | "计划", "需求分析", "任务分解" |
+**트리거 키워드:** 없음. `/plan`으로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** 요구사항 수집 -> 기술 실현 가능성 분석 (MCP 코드 분석) -> 복잡도 평가 (Simple/Medium/Complex) -> API 컨트랙트 정의 (경계를 넘는 경우) -> 태스크 분해 -> 사용자 리뷰 -> 계획 산출물 저장 (기계가 읽는 JSON과, Medium/Complex일 때 사람이 읽는 Markdown 트래커).
 
@@ -321,14 +279,7 @@ judge 노드는 Phase 2에서 설명한 프롬프트 기반 judge입니다. 워�
 
 **설명:** 디자인 우선 아이디어 탐색. 의도를 탐색하고, 제약을 명확히 하며, 접근 방식을 제안하고, 기획 전에 승인된 설계 문서를 생성합니다.
 
-**트리거 키워드:**
-| 언어 | 키워드 |
-|----------|----------|
-| 공통 | "brainstorm" |
-| 영어 | "ideate", "explore design" |
-| 한국어 | "브레인스토밍", "아이디어", "설계 탐색" |
-| 일본어 | "ブレインストーミング", "アイデア", "設計探索" |
-| 중국어 | "头脑风暴", "创意", "设计探索" |
+**트리거 키워드:** 없음. `/brainstorm`으로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** 프로젝트 컨텍스트 탐색 (MCP 분석) -> 명확화 질문(한 번에 하나씩) -> 트레이드오프와 함께 2-3가지 접근 방식 제안 -> 섹션별 설계 제시(각 단계에서 사용자 승인) -> `docs/plans/designs/{NNN}-{name}.md`에 설계 문서 저장 -> 전환: `/plan` 제안.
 
@@ -340,14 +291,7 @@ judge 노드는 Phase 2에서 설명한 프롬프트 기반 judge입니다. 워�
 
 **설명:** 소프트웨어 아키텍처 워크플로우입니다. 아키텍처 문제를 진단하고, 올바른 분석 방법(진단 라우팅 / design-twice / ATAM / CBAM / ADR)을 선택하고, 옵션을 비교하고, 이해관계자 입력을 종합하여 권장안, 리뷰 또는 ADR을 생성합니다.
 
-**트리거 키워드:**
-| 언어 | 키워드 |
-|----------|----------|
-| 공통 | "architecture", "ADR", "ATAM", "CBAM" |
-| 영어 | "architecture review", "architectural tradeoff" |
-| 한국어 | "아키텍처", "설계 검토" |
-| 일본어 | "アーキテクチャ" |
-| 중국어 | "架构" |
+**트리거 키워드:** 없음. `/architecture`로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** 결정 프레이밍(신규 아키텍처 / 리뷰 / 트레이드오프 분석 / 투자 우선순위 / ADR 작성) -> 진단 라우팅으로 방법론 선택 -> MCP 코드 분석(`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`)으로 현재 아키텍처 분석 -> 이해관계자 입력 종합(비용을 정당화할 만큼 교차 관심사일 때만) -> 명시적 가정, 트레이드오프, 리스크, 검증 단계와 함께 권장안 생성 -> 구현이 필요한 경우 `/plan`으로 인계.
 
@@ -361,13 +305,7 @@ judge 노드는 Phase 2에서 설명한 프롬프트 기반 judge입니다. 워�
 
 **설명:** 전체 프로젝트 초기화. 기존 코드베이스를 분석하고, AGENTS.md, ARCHITECTURE.md, 구조화된 `docs/` 지식 베이스를 생성합니다.
 
-**트리거 키워드:**
-| 언어 | 키워드 |
-|----------|----------|
-| 공통 | "deepinit" |
-| 한국어 | "프로젝트 초기화" |
-| 일본어 | "プロジェクト初期化" |
-| 중국어 | "项目初始化" |
+**트리거 키워드:** 없음. `/deepinit`으로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** 준비 -> 코드베이스 분석 (프로젝트 유형, 아키텍처, 암묵적 규칙, 도메인, 경계) -> ARCHITECTURE.md 생성 (도메인 맵, 200줄 미만) -> `docs/` 지식 베이스 생성 (design-docs/, plans/, generated/, product-specs/, references/, 도메인 문서) -> 루트 AGENTS.md 생성 (약 100줄, 목차) -> 경계 AGENTS.md 파일 생성 (모노레포 패키지, 각 50줄 미만) -> 기존 하네스 업데이트 (재실행 시) -> 검증 (깨진 링크 없음, 줄 수 제한).
 
@@ -379,14 +317,7 @@ judge 노드는 Phase 2에서 설명한 프롬프트 기반 judge입니다. 워�
 
 **설명:** 전체 QA 리뷰 파이프라인. 보안 감사(OWASP Top 10), 성능 분석, 접근성 검사(WCAG 2.1 AA), 코드 품질 리뷰.
 
-**트리거 키워드:**
-| 언어 | 키워드 |
-|----------|----------|
-| 공통 | "code review", "security audit", "security review" |
-| 영어 | "review" |
-| 한국어 | "리뷰", "코드 검토", "보안 검토" |
-| 일본어 | "レビュー", "コードレビュー", "セキュリティ監査" |
-| 중국어 | "审查", "代码审查", "安全审计" |
+**트리거 키워드:** 없음. `/review`로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** 리뷰 범위 식별 -> 자동화 보안 검사 (npm audit, bandit) -> 수동 보안 리뷰 (OWASP Top 10) -> 성능 분석 -> 접근성 리뷰 (WCAG 2.1 AA) -> 코드 품질 리뷰 -> QA 보고서 생성.
 
@@ -400,7 +331,7 @@ judge 노드는 Phase 2에서 설명한 프롬프트 기반 judge입니다. 워�
 
 **설명:** 소스 코드, 에이전트 스킬, MCP 구성 요소 또는 배포된 웹 애플리케이션을 대상으로 `oma-security` 스킬을 실행합니다. 워크플로우는 대상에 맞는 엔진을 선택하고, 커버리지와 증거를 기록하며, 발견 사항을 검증하고 설정된 CI 게이트를 적용합니다.
 
-**진입점:** `/security`. Deepsec나 Cisco 스캐너 실행 요청, ARTEX 침투 테스트 요청도 이 워크플로우로 연결됩니다.
+**진입점:** `/security`. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다. 워크플로우 안에서는 대상과 인텐트에 따라 Deepsec, Cisco 스캐너, ARTEX를 고릅니다.
 
 **대상과 엔진:**
 
@@ -433,14 +364,7 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 
 **설명:** 회귀 테스트 작성과 유사 패턴 스캔이 포함된 구조화된 버그 진단 및 수정.
 
-**트리거 키워드:**
-| 언어 | 키워드 |
-|----------|----------|
-| 공통 | "debug" |
-| 영어 | "fix bug", "fix error", "fix crash" |
-| 한국어 | "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐" |
-| 일본어 | "デバッグ", "バグ修正", "エラー修正" |
-| 중국어 | "调试", "修复 bug", "修复错误" |
+**트리거 키워드:** 없음. `/debug`로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** 에러 정보 수집 -> 재현 (MCP `search_for_pattern`, `find_symbol`) -> 근본 원인 진단 (MCP `find_referencing_symbols`로 실행 경로 추적) -> 최소 수정 제안 (사용자 확인 필수) -> 수정 적용 + 회귀 테스트 작성 -> 유사 패턴 스캔 (범위가 10파일을 넘으면 debug-investigator 서브에이전트를 스폰할 수 있음) -> 메모리에 버그 문서화.
 
@@ -452,14 +376,7 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 
 **설명:** 토큰, 컴포넌트 패턴, 접근성 규칙이 포함된 DESIGN.md를 생성하는 7단계 디자인 워크플로우.
 
-**트리거 키워드:**
-| 언어 | 키워드 |
-|----------|----------|
-| 공통 | "design system", "DESIGN.md", "design token" |
-| 영어 | "design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism" |
-| 한국어 | "디자인", "랜딩페이지", "디자인 시스템", "UI 디자인" |
-| 일본어 | "デザイン", "ランディングページ", "デザインシステム" |
-| 중국어 | "设计", "着陆页", "设计系统" |
+**트리거 키워드:** 없음. `/design`으로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** SETUP (컨텍스트 수집, `.design-context.md`) -> EXTRACT (선택적, 레퍼런스 URL/Stitch에서) -> ENHANCE (모호한 프롬프트 보강) -> PROPOSE (색상, 타이포그래피, 레이아웃, 모션, 컴포넌트를 담은 2-3가지 디자인 방향) -> GENERATE (DESIGN.md + CSS/Tailwind/shadcn 토큰) -> AUDIT (반응형, WCAG 2.2, Nielsen 휴리스틱, AI slop 검사) -> HANDOFF (저장, 사용자에게 안내).
 
@@ -513,7 +430,7 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 
 **설명:** `oma-docs`를 통한 문서 드리프트 탐지와 동기화입니다. verify 모드는 저장소의 모든 마크다운(기본 글롭 `**/*.md`)에서 깨진 참조를 찾고, sync 모드는 git diff의 영향을 받는 문서에 문서별 패치를 제안합니다. 인라인으로 실행하며(서브에이전트를 스폰하지 않습니다), 모든 벤더가 `oma docs`를 직접 호출합니다.
 
-**트리거 키워드:** 공통: "oma-docs", "docs verify", "docs sync". 영어: "verify docs", "check docs", "docs drift", "broken doc links", "stale docs", "sync docs", "patch docs". 한국어: "문서 검증", "문서 드리프트", "문서 동기화". 일본어: "ドキュメント検証", "ドキュメント同期". 중국어: "文档校验", "文档同步".
+**트리거 키워드:** 없음. `/docs`로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** 모드 감지(기본은 `verify`이며, 프롬프트에 sync가 언급되거나 git diff 범위가 주어지면 `sync`) -> 사전 점검(`command -v oma`. sync에서는 쓸 만한 diff를 확인하고 없으면 `HEAD~1..HEAD`로 폴백) -> verify는 `oma docs verify --json`(문제가 없으면 종료 코드 `0`, 깨진 참조가 있으면 `1`), sync는 해당 범위에 `oma docs sync --json` -> 호스트 LLM 계약에 따라 발견 사항 종합(verify는 CRITICAL/HIGH/MEDIUM/LOW로 묶어 구체적인 수정안 제시, sync는 최소 unified-diff 패치 작성) -> 각 sync 패치를 대화형으로 제시(`[y] 적용 [n] 건너뛰기 [d] diff 보기 [s] 전체 제안 보기`. 절대 자동 적용하지 않습니다) -> 적용하면 `oma docs verify --json`으로 인덱스 재생성 -> 모드, 종류별 건수, `docs/generated/doc-refs.json`과 `url-drift.json` 위치 보고.
 
@@ -530,7 +447,7 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 
 **설명:** `oma-recap`을 통한 일간 또는 기간 작업 회고입니다. 자연어에서 날짜나 구간을 해석하고, 여러 AI 도구 이력(Grok, Claude, Codex, Qwen, Cursor, Antigravity)에 걸쳐 `oma recap --json`을 호출하고, 테마 분석과 Markdown 서식은 스킬에 위임한 뒤, TL;DR과 저장 경로를 보고합니다. 인라인으로 실행하며(서브에이전트를 스폰하지 않습니다), 모든 벤더가 `oma recap`을 직접 호출합니다.
 
-**트리거 키워드:** 공통: "recap". 한국어: "리캡". 일본어: "リキャップ".
+**트리거 키워드:** 없음. `/recap`으로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:** 모드 감지와 구간 해석(기본은 오늘 기준 `daily`. "이번 주"나 "지난 7일" 같은 표현이 `--window Nd`로 해석되면 `period`) -> 사용자가 도구를 명시적으로 지목할 때만 `--tool` 필터 추출(`grok, claude, codex, qwen, cursor, antigravity`) -> 사전 점검(`command -v oma`) -> `oma recap --json` 실행(daily는 `--date YYYY-MM-DD` 또는 생략, period는 `--window 7d` / `30d`) -> 스킬 계약에 따라 종합하고 저장(15분 테마 임계값, 일간과 다일간 템플릿 구분) -> 3줄 TL;DR과 저장 경로 보고.
 
@@ -561,14 +478,7 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 
 **설명:** `oma-video` 스킬을 엔드 투 엔드로 구동합니다. 브리프 → 스크립트 → 내레이션 → 비주얼 → 자막 → render-spec → 관리되는 HyperFrames(또는 MoneyPrinterTurbo) 컴포지터 순으로 진행합니다. 재현 가능한 실행 디렉토리를 만들며 컴포지터와 ffprobe 검사를 통과한 뒤에만 실제 `.mp4`를 내보냅니다. 지원되는 에셋 폴백에는 키를 선택적으로 설정할 수 있지만 컴포지터나 도구 체인의 실패는 실패한 실행으로 남습니다. 인라인으로 실행합니다(서브에이전트를 스폰하지 않습니다).
 
-**트리거 키워드:**
-| 언어 | 키워드 |
-|----------|----------|
-| 공통 | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
-| 영어 | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
-| 한국어 | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
-| 일본어 | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
-| 중국어 | "生成视频", "制作视频", "短视频", "讲解视频", "演示视频" |
+**트리거 키워드:** 없음. `/video`로 시작합니다. 키워드 훅은 문장만으로 이 워크플로우를 열지 않습니다.
 
 **단계:**
 1. **브리프와 모드 결정:** `shorts`(9:16), `explainer`(16:9), `demo`(화면·웹 캡처) 중 하나를 고르고 모드 기본값을 적용합니다. 플래그로 덮어쓸 수 있습니다.
@@ -611,7 +521,7 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 |--------|--------|-----------|
 | **정의** | 에이전트 전문성 (에이전트가 아는 것) | 오케스트레이션 프로세스 (에이전트가 협업하는 방법) |
 | **위치** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **활성화** | 스킬 라우팅 키워드를 통한 자동 활성화 | 슬래시 명령 또는 트리거 키워드 |
+| **활성화** | 호스트가 스킬 이름과 설명을 맞추고, skill injector가 힌트를 더할 수 있음 | 슬래시 명령. `orchestrate`, `ultrawork`, `work`, `ralph`는 프롬프트가 모드 이름을 말할 때도 시작 |
 | **범위** | 단일 도메인 실행 | 다단계, 종종 멀티 에이전트 |
 | **예시** | "React 컴포넌트 만들어줘" | "기능 계획 -> 구현 -> 리뷰 -> 커밋" |
 
@@ -623,19 +533,19 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 
 oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `UserPromptSubmit` 훅을 사용합니다. 벤더 설정은 `<hookDir>/oma-hook.sh --vendor <v> --event <e>` 항목 하나를 등록하고, 이 항목이 인프로세스 핸들러 체인이 실행되는 `oma hook run`으로 연결됩니다. 체인은 다음으로 구성됩니다:
 
-1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, `oma` 바이너리에 인라인됨): 지원하는 11개 언어(영어, 한국어, 일본어, 중국어, 스페인어, 프랑스어, 독일어, 포르투갈어, 러시아어, 네덜란드어, 폴란드어)의 키워드-워크플로우 매핑을 정의합니다.
-2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): 사용자 입력을 모든 언어의 트리거 키워드와 대조하고 워크플로우 활성화 컨텍스트를 주입하는 TypeScript 로직.
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, `oma` 바이너리에 인라인됨): `workflows` 표는 `orchestrate`, `ultrawork`, `work`, `ralph`만 키워드로 라우팅하고, 각 모드의 명시적 이름만 사용합니다. 같은 파일의 skill 키워드 힌트는 그대로입니다.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): 사용자 입력에서 그 명시적 이름을 찾아 워크플로우 활성화 컨텍스트를 주입하는 TypeScript 로직.
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): 활성 상태 파일을 확인하고 워크플로우 컨텍스트를 다시 주입해 지속 워크플로우 실행을 강제합니다.
 
 ### 감지 흐름
 
-1. 사용자가 자연어 입력을 타이핑합니다.
-2. 훅이 명시적 `/command`가 있는지 확인합니다. 있으면 중복 방지를 위해 감지를 건너뜁니다.
-3. 훅이 입력을 정제(코드 블록, 인용 문자열, 붙여넣은 시스템 에코 블록 제거)한 뒤 `.agents/hooks/core/triggers.json`의 키워드 목록(리터럴 문구)과 `patterns`(원시 정규식) 양쪽에 대조하여 스캔합니다. 강화 가드는 동일 워크플로우가 최근 60초 내에 2회 이상 발동된 경우 재트리거를 억제합니다.
+1. 사용자가 프롬프트를 입력합니다.
+2. 훅이 프롬프트가 `/command`로 시작하는지 확인합니다. 그러면 키워드 주입을 건너뛰고 명령이 워크플로우를 로드합니다. 지속 모드의 슬래시 명령은 그 모드의 상태 파일을 기록합니다.
+3. 훅이 입력을 정제(코드 블록, 인용 문자열, 붙여넣은 시스템 에코 블록 제거)한 뒤 `.agents/hooks/core/triggers.json`의 `workflows` 키워드 목록을 스캔합니다. 그 목록에는 `orchestrate`, `ultrawork`, `work`, `ralph`의 명시적 이름만 있습니다. 강화 가드는 동일 워크플로우가 최근 60초 내에 2회 이상 발동된 경우 재트리거를 억제합니다.
 4. 매칭이 발견되면, 입력이 정보성 패턴에 해당하는지 확인합니다.
 5. 정보성이면 필터링되며(예: "what is orchestrate?"), 워크플로우는 트리거되지 않습니다.
-6. 행동 가능하면, 컨텍스트에 `[OMA WORKFLOW: {workflow-name}]`를 주입합니다. 여러 워크플로우가 일치하면 명시적 호출이 우선하고, 그다음에는 가장 긴 키워드가 우선합니다.
-7. 지속 워크플로우에서는 명시적 호출(`triggers.json`의 `explicit`)만 지속 모드 상태 파일을 기록합니다. 자연어 일치는 제안으로 주입되고, 질문으로 끝나는 프롬프트(첫 줄이나 마지막 줄의 `?`)는 아예 발동하지 않습니다.
+6. 명시적 이름이 일치하면 `[OMA WORKFLOW: {workflow-name}]`를 주입하고 그 워크플로우를 바로 시작하라고 알립니다. 여러 명시적 이름이 일치하면 더 긴 키워드가 우선하고, 그다음이 선언 순서입니다.
+7. 같은 명시적 일치가 지속 모드 상태 파일을 기록합니다. 짧은 질문 안에 모드 이름이 있으면 시작합니다(`ultrawork로 해줄래?`). 모드에 대한 질문(`What is ultrawork?`)은 시작하지 않습니다.
 8. 에이전트가 주입된 태그를 읽고 `.agents/workflows/`에서 해당 워크플로우 파일을 로드합니다.
 
 ### 언어 섹션 컨벤션
@@ -650,23 +560,22 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 모든 섹션은 항상 로드됩니다. 사용자는 자신이 생각하는 언어로 프롬프트를 입력하며, `.agents/oma-config.yaml`의 `language` 설정은 응답 언어만 제어하기 때문입니다. 한 언어로 쓴 키워드는 그 언어의 문자가 들어 있는 프롬프트에만 일치할 수 있으므로, 모든 섹션을 합쳐도 관련 없는 프롬프트에서 발동하지 않습니다.
 
-단어 경계는 키워드 자체에만 좌우되며 `language` 설정과는 무관합니다. ASCII 키워드는 전체 단어일 때만 일치하고("work"는 "network"와, "review"는 "preview"와 일치하지 않습니다), ASCII가 아닌 텍스트를 포함한 키워드는 CJK의 조사와 어미가 단어에 바로 붙기 때문에 부분 문자열로 일치합니다("리뷰해줘").
+단어 경계는 키워드 자체에만 좌우되며 `language` 설정과는 무관합니다. ASCII 키워드는 전체 단어일 때만 일치하고("work"는 "network"와 일치하지 않습니다), ASCII가 아닌 텍스트를 포함한 키워드는 CJK 조사가 단어에 바로 붙기 때문에 부분 문자열로 일치합니다("랄프로").
 
 ### Pattern 필드 (원시 정규식) {#pattern-field-raw-regex}
 
-리터럴 `keywords` 외에도 각 워크플로우는 `patterns`를 선언할 수 있습니다. `patterns`는 `iu` 플래그로 컴파일되는 원시 정규식 문자열입니다. 패턴을 사용하면 키워드 목록을 조합해 나열해야 했을 멀티 토큰 의도 매칭을 간결하게 표현할 수 있습니다.
+detector는 워크플로우 `patterns` 필드를 여전히 컴파일할 수 있습니다. `iu` 플래그의 원시 정규식이며, 키워드 목록으로 표현하기 어려운 멀티 토큰 의도에 씁니다. 배포된 `workflows` 표는 `patterns`를 선언하지 않습니다. 명시적 이름은 모두 `keywords`에도 있어야 합니다. 매칭된 키워드 문자열이 그 워크플로우의 `explicit` 목록에 있을 때만 명시적 호출로 세기 때문입니다.
 
 ```jsonc
 {
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      // Subset of `keywords` that activates persistent mode (persistent workflows only)
-      "explicit": ["orchestrate", ...],
-      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
-      "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
-        "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
+      "explicit": ["orchestrate", "オーケストレート", "orquestar"],
+      "keywords": {
+        "*": ["orchestrate"],
+        "ja": ["オーケストレート"],
+        "es": ["orquestar"]
       }
     }
   }
@@ -689,18 +598,13 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 | `ja` | "とは", "って何", "どうやって", "説明して" |
 | `zh` | "是什么", "什么是", "怎么", "解释" |
 
-입력이 워크플로우 트리거와 정보성 패턴 모두에 매칭되면, 정보성 패턴이 우선하고 워크플로우는 트리거되지 않습니다. 다음과 같은 프롬프트가 차단되는 이유입니다.
-- `"How do you build a TODO app?"`: `*`의 `how do`가 orchestrate 의도 정규식을 차단
-- `"orchestrate 트리거 해주면 되나요?"`: `ko`의 `트리거`가 orchestrate 키워드를 차단
+입력이 명시적 모드 이름과 정보성 패턴 모두에 매칭되면, 정보성 패턴이 우선하고 워크플로우는 트리거되지 않습니다. 다음과 같은 프롬프트가 차단되는 이유입니다.
+- `"what is orchestrate?"`: `*`의 `what is`가 `orchestrate` 키워드를 차단
+- `"orchestrate 트리거 해주면 되나요?"`: `ko`의 `트리거`가 `orchestrate` 키워드를 차단
 
-### 제외된 워크플로우
+### 키워드 훅이 열지 않는 워크플로우
 
-다음 워크플로우는 키워드로 트리거되지 않으며 명시적 `/command`로 호출해야 합니다. `/tools`와 `/stack-set`은 `excludedWorkflows`에 들어 있고(키워드 감지에서 의도적으로 뺐습니다), `/convert`는 트리거 키워드를 아예 배포하지 않으며(`oma-pdf`와 `oma-hwp` 스킬이 각자 키워드 감지를 갖고 있습니다), `/schedule`은 `oma schedule <action>` 시간 기반 작업을 다루는 슬래시 호출 워크플로우이고, `/explain`은 "explain"이 일상 어휘라서 키워드 감지를 걸면 오탐이 끊이지 않기 때문에 트리거 키워드를 배포하지 않습니다.
-- `/tools`
-- `/stack-set`
-- `/convert`
-- `/schedule`
-- `/explain`
+`orchestrate`, `ultrawork`, `work`, `ralph`를 제외한 모든 워크플로우는 슬래시 명령으로 시작합니다. 절차 파일은 `.agents/workflows/`에 그대로 있습니다. `excludedWorkflows`에는 `tools`, `stack-set`, `schedule`, `convert`가 남아 있어서, 나중에 키워드 은행을 추가해도 이 넷은 라우팅되지 않습니다. `/explain`은 "explain"이 일상 어휘라서 슬래시로만 시작합니다. 같은 파일의 skill 키워드 힌트는 별개이며 계속 skill 컨텍스트를 주입합니다.
 
 ---
 

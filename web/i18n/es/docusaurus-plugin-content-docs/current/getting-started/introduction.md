@@ -210,10 +210,8 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"workflow keyword (explicit keyword for persistent ones)"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
-  KD -->|"persistent workflow, natural language only"| SUG["Workflow suggested; agent decides"]
-  SUG -.->|"if the request calls for it"| WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]

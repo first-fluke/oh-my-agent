@@ -25,14 +25,20 @@ function writeMiniCorpus(): string {
     path,
     JSON.stringify([
       {
-        prompt: "Review my code before I open the PR.",
+        prompt: "Kick off ultrawork on this refactor.",
         lang: "en",
-        expected: "review",
+        expected: "ultrawork",
       },
       {
-        prompt: "이 PR 리뷰해줘.",
+        prompt: "랄프로 끝까지 해줘.",
         lang: "ko",
-        expected: "review",
+        expected: "ralph",
+      },
+      {
+        prompt: "Review my code before I open the PR.",
+        lang: "en",
+        expected: null,
+        note: "review prose does not force-start a workflow",
       },
       {
         prompt: "I read the ralph.md file to understand the workflow.",
@@ -56,23 +62,23 @@ function writeMiniCorpus(): string {
 }
 
 describe("triggers end-to-end (real keyword-detector, mini-corpus)", () => {
-  it("detects a genuine English review request", async () => {
+  it("detects an explicit ultrawork invocation", async () => {
     const outcome = await detectOne({
-      prompt: "Review my code before I open the PR.",
+      prompt: "Kick off ultrawork on this refactor.",
       lang: "en",
-      expected: "review",
+      expected: "ultrawork",
     });
-    expect(outcome.detected).toBe("review");
+    expect(outcome.detected).toBe("ultrawork");
     expect(outcome.matchedKeyword).toBeTruthy();
   });
 
-  it("detects a genuine Korean review request", async () => {
+  it("does not force-start a workflow for a review sentence", async () => {
     const outcome = await detectOne({
       prompt: "이 PR 리뷰해줘.",
       lang: "ko",
-      expected: "review",
+      expected: null,
     });
-    expect(outcome.detected).toBe("review");
+    expect(outcome.detected).toBeNull();
   });
 
   it("suppresses a ralph.md artifact reference (RC3 technical-reference guard)", async () => {
@@ -96,7 +102,7 @@ describe("triggers end-to-end (real keyword-detector, mini-corpus)", () => {
   it("runs a full corpus file end-to-end and scores it with zero missed/false fires", async () => {
     const corpusPath = writeMiniCorpus();
     const entries = loadTriggerCorpus(corpusPath);
-    expect(entries).toHaveLength(5);
+    expect(entries).toHaveLength(6);
 
     const outcomes = await detectAll(entries);
     const report = scoreDetections(
@@ -110,16 +116,23 @@ describe("triggers end-to-end (real keyword-detector, mini-corpus)", () => {
       })),
     );
 
-    expect(report.totals.total).toBe(5);
+    expect(report.totals.total).toBe(6);
     expect(report.totals.positives).toBe(2);
-    expect(report.totals.negatives).toBe(3);
+    expect(report.totals.negatives).toBe(4);
     expect(report.totals.missedFires).toBe(0);
     expect(report.totals.falseFires).toBe(0);
     expect(
-      report.perWorkflow.find((w) => w.workflow === "review"),
+      report.perWorkflow.find((w) => w.workflow === "ultrawork"),
     ).toMatchObject({
-      support: 2,
-      truePositives: 2,
+      support: 1,
+      truePositives: 1,
+      recall: 1,
+    });
+    expect(
+      report.perWorkflow.find((w) => w.workflow === "ralph"),
+    ).toMatchObject({
+      support: 1,
+      truePositives: 1,
       recall: 1,
     });
   });
@@ -135,12 +148,12 @@ describe("triggers end-to-end (real keyword-detector, mini-corpus)", () => {
     try {
       const outcomes = await detectAll([
         {
-          prompt: "Review my code before I open the PR.",
+          prompt: "Kick off ultrawork on this refactor.",
           lang: "en",
-          expected: "review",
+          expected: "ultrawork",
         },
       ]);
-      expect(outcomes[0]?.detected).toBe("review");
+      expect(outcomes[0]?.detected).toBe("ultrawork");
       expect(process.env.OMA_STATE_HOME).toBe(callerHome);
       expect(readdirSync(callerHome)).toEqual([]);
     } finally {
@@ -156,9 +169,9 @@ describe("triggers end-to-end (real keyword-detector, mini-corpus)", () => {
     const preview = await detectOne({
       prompt: "preview 페이지 레이아웃 고쳐줘",
       lang: "ko",
-      expected: "debug",
+      expected: null,
     });
-    expect(preview.detected).toBe("debug");
+    expect(preview.detected).toBeNull();
   });
 
   it("keeps corpus entries isolated (no reinforcement-suppression leakage across entries)", async () => {
@@ -166,14 +179,14 @@ describe("triggers end-to-end (real keyword-detector, mini-corpus)", () => {
     // the same workflow within 60s would be reinforcement-suppressed and
     // wrongly look like a missed-fire. Running the same workflow's keyword
     // three times in a row must succeed all three times.
-    const prompt = "Review my code before I open the PR.";
+    const prompt = "ultrawork this task";
     const results = await Promise.all([
-      detectOne({ prompt, lang: "en", expected: "review" }),
-      detectOne({ prompt, lang: "en", expected: "review" }),
-      detectOne({ prompt, lang: "en", expected: "review" }),
+      detectOne({ prompt, lang: "en", expected: "ultrawork" }),
+      detectOne({ prompt, lang: "en", expected: "ultrawork" }),
+      detectOne({ prompt, lang: "en", expected: "ultrawork" }),
     ]);
     for (const r of results) {
-      expect(r.detected).toBe("review");
+      expect(r.detected).toBe("ultrawork");
     }
   });
 });

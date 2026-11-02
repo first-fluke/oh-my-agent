@@ -293,31 +293,20 @@ oma stats get
 
 ## 자동 감지 예제
 
-oh-my-agent은 11개 언어에서 워크플로우 키워드를 감지합니다. 자연어가 워크플로우를 트리거하는 예제:
+키워드 훅은 네 가지 지속 모드만 시작하고, 프롬프트가 그 모드의 이름을 말할 때만 시작합니다. 나머지 워크플로우는 슬래시 커맨드로 시작합니다.
 
 | 입력 | 감지된 워크플로우 | 언어 |
 |----------|------------------|----------|
-| "plan the authentication feature" | `/plan` | 영어 |
-| "do everything in parallel" | `/orchestrate` | 영어 |
-| "review the code for security" | `/review` | 영어 |
-| "brainstorm some ideas for the dashboard" | `/brainstorm` | 영어 |
-| "design a landing page for our product" | `/design` | 영어 |
-| "fix the login bug" | `/debug` | 영어 |
-| "계획 세워줘" | `/plan` | 한국어 |
-| "버그 수정해줘" | `/debug` | 한국어 |
-| "디자인 시스템 만들어줘" | `/design` | 한국어 |
-| "자동으로 실행해" | `/orchestrate` | 한국어 |
-| "コードレビューして" | `/review` | 일본어 |
-| "計画を立てて" | `/plan` | 일본어 |
-| "修复这个 bug" | `/debug` | 중국어 |
-| "设计一个着陆页" | `/design` | 중국어 |
-| "revisar código" | `/review` | 스페인어 |
-| "diseña la página" | `/design` | 스페인어 |
-| "debuggen" | `/debug` | 독일어 |
-| "coordonner étape par étape" | `/work` | 프랑스어 |
-| "don't stop until it's done" | `/ralph` | 영어 |
-| "끝까지 해" | `/ralph` | 한국어 |
-| "最後までやって" | `/ralph` | 일본어 |
+| "Orchestrate this deployment." | `/orchestrate` | 영어 |
+| "orquestar este trabajo" | `/orchestrate` | 스페인어 |
+| "ultrawork this refactor" | `/ultrawork` | 영어 |
+| "ulw로 고쳐줘" | `/ultrawork` | 한국어 |
+| "Switch to work mode for this refactor." | `/work` | 영어 |
+| "work workflow로 진행해줘" | `/work` | 한국어 |
+| "ralph this task" | `/ralph` | 영어 |
+| "랄프로 끝까지 해줘" | `/ralph` | 한국어 |
+
+"plan the authentication feature", "fix the login bug", "do everything in parallel", "don't stop until it's done" 같은 문장은 워크플로우를 시작하지 않습니다.
 
 **정보성 쿼리는 필터링됩니다:**
 

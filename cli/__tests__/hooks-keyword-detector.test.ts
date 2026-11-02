@@ -2064,7 +2064,7 @@ describe("keyword-detector", () => {
       (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
     });
 
-    it("[fixed missed-fire] 'deepsec pr review' beats bare 'review'", async () => {
+    it("does not force a workflow for 'deepsec pr review'", async () => {
       const result = await run(
         {
           kind: "prompt",
@@ -2073,13 +2073,10 @@ describe("keyword-detector", () => {
         },
         ctx,
       );
-      expect(result?.type).toBe("context");
-      if (result?.type === "context") {
-        expect(result.additionalContext).toContain("[OMA WORKFLOW: SECURITY]");
-      }
+      expect(result).toBeNull();
     });
 
-    it("[fixed missed-fire] 'check docs' beats bare 'broken' (debug)", async () => {
+    it("does not force a workflow for 'check docs'", async () => {
       const result = await run(
         {
           kind: "prompt",
@@ -2088,13 +2085,10 @@ describe("keyword-detector", () => {
         },
         ctx,
       );
-      expect(result?.type).toBe("context");
-      if (result?.type === "context") {
-        expect(result.additionalContext).toContain("[OMA WORKFLOW: DOCS]");
-      }
+      expect(result).toBeNull();
     });
 
-    it("[fixed missed-fire] genuine 'what if' brainstorm request now fires", async () => {
+    it("does not force a workflow for a 'what if' exploration", async () => {
       const result = await run(
         {
           kind: "prompt",
@@ -2103,12 +2097,7 @@ describe("keyword-detector", () => {
         },
         ctx,
       );
-      expect(result?.type).toBe("context");
-      if (result?.type === "context") {
-        expect(result.additionalContext).toContain(
-          "[OMA WORKFLOW: BRAINSTORM]",
-        );
-      }
+      expect(result).toBeNull();
     });
 
     it("meta question using the same 'what if' phrasing stays suppressed", async () => {
@@ -2126,7 +2115,7 @@ describe("keyword-detector", () => {
       expect(result).toBeNull();
     });
 
-    it("suppressed-specific policy: a suppressed deepsec mention does not block a separate genuine review request", async () => {
+    it("does not force a workflow for a review request after a security question", async () => {
       const result = await run(
         {
           kind: "prompt",
@@ -2136,10 +2125,7 @@ describe("keyword-detector", () => {
         },
         ctx,
       );
-      expect(result?.type).toBe("context");
-      if (result?.type === "context") {
-        expect(result.additionalContext).toContain("[OMA WORKFLOW: REVIEW]");
-      }
+      expect(result).toBeNull();
     });
   });
 
@@ -2258,39 +2244,31 @@ memory was written by Serena into its internal store.
       });
     }
 
-    const cjkConfigCases: Array<[string, string]> = [
-      ["network 설정 고쳐줘", "DEBUG"],
-      ["preview 페이지 레이아웃 고쳐줘", "DEBUG"],
-      ["explanation 문구 수정해줘", "DEBUG"],
+    const cjkConfigCases = [
+      "network 설정 고쳐줘",
+      "preview 페이지 레이아웃 고쳐줘",
+      "explanation 문구 수정해줘",
     ];
-    for (const [prompt, expected] of cjkConfigCases) {
-      it(`routes '${prompt}' by its real intent, not an ASCII substring`, async () => {
+    for (const prompt of cjkConfigCases) {
+      it(`does not keyword-start a workflow for '${prompt}'`, async () => {
         // language is irrelevant now; the oma-config read is never consulted.
         (fs.readFileSync as ReturnType<typeof vi.fn>).mockReturnValue(
           "language: ko\n",
         );
-        const context = contextOf(await runPrompt(prompt));
-        expect(context).toContain(`[OMA WORKFLOW: ${expected}]`);
+        expect(await runPrompt(prompt)).toBeNull();
+        expect(stateWrites()).toEqual([]);
       });
     }
 
-    it("a natural-language persistent match is only suggested — no state file", async () => {
-      const context = contextOf(
+    it("a natural-language orchestration request does not start orchestrate", async () => {
+      expect(
         await runPrompt("Please handle everything for this deployment."),
-      );
-      expect(context).toContain("[OMA WORKFLOW: ORCHESTRATE]");
-      expect(context).toContain("may match the /orchestrate workflow");
-      expect(context).toContain("Persistent mode was NOT activated");
-      expect(context).not.toContain("Do not ask for confirmation");
+      ).toBeNull();
       expect(stateWrites()).toEqual([]);
     });
 
-    it("natural-language ralph phrasing is suggested, not persisted", async () => {
-      const context = contextOf(
-        await runPrompt("테스트 다 통과할때까지 계속해줘."),
-      );
-      expect(context).toContain("[OMA WORKFLOW: RALPH]");
-      expect(context).toContain('e.g. "ralph"');
+    it("natural-language completion phrasing does not start ralph", async () => {
+      expect(await runPrompt("테스트 다 통과할때까지 계속해줘.")).toBeNull();
       expect(stateWrites()).toEqual([]);
     });
 
@@ -2433,6 +2411,7 @@ memory was written by Serena into its internal store.
           persistent: boolean;
           keywords: Record<string, string[]>;
           explicit?: string[];
+          patterns?: Record<string, string[]>;
         }
       >;
     };
@@ -2444,24 +2423,27 @@ memory was written by Serena into its internal store.
       liveConfig = mod.default as unknown as typeof liveConfig;
     });
 
-    it("declares explicit invocations for every persistent workflow, only there", () => {
+    it("routes only the four persistent modes, each by an explicit name", () => {
+      expect(Object.keys(liveConfig.workflows).sort()).toEqual([
+        "orchestrate",
+        "ralph",
+        "ultrawork",
+        "work",
+      ]);
       for (const [name, def] of Object.entries(liveConfig.workflows)) {
-        if (def.persistent) {
-          expect(def.explicit?.length, name).toBeGreaterThan(0);
-        } else {
-          expect(def.explicit, name).toBeUndefined();
-        }
+        expect(def.persistent, name).toBe(true);
+        expect(def.explicit?.length, name).toBeGreaterThan(0);
+        expect(def.patterns, name).toBeUndefined();
       }
     });
 
-    it("lists every explicit invocation in the workflow's keyword banks", () => {
+    it("lists every explicit invocation in the workflow's keyword banks, and nothing else", () => {
       for (const [name, def] of Object.entries(liveConfig.workflows)) {
         const keywords = collectLangEntries(def.keywords).map((k) =>
           k.toLowerCase(),
         );
-        for (const kw of def.explicit ?? []) {
-          expect(keywords, `${name}: ${kw}`).toContain(kw.toLowerCase());
-        }
+        const explicit = (def.explicit ?? []).map((k) => k.toLowerCase());
+        expect(keywords.sort(), name).toEqual([...explicit].sort());
       }
     });
 

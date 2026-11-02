@@ -210,10 +210,8 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"workflow keyword (explicit keyword for persistent ones)"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
-  KD -->|"persistent workflow, natural language only"| SUG["Workflow suggested; agent decides"]
-  SUG -.->|"if the request calls for it"| WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
@@ -223,7 +221,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-출처: `.agents/hooks/core/keyword-detector.ts`(슬래시 명령 건너뛰기, 트리거 매칭, 지속 워크플로우 제안), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts`, 그리고 `.agents/workflows/` 아래의 워크플로우 파일입니다. 모든 워크플로우에 모든 게이트가 있는 것은 아닙니다. `/orchestrate`는 검증 스크립트를, `/review`는 QA 리뷰를 실행하고, `/ralph`는 [judge](./glossary.md#judge)를 추가합니다.
+출처: `.agents/hooks/core/keyword-detector.ts`(슬래시 명령 건너뛰기, 명시적 모드 이름 매칭), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts`, 그리고 `.agents/workflows/` 아래의 워크플로우 파일입니다. 모든 워크플로우에 모든 게이트가 있는 것은 아닙니다. `/orchestrate`는 검증 스크립트를, `/review`는 QA 리뷰를 실행하고, `/ralph`는 [judge](./glossary.md#judge)를 추가합니다.
 
 ---
 

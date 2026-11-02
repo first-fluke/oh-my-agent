@@ -63,7 +63,7 @@ Plan review reuses authorization already given for the task. Agents ask only for
 
 Persistent workflows keep running until all tasks are done. They maintain state in `.agents/state/` and reinject `[OMA PERSISTENT MODE: ...]` context on each user message until explicitly deactivated.
 
-Persistent mode starts only on an **explicit invocation**: the workflow's slash command (`/ultrawork`, or a namespaced form such as `/oma:ultrawork`), or the workflow's own name in plain text (the `explicit` list in `triggers.json`, e.g. "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). The other trigger keywords below are natural-language hints: they inject the workflow as a suggestion without activating persistent mode, and they never fire when the first or last line of the prompt is a question ending in `?`.
+Persistent mode starts only on an **explicit invocation**: the workflow's slash command (`/ultrawork`, or a namespaced form such as `/oma:ultrawork`), or the workflow's own name in plain text (the `explicit` list in `triggers.json`: "orchestrate" and its listed translations, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). The keyword hook does not open a workflow from any other sentence.
 
 ### /orchestrate
 
@@ -75,28 +75,8 @@ Persistent mode starts only on an **explicit invocation**: the workflow's slash 
 | Language | Keywords |
 |----------|----------|
 | Explicit (persistent) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-| English | "do everything", "run everything", "everything in parallel", "automate everything" |
-| Korean | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
-| Japanese | "全部実行", "全部並列で", "自動でやって" |
-| Chinese | "编排", "全部执行", "全部并行", "自动处理" |
-| Spanish | "ejecutar todo", "todo en paralelo" |
-| French | "tout exécuter", "tout en parallèle" |
-| German | "alles ausführen", "alles parallel" |
-| Portuguese | "executar tudo", "tudo em paralelo" |
-| Russian | "выполнить всё", "всё параллельно" |
-| Dutch | "alles uitvoeren", "alles parallel" |
-| Polish | "wykonaj wszystko", "wszystko równolegle" |
 
-Bare "parallel"/"automate" (and their translations) are not triggers: "run the tests in parallel" or "automate the release notes" are ordinary requests, not multi-agent orchestration.
-
-**Trigger regex patterns** (intent + noun whitelist, see [Auto-Detection: Pattern Field](#pattern-field-raw-regex)):
-| Section | Pattern | Examples that trigger |
-|---------|---------|----------------------|
-| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
-| `*` (universal) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
-| `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
-
-Noun whitelist (14): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. A single feature ("implement the login feature", "로그인 기능 구현해줘") or an existing thing ("make the API faster") does not match.
+Sentences such as "do everything", "전부 해줘", or "build me an app" do not start this workflow.
 
 **Steps:**
 1. **Step 0, Preparation:** Read coordination skill, context-loading guide, memory protocol. Detect vendor.
@@ -146,16 +126,8 @@ flowchart TD
 | Language | Keywords |
 |----------|----------|
 | Explicit (persistent) | "work mode", "work workflow" |
-| Universal | "step by step" |
-| English | "one by one", "one step at a time" |
-| Korean | "단계별", "하나씩 해줘", "차근차근" |
-| Japanese | "ステップバイステップ", "一歩ずつ" |
-| Chinese | "逐步", "一步一步" |
-| Spanish | "paso a paso", "uno por uno" |
-| French | "étape par étape", "un par un" |
-| German | "schritt für schritt", "der reihe nach" |
 
-Bare "work" is not a trigger — it is ordinary vocabulary ("Does this work on Windows?").
+Bare "work" is not a trigger — it is ordinary vocabulary ("Does this work on Windows?"). "step by step" and its translations do not start this workflow either.
 
 **Steps:**
 1. **Step 0, Preparation:** Read skills, context-loading, memory protocol. Record session start.
@@ -249,15 +221,8 @@ flowchart TD
 | Language | Keywords |
 |----------|----------|
 | Explicit (persistent) | "ralph", "랄프" |
-| English | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
-| Korean | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
-| Japanese | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
-| Chinese | "不要停", "直到完成", "全部完成", "做完为止" |
-| Spanish | "no pares", "hasta completar", "termina todo" |
-| French | "n'arrête pas", "jusqu'à complétion", "termine tout" |
-| German | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
 
-Bare resume phrases ("keep going", "carry on", "계속해", "続けて", "продолжай", …) are not triggers: users type them to resume after an interruption.
+Bare resume phrases ("keep going", "carry on", "계속해", "続けて", "продолжай", …) and completion phrasing ("don't stop", "끝까지 해") do not start this workflow.
 
 **Phases:**
 1. **Phase 0, INIT:** Load prerequisites (context-loading, memory protocol, judge protocol). Define and record mechanically verifiable completion criteria, such as test assertions, non-emitting type checks, exit codes, or file existence. Include build checks only when explicitly requested. Show the criteria and continue within the authorized scope. Initialize session with `max_iterations: 5`.
@@ -300,14 +265,7 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Description:** PM-driven task breakdown. Analyzes requirements, selects tech stack, decomposes into prioritized tasks with dependencies, defines API contracts.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "task breakdown" |
-| English | "plan" |
-| Korean | "계획", "요구사항 분석", "스펙 분석" |
-| Japanese | "計画", "要件分析", "タスク分解" |
-| Chinese | "计划", "需求分析", "任务分解" |
+**Trigger keywords:** None. Start it with `/plan`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:** Gather requirements -> Analyze technical feasibility (MCP code analysis) -> Assess complexity (Simple/Medium/Complex) -> Define API contracts (if cross-boundary) -> Decompose into tasks -> Review with user -> Save plan artifacts (machine-readable JSON + human-readable markdown tracker for Medium/Complex).
 
@@ -321,14 +279,7 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Description:** Design-first ideation. Explores intent, clarifies constraints, proposes approaches, produces an approved design document before planning.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "brainstorm" |
-| English | "ideate", "explore design" |
-| Korean | "브레인스토밍", "아이디어", "설계 탐색" |
-| Japanese | "ブレインストーミング", "アイデア", "設計探索" |
-| Chinese | "头脑风暴", "创意", "设计探索" |
+**Trigger keywords:** None. Start it with `/brainstorm`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:** Explore project context (MCP analysis) -> Ask clarifying questions (one at a time) -> Propose 2-3 approaches with trade-offs -> Present design section by section (with user approval each step) -> Save design document to `docs/plans/designs/{NNN}-{name}.md` -> Transition: suggest `/plan`.
 
@@ -340,14 +291,7 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Description:** Software architecture workflow that diagnoses architecture problems, selects the right analysis method (diagnostic routing / design-twice / ATAM / CBAM / ADR), compares options, synthesizes stakeholder input, and produces a recommendation, review, or ADR.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "architecture", "ADR", "ATAM", "CBAM" |
-| English | "architecture review", "architectural tradeoff" |
-| Korean | "아키텍처", "설계 검토" |
-| Japanese | "アーキテクチャ" |
-| Chinese | "架构" |
+**Trigger keywords:** None. Start it with `/architecture`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:** Frame the decision (new architecture / review / tradeoff analysis / investment prioritization / ADR authoring) -> Select methodology via diagnostic routing -> Analyze current architecture via MCP code analysis (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> Synthesize stakeholder input (only when cross-cutting enough to justify the cost) -> Produce recommendation with explicit assumptions, tradeoffs, risks, validation steps -> Hand off to `/plan` when implementation is required.
 
@@ -361,13 +305,7 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Description:** Full project initialization. Analyzes an existing codebase, generates AGENTS.md, ARCHITECTURE.md, and a structured `docs/` knowledge base.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "deepinit" |
-| Korean | "프로젝트 초기화" |
-| Japanese | "プロジェクト初期化" |
-| Chinese | "项目初始化" |
+**Trigger keywords:** None. Start it with `/deepinit`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:** Preparation -> Analyze codebase (project type, architecture, implicit rules, domains, boundaries) -> Generate ARCHITECTURE.md (domain map, under 200 lines) -> Generate `docs/` knowledge base (design-docs/, plans/, generated/, product-specs/, references/, domain docs) -> Generate root AGENTS.md (~100 lines, table of contents) -> Generate boundary AGENTS.md files (monorepo packages, under 50 lines each) -> Update existing harness (if re-running) -> Validate (no dead links, line limits).
 
@@ -379,14 +317,7 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Description:** Full QA review pipeline. Security audit (OWASP Top 10), performance analysis, accessibility check (WCAG 2.1 AA), and code quality review.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "code review", "security audit", "security review" |
-| English | "review" |
-| Korean | "리뷰", "코드 검토", "보안 검토" |
-| Japanese | "レビュー", "コードレビュー", "セキュリティ監査" |
-| Chinese | "审查", "代码审查", "安全审计" |
+**Trigger keywords:** None. Start it with `/review`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:** Identify review scope -> Automated security checks (npm audit, bandit) -> Manual security review (OWASP Top 10) -> Performance analysis -> Accessibility review (WCAG 2.1 AA) -> Code quality review -> Generate QA report.
 
@@ -400,7 +331,7 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Description:** Run the `oma-security` skill for source code, agent skills, MCP components, or a deployed web application. The workflow selects the relevant engine, records its coverage and evidence, validates findings, and applies a configured CI gate.
 
-**Entry point:** `/security`. Requests to run Deepsec, Cisco scanners, or an ARTEX pentest also route here.
+**Entry point:** `/security`. The keyword hook does not open this workflow from a sentence. Inside the workflow, Deepsec, Cisco scanners, and ARTEX are selected by target and intent.
 
 **Targets and engines:**
 
@@ -433,14 +364,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 **Description:** Structured bug diagnosis and fixing with regression test writing and similar pattern scanning.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "debug" |
-| English | "fix bug", "fix error", "fix crash" |
-| Korean | "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐" |
-| Japanese | "デバッグ", "バグ修正", "エラー修正" |
-| Chinese | "调试", "修复 bug", "修复错误" |
+**Trigger keywords:** None. Start it with `/debug`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:** Collect error info -> Reproduce (MCP `search_for_pattern`, `find_symbol`) -> Diagnose root cause (MCP `find_referencing_symbols` to trace execution path) -> Propose minimal fix (user confirmation required) -> Apply fix + write regression test -> Scan for similar patterns (may spawn debug-investigator subagent if scope > 10 files) -> Document bug in memory.
 
@@ -452,14 +376,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 **Description:** 7-phase design workflow producing DESIGN.md with tokens, component patterns, and accessibility rules.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "design system", "DESIGN.md", "design token" |
-| English | "design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism" |
-| Korean | "디자인", "랜딩페이지", "디자인 시스템", "UI 디자인" |
-| Japanese | "デザイン", "ランディングページ", "デザインシステム" |
-| Chinese | "设计", "着陆页", "设计系统" |
+**Trigger keywords:** None. Start it with `/design`. The keyword hook does not open this workflow from a sentence.
 
 **Phases:** SETUP (context gathering, `.design-context.md`) -> EXTRACT (optional, from reference URLs/Stitch) -> ENHANCE (vague prompt augmentation) -> PROPOSE (2-3 design directions with color, typography, layout, motion, components) -> GENERATE (DESIGN.md + CSS/Tailwind/shadcn tokens) -> AUDIT (responsive, WCAG 2.2, Nielsen heuristics, AI slop check) -> HANDOFF (save, inform user).
 
@@ -513,7 +430,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 **Description:** Documentation drift detection and sync via `oma-docs`. Verify mode finds broken refs across all repo markdown (default glob `**/*.md`); sync mode proposes per-doc patches for docs affected by a git diff. Executes inline (no subagent spawning); all vendors invoke `oma docs` directly.
 
-**Trigger keywords:** Universal: "oma-docs", "docs verify", "docs sync". English: "verify docs", "check docs", "docs drift", "broken doc links", "stale docs", "sync docs", "patch docs". Korean: "문서 검증", "문서 드리프트", "문서 동기화". Japanese: "ドキュメント検証", "ドキュメント同期". Chinese: "文档校验", "文档同步".
+**Trigger keywords:** None. Start it with `/docs`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:** Detect mode (`verify` default; `sync` when the prompt mentions sync or supplies a git diff range) -> Preflight (`command -v oma`; for sync confirm a usable diff, fall back to `HEAD~1..HEAD`) -> Verify: `oma docs verify --json` (exit `0` clean, `1` broken refs) or Sync: `oma docs sync --json` against the range -> Synthesize findings under the host-LLM contract (verify: group by CRITICAL/HIGH/MEDIUM/LOW with concrete fixes; sync: draft minimal unified-diff patches) -> Present each sync patch interactively (`[y] apply [n] skip [d] show diff [s] show full proposal`; never auto-apply) -> On apply, regenerate the index via `oma docs verify --json` -> Report mode, counts by kind, and pointers to `docs/generated/doc-refs.json` / `url-drift.json`.
 
@@ -530,7 +447,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 **Description:** Daily or period work recap via `oma-recap`. Resolves a date or window from natural language, invokes `oma recap --json` across multiple AI tool histories (Grok, Claude, Codex, Qwen, Cursor, Antigravity), delegates theme analysis and Markdown formatting to the skill, and reports a TL;DR plus the saved path. Executes inline (no subagent spawning); all vendors invoke `oma recap` directly.
 
-**Trigger keywords:** Universal: "recap". Korean: "리캡". Japanese: "リキャップ".
+**Trigger keywords:** None. Start it with `/recap`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:** Detect mode and resolve window (`daily` default with today; `period` when phrases like "this week" / "지난 7일" resolve to `--window Nd`) -> Extract a `--tool` filter only when the user explicitly names tools (`grok, claude, codex, qwen, cursor, antigravity`) -> Preflight (`command -v oma`) -> Run `oma recap --json` (daily: `--date YYYY-MM-DD` or omitted; period: `--window 7d` / `30d`) -> Synthesize and save under the skill contract (15-minute theme threshold, daily vs multi-day template) -> Report a 3-bullet TL;DR and the save path.
 
@@ -561,14 +478,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 **Description:** Drive the `oma-video` skill end-to-end: brief → script → narration → visuals → captions → render-spec → managed HyperFrames (or MoneyPrinterTurbo) compositor. The workflow creates a reproducible run directory and emits a real `.mp4` only after the compositor and ffprobe checks pass. Provider configuration is key-optional for supported asset fallbacks; a compositor or toolchain failure remains a failed run. Executes inline (no subagent spawning).
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
-| English | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
-| Korean | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
-| Japanese | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
-| Chinese | "生成视频", "制作视频", "短视频", "讲解视频", "演示视频" |
+**Trigger keywords:** None. Start it with `/video`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:**
 1. **Resolve the brief and mode:** Pick `shorts` (9:16), `explainer` (16:9), or `demo` (screen/web capture); apply mode defaults, overridable by flags.
@@ -611,7 +521,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 |--------|--------|-----------|
 | **What they are** | Agent expertise (what an agent knows) | Orchestrated processes (how agents work together) |
 | **Location** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **Activation** | Automatic via skill routing keywords | Slash commands or trigger keywords |
+| **Activation** | Host matches the skill name and description; the skill injector may add hints | Slash command. `orchestrate`, `ultrawork`, `work`, and `ralph` also start when the prompt names the mode |
 | **Scope** | Single-domain execution | Multi-step, often multi-agent |
 | **Examples** | "Build a React component" | "Plan the feature -> build -> review -> commit" |
 
@@ -623,21 +533,21 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is processed. The vendor's settings register a single `<hookDir>/oma-hook.sh --vendor <v> --event <e>` entry that routes into `oma hook run`, where the handler chain runs in-process. The chain consists of:
 
-1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, inlined into the `oma` binary): Defines keyword-to-workflow mappings for all 11 supported languages (English, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, Russian, Dutch, Polish).
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, inlined into the `oma` binary): The `workflows` table keyword-routes only `orchestrate`, `ultrawork`, `work`, and `ralph`, and only by each mode's explicit name. Skill keyword hints live in the same file and are unchanged.
 
-2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScript logic that scans the user's input against the trigger keywords of every language and injects workflow activation context.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScript logic that scans the user's input against those explicit names and injects workflow activation context.
 
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): Enforces persistent workflow execution by checking for active state files and reinjecting workflow context.
 
 ### Detection flow
 
-1. User types natural language input
-2. Hook checks if explicit `/command` is present (if so, skip detection to avoid duplication)
-3. Hook sanitizes input (strips code blocks, quoted strings, pasted system-echo blocks) then scans against `.agents/hooks/core/triggers.json`, including both keyword lists (literal phrases) and `patterns` (raw regex). A reinforcement guard suppresses re-triggers if the same workflow fired 2+ times in the last 60 seconds.
+1. User types a prompt
+2. Hook checks if the prompt starts with a `/command` (if so, skip keyword injection; the command loads the workflow). A persistent slash command still writes that mode's state file
+3. Hook sanitizes input (strips code blocks, quoted strings, pasted system-echo blocks) then scans the `workflows` keyword lists in `.agents/hooks/core/triggers.json`. Those lists contain only the explicit names of `orchestrate`, `ultrawork`, `work`, and `ralph`. A reinforcement guard suppresses re-triggers if the same workflow fired 2+ times in the last 60 seconds.
 4. If a match is found, check if the input matches informational patterns
 5. If informational (e.g., "what is orchestrate?"), filter it out (no workflow triggers)
-6. If actionable, inject `[OMA WORKFLOW: {workflow-name}]` into the context. When several workflows match, an explicit invocation wins, then the longest keyword.
-7. For a persistent workflow, only an explicit invocation (`explicit` in `triggers.json`) writes the persistent-mode state file; a natural-language match is injected as a suggestion, and a question-terminated prompt (`?` on the first or last line) does not fire it at all
+6. If the explicit name matches, inject `[OMA WORKFLOW: {workflow-name}]` and tell the agent to start that workflow immediately. When several explicit names match, the longest keyword wins, then declaration order
+7. The same explicit match writes the persistent-mode state file. Naming the mode inside a short question still starts it (`ultrawork로 해줄래?`). A question about the mode (`What is ultrawork?`) does not
 8. The agent reads the injected tag and loads the corresponding workflow file from `.agents/workflows/`
 
 ### Language section convention
@@ -652,23 +562,22 @@ oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is
 
 Every section is always loaded: users prompt in whichever language they think in, and the `language` setting in `.agents/oma-config.yaml` controls only the response language. A keyword written in one language can only match a prompt containing that script, so merging all sections cannot fire on unrelated prompts.
 
-Word boundaries depend only on the keyword itself, never on `language`: ASCII keywords match whole words only (so "work" does not match "network", and "review" does not match "preview"), while keywords containing non-ASCII text match as substrings because CJK particles and inflections attach directly to the word ("리뷰해줘").
+Word boundaries depend only on the keyword itself, never on `language`: ASCII keywords match whole words only (so "work" does not match "network", and "ulw" does not match a longer identifier), while keywords containing non-ASCII text match as substrings because CJK particles attach directly to the word ("랄프로").
 
 ### Pattern field (raw regex) {#pattern-field-raw-regex}
 
-In addition to literal `keywords`, each workflow can declare `patterns`, raw regex strings compiled with `iu` flags. Patterns enable multi-token intent matching that would otherwise require combinatorial keyword lists.
+The detector can still compile a workflow `patterns` field: raw regex strings with `iu` flags, for multi-token intent that a keyword list cannot express. The shipped `workflows` table does not declare `patterns`. Every explicit name is also present in `keywords`, because a match counts as explicit only when the matched keyword text is in that workflow's `explicit` list.
 
 ```jsonc
 {
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      // Subset of `keywords` that activates persistent mode (persistent workflows only)
-      "explicit": ["orchestrate", ...],
-      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
-      "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
-        "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
+      "explicit": ["orchestrate", "オーケストレート", "orquestar"],
+      "keywords": {
+        "*": ["orchestrate"],
+        "ja": ["オーケストレート"],
+        "es": ["orquestar"]
       }
     }
   }
@@ -691,18 +600,13 @@ The `informationalPatterns` section of `.agents/hooks/core/triggers.json` define
 | `ja` | "とは", "って何", "どうやって", "説明して" |
 | `zh` | "是什么", "什么是", "怎么", "解释" |
 
-If the input matches both a workflow trigger and an informational pattern, the informational pattern takes priority and no workflow is triggered. This is what blocks prompts like:
-- `"How do you build a TODO app?"`: `how do` in `*` blocks the orchestrate intent regex
-- `"orchestrate 트리거 해주면 되나요?"`: `트리거` in `ko` blocks the orchestrate keyword
+If the input matches both an explicit mode name and an informational pattern, the informational pattern takes priority and no workflow is triggered. This is what blocks prompts like:
+- `"what is orchestrate?"`: `what is` in `*` blocks the `orchestrate` keyword
+- `"orchestrate 트리거 해주면 되나요?"`: `트리거` in `ko` blocks the `orchestrate` keyword
 
-### Excluded workflows
+### Workflows the keyword hook does not open
 
-The following workflows are not keyword-triggered and must be invoked with an explicit `/command`. `/tools` and `/stack-set` are in `excludedWorkflows` (deliberately removed from keyword detection); `/convert` simply ships no trigger keywords (the `oma-pdf` and `oma-hwp` skills carry their own keyword detection); `/schedule` is a slash-invoked workflow (`oma schedule <action>` time-based jobs); `/explain` ships no trigger keywords because "explain" is everyday vocabulary and keyword detection would constantly false-positive:
-- `/tools`
-- `/stack-set`
-- `/convert`
-- `/schedule`
-- `/explain`
+Every workflow other than `orchestrate`, `ultrawork`, `work`, and `ralph` starts from its slash command. The procedure file stays in `.agents/workflows/`. `excludedWorkflows` still names `tools`, `stack-set`, `schedule`, and `convert`, so a keyword bank cannot route those four even if one is added later. `/explain` stays slash-only because "explain" is everyday vocabulary. Skill keyword hints in the same file are separate and still inject skill context.
 
 ---
 

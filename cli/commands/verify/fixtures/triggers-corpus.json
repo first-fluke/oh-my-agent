@@ -2,22 +2,26 @@
   {
     "prompt": "Please handle everything for this deployment while I step away.",
     "lang": "en",
-    "expected": "orchestrate"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was orchestrate)"
   },
   {
     "prompt": "Just automate the whole onboarding pipeline end to end.",
     "lang": "en",
-    "expected": "orchestrate"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was orchestrate)"
   },
   {
     "prompt": "Run everything in parallel so the tests finish faster.",
     "lang": "en",
-    "expected": "orchestrate"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was orchestrate)"
   },
   {
     "prompt": "이 배포 작업 전부 해줘, 순서는 알아서 맞춰도 돼.",
     "lang": "ko",
-    "expected": "orchestrate"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was orchestrate)"
   },
   {
     "prompt": "테스트들 병렬 실행해줘, 시간 없어.",
@@ -28,13 +32,14 @@
   {
     "prompt": "이 작업들 전부 병렬로 돌려줘, 시간 없어.",
     "lang": "ko",
-    "expected": "orchestrate",
-    "note": "scope-wide parallel request ('전부 병렬로') still routes to orchestrate"
+    "expected": null,
+    "note": "scope-wide parallel request ('전부 병렬로') still routes to orchestrate relabeled: keyword routing now expects null (was orchestrate)"
   },
   {
     "prompt": "이 마이그레이션 자동으로 처리해줘.",
     "lang": "ko",
-    "expected": "orchestrate"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was orchestrate)"
   },
   {
     "prompt": "Kick off ultrawork on this refactor, I want the full gate loop.",
@@ -69,299 +74,356 @@
   {
     "prompt": "We need an architecture review before splitting this into microservices.",
     "lang": "en",
-    "expected": "architecture"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was architecture)"
   },
   {
     "prompt": "Let's do a tradeoff analysis for the module boundary between billing and orders.",
     "lang": "en",
-    "expected": "architecture"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was architecture)"
   },
   {
     "prompt": "Write the ADR for this new service boundary decision.",
     "lang": "en",
-    "expected": "architecture"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was architecture)"
   },
   {
     "prompt": "이 프로젝트 아키텍처 리뷰 좀 해줘.",
     "lang": "ko",
-    "expected": "architecture"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was architecture)"
   },
   {
     "prompt": "결제랑 주문 서비스 모듈 경계를 정리해줘.",
     "lang": "ko",
-    "expected": "architecture"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was architecture)"
   },
   {
     "prompt": "이 설계는 트레이드오프 분석이 필요해 보여.",
     "lang": "ko",
-    "expected": "architecture"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was architecture)"
   },
   {
     "prompt": "Make a plan for migrating the auth service to the new provider.",
     "lang": "en",
-    "expected": "plan"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was plan)"
   },
   {
     "prompt": "Break down this feature into a task breakdown before we start building.",
     "lang": "en",
-    "expected": "plan"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was plan)"
   },
   {
     "prompt": "Please analyze requirements for the new billing dashboard first.",
     "lang": "en",
-    "expected": "plan"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was plan)"
   },
   {
     "prompt": "이번 마이그레이션 계획 세워줘.",
     "lang": "ko",
-    "expected": "plan"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was plan)"
   },
   {
     "prompt": "이 기능 요구사항 정리해줘, 개발 들어가기 전에.",
     "lang": "ko",
-    "expected": "plan"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was plan)"
   },
   {
     "prompt": "새 대시보드 작업 분해 좀 해줘.",
     "lang": "ko",
-    "expected": "plan"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was plan)"
   },
   {
     "prompt": "Review my code before I open the PR.",
     "lang": "en",
-    "expected": "review"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was review)"
   },
   {
     "prompt": "Please run a security audit on the payment module.",
     "lang": "en",
-    "expected": "review"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was review)"
   },
   {
     "prompt": "Check my code for the new caching layer, something feels off.",
     "lang": "en",
-    "expected": "review"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was review)"
   },
   {
     "prompt": "이 PR 리뷰해줘.",
     "lang": "ko",
-    "expected": "review"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was review)"
   },
   {
     "prompt": "결제 모듈 보안 감사 좀 해줘.",
     "lang": "ko",
-    "expected": "review"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was review)"
   },
   {
     "prompt": "이 코드 한번 봐줘, 이상한 부분 있는지.",
     "lang": "ko",
-    "expected": "review"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was review)"
   },
   {
     "prompt": "Run deepsec on this repo before we merge.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "Kick off a deepsec pr review for this branch.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "We should scan repo with deepsec after the dependency bump.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "이 레포 딥섹 스캔 돌려줘.",
     "lang": "ko",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "이 브랜치 딥섹 PR 리뷰 해줘.",
     "lang": "ko",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "머지 전에 딥섹 실행해줘.",
     "lang": "ko",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "The login page is broken after the last deploy, please debug this.",
     "lang": "en",
-    "expected": "debug"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "Please fix the crash happening on checkout.",
     "lang": "en",
-    "expected": "debug"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "Find the bug causing duplicate emails to send.",
     "lang": "en",
-    "expected": "debug"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "로그인 화면이 배포 후에 깨졌어, 고쳐줘.",
     "lang": "ko",
-    "expected": "debug"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "체크아웃에서 계속 에러나, 버그 좀 찾아줘.",
     "lang": "ko",
-    "expected": "debug"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "이 API 호출이 자꾸 안 돼, 원인 좀 봐줘.",
     "lang": "ko",
-    "expected": "debug"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "Let's brainstorm a few ideas for the onboarding redesign.",
     "lang": "en",
-    "expected": "brainstorm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was brainstorm)"
   },
   {
     "prompt": "Help me ideate on notification strategies for churned users.",
     "lang": "en",
-    "expected": "brainstorm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was brainstorm)"
   },
   {
     "prompt": "What if we explored a completely different pricing model?",
     "lang": "en",
-    "expected": "brainstorm",
-    "note": "probe: 'what if' is also an informationalPatterns entry, so this may be self-suppressed even though it is a genuine brainstorm request"
+    "expected": null,
+    "note": "probe: 'what if' is also an informationalPatterns entry, so this may be self-suppressed even though it is a genuine brainstorm request relabeled: keyword routing now expects null (was brainstorm)"
   },
   {
     "prompt": "새 온보딩 화면 아이디어 좀 줘봐.",
     "lang": "ko",
-    "expected": "brainstorm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was brainstorm)"
   },
   {
     "prompt": "알림 전략 관련해서 같이 생각해보자.",
     "lang": "ko",
-    "expected": "brainstorm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was brainstorm)"
   },
   {
     "prompt": "가격 모델을 완전히 다르게 하면 어떻게 하면 좋을까 구상해보자.",
     "lang": "ko",
-    "expected": "brainstorm",
-    "note": "probe: '어떻게 하면 좋을까' contains '하면 좋을', also an informationalPatterns.ko entry — may self-suppress"
+    "expected": null,
+    "note": "probe: '어떻게 하면 좋을까' contains '하면 좋을', also an informationalPatterns.ko entry — may self-suppress relabeled: keyword routing now expects null (was brainstorm)"
   },
   {
     "prompt": "Walk me through fixing this migration one step at a time.",
     "lang": "en",
-    "expected": "work"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was work)"
   },
   {
     "prompt": "Let's do this step by step, guide me through each change.",
     "lang": "en",
-    "expected": "work"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was work)"
   },
   {
     "prompt": "Switch to manual mode and go one by one through these files.",
     "lang": "en",
-    "expected": "work"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was work)"
   },
   {
     "prompt": "이 작업 단계별로 진행해줘.",
     "lang": "ko",
-    "expected": "work"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was work)"
   },
   {
     "prompt": "파일들 하나씩 해줘, 한번에 말고.",
     "lang": "ko",
-    "expected": "work"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was work)"
   },
   {
     "prompt": "차근차근 해줘, 급하지 않아.",
     "lang": "ko",
-    "expected": "work"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was work)"
   },
   {
     "prompt": "Let's bootstrap a new project for the internal admin tool.",
     "lang": "en",
-    "expected": "deepinit"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was deepinit)"
   },
   {
     "prompt": "Please setup project scaffolding for the mobile app repo.",
     "lang": "en",
-    "expected": "deepinit"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was deepinit)"
   },
   {
     "prompt": "Initialize this repo with our standard harness before we start coding.",
     "lang": "en",
-    "expected": "deepinit"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was deepinit)"
   },
   {
     "prompt": "새 프로젝트 셋업해줘.",
     "lang": "ko",
-    "expected": "deepinit"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was deepinit)"
   },
   {
     "prompt": "이 레포 프로젝트 초기화해줘.",
     "lang": "ko",
-    "expected": "deepinit"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was deepinit)"
   },
   {
     "prompt": "관리자 도구용 새 프로젝트 만들어줘.",
     "lang": "ko",
-    "expected": "deepinit"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was deepinit)"
   },
   {
     "prompt": "Help me resolve this merge conflict on the release branch.",
     "lang": "en",
-    "expected": "scm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was scm)"
   },
   {
     "prompt": "I need to rebase my branch onto main before opening the PR.",
     "lang": "en",
-    "expected": "scm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was scm)"
   },
   {
     "prompt": "Let's set up a worktree for the hotfix branch.",
     "lang": "en",
-    "expected": "scm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was scm)"
   },
   {
     "prompt": "이거 커밋해줘, 메시지는 컨벤셔널로.",
     "lang": "ko",
-    "expected": "scm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was scm)"
   },
   {
     "prompt": "머지 충돌 해결 좀 도와줘.",
     "lang": "ko",
-    "expected": "scm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was scm)"
   },
   {
     "prompt": "이 브랜치 리베이스해줘.",
     "lang": "ko",
-    "expected": "scm"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was scm)"
   },
   {
     "prompt": "Keep going until this migration is fully done, don't stop halfway.",
     "lang": "en",
-    "expected": "ralph"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was ralph)"
   },
   {
     "prompt": "Run this to completion, see it through even if a test fails once.",
     "lang": "en",
-    "expected": "ralph"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was ralph)"
   },
   {
     "prompt": "Finish everything on this ticket before you stop.",
     "lang": "en",
-    "expected": "ralph"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was ralph)"
   },
   {
     "prompt": "이 작업 끝까지 해줘, 멈추지마.",
     "lang": "ko",
-    "expected": "ralph"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was ralph)"
   },
   {
     "prompt": "테스트 다 통과할때까지 계속해줘.",
     "lang": "ko",
-    "expected": "ralph"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was ralph)"
   },
   {
     "prompt": "랄프로 이 리팩토링 끝장내줘.",
@@ -371,122 +433,146 @@
   {
     "prompt": "Design a landing page for the new product launch.",
     "lang": "en",
-    "expected": "design"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was design)"
   },
   {
     "prompt": "Let's pick a color palette and typography for the dashboard redesign.",
     "lang": "en",
-    "expected": "design"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was design)"
   },
   {
     "prompt": "Build a wireframe for the onboarding flow before we code it.",
     "lang": "en",
-    "expected": "design"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was design)"
   },
   {
     "prompt": "이 제품 런칭용 랜딩페이지 디자인해줘.",
     "lang": "ko",
-    "expected": "design"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was design)"
   },
   {
     "prompt": "대시보드 색상 팔레트 정해줘.",
     "lang": "ko",
-    "expected": "design"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was design)"
   },
   {
     "prompt": "온보딩 화면 UI 디자인 좀 만들어줘.",
     "lang": "ko",
-    "expected": "design"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was design)"
   },
   {
     "prompt": "Verify docs against the current API before we ship this release.",
     "lang": "en",
-    "expected": "docs"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was docs)"
   },
   {
     "prompt": "Our documentation is stale, let's sync docs with the latest schema changes.",
     "lang": "en",
-    "expected": "docs"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was docs)"
   },
   {
     "prompt": "Check docs for any broken links after the restructuring.",
     "lang": "en",
-    "expected": "docs"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was docs)"
   },
   {
     "prompt": "릴리즈 전에 문서 검증해줘.",
     "lang": "ko",
-    "expected": "docs"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was docs)"
   },
   {
     "prompt": "이 API 변경 반영해서 문서 동기화해줘.",
     "lang": "ko",
-    "expected": "docs"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was docs)"
   },
   {
     "prompt": "오래된 문서 있는지 점검해줘.",
     "lang": "ko",
-    "expected": "docs"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was docs)"
   },
   {
     "prompt": "Give me a recap of everything I worked on today.",
     "lang": "en",
-    "expected": "recap"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was recap)"
   },
   {
     "prompt": "Do a quick recap of this week's PRs before standup.",
     "lang": "en",
-    "expected": "recap"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was recap)"
   },
   {
     "prompt": "I want a recap of yesterday's debugging session.",
     "lang": "en",
-    "expected": "recap"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was recap)"
   },
   {
     "prompt": "오늘 작업 리캡 좀 해줘.",
     "lang": "ko",
-    "expected": "recap"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was recap)"
   },
   {
     "prompt": "이번 주 PR들 리캡해줘.",
     "lang": "ko",
-    "expected": "recap"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was recap)"
   },
   {
     "prompt": "어제 진행한 디버깅 작업 리캡해줘.",
     "lang": "ko",
-    "expected": "recap"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was recap)"
   },
   {
     "prompt": "Make a video walking through this feature for the release notes.",
     "lang": "en",
-    "expected": "video"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was video)"
   },
   {
     "prompt": "Turn this into a video for the marketing team.",
     "lang": "en",
-    "expected": "video"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was video)"
   },
   {
     "prompt": "Create a demo video showing the new checkout flow.",
     "lang": "en",
-    "expected": "video"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was video)"
   },
   {
     "prompt": "이 기능 설명 영상 만들어줘.",
     "lang": "ko",
-    "expected": "video"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was video)"
   },
   {
     "prompt": "새 결제 플로우 데모 영상 좀 만들어줘.",
     "lang": "ko",
-    "expected": "video"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was video)"
   },
   {
     "prompt": "이 README를 영상으로 만들어줘.",
     "lang": "ko",
-    "expected": "video"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was video)"
   },
   {
     "prompt": "What does the ultrawork workflow do exactly?",
@@ -894,8 +980,8 @@
   {
     "prompt": "What is the security workflow for, out of curiosity? Separately and unrelated to that question, please review this PR today.",
     "lang": "en",
-    "expected": "review",
-    "note": "specificity-ranking policy check: the more specific 'deepsec pr review' match is suppressed (informational window around 'what is'), but a separate, unsuppressed 'review this' request later in the same prompt is NOT suppressed — a suppressed specific candidate must not block a different, genuine generic request from firing"
+    "expected": null,
+    "note": "specificity-ranking policy check: the more specific 'deepsec pr review' match is suppressed (informational window around 'what is'), but a separate, unsuppressed 'review this' request later in the same prompt is NOT suppressed — a suppressed specific candidate must not block a different, genuine generic request from firing relabeled: keyword routing now expects null (was review)"
   },
   {
     "prompt": "둘 다 해줘. 그리고 sbt 사용 이력에 공연들이 다 나열되고 바로 연결되면 좋겠는데.",
@@ -924,14 +1010,14 @@
   {
     "prompt": "이 작업 끝까지 해줘, 멈추지 말고.",
     "lang": "ko",
-    "expected": "ralph",
-    "note": "issue #672 counter-check: removing bare '끝까지' and '다 해' must NOT weaken genuine ralph activation — '끝까지 해' and '멈추지 말고' still match"
+    "expected": null,
+    "note": "issue #672 counter-check: removing bare '끝까지' and '다 해' must NOT weaken genuine ralph activation — '끝까지 해' and '멈추지 말고' still match relabeled: keyword routing now expects null (was ralph)"
   },
   {
     "prompt": "이 마이그레이션 한번에 다 해줘.",
     "lang": "ko",
-    "expected": "orchestrate",
-    "note": "issue #672 side effect: orchestrate's '한번에 다 해줘' was previously shadowed by ralph's shorter '다 해' substring. With '다 해' gone, the specific orchestrate keyword wins"
+    "expected": null,
+    "note": "issue #672 side effect: orchestrate's '한번에 다 해줘' was previously shadowed by ralph's shorter '다 해' substring. With '다 해' gone, the specific orchestrate keyword wins relabeled: keyword routing now expects null (was orchestrate)"
   },
   {
     "prompt": "Does this work on Windows?",
@@ -1002,20 +1088,20 @@
   {
     "prompt": "network 설정 고쳐줘",
     "lang": "ko",
-    "expected": "debug",
-    "note": "CJK-config regression: was work via 'network' under language: ko; the genuine '고쳐줘' fix request is debug"
+    "expected": null,
+    "note": "CJK-config regression: was work via 'network' under language: ko; the genuine '고쳐줘' fix request is debug relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "preview 페이지 레이아웃 고쳐줘",
     "lang": "ko",
-    "expected": "debug",
-    "note": "CJK-config regression: 'preview' fired review under language: ko"
+    "expected": null,
+    "note": "CJK-config regression: 'preview' fired review under language: ko relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "explanation 문구 수정해줘",
     "lang": "ko",
-    "expected": "debug",
-    "note": "CJK-config regression: 'explanation' fired plan under language: ko"
+    "expected": null,
+    "note": "CJK-config regression: 'explanation' fired plan under language: ko relabeled: keyword routing now expects null (was debug)"
   },
   {
     "prompt": "Switch to work mode for this refactor.",
@@ -1032,8 +1118,8 @@
   {
     "prompt": "Build me an app for tracking expenses.",
     "lang": "en",
-    "expected": "orchestrate",
-    "note": "build pattern still routes new-product requests ('build me an app')"
+    "expected": null,
+    "note": "build pattern still routes new-product requests ('build me an app') relabeled: keyword routing now expects null (was orchestrate)"
   },
   {
     "prompt": "Orchestrate this refactor step by step.",
@@ -1044,57 +1130,68 @@
   {
     "prompt": "Run a security scan on this repository.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "Run Cisco Skill Scanner against this skill package.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "Run Cisco MCP Scanner against this MCP server.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "Run Cisco AI Deep SAST on this source tree.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "Run ARTEX against our isolated test deployment.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "Validate security findings from this scan.",
     "lang": "en",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "이 레포 보안 스캔 해줘.",
     "lang": "ko",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "시스코 스킬 스캐너 실행해줘.",
     "lang": "ko",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "시스코 MCP 스캐너 실행해줘.",
     "lang": "ko",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "딥 SAST 실행해줘.",
     "lang": "ko",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "ARTEX 실행해서 테스트 사이트 검사해줘.",
     "lang": "ko",
-    "expected": "security"
+    "expected": null,
+    "note": "relabeled: keyword routing now expects null (was security)"
   },
   {
     "prompt": "What does the security workflow do?",

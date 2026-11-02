@@ -297,27 +297,14 @@ oh-my-agent détecte des mots-clés de workflow dans 11 langues. Voici des exemp
 
 | Vous saisissez | Workflow détecté | Langue |
 |----------------|------------------|--------|
-| "plan the authentication feature" | `/plan` | Anglais |
-| "do everything in parallel" | `/orchestrate` | Anglais |
-| "review the code for security" | `/review` | Anglais |
-| "brainstorm some ideas for the dashboard" | `/brainstorm` | Anglais |
-| "design a landing page for our product" | `/design` | Anglais |
-| "fix the login bug" | `/debug` | Anglais |
-| "계획 세워줘" | `/plan` | Coréen |
-| "버그 수정해줘" | `/debug` | Coréen |
-| "디자인 시스템 만들어줘" | `/design` | Coréen |
-| "자동으로 실행해" | `/orchestrate` | Coréen |
-| "コードレビューして" | `/review` | Japonais |
-| "計画を立てて" | `/plan` | Japonais |
-| "修复这个 bug" | `/debug` | Chinois |
-| "设计一个着陆页" | `/design` | Chinois |
-| "revisar código" | `/review` | Espagnol |
-| "diseña la página" | `/design` | Espagnol |
-| "debuggen" | `/debug` | Allemand |
-| "coordonner étape par étape" | `/work` | Français |
-| "don't stop until it's done" | `/ralph` | Anglais |
-| "끝까지 해" | `/ralph` | Coréen |
-| "最後までやって" | `/ralph` | Japonais |
+| "Orchestrate this deployment." | `/orchestrate` | Anglais |
+| "orquestar este trabajo" | `/orchestrate` | Espagnol |
+| "ultrawork this refactor" | `/ultrawork` | Anglais |
+| "ulw로 고쳐줘" | `/ultrawork` | Coréen |
+| "Switch to work mode for this refactor." | `/work` | Anglais |
+| "work workflow로 진행해줘" | `/work` | Coréen |
+| "ralph this task" | `/ralph` | Anglais |
+| "랄프로 끝까지 해줘" | `/ralph` | Coréen |
 
 **Les questions informatives sont filtrées :**
 

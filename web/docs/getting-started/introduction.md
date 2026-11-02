@@ -212,10 +212,8 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"workflow keyword (explicit keyword for persistent ones)"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
-  KD -->|"persistent workflow, natural language only"| SUG["Workflow suggested; agent decides"]
-  SUG -.->|"if the request calls for it"| WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
@@ -225,7 +223,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Sources: `.agents/hooks/core/keyword-detector.ts` (slash-command skip, trigger matching, persistent suggestion), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts`, and the workflow files under `.agents/workflows/`. Not every workflow has every gate: `/orchestrate` runs the verify script, `/review` runs QA review, and `/ralph` adds the [judge](./glossary.md#judge).
+Sources: `.agents/hooks/core/keyword-detector.ts` (slash-command skip, explicit mode-name matching), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts`, and the workflow files under `.agents/workflows/`. Not every workflow has every gate: `/orchestrate` runs the verify script, `/review` runs QA review, and `/ralph` adds the [judge](./glossary.md#judge).
 
 ---
 

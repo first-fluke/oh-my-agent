@@ -298,27 +298,14 @@ oh-my-agent phát hiện từ khóa workflow trong 11 ngôn ngữ. Ví dụ:
 
 | Bạn nhập | Workflow phát hiện | Ngôn ngữ |
 |----------|-------------------|----------|
-| "plan the authentication feature" | `/plan` | Tiếng Anh |
-| "do everything in parallel" | `/orchestrate` | Tiếng Anh |
-| "review the code for security" | `/review` | Tiếng Anh |
-| "brainstorm some ideas for the dashboard" | `/brainstorm` | Tiếng Anh |
-| "design a landing page for our product" | `/design` | Tiếng Anh |
-| "fix the login bug" | `/debug` | Tiếng Anh |
-| "계획 세워줘" | `/plan` | Tiếng Hàn |
-| "버그 수정해줘" | `/debug` | Tiếng Hàn |
-| "디자인 시스템 만들어줘" | `/design` | Tiếng Hàn |
-| "자동으로 실행해" | `/orchestrate` | Tiếng Hàn |
-| "コードレビューして" | `/review` | Tiếng Nhật |
-| "計画を立てて" | `/plan` | Tiếng Nhật |
-| "修复这个 bug" | `/debug` | Tiếng Trung |
-| "设计一个着陆页" | `/design` | Tiếng Trung |
-| "revisar código" | `/review` | Tiếng Tây Ban Nha |
-| "diseña la página" | `/design` | Tiếng Tây Ban Nha |
-| "debuggen" | `/debug` | Tiếng Đức |
-| "coordonner étape par étape" | `/work` | Tiếng Pháp |
-| "don't stop until it's done" | `/ralph` | Tiếng Anh |
-| "끝까지 해" | `/ralph` | Tiếng Hàn |
-| "最後までやって" | `/ralph` | Tiếng Nhật |
+| "Orchestrate this deployment." | `/orchestrate` | Tiếng Anh |
+| "orquestar este trabajo" | `/orchestrate` | Tiếng Tây Ban Nha |
+| "ultrawork this refactor" | `/ultrawork` | Tiếng Anh |
+| "ulw로 고쳐줘" | `/ultrawork` | Tiếng Hàn |
+| "Switch to work mode for this refactor." | `/work` | Tiếng Anh |
+| "work workflow로 진행해줘" | `/work` | Tiếng Hàn |
+| "ralph this task" | `/ralph` | Tiếng Anh |
+| "랄프로 끝까지 해줘" | `/ralph` | Tiếng Hàn |
 
 **Câu hỏi thông tin được lọc:**
 

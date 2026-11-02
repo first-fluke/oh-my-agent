@@ -297,27 +297,14 @@ oh-my-agent 会在 11 种语言中检测工作流关键词。下面的示例展�
 
 | 你输入 | 检测到的工作流 | 语言 |
 |--------|------------------|----------|
-| "plan the authentication feature" | `/plan` | 英语 |
-| "do everything in parallel" | `/orchestrate` | 英语 |
-| "review the code for security" | `/review` | 英语 |
-| "brainstorm some ideas for the dashboard" | `/brainstorm` | 英语 |
-| "design a landing page for our product" | `/design` | 英语 |
-| "fix the login bug" | `/debug` | 英语 |
-| "계획 세워줘" | `/plan` | 韩语 |
-| "버그 수정해줘" | `/debug` | 韩语 |
-| "디자인 시스템 만들어줘" | `/design` | 韩语 |
-| "자동으로 실행해" | `/orchestrate` | 韩语 |
-| "コードレビューして" | `/review` | 日语 |
-| "計画を立てて" | `/plan` | 日语 |
-| "修复这个 bug" | `/debug` | 中文 |
-| "设计一个着陆页" | `/design` | 中文 |
-| "revisar código" | `/review` | 西班牙语 |
-| "diseña la página" | `/design` | 西班牙语 |
-| "debuggen" | `/debug` | 德语 |
-| "coordonner étape par étape" | `/work` | 法语 |
-| "don't stop until it's done" | `/ralph` | 英语 |
-| "끝까지 해" | `/ralph` | 韩语 |
-| "最後までやって" | `/ralph` | 日语 |
+| "Orchestrate this deployment." | `/orchestrate` | 英语 |
+| "orquestar este trabajo" | `/orchestrate` | 西班牙语 |
+| "ultrawork this refactor" | `/ultrawork` | 英语 |
+| "ulw로 고쳐줘" | `/ultrawork` | 韩语 |
+| "Switch to work mode for this refactor." | `/work` | 英语 |
+| "work workflow로 진행해줘" | `/work` | 韩语 |
+| "ralph this task" | `/ralph` | 英语 |
+| "랄프로 끝까지 해줘" | `/ralph` | 韩语 |
 
 **信息性查询会被过滤：**
 
