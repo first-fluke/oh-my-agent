@@ -1817,18 +1817,20 @@ describe("keyword-detector", () => {
       expect(result).toBeNull();
     });
 
-    it("still activates the review workflow for a genuine user request", async () => {
+    it("still activates an explicit workflow for a genuine user request", async () => {
       (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
       const result = await run(
-        { kind: "prompt", prompt: "please review this", cwd: "/tmp" },
+        { kind: "prompt", prompt: "orchestrate the deployment", cwd: "/tmp" },
         ctx,
       );
       if (result?.type !== "context") {
         throw new Error("expected a context result");
       }
-      expect(result.additionalContext).toContain("REVIEW");
-      expect(result.additionalContext).toContain(".agents/workflows/review.md");
-      expect(result.additionalContext).not.toContain("please review this");
+      expect(result.additionalContext).toContain("ORCHESTRATE");
+      expect(result.additionalContext).toContain(
+        ".agents/workflows/orchestrate.md",
+      );
+      expect(result.additionalContext).not.toContain("the deployment");
     });
   });
 
