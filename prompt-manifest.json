@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.31.0",
-  "releaseDate": "2026-11-02T06:19:24.218Z",
+  "releaseDate": "2026-11-02T14:04:56.229Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -441,13 +441,13 @@
     },
     {
       "path": ".agents/skills/_shared/README.md",
-      "sha256": "13843569e71c7349d08734041d8ec4a64ea9a590878711b5f769141b51bc81c6",
-      "size": 1072
+      "sha256": "8abbb9c79f61c016db52d75cb4f31fda70f1ce92295e6bcc0c7aaaf1b416f4ec",
+      "size": 1087
     },
     {
       "path": ".agents/skills/_shared/conditional/diagram-engine.md",
-      "sha256": "4aabd2c7d8325e3c58560f8aaf8ca608af83bf099e1996888dc8a97cf1026c4b",
-      "size": 6422
+      "sha256": "7467712026611c012f981c06ea3f36eb823bfb7e2b2ac152c18e0061180cfce2",
+      "size": 10694
     },
     {
       "path": ".agents/skills/_shared/conditional/experiment-ledger.md",
@@ -666,8 +666,8 @@
     },
     {
       "path": ".agents/skills/oma-architecture/SKILL.md",
-      "sha256": "b88ff6f53019c5f4207d0c8f284e95e14cde0eb2a0a9eb7042f0ca54f23aac2a",
-      "size": 11503
+      "sha256": "48964fff4179fc34eb69a4c0d0630ce28fa587f840b55c6cb7d7541644ffcb50",
+      "size": 12327
     },
     {
       "path": ".agents/skills/oma-architecture/resources/api-evolution.md",
@@ -2166,8 +2166,8 @@
     },
     {
       "path": ".agents/workflows/architecture.md",
-      "sha256": "2acf6aafba61e061709fb54afaef7f5a8c75019058f2b9c043e8cdd93f3cf3aa",
-      "size": 7929
+      "sha256": "6073df18d4627632438ce92a4a367a08d3f8dc3e1f2f191ee8f7f78f1ff3252c",
+      "size": 8292
     },
     {
       "path": ".agents/workflows/brainstorm.md",
