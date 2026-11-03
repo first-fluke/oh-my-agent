@@ -547,12 +547,14 @@ export function link(opts: LinkOptions = {}): LinkResult {
           record(
             vendorSkillsDir(cli, root),
             "link",
-            `${skillNames.length} skills, ${workflowNames.length} workflows`,
+            cli === "qwen"
+              ? `native .agents/skills discovery; remove legacy skill links, ${workflowNames.length} workflows`
+              : `${skillNames.length} skills, ${workflowNames.length} workflows`,
           );
         }
       }
       if (!dryRun) {
-        if (skillNames.length > 0 && safeCliTools.length > 0) {
+        if (safeCliTools.length > 0) {
           const { created } = createVendorSymlinks(
             root,
             safeCliTools,

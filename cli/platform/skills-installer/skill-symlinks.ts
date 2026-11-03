@@ -4,8 +4,12 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 import { CLI_SKILLS_DIR, INSTALLED_SKILLS_DIR } from "../../constants/index.js";
 import type { CliTool } from "../../types/index.js";
 import { createLink } from "../fs-link.js";
+import { safeGetInstallMode } from "../install-context.js";
 import { readManagedSkills } from "../managed-skill-ownership.js";
-import { resolveEffectiveSkill } from "../skill-overlays.js";
+import {
+  resolveEffectiveSkill,
+  SKILL_OVERLAYS_DIR,
+} from "../skill-overlays.js";
 import { getVendorDisplayPath, resolveCliSkillsDir } from "./vendor-dirs.js";
 
 /**
@@ -33,6 +37,57 @@ function pruneDanglingSymlinks(linkRootDir: string): string[] {
   return removed;
 }
 
+/** Qwen discovers shared skills directly; retire only OMA's old projections. */
+function pruneQwenSkillSymlinks(
+  installRoot: string,
+  linkRootDir: string,
+): string[] {
+  if (!fs.existsSync(linkRootDir)) return [];
+  // Do not traverse a user-owned symlink for the entire skills directory.
+  try {
+    if (!fs.lstatSync(linkRootDir).isDirectory()) return [];
+  } catch {
+    return [];
+  }
+  const managedNames = readManagedSkills(installRoot);
+  const removed: string[] = [];
+  for (const entry of fs.readdirSync(linkRootDir, { withFileTypes: true })) {
+    if (!entry.isSymbolicLink()) continue;
+    if (!entry.name.startsWith("oma-") && !managedNames.has(entry.name))
+      continue;
+    const link = join(linkRootDir, entry.name);
+    const target = resolve(linkRootDir, fs.readlinkSync(link));
+    const base = resolve(installRoot, INSTALLED_SKILLS_DIR, entry.name);
+    const versions = resolve(
+      installRoot,
+      SKILL_OVERLAYS_DIR,
+      entry.name,
+      "versions",
+    );
+    const overlayVersion = relative(versions, target);
+    let sharedDiscoveryLink = false;
+    if (
+      safeGetInstallMode() === "global" &&
+      target === resolve(homedir(), INSTALLED_SKILLS_DIR, entry.name)
+    ) {
+      try {
+        sharedDiscoveryLink = fs.realpathSync(target) === fs.realpathSync(base);
+      } catch {
+        // Missing shared discovery does not establish ownership.
+      }
+    }
+    if (
+      target !== base &&
+      !sharedDiscoveryLink &&
+      !/^[a-f0-9]{16}$/.test(overlayVersion)
+    )
+      continue;
+    fs.unlinkSync(link);
+    removed.push(entry.name);
+  }
+  return removed;
+}
+
 export function createVendorSymlinks(
   installRoot: string,
   cliTools: CliTool[],
@@ -43,15 +98,32 @@ export function createVendorSymlinks(
   const removed: string[] = [];
   const ssotSkillsDir = resolve(installRoot, INSTALLED_SKILLS_DIR);
 
+  let ssotExists = true;
   try {
     fs.realpathSync(ssotSkillsDir);
   } catch {
-    return { created, skipped, removed };
+    ssotExists = false;
   }
 
   for (const cli of cliTools) {
     const skillsDir = getVendorDisplayPath(cli);
     const linkRootDir = resolveCliSkillsDir(installRoot, cli);
+
+    if (cli === "qwen") {
+      removed.push(
+        ...pruneQwenSkillSymlinks(installRoot, linkRootDir).map(
+          (name) => `${skillsDir}/${name}`,
+        ),
+      );
+      skipped.push(
+        ...skillNames.map(
+          (name) => `${skillsDir}/${name} (native .agents/skills discovery)`,
+        ),
+      );
+      continue;
+    }
+
+    if (!ssotExists) continue;
 
     if (!fs.existsSync(linkRootDir)) {
       fs.mkdirSync(linkRootDir, { recursive: true });
@@ -256,6 +328,15 @@ export function assertSkillOverlayVendorLinks(
   installRoot: string,
   skillName: string,
 ): void {
+  // Qwen consumes the managed source directly, so an overlay outside that
+  // discovery tree cannot be promoted as if Qwen would load it.
+  if (
+    fs.existsSync(join(installRoot, ".qwen", "settings.json")) ||
+    fs.existsSync(join(installRoot, ".qwen", "skills"))
+  )
+    throw new Error(
+      "[oma skill opt] cannot apply overlay: Qwen reads .agents/skills directly and does not consume skill overlays",
+    );
   for (const tool of detectExistingCliSymlinkDirs(installRoot)) {
     const root = resolveCliSkillsDir(installRoot, tool);
     if (!isProjectLocalSkillPath(root, installRoot)) continue;

@@ -420,6 +420,8 @@ Codex gates its hooks behind a one-time trust step, so `.codex/hooks.json` does 
 - `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
 - `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (if Copilot is selected)
 
+Qwen reads `.agents/skills/` directly, so OMA does not create `.qwen/skills/oma-*` links. Reconciliation removes legacy OMA skill links and preserves user-owned entries. Workflow links at `.qwen/skills/{workflow}/SKILL.md` continue to point to `.agents/workflows/{workflow}.md`.
+
 Vendor-native agent files are generated from `.agents/agents/` by `oma link`, `oma install`, or `oma update` rather than symlinked directly.
 
 ### 10. Global workflows
