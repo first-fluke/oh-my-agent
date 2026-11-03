@@ -3,6 +3,7 @@ import {
   BraveConfigSchema,
   ExaConfigSchema,
   HonchoConfigSchema,
+  KeenableConfigSchema,
   ProvidersSchema,
 } from "../../utils/providers.js";
 
@@ -112,6 +113,7 @@ export const OmaConfigSchema = z
     providers: ProvidersSchema.optional(),
     brave: BraveConfigSchema.optional(),
     exa: ExaConfigSchema.optional(),
+    keenable: KeenableConfigSchema.optional(),
     honcho: HonchoConfigSchema.optional(),
     agents: AgentsMapSchema.optional(),
     models: z.record(z.string(), z.unknown()).optional(),

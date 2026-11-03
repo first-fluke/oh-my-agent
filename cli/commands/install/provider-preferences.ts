@@ -270,6 +270,10 @@ export function reportProviderSetup(selection: ProviderSelection): void {
     p.log.info(
       'Exa selected. Set EXA_API_KEY or run `oma vault store exa-search` for hidden key input. Test with `oma search web "your query"`; `oma doctor` checks credential availability without making a search request.',
     );
+  if (selection.providers.web === "keenable")
+    p.log.info(
+      'Keenable Search selected. It works without an API key; optionally set KEENABLE_API_KEY or run `oma vault store keenable-search` for higher limits. Test with `oma search web "your query"`.',
+    );
   if (selection.providers.code_intelligence === "gortex")
     p.log.info(
       "Gortex selected. Install the latest Gortex separately and choose repositories to track; then run `oma doctor`. Serena setup was skipped.",

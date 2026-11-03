@@ -224,8 +224,8 @@ it("preserves inactive Exa credential references when switching to native search
   });
 });
 
-it.each(["brave", "exa"])(
-  "offers Native first with Brave and Exa and selects %s interactively",
+it.each(["brave", "exa", "keenable"])(
+  "offers Native first with Brave, Exa and Keenable and selects %s interactively",
   async (provider) => {
     prompts.select.mockReset().mockResolvedValue(provider);
     const selected = await promptProviders(root, false, vi.fn(), {
@@ -239,6 +239,7 @@ it.each(["brave", "exa"])(
           expect.objectContaining({ value: "native" }),
           expect.objectContaining({ value: "brave" }),
           expect.objectContaining({ value: "exa" }),
+          expect.objectContaining({ value: "keenable" }),
         ],
       }),
     );

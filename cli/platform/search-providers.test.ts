@@ -44,6 +44,7 @@ describe("search provider registry", () => {
       "native",
       "brave",
       "exa",
+      "keenable",
     ]);
     expect(registry.list("docs").map((p) => p.id)).toEqual(["context7"]);
     expect(registry.inspect("native", "web")).toEqual({
