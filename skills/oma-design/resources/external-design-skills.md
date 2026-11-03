@@ -10,14 +10,18 @@ they do not add another competing visual-direction supplier.
 
 ## Choose the operation
 
-Select the operation before the product surface. Existing-UI critique, audit,
-and polish use Impeccable, including dashboards, admin panels, SaaS, and internal tools.
+Select the operation before the product surface. Post-implementation product-interface
+review of admin consoles, dashboards, SaaS product UI, and internal tools uses
+Interface Design `design-review` through [product-interface-review.md](product-interface-review.md).
+Other existing-UI critique, accessibility or technical audit, and polish use
+Impeccable. Honor an explicitly requested supplier or operation.
 
 | Requested work | Supplier | Operation boundary |
 |---|---|---|
 | Direction for dashboards, admin panels, SaaS product UI, or internal tools | Interface Design: `interface-design` | Establish or materially revise the product interface's hierarchy and system within the project contract. |
+| Post-implementation hierarchy, density, consistency, or craft review of admin consoles, dashboards, SaaS product UI, or internal tools | Interface Design: `interface-design` plus `design-review` instructions | Read-only findings on the affected interface. Recommended by frontend; advisory unless the task explicitly requires design approval. |
 | Other new web art direction, whole-page visual composition, authorized overhaul | Taste: `design-taste-frontend` | Web visual direction within the supplied brand, content, stack, and scope. |
-| Existing-UI UX or aesthetic assessment | Impeccable: `critique` | Findings and recommendations; a review does not authorize implementation. |
+| Other existing-UI UX or aesthetic assessment | Impeccable: `critique` | Findings and recommendations; a review does not authorize implementation. |
 | Accessibility, responsive, or technical UI audit | Impeccable: `audit` | Read-only findings with observed checks and untested areas. |
 | Finish an existing direction | Impeccable: `polish`, or the specific operation requested | Target the affected surface; preserve the existing visual system. |
 | Extract an existing system or document a changed one | Impeccable: `extract` or `document` | Reuse project facts and retain OMA's DESIGN.md and token contracts. |
@@ -53,9 +57,13 @@ operation remains an explicit capability gap.
 4. Confirm the selected operation's references, scripts, launchers, and data
    resolve before using them. For Impeccable, load its entry instructions and
    the reference for the selected command, rather than every command reference.
-   For Interface Design, follow its direction entrypoint; loading its instructions
-   does not register its optional plugin slash commands. For Taste, follow its
-   current entrypoint and only the required support files.
+   For Interface Design direction, follow its core entrypoint. For `design-review`,
+   also resolve `.claude/commands/design-review.md` and its required support files
+   from the same upstream revision. If the loaded core bundle omits this command,
+   retrieve those instructions through a bounded upstream checkout or document fetch
+   before reviewing. Loading instructions does not register optional plugin slash
+   commands: follow the resolved instructions without invoking an unavailable command.
+   For Taste, follow its current entrypoint and only the required support files.
 5. Pass the brief, existing DESIGN.md/context, target platform, incumbent stack,
    brand, language, accessibility and reduced-motion constraints, authorized writes,
    budget, and verification limits to the chosen operation. Reuse supplied answers

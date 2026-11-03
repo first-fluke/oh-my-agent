@@ -58,7 +58,8 @@ outputs:
 ### Transitions
 - A scoped correction reuses the affected UI and tokens; a discovery document is unnecessary.
 - For existing products, establish Preserve or Overhaul from the brief and current system.
-- For existing-UI critique, audit, polish, or system extraction, select the matching Impeccable operation.
+- For a post-implementation hierarchy, density, consistency, or craft review of an admin console, dashboard, SaaS product UI, or internal tool, select Interface Design `design-review` through `resources/product-interface-review.md`. The frontend recommendation is advisory unless the task explicitly requires design approval.
+- For other existing-UI critique, accessibility or technical audit, polish, or system extraction, select the matching Impeccable operation.
 - For dashboards, admin panels, SaaS product UI, or internal tools needing visual direction, select Interface Design.
 - When the surface is built around a data table or grid, pass `resources/data-grid.md` to the selected supplier with the brief.
 - For other new web art direction or an authorized visual overhaul, select Taste.
@@ -117,6 +118,7 @@ background processes, and paid services are separate effects, not skill loading.
    copy an entire external method catalog into these definitions.
 
 ## References
+- `resources/product-interface-review.md`: recommended post-implementation product-interface review and frontend handoff.
 - `resources/external-design-skills.md`: supplier selection and complete-bundle loading.
 - `../oma-frontend/resources/specialized-visual-implementation.md`: chosen GPU, video-scroll, or GSAP implementation capability.
 - `../_shared/ui-interaction-quality.md`: motion intent, feedback, and interaction-quality decisions.

@@ -40,6 +40,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../references/_shared/core/test-approach.md`
 - Verify responsive design at 320px, 768px, 1024px, 1440px
 - Test keyboard navigation and screen reader compatibility
+- For a new or substantially changed admin console, dashboard, SaaS product UI, or internal tool, follow the [recommended product-interface review](../../oma-design/resources/product-interface-review.md). Record its advisory outcome; reviewer approval is not a completion prerequisite unless the task explicitly requires it.
 
 ## On Error
 See `resources/error-playbook.md` for recovery steps.

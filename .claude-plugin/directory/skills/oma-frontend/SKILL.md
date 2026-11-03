@@ -69,6 +69,7 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 - If UI text is user-facing and i18n exists, add strings through the i18n source of truth.
 - If interaction or hooks are needed, mark the boundary as Client Component.
 - If backend contracts are missing, coordinate with backend/API planning.
+- For a new or substantially changed admin console, dashboard, SaaS product UI, or internal tool, recommend a post-implementation `oma-design` review through `../oma-design/resources/product-interface-review.md`. This review is advisory unless the task explicitly requires design approval.
 - For a requested GPU effect, video-scroll scene, or selected GSAP implementation, use the matching conditional extension.
 
 ### Failure and recovery
@@ -210,6 +211,7 @@ Project stack conventions live in dedicated files. **Read these before coding**;
 To extend: add `resources/<name>.md` and append a row above.
 
 ## References
+- `../oma-design/resources/product-interface-review.md`: recommended design review after substantial product-interface implementation.
 - Specialized visual implementation: `resources/specialized-visual-implementation.md` (requested CanvasUI GPU effect, Scroll World scene, or selected GSAP implementation)
 - Interaction quality: `../_shared/ui-interaction-quality.md` (motion, feedback, touch, interruption, or performance changes)
 - Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)

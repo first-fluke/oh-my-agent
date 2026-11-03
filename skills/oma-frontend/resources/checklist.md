@@ -35,6 +35,15 @@ Run through every item before submitting your work.
 - [ ] Empty state (helpful message + CTA)
 - [ ] Optimistic updates where appropriate
 
+## Recommended product-interface review (advisory)
+
+For new or substantially changed admin consoles, dashboards, SaaS product UI,
+and internal tools, recommend `oma-design` with Interface Design
+`design-review` using [product-interface-review.md](../../oma-design/resources/product-interface-review.md).
+Record `completed`, `recommended-not-run` with a reason, or `not-applicable`.
+An unavailable or omitted advisory review does not block completion; the task's
+required functional, responsive, and accessibility checks still apply.
+
 ## Deferred / Stub Markers (transparency)
 - [ ] Every deferred external integration is wrapped in `// TODO(oma-deferred): <vendor or feature>`
 - [ ] Every mock data block has `// MVP: replace with <real-source>` on top
