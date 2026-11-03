@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.16.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.16.0...web-v11.16.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **qwen:** use native shared skill discovery ([#965](https://github.com/first-fluke/oh-my-agent/issues/965)) ([99317ab](https://github.com/first-fluke/oh-my-agent/commit/99317ab3642a18b1b32b0b7eb33bf3e9bb77053c))
+
 ## [11.16.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.15.1...web-v11.16.0) (2026-11-02)
 
 
