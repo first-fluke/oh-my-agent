@@ -5,13 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-02 · 1 unstarred
+## 2026-11-03 · 1 unstarred
 
-- **@blastrobot** · 0 repos · 0 followers
+- **@miinimanimo** · Seokmin Chang · Seoul · 9 repos · 0 followers
+  - SeoulTech-ITM, Northumbria Univ-ITMB
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1358)
+## Current (1357)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -847,7 +848,6 @@ summaries to spot which persona is churning.
 - @michael-lev-claroty — 2026-08-23
 - @MichaelFrazzy — 2026-05-11
 - @miguelamaral — 2026-07-24
-- @miinimanimo — 2026-04-28
 - @MilosCC — 2026-08-05
 - @mimicatcodes — 2026-05-06
 - @mindok7520 — 2026-02-02
