@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.33.0",
-  "releaseDate": "2026-11-02T23:04:57.343Z",
+  "releaseDate": "2026-11-03T12:17:39.888Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -901,8 +901,8 @@
     },
     {
       "path": ".agents/skills/oma-design/SKILL.md",
-      "sha256": "9e1b77d87e3d1489302bc41181972dd91ce58a6346d8f1fad13d5638c9dbbc4b",
-      "size": 7820
+      "sha256": "fad7173806e0d2bb384c442f03f4bb3339906ae1106763ce544a374194bb2f42",
+      "size": 8301
     },
     {
       "path": ".agents/skills/oma-design/resources/asset-strategy.md",
@@ -941,13 +941,18 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/external-design-skills.md",
-      "sha256": "72e8edc26498195d56bbd5dd10124618de49da78b395909ff49d806304c889f1",
-      "size": 8088
+      "sha256": "4b0b4e97cafdebc78e995876c5e8b9ffdeef1a841774b0b1e37b0d446db00df2",
+      "size": 9046
     },
     {
       "path": ".agents/skills/oma-design/resources/getdesign-fetcher.md",
       "sha256": "b10a581d7a8c46efec8315d061b752383a5284ea05e130009457bd9f4ef07187",
       "size": 4726
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/product-interface-review.md",
+      "sha256": "8e49a479b733c0b38cd43537017bf5cd3d9c2b5e9f3d706e57237b346bb6dbd3",
+      "size": 3354
     },
     {
       "path": ".agents/skills/oma-design/resources/redesign-protocol.md",
@@ -1036,8 +1041,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "60d01a7349552e7b8fa8fed77afabf8cecc603a585baa066941528b0a1a16c54",
-      "size": 13813
+      "sha256": "699bc682ccf028c43e8f4f6505fea5e2cc9c893b71d8b7967e08eb61bdab718a",
+      "size": 14238
     },
     {
       "path": ".agents/skills/oma-frontend/resources/angular-rules.md",
@@ -1046,8 +1051,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
-      "sha256": "e6b28e619ce34d12b5a3183fa3fd4e37257fa70290ff363e981cfb8e4a7a4805",
-      "size": 4885
+      "sha256": "0b0f2c76fdc24cd3f141be864f3fbdd98167e4824ab8f0236e7eaeca4c28cb17",
+      "size": 5419
     },
     {
       "path": ".agents/skills/oma-frontend/resources/error-playbook.md",
@@ -1056,8 +1061,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/execution-protocol.md",
-      "sha256": "a1641fcd6f417f17ed391a078f18d385f9879932ea14528dd86f5c71665ffb3b",
-      "size": 3037
+      "sha256": "9ca239c73b1ab35fcc4ec33b65e53cc82a00a5a5723aa081d5ff0a8fbd51e32f",
+      "size": 3362
     },
     {
       "path": ".agents/skills/oma-frontend/resources/snippets.md",
@@ -2291,6 +2296,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 456
+    "totalFiles": 457
   }
 }
