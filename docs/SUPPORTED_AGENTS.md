@@ -22,7 +22,7 @@ The installer offers 14 targets. Amp is listed for reference only.
 | Kiro CLI | `.kiro/skills/` | First-class (opt-in) | Native + Adapter | `.kiro/agents/*.md`, hook agent `.kiro/agents/oma-hooks.json` (set as the default agent when none is set), `.kiro/hooks/oma-hook.sh`, MCP under `.kiro/settings/` |
 | OpenCode | `.opencode/skills/` | First-class | In-process plugin | Plugin bridge in `.opencode/plugins/oma/`, registered in `.opencode/opencode.jsonc` (or an existing `.opencode/opencode.json`); generated `.opencode/agents/*.md` |
 | pi | `.agents/skills/` (read directly) | Supported | Extension bridge | Hooks through the `.pi/extensions/oma/` extension, workflow prompts in `.pi/prompts/*.md`, MCP in `.pi/mcp.json` through pi-mcp-adapter, `AGENTS.md` |
-| Qwen Code | `.qwen/skills/` | First-class | Native + Adapter | `.qwen/agents/*.md`, hooks, HUD, and MCP in `.qwen/settings.json`, `AGENTS.md` |
+| Qwen Code | `.agents/skills/` (read directly) | First-class | Native + Adapter | Workflow links in `.qwen/skills/`; `.qwen/agents/*.md`, hooks, HUD, and MCP in `.qwen/settings.json`, `AGENTS.md`. No domain skill links |
 | ZCode | none (workflows only) | Supported | Workflow slash-commands | Workflow symlinks in `.zcode/commands/*.md`, MCP in `.zcode/config.json`. No skills, no hooks |
 | Amp | `.agents/skills/` | Compatible | Reads the SSOT | Not an installer target; Amp reads `.agents/skills/` on its own |
 | Gemini CLI | none | Removed | none | The Gemini CLI vendor is gone: oma no longer writes `.gemini/agents/` or Gemini hooks, and `oma link gemini` is rejected. Google stops serving Gemini CLI for Google One and unpaid tiers on June 18, 2026. `model_preset: gemini` redirects to `antigravity`, and a config that still names a `gemini` preset or a `google/*` model prints a deprecation warning (`cli/utils/gemini-deprecation.ts`). Use Antigravity CLI |
@@ -30,6 +30,8 @@ The installer offers 14 targets. Amp is listed for reference only.
 Opt-in vendors appear in the installer but are not preselected; neither are the in-process plugin vendors (OpenCode, pi). HOME-scoped vendors (Antigravity, Hermes, Kimi) are not offered on Windows or in CI; an interactive install asks before linking their skills into HOME, and a non-interactive install (`-y`) skips that step.
 
 Every vendor that gets skill symlinks also gets each workflow as a slash-command skill: `<skill dir>/<workflow>/SKILL.md` is a symlink to `.agents/workflows/<workflow>.md`. Vendors that read `.agents/skills/` directly (Grok, pi, Amp) get no such links.
+
+Qwen reads domain skills from `.agents/skills/` directly and keeps only workflow links in `.qwen/skills/`. Install, update, and link remove legacy OMA skill links while preserving user-owned entries. Qwen does not consume optimizer overlays outside the shared discovery directory, so overlay promotion is refused in Qwen projects.
 
 ## Hook Wiring
 

@@ -228,4 +228,15 @@ describe("skill overlays", () => {
       /real vendor skill directory/,
     );
   });
+
+  it("refuses overlay promotion when qwen reads the managed skill directly", () => {
+    const workspace = setup();
+    mkdirSync(join(workspace, ".qwen"));
+    writeFileSync(join(workspace, ".qwen", "settings.json"), "{}");
+
+    expect(() => assertSkillOverlayVendorLinks(workspace, "demo")).toThrow(
+      /Qwen reads .agents\/skills directly/,
+    );
+    expect(resolveEffectiveSkill(workspace, "demo").kind).toBe("base");
+  });
 });

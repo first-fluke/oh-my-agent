@@ -734,7 +734,6 @@ describe("createCliSymlinks", () => {
 
 describe("createVendorSymlinks", () => {
   const mockTargetDir = "/tmp/test-project";
-  const ssotSkillsDir = resolve(mockTargetDir, ".agents/skills");
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -753,22 +752,18 @@ describe("createVendorSymlinks", () => {
     vi.restoreAllMocks();
   });
 
-  it("createVendorSymlinks creates qwen symlinks", () => {
+  it("uses native shared skill discovery for qwen", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       true,
     );
 
     const result = createVendorSymlinks(mockTargetDir, ["qwen"], ["oma-test"]);
 
-    expect(fs.symlinkSync).toHaveBeenCalledWith(
-      relative(
-        join(mockTargetDir, ".qwen/skills"),
-        join(ssotSkillsDir, "oma-test"),
-      ),
-      join(mockTargetDir, ".qwen/skills/oma-test"),
-      "dir",
+    expect(fs.symlinkSync).not.toHaveBeenCalled();
+    expect(result.created).toHaveLength(0);
+    expect(result.skipped).toContain(
+      ".qwen/skills/oma-test (native .agents/skills discovery)",
     );
-    expect(result.created).toContain(".qwen/skills/oma-test");
   });
 
   it("createCliSymlinks alias still works", () => {
@@ -778,15 +773,11 @@ describe("createVendorSymlinks", () => {
 
     const result = createCliSymlinks(mockTargetDir, ["qwen"], ["oma-test"]);
 
-    expect(fs.symlinkSync).toHaveBeenCalledWith(
-      relative(
-        join(mockTargetDir, ".qwen/skills"),
-        join(ssotSkillsDir, "oma-test"),
-      ),
-      join(mockTargetDir, ".qwen/skills/oma-test"),
-      "dir",
+    expect(fs.symlinkSync).not.toHaveBeenCalled();
+    expect(result.created).toHaveLength(0);
+    expect(result.skipped).toContain(
+      ".qwen/skills/oma-test (native .agents/skills discovery)",
     );
-    expect(result.created).toContain(".qwen/skills/oma-test");
   });
 });
 
