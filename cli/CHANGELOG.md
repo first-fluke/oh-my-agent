@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.34.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.0...cli-v20.34.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **qwen:** use native shared skill discovery ([#965](https://github.com/first-fluke/oh-my-agent/issues/965)) ([99317ab](https://github.com/first-fluke/oh-my-agent/commit/99317ab3642a18b1b32b0b7eb33bf3e9bb77053c))
+
 ## [20.34.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.33.0...cli-v20.34.0) (2026-11-03)
 
 
