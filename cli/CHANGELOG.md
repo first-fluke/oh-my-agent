@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.34.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.33.0...cli-v20.34.0) (2026-11-03)
+
+
+### Features
+
+* **skills:** recommend interface design reviews for product ui ([64510f8](https://github.com/first-fluke/oh-my-agent/commit/64510f895d48b3d331393d06fda2e173e424b0d2))
+
 ## [20.33.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.32.0...cli-v20.33.0) (2026-11-02)
 
 
