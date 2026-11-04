@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.34.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.1...cli-v20.34.2) (2026-11-04)
+
+
+### Bug Fixes
+
+* **dev-workflow:** use package-manager mise prerequisites ([#969](https://github.com/first-fluke/oh-my-agent/issues/969)) ([d033b5e](https://github.com/first-fluke/oh-my-agent/commit/d033b5eac888d615821ca97710dcfff36401ba11)), closes [#964](https://github.com/first-fluke/oh-my-agent/issues/964)
+
 ## [20.34.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.0...cli-v20.34.1) (2026-11-03)
 
 
