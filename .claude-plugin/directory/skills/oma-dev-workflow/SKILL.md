@@ -166,12 +166,19 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 
 ### Prerequisites
 
-```bash
-# Install mise
-curl https://mise.run | sh
+Reuse an existing `mise` installation. If it is missing, install it with a package manager supported by your platform. For example, with Homebrew already installed:
 
-# Activate in shell
-echo 'eval "$(~/.local/bin/mise activate)"' >> ~/.zshrc
+```bash
+brew install mise
+```
+
+For other platforms, use a package-manager method from the [official installation guide](https://mise.jdx.dev/installing-mise.html). Do not pipe a remote installation script directly into a shell.
+
+Follow the [shell setup guide](https://mise.jdx.dev/shell-setup.html) for your current shell when activation is needed. Check for existing activation before editing shell configuration, and use `mise` from `PATH` rather than assuming `~/.local/bin/mise`.
+
+```bash
+# Verify mise is available
+mise --version
 
 # Install all runtimes defined in mise.toml
 mise install
