@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.34.1",
-  "releaseDate": "2026-11-03T14:29:27.229Z",
+  "releaseDate": "2026-11-04T00:39:50.302Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -966,8 +966,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/SKILL.md",
-      "sha256": "52cd90d6891260d43890c9b6ee83fe9caec6579deff43eb2e6a8ade3f8201d10",
-      "size": 16654
+      "sha256": "29601bc58d32f09b71aa2640a3b8c93f185c439ea9b193a5dbdb7087992fedac",
+      "size": 17228
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/affected-checks.py",
