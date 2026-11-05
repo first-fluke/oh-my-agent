@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.34.3",
-  "releaseDate": "2026-11-05T00:07:50.461Z",
+  "releaseDate": "2026-11-05T03:11:30.990Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -401,8 +401,8 @@
     },
     {
       "path": ".agents/rules/dev-workflow.md",
-      "sha256": "0eb40ef9b4d6c6a31069f664e056ead1ffc14131af2075469d6efe84b7429068",
-      "size": 1023
+      "sha256": "7515cc74c5d8d7f95429ff3d477d116b25be138ee467a6e7cded0f7513913bf1",
+      "size": 1464
     },
     {
       "path": ".agents/rules/frontend.md",
@@ -516,8 +516,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/execution-policy.md",
-      "sha256": "d868a915033911e7b35eb54a057126f500e3172ebd4edc10cf1a12c55b974ea4",
-      "size": 4759
+      "sha256": "8f4c754b67d2411df6afc87cff25c5f4b03073d49bfca96b66c893ace7e26b51",
+      "size": 5000
     },
     {
       "path": ".agents/skills/_shared/core/lessons-learned.md",
@@ -966,8 +966,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/SKILL.md",
-      "sha256": "29601bc58d32f09b71aa2640a3b8c93f185c439ea9b193a5dbdb7087992fedac",
-      "size": 17228
+      "sha256": "7e49516cd387b6e23431eb985f27bab2f3be22e29f3cced8c1f751f1fdd8b4bc",
+      "size": 17789
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/affected-checks.py",
@@ -981,8 +981,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/database-patterns.md",
-      "sha256": "0af973382bb5c90e622c12b018f33f8b8c8a718b9400258fe2e83e7f8ffc29f1",
-      "size": 2379
+      "sha256": "a85e517380809a7f0763e1f3afbd2be9669c74726240505b4be386de4afe22c2",
+      "size": 2665
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/i18n-patterns.md",
@@ -1006,8 +1006,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/validation-pipeline.md",
-      "sha256": "10d43f1f36e6d2b2ba7fd80c57bf3ebf5f7f69ac016831b7c80e805daa2e8c7d",
-      "size": 9803
+      "sha256": "74fd6f5e50f10d6eb55a05d53364fc261a08c47f54b565d40da4eb8fcfff31b3",
+      "size": 10763
     },
     {
       "path": ".agents/skills/oma-docs/SKILL.md",
