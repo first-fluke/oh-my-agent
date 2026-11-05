@@ -301,6 +301,14 @@ describe("mergeRulesIndexForVendor", () => {
     );
     expect(content).not.toContain("OMA_CI_ALLOW_NATIVE");
     expect(content).toContain("execution-policy.md");
+    expect(content).toContain("## Completion");
+    expect(content).toContain(
+      "Prioritize completing the outcome the user wants",
+    );
+    expect(content).toContain("Do not add unrequested limitations");
+    expect(content).toContain(
+      "Ask only when a user decision is genuinely required",
+    );
     expect(content).toContain("unless the user explicitly requests a build");
     expect(content).toContain("Do not modify `.agents/` definitions");
     expect(content).toContain("`.agents/results/` and `.agents/state/`");
