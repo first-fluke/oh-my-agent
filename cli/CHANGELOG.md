@@ -1,5 +1,17 @@
 # Changelog
 
+## [20.34.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.2...cli-v20.34.3) (2026-11-05)
+
+
+### Refactoring
+
+* **video:** drop unused VideoConfig.language ([6351da1](https://github.com/first-fluke/oh-my-agent/commit/6351da179c9218832c02496f83ef23e287eca47f))
+
+
+### Documentation
+
+* **i18n:** treat oma-config language as prompt-language fallback ([729dfdc](https://github.com/first-fluke/oh-my-agent/commit/729dfdc0bb9c3f330aeaabc99e1b444fbade7cfe))
+
 ## [20.34.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.1...cli-v20.34.2) (2026-11-04)
 
 
