@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.35.0",
-  "releaseDate": "2026-11-05T05:15:36.617Z",
+  "releaseDate": "2026-11-05T08:55:18.515Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -83,6 +83,11 @@
       "path": ".agents/agents/variants/commandcode.json",
       "sha256": "5397da6a14118ce0495188ac8ffeee7ac8e6d0dd4e0f6a4458ca2b66175bf868",
       "size": 729
+    },
+    {
+      "path": ".agents/agents/variants/copilot.json",
+      "sha256": "c8262102bb50c5f44106ae2bbe916f04ec48569239cbeb15864f0971aa7f0760",
+      "size": 251
     },
     {
       "path": ".agents/agents/variants/cursor.json",
@@ -305,6 +310,11 @@
       "size": 714
     },
     {
+      "path": ".agents/hooks/variants/copilot.json",
+      "sha256": "02ee06c33bb11fb14a181f08baa09ca96a977865d2ba05d148c9d69b7247cae3",
+      "size": 1405
+    },
+    {
       "path": ".agents/hooks/variants/cursor.json",
       "sha256": "570b425924912f104e36c0c4fadf763460152fc71d7c23bd90beb5d3bdc61027",
       "size": 1436
@@ -316,8 +326,8 @@
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "ca16f9be3eeb2760a0449a23373ebba00ab41cf519c147fe9dd66b3dc2719dfb",
-      "size": 6446
+      "sha256": "5038f59f6625884a9d246e3d927adfb2ac0691b76ff7b4e8e5745af433b033bb",
+      "size": 6646
     },
     {
       "path": ".agents/hooks/variants/kimi.json",
@@ -371,8 +381,8 @@
     },
     {
       "path": ".agents/plugins/marketplace.json",
-      "sha256": "61c826f26847f7c54f9c726b7f2333d41d58c15344769ad3988eb2d07fefb4b3",
-      "size": 1251
+      "sha256": "74cb850a96900489b0ef7d5a5497009a31abba3695c63088072b590367171789",
+      "size": 1263
     },
     {
       "path": ".agents/rules/backend.md",
@@ -583,6 +593,11 @@
       "path": ".agents/skills/_shared/runtime/execution-protocols/commandcode.md",
       "sha256": "8120d3108736290720352b0a8c35f952504e08238eac9442fc8e452094875c0a",
       "size": 340
+    },
+    {
+      "path": ".agents/skills/_shared/runtime/execution-protocols/copilot.md",
+      "sha256": "2d497b6cd345820a0e73becad74df848f0c63f8fae483260a180257c8e4e165f",
+      "size": 529
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/grok.md",
@@ -2296,6 +2311,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 457
+    "totalFiles": 460
   }
 }
