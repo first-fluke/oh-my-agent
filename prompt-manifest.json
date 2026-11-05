@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.34.2",
-  "releaseDate": "2026-11-04T00:43:16.963Z",
+  "releaseDate": "2026-11-05T00:04:52.421Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -416,8 +416,8 @@
     },
     {
       "path": ".agents/rules/i18n-guide.md",
-      "sha256": "947da5eef8d2e659fd838d3df0856302548685a265a7ce95e98d96c189d00a1b",
-      "size": 3705
+      "sha256": "abbfd8421dc97efd2fb86a6a7532839ac1e13ca3aa9879e682a5c7ff01326e43",
+      "size": 4174
     },
     {
       "path": ".agents/rules/infrastructure.md",
@@ -1661,13 +1661,13 @@
     },
     {
       "path": ".agents/skills/oma-recap/SKILL.md",
-      "sha256": "5568417ebff6e2fbaa21e50746190ec1a14797329d60f99f4e0dc5bc61a1f61b",
-      "size": 10583
+      "sha256": "4483f9d64e3745d5a1faa614045924aeca1a988bf34905fd4938fac73dc76c80",
+      "size": 10644
     },
     {
       "path": ".agents/skills/oma-recap/resources/output-formats.md",
-      "sha256": "a711abc78f019397b703cfae9d7e6ad5345d5a43b373e0bbb4371443be0ecfc9",
-      "size": 2691
+      "sha256": "8d9528683e6078e8e4113f2dec9727c30bf956352c5975d430fc70e4a63a1c01",
+      "size": 2744
     },
     {
       "path": ".agents/skills/oma-refactor/SKILL.md",
@@ -2171,53 +2171,53 @@
     },
     {
       "path": ".agents/workflows/architecture.md",
-      "sha256": "6073df18d4627632438ce92a4a367a08d3f8dc3e1f2f191ee8f7f78f1ff3252c",
-      "size": 8292
+      "sha256": "97153dac53134a911eb771904853af138e4baa9aa5c37374d9cd19c3f104c131",
+      "size": 8316
     },
     {
       "path": ".agents/workflows/brainstorm.md",
-      "sha256": "1bea0f68b555bd11742522dda5e5c6b345e3c41c006224b46a3a12613503a0f7",
-      "size": 11291
+      "sha256": "9bb9b6f3e39293d24328ddcfc5fd2307d62faf15f5c4b9afdaab7e5d01a6027c",
+      "size": 11315
     },
     {
       "path": ".agents/workflows/convert.md",
-      "sha256": "d18d2cd33e28e30278a1232368159fe2e93e84037888f80e0cb030d8812e4a10",
-      "size": 9276
+      "sha256": "e67460a695eb89d7060cce259f2ceab312bc8d5b958a00559d296e171fd7b905",
+      "size": 9300
     },
     {
       "path": ".agents/workflows/debug.md",
-      "sha256": "9aba8c53a26e8cdd2a4fc7b09c5ec3159e9fb4c2a55362d461ab21492744e189",
-      "size": 5296
+      "sha256": "2636738a0c19fd3e4cd78d3ee9dc9ab1ea77dc4b332d0c5e5c1c9c4b6f3307d3",
+      "size": 5320
     },
     {
       "path": ".agents/workflows/deepinit.md",
-      "sha256": "202cf4d1f209db1ac03f235324ff1956d5f5f79c421ed7791f7d441f06536bfb",
-      "size": 15819
+      "sha256": "a5db9c180bffdcb55a4440064765e751ad5032a249c14ac7bc61908368031b5d",
+      "size": 15843
     },
     {
       "path": ".agents/workflows/design.md",
-      "sha256": "d64ce18501b303c5090573076f8e27ca49ae3e0400c4ce8c8553a252941f3c63",
-      "size": 7320
+      "sha256": "35c8f8a0993288cfaa66a1f3a29780706b2b1618c16dd839ca23c8fd25b48c64",
+      "size": 7344
     },
     {
       "path": ".agents/workflows/docs.md",
-      "sha256": "2f0e8a13a81b6069c8a78860807b3fbdc712845fe723c524663da5dc8cce7429",
-      "size": 9990
+      "sha256": "5587eddc5086f9ebdedd568b20d879127429661c7ddf90b520ae6c69417770c6",
+      "size": 10014
     },
     {
       "path": ".agents/workflows/explain.md",
-      "sha256": "f7fffeeed7963e5d3419d764d95476d4151dfcbbae15e206ab0094f72da2671b",
-      "size": 6957
+      "sha256": "82641fc7293e20e3bf447619c6ddec51eb318d7d90448f749917a3a7f045f7e4",
+      "size": 6981
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "aed45fbe289b8d21f9dbf2e21af3384d4a1dd0b44b5155fcb202b4331de5edc5",
-      "size": 15690
+      "sha256": "b2befebc1ba8b7cdcf2a6dc124058df56bd8dd22896a59deb87fd7c0d10f660e",
+      "size": 15714
     },
     {
       "path": ".agents/workflows/plan.md",
-      "sha256": "1d9904baa485ec796c57b85bc073e99799391a46dcb79bea6320092d5367f2a0",
-      "size": 13225
+      "sha256": "776d1e148d6fc3210f52bc2d152fe361354b4c8b0059eeb4544066e629fb35c6",
+      "size": 13249
     },
     {
       "path": ".agents/workflows/ralph/resources/judge-protocol.md",
@@ -2226,23 +2226,23 @@
     },
     {
       "path": ".agents/workflows/ralph.md",
-      "sha256": "a2b4c204656ca41c496afe8c930a94253f2e9e4149d6d835b78170c3c612c1ee",
-      "size": 17772
+      "sha256": "7f5066cf82a7caae94e186f121cebf3e425ba6ca141622217ff40bea73aae351",
+      "size": 17796
     },
     {
       "path": ".agents/workflows/recap.md",
-      "sha256": "77afc537e1a17856bf6c2731be838daf0204bfaa702faf8d3e847a712546d26d",
-      "size": 5747
+      "sha256": "7dbb1bbf5419a775cd5f4f4be792ce096eec7728ac614725c9dd7e77425b1965",
+      "size": 5771
     },
     {
       "path": ".agents/workflows/review.md",
-      "sha256": "0bcb96c378855a3df1810c92d883138de4bde984bb8413c06395b11815a212cc",
-      "size": 5965
+      "sha256": "f5cfbf394a2fa44e9766fbdac546d35e64fb8c266232eec28d578196256b242a",
+      "size": 5989
     },
     {
       "path": ".agents/workflows/schedule.md",
-      "sha256": "5c9d643e1aec2788087f7966739e785ab5dbce9304091672558d4c0beccf4cca",
-      "size": 4001
+      "sha256": "d2032525d6bb3c7022298616a175ab2807d1a47d4781ab11b86fe0d54dc9f960",
+      "size": 4025
     },
     {
       "path": ".agents/workflows/scm.md",
@@ -2256,13 +2256,13 @@
     },
     {
       "path": ".agents/workflows/stack-set.md",
-      "sha256": "c668e5c96ea650b6604cad124ca0cd815307e2739503d6c0491bc756d1a7d6f4",
-      "size": 29563
+      "sha256": "ae144c80191e85bdb120dc8e1359306364216a17512ebdea4300af472947f386",
+      "size": 29587
     },
     {
       "path": ".agents/workflows/tools.md",
-      "sha256": "e2b16e19c1e01aca3aee88fe1abd043e39add210530007676a6f5adaf08c82b7",
-      "size": 4693
+      "sha256": "28ceb1c92726d1fbb6eb008172a5732cf019304d11387bff84e880dbf350da21",
+      "size": 4717
     },
     {
       "path": ".agents/workflows/ultrawork/resources/multi-review-protocol.md",
@@ -2276,18 +2276,18 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "85e89e8522b6808d05193dec07a74a5d635732104e0c0c66be90add8f6171fe7",
-      "size": 32252
+      "sha256": "10b159947aece4e013bcf8c9afa1511326ad4b4fd88757e5533c8da717545ac1",
+      "size": 32276
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "0d3f480a07f88a2aa6387964ddaa57abc568d52984da07e9b4c9796a40ac73ba",
-      "size": 21742
+      "sha256": "5331c57478e18532b24379a8e038624beafa48b014e20c552578c884b9e75b77",
+      "size": 21766
     },
     {
       "path": ".agents/workflows/work.md",
-      "sha256": "60e8395f7b8836f6e152fdd9c1c7d3606562bc98d30948a7c9849b5b67b1aae2",
-      "size": 11453
+      "sha256": "47eb2c327692aa36a6e1f442dffcfcb614b0241e08eec1d82e0520f4e1cb35f1",
+      "size": 11477
     }
   ],
   "checksums": {
