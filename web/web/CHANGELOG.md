@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.17.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.16.1...web-v11.17.0) (2026-11-05)
+
+
+### Features
+
+* **vendors:** add native packages and agent integrations ([44325b5](https://github.com/first-fluke/oh-my-agent/commit/44325b53f922e927326c18da3c302d6fedca030b))
+
 ## [11.16.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.16.0...web-v11.16.1) (2026-11-03)
 
 
