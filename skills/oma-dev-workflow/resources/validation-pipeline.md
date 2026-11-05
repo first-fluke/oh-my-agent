@@ -114,6 +114,19 @@ EOF
 A linked worktree can share these hooks with other worktrees. If the project uses
 core.hooksPath, use its existing installation process instead.
 
+## Test boundaries
+
+The default pipeline is hermetic: no Docker, no containers (including
+testcontainers), no shared external database, and no network dependency. Prefer
+in-process fakes, embedded engines the app owns, or fixtures at the real data
+boundary.
+
+Do not route a container-dependent test into the default suite because it is
+convenient. Such a test belongs to an opt-in integration task, which stays out of
+`git:pre-commit`, `git:pre-push`, `validate:changed`, and the required CI check
+step. Run it manually or from a separate scheduled job, and document the service
+it needs next to the task.
+
 Place checks by cost. Pre-commit lints staged files and does not rewrite
 unstaged work. Typecheck runs the affected app's project configuration, on the
 push gate when that check would dominate commit time. Do not pass individual
@@ -179,9 +192,16 @@ run = 'python3 .mise/scripts/affected-checks.py --base "${CHECK_BASE:-origin/mai
 [tasks."test:changed"]
 run = 'python3 .mise/scripts/affected-checks.py --base "${CHECK_BASE:-origin/main}" --kind test'
 
+[tasks."test:integration"]
+description = "Run integration tests that need external services (opt-in)"
+run = '<project integration test command>'
+
 [tasks."validate:changed"]
 depends = ["check:changed", "test:changed"]
 ```
+
+`validate:changed` omits `test:integration` by design. Do not add it as a
+dependency of a default gate.
 
 Use the PR target's merge base, not HEAD~1. A documentation-only final commit must
 not erase earlier feature changes from validation. Missing history must run
@@ -196,6 +216,8 @@ local `commit-msg` hook.
 
 Configure runtime/dependency provisioning using the repository's existing CI
 setup before validation. This example expects locked dependencies to be installed.
+The required CI job runs the hermetic suite; keep `test:integration` in a
+separate, non-required job.
 
 ```yaml
 name: CI

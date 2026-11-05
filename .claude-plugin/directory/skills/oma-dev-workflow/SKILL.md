@@ -112,8 +112,8 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 1. Inspect affected app manifests, lockfiles, tool configs, `mise.toml`, CI, hooks, and any `stack/stack.yaml`. Read task definitions and use `mise tasks --all` to discover existing commands.
 2. For setup or tool changes, load the selected tooling profiles from References. Configure missing dependencies, settings, and tasks with the detected package manager; preserve existing tool choices. For checks alone, skip setup.
 3. Expose applicable checks as `lint`, `format:check`, and `typecheck`; keep mutating `format` separate. A `check` task can aggregate non-emitting checks. Connect existing stack `verify.syntax.cmd` to that task without adding unsupported schema keys; preserve `verify.tests` and domain-specific scans.
-4. For hook/CI setup, load the validation pipeline. Provision locked local tools first, preserve the existing hook manager, and connect commitlint to the local `commit-msg` hook. Staged lint stays on pre-commit. Typecheck the whole affected app on the push gate when commit time is the constraint. Configure CI for app checks and tests.
-5. Before relaunching local validation, follow the validation pipeline's repeated-run guidance. A skipped run is not a pass. Run the configured `mise run check` aggregate, or the applicable individual `lint`, `format:check`, and `typecheck` tasks, plus relevant existing tests. Run each underlying checker once. Use `mise run //{path}:{task}` for configured monorepos; typecheck the complete affected app rather than individual changed files.
+4. For hook/CI setup, load the validation pipeline. Provision locked local tools first, preserve the existing hook manager, and connect commitlint to the local `commit-msg` hook. Staged lint stays on pre-commit. Typecheck the whole affected app on the push gate when commit time is the constraint. Configure CI for app checks and tests. Default hooks and required CI run hermetic checks and unit tests only; integration tests get a separate opt-in task.
+5. Before relaunching local validation, follow the validation pipeline's repeated-run guidance. A skipped run is not a pass. Run the configured `mise run check` aggregate, or the applicable individual `lint`, `format:check`, and `typecheck` tasks, plus the relevant hermetic tests. Do not start Docker or external services for validation. Run each underlying checker once. Use `mise run //{path}:{task}` for configured monorepos; typecheck the complete affected app rather than individual changed files.
 6. Report the selected tools, commands, checks passed, and any unavailable or inapplicable checks. Builds remain subject to the execution policy.
 
 ### Resource scope
@@ -161,6 +161,8 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 25. Always quote task names containing `:` in mise.toml (`[tasks."lint:changed"]`) — unquoted colons fail TOML parsing
 26. Always set `monorepo_root = true` (plus `[monorepo].config_roots`) in the root mise.toml before using `//path:task` syntax
 27. Keep check tasks non-mutating; run format/fix tasks only within the requested edit scope, and never rewrite unstaged changes from a Git hook
+28. Keep integration tests in a separate opt-in task and out of `git:pre-commit`, `git:pre-push`, `validate:changed`, and required CI gates
+29. Prefer hermetic tests: do not introduce tests that need Docker, containers (including testcontainers), or external services. If unavoidable, isolate them in the integration task and document the dependency
 
 ### Technical Guidelines
 
@@ -255,7 +257,7 @@ mise run //apps/web:build
 | Topic | Resource File | When to Load |
 |-------|---------------|--------------|
 | Validation Pipeline | `resources/validation-pipeline.md` | Git hooks, CI/CD, change-based testing, repeated local validation |
-| Database & Infrastructure | `resources/database-patterns.md` | Migrations, local Docker infra |
+| Database & Infrastructure | `resources/database-patterns.md` | Migrations, optional local Docker infra (not a test dependency) |
 | API Generation | `resources/api-workflows.md` | Generating API clients |
 | i18n Patterns | `resources/i18n-patterns.md` | Internationalization |
 | Release Coordination | `resources/release-coordination.md` | Versioning, changelog, releases |

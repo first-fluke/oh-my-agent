@@ -24,6 +24,7 @@ This is the shared OMA policy for authorization, clarification, verification, an
 
 - Verification belongs to the project's local CI and push hooks. Do not run test suites, type checks, linters, or builds on your own initiative; run a check only when the user or the active workflow explicitly requires it.
 - Add a regression test with a bug fix. Do not invent implementation-mirroring tests for prose or configuration edits.
+- Prefer hermetic tests. A test that needs Docker, containers (including testcontainers), or another external service is a last resort: isolate it in the project's opt-in integration task and keep it out of default hooks and required gates.
 - Use the shared [result contract](../runtime/result-contract.md) for agent handoffs. Process exit zero and a Markdown file alone are not verified completion.
 - Report completed, partial, blocked, or failed accurately, with remaining work and verification limits. A gate failure means repair evidence/work within the existing scope and retry; it is not automatically a new permission requirement.
 

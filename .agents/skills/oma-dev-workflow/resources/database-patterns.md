@@ -67,7 +67,12 @@ description = "Reset all databases"
 depends = ["//apps/api:migrate:reset"]
 ```
 
-## Local Infrastructure (Docker)
+## Local Infrastructure (Docker, manual)
+
+These tasks are manual development conveniences. They are not a test dependency:
+the default test suite must not require `infra:up`, and tests that need a live
+database belong to the opt-in `test:integration` task described in
+[validation-pipeline.md](validation-pipeline.md).
 
 ```toml
 # apps/api/mise.toml
