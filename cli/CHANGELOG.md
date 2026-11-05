@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.35.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.4...cli-v20.35.0) (2026-11-05)
+
+
+### Features
+
+* **rules:** add completion rules to generated AGENTS.md ([45f85de](https://github.com/first-fluke/oh-my-agent/commit/45f85de3204822da00ea9f689907c905b9f86c2d))
+
 ## [20.34.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.3...cli-v20.34.4) (2026-11-05)
 
 
