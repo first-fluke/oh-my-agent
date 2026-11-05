@@ -19,6 +19,7 @@ export const VENDORS = [
   "claude",
   "codex",
   "commandcode",
+  "copilot",
   "cursor",
   "grok",
   "kimi",
@@ -48,8 +49,12 @@ export type ExtensionVendor = (typeof EXTENSION_VENDORS)[number];
  * Vendors that only receive skill installs (no hook detection, no runtime
  * adapter). Source of truth for the `InstallOnlyVendor` type and the
  * install-only tail of `ALL_CLI_VENDORS` / `CliTool`.
+ *
+ * Copilot moved to `VENDORS`: Copilot CLI reads custom agents from
+ * `.github/agents/` and hooks from `.github/hooks/*.json`, so it now receives
+ * the same agent/hook projection as the other hook vendors.
  */
-export const INSTALL_ONLY_VENDORS = ["copilot", "hermes"] as const;
+export const INSTALL_ONLY_VENDORS = ["hermes"] as const;
 
 /**
  * Vendors that receive ONLY workflow slash-commands (no skill symlinks, no

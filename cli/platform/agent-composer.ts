@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { getVendorCapabilities } from "../constants/vendor-capabilities.js";
 import { loadUserConfig } from "../io/runtime-dispatch/config-loader.js";
 import { resolveAgentPlanFromConfig } from "../io/runtime-dispatch/resolve-plan.js";
 import {
@@ -52,6 +53,14 @@ export const TOOL_MAPPING: Record<string, Record<string, string>> = {
     grep: "grep_search",
     glob: "glob",
   },
+  copilot: {
+    read: "read",
+    write: "edit",
+    edit: "edit",
+    bash: "execute",
+    grep: "search",
+    glob: "search",
+  },
 };
 
 export interface AgentConfig {
@@ -92,6 +101,15 @@ const QWEN_NATIVE_AGENT_VARIANT: AgentVariant = {
   agents: {},
 };
 
+const COPILOT_NATIVE_AGENT_VARIANT: AgentVariant = {
+  vendor: "copilot",
+  destDir: ".github/agents",
+  modelDefault: "inherit",
+  toolsDefault: [],
+  protocolPath: ".agents/skills/_shared/runtime/execution-protocols/copilot.md",
+  agents: {},
+};
+
 interface AbstractAgentDefinition {
   agentKey: string;
   entry: string;
@@ -110,7 +128,9 @@ function getTimeoutField(_vendor: string): string {
 function supportsSkillsFrontmatter(vendor: string): boolean {
   // Qwen Code and OpenCode have no `skills` frontmatter key. Qwen skills are
   // discovered from the parent session; OpenCode skills are project-level.
-  return vendor !== "opencode" && vendor !== "qwen";
+  // Copilot discovers `.github/skills` natively and its custom-agent schema
+  // does not define a `skills` field.
+  return !["opencode", "qwen", "copilot"].includes(vendor);
 }
 
 function serializeTomlString(value: string): string {
@@ -195,6 +215,7 @@ function buildMarkdownAgentFile(
   const mapping = TOOL_MAPPING[vendor] || {};
   const rawTools: string | string[] =
     (config.tools as string | string[]) ||
+    (vendor === "copilot" ? variant.toolsDefault : undefined) ||
     (frontmatter.tools as string | string[]) ||
     variant.toolsDefault;
   const toolsList = Array.isArray(rawTools)
@@ -216,9 +237,11 @@ function buildMarkdownAgentFile(
   // (`tools: []`) is the wrong shape and triggers ConfigInvalidError at
   // bootstrap. Omitting it when empty keeps the frontmatter schema-valid for
   // every vendor (an empty tool list carries no meaning anyway).
-  const hasTools = Array.isArray(finalTools)
-    ? finalTools.length > 0
-    : finalTools.trim().length > 0;
+  const hasTools =
+    (vendor === "copilot" && config.tools !== undefined) ||
+    (Array.isArray(finalTools)
+      ? finalTools.length > 0
+      : finalTools.trim().length > 0);
   // opencode's model catalog is login/subscription-gated and varies per install,
   // so oma must not pin a hardcoded opencode slug (see
   // web/docs/guide/per-agent-models.md — "oma does not hardcode opencode model
@@ -233,7 +256,7 @@ function buildMarkdownAgentFile(
     description: config.description || frontmatter.description,
     tools: hasTools ? finalTools : undefined,
     model:
-      (vendor === "opencode" || vendor === "qwen") &&
+      ["opencode", "qwen", "copilot"].includes(vendor) &&
       resolvedModel === "inherit"
         ? undefined
         : resolvedModel,
@@ -254,12 +277,17 @@ function buildMarkdownAgentFile(
   if (config.timeoutMins !== undefined) {
     fm[getTimeoutField(vendor)] = config.timeoutMins;
   }
-  if (config.mcpServers) fm.mcpServers = config.mcpServers;
+  if (config.mcpServers) {
+    fm[vendor === "copilot" ? "mcp-servers" : "mcpServers"] = config.mcpServers;
+  }
   if (frontmatter.skills && supportsSkillsFrontmatter(vendor)) {
     fm.skills = frontmatter.skills;
   }
   if (config.extra) {
     Object.assign(fm, config.extra);
+  }
+  if (vendor === "copilot") {
+    fm["include-custom-instructions"] ??= true;
   }
   if (vendor === "opencode") {
     fm.mode = "subagent";
@@ -371,6 +399,18 @@ const ALLOWED_FIELDS: Record<string, readonly string[]> = {
   ],
   antigravity: ["name", "description", "model"],
   qwen: ["name", "description", "model", "tools", "approvalMode", "maxTurns"],
+  copilot: [
+    "name",
+    "description",
+    "tools",
+    "model",
+    "user-invocable",
+    "include-custom-instructions",
+    "disable-model-invocation",
+    "mcp-servers",
+    "metadata",
+    "target",
+  ],
   opencode: [
     "name",
     "description",
@@ -469,11 +509,19 @@ export function installVendorAgents(
 ): number {
   const agentsSrcDir = join(sourceDir, ".agents", "agents");
   const variantPath = join(agentsSrcDir, "variants", `${vendor}.json`);
+  const nativeVariant =
+    vendor === "qwen"
+      ? QWEN_NATIVE_AGENT_VARIANT
+      : vendor === "copilot"
+        ? {
+            ...COPILOT_NATIVE_AGENT_VARIANT,
+            destDir:
+              getVendorCapabilities(vendor)?.agents.dir ??
+              COPILOT_NATIVE_AGENT_VARIANT.destDir,
+          }
+        : undefined;
 
-  if (
-    !existsSync(agentsSrcDir) ||
-    (!existsSync(variantPath) && vendor !== "qwen")
-  )
+  if (!existsSync(agentsSrcDir) || (!existsSync(variantPath) && !nativeVariant))
     return 0;
 
   // Variant JSON comes from the (untrusted) working project. safeLoadVariant
@@ -501,15 +549,19 @@ export function installVendorAgents(
           }
         },
       })
-    : vendor === "qwen"
-      ? QWEN_NATIVE_AGENT_VARIANT
-      : undefined;
+    : nativeVariant;
   if (!variant?.destDir) return 0;
 
+  const vendorDestDir =
+    safeGetInstallMode() === "global" &&
+    vendor === "copilot" &&
+    variant.destDir === ".github/agents"
+      ? ".copilot/agents"
+      : variant.destDir;
   const destDir =
     safeGetInstallMode() === "global" && vendor === "opencode"
       ? join(targetDir, ".config", "opencode", "agents")
-      : join(targetDir, variant.destDir);
+      : join(targetDir, vendorDestDir);
   mkdirSync(destDir, { recursive: true });
 
   // Installed project preferences take precedence over the distribution's

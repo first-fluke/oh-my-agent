@@ -42,6 +42,7 @@ describe("runEmit", () => {
     expect(report.agentSkills).toBeDefined();
     expect(report.agentPlugin).toBeDefined();
     expect(report.claudePlugin).toBeDefined();
+    expect(report.piPackage).toBeDefined();
     expect(
       existsSync(path.join(outDir, ".agents/plugins/marketplace.json")),
     ).toBe(true);
@@ -50,6 +51,22 @@ describe("runEmit", () => {
       report.cliDocs?.files.map((file) => path.basename(file.outPath)),
     ).toEqual(["AGENTS.md"]);
     expect(existsSync(path.join(outDir, "cli", "CLAUDE.md"))).toBe(false);
+  });
+
+  it("target=pi-package emits an isolated package and renders its skill results", () => {
+    outDir = mkdtempSync(path.join(tmpdir(), "oma-emit-command-"));
+    const report = runEmit({
+      target: "pi-package",
+      repoRoot: FIXTURES_REPO,
+      outDir,
+    });
+    expect(report.piPackage?.manifestPath).toBe(
+      path.join(outDir, "pi-package", "package.json"),
+    );
+    expect(report.agentPlugin).toBeUndefined();
+    expect(existsSync(report.piPackage?.manifestPath ?? "")).toBe(true);
+    expect(renderText(report)).toContain("pi-package ->");
+    expect(JSON.parse(renderJson(report)).piPackage.target).toBe("pi-package");
   });
 
   it("target=cli-docs emits AGENTS.md without creating CLAUDE.md", () => {

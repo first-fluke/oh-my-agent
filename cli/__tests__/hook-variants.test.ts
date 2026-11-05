@@ -20,6 +20,7 @@ const KNOWN_VENDORS: VendorType[] = [
   "claude",
   "codex",
   "commandcode",
+  "copilot",
   "cursor",
   "grok",
   "kimi",

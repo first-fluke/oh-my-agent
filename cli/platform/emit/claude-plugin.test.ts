@@ -135,6 +135,9 @@ describe("emitClaudePlugin", () => {
     const file = emitCodexMarketplace(FIXTURES_REPO, outDir);
     const manifest = JSON.parse(readFileSync(file, "utf8"));
     expect(manifest.name).toBe("oh-my-agent");
+    expect(manifest.plugins[0]).toMatchObject({
+      source: { source: "local", path: "./codex-plugin" },
+    });
     expect(
       manifest.plugins.map((plugin: { name: string }) => plugin.name),
     ).toEqual(["oma", "oma-frontend", "oma-security", "oma-research"]);

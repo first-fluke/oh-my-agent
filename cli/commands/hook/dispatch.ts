@@ -34,6 +34,9 @@ import codexVariant from "../../../.agents/hooks/variants/codex.json" with {
 import commandcodeVariant from "../../../.agents/hooks/variants/commandcode.json" with {
   type: "json",
 };
+import copilotVariant from "../../../.agents/hooks/variants/copilot.json" with {
+  type: "json",
+};
 import cursorVariant from "../../../.agents/hooks/variants/cursor.json" with {
   type: "json",
 };
@@ -50,12 +53,16 @@ import qwenVariant from "../../../.agents/hooks/variants/qwen.json" with {
   type: "json",
 };
 import { withDiagnosticFeedbackHookEvents } from "../../platform/hooks-composer/diagnostic-feedback.js";
+import { withLifecycleHookEvents } from "../../platform/hooks-composer/lifecycle.js";
+import type { HookVariant } from "../../platform/hooks-composer/variant-types.js";
 import { withSelectedHookMemory } from "../../state/hook-memory.js";
 import type { VendorType } from "../../types/vendors.js";
 import { withQwenHookEvents } from "../../vendors/qwen/hooks.js";
 import { nativeEventToKind, normalizeInput } from "./adapters.js";
+import { coreHookVendor, renderCopilotHookResult } from "./copilot.js";
 import * as diagnosticFeedback from "./diagnostic-feedback.js";
 import { resolveHookConfig } from "./hook-config.js";
+import { recordLifecycleHook } from "./lifecycle.js";
 import type {
   HandlerCtx,
   HandlerResult,
@@ -126,9 +133,12 @@ interface VariantJson {
 // composers, not settings-file variants, so they are intentionally absent.
 export const VARIANT_ROUTES: Readonly<Record<VendorType, VariantJson>> = {
   antigravity: antigravityVariant as VariantJson,
-  claude: claudeVariant as VariantJson,
-  codex: codexVariant as VariantJson,
+  claude: withLifecycleHookEvents(claudeVariant) as VariantJson,
+  codex: withLifecycleHookEvents(codexVariant) as VariantJson,
   commandcode: commandcodeVariant as VariantJson,
+  copilot: withLifecycleHookEvents(
+    copilotVariant as HookVariant,
+  ) as VariantJson,
   cursor: cursorVariant as VariantJson,
   grok: grokVariant as VariantJson,
   kimi: kimiVariant as VariantJson,
@@ -325,6 +335,10 @@ export async function runChain(
 
 export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
   const { vendor, nativeEvent, rawStdin, cwd, sid } = req;
+  if (recordLifecycleHook(req)) return { output: "" };
+  // Copilot's PascalCase compatibility payloads use the canonical Claude
+  // tool names. Core handlers stay shared; output is rendered below for Copilot.
+  const handlerVendor = coreHookVendor(vendor);
 
   // Per-vendor normalization of the raw stdin payload into a canonical HookInput.
   // Warn early if the event has no mapped kind so drift is visible in logs.
@@ -358,7 +372,7 @@ export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
   // semantic-memory selection.
   const { config, memory } = resolveHookConfig(projectRoot);
   const ctx: HandlerCtx = {
-    vendor,
+    vendor: handlerVendor,
     cwd: projectRoot,
     sid,
     ...(config ? { config } : {}),
@@ -384,19 +398,23 @@ export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
     return { output: "" };
   }
 
+  if (vendor === "copilot") {
+    return { output: renderCopilotHookResult(merged, kind, nativeEvent) };
+  }
+
   let output: string;
   switch (merged.type) {
     case "context":
       // post_tool context injects under the native PostToolUse event name;
       // prompt-kind context keeps the prompt-submit / session-start naming.
       output = makePromptOutput(
-        vendor,
+        handlerVendor,
         merged.additionalContext,
         kind === "post_tool" ? nativeEvent : promptHookEventName(nativeEvent),
       );
       break;
     case "mutate":
-      output = makePreToolOutput(vendor, merged.updatedInput);
+      output = makePreToolOutput(handlerVendor, merged.updatedInput);
       break;
     case "block":
       // Pre-tool blocks use the deny dialect; post-tool blocks use the
@@ -405,10 +423,10 @@ export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
       // followup_message would re-submit a turn instead of denying).
       output =
         kind === "pre_tool"
-          ? makePreToolDenyOutput(vendor, merged.reason)
+          ? makePreToolDenyOutput(handlerVendor, merged.reason)
           : kind === "post_tool"
-            ? makePostToolBlockOutput(vendor, merged.reason)
-            : makeBlockOutput(vendor, merged.reason);
+            ? makePostToolBlockOutput(handlerVendor, merged.reason)
+            : makeBlockOutput(handlerVendor, merged.reason);
       break;
   }
 

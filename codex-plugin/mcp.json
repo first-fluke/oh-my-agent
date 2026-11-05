@@ -1,0 +1,31 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "context7": {
+      "type": "streamable-http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "serena": {
+      "type": "stdio",
+      "command": "serena",
+      "args": [
+        "start-mcp-server",
+        "--context",
+        "oma",
+        "--project-from-cwd",
+        "--add-mode",
+        "no-memories"
+      ],
+      "env": {
+        "SERENA_LOG_LEVEL": "info"
+      }
+    },
+    "aside": {
+      "type": "stdio",
+      "command": "aside",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

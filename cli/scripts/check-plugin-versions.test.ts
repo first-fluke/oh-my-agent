@@ -18,6 +18,8 @@ const domainPaths = Object.keys(DOMAIN_PRESETS).flatMap((domain) => [
   `.claude-plugin/domains/${domain}/.claude-plugin/plugin.json`,
 ]);
 const manifestPaths = [
+  "codex-plugin/plugin.json",
+  "pi-package/package.json",
   ".claude-plugin/directory/.claude-plugin/plugin.json",
   ...domainPaths,
 ];

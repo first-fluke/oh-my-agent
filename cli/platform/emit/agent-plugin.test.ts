@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   buildPluginManifest,
   buildPortableMcpConfig,
+  CODEX_PLUGIN_DIR,
   emitAgentPlugin,
   OMA_EXTENSION_NAMESPACE,
 } from "./agent-plugin.js";
@@ -129,6 +130,40 @@ describe("emitAgentPlugin", () => {
     expect(report.manifestPath).toBe(path.join(outDir, "plugin.json"));
     const manifest = JSON.parse(readFileSync(report.manifestPath, "utf-8"));
     expect(manifest.name).toBe("oma");
+  });
+
+  it("emits a separate Codex root without copying repository dependencies", () => {
+    repoDir = mkdtempSync(path.join(tmpdir(), "oma-codex-source-"));
+    cpSync(FIXTURES_REPO, repoDir, { recursive: true });
+    mkdirSync(path.join(repoDir, "node_modules", "dependency"), {
+      recursive: true,
+    });
+    writeFileSync(
+      path.join(repoDir, "node_modules", "dependency", "index.js"),
+      "unused",
+    );
+    writeFileSync(path.join(repoDir, "unrelated.txt"), "preserve");
+    outDir = mkdtempSync(path.join(tmpdir(), "oma-codex-emit-"));
+
+    const report = emitAgentPlugin(repoDir, outDir);
+    const root = path.join(outDir, CODEX_PLUGIN_DIR);
+    expect(report.codexPluginPath).toBe(root);
+    expect(
+      JSON.parse(readFileSync(path.join(root, "plugin.json"), "utf8")).name,
+    ).toBe("oma");
+    expect(
+      existsSync(path.join(root, "skills", "valid-skill", "SKILL.md")),
+    ).toBe(true);
+    expect(existsSync(path.join(root, "mcp.json"))).toBe(true);
+    expect(existsSync(path.join(root, "node_modules"))).toBe(false);
+    expect(existsSync(path.join(root, "unrelated.txt"))).toBe(false);
+    expect(readFileSync(path.join(repoDir, "unrelated.txt"), "utf8")).toBe(
+      "preserve",
+    );
+
+    writeFileSync(path.join(root, "skills", "stale.txt"), "stale");
+    emitAgentPlugin(repoDir, outDir);
+    expect(existsSync(path.join(root, "skills", "stale.txt"))).toBe(false);
   });
 
   it("emits conformant skills under skills/ and ships _shared beside them", () => {

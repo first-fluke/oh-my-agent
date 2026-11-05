@@ -31,17 +31,18 @@ describe("EXTENSION_VENDORS", () => {
   });
 });
 
-describe("VENDORS (unchanged guard)", () => {
+describe("VENDORS", () => {
   it("does NOT include opencode", () => {
     expect(VENDORS).not.toContain("opencode");
   });
 
-  it("contains the original canonical set in exact order", () => {
+  it("contains supported hook vendors in exact order", () => {
     expect([...VENDORS]).toEqual([
       "antigravity",
       "claude",
       "codex",
       "commandcode",
+      "copilot",
       "cursor",
       "grok",
       "kimi",

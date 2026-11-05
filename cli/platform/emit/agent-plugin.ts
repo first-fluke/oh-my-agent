@@ -250,21 +250,48 @@ export function buildPluginManifest(
   return manifest;
 }
 
+/** Codex installs this dedicated tree instead of copying the repository root. */
+export const CODEX_PLUGIN_DIR = "codex-plugin";
+
+function emitCodexPackage(
+  repoRoot: string,
+  outDir: string,
+  mcp: PortableMcpConversion | undefined,
+): string {
+  const root = join(outDir, CODEX_PLUGIN_DIR);
+  rmSync(root, { recursive: true, force: true });
+  mkdirSync(root, { recursive: true });
+
+  emitAgentSkills(repoRoot, join(root, "skills"));
+  if (mcp) {
+    writeFileSync(
+      join(root, "mcp.json"),
+      `${JSON.stringify(
+        { $schema: MCP_SCHEMA_ID, mcpServers: mcp.mcpServers },
+        null,
+        2,
+      )}\n`,
+    );
+  }
+
+  const extensionEntries: string[] = [];
+  for (const entry of EXTENSION_ENTRIES) {
+    const src = join(repoRoot, entry);
+    if (!existsSync(src)) continue;
+    copyEntry(src, join(root, OMA_EXTENSION_NAMESPACE, basename(entry)));
+    extensionEntries.push(entry);
+  }
+
+  writeFileSync(
+    join(root, "plugin.json"),
+    `${JSON.stringify(buildPluginManifest(repoRoot, extensionEntries), null, 2)}\n`,
+  );
+  return root;
+}
+
 /**
- * Emit a self-contained Agent Plugins 1.0.0 package
- * (https://agent-plugins.org/specification) from the `.agents/` SSOT:
- *
- *   outDir/
- *   ├── plugin.json               closed-schema manifest
- *   ├── skills/                   conformant Agent Skills (+ _shared assets)
- *   ├── mcp.json                  portable transport config, when SSOT has one
- *   └── com.firstfluke.oma/       agents / workflows / rules / oma-config.yaml
- *
- * The out dir is the repo root in the canonical layout (Agent Plugins clients
- * discover `plugin.json` and `skills/` at the package root, and a git clone
- * of this repo IS the package), so the out dir itself is never removed — only
- * the package-owned artifacts above are rebuilt on every run, so removed SSOT
- * entries cannot linger while sibling files stay untouched.
+ * Emit the portable package and its dedicated Codex install root.
+ * Rebuild only package-owned paths; preserve unrelated repository files.
  */
 export function emitAgentPlugin(
   repoRoot: string,
@@ -275,6 +302,7 @@ export function emitAgentPlugin(
     "skills",
     "mcp.json",
     OMA_EXTENSION_NAMESPACE,
+    CODEX_PLUGIN_DIR,
   ];
   for (const artifact of ownedArtifacts) {
     rmSync(join(outDir, artifact), { recursive: true, force: true });
@@ -317,11 +345,14 @@ export function emitAgentPlugin(
   const manifestPath = join(outDir, "plugin.json");
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
+  const codexPluginPath = emitCodexPackage(repoRoot, outDir, mcp);
+
   const passCount = skills.filter((s) => s.validation.valid).length;
   return {
     target: "agent-plugin",
     outDir,
     manifestPath,
+    codexPluginPath,
     skills,
     passCount,
     failCount: skills.length - passCount,

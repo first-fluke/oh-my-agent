@@ -1,0 +1,57 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "cursor",
+  "destDir": ".cursor/agents",
+  "modelDefault": "inherit",
+  "toolsDefault": [],
+  "protocolPath": ".agents/skills/_shared/core/quality-principles.md",
+  "agents": {
+    "backend-engineer": {
+      "extra": {
+        "is_background": true
+      }
+    },
+    "frontend-engineer": {
+      "extra": {
+        "is_background": true
+      }
+    },
+    "db-engineer": {
+      "extra": {
+        "readonly": true
+      }
+    },
+    "architecture-reviewer": {
+      "extra": {
+        "readonly": true
+      }
+    },
+    "debug-investigator": {},
+    "mobile-engineer": {
+      "extra": {
+        "is_background": true
+      }
+    },
+    "pm-planner": {
+      "extra": {
+        "readonly": true
+      }
+    },
+    "qa-reviewer": {
+      "extra": {
+        "readonly": true,
+        "is_background": true
+      }
+    },
+    "tf-infra-engineer": {
+      "extra": {
+        "is_background": true
+      }
+    },
+    "docs-curator": {
+      "extra": {
+        "is_background": true
+      }
+    }
+  }
+}

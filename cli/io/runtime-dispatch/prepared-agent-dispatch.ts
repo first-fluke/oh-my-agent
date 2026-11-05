@@ -1,5 +1,6 @@
 import type { VendorConfig } from "../../platform/agent-config.js";
 import { planDispatch } from "../runtime-dispatch.js";
+import { applyAgentDefinition } from "./agent-definition.js";
 import {
   createOpencodeSpawnWrapper,
   type OpencodeWrapper,
@@ -50,6 +51,8 @@ export function prepareAgentDispatch({
     undefined,
     { readOnly, workspace },
   );
+
+  applyAgentDefinition(dispatch, agentId, workspace);
 
   let opencodeWrapper: OpencodeWrapper | null = null;
   if (dispatch.targetVendor === "opencode" && dispatch.mode === "external") {

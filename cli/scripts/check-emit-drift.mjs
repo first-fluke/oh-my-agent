@@ -37,6 +37,9 @@ const CLI_DOC_RELS = [join("cli", "AGENTS.md")];
 // agent-plugin). `plugin.json` is version-normalized like the marketplace.
 const AGENT_PLUGIN_FILE_RELS = ["mcp.json"];
 const AGENT_PLUGIN_TREE_RELS = ["skills", "com.firstfluke.oma"];
+// Clean Codex package; plugin.json tracks package.json's version.
+const CODEX_PLUGIN_TREE_REL = "codex-plugin";
+const PI_PACKAGE_TREE_REL = "pi-package";
 
 // The marketplace manifest's `version` tracks package.json, which
 // release-please bumps on every release — that bump alone must not count as
@@ -126,7 +129,8 @@ function diffTree(scratchDir, rel, normalizeVersions = false) {
     const freshContent = readFileSync(join(fresh, file));
     const committedContent = readFileSync(join(committed, file));
     if (
-      normalizeVersions && file.endsWith("plugin.json")
+      normalizeVersions &&
+      (file.endsWith("plugin.json") || file === "package.json")
         ? stripVersion(freshContent.toString()) !==
           stripVersion(committedContent.toString())
         : !freshContent.equals(committedContent)
@@ -181,6 +185,8 @@ function diffAgentPlugin(scratchDir) {
   for (const rel of AGENT_PLUGIN_TREE_RELS) {
     problems.push(...diffTree(scratchDir, rel));
   }
+  problems.push(...diffTree(scratchDir, CODEX_PLUGIN_TREE_REL, true));
+  problems.push(...diffTree(scratchDir, PI_PACKAGE_TREE_REL, true));
   return problems;
 }
 
@@ -245,7 +251,8 @@ try {
     console.log(
       "emit drift: none — .claude-plugin/marketplace.json, " +
         "cli/AGENTS.md, and the root Agent Plugins package " +
-        "(plugin.json, skills/, mcp.json, com.firstfluke.oma/) match a " +
+        "(plugin.json, skills/, mcp.json, com.firstfluke.oma/), " +
+        "codex-plugin/, and pi-package/ match a " +
         "fresh `oma emit`",
     );
     process.exit(0);

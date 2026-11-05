@@ -1,0 +1,9 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "copilot",
+  "destDir": ".github/agents",
+  "modelDefault": "inherit",
+  "toolsDefault": [],
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/copilot.md",
+  "agents": {}
+}

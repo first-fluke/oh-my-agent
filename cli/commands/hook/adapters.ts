@@ -11,6 +11,7 @@ import {
   readAgyResponse,
 } from "../../../.agents/hooks/core/agy-input.js";
 import { normalizePromptInput } from "../../../.agents/hooks/core/prompt-input.js";
+import { copilotToolName } from "./copilot.js";
 import type { HookInput, Vendor } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -66,6 +67,7 @@ export function nativeEventToKind(
     case "beforeSubmitPrompt":
     case "PreInvocation":
     case "userPromptSubmit":
+    case "userPromptSubmitted":
       return "prompt";
 
     // session-start context injection — only for vendors that wire it as a
@@ -76,7 +78,8 @@ export function nativeEventToKind(
       return vendor === "claude" ||
         vendor === "commandcode" ||
         vendor === "cursor" ||
-        vendor === "qwen"
+        vendor === "qwen" ||
+        vendor === "copilot"
         ? "prompt"
         : null;
 
@@ -104,6 +107,7 @@ export function nativeEventToKind(
     case "Stop":
     case "stop":
     case "AfterAgent":
+    case "agentStop":
       return "stop";
 
     default:
@@ -376,16 +380,16 @@ function resolvePrompt(
  * kiro                                    : .tool_name or .toolName (kiro uses camelCase variants)
  */
 function resolveToolName(
-  _vendor: Vendor,
+  vendor: Vendor,
   payload: Record<string, unknown>,
 ): string {
   const toolCall = payload.toolCall as { name?: unknown } | undefined;
-  return (
+  const name =
     (payload.tool_name as string | undefined) ??
     (payload.toolName as string | undefined) ??
     (typeof toolCall?.name === "string" ? toolCall.name : undefined) ??
-    ""
-  );
+    "";
+  return vendor === "copilot" ? copilotToolName(name) : name;
 }
 
 /**
@@ -396,10 +400,26 @@ function resolveToolName(
  * antigravity: nests .toolCall.args
  */
 function resolveToolInput(
-  _vendor: Vendor,
+  vendor: Vendor,
   payload: Record<string, unknown>,
 ): Record<string, unknown> {
   const toolCall = payload.toolCall as { args?: unknown } | undefined;
+  if (vendor === "copilot") {
+    let value = payload.tool_input ?? payload.toolArgs ?? payload.toolInput;
+    if (typeof value === "string") {
+      try {
+        value = JSON.parse(value);
+      } catch {
+        return {};
+      }
+    }
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    const input = { ...(value as Record<string, unknown>) };
+    if (typeof input.path === "string" && input.file_path === undefined) {
+      input.file_path = input.path;
+    }
+    return input;
+  }
   return (
     (payload.tool_input as Record<string, unknown> | undefined) ??
     (payload.toolInput as Record<string, unknown> | undefined) ??

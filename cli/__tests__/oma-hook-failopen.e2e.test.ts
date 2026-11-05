@@ -1,7 +1,7 @@
 /**
  * E2E fail-open + chain-semantics tests for `oma hook` — design 019, Task 10.
  *
- * Invokes the built CLI bundle (cli/bin/cli.js) via spawnSync so every path
+ * Invokes the local CLI source (cli/cli.ts) via spawnSync so every path
  * goes through the real command handler: stdin parsing, vendor validation,
  * dispatch, and dialect render.
  *
@@ -12,8 +12,8 @@
  * What IS added (command/e2e level guarantees):
  *   1. Empty stdin              → empty stdout, exit 0
  *   2. Malformed JSON stdin     → empty stdout, exit 0
- *   3. Unknown vendor (copilot) → empty stdout, exit 0  (passes framework
- *      validator since copilot is in ALL_CLI_VENDORS, triggers the inner
+ *   3. Unknown vendor (hermes) → empty stdout, exit 0  (passes framework
+ *      validator since hermes is in ALL_CLI_VENDORS, triggers the inner
  *      VENDORS whitelist → fail-open handler path, not a commander error)
  *   4. Unknown/unmapped event   → empty stdout, exit 0
  *   5. Missing .agents/ (temp cwd without variant JSON) → empty stdout, exit 0
@@ -120,9 +120,9 @@ describe("oma hook fail-open guarantees", () => {
   });
 
   /**
-   * Case 3: Unknown vendor (copilot).
+   * Case 3: Unknown vendor (hermes).
    *
-   * "copilot" is in ALL_CLI_VENDORS so it passes the cli-framework validator
+   * "hermes" is in ALL_CLI_VENDORS so it passes the cli-framework validator
    * (no exit 1 from commander). The command.ts handler then checks against the
    * narrower VENDORS whitelist → logs to stderr and returns without writing
    * stdout → exit 0 (fail-open).
@@ -130,9 +130,9 @@ describe("oma hook fail-open guarantees", () => {
    * Note: truly unknown vendors like "bogus" are rejected by the cli-framework
    * validator and exit 1. That is a CLI contract, not a fail-open boundary.
    */
-  it("Case 3: unknown vendor (copilot) → empty stdout, exit 0", () => {
+  it("Case 3: unknown vendor (hermes) → empty stdout, exit 0", () => {
     const r = runHook(
-      ["--vendor", "copilot", "--event", "UserPromptSubmit"],
+      ["--vendor", "hermes", "--event", "UserPromptSubmit"],
       "{}",
       tempDir,
     );

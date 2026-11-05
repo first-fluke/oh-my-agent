@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, rmdirSync, rmSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
+import { getVendorCapabilities } from "../constants/vendor-capabilities.js";
 import type { VendorType } from "../types/index.js";
 import { installVendorAgents } from "./agent-composer.js";
 import { type HookVariant, installHooksFromVariant } from "./hooks-composer.js";
@@ -76,15 +77,17 @@ export function installVendorAdaptations(
   installRoot: string,
   vendors: VendorType[],
 ): void {
-  const hookVariantsDir = join(sourceDir, ".agents", "hooks", "variants");
-
   for (const vendor of vendors) {
     // 1. Install agents from variant (composer design)
     installVendorAgents(sourceDir, installRoot, vendor);
 
     // 2. Install hooks from variant config (parsed + path-validated; a bad
     //    variant is skipped with a warning rather than aborting the install).
-    const variantPath = join(hookVariantsDir, `${vendor}.json`);
+    const variantRelativePath = getVendorCapabilities(vendor)?.hooks.variant;
+    const variantPath = join(
+      sourceDir,
+      variantRelativePath ?? `.agents/hooks/variants/${vendor}.json`,
+    );
     if (existsSync(variantPath)) {
       const variant = safeLoadHookVariant(variantPath, installRoot);
       if (variant?.homeOnly) {

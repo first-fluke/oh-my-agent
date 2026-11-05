@@ -212,6 +212,21 @@ export function emitClaudePlugin(
         2,
       )}\n`,
     );
+    // Codex resolves a plugin root manifest and hardcodes `./skills`, so the
+    // domain roots need the portable manifest too (Claude reads
+    // `.claude-plugin/plugin.json`).
+    writeFileSync(
+      join(root, "plugin.json"),
+      `${JSON.stringify(
+        {
+          ...buildPluginManifest(repoRoot, []),
+          name: `oma-${domain}`,
+          description: preset.description,
+        },
+        null,
+        2,
+      )}\n`,
+    );
   }
 
   emitDirectoryPlugin(repoRoot, join(outDir, "directory"));
@@ -323,7 +338,7 @@ MIT
 /** Codex marketplace metadata; source paths resolve from the repository root. */
 export function emitCodexMarketplace(repoRoot: string, outDir: string): string {
   const plugins = [
-    { name: "oma", path: "./" },
+    { name: "oma", path: "./codex-plugin" },
     ...Object.keys(DOMAIN_PRESETS).map((domain) => ({
       name: `oma-${domain}`,
       path: `./.claude-plugin/domains/${domain}`,

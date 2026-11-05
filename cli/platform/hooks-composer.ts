@@ -12,6 +12,7 @@ import {
   OMA_HOOK_WRAPPER_FILENAME,
   shellQuote,
 } from "./hooks-composer/hook-command.js";
+import { withLifecycleHookEvents } from "./hooks-composer/lifecycle.js";
 import { generateOmaHookWrapper } from "./hooks-composer/oma-hook-wrapper.js";
 import {
   copyHookScripts,
@@ -96,7 +97,22 @@ export function installHooksFromVariant(
   targetDir: string,
   variant: HookVariant,
 ): void {
-  variant = withDiagnosticFeedbackHookEvents(withQwenHookEvents(variant));
+  if (safeGetInstallMode() === "global" && variant.vendor === "copilot") {
+    variant = {
+      ...variant,
+      hookDir:
+        variant.hookDir === ".github/hooks"
+          ? ".copilot/hooks"
+          : variant.hookDir,
+      settingsFile:
+        variant.settingsFile === ".github/hooks/oma.json"
+          ? ".copilot/hooks/oma.json"
+          : variant.settingsFile,
+    };
+  }
+  variant = withLifecycleHookEvents(
+    withDiagnosticFeedbackHookEvents(withQwenHookEvents(variant)),
+  );
   const globalHome = safeGetInstallMode() === "global" ? sourceDir : undefined;
   const commandVariant = globalHome
     ? {
@@ -213,7 +229,28 @@ export function installHooksFromVariant(
   if (variant.extra) Object.assign(extra, variant.extra);
 
   // 5. Merge into settings file (or write Grok-native hook file).
-  if (variant.vendor === "grok") {
+  if (variant.style === "copilot") {
+    // Copilot reads one flat JSON file per source. Its entries use `bash` and
+    // `timeoutSec` and are not nested under `hooks[]`, unlike Claude settings.
+    const copilotEntries: Record<string, unknown[]> = {};
+    for (const [event, entries] of Object.entries(hookEntries)) {
+      // biome-ignore lint/suspicious/noExplicitAny: hook entry shape varies by vendor
+      copilotEntries[event] = (entries as any[]).flatMap((entry) =>
+        // biome-ignore lint/suspicious/noExplicitAny: hook entry shape varies by vendor
+        (entry.hooks ?? [entry]).map((hook: any) => ({
+          type: "command",
+          bash: hook.command,
+          timeoutSec: hook.timeout ?? 5,
+          ...(entry.matcher ? { matcher: entry.matcher } : {}),
+        })),
+      );
+    }
+    const copilotHookFile = join(targetDir, variant.settingsFile);
+    mergeIntoSettings(copilotHookFile, copilotEntries, {
+      ...extra,
+      version: 1,
+    });
+  } else if (variant.vendor === "grok") {
     // Grok discovers hooks from .grok/hooks/*.json files (directory-based).
     // Write a single well-named file with the double-nested shape Grok expects.
     const grokHookFile = join(targetDir, variant.settingsFile);

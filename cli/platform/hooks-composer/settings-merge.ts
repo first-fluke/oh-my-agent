@@ -69,7 +69,9 @@ export function isOmaManagedHookGroup(
  */
 function isOmaManagedHookCommand(h: Record<string, unknown>): boolean {
   const name = typeof h.name === "string" ? h.name : "";
-  const cmd = typeof h.command === "string" ? h.command : "";
+  const cmd = [h.command, h.bash, h.powershell, h.exec]
+    .filter((value): value is string => typeof value === "string")
+    .join("\n");
 
   // New-style: oma-hook.sh wrapper (design 019+)
   if (name.startsWith("oma-hook-") || cmd.includes("oma-hook.sh")) {

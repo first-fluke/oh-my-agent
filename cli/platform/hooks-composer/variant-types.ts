@@ -49,6 +49,13 @@ export interface HookVariant {
    * a `.kiro/settings/cli.json` merge would be dead config it never loads.
    */
   skipSettingsMerge?: boolean;
+  /**
+   * Copilot CLI reads hook files from `.github/hooks/*.json` with a flat
+   * `{version: 1, hooks: {Event: [{type: "command", bash, timeoutSec}]}}`
+   * shape. Set to "copilot" to write that file instead of merging Claude-style
+   * nested groups into a settings file.
+   */
+  style?: "copilot";
   events: Record<string, HookEvent | HookEvent[]>;
   statusLine?: {
     hook: string;

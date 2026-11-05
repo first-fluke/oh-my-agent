@@ -1,0 +1,27 @@
+{
+  "name": "oh-my-agent-pi",
+  "version": "20.35.0",
+  "description": "oh-my-agent skills for Pi",
+  "license": "MIT",
+  "homepage": "https://firstfluke.com/oh-my-agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/first-fluke/oh-my-agent"
+  },
+  "keywords": [
+    "pi-package",
+    "agent-skills",
+    "oh-my-agent"
+  ],
+  "files": [
+    "skills"
+  ],
+  "pi": {
+    "skills": [
+      "./skills"
+    ],
+    "extensions": [],
+    "prompts": [],
+    "themes": []
+  }
+}

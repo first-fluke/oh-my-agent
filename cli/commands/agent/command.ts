@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import { runAction } from "../../utils/cli-framework.js";
+import { runQwenBoard } from "./board.js";
 import { showAgentContext } from "./context.js";
 import { parallelRun, runParallelSupervisor } from "./parallel.js";
 import { beginResult, finishResult, verifyResult } from "./results.js";
@@ -8,6 +9,15 @@ import { reviewAgent } from "./review.js";
 import { checkStatus, spawnAgent } from "./spawn-status.js";
 
 export function registerAgentCommands(program: Command): void {
+  program
+    .command("agent:board <action> [values...]")
+    .description("Use an available Qwen Agent Board alongside OMA run receipts")
+    .requiredOption("--board <name>", "Native Qwen board name")
+    .option("--actor <label>", "Actor label (required for mutations)")
+    .option("--owner <label>", "Suggested owner when creating a task")
+    .option("--note <text>", "Completion note for done")
+    .option("--json", "Print native board JSON")
+    .action(runAction(runQwenBoard));
   program
     .command("agent:parallel-supervisor <manifest>", { hidden: true })
     .action(runAction(runParallelSupervisor));

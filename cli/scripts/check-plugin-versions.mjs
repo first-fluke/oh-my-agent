@@ -11,6 +11,8 @@ export function pluginVersionTargets() {
     { path: ".agents/skills/_version.json", jsonpath: "$.version" },
     { path: ".claude-plugin/plugin.json", jsonpath: "$.version" },
     { path: "plugin.json", jsonpath: "$.version" },
+    { path: "codex-plugin/plugin.json", jsonpath: "$.version" },
+    { path: "pi-package/package.json", jsonpath: "$.version" },
     { path: ".cursor-plugin/plugin.json", jsonpath: "$.version" },
     { path: ".claude-plugin/marketplace.json", jsonpath: "$.metadata.version" },
     {

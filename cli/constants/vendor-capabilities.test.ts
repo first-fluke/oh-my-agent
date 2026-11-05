@@ -1,0 +1,51 @@
+import { describe, expect, it } from "vitest";
+import {
+  getVendorCapabilities,
+  VENDOR_CAPABILITIES,
+} from "./vendor-capabilities.js";
+import { ALL_CLI_VENDORS, CLI_SKILLS_DIR } from "./vendors.js";
+
+describe("vendor capabilities", () => {
+  it("covers every linkable vendor and excludes retired Gemini", () => {
+    expect(Object.keys(VENDOR_CAPABILITIES).sort()).toEqual(
+      [...ALL_CLI_VENDORS].sort(),
+    );
+    expect(getVendorCapabilities("gemini")).toBeUndefined();
+    expect(getVendorCapabilities("antigravity")?.hooks.kind).toBe("settings");
+  });
+
+  it("keeps skill projection destinations aligned with install-mode paths", () => {
+    for (const [vendor, paths] of Object.entries(CLI_SKILLS_DIR)) {
+      const capabilities = getVendorCapabilities(vendor);
+      expect(capabilities?.skills.projectDir).toBe(paths.projectPath);
+      expect(capabilities?.skills.globalDir).toBe(paths.homePath);
+    }
+    expect(getVendorCapabilities("pi")?.skills).toEqual({
+      native: true,
+      projectDir: ".agents/skills",
+      globalDir: ".agents/skills",
+    });
+  });
+
+  it("distinguishes hook-file vendors, extension bridges, and skill-only hosts", () => {
+    expect(getVendorCapabilities("copilot")).toMatchObject({
+      agents: { dir: ".github/agents" },
+      hooks: {
+        kind: "settings",
+        variant: ".agents/hooks/variants/copilot.json",
+      },
+    });
+    expect(getVendorCapabilities("pi")?.hooks).toEqual({
+      kind: "extension",
+      variant: null,
+    });
+    expect(getVendorCapabilities("hermes")?.hooks.kind).toBe("none");
+    expect(getVendorCapabilities("grok")?.skills.projectDir).toBeNull();
+    expect(getVendorCapabilities("zcode")?.skills.projectDir).toBeNull();
+  });
+
+  it("does not resolve inherited object properties as vendors", () => {
+    expect(getVendorCapabilities("constructor")).toBeUndefined();
+    expect(getVendorCapabilities("__proto__")).toBeUndefined();
+  });
+});

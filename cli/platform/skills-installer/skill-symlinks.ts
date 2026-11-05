@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { CLI_SKILLS_DIR, INSTALLED_SKILLS_DIR } from "../../constants/index.js";
+import { getVendorCapabilities } from "../../constants/vendor-capabilities.js";
 import type { CliTool } from "../../types/index.js";
 import { createLink } from "../fs-link.js";
 import { safeGetInstallMode } from "../install-context.js";
@@ -109,7 +110,7 @@ export function createVendorSymlinks(
     const skillsDir = getVendorDisplayPath(cli);
     const linkRootDir = resolveCliSkillsDir(installRoot, cli);
 
-    if (cli === "qwen") {
+    if (getVendorCapabilities(cli)?.skills.native) {
       removed.push(
         ...pruneQwenSkillSymlinks(installRoot, linkRootDir).map(
           (name) => `${skillsDir}/${name}`,

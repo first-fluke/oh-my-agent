@@ -8,6 +8,7 @@ import {
   emitCodexMarketplace,
 } from "../../platform/emit/claude-plugin.js";
 import { emitCliDocs } from "../../platform/emit/cli-docs.js";
+import { emitPiPackage } from "../../platform/emit/pi-package.js";
 import type { AgentSkillsEmitReport } from "../../platform/emit/types.js";
 import {
   addOutputOptions,
@@ -21,6 +22,7 @@ const EMIT_TARGETS = [
   "agent-skills",
   "agent-plugin",
   "claude-plugin",
+  "pi-package",
   "agents-md",
   "cli-docs",
   "all",
@@ -89,6 +91,9 @@ export function runEmit(options: RunEmitOptions): EmitRunReport {
       join(outDir, "generated", "agents-md"),
     );
   }
+  if (target === "pi-package" || target === "all") {
+    report.piPackage = emitPiPackage(repoRoot, join(outDir, "pi-package"));
+  }
   if (target === "cli-docs" || target === "all") {
     report.cliDocs = emitCliDocs(repoRoot, outDir);
   }
@@ -103,7 +108,7 @@ export function registerEmitCommand(program: Command): void {
       .description(
         "Emit standards-conformant artifacts from the .agents/ SSOT " +
           "(Agent Skills spec, Agent Plugins package, Claude Code plugin " +
-          "marketplace, AGENTS.md, cli/AGENTS.md)",
+          "marketplace, Pi package, AGENTS.md, cli/AGENTS.md)",
       )
       .option(
         "--target <target>",

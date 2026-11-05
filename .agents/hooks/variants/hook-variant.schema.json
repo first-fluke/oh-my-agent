@@ -19,12 +19,18 @@
         "claude",
         "codex",
         "commandcode",
+        "copilot",
         "cursor",
         "grok",
         "kimi",
         "kiro",
         "qwen"
       ]
+    },
+    "style": {
+      "type": "string",
+      "enum": ["copilot"],
+      "description": "Write the vendor-native flat hook file instead of the default nested settings merge."
     },
     "hookDir": {
       "type": "string",

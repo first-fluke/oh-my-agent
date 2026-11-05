@@ -27,11 +27,12 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { VENDORS } from "../../../.agents/hooks/core/constants.js";
-import type { Vendor } from "../../../.agents/hooks/core/types.js";
 import { getHookDir } from "../../../.agents/hooks/core/vendor-detect.js";
 import { nativeEventToKind } from "./adapters.js";
+import { coreHookVendor } from "./copilot.js";
 import { VARIANT_ROUTES } from "./dispatch.js";
 import { PROBE_VENDORS } from "./probe.js";
+import type { Vendor } from "./types.js";
 
 const variantsDir = join(
   __dirname,
@@ -73,13 +74,13 @@ describe("vendor wiring contract (variant JSON ↔ dispatch)", () => {
     expect(variants.length).toBeGreaterThan(0);
   });
 
-  it("every variant vendor is in the core VENDORS SSOT", () => {
+  it("every variant vendor resolves to a core runtime or a CLI compatibility adapter", () => {
     for (const v of variants) {
       expect(
         VENDORS,
         `${v.vendor}: add it to .agents/hooks/core/constants.ts VENDORS — ` +
           `the Vendor type and the exhaustive dialect switches derive from it`,
-      ).toContain(v.vendor);
+      ).toContain(coreHookVendor(v.vendor as Vendor));
     }
   });
 
@@ -106,8 +107,15 @@ describe("vendor wiring contract (variant JSON ↔ dispatch)", () => {
 
   it("test-filter getHookDir(vendor) matches each variant's hookDir", () => {
     for (const v of variants) {
+      if (v.vendor === "copilot") {
+        // Copilot uses CLI-normalized handlers and rewrites test-filter's
+        // Claude wrapper path in renderCopilotHookResult (copilot.test.ts).
+        expect(coreHookVendor("copilot")).toBe("claude");
+        expect(v.hookDir).toBe(".github/hooks");
+        continue;
+      }
       expect(
-        getHookDir(v.vendor as Vendor),
+        getHookDir(coreHookVendor(v.vendor as Vendor)),
         `${v.vendor}: getHookDir in .agents/hooks/core/test-filter.ts must ` +
           `return "${v.hookDir}" (mirrors the variant JSON; it cannot import ` +
           `the JSON because pi runs it as a standalone subprocess)`,
@@ -122,6 +130,9 @@ describe("vendor wiring contract (variant JSON ↔ dispatch)", () => {
     // PreToolUse/Stop) have no prompt-submit channel to probe and are exempt.
     const SESSION_START_EVENTS = new Set(["SessionStart", "sessionStart"]);
     for (const v of variants) {
+      // Copilot command prompt-submission stdout is ignored by its runtime;
+      // its supported injection channel is SessionStart (copilot.test.ts).
+      if (v.vendor === "copilot") continue;
       const hasPromptEvent = Object.keys(v.events).some(
         (eventName) =>
           nativeEventToKind(v.vendor as Vendor, eventName) === "prompt" &&

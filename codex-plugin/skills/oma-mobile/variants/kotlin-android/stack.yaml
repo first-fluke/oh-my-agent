@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../stack.schema.json
+language: kotlin
+framework: android
+ui: compose
+state: viewmodel-stateflow
+navigation: navigation-compose
+di: hilt
+# Ktor Client is an engine-agnostic HTTP API, not a replacement for OkHttp.
+# The app module plugs in the OkHttp engine (`ktor-client-okhttp`); unit and
+# contract tests plug in `ktor-client-mock`. Generated API code sees only the
+# Ktor API and never the engine, which is what makes the two swappable.
+http_client: ktor-client
+serialization: kotlinx-serialization
+local_storage: room
+# `org.openapi.generator` Gradle plugin with generatorName=kotlin, library=jvm-ktor.
+api_generator: openapi-generator
+api_spec: api/openapi.json
+response_cache: room-repository
+structure: app/{ui,data,di},api-client
+source: variant
+
+verify:
+  detect: settings.gradle.kts
+  syntax:
+    # Non-compiling lint pass. `./gradlew compileDebugKotlin` is a build and
+    # must not be the default; /stack-set swaps in the project's own check.
+    cmd: "ktlint"
+    skip_if_missing: ktlint
+  tests:
+    cmd: "./gradlew --console=plain :app:testDebugUnitTest :api-client:test"
+    pass_signal: "BUILD SUCCESSFUL"
+    skip_if_missing: java

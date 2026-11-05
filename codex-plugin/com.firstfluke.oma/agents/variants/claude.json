@@ -1,0 +1,29 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "claude",
+  "destDir": ".claude/agents",
+  "modelDefault": "sonnet",
+  "maxTurnsDefault": 100,
+  "toolsDefault": "Read, Write, Edit, Bash, Grep, Glob",
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/claude.md",
+  "agents": {
+    "architecture-reviewer": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob"
+    },
+    "tf-infra-engineer": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob"
+    },
+    "pm-planner": {
+      "tools": "Read, Write, Grep, Glob, Bash"
+    },
+    "qa-reviewer": {
+      "tools": "Read, Grep, Glob, Bash"
+    },
+    "docs-curator": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob"
+    },
+    "research-explorer": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch"
+    }
+  }
+}

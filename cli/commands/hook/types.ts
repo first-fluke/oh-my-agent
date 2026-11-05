@@ -18,8 +18,12 @@ export type {
   HookConfig,
   HookHandler,
   HookInput,
-  Vendor,
 } from "../../../.agents/hooks/core/types.js";
+
+/** Copilot shares core handlers through the CLI compatibility adapter. */
+export type Vendor =
+  | import("../../../.agents/hooks/core/types.js").Vendor
+  | "copilot";
 
 // ---------------------------------------------------------------------------
 // Dispatch envelope — carries the full context from the CLI entrypoint to the
@@ -28,7 +32,7 @@ export type {
 
 export interface HookRequest {
   /** Canonicalized vendor identity */
-  vendor: import("../../../.agents/hooks/core/types.js").Vendor;
+  vendor: Vendor;
   /** Raw native event name from the vendor's hook registration (e.g. "UserPromptSubmit") */
   nativeEvent: string;
   /** Optional matcher / tool name forwarded from --matcher flag */

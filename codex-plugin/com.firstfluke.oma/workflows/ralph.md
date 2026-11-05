@@ -1,0 +1,285 @@
+---
+name: ralph
+description: Ralph - persistent self-referential execution loop wrapping ultrawork with a spawned independent judge
+disable-model-invocation: true
+---
+
+- **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
+- Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
+- Follow `.agents/skills/_shared/core/code-intelligence.md`: discover configured tools; if unavailable or timed out, use native search only for paths outside this project or ignored paths. Do not install or track repositories automatically.
+- Persist coordination artifacts through `.agents/skills/_shared/runtime/memory-protocol.md`; file state is independent of code-intelligence MCP tools.
+- **This workflow does NOT stop until all completion criteria pass or safeguards trigger.**
+- **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
+
+---
+
+## Vendor Detection
+
+Before starting, determine your runtime environment by following `.agents/skills/_shared/core/vendor-detection.md`.
+The detected vendor determines how ultrawork spawns agents internally.
+
+---
+
+## Phase 0: INIT (DO NOT SKIP)
+
+### Step 0.1: Load Prerequisites
+
+1. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
+2. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
+3. Read `.agents/workflows/ralph/resources/judge-protocol.md` for JUDGE rules.
+4. Read `.agents/skills/_shared/runtime/event-spec.md` for meaningful decisions, gate failures, and iteration-scoped evidence.
+
+### Step 0.2: Define Completion Criteria
+
+Analyze the user's request and define **verifiable** completion criteria. Each criterion MUST have:
+
+```markdown
+criteria:
+  - id: C{N}
+    description: "<what to achieve>"
+    verification: "<how to verify — test result, non-emitting check, file existence, command output>"
+    status: PENDING
+    fail_count: 0                   # updated once per JUDGE by judge-protocol.md
+    previous_status: null           # last non-null status from prior iteration
+    regressed_at_iteration: null    # iteration number when PASS → FAIL transition was detected
+    affected_paths: []              # optional glob list — only set when verification takes >30s
+                                    # used by judge-protocol's cache rules; see judge-protocol.md § "Caching for Heavy Verification"
+```
+
+**Rules:**
+- Ground every criterion in a mechanically verifiable check (test assertion, non-emitting type check, exit code, file existence). Include a build/compile/package command only when the user explicitly requested a build, per the shared execution policy.
+- Lock criteria directly into session memory and output them in the execution trace; proceed immediately to Step 0.3 and Phase 1 without halting for interactive confirmation (Ralph is an autonomous persistent execution loop)
+
+### Step 0.3: Initialize Session
+
+1. Generate a `sessionId` (`{YYYYMMDD-HHmmss}` timestamp). All ralph memory files for this run are session-scoped with this suffix, per memory-protocol session-scoped naming. Never write to an unsuffixed `session-ralph.md` — consecutive ralph runs must not overwrite each other.
+2. Set `max_iterations: 5` (default safeguard)
+3. Set `current_iteration: 0`
+4. **Load prior-session context** (cross-session memory):
+   1. Use the memory list tool to find previous `session-ralph-*.md` files. If any exist, read the most recent one and extract: final criteria statuses, BLOCKED items with their failure evidences, and any safeguard trigger.
+   2. If `lessons-{sessionId}.md` exists in the memory base path, read it.
+   3. If any current criterion overlaps a previously BLOCKED item, carry the prior failure evidence as context for EXEC and retry unless explicitly excluded by the user request.
+5. Record session start using memory write tool:
+   - Create `session-ralph-{sessionId}.md` in the memory base path
+   - Include: session start time, user request summary, completion criteria, max_iterations, and prior-session findings loaded in step 4 (or `none`)
+
+---
+
+## Phase 1: EXEC
+
+### Step 1.1: Prepare Ultrawork Input
+
+Compose the ultrawork input based on current iteration:
+
+- **Iteration 1**: Full user request with all PENDING criteria
+- **Iteration 2+**: REMAINING (FAIL + REGRESSED) criteria from previous JUDGE result, with:
+  - Previous JUDGE results as context (what failed and why)
+  - Suggested actions from JUDGE
+  - Already-PASSED criteria excluded from **implementation scope** (do not re-implement), but they remain in **JUDGE scope** (will be re-verified to detect regressions)
+
+### Step 1.2: Execute Ultrawork
+
+Record the current iteration and plan revision in the session artifact. Pass that identity into ultrawork so its plan and REFINE decisions cannot be satisfied by an earlier iteration.
+
+Delegate to the ultrawork workflow:
+
+1. Read and follow `.agents/workflows/ultrawork.md` step by step.
+2. Pass the prepared input, current iteration, and plan revision as the task context, **and pass this ralph run's `sessionId` as ultrawork's session id**. Ultrawork must keep plan task IDs, claims, receipts, and run-scoped reports under that identity so Step 1.3 can match the evidence.
+3. Ultrawork handles all vendor-specific agent spawning internally.
+4. Wait for ultrawork to complete all 5 phases (PLAN, IMPL, VERIFY, REFINE, SHIP).
+5. **Do NOT abridge ultrawork.** If you believe the environment (subagent instability, cost, time) warrants reducing fan-out or collapsing phases, STOP and ask the user first. Single-judgment substitution of ultrawork's structure is forbidden — see the Anti-Circumvention gate in Step 1.3.
+
+### Step 1.3: Verify EXEC Artifacts (Anti-Circumvention Gate)
+
+**Prose instructions ("run ultrawork in full") are advisory and can be rationalized away. This gate verifies the work mechanically — by its artifacts, not by your own narration.** Ultrawork's 5 phases each leave a durable trace; a single-agent shortcut cannot produce them without actually doing the work.
+
+Run the deterministic verifier from the repo root:
+
+```bash
+oma ralph verify --json --session-id {sessionId} --newer-than {iteration_start_iso}
+```
+
+- `--session` scopes the plan artifact to this iteration's session id; `--newer-than` (this iteration's EXEC start time, ISO-8601) excludes stale artifacts from earlier iterations. Supply both for repeated iterations; missing identity cannot prove an iteration.
+- The command checks the artifact table below, prints a structured result (`ok`, `checks`, `missing`, `remediation`), and exits non-zero on failure. On failure it also appends a `gate.failed` L1 event automatically.
+- **The JSON verdict IS the gate result.** Do NOT substitute your own narration for it, and do NOT proceed on a non-zero exit.
+- If the CLI is unavailable, report the gate as unverified. File existence cannot substitute for execution evidence. Resolve `{memBase}` from `memoryConfig.basePath` (default `.agents/state/memories`).
+- Follow `.agents/skills/_shared/runtime/result-contract.md`: QA and REFINE receipts must match this session and a task ID in the plan, include successful checks for the current working tree, and bind the report, plan and phase log by content hash.
+
+| # | Artifact | Proves phase ran |
+|---|----------|------------------|
+| A1 | `{memBase}/session-ultrawork.md` with this iteration's phase-completion records | PLAN + gate progression |
+| A2 | `.agents/results/plan-{sessionId}.json` | PLAN produced a real task breakdown |
+| A3 | `.agents/results/result-qa*.md` (VERIFY) | **a distinct QA agent ran** — absent if IMPL was the only spawn. All dispatch paths write reports to `.agents/results/`; existing `{memBase}/result-qa*.md` remains read fallback |
+| A4 | `.agents/results/result-refactor*.md` (REFINE) | **a distinct Refactor agent ran** — existing `{memBase}/result-refactor*.md` and legacy `result-debug*` reports remain accepted as read fallback |
+
+**Decision:**
+
+- **`ok: true` (exit 0)** → the required local execution evidence is current. Proceed to Step 1.4.
+- **`ok: false` (exit 1, `missing` non-empty)** → treat EXEC as **NOT performed** (the iteration was abridged to implementation-only, regardless of what the EXEC narration claims). Do NOT advance to JUDGE as if work completed. Instead:
+  1. Record the violation in `session-ralph-{sessionId}.md`: `exec-circumvention detected at iteration {N}: missing {artifact}`.
+  2. Emit the audit event:
+     ```bash
+     oma state emit "gate.failed" '{"gate":"ralph.exec-artifacts","reason":"<actual missing or stale artifacts and verification failure>","workflow":"ralph","iteration":"<current iteration>","evidence":["<saved oma ralph verify result path>"]}'
+     ```
+  3. Report the missing or stale evidence, repair the authorized work, and retry the gate. Apply `.agents/skills/_shared/core/execution-policy.md`; ask only when repair needs a material missing decision or new authorization. Do NOT retry with the same missing evidence.
+
+> **REFINE skip exception**: ultrawork permits skipping REFINE for trivial tasks (< 50 lines, see ultrawork `REFINE_GATE` skip conditions). If REFINE was legitimately skipped, A4 may be absent — but `session-ultrawork.md` MUST record the documented skip reason. "No A4 and no recorded skip reason" is a circumvention, not a skip. `oma ralph verify` implements this rule: a recorded skip reason reports A4 as `skip-recorded` (passing), an unrecorded absence reports `missing` (failing).
+
+### Step 1.4: Record EXEC Completion
+
+1. Increment `current_iteration`
+2. Use memory edit tool to record EXEC completion for iteration `{current_iteration}` in `session-ralph-{sessionId}.md`
+
+---
+
+## Phase 2: JUDGE
+
+### Step 2.1: Independent Verification (Spawned Judge)
+
+**The judge is a separate agent with fresh context — not a role the orchestrator plays.** The orchestrator that drove EXEC shares context with the implementation and cannot self-judge without rationalization risk. Spawning is the default; inline judging is a recorded exception.
+
+1. **Compose the judge brief.** It contains ONLY:
+   - The current criteria snapshot: id, description, verification method, status, previous_status, fail_count, regressed_at_iteration, affected_paths, and prior verification evidence
+   - The verification cache records from `session-ralph-{sessionId}.md` (if any)
+   - The required output format (Step 2.2) and a pointer to `.agents/workflows/ralph/resources/judge-protocol.md`
+   - Do NOT include EXEC narration, implementation summaries, or any claim about what was fixed. The judge verifies what IS, not what was intended.
+2. **Spawn the judge via Per-Agent Dispatch** (see Vendor Detection):
+   - **If Claude Code and target vendor is Claude**: `Agent(subagent_type="qa-reviewer", prompt="<judge brief>. Follow .agents/workflows/ralph/resources/judge-protocol.md. Follow the protocol's verification and cache rules and write the JUDGE report to .agents/results/result-judge-{sessionId}-iter{N}.md and record its path in session memory.")`
+   - **Otherwise, or when native dispatch is unavailable**: `oma agent spawn qa-agent judge-prompt.md {sessionId} --task-id {judge_task.id} -w {workspace}`
+   - Verification is mechanical (run command, check exit code/output) — a lower-cost model tier is acceptable where the runtime supports per-agent model selection.
+3. **Wait for the judge claim and `.agents/results/result-qa-{judge_task.id}-{runId}-{sessionId}.md`** (or the explicitly requested judge report name), then read it as the JUDGE result. Preserve the report filename and keep only its path and criterion transitions in coordination memory.
+4. **Inline fallback (exception)**: only if subagent spawning is unavailable in the current runtime, perform the verification inline. Record `judge-inline-fallback at iteration {N}` in `session-ralph-{sessionId}.md` and emit:
+   ```bash
+   oma state emit "decision.made" '{"subject":"ralph.judge-inline-fallback","instanceId":"<current iteration>","decision":"Run JUDGE inline for iteration <N> using <verification commands>.","rationale":"<observed dispatch limitation and why inline verification is the available recovery>","evidence":["<dispatch failure or session artifact path>"]}'
+   ```
+
+Apply [Verification Execution Order](ralph/resources/judge-protocol.md#verification-execution-order), including prior PASS criteria, and its heavy-verification cache rules. The judge uses the shared execution policy when selecting or executing checks.
+
+### Step 2.2: Produce JUDGE Result
+
+The judge writes [JUDGE Result Format](ralph/resources/judge-protocol.md#judge-result-format), the updated criterion state, and [Remaining Items](ralph/resources/judge-protocol.md#remaining-items-on-fail-verdict) when required. Status transitions and verdict computation are defined only in that protocol.
+
+### Step 2.3: Apply JUDGE Result
+
+Validate the returned evidence and state against [Criterion State Transitions](ralph/resources/judge-protocol.md#criterion-state-transitions), then persist the criterion transitions and report path in session memory. Keep the report itself in `.agents/results/`. The judge applies the transition once; the coordinator must not increment counters or apply it again. If the result is inconsistent, return it to the judge for correction against the original snapshot.
+
+---
+
+## Phase 2 → Decision Gate
+
+Evaluate the JUDGE result:
+
+### → Terminal verdict (COMPLETED or PARTIAL)
+
+If the judge returns `COMPLETED` or `PARTIAL`:
+
+1. **PARTIAL**: report blocked items and their evidence as unresolved
+2. **COMPLETED**: report full completion
+3. Use memory edit tool to record final results in `session-ralph-{sessionId}.md`
+4. Output completion summary:
+   ```
+   ## Ralph Complete — Iteration {N}/{max}
+
+   PASSED: C1, C2, ...
+   BLOCKED: C3 (if any)
+
+   Total iterations: {N}
+   ```
+5. Workflow ends.
+
+### → REPLAN (Any criterion is FAIL or REGRESSED)
+
+If any criterion has status FAIL or REGRESSED, proceed to Phase 3.
+
+### → SAFEGUARD (max_iterations reached)
+
+If `current_iteration >= max_iterations`:
+
+1. Force stop regardless of FAIL criteria
+2. Report partial completion:
+   ```
+   ## Ralph Safeguard — Max Iterations Reached ({max})
+
+   PASSED: C1, ...
+   FAILED: C2, ... (still unresolved)
+   BLOCKED: C3, ... (if any)
+
+   Recommendation: Review FAILED criteria manually or increase max_iterations.
+   ```
+3. Use memory edit tool to record safeguard trigger in `session-ralph-{sessionId}.md`
+4. Workflow ends.
+
+---
+
+## Phase 3: REPLAN
+
+### Step 3.1: Extract Remaining Work
+
+From the JUDGE result, collect criteria with status `FAIL` or `REGRESSED`. Treat the two classes separately:
+
+1. **FAIL** (first-time or persistent failures): list each with its reason and suggested_action
+2. **REGRESSED** (previously PASS, now FAIL): list each with previous-pass iteration, the inter-iteration diff that likely caused the regression, and a regression-specific suggested_action.
+3. Include previous iteration's JUDGE evidence as context
+4. Explicitly state which criteria are PASS (do not re-implement, but do not exclude from next JUDGE either)
+5. Explicitly state which criteria are BLOCKED (do not retry)
+
+### Step 3.2: Narrow Scope
+
+Compose a focused task description containing the remaining work, separating regressions from first-fail items so ultrawork's reasoning differs:
+
+```markdown
+## Ralph Iteration {N+1} — Remaining Work
+
+### Already Complete (DO NOT re-implement; will be re-verified by JUDGE)
+- C1: <description> PASS
+
+### Blocked (DO NOT retry)
+- C3: <description> BLOCKED (failed 3x)
+
+### Regressed (was passing — diagnose what broke it; minimal fix that preserves recent changes)
+- C4: <description>
+  - Last passed at: iteration {N}
+  - Failed at: iteration {current}
+  - Files changed since last pass: <list of modified paths>
+  - Failure evidence: <evidence>
+  - Suggested action: diff-aware diagnosis — identify which change in the listed files broke C4, fix that specifically without reverting the criterion that change was made for
+
+### To Fix (first-time or persistent failures)
+- C2: <description>
+  - Previous failure: <evidence>
+  - Suggested action: <action>
+```
+
+**Why separate Regressed from To Fix**: ultrawork prompts that frame work as "fix from scratch" vs "diagnose a regression" produce different reasoning paths. Regressed items should trigger diff-based investigation, not greenfield re-implementation.
+
+### Step 3.3: Loop Back
+
+1. Use memory edit tool to record REPLAN in `session-ralph-{sessionId}.md`
+2. Return to **Phase 1: EXEC** with the narrowed scope
+
+---
+
+## Summary
+
+```
+Phase 0: INIT → Define criteria, load prior sessions, initialize session
+    ↓
+Phase 1: EXEC → Run ultrawork (full or narrowed scope)
+    ↓
+Phase 2: JUDGE → Spawned fresh-context judge verifies each criterion
+    ↓
+Decision: COMPLETED? → End
+          SAFEGUARD? → Force end
+          FAIL? → Phase 3
+    ↓
+Phase 3: REPLAN → Extract remaining, narrow scope
+    ↓
+    └──→ Phase 1 (loop)
+```
+
+| Phase   | Purpose                    | Key Action                        |
+|---------|----------------------------|-----------------------------------|
+| INIT    | Define success criteria     | Verifiable criteria + prior-session load + session init |
+| EXEC    | Implementation             | Delegate to ultrawork             |
+| JUDGE   | Independent verification   | Spawned judge; evidence-based pass/fail per criterion |
+| REPLAN  | Scope narrowing            | Extract FAIL + REGRESSED items, separated by class |

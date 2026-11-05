@@ -1,0 +1,73 @@
+{
+  "$schema": "./hook-variant.schema.json",
+  "vendor": "copilot",
+  "style": "copilot",
+  "hookDir": ".github/hooks",
+  "settingsFile": ".github/hooks/oma.json",
+  "projectDirEnv": null,
+  "runtime": "bun",
+  "events": {
+    "SessionStart": [
+      {
+        "hook": "code-intelligence-primer.ts",
+        "timeout": 3
+      },
+      {
+        "hook": "state-boundary.ts",
+        "timeout": 5
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hook": "keyword-detector.ts",
+        "timeout": 5
+      },
+      {
+        "hook": "state-boundary.ts",
+        "timeout": 5
+      },
+      {
+        "hook": "skill-injector.ts",
+        "timeout": 3
+      },
+      {
+        "hook": "code-intelligence-primer.ts",
+        "timeout": 3
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hook": "scm-guard.ts",
+        "matcher": "Bash",
+        "timeout": 3
+      },
+      {
+        "hook": "code-intelligence-guard.ts",
+        "matcher": "Grep|Glob",
+        "timeout": 2
+      },
+      {
+        "hook": "test-filter.ts",
+        "matcher": "Bash",
+        "timeout": 5
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hook": "refactor-guard.ts",
+        "matcher": "Edit|Write",
+        "timeout": 5
+      }
+    ],
+    "Stop": [
+      {
+        "hook": "persistent-mode.ts",
+        "timeout": 30
+      },
+      {
+        "hook": "refactor-guard.ts",
+        "timeout": 5
+      }
+    ]
+  }
+}

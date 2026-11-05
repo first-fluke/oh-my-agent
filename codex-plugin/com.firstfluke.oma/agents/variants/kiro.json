@@ -1,0 +1,28 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "kiro",
+  "destDir": ".kiro/agents",
+  "modelDefault": "inherit",
+  "maxTurnsDefault": 100,
+  "toolsDefault": [
+    "read",
+    "write",
+    "shell",
+    "grep",
+    "glob",
+    "code",
+    "subagent"
+  ],
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/kiro.md",
+  "agents": {
+    "architecture-reviewer": {
+      "tools": ["read", "grep", "glob", "code"]
+    },
+    "pm-planner": {
+      "tools": ["read", "grep", "glob", "shell"]
+    },
+    "qa-reviewer": {
+      "tools": ["read", "grep", "glob", "shell"]
+    }
+  }
+}

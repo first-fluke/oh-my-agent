@@ -3,6 +3,7 @@ export const EMIT_TARGETS = [
   "agent-skills",
   "agent-plugin",
   "claude-plugin",
+  "pi-package",
   "agents-md",
   "cli-docs",
 ] as const;
@@ -38,6 +39,15 @@ export interface AgentSkillsEmitReport {
   failCount: number;
 }
 
+export interface PiPackageEmitReport {
+  target: "pi-package";
+  outDir: string;
+  manifestPath: string;
+  skills: SkillEmitResult[];
+  passCount: number;
+  failCount: number;
+}
+
 export interface ClaudePluginEmitReport {
   target: "claude-plugin";
   outPath: string;
@@ -53,6 +63,8 @@ export interface AgentPluginEmitReport {
   target: "agent-plugin";
   outDir: string;
   manifestPath: string;
+  /** Clean Codex-installable package emitted under `codex-plugin/`. */
+  codexPluginPath?: string;
   skills: SkillEmitResult[];
   passCount: number;
   failCount: number;
@@ -89,6 +101,7 @@ export interface CliDocsEmitReport {
 
 export type EmitReport =
   | AgentSkillsEmitReport
+  | PiPackageEmitReport
   | AgentPluginEmitReport
   | ClaudePluginEmitReport
   | AgentsMdEmitReport

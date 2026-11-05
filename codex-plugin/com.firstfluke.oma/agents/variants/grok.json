@@ -1,0 +1,10 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "grok",
+  "destDir": ".grok/agents",
+  "modelDefault": "grok-build",
+  "maxTurnsDefault": 100,
+  "toolsDefault": "run_terminal_cmd, read_file, search_replace, list_dir, grep",
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/grok.md",
+  "agents": {}
+}

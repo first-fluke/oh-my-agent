@@ -17,6 +17,7 @@ import {
   nativeEventToKind,
   normalizeInput,
 } from "./adapters.js";
+import { coreHookVendor } from "./copilot.js";
 import { HANDLER_REGISTRY, runChain } from "./dispatch.js";
 import { resolveHookConfig } from "./hook-config.js";
 import type {
@@ -55,7 +56,8 @@ export async function runStandaloneHookScript(
   }
   // OpenCode's existing bridge consumes the Claude JSON dialect. Its vendor
   // identity is outside the protected core Vendor enum.
-  const handlerVendor = vendor === "opencode" ? "claude" : vendor;
+  const handlerVendor =
+    vendor === "opencode" ? "claude" : coreHookVendor(vendor);
 
   let payload: Record<string, unknown>;
   try {

@@ -4,6 +4,7 @@ import type {
   AgentsMdEmitReport,
   ClaudePluginEmitReport,
   CliDocsEmitReport,
+  PiPackageEmitReport,
 } from "../../platform/emit/types.js";
 
 export interface EmitRunReport {
@@ -12,6 +13,7 @@ export interface EmitRunReport {
   claudePlugin?: ClaudePluginEmitReport;
   agentsMd?: AgentsMdEmitReport;
   cliDocs?: CliDocsEmitReport;
+  piPackage?: PiPackageEmitReport;
 }
 
 export function renderJson(report: EmitRunReport): string {
@@ -39,6 +41,9 @@ function renderAgentSkillsSection(report: AgentSkillsEmitReport): string[] {
 function renderAgentPluginSection(report: AgentPluginEmitReport): string[] {
   const lines = [
     `agent-plugin -> ${report.outDir}`,
+    ...(report.codexPluginPath
+      ? [`codex-plugin -> ${report.codexPluginPath}`]
+      : []),
     `  skills: ${report.passCount} passed, ${report.failCount} failed (${report.skills.length} total)`,
   ];
   if (report.mcp.emitted) {
@@ -88,6 +93,12 @@ export function renderText(report: EmitRunReport): string {
     lines.push(...renderAgentPluginSection(report.agentPlugin), "");
   if (report.claudePlugin)
     lines.push(...renderClaudePluginSection(report.claudePlugin), "");
+  if (report.piPackage)
+    lines.push(
+      `pi-package -> ${report.piPackage.outDir}`,
+      `  skills: ${report.piPackage.passCount} passed, ${report.piPackage.failCount} failed (${report.piPackage.skills.length} total)`,
+      "",
+    );
   if (report.agentsMd)
     lines.push(...renderAgentsMdSection(report.agentsMd), "");
   if (report.cliDocs) lines.push(...renderCliDocsSection(report.cliDocs), "");
