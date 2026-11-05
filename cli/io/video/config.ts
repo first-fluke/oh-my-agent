@@ -72,7 +72,6 @@ export interface VideoConfig {
     /** Minutes between latest-version checks (npm + GitHub); 0 = every compose. */
     checkIntervalMin: number;
   };
-  language: string;
 }
 
 export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
@@ -103,7 +102,6 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
   limits: { maxDurationSec: 180, maxScenes: 40 },
   naming: { singleFolderPattern: "{timestamp}-{shortid}-{mode}" },
   hyperframes: { checkIntervalMin: 60 },
-  language: "en",
 };
 
 /**
@@ -135,9 +133,6 @@ export async function loadVideoConfig(
   );
   if (backend.success) merged.voiceBackend = backend.data;
   applyEnvOverrides(merged);
-  // `language` is a root key, never a per-skill one — one read serves both.
-  const language = root?.language;
-  if (typeof language === "string" && language) merged.language = language;
   return merged;
 }
 

@@ -129,19 +129,6 @@ describe("loadVideoConfig", () => {
       ]);
     });
 
-    it("takes the root language, not a per-skill one", async () => {
-      writeOmaConfig("video:\n  default_mode: explainer\n");
-      expect((await loadVideoConfig(tmp)).language).toBe("en");
-
-      writeOmaConfig("video: {}\n");
-      writeFileSync(
-        path.join(tmp, ".agents/oma-config.yaml"),
-        "language: ko\nmodel_preset: claude\n",
-        "utf8",
-      );
-      expect((await loadVideoConfig(tmp)).language).toBe("ko");
-    });
-
     it("ignores the legacy skill config entirely", async () => {
       writeOmaConfig("video:\n  default_mode: explainer\n");
       writeLegacy("default_mode: demo\ndefault_timeout_sec: 42\n");
