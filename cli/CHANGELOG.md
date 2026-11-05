@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.34.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.3...cli-v20.34.4) (2026-11-05)
+
+
+### Documentation
+
+* **dev-workflow:** keep integration tests out of default gates ([80e7ea0](https://github.com/first-fluke/oh-my-agent/commit/80e7ea0e2f00c2c715c7b6fd590d2b0af0d89e50))
+
 ## [20.34.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.2...cli-v20.34.3) (2026-11-05)
 
 
