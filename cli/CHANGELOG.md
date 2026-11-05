@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.36.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.35.0...cli-v20.36.0) (2026-11-05)
+
+
+### Features
+
+* **vendors:** add native packages and agent integrations ([44325b5](https://github.com/first-fluke/oh-my-agent/commit/44325b53f922e927326c18da3c302d6fedca030b))
+
 ## [20.35.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.34.4...cli-v20.35.0) (2026-11-05)
 
 
