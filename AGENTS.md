@@ -5,7 +5,7 @@
 Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. System/developer instructions and the user's request take precedence over OMA defaults. Never build, compile, bundle, or package software unless the user explicitly requests a build.
 
 - **SSOT**: Do not modify `.agents/` definitions (skills, workflows, rules, agents, config) directly. Run outputs under `.agents/results/` and `.agents/state/` are generated artifacts and may be written.
-- **Response language**: Follow `language` in `.agents/oma-config.yaml`.
+- **Response language**: The user's prompt language wins; use `language` in `.agents/oma-config.yaml` only when the prompt carries no language signal, then English.
 - **Skills**: Read the relevant `.agents/skills/{name}/SKILL.md` when needed.
 - **Subagents**:
   - codex: Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent spawn`

@@ -4,7 +4,7 @@ description: Ralph - persistent self-referential execution loop wrapping ultrawo
 disable-model-invocation: true
 ---
 
-- **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
+- **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - Follow `.agents/skills/_shared/core/code-intelligence.md`: discover configured tools; if unavailable or timed out, use native search only for paths outside this project or ignored paths. Do not install or track repositories automatically.
 - Persist coordination artifacts through `.agents/skills/_shared/runtime/memory-protocol.md`; file state is independent of code-intelligence MCP tools.

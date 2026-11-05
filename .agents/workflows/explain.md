@@ -4,7 +4,7 @@ description: Drive a diff/PR/branch or a topic → self-contained interactive HT
 disable-model-invocation: true
 ---
 
-- **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
+- **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - **Never modify `.agents/` definitions.** SSOT protection covers skills, workflows, rules, agents, and config. It does NOT cover this workflow's own output at `.agents/results/explain/` — writing there is the expected behaviour, not a violation.
 - **Follow the host-LLM contract** in `.agents/skills/oma-explanation/SKILL.md`: document structure, HTML contract, validation checklist, and secret gates are owned by the skill and its resources. This workflow only resolves intent, orchestrates the steps, and reports.

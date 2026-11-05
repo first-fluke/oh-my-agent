@@ -4,7 +4,7 @@ description: Documentation drift detection and sync via `oma-docs`. Verify mode 
 disable-model-invocation: true
 ---
 
-- **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
+- **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - **Sync is proposal-only unless edits are authorized.** Follow the execution policy: an explicit request to update the scoped docs authorizes those patches; otherwise present proposals and obtain authorization before applying.
 - **Never modify `.agents/` definitions.** SSOT protection covers skills, workflows, rules, agents, and config, in all modes. Generated artifacts under `.agents/results/` and `.agents/state/` are not SSOT — never delete them to "restore" protection.

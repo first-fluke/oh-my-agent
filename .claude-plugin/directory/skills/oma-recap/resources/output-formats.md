@@ -1,7 +1,7 @@
 # Recap Output Format Templates
 
 Markdown templates for the recap files written to `.agents/results/recap/`.
-Response language follows the `language` setting in `.agents/oma-config.yaml`.
+Response language follows the user's prompt language first, then the `language` setting in `.agents/oma-config.yaml`, then English.
 
 ## Daily format (1d or specific date)
 

@@ -130,7 +130,7 @@ oma recap --json  # rolling last 24h, not "today"
 7. **Themes by content**: Group by actual work, not by tool.
 8. **Time range (daily only)**: `(AM/PM/Evening HH:MM~HH:MM)`. AM: ~12:00, PM: 12:00~18:00, Evening: 18:00~.
 9. **Save results**: Write markdown to `.agents/results/recap/`.
-10. **Response language**: Follows `language` setting in `.agents/oma-config.yaml` if configured.
+10. **Response language**: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.
 11. **No em dashes**: Use commas, periods, or parentheses instead of `—` (em dash).
 
 ### Process
@@ -223,7 +223,7 @@ Use the markdown templates in `resources/output-formats.md`:
 - **Daily format** (1d or specific date): TL;DR → Overview → time-blocked themes → Miscellaneous → Tool Usage Patterns.
 - **Multi-day format** (3d+): project-driven sprint-report structure with Side Projects for small (<30 prompts) work; follow the multi-day grouping rules in the same file.
 
-**Response language follows `language` setting in `.agents/oma-config.yaml`.**
+**Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
 
 ### 5. Save Results
 
