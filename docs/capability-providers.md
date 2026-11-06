@@ -8,7 +8,7 @@ for documentation and code intelligence.
 | Capability | Default | Alternatives | Fallback |
 | --- | --- | --- | --- |
 | Documentation | Context7 | — | Official documentation through web search |
-| General web search | Runtime native search | Brave Search, Exa Search | Explicit failure; no automatic provider switch |
+| General web search | Runtime native search | Brave Search, Exa Search, Keenable Search | Explicit failure; no automatic provider switch |
 | Code intelligence | Serena | Gortex (experimental) | Native search/read |
 | Semantic memory | AgentMemory | Honcho (experimental), `none` | Local evidence only |
 | Coordination and verification | `.agents/state/` | — | No external memory dependency |
@@ -18,7 +18,7 @@ for documentation and code intelligence.
 `oma install` offers a code-intelligence choice (Serena or Gortex) and a semantic
 memory choice (Agent Memory, Honcho, or none). Fresh installs default to **Serena
 and Agent Memory**, including AgentMemory installation, startup, and a health
-check. Web search offers Native (default), Brave Search or Exa Search; reinstalling retains
+check. Web search offers Native (default), Brave Search, Exa Search or Keenable Search (no key required); reinstalling retains
 saved choices. For unattended installs:
 
 ```sh
@@ -109,7 +109,7 @@ Currently, `native` declares runtime-managed web search and `context7` declares
 runtime-managed MCP documentation search. Neither has a CLI execution adapter;
 `runtime-managed` does not certify that the active agent has a connected search
 tool. Registration likewise does not certify credential validity or reachability.
-Brave and Exa have CLI execution adapters for `web`. The existing URL-fetch and platform
+Brave, Exa and Keenable have CLI execution adapters for `web`. The existing URL-fetch and platform
 API search commands retain their existing behavior.
 
 `providers.web` defaults to `native` and accepts a provider ID. The registry checks

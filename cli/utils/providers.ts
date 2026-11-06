@@ -49,6 +49,14 @@ export function loadExaConfig(cwd?: string): ExaConfig {
   return ExaConfigSchema.parse(loadOmaConfig(cwd)?.exa ?? {});
 }
 
+export const KeenableConfigSchema = BraveConfigSchema;
+
+export type KeenableConfig = z.infer<typeof KeenableConfigSchema>;
+
+export function loadKeenableConfig(cwd?: string): KeenableConfig {
+  return KeenableConfigSchema.parse(loadOmaConfig(cwd)?.keenable ?? {});
+}
+
 export const HonchoConfigSchema = z
   .object({
     base_url: z.url().optional(),

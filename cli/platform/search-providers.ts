@@ -1,5 +1,6 @@
 import { createBraveSearchProvider } from "../io/brave-search.js";
 import { createExaSearchProvider } from "../io/exa-search.js";
+import { createKeenableSearchProvider } from "../io/keenable-search.js";
 import type {
   SearchCapability,
   SearchProviderContext,
@@ -161,5 +162,6 @@ export function createSearchProviderRegistry(): SearchProviderRegistry {
     },
     createBraveSearchProvider(),
     createExaSearchProvider(),
+    createKeenableSearchProvider(),
   ]);
 }
