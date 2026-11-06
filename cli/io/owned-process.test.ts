@@ -158,6 +158,65 @@ describe.skipIf(process.platform === "win32")(
       expect(stopped.limitations.join(" ")).toContain("identity changed");
     });
 
+    it("recovers owned leader identity from the group census when its separate ps snapshot is interrupted", async () => {
+      const { record } = await startTree();
+      writeFileSync(
+        join(root, "ps"),
+        `#!/bin/sh
+if [ "$4" = "pid=,ppid=,lstart=,command=" ]; then
+  exit 143
+fi
+exec /bin/ps "$@"
+`,
+        { mode: 0o700 },
+      );
+      vi.stubEnv("PATH", `${root}:${process.env.PATH ?? ""}`);
+      const stopped = await stopOwnedProcess(record, {
+        graceMs: 50,
+        killWaitMs: 1000,
+      });
+      expect(stopped.stopped, stopped.limitations.join(" ")).toBe(true);
+      expect(stopped.survivingPids).toEqual([]);
+      expect(ownedProcessHasLiveMembers(record)).toBe(false);
+    });
+
+    it.each(["different-start", "different-runner"])(
+      "does not recover group ownership from a census with %s",
+      async (difference) => {
+        const { record } = await startTree();
+        writeFileSync(
+          join(root, "ps"),
+          `#!/bin/sh
+if [ "$4" = "pid=,ppid=,lstart=,command=" ]; then
+  exit 143
+fi
+exec /bin/ps "$@"
+`,
+          { mode: 0o700 },
+        );
+        vi.stubEnv("PATH", `${root}:${process.env.PATH ?? ""}`);
+        const changed =
+          difference === "different-start"
+            ? {
+                ...record,
+                process: { ...record.process, started: "different start" },
+              }
+            : { ...record, runnerPid: process.pid + 1 };
+        const kill = vi.spyOn(process, "kill");
+        const stopped = await stopOwnedProcess(changed, {
+          graceMs: 0,
+          killWaitMs: 0,
+        });
+        expect(stopped.stopped).toBe(false);
+        expect(stopped.survivingPids).toContain(record.process.pid);
+        expect(
+          kill.mock.calls.some(
+            ([, signal]) => signal === "SIGTERM" || signal === "SIGKILL",
+          ),
+        ).toBe(false);
+      },
+    );
+
     it("stops a resistant captured child when ps is missing and retains tree uncertainty", async () => {
       const ready = join(root, "direct-ready");
       const child = spawn(

@@ -311,10 +311,22 @@ export async function stopOwnedProcess(
       return recoverInspection([], false);
     }
     if (members.length === 0) return result([]);
+    const leader = members.find((member) => member.pid === pid);
+    // A group SIGTERM can interrupt the separate `ps -p` child while the
+    // creator is handling cancellation. The independent census still proves
+    // ownership when its live leader has the captured PID/start and remains
+    // our direct child. Never use this fallback for an orphan reaper or when
+    // the individual snapshot positively identifies a different process.
+    const creatorOwnsLeader =
+      !current &&
+      record.runnerPid === process.pid &&
+      leader?.ppid === process.pid &&
+      leader.started === record.process.started;
     // Only the still-live creator may clean up its group after its leader exits.
     // An orphan reaper must first match the recorded leader identity.
     if (
       !matches &&
+      !creatorOwnsLeader &&
       !(record.runnerPid === process.pid && !processIsAlive(pid))
     ) {
       limitations.push(
