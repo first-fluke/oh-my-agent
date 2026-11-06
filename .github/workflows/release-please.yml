@@ -225,3 +225,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Verify public npm artifact availability and integrity
+        timeout-minutes: 11
+        run: bun cli/scripts/verify-npm-publication.ts cli/package.json
+

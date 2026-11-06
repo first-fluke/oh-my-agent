@@ -174,8 +174,10 @@ install_oma_cli() {
     ok "oma found ($(command -v oma))"
     return 0
   fi
-  info "Installing the oma CLI (bun install --global oh-my-agent)..."
-  if ! bun install --global oh-my-agent@latest; then
+  # CI can install its already-built checkout without depending on npm CDN propagation.
+  local oma_cli_package="${OMA_CLI_PACKAGE:-oh-my-agent@latest}"
+  info "Installing the oma CLI (bun install --global ${oma_cli_package})..."
+  if ! bun install --global "$oma_cli_package"; then
     warn "Global install failed. Install it later: bun install --global oh-my-agent"
     return 1
   fi

@@ -93,19 +93,26 @@ jobs:
       #     pipefail pipeline on Windows hosts, #618)
       #   - state events atomic write (fsyncSync on a writable temp-file
       #     handle — the EPERM failure only manifests on real Windows, #613)
-      # All are pure (mocked command runners / fs, no spawn/stdin), so they run
-      # safely here without triggering the suite-wide hang.
+      #   - PowerShell bootstrap package arguments (mocked bun; no install)
+      # Existing cases mock command runners / fs. The bootstrap harness runs
+      # only its CLI install block in bounded pwsh processes with mocked bun.
       - name: Test win32-only code paths
         if: matrix.os == 'windows-latest'
         timeout-minutes: 5
-        run: bun run --cwd cli test agentmemory-service.test schtasks.test schedule/port.test test-filter-run.test events.atomic-write.test state/events.test
+        run: bun run --cwd cli test agentmemory-service.test schtasks.test schedule/port.test test-filter-run.test events.atomic-write.test state/events.test __tests__/install-ps1.test.ts
 
       - name: Smoke test install.sh (skip bunx)
         if: matrix.os != 'windows-latest'
         shell: bash
         env:
           OMA_INSTALL_NO_RUN: "1"
+          # Exercise the built source rather than a concurrent npm release.
+          OMA_CLI_PACKAGE: ${{ github.workspace }}/cli
         run: |
+          if command -v oma >/dev/null 2>&1; then
+            echo "oma must be absent before testing its bootstrap install" >&2
+            exit 1
+          fi
           bash ./cli/install.sh
           export PATH="${HOME}/.local/bin:${HOME}/.bun/bin:${PATH}"
           if ! command -v bun >/dev/null 2>&1; then
@@ -145,7 +152,12 @@ jobs:
         shell: pwsh
         env:
           OMA_INSTALL_NO_RUN: "1"
+          OMA_CLI_PACKAGE: ${{ github.workspace }}/cli
         run: |
+          if (Get-Command oma -ErrorAction SilentlyContinue) {
+            Write-Error "oma must be absent before testing its bootstrap install"
+            exit 1
+          }
           ./cli/install.ps1
           if (-not (Get-Command bun -ErrorAction SilentlyContinue)) {
             Write-Error "bun should be on PATH after install.ps1"

@@ -145,8 +145,14 @@ $omaCliReady = $true
 if (Test-Command oma) {
   Write-Ok "oma found"
 } else {
-  Write-Info "Installing the oma CLI (bun install --global oh-my-agent)..."
-  & bun install --global oh-my-agent@latest
+  # CI can install its already-built checkout without depending on npm CDN propagation.
+  $omaCliPackage = if ([string]::IsNullOrEmpty($env:OMA_CLI_PACKAGE)) {
+    "oh-my-agent@latest"
+  } else {
+    $env:OMA_CLI_PACKAGE
+  }
+  Write-Info "Installing the oma CLI (bun install --global $omaCliPackage)..."
+  & bun install --global "$omaCliPackage"
   if ($LASTEXITCODE -ne 0) {
     Write-Warn "Global install failed. Install it later: bun install --global oh-my-agent"
     $omaCliReady = $false

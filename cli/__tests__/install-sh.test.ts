@@ -5,10 +5,11 @@ import { describe, expect, it } from "vitest";
 
 const installScript = resolve(process.cwd(), "install.sh");
 
-function runBash(script: string) {
+function runBash(script: string, env: NodeJS.ProcessEnv = {}) {
   return spawnSync("bash", ["-lc", script], {
     cwd: resolve(process.cwd()),
     encoding: "utf-8",
+    env: { ...process.env, ...env },
   });
 }
 
@@ -92,6 +93,7 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
       .replace(stubBody("install_bun"), "install_bun() { :; }")
       .replace(stubBody("install_uv"), "install_uv() { :; }")
       .replace(stubBody("install_serena"), "install_serena() { :; }")
+      .replace(stubBody("check_cue"), "check_cue() { return 0; }")
       .replace(stubBody("install_oma_cli"), "install_oma_cli() { return 1; }")
       .replace(/exec bunx.*$/m, 'printf "main-executed"; exit 0');
 
@@ -114,6 +116,7 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
       .replace(stubBody("install_uv"), "install_uv() { return 1; }")
       .replace(stubBody("check_serena"), "check_serena() { return 1; }")
       .replace(stubBody("install_serena"), "install_serena() { return 1; }")
+      .replace(stubBody("check_cue"), "check_cue() { return 0; }")
       .replace(stubBody("install_oma_cli"), "install_oma_cli() { return 1; }")
       .replace(/exec bunx.*$/m, 'printf "main-executed"; exit 0');
 
@@ -128,12 +131,15 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
   });
 
   it("keeps an existing oma instead of installing a second global copy", () => {
-    const result = runBash(`
+    const result = runBash(
+      `
       source "${installScript}"
       command_exists() { [ "$1" = "oma" ]; }
       bun() { printf "bun-called"; }
       install_oma_cli
-    `);
+    `,
+      { OMA_CLI_PACKAGE: "/tmp/local checkout/cli" },
+    );
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("oma found");
@@ -143,6 +149,7 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
   it("installs oma globally with bun when it is missing", () => {
     const result = runBash(`
       source "${installScript}"
+      unset OMA_CLI_PACKAGE
       command_exists() { [ "$1" = "oma" ] && [ -n "\${OMA_PRESENT:-}" ]; }
       bun() { printf "bun %s\\n" "$*"; OMA_PRESENT=1; }
       install_oma_cli
@@ -151,6 +158,44 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("bun install --global oh-my-agent@latest");
     expect(result.stdout).toContain("oma installed");
+  });
+
+  it("passes an overridden checkout path with spaces as one package argument", () => {
+    const packagePath = "/tmp/oma checkout/cli";
+    const result = runBash(
+      `
+      source "${installScript}"
+      command_exists() { [ "$1" = "oma" ] && [ -n "\${OMA_PRESENT:-}" ]; }
+      bun() {
+        printf 'argc=%s\\n' "$#"
+        printf 'arg=<%s>\\n' "$@"
+        OMA_PRESENT=1
+      }
+      install_oma_cli
+    `,
+      { OMA_CLI_PACKAGE: packagePath },
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("argc=3");
+    expect(result.stdout).toContain(`arg=<${packagePath}>`);
+    expect(result.stdout).not.toContain("arg=<oh-my-agent@latest>");
+    expect(result.stdout).toContain("oma installed");
+  });
+
+  it("uses the latest published package when the override is empty", () => {
+    const result = runBash(
+      `
+      source "${installScript}"
+      command_exists() { [ "$1" = "oma" ] && [ -n "\${OMA_PRESENT:-}" ]; }
+      bun() { printf 'arg=<%s>\\n' "$@"; OMA_PRESENT=1; }
+      install_oma_cli
+    `,
+      { OMA_CLI_PACKAGE: "" },
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("arg=<oh-my-agent@latest>");
   });
 
   it("launches the installed oma and falls back to bunx when the install fails", () => {
