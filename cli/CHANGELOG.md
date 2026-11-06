@@ -1,5 +1,14 @@
 # Changelog
 
+## [20.36.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.1...cli-v20.36.2) (2026-11-06)
+
+
+### Bug Fixes
+
+* **ci:** check generated documentation before pushing ([6ebc2a7](https://github.com/first-fluke/oh-my-agent/commit/6ebc2a7254d22e1445a2942c848f476394b0f229))
+* **ci:** reduce release history query batch size ([5c52302](https://github.com/first-fluke/oh-my-agent/commit/5c5230277dcc3e897e454499d235230f4cd25774))
+* **ci:** verify checkout installs and public npm artifacts ([418d6e0](https://github.com/first-fluke/oh-my-agent/commit/418d6e0bd7a08cdddc67d18c8223fed51014466c))
+
 ## [20.36.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.0...cli-v20.36.1) (2026-11-06)
 
 
