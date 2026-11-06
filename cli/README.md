@@ -6,7 +6,9 @@
 
 [한국어](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.ko.md) | [中文](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.zh.md) | [Português](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.pt.md) | [日本語](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.ja.md) | [Français](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.fr.md) | [Español](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.es.md) | [Nederlands](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.nl.md) | [Polski](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.pl.md) | [Русский](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.ru.md) | [Deutsch](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.de.md) | [Tiếng Việt](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.vi.md) | [ภาษาไทย](https://github.com/first-fluke/oh-my-agent/blob/main/docs/README.th.md)
 
-oh-my-agent (`oma`) turns Claude Code, Codex CLI, Cursor and 11 other coding agents into a team. A planner splits the work, engineers build in parallel, a reviewer checks the result, and a debugger fixes the root cause.
+## Install
+
+### For humans
 
 Run this from your project root.
 
@@ -14,7 +16,20 @@ Run this from your project root.
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
+### For AI agents
+
+Paste this into your coding agent:
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+The [agent installation guide](https://github.com/first-fluke/oh-my-agent/blob/main/docs/agent-install.md) covers non-interactive setup and verification. If you are the agent, read that guide and carry out the installation.
+
 Then open your agent and type `/orchestrate build a TODO app with login`.
+
+oh-my-agent (`oma`) turns Claude Code, Codex CLI, Cursor and 11 other coding agents into a team. A planner splits the work, engineers build in parallel, a reviewer checks the result, and a debugger fixes the root cause.
 
 ## Start with your task
 
@@ -49,7 +64,7 @@ After installing, run `oma doctor`. [Your first 5 minutes](#your-first-5-minutes
 
 **[Install](#install)** · **[First 5 minutes](#your-first-5-minutes)** · **[The team](#meet-the-team)** · **[Which workflow?](#how-the-team-works-together)** · **[Everything in the box](#everything-in-the-box)** · **[Works with](#works-with)** · **[FAQ](#faq)** · **[Docs](https://firstfluke.com/oh-my-agent/)**
 
-## Install
+## Installation details
 
 The script installs [bun](https://bun.sh) if it is missing, installs the `oma` command globally (`bun install --global oh-my-agent`, skipped when `oma` is already on your PATH), then starts the interactive setup. The hooks (keyword detection and the Stop gate) and several workflows call the globally installed `oma` command. The hooks silently do nothing if they cannot find it. If you skip the script, install it yourself with `bun install --global oh-my-agent` (`npm install --global oh-my-agent` or `brew install oh-my-agent` also work).
 
