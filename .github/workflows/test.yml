@@ -18,6 +18,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      # Source checks must not install a published CLI through the self-updater.
+      OMA_SKIP_VERSION_CHECK: "1"
     steps:
       - uses: actions/checkout@v6
 
@@ -111,6 +114,7 @@ jobs:
         run: |
           if command -v oma >/dev/null 2>&1; then
             echo "oma must be absent before testing its bootstrap install" >&2
+            command -v oma >&2
             exit 1
           fi
           bash ./cli/install.sh
@@ -155,6 +159,7 @@ jobs:
           OMA_CLI_PACKAGE: ${{ github.workspace }}/cli
         run: |
           if (Get-Command oma -ErrorAction SilentlyContinue) {
+            Get-Command oma | Format-List Name, Source, Path
             Write-Error "oma must be absent before testing its bootstrap install"
             exit 1
           }

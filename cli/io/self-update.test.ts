@@ -1,12 +1,24 @@
+import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { http } from "./http.js";
 import {
   getInstallationInfo,
   isOutdated,
   maybeSelfUpdate,
 } from "./self-update.js";
+
+vi.mock("node:child_process", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("node:child_process")>()),
+  spawn: vi.fn(),
+}));
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
 
 describe("isOutdated", () => {
   it("returns true when latest patch is newer", () => {
@@ -59,8 +71,11 @@ describe("maybeSelfUpdate guards", () => {
   });
 
   it("does not throw when registry fetch fails", async () => {
-    // Forcing offline by setting a bogus registry would require mocking http;
-    // assert the function returns a structured result instead of throwing.
+    vi.stubEnv("OMA_SKIP_VERSION_CHECK", "0");
+    vi.stubEnv("NODE_ENV", "test");
+    const fetchLatest = vi
+      .spyOn(http, "get")
+      .mockRejectedValueOnce(new Error("offline"));
     const noticed = vi.fn();
     const spawned = vi.fn();
     await expect(
@@ -70,7 +85,11 @@ describe("maybeSelfUpdate guards", () => {
         onNotice: noticed,
         onSpawnStart: spawned,
       }),
-    ).resolves.toMatchObject({ triggered: expect.any(Boolean) });
+    ).resolves.toEqual({ triggered: false, reason: "fetch-failed" });
+    expect(fetchLatest).toHaveBeenCalledOnce();
+    expect(spawn).not.toHaveBeenCalled();
+    expect(spawned).not.toHaveBeenCalled();
+    expect(noticed).not.toHaveBeenCalled();
   });
 });
 
