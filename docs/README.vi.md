@@ -55,7 +55,7 @@ Trên Windows, installer ẩn Antigravity, Hermes và Kimi, và hook wrapper là
 
 </details>
 
-Phần thiết lập sẽ hỏi ngôn ngữ phản hồi, những agent runtime cần kết nối, capability provider, browser MCP, model preset và skill preset. **Nếu chưa chắc, hãy chọn `All` cho skill preset**: workflow luôn được cài, và một số workflow (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) cần những skill chỉ có trong `All`.
+Phần thiết lập giữ nguyên ngôn ngữ phản hồi đã cấu hình hoặc tự động chọn theo ngôn ngữ hệ thống. Phần thiết lập sẽ hỏi những agent runtime cần kết nối, capability provider, browser MCP, model preset và skill preset. **Nếu chưa chắc, hãy chọn `All` cho skill preset**: workflow luôn được cài, và một số workflow (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) cần những skill chỉ có trong `All`.
 
 <details>
 <summary>Những việc installer cũng làm theo mặc định</summary>

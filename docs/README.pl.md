@@ -55,7 +55,7 @@ Na Windowsie instalator ukrywa Antigravity, Hermes i Kimi, a wrapper hooków jes
 
 </details>
 
-Konfiguracja pyta o język odpowiedzi, środowiska agentowe do podłączenia, dostawców możliwości (capability providers), browser MCP, preset modeli i preset umiejętności. **Jeśli nie masz pewności, wybierz `All` jako preset umiejętności**: workflowy są instalowane zawsze, a kilka z nich (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) wymaga umiejętności, które zawiera tylko `All`.
+Język odpowiedzi pozostaje zgodny z istniejącym ustawieniem lub jest automatycznie ustalany na podstawie języka systemu. Konfiguracja pyta o środowiska agentowe do podłączenia, dostawców możliwości (capability providers), browser MCP, preset modeli i preset umiejętności. **Jeśli nie masz pewności, wybierz `All` jako preset umiejętności**: workflowy są instalowane zawsze, a kilka z nich (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) wymaga umiejętności, które zawiera tylko `All`.
 
 <details>
 <summary>Co instalator robi domyślnie poza tym</summary>

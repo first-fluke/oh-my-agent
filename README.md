@@ -86,7 +86,7 @@ On Windows the installer hides Antigravity, Hermes, and Kimi, and the hook wrapp
 
 </details>
 
-The setup asks for your response language, which agent runtimes to wire up, capability providers, a browser MCP, a model preset, and a skill preset. **Choose `All` for the skill references used across every workflow**: domain presets omit some of those skills. Provider availability and task verification remain separate checks.
+The setup keeps your saved response language or detects it from the system. It asks which agent runtimes to wire up, capability providers, a browser MCP, a model preset, and a skill preset. **Choose `All` for the skill references used across every workflow**: domain presets omit some of those skills. Provider availability and task verification remain separate checks.
 
 Choose a preset explicitly when you want a domain's skills:
 

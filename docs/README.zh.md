@@ -55,7 +55,7 @@ oma
 
 </details>
 
-设置过程会询问响应语言、要接入哪些 agent 运行时、能力提供方、浏览器 MCP、模型预设和技能预设。**拿不准的话，技能预设就选 `All`**：工作流总是会安装，而其中好几个（`/orchestrate`、`/work`、`/ultrawork`、`/ralph`、`/docs`、`/security`）需要只有 `All` 才包含的技能。
+响应语言沿用已有设置；未设置时自动采用系统语言。设置过程会询问要接入哪些 agent 运行时、能力提供方、浏览器 MCP、模型预设和技能预设。**拿不准的话，技能预设就选 `All`**：工作流总是会安装，而其中好几个（`/orchestrate`、`/work`、`/ultrawork`、`/ralph`、`/docs`、`/security`）需要只有 `All` 才包含的技能。
 
 <details>
 <summary>安装器默认还会做的事</summary>

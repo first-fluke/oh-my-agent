@@ -55,7 +55,7 @@ Op Windows verbergt de installer Antigravity, Hermes en Kimi, en is de hook-wrap
 
 </details>
 
-De setup vraagt naar je antwoordtaal, welke agent-runtimes je wilt koppelen, capability-providers, een browser-MCP, een modelpreset en een skillpreset. **Kies `All` als skillpreset als je twijfelt**: workflows worden altijd geïnstalleerd, en verschillende daarvan (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) hebben skills nodig die alleen `All` bevat.
+De antwoordtaal volgt je bestaande instelling of wordt automatisch uit de systeemtaal afgeleid. De setup vraagt welke agent-runtimes je wilt koppelen, capability-providers, een browser-MCP, een modelpreset en een skillpreset. **Kies `All` als skillpreset als je twijfelt**: workflows worden altijd geïnstalleerd, en verschillende daarvan (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) hebben skills nodig die alleen `All` bevat.
 
 <details>
 <summary>Wat de installer standaard nog meer doet</summary>

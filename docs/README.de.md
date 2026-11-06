@@ -55,7 +55,7 @@ Unter Windows blendet der Installer Antigravity, Hermes und Kimi aus, und der Ho
 
 </details>
 
-Das Setup fragt nach deiner Antwortsprache, den anzubindenden Agenten-Runtimes, Fähigkeits-Providern, einem Browser-MCP, einem Modell-Preset und einem Skill-Preset. **Wähle beim Skill-Preset `All`, wenn du unsicher bist**: Workflows werden immer installiert, und mehrere davon (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) brauchen Skills, die nur `All` enthält.
+Die Antwortsprache wird aus einer vorhandenen Einstellung übernommen oder automatisch aus der Systemsprache ermittelt. Das Setup fragt nach den anzubindenden Agenten-Runtimes, Fähigkeits-Providern, einem Browser-MCP, einem Modell-Preset und einem Skill-Preset. **Wähle beim Skill-Preset `All`, wenn du unsicher bist**: Workflows werden immer installiert, und mehrere davon (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) brauchen Skills, die nur `All` enthält.
 
 <details>
 <summary>Was der Installer standardmäßig außerdem tut</summary>

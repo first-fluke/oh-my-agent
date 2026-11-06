@@ -55,7 +55,7 @@ oma
 
 </details>
 
-การตั้งค่าจะถามภาษาที่ใช้ตอบกลับ, agent runtime ที่จะเชื่อมต่อ, capability provider, browser MCP, preset ของโมเดล และ preset ของ skill **ถ้าไม่แน่ใจ ให้เลือก `All` เป็น preset ของ skill** เพราะเวิร์กโฟลว์จะถูกติดตั้งเสมอ และบางตัว (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) ต้องใช้ skill ที่มีเฉพาะใน `All`
+ภาษาที่ใช้ตอบกลับจะใช้ค่าที่ตั้งไว้เดิม หรือเลือกอัตโนมัติตามภาษาของระบบ การตั้งค่าจะถาม agent runtime ที่จะเชื่อมต่อ, capability provider, browser MCP, preset ของโมเดล และ preset ของ skill **ถ้าไม่แน่ใจ ให้เลือก `All` เป็น preset ของ skill** เพราะเวิร์กโฟลว์จะถูกติดตั้งเสมอ และบางตัว (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) ต้องใช้ skill ที่มีเฉพาะใน `All`
 
 <details>
 <summary>สิ่งที่ตัวติดตั้งทำเพิ่มเติมโดยค่าเริ่มต้น</summary>

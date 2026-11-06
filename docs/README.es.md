@@ -55,7 +55,7 @@ En Windows el instalador oculta Antigravity, Hermes y Kimi, y el wrapper de hook
 
 </details>
 
-La configuración te pide el idioma de respuesta, qué runtimes de agentes conectar, los proveedores de capacidades, un MCP de navegador, un preset de modelos y un preset de skills. **Elige `All` como preset de skills si no estás seguro**: los workflows se instalan siempre, y varios de ellos (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) necesitan skills que solo incluye `All`.
+Se conserva el idioma de respuesta ya configurado o se detecta automáticamente a partir del idioma del sistema. La configuración te pide qué runtimes de agentes conectar, los proveedores de capacidades, un MCP de navegador, un preset de modelos y un preset de skills. **Elige `All` como preset de skills si no estás seguro**: los workflows se instalan siempre, y varios de ellos (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) necesitan skills que solo incluye `All`.
 
 <details>
 <summary>Qué más hace el instalador por defecto</summary>

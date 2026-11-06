@@ -55,7 +55,7 @@ Sous Windows, l'installateur masque Antigravity, Hermes et Kimi, et le wrapper d
 
 </details>
 
-La configuration te demande ta langue de réponse, les runtimes d'agents à connecter, les fournisseurs de capacités, un MCP navigateur, un preset de modèles et un preset de skills. **Choisis `All` comme preset de skills si tu hésites** : les workflows sont toujours installés, et plusieurs d'entre eux (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) ont besoin de skills que seul `All` inclut.
+La langue de réponse est conservée si elle est déjà configurée ; sinon, elle est détectée automatiquement à partir de la langue du système. La configuration te demande les runtimes d'agents à connecter, les fournisseurs de capacités, un MCP navigateur, un preset de modèles et un preset de skills. **Choisis `All` comme preset de skills si tu hésites** : les workflows sont toujours installés, et plusieurs d'entre eux (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) ont besoin de skills que seul `All` inclut.
 
 <details>
 <summary>Ce que fait aussi l'installateur par défaut</summary>
