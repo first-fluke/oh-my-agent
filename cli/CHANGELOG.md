@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.36.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.2...cli-v20.36.3) (2026-11-06)
+
+
+### Bug Fixes
+
+* **runtime:** recover ownership after interrupted process inspection ([98f696a](https://github.com/first-fluke/oh-my-agent/commit/98f696adb29423553444300540f80cd81508baaa))
+
 ## [20.36.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.1...cli-v20.36.2) (2026-11-06)
 
 
