@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.36.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.0...cli-v20.36.1) (2026-11-06)
+
+
+### Documentation
+
+* add installation instructions for ai agents ([288b159](https://github.com/first-fluke/oh-my-agent/commit/288b1598801b9f1256e5ea85e65d259b49ee7116))
+* move human and agent installation to readme top ([e0da002](https://github.com/first-fluke/oh-my-agent/commit/e0da00262fc21eb5677d091b17eacb894b8f084f))
+
 ## [20.36.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.35.0...cli-v20.36.0) (2026-11-05)
 
 
