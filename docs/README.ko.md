@@ -4,6 +4,28 @@
 
 [English](../README.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
+<a id="install"></a>
+## 설치
+
+### 직접 설치하기
+
+런타임을 설치하려면 프로젝트 루트에서 다음을 실행하세요.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
+```
+
+### AI 에이전트로 설치하기
+
+코딩 에이전트에게 다음 요청을 전달하세요.
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+[에이전트용 설치 안내](./agent-install.md)에는 비대화형 설치와 확인 절차가 있습니다. 이 문서를 읽는 에이전트는 해당 안내에 따라 설치를 진행하세요.
+
 **oh-my-agent(`oma`)는 특정 벤더에 종속되지 않는 하네스로, 이미 쓰고 있는 코딩 에이전트(Claude Code, Codex CLI, Cursor 외 11개)에 전문가 팀을 더해 줍니다.** 플래너가 작업을 나누고, 엔지니어들이 병렬로 구축하고, 리뷰어가 결과를 확인하고, 디버거가 근본 원인을 고칩니다. 출처가 달린 리서치, 슬라이드 덱, 영상, 이미지도 만듭니다. 대부분의 단계는 직접 열어 볼 수 있는 파일을 남기며, 오래 실행되는 워크플로우에서는 프로젝트의 `test`, `lint`, `typecheck` 스크립트가 통과할 때까지 게이트가 에이전트를 다시 작업으로 돌려보낼 수 있습니다.
 
 ## 작업에 맞게 시작하기
@@ -20,12 +42,6 @@
 에이전트의 터미널에서 `skills use`를 실행하면 선택한 지침과 참고 파일 경로를 받습니다. 이 명령은 지침을 불러옵니다. 스킬이 사용하는 CLI 기능, 다른 스킬, 프로젝트 규칙, 외부 서비스는 각각 별도 의존성입니다. [설치 방식 선택](../web/docs/getting-started/choose-setup.md)에서 범위를 확인할 수 있습니다.
 
 [![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
-
-런타임을 설치하려면 프로젝트 루트에서 다음을 실행하세요.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
-```
 
 런타임 설치 후에는 `oma doctor`를 실행하세요. [처음 5분](#your-first-5-minutes)에서는 팀 워크플로우에 앞서 읽기 전용 작업으로 결과를 확인합니다.
 
@@ -45,21 +61,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 
 **[설치](#install)** · **[처음 5분](#your-first-5-minutes)** · **[팀 소개](#meet-the-team)** · **[어떤 워크플로우?](#how-the-team-works-together)** · **[전체 구성](#everything-in-the-box)** · **[지원 런타임](#works-with)** · **[검증](#verification-not-narration)** · **[FAQ](#faq)** · **[문서](https://first-fluke.github.io/oh-my-agent/)**
 
-<a id="install"></a>
-## 설치
-
-### AI 에이전트로 설치하기
-
-코딩 에이전트에게 다음 요청을 전달하세요.
-
-```text
-Install and configure oh-my-agent in this project by following this guide:
-https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
-```
-
-[에이전트용 설치 안내](./agent-install.md)에는 비대화형 설치와 확인 절차가 있습니다. 이 문서를 읽는 에이전트는 해당 안내에 따라 설치를 진행하세요.
-
-### 직접 설치하기
+## 설치 상세
 
 스크립트는 [bun](https://bun.sh)이 없으면 설치하고, `oma` 커맨드를 전역으로 설치한 뒤(`bun install --global oh-my-agent`, PATH에 이미 `oma`가 있으면 건너뜀) 대화형 설정을 시작합니다. hook(키워드 감지와 Stop 게이트) 및 여러 워크플로우는 전역 설치된 `oma` 커맨드를 호출합니다. hook은 `oma`를 찾지 못하면 경고 없이 아무 작업도 하지 않습니다. 스크립트를 쓰지 않는다면 `bun install --global oh-my-agent`로 직접 설치하세요(`npm install --global oh-my-agent`나 `brew install oh-my-agent`도 됩니다).
 
