@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.36.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.3...cli-v20.36.4) (2026-11-06)
+
+
+### Bug Fixes
+
+* **install:** use system language without prompting ([35991f3](https://github.com/first-fluke/oh-my-agent/commit/35991f349c61079a0a377c62acdcf02cce792384))
+
 ## [20.36.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.2...cli-v20.36.3) (2026-11-06)
 
 
