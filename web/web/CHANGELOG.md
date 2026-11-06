@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.17.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.17.1...web-v11.17.2) (2026-11-06)
+
+
+### Bug Fixes
+
+* **install:** use system language without prompting ([35991f3](https://github.com/first-fluke/oh-my-agent/commit/35991f349c61079a0a377c62acdcf02cce792384))
+
 ## [11.17.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.17.0...web-v11.17.1) (2026-11-06)
 
 
