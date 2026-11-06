@@ -11,11 +11,7 @@ import {
   vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
 import type { CliTool, CliVendor } from "../../types/index.js";
-import {
-  getExistingLanguage,
-  getExistingPreset,
-  scanLanguages,
-} from "./preferences.js";
+import { getExistingPreset } from "./preferences.js";
 
 /**
  * Built-in single-vendor model presets, keyed by the CLI vendor they target.
@@ -53,36 +49,6 @@ export function resolveDefaultPreset(
   _vendors: CliVendor[],
 ): string {
   return existingPreset ?? "auto";
-}
-
-export async function promptLanguage(
-  repoDir: string,
-  installRoot: string,
-  nonInteractive: boolean,
-  cleanup: () => void,
-): Promise<string> {
-  const languages = scanLanguages(repoDir);
-  const existingLanguage = getExistingLanguage(installRoot);
-  const initialLanguage = languages.some(
-    (option) => option.value === existingLanguage,
-  )
-    ? (existingLanguage as string)
-    : "en";
-  const language = nonInteractive
-    ? initialLanguage
-    : await p.select({
-        message: "Response language?",
-        options: languages,
-        initialValue: initialLanguage,
-      });
-
-  if (p.isCancel(language)) {
-    cleanup();
-    p.cancel("Cancelled.");
-    process.exit(0);
-  }
-
-  return language as string;
 }
 
 export async function promptModelPreset(

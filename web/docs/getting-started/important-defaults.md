@@ -16,7 +16,7 @@ Defaults are selected to make a first project usable while keeping user-owned co
 
 | Area | Default | Consequence | Override |
 |---|---|---|---|
-| Response language | `en` | Agent and workflow responses use English unless the project config selects another supported language. An explicit user or session language instruction can still override the project default where the host/workflow supports it. | `language` in `.agents/oma-config.yaml` or `.cue` |
+| Response language | Saved language, otherwise system language; `en` fallback | Install detects the language without prompting. Regional locales map to a supported base language, such as `ko_KR.UTF-8` → `ko`; unsupported locales use `en`. The user's prompt language takes priority over this setting. | `language` in `.agents/oma-config.yaml` or `.cue` |
 | Model routing ([model preset](./glossary.md#model-preset)) | `auto` | The current runtime's native agent configuration is used. Unknown runtimes fall back to `default_cli` when set. | `model_preset`, `default_cli`, or `agents.<id>` |
 | Skill content ([skill preset](./glossary.md#skill-preset)) | Interactive selection; `all` for unattended setup unless `--preset` is given | A preset selects skills. Shared files, all workflow and agent definitions, hooks, and provider setup remain part of the runtime install; other existing skills are retained. | `oma install --preset <name>`; see [preset limits](./installation.md#presets) |
 | Code intelligence ([capability provider](./glossary.md#capability-provider)) | `serena` | A fresh install tries to install Serena and wires its MCP configuration. | `providers.code_intelligence: gortex` or `serena` |

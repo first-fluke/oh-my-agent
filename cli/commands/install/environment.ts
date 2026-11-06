@@ -8,7 +8,7 @@ export type InstallOptions = ProviderInstallOptions & {
   preset?: string;
   /**
    * Non-interactive mode. Skips every prompt and falls back to safe
-   * defaults (language=existing|en, model_preset=existing|auto,
+   * defaults (language=existing|system|en, model_preset=existing|auto,
    * project_type=preset|all, vendors=all non-HOME-base). HOME-base vendor consent
    * stays opt-in (skipped), competitor uninstall is skipped, GitHub star
    * prompt is skipped (an explicit `--yes` / `OMA_YES` stars without asking;

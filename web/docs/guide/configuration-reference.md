@@ -44,7 +44,7 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 
 | Key | Type or accepted values | Default when absent | Purpose |
 | --- | --- | --- | --- |
-| `language` | string | `en` | Response language used by workflows and skills. |
+| `language` | string | `en` | Response language used by workflows and skills. Install retains an existing value or initializes it from the system language without prompting. |
 | `translation_voice` | `formal`, `balanced`, `interpreter` | `balanced` in the shipped template | Voice selection for `oma-translation`. |
 | `date_format` | `ISO`, `US`, `EU` | `ISO` in the shipped template; omission leaves no explicit override | Date formatting preference. |
 | `timezone` | IANA name | system time zone | Dates used by schedules and reports. |

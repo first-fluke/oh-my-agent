@@ -323,6 +323,7 @@ describe("install --global: _install.json schema and meta", () => {
 
     _resetInstallContext();
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it("stamps mode='global' into _version.json via saveLocalVersion", async () => {
@@ -397,9 +398,18 @@ describe("install --global: _install.json schema and meta", () => {
     expect(installedNote).toContain("Workflow referenced skill manifests:");
   });
 
-  it("uses an explicit preset while keeping the other interactive prompts", async () => {
+  it("uses the system language without prompting and keeps the other interactive prompts", async () => {
     delete process.env.OMA_YES;
     delete process.env.CI;
+    vi.stubEnv("LC_ALL", "ko_KR.UTF-8");
+    let initialized = false;
+    fsState.existsSync.mockImplementation(
+      (file: string) =>
+        initialized && file.endsWith("/.agents/oma-config.yaml"),
+    );
+    skillsState.installConfigs.mockImplementationOnce(() => {
+      initialized = true;
+    });
     promptState.select.mockImplementation(
       async (options) => options.initialValue,
     );
@@ -419,8 +429,15 @@ describe("install --global: _install.json schema and meta", () => {
       expect(
         skillsState.installSkill.mock.calls.map((args) => args[1]),
       ).toEqual(PRESETS.frontend);
-      expect(promptState.select).toHaveBeenCalledWith(
+      expect(promptState.select).not.toHaveBeenCalledWith(
         expect.objectContaining({ message: "Response language?" }),
+      );
+      expect(promptState.select).toHaveBeenCalledWith(
+        expect.objectContaining({ message: "Model preset?" }),
+      );
+      expect(fsState.writeFileSync).toHaveBeenCalledWith(
+        path.join(tmpDir, ".agents", "oma-config.yaml"),
+        expect.stringContaining("language: ko"),
       );
       expect(promptState.select).not.toHaveBeenCalledWith(
         expect.objectContaining({ message: "What type of project?" }),
@@ -430,6 +447,26 @@ describe("install --global: _install.json schema and meta", () => {
       promptState.multiselect.mockReset();
       promptState.confirm.mockReset();
     }
+  });
+
+  it("uses the system language without prompting in non-interactive mode", async () => {
+    vi.stubEnv("LC_ALL", "ja_JP.UTF-8");
+    let initialized = false;
+    fsState.existsSync.mockImplementation(
+      (file: string) =>
+        initialized && file.endsWith("/.agents/oma-config.yaml"),
+    );
+    skillsState.installConfigs.mockImplementationOnce(() => {
+      initialized = true;
+    });
+
+    await install({ yes: true });
+
+    expect(promptState.select).not.toHaveBeenCalled();
+    expect(fsState.writeFileSync).toHaveBeenCalledWith(
+      path.join(tmpDir, ".agents", "oma-config.yaml"),
+      expect.stringContaining("language: ja"),
+    );
   });
 
   it("rejects an invalid API preset before migration, locks, downloads, or writes", async () => {

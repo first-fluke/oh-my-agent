@@ -237,9 +237,8 @@ describe("install home policy", () => {
     delete process.env.CI;
     delete process.env.OMA_YES;
 
-    // Language, three providers, model preset, then project type.
+    // Three providers, model preset, then project type.
     promptState.select
-      .mockResolvedValueOnce("en")
       .mockResolvedValueOnce("serena")
       .mockResolvedValueOnce("agentmemory")
       .mockResolvedValueOnce("native")

@@ -33,7 +33,7 @@ On Windows PowerShell, run:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-The interactive setup asks for the response language, CLI vendors, [capability providers](./glossary.md#capability-provider), [model preset](./glossary.md#model-preset), project [skill preset](./glossary.md#skill-preset), and any stack variant. For a first run, keep the defaults, select the vendor you already use, and choose the project preset closest to the repository. See [Presets](./installation.md#presets) for each preset's skills and for [workflows that need skills outside a preset](./installation.md#workflows-that-need-skills-outside-a-preset).
+Setup retains an existing response language or detects the system language automatically. The interactive setup asks for CLI vendors, [capability providers](./glossary.md#capability-provider), [model preset](./glossary.md#model-preset), project [skill preset](./glossary.md#skill-preset), and any stack variant. For a first run, keep the defaults, select the vendor you already use, and choose the project preset closest to the repository. See [Presets](./installation.md#presets) for each preset's skills and for [workflows that need skills outside a preset](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 If you already have `bun`, use the installer directly:
 

@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   cleanDanglingSymlinks,
   getExistingLanguage,
@@ -17,7 +17,53 @@ import {
   isNonInteractive,
   scanLanguages,
 } from "../install/run.js";
-import { README_LANGUAGES } from "./preferences.js";
+import {
+  detectSystemLanguage,
+  README_LANGUAGES,
+  resolveInstallLanguage,
+} from "./preferences.js";
+
+describe("detectSystemLanguage", () => {
+  it.each([
+    ["ko_KR.UTF-8", "ko"],
+    ["ja-JP", "ja"],
+    ["zh-Hant-TW", "zh"],
+    ["pt_BR.UTF-8", "pt"],
+    ["DE_de@euro", "de"],
+    ["fr_FR", "fr"],
+    ["C", "en"],
+    ["C.UTF-8", "en"],
+    ["POSIX", "en"],
+    ["unsupported", "en"],
+  ])("maps host locale %s to %s", (locale, language) => {
+    expect(detectSystemLanguage({ LANG: locale })).toBe(language);
+  });
+
+  it("honors LC_ALL over LC_MESSAGES and LANG", () => {
+    expect(
+      detectSystemLanguage({
+        LC_ALL: "ko_KR.UTF-8",
+        LC_MESSAGES: "ja_JP.UTF-8",
+        LANG: "en_US.UTF-8",
+      }),
+    ).toBe("ko");
+  });
+
+  it("honors LC_MESSAGES over LANG when LC_ALL is empty", () => {
+    expect(
+      detectSystemLanguage({
+        LC_ALL: " ",
+        LC_MESSAGES: "ja_JP.UTF-8",
+        LANG: "en_US.UTF-8",
+      }),
+    ).toBe("ja");
+  });
+
+  it("uses the runtime locale when environment locales are absent", () => {
+    expect(detectSystemLanguage({}, () => "ko-KR")).toBe("ko");
+    expect(detectSystemLanguage({}, () => "unsupported")).toBe("en");
+  });
+});
 
 describe("scanLanguages", () => {
   const tempRoots: string[] = [];
@@ -136,6 +182,7 @@ describe("getExistingLanguage", () => {
       rmSync(root, { recursive: true, force: true });
     }
     tempRoots.length = 0;
+    vi.unstubAllEnvs();
   });
 
   it("reads the current language from oma-config.yaml", () => {
@@ -158,6 +205,38 @@ describe("getExistingLanguage", () => {
     tempRoots.push(root);
 
     expect(getExistingLanguage(root)).toBeNull();
+  });
+
+  it("uses the system language for a fresh installation", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-language-"));
+    tempRoots.push(root);
+    vi.stubEnv("LC_ALL", "ko_KR.UTF-8");
+
+    expect(resolveInstallLanguage(root)).toBe("ko");
+  });
+
+  it("preserves a saved language outside the README translation list", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-language-"));
+    tempRoots.push(root);
+    mkdirSync(join(root, ".agents"), { recursive: true });
+    writeFileSync(join(root, ".agents", "oma-config.yaml"), "language: it\n");
+    vi.stubEnv("LC_ALL", "ko_KR.UTF-8");
+
+    expect(resolveInstallLanguage(root)).toBe("it");
+  });
+
+  it("preserves the saved local language over shared and system defaults", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-language-"));
+    tempRoots.push(root);
+    mkdirSync(join(root, ".agents"), { recursive: true });
+    writeFileSync(join(root, ".agents", "oma-config.yaml"), "language: en\n");
+    writeFileSync(
+      join(root, ".agents", "oma-config.local.yaml"),
+      "language: zh-TW\n",
+    );
+    vi.stubEnv("LC_ALL", "ko_KR.UTF-8");
+
+    expect(resolveInstallLanguage(root)).toBe("zh-TW");
   });
 });
 

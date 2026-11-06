@@ -73,10 +73,10 @@ import {
   ensureCueBinaryWithLog,
   persistInstallPreferences,
 } from "./persist-preferences.js";
+import { resolveInstallLanguage } from "./preferences.js";
 import {
   promptBackendVariant,
   promptDevToolsBrowsers,
-  promptLanguage,
   promptModelPreset,
   promptProjectSkills,
   promptVendors,
@@ -298,12 +298,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       p.log.warn(warning);
     }
 
-    const language = await promptLanguage(
-      repoDir,
-      installRoot,
-      nonInteractive,
-      cleanup,
-    );
+    const language = resolveInstallLanguage(installRoot);
 
     const vendors = await promptVendors(installRoot, nonInteractive);
 

@@ -31,9 +31,9 @@ const LANGUAGE_NAMES: Record<string, string> = {
 
 /**
  * Languages with a translated README under the repository's `docs/`. The
- * release asset ships `.agents/` only, so this list is offered when the
- * downloaded payload has no `docs/` directory. install.test.ts keeps it in
- * sync with `docs/README.*.md`.
+ * release asset ships `.agents/` only, so this list also provides the
+ * supported language codes for system-locale mapping. install.test.ts keeps
+ * it in sync with `docs/README.*.md`.
  */
 export const README_LANGUAGES = [
   "en",
@@ -50,6 +50,27 @@ export const README_LANGUAGES = [
   "vi",
   "zh",
 ] as const;
+
+/** Map the host's message locale to a supported response language. */
+export function detectSystemLanguage(
+  env: NodeJS.ProcessEnv = process.env,
+  runtimeLocale: () => string = () =>
+    Intl.DateTimeFormat().resolvedOptions().locale,
+): string {
+  const locale =
+    [env.LC_ALL, env.LC_MESSAGES, env.LANG].find((value) => value?.trim()) ??
+    runtimeLocale();
+  const language = locale
+    .trim()
+    .toLowerCase()
+    .split(/[-_.@]/)[0];
+  return README_LANGUAGES.find((code) => code === language) ?? "en";
+}
+
+/** Re-install keeps the saved choice; a fresh install follows the host. */
+export function resolveInstallLanguage(installRoot: string): string {
+  return getExistingLanguage(installRoot) ?? detectSystemLanguage();
+}
 
 export function scanLanguages(
   repoDir: string,

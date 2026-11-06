@@ -112,7 +112,7 @@ for semantic memory overrides global AgentMemory selection.
 
 ## Notes
 
-- `language` in `oma-config.yaml` controls agent response language. It is **not** used to determine install/update warning messages — those use the system locale (`$LANG`) because `oma-config.yaml` is not yet loaded at install time.
+- `language` in `oma-config.yaml` controls agent response language. Install retains a saved value in both interactive and unattended mode. New installs read `LC_ALL`, `LC_MESSAGES`, then `LANG`, falling back to the runtime locale when none is set. Regional, script, and encoding suffixes map to a supported base language; unsupported locales, `C`, and `POSIX` use `en`. There is no language prompt. Install/update warning messages use the system locale (`$LANG`).
 - `auto_update_cli` uses project overrides before global defaults and defaults to enabled when neither scope sets it.
 - `telemetry` (default `false`) maps to each vendor's own opt-out, written by `oma install` / `oma update` / `oma link`: Claude `DISABLE_TELEMETRY` + `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY`, Gemini/Qwen `privacy.usageStatisticsEnabled`, Codex `analytics.enabled` + `feedback.enabled`, Grok `[features] telemetry`, and Antigravity (agy) `enableTelemetry` in `~/.gemini/antigravity-cli/settings.json`. Setting `telemetry: true` opts back in by removing oma's opt-out for that vendor.
 - `diagram` (engine `auto` / `archify` / `mermaid`, `explain_sidecar`, `archify.path|quality|open`) is a sparse skill-override section like `video` / `image`; `archify.managed|channel|check_interval_min` are deprecated and ignored. See [Diagram Engine](/docs/guide/diagram-engine).
