@@ -12,7 +12,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1357)
+## Current (1358)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -1110,6 +1110,7 @@ summaries to spot which persona is churning.
 - @shyamsalimkumar — 2026-07-19
 - @sibbl — 2026-01-31
 - @sigco3111 — 2026-05-20
+- @SijiaLiao — 2026-11-06
 - @silobust-hash — 2026-05-17
 - @silverThunder09 — 2026-07-19
 - @sinyear — 2026-06-22
