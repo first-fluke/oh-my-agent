@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.17.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.17.0...web-v11.17.1) (2026-11-06)
+
+
+### Documentation
+
+* add installation instructions for ai agents ([288b159](https://github.com/first-fluke/oh-my-agent/commit/288b1598801b9f1256e5ea85e65d259b49ee7116))
+
 ## [11.17.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.16.1...web-v11.17.0) (2026-11-05)
 
 
