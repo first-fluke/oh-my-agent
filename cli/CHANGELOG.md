@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.36.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.4...cli-v20.36.5) (2026-11-06)
+
+
+### Documentation
+
+* **install:** align readmes with automatic language detection ([52a6fec](https://github.com/first-fluke/oh-my-agent/commit/52a6fecf22cc84609f7289bdd486806e85ef77ba))
+
 ## [20.36.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.3...cli-v20.36.4) (2026-11-06)
 
 
