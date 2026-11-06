@@ -17,6 +17,17 @@ not available while registration is pending. The separate
 explains `oma install --target grok-bot` for the Bot computer. Grok Build's
 runtime integration below is a different installation target.
 
+## Install with an AI agent
+
+Paste this into your coding agent:
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+The [agent installation guide](https://github.com/first-fluke/oh-my-agent/blob/main/docs/agent-install.md) covers CLI preparation, non-interactive project setup, and verification with `oma doctor`.
+
 ## Prerequisites
 
 - **An AI-powered IDE or CLI**: at least one supported host such as Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot, or Hermes
@@ -24,7 +35,7 @@ runtime integration below is a different installation target.
 - **uv**: Python package manager (the bootstrap script offers to install it when missing)
 - **Code intelligence provider**: Serena is the default provider. Gortex is also supported when selected in provider configuration. The installer can bootstrap Serena with `uv tool install`; it continues with a warning when an optional dependency is unavailable. With Gortex selected, project-mode `oma install` and `oma update` register the project with the Gortex daemon (`gortex track`) when it is not tracked yet and add OMA's generated directories to that project's exclude list through the Gortex CLI; nothing is written into the project tree. Gortex itself must be installed separately.
 
-The installer groups integrations by capability. Hook vendors include Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro, and Qwen; OpenCode and pi use extension bridges; GitHub Copilot and Hermes receive skill links; and ZCode receives workflow commands. You can select more than one vendor, but the first task only needs the host you plan to use.
+The installer groups integrations by capability. Hook vendors include Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro, and Qwen; OpenCode and pi use extension bridges; Hermes receives skill links; and ZCode receives workflow commands. You can select more than one vendor, but the first task only needs the host you plan to use.
 
 ---
 

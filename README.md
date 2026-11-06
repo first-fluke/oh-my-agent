@@ -51,6 +51,19 @@ After installing, run `oma doctor`. [Your first 5 minutes](#your-first-5-minutes
 
 ## Install
 
+### For AI agents
+
+Paste this into your coding agent:
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+The [agent installation guide](./docs/agent-install.md) covers non-interactive setup and verification. If you are the agent, read that guide and carry out the installation.
+
+### For humans
+
 The script installs [bun](https://bun.sh) if it is missing, installs the `oma` command globally (`bun install --global oh-my-agent`, skipped when `oma` is already on your PATH), then starts the interactive setup. The hooks (keyword detection and the Stop gate) and several workflows call the globally installed `oma` command. The hooks silently do nothing if they cannot find it. If you skip the script, install it yourself with `bun install --global oh-my-agent` (`npm install --global oh-my-agent` or `brew install oh-my-agent` also work).
 
 <details>

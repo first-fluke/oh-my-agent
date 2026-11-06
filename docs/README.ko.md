@@ -48,6 +48,19 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 <a id="install"></a>
 ## 설치
 
+### AI 에이전트로 설치하기
+
+코딩 에이전트에게 다음 요청을 전달하세요.
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+[에이전트용 설치 안내](./agent-install.md)에는 비대화형 설치와 확인 절차가 있습니다. 이 문서를 읽는 에이전트는 해당 안내에 따라 설치를 진행하세요.
+
+### 직접 설치하기
+
 스크립트는 [bun](https://bun.sh)이 없으면 설치하고, `oma` 커맨드를 전역으로 설치한 뒤(`bun install --global oh-my-agent`, PATH에 이미 `oma`가 있으면 건너뜀) 대화형 설정을 시작합니다. hook(키워드 감지와 Stop 게이트) 및 여러 워크플로우는 전역 설치된 `oma` 커맨드를 호출합니다. hook은 `oma`를 찾지 못하면 경고 없이 아무 작업도 하지 않습니다. 스크립트를 쓰지 않는다면 `bun install --global oh-my-agent`로 직접 설치하세요(`npm install --global oh-my-agent`나 `brew install oh-my-agent`도 됩니다).
 
 <details>
