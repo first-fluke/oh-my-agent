@@ -229,6 +229,7 @@ gh pr list --label "autorelease: pending" 2>/dev/null || echo "  No release PRs"
 3. **Release Please manifest** (`.release-please-manifest.json`)
 4. **Conventional commits** (already configured via commitlint)
 5. **GitHub CLI** (`gh`) installed for the release tasks — `brew install gh` or `mise use gh` (it is a Go binary, not an npm package; `bunx gh` resolves an unrelated deprecated package)
+6. **Publish gating** — the release workflow runs the full Test matrix against the release tag (`gate-tests` job) before publishing, and both publish jobs build from the tag rather than main HEAD
 
 ## Benefits
 

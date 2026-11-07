@@ -96,10 +96,6 @@ Native CLI executor path: `codex exec "@{agent} ..."` using the generated agent 
 Pass each agent its task description, API contracts, and relevant context.
 If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
 
-### If Gemini CLI and target vendor is Gemini
-Use native Gemini subagents when available, otherwise fall back to `oma agent spawn`.
-Native CLI executor path: `gemini -p "@{agent} ..."` using `.gemini/agents/{agent}.md`.
-
 ### If target vendor differs from current runtime, or native dispatch is unavailable
 ```bash
 oma agent spawn backend "task description" session-id --task-id {backend_task.id} -w ./backend &
@@ -116,7 +112,7 @@ wait
 - Use configured symbol/pattern tools or native search to verify API contract alignment between agents
 - Use memory edit tool to record monitoring results
 
-> **Claude Code note**: the Agent tool returns results synchronously (or notifies on background completion), so no file polling is needed. Check status, files changed, and issues directly in each agent's return value.
+> **Claude Code note**: agents dispatched with `run_in_background=true` report via background completion notifications, not synchronous return values — wait for each notification before proceeding to QA (foreground Agent calls return inline). Check status, files changed, and issues in each agent's result; `progress-*` files remain the monitoring path for CLI-fallback spawns.
 
 ---
 
@@ -157,7 +153,7 @@ Apply the shared per-task attempt and cost budget in `.agents/skills/oma-orchest
 
    > **Fix Loop termination conditions** (OR, whichever fires first wins):
    > 1. Total fix cycles have reached the configured maximum (default: 5). Do not start another cycle; report the remaining CRITICAL/HIGH findings and stop.
-   > 2. Session cost cap exceeded: if `loadQuotaCap()` from `cli/io/session-cost.ts` returns non-null, call `checkCap(sessionId, cap)` (no cap configured → skip this condition). If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop the loop immediately. Save current results before stopping, then report early termination due to quota.
+   > 2. Session cost cap exceeded: `oma agent:spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save current results, and report early termination due to quota.
    >
    > If neither condition is met, repeat Steps 5-7.
 

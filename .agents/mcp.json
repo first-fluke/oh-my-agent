@@ -12,7 +12,9 @@
         "oma",
         "--project-from-cwd",
         "--add-mode",
-        "no-memories"
+        "no-memories",
+        "--open-web-dashboard",
+        "false"
       ],
       "env": {
         "SERENA_LOG_LEVEL": "info"
