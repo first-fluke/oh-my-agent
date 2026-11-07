@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.36.6",
-  "releaseDate": "2026-11-07T12:04:06.704Z",
+  "releaseDate": "2026-11-07T12:33:11.329Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -131,8 +131,8 @@
     },
     {
       "path": ".agents/hooks/core/code-intelligence-guard.ts",
-      "sha256": "5a15766f706c40688a6ddabedf4995b76c461e9b24450c259a652d651d255c87",
-      "size": 17363
+      "sha256": "db5bddcffeb7deb2e1e2806301c7fb61b45af7dfa79281589d0e363ac42f76a8",
+      "size": 17525
     },
     {
       "path": ".agents/hooks/core/code-intelligence-primer.ts",
