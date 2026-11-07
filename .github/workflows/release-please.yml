@@ -19,10 +19,11 @@ on:
         required: false
         type: string
 
+# contents/pull-requests write: release-please-action and artifact uploads.
+# No id-token: npm auth uses NPM_TOKEN and no step consumes OIDC/provenance.
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
   # workflow_dispatch of this file after a GITHUB_TOKEN merge. That merge
   # does not emit a push event, so the follow-up run is what tags and publishes.
   actions: write
@@ -151,12 +152,38 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: gh workflow run release-please.yml --repo "$GH_REPO" --ref main
 
-  publish-artifacts:
+  # Audit M5: publishing must be gated on the tests passing for the released
+  # commit. Runs the full Test matrix ONLY when a release is being published;
+  # on scheduled/push runs without a release this job is skipped, so the
+  # matrix never runs needlessly. Publish jobs require result == 'success',
+  # which also blocks them when this job is skipped or fails unexpectedly.
+  gate-tests:
     needs: release-please
     if: ${{ needs.release-please.outputs.cli_release_created == 'true' || inputs.force_cli_publish }}
+    uses: ./.github/workflows/test.yml
+    with:
+      # Test exactly what will be published: the fresh release tag (normal
+      # path) or the explicit force-publish tag. Empty (force without a tag)
+      # falls back to the triggering commit, whose cli/package.json defines
+      # the fallback tag.
+      ref: ${{ inputs.cli_tag_name || needs.release-please.outputs.cli_tag_name }}
+
+  publish-artifacts:
+    needs: [release-please, gate-tests]
+    # !cancelled() lets this expression evaluate even when gate-tests is
+    # skipped/failed; the explicit result check then blocks publishing
+    # unless the tests actually passed for this release.
+    if: ${{ !cancelled() && needs.gate-tests.result == 'success' && (needs.release-please.outputs.cli_release_created == 'true' || inputs.force_cli_publish) }}
     runs-on: ubuntu-latest
     steps:
+      # Audit M6: build from the release tag, not main HEAD. On the normal
+      # path release-please has already created the tag in the same run that
+      # reports release_created=true; force-publish with an explicit tag uses
+      # it directly. Force-publish without a tag checks out the triggering
+      # commit here, then switches to the resolved tag below if it exists.
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.cli_tag_name || needs.release-please.outputs.cli_tag_name }}
 
       - uses: jdx/mise-action@v5
 
@@ -164,12 +191,33 @@ jobs:
         id: release_tag
         env:
           MANUAL_TAG: ${{ inputs.cli_tag_name }}
+          RELEASE_PLEASE_TAG: ${{ needs.release-please.outputs.cli_tag_name }}
         run: |
           if [ -n "$MANUAL_TAG" ]; then
-            echo "value=$MANUAL_TAG" >> "$GITHUB_OUTPUT"
+            TAG="$MANUAL_TAG"
+          elif [ -n "$RELEASE_PLEASE_TAG" ]; then
+            TAG="$RELEASE_PLEASE_TAG"
           else
-            echo "value=cli-v$(jq -r '.version' cli/package.json)" >> "$GITHUB_OUTPUT"
+            TAG="cli-v$(jq -r '.version' cli/package.json)"
           fi
+          echo "value=$TAG" >> "$GITHUB_OUTPUT"
+          # Force-publish fallback semantics: the tag derived from
+          # cli/package.json may already exist (re-publish) or not. If it
+          # exists, re-checkout below so artifacts match the tagged source;
+          # otherwise keep the triggering-commit checkout and let
+          # action-gh-release create the tag (legacy behavior).
+          if [ -z "$MANUAL_TAG" ] && [ -z "$RELEASE_PLEASE_TAG" ] && \
+             git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "recheckout=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "recheckout=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out resolved release tag (force-publish fallback)
+        if: steps.release_tag.outputs.recheckout == 'true'
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.release_tag.outputs.value }}
 
       - name: Regenerate prompt-manifest.json
         run: |
@@ -193,14 +241,39 @@ jobs:
             agent-skills.tar.gz.sha256
 
   publish-npm:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.cli_release_created == 'true' || inputs.force_cli_publish }}
+    needs: [release-please, gate-tests]
+    # Same gate as publish-artifacts: publish only when the release-commit
+    # tests actually passed (skipped/failed gate-tests blocks publishing).
+    if: ${{ !cancelled() && needs.gate-tests.result == 'success' && (needs.release-please.outputs.cli_release_created == 'true' || inputs.force_cli_publish) }}
     runs-on: ubuntu-latest
     steps:
+      # Audit M6: publish the tagged source, not main HEAD (see
+      # publish-artifacts for the tag-timing and fallback semantics).
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ inputs.cli_tag_name || needs.release-please.outputs.cli_tag_name }}
+
+      # Force-publish without an explicit tag: derive the tag from
+      # cli/package.json (legacy fallback) and, if it already exists, build
+      # from it instead of the triggering commit. If it does not exist, keep
+      # the current checkout (legacy behavior).
+      - name: Resolve fallback release tag
+        id: release_tag
+        if: ${{ !inputs.cli_tag_name && !needs.release-please.outputs.cli_tag_name }}
+        run: |
+          TAG="cli-v$(jq -r '.version' cli/package.json)"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "ref=$TAG" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out fallback release tag
+        if: steps.release_tag.outputs.ref != ''
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.release_tag.outputs.ref }}
 
       - uses: jdx/mise-action@v5
 

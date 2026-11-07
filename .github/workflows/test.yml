@@ -4,6 +4,18 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Reusable entry point so release-please.yml can gate publishing on the
+  # tests passing for the released commit (audit M5).
+  workflow_call:
+    inputs:
+      ref:
+        description: Ref to test (tag/branch/SHA); empty tests the triggering commit
+        required: false
+        type: string
+
+# Steps only check out the repo and run local commands; no write scopes needed.
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -23,6 +35,10 @@ jobs:
       OMA_SKIP_VERSION_CHECK: "1"
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Empty on push/PR: checkout falls back to the triggering ref, so
+          # standalone runs behave exactly as before.
+          ref: ${{ inputs.ref }}
 
       - uses: jdx/mise-action@v5
 
