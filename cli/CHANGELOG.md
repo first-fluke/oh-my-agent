@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.36.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.6...cli-v20.36.7) (2026-11-07)
+
+
+### Bug Fixes
+
+* correct Windows path, link, and process handling across the CLI ([dcccdac](https://github.com/first-fluke/oh-my-agent/commit/dcccdac6d538b289066d922c14d70c19023c6151))
+
 ## [20.36.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.5...cli-v20.36.6) (2026-11-07)
 
 
