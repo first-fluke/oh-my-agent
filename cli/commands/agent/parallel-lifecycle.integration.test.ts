@@ -63,12 +63,24 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
     supervisorPids.clear();
     // Windows refuses to delete files a just-signalled child still holds open
     // (EPERM/EBUSY); rmSync's built-in retry waits for the handles to close.
-    fs.rmSync(root, {
-      recursive: true,
-      force: true,
-      maxRetries: 10,
-      retryDelay: 200,
-    });
+    try {
+      fs.rmSync(root, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 200,
+      });
+    } catch (error) {
+      // These cases deliberately leave background children running; on win32 a
+      // directory still used as a live process's cwd cannot be removed at all.
+      // Leaking the temp dir there is harmless; POSIX cleanup stays strict.
+      const code = (error as NodeJS.ErrnoException).code;
+      if (
+        process.platform !== "win32" ||
+        (code !== "EPERM" && code !== "EBUSY")
+      )
+        throw error;
+    }
   });
 
   const invoke = (
