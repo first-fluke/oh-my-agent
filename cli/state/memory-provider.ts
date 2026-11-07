@@ -9,6 +9,7 @@ import type {
   MemoryRecallResult,
   MemoryRememberPayload,
 } from "../types/memory.js";
+import { agentMemoryAuthHeaders } from "./agentmemory-auth.js";
 import {
   type AgentMemoryScope,
   createAgentMemoryScope,
@@ -166,6 +167,9 @@ export function createAgentMemoryProvider(
     return requested;
   }
   let cachedStatus: MemoryProviderStatus | null = null;
+  const authOptions = { env, homeDir: options.homeDir };
+  const authHeaders = (): Record<string, string> =>
+    endpoint ? agentMemoryAuthHeaders(endpoint, authOptions) : {};
 
   async function status(): Promise<MemoryProviderStatus> {
     if (cachedStatus) return cachedStatus;
@@ -189,6 +193,7 @@ export function createAgentMemoryProvider(
 
     try {
       const response = await http.get(`${endpoint}/agentmemory/health`, {
+        headers: authHeaders(),
         timeout: options.healthTimeoutMs ?? 500,
         validateStatus: () => true,
       });
@@ -260,7 +265,7 @@ export function createAgentMemoryProvider(
             data: { content: payload.content },
           },
           {
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", ...authHeaders() },
             timeout: options.observeTimeoutMs ?? 500,
             validateStatus: () => true,
           },
@@ -289,7 +294,7 @@ export function createAgentMemoryProvider(
             concepts: [owner.concept],
           },
           {
-            headers: { "content-type": "application/json" },
+            headers: { "content-type": "application/json", ...authHeaders() },
             timeout: options.rememberTimeoutMs ?? 500,
             validateStatus: () => true,
           },
@@ -312,6 +317,7 @@ export function createAgentMemoryProvider(
           query,
           limit,
           timeoutMs: options.recallTimeoutMs,
+          auth: authOptions,
         });
         return parseMemoryRecallResults(results, limit);
       } catch {

@@ -1,5 +1,9 @@
 import { http } from "../io/http.js";
 import {
+  type AgentMemoryAuthOptions,
+  agentMemoryAuthHeaders,
+} from "./agentmemory-auth.js";
+import {
   type AgentMemoryScope,
   filterAgentMemoryResults,
 } from "./agentmemory-scope.js";
@@ -11,11 +15,13 @@ export async function searchScopedAgentMemory(args: {
   query: string;
   limit: number;
   timeoutMs?: number;
+  auth?: AgentMemoryAuthOptions;
 }): Promise<{ results: unknown[] }> {
   const query = args.query.trim();
   if (!query) return { results: [] };
+  const endpoint = args.endpoint.replace(/\/+$/, "");
   const response = await http.post(
-    `${args.endpoint.replace(/\/+$/, "")}/agentmemory/search`,
+    `${endpoint}/agentmemory/search`,
     {
       query,
       limit: args.limit,
@@ -23,7 +29,11 @@ export async function searchScopedAgentMemory(args: {
       cwd: args.scope.projectDir,
       format: "full",
     },
-    { timeout: args.timeoutMs ?? 2000, validateStatus: () => true },
+    {
+      headers: agentMemoryAuthHeaders(endpoint, args.auth),
+      timeout: args.timeoutMs ?? 2000,
+      validateStatus: () => true,
+    },
   );
   if (response.status < 200 || response.status >= 300) return { results: [] };
   return filterAgentMemoryResults(response.data, args.scope);
