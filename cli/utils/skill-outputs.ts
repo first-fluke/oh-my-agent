@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { isAbsolute, join } from "node:path";
+import { isAbsolute, join, parse } from "node:path";
 import { parse as parseYaml } from "yaml";
 
 export interface DeclaredOutput {
@@ -164,8 +164,9 @@ function artifactExists(workspace: string, pattern: string): boolean {
   const absolutePattern = isAbsolute(pattern)
     ? pattern
     : join(workspace, pattern);
-  const normalized = absolutePattern.replace(/\\/g, "/");
-  const root = normalized.startsWith("/") ? "/" : "";
+  // parse().root is "/" on POSIX and "C:\" (or a UNC share) on Windows.
+  const { root } = parse(absolutePattern);
+  const normalized = absolutePattern.slice(root.length).replace(/\\/g, "/");
   const segments = normalized.split("/").filter((s) => s.length > 0);
   return hasMatch(root || ".", segments);
 }

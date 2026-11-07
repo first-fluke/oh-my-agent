@@ -137,13 +137,22 @@ function checkedPath(root: string, name: string): string {
   if (isAbsolute(name) || !inside(root, path))
     throw new Error("Path must stay inside the project");
   let current = root;
+  let parentIsDirectory = true;
   for (const component of relative(root, path).split(sep).filter(Boolean)) {
     current = join(current, component);
     try {
-      if (lstatSync(current).isSymbolicLink())
+      const stat = lstatSync(current);
+      if (stat.isSymbolicLink())
         throw new Error("Symlink paths are not migrated");
+      parentIsDirectory = stat.isDirectory();
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      // Windows reports ENOENT (POSIX: ENOTDIR) below a non-directory.
+      if (!parentIsDirectory)
+        throw Object.assign(
+          new Error(`ENOTDIR: not a directory, lstat '${current}'`),
+          { code: "ENOTDIR" },
+        );
       break;
     }
   }

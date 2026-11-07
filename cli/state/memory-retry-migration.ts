@@ -252,7 +252,8 @@ function archiveFiles(
       unlinkSync(temporary);
     }
   }
-  if (changed && !dryRun) {
+  // Windows cannot fsync a directory handle (EPERM); skip the entry flush there.
+  if (changed && !dryRun && process.platform !== "win32") {
     const fd = openSync(directory, "r");
     try {
       fsyncSync(fd);
@@ -288,6 +289,33 @@ function sourceLease(path: string): () => void {
       db.close();
     }
   };
+}
+
+function truncateOwnAppend(file: {
+  path: string;
+  fd: number;
+  before: Buffer;
+  identity: string;
+}): void {
+  if (process.platform !== "win32") {
+    ftruncateSync(file.fd, file.before.length);
+    fsyncSync(file.fd);
+    return;
+  }
+  // Windows opens O_APPEND handles append-only, so they cannot be truncated;
+  // truncate through a second handle bound to the same verified file.
+  const fd = openSync(file.path, constants.O_RDWR);
+  try {
+    const stat = fstatSync(fd);
+    if (`${stat.dev}:${stat.ino}` !== file.identity)
+      throw new Error(
+        "Unexpected HOME writer; migration will not remove another writer's data",
+      );
+    ftruncateSync(fd, file.before.length);
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
 }
 
 /** Writes can roll back only their own exact append while the HOME lease is held. */
@@ -333,8 +361,7 @@ function appendTransaction(files: Array<{ path: string; append: string }>): {
         );
     }
     for (const file of [...opened].reverse()) {
-      ftruncateSync(file.fd, file.before.length);
-      fsyncSync(file.fd);
+      truncateOwnAppend(file);
       if (file.created && file.before.length === 0) unlinkSync(file.path);
     }
   }

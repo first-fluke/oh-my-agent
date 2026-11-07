@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { AGENTS_RESULTS_DIR } from "../constants/paths.js";
 import {
   COORDINATION_STORE_REL,
@@ -61,13 +61,13 @@ export function resolveCoordinationBasePath(projectDir: string): string {
   } catch {
     // missing or malformed mcp.json falls back to the default base path
   }
-  if (existsSync(join(projectDir, COORDINATION_STORE_REL))) {
-    return COORDINATION_STORE_REL;
-  }
-  if (existsSync(join(projectDir, LEGACY_SERENA_MEMORY_REL))) {
-    return LEGACY_SERENA_MEMORY_REL;
-  }
-  return COORDINATION_STORE_REL;
+  // The base doubles as a prefix for receipt artifact keys, which are always
+  // "/"-separated, so return the store constants in POSIX form.
+  const store = COORDINATION_STORE_REL.split(sep).join("/");
+  const legacy = LEGACY_SERENA_MEMORY_REL.split(sep).join("/");
+  if (existsSync(join(projectDir, store))) return store;
+  if (existsSync(join(projectDir, legacy))) return legacy;
+  return store;
 }
 
 /** @deprecated Use resolveCoordinationBasePath. */

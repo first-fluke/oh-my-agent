@@ -20,7 +20,9 @@ import { contentHash } from "../eval/rollouts.js";
  * which holds release-development fixtures and is cleared on update.
  */
 
-export const EVOLUTION_DIR = join(AGENTS_DIR, "evolution");
+// Project-relative POSIX path: it is persisted in the constitution and
+// compared against glob patterns, so it must not use the platform separator.
+export const EVOLUTION_DIR = `${AGENTS_DIR}/evolution`;
 export const OPTIMIZER_TEMPLATE_FILE = "optimizer.md";
 export const MAINTAINER_TEMPLATE_FILE = "maintainer.md";
 export const CONSTITUTION_FILE = "constitution.yaml";

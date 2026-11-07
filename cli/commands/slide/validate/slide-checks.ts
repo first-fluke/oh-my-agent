@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { resolve, sep } from "node:path";
 import color from "picocolors";
 import {
   FONTS_READY_TIMEOUT_MS,
@@ -171,7 +171,10 @@ export function assertSafeSlideFile(
   const resolved = resolve(workDir, slideFile);
   // Assert resolved path is inside workDir (defense in depth)
   const normalizedDir = resolve(workDir);
-  if (!resolved.startsWith(`${normalizedDir}/`) && resolved !== normalizedDir) {
+  if (
+    !resolved.startsWith(`${normalizedDir}${sep}`) &&
+    resolved !== normalizedDir
+  ) {
     throw new Error(
       `meta.json order[] entry "${slideFile}" resolves outside workspace directory — rejected.`,
     );

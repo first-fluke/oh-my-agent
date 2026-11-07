@@ -36,6 +36,7 @@ import {
   readFileSync,
   readlinkSync,
   rmSync,
+  unlinkSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { CLI_SKILLS_DIR } from "../../constants/index.js";
@@ -106,7 +107,8 @@ export const migrateWorkflowDirectSymlinks: Migration = {
           if (resolvedTarget !== expected) continue;
 
           try {
-            rmSync(entryPath, { force: true });
+            // unlinkSync, not rmSync: rmSync throws EISDIR on Windows junctions.
+            unlinkSync(entryPath);
             actions.push(
               `${relPath}/${name}: removed legacy wrapper symlink (${vendor})`,
             );

@@ -313,7 +313,11 @@ function shellSearchRoots(
   const cleaned = command
     .replace(DISCARD_REDIRECTION, "$1")
     // `$HOME` is the one expansion agents routinely use for external paths.
-    .replace(/\$\{?HOME\}?(?=\/|\s|$)/g, homedir());
+    // Forward slashes on win32: a backslash would trip the escape check below.
+    .replace(
+      /\$\{?HOME\}?(?=\/|\s|$)/g,
+      process.platform === "win32" ? homedir().replace(/\\/g, "/") : homedir(),
+    );
   // Do not guess expansions, other redirections or subshells.
   if (/[$`<>\\()]/.test(cleaned)) return null;
   const roots: string[] = [];

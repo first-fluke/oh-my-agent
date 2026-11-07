@@ -169,14 +169,21 @@ function extractTarGz(
   destDir: string,
   stripComponents: number,
 ): void {
-  const archivePath = join(destDir, ".oma-download.tar.gz");
+  const archiveName = ".oma-download.tar.gz";
+  const archivePath = join(destDir, archiveName);
   writeFileSync(archivePath, archive);
   try {
-    const args = ["-xzf", archivePath, "-C", destDir];
+    // Relative to cwd: GNU tar (e.g. Git for Windows) reads `C:\...` as a
+    // remote `host:path` archive.
+    const args = ["-xzf", archiveName];
     if (stripComponents > 0) {
       args.push(`--strip-components=${stripComponents}`);
     }
-    execFileSync("tar", args, { stdio: "pipe", timeout: EXTRACT_TIMEOUT_MS });
+    execFileSync("tar", args, {
+      cwd: destDir,
+      stdio: "pipe",
+      timeout: EXTRACT_TIMEOUT_MS,
+    });
   } finally {
     rmSync(archivePath, { force: true });
   }

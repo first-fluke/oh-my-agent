@@ -5,8 +5,8 @@ import {
   mkdirSync,
   readFileSync,
   realpathSync,
-  rmSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -131,7 +131,8 @@ export function scaffoldRunProject(args: {
   stageRenderSpec(runDir, spec);
   const modules = join(projectDir, "node_modules");
   try {
-    if (lstatSync(modules).isSymbolicLink()) rmSync(modules);
+    // unlink, not rm: removes the link itself (incl. a Windows junction).
+    if (lstatSync(modules).isSymbolicLink()) unlinkSync(modules);
     else throw new Error(`expected a managed node_modules link at ${modules}`);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;

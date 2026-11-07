@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { AGENTS_DIR } from "../../constants/paths.js";
 import type { LiveDispatchFn } from "../skills/eval.js";
 import { buildJudgeDispatchFn, buildLiveDispatchFn } from "../skills/eval.js";
@@ -313,7 +313,10 @@ export async function runHarnessFeedback(options: {
   const stamp = report.ts.replace(/[:.]/g, "-");
   const reportPath = join(dir, `feedback-${stamp}.json`);
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf-8");
-  report.reportPath = reportPath.slice(root.length + 1);
+  report.reportPath = reportPath
+    .slice(root.length + 1)
+    .split(sep)
+    .join("/");
   return report;
 }
 

@@ -25,7 +25,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, resolve, sep } from "node:path";
 import type { CliVendor } from "../../types/index.js";
 import { serenaTransportMode } from "../../utils/config.js";
 import { isRecord } from "../../utils/type-guards.js";
@@ -128,7 +128,7 @@ export const migrateProjectSerenaBridge: Migration = {
         target.removeOnly ||
         seen.has(target.path) ||
         !existsSync(target.path) ||
-        !resolve(target.path).startsWith(`${root}/`)
+        !resolve(target.path).startsWith(`${root}${sep}`)
       )
         continue;
       seen.add(target.path);
@@ -154,7 +154,10 @@ export const migrateProjectSerenaBridge: Migration = {
         rmSync(temporary, { force: true });
       }
       actions.push(
-        `${change.path.slice(root.length + 1)} (per-session Serena → shared bridge)`,
+        `${change.path
+          .slice(root.length + 1)
+          .split(sep)
+          .join("/")} (per-session Serena → shared bridge)`,
       );
     }
     return actions;

@@ -84,7 +84,8 @@ function captureEnv(id: string, keysCsv: string): string | null {
   fs.writeFileSync(envFile, JSON.stringify(captured, null, 2), { mode: 0o600 });
   fs.chmodSync(envFile, 0o600);
 
-  return path.join("env", id);
+  // Persisted in the manifest: keep the "/" form on every platform.
+  return path.posix.join("env", id);
 }
 
 /** Vendors accepted by `--model`; mirrors the `oma agent spawn -m` surface. */

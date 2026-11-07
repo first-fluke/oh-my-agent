@@ -55,7 +55,9 @@ export function readProcessIdentity(pid: number): ProcessIdentity | undefined {
         ],
         {
           encoding: "utf8",
-          timeout: 1000,
+          // powershell.exe + CIM takes ~0.5-1s even idle; a 1s cap (the ps
+          // budget) times out under load and leaves the child unidentified.
+          timeout: 5000,
           stdio: ["ignore", "pipe", "ignore"],
         },
       );

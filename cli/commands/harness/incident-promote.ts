@@ -8,7 +8,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { stringify as stringifyYaml } from "yaml";
 import { AGENTS_DIR } from "../../constants/paths.js";
 import { INSTALLED_SKILLS_DIR } from "../../constants/vendors.js";
@@ -357,7 +357,10 @@ export async function promoteHarnessIncident(options: {
     ts: new Date().toISOString(),
     incidentId: incident.id,
     skill,
-    fixturePath: fixturePath.slice(root.length + 1),
+    fixturePath: fixturePath
+      .slice(root.length + 1)
+      .split(sep)
+      .join("/"),
     fixtureId,
     derivation,
     attribution,

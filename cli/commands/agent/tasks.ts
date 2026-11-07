@@ -50,7 +50,18 @@ export function parseInlineTasks(taskSpecs: string[]): TaskDefinition[] {
     let task: string;
     let workspace: string | undefined;
 
-    if (rest.length >= 2) {
+    // A Windows drive path (`C:\repo`) contains the separator itself; rejoin
+    // its drive letter so the workspace survives the split.
+    const drive = rest.length >= 3 ? rest[rest.length - 2] : undefined;
+    if (
+      process.platform === "win32" &&
+      drive &&
+      /^[A-Za-z]$/.test(drive) &&
+      /^[\\/]/.test(rest[rest.length - 1] ?? "")
+    ) {
+      workspace = `${drive}:${rest[rest.length - 1]}`;
+      task = rest.slice(0, -2).join(":");
+    } else if (rest.length >= 2) {
       const lastPart = rest[rest.length - 1] ?? "";
       if (
         lastPart.startsWith("./") ||

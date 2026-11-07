@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { readSkillPromotions } from "./lineage.js";
 
 /**
@@ -89,11 +89,7 @@ export function evolutionArtifactsDir(
 
 export function readEvolutionRun(path: string): EvolutionRunSummary {
   const summary: EvolutionRunSummary = {
-    session:
-      path
-        .split("/")
-        .pop()
-        ?.replace(/\.jsonl$/, "") ?? path,
+    session: basename(path).replace(/\.jsonl$/, ""),
     proposals: { proposed: 0, accepted: 0, rejected: 0, inconclusive: 0 },
     status: "incomplete",
   };

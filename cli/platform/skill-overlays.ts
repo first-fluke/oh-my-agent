@@ -7,12 +7,12 @@ import {
   readFileSync,
   realpathSync,
   renameSync,
-  symlinkSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { AGENTS_SKILLS_DIR } from "../constants/paths.js";
+import { createLink } from "./fs-link.js";
 
 /** Project-owned storage for optimizer-approved replacements of managed skills. */
 export const SKILL_OVERLAYS_DIR = ".agents/evolution/skills";
@@ -212,7 +212,7 @@ function linkProjectionEntry(
     const realRoot = realpathSync(sourceSkillsRoot);
     if (!pointsWithin(realSource, realRoot)) return;
     const linkTarget = relative(dirname(target), source);
-    symlinkSync(linkTarget, target, sourceStat.isDirectory() ? "dir" : "file");
+    createLink(linkTarget, target, sourceStat.isDirectory() ? "dir" : "file");
   } catch {
     // A resource missing during an update is equivalent to it missing in the
     // managed source. The resolver remains safe and uses the pinned body.
