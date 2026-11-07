@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.37.0",
-  "releaseDate": "2026-11-07T15:00:14.912Z",
+  "releaseDate": "2026-11-07T16:22:51.147Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -191,8 +191,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "213bab552464b77b9fb32ed20950cefa0b5bbb4c87cb89636e557a09c96d5fcd",
-      "size": 49756
+      "sha256": "09d0eb6e8295556d5c43f4ede11b344fb486428b838d7aa8ff95e3db1ca0afb7",
+      "size": 52946
     },
     {
       "path": ".agents/hooks/core/memory-adapter.ts",
@@ -206,8 +206,8 @@
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "b8162f7137bf901b44272c4920b583f651fabd219319dec593619071ea12aa41",
-      "size": 30150
+      "sha256": "d09f60ef49ccd086f2aa789faaa6b7e1c55ab0c8c93602cc1368d722bc07dc96",
+      "size": 33334
     },
     {
       "path": ".agents/hooks/core/prompt-input.ts",
@@ -221,8 +221,8 @@
     },
     {
       "path": ".agents/hooks/core/scm-guard.ts",
-      "sha256": "249d076b6224767826989ebb9a8e9b4aa9bda77788bbdee3ae53e0f7627da9fc",
-      "size": 9732
+      "sha256": "f711ddce1020b6d4b6e8c3236aee9478afee096450e5ecab6c7a01bff9b9ac4a",
+      "size": 11563
     },
     {
       "path": ".agents/hooks/core/serena-primer.ts",
@@ -251,8 +251,8 @@
     },
     {
       "path": ".agents/hooks/core/state-core.ts",
-      "sha256": "c6e26948912b0bf4d296f7170be55c1fa37ad915795898743bdde7155e13a400",
-      "size": 11939
+      "sha256": "e38c352e41c5cd4906ae9142cbba5e7a00e3cb65731b531366d60f2f1eb58b9a",
+      "size": 14103
     },
     {
       "path": ".agents/hooks/core/state-emit.ts",
@@ -265,9 +265,14 @@
       "size": 4163
     },
     {
+      "path": ".agents/hooks/core/state-lock.ts",
+      "sha256": "88b0270001e0135e695fa0838b6e841bbd050d5ee2a5c21ab71cd546b47c0530",
+      "size": 5569
+    },
+    {
       "path": ".agents/hooks/core/state-marker.ts",
-      "sha256": "d42a12d1c4cd79f4cbc09308eb9b7786586996fe406d719df6a4fab0b3fd4369",
-      "size": 308
+      "sha256": "a8a055d17dcb35c4092c5475f308e9f20a26fd0616c840af0b4753f26b591949",
+      "size": 330
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
@@ -331,8 +336,8 @@
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "5038f59f6625884a9d246e3d927adfb2ac0691b76ff7b4e8e5745af433b033bb",
-      "size": 6646
+      "sha256": "e9926513b30278f4bd766bea72b4f047e287f3ba3da96e35dd262cb9f8660cfd",
+      "size": 6912
     },
     {
       "path": ".agents/hooks/variants/kimi.json",
@@ -361,13 +366,13 @@
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "64adcba5ef6d0e62ee426be9e5704ed6f9d8b22a6a90a2dc046e79df08626539",
-      "size": 1494
+      "sha256": "fa664cb8458421d2e61266f256b7c698c448c8ab5e0e681edf38fbcec26c7deb",
+      "size": 1513
     },
     {
       "path": ".agents/mcp.json",
-      "sha256": "46e9671c2f1c2e6cd7ed17a650900ad572eb65e1cc733e55ff41b6c75512d990",
-      "size": 2177
+      "sha256": "5a127a4f37551d9f468e35540c8c728b495ba12afbef73653351e1eefb5e8286",
+      "size": 2226
     },
     {
       "path": ".agents/mcp_config.json",
@@ -571,8 +576,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
-      "sha256": "d14f6c3b7cc2432931b4ac87bd9b3dbb23c54b2c784600a22962537bd9d35db0",
-      "size": 4724
+      "sha256": "59e21b00b71b401184a1afba1a7873bfa5dbb2f2e08b325b31c9b15dbe602914",
+      "size": 4647
     },
     {
       "path": ".agents/skills/_shared/runtime/event-spec.md",
@@ -1016,8 +1021,8 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/release-coordination.md",
-      "sha256": "dd4aa72bb27977d267e8cd864e721f01ce39be7135b68addf925d1abd3a1d1f5",
-      "size": 6060
+      "sha256": "911d16a72590a7630ba1e43f1c974fbb50174b4dbddd007bdd54f74726d5f26e",
+      "size": 6258
     },
     {
       "path": ".agents/skills/oma-dev-workflow/resources/tooling-profiles.md",
@@ -2211,8 +2216,8 @@
     },
     {
       "path": ".agents/workflows/debug.md",
-      "sha256": "2636738a0c19fd3e4cd78d3ee9dc9ab1ea77dc4b332d0c5e5c1c9c4b6f3307d3",
-      "size": 5320
+      "sha256": "36df9ad7c7d4b9eab02b267818d935a0e18ff661d7e38658e6eb41e6b843fc5e",
+      "size": 5067
     },
     {
       "path": ".agents/workflows/deepinit.md",
@@ -2236,8 +2241,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "66de01ae6bff3b5cdbfc89c9ee68df3f21d9e8fa12c9725fb5aceca85ac68a5f",
-      "size": 15953
+      "sha256": "73b9b80519650c759dcfbc7710465d67e027bb75cf53468650ed38a3a03b0e3e",
+      "size": 15890
     },
     {
       "path": ".agents/workflows/plan.md",
@@ -2261,8 +2266,8 @@
     },
     {
       "path": ".agents/workflows/review.md",
-      "sha256": "f5cfbf394a2fa44e9766fbdac546d35e64fb8c266232eec28d578196256b242a",
-      "size": 5989
+      "sha256": "c6923a613cd7c215d38f3c5faff076999a9066239a946d4a5b15a8d1cd9a6afc",
+      "size": 5961
     },
     {
       "path": ".agents/workflows/schedule.md",
@@ -2301,8 +2306,8 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "10b159947aece4e013bcf8c9afa1511326ad4b4fd88757e5533c8da717545ac1",
-      "size": 32276
+      "sha256": "8ce57b66961a68a777a121ab00256a08a858c350791275e19912b77b7ec56343",
+      "size": 32409
     },
     {
       "path": ".agents/workflows/video.md",
@@ -2311,8 +2316,8 @@
     },
     {
       "path": ".agents/workflows/work.md",
-      "sha256": "47eb2c327692aa36a6e1f442dffcfcb614b0241e08eec1d82e0520f4e1cb35f1",
-      "size": 11477
+      "sha256": "41b9ac5dc828f2a6443f01bdbb52c036fad4418a75bb6a40d6b988cc2e862dc8",
+      "size": 11450
     }
   ],
   "checksums": {
@@ -2321,6 +2326,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 462
+    "totalFiles": 463
   }
 }
