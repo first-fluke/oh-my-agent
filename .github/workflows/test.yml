@@ -100,12 +100,15 @@ jobs:
       #   - doctor executable lookup (';' PATH + PATHEXT: agentmemory.exe,
       #     oma.exe) and the doctor/profile suites' separator-agnostic fs mocks
       #   - AgentMemory bearer auth + project-alias isolation (junction alias)
+      #   - workflow / ZCode command links: junction removal and the
+      #     hardlink/copy fallback ownership ledger (fixtures seed hardlinks,
+      #     so they cover the fallback even on a symlink-capable runner)
       # Existing cases mock command runners / fs. The bootstrap harness runs
       # only its CLI install block in bounded pwsh processes with mocked bun.
       - name: Test win32-only code paths
         if: matrix.os == 'windows-latest'
         timeout-minutes: 5
-        run: bun run --cwd cli test agentmemory-service.test schtasks.test schedule/port.test test-filter-run.test events.atomic-write.test state/events.test __tests__/install-ps1.test.ts find-executable.test agentmemory-auth.test hook-wrapper-check.test doctor/doctor.test doctor/profile.test agentmemory-isolation.test
+        run: bun run --cwd cli test agentmemory-service.test schtasks.test schedule/port.test test-filter-run.test events.atomic-write.test state/events.test __tests__/install-ps1.test.ts find-executable.test agentmemory-auth.test hook-wrapper-check.test doctor/doctor.test doctor/profile.test agentmemory-isolation.test platform/workflow-symlinks.test platform/zcode-workflow-commands.test platform/workflow-dependencies.test
 
       - name: Smoke test install.sh (skip bunx)
         if: matrix.os != 'windows-latest'

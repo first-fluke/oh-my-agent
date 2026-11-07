@@ -12,6 +12,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { expectLinkedTo } from "../../test/link-assertions.js";
 import { _resetInstallContext, setInstallContext } from "../install-context.js";
 import { recordManagedSkills } from "../managed-skill-ownership.js";
 import { applySkillOverlay, resolveEffectiveSkill } from "../skill-overlays.js";
@@ -226,26 +227,23 @@ describe("createVendorSymlinks (real fs)", () => {
     expect(result.created).toEqual([]);
   });
 
-  // Without symlink privilege Windows links files as hardlinks (fs-link.ts).
-  it.skipIf(process.platform === "win32")(
-    "keeps qwen workflow commands linked after retiring skill links",
-    () => {
-      setupSsotSkill(root, "oma-test");
-      const workflows = join(root, ".agents", "workflows");
-      mkdirSync(workflows, { recursive: true });
-      writeFileSync(
-        join(workflows, "demo.md"),
-        "---\nname: demo\n---\nDemo workflow",
-      );
-      createVendorWorkflowSymlinks(root, ["qwen"], ["demo"]);
+  it("keeps qwen workflow commands linked after retiring skill links", () => {
+    setupSsotSkill(root, "oma-test");
+    const workflows = join(root, ".agents", "workflows");
+    mkdirSync(workflows, { recursive: true });
+    writeFileSync(
+      join(workflows, "demo.md"),
+      "---\nname: demo\n---\nDemo workflow",
+    );
+    createVendorWorkflowSymlinks(root, ["qwen"], ["demo"]);
 
-      createVendorSymlinks(root, ["qwen"], ["oma-test"]);
+    createVendorSymlinks(root, ["qwen"], ["oma-test"]);
 
-      const command = join(root, ".qwen", "skills", "demo", "SKILL.md");
-      expect(lstatSync(command).isSymbolicLink()).toBe(true);
-      expect(readFileSync(command, "utf8")).toContain("Demo workflow");
-    },
-  );
+    const command = join(root, ".qwen", "skills", "demo", "SKILL.md");
+    // Symlink on POSIX; hardlink fallback on unprivileged Windows.
+    expectLinkedTo(command, join(workflows, "demo.md"));
+    expect(readFileSync(command, "utf8")).toContain("Demo workflow");
+  });
 
   it("uses global shared discovery while retiring HOME-scoped qwen skill links", () => {
     setupSsotSkill(root, "oma-test");
