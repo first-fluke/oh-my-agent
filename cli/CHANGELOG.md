@@ -1,5 +1,18 @@
 # Changelog
 
+## [20.37.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.37.0...cli-v20.37.1) (2026-11-07)
+
+
+### Bug Fixes
+
+* **cli:** fail closed on check errors and remove shell-dependent Windows paths ([25536c1](https://github.com/first-fluke/oh-my-agent/commit/25536c12c7d0609eb20d8b56f8f1b1c083219760))
+* **hooks:** harden Stop-gate deactivation, state claims, and Windows gate spawn ([bae23a5](https://github.com/first-fluke/oh-my-agent/commit/bae23a5ed30f3fa7bfc900093cac4c10aff4c92a))
+
+
+### Documentation
+
+* **workflows:** drop Gemini dispatch and align quota guidance with spawn enforcement ([934b8a0](https://github.com/first-fluke/oh-my-agent/commit/934b8a062bad3d2ec8777ef2dc6d183b37bd5d4c))
+
 ## [20.37.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.8...cli-v20.37.0) (2026-11-07)
 
 
