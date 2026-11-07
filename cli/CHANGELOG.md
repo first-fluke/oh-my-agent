@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.36.8](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.7...cli-v20.36.8) (2026-11-07)
+
+
+### Bug Fixes
+
+* **install:** own Windows hardlink/copy workflow links via a ledger ([5b3cbc2](https://github.com/first-fluke/oh-my-agent/commit/5b3cbc2eef9288750ab446fe4d94472110ace72d))
+
 ## [20.36.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.6...cli-v20.36.7) (2026-11-07)
 
 
