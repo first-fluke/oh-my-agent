@@ -40,14 +40,6 @@ Include diagnosis results so far + scan scope in prompt.
 Request subagent execution via model-mediated subagent request.
 Include diagnosis results and scan scope. Results returned as JSON output.
 
-#### If Gemini CLI
-
-Use the native `.gemini/agents/{name}.md` subagent when available (per `_shared/core/vendor-detection.md`); otherwise fall back to:
-
-```bash
-oma agent spawn debug "scan prompt with diagnosis context" {session_id} -w {workspace}
-```
-
 #### If Antigravity or CLI Fallback
 
 ```bash

@@ -131,9 +131,6 @@ Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when availab
 Pass each agent its task description, API contracts, and relevant context.
 If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
 
-#### If Gemini CLI and target vendor is Gemini
-Use native Gemini subagents when available, otherwise fall back to `oma agent spawn`.
-
 #### If target vendor differs from current runtime, or native dispatch is unavailable
 ```bash
 oma agent spawn backend backend-prompt.md {sessionId} --task-id {backend_task.id} -w ./backend &
@@ -189,7 +186,7 @@ Use three separate Agent tool calls (one message = parallel, isolated contexts):
 Spawn one native Codex custom agent (`.codex/agents/{agent}.toml`) **per review** when available, each with only its artifacts + guide section.
 If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
 
-#### If Gemini CLI or Antigravity or CLI Fallback
+#### If Antigravity or CLI Fallback
 ```bash
 oma agent spawn qa-agent step-6-prompt.md {sessionId} --task-id {qa_alignment_task.id} -w {workspace}
 oma agent spawn qa-agent step-7-prompt.md {sessionId} --task-id {qa_safety_task.id} -w {workspace}
@@ -204,7 +201,7 @@ oma agent spawn qa-agent step-8-prompt.md {sessionId} --task-id {qa_regression_t
 
 1. Prefer completion notifications; otherwise use bounded polling of changed reviewer `progress-*` / verdict entries.
 2. Confirm each reviewer wrote its structured verdict to memory.
-   - **Claude-native path**: each `qa-reviewer` Agent call returns synchronously with its verdict.
+   - **Claude-native path**: `qa-reviewer` calls dispatched with `run_in_background=true` report via completion notifications — collect each verdict from memory once notified (foreground calls return inline).
 3. **Aggregate** the three verdicts into `result-qa-{sessionId}.md` under `.agents/results/` (this satisfies the VERIFY artifact contract) and record the combined VERIFY result in `session-ultrawork.md`.
 
 **Wait within the shared execution deadline. Cancellation or deadline exhaustion stops review and recovery and requires bounded owned-resource shutdown.**
@@ -235,7 +232,7 @@ Evaluate [the canonical VERIFY_GATE](ultrawork/resources/phase-gates.md#verify_g
 
 > **Review Loop termination conditions** (OR, whichever fires first wins):
 > 1. Gate failure count has reached the configured maximum iterations (default: 5 total VERIFY + REFINE cycles). Do not start another cycle.
-> 2. Session cost cap exceeded: if `loadQuotaCap()` from `cli/io/session-cost.ts` returns non-null, call `checkCap(sessionId, cap)` (no cap configured → skip this condition). If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop the loop immediately. Save all current step results before stopping, then report to the user that the loop was terminated early due to quota.
+> 2. Session cost cap exceeded: `oma agent:spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save all current step results, and report to the user that the loop was terminated early due to quota.
 >
 > If neither condition is met, return to Step 5 and continue.
 
@@ -272,7 +269,7 @@ Refactor actions (after the review verdicts are collected):
 Spawn one native Codex reviewer per review (`.codex/agents/{agent}.toml`) with only its artifacts + guide section, then the native refactor agent (`.codex/agents/refactor-engineer.toml`) for Steps 9/11/13.
 If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
 
-#### If Gemini CLI or Antigravity or CLI Fallback
+#### If Antigravity or CLI Fallback
 ```bash
 oma agent spawn qa-agent step-10-prompt.md {sessionId} --task-id {qa_reuse_task.id} -w {workspace}
 oma agent spawn qa-agent step-12-prompt.md {sessionId} --task-id {qa_consistency_task.id} -w {workspace}
@@ -333,7 +330,7 @@ Evaluate [the canonical REFINE_GATE](ultrawork/resources/phase-gates.md#refine_g
 
 > **Review Loop termination conditions** (OR, whichever fires first wins):
 > 1. Total REFINE failure count has reached the configured maximum iterations (default: 5 cycles across all phases). Do not start another cycle.
-> 2. Session cost cap exceeded: if `loadQuotaCap()` from `cli/io/session-cost.ts` returns non-null, call `checkCap(sessionId, cap)` (no cap configured → skip this condition). If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop. Save current step results before stopping, then report early termination due to quota.
+> 2. Session cost cap exceeded: `oma agent:spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save current step results, and report early termination due to quota.
 >
 > If neither condition is met, re-spawn the Refactor Agent with specific issues and repeat until GATE passes.
 
@@ -357,7 +354,7 @@ Use separate Agent tool calls (one message = parallel, isolated contexts):
 Spawn one native Codex reviewer per review (`.codex/agents/{agent}.toml`) when available, each with only its artifacts + guide section.
 If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
 
-#### If Gemini CLI or Antigravity or CLI Fallback
+#### If Antigravity or CLI Fallback
 ```bash
 oma agent spawn qa-agent step-14-prompt.md {sessionId} --task-id {qa_quality_task.id} -w {workspace}
 oma agent spawn qa-agent step-15-prompt.md {sessionId} --task-id {qa_ux_task.id} -w {workspace}
@@ -372,7 +369,7 @@ oma agent spawn qa-agent step-17-prompt.md {sessionId} --task-id {qa_ship_task.i
 **Wait for all SHIP reviewers to complete final review before proceeding.**
 
 1. Confirm each reviewer wrote its structured verdict to memory.
-   - **Claude-native path**: each `qa-reviewer` Agent call returns synchronously with its verdict.
+   - **Claude-native path**: `qa-reviewer` calls dispatched with `run_in_background=true` report via completion notifications — collect each verdict from memory once notified (foreground calls return inline).
 2. **Aggregate** the verdicts into `result-qa-{sessionId}.md` under `.agents/results/` (this satisfies the SHIP artifact contract) and record the combined final result in `session-ultrawork.md`.
 
 **Wait within the shared execution deadline. Cancellation or deadline exhaustion stops SHIP review and recovery and requires bounded owned-resource shutdown.**

@@ -21,11 +21,10 @@ If identity or native dispatch is unresolved, use the configured fallback; do no
 
 | Vendor | Spawn Method | Result Handling |
 |:---|:---|:---|
-| Claude Code | `Agent` tool with `.claude/agents/{name}.md` | Synchronous return |
+| Claude Code | `Agent` tool with `.claude/agents/{name}.md` | Return value (foreground) or completion notification (`run_in_background=true`) |
 | OpenCode | Same session: native `task` tool with `subagent_type: {agent-id}` (the only path that shows as a native child task in the active OpenCode GUI/TUI). External fallback: `oma agent spawn`, which creates a temporary primary wrapper that delegates to the `mode: subagent` agent — `opencode run --agent {subagent}` alone is rejected and falls back to the default agent. | Native task return / result file poll |
 | Kilo Code | Same as OpenCode (Kilo is an OpenCode fork): native `task` tool with `subagent_type: {agent-id}` for `.kilo/agents/{name}.md`; external fallback `oma agent spawn` uses the same temporary primary wrapper (`kilo run --agent {subagent}` alone is rejected the same way). Kilo sets `KILO=1` in tool subprocesses. | Native task return / result file poll |
 | Codex CLI | Current-session native dispatch with custom agents in `.codex/agents/{name}.toml` when available, otherwise `oma agent spawn`. A role file without `model` runs on the parent's model; spawn `docs-curator` and `research-explorer` with the fastest model the spawn tool lists as available, and leave `model` unset for other roles and for files that pin one. Never invent a model name. | JSON output |
-| Gemini CLI | Current-session native dispatch with `.gemini/agents/{name}.md` when available, otherwise `oma agent spawn` | JSON output or MCP memory poll |
 | Antigravity | Prefer `oma agent spawn` unless a native role-subagent path is explicitly verified for the target vendor | MCP memory poll |
 | CLI Fallback | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
 
@@ -39,11 +38,11 @@ For each agent:
 
 Example:
 - Runtime: Claude Code
-- Resolved models: `frontend` → `anthropic/…`, `backend` → `anthropic/…`, `qa` → `google/…` (owning vendors: claude, claude, gemini)
+- Resolved models: `frontend` → `anthropic/…`, `backend` → `anthropic/…`, `qa` → `openai/…` (owning vendors: claude, claude, codex)
 - Result:
   - `frontend` -> native Claude subagent
   - `backend` -> native Claude subagent
-  - `qa` -> external Gemini spawn
+  - `qa` -> external Codex spawn via `oma agent spawn`
 
 ### OpenCode specifics
 
