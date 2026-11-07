@@ -390,7 +390,8 @@ describe("AgentMemory isolation on a shared endpoint", () => {
   it("accepts a canonical alias of the bound project and recalls its write", async () => {
     const { root, b } = projects();
     const alias = join(root, "b-alias");
-    symlinkSync(b, alias, "dir");
+    // "junction" needs no admin/Developer Mode on Windows; ignored on POSIX.
+    symlinkSync(b, alias, "junction");
     const shared = await fixture();
     const env = { AGENTMEMORY_URL: shared.url, OMA_PROFILE: "0" };
     const provider = createAgentMemoryProvider({ projectDir: b, env });

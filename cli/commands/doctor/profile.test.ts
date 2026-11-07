@@ -389,7 +389,7 @@ custom_presets:
     // Only oma-config.yaml exists — .agents/config/models.yaml must not be
     // found, so the inline `models:` block is the sole registry source.
     vi.mocked(fsMock.existsSync).mockImplementation((p) =>
-      String(p).endsWith("/.agents/oma-config.yaml"),
+      String(p).replace(/\\/g, "/").endsWith("/.agents/oma-config.yaml"),
     );
     vi.mocked(fsMock.readFileSync).mockReturnValue(CUSTOM_MODEL_YAML);
   });
@@ -481,7 +481,7 @@ custom_presets:
     // Only oma-config.yaml exists — the inline `models:` block is the sole
     // registry source.
     vi.mocked(fsMock.existsSync).mockImplementation((p) =>
-      String(p).endsWith("/.agents/oma-config.yaml"),
+      String(p).replace(/\\/g, "/").endsWith("/.agents/oma-config.yaml"),
     );
     vi.mocked(fsMock.readFileSync).mockReturnValue(OPENCODE_YAML);
     // Only the Z.AI Coding Plan credential exists (mirrors `opencode auth list`

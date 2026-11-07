@@ -97,12 +97,15 @@ jobs:
       #   - state events atomic write (fsyncSync on a writable temp-file
       #     handle — the EPERM failure only manifests on real Windows, #613)
       #   - PowerShell bootstrap package arguments (mocked bun; no install)
+      #   - doctor executable lookup (';' PATH + PATHEXT: agentmemory.exe,
+      #     oma.exe) and the doctor/profile suites' separator-agnostic fs mocks
+      #   - AgentMemory bearer auth + project-alias isolation (junction alias)
       # Existing cases mock command runners / fs. The bootstrap harness runs
       # only its CLI install block in bounded pwsh processes with mocked bun.
       - name: Test win32-only code paths
         if: matrix.os == 'windows-latest'
         timeout-minutes: 5
-        run: bun run --cwd cli test agentmemory-service.test schtasks.test schedule/port.test test-filter-run.test events.atomic-write.test state/events.test __tests__/install-ps1.test.ts
+        run: bun run --cwd cli test agentmemory-service.test schtasks.test schedule/port.test test-filter-run.test events.atomic-write.test state/events.test __tests__/install-ps1.test.ts find-executable.test agentmemory-auth.test hook-wrapper-check.test doctor/doctor.test doctor/profile.test agentmemory-isolation.test
 
       - name: Smoke test install.sh (skip bunx)
         if: matrix.os != 'windows-latest'

@@ -46,12 +46,22 @@ function makeEnv(pathDirs: string[] = []): NodeJS.ProcessEnv {
 }
 
 /**
+ * These cases exercise POSIX resolution (':'-separated PATH, execute bit), so
+ * pin the platform instead of inheriting the host's — Windows lookup is covered
+ * by cli/utils/find-executable.test.ts.
+ */
+function checkPosix(projectDir: string, env: NodeJS.ProcessEnv) {
+  return collectHookWrapperChecks(projectDir, env, "linux");
+}
+
+/**
  * Only the given absolute paths exist (plus the vendor's wrapper), and anything
- * that exists is executable.
+ * that exists is executable. Paths are compared with '/' separators because
+ * `path.join` emits '\' on a Windows host.
  */
 function onlyTheseExist(wrapperSuffix: string, paths: string[]): void {
   fsState.existsSyncFn.mockImplementation((p: unknown) => {
-    const path = String(p);
+    const path = String(p).replace(/\\/g, "/");
     return path.endsWith(wrapperSuffix) || paths.includes(path);
   });
   fsState.accessSyncFn.mockImplementation(() => {
@@ -72,7 +82,7 @@ describe("collectHookWrapperChecks", () => {
     // existsSync always returns false → no wrapper found anywhere
     fsState.existsSyncFn.mockReturnValue(false);
 
-    const checks = collectHookWrapperChecks("/project", makeEnv());
+    const checks = checkPosix("/project", makeEnv());
 
     // All vendors should be "skip" — no crash
     expect(checks.length).toBeGreaterThan(0);
@@ -84,10 +94,7 @@ describe("collectHookWrapperChecks", () => {
   it("returns 'pass' when wrapper exists and oma is on PATH", () => {
     onlyTheseExist(".claude/hooks/oma-hook.sh", ["/usr/local/bin/oma"]);
 
-    const checks = collectHookWrapperChecks(
-      "/project",
-      makeEnv(["/usr/local/bin"]),
-    );
+    const checks = checkPosix("/project", makeEnv(["/usr/local/bin"]));
 
     expect(checks.find((c) => c.vendor === "claude")?.status).toBe("pass");
   });
@@ -96,7 +103,7 @@ describe("collectHookWrapperChecks", () => {
     onlyTheseExist(".claude/hooks/oma-hook.sh", []);
 
     // Empty PATH and no oma in any well-known install dir
-    const checks = collectHookWrapperChecks("/project", makeEnv([]));
+    const checks = checkPosix("/project", makeEnv([]));
 
     const claude = checks.find((c) => c.vendor === "claude");
     expect(claude?.status).toBe("warning");
@@ -109,7 +116,7 @@ describe("collectHookWrapperChecks", () => {
       "/home/testuser/.local/share/mise/shims/oma",
     ]);
 
-    const checks = collectHookWrapperChecks("/project", makeEnv([]));
+    const checks = checkPosix("/project", makeEnv([]));
 
     expect(checks.find((c) => c.vendor === "qwen")?.status).toBe("pass");
   });
@@ -117,7 +124,7 @@ describe("collectHookWrapperChecks", () => {
   it("returns 'pass' when only $OMA_BIN points at an executable oma", () => {
     onlyTheseExist(".claude/hooks/oma-hook.sh", ["/opt/custom/oma"]);
 
-    const checks = collectHookWrapperChecks("/project", {
+    const checks = checkPosix("/project", {
       ...makeEnv([]),
       OMA_BIN: "/opt/custom/oma",
     });
@@ -127,7 +134,7 @@ describe("collectHookWrapperChecks", () => {
 
   it("excludes the antigravity vendor (no oma-hook.sh — .agents/hooks.json runs handlers directly)", () => {
     fsState.existsSyncFn.mockReturnValue(false);
-    const checks = collectHookWrapperChecks("/project", makeEnv());
+    const checks = checkPosix("/project", makeEnv());
     const agy = checks.find((c) => c.vendor === "antigravity");
     expect(agy).toBeUndefined();
   });

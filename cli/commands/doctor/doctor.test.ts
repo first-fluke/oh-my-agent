@@ -182,6 +182,14 @@ import {
   serializeReportAsJson,
 } from "./report.js";
 
+/**
+ * fs mocks below match on '/'-separated suffixes; `path.join` emits '\' on a
+ * Windows host, so normalize before comparing.
+ */
+function slash(p: unknown): string {
+  return String(p).replace(/\\/g, "/");
+}
+
 // Settle all pending procs synchronously
 function settleProcs(exitCode: number, stdoutData?: string): void {
   for (const proc of spawnState.lastProcs) {
@@ -322,10 +330,10 @@ describe("vendor doc OMA block checks", () => {
 
   it("requires AGENTS.md when codex is installed and counts missing OMA block as issue", async () => {
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith("AGENTS.md"),
+      slash(p).endsWith("AGENTS.md"),
     );
     vi.mocked(readFileSync).mockImplementation((p) =>
-      String(p).endsWith("AGENTS.md") ? "# user notes\n" : "",
+      slash(p).endsWith("AGENTS.md") ? "# user notes\n" : "",
     );
 
     const reportPromise = collectDoctorReport();
@@ -368,10 +376,10 @@ describe("vendor doc OMA block checks", () => {
 
   it("flags a CLAUDE.md without @AGENTS.md import as shadowing AGENTS.md", async () => {
     vi.mocked(existsSync).mockImplementation(
-      (p) => String(p).endsWith("AGENTS.md") || String(p).endsWith("CLAUDE.md"),
+      (p) => slash(p).endsWith("AGENTS.md") || slash(p).endsWith("CLAUDE.md"),
     );
     vi.mocked(readFileSync).mockImplementation((p) =>
-      String(p).endsWith("AGENTS.md")
+      slash(p).endsWith("AGENTS.md")
         ? "<!-- OMA:START -->\nblock\n<!-- OMA:END -->\n"
         : "# user notes\n",
     );
@@ -397,7 +405,7 @@ describe("serena binary doctor check", () => {
     spawnState.execFileSyncFn.mockReturnValue("");
     // Mark the project as Serena-activated so a missing binary counts as an issue.
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith(".serena/project.yml"),
+      slash(p).endsWith(".serena/project.yml"),
     );
     vi.mocked(readFileSync).mockReturnValue("");
   });
@@ -433,7 +441,7 @@ describe("serena binary doctor check", () => {
 
   it("does not infer Serena activation from the OMA coordination store", async () => {
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith(".agents/state/memories"),
+      slash(p).endsWith(".agents/state/memories"),
     );
 
     const reportPromise = collectDoctorReport();
@@ -481,7 +489,7 @@ describe("AgentMemory doctor checks", () => {
     ];
 
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith("observe.jsonl"),
+      slash(p).endsWith("observe.jsonl"),
     );
     vi.mocked(readMemoryRetryQueue).mockReturnValue(
       retryLines.map((line, offset) => ({
@@ -518,8 +526,9 @@ describe("AgentMemory doctor checks", () => {
   it("reports missing AgentMemory binary when a service file is installed", async () => {
     vi.mocked(existsSync).mockImplementation(
       (p) =>
-        String(p).endsWith("dev.oma.agentmemory.plist") ||
-        String(p).endsWith("oma-agentmemory.service"),
+        slash(p).endsWith("dev.oma.agentmemory.plist") ||
+        slash(p).endsWith("oma-agentmemory.service") ||
+        slash(p).endsWith("oma-agentmemory.task.xml"),
     );
 
     const reportPromise = collectDoctorReport();
@@ -613,7 +622,7 @@ describe("state and hook doctor checks", () => {
 
   it("reports gitignore, corrupt meta, invalid event lines, and missing active state", async () => {
     vi.mocked(existsSync).mockImplementation((p) => {
-      const path = String(p);
+      const path = slash(p);
       return (
         path.endsWith(".agents/state") ||
         path.endsWith(".agents/state/sessions") ||
@@ -624,14 +633,14 @@ describe("state and hook doctor checks", () => {
       );
     });
     vi.mocked(readdirSync).mockImplementation((p) => {
-      const path = String(p);
+      const path = slash(p);
       if (path.endsWith(".agents/state/sessions")) {
         return [{ name: "sid-1", isDirectory: () => true }] as never;
       }
       return [] as never;
     });
     vi.mocked(readFileSync).mockImplementation((p) => {
-      const path = String(p);
+      const path = slash(p);
       if (path.endsWith("_index.json")) {
         return JSON.stringify({
           schemaVersion: 1,
@@ -681,10 +690,10 @@ describe("state and hook doctor checks", () => {
 
   it("reports invalid installed prompt hook order", async () => {
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith(".codex/hooks.json"),
+      slash(p).endsWith(".codex/hooks.json"),
     );
     vi.mocked(readFileSync).mockImplementation((p) => {
-      if (!String(p).endsWith(".codex/hooks.json")) return "";
+      if (!slash(p).endsWith(".codex/hooks.json")) return "";
       return JSON.stringify({
         hooks: {
           UserPromptSubmit: [
@@ -725,10 +734,10 @@ describe("state and hook doctor checks", () => {
       timeout: 5,
     });
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith(".agents/hooks.json"),
+      slash(p).endsWith(".agents/hooks.json"),
     );
     vi.mocked(readFileSync).mockImplementation((p) => {
-      if (!String(p).endsWith(".agents/hooks.json")) return "";
+      if (!slash(p).endsWith(".agents/hooks.json")) return "";
       return JSON.stringify({
         "oma-keyword-detector": {
           PreInvocation: [handler("keyword-detector.ts")],
@@ -783,11 +792,11 @@ describe("computeEvalCoverage", () => {
   it("returns 0/N when eval root exists but no skill dirs have enough fixtures", () => {
     // evalRoot exists, skill dir "oma-test" has 4 yaml files (< MIN_TASKS=5)
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith(".agents/eval"),
+      slash(p).endsWith(".agents/eval"),
     );
     vi.mocked(readdirSync).mockImplementation((p) => {
-      if (String(p).endsWith(".agents/eval")) return ["oma-test"] as never;
-      if (String(p).endsWith("oma-test"))
+      if (slash(p).endsWith(".agents/eval")) return ["oma-test"] as never;
+      if (slash(p).endsWith("oma-test"))
         return [
           "task1.yaml",
           "task2.yaml",
@@ -805,10 +814,10 @@ describe("computeEvalCoverage", () => {
     // 3 skill dirs: "skill-a" has 5 yaml (passes), "skill-b" has 3 (fails),
     // "skill-c" has 5 (passes). Plus "_shared" is underscore-prefixed and skipped.
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith(".agents/eval"),
+      slash(p).endsWith(".agents/eval"),
     );
     vi.mocked(readdirSync).mockImplementation((p) => {
-      const path = String(p);
+      const path = slash(p);
       if (path.endsWith(".agents/eval"))
         return ["_shared", "skill-a", "skill-b", "skill-c"] as never;
       if (path.endsWith("skill-a"))
@@ -833,10 +842,10 @@ describe("computeEvalCoverage", () => {
 
   it("ignores _rollouts and non-yaml files when counting fixture tasks", () => {
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith(".agents/eval"),
+      slash(p).endsWith(".agents/eval"),
     );
     vi.mocked(readdirSync).mockImplementation((p) => {
-      const path = String(p);
+      const path = slash(p);
       if (path.endsWith(".agents/eval")) return ["skill-x"] as never;
       if (path.endsWith("skill-x"))
         return [
@@ -951,7 +960,7 @@ describe("install-root resolution (#658)", () => {
     // resolver has its own project-then-HOME fallback).
     const installProbes = vi
       .mocked(existsSync)
-      .mock.calls.map((c) => String(c[0]))
+      .mock.calls.map((c) => slash(c[0]))
       .filter(
         (probe) =>
           !probe.includes("_version.json") &&
