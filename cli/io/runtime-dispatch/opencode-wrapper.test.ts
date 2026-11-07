@@ -51,9 +51,12 @@ describe("opencode-wrapper", () => {
 
       // Directory is created before the write.
       expect(mockFsFunctions.mkdirSync).toHaveBeenCalledWith(
-        expect.stringContaining(n("/project/.opencode/agents")),
+        expect.any(String),
         { recursive: true },
       );
+      expect(
+        n(mockFsFunctions.mkdirSync.mock.calls[0]?.[0] as string),
+      ).toContain("/project/.opencode/agents");
 
       const [, content] = mockFsFunctions.writeFileSync.mock.calls[0] as [
         string,

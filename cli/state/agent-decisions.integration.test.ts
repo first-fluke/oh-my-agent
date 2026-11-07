@@ -8,7 +8,15 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from "vitest";
 import { testTask } from "./__fixtures__/task-contract.js";
 import * as decisionStore from "./agent-decisions.js";
 import {
@@ -23,6 +31,7 @@ import {
 } from "./agent-results.js";
 import * as eventStore from "./events.js";
 import { emitEvent, eventsPath, readEvents } from "./events.js";
+import * as memoryDelivery from "./memory-delivery.js";
 import { runtimeStateDir } from "./project-runtime.js";
 
 const required = {
@@ -45,10 +54,16 @@ const claim = {
 
 describe("agent decision completion evidence", () => {
   let root: string;
+  let delivering: MockInstance<typeof memoryDelivery.deliverEventMemory>;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "oma-agent-decisions-"));
+    delivering = vi.spyOn(memoryDelivery, "deliverEventMemory");
   });
-  afterEach(() => {
+  afterEach(async () => {
+    // Decision memory is delivered fire-and-forget; settle it so its SQLite
+    // drain lock is closed before the state home is removed (Windows cannot
+    // delete an open file).
+    await Promise.allSettled(delivering.mock.results.map((r) => r.value));
     vi.restoreAllMocks();
     rmSync(root, { recursive: true, force: true });
   });

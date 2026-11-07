@@ -29,14 +29,18 @@ describe("runProfileCommand", () => {
     ).toBe(0);
   });
 
-  it("maps child termination signals to conventional exit codes", () => {
-    expect(
-      runProfileCommand("1", process.execPath, [
-        "-e",
-        "process.kill(process.pid, 'SIGTERM')",
-      ]),
-    ).toBe(143);
-  });
+  // POSIX-only: Windows has no termination signals; a self-SIGTERM is a plain exit.
+  it.skipIf(process.platform === "win32")(
+    "maps child termination signals to conventional exit codes",
+    () => {
+      expect(
+        runProfileCommand("1", process.execPath, [
+          "-e",
+          "process.kill(process.pid, 'SIGTERM')",
+        ]),
+      ).toBe(143);
+    },
+  );
 
   it("requires an existing profile", () => {
     expect(() => runProfileCommand("3", process.execPath, [])).toThrow(

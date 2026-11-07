@@ -99,7 +99,9 @@ function runRegression(name: string) {
   expect(result.status, result.stderr || result.stdout).toBe(0);
 }
 
-describe("skill recipe helpers", () => {
+// POSIX-only: needs `python3`, file names containing newline/tab (invalid on
+// NTFS), and a `#!` script made executable with chmod.
+describe.skipIf(process.platform === "win32")("skill recipe helpers", () => {
   it("includes all apps for shared, root, and unknown changes", () => {
     runRegression("test_shared_unknown_and_app_paths");
   });

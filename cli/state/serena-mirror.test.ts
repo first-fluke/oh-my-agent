@@ -1,10 +1,10 @@
 import {
-  chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -268,17 +268,14 @@ describe("session-summary", () => {
     });
 
     it("emits a warning event and never throws when both paths fail", async () => {
-      // Make the canonical coordination store read-only so the write fails.
+      // Occupy the canonical coordination store path with a regular file so
+      // the write fails on every platform (directory chmod is a no-op on
+      // Windows and is bypassed by root).
       const memoriesDir = join(projectDir, ".agents", "state", "memories");
-      mkdirSync(memoriesDir, { recursive: true });
-      chmodSync(memoriesDir, 0o400);
+      mkdirSync(join(memoriesDir, ".."), { recursive: true });
+      writeFileSync(memoriesDir, "");
 
-      let result: Awaited<ReturnType<typeof exportSessionSummary>>;
-      try {
-        result = await exportSessionSummary({ projectDir, sid });
-      } finally {
-        chmodSync(memoriesDir, 0o700);
-      }
+      const result = await exportSessionSummary({ projectDir, sid });
 
       expect(result.written).toBe(false);
       expect(result.method).toBe("none");

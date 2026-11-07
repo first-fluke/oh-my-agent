@@ -120,7 +120,10 @@ describe("ensureClaudeWorkspaceTrust", () => {
     const root = makeRoot();
     writeConfig(root, { projects: {} });
     const originalHome = process.env.HOME;
+    // os.homedir() reads USERPROFILE on Windows.
+    const originalUserProfile = process.env.USERPROFILE;
     process.env.HOME = root;
+    process.env.USERPROFILE = root;
     try {
       const result = ensureClaudeWorkspaceTrust("/work/my-app");
       expect(result.changed).toBe(true);
@@ -131,6 +134,8 @@ describe("ensureClaudeWorkspaceTrust", () => {
     } finally {
       if (originalHome === undefined) delete process.env.HOME;
       else process.env.HOME = originalHome;
+      if (originalUserProfile === undefined) delete process.env.USERPROFILE;
+      else process.env.USERPROFILE = originalUserProfile;
     }
   });
 });

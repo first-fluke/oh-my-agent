@@ -207,7 +207,8 @@ describe("installed skill bundle snapshot", () => {
     "resources/AGENTS.md",
     "resources/claude.md",
     "resources/private.key",
-    "resources/bad\nname.md",
+    // Windows cannot create file names containing control characters.
+    ...(process.platform === "win32" ? [] : ["resources/bad\nname.md"]),
   ])("rejects credential/control/unsafe file %j", (file) => {
     const root = project();
     write(root, `.agents/skills/oma-example/${file}`, "Not copied.");
@@ -238,7 +239,7 @@ describe("installed skill bundle snapshot", () => {
       const root = project();
       const file = path.join(root, ".agents/skills", target);
       rmSync(file, { recursive: true, force: true });
-      symlinkSync(directory(), file);
+      symlinkSync(directory(), file, "junction");
       expect(() => loadInstalledMatrixBundle(root, ["oma-example"])).toThrow();
     }
   });
@@ -335,7 +336,7 @@ describe("installed bundle delivery", () => {
         matrixFixtureHash(prepared.protectedFiles ?? {}),
       );
       expect(prepared.prompt).toContain(
-        path.join(prepared.skillRoot, "SKILL.md"),
+        JSON.stringify(path.join(prepared.skillRoot, "SKILL.md")),
       );
       expect(prepared.prompt).toContain("read-access audit only");
       if (delivery === "injected")
@@ -362,7 +363,7 @@ describe("installed bundle delivery", () => {
     );
     expect(prepared.coverageComplete).toBe(false);
     expect(prepared.prompt).toContain(
-      path.join(prepared.skillRoot, "stack/snippets.md"),
+      JSON.stringify(path.join(prepared.skillRoot, "stack/snippets.md")),
     );
     writeFileSync(
       path.join(prepared.protectedRoot ?? "", "_shared/core/unrelated.md"),

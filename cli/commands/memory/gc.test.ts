@@ -7,7 +7,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { checkCap, recordUsage } from "../../io/session-cost.js";
 import {
@@ -118,7 +118,7 @@ describe("garbageCollectLocalState — Serena", () => {
       nowMs: NOW,
     });
 
-    const pruned = r.prunedSerena.map((p) => p.split("/").pop());
+    const pruned = r.prunedSerena.map((p) => basename(p));
     expect(pruned.sort()).toEqual([
       "orchestrator-session-x.md",
       "progress-old.md",
@@ -138,7 +138,7 @@ describe("garbageCollectLocalState — Serena", () => {
       maxAgeDays: 0,
       nowMs: NOW,
     });
-    expect(r.prunedSerena.map((p) => p.split("/").pop())).toEqual([
+    expect(r.prunedSerena.map((p) => basename(p))).toEqual([
       "session-cost-x.md",
     ]);
     expect(existsSync(join(serenaDir(), "progress-ancient.md"))).toBe(true);

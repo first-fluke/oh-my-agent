@@ -215,23 +215,27 @@ describe("installed bundle read-audit grading", () => {
     );
   });
 
-  it("rejects deleted or symlink-replaced shared files", () => {
-    const prepared = installed();
-    const shared = join(prepared.skillRoot, "../_shared/core/policy.md");
-    rmSync(shared);
-    expect(check(prepared, completed(prepared), "integrity")?.status).toBe(
-      "fail",
-    );
-    const target = join(prepared.workspace, "outside-policy.md");
-    writeFileSync(
-      target,
-      prepared.testCase.files["../_shared/core/policy.md"] ?? "",
-    );
-    symlinkSync(target, shared);
-    expect(check(prepared, completed(prepared), "integrity")?.status).toBe(
-      "fail",
-    );
-  });
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "rejects deleted or symlink-replaced shared files",
+    () => {
+      const prepared = installed();
+      const shared = join(prepared.skillRoot, "../_shared/core/policy.md");
+      rmSync(shared);
+      expect(check(prepared, completed(prepared), "integrity")?.status).toBe(
+        "fail",
+      );
+      const target = join(prepared.workspace, "outside-policy.md");
+      writeFileSync(
+        target,
+        prepared.testCase.files["../_shared/core/policy.md"] ?? "",
+      );
+      symlinkSync(target, shared);
+      expect(check(prepared, completed(prepared), "integrity")?.status).toBe(
+        "fail",
+      );
+    },
+  );
 
   it("cannot pass integrity without the protected bundle snapshot", () => {
     const prepared = installed();

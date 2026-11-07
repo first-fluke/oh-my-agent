@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import * as fs from "node:fs";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   applyWin32LongPathPrefix,
@@ -227,9 +228,12 @@ describe("createLink", () => {
     });
 
     it("allows target whose realpath is inside ssotBase", () => {
+      // realpath returns host-native separators; createLink compares with `sep`.
       realpathSync.mockImplementation((p: string) => {
-        if (p === "/proj/.agents/skills/foo") return "/proj/.agents/skills/foo";
-        if (p === "/proj/.agents/skills") return "/proj/.agents/skills";
+        if (p === "/proj/.agents/skills/foo")
+          return join("/proj", ".agents", "skills", "foo");
+        if (p === "/proj/.agents/skills")
+          return join("/proj", ".agents", "skills");
         return p;
       });
 

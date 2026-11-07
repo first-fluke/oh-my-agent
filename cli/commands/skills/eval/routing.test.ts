@@ -185,7 +185,9 @@ describe("measure, summarize, record, replay", () => {
       workspace: taskDir,
     });
     const path = writeRoutingRecord(taskDir, "skill-x", hash, entries);
-    expect(path).toMatch(/_rollouts\/[a-f0-9]{16}\.routing\.json$/);
+    expect(path.replace(/\\/g, "/")).toMatch(
+      /_rollouts\/[a-f0-9]{16}\.routing\.json$/,
+    );
 
     const same = loadRoutingRecord(taskDir, "skill-x", hash, tasks);
     expect(same.status).toBe("measured");

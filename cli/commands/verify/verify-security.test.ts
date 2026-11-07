@@ -36,8 +36,9 @@ describe("runManifestCmd (no shell interpretation of stack.yaml cmd)", () => {
     // execFileSync rewrite dropped stderr, so a real failure produced empty
     // output and the syntax check reported a false "pass". Both streams and
     // the failed exit must remain available to the checker.
+    // Quote execPath: it may contain spaces (C:\Program Files\nodejs\node.exe).
     const out = runManifestCmd(
-      `${process.execPath} -e "process.stderr.write('SYNTAX_ERR');process.exit(1)"`,
+      `"${process.execPath}" -e "process.stderr.write('SYNTAX_ERR');process.exit(1)"`,
       workspace,
     );
     expect(out.stderr).toContain("SYNTAX_ERR");

@@ -321,7 +321,7 @@ describe("real-host smoke control logic (fake CLI responses; no local host insta
     expect(receipt.secondSessionSkippedInstall).toBe(true);
     const shim = readFileSync(join(f.output, "cli-bin/oma"), "utf8");
     expect(shim).toContain("exec bun --preload");
-    expect(shim).toContain("cli/cli.ts");
+    expect(shim).toContain(join("cli", "cli.ts"));
   });
 
   it("does not accept a fail-open bootstrap without installed state", () => {

@@ -124,8 +124,10 @@ describe("ensureCoAuthorGuardHook", () => {
 
     const hook = join(repo, OMA_HOOKS_DIR, "commit-msg");
     expect(existsSync(hook)).toBe(true);
-    // Execute bits: a hook without them is present but inert.
-    expect(statSync(hook).mode & 0o111).not.toBe(0);
+    // Execute bits: a hook without them is present but inert. Windows has no
+    // POSIX mode bits (git for Windows runs hooks regardless).
+    if (process.platform !== "win32")
+      expect(statSync(hook).mode & 0o111).not.toBe(0);
 
     const allow = readFileSync(
       join(repo, OMA_HOOKS_DIR, CO_AUTHORS_ALLOW_FILE),
@@ -250,27 +252,31 @@ describe("ensureCoAuthorGuardHook", () => {
   // A hand-installed hook is often a symlink into the repo (`ln -s
   // ../../scripts/pre-push .git/hooks/pre-push`); git follows it, so it is
   // just as active as a regular file and must not be shadowed either.
-  it("treats a symlinked .git/hooks entry as an active hook", () => {
-    const repo = makeRepo();
-    writeConfig(repo, { enabled: true, email: "bot@example.com" });
-    const marker = join(repo, "LINKED_PRE_COMMIT_RAN");
-    const script = join(repo, "pre-commit.sh");
-    writeFileSync(script, `#!/bin/sh\ntouch "${marker}"\n`);
-    chmodSync(script, 0o755);
-    symlinkSync(script, join(repo, ".git", "hooks", "pre-commit"));
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "treats a symlinked .git/hooks entry as an active hook",
+    () => {
+      const repo = makeRepo();
+      writeConfig(repo, { enabled: true, email: "bot@example.com" });
+      const marker = join(repo, "LINKED_PRE_COMMIT_RAN");
+      const script = join(repo, "pre-commit.sh");
+      writeFileSync(script, `#!/bin/sh\ntouch "${marker}"\n`);
+      chmodSync(script, 0o755);
+      symlinkSync(script, join(repo, ".git", "hooks", "pre-commit"));
 
-    const result = ensureCoAuthorGuardHook(repo);
+      const result = ensureCoAuthorGuardHook(repo);
 
-    expect(result.warning).toContain("pre-commit");
-    const configured = spawnSync("git", ["config", "core.hooksPath"], {
-      cwd: repo,
-      encoding: "utf-8",
-    });
-    expect(configured.status).not.toBe(0);
+      expect(result.warning).toContain("pre-commit");
+      const configured = spawnSync("git", ["config", "core.hooksPath"], {
+        cwd: repo,
+        encoding: "utf-8",
+      });
+      expect(configured.status).not.toBe(0);
 
-    expect(tryCommit(repo, "m.txt", "chore: still hooked").status).toBe(0);
-    expect(existsSync(marker)).toBe(true);
-  });
+      expect(tryCommit(repo, "m.txt", "chore: still hooked").status).toBe(0);
+      expect(existsSync(marker)).toBe(true);
+    },
+  );
 });
 
 describe("the installed hook, enforced by git", () => {

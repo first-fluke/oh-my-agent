@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -25,7 +26,13 @@ import { isOpencodeAuthenticated } from "./auth.js";
 // Expected auth.json path: /home/testuser/.local/share/opencode/auth.json
 // ---------------------------------------------------------------------------
 
-const AUTH_JSON_PATH = "/home/testuser/.local/share/opencode/auth.json";
+const AUTH_JSON_PATH = join(
+  "/home/testuser",
+  ".local",
+  "share",
+  "opencode",
+  "auth.json",
+);
 
 describe("isOpencodeAuthenticated", () => {
   beforeEach(() => {

@@ -45,7 +45,7 @@ function mockWorkspace(planJson: string, resultMd: string | null): void {
         : ["plan-20260806-120000.json"],
   );
   mockFsFunctions.readFileSync.mockImplementation((file: string) =>
-    String(file).endsWith("/run.json")
+    String(file).replace(/\\/g, "/").endsWith("/run.json")
       ? JSON.stringify({
           runId: "run",
           taskId: "task-1",

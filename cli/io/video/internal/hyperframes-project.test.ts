@@ -106,11 +106,13 @@ describe("HyperFrames project", () => {
   it("rejects remote, absolute, traversal and symlink assets outside the run", () => {
     const outside = join(root, "private.wav");
     writeFileSync(outside, "private");
-    symlinkSync(outside, join(runDir, "linked.wav"));
+    // File symlinks need elevated privileges on Windows.
+    const symlinks = process.platform !== "win32";
+    if (symlinks) symlinkSync(outside, join(runDir, "linked.wav"));
     for (const narration of [
       outside,
       "../private.wav",
-      "linked.wav",
+      ...(symlinks ? ["linked.wav"] : []),
       "https://example.com/a.wav",
     ]) {
       const input = {

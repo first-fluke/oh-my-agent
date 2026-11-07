@@ -74,7 +74,9 @@ describe("cleanup safety", () => {
     expect(fs.existsSync(log)).toBe(true);
   });
 
-  it.each([false, true])(
+  // POSIX-only: mocks `ps` identity output and asserts SIGTERM reaping; Windows
+  // reads identity through CIM and stops processes with taskkill instead.
+  it.skipIf(process.platform === "win32").each([false, true])(
     "reaps a verified orphan and protects a reused PID (reused=%s)",
     async (reused) => {
       const pid = 12345;

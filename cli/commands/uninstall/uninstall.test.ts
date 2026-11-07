@@ -81,7 +81,11 @@ function seedOmaLayout(root: string): void {
   // Vendor symlink (oma-owned)
   const claudeSkillsDir = path.join(root, ".claude", "skills");
   fs.mkdirSync(claudeSkillsDir, { recursive: true });
-  fs.symlinkSync(skillDir, path.join(claudeSkillsDir, "oma-frontend"));
+  fs.symlinkSync(
+    skillDir,
+    path.join(claudeSkillsDir, "oma-frontend"),
+    "junction",
+  );
 
   // User-authored real dir (not a symlink)
   fs.mkdirSync(path.join(claudeSkillsDir, "my-custom"), { recursive: true });
@@ -105,38 +109,44 @@ afterEach(() => {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("buildRemovalPlan", () => {
-  it("global removal uses native HOME projections while preserving unrelated source and user files", async () => {
-    const root = makeTmpDir();
-    mockHome = makeTmpDir();
-    setInstallContext({ installRoot: root, mode: "global" });
-    seedOmaLayout(root);
-    const skill = path.join(root, ".agents", "skills", "oma-frontend");
-    const common = path.join(mockHome, ".agents", "skills", "oma-frontend");
-    const vendor = path.join(mockHome, ".codex", "skills", "oma-frontend");
-    for (const link of [common, vendor]) {
-      fs.mkdirSync(path.dirname(link), { recursive: true });
-      fs.symlinkSync(skill, link, "dir");
-    }
-    const user = path.join(mockHome, ".agents", "skills", "user-skill");
-    fs.mkdirSync(user);
-    fs.writeFileSync(path.join(user, "SKILL.md"), "user content");
-    const commands = path.join(mockHome, ".zcode", "commands");
-    fs.mkdirSync(commands, { recursive: true });
-    const workflow = path.join(root, ".agents", "workflows", "debug.md");
-    fs.writeFileSync(workflow, "# Debug");
-    const command = path.join(commands, "debug.md");
-    fs.symlinkSync(workflow, command);
-    const planned = buildRemovalPlan(root).omaOwned.map((entry) => entry.path);
-    expect(planned).toContain(common);
-    expect(planned).toContain(vendor);
-    expect(planned).toContain(command);
-    await uninstall({ yes: true });
-    expect(fs.existsSync(common)).toBe(false);
-    expect(fs.existsSync(vendor)).toBe(false);
-    expect(fs.readFileSync(path.join(user, "SKILL.md"), "utf8")).toBe(
-      "user content",
-    );
-  });
+  // Workflow file symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "global removal uses native HOME projections while preserving unrelated source and user files",
+    async () => {
+      const root = makeTmpDir();
+      mockHome = makeTmpDir();
+      setInstallContext({ installRoot: root, mode: "global" });
+      seedOmaLayout(root);
+      const skill = path.join(root, ".agents", "skills", "oma-frontend");
+      const common = path.join(mockHome, ".agents", "skills", "oma-frontend");
+      const vendor = path.join(mockHome, ".codex", "skills", "oma-frontend");
+      for (const link of [common, vendor]) {
+        fs.mkdirSync(path.dirname(link), { recursive: true });
+        fs.symlinkSync(skill, link, "dir");
+      }
+      const user = path.join(mockHome, ".agents", "skills", "user-skill");
+      fs.mkdirSync(user);
+      fs.writeFileSync(path.join(user, "SKILL.md"), "user content");
+      const commands = path.join(mockHome, ".zcode", "commands");
+      fs.mkdirSync(commands, { recursive: true });
+      const workflow = path.join(root, ".agents", "workflows", "debug.md");
+      fs.writeFileSync(workflow, "# Debug");
+      const command = path.join(commands, "debug.md");
+      fs.symlinkSync(workflow, command);
+      const planned = buildRemovalPlan(root).omaOwned.map(
+        (entry) => entry.path,
+      );
+      expect(planned).toContain(common);
+      expect(planned).toContain(vendor);
+      expect(planned).toContain(command);
+      await uninstall({ yes: true });
+      expect(fs.existsSync(common)).toBe(false);
+      expect(fs.existsSync(vendor)).toBe(false);
+      expect(fs.readFileSync(path.join(user, "SKILL.md"), "utf8")).toBe(
+        "user content",
+      );
+    },
+  );
   it("preserves unregistered SSOT skills and their vendor links", async () => {
     const root = makeTmpDir();
     setInstallContext({ installRoot: root, mode: "project" });
@@ -145,7 +155,7 @@ describe("buildRemovalPlan", () => {
     fs.mkdirSync(userSkill, { recursive: true });
     fs.writeFileSync(path.join(userSkill, "SKILL.md"), "# Third-party skill\n");
     const vendorLink = path.join(root, ".claude/skills/third-party-skill");
-    fs.symlinkSync(userSkill, vendorLink);
+    fs.symlinkSync(userSkill, vendorLink, "junction");
 
     await uninstall({ yes: true });
 
@@ -241,58 +251,66 @@ describe("buildRemovalPlan", () => {
 });
 
 describe("uninstall (actual removal with --yes)", () => {
-  it("removes workflow links and preserves user files in their directories", async () => {
-    const root = makeTmpDir();
-    setInstallContext({ installRoot: root, mode: "project" });
-    seedOmaLayout(root);
-    const workflow = path.join(root, ".agents", "workflows", "debug.md");
-    fs.writeFileSync(workflow, "# Debug\n");
-    const workflowDir = path.join(root, ".claude", "skills", "debug");
-    fs.mkdirSync(path.join(workflowDir, "scripts"), { recursive: true });
-    const link = path.join(workflowDir, "SKILL.md");
-    fs.symlinkSync(workflow, link);
-    const note = path.join(workflowDir, "notes.md");
-    const script = path.join(workflowDir, "scripts", "diagnose.sh");
-    fs.writeFileSync(note, "My debugging notes.\n");
-    fs.writeFileSync(script, "echo diagnose\n");
+  // Workflow file symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "removes workflow links and preserves user files in their directories",
+    async () => {
+      const root = makeTmpDir();
+      setInstallContext({ installRoot: root, mode: "project" });
+      seedOmaLayout(root);
+      const workflow = path.join(root, ".agents", "workflows", "debug.md");
+      fs.writeFileSync(workflow, "# Debug\n");
+      const workflowDir = path.join(root, ".claude", "skills", "debug");
+      fs.mkdirSync(path.join(workflowDir, "scripts"), { recursive: true });
+      const link = path.join(workflowDir, "SKILL.md");
+      fs.symlinkSync(workflow, link);
+      const note = path.join(workflowDir, "notes.md");
+      const script = path.join(workflowDir, "scripts", "diagnose.sh");
+      fs.writeFileSync(note, "My debugging notes.\n");
+      fs.writeFileSync(script, "echo diagnose\n");
 
-    const { omaOwned, userOwned } = buildRemovalPlan(root);
-    expect(omaOwned).toContainEqual(
-      expect.objectContaining({ path: link, kind: "symlink" }),
-    );
-    expect(omaOwned.map((entry) => entry.path)).not.toContain(workflowDir);
-    expect(userOwned.map((entry) => entry.path)).toContain(workflowDir);
+      const { omaOwned, userOwned } = buildRemovalPlan(root);
+      expect(omaOwned).toContainEqual(
+        expect.objectContaining({ path: link, kind: "symlink" }),
+      );
+      expect(omaOwned.map((entry) => entry.path)).not.toContain(workflowDir);
+      expect(userOwned.map((entry) => entry.path)).toContain(workflowDir);
 
-    await uninstall({ yes: true });
+      await uninstall({ yes: true });
 
-    expect(() => fs.lstatSync(link)).toThrow();
-    expect(fs.readFileSync(note, "utf-8")).toBe("My debugging notes.\n");
-    expect(fs.readFileSync(script, "utf-8")).toBe("echo diagnose\n");
-  });
+      expect(() => fs.lstatSync(link)).toThrow();
+      expect(fs.readFileSync(note, "utf-8")).toBe("My debugging notes.\n");
+      expect(fs.readFileSync(script, "utf-8")).toBe("echo diagnose\n");
+    },
+  );
 
-  it("removes workflow directories after their only link is removed", async () => {
-    const root = makeTmpDir();
-    setInstallContext({ installRoot: root, mode: "project" });
-    seedOmaLayout(root);
-    const workflow = path.join(root, ".agents", "workflows", "debug.md");
-    fs.writeFileSync(workflow, "# Debug\n");
-    const workflowDir = path.join(root, ".claude", "skills", "debug");
-    fs.mkdirSync(workflowDir, { recursive: true });
-    fs.symlinkSync(workflow, path.join(workflowDir, "SKILL.md"));
+  // Workflow file symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "removes workflow directories after their only link is removed",
+    async () => {
+      const root = makeTmpDir();
+      setInstallContext({ installRoot: root, mode: "project" });
+      seedOmaLayout(root);
+      const workflow = path.join(root, ".agents", "workflows", "debug.md");
+      fs.writeFileSync(workflow, "# Debug\n");
+      const workflowDir = path.join(root, ".claude", "skills", "debug");
+      fs.mkdirSync(workflowDir, { recursive: true });
+      fs.symlinkSync(workflow, path.join(workflowDir, "SKILL.md"));
 
-    const { omaOwned } = buildRemovalPlan(root);
-    expect(omaOwned).toContainEqual(
-      expect.objectContaining({
-        path: workflowDir,
-        kind: "dir",
-        removeIfEmpty: true,
-      }),
-    );
+      const { omaOwned } = buildRemovalPlan(root);
+      expect(omaOwned).toContainEqual(
+        expect.objectContaining({
+          path: workflowDir,
+          kind: "dir",
+          removeIfEmpty: true,
+        }),
+      );
 
-    await uninstall({ yes: true });
+      await uninstall({ yes: true });
 
-    expect(fs.existsSync(workflowDir)).toBe(false);
-  });
+      expect(fs.existsSync(workflowDir)).toBe(false);
+    },
+  );
 
   it("removes oma-owned entries and preserves user-owned files", async () => {
     const root = makeTmpDir();
@@ -550,7 +568,11 @@ describe("home-consent vendor symlinks", () => {
     const hermesDir = path.join(mockHome, ".hermes", "skills", "oma");
     fs.mkdirSync(hermesDir, { recursive: true });
     const linkPath = path.join(hermesDir, name);
-    fs.symlinkSync(path.join(root, ".agents", "skills", name), linkPath);
+    fs.symlinkSync(
+      path.join(root, ".agents", "skills", name),
+      linkPath,
+      "junction",
+    );
     return linkPath;
   }
 
@@ -582,7 +604,7 @@ describe("home-consent vendor symlinks", () => {
     const foreignSkill = path.join(otherRoot, ".agents", "skills", "oma-qa");
     fs.mkdirSync(foreignSkill, { recursive: true });
     const foreignLink = path.join(hermesDir, "oma-qa");
-    fs.symlinkSync(foreignSkill, foreignLink);
+    fs.symlinkSync(foreignSkill, foreignLink, "junction");
 
     const { omaOwned, userOwned } = buildRemovalPlan(root);
 
@@ -607,7 +629,7 @@ describe("home-consent vendor symlinks", () => {
     const foreignSkill = path.join(otherRoot, ".agents", "skills", "oma-qa");
     fs.mkdirSync(foreignSkill, { recursive: true });
     const foreignLink = path.join(hermesDir, "oma-qa");
-    fs.symlinkSync(foreignSkill, foreignLink);
+    fs.symlinkSync(foreignSkill, foreignLink, "junction");
 
     await uninstall({ yes: true });
 
@@ -626,6 +648,7 @@ describe("home-consent vendor symlinks", () => {
     fs.symlinkSync(
       path.join(root, ".agents", "skills", "oma-frontend"),
       danglingLink,
+      "junction",
     );
 
     const { omaOwned, userOwned } = buildRemovalPlan(root);

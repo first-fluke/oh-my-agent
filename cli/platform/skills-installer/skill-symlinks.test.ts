@@ -43,7 +43,7 @@ function linkSkill(root: string, name: string): string {
   symlinkSync(
     relative(linkRoot, join(root, ".agents", "skills", name)),
     link,
-    "dir",
+    "junction",
   );
   return link;
 }
@@ -108,7 +108,7 @@ describe("createVendorSymlinks (real fs)", () => {
     const userTarget = join(root, "my-skill");
     mkdirSync(userTarget, { recursive: true });
     const userLink = join(root, CURSOR_SKILLS, "my-skill");
-    symlinkSync(userTarget, userLink, "dir");
+    symlinkSync(userTarget, userLink, "junction");
 
     const result = createVendorSymlinks(root, ["cursor"], ["oma-test"]);
 
@@ -138,7 +138,7 @@ describe("createVendorSymlinks (real fs)", () => {
       ["oma-old", join(root, ".agents", "skills", "oma-old")],
     ];
     for (const [name, target] of targets)
-      symlinkSync(target, join(skills, name), "dir");
+      symlinkSync(target, join(skills, name), "junction");
 
     const result = createVendorSymlinks(root, ["qwen"], ["oma-test"]);
 
@@ -162,15 +162,19 @@ describe("createVendorSymlinks (real fs)", () => {
     writeFileSync(join(userSkill, "SKILL.md"), "user skill");
     const foreign = join(root, "user-skills");
     mkdirSync(foreign);
-    symlinkSync(foreign, join(skills, "oma-live"), "dir");
-    symlinkSync(join(foreign, "missing"), join(skills, "oma-dangling"), "dir");
+    symlinkSync(foreign, join(skills, "oma-live"), "junction");
+    symlinkSync(
+      join(foreign, "missing"),
+      join(skills, "oma-dangling"),
+      "junction",
+    );
     symlinkSync(
       join(root, "other", ".agents", "skills", "oma-other"),
       join(skills, "oma-other"),
-      "dir",
+      "junction",
     );
     const sharedCustom = setupSsotSkill(root, "user-skill");
-    symlinkSync(sharedCustom, join(skills, "user-skill"), "dir");
+    symlinkSync(sharedCustom, join(skills, "user-skill"), "junction");
     writeFileSync(join(skills, "oma-file"), "user file");
 
     const result = createVendorSymlinks(root, ["qwen"], ["oma-test"]);
@@ -188,7 +192,7 @@ describe("createVendorSymlinks (real fs)", () => {
     const skills = join(root, ".qwen", "skills");
     mkdirSync(skills, { recursive: true });
     const link = join(skills, "oma-old");
-    symlinkSync(join(root, ".agents", "skills", "oma-old"), link, "dir");
+    symlinkSync(join(root, ".agents", "skills", "oma-old"), link, "junction");
 
     const result = createVendorSymlinks(root, ["qwen"], []);
 
@@ -209,7 +213,11 @@ describe("createVendorSymlinks (real fs)", () => {
     const skills = join(root, ".qwen", "skills");
     mkdirSync(skills, { recursive: true });
     const link = join(skills, "oma-test");
-    symlinkSync(resolveEffectiveSkill(root, "oma-test").directory, link, "dir");
+    symlinkSync(
+      resolveEffectiveSkill(root, "oma-test").directory,
+      link,
+      "junction",
+    );
 
     const result = createVendorSymlinks(root, ["qwen"], ["oma-test"]);
 
@@ -218,22 +226,26 @@ describe("createVendorSymlinks (real fs)", () => {
     expect(result.created).toEqual([]);
   });
 
-  it("keeps qwen workflow commands linked after retiring skill links", () => {
-    setupSsotSkill(root, "oma-test");
-    const workflows = join(root, ".agents", "workflows");
-    mkdirSync(workflows, { recursive: true });
-    writeFileSync(
-      join(workflows, "demo.md"),
-      "---\nname: demo\n---\nDemo workflow",
-    );
-    createVendorWorkflowSymlinks(root, ["qwen"], ["demo"]);
+  // Without symlink privilege Windows links files as hardlinks (fs-link.ts).
+  it.skipIf(process.platform === "win32")(
+    "keeps qwen workflow commands linked after retiring skill links",
+    () => {
+      setupSsotSkill(root, "oma-test");
+      const workflows = join(root, ".agents", "workflows");
+      mkdirSync(workflows, { recursive: true });
+      writeFileSync(
+        join(workflows, "demo.md"),
+        "---\nname: demo\n---\nDemo workflow",
+      );
+      createVendorWorkflowSymlinks(root, ["qwen"], ["demo"]);
 
-    createVendorSymlinks(root, ["qwen"], ["oma-test"]);
+      createVendorSymlinks(root, ["qwen"], ["oma-test"]);
 
-    const command = join(root, ".qwen", "skills", "demo", "SKILL.md");
-    expect(lstatSync(command).isSymbolicLink()).toBe(true);
-    expect(readFileSync(command, "utf8")).toContain("Demo workflow");
-  });
+      const command = join(root, ".qwen", "skills", "demo", "SKILL.md");
+      expect(lstatSync(command).isSymbolicLink()).toBe(true);
+      expect(readFileSync(command, "utf8")).toContain("Demo workflow");
+    },
+  );
 
   it("uses global shared discovery while retiring HOME-scoped qwen skill links", () => {
     setupSsotSkill(root, "oma-test");
@@ -245,12 +257,12 @@ describe("createVendorSymlinks (real fs)", () => {
     const skills = join(testHome.path, ".qwen", "skills");
     mkdirSync(skills, { recursive: true });
     const link = join(skills, "oma-test");
-    symlinkSync(join(root, ".agents", "skills", "oma-test"), link, "dir");
+    symlinkSync(join(root, ".agents", "skills", "oma-test"), link, "junction");
     const sharedLink = join(skills, "oma-shared");
     symlinkSync(
       join(testHome.path, ".agents", "skills", "oma-shared"),
       sharedLink,
-      "dir",
+      "junction",
     );
 
     const result = createVendorSymlinks(

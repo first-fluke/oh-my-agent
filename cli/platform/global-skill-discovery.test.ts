@@ -81,7 +81,7 @@ describe("global common skill discovery", () => {
     skill(oma, "oma-user");
     const foreign = skill(join(root, "elsewhere"), "oma-foreign");
     const link = join(context.home, ".agents", "skills", "oma-foreign");
-    symlinkSync(foreign, link, "dir");
+    symlinkSync(foreign, link, "junction");
     skill(oma, "oma-foreign");
     recordManagedSkills(oma, ["oma-user", "oma-foreign"]);
     expect(createGlobalSkillDiscoveryLinks(oma)).toEqual([]);
@@ -107,26 +107,30 @@ describe("global common skill discovery", () => {
     expect(existsSync(join(oma, "backup"))).toBe(false);
   });
 
-  it("preserves nested asset bytes and symlink targets in the archive", () => {
-    const original = skill(context.home);
-    mkdirSync(join(original, "assets"));
-    writeFileSync(
-      join(original, "assets", "binary"),
-      Buffer.from([0, 255, 1, 2]),
-    );
-    symlinkSync("assets/binary", join(original, "asset"));
-    cpSync(original, join(oma, ".agents", "skills", "oma-test"), {
-      recursive: true,
-      verbatimSymlinks: true,
-    });
-    recordManagedSkills(context.home, ["oma-test"]);
-    recordManagedSkills(oma, ["oma-test"]);
-    createGlobalSkillDiscoveryLinks(oma);
-    const base = join(oma, "backup", "legacy-global-skills");
-    const backup = join(base, readdirSync(base)[0] ?? "", "oma-test");
-    expect(readFileSync(join(backup, "assets", "binary"))).toEqual(
-      Buffer.from([0, 255, 1, 2]),
-    );
-    expect(readlinkSync(join(backup, "asset"))).toBe("assets/binary");
-  });
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "preserves nested asset bytes and symlink targets in the archive",
+    () => {
+      const original = skill(context.home);
+      mkdirSync(join(original, "assets"));
+      writeFileSync(
+        join(original, "assets", "binary"),
+        Buffer.from([0, 255, 1, 2]),
+      );
+      symlinkSync("assets/binary", join(original, "asset"));
+      cpSync(original, join(oma, ".agents", "skills", "oma-test"), {
+        recursive: true,
+        verbatimSymlinks: true,
+      });
+      recordManagedSkills(context.home, ["oma-test"]);
+      recordManagedSkills(oma, ["oma-test"]);
+      createGlobalSkillDiscoveryLinks(oma);
+      const base = join(oma, "backup", "legacy-global-skills");
+      const backup = join(base, readdirSync(base)[0] ?? "", "oma-test");
+      expect(readFileSync(join(backup, "assets", "binary"))).toEqual(
+        Buffer.from([0, 255, 1, 2]),
+      );
+      expect(readlinkSync(join(backup, "asset"))).toBe("assets/binary");
+    },
+  );
 });

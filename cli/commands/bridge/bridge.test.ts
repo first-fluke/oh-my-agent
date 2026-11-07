@@ -24,8 +24,9 @@ vi.mock("../../io/serena-daemon.js", async (importOriginal) => ({
   detachClient: vi.fn(),
 }));
 
-// Normalize Windows backslashes for cross-platform path string checks.
-const n = (s: string) => s.replace(/\\/g, "/");
+// Normalize Windows backslashes (and the drive `resolve` adds to rooted
+// paths) for cross-platform path string checks.
+const n = (s: string) => s.replace(/\\/g, "/").replace(/^[A-Za-z]:\//, "/");
 
 // Mock fs module
 const mockFs = vi.hoisted(() => ({

@@ -61,7 +61,14 @@ if (process.env.FAKE_VENDOR_RELEASE_FILE) {
       } catch {}
     }
     supervisorPids.clear();
-    fs.rmSync(root, { recursive: true, force: true });
+    // Windows refuses to delete files a just-signalled child still holds open
+    // (EPERM/EBUSY); rmSync's built-in retry waits for the handles to close.
+    fs.rmSync(root, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 200,
+    });
   });
 
   const invoke = (
@@ -277,11 +284,16 @@ console.log(JSON.stringify({ type: 'thread.started', thread_id: sid }));
     const supervisorPidFile = path.join(runDir, "supervisor.pid");
     const supervisorPid = Number(fs.readFileSync(supervisorPidFile, "utf8"));
     supervisorPids.add(supervisorPid);
+    // Release only after the supervisor has recorded the child's identity
+    // (pids.txt follows it); the Windows CIM probe can take longer than the
+    // child needs to start, and an exited child can no longer be identified.
     await expect
-      .poll(() => fs.existsSync(path.join(root, "started.txt")), {
-        timeout: 5000,
-        interval: 50,
-      })
+      .poll(
+        () =>
+          fs.existsSync(path.join(root, "started.txt")) &&
+          fs.existsSync(path.join(runDir, "pids.txt")),
+        { timeout: 5000, interval: 50 },
+      )
       .toBe(true);
     expect(listAgentRuns(root)[0]?.status).toBe("running");
     expect(fs.existsSync(path.join(root, "finished.txt"))).toBe(false);

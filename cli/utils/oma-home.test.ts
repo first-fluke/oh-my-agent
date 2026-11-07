@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { profileDir } from "../../.agents/hooks/core/session-storage.js";
 import { stateHome } from "../state/profiles.js";
@@ -8,31 +8,33 @@ afterEach(() => vi.unstubAllEnvs());
 
 describe("OMA global home", () => {
   it("groups all OMA-owned global data under the default home", () => {
+    // resolve() keeps POSIX expectations literal and adds the drive on Windows.
+    const home = resolve("/users/example/.oma");
     expect(omaPaths({}, "/users/example")).toEqual({
-      home: "/users/example/.oma",
-      definitions: "/users/example/.oma/.agents",
-      state: "/users/example/.oma/state",
-      serena: "/users/example/.oma/state/serena",
-      schedule: "/users/example/.oma/schedule",
-      backup: "/users/example/.oma/backup",
+      home,
+      definitions: join(home, ".agents"),
+      state: join(home, "state"),
+      serena: join(home, "state", "serena"),
+      schedule: join(home, "schedule"),
+      backup: join(home, "backup"),
     });
   });
   it("applies a custom root without requiring it to exist", () => {
     expect(
       omaPaths({ OMA_HOME: "/custom/not-created/../data" }, "/users/example")
         .schedule,
-    ).toBe("/custom/data/schedule");
+    ).toBe(resolve("/custom/data/schedule"));
   });
   it("keeps an explicit profile-only override separate", () => {
     const env = { OMA_HOME: "/global", OMA_STATE_HOME: "/profiles" };
-    expect(profileStateHome(env)).toBe("/profiles");
-    expect(omaHome(env)).toBe("/global");
+    expect(profileStateHome(env)).toBe(resolve("/profiles"));
+    expect(omaHome(env)).toBe(resolve("/global"));
   });
   it("uses the same root in standalone hooks and CLI profile APIs", () => {
     vi.stubEnv("OMA_HOME", "/custom/oma");
     vi.stubEnv("OMA_STATE_HOME", undefined);
     vi.stubEnv("OMA_PROFILE", "4");
-    expect(stateHome()).toBe("/custom/oma");
+    expect(stateHome()).toBe(resolve("/custom/oma"));
     expect(profileDir()).toBe(join(stateHome(), "u", "4"));
   });
   it.each(["relative", "/valid\ninvalid", "/valid\0invalid"])(

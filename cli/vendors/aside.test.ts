@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   ASIDE_INSTALL_COMMAND,
@@ -30,7 +30,7 @@ it("does not install when Aside is not selected", async () => {
 });
 it("reuses an existing command on PATH", async () => {
   state.access.mockImplementation((path) => {
-    if (path !== "/test/bin/aside") throw new Error("missing");
+    if (path !== join("/test/bin", "aside")) throw new Error("missing");
   });
   await ensureAsideInstalled(["aside"]);
   expect(resolveAsideCommand()).toBe("aside");
@@ -41,7 +41,7 @@ it("installs missing Aside and resolves its executable outside PATH", async () =
     const child = new EventEmitter();
     queueMicrotask(() => {
       state.access.mockImplementation((path) => {
-        if (path !== join("/test/aside-bin", "aside"))
+        if (path !== resolve("/test/aside-bin", "aside"))
           throw new Error("missing");
       });
       child.emit("close", 0, null);
@@ -54,7 +54,8 @@ it("installs missing Aside and resolves its executable outside PATH", async () =
     ["-o", "pipefail", "-c", ASIDE_INSTALL_COMMAND],
     { stdio: "inherit" },
   );
-  expect(resolveAsideCommand()).toBe("/test/aside-bin/aside");
+  // resolve() adds the drive letter on Windows; identical on POSIX.
+  expect(resolveAsideCommand()).toBe(resolve("/test/aside-bin", "aside"));
   await ensureAsideInstalled(["aside"]);
   expect(state.spawn).toHaveBeenCalledTimes(1);
 });

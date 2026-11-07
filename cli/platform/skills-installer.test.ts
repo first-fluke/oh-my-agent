@@ -492,9 +492,10 @@ describe("createCliSymlinks", () => {
       },
     );
     // Default: realpath is identity (no symlink shenanigans). Tests that
-    // exercise path-traversal defenses override this per-test.
+    // exercise path-traversal defenses override this per-test. `resolve`
+    // mirrors realpath's absolute output (it adds the drive on Windows).
     (fs.realpathSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => p,
+      (p: string) => resolve(p),
     );
   });
 

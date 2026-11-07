@@ -1,6 +1,14 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
+// Forward slashes on every host: Vite's alias replacement is a plain string
+// splice, and a win32 `C:\...\cli\` target followed by `io/chrome` is never
+// resolved, so every "@cli/" import failed on Windows.
+const CLI_DIR = fileURLToPath(new URL("./", import.meta.url)).replace(
+  /\\/g,
+  "/",
+);
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -8,11 +16,12 @@ export default defineConfig({
       // tests resolve cross-slice imports the same way the build (bun build,
       // which reads tsconfig paths) does. The config lives in cli/, so "@cli/"
       // maps to this directory.
-      "@cli/": fileURLToPath(new URL("./", import.meta.url)),
+      "@cli/": CLI_DIR,
     },
   },
   test: {
     setupFiles: [
+      "./test/setup-windows-tmpdir.ts",
       "./test/setup-install-context.ts",
       "./test/setup-session-storage.ts",
       "./test/setup-orca-context.ts",
@@ -49,7 +58,7 @@ export default defineConfig({
         // which resolve relative to cli/ and seed cli-only globals.
         resolve: {
           alias: {
-            "@cli/": fileURLToPath(new URL("./", import.meta.url)),
+            "@cli/": CLI_DIR,
           },
         },
         test: {

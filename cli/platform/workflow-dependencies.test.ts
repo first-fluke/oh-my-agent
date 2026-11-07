@@ -141,22 +141,26 @@ describe("workflow selective-install requirements", () => {
     expect(existsSync(join(f.root, ".agents/skills/oma-backend"))).toBe(false);
   });
 
-  it("removes stale owned workflow links on reinstall and restores them after repair", () => {
-    const f = fixture();
-    f.skill("oma-qa");
-    createVendorWorkflowSymlinks(f.root, ["claude", "codex"], ["custom"]);
-    rmSync(join(f.root, ".agents/skills/oma-qa/SKILL.md"));
-    createVendorWorkflowSymlinks(f.root, ["claude", "codex"], ["custom"]);
-    for (const vendor of ["claude", "codex"])
+  // Without symlink privilege Windows links files as hardlinks, which pruning does not own.
+  it.skipIf(process.platform === "win32")(
+    "removes stale owned workflow links on reinstall and restores them after repair",
+    () => {
+      const f = fixture();
+      f.skill("oma-qa");
+      createVendorWorkflowSymlinks(f.root, ["claude", "codex"], ["custom"]);
+      rmSync(join(f.root, ".agents/skills/oma-qa/SKILL.md"));
+      createVendorWorkflowSymlinks(f.root, ["claude", "codex"], ["custom"]);
+      for (const vendor of ["claude", "codex"])
+        expect(
+          existsSync(join(f.root, `.${vendor}/skills/custom/SKILL.md`)),
+        ).toBe(false);
+      f.skill("oma-qa");
       expect(
-        existsSync(join(f.root, `.${vendor}/skills/custom/SKILL.md`)),
-      ).toBe(false);
-    f.skill("oma-qa");
-    expect(
-      createVendorWorkflowSymlinks(f.root, ["claude", "codex"], ["custom"])
-        .created,
-    ).toHaveLength(2);
-  });
+        createVendorWorkflowSymlinks(f.root, ["claude", "codex"], ["custom"])
+          .created,
+      ).toHaveLength(2);
+    },
+  );
 
   it("preserves user-authored commands and other files when suppressing a workflow", () => {
     const f = fixture();
@@ -174,28 +178,32 @@ describe("workflow selective-install requirements", () => {
     ).toBe("User-owned skill");
   });
 
-  it("prunes stale ZCode and Copilot exposure using the definition root's requirements", () => {
-    const f = fixture();
-    const target = fixture().root;
-    f.skill("oma-qa");
-    installZcodeWorkflowCommands(f.root, target);
-    installCopilotWorkflowPrompts(f.root, target);
-    installPiPromptTemplates(f.root, target);
-    expect(existsSync(join(target, ".zcode/commands/custom.md"))).toBe(true);
-    expect(existsSync(join(target, ".github/prompts/custom.prompt.md"))).toBe(
-      true,
-    );
-    expect(existsSync(join(target, ".pi/prompts/custom.md"))).toBe(true);
-    rmSync(join(f.root, ".agents/skills/oma-qa/SKILL.md"));
-    installZcodeWorkflowCommands(f.root, target);
-    installCopilotWorkflowPrompts(f.root, target);
-    installPiPromptTemplates(f.root, target);
-    expect(existsSync(join(target, ".zcode/commands/custom.md"))).toBe(false);
-    expect(existsSync(join(target, ".github/prompts/custom.prompt.md"))).toBe(
-      false,
-    );
-    expect(existsSync(join(target, ".pi/prompts/custom.md"))).toBe(false);
-  });
+  // Without symlink privilege Windows links files as hardlinks, which pruning does not own.
+  it.skipIf(process.platform === "win32")(
+    "prunes stale ZCode and Copilot exposure using the definition root's requirements",
+    () => {
+      const f = fixture();
+      const target = fixture().root;
+      f.skill("oma-qa");
+      installZcodeWorkflowCommands(f.root, target);
+      installCopilotWorkflowPrompts(f.root, target);
+      installPiPromptTemplates(f.root, target);
+      expect(existsSync(join(target, ".zcode/commands/custom.md"))).toBe(true);
+      expect(existsSync(join(target, ".github/prompts/custom.prompt.md"))).toBe(
+        true,
+      );
+      expect(existsSync(join(target, ".pi/prompts/custom.md"))).toBe(true);
+      rmSync(join(f.root, ".agents/skills/oma-qa/SKILL.md"));
+      installZcodeWorkflowCommands(f.root, target);
+      installCopilotWorkflowPrompts(f.root, target);
+      installPiPromptTemplates(f.root, target);
+      expect(existsSync(join(target, ".zcode/commands/custom.md"))).toBe(false);
+      expect(existsSync(join(target, ".github/prompts/custom.prompt.md"))).toBe(
+        false,
+      );
+      expect(existsSync(join(target, ".pi/prompts/custom.md"))).toBe(false);
+    },
+  );
 
   it("keeps custom workflows without dependency metadata backward compatible", () => {
     const f = fixture();
@@ -264,24 +272,28 @@ describe("workflow selective-install requirements", () => {
     });
   });
 
-  it("removes legacy generated links but preserves links to unrelated files", () => {
-    const f = fixture();
-    f.write(".agents/skills/custom/SKILL.md", "<!-- oma:generated -->\n");
-    mkdirSync(join(f.root, ".claude/skills"), { recursive: true });
-    symlinkSync(
-      join(f.root, ".agents/skills/custom"),
-      join(f.root, ".claude/skills/custom"),
-    );
-    f.write("private/SKILL.md", "Private skill\n");
-    mkdirSync(join(f.root, ".codex/skills/custom"), { recursive: true });
-    symlinkSync(
-      join(f.root, "private/SKILL.md"),
-      join(f.root, ".codex/skills/custom/SKILL.md"),
-    );
-    createVendorWorkflowSymlinks(f.root, ["claude", "codex"], ["custom"]);
-    expect(existsSync(join(f.root, ".claude/skills/custom"))).toBe(false);
-    expect(
-      readFileSync(join(f.root, ".codex/skills/custom/SKILL.md"), "utf8"),
-    ).toBe("Private skill\n");
-  });
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "removes legacy generated links but preserves links to unrelated files",
+    () => {
+      const f = fixture();
+      f.write(".agents/skills/custom/SKILL.md", "<!-- oma:generated -->\n");
+      mkdirSync(join(f.root, ".claude/skills"), { recursive: true });
+      symlinkSync(
+        join(f.root, ".agents/skills/custom"),
+        join(f.root, ".claude/skills/custom"),
+      );
+      f.write("private/SKILL.md", "Private skill\n");
+      mkdirSync(join(f.root, ".codex/skills/custom"), { recursive: true });
+      symlinkSync(
+        join(f.root, "private/SKILL.md"),
+        join(f.root, ".codex/skills/custom/SKILL.md"),
+      );
+      createVendorWorkflowSymlinks(f.root, ["claude", "codex"], ["custom"]);
+      expect(existsSync(join(f.root, ".claude/skills/custom"))).toBe(false);
+      expect(
+        readFileSync(join(f.root, ".codex/skills/custom/SKILL.md"), "utf8"),
+      ).toBe("Private skill\n");
+    },
+  );
 });

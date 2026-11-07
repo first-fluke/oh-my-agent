@@ -31,22 +31,26 @@ function fixture() {
 }
 
 describe("hook script ownership", () => {
-  it("preserves user scripts and symlinks while pruning only recorded stale copies", () => {
-    const { root, dest } = fixture();
-    const userFile = join(dest, "user-lint.sh");
-    const external = join(root, "external.sh");
-    writeFileSync(userFile, "echo user\n");
-    writeFileSync(external, "echo external\n");
-    symlinkSync(external, join(dest, "user-link.sh"));
-    copyHookScripts(root, dest);
-    copyHookScripts(root, dest, new Set(["hud.ts"]));
-    expect(readFileSync(userFile, "utf8")).toBe("echo user\n");
-    expect(readFileSync(join(dest, "user-link.sh"), "utf8")).toBe(
-      "echo external\n",
-    );
-    expect(existsSync(join(dest, "old.ts"))).toBe(false);
-    expect(existsSync(join(dest, "hud.ts"))).toBe(true);
-  });
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "preserves user scripts and symlinks while pruning only recorded stale copies",
+    () => {
+      const { root, dest } = fixture();
+      const userFile = join(dest, "user-lint.sh");
+      const external = join(root, "external.sh");
+      writeFileSync(userFile, "echo user\n");
+      writeFileSync(external, "echo external\n");
+      symlinkSync(external, join(dest, "user-link.sh"));
+      copyHookScripts(root, dest);
+      copyHookScripts(root, dest, new Set(["hud.ts"]));
+      expect(readFileSync(userFile, "utf8")).toBe("echo user\n");
+      expect(readFileSync(join(dest, "user-link.sh"), "utf8")).toBe(
+        "echo external\n",
+      );
+      expect(existsSync(join(dest, "old.ts"))).toBe(false);
+      expect(existsSync(join(dest, "hud.ts"))).toBe(true);
+    },
+  );
 
   it("preserves untracked collisions and user-modified managed scripts", () => {
     const { root, dest } = fixture();
@@ -60,15 +64,19 @@ describe("hook script ownership", () => {
     );
   });
 
-  it("preserves a user symlink colliding with a required hook filename", () => {
-    const { root, dest } = fixture();
-    const external = join(root, "user-hud.ts");
-    writeFileSync(external, "// user HUD\n");
-    symlinkSync(external, join(dest, "hud.ts"));
-    copyHookScripts(root, dest, new Set(["hud.ts"]));
-    expect(readFileSync(join(dest, "hud.ts"), "utf8")).toBe("// user HUD\n");
-    expect(readFileSync(external, "utf8")).toBe("// user HUD\n");
-  });
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "preserves a user symlink colliding with a required hook filename",
+    () => {
+      const { root, dest } = fixture();
+      const external = join(root, "user-hud.ts");
+      writeFileSync(external, "// user HUD\n");
+      symlinkSync(external, join(dest, "hud.ts"));
+      copyHookScripts(root, dest, new Set(["hud.ts"]));
+      expect(readFileSync(join(dest, "hud.ts"), "utf8")).toBe("// user HUD\n");
+      expect(readFileSync(external, "utf8")).toBe("// user HUD\n");
+    },
+  );
 
   it("preserves recorded customizations across repeated namespace upgrades", () => {
     const { root, core, dest } = fixture();

@@ -37,6 +37,9 @@ const REPO_ROOT = resolve(__dirname, "../..");
 const CORE = join(REPO_ROOT, ".agents/hooks/core");
 const sid = "2026-10-08_standalone-memory";
 const vendorSid = "vendor-original-session";
+// The installed wrappers exec $OMA_BIN directly; the fixture launcher is a
+// `#!` script, which Windows cannot exec without a shell.
+const execsShebangLauncher = process.platform !== "win32";
 
 function coreFingerprint(): string {
   const hash = createHash("sha256");
@@ -56,6 +59,8 @@ describe("installed standalone semantic delivery", () => {
     mkdirSync(join(root, ".git"));
     mkdirSync(join(root, ".agents"));
     vi.stubEnv("HOME", join(root, "home"));
+    // os.homedir() reads USERPROFILE on Windows.
+    vi.stubEnv("USERPROFILE", join(root, "home"));
     vi.stubEnv("OMA_PROFILE", "7");
     vi.stubEnv("AGENTMEMORY_URL", "http://127.0.0.1:1");
     vi.stubEnv("OMA_NO_AGENTMEMORY", "0");
@@ -156,114 +161,131 @@ describe("installed standalone semantic delivery", () => {
   }
 
   for (const vendor of ["pi", "opencode", "antigravity"] as const) {
-    it(`${vendor} writes one L1 event and a destination-bound HOME retry`, () => {
-      configure("agentmemory");
-      const hooks = install(vendor);
-      seedEnding();
-      invoke(hooks);
+    it.runIf(execsShebangLauncher)(
+      `${vendor} writes one L1 event and a destination-bound HOME retry`,
+      () => {
+        configure("agentmemory");
+        const hooks = install(vendor);
+        seedEnding();
+        invoke(hooks);
 
-      const ended = readEvents(root, sid).filter(
-        (event) => event.kind === "session.ended",
-      );
-      expect(ended).toHaveLength(1);
-      const path = retryObservePath(root);
-      const { projectId, projectDir } = projectIdentity(root);
-      expect(path).toBe(
-        join(
-          process.env.OMA_STATE_HOME as string,
-          "u/7/projects",
+        const ended = readEvents(root, sid).filter(
+          (event) => event.kind === "session.ended",
+        );
+        expect(ended).toHaveLength(1);
+        const path = retryObservePath(root);
+        const { projectId, projectDir } = projectIdentity(root);
+        expect(path).toBe(
+          join(
+            process.env.OMA_STATE_HOME as string,
+            "u/7/projects",
+            projectId,
+            "retry/observe.jsonl",
+          ),
+        );
+        const queue = readFileSync(path, "utf8")
+          .split("\n")
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+        expect(queue).toHaveLength(1);
+        expect(queue[0].eventId).toBe(ended[0]?.eventId);
+        expect(queue[0].memoryTarget).toMatchObject({
+          provider: "agentmemory",
+          profile: "7",
           projectId,
-          "retry/observe.jsonl",
-        ),
-      );
-      const queue = readFileSync(path, "utf8")
-        .split("\n")
-        .filter(Boolean)
-        .map((line) => JSON.parse(line));
-      expect(queue).toHaveLength(1);
-      expect(queue[0].eventId).toBe(ended[0]?.eventId);
-      expect(queue[0].memoryTarget).toMatchObject({
-        provider: "agentmemory",
-        profile: "7",
-        projectId,
-        projectDir,
-        destination: { endpoint: "http://127.0.0.1:1" },
-      });
-      expect(existsSync(join(root, ".agents/state/retry/observe.jsonl"))).toBe(
-        false,
-      );
+          projectDir,
+          destination: { endpoint: "http://127.0.0.1:1" },
+        });
+        expect(
+          existsSync(join(root, ".agents/state/retry/observe.jsonl")),
+        ).toBe(false);
+        invoke(hooks);
+        expect(
+          readEvents(root, sid).filter(
+            (event) => event.kind === "session.ended",
+          ),
+        ).toHaveLength(1);
+      },
+    );
+  }
+
+  it.runIf(execsShebangLauncher)(
+    "honors explicit none while still recording L1",
+    () => {
+      configure("none");
+      const hooks = install("pi");
+      seedEnding();
       invoke(hooks);
       expect(
         readEvents(root, sid).filter((event) => event.kind === "session.ended"),
       ).toHaveLength(1);
-    });
-  }
+      expect(existsSync(retryObservePath(root))).toBe(false);
+      expect(existsSync(join(root, ".agents/state/retry/observe.jsonl"))).toBe(
+        false,
+      );
+    },
+  );
 
-  it("honors explicit none while still recording L1", () => {
-    configure("none");
-    const hooks = install("pi");
-    seedEnding();
-    invoke(hooks);
-    expect(
-      readEvents(root, sid).filter((event) => event.kind === "session.ended"),
-    ).toHaveLength(1);
-    expect(existsSync(retryObservePath(root))).toBe(false);
-    expect(existsSync(join(root, ".agents/state/retry/observe.jsonl"))).toBe(
-      false,
-    );
-  });
+  it.runIf(execsShebangLauncher)(
+    "invalid provider config cannot fall back to the core legacy writer",
+    () => {
+      configure("honcho");
+      const hooks = install("opencode");
+      seedEnding();
+      invoke(hooks);
+      expect(
+        readEvents(root, sid).filter((event) => event.kind === "session.ended"),
+      ).toHaveLength(1);
+      expect(existsSync(join(root, ".agents/state/retry/observe.jsonl"))).toBe(
+        false,
+      );
+    },
+  );
 
-  it("invalid provider config cannot fall back to the core legacy writer", () => {
-    configure("honcho");
-    const hooks = install("opencode");
-    seedEnding();
-    invoke(hooks);
-    expect(
-      readEvents(root, sid).filter((event) => event.kind === "session.ended"),
-    ).toHaveLength(1);
-    expect(existsSync(join(root, ".agents/state/retry/observe.jsonl"))).toBe(
-      false,
-    );
-  });
+  it.runIf(execsShebangLauncher)(
+    "uses the payload project when the wrapper starts in another directory",
+    () => {
+      configure("agentmemory");
+      const hooks = install("opencode");
+      const elsewhere = join(root, "elsewhere");
+      mkdirSync(elsewhere);
+      seedEnding();
+      invoke(hooks, "persistent-mode.ts", elsewhere);
+      expect(
+        readEvents(root, sid).filter((event) => event.kind === "session.ended"),
+      ).toHaveLength(1);
+      const queue = readFileSync(retryObservePath(root), "utf8").trim();
+      expect(JSON.parse(queue).memoryTarget.projectDir).toBe(
+        projectIdentity(root).projectDir,
+      );
+    },
+  );
 
-  it("uses the payload project when the wrapper starts in another directory", () => {
-    configure("agentmemory");
-    const hooks = install("opencode");
-    const elsewhere = join(root, "elsewhere");
-    mkdirSync(elsewhere);
-    seedEnding();
-    invoke(hooks, "persistent-mode.ts", elsewhere);
-    expect(
-      readEvents(root, sid).filter((event) => event.kind === "session.ended"),
-    ).toHaveLength(1);
-    const queue = readFileSync(retryObservePath(root), "utf8").trim();
-    expect(JSON.parse(queue).memoryTarget.projectDir).toBe(
-      projectIdentity(root).projectDir,
-    );
-  });
-
-  it("keeps Antigravity post-tool recording and Stop enforcement distinct without event fields", () => {
-    configure("none");
-    writeFileSync(
-      join(root, ".agents/oma-config.yaml"),
-      "providers:\n  semantic_memory: none\nrefactor_guard:\n  enabled: true\n  max_lines: 500\n",
-    );
-    const hooks = install("antigravity");
-    mkdirSync(join(root, "src"));
-    const edited = join(root, "src/big.ts");
-    writeFileSync(edited, Array(600).fill("const x = 1;").join("\n"));
-    const payload = { conversationId: vendorSid, workspacePaths: [root] };
-    const recorded = invoke(hooks, "refactor-guard.ts", root, {
-      ...payload,
-      toolCall: { name: "write_to_file", args: { TargetFile: edited } },
-    });
-    expect(JSON.parse(recorded.stdout)).toEqual({});
-    const stopped = invoke(hooks, "refactor-guard.ts", root, payload);
-    expect(JSON.parse(stopped.stdout)).toMatchObject({
-      decision: "continue",
-      reason: expect.stringContaining("big.ts"),
-    });
-  });
+  it.runIf(execsShebangLauncher)(
+    "keeps Antigravity post-tool recording and Stop enforcement distinct without event fields",
+    () => {
+      configure("none");
+      writeFileSync(
+        join(root, ".agents/oma-config.yaml"),
+        "providers:\n  semantic_memory: none\nrefactor_guard:\n  enabled: true\n  max_lines: 500\n",
+      );
+      const hooks = install("antigravity");
+      mkdirSync(join(root, "src"));
+      const edited = join(root, "src/big.ts");
+      writeFileSync(edited, Array(600).fill("const x = 1;").join("\n"));
+      const payload = { conversationId: vendorSid, workspacePaths: [root] };
+      const recorded = invoke(hooks, "refactor-guard.ts", root, {
+        ...payload,
+        toolCall: { name: "write_to_file", args: { TargetFile: edited } },
+      });
+      expect(JSON.parse(recorded.stdout)).toEqual({});
+      const stopped = invoke(hooks, "refactor-guard.ts", root, payload);
+      expect(JSON.parse(stopped.stdout)).toMatchObject({
+        decision: "continue",
+        reason: expect.stringContaining("big.ts"),
+      });
+    },
+  );
 
   it("rejects arbitrary script paths without executing them", () => {
     configure("none");
@@ -273,9 +295,10 @@ describe("installed standalone semantic delivery", () => {
       arbitrary,
       `import { writeFileSync } from "node:fs"; writeFileSync(${JSON.stringify(marker)}, "executed");`,
     );
+    const args = ["hook", "script", "--vendor", "pi", "--script", arbitrary];
     const result = spawnSync(
-      cliLauncher,
-      ["hook", "script", "--vendor", "pi", "--script", arbitrary],
+      execsShebangLauncher ? cliLauncher : "bun",
+      execsShebangLauncher ? args : [cliLauncher, ...args],
       {
         cwd: root,
         env: process.env,

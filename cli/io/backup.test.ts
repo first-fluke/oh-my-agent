@@ -8,7 +8,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { listBackups, safeWriteJson } from "../utils/safe-write.js";
 import {
@@ -70,14 +70,16 @@ describe("backup paths", () => {
 
   it("keeps global definition and native vendor backups under the selected OMA_HOME", () => {
     vi.stubEnv("OMA_HOME", "/custom/oma");
-    expect(backupRoot("/custom/oma")).toBe("/custom/oma/backup");
-    expect(backupRoot(homedir())).toBe("/custom/oma/backup");
+    // OMA_HOME is resolved, which adds a drive letter on Windows.
+    const custom = resolve("/custom/oma");
+    expect(backupRoot("/custom/oma")).toBe(join(custom, "backup"));
+    expect(backupRoot(homedir())).toBe(join(custom, "backup"));
     expect(
       resolveSafeWriteBackup("/custom/oma/.agents/oma-config.yaml").dir,
-    ).toBe("/custom/oma/backup/safe-write");
+    ).toBe(join(custom, "backup", "safe-write"));
     expect(
       resolveSafeWriteBackup(join(homedir(), ".claude", "settings.json")).dir,
-    ).toBe("/custom/oma/backup/safe-write");
+    ).toBe(join(custom, "backup", "safe-write"));
   });
   it("AGENTS_BACKUP_DIR is the canonical gitignored root", () => {
     expect(AGENTS_BACKUP_DIR).toBe(".agents/backup");
@@ -133,6 +135,10 @@ describe("findProjectRoot / resolveSafeWriteBackup", () => {
 
   it("falls back to a sibling dotfile when no project root exists", () => {
     const lone = mkdtempSync(join(tmpdir(), "oma-noproject-"));
+    // The home directory counts as a root; on Windows tmpdir() lives under it.
+    const home = join(lone, "home");
+    vi.stubEnv("HOME", home);
+    vi.stubEnv("USERPROFILE", home);
     try {
       const target = join(lone, "settings.json");
       writeFileSync(target, "{}");
@@ -140,6 +146,7 @@ describe("findProjectRoot / resolveSafeWriteBackup", () => {
       expect(dir).toBe(lone);
       expect(prefix).toBe(".settings.json.backup-");
     } finally {
+      vi.unstubAllEnvs();
       rmSync(lone, { recursive: true, force: true });
     }
   });

@@ -440,9 +440,11 @@ describe("project runtime migration", () => {
     );
   });
 
-  it.each(["symlink", "oversize", "unreadable"])(
+  it.for(["symlink", "oversize", "unreadable"])(
     "defers a session's whole runtime when its lease is %s",
-    async (unsafe) => {
+    async (unsafe, { skip }) => {
+      // File symlinks need elevated privileges on Windows.
+      skip(unsafe === "symlink" && process.platform === "win32");
       const sessionFiles = completedSessionFiles();
       receipt({ runId: secondId, sessionId: "independent", sequence: 12 });
       const lease = source("agent-resume", "session-1.lease.json");
@@ -482,7 +484,7 @@ describe("project runtime migration", () => {
       if (unsafe === "symlink") {
         const original = join(fixture, "original-resume");
         renameSync(resume, original);
-        symlinkSync(original, resume);
+        symlinkSync(original, resume, "junction");
       } else {
         sourceReadHook.directoryCallback = (file) => {
           if (file === resume)
@@ -648,33 +650,39 @@ describe("project runtime migration", () => {
     expect(listAgentRuns(root).at(-1)?.runId).toBe(secondId);
   });
 
-  it("reports conflicts for source symlinks and escaped output references", async () => {
-    const value = receipt();
-    value.output = { path: "../outside.txt", bytes: 1, truncated: false };
-    put("agent-runs", `${firstId}.json`, value);
-    symlinkSync(
-      source("agent-runs", `${firstId}.json`),
-      source("agent-runs", `${secondId}.json`),
-    );
-    const reports = await migrateProjectRuntime({ projectDir: root });
-    expect(
-      reports
-        .filter(
-          (item) =>
-            item.source.includes(firstId) || item.source.includes(secondId),
-        )
-        .every((item) => item.status === "conflict"),
-    ).toBe(true);
-    expect(
-      existsSync(join(runtimeStateDir(root, "agent-runs"), `${firstId}.json`)),
-    ).toBe(false);
-  });
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "reports conflicts for source symlinks and escaped output references",
+    async () => {
+      const value = receipt();
+      value.output = { path: "../outside.txt", bytes: 1, truncated: false };
+      put("agent-runs", `${firstId}.json`, value);
+      symlinkSync(
+        source("agent-runs", `${firstId}.json`),
+        source("agent-runs", `${secondId}.json`),
+      );
+      const reports = await migrateProjectRuntime({ projectDir: root });
+      expect(
+        reports
+          .filter(
+            (item) =>
+              item.source.includes(firstId) || item.source.includes(secondId),
+          )
+          .every((item) => item.status === "conflict"),
+      ).toBe(true);
+      expect(
+        existsSync(
+          join(runtimeStateDir(root, "agent-runs"), `${firstId}.json`),
+        ),
+      ).toBe(false);
+    },
+  );
 
   it("rejects symbolic destination ancestors before lock creation", async () => {
     receipt();
     const outside = join(fixture, "outside");
     mkdirSync(outside);
-    symlinkSync(outside, stateHome);
+    symlinkSync(outside, stateHome, "junction");
     const reports = await migrateProjectRuntime({ projectDir: root });
     expect(reports.every((item) => item.status === "conflict")).toBe(true);
     expect(existsSync(join(outside, "u"))).toBe(false);

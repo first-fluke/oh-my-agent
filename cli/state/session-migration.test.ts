@@ -251,7 +251,14 @@ describe("legacy session migration", () => {
       migrateLegacySessions({ projectDir: project }).failed[0]?.reason,
     ).toContain("differs");
     fs.rmSync(destination, { recursive: true });
-    fs.symlinkSync(join(source, "events.jsonl"), join(source, "link"));
+    // File symlinks need elevated privileges on Windows; a junction is a link too.
+    if (process.platform === "win32")
+      fs.symlinkSync(
+        join(source, "inject-log"),
+        join(source, "link"),
+        "junction",
+      );
+    else fs.symlinkSync(join(source, "events.jsonl"), join(source, "link"));
     expect(
       migrateLegacySessions({ projectDir: project }).failed[0]?.reason,
     ).toContain("links or special files");

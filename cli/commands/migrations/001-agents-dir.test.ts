@@ -90,7 +90,7 @@ describe("migrateToAgents", () => {
     mkdirSync(skillDir, { recursive: true });
     const cursorSkills = join(root, ".cursor", "skills");
     mkdirSync(cursorSkills, { recursive: true });
-    symlinkSync(skillDir, join(cursorSkills, "oma-backend"), "dir");
+    symlinkSync(skillDir, join(cursorSkills, "oma-backend"), "junction");
 
     const actions = migrateToAgents(root);
 
@@ -107,7 +107,7 @@ describe("migrateToAgents", () => {
     const target = join(root, ".agents", "skills");
     mkdirSync(target, { recursive: true });
     mkdirSync(join(root, ".cursor"), { recursive: true });
-    symlinkSync(target, join(root, ".cursor", "skills"), "dir");
+    symlinkSync(target, join(root, ".cursor", "skills"), "junction");
 
     const actions = migrateToAgents(root);
 

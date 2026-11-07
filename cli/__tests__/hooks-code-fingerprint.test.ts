@@ -94,7 +94,10 @@ describe("code fingerprint", () => {
   it("includes untracked names and ignores their contents", async () => {
     initGit();
     const clean = await captureCodeFingerprint(projectDir);
-    const path = join(projectDir, "new\nfile.txt");
+    // Windows forbids a newline in a filename; keep that edge case on POSIX.
+    const name =
+      process.platform === "win32" ? "new file.txt" : "new\nfile.txt";
+    const path = join(projectDir, name);
     writeFileSync(path, "first");
     const added = await captureCodeFingerprint(projectDir);
     expect(added.dirty).toBe(true);

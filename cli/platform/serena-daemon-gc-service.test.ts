@@ -8,7 +8,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   daemonGcServicePath,
@@ -34,6 +34,8 @@ describe("Serena daemon cleanup schedule", () => {
   });
 
   const invocation = ["/opt/node/bin/node", "/opt/oma/bin/cli.js"];
+  // omaHome() resolves OMA_HOME, so on Windows "/storage/oma" gains a drive.
+  const home = resolve("/storage/oma");
 
   it("runs independently of the optional LSP reaper on macOS", () => {
     const plist = renderDaemonGcLaunchdPlist(homeDir, invocation);
@@ -49,7 +51,7 @@ describe("Serena daemon cleanup schedule", () => {
   it("pins the oma that installed it instead of resolving oma on PATH", () => {
     const plist = renderDaemonGcLaunchdPlist(homeDir, invocation);
     expect(plist).toContain(
-      "<array><string>/opt/node/bin/node</string><string>/opt/oma/bin/cli.js</string><string>--oma-home</string><string>/storage/oma</string><string>serena</string><string>daemon</string><string>gc</string><string>--quiet</string></array>",
+      `<array><string>/opt/node/bin/node</string><string>/opt/oma/bin/cli.js</string><string>--oma-home</string><string>${home}</string><string>serena</string><string>daemon</string><string>gc</string><string>--quiet</string></array>`,
     );
     expect(plist).not.toContain("/usr/bin/env");
     expect(plist).toContain("<string>/opt/node/bin:");
@@ -61,7 +63,7 @@ describe("Serena daemon cleanup schedule", () => {
   it("uses the same pinned cleanup command on Linux and Windows", () => {
     expect(renderDaemonGcSystemdTimer()).toContain("OnUnitActiveSec=300s");
     expect(renderDaemonGcSystemdService(homeDir, invocation)).toContain(
-      'ExecStart="/opt/node/bin/node" "/opt/oma/bin/cli.js" "--oma-home" "/storage/oma" "serena" "daemon" "gc" "--quiet"',
+      `ExecStart="/opt/node/bin/node" "/opt/oma/bin/cli.js" "--oma-home" ${JSON.stringify(home)} "serena" "daemon" "gc" "--quiet"`,
     );
     const xml = renderDaemonGcWindowsTaskXml([
       "C:\\node.exe",
@@ -69,13 +71,13 @@ describe("Serena daemon cleanup schedule", () => {
     ]);
     expect(xml).toContain("<Command>C:\\node.exe</Command>");
     expect(xml).toContain(
-      "<Arguments>&quot;C:\\oma\\cli.js&quot; --oma-home /storage/oma serena daemon gc --quiet</Arguments>",
+      `<Arguments>&quot;C:\\oma\\cli.js&quot; --oma-home ${home} serena daemon gc --quiet</Arguments>`,
     );
   });
 
   it("falls back to a PATH lookup when the entry script is unknown", () => {
     expect(renderDaemonGcSystemdService(homeDir, ["oma"])).toContain(
-      'ExecStart=/usr/bin/env "oma" "--oma-home" "/storage/oma" "serena" "daemon" "gc" "--quiet"',
+      `ExecStart=/usr/bin/env "oma" "--oma-home" ${JSON.stringify(home)} "serena" "daemon" "gc" "--quiet"`,
     );
   });
 

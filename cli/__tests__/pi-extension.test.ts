@@ -248,18 +248,23 @@ describe("pi bridge handlers", () => {
     rmSync(target, { recursive: true, force: true });
   });
 
-  it("tool_call blocks `git add .env` via the REAL scm-guard script", async () => {
-    // scm-guard.ts is intentionally NOT faked: this verifies the actual
-    // core-script dialect (hookSpecificOutput.permissionDecision) matches the
-    // bridge's extraction, returning pi's { block, reason } shape.
-    const event = { toolName: "bash", input: { command: "git add .env" } };
-    const out = await handlers.tool_call(event);
-    expect(out?.block).toBe(true);
-    expect(out?.reason).toContain(".env");
-    // The blocked command must not fall through to the test-filter rewrite.
-    expect(event.input.command).toBe("git add .env");
-    rmSync(target, { recursive: true, force: true });
-  });
+  // The installed scm-guard wrapper execs $OMA_BIN, a `#!` launcher here,
+  // which Windows cannot exec without a shell.
+  it.skipIf(process.platform === "win32")(
+    "tool_call blocks `git add .env` via the REAL scm-guard script",
+    async () => {
+      // scm-guard.ts is intentionally NOT faked: this verifies the actual
+      // core-script dialect (hookSpecificOutput.permissionDecision) matches the
+      // bridge's extraction, returning pi's { block, reason } shape.
+      const event = { toolName: "bash", input: { command: "git add .env" } };
+      const out = await handlers.tool_call(event);
+      expect(out?.block).toBe(true);
+      expect(out?.reason).toContain(".env");
+      // The blocked command must not fall through to the test-filter rewrite.
+      expect(event.input.command).toBe("git add .env");
+      rmSync(target, { recursive: true, force: true });
+    },
+  );
 
   it("registers an agent_settled handler", () => {
     expect(typeof handlers.agent_settled).toBe("function");

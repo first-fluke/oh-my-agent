@@ -9,12 +9,20 @@ const driverPath = fileURLToPath(
   ),
 );
 
-test("MPT driver isolates overlapping runs and cleans only their storage", () => {
-  const result = spawnSync(
-    "python3",
-    [
-      "-c",
-      `
+// Windows often has only the Microsoft Store `python3` alias stub, which
+// prints "Python" and exits without running anything.
+const noWindowsPython =
+  process.platform === "win32" &&
+  spawnSync("python3", ["--version"], { encoding: "utf8" }).status !== 0;
+
+test.skipIf(noWindowsPython)(
+  "MPT driver isolates overlapping runs and cleans only their storage",
+  () => {
+    const result = spawnSync(
+      "python3",
+      [
+        "-c",
+        `
 import pathlib, sys, tempfile, types
 
 driver = types.ModuleType("mpt_driver_test")
@@ -112,13 +120,14 @@ with tempfile.TemporaryDirectory(prefix="oma-mpt-regression-") as temp:
 
 print("overlapping-run isolation and failure cleanup passed")
 `,
-      driverPath,
-    ],
-    { encoding: "utf8" },
-  );
-  expect(result.stderr).toBe("");
-  expect(result.status).toBe(0);
-  expect(result.stdout).toContain(
-    "overlapping-run isolation and failure cleanup passed",
-  );
-});
+        driverPath,
+      ],
+      { encoding: "utf8" },
+    );
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain(
+      "overlapping-run isolation and failure cleanup passed",
+    );
+  },
+);

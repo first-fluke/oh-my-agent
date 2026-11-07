@@ -221,16 +221,24 @@ describe("install-context", () => {
       expect(() => validateOmaHome("/proc")).toThrow(/forbidden/);
     });
 
-    it("rejects /etc/foo (subpath) with 'forbidden'", () => {
-      // Defense-in-depth: subpaths of forbidden prefixes also rejected
-      // pre-realpath, regardless of whether the path exists.
-      expect(() => validateOmaHome("/etc/foo")).toThrow(/forbidden/);
-    });
+    // The deny-list holds POSIX system paths; subpaths are matched with the
+    // host separator, and "/etc/foo" is not a system path on Windows.
+    it.skipIf(process.platform === "win32")(
+      "rejects /etc/foo (subpath) with 'forbidden'",
+      () => {
+        // Defense-in-depth: subpaths of forbidden prefixes also rejected
+        // pre-realpath, regardless of whether the path exists.
+        expect(() => validateOmaHome("/etc/foo")).toThrow(/forbidden/);
+      },
+    );
 
-    it("rejects subpaths like /usr/local with 'forbidden'", () => {
-      // /usr/local resolves to itself on both macOS and Linux — deny-list fires
-      expect(() => validateOmaHome("/usr/local")).toThrow(/forbidden/);
-    });
+    it.skipIf(process.platform === "win32")(
+      "rejects subpaths like /usr/local with 'forbidden'",
+      () => {
+        // /usr/local resolves to itself on both macOS and Linux — deny-list fires
+        expect(() => validateOmaHome("/usr/local")).toThrow(/forbidden/);
+      },
+    );
 
     it("accepts a new absolute home under a writable existing ancestor", () => {
       const nonExistent = path.join(makeTmpDir(), "new", "oma-home");

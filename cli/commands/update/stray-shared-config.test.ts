@@ -82,7 +82,7 @@ describe("removeStrayCueTemplate", () => {
     });
     expect(
       formatStrayCueRemoval(root, result as NonNullable<typeof result>),
-    ).toContain("Removed .agents/oma-config.cue");
+    ).toContain(`Removed ${join(".agents", "oma-config.cue")}`);
   });
 
   it("treats line-ending and trailing-whitespace noise as the template", () => {

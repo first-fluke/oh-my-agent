@@ -186,10 +186,16 @@ function makeMockOptimizerFn(editSequences: SkillEdit[][]): OptimizerFn {
 
 beforeEach(() => {
   tmpDir = makeTmpDir();
+  // On Windows tmpdir() lives under the home directory, so the real home would
+  // be found as the backup root for every test skill. Isolate it.
+  const home = makeTmpDir();
+  vi.stubEnv("HOME", home);
+  vi.stubEnv("USERPROFILE", home);
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 // --- Constants ---

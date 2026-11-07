@@ -468,23 +468,27 @@ describe("incident to regression", () => {
     ).toBe(true);
   });
 
-  it("rejects external/symlinked incident evidence before creating a record", () => {
-    const { root, specPath } = setup({ evidence_files: ["outside.txt"] });
-    symlinkSync(specPath, join(root, "outside.txt"));
-    expect(() => captureHarnessIncident(root, specPath)).toThrow(
-      "regular file",
-    );
-    expect(
-      existsSync(
-        join(
-          root,
-          ".agents",
-          "results",
-          "incidents",
-          "reported-incomplete",
-          "incident.json",
+  // Windows file symlinks need elevated privileges.
+  it.skipIf(process.platform === "win32")(
+    "rejects external/symlinked incident evidence before creating a record",
+    () => {
+      const { root, specPath } = setup({ evidence_files: ["outside.txt"] });
+      symlinkSync(specPath, join(root, "outside.txt"));
+      expect(() => captureHarnessIncident(root, specPath)).toThrow(
+        "regular file",
+      );
+      expect(
+        existsSync(
+          join(
+            root,
+            ".agents",
+            "results",
+            "incidents",
+            "reported-incomplete",
+            "incident.json",
+          ),
         ),
-      ),
-    ).toBe(false);
-  });
+      ).toBe(false);
+    },
+  );
 });

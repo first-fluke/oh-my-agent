@@ -4,13 +4,16 @@
  * were consolidated into vendor-detect.ts.
  */
 
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   detectVendorFromInput,
   type HookPayloadKind,
 } from "../../.agents/hooks/core/vendor-detect.ts";
 
-const CORE = "/p/.agents/hooks/core/handler.ts";
+// Script paths come from import.meta.filename, so they use native separators.
+const CORE = join("/p", ".agents", "hooks", "core", "handler.ts");
+const CODEX_HOOK = join("/p", ".codex", "hooks", "x.ts");
 const AGY = { workspacePaths: ["/w"], conversationId: "c" };
 
 afterEach(() => {
@@ -37,12 +40,7 @@ function detect(
 describe("detectVendorFromInput — prompt payloads", () => {
   it("trusts the installed hook dir before any payload signal", () => {
     expect(
-      detect(
-        "prompt",
-        AGY,
-        { GROK_WORKSPACE_ROOT: "/g" },
-        "/p/.codex/hooks/x.ts",
-      ),
+      detect("prompt", AGY, { GROK_WORKSPACE_ROOT: "/g" }, CODEX_HOOK),
     ).toBe("codex");
   });
 
@@ -85,7 +83,7 @@ describe("detectVendorFromInput — stop payloads", () => {
   });
 
   it("ignores the install dir and maps Stop events", () => {
-    expect(detect("stop", {}, {}, "/p/.codex/hooks/x.ts")).toBe("claude");
+    expect(detect("stop", {}, {}, CODEX_HOOK)).toBe("claude");
     expect(
       detect(
         "stop",
@@ -101,8 +99,10 @@ describe("detectVendorFromInput — stop payloads", () => {
 
 describe("detectVendorFromInput — tool payloads", () => {
   it("recognizes the pi bridge dir but no other install dir", () => {
-    expect(detect("tool", {}, {}, "/p/.pi/extensions/oma/x.ts")).toBe("pi");
-    expect(detect("tool", {}, {}, "/p/.codex/hooks/x.ts")).toBe("claude");
+    expect(
+      detect("tool", {}, {}, join("/p", ".pi", "extensions", "oma", "x.ts")),
+    ).toBe("pi");
+    expect(detect("tool", {}, {}, CODEX_HOOK)).toBe("claude");
   });
 
   it("maps env and PreToolUse event names", () => {

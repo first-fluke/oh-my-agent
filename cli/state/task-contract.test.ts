@@ -9,7 +9,15 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from "vitest";
 import {
   PASS_COMMAND,
   testTask,
@@ -23,6 +31,7 @@ import {
   verifyAgentRun,
   verifyRequiredChecks,
 } from "./agent-results.js";
+import * as memoryDelivery from "./memory-delivery.js";
 import { runtimeStateDir } from "./project-runtime.js";
 import {
   contractHash,
@@ -34,11 +43,18 @@ import {
 
 describe("acceptance contracts", () => {
   let root: string;
+  let delivering: MockInstance<typeof memoryDelivery.deliverEventMemory>;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "oma-contract-"));
     writeTestPlan(root);
+    delivering = vi.spyOn(memoryDelivery, "deliverEventMemory");
   });
-  afterEach(() => {
+  afterEach(async () => {
+    // Decision memory is delivered fire-and-forget; settle it so its SQLite
+    // drain lock is closed before the state home is removed (Windows cannot
+    // delete an open file).
+    await Promise.allSettled(delivering.mock.results.map((r) => r.value));
+    delivering.mockRestore();
     process.env.OMA_PROFILE = "0";
     rmSync(root, { recursive: true, force: true });
   });
@@ -553,7 +569,7 @@ describe("acceptance contracts", () => {
   it("rejects scoped inputs reached through a symlinked parent directory", () => {
     mkdirSync(join(root, "source"));
     writeFileSync(join(root, "source/input.txt"), "input");
-    symlinkSync(join(root, "source"), join(root, "linked"), "dir");
+    symlinkSync(join(root, "source"), join(root, "linked"), "junction");
     writeFileSync(
       join(root, ".agents/results/plan-s1.json"),
       JSON.stringify({

@@ -122,26 +122,30 @@ describe("handler run() exports — lockstep guard (T1-a)", () => {
       expect(result).toBeNull();
     });
 
-    it("returns mutate result with filtered command when filter script exists", async () => {
-      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(true);
-      const result = await tf.run(
-        {
-          kind: "pre_tool",
-          toolName: "Bash",
-          toolInput: { command: "bun run test" },
-          cwd: "/tmp",
-        },
-        { vendor: "claude", cwd: "/tmp" },
-      );
-      expect(result).not.toBeNull();
-      expect(result?.type).toBe("mutate");
-      if (result?.type === "mutate") {
-        expect(typeof result.updatedInput.command).toBe("string");
-        expect(result.updatedInput.command as string).toContain(
-          "filter-test-output.sh",
+    // The hook skips its Bash-only rewrite on Windows by design (#618).
+    it.skipIf(process.platform === "win32")(
+      "returns mutate result with filtered command when filter script exists",
+      async () => {
+        (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(true);
+        const result = await tf.run(
+          {
+            kind: "pre_tool",
+            toolName: "Bash",
+            toolInput: { command: "bun run test" },
+            cwd: "/tmp",
+          },
+          { vendor: "claude", cwd: "/tmp" },
         );
-      }
-    });
+        expect(result).not.toBeNull();
+        expect(result?.type).toBe("mutate");
+        if (result?.type === "mutate") {
+          expect(typeof result.updatedInput.command).toBe("string");
+          expect(result.updatedInput.command as string).toContain(
+            "filter-test-output.sh",
+          );
+        }
+      },
+    );
   });
 
   describe("persistent-mode run()", () => {

@@ -65,7 +65,11 @@ function timeoutError(): Error {
 
 function reposJson(paths: string[]): string {
   return JSON.stringify(
-    paths.map((path) => ({ name: path.split("/").pop(), path, stale: false })),
+    paths.map((path) => ({
+      name: path.split(/[\\/]/).pop(),
+      path,
+      stale: false,
+    })),
   );
 }
 

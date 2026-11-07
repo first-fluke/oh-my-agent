@@ -202,20 +202,26 @@ describe("native provider MCP projection", () => {
     expect(readFileSync(join(root, ".mcp.json"), "utf8")).toBe(original);
     expect(existsSync(join(root, ".agents/state"))).toBe(false);
   });
-  it("replaces legacy native symlinks without writing the SSOT target", () => {
-    select("gortex");
-    write(join(root, ".agents/mcp.json"), {
-      mcpServers: { serena: { command: "serena" } },
-    });
-    const original = readFileSync(join(root, ".agents/mcp.json"), "utf8");
-    symlinkSync(join(root, ".agents/mcp.json"), join(root, ".mcp.json"));
-    syncProviderMcp(root, ["claude"], { home });
-    expect(readFileSync(join(root, ".agents/mcp.json"), "utf8")).toBe(original);
-    expect(
-      JSON.parse(readFileSync(join(root, ".mcp.json"), "utf8")).mcpServers
-        .gortex,
-    ).toBeDefined();
-  });
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "replaces legacy native symlinks without writing the SSOT target",
+    () => {
+      select("gortex");
+      write(join(root, ".agents/mcp.json"), {
+        mcpServers: { serena: { command: "serena" } },
+      });
+      const original = readFileSync(join(root, ".agents/mcp.json"), "utf8");
+      symlinkSync(join(root, ".agents/mcp.json"), join(root, ".mcp.json"));
+      syncProviderMcp(root, ["claude"], { home });
+      expect(readFileSync(join(root, ".agents/mcp.json"), "utf8")).toBe(
+        original,
+      );
+      expect(
+        JSON.parse(readFileSync(join(root, ".mcp.json"), "utf8")).mcpServers
+          .gortex,
+      ).toBeDefined();
+    },
+  );
   it("projects provider routing into generated instructions and restores defaults", () => {
     select("gortex");
     mergeRulesIndexForVendor(root, "codex");

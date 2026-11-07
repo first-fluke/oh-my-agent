@@ -142,8 +142,9 @@ describe("schedule/runner.ts — runScheduledJob", () => {
   it("binds the registered home before lookup and ignores captured home redirects", async () => {
     vi.stubEnv("OMA_HOME", "/ambient/oma");
     vi.stubEnv("OMA_STATE_HOME", "/ambient/profile");
+    // omaHome() resolves the path, so on Windows it gains a drive letter.
     mockGetJobById.mockImplementation(() => {
-      expect(process.env.OMA_HOME).toBe("/registered/oma");
+      expect(process.env.OMA_HOME).toBe(path.resolve("/registered/oma"));
       expect(process.env.OMA_STATE_HOME).toBe("/registered/profile");
       return makeSampleJob({ capturedEnvRef: `env/${JOB_ID}` });
     });
@@ -161,14 +162,14 @@ describe("schedule/runner.ts — runScheduledJob", () => {
     });
     const child = mockSpawnSync.mock.calls[0]?.[2];
     expect(child.env).toMatchObject({
-      OMA_HOME: "/registered/oma",
+      OMA_HOME: path.resolve("/registered/oma"),
       OMA_STATE_HOME: "/registered/profile",
       TOKEN: "secret",
     });
     expect(process.env.OMA_HOME).toBe("/ambient/oma");
     expect(process.env.OMA_STATE_HOME).toBe("/ambient/profile");
     expect(mockFsFunctions.unlinkSync).toHaveBeenCalledWith(
-      expect.stringContaining("/running/"),
+      expect.stringContaining(`${path.sep}running${path.sep}`),
     );
   });
 

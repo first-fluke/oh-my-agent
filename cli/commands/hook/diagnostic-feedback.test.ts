@@ -196,7 +196,7 @@ describe("after-edit diagnostic feedback", () => {
   });
 
   it("rejects paths outside the project including symlinks", async () => {
-    symlinkSync(tmpdir(), join(root, "outside"));
+    symlinkSync(tmpdir(), join(root, "outside"), "junction");
     for (const path of [
       "../outside.ts",
       "outside/no-such-file.ts",

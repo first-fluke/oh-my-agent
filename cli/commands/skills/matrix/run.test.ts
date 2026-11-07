@@ -73,6 +73,9 @@ function successfulRun(input: MatrixInvocation): MatrixRun {
   };
 }
 
+// Live runs require POSIX process groups; runSkillsMatrix refuses them on win32.
+const liveIt = it.skipIf(process.platform === "win32");
+
 describe("skill matrix planning and execution", () => {
   it("plans six diagnostic cells without calling a CLI or asking for confirmation", async () => {
     const run = vi.fn();
@@ -112,83 +115,98 @@ describe("skill matrix planning and execution", () => {
     },
   );
 
-  it("reports a cancelled live run without claiming any measurement", async () => {
-    const run = vi.fn();
-    const confirm = vi.fn().mockResolvedValue(false);
-    const report = await runSkillsMatrix({ live: true }, { run, confirm });
-    expect(confirm).toHaveBeenCalledWith(
-      expect.stringContaining("6 native CLI invocations"),
-    );
-    expect(run).not.toHaveBeenCalled();
-    expect(report.status).toBe("cancelled");
-    expect(matrixReportFailed(report)).toBe(true);
-  });
+  liveIt(
+    "reports a cancelled live run without claiming any measurement",
+    async () => {
+      const run = vi.fn();
+      const confirm = vi.fn().mockResolvedValue(false);
+      const report = await runSkillsMatrix({ live: true }, { run, confirm });
+      expect(confirm).toHaveBeenCalledWith(
+        expect.stringContaining("6 native CLI invocations"),
+      );
+      expect(run).not.toHaveBeenCalled();
+      expect(report.status).toBe("cancelled");
+      expect(matrixReportFailed(report)).toBe(true);
+    },
+  );
 
-  it("measures selected native paths independently and removes all cell workspaces", async () => {
-    const workspaces: string[] = [];
-    const run = vi.fn(async (input: MatrixInvocation) => {
-      workspaces.push(input.workspace);
-      expect(input.prompt).not.toContain("SKILL.md");
-      expect(input.prompt).not.toContain('"ok":true');
-      return successfulRun(input);
-    });
-    const report = await runSkillsMatrix(
-      {
-        suite: fixtureSuite(),
-        live: true,
-        yes: true,
-        claudeModel: "fixture-claude",
-        codexModel: "fixture-codex",
-      },
-      { run },
-    );
-    expect(run).toHaveBeenCalledTimes(2);
-    expect(new Set(workspaces).size).toBe(2);
-    expect(workspaces.every((path) => !existsSync(path))).toBe(true);
-    expect(report.summary).toMatchObject({ pass: 2, measured: 2 });
-    expect(matrixReportFailed(report)).toBe(false);
-    expect(report.cells.map((cell) => cell.model)).toEqual([
-      "fixture-claude",
-      "fixture-codex",
-    ]);
-    expect(JSON.stringify(report)).not.toContain("Return exactly");
-  });
+  liveIt(
+    "measures selected native paths independently and removes all cell workspaces",
+    async () => {
+      const workspaces: string[] = [];
+      const run = vi.fn(async (input: MatrixInvocation) => {
+        workspaces.push(input.workspace);
+        expect(input.prompt).not.toContain("SKILL.md");
+        expect(input.prompt).not.toContain('"ok":true');
+        return successfulRun(input);
+      });
+      const report = await runSkillsMatrix(
+        {
+          suite: fixtureSuite(),
+          live: true,
+          yes: true,
+          claudeModel: "fixture-claude",
+          codexModel: "fixture-codex",
+        },
+        { run },
+      );
+      expect(run).toHaveBeenCalledTimes(2);
+      expect(new Set(workspaces).size).toBe(2);
+      expect(workspaces.every((path) => !existsSync(path))).toBe(true);
+      expect(report.summary).toMatchObject({ pass: 2, measured: 2 });
+      expect(matrixReportFailed(report)).toBe(false);
+      expect(report.cells.map((cell) => cell.model)).toEqual([
+        "fixture-claude",
+        "fixture-codex",
+      ]);
+      expect(JSON.stringify(report)).not.toContain("Return exactly");
+    },
+  );
 
-  it("continues other vendors after a dispatch error and keeps failure details generic", async () => {
-    const run = vi.fn(async (input: MatrixInvocation) => {
-      if (input.vendor === "claude")
-        throw new Error("credential-secret-from-vendor");
-      return successfulRun(input);
-    });
-    const report = await runSkillsMatrix(
-      { suite: fixtureSuite(), live: true, yes: true },
-      { run },
-    );
-    expect(report.cells.map((cell) => cell.status)).toEqual(["error", "pass"]);
-    expect(report.summary.measured).toBe(2);
-    expect(matrixReportFailed(report)).toBe(true);
-    expect(JSON.stringify(report)).not.toContain("credential-secret");
-  });
+  liveIt(
+    "continues other vendors after a dispatch error and keeps failure details generic",
+    async () => {
+      const run = vi.fn(async (input: MatrixInvocation) => {
+        if (input.vendor === "claude")
+          throw new Error("credential-secret-from-vendor");
+        return successfulRun(input);
+      });
+      const report = await runSkillsMatrix(
+        { suite: fixtureSuite(), live: true, yes: true },
+        { run },
+      );
+      expect(report.cells.map((cell) => cell.status)).toEqual([
+        "error",
+        "pass",
+      ]);
+      expect(report.summary.measured).toBe(2);
+      expect(matrixReportFailed(report)).toBe(true);
+      expect(JSON.stringify(report)).not.toContain("credential-secret");
+    },
+  );
 
-  it("does not dispatch a second cell after interruption and removes signal listeners", async () => {
-    const controller = new AbortController();
-    const before = process.listenerCount("SIGINT");
-    const workspaces: string[] = [];
-    const run = vi.fn(async (input: MatrixInvocation) => {
-      workspaces.push(input.workspace);
-      controller.abort();
-      return successfulRun(input);
-    });
-    const report = await runSkillsMatrix(
-      { suite: fixtureSuite(), live: true, yes: true },
-      { run, signal: controller.signal },
-    );
-    expect(run).toHaveBeenCalledTimes(1);
-    expect(report.status).toBe("interrupted");
-    expect(matrixReportFailed(report)).toBe(true);
-    expect(process.listenerCount("SIGINT")).toBe(before);
-    expect(workspaces.every((path) => !existsSync(path))).toBe(true);
-  });
+  liveIt(
+    "does not dispatch a second cell after interruption and removes signal listeners",
+    async () => {
+      const controller = new AbortController();
+      const before = process.listenerCount("SIGINT");
+      const workspaces: string[] = [];
+      const run = vi.fn(async (input: MatrixInvocation) => {
+        workspaces.push(input.workspace);
+        controller.abort();
+        return successfulRun(input);
+      });
+      const report = await runSkillsMatrix(
+        { suite: fixtureSuite(), live: true, yes: true },
+        { run, signal: controller.signal },
+      );
+      expect(run).toHaveBeenCalledTimes(1);
+      expect(report.status).toBe("interrupted");
+      expect(matrixReportFailed(report)).toBe(true);
+      expect(process.listenerCount("SIGINT")).toBe(before);
+      expect(workspaces.every((path) => !existsSync(path))).toBe(true);
+    },
+  );
 
   it("saves structured reports without overwriting an existing file", async () => {
     const suite = fixtureSuite();

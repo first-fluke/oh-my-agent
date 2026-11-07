@@ -360,25 +360,29 @@ describe("migrateArtifactLayout", () => {
     expect(existsSync(join(root, ".agents/results"))).toBe(false);
   });
 
-  it("preserves URL-encoded asset filenames and fragment/query suffixes", () => {
-    const root = makeRoot();
-    const links = [
-      "[hash](assets/a%23b.svg#preview)",
-      "[question](assets/a%3Fb.svg?download=1)",
-      "[percent](assets/a%25b.svg)",
-      "[space](assets/a%20b.svg)",
-    ].join("\n");
-    put(root, "docs/design-docs/a.md", links);
-    for (const filename of ["a#b.svg", "a?b.svg", "a%b.svg", "a b.svg"])
-      put(root, `docs/design-docs/assets/${filename}`, "<svg/>\n");
+  // `?` is not a legal filename character on Windows.
+  it.skipIf(process.platform === "win32")(
+    "preserves URL-encoded asset filenames and fragment/query suffixes",
+    () => {
+      const root = makeRoot();
+      const links = [
+        "[hash](assets/a%23b.svg#preview)",
+        "[question](assets/a%3Fb.svg?download=1)",
+        "[percent](assets/a%25b.svg)",
+        "[space](assets/a%20b.svg)",
+      ].join("\n");
+      put(root, "docs/design-docs/a.md", links);
+      for (const filename of ["a#b.svg", "a?b.svg", "a%b.svg", "a b.svg"])
+        put(root, `docs/design-docs/assets/${filename}`, "<svg/>\n");
 
-    migrateArtifactLayout(root);
+      migrateArtifactLayout(root);
 
-    expect(read(root, "docs/decisions/a.md")).toBe(links);
-    expect(read(root, "docs/decisions/assets/a#b.svg")).toBe("<svg/>\n");
-    expect(read(root, "docs/decisions/assets/a?b.svg")).toBe("<svg/>\n");
-    expect(read(root, "docs/decisions/assets/a%b.svg")).toBe("<svg/>\n");
-  });
+      expect(read(root, "docs/decisions/a.md")).toBe(links);
+      expect(read(root, "docs/decisions/assets/a#b.svg")).toBe("<svg/>\n");
+      expect(read(root, "docs/decisions/assets/a?b.svg")).toBe("<svg/>\n");
+      expect(read(root, "docs/decisions/assets/a%b.svg")).toBe("<svg/>\n");
+    },
+  );
 
   it("rebases nested labels/images and balanced-parenthesis collision paths", () => {
     const root = makeRoot();
@@ -403,27 +407,33 @@ describe("migrateArtifactLayout", () => {
     expect(read(root, "docs/decisions/a(v2).md")).toBe("Existing\n");
   });
 
-  it("publishes rebased readonly Markdown and atomically updates readonly references", () => {
-    const root = makeRoot();
-    put(root, "docs/plans/designs/a.md", "[guide](../../guide.md)\n");
-    put(root, "docs/guide.md", "Guide\n");
-    put(root, "README.md", "[a](docs/plans/designs/a.md)\n");
-    chmodSync(join(root, "docs/plans/designs/a.md"), 0o444);
-    chmodSync(join(root, "README.md"), 0o444);
+  // Windows' read-only attribute blocks renaming over the target; POSIX
+  // permission semantics only.
+  it.skipIf(process.platform === "win32")(
+    "publishes rebased readonly Markdown and atomically updates readonly references",
+    () => {
+      const root = makeRoot();
+      put(root, "docs/plans/designs/a.md", "[guide](../../guide.md)\n");
+      put(root, "docs/guide.md", "Guide\n");
+      put(root, "README.md", "[a](docs/plans/designs/a.md)\n");
+      chmodSync(join(root, "docs/plans/designs/a.md"), 0o444);
+      chmodSync(join(root, "README.md"), 0o444);
 
-    const report = migrateArtifactLayout(root);
+      const report = migrateArtifactLayout(root);
 
-    expect(report.skipped).toEqual([]);
-    expect(read(root, "docs/decisions/a.md")).toBe("[guide](../guide.md)\n");
-    expect(read(root, "README.md")).toBe("[a](docs/decisions/a.md)\n");
-    expect(statSync(join(root, "docs/decisions/a.md")).mode & 0o777).toBe(
-      0o444,
-    );
-    expect(statSync(join(root, "README.md")).mode & 0o777).toBe(0o444);
-    expect(migrateArtifactLayout(root).actions).toEqual([]);
-  });
+      expect(report.skipped).toEqual([]);
+      expect(read(root, "docs/decisions/a.md")).toBe("[guide](../guide.md)\n");
+      expect(read(root, "README.md")).toBe("[a](docs/decisions/a.md)\n");
+      expect(statSync(join(root, "docs/decisions/a.md")).mode & 0o777).toBe(
+        0o444,
+      );
+      expect(statSync(join(root, "README.md")).mode & 0o777).toBe(0o444);
+      expect(migrateArtifactLayout(root).actions).toEqual([]);
+    },
+  );
 
-  it.skipIf(process.getuid?.() === 0)(
+  // A 0o555 directory still accepts writes on Windows (chmod ignores dirs).
+  it.skipIf(process.getuid?.() === 0 || process.platform === "win32")(
     "rolls back a failed reference update and retries without duplicate imports",
     () => {
       const root = makeRoot();
@@ -638,34 +648,38 @@ describe("migrateArtifactLayout", () => {
     );
   });
 
-  it("rejects symlink sources, linked parents, destinations and reference files", () => {
-    const root = makeRoot();
-    const external = makeRoot();
-    put(external, "outside.md", "External docs/design-docs/a.md\n");
-    put(root, "docs/design-docs/a.md", "[outside](../../../../outside.md)\n");
-    symlinkSync(
-      join(external, "outside.md"),
-      join(root, "docs/design-docs/link.md"),
-    );
-    symlinkSync(external, join(root, "docs/decisions"));
-    symlinkSync(join(external, "outside.md"), join(root, "README.md"));
-    mkdirSync(join(root, ".agents"), { recursive: true });
-    symlinkSync(external, join(root, ".agents/state"));
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "rejects symlink sources, linked parents, destinations and reference files",
+    () => {
+      const root = makeRoot();
+      const external = makeRoot();
+      put(external, "outside.md", "External docs/design-docs/a.md\n");
+      put(root, "docs/design-docs/a.md", "[outside](../../../../outside.md)\n");
+      symlinkSync(
+        join(external, "outside.md"),
+        join(root, "docs/design-docs/link.md"),
+      );
+      symlinkSync(external, join(root, "docs/decisions"));
+      symlinkSync(join(external, "outside.md"), join(root, "README.md"));
+      mkdirSync(join(root, ".agents"), { recursive: true });
+      symlinkSync(external, join(root, ".agents/state"));
 
-    const report = migrateArtifactLayout(root);
+      const report = migrateArtifactLayout(root);
 
-    expect(report.moved).toEqual([]);
-    expect(
-      report.skipped.some(({ reason }) =>
-        reason.toLowerCase().includes("symlink"),
-      ),
-    ).toBe(true);
-    expect(read(external, "outside.md")).toBe(
-      "External docs/design-docs/a.md\n",
-    );
-    expect(read(root, "docs/design-docs/a.md")).toBe(
-      "[outside](../../../../outside.md)\n",
-    );
-    expect(existsSync(join(external, "a.md"))).toBe(false);
-  });
+      expect(report.moved).toEqual([]);
+      expect(
+        report.skipped.some(({ reason }) =>
+          reason.toLowerCase().includes("symlink"),
+        ),
+      ).toBe(true);
+      expect(read(external, "outside.md")).toBe(
+        "External docs/design-docs/a.md\n",
+      );
+      expect(read(root, "docs/design-docs/a.md")).toBe(
+        "[outside](../../../../outside.md)\n",
+      );
+      expect(existsSync(join(external, "a.md"))).toBe(false);
+    },
+  );
 });

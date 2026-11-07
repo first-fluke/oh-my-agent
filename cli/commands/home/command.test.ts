@@ -1,6 +1,6 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { migrateGlobalHome } from "../../io/global-home-migration.js";
@@ -40,10 +40,12 @@ describe("home command", () => {
     registerHome(program);
     await program.parseAsync(["home", "--json"], { from: "user" });
     const result = JSON.parse(String(log.mock.calls[0]?.[0]));
-    expect(result.home).toBe("/custom/global");
-    expect(result.schedule).toBe("/custom/global/schedule");
-    expect(result.serena).toBe("/custom/global/state/serena");
-    expect(result.profiles).toBe("/custom/profiles");
+    // Roots are resolved, which adds a drive letter on Windows.
+    const custom = resolve("/custom/global");
+    expect(result.home).toBe(custom);
+    expect(result.schedule).toBe(join(custom, "schedule"));
+    expect(result.serena).toBe(join(custom, "state", "serena"));
+    expect(result.profiles).toBe(resolve("/custom/profiles"));
   });
 
   it.each([

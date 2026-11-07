@@ -166,7 +166,8 @@ describe("installCopilotWorkflowPrompts", () => {
     expect(readFileSync(userPrompt, "utf-8")).toBe(userBody);
   });
 
-  it.each([false, true])(
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32").each([false, true])(
     "preserves a same-name prompt symlink, even when its target has an oma marker (%s)",
     (hasMarker) => {
       const sourceDir = mkTemp("oma-copilot-src-");
@@ -188,22 +189,26 @@ describe("installCopilotWorkflowPrompts", () => {
     },
   );
 
-  it("preserves a dangling same-name prompt symlink", () => {
-    const sourceDir = mkTemp("oma-copilot-src-");
-    const targetDir = mkTemp("oma-copilot-dst-");
-    setupSource(sourceDir, { debug: "---\ndescription: Bug\n---\n" });
-    const promptsDir = join(targetDir, ".github", "prompts");
-    mkdirSync(promptsDir, { recursive: true });
-    const prompt = join(promptsDir, "debug.prompt.md");
-    const missingTarget = join(targetDir, "missing.md");
-    symlinkSync(missingTarget, prompt);
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "preserves a dangling same-name prompt symlink",
+    () => {
+      const sourceDir = mkTemp("oma-copilot-src-");
+      const targetDir = mkTemp("oma-copilot-dst-");
+      setupSource(sourceDir, { debug: "---\ndescription: Bug\n---\n" });
+      const promptsDir = join(targetDir, ".github", "prompts");
+      mkdirSync(promptsDir, { recursive: true });
+      const prompt = join(promptsDir, "debug.prompt.md");
+      const missingTarget = join(targetDir, "missing.md");
+      symlinkSync(missingTarget, prompt);
 
-    installCopilotWorkflowPrompts(sourceDir, targetDir);
+      installCopilotWorkflowPrompts(sourceDir, targetDir);
 
-    expect(lstatSync(prompt).isSymbolicLink()).toBe(true);
-    expect(readlinkSync(prompt)).toBe(missingTarget);
-    expect(existsSync(missingTarget)).toBe(false);
-  });
+      expect(lstatSync(prompt).isSymbolicLink()).toBe(true);
+      expect(readlinkSync(prompt)).toBe(missingTarget);
+      expect(existsSync(missingTarget)).toBe(false);
+    },
+  );
 
   it("refreshes an existing oma-generated prompt", () => {
     const sourceDir = mkTemp("oma-copilot-src-");

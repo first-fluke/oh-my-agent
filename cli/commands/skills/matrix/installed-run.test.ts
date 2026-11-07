@@ -54,6 +54,9 @@ function auditRun(input: MatrixInvocation): MatrixRun {
   };
 }
 
+// Live runs require POSIX process groups; runSkillsMatrix refuses them on win32.
+const liveIt = it.skipIf(process.platform === "win32");
+
 describe("installed matrix execution", () => {
   it("plans an unchanged installed bundle without invoking any native CLI", async () => {
     const root = project();
@@ -110,61 +113,69 @@ describe("installed matrix execution", () => {
     expect(after.suiteHash).not.toBe(before.suiteHash);
   });
 
-  it("audits AV-style injected copies while keeping native activation observational", async () => {
-    const root = project();
-    const workspaces: string[] = [];
-    const run = vi.fn(async (input: MatrixInvocation) => {
-      workspaces.push(input.workspace);
-      expect(input.prompt).toContain("## Skill oma-example\nSource: ");
-      expect(input.prompt).not.toContain(root);
+  liveIt(
+    "audits AV-style injected copies while keeping native activation observational",
+    async () => {
+      const root = project();
+      const workspaces: string[] = [];
+      const run = vi.fn(async (input: MatrixInvocation) => {
+        workspaces.push(input.workspace);
+        expect(input.prompt).toContain("## Skill oma-example\nSource: ");
+        expect(input.prompt).not.toContain(root);
+        expect(
+          readFileSync(
+            join(input.workspace, ".agents/skills/_shared/core/example.md"),
+            "utf8",
+          ),
+        ).toBe("Original shared resource.\n");
+        return auditRun(input);
+      });
+      const report = await runSkillsMatrix(
+        {
+          projectRoot: root,
+          skills: "oma-example",
+          delivery: "injected",
+          live: true,
+          yes: true,
+        },
+        { run },
+      );
+      expect(report.summary).toMatchObject({ pass: 2, measured: 2 });
       expect(
-        readFileSync(
-          join(input.workspace, ".agents/skills/_shared/core/example.md"),
-          "utf8",
+        report.cells.every(
+          (cell) => cell.contentHash === report.bundle?.skills[0]?.hash,
         ),
-      ).toBe("Original shared resource.\n");
-      return auditRun(input);
-    });
-    const report = await runSkillsMatrix(
-      {
-        projectRoot: root,
-        skills: "oma-example",
-        delivery: "injected",
-        live: true,
-        yes: true,
-      },
-      { run },
-    );
-    expect(report.summary).toMatchObject({ pass: 2, measured: 2 });
-    expect(
-      report.cells.every(
-        (cell) => cell.contentHash === report.bundle?.skills[0]?.hash,
-      ),
-    ).toBe(true);
-    expect(
-      report.cells.every((cell) => cell.nativeActivation === "unobserved"),
-    ).toBe(true);
-    expect(matrixReportFailed(report)).toBe(false);
-    expect(workspaces.every((workspace) => !existsSync(workspace))).toBe(true);
-  });
+      ).toBe(true);
+      expect(
+        report.cells.every((cell) => cell.nativeActivation === "unobserved"),
+      ).toBe(true);
+      expect(matrixReportFailed(report)).toBe(false);
+      expect(workspaces.every((workspace) => !existsSync(workspace))).toBe(
+        true,
+      );
+    },
+  );
 
-  it("does not count injected content or a correct final response as read evidence", async () => {
-    const root = project();
-    const report = await runSkillsMatrix(
-      {
-        projectRoot: root,
-        skills: "oma-example",
-        delivery: "injected",
-        live: true,
-        yes: true,
-      },
-      {
-        run: async (input) => ({ ...auditRun(input), reads: [] }),
-      },
-    );
-    expect(report.summary.unverifiable).toBe(2);
-    expect(matrixReportFailed(report)).toBe(true);
-  });
+  liveIt(
+    "does not count injected content or a correct final response as read evidence",
+    async () => {
+      const root = project();
+      const report = await runSkillsMatrix(
+        {
+          projectRoot: root,
+          skills: "oma-example",
+          delivery: "injected",
+          live: true,
+          yes: true,
+        },
+        {
+          run: async (input) => ({ ...auditRun(input), reads: [] }),
+        },
+      );
+      expect(report.summary.unverifiable).toBe(2);
+      expect(matrixReportFailed(report)).toBe(true);
+    },
+  );
 
   it.each([
     [{ projectRoot: "/unused" }, "together"],

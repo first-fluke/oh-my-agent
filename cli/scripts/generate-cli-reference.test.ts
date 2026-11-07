@@ -217,7 +217,9 @@ describe("generate-cli-reference targets and --check", () => {
   });
 
   it("targets the English page plus locale copies that carry both markers", () => {
-    const targets = findTargets(root).map((file) => file.slice(root.length));
+    const targets = findTargets(root).map((file) =>
+      file.slice(root.length).replace(/\\/g, "/"),
+    );
     expect(targets).toEqual([
       "/web/docs/cli-interfaces/options.md",
       "/web/i18n/ko/docusaurus-plugin-content-docs/current/cli-interfaces/options.md",

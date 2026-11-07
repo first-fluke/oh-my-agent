@@ -51,26 +51,30 @@ describe("installZcodeWorkflowCommands", () => {
     return dir;
   }
 
-  it("symlinks each top-level workflow at .zcode/commands/<name>.md", () => {
-    const root = mkTemp("oma-zcode-");
-    setupWorkflows(root, {
-      ralph: "---\ndescription: Ralph loop\n---\n\n# body",
-      debug: "---\ndescription: Bug diagnosis\n---\n\n# body",
-    });
+  // Without symlink privilege Windows links files as hardlinks (fs-link.ts).
+  it.skipIf(process.platform === "win32")(
+    "symlinks each top-level workflow at .zcode/commands/<name>.md",
+    () => {
+      const root = mkTemp("oma-zcode-");
+      setupWorkflows(root, {
+        ralph: "---\ndescription: Ralph loop\n---\n\n# body",
+        debug: "---\ndescription: Bug diagnosis\n---\n\n# body",
+      });
 
-    const { created } = installZcodeWorkflowCommands(root);
+      const { created } = installZcodeWorkflowCommands(root);
 
-    // Flat command files — NOT the <name>/SKILL.md skill layout.
-    for (const name of ["ralph", "debug"]) {
-      const file = commandPath(root, name);
-      expect(lstatSync(file).isSymbolicLink()).toBe(true);
-      expect(realpathSync(file)).toBe(
-        realpathSync(join(root, ".agents", "workflows", `${name}.md`)),
-      );
-    }
-    expect(created).toContain(".zcode/commands/ralph");
-    expect(created).toContain(".zcode/commands/debug");
-  });
+      // Flat command files — NOT the <name>/SKILL.md skill layout.
+      for (const name of ["ralph", "debug"]) {
+        const file = commandPath(root, name);
+        expect(lstatSync(file).isSymbolicLink()).toBe(true);
+        expect(realpathSync(file)).toBe(
+          realpathSync(join(root, ".agents", "workflows", `${name}.md`)),
+        );
+      }
+      expect(created).toContain(".zcode/commands/ralph");
+      expect(created).toContain(".zcode/commands/debug");
+    },
+  );
 
   it("skips subdirectories under workflows/", () => {
     const root = mkTemp("oma-zcode-");
@@ -84,21 +88,25 @@ describe("installZcodeWorkflowCommands", () => {
     expect(existsSync(commandPath(root, "resources"))).toBe(false);
   });
 
-  it("prunes stale oma-owned command links whose workflow was removed", () => {
-    const root = mkTemp("oma-zcode-");
-    setupWorkflows(root, { debug: "---\ndescription: Bug\n---\n" });
-    // Seed a stale link pointing at a now-removed workflow.
-    const commandsDir = join(root, ".zcode", "commands");
-    mkdirSync(commandsDir, { recursive: true });
-    const workflowsDir = resolve(root, ".agents", "workflows");
-    const staleLink = join(commandsDir, "ralph.md");
-    symlinkSync(join(workflowsDir, "ralph.md"), staleLink);
+  // Without symlink privilege Windows links files as hardlinks (fs-link.ts).
+  it.skipIf(process.platform === "win32")(
+    "prunes stale oma-owned command links whose workflow was removed",
+    () => {
+      const root = mkTemp("oma-zcode-");
+      setupWorkflows(root, { debug: "---\ndescription: Bug\n---\n" });
+      // Seed a stale link pointing at a now-removed workflow.
+      const commandsDir = join(root, ".zcode", "commands");
+      mkdirSync(commandsDir, { recursive: true });
+      const workflowsDir = resolve(root, ".agents", "workflows");
+      const staleLink = join(commandsDir, "ralph.md");
+      symlinkSync(join(workflowsDir, "ralph.md"), staleLink);
 
-    installZcodeWorkflowCommands(root);
+      installZcodeWorkflowCommands(root);
 
-    expect(existsSync(staleLink)).toBe(false); // pruned (target gone)
-    expect(lstatSync(commandPath(root, "debug")).isSymbolicLink()).toBe(true);
-  });
+      expect(existsSync(staleLink)).toBe(false); // pruned (target gone)
+      expect(lstatSync(commandPath(root, "debug")).isSymbolicLink()).toBe(true);
+    },
+  );
 
   it("does not touch user-authored real command files", () => {
     const root = mkTemp("oma-zcode-");
@@ -131,18 +139,22 @@ describe("installZcodeWorkflowCommands", () => {
     expect(skipped).toContain(".zcode/commands/debug (real file exists)");
   });
 
-  it("is idempotent on repeated calls", () => {
-    const root = mkTemp("oma-zcode-");
-    setupWorkflows(root, { ralph: "---\ndescription: Ralph\n---\n" });
+  // Without symlink privilege Windows links files as hardlinks (fs-link.ts).
+  it.skipIf(process.platform === "win32")(
+    "is idempotent on repeated calls",
+    () => {
+      const root = mkTemp("oma-zcode-");
+      setupWorkflows(root, { ralph: "---\ndescription: Ralph\n---\n" });
 
-    installZcodeWorkflowCommands(root);
-    const first = readlinkSync(commandPath(root, "ralph"));
-    const { created, skipped } = installZcodeWorkflowCommands(root);
+      installZcodeWorkflowCommands(root);
+      const first = readlinkSync(commandPath(root, "ralph"));
+      const { created, skipped } = installZcodeWorkflowCommands(root);
 
-    expect(readlinkSync(commandPath(root, "ralph"))).toBe(first);
-    expect(created).toHaveLength(0);
-    expect(skipped).toContain(".zcode/commands/ralph (already linked)");
-  });
+      expect(readlinkSync(commandPath(root, "ralph"))).toBe(first);
+      expect(created).toHaveLength(0);
+      expect(skipped).toContain(".zcode/commands/ralph (already linked)");
+    },
+  );
 
   it("does nothing when the workflows source does not exist", () => {
     const root = mkTemp("oma-zcode-");

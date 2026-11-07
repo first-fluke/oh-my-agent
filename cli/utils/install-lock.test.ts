@@ -18,8 +18,12 @@ import {
 
 describe("lockPath", () => {
   it("returns <installRoot>/.agents/_install.lock", () => {
-    expect(lockPath("/home/user")).toBe("/home/user/.agents/_install.lock");
-    expect(lockPath("/tmp/project")).toBe("/tmp/project/.agents/_install.lock");
+    expect(lockPath("/home/user")).toBe(
+      join("/home/user", ".agents", "_install.lock"),
+    );
+    expect(lockPath("/tmp/project")).toBe(
+      join("/tmp/project", ".agents", "_install.lock"),
+    );
   });
 });
 

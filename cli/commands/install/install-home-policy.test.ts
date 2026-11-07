@@ -487,7 +487,13 @@ describe("install home policy", () => {
       (opt) => opt.value,
     );
 
-    expect(optionValues).toContain("antigravity");
+    // HOME-shared vendors (Antigravity, Hermes, Kimi) are hidden on Windows by
+    // design (prompts.ts allowHomeWriteVendors).
+    if (process.platform === "win32") {
+      expect(optionValues).not.toContain("antigravity");
+    } else {
+      expect(optionValues).toContain("antigravity");
+    }
     expect(optionValues).not.toContain("gemini");
     // OpenCode is selectable from the install picker (issue #575) so users no
     // longer need a follow-up `oma link opencode` step.
@@ -513,8 +519,11 @@ describe("install EC-12 — cwd equals homedir guard", () => {
   // Stable home value for all EC-12 tests — must NOT equal process.env.HOME
   // that was set by beforeEach (/tmp/test-home), so we pick the same value.
   const fakeHome = "/tmp/test-home";
+  // os.homedir() reads USERPROFILE (not HOME) on Windows.
+  const originalUserProfile = process.env.USERPROFILE;
 
   beforeEach(() => {
+    process.env.USERPROFILE = fakeHome;
     // vi.clearAllMocks doesn't always clear hoisted mock call history across
     // nested describes — clear explicitly to prevent test bleeding.
     promptState.cancel.mockClear();
@@ -533,6 +542,8 @@ describe("install EC-12 — cwd equals homedir guard", () => {
   });
 
   afterEach(() => {
+    if (originalUserProfile === undefined) delete process.env.USERPROFILE;
+    else process.env.USERPROFILE = originalUserProfile;
     cwdSpy?.mockRestore();
     exitSpy?.mockRestore();
   });

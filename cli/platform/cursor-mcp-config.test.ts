@@ -84,34 +84,38 @@ describe("applyCursorMcpConfig", () => {
     expect(() => lstatSync(join(root, ".cursor", "mcp.json"))).toThrow();
   });
 
-  it("replaces a legacy symlink with a regular file", () => {
-    const root = projectRoot();
-    mkdirSync(join(root, ".agents"), { recursive: true });
-    writeFileSync(
-      join(root, ".agents", "mcp.json"),
-      `${JSON.stringify({ mcpServers: { serena: { command: "x" } } })}\n`,
-      "utf-8",
-    );
-    mkdirSync(join(root, ".cursor"), { recursive: true });
-    symlinkSync(
-      join("..", ".agents", "mcp.json"),
-      join(root, ".cursor", "mcp.json"),
-      "file",
-    );
-    expect(lstatSync(join(root, ".cursor", "mcp.json")).isSymbolicLink()).toBe(
-      true,
-    );
+  // File symlinks need admin or Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "replaces a legacy symlink with a regular file",
+    () => {
+      const root = projectRoot();
+      mkdirSync(join(root, ".agents"), { recursive: true });
+      writeFileSync(
+        join(root, ".agents", "mcp.json"),
+        `${JSON.stringify({ mcpServers: { serena: { command: "x" } } })}\n`,
+        "utf-8",
+      );
+      mkdirSync(join(root, ".cursor"), { recursive: true });
+      symlinkSync(
+        join("..", ".agents", "mcp.json"),
+        join(root, ".cursor", "mcp.json"),
+        "file",
+      );
+      expect(
+        lstatSync(join(root, ".cursor", "mcp.json")).isSymbolicLink(),
+      ).toBe(true);
 
-    applyCursorMcpConfig(root);
+      applyCursorMcpConfig(root);
 
-    expect(lstatSync(join(root, ".cursor", "mcp.json")).isSymbolicLink()).toBe(
-      false,
-    );
-    const parsed = JSON.parse(
-      readFileSync(join(root, ".cursor", "mcp.json"), "utf-8"),
-    );
-    expect(parsed.mcpServers.serena.args).toContain("oma");
-  });
+      expect(
+        lstatSync(join(root, ".cursor", "mcp.json")).isSymbolicLink(),
+      ).toBe(false);
+      const parsed = JSON.parse(
+        readFileSync(join(root, ".cursor", "mcp.json"), "utf-8"),
+      );
+      expect(parsed.mcpServers.serena.args).toContain("oma");
+    },
+  );
 
   it("preserves user-added servers and top-level keys already in .cursor/mcp.json", () => {
     const root = projectRoot();

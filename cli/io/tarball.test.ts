@@ -93,7 +93,8 @@ let fixtureSeq = 0;
 
 /** Build a .tar.gz whose entries live under `prefix` (or at the root). */
 function makeArchive(version: string, prefix?: string): Buffer {
-  const src = join(fixtureRoot, `src-${fixtureSeq++}`);
+  const srcName = `src-${fixtureSeq++}`;
+  const src = join(fixtureRoot, srcName);
   const top = prefix ? join(src, prefix) : src;
   mkdirSync(join(top, ".agents", "skills"), { recursive: true });
   mkdirSync(join(top, ".agents", "workflows"), { recursive: true });
@@ -102,9 +103,12 @@ function makeArchive(version: string, prefix?: string): Buffer {
     JSON.stringify({ version }),
   );
   writeFileSync(join(top, ".agents", "workflows", "work.md"), "# work\n");
-  const out = join(fixtureRoot, `archive-${fixtureSeq++}.tar.gz`);
-  execFileSync("tar", ["-czf", out, "-C", src, prefix ?? ".agents"]);
-  return readFileSync(out);
+  const out = `archive-${fixtureSeq++}.tar.gz`;
+  // Relative paths: GNU tar on Windows reads `C:\...` as a remote host.
+  execFileSync("tar", ["-czf", out, "-C", srcName, prefix ?? ".agents"], {
+    cwd: fixtureRoot,
+  });
+  return readFileSync(join(fixtureRoot, out));
 }
 
 function sha256(bytes: Buffer): string {

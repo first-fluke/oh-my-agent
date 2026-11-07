@@ -280,7 +280,7 @@ describe("install --global: _install.json schema and meta", () => {
 
     // Default mock returns for all fs calls
     fsState.existsSync.mockImplementation((p: string) =>
-      p.endsWith("/.agents/oma-config.yaml"),
+      p.replace(/\\/g, "/").endsWith("/.agents/oma-config.yaml"),
     );
     fsState.readdirSync.mockReturnValue([]);
     let configYaml = "language: en\n";
@@ -405,7 +405,8 @@ describe("install --global: _install.json schema and meta", () => {
     let initialized = false;
     fsState.existsSync.mockImplementation(
       (file: string) =>
-        initialized && file.endsWith("/.agents/oma-config.yaml"),
+        initialized &&
+        file.replace(/\\/g, "/").endsWith("/.agents/oma-config.yaml"),
     );
     skillsState.installConfigs.mockImplementationOnce(() => {
       initialized = true;
@@ -454,7 +455,8 @@ describe("install --global: _install.json schema and meta", () => {
     let initialized = false;
     fsState.existsSync.mockImplementation(
       (file: string) =>
-        initialized && file.endsWith("/.agents/oma-config.yaml"),
+        initialized &&
+        file.replace(/\\/g, "/").endsWith("/.agents/oma-config.yaml"),
     );
     skillsState.installConfigs.mockImplementationOnce(() => {
       initialized = true;

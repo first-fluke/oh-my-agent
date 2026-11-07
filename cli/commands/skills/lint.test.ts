@@ -253,19 +253,23 @@ describe("lintSkillPath", () => {
     expect(missingSkillFile.skillCount).toBe(0);
   });
 
-  it("fails closed when SKILL.md cannot be read", () => {
-    const skillDir = writeExternalSkill(workspace, "external-skill", "plain");
-    const skillFile = join(skillDir, "SKILL.md");
-    chmodSync(skillFile, 0o000);
+  // chmod 0o000 does not revoke read access on Windows.
+  it.skipIf(process.platform === "win32")(
+    "fails closed when SKILL.md cannot be read",
+    () => {
+      const skillDir = writeExternalSkill(workspace, "external-skill", "plain");
+      const skillFile = join(skillDir, "SKILL.md");
+      chmodSync(skillFile, 0o000);
 
-    try {
-      const report = lintSkillPath(skillDir);
-      expect(report.smells[0]?.smell).toBe("unreadable-skill-file");
-      expect(report.skillCount).toBe(0);
-    } finally {
-      chmodSync(skillFile, 0o644);
-    }
-  });
+      try {
+        const report = lintSkillPath(skillDir);
+        expect(report.smells[0]?.smell).toBe("unreadable-skill-file");
+        expect(report.skillCount).toBe(0);
+      } finally {
+        chmodSync(skillFile, 0o644);
+      }
+    },
+  );
 
   it("reports malformed YAML frontmatter", () => {
     const skillDir = join(workspace, "external-skill");

@@ -206,13 +206,17 @@ describe("native harness tool observations", () => {
     expect(trace.vendorSessionId).toBeUndefined();
   });
 
-  it("rejects a vendor log symlink that resolves into evaluated task artifacts", () => {
-    const input = fixture("codex");
-    const forged = join(input.workspace, "forged-native.jsonl");
-    renameSync(input.path, forged);
-    symlinkSync(forged, input.path);
-    expect(captureHarnessToolTrace(input).status).toBe("missing");
-  });
+  // Windows file symlinks need elevated privileges.
+  it.skipIf(process.platform === "win32")(
+    "rejects a vendor log symlink that resolves into evaluated task artifacts",
+    () => {
+      const input = fixture("codex");
+      const forged = join(input.workspace, "forged-native.jsonl");
+      renameSync(input.path, forged);
+      symlinkSync(forged, input.path);
+      expect(captureHarnessToolTrace(input).status).toBe("missing");
+    },
+  );
 
   it("rejects oversized native logs before parsing them", () => {
     const input = fixture("codex");

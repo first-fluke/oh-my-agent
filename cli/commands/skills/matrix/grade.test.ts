@@ -233,7 +233,7 @@ describe("matrix grading", () => {
         writeFileSync(path.join(prepared.skillRoot, "__proto__"), "extra");
       if (mode === "removed" || mode === "symlink") rmSync(file);
       if (mode === "symlink")
-        symlinkSync(path.join(prepared.workspace, "missing"), file);
+        symlinkSync(path.join(prepared.workspace, "missing"), file, "junction");
       const cell = gradeMatrixCase(prepared, run(prepared), "codex");
       expect(cell.status).toBe("fail");
       expect(
@@ -247,7 +247,7 @@ describe("matrix grading", () => {
     const vendorRoot = path.join(prepared.workspace, ".agents");
     const movedRoot = path.join(prepared.workspace, "moved");
     renameSync(vendorRoot, movedRoot);
-    symlinkSync(movedRoot, vendorRoot);
+    symlinkSync(movedRoot, vendorRoot, "junction");
     expect(gradeMatrixCase(prepared, run(prepared), "codex").status).toBe(
       "fail",
     );

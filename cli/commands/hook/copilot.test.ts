@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { normalizeInput } from "./adapters.js";
 import { renderCopilotHookResult } from "./copilot.js";
@@ -49,8 +49,10 @@ describe("Copilot hook compatibility", () => {
         "PreToolUse",
       ),
     );
+    // The wrapper directory is resolved, which adds a drive letter on Windows.
+    const hookDir = resolve("/home/test user/.copilot/hooks");
     expect(result.modifiedArgs.command).toBe(
-      "set -o pipefail; (\nvitest\n) 2>&1 | bash '/home/test user/.copilot/hooks/oma/filter-test-output.sh'",
+      `set -o pipefail; (\nvitest\n) 2>&1 | bash '${hookDir}/oma/filter-test-output.sh'`,
     );
     expect(result.modifiedArgs.command).not.toContain(".github");
     expect(result.modifiedArgs.command).not.toContain(".claude");

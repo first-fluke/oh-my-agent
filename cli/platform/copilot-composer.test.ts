@@ -15,6 +15,9 @@ import type { HookVariant } from "./hooks-composer/variant-types.js";
 import { installHooksFromVariant } from "./hooks-composer.js";
 import { setInstallContext } from "./install-context.js";
 
+// Hook commands join with "/"; compare separator-agnostically for Windows.
+const slash = (path: string): string => path.replace(/\\/g, "/");
+
 const roots: string[] = [];
 function root(): string {
   const path = mkdtempSync(join(tmpdir(), "oma-copilot-composer-"));
@@ -95,8 +98,8 @@ describe("Copilot native projection", () => {
       );
       expect(existsSync(join(target, expectedDir, "oma-hook.sh"))).toBe(true);
       expect(existsSync(join(target, ".github"))).toBe(false);
-      expect(result.hooks.PreToolUse[0].bash).toContain(
-        join(target, expectedDir, "oma-hook.sh"),
+      expect(slash(result.hooks.PreToolUse[0].bash)).toContain(
+        slash(join(target, expectedDir, "oma-hook.sh")),
       );
       expect(result.hooks.PreToolUse[0].bash).not.toContain(".github/hooks");
       expect(variant.hookDir).toBe(hookDir);

@@ -11,7 +11,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   HOOK_DEDUP_TTL_MS,
@@ -72,7 +72,7 @@ describe("shouldDispatchHookDelivery", () => {
     expect(winnerDispatched).toBe(true);
     expect(
       JSON.parse(readFileSync(join(dir, hookDeliveryKey(winner)), "utf8")),
-    ).toEqual({ wrapper: PROJECT_WRAPPER, at: 101 });
+    ).toEqual({ wrapper: resolve(PROJECT_WRAPPER), at: 101 });
   });
 
   it("keeps a fresh claim across a small clock rollback with an injected clock", () => {
@@ -103,7 +103,7 @@ describe("shouldDispatchHookDelivery", () => {
     ).toBe(true);
     expect(
       JSON.parse(readFileSync(join(dir, hookDeliveryKey(winner)), "utf8")),
-    ).toEqual({ wrapper: GLOBAL_WRAPPER, at: 10_000 });
+    ).toEqual({ wrapper: resolve(GLOBAL_WRAPPER), at: 10_000 });
   });
 
   it("does not trust a future timestamp outside the configured TTL", () => {

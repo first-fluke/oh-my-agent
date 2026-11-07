@@ -79,36 +79,45 @@ describe("global service migration", () => {
     ).toEqual(["current", "old"]);
   });
 
-  it("does not trust a symlink receipt or copy from a symlink legacy config root", async () => {
-    file(join(home, ".agents/backup/a"), "old");
-    const outside = join(home, "receipt.json");
-    file(
-      outside,
-      JSON.stringify({
-        version: 1,
-        sourceHome: home,
-        destinationHome: destination,
-        area: "backup",
-      }),
-    );
-    const hash = createHash("sha256").update(home).digest("hex").slice(0, 16);
-    const receipt = join(
-      destination,
-      "state/migrations",
-      `services-${hash}-backup.json`,
-    );
-    mkdirSync(join(receipt, ".."), { recursive: true });
-    symlinkSync(outside, receipt);
-    expect((await migrate()).copied).toContain(join(destination, "backup/a"));
-    expect(readFileSync(outside, "utf8")).not.toContain("completedAt");
-    file(join(home, "external/vault-index.json"), '{"version":1,"entries":[]}');
-    mkdirSync(join(home, ".config"), { recursive: true });
-    symlinkSync(join(home, "external"), join(home, ".config/oma"));
-    expect((await migrate()).conflicts.join(" ")).toContain(
-      "Unsafe legacy source root",
-    );
-    expect(existsSync(join(destination, "state/vault-index.json"))).toBe(false);
-  });
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "does not trust a symlink receipt or copy from a symlink legacy config root",
+    async () => {
+      file(join(home, ".agents/backup/a"), "old");
+      const outside = join(home, "receipt.json");
+      file(
+        outside,
+        JSON.stringify({
+          version: 1,
+          sourceHome: home,
+          destinationHome: destination,
+          area: "backup",
+        }),
+      );
+      const hash = createHash("sha256").update(home).digest("hex").slice(0, 16);
+      const receipt = join(
+        destination,
+        "state/migrations",
+        `services-${hash}-backup.json`,
+      );
+      mkdirSync(join(receipt, ".."), { recursive: true });
+      symlinkSync(outside, receipt);
+      expect((await migrate()).copied).toContain(join(destination, "backup/a"));
+      expect(readFileSync(outside, "utf8")).not.toContain("completedAt");
+      file(
+        join(home, "external/vault-index.json"),
+        '{"version":1,"entries":[]}',
+      );
+      mkdirSync(join(home, ".config"), { recursive: true });
+      symlinkSync(join(home, "external"), join(home, ".config/oma"));
+      expect((await migrate()).conflicts.join(" ")).toContain(
+        "Unsafe legacy source root",
+      );
+      expect(existsSync(join(destination, "state/vault-index.json"))).toBe(
+        false,
+      );
+    },
+  );
 
   it.each([".agents/schedule", ".config/oma", ".agents/backup/nested"])(
     "rejects a destination overlapping legacy %s before writing",
@@ -249,7 +258,10 @@ describe("global service migration", () => {
     });
   });
 
-  it.each(["directory", "symlink"])(
+  // File symlinks need elevated privileges on Windows.
+  it.each(
+    process.platform === "win32" ? ["directory"] : ["directory", "symlink"],
+  )(
     "still rejects a canonical daemon log target that is a %s",
     async (kind) => {
       const target = join(destination, "state/serena/serena-daemon-18500.log");
@@ -314,22 +326,26 @@ describe("global service migration", () => {
     ).toBe(false);
   });
 
-  it("does not acquire through a legacy startup lock symlink", async () => {
-    const outside = join(home, "outside-lock");
-    file(outside, "100");
-    mkdirSync(join(home, ".config/oma"), { recursive: true });
-    symlinkSync(outside, join(home, ".config/oma/serena-daemons.lock"));
-    file(join(home, ".config/oma/serena-daemons.json"), "{}");
-    const result = await migrate();
-    expect(result.conflicts.join(" ")).toContain(
-      "Unsafe legacy Serena startup lock",
-    );
-    expect(result.deferred).toEqual([]);
-    expect(readFileSync(outside, "utf8")).toBe("100");
-    expect(
-      existsSync(join(destination, "state/serena/serena-daemons.json")),
-    ).toBe(false);
-  });
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "does not acquire through a legacy startup lock symlink",
+    async () => {
+      const outside = join(home, "outside-lock");
+      file(outside, "100");
+      mkdirSync(join(home, ".config/oma"), { recursive: true });
+      symlinkSync(outside, join(home, ".config/oma/serena-daemons.lock"));
+      file(join(home, ".config/oma/serena-daemons.json"), "{}");
+      const result = await migrate();
+      expect(result.conflicts.join(" ")).toContain(
+        "Unsafe legacy Serena startup lock",
+      );
+      expect(result.deferred).toEqual([]);
+      expect(readFileSync(outside, "utf8")).toBe("100");
+      expect(
+        existsSync(join(destination, "state/serena/serena-daemons.json")),
+      ).toBe(false);
+    },
+  );
 
   it.each(["invalid", "0"])(
     "reports a malformed legacy startup lock as a conflict: %j",
@@ -618,18 +634,22 @@ describe("global service migration", () => {
     expect(readFileSync(target, "utf8")).toBe(original);
   });
 
-  it("does not follow a legacy schedule manifest symlink outside the source root", async () => {
-    const outside = join(home, "outside-manifest.json");
-    file(outside, '{"version":1,"jobs":[{"id":"sch_private"}]}');
-    mkdirSync(join(home, ".agents/schedule"), { recursive: true });
-    symlinkSync(outside, join(home, ".agents/schedule/schedules.json"));
-    expect((await migrate()).conflicts.join(" ")).toContain(
-      "Unsafe schedule manifest",
-    );
-    expect(existsSync(join(destination, "schedule/schedules.json"))).toBe(
-      false,
-    );
-  });
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "does not follow a legacy schedule manifest symlink outside the source root",
+    async () => {
+      const outside = join(home, "outside-manifest.json");
+      file(outside, '{"version":1,"jobs":[{"id":"sch_private"}]}');
+      mkdirSync(join(home, ".agents/schedule"), { recursive: true });
+      symlinkSync(outside, join(home, ".agents/schedule/schedules.json"));
+      expect((await migrate()).conflicts.join(" ")).toContain(
+        "Unsafe schedule manifest",
+      );
+      expect(existsSync(join(destination, "schedule/schedules.json"))).toBe(
+        false,
+      );
+    },
+  );
 
   it.each(["daemon", "client"])(
     "defers every Serena file while an old %s is live",
@@ -688,22 +708,34 @@ describe("global service migration", () => {
     expect(existsSync(join(destination, "schedule/manifest.lock"))).toBe(false);
   });
 
-  it("excludes source symlinks escaping the legacy root and unsafe destination symlinks", async () => {
-    file(join(home, "outside.txt"), "private");
-    mkdirSync(join(home, ".agents/backup"), { recursive: true });
-    symlinkSync(join(home, "outside.txt"), join(home, ".agents/backup/escape"));
-    file(join(home, ".agents/backup/safe"), "copy");
-    let result = await migrate();
-    expect(result.conflicts.join(" ")).toContain("Escaping source symlink");
-    expect(existsSync(join(destination, "backup/escape"))).toBe(false);
-    expect(readFileSync(join(destination, "backup/safe"), "utf8")).toBe("copy");
-    rmSync(join(home, ".agents/backup/escape"));
-    file(join(home, ".agents/backup/another"), "copy");
-    symlinkSync(join(home, "outside.txt"), join(destination, "backup/another"));
-    result = await migrate();
-    expect(result.conflicts.join(" ")).toContain("Unsafe destination");
-    expect(readFileSync(join(home, "outside.txt"), "utf8")).toBe("private");
-  });
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "excludes source symlinks escaping the legacy root and unsafe destination symlinks",
+    async () => {
+      file(join(home, "outside.txt"), "private");
+      mkdirSync(join(home, ".agents/backup"), { recursive: true });
+      symlinkSync(
+        join(home, "outside.txt"),
+        join(home, ".agents/backup/escape"),
+      );
+      file(join(home, ".agents/backup/safe"), "copy");
+      let result = await migrate();
+      expect(result.conflicts.join(" ")).toContain("Escaping source symlink");
+      expect(existsSync(join(destination, "backup/escape"))).toBe(false);
+      expect(readFileSync(join(destination, "backup/safe"), "utf8")).toBe(
+        "copy",
+      );
+      rmSync(join(home, ".agents/backup/escape"));
+      file(join(home, ".agents/backup/another"), "copy");
+      symlinkSync(
+        join(home, "outside.txt"),
+        join(destination, "backup/another"),
+      );
+      result = await migrate();
+      expect(result.conflicts.join(" ")).toContain("Unsafe destination");
+      expect(readFileSync(join(home, "outside.txt"), "utf8")).toBe("private");
+    },
+  );
 
   it("dry run reports copies without creating the destination or receipts", async () => {
     file(join(home, ".agents/schedule/env/sch_one"), "secret");

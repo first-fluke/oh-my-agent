@@ -7,6 +7,10 @@ import { run } from "../../.agents/hooks/core/test-filter.ts";
 
 const HOOK_PATH = join(__dirname, "../../.agents/hooks/core/test-filter.ts");
 
+// The hook deliberately skips the Bash-only rewrite on Windows (#618), so
+// every case that expects a rewritten command is POSIX-only.
+const rewritesCommands = process.platform !== "win32";
+
 // Build an isolated project dir containing the filter scripts the hook
 // expects per vendor. This avoids depending on the developer-only `.claude/`
 // directory (git-ignored) and works on fresh CI checkouts.
@@ -93,7 +97,7 @@ describe("test-filter hook", () => {
     ];
 
     for (const cmd of testCommands) {
-      it(`should detect: ${cmd}`, () => {
+      it.runIf(rewritesCommands)(`should detect: ${cmd}`, () => {
         const result = runHook({
           tool_name: "Bash",
           tool_input: { command: cmd },
@@ -147,61 +151,70 @@ describe("test-filter hook", () => {
     // Verifies the toolName gate accepts "Shell". Vendor detection in the
     // standalone path is orthogonal (real cursor dispatch passes --vendor
     // cursor); a claude-detecting event keeps this focused on the gate.
-    it("should rewrite a test command run via a Shell tool", () => {
-      const result = runHook({
-        tool_name: "Shell",
-        tool_input: { command: "vitest --run" },
-        hook_event_name: "PreToolUse",
-        sessionId: "s1",
-      });
-      expect(result).toContain("filter-test-output.sh");
-    });
+    it.runIf(rewritesCommands)(
+      "should rewrite a test command run via a Shell tool",
+      () => {
+        const result = runHook({
+          tool_name: "Shell",
+          tool_input: { command: "vitest --run" },
+          hook_event_name: "PreToolUse",
+          sessionId: "s1",
+        });
+        expect(result).toContain("filter-test-output.sh");
+      },
+    );
   });
 
   describe('"execute_bash" tool name (Kiro shell tool)', () => {
     // Verifies the toolName gate accepts Kiro's canonical execute_bash. As
     // with the Shell case above, vendor detection is orthogonal — a
     // claude-detecting event keeps this focused on the gate.
-    it("should rewrite a test command run via an execute_bash tool", () => {
-      const result = runHook({
-        tool_name: "execute_bash",
-        tool_input: { command: "vitest --run" },
-        hook_event_name: "PreToolUse",
-        sessionId: "s1",
-      });
-      expect(result).toContain("filter-test-output.sh");
-    });
+    it.runIf(rewritesCommands)(
+      "should rewrite a test command run via an execute_bash tool",
+      () => {
+        const result = runHook({
+          tool_name: "execute_bash",
+          tool_input: { command: "vitest --run" },
+          hook_event_name: "PreToolUse",
+          sessionId: "s1",
+        });
+        expect(result).toContain("filter-test-output.sh");
+      },
+    );
   });
 
   describe("filter script fallback resolution", () => {
-    it("prefers the owned vendor namespace over a legacy filter script", async () => {
-      const root = makeProjectDir();
-      const ownedDir = join(root, ".codex", "hooks", "oma");
-      mkdirSync(ownedDir, { recursive: true });
-      writeFileSync(
-        join(ownedDir, "filter-test-output.sh"),
-        "#!/bin/sh\ncat\n",
-      );
-      try {
-        const result = await run(
-          {
-            kind: "pre_tool",
-            toolName: "Bash",
-            toolInput: { command: "vitest --run" },
-            cwd: root,
-          },
-          { vendor: "codex", cwd: root },
-        );
-        expect(result?.type).toBe("mutate");
-        if (result?.type !== "mutate")
-          throw new Error("Expected rewritten command");
-        expect(result.updatedInput.command).toContain(
+    it.runIf(rewritesCommands)(
+      "prefers the owned vendor namespace over a legacy filter script",
+      async () => {
+        const root = makeProjectDir();
+        const ownedDir = join(root, ".codex", "hooks", "oma");
+        mkdirSync(ownedDir, { recursive: true });
+        writeFileSync(
           join(ownedDir, "filter-test-output.sh"),
+          "#!/bin/sh\ncat\n",
         );
-      } finally {
-        rmSync(root, { recursive: true, force: true });
-      }
-    });
+        try {
+          const result = await run(
+            {
+              kind: "pre_tool",
+              toolName: "Bash",
+              toolInput: { command: "vitest --run" },
+              cwd: root,
+            },
+            { vendor: "codex", cwd: root },
+          );
+          expect(result?.type).toBe("mutate");
+          if (result?.type !== "mutate")
+            throw new Error("Expected rewritten command");
+          expect(result.updatedInput.command).toContain(
+            join(ownedDir, "filter-test-output.sh"),
+          );
+        } finally {
+          rmSync(root, { recursive: true, force: true });
+        }
+      },
+    );
 
     // opencode has no core Vendor identity: its bridge subprocess payload
     // detects as claude, whose hook dir does not exist in an opencode-only
@@ -245,78 +258,104 @@ describe("test-filter hook", () => {
       }
     }
 
-    it("falls back to the opencode bridge dir when the vendor dir is absent", () => {
-      const result = runHookInBareProject(join(".opencode", "plugins", "oma"));
-      const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
-      expect(normalized).toContain(
-        ".opencode/plugins/oma/filter-test-output.sh",
-      );
-    });
+    it.runIf(rewritesCommands)(
+      "falls back to the opencode bridge dir when the vendor dir is absent",
+      () => {
+        const result = runHookInBareProject(
+          join(".opencode", "plugins", "oma"),
+        );
+        const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
+        expect(normalized).toContain(
+          ".opencode/plugins/oma/filter-test-output.sh",
+        );
+      },
+    );
 
-    it("falls back to the SSOT core dir as the last resort", () => {
-      const result = runHookInBareProject(join(".agents", "hooks", "core"));
-      const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
-      expect(normalized).toContain(".agents/hooks/core/filter-test-output.sh");
-    });
+    it.runIf(rewritesCommands)(
+      "falls back to the SSOT core dir as the last resort",
+      () => {
+        const result = runHookInBareProject(join(".agents", "hooks", "core"));
+        const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
+        expect(normalized).toContain(
+          ".agents/hooks/core/filter-test-output.sh",
+        );
+      },
+    );
   });
 
   describe("vendor output format", () => {
-    it("should output hookSpecificOutput for Claude", () => {
-      const result = runHook({
-        tool_name: "Bash",
-        tool_input: { command: "vitest" },
-        hook_event_name: "PreToolUse",
-        sessionId: "s1",
-      });
-      const parsed = JSON.parse(result);
-      expect(parsed.hookSpecificOutput.hookEventName).toBe("PreToolUse");
-      expect(parsed.hookSpecificOutput.updatedInput.command).toContain(
-        "vitest",
-      );
-    });
+    it.runIf(rewritesCommands)(
+      "should output hookSpecificOutput for Claude",
+      () => {
+        const result = runHook({
+          tool_name: "Bash",
+          tool_input: { command: "vitest" },
+          hook_event_name: "PreToolUse",
+          sessionId: "s1",
+        });
+        const parsed = JSON.parse(result);
+        expect(parsed.hookSpecificOutput.hookEventName).toBe("PreToolUse");
+        expect(parsed.hookSpecificOutput.updatedInput.command).toContain(
+          "vitest",
+        );
+      },
+    );
 
-    it("should preserve original tool_input fields", () => {
-      const result = runHook({
-        tool_name: "Bash",
-        tool_input: { command: "vitest", timeout: 60000, description: "tests" },
-        hook_event_name: "PreToolUse",
-        sessionId: "s1",
-      });
-      const parsed = JSON.parse(result);
-      const updated = parsed.hookSpecificOutput.updatedInput;
-      expect(updated.timeout).toBe(60000);
-      expect(updated.description).toBe("tests");
-    });
+    it.runIf(rewritesCommands)(
+      "should preserve original tool_input fields",
+      () => {
+        const result = runHook({
+          tool_name: "Bash",
+          tool_input: {
+            command: "vitest",
+            timeout: 60000,
+            description: "tests",
+          },
+          hook_event_name: "PreToolUse",
+          sessionId: "s1",
+        });
+        const parsed = JSON.parse(result);
+        const updated = parsed.hookSpecificOutput.updatedInput;
+        expect(updated.timeout).toBe(60000);
+        expect(updated.description).toBe("tests");
+      },
+    );
   });
 
   describe("vendor hook paths", () => {
-    it("should use the Codex hook directory for Codex sessions", () => {
-      const result = runHook({
-        tool_name: "Bash",
-        tool_input: { command: "vitest --run" },
-        hook_event_name: "PreToolUse",
-        session_id: "s1",
-      });
-      const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
-
-      expect(normalized).toContain(".codex/hooks/filter-test-output.sh");
-      expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
-    });
-
-    it("should use the Qwen hook directory for Qwen sessions", () => {
-      const result = runHook(
-        {
+    it.runIf(rewritesCommands)(
+      "should use the Codex hook directory for Codex sessions",
+      () => {
+        const result = runHook({
           tool_name: "Bash",
           tool_input: { command: "vitest --run" },
           hook_event_name: "PreToolUse",
-          sessionId: "s1",
-        },
-        { QWEN_PROJECT_DIR: "set" },
-      );
-      const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
+          session_id: "s1",
+        });
+        const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
 
-      expect(normalized).toContain(".qwen/hooks/filter-test-output.sh");
-      expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
-    });
+        expect(normalized).toContain(".codex/hooks/filter-test-output.sh");
+        expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
+      },
+    );
+
+    it.runIf(rewritesCommands)(
+      "should use the Qwen hook directory for Qwen sessions",
+      () => {
+        const result = runHook(
+          {
+            tool_name: "Bash",
+            tool_input: { command: "vitest --run" },
+            hook_event_name: "PreToolUse",
+            sessionId: "s1",
+          },
+          { QWEN_PROJECT_DIR: "set" },
+        );
+        const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
+
+        expect(normalized).toContain(".qwen/hooks/filter-test-output.sh");
+        expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
+      },
+    );
   });
 });

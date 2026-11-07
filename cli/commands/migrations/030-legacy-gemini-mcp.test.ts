@@ -131,17 +131,21 @@ describe("legacy Gemini MCP cleanup", () => {
     expect(readFileSync(global, "utf8")).toBe(before);
   });
 
-  it("does not follow settings symlinks into another config", () => {
-    const foreign = write(
-      { mcpServers: { serena: direct } },
-      join(root, "other"),
-    );
-    const before = readFileSync(foreign, "utf8");
-    mkdirSync(join(root, ".gemini"));
-    symlinkSync(foreign, join(root, ".gemini", "settings.json"));
-    expect(migrateLegacyGeminiMcp.up(root)).toEqual([]);
-    expect(readFileSync(foreign, "utf8")).toBe(before);
-  });
+  // File symlinks need admin / Developer Mode on Windows.
+  it.skipIf(process.platform === "win32")(
+    "does not follow settings symlinks into another config",
+    () => {
+      const foreign = write(
+        { mcpServers: { serena: direct } },
+        join(root, "other"),
+      );
+      const before = readFileSync(foreign, "utf8");
+      mkdirSync(join(root, ".gemini"));
+      symlinkSync(foreign, join(root, ".gemini", "settings.json"));
+      expect(migrateLegacyGeminiMcp.up(root)).toEqual([]);
+      expect(readFileSync(foreign, "utf8")).toBe(before);
+    },
+  );
 
   it("leaves absent and malformed settings untouched", () => {
     expect(migrateLegacyGeminiMcp.up(root)).toEqual([]);

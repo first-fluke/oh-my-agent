@@ -183,18 +183,22 @@ describe("candidate overlay safety", () => {
     );
   });
 
-  it("rejects symlinks in a candidate overlay", () => {
-    const candidate = makeTempDir();
-    const outside = join(makeTempDir(), "outside.md");
-    const skillDir = join(candidate, ".agents", "skills", "oma-example");
-    mkdirSync(skillDir, { recursive: true });
-    writeFileSync(outside, "secret", "utf-8");
-    symlinkSync(outside, join(skillDir, "SKILL.md"));
+  // Windows file symlinks need elevated privileges.
+  it.skipIf(process.platform === "win32")(
+    "rejects symlinks in a candidate overlay",
+    () => {
+      const candidate = makeTempDir();
+      const outside = join(makeTempDir(), "outside.md");
+      const skillDir = join(candidate, ".agents", "skills", "oma-example");
+      mkdirSync(skillDir, { recursive: true });
+      writeFileSync(outside, "secret", "utf-8");
+      symlinkSync(outside, join(skillDir, "SKILL.md"));
 
-    expect(() => validateCandidateOverlay(candidate, candidate)).toThrow(
-      /symbolic link/i,
-    );
-  });
+      expect(() => validateCandidateOverlay(candidate, candidate)).toThrow(
+        /symbolic link/i,
+      );
+    },
+  );
 
   it("rejects vendor variants that could change the model or permissions", () => {
     const candidate = makeTempDir();

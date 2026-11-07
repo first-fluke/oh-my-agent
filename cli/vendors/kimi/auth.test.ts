@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFsFunctions = vi.hoisted(() => ({
@@ -16,7 +17,7 @@ vi.mock("node:os", () => ({
 
 import { isKimiAuthenticated, kimiHome } from "./auth.js";
 
-const DEFAULT_HOME = "/home/testuser/.kimi-code";
+const DEFAULT_HOME = join("/home/testuser", ".kimi-code");
 
 describe("kimiHome", () => {
   afterEach(() => vi.unstubAllEnvs());

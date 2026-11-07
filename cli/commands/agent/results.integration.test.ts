@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import {
   existsSync,
+  linkSync,
   mkdirSync,
   mkdtempSync,
   rmSync,
@@ -149,7 +150,10 @@ fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"
     // Keep real model CLIs unreachable even if fixture configuration regresses.
     const bin = join(root, "fixture-bin");
     mkdirSync(bin);
-    symlinkSync(bun, join(bin, "bun"));
+    // Windows file symlinks need elevation; a hard link to bun.exe keeps the
+    // runtime reachable through PATH without privileges.
+    if (process.platform === "win32") linkSync(bun, join(bin, "bun.exe"));
+    else symlinkSync(bun, join(bin, "bun"));
     // Process ownership inspection stays available while model CLIs remain
     // unreachable in this isolated fixture PATH.
     const ps = ["/bin/ps", "/usr/bin/ps"].find((file) => existsSync(file));

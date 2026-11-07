@@ -257,7 +257,7 @@ describe("cleanDanglingSymlinks", () => {
     mkdirSync(skillsDir, { recursive: true });
 
     const broken = join(skillsDir, "oma-commit");
-    symlinkSync("/nonexistent/path/oma-commit", broken);
+    symlinkSync("/nonexistent/path/oma-commit", broken, "junction");
 
     cleanDanglingSymlinks(skillsDir);
 
@@ -277,7 +277,7 @@ describe("cleanDanglingSymlinks", () => {
     mkdirSync(targetDir, { recursive: true });
 
     const link = join(skillsDir, "oma-frontend");
-    symlinkSync(targetDir, link);
+    symlinkSync(targetDir, link, "junction");
 
     cleanDanglingSymlinks(skillsDir);
 

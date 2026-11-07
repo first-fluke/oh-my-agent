@@ -30,32 +30,37 @@ afterEach(() => {
 });
 
 describe("subagent process ownership", () => {
-  it("only identifies the same orphan after its supervisor exits", () => {
-    const file = join(root, "subagent.pid");
-    const ps = vi
-      .mocked(childProcess.execFileSync)
-      .mockReturnValue(snapshot(process.pid));
-    recordSubagentProcess(file, pid, root);
-    expect(JSON.parse(readFileSync(`${file}.json`, "utf8")).runnerPid).toBe(
-      process.pid,
-    );
-    const kill = vi.spyOn(process, "kill").mockReturnValue(true);
-    ps.mockReturnValue(snapshot(1));
-    expect(isOwnedOrphan(file, pid, root)).toBe(false);
-    kill.mockImplementation(() => {
-      throw Object.assign(new Error("gone"), { code: "ESRCH" });
-    });
-    expect(isOwnedOrphan(file, pid, root)).toBe(true);
-    expect(isOwnedOrphan(file, pid, join(root, "other-project"))).toBe(false);
-    ps.mockReturnValue(snapshot(1, "Mon Oct 5 10:12:13 2026"));
-    expect(isOwnedOrphan(file, pid, root)).toBe(false);
-    ps.mockReturnValue(snapshot(1, undefined, "unrelated process"));
-    expect(isOwnedOrphan(file, pid, root)).toBe(false);
-    ps.mockReturnValue(snapshot(99999));
-    expect(isOwnedOrphan(file, pid, root)).toBe(false);
-    forgetSubagentProcess(file);
-    expect(isOwnedOrphan(file, pid, root)).toBe(false);
-  });
+  // Mocks `ps` output and relies on orphans being reparented to PID 1, both
+  // POSIX-only; the Windows identity path (PowerShell CIM) never reports ppid 1.
+  it.skipIf(process.platform === "win32")(
+    "only identifies the same orphan after its supervisor exits",
+    () => {
+      const file = join(root, "subagent.pid");
+      const ps = vi
+        .mocked(childProcess.execFileSync)
+        .mockReturnValue(snapshot(process.pid));
+      recordSubagentProcess(file, pid, root);
+      expect(JSON.parse(readFileSync(`${file}.json`, "utf8")).runnerPid).toBe(
+        process.pid,
+      );
+      const kill = vi.spyOn(process, "kill").mockReturnValue(true);
+      ps.mockReturnValue(snapshot(1));
+      expect(isOwnedOrphan(file, pid, root)).toBe(false);
+      kill.mockImplementation(() => {
+        throw Object.assign(new Error("gone"), { code: "ESRCH" });
+      });
+      expect(isOwnedOrphan(file, pid, root)).toBe(true);
+      expect(isOwnedOrphan(file, pid, join(root, "other-project"))).toBe(false);
+      ps.mockReturnValue(snapshot(1, "Mon Oct 5 10:12:13 2026"));
+      expect(isOwnedOrphan(file, pid, root)).toBe(false);
+      ps.mockReturnValue(snapshot(1, undefined, "unrelated process"));
+      expect(isOwnedOrphan(file, pid, root)).toBe(false);
+      ps.mockReturnValue(snapshot(99999));
+      expect(isOwnedOrphan(file, pid, root)).toBe(false);
+      forgetSubagentProcess(file);
+      expect(isOwnedOrphan(file, pid, root)).toBe(false);
+    },
+  );
 
   it("preserves invalid, unrecorded and permission-protected processes", () => {
     const file = join(root, "subagent.pid");

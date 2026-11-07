@@ -58,7 +58,7 @@ describe("AgentMemory project scope", () => {
     const root = workspace();
     const original = project(root, "project");
     const alias = join(root, "project-link");
-    symlinkSync(original, alias, "dir");
+    symlinkSync(original, alias, "junction");
     const env = { OMA_PROFILE: "0" };
     const expected = createAgentMemoryScope(original, env);
 

@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   _resetInstallContext,
@@ -31,7 +32,8 @@ describe("global Serena storage binding", () => {
       "--context",
       "oma",
       "--oma-home",
-      "/storage/OMA data",
+      // omaHome() resolves the root (adds a drive letter on Windows).
+      resolve("/storage/OMA data"),
       "--oma-state-home",
       "/storage/profiles",
     ]);

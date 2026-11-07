@@ -181,21 +181,25 @@ describe("matrix suite validation", () => {
     expect(() => loadMatrixSuite(file)).toThrow(/bounded/);
   });
 
-  it("rejects duplicate JSON keys and symlink suite files", () => {
-    const root = directory();
-    const file = path.join(root, "suite.json");
-    writeFileSync(
-      file,
-      JSON.stringify(single()).replace(
-        '"schemaVersion":1',
-        '"schemaVersion":2,"schemaVersion":1',
-      ),
-    );
-    expect(() => loadMatrixSuite(file)).toThrow(/valid JSON/);
-    const linked = path.join(root, "link.json");
-    symlinkSync(file, linked);
-    expect(() => loadMatrixSuite(linked)).toThrow();
-  });
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "rejects duplicate JSON keys and symlink suite files",
+    () => {
+      const root = directory();
+      const file = path.join(root, "suite.json");
+      writeFileSync(
+        file,
+        JSON.stringify(single()).replace(
+          '"schemaVersion":1',
+          '"schemaVersion":2,"schemaVersion":1',
+        ),
+      );
+      expect(() => loadMatrixSuite(file)).toThrow(/valid JSON/);
+      const linked = path.join(root, "link.json");
+      symlinkSync(file, linked);
+      expect(() => loadMatrixSuite(linked)).toThrow();
+    },
+  );
 
   it("rejects invalid UTF-8 fixture files rather than hashing replacement characters", () => {
     const file = path.join(directory(), "suite.json");
@@ -257,7 +261,7 @@ describe("matrix case preparation", () => {
     for (const parent of [".claude", ".claude/skills"]) {
       const workspace = directory();
       if (parent.includes("/")) mkdirSync(path.join(workspace, ".claude"));
-      symlinkSync(directory(), path.join(workspace, parent));
+      symlinkSync(directory(), path.join(workspace, parent), "junction");
       expect(() => prepareMatrixCase(testCase, workspace, "claude")).toThrow(
         /link/,
       );

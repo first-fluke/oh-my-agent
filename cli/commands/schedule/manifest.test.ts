@@ -70,7 +70,8 @@ import {
   writeManifest,
 } from "./manifest.js";
 
-const SCHEDULE_DIR = path.join(FAKE_HOME, ".oma", "schedule");
+// OMA_HOME is resolved, so on Windows "/fake/home" gains a drive letter.
+const SCHEDULE_DIR = path.resolve(FAKE_HOME, ".oma", "schedule");
 const MANIFEST_PATH = path.join(SCHEDULE_DIR, "schedules.json");
 
 function makeEmptyManifest() {
@@ -121,8 +122,10 @@ describe("schedule/manifest.ts", () => {
     it("uses OMA_HOME independently of project/profile storage", () => {
       vi.stubEnv("OMA_HOME", "/custom/oma");
       vi.stubEnv("OMA_STATE_HOME", "/custom/profile");
-      expect(getScheduleDir()).toBe("/custom/oma/schedule");
-      expect(getManifestPath()).toBe("/custom/oma/schedule/schedules.json");
+      expect(getScheduleDir()).toBe(path.resolve("/custom/oma/schedule"));
+      expect(getManifestPath()).toBe(
+        path.resolve("/custom/oma/schedule/schedules.json"),
+      );
     });
   });
 

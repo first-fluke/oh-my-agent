@@ -91,7 +91,9 @@ describe("persistent session execution budget", () => {
     expect(() => first.childEnv({})).toThrow("cancelled");
   });
   it("interrupts setup waiting at the absolute deadline", async () => {
-    const execution = create({ timeoutSeconds: 0.025 });
+    // 25ms elapsed inside create() itself under full-suite load, so the
+    // deadline fired before wait() was reached; 0.5s still exercises the timer.
+    const execution = create({ timeoutSeconds: 0.5 });
     await expect(execution.wait(new Promise(() => {}))).rejects.toMatchObject({
       reason: "timed_out",
       exitCode: 124,

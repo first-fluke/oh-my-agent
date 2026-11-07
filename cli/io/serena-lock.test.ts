@@ -98,13 +98,19 @@ describe("isSerenaLockActive", () => {
     expect(readFileSync(lock, "utf8")).toBe(String(process.pid));
   });
 
-  it("does not follow or delete a symlink lock", () => {
-    const target = join(directory, "target");
-    writeFileSync(target, "");
-    symlinkSync(target, lock);
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "does not follow or delete a symlink lock",
+    () => {
+      const target = join(directory, "target");
+      writeFileSync(target, "");
+      symlinkSync(target, lock);
 
-    expect(() => isSerenaLockActive(lock)).toThrow("Invalid Serena lock file");
-    expect(lstatSync(lock).isSymbolicLink()).toBe(true);
-    expect(existsSync(target)).toBe(true);
-  });
+      expect(() => isSerenaLockActive(lock)).toThrow(
+        "Invalid Serena lock file",
+      );
+      expect(lstatSync(lock).isSymbolicLink()).toBe(true);
+      expect(existsSync(target)).toBe(true);
+    },
+  );
 });

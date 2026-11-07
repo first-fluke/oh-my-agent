@@ -42,7 +42,7 @@ afterEach(() => {
 describe("antigravityMcpConfigPath", () => {
   it("project mode returns <installRoot>/.agents/mcp_config.json", () => {
     expect(antigravityMcpConfigPath("/tmp/proj", "project")).toBe(
-      "/tmp/proj/.agents/mcp_config.json",
+      join("/tmp/proj", ".agents", "mcp_config.json"),
     );
   });
 

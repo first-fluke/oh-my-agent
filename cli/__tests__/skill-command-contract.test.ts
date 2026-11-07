@@ -53,6 +53,12 @@ function commandsFromMarkdown(path: string): string[] {
   return commands;
 }
 
+// Windows usually has no real python3 (only the Store alias, exit 9009), so
+// the shlex-based cases run there only when one is installed.
+const canTokenize =
+  process.platform !== "win32" ||
+  spawnSync("python3", ["-c", "import shlex"]).status === 0;
+
 // Tokenize examples as data. No shell, CLI action, generation, or scan runs.
 function tokenize(commands: string[]): string[][] {
   const result = spawnSync(
@@ -97,31 +103,34 @@ function validatePublicFlags(help: Command, tokens: string[]) {
 describe("published skill CLI examples", () => {
   const surface = fixture();
 
-  it("uses the public command paths and option spellings without running actions", () => {
-    const files = [
-      "oma-image",
-      "oma-video",
-      "oma-slide",
-      "oma-orchestration",
-    ].flatMap((skill) => markdownFiles(join(skillsRoot, skill)));
-    const examples = files.flatMap((file) =>
-      commandsFromMarkdown(file).map((command) => ({ file, command })),
-    );
-    expect(examples.length).toBeGreaterThan(0);
-    const tokens = tokenize(examples.map((e) => e.command));
-    expect(tokens).toHaveLength(examples.length);
-    for (const [i, command] of tokens.entries()) {
-      const example = examples[i];
-      if (!example) throw new Error("Missing example for tokenized command");
-      const end = command.findIndex((word) => /^[>|;&]/.test(word));
-      const args = command.slice(1, end === -1 ? undefined : end);
-      expect(
-        () => surface.normalize(args),
-        `${example.file}: ${example.command}`,
-      ).not.toThrow();
-      validatePublicFlags(surface.help, args);
-    }
-  });
+  it.runIf(canTokenize)(
+    "uses the public command paths and option spellings without running actions",
+    () => {
+      const files = [
+        "oma-image",
+        "oma-video",
+        "oma-slide",
+        "oma-orchestration",
+      ].flatMap((skill) => markdownFiles(join(skillsRoot, skill)));
+      const examples = files.flatMap((file) =>
+        commandsFromMarkdown(file).map((command) => ({ file, command })),
+      );
+      expect(examples.length).toBeGreaterThan(0);
+      const tokens = tokenize(examples.map((e) => e.command));
+      expect(tokens).toHaveLength(examples.length);
+      for (const [i, command] of tokens.entries()) {
+        const example = examples[i];
+        if (!example) throw new Error("Missing example for tokenized command");
+        const end = command.findIndex((word) => /^[>|;&]/.test(word));
+        const args = command.slice(1, end === -1 ? undefined : end);
+        expect(
+          () => surface.normalize(args),
+          `${example.file}: ${example.command}`,
+        ).not.toThrow();
+        validatePublicFlags(surface.help, args);
+      }
+    },
+  );
 
   it("rejects internal registration names that the public surface removed", () => {
     for (const args of [
@@ -135,22 +144,25 @@ describe("published skill CLI examples", () => {
     }
   });
 
-  it("dispatches the verification wrapper through the public agent action", () => {
-    const wrapper = readFileSync(
-      join(skillsRoot, "oma-orchestration/scripts/verify.sh"),
-      "utf8",
-    );
-    const line = wrapper
-      .split("\n")
-      .find((text) => text.startsWith("exec oma "));
-    expect(line).toBeDefined();
-    const [command] = tokenize([line?.replace(/^exec /, "") ?? ""]);
-    if (!command) throw new Error("Missing tokenized wrapper command");
-    const args = command.slice(1);
-    const populated = args.map((arg) =>
-      arg === "$AGENT_TYPE" ? "qa" : arg === "$WORKSPACE" ? "example" : arg,
-    );
-    expect(() => surface.normalize(populated)).not.toThrow();
-    validatePublicFlags(surface.help, populated);
-  });
+  it.runIf(canTokenize)(
+    "dispatches the verification wrapper through the public agent action",
+    () => {
+      const wrapper = readFileSync(
+        join(skillsRoot, "oma-orchestration/scripts/verify.sh"),
+        "utf8",
+      );
+      const line = wrapper
+        .split("\n")
+        .find((text) => text.startsWith("exec oma "));
+      expect(line).toBeDefined();
+      const [command] = tokenize([line?.replace(/^exec /, "") ?? ""]);
+      if (!command) throw new Error("Missing tokenized wrapper command");
+      const args = command.slice(1);
+      const populated = args.map((arg) =>
+        arg === "$AGENT_TYPE" ? "qa" : arg === "$WORKSPACE" ? "example" : arg,
+      );
+      expect(() => surface.normalize(populated)).not.toThrow();
+      validatePublicFlags(surface.help, populated);
+    },
+  );
 });

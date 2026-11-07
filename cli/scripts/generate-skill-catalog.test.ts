@@ -30,6 +30,11 @@ function write(relPath: string, content: string) {
   writeFileSync(path, content);
 }
 
+// syncSkillCatalog reports platform-native relative paths; compare in POSIX form.
+function posix(paths: string[]) {
+  return paths.map((p) => p.replace(/\\/g, "/"));
+}
+
 function read(relPath: string) {
   return readFileSync(join(root, relPath), "utf-8");
 }
@@ -119,7 +124,7 @@ describe("syncSkillCatalog", () => {
 
     expect(result.skills).toBe(2);
     expect(result.missing).toEqual([]);
-    expect(result.updated).toEqual([SOURCE_DOC, localeDoc("ko")]);
+    expect(posix(result.updated)).toEqual([SOURCE_DOC, localeDoc("ko")]);
     expect(read(SOURCE_DOC)).toContain("`oma-zeta`");
     expect(read(SOURCE_DOC)).toContain("## After");
     expect(read(localeDoc("ko"))).not.toContain("old ko");
@@ -130,7 +135,7 @@ describe("syncSkillCatalog", () => {
     write(SOURCE_DOC, page());
 
     const drift = syncSkillCatalog({ repoRoot: root, check: true });
-    expect(drift.drifted).toEqual([SOURCE_DOC]);
+    expect(posix(drift.drifted)).toEqual([SOURCE_DOC]);
     expect(read(SOURCE_DOC)).toBe(page());
 
     syncSkillCatalog({ repoRoot: root });
@@ -142,7 +147,7 @@ describe("syncSkillCatalog", () => {
   it("reports a source page without markers as missing", () => {
     write(SOURCE_DOC, "# Agents\n");
     const result = syncSkillCatalog({ repoRoot: root });
-    expect(result.missing).toEqual([SOURCE_DOC]);
+    expect(posix(result.missing)).toEqual([SOURCE_DOC]);
     expect(read(SOURCE_DOC)).toBe("# Agents\n");
   });
 });

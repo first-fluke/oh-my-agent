@@ -49,30 +49,39 @@ describe("harness raw artifact snapshots", () => {
     expect(readFileSync(join(target, "data", "payload.bin"))).toEqual(
       Buffer.from([0, 255, 128, 10]),
     );
-    expect(statSync(join(target, "data")).mode & 0o777).toBe(0o750);
+    // Windows does not store POSIX mode bits; chmod only toggles read-only.
+    if (process.platform !== "win32")
+      expect(statSync(join(target, "data")).mode & 0o777).toBe(0o750);
     expect(
       captureHarnessSnapshot(target, { excludeHarnessControls: false }),
     ).toEqual(snapshot);
   });
 
-  it("marks secrets, links, and oversized artifacts insufficient without copying their bytes", () => {
-    const source = temporary();
-    writeFileSync(join(source, ".env"), "PRIVATE");
-    writeFileSync(join(source, "large.dat"), Buffer.alloc(5 * 1024 * 1024 + 1));
-    symlinkSync(join(source, ".env"), join(source, "linked"));
-    const snapshot = captureHarnessSnapshot(source);
-    expect(snapshot.complete).toBe(false);
-    expect(snapshot.omissions).toHaveLength(3);
-    expect(JSON.stringify(snapshot)).not.toContain(
-      Buffer.from("PRIVATE").toString("base64"),
-    );
-    expect(() => captureHarnessSnapshot(source, { strict: true })).toThrow(
-      /cannot be pinned/,
-    );
-    expect(() => materializeHarnessSnapshot(snapshot, temporary())).toThrow(
-      /incomplete/,
-    );
-  });
+  // Windows file symlinks need elevated privileges.
+  it.skipIf(process.platform === "win32")(
+    "marks secrets, links, and oversized artifacts insufficient without copying their bytes",
+    () => {
+      const source = temporary();
+      writeFileSync(join(source, ".env"), "PRIVATE");
+      writeFileSync(
+        join(source, "large.dat"),
+        Buffer.alloc(5 * 1024 * 1024 + 1),
+      );
+      symlinkSync(join(source, ".env"), join(source, "linked"));
+      const snapshot = captureHarnessSnapshot(source);
+      expect(snapshot.complete).toBe(false);
+      expect(snapshot.omissions).toHaveLength(3);
+      expect(JSON.stringify(snapshot)).not.toContain(
+        Buffer.from("PRIVATE").toString("base64"),
+      );
+      expect(() => captureHarnessSnapshot(source, { strict: true })).toThrow(
+        /cannot be pinned/,
+      );
+      expect(() => materializeHarnessSnapshot(snapshot, temporary())).toThrow(
+        /incomplete/,
+      );
+    },
+  );
 
   it("rejects artifact corruption and destination symlinks, including ancestors", () => {
     const source = temporary();
@@ -85,7 +94,7 @@ describe("harness raw artifact snapshots", () => {
     if (!first) throw new Error("Missing test file");
     first.contentBase64 = Buffer.from("edited").toString("base64");
     expect(() => validateHarnessSnapshot(corrupt)).toThrow(/digest/);
-    symlinkSync(outside, join(parent, "linked"));
+    symlinkSync(outside, join(parent, "linked"), "junction");
     expect(() =>
       materializeHarnessSnapshot(snapshot, join(parent, "linked")),
     ).toThrow(/symbolic/);

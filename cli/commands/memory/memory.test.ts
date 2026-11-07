@@ -466,42 +466,46 @@ describe("memory commands", () => {
     expect(commandCount).toBe(0);
   });
 
-  it("restarts the existing AgentMemory installation when upgrade fails", async () => {
-    const fakeAgentMemory = join(projectDir, "fake-agentmemory");
-    writeFileSync(
-      fakeAgentMemory,
-      `#!/bin/sh
+  // POSIX-only: the fake AgentMemory binary is a #! shell script spawned without a shell.
+  it.skipIf(process.platform === "win32")(
+    "restarts the existing AgentMemory installation when upgrade fails",
+    async () => {
+      const fakeAgentMemory = join(projectDir, "fake-agentmemory");
+      writeFileSync(
+        fakeAgentMemory,
+        `#!/bin/sh
 if [ "$1" = "stop" ]; then
   exit 0
 fi
 sleep 0.5
 `,
-      "utf-8",
-    );
-    chmodSync(fakeAgentMemory, 0o755);
-    let upgradeCount = 0;
-    const result = await upgradeAgentMemory({
-      homeDir: projectDir,
-      env: { OMA_NO_AGENTMEMORY: "1", AGENTMEMORY_BIN: fakeAgentMemory },
-      bin: fakeAgentMemory,
-      runner(command) {
-        if (command.bin === "bun") {
-          upgradeCount += 1;
-          return { status: 1, error: "update failed" };
-        }
-        return { status: 0 };
-      },
-    });
+        "utf-8",
+      );
+      chmodSync(fakeAgentMemory, 0o755);
+      let upgradeCount = 0;
+      const result = await upgradeAgentMemory({
+        homeDir: projectDir,
+        env: { OMA_NO_AGENTMEMORY: "1", AGENTMEMORY_BIN: fakeAgentMemory },
+        bin: fakeAgentMemory,
+        runner(command) {
+          if (command.bin === "bun") {
+            upgradeCount += 1;
+            return { status: 1, error: "update failed" };
+          }
+          return { status: 0 };
+        },
+      });
 
-    expect(upgradeCount).toBe(1);
-    expect(result).toMatchObject({
-      upgradeExitCode: 1,
-      upgradeError: "update failed",
-      message: "AgentMemory upgrade failed and restart health check failed",
-      start: {
-        action: "start",
-      },
-    });
-    expect(result.start?.startedPid).toBeGreaterThan(0);
-  });
+      expect(upgradeCount).toBe(1);
+      expect(result).toMatchObject({
+        upgradeExitCode: 1,
+        upgradeError: "update failed",
+        message: "AgentMemory upgrade failed and restart health check failed",
+        start: {
+          action: "start",
+        },
+      });
+      expect(result.start?.startedPid).toBeGreaterThan(0);
+    },
+  );
 });

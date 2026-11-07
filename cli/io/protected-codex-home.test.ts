@@ -28,8 +28,12 @@ function nativeHome(config = 'model = "selected-model"\n') {
   return root;
 }
 
+// Staging links config.toml/auth.json as file symlinks, which need elevated
+// privileges (or Developer Mode) on Windows.
+const noFileSymlinks = process.platform === "win32";
+
 describe("protected Codex native config home", () => {
-  it.each([undefined, "file"])(
+  it.skipIf(noFileSymlinks).each([undefined, "file"])(
     "references native config and %s file storage in a private per-call home",
     (store) => {
       const source = nativeHome(
@@ -83,21 +87,24 @@ describe("protected Codex native config home", () => {
     );
   });
 
-  it("stages only the Codex profile and keeps the prompt and model request intact", () => {
-    const source = nativeHome();
-    const invocation = {
-      command: "node",
-      args: ["constant bridge"],
-      env: { CODEX_HOME: source },
-      protectedProfile: "codex-app-server-text-v1",
-      input: '{"model":"selected-model","prompt":"literal text"}',
-    };
-    const prepared = prepareProtectedTextWorkspace(invocation);
-    roots.push(prepared.invocation.env.CODEX_HOME as string);
-    expect(prepared.invocation.input).toBe(invocation.input);
-    expect(prepared.invocation.env.CODEX_HOME).not.toBe(source);
-    prepared.cleanup();
-    const claude = { ...invocation, protectedProfile: "claude-text-v1" };
-    expect(prepareProtectedTextWorkspace(claude).invocation).toBe(claude);
-  });
+  it.skipIf(noFileSymlinks)(
+    "stages only the Codex profile and keeps the prompt and model request intact",
+    () => {
+      const source = nativeHome();
+      const invocation = {
+        command: "node",
+        args: ["constant bridge"],
+        env: { CODEX_HOME: source },
+        protectedProfile: "codex-app-server-text-v1",
+        input: '{"model":"selected-model","prompt":"literal text"}',
+      };
+      const prepared = prepareProtectedTextWorkspace(invocation);
+      roots.push(prepared.invocation.env.CODEX_HOME as string);
+      expect(prepared.invocation.input).toBe(invocation.input);
+      expect(prepared.invocation.env.CODEX_HOME).not.toBe(source);
+      prepared.cleanup();
+      const claude = { ...invocation, protectedProfile: "claude-text-v1" };
+      expect(prepareProtectedTextWorkspace(claude).invocation).toBe(claude);
+    },
+  );
 });

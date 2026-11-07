@@ -180,7 +180,7 @@ describe("Grok Bot portable skills lifecycle", () => {
     symlinkSync(
       join(workflowsDir, "third-party"),
       join(workflowsDir, "oma-first/user-link"),
-      "dir",
+      "junction",
     );
     const preview = uninstallGrokBotSkills({ workflowsDir, dryRun: true });
     expect(preview.removed).toContain("oma-second/SKILL.md");
@@ -215,7 +215,11 @@ describe("Grok Bot portable skills lifecycle", () => {
     const external = join(dirname(workflowsDir), "external");
     put(external, "guide.md", "outside");
     rmSync(join(workflowsDir, "oma-second/resources"), { recursive: true });
-    symlinkSync(external, join(workflowsDir, "oma-second/resources"), "dir");
+    symlinkSync(
+      external,
+      join(workflowsDir, "oma-second/resources"),
+      "junction",
+    );
     expect(() => uninstallGrokBotSkills({ workflowsDir })).toThrow("symlink");
     expect(() => installGrokBotSkills(source, { workflowsDir })).toThrow(
       "symlink",

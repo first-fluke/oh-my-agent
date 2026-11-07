@@ -29,7 +29,7 @@ function setup(cwd: string): void {
   // Legacy vendor dir-symlink → .agents/skills/docs
   const vendorSkills = join(cwd, ".claude", "skills");
   mkdirSync(vendorSkills, { recursive: true });
-  symlinkSync(resolve(wrapper), join(vendorSkills, "docs"), "dir");
+  symlinkSync(resolve(wrapper), join(vendorSkills, "docs"), "junction");
 }
 
 describe("migrateWorkflowDirectSymlinks (013)", () => {

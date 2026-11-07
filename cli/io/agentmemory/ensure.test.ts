@@ -311,31 +311,36 @@ describe("ensureAgentMemory", () => {
     },
   );
 
-  it("retains the runtime manager PATH when provisioning a service", async () => {
-    const deps = dependencies();
-    const nodeDirectory = join(
-      homeDir,
-      "mise",
-      "installs",
-      "node",
-      "26",
-      "bin",
-    );
-    expect(
-      await ensureAgentMemory(
-        { homeDir, env: { PATH: nodeDirectory }, platform: "darwin" },
-        deps,
-      ),
-    ).toMatchObject({ state: "ready" });
-    expect(deps.installService).toHaveBeenCalledWith(
-      expect.objectContaining({
-        executable: "/test/bin/agentmemory",
-        runtimePath: [nodeDirectory, dirname(process.execPath)]
-          .filter((entry, index, entries) => entries.indexOf(entry) === index)
-          .join(":"),
-      }),
-    );
-  });
+  // Simulates a ':'-delimited darwin PATH; Windows drive-letter paths contain
+  // ':' and cannot be represented in it (the win32 case is covered below).
+  it.skipIf(process.platform === "win32")(
+    "retains the runtime manager PATH when provisioning a service",
+    async () => {
+      const deps = dependencies();
+      const nodeDirectory = join(
+        homeDir,
+        "mise",
+        "installs",
+        "node",
+        "26",
+        "bin",
+      );
+      expect(
+        await ensureAgentMemory(
+          { homeDir, env: { PATH: nodeDirectory }, platform: "darwin" },
+          deps,
+        ),
+      ).toMatchObject({ state: "ready" });
+      expect(deps.installService).toHaveBeenCalledWith(
+        expect.objectContaining({
+          executable: "/test/bin/agentmemory",
+          runtimePath: [nodeDirectory, dirname(process.execPath)]
+            .filter((entry, index, entries) => entries.indexOf(entry) === index)
+            .join(":"),
+        }),
+      );
+    },
+  );
 
   it("finds binaries and retains runtime PATH from Windows mixed-case Path", async () => {
     const directory = join(homeDir, "Volta tools", "bin");

@@ -1,4 +1,4 @@
-import { posix, win32 } from "node:path";
+import { join, win32 } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   AGENTS_RESULTS_DIR,
@@ -35,7 +35,7 @@ describe("paths constants", () => {
 
   it("agentsPathFromRoot resolves under POSIX project root", () => {
     expect(agentsPathFromRoot("/repo", AGENTS_RESULTS_DIR)).toBe(
-      posix.join("/repo", ".agents", "results"),
+      join("/repo", ".agents", "results"),
     );
   });
 

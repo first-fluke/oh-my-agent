@@ -15,6 +15,10 @@ import {
   protectTextInvocation,
 } from "./protected-text.js";
 
+// The bridge spawns the fake provider directly; Windows cannot execute an
+// extension-less `#!/usr/bin/env node` script, so those cases are POSIX-only.
+const noShebang = process.platform === "win32";
+
 const roots: string[] = [];
 afterEach(() => {
   for (const root of roots.splice(0))
@@ -143,44 +147,49 @@ describe("protected text capability", () => {
     expect(invocation.input).not.toContain("/hidden");
   });
 
-  it("sends literal text through a fresh, empty-capability Codex thread", () => {
-    const fake = fakeCodex();
-    expect(runFake(fake)).toBe("NO_ACTION");
-    const entries = requests(fake);
-    const start = entries.find((r) => r.method === "thread/start")?.params;
-    expect(start).toMatchObject({
-      model: "configured-model",
-      modelProvider: "openai",
-      ephemeral: true,
-      environments: [],
-      dynamicTools: [],
-      selectedCapabilityRoots: [],
-      runtimeWorkspaceRoots: [],
-      allowProviderModelFallback: false,
-    });
-    expect(start?.config).toMatchObject({
-      mcp_servers: { privateKnowledge: { enabled: false } },
-      "features.hooks": false,
-      "features.apps": false,
-      "skills.include_instructions": false,
-      web_search: "disabled",
-    });
-    expect(
-      entries.find((r) => r.method === "turn/start")?.params,
-    ).toMatchObject({
-      effort: "high",
-      environments: [],
-      input: [
-        {
-          type: "text",
-          text: "@/hidden/fixture\ntraining evidence",
-          text_elements: [],
-        },
-      ],
-    });
-  });
+  it.skipIf(noShebang)(
+    "sends literal text through a fresh, empty-capability Codex thread",
+    () => {
+      const fake = fakeCodex();
+      expect(runFake(fake)).toBe("NO_ACTION");
+      const entries = requests(fake);
+      const start = entries.find((r) => r.method === "thread/start")?.params;
+      expect(start).toMatchObject({
+        model: "configured-model",
+        modelProvider: "openai",
+        ephemeral: true,
+        environments: [],
+        dynamicTools: [],
+        selectedCapabilityRoots: [],
+        runtimeWorkspaceRoots: [],
+        allowProviderModelFallback: false,
+      });
+      expect(start?.config).toMatchObject({
+        mcp_servers: { privateKnowledge: { enabled: false } },
+        "features.hooks": false,
+        "features.apps": false,
+        "skills.include_instructions": false,
+        web_search: "disabled",
+      });
+      expect(
+        entries.find((r) => r.method === "turn/start")?.params,
+      ).toMatchObject({
+        effort: "high",
+        environments: [],
+        input: [
+          {
+            type: "text",
+            text: "@/hidden/fixture\ntraining evidence",
+            text_elements: [],
+          },
+        ],
+      });
+    },
+  );
 
-  it.each(["instructions", "approval", "requirements", "storage"])(
+  it
+    .skipIf(noShebang)
+    .each(["instructions", "approval", "requirements", "storage"])(
     "rejects invalid %s provenance before sending the prompt",
     (mode) => {
       const fake = fakeCodex(mode);
@@ -192,37 +201,48 @@ describe("protected text capability", () => {
     },
   );
 
-  it.each(["request", "tool", "failed", "commentary"])(
+  it.skipIf(noShebang).each(["request", "tool", "failed", "commentary"])(
     "does not accept a successful-looking answer after %s",
     (mode) => {
       expect(() => runFake(fakeCodex(mode))).toThrow();
     },
   );
 
-  it("preserves a configured custom permission profile", () => {
-    const fake = fakeCodex("custom");
-    expect(runFake(fake)).toBe("NO_ACTION");
-    const start = requests(fake).find(
-      (r) => r.method === "thread/start",
-    )?.params;
-    expect(start?.permissions).toBe("locked");
-    expect(start).not.toHaveProperty("sandbox");
-    const wrong = fakeCodex("custom-wrong");
-    expect(() => runFake(wrong)).toThrow();
-    expect(requests(wrong).some((r) => r.method === "turn/start")).toBe(false);
-  });
+  it.skipIf(noShebang)(
+    "preserves a configured custom permission profile",
+    () => {
+      const fake = fakeCodex("custom");
+      expect(runFake(fake)).toBe("NO_ACTION");
+      const start = requests(fake).find(
+        (r) => r.method === "thread/start",
+      )?.params;
+      expect(start?.permissions).toBe("locked");
+      expect(start).not.toHaveProperty("sandbox");
+      const wrong = fakeCodex("custom-wrong");
+      expect(() => runFake(wrong)).toThrow();
+      expect(requests(wrong).some((r) => r.method === "turn/start")).toBe(
+        false,
+      );
+    },
+  );
 
-  it("rejects an unverified CLI version without starting app-server", () => {
-    const fake = fakeCodex("version");
-    expect(() => runFake(fake)).toThrow();
-    expect(() => readFileSync(fake.trace)).toThrow();
-  });
+  it.skipIf(noShebang)(
+    "rejects an unverified CLI version without starting app-server",
+    () => {
+      const fake = fakeCodex("version");
+      expect(() => runFake(fake)).toThrow();
+      expect(() => readFileSync(fake.trace)).toThrow();
+    },
+  );
 
-  it("terminates a stalled server within the request budget", () => {
-    // Assert the bridge's own deadline fired. A wall-clock assertion also
-    // measures process startup and scheduler delays outside this contract.
-    expect(() => runFake(fakeCodex("timeout"), 200, 10_000)).toThrow(
-      "Protected Codex dispatch failed: timeout",
-    );
-  });
+  it.skipIf(noShebang)(
+    "terminates a stalled server within the request budget",
+    () => {
+      // Assert the bridge's own deadline fired. A wall-clock assertion also
+      // measures process startup and scheduler delays outside this contract.
+      expect(() => runFake(fakeCodex("timeout"), 200, 10_000)).toThrow(
+        "Protected Codex dispatch failed: timeout",
+      );
+    },
+  );
 });

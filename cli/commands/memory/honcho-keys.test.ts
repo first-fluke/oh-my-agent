@@ -120,7 +120,9 @@ describe("Honcho credential setup", () => {
     expect(text).toContain("DREAM_ENABLED='false'");
     expect(text).toContain("DERIVER_ENABLED='false'");
     expect(text).toContain("EMBED_MESSAGES='true'");
-    expect(statSync(join(profile, ".env")).mode & 0o777).toBe(0o600);
+    // Windows does not store POSIX mode bits.
+    if (process.platform !== "win32")
+      expect(statSync(join(profile, ".env")).mode & 0o777).toBe(0o600);
     expect(JSON.stringify(result)).not.toContain(secret);
     expect(storeSecret).not.toHaveBeenCalled();
   });
@@ -135,7 +137,7 @@ describe("Honcho credential setup", () => {
   );
   it("refuses credential writes through a symlinked profile", async () => {
     mkdirSync(join(root, ".honcho", "profiles"), { recursive: true });
-    symlinkSync(root, join(root, ".honcho", "profiles", "oma"));
+    symlinkSync(root, join(root, ".honcho", "profiles", "oma"), "junction");
     await expect(
       configureHonchoKey({
         kind: "embedding",

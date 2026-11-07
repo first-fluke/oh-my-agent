@@ -205,12 +205,17 @@ describe("serena-reaper service-commands", () => {
 describe("serenaReaperServicePath", () => {
   it("returns darwin launchd plist path", () => {
     const p = serenaReaperServicePath("/home/u", "darwin");
-    expect(p).toMatch(/Library\/LaunchAgents\/dev\.oma\.serena-reaper\.plist$/);
+    // Host path separators; compare as POSIX.
+    expect(p?.replace(/\\/g, "/")).toMatch(
+      /Library\/LaunchAgents\/dev\.oma\.serena-reaper\.plist$/,
+    );
   });
 
   it("returns linux systemd timer path", () => {
     const p = serenaReaperServicePath("/home/u", "linux");
-    expect(p).toMatch(/systemd\/user\/oma-serena-reaper\.timer$/);
+    expect(p?.replace(/\\/g, "/")).toMatch(
+      /systemd\/user\/oma-serena-reaper\.timer$/,
+    );
   });
 
   it("returns win32 task xml path", () => {

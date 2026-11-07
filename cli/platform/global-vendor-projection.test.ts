@@ -35,6 +35,9 @@ import {
 } from "./rules.js";
 import { installZcodeWorkflowCommands } from "./skills-installer/workflow-links.js";
 
+// Generated commands/text join with "/"; compare separator-agnostically.
+const slash = (path: string): string => path.replace(/\\/g, "/");
+
 const repository = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 describe("global definitions and native vendor projections", () => {
   let root: string;
@@ -88,8 +91,8 @@ describe("global definitions and native vendor projections", () => {
     const config = JSON.parse(
       readFileSync(join(home, ".codex", "hooks.json"), "utf8"),
     );
-    expect(config.hooks.UserPromptSubmit[0].hooks[0].command).toContain(
-      join(home, ".codex", "hooks", "oma-hook.sh"),
+    expect(slash(config.hooks.UserPromptSubmit[0].hooks[0].command)).toContain(
+      slash(join(home, ".codex", "hooks", "oma-hook.sh")),
     );
     expect(
       readFileSync(join(home, ".codex", "hooks", "oma-hook.sh"), "utf8"),
@@ -98,8 +101,8 @@ describe("global definitions and native vendor projections", () => {
     const kiro = JSON.parse(
       readFileSync(join(home, ".kiro", "agents", "oma-hooks.json"), "utf8"),
     );
-    expect(kiro.hooks.userPromptSubmit[0].command).toContain(
-      join(home, ".kiro", "hooks", "oma-hook.sh"),
+    expect(slash(kiro.hooks.userPromptSubmit[0].command)).toContain(
+      slash(join(home, ".kiro", "hooks", "oma-hook.sh")),
     );
     vi.stubEnv("KIMI_CODE_HOME", join(home, ".kimi-code"));
     mkdirSync(join(home, ".kimi-code"));
@@ -215,14 +218,14 @@ describe("global definitions and native vendor projections", () => {
       join(home, ".claude", "rules", "backend.md"),
     ]) {
       const content = readFileSync(file, "utf8");
-      expect(content).toContain(
-        join(oma, ".agents", "skills", "oma-backend", "SKILL.md"),
+      expect(slash(content)).toContain(
+        slash(join(oma, ".agents", "skills", "oma-backend", "SKILL.md")),
       );
       expect(content).toContain(".agents/results/review.md");
       expect(content).toContain(".agents/state/progress.json");
     }
-    expect(readFileSync(join(home, "AGENTS.md"), "utf8")).toContain(
-      join(oma, ".agents", "rules", "backend.md"),
+    expect(slash(readFileSync(join(home, "AGENTS.md"), "utf8"))).toContain(
+      slash(join(oma, ".agents", "rules", "backend.md")),
     );
   });
 });

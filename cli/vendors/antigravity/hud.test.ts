@@ -12,9 +12,17 @@ const FAKE_HOME = "/tmp/fake-home";
 const AGY_DIR = join(FAKE_HOME, ".gemini/antigravity-cli");
 const SETTINGS = join(AGY_DIR, "settings.json");
 const HOME_HOOKS_DIR = join(AGY_DIR, "hooks"); // HOME copy backing statusLine
-const PROJECT_HOOKS_JSON = "/repo/.agents/hooks.json"; // agy auto-loads this
-const CORE = "/repo/.agents/hooks/core"; // protected project source
-const VARIANT = "/repo/.agents/hooks/variants/antigravity.json";
+const PROJECT_HOOKS_JSON = join("/repo", ".agents", "hooks.json"); // agy auto-loads this
+const CORE = join("/repo", ".agents", "hooks", "core"); // protected project source
+const VARIANT = join(
+  "/repo",
+  ".agents",
+  "hooks",
+  "variants",
+  "antigravity.json",
+);
+// Mocks normalize incoming paths to '/' so substring checks work on Windows.
+const toPosix = (p: string) => p.replace(/\\/g, "/");
 
 const variantJson = JSON.stringify({
   events: {
@@ -178,15 +186,15 @@ describe("installAntigravityHud", () => {
     const omaHome = "/custom OMA's $root";
     setInstallContext({ installRoot: omaHome, mode: "global" });
     vi.mocked(fs.existsSync).mockImplementation((path) => {
-      const value = String(path);
+      const value = toPosix(String(path));
       return (
-        value === AGY_DIR ||
+        value === toPosix(AGY_DIR) ||
         value.includes(".agents/hooks/core") ||
         value.endsWith(".agents/hooks/variants/antigravity.json")
       );
     });
     vi.mocked(fs.readFileSync).mockImplementation((path) =>
-      String(path).endsWith(".agents/hooks/variants/antigravity.json")
+      toPosix(String(path)).endsWith(".agents/hooks/variants/antigravity.json")
         ? variantJson
         : "{}",
     );
@@ -224,7 +232,7 @@ describe("installAntigravityHud", () => {
       (p: string) => {
         const norm = p.replace(/\\/g, "/");
         if (norm.endsWith(".gemini/antigravity-cli")) return true;
-        if (norm === SETTINGS) return true;
+        if (norm === toPosix(SETTINGS)) return true;
         if (norm.includes(".agents/hooks/core")) return true;
         if (norm.includes(".agents/hooks/variants/antigravity.json"))
           return true;
@@ -274,7 +282,7 @@ describe("installAntigravityHud", () => {
         (p: string) => {
           const norm = p.replace(/\\/g, "/");
           if (norm.endsWith(".gemini/antigravity-cli")) return true;
-          if (norm === SETTINGS) return true;
+          if (norm === toPosix(SETTINGS)) return true;
           if (norm.includes(".agents/hooks/core")) return true;
           if (norm.includes(".agents/hooks/variants/antigravity.json"))
             return true;
@@ -329,7 +337,7 @@ describe("installAntigravityHud", () => {
         (p: string) => {
           const norm = p.replace(/\\/g, "/");
           if (norm.endsWith(".gemini/antigravity-cli")) return true;
-          if (norm === SETTINGS) return true;
+          if (norm === toPosix(SETTINGS)) return true;
           if (norm.includes(".agents/hooks/core")) return true;
           if (norm.includes(".agents/hooks/variants/antigravity.json"))
             return true;
@@ -379,7 +387,7 @@ describe("installAntigravityHud", () => {
       (p: string) => {
         const norm = p.replace(/\\/g, "/");
         if (norm.endsWith(".gemini/antigravity-cli")) return true;
-        if (norm === SETTINGS) return true;
+        if (norm === toPosix(SETTINGS)) return true;
         if (norm.includes(".agents/hooks/core")) return true;
         if (norm.includes(".agents/hooks/variants/antigravity.json"))
           return true;
@@ -417,9 +425,9 @@ describe("installAntigravityHud", () => {
           if (norm.includes(".agents/hooks/core")) return true;
           if (norm.includes(".agents/hooks/variants/antigravity.json"))
             return true;
-          if (norm === STALE_HOME_HOOKS)
+          if (norm === toPosix(STALE_HOME_HOOKS))
             return opts.homeHooksJson !== undefined;
-          if (norm === PROJECT_HOOKS_JSON)
+          if (norm === toPosix(PROJECT_HOOKS_JSON))
             return opts.projectHooksJson !== undefined;
           return false;
         },
@@ -430,9 +438,15 @@ describe("installAntigravityHud", () => {
         const norm = String(p).replace(/\\/g, "/");
         if (norm.includes(".agents/hooks/variants/antigravity.json"))
           return variantJson;
-        if (norm === PROJECT_HOOKS_JSON && opts.projectHooksJson !== undefined)
+        if (
+          norm === toPosix(PROJECT_HOOKS_JSON) &&
+          opts.projectHooksJson !== undefined
+        )
           return opts.projectHooksJson;
-        if (norm === STALE_HOME_HOOKS && opts.homeHooksJson !== undefined)
+        if (
+          norm === toPosix(STALE_HOME_HOOKS) &&
+          opts.homeHooksJson !== undefined
+        )
           return opts.homeHooksJson;
         return "{}";
       });

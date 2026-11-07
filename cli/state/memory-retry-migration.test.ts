@@ -9,6 +9,7 @@ import {
   rmSync,
   statSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
@@ -266,16 +267,16 @@ describe("explicit retry migration", () => {
       `${JSON.stringify(event())}\n`,
     );
     rmSync(dirname(source), { recursive: true });
-    symlinkSync(outside, dirname(source));
+    symlinkSync(outside, dirname(source), "junction");
     expect(await migrateMemoryRetry({ projectDir: root })).toMatchObject([
       { status: "conflict" },
     ]);
-    rmSync(dirname(source));
+    unlinkSync(dirname(source));
     mkdirSync(dirname(source));
     writeFileSync(source, `${JSON.stringify(event())}\n`);
     const homeRetry = dirname(retryObservePath(root));
     mkdirSync(homeRetry, { recursive: true });
-    symlinkSync(outside, join(homeRetry, "migration-unbound"));
+    symlinkSync(outside, join(homeRetry, "migration-unbound"), "junction");
     expect(await migrateMemoryRetry({ projectDir: root })).toMatchObject([
       { status: "conflict" },
     ]);

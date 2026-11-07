@@ -173,7 +173,7 @@ describe("global OMA home migration", () => {
     symlinkSync(
       join(home, "private"),
       join(home, ".agents/skills/oma-debug"),
-      "dir",
+      "junction",
     );
     const result = await run();
     expect(result.conflicts.join()).toContain(
@@ -246,26 +246,32 @@ describe("global OMA home migration", () => {
     );
     expect(existsSync(join(home, "custom/u"))).toBe(false);
   });
-  it("does not trust a symlinked completion receipt", async () => {
-    seed();
-    write(
-      "receipt.json",
-      JSON.stringify({
-        schemaVersion: 1,
-        source: join(home, ".agents"),
-        completed: true,
-      }),
-    );
-    mkdirSync(join(home, ".oma/state/migrations"), { recursive: true });
-    symlinkSync(
-      join(home, "receipt.json"),
-      join(home, ".oma/state/migrations/global-definitions.json"),
-    );
-    expect((await run()).conflicts.join()).toContain(
-      "Symlink requires manual migration",
-    );
-    expect(existsSync(join(home, ".oma/.agents/skills/oma-debug"))).toBe(false);
-  });
+  // File symlinks need elevated privileges on Windows.
+  it.skipIf(process.platform === "win32")(
+    "does not trust a symlinked completion receipt",
+    async () => {
+      seed();
+      write(
+        "receipt.json",
+        JSON.stringify({
+          schemaVersion: 1,
+          source: join(home, ".agents"),
+          completed: true,
+        }),
+      );
+      mkdirSync(join(home, ".oma/state/migrations"), { recursive: true });
+      symlinkSync(
+        join(home, "receipt.json"),
+        join(home, ".oma/state/migrations/global-definitions.json"),
+      );
+      expect((await run()).conflicts.join()).toContain(
+        "Symlink requires manual migration",
+      );
+      expect(existsSync(join(home, ".oma/.agents/skills/oma-debug"))).toBe(
+        false,
+      );
+    },
+  );
   it("rejects the native HOME as a unified root", async () => {
     const result = await migrateGlobalHome({
       homeDir: home,

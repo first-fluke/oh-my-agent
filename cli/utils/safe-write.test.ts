@@ -141,24 +141,32 @@ describe("atomicWriteFileSync", () => {
     expect(fs.readdirSync(tmpDir)).toEqual(["clean.md"]);
   });
 
-  it("A4: applies the requested mode (executable hook wrappers)", () => {
-    const target = path.join(tmpDir, "oma-hook.sh");
-    atomicWriteFileSync(target, "#!/bin/sh\n", { mode: 0o755 });
+  // Windows has no POSIX permission bits; chmod modes are not observable.
+  it.skipIf(process.platform === "win32")(
+    "A4: applies the requested mode (executable hook wrappers)",
+    () => {
+      const target = path.join(tmpDir, "oma-hook.sh");
+      atomicWriteFileSync(target, "#!/bin/sh\n", { mode: 0o755 });
 
-    expect(fs.statSync(target).mode & 0o777).toBe(0o755);
-  });
+      expect(fs.statSync(target).mode & 0o777).toBe(0o755);
+    },
+  );
 
-  it("A5: writes through a symlink instead of replacing it", () => {
-    const real = path.join(tmpDir, "CLAUDE.md");
-    const link = path.join(tmpDir, "AGENTS.md");
-    fs.writeFileSync(real, "old", "utf-8");
-    fs.symlinkSync(real, link);
+  // File symlinks require admin/Developer Mode on Windows (EPERM).
+  it.skipIf(process.platform === "win32")(
+    "A5: writes through a symlink instead of replacing it",
+    () => {
+      const real = path.join(tmpDir, "CLAUDE.md");
+      const link = path.join(tmpDir, "AGENTS.md");
+      fs.writeFileSync(real, "old", "utf-8");
+      fs.symlinkSync(real, link);
 
-    atomicWriteFileSync(link, "new");
+      atomicWriteFileSync(link, "new");
 
-    expect(fs.lstatSync(link).isSymbolicLink()).toBe(true);
-    expect(fs.readFileSync(real, "utf-8")).toBe("new");
-  });
+      expect(fs.lstatSync(link).isSymbolicLink()).toBe(true);
+      expect(fs.readFileSync(real, "utf-8")).toBe("new");
+    },
+  );
 });
 
 describe("FORBIDDEN_VENDOR_FILES allowlist", () => {

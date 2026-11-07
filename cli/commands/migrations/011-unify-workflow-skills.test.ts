@@ -246,7 +246,7 @@ describe("migration 011 — unify-workflow-skills", () => {
     mkdirSync(vendorSkillsDir, { recursive: true });
     const linkPath = join(vendorSkillsDir, "orchestrate");
     const relTarget = relative(vendorSkillsDir, ssotDir);
-    symlinkSync(relTarget, linkPath, "dir");
+    symlinkSync(relTarget, linkPath, "junction");
 
     expect(isSymlink(linkPath)).toBe(true);
 

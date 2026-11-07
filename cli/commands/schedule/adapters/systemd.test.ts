@@ -147,9 +147,11 @@ describe("SystemdAdapter", () => {
         String(call[0]).endsWith(".service"),
       )?.[1] as string;
       expect(service).toContain('"/tmp/OMA 100%%/$$private"');
-      expect(service).toContain(
-        `StandardOutput=append:/tmp/OMA 100%%/$private/schedule/runs/${JOB_ID}/stdout.log`,
-      );
+      // Built with path helpers: OMA_HOME is resolved with host separators.
+      const stdoutLog = path
+        .join(path.resolve(root), "schedule", "runs", JOB_ID, "stdout.log")
+        .replaceAll("%", "%%");
+      expect(service).toContain(`StandardOutput=append:${stdoutLog}`);
       mockFsFunctions.readFileSync.mockReturnValue(service);
       expect(await adapter.readCommand(LABEL)).toEqual(command);
     });

@@ -208,7 +208,11 @@ describe("native matrix stream evidence", () => {
         workspace,
       ).reads,
     ).toEqual([]);
-    const absolute = { ...item, command: `cat ${resolve(workspace, file)}` };
+    // Codex commands are POSIX shell words, where `\` is an escape character.
+    const absolute = {
+      ...item,
+      command: `cat ${resolve(workspace, file).replace(/\\/g, "/")}`,
+    };
     expect(
       parseMatrixStream(
         "codex",
