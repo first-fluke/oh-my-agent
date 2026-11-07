@@ -1,4 +1,3 @@
-import { accessSync, existsSync, constants as fsConstants } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { retryObservePath } from "../../state/events.js";
@@ -11,6 +10,7 @@ import type {
   MemoryProviderStatus,
   MemoryServicePresence,
 } from "../../types/memory.js";
+import { findExecutable } from "../../utils/find-executable.js";
 import {
   controlAgentMemoryDaemon,
   getAgentMemoryServicePresence,
@@ -45,19 +45,9 @@ function summarizeDaemon(daemon: MemoryDaemonResult): AgentMemoryDaemonCheck {
   };
 }
 
-function canExecute(path: string): boolean {
-  try {
-    accessSync(path, fsConstants.X_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function executableSearchPaths(env: NodeJS.ProcessEnv): string[] {
+function agentMemoryExtraDirs(): string[] {
   const home = homedir();
   return [
-    ...(env.PATH ?? "").split(":"),
     join(home, ".bun", "bin"),
     join(home, ".local", "bin"),
     "/opt/homebrew/bin",
@@ -66,28 +56,19 @@ function executableSearchPaths(env: NodeJS.ProcessEnv): string[] {
     "/bin",
     "/usr/sbin",
     "/sbin",
-  ].filter((path, index, paths) => path && paths.indexOf(path) === index);
+  ];
 }
 
-function findExecutable(
-  command: string,
+export function collectAgentMemoryBinary(
   env: NodeJS.ProcessEnv,
-): string | undefined {
-  if (command.includes("/")) {
-    return existsSync(command) && canExecute(command) ? command : undefined;
-  }
-  for (const dir of executableSearchPaths(env)) {
-    const candidate = join(dir, command);
-    if (existsSync(candidate) && canExecute(candidate)) return candidate;
-  }
-  return undefined;
-}
-
-function collectAgentMemoryBinary(
-  env: NodeJS.ProcessEnv,
+  platform: NodeJS.Platform = process.platform,
 ): AgentMemoryBinaryCheck {
   const command = env.AGENTMEMORY_BIN || "agentmemory";
-  const path = findExecutable(command, env);
+  const path = findExecutable(command, {
+    env,
+    platform,
+    extraDirs: agentMemoryExtraDirs(),
+  });
   return {
     command,
     available: path !== undefined,

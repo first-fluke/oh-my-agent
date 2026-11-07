@@ -19,9 +19,10 @@
  * exits 0 when oma is missing so the agent is never blocked.
  */
 
-import { accessSync, existsSync, constants as fsConstants } from "node:fs";
+import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { findExecutable } from "../../utils/find-executable.js";
 import { VARIANT_ROUTES } from "../hook/dispatch.js";
 
 // ---------------------------------------------------------------------------
@@ -43,27 +44,17 @@ const OMA_HOOK_WRAPPER_FILENAME = "oma-hook.sh";
 // Binary resolution helpers (mirrors the wrapper's own resolution strategy)
 // ---------------------------------------------------------------------------
 
-function canExecute(filePath: string): boolean {
-  try {
-    accessSync(filePath, fsConstants.X_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /**
- * Every directory the wrapper can find `oma` in: the current PATH first, then
- * the well-known install dirs it sweeps when PATH is minimal.
+ * Well-known install dirs the wrapper sweeps when PATH is minimal (searched
+ * after PATH).
  *
  * Kept in sync with OMA_BIN_CANDIDATES in oma-hook-wrapper.ts — the mise
  * `installs/node/<version>` glob is the one candidate not expressible here, so
  * a mise-without-shims install can still warn while the hook works.
  */
-function executableSearchPaths(env: NodeJS.ProcessEnv): string[] {
+function omaInstallDirs(): string[] {
   const home = homedir();
   return [
-    ...(env.PATH ?? "").split(":"),
     join(home, ".bun", "bin"),
     join(home, ".local", "bin"),
     join(home, ".local", "share", "mise", "shims"),
@@ -75,22 +66,24 @@ function executableSearchPaths(env: NodeJS.ProcessEnv): string[] {
     "/bin",
     "/usr/sbin",
     "/sbin",
-  ].filter((p, i, arr) => p && arr.indexOf(p) === i);
+  ];
 }
 
 /**
- * True when the wrapper can find an oma to run: `$OMA_BIN`, then `oma` in any
- * searched directory.
+ * True when the wrapper can find an oma to run: `$OMA_BIN`, then `oma` on PATH
+ * or in a well-known install dir (PATHEXT-aware on Windows, where the binary
+ * is `oma.exe`).
  */
-function omaResolvable(env: NodeJS.ProcessEnv): boolean {
+function omaResolvable(
+  env: NodeJS.ProcessEnv,
+  platform: NodeJS.Platform,
+): boolean {
   const override = env.OMA_BIN;
-  if (override && existsSync(override) && canExecute(override)) return true;
-
-  for (const dir of executableSearchPaths(env)) {
-    const candidate = join(dir, "oma");
-    if (existsSync(candidate) && canExecute(candidate)) return true;
-  }
-  return false;
+  if (override && findExecutable(override, { env, platform })) return true;
+  return (
+    findExecutable("oma", { env, platform, extraDirs: omaInstallDirs() }) !==
+    undefined
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -115,12 +108,13 @@ function checkWrapper(
   vendor: string,
   wrapperPath: string,
   env: NodeJS.ProcessEnv,
+  platform: NodeJS.Platform,
 ): HookWrapperCheck {
   if (!existsSync(wrapperPath)) {
     return { vendor, wrapperPath, status: "skip" };
   }
 
-  if (omaResolvable(env)) {
+  if (omaResolvable(env, platform)) {
     return { vendor, wrapperPath, status: "pass" };
   }
 
@@ -147,6 +141,7 @@ function checkWrapper(
 export function collectHookWrapperChecks(
   projectDir: string,
   env: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
 ): HookWrapperCheck[] {
   const checks: HookWrapperCheck[] = [];
 
@@ -156,7 +151,7 @@ export function collectHookWrapperChecks(
       ...hookDir.split("/"),
       OMA_HOOK_WRAPPER_FILENAME,
     );
-    checks.push(checkWrapper(vendor, wrapperPath, env));
+    checks.push(checkWrapper(vendor, wrapperPath, env, platform));
   }
 
   return checks;
