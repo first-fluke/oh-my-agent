@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.37.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.8...cli-v20.37.0) (2026-11-07)
+
+
+### Features
+
+* support Kilo Code CLI as an opencode-family vendor ([ceecc9f](https://github.com/first-fluke/oh-my-agent/commit/ceecc9fec4c9d389c136b816d116c8174df566b1))
+
 ## [20.36.8](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.7...cli-v20.36.8) (2026-11-07)
 
 
