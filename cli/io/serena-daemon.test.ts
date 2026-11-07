@@ -798,6 +798,10 @@ describe("pruneRegistry", () => {
       root: "/live",
       context: "ide",
       timeoutMs: 5_000,
+      // Without the seam the startup sweep scans the real process table: under
+      // full-suite load that spawn can eat the whole 5s budget, so /live was
+      // never registered (and real daemons on the host leaked into the test).
+      listDaemons: noDaemons,
       spawnDaemon: (port: number) => {
         listening.add(port);
         return process.pid;
