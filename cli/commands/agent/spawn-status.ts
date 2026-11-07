@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import color from "picocolors";
+import { opencodeFamilyLabel } from "../../constants/opencode-family.js";
 import { lookupFinding, recordFinding } from "../../io/findings-cache.js";
 import {
   getCoordinationStorePath,
@@ -448,7 +449,7 @@ export async function spawnAgent(
     if (prepared.opencodeWrapper) {
       console.log(
         color.dim(
-          `  OpenCode: primary wrapper ${prepared.opencodeWrapper.name} → task(${agentId})`,
+          `  ${opencodeFamilyLabel(dispatch.targetVendor)}: primary wrapper ${prepared.opencodeWrapper.name} → task(${agentId})`,
         ),
       );
     }
@@ -654,7 +655,7 @@ export async function spawnAgent(
     };
 
     // Remove the PID file but preserve the log for post-run inspection (#583).
-    // Also drop the temporary OpenCode wrapper agent, if one was created.
+    // Also drop the temporary OpenCode/Kilo wrapper agent, if one was created.
     let cleaned = false;
     let terminating = false;
     const cleanup = (confirmedStopped = true) => {

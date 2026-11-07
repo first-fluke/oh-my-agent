@@ -549,6 +549,62 @@ describe("probeSlug — opencode", () => {
   });
 });
 
+describe("probeSlug — kilo (opencode family)", () => {
+  beforeEach(() => {
+    vi.mocked(childProcess.spawnSync).mockReset();
+  });
+
+  it("runs `kilo models kilo` for a three-segment gateway slug and accepts a listed id", async () => {
+    mockSpawn({
+      status: 0,
+      stdout:
+        "kilo/~anthropic/claude-haiku-latest\nkilo/~anthropic/claude-sonnet-latest",
+    });
+
+    const result = await probeSlug("kilo/~anthropic/claude-sonnet-latest", {
+      userModels: {},
+    });
+
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "kilo",
+      ["models", "kilo"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+    expect(result.cli).toBe("kilo");
+    expect(result.status).toBe("accepted");
+  });
+
+  it("uses a registered kilo cli_model's own provider", async () => {
+    mockSpawn({ status: 0, stdout: "openai/gpt-5.5" });
+
+    const result = await probeSlug("my-kilo-model", {
+      userModels: {
+        "my-kilo-model": {
+          cli: "kilo",
+          cli_model: "openai/gpt-5.5",
+          auth_hint: "kilo auth login",
+          supports: {
+            effort: null,
+            apply_patch: false,
+            task_budget: false,
+            prompt_cache: false,
+            computer_use: false,
+            native_dispatch_from: ["kilo"],
+            api_only: false,
+          },
+        },
+      },
+    });
+
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "kilo",
+      ["models", "openai"],
+      expect.anything(),
+    );
+    expect(result.status).toBe("accepted");
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Regression: existing vendors unchanged
 // ---------------------------------------------------------------------------

@@ -128,6 +128,12 @@ const cases = [
     keys: ["mcp"],
   },
   {
+    vendor: "kilo",
+    project: "kilo.jsonc",
+    global: ".config/kilo/kilo.jsonc",
+    keys: ["mcp"],
+  },
+  {
     vendor: "pi",
     project: ".pi/mcp.json",
     global: ".pi/agent/mcp.json",
@@ -173,7 +179,7 @@ describe.each([false, true])("native browser config (global=%s)", (global) => {
         "firefox-devtools",
       ]);
       expect(servers.aside).toEqual(
-        test.vendor === "opencode"
+        test.vendor === "opencode" || test.vendor === "kilo"
           ? { type: "local", command: ["aside", "mcp"], enabled: true }
           : test.vendor === "copilot"
             ? { type: "local", command: "aside", args: ["mcp"], tools: ["*"] }
@@ -222,6 +228,20 @@ it("preserves OpenCode JSONC comments, trailing commas, strings, and all active 
       },
     });
   }
+});
+
+it("writes Kilo MCP into an existing .kilo/kilo.json and preserves its plugin registration", () => {
+  write(
+    join(root, ".kilo", "kilo.json"),
+    JSON.stringify({ plugin: ["./plugins/oma/oma.ts"] }),
+  );
+  syncBrowserMcp(root, ["chrome"], ["kilo"], { home });
+  expect(read(join(root, ".kilo", "kilo.json"))).toMatchObject({
+    plugin: ["./plugins/oma/oma.ts"],
+    mcp: { "chrome-devtools": { type: "local", enabled: true } },
+  });
+  // The existing layer is used; no root kilo.jsonc is invented beside it.
+  expect(existsSync(join(root, "kilo.jsonc"))).toBe(false);
 });
 
 it("preserves Hermes YAML comments and settings while honoring HERMES_HOME", () => {

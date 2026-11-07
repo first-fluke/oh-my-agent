@@ -1,4 +1,8 @@
 import {
+  isOpencodeFamily,
+  OPENCODE_FAMILY_HOSTS,
+} from "../../../constants/opencode-family.js";
+import {
   splitArgs,
   type VendorConfig,
 } from "../../../platform/agent-config.js";
@@ -208,6 +212,9 @@ const buildExternalPiInvocation: ExternalInvocationBuilder = ({
 /**
  * opencode: `opencode run -m <model> [--agent <agentId>] --dir <cwd>
  *            [--dangerously-skip-permissions] "<prompt>"`.
+ * kilo:     `kilo run -m <model> [--agent <agentId>] --dir <cwd>
+ *            [--auto] "<prompt>"` (same contract; host table supplies the
+ *            binary and auto-approve flag).
  * CRITICAL: `-p` in opencode means `--password`, NOT prompt. The prompt MUST
  * be the trailing positional arg (matches the [message..] positional in
  * `opencode run --help`). Never precede it with a prompt flag.
@@ -220,7 +227,9 @@ const buildExternalOpencodeInvocation: ExternalInvocationBuilder = ({
   options,
 }) => {
   const { readOnly = false, workspace = process.cwd() } = options;
-  const command = vendorConfig.command || "opencode";
+  const host =
+    OPENCODE_FAMILY_HOSTS[isOpencodeFamily(vendor) ? vendor : "opencode"];
+  const command = vendorConfig.command || host.binary;
   const args: string[] = ["run"];
 
   const modelFlag = vendorConfig.model_flag || "-m";
@@ -236,7 +245,7 @@ const buildExternalOpencodeInvocation: ExternalInvocationBuilder = ({
   args.push("--dir", workspace);
 
   if (!readOnly) {
-    args.push("--dangerously-skip-permissions");
+    args.push(host.autoApproveFlag);
   } else {
     args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
   }
@@ -259,6 +268,7 @@ const EXTERNAL_DISPATCH: Record<string, ExternalInvocationBuilder> = {
   kimi: buildExternalKimiInvocation,
   pi: buildExternalPiInvocation,
   opencode: buildExternalOpencodeInvocation,
+  kilo: buildExternalOpencodeInvocation,
 };
 
 /**

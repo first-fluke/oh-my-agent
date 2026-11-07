@@ -177,6 +177,7 @@ const VENDOR_FILES: Record<string, string> = {
   cursor: "AGENTS.md",
   qwen: "AGENTS.md",
   pi: "AGENTS.md",
+  kilo: "AGENTS.md",
   antigravity: "AGENTS.md",
 };
 
@@ -189,6 +190,7 @@ const VENDOR_SPAWN: Record<string, string> = {
     "Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent spawn`. A role file without `model` runs on your model: spawn `docs-curator` and `research-explorer` with the fastest model the spawn tool lists as available, and leave `model` unset otherwise. Never invent a model name",
   qwen: "Same-vendor native dispatch via Qwen Code subagents in `.qwen/agents/{name}.md`; cross-vendor fallback via `oma agent spawn`",
   pi: "pi has no native subagent API; use `oma agent spawn {agent} {prompt} {sessionId} --vendor pi` for CLI subprocess dispatch",
+  kilo: "Same-vendor native dispatch via the Kilo `task` tool with `subagent_type: {agent-id}` (subagents in `.kilo/agents/{name}.md`); cross-vendor fallback via `oma agent spawn`",
   antigravity:
     "Same-vendor native dispatch via `invoke_subagent` tool (with `define_subagent` when needed); cross-vendor fallback via `oma agent spawn`",
 };

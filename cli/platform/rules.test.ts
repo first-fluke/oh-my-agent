@@ -468,6 +468,21 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).toContain("# oh-my-agent");
   });
 
+  it("writes AGENTS.md for kilo with native task dispatch over .kilo/agents", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      false,
+    );
+
+    expect(mergeRulesIndexForVendor(mockTargetDir, "kilo")).toBe(true);
+    const content = findAtomicWrite("AGENTS.md")?.content as string;
+    expect(content).toContain(".kilo/agents/{name}.md");
+    expect(content).toContain("subagent_type: {agent-id}");
+  });
+
+  it("keeps opencode out of the managed AGENTS.md (no doc mapping)", () => {
+    expect(mergeRulesIndexForVendor(mockTargetDir, "opencode")).toBe(false);
+  });
+
   it("writes AGENTS.md for antigravity vendor with invoke_subagent instructions", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       false,

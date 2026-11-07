@@ -1,6 +1,10 @@
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import {
+  OPENCODE_FAMILY_HOSTS,
+  type OpencodeFamilyVendor,
+} from "../constants/opencode-family.js";
 import type { CliVendor } from "../types/index.js";
 
 export type BrowserMcpOptions = {
@@ -58,27 +62,32 @@ export function browserMcpTargets(
   const toml = (path: string): BrowserMcpTarget[] => [
     { path, keys: ["mcp_servers"], format: "toml" },
   ];
-  const opencode = (): BrowserMcpTarget[] => {
-    const base = options.global
-      ? join(
-          process.env.XDG_CONFIG_HOME?.trim() || join(home, ".config"),
-          "opencode",
-        )
-      : root;
-    const candidates = [
-      join(base, "opencode.json"),
-      join(base, "opencode.jsonc"),
-    ];
-    if (!options.global)
-      candidates.push(
-        project(".opencode/opencode.json"),
-        project(".opencode/opencode.jsonc"),
+  // opencode-family hosts (opencode, kilo) share the `mcp` key and entry
+  // format (`entry: "opencode"`) under their own config dir and basename.
+  const opencodeFamily =
+    (host: OpencodeFamilyVendor) => (): BrowserMcpTarget[] => {
+      const spec = OPENCODE_FAMILY_HOSTS[host];
+      const name = spec.configBasename;
+      const base = options.global
+        ? join(
+            process.env.XDG_CONFIG_HOME?.trim() || join(home, ".config"),
+            spec.configDirName,
+          )
+        : root;
+      const candidates = [
+        join(base, `${name}.json`),
+        join(base, `${name}.jsonc`),
+      ];
+      if (!options.global)
+        candidates.push(
+          project(`${spec.projectDir}/${name}.json`),
+          project(`${spec.projectDir}/${name}.jsonc`),
+        );
+      const existing = candidates.filter(existsSync);
+      return (existing.length ? existing : [join(base, `${name}.jsonc`)]).map(
+        (path) => ({ path, keys: ["mcp"], format: "jsonc", entry: "opencode" }),
       );
-    const existing = candidates.filter(existsSync);
-    return (existing.length ? existing : [join(base, "opencode.jsonc")]).map(
-      (path) => ({ path, keys: ["mcp"], format: "jsonc", entry: "opencode" }),
-    );
-  };
+    };
   // Exhaustive by design: a new OMA vendor must declare its MCP path here.
   const targets: Record<CliVendor, () => BrowserMcpTarget[]> = {
     claude: () => json(scoped(".mcp.json", ".claude.json")),
@@ -141,7 +150,8 @@ export function browserMcpTargets(
       json(scoped(".github/mcp.json", ".copilot/mcp-config.json")).map(
         (target) => ({ ...target, entry: "copilot" }),
       ),
-    opencode,
+    opencode: opencodeFamily("opencode"),
+    kilo: opencodeFamily("kilo"),
     pi: () =>
       json(
         options.global

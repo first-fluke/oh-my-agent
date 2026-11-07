@@ -138,6 +138,10 @@ Spawn agents via **Agent tool** using `.claude/agents/{agent}.md` definitions.
 
 Spawn same-session subagents with the native `task` tool and `subagent_type: {agent-id}`. Do not use `oma agent spawn` for same-session OpenCode tasks; that external fallback does not appear as a native child task in the active UI/TUI.
 
+### If Kilo Code and target vendor is Kilo
+
+Same as OpenCode: spawn same-session subagents (`.kilo/agents/{agent}.md`) with the native `task` tool and `subagent_type: {agent-id}`. Do not use `oma agent spawn` for same-session Kilo tasks.
+
 ### If Codex CLI and target vendor is Codex
 
 Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.

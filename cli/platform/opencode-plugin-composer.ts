@@ -1,31 +1,68 @@
 import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+  OPENCODE_FAMILY_HOSTS,
+  type OpencodeFamilyVendor,
+} from "../constants/opencode-family.js";
 import { readJsonForMerge, warnUnmergeable } from "../utils/merge-read.js";
 import { standaloneHookSources } from "./hooks-composer/standalone-wrapper.js";
 import { copyHookScripts } from "./hooks-composer.js";
 import { safeGetInstallMode } from "./install-context.js";
 
 /**
- * Install path for the opencode (Sst opencode) plugin bridge.
+ * Install path for the opencode-family plugin bridge (Sst opencode and its
+ * forks such as Kilo Code — see `OPENCODE_FAMILY_HOSTS`).
  *
  * Unlike the other vendors, opencode does not register settings-file hooks; it
  * loads in-process TypeScript plugins from `.opencode/plugins/`. So opencode is
  * NOT handled by `installHooksFromVariant`. Instead it gets this forked path,
  * invoked from `link()` whenever `opencode` is in the configured vendor set.
+ * Kilo keeps the same plugin model under `.kilo/plugins/` and `kilo.json`.
  *
  * NOTE: opencode's auto-discovery is flat — it only loads `.opencode/plugins/*`
  * files, not subdirectories. The bridge lives in a nested `oma/` subdir (it
  * spawns handler entries installed alongside it), so it is invisible to
  * auto-discovery and must be registered explicitly via `registerOpencodePlugin`.
  *
- * See `.agents/hooks/variants/opencode/oma.ts` for the bridge source.
+ * See `.agents/hooks/variants/opencode/oma.ts` for the bridge source (shared
+ * unchanged by every opencode-family host).
  */
 
 /** Directory (relative to the install root) of the opencode plugin. */
 export const OPENCODE_PLUGIN_DIR = join(".opencode", "plugins", "oma");
 
 /**
- * Materialize the opencode bridge into `<targetDir>/.opencode/plugins/oma/`:
+ * Native config dir of an opencode-family host: `<root>/.opencode` in project
+ * mode, `<home>/.config/opencode` in global mode (`.kilo` / `.config/kilo` for
+ * Kilo). `nativeRoot` is the project root or HOME respectively.
+ */
+export function opencodeFamilyConfigDir(
+  nativeRoot: string,
+  host: OpencodeFamilyVendor = "opencode",
+  global = safeGetInstallMode() === "global",
+): string {
+  const spec = OPENCODE_FAMILY_HOSTS[host];
+  return global
+    ? join(nativeRoot, ".config", spec.configDirName)
+    : join(nativeRoot, spec.projectDir);
+}
+
+/**
+ * The config file `registerOpencodePlugin` writes: an existing
+ * `<basename>.json` is rewritten in place, otherwise `<basename>.jsonc`.
+ */
+export function opencodeFamilyConfigPath(
+  configDir: string,
+  host: OpencodeFamilyVendor = "opencode",
+): string {
+  const basename = OPENCODE_FAMILY_HOSTS[host].configBasename;
+  const jsonPath = join(configDir, `${basename}.json`);
+  return existsSync(jsonPath) ? jsonPath : join(configDir, `${basename}.jsonc`);
+}
+
+/**
+ * Materialize the opencode bridge into `<targetDir>/.opencode/plugins/oma/`
+ * (`<targetDir>/.kilo/plugins/oma/` for Kilo):
  *  1. Install generated Bun handler entries that dispatch through the CLI,
  *     with supporting files such as `filter-test-output.sh`.
  *  2. Copy the bridge `oma.ts` as the plugin entry point.
@@ -36,16 +73,19 @@ export const OPENCODE_PLUGIN_DIR = join(".opencode", "plugins", "oma");
 export function installOpencodePlugin(
   sourceDir: string,
   targetDir: string,
+  host: OpencodeFamilyVendor = "opencode",
 ): void {
   const global = safeGetInstallMode() === "global";
-  const pluginDir = global
-    ? join(targetDir, ".config", "opencode", "plugins", "oma")
-    : join(targetDir, OPENCODE_PLUGIN_DIR);
+  const pluginDir = join(
+    opencodeFamilyConfigDir(targetDir, host, global),
+    "plugins",
+    "oma",
+  );
 
   copyHookScripts(sourceDir, pluginDir, undefined, {
     ownedNamespace: true,
     generatedSources: standaloneHookSources(
-      "opencode",
+      host,
       global ? sourceDir : undefined,
     ),
   });
@@ -69,7 +109,7 @@ export function installOpencodePlugin(
 
 /**
  * Config-relative path to the bridge entry point, as registered under the
- * `plugin` key of `.opencode/opencode.jsonc`.
+ * `plugin` key of `.opencode/opencode.jsonc` (`.kilo/kilo.jsonc` for Kilo).
  *
  * The bridge lives in a nested `oma/` subdirectory (alongside the core hook
  * scripts it spawns), but opencode only auto-discovers plugin files placed
@@ -79,10 +119,9 @@ export function installOpencodePlugin(
  */
 export const OPENCODE_PLUGIN_ENTRY = "./plugins/oma/oma.ts";
 
-const OPENCODE_CONFIG_SCHEMA = "https://opencode.ai/config.json";
-
 /**
- * Register the OMA bridge in `.opencode/opencode.jsonc` so opencode loads it.
+ * Register the OMA bridge in `.opencode/opencode.jsonc` so opencode loads it
+ * (`.kilo/kilo.jsonc` for Kilo).
  *
  * `installOpencodePlugin` only materializes the bridge files; opencode will not
  * pick the nested `plugins/oma/oma.ts` up via auto-discovery (which is flat,
@@ -97,17 +136,15 @@ const OPENCODE_CONFIG_SCHEMA = "https://opencode.ai/config.json";
  * are dropped on rewrite (same tradeoff as the competitors uninstall path); a
  * config that does not parse is left untouched with a warning.
  */
-export function registerOpencodePlugin(targetDir: string): void {
-  const dir =
-    safeGetInstallMode() === "global"
-      ? join(targetDir, ".config", "opencode")
-      : join(targetDir, ".opencode");
-  const jsonPath = join(dir, "opencode.json");
-  const jsoncPath = join(dir, "opencode.jsonc");
-  const configPath = existsSync(jsonPath) ? jsonPath : jsoncPath;
+export function registerOpencodePlugin(
+  targetDir: string,
+  host: OpencodeFamilyVendor = "opencode",
+): void {
+  const dir = opencodeFamilyConfigDir(targetDir, host);
+  const configPath = opencodeFamilyConfigPath(dir, host);
 
   // JSONC (comments, trailing commas) parses; anything still invalid is left
-  // untouched — rewriting it from `{}` would erase the user's opencode config.
+  // untouched — rewriting it from `{}` would erase the user's host config.
   const read = readJsonForMerge(configPath);
   if (read.status === "invalid") {
     warnUnmergeable(configPath, read.reason);
@@ -117,7 +154,7 @@ export function registerOpencodePlugin(targetDir: string): void {
     read.status === "ok" ? read.value : {};
 
   if (typeof config.$schema !== "string") {
-    config.$schema = OPENCODE_CONFIG_SCHEMA;
+    config.$schema = OPENCODE_FAMILY_HOSTS[host].schema;
   }
 
   const plugins = Array.isArray(config.plugin)

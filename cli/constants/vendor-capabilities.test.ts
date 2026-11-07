@@ -44,6 +44,21 @@ describe("vendor capabilities", () => {
     expect(getVendorCapabilities("zcode")?.skills.projectDir).toBeNull();
   });
 
+  it("treats kilo as an opencode-family extension host with native skills", () => {
+    expect(getVendorCapabilities("kilo")).toEqual({
+      skills: {
+        native: true,
+        projectDir: ".agents/skills",
+        globalDir: ".agents/skills",
+      },
+      agents: { dir: ".kilo/agents" },
+      hooks: { kind: "extension", variant: null },
+      plugins: { manifest: null },
+    });
+    // No skill symlink projection: kilo reads .agents/skills natively.
+    expect(Object.hasOwn(CLI_SKILLS_DIR, "kilo")).toBe(false);
+  });
+
   it("does not resolve inherited object properties as vendors", () => {
     expect(getVendorCapabilities("constructor")).toBeUndefined();
     expect(getVendorCapabilities("__proto__")).toBeUndefined();

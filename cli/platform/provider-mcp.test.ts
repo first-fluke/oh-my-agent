@@ -75,6 +75,7 @@ describe("native provider MCP projection", () => {
     "commandcode",
     "copilot",
     "opencode",
+    "kilo",
     "pi",
     "hermes",
     "zcode",

@@ -1,5 +1,9 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+  isOpencodeFamily,
+  OPENCODE_FAMILY_HOSTS,
+} from "../constants/opencode-family.js";
 import { getVendorCapabilities } from "../constants/vendor-capabilities.js";
 import { loadUserConfig } from "../io/runtime-dispatch/config-loader.js";
 import { resolveAgentPlanFromConfig } from "../io/runtime-dispatch/resolve-plan.js";
@@ -126,11 +130,12 @@ function getTimeoutField(_vendor: string): string {
 }
 
 function supportsSkillsFrontmatter(vendor: string): boolean {
-  // Qwen Code and OpenCode have no `skills` frontmatter key. Qwen skills are
-  // discovered from the parent session; OpenCode skills are project-level.
-  // Copilot discovers `.github/skills` natively and its custom-agent schema
-  // does not define a `skills` field.
-  return !["opencode", "qwen", "copilot"].includes(vendor);
+  // Qwen Code and the opencode family (OpenCode, Kilo) have no `skills`
+  // frontmatter key. Qwen skills are discovered from the parent session;
+  // opencode-family skills are project-level. Copilot discovers
+  // `.github/skills` natively and its custom-agent schema does not define a
+  // `skills` field.
+  return !isOpencodeFamily(vendor) && !["qwen", "copilot"].includes(vendor);
 }
 
 function serializeTomlString(value: string): string {
@@ -256,7 +261,7 @@ function buildMarkdownAgentFile(
     description: config.description || frontmatter.description,
     tools: hasTools ? finalTools : undefined,
     model:
-      ["opencode", "qwen", "copilot"].includes(vendor) &&
+      (isOpencodeFamily(vendor) || ["qwen", "copilot"].includes(vendor)) &&
       resolvedModel === "inherit"
         ? undefined
         : resolvedModel,
@@ -267,9 +272,9 @@ function buildMarkdownAgentFile(
       config.maxTurns || frontmatter.maxTurns || variant.maxTurnsDefault;
   }
   if (config.effort) {
-    // opencode expresses reasoning depth as a model `variant`, not `effort`
-    // (#583-2); other markdown vendors keep the abstract `effort` key.
-    if (vendor === "opencode") fm.variant = config.effort;
+    // The opencode family expresses reasoning depth as a model `variant`, not
+    // `effort` (#583-2); other markdown vendors keep the abstract `effort` key.
+    if (isOpencodeFamily(vendor)) fm.variant = config.effort;
     else fm.effort = config.effort;
   }
   if (config.kind) fm.kind = config.kind;
@@ -289,7 +294,7 @@ function buildMarkdownAgentFile(
   if (vendor === "copilot") {
     fm["include-custom-instructions"] ??= true;
   }
-  if (vendor === "opencode") {
+  if (isOpencodeFamily(vendor)) {
     fm.mode = "subagent";
   }
 
@@ -379,6 +384,17 @@ function buildCodexAgentFile(
 // Fields not listed here will be dropped with a console.warn before write.
 // =============================================================================
 
+const OPENCODE_AGENT_FIELDS = [
+  "name",
+  "description",
+  "mode",
+  "model",
+  "variant",
+  "temperature",
+  "tools",
+  "permission",
+] as const;
+
 const ALLOWED_FIELDS: Record<string, readonly string[]> = {
   claude: [
     "name",
@@ -411,16 +427,9 @@ const ALLOWED_FIELDS: Record<string, readonly string[]> = {
     "metadata",
     "target",
   ],
-  opencode: [
-    "name",
-    "description",
-    "mode",
-    "model",
-    "variant",
-    "temperature",
-    "tools",
-    "permission",
-  ],
+  opencode: OPENCODE_AGENT_FIELDS,
+  // Kilo keeps opencode's agent frontmatter schema.
+  kilo: OPENCODE_AGENT_FIELDS,
 };
 
 /**
@@ -479,11 +488,12 @@ export function sanitizeFrontmatterForVendor(
 function resolveOpencodeAgentModel(
   sourceDir: string,
   agentKey: string,
+  host: string = "opencode",
 ): { model?: string; effort?: string } {
   try {
     const config = loadUserConfig(sourceDir);
     const plan = resolveAgentPlanFromConfig(agentKey, config);
-    if (plan.cli !== "opencode") return {};
+    if (plan.cli !== host) return {};
     return { model: plan.cliModel, effort: plan.effort };
   } catch {
     // Missing/invalid config or unknown slug → fall back to inherit.
@@ -559,8 +569,13 @@ export function installVendorAgents(
       ? ".copilot/agents"
       : variant.destDir;
   const destDir =
-    safeGetInstallMode() === "global" && vendor === "opencode"
-      ? join(targetDir, ".config", "opencode", "agents")
+    safeGetInstallMode() === "global" && isOpencodeFamily(vendor)
+      ? join(
+          targetDir,
+          ".config",
+          OPENCODE_FAMILY_HOSTS[vendor].configDirName,
+          "agents",
+        )
       : join(targetDir, vendorDestDir);
   mkdirSync(destDir, { recursive: true });
 
@@ -613,10 +628,11 @@ export function installVendorAgents(
     // #583-2: pin the OpenCode-routed model/variant so native task-dispatched
     // subagents stop inheriting the primary agent's model. An explicit variant
     // override (config.model / config.effort) still wins.
-    if (vendor === "opencode" && userConfig.model_preset !== "auto") {
+    if (isOpencodeFamily(vendor) && userConfig.model_preset !== "auto") {
       const resolved = resolveOpencodeAgentModel(
         sourceDir,
         definition.agentKey,
+        vendor,
       );
       if (resolved.model && !config.model) config.model = resolved.model;
       if (resolved.effort && !config.effort) config.effort = resolved.effort;

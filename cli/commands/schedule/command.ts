@@ -95,6 +95,7 @@ const SCHEDULE_VENDORS = [
   "codex",
   "cursor",
   "grok",
+  "kilo",
   "opencode",
   "pi",
   "qwen",
@@ -495,7 +496,7 @@ export function registerSchedule(program: Command): void {
     )
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (antigravity/claude/codex/cursor/opencode/qwen/grok/pi)",
+      "CLI vendor override (antigravity/claude/codex/cursor/opencode/kilo/qwen/grok/pi)",
     )
     .option(
       "-w, --workspace <path>",

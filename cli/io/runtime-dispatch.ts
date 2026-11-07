@@ -1,3 +1,4 @@
+import { isOpencodeFamily } from "../constants/opencode-family.js";
 import type { VendorConfig } from "../platform/agent-config.js";
 import { persistCodexEffortToToml } from "./runtime-dispatch/codex-effort.js";
 import { ConfigError } from "./runtime-dispatch/config-error.js";
@@ -111,8 +112,9 @@ function applyResolvedPlan(
       plan.cliModel,
     );
   }
-  if (targetVendor === "opencode") {
-    // opencode's prompt is a trailing positional and `-m` is its model flag.
+  if (isOpencodeFamily(targetVendor)) {
+    // The opencode family's prompt is a trailing positional and `-m` is its
+    // model flag.
     return injectModelBeforeTrailingPrompt(invocation, "-m", plan.cliModel);
   }
   return applyPlanArgs(invocation, plan);
@@ -256,12 +258,14 @@ export function planDispatch(
     return { mode, runtimeVendor, targetVendor, reason, invocation: inv };
   };
 
-  // External subprocess dispatch. opencode resolves the per-agent persona from
-  // the generated `.opencode/agents/<id>.md` via `--agent <id>`; other external
-  // vendors keep the historical plain-prompt form (agentId stays undefined → no
-  // regression).
+  // External subprocess dispatch. The opencode family resolves the per-agent
+  // persona from the generated `<host dir>/agents/<id>.md` via `--agent <id>`;
+  // other external vendors keep the historical plain-prompt form (agentId stays
+  // undefined → no regression).
   const dispatchExternal = (reason: string): DispatchPlan => {
-    const externalAgentId = targetVendor === "opencode" ? agentId : undefined;
+    const externalAgentId = isOpencodeFamily(targetVendor)
+      ? agentId
+      : undefined;
     const inv = buildExternalInvocation(
       targetVendor,
       effectiveVendorConfig,

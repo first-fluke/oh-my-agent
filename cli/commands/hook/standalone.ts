@@ -7,6 +7,10 @@ import {
   makePromptOutput,
 } from "../../../.agents/hooks/core/hook-output.js";
 import {
+  isOpencodeFamily,
+  type OpencodeFamilyVendor,
+} from "../../constants/opencode-family.js";
+import {
   isStandaloneHookScript,
   STANDALONE_HOOK_SCRIPTS,
   STANDALONE_HOOK_VENDORS,
@@ -31,7 +35,7 @@ export type StandaloneHookRequest = Omit<
   HookRequest,
   "nativeEvent" | "vendor"
 > & {
-  vendor: HookRequest["vendor"] | "opencode";
+  vendor: HookRequest["vendor"] | OpencodeFamilyVendor;
   script: string;
   nativeEvent?: string;
 };
@@ -54,10 +58,11 @@ export async function runStandaloneHookScript(
   ) {
     return { output: "" };
   }
-  // OpenCode's existing bridge consumes the Claude JSON dialect. Its vendor
-  // identity is outside the protected core Vendor enum.
-  const handlerVendor =
-    vendor === "opencode" ? "claude" : coreHookVendor(vendor);
+  // The opencode-family bridge (opencode, kilo) consumes the Claude JSON
+  // dialect. Its vendor identity is outside the protected core Vendor enum.
+  const handlerVendor = isOpencodeFamily(vendor)
+    ? "claude"
+    : coreHookVendor(vendor);
 
   let payload: Record<string, unknown>;
   try {

@@ -164,7 +164,7 @@ export const RunSchema = z.object({
 });
 
 const generated =
-  /^(?:\.agents\/(?:state|results)(?:\/|$)|\.serena\/memories(?:\/|$)|\.opencode\/agents\/oma-spawn-[^/]+\.md$)/;
+  /^(?:\.agents\/(?:state|results)(?:\/|$)|\.serena\/memories(?:\/|$)|\.(?:opencode|kilo)\/agents\/oma-spawn-[^/]+\.md$)/;
 function digest(content: string | Buffer): string {
   return createHash("sha256").update(content).digest("hex");
 }

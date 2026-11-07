@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { OPENCODE_FAMILY_HOSTS } from "../../constants/opencode-family.js";
 import { claudeMdShadowsAgentsMd } from "../../platform/agents-md-import.js";
 import {
   getAllSkills,
@@ -28,6 +29,11 @@ export const CLI_DEFINITIONS: Array<[string, string, string]> = [
   ["kiro", "kiro-cli", "Follow instructions at https://kiro.dev"],
   ["kimi", "kimi", "Follow instructions at https://www.kimi.com/code"],
   ["pi", "pi", "bun install --global @earendil-works/pi-coding-agent"],
+  [
+    "kilo",
+    OPENCODE_FAMILY_HOSTS.kilo.binary,
+    OPENCODE_FAMILY_HOSTS.kilo.installHint,
+  ],
 ];
 
 /**

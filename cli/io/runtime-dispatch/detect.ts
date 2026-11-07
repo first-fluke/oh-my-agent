@@ -11,6 +11,7 @@ const SUPPORTED_RUNTIME_VENDORS = new Set<RuntimeVendor>([
   "kimi",
   "kiro",
   "opencode",
+  "kilo",
   "pi",
 ]);
 
@@ -50,6 +51,13 @@ export function detectRuntimeVendor(
 
   if (env.KIRO_SESSION_ID || env.KIRO_CHAT_LOG_FILE || env.KIRO_HOME) {
     return "kiro";
+  }
+
+  // Kilo Code exports KILO=1 plus KILO_RUN_ID / KILOCODE_VERSION to its tool
+  // subprocesses (verified on kilo 7.8.27). It also inherits opencode's
+  // OPENCODE=1, so it must be matched before any opencode env detection.
+  if (env.KILO === "1" || env.KILO_RUN_ID || env.KILOCODE_VERSION) {
+    return "kilo";
   }
 
   // TODO(oma-deferred): add env-based opencode session detection when opencode

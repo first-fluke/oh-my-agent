@@ -19,7 +19,7 @@ Receipts live in `.agents/state/agent-runs/`. They contain session/task/run IDs,
 
 The Ralph gate requires QA and REFINE task IDs in a nonempty plan, current successful executable checks, and report/plan/phase artifacts bound to those runs. A waiver alone does not pass this gate. Record a justified REFINE exception as `REFINE skipped: <specific reason>` before QA finalizes its evidence. Old Markdown-only reports remain readable but must be reverified to pass the gate.
 
-Checks cover the Git working tree (HEAD, tracked contents/modes and nonignored untracked files). Generated `.agents/state`, `.agents/results`, and `.serena/memories`, and generated `.opencode/agents/oma-spawn-*.md` wrappers are excluded from the tree hash and artifacts are hashed separately. In an unversioned directory, all files except those generated directories, `.git`, and `node_modules` are covered. External services, ignored dependencies, and malicious receipt tampering require separate controls.
+Checks cover the Git working tree (HEAD, tracked contents/modes and nonignored untracked files). Generated `.agents/state`, `.agents/results`, and `.serena/memories`, and generated `.opencode/agents/oma-spawn-*.md` / `.kilo/agents/oma-spawn-*.md` wrappers are excluded from the tree hash and artifacts are hashed separately. In an unversioned directory, all files except those generated directories, `.git`, and `node_modules` are covered. External services, ignored dependencies, and malicious receipt tampering require separate controls.
 
 ## Artifact storage
 

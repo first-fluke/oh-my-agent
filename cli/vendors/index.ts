@@ -5,6 +5,7 @@ import { isCodexAuthenticated } from "./codex/auth.js";
 import { isCommandCodeAuthenticated } from "./commandcode/auth.js";
 import { isCursorAuthenticated } from "./cursor/auth.js";
 import { isGrokAuthenticated } from "./grok/auth.js";
+import { isKiloAuthenticated } from "./kilo/auth.js";
 import { isKimiAuthenticated } from "./kimi/auth.js";
 import { isKiroAuthenticated } from "./kiro/auth.js";
 import { isOpencodeAuthenticated } from "./opencode/auth.js";
@@ -90,6 +91,12 @@ export const VENDORS: readonly Vendor[] = [
     isAuthenticated: isOpencodeAuthenticated,
     authHint: "opencode auth login",
   },
+  {
+    id: "kilo",
+    label: "Kilo Code CLI",
+    isAuthenticated: isKiloAuthenticated,
+    authHint: "kilo auth login",
+  },
 ];
 
 /**
@@ -109,6 +116,7 @@ export {
   isCommandCodeAuthenticated,
   isCursorAuthenticated,
   isGrokAuthenticated,
+  isKiloAuthenticated,
   isKimiAuthenticated,
   isKiroAuthenticated,
   isOpencodeAuthenticated,

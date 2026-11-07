@@ -86,6 +86,18 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     hooks: { kind: "none", variant: null },
     plugins: { manifest: null },
   },
+  kilo: {
+    // Kilo natively discovers `.agents/skills/*/SKILL.md`, so no skill
+    // projection is needed (same as pi).
+    skills: {
+      native: true,
+      projectDir: ".agents/skills",
+      globalDir: ".agents/skills",
+    },
+    agents: { dir: ".kilo/agents" },
+    hooks: { kind: "extension", variant: null },
+    plugins: { manifest: null },
+  },
   kimi: {
     // Project SSOT scanning does not establish global discovery; retain the
     // existing HOME skill projection and its install-mode handling.

@@ -18,6 +18,11 @@ describe("selectedPresetVendors", () => {
     expect(selectedPresetVendors(["opencode", "grok", "kiro"])).toEqual([]);
   });
 
+  it("treats Kilo like OpenCode (native dispatch, no single-vendor preset)", () => {
+    expect(selectedPresetVendors(["kilo"])).toEqual([]);
+    expect(selectedPresetVendors(["kilo", "claude"])).toEqual(["claude"]);
+  });
+
   it("returns the preset-backed subset of a mixed selection", () => {
     expect(selectedPresetVendors(["opencode", "codex"])).toEqual(["codex"]);
   });

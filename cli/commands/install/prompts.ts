@@ -215,6 +215,11 @@ export async function promptVendors(
       hint: "in-process plugin bridge — .opencode/plugins/oma/, .opencode/agents/",
     },
     {
+      value: "kilo",
+      label: "Kilo Code",
+      hint: "in-process plugin bridge — .kilo/plugins/oma/, .kilo/agents/ (native .agents/skills)",
+    },
+    {
       value: "pi",
       label: "pi (Earendil)",
       hint: "extension bridge + browser MCP via pi-mcp-adapter",

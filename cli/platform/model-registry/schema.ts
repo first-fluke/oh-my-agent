@@ -13,9 +13,10 @@ const RuntimeIdSchema = z.enum(MODEL_OWNER_CLIS);
  * therefore excluded from VENDORS, but is a valid host CLI for user-defined
  * model entries. OpenCode models are environment/subscription-dependent and
  * validated dynamically via `opencode models` — no hardcoded specs are
- * shipped in raw-registry.ts.
+ * shipped in raw-registry.ts. "kilo" (Kilo Code, an opencode fork) is accepted
+ * on the same terms: its `provider/model` slugs come from `kilo models`.
  */
-const CliSchema = z.enum([...VENDORS, "opencode"] as const);
+const CliSchema = z.enum([...VENDORS, "opencode", "kilo"] as const);
 
 const EffortLevelSchema = z.enum(["none", "low", "medium", "high", "xhigh"]);
 

@@ -3,6 +3,10 @@
 
 import { spawnSync } from "node:child_process";
 import {
+  isOpencodeFamily,
+  OPENCODE_FAMILY_HOSTS,
+} from "../../constants/opencode-family.js";
+import {
   getModelSpec,
   loadInlineUserModels,
   ownerToVendor,
@@ -200,9 +204,14 @@ export function resolveProbeTarget(
   // opencode model ids are `provider/model`; when a registered cli_model
   // carries its own provider, that provider wins over the slug's owner (they
   // differ whenever the slug is an alias, e.g. `my-fast-model`).
+  // Kilo gateway ids are three-segment (`kilo/~anthropic/claude-…`), so for an
+  // unregistered kilo slug the derived model still contains a slash; its
+  // provider is the slug's owner (`kilo models kilo`), not `~anthropic`.
   const modelSlashIndex = cliModel.indexOf("/");
   const provider =
-    modelSlashIndex >= 0 ? cliModel.slice(0, modelSlashIndex) : owner;
+    modelSlashIndex >= 0 && (spec !== undefined || cli !== "kilo")
+      ? cliModel.slice(0, modelSlashIndex)
+      : owner;
 
   return { cli, cliModel, provider };
 }
@@ -224,17 +233,22 @@ export async function probeSlug(
   );
 
   // ---------------------------------------------------------------------------
-  // opencode: list-membership probe — runs `opencode models <provider>`
+  // opencode family: list-membership probe — runs `opencode models <provider>`
+  // (`kilo models <provider>` for Kilo; same output format)
   // ---------------------------------------------------------------------------
-  if (cli === "opencode") {
+  if (isOpencodeFamily(cli)) {
     const startMs = Date.now();
     let result: ReturnType<typeof spawnSync>;
 
     try {
-      result = spawnSync("opencode", ["models", provider], {
-        encoding: "utf-8",
-        timeout: timeoutMs,
-      });
+      result = spawnSync(
+        OPENCODE_FAMILY_HOSTS[cli].binary,
+        ["models", provider],
+        {
+          encoding: "utf-8",
+          timeout: timeoutMs,
+        },
+      );
     } catch (err) {
       const durationMs = Date.now() - startMs;
       const errCode = (err as NodeJS.ErrnoException).code;

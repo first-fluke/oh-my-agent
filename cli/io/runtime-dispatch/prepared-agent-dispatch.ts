@@ -1,3 +1,4 @@
+import { isOpencodeFamily } from "../../constants/opencode-family.js";
 import type { VendorConfig } from "../../platform/agent-config.js";
 import { planDispatch } from "../runtime-dispatch.js";
 import { applyAgentDefinition } from "./agent-definition.js";
@@ -55,7 +56,8 @@ export function prepareAgentDispatch({
   applyAgentDefinition(dispatch, agentId, workspace);
 
   let opencodeWrapper: OpencodeWrapper | null = null;
-  if (dispatch.targetVendor === "opencode" && dispatch.mode === "external") {
+  const host = dispatch.targetVendor;
+  if (isOpencodeFamily(host) && dispatch.mode === "external") {
     const dispatchArgs = dispatch.invocation.args;
     const modelIdx = dispatchArgs.indexOf("-m");
     const wrapperModel =
@@ -65,6 +67,7 @@ export function prepareAgentDispatch({
       wrapperId ?? sessionId,
       workspace,
       wrapperModel,
+      host,
     );
     if (swapOpencodeAgentArg(dispatchArgs, agentId, wrapper.name)) {
       opencodeWrapper = wrapper;

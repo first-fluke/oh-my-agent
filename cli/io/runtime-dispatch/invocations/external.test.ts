@@ -434,6 +434,64 @@ describe("buildExternalInvocation — opencode", () => {
   });
 });
 
+describe("buildExternalInvocation — kilo (opencode family)", () => {
+  it("builds `kilo run -m <model> --agent <id> --dir <ws> --auto <prompt>`", () => {
+    const inv = buildExternalInvocation(
+      "kilo",
+      { default_model: "kilo/~anthropic/claude-sonnet-latest" },
+      null,
+      "my prompt",
+      "pm",
+      { workspace: "/separate/worktree" },
+    );
+    expect(inv.command).toBe("kilo");
+    expect(inv.args).toEqual([
+      "run",
+      "-m",
+      "kilo/~anthropic/claude-sonnet-latest",
+      "--agent",
+      "pm",
+      "--dir",
+      "/separate/worktree",
+      "--auto",
+      "my prompt",
+    ]);
+    // kilo run has no --dangerously-skip-permissions, and -p is --password.
+    expect(inv.args).not.toContain("--dangerously-skip-permissions");
+    expect(inv.args).not.toContain("-p");
+  });
+
+  it("honors vendorConfig.command and omits --agent without an agent id", () => {
+    const inv = buildExternalInvocation(
+      "kilo",
+      { command: "kilocode" },
+      null,
+      "my prompt",
+    );
+    expect(inv.command).toBe("kilocode");
+    expect(inv.args).not.toContain("--agent");
+    expect(inv.args.at(-1)).toBe("my prompt");
+  });
+
+  it("readOnly requires an explicit read_only_flag and drops --auto", () => {
+    expect(() =>
+      buildExternalInvocation("kilo", {}, null, "my prompt", "pm", {
+        readOnly: true,
+      }),
+    ).toThrow(/kilo.*read-only|read-only.*kilo/i);
+    const inv = buildExternalInvocation(
+      "kilo",
+      { read_only_flag: "--agent plan" },
+      null,
+      "my prompt",
+      undefined,
+      { readOnly: true },
+    );
+    expect(inv.args).not.toContain("--auto");
+    expect(inv.args).toContain("plan");
+  });
+});
+
 describe("buildExternalInvocation — cursor regression (byte-identical check)", () => {
   afterEach(() => {
     vi.restoreAllMocks();

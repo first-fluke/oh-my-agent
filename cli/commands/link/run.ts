@@ -2,7 +2,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import pc from "picocolors";
-import { VENDORS } from "../../constants/vendors.js";
+import {
+  OPENCODE_FAMILY_HOSTS,
+  OPENCODE_FAMILY_VENDORS,
+} from "../../constants/opencode-family.js";
+import { EXTENSION_VENDORS, VENDORS } from "../../constants/vendors.js";
 import { ensureCoAuthorGuardHook, OMA_HOOKS_DIR } from "../../io/git-hooks.js";
 import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
 import { installVendorAgents } from "../../platform/agent-composer.js";
@@ -18,6 +22,8 @@ import {
 } from "../../platform/install-context.js";
 import {
   installOpencodePlugin,
+  opencodeFamilyConfigDir,
+  opencodeFamilyConfigPath,
   registerOpencodePlugin,
 } from "../../platform/opencode-plugin-composer.js";
 import { installPiExtension } from "../../platform/pi-extension-composer.js";
@@ -288,7 +294,12 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // hook-model vendors are configured. pi auto-loads `.pi/extensions/oma/` and
   // `.pi/prompts/*.md` supplies OMA workflow slash commands.
   const piConfigured = extensionVendors.includes("pi");
-  let piMergedDocs = false;
+  // The extension vendor that owns the shared AGENTS.md merge when no hook
+  // vendor will (pi first, then kilo — opencode has no managed doc).
+  const docExtensionVendor = EXTENSION_VENDORS.find(
+    (v) => extensionVendors.includes(v) && vendorDocFile(v) === "AGENTS.md",
+  );
+  let extensionMergedDocs = false;
   if (piConfigured) {
     record(
       join(
@@ -321,7 +332,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
         "write",
         "mergeRulesIndexForVendor (pi)",
       );
-      piMergedDocs = dryRun
+      extensionMergedDocs = dryRun
         ? false
         : mergeRulesIndexForVendor(nativeRoot, "pi", docVendors, root);
     }
@@ -330,62 +341,78 @@ export function link(opts: LinkOptions = {}): LinkResult {
     }
   }
 
-  // Install in-process extension vendor: opencode (Sst opencode). opencode
-  // loads in-process plugins (event handlers) from `.opencode/plugins/` rather
-  // than settings-file hook registrations. The bridge is materialized under a
-  // nested `oma/` subdir and registered explicitly in opencode.jsonc, since
-  // opencode's auto-discovery only scans `.opencode/plugins/*` flatly.
-  const opencodeConfigured = extensionVendors.includes("opencode");
-  if (opencodeConfigured) {
-    const opencodeDir = join(
-      nativeRoot,
-      ...(safeGetInstallMode() === "global"
-        ? [".config", "opencode"]
-        : [".opencode"]),
-    );
+  // Install in-process extension vendors of the opencode family: opencode (Sst
+  // opencode) and its fork kilo (Kilo Code). They load in-process plugins
+  // (event handlers) from `<host dir>/plugins/` rather than settings-file hook
+  // registrations. The bridge is materialized under a nested `oma/` subdir and
+  // registered explicitly in `<host>.jsonc`, since the hosts' auto-discovery
+  // only scans `<host dir>/plugins/*` flatly. Host paths come from
+  // OPENCODE_FAMILY_HOSTS; opencode's plan reasons keep their historical
+  // unsuffixed names.
+  for (const host of OPENCODE_FAMILY_VENDORS) {
+    if (!extensionVendors.includes(host)) continue;
+    const spec = OPENCODE_FAMILY_HOSTS[host];
+    const suffix = host === "opencode" ? "" : ` (${host})`;
+    const hostDir = opencodeFamilyConfigDir(nativeRoot, host);
     record(
-      join(opencodeDir, "plugins", "oma"),
+      join(hostDir, "plugins", "oma"),
       "write",
-      "installOpencodePlugin",
+      `installOpencodePlugin${suffix}`,
     );
+    record(join(hostDir, "agents"), "write", `installVendorAgents (${host})`);
+    // registerOpencodePlugin rewrites an existing <host>.json in place and
+    // only falls back to creating <host>.jsonc beside the plugins dir.
     record(
-      join(opencodeDir, "agents"),
+      opencodeFamilyConfigPath(hostDir, host),
       "write",
-      "installVendorAgents (opencode)",
-    );
-    // registerOpencodePlugin rewrites an existing opencode.json in place and
-    // only falls back to creating opencode.jsonc beside the plugins dir.
-    const opencodeJson = join(opencodeDir, "opencode.json");
-    record(
-      existsSync(opencodeJson)
-        ? opencodeJson
-        : join(opencodeDir, "opencode.jsonc"),
-      "write",
-      "registerOpencodePlugin",
+      `registerOpencodePlugin${suffix}`,
     );
     // installVendorAgents both counts and writes, so the zero-agent warning
     // below has no dry-run equivalent — the recorded targets stand in for it.
     if (!dryRun) {
-      installOpencodePlugin(root, nativeRoot);
-      // Generate `.opencode/agents/*.md` subagent personas from the SSOT variant
-      // (`.agents/agents/variants/opencode.json`). Extension vendors are skipped
-      // by installVendorAdaptations (hook-vendor only), so generate them here.
-      const agentsWritten = installVendorAgents(root, nativeRoot, "opencode");
-      // The bridge lives in a nested subdir that opencode's flat plugin
-      // auto-discovery skips, so register it explicitly in opencode.jsonc.
-      registerOpencodePlugin(nativeRoot);
+      installOpencodePlugin(root, nativeRoot, host);
+      // Generate `<host dir>/agents/*.md` subagent personas from the SSOT
+      // variant (`.agents/agents/variants/<host>.json`). Extension vendors are
+      // skipped by installVendorAdaptations (hook-vendor only), so generate
+      // them here.
+      const agentsWritten = installVendorAgents(root, nativeRoot, host);
+      // The bridge lives in a nested subdir that the host's flat plugin
+      // auto-discovery skips, so register it explicitly in <host>.jsonc.
+      registerOpencodePlugin(nativeRoot, host);
       if (agentsWritten === 0) {
         // Printed even in quiet mode: a zero-agent link is silent data loss —
-        // per-agent model pins in oma-config.yaml never reach .opencode/agents/.
+        // per-agent model pins in oma-config.yaml never reach <host dir>/agents/.
         console.log(
-          `${pc.yellow("⚠")} opencode: no agents generated from ${join(root, ".agents", "agents")} — .opencode/agents/ left untouched.`,
+          `${pc.yellow("⚠")} ${host}: no agents generated from ${join(root, ".agents", "agents")} — ${spec.projectDir}/agents/ left untouched.`,
         );
       } else if (!quiet) {
         console.log(
-          `${pc.green("✓")} opencode (.opencode/plugins/oma/, .opencode/agents/ — ${agentsWritten} agents)`,
+          `${pc.green("✓")} ${host} (${spec.projectDir}/plugins/oma/, ${spec.projectDir}/agents/ — ${agentsWritten} agents)`,
         );
       }
     }
+  }
+
+  // Kilo reads AGENTS.md but has no hook vendor to merge it on a kilo-only
+  // link; pi already merged it above when configured.
+  if (
+    docExtensionVendor !== undefined &&
+    docExtensionVendor !== "pi" &&
+    hookVendors.length === 0
+  ) {
+    record(
+      join(nativeRoot, "AGENTS.md"),
+      "write",
+      `mergeRulesIndexForVendor (${docExtensionVendor})`,
+    );
+    extensionMergedDocs = dryRun
+      ? false
+      : mergeRulesIndexForVendor(
+          nativeRoot,
+          docExtensionVendor,
+          docVendors,
+          root,
+        );
   }
 
   // Install workflow-only vendor: zcode. Runs regardless of whether any
@@ -412,7 +439,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
     if (dryRun && !quiet) {
       renderLinkPlan(plan, root);
     }
-    return { ...empty, mergedDocs: piMergedDocs ? ["AGENTS.md"] : [] };
+    return { ...empty, mergedDocs: extensionMergedDocs ? ["AGENTS.md"] : [] };
   }
 
   if (!quiet && !dryRun) {
@@ -498,23 +525,25 @@ export function link(opts: LinkOptions = {}): LinkResult {
       record(join(nativeRoot, target), "write", "mergeRulesIndexForVendor");
     }
   }
-  if (piConfigured && !mergedDocsSet.has("AGENTS.md")) {
+  if (docExtensionVendor !== undefined && !mergedDocsSet.has("AGENTS.md")) {
     if (dryRun) {
       if (!plannedDocs.has("AGENTS.md")) {
         plannedDocs.add("AGENTS.md");
         record(
           join(nativeRoot, "AGENTS.md"),
           "write",
-          "mergeRulesIndexForVendor (pi)",
+          `mergeRulesIndexForVendor (${docExtensionVendor})`,
         );
       }
-    } else if (mergeRulesIndexForVendor(nativeRoot, "pi", docVendors, root)) {
+    } else if (
+      mergeRulesIndexForVendor(nativeRoot, docExtensionVendor, docVendors, root)
+    ) {
       mergedDocsSet.add("AGENTS.md");
       mergedDocs.push("AGENTS.md");
       record(
         join(nativeRoot, "AGENTS.md"),
         "write",
-        "mergeRulesIndexForVendor (pi)",
+        `mergeRulesIndexForVendor (${docExtensionVendor})`,
       );
     }
   }

@@ -41,8 +41,12 @@ export const VENDORS = [
  * hooks are loaded as extensions rather than settings-file registrations, so it
  * receives its own dedicated install path and is excluded from `VENDORS`,
  * `HOOK_VENDORS`, and `installHooksFromVariant`.
+ *
+ * `kilo` (Kilo Code CLI) is an opencode fork that keeps opencode's plugin,
+ * agent, MCP and `run` contracts under `.kilo/` / `kilo.json`. It shares
+ * opencode's composer through the host table in `./opencode-family.ts`.
  */
-export const EXTENSION_VENDORS = ["pi", "opencode"] as const;
+export const EXTENSION_VENDORS = ["pi", "opencode", "kilo"] as const;
 export type ExtensionVendor = (typeof EXTENSION_VENDORS)[number];
 
 /**

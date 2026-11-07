@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import color from "picocolors";
+import { opencodeFamilyLabel } from "../../constants/opencode-family.js";
 import {
   AGENTS_RESULTS_DIR,
   agentsPathFromRoot,
@@ -361,7 +362,7 @@ export async function parallelRun(
         );
         if (prepared.opencodeWrapper) {
           console.log(
-            `    OpenCode: primary wrapper ${prepared.opencodeWrapper.name} → task(${agent})`,
+            `    ${opencodeFamilyLabel(dispatch.targetVendor)}: primary wrapper ${prepared.opencodeWrapper.name} → task(${agent})`,
           );
         }
 

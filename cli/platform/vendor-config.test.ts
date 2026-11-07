@@ -47,6 +47,7 @@ describe("readVendorsFromConfig", () => {
     "cursor",
     "grok",
     "hermes",
+    "kilo",
     "kimi",
     "kiro",
     "opencode",

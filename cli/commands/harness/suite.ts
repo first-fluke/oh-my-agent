@@ -42,6 +42,7 @@ export const FIXTURE_HARNESS_CONTROLS = [
   ".github/prompts",
   ".github/skills",
   ".hermes",
+  ".kilo",
   ".kiro",
   ".opencode",
   ".pi",

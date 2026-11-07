@@ -69,6 +69,25 @@ describe("opencode-wrapper", () => {
       expect(content).toContain("task");
     });
 
+    it("writes the kilo wrapper under .kilo/agents", () => {
+      const wrapper = createOpencodeSpawnWrapper(
+        "qa-reviewer",
+        "sess-1",
+        "/project",
+        undefined,
+        "kilo",
+      );
+      expect(n(wrapper.filePath)).toBe(
+        "/project/.kilo/agents/oma-spawn-qa-reviewer-sess-1.md",
+      );
+      const [, content] = mockFsFunctions.writeFileSync.mock.calls[0] as [
+        string,
+        string,
+      ];
+      expect(content).toContain("mode: primary");
+      expect(content).toContain('subagent_type: "qa-reviewer"');
+    });
+
     it("pins the resolved model on the wrapper when provided", () => {
       createOpencodeSpawnWrapper(
         "backend-engineer",

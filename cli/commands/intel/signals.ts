@@ -10,7 +10,10 @@ const CAPABILITY_KEYWORDS: Array<[string, RegExp]> = [
   ["research", /market|research|search|trend|competitor|intelligence/i],
   ["docs", /docs|readme|reference|guide|documentation/i],
   ["release", /release|ship|deploy|version|changelog/i],
-  ["cross-runtime", /codex|claude|gemini|opencode|cursor|kiro|grok|runtime/i],
+  [
+    "cross-runtime",
+    /codex|claude|gemini|opencode|kilo|cursor|kiro|grok|runtime/i,
+  ],
   ["platform", /windows|linux|macos|shell|path|hook|manifest/i],
 ];
 

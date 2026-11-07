@@ -20,7 +20,7 @@ Ask the user for the following if not already provided in the prompt:
 | Prompt | Instruction the agent will receive | `"review the latest diff"` |
 | Interval / cron | When to run | `"every 2 hours"`, `"5m"`, `"0 9 * * *"` |
 | Workspace (optional) | Absolute path to the project directory | `/home/user/myproject` (default: cwd) |
-| Vendor (optional) | CLI vendor override (passed to `oma agent spawn --vendor`) | `claude`, `codex`, `antigravity`, `cursor`, `qwen`, `grok`, `opencode`, `pi` |
+| Vendor (optional) | CLI vendor override (passed to `oma agent spawn --vendor`) | `claude`, `codex`, `antigravity`, `cursor`, `qwen`, `grok`, `opencode`, `kilo`, `pi` |
 
 If all required fields are already in the user's prompt, proceed directly to Step 2.
 

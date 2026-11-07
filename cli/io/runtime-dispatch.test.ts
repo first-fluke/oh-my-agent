@@ -64,6 +64,19 @@ describe("detectRuntimeVendor", () => {
     expect(detectRuntimeVendor({ PI_CODING_AGENT: "true" })).toBe("pi");
   });
 
+  it("returns 'kilo' from the env Kilo Code exports to tool subprocesses", () => {
+    expect(detectRuntimeVendor({ KILO: "1" })).toBe("kilo");
+    expect(detectRuntimeVendor({ KILO_RUN_ID: "run-1" })).toBe("kilo");
+    expect(detectRuntimeVendor({ KILOCODE_VERSION: "7.8.27" })).toBe("kilo");
+    // Kilo inherits opencode's OPENCODE=1; it must still resolve to kilo.
+    expect(detectRuntimeVendor({ KILO: "1", OPENCODE: "1" })).toBe("kilo");
+    expect(detectRuntimeVendor({ OMA_RUNTIME_VENDOR: "kilo" })).toBe("kilo");
+  });
+
+  it("does not treat a bare OPENCODE=1 as kilo", () => {
+    expect(detectRuntimeVendor({ OPENCODE: "1" })).toBe("unknown");
+  });
+
   it("returns 'unknown' when no known env vars are present", () => {
     expect(detectRuntimeVendor({})).toBe("unknown");
   });
@@ -374,6 +387,49 @@ describe("planDispatch — plan integration (T10b)", () => {
     );
 
     expect(tomlAfterSecond).toBe(tomlAfterFirst);
+  });
+
+  it("kilo-routed agent: `kilo run` with -m before the trailing prompt and --agent <id>", () => {
+    writeFileSync(
+      join(tempDir, ".agents", "oma-config.yaml"),
+      [
+        "language: en",
+        "model_preset: claude",
+        "models:",
+        "  kilo-sonnet:",
+        "    cli: kilo",
+        "    cli_model: kilo/~anthropic/claude-sonnet-latest",
+        '    auth_hint: "kilo auth login"',
+        "    supports:",
+        "      effort: null",
+        "      apply_patch: false",
+        "      task_budget: false",
+        "      prompt_cache: false",
+        "      computer_use: false",
+        "      native_dispatch_from: [kilo]",
+        "      api_only: false",
+        "agents:",
+        "  backend:",
+        "    model: kilo-sonnet",
+      ].join("\n"),
+    );
+
+    const plan = planDispatch("backend", "kilo", {}, null, "do the task", {
+      KILO: "1",
+    });
+
+    expect(plan.runtimeVendor).toBe("kilo");
+    expect(plan.mode).toBe("external");
+    expect(plan.invocation.command).toBe("kilo");
+    expect(plan.invocation.args[0]).toBe("run");
+    expect(plan.invocation.args.slice(-3)).toEqual([
+      "-m",
+      "kilo/~anthropic/claude-sonnet-latest",
+      "do the task",
+    ]);
+    const agentIdx = plan.invocation.args.indexOf("--agent");
+    expect(plan.invocation.args[agentIdx + 1]).toBe("backend");
+    expect(plan.invocation.args).toContain("--auto");
   });
 
   it("missing oma-config.yaml → ConfigError handled gracefully, dispatch succeeds", () => {

@@ -22,6 +22,7 @@ vi.mock("../../vendors/index.js", () => {
   const isKimiAuthenticated = vi.fn(() => false);
   const isKiroAuthenticated = vi.fn(() => false);
   const isOpencodeAuthenticated = vi.fn(() => false);
+  const isKiloAuthenticated = vi.fn(() => false);
   const isPiAuthenticated = vi.fn(() => false);
   const isQwenAuthenticated = vi.fn(() => false);
   return {
@@ -34,6 +35,7 @@ vi.mock("../../vendors/index.js", () => {
     isKimiAuthenticated,
     isKiroAuthenticated,
     isOpencodeAuthenticated,
+    isKiloAuthenticated,
     isPiAuthenticated,
     isQwenAuthenticated,
     AUTH_CHECKERS: {

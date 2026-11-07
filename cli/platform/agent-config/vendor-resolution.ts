@@ -168,6 +168,8 @@ export function resolvePromptFlag(
     // The opencode branch in buildExternalInvocation ignores promptFlag, but
     // null keeps the generic path from ever pairing a prompt with -p.
     opencode: null,
+    // kilo is an opencode fork with the same `run [message..]` / `-p` contract.
+    kilo: null,
   };
 
   if (Object.hasOwn(defaults, vendor)) return defaults[vendor] as string | null;

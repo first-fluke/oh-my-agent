@@ -305,6 +305,76 @@ describe("link --dry-run (real project writers)", () => {
       );
     });
 
+    it("records .kilo/ targets and the kilo AGENTS.md merge for a kilo-only project", () => {
+      const root = makeProject("vendors:\n  - kilo\n");
+      process.chdir(root);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+
+      expect(planPath(plan, "installOpencodePlugin (kilo)")).toBe(
+        join(root, ".kilo", "plugins", "oma"),
+      );
+      expect(planPath(plan, "installVendorAgents (kilo)")).toBe(
+        join(root, ".kilo", "agents"),
+      );
+      expect(planPath(plan, "registerOpencodePlugin (kilo)")).toBe(
+        join(root, ".kilo", "kilo.jsonc"),
+      );
+      expect(planPath(plan, "mergeRulesIndexForVendor (kilo)")).toBe(
+        join(root, "AGENTS.md"),
+      );
+      // Kilo shares opencode's composer but never touches opencode's paths.
+      expect(planPath(plan, "installOpencodePlugin")).toBeUndefined();
+      expect(plan.some((e) => e.path.includes(".opencode"))).toBe(false);
+    });
+
+    it("records ~/.config/kilo targets in global mode", () => {
+      const root = makeProject("vendors:\n  - kilo\n");
+      const home = makeHome();
+      _resetInstallContext();
+      setInstallContext({ installRoot: root, mode: "global" });
+      process.chdir(root);
+
+      const { plan } = link({ root, quiet: true, dryRun: true });
+
+      expect(planPath(plan, "registerOpencodePlugin (kilo)")).toBe(
+        join(home, ".config", "kilo", "kilo.jsonc"),
+      );
+      expect(planPath(plan, "installOpencodePlugin (kilo)")).toBe(
+        join(home, ".config", "kilo", "plugins", "oma"),
+      );
+      expect(planPath(plan, "installVendorAgents (kilo)")).toBe(
+        join(home, ".config", "kilo", "agents"),
+      );
+    });
+
+    it("records an existing .kilo/kilo.json instead of kilo.jsonc", () => {
+      const root = makeProject("vendors:\n  - kilo\n");
+      mkdirSync(join(root, ".kilo"), { recursive: true });
+      writeFileSync(join(root, ".kilo", "kilo.json"), "{}\n", "utf-8");
+      process.chdir(root);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+
+      expect(planPath(plan, "registerOpencodePlugin (kilo)")).toBe(
+        join(root, ".kilo", "kilo.json"),
+      );
+    });
+
+    it("keeps opencode's plan reasons when opencode and kilo are linked together", () => {
+      const root = makeProject("vendors:\n  - opencode\n  - kilo\n");
+      process.chdir(root);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+
+      expect(planPath(plan, "registerOpencodePlugin")).toBe(
+        join(root, ".opencode", "opencode.jsonc"),
+      );
+      expect(planPath(plan, "registerOpencodePlugin (kilo)")).toBe(
+        join(root, ".kilo", "kilo.jsonc"),
+      );
+    });
+
     it("records the kimi targets under KIMI_CODE_HOME, and mcp.json there in global mode", () => {
       const root = makeProject("vendors:\n  - kimi\n");
       const home = makeHome();

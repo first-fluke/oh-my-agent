@@ -26,6 +26,7 @@ const VENDOR_ROOTS: Record<CliVendor, string[]> = {
   // marker. Its HOME hooks are (re)written by `oma link` under recorded consent
   // (installKimiHooks), not the project-root update sweep.
   kimi: [],
+  kilo: [".kilo"],
   kiro: [".kiro"],
   opencode: [".opencode"],
   pi: [".pi"],

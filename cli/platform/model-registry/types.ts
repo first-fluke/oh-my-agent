@@ -14,6 +14,7 @@ export const MODEL_OWNER_CLIS = [
   "kiro",
   "kimi",
   "opencode",
+  "kilo",
 ] as const;
 
 export type RuntimeId =

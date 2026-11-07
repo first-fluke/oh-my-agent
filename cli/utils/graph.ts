@@ -221,6 +221,7 @@ export function buildGraph(
     "cursor",
     "qwen",
     "opencode",
+    "kilo",
     "pi",
   ]) {
     const agentDir = `.${vendor}/agents`;

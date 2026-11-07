@@ -1,5 +1,9 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
+import {
+  OPENCODE_FAMILY_HOSTS,
+  type OpencodeFamilyVendor,
+} from "../../constants/opencode-family.js";
 import { safeReadJson } from "../../utils/safe-json.js";
 
 /**
@@ -58,8 +62,20 @@ function hasCredential(entry: OpencodeAuthEntry | undefined): boolean {
  * matching entry carries a usable credential.
  */
 export function isOpencodeAuthenticated(provider?: string): boolean {
+  return isOpencodeFamilyAuthenticated("opencode", provider);
+}
+
+/**
+ * {@link isOpencodeAuthenticated} for any opencode-family host. Forks keep
+ * opencode's per-provider auth.json format under their own data dir
+ * (`~/.local/share/kilo/auth.json` for Kilo).
+ */
+export function isOpencodeFamilyAuthenticated(
+  host: OpencodeFamilyVendor,
+  provider?: string,
+): boolean {
   const auth = safeReadJson<Record<string, OpencodeAuthEntry>>(
-    join(homedir(), ".local", "share", "opencode", "auth.json"),
+    join(homedir(), ...OPENCODE_FAMILY_HOSTS[host].authFile),
   );
 
   if (!auth || typeof auth !== "object" || Array.isArray(auth)) {

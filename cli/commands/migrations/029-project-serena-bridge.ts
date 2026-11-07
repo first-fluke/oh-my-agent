@@ -50,10 +50,11 @@ const PROJECT_VENDORS: readonly CliVendor[] = [
   "commandcode",
   "copilot",
   "opencode",
+  "kilo",
   "pi",
 ];
 
-/** `command`/`args` of an entry, normalising opencode's single command array. */
+/** `command`/`args` of an entry, normalising the opencode family's single command array. */
 function launcher(entry: unknown): string[] | undefined {
   if (!isRecord(entry)) return undefined;
   if (Array.isArray(entry.command))

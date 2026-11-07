@@ -165,6 +165,7 @@ export const OWNER_TO_CLI: Record<string, RuntimeId> = {
   qwen: "qwen",
   kiro: "kiro",
   opencode: "opencode",
+  kilo: "kilo",
 };
 
 /**

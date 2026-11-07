@@ -1,5 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  OPENCODE_FAMILY_HOSTS,
+  type OpencodeFamilyVendor,
+} from "../../constants/opencode-family.js";
 
 /**
  * OpenCode external-fallback dispatch wrapper (#583).
@@ -19,6 +23,9 @@ import path from "node:path";
  * Fix: for the external fallback only, generate a throwaway PRIMARY wrapper
  * agent that immediately delegates to the real subagent via the `task` tool,
  * run `opencode run --agent <wrapper>`, then remove the wrapper on exit.
+ *
+ * Kilo (an opencode fork) rejects `kilo run --agent <subagent>` the same way
+ * (verified on kilo 7.8.27), so it gets the same wrapper under `.kilo/agents/`.
  */
 
 export interface OpencodeWrapper {
@@ -51,9 +58,10 @@ export function createOpencodeSpawnWrapper(
   sessionId: string,
   cwd: string = process.cwd(),
   model?: string,
+  host: OpencodeFamilyVendor = "opencode",
 ): OpencodeWrapper {
   const name = opencodeWrapperName(subagentId, sessionId);
-  const dir = path.join(cwd, ".opencode", "agents");
+  const dir = path.join(cwd, OPENCODE_FAMILY_HOSTS[host].projectDir, "agents");
   fs.mkdirSync(dir, { recursive: true });
   const filePath = path.join(dir, `${name}.md`);
 

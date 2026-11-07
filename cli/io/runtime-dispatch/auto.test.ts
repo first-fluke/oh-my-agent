@@ -31,6 +31,7 @@ describe("auto model selection", () => {
     "antigravity",
     "qwen",
     "opencode",
+    "kilo",
     "pi",
     "grok",
     "kiro",

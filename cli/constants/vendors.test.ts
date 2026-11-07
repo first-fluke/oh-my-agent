@@ -115,3 +115,23 @@ describe("type-level: opencode is ExtensionVendorType but NOT VendorType", () =>
     expect(v).toBeDefined(); // unreachable at type-level; runtime fallback only
   });
 });
+
+describe("kilo (opencode-family extension vendor)", () => {
+  it("is an extension vendor, linkable, and NOT a hook vendor", () => {
+    expect(EXTENSION_VENDORS).toContain("kilo");
+    expect(ALL_CLI_VENDORS).toContain("kilo");
+    expect(VENDORS).not.toContain("kilo");
+  });
+
+  it("has no CLI_SKILLS_DIR entry (skills are discovered natively)", () => {
+    expect(Object.hasOwn(CLI_SKILLS_DIR, "kilo")).toBe(false);
+  });
+
+  it("is ExtensionVendorType but NOT VendorType at the type level", () => {
+    const v: ExtensionVendorType = "kilo";
+    expect(v).toBe("kilo");
+    // @ts-expect-error — 'kilo' must NOT be in VendorType (VENDORS tuple).
+    const h: VendorType = "kilo";
+    expect(h).toBeDefined();
+  });
+});

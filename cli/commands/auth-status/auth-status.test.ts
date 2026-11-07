@@ -86,6 +86,9 @@ describe("auth:status command", () => {
             "opencode-go": { type: "api", key: "sk-opencode-xxx" },
           });
         }
+        if (path.includes("kilo")) {
+          return JSON.stringify({ kilo: { type: "oauth", access: "tok" } });
+        }
         return "{}";
       });
 
@@ -107,6 +110,7 @@ describe("auth:status command", () => {
         kiro: true,
         pi: true,
         opencode: true,
+        kilo: true,
       });
     });
   });
@@ -137,6 +141,7 @@ describe("auth:status command", () => {
         kiro: false,
         pi: false,
         opencode: false,
+        kilo: false,
       });
     });
   });

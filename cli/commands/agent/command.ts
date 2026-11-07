@@ -117,7 +117,7 @@ export function registerAgentCommands(program: Command): void {
     )
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (antigravity/claude/codex/cursor/opencode/qwen/grok/pi)",
+      "CLI vendor override (antigravity/claude/codex/cursor/opencode/kilo/qwen/grok/pi)",
     )
     .option(
       "-w, --workspace <path>",
@@ -183,7 +183,7 @@ export function registerAgentCommands(program: Command): void {
     )
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (antigravity/claude/codex/cursor/opencode/qwen/grok/pi)",
+      "CLI vendor override (antigravity/claude/codex/cursor/opencode/kilo/qwen/grok/pi)",
     )
     .option(
       "-i, --inline",

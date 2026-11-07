@@ -30,7 +30,11 @@ import {
   resolveFreeProvider,
   resolveFreeVendor,
 } from "../../utils/free-provider.js";
-import { AUTH_CHECKERS, isOpencodeAuthenticated } from "../../vendors/index.js";
+import {
+  AUTH_CHECKERS,
+  isKiloAuthenticated,
+  isOpencodeAuthenticated,
+} from "../../vendors/index.js";
 import {
   type DeprecatedOAuthSessionResult,
   detectDeprecatedOAuthSession,
@@ -100,10 +104,18 @@ function opencodeProvider(spec: ModelSpec | undefined): string | undefined {
 
 function checkAuthStatus(cli: string, spec: ModelSpec | undefined): AuthStatus {
   try {
-    if (cli === "opencode") {
+    // The opencode family (opencode, kilo) authenticates per provider; Kilo
+    // keeps opencode's auth.json format under its own data dir.
+    const providerAuth =
+      cli === "opencode"
+        ? isOpencodeAuthenticated
+        : cli === "kilo"
+          ? isKiloAuthenticated
+          : undefined;
+    if (providerAuth) {
       const provider = opencodeProvider(spec);
       if (!provider) return "unknown";
-      return isOpencodeAuthenticated(provider) ? "logged_in" : "not_logged_in";
+      return providerAuth(provider) ? "logged_in" : "not_logged_in";
     }
     const checker = AUTH_CHECKERS[cli];
     if (!checker) return "unknown";

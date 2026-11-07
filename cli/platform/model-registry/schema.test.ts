@@ -66,6 +66,7 @@ describe("ModelSpecSchema — cli field", () => {
       "qwen",
       "kiro",
       "opencode",
+      "kilo",
     ] as const;
     for (const vendor of vendors) {
       const result = ModelSpecSchema.safeParse({
@@ -100,6 +101,15 @@ describe("ModelSpecSchema — RAW_REGISTRY regression", () => {
         spec.cli,
         `RAW_REGISTRY["${slug}"] must not hardcode cli:"opencode"`,
       ).not.toBe("opencode");
+    }
+  });
+
+  it("no RAW_REGISTRY entry uses cli:'kilo' (kilo slugs come from `kilo models`)", () => {
+    for (const [slug, spec] of RAW_REGISTRY) {
+      expect(
+        spec.cli,
+        `RAW_REGISTRY["${slug}"] must not hardcode cli:"kilo"`,
+      ).not.toBe("kilo");
     }
   });
 });

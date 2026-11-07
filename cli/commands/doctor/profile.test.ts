@@ -28,6 +28,7 @@ vi.mock("../../vendors/index.js", () => {
   const isKiroAuthenticated = vi.fn(() => false);
   // Mirrors the real signature: opencode credentials are keyed per provider.
   const isOpencodeAuthenticated = vi.fn((_provider?: string) => false);
+  const isKiloAuthenticated = vi.fn((_provider?: string) => false);
   const isPiAuthenticated = vi.fn(() => false);
   const isQwenAuthenticated = vi.fn(() => false);
   return {
@@ -40,6 +41,7 @@ vi.mock("../../vendors/index.js", () => {
     isKimiAuthenticated,
     isKiroAuthenticated,
     isOpencodeAuthenticated,
+    isKiloAuthenticated,
     isPiAuthenticated,
     isQwenAuthenticated,
     // Mirrors the derived AUTH_CHECKERS in vendors/index (same fn instances so
@@ -56,6 +58,7 @@ vi.mock("../../vendors/index.js", () => {
       kiro: isKiroAuthenticated,
       pi: isPiAuthenticated,
       opencode: isOpencodeAuthenticated,
+      kilo: isKiloAuthenticated,
     },
   };
 });
@@ -549,6 +552,54 @@ custom_presets:
 
     expect(orchestrator?.cli).toBe("opencode");
     expect(orchestrator?.authStatus).toBe("unknown");
+  });
+});
+
+describe("collectProfileReport — Kilo provider-aware auth", () => {
+  const KILO_YAML = `
+language: en
+model_preset: kilo-local
+models:
+  kilo-sonnet:
+    cli: kilo
+    cli_model: kilo/~anthropic/claude-sonnet-latest
+    auth_hint: "Kilo gateway — run: kilo auth login"
+    supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
+      native_dispatch_from: [kilo]
+      api_only: false
+custom_presets:
+  kilo-local:
+    description: kilo local
+    agent_defaults:
+      orchestrator:
+        model: kilo-sonnet
+`.trim();
+
+  beforeEach(() => {
+    vi.mocked(fsMock.existsSync).mockImplementation((p) =>
+      String(p).replace(/\\/g, "/").endsWith("/.agents/oma-config.yaml"),
+    );
+    vi.mocked(fsMock.readFileSync).mockReturnValue(KILO_YAML);
+  });
+
+  it("checks kilo's credential store for the cli_model's provider", async () => {
+    vi.mocked(vendorsMock.isKiloAuthenticated).mockImplementation(
+      (provider?: string) => provider === "kilo",
+    );
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+    const orchestrator = report.rows.find((r) => r.role === "orchestrator");
+
+    expect(orchestrator?.cli).toBe("kilo");
+    expect(orchestrator?.authStatus).toBe("logged_in");
+    expect(vendorsMock.isKiloAuthenticated).toHaveBeenCalledWith("kilo");
+    expect(vendorsMock.isOpencodeAuthenticated).not.toHaveBeenCalledWith(
+      "kilo",
+    );
   });
 });
 

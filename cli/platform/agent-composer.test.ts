@@ -15,6 +15,7 @@ import {
   sanitizeFrontmatterForVendor,
   stripCharterCheck,
 } from "./agent-composer.js";
+import { _resetInstallContext, setInstallContext } from "./install-context.js";
 
 // ---------------------------------------------------------------------------
 // agent-composer.test.ts
@@ -1034,5 +1035,194 @@ describe("installVendorAgents — opencode variant", () => {
     ) as { modelDefault: string };
     expect(variant.modelDefault).toBe("inherit");
     expect(variant.modelDefault).not.toMatch(/^opencode-go\//);
+  });
+});
+
+describe("installVendorAgents — kilo variant (opencode family)", () => {
+  const tempRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of tempRoots) {
+      rmSync(root, { recursive: true, force: true });
+    }
+    tempRoots.length = 0;
+    _resetInstallContext();
+    vi.restoreAllMocks();
+  });
+
+  function makeKiloSourceDir(
+    agentOverride: Record<string, unknown> = {},
+  ): string {
+    const sourceDir = mkdtempSync(join(tmpdir(), "oma-kilo-src-"));
+    tempRoots.push(sourceDir);
+    const agentsDir = join(sourceDir, ".agents", "agents");
+    mkdirSync(join(agentsDir, "variants"), { recursive: true });
+    writeFileSync(
+      join(agentsDir, "backend-engineer.md"),
+      "---\nname: backend-engineer\ndescription: Backend specialist\nskills: [oma-backend]\n---\nFollow the vendor-specific execution protocol:\n",
+    );
+    writeFileSync(
+      join(agentsDir, "variants", "kilo.json"),
+      JSON.stringify({
+        vendor: "kilo",
+        destDir: ".kilo/agents",
+        modelDefault: "inherit",
+        toolsDefault: [],
+        protocolPath:
+          ".agents/skills/_shared/runtime/execution-protocols/kilo.md",
+        agents: { "backend-engineer": agentOverride },
+      }),
+    );
+    return sourceDir;
+  }
+
+  function makeTargetDir(): string {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-kilo-dst-"));
+    tempRoots.push(targetDir);
+    return targetDir;
+  }
+
+  const generated = (targetDir: string) =>
+    readFileSync(
+      join(targetDir, ".kilo", "agents", "backend-engineer.md"),
+      "utf-8",
+    );
+
+  it("generates opencode-style subagents in .kilo/agents", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeKiloSourceDir();
+    const targetDir = makeTargetDir();
+
+    expect(installVendorAgents(sourceDir, targetDir, "kilo")).toBe(1);
+
+    const content = generated(targetDir);
+    expect(content).toContain("mode: subagent");
+    expect(content).toContain("description: Backend specialist");
+    // inherit → no model; no `skills` key (project-level skills); no `tools: []`.
+    expect(content).not.toMatch(/^model:/m);
+    expect(content).not.toMatch(/^skills:/m);
+    expect(content).not.toMatch(/^tools:/m);
+    expect(content).toContain(
+      ".agents/skills/_shared/runtime/execution-protocols/kilo.md",
+    );
+    expect(existsSync(join(targetDir, ".opencode"))).toBe(false);
+  });
+
+  it("pins a Kilo-routed model and maps effort → variant", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeKiloSourceDir();
+    writeFileSync(
+      join(sourceDir, ".agents", "oma-config.yaml"),
+      [
+        "language: en",
+        "model_preset: antigravity",
+        "models:",
+        "  kilo-sonnet:",
+        "    cli: kilo",
+        "    cli_model: kilo/~anthropic/claude-sonnet-latest",
+        '    auth_hint: "kilo auth login"',
+        "    supports:",
+        "      effort: null",
+        "      apply_patch: false",
+        "      task_budget: false",
+        "      prompt_cache: false",
+        "      computer_use: false",
+        "      native_dispatch_from: [kilo]",
+        "      api_only: false",
+        "agents:",
+        "  backend:",
+        "    model: kilo-sonnet",
+        "    effort: high",
+      ].join("\n"),
+    );
+    const targetDir = makeTargetDir();
+
+    installVendorAgents(sourceDir, targetDir, "kilo");
+
+    const content = generated(targetDir);
+    expect(content).toMatch(/^model: kilo\/~anthropic\/claude-sonnet-latest$/m);
+    expect(content).toMatch(/^variant: high$/m);
+    expect(content).not.toMatch(/^effort:/m);
+  });
+
+  it("does not pin a model routed to opencode into kilo agents", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeKiloSourceDir();
+    writeFileSync(
+      join(sourceDir, ".agents", "oma-config.yaml"),
+      [
+        "language: en",
+        "model_preset: antigravity",
+        "models:",
+        "  opencode-go/deepseek-v4-flash:",
+        "    cli: opencode",
+        "    cli_model: openai/gpt-5.5",
+        '    auth_hint: "OpenCode Go subscription"',
+        "    supports:",
+        "      effort: null",
+        "      apply_patch: false",
+        "      task_budget: false",
+        "      prompt_cache: false",
+        "      computer_use: false",
+        "      native_dispatch_from: [opencode]",
+        "      api_only: false",
+        "agents:",
+        "  backend:",
+        "    model: opencode-go/deepseek-v4-flash",
+      ].join("\n"),
+    );
+    const targetDir = makeTargetDir();
+
+    installVendorAgents(sourceDir, targetDir, "kilo");
+
+    expect(generated(targetDir)).not.toMatch(/^model:/m);
+  });
+
+  it("writes global agents to ~/.config/kilo/agents", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeKiloSourceDir();
+    const home = makeTargetDir();
+    setInstallContext({ installRoot: sourceDir, mode: "global" });
+
+    expect(installVendorAgents(sourceDir, home, "kilo")).toBe(1);
+
+    expect(
+      existsSync(
+        join(home, ".config", "kilo", "agents", "backend-engineer.md"),
+      ),
+    ).toBe(true);
+    expect(existsSync(join(home, ".kilo"))).toBe(false);
+  });
+
+  it("real kilo variant SSOT mirrors opencode's apart from host paths", () => {
+    const read = (name: string) =>
+      JSON.parse(
+        readFileSync(
+          new URL(
+            `../../.agents/agents/variants/${name}.json`,
+            import.meta.url,
+          ),
+          "utf-8",
+        ),
+      ) as Record<string, unknown>;
+    const kilo = read("kilo");
+    const opencode = read("opencode");
+    expect(kilo).toMatchObject({
+      vendor: "kilo",
+      destDir: ".kilo/agents",
+      modelDefault: "inherit",
+      protocolPath:
+        ".agents/skills/_shared/runtime/execution-protocols/kilo.md",
+    });
+    expect(kilo.agents).toEqual(opencode.agents);
+    expect(kilo.toolsDefault).toEqual(opencode.toolsDefault);
+    expect(
+      existsSync(
+        new URL(
+          "../../.agents/skills/_shared/runtime/execution-protocols/kilo.md",
+          import.meta.url,
+        ),
+      ),
+    ).toBe(true);
   });
 });

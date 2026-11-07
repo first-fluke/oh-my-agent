@@ -118,7 +118,8 @@ export function buildAgentPlanArgs(plan: AgentPlan): string[] {
       if (thinkingLevel) args.push("--thinking", thinkingLevel);
       break;
     }
-    case "opencode": {
+    case "opencode":
+    case "kilo": {
       // Model flag (`-m`) is injected before the trailing prompt positional by
       // injectModelBeforeTrailingPrompt in runtime-dispatch.ts (opencode's
       // prompt is a variadic positional; `-m` appended after it would be

@@ -81,6 +81,7 @@ const VENDOR_ENV_PREFIXES: Record<string, string[]> = {
   gemini: ["GEMINI_", "GOOGLE_"],
   grok: ["GROK_", "XAI_"],
   hermes: ["HERMES_", "OPENAI_", "ANTHROPIC_"],
+  kilo: ["KILO_", "KILOCODE_", "ANTHROPIC_", "OPENAI_", "GEMINI_", "GOOGLE_"],
   kiro: ["KIRO_", "AWS_"],
   opencode: ["OPENCODE_", "ANTHROPIC_", "OPENAI_", "GEMINI_", "GOOGLE_"],
   pi: ["PI_", "ANTHROPIC_", "OPENAI_", "GEMINI_", "GOOGLE_"],

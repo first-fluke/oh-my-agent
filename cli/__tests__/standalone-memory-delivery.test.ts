@@ -96,6 +96,10 @@ describe("installed standalone semantic delivery", () => {
       installOpencodePlugin(REPO_ROOT, root);
       return join(root, OPENCODE_PLUGIN_DIR);
     }
+    if (vendor === "kilo") {
+      installOpencodePlugin(REPO_ROOT, root, "kilo");
+      return join(root, ".kilo", "plugins", "oma");
+    }
     cpSync(CORE, join(root, ".agents/hooks/core"), { recursive: true });
     mkdirSync(join(root, ".agents/hooks/variants"), { recursive: true });
     cpSync(
@@ -160,7 +164,7 @@ describe("installed standalone semantic delivery", () => {
     return result;
   }
 
-  for (const vendor of ["pi", "opencode", "antigravity"] as const) {
+  for (const vendor of ["pi", "opencode", "kilo", "antigravity"] as const) {
     it.runIf(execsShebangLauncher)(
       `${vendor} writes one L1 event and a destination-bound HOME retry`,
       () => {

@@ -2,6 +2,7 @@
 export const STANDALONE_HOOK_VENDORS = [
   "pi",
   "opencode",
+  "kilo",
   "antigravity",
 ] as const;
 
