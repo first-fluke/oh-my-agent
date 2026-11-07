@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import {
@@ -9,7 +10,7 @@ import { TaskContractSchema } from "../../state/task-contract.js";
 import type { VerifyCheck } from "../../types/index.js";
 import { checkClosure } from "../../utils/skill-outputs.js";
 import type { AgentType } from "./agent-types.js";
-import { createCheck, runCommand } from "./check-utils.js";
+import { createCheck } from "./check-utils.js";
 import {
   findResultFile,
   resolveVerifySelection,
@@ -56,6 +57,33 @@ export function findLatestPlan(
   return existsSync(legacyPath) ? legacyPath : null;
 }
 
+/**
+ * Shell-free `git diff --name-only HEAD || git diff --name-only --cached`.
+ * The old execSync string used POSIX `2>/dev/null`, which fails under
+ * cmd.exe and made the scope check silently report "No files changed" on
+ * Windows. Null (both invocations failed) preserves the old contract.
+ */
+function gitChangedFiles(workspace: string): string | null {
+  const options = {
+    cwd: workspace,
+    encoding: "utf-8" as const,
+    stdio: "pipe" as const,
+  };
+  try {
+    return execFileSync("git", ["diff", "--name-only", "HEAD"], options).trim();
+  } catch {
+    try {
+      return execFileSync(
+        "git",
+        ["diff", "--name-only", "--cached"],
+        options,
+      ).trim();
+    } catch {
+      return null;
+    }
+  }
+}
+
 export function checkScopeViolation(
   workspace: string,
   agentType: AgentType,
@@ -91,10 +119,7 @@ export function checkScopeViolation(
     return createCheck("Scope Check", "skip", "No scope defined in plan");
   }
 
-  const diffOutput = runCommand(
-    "git diff --name-only HEAD 2>/dev/null || git diff --name-only --cached 2>/dev/null",
-    workspace,
-  );
+  const diffOutput = gitChangedFiles(workspace);
   if (!diffOutput)
     return createCheck("Scope Check", "pass", "No files changed");
 

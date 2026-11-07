@@ -7,8 +7,9 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { join, sep } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { CANONICAL_MEMORIES_REL, LEGACY_MEMORIES_REL } from "../io/memory.js";
 import { testTask } from "./__fixtures__/task-contract.js";
 import {
   beginAgentRun,
@@ -21,7 +22,9 @@ import {
 } from "./artifact-verifier.js";
 import { activateWorkflowSession, readEvents } from "./events.js";
 
-const MEM_BASE = ".serena/memories";
+// The verifier returns POSIX-separated relative paths; normalize the
+// platform-native constants so assertions hold on Windows too.
+const MEM_BASE = LEGACY_MEMORIES_REL.split(sep).join("/");
 
 function writeArtifact(projectDir: string, relPath: string, content = "x") {
   const fullPath = join(projectDir, relPath);
@@ -91,15 +94,20 @@ describe("resolveMemoryBasePath", () => {
 
   afterEach(() => {
     rmSync(projectDir, { recursive: true, force: true });
+    vi.restoreAllMocks();
   });
 
   it("defaults to .agents/state/memories when mcp.json is absent", () => {
-    expect(resolveMemoryBasePath(projectDir)).toBe(".agents/state/memories");
+    expect(resolveMemoryBasePath(projectDir)).toBe(
+      CANONICAL_MEMORIES_REL.split(sep).join("/"),
+    );
   });
 
   it("falls back to legacy .serena/memories when only it exists", () => {
     mkdirSync(join(projectDir, ".serena", "memories"), { recursive: true });
-    expect(resolveMemoryBasePath(projectDir)).toBe(".serena/memories");
+    expect(resolveMemoryBasePath(projectDir)).toBe(
+      LEGACY_MEMORIES_REL.split(sep).join("/"),
+    );
   });
 
   it("prefers canonical .agents/state/memories over an existing legacy dir", () => {
@@ -107,7 +115,9 @@ describe("resolveMemoryBasePath", () => {
     mkdirSync(join(projectDir, ".agents", "state", "memories"), {
       recursive: true,
     });
-    expect(resolveMemoryBasePath(projectDir)).toBe(".agents/state/memories");
+    expect(resolveMemoryBasePath(projectDir)).toBe(
+      CANONICAL_MEMORIES_REL.split(sep).join("/"),
+    );
   });
 
   it("reads memoryConfig.basePath from .agents/mcp.json", () => {
@@ -121,7 +131,63 @@ describe("resolveMemoryBasePath", () => {
 
   it("falls back to the default on malformed mcp.json", () => {
     writeArtifact(projectDir, ".agents/mcp.json", "not-json");
-    expect(resolveMemoryBasePath(projectDir)).toBe(".agents/state/memories");
+    expect(resolveMemoryBasePath(projectDir)).toBe(
+      CANONICAL_MEMORIES_REL.split(sep).join("/"),
+    );
+  });
+
+  it("accepts a valid relative basePath", () => {
+    writeArtifact(
+      projectDir,
+      ".agents/mcp.json",
+      JSON.stringify({ memoryConfig: { basePath: "memories" } }),
+    );
+    expect(resolveMemoryBasePath(projectDir)).toBe("memories");
+  });
+
+  it("rejects a traversing basePath and falls back to the default", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    writeArtifact(
+      projectDir,
+      ".agents/mcp.json",
+      JSON.stringify({ memoryConfig: { basePath: "../../evil" } }),
+    );
+    expect(resolveMemoryBasePath(projectDir)).toBe(
+      CANONICAL_MEMORIES_REL.split(sep).join("/"),
+    );
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("unsafe memoryConfig.basePath"),
+    );
+  });
+
+  it("rejects an absolute basePath and falls back to the default", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    writeArtifact(
+      projectDir,
+      ".agents/mcp.json",
+      JSON.stringify({
+        memoryConfig: { basePath: join(projectDir, "..", "outside-mem") },
+      }),
+    );
+    expect(resolveMemoryBasePath(projectDir)).toBe(
+      CANONICAL_MEMORIES_REL.split(sep).join("/"),
+    );
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("unsafe memoryConfig.basePath"),
+    );
+  });
+
+  it("falls back to an existing legacy dir when basePath is unsafe", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    mkdirSync(join(projectDir, ".serena", "memories"), { recursive: true });
+    writeArtifact(
+      projectDir,
+      ".agents/mcp.json",
+      JSON.stringify({ memoryConfig: { basePath: "../../evil" } }),
+    );
+    expect(resolveMemoryBasePath(projectDir)).toBe(
+      LEGACY_MEMORIES_REL.split(sep).join("/"),
+    );
   });
 });
 
@@ -335,5 +401,24 @@ describe("verifyRalphExecArtifacts", () => {
 
     expect(result.ok).toBe(false);
     expect(result.emitted).toBe(false);
+  });
+
+  it("ignores an unsafe basePath and gates against the fallback store", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    writeArtifact(
+      projectDir,
+      ".agents/mcp.json",
+      JSON.stringify({ memoryConfig: { basePath: "../../evil" } }),
+    );
+    writeFullArtifactSet(projectDir);
+
+    const result = await verifyRalphExecArtifacts({
+      projectDir,
+      emitOnFail: false,
+    });
+
+    expect(result.memBase).toBe(MEM_BASE);
+    expect(result.ok).toBe(true);
+    vi.restoreAllMocks();
   });
 });

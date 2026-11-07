@@ -62,6 +62,7 @@ const mockFsFunctions = vi.hoisted(() => ({
   lstatSync: vi.fn(),
   mkdirSync: vi.fn(),
   readdirSync: vi.fn(),
+  appendFileSync: vi.fn(),
 }));
 
 vi.mock("node:fs", async () => ({
@@ -679,9 +680,12 @@ describe("agent/spawn-status.ts", () => {
     await vi.waitFor(() => expect(exitSpy).toHaveBeenCalledWith(0));
 
     // A terminal "completed" status is persisted to the session-specific file.
-    const statusWrite = mockFsFunctions.writeFileSync.mock.calls.find((call) =>
-      n(String(call[0])).endsWith(".status"),
+    // The first .status write is the "running" spawn marker (M10b); the
+    // terminal write is the last one.
+    const statusWrites = mockFsFunctions.writeFileSync.mock.calls.filter(
+      (call) => n(String(call[0])).endsWith(".status"),
     );
+    const statusWrite = statusWrites.at(-1);
     expect(statusWrite).toBeDefined();
     expect(n(String(statusWrite?.[0]))).toContain(
       "subagent-session1-agent1.status",
@@ -997,5 +1001,157 @@ describe("agent/spawn-status.ts", () => {
     expect(vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1]).not.toContain(
       "--dangerously-bypass-approvals-and-sandbox",
     );
+  });
+
+  // ---------------------------------------------------------------------------
+  // M10a: spawn 'error' event handling (missing vendor binary → ENOENT)
+  // ---------------------------------------------------------------------------
+
+  it("handles spawn 'error' with friendly failure, cleanup, and no double-exit", async () => {
+    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = n(pathArg.toString());
+      if (target.endsWith("/tmp")) return true;
+      // PID file present at cleanup time.
+      if (target.includes("subagent-") && target.endsWith(".pid")) return true;
+      return false;
+    });
+    mockFsFunctions.statSync.mockReturnValue({
+      isDirectory: () => true,
+      isFile: () => false,
+    });
+    mockFsFunctions.openSync.mockReturnValue(123);
+
+    const handlers: Record<string, (arg?: unknown) => void> = {};
+    const mockChild = {
+      pid: 55555,
+      on: vi.fn((event: string, handler: (arg?: unknown) => void) => {
+        handlers[event] = handler;
+      }),
+      unref: vi.fn(),
+    };
+    vi.mocked(child_process.spawn).mockReturnValue(
+      mockChild as unknown as child_process.ChildProcess,
+    );
+
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
+      throw new Error("exit");
+    });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await spawnAgent("agent1", "do stuff", "session1", "/tmp");
+
+    // An 'error' listener must be registered so ENOENT cannot become an
+    // uncaught exception.
+    expect(handlers.error).toBeDefined();
+    expect(() => handlers.error?.(new Error("spawn claude ENOENT"))).toThrow(
+      "exit",
+    );
+    expect(exitSpy).toHaveBeenCalledTimes(1);
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("ENOENT"));
+  });
+
+  it("registers an error listener on the no-PID failure path", async () => {
+    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) =>
+      n(pathArg.toString()).endsWith("/tmp"),
+    );
+    mockFsFunctions.statSync.mockReturnValue({
+      isDirectory: () => true,
+      isFile: () => false,
+    });
+    mockFsFunctions.openSync.mockReturnValue(123);
+
+    const registeredEvents: string[] = [];
+    const mockChild = {
+      pid: undefined,
+      on: vi.fn((event: string) => {
+        registeredEvents.push(event);
+      }),
+      unref: vi.fn(),
+    };
+    vi.mocked(child_process.spawn).mockReturnValue(
+      mockChild as unknown as child_process.ChildProcess,
+    );
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
+      throw new Error("exit");
+    });
+
+    await expect(
+      spawnAgent("agent1", "do stuff", "session1", "/tmp"),
+    ).rejects.toThrow("exit");
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(registeredEvents).toContain("error");
+    expect(mockFsFunctions.closeSync).toHaveBeenCalledWith(123);
+  });
+
+  // ---------------------------------------------------------------------------
+  // M10c: quota reservation blocks concurrent spawns against the same cap
+  // ---------------------------------------------------------------------------
+
+  // Shared setup for the reservation tests: a spawn_count=1 cap plus an
+  // in-memory append store backing the session-cost record file.
+  const setupQuotaCap = () => {
+    const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue("/project");
+    const CONFIG = [
+      "language: en",
+      "model_preset: claude",
+      "session:",
+      "  quota_cap:",
+      "    spawn_count: 1",
+    ].join("\n");
+    const costStore = new Map<string, string>();
+    mockFsFunctions.appendFileSync.mockImplementation(
+      (p: fs.PathLike, data: string) => {
+        const key = n(String(p));
+        costStore.set(key, (costStore.get(key) ?? "") + data);
+      },
+    );
+    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = n(pathArg.toString());
+      if (costStore.has(target)) return true;
+      if (target.endsWith("/project/.agents/oma-config.yaml")) return true;
+      if (target.endsWith(".agents/state/memories")) return true;
+      if (target.endsWith("/project")) return true;
+      return false;
+    });
+    mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = n(pathArg.toString());
+      if (costStore.has(target)) return costStore.get(target) ?? "";
+      if (target.includes("oma-config.yaml")) return CONFIG;
+      return "";
+    });
+    mockFsFunctions.openSync.mockReturnValue(123);
+    return { cwdSpy, costStore };
+  };
+
+  it("releases the reserved slot when the spawn errors out", async () => {
+    const { cwdSpy } = setupQuotaCap();
+    const handlers: Record<string, (arg?: unknown) => void> = {};
+    const mockChild = {
+      pid: 12345,
+      on: vi.fn((event: string, handler: (arg?: unknown) => void) => {
+        handlers[event] = handler;
+      }),
+      unref: vi.fn(),
+    };
+    vi.mocked(child_process.spawn).mockReturnValue(
+      mockChild as unknown as child_process.ChildProcess,
+    );
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
+      throw new Error("exit");
+    });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await spawnAgent("agent1", "first task", "session1", "/project");
+    expect(() => handlers.error?.(new Error("spawn claude ENOENT"))).toThrow(
+      "exit",
+    );
+    expect(exitSpy).toHaveBeenCalledWith(1);
+
+    // The cancellation released the slot: the next spawn passes the cap.
+    await spawnAgent("agent2", "second task", "session1", "/project");
+    expect(child_process.spawn).toHaveBeenCalledTimes(2);
+
+    cwdSpy.mockRestore();
   });
 });

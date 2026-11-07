@@ -1,23 +1,40 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+
+/**
+ * Run git with an explicit argument array via execFileSync so no shell ever
+ * interprets the arguments (model: cli/commands/retro/internal/git.ts).
+ * The old shell strings used `2>/dev/null`, which cmd.exe does not understand
+ * on Windows — every call silently failed and returned empty stats.
+ * Returns trimmed stdout, or null when git fails (non-zero exit / missing).
+ */
+function execGit(cwd: string, args: string[]): string | null {
+  try {
+    return execFileSync("git", args, {
+      cwd,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+      maxBuffer: 10 * 1024 * 1024,
+    }).trim();
+  } catch {
+    return null;
+  }
+}
 
 export function getGitStats(cwd: string): {
   filesChanged: number;
   linesAdded: number;
   linesRemoved: number;
 } {
-  try {
-    const diffStat = execSync(
-      "git diff --stat HEAD~10 2>/dev/null || git diff --stat",
-      {
-        cwd,
-        encoding: "utf-8",
-        stdio: ["pipe", "pipe", "ignore"],
-      },
-    );
+  // Old shell: `git diff --stat HEAD~10 2>/dev/null || git diff --stat`.
+  // The fallback covers shallow history (<10 commits) and detached states.
+  const diffStat =
+    execGit(cwd, ["diff", "--stat", "HEAD~10"]) ??
+    execGit(cwd, ["diff", "--stat"]);
 
-    const lines = diffStat.trim().split("\n");
+  if (diffStat) {
+    const lines = diffStat.split("\n");
     const summaryLine = lines[lines.length - 1] || "";
 
     const filesMatch = summaryLine.match(/(\d+) files? changed/);
@@ -29,63 +46,36 @@ export function getGitStats(cwd: string): {
       linesAdded: addMatch?.[1] ? parseInt(addMatch[1], 10) : 0,
       linesRemoved: removeMatch?.[1] ? parseInt(removeMatch[1], 10) : 0,
     };
-  } catch {
-    return { filesChanged: 0, linesAdded: 0, linesRemoved: 0 };
   }
+  return { filesChanged: 0, linesAdded: 0, linesRemoved: 0 };
 }
 
 export function getRecentGitCommits(cwd: string, limit = 5): string[] {
-  try {
-    const logs = execSync(`git log --oneline -${limit} 2>/dev/null`, {
-      cwd,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
-    });
-    return logs.trim().split("\n").filter(Boolean);
-  } catch {
-    return [];
-  }
+  const logs = execGit(cwd, ["log", "--oneline", `-${limit}`]);
+  if (logs === null) return [];
+  return logs.split("\n").filter(Boolean);
 }
 
 export function getRecentChangedFiles(cwd: string): string[] {
-  try {
-    const files = execSync(
-      "git diff --name-only HEAD~5 2>/dev/null || git diff --name-only",
-      {
-        cwd,
-        encoding: "utf-8",
-        stdio: ["pipe", "pipe", "ignore"],
-      },
-    );
-    return files.trim().split("\n").filter(Boolean).slice(0, 10);
-  } catch {
-    return [];
-  }
+  const files =
+    execGit(cwd, ["diff", "--name-only", "HEAD~5"]) ??
+    execGit(cwd, ["diff", "--name-only"]);
+  if (files === null) return [];
+  return files.split("\n").filter(Boolean).slice(0, 10);
 }
 
 export function getGitDiffSummary(cwd: string): string {
-  try {
-    return execSync("git diff --stat HEAD~5 2>/dev/null || git diff --stat", {
-      cwd,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
-    }).trim();
-  } catch {
-    return "";
-  }
+  return (
+    execGit(cwd, ["diff", "--stat", "HEAD~5"]) ??
+    execGit(cwd, ["diff", "--stat"]) ??
+    ""
+  );
 }
 
 export function getCommitMessages(cwd: string, limit = 10): string[] {
-  try {
-    const logs = execSync(`git log --format="%s" -${limit} 2>/dev/null`, {
-      cwd,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
-    });
-    return logs.trim().split("\n").filter(Boolean);
-  } catch {
-    return [];
-  }
+  const logs = execGit(cwd, ["log", "--format=%s", `-${limit}`]);
+  if (logs === null) return [];
+  return logs.split("\n").filter(Boolean);
 }
 
 export function getCommitTypes(commits: string[]): Record<string, number> {
@@ -145,16 +135,9 @@ export function getCommitsSince(
     const date = new Date(sinceDate);
     const isoDate = date.toISOString().split("T")[0];
 
-    const logs = execSync(
-      `git log --format="%s" --since="${isoDate}" 2>/dev/null`,
-      {
-        cwd,
-        encoding: "utf-8",
-        stdio: ["pipe", "pipe", "ignore"],
-      },
-    );
-
-    return logs.trim().split("\n").filter(Boolean);
+    const logs = execGit(cwd, ["log", "--format=%s", `--since=${isoDate}`]);
+    if (logs === null) return getCommitMessages(cwd, 10);
+    return logs.split("\n").filter(Boolean);
   } catch {
     return getCommitMessages(cwd, 10);
   }

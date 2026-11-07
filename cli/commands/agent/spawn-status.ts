@@ -520,6 +520,16 @@ export async function spawnAgent(
       if (confirmedStopped) prepared.cleanup();
       finishAgentRun(runRoot, run.runId, 1);
     };
+    // Async spawn failures (ENOENT/EACCES emitted after spawn returns) must
+    // not become uncaught exceptions: clean up and exit through a friendly
+    // path. `cleaned` is initialized by the time this async callback can run;
+    // skipping emergencyCleanup after a normal cleanup avoids double-closing
+    // the log fds. process.exit prevents a later close handler from re-entering.
+    child.on("error", (error) => {
+      console.error(color.red(`[${agentId}] Spawn error: ${error.message}`));
+      if (!cleaned) emergencyCleanup?.(false);
+      process.exit(1);
+    });
     if (!child.pid) {
       finishAgentRun(runRoot, run.runId, null);
       prepared.cleanup();

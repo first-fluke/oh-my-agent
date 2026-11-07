@@ -21,6 +21,7 @@ vi.mock("node:fs", async () => {
 
 vi.mock("node:child_process", () => ({
   execSync: vi.fn(),
+  execFileSync: vi.fn(),
 }));
 
 vi.mock("@clack/prompts", () => ({
@@ -44,7 +45,7 @@ vi.mock("picocolors", () => ({
 
 import { checkScopeViolation } from "../verify/report.js";
 
-const mockExecSync = child_process.execSync as ReturnType<typeof vi.fn>;
+const mockExecFileSync = child_process.execFileSync as ReturnType<typeof vi.fn>;
 
 describe("checkScopeViolation", () => {
   beforeEach(() => {
@@ -113,7 +114,7 @@ describe("checkScopeViolation", () => {
         tasks: [{ agent: "backend", scope: ["src/api/"] }],
       }),
     );
-    mockExecSync.mockReturnValue("");
+    mockExecFileSync.mockReturnValue("");
 
     const result = checkScopeViolation("/workspace", "backend");
 
@@ -128,7 +129,7 @@ describe("checkScopeViolation", () => {
         tasks: [{ agent: "backend", scope: ["src/api/", "migrations/"] }],
       }),
     );
-    mockExecSync.mockReturnValue("src/api/routes.ts\nmigrations/001.sql");
+    mockExecFileSync.mockReturnValue("src/api/routes.ts\nmigrations/001.sql");
 
     const result = checkScopeViolation("/workspace", "backend");
 
@@ -143,7 +144,7 @@ describe("checkScopeViolation", () => {
         tasks: [{ agent: "backend", scope: ["src/api/"] }],
       }),
     );
-    mockExecSync.mockReturnValue(
+    mockExecFileSync.mockReturnValue(
       "src/api/routes.ts\nsrc/components/Button.tsx",
     );
 
@@ -161,7 +162,7 @@ describe("checkScopeViolation", () => {
         tasks: [{ agent: "frontend", scope: ["src/components/"] }],
       }),
     );
-    mockExecSync.mockReturnValue(
+    mockExecFileSync.mockReturnValue(
       "src/components/Card.tsx\nsrc/api/auth.ts\nmigrations/002.sql",
     );
 
@@ -182,7 +183,7 @@ describe("checkScopeViolation", () => {
         ],
       }),
     );
-    mockExecSync.mockReturnValue("src/api/routes.ts\nsrc/services/auth.ts");
+    mockExecFileSync.mockReturnValue("src/api/routes.ts\nsrc/services/auth.ts");
 
     const result = checkScopeViolation("/workspace", "backend");
 
@@ -197,7 +198,7 @@ describe("checkScopeViolation", () => {
         tasks: [{ agent: "backend", scope: ["src/api/"] }],
       }),
     );
-    mockExecSync.mockImplementation(() => {
+    mockExecFileSync.mockImplementation(() => {
       throw new Error("not a git repo");
     });
 
@@ -207,6 +208,31 @@ describe("checkScopeViolation", () => {
     expect(result.message).toBe("No files changed");
   });
 
+  it("falls back to --cached when the HEAD diff fails", () => {
+    mockFsFunctions.existsSync.mockReturnValue(true);
+    mockFsFunctions.readFileSync.mockReturnValue(
+      JSON.stringify({
+        tasks: [{ agent: "backend", scope: ["src/api/"] }],
+      }),
+    );
+    mockExecFileSync
+      .mockImplementationOnce(() => {
+        throw new Error("ambiguous argument HEAD");
+      })
+      .mockReturnValueOnce("src/api/routes.ts");
+
+    const result = checkScopeViolation("/workspace", "backend");
+
+    expect(result.status).toBe("pass");
+    expect(result.message).toBe("All 1 files in scope");
+    expect(mockExecFileSync).toHaveBeenNthCalledWith(
+      2,
+      "git",
+      ["diff", "--name-only", "--cached"],
+      expect.objectContaining({ cwd: "/workspace" }),
+    );
+  });
+
   it("should match agent type case-insensitively", () => {
     mockFsFunctions.existsSync.mockReturnValue(true);
     mockFsFunctions.readFileSync.mockReturnValue(
@@ -214,7 +240,7 @@ describe("checkScopeViolation", () => {
         tasks: [{ agent: "Backend", scope: ["src/api/"] }],
       }),
     );
-    mockExecSync.mockReturnValue("src/api/routes.ts");
+    mockExecFileSync.mockReturnValue("src/api/routes.ts");
 
     const result = checkScopeViolation("/workspace", "backend");
 

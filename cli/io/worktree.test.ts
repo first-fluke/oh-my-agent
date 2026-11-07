@@ -6,7 +6,7 @@
  * module shells out to git; mocking it would not test the integration.
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -88,6 +88,43 @@ describe("createWorktree", () => {
       encoding: "utf-8",
     }).trim();
     expect(headBranch).toBe(handle.branch);
+  });
+
+  it("works when the repo path contains spaces (shell-free runGit regression)", () => {
+    // The old runGit built a shell string with JSON.stringify quoting,
+    // which cmd.exe mangles. A space-bearing repo path is the witness.
+    const spaceRepo = mkdtempSync(path.join(tmpdir(), "oma worktree space-"));
+    const sessId = `space-sess-${Math.random().toString(36).slice(2)}`;
+    sessionsToCleanup.push(sessId);
+    try {
+      const g = (args: string[]) =>
+        execFileSync("git", args, { cwd: spaceRepo, stdio: "pipe" });
+      g(["init", "-b", "main"]);
+      g(["config", "user.email", "test@example.com"]);
+      g(["config", "user.name", "Test"]);
+      g(["commit", "--allow-empty", "-m", "init"]);
+
+      const handle = createWorktree(sessId, "backend", spaceRepo);
+      expect(existsSync(handle.path)).toBe(true);
+      expect(handle.base).toBe("main");
+      expect(
+        execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+          cwd: handle.path,
+          encoding: "utf-8",
+        }).trim(),
+      ).toBe(handle.branch);
+
+      execFileSync("git", ["worktree", "remove", "--force", handle.path], {
+        cwd: spaceRepo,
+        stdio: "pipe",
+      });
+      execFileSync("git", ["branch", "-D", handle.branch], {
+        cwd: spaceRepo,
+        stdio: "pipe",
+      });
+    } finally {
+      rmSync(spaceRepo, { recursive: true, force: true });
+    }
   });
 
   it("sanitizes unsafe characters in sessionId / agentId for the branch", () => {

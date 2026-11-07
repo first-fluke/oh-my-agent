@@ -5,6 +5,7 @@ import {
   COORDINATION_STORE_REL,
   LEGACY_SERENA_MEMORY_REL,
 } from "../io/memory.js";
+import { assertContainedRelPath } from "../platform/path-containment.js";
 import {
   listAgentRuns,
   resultEvidenceValid,
@@ -50,6 +51,11 @@ const REMEDIATION =
  * Resolve memoryConfig.basePath from .agents/mcp.json. Default is the
  * canonical store `.agents/state/memories`, falling back to an existing
  * legacy `.serena/memories` for projects created before the move.
+ *
+ * mcp.json is agent-writable, so basePath is untrusted: absolute paths and
+ * `..` traversals escaping projectDir would point the anti-circumvention
+ * gate at out-of-project directories. Unsafe values are rejected (with a
+ * warning) and the default resolution chain applies instead.
  */
 export function resolveCoordinationBasePath(projectDir: string): string {
   try {
@@ -57,7 +63,21 @@ export function resolveCoordinationBasePath(projectDir: string): string {
       readFileSync(join(projectDir, ".agents", "mcp.json"), "utf-8"),
     ) as { memoryConfig?: { basePath?: string } };
     const basePath = parsed.memoryConfig?.basePath;
-    if (typeof basePath === "string" && basePath.length > 0) return basePath;
+    if (typeof basePath === "string" && basePath.length > 0) {
+      try {
+        return assertContainedRelPath(
+          projectDir,
+          basePath,
+          "memoryConfig.basePath",
+        );
+      } catch (error) {
+        console.warn(
+          `[artifact-verifier] Ignoring unsafe memoryConfig.basePath: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
   } catch {
     // missing or malformed mcp.json falls back to the default base path
   }

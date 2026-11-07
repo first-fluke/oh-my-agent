@@ -1,12 +1,18 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import {
+  type Dirent,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+} from "node:fs";
 import { createRequire } from "node:module";
-import { join, relative, resolve } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
 import type { VerifyCheck } from "../../types/index.js";
 import {
   checkCommandResult,
   createCheck,
+  findBinary,
   runCheckCommand,
-  runCommand,
 } from "./check-utils.js";
 
 export function checkHardcodedSecrets(workspace: string): VerifyCheck {
@@ -59,12 +65,65 @@ export function checkHardcodedSecrets(workspace: string): VerifyCheck {
   return createCheck("Hardcoded Secrets", "pass", "None detected");
 }
 
+/**
+ * In-process line counting replacing the old POSIX `grep -rn ... | grep -v ...
+ * | wc -l` pipelines, which silently no-oped on Windows (no grep → null → 0 →
+ * false "pass"). Walks the workspace, keeps the grep --include extension
+ * filter, and applies exclude terms with grep -v semantics (matched against
+ * the whole path:line:content output line). Unreadable/binary files and
+ * symlinks are skipped; node_modules/.git are never descended into.
+ */
+function countSourceMatches(
+  workspace: string,
+  extensions: string[],
+  pattern: RegExp,
+  excludeTerms: string[],
+): number {
+  let count = 0;
+  const walk = (dir: string): void => {
+    let entries: Dirent[];
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === "node_modules" || entry.name === ".git") continue;
+        walk(full);
+      } else if (entry.isFile()) {
+        if (!extensions.some((ext) => entry.name.endsWith(ext))) continue;
+        let content: string;
+        try {
+          if (statSync(full).size > 5 * 1024 * 1024) continue;
+          content = readFileSync(full, "utf-8");
+        } catch {
+          continue;
+        }
+        const rel = `./${relative(workspace, full).split(sep).join("/")}`;
+        const lines = content.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          const text = lines[i] ?? "";
+          if (!pattern.test(text)) continue;
+          const grepLine = `${rel}:${i + 1}:${text}`;
+          if (excludeTerms.some((term) => grepLine.includes(term))) continue;
+          count++;
+        }
+      }
+    }
+  };
+  walk(workspace);
+  return count;
+}
+
 export function checkTodoComments(workspace: string): VerifyCheck {
-  const result = runCommand(
-    `grep -rn --include="*.py" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.dart" -E "TODO|FIXME|HACK|XXX" . 2>/dev/null | grep -v node_modules | grep -v ".agents/" | wc -l`,
+  const count = countSourceMatches(
     workspace,
+    [".py", ".ts", ".tsx", ".js", ".dart"],
+    /TODO|FIXME|HACK|XXX/,
+    [".agents/"],
   );
-  const count = Number.parseInt(result || "0", 10);
   if (count > 0) {
     return createCheck("TODO/FIXME Comments", "warn", `${count} found`);
   }
@@ -72,7 +131,7 @@ export function checkTodoComments(workspace: string): VerifyCheck {
 }
 
 export function checkPythonTests(workspace: string): VerifyCheck {
-  const hasUv = runCommand("which uv", workspace);
+  const hasUv = findBinary("uv") !== null;
   const hasPyproject = existsSync(join(workspace, "pyproject.toml"));
   if (!hasUv || !hasPyproject) {
     return createCheck(
@@ -102,11 +161,12 @@ export function checkTypeScript(workspace: string): VerifyCheck {
 }
 
 export function checkInlineStyles(workspace: string): VerifyCheck {
-  const result = runCommand(
-    `grep -rn --include="*.tsx" --include="*.jsx" 'style={{' . 2>/dev/null | grep -v node_modules | wc -l`,
+  const count = countSourceMatches(
     workspace,
+    [".tsx", ".jsx"],
+    /style=\{\{/,
+    [],
   );
-  const count = Number.parseInt(result || "0", 10);
   if (count > 0) {
     return createCheck(
       "Inline Styles",
@@ -118,11 +178,9 @@ export function checkInlineStyles(workspace: string): VerifyCheck {
 }
 
 export function checkAnyTypes(workspace: string): VerifyCheck {
-  const result = runCommand(
-    `grep -rn --include="*.ts" --include="*.tsx" ': any' . 2>/dev/null | grep -v node_modules | grep -v ".d.ts" | wc -l`,
-    workspace,
-  );
-  const count = Number.parseInt(result || "0", 10);
+  const count = countSourceMatches(workspace, [".ts", ".tsx"], /: any/, [
+    ".d.ts",
+  ]);
   if (count > 3)
     return createCheck("Any Types", "fail", `${count} found (limit: 3)`);
   if (count > 0) return createCheck("Any Types", "warn", `${count} found`);
@@ -178,9 +236,9 @@ function hasVitest(workspace: string): boolean {
 }
 
 export function checkFlutterAnalysis(workspace: string): VerifyCheck {
-  const hasFlutter = runCommand("which flutter", workspace);
+  const hasFlutter = findBinary("flutter") !== null;
   if (!hasFlutter) {
-    const hasDart = runCommand("which dart", workspace);
+    const hasDart = findBinary("dart") !== null;
     if (!hasDart) {
       return createCheck("Flutter/Dart Analysis", "skip", "Not available");
     }
@@ -200,7 +258,7 @@ export function checkFlutterAnalysis(workspace: string): VerifyCheck {
 }
 
 export function checkFlutterTests(workspace: string): VerifyCheck {
-  const hasFlutter = runCommand("which flutter", workspace);
+  const hasFlutter = findBinary("flutter") !== null;
   if (!hasFlutter)
     return createCheck("Flutter Tests", "skip", "Flutter not available");
   return checkCommandResult(

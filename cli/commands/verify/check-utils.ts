@@ -1,4 +1,6 @@
 import { execSync, spawnSync } from "node:child_process";
+import { statSync } from "node:fs";
+import { delimiter, join } from "node:path";
 import type { VerifyCheck } from "../../types/index.js";
 
 export function createCheck(
@@ -9,13 +11,17 @@ export function createCheck(
   return { name, status, message };
 }
 
-// Output-only probes (grep, which, git). Never use this to judge a test or compiler.
+// Output-only probes (grep, git). Never use this to judge a test or compiler:
+// a non-zero exit is indistinguishable from empty output here (null). Verdict-
+// bearing checks must use runCheckCommand + checkCommandResult, which fail
+// closed on spawn errors, signals, and non-zero exits.
 export function runCommand(cmd: string, cwd: string): string | null {
   try {
     return execSync(cmd, {
       encoding: "utf-8",
       cwd,
       stdio: ["pipe", "pipe", "pipe"],
+      maxBuffer: 10 * 1024 * 1024,
     }).trim();
   } catch {
     return null;
@@ -84,4 +90,32 @@ export function checkCommandResult(
     );
   }
   return createCheck(name, "pass", successMessage);
+}
+
+/**
+ * Cross-platform PATH lookup replacing `which X` (which does not exist on
+ * Windows). Scans PATH entries in order; on win32 also tries the PATHEXT
+ * extensions (.exe, .cmd, .bat, ...). Returns the resolved path or null.
+ * The name is validated against a strict allowlist so it can never carry
+ * shell metacharacters or path traversal into downstream consumers.
+ */
+export function findBinary(name: string): string | null {
+  if (!/^[A-Za-z0-9._-]+$/.test(name)) return null;
+  const pathValue = process.env.PATH ?? process.env.Path ?? "";
+  const extensions =
+    process.platform === "win32"
+      ? (process.env.PATHEXT ?? ".COM;.EXE;.BAT;.CMD").split(";")
+      : [""];
+  for (const dir of pathValue.split(delimiter)) {
+    if (!dir) continue;
+    for (const ext of extensions) {
+      const candidate = join(dir, name + ext);
+      try {
+        if (statSync(candidate).isFile()) return candidate;
+      } catch {
+        // Not present in this PATH entry — keep scanning.
+      }
+    }
+  }
+  return null;
 }

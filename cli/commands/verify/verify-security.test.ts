@@ -1,4 +1,3 @@
-import { execSync } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -26,7 +25,14 @@ describe("runManifestCmd (no shell interpretation of stack.yaml cmd)", () => {
   });
 
   it("runs a plain command and returns its stdout", () => {
-    const result = runManifestCmd("echo hello", workspace);
+    // Use the node binary rather than `echo`: echo is a cmd.exe builtin on
+    // Windows, not a spawnable executable. Quote execPath because it may
+    // contain spaces (C:\Program Files\...); runManifestCmd's tokenizer
+    // honours quoted tokens.
+    const result = runManifestCmd(
+      `"${process.execPath}" -e "process.stdout.write('hello')"`,
+      workspace,
+    );
     expect(result.exitCode).toBe(0);
     expect(result.stdout.trim()).toBe("hello");
   });
@@ -50,7 +56,7 @@ describe("hasBinary (no shell injection via skip_if_missing)", () => {
   it("rejects bin tokens containing shell metacharacters", () => {
     const marker = join(workspace, "pwned2");
     // Old code: `which ${bin}` via execSync → injection. New code rejects the
-    // token on the SAFE_BIN_RE allowlist before any process runs.
+    // token on findBinary's identifier allowlist before any lookup runs.
     expect(hasBinary(`bun; touch ${marker}`, workspace)).toBe(false);
     expect(hasBinary("bun && id", workspace)).toBe(false);
     expect(hasBinary("../../bin/sh", workspace)).toBe(false);
@@ -58,15 +64,8 @@ describe("hasBinary (no shell injection via skip_if_missing)", () => {
   });
 
   it("resolves a real binary by plain name", () => {
-    // `sh` exists on every POSIX CI runner.
-    const shExists = (() => {
-      try {
-        execSync("which sh");
-        return true;
-      } catch {
-        return false;
-      }
-    })();
-    if (shExists) expect(hasBinary("sh", workspace)).toBe(true);
+    // sh exists on every POSIX CI runner; cmd.exe on every Windows host.
+    const bin = process.platform === "win32" ? "cmd" : "sh";
+    expect(hasBinary(bin, workspace)).toBe(true);
   });
 });

@@ -14,7 +14,7 @@
  * error out instead of silently falling back to in-place execution.
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -31,7 +31,9 @@ function sanitize(input: string): string {
 }
 
 function runGit(args: string[], cwd: string): string {
-  return execSync(`git ${args.map((a) => JSON.stringify(a)).join(" ")}`, {
+  // Arg-array invocation: no shell means cmd.exe quoting/escaping can never
+  // mangle paths or branch names (JSON.stringify quoting is POSIX-only).
+  return execFileSync("git", args, {
     cwd,
     encoding: "utf-8",
   }).trim();
