@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.36.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.5...cli-v20.36.6) (2026-11-07)
+
+
+### Bug Fixes
+
+* **doctor:** resolve executables on Windows PATH and PATHEXT ([00e0240](https://github.com/first-fluke/oh-my-agent/commit/00e0240eaa17469d0207b04a36d1e4b79858136f))
+* **memory:** authenticate AgentMemory REST calls with the bearer secret ([c233d7e](https://github.com/first-fluke/oh-my-agent/commit/c233d7e3cd518f50052773a070e6f8543831ba93))
+
 ## [20.36.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.36.4...cli-v20.36.5) (2026-11-06)
 
 

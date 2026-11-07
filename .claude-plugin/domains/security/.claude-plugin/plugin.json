@@ -1,6 +1,6 @@
 {
   "name": "oma-security",
-  "version": "20.36.5",
+  "version": "20.36.6",
   "description": "Security scans, source review, and verified remediation",
   "author": {
     "name": "First Fluke"
