@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.36.8",
-  "releaseDate": "2026-11-07T12:54:44.099Z",
+  "releaseDate": "2026-11-07T14:57:20.246Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -98,6 +98,11 @@
       "path": ".agents/agents/variants/grok.json",
       "sha256": "4e63166cbd02bcdd79c8ec63aba9c483453f34bddca9dbeab508f726bb2bf27c",
       "size": 331
+    },
+    {
+      "path": ".agents/agents/variants/kilo.json",
+      "sha256": "8a72b3879f05c8d3cdf70592ee4fbf0d067e26bfaf61a5f6e452e904f044cff3",
+      "size": 571
     },
     {
       "path": ".agents/agents/variants/kiro.json",
@@ -266,8 +271,8 @@
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "c7391ca239d3326bb04f984c2d7ca6fb6297ce6aa7fa892dca29d638af1e4f82",
-      "size": 6815
+      "sha256": "08c964b1a228b6f6c90bcbf098e141e318f5ac523225d9375923a66708ad9ade",
+      "size": 6879
     },
     {
       "path": ".agents/hooks/core/triggers.json",
@@ -566,8 +571,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
-      "sha256": "ba9f5047a6b2ad606e59c858a30e7138bcd6eec4cd15efffa0eb6e2b116251f0",
-      "size": 4289
+      "sha256": "d14f6c3b7cc2432931b4ac87bd9b3dbb23c54b2c784600a22962537bd9d35db0",
+      "size": 4724
     },
     {
       "path": ".agents/skills/_shared/runtime/event-spec.md",
@@ -605,6 +610,11 @@
       "size": 562
     },
     {
+      "path": ".agents/skills/_shared/runtime/execution-protocols/kilo.md",
+      "sha256": "74c9ac59c32ed6b94cc13b6c17720030a9aa7f27e0628f501319d4188f3c0388",
+      "size": 1036
+    },
+    {
       "path": ".agents/skills/_shared/runtime/execution-protocols/kimi.md",
       "sha256": "bf90381d197ae9a7bdf0d4d837dbbac090d0f11bdcb67ece7f23bc29248c40c0",
       "size": 527
@@ -636,8 +646,8 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/result-contract.md",
-      "sha256": "77378104c457143cff234fdd3176744932a26650f59cdbed0e23c3279ee4e78b",
-      "size": 9980
+      "sha256": "16b050f0e2c21c1768f4d153b1fcfc6cd56deffadabe0687ad027e106b13df02",
+      "size": 10012
     },
     {
       "path": ".agents/skills/_shared/ui-interaction-quality.md",
@@ -1531,8 +1541,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/SKILL.md",
-      "sha256": "fb82efa2e6eca09304178387a2adcc4ebaedeec05f642c99c01b68213fef8fe7",
-      "size": 17009
+      "sha256": "a0a8f43ea96389d165f44f9310201c7374a20a15a9707fe842ae01036bf6d5b5",
+      "size": 17029
     },
     {
       "path": ".agents/skills/oma-orchestration/config/cli-config.yaml",
@@ -2226,8 +2236,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "b2befebc1ba8b7cdcf2a6dc124058df56bd8dd22896a59deb87fd7c0d10f660e",
-      "size": 15714
+      "sha256": "66de01ae6bff3b5cdbfc89c9ee68df3f21d9e8fa12c9725fb5aceca85ac68a5f",
+      "size": 15953
     },
     {
       "path": ".agents/workflows/plan.md",
@@ -2256,8 +2266,8 @@
     },
     {
       "path": ".agents/workflows/schedule.md",
-      "sha256": "d2032525d6bb3c7022298616a175ab2807d1a47d4781ab11b86fe0d54dc9f960",
-      "size": 4025
+      "sha256": "97e32df12edaec588a338191633e5f6bc50d67d20199fb68950c8716a69b292b",
+      "size": 4033
     },
     {
       "path": ".agents/workflows/scm.md",
@@ -2311,6 +2321,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 460
+    "totalFiles": 462
   }
 }
