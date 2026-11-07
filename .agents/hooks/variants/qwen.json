@@ -44,7 +44,7 @@
     "PostToolUse": [
       {
         "hook": "refactor-guard.ts",
-        "matcher": "write_file|replace",
+        "matcher": "write_file|edit|replace|notebook_edit",
         "timeout": 5
       }
     ],

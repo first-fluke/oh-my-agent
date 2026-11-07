@@ -1,6 +1,7 @@
 // Compatibility surface for installed hook consumers.
 export {
   atomicWriteJson,
+  claimActiveSession,
   defaultIndex,
   getActiveSid,
   indexPath,

@@ -34,7 +34,11 @@ import {
 } from "./code-fingerprint.ts";
 import { UNKNOWN_SESSION_ID } from "./constants.ts";
 import { makeBlockOutput } from "./hook-output.ts";
-import { isDeactivationRequest } from "./keyword-detector.ts";
+import {
+  DEACTIVATION_PHRASES,
+  normalizeForMatching,
+  stripSystemEchoes,
+} from "./keyword-detector.ts";
 // triggers.json is imported statically: bundler inlines it into the oma binary;
 // standalone bun runs resolve the sibling file (pi / direct run).
 import embeddedTriggers from "./triggers.json" with { type: "json" };
@@ -192,10 +196,19 @@ function killGateTree(pid: number | undefined, leaderAlive: boolean): void {
 }
 
 /**
- * Run a resolved gate argv with a hard timeout. No shell involved. Async so
- * the dispatcher's per-handler timeout can still preempt it; on timeout, or
- * when this hook process is itself signalled (vendor kill, Ctrl-C), the whole
- * gate process tree is killed — no orphaned test runners.
+ * Run a resolved gate argv with a hard timeout. Async so the dispatcher's
+ * per-handler timeout can still preempt it; on timeout, or when this hook
+ * process is itself signalled (vendor kill, Ctrl-C), the whole gate process
+ * tree is killed — no orphaned test runners.
+ *
+ * POSIX: no shell — the argv is executed directly. win32: npm/pnpm/yarn
+ * resolve to `.cmd` shims, which Node >= 18.20 refuses to spawn without a
+ * shell (EINVAL/ENOENT), so those runners go through the system shell.
+ * Injection-safe HERE because the argv is fully allowlisted by
+ * resolveGateArgv: `command` ∈ {bun, npm, pnpm, yarn} and the only other
+ * token is `gateKeyword` ∈ {typecheck, test, lint}. No agent-writable string
+ * ever reaches this spawn. `bun` is a real `.exe` and stays shell-less;
+ * taskkill /T still reaps the shell's whole child tree on timeout.
  */
 export function runGateCommand(
   argv: string[],
@@ -252,6 +265,8 @@ export function runGateCommand(
         detached: process.platform !== "win32",
         stdio: ["ignore", "pipe", "pipe"],
         windowsHide: true,
+        // .cmd shims (npm/pnpm/yarn) need a shell on win32; argv is allowlisted.
+        shell: process.platform === "win32" && command !== "bun",
       });
     } catch (error) {
       spawnError = error instanceof Error ? error.message : String(error);
@@ -511,6 +526,33 @@ export function deactivateAllForSession(
   }
 }
 
+/**
+ * H4 guard: true ONLY when `text` is a deactivation phrase standing alone —
+ * never a substring of a longer narration.
+ *
+ * The plain substring matcher (keyword-detector's isDeactivationRequest) is
+ * correct for a genuine USER prompt but catastrophic for assistant/response/
+ * transcript text: "the workflow completed successfully" contains "workflow
+ * complete", and the hook's OWN block reason contains `say "workflow done"`,
+ * which vendors that echo prior messages would feed back into the next Stop.
+ *
+ * This matcher (1) strips oma's system-echo lines, then (2) requires the whole
+ * remaining text — modulo surrounding quotes/whitespace and trailing sentence
+ * punctuation — to EQUAL a phrase. Embedded narration therefore never matches.
+ */
+export function isStandaloneDeactivation(text: string): boolean {
+  const cleaned = normalizeForMatching(stripSystemEchoes(text)).trim();
+  if (!cleaned) return false;
+  const core = cleaned
+    .replace(/^[\s"'“”‘’]+/, "")
+    .replace(/[\s"'“”‘’.!?。！？]+$/, "")
+    .trim();
+  if (!core) return false;
+  return Object.values(DEACTIVATION_PHRASES)
+    .flat()
+    .some((phrase) => normalizeForMatching(phrase) === core);
+}
+
 /** activatedAt of a state file, falling back to its mtime when unreadable. */
 function stateTimestampMs(path: string): number {
   try {
@@ -592,7 +634,15 @@ function incrementReinforcement(
  * the stop should be blocked, or `null` when no workflow is active / all are
  * stale/exhausted.
  *
- * Both canonical and standalone callers pass response text to this handler.
+ * Deactivation (H4): a genuine user "workflow done" arrives through the PROMPT
+ * hook (keyword-detector's run() → deactivateAllPersistentModes), which deletes
+ * the state file BEFORE Stop fires. Assistant/response/transcript text must
+ * NEVER deactivate — narration like "the workflow completed successfully" and
+ * the hook's own echoed block reason both contain the phrases. The sole vendor
+ * with no prompt-submit event is commandcode (commandcode.json registers only
+ * SessionStart/PostToolUse/Stop), so it alone keeps a guarded fallback: the
+ * response text must be a STANDALONE phrase after system echoes are stripped
+ * (isStandaloneDeactivation). Every other vendor ignores `responseText`.
  *
  * `ctx.cwd` must be the resolved git-root project directory;
  * `ctx.sid` is the vendor session id.
@@ -623,25 +673,27 @@ export async function run(
     return null;
   }
 
-  // Honor "workflow done" deactivation carried in the stop payload's response
-  // text (parity with the standalone main() path). Without this, persistent
-  // mode could not be deactivated via the central `oma hook run` dispatch.
-  if (input.responseText) {
-    if (isDeactivationRequest(input.responseText)) {
-      const endings = loadPersistentWorkflows()
-        .map((workflow) => readModeState(projectDir, workflow, sessionId))
-        .filter((state): state is ModeState => state !== null)
-        .map(
-          (state): SessionEnding => ({
-            state,
-            status: "completed",
-            reason: "workflow_done",
-          }),
-        );
-      deactivateAllForSession(projectDir, sessionId);
-      await finishPersistentSessions(projectDir, sessionId, endings);
-      return null;
-    }
+  // H4: a deactivation phrase may arrive in the stop payload's response text
+  // (standalone pi/antigravity stdin, or vendors without a prompt-submit
+  // event). It deactivates ONLY as a STANDALONE phrase after oma's system
+  // echoes are stripped (isStandaloneDeactivation): assistant narration like
+  // "the workflow completed successfully" is a substring and never matches,
+  // and the hook's own block reason (which contains "workflow done") is
+  // removed by stripSystemEchoes before matching.
+  if (input.responseText && isStandaloneDeactivation(input.responseText)) {
+    const endings = loadPersistentWorkflows()
+      .map((workflow) => readModeState(projectDir, workflow, sessionId))
+      .filter((state): state is ModeState => state !== null)
+      .map(
+        (state): SessionEnding => ({
+          state,
+          status: "completed",
+          reason: "workflow_done",
+        }),
+      );
+    deactivateAllForSession(projectDir, sessionId);
+    await finishPersistentSessions(projectDir, sessionId, endings);
+    return null;
   }
 
   const persistentWorkflows = loadPersistentWorkflows();
@@ -752,6 +804,12 @@ export async function run(
           gate: gateKeyword,
           timedOut: gate.timedOut,
           ...(gate.timedOut ? { budgetMs } : {}),
+          // event-spec.md: gate.failed payload requires {gate, reason}.
+          reason: codeChanged
+            ? "code_changed_during_gate"
+            : gate.timedOut
+              ? "gate_timeout"
+              : "gate_failed",
           summary: codeChanged
             ? "code changed during gate"
             : gate.timedOut
@@ -793,7 +851,8 @@ export async function run(
       `[OMA PERSISTENT MODE: ${workflow.toUpperCase()}]`,
       `The /${workflow} workflow is still active (reinforcement ${state.reinforcementCount}/${MAX_REINFORCEMENTS}).`,
       `Continue executing the workflow. If all tasks are genuinely complete:`,
-      `  1. Delete the state file: Bash \`rm ${stateFile}\``,
+      `  1. Delete the state file: ${stateFile}`,
+      `  2. Or ask the user to say "워크플로우 완료" / "workflow done"`,
       ignoredGateNote,
     ]
       .filter(Boolean)
@@ -825,11 +884,11 @@ async function main() {
   const projectDir = getProjectDir(vendor, input);
   const sessionId = getSessionId(input);
 
-  // Check all text fields in stdin for deactivation phrases.
-  // The assistant may have included "workflow done" in its response,
-  // or it may appear in transcript/content fields depending on vendor.
-  // This raw-stdin check is standalone-path-only; the canonical HookInput
-  // { kind: "stop" } does not carry these text fields.
+  // Collect response/transcript text for the canonical handler. run() applies
+  // the H4 guard: only commandcode (no prompt-submit event) may deactivate from
+  // a STANDALONE phrase; for pi/antigravity (this standalone path) the text is
+  // assistant narration and is ignored — the genuine user prompt path already
+  // deleted the state on a real "workflow done".
   const textToCheck = [
     input.prompt_response,
     input.response,

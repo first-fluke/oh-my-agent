@@ -18,9 +18,23 @@ vi.mock("node:child_process", () => ({
   spawnSync: vi.fn(),
 }));
 
+vi.mock("../../.agents/hooks/core/state-emit.ts", () => ({
+  emitEvent: vi.fn(async () => ({})),
+}));
+
 const childProcess = await import("node:child_process");
-const { isStale, deactivate, writeBlockAndExit, run, sweepOrphanedModeStates } =
-  await import("../../.agents/hooks/core/persistent-mode.ts");
+const stateEmit = await import("../../.agents/hooks/core/state-emit.ts");
+const {
+  isStale,
+  deactivate,
+  writeBlockAndExit,
+  run,
+  sweepOrphanedModeStates,
+  runGateCommand,
+  resolveGateArgv,
+  isStandaloneDeactivation,
+  GATE_TIMEOUT_MS,
+} = await import("../../.agents/hooks/core/persistent-mode.ts");
 const { resolveGitRoot } = await import("../../.agents/hooks/core/fs-utils.ts");
 
 const FAKE_GATE_PID = 987_654;
@@ -248,8 +262,8 @@ describe("persistent-mode", () => {
         ["run", "typecheck"],
         expect.objectContaining({ cwd: projectDir }),
       );
-      // No shell: argv only, never a `shell: true` option.
-      expect(spawnMock().mock.calls[0]?.[2]).not.toHaveProperty("shell");
+      // POSIX: argv only — an explicit `shell: false` (or no option at all).
+      expect(spawnMock().mock.calls[0]?.[2]?.shell).toBeFalsy();
       expect(fs.unlinkSync).toHaveBeenCalledWith(statePath);
     });
 
@@ -518,5 +532,338 @@ describe("persistent-mode", () => {
         ),
       );
     });
+  });
+});
+
+// ── H3: Stop-hook timeout contract (variant ↔ GATE_TIMEOUT_MS) ──────────────
+describe("Stop-hook timeout contract", () => {
+  it("keeps the gate cap inside the 30s Stop-handler budget", () => {
+    expect(GATE_TIMEOUT_MS).toBe(25_000);
+  });
+
+  it("every vendor variant wires persistent-mode Stop above the gate cap", async () => {
+    // The global node:fs mock would hide the real files — read them for real.
+    const actualFs = await vi.importActual<typeof import("node:fs")>("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const variantsDir = fileURLToPath(
+      new URL("../../.agents/hooks/variants/", import.meta.url),
+    );
+    const files = actualFs
+      .readdirSync(variantsDir)
+      .filter((f) => f.endsWith(".json") && !f.endsWith(".schema.json"));
+    expect(files.length).toBeGreaterThan(0);
+
+    for (const file of files) {
+      const variant = JSON.parse(
+        actualFs.readFileSync(join(variantsDir, file), "utf-8"),
+      ) as {
+        vendor: string;
+        events: Record<
+          string,
+          | { hook: string; timeout: number }
+          | Array<{ hook: string; timeout: number }>
+        >;
+      };
+      // Stop is spelled "Stop" or "stop" depending on the vendor.
+      const stopEntries = Object.entries(variant.events).filter(
+        ([name]) => name.toLowerCase() === "stop",
+      );
+      expect(
+        stopEntries.length,
+        `${variant.vendor}: no Stop event registered`,
+      ).toBeGreaterThan(0);
+      let found = false;
+      for (const [, raw] of stopEntries) {
+        const configs = Array.isArray(raw) ? raw : [raw];
+        for (const c of configs) {
+          if (c.hook !== "persistent-mode.ts") continue;
+          found = true;
+          // timeout is seconds; the host must outlive the synchronous gate.
+          expect(
+            c.timeout * 1000,
+            `${variant.vendor}: persistent-mode Stop timeout (${c.timeout}s) ` +
+              `must exceed GATE_TIMEOUT_MS (${GATE_TIMEOUT_MS}ms) or the host ` +
+              `kills the hook mid-gate and the stop fails open`,
+          ).toBeGreaterThan(GATE_TIMEOUT_MS);
+        }
+      }
+      expect(found, `${variant.vendor}: persistent-mode not on Stop`).toBe(
+        true,
+      );
+    }
+  });
+});
+
+// ── Variant wiring: qwen refactor-guard must see incremental edit tools ─────
+describe("refactor-guard PostToolUse matcher wiring", () => {
+  it("qwen matcher covers write_file/edit/notebook_edit (+ legacy replace)", async () => {
+    // Regression: qwen's real edit tools are `edit` and `notebook_edit`; a
+    // matcher of only "write_file|replace" (legacy gemini name) never fired the
+    // recorder for incremental edits, so the >500-line Stop enforcement missed
+    // edited files. The handler's EDIT_TOOLS already understands these names.
+    const actualFs = await vi.importActual<typeof import("node:fs")>("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const qwenPath = fileURLToPath(
+      new URL("../../.agents/hooks/variants/qwen.json", import.meta.url),
+    );
+    const qwen = JSON.parse(actualFs.readFileSync(qwenPath, "utf-8")) as {
+      events: { PostToolUse: Array<{ hook: string; matcher?: string }> };
+    };
+    const entry = qwen.events.PostToolUse.find(
+      (c) => c.hook === "refactor-guard.ts",
+    );
+    expect(entry).toBeDefined();
+    const tokens = (entry?.matcher ?? "").split("|");
+    for (const tool of ["write_file", "edit", "notebook_edit", "replace"]) {
+      expect(tokens, `qwen refactor-guard matcher missing ${tool}`).toContain(
+        tool,
+      );
+    }
+  });
+});
+
+// ── H4: assistant narration must never deactivate ──────────────────────────
+describe("isStandaloneDeactivation (H4 guard)", () => {
+  it("rejects assistant narration that embeds a phrase", () => {
+    expect(
+      isStandaloneDeactivation("the workflow completed successfully"),
+    ).toBe(false);
+    expect(isStandaloneDeactivation("Great, workflow done! Now rest.")).toBe(
+      false,
+    );
+  });
+
+  it("rejects an echo of the hook's own block reason", () => {
+    const echo = [
+      "[OMA PERSISTENT MODE: WORK]",
+      "The /work workflow is still active (reinforcement 1/5).",
+      '  2. Or ask the user to say "워크플로우 완료" / "workflow done"',
+    ].join("\n");
+    expect(isStandaloneDeactivation(echo)).toBe(false);
+  });
+
+  it("accepts a phrase standing alone (any language, quotes/punctuation ok)", () => {
+    expect(isStandaloneDeactivation("workflow done")).toBe(true);
+    expect(isStandaloneDeactivation("  Workflow Done.  ")).toBe(true);
+    expect(isStandaloneDeactivation('"workflow done"')).toBe(true);
+    expect(isStandaloneDeactivation("워크플로우 완료")).toBe(true);
+  });
+});
+
+describe("run() deactivation source (H4)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  const projectDir = "/tmp/project";
+  const sid = "sess-h4";
+  const statePath = join(
+    projectDir,
+    ".agents",
+    "state",
+    `work-state-${sid}.json`,
+  );
+  const pkgPath = join(projectDir, "package.json");
+
+  const mockActiveState = () => {
+    const state = {
+      workflow: "work",
+      sessionId: sid,
+      activatedAt: new Date().toISOString(),
+      reinforcementCount: 0,
+    };
+    const stateDir = join(projectDir, ".agents", "state");
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => p === statePath || p === pkgPath || p === stateDir,
+    );
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        if (p === statePath) return JSON.stringify(state);
+        if (p === pkgPath) return JSON.stringify({ scripts: {} });
+        throw new Error(`unexpected read: ${p}`);
+      },
+    );
+    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+      `work-state-${sid}.json`,
+    ]);
+  };
+
+  it("claude: assistant narration in responseText does NOT deactivate", async () => {
+    mockActiveState();
+    const result = await run(
+      {
+        kind: "stop",
+        cwd: projectDir,
+        responseText: "the workflow completed successfully",
+      },
+      { vendor: "claude", cwd: projectDir, sid },
+    );
+    expect(result?.type).toBe("block");
+    expect(fs.unlinkSync).not.toHaveBeenCalled();
+  });
+
+  it("claude: a block-reason echo containing 'workflow done' does NOT deactivate", async () => {
+    mockActiveState();
+    const result = await run(
+      {
+        kind: "stop",
+        cwd: projectDir,
+        responseText:
+          '[OMA PERSISTENT MODE: WORK] ask the user to say "workflow done"',
+      },
+      { vendor: "claude", cwd: projectDir, sid },
+    );
+    expect(result?.type).toBe("block");
+    expect(fs.unlinkSync).not.toHaveBeenCalled();
+  });
+
+  it("commandcode (no prompt event): standalone phrase deactivates", async () => {
+    mockActiveState();
+    const result = await run(
+      { kind: "stop", cwd: projectDir, responseText: "workflow done" },
+      { vendor: "commandcode", cwd: projectDir, sid },
+    );
+    expect(result).toBeNull();
+    expect(fs.unlinkSync).toHaveBeenCalledWith(statePath);
+  });
+
+  it("commandcode: narration still does NOT deactivate", async () => {
+    mockActiveState();
+    const result = await run(
+      {
+        kind: "stop",
+        cwd: projectDir,
+        responseText: "the workflow completed successfully",
+      },
+      { vendor: "commandcode", cwd: projectDir, sid },
+    );
+    expect(result?.type).toBe("block");
+    expect(fs.unlinkSync).not.toHaveBeenCalled();
+  });
+});
+
+// ── M1: win32 npm/pnpm/yarn gate spawn ─────────────────────────────────────
+describe("runGateCommand platform spawn (M1)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  const originalPlatform = process.platform;
+  const setPlatform = (value: string) => {
+    Object.defineProperty(process, "platform", { value, configurable: true });
+  };
+  afterEach(() => setPlatform(originalPlatform));
+
+  it("uses a shell on win32 for npm/pnpm/yarn (.cmd shims)", async () => {
+    setPlatform("win32");
+    spawnMock().mockImplementation(() => exitingGate(0));
+    for (const cmd of ["npm", "pnpm", "yarn"]) {
+      await runGateCommand([cmd, "run", "test"], "/tmp/project");
+      expect(spawnMock()).toHaveBeenLastCalledWith(
+        cmd,
+        ["run", "test"],
+        expect.objectContaining({ shell: true }),
+      );
+    }
+  });
+
+  it("keeps bun shell-less on win32 (real .exe)", async () => {
+    setPlatform("win32");
+    spawnMock().mockImplementation(() => exitingGate(0));
+    await runGateCommand(["bun", "run", "test"], "/tmp/project");
+    expect(spawnMock()).toHaveBeenLastCalledWith(
+      "bun",
+      ["run", "test"],
+      expect.objectContaining({ shell: false }),
+    );
+  });
+
+  it("never uses a shell on POSIX", async () => {
+    setPlatform("linux");
+    spawnMock().mockImplementation(() => exitingGate(0));
+    await runGateCommand(["npm", "run", "test"], "/tmp/project");
+    expect(spawnMock()).toHaveBeenLastCalledWith(
+      "npm",
+      ["run", "test"],
+      expect.objectContaining({ shell: false }),
+    );
+  });
+
+  it("resolveGateArgv only ever returns allowlisted runners + keywords", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => p.endsWith("package.json") || p.endsWith("pnpm-lock.yaml"),
+    );
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      JSON.stringify({ scripts: { test: "vitest" } }),
+    );
+    expect(resolveGateArgv("test", "/tmp/project")).toEqual([
+      "pnpm",
+      "run",
+      "test",
+    ]);
+    // A free-form gate string never resolves to an argv (never executed).
+    expect(resolveGateArgv("rm -rf /", "/tmp/project")).toBeNull();
+  });
+});
+
+// ── M4: gate.failed payload carries spec-required `reason` ─────────────────
+describe("gate event payload (M4)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  it("emits gate.failed with {gate, reason} (no summary)", async () => {
+    const projectDir = "/tmp/project";
+    const sid = "sess-m4";
+    const statePath = join(
+      projectDir,
+      ".agents",
+      "state",
+      `work-state-${sid}.json`,
+    );
+    const pkgPath = join(projectDir, "package.json");
+    const state = {
+      workflow: "work",
+      sessionId: sid,
+      omaSid: "oma-test",
+      activatedAt: new Date().toISOString(),
+      reinforcementCount: 0,
+      goal: { completion: { gate: "typecheck" } },
+    };
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) =>
+        p === statePath || p === pkgPath || p === join(projectDir, "bun.lock"),
+    );
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        if (p === statePath) return JSON.stringify(state);
+        if (p === pkgPath)
+          return JSON.stringify({ scripts: { typecheck: "tsc" } });
+        throw new Error(`unexpected read: ${p}`);
+      },
+    );
+    (
+      childProcess.spawnSync as unknown as ReturnType<typeof vi.fn>
+    ).mockReturnValue({ status: 1, stdout: "boom", stderr: "", signal: null });
+    // runGateCommand spawns asynchronously; drive the failing gate through
+    // the fake child instead of the legacy spawnSync mock.
+    spawnMock().mockImplementation(() => exitingGate(1));
+
+    const result = await run(
+      { kind: "stop", cwd: projectDir },
+      { vendor: "claude", cwd: projectDir, sid },
+    );
+    expect(result?.type).toBe("block");
+    // gate.failed emission is fire-and-forget; flush the microtask/timer queue.
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(stateEmit.emitEvent).toHaveBeenCalled();
+    const call = (
+      stateEmit.emitEvent as ReturnType<typeof vi.fn>
+    ).mock.calls.find((c) => (c[2] as { kind: string }).kind === "gate.failed");
+    expect(call).toBeDefined();
+    const payload = (
+      call as [string, string, { payload: Record<string, unknown> }]
+    )[2].payload;
+    expect(payload.gate).toBe("typecheck");
+    expect(typeof payload.reason).toBe("string");
+    // Upstream also carries a human-facing summary alongside the machine code.
   });
 });

@@ -45,6 +45,8 @@ const {
   isReinforcementSuppressed,
   recordKwTrigger,
   loadKwState,
+  saveKwState,
+  updateKwState,
   // Task 3 — CLI invocation guard
   CLI_INVOCATION_AT_START,
   KEYWORD_SKIP_PREDICATES,
@@ -2457,6 +2459,128 @@ memory was written by Serena into its internal store.
       expect(all("orchestrate")).not.toContain("automate");
       for (const phrase of ["keep going", "carry on", "계속해", "계속 해줘"]) {
         expect(all("ralph")).not.toContain(phrase);
+      }
+    });
+  });
+
+  describe("kw-state locking (M12)", () => {
+    it("saveKwState acquires the exclusive lock and writes atomically", () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      // Lock-token readback gets no parseable content → release unlinks.
+      (fs.readFileSync as ReturnType<typeof vi.fn>).mockReturnValue(undefined);
+      saveKwState("/tmp/project", { triggers: {} });
+      const openCalls = (fs.openSync as ReturnType<typeof vi.fn>).mock.calls;
+      expect(
+        openCalls.some(
+          ([path, flag]) =>
+            String(path).endsWith("keyword-detector-state.json.lock") &&
+            flag === "wx",
+        ),
+      ).toBe(true);
+      // Atomic write goes through tmp+rename, never a bare overwrite.
+      expect(fs.renameSync).toHaveBeenCalled();
+      expect(fs.unlinkSync).toHaveBeenCalledWith(
+        join(
+          "/tmp/project",
+          ".agents",
+          "state",
+          "keyword-detector-state.json.lock",
+        ),
+      );
+    });
+
+    it("updateKwState re-reads fresh state inside the lock and merges", () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(true);
+      (fs.readFileSync as ReturnType<typeof vi.fn>).mockReturnValue(
+        JSON.stringify({
+          triggers: {
+            work: { lastTriggeredAt: new Date().toISOString(), count: 1 },
+          },
+        }),
+      );
+      const next = updateKwState("/tmp/project", (s) =>
+        recordKwTrigger(s, "ralph"),
+      );
+      expect(next.triggers.work?.count).toBe(1);
+      expect(next.triggers.ralph?.count).toBe(1);
+    });
+  });
+
+  describe("M14 — persistent-bank distinctiveness", () => {
+    // Upstream removed every everyday-word trigger from persistent workflows:
+    // work fires only on "work mode"/"work workflow", ralph only on
+    // "ralph"/"랄프". collectLangEntries merges all language banks, so a bare
+    // Latin-script word like "continue" or "work" would match ordinary
+    // prompts in any language — assert no persistent bank reintroduces one.
+    let liveTriggers: {
+      workflows: Record<
+        string,
+        { persistent: boolean; keywords: Record<string, string[]> }
+      >;
+    };
+
+    beforeEach(async () => {
+      const mod = await import("../../.agents/hooks/core/triggers.json", {
+        with: { type: "json" },
+      });
+      liveTriggers = mod.default as unknown as typeof liveTriggers;
+    });
+
+    it("no persistent workflow bank contains a bare everyday word", () => {
+      const persistent = Object.entries(liveTriggers.workflows).filter(
+        ([, workflow]) => workflow.persistent,
+      );
+      expect(persistent.length).toBeGreaterThan(0);
+      for (const [name, workflow] of persistent) {
+        const all = Object.values(workflow.keywords).flat();
+        expect(all, `/${name} must not fire on bare "continue"`).not.toContain(
+          "continue",
+        );
+        expect(all, `/${name} must not fire on bare "work"`).not.toContain(
+          "work",
+        );
+      }
+    });
+
+    it("English 'continue' no longer activates persistent ralph", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      const result = await run(
+        { kind: "prompt", prompt: "continue", cwd: "/tmp" },
+        { vendor: "claude", cwd: "/tmp", sid: "m14-sess" },
+      );
+      expect(result).toBeNull();
+    });
+
+    it("French 'continue' no longer activates persistent ralph", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      const result = await run(
+        { kind: "prompt", prompt: "continue avec cette tâche", cwd: "/tmp" },
+        { vendor: "claude", cwd: "/tmp", sid: "m14-sess" },
+      );
+      expect(result).toBeNull();
+    });
+
+    it("ralph still fires on its explicit name", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      const result = await run(
+        { kind: "prompt", prompt: "ralph", cwd: "/tmp" },
+        { vendor: "claude", cwd: "/tmp", sid: "m14-sess" },
+      );
+      expect(result?.type).toBe("context");
+      if (result?.type === "context") {
+        expect(result.additionalContext).toContain("[OMA WORKFLOW: RALPH]");
+      }
+    });
+
+    it("work still fires on its explicit workflow phrase", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      const result = await run(
+        { kind: "prompt", prompt: "work workflow", cwd: "/tmp" },
+        { vendor: "claude", cwd: "/tmp", sid: "m14-sess" },
+      );
+      expect(result?.type).toBe("context");
+      if (result?.type === "context") {
+        expect(result.additionalContext).toContain("[OMA WORKFLOW: WORK]");
       }
     });
   });

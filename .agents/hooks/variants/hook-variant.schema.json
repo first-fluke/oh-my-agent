@@ -129,9 +129,9 @@
         },
         "timeout": {
           "type": "integer",
-          "description": "Max execution time in seconds.",
+          "description": "Max execution time in seconds. The persistent-mode Stop hook runs a completion gate capped at GATE_TIMEOUT_MS (60s), so its entry MUST exceed that plus margin (70s); the contract test in cli/__tests__/hooks-persistent-mode.test.ts enforces timeout*1000 > GATE_TIMEOUT_MS. Other hooks stay small.",
           "minimum": 1,
-          "maximum": 30,
+          "maximum": 120,
           "default": 5
         },
         "loopLimit": {

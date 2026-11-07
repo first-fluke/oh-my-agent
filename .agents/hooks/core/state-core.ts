@@ -164,19 +164,57 @@ export function atomicWriteJson(path: string, value: unknown): void {
   fsyncParent(path);
 }
 
+/**
+ * Preserve a corrupt index for forensics instead of silently discarding every
+ * active session. Best-effort: a concurrent reader may win the rename; the
+ * loser still falls back to the default index.
+ */
+function quarantineCorruptIndex(path: string): void {
+  const target = `${path}.corrupt-${Date.now()}`;
+  try {
+    renameSync(path, target);
+    process.stderr.write(
+      `[oma] _index.json was corrupt; quarantined to ${target}\n`,
+    );
+  } catch {
+    process.stderr.write(
+      "[oma] _index.json is corrupt and could not be quarantined; resetting\n",
+    );
+  }
+  process.stderr.write(
+    "[oma]   hint: run 'oma state repair' to re-derive active pointers from events\n",
+  );
+}
+
 export function readIndex(projectDir: string): StateIndex {
   const path = readableIndexPath(projectDir);
   if (!existsSync(path)) return defaultIndex();
+  let raw: string;
   try {
-    const parsed = JSON.parse(
-      readFileSync(path, "utf-8"),
-    ) as Partial<StateIndex>;
+    raw = readFileSync(path, "utf-8");
+  } catch {
+    // Transient read error (not provably corrupt) — do not quarantine.
+    return defaultIndex();
+  }
+  try {
+    const parsed = JSON.parse(raw) as Partial<StateIndex> | null;
+    if (
+      parsed === null ||
+      typeof parsed !== "object" ||
+      (parsed.active !== undefined &&
+        (typeof parsed.active !== "object" ||
+          parsed.active === null ||
+          Array.isArray(parsed.active)))
+    ) {
+      throw new Error("invalid index shape");
+    }
     return {
       schemaVersion: INDEX_SCHEMA_VERSION,
       active: parsed.active ?? {},
       lastSession: parsed.lastSession,
     };
   } catch {
+    quarantineCorruptIndex(path);
     return defaultIndex();
   }
 }
@@ -226,6 +264,34 @@ export function setActiveSession(
   return updateIndex(projectDir, (index) => {
     index.active[category] = sid;
   });
+}
+
+/**
+ * Claim an active-session slot WITHOUT stomping a live different session
+ * (M12c). Unconditional setActiveSession on every matched workflow let two
+ * simultaneous sessions clobber each other's pointer. The claim decision runs
+ * inside the index lock; `isLive` is injected by the caller (keyword-detector
+ * derives it from the session's events.jsonl) so this module stays agnostic.
+ * The non-claiming session still gets its own sid + session.created event.
+ *
+ * Returns true when the slot was claimed (empty, stale, or already ours).
+ */
+export function claimActiveSession(
+  projectDir: string,
+  category: string,
+  sid: string,
+  isLive: (existingSid: string) => boolean,
+): boolean {
+  sessionDir(projectDir, sid);
+  let claimed = false;
+  updateIndex(projectDir, (index) => {
+    const current = index.active[category];
+    if (!current || current === sid || !isLive(current)) {
+      index.active[category] = sid;
+      claimed = true;
+    }
+  });
+  return claimed;
 }
 
 export function setLastSession(

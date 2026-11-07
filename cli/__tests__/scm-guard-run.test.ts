@@ -71,6 +71,56 @@ describe("scm-guard run() — blocks secret staging", () => {
     expect(result?.type).toBe("block");
     expect((result as { reason: string }).reason).toContain(".env");
   });
+
+  it("blocks Windows-style backslash pathspecs (basename matching)", async () => {
+    const result = await runWith("git add config\\credentials.json");
+    expect(result?.type).toBe("block");
+    expect((result as { reason: string }).reason).toContain(
+      "config\\credentials.json",
+    );
+    expect((await runWith("git add deploy\\.netrc"))?.type).toBe("block");
+  });
+
+  it("blocks basename-exact patterns under a directory", async () => {
+    expect((await runWith("git add dir/.npmrc"))?.type).toBe("block");
+    expect((await runWith("git add dir/.netrc"))?.type).toBe("block");
+  });
+
+  it("blocks a compound command with one safe and one forbidden add", async () => {
+    const result = await runWith("git add README.md && git add .env");
+    expect(result?.type).toBe("block");
+    expect((result as { reason: string }).reason).toContain(".env");
+  });
+
+  it("still blocks when the bypass token appears only in another segment", async () => {
+    const result = await runWith(
+      "echo OMA_SCM_ALLOW_SECRETS=1 && git add credentials.json",
+    );
+    expect(result?.type).toBe("block");
+  });
+
+  it("still blocks when the token is an argument of another command in the same segment", async () => {
+    const result = await runWith(
+      "echo OMA_SCM_ALLOW_SECRETS=1 git add credentials.json",
+    );
+    expect(result?.type).toBe("block");
+  });
+
+  it("still blocks when the token appears after the paths", async () => {
+    const result = await runWith(
+      "git add credentials.json OMA_SCM_ALLOW_SECRETS=1",
+    );
+    expect(result?.type).toBe("block");
+  });
+
+  it("bypasses only the prefixed segment, not other git add segments", async () => {
+    const result = await runWith(
+      "OMA_SCM_ALLOW_SECRETS=1 git add .env && git add credentials.json",
+    );
+    expect(result?.type).toBe("block");
+    expect((result as { reason: string }).reason).toContain("credentials.json");
+    expect((result as { reason: string }).reason).not.toContain(".env");
+  });
 });
 
 describe("scm-guard run() — allows safe operations (fail-open)", () => {
@@ -81,6 +131,7 @@ describe("scm-guard run() — allows safe operations (fail-open)", () => {
   it("allows template/example files (allowed_exceptions)", async () => {
     expect(await runWith("git add .env.example")).toBeNull();
     expect(await runWith("git add config/secrets.yaml.template")).toBeNull();
+    expect(await runWith("git add config\\.env.example")).toBeNull();
   });
 
   it("allows non-add git commands even when they mention secret names", async () => {
@@ -102,8 +153,21 @@ describe("scm-guard run() — allows safe operations (fail-open)", () => {
     expect(await runWith("git add --all")).toBeNull();
   });
 
-  it("honours the OMA_SCM_ALLOW_SECRETS=1 bypass", async () => {
+  it("honours the OMA_SCM_ALLOW_SECRETS=1 bypass (documented consent path)", async () => {
     expect(await runWith("OMA_SCM_ALLOW_SECRETS=1 git add .env")).toBeNull();
+    expect(
+      await runWith("OMA_SCM_ALLOW_SECRETS=1 git add credentials.json"),
+    ).toBeNull();
+    expect(
+      await runWith(
+        "cd repo && OMA_SCM_ALLOW_SECRETS=1 git add config\\credentials.json",
+      ),
+    ).toBeNull();
+    expect(
+      await runWith(
+        "OMA_SCM_ALLOW_SECRETS=1 git add .env && OMA_SCM_ALLOW_SECRETS=1 git add credentials.json",
+      ),
+    ).toBeNull();
   });
 
   it("ignores non-shell tools and non-pre_tool events", async () => {
