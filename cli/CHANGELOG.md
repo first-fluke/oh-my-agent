@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.38.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.0...cli-v20.38.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **emit:** keep the GitHub archive under the plugin-directory limits ([2a76c60](https://github.com/first-fluke/oh-my-agent/commit/2a76c6084c19f25a39eedbec1988a084cc547d4d))
+
 ## [20.38.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.37.1...cli-v20.38.0) (2026-11-08)
 
 

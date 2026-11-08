@@ -6,7 +6,7 @@
       "name": "oma",
       "source": "./",
       "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
-      "version": "20.38.0",
+      "version": "20.38.1",
       "category": "development",
       "tags": [
         "skills",
@@ -18,7 +18,7 @@
       "name": "oma-frontend",
       "source": "./.claude-plugin/domains/frontend",
       "description": "Frontend implementation, interface design, review, and debugging",
-      "version": "20.38.0",
+      "version": "20.38.1",
       "category": "frontend",
       "tags": [
         "skills",
@@ -30,7 +30,7 @@
       "name": "oma-security",
       "source": "./.claude-plugin/domains/security",
       "description": "Security scans, source review, and verified remediation",
-      "version": "20.38.0",
+      "version": "20.38.1",
       "category": "security",
       "tags": [
         "skills",
@@ -42,7 +42,7 @@
       "name": "oma-research",
       "source": "./.claude-plugin/domains/research",
       "description": "Literature search, market research, document extraction, and academic writing",
-      "version": "20.38.0",
+      "version": "20.38.1",
       "category": "research",
       "tags": [
         "skills",

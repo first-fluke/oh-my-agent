@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent-opencode",
-  "version": "20.38.0",
+  "version": "20.38.1",
   "description": "oh-my-agent hook bridge for OpenCode and Kilo Code",
   "license": "MIT",
   "homepage": "https://firstfluke.com/oh-my-agent",
