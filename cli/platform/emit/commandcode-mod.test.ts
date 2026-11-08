@@ -53,7 +53,12 @@ describe("emitCommandcodeMod", () => {
     mkdirSync(join(source, ".agents/skills/demo"), { recursive: true });
     writeFileSync(
       join(source, ".agents/skills/demo/SKILL.md"),
-      "---\nname: demo\ndescription: Demo skill\n---\nBody\n",
+      "---\nname: demo\ndescription: Demo skill\n---\nBody; see [policy](../_shared/core/policy.md).\n",
+    );
+    mkdirSync(join(source, ".agents/skills/_shared/core"), { recursive: true });
+    writeFileSync(
+      join(source, ".agents/skills/_shared/core/policy.md"),
+      "# Policy\n",
     );
 
     const output = join(root, "commandcode-mod");
@@ -77,6 +82,15 @@ describe("emitCommandcodeMod", () => {
     );
     expect(existsSync(join(output, "filter-test-output.sh"))).toBe(true);
     expect(existsSync(join(output, "skills/demo/SKILL.md"))).toBe(true);
+    // `commandcode.skills: ["./skills"]` loads the whole tree: one
+    // skills/_shared/ copy instead of a bundle inside every skill.
+    expect(
+      readFileSync(join(output, "skills/demo/SKILL.md"), "utf-8"),
+    ).toContain("(../_shared/core/policy.md)");
+    expect(existsSync(join(output, "skills/_shared/core/policy.md"))).toBe(
+      true,
+    );
+    expect(existsSync(join(output, "skills/demo/references"))).toBe(false);
     expect(report.skills.some((skill) => skill.skill === "demo")).toBe(true);
     expect(report.passCount + report.failCount).toBe(report.skills.length);
   });

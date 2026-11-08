@@ -333,7 +333,13 @@ function emitCodexPackage(
   rmSync(root, { recursive: true, force: true });
   mkdirSync(root, { recursive: true });
 
-  emitAgentSkills(repoRoot, join(root, "skills"));
+  // Hosts install this tree whole, so the shared references live once at
+  // `skills/_shared/` instead of being bundled into every skill. Only the
+  // root package keeps per-skill bundles: `skills use <repo>@<skill>` copies
+  // a single skill directory out of it.
+  emitAgentSkills(repoRoot, join(root, "skills"), {
+    sharedResources: "package",
+  });
   if (mcp) {
     writeFileSync(
       join(root, "mcp.json"),
@@ -371,7 +377,9 @@ export function emitAgentPlugin(
   mkdirSync(outDir, { recursive: true });
 
   // Keep the package-level tree for consumers that reference it directly.
-  // Each skill bundles shared resources for single-directory installs.
+  // Each skill also bundles the shared resources it references, because
+  // `skills use first-fluke/oh-my-agent@<skill>` copies one skill directory
+  // out of this package; the emitted whole-package trees share one copy.
   const sharedDir = join(repoRoot, SKILLS_DIR, "_shared");
   if (existsSync(sharedDir)) {
     copyEntry(sharedDir, join(outDir, "skills", "_shared"));

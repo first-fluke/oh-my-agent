@@ -124,7 +124,11 @@ export function emitAntigravityPlugin(
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
 
-  const skills = emitAgentSkills(repoRoot, join(outDir, "skills"));
+  // The host installs the package whole: shared references live once at
+  // `skills/_shared/` rather than being bundled into every skill.
+  const skills = emitAgentSkills(repoRoot, join(outDir, "skills"), {
+    sharedResources: "package",
+  });
 
   const agents = readAgents(repoRoot);
   if (agents.length > 0) mkdirSync(join(outDir, "agents"), { recursive: true });

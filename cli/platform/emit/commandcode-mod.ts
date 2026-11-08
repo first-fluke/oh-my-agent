@@ -44,7 +44,11 @@ export function emitCommandcodeMod(
   mkdirSync(join(outDir, "mods"), { recursive: true });
   // Replace the emitter-owned skill tree so removed source skills do not linger.
   rmSync(join(outDir, "skills"), { recursive: true, force: true });
-  const skills = emitAgentSkills(repoRoot, join(outDir, "skills"));
+  // The host installs the package whole: shared references live once at
+  // `skills/_shared/` rather than being bundled into every skill.
+  const skills = emitAgentSkills(repoRoot, join(outDir, "skills"), {
+    sharedResources: "package",
+  });
 
   const modPath = join(outDir, MOD_ENTRY);
   const bridgeSrc = join(repoRoot, COMMANDCODE_BRIDGE_SOURCE);

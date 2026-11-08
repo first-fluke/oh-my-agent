@@ -221,6 +221,46 @@ describe("emitAgentPlugin", () => {
     ).toBe(true);
   });
 
+  it("shares one _shared tree across the clean package while the root package bundles per skill", () => {
+    repoDir = mkdtempSync(path.join(tmpdir(), "oma-agent-plugin-source-"));
+    cpSync(FIXTURES_REPO, repoDir, { recursive: true });
+    writeFileSync(
+      path.join(repoDir, ".agents", "skills", "valid-skill", "SKILL.md"),
+      "---\nname: valid-skill\ndescription: Shared references fixture.\n---\n\n" +
+        "[Shared note](../_shared/core/shared-note.md#details)\n",
+    );
+    outDir = mkdtempSync(path.join(tmpdir(), "oma-emit-agent-plugin-"));
+    emitAgentPlugin(repoDir, outDir);
+
+    // Root package: `skills use <repo>@<skill>` copies one skill directory,
+    // so the reference is bundled inside the skill.
+    expect(
+      readFileSync(
+        path.join(outDir, "skills", "valid-skill", "SKILL.md"),
+        "utf-8",
+      ),
+    ).toContain("(references/_shared/core/shared-note.md#details)");
+    expect(
+      existsSync(
+        path.join(outDir, "skills", "valid-skill", "references", "_shared"),
+      ),
+    ).toBe(true);
+
+    // Clean package: hosts install the whole tree, so one copy at
+    // skills/_shared/ is enough and no skill carries its own bundle.
+    const clean = path.join(outDir, CODEX_PLUGIN_DIR, "skills");
+    expect(
+      readFileSync(path.join(clean, "valid-skill", "SKILL.md"), "utf-8"),
+    ).toContain("(../_shared/core/shared-note.md#details)");
+    expect(
+      existsSync(path.join(clean, "_shared", "core", "shared-note.md")),
+    ).toBe(true);
+    expect(
+      existsSync(path.join(clean, "valid-skill", "references", "_shared")),
+    ).toBe(false);
+    expect(existsSync(path.join(clean, "_shared", "SKILL.md"))).toBe(false);
+  });
+
   it("keeps shared entry, nested, and overflow references usable when only one skill is installed", () => {
     repoDir = mkdtempSync(path.join(tmpdir(), "oma-agent-plugin-source-"));
     cpSync(FIXTURES_REPO, repoDir, { recursive: true });

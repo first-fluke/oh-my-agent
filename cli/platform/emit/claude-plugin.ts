@@ -138,8 +138,11 @@ export function emitClaudePlugin(
     mkdirSync(join(root, ".claude-plugin"), { recursive: true });
     if (existsSync(join(repoRoot, "LICENSE")))
       cpSync(join(repoRoot, "LICENSE"), join(root, "LICENSE"));
+    // Installed as one plugin directory, like the directory entry: one
+    // `skills/_shared/` tree instead of a bundle inside every skill.
     const skills = emitAgentSkills(repoRoot, join(root, "skills"), {
       skills: preset.skills,
+      sharedResources: "package",
     });
     const agents: string[] = [];
     for (const name of preset.agents) {

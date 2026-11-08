@@ -1,11 +1,13 @@
 import { spawnSync } from "node:child_process";
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -234,6 +236,42 @@ describe("emitAntigravityPlugin", () => {
     );
     expect(manifest).not.toHaveProperty("logo");
     expect(schemaProblems(manifest)).toEqual([]);
+  });
+
+  it("emits shared references once at skills/_shared instead of per skill", () => {
+    const source = mkdtempSync(path.join(tmpdir(), "oma-emit-agy-source-"));
+    cpSync(FIXTURES_REPO, source, { recursive: true });
+    writeFileSync(
+      path.join(source, ".agents", "skills", "valid-skill", "SKILL.md"),
+      "---\nname: valid-skill\ndescription: Shared references fixture.\n---\n\n" +
+        "[Shared note](../_shared/core/shared-note.md)\n",
+    );
+    outDir = mkdtempSync(path.join(tmpdir(), "oma-emit-agy-shared-"));
+    try {
+      const report = emitAntigravityPlugin(source, outDir);
+      // agy scans skills/ for SKILL.md folders, so the shared directory
+      // is never reported as a skill (validated: 33 skills, no findings).
+      expect(report.skills.map((s) => s.skill)).not.toContain("_shared");
+      expect(
+        existsSync(path.join(outDir, "skills", "_shared", "SKILL.md")),
+      ).toBe(false);
+      expect(
+        readFileSync(
+          path.join(outDir, "skills", "valid-skill", "SKILL.md"),
+          "utf8",
+        ),
+      ).toContain("(../_shared/core/shared-note.md)");
+      expect(
+        existsSync(
+          path.join(outDir, "skills", "_shared", "core", "shared-note.md"),
+        ),
+      ).toBe(true);
+      expect(
+        existsSync(path.join(outDir, "skills", "valid-skill", "references")),
+      ).toBe(false);
+    } finally {
+      rmSync(source, { recursive: true, force: true });
+    }
   });
 
   it("replaces a stale tree instead of merging into it", () => {

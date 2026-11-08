@@ -30,7 +30,11 @@ export function emitPiPackage(
   mkdirSync(outDir, { recursive: true });
   // Replace the emitter-owned skill tree so removed source skills do not linger.
   rmSync(join(outDir, "skills"), { recursive: true, force: true });
-  const skills = emitAgentSkills(repoRoot, join(outDir, "skills"));
+  // The host installs the package whole: shared references live once at
+  // `skills/_shared/` rather than being bundled into every skill.
+  const skills = emitAgentSkills(repoRoot, join(outDir, "skills"), {
+    sharedResources: "package",
+  });
   const manifestPath = join(outDir, "package.json");
   writeFileSync(
     manifestPath,

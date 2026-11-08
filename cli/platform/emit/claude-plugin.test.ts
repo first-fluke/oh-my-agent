@@ -77,9 +77,21 @@ describe("emitClaudePlugin", () => {
     emitClaudePlugin(root, outDir);
     for (const [domain, preset] of Object.entries(DOMAIN_PRESETS)) {
       const domainRoot = path.join(outDir, "domains", domain);
-      expect(readdirSync(path.join(domainRoot, "skills")).sort()).toEqual(
-        [...preset.skills].sort(),
-      );
+      // The shared references are emitted once per domain package.
+      expect(
+        readdirSync(path.join(domainRoot, "skills"))
+          .filter((name) => name !== "_shared")
+          .sort(),
+      ).toEqual([...preset.skills].sort());
+      expect(
+        existsSync(path.join(domainRoot, "skills", "_shared", "core")),
+      ).toBe(true);
+      for (const skill of preset.skills)
+        expect(
+          existsSync(
+            path.join(domainRoot, "skills", skill, "references", "_shared"),
+          ),
+        ).toBe(false);
       expect(PRESETS[domain]).toEqual([...preset.skills]);
       const manifest = JSON.parse(
         readFileSync(

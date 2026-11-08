@@ -37,11 +37,16 @@ describe("emitPiPackage", () => {
     });
     writeFileSync(
       join(source, ".agents/skills/demo/SKILL.md"),
-      "---\nname: demo\ndescription: Demo skill\n---\nRead [guide](resources/guide.md).\n",
+      "---\nname: demo\ndescription: Demo skill\n---\nRead [guide](resources/guide.md) and [policy](../_shared/core/policy.md).\n",
     );
     writeFileSync(
       join(source, ".agents/skills/demo/resources/guide.md"),
       "# Guide\n",
+    );
+    mkdirSync(join(source, ".agents/skills/_shared/core"), { recursive: true });
+    writeFileSync(
+      join(source, ".agents/skills/_shared/core/policy.md"),
+      "# Policy\n",
     );
     const report = emitPiPackage(source, output);
     const manifest = JSON.parse(readFileSync(report.manifestPath, "utf-8"));
@@ -61,6 +66,15 @@ describe("emitPiPackage", () => {
     expect(
       readFileSync(join(output, "skills/demo/resources/guide.md"), "utf-8"),
     ).toBe("# Guide\n");
+    // pi loads the package whole (`pi.skills: ["./skills"]`): shared
+    // references are emitted once at skills/_shared/, not per skill.
+    expect(
+      readFileSync(join(output, "skills/demo/SKILL.md"), "utf-8"),
+    ).toContain("(../_shared/core/policy.md)");
+    expect(existsSync(join(output, "skills/_shared/core/policy.md"))).toBe(
+      true,
+    );
+    expect(existsSync(join(output, "skills/demo/references"))).toBe(false);
     expect(report.passCount + report.failCount).toBe(report.skills.length);
   });
 

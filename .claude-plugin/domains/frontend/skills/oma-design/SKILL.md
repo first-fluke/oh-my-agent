@@ -121,7 +121,7 @@ background processes, and paid services are separate effects, not skill loading.
 - `resources/product-interface-review.md`: recommended post-implementation product-interface review and frontend handoff.
 - `resources/external-design-skills.md`: supplier selection and complete-bundle loading.
 - `../oma-frontend/resources/specialized-visual-implementation.md`: chosen GPU, video-scroll, or GSAP implementation capability.
-- `references/_shared/ui-interaction-quality.md`: motion intent, feedback, and interaction-quality decisions.
+- `../_shared/ui-interaction-quality.md`: motion intent, feedback, and interaction-quality decisions.
 - `resources/execution-protocol.md`: operation scope, artifacts, and handoff.
 - `resources/redesign-protocol.md`: preserving an existing product.
 - `resources/design-md-spec.md`: creating or materially revising DESIGN.md.
@@ -132,4 +132,4 @@ background processes, and paid services are separate effects, not skill loading.
 - `resources/getdesign-fetcher.md`: explicitly relevant vendor inspiration.
 - `resources/stitch-integration.md`: requested Stitch operation.
 - `resources/error-playbook.md`: an observed supplier or design-tool failure.
-- `references/_shared/core/execution-policy.md`: authorization, budgets, builds, and completion.
+- `../_shared/core/execution-policy.md`: authorization, budgets, builds, and completion.
