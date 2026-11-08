@@ -173,7 +173,7 @@ In this source repository, run the local CLI as `bun cli/cli.ts emit --target <t
 
 ### Antigravity CLI (`agy`)
 
-The package follows [antigravity.google/docs/build-plugins](https://antigravity.google/docs/build-plugins): `plugin.json` validated against `https://antigravity.google/schemas/v1/plugin.json`, `skills/<name>/SKILL.md`, `agents/<name>.md`, `rules/AGENTS.md` plus one `rules/<rule>.md` per OMA rule (`trigger: always_on | glob | model_decision`, comma-separated `globs`), `mcp_config.json`, `assets/logo.png`, and a README. A self-contained tree is emitted because `agy plugin validate --strict` rejects the repository root (the root `AGENTS.md` and Claude `hooks/hooks.json` are reported as never loaded).
+The package follows [antigravity.google/docs/build-plugins](https://antigravity.google/docs/build-plugins): `plugin.json` validated against `https://antigravity.google/schemas/v1/plugin.json`, `skills/<name>/SKILL.md`, `agents/<name>.md`, `rules/AGENTS.md` plus one `rules/<rule>.md` per OMA rule (`trigger: always_on | glob | model_decision`, comma-separated `globs`), `mcp_config.json`, `assets/logo.png`, and a README. A self-contained tree is emitted because `agy plugin validate --strict` rejects the repository root (the root `AGENTS.md` and Claude `hooks/hooks.json` are reported as never loaded). Install the `antigravity-plugin/` directory, not the repository URL or root: pointed at the root, agy loads the Agent Plugins `plugin.json` there instead — 33 skills, no agents or rules, and `mcp.json` only while its `enable-agent-plugins-spec` flag is on (`agy plugin validate --json .`, agy 1.5.3).
 
 ```bash
 git clone https://github.com/first-fluke/oh-my-agent
