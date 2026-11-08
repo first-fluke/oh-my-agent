@@ -67,22 +67,7 @@
         },
         {
           "type": "json",
-          "path": "codex-plugin/plugin.json",
-          "jsonpath": "$.version"
-        },
-        {
-          "type": "json",
-          "path": "pi-package/package.json",
-          "jsonpath": "$.version"
-        },
-        {
-          "type": "json",
           "path": "opencode-package/package.json",
-          "jsonpath": "$.version"
-        },
-        {
-          "type": "json",
-          "path": "commandcode-mod/package.json",
           "jsonpath": "$.version"
         },
         {
@@ -98,11 +83,6 @@
         {
           "type": "json",
           "path": ".claude-plugin/directory/.claude-plugin/plugin.json",
-          "jsonpath": "$.version"
-        },
-        {
-          "type": "json",
-          "path": "antigravity-plugin/plugin.json",
           "jsonpath": "$.version"
         },
         {

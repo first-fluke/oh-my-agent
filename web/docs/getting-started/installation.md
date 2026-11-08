@@ -181,7 +181,8 @@ the runtime installer. Shared runtime setup and existing installed skills follow
 the installer behavior described above. The `oma` entry retains the full plugin.
 The same domain roots are declared in the generated Codex marketplace catalog
 and in the Grok Build and ZCode catalogs. Antigravity CLI (`agy plugin install
-./antigravity-plugin`), Grok Build CLI, ZCode, and Kimi Code (`/plugins install`)
+./antigravity-plugin` on the emitted tree or the `oma-antigravity-plugin.tar.gz`
+release asset), Grok Build CLI, ZCode, and Kimi Code (`/plugins install`)
 each read their own generated manifest; see
 [Claude-compatible plugin hosts](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)
 for the exact steps per host.

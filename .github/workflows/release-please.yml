@@ -224,10 +224,27 @@ jobs:
           VERSION=$(jq -r '.["."]' .release-please-manifest.json)
           bunx tsx cli/generate-manifest.ts "$VERSION"
 
-      - name: Create tarball
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # The plugin packages hosts install from a local path are generated
+      # here, not committed: codex-plugin/ (the clean copy of the root Agent
+      # Plugins package for Copilot, Kiro and Qwen local installs) and the
+      # self-contained Antigravity tree. Both ship as release assets.
+      - name: Emit plugin packages
+        run: |
+          bun cli/cli.ts emit --target all --output-dir "$RUNNER_TEMP/oma-emit" --json > "$RUNNER_TEMP/oma-emit-report.json"
+          test -f "$RUNNER_TEMP/oma-emit/codex-plugin/plugin.json"
+          test -f "$RUNNER_TEMP/oma-emit/antigravity-plugin/plugin.json"
+
+      - name: Create tarballs
         run: |
           tar -czvf agent-skills.tar.gz .agents/
-          sha256sum agent-skills.tar.gz > agent-skills.tar.gz.sha256
+          tar -C "$RUNNER_TEMP/oma-emit" -czf oma-agent-plugin.tar.gz codex-plugin
+          tar -C "$RUNNER_TEMP/oma-emit" -czf oma-antigravity-plugin.tar.gz antigravity-plugin
+          for archive in agent-skills.tar.gz oma-agent-plugin.tar.gz oma-antigravity-plugin.tar.gz; do
+            sha256sum "$archive" > "$archive.sha256"
+          done
 
       - name: Upload release artifacts
         env:
@@ -239,6 +256,10 @@ jobs:
             prompt-manifest.json
             agent-skills.tar.gz
             agent-skills.tar.gz.sha256
+            oma-agent-plugin.tar.gz
+            oma-agent-plugin.tar.gz.sha256
+            oma-antigravity-plugin.tar.gz
+            oma-antigravity-plugin.tar.gz.sha256
 
   publish-npm:
     needs: [release-please, gate-tests]
@@ -319,4 +340,38 @@ jobs:
       - name: Verify public npm artifact availability and integrity
         timeout-minutes: 11
         run: bun cli/scripts/verify-npm-publication.ts cli/package.json
+
+      # The Pi skill package (oh-my-agent-pi), the OpenCode/Kilo plugin
+      # (oh-my-agent-opencode) and the Command Code mod (oh-my-agent-commandcode)
+      # are emitted from the .agents/ SSOT at the release tag and published
+      # under their own names; pi-package/ and commandcode-mod/ are not
+      # committed at all. NPM_TOKEN must be allowed to publish these three
+      # package names as well as oh-my-agent. The same duplicate-run guard as
+      # above skips a version that is already on the registry.
+      - name: Emit plugin packages
+        run: |
+          bun cli/cli.ts emit --target all --output-dir "$RUNNER_TEMP/oma-emit" --json > "$RUNNER_TEMP/oma-emit-report.json"
+
+      - name: Publish emitted plugin packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          for dir in pi-package opencode-package commandcode-mod; do
+            pkg="$RUNNER_TEMP/oma-emit/$dir"
+            name=$(jq -r '.name' "$pkg/package.json")
+            version=$(jq -r '.version' "$pkg/package.json")
+            if curl -fsS "https://registry.npmjs.org/${name}/${version}" >/dev/null 2>&1; then
+              echo "${name}@${version} is already published; skipping publish"
+              continue
+            fi
+            (cd "$pkg" && bun publish --access public)
+          done
+
+      - name: Verify emitted plugin packages on the public registry
+        timeout-minutes: 11
+        run: |
+          for dir in pi-package opencode-package commandcode-mod; do
+            bun cli/scripts/verify-npm-publication.ts "$RUNNER_TEMP/oma-emit/$dir/package.json"
+          done
 

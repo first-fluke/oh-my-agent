@@ -284,7 +284,12 @@ export function buildPluginManifest(
   return manifest;
 }
 
-/** Codex installs this dedicated tree instead of copying the repository root. */
+/**
+ * Clean copy of the root package for local-path installs (Copilot, Kiro,
+ * Qwen, ...): the repository root also carries the source tree and
+ * `node_modules`, which a local-path install would copy. Emitted and
+ * gitignored; the release workflow attaches it as `oma-agent-plugin.tar.gz`.
+ */
 export const CODEX_PLUGIN_DIR = "codex-plugin";
 
 /**

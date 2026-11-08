@@ -1,6 +1,6 @@
-// Installs this checkout as an Agent Plugins 1.0 package into a real host
-// whose home is pointed at a scratch directory, then checks what the host
-// recorded. Hosts: GitHub Copilot CLI (`copilot plugin install <path>`) and
+// Installs the Agent Plugins 1.0 package emitted from this checkout (the
+// clean `codex-plugin/` copy of the root package) into a real host whose home
+// is pointed at a scratch directory, then checks what the host recorded. Hosts: GitHub Copilot CLI (`copilot plugin install <path>`) and
 // Qwen Code (`qwen extensions install <path>`). Both are npm-installable and
 // register a local package without signing in. Kiro CLI and Hermes Agent also
 // accept the same package but are not covered here: kiro-cli is a platform
@@ -28,7 +28,7 @@ export type AgentPluginHost = keyof typeof AGENT_PLUGIN_HOST_VERSIONS;
 
 export interface SmokeOptions {
   host: AgentPluginHost;
-  /** Package directory to install: the checkout root. */
+  /** Package directory to install: the emitted `codex-plugin/` tree. */
   pkg: string;
   /** Scratch directory the host must use as its home. */
   home: string;
@@ -119,7 +119,7 @@ export function runAgentPluginHostSmoke(options: SmokeOptions): Receipt {
   if (host === "qwen")
     assert(
       !existsSync(join(pkg, ".claude-plugin", "marketplace.json")),
-      `${pkg} carries .claude-plugin/marketplace.json; point the qwen smoke at codex-plugin/`,
+      `${pkg} carries .claude-plugin/marketplace.json; point the qwen smoke at the emitted codex-plugin/ tree`,
     );
   assert.equal(
     manifest.$schema,

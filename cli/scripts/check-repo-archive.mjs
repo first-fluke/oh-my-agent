@@ -15,10 +15,10 @@ export const MAX_ENTRIES = 9000;
  * Count the files and folders in a (uncompressed) tar archive.
  *
  * Measured on the tar itself rather than `git ls-tree`, because that is what
- * GitHub serves and the plugin directory counts: `git archive` honors the
- * `export-ignore` attributes in .gitattributes, which keep the emitted plugin
- * packages that hosts only ever clone or copy from a local path
- * (pi-package/, antigravity-plugin/, commandcode-mod/) out of the archive.
+ * GitHub serves and the plugin directory counts, and `git archive` honors any
+ * `export-ignore` attributes in .gitattributes. (The emitted plugin packages
+ * that hosts install from a local path are gitignored, so they never reach
+ * the archive in the first place.)
  * Metadata records (pax `x`/`g`, GNU long-name `L`/`K`) describe the entry
  * that follows and are not entries themselves.
  */

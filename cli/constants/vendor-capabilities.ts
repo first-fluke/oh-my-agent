@@ -42,8 +42,9 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     skills: skills("antigravity"),
     agents: { dir: null },
     hooks: settings("antigravity"),
-    // Install: `agy plugin install ./antigravity-plugin` from a clone
-    // (self-contained tree; `agy plugin validate --strict` passes).
+    // Install: `agy plugin install ./antigravity-plugin` on the emitted
+    // tree (`oma emit --target antigravity-plugin`, or the release asset
+    // oma-antigravity-plugin.tar.gz); self-contained, not committed.
     plugins: { manifest: "antigravity-plugin/plugin.json" },
   },
   claude: {
@@ -56,14 +57,17 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     skills: skills("codex"),
     agents: { dir: ".codex/agents" },
     hooks: settings("codex"),
-    plugins: { manifest: "codex-plugin/plugin.json" },
+    // The Codex marketplace's `oma` entry resolves the repository root, the
+    // same Agent Plugins 1.0 package Copilot, Kiro, Qwen and Hermes install.
+    plugins: { manifest: "plugin.json" },
   },
   commandcode: {
     skills: skills("commandcode"),
     agents: { dir: ".commandcode/agents" },
     hooks: settings("commandcode"),
-    // Mod package (`oma emit --target commandcode-mod`): install with
-    // `cmd mods add oh-my-agent-commandcode` or `cmd mods add ./commandcode-mod`.
+    // Mod package (`oma emit --target commandcode-mod`, published to npm at
+    // release): `cmd mods add oh-my-agent-commandcode`, or
+    // `cmd mods add ./commandcode-mod` on the emitted tree.
     plugins: { manifest: "commandcode-mod/package.json" },
   },
   copilot: {
@@ -72,8 +76,9 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     hooks: settings("copilot"),
     // Agent Plugins 1.0 root package; Copilot reads its agents, commands,
     // rules and hooks from `com.github.copilot/`. Install with
-    // `copilot plugin install first-fluke/oh-my-agent:codex-plugin`
-    // (the clean tree) or `copilot plugin install <local path>`.
+    // `copilot plugin install first-fluke/oh-my-agent` (a clone of the root
+    // package) or `copilot plugin install <path>` on the emitted
+    // `codex-plugin/` clean copy.
     plugins: { manifest: "plugin.json" },
   },
   cursor: {

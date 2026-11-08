@@ -335,10 +335,16 @@ MIT
   );
 }
 
-/** Codex marketplace metadata; source paths resolve from the repository root. */
+/**
+ * Codex marketplace metadata; source paths resolve from the repository root.
+ * The full `oma` entry is the repository root itself (an Agent Plugins 1.0
+ * package, like the Claude marketplace's `./` entry): marketplace installs
+ * clone the repository without dependencies, so no clean copy needs to be
+ * committed for them. `codex-plugin/` is only emitted for local-path installs.
+ */
 export function emitCodexMarketplace(repoRoot: string, outDir: string): string {
   const plugins = [
-    { name: "oma", path: "./codex-plugin" },
+    { name: "oma", path: "./" },
     ...Object.keys(DOMAIN_PRESETS).map((domain) => ({
       name: `oma-${domain}`,
       path: `./.claude-plugin/domains/${domain}`,

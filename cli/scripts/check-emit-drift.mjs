@@ -9,14 +9,16 @@
 // `com.github.copilot/`) — conformant clients (Copilot CLI, Kiro, Qwen Code,
 // Hermes, Codex) discover those files at the package root, so a git
 // clone of this repo is the installable package. The same applies to the
-// Claude-compatible native-manifest hosts: `antigravity-plugin/` (installed
-// as a directory) and the `.grok-plugin/`, `.zcode-plugin/`, `.kimi-plugin/`
-// manifests the Grok, ZCode, and Kimi hosts read at the repo root. The
-// agent-skills/agents-md trees that `oma emit` also writes under `generated/`
-// are NOT committed
-// here — the portable skills are already included in the root package.
-// `oma emit --target agent-skills` also emits standalone skills for users'
-// own projects. See
+// `.grok-plugin/`, `.zcode-plugin/`, `.kimi-plugin/` manifests the Grok,
+// ZCode, and Kimi hosts read at the repo root, and to the committed
+// `opencode-package/` npm plugin. The packages hosts only install from a
+// local path (`codex-plugin/`, `pi-package/`, `antigravity-plugin/`,
+// `commandcode-mod/`) are gitignored: the release workflow emits them and
+// publishes them to npm or as release assets, and their emitters are covered
+// by unit tests. The agent-skills/agents-md trees that `oma emit` also
+// writes under `generated/` are NOT committed here — the portable skills are
+// already included in the root package. `oma emit --target agent-skills`
+// also emits standalone skills for users' own projects. See
 // cli/commands/emit/command.ts and cli/platform/emit/*.ts.
 
 import { execFileSync } from "node:child_process";
@@ -46,22 +48,16 @@ const AGENT_PLUGIN_TREE_RELS = [
   "com.firstfluke.oma",
   "com.github.copilot",
 ];
-// Clean Codex package; plugin.json tracks package.json's version.
-const CODEX_PLUGIN_TREE_REL = "codex-plugin";
-const PI_PACKAGE_TREE_REL = "pi-package";
-// Claude-compatible native-manifest hosts: Antigravity installs the
-// self-contained tree, Grok/ZCode/Kimi read a dot-directory manifest at the
-// repo root (emit --target antigravity-plugin | grok-plugin | zcode-plugin |
-// kimi-plugin). Manifests track package.json's version.
-const ANTIGRAVITY_PLUGIN_TREE_REL = "antigravity-plugin";
+// Claude-compatible native-manifest hosts: Grok/ZCode/Kimi read a
+// dot-directory manifest at the repo root (emit --target grok-plugin |
+// zcode-plugin | kimi-plugin). Manifests track package.json's version.
 const NATIVE_MANIFEST_TREE_RELS = [
   ".grok-plugin",
   ".zcode-plugin",
   ".kimi-plugin",
 ];
-// JavaScript extension-host packages; package.json tracks the release version.
+// OpenCode/Kilo npm plugin; package.json tracks the release version.
 const OPENCODE_PACKAGE_TREE_REL = "opencode-package";
-const COMMANDCODE_MOD_TREE_REL = "commandcode-mod";
 
 // The marketplace manifest's `version` tracks package.json, which
 // release-please bumps on every release — that bump alone must not count as
@@ -209,16 +205,12 @@ function diffAgentPlugin(scratchDir) {
   for (const rel of AGENT_PLUGIN_TREE_RELS) {
     problems.push(...diffTree(scratchDir, rel));
   }
-  problems.push(...diffTree(scratchDir, CODEX_PLUGIN_TREE_REL, true));
-  problems.push(...diffTree(scratchDir, PI_PACKAGE_TREE_REL, true));
   problems.push(...diffTree(scratchDir, OPENCODE_PACKAGE_TREE_REL, true));
-  problems.push(...diffTree(scratchDir, COMMANDCODE_MOD_TREE_REL, true));
   return problems;
 }
 
 function diffNativeManifestPlugins(scratchDir) {
   const problems = [];
-  problems.push(...diffTree(scratchDir, ANTIGRAVITY_PLUGIN_TREE_REL, true));
   for (const rel of NATIVE_MANIFEST_TREE_RELS) {
     // marketplace.json entries also carry the release version (ZCode compares
     // it against the installed plugin.json), so normalize both files.
@@ -291,8 +283,7 @@ try {
       "emit drift: none — .claude-plugin/marketplace.json, " +
         "cli/AGENTS.md, the root Agent Plugins package " +
         "(plugin.json, skills/, mcp.json, com.firstfluke.oma/, " +
-        "com.github.copilot/), codex-plugin/, pi-package/, " +
-        "antigravity-plugin/, opencode-package/, commandcode-mod/, and " +
+        "com.github.copilot/), opencode-package/, and " +
         "the .grok-plugin/, .zcode-plugin/, .kimi-plugin/ manifests match " +
         "a fresh `oma emit`",
     );
@@ -308,9 +299,9 @@ try {
   for (const issue of nativeManifestIssues) console.error(`  ${issue}`);
   console.error(
     "Run `oma emit --target all` at the repo root and commit the changes to " +
-      ".claude-plugin/, cli/, antigravity-plugin/, .grok-plugin/, " +
+      ".claude-plugin/, cli/, opencode-package/, .grok-plugin/, " +
       ".zcode-plugin/, .kimi-plugin/, and the root package artifacts " +
-      "(generated/ is gitignored).",
+      "(generated/ and the local-path plugin trees are gitignored).",
   );
   process.exit(1);
 } finally {

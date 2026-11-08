@@ -136,7 +136,7 @@ describe("emitClaudePlugin", () => {
     const manifest = JSON.parse(readFileSync(file, "utf8"));
     expect(manifest.name).toBe("oh-my-agent");
     expect(manifest.plugins[0]).toMatchObject({
-      source: { source: "local", path: "./codex-plugin" },
+      source: { source: "local", path: "./" },
     });
     expect(
       manifest.plugins.map((plugin: { name: string }) => plugin.name),

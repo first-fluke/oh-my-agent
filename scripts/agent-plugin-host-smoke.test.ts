@@ -10,7 +10,8 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it } from "vitest";
+import { emitAgentPlugin } from "../cli/platform/emit/agent-plugin.js";
 import {
   AGENT_PLUGIN_HOST_VERSIONS,
   type AgentPluginHost,
@@ -26,6 +27,20 @@ afterEach(() => {
     rmSync(root, { recursive: true, force: true });
 });
 
+// The clean package is emitted, not committed; build it once per run from
+// this checkout's SSOT, exactly as the CI job does before the real install.
+let emittedBase: string | undefined;
+function emittedPackage(): string {
+  if (!emittedBase) {
+    emittedBase = mkdtempSync(join(tmpdir(), "oma-agent-plugin-emit-"));
+    emitAgentPlugin(repository, emittedBase);
+  }
+  return join(emittedBase, "codex-plugin");
+}
+afterAll(() => {
+  if (emittedBase) rmSync(emittedBase, { recursive: true, force: true });
+});
+
 type Call = { command: string; args: string[] };
 
 /** A fake host that copies the package the way the real CLIs do. */
@@ -36,7 +51,7 @@ function fixture(
   const root = mkdtempSync(join(tmpdir(), "oma-agent-plugin-smoke-"));
   roots.push(root);
   const pkg = join(root, "package");
-  cpSync(join(repository, "codex-plugin"), pkg, { recursive: true });
+  cpSync(emittedPackage(), pkg, { recursive: true });
   const home = join(root, "home");
   const output = join(root, "out");
   const manifest = JSON.parse(readFileSync(join(pkg, "plugin.json"), "utf8"));
@@ -106,7 +121,7 @@ function fixture(
 
 describe("expectedPackageFiles", () => {
   it("lists the manifest, mcp.json, and every skill manifest", () => {
-    const files = expectedPackageFiles(join(repository, "codex-plugin"));
+    const files = expectedPackageFiles(emittedPackage());
     expect(files).toContain("plugin.json");
     expect(files).toContain("mcp.json");
     expect(
@@ -181,7 +196,7 @@ describe("assertInstalledCopy", () => {
   it("accepts an exact copy and rejects a missing skill", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-agent-plugin-copy-"));
     roots.push(root);
-    const pkg = join(repository, "codex-plugin");
+    const pkg = emittedPackage();
     const copy = join(root, "copy");
     cpSync(pkg, copy, { recursive: true });
     expect(() => assertInstalledCopy(pkg, copy)).not.toThrow();

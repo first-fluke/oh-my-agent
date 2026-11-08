@@ -237,7 +237,8 @@ This plugin bundles ${skillCount} skills, ${agentCount} specialist agents, and $
 ## Install
 
 \`\`\`bash
-# From a clone of the repository
+# Unpack oma-antigravity-plugin.tar.gz from a GitHub release, or run
+# \`oma emit --target antigravity-plugin\` in a clone of the repository.
 agy plugin validate --strict ./antigravity-plugin
 agy plugin install ./antigravity-plugin
 \`\`\`

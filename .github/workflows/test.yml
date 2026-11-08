@@ -250,14 +250,14 @@ jobs:
           retention-days: 7
 
   # The checkout root is also an Agent Plugins 1.0 package (root plugin.json,
-  # skills/, mcp.json, com.github.copilot/). This lighter job installs it from
-  # a local path into the two hosts that are npm-installable and need no
-  # sign-in for that step: GitHub Copilot CLI and Qwen Code. Kiro CLI (platform
-  # installer download, login-gated beyond `powers install`) and Hermes Agent
-  # (Python, no npm package) accept the same package and are covered by the
-  # local validation recorded in web/docs/guide/vendor-capabilities.md.
-  # Runs before `bun install`: the host copies the whole directory, and the
-  # smoke script only needs Node built-ins.
+  # skills/, mcp.json, com.github.copilot/). This lighter job emits the clean
+  # copy of that package (`oma emit` writes it to codex-plugin/; it is
+  # generated, not committed) and installs it from a local path into the two
+  # hosts that are npm-installable and need no sign-in for that step: GitHub
+  # Copilot CLI and Qwen Code. Kiro CLI (platform installer download,
+  # login-gated beyond `powers install`) and Hermes Agent (Python, no npm
+  # package) accept the same package and are covered by the local validation
+  # recorded in web/docs/guide/vendor-capabilities.md.
   agent-plugin-hosts:
     name: ${{ matrix.host }} Agent Plugins package installation
     runs-on: ubuntu-latest
@@ -277,21 +277,28 @@ jobs:
         with:
           persist-credentials: false
       - uses: jdx/mise-action@v5
+      - name: Install repository dependencies without building
+        run: bun install --frozen-lockfile
+      # codex-plugin/ is the clean copy of the root package (the documented
+      # local-path install) and is emitted, not committed. The repository
+      # root also carries .claude-plugin/marketplace.json, which Qwen prefers
+      # over the Agent Plugins manifest and turns into an interactive plugin
+      # picker, so the smoke never installs the root itself.
+      - name: Emit the clean Agent Plugins package
+        run: |
+          bun cli/cli.ts emit --target agent-plugin --output-dir "$RUNNER_TEMP/oma-emit" --json > "$RUNNER_TEMP/oma-emit-report.json"
+          test -f "$RUNNER_TEMP/oma-emit/codex-plugin/plugin.json"
       - name: Install the pinned host in runner temporary storage
         env:
           OMA_SMOKE_HOST_PACKAGE: ${{ matrix.package }}
         run: |
           npm install --global --prefix "$RUNNER_TEMP/oma-agent-plugin-host-tools" --no-audit --no-fund "$OMA_SMOKE_HOST_PACKAGE"
           echo "$RUNNER_TEMP/oma-agent-plugin-host-tools/bin" >> "$GITHUB_PATH"
-      # codex-plugin/ is the clean copy of the root package (the documented
-      # local-path install). The repository root also carries
-      # .claude-plugin/marketplace.json, which Qwen prefers over the Agent
-      # Plugins manifest and turns into an interactive plugin picker.
-      - name: Install the checkout's codex-plugin/ package under a scratch HOME
+      - name: Install the emitted codex-plugin/ package under a scratch HOME
         env:
           OMA_SMOKE_HOME: ${{ runner.temp }}/oma-agent-plugin-smoke
         run: |
-          bun scripts/agent-plugin-host-smoke.ts '${{ matrix.host }}' "$GITHUB_WORKSPACE/codex-plugin"
+          bun scripts/agent-plugin-host-smoke.ts '${{ matrix.host }}' "$RUNNER_TEMP/oma-emit/codex-plugin"
       - name: Preserve Agent Plugins smoke receipts
         if: always()
         uses: actions/upload-artifact@v7.0.2

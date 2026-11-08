@@ -60,14 +60,12 @@ describe("vendor capabilities", () => {
   });
 
   it("records the root Agent Plugins package for every host that installs it", () => {
-    for (const vendor of ["copilot", "kiro", "qwen", "hermes"]) {
+    // Codex: its marketplace's `oma` entry resolves the repository root.
+    for (const vendor of ["copilot", "kiro", "qwen", "hermes", "codex"]) {
       expect(getVendorCapabilities(vendor)?.plugins.manifest).toBe(
         "plugin.json",
       );
     }
-    expect(getVendorCapabilities("codex")?.plugins.manifest).toBe(
-      "codex-plugin/plugin.json",
-    );
     expect(getVendorCapabilities("claude")?.plugins.manifest).toBe(
       ".claude-plugin/plugin.json",
     );

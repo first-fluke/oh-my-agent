@@ -11,10 +11,10 @@ export function pluginVersionTargets() {
     { path: ".agents/skills/_version.json", jsonpath: "$.version" },
     { path: ".claude-plugin/plugin.json", jsonpath: "$.version" },
     { path: "plugin.json", jsonpath: "$.version" },
-    { path: "codex-plugin/plugin.json", jsonpath: "$.version" },
-    { path: "pi-package/package.json", jsonpath: "$.version" },
+    // codex-plugin/, pi-package/, commandcode-mod/ and antigravity-plugin/
+    // are emitted at release time, not committed, so only the tracked
+    // opencode-package/ manifest is version-checked here.
     { path: "opencode-package/package.json", jsonpath: "$.version" },
-    { path: "commandcode-mod/package.json", jsonpath: "$.version" },
     { path: ".cursor-plugin/plugin.json", jsonpath: "$.version" },
     { path: ".claude-plugin/marketplace.json", jsonpath: "$.metadata.version" },
     {
@@ -22,8 +22,7 @@ export function pluginVersionTargets() {
       jsonpath: "$.version",
     },
     // Claude-compatible native-manifest hosts (emit --target
-    // antigravity-plugin | grok-plugin | zcode-plugin | kimi-plugin).
-    { path: "antigravity-plugin/plugin.json", jsonpath: "$.version" },
+    // grok-plugin | zcode-plugin | kimi-plugin).
     { path: ".grok-plugin/plugin.json", jsonpath: "$.version" },
     { path: ".zcode-plugin/plugin.json", jsonpath: "$.version" },
     { path: ".kimi-plugin/plugin.json", jsonpath: "$.version" },
