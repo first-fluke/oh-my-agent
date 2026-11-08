@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.38.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.3...cli-v20.38.4) (2026-11-08)
+
+
+### Bug Fixes
+
+* **antigravity:** write unquoted hook and HUD commands on Windows ([29a9e60](https://github.com/first-fluke/oh-my-agent/commit/29a9e6022ee3dff3a2b3fca15e963d13de8ab65f))
+
 ## [20.38.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.2...cli-v20.38.3) (2026-11-08)
 
 
