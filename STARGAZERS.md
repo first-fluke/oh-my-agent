@@ -12,7 +12,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1373)
+## Current (1374)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -965,6 +965,7 @@ summaries to spot which persona is churning.
 - @orangec-at — 2026-02-03
 - @ordinalmiko — 2026-09-24
 - @orientpine — 2026-02-10
+- @Oscar-O — 2026-11-08
 - @oudommeas — 2026-04-03
 - @ourfirstfluke — 2026-02-05
 - @ownicc — 2026-09-25
