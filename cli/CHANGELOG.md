@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.38.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.37.1...cli-v20.38.0) (2026-11-08)
+
+
+### Features
+
+* **emit:** package oma as a plugin for every supported host ([a513d1e](https://github.com/first-fluke/oh-my-agent/commit/a513d1e73fc64878e5f30cc90da1989573526831))
+
 ## [20.37.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.37.0...cli-v20.37.1) (2026-11-07)
 
 
