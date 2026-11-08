@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.18.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.18.1...web-v11.18.2) (2026-11-08)
+
+
+### Refactoring
+
+* **emit:** share one _shared tree in whole-package plugin trees ([44c9c39](https://github.com/first-fluke/oh-my-agent/commit/44c9c39d38adc0036ec9a2693846b43dbd833ba5))
+
 ## [11.18.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.18.0...web-v11.18.1) (2026-11-08)
 
 
