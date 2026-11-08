@@ -9,6 +9,15 @@
 # PowerShell scripts use CRLF natively; preserve as-is.
 *.ps1 text eol=crlf
 
+# Keep the emitted plugin packages that hosts only ever git-clone or install
+# from a local path out of the GitHub archive. Anthropic's plugin directory
+# validates that archive (50 MiB / 10,000 entries); cli/scripts/
+# check-repo-archive.mjs gates the same tar. Clones and local paths are
+# unaffected. codex-plugin/ stays: Codex marketplace installs resolve it.
+pi-package/ export-ignore
+antigravity-plugin/ export-ignore
+commandcode-mod/ export-ignore
+
 # Mark common binaries so they aren't touched.
 *.png binary
 *.jpg binary
