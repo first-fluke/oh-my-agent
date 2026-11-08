@@ -6,7 +6,12 @@ import {
   _resetInstallContext,
   setInstallContext,
 } from "../../platform/install-context.js";
-import { installAntigravityHud } from "./hud.js";
+import {
+  agyScriptCommand,
+  HUD_GLOBAL_LAUNCHER,
+  hudLauncherSource,
+  installAntigravityHud,
+} from "./hud.js";
 
 const FAKE_HOME = "/tmp/fake-home";
 const AGY_DIR = join(FAKE_HOME, ".gemini/antigravity-cli");
@@ -23,6 +28,9 @@ const VARIANT = join(
 );
 // Mocks normalize incoming paths to '/' so substring checks work on Windows.
 const toPosix = (p: string) => p.replace(/\\/g, "/");
+// The command agy gets for a HOME hook script on the platform running the
+// tests: quoted on POSIX, bare on Windows (agy's runner keeps quotes there).
+const cmd = (script: string) => agyScriptCommand(join(HOME_HOOKS_DIR, script));
 
 const variantJson = JSON.stringify({
   events: {
@@ -149,25 +157,25 @@ describe("installAntigravityHud", () => {
     // lifecycle (PreInvocation): handler array directly, no matcher
     expect(doc["oma-keyword-detector"].PreInvocation[0]).toMatchObject({
       type: "command",
-      command: `bun "${join(HOME_HOOKS_DIR, "keyword-detector.ts")}"`,
+      command: cmd("keyword-detector.ts"),
       timeout: 5,
     });
     expect(doc["oma-state-boundary"].PreInvocation[0].command).toBe(
-      `bun "${join(HOME_HOOKS_DIR, "state-boundary.ts")}"`,
+      cmd("state-boundary.ts"),
     );
     expect(doc["oma-skill-injector"].PreInvocation[0].command).toBe(
-      `bun "${join(HOME_HOOKS_DIR, "skill-injector.ts")}"`,
+      cmd("skill-injector.ts"),
     );
 
     // tool event (PreToolUse): { matcher, hooks: [handler] }
     expect(doc["oma-test-filter"].PreToolUse[0].matcher).toBe("run_command");
     expect(doc["oma-test-filter"].PreToolUse[0].hooks[0].command).toBe(
-      `bun "${join(HOME_HOOKS_DIR, "test-filter.ts")}"`,
+      cmd("test-filter.ts"),
     );
 
     // lifecycle (Stop): handler array directly
     expect(doc["oma-persistent-mode"].Stop[0].command).toBe(
-      `bun "${join(HOME_HOOKS_DIR, "persistent-mode.ts")}"`,
+      cmd("persistent-mode.ts"),
     );
 
     // settings.json: statusLine (HOME copy) only — agy strips hooks/defaultHooksPath.
@@ -175,9 +183,7 @@ describe("installAntigravityHud", () => {
     expect(settingsWrite).toBeTruthy();
     const settings = JSON.parse(settingsWrite?.[1] as string);
     expect(settings.statusLine.type).toBe("command");
-    expect(settings.statusLine.command).toBe(
-      `bun "${join(HOME_HOOKS_DIR, "hud.ts")}"`,
-    );
+    expect(settings.statusLine.command).toBe(cmd("hud.ts"));
     expect(settings.hooks).toBeUndefined();
     expect(settings.defaultHooksPath).toBeUndefined();
   });
@@ -216,9 +222,23 @@ describe("installAntigravityHud", () => {
     );
     const settingsWrite = writes.find(([path]) => path === SETTINGS);
     const settings = JSON.parse(settingsWrite?.[1] as string);
-    expect(settings.statusLine.command).toBe(
-      `OMA_HOME='/custom OMA'\\''s $root' bun "${join(HOME_HOOKS_DIR, "hud.ts")}"`,
-    );
+    if (process.platform === "win32") {
+      // agy's Windows runner has no shell for an inline OMA_HOME= prefix:
+      // the HUD runs through a generated launcher that binds it.
+      const launcher = join(HOME_HOOKS_DIR, HUD_GLOBAL_LAUNCHER);
+      expect(settings.statusLine.command).toBe(`bun ${launcher}`);
+      const launcherWrite = writes.find(([path]) => path === launcher);
+      expect(launcherWrite?.[1]).toBe(
+        hudLauncherSource(join(HOME_HOOKS_DIR, "hud.ts"), omaHome),
+      );
+      expect(launcherWrite?.[1]).toContain(
+        `OMA_HOME: ${JSON.stringify(omaHome)}`,
+      );
+    } else {
+      expect(settings.statusLine.command).toBe(
+        `OMA_HOME='/custom OMA'\\''s $root' bun "${join(HOME_HOOKS_DIR, "hud.ts")}"`,
+      );
+    }
     expect(
       writes.some(
         ([path]) =>
@@ -505,5 +525,38 @@ describe("installAntigravityHud", () => {
 
       expect(fs.unlinkSync).toHaveBeenCalledWith(STALE_HOME_HOOKS);
     });
+  });
+});
+
+describe("agyScriptCommand", () => {
+  const win = "C:\\Users\\remote\\.gemini\\antigravity-cli\\hooks\\hud.ts";
+
+  it("quotes the path on POSIX hosts, where agy runs commands through a shell", () => {
+    expect(
+      agyScriptCommand("/home/u/.gemini/antigravity-cli/hooks/hud.ts", "linux"),
+    ).toBe('bun "/home/u/.gemini/antigravity-cli/hooks/hud.ts"');
+    expect(agyScriptCommand("/Users/u/my dir/hud.ts", "darwin")).toBe(
+      'bun "/Users/u/my dir/hud.ts"',
+    );
+  });
+
+  it("writes a bare path on Windows: agy's runner keeps quotes in the argument", () => {
+    const shortPath = vi.fn();
+    expect(agyScriptCommand(win, "win32", shortPath)).toBe(`bun ${win}`);
+    expect(shortPath).not.toHaveBeenCalled();
+  });
+
+  it("uses the 8.3 short name on Windows when the path has whitespace", () => {
+    const spaced =
+      "C:\\Users\\Jane Doe\\.gemini\\antigravity-cli\\hooks\\hud.ts";
+    const short = "C:\\Users\\JANEDO~1\\.gemini\\ANTIGR~1\\hooks\\hud.ts";
+    expect(agyScriptCommand(spaced, "win32", () => short)).toBe(`bun ${short}`);
+  });
+
+  it("falls back to the quoted path when no short name is available", () => {
+    const spaced = "C:\\Users\\Jane Doe\\hooks\\hud.ts";
+    expect(agyScriptCommand(spaced, "win32", () => undefined)).toBe(
+      `bun "${spaced}"`,
+    );
   });
 });
