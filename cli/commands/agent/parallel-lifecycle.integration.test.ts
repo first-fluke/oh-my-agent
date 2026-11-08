@@ -299,12 +299,15 @@ console.log(JSON.stringify({ type: 'thread.started', thread_id: sid }));
     // Release only after the supervisor has recorded the child's identity
     // (pids.txt follows it); the Windows CIM probe can take longer than the
     // child needs to start, and an exited child can no longer be identified.
+    // The probe itself is budgeted 5s on win32 (readProcessIdentity), so a
+    // 5s poll raced it under full-suite load; 20s leaves headroom without
+    // weakening the assertion.
     await expect
       .poll(
         () =>
           fs.existsSync(path.join(root, "started.txt")) &&
           fs.existsSync(path.join(runDir, "pids.txt")),
-        { timeout: 5000, interval: 50 },
+        { timeout: 20_000, interval: 50 },
       )
       .toBe(true);
     expect(listAgentRuns(root)[0]?.status).toBe("running");
