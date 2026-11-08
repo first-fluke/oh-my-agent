@@ -283,11 +283,15 @@ jobs:
         run: |
           npm install --global --prefix "$RUNNER_TEMP/oma-agent-plugin-host-tools" --no-audit --no-fund "$OMA_SMOKE_HOST_PACKAGE"
           echo "$RUNNER_TEMP/oma-agent-plugin-host-tools/bin" >> "$GITHUB_PATH"
-      - name: Install the checkout as an Agent Plugins package under a scratch HOME
+      # codex-plugin/ is the clean copy of the root package (the documented
+      # local-path install). The repository root also carries
+      # .claude-plugin/marketplace.json, which Qwen prefers over the Agent
+      # Plugins manifest and turns into an interactive plugin picker.
+      - name: Install the checkout's codex-plugin/ package under a scratch HOME
         env:
           OMA_SMOKE_HOME: ${{ runner.temp }}/oma-agent-plugin-smoke
         run: |
-          bun scripts/agent-plugin-host-smoke.ts '${{ matrix.host }}'
+          bun scripts/agent-plugin-host-smoke.ts '${{ matrix.host }}' "$GITHUB_WORKSPACE/codex-plugin"
       - name: Preserve Agent Plugins smoke receipts
         if: always()
         uses: actions/upload-artifact@v7.0.2

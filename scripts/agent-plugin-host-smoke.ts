@@ -113,6 +113,14 @@ export function runAgentPluginHostSmoke(options: SmokeOptions): Receipt {
     "package root has no plugin.json",
   );
   const manifest = JSON.parse(readFileSync(join(pkg, "plugin.json"), "utf8"));
+  // Qwen resolves a directory that carries a Claude marketplace as that
+  // marketplace and opens an interactive plugin picker instead of installing
+  // the Agent Plugins package; the repository root is such a directory.
+  if (host === "qwen")
+    assert(
+      !existsSync(join(pkg, ".claude-plugin", "marketplace.json")),
+      `${pkg} carries .claude-plugin/marketplace.json; point the qwen smoke at codex-plugin/`,
+    );
   assert.equal(
     manifest.$schema,
     "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
