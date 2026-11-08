@@ -112,10 +112,12 @@ export function inspectInstalledSubset(
     "Installed plugin root is missing",
   );
   const preset = DOMAIN_PRESETS[domain];
+  // skills/_shared/ holds the shared guides the skills reference (emitted
+  // once per package); every other directory must be a preset skill.
   const skills = readdirSync(join(pluginRoot, "skills"), {
     withFileTypes: true,
   })
-    .filter((entry) => entry.isDirectory())
+    .filter((entry) => entry.isDirectory() && entry.name !== "_shared")
     .map((entry) => entry.name)
     .sort();
   assert.deepEqual(
