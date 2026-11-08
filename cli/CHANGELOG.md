@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.38.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.2...cli-v20.38.3) (2026-11-08)
+
+
+### Bug Fixes
+
+* **ci:** ignore skills/_shared in the installed-domain inventory ([b07276f](https://github.com/first-fluke/oh-my-agent/commit/b07276fe25a663c3522d8113aafa3e7645090e11))
+
 ## [20.38.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.1...cli-v20.38.2) (2026-11-08)
 
 
