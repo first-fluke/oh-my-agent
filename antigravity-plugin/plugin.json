@@ -3,7 +3,7 @@
   "name": "oma",
   "displayName": "oh-my-agent",
   "description": "Portable multi-agent harness: project skills, workflows, and specialist agents that plan, build in parallel, review, and debug your code.",
-  "version": "20.38.0",
+  "version": "20.38.1",
   "logo": "assets/logo.png",
   "suggestedPrompts": [
     "Plan this feature with /oma-pm and split it into parallel tasks",
