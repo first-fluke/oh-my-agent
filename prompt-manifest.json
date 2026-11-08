@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.37.1",
-  "releaseDate": "2026-11-07T16:25:35.928Z",
+  "releaseDate": "2026-11-08T01:53:26.673Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -276,8 +276,8 @@
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "08c964b1a228b6f6c90bcbf098e141e318f5ac523225d9375923a66708ad9ade",
-      "size": 6879
+      "sha256": "2393e47368cb9ec240fcf5d6aae56f21233a8c3541517865042f034fcc8332af",
+      "size": 7161
     },
     {
       "path": ".agents/hooks/core/triggers.json",
@@ -315,6 +315,11 @@
       "size": 1194
     },
     {
+      "path": ".agents/hooks/variants/commandcode/oma.ts",
+      "sha256": "ce500370b664c8a6b603c81fe7ba701f2c6c7714ff9b295227780266552b8b1c",
+      "size": 12488
+    },
+    {
       "path": ".agents/hooks/variants/commandcode.json",
       "sha256": "dc82f052a92531e5b75f5ed07456d60a91d06aa05765f24dfe247577cee46898",
       "size": 714
@@ -350,9 +355,14 @@
       "size": 1216
     },
     {
+      "path": ".agents/hooks/variants/opencode/index.ts",
+      "sha256": "b3da76af153b0eb4742712c32d4a86055d556d215c607998d394f234aa77e5db",
+      "size": 5516
+    },
+    {
       "path": ".agents/hooks/variants/opencode/oma.ts",
-      "sha256": "fcd97cec846a199bd515c743f4bec8f4b9aa7771687607de6c86ea0cfdadc7c2",
-      "size": 17832
+      "sha256": "8b2a4195b39f5e0ae94c0a5361bc37fe6d35de91d68c42124ff92c785c40f876",
+      "size": 18268
     },
     {
       "path": ".agents/hooks/variants/pi/README.md",
@@ -2326,6 +2336,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 463
+    "totalFiles": 465
   }
 }
