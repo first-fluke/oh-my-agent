@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.18.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.17.2...web-v11.18.0) (2026-11-08)
+
+
+### Features
+
+* **emit:** package oma as a plugin for every supported host ([a513d1e](https://github.com/first-fluke/oh-my-agent/commit/a513d1e73fc64878e5f30cc90da1989573526831))
+
 ## [11.17.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.17.1...web-v11.17.2) (2026-11-06)
 
 
