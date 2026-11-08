@@ -289,7 +289,25 @@ jobs:
       - name: Build CLI
         run: bun run --cwd cli build
 
+      # Duplicate-run guard: one release can produce two runs (the
+      # push-triggered run and the follow-up `gh workflow run` dispatch after
+      # merge-release-prs). The second `bun publish` fails with E409 and then
+      # the verification step polls for a publication it cannot produce,
+      # failing the run after its 11-minute deadline. Skip the publish when the
+      # exact version is already on the public registry.
+      - name: Check whether this version is already published
+        id: npm_version
+        run: |
+          VERSION=$(jq -r '.version' cli/package.json)
+          if curl -fsS "https://registry.npmjs.org/oh-my-agent/${VERSION}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "oh-my-agent@${VERSION} is already published; skipping publish"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish primary NPM package
+        if: ${{ steps.npm_version.outputs.exists != 'true' }}
         run: cd cli && bun publish --access public
         env:
           # The npm auth step above writes ~/.npmrc. Bun publish also reads
