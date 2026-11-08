@@ -504,6 +504,68 @@ function resolveOpencodeAgentModel(
 /** Inherit-by-default vendors whose native files still pin a fixed preset. */
 const PRESET_PINNED_INHERIT_VENDORS = new Set(["codex", "qwen"]);
 
+export interface RenderedAgentFile {
+  agentKey: string;
+  fileName: string;
+  content: string;
+}
+
+/**
+ * Render every `.agents/agents/*.md` definition as `vendor`'s native agent
+ * file without touching an install root. Unlike `installVendorAgents`, this
+ * ignores the installed project's model preset and overrides: it is the pure
+ * SSOT projection that `oma emit` ships inside distributable packages, so the
+ * output is identical on every machine. The variant JSON (when present) still
+ * supplies per-agent overrides; vendors with a built-in native variant (Qwen,
+ * Copilot) render without one.
+ */
+export function renderVendorAgentFiles(
+  sourceDir: string,
+  vendor: string,
+  definitionsRoot = ".agents",
+): RenderedAgentFile[] {
+  const variantPath = join(
+    sourceDir,
+    ".agents",
+    "agents",
+    "variants",
+    `${vendor}.json`,
+  );
+  const nativeVariant =
+    vendor === "qwen"
+      ? QWEN_NATIVE_AGENT_VARIANT
+      : vendor === "copilot"
+        ? COPILOT_NATIVE_AGENT_VARIANT
+        : undefined;
+  let variant: AgentVariant | undefined = nativeVariant;
+  if (existsSync(variantPath)) {
+    try {
+      variant = JSON.parse(readFileSync(variantPath, "utf-8")) as AgentVariant;
+    } catch {
+      variant = nativeVariant;
+    }
+  }
+  if (!variant) return [];
+  const resolved: AgentVariant = { ...variant, agents: variant.agents ?? {} };
+  return readAbstractAgentDefinitions(sourceDir).map((definition) => {
+    const config: AgentConfig = {
+      ...(resolved.agents[definition.agentKey] || {}),
+    };
+    const output =
+      vendor === "codex"
+        ? buildCodexAgentFile(definition, resolved, config, definitionsRoot)
+        : buildMarkdownAgentFile(
+            definition,
+            resolved,
+            config,
+            vendor,
+            undefined,
+            definitionsRoot,
+          );
+    return { agentKey: definition.agentKey, ...output };
+  });
+}
+
 /**
  * Generate vendor-specific agent files from core definitions and variant config.
  *

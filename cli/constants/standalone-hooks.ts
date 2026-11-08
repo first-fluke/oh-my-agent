@@ -1,9 +1,15 @@
-/** CLI-owned entry points installed beside extension bridges. */
+/**
+ * CLI-owned entry points installed beside extension bridges. `commandcode` is
+ * here for the emitted mod package (`commandcode-mod/mods/oma.ts`), which
+ * dispatches every hook through `oma hook script --vendor commandcode`; the
+ * per-project Command Code install keeps its settings-file hooks.
+ */
 export const STANDALONE_HOOK_VENDORS = [
   "pi",
   "opencode",
   "kilo",
   "antigravity",
+  "commandcode",
 ] as const;
 
 export type StandaloneHookVendor = (typeof STANDALONE_HOOK_VENDORS)[number];

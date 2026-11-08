@@ -45,6 +45,45 @@ describe("runStandaloneHookScript — opencode-family identities", () => {
     });
   });
 
+  it("answers commandcode (the emitted mod bridge) in its own Claude-shaped dialect", async () => {
+    const deny = await runStandaloneHookScript({
+      vendor: "commandcode",
+      script: "scm-guard.ts",
+      cwd: root,
+      rawStdin: JSON.stringify({
+        hook_event_name: "PreToolUse",
+        tool_name: "Bash",
+        tool_input: { command: "git add .env" },
+        cwd: root,
+        sessionId: "s1",
+      }),
+    });
+    expect(JSON.parse(deny.output)).toMatchObject({
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "deny",
+      },
+    });
+
+    // The mod has a prompt hook (transformInput) the settings-file variant
+    // lacks; UserPromptSubmit must route to the prompt handlers.
+    const prompt = await runStandaloneHookScript({
+      vendor: "commandcode",
+      script: "keyword-detector.ts",
+      cwd: root,
+      rawStdin: JSON.stringify({
+        hook_event_name: "UserPromptSubmit",
+        prompt: "orchestrate: say hi",
+        cwd: root,
+        sessionId: "s1",
+      }),
+    });
+    expect(prompt.output).toContain("[OMA WORKFLOW: ORCHESTRATE]");
+    expect(JSON.parse(prompt.output)).toMatchObject({
+      hookSpecificOutput: { hookEventName: "UserPromptSubmit" },
+    });
+  });
+
   it("ignores vendors outside the standalone allowlist", async () => {
     const result = await runStandaloneHookScript({
       vendor: "kilocode" as "kilo",

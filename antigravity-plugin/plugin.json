@@ -1,0 +1,27 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "oma",
+  "displayName": "oh-my-agent",
+  "description": "Portable multi-agent harness: project skills, workflows, and specialist agents that plan, build in parallel, review, and debug your code.",
+  "version": "20.37.1",
+  "logo": "assets/logo.png",
+  "suggestedPrompts": [
+    "Plan this feature with /oma-pm and split it into parallel tasks",
+    "Review the current diff with /oma-qa and list findings by severity",
+    "Debug this failing test with /oma-debug and propose a minimal fix"
+  ],
+  "author": {
+    "name": "First Fluke",
+    "url": "https://github.com/first-fluke"
+  },
+  "homepage": "https://firstfluke.com/oh-my-agent",
+  "repository": "https://github.com/first-fluke/oh-my-agent",
+  "license": "MIT",
+  "keywords": [
+    "multi-agent",
+    "orchestrator",
+    "skills",
+    "workflows",
+    "antigravity"
+  ]
+}

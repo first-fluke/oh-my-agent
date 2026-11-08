@@ -1,0 +1,69 @@
+{
+  "name": "oma",
+  "version": "20.37.1",
+  "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
+  "keywords": [
+    "multi-agent",
+    "orchestrator",
+    "skills",
+    "workflows",
+    "kimi"
+  ],
+  "author": "First Fluke",
+  "homepage": "https://firstfluke.com/oh-my-agent",
+  "license": "MIT",
+  "interface": {
+    "displayName": "oh-my-agent",
+    "shortDescription": "Skills, specialist agents, and MCP servers for oma",
+    "longDescription": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
+    "developerName": "First Fluke",
+    "websiteURL": "https://firstfluke.com/oh-my-agent",
+    "defaultLocale": "en-US"
+  },
+  "skills": [
+    "./skills"
+  ],
+  "agents": [
+    "./.agents/agents/architecture-reviewer.md",
+    "./.agents/agents/backend-engineer.md",
+    "./.agents/agents/db-engineer.md",
+    "./.agents/agents/debug-investigator.md",
+    "./.agents/agents/docs-curator.md",
+    "./.agents/agents/frontend-engineer.md",
+    "./.agents/agents/mobile-engineer.md",
+    "./.agents/agents/pm-planner.md",
+    "./.agents/agents/qa-reviewer.md",
+    "./.agents/agents/refactor-engineer.md",
+    "./.agents/agents/research-explorer.md",
+    "./.agents/agents/tf-infra-engineer.md"
+  ],
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "serena": {
+      "command": "serena",
+      "args": [
+        "start-mcp-server",
+        "--context",
+        "oma",
+        "--project-from-cwd",
+        "--add-mode",
+        "no-memories",
+        "--open-web-dashboard",
+        "false"
+      ],
+      "env": {
+        "SERENA_LOG_LEVEL": "info"
+      }
+    },
+    "aside": {
+      "command": "aside",
+      "args": [
+        "mcp"
+      ]
+    }
+  },
+  "skillInstructions": "Skills from oh-my-agent reference shared resources under their own references/_shared/ folder. Respond in the user's prompt language; keep code, commit messages, and file paths in English."
+}

@@ -12,6 +12,7 @@ Choose the entry point for the task you want to complete.
 | One focused task in your current agent | [Load one skill](#load-one-skill) | Instructions and supporting files in a temporary directory |
 | Project hooks, specialist agents, and workflows | [Install a skill preset](#install-a-skill-preset) | OMA runtime integration with the selected skills |
 | Claude Code marketplace installation | [Install the plugin](#install-the-claude-code-plugin) | The OMA plugin and project bootstrap |
+| Copilot CLI, Kiro, Qwen Code, Hermes, or Codex package installation | [Agent Plugins package](../guide/vendor-capabilities.md#agent-plugins-package) | Skills and MCP servers for every host; Copilot also gets agents, commands, rules, and the bootstrap hook |
 
 ## Load one skill
 

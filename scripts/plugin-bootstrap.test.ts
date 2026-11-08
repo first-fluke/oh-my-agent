@@ -49,7 +49,27 @@ function fixture(
   const installer = join(root, "installer.sh");
   const bunTemplate = join(root, "bun-template");
   const settings = join(root, "settings.json");
+  const copilotSettings = join(root, "copilot-oma.json");
   mkdirSync(bin, { recursive: true });
+  // Copilot's flat hook file, as `oma install` writes `.github/hooks/oma.json`.
+  writeFileSync(
+    copilotSettings,
+    JSON.stringify({
+      version: 1,
+      hooks: Object.fromEntries(
+        hookEvents.map((event) => [
+          event,
+          [
+            {
+              type: "command",
+              bash: `'.github/hooks/oma-hook.sh' --vendor 'copilot' --event '${event}'`,
+              timeoutSec: 15,
+            },
+          ],
+        ]),
+      ),
+    }),
+  );
   mkdirSync(data, { recursive: true });
   for (const command of ["bash", "cat", "chmod", "mkdir", "sh", "tail"]) {
     const target = [`/bin/${command}`, `/usr/bin/${command}`].find(existsSync);
@@ -104,6 +124,12 @@ mkdir -p .claude/hooks
 cat "$FIXTURE_SETTINGS" > .claude/settings.json
 printf '#!/bin/sh\\nexit 0\\n' > .claude/hooks/oma-hook.sh
 chmod +x .claude/hooks/oma-hook.sh
+if [ "\${FIXTURE_COPILOT:-0}" = 1 ]; then
+  mkdir -p .github/hooks
+  cat "$FIXTURE_COPILOT_SETTINGS" > .github/hooks/oma.json
+  printf '#!/bin/sh\\nexit 0\\n' > .github/hooks/oma-hook.sh
+  chmod +x .github/hooks/oma-hook.sh
+fi
 if [ "\${FIXTURE_INCOMPLETE:-0}" != 1 ]; then
   mkdir -p .agents/skills
   if [ "\${FIXTURE_SKIP_SKILLS:-0}" != 1 ]; then
@@ -171,6 +197,7 @@ chmod +x "$HOME/.local/bin/bun"
         FIXTURE_INSTALLER: installer,
         FIXTURE_BUN_TEMPLATE: bunTemplate,
         FIXTURE_SETTINGS: settings,
+        FIXTURE_COPILOT_SETTINGS: copilotSettings,
         FIXTURE_NODE: process.execPath,
         OMA_INSTALL_GLOBAL: "0",
         ...extra,
@@ -216,6 +243,35 @@ describe.skipIf(process.platform === "win32")("plugin bootstrap", () => {
       expect(f.installedArgs()).toHaveLength(2);
     },
   );
+
+  it("verifies Copilot's project registration when loaded by the Agent Plugins package", () => {
+    const f = fixture();
+    const project = f.project("project");
+    const copilot = { OMA_PLUGIN_VENDOR: "copilot", FIXTURE_COPILOT: "1" };
+    expect(f.run(project, copilot).stderr).toContain("oma is ready");
+    expect(f.run(project, copilot).stderr).not.toContain("wiring project");
+    expect(f.installedArgs()).toEqual(["install --yes"]);
+    // A Claude-only wiring does not satisfy the Copilot entry.
+    const other = f.project("claude-only");
+    expect(f.run(other, { OMA_PLUGIN_VENDOR: "copilot" }).stderr).toContain(
+      "project wiring is incomplete",
+    );
+    expect(
+      existsSync(join(other, ".agents/state/plugin-bootstrap.version")),
+    ).toBe(false);
+  });
+
+  it("resolves the package root from PLUGIN_ROOT when the Claude variable is unset", () => {
+    const f = fixture();
+    const project = f.project("project");
+    const result = f.run(project, {
+      CLAUDE_PLUGIN_ROOT: "",
+      PLUGIN_ROOT: f.root,
+      FIXTURE_PRESET: "frontend",
+    });
+    expect(result.stderr).toContain("oma is ready");
+    expect(f.installedArgs()).toEqual(["install --yes --preset frontend"]);
+  });
 
   it("reinstalls when changing full to domain and back with the same CLI version", () => {
     const f = fixture();

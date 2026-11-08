@@ -132,6 +132,23 @@ describe("test-filter run() — platform and idempotency guards (#618)", () => {
       }
     });
 
+    it("prefers the packaged bridge dir a host plugin exports via OMA_HOOK_BRIDGE_DIR", async () => {
+      setPlatform("linux");
+      const bridgeDir = join("/opt", "node_modules", "oh-my-agent-opencode");
+      vi.stubEnv("OMA_HOOK_BRIDGE_DIR", bridgeDir);
+      try {
+        const result = await runWith("npm test");
+        expect(result?.type).toBe("mutate");
+        if (result?.type === "mutate") {
+          expect(result.updatedInput.command as string).toContain(
+            `bash "${join(bridgeDir, "filter-test-output.sh")}"`,
+          );
+        }
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
     it("rewrites CommandLine in place for antigravity run_command", async () => {
       setPlatform("linux");
       const result = await tf.run(

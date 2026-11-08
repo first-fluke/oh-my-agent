@@ -3,6 +3,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -11,12 +12,14 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  BASE_KEYWORDS,
   buildPluginManifest,
   buildPortableMcpConfig,
   CODEX_PLUGIN_DIR,
   emitAgentPlugin,
   OMA_EXTENSION_NAMESPACE,
 } from "./agent-plugin.js";
+import { COPILOT_EXTENSION_NAMESPACE } from "./copilot-plugin.js";
 
 const FIXTURES_REPO = path.resolve(import.meta.dirname, "__fixtures__", "repo");
 
@@ -75,6 +78,12 @@ describe("buildPortableMcpConfig", () => {
 });
 
 describe("buildPluginManifest", () => {
+  let repoDir: string;
+
+  afterEach(() => {
+    if (repoDir) rmSync(repoDir, { recursive: true, force: true });
+  });
+
   it("uses the canonical 1.0.0 schema id and the stable oma plugin name", () => {
     const manifest = buildPluginManifest(FIXTURES_REPO, []);
     expect(manifest.$schema).toBe(
@@ -90,6 +99,39 @@ describe("buildPluginManifest", () => {
     expect(manifest.description).toBe("Fixture repo for oma emit tests");
     expect(manifest.author).toEqual({ name: "Fixture Author" });
     expect(manifest.homepage).toBe("https://example.test/fixture-repo");
+  });
+
+  it("always carries the activation keywords Kiro and humans search for", () => {
+    const manifest = buildPluginManifest(FIXTURES_REPO, []);
+    expect(manifest.keywords).toEqual([...BASE_KEYWORDS]);
+    expect(manifest.keywords).toEqual(
+      expect.arrayContaining(["oma", "oh-my-agent", "orchestrate", "skills"]),
+    );
+  });
+
+  it("appends package.json keywords after the base set, minus the pi marker", () => {
+    repoDir = mkdtempSync(path.join(tmpdir(), "oma-manifest-keywords-"));
+    cpSync(FIXTURES_REPO, repoDir, { recursive: true });
+    const pkgPath = path.join(repoDir, "package.json");
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+    pkg.keywords = ["pi-package", "skills", "custom-tag"];
+    writeFileSync(pkgPath, JSON.stringify(pkg));
+    const manifest = buildPluginManifest(repoDir, []);
+    expect(manifest.keywords).toEqual([...BASE_KEYWORDS, "custom-tag"]);
+  });
+
+  it("registers Copilot's client namespace as an empty object on request", () => {
+    const plain = buildPluginManifest(FIXTURES_REPO, []);
+    expect(plain.extensions).toBeUndefined();
+    const copilot = buildPluginManifest(FIXTURES_REPO, [], { copilot: true });
+    expect(copilot.extensions).toEqual({ [COPILOT_EXTENSION_NAMESPACE]: {} });
+    const both = buildPluginManifest(FIXTURES_REPO, [".agents/workflows"], {
+      copilot: true,
+    });
+    expect(Object.keys(both.extensions as object)).toEqual([
+      OMA_EXTENSION_NAMESPACE,
+      COPILOT_EXTENSION_NAMESPACE,
+    ]);
   });
 
   it("declares the extension namespace only when payload entries exist", () => {
@@ -328,11 +370,53 @@ describe("emitAgentPlugin", () => {
       OMA_EXTENSION_NAMESPACE,
       "stale.txt",
     );
+    const staleCopilot = path.join(
+      report.outDir,
+      COPILOT_EXTENSION_NAMESPACE,
+      "stale.txt",
+    );
     writeFileSync(staleSkill, "stale");
     writeFileSync(staleExtension, "stale");
+    writeFileSync(staleCopilot, "stale");
     emitAgentPlugin(FIXTURES_REPO, report.outDir);
     expect(existsSync(staleSkill)).toBe(false);
     expect(existsSync(staleExtension)).toBe(false);
+    expect(existsSync(staleCopilot)).toBe(false);
+  });
+
+  it("ships the Copilot namespace in the root package and the Codex copy", () => {
+    const report = emit();
+    const rootNs = path.join(outDir, COPILOT_EXTENSION_NAMESPACE);
+    expect(report.copilot.dir).toBe(rootNs);
+    expect(report.copilot.agents).toEqual(["fixture-agent.agent.md"]);
+    expect(report.copilot.commands).toEqual(["fixture-workflow.md"]);
+    expect(report.copilot.rules).toEqual(["fixture-rule.instructions.md"]);
+    const manifest = JSON.parse(readFileSync(report.manifestPath, "utf-8"));
+    expect(manifest.extensions[COPILOT_EXTENSION_NAMESPACE]).toEqual({});
+    expect(manifest.extensions[OMA_EXTENSION_NAMESPACE]).toBeDefined();
+    // The spec forbids component-path fields on the manifest root.
+    for (const field of ["skills", "agents", "hooks", "mcpServers", "commands"])
+      expect(manifest).not.toHaveProperty(field);
+
+    const codexNs = path.join(
+      outDir,
+      CODEX_PLUGIN_DIR,
+      COPILOT_EXTENSION_NAMESPACE,
+    );
+    const list = (dir: string) =>
+      ["agents", "commands", "rules"].flatMap((sub) =>
+        readdirSync(path.join(dir, sub)).map((file) => `${sub}/${file}`),
+      );
+    expect(list(codexNs)).toEqual(list(rootNs));
+    for (const file of list(rootNs)) {
+      expect(readFileSync(path.join(codexNs, file), "utf-8")).toBe(
+        readFileSync(path.join(rootNs, file), "utf-8"),
+      );
+    }
+    const codexManifest = JSON.parse(
+      readFileSync(path.join(outDir, CODEX_PLUGIN_DIR, "plugin.json"), "utf-8"),
+    );
+    expect(codexManifest.extensions).toEqual(manifest.extensions);
   });
 
   it("never removes the out dir itself — sibling files survive re-emit", () => {

@@ -10,10 +10,15 @@
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "license": "MIT",
   "keywords": [
+    "oma",
+    "oh-my-agent",
     "multi-agent",
     "orchestrator",
+    "orchestrate",
+    "workflow",
+    "workflows",
     "skills",
-    "workflows"
+    "agents"
   ],
   "extensions": {
     "com.firstfluke.oma": {
@@ -23,6 +28,7 @@
         "./com.firstfluke.oma/rules",
         "./com.firstfluke.oma/oma-config.yaml"
       ]
-    }
+    },
+    "com.github.copilot": {}
   }
 }

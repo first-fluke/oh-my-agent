@@ -1,0 +1,39 @@
+{
+  "name": "oh-my-agent-opencode",
+  "version": "20.37.1",
+  "description": "oh-my-agent hook bridge for OpenCode and Kilo Code",
+  "license": "MIT",
+  "homepage": "https://firstfluke.com/oh-my-agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/first-fluke/oh-my-agent"
+  },
+  "type": "module",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "kilo",
+    "kilocode",
+    "oh-my-agent"
+  ],
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "files": [
+    "index.ts",
+    "oma.ts",
+    "keyword-detector.ts",
+    "skill-injector.ts",
+    "code-intelligence-primer.ts",
+    "serena-primer.ts",
+    "state-boundary.ts",
+    "scm-guard.ts",
+    "code-intelligence-guard.ts",
+    "test-filter.ts",
+    "refactor-guard.ts",
+    "persistent-mode.ts",
+    "filter-test-output.sh",
+    "README.md"
+  ]
+}

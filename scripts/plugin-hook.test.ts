@@ -95,6 +95,162 @@ function registerProjectHook(
   return wrapper;
 }
 
+/** Copilot's flat hook-file registration (`.github/hooks/oma.json`). */
+function registerCopilotProjectHook(
+  project: string,
+  event: string,
+  matcher?: string,
+  wrapperRel = ".github/hooks/oma-hook.sh",
+) {
+  const wrapper = join(project, ".github/hooks/oma-hook.sh");
+  mkdirSync(dirname(wrapper), { recursive: true });
+  writeFileSync(wrapper, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+  writeFileSync(
+    join(project, ".github/hooks/oma.json"),
+    JSON.stringify({
+      version: 1,
+      hooks: {
+        [event]: [
+          {
+            type: "command",
+            bash: `'${wrapperRel}' --vendor 'copilot' --event '${event}'`,
+            timeoutSec: 15,
+            ...(matcher ? { matcher } : {}),
+          },
+        ],
+      },
+    }),
+  );
+  return wrapper;
+}
+
+describe.skipIf(process.platform === "win32")(
+  "Agent Plugins package hook dispatch (Copilot)",
+  () => {
+    const copilotEnv = (f: ReturnType<typeof fixture>) => ({
+      ...f.env,
+      OMA_PLUGIN_VENDOR: "copilot",
+    });
+
+    it("runs the emitted hooks.json commands with PLUGIN_ROOT resolved by the shell", () => {
+      const f = fixture();
+      const namespace = join(f.plugin, "com.github.copilot");
+      mkdirSync(join(namespace, "scripts"), { recursive: true });
+      cpSync(
+        join(repoRoot, "scripts/plugin-hook.sh"),
+        join(namespace, "scripts/plugin-hook.sh"),
+      );
+      const hooks = JSON.parse(
+        readFileSync(
+          join(repoRoot, "com.github.copilot/hooks/hooks.json"),
+          "utf8",
+        ),
+      );
+      const entry = hooks.hooks.PreToolUse[0];
+      expect(entry.matcher).toBe("Bash");
+      const result = spawnSync("sh", ["-c", entry.bash], {
+        cwd: f.project,
+        env: { ...f.env, PLUGIN_ROOT: f.plugin },
+        input: '{"tool_name":"Bash"}',
+        encoding: "utf8",
+        timeout: 5000,
+      });
+      expect(result.status).toBe(0);
+      expect(result.stdout).toBe('{"decision":"block","reason":"fixture"}');
+      expect(readFileSync(f.args, "utf8").trim().split("\n")).toEqual([
+        "hook",
+        "--vendor",
+        "copilot",
+        "--event",
+        "PreToolUse",
+        "--matcher",
+        "Bash",
+      ]);
+    });
+
+    it("fails open when the plugin root cannot be resolved", () => {
+      const f = fixture();
+      const hooks = JSON.parse(
+        readFileSync(
+          join(repoRoot, "com.github.copilot/hooks/hooks.json"),
+          "utf8",
+        ),
+      );
+      for (const entries of Object.values(hooks.hooks) as Array<
+        Array<{ bash: string }>
+      >) {
+        const result = spawnSync("sh", ["-c", entries[0].bash], {
+          cwd: f.project,
+          env: { ...f.env, PLUGIN_ROOT: join(f.root, "missing") },
+          input: "{}",
+          encoding: "utf8",
+          timeout: 5000,
+        });
+        expect(result.status).toBe(0);
+        expect(result.stdout).toBe("");
+      }
+      expect(existsSync(f.args)).toBe(false);
+    });
+
+    it("lets the installed Copilot project hook own the event", () => {
+      const f = fixture();
+      registerCopilotProjectHook(f.project, "PreToolUse", "Bash|Grep|Glob");
+      const result = spawnSync(
+        "sh",
+        [join(f.plugin, "scripts/plugin-hook.sh"), "PreToolUse", "Bash"],
+        {
+          cwd: f.project,
+          env: copilotEnv(f),
+          input: "{}",
+          encoding: "utf8",
+          timeout: 5000,
+        },
+      );
+      expect(result.status).toBe(0);
+      expect(result.stdout).toBe("");
+      expect(existsSync(f.args)).toBe(false);
+    });
+
+    it("ignores a Claude-only project registration and keeps a mismatched Copilot one as fallback", () => {
+      const f = fixture();
+      registerProjectHook(f.project, "PreToolUse", "Bash");
+      registerCopilotProjectHook(f.project, "PreToolUse", "Grep|Glob");
+      const result = spawnSync(
+        "sh",
+        [join(f.plugin, "scripts/plugin-hook.sh"), "PreToolUse", "Bash"],
+        {
+          cwd: f.project,
+          env: copilotEnv(f),
+          input: "{}",
+          encoding: "utf8",
+          timeout: 5000,
+        },
+      );
+      expect(result.status).toBe(0);
+      expect(result.stdout).toBe('{"decision":"block","reason":"fixture"}');
+      expect(readFileSync(f.args, "utf8")).toContain("copilot");
+    });
+
+    it("exits silently for an unknown vendor", () => {
+      const f = fixture();
+      const result = spawnSync(
+        "sh",
+        [join(f.plugin, "scripts/plugin-hook.sh"), "Stop"],
+        {
+          cwd: f.project,
+          env: { ...f.env, OMA_PLUGIN_VENDOR: "nope" },
+          input: "{}",
+          encoding: "utf8",
+          timeout: 5000,
+        },
+      );
+      expect(result.status).toBe(0);
+      expect(result.stdout).toBe("");
+      expect(existsSync(f.args)).toBe(false);
+    });
+  },
+);
+
 describe.skipIf(process.platform === "win32")(
   "marketplace hook dispatch",
   () => {

@@ -13,12 +13,26 @@ export function pluginVersionTargets() {
     { path: "plugin.json", jsonpath: "$.version" },
     { path: "codex-plugin/plugin.json", jsonpath: "$.version" },
     { path: "pi-package/package.json", jsonpath: "$.version" },
+    { path: "opencode-package/package.json", jsonpath: "$.version" },
+    { path: "commandcode-mod/package.json", jsonpath: "$.version" },
     { path: ".cursor-plugin/plugin.json", jsonpath: "$.version" },
     { path: ".claude-plugin/marketplace.json", jsonpath: "$.metadata.version" },
     {
       path: ".claude-plugin/directory/.claude-plugin/plugin.json",
       jsonpath: "$.version",
     },
+    // Claude-compatible native-manifest hosts (emit --target
+    // antigravity-plugin | grok-plugin | zcode-plugin | kimi-plugin).
+    { path: "antigravity-plugin/plugin.json", jsonpath: "$.version" },
+    { path: ".grok-plugin/plugin.json", jsonpath: "$.version" },
+    { path: ".zcode-plugin/plugin.json", jsonpath: "$.version" },
+    { path: ".kimi-plugin/plugin.json", jsonpath: "$.version" },
+    // ZCode's "Check for updates" compares the catalog entry version against
+    // the installed plugin.json, so every entry tracks the release too.
+    ...[null, ...Object.keys(DOMAIN_PRESETS)].map((_, index) => ({
+      path: ".zcode-plugin/marketplace.json",
+      jsonpath: `$.plugins[${index}].version`,
+    })),
     ...Object.keys(DOMAIN_PRESETS).flatMap((domain) => [
       {
         path: `.claude-plugin/domains/${domain}/plugin.json`,
@@ -30,6 +44,23 @@ export function pluginVersionTargets() {
       },
     ]),
   ];
+}
+
+/**
+ * Resolve the subset of JSONPath Release Please's json updater uses here:
+ * dotted keys and numeric indexes (`$.plugins[1].version`).
+ */
+export function resolveJsonPath(value, jsonpath) {
+  const segments = jsonpath
+    .replace(/^\$\.?/, "")
+    .split(/\.|\[|\]\.?/)
+    .filter(Boolean);
+  let current = value;
+  for (const segment of segments) {
+    if (current === null || typeof current !== "object") return undefined;
+    current = current[/^\d+$/.test(segment) ? Number(segment) : segment];
+  }
+  return current;
 }
 
 /** Check checked-in versions before emit drift normalizes release metadata. */
@@ -61,10 +92,7 @@ export function checkPluginVersions(repoRoot) {
   for (const target of pluginVersionTargets()) {
     const manifest = read(target.path);
     if (manifest) {
-      const actual =
-        target.jsonpath === "$.metadata.version"
-          ? manifest.metadata?.version
-          : manifest.version;
+      const actual = resolveJsonPath(manifest, target.jsonpath);
       if (actual !== expected) {
         issues.push(
           `${target.path}: expected version ${expected}, found ${JSON.stringify(actual) ?? "missing"}`,

@@ -9,7 +9,10 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { DOMAIN_PRESETS } from "../platform/domain-presets.js";
-import { checkPluginVersions } from "./check-plugin-versions.mjs";
+import {
+  checkPluginVersions,
+  resolveJsonPath,
+} from "./check-plugin-versions.mjs";
 
 const roots: string[] = [];
 const repoRoot = resolve(import.meta.dirname, "../..");
@@ -20,9 +23,17 @@ const domainPaths = Object.keys(DOMAIN_PRESETS).flatMap((domain) => [
 const manifestPaths = [
   "codex-plugin/plugin.json",
   "pi-package/package.json",
+  "opencode-package/package.json",
+  "commandcode-mod/package.json",
   ".claude-plugin/directory/.claude-plugin/plugin.json",
   ...domainPaths,
+  "antigravity-plugin/plugin.json",
+  ".grok-plugin/plugin.json",
+  ".zcode-plugin/plugin.json",
+  ".kimi-plugin/plugin.json",
 ];
+const zcodeMarketplace = ".zcode-plugin/marketplace.json";
+const zcodeEntryCount = 1 + Object.keys(DOMAIN_PRESETS).length;
 
 function write(root: string, file: string, value: unknown) {
   mkdirSync(dirname(join(root, file)), { recursive: true });
@@ -46,6 +57,9 @@ function fixture(version = "20.20.0") {
   ];
   for (const file of files) write(root, file, { version });
   write(root, ".claude-plugin/marketplace.json", { metadata: { version } });
+  write(root, zcodeMarketplace, {
+    plugins: Array.from({ length: zcodeEntryCount }, () => ({ version })),
+  });
   write(root, "release-please-config.json", config);
   return { root, config };
 }
@@ -114,6 +128,26 @@ describe("plugin release version propagation", () => {
       );
     },
   );
+
+  it("rejects a stale ZCode marketplace entry version by index", () => {
+    const { root } = fixture();
+    const plugins = Array.from({ length: zcodeEntryCount }, () => ({
+      version: "20.20.0",
+    }));
+    plugins[1] = { version: "20.19.0" };
+    write(root, zcodeMarketplace, { plugins });
+    expect(checkPluginVersions(root)).toEqual([
+      `${zcodeMarketplace}: expected version 20.20.0, found "20.19.0"`,
+    ]);
+  });
+
+  it("resolves dotted and indexed JSON paths", () => {
+    const doc = { metadata: { version: "1" }, plugins: [{ version: "2" }] };
+    expect(resolveJsonPath(doc, "$.version")).toBeUndefined();
+    expect(resolveJsonPath(doc, "$.metadata.version")).toBe("1");
+    expect(resolveJsonPath(doc, "$.plugins[0].version")).toBe("2");
+    expect(resolveJsonPath(doc, "$.plugins[1].version")).toBeUndefined();
+  });
 
   it("rejects root and CLI version disagreement", () => {
     const { root } = fixture();

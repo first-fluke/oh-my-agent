@@ -1,0 +1,32 @@
+{
+  "name": "oh-my-agent-commandcode",
+  "version": "20.37.1",
+  "description": "oh-my-agent hooks and skills for Command Code",
+  "license": "MIT",
+  "homepage": "https://firstfluke.com/oh-my-agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/first-fluke/oh-my-agent"
+  },
+  "type": "module",
+  "keywords": [
+    "cmd-mod",
+    "cmd-mod-hook",
+    "agent-skills",
+    "oh-my-agent"
+  ],
+  "files": [
+    "mods",
+    "skills",
+    "filter-test-output.sh",
+    "README.md"
+  ],
+  "commandcode": {
+    "mods": [
+      "./mods/oma.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  }
+}

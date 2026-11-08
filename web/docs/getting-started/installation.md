@@ -179,7 +179,12 @@ The domain entries contain 8 frontend, 6 security, or 8 research skills and a
 matching native agent selection. Their session bootstrap passes that preset to
 the runtime installer. Shared runtime setup and existing installed skills follow
 the installer behavior described above. The `oma` entry retains the full plugin.
-The same domain roots are declared in the generated Codex marketplace catalog.
+The same domain roots are declared in the generated Codex marketplace catalog
+and in the Grok Build and ZCode catalogs. Antigravity CLI (`agy plugin install
+./antigravity-plugin`), Grok Build CLI, ZCode, and Kimi Code (`/plugins install`)
+each read their own generated manifest; see
+[Claude-compatible plugin hosts](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)
+for the exact steps per host.
 
 The pinned host CI jobs register the local marketplace on fresh runners, install
 domain entries, and inspect the resulting inventory. These checks run without

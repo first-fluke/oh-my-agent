@@ -53,10 +53,52 @@ describe("vendor capabilities", () => {
       },
       agents: { dir: ".kilo/agents" },
       hooks: { kind: "extension", variant: null },
-      plugins: { manifest: null },
+      plugins: { manifest: "opencode-package/package.json" },
     });
     // No skill symlink projection: kilo reads .agents/skills natively.
     expect(Object.hasOwn(CLI_SKILLS_DIR, "kilo")).toBe(false);
+  });
+
+  it("records the root Agent Plugins package for every host that installs it", () => {
+    for (const vendor of ["copilot", "kiro", "qwen", "hermes"]) {
+      expect(getVendorCapabilities(vendor)?.plugins.manifest).toBe(
+        "plugin.json",
+      );
+    }
+    expect(getVendorCapabilities("codex")?.plugins.manifest).toBe(
+      "codex-plugin/plugin.json",
+    );
+    expect(getVendorCapabilities("claude")?.plugins.manifest).toBe(
+      ".claude-plugin/plugin.json",
+    );
+  });
+
+  it("records a package manifest for every emitted native-manifest host", () => {
+    expect(getVendorCapabilities("antigravity")?.plugins.manifest).toBe(
+      "antigravity-plugin/plugin.json",
+    );
+    expect(getVendorCapabilities("grok")?.plugins.manifest).toBe(
+      ".grok-plugin/plugin.json",
+    );
+    expect(getVendorCapabilities("zcode")?.plugins.manifest).toBe(
+      ".zcode-plugin/plugin.json",
+    );
+    expect(getVendorCapabilities("kimi")?.plugins.manifest).toBe(
+      ".kimi-plugin/plugin.json",
+    );
+  });
+
+  it("points the JavaScript extension hosts at their emitted packages", () => {
+    // opencode and kilo share one npm plugin; commandcode ships a mod package.
+    expect(getVendorCapabilities("opencode")?.plugins.manifest).toBe(
+      "opencode-package/package.json",
+    );
+    expect(getVendorCapabilities("kilo")?.plugins.manifest).toBe(
+      getVendorCapabilities("opencode")?.plugins.manifest,
+    );
+    expect(getVendorCapabilities("commandcode")?.plugins.manifest).toBe(
+      "commandcode-mod/package.json",
+    );
   });
 
   it("does not resolve inherited object properties as vendors", () => {

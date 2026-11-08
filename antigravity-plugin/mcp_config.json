@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "serena": {
+      "command": "serena",
+      "args": [
+        "start-mcp-server",
+        "--context",
+        "oma",
+        "--project-from-cwd",
+        "--add-mode",
+        "no-memories",
+        "--open-web-dashboard",
+        "false"
+      ],
+      "env": {
+        "SERENA_LOG_LEVEL": "info"
+      }
+    },
+    "aside": {
+      "command": "aside",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

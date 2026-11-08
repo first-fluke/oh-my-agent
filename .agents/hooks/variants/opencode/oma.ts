@@ -74,6 +74,22 @@ function corePath(script: string): string {
 }
 
 /**
+ * Directory of this bridge, exported to the handlers as OMA_HOOK_BRIDGE_DIR so
+ * test-filter finds `filter-test-output.sh` when the bridge ships as the
+ * `oh-my-agent-opencode` npm package (outside the project tree).
+ */
+function bridgeEnv(): NodeJS.ProcessEnv {
+  try {
+    return {
+      ...process.env,
+      OMA_HOOK_BRIDGE_DIR: fileURLToPath(new URL(".", import.meta.url)),
+    };
+  } catch {
+    return process.env;
+  }
+}
+
+/**
  * Run an oma core hook script as a subprocess: feed it JSON on stdin, parse
  * its JSON stdout. Fail-open (returns null) on any error — a broken hook must
  * never block the agent. Spawns with `cwd` = opencode's working directory so
@@ -93,7 +109,7 @@ function runCore(
       cwd,
       encoding: "utf-8",
       timeout: timeoutMs,
-      env: process.env,
+      env: bridgeEnv(),
     });
     const out = (res.stdout ?? "").trim();
     if (!out) return null;

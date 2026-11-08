@@ -1,0 +1,95 @@
+{
+  "name": "oma",
+  "version": "20.37.1",
+  "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
+  "author": {
+    "name": "First Fluke"
+  },
+  "homepage": "https://firstfluke.com/oh-my-agent",
+  "repository": "https://github.com/first-fluke/oh-my-agent",
+  "license": "MIT",
+  "keywords": [
+    "multi-agent",
+    "orchestrator",
+    "skills",
+    "workflows",
+    "zcode"
+  ],
+  "skills": [
+    "./skills/oma-academic-writing",
+    "./skills/oma-architecture",
+    "./skills/oma-backend",
+    "./skills/oma-brainstorm",
+    "./skills/oma-coordination",
+    "./skills/oma-db",
+    "./skills/oma-debug",
+    "./skills/oma-design",
+    "./skills/oma-dev-workflow",
+    "./skills/oma-docs",
+    "./skills/oma-explanation",
+    "./skills/oma-frontend",
+    "./skills/oma-hwp",
+    "./skills/oma-image",
+    "./skills/oma-market",
+    "./skills/oma-mobile",
+    "./skills/oma-observability",
+    "./skills/oma-orchestration",
+    "./skills/oma-pdf",
+    "./skills/oma-pm",
+    "./skills/oma-qa",
+    "./skills/oma-recap",
+    "./skills/oma-refactor",
+    "./skills/oma-scholar",
+    "./skills/oma-scm",
+    "./skills/oma-search",
+    "./skills/oma-security",
+    "./skills/oma-skill-creation",
+    "./skills/oma-slide",
+    "./skills/oma-tf-infra",
+    "./skills/oma-translation",
+    "./skills/oma-video",
+    "./skills/oma-voice"
+  ],
+  "agents": [
+    "./.agents/agents/architecture-reviewer.md",
+    "./.agents/agents/backend-engineer.md",
+    "./.agents/agents/db-engineer.md",
+    "./.agents/agents/debug-investigator.md",
+    "./.agents/agents/docs-curator.md",
+    "./.agents/agents/frontend-engineer.md",
+    "./.agents/agents/mobile-engineer.md",
+    "./.agents/agents/pm-planner.md",
+    "./.agents/agents/qa-reviewer.md",
+    "./.agents/agents/refactor-engineer.md",
+    "./.agents/agents/research-explorer.md",
+    "./.agents/agents/tf-infra-engineer.md"
+  ],
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "serena": {
+      "command": "serena",
+      "args": [
+        "start-mcp-server",
+        "--context",
+        "oma",
+        "--project-from-cwd",
+        "--add-mode",
+        "no-memories",
+        "--open-web-dashboard",
+        "false"
+      ],
+      "env": {
+        "SERENA_LOG_LEVEL": "info"
+      }
+    },
+    "aside": {
+      "command": "aside",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

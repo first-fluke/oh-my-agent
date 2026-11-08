@@ -2,9 +2,16 @@ import type {
   AgentPluginEmitReport,
   AgentSkillsEmitReport,
   AgentsMdEmitReport,
+  AntigravityEmitReport,
   ClaudePluginEmitReport,
   CliDocsEmitReport,
+  CommandcodeModEmitReport,
+  GrokPluginEmitReport,
+  KimiPluginEmitReport,
+  NativeMcpReport,
+  OpencodePackageEmitReport,
   PiPackageEmitReport,
+  ZcodePluginEmitReport,
 } from "../../platform/emit/types.js";
 
 export interface EmitRunReport {
@@ -14,6 +21,12 @@ export interface EmitRunReport {
   agentsMd?: AgentsMdEmitReport;
   cliDocs?: CliDocsEmitReport;
   piPackage?: PiPackageEmitReport;
+  antigravityPlugin?: AntigravityEmitReport;
+  grokPlugin?: GrokPluginEmitReport;
+  zcodePlugin?: ZcodePluginEmitReport;
+  kimiPlugin?: KimiPluginEmitReport;
+  opencodePackage?: OpencodePackageEmitReport;
+  commandcodeMod?: CommandcodeModEmitReport;
 }
 
 export function renderJson(report: EmitRunReport): string {
@@ -55,6 +68,10 @@ function renderAgentPluginSection(report: AgentPluginEmitReport): string[] {
     lines.push("  mcp servers: no .agents/mcp.json, mcp.json not emitted");
   }
   lines.push(`  extensions: ${report.extensionEntries.join(", ") || "(none)"}`);
+  const copilot = report.copilot;
+  lines.push(
+    `  com.github.copilot: ${copilot.agents.length} agents, ${copilot.commands.length} commands, ${copilot.rules.length} rules, hooks ${copilot.hooks ? "emitted" : "not emitted"}`,
+  );
   return lines;
 }
 
@@ -72,6 +89,50 @@ function renderAgentsMdSection(report: AgentsMdEmitReport): string[] {
     `agents-md -> ${report.outPath}`,
     `  existing: ${report.existingPath} (${report.existingExists ? "found" : "not found"})`,
     `  differs from existing: ${report.existingDiffers ? "yes" : "no"}`,
+  ];
+}
+
+function renderMcpLines(mcp: NativeMcpReport): string[] {
+  if (!mcp.emitted) return ["  mcp servers: no .agents/mcp.json"];
+  return [
+    `  mcp servers: ${mcp.servers.join(", ") || "(none)"}`,
+    ...mcp.skipped.map(
+      (skip) => `    skipped: ${skip.server} (${skip.reason})`,
+    ),
+  ];
+}
+
+function renderAntigravitySection(report: AntigravityEmitReport): string[] {
+  return [
+    `antigravity-plugin -> ${report.outDir}`,
+    `  skills: ${report.passCount} passed, ${report.failCount} failed (${report.skills.length} total)`,
+    `  agents: ${report.agents.length}, rules: ${report.rules.length}`,
+    ...renderMcpLines(report.mcp),
+  ];
+}
+
+function renderGrokSection(report: GrokPluginEmitReport): string[] {
+  return [
+    `grok-plugin -> ${report.manifestPath}`,
+    `grok-marketplace -> ${report.marketplacePath}`,
+    `  agents: ${report.agents.length}`,
+  ];
+}
+
+function renderZcodeSection(report: ZcodePluginEmitReport): string[] {
+  return [
+    `zcode-plugin -> ${report.manifestPath}`,
+    `zcode-marketplace -> ${report.marketplacePath}`,
+    `  agents: ${report.agents.length}`,
+    ...renderMcpLines(report.mcp),
+  ];
+}
+
+function renderKimiSection(report: KimiPluginEmitReport): string[] {
+  return [
+    `kimi-plugin -> ${report.manifestPath}`,
+    `  agents: ${report.agents.length}`,
+    ...renderMcpLines(report.mcp),
   ];
 }
 
@@ -97,6 +158,27 @@ export function renderText(report: EmitRunReport): string {
     lines.push(
       `pi-package -> ${report.piPackage.outDir}`,
       `  skills: ${report.piPackage.passCount} passed, ${report.piPackage.failCount} failed (${report.piPackage.skills.length} total)`,
+      "",
+    );
+  if (report.antigravityPlugin)
+    lines.push(...renderAntigravitySection(report.antigravityPlugin), "");
+  if (report.grokPlugin)
+    lines.push(...renderGrokSection(report.grokPlugin), "");
+  if (report.zcodePlugin)
+    lines.push(...renderZcodeSection(report.zcodePlugin), "");
+  if (report.kimiPlugin)
+    lines.push(...renderKimiSection(report.kimiPlugin), "");
+  if (report.opencodePackage)
+    lines.push(
+      `opencode-package -> ${report.opencodePackage.outDir}`,
+      `  files: ${report.opencodePackage.files.join(", ")}`,
+      "",
+    );
+  if (report.commandcodeMod)
+    lines.push(
+      `commandcode-mod -> ${report.commandcodeMod.outDir}`,
+      `  mod: ${report.commandcodeMod.modPath}`,
+      `  skills: ${report.commandcodeMod.passCount} passed, ${report.commandcodeMod.failCount} failed (${report.commandcodeMod.skills.length} total)`,
       "",
     );
   if (report.agentsMd)

@@ -32,6 +32,32 @@ import { safeGetInstallMode } from "./install-context.js";
 export const OPENCODE_PLUGIN_DIR = join(".opencode", "plugins", "oma");
 
 /**
+ * SSOT bridge source, relative to the oma source dir. Shared by the
+ * per-project install below and by `oma emit --target opencode-package`,
+ * which ships the same file as the npm package entry point.
+ */
+export const OPENCODE_BRIDGE_SOURCE = join(
+  ".agents",
+  "hooks",
+  "variants",
+  "opencode",
+  "oma.ts",
+);
+
+/**
+ * npm package entry emitted beside the bridge: the OpenCode 2.x definition
+ * (`{ id, setup }`) plus the legacy function export for Kilo / OpenCode 1.x.
+ * Not installed per project — the per-project path registers the bridge.
+ */
+export const OPENCODE_PACKAGE_ENTRY_SOURCE = join(
+  ".agents",
+  "hooks",
+  "variants",
+  "opencode",
+  "index.ts",
+);
+
+/**
  * Native config dir of an opencode-family host: `<root>/.opencode` in project
  * mode, `<home>/.config/opencode` in global mode (`.kilo` / `.config/kilo` for
  * Kilo). `nativeRoot` is the project root or HOME respectively.
@@ -91,14 +117,7 @@ export function installOpencodePlugin(
   });
 
   // 2. The bridge entry point.
-  const shimSrc = join(
-    sourceDir,
-    ".agents",
-    "hooks",
-    "variants",
-    "opencode",
-    "oma.ts",
-  );
+  const shimSrc = join(sourceDir, OPENCODE_BRIDGE_SOURCE);
   if (existsSync(shimSrc)) {
     cpSync(shimSrc, join(pluginDir, "oma.ts"), {
       force: true,

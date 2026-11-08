@@ -77,6 +77,16 @@
         },
         {
           "type": "json",
+          "path": "opencode-package/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "commandcode-mod/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
           "path": ".cursor-plugin/plugin.json",
           "jsonpath": "$.version"
         },
@@ -89,6 +99,46 @@
           "type": "json",
           "path": ".claude-plugin/directory/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "antigravity-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".grok-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".zcode-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".kimi-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".zcode-plugin/marketplace.json",
+          "jsonpath": "$.plugins[0].version"
+        },
+        {
+          "type": "json",
+          "path": ".zcode-plugin/marketplace.json",
+          "jsonpath": "$.plugins[1].version"
+        },
+        {
+          "type": "json",
+          "path": ".zcode-plugin/marketplace.json",
+          "jsonpath": "$.plugins[2].version"
+        },
+        {
+          "type": "json",
+          "path": ".zcode-plugin/marketplace.json",
+          "jsonpath": "$.plugins[3].version"
         },
         {
           "type": "generic",

@@ -4,12 +4,30 @@ import { emitAgentPlugin } from "../../platform/emit/agent-plugin.js";
 import { emitAgentSkills } from "../../platform/emit/agent-skills.js";
 import { emitAgentsMd } from "../../platform/emit/agents-md.js";
 import {
+  ANTIGRAVITY_PLUGIN_DIR,
+  emitAntigravityPlugin,
+} from "../../platform/emit/antigravity.js";
+import {
   emitClaudePlugin,
   emitCodexMarketplace,
 } from "../../platform/emit/claude-plugin.js";
 import { emitCliDocs } from "../../platform/emit/cli-docs.js";
+import { emitCommandcodeMod } from "../../platform/emit/commandcode-mod.js";
+import {
+  emitGrokPlugin,
+  GROK_PLUGIN_DIR,
+} from "../../platform/emit/grok-plugin.js";
+import {
+  emitKimiPlugin,
+  KIMI_PLUGIN_DIR,
+} from "../../platform/emit/kimi-plugin.js";
+import { emitOpencodePackage } from "../../platform/emit/opencode-package.js";
 import { emitPiPackage } from "../../platform/emit/pi-package.js";
 import type { AgentSkillsEmitReport } from "../../platform/emit/types.js";
+import {
+  emitZcodePlugin,
+  ZCODE_PLUGIN_DIR,
+} from "../../platform/emit/zcode-plugin.js";
 import {
   addOutputOptions,
   resolveJsonMode,
@@ -23,6 +41,12 @@ const EMIT_TARGETS = [
   "agent-plugin",
   "claude-plugin",
   "pi-package",
+  "antigravity-plugin",
+  "grok-plugin",
+  "zcode-plugin",
+  "kimi-plugin",
+  "opencode-package",
+  "commandcode-mod",
   "agents-md",
   "cli-docs",
   "all",
@@ -94,6 +118,41 @@ export function runEmit(options: RunEmitOptions): EmitRunReport {
   if (target === "pi-package" || target === "all") {
     report.piPackage = emitPiPackage(repoRoot, join(outDir, "pi-package"));
   }
+  // Claude-compatible native-manifest hosts. Antigravity gets a self-contained
+  // tree (its validator rejects the repo root); Grok, ZCode, and Kimi read a
+  // dot-directory manifest at the repo root and reuse the root skills tree.
+  if (target === "antigravity-plugin" || target === "all") {
+    report.antigravityPlugin = emitAntigravityPlugin(
+      repoRoot,
+      join(outDir, ANTIGRAVITY_PLUGIN_DIR),
+    );
+  }
+  if (target === "grok-plugin" || target === "all") {
+    report.grokPlugin = emitGrokPlugin(repoRoot, join(outDir, GROK_PLUGIN_DIR));
+  }
+  if (target === "zcode-plugin" || target === "all") {
+    report.zcodePlugin = emitZcodePlugin(
+      repoRoot,
+      join(outDir, ZCODE_PLUGIN_DIR),
+    );
+  }
+  if (target === "kimi-plugin" || target === "all") {
+    report.kimiPlugin = emitKimiPlugin(repoRoot, join(outDir, KIMI_PLUGIN_DIR));
+  }
+  // JavaScript extension hosts: one npm plugin shared by OpenCode and Kilo,
+  // and a Command Code mod package.
+  if (target === "opencode-package" || target === "all") {
+    report.opencodePackage = emitOpencodePackage(
+      repoRoot,
+      join(outDir, "opencode-package"),
+    );
+  }
+  if (target === "commandcode-mod" || target === "all") {
+    report.commandcodeMod = emitCommandcodeMod(
+      repoRoot,
+      join(outDir, "commandcode-mod"),
+    );
+  }
   if (target === "cli-docs" || target === "all") {
     report.cliDocs = emitCliDocs(repoRoot, outDir);
   }
@@ -108,7 +167,8 @@ export function registerEmitCommand(program: Command): void {
       .description(
         "Emit standards-conformant artifacts from the .agents/ SSOT " +
           "(Agent Skills spec, Agent Plugins package, Claude Code plugin " +
-          "marketplace, Pi package, AGENTS.md, cli/AGENTS.md)",
+          "marketplace, Pi package, Antigravity/Grok/ZCode/Kimi plugin " +
+          "manifests, AGENTS.md, cli/AGENTS.md)",
       )
       .option(
         "--target <target>",
@@ -118,7 +178,8 @@ export function registerEmitCommand(program: Command): void {
       .option(
         "--out <dir>",
         "Output base directory; artifacts are written to their repo-relative " +
-          "paths under it (generated/, .claude-plugin/, and the Agent " +
+          "paths under it (generated/, .claude-plugin/, antigravity-plugin/, " +
+          ".grok-plugin/, .zcode-plugin/, .kimi-plugin/, and the Agent " +
           "Plugins package at the base root). Default: repo root.",
         DEFAULT_OUT_DIR,
       ),

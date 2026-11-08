@@ -10,9 +10,14 @@
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "license": "MIT",
   "keywords": [
+    "oma",
+    "oh-my-agent",
     "multi-agent",
     "orchestrator",
+    "orchestrate",
+    "workflow",
+    "workflows",
     "skills",
-    "workflows"
+    "agents"
   ]
 }

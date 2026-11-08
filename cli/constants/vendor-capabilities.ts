@@ -42,7 +42,9 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     skills: skills("antigravity"),
     agents: { dir: null },
     hooks: settings("antigravity"),
-    plugins: { manifest: null },
+    // Install: `agy plugin install ./antigravity-plugin` from a clone
+    // (self-contained tree; `agy plugin validate --strict` passes).
+    plugins: { manifest: "antigravity-plugin/plugin.json" },
   },
   claude: {
     skills: skills("claude"),
@@ -60,13 +62,19 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     skills: skills("commandcode"),
     agents: { dir: ".commandcode/agents" },
     hooks: settings("commandcode"),
-    plugins: { manifest: null },
+    // Mod package (`oma emit --target commandcode-mod`): install with
+    // `cmd mods add oh-my-agent-commandcode` or `cmd mods add ./commandcode-mod`.
+    plugins: { manifest: "commandcode-mod/package.json" },
   },
   copilot: {
     skills: skills("copilot"),
     agents: { dir: ".github/agents" },
     hooks: settings("copilot"),
-    plugins: { manifest: null },
+    // Agent Plugins 1.0 root package; Copilot reads its agents, commands,
+    // rules and hooks from `com.github.copilot/`. Install with
+    // `copilot plugin install first-fluke/oh-my-agent:codex-plugin`
+    // (the clean tree) or `copilot plugin install <local path>`.
+    plugins: { manifest: "plugin.json" },
   },
   cursor: {
     skills: skills("cursor"),
@@ -78,13 +86,18 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     skills: { native: false, projectDir: null, globalDir: null },
     agents: { dir: ".grok/agents" },
     hooks: settings("grok"),
-    plugins: { manifest: null },
+    // Install: `grok plugin marketplace add first-fluke/oh-my-agent`, then
+    // `grok plugin install oma` (catalog at .grok-plugin/marketplace.json).
+    plugins: { manifest: ".grok-plugin/plugin.json" },
   },
   hermes: {
     skills: skills("hermes"),
     agents: { dir: null },
     hooks: { kind: "none", variant: null },
-    plugins: { manifest: null },
+    // Portable Agent Plugins v1 package (root plugin.json + skills/ +
+    // mcp.json). Install with `hermes plugins install first-fluke/oh-my-agent`
+    // then `hermes plugins enable oma`; skills load as `oma:<skill>`.
+    plugins: { manifest: "plugin.json" },
   },
   kilo: {
     // Kilo natively discovers `.agents/skills/*/SKILL.md`, so no skill
@@ -96,7 +109,9 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     },
     agents: { dir: ".kilo/agents" },
     hooks: { kind: "extension", variant: null },
-    plugins: { manifest: null },
+    // Shared opencode-family npm plugin (`oma emit --target opencode-package`):
+    // install with `"plugin": ["oh-my-agent-opencode"]` in `.kilo/kilo.json`.
+    plugins: { manifest: "opencode-package/package.json" },
   },
   kimi: {
     // Project SSOT scanning does not establish global discovery; retain the
@@ -104,13 +119,19 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     skills: skills("kimi"),
     agents: { dir: null },
     hooks: settings("kimi"),
-    plugins: { manifest: null },
+    // Install: `/plugins install <clone path | github url>` inside Kimi Code
+    // (manifest at .kimi-plugin/plugin.json; stored per user).
+    plugins: { manifest: ".kimi-plugin/plugin.json" },
   },
   kiro: {
     skills: skills("kiro"),
     agents: { dir: ".kiro/agents" },
     hooks: settings("kiro"),
-    plugins: { manifest: null },
+    // A Kiro Power is an Agent Plugins package; the manifest `keywords` are
+    // its activation vocabulary. Install with
+    // `kiro-cli powers install <local path>` (CLI 2.25+) or import the folder
+    // / GitHub repository from the Powers panel.
+    plugins: { manifest: "plugin.json" },
   },
   opencode: {
     skills: {
@@ -120,7 +141,9 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     },
     agents: { dir: ".opencode/agents" },
     hooks: { kind: "extension", variant: null },
-    plugins: { manifest: null },
+    // npm plugin (`oma emit --target opencode-package`): install with
+    // `"plugin": ["oh-my-agent-opencode"]` in `.opencode/opencode.json`.
+    plugins: { manifest: "opencode-package/package.json" },
   },
   pi: {
     skills: {
@@ -136,13 +159,19 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     skills: skills("qwen", true),
     agents: { dir: ".qwen/agents" },
     hooks: settings("qwen"),
-    plugins: { manifest: null },
+    // Qwen Code installs an Agent Plugins v1 package as an extension
+    // (skills + mcp.json; no native qwen-extension.json is needed). Install
+    // with `qwen extensions install <local path | git URL>` or
+    // `qwen extensions link <local path>`.
+    plugins: { manifest: "plugin.json" },
   },
   zcode: {
     skills: { native: false, projectDir: null, globalDir: null },
     agents: { dir: null },
     hooks: { kind: "none", variant: null },
-    plugins: { manifest: null },
+    // Install: Settings -> Plugins -> Create -> Add marketplace (GitHub
+    // `first-fluke/oh-my-agent` or a clone path), then Install `oma`.
+    plugins: { manifest: ".zcode-plugin/plugin.json" },
   },
 };
 

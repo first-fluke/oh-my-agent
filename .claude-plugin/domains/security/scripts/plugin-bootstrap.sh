@@ -20,7 +20,26 @@ INSTALL_SH="https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/i
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 PRESET="${1:-all}"
 case "${PRESET}" in all|frontend|security|research) ;; *) exit 0 ;; esac
-PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-${0%/*}/..}"
+# OMA_PLUGIN_VENDOR names the host that loaded this plugin copy; it decides
+# which project registration proves the wiring is complete:
+#   claude  (default) — .claude/settings.json + .claude/hooks/oma-hook.sh
+#   copilot           — .github/hooks/oma.json + .github/hooks/oma-hook.sh
+#                       (Agent Plugins package, com.github.copilot/ namespace)
+VENDOR="${OMA_PLUGIN_VENDOR:-claude}"
+case "${VENDOR}" in
+  claude)
+    PROJECT_HOOK_DIR=".claude/hooks"
+    PROJECT_SETTINGS=".claude/settings.json"
+    ;;
+  copilot)
+    PROJECT_HOOK_DIR=".github/hooks"
+    PROJECT_SETTINGS=".github/hooks/oma.json"
+    ;;
+  *) exit 0 ;;
+esac
+# Claude exports CLAUDE_PLUGIN_ROOT; Agent Plugins hosts substitute or export
+# PLUGIN_ROOT. The script's own location is the last resort.
+PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT:-${0%/*}/..}}"
 SELECTION="${PLUGIN_DIR}/selection.json"
 
 # Preserve configured CLI precedence and add installer locations as fallbacks.
@@ -65,12 +84,14 @@ resolve_oma() {
 
 project_is_wired() {
   [ -f "${PROJECT_DIR}/.agents/skills/_version.json" ] \
-    && [ -f "${PROJECT_DIR}/.claude/settings.json" ] \
-    && [ -x "${PROJECT_DIR}/.claude/hooks/oma-hook.sh" ] \
+    && [ -f "${PROJECT_DIR}/${PROJECT_SETTINGS}" ] \
+    && [ -x "${PROJECT_DIR}/${PROJECT_HOOK_DIR}/oma-hook.sh" ] \
     && { [ -f "${PROJECT_DIR}/.agents/oma-config.yaml" ] \
       || [ -f "${PROJECT_DIR}/.agents/oma-config.cue" ]; } \
     && command -v bun >/dev/null 2>&1 \
-    && OMA_BOOTSTRAP_PROJECT="${PROJECT_DIR}" OMA_BOOTSTRAP_PRESET="${PRESET}" OMA_BOOTSTRAP_SELECTION="${SELECTION}" bun -e '
+    && OMA_BOOTSTRAP_PROJECT="${PROJECT_DIR}" OMA_BOOTSTRAP_PRESET="${PRESET}" OMA_BOOTSTRAP_SELECTION="${SELECTION}" \
+       OMA_BOOTSTRAP_VENDOR="${VENDOR}" OMA_BOOTSTRAP_SETTINGS="${PROJECT_SETTINGS}" \
+       OMA_BOOTSTRAP_HOOK_DIR="${PROJECT_HOOK_DIR}" bun -e '
       const { readFileSync, existsSync } = require("node:fs");
       const { join } = require("node:path");
       try {
@@ -86,13 +107,19 @@ project_is_wired() {
                 existsSync(join(process.env.OMA_BOOTSTRAP_PROJECT, ".agents/skills", name, "SKILL.md")))) process.exit(1);
         }
         const settings = JSON.parse(readFileSync(
-          join(process.env.OMA_BOOTSTRAP_PROJECT, ".claude/settings.json"), "utf8"));
+          join(process.env.OMA_BOOTSTRAP_PROJECT, process.env.OMA_BOOTSTRAP_SETTINGS), "utf8"));
+        const wrapper = `${process.env.OMA_BOOTSTRAP_HOOK_DIR}/oma-hook.sh`;
         const events = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"];
-        const complete = events.every((event) =>
-          Array.isArray(settings.hooks?.[event]) && settings.hooks[event].some((group) =>
-            Array.isArray(group?.hooks) && group.hooks.some((hook) =>
+        const registered = process.env.OMA_BOOTSTRAP_VENDOR === "copilot"
+          // Copilot hook files are flat: {type, bash, timeoutSec[, matcher]}.
+          ? (group) => group?.type === "command" &&
+              typeof group.bash === "string" && group.bash.includes(wrapper)
+          : (group, event) => Array.isArray(group?.hooks) && group.hooks.some((hook) =>
               hook?.type === "command" && hook.name === `oma-hook-${event}` &&
-              typeof hook.command === "string" && hook.command.includes(".claude/hooks/oma-hook.sh"))));
+              typeof hook.command === "string" && hook.command.includes(wrapper));
+        const complete = events.every((event) =>
+          Array.isArray(settings.hooks?.[event]) &&
+          settings.hooks[event].some((group) => registered(group, event)));
         process.exit(complete ? 0 : 1);
       } catch {
         process.exit(1);

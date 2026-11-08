@@ -1,0 +1,111 @@
+{
+  "name": "oh-my-agent",
+  "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
+  "owner": {
+    "name": "First Fluke",
+    "url": "https://github.com/first-fluke/oh-my-agent"
+  },
+  "plugins": [
+    {
+      "name": "oma",
+      "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
+      "category": "development",
+      "source": {
+        "type": "local",
+        "path": "./"
+      },
+      "keywords": [
+        "multi-agent",
+        "orchestrator",
+        "skills",
+        "workflows"
+      ],
+      "tags": [
+        "skills",
+        "agents",
+        "workflows"
+      ],
+      "homepage": "https://firstfluke.com/oh-my-agent",
+      "author": "First Fluke"
+    },
+    {
+      "name": "oma-frontend",
+      "description": "Frontend implementation, interface design, review, and debugging",
+      "category": "frontend",
+      "source": {
+        "type": "local",
+        "path": "./.claude-plugin/domains/frontend"
+      },
+      "keywords": [
+        "frontend",
+        "oma-architecture",
+        "oma-brainstorm",
+        "oma-design",
+        "oma-frontend",
+        "oma-pm",
+        "oma-qa",
+        "oma-debug",
+        "oma-scm"
+      ],
+      "tags": [
+        "skills",
+        "agents",
+        "frontend"
+      ],
+      "homepage": "https://firstfluke.com/oh-my-agent",
+      "author": "First Fluke"
+    },
+    {
+      "name": "oma-security",
+      "description": "Security scans, source review, and verified remediation",
+      "category": "security",
+      "source": {
+        "type": "local",
+        "path": "./.claude-plugin/domains/security"
+      },
+      "keywords": [
+        "security",
+        "oma-security",
+        "oma-architecture",
+        "oma-qa",
+        "oma-debug",
+        "oma-refactor",
+        "oma-scm"
+      ],
+      "tags": [
+        "skills",
+        "agents",
+        "security"
+      ],
+      "homepage": "https://firstfluke.com/oh-my-agent",
+      "author": "First Fluke"
+    },
+    {
+      "name": "oma-research",
+      "description": "Literature search, market research, document extraction, and academic writing",
+      "category": "research",
+      "source": {
+        "type": "local",
+        "path": "./.claude-plugin/domains/research"
+      },
+      "keywords": [
+        "research",
+        "oma-scholar",
+        "oma-market",
+        "oma-pdf",
+        "oma-hwp",
+        "oma-academic-writing",
+        "oma-search",
+        "oma-translation",
+        "oma-scm"
+      ],
+      "tags": [
+        "skills",
+        "agents",
+        "research"
+      ],
+      "homepage": "https://firstfluke.com/oh-my-agent",
+      "author": "First Fluke"
+    }
+  ]
+}

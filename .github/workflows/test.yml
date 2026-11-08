@@ -248,3 +248,53 @@ jobs:
             ${{ runner.temp }}/oma-plugin-host-smoke-${{ matrix.host }}/command-*.log
           if-no-files-found: warn
           retention-days: 7
+
+  # The checkout root is also an Agent Plugins 1.0 package (root plugin.json,
+  # skills/, mcp.json, com.github.copilot/). This lighter job installs it from
+  # a local path into the two hosts that are npm-installable and need no
+  # sign-in for that step: GitHub Copilot CLI and Qwen Code. Kiro CLI (platform
+  # installer download, login-gated beyond `powers install`) and Hermes Agent
+  # (Python, no npm package) accept the same package and are covered by the
+  # local validation recorded in web/docs/guide/vendor-capabilities.md.
+  # Runs before `bun install`: the host copies the whole directory, and the
+  # smoke script only needs Node built-ins.
+  agent-plugin-hosts:
+    name: ${{ matrix.host }} Agent Plugins package installation
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - host: copilot
+            package: '@github/copilot@1.0.107'
+          - host: qwen
+            package: '@qwen-code/qwen-code@0.26.9'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@v5
+      - name: Install the pinned host in runner temporary storage
+        env:
+          OMA_SMOKE_HOST_PACKAGE: ${{ matrix.package }}
+        run: |
+          npm install --global --prefix "$RUNNER_TEMP/oma-agent-plugin-host-tools" --no-audit --no-fund "$OMA_SMOKE_HOST_PACKAGE"
+          echo "$RUNNER_TEMP/oma-agent-plugin-host-tools/bin" >> "$GITHUB_PATH"
+      - name: Install the checkout as an Agent Plugins package under a scratch HOME
+        env:
+          OMA_SMOKE_HOME: ${{ runner.temp }}/oma-agent-plugin-smoke
+        run: |
+          bun scripts/agent-plugin-host-smoke.ts '${{ matrix.host }}'
+      - name: Preserve Agent Plugins smoke receipts
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: agent-plugin-host-${{ matrix.host }}
+          path: |
+            ${{ runner.temp }}/oma-agent-plugin-smoke/oma-agent-plugin-smoke-${{ matrix.host }}/report.json
+            ${{ runner.temp }}/oma-agent-plugin-smoke/oma-agent-plugin-smoke-${{ matrix.host }}/command-*.log
+          if-no-files-found: warn
+          retention-days: 7

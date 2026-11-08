@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "bash": "OMA_PLUGIN_VENDOR=copilot sh \"${PLUGIN_ROOT}/com.github.copilot/scripts/plugin-bootstrap.sh\" all || true",
+        "timeoutSec": 600
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "bash": "OMA_PLUGIN_VENDOR=copilot sh \"${PLUGIN_ROOT}/com.github.copilot/scripts/plugin-hook.sh\" UserPromptSubmit || true",
+        "timeoutSec": 21
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "bash": "OMA_PLUGIN_VENDOR=copilot sh \"${PLUGIN_ROOT}/com.github.copilot/scripts/plugin-hook.sh\" PreToolUse Bash || true",
+        "timeoutSec": 15,
+        "matcher": "Bash"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "bash": "OMA_PLUGIN_VENDOR=copilot sh \"${PLUGIN_ROOT}/com.github.copilot/scripts/plugin-hook.sh\" Stop || true",
+        "timeoutSec": 40
+      }
+    ]
+  }
+}
