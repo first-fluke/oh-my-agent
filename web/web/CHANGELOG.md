@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.18.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.18.0...web-v11.18.1) (2026-11-08)
+
+
+### Documentation
+
+* **antigravity:** say what installing the repository root yields ([beeff91](https://github.com/first-fluke/oh-my-agent/commit/beeff91c41511dc70619cc5f58bb809bff12479f))
+
 ## [11.18.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.17.2...web-v11.18.0) (2026-11-08)
 
 
