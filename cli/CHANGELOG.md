@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.38.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.1...cli-v20.38.2) (2026-11-08)
+
+
+### Refactoring
+
+* **emit:** share one _shared tree in whole-package plugin trees ([44c9c39](https://github.com/first-fluke/oh-my-agent/commit/44c9c39d38adc0036ec9a2693846b43dbd833ba5))
+
 ## [20.38.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.0...cli-v20.38.1) (2026-11-08)
 
 
