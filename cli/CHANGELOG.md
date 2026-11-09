@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.39.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.4...cli-v20.39.0) (2026-11-09)
+
+
+### Features
+
+* **qwen:** record project hook approval on link ([acdb9dc](https://github.com/first-fluke/oh-my-agent/commit/acdb9dcfcfb914bde00bd168b81183f752856df1))
+
 ## [20.38.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.3...cli-v20.38.4) (2026-11-08)
 
 
