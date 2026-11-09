@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.19.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.18.2...web-v11.19.0) (2026-11-09)
+
+
+### Features
+
+* **qwen:** record project hook approval on link ([acdb9dc](https://github.com/first-fluke/oh-my-agent/commit/acdb9dcfcfb914bde00bd168b81183f752856df1))
+
 ## [11.18.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.18.1...web-v11.18.2) (2026-11-08)
 
 
