@@ -5,14 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-03 · 1 unstarred
+## 2026-11-09 · 1 unstarred
 
-- **@miinimanimo** · Seokmin Chang · Seoul · 9 repos · 0 followers
-  - SeoulTech-ITM, Northumbria Univ-ITMB
+- **@yqecea** · Yusuf · Kazakhstan, Astana · 86 repos · 3 followers
+  - 15 y.o Data Science,Student
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1374)
+## Current (1375)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -81,6 +81,7 @@ summaries to spot which persona is churning.
 - @alloyapple — 2026-03-27
 - @aloknew157 — 2026-01-31
 - @alpoxdev — 2026-04-19
+- @alwayrun — 2026-11-08
 - @alzkdpf — 2026-03-17
 - @amanvishnani — 2026-01-31
 - @amazingguni — 2026-05-22
@@ -1209,6 +1210,7 @@ summaries to spot which persona is churning.
 - @thailoc-dev — 2026-03-14
 - @TharllesteAfya — 2026-10-05
 - @TheCrAge100 — 2026-03-05
+- @thekumbhaj — 2026-11-08
 - @themagrus — 2026-04-28
 - @thenotoriousllama — 2026-09-15
 - @therustyrobot — 2026-03-26
@@ -1357,7 +1359,6 @@ summaries to spot which persona is churning.
 - @YounJJ — 2026-02-07
 - @younkeunho — 2026-05-20
 - @youzhiqingw — 2026-04-22
-- @yqecea — 2026-02-17
 - @ysjkof — 2026-02-07
 - @yucz — 2026-03-08
 - @YUjinEDU — 2026-06-09
