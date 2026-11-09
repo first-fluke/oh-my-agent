@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.20.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.19.0...web-v11.20.0) (2026-11-09)
+
+
+### Features
+
+* **config:** declare LLM providers under providers and agents.default ([8589636](https://github.com/first-fluke/oh-my-agent/commit/8589636edbbb10841ad397de88ca04b52c3889cc))
+
 ## [11.19.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.18.2...web-v11.19.0) (2026-11-09)
 
 
