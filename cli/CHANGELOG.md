@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.40.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.39.0...cli-v20.40.0) (2026-11-09)
+
+
+### Features
+
+* **config:** declare LLM providers under providers and agents.default ([8589636](https://github.com/first-fluke/oh-my-agent/commit/8589636edbbb10841ad397de88ca04b52c3889cc))
+
 ## [20.39.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.38.4...cli-v20.39.0) (2026-11-09)
 
 
