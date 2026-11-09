@@ -31,7 +31,13 @@ export type DispatchPlan = {
 };
 
 export type AgentPlan = {
-  freeProvider?: import("../../utils/free-provider.js").FreeProvider;
+  /**
+   * Set when the agent is routed through a `providers.<name>` endpoint (or
+   * the built-in `free` FreeLLMAPI gateway) instead of the CLI's own account.
+   */
+  provider?: import("../../utils/free-provider.js").LlmProvider;
+  /** True when `model_preset` named the provider (every role is routed). */
+  providerFromPreset?: boolean;
   cli: Exclude<RuntimeVendor, "unknown">;
   /** Absent in auto mode: the vendor's agent/session configuration selects the model. */
   cliModel?: string;

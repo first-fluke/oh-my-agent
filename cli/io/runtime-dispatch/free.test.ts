@@ -169,7 +169,8 @@ describe("free preset dispatch", () => {
     expect(plan).toMatchObject({
       cli: "claude",
       cliModel: "auto",
-      freeProvider: { apiKeyEnv: "FREELLM_API_KEY" },
+      provider: { name: "free", apiKeyEnv: "FREELLM_API_KEY" },
+      providerFromPreset: true,
     });
     expect(JSON.stringify(plan)).not.toContain("gpt-5.4");
   });

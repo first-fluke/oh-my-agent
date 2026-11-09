@@ -52,7 +52,8 @@ export function usesGeminiCli(
 
   if (config.agents) {
     for (const spec of Object.values(config.agents)) {
-      if (isGeminiModelSlug(spec?.model)) return true;
+      // `agents.default` carries tuning only, never a model.
+      if (spec && "model" in spec && isGeminiModelSlug(spec.model)) return true;
     }
   }
 

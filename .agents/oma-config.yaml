@@ -73,9 +73,24 @@ telemetry: false
 # `find -name`, `git grep`) and points the agent at the provider's tools. Set
 # `off` to fall back to the advisory-only primer. Searches confined to paths
 # outside the project or provider-excluded paths already pass.
+#
+# LLM providers — any other key under `providers:` whose value is an object
+# declares an OpenAI/Anthropic-compatible endpoint that spawned agents can be
+# routed through instead of the CLI's own account. The key holds no secret:
+# `api_key_env` names the environment variable. Use it with
+# `model_preset: <name>` (every role → default_model) or per role with
+# `agents.<id>.model: <name>/<model-id>`. Transport decides the child CLI:
+# chat_completions → codex | qwen, responses → codex, anthropic_messages →
+# claude, multi (a gateway serving all) → codex | claude | qwen. `free` is the
+# built-in FreeLLMAPI gateway (see section 2).
 providers:
   code_intelligence: serena
   # code_intelligence_guard: block
+  # exaone:
+  #   base_url: https://api.exaone.ai/v1
+  #   api_key_env: EXAONE_API_KEY
+  #   transport: chat_completions
+  #   default_model: k-exaone_v2.5
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. Model selection
 # ─────────────────────────────────────────────────────────────────────────────
@@ -91,7 +106,8 @@ providers:
 # auto follows the current runtime's agent/model settings without pinning a model.
 # Explicit agents overrides still win; unknown runtimes use default_cli.
 # Fixed presets: free | antigravity | claude | codex | qwen | cursor | kiro | mixed
-# (custom_presets entries are also valid)
+# (custom_presets entries and `providers.<name>` LLM providers are also valid;
+# a provider preset sends every role to that provider's default_model)
 model_preset: auto
 
 # FreeLLMAPI gateway settings (used when model_preset: free).
@@ -117,10 +133,15 @@ model_preset: auto
 #             (https://openrouter.ai/models). Only models whose owning vendor
 #             ships a forkable CLI (antigravity, claude, codex, qwen) are usable —
 #             API-only entries (api_only: true) are skipped. Custom slugs go
-#             in `models:` below.
+#             in `models:` below. "<provider>/<model-id>" routes the role
+#             through a `providers.<name>` LLM provider instead (see section 1).
 #   effort:   none | low | medium | high | xhigh   (ignored for cli-session models like Claude)
 #   thinking: true | false                          (vendor-dependent)
 #   memory:   user | project | local                (per-agent memory tier)
+#
+# `default` is a reserved entry: its effort / thinking / memory apply to every
+# role that sets none of its own (it carries no model), e.g.
+#   default: { effort: medium }
 #
 # `eval` below pins skill-eval dispatch (`oma skill eval --live`) to claude:
 # antigravity external dispatch is unreliable in this environment (prompts do

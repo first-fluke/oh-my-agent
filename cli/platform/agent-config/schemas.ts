@@ -10,10 +10,13 @@ import {
 // AgentSpec — object only (no string shorthand)
 // ---------------------------------------------------------------------------
 
+// The owner is a registry owner (openai, anthropic, ...) or a `providers.<name>`
+// key; the model part also admits `_` and `:` for provider-native ids such as
+// `exaone/k-exaone_v2.5` or a gateway chain like `free/auto:coding`.
 const ModelSlugSchema = z
   .string()
   .regex(
-    /^[a-z][a-z0-9-]*\/[a-z0-9][a-z0-9.-]+$/,
+    /^[a-z][a-z0-9-]*\/[a-z0-9][a-z0-9._:-]+$/,
     "Model slug must be in owner/model format (e.g. openai/gpt-5.4)",
   );
 
@@ -29,6 +32,20 @@ const AgentSpecSchema = z.object({
 });
 
 export type AgentSpec = z.infer<typeof AgentSpecSchema>;
+
+/**
+ * `agents.default`: tuning applied to every role that sets none of its own.
+ * It carries no model — the preset or the per-role entry decides that.
+ */
+const AgentDefaultsSchema = z
+  .object({
+    effort: EffortLevelSchema.optional(),
+    thinking: z.boolean().optional(),
+    memory: MemoryTierSchema.optional(),
+  })
+  .strict();
+
+export type AgentDefaults = z.infer<typeof AgentDefaultsSchema>;
 
 // ---------------------------------------------------------------------------
 // Zod schemas for runtime validation
@@ -54,6 +71,7 @@ const _AgentIdSchema = z.enum(AgentIdValues);
 // plain object with all 11 entries optional so users can override subsets.
 const AgentsMapSchema = z
   .object({
+    default: AgentDefaultsSchema.optional(),
     orchestrator: AgentSpecSchema.optional(),
     architecture: AgentSpecSchema.optional(),
     qa: AgentSpecSchema.optional(),

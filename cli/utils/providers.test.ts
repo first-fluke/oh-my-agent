@@ -7,8 +7,10 @@ import { createMemoryProvider } from "../state/semantic-memory.js";
 import {
   ExaConfigSchema,
   HonchoConfigSchema,
+  llmProviderEntries,
   loadExaConfig,
   loadProviders,
+  ProvidersSchema,
   resolveProviders,
 } from "./providers.js";
 
@@ -130,5 +132,65 @@ describe("capability provider selection", () => {
     expect(HonchoConfigSchema.safeParse({ timeout_ms: -1 }).success).toBe(
       false,
     );
+  });
+});
+
+describe("LLM provider entries under providers:", () => {
+  it("accepts named provider objects beside the capability selectors", () => {
+    const providers = {
+      code_intelligence: "serena",
+      exaone: {
+        base_url: "https://api.exaone.ai/v1",
+        api_key_env: "EXAONE_API_KEY",
+        transport: "chat_completions",
+        default_model: "k-exaone_v2.5",
+      },
+    };
+    expect(ProvidersSchema.safeParse(providers).success).toBe(true);
+    expect(resolveProviders(providers).code_intelligence).toBe("serena");
+    expect(Object.keys(llmProviderEntries(providers))).toEqual(["exaone"]);
+    expect(
+      OmaConfigSchema.safeParse({ model_preset: "exaone", providers }).success,
+    ).toBe(true);
+  });
+
+  it("rejects a misspelled capability key, a secret in the entry, and an unknown transport", () => {
+    expect(
+      ProvidersSchema.safeParse({ code_inteligence: "serena" }).success,
+    ).toBe(false);
+    expect(
+      ProvidersSchema.safeParse({
+        exaone: { base_url: "https://x/v1", api_key: "sk-plaintext" },
+      }).success,
+    ).toBe(false);
+    expect(
+      ProvidersSchema.safeParse({
+        exaone: { base_url: "https://x/v1", transport: "grpc" },
+      }).success,
+    ).toBe(false);
+    expect(
+      ProvidersSchema.safeParse({
+        exaone: { base_url: "https://x/v1", api_key_env: "bad-name" },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("loads provider entries from the project config without touching capability defaults", () => {
+    const root = project(
+      [
+        "model_preset: auto",
+        "providers:",
+        "  web: brave",
+        "  local:",
+        "    base_url: http://127.0.0.1:8080",
+        "    api_key_env: LOCAL_KEY",
+        "",
+      ].join("\n"),
+    );
+    expect(loadProviders(root)).toMatchObject({
+      web: "brave",
+      code_intelligence: "serena",
+    });
+    expect(Object.keys(loadProviders(root))).not.toContain("local");
   });
 });

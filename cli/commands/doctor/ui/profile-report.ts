@@ -37,7 +37,9 @@ export async function renderProfileReport(
         `Server: ${free.reachable ? "reachable" : "unavailable"}`,
         `Environment overrides: ${free.environmentOverrides.join(", ") || "none"}`,
       ].join("\n"),
-      "FreeLLMAPI",
+      free.name && free.name !== "free"
+        ? `Provider: ${free.name}`
+        : "FreeLLMAPI",
     );
     if (free.error) p.log.error(free.error);
   }

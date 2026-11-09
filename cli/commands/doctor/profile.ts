@@ -25,10 +25,11 @@ import {
 } from "../../platform/model-registry.js";
 import { loadConfigLayers } from "../../utils/config-layers.js";
 import {
-  freeApiKey,
-  probeFreeProvider,
-  resolveFreeProvider,
-  resolveFreeVendor,
+  isLlmProviderName,
+  probeLlmProvider,
+  providerApiKey,
+  resolveLlmProvider,
+  resolveProviderVendor,
 } from "../../utils/free-provider.js";
 import {
   AUTH_CHECKERS,
@@ -134,7 +135,7 @@ function resolvePreset(
 ): { preset: ModelPreset; resolvedKey: string } | null {
   const modelPreset = config.model_preset;
   if (!modelPreset) return null;
-  if (modelPreset === "auto" || modelPreset === "free") {
+  if (modelPreset === "auto" || isLlmProviderName(modelPreset, config)) {
     return {
       preset: { description: "Vendor agent defaults", agent_defaults: {} },
       resolvedKey: modelPreset,
@@ -214,6 +215,8 @@ export interface ProfileReport {
   };
   configError?: string;
   freeProvider?: {
+    name?: string;
+    transport?: string;
     baseUrl?: string;
     model?: string;
     apiKeyEnv?: string;
@@ -264,21 +267,24 @@ export async function collectProfileReport(
 
   let freeProvider: ProfileReport["freeProvider"];
   let freeVendor = "unknown";
-  if (profileName === "free" && config) {
+  if (config && isLlmProviderName(profileName, config)) {
     freeProvider = {
       keyPresent: false,
       reachable: false,
-      environmentOverrides: ["FREELLM_BASE_URL", "FREELLM_MODEL"].filter(
-        (name) => process.env[name] !== undefined,
-      ),
+      environmentOverrides:
+        profileName === "free"
+          ? ["FREELLM_BASE_URL", "FREELLM_MODEL"].filter(
+              (name) => process.env[name] !== undefined,
+            )
+          : [],
     };
     try {
-      Object.assign(freeProvider, resolveFreeProvider(config));
-      freeVendor = resolveFreeVendor(config);
-      const provider = resolveFreeProvider(config);
-      freeApiKey(provider);
+      const provider = resolveLlmProvider(profileName, config);
+      Object.assign(freeProvider, provider);
+      freeVendor = resolveProviderVendor(provider, config);
+      providerApiKey(provider);
       freeProvider.keyPresent = true;
-      await probeFreeProvider(provider);
+      await probeLlmProvider(provider);
       freeProvider.reachable = true;
     } catch (error) {
       freeProvider.error =
@@ -302,7 +308,7 @@ export async function collectProfileReport(
     if (freeProvider) {
       return {
         role,
-        model: freeProvider.model ?? "(invalid free config)",
+        model: freeProvider.model || `(invalid ${profileName} provider config)`,
         cli: freeVendor,
         authStatus: freeProvider.reachable
           ? "logged_in"

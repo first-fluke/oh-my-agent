@@ -1,8 +1,9 @@
 import { resolveAutoVendor } from "../../io/runtime-dispatch/detect.js";
 import { loadOmaConfig } from "../../utils/config.js";
 import {
-  resolveFreeProvider,
-  resolveFreeVendor,
+  isLlmProviderName,
+  resolveLlmProvider,
+  resolveProviderVendor,
 } from "../../utils/free-provider.js";
 import {
   BUILT_IN_PRESET_ALIASES,
@@ -100,10 +101,18 @@ export function resolveVendor(
   const parsedConfig = loadOmaConfig(cwd);
   const agentsOverride = parsedConfig?.agents;
   const defaultCli = parsedConfig?.default_cli;
-  if (parsedConfig?.model_preset === "free") {
-    resolveFreeProvider(parsedConfig);
+  if (
+    parsedConfig &&
+    isLlmProviderName(parsedConfig.model_preset, parsedConfig)
+  ) {
+    // A provider preset (`free` or any `providers.<name>`) routes every role
+    // through the transport its endpoint supports.
+    const provider = resolveLlmProvider(
+      parsedConfig.model_preset,
+      parsedConfig,
+    );
     return {
-      vendor: resolveFreeVendor(parsedConfig, vendorOverride),
+      vendor: resolveProviderVendor(provider, parsedConfig, vendorOverride),
       config: cliConfig,
     };
   }

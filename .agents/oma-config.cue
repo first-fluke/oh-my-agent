@@ -17,8 +17,17 @@ package config
 
 // ── 2. Model selection & registries ─────────────────────────────────────────
 
+// model: "<owner>/<model>" — a registry owner (openai/…) or a providers.<name>
+// key; the model part admits "_" and ":" for provider-native ids.
 #AgentSpec: {
-	model:     string & =~"^[a-z0-9-]+/[a-z0-9.-]+$"
+	model:     string & =~"^[a-z0-9-]+/[a-z0-9._:-]+$"
+	effort?:   #EffortLevel
+	thinking?: bool
+	memory?:   "user" | "project" | "local"
+}
+
+// agents.default — tuning for every role that sets none of its own (no model).
+#AgentDefaults: {
 	effort?:   #EffortLevel
 	thinking?: bool
 	memory?:   "user" | "project" | "local"
@@ -292,12 +301,28 @@ package config
 
 // ── Search & Provider overrides ─────────────────────────────────────────────
 
+// An LLM endpoint oma routes spawned agents through (Hermes-style
+// providers.<name>). Keys hold no secret: api_key_env names the variable.
+// Use it with model_preset: <name> (every role → default_model) or
+// agents.<id>.model: "<name>/<model-id>". "free" is the built-in FreeLLMAPI
+// gateway; its legacy top-level free: block is read as providers.free.
+#LlmProviderConfig: {
+	base_url:       string
+	api_key_env?:   string & =~"^[A-Za-z_][A-Za-z0-9_]*$"
+	transport?:     "chat_completions" | "responses" | "anthropic_messages" | "multi"
+	default_model?: string
+}
+
 #ProvidersConfig: {
+	docs?:              "context7"
+	web?:               string
 	code_intelligence?: "serena" | "gortex"
 	// PreToolUse guard that denies native Grep/Glob/recursive shell search
 	// while a code-intelligence provider is configured. Default: block.
 	code_intelligence_guard?: "block" | "off"
-	[string]: _
+	semantic_memory?:         "agentmemory" | "honcho" | "none"
+	// Every other key is an LLM provider.
+	[!~"^(docs|web|code_intelligence|code_intelligence_guard|semantic_memory)$"]: #LlmProviderConfig
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -311,7 +336,10 @@ package config
 	model_preset:    "auto" | "free" | "antigravity" | "claude" | "codex" | "qwen" | "cursor" | "kiro" | "mixed" | string
 	default_cli?:    string
 	free?:           #FreeConfig
-	agents?: [string]: #AgentSpec
+	agents?: {
+		default?: #AgentDefaults
+		[!="default"]: #AgentSpec
+	}
 	models?: [string]: #ModelSpec
 	custom_presets?: [string]: #CustomPresetSpec
 

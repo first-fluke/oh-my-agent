@@ -51,11 +51,11 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `auto_update_cli` | boolean | `true` | Background CLI version checks; opt out with `false`. |
 | `telemetry` | boolean | `false` | Vendor telemetry opt-in used by install, update, and link reconciliation. |
 | `model_preset` | non-empty string | `auto` in new templates | Built-in or custom model preset. `OMA_MODEL_PRESET` overrides it for one process. |
-| `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | FreeLLMAPI settings when the preset is `free`; `FREELLM_BASE_URL` and `FREELLM_MODEL` override file values, and the key name never contains the secret. See [Per-agent model configuration](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Select documentation, search, code-intelligence, and semantic-memory providers. See [Providers](#providers). |
+| `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | FreeLLMAPI settings when the preset is `free`; the legacy spelling of `providers.free`. `FREELLM_BASE_URL` and `FREELLM_MODEL` override file values, and the key name never contains the secret. See [Per-agent model configuration](/docs/guide/per-agent-models#freellmapi-preset). |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`, plus any `<name>` → LLM provider object | `context7`, `native`, `serena`, `block`, `agentmemory`; no LLM providers | Select documentation, search, code-intelligence, and semantic-memory providers, and declare LLM endpoints agents can be routed through. See [Providers](#providers). |
 | `brave` | `api_key_env` or `api_key_vault` | unset | Brave search credential reference. |
 | `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | See [Honcho details](#honcho-semantic-memory) | Honcho semantic-memory connection settings. |
-| `agents` | agent ID → `model`, optional `effort`, `thinking`, `memory` | preset resolution | Per-agent overrides applied over the selected preset. Effort is `none`, `low`, `medium`, `high`, or `xhigh`; memory is `user`, `project`, or `local`. |
+| `agents` | agent ID → `model`, optional `effort`, `thinking`, `memory`; `default` → `effort`, `thinking`, `memory` | preset resolution | Per-agent overrides applied over the selected preset. Effort is `none`, `low`, `medium`, `high`, or `xhigh`; memory is `user`, `project`, or `local`. `agents.default` fills those fields for every role that sets none; a `<provider>/<model-id>` model routes the role through that LLM provider. |
 | `models` | model slug → CLI mapping | unset | Inline model definitions for supported vendor CLIs. |
 | `custom_presets` | preset → description, optional `extends`, `agent_defaults` | unset | User-defined presets; `extends` may inherit a built-in. |
 | `vendors` | `string[]` of selected vendor IDs (YAML and CUE) | absent: `oma link` uses every linkable vendor, `oma update` uses vendors whose project directories exist | Selects which vendor integrations `oma install` and `oma update` project. The dispatch capability map lives in the managed orchestration config; see [Vendor selection and dispatch metadata](#vendor-selection-and-dispatch-metadata). |
@@ -98,6 +98,30 @@ These blocks are accepted through the configuration passthrough and are interpre
 | `code_intelligence` | `serena`, `gortex` | `serena` |
 | `code_intelligence_guard` | `block`, `off` | `block` |
 | `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
+
+Any other key under `providers` is an **LLM provider**: an OpenAI- or Anthropic-compatible endpoint that `oma agent spawn` can route a child CLI through instead of that CLI's own account. The value is an object:
+
+| Field | Accepted values | Required | Purpose |
+| --- | --- | --- | --- |
+| `base_url` | absolute HTTP(S) URL without credentials, query, or fragment; `/v1` is appended when missing | yes | The endpoint. |
+| `api_key_env` | environment-variable name | yes (except `free`, which defaults to `FREELLM_API_KEY`) | Where the key is read from; the file never holds the key. |
+| `transport` | `chat_completions` (default), `responses`, `anthropic_messages`, `multi` | no | The wire protocol the endpoint speaks. It selects the child CLI: `chat_completions` → Codex or Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` (a gateway serving all three) → Codex, Claude, or Qwen. |
+| `default_model` | model ID | when the provider is used as `model_preset` | The model every role uses under `model_preset: <name>`. |
+
+```yaml
+providers:
+  code_intelligence: serena
+  exaone:
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY
+    transport: chat_completions
+    default_model: k-exaone_v2.5
+agents:
+  default: { effort: medium }
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+`free` is the built-in provider for a local FreeLLMAPI gateway and keeps its defaults, environment overrides, and the legacy top-level `free:` block; see [Custom LLM providers](/docs/guide/per-agent-models#custom-llm-providers).
 
 `code_intelligence_guard` controls the PreToolUse search guard. Native searches confined to confirmed provider exclusions or paths outside the project are allowed without a bypass. The guard reads Serena exclusions and enabled gitignore rules, or Gortex's exclusion listing; it does not infer dependencies from directory names.
 

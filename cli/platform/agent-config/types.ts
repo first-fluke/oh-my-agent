@@ -1,4 +1,4 @@
-import type { AgentSpec } from "./schemas.js";
+import type { AgentDefaults, AgentSpec } from "./schemas.js";
 
 // ---------------------------------------------------------------------------
 // AgentId — canonical set of agent role identifiers (13 values)
@@ -146,8 +146,12 @@ export interface OmaConfig {
    * omitted so features that gate on telemetry (e.g. Remote Control) work.
    */
   telemetry?: boolean;
-  /** Per-agent overrides applied as shallow merge on top of preset */
-  agents?: Partial<Record<AgentId, AgentSpec>>;
+  /**
+   * Per-agent overrides applied as shallow merge on top of preset. The
+   * reserved `default` entry holds effort / thinking / memory for roles that
+   * set none (never a model).
+   */
+  agents?: Partial<Record<AgentId, AgentSpec>> & { default?: AgentDefaults };
   /** Inline user-defined model slugs (formerly models.yaml) */
   models?: Record<string, UserModelSpec>;
   /** User-defined presets; may extend a built-in */

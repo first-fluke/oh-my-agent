@@ -6,7 +6,7 @@ import {
   detectRuntimeVendor,
   resolveAutoVendor,
 } from "./runtime-dispatch/detect.js";
-import { applyFreeProvider } from "./runtime-dispatch/free-invocation.js";
+import { applyLlmProvider } from "./runtime-dispatch/free-invocation.js";
 import {
   buildExternalInvocation,
   type ExternalInvocationOptions,
@@ -203,7 +203,9 @@ export function planDispatch(
     const planOverride =
       targetVendor === "pi" || runtimeVendor === "pi" ? "pi" : undefined;
     plan = resolveAgentPlan(agentId, planOverride, env);
-    if (plan.freeProvider) {
+    if (plan.provider) {
+      // A provider route follows the dispatch target (codex / claude / qwen by
+      // transport), not the pi/runtime override used for registry models.
       plan = resolveAgentPlan(agentId, targetVendor, env);
     }
     // An inherited plan follows the already resolved dispatch target, including
@@ -246,13 +248,14 @@ export function planDispatch(
     inv: Invocation,
   ): DispatchPlan => {
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
-    if (activePlan?.freeProvider) {
-      applyFreeProvider({
+    if (activePlan?.provider) {
+      applyLlmProvider({
         invocation: inv,
         vendor: targetVendor,
-        provider: activePlan.freeProvider,
+        provider: activePlan.provider,
         env,
         workspace,
+        fromPreset: activePlan.providerFromPreset === true,
       });
     }
     return { mode, runtimeVendor, targetVendor, reason, invocation: inv };

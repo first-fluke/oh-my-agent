@@ -3,14 +3,14 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { type ParseError, parse } from "jsonc-parser";
 import {
-  type FreeProvider,
   FreeProviderError,
+  type LlmProvider,
 } from "../../utils/free-provider.js";
 import { isRecord } from "../../utils/type-guards.js";
 
 interface FreeSettingsRequest {
   vendor: string;
-  provider: FreeProvider;
+  provider: LlmProvider;
   env: NodeJS.ProcessEnv;
   workspace?: string;
 }
@@ -67,7 +67,7 @@ export function assertFreeSettings({
     }
     if (errors.length || !isRecord(settings))
       throw new FreeProviderError(
-        `Invalid ${vendor} settings at ${file}; cannot verify the free route.`,
+        `Invalid ${vendor} settings at ${file}; cannot verify the ${provider.name} route.`,
       );
     if (isRecord(settings.env)) {
       const names =
@@ -86,7 +86,7 @@ export function assertFreeSettings({
       for (const name of names) {
         if (settings.env[name] && settings.env[name] !== env[name]) {
           throw new FreeProviderError(
-            `${file} sets ${name}, overriding the free route. Remove the conflicting setting or use --vendor codex.`,
+            `${file} sets ${name}, overriding the ${provider.name} route. Remove the conflicting setting or use --vendor codex.`,
           );
         }
       }

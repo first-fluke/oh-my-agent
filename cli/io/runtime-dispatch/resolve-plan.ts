@@ -17,8 +17,9 @@ import {
   type RuntimeId,
 } from "../../platform/model-registry.js";
 import {
-  resolveFreeProvider,
-  resolveFreeVendor,
+  isLlmProviderName,
+  resolveLlmProvider,
+  resolveProviderVendor,
 } from "../../utils/free-provider.js";
 import { ConfigError } from "./config-error.js";
 import { loadUserConfig } from "./config-loader.js";
@@ -84,14 +85,80 @@ function mergeWithBase(
   );
 }
 
+type AgentDefaults = Pick<AgentSpec, "effort" | "thinking" | "memory">;
+
+/** `agents.default`: effort / thinking / memory used when a role sets none. */
+function agentDefaults(config: Partial<OmaConfig>): AgentDefaults {
+  const entry = (config.agents as Record<string, unknown> | undefined)?.default;
+  return entry && typeof entry === "object" && !Array.isArray(entry)
+    ? (entry as AgentDefaults)
+    : {};
+}
+
+/** Fill effort / thinking / memory from `agents.default` where the plan has none. */
+function withAgentDefaults(
+  plan: AgentPlan,
+  config: Partial<OmaConfig>,
+): AgentPlan {
+  const defaults = agentDefaults(config);
+  if (plan.effort === undefined && defaults.effort !== undefined)
+    plan.effort = defaults.effort as EffortLevel;
+  if (plan.thinking === undefined && defaults.thinking !== undefined)
+    plan.thinking = defaults.thinking;
+  if (plan.memory === undefined && defaults.memory !== undefined)
+    plan.memory = defaults.memory;
+  return plan;
+}
+
+/** The per-role fields (`agents.<id>`) that apply to a provider-routed plan. */
+function roleTuning(
+  agentId: string,
+  config: Partial<OmaConfig>,
+): AgentDefaults {
+  const bare = agentId.replace(/-agent$/i, "");
+  const agents = (config.agents ?? {}) as Record<string, AgentSpec | undefined>;
+  const spec =
+    agents[normalizeAgentId(agentId) ?? bare] ??
+    agents[bare] ??
+    agents[agentId];
+  return spec
+    ? { effort: spec.effort, thinking: spec.thinking, memory: spec.memory }
+    : {};
+}
+
+function providerPlan(
+  providerName: string,
+  cliModel: string,
+  tuning: AgentDefaults,
+  fromPreset: boolean,
+  config: Partial<OmaConfig>,
+  vendorOverride: string | undefined,
+  env: NodeJS.ProcessEnv,
+): AgentPlan {
+  const provider = resolveLlmProvider(providerName, config, env);
+  const plan: AgentPlan = {
+    cli: resolveProviderVendor(provider, config, vendorOverride, env),
+    cliModel,
+    provider,
+    providerFromPreset: fromPreset,
+  };
+  if (tuning.effort !== undefined) plan.effort = tuning.effort as EffortLevel;
+  if (tuning.thinking !== undefined) plan.thinking = tuning.thinking;
+  if (tuning.memory !== undefined) plan.memory = tuning.memory;
+  return withAgentDefaults(plan, config);
+}
+
 /**
  * Pure implementation — separated from file I/O so tests can inject config.
  *
  * 4-step resolver:
- * 1. Resolve preset (built-in, alias, or custom with optional extends merge)
- * 2. Spec selection — override (agents map) shallow-merged over preset entry
+ * 1. Resolve preset (built-in, alias, custom with optional extends merge, or
+ *    a `providers.<name>` entry / `free`, which routes every role)
+ * 2. Spec selection — override (agents map) shallow-merged over preset entry;
+ *    a `<provider>/<model>` slug routes that role through the provider
  * 3. Registry lookup — built-in models + user inline models
- * 4. Feature filter — drop effort for cli-session, apply vendorOverride
+ * 4. Feature filter — drop effort for cli-session, apply vendorOverride, then
+ *    fill effort / thinking / memory from `agents.default`
  */
 export function resolveAgentPlanFromConfig(
   agentId: string,
@@ -100,13 +167,24 @@ export function resolveAgentPlanFromConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): AgentPlan {
   const modelPreset = config.model_preset;
-  if (modelPreset === "free") {
-    const freeProvider = resolveFreeProvider(config, env);
-    return {
-      cli: resolveFreeVendor(config, vendorOverride, env),
-      cliModel: freeProvider.model,
-      freeProvider,
-    };
+  if (isLlmProviderName(modelPreset, config)) {
+    // Every role goes to the provider's default model; per-role model pins are
+    // ignored (they would escape the route), per-role tuning still applies.
+    const provider = resolveLlmProvider(modelPreset, config, env);
+    if (!provider.model) {
+      throw new ConfigError(
+        `model_preset "${modelPreset}" needs providers.${modelPreset}.default_model, or pin roles with agents.<id>.model: ${modelPreset}/<model-id>.`,
+      );
+    }
+    return providerPlan(
+      modelPreset,
+      provider.model,
+      roleTuning(agentId, config),
+      true,
+      config,
+      vendorOverride,
+      env,
+    );
   }
   if (!modelPreset) {
     throw new ConfigError(
@@ -171,7 +249,10 @@ export function resolveAgentPlanFromConfig(
   const override = config.agents?.[typedAgentId];
 
   if (modelPreset === "auto" && !override) {
-    return { cli: resolveAutoVendor(config.default_cli, vendorOverride, env) };
+    return withAgentDefaults(
+      { cli: resolveAutoVendor(config.default_cli, vendorOverride, env) },
+      config,
+    );
   }
 
   const spec = override ? { ...presetSpec, ...override } : presetSpec;
@@ -185,6 +266,22 @@ export function resolveAgentPlanFromConfig(
   if (override && JSON.stringify(override) === JSON.stringify(presetSpec)) {
     console.debug(
       `[resolve-agent-plan] ${agentId}: override is identical to preset entry (no-op).`,
+    );
+  }
+
+  // Step 2b: a `<provider>/<model-id>` slug routes this role through that
+  // `providers.<name>` endpoint; the model id is passed to the CLI as-is.
+  const slashIdx = spec.model.indexOf("/");
+  const owner = slashIdx === -1 ? undefined : spec.model.slice(0, slashIdx);
+  if (isLlmProviderName(owner, config)) {
+    return providerPlan(
+      owner,
+      spec.model.slice(slashIdx + 1),
+      { effort: spec.effort, thinking: spec.thinking, memory: spec.memory },
+      false,
+      config,
+      vendorOverride,
+      env,
     );
   }
 
@@ -258,6 +355,15 @@ export function resolveAgentPlanFromConfig(
 
   if (finalEffort !== undefined) plan.effort = finalEffort;
   if (spec.thinking !== undefined) plan.thinking = spec.thinking;
+  withAgentDefaults(plan, config);
+  // A cli-session model (Claude Code) has no effort flag: a default is dropped
+  // silently here, since the role never asked for one.
+  if (
+    cli !== "pi" &&
+    modelSpec.supports.effort?.type === "cli-session" &&
+    spec.effort === undefined
+  )
+    delete plan.effort;
   if (spec.memory !== undefined) plan.memory = spec.memory;
 
   return plan;
