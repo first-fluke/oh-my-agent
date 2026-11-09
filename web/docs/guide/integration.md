@@ -166,7 +166,7 @@ For Qwen Code, generated Markdown definitions live in `.qwen/agents/`. Select an
 
 Qwen Code uses the same `code-intelligence-primer` as the other vendors. Like Claude Code, it registers the shared primer on `SessionStart` and `UserPromptSubmit`: guidance is injected once per session and again after compaction. The primer follows the configured provider (Serena or Gortex), includes deferred-tool guidance, and allows native fallback when the provider is unavailable or times out. Qwen does not add separate code-search blocking or provider-result tracking.
 
-After updating the CLI, run `oma link qwen` to regenerate the hook settings and wrapper, then start a new Qwen session. Hook output tests verify the integration contract; they do not guarantee which tool a model will choose.
+After updating the CLI, run `oma link qwen` to regenerate the hook settings and wrapper, then start a new Qwen session. Qwen Code only runs project hooks after you approve that exact configuration (`~/.qwen/hookApprovals.json`); `oma link` records that approval for the hooks it wrote, so neither the first interactive session nor `qwen -p` withholds them. It never approves hooks oma did not write and never overrides a rejection you made in Qwen. Hook output tests verify the integration contract; they do not guarantee which tool a model will choose.
 
 ### Step 3: configure user preferences
 

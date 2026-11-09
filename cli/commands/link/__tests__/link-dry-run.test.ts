@@ -29,6 +29,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const homeWriters = {
   trust: vi.fn(() => ({ changed: false, alreadyTrusted: true })),
+  qwenApproval: vi.fn(() => ({
+    changed: false,
+    alreadyApproved: true,
+    path: "/tmp/hookApprovals.json",
+  })),
   agyHud: vi.fn(() => ({ installed: false, reason: "stubbed" })),
   agyMcp: vi.fn(() => undefined),
   kimiHooks: vi.fn(() => ({ installed: false, reason: "stubbed" })),
@@ -41,6 +46,11 @@ const homeWriters = {
 vi.mock("../../../vendors/claude/trust.js", () => ({
   ensureClaudeWorkspaceTrust: (...args: unknown[]) =>
     homeWriters.trust(...(args as [])),
+}));
+vi.mock("../../../vendors/qwen/hook-approvals.js", () => ({
+  ensureQwenHookApproval: (...args: unknown[]) =>
+    homeWriters.qwenApproval(...(args as [])),
+  qwenHookApprovalsPath: () => "/tmp/hookApprovals.json",
 }));
 
 vi.mock("../../../vendors/antigravity/hud.js", () => ({
@@ -189,6 +199,7 @@ describe("link --dry-run (real project writers)", () => {
     link({ quiet: true, dryRun: true });
 
     expect(homeWriters.trust).not.toHaveBeenCalled();
+    expect(homeWriters.qwenApproval).not.toHaveBeenCalled();
     expect(homeWriters.agyHud).not.toHaveBeenCalled();
     expect(homeWriters.agyMcp).not.toHaveBeenCalled();
     expect(homeWriters.kimiHooks).not.toHaveBeenCalled();

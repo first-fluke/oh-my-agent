@@ -107,6 +107,14 @@ vi.mock("../../../vendors/claude/trust.js", () => ({
     alreadyTrusted: true,
   })),
 }));
+vi.mock("../../../vendors/qwen/hook-approvals.js", () => ({
+  ensureQwenHookApproval: vi.fn(() => ({
+    changed: false,
+    alreadyApproved: true,
+    path: "/tmp/hookApprovals.json",
+  })),
+  qwenHookApprovalsPath: vi.fn(() => "/tmp/hookApprovals.json"),
+}));
 
 vi.mock("../../../vendors/codex/settings.js", () => ({
   applyCodexSettings: vi.fn((s: unknown) => s),

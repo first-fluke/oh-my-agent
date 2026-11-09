@@ -10,6 +10,7 @@ import {
   sessionDir,
 } from "../../state/events.js";
 import { isRecord } from "../../utils/type-guards.js";
+import { qwenHookApprovalState } from "../../vendors/qwen/hook-approvals.js";
 import type {
   HookOrderDoctorCheck,
   StateDoctorCheck,
@@ -397,6 +398,20 @@ export function collectStateDoctorCheck(projectDir: string): StateDoctorCheck {
       issues.push(`hook settings are corrupt: ${check.vendor}`);
     } else if (!check.ok) {
       issues.push(`hook order invalid: ${check.vendor}`);
+    }
+  }
+  // Qwen withholds project hooks until that exact configuration is approved
+  // in ~/.qwen/hookApprovals.json (`oma link qwen` records it for oma hooks).
+  if (hookOrder.some((check) => check.vendor === "qwen" && check.configured)) {
+    const approval = qwenHookApprovalState(projectDir);
+    if (approval === "pending") {
+      issues.push(
+        "qwen project hooks are not approved in ~/.qwen/hookApprovals.json (run `oma link qwen`, or review them with /hooks in Qwen Code)",
+      );
+    } else if (approval === "rejected") {
+      issues.push(
+        "qwen project hooks were rejected in Qwen Code (remove the entry from ~/.qwen/hookApprovals.json to reconsider)",
+      );
     }
   }
 

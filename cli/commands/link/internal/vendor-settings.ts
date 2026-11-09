@@ -56,6 +56,10 @@ import {
   needsKiroMcpUpdate,
 } from "../../../vendors/kiro/settings.js";
 import {
+  ensureQwenHookApproval,
+  qwenHookApprovalsPath,
+} from "../../../vendors/qwen/hook-approvals.js";
+import {
   applyQwenSettings,
   needsQwenSettingsUpdate,
 } from "../../../vendors/qwen/settings.js";
@@ -163,6 +167,31 @@ export function syncVendorSettings(
       if (!dryRun) {
         const next = applyQwenSettings(qwenSettings, qwenOptions);
         safeWriteJson(qwenSettingsPath, next);
+      }
+    }
+
+    // Qwen withholds the hooks in a project's .qwen/settings.json until the
+    // user approves that exact configuration (~/.qwen/hookApprovals.json);
+    // `qwen -p` never asks and just skips them. The hooks are oma's own,
+    // written at the user's request, so record the approval for them — only
+    // when every project hook is an oma hook, and never over a rejection.
+    // Project installs only: a global install keeps its hooks in the user
+    // settings, which need no approval. See vendors/qwen/hook-approvals.ts.
+    if (safeGetInstallMode() === "project") {
+      record(qwenHookApprovalsPath(), "write", "ensureQwenHookApproval");
+      if (!dryRun) {
+        const approval = ensureQwenHookApproval(nativeRoot);
+        if (!quiet) {
+          if (approval.changed) {
+            console.log(
+              `${pc.green("✓")} qwen: approved project hooks (${approval.path})`,
+            );
+          } else if (approval.reason) {
+            console.log(
+              `${pc.yellow("⚠")} qwen hook approval: ${approval.reason}`,
+            );
+          }
+        }
       }
     }
   }
