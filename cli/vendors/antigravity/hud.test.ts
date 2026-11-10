@@ -154,28 +154,34 @@ describe("installAntigravityHud", () => {
     const doc = JSON.parse(hooksWrite?.[1] as string);
     expect(doc.hooks).toBeUndefined();
 
+    // Project commands are path-free so the committed file is identical on
+    // every machine/OS (no HOME path, no quoting).
+    const projectCmd = (script: string) =>
+      `oma hook script --vendor antigravity --script ${script}`;
+    expect(JSON.stringify(doc)).not.toContain(FAKE_HOME);
+
     // lifecycle (PreInvocation): handler array directly, no matcher
     expect(doc["oma-keyword-detector"].PreInvocation[0]).toMatchObject({
       type: "command",
-      command: cmd("keyword-detector.ts"),
+      command: projectCmd("keyword-detector.ts"),
       timeout: 5,
     });
     expect(doc["oma-state-boundary"].PreInvocation[0].command).toBe(
-      cmd("state-boundary.ts"),
+      projectCmd("state-boundary.ts"),
     );
     expect(doc["oma-skill-injector"].PreInvocation[0].command).toBe(
-      cmd("skill-injector.ts"),
+      projectCmd("skill-injector.ts"),
     );
 
     // tool event (PreToolUse): { matcher, hooks: [handler] }
     expect(doc["oma-test-filter"].PreToolUse[0].matcher).toBe("run_command");
     expect(doc["oma-test-filter"].PreToolUse[0].hooks[0].command).toBe(
-      cmd("test-filter.ts"),
+      projectCmd("test-filter.ts"),
     );
 
     // lifecycle (Stop): handler array directly
     expect(doc["oma-persistent-mode"].Stop[0].command).toBe(
-      cmd("persistent-mode.ts"),
+      projectCmd("persistent-mode.ts"),
     );
 
     // settings.json: statusLine (HOME copy) only — agy strips hooks/defaultHooksPath.
@@ -219,6 +225,15 @@ describe("installAntigravityHud", () => {
     );
     expect(handler?.[1]).toContain(
       `env: { ...process.env, OMA_HOME: ${JSON.stringify(omaHome)} }`,
+    );
+    // Global hooks.json is not committed to a project, so it keeps the HOME
+    // wrapper (which carries the baked OMA_HOME).
+    const globalHooks = writes.find(
+      ([path]) => path === join(omaHome, ".agents/hooks.json"),
+    );
+    const globalDoc = JSON.parse(globalHooks?.[1] as string);
+    expect(globalDoc["oma-state-boundary"].PreInvocation[0].command).toBe(
+      cmd("state-boundary.ts"),
     );
     const settingsWrite = writes.find(([path]) => path === SETTINGS);
     const settings = JSON.parse(settingsWrite?.[1] as string);

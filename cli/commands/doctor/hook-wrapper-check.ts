@@ -28,8 +28,8 @@ import { VARIANT_ROUTES } from "../hook/dispatch.js";
 // ---------------------------------------------------------------------------
 // Vendor → hookDir table — derived from the embedded variant route table so
 // doctor coverage can never drift from what `oma hook run` actually dispatches.
-// antigravity is excluded: its `.agents/hooks.json` runs handlers directly via
-// bun from `.agents/hooks/core` — no oma-hook.sh wrapper exists for it.
+// antigravity is excluded: its `.agents/hooks.json` calls
+// `oma hook script` directly — no oma-hook.sh wrapper exists for it.
 // ---------------------------------------------------------------------------
 
 const PROJECT_HOOK_DIRS: Array<{ vendor: string; hookDir: string }> =

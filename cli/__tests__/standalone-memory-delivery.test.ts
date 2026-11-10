@@ -114,8 +114,10 @@ describe("installed standalone semantic delivery", () => {
     const doc = JSON.parse(
       readFileSync(join(root, ".agents/hooks.json"), "utf8"),
     );
+    // Project hooks.json is path-free; it runs the same `oma hook script`
+    // dispatch the HOME wrapper invoked below spawns.
     expect(doc["oma-persistent-mode"].Stop[0].command).toBe(
-      `bun "${join(hooks, "persistent-mode.ts")}"`,
+      "oma hook script --vendor antigravity --script persistent-mode.ts",
     );
     expect(
       Object.keys(doc).filter((key) => key === "oma-persistent-mode"),

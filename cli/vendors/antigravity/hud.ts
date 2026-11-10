@@ -50,6 +50,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { isStandaloneHookScript } from "../../constants/standalone-hooks.js";
 import { shellQuote } from "../../platform/hooks-composer/hook-command.js";
 import { standaloneHookSources } from "../../platform/hooks-composer/standalone-wrapper.js";
 import { safeGetInstallMode } from "../../platform/install-context.js";
@@ -272,22 +273,46 @@ function mergeAgyHooksDoc(
 }
 
 /**
+ * Handler command for one hook.
+ *
+ * Project installs emit `oma hook script --vendor antigravity --script <name>`
+ * — no path, no quotes — so the committed `.agents/hooks.json` is
+ * byte-identical on macOS, Linux, and Windows and stops churning between
+ * teammates' HOME dirs. It carries no quotes, so it also survives agy's
+ * shell-less Windows runner (see WINDOWS above), where `oma` resolves to
+ * `oma.cmd` via PATHEXT. This is exactly what the HOME standalone wrapper
+ * spawns, minus the bun hop.
+ *
+ * Global installs point at the HOME wrapper instead (via agyScriptCommand): it
+ * carries the baked `OMA_HOME`, and the global hooks.json is never committed
+ * to a project.
+ */
+function agyHookCommand(script: string, wrapperDir: string | null): string {
+  return wrapperDir
+    ? agyScriptCommand(join(wrapperDir, script))
+    : `oma hook script --vendor antigravity --script ${script}`;
+}
+
+/**
  * Build agy's `hooks.json` document: a top-level map of hook name → event
- * config. Each OMA core hook gets its own named entry; commands point at the
- * generated standalone wrappers by absolute path. Each entry dispatches only
- * its named handler, so separate agy registrations cannot repeat a full chain.
+ * config. Each OMA core hook gets its own named entry (see agyHookCommand for
+ * the command form). Each entry dispatches only its named handler, so separate
+ * agy registrations cannot repeat a full chain. Hooks outside the standalone
+ * allowlist are skipped: `oma hook script` would no-op on them anyway, and the
+ * name is embedded unquoted.
  */
 function buildAgyHooksDoc(
-  coreHooksDir: string,
+  wrapperDir: string | null,
   variant: AntigravityVariant,
 ): AgyHooksDoc {
   const doc: AgyHooksDoc = {};
   for (const [eventName, rawConfig] of Object.entries(variant.events)) {
     const configs = Array.isArray(rawConfig) ? rawConfig : [rawConfig];
     for (const config of configs) {
+      if (!isStandaloneHookScript(config.hook)) continue;
       const handler = {
         type: "command",
-        command: agyScriptCommand(join(coreHooksDir, config.hook)),
+        command: agyHookCommand(config.hook, wrapperDir),
         timeout: config.timeout,
       };
       const entry = TOOL_EVENTS.has(eventName)
@@ -363,8 +388,9 @@ export function installAntigravityHud(
   const statusLineHook = variant.statusLine?.hook ?? "hud.ts";
 
   // Project hooks.json — agy auto-loads it from the workspace `.agents/` root.
-  // Commands point at the HOME wrappers (absolute, cwd-independent).
-  // MERGE, don't overwrite: the file is shared with user-registered hooks
+  // Project installs use path-free `oma hook script` commands so the committed
+  // file is identical across machines/OSes; global installs use the HOME
+  // wrappers (they carry OMA_HOME). MERGE, don't overwrite: the file is shared with user-registered hooks
   // (added by hand or via agy's /hooks UI) — only `oma-*` entries are ours.
   const hooksJsonPath = join(sourceDir, PROJECT_HOOKS_JSON);
   const coreHooksDir = join(sourceDir, PROJECT_CORE_HOOKS);
@@ -376,7 +402,10 @@ export function installAntigravityHud(
       mkdirSync(join(sourceDir, ".agents"), { recursive: true });
       safeWriteJson(
         hooksJsonPath,
-        mergeAgyHooksDoc(existingHooks, buildAgyHooksDoc(hooksDir, variant)),
+        mergeAgyHooksDoc(
+          existingHooks,
+          buildAgyHooksDoc(globalHome ? hooksDir : null, variant),
+        ),
       );
       writtenHooksJson = hooksJsonPath;
     }
