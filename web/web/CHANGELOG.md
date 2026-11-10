@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.20.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.0...web-v11.20.1) (2026-11-10)
+
+
+### Refactoring
+
+* **config:** consolidate provider, credential and fallback keys ([9668e56](https://github.com/first-fluke/oh-my-agent/commit/9668e5682f66cd38f6c5973f85a37d053643ee77))
+
 ## [11.20.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.19.0...web-v11.20.0) (2026-11-09)
 
 
