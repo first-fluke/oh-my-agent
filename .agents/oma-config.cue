@@ -326,7 +326,7 @@ package config
 	// Credential / connection sections for the selectors above.
 	brave?:  {api_key_env?: string, api_key_vault?: string}
 	exa?:    {api_key_env?: string, api_key_vault?: string}
-	honcho?: _
+	honcho?: {...} // see configuration-reference: Honcho semantic memory
 	// Every other key is an LLM provider.
 	[!~"^(docs|web|code_intelligence|code_intelligence_guard|semantic_memory|brave|exa|honcho)$"]: #LlmProviderConfig
 }

@@ -10,6 +10,9 @@ task.auto_infer = ["node"]
 bun = "1.4.2"
 node = "26"
 hk = "2.7.0"
+# Evaluates .agents/oma-config.cue (schema + instance) in tests and hooks;
+# without it the loader silently falls back to the YAML file.
+cue = "0.17.1"
 
 [tasks.hooks]
 description = "Install hk git hooks into this repository"
