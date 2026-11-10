@@ -257,8 +257,35 @@ function spawnDaemonProcess(
   return child.pid;
 }
 
+/**
+ * Stop a daemon and everything under it.
+ *
+ * On Windows the recorded pid is the `serena.exe` trampoline, which runs the
+ * venv `python.exe` launcher, which runs the real interpreter. `process.kill`
+ * there is a TerminateProcess on that one pid only, so the server process
+ * could outlive it and keep the port. `taskkill /T` takes the whole tree.
+ */
+export function terminateDaemonTree(
+  pid: number,
+  platform: NodeJS.Platform = process.platform,
+): void {
+  if (platform !== "win32") {
+    process.kill(pid, "SIGTERM");
+    return;
+  }
+  const result = spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+    encoding: "utf-8",
+    timeout: 10_000,
+    windowsHide: true,
+  });
+  if (result.status !== 0 && isAlive(pid))
+    throw new Error(
+      `taskkill failed for Serena daemon ${pid}: ${(result.stderr || result.stdout || "").trim()}`,
+    );
+}
+
 async function stopStaleDaemon(pid: number): Promise<void> {
-  process.kill(pid, "SIGTERM");
+  terminateDaemonTree(pid);
   const deadline = Date.now() + 5000;
   while (isAlive(pid) && Date.now() < deadline) {
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -495,8 +522,23 @@ export interface RunningDaemon {
   context: string;
 }
 
+// Windows command lines quote arguments that contain spaces, so a project
+// path may arrive as `"C:\Users\Jane Doe\app"`.
 const DAEMON_COMMAND_PATTERN =
-  /serena\S*\s+start-mcp-server\b(?=.*--transport\s+streamable-http\b)(?=.*--port\s+(\d+))(?=.*--project\s+(\S+))(?=.*--context\s+(\S+))/;
+  /serena\S*\s+start-mcp-server\b(?=.*--transport\s+streamable-http\b)(?=.*--port\s+(\d+))(?=.*--project\s+("[^"]*"|\S+))(?=.*--context\s+(\S+))/;
+
+function matchDaemonCommand(
+  pid: number,
+  command: string,
+): RunningDaemon | null {
+  const [, portText, rawRoot, context] =
+    command.match(DAEMON_COMMAND_PATTERN) ?? [];
+  if (!portText || !rawRoot || !context) return null;
+  const port = Number.parseInt(portText, 10);
+  if (port < PORT_BASE || port >= PORT_BASE + PORT_RANGE) return null;
+  const root = rawRoot.replace(/^"(.*)"$/, "$1");
+  return { pid, port, root, context };
+}
 
 /**
  * Parse `ps -axo pid,command` output for daemons shaped like the ones
@@ -509,19 +551,63 @@ export function parseRunningDaemons(psOutput: string): RunningDaemon[] {
     const row = line.trim().match(/^(\d+)\s+(.*)$/);
     const [, pidText, command] = row ?? [];
     if (!pidText || !command) continue;
-    const [, portText, root, context] =
-      command.match(DAEMON_COMMAND_PATTERN) ?? [];
-    if (!portText || !root || !context) continue;
-    const port = Number.parseInt(portText, 10);
-    if (port < PORT_BASE || port >= PORT_BASE + PORT_RANGE) continue;
-    found.push({ pid: Number.parseInt(pidText, 10), port, root, context });
+    const daemon = matchDaemonCommand(Number.parseInt(pidText, 10), command);
+    if (daemon) found.push(daemon);
   }
   return found;
 }
 
-/** Best-effort process-table scan; empty where `ps` is unavailable (Windows). */
-export function listRunningDaemons(): RunningDaemon[] {
+/**
+ * Parse `<pid> <ppid> <command line>` rows from Win32_Process.
+ *
+ * On Windows one daemon is a chain of processes with the same arguments: the
+ * `serena.exe` trampoline (the pid the registry records), the venv
+ * `python.exe` launcher, and the interpreter. Only the head of each chain is
+ * the daemon. Reporting the children too would make the sweep adopt them as
+ * unregistered duplicates and later kill the server out from under its
+ * clients.
+ */
+export function parseWindowsDaemons(output: string): RunningDaemon[] {
+  const matched: { daemon: RunningDaemon; ppid: number }[] = [];
+  for (const line of output.split(/\r?\n/)) {
+    const row = line.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/);
+    const [, pidText, ppidText, command] = row ?? [];
+    if (!pidText || !ppidText || !command) continue;
+    const daemon = matchDaemonCommand(Number.parseInt(pidText, 10), command);
+    if (daemon) matched.push({ daemon, ppid: Number.parseInt(ppidText, 10) });
+  }
+  const byPid = new Map(matched.map((entry) => [entry.daemon.pid, entry]));
+  return matched
+    .filter(({ daemon, ppid }) => {
+      const parent = byPid.get(ppid)?.daemon;
+      return !(
+        parent &&
+        parent.port === daemon.port &&
+        parent.root === daemon.root &&
+        parent.context === daemon.context
+      );
+    })
+    .map(({ daemon }) => daemon);
+}
+
+const WINDOWS_PROCESS_QUERY = [
+  "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
+  "Get-CimInstance Win32_Process -Filter \"CommandLine LIKE '%start-mcp-server%'\" | ForEach-Object { '{0} {1} {2}' -f $_.ProcessId, $_.ParentProcessId, $_.CommandLine }",
+].join("; ");
+
+/** Best-effort process-table scan; empty when the scan itself fails. */
+export function listRunningDaemons(
+  platform: NodeJS.Platform = process.platform,
+): RunningDaemon[] {
   try {
+    if (platform === "win32") {
+      const result = spawnSync(
+        "powershell.exe",
+        ["-NoProfile", "-NonInteractive", "-Command", WINDOWS_PROCESS_QUERY],
+        { encoding: "utf-8", timeout: 15_000, windowsHide: true },
+      );
+      return parseWindowsDaemons(result.stdout ?? "");
+    }
     const result = spawnSync("ps", ["-axo", "pid,command"], {
       encoding: "utf-8",
       timeout: 5_000,
@@ -648,8 +734,8 @@ export function detachClient(key: string, pid = process.pid): void {
  */
 export function reclaimIdleDaemons(
   nowMs = Date.now(),
-  kill: (pid: number, signal: NodeJS.Signals) => void = (pid, signal) => {
-    process.kill(pid, signal);
+  kill: (pid: number, signal: NodeJS.Signals) => void = (pid) => {
+    terminateDaemonTree(pid);
   },
   listDaemons: () => RunningDaemon[] = listRunningDaemons,
   /** The acquiring caller handles this key's stop-and-wait under its startup lock. */

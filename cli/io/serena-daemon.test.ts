@@ -23,8 +23,10 @@ import {
   detachClient,
   ensureSerenaDaemon,
   isUnservableProjectRoot,
+  listRunningDaemons,
   omaStateDir,
   parseRunningDaemons,
+  parseWindowsDaemons,
   preferredPort,
   pruneRegistry,
   readRegistry,
@@ -1200,6 +1202,102 @@ describe("parseRunningDaemons", () => {
         context: "oma",
       },
     ]);
+  });
+});
+
+describe("parseWindowsDaemons", () => {
+  const args = (port: number, project: string) =>
+    `start-mcp-server --transport streamable-http --host 127.0.0.1 --port ${port} --project ${project} --context oma --add-mode no-memories --open-web-dashboard false`;
+  const python =
+    '"C:\\Users\\me\\AppData\\Roaming\\uv\\tools\\serena-agent\\Scripts\\python.exe" "C:\\Users\\me\\.local\\bin\\serena.exe"';
+
+  it("reports only the trampoline at the head of each daemon chain", () => {
+    // Shape captured from Win32_Process: serena.exe -> venv python -> python.
+    const root = "C:\\Users\\me\\workspace\\dahaejo";
+    const output = [
+      `30148 31564 serena ${args(12360, root)}`,
+      `32496 30148 ${python} ${args(12360, root)}`,
+      `3668 32496 ${python} ${args(12360, root)}`,
+      "25584 26636 powershell.exe -Command start-mcp-server",
+      "",
+    ].join("\r\n");
+
+    expect(parseWindowsDaemons(output)).toEqual([
+      { pid: 30148, port: 12360, root, context: "oma" },
+    ]);
+  });
+
+  it("keeps an orphaned child as its own daemon and unquotes spaced paths", () => {
+    const root = "C:\\Users\\Jane Doe\\app";
+    const output = `32496 99999 ${python} ${args(12370, `"${root}"`)}`;
+
+    expect(parseWindowsDaemons(output)).toEqual([
+      { pid: 32496, port: 12370, root, context: "oma" },
+    ]);
+  });
+});
+
+describe("listRunningDaemons", () => {
+  it.runIf(process.platform === "win32")(
+    "sees daemons through Win32_Process on Windows",
+    () => {
+      // Regression: the scan used `ps -axo`, which Windows lacks, so it was
+      // always empty and replacing a stale-runtime daemon failed with
+      // "Cannot verify stale Serena process identity".
+      const parsed = parseWindowsDaemons(
+        `4242 1 serena start-mcp-server --transport streamable-http --port 12345 --project C:\\p --context oma`,
+      );
+      expect(parsed).toHaveLength(1);
+      expect(Array.isArray(listRunningDaemons("win32"))).toBe(true);
+    },
+  );
+});
+
+describe("ensureSerenaDaemon — stale runtime on Windows", () => {
+  it("replaces an idle stale daemon identified by the Windows scan", async () => {
+    const root = resolve(work);
+    const key = daemonKey(root, "oma");
+    const port = preferredPort(key);
+    mkdirSync(omaStateDir(), { recursive: true });
+    writeFileSync(
+      join(omaStateDir(), "serena-daemons.json"),
+      JSON.stringify({
+        [key]: {
+          root,
+          context: "oma",
+          port,
+          pid: process.pid,
+          startedAt: new Date().toISOString(),
+          runtimeRevision: "old",
+          clients: [],
+          idleSince: new Date().toISOString(),
+        },
+      }),
+    );
+    const stopped: number[] = [];
+    let spawnedPort: number | undefined;
+    const windowsTable = `${process.pid} 1 serena start-mcp-server --transport streamable-http --host 127.0.0.1 --port ${port} --project ${root} --context oma`;
+
+    const handle = await ensureSerenaDaemon({
+      root,
+      context: "oma",
+      runtimeRevision: "new",
+      listDaemons: () => parseWindowsDaemons(windowsTable),
+      stopDaemon: async (pid) => {
+        stopped.push(pid);
+      },
+      spawnDaemon: (p) => {
+        spawnedPort = p;
+        return process.pid;
+      },
+      probe: async (p) => p === spawnedPort,
+      pollIntervalMs: 10,
+      timeoutMs: 5_000,
+    });
+
+    expect(stopped).toEqual([process.pid]);
+    expect(handle).toMatchObject({ port, started: true });
+    expect(readRegistry()[key]?.runtimeRevision).toBe("new");
   });
 });
 
