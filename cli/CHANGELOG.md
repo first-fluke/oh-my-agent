@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.40.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.1...cli-v20.40.2) (2026-11-10)
+
+
+### Bug Fixes
+
+* **antigravity:** emit path-free hook commands in project hooks.json ([a6daac3](https://github.com/first-fluke/oh-my-agent/commit/a6daac3b9dd762ffa30f3c46dd8346aa4090f536))
+
 ## [20.40.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.0...cli-v20.40.1) (2026-11-10)
 
 
