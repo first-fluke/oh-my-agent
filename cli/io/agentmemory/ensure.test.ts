@@ -84,6 +84,9 @@ function dependencies() {
     startDaemon: vi
       .fn<NonNullable<Dependencies["startDaemon"]>>()
       .mockResolvedValue(daemon),
+    seedEngineLogLevel: vi
+      .fn<NonNullable<Dependencies["seedEngineLogLevel"]>>()
+      .mockReturnValue({ status: "seeded", path: "/unused" }),
     now: () => time,
     sleep: vi.fn(async (milliseconds: number) => {
       time += milliseconds;
@@ -149,6 +152,29 @@ describe("ensureAgentMemory", () => {
         env: { AGENTMEMORY_URL: "http://127.0.0.1:3111" },
       }),
     );
+  });
+
+  it("seeds the engine log level only for the OMA-managed local engine", async () => {
+    const managed = dependencies();
+    await ensureAgentMemory({ homeDir, env: {}, platform: "darwin" }, managed);
+    expect(managed.seedEngineLogLevel).toHaveBeenCalledWith({
+      homeDir,
+      env: {},
+      platform: "darwin",
+    });
+
+    const reused = dependencies();
+    reused.status.mockReset().mockResolvedValue(reused.ready);
+    await ensureAgentMemory({ homeDir, env: {}, platform: "darwin" }, reused);
+    expect(reused.seedEngineLogLevel).toHaveBeenCalledOnce();
+
+    const remote = dependencies();
+    remote.status.mockReset().mockResolvedValue(remote.ready);
+    await ensureAgentMemory(
+      { homeDir, env: { AGENTMEMORY_URL: "https://remote.example" } },
+      remote,
+    );
+    expect(remote.seedEngineLogLevel).not.toHaveBeenCalled();
   });
 
   it.each([{ AGENTMEMORY_BIN: "./bin/agentmemory" }, { PATH: "./bin" }])(

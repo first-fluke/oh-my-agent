@@ -27,6 +27,7 @@ import {
   readEndpointConfig,
   writeEndpointConfig,
 } from "./endpoint-config.js";
+import { seedAgentMemoryEngineLogLevel } from "./engine-config.js";
 import { defaultAgentMemoryInstaller } from "./setup.js";
 
 export interface EnsureAgentMemoryOptions {
@@ -59,6 +60,7 @@ interface EnsureAgentMemoryDependencies {
   servicePresence: typeof getAgentMemoryServicePresence;
   installService: typeof installAgentMemoryService;
   startDaemon: typeof controlAgentMemoryDaemon;
+  seedEngineLogLevel: typeof seedAgentMemoryEngineLogLevel;
   now(): number;
   sleep(milliseconds: number): Promise<void>;
 }
@@ -117,6 +119,7 @@ const DEFAULT_DEPENDENCIES: EnsureAgentMemoryDependencies = {
   servicePresence: getAgentMemoryServicePresence,
   installService: installAgentMemoryService,
   startDaemon: controlAgentMemoryDaemon,
+  seedEngineLogLevel: seedAgentMemoryEngineLogLevel,
   now: Date.now,
   sleep: (milliseconds) =>
     new Promise((resolve) => setTimeout(resolve, milliseconds)),
@@ -204,6 +207,9 @@ async function ensureConfiguredAgentMemory(
     platform,
     env: { ...env, AGENTMEMORY_URL: endpoint },
   };
+  // Quiet the engine log for the instance OMA manages (see engine-config.ts).
+  // Best effort; a running engine picks it up on its next start.
+  if (managed) deps.seedEngineLogLevel({ homeDir, env, platform });
   const existing = await deps.status(context);
   if (existing.reachable) {
     if (!configuredEndpoint) {

@@ -28,6 +28,7 @@ import {
   readEndpointConfig,
   writeEndpointConfig,
 } from "./endpoint-config.js";
+import { seedAgentMemoryEngineLogLevel } from "./engine-config.js";
 
 export const AGENTMEMORY_INSTALL_COMMAND =
   "bun install -g @agentmemory/agentmemory";
@@ -80,6 +81,16 @@ export async function setupAgentMemory(
       writeEndpointConfig(homeDir, nextConfig);
       wroteEndpoint = true;
     }
+  }
+
+  // A local engine is about to be installed or started: quiet its log first
+  // (see engine-config.ts). A remote endpoint's engine is not ours to tune.
+  if (!args.dryRun && !args.endpoint && (args.install || args.start)) {
+    seedAgentMemoryEngineLogLevel({
+      homeDir,
+      env: args.env ?? process.env,
+      platform: args.platform ?? process.platform,
+    });
   }
 
   if (args.install) {
