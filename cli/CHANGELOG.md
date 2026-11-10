@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.40.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.3...cli-v20.40.4) (2026-11-10)
+
+
+### Bug Fixes
+
+* **memory:** seed agentmemory engine log level to error ([7dcd614](https://github.com/first-fluke/oh-my-agent/commit/7dcd614f5c49d6cb5a0b47ec7027730177811b6c))
+
 ## [20.40.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.2...cli-v20.40.3) (2026-11-10)
 
 
