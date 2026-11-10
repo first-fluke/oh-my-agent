@@ -17,6 +17,7 @@ export class ConfigLayerError extends Error {
   constructor(
     message: string,
     readonly local = false,
+    readonly missingCli = false,
   ) {
     super(message);
     this.name = "ConfigLayerError";
@@ -42,6 +43,7 @@ function readConfig(file: string, local: boolean): Record<string, unknown> {
       throw new ConfigLayerError(
         `Failed to evaluate CUE at ${file}: ${local ? "invalid local CUE" : (result.error ?? "unknown error")}.${result.missingCli ? " Install CUE or use oma-config.yaml (oma-config.local.yaml for local settings)." : ""}`,
         local,
+        Boolean(result.missingCli),
       );
     }
     value = result.data;
@@ -99,6 +101,28 @@ function overlay(
   return result;
 }
 
+/**
+ * Config is re-read many times per command; the fallback is the same each
+ * time, so it is reported once per CUE file per process.
+ */
+const warnedCueFallbacks = new Set<string>();
+
+function warnCueFallbackOnce(cue: string, yaml: string, error: unknown): void {
+  if (warnedCueFallbacks.has(cue)) return;
+  warnedCueFallbacks.add(cue);
+  const missingCli = error instanceof ConfigLayerError && error.missingCli;
+  const install =
+    process.platform === "win32"
+      ? "winget install -e --id cue-lang.cue"
+      : "brew install cue";
+  const reason = missingCli
+    ? ` The cue CLI is not on PATH; install it with '${install}'.`
+    : ` Run 'cue export ${cue}' to see the error.`;
+  console.warn(
+    `[config] CUE evaluation failed at ${cue}. Falling back to oma-config.yaml (${yaml}).${reason}`,
+  );
+}
+
 function readDirectoryLayers(
   root: string,
   env: NodeJS.ProcessEnv,
@@ -133,9 +157,7 @@ function readDirectoryLayers(
       sources.shared = cue;
     } catch (error) {
       if (!existsSync(yaml)) throw error;
-      console.warn(
-        `[config] CUE evaluation failed at ${cue}. Falling back to oma-config.yaml (${yaml}).`,
-      );
+      warnCueFallbackOnce(cue, yaml, error);
     }
   }
   if (!sources.shared && existsSync(yaml)) {

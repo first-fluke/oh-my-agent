@@ -88,6 +88,28 @@ describe("loadOmaConfig CUE priority and fallback", () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining("Falling back to oma-config.yaml"),
     );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("cue CLI is not on PATH"),
+    );
+
+    warnSpy.mockRestore();
+  });
+
+  it("warns about the CUE fallback once per file however often config is read", () => {
+    writeFileSync(join(dir, ".agents", "oma-config.cue"), 'language: "ko"\n');
+    writeFileSync(join(dir, ".agents", "oma-config.yaml"), "language: en\n");
+    vi.mocked(evaluateCueFile).mockReturnValue({
+      success: false,
+      missingCli: true,
+      error: "'cue' command not found in PATH",
+    });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    for (let i = 0; i < 5; i++) expect(loadOmaConfig(dir)?.language).toBe("en");
+    const fallbackWarnings = warnSpy.mock.calls.filter(([message]) =>
+      String(message).includes(join(dir, ".agents", "oma-config.cue")),
+    );
+    expect(fallbackWarnings).toHaveLength(1);
 
     warnSpy.mockRestore();
   });

@@ -21,9 +21,7 @@ export function ensureCueBinaryWithLog(): void {
   if (cueBinary.status === "installed") {
     p.log.success(pc.green("Installed CUE binary"));
   } else if (cueBinary.status === "install-failed") {
-    p.log.warn(
-      `CUE binary not found — install via 'brew install cue' (macOS) or see https://cuelang.org/docs/install/`,
-    );
+    p.log.warn(`CUE binary not found — ${cueBinary.error}`);
   }
 }
 
