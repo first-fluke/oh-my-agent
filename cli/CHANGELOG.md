@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.40.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.2...cli-v20.40.3) (2026-11-10)
+
+
+### Bug Fixes
+
+* **config:** warn about cue fallback once with an install hint ([7eaa4b0](https://github.com/first-fluke/oh-my-agent/commit/7eaa4b086e080650844135a12ede3a889876c84b))
+* **memory:** make the windows agentmemory task registrable ([df5ce26](https://github.com/first-fluke/oh-my-agent/commit/df5ce26f138d6a9fff151e75ee0ef9bde8d7bd77))
+
 ## [20.40.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.1...cli-v20.40.2) (2026-11-10)
 
 
