@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.40.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.4...cli-v20.40.5) (2026-11-10)
+
+
+### Bug Fixes
+
+* **serena:** detect and stop bridge daemons on windows ([8e3d148](https://github.com/first-fluke/oh-my-agent/commit/8e3d148de83a40eb330e87d6bf4490634695de70))
+
 ## [20.40.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.3...cli-v20.40.4) (2026-11-10)
 
 
