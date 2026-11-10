@@ -18,6 +18,7 @@ import {
   renderLaunchdService,
   renderSystemdService,
   renderWindowsTaskXml,
+  windowsTaskUserId,
 } from "./agentmemory/service-files.js";
 
 /**
@@ -91,6 +92,7 @@ export function installAgentMemoryService(
               port,
               executable: args.executable,
               runtimePath: args.runtimePath,
+              userId: windowsTaskUserId(),
             })
           : undefined;
   const commands =

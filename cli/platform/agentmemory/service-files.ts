@@ -150,14 +150,31 @@ WantedBy=default.target
 // Windows Task Scheduler definition. Task Scheduler has no per-task env block,
 // so III_REST_PORT is set inline via cmd; WorkingDirectory pins the cwd-relative
 // ./data store to the AgentMemory home, and MultipleInstancesPolicy=IgnoreNew
-// prevents the overlapping-engine race that produces 404s.
+// prevents the overlapping-engine race that produces 404s. schtasks rejects a
+// RestartOnFailure Interval below PT1M ("incorrectly formatted or out of range").
+// A LogonTrigger without <UserId> fires for any user's logon, which only an
+// elevated shell may register ("Access is denied"); scoping it to the current
+// user keeps registration possible from a standard shell.
+export function windowsTaskUserId(
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  const user = env.USERNAME?.trim();
+  if (!user) return undefined;
+  const domain = env.USERDOMAIN?.trim();
+  return domain ? `${domain}\\${user}` : user;
+}
+
 export function renderWindowsTaskXml(args: {
   homeDir: string;
   port: number;
   executable?: string;
   runtimePath?: string;
+  userId?: string;
 }): string {
   const dataHome = agentMemoryDataHome(args.homeDir);
+  const userIdLine = args.userId
+    ? `\n      <UserId>${escapeXml(args.userId)}</UserId>`
+    : "";
   // Encoded PowerShell keeps PATH values literal; cmd.exe expands %NAME% even
   // inside quotes. The default task retains its existing cmd invocation.
   const encodedCommand =
@@ -179,11 +196,11 @@ export function renderWindowsTaskXml(args: {
   </RegistrationInfo>
   <Triggers>
     <LogonTrigger>
-      <Enabled>true</Enabled>
+      <Enabled>true</Enabled>${userIdLine}
     </LogonTrigger>
   </Triggers>
   <Principals>
-    <Principal id="Author">
+    <Principal id="Author">${userIdLine}
       <LogonType>InteractiveToken</LogonType>
       <RunLevel>LeastPrivilege</RunLevel>
     </Principal>
@@ -195,7 +212,7 @@ export function renderWindowsTaskXml(args: {
     <StartWhenAvailable>true</StartWhenAvailable>
     <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
     <RestartOnFailure>
-      <Interval>PT10S</Interval>
+      <Interval>PT1M</Interval>
       <Count>3</Count>
     </RestartOnFailure>
   </Settings>

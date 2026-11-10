@@ -9,12 +9,40 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  renderWindowsTaskXml,
+  windowsTaskUserId,
+} from "./agentmemory/service-files.js";
+import {
   DEFAULT_AGENTMEMORY_PORT,
   getAgentMemoryServicePresence,
   installAgentMemoryService,
   parsePositivePort,
   uninstallAgentMemoryService,
 } from "./agentmemory-service.js";
+
+describe("windows task user scope", () => {
+  it("derives DOMAIN\\user from the environment", () => {
+    expect(windowsTaskUserId({ USERDOMAIN: "HOME", USERNAME: "remote" })).toBe(
+      "HOME\\remote",
+    );
+    expect(windowsTaskUserId({ USERNAME: "remote" })).toBe("remote");
+    expect(windowsTaskUserId({})).toBeUndefined();
+  });
+
+  it("scopes the logon trigger and principal to the user so a non-elevated shell can register it", () => {
+    const xml = renderWindowsTaskXml({
+      homeDir: "C:\\Users\\a&b",
+      port: 3111,
+      userId: "HOME\\a&b",
+    });
+    expect(xml).toMatch(
+      /<LogonTrigger>\s*<Enabled>true<\/Enabled>\s*<UserId>HOME\\a&amp;b<\/UserId>\s*<\/LogonTrigger>/,
+    );
+    expect(xml).toMatch(
+      /<Principal id="Author">\s*<UserId>HOME\\a&amp;b<\/UserId>/,
+    );
+  });
+});
 
 describe("agentmemory-service", () => {
   let homeDir: string;
@@ -321,6 +349,15 @@ describe("agentmemory-service", () => {
       expect(result.content).toContain("III_REST_PORT=3460");
       // IgnoreNew prevents the overlapping-engine race on Windows.
       expect(result.content).toContain("IgnoreNew");
+      // schtasks only accepts a RestartOnFailure Interval of PT1M..P31D.
+      const interval = result.content?.match(
+        /<RestartOnFailure>\s*<Interval>(PT\d+[SM])<\/Interval>/,
+      )?.[1];
+      expect(interval).toBeDefined();
+      const seconds =
+        Number(interval?.slice(2, -1)) * (interval?.endsWith("M") ? 60 : 1);
+      expect(seconds).toBeGreaterThanOrEqual(60);
+      expect(result.content).not.toContain("PT10S");
       expect(result.commands).toEqual(
         expect.arrayContaining([
           expect.stringContaining(`schtasks /create /tn ${"OMA AgentMemory"}`),
